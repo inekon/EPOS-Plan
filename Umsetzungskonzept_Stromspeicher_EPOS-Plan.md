@@ -576,6 +576,34 @@ Projektkopien + 3 Anlagen-Bezeichner; Fix = je Zeile ein UPDATE nach Freigabe) �
 gewerkeübergreifende Speicherweg-Datenverlust (Frage 19) wird parallel in einer separaten Sitzung
 behoben. Ausstehend: zweiter App-Start als Gegenprobe der drei Fixes.
 
+### Abnahme — Runden 2 + 3 (17.08.2026) ✔
+
+**Runde 2 (Kartenansicht):** (1) Aufklappen der PV-/Speicherkarten repariert — drei Ursachen headless
+belegt (vorher rot/nachher grün): Klickfläche war nur das 8-px-Dreieck (jetzt die ganze Karte), das
+Vorbild `SpeicherKarte` hatte ein **Doppelabonnement** (ein Klick = auf und sofort zu — auch die
+Wärme-Pufferkarten waren unbemerkt defekt), und der Detailbereich brach nicht um (1213 px Inhalt in
+622-px-Karte; betraf auch die Wärmepumpen-Chipzeile). (2) Nicht gewählte Komponenten sind ausgeblendet;
+da die Platzhalterkarte der einzige Zuschaltweg ist, gibt es den Sitzungs-Link „+ Nicht gewählte
+Komponenten anzeigen (n)". (3) Kaskaden-Rückfrage: Symptom eines **stillen Bestandsfehlers** —
+`KonfigurationCtrl.Insert` führt `Kaskade_Zweikanalig` nicht, jedes Speichern löschte das Flag (Läufe
+rechneten wieder einkanalig, die Automatik fragte erneut). Fix: Flag wird über den Delete/Insert-Zyklus
+gerettet + zweiter Riegel vor der Abfrage; wirkt ab dem nächsten Speichern (Altprojekte: Haken einmal neu
+setzen). Gleiche Fehlerklasse bei `Extrapolation_erlaubt` entdeckt → Frage 23 (Chip liegt).
+
+**Runde 3 (Ergebnisseite):** Werte-/Einheiten-/Vergleichsspalten waren bei realen Fenstergrößen
+abgeschnitten — Ursache ist der Ausleih-Mechanismus der Seite in `splitContainer_Parameter.Panel2` bei
+festem, unverankertem `tabControl_Simulation` (headless: Liste 211 px hinter dem Rand bei 1280×800).
+Umbau auf ein `TableLayoutPanel`-Raster mit **absoluter Kennzahlenspalte** (584 px — die Liste weicht
+nie, das Diagramm flext; `SpSeiteEinpassen()` passt auf die sichtbare Schnittmenge ein, MinimumSize
+928×420, darunter greift der Bildlauf). Neuer **Kernblock „Wesentliche Daten"** (12 Kacheln:
+Kapazität, Leistung, SoC-Band %/kWh, Betriebsart, Berechnungsart · E_a,äq, ΔJ, Amortisation, n_zyk,
+Eigenverbrauchsquote, Autarkiegrad) aus denselben Datenquellen wie die Liste, inkl. „–"-Regel.
+**44 Headless-Zusicherungen, 0 Verletzungen**; Breitenreihe 700–1266 px belegt konstante
+Listensichtbarkeit. Beide Runden: 337/337 Tests grün, Prüfbuild 0 Fehler/Baseline-Warnungen, Encoding
+gewahrt. **Gegenprobe App-Start:** Karten-Aufklappen per Klick irgendwo, Einblende-Link, keine
+Kaskaden-Rückfrage bei gesetztem Haken, Ergebnisseite bei realer Fenstergröße und DPI-Skalierung
+(Kernblock-Umbruch), Seitenwechsel/Splitter, CSV/Ampeln/Vergleich.
+
 ---
 
 ## 4. Teststrategie
@@ -618,6 +646,7 @@ Aus dieser Prüfung:
 | 20 | **Befund (AP9b):** `REF_SP_TYP` (ID_Type 6) ist in der Produktiv-DB nicht anlegbar — `Tab_Typ_Energieanlagen` führt nur die Typen 1, 2, 3, 4, 10, 11, 12 unter erzwungener Beziehung; es existiert keine einzige Referenzzeile, die Referenzliste ist reine UI | Klären: Typ 6 im Typkatalog nachtragen (Migrationsschritt) oder das Referenz-Konzept für Speicher aufgeben |
 | 21 | **Bestandsbefund (Abnahme R1):** Projekt 1011 ist nicht rechenbar — `SimulationControl.cs:424/431` castet `ID_Carrier` hart auf `int`; bei NULL fliegt eine unbehandelte `InvalidCastException` bis in den Absturzdialog | Kleinstfix (NULL-Guard + Protokollmeldung); Aufgaben-Chip liegt bereit |
 | 22 | **Datenbefund (Abnahme R1):** „raumluftabh�ngig" = U+FFFD-Ersatzzeichen im Datenbestand — `Tab_Heizkessel_STAMM.Bezeichner` ID 251 (Katalogquelle), 6 Projektkopien (`Tab_Heizkessel` 1018251-53/55, 1018324-25), 3 Anlagen-Bezeichner (`Tab_Energieanlagen` 10369/11275/11269); vermutlich alter VDI-3805-Import mit falscher Kodierung | Je Zeile ein UPDATE „�"→„ä" nach Freigabe durch Philipp |
+| 23 | **Bestandsbefund (Abnahme R2):** `KonfigurationCtrl.Insert` setzt `Extrapolation_erlaubt` bei jedem Speichern unbedingt auf „an" zurück — dieselbe Fehlerklasse wie das (behobene) stille Löschen von `Kaskade_Zweikanalig` | Kleinstfix nach dem Kaskaden-Muster (Wert über den Delete/Insert-Zyklus retten); Aufgaben-Chip liegt bereit |
 
 ---
 

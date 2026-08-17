@@ -15,7 +15,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <c>Tab_Energieanlagen.ID</c> je BHKW, INDEXGLEICH zu <see cref="bhkw_list"/>
-        /// (Konzept 6.2). Gefüllt von <c>SimulationControl.Simulation_BHKW_Ctrl</c>.
+        /// (Konzept 6.2). Gefüllt von <c>SimulationControl.BHKW_Liste_Laden</c>.
         ///
         /// <see cref="bhkw_list"/> trägt die <c>ID_BHKW</c> — die KATALOGZEILE, nicht die
         /// Anlage. Senke, Ladepriorität und Speicherzuordnung hängen aber an der Anlage;
@@ -50,17 +50,23 @@ namespace WindowsFormsApplication1
         public float bhkwGrenzleistungAllgemein = 0;
         public float Waermeueberschuss = 0f;
 
-        // Vorgaben für Solar und Speicher setzen
-        bool solarVorhanden = false; // Solar = 0
-        float solarSpeicher = 0.0f;
-        float solarWaerme = 0.0f;
+        // PAKET BHKW-REGULÄR: Hier standen die drei Solar-Felder (solarVorhanden,
+        // solarSpeicher, solarWaerme) des einkanaligen Altpfads. Sie waren eine
+        // VBA-Erbschaft ohne Anbindung - solarVorhanden war fest false, und
+        // SolareErzeugung() lieferte als Platzhalter immer 0. Mit dem Altpfad sind sie
+        // ersatzlos entfallen; die Solarthermie rechnet in ihrem eigenen Modul
+        // (SimulationSolarthermie) und speist die Kanäle über die Speicherstufe.
+
         /// <summary>
-        /// Kapazität des Pendelspeichers [kWh] — NUR NOCH IM EINKANALIGEN ALTPFAD.
+        /// Speicherraum-Skalar der gemeinsamen Motorläufe [kWh].
         ///
-        /// Im zweikanaligen Weg ist dieser Skalar durch einen zugeordneten
-        /// <see cref="SimulationPufferspeicher"/> abgelöst (Konzept 6.5, zweiter Punkt);
-        /// <c>SimulationControl</c> setzt ihn dort ausdrücklich auf 0, damit ein
-        /// versehentlicher Rückgriff sofort auffiele.
+        /// Historisch die Kapazität des BHKW-Pendelspeichers im einkanaligen Altpfad; der
+        /// Name ist seit PAKET BHKW-REGULÄR eine Altlast. Der Altpfad, der ihn aus einem
+        /// Volumen befüllte, ist entfallen — heute setzt <see cref="Fahrweise_Stunde"/> ihn
+        /// je Stunde als SPIEGEL des zugeordneten <see cref="SimulationPufferspeicher"/>
+        /// (Ladefähigkeit bzw. Bilanzraum, Konzept 6.5 zweiter Punkt).
+        /// <c>SimulationControl</c> setzt das Feld beim Vorbereiten ausdrücklich auf 0,
+        /// damit ein versehentlicher Rückgriff auf einen Vorlaufwert sofort auffiele.
         /// </summary>
         public float kapazitaetPendelspeicher = 0.0f; // Pendelspeicher = 0
 
@@ -126,58 +132,41 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public bool Berechnung(int ProjektID)
-        {
-            m_ID_Projekt = ProjektID;
-            anzahlBhkw = bhkw_list.Count;
-
-            // Variablen vor jeder Berechnung sauber zurücksetzen
-            Kennzahlen_Zuruecksetzen();
-
-            Moduldaten_Einlesen(anzahlBhkw);
-
-            // --- 1. Simulationen ausführen ---
-            if (modeBHKW == 0)
-            {
-                BhkwSimulationWaermegefuehrt(
-                    waermebedarf, stromproduktion, waermerestbedarf, waermeproduktion,
-                    s_waerme_MWh, s_strom_MWh, kapazitaetPendelspeicher, anzahlBhkw,
-                    bhkwWaermeLeistung, bhkwStromLeistung, ref solarSpeicher,
-                    bhkwGrenzL, solarVorhanden, ref solarWaerme, ref Waermeueberschuss,
-                    strombedarf, bhkwGrenzleistungAllgemein
-                );
-            }
-            else if (modeBHKW == 1)
-            {
-                SimulationStromgefuehrt(
-                    waermebedarf, strombedarf, stromproduktion, waermerestbedarf, waermeproduktion,
-                    s_waerme_MWh, s_strom_MWh, kapazitaetPendelspeicher, anzahlBhkw,
-                    bhkwWaermeLeistung, bhkwStromLeistung, bhkwGrenzleistungAllgemein, ref Waermeueberschuss
-                );
-            }
-            else if (modeBHKW == 2)
-            {
-                SimulationOhneEinspeisung(
-                    waermebedarf, strombedarf, stromproduktion, waermerestbedarf, waermeproduktion,
-                    s_waerme_MWh, s_strom_MWh, kapazitaetPendelspeicher, anzahlBhkw,
-                    bhkwWaermeLeistung, bhkwStromLeistung, bhkwGrenzleistungAllgemein
-                );
-            }
-
-            // --- 2. Das übersetzte VBA-Code-Fragment für die Auswertung anhängen ---
-            Auswertung(anzahlBhkw);
-
-            return true;
-        }
+        // =====================================================================
+        // PAKET BHKW-REGULÄR (Entscheidung des Anwenders 17.08.2026, revidiert 6-1):
+        //
+        // Hier stand Berechnung(int ProjektID) - der EINSTIEG DES EINKANALIGEN ALTPFADS.
+        // Er verteilte den Lauf nach modeBHKW auf drei Jahresschleifen
+        // (BhkwSimulationWaermegefuehrt, SimulationStromgefuehrt,
+        // SimulationOhneEinspeisung) und rechnete gegen den skalaren Pendelspeicher.
+        //
+        // Alle vier Methoden sind ersatzlos entfallen. Der EINZIGE Einstieg ist jetzt
+        // Berechnung_Zweikanalig bzw. - als Mitglied der Speicherstufe - die Kette
+        // Vorbereiten_Zweikanalig / Stunde_Start / Stunde_Bedarf / Zweikanalig_Laden /
+        // Stunde_Ende / Abschluss_Zweikanalig.
+        //
+        // WAS AN PHYSIK ERHALTEN BLIEB: die drei Motorläufe (Motorlauf_Waermegefuehrt,
+        // Motorlauf_Stromgefuehrt, Motorlauf_OhneEinspeisung). Sie bestimmen unverändert,
+        // WANN die Maschine läuft und wie viel sie produziert - Fahrweise_Stunde ruft
+        // genau dieselben Methoden, nur gegen einen Speicherspiegel statt gegen den
+        // skalaren Pendelspeicher (Paket-5-Lehre N6: die Physik steht EINMAL).
+        //
+        // WAS AN BILANZ VERSCHWAND: die Vektordifferenz „Restwärme = Bedarf − Produktion"
+        // beim Aufrufer und die Speicherabrechnung am Stundenende. Beide waren mit einem
+        // Puffer nicht mehr richtig - geladene Wärme deckt noch keinen Bedarf
+        // (Konzept 6.5). Der neue Weg führt Direktdeckung, Speicherladung und Überschuss
+        // getrennt und prüft ihre Summe gegen die Produktion (Energieprobe).
+        // =====================================================================
 
         // =====================================================================
         // Gemeinsame Bausteine beider Rechenwege (Paket 6, Lehre N6 aus Paket 5:
-        // die Physik steht EINMAL, nicht zweimal). Herausgelöst aus Berechnung();
-        // die ausgeführten Anweisungen und ihre Reihenfolge sind unverändert.
+        // die Physik steht EINMAL, nicht zweimal). Herausgelöst aus dem entfallenen
+        // Berechnung(); die ausgeführten Anweisungen und ihre Reihenfolge sind
+        // unverändert.
         // =====================================================================
 
         /// <summary>
-        /// Schritt 0 aus <see cref="Berechnung"/>: alle Jahressummen und
+        /// Schritt 0 des Laufs (vormals aus <c>Berechnung</c>): alle Jahressummen und
         /// Emissionszähler auf den Laufanfang.
         /// </summary>
         private void Kennzahlen_Zuruecksetzen()
@@ -223,17 +212,25 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Schritt 1 aus <see cref="Berechnung"/>: Grenzleistung auflösen und die
-        /// Modulkennwerte aus dem Katalog lesen.
+        /// Schritt 1 des Laufs (vormals aus <c>Berechnung</c>): Grenzleistung auflösen und
+        /// die Modulkennwerte aus dem Katalog lesen.
         ///
         /// ACHTUNG, Bestandsverhalten: <see cref="bhkwGrenzleistungAllgemein"/> wird
         /// hier IN PLACE durch 100 geteilt. Ein zweiter Aufruf auf derselben Instanz
-        /// teilte erneut — deshalb ruft jeder Rechenweg diese Methode genau einmal.
+        /// teilte erneut — deshalb ruft der Rechenweg diese Methode genau einmal.
         /// </summary>
         private void Moduldaten_Einlesen(int anzahl)
         {
             bhkwGrenzleistungAllgemein /= 100;
-            if (bhkwGrenzleistungAllgemein == 0) bhkwGrenzleistungAllgemein = 0.5f;
+
+            // PAKET BHKW-REGULÄR (Entscheidung des Anwenders 17.08.2026, Punkt 2):
+            // Fallback 50 % -> 30 %. Er greift, wenn das Projekt keine
+            // Leistungsuntergrenze gepflegt hat (Tab_Einstellungen.Leistungsgrenze = 0).
+            // Migrationsschritt 13 hebt genau diese Sätze auf 30 an, sodass Migration und
+            // Fallback denselben Wert nennen; der Fallback bleibt trotzdem stehen, weil
+            // eine Datenbank ohne gelaufene Migration nicht plötzlich anders rechnen soll
+            // als eine mit.
+            if (bhkwGrenzleistungAllgemein == 0) bhkwGrenzleistungAllgemein = 0.3f;
 
             BHKWCtrl ctrl = new BHKWCtrl();
             for (int i = 0; i < anzahl; i++)
@@ -250,7 +247,26 @@ namespace WindowsFormsApplication1
                 if ((float)ctrl.m_Grenzleistung == 0)
                     bhkwGrenzL[i] = bhkwGrenzleistungAllgemein; // Grenzleistung als Faktor (z.B. 0.8 für 80% Modulation)
                 else
-                    bhkwGrenzL[i] = (float)ctrl.m_Grenzleistung; // Grenzleistung als Faktor (z.B. 0.8 für 80% Modulation)
+                    // PAKET BHKW-REGULÄR — EINHEITEN-FIX. Hier stand der Katalogwert OHNE
+                    // Division: bhkwGrenzL[i] = (float)ctrl.m_Grenzleistung.
+                    //
+                    // DER BRUCH. bhkwGrenzL ist ein FAKTOR (0,3 = 30 % Teillast) - so
+                    // wird das Feld in allen drei Motorläufen benutzt
+                    // (bhkwWaermeLeistung[motor] * bhkwGrenzL[motor]). Der Anlagenwert aus
+                    // Tab_Energieanlagen.Grenzleistung wird deshalb beim Laden durch 100
+                    // geteilt (SimulationControl.BHKW_Liste_Laden), und die projektweite
+                    // Grenze ebenso (die Zeile am Methodenanfang). Der KATALOGWERT aus
+                    // Tab_BHKW.Grenzleistung wurde es nicht - er trägt aber dieselbe
+                    // Einheit, nämlich Prozent.
+                    //
+                    // DIE FOLGE war ein Faktor 100 zu viel: Ein Katalog-BHKW mit 50 %
+                    // Modulationsgrenze rechnete mit bhkwGrenzL = 50. Da der Katalogwert
+                    // den Anlagenwert überschreibt, sobald er ungleich 0 ist, betraf das
+                    // jedes Modul mit gepflegter Katalog-Grenzleistung. Die Bedingung
+                    // „bhkwWaermeLeistung * bhkwGrenzL <= Wärmeraum" war damit praktisch
+                    // nie erfüllt - der Teillastzweig fiel aus, das Modul lief nur noch
+                    // Volllast oder gar nicht.
+                    bhkwGrenzL[i] = (float)(ctrl.m_Grenzleistung / 100.0); // Prozent -> Faktor (50 -> 0,5)
 
                 // Emissionsfaktoren aus der DB auslesen (Äquivalent zu Cells(zaehler+2, X))
                 bhkwCO2Factor[i] = (float)ctrl.m_CO2;
@@ -262,8 +278,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Schritt 2 aus <see cref="Berechnung"/>: Laufzeiten, Brennstoffverbrauch und
-        /// Emissionen aus den Modul-Jahressummen. Wort für Wort unverändert.
+        /// Schritt 2 des Laufs (vormals aus <c>Berechnung</c>): Laufzeiten,
+        /// Brennstoffverbrauch und Emissionen aus den Modul-Jahressummen. Wort für Wort
+        /// unverändert.
         /// </summary>
         private void Auswertung(int anzahl)
         {
@@ -331,400 +348,117 @@ namespace WindowsFormsApplication1
         }
 
 
-        // Hinweis: Die globalen VBA-Variablen (wie solar_waerme, solar_vorhanden etc.) 
-        // werden hier als 'ref' übergeben, damit Änderungen zurückgegeben werden.
-        public void BhkwSimulationWaermegefuehrt(
-                float[] waermebedarf,
-                float[] stromproduktion,
-                float[] waermerestbedarf,
-                float[] waermeproduktion,
-                float[] s_waerme,
-                float[] s_strom,
-                float kapazitaetPendelspeicher,
-                int anzahl,
-                float[] bhkwWaermeLeistung,
-                float[] bhkwStromLeistung,
-                ref float solarSpeicher,
-                float[] bhkwGrenzL,
-                bool solarVorhanden,
-                ref float solarWaerme,
-                ref float solarUeberschuss,
-                float[] strombedarf, // Im Sommerbetrieb des VBA-Codes genutzt!
-                float bhkwGrenzleistung // In der Notschaltung des VBA-Codes genutzt!
-            )
-        {
-            float speicher = 0f;
-            float restWaerme = 0f;
-            int stdTag = 0;
-            bool solar = false;
-            float solW = 0f;
-            float solSp = 0f;
-
-            // Arrays initialisieren (die ersten 10 Elemente nullen)
-            for (int i = 0; i <= 9; i++)
-            {
-                s_waerme[i] = 0f;
-                s_strom[i] = 0f;
-            }
-
-            // Solar-Verfügbarkeit prüfen
-            // HINWEIS: 'Bericht.Cells(50, 4)' wurde hier als Platzhalter-Bedingung eingebaut,
-            // da das Excel-Objekt in C# so nicht existiert.
-            bool berichtAusschluss = false; // Hier Logik für Bericht.Cells(50, 4) = "Ja" abbilden falls nötig
-
-            if (solarVorhanden && !berichtAusschluss)
-            {
-                solar = true;
-                solarWaerme = 0f;
-                solarUeberschuss = 0f;
-                solarSpeicher = kapazitaetPendelspeicher * solarSpeicher / 100f;
-            }
-            else
-            {
-                solarSpeicher = 0f;
-                solar = false;
-            }
-
-            solSp = 0f;
-
-            // Die Jahresschleife über 8760 Stunden
-            for (int stunde = 0; stunde <= 8759; stunde++)
-            {
-                stdTag = (stunde % 24) + 1;
-
-                // ********************************************** Solar
-                if (solar)
-                {
-                    solW = SolareErzeugung(stunde);
-                    if (solW + solSp > waermebedarf[stunde])
-                    {
-                        restWaerme = 0f;
-                        solSp = solSp + solW - waermebedarf[stunde];
-
-                        if (solSp > solarSpeicher)
-                        {
-                            solarWaerme = solarWaerme + SolareErzeugung(stunde) - (solSp - solarSpeicher);
-                            solarUeberschuss = solarUeberschuss + (solSp - solarSpeicher);
-                            solSp = solarSpeicher;
-                        }
-                        else
-                        {
-                            solarWaerme = solarWaerme + SolareErzeugung(stunde);
-                        }
-                    }
-                    else
-                    {
-                        restWaerme = waermebedarf[stunde] - SolareErzeugung(stunde) - solSp;
-                        solSp = 0f;
-                        solarWaerme = solarWaerme + SolareErzeugung(stunde);
-                    }
-                }
-                else
-                {
-                    restWaerme = waermebedarf[stunde];
-                }
-                // **********************************************
-
-                stromproduktion[stunde] = 0f;
-                waermeproduktion[stunde] = 0f;
-
-                Motorlauf_Waermegefuehrt(stunde, stdTag, anzahl, stromproduktion, waermeproduktion,
-                                         s_waerme, s_strom, bhkwWaermeLeistung, bhkwStromLeistung,
-                                         bhkwGrenzL, strombedarf, bhkwGrenzleistung,
-                                         kapazitaetPendelspeicher, solarSpeicher,
-                                         ref speicher, ref restWaerme);
-
-                // Endabrechnung der Stunde für den Speicher
-                Speicherabrechnung(ref speicher, ref restWaerme);
-
-                waermerestbedarf[stunde] = restWaerme;
-            }
-
-            // Ergebnisse auf MWh (bzw. durch 1000) herunterskalieren
-            for (int j = 0; j < anzahl; j++)
-            {
-                s_waerme[j] /= 1000f;
-                s_strom[j] /= 1000f;
-            }
-
-            if (solarUeberschuss > 0)
-            {
-                solarWaerme -= solarUeberschuss;
-                solarUeberschuss /= 1000f;
-            }
-
-            if (solarWaerme > 0)
-            {
-                solarWaerme /= 1000f;
-            }
-        }
+        // PAKET BHKW-REGULÄR: Hier stand BhkwSimulationWaermegefuehrt - die
+        // JAHRESSCHLEIFE der wärmegeführten Fahrweise im einkanaligen Altpfad. Sie ist
+        // mit dem Altpfad entfallen; der Stundenschritt selbst
+        // (Motorlauf_Waermegefuehrt) bleibt und wird von Fahrweise_Stunde gerufen.
+        //
+        // Sie trug außer der Schleife nur noch VBA-Erbschaft: einen Solar-Vorlauf, der
+        // wegen solarVorhanden = false und SolareErzeugung() == 0 nie etwas tat, und die
+        // Speicherabrechnung am Stundenende, die der neue Weg durch die Phasen A und E
+        // der Kaskadenschleife ersetzt.
 
         /// <summary>
-        /// Der STUNDENSCHRITT der wärmegeführten Fahrweise — die Motorzuschaltung samt
-        /// Winter-/Sommerbetrieb und den beiden Notschaltungen (Paket 6, herausgelöst aus
-        /// <see cref="BhkwSimulationWaermegefuehrt"/>; Anweisungen und Reihenfolge sind
-        /// unverändert, nur die erste Zuweisung an <c>restSpeicher</c> ist hierher
-        /// gewandert und damit zur lokalen Deklaration geworden).
+        /// Der STUNDENSCHRITT der wärmegeführten Fahrweise — die Motorzuschaltung gegen
+        /// den Wärmeraum aus Momentanbedarf und Speicherraum.
         ///
-        /// EINE Fassung für beide Rechenwege (Paket-5-Lehre N6): Der einkanalige Altpfad
-        /// ruft sie mit dem skalaren Pendelspeicher, der zweikanalige Weg mit einem
-        /// SPIEGEL des <see cref="SimulationPufferspeicher"/> — <paramref name="speicher"/>
-        /// ist dort der Füllstand, <paramref name="kapazitaetPendelspeicher"/> der
-        /// Zielfüllstand aus Ladefähigkeit bzw. Bilanzraum (Konzept 3.4). Der Zuwachs von
+        /// <para><b>PAKET BHKW-REGULÄR — TOTE ZWEIGE ENTFERNT.</b> Die Methode war in eine
+        /// Betriebsartenweiche gehüllt, deren erste Bedingung <c>if (stunde &lt; 8760)</c>
+        /// für JEDE Stunde des Jahres wahr ist (die Jahresschleife läuft 0..8759). Damit
+        /// waren unerreichbar:
+        /// <list type="bullet">
+        ///   <item>der SOMMERBETRIEB (<c>else if (stdTag > 10 &amp;&amp; stdTag &lt; 22)</c>)
+        ///         mit seinen vier stromseitigen Zuschaltfällen,</item>
+        ///   <item>die darin liegende 30-%-Schwelle und die 10-%-NOTSCHALTUNG,</item>
+        ///   <item>die 20-%-NOTSCHALTUNG als letzter <c>else if</c>-Zweig.</item>
+        /// </list>
+        /// Ihr Entfernen ist ERGEBNISNEUTRAL — nachweisbar durch Lesen, nicht erst durch
+        /// Messen: Kein Aufruf konnte sie erreichen. Die auskommentierte Altbedingung
+        /// <c>//if (stunde &lt; 3600 || stunde > 5760)</c> zeigt, dass die Weiche einmal
+        /// gemeint war und irgendwann stillgelegt wurde; sie zurückzuholen wäre eine
+        /// fachliche Änderung und gehört nicht in dieses Paket (dokumentiert in
+        /// Paket6_BHKW_Protokoll.md:74-94, Entscheidung 6-2 vom Anwender revidiert).
+        ///
+        /// Mit den Zweigen entfielen ihre Parameter: <c>stdTag</c> und <c>strombedarf</c>
+        /// (nur im Sommerbetrieb gelesen), <c>bhkwGrenzleistung</c> (nur in der
+        /// 10-%-Notschaltung) und <c>solarSpeicher</c> — letzterer trug seit dem Rückbau
+        /// des Altpfads ohnehin konstant <c>0f</c>, sodass die Terme
+        /// <c>kapazitaetPendelspeicher - solarSpeicher - speicher</c> bitgleich zu
+        /// <c>kapazitaetPendelspeicher - speicher</c> sind.</para>
+        ///
+        /// <para><b>Speicher als SPIEGEL:</b> <paramref name="speicher"/> ist der
+        /// Füllstand, <paramref name="kapazitaetPendelspeicher"/> der Zielfüllstand aus
+        /// Ladefähigkeit bzw. Bilanzraum des zugeordneten
+        /// <see cref="SimulationPufferspeicher"/> (Konzept 3.4). Der Zuwachs von
         /// <paramref name="speicher"/> ist die zu ladende Menge, der Rückgang von
-        /// <paramref name="restWaerme"/> die Direktdeckung.
+        /// <paramref name="restWaerme"/> die Direktdeckung. Aufrufer ist
+        /// <see cref="Fahrweise_Stunde"/>.</para>
         /// </summary>
         private void Motorlauf_Waermegefuehrt(
-            int stunde, int stdTag, int anzahl,
+            int stunde, int anzahl,
             float[] stromproduktion, float[] waermeproduktion,
             float[] s_waerme, float[] s_strom,
             float[] bhkwWaermeLeistung, float[] bhkwStromLeistung, float[] bhkwGrenzL,
-            float[] strombedarf, float bhkwGrenzleistung,
-            float kapazitaetPendelspeicher, float solarSpeicher,
+            float kapazitaetPendelspeicher,
             ref float speicher, ref float restWaerme)
         {
-            float restSpeicher = kapazitaetPendelspeicher - solarSpeicher - speicher;
-
+            for (int motor = 0; motor < anzahl; motor++)
             {
-                // Winterbetrieb
-                //if (stunde < 3600 || stunde > 5760)
-                if (stunde < 8760)
+                // Freier Speicherraum VOR diesem Motor. Er wird je Motor neu gebildet,
+                // weil der vorige den Füllstand verändert haben kann. (Die frühere
+                // Fassung hatte dieselbe Zuweisung zusätzlich vor der Schleife; sie wurde
+                // dort nie gelesen und ist mit der Weichenhülle entfallen.)
+                float restSpeicher = kapazitaetPendelspeicher - speicher;
+
+                if (bhkwWaermeLeistung[motor] < restWaerme + restSpeicher)
                 {
-                    for (int motor = 0; motor < anzahl; motor++)
+                    waermeproduktion[stunde] += bhkwWaermeLeistung[motor];
+                    s_waerme[motor] += bhkwWaermeLeistung[motor];
+                    stromproduktion[stunde] += bhkwStromLeistung[motor];
+                    s_strom[motor] += bhkwStromLeistung[motor];
+                    restWaerme -= bhkwWaermeLeistung[motor];
+
+                    if (restWaerme < 0)
                     {
-                        restSpeicher = kapazitaetPendelspeicher - solarSpeicher - speicher;
-
-                        if (bhkwWaermeLeistung[motor] < restWaerme + restSpeicher)
-                        {
-                            waermeproduktion[stunde] += bhkwWaermeLeistung[motor];
-                            s_waerme[motor] += bhkwWaermeLeistung[motor];
-                            stromproduktion[stunde] += bhkwStromLeistung[motor];
-                            s_strom[motor] += bhkwStromLeistung[motor];
-                            restWaerme -= bhkwWaermeLeistung[motor];
-
-                            if (restWaerme < 0)
-                            {
-                                speicher -= restWaerme;
-                                restWaerme = 0f;
-                            }
-                        }
-                        else if (bhkwWaermeLeistung[motor] * bhkwGrenzL[motor] <= restWaerme + restSpeicher)
-                        {
-                            waermeproduktion[stunde] += restWaerme + restSpeicher;
-                            s_waerme[motor] += restWaerme + restSpeicher;
-                            stromproduktion[stunde] += (restWaerme + restSpeicher) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
-                            s_strom[motor] += (restWaerme + restSpeicher) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
-                            speicher = kapazitaetPendelspeicher - solarSpeicher;
-                            restWaerme = 0f;
-                        }
+                        speicher -= restWaerme;
+                        restWaerme = 0f;
                     }
                 }
-                // Sommerbetrieb
-                else if (stdTag > 10 && stdTag < 22)
+                else if (bhkwWaermeLeistung[motor] * bhkwGrenzL[motor] <= restWaerme + restSpeicher)
                 {
-                    for (int motor = 0; motor < anzahl; motor++)
-                    {
-                        restSpeicher = kapazitaetPendelspeicher - solarSpeicher - speicher;
-
-                        if (bhkwStromLeistung[motor] < strombedarf[stunde] && (restSpeicher + restWaerme > bhkwWaermeLeistung[motor]) && bhkwStromLeistung[motor] > 0.2f)
-                        {
-                            stromproduktion[stunde] += bhkwStromLeistung[motor];
-                            s_strom[motor] += bhkwStromLeistung[motor];
-                            waermeproduktion[stunde] += bhkwWaermeLeistung[motor];
-                            s_waerme[motor] += bhkwWaermeLeistung[motor];
-                            restWaerme -= bhkwWaermeLeistung[motor];
-
-                            if (restWaerme < 0)
-                            {
-                                speicher -= restWaerme;
-                                restWaerme = 0f;
-                            }
-                        }
-                        else if (bhkwStromLeistung[motor] * bhkwGrenzL[motor] <= strombedarf[stunde] && (restSpeicher + restWaerme > strombedarf[stunde] / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor]) && bhkwStromLeistung[motor] > 0.2f)
-                        {
-                            stromproduktion[stunde] += strombedarf[stunde];
-                            s_strom[motor] += strombedarf[stunde];
-                            waermeproduktion[stunde] += strombedarf[stunde] / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
-                            s_waerme[motor] += strombedarf[stunde] / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
-                            restWaerme -= strombedarf[stunde] / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
-
-                            if (restWaerme < 0)
-                            {
-                                speicher -= restWaerme;
-                                restWaerme = 0f;
-                            }
-                        }
-                        else if (bhkwStromLeistung[motor] * bhkwGrenzL[motor] <= strombedarf[stunde] && (restSpeicher + restWaerme > bhkwWaermeLeistung[motor] * bhkwGrenzL[motor]) && bhkwStromLeistung[motor] > 0.2f)
-                        {
-                            waermeproduktion[stunde] += restSpeicher + restWaerme;
-                            s_waerme[motor] += restSpeicher + restWaerme;
-                            stromproduktion[stunde] += (restSpeicher + restWaerme) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
-                            s_strom[motor] += (restSpeicher + restWaerme) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
-                            restWaerme = 0f;
-                            speicher = kapazitaetPendelspeicher - solarSpeicher;
-                        }
-                        else if (bhkwStromLeistung[motor] * bhkwGrenzL[motor] * 0.8f <= strombedarf[stunde] && speicher < kapazitaetPendelspeicher * 0.3f && bhkwStromLeistung[motor] > 0.2f)
-                        {
-                            waermeproduktion[stunde] += bhkwWaermeLeistung[motor] * bhkwGrenzL[motor];
-                            s_waerme[motor] += bhkwWaermeLeistung[motor] * bhkwGrenzL[motor];
-                            stromproduktion[stunde] += bhkwStromLeistung[motor] * bhkwGrenzL[motor];
-                            s_strom[motor] += bhkwStromLeistung[motor] * bhkwGrenzL[motor];
-                            restWaerme -= bhkwWaermeLeistung[motor] * bhkwGrenzL[motor];
-
-                            if (restWaerme < 0)
-                            {
-                                speicher -= restWaerme;
-                                restWaerme = 0f;
-                            }
-                        }
-                        // Notschaltung: es müssen immer 10 % im Speicher sein
-                        else if (speicher < kapazitaetPendelspeicher * 0.1f)
-                        {
-                            waermeproduktion[stunde] += bhkwWaermeLeistung[motor] * bhkwGrenzL[motor];
-                            s_waerme[motor] += bhkwWaermeLeistung[motor] * bhkwGrenzL[motor];
-                            stromproduktion[stunde] += bhkwStromLeistung[motor] * bhkwGrenzL[motor];
-                            s_strom[motor] += bhkwStromLeistung[motor] * bhkwGrenzL[motor];
-                            restWaerme -= bhkwWaermeLeistung[motor] * bhkwGrenzleistung;
-
-                            if (restWaerme < 0)
-                            {
-                                speicher -= restWaerme;
-                                restWaerme = 0f;
-                            }
-                        }
-                    }
-                }
-                // Notschaltung: es müssen immer 20 % im Speicher sein
-                else if (speicher - restWaerme < kapazitaetPendelspeicher * 0.2f && (stdTag > 5 && stdTag < 10))
-                {
-                    for (int motor = 0; motor < anzahl; motor++)
-                    {
-                        restSpeicher = kapazitaetPendelspeicher - solarSpeicher - speicher;
-
-                        if (bhkwWaermeLeistung[motor] < restWaerme + restSpeicher)
-                        {
-                            waermeproduktion[stunde] += bhkwWaermeLeistung[motor];
-                            s_waerme[motor] += bhkwWaermeLeistung[motor];
-                            stromproduktion[stunde] += bhkwStromLeistung[motor];
-                            s_strom[motor] += bhkwStromLeistung[motor];
-                            restWaerme -= bhkwWaermeLeistung[motor];
-
-                            if (restWaerme < 0)
-                            {
-                                speicher -= restWaerme;
-                                restWaerme = 0f;
-                            }
-                        }
-                        else if (bhkwWaermeLeistung[motor] * bhkwGrenzL[motor] <= restWaerme + restSpeicher)
-                        {
-                            waermeproduktion[stunde] += restWaerme + restSpeicher;
-                            s_waerme[motor] += restWaerme + restSpeicher;
-                            stromproduktion[stunde] += (restWaerme + restSpeicher) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
-                            s_strom[motor] += (restWaerme + restSpeicher) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
-                            speicher = kapazitaetPendelspeicher - solarSpeicher;
-                            restWaerme = 0f;
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Die Endabrechnung der Stunde: Der Speicher deckt, was von der Stunde offen
-        /// geblieben ist (wortgleich aus wärmegeführter Fahrweise und Fahrweise ohne
-        /// Einspeisung — beide hatten diesen Block doppelt).
-        ///
-        /// NUR IM ALTPFAD: Im zweikanaligen Weg entlädt die <see cref="Kaskadenschleife"/>
-        /// die Speicher in den Phasen A und E (Konzept 6.3).
-        /// </summary>
-        private static void Speicherabrechnung(ref float speicher, ref float restWaerme)
-        {
-            if (restWaerme > speicher)
-            {
-                restWaerme -= speicher;
-                speicher = 0f;
-            }
-            else
-            {
-                speicher -= restWaerme;
-                restWaerme = 0f;
-            }
-        }
-
-        public void SimulationStromgefuehrt(
-            float[] waermebedarf,
-            float[] strombedarf,
-            float[] stromproduktion,
-            float[] waermerestbedarf,
-            float[] waermeproduktion,
-            float[] s_waerme,
-            float[] s_strom,
-            float kapazitaetPendelspeicher,
-            int anzahl,
-            float[] bhkwWaermeLeistung,
-            float[] bhkwStromLeistung,
-            float bhkwGrenzleistung,
-            ref float waermeUeberschuss
-        )
-        {
-            float speicher = 0f;
-            float restWaerme = 0f;
-            float restStrom = 0f;
-            int stdTag = 0;
-
-            // Die Jahresschleife über 8760 Stunden
-            for (int stunde = 0; stunde <= 8759; stunde++)
-            {
-                stdTag = (stunde % 24) + 1;
-
-                // Restwärmebedarf berechnen (Wärmebedarf abzüglich dem, was noch im Puffer ist)
-                restWaerme = waermebedarf[stunde] - speicher;
-                speicher = 0f; // Speicher wird geleert/verbraucht
-
-                restStrom = strombedarf[stunde];
-                stromproduktion[stunde] = 0f;
-                waermeproduktion[stunde] = 0f;
-
-                // Die Motoren/Module nacheinander zuschalten
-                Motorlauf_Stromgefuehrt(stunde, anzahl, stromproduktion, waermeproduktion,
-                                        s_waerme, s_strom, bhkwWaermeLeistung, bhkwStromLeistung,
-                                        bhkwGrenzleistung, ref restStrom, ref restWaerme);
-
-                // Wenn restWaerme negativ ist, bedeutet das: Es wurde mehr Wärme produziert als benötigt -> Ab in den Speicher!
-                if (restWaerme < 0)
-                {
-                    speicher = speicher - restWaerme; // restWaerme ist negativ, minus und minus ergibt plus
+                    waermeproduktion[stunde] += restWaerme + restSpeicher;
+                    s_waerme[motor] += restWaerme + restSpeicher;
+                    stromproduktion[stunde] += (restWaerme + restSpeicher) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
+                    s_strom[motor] += (restWaerme + restSpeicher) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
+                    speicher = kapazitaetPendelspeicher;
                     restWaerme = 0f;
                 }
-
-                // Wenn der Speicher überläuft, entsteht Wärmeüberschuss
-                if (speicher > kapazitaetPendelspeicher)
-                {
-                    waermeUeberschuss += (speicher - kapazitaetPendelspeicher);
-                    speicher = kapazitaetPendelspeicher;
-                }
-
-                // Verbleibender ungedeckter Wärmebedarf (z.B. für den Spitzenlastkessel) wegschreiben
-                waermerestbedarf[stunde] = restWaerme;
-            }
-
-            // Ergebnisse am Ende der Jahressimulation von kW in MWh umrechnen (/ 1000)
-            for (int j = 0; j < anzahl; j++)
-            {
-                s_waerme[j] /= 1000f;
-                s_strom[j] /= 1000f;
             }
         }
+
+        // PAKET BHKW-REGULÄR: Hier standen zwei Altpfad-Bausteine.
+        //
+        //   Speicherabrechnung(ref speicher, ref restWaerme) - die Endabrechnung der
+        //   Stunde, in der der skalare Pendelspeicher deckte, was offen geblieben war.
+        //   Der neue Weg entlädt die Speicher in den Phasen A und E der
+        //   Kaskadenschleife (Konzept 6.3), mit Herkunftsrechnung und Zurechnung der
+        //   Entladung auf die Erzeuger - beides konnte diese Methode nicht leisten.
+        //
+        //   SimulationStromgefuehrt(...) - die JAHRESSCHLEIFE der stromgeführten
+        //   Fahrweise. Der Stundenschritt Motorlauf_Stromgefuehrt bleibt und wird von
+        //   Fahrweise_Stunde gerufen; die Schleife samt Speicherüberlauf-Buchung ist
+        //   entfallen (der Überschuss wird jetzt je Stunde in Ueberschuss_stuendlich
+        //   gebucht und über die Energieprobe geprüft).
 
         /// <summary>
         /// Der STUNDENSCHRITT der stromgeführten Fahrweise: Die Motoren folgen dem
-        /// Strombedarf, die Wärme ist Koppelprodukt (Paket 6, herausgelöst aus
-        /// <see cref="SimulationStromgefuehrt"/> — Anweisungen unverändert).
+        /// Strombedarf, die Wärme ist Koppelprodukt (Paket 6, herausgelöst aus der mit dem
+        /// Altpfad entfallenen <c>SimulationStromgefuehrt</c> — Anweisungen unverändert).
         ///
         /// Der Speicher kommt hier bewusst NICHT vor: Eine stromgeführte Maschine richtet
         /// ihre Leistung nach dem Strombedarf, nicht nach dem Füllstand. Was an Wärme
-        /// übrig bleibt, entscheidet erst der Aufrufer — im Altpfad der Pendelspeicher mit
-        /// Überlauf, im zweikanaligen Weg die Ladephase C/D (Konzept 6.3).
+        /// übrig bleibt, entscheidet erst der Aufrufer — <see cref="Fahrweise_Stunde"/>
+        /// gibt es an die Ladephase C/D weiter (Konzept 6.3).
         /// </summary>
         private void Motorlauf_Stromgefuehrt(
             int stunde, int anzahl,
@@ -765,72 +499,23 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public void SimulationOhneEinspeisung(
-            float[] waermebedarf,
-            float[] strombedarf,
-            float[] stromproduktion,
-            float[] waermerestbedarf,
-            float[] waermeproduktion,
-            float[] s_waerme,
-            float[] s_strom,
-            float kapazitaetPendelspeicher,
-            int anzahl,
-            float[] bhkwWaermeLeistung,
-            float[] bhkwStromLeistung,
-            float bhkwGrenzleistung
-        )
-        {
-            float speicher = 0f;
-            float restStrom = 0f;
-            float restWaerme = 0f;
-            int stdTag = 0;
-
-            // Die ersten 10 Elemente der Summenzähler nullen
-            for (int i = 0; i <= 9; i++)
-            {
-                s_waerme[i] = 0f;
-                s_strom[i] = 0f;
-            }
-
-            // Die Jahresschleife über 8760 Stunden
-            for (int stunde = 0; stunde <= 8759; stunde++)
-            {
-                stdTag = (stunde % 24) + 1;
-                restWaerme = waermebedarf[stunde];
-                restStrom = strombedarf[stunde];
-
-                stromproduktion[stunde] = 0f;
-                waermeproduktion[stunde] = 0f;
-
-                Motorlauf_OhneEinspeisung(stunde, anzahl, stromproduktion, waermeproduktion,
-                                          s_waerme, s_strom, bhkwWaermeLeistung, bhkwStromLeistung,
-                                          bhkwGrenzleistung, kapazitaetPendelspeicher,
-                                          ref speicher, ref restWaerme, ref restStrom);
-
-                // --- Speicherabrechnung am Ende der Stunde ---
-                Speicherabrechnung(ref speicher, ref restWaerme);
-
-                waermerestbedarf[stunde] = restWaerme;
-            }
-
-            // Am Ende der Simulation von kW in MWh umrechnen
-            for (int j = 0; j < anzahl; j++)
-            {
-                s_waerme[j] /= 1000f;
-                s_strom[j] /= 1000f;
-            }
-        }
+        // PAKET BHKW-REGULÄR: Hier stand SimulationOhneEinspeisung(...) - die
+        // JAHRESSCHLEIFE der Fahrweise ohne Einspeisung im einkanaligen Altpfad. Wie bei
+        // den beiden anderen Fahrweisen bleibt der Stundenschritt
+        // (Motorlauf_OhneEinspeisung) und wird von Fahrweise_Stunde gerufen; die Schleife
+        // samt Speicherabrechnung am Stundenende ist entfallen.
 
         /// <summary>
         /// Der STUNDENSCHRITT der Fahrweise OHNE EINSPEISUNG: erst die wärmeseitige
         /// Zuschaltung (W1/W2), danach die stromseitige (S1…S3) — beide Schleifen
-        /// unverändert aus <see cref="SimulationOhneEinspeisung"/> herausgelöst (Paket 6);
-        /// nur die erste Zuweisung an <c>restSpeicher</c> und die beiden Hilfsgrößen
+        /// unverändert aus der mit dem Altpfad entfallenen
+        /// <c>SimulationOhneEinspeisung</c> herausgelöst (Paket 6); nur die erste
+        /// Zuweisung an <c>restSpeicher</c> und die beiden Hilfsgrößen
         /// <c>wLeistung</c>/<c>sLeistung</c> sind hierher gewandert.
         ///
         /// Wie bei der wärmegeführten Fahrweise sind <paramref name="speicher"/> und
-        /// <paramref name="kapazitaetPendelspeicher"/> im zweikanaligen Weg der Spiegel
-        /// eines <see cref="SimulationPufferspeicher"/>.
+        /// <paramref name="kapazitaetPendelspeicher"/> der Spiegel eines
+        /// <see cref="SimulationPufferspeicher"/>.
         /// </summary>
         private void Motorlauf_OhneEinspeisung(
             int stunde, int anzahl,
@@ -982,12 +667,10 @@ namespace WindowsFormsApplication1
 
 
 
-        // Hilfsmethode als Platzhalter für die solare Erzeugung
-        private float SolareErzeugung(int stunde)
-        {
-            // Hier deine Berechnungslogik für die Solarstunde einfügen
-            return 0f;
-        }
+        // PAKET BHKW-REGULÄR: Hier stand SolareErzeugung(int stunde) - eine
+        // Platzhalter-Methode aus der VBA-Übersetzung, die immer 0f zurückgab. Ihr
+        // einziger Aufrufer war der Solar-Vorlauf der entfallenen wärmegeführten
+        // Jahresschleife; sie ist mit ihm entfallen.
 
         // =====================================================================
         // ZWEIKANALIGER WEG (Paket 6 - Konzept 6.3 und 6.5, zweiter Punkt)
@@ -1157,8 +840,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Modulaufbau des zweikanaligen Wegs — dieselben Schritte wie in
-        /// <see cref="Berechnung"/>, zusätzlich die Senkenzuordnung.
+        /// Modulaufbau des Laufs — dieselben Schritte, die das entfallene
+        /// <c>Berechnung</c> des Altpfads voranstellte (Kennzahlen zurücksetzen,
+        /// Moduldaten einlesen), zusätzlich die Senkenzuordnung.
         ///
         /// EINE SENKE JE STUFE: Die drei Fahrweisen schalten ihre Motoren GEMEINSAM
         /// gegen einen Wärmeraum zu (<c>restWaerme + restSpeicher</c>). Eine Senke je
@@ -1538,7 +1222,8 @@ namespace WindowsFormsApplication1
         /// Der Speicher wird dabei als SKALARER SPIEGEL geführt: <c>speicher</c> beginnt
         /// bei 0, <c>kapazitaet</c> ist der Speicherraum. Der Zuwachs von <c>speicher</c>
         /// ist damit genau die einzulagernde Menge, der Rückgang von <c>restWaerme</c>
-        /// die Direktdeckung. Gerechnet wird mit denselben Methoden wie im Altpfad
+        /// die Direktdeckung. Gerechnet wird mit denselben drei Motorläufen, die auch der
+        /// entfallene Altpfad benutzt hat
         /// (<see cref="Motorlauf_Waermegefuehrt"/>, <see cref="Motorlauf_Stromgefuehrt"/>,
         /// <see cref="Motorlauf_OhneEinspeisung"/>) — es gibt keine zweite Physik.
         /// </summary>
@@ -1550,7 +1235,6 @@ namespace WindowsFormsApplication1
             float speicher = 0f;
             float restWaerme = (float)bedarf;
             float kapazitaet = (float)speicherraum;
-            int stdTag = (stunde % 24) + 1;
 
             if (modeBHKW == 1)
             {
@@ -1577,10 +1261,13 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                Motorlauf_Waermegefuehrt(stunde, stdTag, _anzahlZweikanalig, stromproduktion, waermeproduktion,
+                // PAKET BHKW-REGULÄR: Die Argumente stdTag, strombedarf,
+                // bhkwGrenzleistungAllgemein und der Solar-Speicheranteil 0f sind
+                // entfallen - sie speisten ausschließlich die toten Sommer- und
+                // Notschaltungszweige des Motorlaufs (Begründung dort).
+                Motorlauf_Waermegefuehrt(stunde, _anzahlZweikanalig, stromproduktion, waermeproduktion,
                                          s_waerme_MWh, s_strom_MWh, bhkwWaermeLeistung, bhkwStromLeistung,
-                                         bhkwGrenzL, strombedarf, bhkwGrenzleistungAllgemein,
-                                         kapazitaet, 0f, ref speicher, ref restWaerme);
+                                         bhkwGrenzL, kapazitaet, ref speicher, ref restWaerme);
             }
 
             gedeckt = bedarf - restWaerme;

@@ -193,13 +193,13 @@
     <value>17</value>
   </data>
   <data name="Liste_WP.Location" type="System.Drawing.Point, System.Drawing">
-    <value>21, 115</value>
+    <value>21, 146</value>
   </data>
   <data name="Liste_WP.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 4, 3, 4</value>
   </data>
   <data name="Liste_WP.Size" type="System.Drawing.Size, System.Drawing">
-    <value>377, 293</value>
+    <value>377, 262</value>
   </data>
   <data name="Liste_WP.TabIndex" type="System.Int32, mscorlib">
     <value>8</value>
@@ -1098,6 +1098,54 @@
   </data>
   <data name="&gt;&gt;lbl_LeistungBis.ZOrder" xml:space="preserve">
     <value>2</value>
+  </data>
+  <data name="lbl_Filter.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="lbl_Filter.Location" type="System.Drawing.Point, System.Drawing">
+    <value>21, 118</value>
+  </data>
+  <data name="lbl_Filter.Size" type="System.Drawing.Size, System.Drawing">
+    <value>45, 17</value>
+  </data>
+  <data name="lbl_Filter.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="lbl_Filter.Text" xml:space="preserve">
+    <value>Filter:</value>
+  </data>
+  <data name="&gt;&gt;lbl_Filter.Name" xml:space="preserve">
+    <value>lbl_Filter</value>
+  </data>
+  <data name="&gt;&gt;lbl_Filter.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;lbl_Filter.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;lbl_Filter.ZOrder" xml:space="preserve">
+    <value>32</value>
+  </data>
+  <data name="txt_Filter.Location" type="System.Drawing.Point, System.Drawing">
+    <value>72, 115</value>
+  </data>
+  <data name="txt_Filter.Size" type="System.Drawing.Size, System.Drawing">
+    <value>326, 25</value>
+  </data>
+  <data name="txt_Filter.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="&gt;&gt;txt_Filter.Name" xml:space="preserve">
+    <value>txt_Filter</value>
+  </data>
+  <data name="&gt;&gt;txt_Filter.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;txt_Filter.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;txt_Filter.ZOrder" xml:space="preserve">
+    <value>33</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>

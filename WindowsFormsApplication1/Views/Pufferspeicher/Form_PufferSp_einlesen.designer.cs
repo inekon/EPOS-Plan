@@ -49,6 +49,8 @@
             num_VolumenBis = new System.Windows.Forms.NumericUpDown();
             lbl_VolumenFilter = new System.Windows.Forms.Label();
             lbl_VolumenBis = new System.Windows.Forms.Label();
+            lbl_Filter = new System.Windows.Forms.Label();
+            txt_Filter = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)num_VolumenVon).BeginInit();
             ((System.ComponentModel.ISupportInitialize)num_VolumenBis).BeginInit();
             SuspendLayout();
@@ -75,6 +77,8 @@
             resources.ApplyResources(Liste_PufferSp, "Liste_PufferSp");
             Liste_PufferSp.ForeColor = System.Drawing.Color.Black;
             Liste_PufferSp.Name = "Liste_PufferSp";
+            // Mehrfachauswahl: der Anwender kann mehrere VDI-Eintraege in einem Vorgang laden.
+            Liste_PufferSp.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
             Liste_PufferSp.SelectedIndexChanged += Liste_WP_SelectedIndexChanged;
             // 
             // btn_VDI3805
@@ -191,6 +195,20 @@
             lbl_VolumenBis.ForeColor = System.Drawing.Color.Black;
             lbl_VolumenBis.Name = "lbl_VolumenBis";
             // 
+            // lbl_Filter
+            // 
+            resources.ApplyResources(lbl_Filter, "lbl_Filter");
+            lbl_Filter.ForeColor = System.Drawing.Color.Black;
+            lbl_Filter.Name = "lbl_Filter";
+            // 
+            // txt_Filter
+            // 
+            txt_Filter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(txt_Filter, "txt_Filter");
+            txt_Filter.ForeColor = System.Drawing.Color.Black;
+            txt_Filter.Name = "txt_Filter";
+            txt_Filter.TextChanged += Suchfilter_TextChanged;
+            // 
             // Form_PufferSp_einlesen
             // 
             resources.ApplyResources(this, "$this");
@@ -215,6 +233,8 @@
             Controls.Add(textBox_Typ);
             Controls.Add(Label17);
             Controls.Add(textBox_Volumen);
+            Controls.Add(lbl_Filter);
+            Controls.Add(txt_Filter);
             ForeColor = System.Drawing.Color.Black;
             Name = "Form_PufferSp_einlesen";
             ((System.ComponentModel.ISupportInitialize)num_VolumenVon).EndInit();
@@ -245,5 +265,7 @@ private System.Windows.Forms.TextBox textBox_Volumen;
         private System.Windows.Forms.NumericUpDown num_VolumenBis;
         private System.Windows.Forms.Label lbl_VolumenFilter;
         private System.Windows.Forms.Label lbl_VolumenBis;
+        private System.Windows.Forms.Label lbl_Filter;
+        private System.Windows.Forms.TextBox txt_Filter;
     }
 }

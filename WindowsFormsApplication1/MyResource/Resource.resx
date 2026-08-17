@@ -244,6 +244,12 @@ physikalisch. Das ist ein Hinweis, keine Sperre.</value>
   <data name="SIM_KARTE_VERFUEGBAR" xml:space="preserve">
     <value>nicht in der Simulation</value>
   </data>
+  <data name="SIM_KARTE_VERFUEGBAR_AUSBLENDEN" xml:space="preserve">
+    <value>− Nicht gewählte Komponenten ausblenden</value>
+  </data>
+  <data name="SIM_KARTE_VERFUEGBAR_EINBLENDEN" xml:space="preserve">
+    <value>+ Nicht gewählte Komponenten anzeigen ({0}) …</value>
+  </data>
   <data name="SIM_KARTE_WPPRIO" xml:space="preserve">
     <value>WP-Prio {0}</value>
   </data>
@@ -607,6 +613,9 @@ Ohne Quellpuffer steht hier 0,00.</value>
   <data name="PSP_FEHLER_NACHRANG_UNTER_EIN" xml:space="preserve">
     <value>Die Abschaltschwelle für nachrangige Erzeuger muss über der Einschaltschwelle liegen.</value>
   </data>
+  <data name="PSP_FEHLER_RESERVE_UEBER_AUS" xml:space="preserve">
+    <value>Der Mindestfüllstand muss unter der Abschaltschwelle liegen - sonst könnte der Speicher keinen Bedarf mehr decken.</value>
+  </data>
   <data name="PSP_FEHLER_SCHWELLE_BEREICH" xml:space="preserve">
     <value>Die {0} muss zwischen 0 und 100 % liegen.</value>
   </data>
@@ -693,6 +702,9 @@ Ohne Quellpuffer steht hier 0,00.</value>
   </data>
   <data name="PSP_LABEL_RUECKLAUF" xml:space="preserve">
     <value>Rücklauf [°C]:</value>
+  </data>
+  <data name="PSP_LABEL_MINDESTFUELLSTAND" xml:space="preserve">
+    <value>Mindestfüllstand/Notreserve [%]:</value>
   </data>
   <data name="PSP_LABEL_SCHWELLE_NACHRANGIG" xml:space="preserve">
     <value>… nachrangig [%]:</value>
@@ -802,6 +814,9 @@ Die Zuordnung erfolgt in der Tabelle 'Pufferspeicher Zuordnung'.</value>
   </data>
   <data name="PSP_NAME_EINSCHALTSCHWELLE" xml:space="preserve">
     <value>Einschaltschwelle</value>
+  </data>
+  <data name="PSP_NAME_MINDESTFUELLSTAND" xml:space="preserve">
+    <value>Mindestfüllstand/Notreserve</value>
   </data>
   <data name="PSP_OBERGRENZE_EIGEN" xml:space="preserve">
     <value>{0} % (eigene)</value>
@@ -1779,6 +1794,9 @@ Jetzt Datei auswählen?</value>
   <data name="SIMQ_ERDKOLLEKTOR_ANZEIGE" xml:space="preserve">
     <value>Erdreich Kollektor {0} m</value>
   </data>
+  <data name="SIMQ_ERDREICH_AENDERUNG_HINWEIS" xml:space="preserve">
+    <value>Eingaben geändert — die Auslegungsprüfung zeigt noch den letzten Simulationslauf. Bitte die Simulation neu starten.</value>
+  </data>
   <data name="SIMQ_ERDREICH_ANZAHL_SONDEN" xml:space="preserve">
     <value>Anzahl Sonden:</value>
   </data>
@@ -1790,6 +1808,9 @@ Jetzt Datei auswählen?</value>
   </data>
   <data name="SIMQ_ERDREICH_BODENTYP_HINWEIS" xml:space="preserve">
     <value>(Katalog VDI 4640 Blatt 1, Entwurf 2021-12)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_BTN_SIMULATION" xml:space="preserve">
+    <value>Simulation</value>
   </data>
   <data name="SIMQ_ERDREICH_ENTZUG_KURZTEXT" xml:space="preserve">
     <value>Entzug {0} kWh/a{1}, Spitze {2} W, {3} h/a. </value>
@@ -1841,6 +1862,21 @@ der Auslegungsprüfung nach VDI 4640 Blatt 2.</value>
   <data name="SIMQ_ERDREICH_MSG_LAENGE_NULL" xml:space="preserve">
     <value>Die Sondenlänge muss größer als 0 m sein!</value>
   </data>
+  <data name="SIMQ_ERDREICH_MSG_SIM_FEHLER" xml:space="preserve">
+    <value>Der Simulationslauf ist abgebrochen — die Auslegungsprüfung bleibt unverändert:
+
+{0}</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_SIM_OHNE_ERGEBNIS" xml:space="preserve">
+    <value>Der Simulationslauf ist durchgelaufen, hat für diese Wärmepumpe aber keine Erdreich-Kennwerte geliefert.
+
+Das ist der Fall, wenn die Wärmepumpe nicht gerechnet wird (Tool „Wärmepumpe" in der Konfiguration abgewählt) oder wenn ihr Quellentyp in der Datenbank nicht auf Erdreich steht. Die Auslegungsprüfung bleibt unverändert.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_SIM_OHNE_PROJEKT" xml:space="preserve">
+    <value>Das Projekt dieses Dialogs ließ sich nicht bestimmen — ohne Projektbezug kann kein Simulationslauf gestartet werden.
+
+Bitte die Auslegungsprüfung über den Simulationslauf des Projekts füllen.</value>
+  </data>
   <data name="SIMQ_ERDREICH_MSG_SPREIZUNG" xml:space="preserve">
     <value>Bitte eine nutzbare Spreizung größer als 0 K eintragen!
 Sie ist Eingangsgröße der Frostprüfung der Quelle.</value>
@@ -1872,6 +1908,9 @@ Jahresvolllaststunden aus einem Simulationslauf.</value>
   </data>
   <data name="SIMQ_ERDREICH_RB_SONDE" xml:space="preserve">
     <value>Erdsonde</value>
+  </data>
+  <data name="SIMQ_ERDREICH_SIM_NUR_GESPEICHERT" xml:space="preserve">
+    <value>Der Lauf hat mit den GESPEICHERTEN Quelldaten gerechnet — die hier geänderten Eingaben wirken erst nach „OK" und einem neuen Lauf. Grenzwert und Sondenmeter sind bereits mit den geänderten Eingaben gerechnet.</value>
   </data>
   <data name="SIMQ_ERDREICH_SPEICHERLADUNG" xml:space="preserve">
     <value>Entzugsarbeit und Spitze enthalten die Wärme, mit der die Wärmepumpe den Pufferspeicher lädt.</value>
@@ -3978,5 +4017,50 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   </data>
   <data name="SIM_KARTE_PV_KWP" xml:space="preserve">
     <value>{0} kWp (rechnerisch)</value>
+  </data>
+  <data name="SP_ERG_KERN_GRUPPE_ANLAGE" xml:space="preserve">
+    <value>Anlage / Variante</value>
+  </data>
+  <data name="SP_ERG_KERN_GRUPPE_ERGEBNIS" xml:space="preserve">
+    <value>Kernergebnisse</value>
+  </data>
+  <data name="SP_ERG_KERN_KAPAZITAET" xml:space="preserve">
+    <value>Kapazität [kWh]</value>
+  </data>
+  <data name="SP_ERG_KERN_LEISTUNG" xml:space="preserve">
+    <value>Lade-/Entladeleistung [kW]</value>
+  </data>
+  <data name="SP_ERG_KERN_SOC_PROZENT" xml:space="preserve">
+    <value>SoC-Band [%]</value>
+  </data>
+  <data name="SP_ERG_KERN_SOC_KWH" xml:space="preserve">
+    <value>SoC-Band [kWh]</value>
+  </data>
+  <data name="SP_ERG_KERN_BETRIEBSART" xml:space="preserve">
+    <value>Betriebsart</value>
+  </data>
+  <data name="SP_ERG_KERN_BERECHNUNGSART" xml:space="preserve">
+    <value>Berechnungsart</value>
+  </data>
+  <data name="SP_ERG_KERN_ERTRAG" xml:space="preserve">
+    <value>Ertrag E_a,äq [€/a]</value>
+  </data>
+  <data name="SP_ERG_KERN_UEBERSCHUSS" xml:space="preserve">
+    <value>Jahresüberschuss ΔJ [€/a]</value>
+  </data>
+  <data name="SP_ERG_KERN_AMORTISATION" xml:space="preserve">
+    <value>Amortisation statisch [a]</value>
+  </data>
+  <data name="SP_ERG_KERN_VOLLZYKLEN" xml:space="preserve">
+    <value>Vollzyklen n_zyk [1/a]</value>
+  </data>
+  <data name="SP_ERG_KERN_EIGENVERBRAUCH" xml:space="preserve">
+    <value>Eigenverbrauchsquote [%]</value>
+  </data>
+  <data name="SP_ERG_KERN_AUTARKIE" xml:space="preserve">
+    <value>Autarkiegrad [%]</value>
+  </data>
+  <data name="SP_ERG_KERN_BEREICH" xml:space="preserve">
+    <value>{0} – {1}</value>
   </data>
 </root>

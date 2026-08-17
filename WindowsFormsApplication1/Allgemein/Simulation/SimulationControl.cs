@@ -102,17 +102,65 @@ namespace WindowsFormsApplication1
         public List<Senkenzuordnung> senkenzuordnungen = new List<Senkenzuordnung>();
 
         /// <summary>
-        /// Feature-Flag der zweikanaligen Kaskade (Konzept Kapitel 9), gelesen aus
-        /// <c>Tab_Einstellungen.Kaskade_Zweikanalig</c> des Projekts.
+        /// EFFEKTIVER Rechenweg des Laufs: <c>true</c> = Speicherstufen-Mechanik
+        /// (<see cref="Kaskade_Zweikanalig"/>) auf den beiden Bedarfskanälen mit
+        /// herausgelöster Ladephase (Reihenfolge-Invariante 6.3), <c>false</c> = der
+        /// einkanalige Altpfad.
         ///
-        /// GESETZT: <see cref="Kaskade_Zweikanalig"/> rechnet die Kaskade auf den beiden
-        /// Bedarfskanälen mit herausgelöster Ladephase (Reihenfolge-Invariante 6.3).
-        /// NICHT GESETZT: der unveränderte einkanalige Altpfad als Rückfallebene.
+        /// ZWEI QUELLEN speisen das Feld (siehe die Zuweisung in <c>Do_Simulation</c>):
+        ///
+        ///   1. das Feature-Flag <c>Tab_Einstellungen.Kaskade_Zweikanalig</c> des
+        ///      Projekts (Konzept Kapitel 9) — der Schalter für Projekte OHNE BHKW,
+        ///   2. seit PAKET BHKW-REGULÄR: die bloße ANWESENHEIT eines BHKW in
+        ///      <c>Tool_1..4</c>. BHKW-Projekte rechnen ohne Rücksicht auf das Flag über
+        ///      die Speicherstufe (Entscheidung des Anwenders 17.08.2026, revidiert 6-1).
+        ///
+        /// WARUM DAS FELD SELBST GESETZT WIRD und nicht nur die Weiche: Der Rechenweg ist
+        /// nicht allein die Verzweigung in <c>Do_Simulation</c>. <see cref="AlleSpeicher"/>,
+        /// der Registry-Aufbau und der <c>SimulationRunner</c> (Restbedarf und
+        /// Deckungsgrade von Wärmepumpe und BHKW) lesen dasselbe Feld und müssen dieselbe
+        /// Antwort bekommen — sonst rechnete ein BHKW-Projekt zweikanalig, während seine
+        /// Ergebnisbildung noch die Altpfad-Formeln nähme.
         ///
         /// Der Schalter ändert Ergebnisse — bei Projekten mit Puffer-Senke deutlich. Was
         /// sich ändert und warum, steht im Umsetzungsprotokoll zu Paket 4, Teil 7.
         /// </summary>
         public bool KaskadeZweikanalig = false;
+
+        /// <summary>
+        /// <c>true</c>, wenn NICHT das Feature-Flag, sondern das BHKW in der Kaskade den
+        /// Speicherstufen-Weg erzwungen hat (Paket BHKW-Regulär). Trägt allein den
+        /// Protokollhinweis: Der Anwender soll den Grund des Rechenwegs im Lauf-Protokoll
+        /// wiederfinden, auch wenn er den Schalter nie berührt hat.
+        /// </summary>
+        private bool _bhkwErzwingtSpeicherstufe = false;
+
+        /// <summary>
+        /// <c>true</c>, wenn ein PARALLELVERBUND im Projekt den Speicherstufen-Weg
+        /// erzwungen hat (Paket Parallelverbund, Entscheidung des Anwenders 17.08.2026) —
+        /// genau die Bauform von <see cref="_bhkwErzwingtSpeicherstufe"/> und aus demselben
+        /// Grund: Der Anwender soll den Grund des Rechenwegs im Lauf-Protokoll
+        /// wiederfinden, auch wenn er den Schalter nie berührt hat.
+        ///
+        /// WARUM DER VERBUND DEN WEG ERZWINGT. Der einkanalige Altpfad holt seinen einen
+        /// Speicher aus der Alt-Zuordnung <c>Z_ProjektPufferSp</c> und kennt weder
+        /// Ladeaufträge noch die Speicher-Registry als Rechenmenge. Ein Verbund ist aber
+        /// genau eine Aussage über den LADEWEG („diese Anlage lädt einen gemeinsamen
+        /// Vorrat aus mehreren Behältern"); ohne die Speicherstufe würde die aufsummierte
+        /// Kapazität gespeichert, angezeigt — und nicht gerechnet. Das ist derselbe stille
+        /// Wirkungsverlust, den Paket BHKW-Regulär für das BHKW beseitigt hat.
+        /// </summary>
+        private bool _verbundErzwingtSpeicherstufe = false;
+
+        /// <summary>
+        /// Die Verbünde des Projekts als <c>Leitspeicher-ID -&gt; zusätzliche Mitglieder</c>,
+        /// EINMAL je Lauf gelesen (Paket Parallelverbund).
+        ///
+        /// Warum als Feld und nicht je Speicher nachgeschlagen: Der Registry-Aufbau läuft
+        /// über zwei Blöcke und mehrere Rückfallwege; eine Abfrage je Kandidat wäre ein
+        /// N+1 im Rechenpfad. Leeres Verzeichnis = kein Verbund = Bestandsverhalten.
+        /// </summary>
+        private Dictionary<int, List<int>> _verbuende = new Dictionary<int, List<int>>();
 
         /// <summary>
         /// Senkenspeicher der Wärmepumpe — Alias auf den ersten Heizungs-Puffer der
@@ -352,8 +400,38 @@ namespace WindowsFormsApplication1
             // ausdrücklich als Heizungspuffer zu führen ist (siehe
             // SpeicherRegistryAufbauen, Block 1). Der Protokollhinweis bleibt an seiner
             // bisherigen Stelle, damit die Reihenfolge im Protokollkanal unverändert ist.
-            KaskadeZweikanalig = ctrl_konfig != null && ctrl_konfig.model != null &&
-                                 ctrl_konfig.model.Kaskade_Zweikanalig;
+            //
+            // PAKET BHKW-REGULÄR (Entscheidung des Anwenders 17.08.2026, revidiert 6-1):
+            // Steht ein BHKW in der Kaskade, gilt der Speicherstufen-Weg IMMER — auch
+            // ohne Flag. Begründung des Anwenders: „es soll analog anderen Wärmeerzeugern
+            // funktionieren, der Altpfad wird nicht benötigt." Der BHKW-Altpfad rechnete
+            // seinen Speicher am Bedarf vorbei (Vektordifferenz Bedarf − Produktion,
+            // Bilanzfehler aus Konzept 6.5) und ließ den Pufferspeicher unberücksichtigt;
+            // dieser Weg ist mit diesem Paket ersatzlos entfallen.
+            //
+            // Ohne BHKW bleibt die Weiche Zeile für Zeile das, was sie war: Projekte mit
+            // Wärmepumpe, Kessel und Solarthermie folgen weiterhin ausschließlich dem
+            // Flag. Der Speicherstufen-Weg braucht dafür KEINE Kaskade und kein weiteres
+            // Merkmal - ein BHKW allein in Tool_1 genügt.
+            //
+            // Die Anwesenheitsprüfung ist hier möglich, weil tool[] vor Do_Simulation
+            // gesetzt wird (SimulationRunner: sim.tool = tool VOR sim.Do_Simulation).
+            _bhkwErzwingtSpeicherstufe = KaskadeEnthaelt(DbWerte.ERZEUGER_BHKW);
+
+            // PAKET PARALLELVERBUND (Entscheidung des Anwenders 17.08.2026): dasselbe
+            // Oder-Glied, dieselbe Begründung. Führt mindestens eine Anlage des Projekts
+            // zusätzliche Verbundmitglieder, rechnet der Lauf über die Speicherstufe —
+            // sonst wäre die aufsummierte Kapazität gespeichert und angezeigt, aber nicht
+            // gerechnet (Feldkommentar zu _verbundErzwingtSpeicherstufe).
+            //
+            // EIN Zugriff auf die Zuordnungstabelle; auf jeder Datenbank ohne Verbund
+            // liefert er false, und die Weiche ist Zeile für Zeile die bisherige.
+            _verbundErzwingtSpeicherstufe = AnlagePufferVerbundCtrl.ProjektHatVerbund(ID_Projekt);
+
+            KaskadeZweikanalig = (ctrl_konfig != null && ctrl_konfig.model != null &&
+                                  ctrl_konfig.model.Kaskade_Zweikanalig) ||
+                                 _bhkwErzwingtSpeicherstufe ||
+                                 _verbundErzwingtSpeicherstufe;
 
             // ***********************************************************************
             // Speicher-Registry aufbauen (Paket 4 - Konzept 6.2) und den Senkenspeicher
@@ -377,9 +455,30 @@ namespace WindowsFormsApplication1
             // zweikanaligen Weg.
             senkenzuordnungen = WaermesenkeClass.SenkenLaden(m_ID_Projekt);
 
-            // Hinweis zum Feature-Flag (das Flag selbst steht weiter oben, vor dem
-            // Registry-Aufbau — siehe die Begründung dort).
-            if (KaskadeZweikanalig)
+            // Hinweis zum Rechenweg (die Auswertung selbst steht weiter oben, vor dem
+            // Registry-Aufbau — siehe die Begründung dort). Der Grund wird MITGETEILT:
+            // Bei einem BHKW-Projekt hat der Anwender den Schalter unter Umständen nie
+            // berührt, und ein Rechenweg, den niemand angefordert hat, muss im Protokoll
+            // erklärt sein (Paket BHKW-Regulär).
+            if (_bhkwErzwingtSpeicherstufe)
+                Protokoll.Hinweis("Das Projekt enthält ein BHKW - dieser Lauf rechnet " +
+                                  "deshalb IMMER über die Speicherstufe mit herausgelöster " +
+                                  "Ladephase (Konzept 6.3), unabhängig von der " +
+                                  "Projekteinstellung Kaskade_Zweikanalig. Der einkanalige " +
+                                  "BHKW-Altpfad ist entfallen (Paket BHKW-Regulär).");
+            // Der Verbundhinweis steht NACH dem BHKW-Hinweis und als eigener Zweig: Bei
+            // einem BHKW-Projekt mit Verbund ist der Rechenweg schon erklärt, und zwei
+            // Sätze über dieselbe Weiche wären Rauschen. Ohne BHKW ist der Verbund der
+            // Grund und muss genannt werden.
+            else if (_verbundErzwingtSpeicherstufe)
+                Protokoll.Hinweis("Mindestens ein Wärmeerzeuger des Projekts lädt einen " +
+                                  "PARALLELVERBUND aus mehreren Pufferspeichern - dieser Lauf " +
+                                  "rechnet deshalb IMMER über die Speicherstufe mit " +
+                                  "herausgelöster Ladephase (Konzept 6.3), unabhängig von der " +
+                                  "Projekteinstellung Kaskade_Zweikanalig. Der einkanalige " +
+                                  "Altpfad kennt keine Ladeaufträge und würde die " +
+                                  "aufsummierte Verbundkapazität nicht rechnen.");
+            else if (KaskadeZweikanalig)
                 Protokoll.Hinweis("Projekteinstellung Kaskade_Zweikanalig ist gesetzt - " +
                                   "dieser Lauf rechnet ZWEIKANALIG mit herausgelöster " +
                                   "Ladephase (Konzept 6.3).");
@@ -413,6 +512,11 @@ namespace WindowsFormsApplication1
             // Die Verzweigung steht bewusst VOR der bestehenden Schleife und nicht in
             // ihr: Der einkanalige Altpfad bleibt damit Zeile für Zeile unverändert und
             // ist als Rückfallebene durch Lesen nachweisbar, nicht erst durch Messen.
+            //
+            // PAKET BHKW-REGULÄR: Der Altpfad ist Rückfallebene nur noch für Projekte
+            // OHNE BHKW. Sein BHKW-Zweig ist ersatzlos entfallen - er kann keines mehr
+            // rechnen, und er bekommt seit der Erweiterung der Flag-Auswertung auch
+            // keines mehr vorgesetzt.
             // ***********************************************************************
 
             // carrier ID, notwendig für die Berichtserzeugung holen (Brennstoff, Kosten, Emissionsberechnung)
@@ -484,22 +588,13 @@ namespace WindowsFormsApplication1
 
                         bSimulationSolarthermie = true;
                     }
-                    else if (tool[i] == DbWerte.ERZEUGER_BHKW)
-                    {
-                        Ausgang = Simulation_BHKW_Ctrl(Eingang, Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich));
-
-                        Restwaerme = Ausgang.Sum();
-                        Rest_Waermebedarf_stuendlich = Ausgang;
-                        Eingang = Ausgang;
-
-                        // Erzeugung holen und in Viertelstunden wandeln
-                        float[] bhkwStromStuendlich = simulation_bhkw.stromproduktion;
-                        float[] bhkwStromViertelstuendlich = Stundenwerte_zu_viertelstunden(bhkwStromStuendlich);
-
-                        // Erzeugung vom Vektor abziehen
-                        Rest_Strombedarf_viertelstuendlich = SubVectors(Rest_Strombedarf_viertelstuendlich, bhkwStromViertelstuendlich, false);
-                        bSimulationBHKW = true;
-                    }
+                    // PAKET BHKW-REGULÄR: Hier stand der einkanalige BHKW-Zweig
+                    // (Simulation_BHKW_Ctrl mit skalarem Pendelspeicher). Er ist
+                    // entfallen - ein Projekt mit BHKW erreicht diese Schleife nicht
+                    // mehr, weil die Weiche es ausnahmslos in die Speicherstufe schickt
+                    // (Entscheidung des Anwenders 17.08.2026, revidiert 6-1). Ein
+                    // toter else-if-Zweig für ERZEUGER_BHKW bliebe eine Attrappe: Er
+                    // sähe wie eine Rückfallebene aus, wäre aber keine.
                 }
             }
 
@@ -681,13 +776,20 @@ namespace WindowsFormsApplication1
             // gekommen ist - sonst rechnet er still anders als vorher.
             _kesselNurWegenQuelle = _kesselInSchleife && !kesselPufferSenke && kesselPufferQuelle;
 
-            // PAKET 6: Das BHKW ist Kaskadenteilnehmer, sobald es einen Speicher hat -
-            // entweder über eine Puffer-Senke (WS_ID_Puffer/WS_ID_Puffer2, derselbe Test
-            // wie bei Solarthermie und Kessel) oder über seinen PENDELSPEICHER, der im
-            // neuen Weg durch eine SimulationPufferspeicher-Instanz abgelöst wird
+            // PAKET 6: Das BHKW ist Mitglied der SPEICHERSTUFE, sobald es einen Speicher
+            // hat - entweder über eine Puffer-Senke (WS_ID_Puffer/WS_ID_Puffer2, derselbe
+            // Test wie bei Solarthermie und Kessel) oder über seinen PENDELSPEICHER, der
+            // im neuen Weg durch eine SimulationPufferspeicher-Instanz abgelöst wird
             // (Konzept 6.5, zweiter Punkt). Ohne beides hat es keine Speicherbeteiligung
             // und bleibt Vektorstufe an seiner Kaskadenposition - zweikanalig, aber ohne
             // die Phasen A, C, D, E und G.
+            //
+            // PAKET BHKW-REGULÄR: Diese Bedingung ist UNVERÄNDERT geblieben, und das ist
+            // Absicht. Die Weiche entscheidet nur, dass ein BHKW-Projekt überhaupt
+            // hierher kommt; ob das BHKW dann in der Stundenschleife oder als Vektorstufe
+            // rechnet, bleibt eine Frage seines Speichers. Ein BHKW ohne jeden Puffer hat
+            // in einer Speicherstufe nichts zu suchen - es würde dort nur die Bezugsgrößen
+            // der übrigen Mitglieder verschieben, ohne selbst etwas zu gewinnen.
             _bhkwInSchleife = KaskadeEnthaelt(DbWerte.ERZEUGER_BHKW) &&
                               (ErzeugerMitPufferSenke(ProjektPuffer.TYP_BHKW) ||
                                VolumenPendelspeicherBHKW > 0);
@@ -1376,15 +1478,19 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// BHKW-Liste und Anlagen-IDs des zweikanaligen Wegs (Paket 6) — dieselbe Abfrage
-        /// wie <see cref="Simulation_BHKW_Ctrl"/>, nur dialogfrei und parametrisiert über
-        /// <see cref="StilleDb"/> (Befund N9 der Paket-5-Nacharbeit). Ohne <c>ORDER BY</c>,
-        /// damit die Modulreihenfolge dieselbe ist wie im Altpfad.
+        /// BHKW-Liste und Anlagen-IDs — seit PAKET BHKW-REGULÄR der EINZIGE Ladeweg der
+        /// BHKW-Module. Er übernimmt die Abfrage des entfallenen einkanaligen
+        /// <c>Simulation_BHKW_Ctrl</c>, nur dialogfrei und parametrisiert über
+        /// <see cref="StilleDb"/> (Befund N9 der Paket-5-Nacharbeit) statt über
+        /// <c>RecordSet</c>. Ohne <c>ORDER BY</c>, damit die Modulreihenfolge dieselbe
+        /// bleibt wie bisher.
         ///
-        /// <c>bhkwGrenzL</c> wird hier wie im Altpfad aus der ANLAGE vorbelegt;
+        /// <c>bhkwGrenzL</c> wird hier aus der ANLAGE vorbelegt (Prozentwert / 100);
         /// <c>SimulationBHKW.Moduldaten_Einlesen</c> überschreibt den Wert anschließend
-        /// aus dem Katalog, sofern dort eine Grenzleistung hinterlegt ist. Dieses
-        /// Bestandsverhalten bleibt unangetastet.
+        /// aus dem Katalog, sofern dort eine Grenzleistung hinterlegt ist. Der KATALOGWERT
+        /// wird dort seit dem Einheiten-Fix dieses Pakets ebenfalls durch 100 geteilt -
+        /// vorher trug er als Prozentzahl (z. B. 50) in eine Formel ein, die einen Faktor
+        /// erwartet (0,5). Siehe die Begründung in <c>Moduldaten_Einlesen</c>.
         /// </summary>
         private void BHKW_Liste_Laden()
         {
@@ -1553,6 +1659,11 @@ namespace WindowsFormsApplication1
                 sp.SchwelleAus = p.SchwelleAus / 100.0;
                 sp.SchwelleAusNachrang = p.SchwelleAusNachrang / 100.0;
                 sp.Entladeprio = p.Entladeprio;
+
+                // PAKET BHKW-REGULÄR: Mindestfüllstand/Notreserve auch auf dem
+                // Ersatz-Pendelspeicher-Weg. Er ist der Speicher, für den die Reserve
+                // fachlich gedacht ist - ein Puffer, den ausschließlich das BHKW bedient.
+                sp.SchwelleReserve = p.SchwelleReserve / 100.0;
                 SpeicherAufnehmen(sp, true);
             }
 
@@ -1762,12 +1873,41 @@ namespace WindowsFormsApplication1
         {
             List<int> senken = SenkenPufferDerAnlagen();
 
+            // PAKET PARALLELVERBUND — das Sicherheitsnetz gegen DOPPELZÄHLUNG.
+            //
+            // Ein Verbundmitglied hat keinen eigenen Füllstand mehr: Seine Kapazität steckt
+            // seit VerbundAufaddieren im Q_max des Leitspeichers. Käme es zusätzlich als
+            // eigenes Rechenobjekt in den Rechenpfad, zählte dieselbe Kapazität zweimal,
+            // und die Bilanz des Laufs wäre falsch, ohne dass es irgendwo auffiele.
+            //
+            // Im Regelfall ist das gar nicht möglich: Ein Mitglied steht in keiner
+            // WS_ID_Puffer-Referenz und kommt schon über ReferenzierteSenkenPuffer nicht in
+            // die Registry. Der Fall entsteht nur bei von HAND gepflegten Beständen (SQL
+            // direkt in der Datenbank) - der Dialog verhindert ihn beim Speichern.
+            // Als ANZEIGEOBJEKT (ImRechenpfad = false) bleibt der Speicher zulässig, genau
+            // wie jeder andere referenzierte Puffer ohne Ladeauftrag.
+            List<int> verbundMitglieder = AnlagePufferVerbundCtrl.MitgliederDesProjekts(m_ID_Projekt);
+
             foreach (int id in _speicherReihenfolge)
             {
                 SimulationPufferspeicher sp;
                 if (!speicherRegistry.TryGetValue(id, out sp) || sp == null) continue;
 
                 if (sp.IstQuelle) { sp.ImRechenpfad = true; continue; }
+
+                if (verbundMitglieder.Contains(id))
+                {
+                    Protokoll.WarnungEinmal("verbund-mitglied-eigenes-ziel-" + id,
+                                      "Parallelverbund: Puffer " + id + " (" + sp.BezeichnerAnzeige() +
+                                      ") ist Verbundmitglied UND wird von einer Anlage als " +
+                                      "eigenständige Senke geführt. Seine Kapazität steckt " +
+                                      "bereits im Leitspeicher des Verbunds; als eigenes " +
+                                      "Rechenobjekt zählte sie doppelt. Er rechnet deshalb " +
+                                      "NICHT eigenständig mit - bitte die Wärmesenke der " +
+                                      "betreffenden Anlage berichtigen.");
+                    sp.ImRechenpfad = false;
+                    continue;
+                }
 
                 // Ausdrücklich ZUWEISEN, nicht nur setzen: Der Senkenspeicher aus der
                 // Alt-Zuordnung trägt das Flag schon aus dem Registry-Aufbau. Ohne
@@ -2192,6 +2332,32 @@ namespace WindowsFormsApplication1
             _zusatzSpeicher.Clear();
             _pufferOhneRegistrySchluessel = null;
 
+            // --- 0. Die Verbünde des Projekts, EINMAL ---------------------------------
+            //
+            // PAKET PARALLELVERBUND: Muss VOR beiden Blöcken stehen — die Aggregation
+            // greift in Block 1 (WP-Alt-Zuordnung) genauso wie in Block 2. Auf einer
+            // Datenbank ohne Verbund ist das Verzeichnis leer und alles Folgende ist Zeile
+            // für Zeile das bisherige Verhalten.
+            List<int> abweichendeZuschnitte;
+            _verbuende = AnlagePufferVerbundCtrl.VerbuendeDesProjekts(m_ID_Projekt,
+                                                                     out abweichendeZuschnitte);
+
+            // FACHLICH UNMÖGLICHE KONSTELLATION, aber kein Absturzgrund: Zwei Anlagen
+            // nennen für denselben Leitspeicher unterschiedliche Mitglieder. Hydraulisch
+            // ist ein Behälter entweder Teil des Vorrats oder nicht — eine
+            // erzeugerabhängige Kapazität desselben Speichers gibt es nicht. Gerechnet
+            // wird deshalb die VEREINIGUNG (siehe VerbuendeDesProjekts), und der Anwender
+            // erfährt es. Der Dialog verhindert diesen Fall beim Speichern; hier bleibt er
+            // für von Hand gepflegte Bestände.
+            foreach (int idLeit in abweichendeZuschnitte)
+                Protokoll.WarnungEinmal("verbund-zuschnitt-abweichend-" + idLeit,
+                                  "Parallelverbund: Für den Leitspeicher " + idLeit +
+                                  " nennen mehrere Wärmeerzeuger UNTERSCHIEDLICHE " +
+                                  "Verbundmitglieder. Gerechnet wird die Vereinigung aller " +
+                                  "genannten Speicher als EIN Vorrat - ein Behälter ist " +
+                                  "hydraulisch entweder Teil des Verbunds oder nicht. " +
+                                  "Bitte die Wärmesenken der beteiligten Erzeuger vereinheitlichen.");
+
             // --- 1. Senkenspeicher der Wärmepumpe aus Z_ProjektPufferSp --------------
             //
             // Der Block ist gegenüber Paket 3 UNVERÄNDERT (nur das Ziel der Zuweisung
@@ -2273,6 +2439,13 @@ namespace WindowsFormsApplication1
                                   psp.items[0].Betriebsbereitschaftverlust);
                     RueckfallMelden(pufferWp, psp.items[0].ID, psp.items[0].Name);
 
+                    // PAKET PARALLELVERBUND — NACH RueckfallMelden: Die Rückfallmeldung
+                    // nennt die Kapazität, die aus dem ΔT-Notnagel des LEITSPEICHERS
+                    // folgt. Stünde die Aggregation davor, meldete sie eine
+                    // Verbundkapazität und wäre als Aussage über den einen Speicher ohne
+                    // Temperaturpaar falsch.
+                    VerbundAufaddieren(pufferWp);
+
                     // Konfigurierbare Schwellen der Speicherregelung [%]
                     object sEin = WaermequelleClass.WertLesenStill("Z_ProjektPufferSp", "Schwelle_Ein", pspZuordnung.items[n].ID);
                     object sAus = WaermequelleClass.WertLesenStill("Z_ProjektPufferSp", "Schwelle_Aus", pspZuordnung.items[n].ID);
@@ -2346,6 +2519,10 @@ namespace WindowsFormsApplication1
                 sp.Init(p.Gesamtvolumen, vorlauf, ruecklauf, p.Bereitschaftsverluste);
                 RueckfallMelden(sp, p.ID, p.Bezeichner);
 
+                // PAKET PARALLELVERBUND — dieselbe Stelle wie in Block 1, unmittelbar nach
+                // der Rückfallmeldung des LEITSPEICHERS (Begründung dort).
+                VerbundAufaddieren(sp);
+
                 // PufferInfo führt die Schwellen in PROZENT (Ladeordnung-Vorgaben),
                 // SimulationPufferspeicher als Anteil 0..1.
                 sp.SchwelleEin = p.SchwelleEin / 100.0;
@@ -2353,10 +2530,130 @@ namespace WindowsFormsApplication1
                 sp.SchwelleAusNachrang = p.SchwelleAusNachrang / 100.0;
                 sp.Entladeprio = p.Entladeprio;
 
+                // PAKET BHKW-REGULÄR: Mindestfüllstand/Notreserve, dieselbe
+                // Prozent-zu-Anteil-Umrechnung wie bei den drei Schwellen. WIRKSAM wird der
+                // Wert erst, wenn die Kaskadenschleife den Speicher als Ziel eines
+                // BHKW-Ladeauftrags erkennt (BhkwReserveGilt) - bis dahin ist er ein
+                // getragener Parameter ohne Rechenwirkung.
+                sp.SchwelleReserve = p.SchwelleReserve / 100.0;
+
                 // Beim Aufbau nicht im Rechenpfad; der zweikanalige Weg öffnet ihn, wenn
                 // eine Anlage ihn als Senke führt (siehe ImRechenpfad).
                 SpeicherAufnehmen(sp, false);
             }
+        }
+
+        /// <summary>
+        /// PAKET PARALLELVERBUND (Entscheidung des Anwenders 17.08.2026): Macht aus dem
+        /// LEITSPEICHER das Rechenobjekt des GESAMTEN Verbunds — ein gemeinsamer
+        /// Wärmevorrat aus mehreren parallel verschalteten Behältern.
+        ///
+        /// <b>WARUM HIER.</b> Das ist die minimal-invasive Stelle des ganzen Pakets. An
+        /// dieser Zeile ist der Leitspeicher gerade fertig initialisiert, aber noch nicht
+        /// in der Registry — alles, was danach kommt (Ladeordnung, Entladereihenfolge,
+        /// Phase G, Persistenz nach <c>Tab_ErgebnisPufferspeicher</c>, Kennzahlen,
+        /// Berichtszeitreihen), arbeitet bereits mit dem fertigen Objekt und braucht
+        /// KEINE Verbundkenntnis. Ein Verbund ist damit für den gesamten Rechenweg genau
+        /// ein Speicher mit größerer Kapazität — und exakt das ist die fachliche Zusage
+        /// („Kapazitäten addiert, ein Füllstand, eine Schaltschwelle, EINE Ergebniszeile").
+        /// Jede andere Stelle hätte den Verbundbegriff in die Kaskadenschleife tragen
+        /// müssen.
+        ///
+        /// <b>Q_max WIRD SUMMIERT, NICHT DAS VOLUMEN.</b> Jeder Behälter bringt sein
+        /// eigenes Temperaturpaar mit, und für jedes gilt die Vorrangkette bzw. der
+        /// ΔT-Rückfall dieses Speichers — genau wie bisher für einen Einzelpuffer (Block 2
+        /// oben, <c>WaermesenkeClass.PufferInfo.Q_max</c>). Zwei mal 1000 l bei 60/40 und
+        /// 50/40 ergeben eben nicht 2000 l bei einer der beiden Spreizungen. Über die
+        /// Einzelkapazitäten zu summieren ist die physikalisch richtige Rechnung und
+        /// dieselbe Zahl, die der Dialog anzeigt
+        /// (<c>WaermesenkeClass.VerbundKapazitaet</c>).
+        ///
+        /// <b>Was MITKOMMT:</b> <c>Q_max</c> und die <c>Bereitschaftsverluste</c> (jeder
+        /// Behälter verliert für sich; der Verbund verliert die Summe).
+        ///
+        /// <b>Was NICHT mitkommt:</b> Schwellen (Ein/Aus/Nachrang), Notreserve,
+        /// Entladepriorität, Verwendung und das angezeigte Temperaturpaar. Sie stammen
+        /// AUSSCHLIESSLICH vom Leitspeicher, denn ein gemeinsamer Vorrat hat genau eine
+        /// Regelung — zwei Abschaltschwellen an einem Füllstand wären keine Physik, sondern
+        /// ein Widerspruch. Der Anwender pflegt sie am Leitspeicher, und die
+        /// Pufferverwaltung zeigt genau dort, was gilt.
+        ///
+        /// <b>Ein Mitglied ohne gepflegtes Temperaturpaar</b> bekommt HIER den generischen
+        /// 10-K-Rückfall aus <see cref="SimulationPufferspeicher.Init"/> — dieselbe
+        /// Ersatzannahme, die es als Einzelspeicher bekäme — und die Meldung dazu, damit
+        /// eine Verbundkapazität nie stillschweigend auf einer Annahme steht.
+        ///
+        /// <b>Kein Mitglied wird ein eigenes Rechenobjekt.</b> Mitglieder stehen in keiner
+        /// <c>WS_ID_Puffer</c>-Referenz und kommen deshalb schon über
+        /// <see cref="ReferenzierteSenkenPuffer"/> nicht in die Registry; das
+        /// Sicherheitsnetz für von Hand gepflegte Bestände sitzt in
+        /// <see cref="RegistryFuerZweikanaligOeffnen"/>.
+        /// </summary>
+        private void VerbundAufaddieren(SimulationPufferspeicher leit)
+        {
+            if (leit == null || _verbuende.Count == 0) return;
+
+            List<int> mitglieder;
+            if (!_verbuende.TryGetValue(leit.ID_Pufferspeicher, out mitglieder) ||
+                mitglieder == null || mitglieder.Count == 0) return;
+
+            double qLeit = leit.Q_max;
+            double qSumme = qLeit;
+            int gezaehlt = 0;
+
+            foreach (int idMitglied in mitglieder)
+            {
+                WaermesenkeClass.PufferInfo m = WaermesenkeClass.PufferLesen(idMitglied);
+                if (m == null)
+                {
+                    Protokoll.WarnungEinmal("verbund-mitglied-fehlt-" + idMitglied,
+                                      "Parallelverbund: Das Verbundmitglied " + idMitglied +
+                                      " des Leitspeichers " + leit.ID_Pufferspeicher + " (" +
+                                      leit.BezeichnerAnzeige() + ") existiert nicht mehr - seine " +
+                                      "Kapazität fehlt im gemeinsamen Vorrat.");
+                    continue;
+                }
+
+                if (m.ID_Projekt != m_ID_Projekt)
+                {
+                    Protokoll.WarnungEinmal("verbund-mitglied-fremdprojekt-" + idMitglied,
+                                      "Parallelverbund: Das Verbundmitglied " + idMitglied + " (" +
+                                      m.Bezeichner + ") gehört zu Projekt " + m.ID_Projekt +
+                                      ", nicht zu " + m_ID_Projekt +
+                                      " - es wird nicht mitgerechnet.");
+                    continue;
+                }
+
+                // Einzelkapazität über DENSELBEN Weg wie ein eigenständiger Speicher: ein
+                // eigenes SimulationPufferspeicher-Objekt, das nur zum Rechnen von Q_max
+                // und VerlustProStunde dient und die Registry nie sieht. So gilt für jedes
+                // Mitglied die vertraute Init-Regel (1,16 Wh/(l·K), ΔT-Rückfall 10 K), und
+                // es gibt keine zweite Kapazitätsformel im Haus.
+                SimulationPufferspeicher hilf = new SimulationPufferspeicher();
+                hilf.Init(m.Gesamtvolumen, m.Vorlauf, m.Ruecklauf, m.Bereitschaftsverluste);
+                RueckfallMelden(hilf, m.ID, m.Bezeichner);
+
+                qSumme += hilf.Q_max;
+                leit.VerlustProStunde += hilf.VerlustProStunde;
+                gezaehlt++;
+            }
+
+            leit.Q_max = qSumme;
+
+            if (gezaehlt == 0) return;
+
+            // Der NACHWEIS des Pakets: eine Protokollzeile, aus der die Summe
+            // nachvollziehbar ist. Sie steht bewusst im HINWEIS-Kanal, nicht als Warnung -
+            // der Verbund ist eine gewollte Konfiguration, keine Ersatzannahme.
+            Protokoll.HinweisEinmal("verbund-aggregiert-" + leit.ID_Pufferspeicher,
+                              "Parallelverbund: Speicher " + leit.ID_Pufferspeicher + " (" +
+                              leit.BezeichnerAnzeige() + ") rechnet als EIN gemeinsamer Vorrat " +
+                              "aus " + (gezaehlt + 1) + " Behältern - nutzbare Kapazität Q_max " +
+                              qLeit.ToString("0.###") + " kWh (Leitspeicher) + " +
+                              (qSumme - qLeit).ToString("0.###") + " kWh (" + gezaehlt +
+                              " Mitglieder) = " + qSumme.ToString("0.###") + " kWh. Schwellen, " +
+                              "Notreserve, Entladepriorität und Verwendung gelten aus dem " +
+                              "Leitspeicher; es entsteht EINE Ergebniszeile unter seiner ID.");
         }
 
         /// <summary>
@@ -2814,6 +3111,12 @@ namespace WindowsFormsApplication1
         /// Puffer verlangt eine gemeinsame Speicherstufe mit Rechenreihenfolge — beides
         /// gibt es nur im zweikanaligen Weg. Der Kessel rechnet mit vollem
         /// Brennstoffbedarf wie bisher.</para>
+        ///
+        /// <para><b>PAKET BHKW-REGULÄR — Geltungsbereich:</b> Diese Hinweise erreichen nur
+        /// noch Projekte OHNE BHKW. Sobald ein BHKW in <c>Tool_1..4</c> steht, schickt die
+        /// Weiche den Lauf ausnahmslos in die Speicherstufe, und der Altpfad wird gar
+        /// nicht betreten. Ein BHKW-Hinweis fehlt hier deshalb nicht — er wäre
+        /// unerreichbar.</para>
         /// </summary>
         private void AltpfadHinweiseD5a()
         {
@@ -3021,59 +3324,29 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private float[] Simulation_BHKW_Ctrl(float[] Waermebedarf, float[] Strombedarf)
-        {
-            RecordSet rs = new RecordSet();
-
-            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass. BHKW_TYP);
-
-            simulation_bhkw.bhkw_list.Clear();
-            simulation_bhkw.bhkw_list_Namen.Clear();
-            // Anlagen-IDs parallel zu bhkw_list (Konzept 6.2). bhkw_list trägt die
-            // ID_BHKW (Katalogzeile), nicht die Anlage - für Senken, Ladeprioritäten und
-            // die Speicherzuordnung braucht Etappe 4b aber Tab_Energieanlagen.ID.
-            simulation_bhkw.bhkw_anlagen_ids.Clear();
-
-            int i = 0;
-            while (rs.Next())
-            {
-                simulation_bhkw.bhkw_list.Add((int)rs.Read("ID_BHKW"));
-                simulation_bhkw.bhkw_anlagen_ids.Add((int)rs.Read("ID"));
-                simulation_bhkw.bhkw_list_Namen.Add((string)rs.Read("Bezeichner"));
-        //        simulation_bhkw.bhkw_carrier.TryAdd((string)rs.Read("Bezeichner"), (int)rs.Read("ID_Carrier"));
-
-                double Grenzleistung = (double)rs.Read("Grenzleistung") / 100;
-                simulation_bhkw.bhkwGrenzL[i++] = (float)Grenzleistung;
-            }
-            rs.Close();
-
-            simulation_bhkw.waermebedarf = Waermebedarf;
-            simulation_bhkw.strombedarf = Strombedarf;
-            simulation_bhkw.bhkwGrenzleistungAllgemein = GrenzleistungBHKW;
-            // Kapazität des Pendelspeichers aus dem Volumen in LITERN (Etappe 3):
-            //   Liter · 1,163 Wh/(l·K) · 20 K / 1000 = Liter · 20 / 860 [kWh]
-            // Formelgleich zur Altfassung "m³ · 20000 / 860", weil die Migration den
-            // Alt-Parameter mit dem Faktor 1000 in Liter überführt hat: 800 l ergeben
-            // 16000/860 = 18,60 kWh, genau wie 0,8 · 20000/860. Die Zwischenprodukte
-            // (Liter · 20 bzw. m³ · 20000) sind gleich groß und in float exakt
-            // darstellbar, das Ergebnis ist damit bitgleich.
-            //
-            // ACHTUNG, bewusster Verhaltensunterschied: das Feld war IMMER int. Der
-            // Alt-Parameter in m³ wurde deshalb auf ganze Kubikmeter abgeschnitten
-            // ((int)0,8 = 0, (int)1,5 = 1) - die Nachkommastelle der Eingabe war
-            // wirkungslos. In Litern verschwindet dieser Effekt; Projekte mit einem
-            // Alt-Wert, der keine ganze Zahl war, rechnen jetzt mit dem eingegebenen
-            // Volumen statt mit dem abgeschnittenen.
-            simulation_bhkw.kapazitaetPendelspeicher = (float)VolumenPendelspeicherBHKW * 20 / 860;
-            simulation_bhkw.modeBHKW = modeBHKW;
-
-            // Simulation starten
-            m_bError = !simulation_bhkw.Berechnung(m_ID_Projekt);
-
-            float[] restwaerme = SubVectors(Waermebedarf, simulation_bhkw.waermeproduktion);
-      
-            return m_bError ? Waermebedarf : restwaerme;
-        }
+        // PAKET BHKW-REGULÄR (Entscheidung des Anwenders 17.08.2026, revidiert 6-1):
+        // Hier stand Simulation_BHKW_Ctrl - der einkanalige BHKW-Aufrufer des Altpfads.
+        // Er ist ersatzlos entfallen; kein Lauf erreicht ihn mehr, weil BHKW-Projekte
+        // ausnahmslos über die Speicherstufe rechnen (BHKW_Liste_Laden,
+        // Simulation_BHKW_Ctrl_Zweikanalig, Speicherstufe_Rechnen).
+        //
+        // WAS MIT IHM VERSCHWINDET, und warum das gewollt ist:
+        //
+        //   - die RecordSet-Abfrage der BHKW-Anlagen (in neuem Code unerwünscht; der
+        //     zweikanalige Weg liest sie parametrisiert über StilleDb),
+        //   - die Bilanz „Restwärme = Bedarf − Produktion" als Vektordifferenz. Sobald
+        //     das BHKW einen Speicher lädt, ist sie falsch: Geladene Wärme deckt noch
+        //     keinen Bedarf (Bilanzfehler aus Konzept 6.5). Genau dieser Punkt war der
+        //     Anlass des Pakets,
+        //   - die Befüllung von kapazitaetPendelspeicher aus VolumenPendelspeicherBHKW
+        //     (Liter · 20 / 860 [kWh], feste 20 K Spreizung). Der Speicherraum kommt
+        //     jetzt aus einem SimulationPufferspeicher mit Hysterese,
+        //     Bereitschaftsverlusten und ΔT-Spreizung aus den Puffer-Parametern
+        //     (BhkwErsatzspeicherAufnehmen).
+        //
+        // Das FELD kapazitaetPendelspeicher in SimulationBHKW bleibt bestehen: Es ist
+        // der generische Speicherraum-Skalar der gemeinsamen Motorläufe, über den der
+        // zweikanalige Weg seinen Stufenspeicher spiegelt (Fahrweise_Stunde).
 
         private float[] Simulation_SPK_Ctrl(float[] Waermebedarf, float[] Strombedarf, int nBereitschaft)
         {
@@ -3249,17 +3522,10 @@ namespace WindowsFormsApplication1
 
             var ergebnis = simulation_pv.BerechnePV(strombedarf, testStrahlung, flaeche, wirkungsgrad, tempKoeff, tAmb, cosTheta);
 
-            Console.WriteLine($"--- PV TESTLAUF ---");
-            Console.WriteLine($"Potenzielle Produktion: {ergebnis.produktion} kW");
-
             if (ergebnis.produktion < 8.0)
             {
                 Console.WriteLine("WARNUNG: Der Wert ist zu niedrig für 10kWp bei 1000W/m²!");
                 Console.WriteLine("Prüfe: Ist h0 wirklich 0.20? Wird flaeche korrekt übergeben?");
-            }
-            else
-            {
-                Console.WriteLine("ERGEBNIS OK: Die Formel arbeitet physikalisch korrekt.");
             }
         }
 

@@ -62,6 +62,35 @@ namespace WindowsFormsApplication1
         /// </summary>
         private bool _kesselChartAktiv;
 
+        // ------------------------------------------------------------------------------
+        //  BHKW-Seite: Umschalter „sortiert" und die zwei Speicher-Kennzahlen
+        // ------------------------------------------------------------------------------
+        //
+        // Das Diagramm chart_BHKW_Waerme steht im Designer, der Umschalter kommt
+        // programmatisch dazu — genau wie auf der Heizkessel-Seite (dort ist auch das
+        // Diagramm programmatisch, weil es keines gab). Designer und .resx bleiben für
+        // den Umschalter unangetastet; die zwei neuen Kennzahlzeilen entstehen ebenfalls
+        // programmatisch nach dem Muster von InitKesselQuellwaerme.
+        private System.Windows.Forms.CheckBox checkBox_BHKW_sortiert;
+        private ChartManager _chartBhkwManager;
+
+        /// <summary>
+        /// Gehört zum aktuellen Ergebnis ein BHKW-Diagramm? Gesetzt von
+        /// <see cref="BhkwErgebnisAnzeigen"/>. Dieselbe Begründung wie bei
+        /// <see cref="_kesselChartAktiv"/>: <c>chart_BHKW_Waerme.Visible</c> liefert
+        /// false, solange ein Elternelement nicht angezeigt wird.
+        /// </summary>
+        private bool _bhkwChartAktiv;
+
+        // Kennzahlzeilen „davon in den Speicher" und „aus dem Speicher gedeckt"
+        // (SimulationBHKW.Speicherladung_gesamt bzw. Speicherentladung_Anteil).
+        private Label label_BhkwSpeicherladung;
+        private TextBox tb_BhkwSpeicherladung;
+        private Label label_BhkwSpeicherladungEinheit;
+        private Label label_BhkwSpeicherdeckung;
+        private TextBox tb_BhkwSpeicherdeckung;
+        private Label label_BhkwSpeicherdeckungEinheit;
+
         /// <summary>
         /// Zustand der Schaltfläche „Ergebnis speichern" (Nacharbeit Paket 8, Befund N1).
         ///
@@ -142,6 +171,12 @@ namespace WindowsFormsApplication1
         private const string S_UEBERSCHUSS = "UEBERSCHUSS";
         private const string S_PHOTOVOLTAIK = "PHOTOVOLTAIK";
         private const string S_RESTWAERME = "RESTWAERME";
+
+        // BHKW-ANZEIGE-NACHZUG: Die Wärme, die das BHKW in einen Pufferspeicher legt
+        // (SimulationBHKW.Speicherladung_stuendlich). Sie ist ein TEIL der Produktion,
+        // nicht ihre Ergänzung — deshalb eine eigene Serie und KEINE Stapelgruppe
+        // (Begründung in BhkwSerienAufbauen).
+        private const string S_SPEICHERLADUNG = "SPEICHERLADUNG";
         /// <summary>
         /// Legt eine Serie unter ihrem technischen Schlüssel an und hängt den Anzeigetext
         /// an <c>LegendText</c> (Muster aus NavigatorWaerme, Paket 9 / L6).
@@ -299,6 +334,10 @@ namespace WindowsFormsApplication1
 
             // Wärmelast-Jahresganglinie im Heizkessel-Tab (programmatisch, Muster wie oben).
             InitKesselChart();
+
+            // BHKW-Seite: Umschalter „sortiert" und die zwei Speicher-Kennzahlen
+            // (BHKW-Anzeige-Nachzug, Bedienmuster der Heizkessel-Seite).
+            InitBhkwChart();
 
             // HIER DIE KORREKTUR: ReihenfolgeTabPages() komplett weglassen
             // und stattdessen direkt unsere neue Update-Logik starten!
@@ -1035,6 +1074,431 @@ namespace WindowsFormsApplication1
 
             CsvExportClass.Export(string.Format(MyResource.Resource.CHART_DATEI_HEIZKESSEL, m_ID_Projekt),
                 simulation_Waermebedarf.Stundentemperatur, spalten, false);
+        }
+
+        // ====================================================================
+        //  BHKW-Seite: Nachzug auf den Speicherstufen-Rechenweg
+        // ====================================================================
+        //
+        // AUSGANGSLAGE (Live-Test 17.08.2026, zwei Meldungen des Anwenders).
+        //
+        //  (1) „Der Pufferspeicher wird noch nicht berücksichtigt." Gemessen an Projekt
+        //      1018 („BHKW Test München") legt das BHKW 14,32 von 25,61 MWh — also 56 %
+        //      seiner Jahresproduktion — in den Pufferspeicher, und 14,11 MWh deckt es
+        //      über dessen Entladung. KEINE dieser drei Zahlen stand auf der Seite. Die
+        //      Restwärme entstand hier als Vektordifferenz „Bedarf − Produktion"
+        //      (SubVectors) und der Deckungsgrad als „Produktion / Projektbedarf" — beides
+        //      die Altpfad-Formeln aus Konzept 6.5, die genau dann falsch werden, wenn ein
+        //      Speicher im Bilanzraum steht: Geladene Wärme deckt noch keinen Bedarf, und
+        //      entladene Wärme deckt Bedarf, ohne in der Produktionsstunde zu erscheinen.
+        //      Der Rechenkern führt die richtigen Größen längst
+        //      (SimulationBHKW.Direktdeckung_gesamt, Speicherentladung_Anteil,
+        //      Speicherladung_stuendlich/_gesamt, waermerestbedarf, Waermebedarf_gesamt);
+        //      Tab_ErgebnisBHKW rechnet damit seit Paket 6 (SimulationRunner:381-448),
+        //      nur die Seite tat es nicht — offener Punkt 2 des Pakets BHKW-Regulär.
+        //
+        //  (2) „Die Darstellung ‚sortiert' fehlt." Sie fehlte nicht nur — sie war die
+        //      EINZIGE. Die Seite sortierte Bedarf und Produktion unbedingt absteigend
+        //      (OrderByDescending, jede Serie für sich), trug darüber aber den Titel
+        //      „Wärmelast Jahresganglinie" und beschriftete die Achse mit Jahresstunden.
+        //      Damit erklärt sich der gemeldete „harte Abfall auf 0 nach etwa 1460 h":
+        //      Das BHKW hat in 1018 genau 1505 Stunden mit Produktion > 0 — die Dauerlinie
+        //      MUSS dort auf 0 fallen. Ein Speicherfehler war das nicht, wohl aber eine
+        //      Darstellung, die als Ganglinie gelesen werden musste und keine war.
+        //
+        // BEDIENMUSTER = HEIZKESSEL-SEITE, Steuerelement für Steuerelement:
+        //   - eine programmatische CheckBox mit demselben Text (MyResource.SIM_CHK_SORTIERT
+        //     „sortiert"), derselben Schrift (checkBox_WP_sortiert.Font), derselben
+        //     Position (rechts oben AM Diagramm) und derselben Sichtbarkeitsregel
+        //     (nur wenn das Ergebnis die Komponente führt, siehe ErgebnisPraesenz),
+        //   - CHRONOLOGISCH ist der Grundzustand, „sortiert" die Umschaltung,
+        //   - Sortierung, Serientyp und Achsenwechsel kommen ausschließlich aus
+        //     GanglinienDarstellung (Anzeigewerte/Stapeltyp) — dieselbe Regel, die auch
+        //     Wärmepumpe, Heizkessel und die beiden Navigatoren benutzen. Damit ist jede
+        //     Serie für sich absteigend sortiert, wie es das Vorbild tut.
+        //
+        // BEZUGSGRÖSSE DES BEDARFS: hier bleibt es beim STUFENEINGANG
+        // (SimulationBHKW.waermebedarf) und NICHT beim Projektbedarf, den die
+        // Heizkessel-Seite zeigt. Grund: Die Restwärme-Ganglinie des Kerns ist
+        // stundenweise als „Stufeneingang − Direktdeckung − zugerechnete Entladung"
+        // definiert (SimulationBHKW.Stunde_Ende). Mit dem Projektbedarf als Linie stünde
+        // im Bild eine Bezugsgröße, gegen die die beiden anderen Serien nicht gerechnet
+        // sind — die Summe Rest + Direktdeckung + Entladung ginge sichtbar nicht auf. Der
+        // PROJEKTbedarf bleibt die Bezugsgröße des Deckungsgrades (so weist ihn der Kern
+        // aus) und steht als Zahl auf der Seite. Offen dokumentiert.
+
+        /// <summary>
+        /// Legt den Umschalter „sortiert" am BHKW-Diagramm und die zwei
+        /// Speicher-Kennzahlzeilen an — programmatisch nach dem Muster von
+        /// <see cref="InitKesselChart"/> bzw. <see cref="InitKesselQuellwaerme"/>;
+        /// Designer und .resx der Form bleiben unangetastet.
+        /// </summary>
+        private void InitBhkwChart()
+        {
+            if (chart_BHKW_Waerme == null || chart_BHKW_Waerme.Parent == null) return;
+
+            checkBox_BHKW_sortiert = new CheckBox();
+            checkBox_BHKW_sortiert.Name = "checkBox_BHKW_sortiert";
+            // Wortgleich mit der Heizkessel- und der Wärmepumpen-Seite.
+            checkBox_BHKW_sortiert.Text = MyResource.Resource.SIM_CHK_SORTIERT;
+            checkBox_BHKW_sortiert.AutoSize = true;
+            checkBox_BHKW_sortiert.Font = checkBox_WP_sortiert.Font;
+            checkBox_BHKW_sortiert.ForeColor = Color.Black;
+            // Der Umschalter ist ein GESCHWISTER des Diagramms und bekäme dessen
+            // Hintergrund nicht (WinForms-Transparenz nimmt den des Elternelements) —
+            // deshalb dieselbe Farbe wie die Chartfläche, wie beim Kessel.
+            checkBox_BHKW_sortiert.BackColor = chart_BHKW_Waerme.BackColor;
+            checkBox_BHKW_sortiert.Location =
+                new Point(chart_BHKW_Waerme.Right - 90, chart_BHKW_Waerme.Top + 8);
+            checkBox_BHKW_sortiert.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            checkBox_BHKW_sortiert.Visible = false;   // erst nach einem Lauf mit BHKW
+            checkBox_BHKW_sortiert.CheckedChanged += checkBox_BHKW_sortiert_CheckedChanged;
+            chart_BHKW_Waerme.Parent.Controls.Add(checkBox_BHKW_sortiert);
+            checkBox_BHKW_sortiert.BringToFront();
+
+            InitBhkwSpeicherzeilen();
+        }
+
+        /// <summary>
+        /// Legt die zwei Kennzahlzeilen „davon in den Speicher" und „aus dem Speicher
+        /// gedeckt" unter der Zeile „Wärmeüberschuß" an und rückt die darunter liegenden
+        /// Zeilen der rechten Spalte nach.
+        ///
+        /// Maße, Schrift und Farben kommen von der Nachbarzeile
+        /// (<see cref="NachbarZeile"/>), nicht aus einer Namensliste — dieselbe Begründung
+        /// wie bei <see cref="InitKesselQuellwaerme"/>: Die Zeilen bleiben bündig, auch
+        /// wenn der Entwurf sich verschiebt.
+        ///
+        /// <b>Warum die Seite nachrücken muss.</b> Der Wärmeblock der rechten Spalte endet
+        /// im Entwurf bei y≈205, die nächste Zeile („Stromproduktion") beginnt bei y=236.
+        /// Für EINE Zeile ist Platz, für zwei nicht. Die Zeilen darunter wandern deshalb um
+        /// zwei Zeilenhöhen nach unten — derselbe Eingriff wie das „+32" der
+        /// Pufferspeicher-Maske, nur zur Laufzeit und damit ohne .resx-Änderung. Der
+        /// unterste Block (Brennstoffverbrauch) endet danach bei y≈696 und bleibt innerhalb
+        /// der Entwurfshöhe der Seite (721).
+        /// </summary>
+        private void InitBhkwSpeicherzeilen()
+        {
+            if (tabPage_BHKW == null || textBox_Waermeueberschuss_BHKW == null) return;
+
+            TextBox muster = textBox_Waermeueberschuss_BHKW;
+            Control beschriftung = NachbarZeile(muster, true);
+            Control einheit = NachbarZeile(muster, false);
+
+            int schritt = muster.Height + 7;          // Zeilenabstand des Entwurfs (25 + 7)
+            int y1 = muster.Bottom + 7;
+            int y2 = y1 + schritt;
+
+            // Erst nachrücken, dann einfügen: Sonst schöbe der Versatz die neuen Zeilen
+            // gleich wieder mit nach unten.
+            BhkwZeilenNachruecken(muster.Bottom + 4, 2 * schritt);
+
+            BhkwKennzahlZeile(muster, beschriftung, einheit, y1,
+                              "tb_BhkwSpeicherladung",
+                              TextAusFormResx("SIMDET_BHKW_SPEICHERLADUNG", "davon in den Speicher:"),
+                              out label_BhkwSpeicherladung, out tb_BhkwSpeicherladung,
+                              out label_BhkwSpeicherladungEinheit);
+
+            BhkwKennzahlZeile(muster, beschriftung, einheit, y2,
+                              "tb_BhkwSpeicherdeckung",
+                              TextAusFormResx("SIMDET_BHKW_SPEICHERDECKUNG", "aus dem Speicher gedeckt:"),
+                              out label_BhkwSpeicherdeckung, out tb_BhkwSpeicherdeckung,
+                              out label_BhkwSpeicherdeckungEinheit);
+        }
+
+        /// <summary>
+        /// Schiebt alle Steuerelemente der RECHTEN Spalte der BHKW-Seite, die unterhalb
+        /// von <paramref name="abY"/> beginnen, um <paramref name="dy"/> nach unten.
+        ///
+        /// Die Spalte wird über die Waagerechte abgegrenzt (Left &gt;= halbe Seitenbreite)
+        /// und nicht über eine Liste von Steuerelementnamen: Das Diagramm und die
+        /// Modultabelle links reichen bis y≈693 und dürfen sich nicht bewegen.
+        /// </summary>
+        private void BhkwZeilenNachruecken(int abY, int dy)
+        {
+            if (tabPage_BHKW == null || chart_BHKW_Waerme == null) return;
+
+            int grenzeLinks = chart_BHKW_Waerme.Right + 8;
+
+            tabPage_BHKW.SuspendLayout();
+            foreach (Control c in tabPage_BHKW.Controls)
+            {
+                if (ReferenceEquals(c, chart_BHKW_Waerme)) continue;
+                if (c.Left < grenzeLinks) continue;
+                if (c.Top < abY) continue;
+                c.Location = new Point(c.Left, c.Top + dy);
+            }
+            tabPage_BHKW.ResumeLayout();
+        }
+
+        /// <summary>
+        /// Baut EINE Kennzahlzeile (Beschriftung – Feld – Einheit) auf der Höhe
+        /// <paramref name="y"/>, mit den Maßen und Farben von <paramref name="muster"/>.
+        /// </summary>
+        private void BhkwKennzahlZeile(TextBox muster, Control beschriftung, Control einheit,
+                                       int y, string feldName, string text,
+                                       out Label lblText, out TextBox feld, out Label lblEinheit)
+        {
+            feld = new TextBox();
+            feld.Name = feldName;
+            feld.ReadOnly = true;
+            feld.BackColor = muster.BackColor;
+            feld.ForeColor = muster.ForeColor;
+            feld.BorderStyle = muster.BorderStyle;
+            feld.Font = muster.Font;
+            feld.TextAlign = muster.TextAlign;
+            feld.Bounds = new Rectangle(muster.Left, y, muster.Width, muster.Height);
+            feld.Visible = false;
+            tabPage_BHKW.Controls.Add(feld);
+
+            lblText = new Label();
+            lblText.Name = feldName + "_Label";
+            lblText.Text = text;
+            lblText.AutoSize = false;
+            lblText.TextAlign = ContentAlignment.MiddleRight;
+            lblText.Visible = false;
+            if (beschriftung != null)
+            {
+                lblText.Font = beschriftung.Font;
+                lblText.ForeColor = beschriftung.ForeColor;
+                lblText.BackColor = beschriftung.BackColor;
+                // RECHTE Kante wie die Nachbarzeile (dort endet der rechtsbündige Text),
+                // Breite aber GEMESSEN: „aus dem Speicher gedeckt:" ist länger als jede
+                // Entwurfsbeschriftung der Spalte und würde in deren Breite abschneiden.
+                // Nach links wird höchstens bis an das Diagramm herangerückt.
+                int noetig = BreiteMessen(text, beschriftung.Font, beschriftung.Width);
+                int rechts = beschriftung.Right;
+                int links = rechts - noetig;
+                int grenze = (chart_BHKW_Waerme != null) ? chart_BHKW_Waerme.Right + 8 : 0;
+                if (links < grenze) links = grenze;
+                lblText.Bounds = new Rectangle(links, y, rechts - links, muster.Height);
+            }
+            else
+            {
+                lblText.Bounds = new Rectangle(muster.Left - 250, y, 244, muster.Height);
+            }
+            tabPage_BHKW.Controls.Add(lblText);
+
+            lblEinheit = new Label();
+            lblEinheit.Name = feldName + "_Einheit";
+            // Die Einheit ist die der Nachbarzeile („MWh/a"); sie wird ÜBERNOMMEN und
+            // nicht neu getextet - so kann sie nicht von ihr abweichen.
+            lblEinheit.Text = (einheit != null) ? einheit.Text : "MWh/a";
+            lblEinheit.AutoSize = true;
+            lblEinheit.Visible = false;
+            if (einheit != null)
+            {
+                lblEinheit.Font = einheit.Font;
+                lblEinheit.ForeColor = einheit.ForeColor;
+                lblEinheit.BackColor = einheit.BackColor;
+                lblEinheit.Location = new Point(einheit.Left, y + 4);
+            }
+            else
+            {
+                lblEinheit.Location = new Point(muster.Right + 8, y + 4);
+            }
+            tabPage_BHKW.Controls.Add(lblEinheit);
+        }
+
+        /// <summary>
+        /// Die Breite, die <paramref name="text"/> in <paramref name="schrift"/> braucht —
+        /// mindestens <paramref name="mindestens"/>. Gemessen mit demselben Renderer, mit
+        /// dem WinForms zeichnet (<c>TextRenderer</c>, GDI); ein Zuschlag von 6 px hält den
+        /// Text von der Kante frei.
+        /// </summary>
+        private static int BreiteMessen(string text, Font schrift, int mindestens)
+        {
+            try
+            {
+                int gemessen = TextRenderer.MeasureText(text ?? "", schrift).Width + 6;
+                return (gemessen > mindestens) ? gemessen : mindestens;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Textbreite nicht messbar: " + ex.Message);
+                return mindestens;
+            }
+        }
+
+        /// <summary>
+        /// Ein Anzeigetext aus der EIGENEN .resx-Familie der Form
+        /// (<c>Form_Simulation_Detail.resx</c> und ihre Satelliten).
+        ///
+        /// <b>Warum nicht der Katalog <c>MyResource.Resource</c>.</b> Programmatische
+        /// Steuerelemente nehmen dort sonst ihren Text (siehe
+        /// <see cref="InitKesselChart"/>). Für die drei NEUEN Texte dieses Nachzugs war der
+        /// Katalog nicht verfügbar (parallele Arbeit an derselben Datei), und die
+        /// formulareigene .resx ist der zweite vorgesehene Ort — sie trägt die
+        /// Oberflächentexte dieser Form ohnehin und wird beim Sprachwechsel über ihre
+        /// Satelliten mitgezogen.
+        ///
+        /// <b>Warum mit Rückfalltext.</b> <c>GetString</c> liefert <c>null</c>, wenn der
+        /// Eintrag fehlt — ein leeres Etikett wäre eine stille Fehlanzeige. Der Rückfall
+        /// ist derselbe deutsche Wortlaut, der in der neutralen .resx steht.
+        /// </summary>
+        private static string TextAusFormResx(string schluessel, string rueckfall)
+        {
+            try
+            {
+                string wert = _formTexte.GetString(schluessel);
+                if (!string.IsNullOrEmpty(wert)) return wert;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Anzeigetext '" + schluessel + "' nicht lesbar: " + ex.Message);
+            }
+            return rueckfall;
+        }
+
+        private static readonly System.ComponentModel.ComponentResourceManager _formTexte =
+            new System.ComponentModel.ComponentResourceManager(typeof(Form_Simulation_Detail));
+
+        /// <summary>
+        /// Zeigt Diagramm und Speicher-Kennzahlen der BHKW-Seite — oder blendet sie aus,
+        /// wenn das Ergebnis kein BHKW führt (Präsenzregel, siehe
+        /// <see cref="ErgebnisPraesenz"/>).
+        ///
+        /// BEWUSST außerhalb von <c>if (sim.bSimulationBHKW)</c> gerufen: Wird das BHKW in
+        /// einem Folgelauf abgewählt, muss das Bild des Vorlaufs verschwinden statt
+        /// stehenzubleiben — dieselbe Begründung wie bei
+        /// <see cref="KesselErgebnisAnzeigen"/>.
+        /// </summary>
+        private void BhkwErgebnisAnzeigen()
+        {
+            if (chart_BHKW_Waerme == null) return;
+
+            bool zeigen = sim != null && sim.simulation_bhkw != null
+                          && ErgebnisPraesenz.Ermitteln(sim).BHKW;
+
+            _bhkwChartAktiv = zeigen;
+            if (checkBox_BHKW_sortiert != null) checkBox_BHKW_sortiert.Visible = zeigen;
+
+            // Die zwei Speicherzeilen folgen derselben Regel wie das Diagramm.
+            BhkwSpeicherzeilenSichtbar(zeigen);
+
+            if (!zeigen)
+            {
+                if (_chartBhkwManager != null) _chartBhkwManager.HardReset();
+                return;
+            }
+
+            if (_chartBhkwManager == null) _chartBhkwManager = new ChartManager(chart_BHKW_Waerme);
+            BhkwSerienAufbauen();
+        }
+
+        /// <summary>Blendet die zwei Speicher-Kennzahlzeilen ein oder aus.</summary>
+        private void BhkwSpeicherzeilenSichtbar(bool zeigen)
+        {
+            if (tb_BhkwSpeicherladung != null) tb_BhkwSpeicherladung.Visible = zeigen;
+            if (label_BhkwSpeicherladung != null) label_BhkwSpeicherladung.Visible = zeigen;
+            if (label_BhkwSpeicherladungEinheit != null) label_BhkwSpeicherladungEinheit.Visible = zeigen;
+            if (tb_BhkwSpeicherdeckung != null) tb_BhkwSpeicherdeckung.Visible = zeigen;
+            if (label_BhkwSpeicherdeckung != null) label_BhkwSpeicherdeckung.Visible = zeigen;
+            if (label_BhkwSpeicherdeckungEinheit != null) label_BhkwSpeicherdeckungEinheit.Visible = zeigen;
+        }
+
+        /// <summary>
+        /// Baut Diagrammkonfiguration und Serien der BHKW-Seite auf — in der
+        /// Darstellungsform, die der Umschalter „sortiert" vorgibt. Ablauf wie
+        /// <see cref="KesselSerienAufbauen"/>: <c>XAxisAsNumber</c> setzen,
+        /// <c>HardReset()</c>, <c>Init()</c>, Serien neu.
+        ///
+        /// VIER Serien, alle unmittelbar aus dem Rechenkern — hier wird nichts
+        /// nachgerechnet:
+        ///   Wärmeproduktion = <c>waermeproduktion</c>, die BRUTTOerzeugung der Motoren.
+        ///                     Sie enthält Direktdeckung, Speicherladung und Überschuss
+        ///                     (Energieprobe in <c>SimulationBHKW.Energieprobe</c>).
+        ///                     SÄULEN, unten.
+        ///   Speicherladung  = <c>Speicherladung_stuendlich</c>, der Anteil der Produktion,
+        ///                     der in einen Pufferspeicher geht. LINIE.
+        ///   Restwärme       = <c>waermerestbedarf</c>, die Ganglinie des Kerns
+        ///                     („Stufeneingang − Direktdeckung − zugerechnete Entladung",
+        ///                     <c>SimulationBHKW.Stunde_Ende</c>). Ersetzt die frühere
+        ///                     Vektordifferenz.
+        ///   Wärmebedarf     = <c>waermebedarf</c>, der Stufeneingang. LINIE, zuletzt
+        ///                     angelegt und damit ganz oben.
+        ///
+        /// <b>Warum die Speicherladung KEINE Stapelserie ist.</b> Sie ist ein TEIL der
+        /// Produktion, nicht ihre Ergänzung. In derselben Stapelgruppe zeigte das Bild die
+        /// Summe „Produktion + Ladung" und damit die Ladung doppelt; in einer zweiten
+        /// Stapelgruppe stellt MS-Chart die Säulen NEBENEINANDER — bei 8760 Punkten auf
+        /// 575 Bildpunkten verschwinden dann beide in der Rasterung (Befund der
+        /// Heizkessel-Seite). Als Linie über den Säulen ist sie ablesbar: Sie liegt
+        /// zwischen 0 und der Oberkante der Produktion, und der Abstand nach oben ist die
+        /// unmittelbar gedeckte Wärme.
+        ///
+        /// <b>Warum EINE Stapelgruppe „Produktion".</b> Dieselbe Begründung wie beim
+        /// Kessel: Nur die Produktionssäulen stapeln, die drei Linien belegen keinen
+        /// Säulenplatz und lassen ihnen die volle Breite.
+        /// </summary>
+        private void BhkwSerienAufbauen()
+        {
+            if (_chartBhkwManager == null || sim == null || sim.simulation_bhkw == null) return;
+
+            SimulationBHKW bh = sim.simulation_bhkw;
+            bool sortiert = checkBox_BHKW_sortiert != null && checkBox_BHKW_sortiert.Checked;
+
+            float[] bedarf = bh.waermebedarf;
+            float[] produktion = bh.waermeproduktion;
+            float[] rest = bh.waermerestbedarf;
+            float[] ladung = Array.ConvertAll<double, float>(bh.Speicherladung_stuendlich, x => (float)x);
+
+            ChartManager cm = _chartBhkwManager;
+            cm.YMaxValue = Math.Max(bedarf.Max(), produktion.Max()) + 1;
+            cm.YMinValue = 0;
+            cm.XAxisAsNumber = sortiert;
+            cm.XAxisTitle = sortiert
+                ? MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN
+                : MyResource.Resource.CHART_ACHSE_MONATE;
+            cm.YAxisTitle = MyResource.Resource.CHART_ACHSE_WAERMELAST;
+            cm.toolTipUnit = "kW";
+            cm.ChartTitle = MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE;
+            cm.MitLegende = true;
+            cm.MitChartBorder = true;
+            cm.AreaLine = false;
+            cm.MaxXVALUE = 8760;
+            cm.MitViertelStunde = false;
+
+            cm.HardReset();
+            cm.Init();
+
+            // Reihenfolge = Zeichenreihenfolge: Das Zuletztangelegte liegt oben.
+            SerieAnlegen(cm, S_WAERMEPRODUKTION, MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION,
+                         Color.Blue, GanglinienDarstellung.Anzeigewerte(produktion, sortiert),
+                         GanglinienDarstellung.Stapeltyp(sortiert), "Produktion");
+
+            // DAUERLINIE: Dort ist die Produktion eine Linie und kann mit einer anderen
+            // punktgleich verlaufen; die untere wird deshalb breiter gezeichnet (Muster der
+            // Heizkessel-Seite, Begründung dort).
+            if (sortiert) cm._chart.Series[S_WAERMEPRODUKTION].BorderWidth = 4;
+
+            SerieAnlegen(cm, S_SPEICHERLADUNG,
+                         TextAusFormResx("SIMDET_BHKW_SERIE_SPEICHERLADUNG", "Speicherladung"),
+                         Color.DarkOrange, GanglinienDarstellung.Anzeigewerte(ladung, sortiert),
+                         SeriesChartType.FastLine);
+
+            SerieAnlegen(cm, S_RESTWAERME, MyResource.Resource.CHART_SEGMENT_RESTWAERME,
+                         Color.Green, GanglinienDarstellung.Anzeigewerte(rest, sortiert),
+                         SeriesChartType.FastLine);
+
+            // Der Stufeneingang ZULETZT und damit ganz oben — er ist die Bezugsgröße,
+            // gegen die die drei anderen Serien gerechnet sind (Blockkommentar oben).
+            SerieAnlegen(cm, S_WAERMEBEDARF, MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF,
+                         Color.Red, GanglinienDarstellung.Anzeigewerte(bedarf, sortiert),
+                         SeriesChartType.FastLine);
+
+            cm._chart.Invalidate();
+        }
+
+        /// <summary>
+        /// Umschalter „sortiert" der BHKW-Seite: Jahresganglinie ↔ Jahresdauerlinie.
+        /// Baut das Diagramm neu auf; an den Vektoren ändert sich nichts (wortgleich mit
+        /// <see cref="checkBox_Kessel_sortiert_CheckedChanged"/>).
+        /// </summary>
+        private void checkBox_BHKW_sortiert_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!_bhkwChartAktiv) return;
+            BhkwSerienAufbauen();
         }
 
         /// <summary>
@@ -1780,7 +2244,10 @@ namespace WindowsFormsApplication1
 
             LeseKonfiguration();
             LeseSpeicherVariante();
-            PendelspeicherFeldEinrichten();
+            // PAKET BHKW-REGULÄR: Hier stand PendelspeicherFeldEinrichten(). Das Feld
+            // „Volumen Pendelspeicher [l]" ist von der BHKW-Parameterseite entfallen
+            // (Entscheidung des Anwenders 17.08.2026, Punkt 4) - siehe die Begründung an
+            // der entfallenen Methode weiter unten.
 
             // Blockade bei nicht abgeschlossener Schema-Migration (ADR-001, Aufgabe 6):
             // gar nicht erst automatisch rechnen. Die Prüfung steht hier VOR dem Lauf
@@ -2921,43 +3388,91 @@ namespace WindowsFormsApplication1
             // ********************************************************************************************/
             // BHKW
             // ********************************************************************************************/
-            // Chart Solarthermie Wärmerbedarf und Produktion
-            _chartManager[10] = new ChartManager(chart_BHKW_Waerme);
-            _chartManager[10].YMaxValue = sim.simulation_bhkw.waermebedarf.Max();
-            _chartManager[10].YMinValue = 0;
-            _chartManager[10].XAxisAsNumber = true;
-            _chartManager[10].XAxisTitle = MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN;
-            _chartManager[10].YAxisTitle = MyResource.Resource.CHART_ACHSE_WAERMELAST;
-            _chartManager[10].toolTipUnit = "kW";
-            _chartManager[10].ChartTitle = MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE;
-            _chartManager[10].MitLegende = true;
-            _chartManager[10].MitChartBorder = true;
-            _chartManager[10].AreaLine = false;
-            _chartManager[10].Init();
-
-            float[] waermebedarfSortiert = sim.simulation_bhkw.waermebedarf.OrderByDescending(w => w).ToArray();
-            SerieAnlegen(_chartManager[10], S_WAERMEBEDARF, MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF, Color.Red, waermebedarfSortiert);
-            float[] waermeproduktionSortiert = sim.simulation_bhkw.waermeproduktion.OrderByDescending(w => w).ToArray();
-            SerieAnlegen(_chartManager[10], S_WAERMEPRODUKTION, MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION, Color.Blue, waermeproduktionSortiert);
+            //
+            // BHKW-ANZEIGE-NACHZUG: Diagramm und Kennzahlen kommen jetzt aus den Größen des
+            // Speicherstufen-Wegs. Hier stand bis dahin
+            //
+            //   - eine unbedingte Sortierung (OrderByDescending) unter dem Titel
+            //     „Jahresganglinie" - der gemeldete „harte Abfall auf 0",
+            //   - die Restwärme als Vektordifferenz SubVectors(Bedarf, Produktion),
+            //   - der Deckungsgrad als Produktion / Projektbedarf.
+            //
+            // Diagramm und Umschalter liegen jetzt in BhkwErgebnisAnzeigen (Muster
+            // KesselErgebnisAnzeigen); _chartManager[10] ist damit entfallen. Die
+            // Begründungen stehen im Blockkommentar dort.
+            BhkwErgebnisAnzeigen();
 
             textBox_Betriebsstunden.Text = sim.simulation_bhkw.Betriebsstunden.ToString("F0");
             textBox_Betriebsstunden_Durchschnitt.Text = sim.simulation_bhkw.dLaufzeiten.ToString("F0");
 
             AktualisiereBrennstoffAnzeige(sim.simulation_bhkw);
 
-            textBox_Waermebedarf_BHKW.Text = (sim.simulation_bhkw.waermebedarf.Sum() / 1000).ToString("F2");
+            // STUFENEINGANG: dieselbe Größe wie bisher, aber aus der double-Jahressumme des
+            // Moduls statt aus 8760 float-Additionen - wortgleich mit dem Ausdruck, aus dem
+            // Tab_ErgebnisBHKW.Waermebedarf entsteht (SimulationRunner:381-383). Im
+            // Altpfad-Fall (kein zweikanaliger Weg) gilt weiter die Ganglinie: Dort führt
+            // das Modul die Summe nicht.
+            double bhkwWaermebedarfMWh = sim.KaskadeZweikanalig
+                ? sim.simulation_bhkw.Waermebedarf_gesamt / 1000.0
+                : sim.simulation_bhkw.waermebedarf.Sum() / 1000.0;
+
+            textBox_Waermebedarf_BHKW.Text = bhkwWaermebedarfMWh.ToString("F2");
             textBox_Strombedarf_BHKW.Text = (sim.simulation_bhkw.strombedarf.Sum() / 1000).ToString("F2");
             textBox_Waermeproduktion_gesamt_BHKW.Text = sim.simulation_bhkw.Waermeproduktion_BHKW_MWh.ToString("F2");
             textBox_Stromproduktion_gesamt_BHKW.Text = sim.simulation_bhkw.Stromproduktion_BHKW_MWh.ToString("F2");
 
-            float[] restwaerme = sim.SubVectors(sim.simulation_bhkw.waermebedarf, sim.simulation_bhkw.waermeproduktion);
-            textBox_Restwaermebedarf_BHKW.Text = (restwaerme.Sum() / 1000f).ToString("F2");
+            // EIGENANTEIL des BHKW an der Bedarfsdeckung: unmittelbar abgegebene Wärme plus
+            // der ihm zugerechnete Anteil an der bedarfsdeckenden Speicherentladung
+            // (Interimsregel „Vermischung im Speicher", Kaskadenschleife). Er ist die
+            // Bezugsgröße von Restbedarf UND Deckungsgrad - beides zwei Seiten derselben
+            // Rechnung, genau wie in SimulationRunner:434-449.
+            double bhkwDirektMWh = sim.simulation_bhkw.Direktdeckung_gesamt / 1000.0;
+            double bhkwEntladungMWh = sim.simulation_bhkw.Speicherentladung_Anteil / 1000.0;
+            double bhkwEigenMWh = bhkwDirektMWh + bhkwEntladungMWh;
+
+            // RESTWÄRME: Vorher die Vektordifferenz „Bedarf − Produktion" - der
+            // Bilanzfehler aus Konzept 6.5. Sobald das BHKW einen Speicher lädt, gilt sie
+            // nicht mehr: Geladene Wärme deckt noch keinen Bedarf, entladene deckt Bedarf
+            // ohne in der Produktionsstunde zu stehen. Im Altpfad-Fall bleibt es bei der
+            // Vektordifferenz - dort sind Direktdeckung und Entladungsanteil exakt 0, und
+            // der Eigenanteil wäre 0.
+            double bhkwRestwaermeMWh;
+            if (sim.KaskadeZweikanalig)
+            {
+                bhkwRestwaermeMWh = bhkwWaermebedarfMWh - bhkwEigenMWh;
+                if (bhkwRestwaermeMWh < 0) bhkwRestwaermeMWh = 0;   // Rundungsschutz
+            }
+            else
+            {
+                bhkwRestwaermeMWh =
+                    sim.SubVectors(sim.simulation_bhkw.waermebedarf,
+                                   sim.simulation_bhkw.waermeproduktion).Sum() / 1000f;
+            }
+            textBox_Restwaermebedarf_BHKW.Text = bhkwRestwaermeMWh.ToString("F2");
 
             textBox_Reststrombedarf_BHKW.Text = ((sim.simulation_bhkw.strombedarf.Sum() / 1000) - sim.simulation_bhkw.Stromproduktion_BHKW_MWh).ToString("F2");
             textBox_Waermeueberschuss_BHKW.Text = (sim.simulation_bhkw.Waermeueberschuss / 1000).ToString("F2");
 
+            // DER SPEICHERBEITRAG, bisher nirgends sichtbar (Live-Test-Meldung 1):
+            // wohin die Produktion geht und woher die Deckung kommt.
+            if (tb_BhkwSpeicherladung != null)
+                tb_BhkwSpeicherladung.Text =
+                    (sim.simulation_bhkw.Speicherladung_gesamt / 1000.0).ToString("F2");
+            if (tb_BhkwSpeicherdeckung != null)
+                tb_BhkwSpeicherdeckung.Text = bhkwEntladungMWh.ToString("F2");
+
+            // DECKUNGSGRAD: Vorher die PRODUKTION im Zähler - damit wies die Seite Wärme
+            // als Deckung aus, die noch im Speicher lag. Jetzt der Eigenanteil, auf 0..100
+            // geklemmt wie im Runner. Bezugsgröße bleibt der PROJEKTwärmebedarf.
             if (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
-                textBox_Waermedeckung.Text = (sim.simulation_bhkw.Waermeproduktion_BHKW_MWh * 100 / simulation_Waermebedarf.Waermebedarf_Gesamt).ToString("F2");
+            {
+                double bhkwDeckung = sim.KaskadeZweikanalig
+                    ? bhkwEigenMWh * 100.0 / simulation_Waermebedarf.Waermebedarf_Gesamt
+                    : sim.simulation_bhkw.Waermeproduktion_BHKW_MWh * 100.0 / simulation_Waermebedarf.Waermebedarf_Gesamt;
+                if (bhkwDeckung > 100) bhkwDeckung = 100;
+                if (bhkwDeckung < 0) bhkwDeckung = 0;
+                textBox_Waermedeckung.Text = bhkwDeckung.ToString("F2");
+            }
             else
                 textBox_Waermedeckung.Text = "0";
             if (simulation_Strombedarf.Strombedarf_gesamt > 0)
@@ -2966,6 +3481,12 @@ namespace WindowsFormsApplication1
                 textBox_Stromdeckung.Text = "0";
 
             // Auflistung der BHKW-Module (ListView, analog Heizkessel/Solarthermie).
+            //
+            // BHKW-ANZEIGE-NACHZUG, geprüft und UNVERÄNDERT gelassen: s_waerme_MWh und
+            // s_strom_MWh sind genau die Felder, aus denen der Runner die Zeilen von
+            // Tab_ErgebnisBHKWModul bildet (SimulationRunner:498-511). Die Tabelle deckt
+            // sich damit ohne Eingriff mit dem Kern; die Modulwärme ist - wie die
+            // Gesamtproduktion daneben - die BRUTTOerzeugung inklusive Speicherladung.
             dataGridView_BHKW.Items.Clear();
             if (sim != null && sim.simulation_bhkw != null)
             {
@@ -3601,40 +4122,29 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>
-        /// Richtet das Eingabefeld des BHKW-Pendelspeichers auf LITER ein und laedt den
-        /// Wert aus dem Projekt-Puffer "BHKW-Pendelspeicher" (Etappe 3, 14.08.2026).
-        ///
-        /// Der Alt-Parameter Tab_Einstellungen.Pendelspeicher stand in m3 und wird nicht
-        /// mehr gelesen; die Migration hat ihn als m3 x 1000 in den Puffer uebernommen.
-        ///
-        /// Beschriftung und Wertebereich stehen bewusst HIER und nicht im Designer bzw.
-        /// in der .resx: der Designer wuerde die Aenderung beim naechsten Oeffnen
-        /// zurueckschreiben, und die Satellitendateien dieses Ordners kennen label56.Text
-        /// ohnehin nicht. Die durchgaengige Lokalisierung der Simulationsformulare ist
-        /// Paket 9 - dort gehoert dieser Text in die de-DE-/en-US-.resx.
-        /// </summary>
-        private void PendelspeicherFeldEinrichten()
-        {
-            label56.Text = MyResource.Resource.PSP_LABEL_VOLUMEN_PENDELSPEICHER;
-
-            // Liter sind ganzzahlig; die Vorgaben des Designers (eine Nachkommastelle,
-            // Schrittweite 0,1, Maximum 100) stammen aus der m3-Zeit.
-            numericUpDown_Volumen.DecimalPlaces = 0;
-            numericUpDown_Volumen.Increment = 50;
-            numericUpDown_Volumen.Minimum = 0;
-            numericUpDown_Volumen.Maximum = 1000000;
-
-            // Wert beim Laden in den Wertebereich klemmen. NumericUpDown.Value wirft eine
-            // ArgumentOutOfRangeException, sobald der Wert ausserhalb von Minimum/Maximum
-            // liegt - und das laesst sich hier nicht ausschliessen: Gesamtvolumen kommt
-            // aus der Datenbank und kann jede Zahl tragen (Altbestand, Import, Tippfehler
-            // in Access). Ein Volumen, das die Anzeige nicht fassen kann, darf das
-            // Formular nicht am Oeffnen hindern.
-            decimal gelesen = PufferSpCtrl.PendelspeicherVolumenLiter(m_ID_Projekt);
-            numericUpDown_Volumen.Value = Math.Max(numericUpDown_Volumen.Minimum,
-                                                   Math.Min(numericUpDown_Volumen.Maximum, gelesen));
-        }
+        // =====================================================================
+        // PAKET BHKW-REGULÄR (Entscheidung des Anwenders 17.08.2026, Punkt 4):
+        //
+        // Hier stand PendelspeicherFeldEinrichten() - die Einrichtung des Feldes „Volumen
+        // Pendelspeicher [l]" auf der BHKW-Parameterseite. Das FELD IST AUSGEBAUT, samt
+        // Beschriftung (label56) und Eingabefeld (numericUpDown_Volumen) im Designer.
+        //
+        // WARUM. Ein Pendelspeicher ist ein Pufferspeicher. Ihn an ZWEI Stellen zu pflegen
+        // - hier als bloße Literzahl und in der Pufferverwaltung als vollständiger Speicher
+        // mit Verwendung, Temperaturpaar, Schaltschwellen und jetzt Notreserve - hieß, dass
+        // dieselbe Anlage zwei Wahrheiten hatte. Der BHKW-Speicher wird ab diesem Paket
+        // ausschließlich über die Pufferverwaltung und die Senkenzuordnung der BHKW-Anlage
+        // geführt, wie bei jedem anderen Wärmeerzeuger auch.
+        //
+        // WAS BLEIBT. Bestehende Puffer mit dem Bezeichner „BHKW-Pendelspeicher" bleiben
+        // normale Projektpuffer und rechnen weiter mit - über den Ersatzspeicher-Weg
+        // (SimulationControl.BhkwErsatzspeicherAufnehmen). Auch die Lesefunktion
+        // PufferSpCtrl.PendelspeicherVolumenLiter bleibt: Sie speist
+        // SimulationControl.VolumenPendelspeicherBHKW, und dieses Feld entscheidet weiterhin
+        // über die Speicherbeteiligung eines BHKW ohne Puffer-Senke (Altbestände aus
+        // Migrationsregel R6). Nur der SCHREIBWEG über die Oberfläche ist entfallen; die
+        // Volumenpflege läuft über die Pufferverwaltung.
+        // =====================================================================
 
         private void LeseKonfiguration()
         {
@@ -3665,29 +4175,10 @@ namespace WindowsFormsApplication1
             SpeichereKonfigurationsAenderung(model => model.Leistungsgrenze = (int)numericUpDown_UnteresteLG.Value);
         }
 
-        /// <summary>
-        /// Speichert das Pendelspeichervolumen in LITERN im Projekt-Puffer
-        /// "BHKW-Pendelspeicher" (Etappe 3). Frueher ging der Wert als m3 nach
-        /// Tab_Einstellungen.Pendelspeicher - diese Spalte wird nicht mehr gelesen und
-        /// bewusst auch nicht mehr geschrieben.
-        /// </summary>
-        private void numericUpDown_Volumen_Leave(object sender, EventArgs e)
-        {
-            int liter;
-            if (!int.TryParse(numericUpDown_Volumen.Value.ToString("F0", CultureInfo.InvariantCulture),
-                              NumberStyles.Integer, CultureInfo.InvariantCulture, out liter))
-                return;                                   // unlesbarer Wert: nichts speichern
-
-            if (liter < 0)                                // negative Volumina ablehnen
-            {
-                liter = 0;
-                numericUpDown_Volumen.Value = 0;
-            }
-
-            if (!PufferSpCtrl.SetPendelspeicherVolumenLiter(m_ID_Projekt, liter))
-                Console.WriteLine("Das Volumen des BHKW-Pendelspeichers konnte nicht gespeichert werden.");
-        }
-
+        // PAKET BHKW-REGULÄR: Hier stand numericUpDown_Volumen_Leave - der SCHREIBWEG des
+        // Pendelspeichervolumens über PufferSpCtrl.SetPendelspeicherVolumenLiter. Er ist mit
+        // dem Eingabefeld entfallen (Begründung oben). Die Ctrl-Methode selbst bleibt
+        // bestehen: Migrationsregel R6 benutzt sie beim Anlegen des Puffers.
         private void textBox_Netzverluste_Leave(object sender, EventArgs e)
         {
             SpeichereKonfigurationsAenderung(model => model.m_Netzverluste = Convert.ToDouble(textBox_Netzverluste.Text));
@@ -4823,15 +5314,67 @@ namespace WindowsFormsApplication1
         // die Seite nicht - anders als im PV-Diagramm ist der Ladezustand hier die
         // Primärgröße.
 
-        // Maße der Seitenaufteilung: Diagramm links, Kennzahlen rechts. Die rechte
-        // Kante liegt bei x ≈ 1276 und damit innerhalb der Entwurfsbreite des
-        // aufnehmenden Panels (≈1295, siehe Kommentar bei InitKesselChart).
+        // ====================================================================
+        //  SEITENAUFTEILUNG (Abnahmebefund „nur die Spalte Kennzahl ist sichtbar")
+        // ====================================================================
+        //
+        // AUSGANGSLAGE. Alle sieben Steuerelemente der Seite lagen auf FESTEN
+        // Koordinaten OHNE Verankerung: das Diagramm bei x = 16..656, die
+        // Kennzahlenliste bei x = 676..1276, die Ampelzeile darunter. Das passte zur
+        // ENTWURFSBREITE des aufnehmenden Panels (splitContainer_Parameter.Panel2,
+        // rund 1266 px), nicht aber zu dem, was der Anwender davon SIEHT: Das
+        // Formular führt seinen Reiterblock in fester Größe (tabControl_Simulation,
+        // 1456 px, ohne Anker) und rollt bei kleineren Fenstern über AutoScroll.
+        // Gemessen bei 1280 x 800: von den 1266 px des Panels sind 1065 px sichtbar -
+        // die Liste endete 211 px, ihre Einheitenspalte 173 px hinter dem rechten
+        // Fensterrand. Sichtbar blieb allein die Spalte „Kennzahl".
+        //
+        // UMBAU. Die Seite trägt jetzt EIN Steuerelement, das Raster
+        // <see cref="tabelle_SpeicherSeite"/>. Es teilt die Fläche in eine wachsende
+        // Diagrammspalte und eine Kennzahlenspalte fester Breite; die Höhe verteilen
+        // Zeilenstile statt Pixelabstände. Zwei Eigenschaften des Rasters tragen den
+        // Befund:
+        //
+        //   1. Die Kennzahlenspalte ist ABSOLUT bemaßt, die Diagrammspalte
+        //      prozentual. Ein TableLayoutPanel bedient absolute Spalten zuerst - bei
+        //      Platzmangel weicht das Diagramm, nie die Liste (Vorrangregel des
+        //      Befunds).
+        //   2. Das Raster wird nicht auf die GRÖSSE des aufnehmenden Panels gelegt,
+        //      sondern auf dessen SICHTBAREN Ausschnitt (SpSeiteEinpassen). Solange
+        //      das Formular seinen Reiterblock fest führt, ist genau das der
+        //      Unterschied zwischen „steht da" und „ist zu sehen".
+        //
+        // Unterhalb von SP_ERG_SEITE_MINBREITE hört das Einpassen auf; dann rollt
+        // Panel2 (AutoScroll ist dort gesetzt), statt die Liste zu stauchen.
         private const int SP_ERG_RAND = 16;
-        private const int SP_ERG_CHART_OBEN = 46;
-        private const int SP_ERG_CHART_BREITE = 640;
-        private const int SP_ERG_CHART_HOEHE = 380;
-        private const int SP_ERG_LISTE_LINKS = 676;
-        private const int SP_ERG_LISTE_BREITE = 600;
+
+        // Breite der Kennzahlenspalte. Die vier Spalten der Liste ergeben in BEIDEN
+        // Zuständen 560 px (siehe SpVergleichsspalteSetzen); dazu kommen die
+        // senkrechte Bildlaufleiste und der Rahmen der ListView.
+        private const int SP_ERG_LISTE_BREITE = 584;
+
+        // Kleinste noch brauchbare Diagrammbreite und der Abstand zwischen den Spalten.
+        private const int SP_ERG_CHART_MINBREITE = 300;
+        private const int SP_ERG_SPALTENABSTAND = 12;
+
+        // Mindestmaße der ganzen Seite - darunter übernimmt der Bildlauf von Panel2.
+        private const int SP_ERG_SEITE_MINBREITE =
+            2 * SP_ERG_RAND + SP_ERG_LISTE_BREITE + SP_ERG_SPALTENABSTAND + SP_ERG_CHART_MINBREITE;
+        private const int SP_ERG_SEITE_MINHOEHE = 420;
+
+        // Feste Zeilenhöhen der Nebenzeilen (Knöpfe, Warnzeile, Zyklenampel).
+        private const int SP_ERG_ZEILE_KNOEPFE = 40;
+        private const int SP_ERG_ZEILE_HINWEIS = 46;
+
+        // Maße einer Kachel des Kernblocks „Wesentliche Daten".
+        private const int SP_ERG_KACHEL_BREITE = 176;
+        private const int SP_ERG_KACHEL_HOEHE = 38;
+        private const int SP_ERG_KACHEL_TITEL = 15;
+        private const int SP_ERG_KERN_GRUPPE_BREITE = 132;
+
+        // Anfangshöhe des Kernblocks (zwei Gruppen zu je einer Kachelreihe). Die
+        // gültige Höhe rechnet SpKernblockEinpassen aus dem tatsächlichen Umbruch.
+        private const int SP_ERG_KERN_HOEHE_START = 2 * (SP_ERG_KACHEL_HOEHE + 4) + 8;
 
         // Spaltenbreiten des Kennzahlenblocks. Die Summe bleibt in beiden Zuständen
         // bei 560 px und damit innerhalb der Listenbreite - die Vergleichsspalte
@@ -4857,6 +5400,37 @@ namespace WindowsFormsApplication1
         private Label label_SpeicherStatus;
         private Label label_SpeicherAmpel;
 
+        /// <summary>Grundraster der Seite - das EINZIGE Kind der TabPage.</summary>
+        private TableLayoutPanel tabelle_SpeicherSeite;
+
+        /// <summary>Diagrammspalte (links) und Kennzahlenspalte (rechts).</summary>
+        private TableLayoutPanel tabelle_SpeicherDiagramm;
+        private TableLayoutPanel tabelle_SpeicherKennzahlen;
+
+        /// <summary>Kernblock „Wesentliche Daten" zwischen Kopfzeile und Diagramm.</summary>
+        private Panel panel_SpKernblock;
+        private FlowLayoutPanel flow_SpKernAnlage;
+        private FlowLayoutPanel flow_SpKernErgebnis;
+
+        /// <summary>Wertfelder des Kernblocks, Schlüssel siehe <c>SPK_*</c>.</summary>
+        private readonly Dictionary<string, Label> _spKernwerte = new Dictionary<string, Label>();
+
+        // Schlüssel der Kernblock-Kacheln. Sie stehen als Konstanten da, weil sie
+        // sowohl den Aufbau (SpKachel) als auch das Füllen (SpKernblockFuellen)
+        // adressieren - ein Tippfehler soll den Übersetzer stören, nicht den Anwender.
+        private const string SPK_KAPAZITAET = "Kapazitaet";
+        private const string SPK_LEISTUNG = "Leistung";
+        private const string SPK_SOC_PROZENT = "SoCProzent";
+        private const string SPK_SOC_KWH = "SoCKwh";
+        private const string SPK_BETRIEBSART = "Betriebsart";
+        private const string SPK_BERECHNUNGSART = "Berechnungsart";
+        private const string SPK_ERTRAG = "Ertrag";
+        private const string SPK_UEBERSCHUSS = "Ueberschuss";
+        private const string SPK_AMORTISATION = "Amortisation";
+        private const string SPK_VOLLZYKLEN = "Vollzyklen";
+        private const string SPK_EIGENVERBRAUCH = "Eigenverbrauch";
+        private const string SPK_AUTARKIE = "Autarkie";
+
         /// <summary>
         /// Warnzeile „dieser Lauf enthält keine Erzeugung" (Abnahmebefund 2). Sie steht
         /// unter den Ausgabeknöpfen und ist nur belegt, wenn sie etwas zu sagen hat.
@@ -4869,13 +5443,75 @@ namespace WindowsFormsApplication1
         {
             if (tabPage_Stromspeicher == null) return;
 
+            // --- Grundraster: Kopfzeile, Kernblock, darunter Diagramm | Kennzahlen ---
+            tabelle_SpeicherSeite = new TableLayoutPanel();
+            tabelle_SpeicherSeite.Name = "tabelle_SpeicherSeite";
+            tabelle_SpeicherSeite.ColumnCount = 2;
+            tabelle_SpeicherSeite.RowCount = 3;
+            tabelle_SpeicherSeite.Padding = new Padding(SP_ERG_RAND, 12, SP_ERG_RAND, 8);
+            tabelle_SpeicherSeite.MinimumSize = new Size(SP_ERG_SEITE_MINBREITE, SP_ERG_SEITE_MINHOEHE);
+            // Kein Dock: Die Seite wird auf den SICHTBAREN Ausschnitt eingepasst, nicht
+            // auf die (breitere) Größe des aufnehmenden Panels - siehe SpSeiteEinpassen.
+            tabelle_SpeicherSeite.Dock = DockStyle.None;
+            tabelle_SpeicherSeite.Location = new Point(0, 0);
+            tabelle_SpeicherSeite.Size = new Size(SP_ERG_SEITE_MINBREITE, SP_ERG_SEITE_MINHOEHE);
+            // Die absolute Spalte wird zuerst bedient: Bei Platzmangel weicht das
+            // Diagramm, nie die Kennzahlenliste.
+            tabelle_SpeicherSeite.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
+            tabelle_SpeicherSeite.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, SP_ERG_LISTE_BREITE));
+            tabelle_SpeicherSeite.RowStyles.Add(new RowStyle(SizeType.AutoSize));   // Kopfzeile
+            // Der Kernblock bekommt seine Höhe gerechnet statt gemessen - eine
+            // selbstmessende Zeile über umbrechenden Kacheln misst ohne
+            // Breitenvorgabe (siehe SpKernGruppe/SpKernblockEinpassen).
+            tabelle_SpeicherSeite.RowStyles.Add(new RowStyle(SizeType.Absolute, SP_ERG_KERN_HOEHE_START));
+            tabelle_SpeicherSeite.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
+
             label_SpeicherStatus = new Label();
             label_SpeicherStatus.Name = "label_SpeicherStatus";
             label_SpeicherStatus.Text = MyResource.Resource.SP_ERG_KEIN_LAUF;
-            label_SpeicherStatus.Location = new Point(SP_ERG_RAND, 14);
-            label_SpeicherStatus.Size = new Size(1200, 22);
+            label_SpeicherStatus.AutoSize = false;
+            label_SpeicherStatus.Dock = DockStyle.Fill;
+            label_SpeicherStatus.Height = 24;
+            label_SpeicherStatus.Margin = new Padding(0, 0, 0, 2);
             label_SpeicherStatus.Font = new Font("Segoe UI", 10f, FontStyle.Bold);
-            tabPage_Stromspeicher.Controls.Add(label_SpeicherStatus);
+            tabelle_SpeicherSeite.Controls.Add(label_SpeicherStatus, 0, 0);
+            tabelle_SpeicherSeite.SetColumnSpan(label_SpeicherStatus, 2);
+
+            panel_SpKernblock = SpKernblockAufbauen();
+            tabelle_SpeicherSeite.Controls.Add(panel_SpKernblock, 0, 1);
+            tabelle_SpeicherSeite.SetColumnSpan(panel_SpKernblock, 2);
+
+            tabelle_SpeicherSeite.Controls.Add(SpDiagrammspalteAufbauen(), 0, 2);
+            tabelle_SpeicherSeite.Controls.Add(SpKennzahlenspalteAufbauen(), 1, 2);
+
+            tabPage_Stromspeicher.Controls.Add(tabelle_SpeicherSeite);
+
+            // Das Raster wandert zur Laufzeit samt Seite in splitContainer_Parameter.Panel2
+            // (siehe listViewQuellen_SelectedIndexChanged) und muss sich dort neu
+            // einpassen; dasselbe gilt bei jeder Größenänderung des Formulars und beim
+            // Verschieben des Menü-Splitters.
+            tabelle_SpeicherSeite.ParentChanged += (s, e) => SpSeiteEinpassen();
+            tabelle_SpeicherSeite.VisibleChanged += (s, e) => SpSeiteEinpassen();
+            this.ClientSizeChanged += (s, e) => SpSeiteEinpassen();
+            if (splitContainer_Parameter != null)
+                splitContainer_Parameter.SplitterMoved += (s, e) => SpSeiteEinpassen();
+        }
+
+        /// <summary>
+        /// Linke Spalte: SoC-Diagramm, darunter die Ausgabeknöpfe und die Warnzeile.
+        /// </summary>
+        private Control SpDiagrammspalteAufbauen()
+        {
+            TableLayoutPanel spalte = new TableLayoutPanel();
+            spalte.Name = "tabelle_SpeicherDiagramm";
+            spalte.Dock = DockStyle.Fill;
+            spalte.Margin = new Padding(0, 0, SP_ERG_SPALTENABSTAND, 0);
+            spalte.ColumnCount = 1;
+            spalte.RowCount = 3;
+            spalte.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
+            spalte.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
+            spalte.RowStyles.Add(new RowStyle(SizeType.Absolute, SP_ERG_ZEILE_KNOEPFE));
+            spalte.RowStyles.Add(new RowStyle(SizeType.Absolute, SP_ERG_ZEILE_HINWEIS));
 
             chart_Speicher = new System.Windows.Forms.DataVisualization.Charting.Chart();
             chart_Speicher.Name = "chart_Speicher";
@@ -4884,28 +5520,31 @@ namespace WindowsFormsApplication1
             chart_Speicher.ChartAreas.Add(new ChartArea("ChartArea_Speicher"));
             chart_Speicher.BackColor = Color.WhiteSmoke;
             chart_Speicher.BorderlineColor = Color.Transparent;
-            // Feste Position, keine Rechts-Verankerung: Die Steuerelemente der TabPage
-            // wandern zur Laufzeit in splitContainer_Parameter.Panel2 (siehe Kommentar
-            // bei InitCsvExportButtons).
-            chart_Speicher.Location = new Point(SP_ERG_RAND, SP_ERG_CHART_OBEN);
-            chart_Speicher.Size = new Size(SP_ERG_CHART_BREITE, SP_ERG_CHART_HOEHE);
-            chart_Speicher.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            chart_Speicher.Dock = DockStyle.Fill;
+            chart_Speicher.Margin = new Padding(0);
             chart_Speicher.Visible = false;              // erst nach einem Speicherlauf
-            tabPage_Stromspeicher.Controls.Add(chart_Speicher);
+            spalte.Controls.Add(chart_Speicher, 0, 0);
+
+            FlowLayoutPanel knoepfe = new FlowLayoutPanel();
+            knoepfe.Name = "flow_SpeicherKnoepfe";
+            knoepfe.Dock = DockStyle.Fill;
+            knoepfe.FlowDirection = FlowDirection.LeftToRight;
+            knoepfe.WrapContents = false;
+            knoepfe.Margin = new Padding(0, 6, 0, 0);
+            knoepfe.Padding = new Padding(0);
 
             btn_CsvExportSpeicher = new Button();
             btn_CsvExportSpeicher.Name = "btn_CsvExportSpeicher";
             btn_CsvExportSpeicher.Text = MyResource.Resource.SIM_BTN_CSV_EXPORT;
             btn_CsvExportSpeicher.Size = new Size(150, 32);
-            btn_CsvExportSpeicher.Location = new Point(SP_ERG_RAND, SP_ERG_CHART_OBEN + SP_ERG_CHART_HOEHE + 12);
-            btn_CsvExportSpeicher.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            btn_CsvExportSpeicher.Margin = new Padding(0, 0, 12, 0);
             btn_CsvExportSpeicher.BackColor = SystemColors.Control;
             btn_CsvExportSpeicher.ForeColor = Color.Black;
             btn_CsvExportSpeicher.UseVisualStyleBackColor = false;
             btn_CsvExportSpeicher.Visible = false;
             btn_CsvExportSpeicher.Click += btn_CsvExportSpeicher_Click;
             tooltip.SetToolTip(btn_CsvExportSpeicher, MyResource.Resource.SP_TOOLTIP_CSV);
-            tabPage_Stromspeicher.Controls.Add(btn_CsvExportSpeicher);
+            knoepfe.Controls.Add(btn_CsvExportSpeicher);
 
             // AP9: Einstieg in den Variantenvergleich (Fachkonzept 7.3). Er steht HIER
             // und nicht am Kontextmenü der Übersicht, weil er genau eines braucht, was
@@ -4917,16 +5556,48 @@ namespace WindowsFormsApplication1
             btn_SpVariantenVergleich.Name = "btn_SpVariantenVergleich";
             btn_SpVariantenVergleich.Text = MyResource.Resource.VAR_VGL_BTN_OEFFNEN;
             btn_SpVariantenVergleich.Size = new Size(200, 32);
-            btn_SpVariantenVergleich.Location = new Point(SP_ERG_RAND + 162,
-                                                          SP_ERG_CHART_OBEN + SP_ERG_CHART_HOEHE + 12);
-            btn_SpVariantenVergleich.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            btn_SpVariantenVergleich.Margin = new Padding(0);
             btn_SpVariantenVergleich.BackColor = SystemColors.Control;
             btn_SpVariantenVergleich.ForeColor = Color.Black;
             btn_SpVariantenVergleich.UseVisualStyleBackColor = false;
             btn_SpVariantenVergleich.Visible = false;
             btn_SpVariantenVergleich.Click += btn_SpVariantenVergleich_Click;
             tooltip.SetToolTip(btn_SpVariantenVergleich, MyResource.Resource.VAR_VGL_TOOLTIP_OEFFNEN);
-            tabPage_Stromspeicher.Controls.Add(btn_SpVariantenVergleich);
+            knoepfe.Controls.Add(btn_SpVariantenVergleich);
+
+            spalte.Controls.Add(knoepfe, 0, 1);
+
+            // Abnahmebefund 2: Ein Lauf ohne jede Erzeugung sagt es hier im Klartext -
+            // sonst liest sich die 0-%-Eigenverbrauchsquote wie ein Rechenfehler.
+            label_SpeicherErzeugungshinweis = new Label();
+            label_SpeicherErzeugungshinweis.Name = "label_SpeicherErzeugungshinweis";
+            label_SpeicherErzeugungshinweis.AutoSize = false;
+            label_SpeicherErzeugungshinweis.Dock = DockStyle.Fill;
+            label_SpeicherErzeugungshinweis.Margin = new Padding(0, 2, 0, 0);
+            label_SpeicherErzeugungshinweis.Font = new Font("Segoe UI", 9f, FontStyle.Regular);
+            label_SpeicherErzeugungshinweis.ForeColor = Color.Firebrick;
+            spalte.Controls.Add(label_SpeicherErzeugungshinweis, 0, 2);
+
+            tabelle_SpeicherDiagramm = spalte;
+            return spalte;
+        }
+
+        /// <summary>
+        /// Rechte Spalte: Kennzahlenliste, darunter die Zyklenampel. Ihre Breite ist
+        /// im Grundraster absolut gesetzt (<see cref="SP_ERG_LISTE_BREITE"/>) - die
+        /// vier Spalten der Liste müssen vollständig sichtbar bleiben.
+        /// </summary>
+        private Control SpKennzahlenspalteAufbauen()
+        {
+            TableLayoutPanel spalte = new TableLayoutPanel();
+            spalte.Name = "tabelle_SpeicherKennzahlen";
+            spalte.Dock = DockStyle.Fill;
+            spalte.Margin = new Padding(0);
+            spalte.ColumnCount = 1;
+            spalte.RowCount = 2;
+            spalte.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
+            spalte.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
+            spalte.RowStyles.Add(new RowStyle(SizeType.Absolute, SP_ERG_ZEILE_HINWEIS));
 
             listView_SpeicherKennzahlen = new ListView();
             listView_SpeicherKennzahlen.Name = "listView_SpeicherKennzahlen";
@@ -4937,9 +5608,8 @@ namespace WindowsFormsApplication1
             listView_SpeicherKennzahlen.HeaderStyle = ColumnHeaderStyle.Nonclickable;
             listView_SpeicherKennzahlen.ShowGroups = true;
             listView_SpeicherKennzahlen.Font = new Font("Segoe UI", 9.75f, FontStyle.Regular);
-            listView_SpeicherKennzahlen.Location = new Point(SP_ERG_LISTE_LINKS, SP_ERG_CHART_OBEN);
-            listView_SpeicherKennzahlen.Size = new Size(SP_ERG_LISTE_BREITE, 560);
-            listView_SpeicherKennzahlen.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            listView_SpeicherKennzahlen.Dock = DockStyle.Fill;
+            listView_SpeicherKennzahlen.Margin = new Padding(0);
             listView_SpeicherKennzahlen.Columns.Add(MyResource.Resource.SP_ERG_SPALTE_KENNZAHL, SP_ERG_SP_KENNZAHL, HorizontalAlignment.Left);
             listView_SpeicherKennzahlen.Columns.Add(MyResource.Resource.SP_ERG_SPALTE_WERT, SP_ERG_SP_WERT, HorizontalAlignment.Right);
             // Vergleichsspalte (AP6): steht immer im Spaltensatz, ist aber ohne
@@ -4949,27 +5619,313 @@ namespace WindowsFormsApplication1
             listView_SpeicherKennzahlen.Groups.Add(new ListViewGroup("ENERGIE", MyResource.Resource.SP_ERG_GRUPPE_ENERGIE));
             listView_SpeicherKennzahlen.Groups.Add(new ListViewGroup("SPEICHER", MyResource.Resource.SP_ERG_GRUPPE_SPEICHER));
             listView_SpeicherKennzahlen.Groups.Add(new ListViewGroup("WIRTSCHAFT", MyResource.Resource.SP_ERG_GRUPPE_WIRTSCHAFT));
-            tabPage_Stromspeicher.Controls.Add(listView_SpeicherKennzahlen);
-
-            // Abnahmebefund 2: Ein Lauf ohne jede Erzeugung sagt es hier im Klartext -
-            // sonst liest sich die 0-%-Eigenverbrauchsquote wie ein Rechenfehler.
-            label_SpeicherErzeugungshinweis = new Label();
-            label_SpeicherErzeugungshinweis.Name = "label_SpeicherErzeugungshinweis";
-            label_SpeicherErzeugungshinweis.Location =
-                new Point(SP_ERG_RAND, SP_ERG_CHART_OBEN + SP_ERG_CHART_HOEHE + 56);
-            label_SpeicherErzeugungshinweis.Size = new Size(SP_ERG_CHART_BREITE, 44);
-            label_SpeicherErzeugungshinweis.Font = new Font("Segoe UI", 9f, FontStyle.Regular);
-            label_SpeicherErzeugungshinweis.ForeColor = Color.Firebrick;
-            label_SpeicherErzeugungshinweis.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-            tabPage_Stromspeicher.Controls.Add(label_SpeicherErzeugungshinweis);
+            spalte.Controls.Add(listView_SpeicherKennzahlen, 0, 0);
 
             label_SpeicherAmpel = new Label();
             label_SpeicherAmpel.Name = "label_SpeicherAmpel";
-            label_SpeicherAmpel.Location = new Point(SP_ERG_LISTE_LINKS, SP_ERG_CHART_OBEN + 570);
-            label_SpeicherAmpel.Size = new Size(SP_ERG_LISTE_BREITE, 44);
+            label_SpeicherAmpel.AutoSize = false;
+            label_SpeicherAmpel.Dock = DockStyle.Fill;
+            label_SpeicherAmpel.Margin = new Padding(0, 2, 0, 0);
             label_SpeicherAmpel.Font = new Font("Segoe UI", 9f, FontStyle.Regular);
-            label_SpeicherAmpel.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-            tabPage_Stromspeicher.Controls.Add(label_SpeicherAmpel);
+            spalte.Controls.Add(label_SpeicherAmpel, 0, 1);
+
+            tabelle_SpeicherKennzahlen = spalte;
+            return spalte;
+        }
+
+        // ====================================================================
+        //  Kernblock „Wesentliche Daten"
+        // ====================================================================
+        //
+        // Der Anwender fragte nach den WESENTLICHEN Daten des Speichers. Die
+        // Kennzahlenliste führt knapp vierzig Zeilen in drei Gruppen - vollständig,
+        // aber nicht auf einen Blick lesbar. Der Block darüber greift daraus zwölf
+        // Größen heraus: links, was gerechnet WURDE (Anlage und Variante), rechts
+        // daneben, was dabei HERAUSKAM.
+        //
+        // KEINE ZWEITE RECHENWELT: Jede Kachel liest aus derselben Quelle wie die
+        // Liste - dem Ergebnismodell (StromspeicherSimCtrl.AlsErgebnismodell), dem
+        // Engine-Ergebnis und dem Laufkontext. Gefüllt wird im selben Zug wie die
+        // Liste (SpeicherErgebnisAnzeigen); ohne Lauf räumt SpKernblockLeeren.
+        //
+        // Die Kacheln liegen in FlowLayoutPanels: Wird die Seite schmal, brechen sie
+        // um, statt abgeschnitten zu werden.
+
+        private Panel SpKernblockAufbauen()
+        {
+            Panel block = new Panel();
+            block.Name = "panel_SpKernblock";
+            block.Dock = DockStyle.Fill;
+            block.Margin = new Padding(0, 4, 0, 8);
+            block.Padding = new Padding(8, 4, 8, 4);
+            block.BackColor = Color.FromArgb(246, 248, 250);
+
+            flow_SpKernAnlage = SpKernGruppe("flow_SpKernAnlage",
+                                             MyResource.Resource.SP_ERG_KERN_GRUPPE_ANLAGE);
+            flow_SpKernAnlage.Controls.Add(SpKachel(SPK_KAPAZITAET, MyResource.Resource.SP_ERG_KERN_KAPAZITAET));
+            flow_SpKernAnlage.Controls.Add(SpKachel(SPK_LEISTUNG, MyResource.Resource.SP_ERG_KERN_LEISTUNG));
+            flow_SpKernAnlage.Controls.Add(SpKachel(SPK_SOC_PROZENT, MyResource.Resource.SP_ERG_KERN_SOC_PROZENT));
+            flow_SpKernAnlage.Controls.Add(SpKachel(SPK_SOC_KWH, MyResource.Resource.SP_ERG_KERN_SOC_KWH));
+            flow_SpKernAnlage.Controls.Add(SpKachel(SPK_BETRIEBSART, MyResource.Resource.SP_ERG_KERN_BETRIEBSART));
+            flow_SpKernAnlage.Controls.Add(SpKachel(SPK_BERECHNUNGSART, MyResource.Resource.SP_ERG_KERN_BERECHNUNGSART));
+
+            flow_SpKernErgebnis = SpKernGruppe("flow_SpKernErgebnis",
+                                               MyResource.Resource.SP_ERG_KERN_GRUPPE_ERGEBNIS);
+            flow_SpKernErgebnis.Controls.Add(SpKachel(SPK_ERTRAG, MyResource.Resource.SP_ERG_KERN_ERTRAG));
+            flow_SpKernErgebnis.Controls.Add(SpKachel(SPK_UEBERSCHUSS, MyResource.Resource.SP_ERG_KERN_UEBERSCHUSS));
+            flow_SpKernErgebnis.Controls.Add(SpKachel(SPK_AMORTISATION, MyResource.Resource.SP_ERG_KERN_AMORTISATION));
+            flow_SpKernErgebnis.Controls.Add(SpKachel(SPK_VOLLZYKLEN, MyResource.Resource.SP_ERG_KERN_VOLLZYKLEN));
+            flow_SpKernErgebnis.Controls.Add(SpKachel(SPK_EIGENVERBRAUCH, MyResource.Resource.SP_ERG_KERN_EIGENVERBRAUCH));
+            flow_SpKernErgebnis.Controls.Add(SpKachel(SPK_AUTARKIE, MyResource.Resource.SP_ERG_KERN_AUTARKIE));
+
+            // Reihenfolge beachten: Bei Dock = Top liegt das ZULETZT hinzugefügte
+            // Steuerelement oben. Die Anlagendaten stehen über den Ergebnissen.
+            block.Controls.Add(flow_SpKernErgebnis);
+            block.Controls.Add(flow_SpKernAnlage);
+
+            // Die Zeilenhöhe des Blocks im Grundraster hängt davon ab, wie viele
+            // Kachelreihen die aktuelle Breite trägt - siehe SpKernblockEinpassen.
+            flow_SpKernAnlage.SizeChanged += (s, e) => SpKernblockEinpassen();
+            flow_SpKernErgebnis.SizeChanged += (s, e) => SpKernblockEinpassen();
+
+            return block;
+        }
+
+        /// <summary>
+        /// Eine Zeile des Kernblocks: Gruppenname links, danach die Kacheln.
+        /// </summary>
+        /// <remarks>
+        /// <c>Dock = Top</c> zusammen mit <c>AutoSize</c> ist das tragfähige Gespann:
+        /// Die Breite kommt vom Behälter, die Höhe ergibt sich aus dem Umbruch. Ein
+        /// <c>Dock = Fill</c> in einer selbstmessenden Zeile misst dagegen ohne
+        /// Breitenvorgabe - dann bricht jede Kachel in eine eigene Zeile um, und der
+        /// Block frisst die halbe Seite.
+        /// </remarks>
+        private FlowLayoutPanel SpKernGruppe(string name, string beschriftung)
+        {
+            FlowLayoutPanel flow = new FlowLayoutPanel();
+            flow.Name = name;
+            flow.Dock = DockStyle.Top;
+            flow.AutoSize = true;
+            flow.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            flow.FlowDirection = FlowDirection.LeftToRight;
+            flow.WrapContents = true;
+            flow.Margin = new Padding(0);
+            flow.Padding = new Padding(0);
+
+            Label kopf = new Label();
+            kopf.Name = name + "_Kopf";
+            kopf.Text = beschriftung;
+            kopf.AutoSize = false;
+            kopf.Size = new Size(SP_ERG_KERN_GRUPPE_BREITE, SP_ERG_KACHEL_HOEHE);
+            kopf.Margin = new Padding(0, 2, 8, 2);
+            kopf.TextAlign = ContentAlignment.MiddleLeft;
+            kopf.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
+            kopf.ForeColor = Color.FromArgb(0, 92, 140);
+            flow.Controls.Add(kopf);
+
+            return flow;
+        }
+
+        /// <summary>
+        /// Eine Kachel: Beschriftung (klein, grau) über dem Wert (groß, fett). Das
+        /// Wertfeld wird unter <paramref name="schluessel"/> gemerkt und von
+        /// <see cref="SpKernwert"/> beschrieben.
+        /// </summary>
+        private Panel SpKachel(string schluessel, string beschriftung)
+        {
+            Panel kachel = new Panel();
+            kachel.Name = "panel_SpKern_" + schluessel;
+            kachel.Size = new Size(SP_ERG_KACHEL_BREITE, SP_ERG_KACHEL_HOEHE);
+            kachel.Margin = new Padding(0, 2, 10, 2);
+
+            Label titel = new Label();
+            titel.Name = "label_SpKernTitel_" + schluessel;
+            titel.Text = beschriftung;
+            titel.AutoSize = false;
+            titel.Bounds = new Rectangle(0, 0, SP_ERG_KACHEL_BREITE, SP_ERG_KACHEL_TITEL);
+            titel.Font = new Font("Segoe UI", 7.75f, FontStyle.Regular);
+            titel.ForeColor = Color.FromArgb(90, 96, 104);
+            kachel.Controls.Add(titel);
+
+            Label wert = new Label();
+            wert.Name = "label_SpKernWert_" + schluessel;
+            wert.Text = SP_ERG_UNBESTIMMT;
+            wert.AutoSize = false;
+            wert.Bounds = new Rectangle(0, SP_ERG_KACHEL_TITEL,
+                                        SP_ERG_KACHEL_BREITE, SP_ERG_KACHEL_HOEHE - SP_ERG_KACHEL_TITEL);
+            wert.Font = new Font("Segoe UI", 10.5f, FontStyle.Bold);
+            wert.ForeColor = Color.FromArgb(28, 32, 38);
+            kachel.Controls.Add(wert);
+
+            _spKernwerte[schluessel] = wert;
+            return kachel;
+        }
+
+        private void SpKernwert(string schluessel, string text)
+        {
+            Label l;
+            if (_spKernwerte.TryGetValue(schluessel, out l)) l.Text = text;
+        }
+
+        private void SpKernwert(string schluessel, double wert, string format)
+        {
+            SpKernwert(schluessel, wert.ToString(format, CultureInfo.CurrentCulture));
+        }
+
+        /// <summary>
+        /// Füllt den Kernblock aus DENSELBEN Quellen wie die Kennzahlenliste:
+        /// <paramref name="k"/> ist das Ergebnismodell, <paramref name="erg"/> das
+        /// Engine-Ergebnis (Amortisation samt Sonderfällen, Erzeugungsprüfung),
+        /// <paramref name="kontext"/> der Laufkontext (Auslegung der Variante).
+        /// </summary>
+        private void SpKernblockFuellen(ErgebnisStromspeicherModel k,
+                                        SpeicherEngine.SpeicherErgebnis erg,
+                                        StromspeicherLaufKontext kontext)
+        {
+            SpeicherEngine.SpeicherParameter p = kontext != null ? kontext.Parameter : null;
+
+            if (p != null)
+            {
+                SpKernwert(SPK_KAPAZITAET, p.CNomKwh, "N1");
+                SpKernwert(SPK_LEISTUNG, p.PKw, "N1");
+                SpKernwert(SPK_SOC_KWH, string.Format(MyResource.Resource.SP_ERG_KERN_BEREICH,
+                                                      p.SoCMinKwh.ToString("N1", CultureInfo.CurrentCulture),
+                                                      p.SoCMaxKwh.ToString("N1", CultureInfo.CurrentCulture)));
+                // Das Band in Prozent der Nennkapazität - dieselbe Lesart wie die
+                // Eingabemaske der Variante (Fachkonzept 5.1).
+                if (p.CNomKwh > 0.0)
+                    SpKernwert(SPK_SOC_PROZENT, string.Format(MyResource.Resource.SP_ERG_KERN_BEREICH,
+                                                              (p.SoCMinKwh / p.CNomKwh * 100.0).ToString("N0", CultureInfo.CurrentCulture),
+                                                              (p.SoCMaxKwh / p.CNomKwh * 100.0).ToString("N0", CultureInfo.CurrentCulture)));
+                else
+                    SpKernwert(SPK_SOC_PROZENT, SP_ERG_UNBESTIMMT);
+            }
+            else
+            {
+                SpKernwert(SPK_KAPAZITAET, SP_ERG_UNBESTIMMT);
+                SpKernwert(SPK_LEISTUNG, SP_ERG_UNBESTIMMT);
+                SpKernwert(SPK_SOC_KWH, SP_ERG_UNBESTIMMT);
+                SpKernwert(SPK_SOC_PROZENT, SP_ERG_UNBESTIMMT);
+            }
+
+            SpKernwert(SPK_BETRIEBSART, string.IsNullOrEmpty(k.Betriebsart) ? SP_ERG_UNBESTIMMT : k.Betriebsart);
+            SpKernwert(SPK_BERECHNUNGSART, string.IsNullOrEmpty(k.Berechnungsart) ? SP_ERG_UNBESTIMMT : k.Berechnungsart);
+
+            SpKernwert(SPK_ERTRAG, k.Ertrag_Aequivalent, "N2");
+            SpKernwert(SPK_UEBERSCHUSS, k.Jahresueberschuss, "N2");
+            // Genau der Text der Listenzeile - mit „nicht amortisierbar" und
+            // „> Nutzungsdauer" statt einer Zahl, die es dort nicht gibt.
+            SpKernwert(SPK_AMORTISATION, SpAmortisationstext(erg.Wirtschaftlichkeit.StatischeAmortisation));
+            SpKernwert(SPK_VOLLZYKLEN, k.Vollzyklen, "N1");
+
+            // Ohne Erzeugung ist die Eigenverbrauchsquote unbestimmt (0/0), nicht null -
+            // dieselbe Regel wie in der Liste; die Warnzeile sagt, warum.
+            if (erg.Kennzahlen.ErzeugungKwh > 0.0)
+                SpKernwert(SPK_EIGENVERBRAUCH, k.Eigenverbrauchsquote, "N1");
+            else
+                SpKernwert(SPK_EIGENVERBRAUCH, SP_ERG_UNBESTIMMT);
+
+            SpKernwert(SPK_AUTARKIE, k.Autarkiegrad, "N1");
+        }
+
+        /// <summary>Räumt den Kernblock ab - Zustand „noch kein Lauf".</summary>
+        private void SpKernblockLeeren()
+        {
+            foreach (Label l in _spKernwerte.Values) l.Text = SP_ERG_UNBESTIMMT;
+        }
+
+        /// <summary>
+        /// Passt das Grundraster auf den SICHTBAREN Ausschnitt des aufnehmenden
+        /// Behälters ein.
+        /// </summary>
+        /// <remarks>
+        /// Der Behälter (splitContainer_Parameter.Panel2) ist breiter als das, was
+        /// davon zu sehen ist: Das Formular führt tabControl_Simulation in fester
+        /// Größe und rollt darüber hinaus (AutoScroll). Ein Raster mit
+        /// <c>Dock = Fill</c> bekäme deshalb die volle Panelbreite und schöbe die
+        /// Kennzahlenliste erneut hinter den Fensterrand - genau der Abnahmebefund.
+        /// Maßgeblich ist die Schnittmenge der Client-Flächen aller Vorfahren.
+        ///
+        /// Unterhalb von <see cref="SP_ERG_SEITE_MINBREITE"/> hört das Einpassen auf;
+        /// dann übernimmt der Bildlauf von Panel2, und die Liste behält ihre Breite.
+        /// </remarks>
+        private void SpSeiteEinpassen()
+        {
+            if (tabelle_SpeicherSeite == null) return;
+
+            Control eltern = tabelle_SpeicherSeite.Parent;
+            if (eltern == null || !tabelle_SpeicherSeite.Visible) return;
+
+            Rectangle sichtbar = eltern.RectangleToScreen(eltern.ClientRectangle);
+            for (Control p = eltern.Parent; p != null; p = p.Parent)
+                sichtbar = Rectangle.Intersect(sichtbar, p.RectangleToScreen(p.ClientRectangle));
+
+            if (sichtbar.Width <= 0 || sichtbar.Height <= 0) return;
+
+            // MinimumSize deckelt nach unten ab; SetBounds erzwingt die Maße auch dann,
+            // wenn der Behälter größer ist.
+            tabelle_SpeicherSeite.Bounds = new Rectangle(0, 0, sichtbar.Width, sichtbar.Height);
+            SpKernblockEinpassen();
+            SpTextzeilenEinpassen();
+        }
+
+        /// <summary>
+        /// Zieht die Höhe der beiden Textzeilen nach - Warnzeile unter dem Diagramm,
+        /// Zyklenampel unter der Liste.
+        /// </summary>
+        /// <remarks>
+        /// Muster <c>label_Erdreich</c> weiter oben: Bei fester Breite messen und nur
+        /// die Höhe nachziehen. Eine starre Zeilenhöhe schnitte auf schmalen Seiten
+        /// genau das ab, was die Zeile zu sagen hat - und das sind Warnungen.
+        /// </remarks>
+        private void SpTextzeilenEinpassen()
+        {
+            SpZeilenhoeheNachziehen(tabelle_SpeicherDiagramm, 2, label_SpeicherErzeugungshinweis);
+            SpZeilenhoeheNachziehen(tabelle_SpeicherKennzahlen, 1, label_SpeicherAmpel);
+        }
+
+        private static void SpZeilenhoeheNachziehen(TableLayoutPanel tabelle, int zeile, Label text)
+        {
+            if (tabelle == null || text == null || text.Width <= 0) return;
+            if (zeile < 0 || zeile >= tabelle.RowStyles.Count) return;
+
+            int hoehe = SP_ERG_ZEILE_HINWEIS;
+            if (!string.IsNullOrEmpty(text.Text))
+            {
+                Size gemessen = TextRenderer.MeasureText(text.Text, text.Font,
+                    new Size(text.Width, int.MaxValue),
+                    TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl);
+                if (gemessen.Height + 8 > hoehe) hoehe = gemessen.Height + 8;
+            }
+
+            // Nur bei echter Änderung anfassen (siehe SpKernblockEinpassen).
+            RowStyle rs = tabelle.RowStyles[zeile];
+            if (Math.Abs(rs.Height - hoehe) < 0.5f) return;
+            rs.SizeType = SizeType.Absolute;
+            rs.Height = hoehe;
+        }
+
+        /// <summary>
+        /// Setzt die Zeilenhöhe des Kernblocks auf das, was die Kacheln nach dem
+        /// Umbruch tatsächlich brauchen (eine Reihe je Gruppe bei breiter Seite, zwei
+        /// oder drei bei schmaler).
+        /// </summary>
+        private void SpKernblockEinpassen()
+        {
+            if (tabelle_SpeicherSeite == null || panel_SpKernblock == null) return;
+            if (flow_SpKernAnlage == null || flow_SpKernErgebnis == null) return;
+
+            int hoehe = panel_SpKernblock.Padding.Vertical
+                        + flow_SpKernAnlage.Height + flow_SpKernErgebnis.Height;
+            if (hoehe < SP_ERG_KERN_HOEHE_START) hoehe = SP_ERG_KERN_HOEHE_START;
+
+            // Nur bei echter Änderung anfassen - sonst löst jede Layoutrunde die
+            // nächste aus (die Höhe hängt an den Kacheln, die Kacheln an der Höhe).
+            RowStyle zeile = tabelle_SpeicherSeite.RowStyles[1];
+            if (Math.Abs(zeile.Height - hoehe) < 0.5f) return;
+            zeile.SizeType = SizeType.Absolute;
+            zeile.Height = hoehe;
         }
 
         /// <summary>
@@ -4979,6 +5935,10 @@ namespace WindowsFormsApplication1
         private void SpeicherErgebnisAnzeigen()
         {
             if (listView_SpeicherKennzahlen == null) return;
+
+            // Die Seite kann seit dem Umbau schmaler sein als der Behälter, in dem sie
+            // liegt - vor jeder Anzeige neu einpassen (siehe SpSeiteEinpassen).
+            SpSeiteEinpassen();
 
             listView_SpeicherKennzahlen.Items.Clear();
             label_SpeicherAmpel.Text = "";
@@ -4992,10 +5952,12 @@ namespace WindowsFormsApplication1
                 chart_Speicher.Visible = false;
                 btn_CsvExportSpeicher.Visible = false;
                 btn_SpVariantenVergleich.Visible = false;
+                SpKernblockLeeren();
                 SpVergleichsspalteSetzen(false);
                 // Serien des Vorlaufs abräumen, damit kein Bild ohne Bezug stehenbleibt
                 // (Muster KesselErgebnisAnzeigen).
                 if (_chartSpeicherManager != null) _chartSpeicherManager.HardReset();
+                SpTextzeilenEinpassen();
                 return;
             }
 
@@ -5016,10 +5978,14 @@ namespace WindowsFormsApplication1
             label_SpeicherStatus.ForeColor = Color.Black;
 
             SpVergleichsspalteSetzen(vergleich != null);
+            SpKernblockFuellen(k, erg, kontext);
             SpKennzahlenFuellen(k, erg, kontext, kv, vergleich);
             SpZyklenampelSetzen(k, kontext);
             SpErzeugungshinweisSetzen(erg);
             SpSoCDiagrammZeichnen();
+            // Erst jetzt stehen die Texte fest - Warnzeile und Ampel bekommen die Höhe,
+            // die ihr Umbruch braucht.
+            SpTextzeilenEinpassen();
 
             btn_CsvExportSpeicher.Visible = true;
 

@@ -666,6 +666,33 @@ namespace WindowsFormsApplication1
                 if (a.Zweitsenke) { if (BHKW.Auftrag_Zweit == null) BHKW.Auftrag_Zweit = a; }
                 else { if (BHKW.Auftrag_Haupt == null) BHKW.Auftrag_Haupt = a; }
             }
+
+            // PAKET BHKW-REGULÄR: Die Speicher, auf die das BHKW angewiesen ist, bekommen
+            // ihre NOTRESERVE scharf gestellt. Erst hier steht fest, WELCHE das sind - die
+            // Ladeaufträge entstehen aus Senkenzuordnung und Ladeordnung, nicht aus der
+            // Puffertabelle.
+            //
+            // Das Feld wird ausschließlich hier gesetzt und nirgends zurückgenommen: Ein
+            // Speicher, den das BHKW in diesem Lauf lädt, behält die Reserve über das ganze
+            // Jahr. Ohne BHKW in der Stufe läuft diese Methode nicht (MitBHKW), und die
+            // Reserve bleibt an jedem Speicher unwirksam.
+            ReserveScharfstellen(BHKW.Auftrag_Haupt);
+            ReserveScharfstellen(BHKW.Auftrag_Zweit);
+        }
+
+        /// <summary>
+        /// Stellt den Mindestfüllstand des Zielspeichers eines BHKW-Ladeauftrags scharf
+        /// (Paket BHKW-Regulär). Ohne Auftrag oder ohne Speicher ein No-op.
+        ///
+        /// Die PROZENTZAHL aus <c>Tab_Pufferspeicher.Schwelle_Reserve</c> steht bereits als
+        /// ANTEIL (0…1) im Speicherobjekt — umgerechnet wird sie beim Übertragen der
+        /// Puffer-Parameter (<c>SimulationControl</c>), wie bei Ein- und Abschaltschwelle
+        /// auch. Hier wird nur der Schalter gesetzt.
+        /// </summary>
+        private static void ReserveScharfstellen(Ladeauftrag a)
+        {
+            if (a == null || a.Speicher == null) return;
+            a.Speicher.BhkwReserveGilt = true;
         }
 
         /// <summary>
@@ -1124,6 +1151,43 @@ namespace WindowsFormsApplication1
 
                 double bedarf = brauchwasser ? rest_ww : rest_heiz;
                 if (bedarf <= 0) continue;
+
+                // PAKET BHKW-REGULÄR: MINDESTFÜLLSTAND/NOTRESERVE. Diese eine Zeile ist
+                // die gesamte Wirkung des Puffer-Parameters Schwelle_Reserve - sie klemmt
+                // den ANGEFORDERTEN Bedarf, nicht die Speicherphysik.
+                //
+                // WARUM HIER. EntladeKanal ist die einzige Stelle, an der ein Speicher
+                // bedarfsdeckend aus seinem VORRAT entlädt (Phase A Vorabentladung und
+                // Phase E Nachentladung laufen beide durch sie). Die Durchleitung derselben
+                // Stunde geht über DurchsatzEntladen und bleibt bewusst unberührt: Dort
+                // wird nur der Überhang über Q_max entnommen, und der liegt konstruktiv
+                // oberhalb der Reservemarke.
+                //
+                // WARUM NICHT IN SimulationPufferspeicher.Entladen. Das ist die
+                // Speicherphysik ALLER Erzeuger und Phasen; eine Untergrenze dort wäre die
+                // globale Verhaltensänderung, die die Entscheidung des Anwenders
+                // ausdrücklich ausschließt (andere Erzeuger entladen unverändert bis 0).
+                //
+                // VERHALTENSNEUTRAL OHNE BHKW: EntnahmeObergrenze liefert double.MaxValue,
+                // solange der Speicher nicht im Bilanzraum eines BHKW steht oder keine
+                // Reserve gepflegt ist. Math.Min mit MaxValue gibt den Bedarf unverändert
+                // zurück - kein Projekt ohne BHKW ändert sein Ergebnis.
+                double entnehmbar = sp.EntnahmeObergrenze();
+                if (bedarf > entnehmbar) bedarf = entnehmbar;
+
+                // Reservemarke erreicht: nichts mehr entnehmen. Der Speicher geht in den
+                // NACHLADEBETRIEB - der Bedarf bleibt offen und wird von der nächsten
+                // Kaskadenstufe bzw. vom Heizstab gedeckt, während das BHKW seinen Vorrat
+                // wieder aufbaut. Das ist dieselbe Markierung, die am Ende dieser Schleife
+                // ein nicht ausreichender Speicher bekommt.
+                //
+                // Dieser Zweig ist NUR bei aktiver Reserve erreichbar: Ohne sie liefert
+                // EntnahmeObergrenze double.MaxValue, und bedarf war oben schon > 0.
+                if (bedarf <= 0)
+                {
+                    if (vorab) sp.LaedtGerade = true;
+                    continue;
+                }
 
                 double gedeckt = sp.Entladen(bedarf, stunde);
                 if (gedeckt <= 0) continue;
