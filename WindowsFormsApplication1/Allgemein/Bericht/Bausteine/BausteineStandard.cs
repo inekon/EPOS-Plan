@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
 
@@ -91,11 +91,10 @@ namespace WindowsFormsApplication1
                    "(stündliche Jahresrechnung) und anschließend wirtschaftlich bewertet; " +
                    "die Zahlen aller Kapitel stammen damit aus demselben Rechenlauf.");
             k.Text("Grundlage sind die je Projekt gespeicherten Simulationsergebnisse der " +
-                   "EPOS-Plan-Simulation (stündliche Jahresrechnung; Tabellenfamilie Tab_Ergebnis, " +
-                   "verknüpft über die Projekt-ID). Varianten sind eigenständige Projektkopien, " +
+                   "EPOS-Plan-Simulation (stündliche Jahresrechnung). Varianten sind eigenständige Projektkopien, " +
                    "verknüpft über die Variantenliste des Stammprojekts.");
-            k.Text("Herstellerdaten stammen aus den hinterlegten Katalogen (u. a. VDI 3805, " +
-                   "CEC/PAN für PV-Module); Klimadaten aus der dem Projekt zugeordneten Klimaregion.");
+            k.Text("Herstellerdaten stammen aus den hinterlegten Katalogen oder manuellen Eingaben. " +
+                   "Klimadaten aus der dem Projekt zugeordneten Klimaregion.");
             k.Hinweis("Emissionsfaktoren und Energiepreise werden mit den Kennzahlgruppen " +
                       "Emissionen und Kosten ausgewiesen, sobald deren Verrechnung aktiv ist (Ausbaustufe).");
 

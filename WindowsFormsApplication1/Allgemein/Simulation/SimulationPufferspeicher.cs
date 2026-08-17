@@ -122,6 +122,51 @@ namespace WindowsFormsApplication1
         /// </summary>
         public int Entladeprio = 0;
 
+        /// <summary>
+        /// MINDESTFÜLLSTAND/NOTRESERVE als Anteil der nutzbaren Kapazität (0…1), Spalte
+        /// <c>Schwelle_Reserve</c> (Paket BHKW-Regulär, Entscheidung des Anwenders
+        /// 17.08.2026, Punkt 3). 0 = keine Reserve.
+        ///
+        /// Sie wirkt NUR, wenn <see cref="BhkwReserveGilt"/> gesetzt ist — siehe dort.
+        /// </summary>
+        public double SchwelleReserve = 0;
+
+        /// <summary>
+        /// <c>true</c>, wenn dieser Speicher im BILANZRAUM DES BHKW steht, also Ziel eines
+        /// BHKW-Ladeauftrags ist (<c>Kaskadenschleife.BhkwAuftraegeZuordnen</c> setzt das
+        /// Feld je Lauf). Erst dann ist <see cref="SchwelleReserve"/> wirksam.
+        ///
+        /// <para><b>WARUM DIESER SCHALTER — und warum die Reserve nicht global gilt.</b>
+        /// Die Entscheidung des Anwenders lautet ausdrücklich: Die Notreserve wirkt auf die
+        /// BHKW-Entladung, alle anderen Erzeuger entladen unverändert bis 0. Ein BHKW ist
+        /// eine Maschine mit Anlaufverhalten — fährt sein Speicher vollständig leer, gibt es
+        /// keinen Vorrat, aus dem die nächste Bedarfsspitze bis zum Anlaufen gedeckt werden
+        /// könnte. Wärmepumpe, Kessel und Solarthermie haben dieses Problem nicht, und für
+        /// sie wäre eine Untergrenze eine stille Verhaltensänderung: Sie ließe Bedarf offen,
+        /// obwohl Wärme im Speicher liegt.</para>
+        ///
+        /// <para><b>WARUM AM SPEICHER und nicht an der Entladung.</b> Die Entladung eines
+        /// Speichers ist NICHT erzeugerbezogen: Ein Puffer wird entladen, weil Bedarf offen
+        /// ist, nicht weil ein bestimmter Erzeuger ihn geladen hat. Es gibt keinen „BHKW-
+        /// Entladevorgang", den man einzeln begrenzen könnte. Die Notreserve ist deshalb als
+        /// das ausgedrückt, was sie fachlich ist: eine Eigenschaft DES SPEICHERS — er soll
+        /// nicht leerlaufen —, aktiviert genau an den Speichern, auf die ein BHKW angewiesen
+        /// ist.</para>
+        ///
+        /// <para><b>DOKUMENTIERTE ABGRENZUNG (geteilter Speicher).</b> Lädt außer dem BHKW
+        /// noch ein anderer Erzeuger denselben Puffer, wirkt die Reserve auch auf dessen
+        /// Entladung — ein Speicher hat einen Füllstand, nicht zwei, und eine getrennte
+        /// Untergrenze je Herkunftsanteil wäre neue Physik. Der Regelfall ist der
+        /// EIGENE BHKW-Puffer (Migrationsregel R6 und
+        /// <c>ProjektPuffer.SQL_BHKW_AUF_PUFFER</c> legen ihn genau so an); der geteilte
+        /// Fall bleibt als offener Punkt vermerkt.</para>
+        ///
+        /// <para>OHNE BHKW im Projekt ist das Feld an JEDEM Speicher <c>false</c>, und
+        /// <see cref="EntnahmeObergrenze"/> liefert <c>double.MaxValue</c> — die Entladung
+        /// rechnet dann Anweisung für Anweisung wie bisher.</para>
+        /// </summary>
+        public bool BhkwReserveGilt = false;
+
         /// <summary>Projekt, zu dem die Speicherzeile gehört (Tab_Pufferspeicher.ID_Projekt).</summary>
         public int ID_Projekt = 0;
 
@@ -640,6 +685,44 @@ namespace WindowsFormsApplication1
         public double Entnahmefaehigkeit()
         {
             return EntladeleistungMax > 0 ? EntladeleistungMax : double.MaxValue;
+        }
+
+        /// <summary>
+        /// Höchste bedarfsdeckende ENTNAHME, die dieser Speicher jetzt noch zulässt [kWh] —
+        /// die eine Stelle, an der der Mindestfüllstand aus
+        /// <see cref="SchwelleReserve"/> wirkt (Paket BHKW-Regulär).
+        ///
+        /// <code>
+        /// ohne BHKW-Bezug oder ohne Reserve : double.MaxValue   (bisheriges Verhalten)
+        /// sonst                             : max(0, SOC − Q_max · SchwelleReserve)
+        /// </code>
+        ///
+        /// <para><b>Bewusst NICHT in <see cref="Entladen"/> eingebaut.</b> Diese Methode ist
+        /// die Speicherphysik aller vier Erzeugerarten und aller Phasen; eine Untergrenze
+        /// dort wäre eine globale Verhaltensänderung — genau das, was die Entscheidung des
+        /// Anwenders ausschließt. Die Grenze wird deshalb von der
+        /// <c>Kaskadenschleife</c> vor der Entladung auf den ANGEFORDERTEN Bedarf gelegt
+        /// (Phasen A und E). <see cref="Entladen"/> selbst bleibt Zeile für Zeile
+        /// unverändert und kennt weiterhin nur die Grenze „Speicher leer".</para>
+        ///
+        /// <para><b>Der Bezug ist Q_max, nicht SOC.</b> Die Reserve ist ein Anteil der
+        /// NUTZBAREN KAPAZITÄT — dieselbe Bezugsgröße wie bei Ein- und Abschaltschwelle.
+        /// Ein Anteil des momentanen Füllstands wäre keine feste Marke, sondern eine, die
+        /// mit dem Leerlaufen mitwandert und nie erreicht würde.</para>
+        ///
+        /// <para><b>Der DURCHSATZ bleibt unangetastet.</b> Steht der Füllstand über
+        /// <c>Q_max</c> (Durchleitung derselben Stunde, Befund N6), ist der Überhang
+        /// vollständig entnehmbar: <c>SOC − Q_max · Reserve</c> ist dann größer als der
+        /// Überhang. Die Reserve begrenzt also den VORRAT, nicht die hydraulische Weiche —
+        /// und deshalb war auf der Ladeseite (Bilanzraum, Ladefähigkeit) nichts zu
+        /// ändern.</para>
+        /// </summary>
+        public double EntnahmeObergrenze()
+        {
+            if (!BhkwReserveGilt || SchwelleReserve <= 0 || Q_max <= 0) return double.MaxValue;
+
+            double ueberReserve = SOC - Q_max * SchwelleReserve;
+            return ueberReserve > 0 ? ueberReserve : 0;
         }
 
         /// <summary>

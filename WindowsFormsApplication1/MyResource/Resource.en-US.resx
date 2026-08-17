@@ -244,6 +244,12 @@ This is a hint, not a block.</value>
   <data name="SIM_KARTE_VERFUEGBAR" xml:space="preserve">
     <value>not in the simulation</value>
   </data>
+  <data name="SIM_KARTE_VERFUEGBAR_AUSBLENDEN" xml:space="preserve">
+    <value>− Hide components that are not selected</value>
+  </data>
+  <data name="SIM_KARTE_VERFUEGBAR_EINBLENDEN" xml:space="preserve">
+    <value>+ Show components that are not selected ({0}) …</value>
+  </data>
   <data name="SIM_KARTE_WPPRIO" xml:space="preserve">
     <value>HP prio {0}</value>
   </data>
@@ -1773,6 +1779,9 @@ Select file now?</value>
   <data name="SIMQ_ERDKOLLEKTOR_ANZEIGE" xml:space="preserve">
     <value>Ground collector {0} m</value>
   </data>
+  <data name="SIMQ_ERDREICH_AENDERUNG_HINWEIS" xml:space="preserve">
+    <value>Inputs changed — the design check still shows the last simulation run. Please restart the simulation.</value>
+  </data>
   <data name="SIMQ_ERDREICH_ANZAHL_SONDEN" xml:space="preserve">
     <value>Number of BHE:</value>
   </data>
@@ -1784,6 +1793,9 @@ Select file now?</value>
   </data>
   <data name="SIMQ_ERDREICH_BODENTYP_HINWEIS" xml:space="preserve">
     <value>(Catalogue VDI 4640 Part 1, draft 2021-12)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_BTN_SIMULATION" xml:space="preserve">
+    <value>Simulation</value>
   </data>
   <data name="SIMQ_ERDREICH_ENTZUG_KURZTEXT" xml:space="preserve">
     <value>Extraction {0} kWh/a{1}, peak {2} W, {3} h/a. </value>
@@ -1835,6 +1847,21 @@ for the design check according to VDI 4640 Part 2.</value>
   <data name="SIMQ_ERDREICH_MSG_LAENGE_NULL" xml:space="preserve">
     <value>The BHE length must be greater than 0 m!</value>
   </data>
+  <data name="SIMQ_ERDREICH_MSG_SIM_FEHLER" xml:space="preserve">
+    <value>The simulation run was aborted — the design check remains unchanged:
+
+{0}</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_SIM_OHNE_ERGEBNIS" xml:space="preserve">
+    <value>The simulation run completed but did not return any ground characteristics for this heat pump.
+
+This happens when the heat pump is not calculated (tool "Heat pump" deselected in the configuration) or when its source type in the database is not set to ground. The design check remains unchanged.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_SIM_OHNE_PROJEKT" xml:space="preserve">
+    <value>The project of this dialogue could not be determined — without a project reference no simulation run can be started.
+
+Please fill the design check via the project's simulation run.</value>
+  </data>
   <data name="SIMQ_ERDREICH_MSG_SPREIZUNG" xml:space="preserve">
     <value>Please enter a usable temperature spread greater than 0 K!
 It is an input variable for the frost check of the source.</value>
@@ -1866,6 +1893,9 @@ annual full-load hours from a simulation run.</value>
   </data>
   <data name="SIMQ_ERDREICH_RB_SONDE" xml:space="preserve">
     <value>Borehole heat exchanger</value>
+  </data>
+  <data name="SIMQ_ERDREICH_SIM_NUR_GESPEICHERT" xml:space="preserve">
+    <value>The run used the SAVED source data — the inputs changed here take effect only after "OK" and a new run. Limit value and probe metres are already calculated with the changed inputs.</value>
   </data>
   <data name="SIMQ_ERDREICH_SPEICHERLADUNG" xml:space="preserve">
     <value>Extracted energy and peak include the heat with which the heat pump charges the buffer storage.</value>
@@ -3972,5 +4002,50 @@ It then feeds the overview and the overall simulation. The existing simulation r
   </data>
   <data name="SIM_KARTE_PV_KWP" xml:space="preserve">
     <value>{0} kWp (calculated)</value>
+  </data>
+  <data name="SP_ERG_KERN_GRUPPE_ANLAGE" xml:space="preserve">
+    <value>System / variant</value>
+  </data>
+  <data name="SP_ERG_KERN_GRUPPE_ERGEBNIS" xml:space="preserve">
+    <value>Key results</value>
+  </data>
+  <data name="SP_ERG_KERN_KAPAZITAET" xml:space="preserve">
+    <value>Capacity [kWh]</value>
+  </data>
+  <data name="SP_ERG_KERN_LEISTUNG" xml:space="preserve">
+    <value>Charge/discharge power [kW]</value>
+  </data>
+  <data name="SP_ERG_KERN_SOC_PROZENT" xml:space="preserve">
+    <value>SoC band [%]</value>
+  </data>
+  <data name="SP_ERG_KERN_SOC_KWH" xml:space="preserve">
+    <value>SoC band [kWh]</value>
+  </data>
+  <data name="SP_ERG_KERN_BETRIEBSART" xml:space="preserve">
+    <value>Operating mode</value>
+  </data>
+  <data name="SP_ERG_KERN_BERECHNUNGSART" xml:space="preserve">
+    <value>Calculation mode</value>
+  </data>
+  <data name="SP_ERG_KERN_ERTRAG" xml:space="preserve">
+    <value>Yield E_a,eq [€/a]</value>
+  </data>
+  <data name="SP_ERG_KERN_UEBERSCHUSS" xml:space="preserve">
+    <value>Annual surplus ΔJ [€/a]</value>
+  </data>
+  <data name="SP_ERG_KERN_AMORTISATION" xml:space="preserve">
+    <value>Static payback [a]</value>
+  </data>
+  <data name="SP_ERG_KERN_VOLLZYKLEN" xml:space="preserve">
+    <value>Full cycles n_cyc [1/a]</value>
+  </data>
+  <data name="SP_ERG_KERN_EIGENVERBRAUCH" xml:space="preserve">
+    <value>Self-consumption rate [%]</value>
+  </data>
+  <data name="SP_ERG_KERN_AUTARKIE" xml:space="preserve">
+    <value>Self-sufficiency [%]</value>
+  </data>
+  <data name="SP_ERG_KERN_BEREICH" xml:space="preserve">
+    <value>{0} – {1}</value>
   </data>
 </root>

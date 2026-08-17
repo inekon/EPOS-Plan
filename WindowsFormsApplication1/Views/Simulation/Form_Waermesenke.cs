@@ -96,6 +96,40 @@ namespace WindowsFormsApplication1
         private Label _lblHinweis;
         private Button _btnPufferAnlegen;
 
+        // --- Parallelverbund (Paket Parallelverbund, Entscheidung 17.08.2026) ----------
+        //
+        // GEWÄHLTE VARIANTE: Der Leitspeicher bleibt das BESTEHENDE Dropdown je Ziel, die
+        // zusätzlichen Speicher kommen in EINER CheckedListBox darunter.
+        //
+        // Warum diese und nicht „erster Haken = Leitspeicher": Die drei Fugen des Dialogs
+        // (FuelleCombo, AktuelleId, AusOberflaeche) bleiben damit in ihrer Bedeutung
+        // unangetastet — das Dropdown ist weiterhin die Quelle von Daten.ID_Puffer, und
+        // die gesamte Bestandslogik daran (PufferWaehlen, AktuellerHauptPuffer,
+        // PositionsText, btnPufferAnlegen_Click, die Verwendungsfilterung in
+        // PufferListenLaden) rechnet unverändert weiter. Ein „erster Haken"-Modell hätte
+        // den Leitspeicher-Begriff in eine Liste ohne stabile Reihenfolge verlegt: Beim
+        // Abwählen des ersten Hakens wäre der Leitspeicher stillschweigend ein anderer
+        // geworden — und damit die ID, unter der Schwellen, Entladepriorität und die
+        // Ergebniszeile laufen. Hinzu kommt die Fachlage: Der Leitspeicher ist KEIN
+        // gleichrangiges Element, er trägt die Regelung des Verbunds. Zwei verschiedene
+        // Bedienelemente drücken diesen Unterschied aus, eine Hakenliste verwischt ihn.
+        //
+        // EINE Liste für alle drei Ziele (Heizung/Brauchwasser/Kombi) statt drei: Es kann
+        // ohnehin nur EIN Ziel gewählt sein, drei Listen wären dreimal dieselbe Fläche mit
+        // einem sichtbaren Steuerelement. Die Liste wird beim Zielwechsel neu befüllt —
+        // dieselbe Mechanik, die _cbPuffer2 über Puffer2ListeFuellen schon nutzt.
+        private GroupBox _gbVerbund;
+        private CheckedListBox _clbVerbund;
+        private Label _lblVerbundSumme;
+
+        /// <summary>
+        /// Die Puffer, die aktuell in <see cref="_clbVerbund"/> stehen — index-parallel zur
+        /// Liste. Das Gegenstück zu den <c>_puffer*</c>-Listen der Dropdowns; ohne sie wäre
+        /// aus einem Hakenindex keine Puffer-ID zu gewinnen.
+        /// </summary>
+        private List<WaermesenkeClass.PufferInfo> _verbundKandidaten =
+            new List<WaermesenkeClass.PufferInfo>();
+
         private List<WaermesenkeClass.PufferInfo> _pufferHeizung =
             new List<WaermesenkeClass.PufferInfo>();
         private List<WaermesenkeClass.PufferInfo> _pufferBrauchwasser =
@@ -233,11 +267,68 @@ namespace WindowsFormsApplication1
             gbHaupt.Controls.Add(_rbPufferKombi);
             gbHaupt.Controls.Add(_cbPufferKombi);
 
+            // --- Parallelverbund der Hauptsenke ---------------------------------------
+            //
+            // PAKET PARALLELVERBUND. Die Gruppe steht unmittelbar UNTER der Hauptsenke und
+            // ÜBER dem Ladeverhalten - das ist die Leserichtung der Fachfrage: erst welcher
+            // Speicher (Leitspeicher), dann welche zusätzlich (Verbund), dann wie geladen
+            // wird. Das Ladeverhalten gilt anschließend für den ganzen Verbund.
+            //
+            // ALLES DARUNTER RÜCKT um VERBUND_ZUWACHS. Die Bestandswerte bleiben als
+            // Summanden sichtbar (176, 326, 346, 488) - so ist an jeder Stelle ablesbar,
+            // was vorher dort stand, und ein späteres Entfernen der Gruppe wäre eine
+            // Rechnung ohne Rest. Dieselbe Denkweise wie der D5a-Kommentar zur ClientSize
+            // weiter oben.
+            const int VERBUND_OBEN = 176;
+            const int VERBUND_HOEHE = 138;
+            const int VERBUND_ZUWACHS = VERBUND_HOEHE + 8;
+
+            _gbVerbund = new GroupBox
+            {
+                Text = SIM_GB_VERBUND,
+                Location = new Point(12, VERBUND_OBEN),
+                Size = new Size(596, VERBUND_HOEHE)
+            };
+            this.Controls.Add(_gbVerbund);
+
+            Label lblVerbund = new Label
+            {
+                Text = SIM_LBL_VERBUND_ZUSATZ,
+                AutoSize = true,
+                Location = new Point(16, 20)
+            };
+
+            // CheckedListBox im Bestandsstil der Auswahlfelder: dieselbe Breite wie
+            // _cbPuffer2 (430 + Beschriftungsspalte), volle Gruppenbreite minus Rand.
+            // CheckOnClick, damit ein Klick genügt - ohne die Eigenschaft verlangt WinForms
+            // zwei Klicks (erst Auswahl, dann Haken), und das liest sich wie ein Defekt.
+            _clbVerbund = new CheckedListBox
+            {
+                Location = new Point(16, 40),
+                Size = new Size(564, 68),
+                CheckOnClick = true,
+                IntegralHeight = false
+            };
+            _clbVerbund.ItemCheck += VerbundHaken_Geaendert;
+
+            _lblVerbundSumme = new Label
+            {
+                AutoSize = false,
+                Location = new Point(16, 114),
+                Size = new Size(564, 16),
+                ForeColor = SystemColors.GrayText,
+                Text = ""
+            };
+
+            _gbVerbund.Controls.Add(lblVerbund);
+            _gbVerbund.Controls.Add(_clbVerbund);
+            _gbVerbund.Controls.Add(_lblVerbundSumme);
+
             // --- Ladeverhalten der Hauptsenke ----------------------------------------
             _gbLaden = new GroupBox
             {
                 Text = MyResource.Resource.SIM_GB_LADEVERHALTEN,
-                Location = new Point(12, 176),
+                Location = new Point(12, 176 + VERBUND_ZUWACHS),
                 Size = new Size(596, 140)
             };
             this.Controls.Add(_gbLaden);
@@ -297,7 +388,7 @@ namespace WindowsFormsApplication1
             {
                 Text = MyResource.Resource.SIM_CHK_ZWEITSENKE,
                 AutoSize = true,
-                Location = new Point(20, 326)
+                Location = new Point(20, 326 + VERBUND_ZUWACHS)
             };
             _chkZweitsenke.CheckedChanged += Auswahl_Geaendert;
             this.Controls.Add(_chkZweitsenke);
@@ -305,7 +396,7 @@ namespace WindowsFormsApplication1
             _gbZweitsenke = new GroupBox
             {
                 Text = "",
-                Location = new Point(12, 346),
+                Location = new Point(12, 346 + VERBUND_ZUWACHS),
                 Size = new Size(596, 132)
             };
             this.Controls.Add(_gbZweitsenke);
@@ -379,7 +470,7 @@ namespace WindowsFormsApplication1
             // Trenner, Knöpfe und ClientSize hängen an dem Ergebnis.
             const int HINWEIS_LINKS = 14;
             const int HINWEIS_BREITE = 390;
-            const int HINWEIS_OBEN = 488;
+            const int HINWEIS_OBEN = 488 + VERBUND_ZUWACHS;
             const int HINWEIS_MIN = 56;     // nie kleiner als der Bestand
             const int HINWEIS_MAX = 160;    // Notbremse gegen eine entgleiste Übersetzung
 
@@ -521,6 +612,127 @@ namespace WindowsFormsApplication1
             }
 
             AnzeigeAktualisieren();
+        }
+
+        // --- Parallelverbund: Liste, Haken und Summenanzeige --------------------------
+
+        /// <summary>
+        /// Füllt die Verbundliste mit den Puffern, die ZUSÄTZLICH zum Leitspeicher in
+        /// Frage kommen: dieselbe Verwendungsfilterung wie das Leit-Dropdown, ohne den
+        /// Leitspeicher selbst und ohne die Zweitsenke.
+        ///
+        /// <b>Dieselbe Filterung wie <see cref="PufferListenLaden"/></b> — die Liste greift
+        /// auf genau die Listen zu, die dort geladen wurden (SENKENZIEL-Sicht, nicht
+        /// Kanalsicht). Ein Verbund mischt keine Verwendungen: Ein Behälter, der als
+        /// Brauchwasserspeicher gepflegt ist, gehört nicht in den Heizungsvorrat, und
+        /// <c>WaermesenkeClass.Pruefen</c> weist genau das beim Speichern ab. Auswahl und
+        /// Validierung dürfen nicht auseinanderlaufen.
+        ///
+        /// <b>Der LEITSPEICHER fehlt in der Liste</b>, denn er ist schon Teil des Verbunds
+        /// (er ist der Vorratsbehälter, an dem die Regelung hängt). Beim Umschalten des
+        /// Leit-Dropdowns wandert er deshalb aus der Liste heraus, und der zuvor gewählte
+        /// Leitspeicher wandert hinein.
+        ///
+        /// <b>Die ZWEITSENKE fehlt ebenfalls</b>: Sie ist ein eigenes Ladeziel mit eigener
+        /// Priorität und Obergrenze und kann nicht gleichzeitig im Hauptvorrat stecken
+        /// (dieselbe Regel wie in <c>WaermesenkeClass.VerbundNormalisieren</c>). Sie aus der
+        /// Liste zu nehmen, ist freundlicher als eine Fehlermeldung beim Speichern.
+        ///
+        /// GESETZTE HAKEN BLEIBEN, soweit der Puffer noch in der Liste steht — Muster
+        /// <see cref="FuelleCombo"/>, das die alte Auswahl ebenso nachzieht.
+        /// </summary>
+        private void VerbundListeFuellen()
+        {
+            List<int> vorher = GewaehlteVerbundMitglieder();
+            int idLeit = AktuellerHauptPuffer();
+            int idZweit = _chkZweitsenke.Checked ? AktuelleId(_cbPuffer2) : 0;
+
+            _verbundKandidaten = new List<WaermesenkeClass.PufferInfo>();
+            foreach (WaermesenkeClass.PufferInfo p in Hauptsenkenliste())
+            {
+                if (p.ID == idLeit) continue;
+                if (idZweit > 0 && p.ID == idZweit) continue;
+                _verbundKandidaten.Add(p);
+            }
+
+            _clbVerbund.Items.Clear();
+            foreach (WaermesenkeClass.PufferInfo p in _verbundKandidaten)
+                _clbVerbund.Items.Add(p);
+
+            for (int i = 0; i < _verbundKandidaten.Count; i++)
+                if (vorher.Contains(_verbundKandidaten[i].ID))
+                    _clbVerbund.SetItemChecked(i, true);
+        }
+
+        /// <summary>Die Puffer-Liste des aktuell gewählten HAUPTSENKEN-Ziels.</summary>
+        private List<WaermesenkeClass.PufferInfo> Hauptsenkenliste()
+        {
+            if (_rbPufferBrauchwasser.Checked) return _pufferBrauchwasser;
+            if (_rbPufferKombi.Checked) return _pufferKombi;
+            if (_rbPufferHeizung.Checked) return _pufferHeizung;
+            return new List<WaermesenkeClass.PufferInfo>();
+        }
+
+        /// <summary>Die gehakten Verbundmitglieder als Puffer-IDs; nie <c>null</c>.</summary>
+        private List<int> GewaehlteVerbundMitglieder()
+        {
+            return GewaehlteVerbundMitglieder(-1, false);
+        }
+
+        /// <summary>
+        /// Wie <see cref="GewaehlteVerbundMitglieder()"/>, aber mit einem ERSATZZUSTAND für
+        /// genau einen Eintrag.
+        ///
+        /// Nötig für <see cref="VerbundHaken_Geaendert"/>: Das Ereignis
+        /// <c>CheckedListBox.ItemCheck</c> feuert, BEVOR der neue Hakenzustand im
+        /// Steuerelement steht. Ohne den Ersatz zeigte die Summenanzeige eine Zeile lang
+        /// den vorherigen Stand — also genau in dem Moment die falsche Zahl, in dem der
+        /// Anwender hinsieht.
+        /// </summary>
+        private List<int> GewaehlteVerbundMitglieder(int indexErsatz, bool gehaktErsatz)
+        {
+            List<int> ids = new List<int>();
+
+            for (int i = 0; i < _verbundKandidaten.Count; i++)
+            {
+                bool gehakt = i == indexErsatz ? gehaktErsatz : _clbVerbund.GetItemChecked(i);
+                if (gehakt) ids.Add(_verbundKandidaten[i].ID);
+            }
+
+            return ids;
+        }
+
+        /// <summary>
+        /// Schreibt die Summenzeile „Verbund: n Speicher · Q_max gesamt x kWh" bzw. den
+        /// Hinweis, dass kein Verbund gewählt ist.
+        ///
+        /// Die Kapazität kommt aus <c>WaermesenkeClass.VerbundKapazitaet</c> — derselben
+        /// Summe über die EINZELkapazitäten, mit der die Engine rechnet. Der Dialog
+        /// wiederholt die Formel nicht.
+        /// </summary>
+        private void VerbundSummeAnzeigen(List<int> mitglieder)
+        {
+            int idLeit = AktuellerHauptPuffer();
+
+            if (idLeit <= 0 || mitglieder == null || mitglieder.Count == 0)
+            {
+                _lblVerbundSumme.Text = idLeit > 0 ? SIM_VERBUND_KEIN_VERBUND : "";
+                return;
+            }
+
+            double q = WaermesenkeClass.VerbundKapazitaet(idLeit, mitglieder);
+            _lblVerbundSumme.Text = string.Format(SIM_VERBUND_SUMME,
+                                                  mitglieder.Count + 1, q.ToString("0.#"));
+        }
+
+        private void VerbundHaken_Geaendert(object sender, ItemCheckEventArgs e)
+        {
+            if (_aktualisiert) return;
+
+            // Positionstext MIT: Der Verbund ändert die Kapazität des Ladeziels, und die
+            // Ladeordnung-Vorschau nennt eine Obergrenze in Prozent davon. Ohne diesen
+            // Aufruf blieben Summenzeile und Positionsangabe verschieden aktuell.
+            VerbundSummeAnzeigen(GewaehlteVerbundMitglieder(e.Index, e.NewValue == CheckState.Checked));
         }
 
         private void PufferListenLaden()

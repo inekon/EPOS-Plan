@@ -285,12 +285,22 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Fragt beim Speichern der Konfiguration nach, wenn die Regel erfüllt ist und der
         /// Haken fehlt (Altbestand, SQL-Pflege). „Nein" wird wie eine bewusste Abwahl
-        /// behandelt und in diesem Dialog nicht noch einmal gefragt.
+        /// behandelt und in diesem Dialog nicht noch einmal gefragt
+        /// (<c>_kaskadeAutomatikZurueckgestellt</c>).
+        ///
+        /// <b>ABNAHMEBEFUND 3 — gefragt wird NUR, wenn die Kaskade noch aus ist.</b> Die
+        /// Vorbedingung stand schon immer als Lesezugriff da; sie ging trotzdem ins Leere,
+        /// weil der Delete/Insert-Zyklus in <c>btn_Speichern_Click</c> das Flag unmittelbar
+        /// vorher weggeschrieben hatte (dort behoben). Der Haken der Fußzeile kommt als
+        /// ZWEITER Riegel dazu: Er ist die Aussage, die der Anwender vor sich sieht — läuft
+        /// sie dem gespeicherten Stand davon, ist eine Rückfrage nach etwas, das laut
+        /// Bildschirm längst eingeschaltet ist, in jedem Fall falsch.
         /// </summary>
         private void KaskadeAutomatikBeimSpeichern()
         {
             if (m_ID_Projekt <= 0 || _kaskadeAutomatikZurueckgestellt) return;
             if (KonfigurationCtrl.KaskadeZweikanaligLesen(m_ID_Projekt)) return;
+            if (checkBox_KaskadeZweikanalig != null && checkBox_KaskadeZweikanalig.Checked) return;
             if (!KonfigurationCtrl.KaskadeNotwendig(m_ID_Projekt)) return;
 
             DialogResult wahl = MessageBox.Show(

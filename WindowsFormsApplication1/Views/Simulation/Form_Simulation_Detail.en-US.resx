@@ -914,4 +914,14 @@ The CHP unit follows the electricity demand. Surplus heat is buffered in the sto
 Without feed-in (zero export)
 The CHP unit never generates more electricity than the current own demand. The unit throttles back immediately as soon as the electricity demand is covered or the heat storage is full. No grid feed-in.</value>
   </data>
+  <!-- BHKW display catch-up: three display texts of the CHP result page. -->
+  <data name="SIMDET_BHKW_SPEICHERLADUNG" xml:space="preserve">
+    <value>of which into storage:</value>
+  </data>
+  <data name="SIMDET_BHKW_SPEICHERDECKUNG" xml:space="preserve">
+    <value>covered from storage:</value>
+  </data>
+  <data name="SIMDET_BHKW_SERIE_SPEICHERLADUNG" xml:space="preserve">
+    <value>Storage charging</value>
+  </data>
 </root>

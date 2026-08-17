@@ -49,12 +49,19 @@ namespace WindowsFormsApplication1
     /// mit Arbeitspaket AP4 (Preis- und Verguetungsmodell) hinzu und ist ebenso
     /// mehrteilig: 12a Aufschlagsspalten an energy_project_settings, 12b/12c die
     /// Preisreihen- und Kostenprofiltabellen, 12d die Vorbelegung der
-    /// Aufschlagskomponenten - nur fuer den Strom-Carrier.
+    /// Aufschlagskomponenten - nur fuer den Strom-Carrier. Schritt 13 kommt mit dem Paket
+    /// BHKW-REGULAER hinzu (Entscheidungen des Anwenders 17.08.2026): 13a die Spalte
+    /// Tab_Pufferspeicher.Schwelle_Reserve, 13b die beiden Vorbelegungen
+    /// Schwelle_Reserve = 10 und Leistungsgrenze = 30 - der vierte DML-Schritt neben 5, 7
+    /// und 9. Schritt 14 kommt mit dem Paket PARALLELVERBUND hinzu (Entscheidung des
+    /// Anwenders 17.08.2026) und legt die Zuordnungstabelle Z_AnlagePufferVerbund samt
+    /// Index und Beziehungen an - rein additives DDL, KEIN DML: eine leere Tabelle
+    /// bedeutet "kein Projekt hat einen Verbund" und damit exakt das bisherige Verhalten.
     /// </summary>
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 12;
+        public const int ZIEL_VERSION = 14;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -154,6 +161,54 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_12_PREISMODELL = 12;
 
+        /// <summary>
+        /// Nummer des Pakets BHKW-REGULÄR (Entscheidungen des Anwenders vom 17.08.2026,
+        /// Punkte 2 und 3).
+        ///
+        /// <b>Zwei Teile in EINER Version</b> — beide gehören zur BHKW-Umstellung und
+        /// dürfen nicht getrennt stehen bleiben:
+        ///   13a  additives DDL: die Spalte <c>Tab_Pufferspeicher.Schwelle_Reserve</c>
+        ///        (Mindestfüllstand/Notreserve [%]) aus dem Spaltenkatalog,
+        ///   13b  DML: Vorbelegung <c>Schwelle_Reserve = 10</c> für alle Zeilen ohne Wert
+        ///        UND Anhebung <c>Tab_Einstellungen.Leistungsgrenze = 30</c>, wo heute 0
+        ///        oder 1 steht.
+        ///
+        /// <b>Warum die Leistungsgrenze mitkommt.</b> Sie ist die untere Modulationsgrenze
+        /// der BHKW-Module in Prozent. Ein Wert 0 bedeutete für die Engine „nicht gesetzt"
+        /// und lief in den Fallback (bis zu diesem Paket 50 %, jetzt 30 %); eine 1 ist
+        /// keine sinnvolle Angabe, sondern der Rest einer Eingabemaske, deren Minimum
+        /// einmal bei 1 lag — 1 % Teillast gibt es an keinem Motor. Beides ist mit dem
+        /// neuen Rechenweg eine falsche Vorgabe, weil das BHKW jetzt gegen einen echten
+        /// Speicherraum moduliert. 30 % ist der Wert, den der Anwender festgelegt hat.
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): Das DDL geht über Vorhandenes
+        /// hinweg. Beide UPDATE-Anweisungen sind auf ihre eigenen Bedingungen
+        /// eingeschränkt (<c>IS NULL</c> bzw. <c>= 0 OR = 1</c>) — ein zweiter Lauf findet
+        /// keine Zeile mehr, und ein später vom Anwender gesetzter Wert wird niemals
+        /// überschrieben.
+        /// </summary>
+        public const int SCHRITT_13_BHKW_REGULAER = 13;
+
+        /// <summary>
+        /// Nummer des Pakets PARALLELVERBUND (Entscheidung des Anwenders vom 17.08.2026):
+        /// je Wärmeerzeuger dürfen MEHRERE Pufferspeicher parallel gewählt werden, gerechnet
+        /// als EIN gemeinsamer Wärmevorrat.
+        ///
+        /// <b>Ein Teil, rein additiv.</b> 14a die Tabelle
+        /// <c>Z_AnlagePufferVerbund</c> samt Index, 14b ihre beiden Beziehungen. Es gibt
+        /// KEIN DML: Der Leitspeicher steht weiterhin in <c>WS_ID_Puffer</c>, und die
+        /// zusätzlichen Mitglieder kann niemand aus Bestandsdaten erraten. Eine leere
+        /// Tabelle heißt „kein Projekt hat einen Verbund" — und das ist genau der heutige
+        /// Stand. Deshalb ist der Schritt auch der einzige bisher, der KEINEN
+        /// Bestandswert anfasst.
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): <c>Ddl</c> wertet „existiert
+        /// bereits" als Erfolg — Tabelle, Index und Beziehungen gehen über Vorhandenes
+        /// hinweg. Der Schritt ist damit für den Trockentest geeignet und läuft sowohl
+        /// von Stand 12 als auch von Stand 13 aus sauber durch.
+        /// </summary>
+        public const int SCHRITT_14_PARALLELVERBUND = 14;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -213,6 +268,28 @@ namespace WindowsFormsApplication1
         /// <c>Extrapolation_erlaubt = WAHR</c> erhalten haben.
         /// </summary>
         public static int DatenExtrapolationVorbelegt { get; private set; }
+
+        // --- Zählwerk des Pakets BHKW-Regulär aus Schritt 13 ---------------------------
+
+        /// <summary>13b: Pufferspeicher, die die Vorbelegung <c>Schwelle_Reserve = 10</c> erhalten haben.</summary>
+        public static int DatenReserveVorbelegt { get; private set; }
+
+        /// <summary>13b: Einstellungssätze, deren <c>Leistungsgrenze</c> von 0 bzw. 1 auf 30 angehoben wurde.</summary>
+        public static int DatenLeistungsgrenzeAngehoben { get; private set; }
+
+        // --- Zählwerk des Pakets Parallelverbund aus Schritt 14 -------------------------
+
+        /// <summary>
+        /// 14: Zeilen, die in <c>Z_AnlagePufferVerbund</c> STEHEN, nachdem der Schritt
+        /// gelaufen ist.
+        ///
+        /// Das ist ausdrücklich KEIN Änderungszähler — Schritt 14 schreibt keine Daten.
+        /// Der Wert beantwortet die Frage, die beim Nachweis wirklich zählt: „Rechnet in
+        /// dieser Datenbank überhaupt ein Verbund?" 0 belegt die Regressionszusage
+        /// (leere Tabelle ⇒ unverändertes Verhalten), ein Wert &gt; 0 sagt, wie viele
+        /// Mitgliedschaften der Lauf danach aggregiert.
+        /// </summary>
+        public static int DatenVerbundZeilen { get; private set; }
 
         // --- Zählwerk der Datenregel R7 aus Schritt 9 (Etappe E0) ---------------------
 
@@ -353,6 +430,20 @@ namespace WindowsFormsApplication1
                         "Preismodell: Aufschlagsspalten, Tab_Preisreihe(Daten), Tab_Kostenprofil, Vorbelegung (AP4)",
                         "Das Preis- und Vergütungsmodell konnte nicht angelegt werden.",
                         Schritt_12_Preismodell),
+
+            // PAKET BHKW-REGULÄR - Notreserve des Puffers und Leistungsuntergrenze der
+            //       BHKW-Module (Entscheidungen des Anwenders 17.08.2026, Punkte 2 und 3).
+            new Schritt(SCHRITT_13_BHKW_REGULAER,
+                        "BHKW-Regulär: Spalte Schwelle_Reserve, Vorbelegung 10 %, Leistungsgrenze 30 %",
+                        "Die Notreserve der Pufferspeicher bzw. die BHKW-Leistungsuntergrenze konnte nicht gesetzt werden.",
+                        Schritt_13_BhkwRegulaer),
+
+            // PAKET PARALLELVERBUND - Mehrfachauswahl von Pufferspeichern je Wärmeerzeuger
+            //       (Entscheidung des Anwenders 17.08.2026). Nur DDL, kein DML.
+            new Schritt(SCHRITT_14_PARALLELVERBUND,
+                        "Parallelverbund: Tabelle Z_AnlagePufferVerbund samt Index und Beziehungen",
+                        "Die Zuordnungstabelle für den Pufferverbund konnte nicht angelegt werden.",
+                        Schritt_14_Parallelverbund),
         };
 
         // =================================================================================
@@ -388,6 +479,9 @@ namespace WindowsFormsApplication1
             DatenSpVariantenAktiv = 0;
             DatenSpBandUebernommen = 0;
             DatenAufschlagVorbelegt = 0;
+            DatenReserveVorbelegt = 0;
+            DatenLeistungsgrenzeAngehoben = 0;
+            DatenVerbundZeilen = 0;
 
             var l = new Lauf();
             string dbPfad;
@@ -556,6 +650,21 @@ namespace WindowsFormsApplication1
             if (DatenAufschlagVorbelegt > 0)
                 l.Zeile("Preismodell 4.2 (AP4): " + DatenAufschlagVorbelegt +
                         " Strom-Energieträgerzeilen mit den Aufschlagsvorschlägen vorbelegt.");
+
+            if (DatenReserveVorbelegt > 0 || DatenLeistungsgrenzeAngehoben > 0)
+                l.Zeile("BHKW-Regulär (Schritt 13): " + DatenReserveVorbelegt +
+                        " Pufferspeicher mit Schwelle_Reserve = 10 %, " +
+                        DatenLeistungsgrenzeAngehoben +
+                        " Einstellungssätze mit Leistungsgrenze = 30 % (vorher 0 oder 1).");
+
+            // Schritt 14 meldet AUCH die 0 - anders als die Zeilen darüber. Sie ist hier
+            // die eigentliche Aussage: keine Verbundzeile heißt „dieser Lauf rechnet wie
+            // bisher", und genau das muss im Protokoll stehen, statt weggelassen zu werden.
+            l.Zeile("Parallelverbund (Schritt 14): " + DatenVerbundZeilen +
+                    " Zeilen in " + SchemaKatalog.Z_ANLAGEPUFFERVERBUND +
+                    (DatenVerbundZeilen == 0
+                        ? " - kein Projekt führt einen Pufferverbund, der Rechenweg bleibt unverändert."
+                        : " - so viele zusätzliche Verbundmitglieder gehen in die Aggregation ein."));
 
             return alleOk && StandNachher >= ZIEL_VERSION;
         }
@@ -1421,6 +1530,228 @@ namespace WindowsFormsApplication1
             ok &= AufschlagFlagVorbelegen(l);
 
             return ok;
+        }
+
+        /// <summary>
+        /// Schritt 13 (Paket BHKW-Regulär, Entscheidungen des Anwenders 17.08.2026):
+        /// Notreserve des Pufferspeichers und Leistungsuntergrenze der BHKW-Module.
+        ///
+        /// DREI TEILE, in dieser Reihenfolge:
+        ///
+        ///   1. <b>DDL, idempotent</b> — die Spalte
+        ///      <c>Tab_Pufferspeicher.Schwelle_Reserve</c> aus dem gemeinsamen Katalog,
+        ///      derselbe additive Weg wie Schritt 2. Auf einer Datenbank, deren
+        ///      Rückfallebene schon gelaufen ist, ein No-op („bereits vorhanden").
+        ///   2. <b>DML</b> — <c>Schwelle_Reserve = 10</c> für alle Zeilen, die noch keinen
+        ///      Wert tragen.
+        ///   3. <b>DML</b> — <c>Leistungsgrenze = 30</c> für alle Einstellungssätze, die
+        ///      heute 0 oder 1 tragen.
+        ///
+        /// WARUM DIE VORBELEGUNG DER RESERVE NÖTIG IST. <c>ADD COLUMN … DOUBLE</c> lässt
+        /// bestehende Zeilen in Access auf NULL. Für den Rechenkern hieße NULL „keine
+        /// Reserve" (die Leseseite bildet NULL auf 0 ab) — eine fachliche Aussage über
+        /// jeden Bestandsspeicher, die niemand getroffen hat. Die Entscheidung des
+        /// Anwenders lautet 10 % für Bestand UND Neuanlagen; nur so verhält sich ein
+        /// migrierter Speicher wie ein neu angelegter.
+        ///
+        /// WARUM DIE LEISTUNGSGRENZE MITKOMMT. Sie ist die untere Modulationsgrenze der
+        /// BHKW-Module in Prozent. 0 bedeutete für die Engine „nicht gesetzt" und lief in
+        /// den Fallback; 1 ist der Rest einer Eingabemaske mit Minimum 1 und an keinem
+        /// Motor eine sinnvolle Teillast. Mit dem neuen Rechenweg moduliert das BHKW gegen
+        /// einen echten Speicherraum, und beide Werte wären dort eine falsche Vorgabe.
+        /// Passend dazu ist der Engine-Fallback in <c>SimulationBHKW.Moduldaten_Einlesen</c>
+        /// von 50 % auf 30 % gesetzt — Migration und Fallback nennen damit denselben Wert.
+        ///
+        /// IDEMPOTENZ. Beide UPDATE-Anweisungen tragen ihre Einschränkung im WHERE. Ein
+        /// zweiter Lauf findet keine Zeile mehr; ein später vom Anwender geänderter Wert
+        /// wird nie überschrieben. Deshalb ist der Schritt auch für den Trockentest
+        /// geeignet: Er kann beliebig oft laufen, ohne etwas zu verschieben.
+        ///
+        /// TEILERFOLG IST FEHLER. Die beiden DML-Teile werden gesammelt (<c>ok &amp;=</c>)
+        /// statt beim ersten Fehler abzubrechen — so steht im Protokoll, was von den
+        /// beiden Vorbelegungen gelungen ist. Der Marker rückt nur bei vollem Erfolg vor.
+        /// </summary>
+        private static bool Schritt_13_BhkwRegulaer(Lauf l)
+        {
+            // --- 13a) Spalte Schwelle_Reserve -----------------------------------------
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt13_Mindestfuellstand)) return false;
+
+            // --- 13b) Vorbelegungen ---------------------------------------------------
+            bool ok = ReserveVorbelegen(l);
+            ok &= LeistungsgrenzeAnheben(l);
+
+            return ok;
+        }
+
+        /// <summary>
+        /// 13b, erster Teil: <c>Schwelle_Reserve = 10</c> für Puffer ohne Wert.
+        ///
+        /// Die Bedingung ist <c>IS NULL</c>, nicht <c>= 0</c>: Eine ausdrückliche 0 ist die
+        /// zulässige Aussage „dieser Speicher darf leergefahren werden", und sie stammt
+        /// dann vom Anwender. Nur das Fehlen eines Werts wird vorbelegt.
+        /// </summary>
+        private static bool ReserveVorbelegen(Lauf l)
+        {
+            int betroffen = NonQuery(l,
+                "UPDATE [" + SchemaKatalog.TAB_PUFFERSPEICHER + "] SET [" +
+                SchemaKatalog.SPALTE_SCHWELLE_RESERVE + "] = 10 WHERE [" +
+                SchemaKatalog.SPALTE_SCHWELLE_RESERVE + "] IS NULL");
+
+            if (betroffen < 0)
+            {
+                l.Notiz("Vorbelegung Schwelle_Reserve: UPDATE fehlgeschlagen");
+                return false;
+            }
+
+            DatenReserveVorbelegt = betroffen;
+            l.Notiz("Schwelle_Reserve: " + betroffen + " Pufferspeicher auf 10 % vorbelegt " +
+                    "(Mindestfüllstand/Notreserve, wirkt nur auf die BHKW-Entladung)");
+            return true;
+        }
+
+        /// <summary>
+        /// 13b, zweiter Teil: <c>Leistungsgrenze = 30</c>, wo 0 oder 1 steht.
+        ///
+        /// Die Spalte gehört zum BESTAND von <c>Tab_Einstellungen</c> (sie wird in
+        /// <c>KonfigurationCtrl.ReadSingle</c> über <c>row[21]</c> gelesen) und wird
+        /// deshalb NICHT angelegt, nur beschrieben. Steht dort ein vom Anwender gepflegter
+        /// Wert - also alles außer 0 und 1 -, bleibt er unangetastet.
+        /// </summary>
+        private static bool LeistungsgrenzeAnheben(Lauf l)
+        {
+            int betroffen = NonQuery(l,
+                "UPDATE [" + SchemaKatalog.TAB_EINSTELLUNGEN + "] SET [Leistungsgrenze] = 30 " +
+                "WHERE [Leistungsgrenze] = 0 OR [Leistungsgrenze] = 1");
+
+            if (betroffen < 0)
+            {
+                l.Notiz("Anhebung Leistungsgrenze: UPDATE fehlgeschlagen");
+                return false;
+            }
+
+            DatenLeistungsgrenzeAngehoben = betroffen;
+            l.Notiz("Leistungsgrenze: " + betroffen + " Einstellungssätze von 0 bzw. 1 auf 30 % " +
+                    "angehoben (untere Modulationsgrenze der BHKW-Module)");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 14 - Parallelverbund: Z_AnlagePufferVerbund (Entscheidung 17.08.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Die ZUSÄTZLICHEN Mitglieder eines Pufferverbunds, je Wärmeerzeuger-Anlage eine
+        /// Zeile pro Mitglied. Der LEITSPEICHER steht nicht hier, sondern unverändert in
+        /// <c>Tab_Energieanlagen.WS_ID_Puffer</c> — Begründung im Katalogeintrag
+        /// <see cref="SchemaKatalog.Z_ANLAGEPUFFERVERBUND"/>.
+        ///
+        /// <b>ID als LONG, nicht als AutoWert.</b> Der Auftrag nannte AUTOINCREMENT; das
+        /// Hausmuster für NEUE Tabellen ist seit ADR-001 aber die explizite Vergabe über
+        /// <c>MAX(ID)+1</c> (so <c>Tab_Preisreihe</c>, <c>Tab_Kostenprofil</c>,
+        /// <c>Tab_StromspeicherVariante</c>, <c>Tab_PreisreiheDaten</c> — dort ausdrücklich
+        /// begründet). Eine einzige Tabelle mit COUNTER wäre eine zweite Konvention im
+        /// selben Schema und ein Sonderfall für jeden künftigen Leser; der Gewinn wäre
+        /// null, weil der Controller die ID ohnehin über <c>DataRepository.GetMaxID</c>
+        /// zieht.
+        ///
+        /// <b>Keine DEFAULT-Werte auf den beiden FK-Spalten</b> — dieselbe Regel wie im
+        /// Spaltenkatalog: eine 0 verletzte die erzwungene Beziehung, „nicht gesetzt" wird
+        /// durch NULL ausgedrückt. Fachlich kommt das hier gar nicht vor: Eine Zeile ohne
+        /// Anlage oder ohne Puffer hat keine Bedeutung, und <c>AnlagePufferVerbundCtrl</c>
+        /// schreibt nur vollständige Paare.
+        /// </summary>
+        public const string SQL_CREATE_ANLAGEPUFFERVERBUND =
+            "CREATE TABLE Z_AnlagePufferVerbund (ID LONG NOT NULL PRIMARY KEY, " +
+            "ID_Anlage LONG, ID_Puffer LONG)";
+
+        /// <summary>
+        /// Index über den Anlagenverweis — der Suchweg des Dialogs (Mitglieder EINER
+        /// Anlage). Die Registry-Speisung liest projektweit über einen Verbund zu
+        /// <c>Tab_Energieanlagen</c> und profitiert davon ebenfalls.
+        /// </summary>
+        public const string SQL_INDEX_ANLAGEPUFFERVERBUND =
+            "CREATE INDEX idx_AnlagePufferVerbund ON Z_AnlagePufferVerbund (ID_Anlage)";
+
+        /// <summary>
+        /// Löschweitergabe von der ANLAGE auf ihre Verbundzeilen, Muster
+        /// <c>FK_SpVariante_Anlage</c>.
+        ///
+        /// <b>Warum hier CASCADE und nicht restriktiv.</b> Eine Verbundzeile ist ein
+        /// UNSELBSTÄNDIGER Anhang der Anlage — sie sagt nur, wie diese eine Anlage lädt.
+        /// Restriktiv würde das Löschen jeder Anlage mit Verbund blockieren und damit ein
+        /// bestehendes Bedienverhalten brechen (Anlage entfernen ist heute jederzeit
+        /// möglich); zurück blieben Waisen, die auf eine fremde Anlagen-ID zeigen, sobald
+        /// die MAX(ID)+1-Vergabe die Nummer erneut ausgibt. Genau diese Begründung trägt
+        /// schon <c>FK_SpVariante_Anlage</c>.
+        /// </summary>
+        public const string SQL_FK_VERBUND_ANLAGE =
+            "ALTER TABLE Z_AnlagePufferVerbund ADD CONSTRAINT FK_Verbund_Anlage " +
+            "FOREIGN KEY (ID_Anlage) REFERENCES Tab_Energieanlagen (ID) ON DELETE CASCADE";
+
+        /// <summary>
+        /// Verweis auf den PUFFER — RESTRIKTIV, Muster <see cref="FkRestriktiv"/> und damit
+        /// dieselbe Semantik wie <c>WS_ID_Puffer</c>/<c>WS_ID_Puffer2</c>.
+        ///
+        /// <b>Warum hier nicht CASCADE.</b> Ein Verbundmitglied ist ein echter Behälter mit
+        /// Kapazität, Investition und Wirtschaftlichkeitszeile. Verschwindet er
+        /// stillschweigend mit einem Löschklick, ändert sich die gerechnete Kapazität des
+        /// Verbunds, ohne dass jemand davon erfährt. Restriktiv erzwingt den
+        /// Anwendungsweg: <c>PufferSpCtrl.ReferenzenAufPuffer</c> meldet die
+        /// Verbundmitgliedschaft wie eine Haupt-/Zweitsenken-Referenz, und
+        /// <c>ReferenzenLoesen</c> räumt die Zeile ausdrücklich weg, wenn der Anwender das
+        /// Entfernen bestätigt.
+        /// </summary>
+        public const string SQL_FK_VERBUND_PUFFER =
+            "ALTER TABLE Z_AnlagePufferVerbund ADD CONSTRAINT FK_Verbund_Puffer " +
+            "FOREIGN KEY (ID_Puffer) REFERENCES Tab_Pufferspeicher (ID)";
+
+        /// <summary>
+        /// <b>Schritt 14 (Paket Parallelverbund).</b> Zwei Teile, Bauform wie Schritt 11b:
+        ///
+        ///   <b>14a</b> <c>Z_AnlagePufferVerbund</c> samt Index. HART: Ohne die Tabelle
+        ///   gibt es nichts zu beziehen, der Schritt bricht sofort ab.
+        ///
+        ///   <b>14b</b> die beiden Beziehungen. WEICH — genau wie
+        ///   <c>FK_SpVariante_Anlage</c>: Fehlt eine Beziehung auf einer fremden
+        ///   Datenbank (etwa weil <c>Tab_Energieanlagen</c> dort keinen eindeutigen Index
+        ///   auf ID trägt), bleibt die Ablage benutzbar. Das Aufräumen leistet dann der
+        ///   Anwendungsweg, der es ohnehin ausdrücklich tut
+        ///   (<c>PufferSpCtrl.ReferenzenLoesen</c>, <c>AnlagePufferVerbundCtrl.Schreiben</c>
+        ///   mit Delete/Insert). Ein Abbruch würde dagegen den Versionsmarker
+        ///   zurückhalten und den ganzen Lauf als gescheitert melden, obwohl der Verbund
+        ///   arbeitet.
+        ///
+        /// <b>Kein DML.</b> Siehe <see cref="SCHRITT_14_PARALLELVERBUND"/>: Der
+        /// Leitspeicher liegt schon richtig, und Mitglieder lassen sich aus Bestandsdaten
+        /// nicht erraten. Der Schritt zählt am Ende nur, was in der Tabelle steht.
+        /// </summary>
+        private static bool Schritt_14_Parallelverbund(Lauf l)
+        {
+            // --- 14a) Tabelle und Index ----------------------------------------------
+            if (!Ddl(l, SQL_CREATE_ANLAGEPUFFERVERBUND,
+                     "Tabelle " + SchemaKatalog.Z_ANLAGEPUFFERVERBUND)) return false;
+
+            if (!Ddl(l, SQL_INDEX_ANLAGEPUFFERVERBUND, "Index idx_AnlagePufferVerbund"))
+                l.Notiz("Index idx_AnlagePufferVerbund fehlt - nur ein Tempoverlust beim " +
+                        "Auflösen der Verbundmitglieder.");
+
+            // --- 14b) Beziehungen (weich, Begründung siehe Methodenkopf) --------------
+            if (!Ddl(l, SQL_FK_VERBUND_ANLAGE, "Beziehung FK_Verbund_Anlage (mit Löschweitergabe)"))
+                l.Notiz("Beziehung FK_Verbund_Anlage fehlt - Verbundzeilen gelöschter Anlagen " +
+                        "bleiben stehen; AnlagePufferVerbundCtrl räumt sie beim nächsten " +
+                        "Speichern der Senke weg.");
+
+            if (!Ddl(l, SQL_FK_VERBUND_PUFFER, "Beziehung FK_Verbund_Puffer (restriktiv)"))
+                l.Notiz("Beziehung FK_Verbund_Puffer fehlt - ein gelöschter Puffer könnte als " +
+                        "Verbundmitglied verwaisen; PufferSpCtrl.ReferenzenLoesen entfernt die " +
+                        "Zeile trotzdem ausdrücklich.");
+
+            // --- Nachweiszähler -------------------------------------------------------
+            object anzahl = Scalar(l, "SELECT COUNT(*) FROM [" +
+                                      SchemaKatalog.Z_ANLAGEPUFFERVERBUND + "]");
+            DatenVerbundZeilen = anzahl == null ? 0 : Convert.ToInt32(anzahl);
+
+            return true;
         }
 
         /// <summary>

@@ -196,8 +196,6 @@
             comboBox_NetzvEinheit = new System.Windows.Forms.ComboBox();
             tabPage_BHKW_Parameter = new System.Windows.Forms.TabPage();
             richTextBox_Info = new System.Windows.Forms.RichTextBox();
-            label56 = new System.Windows.Forms.Label();
-            numericUpDown_Volumen = new System.Windows.Forms.NumericUpDown();
             groupBox_BHKWBetriebsart = new System.Windows.Forms.GroupBox();
             radioButton_OhneStromEinspeisung = new System.Windows.Forms.RadioButton();
             radioButton_Waermegefuehrt = new System.Windows.Forms.RadioButton();
@@ -364,7 +362,6 @@
             tabControl_Einstellungen.SuspendLayout();
             tabPage_Bedarf_Parameter.SuspendLayout();
             tabPage_BHKW_Parameter.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)numericUpDown_Volumen).BeginInit();
             groupBox_BHKWBetriebsart.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDown_UnteresteLG).BeginInit();
             tabPage_Stromspeicher_Parameter.SuspendLayout();
@@ -1525,8 +1522,9 @@
             // 
             tabPage_BHKW_Parameter.BackColor = System.Drawing.Color.White;
             tabPage_BHKW_Parameter.Controls.Add(richTextBox_Info);
-            tabPage_BHKW_Parameter.Controls.Add(label56);
-            tabPage_BHKW_Parameter.Controls.Add(numericUpDown_Volumen);
+            // PAKET BHKW-REGULÄR: label56 und numericUpDown_Volumen („Volumen
+            // Pendelspeicher [l]") sind entfallen - der Speicher wird über die
+            // Pufferverwaltung gepflegt (Form_Simulation_Detail.cs, Begründung dort).
             tabPage_BHKW_Parameter.Controls.Add(groupBox_BHKWBetriebsart);
             tabPage_BHKW_Parameter.Controls.Add(label54);
             tabPage_BHKW_Parameter.Controls.Add(numericUpDown_UnteresteLG);
@@ -1539,20 +1537,7 @@
             resources.ApplyResources(richTextBox_Info, "richTextBox_Info");
             richTextBox_Info.ForeColor = System.Drawing.Color.DarkGreen;
             richTextBox_Info.Name = "richTextBox_Info";
-            // 
-            // label56
-            // 
-            resources.ApplyResources(label56, "label56");
-            label56.Name = "label56";
-            // 
-            // numericUpDown_Volumen
-            // 
-            numericUpDown_Volumen.DecimalPlaces = 1;
-            resources.ApplyResources(numericUpDown_Volumen, "numericUpDown_Volumen");
-            numericUpDown_Volumen.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
-            numericUpDown_Volumen.Name = "numericUpDown_Volumen";
-            numericUpDown_Volumen.Leave += numericUpDown_Volumen_Leave;
-            // 
+            //
             // groupBox_BHKWBetriebsart
             // 
             groupBox_BHKWBetriebsart.Controls.Add(radioButton_OhneStromEinspeisung);
@@ -2782,7 +2767,6 @@
             tabPage_Bedarf_Parameter.PerformLayout();
             tabPage_BHKW_Parameter.ResumeLayout(false);
             tabPage_BHKW_Parameter.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)numericUpDown_Volumen).EndInit();
             groupBox_BHKWBetriebsart.ResumeLayout(false);
             groupBox_BHKWBetriebsart.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDown_UnteresteLG).EndInit();
@@ -3001,8 +2985,7 @@
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.RichTextBox richTextBox_Info;
-        private System.Windows.Forms.Label label56;
-        private System.Windows.Forms.NumericUpDown numericUpDown_Volumen;
+        // PAKET BHKW-REGULÄR: label56 und numericUpDown_Volumen entfallen (siehe oben).
         private System.Windows.Forms.GroupBox groupBox_BHKWBetriebsart;
         private System.Windows.Forms.RadioButton radioButton_OhneStromEinspeisung;
         private System.Windows.Forms.RadioButton radioButton_Waermegefuehrt;

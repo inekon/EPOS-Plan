@@ -252,22 +252,36 @@ namespace WindowsFormsApplication1
         /// Klick und Doppelklick auf JEDES Kind bedienen die Karte — außer auf ✎, das
         /// seinen eigenen Klick behält. Ohne den Durchgriff wäre nur der schmale freie
         /// Streifen zwischen den Beschriftungen anklickbar.
+        ///
+        /// <b>Abnahmebefund 2 — erst abmelden, dann anmelden.</b> Die Methode läuft
+        /// ZWEIMAL über dieselben Steuerelemente: einmal aus dem Konstruktor und einmal
+        /// am Ende von <see cref="Setzen"/> (für die dort neu entstandenen Chips und
+        /// Detailzeilen). Ohne das Abmelden trugen alle im Konstruktor angelegten Kinder
+        /// — Pfeil, Name, Kopfchips, Bilanz — den Handler DOPPELT. Ein Klick meldete
+        /// <see cref="Umschalten"/> dann zweimal, und die Konfigurationsseite klappte die
+        /// Karte auf und unmittelbar wieder zu: am Bildschirm passierte nichts. Im
+        /// Harness gemessen: „Umschalten-Auslösungen durch EINEN Pfeilklick: 2",
+        /// Kartenhöhe unverändert 41 px trotz sechs Detailzeilen.
         /// </summary>
         private void KlickDurchreichen(Control c)
         {
             foreach (Control k in c.Controls)
             {
                 if (ReferenceEquals(k, _lnkEdit)) continue;
-                k.Click += ZeileGeklickt;
-                k.DoubleClick += KarteDoppelklick;
+                Anmelden(k);
                 KlickDurchreichen(k);
             }
 
-            if (ReferenceEquals(c, this))
-            {
-                c.Click += ZeileGeklickt;
-                c.DoubleClick += KarteDoppelklick;
-            }
+            if (ReferenceEquals(c, this)) Anmelden(c);
+        }
+
+        /// <summary>Meldet die beiden Kartenhandler genau EINMAL an.</summary>
+        private void Anmelden(Control c)
+        {
+            c.Click -= ZeileGeklickt;
+            c.Click += ZeileGeklickt;
+            c.DoubleClick -= KarteDoppelklick;
+            c.DoubleClick += KarteDoppelklick;
         }
 
         private void ZeileGeklickt(object sender, EventArgs e)
