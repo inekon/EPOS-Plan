@@ -63,6 +63,8 @@
             label4 = new System.Windows.Forms.Label();
             label_Type = new System.Windows.Forms.Label();
             btn_Admin = new System.Windows.Forms.Button();
+            label19 = new System.Windows.Forms.Label();
+            cmbBrennstoffArt = new System.Windows.Forms.ComboBox();
             groupBox1.SuspendLayout();
             SuspendLayout();
             // 
@@ -160,6 +162,8 @@
             // groupBox1
             // 
             groupBox1.BackColor = System.Drawing.Color.White;
+            groupBox1.Controls.Add(label19);
+            groupBox1.Controls.Add(cmbBrennstoffArt);
             groupBox1.Controls.Add(checkBox_Brennwert);
             groupBox1.Controls.Add(label3);
             groupBox1.Controls.Add(textBox_Investitionskosten);
@@ -292,6 +296,17 @@
             btn_Admin.UseVisualStyleBackColor = true;
             btn_Admin.Click += btn_Admin_Click;
             // 
+            // label19
+            // 
+            resources.ApplyResources(label19, "label19");
+            label19.Name = "label19";
+            // 
+            // cmbBrennstoffArt
+            // 
+            cmbBrennstoffArt.FormattingEnabled = true;
+            resources.ApplyResources(cmbBrennstoffArt, "cmbBrennstoffArt");
+            cmbBrennstoffArt.Name = "cmbBrennstoffArt";
+            // 
             // Form_Heizkessel
             // 
             resources.ApplyResources(this, "$this");
@@ -363,5 +378,7 @@
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.ComboBox cmbBrennstoffArt;
     }
 }
