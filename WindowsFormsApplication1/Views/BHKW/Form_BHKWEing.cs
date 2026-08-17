@@ -340,6 +340,15 @@ namespace WindowsFormsApplication1
             textBox_Vorlauf.Text = m.Vorlauf.ToString();
             textBox_Ruecklauf.Text = m.Ruecklauf.ToString();
 
+            // Lädt die Namen aus Tab_Brennstoff_Stamm in die ComboBox
+            string code = "Gas";
+            string szBrennstoff = "Stadtgas";
+            string sql = "SELECT id, name FROM energy_carrier where group_code = '" + code + "' ORDER BY name";
+            cmbBrennstoffArt.DataSource = DataRepository.GetDataTable(sql);
+            cmbBrennstoffArt.DisplayMember = "name";
+            cmbBrennstoffArt.ValueMember = "id";
+            cmbBrennstoffArt.Text = szBrennstoff;
+  
             dataGridView1.ClearSelection();
         }
 

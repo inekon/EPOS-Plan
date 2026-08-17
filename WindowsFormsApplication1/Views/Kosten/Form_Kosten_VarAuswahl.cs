@@ -40,8 +40,7 @@ namespace WindowsFormsApplication1
             cmbBrennstoffArt.DisplayMember = "Bezeichner";
             cmbBrennstoffArt.ValueMember = "ID";
             cmbBrennstoffArt.Text = m_szBrennstoff;
-            cmbBrennstoffArt.Text = m_szBrennstoff;
-
+      
             sql = "SELECT energy_carrier.id, energy_carrier.name, energy_carrier.code, " +
                 "energy_carrier.ID_Brennstoff FROM energy_carrier WHERE " +
                 "energy_carrier.name <> [energy_carrier.code] and energy_carrier.group_code='" + m_szKategorie + "'";

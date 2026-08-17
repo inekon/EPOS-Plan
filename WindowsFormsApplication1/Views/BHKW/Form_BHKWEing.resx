@@ -232,7 +232,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="listBox_Auswahl.Size" type="System.Drawing.Size, System.Drawing">
-    <value>307, 157</value>
+    <value>307, 130</value>
   </data>
   <data name="listBox_Auswahl.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -799,6 +799,60 @@
   <data name="&gt;&gt;label3.ZOrder" xml:space="preserve">
     <value>7</value>
   </data>
+  <data name="label19.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label19.Location" type="System.Drawing.Point, System.Drawing">
+    <value>13, 134</value>
+  </data>
+  <data name="label19.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label19.Size" type="System.Drawing.Size, System.Drawing">
+    <value>70, 17</value>
+  </data>
+  <data name="label19.TabIndex" type="System.Int32, mscorlib">
+    <value>74</value>
+  </data>
+  <data name="label19.Text" xml:space="preserve">
+    <value>Brennstoff:</value>
+  </data>
+  <data name="&gt;&gt;label19.Name" xml:space="preserve">
+    <value>label19</value>
+  </data>
+  <data name="&gt;&gt;label19.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label19.Parent" xml:space="preserve">
+    <value>panel1</value>
+  </data>
+  <data name="&gt;&gt;label19.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="cmbBrennstoffArt.Location" type="System.Drawing.Point, System.Drawing">
+    <value>143, 134</value>
+  </data>
+  <data name="cmbBrennstoffArt.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="cmbBrennstoffArt.Size" type="System.Drawing.Size, System.Drawing">
+    <value>208, 25</value>
+  </data>
+  <data name="cmbBrennstoffArt.TabIndex" type="System.Int32, mscorlib">
+    <value>73</value>
+  </data>
+  <data name="&gt;&gt;cmbBrennstoffArt.Name" xml:space="preserve">
+    <value>cmbBrennstoffArt</value>
+  </data>
+  <data name="&gt;&gt;cmbBrennstoffArt.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;cmbBrennstoffArt.Parent" xml:space="preserve">
+    <value>panel1</value>
+  </data>
+  <data name="&gt;&gt;cmbBrennstoffArt.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
   <data name="label2.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -809,7 +863,7 @@
     <value>NoControl</value>
   </data>
   <data name="label2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>13, 130</value>
+    <value>15, 162</value>
   </data>
   <data name="label2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -836,7 +890,7 @@
     <value>panel1</value>
   </data>
   <data name="&gt;&gt;label2.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>2</value>
   </data>
   <data name="Label12.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -875,7 +929,7 @@
     <value>panel1</value>
   </data>
   <data name="&gt;&gt;Label12.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>3</value>
   </data>
   <data name="Label10.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -914,7 +968,7 @@
     <value>panel1</value>
   </data>
   <data name="&gt;&gt;Label10.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>4</value>
   </data>
   <data name="textBox_Name.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -944,7 +998,7 @@
     <value>panel1</value>
   </data>
   <data name="&gt;&gt;textBox_Name.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>5</value>
   </data>
   <data name="textBox_Leistung_th.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -974,13 +1028,13 @@
     <value>panel1</value>
   </data>
   <data name="&gt;&gt;textBox_Leistung_th.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>6</value>
   </data>
   <data name="textBox_Beschreibung.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9pt</value>
   </data>
   <data name="textBox_Beschreibung.Location" type="System.Drawing.Point, System.Drawing">
-    <value>16, 152</value>
+    <value>16, 182</value>
   </data>
   <data name="textBox_Beschreibung.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>5, 5, 5, 5</value>
@@ -1007,7 +1061,7 @@
     <value>panel1</value>
   </data>
   <data name="&gt;&gt;textBox_Beschreibung.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>7</value>
   </data>
   <data name="textBox_Firma.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -1037,7 +1091,7 @@
     <value>panel1</value>
   </data>
   <data name="&gt;&gt;textBox_Firma.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>8</value>
   </data>
   <data name="textBox_Leistung_el.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -1067,7 +1121,7 @@
     <value>panel1</value>
   </data>
   <data name="&gt;&gt;textBox_Leistung_el.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>9</value>
   </data>
   <data name="Label14.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1106,7 +1160,7 @@
     <value>panel1</value>
   </data>
   <data name="&gt;&gt;Label14.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>10</value>
   </data>
   <data name="Label15.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1145,7 +1199,7 @@
     <value>panel1</value>
   </data>
   <data name="&gt;&gt;Label15.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>11</value>
   </data>
   <data name="Label16.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1184,7 +1238,7 @@
     <value>panel1</value>
   </data>
   <data name="&gt;&gt;Label16.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>12</value>
   </data>
   <data name="Label11.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1223,13 +1277,13 @@
     <value>panel1</value>
   </data>
   <data name="&gt;&gt;Label11.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>13</value>
   </data>
   <data name="panel1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>14, 226</value>
+    <value>14, 198</value>
   </data>
   <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>376, 221</value>
+    <value>376, 249</value>
   </data>
   <data name="panel1.TabIndex" type="System.Int32, mscorlib">
     <value>79</value>

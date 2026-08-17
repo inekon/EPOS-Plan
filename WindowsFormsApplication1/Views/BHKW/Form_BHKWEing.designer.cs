@@ -1,4 +1,4 @@
-namespace WindowsFormsApplication1
+ï»¿namespace WindowsFormsApplication1
 {
     partial class Form_BHKWEing
     {
@@ -10,7 +10,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Verwendete Ressourcen bereinigen.
         /// </summary>
-        /// <param name="disposing">True, wenn verwaltete Ressourcen gelöscht werden sollen; andernfalls False.</param>
+        /// <param name="disposing">True, wenn verwaltete Ressourcen gelÃ¶scht werden sollen; andernfalls False.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -23,8 +23,8 @@ namespace WindowsFormsApplication1
         #region Vom Windows Form-Designer generierter Code
 
         /// <summary>
-        /// Erforderliche Methode für die Designerunterstützung.
-        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// Erforderliche Methode fÃ¼r die DesignerunterstÃ¼tzung.
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geÃ¤ndert werden.
         /// </summary>
         private void InitializeComponent()
         {
@@ -42,7 +42,7 @@ namespace WindowsFormsApplication1
             comboBox_Leistung = new System.Windows.Forms.ComboBox();
             btn_DBBHKW_Edit = new System.Windows.Forms.Button();
             btn_DBBHKW_Neu = new System.Windows.Forms.Button();
-            btn_DBBHKW_Löschen = new System.Windows.Forms.Button();
+            btn_DBBHKW_LÃ¶schen = new System.Windows.Forms.Button();
             btn_OK = new System.Windows.Forms.Button();
             Label7 = new System.Windows.Forms.Label();
             Label8 = new System.Windows.Forms.Label();
@@ -52,6 +52,8 @@ namespace WindowsFormsApplication1
             label_Type = new System.Windows.Forms.Label();
             label3 = new System.Windows.Forms.Label();
             panel1 = new System.Windows.Forms.Panel();
+            label19 = new System.Windows.Forms.Label();
+            cmbBrennstoffArt = new System.Windows.Forms.ComboBox();
             label2 = new System.Windows.Forms.Label();
             Label12 = new System.Windows.Forms.Label();
             Label10 = new System.Windows.Forms.Label();
@@ -109,7 +111,7 @@ namespace WindowsFormsApplication1
             resources.ApplyResources(btn_Entfernen, "btn_Entfernen");
             btn_Entfernen.Name = "btn_Entfernen";
             btn_Entfernen.UseVisualStyleBackColor = true;
-            btn_Entfernen.Click += btn_BHKW_Löschen_Click;
+            btn_Entfernen.Click += btn_BHKW_LÃ¶schen_Click;
             // 
             // textBox__M_GrenzL
             // 
@@ -156,12 +158,12 @@ namespace WindowsFormsApplication1
             btn_DBBHKW_Neu.UseVisualStyleBackColor = true;
             btn_DBBHKW_Neu.Click += btn_DBBHKW_Neu_Click;
             // 
-            // btn_DBBHKW_Löschen
+            // btn_DBBHKW_LÃ¶schen
             // 
-            resources.ApplyResources(btn_DBBHKW_Löschen, "btn_DBBHKW_Löschen");
-            btn_DBBHKW_Löschen.Name = "btn_DBBHKW_Löschen";
-            btn_DBBHKW_Löschen.UseVisualStyleBackColor = true;
-            btn_DBBHKW_Löschen.Click += btn_DBBHKW_Löschen_Click;
+            resources.ApplyResources(btn_DBBHKW_LÃ¶schen, "btn_DBBHKW_LÃ¶schen");
+            btn_DBBHKW_LÃ¶schen.Name = "btn_DBBHKW_LÃ¶schen";
+            btn_DBBHKW_LÃ¶schen.UseVisualStyleBackColor = true;
+            btn_DBBHKW_LÃ¶schen.Click += btn_DBBHKW_LÃ¶schen_Click;
             // 
             // btn_OK
             // 
@@ -219,6 +221,8 @@ namespace WindowsFormsApplication1
             // panel1
             // 
             panel1.BackColor = System.Drawing.Color.White;
+            panel1.Controls.Add(label19);
+            panel1.Controls.Add(cmbBrennstoffArt);
             panel1.Controls.Add(label2);
             panel1.Controls.Add(Label12);
             panel1.Controls.Add(Label10);
@@ -233,6 +237,17 @@ namespace WindowsFormsApplication1
             panel1.Controls.Add(Label11);
             resources.ApplyResources(panel1, "panel1");
             panel1.Name = "panel1";
+            // 
+            // label19
+            // 
+            resources.ApplyResources(label19, "label19");
+            label19.Name = "label19";
+            // 
+            // cmbBrennstoffArt
+            // 
+            cmbBrennstoffArt.FormattingEnabled = true;
+            resources.ApplyResources(cmbBrennstoffArt, "cmbBrennstoffArt");
+            cmbBrennstoffArt.Name = "cmbBrennstoffArt";
             // 
             // label2
             // 
@@ -370,7 +385,7 @@ namespace WindowsFormsApplication1
             Controls.Add(comboBox_Leistung);
             Controls.Add(btn_DBBHKW_Edit);
             Controls.Add(btn_DBBHKW_Neu);
-            Controls.Add(btn_DBBHKW_Löschen);
+            Controls.Add(btn_DBBHKW_LÃ¶schen);
             Controls.Add(btn_OK);
             Controls.Add(Label7);
             Controls.Add(Label8);
@@ -400,7 +415,7 @@ private System.Windows.Forms.ComboBox comboBox_Brennstoff;
 private System.Windows.Forms.ComboBox comboBox_Leistung;
 private System.Windows.Forms.Button btn_DBBHKW_Edit;
 private System.Windows.Forms.Button btn_DBBHKW_Neu;
-private System.Windows.Forms.Button btn_DBBHKW_Löschen;
+private System.Windows.Forms.Button btn_DBBHKW_LÃ¶schen;
 private System.Windows.Forms.Button btn_OK;
 private System.Windows.Forms.Label Label7;
 private System.Windows.Forms.Label Label8;
@@ -428,5 +443,7 @@ private System.Windows.Forms.TextBox textBox_Summe_Leistung;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.TextBox textBox_Vorlauf;
         private System.Windows.Forms.TextBox textBox_Ruecklauf;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.ComboBox cmbBrennstoffArt;
     }
 }
