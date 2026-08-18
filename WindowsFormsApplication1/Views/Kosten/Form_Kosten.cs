@@ -36,6 +36,12 @@ namespace WindowsFormsApplication1
         private readonly Dictionary<string, string> _betriebsHinweis =
             new Dictionary<string, string>(StringComparer.Ordinal);
 
+        /// <summary>
+        /// Sperrt den Aufbau des Energieträger-Blocks, solange
+        /// <see cref="FillCarrierComboBox"/> die Liste an die Daten bindet.
+        /// </summary>
+        private bool _traegerlisteWirdGefuellt;
+
         // Variable für den Extender des aktuellen Formulars
         private HelpExtender _helpExtender;
 
@@ -1085,6 +1091,10 @@ namespace WindowsFormsApplication1
 
         private void listBox_Energieträger_SelectedIndexChanged(object sender, EventArgs e)
         {
+            // Während des Befüllens ist jede Auswahl eine Nebenwirkung der Bindung und
+            // keine Entscheidung des Anwenders — Begründung bei FillCarrierComboBox().
+            if (_traegerlisteWirdGefuellt) return;
+
             if (listBox_Energieträger.SelectedItem is EnergyCarrier selectedCarrier)
             {
                 flpContainer_Energiekosten.Controls.Clear();
@@ -1172,17 +1182,59 @@ namespace WindowsFormsApplication1
             return carriers;
         }
 
+        /// <summary>
+        /// Füllt die Energieträgerliste des Projekts — <b>ohne</b> Auswahl und damit
+        /// ohne Energieträger-Block im Panel.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum die Sperre.</b> Die Bindung meldet unterwegs Auswahlen, die keine
+        /// sind: <c>DataSource=</c> setzt die ListBox auf Zeile 0 (ein
+        /// <c>SelectedIndexChanged</c>), <c>DisplayMember=</c> baut die Anzeige neu und
+        /// meldet dabei zweimal erneut Zeile 0, erst <c>SelectedIndex = -1</c> nimmt die
+        /// Auswahl zurück. Der Behandler baute daraus <b>dreimal</b> ein
+        /// <c>ucFuelSettings</c> samt <c>ucStromAufschlaege</c> — jedes mit eigenen
+        /// Lesezugriffen auf die Datenbank — von denen keines übrig bleiben sollte.
+        /// Nachgewiesen am 18.08.2026 für die Projekte 1017 und 1023: drei Aufrufe von
+        /// <c>StromAufschlagCtrl.StelleSpaltenSicher</c> je <c>new Form_Kosten(id)</c>.
+        /// Seit Commit 87483b4 (Fehlerdialoge beseitigt) fiel das nicht mehr auf, die
+        /// dreifache Arbeit blieb.
+        /// </para>
+        /// <para>
+        /// Gleiches Mittel wie in <c>ucStromAufschlaege</c> (<c>_laden</c>): eine Sperre,
+        /// die nur das programmatische Befüllen stummschaltet. Die echte Anwenderauswahl
+        /// läuft unverändert durch den Behandler — auch die Zuweisung aus
+        /// <see cref="btn_Carrier_Click"/> nach dem Anlegen eines Trägers, die erst
+        /// <b>nach</b> dem Befüllen erfolgt.
+        /// </para>
+        /// </remarks>
         private void FillCarrierComboBox()
         {
             // Daten holen
             List<EnergyCarrier> allCarriers = GetAllCarriers(m_ID_Projekt);
-            // ComboBox konfigurieren
-            listBox_Energieträger.DataSource = allCarriers;
-            // Darstellung
-            listBox_Energieträger.DisplayMember = "Name";
-            // Welcher Wert soll im Hintergrund identifizieren?
-            listBox_Energieträger.ValueMember = "Id";
-            listBox_Energieträger.SelectedIndex = -1; // Start ohne Auswahl 
+
+            _traegerlisteWirdGefuellt = true;
+            try
+            {
+                // ComboBox konfigurieren
+                listBox_Energieträger.DataSource = allCarriers;
+                // Darstellung
+                listBox_Energieträger.DisplayMember = "Name";
+                // Welcher Wert soll im Hintergrund identifizieren?
+                listBox_Energieträger.ValueMember = "Id";
+                listBox_Energieträger.SelectedIndex = -1; // Start ohne Auswahl
+            }
+            finally
+            {
+                _traegerlisteWirdGefuellt = false;
+            }
+
+            // Keine Auswahl, also auch kein Block: Bisher blieb der zuletzt während der
+            // Bindung gebaute Block im Panel stehen, obwohl in der Liste nichts markiert
+            // war. Im Konstruktor räumte ihn RenderEnergieTab() zufällig weg, nach
+            // „Hinzufügen" ohne Treffer blieb er sichtbar — und wurde beim Schließen
+            // (OnFormClosing) sogar gespeichert.
+            flpContainer_Energiekosten.Controls.Clear();
         }
 
         private string CreateNewEnergyCarrier()
