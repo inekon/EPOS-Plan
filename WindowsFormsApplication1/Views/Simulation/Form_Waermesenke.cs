@@ -623,6 +623,16 @@ namespace WindowsFormsApplication1
                 PrioWaehlen(_cbLadeprio2, Daten.Ladeprio2);
                 _chkLadegrenze2.Checked = Daten.Ladegrenze2 > 0;
                 if (Daten.Ladegrenze2 > 0) _tbLadegrenze2.Text = Daten.Ladegrenze2.ToString("0.#");
+
+                // PAKET PARALLELVERBUND — ZULETZT: Die Liste schließt Leitspeicher und
+                // Zweitsenke aus, und beide stehen erst jetzt fest. Der Aufbau der Liste und
+                // das Setzen der Haken sind zwei Schritte, weil die Liste die vorherige
+                // Auswahl nachzieht (VerbundListeFuellen) - beim ERSTEN Öffnen gibt es die
+                // noch nicht, sie kommt aus Daten.VerbundMitglieder.
+                VerbundListeFuellen();
+                for (int i = 0; i < _verbundKandidaten.Count; i++)
+                    _clbVerbund.SetItemChecked(
+                        i, Daten.VerbundMitglieder.Contains(_verbundKandidaten[i].ID));
             }
             finally
             {
@@ -863,6 +873,23 @@ namespace WindowsFormsApplication1
                 finally { _aktualisiert = false; }
             }
 
+            // PAKET PARALLELVERBUND: Die Kandidatenliste hängt am gewählten ZIEL
+            // (Verwendungsfilter), am LEITSPEICHER und an der ZWEITSENKE - alle drei
+            // stellen diese Bedienelemente ein. Sie neu aufzubauen ist billig (die
+            // Puffer-Listen sind schon geladen) und hält Auswahl und Fachregel beisammen.
+            // Der Wächter _aktualisiert verhindert, dass das Setzen der Haken das
+            // ItemCheck-Ereignis in eine Rückkopplung treibt.
+            if (sender == _rbHeizkreis || sender == _rbPufferHeizung ||
+                sender == _rbPufferBrauchwasser || sender == _rbPufferKombi ||
+                sender == _cbPufferHeizung || sender == _cbPufferBrauchwasser ||
+                sender == _cbPufferKombi || sender == _cbZiel2 ||
+                sender == _cbPuffer2 || sender == _chkZweitsenke)
+            {
+                _aktualisiert = true;
+                try { VerbundListeFuellen(); }
+                finally { _aktualisiert = false; }
+            }
+
             AnzeigeAktualisieren();
         }
 
@@ -889,10 +916,24 @@ namespace WindowsFormsApplication1
             _gbZweitsenke.Enabled = _chkZweitsenke.Checked;
             _tbLadegrenze2.Enabled = _chkZweitsenke.Checked && _chkLadegrenze2.Checked;
 
+            // PAKET PARALLELVERBUND: Nur eine PUFFER-Hauptsenke kann einen Verbund haben -
+            // beim Heizkreis gibt es keinen Vorratsbehälter, dem etwas hinzuzufügen wäre.
+            // Dieselbe Bedingung wie beim Ladeverhalten eine Zeile darüber.
+            _gbVerbund.Enabled = pufferSenke;
+
             _lblPosition.Text = PositionsText();
+            VerbundSummeAnzeigen(GewaehlteVerbundMitglieder());
         }
 
-        /// <summary>„Lädt als n. von m" für die aktuell gewählte Priorität (Konzept 3.4/4.2).</summary>
+        /// <summary>
+        /// „Lädt als n. von m" für die aktuell gewählte Priorität (Konzept 3.4/4.2).
+        ///
+        /// PAKET PARALLELVERBUND: Bezugsgröße ist der LEITSPEICHER und damit der Verbund als
+        /// Ganzes — <see cref="AktuellerHauptPuffer"/> liefert genau ihn, und die
+        /// Ladeordnung kennt ohnehin nur diese eine ID (die Mitglieder stehen in keiner
+        /// <c>WS_ID_Puffer</c>-Referenz). Die Ladereihenfolge eines Verbunds ist deshalb
+        /// dieselbe Frage wie die eines Einzelspeichers, und hier war nichts zu ändern.
+        /// </summary>
         private string PositionsText()
         {
             int idPuffer = AktuellerHauptPuffer();
@@ -957,6 +998,9 @@ namespace WindowsFormsApplication1
             {
                 PufferListenLaden();
                 Puffer2ListeFuellen();
+                // PAKET PARALLELVERBUND: Ein gerade angelegter Puffer soll auch als
+                // Verbundmitglied wählbar sein, ohne den Dialog neu zu öffnen.
+                VerbundListeFuellen();
 
                 if (frm.ID_Puffer > 0)
                 {
@@ -1101,6 +1145,13 @@ namespace WindowsFormsApplication1
         {
             fehler = null;
             WaermesenkeClass.SenkeDaten d = new WaermesenkeClass.SenkeDaten();
+
+            // PAKET PARALLELVERBUND: Die Mitglieder gehören zur HAUPTsenke und werden
+            // deshalb hier - vor der Ziel-Auswertung - eingesammelt. Normalisieren in
+            // WaermesenkeClass leert die Liste selbst, wenn das Ziel am Ende kein Puffer
+            // ist (Heizkreis); der Dialog braucht dafür keinen eigenen Zweig, und es gibt
+            // nur EINE Auslegung dieser Regel.
+            d.VerbundMitglieder = GewaehlteVerbundMitglieder();
 
             if (_rbPufferHeizung.Checked)
             {

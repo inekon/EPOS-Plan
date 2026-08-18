@@ -137,37 +137,29 @@ namespace WindowsFormsApplication1
             RecordSet rs = new RecordSet();
 
             textBox_Bezeichner.Text = listBox_PV.Text;
-            model.m_szName = textBox_Bezeichner.Text;
             
             rs.Open("SELECT * FROM Tab_PV_STAMM where Bezeichner='" + listBox_PV.Text + "'");
 
             if (!rs.EOF())
             {
                 textBox_Beschreibung.Text = (string)rs.Read("Beschreibung");
-                model.m_szBeschreibung = textBox_Beschreibung.Text;
                 textBox_Firma.Text = (string)rs.Read("Firma");
-                model.m_szFirma = textBox_Firma.Text;
+                // Hier wird nur die Anzeige besetzt. Das Model fuellt
+                // ausschliesslich btn_Speichern_Click aus den mit ZahlPruefen
+                // geprueften Feldern - die DB-Werte stehen hier im Format der
+                // Systemkultur (z.B. "17,50") und duerfen nicht kulturinvariant
+                // zurueckgelesen werden.
                 textBox_Wirkungsgrad.Text = Convert.ToDouble(rs.Read("Wirkungsgrad")).ToString("F2");
-                model.m_Wirkungsgrad = Program.convertTxt2Double(textBox_Wirkungsgrad.Text);
                 textBox_Leistung.Text = Convert.ToDouble(rs.Read("Leistung")).ToString("F2");
-                model.m_Leistung = Program.convertTxt2Double(textBox_Leistung.Text);
                
                 textBox_ULeerlauf.Text = rs.Read("U_Leerlauf").ToString();
-                model.m_U_Leerlauf = Program.convertTxt2Double(textBox_ULeerlauf.Text);
                 textBox_UMpp.Text = rs.Read("U_Mpp").ToString();
-                model.m_U_Mpp = Program.convertTxt2Double(textBox_UMpp.Text);
                 textBox_IMpp.Text = rs.Read("I_Mpp").ToString();
-                model.m_I_Mpp = Program.convertTxt2Double(textBox_IMpp.Text);
                 textBox_IKurzschluss.Text = rs.Read("I_Kurzschluss").ToString();
-                model.m_I_Kurzschluss = Program.convertTxt2Double(textBox_IKurzschluss.Text);
                 textBox_TempKoeff.Text = rs.Read("gamma_PMP").ToString();
-                model.m_Temp_Coeff_Pmax = Program.convertTxt2Double(textBox_TempKoeff.Text);
                 textBox_Laenge.Text = rs.Read("Laenge").ToString();
-                model.m_Laenge = Program.convertTxt2Double(textBox_Laenge.Text);
                 textBox_Breite.Text = rs.Read("Breite").ToString();
-                model.m_Breite = Program.convertTxt2Double(textBox_Breite.Text);
                 textBox_Modulkosten.Text = rs.Read("Modulkosten").ToString();
-                model.m_Modulkosten = Program.convertTxt2Double(textBox_Modulkosten.Text);
 
             }
             rs.Close();

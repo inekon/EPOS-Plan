@@ -258,6 +258,49 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Alle Puffer, die im Projekt als WAERMEQUELLE einer Anlage gefuehrt werden
+        /// (<c>WQ_ID_Puffer</c>); nie <c>null</c>.
+        ///
+        /// <b>Warum der Verbund das braucht.</b> Ein Quellspeicher rechnet in der Engine
+        /// auf einem EIGENEN Weg: Seine nutzbare Kapazitaet folgt nicht dem Temperaturpaar
+        /// der Speicherzeile, sondern der Spreizung <c>WQ_Spreizung</c> der ANLAGE
+        /// (<c>SimulationControl.QuellspeicherUebernehmen</c>). Er ist damit bereits ein
+        /// vollwertiges Rechenobjekt - wuerde derselbe Behaelter zusaetzlich in den
+        /// Senkenvorrat eines Verbunds aufaddiert, stuende seine Kapazitaet zweimal im
+        /// Lauf: einmal als Quelle, einmal als Teil des Vorrats. Fachlich ist das ein
+        /// Kurzschluss - ein Behaelter kann nicht gleichzeitig die Waerme liefern UND den
+        /// Vorrat bilden, in den sie geladen wird.
+        ///
+        /// PROJEKTWEIT, nicht je Anlage: <c>WaermesenkeClass.QuellPufferDerAnlage</c>
+        /// beantwortet die Frage fuer EINE Anlage (Pruefpunkt 4 in
+        /// <c>WaermesenkeClass.Pruefen</c>). Hier geht es um jede Anlage des Projekts -
+        /// auch die Quelle einer ANDEREN Waermepumpe darf nicht in einen fremden Verbund
+        /// wandern. Gefunden wurde die Luecke im Wirkungsnachweis des Pakets: In Projekt
+        /// 1021 war der zweite Heizungspuffer zugleich Quellspeicher der zweiten
+        /// Waermepumpe, und seine Kapazitaet erschien sowohl im Verbund als auch als
+        /// eigenes Quellobjekt.
+        /// </summary>
+        public static List<int> QuellPufferDesProjekts(int idProjekt)
+        {
+            List<int> liste = new List<int>();
+            if (idProjekt <= 0) return liste;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT WQ_ID_Puffer FROM Tab_Energieanlagen " +
+                "WHERE ID_Projekt = ? AND WQ_ID_Puffer IS NOT NULL",
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+            if (dt == null) return liste;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                int id = StilleDb.Zahl(StilleDb.Feld(r, "WQ_ID_Puffer"));
+                if (id > 0 && !liste.Contains(id)) liste.Add(id);
+            }
+
+            return liste;
+        }
+
+        /// <summary>
         /// Der LEITSPEICHER des Verbunds, in dem dieser Puffer Mitglied ist; 0, wenn er in
         /// keinem Verbund steht. Grundlage der Anzeige „im Verbund mit …" an der
         /// Speicherkarte und im Pufferdialog.
@@ -410,9 +453,12 @@ namespace WindowsFormsApplication1
         ///     Leitspeicher.</description></item>
         ///   <item><description>Der gewaehlte Leitspeicher ist selbst Mitglied eines
         ///     fremden Verbunds.</description></item>
-        ///   <item><description>Mitglied ist die Waermequelle derselben Anlage
-        ///     (Kurzschluss, dieselbe Regel wie Punkt 4 in
-        ///     <c>WaermesenkeClass.Pruefen</c>).</description></item>
+        ///   <item><description>Mitglied ist die Waermequelle IRGENDEINER Anlage des
+        ///     Projekts (Kurzschluss). Fuer die eigene Anlage ist das dieselbe Regel wie
+        ///     Punkt 4 in <c>WaermesenkeClass.Pruefen</c>; die Ausweitung auf das ganze
+        ///     Projekt kam aus dem Wirkungsnachweis dieses Pakets - ein Quellspeicher
+        ///     rechnet auf einem eigenen Weg und wuerde im Verbund doppelt zaehlen
+        ///     (Begruendung bei <see cref="QuellPufferDesProjekts"/>).</description></item>
         ///   <item><description>Mitglied gehoert nicht zum Projekt oder traegt eine andere
         ///     Verwendung als der Leitspeicher.</description></item>
         /// </list>
@@ -455,7 +501,12 @@ namespace WindowsFormsApplication1
                     ID_FremderLeit = fremderLeitDesLeit
                 });
 
-            int idQuelle = WaermesenkeClass.QuellPufferDerAnlage(idProjekt, idAnlage);
+            // Quellspeicher des GANZEN Projekts, nicht nur der eigenen Anlage: Auch die
+            // Waermequelle einer anderen Waermepumpe darf nicht in diesen Verbund - sie
+            // rechnet auf einem eigenen Weg und zaehlte sonst doppelt (Begruendung bei
+            // QuellPufferDesProjekts; die Engine wehrt denselben Fall in
+            // SimulationControl.VerbundAufaddieren ab).
+            List<int> quellPuffer = QuellPufferDesProjekts(idProjekt);
 
             foreach (int idMitglied in mitglieder)
             {
@@ -472,8 +523,8 @@ namespace WindowsFormsApplication1
                     continue;
                 }
 
-                // --- 5. Quelle derselben Anlage --------------------------------------
-                if (idQuelle > 0 && idQuelle == idMitglied)
+                // --- 5. Waermequelle einer Anlage des Projekts ------------------------
+                if (quellPuffer.Contains(idMitglied))
                 {
                     befunde.Add(new Konfliktbefund { ID_Puffer = idMitglied, Grund = GRUND_QUELLE });
                     continue;

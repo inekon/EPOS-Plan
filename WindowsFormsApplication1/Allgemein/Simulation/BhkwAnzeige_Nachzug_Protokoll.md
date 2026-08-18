@@ -238,7 +238,7 @@ Je Datei vor und nach jedem Eingriff gemessen (`BOM`, Anzahl `CRLF`, Anzahl rein
 
 | Datei | vorher | nachher |
 |---|---|---|
-| `Views/Simulation/Form_Simulation_Detail.cs` | BOM, 6031 CRLF, 0 LF | BOM, 6520 CRLF, **0 LF** |
+| `Views/Simulation/Form_Simulation_Detail.cs` | BOM, 6031 CRLF, 0 LF | BOM, 6549 CRLF, **0 LF** |
 | `Views/Simulation/Form_Simulation_Detail.resx` | BOM, 9259 CRLF, 0 LF | BOM, 9273 CRLF, **0 LF** |
 | `Views/Simulation/Form_Simulation_Detail.en-US.resx` | BOM, 916 CRLF, 0 LF | BOM, 926 CRLF, **0 LF** |
 | `Allgemein/Simulation/BhkwAnzeige_Nachzug_Protokoll.md` (diese Datei) | — | **kein BOM, reine LF** |
@@ -363,20 +363,65 @@ auf einer Kopie.
 
 Geprüft über alle Paare der Steuerelemente von `tabPage_BHKW` (Schnittfläche > 2 × 2 px).
 
+Die gemessene Beschriftungsbreite (3.5) gegen den vorhandenen Platz — die Schrift der
+Spalte ist Segoe UI 10 pt, übernommen von der Nachbarzeile:
+
+| Beschriftung | Position | nötig | vorhanden | |
+|---|---|---|---|---|
+| „davon in den Speicher:" | x=637…790, y=209 | 147 px | 153 px | **passt** |
+| „aus dem Speicher gedeckt:" | x=615…790, y=241 | 171 px | 175 px | **passt** |
+
+Die zweite Zeile ist bis an die Klemmgrenze `chart.Right + 8 = 615` gewandert und bleibt
+dort — ohne die Messung hätte sie in der Entwurfsbreite von 137 px abgeschnitten. Die
+rechten Kanten (790) und die Einheitenspalte (1053) liegen bündig mit den Bestandszeilen.
+
 ### 6.6 Build
 
 | Nachweis | Ergebnis |
 |---|---|
 | Prüfbuild `WindowsFormsApplication1` (Debug/x86) **vor** dem Nachzug | 0 Fehler / **6 Warnungen** (Baseline) |
-| Prüfbuild **nach** dem Nachzug | 0 Fehler / **6 Warnungen** — Baseline gehalten |
+| Prüfbuild nach den Hauptänderungen | 0 Fehler / **6 Warnungen** — Baseline gehalten |
+| **Isolierter Prüfbuild des Endstands** (siehe unten) | 0 Fehler / **6 Warnungen** — Baseline gehalten |
 | Referenzlauf-Werkzeug (Debug/x86) | 0 Fehler / 0 Warnungen |
-| Harness (Debug/x86) | 0 Fehler |
+| Harness (Debug/x86) | 0 Fehler / 0 Warnungen |
 
-Vorbefund während der Umsetzung: Ein Prüfbuild schlug mit **6 Fehlern in
-`WaermesenkeClass.cs`** fehl (`Resource.SIM_VERBUND_KONFLIKT_*` noch nicht im
-Ressourcen-Designer). Alle sechs liegen in einer Datei, die dieser Nachzug **nicht**
-anfasst; sie stammen aus paralleler Arbeit am Ressourcenkatalog. Keine Fehlermeldung in
-`Form_Simulation_Detail.cs` oder den beiden .resx.
+**Vorbefund fremder Ursache.** Ab 18:10 schlug der Prüfbuild des Arbeitsbaums mit
+**12 Fehlern** fehl — fehlende Katalogschlüssel `Resource.SIM_*VERBUND*`, die aus einer
+parallel laufenden Arbeit am Ressourcenkatalog stammen. Verteilung nach Datei:
+
+```
+6  Allgemein\Simulation\WaermesenkeClass.cs
+4  Views\Simulation\Form_Waermesenke.cs
+2  Views\Simulation\Form_Simulation_Config.Karten.cs
+0  Views\Simulation\Form_Simulation_Detail.cs      <- dieser Nachzug
+```
+
+Es fehlen dreizehn Katalogschlüssel (`SIM_GB_VERBUND`, `SIM_TIP_VERBUND`,
+`SIM_VERBUND_SUMME`, `SIM_VERBUND_KEIN_VERBUND`, `SIM_LBL_VERBUND_ZUSATZ`,
+`SIM_KARTE_VERBUND_ZUSATZ`, `PSP_KARTE_IM_VERBUND`, sechs `SIM_VERBUND_KONFLIKT_*`).
+
+Alle drei Dateien stehen auf der Sperrliste dieses Auftrags und wurden **nicht** angefasst;
+`MyResource\Resource.*` ebenso.
+
+**Damit der Endstand trotzdem belegt ist**, lief der Prüfbuild zusätzlich auf einer
+Wegwerfkopie des Baums (`%TEMP%\wpiso`, nur Quellen ohne `bin`/`obj`, 20 MB), in der
+der Ressourcen-Designer die dreizehn noch nicht angelegten Schlüssel als
+Ersatz-Eigenschaften trägt. Die drei betroffenen Fremddateien bleiben dabei
+**byte-identisch** — angefasst ist nur `Resource.Designer.cs` der Kopie:
+
+```
+0 Fehler / 6 Warnungen
+```
+
+Der Messlauf aus 6.2 bis 6.5 wurde gegen **dieselbe Kopie** wiederholt (Harness mit
+umgebogener Projektreferenz). Alle Anzeigewerte, alle Serien und alle Summen sind
+identisch mit dem Lauf gegen den Arbeitsbaum.
+
+**Synchronisation des Anwenders.** Um 18:17 hat der Anwender selbst committet und
+gemerged (`e596296` „Synchronisation vom 17.08.2026 18:17:58,15" und ein Folge-Merge);
+dieser Nachzug hat weder committet noch gepusht. Die Änderungen dieses Protokolls liegen
+seitdem im Commit, im Arbeitsbaum unverändert vorhanden (22 Trefferstellen in
+`Form_Simulation_Detail.cs`, je 3 in den beiden .resx).
 
 ---
 

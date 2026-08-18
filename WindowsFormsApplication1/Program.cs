@@ -119,7 +119,7 @@ namespace WindowsFormsApplication1
         // ------------------------------------------------------------------
         // Sperre gegen die Endlosschleife aus Prüfmeldung und Undo()
         //
-        // Fast alle Aufrufer von checkInt/checkDouble nehmen eine ungültige
+        // Fast alle Aufrufer von checkInt nehmen eine ungültige
         // Eingabe nach 'false' mit TextBox.Undo() zurück. Undo() löst TextChanged
         // erneut aus, und weil die Win32-Edit-Box mit EM_UNDO zwischen Rückgängig
         // und Wiederherstellen umschaltet, pendelt der Text zwischen der
@@ -182,19 +182,6 @@ namespace WindowsFormsApplication1
             if (ctrl != null) ctrl.Focus();
             MessageBox.Show("Eingaben überprüfen: \"" + text + "\"" + Environment.NewLine +
                             "Bitte eine ganze Zahl eingeben.");
-            PruefmeldungSperren(ctrl);
-            return false;
-        }
-
-        public static bool checkDouble(Control ctrl, string text)
-        {
-            double number;
-            if (double.TryParse(text, out number)) return true;
-            if (PruefmeldungGesperrt(ctrl)) return true;
-
-            if (ctrl != null) ctrl.Focus();
-            MessageBox.Show("Eingaben überprüfen: \"" + text + "\"" + Environment.NewLine +
-                            "Bitte eine Zahl eingeben (Dezimaltrennzeichen Komma oder Punkt).");
             PruefmeldungSperren(ctrl);
             return false;
         }
@@ -308,26 +295,40 @@ namespace WindowsFormsApplication1
             return false;
         }
 
+        /// <summary>
+        /// Zahl aus Text nach derselben Regel wie <see cref="ZahlParsen"/>:
+        /// Dezimal-Komma ODER -Punkt, kein Tausendertrennzeichen. Vertrag der
+        /// Aufrufer bleibt erhalten: leer (oder null) ergibt 0, nicht parsbarer
+        /// Text wirft FormatException - die Einlese-Dialoge fangen sie und zählen
+        /// den Eintrag als Fehler. Aufruferkataster und Herleitung:
+        /// Allgemein\Simulation\Befund_convertTxt2Double_Dezimaltrennzeichen.md.
+        /// </summary>
         public static double convertTxt2Double(string txt)
         {
-            if (txt != "")
-            {
-                double number = Convert.ToDouble(txt, System.Globalization.CultureInfo.InvariantCulture);
-                return number;
-            }
-            return 0;
+            if (string.IsNullOrWhiteSpace(txt)) return 0;
+
+            double number;
+            if (ZahlParsen(txt, out number)) return number;
+            throw new FormatException("Keine gültige Zahl: \"" + txt + "\"");
         }
 
+        /// <summary>
+        /// Ganzzahl aus Text; zusätzlich werden Dezimalschreibweisen ganzer
+        /// Zahlen akzeptiert ("35.0", "35,0" ergibt 35 - VDI-Dateien liefern
+        /// Ganzzahlfelder teils so). Vertrag bleibt: leer oder nicht
+        /// (ganzzahlig) parsbar ergibt 0, kein Wurf.
+        /// </summary>
         public static int convertTxt2Int(string txt)
         {
-            if (txt != "")
-            {
-                int number;
-                if (Int32.TryParse(txt, out number))
-                {
-                    return number;
-                }
-            }
+            if (string.IsNullOrWhiteSpace(txt)) return 0;
+
+            int number;
+            if (GanzzahlParsen(txt, out number)) return number;
+
+            double d;
+            if (ZahlParsen(txt, out d) && d >= int.MinValue && d <= int.MaxValue && d == Math.Floor(d))
+                return (int)d;
+
             return 0;
         }
 

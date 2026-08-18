@@ -103,7 +103,11 @@ namespace WindowsFormsApplication1
             _anzeigeIndex.Clear();
             for (int i = 0; i < ctrl._list.Count; i++)
             {
-                double volumen = Program.convertTxt2Double(ctrl._list[i].m_szVolumen);
+                // ZahlParsen statt convertTxt2Double: eine nicht parsbare
+                // Volumenangabe darf den Listenaufbau nicht abbrechen - sie
+                // zaehlt als 0, den Fehler meldet erst die Uebernahme.
+                double volumen;
+                if (!Program.ZahlParsen(ctrl._list[i].m_szVolumen, out volumen)) volumen = 0;
                 if (volumen < min || volumen > max) continue;
                 if (!VdiAuswahlFilter.Passt(suche, ctrl._list[i].m_szName, ctrl._list[i].m_szFirma)) continue;
                 Liste_PufferSp.Items.Add(ctrl._list[i].m_szName);
@@ -147,7 +151,12 @@ namespace WindowsFormsApplication1
             {
                 // Einzelfall: Meldungen und Dialogverhalten bleiben wie im Bestand;
                 // die Detailfelder werden nicht neu besetzt, damit eine Korrektur
-                // von Hand erhalten bleibt.
+                // von Hand erhalten bleibt. Weil Handkorrektur vorgesehen ist,
+                // wird das Zahlfeld vorab nach dem Hausmuster geprueft (sprechende
+                // Meldung, Fokus, Dialog bleibt offen); leer gilt wie bisher als 0.
+                double dVerluste;
+                if (!Program.ZahlPruefen(textBox_Versluste, "Betriebsbereitschaftsverluste", out dVerluste, leerErlaubt: true)) return;
+
                 VdiUebernahmeErgebnis einzel = UebernehmeEintrag(out fehlertext);
                 if (einzel == VdiUebernahmeErgebnis.Duplikat)
                 {

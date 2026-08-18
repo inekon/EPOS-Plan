@@ -2601,8 +2601,41 @@ namespace WindowsFormsApplication1
             double qSumme = qLeit;
             int gezaehlt = 0;
 
+            // QUELLSPEICHER des Projekts — sie dürfen NIE in einen Senkenvorrat wandern.
+            //
+            // Ein Quellspeicher rechnet auf einem EIGENEN Weg: Seine Kapazität folgt der
+            // Anlagen-Spreizung WQ_Spreizung, nicht dem Temperaturpaar der Speicherzeile
+            // (QuellspeicherUebernehmen). Er ist damit bereits ein vollwertiges
+            // Rechenobjekt; ihn zusätzlich aufzuaddieren zählte dieselbe Kapazität zweimal.
+            //
+            // Das Sicherheitsnetz in RegistryFuerZweikanaligOeffnen greift für diesen Fall
+            // NICHT: Es lässt Quellspeicher ausdrücklich als Erstes durch
+            // (sp.IstQuelle ⇒ ImRechenpfad = true, danach continue), weil sie ihren eigenen
+            // Pfad haben. Die Abwehr muss deshalb HIER stehen — an der Stelle, an der die
+            // Kapazität summiert wird.
+            //
+            // Aufgefallen im Wirkungsnachweis dieses Pakets: In Projekt 1021 war der als
+            // Verbundmitglied eingetragene zweite Heizungspuffer zugleich Quellspeicher der
+            // zweiten Wärmepumpe — seine Kapazität erschien im Verbund UND als eigenes
+            // Quellobjekt in Tab_ErgebnisPufferspeicher.
+            List<int> quellPuffer = AnlagePufferVerbundCtrl.QuellPufferDesProjekts(m_ID_Projekt);
+
             foreach (int idMitglied in mitglieder)
             {
+                if (quellPuffer.Contains(idMitglied))
+                {
+                    Protokoll.WarnungEinmal("verbund-mitglied-ist-quelle-" + idMitglied,
+                                      "Parallelverbund: Der Puffer " + idMitglied +
+                                      " ist die WÄRMEQUELLE einer Anlage dieses Projekts und " +
+                                      "kann deshalb nicht Teil des Wärmevorrats von Speicher " +
+                                      leit.ID_Pufferspeicher + " (" + leit.BezeichnerAnzeige() +
+                                      ") sein - ein Behälter liefert entweder die Wärme oder er " +
+                                      "bildet den Vorrat, in den sie geladen wird. Seine " +
+                                      "Kapazität geht NICHT in den Verbund ein; bitte die " +
+                                      "Wärmesenke der ladenden Anlage berichtigen.");
+                    continue;
+                }
+
                 WaermesenkeClass.PufferInfo m = WaermesenkeClass.PufferLesen(idMitglied);
                 if (m == null)
                 {
