@@ -97,6 +97,20 @@ namespace WindowsFormsApplication1
                 {
 
                 }
+                else if (Col(csvReader, 0) == "710.01")
+                {
+                    // Rueckfallquelle Wirkungsgrad: manche Kataloge (z. B. Vaillant icoVIT,
+                    // Viessmann Vitocrossal) lassen Spalte 26 des 700er-Satzes leer und
+                    // fuehren den Kesselwirkungsgrad nur im 710.01-Satz (Spalte 6, bei
+                    // Nennleistung, in Prozent wie Spalte 26). Ohne Rueckfall setzte die
+                    // Uebernahme beide Wirkungsgradfelder auf den Platzhalter 1. Es zaehlt
+                    // die erste 710.01-Zeile des Blocks, die einen Wert liefert; ein in
+                    // Spalte 26 vorhandener Wert bleibt unangetastet.
+                    if (bBeginn && temp != null && temp.m_szWirkungsgrad == "")
+                    {
+                        temp.m_szWirkungsgrad = Col(csvReader, 6);
+                    }
+                }
                 else if (Col(csvReader, 0) == "710.05")
                 {
                     szCO2 = Col(csvReader, 10);
