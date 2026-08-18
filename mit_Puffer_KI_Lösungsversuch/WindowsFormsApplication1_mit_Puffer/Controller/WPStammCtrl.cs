@@ -191,14 +191,14 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(sql);
         }
 
-        // Kennlinien-Import (Kuehlung) in die STAMM-Tabelle. ID explizit (MAX+1), ReadOnly = false.
+        // Kennlinien-Import (Kuehlung) in die STAMM-Tabelle. ID explizit (MAX+1).
         public bool InsertKenndatenKuehlungStamm(int idWp, int vorlauf, int temperatur, double cop, double pkuehl, int last)
         {
             object m = DataRepository.ExecuteScalar("SELECT Max(ID) FROM " + CURVE_K);
             int id = (m == null || m == DBNull.Value) ? 1 : Convert.ToInt32(m) + 1;
             string sql = System.FormattableString.Invariant(
-                $@"INSERT INTO {CURVE_K} (ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl, Last, ReadOnly)
-                   VALUES ({id}, {idWp}, {vorlauf}, {temperatur}, {cop}, {pkuehl}, {last}, FALSE)");
+                $@"INSERT INTO {CURVE_K} (ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl, [Last])
+                   VALUES ({id}, {idWp}, {vorlauf}, {temperatur}, {cop}, {pkuehl}, {last})");
             return DataRepository.ExecuteSQL(sql);
         }
 
