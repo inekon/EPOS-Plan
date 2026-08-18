@@ -232,6 +232,14 @@ UTF-8-kodierten `VdiAuswahlFilter.cs` bzw. als `lbl_Filter.Text` in den `.resx`-
 * **Kein Test mit echter VDI-Datei.** Der Weg `btn_VDI3805_Click` → `ctrl.Import(datei)` ist
   unverändert, aber ohne Beispieldatei nicht gefahren. Sobald eine `.vdi` vorliegt, sollte der
   Import einmal von der Datei aus durchlaufen werden.
+  Nachtrag Heizkessel (18.08.2026, `%TEMP%\wpk13`): mit den sieben Herstellerkatalogen aus
+  `VDI-3805-Daten\SPK-Daten` real gefahren. Parser-Scan: 816 Datensätze, alle mit Satz 710.11,
+  Brennstoffindizes (Spalte 3) 1/2/3/4/9/12/13/15/22 — deckungsgleich mit
+  `Tab_Brennstoff_Stamm`, keiner außerhalb 1–25. End-to-End über die Form (Weishaupt Öl,
+  Buderus Gas, Mehrfachweg, Leistungsfilter 10–200 unverändert): 18 Kessel übernommen,
+  Öl-/Gas-Feld und Brennstoff-ID je Kessel korrekt, 18/18 PASS. Für Wärmepumpe,
+  Pufferspeicher und Solarkollektoren steht der Realdatei-Test weiterhin aus (Dateien
+  unter `VDI-3805-Daten`).
 * **Bestandsbefund Heizkessel (BEHOBEN 18.08.2026):** `szBrennstoffart` wird jetzt in
   `ZeigeDetails` verdrahtet, und die Übernahme routet den Wirkungsgrad nach Brennstoffindex
   (Öl = 6–9/18–22 → `Wirkungsgrad_Oel`, sonst Gas; Rückfall über `szBrennstoffart`, ohne
