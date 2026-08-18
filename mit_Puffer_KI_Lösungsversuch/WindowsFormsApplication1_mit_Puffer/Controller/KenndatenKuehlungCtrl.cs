@@ -106,7 +106,7 @@ namespace WindowsFormsApplication1
 
                 // Insert mit InvariantCulture
                 string sql = FormattableString.Invariant($@"
-                    INSERT INTO Tab_Kenndaten_Kuehlung (ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl, Last) 
+                    INSERT INTO Tab_Kenndaten_Kuehlung (ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl, [Last]) 
                     VALUES ({m_ID}, {m_ID_WP}, {m_nVorlauf}, {m_nTemperatur}, {m_nCOP}, {m_nPkuehl}, {m_nLast})");
 
                 return DataRepository.ExecuteSQL(sql);
