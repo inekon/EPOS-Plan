@@ -4437,7 +4437,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("PSP_FEHLER_NACHRANG_UNTER_EIN", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Mindestfüllstand muss unter der Abschaltschwelle liegen - sonst könnte der Speicher keinen Bedarf mehr decken. ähnelt.
         /// </summary>
@@ -4446,7 +4446,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("PSP_FEHLER_RESERVE_UEBER_AUS", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die {0} muss zwischen 0 und 100 % liegen. ähnelt.
         /// </summary>
@@ -4862,6 +4862,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestfüllstand/Notreserve [%]: ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_MINDESTFUELLSTAND {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_MINDESTFUELLSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf [°C]: ähnelt.
         /// </summary>
         public static string PSP_LABEL_RUECKLAUF {
@@ -4870,15 +4879,6 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestfüllstand/Notreserve [%]: ähnelt.
-        /// </summary>
-        public static string PSP_LABEL_MINDESTFUELLSTAND {
-            get {
-                return ResourceManager.GetString("PSP_LABEL_MINDESTFUELLSTAND", resourceCulture);
-            }
-        }
-
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die … nachrangig [%]: ähnelt.
         /// </summary>
@@ -5173,7 +5173,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("PSP_NAME_EINSCHALTSCHWELLE", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Mindestfüllstand/Notreserve ähnelt.
         /// </summary>
@@ -5182,7 +5182,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("PSP_NAME_MINDESTFUELLSTAND", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} % (eigene) ähnelt.
         /// </summary>
@@ -6424,7 +6424,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIM_KARTE_VERFUEGBAR", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die − Nicht gewählte Komponenten ausblenden ähnelt.
         /// </summary>
@@ -6433,7 +6433,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIM_KARTE_VERFUEGBAR_AUSBLENDEN", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die + Nicht gewählte Komponenten anzeigen ({0}) … ähnelt.
         /// </summary>
@@ -8803,7 +8803,7 @@ namespace WindowsFormsApplication1.MyResource {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Simulationslauf ist durchgelaufen, hat für diese Wärmepumpe aber keine Erdreich-Kennwerte geliefert.
         ///
-        ///Das ist der Fall, wenn die Wärmepumpe nicht gerechnet wird (Tool „Wärmepumpe“ in der Konfiguration abgewählt) oder wenn ihr Quellent [Rest der Zeichenfolge wurde abgeschnitten]”; ähnelt.
+        ///Das ist der Fall, wenn die Wärmepumpe nicht gerechnet wird (Tool „Wärmepumpe&quot; in der Konfiguration abgewählt) oder wenn ihr Quellentyp in der Datenbank nicht auf Erdreich steht. Die Auslegungsprüfung bleibt unverändert. ähnelt.
         /// </summary>
         public static string SIMQ_ERDREICH_MSG_SIM_OHNE_ERGEBNIS {
             get {
@@ -8909,7 +8909,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Lauf hat mit den GESPEICHERTEN Quelldaten gerechnet — die hier geänderten Eingaben wirken erst nach „OK“ und einem neuen Lauf. Grenzwert und Sondenme [Rest der Zeichenfolge wurde abgeschnitten]”; ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Lauf hat mit den GESPEICHERTEN Quelldaten gerechnet — die hier geänderten Eingaben wirken erst nach „OK&quot; und einem neuen Lauf. Grenzwert und Sondenmeter sind bereits mit den geänderten Eingaben gerechnet. ähnelt.
         /// </summary>
         public static string SIMQ_ERDREICH_SIM_NUR_GESPEICHERT {
             get {
@@ -10184,6 +10184,141 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation statisch [a] ähnelt.
+        /// </summary>
+        public static string SP_ERG_KERN_AMORTISATION {
+            get {
+                return ResourceManager.GetString("SP_ERG_KERN_AMORTISATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Autarkiegrad [%] ähnelt.
+        /// </summary>
+        public static string SP_ERG_KERN_AUTARKIE {
+            get {
+                return ResourceManager.GetString("SP_ERG_KERN_AUTARKIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berechnungsart ähnelt.
+        /// </summary>
+        public static string SP_ERG_KERN_BERECHNUNGSART {
+            get {
+                return ResourceManager.GetString("SP_ERG_KERN_BERECHNUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} – {1} ähnelt.
+        /// </summary>
+        public static string SP_ERG_KERN_BEREICH {
+            get {
+                return ResourceManager.GetString("SP_ERG_KERN_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart ähnelt.
+        /// </summary>
+        public static string SP_ERG_KERN_BETRIEBSART {
+            get {
+                return ResourceManager.GetString("SP_ERG_KERN_BETRIEBSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenverbrauchsquote [%] ähnelt.
+        /// </summary>
+        public static string SP_ERG_KERN_EIGENVERBRAUCH {
+            get {
+                return ResourceManager.GetString("SP_ERG_KERN_EIGENVERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ertrag E_a,äq [€/a] ähnelt.
+        /// </summary>
+        public static string SP_ERG_KERN_ERTRAG {
+            get {
+                return ResourceManager.GetString("SP_ERG_KERN_ERTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage / Variante ähnelt.
+        /// </summary>
+        public static string SP_ERG_KERN_GRUPPE_ANLAGE {
+            get {
+                return ResourceManager.GetString("SP_ERG_KERN_GRUPPE_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kernergebnisse ähnelt.
+        /// </summary>
+        public static string SP_ERG_KERN_GRUPPE_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("SP_ERG_KERN_GRUPPE_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität [kWh] ähnelt.
+        /// </summary>
+        public static string SP_ERG_KERN_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("SP_ERG_KERN_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lade-/Entladeleistung [kW] ähnelt.
+        /// </summary>
+        public static string SP_ERG_KERN_LEISTUNG {
+            get {
+                return ResourceManager.GetString("SP_ERG_KERN_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die SoC-Band [kWh] ähnelt.
+        /// </summary>
+        public static string SP_ERG_KERN_SOC_KWH {
+            get {
+                return ResourceManager.GetString("SP_ERG_KERN_SOC_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die SoC-Band [%] ähnelt.
+        /// </summary>
+        public static string SP_ERG_KERN_SOC_PROZENT {
+            get {
+                return ResourceManager.GetString("SP_ERG_KERN_SOC_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresüberschuss ΔJ [€/a] ähnelt.
+        /// </summary>
+        public static string SP_ERG_KERN_UEBERSCHUSS {
+            get {
+                return ResourceManager.GetString("SP_ERG_KERN_UEBERSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollzyklen n_zyk [1/a] ähnelt.
+        /// </summary>
+        public static string SP_ERG_KERN_VOLLZYKLEN {
+            get {
+                return ResourceManager.GetString("SP_ERG_KERN_VOLLZYKLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Excel-Kompatibilitätsmodus aktiv – dies ist kein Produktivergebnis. ähnelt.
         /// </summary>
         public static string SP_ERG_KOMPATIBILITAET_AKTIV {
@@ -11335,140 +11470,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VAR_VGL_TOOLTIP_OEFFNEN {
             get {
                 return ResourceManager.GetString("VAR_VGL_TOOLTIP_OEFFNEN", resourceCulture);
-            }
-        }
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage / Variante ähnelt.
-        /// </summary>
-        public static string SP_ERG_KERN_GRUPPE_ANLAGE {
-            get {
-                return ResourceManager.GetString("SP_ERG_KERN_GRUPPE_ANLAGE", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kernergebnisse ähnelt.
-        /// </summary>
-        public static string SP_ERG_KERN_GRUPPE_ERGEBNIS {
-            get {
-                return ResourceManager.GetString("SP_ERG_KERN_GRUPPE_ERGEBNIS", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität [kWh] ähnelt.
-        /// </summary>
-        public static string SP_ERG_KERN_KAPAZITAET {
-            get {
-                return ResourceManager.GetString("SP_ERG_KERN_KAPAZITAET", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Lade-/Entladeleistung [kW] ähnelt.
-        /// </summary>
-        public static string SP_ERG_KERN_LEISTUNG {
-            get {
-                return ResourceManager.GetString("SP_ERG_KERN_LEISTUNG", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die SoC-Band [%] ähnelt.
-        /// </summary>
-        public static string SP_ERG_KERN_SOC_PROZENT {
-            get {
-                return ResourceManager.GetString("SP_ERG_KERN_SOC_PROZENT", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die SoC-Band [kWh] ähnelt.
-        /// </summary>
-        public static string SP_ERG_KERN_SOC_KWH {
-            get {
-                return ResourceManager.GetString("SP_ERG_KERN_SOC_KWH", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart ähnelt.
-        /// </summary>
-        public static string SP_ERG_KERN_BETRIEBSART {
-            get {
-                return ResourceManager.GetString("SP_ERG_KERN_BETRIEBSART", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Berechnungsart ähnelt.
-        /// </summary>
-        public static string SP_ERG_KERN_BERECHNUNGSART {
-            get {
-                return ResourceManager.GetString("SP_ERG_KERN_BERECHNUNGSART", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ertrag E_a,äq [€/a] ähnelt.
-        /// </summary>
-        public static string SP_ERG_KERN_ERTRAG {
-            get {
-                return ResourceManager.GetString("SP_ERG_KERN_ERTRAG", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresüberschuss ΔJ [€/a] ähnelt.
-        /// </summary>
-        public static string SP_ERG_KERN_UEBERSCHUSS {
-            get {
-                return ResourceManager.GetString("SP_ERG_KERN_UEBERSCHUSS", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation statisch [a] ähnelt.
-        /// </summary>
-        public static string SP_ERG_KERN_AMORTISATION {
-            get {
-                return ResourceManager.GetString("SP_ERG_KERN_AMORTISATION", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vollzyklen n_zyk [1/a] ähnelt.
-        /// </summary>
-        public static string SP_ERG_KERN_VOLLZYKLEN {
-            get {
-                return ResourceManager.GetString("SP_ERG_KERN_VOLLZYKLEN", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenverbrauchsquote [%] ähnelt.
-        /// </summary>
-        public static string SP_ERG_KERN_EIGENVERBRAUCH {
-            get {
-                return ResourceManager.GetString("SP_ERG_KERN_EIGENVERBRAUCH", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Autarkiegrad [%] ähnelt.
-        /// </summary>
-        public static string SP_ERG_KERN_AUTARKIE {
-            get {
-                return ResourceManager.GetString("SP_ERG_KERN_AUTARKIE", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} – {1} ähnelt.
-        /// </summary>
-        public static string SP_ERG_KERN_BEREICH {
-            get {
-                return ResourceManager.GetString("SP_ERG_KERN_BEREICH", resourceCulture);
             }
         }
 

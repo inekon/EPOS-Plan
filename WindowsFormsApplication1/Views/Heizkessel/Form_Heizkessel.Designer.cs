@@ -44,17 +44,19 @@
             btn_Bearbeiten = new System.Windows.Forms.Button();
             btn_Löschen = new System.Windows.Forms.Button();
             groupBox1 = new System.Windows.Forms.GroupBox();
+            label_BrennstoffArt = new System.Windows.Forms.Label();
+            cmbBrennstoffArt = new System.Windows.Forms.ComboBox();
             checkBox_Brennwert = new System.Windows.Forms.CheckBox();
             label3 = new System.Windows.Forms.Label();
-            textBox_Investitionskosten = new System.Windows.Forms.TextBox();
             label18 = new System.Windows.Forms.Label();
             textBox_Kesselbeschreibung = new System.Windows.Forms.TextBox();
-            label14 = new System.Windows.Forms.Label();
-            textBox_Kesselleistung = new System.Windows.Forms.TextBox();
-            label15 = new System.Windows.Forms.Label();
+            textBox_Investitionskosten = new System.Windows.Forms.TextBox();
+            label_Kesseltyp = new System.Windows.Forms.Label();
             textBox_Kesseltyp = new System.Windows.Forms.TextBox();
+            label14 = new System.Windows.Forms.Label();
             label16 = new System.Windows.Forms.Label();
             textBox_Kesselname = new System.Windows.Forms.TextBox();
+            textBox_Kesselleistung = new System.Windows.Forms.TextBox();
             textBox_Ruecklauf = new System.Windows.Forms.TextBox();
             textBox_Vorlauf = new System.Windows.Forms.TextBox();
             label6 = new System.Windows.Forms.Label();
@@ -63,8 +65,6 @@
             label4 = new System.Windows.Forms.Label();
             label_Type = new System.Windows.Forms.Label();
             btn_Admin = new System.Windows.Forms.Button();
-            label19 = new System.Windows.Forms.Label();
-            cmbBrennstoffArt = new System.Windows.Forms.ComboBox();
             groupBox1.SuspendLayout();
             SuspendLayout();
             // 
@@ -162,22 +162,33 @@
             // groupBox1
             // 
             groupBox1.BackColor = System.Drawing.Color.White;
-            groupBox1.Controls.Add(label19);
+            groupBox1.Controls.Add(label_BrennstoffArt);
             groupBox1.Controls.Add(cmbBrennstoffArt);
             groupBox1.Controls.Add(checkBox_Brennwert);
             groupBox1.Controls.Add(label3);
-            groupBox1.Controls.Add(textBox_Investitionskosten);
             groupBox1.Controls.Add(label18);
             groupBox1.Controls.Add(textBox_Kesselbeschreibung);
-            groupBox1.Controls.Add(label14);
-            groupBox1.Controls.Add(textBox_Kesselleistung);
-            groupBox1.Controls.Add(label15);
+            groupBox1.Controls.Add(textBox_Investitionskosten);
+            groupBox1.Controls.Add(label_Kesseltyp);
             groupBox1.Controls.Add(textBox_Kesseltyp);
+            groupBox1.Controls.Add(label14);
             groupBox1.Controls.Add(label16);
             groupBox1.Controls.Add(textBox_Kesselname);
+            groupBox1.Controls.Add(textBox_Kesselleistung);
             resources.ApplyResources(groupBox1, "groupBox1");
             groupBox1.Name = "groupBox1";
             groupBox1.TabStop = false;
+            // 
+            // label_BrennstoffArt
+            // 
+            resources.ApplyResources(label_BrennstoffArt, "label_BrennstoffArt");
+            label_BrennstoffArt.Name = "label_BrennstoffArt";
+            // 
+            // cmbBrennstoffArt
+            // 
+            cmbBrennstoffArt.FormattingEnabled = true;
+            resources.ApplyResources(cmbBrennstoffArt, "cmbBrennstoffArt");
+            cmbBrennstoffArt.Name = "cmbBrennstoffArt";
             // 
             // checkBox_Brennwert
             // 
@@ -189,13 +200,6 @@
             // 
             resources.ApplyResources(label3, "label3");
             label3.Name = "label3";
-            // 
-            // textBox_Investitionskosten
-            // 
-            textBox_Investitionskosten.BackColor = System.Drawing.Color.White;
-            resources.ApplyResources(textBox_Investitionskosten, "textBox_Investitionskosten");
-            textBox_Investitionskosten.Name = "textBox_Investitionskosten";
-            textBox_Investitionskosten.ReadOnly = true;
             // 
             // label18
             // 
@@ -209,22 +213,17 @@
             textBox_Kesselbeschreibung.Name = "textBox_Kesselbeschreibung";
             textBox_Kesselbeschreibung.ReadOnly = true;
             // 
-            // label14
+            // textBox_Investitionskosten
             // 
-            resources.ApplyResources(label14, "label14");
-            label14.Name = "label14";
+            textBox_Investitionskosten.BackColor = System.Drawing.Color.White;
+            resources.ApplyResources(textBox_Investitionskosten, "textBox_Investitionskosten");
+            textBox_Investitionskosten.Name = "textBox_Investitionskosten";
+            textBox_Investitionskosten.ReadOnly = true;
             // 
-            // textBox_Kesselleistung
+            // label_Kesseltyp
             // 
-            textBox_Kesselleistung.BackColor = System.Drawing.Color.White;
-            resources.ApplyResources(textBox_Kesselleistung, "textBox_Kesselleistung");
-            textBox_Kesselleistung.Name = "textBox_Kesselleistung";
-            textBox_Kesselleistung.ReadOnly = true;
-            // 
-            // label15
-            // 
-            resources.ApplyResources(label15, "label15");
-            label15.Name = "label15";
+            resources.ApplyResources(label_Kesseltyp, "label_Kesseltyp");
+            label_Kesseltyp.Name = "label_Kesseltyp";
             // 
             // textBox_Kesseltyp
             // 
@@ -232,6 +231,11 @@
             resources.ApplyResources(textBox_Kesseltyp, "textBox_Kesseltyp");
             textBox_Kesseltyp.Name = "textBox_Kesseltyp";
             textBox_Kesseltyp.ReadOnly = true;
+            // 
+            // label14
+            // 
+            resources.ApplyResources(label14, "label14");
+            label14.Name = "label14";
             // 
             // label16
             // 
@@ -244,6 +248,13 @@
             resources.ApplyResources(textBox_Kesselname, "textBox_Kesselname");
             textBox_Kesselname.Name = "textBox_Kesselname";
             textBox_Kesselname.ReadOnly = true;
+            // 
+            // textBox_Kesselleistung
+            // 
+            textBox_Kesselleistung.BackColor = System.Drawing.Color.White;
+            resources.ApplyResources(textBox_Kesselleistung, "textBox_Kesselleistung");
+            textBox_Kesselleistung.Name = "textBox_Kesselleistung";
+            textBox_Kesselleistung.ReadOnly = true;
             // 
             // textBox_Ruecklauf
             // 
@@ -295,17 +306,6 @@
             btn_Admin.Name = "btn_Admin";
             btn_Admin.UseVisualStyleBackColor = true;
             btn_Admin.Click += btn_Admin_Click;
-            // 
-            // label19
-            // 
-            resources.ApplyResources(label19, "label19");
-            label19.Name = "label19";
-            // 
-            // cmbBrennstoffArt
-            // 
-            cmbBrennstoffArt.FormattingEnabled = true;
-            resources.ApplyResources(cmbBrennstoffArt, "cmbBrennstoffArt");
-            cmbBrennstoffArt.Name = "cmbBrennstoffArt";
             // 
             // Form_Heizkessel
             // 
@@ -365,7 +365,7 @@
         private System.Windows.Forms.TextBox textBox_Kesselbeschreibung;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.TextBox textBox_Kesselleistung;
-        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.Label label_Kesseltyp;
         private System.Windows.Forms.TextBox textBox_Kesseltyp;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.TextBox textBox_Kesselname;
@@ -378,7 +378,7 @@
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.Label label_BrennstoffArt;
         private System.Windows.Forms.ComboBox cmbBrennstoffArt;
     }
 }

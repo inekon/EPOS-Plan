@@ -74,9 +74,9 @@
             label1.Location = new System.Drawing.Point(13, 29);
             label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label1.Name = "label1";
-            label1.Size = new System.Drawing.Size(107, 17);
+            label1.Size = new System.Drawing.Size(91, 17);
             label1.TabIndex = 4;
-            label1.Text = "Energieerzeuger:";
+            label1.Text = "Energieträger:";
             // 
             // comboBox_Varianten
             // 
@@ -94,7 +94,7 @@
             label2.Name = "label2";
             label2.Size = new System.Drawing.Size(138, 57);
             label2.TabIndex = 7;
-            label2.Text = "Varianten Auswahl:";
+            label2.Text = "Energieträger Varianten Auswahl:";
             // 
             // Form_Kosten_VarAuswahl
             // 
@@ -114,7 +114,7 @@
             Name = "Form_Kosten_VarAuswahl";
             ShowInTaskbar = false;
             StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            Text = "Energieerzeuger Variante";
+            Text = "Energieträger Variante";
             Load += Form_Kosten_VarAuswahl_Load;
             ResumeLayout(false);
             PerformLayout();
