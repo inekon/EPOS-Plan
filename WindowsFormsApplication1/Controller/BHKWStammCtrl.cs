@@ -132,18 +132,28 @@ namespace WindowsFormsApplication1
             return val != null && val != DBNull.Value && Convert.ToBoolean(val);
         }
 
+        /// <summary>
+        /// Hebt den ReadOnly-Schutz fuer genau den naechsten <see cref="Update"/>-Aufruf auf.
+        /// Nur setzen, wenn der Anwender das Ueberschreiben eines Katalogsatzes ausdruecklich
+        /// bestaetigt hat (siehe Form_DBBHKW); wird danach selbsttaetig zurueckgesetzt.
+        /// </summary>
+        public bool SchreibschutzUebergehen = false;
+
         public bool Update()
         {
             // ReadOnly-Schutz: schreibgeschuetzte Stammdatensaetze duerfen nicht geaendert werden.
             // Nur bei Standalone-Aufruf pruefen (kein externer Transaktions-Connection gesetzt),
             // um Sperrkonflikte mit einer bereits laufenden Transaktion zu vermeiden. Bei
             // transaktionalen Neuanlagen ist der Datensatz ohnehin frisch (ReadOnly = false).
-            if (DBCommand.Connection == null && IsReadOnly(model.m_szBezeichner))
+            if (!SchreibschutzUebergehen && DBCommand.Connection == null && IsReadOnly(model.m_szBezeichner))
             {
                 MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
                     "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
+
+            // Die Freigabe gilt nur fuer diesen einen Aufruf.
+            SchreibschutzUebergehen = false;
 
             try
             {
