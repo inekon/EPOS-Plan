@@ -761,8 +761,27 @@ namespace WindowsFormsApplication1
                 // taucht in mehreren Anlagen auf und muss nicht mehrfach geprueft werden.
                 Dictionary<int, bool> pufferCache = new Dictionary<int, bool>();
 
+                // EINE ZEILE JE PROJEKT UND GERAET (Teil A der Anlagenzeilen-Eindeutigkeit).
+                //
+                // WARUM DIE PRUEFUNG HIER STEHT UND NICHT NUR IM DIALOG. Dies ist der EINE
+                // Schreibweg aller Erzeuger - Wizard, Startseitenkarten, Kontextmenues und
+                // das Simulationsdetail laufen samt und sonders hier hindurch. Eine
+                // Pruefung je Dialog waere zwoelfmal dieselbe Wahrheit, und der
+                // dreizehnte Dialog haette sie wieder nicht.
+                //
+                // WARUM DIE BELEGUNG UND NICHT NUR EIN SELECT. Der Weg ist Loeschen +
+                // Neuanlegen: Beim Eintritt sind die alten Anlagenzeilen bereits fort, die
+                // neuen noch nicht alle da. Die Dublette entsteht INNERHALB der Liste -
+                // zwei Eintraege gleichen Bezeichners loesen ueber CopyFromStamm auf
+                // dieselbe Projektkopie auf - und genau dort wird sie hier erkannt.
+                AnlagenEindeutigkeit.Belegung belegt = new AnlagenEindeutigkeit.Belegung();
+                List<WErzeugerModel> geschrieben = new List<WErzeugerModel>();
+                bool feldHinweisGezeigt = false;
+
                 foreach (var item in list)
                 {
+                    // Gesperrte Verweisspalte dieses Anlagentyps (null = keine Sperre).
+                    string sperrSpalte = null;
                     // Stammdatensatz der jeweiligen Energieanlage bei Bedarf ins Projekt kopieren
                     // (Dispatch ueber ID_Type / Tab_Typ_Energieanlagen). Idempotent (dedup per Bezeichner + Projekt).
                     // Weitere Typen (Heizkessel, PV, Stromspeicher, Solar, Pufferspeicher) hier analog ergaenzen,
@@ -771,21 +790,36 @@ namespace WindowsFormsApplication1
                     {
                         int idWp = new WPCtrl().CopyFromStamm(item.Bezeichner, projektID);
                         if (idWp > 0) item.ID_WP = idWp;
+                        sperrSpalte = AnlagenEindeutigkeit.SPALTE_WP;
                     }
                     else if (item.ID_Type == WizardItemClass.BHKW_TYP)
                     {
                         int idBhkw = new BHKWCtrl().CopyFromStamm(item.Bezeichner, projektID);
                         if (idBhkw > 0) item.ID_BHKW = idBhkw;
+                        sperrSpalte = AnlagenEindeutigkeit.SPALTE_BHKW;
                     }
                     else if (CheckType(item, WizardItemClass.KESSEL_TYP, WizardItemClass.REF_KESSEL_TYP))
                     {
                         int idKessel = new HeizkesselCtrl().CopyFromStamm(item.Bezeichner, projektID);
                         if (idKessel > 0) item.ID_Kessel = idKessel;
+                        sperrSpalte = AnlagenEindeutigkeit.SPALTE_KESSEL;
                     }
                     else if (CheckType(item, WizardItemClass.SP_TYP, WizardItemClass.REF_SP_TYP))
                     {
                         int idSp = new StromspeicherCtrl().CopyFromStamm(item.Bezeichner, projektID);
                         if (idSp > 0) item.ID_SP = idSp;
+
+                        // KEINE Geraetesperre: eine zweite Zeile auf denselben Speicher ist
+                        // eine weitere VARIANTE (Fachkonzept Stromspeicher 7.3). Was auch
+                        // dort nicht vorkommen darf, sind zwei Varianten GLEICHEN NAMENS -
+                        // SpVariantenWiederherstellen ordnet die geretteten
+                        // Betriebsparameter ueber (ID_Type, Bezeichner) zu und traefe sonst
+                        // immer dieselbe Zeile. Die Pruefung stammt aus
+                        // StromspeicherKontextMenuCtrl.VarianteAnlegen und gilt jetzt auch
+                        // hier; nur kann sie an dieser Stelle nicht abbrechen (das DELETE
+                        // ist bereits gelaufen), sondern vergibt ein Suffix.
+                        item.Bezeichner = AnlagenEindeutigkeit.SpeichervarianteBenennen(item.Bezeichner, belegt);
+                        belegt.NameMerken(item.Bezeichner);
                     }
                     else if (item.ID_Type == WizardItemClass.PUFFER_TYP)
                     {
@@ -811,16 +845,47 @@ namespace WindowsFormsApplication1
                             idPuf = item.ID_PUFFER;
 
                         item.ID_PUFFER = (idPuf > 0) ? idPuf : 0;
+                        sperrSpalte = AnlagenEindeutigkeit.SPALTE_PUFFER;
                     }
                     else if (CheckType(item, WizardItemClass.PV_TYP, WizardItemClass.REF_PV_TYP))
                     {
                         int idPv = new PhotovoltaikCtrl().CopyFromStamm(item.Bezeichner, projektID);
                         if (idPv > 0) item.ID_PV = idPv;
+
+                        // KEINE Sperre: mehrere Felder desselben Modultyps sind richtig -
+                        // die Engine rechnet PV und Solarthermie bewusst je Zeile. Gemeldet
+                        // wird nur die exakte Wiederholung (Neigung UND Azimut UND
+                        // Modulanzahl gleich), und auch die nur als Hinweis.
+                        if (!feldHinweisGezeigt)
+                            feldHinweisGezeigt = AnlagenEindeutigkeit.FeldHinweisPruefen(item, geschrieben);
                     }
                     else if (CheckType(item, WizardItemClass.SOLAR_TYP, WizardItemClass.REF_SOLAR_TYP))
                     {
                         int idSol = new SolarkollektorenCtrl().CopyFromStamm(item.Bezeichner, projektID);
                         if (idSol > 0) item.ID_Solar = idSol;
+
+                        if (!feldHinweisGezeigt)
+                            feldHinweisGezeigt = AnlagenEindeutigkeit.FeldHinweisPruefen(item, geschrieben);
+                    }
+
+                    // --- EINE ZEILE JE PROJEKT UND GERAET -----------------------------
+                    // Zeigt bereits eine Zeile dieses Projekts auf dasselbe Geraet, fragt
+                    // Aufnehmen nach und legt bei "Ja" eine eigene Geraetekopie an (dabei
+                    // wandert auch der Bezeichner der Anlagenzeile auf den neuen Namen).
+                    // 0 heisst "der Anwender will die Zeile nicht" - sie wird uebergangen.
+                    if (sperrSpalte != null)
+                    {
+                        GeraeteSperre sperre = AnlagenEindeutigkeit.Sperre(sperrSpalte);
+                        int idAlt = Verweis(item, sperrSpalte);
+
+                        if (idAlt > 0)
+                        {
+                            int idNeu = AnlagenEindeutigkeit.Aufnehmen(
+                                sperre, projektID, idAlt, item, belegt, item.GeraetekopieErzwingen);
+
+                            if (idNeu <= 0) continue;   // Aufnahme verworfen
+                            if (idNeu != idAlt) VerweisSetzen(item, sperrSpalte, idNeu);
+                        }
                     }
 
                     // Anweisung und Parameter stehen zentral (siehe SQL_ANLAGE_INSERT):
@@ -831,6 +896,8 @@ namespace WindowsFormsApplication1
                         SpVariantenVerwerfen("das Neuanlegen der Anlagen ist gescheitert");
                         return false;
                     }
+
+                    geschrieben.Add(item);
                 }
 
                 // AP9b: Erst jetzt, mit vollstaendig neu geschriebenen Anlagenzeilen, sind
@@ -853,6 +920,28 @@ namespace WindowsFormsApplication1
         private static bool CheckType(WErzeugerModel item, int typ, int refTyp)
         {
             return item.ID_Type == typ || item.ID_Type == refTyp;
+        }
+
+        /// <summary>
+        /// Liest den Geräteverweis einer gesperrten Spalte aus dem Modell. Zwei
+        /// Zuordnungen an einer Stelle - der Gegenpart ist <see cref="VerweisSetzen"/>.
+        /// </summary>
+        private static int Verweis(WErzeugerModel item, string spalte)
+        {
+            if (spalte == AnlagenEindeutigkeit.SPALTE_WP) return item.ID_WP;
+            if (spalte == AnlagenEindeutigkeit.SPALTE_KESSEL) return item.ID_Kessel;
+            if (spalte == AnlagenEindeutigkeit.SPALTE_BHKW) return item.ID_BHKW;
+            if (spalte == AnlagenEindeutigkeit.SPALTE_PUFFER) return item.ID_PUFFER;
+            return 0;
+        }
+
+        /// <summary>Setzt den Geräteverweis einer gesperrten Spalte im Modell.</summary>
+        private static void VerweisSetzen(WErzeugerModel item, string spalte, int id)
+        {
+            if (spalte == AnlagenEindeutigkeit.SPALTE_WP) item.ID_WP = id;
+            else if (spalte == AnlagenEindeutigkeit.SPALTE_KESSEL) item.ID_Kessel = id;
+            else if (spalte == AnlagenEindeutigkeit.SPALTE_BHKW) item.ID_BHKW = id;
+            else if (spalte == AnlagenEindeutigkeit.SPALTE_PUFFER) item.ID_PUFFER = id;
         }
         
         /// <summary>

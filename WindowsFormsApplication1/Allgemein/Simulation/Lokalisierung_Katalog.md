@@ -1217,3 +1217,31 @@ englischer Oberfläche liefert `WartungDbWert("PROZENT_INV")` weiterhin `%/a`, u
 `Kollektormodulanzahl`) und die Gerätetabellen stehen als Spaltennamen in der Landkarte
 `TechnikPlanwertCtrl.Plaene` — Spaltennamen sind keine Datenwerte und gehören deshalb weiterhin
 nicht in `DbWerte` (dieselbe Abgrenzung wie bei `Tab_WP.Heizung`, siehe Kopf von `DbWerte.cs`).
+
+## Nachtrag Anlagenzeilen-Eindeutigkeit — eine Zeile je Projekt und Gerät (18.08.2026)
+
+Umsetzung der Nutzerentscheidung „Prüfung und Index"; Befundlage, Leitgedanke und Verifikation in
+[`../Update/Anlagenzeilen_Eindeutigkeit_Protokoll.md`](../Update/Anlagenzeilen_Eindeutigkeit_Protokoll.md).
+
+**Drei-Schichten-Zuordnung dieser Etappe.**
+
+| Schicht | Wo | Werte |
+|---|---|---|
+| **Persistenz** | keine neuen DB-Werte. Tabellennamen aus `SchemaKatalog`, Spaltennamen als Konstanten in `Allgemein/Update/AnlagenEindeutigkeit.cs:71-74` | `ID_WP`, `ID_Kessel`, `ID_BHKW`, `ID_PUFFER` — Spalten**namen**, keine Datenwerte (Abgrenzung wie im Kopf von `DbWerte.cs`) |
+| **Schlüssel** | dieselben Spaltennamen als Steuerwerte in `WizardCtrl.Verweis`/`VerweisSetzen` (`Controller/WizardCtrl.cs:929/939`) und im Indexnamen `idx_Anlage_<Spalte>` | sprachneutral, ASCII |
+| **Anzeige** | die fünf `ANL_*` unten, ausgegeben über `AnlagenEindeutigkeit.Fragen`/`Melden` (`:195`/`:212`) | s. Tabelle |
+
+**Nicht lokalisiert und warum.** `GeraeteSperre.Gewerk` (`AnlagenEindeutigkeit.cs:79-88`:
+„Wärmepumpe", „Heizkessel", „BHKW", „Pufferspeicher") ist reiner **Protokolltext** des
+Migrationsberichts — dieselbe Kategorie wie die übrigen Zeilen in `SchemaMigration`, die
+durchgehend deutsch bleiben. Ebenso die `Console.WriteLine`-Diagnosen des Schreibwegs.
+
+### Neu (5)
+
+| Schlüssel | DE | EN | Fundstellen | Grund |
+|---|---|---|---|---|
+| `ANL_DUBLETTE_TITEL` | Gerät bereits im Projekt | Device already in the project | AnlagenEindeutigkeit.cs (`Aufnehmen`, `ZweitesGeraetBestaetigen`, `FeldHinweisPruefen`, `SpeichervarianteBenennen`) | **neu.** Ein Titel für alle vier Meldungen dieses Pakets — der Anwender soll sie als dieselbe Sache erkennen. |
+| `ANL_DUBLETTE_FRAGE` | Das Gerät „{0}" ist bereits im Projekt.\n\nAls zweites, baugleiches Gerät aufnehmen? Dann wird eine eigene Gerätekopie angelegt.\n\n„Nein" verwirft die Aufnahme. | The device “{0}” is already part of this project.\n\nAdd it as a second, identical device? A separate device copy will then be created.\n\n“No” discards the entry. | AnlagenEindeutigkeit.cs (`Aufnehmen:333`, `ZweitesGeraetBestaetigen:238`), Form_PufferSp.cs (`btn_PufferSp_Hinzu_Click:112`) | **neu.** Die eine Rückfrage — ausdrücklich mit BEIDEN Folgen im Text, weil „Nein" eine Zeile verwirft und das sonst unsichtbar bliebe. Dialog und Schreibweg benutzen denselben Schlüssel; zwei Wortlaute für dieselbe Frage wären der Anfang zweier Wahrheiten. |
+| `ANL_DUBLETTE_KOPIE_FEHLER` | Für „{0}" konnte keine eigene Gerätekopie angelegt werden. Die Anlage wurde nicht aufgenommen; Einzelheiten stehen im Protokoll. | No separate device copy could be created for “{0}”. The item was not added; details are in the log. | AnlagenEindeutigkeit.cs (`Aufnehmen`) | **neu.** Nennt die FOLGE („wurde nicht aufgenommen"), nicht nur den Fehler — ohne Kopie gäbe es nur noch die Dublette oder gar nichts, und der Anwender muss wissen, welches von beidem eingetreten ist. |
+| `ANL_FELD_HINWEIS` | „{0}" ist mit derselben Neigung ({1}°), demselben Azimut ({2}°) und derselben Modulanzahl ({3}) bereits im Projekt.\n\nMehrere Felder desselben Modultyps sind zulässig — bitte prüfen, ob das so gewollt ist. | “{0}” is already in the project with the same tilt ({1}°), the same azimuth ({2}°) and the same module count ({3}).\n\nSeveral arrays of the same module type are allowed — please check whether this is intended. | AnlagenEindeutigkeit.cs (`FeldHinweisPruefen:609`) | **neu.** PV und Solarthermie sind NICHT gesperrt. Der zweite Satz steht deshalb ausdrücklich im Text: Der Hinweis ist eine Rückversicherung, keine Fehlermeldung. Die drei Zahlen nennen genau die Kriterien, die zum Treffer geführt haben. |
+| `ANL_SP_NAME_ANGEPASST` | Der Name „{0}" ist im Projekt bereits vergeben. Die Speichervariante wurde in „{1}" umbenannt. | The name “{0}” is already used in this project. The storage variant was renamed to “{1}”. | AnlagenEindeutigkeit.cs (`SpeichervarianteBenennen:650`) | **neu.** Gegenstück zu `VAR_MSG_NAME_VERGEBEN`, das im Kontextmenü die Eingabe zurückweisen kann. Auf dem Wizard-Weg steht der Aufruf hinter einem bereits ausgeführten DELETE — dort wird umbenannt statt abgebrochen, und der Text sagt beide Namen. |

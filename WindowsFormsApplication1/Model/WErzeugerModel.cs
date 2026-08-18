@@ -33,6 +33,21 @@
         public int ID_PUFFER;
 
         /// <summary>
+        /// NICHT PERSISTENT. Der Anwender hat in der Oberfläche bestätigt, dass dieses
+        /// Gerät ein ZWEITES MAL ins Projekt soll (Rückfrage aus
+        /// <see cref="AnlagenEindeutigkeit"/>) - der Schreibweg legt dafür eine eigene
+        /// Gerätekopie an, statt die vorhandene ID ein zweites Mal zu referenzieren.
+        ///
+        /// <para>
+        /// WOZU DAS FELD. Ohne die Weitergabe der Antwort käme dieselbe Frage zweimal:
+        /// einmal im Dialog beim Aufnehmen und ein zweites Mal in
+        /// <c>WizardCtrl.Add_WP_Waermeerzeuger</c> beim Speichern. Der Wert wird in keine
+        /// Spalte geschrieben; er lebt genau so lange wie die Modell-Liste des Dialogs.
+        /// </para>
+        /// </summary>
+        public bool GeraetekopieErzwingen;
+
+        /// <summary>
         /// <c>ID_Carrier</c> NULL-treu. In der Datenbank ist die Spalte NULL-fähig und
         /// führt beide Schreibweisen für „kein Energieträger": NULL (74 Zeilen im
         /// Bestand) und 0 (3 Zeilen). Als <c>int</c> allein ließ sich das nicht
