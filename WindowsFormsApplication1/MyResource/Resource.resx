@@ -4588,7 +4588,6 @@ Mehrere Felder desselben Modultyps sind zulässig — bitte prüfen, ob das so g
   <data name="ANL_SP_NAME_ANGEPASST" xml:space="preserve">
     <value>Der Name „{0}" ist im Projekt bereits vergeben. Die Speichervariante wurde in „{1}" umbenannt.</value>
   </data>
-<<<<<<< HEAD
   <data name="GESETZ_MENUE" xml:space="preserve">
     <value>Gesetzliche Parameter…</value>
   </data>
@@ -4702,7 +4701,7 @@ Danach fehlt der Wert in jeder Rechnung, die dieses Jahr betrifft.</value>
   </data>
   <data name="GESETZ_KLASSE_ANZ_UMSATZSTEUER" xml:space="preserve">
     <value>Umsatzsteuer</value>
-=======
+  </data>
   <data name="BK_KOSTEN_OHNE_POSITION" xml:space="preserve">
     <value>⚠ Ohne Kostenposition: {0} — über „Kostenverwaltung öffnen…" und dort „Planwert übernehmen…" erfassen</value>
   </data>
@@ -4711,7 +4710,6 @@ Danach fehlt der Wert in jeder Rechnung, die dieses Jahr betrifft.</value>
   </data>
   <data name="BK_KOSTEN_ENERGIE_PREIS0" xml:space="preserve">
     <value>⚠ Arbeitspreis 0,00 bei: {0} — ohne Preis können keine Energiekosten entstehen; im Reiter „Energiekosten" der Kostenverwaltung erfassen.</value>
->>>>>>> eafbe15227858938e527b134232853c4ce3d8563
   </data>
   <data name="ADM_BTN_SPEICHERN" xml:space="preserve">
     <value>Speichern</value>
