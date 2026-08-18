@@ -256,6 +256,7 @@ UTF-8-kodierten `VdiAuswahlFilter.cs` bzw. als `lbl_Filter.Text` in den `.resx`-
 * **Bestandsbefund SimulationSPK (BEHOBEN 18.08.2026):** Die globale
   Verbrauchs-Bilanzkaskade in `Bilanz_und_Nutzungsgrad` (`SimulationSPK.cs:259–274`) kannte
   nur die Brennstoff-IDs 1–13 und 15–22. Kessel mit Brennstoff 14, 23 (Fernwärme),
+<<<<<<< HEAD
   24 (Sonstige) oder 25 (Wasserstoff) wurden in keinen globalen Brennstoffzähler gebucht
   (`Gasverbrauch_SPK`, `Oelverbrauch_SPK`, …); Bruttoerzeugung und Emissionen stimmten
   (tabellenbasiert). Seit dem Clamp-Fix können 24/25 real in `Tab_Heizkessel_STAMM`
@@ -284,6 +285,39 @@ UTF-8-kodierten `VdiAuswahlFilter.cs` bzw. als `lbl_Filter.Text` in den `.resx`-
   Zweige, und `Sonstigemenge_BHKW` wird zwar deklariert, resettet und vom Runner
   (`SimulationRunner.cs:492–494`) samt Anzeige konsumiert, aber nie befüllt. Gleiches
   Lösungsmuster wie beim Kessel anwendbar; als eigener Task vorgemerkt.
+=======
+  24 (Sonstige) oder 25 (Wasserstoff) werden in keinen globalen Brennstoffzähler gebucht
+  (`Gasverbrauch_SPK`, `Oelverbrauch_SPK`, …); Bruttoerzeugung und Emissionen stimmen
+  (tabellenbasiert). Kein Crash-Risiko: die ID indiziert kein Array, und die
+  Öl-Erkennung 6–9/18–22 behandelt 24/25 konsistent als Gas-Feld-Leser. Seit dem
+  Clamp-Fix können 24/25 real in `Tab_Heizkessel_STAMM` stehen — die Lücke ist damit
+  praktisch relevant; als eigener Task vorgemerkt.
+* **Bestandsbefund SimulationBHKW (BEHOBEN 18.08.2026):** Die Brennstoff-Kaskade in
+  `Auswertung` (`SimulationBHKW.cs:325–336`) hatte dieselbe Lücke wie der Kessel:
+  13 (Strom), 14 (Biogas), 23 (Fernwärme), 24 (Sonstige) und 25 (Wasserstoff) fielen
+  durch alle Zweige; `Sonstigemenge_BHKW` wurde deklariert, resettet und vom Runner
+  (`SimulationRunner.cs:492–494`) samt Anzeige (`SIM_LABEL_SONSTIGE`) konsumiert, aber
+  nie befüllt — ein solches BHKW zeigte in der Brennstoffliste der Detailansicht
+  stattdessen rot „Kein Brennstoff". Behebung nach dem Kessel-Muster
+  (`Tab_Brennstoff_Stamm.ID_Kategorie`): 14 (Biogas, Kategorie 1) zählt zum Gas-Zweig,
+  und zwar einschließlich der Gasspitzen-Formel — dieselbe bewusste Nebenwirkung wie
+  beim Kessel (reine Biogas-Anlage weist die Gasspitze aus); `Gasspitze_BHKW` hat
+  derzeit ohnehin keinen Leser. Alles ohne eigenen Zähler (13/23/24/25, künftige IDs)
+  fängt ein finales `else` auf `Sonstigemenge_BHKW`. Klärfrage Strom: Ein BHKW mit
+  Brennstoff 13 kommt praktisch nicht vor (Katalogbestand 18.08.2026: 18× Brennstoff 1,
+  3× Brennstoff 8, sonst nichts), und `Stromverbrauch_BHKW` wird nirgends gelesen —
+  13 läuft deshalb bewusst in den Sammelposten statt in einen unsichtbaren
+  Strom-Sonderzweig; der Stub behielt nur einen berichtigten Kommentar (der alte
+  nannte fälschlich „Brennstoffart 14"). Anders als beim Kessel war an der Anzeige
+  nichts nachzuziehen: die BHKW-Brennstoffzeilen (`Form_Simulation_Detail.cs:6483–6531`)
+  hängen direkt an den Zählern, nicht an einer ID-Tabelle. Verifikation: Prüfbuild
+  0 Fehler / 6 Bestandswarnungen; Simulations-Smoke auf DB-Arbeitskopie
+  (`%TEMP%\wpk17_bhkw`, Muster `wpk13_spk`, Projekt 1017 mit BHKW 1017080, Hash-Beweis
+  auf den Worktree-Build) über sechs Durchgänge Brennstoff 1/14/23/13/24/25:
+  Verbrauch wandert nur zwischen Gas- und Sammelzähler (je Lauf exakt gleich
+  `BruttoBHKWErzeugung` 90,102921 MWh), Gasspitze nur bei 1 und 14 (bitgleich),
+  Physik (Brutto/Wärme/Strom) über alle sechs Läufe bitidentisch, 48/48 Asserts PASS.
+>>>>>>> claude/zen-elion-54f9d7
 * **Bestandsbefund Wärmepumpe (nicht angefasst):** scheitert `InsertKenndatenStamm` mitten in
   der Kennlinienschleife, bleibt der bereits geschriebene STAMM-Satz ohne vollständige
   Kennlinien stehen — es gibt an dieser Stelle keine Transaktion. Beim Mehrfachladen zählt so
