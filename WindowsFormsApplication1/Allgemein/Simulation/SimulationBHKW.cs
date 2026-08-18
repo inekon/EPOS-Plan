@@ -87,7 +87,7 @@ namespace WindowsFormsApplication1
         public double Kohle_BHKW = 0;
         public double Pellets_BHKW = 0;
         public double TierischeFette_BHKW = 0;
-        public float Stromverbrauch_BHKW = 0f; // Ergänzt aus Brennstoffart 14
+        public float Stromverbrauch_BHKW = 0f; // Nie befüllt, nirgends gelesen — Brennstoff 13 (Strom) läuft in Auswertung() in den Sammelposten Sonstigemenge_BHKW
 
         //public float Biogasverbrauch_BHKW = 0f;
         //public float Fluessiggasverbrauch_BHKW = 0f;
@@ -280,7 +280,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Schritt 2 des Laufs (vormals aus <c>Berechnung</c>): Laufzeiten,
         /// Brennstoffverbrauch und Emissionen aus den Modul-Jahressummen. Wort für Wort
-        /// unverändert.
+        /// unverändert bis auf die Brennstoff-Kaskade (Kategorien-Zuordnung nach
+        /// Tab_Brennstoff_Stamm, siehe Kommentar dort).
         /// </summary>
         private void Auswertung(int anzahl)
         {
@@ -319,10 +320,19 @@ namespace WindowsFormsApplication1
 
                     // Brennstoffarten-Verzweigung
 
-                    // Den Verbrauch auf die globalen Brennstoffzähler buchen
+                    // Den Verbrauch auf die globalen Brennstoffzähler buchen. Die Bereiche
+                    // spiegeln Tab_Brennstoff_Stamm.ID_Kategorie (Vorbild: SimulationSPK,
+                    // Bilanz_und_Nutzungsgrad): 14 (Biogas) ist Kategorie 1 und zählt zum
+                    // Gas — einschließlich der Gasspitze, wie beim reinen Biogas-Kessel.
+                    // Was keinen eigenen Zähler hat (13 Strom, 23 Fernwärme, 24 Sonstige,
+                    // 25 Wasserstoff, künftige IDs), fängt das else auf den Sammelposten
+                    // Sonstigemenge_BHKW, den Runner und Anzeige bereits konsumieren.
+                    // 13 bekommt bewusst keinen Strom-Sonderzweig wie der Kessel:
+                    // Stromverbrauch_BHKW wird nirgends gelesen, ein Strom-BHKW kommt im
+                    // Katalog nicht vor.
                     int art = bhkwBrennstoffart[zaehler];
 
-                    if (art >= 1 && art <= 5)
+                    if ((art >= 1 && art <= 5) || art == 14)
                     {
                         Gasverbrauch_BHKW += ModulVerbrauch;
                         Gasspitze_BHKW += bhkwWaermeLeistung[zaehler] * (1f + bhkwSKZ[zaehler]) / bhkwWirkungsgrad[zaehler];
@@ -334,6 +344,7 @@ namespace WindowsFormsApplication1
                     else if (art == 17) TierischeFette_BHKW += ModulVerbrauch;
                     else if (art == 15) Pellets_BHKW += ModulVerbrauch;
                     else if (art == 16) Rapsoelverbrauch_BHKW += ModulVerbrauch;
+                    else Sonstigemenge_BHKW += ModulVerbrauch;
 
                 }
             }
