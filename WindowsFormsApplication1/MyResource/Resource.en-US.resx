@@ -4573,4 +4573,13 @@ Several arrays of the same module type are allowed — please check whether this
   <data name="ANL_SP_NAME_ANGEPASST" xml:space="preserve">
     <value>The name “{0}” is already used in this project. The storage variant was renamed to “{1}”.</value>
   </data>
+  <data name="BK_KOSTEN_OHNE_POSITION" xml:space="preserve">
+    <value>⚠ No cost item: {0} — record it via “Open cost management…” and then “Adopt engineering value…”</value>
+  </data>
+  <data name="BK_KOSTEN_OHNE_POSITION_HINT" xml:space="preserve">
+    <value>“{0}” is installed in this project but carries no investment item — the “Investment” tile therefore does not include it.</value>
+  </data>
+  <data name="BK_KOSTEN_ENERGIE_PREIS0" xml:space="preserve">
+    <value>⚠ Unit price 0.00 for: {0} — without a price no energy costs can arise; enter it on the “Energy costs” tab of cost management.</value>
+  </data>
 </root>
