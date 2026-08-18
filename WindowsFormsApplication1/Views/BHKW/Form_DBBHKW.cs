@@ -6,7 +6,8 @@ namespace WindowsFormsApplication1
 {
     // Editor der BHKW-STAMMDATEN. Liest/schreibt/loescht ausschliesslich Tab_BHKW_STAMM
     // (nicht mehr die Projekt-Tabelle Tab_BHKW). Schreibgeschuetzte Datensaetze (ReadOnly=true)
-    // koennen nicht ueberschrieben werden. Neue Datensaetze werden mit ReadOnly=false angelegt.
+    // koennen nur nach ausdruecklicher Rueckfrage ueberschrieben werden. Neue
+    // Datensaetze werden mit ReadOnly=false angelegt.
     public partial class Form_DBBHKW : Form
     {
         public BHKWStammModel model = new BHKWStammModel();
@@ -16,6 +17,10 @@ namespace WindowsFormsApplication1
         public const int MODE_NEU = 1;
         public int m_mode = MODE_EDIT;
         public string m_szName = "";
+
+        // true, wenn der geladene Datensatz aus dem Auslieferungskatalog stammt (ReadOnly).
+        // Ueberschreiben bleibt moeglich, verlangt dann aber eine ausdrueckliche Bestaetigung.
+        private bool m_bKatalogsatz = false;
 
         public Form_DBBHKW()
         {
@@ -49,14 +54,17 @@ namespace WindowsFormsApplication1
                 ctrl.ReadAll("Bezeichner='" + szName + "'");
                 model = ctrl.items[0];
 
-                // ReadOnly-Schutz: schreibgeschuetzte Datensaetze koennen nicht ueberschrieben werden.
-                bool ro = model.m_bReadOnly;
+                // Katalogsaetze (ReadOnly) bleiben ueberschreibbar; die Rueckfrage stellt
+                // btn_Ueberschreiben_Click. Damit folgt der Dialog dem Hausmuster von
+                // Heizkessel, Gebaeude und Brauchwasser: Knopf aktiv, Pruefung beim Speichern.
+                m_bKatalogsatz = model.m_bReadOnly;
                 btn_Speichern.Enabled = false;
                 btn_Speichern_Unter.Enabled = true;   // "Speichern unter" legt eine neue Kopie an -> immer erlaubt
-                btn_Überschreiben.Enabled = !ro;      // Ueberschreiben nur wenn NICHT schreibgeschuetzt
+                btn_Überschreiben.Enabled = true;
             }
             else
             {
+                m_bKatalogsatz = false;
                 btn_Speichern.Enabled = true;
                 btn_Speichern_Unter.Enabled = false;
                 btn_Überschreiben.Enabled = false;
@@ -118,7 +126,23 @@ namespace WindowsFormsApplication1
             {
                 ctrl.model = InitDatensatzUpdate(werte);
 
-                // ctrl.Update() prueft selbst erneut auf ReadOnly (Standalone-Aufruf).
+                // Katalogsatz: einmal ausdruecklich nachfragen und den Schutz nur fuer
+                // genau diesen Schreibvorgang aufheben.
+                if (m_bKatalogsatz)
+                {
+                    if (MessageBox.Show(
+                            "Dieser Datensatz stammt aus dem Auslieferungskatalog und ist schreibgeschützt."
+                            + Environment.NewLine + Environment.NewLine
+                            + "Soll er trotzdem überschrieben werden?",
+                            "Schreibgeschützter Datensatz",
+                            MessageBoxButtons.YesNo, MessageBoxIcon.Warning,
+                            MessageBoxDefaultButton.Button2) != DialogResult.Yes)
+                        return;
+
+                    ctrl.SchreibschutzUebergehen = true;
+                }
+
+                // Ohne diese Freigabe prueft ctrl.Update() selbst erneut auf ReadOnly.
                 if (ctrl.Update())
                 {
                     MessageBox.Show("Datensatz gespeichert");
