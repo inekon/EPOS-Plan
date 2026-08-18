@@ -253,17 +253,60 @@ UTF-8-kodierten `VdiAuswahlFilter.cs` bzw. als `lbl_Filter.Text` in den `.resx`-
   (Rückfall 25, `DataRepository.ExecuteScalar`); Smoke über den echten Importweg
   `ctrl.Import` mit Index 1/19/23/24/25/26 in beiden Übernahmewegen, 12/12 PASS
   (`%TEMP%\wpk12`), Prüfbuild 0 Fehler / 6 Bestandswarnungen.
-* **Bestandsbefund SimulationSPK (nicht angefasst, 18.08.2026):** Die globale
-  Verbrauchs-Bilanzkaskade in `Bilanz_und_Nutzungsgrad` (`SimulationSPK.cs:259–274`) kennt
+* **Bestandsbefund SimulationSPK (BEHOBEN 18.08.2026):** Die globale
+  Verbrauchs-Bilanzkaskade in `Bilanz_und_Nutzungsgrad` (`SimulationSPK.cs:259–274`) kannte
   nur die Brennstoff-IDs 1–13 und 15–22. Kessel mit Brennstoff 14, 23 (Fernwärme),
-  24 (Sonstige) oder 25 (Wasserstoff) werden in keinen globalen Brennstoffzähler gebucht
-  (`Gasverbrauch_SPK`, `Oelverbrauch_SPK`, …); Bruttoerzeugung und Emissionen stimmen
-  (tabellenbasiert). Kein Crash-Risiko: die ID indiziert kein Array, und die
-  Öl-Erkennung 6–9/18–22 behandelt 24/25 konsistent als Gas-Feld-Leser. Seit dem
-  Clamp-Fix können 24/25 real in `Tab_Heizkessel_STAMM` stehen — die Lücke ist damit
-  praktisch relevant; als eigener Task vorgemerkt.
+  24 (Sonstige) oder 25 (Wasserstoff) wurden in keinen globalen Brennstoffzähler gebucht
+  (`Gasverbrauch_SPK`, `Oelverbrauch_SPK`, …); Bruttoerzeugung und Emissionen stimmten
+  (tabellenbasiert). Seit dem Clamp-Fix können 24/25 real in `Tab_Heizkessel_STAMM`
+  stehen — die Lücke war damit praktisch relevant.
+  Behebung: Zuordnung nach `Tab_Brennstoff_Stamm.ID_Kategorie` — 14 (Biogas,
+  Kategorie 1) zählt zum Gas-Zweig; 23/24/25 und alle künftigen IDs fängt ein neues
+  finales `else` auf den bereits durchgängig verdrahteten Sammelposten
+  `Sonstigverbrauch_SPK` (Runner → `ErgebnisModel` → Ergebnistabellen →
+  `KennzahlenKatalog`-Summen → UI-Zeile „Sonstige"; deren Sichtbarkeitslogik in
+  `Form_Simulation_Detail` erwartete genau diese else-Verzweigung, dort bislang als
+  offener Punkt kommentiert). Gas-Kennungen der Anzeige-Tabelle
+  (`_kesselBrennstoffIds`) um 14 ergänzt. Eigene Zähler je Kategorie (Fernwärme,
+  Wasserstoff) wären ein Ausbau von DB-Schema, Ergebnismodellen, Berichten und
+  Designer/resx — bewusst nicht Teil dieses Fixes. Zwillingsstellen der Öl-Erkennung
+  (`SimulationSPK.cs:352/366/911`) geprüft und unverändert: 6–9/18–22 deckt
+  Kategorie 2 (Öl) vollständig ab; der Nicht-Öl-Kanal für 14/23/24/25 ist Bestand.
+  Nebenwirkung dokumentiert: Reine Biogas-Kessel weisen die Gasspitze jetzt aus
+  (vorher über `Gasverbrauch_SPK < 0.1` genullt) — fachlich konsequent, da Kategorie
+  Gas. Verifikation: Prüfbuild 0 Fehler / 6 Bestandswarnungen; Simulations-Smoke auf
+  DB-Arbeitskopie (`%TEMP%\wpk13_spk`) über beide Rechenwege (Projekt 1017
+  zweikanalig, 1023 einkanalig) mit Brennstoff 3/14/23 je Lauf: Verbrauch wandert nur
+  zwischen den Kategorien-Zählern, `BruttoWaermeSpkErzeugung` und `S_Waerme_spk`
+  bitidentisch über alle drei Durchgänge, alle Asserts PASS.
+* **Bestandsbefund SimulationBHKW (nicht angefasst, 18.08.2026):** Die BHKW-Kaskade
+  (`SimulationBHKW.cs:325–336`) hat dieselbe Lücke — 13/14/23/24/25 fallen durch alle
+  Zweige, und `Sonstigemenge_BHKW` wird zwar deklariert, resettet und vom Runner
+  (`SimulationRunner.cs:492–494`) samt Anzeige konsumiert, aber nie befüllt. Gleiches
+  Lösungsmuster wie beim Kessel anwendbar; als eigener Task vorgemerkt.
 * **Bestandsbefund Wärmepumpe (nicht angefasst):** scheitert `InsertKenndatenStamm` mitten in
   der Kennlinienschleife, bleibt der bereits geschriebene STAMM-Satz ohne vollständige
   Kennlinien stehen — es gibt an dieser Stelle keine Transaktion. Beim Mehrfachladen zählt so
   ein Eintrag als „fehlgeschlagen". Inzwischen behoben (18.08.2026, Aufräumklammer) — siehe
   `VdiImport_WP_Transaktion_Protokoll.md`.
+* **Import-Design Wirkungsgrad-Rückfall 710.01 (UMGESETZT 18.08.2026):** Der
+  Heizkessel-Parser zieht den Kesselwirkungsgrad jetzt aus dem 710.01-Satz (Spalte 6,
+  Volllast bei Nennleistung), wenn Spalte 26 des 700er-Satzes leer ist
+  (`Heizkesselmport.cs`; es zählt die erste 710.01-Zeile des Blocks mit Wert, ein
+  vorhandener Spalte-26-Wert bleibt führend). Anlass: 556 der 816 Katalogkessel
+  (Hoval und Wolf komplett, Viessmann 176/177) kamen ohne Wirkungsgrad an und
+  erhielten bei der Übernahme den Platzhalter 1 in beiden Feldern; der Rückfall füllt
+  539 davon. Weil Brennwertkessel Hi-basierte Volllastwerte über 100 % liefern
+  (17 Hoval-Kessel, 103.2–104.1 % → Faktor bis 1.041), wurde zugleich die
+  Prozent-Klammer der Simulation von > 1.0 auf > 1.5 angehoben (`SimulationSPK.cs`,
+  Kesseldaten-Block; dieselbe Schwelle nutzt `LiesReferenzkessel` seit Review 11) —
+  die alte Schwelle hätte 1.035 als Prozentwert gedeutet und auf ~0.01 zerlegt.
+  Echte Prozentwerte (≥ 50) und echte Faktoren (≤ 1.1) verhalten sich unverändert.
+  Verifikation: Prüfbuild x86 0 Fehler / 6 Bestandswarnungen (zusätzlich x64 für den
+  Smoke); Smoke über den echten `ctrl.Import`-Weg gegen unabhängig vorberechnete
+  Erwartungswerte aller sieben Kataloge: 816/816 PASS (Spots: icoVIT 98 aus 710.01,
+  Vitocrossal 200 CM2 97.2, eloBLOCK VE 6 unverändert 98.2, Hoval > 100 durchgereicht).
+  17 Kessel (6 Buderus KB/GB-i, 11 Weishaupt WTC) führen weder Spalte 26 noch einen
+  710.01-Wert — dort bleibt das Platzhalterverhalten bewusst Bestand. Die
+  Altdatensätze in `Tab_Heizkessel_STAMM`/`Tab_Heizkessel` bleiben auf
+  Nutzerentscheid vom 18.08.2026 unverändert; nur Neu-Importe profitieren.

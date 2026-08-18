@@ -4087,4 +4087,346 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="PSP_KARTE_IM_VERBUND" xml:space="preserve">
     <value>In a parallel array with {0} - this tank has no state of charge of its own; capacity and result row belong to the lead tank.</value>
   </data>
+  <data name="BK_NAV_UEBERSICHT" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="BK_NAV_KOSTEN" xml:space="preserve">
+    <value>Costs</value>
+  </data>
+  <data name="BK_NAV_WIRTSCHAFT" xml:space="preserve">
+    <value>Economics</value>
+  </data>
+  <data name="BK_NAV_BERICHT" xml:space="preserve">
+    <value>Report</value>
+  </data>
+  <data name="BK_KOPF_UEBERSICHT" xml:space="preserve">
+    <value>Overview — base project and variants</value>
+  </data>
+  <data name="BK_KOPF_KOSTEN" xml:space="preserve">
+    <value>Costs — investment, operation, energy</value>
+  </data>
+  <data name="BK_KOPF_WIRTSCHAFT" xml:space="preserve">
+    <value>Economics — net present value method (DIN EN 17463)</value>
+  </data>
+  <data name="BK_KOPF_BERICHT" xml:space="preserve">
+    <value>Report — Word and Excel output</value>
+  </data>
+  <data name="BK_LBL_STAMM" xml:space="preserve">
+    <value>Base project:</value>
+  </data>
+  <data name="BK_CHK_NURSTAEMME" xml:space="preserve">
+    <value>base projects only</value>
+  </data>
+  <data name="BK_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Identifier:</value>
+  </data>
+  <data name="BK_BTN_ANLEGEN" xml:space="preserve">
+    <value>Create variant</value>
+  </data>
+  <data name="BK_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete variant</value>
+  </data>
+  <data name="BK_BTN_SIMULIEREN" xml:space="preserve">
+    <value>Run simulation</value>
+  </data>
+  <data name="BK_SP_ART" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="BK_SP_BEZEICHNER" xml:space="preserve">
+    <value>Identifier</value>
+  </data>
+  <data name="BK_SP_PROJEKTNAME" xml:space="preserve">
+    <value>Project name</value>
+  </data>
+  <data name="BK_SP_SIMSTAND" xml:space="preserve">
+    <value>Simulation status</value>
+  </data>
+  <data name="BK_ART_STAMM" xml:space="preserve">
+    <value>Base</value>
+  </data>
+  <data name="BK_ART_VARIANTE" xml:space="preserve">
+    <value>Variant</value>
+  </data>
+  <data name="BK_ART_STAMMPROJEKT" xml:space="preserve">
+    <value>(base project)</value>
+  </data>
+  <data name="BK_LBL_KOMPONENTEN_STAMM" xml:space="preserve">
+    <value>Components of the base project</value>
+  </data>
+  <data name="BK_LBL_KOMPONENTEN_DIFF" xml:space="preserve">
+    <value>Differences from the base project — variant “{0}”</value>
+  </data>
+  <data name="BK_SP_GEWERK" xml:space="preserve">
+    <value>Trade</value>
+  </data>
+  <data name="BK_SP_MERKMAL" xml:space="preserve">
+    <value>Property</value>
+  </data>
+  <data name="BK_SP_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="BK_SP_WERT_STAMM" xml:space="preserve">
+    <value>Base</value>
+  </data>
+  <data name="BK_SP_WERT_VARIANTE" xml:space="preserve">
+    <value>Variant</value>
+  </data>
+  <data name="BK_SP_AKTION" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="BK_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Adopt from…</value>
+  </data>
+  <data name="BK_TIP_UEBERNEHMEN" xml:space="preserve">
+    <value>Adopting individual properties follows in the next package.</value>
+  </data>
+  <data name="BK_MSG_KEINE_ABWEICHUNG" xml:space="preserve">
+    <value>No differences in the compared plant and building configuration.</value>
+  </data>
+  <data name="BK_MSG_KEINE_KOMPONENTEN" xml:space="preserve">
+    <value>No components are stored for this project.</value>
+  </data>
+  <data name="BK_MSG_ANZAHL_UNTERSCHIEDE" xml:space="preserve">
+    <value>{0} difference(s) compared to the base project.</value>
+  </data>
+  <data name="BK_MSG_KEIN_STAMM" xml:space="preserve">
+    <value>No base project selected.</value>
+  </data>
+  <data name="BK_MSG_NUR_VARIANTE" xml:space="preserve">
+    <value>Please select a variant (the base project is not deleted here).</value>
+  </data>
+  <data name="BK_MSG_BITTE_WAEHLEN" xml:space="preserve">
+    <value>Please select the base project or a variant.</value>
+  </data>
+  <data name="BK_MSG_LOESCHEN_FRAGE" xml:space="preserve">
+    <value>Irrevocably delete variant “{0}” and all associated project data?</value>
+  </data>
+  <data name="BK_MSG_VARIANTE_ANGELEGT" xml:space="preserve">
+    <value>Variant “{0}” created.</value>
+  </data>
+  <data name="BK_MSG_VARIANTE_GELOESCHT" xml:space="preserve">
+    <value>Variant “{0}” deleted.</value>
+  </data>
+  <data name="BK_MSG_ANLEGEN_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>The variant could not be created.</value>
+  </data>
+  <data name="BK_MSG_LOESCHEN_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>The variant could not be deleted.</value>
+  </data>
+  <data name="BK_MSG_LADEFEHLER" xml:space="preserve">
+    <value>Error loading the projects: {0}</value>
+  </data>
+  <data name="BK_MSG_ANLEGEFEHLER" xml:space="preserve">
+    <value>Error while creating: {0}</value>
+  </data>
+  <data name="BK_MSG_LOESCHFEHLER" xml:space="preserve">
+    <value>Error while deleting: {0}</value>
+  </data>
+  <data name="BK_MSG_SIMFEHLER" xml:space="preserve">
+    <value>Error during the simulation: {0}</value>
+  </data>
+  <data name="BK_MSG_SIM_FERTIG" xml:space="preserve">
+    <value>Simulation finished ({0} project(s)).</value>
+  </data>
+  <data name="BK_MSG_SIM_OK" xml:space="preserve">
+    <value>{0}: ok (result ID {1})</value>
+  </data>
+  <data name="BK_MSG_SIM_FEHLER" xml:space="preserve">
+    <value>{0}: ERROR – {1}</value>
+  </data>
+  <data name="BK_TITEL_SIMULATION" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="BK_PRAEFIX_STAMM" xml:space="preserve">
+    <value>Base: {0}</value>
+  </data>
+  <data name="BK_PRAEFIX_VARIANTE" xml:space="preserve">
+    <value>Variant: {0}</value>
+  </data>
+  <data name="BK_KOSTEN_INVEST" xml:space="preserve">
+    <value>Investment</value>
+  </data>
+  <data name="BK_KOSTEN_BETRIEB" xml:space="preserve">
+    <value>Operation</value>
+  </data>
+  <data name="BK_KOSTEN_ENERGIE" xml:space="preserve">
+    <value>Energy</value>
+  </data>
+  <data name="BK_KOSTEN_INVEST_HINT" xml:space="preserve">
+    <value>Sum of the investment items (expected case)</value>
+  </data>
+  <data name="BK_KOSTEN_BETRIEB_HINT" xml:space="preserve">
+    <value>Sum of the annual operating costs (expected case)</value>
+  </data>
+  <data name="BK_KOSTEN_ENERGIE_HINT" xml:space="preserve">
+    <value>from the stored economic calculation</value>
+  </data>
+  <data name="BK_KOSTEN_ENERGIE_FEHLT" xml:space="preserve">
+    <value>Energy costs not calculated yet — page “Economics”, “Calculate”.</value>
+  </data>
+  <data name="BK_KOSTEN_EINHEIT_EUR" xml:space="preserve">
+    <value>€</value>
+  </data>
+  <data name="BK_KOSTEN_EINHEIT_EUR_A" xml:space="preserve">
+    <value>€/a</value>
+  </data>
+  <data name="BK_KOSTEN_BTN_VERWALTUNG" xml:space="preserve">
+    <value>Open cost management…</value>
+  </data>
+  <data name="BK_KOSTEN_PROJEKT" xml:space="preserve">
+    <value>Project: {0}</value>
+  </data>
+  <data name="BK_KOSTEN_KEIN_PROJEKT" xml:space="preserve">
+    <value>No project selected.</value>
+  </data>
+  <data name="BK_KOSTEN_STAND" xml:space="preserve">
+    <value>As of: {0}</value>
+  </data>
+  <data name="BK_KOSTEN_STATUS" xml:space="preserve">
+    <value>{0} investment item(s) · {1}</value>
+  </data>
+  <data name="BK_KOSTEN_LBL_KOMPONENTEN" xml:space="preserve">
+    <value>Costs per component</value>
+  </data>
+  <data name="BK_KOSTEN_LBL_TRAEGER" xml:space="preserve">
+    <value>Energy carriers of the project</value>
+  </data>
+  <data name="BK_KOSTEN_SP_KOMPONENTE" xml:space="preserve">
+    <value>Component</value>
+  </data>
+  <data name="BK_KOSTEN_SP_SUMME" xml:space="preserve">
+    <value>Total [€]</value>
+  </data>
+  <data name="BK_KOSTEN_SUMME" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="BK_KOSTEN_SP_TRAEGER" xml:space="preserve">
+    <value>Energy carrier</value>
+  </data>
+  <data name="BK_KOSTEN_SP_ABRECHNUNG" xml:space="preserve">
+    <value>Billing unit</value>
+  </data>
+  <data name="BK_KOSTEN_SP_HEIZWERT" xml:space="preserve">
+    <value>Calorific value [kWh/unit]</value>
+  </data>
+  <data name="BK_KOSTEN_SP_ARBEITSPREIS" xml:space="preserve">
+    <value>Unit price [€/unit]</value>
+  </data>
+  <data name="BK_KOSTEN_SP_GRUNDPREIS" xml:space="preserve">
+    <value>Base price [€/a]</value>
+  </data>
+  <data name="BK_BTN_VERGLEICH_ALT" xml:space="preserve">
+    <value>Project comparison + report (legacy)</value>
+  </data>
+  <data name="BK_UEB_TITEL_FELD" xml:space="preserve">
+    <value>Apply characteristic</value>
+  </data>
+  <data name="BK_UEB_TITEL_KOMP" xml:space="preserve">
+    <value>Apply components</value>
+  </data>
+  <data name="BK_UEB_LBL_QUELLE" xml:space="preserve">
+    <value>Source:</value>
+  </data>
+  <data name="BK_UEB_LBL_ZIEL" xml:space="preserve">
+    <value>Target:</value>
+  </data>
+  <data name="BK_UEB_LBL_WERT_QUELLE" xml:space="preserve">
+    <value>Source value:</value>
+  </data>
+  <data name="BK_UEB_LBL_WERT_ZIEL" xml:space="preserve">
+    <value>Target value:</value>
+  </data>
+  <data name="BK_UEB_BTN_OK" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="BK_UEB_BTN_ABBRUCH" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="BK_UEB_QUELLE_STAMM" xml:space="preserve">
+    <value>Master project: {0}</value>
+  </data>
+  <data name="BK_UEB_QUELLE_VARIANTE" xml:space="preserve">
+    <value>Variant: {0}</value>
+  </data>
+  <data name="BK_UEB_KOMPONENTEN" xml:space="preserve">
+    <value>Affected: {0} → {1}</value>
+  </data>
+  <data name="BK_TIP_UEBERNEHMEN_FELD" xml:space="preserve">
+    <value>Apply this characteristic from another version (master project or variant).</value>
+  </data>
+  <data name="BK_TIP_UEBERNEHMEN_KOMP" xml:space="preserve">
+    <value>Apply the component set of this trade from another version.</value>
+  </data>
+  <data name="BK_TIP_UEBERNEHMEN_GESPERRT_SCHLUESSEL" xml:space="preserve">
+    <value>The identifier determines the component pairing itself and therefore cannot be applied field by field — use the component row of the trade instead.</value>
+  </data>
+  <data name="BK_MSG_UEB_KEIN_FELD" xml:space="preserve">
+    <value>This row does not denote a single characteristic.</value>
+  </data>
+  <data name="BK_MSG_UEB_SCHLUESSEL" xml:space="preserve">
+    <value>The identifier is the key of the component pairing — please apply the whole component.</value>
+  </data>
+  <data name="BK_MSG_UEB_KEINE_QUELLE" xml:space="preserve">
+    <value>There is no other version to apply from.</value>
+  </data>
+  <data name="BK_MSG_UEB_KEINE_QUELLZEILE" xml:space="preserve">
+    <value>The source holds no record for this characteristic.</value>
+  </data>
+  <data name="BK_MSG_UEB_KEINE_ZIELZEILE" xml:space="preserve">
+    <value>The target holds no record for this characteristic.</value>
+  </data>
+  <data name="BK_MSG_UEB_NICHT_EINDEUTIG" xml:space="preserve">
+    <value>Pairing is not unique: trade "{0}" holds {1} components in the source and {2} in the target. Please apply the component set instead of a single characteristic.</value>
+  </data>
+  <data name="BK_MSG_UEB_GLEICH" xml:space="preserve">
+    <value>Source and target already hold the same value — nothing to do.</value>
+  </data>
+  <data name="BK_MSG_UEB_SCHREIBFEHLER" xml:space="preserve">
+    <value>The value could not be written.</value>
+  </data>
+  <data name="BK_MSG_UEB_OK" xml:space="preserve">
+    <value>Applied: {0} · {1} = {2}</value>
+  </data>
+  <data name="BK_MSG_UEB_FEHLER" xml:space="preserve">
+    <value>Apply failed: {0}</value>
+  </data>
+  <data name="BK_MSG_UEB_ERGEBNIS_VERALTET" xml:space="preserve">
+    <value>Results out of date — please run the simulation again.</value>
+  </data>
+  <data name="BK_KOMP_ZUS_KOPF" xml:space="preserve">
+    <value>Trade "{0}": the target's component set ({1} components) is replaced by the source's ({2} components).</value>
+  </data>
+  <data name="BK_KOMP_ZUS_ANLEGEN" xml:space="preserve">
+    <value>  + create: {0}</value>
+  </data>
+  <data name="BK_KOMP_ZUS_ERSETZEN" xml:space="preserve">
+    <value>  ~ replace: {0}</value>
+  </data>
+  <data name="BK_KOMP_ZUS_ENTFERNEN" xml:space="preserve">
+    <value>  - remove: {0}</value>
+  </data>
+  <data name="BK_KOMP_ZUS_KETTE" xml:space="preserve">
+    <value>Tables involved:</value>
+  </data>
+  <data name="BK_MSG_KOMP_NICHTS_ZU_TUN" xml:space="preserve">
+    <value>Source and target already hold the same component set — nothing to do.</value>
+  </data>
+  <data name="BK_MSG_KOMP_GEWERK_UNBEKANNT" xml:space="preserve">
+    <value>Component apply is not implemented for trade "{0}".</value>
+  </data>
+  <data name="BK_MSG_KOMP_OK" xml:space="preserve">
+    <value>Components applied (trade "{0}"): {1} created, {2} replaced, {3} removed.</value>
+  </data>
+  <data name="BK_MSG_KOMP_FEHLER" xml:space="preserve">
+    <value>Component apply failed: {0}</value>
+  </data>
+  <data name="BK_KOMP_HINW_PUFFERVERWEIS" xml:space="preserve">
+    <value>{0} reference(s) to a buffer storage could not be resolved in the target and were left empty.</value>
+  </data>
+  <data name="BK_KOMP_HINW_KINDTABELLE" xml:space="preserve">
+    <value>Table {0} could not be read — its data is missing from the copy.</value>
+  </data>
+  <data name="BK_KOMP_HINW_VARIANTE" xml:space="preserve">
+    <value>The operating parameters of storage variant "{0}" could not be created.</value>
+  </data>
 </root>
