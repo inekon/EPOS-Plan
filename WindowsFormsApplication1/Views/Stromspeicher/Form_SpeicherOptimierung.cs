@@ -159,6 +159,11 @@ namespace WindowsFormsApplication1
 
             PunktzahlAktualisieren();
             ZustandSetzen(false);
+
+            // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
+            // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
+            // Auf ausreichend grossen Schirmen wirkungslos.
+            FensterEinpassung.Einhaengen(this);
         }
 
         private void AufbauSteuerelemente()

@@ -40,6 +40,11 @@ namespace WindowsFormsApplication1
             textBox_ProjektOpen.Text = MyResource.Resource.Text_Select;
             InitEventDictionary();
             _helpExtender = new HelpExtender(Program.HelpCatalog);
+
+            // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
+            // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
+            // Auf ausreichend grossen Schirmen wirkungslos.
+            FensterEinpassung.Einhaengen(this);
         }
 
         private void Form_Start_Load(object sender, EventArgs e)

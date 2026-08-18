@@ -76,6 +76,11 @@ namespace WindowsFormsApplication1
             _dgvModules.MultiSelect = false; // Verhindert die Auswahl mehrerer Zeilen (auch mit Strg/Shift)
 
             statusStrip1.Items[0].Text = "Bereit. Bitte CEC Datenbank oder PAN Datei laden.";
+
+            // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
+            // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
+            // Auf ausreichend grossen Schirmen wirkungslos.
+            FensterEinpassung.Einhaengen(this);
         }
 
         // Hilfsmethode für flüssigeres Zeichnen beim Resizen

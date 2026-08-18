@@ -31,6 +31,11 @@ namespace WindowsFormsApplication1
             btnSelect.MakeSmoothButton(btnSelect.Height / 4);
             btnCancel.MakeSmoothButton(btnCancel.Height / 4);
             btnSelect.TabStop = false;
+
+            // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
+            // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
+            // Auf ausreichend grossen Schirmen wirkungslos.
+            FensterEinpassung.Einhaengen(this);
         }
 
         private void AttachEvents()
