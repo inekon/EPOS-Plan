@@ -4573,4 +4573,118 @@ Several arrays of the same module type are allowed — please check whether this
   <data name="ANL_SP_NAME_ANGEPASST" xml:space="preserve">
     <value>The name “{0}” is already used in this project. The storage variant was renamed to “{1}”.</value>
   </data>
+  <data name="GESETZ_MENUE" xml:space="preserve">
+    <value>Statutory parameters…</value>
+  </data>
+  <data name="GESETZ_TITEL" xml:space="preserve">
+    <value>Statutory parameters</value>
+  </data>
+  <data name="GESETZ_LBL_KLASSE" xml:space="preserve">
+    <value>Area</value>
+  </data>
+  <data name="GESETZ_LBL_HINWEIS" xml:space="preserve">
+    <value>An amendment is a new year row, not a change to the old one. Only then will a calculation made today still produce the same figures years from now.</value>
+  </data>
+  <data name="GESETZ_LBL_WERT_LEER" xml:space="preserve">
+    <value>empty = the rate has been abolished (not 0)</value>
+  </data>
+  <data name="GESETZ_SP_SCHLUESSEL" xml:space="preserve">
+    <value>Key</value>
+  </data>
+  <data name="GESETZ_SP_JAHRVON" xml:space="preserve">
+    <value>Valid from</value>
+  </data>
+  <data name="GESETZ_SP_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="GESETZ_SP_EINHEIT" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="GESETZ_SP_STATUS" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="GESETZ_SP_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="GESETZ_BTN_NEU" xml:space="preserve">
+    <value>New…</value>
+  </data>
+  <data name="GESETZ_BTN_AENDERN" xml:space="preserve">
+    <value>Edit…</value>
+  </data>
+  <data name="GESETZ_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="GESETZ_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="GESETZ_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="GESETZ_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="GESETZ_DLG_TITEL_NEU" xml:space="preserve">
+    <value>New statutory parameter</value>
+  </data>
+  <data name="GESETZ_DLG_TITEL_AENDERN" xml:space="preserve">
+    <value>Edit statutory parameter</value>
+  </data>
+  <data name="GESETZ_FRAGE_TITEL" xml:space="preserve">
+    <value>Amendment or correction?</value>
+  </data>
+  <data name="GESETZ_FRAGE_NEUE_ZEILE" xml:space="preserve">
+    <value>The row “{0}” is valid from {1} and therefore lies in the past.
+
+An amendment belongs in a NEW year row; the old one stays in place so that earlier calculations remain traceable.
+
+“Yes” creates a new row. “No” changes the existing row — that is meant for typing errors only.</value>
+  </data>
+  <data name="GESETZ_LOESCHEN_TITEL" xml:space="preserve">
+    <value>Delete statutory parameter</value>
+  </data>
+  <data name="GESETZ_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Really delete the row “{0}” (valid from {1})?
+
+After that the value will be missing from every calculation concerning that year.</value>
+  </data>
+  <data name="GESETZ_MSG_SCHLUESSEL_FEHLT" xml:space="preserve">
+    <value>Please enter a key.</value>
+  </data>
+  <data name="GESETZ_MSG_JAHR_UNGUELTIG" xml:space="preserve">
+    <value>“Valid from” must be a year between 1990 and 2100.</value>
+  </data>
+  <data name="GESETZ_MSG_WERT_UNGUELTIG" xml:space="preserve">
+    <value>The value is not a valid number. Leave the field empty for a rate that has been abolished.</value>
+  </data>
+  <data name="GESETZ_MSG_DOPPELT" xml:space="preserve">
+    <value>The key “{0}” already has a row valid from {1}.</value>
+  </data>
+  <data name="GESETZ_MSG_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>The row could not be saved.</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_KWKG" xml:space="preserve">
+    <value>CHP Act</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_STROMSTEUER" xml:space="preserve">
+    <value>Electricity tax</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_ENERGIESTEUER" xml:space="preserve">
+    <value>Energy tax</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_CO2_PREIS" xml:space="preserve">
+    <value>CO₂ price</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_EF_NACHWEIS" xml:space="preserve">
+    <value>Emission factors — statutory proof</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_EF_BILANZ" xml:space="preserve">
+    <value>Emission factors — real balance</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_PEF_NACHWEIS" xml:space="preserve">
+    <value>Primary energy factors — statutory proof</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_UMSATZSTEUER" xml:space="preserve">
+    <value>VAT</value>
+  </data>
 </root>

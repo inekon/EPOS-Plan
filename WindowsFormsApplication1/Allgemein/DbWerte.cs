@@ -502,5 +502,339 @@ namespace WindowsFormsApplication1
         /// Engine kennt ausschliesslich ct/kWh (Fachkonzept 4.1).
         /// </summary>
         public const string PREISREIHE_EINHEIT_CT_KWH = "ct/kWh";
+
+        // =====================================================================
+        // Katalog gesetzlicher Parameter — Tab_Gesetzesparameter
+        //   Konzept_BHKW_Kosten_Erloese.md, Leitentscheidung L2, Etappe E1.
+        //   Faktenbasis: Grundlagen_KWKG_Energiesteuer_Stromsteuer.md (Repo-Wurzel).
+        //
+        //   ALLE drei Werte dieser Tabelle — Schluessel, Klasse, Einheit und Status —
+        //   stehen als Zeichenkette IN der Datenbank und werden in SQL damit
+        //   verglichen. Sie gehoeren deshalb hierher, sind sprachneutral und ASCII
+        //   und sind nach der Auslieferung EINGEFROREN: Wer einen Schluessel
+        //   umbenennt, macht jede gepflegte Bestandszeile unauffindbar.
+        //
+        //   Der Anzeigename einer Klasse ist ein ANDERER String und steht in
+        //   MyResource (GESETZ_KLASSE_*). Kein Anzeigetext ist je Steuerwert.
+        // =====================================================================
+
+        // --------------------------------------------------------------- Klasse
+
+        /// <summary>KWK-Gesetz: Zuschlagssaetze, Kontingente, Jahresdeckel, Fristen.</summary>
+        public const string GESETZ_KLASSE_KWKG = "KWKG";
+
+        /// <summary>Stromsteuergesetz: Regelsatz, Entlastung § 9b, Befreiungsvoraussetzungen.</summary>
+        public const string GESETZ_KLASSE_STROMSTEUER = "STROMSTEUER";
+
+        /// <summary>Energiesteuergesetz: Regelsaetze § 2 sowie Entlastungen § 53a und § 54.</summary>
+        public const string GESETZ_KLASSE_ENERGIESTEUER = "ENERGIESTEUER";
+
+        /// <summary>Nationaler Emissionshandel (BEHG) und EU-ETS-2-Umfeld.</summary>
+        public const string GESETZ_KLASSE_CO2_PREIS = "CO2_PREIS";
+
+        /// <summary>
+        /// Emissionsfaktoren fuer den gesetzlichen NACHWEIS (GEG/GModG Anlage 9).
+        /// <para>
+        /// <b>Sicherheitsrelevante Trennung (L11).</b> Diese Faktoren gehoeren in den
+        /// Energieausweis, NIE in Wirtschaftlichkeit oder Klimabilanz. Der
+        /// Nachweiswert fuer Netzstrom betraegt ab 2027 100 g CO2-Aeq/kWh, der reale
+        /// Strommix lag 2025 bei 406 g CO2-Aeq/kWh mit Vorkette — Faktor 4. Werden
+        /// beide Saetze vermischt, rechnet sich jede Anlage schoen.
+        /// </para>
+        /// </summary>
+        public const string GESETZ_KLASSE_EF_NACHWEIS = "EF_NACHWEIS";
+
+        /// <summary>
+        /// Emissionsfaktoren fuer die REALE BILANZ (UBA-Strommix, EBeV, BAFA).
+        /// <inheritdoc cref="GESETZ_KLASSE_EF_NACHWEIS" path="/summary/para"/>
+        /// </summary>
+        public const string GESETZ_KLASSE_EF_BILANZ = "EF_BILANZ";
+
+        /// <summary>Primaerenergiefaktoren fuer den Nachweis (GEG/GModG Anlage 4).</summary>
+        public const string GESETZ_KLASSE_PEF_NACHWEIS = "PEF_NACHWEIS";
+
+        /// <summary>Umsatzsteuer — loest die 40-fach hart codierte 1,19 ab (L8).</summary>
+        public const string GESETZ_KLASSE_UMSATZSTEUER = "UMSATZSTEUER";
+
+        // --------------------------------------------------------------- Status
+
+        /// <summary>Aus einer Primaerquelle belegt und in Kraft.</summary>
+        public const string GESETZ_STATUS_GESICHERT = "GESICHERT";
+
+        /// <summary>Politisch gesetzt, Gesetzgebungsverfahren laeuft noch; oder Datenstand vorlaeufig.</summary>
+        public const string GESETZ_STATUS_VORLAEUFIG = "VORLAEUFIG";
+
+        /// <summary>Fortschreibung ohne Rechtsgrundlage — im Bericht als Prognose auszuweisen.</summary>
+        public const string GESETZ_STATUS_PROGNOSE = "PROGNOSE";
+
+        // -------------------------------------------------------------- Einheit
+        //   L3 — Einheitendisziplin: Jeder Satz steht in SEINER gesetzlichen
+        //   Einheit. Die Vermischung von €/MWh, €/1.000 l und €/1.000 kg ist die
+        //   Ursache des Oel-Fehlers der abgeloesten Excel-Anwendung.
+
+        public const string GESETZ_EINHEIT_EUR_MWH = "EUR/MWh";
+        public const string GESETZ_EINHEIT_EUR_1000L = "EUR/1000l";
+        public const string GESETZ_EINHEIT_EUR_1000KG = "EUR/1000kg";
+        public const string GESETZ_EINHEIT_EUR_GJ = "EUR/GJ";
+        public const string GESETZ_EINHEIT_EUR_T = "EUR/t";
+        public const string GESETZ_EINHEIT_EUR_A = "EUR/a";
+        public const string GESETZ_EINHEIT_CT_KWH = "ct/kWh";
+        public const string GESETZ_EINHEIT_G_KWH = "g/kWh";
+        public const string GESETZ_EINHEIT_GJ_MWH = "GJ/MWh";
+        public const string GESETZ_EINHEIT_H = "h";
+        public const string GESETZ_EINHEIT_KW = "kW";
+        public const string GESETZ_EINHEIT_KM = "km";
+        public const string GESETZ_EINHEIT_PROZENT = "Prozent";
+        public const string GESETZ_EINHEIT_JAHR = "Jahr";
+
+        /// <summary>Dimensionslos — Primaerenergiefaktoren und reine Verhaeltniszahlen.</summary>
+        public const string GESETZ_EINHEIT_OHNE = "-";
+
+        // ------------------------------------------------------- Schluessel KWKG
+        //   Grundlagen, Abschnitt 1. Zuschlagssaetze in ct/kWh, Kontingente in
+        //   Vollbenutzungsstunden, Grenzen in kW.
+
+        public const string GESETZ_KWKG_ZUSCHLAG_EINSP_BIS50KW = "KWKG_ZUSCHLAG_EINSPEISUNG_BIS50KW";
+        public const string GESETZ_KWKG_ZUSCHLAG_EINSP_BIS100KW = "KWKG_ZUSCHLAG_EINSPEISUNG_BIS100KW";
+        public const string GESETZ_KWKG_ZUSCHLAG_EINSP_BIS250KW = "KWKG_ZUSCHLAG_EINSPEISUNG_BIS250KW";
+        public const string GESETZ_KWKG_ZUSCHLAG_EINSP_BIS2MW = "KWKG_ZUSCHLAG_EINSPEISUNG_BIS2MW";
+        public const string GESETZ_KWKG_ZUSCHLAG_EINSP_UEBER2MW = "KWKG_ZUSCHLAG_EINSPEISUNG_UEBER2MW";
+        public const string GESETZ_KWKG_ZUSCHLAG_EINSP_UEBER2MW_NACHGER = "KWKG_ZUSCHLAG_EINSPEISUNG_UEBER2MW_NACHGERUESTET";
+
+        /// <summary>§ 7 Abs. 3a geht Abs. 1 und 2 vor — nur fuer NEUE Anlagen bis 50 kWel.</summary>
+        public const string GESETZ_KWKG_ZUSCHLAG_NEU_BIS50KW_EINSP = "KWKG_ZUSCHLAG_NEU_BIS50KW_EINSPEISUNG";
+
+        /// <inheritdoc cref="GESETZ_KWKG_ZUSCHLAG_NEU_BIS50KW_EINSP"/>
+        public const string GESETZ_KWKG_ZUSCHLAG_NEU_BIS50KW_EIGEN = "KWKG_ZUSCHLAG_NEU_BIS50KW_EIGEN";
+
+        /// <summary>
+        /// Selbst genutzter Strom, Fall 1 des § 6 Abs. 3 (Anlagen bis 100 kW).
+        /// Ein Zuschlag auf Eigenstrom besteht NICHT generell, sondern nur in den drei
+        /// Faellen N1, N2 und N3.
+        /// </summary>
+        public const string GESETZ_KWKG_ZUSCHLAG_EIGEN_N1_BIS50KW = "KWKG_ZUSCHLAG_EIGEN_N1_BIS50KW";
+
+        /// <inheritdoc cref="GESETZ_KWKG_ZUSCHLAG_EIGEN_N1_BIS50KW"/>
+        public const string GESETZ_KWKG_ZUSCHLAG_EIGEN_N1_BIS100KW = "KWKG_ZUSCHLAG_EIGEN_N1_BIS100KW";
+
+        /// <summary>Selbst genutzter Strom, Fall 2 (Kundenanlage / geschlossenes Verteilernetz).</summary>
+        public const string GESETZ_KWKG_ZUSCHLAG_EIGEN_N2_BIS50KW = "KWKG_ZUSCHLAG_EIGEN_N2_BIS50KW";
+
+        /// <inheritdoc cref="GESETZ_KWKG_ZUSCHLAG_EIGEN_N2_BIS50KW"/>
+        public const string GESETZ_KWKG_ZUSCHLAG_EIGEN_N2_BIS100KW = "KWKG_ZUSCHLAG_EIGEN_N2_BIS100KW";
+
+        /// <inheritdoc cref="GESETZ_KWKG_ZUSCHLAG_EIGEN_N2_BIS50KW"/>
+        public const string GESETZ_KWKG_ZUSCHLAG_EIGEN_N2_BIS250KW = "KWKG_ZUSCHLAG_EIGEN_N2_BIS250KW";
+
+        /// <inheritdoc cref="GESETZ_KWKG_ZUSCHLAG_EIGEN_N2_BIS50KW"/>
+        public const string GESETZ_KWKG_ZUSCHLAG_EIGEN_N2_BIS2MW = "KWKG_ZUSCHLAG_EIGEN_N2_BIS2MW";
+
+        /// <inheritdoc cref="GESETZ_KWKG_ZUSCHLAG_EIGEN_N2_BIS50KW"/>
+        public const string GESETZ_KWKG_ZUSCHLAG_EIGEN_N2_UEBER2MW = "KWKG_ZUSCHLAG_EIGEN_N2_UEBER2MW";
+
+        /// <summary>Selbst genutzter Strom, Fall 3 (stromkostenintensives Unternehmen).</summary>
+        public const string GESETZ_KWKG_ZUSCHLAG_EIGEN_N3_BIS50KW = "KWKG_ZUSCHLAG_EIGEN_N3_BIS50KW";
+
+        /// <inheritdoc cref="GESETZ_KWKG_ZUSCHLAG_EIGEN_N3_BIS50KW"/>
+        public const string GESETZ_KWKG_ZUSCHLAG_EIGEN_N3_BIS250KW = "KWKG_ZUSCHLAG_EIGEN_N3_BIS250KW";
+
+        /// <inheritdoc cref="GESETZ_KWKG_ZUSCHLAG_EIGEN_N3_BIS50KW"/>
+        public const string GESETZ_KWKG_ZUSCHLAG_EIGEN_N3_BIS2MW = "KWKG_ZUSCHLAG_EIGEN_N3_BIS2MW";
+
+        /// <inheritdoc cref="GESETZ_KWKG_ZUSCHLAG_EIGEN_N3_BIS50KW"/>
+        public const string GESETZ_KWKG_ZUSCHLAG_EIGEN_N3_UEBER2MW = "KWKG_ZUSCHLAG_EIGEN_N3_UEBER2MW";
+
+        public const string GESETZ_KWKG_LEISTUNGSSTUFE_1 = "KWKG_LEISTUNGSSTUFE_1_KW";
+        public const string GESETZ_KWKG_LEISTUNGSSTUFE_2 = "KWKG_LEISTUNGSSTUFE_2_KW";
+        public const string GESETZ_KWKG_LEISTUNGSSTUFE_3 = "KWKG_LEISTUNGSSTUFE_3_KW";
+        public const string GESETZ_KWKG_LEISTUNGSSTUFE_4 = "KWKG_LEISTUNGSSTUFE_4_KW";
+
+        /// <summary>§ 8 Abs. 1: 30.000 Vbh fuer ALLE neuen Anlagen — die frueheren 60.000 Vbh
+        /// bis 50 kW gibt es seit dem KWKG 2020 nicht mehr.</summary>
+        public const string GESETZ_KWKG_VBH_NEUANLAGE = "KWKG_VBH_NEUANLAGE";
+
+        public const string GESETZ_KWKG_VBH_MODERNISIERT_10 = "KWKG_VBH_MODERNISIERT_10";
+        public const string GESETZ_KWKG_VBH_MODERNISIERT_25 = "KWKG_VBH_MODERNISIERT_25";
+        public const string GESETZ_KWKG_VBH_MODERNISIERT_50 = "KWKG_VBH_MODERNISIERT_50";
+        public const string GESETZ_KWKG_VBH_NACHGERUESTET_10 = "KWKG_VBH_NACHGERUESTET_10";
+        public const string GESETZ_KWKG_VBH_NACHGERUESTET_25 = "KWKG_VBH_NACHGERUESTET_25";
+        public const string GESETZ_KWKG_VBH_NACHGERUESTET_50 = "KWKG_VBH_NACHGERUESTET_50";
+
+        public const string GESETZ_KWKG_KOSTENSCHWELLE_10 = "KWKG_KOSTENSCHWELLE_10";
+        public const string GESETZ_KWKG_KOSTENSCHWELLE_25 = "KWKG_KOSTENSCHWELLE_25";
+        public const string GESETZ_KWKG_KOSTENSCHWELLE_50 = "KWKG_KOSTENSCHWELLE_50";
+
+        public const string GESETZ_KWKG_MINDESTALTER_10 = "KWKG_MINDESTALTER_10";
+        public const string GESETZ_KWKG_MINDESTALTER_25 = "KWKG_MINDESTALTER_25";
+        public const string GESETZ_KWKG_MINDESTALTER_50 = "KWKG_MINDESTALTER_50";
+
+        /// <summary>
+        /// Jahresdeckel nach § 8 Abs. 4 in Vollbenutzungsstunden je Kalenderjahr —
+        /// eine Jahreszeile je Stufe (5.000 ab 2021 bis 2.500 ab 2030).
+        /// <para>
+        /// Loest die Tabelle <c>Tab_KWKG_Staffel</c> ab (Etappe E1, Schritt 4). Die
+        /// Alttabelle bleibt unangetastet stehen, wird aber nicht mehr gelesen.
+        /// </para>
+        /// </summary>
+        public const string GESETZ_KWKG_VBH_JAHRESDECKEL = "KWKG_VBH_JAHRESDECKEL";
+
+        public const string GESETZ_KWKG_PAUSCHALE_BIS2KW = "KWKG_PAUSCHALE_BIS2KW";
+        public const string GESETZ_KWKG_PAUSCHALE_BIS2KW_VBH = "KWKG_PAUSCHALE_BIS2KW_VBH";
+        public const string GESETZ_KWKG_PAUSCHALE_GRENZE = "KWKG_PAUSCHALE_GRENZE_KW";
+
+        /// <summary>Kalenderjahr, bis zu dessen 31.12. der Dauerbetrieb aufgenommen sein muss (§ 6 Abs. 1).</summary>
+        public const string GESETZ_KWKG_STICHTAG_DAUERBETRIEB = "KWKG_STICHTAG_DAUERBETRIEB";
+
+        /// <summary>Verlaengerung in Jahren bei Genehmigung oder Beauftragung bis zum Stichtag (Novelle 2025).</summary>
+        public const string GESETZ_KWKG_REALISIERUNGSFRIST = "KWKG_REALISIERUNGSFRIST";
+
+        // ------------------------------------------------ Schluessel Stromsteuer
+        //   Grundlagen, Abschnitt 2. L4: Steuersatz und Entlastungssatz sind
+        //   GETRENNTE Groessen — nie eine Differenz raten.
+
+        public const string GESETZ_STROMST_REGELSATZ = "STROMST_REGELSATZ";
+        public const string GESETZ_STROMST_ENTLASTUNG_9B = "STROMST_ENTLASTUNG_9B";
+        public const string GESETZ_STROMST_SOCKELBETRAG_9B = "STROMST_SOCKELBETRAG_9B";
+        public const string GESETZ_STROMST_GRENZE_BEFREIUNG = "STROMST_GRENZE_BEFREIUNG_9_1_3_KW";
+        public const string GESETZ_STROMST_RADIUS_RAEUMLICH = "STROMST_RADIUS_RAEUMLICH_KM";
+        public const string GESETZ_STROMST_CO2_GRENZWERT = "STROMST_CO2_GRENZWERT_HOCHEFFIZIENT";
+        public const string GESETZ_STROMST_ERLAUBNISSCHWELLE = "STROMST_ERLAUBNISSCHWELLE_KW";
+
+        // ----------------------------------------------- Schluessel Energiesteuer
+        //   Grundlagen, Abschnitt 3. EINHEITENFALLE: Erdgas je MWh, Heizoel je
+        //   1.000 Liter, Fluessiggas und Schweroel je 1.000 kg.
+
+        public const string GESETZ_ENERGIEST_ERDGAS = "ENERGIEST_ERDGAS";
+        public const string GESETZ_ENERGIEST_HEIZOEL_EL = "ENERGIEST_HEIZOEL_EL";
+        public const string GESETZ_ENERGIEST_GASOEL_SCHWEFELREICH = "ENERGIEST_GASOEL_SCHWEFELREICH";
+        public const string GESETZ_ENERGIEST_FLUESSIGGAS = "ENERGIEST_FLUESSIGGAS";
+        public const string GESETZ_ENERGIEST_SCHWEROEL = "ENERGIEST_SCHWEROEL";
+
+        public const string GESETZ_ENERGIEST_53A5_ERDGAS = "ENERGIEST_53A5_ERDGAS";
+        public const string GESETZ_ENERGIEST_53A5_HEIZOEL_EL = "ENERGIEST_53A5_HEIZOEL_EL";
+        public const string GESETZ_ENERGIEST_53A5_FLUESSIGGAS = "ENERGIEST_53A5_FLUESSIGGAS";
+        public const string GESETZ_ENERGIEST_53A5_SCHWEROEL = "ENERGIEST_53A5_SCHWEROEL";
+        public const string GESETZ_ENERGIEST_53A5_KOHLE = "ENERGIEST_53A5_KOHLE";
+        public const string GESETZ_ENERGIEST_53A_NUTZUNGSGRAD = "ENERGIEST_53A_MINDESTNUTZUNGSGRAD";
+
+        public const string GESETZ_ENERGIEST_54_ERDGAS = "ENERGIEST_54_ERDGAS";
+        public const string GESETZ_ENERGIEST_54_HEIZOEL_EL = "ENERGIEST_54_HEIZOEL_EL";
+        public const string GESETZ_ENERGIEST_54_FLUESSIGGAS = "ENERGIEST_54_FLUESSIGGAS";
+        public const string GESETZ_ENERGIEST_54_SOCKELBETRAG = "ENERGIEST_54_SOCKELBETRAG";
+
+        // --------------------------------------------------- Schluessel CO2-Preis
+        //   Grundlagen, Abschnitt 8. 2026 ist mit 65 €/t zu rechnen, NICHT mit dem
+        //   Mittelwert des Korridors — alle Auktionen endeten am Hoechstpreis.
+
+        public const string GESETZ_CO2_PREIS_NEHS = "CO2_PREIS_NEHS";
+        public const string GESETZ_CO2_PREIS_KORRIDOR_MIN = "CO2_PREIS_NEHS_KORRIDOR_MIN";
+        public const string GESETZ_CO2_PREIS_KORRIDOR_MAX = "CO2_PREIS_NEHS_KORRIDOR_MAX";
+        public const string GESETZ_CO2_PREIS_NACHVERKAUF = "CO2_PREIS_NEHS_NACHVERKAUF";
+        public const string GESETZ_CO2_PREIS_NACHKAUF = "CO2_PREIS_NEHS_NACHKAUF";
+
+        // ------------------------------- Schluessel Emissionsfaktoren NACHWEIS
+        //   GEG/GModG Anlage 9, Grundlagen 7.3. NUR fuer den Energieausweis (L11).
+
+        public const string GESETZ_EF_NACHWEIS_HEIZOEL = "EF_NACHWEIS_HEIZOEL";
+        public const string GESETZ_EF_NACHWEIS_ERDGAS = "EF_NACHWEIS_ERDGAS";
+        public const string GESETZ_EF_NACHWEIS_FLUESSIGGAS = "EF_NACHWEIS_FLUESSIGGAS";
+        public const string GESETZ_EF_NACHWEIS_STEINKOHLE = "EF_NACHWEIS_STEINKOHLE";
+        public const string GESETZ_EF_NACHWEIS_BRAUNKOHLE = "EF_NACHWEIS_BRAUNKOHLE";
+        public const string GESETZ_EF_NACHWEIS_HOLZ = "EF_NACHWEIS_HOLZ";
+
+        /// <summary>560 g/kWh bis 2026, ab 2027 100 g/kWh — politisch gesetzt, nie in die reale Bilanz (L11).</summary>
+        public const string GESETZ_EF_NACHWEIS_STROM_NETZ = "EF_NACHWEIS_STROM_NETZ";
+
+        public const string GESETZ_EF_NACHWEIS_BIOGAS = "EF_NACHWEIS_BIOGAS";
+        public const string GESETZ_EF_NACHWEIS_BIOGAS_GEBAEUDENAH = "EF_NACHWEIS_BIOGAS_GEBAEUDENAH";
+        public const string GESETZ_EF_NACHWEIS_BIOMETHAN = "EF_NACHWEIS_BIOMETHAN";
+        public const string GESETZ_EF_NACHWEIS_BIOGENES_FLUESSIGGAS = "EF_NACHWEIS_BIOGENES_FLUESSIGGAS";
+        public const string GESETZ_EF_NACHWEIS_BIOOEL = "EF_NACHWEIS_BIOOEL";
+        public const string GESETZ_EF_NACHWEIS_ABWAERME = "EF_NACHWEIS_ABWAERME";
+
+        /// <summary>
+        /// 860 g CO2-Aeq/kWh bis 31.12.2026; ab 01.01.2027 ENTFAELLT der Faktor
+        /// ersatzlos (L12). Die 2027er-Jahreszeile fuehrt deshalb KEINEN Wert —
+        /// weder 0 noch eine Fortschreibung der 860.
+        /// </summary>
+        public const string GESETZ_EF_NACHWEIS_VERDRAENGUNGSSTROMMIX = "EF_NACHWEIS_VERDRAENGUNGSSTROMMIX";
+
+        public const string GESETZ_EF_NACHWEIS_FW_KWK_KOHLE = "EF_NACHWEIS_FW_KWK_KOHLE";
+        public const string GESETZ_EF_NACHWEIS_FW_KWK_GAS_FLUESSIG = "EF_NACHWEIS_FW_KWK_GAS_FLUESSIG";
+        public const string GESETZ_EF_NACHWEIS_FW_KWK_ERNEUERBAR = "EF_NACHWEIS_FW_KWK_ERNEUERBAR";
+        public const string GESETZ_EF_NACHWEIS_FW_HEIZWERK_KOHLE = "EF_NACHWEIS_FW_HEIZWERK_KOHLE";
+        public const string GESETZ_EF_NACHWEIS_FW_HEIZWERK_GAS_FLUESSIG = "EF_NACHWEIS_FW_HEIZWERK_GAS_FLUESSIG";
+        public const string GESETZ_EF_NACHWEIS_FW_HEIZWERK_ERNEUERBAR = "EF_NACHWEIS_FW_HEIZWERK_ERNEUERBAR";
+        public const string GESETZ_EF_NACHWEIS_FW_VORKETTE_AUFSCHLAG = "EF_NACHWEIS_FW_VORKETTE_AUFSCHLAG";
+        public const string GESETZ_EF_NACHWEIS_FW_VORKETTE_MINDEST = "EF_NACHWEIS_FW_VORKETTE_MINDEST";
+
+        // --------------------------------- Schluessel Emissionsfaktoren BILANZ
+        //   UBA-Strommix (7.6), EBeV 2030 und BAFA (7.7). Fuer Wirtschaftlichkeit,
+        //   CO2-Kosten und Klimabilanz — NIE fuer den Nachweis (L11).
+
+        public const string GESETZ_EF_BILANZ_STROMMIX_CO2_DIREKT = "EF_BILANZ_STROMMIX_CO2_DIREKT";
+        public const string GESETZ_EF_BILANZ_STROMMIX_THG_OHNE_VK = "EF_BILANZ_STROMMIX_THG_OHNE_VORKETTE";
+
+        /// <summary>Die fuer Wirtschaftlichkeit und Emissionsbilanz MASSGEBLICHE Reihe.</summary>
+        public const string GESETZ_EF_BILANZ_STROMMIX_THG_MIT_VK = "EF_BILANZ_STROMMIX_THG_MIT_VORKETTE";
+
+        public const string GESETZ_EF_BILANZ_EBEV_ERDGAS_HI = "EF_BILANZ_EBEV_ERDGAS_HI";
+
+        /// <summary>Brennwertbezogen — in Deutschland wird so abgerechnet (Hi/Ho-Falle, rund 10 %).</summary>
+        public const string GESETZ_EF_BILANZ_EBEV_ERDGAS_HO = "EF_BILANZ_EBEV_ERDGAS_HO";
+
+        public const string GESETZ_EF_BILANZ_EBEV_HEIZOEL_EL = "EF_BILANZ_EBEV_HEIZOEL_EL";
+        public const string GESETZ_EF_BILANZ_EBEV_HEIZOEL_S = "EF_BILANZ_EBEV_HEIZOEL_S";
+        public const string GESETZ_EF_BILANZ_EBEV_FLUESSIGGAS = "EF_BILANZ_EBEV_FLUESSIGGAS";
+        public const string GESETZ_EF_BILANZ_EBEV_PFLANZENOEL = "EF_BILANZ_EBEV_PFLANZENOEL";
+        public const string GESETZ_EF_BILANZ_EBEV_BIODIESEL = "EF_BILANZ_EBEV_BIODIESEL";
+
+        /// <summary>Nullansatz nur MIT Nachhaltigkeitsnachweis, sonst voller fossiler Standardwert (L13).</summary>
+        public const string GESETZ_EF_BILANZ_EBEV_BIOMASSE = "EF_BILANZ_EBEV_BIOMASSE";
+
+        public const string GESETZ_EF_BILANZ_EBEV_UMRECHNUNG_HO = "EF_BILANZ_EBEV_UMRECHNUNG_HO";
+
+        public const string GESETZ_EF_BILANZ_BAFA_BIOGAS = "EF_BILANZ_BAFA_BIOGAS";
+        public const string GESETZ_EF_BILANZ_BAFA_KLAERGAS = "EF_BILANZ_BAFA_KLAERGAS";
+        public const string GESETZ_EF_BILANZ_BAFA_DEPONIEGAS = "EF_BILANZ_BAFA_DEPONIEGAS";
+        public const string GESETZ_EF_BILANZ_BAFA_PELLETS = "EF_BILANZ_BAFA_PELLETS";
+        public const string GESETZ_EF_BILANZ_BAFA_HOLZ_TROCKEN = "EF_BILANZ_BAFA_HOLZ_TROCKEN";
+        public const string GESETZ_EF_BILANZ_BAFA_BIODIESEL = "EF_BILANZ_BAFA_BIODIESEL";
+        public const string GESETZ_EF_BILANZ_BAFA_KLAERSCHLAMM = "EF_BILANZ_BAFA_KLAERSCHLAMM";
+        public const string GESETZ_EF_BILANZ_BAFA_FERNWAERME = "EF_BILANZ_BAFA_FERNWAERME";
+        public const string GESETZ_EF_BILANZ_BAFA_STROM = "EF_BILANZ_BAFA_STROM";
+
+        // ---------------------------- Schluessel Primaerenergiefaktoren NACHWEIS
+        //   GEG/GModG Anlage 4, Grundlagen 7.2, nicht erneuerbarer Anteil.
+
+        public const string GESETZ_PEF_NACHWEIS_HEIZOEL = "PEF_NACHWEIS_HEIZOEL";
+        public const string GESETZ_PEF_NACHWEIS_ERDGAS = "PEF_NACHWEIS_ERDGAS";
+        public const string GESETZ_PEF_NACHWEIS_FLUESSIGGAS = "PEF_NACHWEIS_FLUESSIGGAS";
+        public const string GESETZ_PEF_NACHWEIS_STEINKOHLE = "PEF_NACHWEIS_STEINKOHLE";
+        public const string GESETZ_PEF_NACHWEIS_BRAUNKOHLE = "PEF_NACHWEIS_BRAUNKOHLE";
+        public const string GESETZ_PEF_NACHWEIS_STROM_NETZ = "PEF_NACHWEIS_STROM_NETZ";
+        public const string GESETZ_PEF_NACHWEIS_STROM_GEBAEUDENAH = "PEF_NACHWEIS_STROM_GEBAEUDENAH";
+        public const string GESETZ_PEF_NACHWEIS_HOLZ = "PEF_NACHWEIS_HOLZ";
+        public const string GESETZ_PEF_NACHWEIS_BIOGAS = "PEF_NACHWEIS_BIOGAS";
+        public const string GESETZ_PEF_NACHWEIS_BIOMETHAN = "PEF_NACHWEIS_BIOMETHAN";
+        public const string GESETZ_PEF_NACHWEIS_BIOGENES_FLUESSIGGAS = "PEF_NACHWEIS_BIOGENES_FLUESSIGGAS";
+        public const string GESETZ_PEF_NACHWEIS_BIOOEL = "PEF_NACHWEIS_BIOOEL";
+        public const string GESETZ_PEF_NACHWEIS_WASSERSTOFF = "PEF_NACHWEIS_WASSERSTOFF";
+        public const string GESETZ_PEF_NACHWEIS_FERNWAERME = "PEF_NACHWEIS_FERNWAERME";
+
+        /// <inheritdoc cref="GESETZ_EF_NACHWEIS_VERDRAENGUNGSSTROMMIX"/>
+        public const string GESETZ_PEF_NACHWEIS_VERDRAENGUNGSSTROMMIX = "PEF_NACHWEIS_VERDRAENGUNGSSTROMMIX";
+
+        public const string GESETZ_PEF_NACHWEIS_ERDWAERME = "PEF_NACHWEIS_ERDWAERME";
+        public const string GESETZ_PEF_NACHWEIS_SOLARTHERMIE = "PEF_NACHWEIS_SOLARTHERMIE";
+        public const string GESETZ_PEF_NACHWEIS_UMGEBUNGSWAERME = "PEF_NACHWEIS_UMGEBUNGSWAERME";
+        public const string GESETZ_PEF_NACHWEIS_ABWAERME = "PEF_NACHWEIS_ABWAERME";
+        public const string GESETZ_PEF_NACHWEIS_BIOMASSE_RAEUMLICH = "PEF_NACHWEIS_BIOMASSE_RAEUMLICH";
+        public const string GESETZ_PEF_NACHWEIS_FW_MINDESTWERT = "PEF_NACHWEIS_FW_MINDESTWERT";
+        public const string GESETZ_PEF_NACHWEIS_FW_MINDERUNG_JE_PP = "PEF_NACHWEIS_FW_MINDERUNG_JE_PROZENTPUNKT";
+
+        // ------------------------------------------------ Schluessel Umsatzsteuer
+
+        public const string GESETZ_UMSATZSTEUER_REGELSATZ = "UMSATZSTEUER_REGELSATZ";
     }
 }
