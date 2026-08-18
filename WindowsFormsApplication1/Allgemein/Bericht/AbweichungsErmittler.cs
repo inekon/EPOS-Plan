@@ -157,7 +157,13 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        private static DataRow ZeileFuer(ProjektDetails d, Merkmal f)
+        /// <summary>
+        /// Die Datenzeile eines Projekts, aus der ein Merkmal gelesen wird
+        /// (null = Gewerk im Projekt nicht vorhanden). Öffentlich, damit die Seite
+        /// „Übersicht" des Reiters „Berichte &amp; Kosten" die Komponenten des
+        /// Stammprojekts mit derselben Feldliste anzeigen kann wie der Bericht.
+        /// </summary>
+        public static DataRow ZeileFuer(ProjektDetails d, Merkmal f)
         {
             if (f.Tabelle == "Tab_Energieanlagen")
                 return (d.Anlagen != null && d.Anlagen.Rows.Count > 0) ? d.Anlagen.Rows[0] : null;

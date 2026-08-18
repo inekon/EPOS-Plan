@@ -4102,4 +4102,346 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="PSP_KARTE_IM_VERBUND" xml:space="preserve">
     <value>Im Parallelverbund mit {0} - dieser Speicher hat im Lauf keinen eigenen Füllstand; Kapazität und Ergebniszeile gehören zum Leitspeicher.</value>
   </data>
+  <data name="BK_NAV_UEBERSICHT" xml:space="preserve">
+    <value>Übersicht</value>
+  </data>
+  <data name="BK_NAV_KOSTEN" xml:space="preserve">
+    <value>Kosten</value>
+  </data>
+  <data name="BK_NAV_WIRTSCHAFT" xml:space="preserve">
+    <value>Wirtschaftlichkeit</value>
+  </data>
+  <data name="BK_NAV_BERICHT" xml:space="preserve">
+    <value>Bericht</value>
+  </data>
+  <data name="BK_KOPF_UEBERSICHT" xml:space="preserve">
+    <value>Übersicht — Stammprojekt und Varianten</value>
+  </data>
+  <data name="BK_KOPF_KOSTEN" xml:space="preserve">
+    <value>Kosten — Investition, Betrieb, Energie</value>
+  </data>
+  <data name="BK_KOPF_WIRTSCHAFT" xml:space="preserve">
+    <value>Wirtschaftlichkeit — Kapitalwertmethode (DIN EN 17463)</value>
+  </data>
+  <data name="BK_KOPF_BERICHT" xml:space="preserve">
+    <value>Bericht — Word- und Excel-Ausgabe</value>
+  </data>
+  <data name="BK_LBL_STAMM" xml:space="preserve">
+    <value>Stammprojekt:</value>
+  </data>
+  <data name="BK_CHK_NURSTAEMME" xml:space="preserve">
+    <value>nur Stammprojekte</value>
+  </data>
+  <data name="BK_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichner:</value>
+  </data>
+  <data name="BK_BTN_ANLEGEN" xml:space="preserve">
+    <value>Variante anlegen</value>
+  </data>
+  <data name="BK_BTN_LOESCHEN" xml:space="preserve">
+    <value>Variante löschen</value>
+  </data>
+  <data name="BK_BTN_SIMULIEREN" xml:space="preserve">
+    <value>Simulation starten</value>
+  </data>
+  <data name="BK_SP_ART" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="BK_SP_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichner</value>
+  </data>
+  <data name="BK_SP_PROJEKTNAME" xml:space="preserve">
+    <value>Projektname</value>
+  </data>
+  <data name="BK_SP_SIMSTAND" xml:space="preserve">
+    <value>Simulationsstand</value>
+  </data>
+  <data name="BK_ART_STAMM" xml:space="preserve">
+    <value>Stamm</value>
+  </data>
+  <data name="BK_ART_VARIANTE" xml:space="preserve">
+    <value>Variante</value>
+  </data>
+  <data name="BK_ART_STAMMPROJEKT" xml:space="preserve">
+    <value>(Stammprojekt)</value>
+  </data>
+  <data name="BK_LBL_KOMPONENTEN_STAMM" xml:space="preserve">
+    <value>Komponenten des Stammprojekts</value>
+  </data>
+  <data name="BK_LBL_KOMPONENTEN_DIFF" xml:space="preserve">
+    <value>Unterschiede zum Stammprojekt — Variante „{0}“</value>
+  </data>
+  <data name="BK_SP_GEWERK" xml:space="preserve">
+    <value>Gewerk</value>
+  </data>
+  <data name="BK_SP_MERKMAL" xml:space="preserve">
+    <value>Merkmal</value>
+  </data>
+  <data name="BK_SP_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="BK_SP_WERT_STAMM" xml:space="preserve">
+    <value>Stamm</value>
+  </data>
+  <data name="BK_SP_WERT_VARIANTE" xml:space="preserve">
+    <value>Variante</value>
+  </data>
+  <data name="BK_SP_AKTION" xml:space="preserve">
+    <value>Aktion</value>
+  </data>
+  <data name="BK_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen aus…</value>
+  </data>
+  <data name="BK_TIP_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernahme einzelner Merkmale folgt im nächsten Paket.</value>
+  </data>
+  <data name="BK_MSG_KEINE_ABWEICHUNG" xml:space="preserve">
+    <value>Keine Unterschiede in der verglichenen Anlagen- und Gebäudekonfiguration.</value>
+  </data>
+  <data name="BK_MSG_KEINE_KOMPONENTEN" xml:space="preserve">
+    <value>Für dieses Projekt sind keine Komponenten hinterlegt.</value>
+  </data>
+  <data name="BK_MSG_ANZAHL_UNTERSCHIEDE" xml:space="preserve">
+    <value>{0} Unterschied(e) gegenüber dem Stammprojekt.</value>
+  </data>
+  <data name="BK_MSG_KEIN_STAMM" xml:space="preserve">
+    <value>Kein Stammprojekt gewählt.</value>
+  </data>
+  <data name="BK_MSG_NUR_VARIANTE" xml:space="preserve">
+    <value>Bitte eine Variante auswählen (das Stammprojekt wird hier nicht gelöscht).</value>
+  </data>
+  <data name="BK_MSG_BITTE_WAEHLEN" xml:space="preserve">
+    <value>Bitte Stamm oder Variante auswählen.</value>
+  </data>
+  <data name="BK_MSG_LOESCHEN_FRAGE" xml:space="preserve">
+    <value>Variante „{0}“ und alle zugehörigen Projektdaten unwiderruflich löschen?</value>
+  </data>
+  <data name="BK_MSG_VARIANTE_ANGELEGT" xml:space="preserve">
+    <value>Variante „{0}“ angelegt.</value>
+  </data>
+  <data name="BK_MSG_VARIANTE_GELOESCHT" xml:space="preserve">
+    <value>Variante „{0}“ gelöscht.</value>
+  </data>
+  <data name="BK_MSG_ANLEGEN_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Variante konnte nicht angelegt werden.</value>
+  </data>
+  <data name="BK_MSG_LOESCHEN_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Variante konnte nicht gelöscht werden.</value>
+  </data>
+  <data name="BK_MSG_LADEFEHLER" xml:space="preserve">
+    <value>Fehler beim Laden der Projekte: {0}</value>
+  </data>
+  <data name="BK_MSG_ANLEGEFEHLER" xml:space="preserve">
+    <value>Fehler beim Anlegen: {0}</value>
+  </data>
+  <data name="BK_MSG_LOESCHFEHLER" xml:space="preserve">
+    <value>Fehler beim Löschen: {0}</value>
+  </data>
+  <data name="BK_MSG_SIMFEHLER" xml:space="preserve">
+    <value>Fehler bei der Simulation: {0}</value>
+  </data>
+  <data name="BK_MSG_SIM_FERTIG" xml:space="preserve">
+    <value>Simulation abgeschlossen ({0} Projekt(e)).</value>
+  </data>
+  <data name="BK_MSG_SIM_OK" xml:space="preserve">
+    <value>{0}: ok (Ergebnis-ID {1})</value>
+  </data>
+  <data name="BK_MSG_SIM_FEHLER" xml:space="preserve">
+    <value>{0}: FEHLER – {1}</value>
+  </data>
+  <data name="BK_TITEL_SIMULATION" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="BK_PRAEFIX_STAMM" xml:space="preserve">
+    <value>Stamm: {0}</value>
+  </data>
+  <data name="BK_PRAEFIX_VARIANTE" xml:space="preserve">
+    <value>Variante: {0}</value>
+  </data>
+  <data name="BK_KOSTEN_INVEST" xml:space="preserve">
+    <value>Investition</value>
+  </data>
+  <data name="BK_KOSTEN_BETRIEB" xml:space="preserve">
+    <value>Betrieb</value>
+  </data>
+  <data name="BK_KOSTEN_ENERGIE" xml:space="preserve">
+    <value>Energie</value>
+  </data>
+  <data name="BK_KOSTEN_INVEST_HINT" xml:space="preserve">
+    <value>Summe der Investitionspositionen (Erwartungswert)</value>
+  </data>
+  <data name="BK_KOSTEN_BETRIEB_HINT" xml:space="preserve">
+    <value>Summe der Betriebskosten p. a. (Erwartungswert)</value>
+  </data>
+  <data name="BK_KOSTEN_ENERGIE_HINT" xml:space="preserve">
+    <value>aus der gespeicherten Wirtschaftlichkeitsrechnung</value>
+  </data>
+  <data name="BK_KOSTEN_ENERGIE_FEHLT" xml:space="preserve">
+    <value>Energiekosten noch nicht berechnet — Seite „Wirtschaftlichkeit“, „Berechnen“.</value>
+  </data>
+  <data name="BK_KOSTEN_EINHEIT_EUR" xml:space="preserve">
+    <value>€</value>
+  </data>
+  <data name="BK_KOSTEN_EINHEIT_EUR_A" xml:space="preserve">
+    <value>€/a</value>
+  </data>
+  <data name="BK_KOSTEN_BTN_VERWALTUNG" xml:space="preserve">
+    <value>Kostenverwaltung öffnen…</value>
+  </data>
+  <data name="BK_KOSTEN_PROJEKT" xml:space="preserve">
+    <value>Projekt: {0}</value>
+  </data>
+  <data name="BK_KOSTEN_KEIN_PROJEKT" xml:space="preserve">
+    <value>Kein Projekt gewählt.</value>
+  </data>
+  <data name="BK_KOSTEN_STAND" xml:space="preserve">
+    <value>Stand: {0}</value>
+  </data>
+  <data name="BK_KOSTEN_STATUS" xml:space="preserve">
+    <value>{0} Investitionsposition(en) · {1}</value>
+  </data>
+  <data name="BK_KOSTEN_LBL_KOMPONENTEN" xml:space="preserve">
+    <value>Kosten je Komponente</value>
+  </data>
+  <data name="BK_KOSTEN_LBL_TRAEGER" xml:space="preserve">
+    <value>Energieträger des Projekts</value>
+  </data>
+  <data name="BK_KOSTEN_SP_KOMPONENTE" xml:space="preserve">
+    <value>Komponente</value>
+  </data>
+  <data name="BK_KOSTEN_SP_SUMME" xml:space="preserve">
+    <value>Summe [€]</value>
+  </data>
+  <data name="BK_KOSTEN_SUMME" xml:space="preserve">
+    <value>Gesamt</value>
+  </data>
+  <data name="BK_KOSTEN_SP_TRAEGER" xml:space="preserve">
+    <value>Energieträger</value>
+  </data>
+  <data name="BK_KOSTEN_SP_ABRECHNUNG" xml:space="preserve">
+    <value>Abrechnungseinheit</value>
+  </data>
+  <data name="BK_KOSTEN_SP_HEIZWERT" xml:space="preserve">
+    <value>Heizwert [kWh/Einheit]</value>
+  </data>
+  <data name="BK_KOSTEN_SP_ARBEITSPREIS" xml:space="preserve">
+    <value>Arbeitspreis [€/Einheit]</value>
+  </data>
+  <data name="BK_KOSTEN_SP_GRUNDPREIS" xml:space="preserve">
+    <value>Grundpreis [€/a]</value>
+  </data>
+  <data name="BK_BTN_VERGLEICH_ALT" xml:space="preserve">
+    <value>Projektvergleich + Bericht (alt)</value>
+  </data>
+  <data name="BK_UEB_TITEL_FELD" xml:space="preserve">
+    <value>Merkmal übernehmen</value>
+  </data>
+  <data name="BK_UEB_TITEL_KOMP" xml:space="preserve">
+    <value>Komponenten übernehmen</value>
+  </data>
+  <data name="BK_UEB_LBL_QUELLE" xml:space="preserve">
+    <value>Quelle:</value>
+  </data>
+  <data name="BK_UEB_LBL_ZIEL" xml:space="preserve">
+    <value>Ziel:</value>
+  </data>
+  <data name="BK_UEB_LBL_WERT_QUELLE" xml:space="preserve">
+    <value>Wert der Quelle:</value>
+  </data>
+  <data name="BK_UEB_LBL_WERT_ZIEL" xml:space="preserve">
+    <value>Wert des Ziels:</value>
+  </data>
+  <data name="BK_UEB_BTN_OK" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="BK_UEB_BTN_ABBRUCH" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="BK_UEB_QUELLE_STAMM" xml:space="preserve">
+    <value>Stammprojekt: {0}</value>
+  </data>
+  <data name="BK_UEB_QUELLE_VARIANTE" xml:space="preserve">
+    <value>Variante: {0}</value>
+  </data>
+  <data name="BK_UEB_KOMPONENTEN" xml:space="preserve">
+    <value>Betroffen: {0} → {1}</value>
+  </data>
+  <data name="BK_TIP_UEBERNEHMEN_FELD" xml:space="preserve">
+    <value>Dieses Merkmal aus einer anderen Version übernehmen (Stamm oder Variante).</value>
+  </data>
+  <data name="BK_TIP_UEBERNEHMEN_KOMP" xml:space="preserve">
+    <value>Den Komponentenbestand dieses Gewerks aus einer anderen Version übernehmen.</value>
+  </data>
+  <data name="BK_TIP_UEBERNEHMEN_GESPERRT_SCHLUESSEL" xml:space="preserve">
+    <value>Der Bezeichner bestimmt die Zuordnung der Komponenten selbst und kann deshalb nicht feldweise übernommen werden — dafür ist die Bestandszeile des Gewerks da.</value>
+  </data>
+  <data name="BK_MSG_UEB_KEIN_FELD" xml:space="preserve">
+    <value>Diese Zeile bezeichnet kein einzelnes Merkmal.</value>
+  </data>
+  <data name="BK_MSG_UEB_SCHLUESSEL" xml:space="preserve">
+    <value>Der Bezeichner ist der Schlüssel der Komponentenzuordnung — bitte die ganze Komponente übernehmen.</value>
+  </data>
+  <data name="BK_MSG_UEB_KEINE_QUELLE" xml:space="preserve">
+    <value>Es gibt keine andere Version, aus der übernommen werden könnte.</value>
+  </data>
+  <data name="BK_MSG_UEB_KEINE_QUELLZEILE" xml:space="preserve">
+    <value>Die Quelle führt zu diesem Merkmal keinen Datensatz.</value>
+  </data>
+  <data name="BK_MSG_UEB_KEINE_ZIELZEILE" xml:space="preserve">
+    <value>Das Ziel führt zu diesem Merkmal keinen Datensatz.</value>
+  </data>
+  <data name="BK_MSG_UEB_NICHT_EINDEUTIG" xml:space="preserve">
+    <value>Zuordnung nicht eindeutig: Gewerk „{0}" führt in der Quelle {1} und im Ziel {2} Komponenten. Bitte statt eines einzelnen Merkmals den Komponentenbestand übernehmen.</value>
+  </data>
+  <data name="BK_MSG_UEB_GLEICH" xml:space="preserve">
+    <value>Quelle und Ziel führen bereits denselben Wert — nichts zu tun.</value>
+  </data>
+  <data name="BK_MSG_UEB_SCHREIBFEHLER" xml:space="preserve">
+    <value>Der Wert konnte nicht geschrieben werden.</value>
+  </data>
+  <data name="BK_MSG_UEB_OK" xml:space="preserve">
+    <value>Übernommen: {0} · {1} = {2}</value>
+  </data>
+  <data name="BK_MSG_UEB_FEHLER" xml:space="preserve">
+    <value>Übernahme fehlgeschlagen: {0}</value>
+  </data>
+  <data name="BK_MSG_UEB_ERGEBNIS_VERALTET" xml:space="preserve">
+    <value>Ergebnisse veraltet — Simulation neu ausführen.</value>
+  </data>
+  <data name="BK_KOMP_ZUS_KOPF" xml:space="preserve">
+    <value>Gewerk „{0}": Der Bestand des Ziels ({1} Komponenten) wird durch den der Quelle ({2} Komponenten) ersetzt.</value>
+  </data>
+  <data name="BK_KOMP_ZUS_ANLEGEN" xml:space="preserve">
+    <value>  + anlegen: {0}</value>
+  </data>
+  <data name="BK_KOMP_ZUS_ERSETZEN" xml:space="preserve">
+    <value>  ~ ersetzen: {0}</value>
+  </data>
+  <data name="BK_KOMP_ZUS_ENTFERNEN" xml:space="preserve">
+    <value>  - entfernen: {0}</value>
+  </data>
+  <data name="BK_KOMP_ZUS_KETTE" xml:space="preserve">
+    <value>Betroffene Tabellen:</value>
+  </data>
+  <data name="BK_MSG_KOMP_NICHTS_ZU_TUN" xml:space="preserve">
+    <value>Quelle und Ziel führen bereits denselben Komponentenbestand — nichts zu tun.</value>
+  </data>
+  <data name="BK_MSG_KOMP_GEWERK_UNBEKANNT" xml:space="preserve">
+    <value>Für das Gewerk „{0}" ist die Komponenten-Übernahme nicht umgesetzt.</value>
+  </data>
+  <data name="BK_MSG_KOMP_OK" xml:space="preserve">
+    <value>Komponenten übernommen (Gewerk „{0}"): {1} angelegt, {2} ersetzt, {3} entfernt.</value>
+  </data>
+  <data name="BK_MSG_KOMP_FEHLER" xml:space="preserve">
+    <value>Komponenten-Übernahme fehlgeschlagen: {0}</value>
+  </data>
+  <data name="BK_KOMP_HINW_PUFFERVERWEIS" xml:space="preserve">
+    <value>{0} Verweis(e) auf einen Pufferspeicher ließen sich im Ziel nicht auflösen und bleiben leer.</value>
+  </data>
+  <data name="BK_KOMP_HINW_KINDTABELLE" xml:space="preserve">
+    <value>Die Tabelle {0} konnte nicht gelesen werden — ihre Daten fehlen in der Kopie.</value>
+  </data>
+  <data name="BK_KOMP_HINW_VARIANTE" xml:space="preserve">
+    <value>Die Betriebsführung der Speichervariante „{0}" konnte nicht angelegt werden.</value>
+  </data>
 </root>

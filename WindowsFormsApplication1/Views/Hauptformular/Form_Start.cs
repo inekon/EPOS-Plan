@@ -1184,6 +1184,10 @@ namespace WindowsFormsApplication1
             {
                 //if(e.TabPageIndex >= 1 && e.TabPageIndex <= 3)
                 if (!bUpdateWizardSymbole) { UpdateWizardSymbole(); bUpdateWizardSymbole = true; }
+
+                // Reiter „Berichte & Kosten": Seite beim ersten Betreten aufbauen und
+                // danach jedes Mal auf das aktuell geöffnete Projekt einstellen.
+                if (e.TabPage == tabPage6) BaueBerichteKostenSeite();
             }
         }
 
@@ -1972,7 +1976,55 @@ namespace WindowsFormsApplication1
 
         private void btn_Varianten_Click(object sender, EventArgs e)
         {
-            new Form_Variantentest(m_ID_Projekt).ShowDialog();   
+            // Rückfallweg: der Dialog ist seit dem Umbau des Reiters „Berichte & Kosten"
+            // nicht mehr verdrahtet (die Schaltfläche wird in BaueBerichteKostenSeite
+            // entfernt). Handler und Formular bleiben stehen, falls der Dialog wieder
+            // gebraucht wird.
+            new Form_Variantentest(m_ID_Projekt).ShowDialog();
+        }
+
+        // ============================================================
+        //  Reiter „Berichte & Kosten" (tabPage6)
+        //
+        //  Der Reiter enthielt bis zum Umbau nur die zwei Schaltflächen „Kosten"
+        //  und „Varianten". Er trägt jetzt eine senkrechte Navigation mit vier
+        //  Seiten (Übersicht, Kosten, Wirtschaftlichkeit, Bericht) —
+        //  siehe UcBerichteKosten.
+        //
+        //  Programmatisch angehängt, damit Form_Start.Designer.cs und die .resx
+        //  unberührt bleiben (CLAUDE.md: Designer-Dateien nicht von Hand
+        //  editieren) — dasselbe Vorgehen wie bei Form_Kosten.BauePreisreihenEinstieg.
+        // ============================================================
+
+        private UcBerichteKosten _berichteKosten;
+
+        /// <summary>
+        /// Baut die Reiterseite beim ersten Aufruf auf und übergibt ihr bei jedem
+        /// weiteren Aufruf das aktuell geöffnete Projekt (es kann sich zwischenzeitlich
+        /// geändert haben).
+        /// </summary>
+        private void BaueBerichteKostenSeite()
+        {
+            if (this.DesignMode) return;
+
+            if (_berichteKosten == null)
+            {
+                // Die zwei Altknöpfe entfallen (Designer bleibt unberührt).
+                EntferneAltknopf(btn_Kosten);
+                EntferneAltknopf(btn_Varianten);
+
+                _berichteKosten = new UcBerichteKosten { Dock = DockStyle.Fill };
+                tabPage6.Controls.Add(_berichteKosten);
+            }
+
+            _berichteKosten.SetzeProjekt(m_ID_Projekt);
+        }
+
+        private static void EntferneAltknopf(Control knopf)
+        {
+            if (knopf == null || knopf.Parent == null) return;
+            knopf.Parent.Controls.Remove(knopf);
+            knopf.Dispose();
         }
     }
 }

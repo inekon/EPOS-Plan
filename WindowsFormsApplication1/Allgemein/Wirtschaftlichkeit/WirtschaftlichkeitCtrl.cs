@@ -1144,8 +1144,11 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Kategorie-1-Positionen (Investitionen) mit Szenariowerten.
-        /// Best/WorstCase bzw. …_Nutzungsdauer: 0/leer → Erwartungswert (VALERI-Muster).</summary>
-        private static List<KapitalwertRechner.InvestPosition> LiesInvestitionen(int idProjekt, string szenario)
+        /// Best/WorstCase bzw. …_Nutzungsdauer: 0/leer → Erwartungswert (VALERI-Muster).
+        /// <para>Sichtbarkeit <c>internal</c> statt <c>private</c>, damit die
+        /// Kompaktanzeige der Seite „Kosten" (<see cref="UcBkKosten"/>) dieselbe
+        /// Leselogik verwendet und keine zweite entsteht.</para></summary>
+        internal static List<KapitalwertRechner.InvestPosition> LiesInvestitionen(int idProjekt, string szenario)
         {
             var liste = new List<KapitalwertRechner.InvestPosition>();
             try
@@ -1169,8 +1172,9 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        /// <summary>Summe der Kategorie-2-Positionen (Betriebskosten p. a., Szenariowert).</summary>
-        private static double LiesBetriebskosten(int idProjekt, string szenario)
+        /// <summary>Summe der Kategorie-2-Positionen (Betriebskosten p. a., Szenariowert).
+        /// <c>internal</c> aus demselben Grund wie <see cref="LiesInvestitionen"/>.</summary>
+        internal static double LiesBetriebskosten(int idProjekt, string szenario)
         {
             double summe = 0;
             try
