@@ -4048,4 +4048,43 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="SP_ERG_KERN_BEREICH" xml:space="preserve">
     <value>{0} – {1}</value>
   </data>
+  <data name="SIM_GB_VERBUND" xml:space="preserve">
+    <value>Parallel array (several tanks as one store)</value>
+  </data>
+  <data name="SIM_LBL_VERBUND_ZUSATZ" xml:space="preserve">
+    <value>Additional buffer tanks connected in parallel (shared store with the lead tank selected above):</value>
+  </data>
+  <data name="SIM_VERBUND_SUMME" xml:space="preserve">
+    <value>Array: {0} tanks · total Q_max {1} kWh</value>
+  </data>
+  <data name="SIM_VERBUND_KEIN_VERBUND" xml:space="preserve">
+    <value>No array - only the buffer tank selected above is used.</value>
+  </data>
+  <data name="SIM_VERBUND_KONFLIKT_SENKE" xml:space="preserve">
+    <value>Buffer tank "{0}" cannot be an array member: unit "{1}" already charges it as its own sink target.</value>
+  </data>
+  <data name="SIM_VERBUND_KONFLIKT_FREMDVERBUND" xml:space="preserve">
+    <value>Buffer tank "{0}" already belongs to the array led by "{1}".</value>
+  </data>
+  <data name="SIM_VERBUND_KONFLIKT_LEIT_IST_MITGLIED" xml:space="preserve">
+    <value>The selected buffer tank "{0}" is itself a member of the array led by "{1}" and therefore cannot lead another array.</value>
+  </data>
+  <data name="SIM_VERBUND_KONFLIKT_QUELLE" xml:space="preserve">
+    <value>Buffer tank "{0}" is the heat source of a unit in this project and cannot at the same time be part of a heat store.</value>
+  </data>
+  <data name="SIM_VERBUND_KONFLIKT_PASST_NICHT" xml:space="preserve">
+    <value>Buffer tank "{0}" does not belong to this project or is not set up for use "{1}".</value>
+  </data>
+  <data name="SIM_VERBUND_KONFLIKT_ERKLAERUNG" xml:space="preserve">
+    <value>A tank in a parallel array no longer has its own state of charge - its capacity belongs to the shared store of the lead tank. If another target also charged it, the same capacity would count twice.</value>
+  </data>
+  <data name="SIM_KARTE_VERBUND_ZUSATZ" xml:space="preserve">
+    <value>+{0} parallel</value>
+  </data>
+  <data name="SIM_TIP_VERBUND" xml:space="preserve">
+    <value>Parallel array: {0} buffer tanks are calculated as ONE shared heat store (capacities added, one state of charge, one switching threshold).</value>
+  </data>
+  <data name="PSP_KARTE_IM_VERBUND" xml:space="preserve">
+    <value>In a parallel array with {0} - this tank has no state of charge of its own; capacity and result row belong to the lead tank.</value>
+  </data>
 </root>

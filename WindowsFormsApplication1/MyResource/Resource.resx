@@ -4063,4 +4063,43 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="SP_ERG_KERN_BEREICH" xml:space="preserve">
     <value>{0} – {1}</value>
   </data>
+  <data name="SIM_GB_VERBUND" xml:space="preserve">
+    <value>Parallelverbund (mehrere Speicher als ein Vorrat)</value>
+  </data>
+  <data name="SIM_LBL_VERBUND_ZUSATZ" xml:space="preserve">
+    <value>Zusätzlich parallel geschaltete Pufferspeicher (gemeinsamer Vorrat mit dem oben gewählten Leitspeicher):</value>
+  </data>
+  <data name="SIM_VERBUND_SUMME" xml:space="preserve">
+    <value>Verbund: {0} Speicher · Q_max gesamt {1} kWh</value>
+  </data>
+  <data name="SIM_VERBUND_KEIN_VERBUND" xml:space="preserve">
+    <value>Kein Verbund - es rechnet allein der oben gewählte Pufferspeicher.</value>
+  </data>
+  <data name="SIM_VERBUND_KONFLIKT_SENKE" xml:space="preserve">
+    <value>Der Pufferspeicher „{0}" kann nicht als Verbundmitglied dienen: Die Anlage „{1}" lädt ihn bereits als eigenes Senkenziel.</value>
+  </data>
+  <data name="SIM_VERBUND_KONFLIKT_FREMDVERBUND" xml:space="preserve">
+    <value>Der Pufferspeicher „{0}" gehört bereits zum Verbund des Leitspeichers „{1}".</value>
+  </data>
+  <data name="SIM_VERBUND_KONFLIKT_LEIT_IST_MITGLIED" xml:space="preserve">
+    <value>Der gewählte Pufferspeicher „{0}" ist selbst Mitglied im Verbund des Leitspeichers „{1}" und kann deshalb nicht Leitspeicher eines weiteren Verbunds sein.</value>
+  </data>
+  <data name="SIM_VERBUND_KONFLIKT_QUELLE" xml:space="preserve">
+    <value>Der Pufferspeicher „{0}" ist die Wärmequelle einer Anlage dieses Projekts und kann nicht gleichzeitig Teil eines Wärmevorrats sein.</value>
+  </data>
+  <data name="SIM_VERBUND_KONFLIKT_PASST_NICHT" xml:space="preserve">
+    <value>Der Pufferspeicher „{0}" gehört nicht zu diesem Projekt oder ist nicht für die Verwendung „{1}" gepflegt.</value>
+  </data>
+  <data name="SIM_VERBUND_KONFLIKT_ERKLAERUNG" xml:space="preserve">
+    <value>Ein Speicher im Parallelverbund hat keinen eigenen Füllstand mehr - seine Kapazität gehört zum gemeinsamen Vorrat des Leitspeichers. Würde ihn zusätzlich ein anderes Ziel laden, zählte dieselbe Kapazität zweimal.</value>
+  </data>
+  <data name="SIM_KARTE_VERBUND_ZUSATZ" xml:space="preserve">
+    <value>+{0} parallel</value>
+  </data>
+  <data name="SIM_TIP_VERBUND" xml:space="preserve">
+    <value>Parallelverbund: {0} Pufferspeicher werden als EIN gemeinsamer Wärmevorrat gerechnet (Kapazitäten addiert, ein Füllstand, eine Schaltschwelle).</value>
+  </data>
+  <data name="PSP_KARTE_IM_VERBUND" xml:space="preserve">
+    <value>Im Parallelverbund mit {0} - dieser Speicher hat im Lauf keinen eigenen Füllstand; Kapazität und Ergebniszeile gehören zum Leitspeicher.</value>
+  </data>
 </root>
