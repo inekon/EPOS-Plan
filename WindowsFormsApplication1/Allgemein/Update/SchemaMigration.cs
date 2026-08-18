@@ -64,12 +64,17 @@ namespace WindowsFormsApplication1
     /// hinzu und legt vier zusammengesetzte eindeutige Indizes auf Tab_Energieanlagen an -
     /// rein additives DDL, KEIN DML, und mit einer ausdruecklichen Vorabpruefung:
     /// Bestandsdubletten fuehren zum Ueberspringen des betroffenen Index statt zum
-    /// Abbruch der Migration.
+    /// Abbruch der Migration. Schritt 17 loest genau diese Bestandsdubletten auf -
+    /// der sechste DML-Schritt neben 5, 7, 9, 13 und 15 und der erste, der Zeilen
+    /// ANLEGT statt nur zu aendern: Jede ueberzaehlige Anlagenzeile bekommt eine
+    /// eigene Projektkopie ihres Geraets, damit die fachlich gewollte Kaskade
+    /// erhalten bleibt (Nutzerentscheidung 18.08.2026) und die Indizes aus Schritt 16
+    /// im selben Lauf greifen koennen.
     /// </summary>
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 16;
+        public const int ZIEL_VERSION = 17;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -276,6 +281,52 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_16_ANLAGEN_EINDEUTIG = 16;
 
+        /// <summary>
+        /// Nummer der DUBLETTENAUFLÖSUNG (Nutzerentscheidung vom 18.08.2026: „Ja, in
+        /// 1009 und 1011 stehen wirklich je zwei baugleiche Geräte").
+        ///
+        /// <b>Was der Schritt tut.</b> Zeigen mehrere Anlagenzeilen eines Projekts auf
+        /// dasselbe Gerät, behält die Zeile mit der KLEINSTEN ID das vorhandene Gerät;
+        /// jede weitere bekommt eine eigene Projektkopie desselben Geräts und wird auf
+        /// deren ID umgehängt. Gerätekopie und Anlagenzeile tragen anschließend
+        /// denselben, im Projekt eindeutigen Bezeichner.
+        ///
+        /// <b>Warum überführen und nicht löschen.</b> Die Doppelzeilen sind fachlich
+        /// gewollte Kaskaden — zwei baugleiche Geräte —, nur technisch falsch abgelegt.
+        /// Bis <see cref="SCHRITT_16_ANLAGEN_EINDEUTIG"/> gab es überhaupt keinen Weg,
+        /// ein zweites baugleiches Gerät sauber anzulegen: <c>CopyFromStamm</c> gibt bei
+        /// Namensgleichheit die VORHANDENE Projekt-ID zurück (<c>WPCtrl.cs:244</c>,
+        /// <c>HeizkesselCtrl.cs:188</c>, <c>BHKWCtrl.cs:253</c>,
+        /// <c>PufferSpCtrl.cs:206</c>). Ein Löschen wäre deshalb kein Aufräumen, sondern
+        /// der Verlust genau der Aussage, die der Anwender treffen wollte.
+        ///
+        /// <b>Was sich dadurch ÄNDERN soll.</b> Nur die Kostenseite: Sie zählt seit
+        /// Commit 605dcb8 JE GERÄT (<c>TechnikPlanwertCtrl.LiesAnlagen</c>, GROUP BY
+        /// Verweisspalte) und führte die Kaskade deshalb bisher als EIN Gerät. Nach der
+        /// Überführung sind es zwei — das ist die beabsichtigte Korrektur.
+        ///
+        /// <b>Was sich NICHT ändern darf.</b> Der Rechenlauf. Die Engine baut ihre
+        /// Modullisten je Anlagenzeile auf; zwei Zeilen bleiben zwei Module, nur mit
+        /// eigenen Geräte-IDs. Weil die Kopie wertgleich ist (Spaltensatz der Quellzeile,
+        /// Kindtabellen inbegriffen), rechnet jedes Modul mit denselben Zahlen wie zuvor.
+        /// Sichtbar wird die Überführung allein im ANZEIGENAMEN des zweiten Moduls, der
+        /// den Bezeichner der Anlagenzeile trägt (<c>SimulationWaermepumpe.cs:304</c>,
+        /// <c>SimulationRunner</c> „Modul") und jetzt das Suffix führt.
+        ///
+        /// <b>Reihenfolge zu Schritt 16.</b> Der Schritt läuft NACH 16 — die
+        /// Schrittnummer ist der Marker, eine frühere Ausführung ließe 16 dauerhaft aus.
+        /// Damit die Indizes trotzdem im SELBEN Lauf entstehen, meldet er die
+        /// Abschlussprüfung (Teil C) wieder als offen an; sie läuft nach der Schleife und
+        /// legt jeden Index an, dessen Spalte jetzt sauber ist.
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): Er arbeitet ausschließlich auf
+        /// Zeilen, die sich AKTUELL ein Gerät teilen. Nach einem erfolgreichen Lauf gibt
+        /// es keine solche Gruppe mehr — ein zweiter Lauf legt keine weitere Kopie an.
+        /// Ein abgebrochener Lauf ist ebenfalls unkritisch: Bereits überführte Zeilen
+        /// sind keine Dubletten mehr, der nächste Lauf nimmt nur den Rest.
+        /// </summary>
+        public const int SCHRITT_17_ANLAGEN_DUBLETTEN = 17;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -367,6 +418,23 @@ namespace WindowsFormsApplication1
         /// 0 ist die Zusage „je Projekt und Gerät genau eine Zeile".
         /// </summary>
         public static int DatenEindeutigDubletten { get; private set; }
+
+        // --- Zählwerk der Dublettenauflösung aus Schritt 17 -----------------------------
+
+        /// <summary>
+        /// 17: Anlagenzeilen, die eine EIGENE Gerätekopie erhalten haben und auf sie
+        /// umgehängt wurden. Die Zahl ist zugleich die Zahl der neu angelegten
+        /// Gerätezeilen — je überführter Anlagenzeile genau eine.
+        /// </summary>
+        public static int DatenDublettenUeberfuehrt { get; private set; }
+
+        /// <summary>
+        /// 17: Anlagenzeilen, deren Überführung NICHT gelang (Gerätekopie oder Umhängen
+        /// fehlgeschlagen). Sie bleiben unverändert stehen; der zugehörige Index wird
+        /// deshalb weiterhin übersprungen und die Zeilen erscheinen in der
+        /// Abschlussprüfung. 0 ist die Zusage „vollständig überführt".
+        /// </summary>
+        public static int DatenDublettenOffen { get; private set; }
 
         /// <summary>
         /// Wurde die Eindeutigkeitsprüfung in diesem Lauf schon ausgeführt? Verhindert,
@@ -557,6 +625,16 @@ namespace WindowsFormsApplication1
                         "Anlagenzeilen-Eindeutigkeit: Indizes auf (ID_Projekt, ID_WP | ID_Kessel | ID_BHKW | ID_PUFFER)",
                         "Die Eindeutigkeitsindizes der Anlagenzeilen konnten nicht angelegt werden.",
                         Schritt_16_AnlagenEindeutigkeit),
+
+            // PAKET ANLAGENZEILEN-EINDEUTIGKEIT, Teil D - die Bestandsdubletten aus
+            //       Schritt 16 verlustfrei in eigene Gerätekopien überführen
+            //       (Nutzerentscheidung 18.08.2026: die Doppelzeilen sind gewollte
+            //       Kaskaden). DML; muss NACH 16 stehen, holt die Indizes über die
+            //       Abschlussprüfung im selben Lauf nach.
+            new Schritt(SCHRITT_17_ANLAGEN_DUBLETTEN,
+                        "Doppelt belegte Anlagenzeilen in eigene Gerätekopien überführen",
+                        "Die doppelt belegten Anlagenzeilen konnten nicht überführt werden.",
+                        Schritt_17_AnlagenDubletten),
         };
 
         // =================================================================================
@@ -598,6 +676,8 @@ namespace WindowsFormsApplication1
             DatenKesselWartungseinheitVorbelegt = 0;
             DatenEindeutigIndizes = 0;
             DatenEindeutigDubletten = 0;
+            DatenDublettenUeberfuehrt = 0;
+            DatenDublettenOffen = 0;
             _eindeutigkeitGeprueft = false;
 
             var l = new Lauf();
@@ -801,6 +881,17 @@ namespace WindowsFormsApplication1
             // eigentliche Aussage: "je Projekt und Gerät genau eine Anlagenzeile", und
             // damit die Bedingung dafür, dass Engine (je Zeile) und Kostenseite
             // (je Gerät, TechnikPlanwertCtrl) dasselbe meinen.
+            // Schritt 17 meldet - wie 14 und 16 - AUCH die 0. Sie sagt „dieser Bestand
+            // führte keine doppelt belegte Anlagenzeile", und genau das ist die Aussage,
+            // die den unveränderten Rechenlauf trägt.
+            l.Zeile("Dublettenauflösung (Schritt 17): " + DatenDublettenUeberfuehrt +
+                    " Anlagenzeilen auf eine eigene Gerätekopie überführt" +
+                    (DatenDublettenOffen > 0
+                        ? ", " + DatenDublettenOffen + " NICHT überführt - siehe die Meldungen oben."
+                        : (DatenDublettenUeberfuehrt == 0
+                            ? " - es gab keine doppelt belegte Anlagenzeile."
+                            : " - je Zeile ein eigenes Gerät mit eigener Investition und Wartung.")));
+
             l.Zeile("Anlagenzeilen-Eindeutigkeit (Schritt 16): " + DatenEindeutigIndizes +
                     " von " + AnlagenEindeutigkeit.SPERREN.Length + " Eindeutigkeitsindizes aktiv, " +
                     DatenEindeutigDubletten + " doppelt belegte Anlagenzeilen" +
@@ -1974,6 +2065,196 @@ namespace WindowsFormsApplication1
             }
 
             return dt.Rows.Count;
+        }
+
+        // =================================================================================
+        // Schritt 17 - Dubletten in eigene Gerätekopien überführen (Entscheidung 18.08.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Schritt 17.</b> Löst die Bestandsdubletten auf, die Schritt 16 nur melden
+        /// konnte — verlustfrei: Die Zeile mit der KLEINSTEN ID behält das vorhandene
+        /// Gerät, jede weitere bekommt eine eigene Projektkopie und wird auf deren ID
+        /// umgehängt.
+        ///
+        /// <para>
+        /// <b>Derselbe Weg wie Teil A.</b> Die Kopie entsteht über
+        /// <see cref="AnlagenEindeutigkeit.ProjektkopieAnlegen"/> — dieselbe Routine, mit
+        /// der die Oberfläche seit Schritt 16 ein zweites baugleiches Gerät anlegt. Damit
+        /// wandern die Kindtabellen mit (heute die Kennlinien der Wärmepumpe,
+        /// <c>Tab_Kenndaten</c>/<c>Tab_Kenndaten_Kuehlung</c>); ohne sie wäre die zweite
+        /// Wärmepumpe rechnerisch wertlos. Und der Spaltensatz kommt aus der Quellzeile
+        /// selbst, die Kopie ist also WERTGLEICH — genau das trägt die Zusage, dass sich
+        /// der Rechenlauf nicht ändert.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Gerätekopie und Anlagenzeile tragen denselben Namen.</b> Die verbliebenen
+        /// bezeichnerbasierten Lesepfade lösen über ihn auf — allen voran die
+        /// Kesselauflösung <c>SimulationSPK.Kesseldaten_Einlesen</c>, die das Gerät zur
+        /// Anlagenzeile über <c>Bezeichner = … AND ID_Projekt = …</c> sucht. Bekäme nur
+        /// die Gerätekopie das Suffix, zeigte die zweite Anlagenzeile auf das neue Gerät,
+        /// läse aber weiter die Werte des alten. Beide Namen zusammen zu setzen ist
+        /// deshalb keine Kosmetik, sondern Bedingung.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Immer true</b> — Begründung wie bei
+        /// <see cref="Schritt_16_AnlagenEindeutigkeit"/>: Was nicht überführt werden
+        /// konnte, bleibt unverändert stehen. Die Datenbank verhält sich dann exakt wie
+        /// bisher, der betroffene Index wird weiter übersprungen und die Zeilen stehen in
+        /// der Abschlussprüfung. Ein <c>false</c> hielte dagegen den ganzen Migrationslauf
+        /// an und sperrte über <see cref="SimulationGesperrt"/> die Simulation — für eine
+        /// Datenbereinigung, ohne die alles wie zuvor funktioniert, das falsche Mittel.
+        /// Jeder Fehlschlag steht einzeln im Protokoll und in
+        /// <see cref="DatenDublettenOffen"/>.
+        /// </para>
+        /// </summary>
+        private static bool Schritt_17_AnlagenDubletten(Lauf l)
+        {
+            int ueberfuehrt = 0;
+            int offen = 0;
+
+            foreach (GeraeteSperre sperre in AnlagenEindeutigkeit.SPERREN)
+            {
+                DataTable gruppen = Abfrage(l, AnlagenEindeutigkeit.SqlDublettenGruppen(sperre.Spalte));
+                if (gruppen == null)
+                {
+                    l.Notiz(sperre.Spalte + ": Die Dublettensuche war nicht möglich - für dieses " +
+                            "Gewerk wurde nichts überführt.");
+                    continue;
+                }
+
+                foreach (DataRow g in gruppen.Rows)
+                    GruppeUeberfuehren(l, sperre, Zahl(g["ID_Projekt"]), Zahl(g["Geraet"]),
+                                       ref ueberfuehrt, ref offen);
+            }
+
+            DatenDublettenUeberfuehrt = ueberfuehrt;
+            DatenDublettenOffen = offen;
+
+            if (ueberfuehrt == 0 && offen == 0)
+                l.Notiz("Keine doppelt belegte Anlagenzeile gefunden - es gab nichts zu überführen.");
+
+            // Die Abschlussprüfung (Teil C) wieder als offen anmelden: Sie läuft nach der
+            // Schrittschleife und legt jeden Index an, dessen Spalte jetzt sauber ist.
+            // OHNE diese Zeile stünde der Bestand zwar bereinigt da, die Indizes kämen
+            // aber erst beim NÄCHSTEN Programmstart - eine Migration, die ihre eigene
+            // Voraussetzung schafft und sie dann nicht nutzt. Nur wenn tatsächlich etwas
+            // überführt wurde: sonst hätte die Prüfung nichts Neues zu sagen und
+            // wiederholte bloß die Meldungen aus Schritt 16.
+            if (ueberfuehrt > 0) _eindeutigkeitGeprueft = false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Überführt EINE Dublettengruppe (ein Projekt, ein Gerät): Die Zeile mit der
+        /// kleinsten ID behält das Gerät, jede weitere bekommt eine eigene Kopie.
+        ///
+        /// <para>
+        /// <b>Warum die kleinste ID bleibt.</b> Sie ist die zuerst angelegte Zeile und
+        /// trägt damit den Namen ohne Suffix. Jede andere Wahl benannte ausgerechnet das
+        /// Gerät um, das der Anwender kennt, und zöge die Umbenennung durch alle
+        /// bezeichnerbasierten Altpfade und durch die Anzeige des ersten Moduls.
+        /// </para>
+        /// </summary>
+        private static void GruppeUeberfuehren(Lauf l, GeraeteSperre sperre, int idProjekt,
+                                               int idGeraet, ref int ueberfuehrt, ref int offen)
+        {
+            DataTable zeilen = Abfrage(l,
+                "SELECT ID, Bezeichner FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] " +
+                "WHERE ID_Projekt = ? AND [" + sperre.Spalte + "] = ? ORDER BY ID",
+                new OleDbParameter("@proj", OleDbType.Integer) { Value = idProjekt },
+                new OleDbParameter("@ger", OleDbType.Integer) { Value = idGeraet });
+
+            if (zeilen == null || zeilen.Rows.Count < 2) return;
+
+            // 0 ist für den Index ein WERT und damit eine Dublette, aber kein Gerät: Es
+            // gibt keine Quellzeile, die sich kopieren ließe. Solche Platzhalter muss der
+            // Anwender leeren; sie stehen dafür mit Projekt und Zeile im Protokoll.
+            if (idGeraet <= 0)
+            {
+                l.Notiz("Projekt " + idProjekt + ", " + sperre.Gewerk + ": " + zeilen.Rows.Count +
+                        " Anlagenzeilen führen in " + sperre.Spalte + " den Platzhalter 0 statt eines " +
+                        "Geräts - sie lassen sich nicht überführen und bleiben unverändert stehen.");
+                offen += zeilen.Rows.Count - 1;
+                return;
+            }
+
+            string geraetName = Txt(Scalar(l,
+                "SELECT Bezeichner FROM [" + sperre.Tabelle + "] WHERE ID = ?",
+                new OleDbParameter("@id", OleDbType.Integer) { Value = idGeraet }));
+
+            for (int i = 1; i < zeilen.Rows.Count; i++)
+            {
+                int idZeile = Zahl(zeilen.Rows[i]["ID"]);
+                string alt = Txt(zeilen.Rows[i]["Bezeichner"]).Trim();
+
+                // Namensgrundlage ist der Bezeichner der ANLAGENZEILE - er ist der, über
+                // den die Altpfade suchen. Anlagenzeilen ohne Bezeichner gibt es im
+                // Bestand (Frage 21, EnergietraegerZuordnungLesen meldet sie); dann tritt
+                // der Gerätename ein, damit die Kopie überhaupt auffindbar bleibt.
+                string basis = (alt.Length > 0) ? alt : geraetName;
+
+                string name = AnlagenEindeutigkeit.EindeutigerBezeichner(
+                    sperre.Tabelle, idProjekt, basis, 0);
+
+                int neu = AnlagenEindeutigkeit.ProjektkopieAnlegen(sperre, idGeraet, idProjekt, name);
+                if (neu <= 0)
+                {
+                    l.Notiz("Projekt " + idProjekt + ", " + sperre.Gewerk + ", Anlagenzeile " + idZeile +
+                            " \"" + alt + "\": Die Gerätekopie in " + sperre.Tabelle +
+                            " ließ sich nicht anlegen - die Zeile bleibt unverändert auf Gerät " +
+                            idGeraet + ".");
+                    offen++;
+                    continue;
+                }
+
+                int n = NonQuery(l,
+                    "UPDATE [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] SET [" + sperre.Spalte +
+                    "] = ?, Bezeichner = ? WHERE ID = ?",
+                    new OleDbParameter("@ger", OleDbType.Integer) { Value = neu },
+                    new OleDbParameter("@bez", OleDbType.VarWChar) { Value = name },
+                    new OleDbParameter("@id", OleDbType.Integer) { Value = idZeile });
+
+                if (n < 0)
+                {
+                    // Die Kopie steht schon, die Anlagenzeile zeigt aber noch auf das alte
+                    // Gerät: Ein Gerät ohne Anlagenzeile wäre eine Karteileiche, die in der
+                    // Kostenübernahme als zusätzliches Gerät auftauchte. Deshalb zurückbauen.
+                    KopieVerwerfen(l, sperre, neu);
+                    l.Notiz("Projekt " + idProjekt + ", " + sperre.Gewerk + ", Anlagenzeile " + idZeile +
+                            " \"" + alt + "\": Das Umhängen auf die Gerätekopie schlug fehl - die " +
+                            "Kopie wurde zurückgenommen, die Zeile bleibt unverändert auf Gerät " +
+                            idGeraet + ".");
+                    offen++;
+                    continue;
+                }
+
+                ueberfuehrt++;
+                l.Notiz("Projekt " + idProjekt + ", " + sperre.Gewerk + ", Anlagenzeile " + idZeile +
+                        " \"" + alt + "\": eigene Gerätekopie in " + sperre.Tabelle + " angelegt - " +
+                        sperre.Spalte + " " + idGeraet + " -> " + neu + ", Bezeichner \"" + name + "\".");
+            }
+        }
+
+        /// <summary>
+        /// Nimmt eine gerade angelegte Gerätekopie samt ihrer Kindzeilen zurück. Läuft nur
+        /// im Fehlerfall — und ausschließlich auf einer ID, die dieser Lauf selbst eben
+        /// erzeugt hat.
+        /// </summary>
+        private static void KopieVerwerfen(Lauf l, GeraeteSperre sperre, int idNeu)
+        {
+            foreach (string[] kind in sperre.Kinder)
+            {
+                if (kind == null || kind.Length < 2) continue;
+                NonQuery(l, "DELETE FROM [" + kind[0] + "] WHERE [" + kind[1] + "] = ?",
+                         new OleDbParameter("@fk", OleDbType.Integer) { Value = idNeu });
+            }
+
+            NonQuery(l, "DELETE FROM [" + sperre.Tabelle + "] WHERE ID = ?",
+                     new OleDbParameter("@id", OleDbType.Integer) { Value = idNeu });
         }
 
         // =================================================================================
