@@ -727,8 +727,10 @@ namespace WindowsFormsApplication1
 
                 if (kategorieIDNeu == KATEGORIE_BETRIEB)
                 {
+                    // komponentenID wird für die Kessel-Einheit „%/a" gebraucht: ihre
+                    // Bezugsgröße ist die erfasste Investitionsposition dieser Komponente.
                     TechnikPlanwertCtrl.Betriebsplanwert bp =
-                        TechnikPlanwertCtrl.LiesBetriebsplanwert(projektID, komponente);
+                        TechnikPlanwertCtrl.LiesBetriebsplanwert(projektID, komponente, komponentenID);
                     _betriebsHinweis[komponente ?? ""] = bp.Hinweis ?? "";
 
                     if (vorhanden > 0)
@@ -1028,7 +1030,8 @@ namespace WindowsFormsApplication1
                 {
                     // Beim erneuten Öffnen ist die Position längst vorhanden; der Grund
                     // wird deshalb hier frisch ermittelt statt gemerkt.
-                    h = TechnikPlanwertCtrl.LiesBetriebsplanwert(m_ID_Projekt, komponente).Hinweis;
+                    h = TechnikPlanwertCtrl.LiesBetriebsplanwert(
+                            m_ID_Projekt, komponente, GetKomponentenID(komponente)).Hinweis;
                     _betriebsHinweis[komponente ?? ""] = h ?? "";
                 }
                 text = h ?? "";

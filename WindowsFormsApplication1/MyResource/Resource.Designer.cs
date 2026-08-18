@@ -2734,6 +2734,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die €/kWh Wärmemenge ähnelt.
+        /// </summary>
+        public static string KESSEL_WARTUNG_EINH_ARBEIT {
+            get {
+                return ResourceManager.GetString("KESSEL_WARTUNG_EINH_ARBEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die €/a Jahresbetrag ähnelt.
+        /// </summary>
+        public static string KESSEL_WARTUNG_EINH_JAHR {
+            get {
+                return ResourceManager.GetString("KESSEL_WARTUNG_EINH_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die %/a der Investition ähnelt.
+        /// </summary>
+        public static string KESSEL_WARTUNG_EINH_PROZENT {
+            get {
+                return ResourceManager.GetString("KESSEL_WARTUNG_EINH_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit ähnelt.
+        /// </summary>
+        public static string KESSEL_WARTUNG_EINHEIT_LBL {
+            get {
+                return ResourceManager.GetString("KESSEL_WARTUNG_EINHEIT_LBL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wartungskosten ähnelt.
+        /// </summary>
+        public static string KESSEL_WARTUNG_LBL {
+            get {
+                return ResourceManager.GetString("KESSEL_WARTUNG_LBL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
         /// </summary>
         public static string KONFIG_BHKW {
@@ -2815,20 +2860,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kessel dieses Projekts führen unterschiedliche Einheiten für die Wartungskosten — keine Vorbelegung. ähnelt.
+        /// </summary>
+        public static string KOSTEN_BETRIEB_EINHEIT_GEMISCHT {
+            get {
+                return ResourceManager.GetString("KOSTEN_BETRIEB_EINHEIT_GEMISCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt: {0} €/kWh × {1} kWh Wärme aus dem Lauf vom {2}. ähnelt.
+        /// </summary>
+        public static string KOSTEN_BETRIEB_HERL_KESSEL_ARBEIT {
+            get {
+                return ResourceManager.GetString("KOSTEN_BETRIEB_HERL_KESSEL_ARBEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt: {0} €/a — fester Jahresbetrag aus der Kesseltechnik. ähnelt.
+        /// </summary>
+        public static string KOSTEN_BETRIEB_HERL_KESSEL_JAHR {
+            get {
+                return ResourceManager.GetString("KOSTEN_BETRIEB_HERL_KESSEL_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt: {0} %/a von {1} € Investition = {2} €/a. ähnelt.
+        /// </summary>
+        public static string KOSTEN_BETRIEB_HERL_KESSEL_PROZENT {
+            get {
+                return ResourceManager.GetString("KOSTEN_BETRIEB_HERL_KESSEL_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt: {0} €/kWhel × {1} kWhel aus dem Lauf vom {2}. ähnelt.
         /// </summary>
         public static string KOSTEN_BETRIEB_HERLEITUNG {
             get {
                 return ResourceManager.GetString("KOSTEN_BETRIEB_HERLEITUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit von Tab_Heizkessel.Wartungskosten ist nicht belegt — keine Vorbelegung (offene Rückfrage). ähnelt.
-        /// </summary>
-        public static string KOSTEN_BETRIEB_KESSEL_UNKLAR {
-            get {
-                return ResourceManager.GetString("KOSTEN_BETRIEB_KESSEL_UNKLAR", resourceCulture);
             }
         }
         
@@ -2847,6 +2919,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOSTEN_BETRIEB_OHNE_ERGEBNIS {
             get {
                 return ResourceManager.GetString("KOSTEN_BETRIEB_OHNE_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wartungskosten sind als Anteil der Investition angegeben, die Investitionsposition ist aber noch nicht erfasst — keine Vorbelegung. ähnelt.
+        /// </summary>
+        public static string KOSTEN_BETRIEB_OHNE_INVESTITION {
+            get {
+                return ResourceManager.GetString("KOSTEN_BETRIEB_OHNE_INVESTITION", resourceCulture);
             }
         }
         
@@ -2946,6 +3027,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOSTEN_PLANWERT_HERL_FELD {
             get {
                 return ResourceManager.GetString("KOSTEN_PLANWERT_HERL_FELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} €/Modul × {1} Module ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_HERL_MENGE {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_HERL_MENGE", resourceCulture);
             }
         }
         

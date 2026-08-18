@@ -88,10 +88,10 @@ namespace WindowsFormsApplication1
 
         private bool Insert()
         {
-            string sql = @"INSERT INTO [Tab_Heizkessel] (Bezeichner, Beschreibung, Firma, Ptherm, Brennstoff, 
-                            Wirkungsgrad_Gas, Wirkungsgrad_Öl, Investitionskosten, Raumbedarf, 
-                            Wartungskosten, Nutzungsdauer, CO2, SO2, NOx, CO, Staub, Betriebsbereitschaftverlust, Brennwert) 
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            string sql = @"INSERT INTO [Tab_Heizkessel] (Bezeichner, Beschreibung, Firma, Ptherm, Brennstoff,
+                            Wirkungsgrad_Gas, Wirkungsgrad_Öl, Investitionskosten, Raumbedarf,
+                            Wartungskosten, Wartungskosten_Einheit, Nutzungsdauer, CO2, SO2, NOx, CO, Staub, Betriebsbereitschaftverlust, Brennwert)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             bool success = DataRepository.ExecuteSQL(sql, CreateParameters(false));
             if (success)
@@ -128,7 +128,7 @@ namespace WindowsFormsApplication1
             string sql = @"UPDATE [Tab_Heizkessel] SET
                             Beschreibung = ?, Firma = ?, Ptherm = ?, Brennstoff = ?,
                             Wirkungsgrad_Gas = ?, Wirkungsgrad_Öl = ?, Investitionskosten = ?,
-                            Raumbedarf = ?, Wartungskosten = ?, Nutzungsdauer = ?,
+                            Raumbedarf = ?, Wartungskosten = ?, Wartungskosten_Einheit = ?, Nutzungsdauer = ?,
                             CO2 = ?, SO2 = ?, NOx = ?, CO = ?, Staub = ?,
                             Betriebsbereitschaftverlust = ?, Brennwert = ?
                           WHERE ID = ?";
@@ -194,9 +194,10 @@ namespace WindowsFormsApplication1
                 string sql = @"INSERT INTO [Tab_Heizkessel]
                     (ID, ID_Projekt, Bezeichner, Firma, Beschreibung, Ptherm, Brennstoff,
                      Wirkungsgrad_Gas, Wirkungsgrad_Öl, Investitionskosten, Raumbedarf, Wartungskosten,
+                     Wartungskosten_Einheit,
                      Nutzungsdauer, CO2, SO2, NOx, CO, Staub, Betriebsbereitschaftverlust, Brennwert,
                      Vorlauf, Ruecklauf)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 OleDbParameter[] ps = {
                     new OleDbParameter("@id", neueId),
@@ -211,6 +212,11 @@ namespace WindowsFormsApplication1
                     P("@inv", s["Investitionskosten"]),
                     P("@rau", s["Raumbedarf"]),
                     P("@war", s["Wartungskosten"]),
+                    // Die Bezugsgroesse muss mitkopiert werden, sonst haette die
+                    // Projektkopie einen Betrag ohne Einheit (Migrationsschritt 15).
+                    // ColOrNull haelt den Fall offen, dass die Spalte auf einer nicht
+                    // migrierten Datenbank im STAMM noch fehlt.
+                    P("@wae", Einheit(ColOrNull(s, SchemaKatalog.SPALTE_KESSEL_WARTUNG_EINHEIT) as string)),
                     P("@nut", s["Nutzungsdauer"]),
                     P("@co2", s["CO2"]),
                     P("@so2", s["SO2"]),
@@ -262,6 +268,21 @@ namespace WindowsFormsApplication1
             return row.Table.Columns.Contains(col) ? row[col] : DBNull.Value;
         }
 
+        /// <summary>
+        /// Bezugsgröße der Wartungskosten mit Rückfall auf den festen Jahresbetrag.
+        /// </summary>
+        /// <remarks>
+        /// Leer bedeutet „nicht gesetzt" und tritt nur auf, solange Migrationsschritt 15
+        /// nicht gelaufen ist. Die Rückfallebene ist dieselbe Wahl wie dort
+        /// (<see cref="DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR"/>) — Lese- und Schreibseite
+        /// dürfen sich hier nicht unterscheiden, sonst wechselte die Bedeutung einer Zahl
+        /// mit dem Migrationsstand.
+        /// </remarks>
+        internal static string Einheit(string wert)
+        {
+            return string.IsNullOrWhiteSpace(wert) ? DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR : wert.Trim();
+        }
+
         // --- MAPPING & PARAMETER ---
 
         private OleDbParameter[] CreateParameters(bool isUpdate)
@@ -280,6 +301,7 @@ namespace WindowsFormsApplication1
             p.Add(new OleDbParameter("@inv", this.Investitionskosten));
             p.Add(new OleDbParameter("@rau", this.Raumbedarf));
             p.Add(new OleDbParameter("@war", this.Wartungskosten));
+            p.Add(new OleDbParameter("@wae", Einheit(this.Wartungskosten_Einheit)));
             p.Add(new OleDbParameter("@nut", this.Nutzungsdauer));
             p.Add(new OleDbParameter("@co2", this.CO2));
             p.Add(new OleDbParameter("@so2", this.SO2));
@@ -309,6 +331,8 @@ namespace WindowsFormsApplication1
             target.Investitionskosten = row["Investitionskosten"] != DBNull.Value ? Convert.ToDouble(row["Investitionskosten"]) : 0.0;
             target.Raumbedarf = row["Raumbedarf"] != DBNull.Value ? Convert.ToDouble(row["Raumbedarf"]) : 0.0;
             target.Wartungskosten = row["Wartungskosten"] != DBNull.Value ? Convert.ToDouble(row["Wartungskosten"]) : 0.0;
+            // Spaltenprüfung, weil eine nicht migrierte Datenbank die Spalte noch nicht führt.
+            target.Wartungskosten_Einheit = Einheit(ColOrNull(row, SchemaKatalog.SPALTE_KESSEL_WARTUNG_EINHEIT) as string);
             target.Nutzungsdauer = row["Nutzungsdauer"] != DBNull.Value ? Convert.ToDouble(row["Nutzungsdauer"]) : 0.0;
             target.CO2 = row["CO2"] != DBNull.Value ? Convert.ToDouble(row["CO2"]) : 0.0;
             target.SO2 = row["SO2"] != DBNull.Value ? Convert.ToDouble(row["SO2"]) : 0.0;

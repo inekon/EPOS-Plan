@@ -315,3 +315,359 @@ eigener Arbeitsauftrag hinterlegt.
    Altbestand, der auch mit dieser Etappe nicht angefasst wurde. Der neue Code arbeitet
    durchgehend über `kategorieID`.
 5. **Nebenbefund aus Abschnitt 6** — Fehlerdialoge beim Öffnen der Kostenmaske.
+
+---
+
+# Nachtrag 18.08.2026 — die beiden offenen Entscheidungen sind beantwortet
+
+Der Anwender hat die Punkte 1 und 2 aus Abschnitt 7 entschieden. Codestand: Haupt-Checkout
+`main`, HEAD `87483b4` + der Working Tree dieser Etappe (12 geänderte Codedateien, dazu dieses
+Protokoll und der Nachtrag in
+[`../Simulation/Lokalisierung_Katalog.md`](../Simulation/Lokalisierung_Katalog.md)).
+**Nichts committet.** Die Engine (`Allgemein/Simulation/*.cs`) ist unberührt —
+`git diff --stat -- 'WindowsFormsApplication1/Allgemein/Simulation/*.cs'` ist leer (dort änderte
+sich nur die Dokumentationsdatei `Lokalisierung_Katalog.md`), deshalb kein Referenzlauf.
+
+---
+
+## N1. Entscheidung zu Punkt 1 — die Wartungseinheit des Kessels ist wählbar
+
+Abschnitt 4 hatte belegt, dass sich die Einheit von `Tab_Heizkessel.Wartungskosten` **nicht**
+belegen lässt: kein Eingabefeld, keine Beschriftung, kein Einheitensuffix, in allen 44 Projekt-
+und 21 Katalogzeilen der Wert 0. Der Anwender hat entschieden, sie **nicht** zu erraten, sondern
+**wählbar** zu machen.
+
+### N1.1 Die drei Einheiten in den drei Schichten
+
+| Schicht | Werte | Ort |
+|---|---|---|
+| **Persistenz** (deutsch, eingefroren) | `€/a`, `€/kWh`, `%/a` | `Allgemein/DbWerte.cs:177/185/194` |
+| **Schlüssel** (sprachneutral, ASCII) | `EUR_JAHR`, `EUR_KWH`, `PROZENT_INV` | `Controller/TechnikPlanwertCtrl.cs:60-70` |
+| **Anzeige** (lokalisiert) | „€/a Jahresbetrag" … | `TechnikPlanwertCtrl.WartungName`, `:795` |
+
+Umrechnung ausschließlich über `WartungSchluessel` (`TechnikPlanwertCtrl.cs:773`) und
+`WartungDbWert` (`:784`). Die ComboBox trägt als Item den Typ `EinheitItem`
+(`Views/Heizkessel/Form_Heizkessel_Bearbeiten.cs:214`), der den **Schlüssel** hält und den
+**lokalisierten Namen** anzeigt — kein Anzeigetext ist je Steuerwert. Belegt in Abschnitt N4,
+Zeile E: auf englischer Oberfläche liefert `WartungDbWert("PROZENT_INV")` weiterhin `%/a`.
+
+### N1.2 Migrationsschritt 15
+
+**Ermittlung des Ausgangsstands.** `SchemaMigration.ZIEL_VERSION` stand im Code auf **14**, die
+höchste registrierte Schrittnummer war `SCHRITT_14_PARALLELVERBUND`, und die Produktivdatenbank
+meldete in `Tab_Applikation.SchemaVersion` ebenfalls **14** (gelesen aus einer Wegwerf-Kopie mit
+32-bit-PowerShell + ACE OLEDB, rein lesend). Alle drei Quellen stimmten überein — die nächste
+freie Nummer ist damit **15**.
+
+| Was | Wo |
+|---|---|
+| Spaltenname (EINE Wahrheit) | `Allgemein/Update/SchemaKatalog.cs:534` (`SPALTE_KESSEL_WARTUNG_EINHEIT`) |
+| Katalogeintrag, beide Tabellen, `TEXT(20)` | `SchemaKatalog.cs:573` (`Schritt15_KesselWartungseinheit`) |
+| Schrittnummer + Begründung | `SchemaMigration.cs:243` (`SCHRITT_15_KESSEL_WARTUNGSEINHEIT`) |
+| Zielversion 14 → 15 | `SchemaMigration.cs:68` |
+| Registrierung in `SCHRITTE` | `SchemaMigration.cs:491` |
+| Ausführung (15a DDL + 15b DML) | `SchemaMigration.cs:1704` (`Schritt_15_KesselWartungseinheit`) |
+| Zählwerk | `SchemaMigration.DatenKesselWartungseinheitVorbelegt` |
+
+**Beide Tabellen im selben Eintrag** — dieselbe Begründung wie bei `Schritt11_Stromspeicher`:
+`HeizkesselCtrl.CopyFromStamm` kopiert Feld für Feld aus dem Katalog in die Projekttabelle, eine
+Spalte nur auf einer Seite wäre sofort ein Datenverlust beim Übernehmen in ein Projekt.
+
+**NICHT in `SchemaKatalog.Alle`** — dieselbe Begründung wie bei `Schritt12_Preismodell`: `Alle`
+ist ausdrücklich der Umfang der SIMULATIONS-Eingabespalten, den die stille Rückfallebene
+`WaermequelleClass.SchemaSicherstellen` bei jedem Simulationsstart sicherstellt. Der Rechenkern
+liest die Wartungseinheit nirgends; sie gehört allein dem Kostenmodul. Ihre eigene, tolerante
+Vorsorge steht in `Controller/HeizkesselStammCtrl.cs:77` (`StelleSpaltenSicher`), aufgerufen aus
+dem einzigen Dialog, der die Spalte schreibt (`Form_Heizkessel_Bearbeiten.cs:33`). Sie folgt der
+**korrigierten** Fassung von `StromAufschlagCtrl.StelleSpaltenSicher` aus `87483b4`: Schema je
+Tabelle (sonst greift die Existenzprüfung für die zweite Tabelle nie und das `ALTER TABLE` läuft
+bei jedem Aufruf erneut) und DDL über eine eigene `OleDbConnection` statt über
+`DataRepository.ExecuteSQL`, das seine Fehler selbst als Dialog zeigt.
+
+### N1.3 Warum die Vorbelegung „€/a" lautet
+
+Rechnerisch sind **alle drei** Einheiten neutral, solange der Betrag 0 ist: 0 €/a,
+0 €/kWh × Menge und 0 %/a ergeben gleichermaßen 0 €. „Unschädlich" allein entscheidet also
+nicht. Den Ausschlag geben drei andere Gründe:
+
+1. **Einzige selbsttragende Einheit.** `€/a` braucht weder einen Simulationslauf noch eine
+   erfasste Investitionsposition. Bei jeder anderen Vorbelegung bekämen **alle** Bestandsprojekte
+   sofort einen Hinweis auf eine fehlende Bezugsgröße — für einen Wert, den nie jemand gepflegt
+   hat. Das ist der konkrete Schaden, den die anderen beiden Einheiten anrichten würden.
+2. **Geringster Schaden bei der ersten Eingabe.** Trägt jemand später eine „50" ein, ohne auf die
+   Einheit zu achten, sind das 50 €/a. Unter `€/kWh` wären daraus bei 22.430 kWh Jahreswärme
+   1.121.500 €/a geworden, unter `%/a` die Hälfte der Investition. `€/a` ist die Lesart, die
+   nicht stillschweigend um Größenordnungen danebenliegt.
+3. **Der VDI-3805-Import gibt keine Gegenprobe her.** Er schreibt kein importiertes
+   Wartungsentgelt, sondern den Modell-Vorgabewert 0 (`Form_Heizkessel_einlesen.cs:313/331`
+   setzen `Wartungskosten` aus einem frisch erzeugten `HeizkesselModel`); der Parser liest gar
+   kein Wartungsfeld. Es gibt also keine importierte Semantik, die für eine andere Einheit
+   spräche.
+
+Zusätzlich gilt weiterhin die Hausregel aus `605dcb8`: **Betrag 0 ist ungepflegt.** Trägt kein
+Kessel eines Projekts einen Betrag > 0, gibt es keine Zahl und keinen Rechenweg, sondern
+denselben Hinweis wie bei den Gewerken ohne Wartungsfeld. Für den gesamten Bestand ändert sich
+durch Schritt 15 damit **nichts** außer einer nun vollständigen Angabe.
+
+### N1.4 Oberfläche — `Form_Heizkessel_Bearbeiten`
+
+**Warum dieser Dialog.** Er ist der einzige Eingabeweg für Kesseldaten: Sowohl der Katalogbrowser
+`Form_Heizkessel_Admin.cs:141/155` als auch der Projektdialog `Form_Heizkessel.cs:628` öffnen für
+„Bearbeiten" bzw. „Neu" **dieses** Formular. Die übrigen Kostenfelder (`Investitionskosten`,
+`Raumbedarf`, `Nutzungsdauer`) stehen bereits hier in der Rubrik „Eingabedaten zur Berechnung der
+Kosten". Damit ist er das genaue Gegenstück zu `Form_DBBHKW`, wo die BHKW-Wartungskosten mit dem
+Suffix „€ / kWhel" sitzen — die Analogie, nach der der Auftrag gefragt hat. In die Projektkopie
+`Tab_Heizkessel` gelangen die Werte auf demselben Weg wie alle übrigen: über
+`HeizkesselCtrl.CopyFromStamm`.
+
+**Warum zur Laufzeit statt im Designer.** Projektregel: Designer- und `.resx`-Dateien werden
+nicht von Hand editiert. Der Designer scheidet hier zusätzlich praktisch aus, weil dieses
+Formular seine Koordinaten in **zwei** Ressourcendateien führt
+(`Form_Heizkessel_Bearbeiten.resx` und `…en-US.resx`) — ein von Hand ergänztes Control müsste in
+beiden stehen, sonst springt es beim Sprachwechsel. Der gewählte Weg ist derselbe, den die
+neueren Masken dieser Session gegangen sind: `Form_PlanwertUebernahme` kommt ganz ohne
+Designer-Datei aus, `ucKostenItem.cs:28` hebt seine Betragsgrenze programmatisch an.
+
+**Maße relativ, Breite gedeckelt.** Alle Positionen leiten sich aus den vorhandenen Controls der
+Rubrik ab (`Label17.Right`, `tb_Investitionskosten.Top/Size`, `tb_Raumbedarf.Top`,
+`tb_Nutzungsdauer.Top`), nicht aus abgeschriebenen Designer-Koordinaten — zur Laufzeit hat
+`AutoScaleMode.Font` die Rubrik von 344/129 auf 304/114 gestaucht, feste Pixel wären falsch
+gewesen. Wie weit die Rubrik nach rechts wachsen darf, ermittelt `FreieBreite()`
+(`Form_Heizkessel_Bearbeiten.cs:192`) aus den **tatsächlichen Geschwistern** des Formulars. Der
+erste Entwurf mit fester Breite hätte `groupBox5` um 30 Pixel überdeckt; das ist im Harnisch
+aufgefallen und mit dem Deckel behoben (Endstand: Rubrik `{X=17,Y=304,W=511,H=114}`, keine
+Kollision).
+
+| Was | Wo |
+|---|---|
+| Feldaufbau, Zeilen und Spalten | `Form_Heizkessel_Bearbeiten.cs:110` (`WartungsfeldAufbauen`) |
+| Breitendeckel aus den Nachbarn | `Form_Heizkessel_Bearbeiten.cs:192` (`FreieBreite`) |
+| Auswahleintrag Schlüssel/Anzeige | `Form_Heizkessel_Bearbeiten.cs:214` (`EinheitItem`) |
+| Laden aus dem Katalog | `Form_Heizkessel_Bearbeiten.cs:283` |
+| Zahlenprüfung am Knopf | `Form_Heizkessel_Bearbeiten.cs:455` |
+| Schreiben ins Modell | `Form_Heizkessel_Bearbeiten.cs:496` |
+
+**Nebenbefund mit erledigt — hier lag die Ursache der lauter Nullen.** `InitDatensatzUpdate`
+setzte `Wartungskosten` **nie**. Das Modell entstand mit dem Vorgabewert 0, und jedes Speichern
+im Katalog-Editor schrieb den Wert damit auf 0 zurück. Genau deshalb stand das Feld in allen 21
+Katalog- und 44 Projektzeilen auf 0 — es war nicht „nie gepflegt", sondern **wiederholt
+gelöscht**. Behoben mit `Form_Heizkessel_Bearbeiten.cs:495-496`.
+
+### N1.5 Kostenübernahme — `TechnikPlanwertCtrl.KesselPlanwert`
+
+Neu in `Controller/TechnikPlanwertCtrl.cs:637`; Einstieg über
+`LiesBetriebsplanwert(projektID, komponente, komponentenID)` (`:487`). Die Signatur hat einen
+dritten Parameter bekommen, weil die Einheit `%/a` die **erfasste Investitionsposition** der
+Komponente als Bezugsgröße braucht; beide Aufrufer reichen ihn durch
+(`Views/Kosten/Form_Kosten.cs:733` und `:1033`).
+
+**Die Bezugsgrößen sind GEWERKgrößen, keine Gerätegrößen.** `Tab_ErgebnisHeizkessel` führt genau
+**eine** Zeile je Lauf — die Wärme aller Kessel zusammen, anders als beim BHKW, wo
+`Tab_ErgebnisBHKWModul` je Modul aufschlüsselt. Die Investitionsposition ist ohnehin eine Zahl
+für das ganze Gewerk. Eine Aufteilung auf einzelne Kessel gibt die Datenlage nicht her. Daraus
+folgt die Rechenweise:
+
+| Einheit | Rechnung | Braucht | Bei mehreren Kesseln |
+|---|---|---|---|
+| `€/a` | Summe der Jahresbeträge | nichts weiter | Beträge **addieren** sich |
+| `€/kWh` | Satz × `Waermeproduktion` × 1000 des jüngsten Laufs | Simulationslauf | Satz muss **eindeutig** sein, dann **einmal** auf die Gesamtmenge |
+| `%/a` | Satz/100 × Investitions-Hauptposition | erfasste Investition | Satz muss **eindeutig** sein, dann **einmal** auf die Gesamtinvestition |
+
+Bei einem uneindeutigen Satz wäre Σ Satzᵢ × Q die vierfache Wartung für vier Kessel — deshalb in
+diesem Fall keine Zahl, sondern `KOSTEN_BETRIEB_NICHT_ZUORDENBAR`. Führen die Kessel eines
+Projekts **unterschiedliche Einheiten**, gibt es ebenfalls keinen rechenbaren Gesamtwert; dafür
+gibt es den neuen Hinweis `KOSTEN_BETRIEB_EINHEIT_GEMISCHT`.
+
+**Die Hinweisregel des Auftrags ist damit erfüllt:** Ohne Simulationsergebnis bleibt es bei der
+bestehenden Regel (Hinweis statt Zahl) **nur** für die mengenabhängige Einheit `€/kWh`; `€/a`
+liefert auch ohne Lauf eine Zahl, und `%/a` braucht keinen Lauf, sondern die
+Investitionsposition — fehlt sie, gibt es den eigenen Grund `KOSTEN_BETRIEB_OHNE_INVESTITION`.
+
+Der bisherige Sammelhinweis `KOSTEN_BETRIEB_KESSEL_UNKLAR` („Die Einheit … ist nicht belegt")
+ist damit gegenstandslos und aus Code und beiden `.resx` entfernt.
+
+### N1.6 Übrige Gewerke — geprüft, bewusst unverändert
+
+Der Auftrag verlangte, das Muster **nur** dort zu übertragen, wo die Einheit heute ebenfalls
+unbelegt ist.
+
+| Gewerk | Wartungsfeld | Einheit belegt? | Ergebnis |
+|---|---|---|---|
+| BHKW | `Wartungskosten_kwhel` | **ja** — `Form_DBBHKW.designer.cs:602-608` beschriftet `Label19` neben dem Feld mit „€ / kWhel" | unverändert |
+| Heizkessel | `Wartungskosten` | **nein** | wählbar gemacht |
+| Stromspeicher | `Verschleisskosten` | eigene Wirtschaftlichkeit in `StromspeicherSimCtrl` | unverändert (eine zweite Position wäre Doppelzählung) |
+| WP, PV, Solarthermie, Pufferspeicher | — | kein Wartungsfeld in der Gerätetabelle | unverändert |
+
+---
+
+## N2. Entscheidung zu Punkt 2 — PV und Solarthermie: Preis × Stückzahl
+
+### N2.1 Die Semantikprüfung: `PV_Leistung` ist eine STÜCKZAHL, keine Leistung
+
+Der Auftrag verlangte ausdrücklich, das vor dem Multiplizieren zu klären. Der Name legt eine
+Leistung nahe, die Datenlage widerlegt ihn:
+
+| Beleg | Befund |
+|---|---|
+| `Allgemein/Simulation/SimulationPV.cs:100` | `nFlaecheGesamt = ctrlsol.m_Breite * ctrlsol.m_Laenge * (long)ctrl.items[n].PV_Leistung` — der Wert wird mit den **Modulmaßen** multipliziert. Das ergibt nur als Anzahl eine Fläche. |
+| `SimulationPV.cs:130` | derselbe Wert wird als `Anzahl` in `PVModulErgebnis` geschrieben |
+| Oberfläche | das Eingabefeld ist mit „Anzahl Module" beschriftet |
+| Rohdaten | Werte 20/30 bei Modulen mit 260–290 **W** Nennleistung — als kWp wären das 77–115 Module, als Anzahl ergibt sich mit `Tab_PV.Leistung` eine plausible Anlage |
+| `Tab_PV` | führt `Leistung` (W je Modul), `Laenge`, `Breite`, `Modulkosten` — ein Katalog **je Modul** |
+
+`Kollektormodulanzahl` ist ebenso eindeutig: `SimulationSolarthermie` multipliziert sie mit der
+**Aperturfläche eines** Kollektors, und die Spalte ist ein LONG.
+
+Beide Kostenfelder (`Tab_PV.Modulkosten`, `Tab_Solarkollektoren.Investitionskosten`) stehen im
+jeweiligen **Modul**-Katalog neben Modulmaßen bzw. Modulfläche und sind mit „€" beschriftet —
+also ein Betrag je Modul. **Die Multiplikation ist damit belegt, nicht vermutet**, und wurde
+umgesetzt.
+
+### N2.2 Umsetzung
+
+| Was | Wo |
+|---|---|
+| Stückzahlspalte je Gewerk in der Landkarte | `TechnikPlanwertCtrl.cs:149` (`Plan.Mengenspalte`) |
+| Stückzahl je Gerät ermitteln und **aufsummieren** | `TechnikPlanwertCtrl.cs:201` (`LiesAnlagen`) |
+| Feld an der Anlage | `TechnikPlanwertCtrl.cs:108` (`Anlage.Menge`) |
+| Kostenbasis Preis × Stückzahl | `TechnikPlanwertCtrl.cs:352` (`Stueckpreis`), aufgerufen `:304` (PV) und `:308` (Solarthermie) |
+| Herleitung in der Übernahmemaske | Ressource `KOSTEN_PLANWERT_HERL_MENGE` |
+
+**Die Stückzahl wird über die Anlagenzeilen SUMMIERT, nicht verworfen.** Die Entdoppelung je
+Gerät aus Befund D2 bleibt bestehen — aber sie darf die Menge nicht wegwerfen: Mehrere
+Anlagenzeilen auf dasselbe PV-Modul sind kein Fehler, sondern der Regelfall (jede Zeile ist ein
+eigenes Feld mit eigener Neigung, Ausrichtung und Modulzahl). Genau so rechnet die Engine:
+`SimulationPV` läuft über die Anlagenzeilen und nimmt je Zeile deren `PV_Leistung`. Die
+Kostenseite muss dieselbe Anlage beschreiben wie der Rechenkern. Aus `SELECT DISTINCT` wurde
+deshalb `GROUP BY` mit `SUM(<Mengenspalte>)`; für die fünf Gewerke ohne Stückzahl ist die Abfrage
+verhaltensgleich geblieben (belegt durch die unveränderten Regressionsproben D1…D16).
+
+**Ganzzahlig abgeschnitten wie in der Engine.** `SimulationPV` castet mit `(long)`; eine
+eingegebene 10,5 wird dort als 10 Module gerechnet. `Math.Truncate` in `LiesAnlagen` hält Kosten
+und Ertrag auf derselben Anlage.
+
+**Kostenbasis `SPEZIFISCH` statt `MODULPREIS`.** Der Wert ist jetzt „spezifischer Preis ×
+Baugröße" — dieselbe Bauform wie beim BHKW (€/kWel × kWel) und beim Stromspeicher (€/kWh × kWh).
+Anzeigename und Herkunftsspalte des Übernahmedialogs stimmen damit ohne Sonderfall, und die
+Rechnung steht dort im Klartext: **„468,89 €/Modul × 20 Module"**. Eine echte Auswahl entsteht
+dadurch **nicht** — beide Gewerke führen weiterhin genau ein Kostenfeld, es bleibt bei einer
+Basis je Anlage.
+
+**Verhaltensänderung, die benannt sein will.** Eine Anlage mit **0 Modulen** trägt jetzt nichts
+mehr bei, statt wie bisher den nackten Modulpreis anzusetzen. Das ist die richtige Aussage —
+0 Module kosten 0 —, aber es ist eine Änderung. Überschrieben wird dadurch nichts: Weicht eine
+erfasste Position ab, erscheint sie in der Abweichungsanzeige und wird nur auf Knopfdruck
+angeglichen (Entscheidung 4 der Vorgängeretappe).
+
+### N2.3 Nachgerechnete Zahlenproben gegen die Rohdaten
+
+| Projekt | Gewerk | Rohdaten | Planwert neu | Bisher |
+|---|---|---|---|---|
+| 1007 | PV, Gerät 1007005 | 468,89 €/Modul × 20 Module | **9.377,80 €** | 468,89 € |
+| 1026 | Solarthermie, Gerät 1011013 | 3.775,00 €/Modul × 10 Module | **37.750,00 €** | 3.775,00 € |
+| 1011 | PV, Gerät 1011008 über **zwei** Anlagenzeilen (30 + 30) | 100,00 €/Modul × 60 Module | **6.000,00 €** | 100,00 € |
+| 1011 | Solarthermie, Gerät 1011001 über **zwei** Zeilen (1 + 1) | 500,00 €/Modul × 2 Module | **1.000,00 €** | 500,00 € |
+| 1007 | PV, Gerät 1007006 | 300,00 €/Modul × **0** Module | **keine Basis** | 300,00 € |
+
+(Die Preise der drei unteren Zeilen sind Testwerte in der Wegwerf-Kopie — in der
+Ausgangsdatenbank stehen diese Kostenfelder auf 0 und ergäben ohnehin keine Basis.)
+
+---
+
+## N3. Geänderte Dateien
+
+| Datei | Inhalt |
+|---|---|
+| `Allgemein/DbWerte.cs` | drei Persistenzwerte der Wartungseinheit samt Begründung der Vorbelegung |
+| `Allgemein/Update/SchemaKatalog.cs` | Tabellennamen, Spaltenname, `Schritt15_KesselWartungseinheit`, Begründung für das Fernbleiben aus `Alle` |
+| `Allgemein/Update/SchemaMigration.cs` | `ZIEL_VERSION` 14 → 15, Schritt 15 (DDL + DML), Zählwerk, Registrierung |
+| `Model/HeizkesselModel.cs` | Feld `Wartungskosten_Einheit`, Vorgabe „€/a" |
+| `Controller/HeizkesselCtrl.cs` | Spalte in `Insert`/`Update`/`CopyFromStamm`/`FillModelFromRow`, Rückfallebene `Einheit(...)` |
+| `Controller/HeizkesselStammCtrl.cs` | dieselbe Spalte in `Insert`/`Update`/`FillModelFromRow`, neue Vorsorge `StelleSpaltenSicher` |
+| `Controller/TechnikPlanwertCtrl.cs` | Einheitenkatalog, `KesselPlanwert`, dritter Parameter an `LiesBetriebsplanwert`, Stückzahl in `LiesAnlagen`, `Stueckpreis` für PV/Solarthermie |
+| `Views/Heizkessel/Form_Heizkessel_Bearbeiten.cs` | Wartungskostenfeld + Einheitenauswahl (zur Laufzeit), Laden/Prüfen/Speichern, Behebung des stillen Nullsetzens |
+| `Views/Kosten/Form_Kosten.cs` | `komponentenID` an beide Aufrufe von `LiesBetriebsplanwert` |
+| `MyResource/Resource*.resx`, `Resource.Designer.cs` | 11 neue Schlüssel (de + en), 1 entfallener |
+
+**Kodierung.** `Form_Heizkessel_Bearbeiten.cs` ist CP1252 (eine der 93 Nicht-UTF-8-Dateien des
+Projekts) und wurde über den Hin-/Rückweg mit `iconv` und Rundprobe (`cmp`) bearbeitet; alle
+zwölf Dateien behalten ihre Ausgangskodierung und CRLF, kein U+FFFD.
+
+---
+
+## N4. Verifikation
+
+Reflection-Harnisch (net8.0-windows, x86) gegen eine **Wegwerf-Kopie** der `Kenndaten.accdb`
+unter `C:\Waermeplan\_ke`; Produktiv-DB ausschließlich lesend kopiert (`Kenndaten.laccdb` vorher
+geprüft — nicht vorhanden). Build in ein Scratch-`OutDir`, `bin\` unberührt: **0 Fehler, exakt 6
+Bestandswarnungen** (CS0108 ×2, CS0109 ×2, CS1998, CS4014). Modale Dialoge fängt ein
+Wächter-Thread (`EnumThreadWindows` auf `#32770`).
+
+Datengrundlage: Projekt 1018 (Kessel 1018328, Lauf 171 mit `Waermeproduktion` 22,43 MWh/a =
+22.430 kWh/a, erfasste Investitions-Hauptposition Heizkessel 15.000 €), Projekt 1017 (Kessel
+1017237, **kein** Simulationslauf), Projekte 1007/1011/1026 für PV und Solarthermie.
+
+| Nr. | Prüfung | Erwartet | Ergebnis |
+|---|---|---|---|
+| A1–A3 | Migration 14 → 15 | Marker in `Tab_Applikation` steht auf 15 | OK |
+| A4–A6 | Vorbelegung | 65 Zeilen (44 Projekt + 21 Katalog), alle „€/a" | OK |
+| A7–A9 | Bestandswerte unversehrt | Wartungsbeträge 0, Investitionen 66.494,06 € / 34.080,67 € unverändert | OK |
+| A10–A12 | Doppelstart (Marker zurückgesetzt) | wieder Stand 15, **0** weitere Vorbelegungen, ein von Hand gesetztes „%/a" bleibt stehen | OK |
+| B1–B2 | Einheit `€/a` | 480 € → **480,00 €/a**, Herleitung nennt den Betrag | OK |
+| B3–B4 | Einheit `€/kWh` | 0,02 × 22.430 = **448,60 €/a**, Herleitung nennt Menge und Lauf | OK |
+| B5–B6 | Einheit `%/a` | 3 % von 15.000 = **450,00 €/a**, Herleitung nennt die Investition | OK |
+| B7–B8 | Betrag 0 | keine Zahl, Hinweis „keine Wartungsangaben" | OK |
+| B9–B10 | ohne Lauf, `€/kWh` | keine Zahl, Hinweis „erst nach einem Simulationslauf" | OK |
+| B11 | ohne Lauf, `€/a` | **300,00 €/a** trotzdem — kein Lauf nötig | OK |
+| B12 | `%/a` ohne Investitionsposition | keine Zahl, eigener Hinweis | OK |
+| B13–B14 | zwei Kessel | `€/a` addiert (200 + 150 = **350,00**); gemischte Einheiten → Hinweis | OK |
+| B15–B16 | zwei Kessel, `%/a` | gleicher Satz → **einmal** 450,00 €; verschiedene Sätze → keine Zahl | OK |
+| C1–C7 | PV 1007 | 1 Basis `SPEZIFISCH`, **9.377,80 €**, Herleitung „468,89 €/Modul × 20 Module", nicht mehrdeutig | OK |
+| C8–C10 | 0 Module bei gepflegtem Preis | keine Basis, Gewerksumme bleibt 9.377,80 € | OK |
+| C11 | Solarthermie 1026 | 3.775 × 10 = **37.750,00 €** | OK |
+| C12–C16 | zwei Anlagenzeilen auf ein Gerät | 1 Gerät, Stückzahl **summiert** (60 bzw. 2), 6.000,00 € / 1.000,00 € | OK |
+| C17 | Gewerk ohne Stückzahl | Wärmepumpe unverändert | OK |
+| D1–D5 | **Regression** BHKW-Auswahl | zwei Basen 33.000 € und 32.750 €, mehrdeutig, kein stiller Wert | OK |
+| D6–D7 | **Regression** Nebenkostenzeilen | 3 von 4 Posten (nur > 0), Summe 4.500 € | OK |
+| D8–D9 | **Regression** kein Doppelanlegen | 1 → 4 Zeilen, zweiter Aufruf 4 → 4 | OK |
+| D10–D13 | **Regression** Abweichungsanzeige | erfasst 15.000 €, Technik 12.000 €, gemeldet; BHKW meldet offene Auswahl | OK |
+| D14 | **Regression** Kachel gleich Tabelle | 55.500,00 € == 55.500,00 € | OK |
+| D15–D16 | **Regression** BHKW-Betriebskosten | 0,04 €/kWhel × 13.230 kWhel = **529,20 €/a**; WP-Hinweis unverändert | OK |
+| E (21 Proben) | de / en | alle 11 Schlüssel in beiden Sprachen belegt und übersetzt; Persistenz- und Steuerwerte bleiben auf englischer Oberfläche unverändert | OK |
+| F1–F5 | Maske: Aufbau und Lage | Feld + Auswahl vorhanden, in der Rubrik, **keine Kollision** mit Nachbarcontrols | OK |
+| F6–F10 | Maske: Laden und Speichern | 123,45 € + „%/a" gespeichert und zurückgelesen | OK |
+| F11–F13 | `CopyFromStamm` | Betrag **und** Einheit landen in der Projektkopie | OK |
+| F14 + Wächter | Dialoge | genau **ein** Dialog (die Speicherbestätigung), sonst **keiner** | OK |
+
+**101 Prüfungen, 0 Fehlschläge.**
+
+Während der Verifikation aufgefallen und behoben: Der erste Layoutentwurf machte `groupBox3`
+30 Pixel zu breit und hätte `groupBox5` überdeckt. Die Rubrikbreite wird seither aus den
+tatsächlichen Nachbarn gedeckelt (`FreieBreite`), nicht mehr aus einer geschätzten Zahl.
+
+---
+
+## N5. Offene Punkte (Stand nach diesem Nachtrag)
+
+Von den fünf Punkten aus Abschnitt 7 sind **1 und 2 erledigt**. Es bleiben:
+
+1. **Korrigierter Stromspeicher-Planwert** (bisher Punkt 3) — die Formel
+   `Modulkosten × Energie + Leistungskosten × Leistung + Investition_Fix` gilt, in den Testdaten
+   steht `Modulkosten` aber durchgehend auf 0; an echten Zahlen ist der Unterschied weiterhin
+   nicht gemessen.
+2. **Reiterbeschriftungen von `Form_Kosten`** (bisher Punkt 4) — „Investitionskosten" /
+   „Betriebskosten" / „Energiekosten" sind weiterhin deutsche Designer-Literale und zugleich
+   SQL-Vergleichswert gegen `Tab_KostenKategorie.KategorieName`. Unverändert.
+3. **Nachtrag zu Punkt 5:** Die drei Fehlerdialoge beim Öffnen der Kostenmaske sind mit `87483b4`
+   behoben; der Harnisch dieser Etappe bestätigt es (der Wächter meldet außerhalb der
+   Speicherbestätigung **keinen** Dialog).
+4. **Neu: Die Wartungseinheit ist nur im Katalog pflegbar.** Eine bereits in ein Projekt kopierte
+   `Tab_Heizkessel`-Zeile bekommt eine geänderte Einheit erst über einen erneuten
+   `CopyFromStamm` bzw. über `KomponentenUebernahmeCtrl`. Das ist das Verhalten **aller** übrigen
+   Kesselfelder (auch `Investitionskosten`) und damit konsistent — sollte der Anwender die
+   Einheit je Projekt abweichend pflegen wollen, wäre das eine eigene Entscheidung mit einem
+   eigenen Eingabeweg im Projektdialog.
+5. **Neu: PV-Anlagen mit Stückzahl 0.** Sie tragen jetzt 0 € statt eines Modulpreises bei. Wo
+   eine Kostenposition bereits auf dem alten Wert steht, erscheint sie als Abweichung. Das ist
+   gewollt (Entscheidung 4: melden statt überschreiben), heißt aber, dass betroffene Projekte
+   einmal über „Planwert übernehmen…" nachgezogen werden sollten.

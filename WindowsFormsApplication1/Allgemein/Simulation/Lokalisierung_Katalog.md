@@ -1165,3 +1165,55 @@ zeigt dazu die Anzeigetexte `KOSTEN_PLANWERT_BASIS_*`.
 | `BK_KOSTEN_SP_TECHNIK` | Technik-Planwert | Engineering value | UcBkKosten.cs (`LadeKomponenten`) | **neu.** Dritte Spalte der Komponententabelle neben „Investition [€]". |
 | `BK_KOSTEN_ABWEICHUNG` | ⚠ {0} Komponente(n) weichen vom Technik-Planwert ab | ⚠ {0} component(s) differ from the engineering value | UcBkKosten.cs (`Aktualisiere`, Statuszeile) | **neu.** Ergänzt `BK_KOSTEN_STATUS`, wenn mindestens eine Komponente abweicht. |
 | `BK_KOMP_HINW_KOSTEN` | Die Kostenposition „{0}" wurde nicht verändert und weicht jetzt vom Technik-Planwert ab — in der Kostenverwaltung über „Planwert übernehmen…" angleichen. | Cost item "{0}" was left unchanged and now differs from the engineering value — align it in cost management via "Apply engineering value…". | KomponentenUebernahmeCtrl.cs (`KostenabweichungMelden`) | **neu.** Reiht sich in die Hinweise der Komponenten-Übernahme ein (`BK_KOMP_HINW_*`): der Bestandsaustausch lässt die Kostenposition absichtlich stehen, sagt es jetzt aber. |
+
+## Nachtrag Kessel-Wartungseinheit und Stückzahl bei PV/Solarthermie (18.08.2026)
+
+Umsetzung der beiden Nutzerentscheidungen aus
+[`../Reporting/Kostenuebernahme_Protokoll.md`](../Reporting/Kostenuebernahme_Protokoll.md),
+Abschnitt „Nachtrag": Die Bezugsgröße der Kessel-Wartungskosten ist wählbar statt fest
+verdrahtet, und der Investitions-Planwert von Photovoltaik und Solarthermie ist Modulpreis ×
+Stückzahl.
+
+**Drei-Schichten-Zuordnung dieser Etappe.** Die drei Einheiten treten in allen drei Schichten
+auf und dürfen nicht verwechselt werden:
+
+| Schicht | Wo | Werte |
+|---|---|---|
+| **Persistenz** | `Tab_Heizkessel.Wartungskosten_Einheit`, `Tab_Heizkessel_STAMM.Wartungskosten_Einheit`; Konstanten in `Allgemein/DbWerte.cs:177/185/194` | `€/a`, `€/kWh`, `%/a` — deutsch/eingefroren, in SQL verglichen (Migrationsschritt 15b) |
+| **Schlüssel** | Steuerwerte der Auswahlliste, `Controller/TechnikPlanwertCtrl.cs:60-70` | `EUR_JAHR`, `EUR_KWH`, `PROZENT_INV` — sprachneutral, ASCII |
+| **Anzeige** | `KESSEL_WARTUNG_EINH_*`, ausgegeben über `TechnikPlanwertCtrl.WartungName` | s. Tabelle unten |
+
+Die Umrechnung läuft ausschließlich über `TechnikPlanwertCtrl.WartungSchluessel`
+(Persistenz → Schlüssel, `TechnikPlanwertCtrl.cs:773`) und `WartungDbWert`
+(Schlüssel → Persistenz, `:784`). In der ComboBox von `Form_Heizkessel_Bearbeiten` steht als
+Item der Typ `EinheitItem` (`Form_Heizkessel_Bearbeiten.cs:214`): Er **trägt** den Schlüssel und
+**zeigt** den lokalisierten Namen — kein Anzeigetext ist je Steuerwert. Verifiziert: Auf
+englischer Oberfläche liefert `WartungDbWert("PROZENT_INV")` weiterhin `%/a`, und
+`WartungSchluessel("€/kWh")` weiterhin `EUR_KWH`.
+
+### Neu (11)
+
+| Schlüssel | DE | EN | Fundstellen | Grund |
+|---|---|---|---|---|
+| `KESSEL_WARTUNG_LBL` | Wartungskosten | Maintenance costs | Form_Heizkessel_Bearbeiten.cs (`WartungsfeldAufbauen`, `EingabenPruefen`) | **neu.** Beschriftung des neuen Feldes; **ohne Doppelpunkt**, weil derselbe Text auch als Feldname in der Prüfmeldung von `Program.ZahlPruefen` erscheint. Den Doppelpunkt hängt die Maske an. |
+| `KESSEL_WARTUNG_EINHEIT_LBL` | Einheit | Unit | Form_Heizkessel_Bearbeiten.cs (`WartungsfeldAufbauen`) | **neu.** Beschriftung der Einheitenauswahl, ebenfalls ohne Doppelpunkt. |
+| `KESSEL_WARTUNG_EINH_JAHR` | €/a Jahresbetrag | €/a per year | TechnikPlanwertCtrl.cs (`WartungName`) | **neu.** Anzeigetext zum Steuerwert `EUR_JAHR`. Das Einheitenzeichen bleibt in beiden Sprachen gleich, nur die Erläuterung ist übersetzt. |
+| `KESSEL_WARTUNG_EINH_ARBEIT` | €/kWh Wärmemenge | €/kWh of heat | TechnikPlanwertCtrl.cs (`WartungName`) | **neu.** Anzeigetext zum Steuerwert `EUR_KWH`. |
+| `KESSEL_WARTUNG_EINH_PROZENT` | %/a der Investition | %/a of investment | TechnikPlanwertCtrl.cs (`WartungName`) | **neu.** Anzeigetext zum Steuerwert `PROZENT_INV`. |
+| `KOSTEN_PLANWERT_HERL_MENGE` | {0} €/Modul × {1} Module | {0} €/module × {1} modules | TechnikPlanwertCtrl.cs (`Stueckpreis`) | **neu.** Macht die Multiplikation in der Herkunftsspalte des Übernahmedialogs sichtbar, damit der Anwender die Rechnung nachvollziehen kann („468,89 €/Modul × 20 Module"). Reiht sich in `KOSTEN_PLANWERT_HERL_BHKW`/`…_SPEICHER` ein. |
+| `KOSTEN_BETRIEB_EINHEIT_GEMISCHT` | Die Kessel dieses Projekts führen unterschiedliche Einheiten für die Wartungskosten — keine Vorbelegung. | The boilers of this project use different units for their maintenance costs — no default value. | TechnikPlanwertCtrl.cs (`KesselPlanwert`) | **neu.** Wärmemenge und Investitionsposition sind Gewerkgrößen, keine Gerätegrößen; bei gemischten Einheiten gibt es keinen rechenbaren Gesamtwert. Lieber kein Wert als ein geratener. |
+| `KOSTEN_BETRIEB_OHNE_INVESTITION` | Die Wartungskosten sind als Anteil der Investition angegeben, die Investitionsposition ist aber noch nicht erfasst — keine Vorbelegung. | The maintenance costs are given as a share of the investment, but no investment item has been recorded yet — no default value. | TechnikPlanwertCtrl.cs (`KesselPlanwert`) | **neu.** Eigene Bezugsgröße, eigener Grund: `%/a` braucht keinen Simulationslauf, sondern eine erfasste Investition. |
+| `KOSTEN_BETRIEB_HERL_KESSEL_JAHR` | Vorbelegt: {0} €/a — fester Jahresbetrag aus der Kesseltechnik. | Default: {0} €/a — fixed annual amount from the boiler data. | TechnikPlanwertCtrl.cs (`KesselPlanwert`) | **neu.** Herleitung je Einheit statt einer Sammelmeldung — der Anwender soll erkennen, WELCHE Einheit gerechnet wurde. |
+| `KOSTEN_BETRIEB_HERL_KESSEL_ARBEIT` | Vorbelegt: {0} €/kWh × {1} kWh Wärme aus dem Lauf vom {2}. | Default: {0} €/kWh × {1} kWh of heat from the run of {2}. | TechnikPlanwertCtrl.cs (`KesselPlanwert`) | **neu.** Nennt zusätzlich den Lauf, aus dem die Wärmemenge stammt — Muster `KOSTEN_BETRIEB_HERLEITUNG` (BHKW). |
+| `KOSTEN_BETRIEB_HERL_KESSEL_PROZENT` | Vorbelegt: {0} %/a von {1} € Investition = {2} €/a. | Default: {0} %/a of {1} € investment = {2} €/a. | TechnikPlanwertCtrl.cs (`KesselPlanwert`) | **neu.** Nennt Satz, Bezugsgröße und Ergebnis, weil sich der Betrag hier aus einer ANDEREN Kostenposition ableitet. |
+
+### Entfallen (1)
+
+| Schlüssel | Grund |
+|---|---|
+| `KOSTEN_BETRIEB_KESSEL_UNKLAR` | Der Text lautete „Die Einheit von Tab_Heizkessel.Wartungskosten ist nicht belegt — keine Vorbelegung (offene Rückfrage)." Die Rückfrage ist mit der Entscheidung vom 18.08.2026 beantwortet: Die Einheit ist wählbar und in jeder Zeile gesetzt. Der Schlüssel ist aus `Resource.resx`, `Resource.en-US.resx` und `Resource.Designer.cs` entfernt; an seine Stelle treten die drei `KOSTEN_BETRIEB_HERL_KESSEL_*` und die beiden neuen Gründe. |
+
+**Kein neuer Persistenzwert außerhalb von `DbWerte`.** Die Stückzahlspalten (`PV_Leistung`,
+`Kollektormodulanzahl`) und die Gerätetabellen stehen als Spaltennamen in der Landkarte
+`TechnikPlanwertCtrl.Plaene` — Spaltennamen sind keine Datenwerte und gehören deshalb weiterhin
+nicht in `DbWerte` (dieselbe Abgrenzung wie bei `Tab_WP.Heizung`, siehe Kopf von `DbWerte.cs`).

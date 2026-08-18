@@ -57,11 +57,15 @@ namespace WindowsFormsApplication1
     /// Anwenders 17.08.2026) und legt die Zuordnungstabelle Z_AnlagePufferVerbund samt
     /// Index und Beziehungen an - rein additives DDL, KEIN DML: eine leere Tabelle
     /// bedeutet "kein Projekt hat einen Verbund" und damit exakt das bisherige Verhalten.
+    /// Schritt 15 kommt mit dem Paket KESSEL-WARTUNGSEINHEIT hinzu (Entscheidung des
+    /// Anwenders 18.08.2026): 15a die Spalte Wartungskosten_Einheit in Tab_Heizkessel und
+    /// Tab_Heizkessel_STAMM, 15b ihre Vorbelegung auf "€/a" - der fuenfte DML-Schritt
+    /// neben 5, 7, 9 und 13.
     /// </summary>
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 14;
+        public const int ZIEL_VERSION = 15;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -209,6 +213,35 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_14_PARALLELVERBUND = 14;
 
+        /// <summary>
+        /// Nummer des Pakets KESSEL-WARTUNGSEINHEIT (Entscheidung des Anwenders vom
+        /// 18.08.2026, Punkt 1): Die Bezugsgröße von <c>Tab_Heizkessel.Wartungskosten</c>
+        /// ist künftig je Kessel wählbar statt fest verdrahtet.
+        ///
+        /// <b>Zwei Teile in EINER Version</b> — Bauform wie Schritt 13:
+        ///   15a  additives DDL: die Spalte
+        ///        <c>Wartungskosten_Einheit</c> in <c>Tab_Heizkessel</c> UND
+        ///        <c>Tab_Heizkessel_STAMM</c> aus dem Spaltenkatalog,
+        ///   15b  DML: Vorbelegung auf <see cref="DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR"/>
+        ///        („€/a") für alle Zeilen ohne Wert.
+        ///
+        /// <b>Warum überhaupt eine Vorbelegung.</b> Eine leere Einheit wäre für die
+        /// Kostenübernahme eine offene Frage bei JEDEM Bestandskessel — 44 Projekt- und
+        /// 21 Katalogzeilen, die alle auf <c>Wartungskosten = 0</c> stehen und über die
+        /// niemand je eine Aussage getroffen hat. Die Vorbelegung macht daraus eine
+        /// vollständige, rechenbare Angabe, ohne eine einzige Zahl zu verändern:
+        /// 0 €/a ist exakt der bisherige Zustand „keine Wartungskosten angesetzt".
+        /// Die Begründung für gerade diese Einheit steht bei
+        /// <see cref="DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR"/>.
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): Das DDL geht über Vorhandenes
+        /// hinweg. Das UPDATE ist auf <c>IS NULL OR = ''</c> eingeschränkt — ein zweiter
+        /// Lauf findet keine Zeile mehr, und eine vom Anwender im Katalog-Editor gesetzte
+        /// Einheit wird niemals überschrieben. Das ist dieselbe Bauform wie die
+        /// Vorbelegung <c>Schwelle_Reserve = 10</c> aus Schritt 13b.
+        /// </summary>
+        public const int SCHRITT_15_KESSEL_WARTUNGSEINHEIT = 15;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -276,6 +309,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>13b: Einstellungssätze, deren <c>Leistungsgrenze</c> von 0 bzw. 1 auf 30 angehoben wurde.</summary>
         public static int DatenLeistungsgrenzeAngehoben { get; private set; }
+
+        // --- Zählwerk des Pakets Kessel-Wartungseinheit aus Schritt 15 ------------------
+
+        /// <summary>
+        /// 15b: Kessel (Projekttabelle UND Katalog zusammen), die die Vorbelegung
+        /// <c>Wartungskosten_Einheit = "€/a"</c> erhalten haben.
+        /// </summary>
+        public static int DatenKesselWartungseinheitVorbelegt { get; private set; }
 
         // --- Zählwerk des Pakets Parallelverbund aus Schritt 14 -------------------------
 
@@ -444,6 +485,13 @@ namespace WindowsFormsApplication1
                         "Parallelverbund: Tabelle Z_AnlagePufferVerbund samt Index und Beziehungen",
                         "Die Zuordnungstabelle für den Pufferverbund konnte nicht angelegt werden.",
                         Schritt_14_Parallelverbund),
+
+            // PAKET KESSEL-WARTUNGSEINHEIT - Bezugsgröße von Tab_Heizkessel.Wartungskosten
+            //       je Kessel wählbar (Entscheidung des Anwenders 18.08.2026, Punkt 1).
+            new Schritt(SCHRITT_15_KESSEL_WARTUNGSEINHEIT,
+                        "Kessel-Wartungseinheit: Spalte Wartungskosten_Einheit, Vorbelegung €/a",
+                        "Die Bezugsgröße der Kessel-Wartungskosten konnte nicht angelegt werden.",
+                        Schritt_15_KesselWartungseinheit),
         };
 
         // =================================================================================
@@ -482,6 +530,7 @@ namespace WindowsFormsApplication1
             DatenReserveVorbelegt = 0;
             DatenLeistungsgrenzeAngehoben = 0;
             DatenVerbundZeilen = 0;
+            DatenKesselWartungseinheitVorbelegt = 0;
 
             var l = new Lauf();
             string dbPfad;
@@ -1633,6 +1682,61 @@ namespace WindowsFormsApplication1
             l.Notiz("Leistungsgrenze: " + betroffen + " Einstellungssätze von 0 bzw. 1 auf 30 % " +
                     "angehoben (untere Modulationsgrenze der BHKW-Module)");
             return true;
+        }
+
+        // =================================================================================
+        // Schritt 15 - Kessel-Wartungseinheit (Entscheidung des Anwenders 18.08.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Schritt 15.</b> Zwei Teile, Bauform wie Schritt 13:
+        ///
+        ///   <b>15a</b> die Spalte <c>Wartungskosten_Einheit</c> in
+        ///   <c>Tab_Heizkessel</c> und <c>Tab_Heizkessel_STAMM</c> — additives DDL aus dem
+        ///   Spaltenkatalog. HART: Ohne die Spalte gibt es nichts vorzubelegen.
+        ///
+        ///   <b>15b</b> die Vorbelegung auf „€/a" für jede Zeile ohne Wert.
+        ///
+        /// Begründung für Spalte, Typ und Wahl der Vorbelegung:
+        /// <see cref="SchemaKatalog.Schritt15_KesselWartungseinheit"/> und
+        /// <see cref="DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR"/>.
+        /// </summary>
+        private static bool Schritt_15_KesselWartungseinheit(Lauf l)
+        {
+            // --- 15a) Spalte in beiden Tabellen ---------------------------------------
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt15_KesselWartungseinheit)) return false;
+
+            // --- 15b) Vorbelegung ----------------------------------------------------
+            bool ok = true;
+            int summe = 0;
+
+            foreach (string tabelle in new[] { SchemaKatalog.TAB_HEIZKESSEL,
+                                               SchemaKatalog.TAB_HEIZKESSEL_STAMM })
+            {
+                // IS NULL ODER Leerstring: Access legt eine neue TEXT-Spalte mit NULL an,
+                // ein von Hand nachgetragenes Feld kann aber auch "" enthalten. Beides
+                // heisst "nicht gesetzt"; ein gepflegter Wert bleibt unangetastet.
+                int betroffen = NonQuery(l,
+                    "UPDATE [" + tabelle + "] SET [" +
+                    SchemaKatalog.SPALTE_KESSEL_WARTUNG_EINHEIT + "] = ? WHERE [" +
+                    SchemaKatalog.SPALTE_KESSEL_WARTUNG_EINHEIT + "] IS NULL OR [" +
+                    SchemaKatalog.SPALTE_KESSEL_WARTUNG_EINHEIT + "] = ''",
+                    new OleDbParameter("@e", DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR));
+
+                if (betroffen < 0)
+                {
+                    l.Notiz("Vorbelegung Wartungskosten_Einheit in " + tabelle + ": UPDATE fehlgeschlagen");
+                    ok = false;
+                    continue;
+                }
+                summe += betroffen;
+            }
+
+            DatenKesselWartungseinheitVorbelegt = summe;
+            l.Notiz("Wartungskosten_Einheit: " + summe + " Kessel auf \"" +
+                    DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR + "\" vorbelegt (fester Jahresbetrag; " +
+                    "die Beträge selbst bleiben unverändert)");
+            return ok;
         }
 
         // =================================================================================

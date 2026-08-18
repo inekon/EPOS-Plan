@@ -18,6 +18,18 @@ namespace WindowsFormsApplication1
         public double Investitionskosten;
         public double Raumbedarf;
         public double Wartungskosten;
+
+        /// <summary>
+        /// Bezugsgröße von <see cref="Wartungskosten"/> — einer der drei Persistenzwerte
+        /// <see cref="DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR"/>,
+        /// <see cref="DbWerte.KESSEL_WARTUNG_EINHEIT_ARBEIT"/> oder
+        /// <see cref="DbWerte.KESSEL_WARTUNG_EINHEIT_PROZENT"/>
+        /// (Entscheidung des Anwenders 18.08.2026, Migrationsschritt 15).
+        /// Vorgabe ist der feste Jahresbetrag — Begründung bei
+        /// <see cref="DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR"/>.
+        /// </summary>
+        public string Wartungskosten_Einheit;
+
         public double Nutzungsdauer;
         public double CO2;
         public double SO2;
@@ -42,6 +54,7 @@ namespace WindowsFormsApplication1
             Investitionskosten = 0;
             Raumbedarf = 0;
             Wartungskosten = 0;
+            Wartungskosten_Einheit = DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR;
             Nutzungsdauer = 0;
             CO2 = 0;    
             SO2 = 0;    

@@ -61,6 +61,8 @@ namespace WindowsFormsApplication1
         public const string TAB_PREISREIHE = "Tab_Preisreihe";
         public const string TAB_PREISREIHEDATEN = "Tab_PreisreiheDaten";
         public const string TAB_KOSTENPROFIL = "Tab_Kostenprofil";
+        public const string TAB_HEIZKESSEL = "Tab_Heizkessel";
+        public const string TAB_HEIZKESSEL_STAMM = "Tab_Heizkessel_STAMM";
 
         /// <summary>
         /// PAKET PARALLELVERBUND (Entscheidung des Anwenders 17.08.2026): die ZUSÄTZLICHEN
@@ -522,6 +524,59 @@ namespace WindowsFormsApplication1
         public const string SPALTE_VARIANTE_AUFSCHLAG_ANWENDEN = "Aufschlag_Anwenden";
 
         /// <summary>
+        /// Name der Bezugsgröße der Kessel-Wartungskosten (Entscheidung des Anwenders
+        /// 18.08.2026, Punkt 1). EINE Wahrheit für Migration, Katalog-Editor
+        /// (<c>Form_Heizkessel_Bearbeiten</c>), beide Controller
+        /// (<c>HeizkesselCtrl</c>, <c>HeizkesselStammCtrl</c>) und die Kostenübernahme
+        /// (<c>TechnikPlanwertCtrl.LiesBetriebsplanwert</c>) — dasselbe Muster wie
+        /// <see cref="SPALTE_SCHWELLE_RESERVE"/>.
+        /// </summary>
+        public const string SPALTE_KESSEL_WARTUNG_EINHEIT = "Wartungskosten_Einheit";
+
+        /// <summary>
+        /// Schritt 15 der Migration — die Bezugsgröße der Kessel-Wartungskosten in
+        /// <c>Tab_Heizkessel</c> UND <c>Tab_Heizkessel_STAMM</c>.
+        ///
+        /// <b>Was sie trägt.</b> Einen der drei Persistenzwerte aus
+        /// <see cref="DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR"/>, <c>…_ARBEIT</c> und
+        /// <c>…_PROZENT</c> — also die Aussage, worauf sich die Zahl in
+        /// <c>Wartungskosten</c> bezieht. Bis zum 18.08.2026 war das nicht belegbar: Das
+        /// Feld hatte keine Oberfläche und stand überall auf 0.
+        ///
+        /// <b>Beide Tabellen im selben Eintrag, identischer Satz</b> — dieselbe Begründung
+        /// wie bei <see cref="Schritt11_Stromspeicher"/>: <c>HeizkesselCtrl.CopyFromStamm</c>
+        /// kopiert Feld für Feld aus dem Katalog in die Projekttabelle, eine Spalte nur auf
+        /// einer Seite wäre sofort ein Datenverlust beim Übernehmen in ein Projekt.
+        ///
+        /// <b>TEXT(20) statt einer Schlüsselzahl.</b> Der gespeicherte Wert ist die
+        /// Einheit selbst („€/a"), nicht ein Verweis in eine Katalogtabelle. Das ist die
+        /// Bauform, die dieses Schema für Auswahlwerte durchgehend verwendet
+        /// (<c>WQ_Typ</c>, <c>Betriebsart</c>, <c>Preisquelle</c>, <c>Speichertyp</c>) —
+        /// eine eigene Katalogtabelle für drei feste Werte wäre eine zweite Konvention
+        /// ohne Gegenwert. 20 Zeichen sind reichlich; der längste Wert hat fünf.
+        ///
+        /// <b>Vorbelegung durch DML, nicht durch DDL-DEFAULT.</b> Ein DEFAULT gälte nur
+        /// für künftig eingefügte Zeilen und ließe die 44 Projekt- und 21 Katalogzeilen
+        /// des Bestands auf NULL stehen — dieselbe Falle, die schon bei
+        /// <see cref="Schritt11_Stromspeicher"/> beschrieben ist. Die Vorbelegung setzt
+        /// deshalb <c>SchemaMigration.Schritt_15_KesselWartungseinheit</c>; warum sie
+        /// gerade auf „€/a" lautet, steht bei
+        /// <see cref="DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR"/>.
+        ///
+        /// <b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access immer
+        /// hinten an. Folgenlos: beide Tabellen werden ausschließlich NAMENSBASIERT
+        /// gelesen (<c>HeizkesselCtrl.FillModelFromRow</c>,
+        /// <c>HeizkesselStammCtrl.FillModelFromRow</c>,
+        /// <c>Form_Heizkessel_Bearbeiten.SetControls</c> über <c>RecordSet.Read(name)</c>) —
+        /// eine <c>row[0…n]</c>-Kette wie bei <c>Tab_Einstellungen</c> gibt es hier nicht.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt15_KesselWartungseinheit =
+        {
+            new SchemaSpalte(TAB_HEIZKESSEL,       SPALTE_KESSEL_WARTUNG_EINHEIT, "TEXT(20)"),
+            new SchemaSpalte(TAB_HEIZKESSEL_STAMM, SPALTE_KESSEL_WARTUNG_EINHEIT, "TEXT(20)"),
+        };
+
+        /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
         /// und ist deshalb nicht Teil von <see cref="Alle"/>.
@@ -579,6 +634,14 @@ namespace WindowsFormsApplication1
         /// fehlt sie in der Datenbank, scheitert dort die Abfrage und mit ihr der ganze
         /// Lauf. Die Rückfallebene läuft bei jedem Simulationsstart und schließt genau
         /// diese Lücke, auch wenn die Migration nie angestoßen wurde.
+        ///
+        /// <see cref="Schritt15_KesselWartungseinheit"/> ist BEWUSST NICHT aufgeführt —
+        /// dieselbe Begründung wie bei <see cref="Schritt12_Preismodell"/>: Die
+        /// Rückfallebene sichert die Eingabespalten der SIMULATION, und der Rechenkern
+        /// liest die Kessel-Wartungseinheit nirgends; sie gehört ausschließlich dem
+        /// Kostenmodul. Für sie gibt es die eigene, tolerante Vorsorge unmittelbar vor dem
+        /// Zugriff (<c>HeizkesselStammCtrl.StelleSpaltenSicher</c>), aufgerufen aus dem
+        /// einzigen Dialog, der die Spalte schreibt.
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {

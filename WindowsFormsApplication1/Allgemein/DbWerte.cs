@@ -128,6 +128,71 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string KOSTEN_EINHEIT_EURO = "€";
 
+        // =====================================================================
+        // Bezugsgröße der Kessel-Wartungskosten
+        //   Tab_Heizkessel.Wartungskosten_Einheit und
+        //   Tab_Heizkessel_STAMM.Wartungskosten_Einheit (Migrationsschritt 15)
+        //   Persistenzwert, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>
+        /// <c>Tab_Heizkessel.Wartungskosten</c> ist ein FESTER JAHRESBETRAG [€/a] —
+        /// die Vorbelegung jedes Bestandsdatensatzes (Migrationsschritt 15b).
+        ///
+        /// <para>
+        /// <b>Warum es diese Spalte gibt.</b> Bis zum 18.08.2026 hatte
+        /// <c>Wartungskosten</c> in der ganzen Anwendung keine Oberfläche und stand in
+        /// Katalog wie Projekten durchgehend auf 0; die Einheit war damit nicht belegbar
+        /// (Recherche in <c>Allgemein\Reporting\Kostenuebernahme_Protokoll.md</c>,
+        /// Abschnitt 4). Statt eine Einheit zu erraten, ist sie seit der Entscheidung des
+        /// Anwenders vom 18.08.2026 <b>je Kessel wählbar</b>. Anders als beim BHKW, dessen
+        /// Feld <c>Wartungskosten_kwhel</c> die Einheit schon im Namen trägt und in
+        /// <c>Form_DBBHKW</c> mit „€ / kWhel" beschriftet ist, gibt es beim Kessel keine
+        /// gewachsene Festlegung, die eine feste Verdrahtung rechtfertigen würde.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Warum €/a die Vorbelegung ist.</b> Rechnerisch sind alle drei Einheiten
+        /// neutral, solange der Betrag 0 ist — 0 €/a, 0 €/kWh × Menge und 0 %/a ergeben
+        /// gleichermaßen 0 €. Den Ausschlag geben zwei andere Gründe:
+        /// <list type="number">
+        ///   <item><description><b>Einzige selbsttragende Einheit.</b> €/a braucht weder
+        ///     einen Simulationslauf noch eine erfasste Investitionsposition. Bei jeder
+        ///     anderen Vorbelegung bekämen alle Bestandsprojekte einen Hinweis auf eine
+        ///     fehlende Bezugsgröße — für einen Wert, den nie jemand gepflegt hat.</description></item>
+        ///   <item><description><b>Geringster Schaden bei der ersten Eingabe.</b> Trägt
+        ///     jemand später eine „50" ein, ohne die Einheit zu beachten, sind das 50 €/a.
+        ///     Unter €/kWh wären daraus bei 22.430 kWh Jahreswärme 1.121.500 €/a geworden,
+        ///     unter %/a die Hälfte der Investition.</description></item>
+        /// </list>
+        /// Der VDI-3805-Import gibt keine Gegenprobe her: <c>Heizkesselmport</c> liest gar
+        /// kein Wartungsfeld, <c>Form_Heizkessel_einlesen</c> schreibt den Modell-Vorgabewert 0.
+        /// </para>
+        ///
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel). Der sprachneutrale
+        /// Steuerwert der Auswahlliste steht in
+        /// <c>TechnikPlanwertCtrl.WARTUNG_EUR_JAHR</c>, der Anzeigetext in
+        /// <c>MyResource.Resource.KESSEL_WARTUNG_EINH_JAHR</c>.
+        /// </summary>
+        public const string KESSEL_WARTUNG_EINHEIT_JAHR = "€/a";
+
+        /// <summary>
+        /// <c>Tab_Heizkessel.Wartungskosten</c> bezieht sich auf die ERZEUGTE WÄRMEMENGE
+        /// [€/kWh]. Bezugsgröße ist <c>Tab_ErgebnisHeizkessel.Waermeproduktion</c> (MWh/a)
+        /// des jüngsten Simulationslaufs — ohne Lauf gibt es keine Vorbelegung.
+        /// <inheritdoc cref="KESSEL_WARTUNG_EINHEIT_JAHR" path="/summary/para[last()]"/>
+        /// </summary>
+        public const string KESSEL_WARTUNG_EINHEIT_ARBEIT = "€/kWh";
+
+        /// <summary>
+        /// <c>Tab_Heizkessel.Wartungskosten</c> ist ein ANTEIL DER INVESTITION je Jahr
+        /// [%/a]. Bezugsgröße ist die erfasste Investitions-Hauptposition der Komponente
+        /// (<c>Tab_ProjektWerte</c>, Kategorie 1) — ist sie noch nicht erfasst, gibt es
+        /// keine Vorbelegung.
+        /// <inheritdoc cref="KESSEL_WARTUNG_EINHEIT_JAHR" path="/summary/para[last()]"/>
+        /// </summary>
+        public const string KESSEL_WARTUNG_EINHEIT_PROZENT = "%/a";
+
         /// <summary>
         /// Altbestand: <c>Tool_5</c>/<c>Tool_6</c> trugen früher einen Bool-Text statt des
         /// Erzeugernamens. Bestandsdatenbanken enthalten ihn weiterhin, deshalb wird beim
