@@ -320,7 +320,7 @@ namespace WindowsFormsApplication1
                         foreach (DataRow r in ck.Rows)
                         {
                             using (OleDbCommand c = new OleDbCommand(
-                                "INSERT INTO Tab_Kenndaten_Kuehlung (ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl, Last) VALUES (?, ?, ?, ?, ?, ?, ?)", conn, trans))
+                                "INSERT INTO Tab_Kenndaten_Kuehlung (ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl, [Last]) VALUES (?, ?, ?, ?, ?, ?, ?)", conn, trans))
                             {
                                 c.Parameters.Add(new OleDbParameter("@id", ckid++));
                                 c.Parameters.Add(new OleDbParameter("@wp", neueId));
