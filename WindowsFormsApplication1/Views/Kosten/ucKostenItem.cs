@@ -19,10 +19,18 @@ public partial class ucKostenZeile : UserControl
         
         numBetrag.DecimalPlaces = 2; // Erlaubt zwei Nachkommastellen
         numBetrag.Increment = 1M;  // Schritte beim Klicken
+
+        // Obergrenze: der Designer stand auf 99.999 €. Das reicht für ein Modul, nicht
+        // für eine Anlage — das Beispiel-BHKW „2G 250kw.el Gas" kommt über den
+        // spezifischen Preis auf 163.400 € (653,60 €/kWel × 250 kWel), und jedes Setzen
+        // eines größeren Wertes hätte eine ArgumentOutOfRangeException geworfen.
+        // Programmatisch statt im Designer, damit die generierte Datei unberührt bleibt.
+        numBetrag.Maximum = 100000000M;
+
         numDauer.DecimalPlaces = 2; // Erlaubt zwei Nachkommastellen
         numDauer.Increment = 0.5M;  // Schritte beim Klicken
-        numBetrag.Value = (decimal)pos.Betrag;
-        numDauer.Value = (decimal)pos.Nutzungsdauer;
+        numBetrag.Value = Klemme(pos.Betrag, numBetrag.Minimum, numBetrag.Maximum);
+        numDauer.Value = Klemme(pos.Nutzungsdauer, numDauer.Minimum, numDauer.Maximum);
 
         // Events abfangen, um Änderungen zurück ins Objekt zu schreiben
         numBetrag.ValueChanged += (s, e) => { pos.Betrag = (decimal)numBetrag.Value; OnValueChanged(); };
@@ -75,15 +83,29 @@ public partial class ucKostenZeile : UserControl
 
     public void SetBerechnetenWert(decimal wert)
     {
+        decimal w = Klemme(wert, numBetrag.Minimum, numBetrag.Maximum);
+
         // Control anpassen, das den Betrag anzeigt.
         if (this.numBetrag.InvokeRequired)
         {
-            this.Invoke(new Action(() => this.numBetrag.Value = wert));
+            this.Invoke(new Action(() => this.numBetrag.Value = w));
         }
         else
         {
-            this.numBetrag.Value = wert;
+            this.numBetrag.Value = w;
         }
+    }
+
+    /// <summary>
+    /// Hält einen Wert in den Grenzen des Drehfeldes. Ein Betrag aus der Datenbank kann
+    /// außerhalb liegen (Altbestand, importierte Daten); <c>NumericUpDown.Value</c> wirft
+    /// dann eine Ausnahme und riss bislang den Aufbau der ganzen Positionsliste ab.
+    /// </summary>
+    private static decimal Klemme(decimal wert, decimal min, decimal max)
+    {
+        if (wert < min) return min;
+        if (wert > max) return max;
+        return wert;
     }
 
     private void btnOpenCases_Click(object sender, EventArgs e)

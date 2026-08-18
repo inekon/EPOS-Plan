@@ -385,8 +385,44 @@ namespace WindowsFormsApplication1
 
             MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idZiel);
 
+            // --- 9) Kostenpositionen: absichtlich NICHT angefasst, aber gemeldet -------
+            // Der Bestandsaustausch tauscht die Gerätezeile; die Kostenposition des
+            // Zielprojekts bleibt auf ihrem alten Betrag stehen. Das ist richtig so
+            // (Nutzerentscheidung 4 vom 18.08.2026: niemals automatisch überschreiben) —
+            // aber es darf nicht STILL geschehen. Deshalb wird hier gezählt, welche
+            // Komponenten dadurch vom Technik-Planwert abweichen; angeglichen wird
+            // ausschließlich in der Kostenverwaltung über „Planwert übernehmen…".
+            KostenabweichungMelden(idZiel, plan.Gewerk, warnungen);
+
             hinweise = string.Join("\r\n", warnungen.ToArray());
             return true;
+        }
+
+        /// <summary>
+        /// Vermerkt, ob die (unangetastete) Kostenposition des Gewerks nach dem Austausch
+        /// noch zum Technik-Planwert passt.
+        /// </summary>
+        private static void KostenabweichungMelden(int idZiel, string gewerk, List<string> warnungen)
+        {
+            try
+            {
+                // Das Gewerk „Spitzenkessel" heißt als Kostenkomponente „Heizkessel";
+                // alle übrigen tragen denselben Namen (Tab_KostenKomponente).
+                string komponente = string.Equals(gewerk, "Spitzenkessel", StringComparison.OrdinalIgnoreCase)
+                    ? DbWerte.ERZEUGER_HEIZKESSEL : gewerk;
+
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT MIN(ID) FROM Tab_KostenKomponente WHERE Komponente = ?",
+                    new OleDbParameter("@k", komponente ?? ""));
+                if (o == null || o == DBNull.Value) return;
+
+                KostenPositionCtrl.Abweichung ab = KostenPositionCtrl.Pruefe(
+                    idZiel, komponente, Form_Kosten.KATEGORIE_INVESTITION, Convert.ToInt32(o));
+
+                if (ab != null && ab.Abweichend)
+                    warnungen.Add(string.Format(MyResource.Resource.BK_KOMP_HINW_KOSTEN, komponente));
+            }
+            catch { }
         }
 
         // ------------------------------------------------------------------ Bausteine

@@ -4432,4 +4432,94 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_KOMP_HINW_VARIANTE" xml:space="preserve">
     <value>The operating parameters of storage variant "{0}" could not be created.</value>
   </data>
+  <data name="KOSTEN_BTN_PLANWERT" xml:space="preserve">
+    <value>🔄 Apply engineering value…</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_TITEL" xml:space="preserve">
+    <value>Apply engineering value — {0}</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_KOPF" xml:space="preserve">
+    <value>Choose per unit which value counts as the investment. Ancillary costs are created as separate rows.</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_SP_ANLAGE" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_SP_BASIS" xml:space="preserve">
+    <value>Cost basis</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_SP_BETRAG" xml:space="preserve">
+    <value>Amount [€]</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_SP_HERLEITUNG" xml:space="preserve">
+    <value>Origin</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_BASIS_MODUL" xml:space="preserve">
+    <value>Module price</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_BASIS_SPEZ" xml:space="preserve">
+    <value>specific price × size</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_BASIS_KEINE" xml:space="preserve">
+    <value>do not apply</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_HERL_FELD" xml:space="preserve">
+    <value>field {0}</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_HERL_BHKW" xml:space="preserve">
+    <value>{0} €/kWel × {1} kWel</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_HERL_SPEICHER" xml:space="preserve">
+    <value>{0} €/kWh × {1} kWh + {2} €/kW × {3} kW + {4} €</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_NEBENKOSTEN" xml:space="preserve">
+    <value>Ancillary costs — one row per item:</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_SUMME" xml:space="preserve">
+    <value>Main item: {0} €</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_BTN_OK" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_BTN_ABBRUCH" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_LEER" xml:space="preserve">
+    <value>No cost value is maintained in this project's engineering data for "{0}".</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_UEBERNOMMEN" xml:space="preserve">
+    <value>"{0}": main item set to {1} €, {2} ancillary row(s) reconciled.</value>
+  </data>
+  <data name="KOSTEN_ABWEICHUNG" xml:space="preserve">
+    <value>Differs from the engineering value: recorded {0} €, engineering {1} €. Use "Apply engineering value…" to align.</value>
+  </data>
+  <data name="KOSTEN_ABWEICHUNG_AUSWAHL" xml:space="preserve">
+    <value>Two cost bases are available for this component. Decide via "Apply engineering value…".</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_OHNE_ERGEBNIS" xml:space="preserve">
+    <value>Operating cost defaults are available only after a simulation run.</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_OHNE_WARTUNGSFELD" xml:space="preserve">
+    <value>No maintenance data is stored for this trade — no default value.</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_OHNE_MENGE" xml:space="preserve">
+    <value>The simulation run reports no annual quantity for this trade — no default value.</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_NICHT_ZUORDENBAR" xml:space="preserve">
+    <value>Maintenance rates cannot be matched unambiguously to the modules of the run — no default value.</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_KESSEL_UNKLAR" xml:space="preserve">
+    <value>The unit of Tab_Heizkessel.Wartungskosten is not documented — no default value (open question).</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_HERLEITUNG" xml:space="preserve">
+    <value>Default: {0} €/kWhel × {1} kWhel from the run of {2}.</value>
+  </data>
+  <data name="BK_KOSTEN_SP_TECHNIK" xml:space="preserve">
+    <value>Engineering value</value>
+  </data>
+  <data name="BK_KOSTEN_ABWEICHUNG" xml:space="preserve">
+    <value>⚠ {0} component(s) differ from the engineering value</value>
+  </data>
+  <data name="BK_KOMP_HINW_KOSTEN" xml:space="preserve">
+    <value>Cost item "{0}" was left unchanged and now differs from the engineering value — align it in cost management via "Apply engineering value…".</value>
+  </data>
 </root>

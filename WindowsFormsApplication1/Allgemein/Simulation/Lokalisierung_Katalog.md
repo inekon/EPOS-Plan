@@ -1113,3 +1113,55 @@ angefasst wurde.
 |---|---|---|---|
 | `BK_KOSTEN_LBL_KOMPONENTEN` | Investition je Komponente | Investment per component | Die Tabelle zeigt seit dem Kategoriefilter nur noch Kategorie 1. „Kosten je Komponente" hätte weiterhin die Gesamtkosten aller Kategorien versprochen. |
 | `BK_KOSTEN_SP_SUMME` | Investition [€] | Investment [€] | Dieselbe Präzisierung im Spaltenkopf; die Summenzeile darunter (`BK_KOSTEN_SUMME`, „Gesamt") muss zur Kachel „Investition" passen. |
+
+## Nachtrag Kostenübernahme — Technik-Planwerte, Nebenkosten, Abweichungen (18.08.2026)
+
+Umsetzung der vier Nutzerentscheidungen aus
+[`../Reporting/Kostenuebernahme_Protokoll.md`](../Reporting/Kostenuebernahme_Protokoll.md):
+Der Technik-Planwert wird je Anlage zur Wahl gestellt, Nebenkosten entstehen als eigene Zeilen,
+Betriebskosten werden erst nach einem Simulationslauf vorbelegt, und Abweichungen zwischen
+erfasster Position und Technik werden angezeigt statt still überschrieben.
+
+**Drei-Schichten-Zuordnung dieser Etappe.** Die vier Nebenkostenbezeichnungen („Montage",
+„Lieferung", „Schallschutzhaube", „Abgasreinigung") gehen als `Tab_Kostenfaktor.Bezeichnung`
+in die Datenbank und werden in SQL damit verglichen — sie sind **Persistenzwerte** und stehen
+deshalb in `Allgemein/DbWerte.cs` (`KOSTENPOSTEN_*`), nicht hier. Ebenso die Gruppe „Allgemein"
+(`KOSTEN_GRUPPE_ALLGEMEIN`) und die Einheit „€" (`KOSTEN_EINHEIT_EURO`), die bis dahin als
+Literale in `Form_Kosten` standen. Die Kostenbasen sind **Steuerwerte** und sprachneutral
+(`MODULPREIS`, `SPEZIFISCH`, `KEINE` in `TechnikPlanwertCtrl`); die Auswahlliste des Dialogs
+zeigt dazu die Anzeigetexte `KOSTEN_PLANWERT_BASIS_*`.
+
+### Neu (30)
+
+| Schlüssel | DE | EN | Fundstellen | Grund |
+|---|---|---|---|---|
+| `KOSTEN_BTN_PLANWERT` | 🔄 Planwert übernehmen… | 🔄 Apply engineering value… | Form_Kosten.cs (`UpdateDetailPanel`, Gruppenkopf) | **neu.** Ersetzt das deutsche Literal „🔄 Planwert übernehmen...". |
+| `KOSTEN_PLANWERT_TITEL` | Technik-Planwert übernehmen — {0} | Apply engineering value — {0} | Form_PlanwertUebernahme.cs (`Aufbauen`) | **neu.** `{0}` ist die Komponente. |
+| `KOSTEN_PLANWERT_KOPF` | Je Anlage festlegen, welcher Wert als Investition gilt. Die Nebenkosten entstehen als eigene Zeilen. | Choose per unit which value counts as the investment. Ancillary costs are created as separate rows. | Form_PlanwertUebernahme.cs | **neu.** Sagt die beiden Regeln der Maske in einem Satz. |
+| `KOSTEN_PLANWERT_SP_ANLAGE` | Anlage | Unit | Form_PlanwertUebernahme.cs | **neu.** Spaltenkopf. |
+| `KOSTEN_PLANWERT_SP_BASIS` | Kostenbasis | Cost basis | Form_PlanwertUebernahme.cs | **neu.** Spaltenkopf der Auswahlspalte. |
+| `KOSTEN_PLANWERT_SP_BETRAG` | Betrag [€] | Amount [€] | Form_PlanwertUebernahme.cs | **neu.** Spaltenkopf. |
+| `KOSTEN_PLANWERT_SP_HERLEITUNG` | Herkunft | Origin | Form_PlanwertUebernahme.cs | **neu.** Spaltenkopf; die Spalte zeigt Feldname bzw. Rechenweg. |
+| `KOSTEN_PLANWERT_BASIS_MODUL` | Modulpreis | Module price | TechnikPlanwertCtrl.cs (`BasisName`) | **neu.** Anzeigetext zum Steuerwert `MODULPREIS`. |
+| `KOSTEN_PLANWERT_BASIS_SPEZ` | spezifischer Preis × Baugröße | specific price × size | TechnikPlanwertCtrl.cs (`BasisName`) | **neu.** Anzeigetext zum Steuerwert `SPEZIFISCH`; bewusst gewerkneutral, weil die Baugröße beim BHKW kWel und beim Speicher kWh/kW ist. |
+| `KOSTEN_PLANWERT_BASIS_KEINE` | nicht ansetzen | do not apply | TechnikPlanwertCtrl.cs (`BasisName`) | **neu.** Anzeigetext zum Steuerwert `KEINE` — die Anlage trägt nichts zur Hauptposition bei. |
+| `KOSTEN_PLANWERT_HERL_FELD` | Feld {0} | field {0} | TechnikPlanwertCtrl.cs (`BasenFuellen`) | **neu.** `{0}` ist der SPALTENNAME der Datenbank und bleibt deshalb unübersetzt. |
+| `KOSTEN_PLANWERT_HERL_BHKW` | {0} €/kWel × {1} kWel | {0} €/kWel × {1} kWel | TechnikPlanwertCtrl.cs (`BasenFuellen`) | **neu.** Rein numerische Herleitung; `kWel` ist eine Einheit und in beiden Sprachen gleich. |
+| `KOSTEN_PLANWERT_HERL_SPEICHER` | {0} €/kWh × {1} kWh + {2} €/kW × {3} kW + {4} € | (gleich) | TechnikPlanwertCtrl.cs (`BasenFuellen`) | **neu.** Dieselbe Begründung. |
+| `KOSTEN_PLANWERT_NEBENKOSTEN` | Nebenkosten — je Posten eine eigene Zeile: | Ancillary costs — one row per item: | Form_PlanwertUebernahme.cs (`SummeAktualisieren`) | **neu.** Die Posten selbst sind Persistenzwerte aus `DbWerte` und bleiben deutsch. |
+| `KOSTEN_PLANWERT_SUMME` | Hauptposition: {0} € | Main item: {0} € | Form_PlanwertUebernahme.cs | **neu.** `{0}` ist bereits formatiert. |
+| `KOSTEN_PLANWERT_BTN_OK` | Übernehmen | Apply | Form_PlanwertUebernahme.cs | **neu.** |
+| `KOSTEN_PLANWERT_BTN_ABBRUCH` | Abbrechen | Cancel | Form_PlanwertUebernahme.cs | **neu.** |
+| `KOSTEN_PLANWERT_LEER` | Für „{0}" ist in der Technik dieses Projekts kein Kostenwert gepflegt. | No cost value is maintained in this project's engineering data for "{0}". | Form_Kosten.cs (`btnTest_KostenUebernahme_Click`) | **neu.** Ersetzt die frühere Ja/Nein-Rückfrage „Es wurden 0,00 € in der Technik gefunden. Trotzdem übernehmen?", die eine 0 in die Position schreiben wollte. |
+| `KOSTEN_PLANWERT_UEBERNOMMEN` | „{0}": Hauptposition auf {1} € gesetzt, {2} Nebenkostenzeile(n) abgeglichen. | "{0}": main item set to {1} €, {2} ancillary row(s) reconciled. | Form_Kosten.cs (`btnTest_KostenUebernahme_Click`) | **neu.** Ersetzt das Literal „Der Wert für '…' wurde erfolgreich auf … € aktualisiert."; nennt zusätzlich die Nebenzeilen. |
+| `KOSTEN_ABWEICHUNG` | Weicht vom Technik-Planwert ab: erfasst {0} €, Technik {1} €. Über „Planwert übernehmen…" angleichen. | Differs from the engineering value: recorded {0} €, engineering {1} €. Use "Apply engineering value…" to align. | Form_Kosten.cs (`HinweiszeileAnlegen`), UcBkKosten.cs (Zellen-Tooltip) | **neu.** Nennt **beide** Werte und den Weg zum Angleichen — überschrieben wird nie. |
+| `KOSTEN_ABWEICHUNG_AUSWAHL` | Für diese Komponente stehen zwei Kostenbasen zur Wahl. Über „Planwert übernehmen…" entscheiden. | Two cost bases are available for this component. Decide via "Apply engineering value…". | Form_Kosten.cs (`HinweiszeileAnlegen`) | **neu.** Der Fall „noch nichts gewählt" ist keine Abweichung im Zahlenvergleich, sondern eine offene Entscheidung. |
+| `KOSTEN_BETRIEB_OHNE_ERGEBNIS` | Vorbelegung der Betriebskosten erst nach einem Simulationslauf verfügbar. | Operating cost defaults are available only after a simulation run. | TechnikPlanwertCtrl.cs (`LiesBetriebsplanwert`) | **neu.** Nutzerentscheidung 3: ohne Lauf keine Zahl, sondern ein Grund. |
+| `KOSTEN_BETRIEB_OHNE_WARTUNGSFELD` | Für dieses Gewerk sind keine Wartungsangaben hinterlegt — keine Vorbelegung. | No maintenance data is stored for this trade — no default value. | TechnikPlanwertCtrl.cs | **neu.** Gilt für WP, PV, Solarthermie, Pufferspeicher, Stromspeicher. |
+| `KOSTEN_BETRIEB_OHNE_MENGE` | Der Simulationslauf weist für dieses Gewerk keine Jahresmenge aus — keine Vorbelegung. | The simulation run reports no annual quantity for this trade — no default value. | TechnikPlanwertCtrl.cs | **neu.** Lauf vorhanden, aber Erzeugung 0. |
+| `KOSTEN_BETRIEB_NICHT_ZUORDENBAR` | Die Wartungssätze lassen sich den Modulen des Laufs nicht eindeutig zuordnen — keine Vorbelegung. | Maintenance rates cannot be matched unambiguously to the modules of the run — no default value. | TechnikPlanwertCtrl.cs | **neu.** Lieber kein Wert als ein geratener. |
+| `KOSTEN_BETRIEB_KESSEL_UNKLAR` | Die Einheit von Tab_Heizkessel.Wartungskosten ist nicht belegt — keine Vorbelegung (offene Rückfrage). | The unit of Tab_Heizkessel.Wartungskosten is not documented — no default value (open question). | TechnikPlanwertCtrl.cs | **neu.** Der Spaltenname steht bewusst im Text: er ist die Kennung, unter der die Rückfrage im Protokoll geführt wird. |
+| `KOSTEN_BETRIEB_HERLEITUNG` | Vorbelegt: {0} €/kWhel × {1} kWhel aus dem Lauf vom {2}. | Default: {0} €/kWhel × {1} kWhel from the run of {2}. | TechnikPlanwertCtrl.cs | **neu.** Macht die Zahl nachvollziehbar und nennt den Lauf, aus dem sie stammt. |
+| `BK_KOSTEN_SP_TECHNIK` | Technik-Planwert | Engineering value | UcBkKosten.cs (`LadeKomponenten`) | **neu.** Dritte Spalte der Komponententabelle neben „Investition [€]". |
+| `BK_KOSTEN_ABWEICHUNG` | ⚠ {0} Komponente(n) weichen vom Technik-Planwert ab | ⚠ {0} component(s) differ from the engineering value | UcBkKosten.cs (`Aktualisiere`, Statuszeile) | **neu.** Ergänzt `BK_KOSTEN_STATUS`, wenn mindestens eine Komponente abweicht. |
+| `BK_KOMP_HINW_KOSTEN` | Die Kostenposition „{0}" wurde nicht verändert und weicht jetzt vom Technik-Planwert ab — in der Kostenverwaltung über „Planwert übernehmen…" angleichen. | Cost item "{0}" was left unchanged and now differs from the engineering value — align it in cost management via "Apply engineering value…". | KomponentenUebernahmeCtrl.cs (`KostenabweichungMelden`) | **neu.** Reiht sich in die Hinweise der Komponenten-Übernahme ein (`BK_KOMP_HINW_*`): der Bestandsaustausch lässt die Kostenposition absichtlich stehen, sagt es jetzt aber. |
