@@ -304,6 +304,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kostenposition „{0}&quot; wurde nicht verändert und weicht jetzt vom Technik-Planwert ab — in der Kostenverwaltung über „Planwert übernehmen…&quot; angleichen. ähnelt.
+        /// </summary>
+        public static string BK_KOMP_HINW_KOSTEN {
+            get {
+                return ResourceManager.GetString("BK_KOMP_HINW_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Verweis(e) auf einen Pufferspeicher ließen sich im Ziel nicht auflösen und bleiben leer. ähnelt.
         /// </summary>
         public static string BK_KOMP_HINW_PUFFERVERWEIS {
@@ -399,6 +408,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_KOPF_WIRTSCHAFT {
             get {
                 return ResourceManager.GetString("BK_KOPF_WIRTSCHAFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ {0} Komponente(n) weichen vom Technik-Planwert ab ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_ABWEICHUNG", resourceCulture);
             }
         }
         
@@ -579,6 +597,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_KOSTEN_SP_SUMME {
             get {
                 return ResourceManager.GetString("BK_KOSTEN_SP_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Technik-Planwert ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_SP_TECHNIK {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_SP_TECHNIK", resourceCulture);
             }
         }
         
@@ -2770,11 +2797,254 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weicht vom Technik-Planwert ab: erfasst {0} €, Technik {1} €. Über „Planwert übernehmen…&quot; angleichen. ähnelt.
+        /// </summary>
+        public static string KOSTEN_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("KOSTEN_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diese Komponente stehen zwei Kostenbasen zur Wahl. Über „Planwert übernehmen…&quot; entscheiden. ähnelt.
+        /// </summary>
+        public static string KOSTEN_ABWEICHUNG_AUSWAHL {
+            get {
+                return ResourceManager.GetString("KOSTEN_ABWEICHUNG_AUSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt: {0} €/kWhel × {1} kWhel aus dem Lauf vom {2}. ähnelt.
+        /// </summary>
+        public static string KOSTEN_BETRIEB_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("KOSTEN_BETRIEB_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit von Tab_Heizkessel.Wartungskosten ist nicht belegt — keine Vorbelegung (offene Rückfrage). ähnelt.
+        /// </summary>
+        public static string KOSTEN_BETRIEB_KESSEL_UNKLAR {
+            get {
+                return ResourceManager.GetString("KOSTEN_BETRIEB_KESSEL_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wartungssätze lassen sich den Modulen des Laufs nicht eindeutig zuordnen — keine Vorbelegung. ähnelt.
+        /// </summary>
+        public static string KOSTEN_BETRIEB_NICHT_ZUORDENBAR {
+            get {
+                return ResourceManager.GetString("KOSTEN_BETRIEB_NICHT_ZUORDENBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegung der Betriebskosten erst nach einem Simulationslauf verfügbar. ähnelt.
+        /// </summary>
+        public static string KOSTEN_BETRIEB_OHNE_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("KOSTEN_BETRIEB_OHNE_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Simulationslauf weist für dieses Gewerk keine Jahresmenge aus — keine Vorbelegung. ähnelt.
+        /// </summary>
+        public static string KOSTEN_BETRIEB_OHNE_MENGE {
+            get {
+                return ResourceManager.GetString("KOSTEN_BETRIEB_OHNE_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Gewerk sind keine Wartungsangaben hinterlegt — keine Vorbelegung. ähnelt.
+        /// </summary>
+        public static string KOSTEN_BETRIEB_OHNE_WARTUNGSFELD {
+            get {
+                return ResourceManager.GetString("KOSTEN_BETRIEB_OHNE_WARTUNGSFELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 🔄 Planwert übernehmen… ähnelt.
+        /// </summary>
+        public static string KOSTEN_BTN_PLANWERT {
+            get {
+                return ResourceManager.GetString("KOSTEN_BTN_PLANWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die PROJEKT GESAMT ({0}): {1} € ähnelt.
         /// </summary>
         public static string KOSTEN_LBL_PROJEKT_GESAMT {
             get {
                 return ResourceManager.GetString("KOSTEN_LBL_PROJEKT_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht ansetzen ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_BASIS_KEINE {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_BASIS_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modulpreis ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_BASIS_MODUL {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_BASIS_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die spezifischer Preis × Baugröße ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_BASIS_SPEZ {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_BASIS_SPEZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_BTN_ABBRUCH {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_BTN_ABBRUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_BTN_OK {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_BTN_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} €/kWel × {1} kWel ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_HERL_BHKW {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_HERL_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feld {0} ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_HERL_FELD {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_HERL_FELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} €/kWh × {1} kWh + {2} €/kW × {3} kW + {4} € ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_HERL_SPEICHER {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_HERL_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Anlage festlegen, welcher Wert als Investition gilt. Die Nebenkosten entstehen als eigene Zeilen. ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_KOPF {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für „{0}&quot; ist in der Technik dieses Projekts kein Kostenwert gepflegt. ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_LEER {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nebenkosten — je Posten eine eigene Zeile: ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_NEBENKOSTEN {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_NEBENKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_SP_ANLAGE {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_SP_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenbasis ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_SP_BASIS {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_SP_BASIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrag [€] ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_SP_BETRAG {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_SP_BETRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_SP_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_SP_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hauptposition: {0} € ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_SUMME {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Technik-Planwert übernehmen — {0} ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_TITEL {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}&quot;: Hauptposition auf {1} € gesetzt, {2} Nebenkostenzeile(n) abgeglichen. ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_UEBERNOMMEN", resourceCulture);
             }
         }
         

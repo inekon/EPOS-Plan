@@ -42,6 +42,13 @@ namespace WindowsFormsApplication1
         private int _idProjekt = -1;
         private string _projektname = "";
 
+        /// <summary>
+        /// Zahl der Komponenten, deren erfasste Investitionsposition zu keinem
+        /// Technik-Planwert passt — gefüllt in <see cref="LadeKomponenten"/>, gemeldet in
+        /// der Statuszeile.
+        /// </summary>
+        private int _abweichungen = 0;
+
         private readonly WirtschaftlichkeitCtrl _wirt = new WirtschaftlichkeitCtrl();
 
         // Steuerelemente
@@ -279,7 +286,11 @@ namespace WindowsFormsApplication1
             LadeKomponenten(kultur);
             LadeTraeger(kultur);
 
-            Melde(string.Format(MyResource.Resource.BK_KOSTEN_STATUS, investPositionen, energieHinweis).Trim());
+            string status = string.Format(MyResource.Resource.BK_KOSTEN_STATUS,
+                                          investPositionen, energieHinweis).Trim();
+            if (_abweichungen > 0)
+                status += "  ·  " + string.Format(MyResource.Resource.BK_KOSTEN_ABWEICHUNG, _abweichungen);
+            Melde(status);
         }
 
         // Investitionssummen je Komponente — dieselbe Leselogik, die auch die
@@ -295,11 +306,16 @@ namespace WindowsFormsApplication1
         // BK_KOSTEN_LBL_KOMPONENTEN).
         private void LadeKomponenten(System.Globalization.CultureInfo kultur)
         {
+            _abweichungen = 0;
+
             gridKomponenten.Columns.Add("komponente", MyResource.Resource.BK_KOSTEN_SP_KOMPONENTE);
             gridKomponenten.Columns.Add("summe", MyResource.Resource.BK_KOSTEN_SP_SUMME);
-            gridKomponenten.Columns[0].FillWeight = 130;
-            gridKomponenten.Columns[1].FillWeight = 80;
+            gridKomponenten.Columns.Add("technik", MyResource.Resource.BK_KOSTEN_SP_TECHNIK);
+            gridKomponenten.Columns[0].FillWeight = 120;
+            gridKomponenten.Columns[1].FillWeight = 70;
+            gridKomponenten.Columns[2].FillWeight = 70;
             gridKomponenten.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gridKomponenten.Columns[2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
             try
             {
@@ -310,21 +326,60 @@ namespace WindowsFormsApplication1
                 double summe = 0;
                 foreach (DataRow r in dt.Rows)
                 {
+                    string komponente = S(r, "Komponente");
                     double? w = D(r, "Summe");
                     summe += w ?? 0;
-                    gridKomponenten.Rows.Add(S(r, "Komponente"),
-                        w.HasValue ? w.Value.ToString("N2", kultur) : "—");
+
+                    // Technik-Planwert daneben, Abweichungen markiert — angezeigt, nie
+                    // überschrieben (Nutzerentscheidung 4 vom 18.08.2026). Angeglichen
+                    // wird ausschließlich in der Kostenverwaltung über
+                    // „Planwert übernehmen…".
+                    KostenPositionCtrl.Abweichung ab = Abweichung(komponente);
+
+                    int idxZeile = gridKomponenten.Rows.Add(
+                        komponente,
+                        w.HasValue ? w.Value.ToString("N2", kultur) : "—",
+                        (ab != null && ab.TechnikVorhanden) ? ab.Technik.ToString("N2", kultur) : "—");
+
+                    if (ab != null && ab.Abweichend)
+                    {
+                        _abweichungen++;
+                        gridKomponenten.Rows[idxZeile].DefaultCellStyle.BackColor =
+                            Color.FromArgb(0xFF, 0xF4, 0xD9);
+                        gridKomponenten.Rows[idxZeile].Cells[2].ToolTipText = ab.Text;
+                    }
                 }
                 if (dt.Rows.Count > 0)
                 {
                     int idx = gridKomponenten.Rows.Add(MyResource.Resource.BK_KOSTEN_SUMME,
-                                                       summe.ToString("N2", kultur));
+                                                       summe.ToString("N2", kultur), "");
                     gridKomponenten.Rows[idx].DefaultCellStyle.Font =
                         new Font(gridKomponenten.Font, FontStyle.Bold);
                 }
                 gridKomponenten.ClearSelection();
             }
             catch { }
+        }
+
+        /// <summary>
+        /// Abweichung einer Komponente zwischen erfasster Position und Technik-Planwert —
+        /// dieselbe Prüfung, die auch die Kostenverwaltung anzeigt
+        /// (<see cref="KostenPositionCtrl.Pruefe"/>). <c>null</c>, wenn die Komponente
+        /// nicht zur Landkarte gehört.
+        /// </summary>
+        private KostenPositionCtrl.Abweichung Abweichung(string komponente)
+        {
+            try
+            {
+                int id = Convert.ToInt32(DataRepository.ExecuteScalar(
+                    "SELECT MIN(ID) FROM Tab_KostenKomponente WHERE Komponente = ?",
+                    new OleDbParameter("@k", komponente ?? "")));
+                if (id <= 0) return null;
+
+                return KostenPositionCtrl.Pruefe(_idProjekt, komponente,
+                                                 Form_Kosten.KATEGORIE_INVESTITION, id);
+            }
+            catch { return null; }
         }
 
         // Energieträger des Projekts mit Abrechnungseinheit, effektivem Heizwert und

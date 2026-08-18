@@ -28,6 +28,14 @@ namespace WindowsFormsApplication1
         private string kategorie = "";
         private int kategorieID = 0;
 
+        /// <summary>
+        /// Grund, warum die Betriebskosten einer Komponente NICHT vorbelegt werden konnten
+        /// (bzw. Herleitung, wenn sie es wurden) — gefüllt beim ersten Anwählen, angezeigt
+        /// als Hinweiszeile über der Gruppe. Schlüssel ist der Komponentenname.
+        /// </summary>
+        private readonly Dictionary<string, string> _betriebsHinweis =
+            new Dictionary<string, string>(StringComparer.Ordinal);
+
         // Variable für den Extender des aktuellen Formulars
         private HelpExtender _helpExtender;
 
@@ -322,6 +330,11 @@ namespace WindowsFormsApplication1
             // Falls ein kleiner Sicherheitsabstand zum rechten Rand sein soll (z.B. 5 Pixel):
             targetWidth -= 5;
 
+            // Hinweiszeile über der Liste: Abweichung zum Technik-Planwert (Investition)
+            // bzw. Grund/Herleitung der Betriebskosten-Vorbelegung. Beides ist eine
+            // Mitteilung, kein Eingabefeld — deshalb steht sie vor der ersten Gruppe.
+            HinweiszeileAnlegen(komponente, targetWidth);
+
             string aktuelleGruppe = "";
 
             foreach (var f in faktoren)
@@ -356,7 +369,7 @@ namespace WindowsFormsApplication1
                     {
                         btnTest = new Button
                         {
-                            Text = "🔄 Planwert übernehmen...",
+                            Text = MyResource.Resource.KOSTEN_BTN_PLANWERT,
                             Height = 20,
                             Width = 160,
                             AutoSize = false,
@@ -677,10 +690,21 @@ namespace WindowsFormsApplication1
         /// eine zweite Hauptposition anlegen.
         /// </para>
         /// <para>
-        /// <b>Vorbelegung nur bei Investitionskosten.</b> <see cref="GetModulKosten"/> liefert
-        /// den Investitionswert der verbauten Technik. Als Betriebskostenbetrag wäre er
-        /// fachlich falsch (€ gegenüber €/a), deshalb entstehen Positionen anderer Kategorien
-        /// mit Betrag 0.
+        /// <b>Vorbelegung je Kategorie.</b> Investitionskosten kommen aus
+        /// <see cref="GetModulKosten"/> (eindeutige Technikwerte; mehrdeutige Anlagen
+        /// tragen 0 bei und werden über die Abweichungsanzeige gemeldet). Betriebskosten
+        /// entstehen seit dem 18.08.2026 aus den Wartungsangaben mal der tatsächlich
+        /// gerechneten Jahresmenge — <see cref="TechnikPlanwertCtrl.LiesBetriebsplanwert"/>;
+        /// liegt kein Simulationsergebnis vor, bleibt die Position bei 0 und der Grund steht
+        /// als Hinweiszeile über der Gruppe (Nutzerentscheidung 3). Energiekosten haben ihre
+        /// eigene Maske und werden hier nicht vorbelegt.
+        /// </para>
+        /// <para>
+        /// <b>Nebenkosten entstehen als eigene Zeilen</b> (Nutzerentscheidung 2), nicht als
+        /// Aufschlag auf die Hauptposition — siehe
+        /// <see cref="KostenPositionCtrl.SchreibeNebenkosten"/>. Sie werden bei jedem
+        /// Anwählen nur ANGELEGT, wenn sie fehlen; vorhandene Zeilen bleiben unberührt,
+        /// damit ein zweites Öffnen weder Dubletten erzeugt noch Anwenderwerte überschreibt.
         /// </para>
         /// </remarks>
         private void EnsureMainComponentExists(int projektID, string komponente, decimal externeKosten)
@@ -688,61 +712,80 @@ namespace WindowsFormsApplication1
             try
             {
                 int kategorieIDNeu = tabMain.SelectedIndex + 1;
+                int komponentenID = GetKomponentenID(komponente);
+                if (komponentenID <= 0) return;
+
+                // --- Nebenkosten: fehlende Zeilen anlegen, vorhandene NICHT anfassen -----
+                if (kategorieIDNeu == KATEGORIE_INVESTITION)
+                    NebenkostenAnlegen(projektID, komponente, komponentenID);
 
                 // Hauptposition dieser Komponente in DIESER Kategorie bereits vorhanden?
-                string sqlCheckProjekt = @"SELECT COUNT(*)
-                                           FROM Tab_ProjektWerte AS w
-                                                INNER JOIN Tab_Kostenfaktor AS f ON w.StammID = f.StammID
-                                           WHERE w.ProjektID = ? AND w.KategorieID = ? AND w.KomponentenID = ?
-                                                 AND f.IsMainComponent = True AND f.Bezeichnung = ?";
+                int vorhanden = KostenPositionCtrl.FindeHauptposition(projektID, kategorieIDNeu,
+                                                                      komponentenID, komponente);
 
-                int exists = Convert.ToInt32(DataRepository.ExecuteScalar(sqlCheckProjekt,
-                    new OleDbParameter("@p1", projektID),
-                    new OleDbParameter("@kat", kategorieIDNeu),
-                    new OleDbParameter("@kID", GetKomponentenID(komponente)),
-                    new OleDbParameter("@bez", komponente)));
-
-                if (exists > 0) return;
-
-                // Stammdaten prüfen — projektfreie Quelle (D4).
-                string sqlStamm = @"SELECT MIN(StammID) FROM Tab_Kostenfaktor
-                            WHERE Bezeichnung = ? AND IsMainComponent = True";
-
-                object resStamm = DataRepository.ExecuteScalar(sqlStamm,
-                    new OleDbParameter("@k1", komponente));
-
-                if (resStamm == null || resStamm == DBNull.Value) return; // Nichts gefunden, Abbruch
-                int stammID = Convert.ToInt32(resStamm);
-
-                // --- Kosten ermitteln (nur Investitionskosten werden vorbelegt, s. o.) ---
                 decimal initialeKosten = 0;
-                if (kategorieIDNeu == KATEGORIE_INVESTITION)
+
+                if (kategorieIDNeu == KATEGORIE_BETRIEB)
                 {
-                    initialeKosten = externeKosten;
-                    if (initialeKosten == 0)
+                    TechnikPlanwertCtrl.Betriebsplanwert bp =
+                        TechnikPlanwertCtrl.LiesBetriebsplanwert(projektID, komponente);
+                    _betriebsHinweis[komponente ?? ""] = bp.Hinweis ?? "";
+
+                    if (vorhanden > 0)
                     {
-                        initialeKosten = (decimal)GetModulKosten(projektID, komponente);
+                        // BETRAG 0 GILT ALS UNGEPFLEGT — dieselbe Hausregel, mit der seit
+                        // dem 18.08.2026 auch ein Arbeitspreis 0 behandelt wird. Ohne sie
+                        // liefe die Vorbelegung an allen Bestandsprojekten vorbei: deren
+                        // Betriebskosten-Hauptposition existiert längst und steht auf 0,
+                        // weil sie vor dem ersten Simulationslauf angelegt wurde. Ein
+                        // gepflegter Wert wird NIE angefasst (Nutzerentscheidung 4).
+                        if (bp.Betrag.HasValue &&
+                            Math.Abs(KostenPositionCtrl.LiesBetrag(vorhanden)) < 0.005)
+                            KostenPositionCtrl.SetzeBetragNachId(vorhanden, bp.Betrag.Value);
+                        return;
+                    }
+
+                    if (bp.Betrag.HasValue) initialeKosten = (decimal)bp.Betrag.Value;
+                }
+                else
+                {
+                    if (vorhanden > 0) return;
+
+                    if (kategorieIDNeu == KATEGORIE_INVESTITION)
+                    {
+                        initialeKosten = externeKosten;
+                        if (initialeKosten == 0)
+                            initialeKosten = (decimal)GetModulKosten(projektID, komponente);
                     }
                 }
 
-                string sqlInsertWert = @"INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID,
-                                 KategorieID, EingegebenerWert, Nutzungsdauer, Einheit, Gruppe)
-                                 VALUES (?, ?, ?, ?, ?, 0, ?,?)";
+                // Stammdaten prüfen — projektfreie Quelle (D4).
+                int stammID = KostenPositionCtrl.StammIdHaupt(komponente);
+                if (stammID <= 0) return;                       // Nichts gefunden, Abbruch
 
-                DataRepository.ExecuteSQL(sqlInsertWert,
-                    new OleDbParameter("@pID", projektID),
-                    new OleDbParameter("@sID", stammID),
-                    new OleDbParameter("@kID", GetKomponentenID(komponente)),
-                    new OleDbParameter("@kat", kategorieIDNeu),
-                    new OleDbParameter("@val", (double)initialeKosten), // Access mag Double oft lieber als Decimal
-                    new OleDbParameter("@unit", "€"),
-                    new OleDbParameter("gr", "Allgemein")
-                );
+                KostenPositionCtrl.SetzeBetrag(projektID, kategorieIDNeu, komponentenID, stammID,
+                                               (double)initialeKosten,
+                                               DbWerte.KOSTEN_GRUPPE_ALLGEMEIN, true);
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Fehler beim Initialisieren der Hauptkomponente: " + ex.Message);
             }
+        }
+
+        /// <summary>
+        /// Legt für jeden Nebenkostenposten der Technik mit Wert &gt; 0 eine eigene
+        /// Investitionszeile an, sofern sie noch fehlt (Nutzerentscheidung 2).
+        /// </summary>
+        private void NebenkostenAnlegen(int projektID, string komponente, int komponentenID)
+        {
+            var posten = TechnikPlanwertCtrl.Nebensummen(
+                TechnikPlanwertCtrl.LiesAnlagen(projektID, komponente));
+            if (posten.Count == 0) return;
+
+            KostenPositionCtrl.SchreibeNebenkosten(projektID, KATEGORIE_INVESTITION, komponentenID,
+                                                   posten, DbWerte.KOSTEN_GRUPPE_ALLGEMEIN,
+                                                   KostenPositionCtrl.Nebenmodus.NurAnlegen);
         }
 
         private void btn_Hinzu_Click(object sender, EventArgs e)
@@ -894,104 +937,141 @@ namespace WindowsFormsApplication1
 
         }
 
-        private void btnTest_KostenUebernahme_Click(string komponente)
-        {
-            // Wert aus dem Technik-Modul abrufen
-            decimal technikKosten = (decimal)GetModulKosten(m_ID_Projekt, komponente);
-
-            if (technikKosten == 0)
-            {
-                if (MessageBox.Show("Es wurden 0,00 € in der Technik gefunden. Trotzdem übernehmen?",
-                    "Hinweis", MessageBoxButtons.YesNo) == DialogResult.No) return;
-            }
-
-            // Suche die "MainComponent" Zeile in der UI, um sie sofort zu aktualisieren
-            ucKostenZeile mainZeile = null;
-            foreach (Control c in flp.Controls)
-            {
-                if (c is ucKostenZeile zeile && zeile.Daten.IsMainComponent)
-                {
-                    mainZeile = zeile;
-                    break;
-                }
-            }
-
-            if (mainZeile != null)
-            {
-                // Wert im UserControl setzen (das löst dort intern das UI-Update aus)
-                mainZeile.Daten.Betrag = technikKosten;
-                mainZeile.SetBerechnetenWert(technikKosten);
-
-                // In die Datenbank schreiben
-                UpdateSingleRowInDatabase(mainZeile.Daten);
-
-                // Gesamtsummen im Formular neu berechnen
-                Gesamtkosten(komponente);
-
-                MessageBox.Show($"Der Wert für '{komponente}' wurde erfolgreich auf {technikKosten:N2} € aktualisiert.",
-                    "Update erfolgreich", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-        }
-
         /// <summary>
-        /// Investitionswert der im Projekt verbauten Technik einer Komponente — Vorbelegung
-        /// der Hauptposition und Ziel des Knopfes „Planwert übernehmen…".
+        /// Knopf „Planwert übernehmen…": stellt die Technik-Planwerte <b>je Anlage</b> zur
+        /// Wahl (<see cref="Form_PlanwertUebernahme"/>) und schreibt danach Hauptposition
+        /// und Nebenkostenzeilen.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// Befund D2 (18.08.2026): Zuvor über <c>Abfrage_ProjektKostenKomponenten</c>. Deren
-        /// sieben Teilabfragen (<c>Abfrage_Kosten_Pufferspeicher</c> &amp; Co.) summieren die
-        /// Gerätekosten über einen Join auf <c>Tab_Energieanlagen</c>. Verweisen ZWEI
-        /// Anlagenzeilen desselben Projekts auf DASSELBE Gerät — Dublette in
-        /// <c>Tab_Energieanlagen</c>, z. B. Projekt 1018 Zeilen 11329 und 11330 mit
-        /// <c>ID_PUFFER</c> = 1054168 —, zählt die Abfrage das Gerät doppelt. Jetzt wird je
-        /// Gerät genau einmal gezählt (<c>SELECT DISTINCT</c> über die Verweisspalte).
+        /// Bis 18.08.2026 nahm der Knopf ohne Rückfrage den Inhalt genau eines Feldes je
+        /// Gewerk. Das war beim BHKW die kleinere von zwei gepflegten Zahlen
+        /// (<c>Kosten_Modul</c> statt <c>Investition_kwel × Pel</c>) und ignorierte die vier
+        /// Nebenkostenfelder vollständig. Jetzt entscheidet der Anwender, und die
+        /// Nebenkosten entstehen als eigene, einzeln änderbare Zeilen
+        /// (Nutzerentscheidungen 1 und 2).
         /// </para>
         /// <para>
-        /// Die gespeicherten Abfragen bleiben unangetastet: Die Datenbank liegt außerhalb des
-        /// Repos, eine Abfrageänderung erreicht Bestandsinstallationen nur über einen
-        /// Migrationsschritt.
+        /// Übernommen wird nur auf ausdrückliche Bestätigung — <b>nie automatisch</b>
+        /// (Nutzerentscheidung 4). Bricht der Anwender ab, bleibt jeder erfasste Wert stehen.
+        /// </para>
+        /// </remarks>
+        private void btnTest_KostenUebernahme_Click(string komponente)
+        {
+            // Nur die Investitionskosten haben einen Technik-Planwert; auf den anderen
+            // Reitern wäre der Knopf sinnlos (Betriebskosten sind €/a, Energiekosten
+            // haben ihre eigene Maske).
+            if (kategorieID != KATEGORIE_INVESTITION) return;
+
+            var anlagen = TechnikPlanwertCtrl.LiesAnlagen(m_ID_Projekt, komponente);
+            if (anlagen.Count == 0)
+            {
+                MessageBox.Show(string.Format(MyResource.Resource.KOSTEN_PLANWERT_LEER, komponente),
+                                this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            double summe;
+            List<TechnikPlanwertCtrl.Nebenposten> nebenkosten;
+            using (var dlg = new Form_PlanwertUebernahme(komponente, anlagen))
+            {
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                summe = dlg.Hauptsumme;
+                nebenkosten = dlg.Nebenkosten;
+            }
+
+            int komponentenID = GetKomponentenID(komponente);
+            int hauptID = KostenPositionCtrl.FindeHauptposition(m_ID_Projekt, KATEGORIE_INVESTITION,
+                                                                komponentenID, komponente);
+            if (hauptID > 0) KostenPositionCtrl.SetzeBetragNachId(hauptID, summe);
+
+            int nZeilen = KostenPositionCtrl.SchreibeNebenkosten(
+                m_ID_Projekt, KATEGORIE_INVESTITION, komponentenID, nebenkosten,
+                DbWerte.KOSTEN_GRUPPE_ALLGEMEIN, KostenPositionCtrl.Nebenmodus.Abgleichen);
+
+            // Neu einlesen statt die Zeilen von Hand nachzuziehen: die Nebenkosten können
+            // gerade erst entstanden sein, und die Abweichungsanzeige muss ohnehin neu.
+            LoadKostenFaktoren(m_ID_Projekt, komponente);
+            Gesamtkosten(komponente);
+
+            MessageBox.Show(string.Format(MyResource.Resource.KOSTEN_PLANWERT_UEBERNOMMEN,
+                                          komponente, summe.ToString("N2", BerichtTexte.Kultur), nZeilen),
+                            this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        /// <summary>
+        /// Hinweiszeile über der Positionsliste: Abweichung zum Technik-Planwert
+        /// (Investitionskosten) bzw. Herleitung oder Grund der ausgebliebenen Vorbelegung
+        /// (Betriebskosten). Ohne Mitteilung entsteht keine Zeile.
+        /// </summary>
+        private void HinweiszeileAnlegen(string komponente, int breite)
+        {
+            string text = "";
+            Color farbe = Color.FromArgb(0x33, 0x33, 0x33);
+            Color flaeche = Color.FromArgb(0xF4, 0xF6, 0xFA);
+
+            if (kategorieID == KATEGORIE_INVESTITION)
+            {
+                KostenPositionCtrl.Abweichung ab = KostenPositionCtrl.Pruefe(
+                    m_ID_Projekt, komponente, KATEGORIE_INVESTITION, GetKomponentenID(komponente));
+                if (ab.Abweichend)
+                {
+                    text = ab.Text;
+                    farbe = Color.FromArgb(0x8A, 0x4B, 0x00);
+                    flaeche = Color.FromArgb(0xFF, 0xF4, 0xD9);
+                }
+            }
+            else if (kategorieID == KATEGORIE_BETRIEB)
+            {
+                string h;
+                if (!_betriebsHinweis.TryGetValue(komponente ?? "", out h))
+                {
+                    // Beim erneuten Öffnen ist die Position längst vorhanden; der Grund
+                    // wird deshalb hier frisch ermittelt statt gemerkt.
+                    h = TechnikPlanwertCtrl.LiesBetriebsplanwert(m_ID_Projekt, komponente).Hinweis;
+                    _betriebsHinweis[komponente ?? ""] = h ?? "";
+                }
+                text = h ?? "";
+            }
+
+            if (string.IsNullOrEmpty(text)) return;
+
+            Label lbl = new Label
+            {
+                Text = text,
+                AutoSize = false,
+                Size = new Size(Math.Max(200, breite), 34),
+                Margin = new Padding(0, 6, 0, 0),
+                Padding = new Padding(6, 4, 6, 0),
+                BackColor = flaeche,
+                ForeColor = farbe
+            };
+            flp.Controls.Add(lbl);
+        }
+
+        /// <summary>
+        /// Investitionswert der im Projekt verbauten Technik einer Komponente, soweit er
+        /// <b>eindeutig</b> ist — Vorbelegung der Hauptposition beim ersten Anwählen.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Die Ermittlung selbst steht seit dem 18.08.2026 in
+        /// <see cref="TechnikPlanwertCtrl"/>; von dort kommt auch der Entdoppelungsschutz
+        /// des Befundes D2 (mehrere Anlagenzeilen auf dasselbe Gerät).
         /// </para>
         /// <para>
-        /// Nebenwirkung, bewusst in Kauf genommen: Der alte Weg filterte zusätzlich über
-        /// <c>Tab_Typ_Energieanlagen.Bezeichner</c>. Für „Stromspeicher" konnte er deshalb nie
-        /// einen Wert liefern, weil der Anlagentyp dort „Batteriespeicher" heißt. Der neue Weg
-        /// fragt die Verweisspalte ab und findet den Stromspeicher.
+        /// <b>Mehrdeutige Anlagen tragen hier 0 bei.</b> Beim BHKW konkurrieren
+        /// <c>Kosten_Modul</c> und <c>Investition_kwel × Pel</c> — für dieselbe Anlage
+        /// zwei gültige, weit auseinanderliegende Zahlen (Beispielmodul „2G 250kw.el Gas":
+        /// 16.666 € gegen 163.400 €). Welche gilt, entscheidet der Anwender im Dialog
+        /// <see cref="Form_PlanwertUebernahme"/>; still eine davon einzutragen wäre geraten.
+        /// Die Abweichungsanzeige weist genau darauf hin, solange nichts gewählt ist.
         /// </para>
         /// </remarks>
         private double GetModulKosten(int projektID, string komponente)
         {
-            string verweis, tabelle, kostenspalte;
-
-            switch (komponente)
-            {
-                case DbWerte.ERZEUGER_WAERMEPUMPE:
-                    verweis = "ID_WP"; tabelle = "Tab_WP"; kostenspalte = "Modulkosten"; break;
-                case DbWerte.ERZEUGER_HEIZKESSEL:
-                    verweis = "ID_Kessel"; tabelle = "Tab_Heizkessel"; kostenspalte = "Investitionskosten"; break;
-                case DbWerte.ERZEUGER_PHOTOVOLTAIK:
-                    verweis = "ID_PV"; tabelle = "Tab_PV"; kostenspalte = "Modulkosten"; break;
-                case DbWerte.ERZEUGER_SOLARTHERMIE:
-                    verweis = "ID_Solar"; tabelle = "Tab_Solarkollektoren"; kostenspalte = "Investitionskosten"; break;
-                case DbWerte.ERZEUGER_STROMSPEICHER:
-                    verweis = "ID_SP"; tabelle = "Tab_Stromspeicher"; kostenspalte = "Modulkosten"; break;
-                case DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER:
-                    verweis = "ID_PUFFER"; tabelle = "Tab_Pufferspeicher"; kostenspalte = "Investitionskosten"; break;
-                case DbWerte.ERZEUGER_BHKW:
-                    verweis = "ID_BHKW"; tabelle = "Tab_BHKW"; kostenspalte = "Kosten_Modul"; break;
-                default:
-                    return 0.0;
-            }
-
-            // Tabellen- und Spaltennamen stammen ausschließlich aus dem Schalter oben,
-            // nie aus einer Eingabe; die ProjektID bleibt Parameter.
-            string sql = "SELECT Sum(g.[" + kostenspalte + "]) " +
-                         "FROM (SELECT DISTINCT [" + verweis + "] FROM Tab_Energieanlagen " +
-                         "      WHERE ID_Projekt = ? AND [" + verweis + "] IS NOT NULL) AS a " +
-                         "     INNER JOIN [" + tabelle + "] AS g ON a.[" + verweis + "] = g.ID";
-
-            object obj = DataRepository.ExecuteScalar(sql, new OleDbParameter("@id", (Int32)projektID));
-            return (obj != null && obj != DBNull.Value) ? Convert.ToDouble(obj) : 0.0;
+            return TechnikPlanwertCtrl.Hauptsumme(
+                TechnikPlanwertCtrl.LiesAnlagen(projektID, komponente), null);
         }
 
         private void RenderEnergieTab(string filterKategorie = "Alle Kategorien")

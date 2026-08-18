@@ -84,6 +84,50 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string KOSTEN_KOMPONENTE_PUFFERSPEICHER = "Pufferspeicher";
 
+        // =====================================================================
+        // Nebenkosten-Positionen einer Kostenkomponente
+        //   Tab_Kostenfaktor.Bezeichnung (IsMainComponent = False), verwendet als
+        //   Unterposition in der Gruppe der Komponente (Tab_ProjektWerte)
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>
+        /// Nebenkostenposten der BHKW-Investition — je Posten eine eigene Kostenzeile in der
+        /// Gruppe der Komponente statt eines Aufschlags auf die Hauptposition
+        /// (Nutzerentscheidung 2 vom 18.08.2026: im Bericht aufschlüsselbar und einzeln
+        /// änderbar). Quelle sind die vier Nebenkostenfelder von <c>Tab_BHKW</c>
+        /// (<c>Kosten_Montage</c>, <c>Kosten_Lieferung</c>, <c>Kosten_Schallschutzhaube</c>,
+        /// <c>Kosten_Abgasreinigung</c>); andere Gewerke führen keine solchen Felder.
+        /// <para>
+        /// Die Werte landen als <c>Tab_Kostenfaktor.Bezeichnung</c> in der Datenbank und
+        /// werden in SQL damit verglichen — deshalb hier, deutsch und eingefroren.
+        /// </para>
+        /// </summary>
+        public const string KOSTENPOSTEN_MONTAGE = "Montage";
+
+        /// <inheritdoc cref="KOSTENPOSTEN_MONTAGE"/>
+        public const string KOSTENPOSTEN_LIEFERUNG = "Lieferung";
+
+        /// <inheritdoc cref="KOSTENPOSTEN_MONTAGE"/>
+        public const string KOSTENPOSTEN_SCHALLSCHUTZHAUBE = "Schallschutzhaube";
+
+        /// <inheritdoc cref="KOSTENPOSTEN_MONTAGE"/>
+        public const string KOSTENPOSTEN_ABGASREINIGUNG = "Abgasreinigung";
+
+        /// <summary>
+        /// Rückfallgruppe in <c>Tab_ProjektWerte.Gruppe</c> und
+        /// <c>Tab_KostenGruppenKatalog.GruppenName</c>: die Gruppe, in der Haupt- und
+        /// Nebenpositionen einer Komponente zusammenstehen.
+        /// Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string KOSTEN_GRUPPE_ALLGEMEIN = "Allgemein";
+
+        /// <summary>
+        /// Einheit der Kostenpositionen in <c>Tab_ProjektWerte.Einheit</c>.
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string KOSTEN_EINHEIT_EURO = "€";
+
         /// <summary>
         /// Altbestand: <c>Tool_5</c>/<c>Tool_6</c> trugen früher einen Bool-Text statt des
         /// Erzeugernamens. Bestandsdatenbanken enthalten ihn weiterhin, deshalb wird beim

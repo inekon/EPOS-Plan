@@ -4447,4 +4447,94 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_KOMP_HINW_VARIANTE" xml:space="preserve">
     <value>Die Betriebsführung der Speichervariante „{0}" konnte nicht angelegt werden.</value>
   </data>
+  <data name="KOSTEN_BTN_PLANWERT" xml:space="preserve">
+    <value>🔄 Planwert übernehmen…</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_TITEL" xml:space="preserve">
+    <value>Technik-Planwert übernehmen — {0}</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_KOPF" xml:space="preserve">
+    <value>Je Anlage festlegen, welcher Wert als Investition gilt. Die Nebenkosten entstehen als eigene Zeilen.</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_SP_ANLAGE" xml:space="preserve">
+    <value>Anlage</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_SP_BASIS" xml:space="preserve">
+    <value>Kostenbasis</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_SP_BETRAG" xml:space="preserve">
+    <value>Betrag [€]</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_SP_HERLEITUNG" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_BASIS_MODUL" xml:space="preserve">
+    <value>Modulpreis</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_BASIS_SPEZ" xml:space="preserve">
+    <value>spezifischer Preis × Baugröße</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_BASIS_KEINE" xml:space="preserve">
+    <value>nicht ansetzen</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_HERL_FELD" xml:space="preserve">
+    <value>Feld {0}</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_HERL_BHKW" xml:space="preserve">
+    <value>{0} €/kWel × {1} kWel</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_HERL_SPEICHER" xml:space="preserve">
+    <value>{0} €/kWh × {1} kWh + {2} €/kW × {3} kW + {4} €</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_NEBENKOSTEN" xml:space="preserve">
+    <value>Nebenkosten — je Posten eine eigene Zeile:</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_SUMME" xml:space="preserve">
+    <value>Hauptposition: {0} €</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_BTN_OK" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_BTN_ABBRUCH" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_LEER" xml:space="preserve">
+    <value>Für „{0}" ist in der Technik dieses Projekts kein Kostenwert gepflegt.</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_UEBERNOMMEN" xml:space="preserve">
+    <value>„{0}": Hauptposition auf {1} € gesetzt, {2} Nebenkostenzeile(n) abgeglichen.</value>
+  </data>
+  <data name="KOSTEN_ABWEICHUNG" xml:space="preserve">
+    <value>Weicht vom Technik-Planwert ab: erfasst {0} €, Technik {1} €. Über „Planwert übernehmen…" angleichen.</value>
+  </data>
+  <data name="KOSTEN_ABWEICHUNG_AUSWAHL" xml:space="preserve">
+    <value>Für diese Komponente stehen zwei Kostenbasen zur Wahl. Über „Planwert übernehmen…" entscheiden.</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_OHNE_ERGEBNIS" xml:space="preserve">
+    <value>Vorbelegung der Betriebskosten erst nach einem Simulationslauf verfügbar.</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_OHNE_WARTUNGSFELD" xml:space="preserve">
+    <value>Für dieses Gewerk sind keine Wartungsangaben hinterlegt — keine Vorbelegung.</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_OHNE_MENGE" xml:space="preserve">
+    <value>Der Simulationslauf weist für dieses Gewerk keine Jahresmenge aus — keine Vorbelegung.</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_NICHT_ZUORDENBAR" xml:space="preserve">
+    <value>Die Wartungssätze lassen sich den Modulen des Laufs nicht eindeutig zuordnen — keine Vorbelegung.</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_KESSEL_UNKLAR" xml:space="preserve">
+    <value>Die Einheit von Tab_Heizkessel.Wartungskosten ist nicht belegt — keine Vorbelegung (offene Rückfrage).</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_HERLEITUNG" xml:space="preserve">
+    <value>Vorbelegt: {0} €/kWhel × {1} kWhel aus dem Lauf vom {2}.</value>
+  </data>
+  <data name="BK_KOSTEN_SP_TECHNIK" xml:space="preserve">
+    <value>Technik-Planwert</value>
+  </data>
+  <data name="BK_KOSTEN_ABWEICHUNG" xml:space="preserve">
+    <value>⚠ {0} Komponente(n) weichen vom Technik-Planwert ab</value>
+  </data>
+  <data name="BK_KOMP_HINW_KOSTEN" xml:space="preserve">
+    <value>Die Kostenposition „{0}" wurde nicht verändert und weicht jetzt vom Technik-Planwert ab — in der Kostenverwaltung über „Planwert übernehmen…" angleichen.</value>
+  </data>
 </root>
