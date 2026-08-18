@@ -119,6 +119,33 @@ unit-getestet, sprachneutrale Schlüssel, unveränderliche Objekte). Kein neues
 Projekt, sondern `Allgemein/Wirtschaftlichkeit/` ohne DB-Bezug; Tests im
 vorhandenen Testprojekt.
 
+**L11 — Zwei Faktorensätze, strikt getrennt.** Nachweisfaktoren (GEG bis
+31.12.2026, GModG ab 01.01.2027) und reale Bilanzfaktoren (UBA-Strommix) werden
+getrennt geführt und dürfen **nie dieselbe Variable belegen**. Grund: Der
+GModG-Nachweiswert für Netzstrom beträgt ab 2027 100 g CO₂-Äq/kWh, der reale
+Strommix lag 2025 bei 406 g CO₂-Äq/kWh mit Vorkette — Faktor 4. Der Nachweiswert
+gehört in den Energieausweis, der reale in Wirtschaftlichkeit und Klimabilanz.
+Einzelheiten in [`Grundlagen_KWKG_Energiesteuer_Stromsteuer.md`](../../../Grundlagen_KWKG_Energiesteuer_Stromsteuer.md),
+Abschnitt 7.
+
+**L12 — Methodenwechsel 2027 abbilden, nicht nur Zahlen tauschen.** Zum
+01.01.2027 entfällt der Verdrängungsstrommix (2,8 beziehungsweise
+860 g CO₂-Äq/kWh) **ersatzlos**; die Stromgutschriftmethode für eingespeisten
+KWK-Strom wird abgeschafft und durch eine Bewertung nach DIN EN 15316-4-5
+ersetzt. Beide Rechenwege müssen parallel vorliegen und über dasselbe
+Gültig-ab-Datum umgeschaltet werden. Wer nach 2027 dennoch eine Gutschrift
+rechnen will, trifft eine methodische Wahl — sie wird zum Auswahlparameter und
+im Bericht ausgewiesen. Für BHKW-Projekte ist das die folgenreichste Änderung
+des gesamten Vorhabens.
+
+**L13 — Bilanzierungskonvention für Biomasse ausweisen.** Ob biogenes
+Verbrennungs-CO₂ mit null angesetzt wird, hängt vom Regelwerk ab und
+widerspricht sich zwischen BEHG, GModG, UBA-Emissionsbilanz und UBA-CO₂-Rechner
+(dort 365 g/kWh). Die gewählte Konvention wird Einstellung mit Ausweis im
+Bericht, keine stille Annahme im Code. Beim BEHG kommt hinzu, dass der Nullansatz
+**einen Nachhaltigkeitsnachweis voraussetzt** — ohne ihn gilt der volle fossile
+Standardwert.
+
 **L10 — HT/NT entfällt** (Nutzervorgabe). Die Vier-Preis-Struktur bleibt intern
 erhalten, wird aber mit demselben Durchschnittspreis belegt — genau das tut die
 Altanwendung in `Durchschitt_eintragen` bereits. Die Leistungspreise bleiben

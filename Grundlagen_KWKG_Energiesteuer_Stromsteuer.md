@@ -297,7 +297,179 @@ Unternehmensart (produzierendes Gewerbe, Land- und Forstwirtschaft).
 
 ---
 
-## 7 Quellen (abgerufen 18.08.2026)
+## 7 Emissions- und Primärenergiefaktoren
+
+### 7.1 Der Rechtsrahmen hat gewechselt
+
+Das Gebäudeenergiegesetz ist zum **Gebäudemodernisierungsgesetz (GModG)**
+umbenannt worden — ausgefertigt 23.07.2026, verkündet 28.07.2026 in
+**BGBl. 2026 I Nr. 226**. Das Inkrafttreten ist gestaffelt: Die
+Heizungstausch-Regeln gelten seit 29.07.2026, die **neuen Anlagen 4 und 9 aber
+erst ab 01.01.2027**. Bis dahin gelten die alten Faktoren weiter.
+
+**Für eine Software, die Projekte über zwanzig Jahre rechnet, müssen beide
+Faktorensätze parallel mit Gültig-ab-Datum vorliegen.** Vier Gründe:
+
+1. Nachweise bis 31.12.2026 laufen nach altem Recht, ab 01.01.2027 nach neuem.
+2. Ein 2026 gerechneter Variantenvergleich muss 2029 dieselben Zahlen liefern.
+3. Der Bruch ist groß, nicht kosmetisch — Holz 0,2 → 0,7 (Faktor 3,5), Strom
+   560 → 100 g CO₂-Äq/kWh (Faktor 5,6).
+4. Der Wegfall des Verdrängungsstrommix ist ein **Methodenwechsel**, kein
+   Parameterwechsel (siehe 7.4).
+
+### 7.2 Primärenergiefaktoren (Anlage 4), nicht erneuerbarer Anteil
+
+| Energieträger | bis 31.12.2026 | ab 01.01.2027 |
+|---|---|---|
+| Heizöl, Erdgas, Flüssiggas, Steinkohle | 1,1 | 1,1 |
+| Braunkohle | 1,2 | 1,2 |
+| **Strom netzbezogen** | **1,8** | **1,5** |
+| Strom gebäudenah (PV, Wind) | 0,0 | 0,0 |
+| **Holz, feste Biomasse** | **0,2** | **0,7** |
+| Biogas, Biomethan, biogenes Flüssiggas, Bioöl | 1,1 | **0,7** |
+| Wasserstoff und Derivate, synthetisches Heizöl | — | **0,7** |
+| Fernwärme (Standardwert) | — | **0,7** |
+| **Verdrängungsstrommix KWK** | **2,8** | **entfällt ersatzlos** |
+| Erdwärme, Solarthermie, Umgebungswärme, Abwärme | 0,0 | 0,0 |
+
+Zwei Sonderregeln bleiben: Für flüssige oder gasförmige Biomasse, die im
+unmittelbaren räumlichen Zusammenhang erzeugt wird, darf **0,3** angesetzt werden
+(§ 22 Abs. 1 Satz 2). Fernwärme darf unter 0,7 sinken — um **0,002 je
+Prozentpunkt** erneuerbarer Anteil, Minimum 0,5 (§ 22 Abs. 6 neu).
+
+### 7.3 Emissionsfaktoren für den Nachweis (Anlage 9), g CO₂-Äquivalent/kWh
+
+| Energieträger | bis 31.12.2026 | ab 01.01.2027 |
+|---|---|---|
+| Heizöl / Erdgas / Flüssiggas | 310 / 240 / 270 | unverändert |
+| Steinkohle / Braunkohle | 400 / 430 | unverändert |
+| **Strom netzbezogen** | **560** | **100** |
+| Biogas (gebäudenah) | 140 (75) | **80 (70)** |
+| Biomethan / biogenes Flüssiggas / Bioöl | 240 / 180 / 210 | **je 80** |
+| Holz, feste Biomasse | 20 | 20 |
+| **Verdrängungsstrommix** | **860** | **entfällt ersatzlos** |
+| Abwärme aus Prozessen | 40 | **10** |
+| Fernwärme aus KWK ≥ 70 % (Kohle / gas+flüssig / erneuerbar) | 300 / 180 / 40 | unverändert |
+| Fernwärme aus Heizwerken (Kohle / gas+flüssig / erneuerbar) | 400 / 300 / 60 | unverändert |
+
+Neu ab 2027: Für Fernwärme sind Vorkette und Netzverluste zu berücksichtigen —
+zulässig ist ein pauschaler Aufschlag von **20 %, mindestens 40 g CO₂-Äq/kWh**.
+
+### 7.4 Der Verdrängungsstrommix entfällt — Folgen für KWK
+
+Bis 31.12.2026 wird eingespeister KWK-Strom mit **2,8** primärenergetisch und
+**860 g CO₂-Äq/kWh** gutgeschrieben (Herkunft: DIN V 18599-1:2011-12 über die
+EnEV). **Ab 01.01.2027 gibt es keinen amtlichen Verdrängungsfaktor mehr.** Die
+Stromgutschriftmethode ist abgeschafft; KWK-Wärme wird stattdessen nach
+**DIN EN 15316-4-5:2017-09, Abschnitt 6.2.2.1.6.3** bewertet. Das betrifft den
+Rechenweg, nicht nur eine Zahl — die Software braucht beide Wege, umgeschaltet
+über dasselbe Gültig-ab-Datum.
+
+Einen amtlichen Ersatz speziell für KWK gibt es nicht. Das Umweltbundesamt
+veröffentlicht in CLIMATE CHANGE 11/2026 Substitutionsfaktoren, die aber für
+erneuerbaren Strom hergeleitet sind (Photovoltaik: 685 g CO₂-Äq/kWh vermiedene
+Emissionen für 2024). Wer ab 2027 eine Gutschrift für eingespeisten KWK-Strom
+rechnet, trifft damit eine **methodische Wahl**, keine Rechtsvorgabe — sie gehört
+als Auswahlparameter in die Software und in den Bericht.
+
+> **Korrektur zu den Altwerten der Excel-Anwendung:** Der dort als „Nahwärme 2,8"
+> geführte Wert ist mit hoher Wahrscheinlichkeit falsch beschriftet — 2,8 war nie
+> ein Nahwärmefaktor, sondern immer der Verdrängungsstrommix für KWK. Ebenso
+> gehört „Bio-Erdgas 0,5" heute auf **0,3** (§ 22 Abs. 1 Satz 2).
+
+### 7.5 Zwei Faktorensätze, die nie vermischt werden dürfen
+
+Der Nachweiswert „Strom = 100 g CO₂-Äq/kWh" ab 2027 ist **politisch gesetzt**,
+nicht physikalisch. Der reale Strommix lag 2025 bei **344 g CO₂/kWh direkt**
+beziehungsweise **406 g CO₂-Äq/kWh mit Vorkette** — Faktor 3,4 bis 4,1 darüber.
+
+| Satz | Zweck | Quelle |
+|---|---|---|
+| **Nachweis** (GEG/GModG Anlage 9) | Energieausweis, gesetzliche Nachweisführung | Anlage 9, stichtagsabhängig |
+| **Reale Bilanz** | Wirtschaftlichkeit, CO₂-Kosten, ehrliche Klimabilanz | UBA-Strommix, jährlich fortgeschrieben |
+
+**Diese beiden dürfen im Code nie dieselbe Variable belegen** — sonst rechnet
+sich jede Anlage schön.
+
+### 7.6 Strommix Deutschland (reale Bilanz)
+
+Quelle: Umweltbundesamt, CLIMATE CHANGE 16/2026, „Entwicklung der spezifischen
+Treibhausgas-Emissionen des deutschen Strommix 1990–2025", März 2026.
+
+| Jahr | CO₂ direkt | THG ohne Vorkette | **THG mit Vorkette** | Status |
+|---|---|---|---|---|
+| 2020 | 365 | 373 | 435 | gesichert |
+| 2021 | 406 | 414 | 477 | gesichert |
+| 2022 | 433 | 441 | 503 | gesichert |
+| 2023 | 379 | 387 | 442 | gesichert |
+| 2024 | 353 | 361 | 414 | vorläufig |
+| **2025** | **344** | **352** | **406** | geschätzt |
+
+*(g CO₂ bzw. g CO₂-Äquivalent je kWh)*
+
+Für Wirtschaftlichkeit und Emissionsbilanz ist die Spalte **mit Vorkette**
+maßgeblich. Die Reihe wird jährlich im März veröffentlicht, das jüngste Jahr ist
+immer geschätzt und wird im Folgejahr revidiert — die Software muss Werte also
+auch **rückwirkend korrigieren** können.
+
+**Schadstoffe außer CO₂** sind amtlich nur bis Datenjahr **2021** verfügbar
+(UBA-Tabelle, Seitenstand 02.07.2024): SO₂ 0,196 · NO₂ 0,374 · CO 0,174 ·
+Staub gesamt 0,00955 · PM10 0,00888 g/kWh. Eine neuere amtliche Quelle je kWh
+Strom existiert nicht — diese Werte gehören mit Datenstand gekennzeichnet.
+
+### 7.7 Brennstoff-Emissionsfaktoren
+
+**Rechtsverbindlich für die CO₂-Bepreisung** (EBeV 2030, Anlage 2 Teil 4):
+
+| Brennstoff | t CO₂/TJ | g CO₂/kWh (Hi) |
+|---|---|---|
+| **Erdgas** | 55,8 | **200,9** — brennwertbezogen **181,4** |
+| **Heizöl EL** | 74,0 | 266,4 |
+| Heizöl S | 79,7 | 286,9 |
+| **Flüssiggas** | 65,5 | 235,8 |
+| **Pflanzenöl** (auch Tierfette, Altspeiseöl) | 74,0 | 266,4 |
+| Biodiesel | 74,0 | 266,4 |
+
+> **Hi/Ho-Falle beim Erdgas.** Abgerechnet wird in Deutschland brennwertbezogen;
+> die Verordnung nennt dafür den Umrechnungsfaktor 3,2508 GJ/MWh. Wer den
+> Heizwert-Faktor auf eine brennwertbezogene Menge anwendet, irrt um rund 10 %.
+
+**Biomasse-Nullregel (§ 8 EBeV 2030):** Für den Biomasseanteil darf ein
+Emissionsfaktor von **null** angesetzt werden — aber **nur mit anerkanntem
+Nachhaltigkeitsnachweis**. Ohne Nachweis gilt der volle fossile Standardwert.
+Feste Biomasse, Biogas und Klärgas sind keine BEHG-Brennstoffe und in der EBeV
+nicht enthalten.
+
+**Ohne gesetzliche Festlegung** — belastbarster amtlicher Wert ist das
+BAFA-Infoblatt zur Bundesförderung Energie- und Ressourceneffizienz, Version 3.4,
+Stand 01.06.2026 (heizwertbezogen, g CO₂/kWh): Biogas 152 · Klärgas 50 ·
+Deponiegas 50 · Pellets 36 · Holz trocken 27 · Biodiesel 70 · Klärschlamm 10 ·
+Fernwärme 280 · Strom 435.
+
+**Inklusive Vorkette** (UBA CLIMATE CHANGE 11/2026, biogenes Verbrennungs-CO₂
+definitionsgemäß null, g CO₂-Äq/kWh): Hackschnitzel-Kessel 22,6 · Pellets-Kessel
+17,4 · **Rapsöl-BHKW 143,2** · Biogas aus Energiepflanzen im BHKW 154,7 · Biogas
+aus Gülle **−39,5** (Güllebonus nach RED II) · Klärgas-BHKW 37,6.
+
+### 7.8 Wo gilt welche Bilanzierungsregel für Biomasse
+
+Das ist die größte Fehlerquelle, weil sich die Regelwerke widersprechen:
+
+| Regelwerk | Biogenes Verbrennungs-CO₂ | anzusetzen ist stattdessen |
+|---|---|---|
+| **EBeV 2030 / BEHG** | 0, **nur mit Nachhaltigkeitsnachweis** | sonst voller fossiler Standardwert |
+| **GEG / GModG Anlage 9** | 0 | Vorkettenwert (Holz 20, Biogas 140 bzw. 80) |
+| **UBA-Emissionsbilanz** | 0 | Vorkette + CH₄/N₂O + Hilfsenergie |
+| **BAFA EEW** | 0 | Vorkettenwert (Pellets 36, Holz 27) |
+| **UBA-CO₂-Rechner** | **nicht 0**, sondern 365 g/kWh | — |
+
+Das Umweltbundesamt benennt diesen Widerspruch selbst. Für ein Planungswerkzeug
+heißt das: Die Bilanzierungskonvention gehört als **ausgewiesene Einstellung** in
+den Bericht, nicht als stille Annahme in den Code.
+
+---
+
+## 8 Quellen (abgerufen 18.08.2026)
 
 **Gesetzestexte** — gesetze-im-internet.de: KWKG 2025 §§ 7, 8, 9 und Stammfassung;
 StromStG §§ 2, 3, 9; StromStV § 12b; EnergieStG §§ 2, 53, 53a, 53b (weggefallen),
@@ -311,3 +483,30 @@ KWK-Anlagen.
 **Fachkommentare** — Energie und Recht (17.03.2026), Baker Tilly (27.01.2026),
 EY (28.10.2025), LHM Energiesteuer (04.01. und 18.01.2026), BBH-Blog
 (13.02.2025), BHKW-Infozentrum (05.01.2024).
+
+**Emissions- und Primärenergiefaktoren** — Gebäudemodernisierungsgesetz,
+BGBl. 2026 I Nr. 226 vom 28.07.2026 (Regelungstext, Anlagen 4 und 9); GEG
+Anlagen 4 und 9 in der bis 31.12.2026 geltenden Fassung; EBeV 2030 Anlage 2
+Teil 4 und § 8; Umweltbundesamt CLIMATE CHANGE 16/2026 (Strommix 1990–2025,
+März 2026), CLIMATE CHANGE 11/2026 (Emissionsbilanz erneuerbarer Energieträger,
+Januar 2026), CLIMATE CHANGE 28/2022 (CO₂-Faktoren fossiler Brennstoffe),
+UBA-Tabelle „Spezifische Emissionsfaktoren für den deutschen Strommix"
+(Seitenstand 02.07.2024, Datenjahr 2021), UBA-CO₂-Rechner (Methodikumstellung
+März 2024); BAFA-Infoblatt CO₂-Faktoren zur Bundesförderung Energie- und
+Ressourceneffizienz, Version 3.4, Stand 01.06.2026; DEHSt, nEHS Verkauf und
+Versteigerung.
+
+---
+
+## 9 Offene Recherchepunkte
+
+- **Tatsächliche Auktionspreise 2026.** Die Versteigerungen laufen seit
+  01.07.2026 wöchentlich an der EEX im Korridor 55 bis 65 €/t; die erzielten
+  Zuschlagspreise sind noch nicht belegt. Gesichert sind bislang: Festpreise
+  2021–2025 (25 / 30 / 30 / 45 / 55 €/t), Korridor 2026, Verkaufsphase November
+  bis Dezember 2026 zu 68 €/t und Nachkauf 2027 zu 70 €/t.
+- **Start des europäischen Emissionshandels für Gebäude und Verkehr (ETS 2).**
+  Eine Quelle nennt die Verschiebung auf **2028** bei nationaler Überbrückung
+  2027, andere nennen 2027. Zu klären ist, ob die Verschiebung im EU-Amtsblatt
+  verkündet oder noch im Verfahren ist. **Alles ab 2027 ist damit Prognose** und
+  gehört als frei editierbarer Preispfad in die Software, nicht als fester Wert.
