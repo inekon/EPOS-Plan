@@ -671,3 +671,55 @@ Von den fünf Punkten aus Abschnitt 7 sind **1 und 2 erledigt**. Es bleiben:
    eine Kostenposition bereits auf dem alten Wert steht, erscheint sie als Abweichung. Das ist
    gewollt (Entscheidung 4: melden statt überschreiben), heißt aber, dass betroffene Projekte
    einmal über „Planwert übernehmen…" nachgezogen werden sollten.
+
+---
+
+# Nachtrag 18.08.2026 (2) — der dreifache Aufbau des Energieträger-Blocks
+
+Abschnitt 6 hielt fest, dass `StelleSpaltenSicher` **je Konstruktion von `Form_Kosten` genau
+dreimal** lief. Mit `87483b4` verschwanden die drei Fehlerdialoge — die dreifache Arbeit blieb.
+Sie ist jetzt behoben.
+
+## Ursache
+
+`FillCarrierComboBox()` bindet die Energieträgerliste in vier Anweisungen. Drei davon melden
+`SelectedIndexChanged`, obwohl der Anwender nichts gewählt hat. Gemessen an einer frisch
+gebundenen `ListBox` (Projekt 1017, drei Träger):
+
+| Anweisung | Ereignisse | `SelectedIndex` | Wirkung im Behandler |
+|---|---|---|---|
+| `DataSource = allCarriers` | 1 | 0 | Block gebaut |
+| `DisplayMember = "Name"` | 2 | 0 | Block gebaut, Block gebaut |
+| `ValueMember = "Id"` | 0 | 0 | — |
+| `SelectedIndex = -1` | 1 | −1 | `SelectedItem` ist null, kein Block |
+
+`listBox_Energieträger_SelectedIndexChanged` baut bei jedem dieser Ereignisse ein neues
+`ucFuelSettings` (beim Strom-Träger samt `ucStromAufschlaege`) mit eigenen Lesezugriffen — drei
+Stück, von denen keines übrig bleiben sollte. Der zuletzt gebaute blieb sogar im Panel stehen,
+obwohl die Liste danach nichts mehr markiert hatte; im Konstruktor räumte ihn `RenderEnergieTab()`
+zufällig weg, nach „Hinzufügen" ohne Namenstreffer blieb er sichtbar und wurde beim Schließen
+über `OnFormClosing` mitgespeichert.
+
+## Behebung
+
+`Form_Kosten.cs`: Sperre `_traegerlisteWirdGefuellt` um die vier Bindungsanweisungen (gleiches
+Mittel wie `_laden` in `ucStromAufschlaege`), Rückgabe des Behandlers bei gesetzter Sperre, und
+`flpContainer_Energiekosten.Controls.Clear()` am Ende des Befüllens — ohne Auswahl kein Block.
+Die echte Anwenderauswahl läuft unverändert durch den Behandler.
+
+## Verifikation
+
+Reflection-Harnisch (`dev/h_kosten`, unversioniert) gegen eine Wegwerf-Kopie der
+`Kenndaten.accdb` mit umgebogenem `Settings.DBPath`; gezählt wird über die Registrierung jedes
+gebauten `ucFuelSettings` beim `HelpExtender`. Projekte 1017 und 1023:
+
+| Probe | vorher | nachher |
+|---|---|---|
+| `new Form_Kosten(id)` | **3** Blöcke | **0** Blöcke |
+| `FillCarrierComboBox()` einzeln | 1 Block, bleibt im Panel | 0 Blöcke, Panel leer |
+| Auswahl einer Zeile | 1 Block | 1 Block |
+| Wechsel auf eine andere Zeile | 1 Block | 1 Block |
+
+Null statt eins beim Öffnen ist richtig: Die Liste startet ohne Auswahl, das Panel war auch
+vorher leer (`RenderEnergieTab()`), die drei Blöcke waren reine Verschwendung. Der Dialogwächter
+meldete in beiden Läufen keinen Dialog.
