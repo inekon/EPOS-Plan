@@ -75,6 +75,11 @@ namespace WindowsFormsApplication1
             FillKlimaList();
 
             tt.Draw += new DrawToolTipEventHandler(this.tt_Draw);
+
+            // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
+            // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
+            // Auf ausreichend grossen Schirmen wirkungslos.
+            FensterEinpassung.Einhaengen(this);
         }
 
         private void tt_Draw(object sender, DrawToolTipEventArgs e)

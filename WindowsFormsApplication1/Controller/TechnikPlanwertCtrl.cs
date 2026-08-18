@@ -169,6 +169,44 @@ namespace WindowsFormsApplication1
         internal static bool Bekannt(string komponente)
         { return !string.IsNullOrEmpty(komponente) && Plaene.ContainsKey(komponente); }
 
+        /// <summary>
+        /// Ist dieses Gewerk im Projekt überhaupt VERBAUT? Geprüft wird die Verweisspalte
+        /// der Landkarte in <c>Tab_Energieanlagen</c> — dieselbe Bedingung, mit der
+        /// <see cref="LiesAnlagen"/> die Geräte einsammelt, aber OHNE den Verbund mit der
+        /// Gerätetabelle.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum ohne Verbund.</b> <see cref="LiesAnlagen"/> liefert eine leere Liste,
+        /// sobald der Gerätesatz fehlt (INNER JOIN). Für die Frage „ist das Gewerk im
+        /// Projekt?" wäre das die falsche Antwort: die Anlagenzeile existiert dann ja, nur
+        /// ihr Katalogsatz nicht. Wer eine Kostenposition erfassen will, muss das Gewerk
+        /// trotzdem angeboten bekommen.
+        /// </para>
+        /// <para>
+        /// <b>Warum nicht über <c>ID_Type</c>.</b> Der Wizard-Status in
+        /// <c>Form_Start.UpdateWizardSymbole</c> fragt <c>ID_Type</c> ab; das ist dieselbe
+        /// Aussage, hängt aber an einer zweiten Zuordnungstabelle
+        /// (<c>WizardItemClass</c>). Die Verweisspalte steht bereits in der Landkarte
+        /// <see cref="Plaene"/> und bleibt damit die EINE Quelle.
+        /// </para>
+        /// </remarks>
+        internal static bool Verbaut(int projektID, string komponente)
+        {
+            Plan plan;
+            if (!Plaene.TryGetValue(komponente ?? "", out plan)) return false;
+
+            try
+            {
+                object n = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM Tab_Energieanlagen " +
+                    "WHERE ID_Projekt = ? AND [" + plan.Verweis + "] IS NOT NULL",
+                    new OleDbParameter("@p", (Int32)projektID));
+                return n != null && n != DBNull.Value && Convert.ToInt32(n) > 0;
+            }
+            catch { return false; }
+        }
+
         // --------------------------------------------------------------- Investition
 
         /// <summary>

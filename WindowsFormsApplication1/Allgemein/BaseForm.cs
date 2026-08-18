@@ -50,10 +50,23 @@ namespace WindowsFormsApplication1
                 if (wunschGroesse.Height > this.Height) this.Height = wunschGroesse.Height;
 
                 // 3. Notebook-Schutz: Begrenzen auf die echte Monitor-Arbeitsfläche (ohne Taskleiste)
+                //
+                // Diese drei Zeilen bleiben stehen, greifen aber faktisch nie: Schritt 2
+                // hat gerade MinimumSize auf das Entwurfsmaß gesetzt, und MinimumSize
+                // blockiert jedes Verkleinern lautlos. Genau diese Lücke schließt der
+                // Aufruf von FensterEinpassung.Anwenden weiter unten — er senkt die
+                // Mindestgröße mit ab, hält den Inhalt über AutoScroll erreichbar und
+                // korrigiert zusätzlich die Fensterlage. Auf einem ausreichend großen
+                // Schirm ist er wirkungslos, das Verhalten dieser Klasse bleibt dort
+                // unverändert.
                 Rectangle bildschirm = Screen.FromControl(this).WorkingArea;
 
                 if (this.Width > bildschirm.Width) this.Width = bildschirm.Width;
                 if (this.Height > bildschirm.Height) this.Height = bildschirm.Height;
+
+                // 4. Einpassung in die Arbeitsfläche des Bildschirms, auf dem das Fenster
+                //    erscheint — gemeinsame Stelle für alle BaseForm-Nachfahren.
+                FensterEinpassung.Anwenden(this);
             }
         }
     }

@@ -65,13 +65,16 @@ namespace WindowsFormsApplication1
             // Einmal initial aufrufen, damit beim Start 0 oder die Startwerte da stehen
             Gesamtkosten();
 
-            if ((Program.startfrm.status & 0x2) == 0x2) { listBox_Erzeuger.Items.Add("Wärmepumpe"); listBox_Betriebskosten.Items.Add("Wärmepumpe"); }
-            if ((Program.startfrm.status & 0x1) == 0x1) { listBox_Erzeuger.Items.Add("Heizkessel"); listBox_Betriebskosten.Items.Add("Heizkessel"); }
-            if ((Program.startfrm.status & 1024) == 1024) { listBox_Erzeuger.Items.Add("Photovoltaik"); listBox_Betriebskosten.Items.Add("Photovoltaik"); }
-            if ((Program.startfrm.status & 512) == 512) { listBox_Erzeuger.Items.Add("Solarthermie"); listBox_Betriebskosten.Items.Add("Solarthermie"); }
-            if ((Program.startfrm.status & 0x4) == 0x4) { listBox_Erzeuger.Items.Add("Stromspeicher"); listBox_Betriebskosten.Items.Add("Stromspeicher"); }
-            if ((Program.startfrm.status & 2048) == 2048) { listBox_Erzeuger.Items.Add("Pufferspeicher"); listBox_Betriebskosten.Items.Add("Pufferspeicher"); }
-            if ((Program.startfrm.status & 256) == 256) { listBox_Erzeuger.Items.Add("BHKW"); listBox_Betriebskosten.Items.Add("BHKW"); }
+            // Die beiden Gewerkelisten beschreiben DAS HIER BEARBEITETE PROJEKT
+            // (m_ID_Projekt) — siehe <see cref="ProjektKomponenten"/>. Bis 18.08.2026
+            // standen hier sieben Bitabfragen auf Program.startfrm.status; das ist der
+            // Gewerke-Status des im STARTASSISTENTEN geladenen Projekts und kann ein
+            // anderes sein.
+            foreach (string komponente in ProjektKomponenten(m_ID_Projekt))
+            {
+                listBox_Erzeuger.Items.Add(komponente);
+                listBox_Betriebskosten.Items.Add(komponente);
+            }
 
             // Double Buffered für ruckelfreiere UI
             typeof(FlowLayoutPanel).InvokeMember("DoubleBuffered",
@@ -89,6 +92,11 @@ namespace WindowsFormsApplication1
             FillCarrierComboBox();
             RenderEnergieTab();
             BauePreisreihenEinstieg();
+
+            // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
+            // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
+            // Auf ausreichend grossen Schirmen wirkungslos.
+            FensterEinpassung.Einhaengen(this);
         }
 
         /// <summary>
@@ -854,6 +862,74 @@ namespace WindowsFormsApplication1
             {
                 MessageBox.Show("Fehler beim Verarbeiten der Daten: " + ex.Message);
             }
+        }
+
+        /// <summary>
+        /// Die Gewerke, die in DIESEM Projekt zu bepreisen sind — Vereinigung aus „Anlage
+        /// im Projekt verbaut" (<see cref="TechnikPlanwertCtrl.Verbaut"/> über
+        /// <c>Tab_Energieanlagen</c>) und „Kostenposition bereits erfasst"
+        /// (<c>Tab_ProjektWerte</c>), in der Reihenfolge von <c>Tab_KostenKomponente</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum nicht mehr <c>Program.startfrm.status</c>.</b> Dieses Feld ist KEIN
+        /// Lizenzbit, sondern der Gewerke-Status des im Startassistenten geladenen Projekts:
+        /// <c>Form_Start.UpdateWizardSymbole</c> setzt Bit 256 (BHKW), 0x2 (Wärmepumpe) und
+        /// die übrigen je nach Zeilenzahl in <c>Tab_Energieanlagen</c> — und zwar für
+        /// <c>Form_Start.m_ID_Projekt</c>. Der Kostendialog wird aber auch für ein ANDERES
+        /// Projekt geöffnet: <see cref="UcBkKosten"/> reicht die auf der Seite
+        /// „Berichte &amp; Kosten" markierte Zeile herein — Stamm ODER Variante. Stand der
+        /// Assistent auf einem anderen Projekt oder wurde er in dieser Sitzung nie
+        /// geöffnet, zeigte die Liste fremde Gewerke oder blieb leer, und der Anwender
+        /// konnte für sein BHKW überhaupt keine Kostenposition anlegen.
+        /// </para>
+        /// <para>
+        /// <b>Warum eine Vereinigung.</b> Ein Gewerk, dessen Anlagenzeilen gelöscht wurden,
+        /// führt möglicherweise noch Kostenpositionen. Die dürfen nicht unerreichbar
+        /// werden — angeboten wird deshalb alles, was verbaut ist ODER bereits Zahlen
+        /// trägt. Gegenüber dem alten Weg wird dadurch nichts enger: auch die Bitabfragen
+        /// zeigten nur Gewerke, die im (Assistenten-)Projekt vorkommen.
+        /// </para>
+        /// </remarks>
+        private static List<string> ProjektKomponenten(int projektID)
+        {
+            var liste = new List<string>();
+            if (projektID <= 0) return liste;
+
+            var mitPositionen = new HashSet<string>(StringComparer.Ordinal);
+            try
+            {
+                DataTable p = DataRepository.GetDataTable(
+                    "SELECT DISTINCT k.Komponente " +
+                    "FROM Tab_KostenKomponente AS k " +
+                    "     INNER JOIN Tab_ProjektWerte AS w ON k.ID = w.KomponentenID " +
+                    "WHERE w.ProjektID = ?",
+                    new OleDbParameter("@pid", projektID));
+                if (p != null)
+                    foreach (DataRow r in p.Rows)
+                        if (r["Komponente"] != DBNull.Value)
+                            mitPositionen.Add(r["Komponente"].ToString());
+            }
+            catch { }
+
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT Komponente FROM Tab_KostenKomponente ORDER BY ID");
+                if (dt == null) return liste;
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    if (r["Komponente"] == DBNull.Value) continue;
+                    string k = r["Komponente"].ToString();
+                    if (k.Length == 0) continue;
+                    if (mitPositionen.Contains(k) || TechnikPlanwertCtrl.Verbaut(projektID, k))
+                        liste.Add(k);
+                }
+            }
+            catch { }
+
+            return liste;
         }
 
         private int GetKomponentenID(string Erzeuger)
