@@ -232,10 +232,30 @@ UTF-8-kodierten `VdiAuswahlFilter.cs` bzw. als `lbl_Filter.Text` in den `.resx`-
 * **Kein Test mit echter VDI-Datei.** Der Weg `btn_VDI3805_Click` → `ctrl.Import(datei)` ist
   unverändert, aber ohne Beispieldatei nicht gefahren. Sobald eine `.vdi` vorliegt, sollte der
   Import einmal von der Datei aus durchlaufen werden.
-* **Bestandsbefund Heizkessel (nicht angefasst):** `szBrennstoffart` wird nirgends gesetzt,
-  bleibt also immer leer. `InitDatensatzUpdate` legt den Wirkungsgrad deshalb stets auf
-  `Wirkungsgrad_Gas`, auch bei Ölkesseln.
+* **Bestandsbefund Heizkessel (BEHOBEN 18.08.2026):** `szBrennstoffart` wird jetzt in
+  `ZeigeDetails` verdrahtet, und die Übernahme routet den Wirkungsgrad nach Brennstoffindex
+  (Öl = 6–9/18–22 → `Wirkungsgrad_Oel`, sonst Gas; Rückfall über `szBrennstoffart`, ohne
+  jede Kennung bleibt Gas als dokumentiertes Bestandsverhalten). Belegt gegen
+  `Tab_Brennstoff_Stamm` und die gleichlautende Bedingung in `SimulationSPK` (:352–354);
+  Smoke über den echten Importweg `ctrl.Import`, 10/10 Fälle PASS (`%TEMP%\wpk11`).
+  Folgebefund daraus: Der Bestands-Clamp `Index > 22 → 23` kennt die inzwischen 25
+  Einträge der Brennstofftabelle nicht — Sonstige (24) und Wasserstoff (25) landen still
+  als Fernwärme (23); als eigener Task vorgemerkt. Inzwischen behoben (18.08.2026):
+  Der Deckel liest die Obergrenze jetzt dynamisch aus `MAX(ID)` von `Tab_Brennstoff_Stamm`
+  (Rückfall 25, `DataRepository.ExecuteScalar`); Smoke über den echten Importweg
+  `ctrl.Import` mit Index 1/19/23/24/25/26 in beiden Übernahmewegen, 12/12 PASS
+  (`%TEMP%\wpk12`), Prüfbuild 0 Fehler / 6 Bestandswarnungen.
+* **Bestandsbefund SimulationSPK (nicht angefasst, 18.08.2026):** Die globale
+  Verbrauchs-Bilanzkaskade in `Bilanz_und_Nutzungsgrad` (`SimulationSPK.cs:259–274`) kennt
+  nur die Brennstoff-IDs 1–13 und 15–22. Kessel mit Brennstoff 14, 23 (Fernwärme),
+  24 (Sonstige) oder 25 (Wasserstoff) werden in keinen globalen Brennstoffzähler gebucht
+  (`Gasverbrauch_SPK`, `Oelverbrauch_SPK`, …); Bruttoerzeugung und Emissionen stimmen
+  (tabellenbasiert). Kein Crash-Risiko: die ID indiziert kein Array, und die
+  Öl-Erkennung 6–9/18–22 behandelt 24/25 konsistent als Gas-Feld-Leser. Seit dem
+  Clamp-Fix können 24/25 real in `Tab_Heizkessel_STAMM` stehen — die Lücke ist damit
+  praktisch relevant; als eigener Task vorgemerkt.
 * **Bestandsbefund Wärmepumpe (nicht angefasst):** scheitert `InsertKenndatenStamm` mitten in
   der Kennlinienschleife, bleibt der bereits geschriebene STAMM-Satz ohne vollständige
   Kennlinien stehen — es gibt an dieser Stelle keine Transaktion. Beim Mehrfachladen zählt so
-  ein Eintrag als „fehlgeschlagen".
+  ein Eintrag als „fehlgeschlagen". Inzwischen behoben (18.08.2026, Aufräumklammer) — siehe
+  `VdiImport_WP_Transaktion_Protokoll.md`.

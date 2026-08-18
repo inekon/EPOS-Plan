@@ -909,7 +909,7 @@ namespace WindowsFormsApplication1
             // Buchung dort, gehört diese Tabelle nachgezogen (offener Punkt).
             _kesselBrennstoffIds = new[]
             {
-                new[] { 1, 2, 3, 4, 5 },                        // Gas
+                new[] { 1, 2, 3, 4, 5, 14 },                    // Gas (14 = Biogas)
                 new[] { 6, 7, 8, 9, 18, 19, 20, 21, 22 },       // Öl
                 new[] { 10 },                                   // Koks
                 new[] { 11 },                                   // Kohle

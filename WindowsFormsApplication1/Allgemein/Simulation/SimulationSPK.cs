@@ -255,8 +255,13 @@ namespace WindowsFormsApplication1
                 double Kessel_Gesamtverbrauch_MWh = Kessel_Verbrauch_MWh_Spk[i];
                 BruttoWaermeSpkErzeugung += Kessel_Gesamtverbrauch_MWh;
 
-                // Den Verbrauch auf die globalen Brennstoffzähler buchen
-                if (Brennstoff_Art[i] >= 1 && Brennstoff_Art[i] <= 5) Gasverbrauch_SPK += Kessel_Gesamtverbrauch_MWh;
+                // Den Verbrauch auf die globalen Brennstoffzähler buchen. Die Bereiche
+                // spiegeln Tab_Brennstoff_Stamm.ID_Kategorie: 14 (Biogas) ist Kategorie 1
+                // und zählt zum Gas. Was keinen eigenen Zähler hat (23 Fernwärme,
+                // 24 Sonstige, 25 Wasserstoff, künftige IDs), fängt das else als
+                // Sammelposten — dieselbe Verzweigung erwartet die Anzeige
+                // (Form_Simulation_Detail, _kesselBrennstoffIds).
+                if ((Brennstoff_Art[i] >= 1 && Brennstoff_Art[i] <= 5) || Brennstoff_Art[i] == 14) Gasverbrauch_SPK += Kessel_Gesamtverbrauch_MWh;
                 else if ((Brennstoff_Art[i] >= 6 && Brennstoff_Art[i] <= 9) || (Brennstoff_Art[i] >= 18 && Brennstoff_Art[i] <= 22)) Oelverbrauch_SPK += Kessel_Gesamtverbrauch_MWh;
                 else if (Brennstoff_Art[i] == 10) Koks_SPK += Kessel_Gesamtverbrauch_MWh;
                 else if (Brennstoff_Art[i] == 11) Kohle_SPK += Kessel_Gesamtverbrauch_MWh;
@@ -272,6 +277,7 @@ namespace WindowsFormsApplication1
                 }
                 else if (Brennstoff_Art[i] == 15) Pellets_SPK += Kessel_Gesamtverbrauch_MWh;
                 else if (Brennstoff_Art[i] == 16) Rapsoelverbrauch_SPK += Kessel_Gesamtverbrauch_MWh;
+                else Sonstigverbrauch_SPK += Kessel_Gesamtverbrauch_MWh;
 
                 // Emissionen basierend auf dem echten stündlich ermittelten Gesamtverbrauch
                 Em_CO2_SPK += Kessel_Gesamtverbrauch_MWh * CO2_SPK[i];

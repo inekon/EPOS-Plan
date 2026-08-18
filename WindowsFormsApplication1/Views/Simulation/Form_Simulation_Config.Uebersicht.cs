@@ -1141,6 +1141,13 @@ namespace WindowsFormsApplication1
                         Form_QuelleErdreich frmErde = new Form_QuelleErdreich();
                         frmErde.WPName = info.Bezeichner;
 
+                        // Projekt- und Anlagenbezug für den Simulationsknopf des Dialogs
+                        // (Abnahme Runde 4): Mit gesetzten IDs greift dessen Vorrangweg;
+                        // der Owner-/Namensrückfall in ProjektErmitteln/ErgebnisDesLaufs
+                        // bleibt nur Sicherheitsnetz für fremde Aufrufer.
+                        frmErde.ID_Projekt = m_ID_Projekt;
+                        frmErde.ID_Anlage = info.ID;
+
                         string quellsystem = WaermequelleClass.WertLesen(info.ID, "WQ_Quellsystem") as string;
                         if (!string.IsNullOrEmpty(quellsystem)) frmErde.Quellsystem = quellsystem;
 

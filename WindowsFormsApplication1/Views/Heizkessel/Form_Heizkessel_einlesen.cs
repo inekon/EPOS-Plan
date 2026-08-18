@@ -61,7 +61,11 @@ namespace WindowsFormsApplication1
             _anzeigeIndex.Clear();
             for (int i = 0; i < ctrl._list.Count; i++)
             {
-                double p = Program.convertTxt2Double(ctrl._list[i].m_szThLeistung);
+                // ZahlParsen statt convertTxt2Double: eine nicht parsbare
+                // Leistungsangabe darf den Listenaufbau nicht abbrechen - sie
+                // zaehlt als 0, den Fehler meldet erst die Uebernahme.
+                double p;
+                if (!Program.ZahlParsen(ctrl._list[i].m_szThLeistung, out p)) p = 0;
                 if (p < min) continue;
                 if (p > max) continue;
                 if (!VdiAuswahlFilter.Passt(suche, ctrl._list[i].m_szName, ctrl._list[i].m_szFirma)) continue;
@@ -127,7 +131,7 @@ namespace WindowsFormsApplication1
         }
 
         // Uebertraegt einen VDI-Eintrag in die Detailfelder. Die Felder (und die
-        // Zusatzwerte szBrennstoffIndex/szCO2/szNOx/szCO) sind auch beim
+        // Zusatzwerte szBrennstoffIndex/szBrennstoffart/szCO2/szNOx/szCO) sind auch beim
         // Mehrfachladen der Traeger fuer die Uebernahme (InitDatensatzUpdate liest
         // sie aus) - damit bleibt es bei genau einem Schreibweg.
         private void ZeigeDetails(int i)
@@ -142,6 +146,7 @@ namespace WindowsFormsApplication1
             textBox_Versluste.Text = ctrl._list[i].m_szVerluste;
             textBox__Wirkungsgrad.Text = ctrl._list[i].m_szWirkungsgrad;
             szBrennstoffIndex = ctrl._list[i].m_szBrennstoffIndex;
+            szBrennstoffart = ctrl._list[i].szBrennstoffart;
             szCO2 = ctrl._list[i].m_szCO2;
             szNOx = ctrl._list[i].m_szNOX;
             szCO = ctrl._list[i].m_szCO;
@@ -163,7 +168,15 @@ namespace WindowsFormsApplication1
             {
                 // Einzelfall: Meldungen und Dialogverhalten bleiben wie im Bestand;
                 // die Detailfelder werden nicht neu besetzt, damit eine Korrektur
-                // von Hand erhalten bleibt.
+                // von Hand erhalten bleibt. Weil Handkorrektur vorgesehen ist,
+                // werden die Zahlfelder vorab nach dem Hausmuster geprueft
+                // (sprechende Meldung, Fokus, Dialog bleibt offen); leer gilt
+                // wie bisher als 0.
+                double dPruef;
+                if (!Program.ZahlPruefen(textBox_ThLeistung, "Thermische Leistung", out dPruef, leerErlaubt: true)) return;
+                if (!Program.ZahlPruefen(textBox__Wirkungsgrad, "Wirkungsgrad", out dPruef, leerErlaubt: true)) return;
+                if (!Program.ZahlPruefen(textBox_Versluste, "Betriebsbereitschaftsverluste", out dPruef, leerErlaubt: true)) return;
+
                 VdiUebernahmeErgebnis einzel = UebernehmeEintrag();
                 if (einzel == VdiUebernahmeErgebnis.Duplikat)
                 {
@@ -344,21 +357,44 @@ namespace WindowsFormsApplication1
             model.Beschreibung = textBox_Bauart.Text;
             model.Ptherm = Program.convertTxt2Double(textBox_ThLeistung.Text);
 
-            int nBrennstoffart = Program.convertTxt2Int(szBrennstoffart);
-            if (nBrennstoffart == 0) model.Wirkungsgrad_Gas = Program.convertTxt2Double(textBox__Wirkungsgrad.Text) / 100;
-            else if (nBrennstoffart == 1) model.Wirkungsgrad_Oel = Program.convertTxt2Double(textBox__Wirkungsgrad.Text) / 100;
+            // Brennstoffindex zuerst: er wird als model.Brennstoff gespeichert und
+            // entscheidet, aus welchem Feld Simulation und Wirtschaftlichkeit den
+            // Wirkungsgrad spaeter lesen (Oel = Index 6-9 und 18-22, wie
+            // SimulationSPK.Stunde_Abschluss und der Brennstofffilter der Dialoge).
+            int Brennstoffindex = Program.convertTxt2Int(szBrennstoffIndex);
+            // Deckel gegen Indizes ausserhalb der Brennstofftabelle. Die Obergrenze
+            // kommt aus Tab_Brennstoff_Stamm selbst (MAX(ID)), weil die Tabelle
+            // waechst: der alte harte Deckel (> 22 -> 23) machte die spaeter
+            // ergaenzten Eintraege Sonstige (24) und Wasserstoff (25) still zu
+            // Fernwaerme (23). Ohne Tabellenwert bleibt 25 als heutiger Bestand.
+            object oMaxBrennstoff = DataRepository.ExecuteScalar("SELECT MAX(ID) FROM Tab_Brennstoff_Stamm");
+            int nMaxBrennstoff = (oMaxBrennstoff != null) ? Convert.ToInt32(oMaxBrennstoff) : 25;
+            if (Brennstoffindex > nMaxBrennstoff) Brennstoffindex = nMaxBrennstoff;
+            model.Brennstoff = Brennstoffindex;
+
+            double dWirkungsgrad = Program.convertTxt2Double(textBox__Wirkungsgrad.Text) / 100;
+            if (Brennstoffindex > 0)
+            {
+                bool bOel = (Brennstoffindex >= 6 && Brennstoffindex <= 9)
+                         || (Brennstoffindex >= 18 && Brennstoffindex <= 22);
+                if (bOel) model.Wirkungsgrad_Oel = dWirkungsgrad;
+                else model.Wirkungsgrad_Gas = dWirkungsgrad;
+            }
             else
             {
-                model.Wirkungsgrad_Gas = model.Wirkungsgrad_Oel = Program.convertTxt2Double(textBox__Wirkungsgrad.Text) / 100;
+                // Ohne Brennstoffindex wie bisher ueber die Brennstoffart des
+                // VDI-Satzes (0 = Gas, 1 = Oel, sonst beide Felder). Liefert die
+                // Datei gar keine Kennung, bleibt es beim Bestandsverhalten Gas.
+                int nBrennstoffart = Program.convertTxt2Int(szBrennstoffart);
+                if (nBrennstoffart == 0) model.Wirkungsgrad_Gas = dWirkungsgrad;
+                else if (nBrennstoffart == 1) model.Wirkungsgrad_Oel = dWirkungsgrad;
+                else model.Wirkungsgrad_Gas = model.Wirkungsgrad_Oel = dWirkungsgrad;
             }
 
             if (model.Wirkungsgrad_Gas == 0 && model.Wirkungsgrad_Oel == 0)
                 model.Wirkungsgrad_Gas = model.Wirkungsgrad_Oel = 1;
 
             model.Betriebsbereitschaftverlust = Program.convertTxt2Double(textBox_Versluste.Text);
-            int Brennstoffindex = Program.convertTxt2Int(szBrennstoffIndex);
-            if (Brennstoffindex > 22) Brennstoffindex = 23;
-            model.Brennstoff = Brennstoffindex;
             model.NOx = Program.convertTxt2Double(szNOx);
             model.CO2 = Program.convertTxt2Double(szCO2);
             model.CO = Program.convertTxt2Double(szCO);

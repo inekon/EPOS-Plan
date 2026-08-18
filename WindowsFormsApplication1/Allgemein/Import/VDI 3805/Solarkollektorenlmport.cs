@@ -132,8 +132,10 @@ namespace WindowsFormsApplication1
         private static double ParseDouble(string value)
         {
             if (string.IsNullOrWhiteSpace(value)) return 0;
-            // Ersetzt Komma durch Punkt für universelles Parsing
-            double.TryParse(value.Replace(',', '.'), System.Globalization.NumberStyles.Any,
+            // Ersetzt Komma durch Punkt für universelles Parsing.
+            // NumberStyles.Float (statt Any): ohne AllowThousands, damit ein
+            // Gruppenzeichen nie still als Tausendertrennzeichen durchrutscht.
+            double.TryParse(value.Replace(',', '.'), System.Globalization.NumberStyles.Float,
                             System.Globalization.CultureInfo.InvariantCulture, out double result);
             return result;
         }

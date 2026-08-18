@@ -114,7 +114,11 @@ namespace WindowsFormsApplication1
             _anzeigeIndex.Clear();
             for (int i = 0; i < ctrl._list.Count; i++)
             {
-                double leistung = Program.convertTxt2Double(ctrl._list[i].szThLeistung);
+                // ZahlParsen statt convertTxt2Double: eine nicht parsbare
+                // Leistungsangabe darf den Listenaufbau nicht abbrechen - sie
+                // zaehlt als 0, den Fehler meldet erst die Uebernahme.
+                double leistung;
+                if (!Program.ZahlParsen(ctrl._list[i].szThLeistung, out leistung)) leistung = 0;
                 if (leistung < min || leistung > max) continue;
                 if (!VdiAuswahlFilter.Passt(suche, ctrl._list[i].szName, ctrl._list[i].szFirma)) continue;
                 Liste_WP.Items.Add(ctrl._list[i].szName);
@@ -234,63 +238,85 @@ namespace WindowsFormsApplication1
                 wpctrl.Kuehlleistung = kuehlung;
             }
 
-            if(!wpctrl.Insert()) return VdiUebernahmeErgebnis.Fehler;
-
-            string vorlauf = "";
-            string last = "";
-            bool anfang=false;
-            bool anfang_kuehl = false;
-            List<string> datlines = ctrl._list[index].x;
-
-            for (int i = 0; i < datlines.Count; i++)
+            // Aufraeumklammer um den GESAMTEN Schreibvorgang dieses Eintrags. Die
+            // Inserts laufen im Controller ueber getrennte Verbindungen, eine
+            // gemeinsame Transaktion ist ohne Controller-Umbau nicht moeglich.
+            // Deshalb: scheitert irgendein Schritt (false oder Exception), wird ein
+            // bereits angelegter Stammsatz samt Kennlinien wieder geloescht, damit
+            // kein unvollstaendiger Datensatz stehen bleibt (Befund 17.08.2026).
+            // Der Stammsatz-Insert steht bewusst INNERHALB der Klammer: Insert()
+            // committet den Satz und liest erst danach @@IDENTITY zurueck - misslingt
+            // dieses Rueckmelden, meldet Insert() false, obwohl der Satz schon in der
+            // Datenbank steht. Ohne Satz laeuft Delete() ins Leere und stoert nicht.
+            bool bVollstaendig = false;
+            try
             {
-                string[] token = datlines[i].Split(';');
-                if (token[0] == "710.09" && token[2] == "1")
+                if(!wpctrl.Insert()) return VdiUebernahmeErgebnis.Fehler;
+
+                string vorlauf = "";
+                string last = "";
+                bool anfang=false;
+                bool anfang_kuehl = false;
+                List<string> datlines = ctrl._list[index].x;
+
+                for (int i = 0; i < datlines.Count; i++)
                 {
-                    vorlauf = token[3];
-                    anfang = true;
+                    string[] token = datlines[i].Split(';');
+                    if (token[0] == "710.09" && token[2] == "1")
+                    {
+                        vorlauf = token[3];
+                        anfang = true;
+                    }
+                    else if (token[0] == "710.09" && token[2] == "2")
+                    {
+                        vorlauf = token[3];
+                        anfang_kuehl = true;
+                        anfang = false;
+                        last = token[7];
+                    }
+                    else if(anfang && (token[0] == "710.91"))
+                    {
+                        string cop=token[5];
+                        string p=token[3];
+                        string t=token[2];
+
+                        datctrl.m_ID_WP = wpctrl.ID;
+                        datctrl.m_nCOP = Program.convertTxt2Double(cop);
+                        datctrl.m_nTemperatur = Program.convertTxt2Int(t);
+                        datctrl.m_nPTherm = Program.convertTxt2Double(p);
+                        datctrl.m_nVorlauf = Program.convertTxt2Int(vorlauf);
+
+                        if(!wpctrl.InsertKenndatenStamm(datctrl.m_ID_WP, datctrl.m_nVorlauf, datctrl.m_nTemperatur, datctrl.m_nCOP, datctrl.m_nPTherm)) return VdiUebernahmeErgebnis.Fehler;
+                    }
+                    else if (anfang_kuehl && (token[0] == "710.91"))
+                    {
+                        string cop = token[5];
+                        string p = token[3];
+                        string t = token[2];
+
+                        datkuehlctrl.m_ID_WP = wpctrl.ID;
+                        datkuehlctrl.m_nCOP = Program.convertTxt2Double(cop);
+                        datkuehlctrl.m_nTemperatur = Program.convertTxt2Int(t);
+                        datkuehlctrl.m_nPkuehl = Program.convertTxt2Double(p);
+                        datkuehlctrl.m_nVorlauf = Program.convertTxt2Int(vorlauf); ;
+                        if(last.ToUpper()  == "MAX") datkuehlctrl.m_nLast = 100;
+                        else datkuehlctrl.m_nLast = Program.convertTxt2Int(last);
+
+                        if (!wpctrl.InsertKenndatenKuehlungStamm(datkuehlctrl.m_ID_WP, datkuehlctrl.m_nVorlauf, datkuehlctrl.m_nTemperatur, datkuehlctrl.m_nCOP, datkuehlctrl.m_nPkuehl, datkuehlctrl.m_nLast)) return VdiUebernahmeErgebnis.Fehler;
+                    }
+
                 }
-                else if (token[0] == "710.09" && token[2] == "2")
-                {
-                    vorlauf = token[3];
-                    anfang_kuehl = true;
-                    anfang = false;
-                    last = token[7];
-                }
-                else if(anfang && (token[0] == "710.91"))
-                {
-                    string cop=token[5];
-                    string p=token[3];
-                    string t=token[2];
 
-                    datctrl.m_ID_WP = wpctrl.ID;
-                    datctrl.m_nCOP = Program.convertTxt2Double(cop);
-                    datctrl.m_nTemperatur = Program.convertTxt2Int(t);
-                    datctrl.m_nPTherm = Program.convertTxt2Double(p);
-                    datctrl.m_nVorlauf = Program.convertTxt2Int(vorlauf);
-
-                    if(!wpctrl.InsertKenndatenStamm(datctrl.m_ID_WP, datctrl.m_nVorlauf, datctrl.m_nTemperatur, datctrl.m_nCOP, datctrl.m_nPTherm)) return VdiUebernahmeErgebnis.Fehler;
-                }
-                else if (anfang_kuehl && (token[0] == "710.91"))
-                {
-                    string cop = token[5];
-                    string p = token[3];
-                    string t = token[2];
-
-                    datkuehlctrl.m_ID_WP = wpctrl.ID;
-                    datkuehlctrl.m_nCOP = Program.convertTxt2Double(cop);
-                    datkuehlctrl.m_nTemperatur = Program.convertTxt2Int(t);
-                    datkuehlctrl.m_nPkuehl = Program.convertTxt2Double(p);
-                    datkuehlctrl.m_nVorlauf = Program.convertTxt2Int(vorlauf); ;
-                    if(last.ToUpper()  == "MAX") datkuehlctrl.m_nLast = 100;
-                    else datkuehlctrl.m_nLast = Program.convertTxt2Int(last);
-
-                    if (!wpctrl.InsertKenndatenKuehlungStamm(datkuehlctrl.m_ID_WP, datkuehlctrl.m_nVorlauf, datkuehlctrl.m_nTemperatur, datkuehlctrl.m_nCOP, datkuehlctrl.m_nPkuehl, datkuehlctrl.m_nLast)) return VdiUebernahmeErgebnis.Fehler;
-                }
-
+                bVollstaendig = true;
+                return VdiUebernahmeErgebnis.Gespeichert;
             }
-
-            return VdiUebernahmeErgebnis.Gespeichert;
+            finally
+            {
+                // Delete() loescht per Bezeichner (die Duplikatpruefung oben stellt
+                // Eindeutigkeit sicher), faengt eigene Fehler und wirft nie.
+                if (!bVollstaendig && !wpctrl.Delete())
+                    Console.WriteLine("Unvollstaendiger WP-Stammsatz '" + wpctrl.WPName + "' (ID " + wpctrl.ID + ") konnte nicht aufgeraeumt werden!");
+            }
         }
 
 

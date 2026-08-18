@@ -1368,6 +1368,24 @@ namespace WindowsFormsApplication1
 
             if (pufferSenke)
             {
+                // PAKET PARALLELVERBUND (Entscheidung 17.08.2026): Lädt der Erzeuger einen
+                // gemeinsamen Vorrat aus mehreren Speichern, muss die Karte das zeigen -
+                // sonst stünde dort der Name EINES Behälters, während der Lauf mit der
+                // Summe rechnet. Der Zusatz steht VOR der Kreisziffer, damit die
+                // Ladeposition wie bisher am Ende des Chips sitzt.
+                //
+                // Punktueller Griff auf die Zuordnung, nur bei Puffer-Senke: Die Karten
+                // bauen ihre Daten aus EINER Projektabfrage (AnlagenInfo.Senke über
+                // WaermesenkeClass.AusDatenzeile, ohne Verbund-Nachschlag je Zeile), und
+                // eine Anlage ohne Puffer-Senke kann keinen Verbund haben.
+                int zusatz = WaermesenkeClass.VerbundLesen(info.ID).Count;
+                if (zusatz > 0)
+                {
+                    text += " " + string.Format(MyResource.Resource.SIM_KARTE_VERBUND_ZUSATZ, zusatz);
+                    hinweis = string.Format(MyResource.Resource.SIM_TIP_VERBUND, zusatz + 1) +
+                              Environment.NewLine + hinweis;
+                }
+
                 List<Ladeordnung.LadeEintrag> ordnung =
                     Ladeordnung.Ladereihenfolge(m_ID_Projekt, info.Senke.ID_Puffer);
                 int position = Ladeordnung.Position(ordnung, info.ID, false);
@@ -1626,6 +1644,21 @@ namespace WindowsFormsApplication1
 
             // --- Versorgt: der Kanal, aus dem entladen wird --------------------------
             d.Detailzeilen.Add(string.Format(MyResource.Resource.PSP_KARTE_VERSORGT, d.Verwendung));
+
+            // --- PARALLELVERBUND (Entscheidung 17.08.2026) ---------------------------
+            //
+            // Ein MITGLIED hat im Lauf keinen eigenen Füllstand: Seine Kapazität steckt im
+            // Leitspeicher, und in Tab_ErgebnisPufferspeicher steht keine Zeile für ihn.
+            // Ohne diese Zeile suchte der Anwender im Ergebnis nach einem Speicher, den es
+            // dort nicht gibt - genau die stille Leerstelle, die das Paket vermeiden soll.
+            //
+            // EINE Abfrage je Karte, und nur diese eine: Die Zahl der Mitglieder des
+            // eigenen Verbunds interessiert an dieser Stelle nicht, sie steht am
+            // Erzeuger-Chip (SenkenChips).
+            int idLeit = AnlagePufferVerbundCtrl.LeitspeicherFuerMitglied(p.ID);
+            if (idLeit > 0 && idLeit != p.ID)
+                d.Detailzeilen.Add(string.Format(MyResource.Resource.PSP_KARTE_IM_VERBUND,
+                                                 WaermesenkeClass.PufferName(idLeit)));
 
             // --- Quelle für: NUR Erzeuger (Invariante S-1) ---------------------------
             List<string> quelleFuer = QuelleFuerAnlagen(p);
