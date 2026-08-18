@@ -386,14 +386,23 @@ Deshalb der A/B-Nachweis auf **derselben Wegwerf-Kopie**:
 
 ```
 Referenzlauf.exe migration C:\ProgramData\EPOS_PLAN\Kenndaten.accdb  <Scratch>\DB
-A = HEAD 12cdce6            → projekt <id> <Scratch>\A\Projekt_<id> <Scratch>\DB
-B = HEAD + Etappe E1        → projekt <id> <Scratch>\B\Projekt_<id> <Scratch>\DB
+A = Stand 12cdce6           → projekt <id> <Scratch>\A\Projekt_<id> <Scratch>\DB   (Build 22:07)
+B = Stand 12cdce6 + E1      → projekt <id> <Scratch>\B\Projekt_<id> <Scratch>\DB   (Build 22:28)
 Referenzlauf.exe vergleich <Scratch>\A <Scratch>\B
 ```
 
 Beide Läufe mit dem jeweils dazu gebauten `Referenzlauf.csproj` (ProjectReference auf die
 App, also Exe und DLL garantiert konsistent), Feature-Flag `Kaskade_Zweikanalig` **AUS**,
 acht Projekte 1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024.
+
+> **Der B-Stand enthält eine Fremdänderung.** Zwischen den beiden Builds ist im selben
+> Arbeitsverzeichnis der Commit `2d70e82` „Kostenmaske: Energieträger-Block wird beim
+> Öffnen nur noch einmal aufgebaut" (Merge `097a465`, 22:19 Uhr) gelandet — 66 geänderte
+> Zeilen in `Views/Kosten/Form_Kosten.cs`. Der B-Build trägt sie also mit. Für den
+> Nachweis ist das unschädlich und macht ihn sogar schärfer: `Form_Kosten` ist eine
+> Eingabemaske und wird vom kopflosen `SimulationRunner` nie angefasst, und der Vergleich
+> zeigt über **beide** Änderungen zusammen nicht eine einzige Abweichung. Die Differenz
+> A → B ist damit „Etappe E1 **plus** Kostenmaske" — und die ist null.
 
 ```
 Projekt_1007: PASS (29 Dateien, 324210 Werte)
@@ -480,6 +489,16 @@ Jahresdeckel. Alle übrigen 174 Zeilen liegen bereit und wirken auf nichts.
   doppelt und wurde entfernt; im Ergebnis stehen die 36 Schlüssel genau einmal, an der
   vom Generator vorgesehenen Stelle. Wer die `.resx` erneut ändert, sollte den Designer
   danach auf Dubletten prüfen.
+- **Offener Merge-Konflikt in beiden `.resx` (Stand 18.08.2026, 22:44).** Unmittelbar nach
+  dem letzten Build hat eine Synchronisation (`GitHub_Sync.bat`, Commit `949696f`) einen
+  `git pull` angestoßen, der in `Resource.resx` und `Resource.en-US.resx` kollidiert:
+  Beide Seiten haben Einträge **vor `</root>` angehängt** — diese Etappe 36 `GESETZ_*`,
+  der eingehende Commit `eafbe15` drei `BK_KOSTEN_*`. Es gibt **keine Schlüsselüberschneidung**
+  (der eingehende Stand kennt kein `GESETZ_*`), die Auflösung ist also „beide Blöcke
+  behalten"; zu beachten ist nur das **gemeinsame abschließende `</data>`** hinter dem
+  `>>>>>>>`-Marker, das zum jeweils letzten Eintrag gehört. `Resource.Designer.cs` ist
+  bereits sauber zusammengeführt und enthält beide Sätze — nach dem Auflösen der `.resx`
+  passen Ressourcen und Designer wieder zusammen.
 
 ---
 
