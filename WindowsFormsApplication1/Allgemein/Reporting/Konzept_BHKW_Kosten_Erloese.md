@@ -139,7 +139,8 @@ Additiv, Migration ab Schemastand 18. Muster für neue Tabellen:
 | `Tab_ProjektWerte` | `Kostenart TEXT(20)`, `Bemessung TEXT(20)`, `IstErloes YESNO`, `Menge DOUBLE`, `Einheitpreis DOUBLE` |
 | `Tab_ErgebnisBHKWModul` | `Betriebsstunden DOUBLE`, `VbhElektrisch DOUBLE` |
 | `Tab_BHKW`, `Tab_BHKW_STAMM` | `Wartungsbemessung TEXT(20)` — analog Kessel (Schritt 15) |
-| `Tab_ProjektTarif` | `Leistungsmodell TEXT(20)`, Staffelgrenzen und Sommer-/Winterpreise |
+| `Tab_ProjektTarif` | `Leistungsmodell TEXT(20)` (`MONATLICH` / `STAFFEL` / `JAHRESHOECHSTLAST`), vier **kumulierte Obergrenzen** in kW mit Sommer- und Winterpreis, monatlicher Leistungspreis, Grundpreis, `GueltigAb` |
+| `Tab_Kraftwerkspark` | `CO`, `Staub`, `GueltigAb`, `Quelle`, `ReadOnly` und vor allem **`Bezugsbasis TEXT(12)`** (`BRENNSTOFF` / `STROM`) |
 | `Tab_ProjektWirtschaftlichkeit` | Steuerparameter je Projekt: Unternehmensart, Nutzungsgrad, Hocheffizienz, räumlicher Zusammenhang, Wahl § 53 / § 53a |
 
 **ACE-Regeln, die im Bestand teuer gelernt wurden:** `YESNO` belegt
@@ -280,11 +281,19 @@ Bestandsprojekte ohne die neuen Angaben.
 
 ## 9 Offene Punkte
 
-1. **`DB-TARIF.XLS`** (Passwort `uep`, Blätter `TarifBezug`, `TarifEinspeisung`)
-   liegt nicht vor — enthält die Strompreis-Stammdaten. Für E5 nötig, falls die
-   Alt-Tarife übernommen werden sollen.
-2. **`bhkwplan.py`** fehlt; die Mengenaufteilung wurde aus dem VBA rekonstruiert.
-   Gegenprüfung wünschenswert.
+1. ~~`DB-TARIF.XLS` und `bhkwplan.py` fehlen~~ — **am 18.08.2026 nachgereicht und
+   ausgewertet** (Analyse, Abschnitte 7 und 8). Ergebnis: Die Werte beider
+   Kataloge sind veraltet und werden **nicht übernommen**; ausgewertet wurde die
+   Struktur. Die Mengenlogik ist bestätigt, und die Methodenfrage ist
+   entschieden — den Ergebnisdialog füllt die **Differenzmethode**, Abschnitt 4.3
+   dieses Konzepts ist damit belegt.
+2. **Zwei Strukturkorrekturen** gegenüber dem Altkatalog sind in Abschnitt 3
+   eingearbeitet und beim Nachbau zu beachten: Leistungsstaffelgrenzen werden als
+   **kumulierte Obergrenze** geführt (der Altkatalog speichert Stufen*breiten*),
+   und das Leistungsmodell wird eine **sichtbare Auswahl** statt der versteckten
+   Schalterlogik „Sommerpreis = 0". Beim Kraftwerkspark verhindert das neue Feld
+   `Bezugsbasis`, dass Faktoren je kWh Brennstoff und je kWh Strom in derselben
+   Spalte landen — genau dieser Definitionsbruch steckt im Altkatalog.
 3. **§ 53 neben § 53a** rechtlich ungeklärt — als Option modelliert.
 4. **Kategorie 3 „Energiekosten"** in `Tab_ProjektWerte` ist pflegbar, wird aber
    von keiner Rechnung gelesen; dort erfasste Beträge fallen still aus jeder

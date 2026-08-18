@@ -312,5 +312,116 @@ Aus denselben Streams stammen die Dialogbeschreibungen.
 Werte und `Range.Formula` die Formeln; `Range.Text` ist bei Mehrzellbereichen
 nicht nutzbar.
 
-**Nicht verfügbar und für eine vollständige Nachbildung wünschenswert:**
-`DB-TARIF.XLS` (Strompreis-Stammdaten) und `bhkwplan.py` (Mengenaufteilung).
+Die zunächst fehlenden Dateien `DB-TARIF.XLS`, `DB-Kraftwerk.XLS` und
+`bhkwplan.py` wurden am 18.08.2026 nachgereicht; ihre Auswertung steht in den
+Abschnitten 7 und 8.
+
+---
+
+## 7 Stammdatenkataloge
+
+> **Die Zahlenwerte beider Kataloge sind veraltet** (Preisstand teils 1996,
+> Emissionsdaten bis 2020) und werden **nicht übernommen**. Ausgewertet wurde die
+> **Struktur** — sie bestimmt, welche Felder die neuen Pflegemasken brauchen.
+
+### 7.1 `DB-TARIF.XLS` — Strompreise
+
+`TarifBezug` 55 Spalten, belegt 1–51, **28 Datensätze**; `TarifEinspeisung`
+50 Spalten, belegt 1–43, **15 Datensätze**.
+
+**Ein Blatt, zwei Rollen:** `TarifBezug` liefert sowohl den Bezugs- als auch den
+Reststromtarif — die Übernahme schreibt mit identischem Mapping nach
+`Tab_Tarifstruktur` Zeilen 3–24 beziehungsweise 63–84.
+
+Vier Feldgruppen: Identität (1–3), Leistungspreis-Staffel (4–15), Arbeitspreise
+(16–19), Zeitstruktur (20–49, davon **28 Spalten allein für die HT-Fenster je
+Wochentag**). Die bis dahin undokumentierten Spalten sind aufgelöst:
+**Spalte 50 = monatlicher Leistungspreis** (€/kW·Monat, hat Vorrang vor der
+Staffel), **Spalte 51 = Grundpreis** (in allen 28 Sätzen 0, also tot).
+
+Vier Fallen, die beim Nachbau zu vermeiden sind:
+
+| Falle | Erläuterung |
+|---|---|
+| **Stufen*breiten*, keine Obergrenzen** | „500/1500/6000" bedeutet Grenzen bei 500, 2.000 und 8.000 kW — die Staffelroutine summiert kumulativ |
+| **Stufe 4 nie befüllt** | die Speicherzeile ist auskommentiert; die vierte Stufe ist der unbegrenzte Rest |
+| **Sommerpreis 0 als versteckter Modellschalter** | dann wird nur das Jahresmaximum mit Winterpreisen gestaffelt — bei 22 von 28 Sätzen der Fall |
+| **Währungsfalle** | Kopftexte sagen „DM/kW", die Werte sind Euro (142,139 = 278 DM ÷ 1,95583) |
+
+Beim Einspeisungsblatt sind **Sollleistung und Reduktionsfaktoren leer oder 0**,
+und es gibt **keinen aktiven Lesepfad** mehr — beides bestätigt Befund 11 („Leistungserlös
+Einspeisung fest 0") von der Datenseite.
+
+**Folge für das Zielmodell:** Mehr als die Hälfte des Blattes entfällt — die 28
+HT-Fenster-Spalten, drei der vier Arbeitspreise, Stufe 4 und die
+Einspeise-Sollleistung. Zu übernehmen sind Identität, ein Arbeitspreis,
+Sommeranfang und -ende (bleiben nötig, weil die Staffel Sommer und Winter
+trennt), Grundpreis sowie ein **explizites Leistungsmodell** statt der
+Schalterlogik über den Sommerpreis. Zwei Korrekturen gehören in die neue Maske:
+Staffelgrenzen als **kumulierte Obergrenze** statt als Breite, und ein Feld
+**Gültig ab** — der Altkatalog trägt den Preisstand nur im Beschreibungstext
+(„Stand 1.1.96") und überschreibt beim Speichern ersatzlos.
+
+### 7.2 `DB-Kraftwerk.XLS` — Kraftwerkspark
+
+Ein Blatt, 10 Spalten, **11 Datensätze**, Bezugsjahre 1994–2020 (auch die Zeile
+„2023" nutzt Daten von 2020). Kein Bezugsjahr-Feld — es steckt nur im
+Bezeichnertext.
+
+Abgleich mit dem vorhandenen `Tab_Kraftwerkspark`:
+
+| Größe | Altkatalog | Bestand EPOS-Plan |
+|---|---|---|
+| Wirkungsgrad | Bruch (0,43) | **Prozent** (42) |
+| CO₂ | **mg**/kWh Brennstoff | **g**/kWh Brennstoff — Faktor 1.000 |
+| SO₂, NOx | mg/kWh | mg/kWh — identisch |
+| CO, Staub | vorhanden | **fehlen** |
+| Bezugsjahr, Quelle | fehlen bzw. Fließtext | fehlen |
+
+Der Wertevergleich deckt drei Definitionsprobleme im Altkatalog auf: Der
+Wirkungsgrad einer Zeile ist ein **Textwert**; fünf Mixzeilen ab 2016 tragen
+Faktoren **je kWh Strom** in einer Spalte, die je kWh **Brennstoff** deklariert
+ist; und absolute Emissionsfaktoren stehen neben negativen
+Netto-Vermeidungssalden. Zusätzlich ist **Staub im aktiven Altcode tot** — die
+Aktualisierung kopiert nur die ersten sieben Spalten, die Referenzrechnung liest
+aber weiterhin die nie gefüllte Zelle.
+
+**Folge für das Zielmodell:** keine Wertübernahme. Die Struktur ist additiv zu
+ergänzen um `CO`, `Staub`, `GueltigAb`, `Quelle`, `ReadOnly` und vor allem
+**`Bezugsbasis`** mit den Werten `BRENNSTOFF` oder `STROM` — das macht den
+Definitionsbruch des Altkatalogs strukturell unmöglich und deckt zugleich den
+bestehenden Seed-Satz „Deutscher Strommix" ab, der bewusst je kWh Strom definiert
+ist.
+
+---
+
+## 8 `bhkwplan.py` — Gegenprobe zur Mengenlogik
+
+Die Datei bestätigt die aus dem VBA rekonstruierten Formeln:
+`Strombezug = max(0, Bedarf − Produktion)`,
+`Einspeisung = max(0, Produktion − Bedarf)`,
+`Eigenverbrauch = Bedarf − Bezug`, je Tarifzone summiert und in MWh geführt.
+Ebenso die Tarifcode-Bildung, die Monatsgrenzen als feste Stundenindizes und die
+Maxima je Zone.
+
+**Eine Methodenfrage war zu klären:** `py_einsparung_arbeit` rechnet
+`Eigenverbrauch × Arbeitspreis` — also mit **einem** Preis —, während der
+VBA-Code die **Differenz zweier Tarife** bildet. Welche Methode füllt den
+Ergebnisdialog?
+
+**Antwort: die Differenzmethode.** Die Python-Werte werden dreißig Zeilen später
+überschrieben:
+
+```vba
+einsparung_arbeit(0) = KostenArbeitStrombezug - KostenArbeitReststrombezug
+```
+
+und genau dieser Index 0 landet im Feld „Vermiedene Kosten / für die Arbeit".
+Bestätigt von der Tabellenseite: `Tab_Erloese` führt die Zeilen „Bezugskosten /
+Strombedarfskosten / Reststrompreis / Reststrombezugskosten / vermiedene Kosten".
+
+Die Indizes 1 bis 4 behalten dagegen die Python-Werte und erscheinen so in den
+Diagnoseblättern — dort steht die eigenverbrauchsbewertete Zahl, im Dialog die
+Differenz. **Referenz für die Zahlenprobe ist der Dialogwert.**
+`py_einsparung_arbeit` ist Restbestand der Portierung von der früheren nativen
+`BHKWPLAN.DLL`; der zugehörige Altaufruf steht auskommentiert daneben.
