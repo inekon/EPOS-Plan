@@ -103,9 +103,53 @@ namespace WindowsFormsApplication1
         public float Em_Staub_BHKW = 0f;
 
         // Laufzeiten
+        //
+        // ETAPPE E2 — WAS DIESE DREI FELDER WIRKLICH SIND. Laufzeiten[i] entsteht in
+        // Auswertung() als Waerme_MWh[i] / Waermeleistung[i] * 1000, ist also eine
+        // THERMISCHE VOLLBENUTZUNGSSTUNDENZAHL und KEINE Betriebsstundenzahl: Taktung
+        // (An/Aus innerhalb einer Stunde, Teillast) bildet das Modell nicht ab. Ein
+        // Modul, das ein Jahr lang zur Haelfte moduliert laeuft, hat 8.760
+        // Betriebsstunden, aber nur 4.380 thermische Vbh.
+        //
+        // Betriebsstunden ist die SUMME dieser Groesse ueber alle Module und kann
+        // deshalb 8.760 h ueberschreiten - bei zwei voll ausgelasteten Modulen sind es
+        // 17.520. Der Name ist Altbestand aus dem VBA-Vorlaeufer und wird hier bewusst
+        // nicht umbenannt (Tab_ErgebnisBHKW.Betriebsstunden_Gesamt haengt daran); die
+        // ANZEIGE benennt die Groesse seit E2 richtig, und die neuen Felder darunter
+        // tragen die Groesse, an der der KWK-Zuschlag haengt.
         public float Betriebsstunden = 0f;
         public float dLaufzeiten = 0f;
         public float[] Laufzeiten = new float[10];
+
+        /// <summary>
+        /// ETAPPE E2 — ELEKTRISCHE Vollbenutzungsstunden je Modul [h/a]:
+        /// <c>Stromproduktion [MWh] × 1000 / P_el [kW]</c>.
+        ///
+        /// <para>Das ist die Groesse, an der der KWK-Zuschlag haengt (KWKG 2025 § 8:
+        /// Zuschlag je Kilowattstunde KWK-Strom, gedeckelt ueber Vollbenutzungsstunden).
+        /// Sie kann 8.760 h konstruktiv nicht ueberschreiten, weil ein Modul nie mehr
+        /// Strom erzeugt als seine Nennleistung mal Jahresstunden.</para>
+        ///
+        /// <para>0, solange <see cref="bhkwStromLeistung"/> des Moduls 0 ist — dann ist
+        /// P_el im Katalog nicht gepflegt und eine Vbh-Zahl waere frei erfunden.</para>
+        /// </summary>
+        public float[] VbhElektrisch = new float[10];
+
+        /// <summary>
+        /// ETAPPE E2 — LEISTUNGSGEWICHTETE elektrische Vollbenutzungsstunden der ganzen
+        /// Anlage [h/a]: <c>Σ Stromproduktion [MWh] × 1000 / Σ P_el [kW]</c>.
+        ///
+        /// <para>Bewusst NICHT die Summe der Modulwerte (die koennte wie
+        /// <see cref="Betriebsstunden"/> ueber 8.760 h steigen) und auch nicht deren
+        /// arithmetisches Mittel (das gewichtete ein 5-kW-Modul so stark wie ein
+        /// 500-kW-Modul). Die leistungsgewichtete Groesse ist die einzige, die die
+        /// Aussage „so viele Vollbenutzungsstunden hat die installierte elektrische
+        /// Leistung erreicht" traegt — und genau die deckelt der Zuschlag, solange er
+        /// projektweit gerechnet wird (Etappe E6 macht ihn modulscharf).</para>
+        ///
+        /// <para>0, wenn keine elektrische Leistung gepflegt ist.</para>
+        /// </summary>
+        public float VbhElektrischGesamt = 0f;
 
         // Arrays für die Modulkonfigurationen zur späteren Berechnung
         private int[] bhkwBrennstoffart = new int[10];
@@ -303,6 +347,17 @@ namespace WindowsFormsApplication1
                 }
                 dLaufzeiten += Laufzeiten[zaehler];
 
+                // ETAPPE E2 — ELEKTRISCHE Vollbenutzungsstunden des Moduls. Dieselbe
+                // Rechnung wie eine Zeile darueber, nur mit der ELEKTRISCHEN Nennleistung
+                // im Nenner und der Stromproduktion im Zaehler. Rein additiv: Kein
+                // bestehender Rechenweg liest die beiden neuen Felder, sie werden
+                // ausschliesslich in die Ergebniszeilen geschrieben.
+                if (bhkwStromLeistung[zaehler] > 0)
+                    VbhElektrisch[zaehler] =
+                        (s_strom_MWh[zaehler] / bhkwStromLeistung[zaehler]) * 1000f;
+                else
+                    VbhElektrisch[zaehler] = 0f;   // P_el nicht gepflegt -> keine Zahl erfinden
+
                 // Verbrauch & Emissionen
                 if (bhkwWirkungsgrad[zaehler] > 0)
                 {
@@ -356,6 +411,21 @@ namespace WindowsFormsApplication1
             {
                 dLaufzeiten = dLaufzeiten / anzahl;
             }
+
+            // ETAPPE E2 — leistungsgewichtete elektrische Vollbenutzungsstunden der
+            // Anlage. Summe der Stromproduktion durch Summe der elektrischen
+            // Nennleistungen; Module ohne gepflegtes P_el bleiben in BEIDEN Summen
+            // aussen vor, sonst zoege ihre Stromproduktion (die es ohne P_el ohnehin
+            // nicht gibt) den Wert nach oben.
+            float summeStromMWh = 0f;
+            float summePelKW = 0f;
+            for (int i = 0; i < anzahl; i++)
+            {
+                if (bhkwStromLeistung[i] <= 0) continue;
+                summeStromMWh += s_strom_MWh[i];
+                summePelKW += bhkwStromLeistung[i];
+            }
+            VbhElektrischGesamt = (summePelKW > 0) ? (summeStromMWh / summePelKW) * 1000f : 0f;
         }
 
 
@@ -841,12 +911,15 @@ namespace WindowsFormsApplication1
             // das den Bedarfsvektor des Projekts überschreiben.
             waermebedarf = new float[8760];
 
+            VbhElektrischGesamt = 0f;
+
             for (int i = 0; i < MAX_BHKW; i++)
             {
                 s_waerme_MWh[i] = 0f;
                 s_strom_MWh[i] = 0f;
                 s_waerme_ueberschuss[i] = 0f;
                 Laufzeiten[i] = 0f;
+                VbhElektrisch[i] = 0f;
             }
         }
 

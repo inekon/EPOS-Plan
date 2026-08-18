@@ -9,6 +9,8 @@ entschieden ist, welche Etappe läuft und welche Ergebniswirkung jede Etappe hat
 | [`Grundlagen_KWKG_Energiesteuer_Stromsteuer.md`](../../../Grundlagen_KWKG_Energiesteuer_Stromsteuer.md) | Rechtsstand mit Quellen — Faktenbasis aller Seed-Werte |
 | [`Analyse_Altanwendung_BHKW-Plan.md`](Analyse_Altanwendung_BHKW-Plan.md) | Rechenwege der Excel-Anwendung und ihre 17 Fehler |
 | [`UMSETZUNGSSTAND.md`](UMSETZUNGSSTAND.md) | Gesamtstand Bericht und Wirtschaftlichkeit (W1–W3, Phasen 9–11) |
+| [`W4_E1_Gesetzesparameter_Protokoll.md`](W4_E1_Gesetzesparameter_Protokoll.md) | Etappe E1: Katalog, Seed, Pflegemaske, Lesefassade |
+| [`W4_E2_Vollbenutzungsstunden_Protokoll.md`](W4_E2_Vollbenutzungsstunden_Protokoll.md) | Etappe E2: Vbh-Korrektur, Wirkungsbeleg, Migrationsschritt 18 |
 
 ---
 
@@ -16,8 +18,8 @@ entschieden ist, welche Etappe läuft und welche Ergebniswirkung jede Etappe hat
 
 | # | Inhalt | Ergebniswirkung | Status |
 |---|---|---|---|
-| **E1** | Katalog `Tab_Gesetzesparameter`, Seed, Lesefassade, Pflegemaske; Überführung `Tab_KWKG_Staffel` | **keine** (nur Überführung, wertgleich) | **in Arbeit** |
-| **E2** | Vollbenutzungsstunden elektrisch je Modul, Betriebsstunden persistieren | **ja — Korrektur** eines Rechenfehlers | offen |
+| **E1** | Katalog `Tab_Gesetzesparameter`, Seed, Lesefassade, Pflegemaske; Überführung `Tab_KWKG_Staffel` | **keine** (nur Überführung, wertgleich) | **umgesetzt** (8/8 PASS, 194/194 byte-gleich) |
+| **E2** | Vollbenutzungsstunden elektrisch, Vbh je Modul persistieren (Migrationsschritt 18) | **ja — Korrektur** zweier Rechenfehler | **umgesetzt** (8/8 PASS; Wirkung nur bei gepflegtem KWKG-Satz) |
 | **E3** | Kostenposition um Kostenart, Bemessung, Erlös-Kennzeichen erweitern; Betriebskosten-Dialog nach VDI 2067 | keine für Bestandsprojekte | offen |
 | **E4** | Energiesteuer- und Stromsteuergutschrift | nur bei gepflegten Angaben | offen |
 | **E5** | Tarife mit drei Leistungspreismodellen, vermiedener Strombezug | nur bei gepflegten Tarifen | offen |
@@ -73,7 +75,8 @@ widersprüchliche Begrenzungen des KWK-Bonus.
 
 | Mangel | Fundstelle | Etappe |
 |---|---|---|
-| Vollbenutzungsstunden für die KWKG-Deckelung sind die **Summe thermischer** Vbh über alle Module und können 8.760 h überschreiten — der Zuschlag fällt bei Kaskaden zu hoch aus | `WirtschaftlichkeitCtrl.cs:848` | E2 |
+| ~~Vollbenutzungsstunden für die KWKG-Deckelung sind die **Summe thermischer** Vbh über alle Module und können 8.760 h überschreiten~~ — **behoben mit E2**; die Richtung war umgekehrt als angenommen: Der Zuschlag fiel bei Kaskaden zu **niedrig** aus (Protokoll, Abschnitt 1.2) | `WirtschaftlichkeitCtrl.cs:848` | **E2, erledigt** |
+| ~~`LiesBhkwLeistungKW` summierte **alle Gerätezeilen** statt der installierten Anlagen — Projekt 1024 kam auf 546,4 kW statt 21 kW und verlor den Zuschlag am 500-kW-Guard~~ — **behoben mit E2** | `WirtschaftlichkeitCtrl.cs:991` | **E2, erledigt** |
 | Energiesteuer- und Stromsteuererstattung fehlen vollständig | — | E4 |
 | Vermiedener Strombezug ist keine Erlöszeile; die Bezugsgröße „Bedarf ohne Anlage" wird nirgends geführt | `StromMatrix.cs:35-42` | E5 |
 | Ohne Photovoltaik im Projekt bekommt eingespeister BHKW-Strom **keinen Strompreis**, nur den Zuschlag | `Form_WirtschaftlichkeitParameter.cs:62-66` | E5 |

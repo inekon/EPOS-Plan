@@ -102,8 +102,28 @@ namespace WindowsFormsApplication1
         public double Waermeproduktion;             // MWh/a
         public double Waermeueberschuss;            // MWh/a
         public double Stromproduktion;              // MWh/a
-        public double Betriebsstunden_Gesamt;       // h/a
-        public double Betriebsstunden_Durchschnitt; // h/a
+        // ETAPPE E2 - WAS DIESE BEIDEN FELDER SIND (und was nicht):
+        // Betriebsstunden_Gesamt ist die SUMME der THERMISCHEN Vollbenutzungsstunden
+        // ueber alle Module (SimulationBHKW.Laufzeiten[] = Waerme / Waermeleistung),
+        // KEINE Betriebsstundenzahl - Taktung bildet das Modell nicht ab. Die Summe
+        // kann 8.760 h ueberschreiten, sobald mehr als ein Modul laeuft. Die Feldnamen
+        // bleiben, weil die gleichnamigen Spalten in Tab_ErgebnisBHKW seit jeher so
+        // heissen; die ANZEIGE benennt sie seit E2 richtig.
+        public double Betriebsstunden_Gesamt;       // h/a (Summe THERMISCHER Vbh je Modul)
+        public double Betriebsstunden_Durchschnitt; // h/a (Mittel THERMISCHER Vbh je Modul)
+
+        /// <summary>
+        /// ETAPPE E2 - LEISTUNGSGEWICHTETE elektrische Vollbenutzungsstunden [h/a]:
+        /// Summe Stromproduktion [MWh] x 1000 / Summe P_el [kW] aller Module.
+        ///
+        /// <para>Die massgebliche Groesse fuer die KWKG-Deckelung (der Zuschlag haengt
+        /// an KWK-STROM) und die einzige der drei Vbh-Groessen dieser Zeile, die
+        /// 8.760 h nicht ueberschreiten kann.</para>
+        ///
+        /// <para>0 = nicht erhoben (Ergebniszeile vor Etappe E2) oder keine elektrische
+        /// Nennleistung gepflegt. Die Leseseite behandelt beides gleich.</para>
+        /// </summary>
+        public double VbhElektrisch;                // h/a
         public double Waermebedarfsdeckung;         // %
         public double Strombedarfsdeckung;          // %
         public double Gasverbrauch;
@@ -127,6 +147,32 @@ namespace WindowsFormsApplication1
         public string Brennstoff = "";
         public double Verbrauch = 0.0;          // MWh/a
         public int CarrierId;             // energy_carrier.id (0 = keine Zuordnung)
+
+        /// <summary>
+        /// ETAPPE E2 - THERMISCHE Vollbenutzungsstunden dieses Moduls [h/a]:
+        /// Waermeproduktion [MWh] x 1000 / P_therm [kW] (SimulationBHKW.Laufzeiten[i]).
+        ///
+        /// <para><b>Ausdruecklich KEINE Betriebsstundenzahl.</b> Der Rechenkern kennt
+        /// keine Taktung: Ein Modul, das ein Jahr lang halb moduliert laeuft, hat
+        /// 8.760 Betriebsstunden, aber 4.380 thermische Vbh. Die Groesse heisst deshalb
+        /// so, wie sie gebildet wird - wer spaeter eine Wartung „je Betriebsstunde"
+        /// darauf bemisst (Etappe E3), rechnet mit einer NAEHERUNG und muss das
+        /// wissen.</para>
+        ///
+        /// <para>0 = nicht erhoben (Zeile vor Etappe E2) oder keine Waermeleistung
+        /// gepflegt.</para>
+        /// </summary>
+        public double VbhThermisch;       // h/a
+
+        /// <summary>
+        /// ETAPPE E2 - ELEKTRISCHE Vollbenutzungsstunden dieses Moduls [h/a]:
+        /// Stromproduktion [MWh] x 1000 / P_el [kW]. Bemessungsgrundlage des
+        /// KWK-Zuschlags; Etappe E6 deckelt damit modulscharf. Kann 8.760 h nicht
+        /// ueberschreiten.
+        ///
+        /// <para>0 = nicht erhoben (Zeile vor Etappe E2) oder P_el nicht gepflegt.</para>
+        /// </summary>
+        public double VbhElektrisch;      // h/a
     }
 
     // Detail: Heizkessel/Spitzenkessel-Aggregat (Tab_ErgebnisHeizkessel) + Modulliste.

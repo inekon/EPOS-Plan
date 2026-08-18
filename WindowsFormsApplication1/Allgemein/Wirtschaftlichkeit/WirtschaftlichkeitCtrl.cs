@@ -41,6 +41,11 @@ namespace WindowsFormsApplication1
         public const string TAB_MATRIX = "Tab_ErgebnisStromMatrix";
         public const string TAB_KWKG_STAFFEL = "Tab_KWKG_Staffel";
 
+        /// <summary>ETAPPE E2 (L6): Spalte der erreichten elektrischen
+        /// Vollbenutzungsstunden in <see cref="TAB_ERGEBNIS"/>. EINE Wahrheit für
+        /// Anlage, Schreib- und Leseweg.</summary>
+        public const string SPALTE_KWKG_VBH_EL = "KWKGVbhElektrisch";
+
         /// <summary>Fristen des § 6 KWKG 2025 (Konzept Kap. 8.2, Phase 9).</summary>
         public static readonly DateTime KWKG_STICHTAG_ENDE = new DateTime(2026, 12, 31);
         public const int KWKG_REALISIERUNG_JAHRE = 4;
@@ -213,6 +218,13 @@ namespace WindowsFormsApplication1
                     SpalteSicher(conn, TAB_PARAMETER, "KWKG_Vbh_Kontingent", "DOUBLE");
                     SpalteSicher(conn, TAB_ERGEBNIS, "StromkostenTarif", "DOUBLE");
                     SpalteSicher(conn, TAB_ERGEBNIS, "HinweisText", "LONGTEXT");
+                    // ETAPPE E2 (L6): die Bemessungsgrundlage der KWKG-Deckelung wird
+                    // mitgeschrieben, damit ein gespeichertes Ergebnis nachvollziehbar
+                    // bleibt. Additiv über denselben Weg wie die Spalten darüber — dieses
+                    // Modul führt seine Tabellen seit jeher selbst (bekannte doppelte
+                    // Wahrheit gegenüber SchemaMigration, W4-Umsetzungsstand Abschnitt 6);
+                    // ein Migrationsschritt dafür wäre der dritte Mechanismus.
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_KWKG_VBH_EL, "DOUBLE");
                     SpalteSicher(conn, TAB_PARAMETER, "KWKG_Bonus_Einspeisung", "DOUBLE");
                     SpalteSicher(conn, TAB_PARAMETER, "ID_Kraftwerkspark", "LONG");
                     SpalteSicher(conn, TAB_PARAMETER, "RefKessel_Wirkungsgrad", "DOUBLE");
@@ -749,6 +761,9 @@ namespace WindowsFormsApplication1
             public double Behg;             // €/a BEHG-Abgabe Jahr 1 (steigt mit p_E)
             public double[] KwkgReihe;      // nominale KWKG-Erlöse je Jahr (null = keine)
             public double KwkgJahr1;
+            /// <summary>ETAPPE E2 (L6): erreichte ELEKTRISCHE Vbh [h/a] — die Größe, an
+            /// der die KWKG-Deckelung hängt (0 = kein BHKW / nicht bestimmbar).</summary>
+            public double VbhElektrisch;
             public double WaermeMWh;
 
             // Stufe W3 (Phase 8)
@@ -820,6 +835,14 @@ namespace WindowsFormsApplication1
             // Ergebnis als 0 sichtbar (Faktoren in der Kostenmaske pflegen).
             e.Behg = p.CO2Preis > 0 ? (v.CO2Brennstoff ?? 0) * p.CO2Preis : 0;
 
+            // ETAPPE E2 (L6): die erreichten ELEKTRISCHEN Vollbenutzungsstunden — die
+            // Bezugsgröße der KWKG-Deckelung. Sie wird UNABHÄNGIG davon geführt, ob ein
+            // KWKG-Satz gepflegt ist, damit Reiter und Bericht sie auch dann zeigen
+            // können; der zugehörige Hinweis entsteht ausschließlich in BaueKwkgReihe,
+            // also nur dort, wo die Größe tatsächlich gebraucht wird.
+            string vbhHinweisUnbenutzt;
+            e.VbhElektrisch = VbhElektrisch(v, out vbhHinweisUnbenutzt);
+
             double kwkgJahr1;
             string kwkgHinweis;
             e.KwkgReihe = BaueKwkgReihe(v, p, e.Matrix, out kwkgJahr1, out kwkgHinweis);
@@ -839,7 +862,12 @@ namespace WindowsFormsApplication1
         /// Heizöl-Ausschluss für Neuanlagen — Verstoß ⇒ Bonus = 0 mit Hinweis.
         /// Negativpreis-Abschlag (§ 7 Abs. 5) als %-Näherung auf die vergüteten Vbh;
         /// die abgeschlagenen Stunden verbrauchen das Kontingent nicht.
-        /// Näherung unverändert: erreichte Vbh = Betriebsstunden des BHKW.
+        ///
+        /// <para><b>ETAPPE E2 (L6): erreichte Vbh = ELEKTRISCHE Vollbenutzungsstunden</b>
+        /// (<see cref="VbhElektrisch"/>), leistungsgewichtet über alle Module. Bis dahin
+        /// stand hier <c>Betriebsstunden_Gesamt</c> — die Summe THERMISCHER Vbh, die
+        /// 8.760 h überschreiten kann und den Zuschlag bei Kaskaden zu hoch ansetzte. Die
+        /// Rechnung bleibt projektweit; modulscharf wird sie in Etappe E6.</para>
         /// </summary>
         private double[] BaueKwkgReihe(VariantenDaten v, WirtschaftlichkeitParameter p,
                                        StromMatrix matrix, out double jahr1, out string hinweis)
@@ -850,8 +878,17 @@ namespace WindowsFormsApplication1
             bool aktiv = p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0;
             if (!aktiv || v.Ergebnis == null || v.Ergebnis.BHKW == null) return null;
             double stromMWh = v.Ergebnis.BHKW.Stromproduktion;
-            double vbh = v.Ergebnis.BHKW.Betriebsstunden_Gesamt;
-            if (stromMWh <= 0 || vbh <= 0) return null;
+            if (stromMWh <= 0) return null;      // kein KWK-Strom -> nichts zu vergüten
+
+            // ETAPPE E2: die maßgebliche Größe der Deckelung. Ist sie nicht bestimmbar,
+            // sagt der Hinweis warum — statt still mit 0 weiterzurechnen (Befund D5-Regel).
+            string vbhHinweis;
+            double vbh = VbhElektrisch(v, out vbhHinweis);
+            if (vbh <= 0)
+            {
+                if (vbhHinweis != null) hinweis = vbhHinweis;
+                return null;
+            }
 
             // ---------------- Förderfähigkeit § 6 KWKG 2025 (Kap. 8.2) ----------------
             if (p.KwkgStichtag.HasValue)
@@ -880,8 +917,7 @@ namespace WindowsFormsApplication1
                              "Förderfähigkeit ungeprüft (§ 6 KWKG 2025, Stichtag 31.12.2026).");
 
             // ---------------- Guards Kap. 8.4/8.5: > 500 kW, Heizöl-Neuanlage ----------------
-            if (!_pelCache.ContainsKey(v.IdProjekt)) _pelCache[v.IdProjekt] = LiesBhkwLeistungKW(v.IdProjekt);
-            double pelKW = _pelCache[v.IdProjekt];
+            double pelKW = PelKW(v.IdProjekt);
             if (pelKW > KWKG_MAX_LEISTUNG_KW)
             {
                 hinweise.Add("KWKG: Σ installierte BHKW-Leistung " + pelKW.ToString("N0") +
@@ -987,9 +1023,50 @@ namespace WindowsFormsApplication1
             return deckel;
         }
 
-        /// <summary>Installierte elektrische BHKW-Leistung des Projekts [kW] (Σ Tab_BHKW.Pel).</summary>
+        /// <summary>
+        /// Installierte elektrische BHKW-Leistung des Projekts [kW].
+        ///
+        /// <para><b>ETAPPE E2 — Bezugsmenge korrigiert.</b> Bis dahin lautete die Abfrage
+        /// <c>SELECT SUM(Pel) FROM Tab_BHKW WHERE ID_Projekt = ?</c> — die Summe über alle
+        /// BHKW-GERÄTEZEILEN des Projekts. Das ist nicht die installierte Leistung:
+        /// <c>Tab_BHKW</c> nimmt jede Katalogübernahme auf, auch wenn die zugehörige
+        /// Anlagenzeile nie entstand oder später gelöscht wurde. Die Simulation baut ihre
+        /// Modulliste dagegen ausschließlich aus <c>Tab_Energieanlagen</c>
+        /// (<c>SimulationControl.BHKW_Liste_Laden</c>); nur diese Geräte laufen und
+        /// erzeugen den Strom, an dem der Zuschlag hängt.</para>
+        ///
+        /// <para><b>Gemessen am Bestand (18.08.2026):</b> Projekt 1024 führt EIN
+        /// BHKW-Modul mit 21 kW, <c>Tab_BHKW</c> aber fünf Gerätezeilen mit zusammen
+        /// 546,4 kW. Die alte Summe überschritt damit die 500-kW-Schwelle des
+        /// Ausschreibungsfensters und setzte den KWK-Zuschlag auf 0 — für eine Anlage, die
+        /// nicht einmal ein Zwanzigstel dieser Leistung hat. Projekt 1023 kommt auf
+        /// 1.551,2 kW aus elf Gerätezeilen und hat überhaupt kein BHKW im Anlagenbestand.</para>
+        ///
+        /// <para><b>Rückfall auf die alte Summe</b>, wenn der Verbund keine Zeile liefert
+        /// (Anlagenzeile ohne <c>ID_BHKW</c>, Datenbank ohne Anlagenzeilen): Dann ist die
+        /// Gerätesumme die einzige verfügbare Aussage, und sie ist konservativ — sie
+        /// überschätzt die Leistung nie nach unten. Ein Projekt ohne jede Angabe liefert 0;
+        /// die Aufrufer behandeln das ausdrücklich.</para>
+        /// </summary>
         private static double LiesBhkwLeistungKW(int idProjekt)
         {
+            // 1. Σ P_el über die ANLAGENZEILEN — dieselbe Menge, die die Engine rechnet.
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT SUM(b.Pel) FROM Tab_Energieanlagen AS a " +
+                    "INNER JOIN Tab_BHKW AS b ON a.ID_BHKW = b.ID " +
+                    "WHERE a.ID_Projekt = ? AND a.ID_Type = " + WizardItemClass.BHKW_TYP,
+                    new OleDbParameter("@p", idProjekt));
+                if (o != null && o != DBNull.Value)
+                {
+                    double summe = Convert.ToDouble(o);
+                    if (summe > 0) return summe;
+                }
+            }
+            catch { }
+
+            // 2. Rückfall: Σ P_el über die Gerätezeilen (der Weg bis Etappe E2).
             try
             {
                 object o = DataRepository.ExecuteScalar(
@@ -999,6 +1076,64 @@ namespace WindowsFormsApplication1
             }
             catch { }
             return 0;
+        }
+
+        /// <summary>Σ P_el des Projekts [kW], einmal je Berechne-Lauf gelesen.</summary>
+        private double PelKW(int idProjekt)
+        {
+            if (!_pelCache.ContainsKey(idProjekt)) _pelCache[idProjekt] = LiesBhkwLeistungKW(idProjekt);
+            return _pelCache[idProjekt];
+        }
+
+        /// <summary>
+        /// ETAPPE E2 (Leitentscheidung L6) — die ELEKTRISCHEN Vollbenutzungsstunden des
+        /// Projekts [h/a], leistungsgewichtet über alle BHKW-Module:
+        /// <c>Σ Stromproduktion [MWh] × 1000 / Σ P_el [kW]</c>.
+        ///
+        /// <para><b>Warum diese Größe und nicht die bisherige.</b> Der KWK-Zuschlag wird je
+        /// Kilowattstunde KWK-STROM gezahlt und über Vollbenutzungsstunden gedeckelt
+        /// (KWKG 2025 § 8). Bis Etappe E2 stand an dieser Stelle
+        /// <c>Ergebnis.BHKW.Betriebsstunden_Gesamt</c> — die SUMME THERMISCHER
+        /// Vollbenutzungsstunden über alle Module
+        /// (<c>SimulationBHKW.Laufzeiten[i] = Wärme_MWh[i] / P_therm[i] × 1000</c>,
+        /// aufsummiert). Zwei Fehler in einem: falsche Energieart (thermisch statt
+        /// elektrisch) und falsche Aggregation (Summe statt Gewichtung). Die Summe kann
+        /// 8.760 h überschreiten; der Deckel griff dadurch bei Kaskaden nicht mehr, und der
+        /// Zuschlag fiel systematisch zu hoch aus.</para>
+        ///
+        /// <para><b>Zwei Quellen, eine Formel.</b> Vorrang hat der beim Lauf berechnete und
+        /// gespeicherte Wert (<c>Tab_ErgebnisBHKW.VbhElektrisch</c>, Migrationsschritt 18) —
+        /// er trägt die Leistung, die ZUM ZEITPUNKT DES LAUFS installiert war, und ist
+        /// damit dieselbe Zahl, die Ergebnisreiter und Bericht zeigen. Fehlt er
+        /// (Ergebniszeile vor E2), wird er aus <c>Stromproduktion</c> und der heute
+        /// installierten Leistung gebildet — nach derselben Formel, die der Rechenkern
+        /// verwendet.</para>
+        /// </summary>
+        /// <param name="hinweis">
+        /// != null, wenn die Größe NICHT bestimmbar ist und der Anwender das wissen muss
+        /// (keine elektrische Leistung gepflegt). Kein Strom im Lauf ergibt dagegen still
+        /// 0 — dann gibt es schlicht nichts zu vergüten.
+        /// </param>
+        /// <returns>Elektrische Vollbenutzungsstunden [h/a]; 0 = nicht bestimmbar.</returns>
+        private double VbhElektrisch(VariantenDaten v, out string hinweis)
+        {
+            hinweis = null;
+            if (v == null || v.Ergebnis == null || v.Ergebnis.BHKW == null) return 0;
+
+            double stromMWh = v.Ergebnis.BHKW.Stromproduktion;
+            if (stromMWh <= 0) return 0;   // kein KWK-Strom -> keine Vollbenutzungsstunden
+
+            double gespeichert = v.Ergebnis.BHKW.VbhElektrisch;
+            if (gespeichert > 0) return gespeichert;
+
+            double pelKW = PelKW(v.IdProjekt);
+            if (pelKW <= 0)
+            {
+                hinweis = "KWKG: keine elektrische Nennleistung der BHKW gepflegt (Tab_BHKW.Pel) — " +
+                          "die elektrischen Vollbenutzungsstunden sind nicht bestimmbar; Bonus = 0.";
+                return 0;
+            }
+            return stromMWh * 1000.0 / pelKW;
         }
 
         /// <summary>true, wenn ein BHKW des Projekts einen Öl-Träger nutzt
@@ -1128,6 +1263,7 @@ namespace WindowsFormsApplication1
             erg.EinspeiseerloesJahr = eingabe.Erloes;
             erg.CO2AbgabeJahr = eingabe.Behg;                 // W2: BEHG
             erg.KwkgErloesJahr1 = eingabe.KwkgJahr1;          // W2/W3: KWKG
+            erg.KwkgVbhElektrisch = eingabe.VbhElektrisch;    // E2: Bezugsgröße der Deckelung
             erg.StromkostenTarif = eingabe.StromkostenTarif;  // W3: Tarifmatrix
             erg.Hinweis = eingabe.Hinweis;
             foreach (KapitalwertRechner.InvestPosition pos in eingabe.Investitionen)
@@ -1295,8 +1431,9 @@ namespace WindowsFormsApplication1
                                     "Einspeiseverguetung, Investition, Betriebskosten, Energiekosten, Einspeiseerloes, " +
                                     "BarwertAusgaben, BarwertEinnahmen, Restwert, Kapitalwert, KapitalwertDiff, " +
                                     "AnnuitaetKW, AmortisationJahre, Gestehungskosten, " +
-                                    "IRR, CO2Abgabe, KWKGErloes, StromkostenTarif, HinweisText, Fehlgrund) " +
-                                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", conn, tx))
+                                    "IRR, CO2Abgabe, KWKGErloes, " + SPALTE_KWKG_VBH_EL + ", " +
+                                    "StromkostenTarif, HinweisText, Fehlgrund) " +
+                                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", conn, tx))
                                 {
                                     OleDbParameterCollection ps = cmd.Parameters;
                                     ps.AddWithValue("@id", naechsteId);
@@ -1326,6 +1463,7 @@ namespace WindowsFormsApplication1
                                     ps.Add(DbWert(e.IRR));
                                     ps.AddWithValue("@behg", R(e.CO2AbgabeJahr));
                                     ps.AddWithValue("@kwkg", R(e.KwkgErloesJahr1));
+                                    ps.AddWithValue("@vbhel", R(e.KwkgVbhElektrisch));   // E2 (L6)
                                     ps.Add(DbWert(e.StromkostenTarif));
                                     ps.AddWithValue("@hw", (object)e.Hinweis ?? DBNull.Value);
                                     ps.AddWithValue("@fg", (object)e.Fehlgrund ?? DBNull.Value);
@@ -1454,6 +1592,7 @@ namespace WindowsFormsApplication1
                             IRR = D(r, "IRR"),
                             CO2AbgabeJahr = D(r, "CO2Abgabe") ?? 0,
                             KwkgErloesJahr1 = D(r, "KWKGErloes") ?? 0,
+                            KwkgVbhElektrisch = D(r, SPALTE_KWKG_VBH_EL) ?? 0,   // E2 (L6)
                             StromkostenTarif = D(r, "StromkostenTarif"),
                             Hinweis = r.Table.Columns.Contains("HinweisText") && r["HinweisText"] != DBNull.Value
                                       ? r["HinweisText"].ToString() : null,

@@ -44,8 +44,17 @@ produktiv (Phasen W1–W3, 9 und 11, siehe [`UMSETZUNGSSTAND.md`](UMSETZUNGSSTAN
 **Ein Rechenfehler im Bestand** ist zu korrigieren: `WirtschaftlichkeitCtrl.cs:848`
 setzt die erreichten Vollbenutzungsstunden auf `Betriebsstunden_Gesamt`. Das ist
 die **Summe thermischer** Vollbenutzungsstunden über alle Module
-(`SimulationBHKW.cs:294-304`, `:353-358`) und kann 8.760 h überschreiten — bei
-mehreren BHKW fällt der Zuschlag systematisch zu hoch aus.
+(`SimulationBHKW.cs:294-304`, `:353-358`) und kann 8.760 h überschreiten.
+
+> **Richtungskorrektur nach der Messung (Etappe E2, 18.08.2026).** Dieser Absatz
+> nahm an, der Zuschlag falle „bei mehreren BHKW systematisch zu hoch" aus. Das
+> Gegenteil ist der Fall: `BaueKwkgReihe` normiert mit
+> `bonusVoll × verguetet / vbh` — eine zu große Vbh-Zahl senkt diesen Bruch und
+> verbraucht zugleich das 30.000-h-Kontingent zu schnell. Gemessen an einer
+> präparierten Zweimodul-Kaskade halbierte der Altstand den Zuschlag exakt
+> (242,90 statt 485,81 €/a im Jahr 1). Belege in
+> [`W4_E2_Vollbenutzungsstunden_Protokoll.md`](W4_E2_Vollbenutzungsstunden_Protokoll.md),
+> Abschnitt 4.
 
 ---
 
@@ -93,6 +102,17 @@ aufgehoben.
 `SimulationBHKW.Laufzeiten[]` persistiert (Muster Wärmepumpe: `ErgebnisModel.cs:92`,
 `ErgebnisCtrl.cs:222/235`, `SimulationRunner.cs:362`) — sie sind die
 Bemessungsgrundlage für Wartung je Betriebsstunde.
+
+> **Zwei Präzisierungen aus der Umsetzung (E2, 18.08.2026).** (1) Die Spalte für
+> `Laufzeiten[]` heißt `VbhThermisch`, **nicht** `Betriebsstunden`: Der Wert ist
+> `Wärme / P_therm`, also eine Vollbenutzungsstundenzahl; Taktung bildet der
+> Rechenkern nicht ab. Wer eine Wartung „je Betriebsstunde" darauf bemisst (L7,
+> Etappe E3), rechnet mit einer Näherung und muss das wissen. (2) **Je Modul sind
+> thermische und elektrische Vbh im heutigen Modell identisch** — der Motor
+> erzeugt Wärme und Strom stets im festen Verhältnis `P_el / P_therm`. Die
+> Korrektur wirkt deshalb ausschließlich über die **Aggregation** (Summe →
+> leistungsgewichtet) und über die **Bezugsmenge von Σ P_el**, nicht über die
+> Energieart je Modul.
 
 **L7 — Nutzerentscheidungen vom 18.08.2026:**
 
@@ -164,7 +184,9 @@ Additiv, Migration ab Schemastand 18. Muster für neue Tabellen:
 |---|---|
 | `Tab_Gesetzesparameter` (neu) | `ID LONG PK, Schluessel TEXT(60), Klasse TEXT(40), JahrVon LONG, Wert DOUBLE, Einheit TEXT(20), Quelle TEXT(120)` |
 | `Tab_ProjektWerte` | `Kostenart TEXT(20)`, `Bemessung TEXT(20)`, `IstErloes YESNO`, `Menge DOUBLE`, `Einheitpreis DOUBLE` |
-| `Tab_ErgebnisBHKWModul` | `Betriebsstunden DOUBLE`, `VbhElektrisch DOUBLE` |
+| `Tab_ErgebnisBHKW` | `VbhElektrisch DOUBLE` — leistungsgewichtet über alle Module (E2, Schritt 18) |
+| `Tab_ErgebnisBHKWModul` | `VbhThermisch DOUBLE`, `VbhElektrisch DOUBLE` (E2, Schritt 18) |
+| `Tab_ErgebnisWirtschaftlichkeit` | `KWKGVbhElektrisch DOUBLE` — Bemessungsgrundlage der Deckelung, über `SpalteSicher` |
 | `Tab_BHKW`, `Tab_BHKW_STAMM` | `Wartungsbemessung TEXT(20)` — analog Kessel (Schritt 15) |
 | `Tab_ProjektTarif` | `Leistungsmodell TEXT(20)` (`MONATLICH` / `STAFFEL` / `JAHRESHOECHSTLAST`), vier **kumulierte Obergrenzen** in kW mit Sommer- und Winterpreis, monatlicher Leistungspreis, Grundpreis, `GueltigAb` |
 | `Tab_Kraftwerkspark` | `CO`, `Staub`, `GueltigAb`, `Quelle`, `ReadOnly` und vor allem **`Bezugsbasis TEXT(12)`** (`BRENNSTOFF` / `STROM`) |

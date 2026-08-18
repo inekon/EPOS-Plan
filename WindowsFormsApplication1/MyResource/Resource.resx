@@ -1014,6 +1014,15 @@ sich aus: Volumen × 1,16 Wh/(l·K) × (Vorlauf − Rücklauf).</value>
   <data name="SIM_BHKW_MODUL_STANDARD" xml:space="preserve">
     <value>Standard BHKW</value>
   </data>
+  <data name="SIM_BHKW_VBH_EL" xml:space="preserve">
+    <value>Vollbenutzungsstunden elektrisch:</value>
+  </data>
+  <data name="SIM_BHKW_VBH_TH_MITTEL" xml:space="preserve">
+    <value>Vbh thermisch, Mittel Module</value>
+  </data>
+  <data name="SIM_BHKW_VBH_TH_SUMME" xml:space="preserve">
+    <value>Vbh thermisch, Summe Module</value>
+  </data>
   <data name="SIM_BM_RB_LAUFZEIT" xml:space="preserve">
     <value>Laufzeitoptimiert - maximale Leistung</value>
   </data>
