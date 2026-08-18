@@ -347,8 +347,18 @@ namespace WindowsFormsApplication1
                 for (int i = 0; i < quellAnlagen.Count; i++)
                 {
                     WErzeugerCtrl a = quellAnlagen[i];
-                    GeraetefkSetzen(plan, a, GeraetefkZiel(plan, a, quellGeraete, neueGeraeteIds));
+
+                    // REIHENFOLGE IST HIER WESENTLICH. Beim Gewerk Pufferspeicher ist der
+                    // Geraete-Fremdschluessel DIESELBE Spalte wie einer der vier
+                    // Pufferverweise (ID_PUFFER). Wer ihn zuerst umsetzt, laesst die
+                    // anschliessende Verweis-Abbildung auf einer bereits gesetzten
+                    // ZIEL-ID nachschlagen - die steht nicht in der Quell-Abbildung, und
+                    // der Verweis fiele als "nicht aufloesbar" weg. Deshalb: Ziel-ID aus
+                    // dem UNVERAENDERTEN Modell bestimmen, dann die Verweise abbilden,
+                    // und den Geraete-Fremdschluessel zuletzt setzen.
+                    int fkZiel = GeraetefkZiel(plan, a, quellGeraete, neueGeraeteIds);
                     PufferverweiseUmschreiben(a, pufferAbbildung, warnungen);
+                    GeraetefkSetzen(plan, a, fkZiel);
 
                     Ausfuehren(conn, trans, WizardCtrl.SQL_ANLAGE_INSERT,
                                WizardCtrl.AnlagenParameter(idZiel, a, pufferCache));
