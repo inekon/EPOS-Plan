@@ -4588,4 +4588,13 @@ Mehrere Felder desselben Modultyps sind zulässig — bitte prüfen, ob das so g
   <data name="ANL_SP_NAME_ANGEPASST" xml:space="preserve">
     <value>Der Name „{0}" ist im Projekt bereits vergeben. Die Speichervariante wurde in „{1}" umbenannt.</value>
   </data>
+  <data name="BK_KOSTEN_OHNE_POSITION" xml:space="preserve">
+    <value>⚠ Ohne Kostenposition: {0} — über „Kostenverwaltung öffnen…" und dort „Planwert übernehmen…" erfassen</value>
+  </data>
+  <data name="BK_KOSTEN_OHNE_POSITION_HINT" xml:space="preserve">
+    <value>„{0}" ist im Projekt verbaut, führt aber keine Investitionsposition — die Kachel „Investition" zählt dieses Gewerk deshalb nicht mit.</value>
+  </data>
+  <data name="BK_KOSTEN_ENERGIE_PREIS0" xml:space="preserve">
+    <value>⚠ Arbeitspreis 0,00 bei: {0} — ohne Preis können keine Energiekosten entstehen; im Reiter „Energiekosten" der Kostenverwaltung erfassen.</value>
+  </data>
 </root>

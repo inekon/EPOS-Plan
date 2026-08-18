@@ -49,6 +49,21 @@ namespace WindowsFormsApplication1
         /// </summary>
         private int _abweichungen = 0;
 
+        /// <summary>
+        /// Gewerke, die im Projekt VERBAUT sind, aber keine Investitionsposition führen —
+        /// gefüllt in <see cref="LadeKomponenten"/>, gemeldet in der Statuszeile. Ohne diese
+        /// Liste zeigte die Seite stumm 0,00 €: Kachel, Tabelle und Fußzeile schwiegen
+        /// darüber, DASS ein Gewerk des Projekts überhaupt fehlt.
+        /// </summary>
+        private readonly List<string> _ohnePosition = new List<string>();
+
+        /// <summary>
+        /// Energieträger des Projekts mit Arbeitspreis 0 — gefüllt in
+        /// <see cref="LadeTraeger"/>. Solange hier etwas steht, können die Energiekosten
+        /// gar nicht anders als 0 ausfallen; genau das sagt die Statuszeile dann auch.
+        /// </summary>
+        private readonly List<string> _traegerOhnePreis = new List<string>();
+
         private readonly WirtschaftlichkeitCtrl _wirt = new WirtschaftlichkeitCtrl();
 
         // Steuerelemente
@@ -249,20 +264,35 @@ namespace WindowsFormsApplication1
                 foreach (KapitalwertRechner.InvestPosition p in positionen) invest += p.Betrag;
             }
             catch { }
-            kInvest.Wert = invest.ToString("N2", kultur) + " " + MyResource.Resource.BK_KOSTEN_EINHEIT_EUR;
+            // Keine einzige Investitionsposition heißt NICHT „das Projekt kostet nichts".
+            // 0,00 € wäre an dieser Stelle eine Aussage, die niemand getroffen hat — dieselbe
+            // Unterscheidung wie auf der Stromspeicher-Ergebnisseite („—" statt 0,0 %).
+            kInvest.Wert = (investPositionen > 0)
+                ? invest.ToString("N2", kultur) + " " + MyResource.Resource.BK_KOSTEN_EINHEIT_EUR
+                : "—";
 
             // --- Kategorie 2: Betrieb ---
             double betrieb = 0;
+            int betriebPositionen = 0;
             try
             {
                 betrieb = WirtschaftlichkeitCtrl.LiesBetriebskosten(
                     _idProjekt, WirtschaftlichkeitSzenario.ERWARTET);
+
+                // Nur zum Unterscheiden von „nichts erfasst" und „erfasst, aber 0" —
+                // gerechnet wird weiterhin ausschließlich mit LiesBetriebskosten.
+                DataTable bt = Form_Kosten.LiesKomponentenSummen(
+                    _idProjekt, Form_Kosten.KATEGORIE_BETRIEB);
+                betriebPositionen = (bt != null) ? bt.Rows.Count : 0;
             }
             catch { }
-            kBetrieb.Wert = betrieb.ToString("N2", kultur) + " " + MyResource.Resource.BK_KOSTEN_EINHEIT_EUR_A;
+            kBetrieb.Wert = (betriebPositionen > 0)
+                ? betrieb.ToString("N2", kultur) + " " + MyResource.Resource.BK_KOSTEN_EINHEIT_EUR_A
+                : "—";
 
             // --- Energie: zuletzt gespeicherter Wert der Wirtschaftlichkeitsrechnung ---
             string energieHinweis = "";
+            bool energieNull = true;      // nichts berechnet ODER 0,00 €/a
             try
             {
                 WirtschaftlichkeitErgebnis erg = _wirt
@@ -277,6 +307,7 @@ namespace WindowsFormsApplication1
                 {
                     kEnergie.Wert = erg.EnergiekostenJahr.Value.ToString("N2", kultur) + " " +
                                     MyResource.Resource.BK_KOSTEN_EINHEIT_EUR_A;
+                    energieNull = Math.Abs(erg.EnergiekostenJahr.Value) < 0.005;
                     energieHinweis = string.Format(MyResource.Resource.BK_KOSTEN_STAND,
                         erg.Zeitstempel.ToString("dd.MM.yyyy HH:mm"));
                 }
@@ -290,6 +321,21 @@ namespace WindowsFormsApplication1
                                           investPositionen, energieHinweis).Trim();
             if (_abweichungen > 0)
                 status += "  ·  " + string.Format(MyResource.Resource.BK_KOSTEN_ABWEICHUNG, _abweichungen);
+
+            // Ein verbautes Gewerk ohne Kostenposition ist kein Rechenfehler, sondern eine
+            // FEHLENDE EINGABE — und muss als solche dastehen, statt sich hinter einer 0,00 €
+            // zu verstecken (dieselbe Haltung wie auf der Stromspeicher-Ergebnisseite, wo
+            // statt irreführender 0,0 % ein „—" mit Warnzeile steht).
+            if (_ohnePosition.Count > 0)
+                status += "  ·  " + string.Format(MyResource.Resource.BK_KOSTEN_OHNE_POSITION,
+                                                  string.Join(", ", _ohnePosition.ToArray()));
+
+            // 0,00 €/a Energiekosten bei ungepflegtem Arbeitspreis: die Zahl ist rechnerisch
+            // richtig und trotzdem wertlos, solange niemand sagt, warum sie null ist.
+            if (energieNull && _traegerOhnePreis.Count > 0)
+                status += "  ·  " + string.Format(MyResource.Resource.BK_KOSTEN_ENERGIE_PREIS0,
+                                                  string.Join(", ", _traegerOhnePreis.ToArray()));
+
             Melde(status);
         }
 
@@ -307,6 +353,7 @@ namespace WindowsFormsApplication1
         private void LadeKomponenten(System.Globalization.CultureInfo kultur)
         {
             _abweichungen = 0;
+            _ohnePosition.Clear();
 
             gridKomponenten.Columns.Add("komponente", MyResource.Resource.BK_KOSTEN_SP_KOMPONENTE);
             gridKomponenten.Columns.Add("summe", MyResource.Resource.BK_KOSTEN_SP_SUMME);
@@ -324,9 +371,11 @@ namespace WindowsFormsApplication1
                 if (dt == null) return;
 
                 double summe = 0;
+                var erfasst = new HashSet<string>(StringComparer.Ordinal);
                 foreach (DataRow r in dt.Rows)
                 {
                     string komponente = S(r, "Komponente");
+                    erfasst.Add(komponente);
                     double? w = D(r, "Summe");
                     summe += w ?? 0;
 
@@ -349,6 +398,9 @@ namespace WindowsFormsApplication1
                         gridKomponenten.Rows[idxZeile].Cells[2].ToolTipText = ab.Text;
                     }
                 }
+
+                ZeigeGewerkeOhnePosition(erfasst, kultur);
+
                 if (dt.Rows.Count > 0)
                 {
                     int idx = gridKomponenten.Rows.Add(MyResource.Resource.BK_KOSTEN_SUMME,
@@ -359,6 +411,67 @@ namespace WindowsFormsApplication1
                 gridKomponenten.ClearSelection();
             }
             catch { }
+        }
+
+        /// <summary>
+        /// Hängt für jedes im Projekt VERBAUTE Gewerk OHNE Investitionsposition eine Zeile an.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Der Fall, den das sichtbar macht.</b> Die Tabelle entstand bisher allein aus
+        /// <c>Tab_ProjektWerte</c> (<see cref="Form_Kosten.LiesKomponentenSummen"/>). Ein
+        /// Gewerk, für das noch NIE eine Kostenposition erfasst wurde, kam darin nicht vor —
+        /// die Seite zeigte eine leere Liste, 0,00 € in der Kachel und „0 Investitionsposition(en)"
+        /// in der Fußzeile, ohne dass irgendwo stand, dass das Projekt überhaupt ein solches
+        /// Gewerk hat. Genau so trat der Befund beim Projekt „BHKW Test München" auf.
+        /// </para>
+        /// <para>
+        /// <b>Betrag „—", nicht 0,00 €.</b> Nichts erfasst heißt NICHT „kostet nichts". Die
+        /// Zeile geht deshalb auch nicht in die Summe ein; daneben steht der Technik-Planwert,
+        /// der bei „Planwert übernehmen…" entstünde. Angezeigt, nie geschrieben
+        /// (Nutzerentscheidung 4 vom 18.08.2026).
+        /// </para>
+        /// <para>
+        /// <b>Verbaut, nicht lizenziert.</b> Maßgeblich ist
+        /// <see cref="TechnikPlanwertCtrl.Verbaut"/> über <c>Tab_Energieanlagen</c> DIESES
+        /// Projekts — nicht der Wizard-Status <c>Program.startfrm.status</c>, der das im
+        /// Startassistenten geladene Projekt beschreibt und hier ein fremdes sein kann.
+        /// </para>
+        /// </remarks>
+        private void ZeigeGewerkeOhnePosition(HashSet<string> erfasst,
+                                              System.Globalization.CultureInfo kultur)
+        {
+            DataTable dt;
+            try
+            {
+                dt = DataRepository.GetDataTable(
+                    "SELECT Komponente FROM Tab_KostenKomponente ORDER BY ID");
+            }
+            catch { return; }
+            if (dt == null) return;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                string komponente = S(r, "Komponente");
+                if (komponente.Length == 0 || erfasst.Contains(komponente)) continue;
+                if (!TechnikPlanwertCtrl.Verbaut(_idProjekt, komponente)) continue;
+
+                KostenPositionCtrl.Abweichung ab = Abweichung(komponente);
+                int idx = gridKomponenten.Rows.Add(
+                    komponente,
+                    "—",
+                    (ab != null && ab.TechnikVorhanden) ? ab.Technik.ToString("N2", kultur) : "—");
+
+                gridKomponenten.Rows[idx].DefaultCellStyle.BackColor =
+                    Color.FromArgb(0xFF, 0xE6, 0xE6);
+
+                string hinweis = string.Format(
+                    MyResource.Resource.BK_KOSTEN_OHNE_POSITION_HINT, komponente);
+                gridKomponenten.Rows[idx].Cells[0].ToolTipText = hinweis;
+                gridKomponenten.Rows[idx].Cells[1].ToolTipText = hinweis;
+
+                _ohnePosition.Add(komponente);
+            }
         }
 
         /// <summary>
@@ -387,6 +500,8 @@ namespace WindowsFormsApplication1
         // KostenEmissionRechner).
         private void LadeTraeger(System.Globalization.CultureInfo kultur)
         {
+            _traegerOhnePreis.Clear();
+
             gridTraeger.Columns.Add("traeger", MyResource.Resource.BK_KOSTEN_SP_TRAEGER);
             gridTraeger.Columns.Add("einheit", MyResource.Resource.BK_KOSTEN_SP_ABRECHNUNG);
             gridTraeger.Columns.Add("hi", MyResource.Resource.BK_KOSTEN_SP_HEIZWERT);
@@ -414,6 +529,12 @@ namespace WindowsFormsApplication1
                     double? preis, grund;
                     LiesPreise(carrier, out preis, out grund);
                     double? hi = D(r, "eff_hi");
+
+                    // Weder Projekt- noch Katalogpreis gepflegt: der Träger kann keine
+                    // Energiekosten erzeugen. Der Grund gehört in die Statuszeile, nicht nur
+                    // die 0,0000 in die Tabelle.
+                    if (!preis.HasValue || Math.Abs(preis.Value) < 1e-9)
+                        _traegerOhnePreis.Add(S(r, "name"));
 
                     gridTraeger.Rows.Add(
                         S(r, "name"),
@@ -499,6 +620,8 @@ namespace WindowsFormsApplication1
         public int KomponentenZeilen { get { return gridKomponenten.Rows.Count; } }
         public int TraegerZeilen { get { return gridTraeger.Rows.Count; } }
         public string StatusText { get { return lblStatus != null ? lblStatus.Text : ""; } }
+        public int GewerkeOhnePosition { get { return _ohnePosition.Count; } }
+        public int TraegerOhnePreis { get { return _traegerOhnePreis.Count; } }
 
         // ------------------------------------------------------ Kategorie-Kachel
 

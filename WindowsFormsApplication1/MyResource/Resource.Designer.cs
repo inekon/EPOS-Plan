@@ -544,6 +544,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Arbeitspreis 0,00 bei: {0} — ohne Preis können keine Energ [rest] ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_ENERGIE_PREIS0 {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_ENERGIE_PREIS0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Investition ähnelt.
         /// </summary>
         public static string BK_KOSTEN_INVEST {
@@ -585,6 +594,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_KOSTEN_LBL_TRAEGER {
             get {
                 return ResourceManager.GetString("BK_KOSTEN_LBL_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Ohne Kostenposition: {0} — über „Kostenverwaltung öffnen…" [rest] ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_OHNE_POSITION {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_OHNE_POSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}" ist im Projekt verbaut, führt aber keine Investitionsp [rest] ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_OHNE_POSITION_HINT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_OHNE_POSITION_HINT", resourceCulture);
             }
         }
         
