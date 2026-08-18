@@ -11471,5 +11471,122 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SP_ERG_KERN_BEREICH", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parallelverbund (mehrere Speicher als ein Vorrat) ähnelt.
+        /// </summary>
+        public static string SIM_GB_VERBUND {
+            get {
+                return ResourceManager.GetString("SIM_GB_VERBUND", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zusätzlich parallel geschaltete Pufferspeicher (gemeinsamer Vorrat mit dem oben gewählten Leitspeicher): ähnelt.
+        /// </summary>
+        public static string SIM_LBL_VERBUND_ZUSATZ {
+            get {
+                return ResourceManager.GetString("SIM_LBL_VERBUND_ZUSATZ", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verbund: {0} Speicher · Q_max gesamt {1} kWh ähnelt.
+        /// </summary>
+        public static string SIM_VERBUND_SUMME {
+            get {
+                return ResourceManager.GetString("SIM_VERBUND_SUMME", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Verbund - es rechnet allein der oben gewählte Pufferspeicher. ähnelt.
+        /// </summary>
+        public static string SIM_VERBUND_KEIN_VERBUND {
+            get {
+                return ResourceManager.GetString("SIM_VERBUND_KEIN_VERBUND", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Pufferspeicher „{0}" kann nicht als Verbundmitglied dienen: Die Anlage „{1}" lädt ihn bereits als eigenes Senkenziel. ähnelt.
+        /// </summary>
+        public static string SIM_VERBUND_KONFLIKT_SENKE {
+            get {
+                return ResourceManager.GetString("SIM_VERBUND_KONFLIKT_SENKE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Pufferspeicher „{0}" gehört bereits zum Verbund des Leitspeichers „{1}". ähnelt.
+        /// </summary>
+        public static string SIM_VERBUND_KONFLIKT_FREMDVERBUND {
+            get {
+                return ResourceManager.GetString("SIM_VERBUND_KONFLIKT_FREMDVERBUND", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der gewählte Pufferspeicher „{0}" ist selbst Mitglied im Verbund des Leitspeichers „{1}" und kann deshalb nicht Leitspeicher eines weiteren Verbunds sein. ähnelt.
+        /// </summary>
+        public static string SIM_VERBUND_KONFLIKT_LEIT_IST_MITGLIED {
+            get {
+                return ResourceManager.GetString("SIM_VERBUND_KONFLIKT_LEIT_IST_MITGLIED", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Pufferspeicher „{0}" ist die Wärmequelle einer Anlage dieses Projekts und kann nicht gleichzeitig Teil eines Wärmevorrats sein. ähnelt.
+        /// </summary>
+        public static string SIM_VERBUND_KONFLIKT_QUELLE {
+            get {
+                return ResourceManager.GetString("SIM_VERBUND_KONFLIKT_QUELLE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Pufferspeicher „{0}" gehört nicht zu diesem Projekt oder ist nicht für die Verwendung „{1}" gepflegt. ähnelt.
+        /// </summary>
+        public static string SIM_VERBUND_KONFLIKT_PASST_NICHT {
+            get {
+                return ResourceManager.GetString("SIM_VERBUND_KONFLIKT_PASST_NICHT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Speicher im Parallelverbund hat keinen eigenen Füllstand mehr - seine Kapazität gehört zum gemeinsamen Vorrat des Leitspeichers. Würde ihn zusätzlich ein anderes Ziel laden, zählte dieselbe Kapazität zweimal. ähnelt.
+        /// </summary>
+        public static string SIM_VERBUND_KONFLIKT_ERKLAERUNG {
+            get {
+                return ResourceManager.GetString("SIM_VERBUND_KONFLIKT_ERKLAERUNG", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die +{0} parallel ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_VERBUND_ZUSATZ {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_VERBUND_ZUSATZ", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parallelverbund: {0} Pufferspeicher werden als EIN gemeinsamer Wärmevorrat gerechnet (Kapazitäten addiert, ein Füllstand, eine Schaltschwelle). ähnelt.
+        /// </summary>
+        public static string SIM_TIP_VERBUND {
+            get {
+                return ResourceManager.GetString("SIM_TIP_VERBUND", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Parallelverbund mit {0} - dieser Speicher hat im Lauf keinen eigenen Füllstand; Kapazität und Ergebniszeile gehören zum Leitspeicher. ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_IM_VERBUND {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_IM_VERBUND", resourceCulture);
+            }
+        }
     }
 }

@@ -141,6 +141,24 @@ namespace WindowsFormsApplication1
 
         private bool _aktualisiert;   // verhindert Event-Rückkopplung beim Befüllen
 
+        // --- Sichtbare Texte des Parallelverbunds ------------------------------------
+        //
+        // Sie kommen aus dem Ressourcenkatalog wie alle übrigen Texte dieses Dialogs
+        // (Paket 9 / L7, Konzept 13.6). Die vier Verweise stehen hier gebündelt, weil sie
+        // in mehreren Methoden gebraucht werden - so ist auf einen Blick zu sehen, welche
+        // Schlüssel dieser Dialog für den Verbund führt.
+        private static string SIM_GB_VERBUND
+        { get { return MyResource.Resource.SIM_GB_VERBUND; } }
+
+        private static string SIM_LBL_VERBUND_ZUSATZ
+        { get { return MyResource.Resource.SIM_LBL_VERBUND_ZUSATZ; } }
+
+        private static string SIM_VERBUND_SUMME
+        { get { return MyResource.Resource.SIM_VERBUND_SUMME; } }
+
+        private static string SIM_VERBUND_KEIN_VERBUND
+        { get { return MyResource.Resource.SIM_VERBUND_KEIN_VERBUND; } }
+
         /// <summary>Eintrag der Ladeprioritäts-Dropdowns (0 = nach Vorgabe).</summary>
         private class PrioItem
         {
