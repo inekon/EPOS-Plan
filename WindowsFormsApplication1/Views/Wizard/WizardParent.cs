@@ -83,6 +83,11 @@ namespace WindowsFormsApplication1
                 // Allgemeine Fehler abfangen
                 Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
             }
+
+            // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
+            // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
+            // Auf ausreichend grossen Schirmen wirkungslos.
+            FensterEinpassung.Einhaengen(this);
         }
 
         private void SetImageFromFile(string imagePath)

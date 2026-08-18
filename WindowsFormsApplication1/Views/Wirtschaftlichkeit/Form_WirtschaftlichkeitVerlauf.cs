@@ -186,6 +186,11 @@ namespace WindowsFormsApplication1
             this.ClientSize = new Size(
                 Math.Min(898, Math.Max(744, Screen.PrimaryScreen.WorkingArea.Width - 60)),
                 Math.Min(744, Math.Max(513, Screen.PrimaryScreen.WorkingArea.Height - 90)));
+
+            // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
+            // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
+            // Auf ausreichend grossen Schirmen wirkungslos.
+            FensterEinpassung.Einhaengen(this);
         }
 
         // ------------------------------------------------------------- Zeichnen

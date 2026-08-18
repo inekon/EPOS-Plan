@@ -365,6 +365,11 @@ namespace WindowsFormsApplication1
             // Bereich für den KI-Hilfe-Assistenten melden; die aktive
             // Registerkarte wird automatisch mit erkannt.
             this.Activated += (s, e) => HilfeKontext.SetzeBereich("Detaillierte Simulation");
+
+            // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
+            // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
+            // Auf ausreichend grossen Schirmen wirkungslos.
+            FensterEinpassung.Einhaengen(this);
         }
 
         /// <summary>
