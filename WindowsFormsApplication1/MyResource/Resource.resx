@@ -4567,4 +4567,25 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_KOMP_HINW_KOSTEN" xml:space="preserve">
     <value>Die Kostenposition „{0}" wurde nicht verändert und weicht jetzt vom Technik-Planwert ab — in der Kostenverwaltung über „Planwert übernehmen…" angleichen.</value>
   </data>
+  <data name="ANL_DUBLETTE_TITEL" xml:space="preserve">
+    <value>Gerät bereits im Projekt</value>
+  </data>
+  <data name="ANL_DUBLETTE_FRAGE" xml:space="preserve">
+    <value>Das Gerät „{0}" ist bereits im Projekt.
+
+Als zweites, baugleiches Gerät aufnehmen? Dann wird eine eigene Gerätekopie angelegt.
+
+„Nein" verwirft die Aufnahme.</value>
+  </data>
+  <data name="ANL_DUBLETTE_KOPIE_FEHLER" xml:space="preserve">
+    <value>Für „{0}" konnte keine eigene Gerätekopie angelegt werden. Die Anlage wurde nicht aufgenommen; Einzelheiten stehen im Protokoll.</value>
+  </data>
+  <data name="ANL_FELD_HINWEIS" xml:space="preserve">
+    <value>„{0}" ist mit derselben Neigung ({1}°), demselben Azimut ({2}°) und derselben Modulanzahl ({3}) bereits im Projekt.
+
+Mehrere Felder desselben Modultyps sind zulässig — bitte prüfen, ob das so gewollt ist.</value>
+  </data>
+  <data name="ANL_SP_NAME_ANGEPASST" xml:space="preserve">
+    <value>Der Name „{0}" ist im Projekt bereits vergeben. Die Speichervariante wurde in „{1}" umbenannt.</value>
+  </data>
 </root>

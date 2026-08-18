@@ -377,8 +377,13 @@ namespace WindowsFormsApplication1
                                       schwelleReserve)) < 0)
                 return -1;
 
-            // Anlagenzeile nachtragen - eine je Projekt + Bezeichner (Regel R4 der Migration)
-            if (!AnlagenzeileVorhanden(idProjekt, name))
+            // Anlagenzeile nachtragen - eine je Projekt + Bezeichner (Regel R4 der
+            // Migration) UND eine je Projekt + Gerät (Teil A der Anlagenzeilen-
+            // Eindeutigkeit). Die zweite Bedingung ist die belastbarere: Sie prüft den
+            // Fremdschlüssel ID_PUFFER, also genau das, was der Eindeutigkeitsindex
+            // sperrt; die Namensprüfung hängt am Bezeichner, der sich ändern kann.
+            if (!AnlagenzeileVorhanden(idProjekt, name) &&
+                !AnlagenEindeutigkeit.ZeileVorhanden(AnlagenEindeutigkeit.SPALTE_PUFFER, idProjekt, neueId))
                 StilleDb.NonQuery(ProjektPuffer.SQL_ANLAGENZEILE_INSERT,
                                   ProjektPuffer.AnlagenzeileParameter(idProjekt, name, neueId));
 
@@ -807,7 +812,10 @@ namespace WindowsFormsApplication1
 
             // Anlagenzeile nachtragen, damit der Speicher im Projektbaum erscheint -
             // dieselbe Regel wie R4 der Migration (eine Zeile je Projekt+Bezeichner).
-            if (!AnlagenzeileVorhanden(idProjekt, ProjektPuffer.BEZ_PENDELSPEICHER))
+            // Wie in ProjektPufferAnlegen: Name UND Geräteverweis prüfen - eine Zeile je
+            // Projekt und Gerät (Teil A der Anlagenzeilen-Eindeutigkeit).
+            if (!AnlagenzeileVorhanden(idProjekt, ProjektPuffer.BEZ_PENDELSPEICHER) &&
+                !AnlagenEindeutigkeit.ZeileVorhanden(AnlagenEindeutigkeit.SPALTE_PUFFER, idProjekt, neueId))
                 StillNonQuery(ProjektPuffer.SQL_ANLAGENZEILE_INSERT,
                               ProjektPuffer.AnlagenzeileParameter(idProjekt,
                                                                   ProjektPuffer.BEZ_PENDELSPEICHER,

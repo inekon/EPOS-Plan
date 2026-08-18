@@ -4552,4 +4552,25 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_KOMP_HINW_KOSTEN" xml:space="preserve">
     <value>Cost item "{0}" was left unchanged and now differs from the engineering value — align it in cost management via "Apply engineering value…".</value>
   </data>
+  <data name="ANL_DUBLETTE_TITEL" xml:space="preserve">
+    <value>Device already in the project</value>
+  </data>
+  <data name="ANL_DUBLETTE_FRAGE" xml:space="preserve">
+    <value>The device “{0}” is already part of this project.
+
+Add it as a second, identical device? A separate device copy will then be created.
+
+“No” discards the entry.</value>
+  </data>
+  <data name="ANL_DUBLETTE_KOPIE_FEHLER" xml:space="preserve">
+    <value>No separate device copy could be created for “{0}”. The item was not added; details are in the log.</value>
+  </data>
+  <data name="ANL_FELD_HINWEIS" xml:space="preserve">
+    <value>“{0}” is already in the project with the same tilt ({1}°), the same azimuth ({2}°) and the same module count ({3}).
+
+Several arrays of the same module type are allowed — please check whether this is intended.</value>
+  </data>
+  <data name="ANL_SP_NAME_ANGEPASST" xml:space="preserve">
+    <value>The name “{0}” is already used in this project. The storage variant was renamed to “{1}”.</value>
+  </data>
 </root>

@@ -61,6 +61,57 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gerät „{0}&quot; ist bereits im Projekt.
+        ///
+        ///Als zweites, baugleiches Gerät aufnehmen? Dann wird eine eigene Gerätekopie angelegt.
+        ///
+        ///„Nein&quot; verwirft die Aufnahme. ähnelt.
+        /// </summary>
+        public static string ANL_DUBLETTE_FRAGE {
+            get {
+                return ResourceManager.GetString("ANL_DUBLETTE_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für „{0}&quot; konnte keine eigene Gerätekopie angelegt werden. Die Anlage wurde nicht aufgenommen; Einzelheiten stehen im Protokoll. ähnelt.
+        /// </summary>
+        public static string ANL_DUBLETTE_KOPIE_FEHLER {
+            get {
+                return ResourceManager.GetString("ANL_DUBLETTE_KOPIE_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät bereits im Projekt ähnelt.
+        /// </summary>
+        public static string ANL_DUBLETTE_TITEL {
+            get {
+                return ResourceManager.GetString("ANL_DUBLETTE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}&quot; ist mit derselben Neigung ({1}°), demselben Azimut ({2}°) und derselben Modulanzahl ({3}) bereits im Projekt.
+        ///
+        ///Mehrere Felder desselben Modultyps sind zulässig — bitte prüfen, ob das so gewollt ist. ähnelt.
+        /// </summary>
+        public static string ANL_FELD_HINWEIS {
+            get {
+                return ResourceManager.GetString("ANL_FELD_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name „{0}&quot; ist im Projekt bereits vergeben. Die Speichervariante wurde in „{1}&quot; umbenannt. ähnelt.
+        /// </summary>
+        public static string ANL_SP_NAME_ANGEPASST {
+            get {
+                return ResourceManager.GetString("ANL_SP_NAME_ANGEPASST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Netzladung [kWh] ähnelt.
         /// </summary>
         public static string ARB_CSV_LADUNG_NETZ {

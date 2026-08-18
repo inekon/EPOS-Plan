@@ -100,6 +100,19 @@ namespace WindowsFormsApplication1
            
             if (listBox_Pufferspeicher_DB.Text == "") return;
 
+            // VORPRUEFUNG "eine Zeile je Projekt und Geraet" (Teil A). Sie steht hier,
+            // damit der Anwender die Meldung sieht, WAEHREND er den Speicher aufnimmt -
+            // nicht erst beim Speichern. Massgeblich ist die Liste und nicht die
+            // Datenbank: Der Speicherweg loescht die Pufferzeilen des Projekts und
+            // schreibt genau diese Liste neu, und beide gleichnamigen Eintraege wuerden
+            // ueber PufferSpCtrl.CopyFromStamm auf DIESELBE Projektkopie auflaufen.
+            bool zweitesGeraet = false;
+            if (AnlagenEindeutigkeit.BereitsInListe(_linkeListe, m_nType, listBox_Pufferspeicher_DB.Text))
+            {
+                if (!AnlagenEindeutigkeit.ZweitesGeraetBestaetigen(listBox_Pufferspeicher_DB.Text)) return;
+                zweitesGeraet = true;
+            }
+
             rs.Open("select * from Tab_Pufferspeicher_STAMM where Bezeichner='" + listBox_Pufferspeicher_DB.Text + "'");
             if (rs.Next())
             {
@@ -109,6 +122,8 @@ namespace WindowsFormsApplication1
                 model.ID_PUFFER = (int)rs.Read("ID");
                 model.ID_Type = m_nType;
                 model.Bezeichner = listBox_Pufferspeicher_DB.Text;
+                // Antwort des Anwenders weitergeben - der Schreibweg fragt sonst erneut.
+                model.GeraetekopieErzwingen = zweitesGeraet;
 
                 list_pufferspmodel.Add(model);
                 listBox_Pufferspeicher.Items.Add(listBox_Pufferspeicher_DB.Text);

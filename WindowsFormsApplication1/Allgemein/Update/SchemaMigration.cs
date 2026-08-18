@@ -60,12 +60,16 @@ namespace WindowsFormsApplication1
     /// Schritt 15 kommt mit dem Paket KESSEL-WARTUNGSEINHEIT hinzu (Entscheidung des
     /// Anwenders 18.08.2026): 15a die Spalte Wartungskosten_Einheit in Tab_Heizkessel und
     /// Tab_Heizkessel_STAMM, 15b ihre Vorbelegung auf "€/a" - der fuenfte DML-Schritt
-    /// neben 5, 7, 9 und 13.
+    /// neben 5, 7, 9 und 13. Schritt 16 kommt mit dem Paket ANLAGENZEILEN-EINDEUTIGKEIT
+    /// hinzu und legt vier zusammengesetzte eindeutige Indizes auf Tab_Energieanlagen an -
+    /// rein additives DDL, KEIN DML, und mit einer ausdruecklichen Vorabpruefung:
+    /// Bestandsdubletten fuehren zum Ueberspringen des betroffenen Index statt zum
+    /// Abbruch der Migration.
     /// </summary>
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 15;
+        public const int ZIEL_VERSION = 16;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -242,6 +246,36 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_15_KESSEL_WARTUNGSEINHEIT = 15;
 
+        /// <summary>
+        /// Nummer des Pakets ANLAGENZEILEN-EINDEUTIGKEIT: zusammengesetzte eindeutige
+        /// Indizes über (<c>ID_Projekt</c>, <c>ID_WP</c> | <c>ID_Kessel</c> |
+        /// <c>ID_BHKW</c> | <c>ID_PUFFER</c>) auf <c>Tab_Energieanlagen</c>.
+        ///
+        /// <b>Warum das nötig ist.</b> Kein Schreibpfad prüfte bisher, ob zwei Zeilen
+        /// desselben Projekts auf dasselbe Gerät zeigen. Die Simulation baut ihre
+        /// Modullisten JE ANLAGENZEILE auf (<c>SimulationControl.WP_Liste_Laden</c>,
+        /// <c>SPK_Liste_Laden</c>, <c>BHKW_Liste_Laden</c> — kein DISTINCT), die
+        /// Kostenseite zählt seit Commit 605dcb8 dagegen JE GERÄT
+        /// (<c>TechnikPlanwertCtrl</c>, GROUP BY Verweisspalte). Solange Doppelzeilen
+        /// möglich sind, widersprechen sich beide Deutungen. Der Index beseitigt genau
+        /// das: Ist je Projekt und Gerät nur eine Zeile erlaubt, sind „je Zeile" und
+        /// „je Gerät" wieder dasselbe.
+        ///
+        /// <b>Nur vier Spalten.</b> <c>ID_PV</c> und <c>ID_Solar</c> bleiben frei
+        /// (mehrere Felder desselben Modultyps sind richtig), <c>ID_SP</c> ebenfalls
+        /// (eine zweite Zeile ist dort eine VARIANTE, kein zweiter Speicher).
+        ///
+        /// <b>Kein DML — und kein Abbruch bei unbereinigtem Bestand.</b> Der Schritt
+        /// prüft VORAB auf Dubletten. Findet er welche, legt er den betroffenen Index
+        /// NICHT an, nennt Projekt, Gewerk und Zeilen im Protokoll und führt sich als
+        /// „übersprungen". Der Marker wird trotzdem gesetzt; nachgezogen wird über die
+        /// Abschlussprüfung (<see cref="EindeutigkeitAbschluss"/>), die bei JEDEM
+        /// weiteren Lauf fehlende Indizes anlegt, sobald der Bestand sauber ist. Ein
+        /// Abbruch wäre hier das Falsche: Er hielte den ganzen Migrationslauf an, obwohl
+        /// nichts kaputt ist — die Datenbank verhält sich ohne Index exakt wie bisher.
+        /// </summary>
+        public const int SCHRITT_16_ANLAGEN_EINDEUTIG = 16;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -317,6 +351,29 @@ namespace WindowsFormsApplication1
         /// <c>Wartungskosten_Einheit = "€/a"</c> erhalten haben.
         /// </summary>
         public static int DatenKesselWartungseinheitVorbelegt { get; private set; }
+
+        // --- Zählwerk des Pakets Anlagenzeilen-Eindeutigkeit aus Schritt 16 -------------
+
+        /// <summary>
+        /// 16: Zahl der ANGELEGTEN oder bereits vorhandenen Eindeutigkeitsindizes
+        /// (höchstens 4). Weniger als 4 heißt: Für die fehlenden Spalten stehen noch
+        /// Bestandsdubletten in der Datenbank.
+        /// </summary>
+        public static int DatenEindeutigIndizes { get; private set; }
+
+        /// <summary>
+        /// 16: Zahl der Anlagenzeilen, die sich ein Gerät mit mindestens einer anderen
+        /// Zeile desselben Projekts teilen — über alle vier gesperrten Spalten summiert.
+        /// 0 ist die Zusage „je Projekt und Gerät genau eine Zeile".
+        /// </summary>
+        public static int DatenEindeutigDubletten { get; private set; }
+
+        /// <summary>
+        /// Wurde die Eindeutigkeitsprüfung in diesem Lauf schon ausgeführt? Verhindert,
+        /// dass die Abschlussprüfung nach der Schleife dieselbe Arbeit ein zweites Mal
+        /// meldet, wenn Schritt 16 im selben Lauf gerade erst gelaufen ist.
+        /// </summary>
+        private static bool _eindeutigkeitGeprueft;
 
         // --- Zählwerk des Pakets Parallelverbund aus Schritt 14 -------------------------
 
@@ -492,6 +549,14 @@ namespace WindowsFormsApplication1
                         "Kessel-Wartungseinheit: Spalte Wartungskosten_Einheit, Vorbelegung €/a",
                         "Die Bezugsgröße der Kessel-Wartungskosten konnte nicht angelegt werden.",
                         Schritt_15_KesselWartungseinheit),
+
+            // PAKET ANLAGENZEILEN-EINDEUTIGKEIT - eine Zeile je Projekt und Gerät
+            //       (Entscheidung des Anwenders 18.08.2026, „Prüfung und Index").
+            //       Nur DDL, kein DML; bei Bestandsdubletten übersprungen statt gescheitert.
+            new Schritt(SCHRITT_16_ANLAGEN_EINDEUTIG,
+                        "Anlagenzeilen-Eindeutigkeit: Indizes auf (ID_Projekt, ID_WP | ID_Kessel | ID_BHKW | ID_PUFFER)",
+                        "Die Eindeutigkeitsindizes der Anlagenzeilen konnten nicht angelegt werden.",
+                        Schritt_16_AnlagenEindeutigkeit),
         };
 
         // =================================================================================
@@ -531,6 +596,9 @@ namespace WindowsFormsApplication1
             DatenLeistungsgrenzeAngehoben = 0;
             DatenVerbundZeilen = 0;
             DatenKesselWartungseinheitVorbelegt = 0;
+            DatenEindeutigIndizes = 0;
+            DatenEindeutigDubletten = 0;
+            _eindeutigkeitGeprueft = false;
 
             var l = new Lauf();
             string dbPfad;
@@ -664,6 +732,20 @@ namespace WindowsFormsApplication1
                 l.Detail();
             }
 
+            // --- Teil C: Abschlussprüfung der Anlagenzeilen-Eindeutigkeit --------------
+            // Läuft, wenn Schritt 16 in DIESEM Lauf nicht ausgeführt wurde - also auf
+            // jeder bereits auf Stand 16 stehenden Datenbank. Sie ist beides: der
+            // Nachweis, dass die Migration selbst keine Dublette hinterlassen hat (die
+            // Regeln R4 und die ID_PUFFER-Bereinigung könnten das), und der NACHZUG der
+            // Indizes, die beim ersten Lauf wegen unbereinigter Bestände übersprungen
+            // wurden.
+            if (!_eindeutigkeitGeprueft)
+            {
+                l.Zeile("Abschlussprüfung Anlagenzeilen-Eindeutigkeit");
+                EindeutigkeitAbschluss(l, StandNachher >= SCHRITT_16_ANLAGEN_EINDEUTIG);
+                l.Detail();
+            }
+
             l.Leerzeile();
             l.Zeile("Schemastand nachher: " + StandNachher + "   (Zielstand " + ZIEL_VERSION + ")");
             if (IdPufferGemappt > 0 || IdPufferGenullt > 0)
@@ -714,6 +796,18 @@ namespace WindowsFormsApplication1
                     (DatenVerbundZeilen == 0
                         ? " - kein Projekt führt einen Pufferverbund, der Rechenweg bleibt unverändert."
                         : " - so viele zusätzliche Verbundmitglieder gehen in die Aggregation ein."));
+
+            // Schritt 16 meldet - wie Schritt 14 - AUCH den guten Fall. Die 0 ist hier die
+            // eigentliche Aussage: "je Projekt und Gerät genau eine Anlagenzeile", und
+            // damit die Bedingung dafür, dass Engine (je Zeile) und Kostenseite
+            // (je Gerät, TechnikPlanwertCtrl) dasselbe meinen.
+            l.Zeile("Anlagenzeilen-Eindeutigkeit (Schritt 16): " + DatenEindeutigIndizes +
+                    " von " + AnlagenEindeutigkeit.SPERREN.Length + " Eindeutigkeitsindizes aktiv, " +
+                    DatenEindeutigDubletten + " doppelt belegte Anlagenzeilen" +
+                    (DatenEindeutigDubletten == 0
+                        ? " - je Projekt und Gerät genau eine Zeile."
+                        : " - die betroffenen Zeilen stehen oben; die fehlenden Indizes werden " +
+                          "nach der Bereinigung beim nächsten Programmstart nachgezogen."));
 
             return alleOk && StandNachher >= ZIEL_VERSION;
         }
@@ -1737,6 +1831,149 @@ namespace WindowsFormsApplication1
                     DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR + "\" vorbelegt (fester Jahresbetrag; " +
                     "die Beträge selbst bleiben unverändert)");
             return ok;
+        }
+
+        // =================================================================================
+        // Schritt 16 - Anlagenzeilen-Eindeutigkeit (Entscheidung 18.08.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Schritt 16.</b> Legt die vier zusammengesetzten Eindeutigkeitsindizes an —
+        /// aber nur für die Spalten, deren Bestand bereits sauber ist.
+        ///
+        /// <para>
+        /// Die eigentliche Arbeit steht in <see cref="EindeutigkeitAbschluss"/>, weil sie
+        /// zweimal gebraucht wird: hier beim erstmaligen Erreichen von Stand 16 und danach
+        /// bei JEDEM weiteren Lauf als Abschlussprüfung (Teil C). Ein Schritt kann das
+        /// nicht leisten — er läuft nach dem Anheben des Markers nie wieder.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Immer true.</b> Der Schritt kann fachlich nicht scheitern: Ohne Index
+        /// verhält sich die Datenbank exakt wie bisher. Ein <c>false</c> hielte den
+        /// Marker zurück und meldete den ganzen Lauf als gescheitert, obwohl nichts
+        /// kaputt ist — und die Bereinigung der Bestandsdaten ist eine Entscheidung des
+        /// Anwenders, kein Migrationsauftrag.
+        /// </para>
+        /// </summary>
+        private static bool Schritt_16_AnlagenEindeutigkeit(Lauf l)
+        {
+            EindeutigkeitAbschluss(l, true);
+            return true;
+        }
+
+        /// <summary>
+        /// Prüft die vier gesperrten Geräteverweise auf Dubletten, meldet jede gefundene
+        /// Zeile und legt — sofern erlaubt und der Bestand sauber ist — den fehlenden
+        /// Eindeutigkeitsindex an.
+        ///
+        /// <para>
+        /// <b>Teil B und Teil C in einer Routine.</b> Teil B ist das Anlegen des Index,
+        /// Teil C der Bericht. Beides aus derselben Abfrage zu speisen ist keine
+        /// Bequemlichkeit, sondern Bedingung: Der Bericht muss GENAU das sehen, was den
+        /// Index scheitern ließe, sonst meldet er „sauber" und das
+        /// <c>CREATE UNIQUE INDEX</c> scheitert danach doch (deshalb prüft
+        /// <see cref="AnlagenEindeutigkeit.SqlDublettenGruppen"/> auf
+        /// <c>IS NOT NULL</c> und nicht auf <c>&gt; 0</c>).
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Warum die Prüfung an JEDEM Lauf hängt und nicht nur am Schritt.</b> Die
+        /// Migration kann Dubletten selbst erzeugen: Regel R4 der Datenmigration und die
+        /// ID_PUFFER-Bereinigung setzen zwei gleichnamige Zeilen auf dieselbe Geräte-ID.
+        /// Und die Bereinigung des Bestands ist noch nicht entschieden — der Index muss
+        /// deshalb NACHZIEHEN können, sobald der Bestand sauber ist, ohne dass der
+        /// Schritt ein zweites Mal läuft.
+        /// </para>
+        /// </summary>
+        /// <param name="indizesAnlegen">
+        /// false = nur berichten. Gilt, solange der Marker die Version 16 noch nicht
+        /// erreicht hat — dann wäre das Anlegen die Arbeit eines Schritts, der gar nicht
+        /// gelaufen ist.
+        /// </param>
+        private static void EindeutigkeitAbschluss(Lauf l, bool indizesAnlegen)
+        {
+            _eindeutigkeitGeprueft = true;
+
+            int indizes = 0;
+            int dubletten = 0;
+
+            foreach (GeraeteSperre sperre in AnlagenEindeutigkeit.SPERREN)
+            {
+                int betroffen = DublettenMelden(l, sperre);
+                if (betroffen < 0) continue;          // Abfrage gescheitert - schon notiert
+
+                dubletten += betroffen;
+
+                if (betroffen > 0)
+                {
+                    l.Notiz(sperre.Spalte + ": Index " + AnlagenEindeutigkeit.IndexName(sperre.Spalte) +
+                            " ÜBERSPRUNGEN - erst nach Bereinigung der oben genannten Zeilen " +
+                            "anlegbar. Der nächste Programmstart zieht ihn nach.");
+                    continue;
+                }
+
+                if (!indizesAnlegen) continue;
+
+                if (Ddl(l, AnlagenEindeutigkeit.SqlIndex(sperre.Spalte),
+                        "Eindeutigkeitsindex " + AnlagenEindeutigkeit.IndexName(sperre.Spalte) +
+                        " (" + sperre.Gewerk + ")"))
+                    indizes++;
+                else
+                    l.Notiz(sperre.Spalte + ": Der Index konnte trotz dublettenfreiem Bestand nicht " +
+                            "angelegt werden - die Datenbank verhält sich unverändert wie bisher.");
+            }
+
+            DatenEindeutigIndizes = indizes;
+            DatenEindeutigDubletten = dubletten;
+        }
+
+        /// <summary>
+        /// Meldet die Dublettenzeilen EINER Spalte und liefert ihre Zahl; -1, wenn die
+        /// Abfrage nicht ausgeführt werden konnte (etwa weil die Spalte fehlt).
+        ///
+        /// <para>
+        /// Die Meldung nennt Projekt, Gewerk, Geräte-ID und JEDE betroffene Anlagenzeile
+        /// mit ID und Bezeichner — ohne diese Liste wäre die Aussage „es gibt Dubletten"
+        /// für den Anwender nicht handhabbar. Die Zahl der ausgegebenen Zeilen ist
+        /// gedeckelt, damit eine unbereinigte Datenbank das Protokoll nicht flutet.
+        /// </para>
+        /// </summary>
+        private static int DublettenMelden(Lauf l, GeraeteSperre sperre)
+        {
+            const int MAX_ZEILEN = 40;
+
+            DataTable dt = Abfrage(l, AnlagenEindeutigkeit.SqlDublettenZeilen(sperre.Spalte));
+            if (dt == null)
+            {
+                l.Notiz(sperre.Spalte + ": Die Dublettenprüfung war nicht möglich - der Index " +
+                        "wird nicht angelegt.");
+                return -1;
+            }
+
+            if (dt.Rows.Count == 0) return 0;
+
+            l.Notiz(sperre.Gewerk + " (" + sperre.Spalte + "): " + dt.Rows.Count +
+                    " Anlagenzeilen teilen sich ein Gerät mit einer anderen Zeile desselben Projekts.");
+
+            int gezeigt = 0;
+            foreach (DataRow r in dt.Rows)
+            {
+                if (gezeigt >= MAX_ZEILEN)
+                {
+                    l.Notiz("    … weitere " + (dt.Rows.Count - MAX_ZEILEN) +
+                            " Zeilen nicht einzeln aufgeführt.");
+                    break;
+                }
+
+                int geraet = Zahl(r["Geraet"]);
+                l.Notiz("    Projekt " + Zahl(r["ID_Projekt"]) + ", " + sperre.Gewerk + " " +
+                        (geraet == 0 ? "0 (Platzhalter statt leer)" : geraet.ToString()) +
+                        ": Anlagenzeile " + Zahl(r["ID"]) + " \"" + Txt(r["Bezeichner"]) + "\"");
+                gezeigt++;
+            }
+
+            return dt.Rows.Count;
         }
 
         // =================================================================================
