@@ -15,6 +15,12 @@ namespace WindowsFormsApplication1
         private readonly Color Accent = Color.FromArgb(59, 130, 246);
         private readonly Color Surface = Color.FromArgb(248, 249, 252);
 
+        // Kostenkategorien wie in Tab_KostenKategorie. Die Reiter des Formulars stehen in
+        // derselben Reihenfolge, deshalb gilt durchgehend KategorieID = tabMain.SelectedIndex + 1.
+        internal const int KATEGORIE_INVESTITION = 1;
+        internal const int KATEGORIE_BETRIEB = 2;
+        internal const int KATEGORIE_ENERGIE = 3;
+
         public Dictionary<string, NumericUpDown> _Inputs = new Dictionary<string, NumericUpDown>();
         public int m_ID_Projekt = 0;
 
@@ -34,7 +40,7 @@ namespace WindowsFormsApplication1
 
             m_ID_Projekt = IDProjekt;
             tabMain.SelectedIndex = 0;
-            kategorieID = 1;
+            kategorieID = KATEGORIE_INVESTITION;
             kategorie = tabMain.TabPages[0].Text;
             flp = flpContainer;
 
@@ -224,6 +230,45 @@ namespace WindowsFormsApplication1
             base.OnFormClosing(e);
         }
 
+        /// <summary>
+        /// Summen je Komponente aus <c>Tab_ProjektWerte</c> — <b>getrennt nach Kategorie</b>
+        /// (1 Investition, 2 Betrieb, 3 Energie). Spalten der Rückgabe: <c>Komponente</c>,
+        /// <c>Summe</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Befund D1 (18.08.2026): Beide Aufrufer lasen zuvor die gespeicherte Abfrage
+        /// <c>Abfrage_KostenKomponenten</c>. Die summiert <c>EingegebenerWert</c> nur über
+        /// ProjektID und Komponente und filtert <b>nicht</b> nach <c>KategorieID</c> —
+        /// Investitions-, Betriebs- und Energiepositionen derselben Komponente landeten in
+        /// einer Zahl. Nachweis Projekt 1024: Wärmepumpe 6.100 € = 6.001 € (Investition) +
+        /// 99 € (Betrieb), während die Investitions-Kachel der Kostenseite korrekt
+        /// 12.001,00 € zeigte und die Tabelle darunter 12.100,00 €.
+        /// </para>
+        /// <para>
+        /// Bewusst als eigenes parametrisiertes SQL statt einer Korrektur der gespeicherten
+        /// Abfrage: Die Datenbank liegt außerhalb des Repos, eine Abfrageänderung erreicht
+        /// Bestandsinstallationen nur über einen Migrationsschritt.
+        /// </para>
+        /// <para>
+        /// <c>internal</c>, damit die Kompaktanzeige der Seite „Kosten"
+        /// (<see cref="UcBkKosten"/>) dieselbe Leselogik verwendet und keine zweite entsteht —
+        /// gleiche Begründung wie bei <see cref="WirtschaftlichkeitCtrl.LiesInvestitionen"/>.
+        /// </para>
+        /// </remarks>
+        internal static DataTable LiesKomponentenSummen(int projektID, int kategorieID)
+        {
+            string sql = @"SELECT k.Komponente, Sum(w.EingegebenerWert) AS Summe
+                           FROM Tab_KostenKomponente AS k
+                                INNER JOIN Tab_ProjektWerte AS w ON k.ID = w.KomponentenID
+                           WHERE w.ProjektID = ? AND w.KategorieID = ?
+                           GROUP BY k.Komponente";
+
+            return DataRepository.GetDataTable(sql,
+                new OleDbParameter("@pid", projektID),
+                new OleDbParameter("@kat", kategorieID));
+        }
+
         private void Gesamtkosten(string aktuelleSelektion = "")
         {
             decimal summeGesamt = 0;
@@ -238,34 +283,15 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            // Die Gesamtsumme berechnen:
-            // Summe aller ANDEREN Komponenten aus der Datenbank
-            // und live berechnete summeSelektion dazu addieren.
-            string sql = $"SELECT Komponente, Summe FROM Abfrage_KostenKomponenten WHERE ProjektID = ?";
-
-            // Parameter vorbereiten
-            OleDbParameter[] ps = {
-                new OleDbParameter("@id", m_ID_Projekt),
-            };
-
-            // Repository nutzen, um die Daten zu holen
-            DataTable dt = DataRepository.GetDataTable(sql, ps);
+            // Die Gesamtsumme der GERADE ANGEZEIGTEN Kategorie aus der Datenbank.
+            DataTable dt = LiesKomponentenSummen(m_ID_Projekt, kategorieID);
 
             // Durch die Zeilen loopen (ersetzt den Reader)
             foreach (DataRow row in dt.Rows)
             {
-                string komponente = row["Komponente"].ToString();
                 decimal betrag = row["Summe"] != DBNull.Value ? Convert.ToDecimal(row["Summe"]) : 0;
-
-                // Wenn es NICHT die aktuelle Komponente ist, zur Gesamtsumme addieren
-                //     if (komponente != aktuelleSelektion)
-                {
-                    summeGesamt += betrag;
-                }
+                summeGesamt += betrag;
             }
-
-            // Jetzt die live berechnete Selektion zur Gesamtsumme addieren
-            //summeGesamt += summeSelektion;
 
             // Anzeige aktualisieren
             if (aktuelleSelektion != "")
@@ -273,7 +299,11 @@ namespace WindowsFormsApplication1
             else
                 label_ErzeugerGesamt.Text = "-";
 
-            label_Gesamt.Text = $"PROJEKT GESAMT: {summeGesamt:N2} €";
+            // Die Kategorie steht mit im Text: Investitions-, Betriebs- und Energiekosten
+            // haben verschiedene Bezugsgrößen (€ gegenüber €/a) und dürfen nicht als eine
+            // Zahl gelesen werden.
+            label_Gesamt.Text = string.Format(MyResource.Resource.KOSTEN_LBL_PROJEKT_GESAMT,
+                                              kategorie, summeGesamt.ToString("N2"));
 
             label_ErzeugerGesamt.Refresh();
             label_Gesamt.Refresh();
@@ -619,52 +649,95 @@ namespace WindowsFormsApplication1
             UpdateDetailPanel(komponente, geladeneFaktoren);
         }
 
+        /// <summary>
+        /// Legt die Hauptposition einer Komponente an, sofern sie im Projekt <b>und in der
+        /// gerade geöffneten Kategorie</b> noch fehlt.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Befund D3 (18.08.2026): Die Existenzprüfung lief über
+        /// <c>ProjektID</c> + <c>StammID</c> <b>ohne</c> <c>KategorieID</c>. Sobald die
+        /// Investitions-Hauptposition einer Komponente existierte, galt sie auch für den
+        /// Reiter „Betriebskosten" als vorhanden — eine Betriebskosten-Hauptposition konnte
+        /// deshalb nie entstehen.
+        /// </para>
+        /// <para>
+        /// Befund D4 (18.08.2026): Die <c>StammID</c> kam aus <c>Abfrage_Kostenfaktoren</c>.
+        /// Diese gespeicherte Abfrage ist ein INNER JOIN <b>über <c>Tab_ProjektWerte</c></b>
+        /// und liefert ohne bereits erfasste Projektwerte nichts — in einer frisch
+        /// ausgelieferten Datenbank unterblieb die automatische Übernahme des Technik-Planwerts
+        /// deshalb vollständig. Jetzt kommt die <c>StammID</c> aus der projektfreien
+        /// Katalogtabelle <c>Tab_Kostenfaktor</c>.
+        /// </para>
+        /// <para>
+        /// Die Existenzprüfung fragt bewusst über <c>Tab_Kostenfaktor.Bezeichnung</c> statt
+        /// über eine feste <c>StammID</c>: Der Katalog führt für „Solarthermie" zwei
+        /// Hauptpositions-Zeilen (StammID 82 und 84), und Bestandsprojekte verwenden beide.
+        /// Ein Vergleich gegen nur eine der beiden würde für die andere Hälfte der Projekte
+        /// eine zweite Hauptposition anlegen.
+        /// </para>
+        /// <para>
+        /// <b>Vorbelegung nur bei Investitionskosten.</b> <see cref="GetModulKosten"/> liefert
+        /// den Investitionswert der verbauten Technik. Als Betriebskostenbetrag wäre er
+        /// fachlich falsch (€ gegenüber €/a), deshalb entstehen Positionen anderer Kategorien
+        /// mit Betrag 0.
+        /// </para>
+        /// </remarks>
         private void EnsureMainComponentExists(int projektID, string komponente, decimal externeKosten)
         {
             try
             {
-                // Stammdaten prüfen ---
-                string sqlStamm = @"SELECT StammID FROM Abfrage_Kostenfaktoren 
-                            WHERE Komponente = ? AND Bezeichnung = ? AND IsMainComponent = True";
+                int kategorieIDNeu = tabMain.SelectedIndex + 1;
 
-                object resStamm = DataRepository.ExecuteScalar(sqlStamm,
-                    new OleDbParameter("@k1", komponente),
-                    new OleDbParameter("@k2", komponente));
-
-                if (resStamm == null) return; // Nichts gefunden, Abbruch
-                int stammID = Convert.ToInt32(resStamm);
-
-                // Projektdaten prüfen ---
-                string sqlCheckProjekt = "SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ProjektID = ? AND StammID = ?";
+                // Hauptposition dieser Komponente in DIESER Kategorie bereits vorhanden?
+                string sqlCheckProjekt = @"SELECT COUNT(*)
+                                           FROM Tab_ProjektWerte AS w
+                                                INNER JOIN Tab_Kostenfaktor AS f ON w.StammID = f.StammID
+                                           WHERE w.ProjektID = ? AND w.KategorieID = ? AND w.KomponentenID = ?
+                                                 AND f.IsMainComponent = True AND f.Bezeichnung = ?";
 
                 int exists = Convert.ToInt32(DataRepository.ExecuteScalar(sqlCheckProjekt,
                     new OleDbParameter("@p1", projektID),
-                    new OleDbParameter("@s1", stammID)));
+                    new OleDbParameter("@kat", kategorieIDNeu),
+                    new OleDbParameter("@kID", GetKomponentenID(komponente)),
+                    new OleDbParameter("@bez", komponente)));
 
-                if (exists == 0)
+                if (exists > 0) return;
+
+                // Stammdaten prüfen — projektfreie Quelle (D4).
+                string sqlStamm = @"SELECT MIN(StammID) FROM Tab_Kostenfaktor
+                            WHERE Bezeichnung = ? AND IsMainComponent = True";
+
+                object resStamm = DataRepository.ExecuteScalar(sqlStamm,
+                    new OleDbParameter("@k1", komponente));
+
+                if (resStamm == null || resStamm == DBNull.Value) return; // Nichts gefunden, Abbruch
+                int stammID = Convert.ToInt32(resStamm);
+
+                // --- Kosten ermitteln (nur Investitionskosten werden vorbelegt, s. o.) ---
+                decimal initialeKosten = 0;
+                if (kategorieIDNeu == KATEGORIE_INVESTITION)
                 {
-                    // --- Kosten ermitteln ---
-                    decimal initialeKosten = externeKosten;
+                    initialeKosten = externeKosten;
                     if (initialeKosten == 0)
                     {
                         initialeKosten = (decimal)GetModulKosten(projektID, komponente);
                     }
-
-                    string sqlInsertWert = @"INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID, 
-                                     KategorieID, EingegebenerWert, Nutzungsdauer, Einheit, Gruppe) 
-                                     VALUES (?, ?, ?, ?, ?, 0, ?,?)";
-
-                    DataRepository.ExecuteSQL(sqlInsertWert,
-                        new OleDbParameter("@pID", projektID),
-                        new OleDbParameter("@sID", stammID),
-                        new OleDbParameter("@kID", GetKomponentenID(komponente)),
-                        new OleDbParameter("@kat", tabMain.SelectedIndex + 1),
-                        new OleDbParameter("@val", (double)initialeKosten), // Access mag Double oft lieber als Decimal
-                        new OleDbParameter("@unit", "€"),
-                        new OleDbParameter("gr", "Allgemein")
-                    );
-
                 }
+
+                string sqlInsertWert = @"INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID,
+                                 KategorieID, EingegebenerWert, Nutzungsdauer, Einheit, Gruppe)
+                                 VALUES (?, ?, ?, ?, ?, 0, ?,?)";
+
+                DataRepository.ExecuteSQL(sqlInsertWert,
+                    new OleDbParameter("@pID", projektID),
+                    new OleDbParameter("@sID", stammID),
+                    new OleDbParameter("@kID", GetKomponentenID(komponente)),
+                    new OleDbParameter("@kat", kategorieIDNeu),
+                    new OleDbParameter("@val", (double)initialeKosten), // Access mag Double oft lieber als Decimal
+                    new OleDbParameter("@unit", "€"),
+                    new OleDbParameter("gr", "Allgemein")
+                );
             }
             catch (Exception ex)
             {
@@ -795,24 +868,28 @@ namespace WindowsFormsApplication1
         {
             flpContainer_Energiekosten.Visible = false;
             kategorie = tabMain.SelectedTab.Text;
+
+            // Reihenfolge beachten: kategorieID muss VOR Gesamtkosten() stehen — die
+            // Gesamtsumme wird seit Befund D1 nach Kategorie gefiltert und hätte sonst
+            // noch die des zuvor gewählten Reiters verwendet.
             if (kategorie == "Investitionskosten")
             {
+                kategorieID = KATEGORIE_INVESTITION;
                 flp = flpContainer;
                 Gesamtkosten(listBox_Erzeuger.Text);
-                kategorieID = 1;
             }
             else if (kategorie == "Betriebskosten")
             {
+                kategorieID = KATEGORIE_BETRIEB;
                 flp = flpContainer_Betriebskosten;
                 Gesamtkosten(listBox_Betriebskosten.Text);
-                kategorieID = 2;
             }
             else if (kategorie == "Energiekosten")
             {
+                kategorieID = KATEGORIE_ENERGIE;
                 flp = flpContainer_Energiekosten;
                 flp.Visible = false;
                 Gesamtkosten();
-                kategorieID = 3;
             }
 
         }
@@ -856,20 +933,65 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Investitionswert der im Projekt verbauten Technik einer Komponente — Vorbelegung
+        /// der Hauptposition und Ziel des Knopfes „Planwert übernehmen…".
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Befund D2 (18.08.2026): Zuvor über <c>Abfrage_ProjektKostenKomponenten</c>. Deren
+        /// sieben Teilabfragen (<c>Abfrage_Kosten_Pufferspeicher</c> &amp; Co.) summieren die
+        /// Gerätekosten über einen Join auf <c>Tab_Energieanlagen</c>. Verweisen ZWEI
+        /// Anlagenzeilen desselben Projekts auf DASSELBE Gerät — Dublette in
+        /// <c>Tab_Energieanlagen</c>, z. B. Projekt 1018 Zeilen 11329 und 11330 mit
+        /// <c>ID_PUFFER</c> = 1054168 —, zählt die Abfrage das Gerät doppelt. Jetzt wird je
+        /// Gerät genau einmal gezählt (<c>SELECT DISTINCT</c> über die Verweisspalte).
+        /// </para>
+        /// <para>
+        /// Die gespeicherten Abfragen bleiben unangetastet: Die Datenbank liegt außerhalb des
+        /// Repos, eine Abfrageänderung erreicht Bestandsinstallationen nur über einen
+        /// Migrationsschritt.
+        /// </para>
+        /// <para>
+        /// Nebenwirkung, bewusst in Kauf genommen: Der alte Weg filterte zusätzlich über
+        /// <c>Tab_Typ_Energieanlagen.Bezeichner</c>. Für „Stromspeicher" konnte er deshalb nie
+        /// einen Wert liefern, weil der Anlagentyp dort „Batteriespeicher" heißt. Der neue Weg
+        /// fragt die Verweisspalte ab und findet den Stromspeicher.
+        /// </para>
+        /// </remarks>
         private double GetModulKosten(int projektID, string komponente)
         {
-            double Summe = 0;
+            string verweis, tabelle, kostenspalte;
 
-            string sql = "SELECT Abfrage_ProjektKostenKomponenten.Gesamt,Abfrage_ProjektKostenKomponenten.ID_Projekt, Tab_Typ_Energieanlagen.Bezeichner " +
-                         "FROM Abfrage_ProjektKostenKomponenten " +
-                         "INNER JOIN Tab_Typ_Energieanlagen ON Abfrage_ProjektKostenKomponenten.ID_Type = Tab_Typ_Energieanlagen.ID " +
-                         "WHERE Abfrage_ProjektKostenKomponenten.ID_Projekt=? and Tab_Typ_Energieanlagen.Bezeichner=?";
+            switch (komponente)
+            {
+                case DbWerte.ERZEUGER_WAERMEPUMPE:
+                    verweis = "ID_WP"; tabelle = "Tab_WP"; kostenspalte = "Modulkosten"; break;
+                case DbWerte.ERZEUGER_HEIZKESSEL:
+                    verweis = "ID_Kessel"; tabelle = "Tab_Heizkessel"; kostenspalte = "Investitionskosten"; break;
+                case DbWerte.ERZEUGER_PHOTOVOLTAIK:
+                    verweis = "ID_PV"; tabelle = "Tab_PV"; kostenspalte = "Modulkosten"; break;
+                case DbWerte.ERZEUGER_SOLARTHERMIE:
+                    verweis = "ID_Solar"; tabelle = "Tab_Solarkollektoren"; kostenspalte = "Investitionskosten"; break;
+                case DbWerte.ERZEUGER_STROMSPEICHER:
+                    verweis = "ID_SP"; tabelle = "Tab_Stromspeicher"; kostenspalte = "Modulkosten"; break;
+                case DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER:
+                    verweis = "ID_PUFFER"; tabelle = "Tab_Pufferspeicher"; kostenspalte = "Investitionskosten"; break;
+                case DbWerte.ERZEUGER_BHKW:
+                    verweis = "ID_BHKW"; tabelle = "Tab_BHKW"; kostenspalte = "Kosten_Modul"; break;
+                default:
+                    return 0.0;
+            }
 
-            OleDbParameter[] p = { new OleDbParameter("@id", (Int32)projektID), new OleDbParameter("@komp", (string)komponente) };
+            // Tabellen- und Spaltennamen stammen ausschließlich aus dem Schalter oben,
+            // nie aus einer Eingabe; die ProjektID bleibt Parameter.
+            string sql = "SELECT Sum(g.[" + kostenspalte + "]) " +
+                         "FROM (SELECT DISTINCT [" + verweis + "] FROM Tab_Energieanlagen " +
+                         "      WHERE ID_Projekt = ? AND [" + verweis + "] IS NOT NULL) AS a " +
+                         "     INNER JOIN [" + tabelle + "] AS g ON a.[" + verweis + "] = g.ID";
 
-            object obj = DataRepository.ExecuteScalar(sql, p);
-            Summe = (obj != null && obj != DBNull.Value) ? Convert.ToDouble(obj) : 0.0;
-            return Summe;
+            object obj = DataRepository.ExecuteScalar(sql, new OleDbParameter("@id", (Int32)projektID));
+            return (obj != null && obj != DBNull.Value) ? Convert.ToDouble(obj) : 0.0;
         }
 
         private void RenderEnergieTab(string filterKategorie = "Alle Kategorien")

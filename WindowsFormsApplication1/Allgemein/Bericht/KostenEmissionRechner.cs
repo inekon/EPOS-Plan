@@ -237,7 +237,33 @@ namespace WindowsFormsApplication1
             }
             catch { }
 
-            info.PreisArbeit = sPreis ?? kPreis;
+            // Arbeitspreis: 0 zählt als NICHT GEPFLEGT (Befund D5, 18.08.2026).
+            //
+            // Ein Arbeitspreis von 0 kam bisher als gültiger Preis durch: Die Spalten
+            // custom_price_work / price_work sind numerisch und selten NULL, W() liefert
+            // deshalb 0.0 statt null. Folge: kostenVollstaendig blieb true, die
+            // Energiekosten wurden zu 0,00 €/a und die Wirtschaftlichkeitsrechnung
+            // speicherte einen Kapitalwert OHNE Fehlgrund — nachgewiesen an Projekt 1018
+            // („Erdgas E", beide Preisspalten 0): Kapitalwert −80.464,51 € auf einer
+            // Datenbasis ohne jeden Energiepreis, während Projekt 1024 korrekt
+            // „Energiekosten nicht bestimmbar" meldete.
+            //
+            // Abgrenzung: Die Regel gilt nur für den ARBEITSPREIS und nur für Träger, die
+            // ein verbrauchendes Modul überhaupt anfährt. Ein legitim kostenloser Träger
+            // existiert in diesem Datenmodell nicht — energy_carrier führt ausschließlich
+            // beschaffte Energie (pricing_model ANIMAL_FAT, ELECTRICITY, GASEOUS_FUEL,
+            // HEAT, LIQUID_FUEL, SOLID_FUEL), jeweils mit Abrechnungseinheit und
+            // Heizwert. Umweltwärme der Wärmepumpe und PV-Eigenstrom sind KEINE
+            // Energieträger: In verbrauchJeTraeger landen nur BHKW- und Heizkesselmodule,
+            // der Strombezug läuft separat über den Netzbezugspfad. Ein Arbeitspreis 0 ist
+            // hier also immer „noch nicht erfasst", nie „kostenlos".
+            //
+            // Der GRUNDPREIS bleibt bewusst unangetastet: 0 €/a ist dort ein üblicher und
+            // gültiger Vertragswert.
+            //
+            // Vorrangkette wie beim CO₂-Faktor unten: Projektwert → Katalogwert → null.
+            info.PreisArbeit = (sPreis.HasValue && sPreis.Value > 0) ? sPreis
+                             : ((kPreis.HasValue && kPreis.Value > 0) ? kPreis : null);
             info.Grundpreis = sGrund ?? kGrund;
 
             // Vorrang: Projektwert → Katalog Tab_Brennstoff_Stamm → energy_carrier.

@@ -102,15 +102,36 @@ namespace WindowsFormsApplication1
             return success;
         }
 
+        /// <summary>
+        /// Schreibt den geladenen Projekt-Heizkessel zurück. Schlüssel ist der
+        /// Primärschlüssel <c>ID</c>; ohne gesetzte ID passiert nichts.
+        /// </summary>
+        /// <remarks>
+        /// Befund D6 (18.08.2026): Der Schlüssel war <c>Bezeichner</c> <b>ohne</b>
+        /// Projektbezug. <c>Tab_Heizkessel</c> hält die Projektkopien aller Projekte, und
+        /// eine Projektkopie behält den Bezeichner ihrer Stammvorlage — ein Aufruf hätte
+        /// also die gleichnamigen Kessel <b>aller</b> Projekte überschrieben.
+        /// <para>
+        /// Statt die Methode zu entfernen (sie hat derzeit keinen Aufrufer) auf den
+        /// Primärschlüssel umgestellt: <see cref="Save"/> entscheidet bereits anhand von
+        /// <c>ID</c> zwischen Einfügen und Aktualisieren, die ID ist damit die Zeilenidentität,
+        /// die die Klasse selbst voraussetzt — und ein Projektfilter allein bliebe mehrdeutig,
+        /// sobald ein Projekt zwei gleichnamige Kessel führt (Konvention CLAUDE.md:
+        /// Beziehungen über IDs). Ein Entfernen wäre zudem eine Bruchänderung an der
+        /// öffentlichen Schnittstelle, während parallele Zweige offen sind.
+        /// </para>
+        /// </remarks>
         public bool Update()
         {
-            string sql = @"UPDATE [Tab_Heizkessel] SET 
-                            Beschreibung = ?, Firma = ?, Ptherm = ?, Brennstoff = ?, 
-                            Wirkungsgrad_Gas = ?, Wirkungsgrad_Öl = ?, Investitionskosten = ?, 
-                            Raumbedarf = ?, Wartungskosten = ?, Nutzungsdauer = ?, 
-                            CO2 = ?, SO2 = ?, NOx = ?, CO = ?, Staub = ?, 
-                            Betriebsbereitschaftverlust = ?, Brennwert = ? 
-                          WHERE Bezeichner = ?"; // Oder WHERE ID = ?, falls ID der Primärschlüssel ist
+            if (this.ID <= 0) return false;   // ohne Zeilenidentität wird nichts geschrieben
+
+            string sql = @"UPDATE [Tab_Heizkessel] SET
+                            Beschreibung = ?, Firma = ?, Ptherm = ?, Brennstoff = ?,
+                            Wirkungsgrad_Gas = ?, Wirkungsgrad_Öl = ?, Investitionskosten = ?,
+                            Raumbedarf = ?, Wartungskosten = ?, Nutzungsdauer = ?,
+                            CO2 = ?, SO2 = ?, NOx = ?, CO = ?, Staub = ?,
+                            Betriebsbereitschaftverlust = ?, Brennwert = ?
+                          WHERE ID = ?";
 
             return DataRepository.ExecuteSQL(sql, CreateParameters(true));
         }
@@ -268,8 +289,9 @@ namespace WindowsFormsApplication1
             p.Add(new OleDbParameter("@bbv", this.Betriebsbereitschaftverlust));
             p.Add(new OleDbParameter("@brn", this.Brennwert));
 
-            // Bei Update steht der Name im WHERE-Teil (am Ende)
-            if (isUpdate) p.Add(new OleDbParameter("@nam", this.Name ?? ""));
+            // Bei Update steht der Schlüssel im WHERE-Teil (am Ende) — seit Befund D6
+            // der Primärschlüssel ID statt des projektübergreifend mehrdeutigen Bezeichners.
+            if (isUpdate) p.Add(new OleDbParameter("@id", this.ID));
 
             return p.ToArray();
         }
