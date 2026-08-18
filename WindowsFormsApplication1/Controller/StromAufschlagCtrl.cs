@@ -56,30 +56,110 @@ namespace WindowsFormsApplication1
         /// <c>ErgebnisCtrl.StelleKesselSpaltenSicher</c>.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// Bewusst OHNE Vorbelegung: Die Vorschlagswerte setzt Migrationsschritt 12d.
         /// Hier entstehen nur die Spalten, damit ein Lesezugriff nicht scheitert; die
         /// Leseseite faellt dann auf die Vorgaben des <see cref="StromAufschlagModel"/>
         /// zurueck - dieselben Zahlen.
+        /// </para>
+        /// <para>
+        /// <b>JE TABELLE pruefen.</b> <c>SchemaKatalog.Schritt12_Preismodell</c> fuehrt
+        /// ZWEI Tabellen: die vierzehn Aufschlags- und Verguetungsspalten an
+        /// <c>energy_project_settings</c> und die drei Preisquellen-Verweise an
+        /// <c>Tab_StromspeicherVariante</c>. Wird das Schema nur EINER Tabelle gelesen,
+        /// greift die Existenzpruefung fuer die Spalten der anderen nie - das
+        /// <c>ALTER TABLE</c> lief dann bei jedem Oeffnen der Kostenverwaltung erneut und
+        /// quittierte mit "Field … already exists". Deshalb dasselbe Vorgehen wie in
+        /// <c>SchemaMigration.SpaltenAnlegen</c>: Schema je Tabelle, einmal gelesen und
+        /// gemerkt.
+        /// </para>
+        /// <para>
+        /// <b>Ohne Dialog.</b> Eine Vorsorge ist kein Bedienschritt - sie darf den
+        /// Anwender nicht mit MessageBoxen behelligen. Das DDL laeuft deshalb ueber eine
+        /// eigene <see cref="OleDbConnection"/> statt ueber
+        /// <c>DataRepository.ExecuteSQL</c>, das seine Fehler selbst als Dialog zeigt und
+        /// damit am umschliessenden <c>try/catch</c> vorbeikommt. Muster ist
+        /// <c>ErgebnisCtrl.ErgaenzeSpalte</c>. Echte Fehler bleiben sichtbar: Scheitert
+        /// das Anlegen wirklich (Datei schreibgeschuetzt, Datenbank exklusiv geoeffnet),
+        /// meldet der nachfolgende Lese- bzw. Schreibzugriff ueber
+        /// <see cref="DataRepository"/> ganz regulaer.
+        /// </para>
         /// </remarks>
         public static void StelleSpaltenSicher()
         {
             try
             {
-                DataTable schema = DataRepository.GetDataTable("SELECT TOP 1 * FROM [" + TABLE + "]");
-                if (schema == null) return;
-
-                foreach (SchemaSpalte s in SchemaKatalog.Schritt12_Preismodell)
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
                 {
-                    if (schema.Columns.Contains(s.Name)) continue;
-                    try
+                    conn.Open();
+
+                    // Schema je Tabelle - einmal gelesen, dann gemerkt.
+                    Dictionary<string, HashSet<string>> schemaJeTabelle =
+                        new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+
+                    foreach (SchemaSpalte s in SchemaKatalog.Schritt12_Preismodell)
                     {
-                        DataRepository.ExecuteSQL(
-                            "ALTER TABLE [" + s.Tabelle + "] ADD COLUMN [" + s.Name + "] " + s.TypDefinition);
+                        HashSet<string> vorhanden;
+                        if (!schemaJeTabelle.TryGetValue(s.Tabelle, out vorhanden))
+                        {
+                            vorhanden = SpaltenNamen(conn, s.Tabelle);
+                            schemaJeTabelle[s.Tabelle] = vorhanden;
+                        }
+
+                        // null = Tabelle gibt es (noch) nicht. Sie hier anzulegen ist nicht
+                        // Aufgabe dieser Vorsorge - das erledigen die Migration bzw.
+                        // StromspeicherVarianteCtrl.StelleTabelleSicher.
+                        if (vorhanden == null) continue;
+                        if (vorhanden.Contains(s.Name)) continue;
+
+                        try
+                        {
+                            using (OleDbCommand cmd = new OleDbCommand(
+                                "ALTER TABLE [" + s.Tabelle + "] ADD COLUMN [" + s.Name + "] " +
+                                s.TypDefinition, conn))
+                                cmd.ExecuteNonQuery();
+                        }
+                        catch (Exception ex)
+                        {
+                            // Protokoll statt Dialog - siehe <remarks>.
+                            Protokoll(s.Tabelle + "." + s.Name + ": " + ex.Message);
+                        }
                     }
-                    catch { /* "existiert bereits" ist kein Fehler */ }
                 }
             }
-            catch { /* der eigentliche Zugriff meldet den Fehler */ }
+            catch (Exception ex)
+            {
+                // Keine Verbindung, kein Schema - der eigentliche Zugriff meldet es.
+                Protokoll(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Die Spaltennamen einer Tabelle, oder <c>null</c>, wenn es die Tabelle nicht
+        /// gibt bzw. das Schema nicht lesbar ist. Eine Tabelle ohne Spalten kennt Access
+        /// nicht - "keine Zeilen" heisst deshalb zuverlaessig "keine Tabelle".
+        /// </summary>
+        private static HashSet<string> SpaltenNamen(OleDbConnection conn, string tabelle)
+        {
+            try
+            {
+                DataTable cols = conn.GetOleDbSchemaTable(
+                    OleDbSchemaGuid.Columns, new object[] { null, null, tabelle, null });
+
+                if (cols == null || cols.Rows.Count == 0) return null;
+
+                HashSet<string> namen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (DataRow r in cols.Rows) namen.Add(Convert.ToString(r["COLUMN_NAME"]));
+                return namen;
+            }
+            catch { return null; }
+        }
+
+        /// <summary>Protokolliert einen Vorsorge-Fehlschlag, ohne den Anwender zu stoeren.</summary>
+        private static void Protokoll(string meldung)
+        {
+            try { Console.WriteLine("StromAufschlagCtrl.StelleSpaltenSicher: " + meldung); }
+            catch { }
         }
 
         // =====================================================================
