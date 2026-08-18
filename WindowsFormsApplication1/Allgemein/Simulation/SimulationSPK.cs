@@ -219,9 +219,15 @@ namespace WindowsFormsApplication1
                 Kessel_Wirk_Gas_Spk[i] = heizkesselctrl.items[0].Wirkungsgrad_Gas;
                 Kessel_Wirk_Oel_Spk[i] = heizkesselctrl.items[0].Wirkungsgrad_Oel;
 
-                // Absicherung Prozentwerte -> Faktor
-                if (Kessel_Wirk_Gas_Spk[i] > 1.0) Kessel_Wirk_Gas_Spk[i] /= 100.0;
-                if (Kessel_Wirk_Oel_Spk[i] > 1.0) Kessel_Wirk_Oel_Spk[i] /= 100.0;
+                // Absicherung Prozentwerte -> Faktor. Schwelle 1.5 statt 1.0 (18.08.2026):
+                // Brennwertkessel liefern Hi-basierte Volllastwirkungsgrade bis ~104 % —
+                // als Faktor gespeichert (710.01-Rückfall des Imports, z. B. Hoval
+                // 103.5 % -> 1.035) hätte die alte Schwelle sie als Prozentwert gedeutet
+                // und auf ~0.01 zerlegt. Echte Prozentwerte liegen >= 50, echte Faktoren
+                // <= ~1.1; 1.5 trennt beide sauber (dieselbe Schwelle nutzt
+                // WirtschaftlichkeitCtrl.LiesReferenzkessel seit Review 11).
+                if (Kessel_Wirk_Gas_Spk[i] > 1.5) Kessel_Wirk_Gas_Spk[i] /= 100.0;
+                if (Kessel_Wirk_Oel_Spk[i] > 1.5) Kessel_Wirk_Oel_Spk[i] /= 100.0;
 
                 Brennstoff_Betrieb_Spk[i] = heizkesselctrl.items[0].Brennstoff;
                 Brennstoff_Art[i] = Brennstoff_Betrieb_Spk[i];
