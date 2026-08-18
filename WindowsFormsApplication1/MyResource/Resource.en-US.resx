@@ -4582,4 +4582,38 @@ Several arrays of the same module type are allowed — please check whether this
   <data name="BK_KOSTEN_ENERGIE_PREIS0" xml:space="preserve">
     <value>⚠ Unit price 0.00 for: {0} — without a price no energy costs can arise; enter it on the “Energy costs” tab of cost management.</value>
   </data>
+  <data name="ADM_BTN_SPEICHERN" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="ADM_TIP_SPEICHERN" xml:space="preserve">
+    <value>Writes the values shown back into the catalogue record. The dialog stays open.</value>
+  </data>
+  <data name="ADM_TIP_SPEICHERN_LEER" xml:space="preserve">
+    <value>No record selected — please pick an entry in the list on the left.</value>
+  </data>
+  <data name="ADM_TIP_SPEICHERN_UNVERAENDERT" xml:space="preserve">
+    <value>No change — there is nothing to save.</value>
+  </data>
+  <data name="ADM_STATUS_GESPEICHERT" xml:space="preserve">
+    <value>Saved at {0}</value>
+  </data>
+  <data name="ADM_STATUS_FEHLER" xml:space="preserve">
+    <value>Not saved</value>
+  </data>
+  <data name="ADM_SCHUTZ_TITEL" xml:space="preserve">
+    <value>Write-protected record</value>
+  </data>
+  <data name="ADM_SCHUTZ_FRAGE" xml:space="preserve">
+    <value>The record “{0}” comes from the shipped catalogue and is write-protected.
+
+Overwrite it anyway?</value>
+  </data>
+  <data name="ADM_MEHRDEUTIG_TITEL" xml:space="preserve">
+    <value>Designation not unique</value>
+  </data>
+  <data name="ADM_MEHRDEUTIG_TEXT" xml:space="preserve">
+    <value>The designation “{0}” occurs {1} times in the catalogue.
+
+Saving would overwrite all of those records at once and is therefore refused. Please remove the duplicates first.</value>
+  </data>
 </root>

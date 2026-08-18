@@ -4597,4 +4597,38 @@ Mehrere Felder desselben Modultyps sind zulässig — bitte prüfen, ob das so g
   <data name="BK_KOSTEN_ENERGIE_PREIS0" xml:space="preserve">
     <value>⚠ Arbeitspreis 0,00 bei: {0} — ohne Preis können keine Energiekosten entstehen; im Reiter „Energiekosten" der Kostenverwaltung erfassen.</value>
   </data>
+  <data name="ADM_BTN_SPEICHERN" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="ADM_TIP_SPEICHERN" xml:space="preserve">
+    <value>Schreibt die angezeigten Werte in den Stammdatensatz zurück. Der Dialog bleibt geöffnet.</value>
+  </data>
+  <data name="ADM_TIP_SPEICHERN_LEER" xml:space="preserve">
+    <value>Kein Datensatz markiert — bitte links einen Eintrag auswählen.</value>
+  </data>
+  <data name="ADM_TIP_SPEICHERN_UNVERAENDERT" xml:space="preserve">
+    <value>Keine Änderung — es gibt nichts zu speichern.</value>
+  </data>
+  <data name="ADM_STATUS_GESPEICHERT" xml:space="preserve">
+    <value>Gespeichert um {0}</value>
+  </data>
+  <data name="ADM_STATUS_FEHLER" xml:space="preserve">
+    <value>Nicht gespeichert</value>
+  </data>
+  <data name="ADM_SCHUTZ_TITEL" xml:space="preserve">
+    <value>Schreibgeschützter Datensatz</value>
+  </data>
+  <data name="ADM_SCHUTZ_FRAGE" xml:space="preserve">
+    <value>Der Datensatz „{0}“ stammt aus dem Auslieferungskatalog und ist schreibgeschützt.
+
+Soll er trotzdem überschrieben werden?</value>
+  </data>
+  <data name="ADM_MEHRDEUTIG_TITEL" xml:space="preserve">
+    <value>Bezeichner nicht eindeutig</value>
+  </data>
+  <data name="ADM_MEHRDEUTIG_TEXT" xml:space="preserve">
+    <value>Der Bezeichner „{0}“ kommt im Katalog {1}-mal vor.
+
+Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird deshalb abgelehnt. Bitte die Dubletten zuerst bereinigen.</value>
+  </data>
 </root>
