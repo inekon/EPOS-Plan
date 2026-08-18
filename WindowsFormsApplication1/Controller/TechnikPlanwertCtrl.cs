@@ -50,6 +50,25 @@ namespace WindowsFormsApplication1
         /// <summary>Auswahlwert „diese Anlage trägt nichts bei" (nur bei Mehrdeutigkeit).</summary>
         internal const string BASIS_KEINE = "KEINE";
 
+        // --- Bezugsgröße der Kessel-Wartungskosten (Entscheidung 18.08.2026, Punkt 1) ---
+        //
+        // Sprachneutrale Steuerwerte der Auswahlliste. Der GESPEICHERTE Wert steht in
+        // DbWerte.KESSEL_WARTUNG_EINHEIT_* (deutsch, eingefroren), der ANZEIGETEXT in
+        // MyResource.Resource.KESSEL_WARTUNG_EINH_* — Drei-Schichten-Regel, Konzept 13.6.
+
+        /// <summary>Fester Jahresbetrag [€/a] — die Vorbelegung jedes Bestandskessels.</summary>
+        internal const string WARTUNG_EUR_JAHR = "EUR_JAHR";
+
+        /// <summary>Auf die erzeugte Wärmemenge [€/kWh] — braucht einen Simulationslauf.</summary>
+        internal const string WARTUNG_EUR_KWH = "EUR_KWH";
+
+        /// <summary>Anteil der Investition je Jahr [%/a] — braucht die Investitionsposition.</summary>
+        internal const string WARTUNG_PROZENT_INV = "PROZENT_INV";
+
+        /// <summary>Die drei Einheiten in Anzeigereihenfolge — Quelle jeder Auswahlliste.</summary>
+        internal static readonly string[] WARTUNG_SCHLUESSEL =
+        { WARTUNG_EUR_JAHR, WARTUNG_EUR_KWH, WARTUNG_PROZENT_INV };
+
         // ------------------------------------------------------------------ Datentypen
 
         /// <summary>Eine mögliche Kostenbasis einer Anlage.</summary>
@@ -81,6 +100,13 @@ namespace WindowsFormsApplication1
             public int GeraetID;
             public string Bezeichner = "";
 
+            /// <summary>
+            /// Verbaute STÜCKZAHL dieses Geräts im Projekt — Summe über alle Anlagenzeilen,
+            /// die darauf verweisen. Nur bei den Gewerken belegt, deren Gerätepreis ein
+            /// Preis JE MODUL ist (Photovoltaik, Solarthermie); sonst 0.
+            /// </summary>
+            public double Menge;
+
             /// <summary>Alle Basiswerte &gt; 0. Leer = in der Technik ist nichts gepflegt.</summary>
             public List<Basiswert> Basiswerte = new List<Basiswert>();
 
@@ -108,11 +134,19 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------------ Landkarte
 
-        /// <summary>Gerätetabelle und Verweisspalte eines Gewerks.</summary>
+        /// <summary>Gerätetabelle, Verweisspalte und Stückzahlspalte eines Gewerks.</summary>
         private sealed class Plan
         {
             public string Tabelle;
             public string Verweis;
+
+            /// <summary>
+            /// Spalte in <c>Tab_Energieanlagen</c>, die die verbaute STÜCKZAHL trägt —
+            /// gesetzt nur bei Photovoltaik und Solarthermie (Nutzerentscheidung vom
+            /// 18.08.2026, Punkt 2). <c>null</c> = das Gewerk kennt keine Stückzahl, der
+            /// Gerätepreis ist der Anlagenpreis.
+            /// </summary>
+            public string Mengenspalte;
         }
 
         /// <summary>
@@ -124,8 +158,8 @@ namespace WindowsFormsApplication1
         {
             { DbWerte.ERZEUGER_WAERMEPUMPE,             new Plan { Tabelle = "Tab_WP",               Verweis = "ID_WP" } },
             { DbWerte.ERZEUGER_HEIZKESSEL,              new Plan { Tabelle = "Tab_Heizkessel",       Verweis = "ID_Kessel" } },
-            { DbWerte.ERZEUGER_PHOTOVOLTAIK,            new Plan { Tabelle = "Tab_PV",               Verweis = "ID_PV" } },
-            { DbWerte.ERZEUGER_SOLARTHERMIE,            new Plan { Tabelle = "Tab_Solarkollektoren", Verweis = "ID_Solar" } },
+            { DbWerte.ERZEUGER_PHOTOVOLTAIK,            new Plan { Tabelle = "Tab_PV",               Verweis = "ID_PV",     Mengenspalte = "PV_Leistung" } },
+            { DbWerte.ERZEUGER_SOLARTHERMIE,            new Plan { Tabelle = "Tab_Solarkollektoren", Verweis = "ID_Solar",  Mengenspalte = "Kollektormodulanzahl" } },
             { DbWerte.ERZEUGER_STROMSPEICHER,           new Plan { Tabelle = "Tab_Stromspeicher",    Verweis = "ID_SP" } },
             { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, new Plan { Tabelle = "Tab_Pufferspeicher",   Verweis = "ID_PUFFER" } },
             { DbWerte.ERZEUGER_BHKW,                    new Plan { Tabelle = "Tab_BHKW",             Verweis = "ID_BHKW" } }
@@ -153,11 +187,27 @@ namespace WindowsFormsApplication1
             {
                 // Entdoppelung über die Verweisspalte (Befund D2): ein Gerät zählt einmal,
                 // egal wie viele Anlagenzeilen darauf zeigen.
+                //
+                // FÜHRT DAS GEWERK EINE STÜCKZAHL, wird sie dabei AUFSUMMIERT statt
+                // verworfen (Nutzerentscheidung 2 vom 18.08.2026). Mehrere Anlagenzeilen
+                // auf dasselbe PV-Modul sind kein Fehler, sondern der Regelfall: Jede
+                // Zeile ist ein eigenes Feld mit eigener Neigung und Ausrichtung und
+                // eigener Modulzahl. Genau so rechnet auch die Engine — SimulationPV
+                // läuft über die ANLAGENZEILEN und nimmt je Zeile deren PV_Leistung
+                // (SimulationPV.cs, Modulfläche = Breite × Länge × PV_Leistung); für die
+                // Solarthermie ebenso (SimulationSolarthermie: Fläche =
+                // Aperturfläche × Kollektormodulanzahl). Die Kostenseite muss dieselbe
+                // Anlage beschreiben wie der Rechenkern.
+                string mengenAusdruck = (plan.Mengenspalte != null)
+                    ? ", SUM([" + plan.Mengenspalte + "]) AS Menge" : "";
+
                 dt = DataRepository.GetDataTable(
-                    "SELECT g.* " +
-                    "FROM (SELECT DISTINCT [" + plan.Verweis + "] FROM Tab_Energieanlagen " +
-                    "      WHERE ID_Projekt = ? AND [" + plan.Verweis + "] IS NOT NULL) AS a " +
-                    "     INNER JOIN [" + plan.Tabelle + "] AS g ON a.[" + plan.Verweis + "] = g.ID",
+                    "SELECT g.*" + (plan.Mengenspalte != null ? ", a.Menge" : "") + " " +
+                    "FROM (SELECT [" + plan.Verweis + "] AS Geraet" + mengenAusdruck +
+                    "      FROM Tab_Energieanlagen " +
+                    "      WHERE ID_Projekt = ? AND [" + plan.Verweis + "] IS NOT NULL " +
+                    "      GROUP BY [" + plan.Verweis + "]) AS a " +
+                    "     INNER JOIN [" + plan.Tabelle + "] AS g ON a.Geraet = g.ID",
                     new OleDbParameter("@p", (Int32)projektID));
             }
             catch { return liste; }
@@ -169,7 +219,11 @@ namespace WindowsFormsApplication1
                 var a = new Anlage
                 {
                     GeraetID = Ganz(r, "ID"),
-                    Bezeichner = Text(r, "Bezeichner")
+                    Bezeichner = Text(r, "Bezeichner"),
+                    // Ganzzahlig abgeschnitten wie in der Engine: SimulationPV castet
+                    // PV_Leistung mit (long), eine eingegebene 10,5 wird dort als 10
+                    // Module gerechnet. Kosten und Ertrag müssen dieselbe Anlage meinen.
+                    Menge = Math.Truncate(Zahl(r, "Menge"))
                 };
 
                 BasenFuellen(komponente, r, a);
@@ -247,17 +301,59 @@ namespace WindowsFormsApplication1
                     break;
 
                 case DbWerte.ERZEUGER_PHOTOVOLTAIK:
-                    Basis(a, BASIS_MODULPREIS, Zahl(r, "Modulkosten"),
-                          Herleitung(MyResource.Resource.KOSTEN_PLANWERT_HERL_FELD, "Modulkosten"));
+                    Stueckpreis(a, Zahl(r, "Modulkosten"));
+                    break;
+
+                case DbWerte.ERZEUGER_SOLARTHERMIE:
+                    Stueckpreis(a, Zahl(r, "Investitionskosten"));
                     break;
 
                 case DbWerte.ERZEUGER_HEIZKESSEL:
-                case DbWerte.ERZEUGER_SOLARTHERMIE:
                 case DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER:
                     Basis(a, BASIS_MODULPREIS, Zahl(r, "Investitionskosten"),
                           Herleitung(MyResource.Resource.KOSTEN_PLANWERT_HERL_FELD, "Investitionskosten"));
                     break;
             }
+        }
+
+        /// <summary>
+        /// Kostenbasis der Gewerke, deren Gerätepreis ein Preis JE MODUL ist:
+        /// Modulpreis × verbaute Stückzahl (Nutzerentscheidung 2 vom 18.08.2026).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Belegt, nicht vermutet.</b> Beide Faktoren sind aus dem Rechenkern
+        /// nachweisbar: <c>Tab_Energieanlagen.PV_Leistung</c> ist trotz des Namens die
+        /// MODULANZAHL — <c>SimulationPV</c> bildet damit die Modulfläche
+        /// (Breite × Länge × PV_Leistung) und führt den Wert als <c>Anzahl</c> ins
+        /// Ergebnis; die Maske beschriftet das Feld mit „Anzahl Module".
+        /// <c>Kollektormodulanzahl</c> ebenso: <c>SimulationSolarthermie</c> multipliziert
+        /// sie mit der Aperturfläche EINES Kollektors. Beide Kostenfelder stehen im
+        /// jeweiligen MODUL-Katalogdialog neben Modulmaßen und Modulleistung und sind
+        /// dort mit „€" beschriftet, also ein Betrag je Modul.
+        /// </para>
+        /// <para>
+        /// <b>Warum <see cref="BASIS_SPEZIFISCH"/> und nicht <see cref="BASIS_MODULPREIS"/>.</b>
+        /// Der Wert ist jetzt „spezifischer Preis × Baugröße" — dieselbe Bauform wie beim
+        /// BHKW (€/kWel × kWel) und beim Stromspeicher (€/kWh × kWh). Der Anzeigetext und
+        /// die Herkunftsspalte des Übernahmedialogs stimmen damit ohne Sonderfall, und die
+        /// Rechnung steht im Klartext daneben („468,89 €/Modul × 20 Module").
+        /// Eine ECHTE Auswahl entsteht dadurch nicht: Beide Gewerke führen weiterhin genau
+        /// ein Kostenfeld, es bleibt bei einer Basis je Anlage.
+        /// </para>
+        /// <para>
+        /// <b>Stückzahl 0 ergibt keine Basis.</b> <see cref="Basis"/> verwirft Beträge
+        /// ≤ 0 — eine Anlage ohne konfigurierte Module trägt also nichts bei, statt
+        /// stillschweigend ein Modul zu unterstellen. Das ist eine Änderung gegenüber dem
+        /// bisherigen Verhalten (nackter Modulpreis) und wird über die Abweichungsanzeige
+        /// gemeldet; überschrieben wird nie (Nutzerentscheidung 4).
+        /// </para>
+        /// </remarks>
+        private static void Stueckpreis(Anlage a, double preisJeModul)
+        {
+            Basis(a, BASIS_SPEZIFISCH, preisJeModul * a.Menge,
+                  Herleitung(MyResource.Resource.KOSTEN_PLANWERT_HERL_MENGE,
+                             Z(preisJeModul, 2), Z(a.Menge, 0)));
         }
 
         private static void Basis(Anlage a, string schluessel, double betrag, string herleitung)
@@ -369,14 +465,11 @@ namespace WindowsFormsApplication1
         /// (Einheit MWh/a, siehe Konzept_Wirtschaftlichkeit 3.1) × 1000.
         /// </para>
         /// <para>
-        /// <b>Der Heizkessel bleibt bewusst ohne Vorbelegung.</b> <c>Tab_Heizkessel.Wartungskosten</c>
-        /// hat in der gesamten Anwendung KEINE Oberfläche: weder <c>Form_Heizkessel*</c> noch
-        /// der Katalog-Editor zeigen das Feld, es gibt also weder Beschriftung noch
-        /// Einheitensuffix; gefüllt wird es ausschließlich vom VDI-3805-Import
-        /// (<c>Form_Heizkessel_einlesen</c>). In Katalog und Projekten steht durchgehend 0.
-        /// Ob €/a, €/kWh oder €/kW gemeint ist, lässt sich damit nicht belegen — eine
-        /// Vorbelegung wäre geraten. Offene Nutzerfrage, siehe
-        /// <c>Allgemein\Reporting\Kostenuebernahme_Protokoll.md</c>.
+        /// <b>Der Heizkessel rechnet seit dem 18.08.2026 nach der GEWÄHLTEN Einheit.</b>
+        /// <c>Tab_Heizkessel.Wartungskosten</c> hatte bis dahin keine Oberfläche und stand
+        /// überall auf 0; die Einheit war deshalb nicht belegbar. Statt eine zu erraten, ist
+        /// sie jetzt je Kessel wählbar (<c>Wartungskosten_Einheit</c>,
+        /// Migrationsschritt 15) — siehe <see cref="KesselPlanwert"/>.
         /// </para>
         /// <para>
         /// Die übrigen Gewerke führen überhaupt kein Wartungsfeld in der Gerätetabelle
@@ -386,15 +479,22 @@ namespace WindowsFormsApplication1
         /// Kostenposition wäre Doppelzählung.
         /// </para>
         /// </remarks>
-        internal static Betriebsplanwert LiesBetriebsplanwert(int projektID, string komponente)
+        /// <param name="komponentenID">
+        /// <c>Tab_KostenKomponente.ID</c> des Gewerks — nur für die Einheit „%/a" nötig,
+        /// deren Bezugsgröße die erfasste Investitionsposition ist. 0 = unbekannt; dann
+        /// gibt es für diese Einheit keine Vorbelegung.
+        /// </param>
+        internal static Betriebsplanwert LiesBetriebsplanwert(int projektID, string komponente,
+                                                              int komponentenID)
         {
             var erg = new Betriebsplanwert();
 
+            if (string.Equals(komponente, DbWerte.ERZEUGER_HEIZKESSEL, StringComparison.Ordinal))
+                return KesselPlanwert(projektID, komponente, komponentenID);
+
             if (!string.Equals(komponente, DbWerte.ERZEUGER_BHKW, StringComparison.Ordinal))
             {
-                erg.Hinweis = string.Equals(komponente, DbWerte.ERZEUGER_HEIZKESSEL, StringComparison.Ordinal)
-                    ? MyResource.Resource.KOSTEN_BETRIEB_KESSEL_UNKLAR
-                    : MyResource.Resource.KOSTEN_BETRIEB_OHNE_WARTUNGSFELD;
+                erg.Hinweis = MyResource.Resource.KOSTEN_BETRIEB_OHNE_WARTUNGSFELD;
                 return erg;
             }
 
@@ -491,6 +591,215 @@ namespace WindowsFormsApplication1
                                         Z(summeEuro / summeKwh, 4), Z(summeKwh, 0),
                                         stand == DateTime.MinValue ? "-" : stand.ToString("dd.MM.yyyy HH:mm"));
             return erg;
+        }
+
+        // ------------------------------------------------- Betriebskosten Heizkessel
+
+        /// <summary>
+        /// Betriebskosten-Vorbelegung des HEIZKESSELS nach der je Kessel gewählten
+        /// Bezugsgröße <c>Tab_Heizkessel.Wartungskosten_Einheit</c>
+        /// (Entscheidung des Anwenders vom 18.08.2026, Punkt 1).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>0 gilt als ungepflegt.</b> Trägt kein Kessel des Projekts einen Betrag &gt; 0,
+        /// gibt es keine Zahl und keinen Rechenweg, sondern denselben Hinweis wie bei den
+        /// Gewerken ohne Wartungsfeld. Das ist die Hausregel aus <c>605dcb8</c>
+        /// („Arbeitspreis 0 gilt als ungepflegt"), und sie ist der Grund, aus dem die
+        /// Vorbelegung der Einheit auf „€/a" für den Bestand folgenlos bleibt.
+        /// </para>
+        /// <para>
+        /// <b>Eine Einheit je Projekt.</b> Die Bezugsgrößen zweier Einheiten sind
+        /// GEWERKGRÖSSEN, keine Gerätegrößen: <c>Tab_ErgebnisHeizkessel</c> führt genau
+        /// EINE Zeile je Lauf — die Wärme aller Kessel zusammen, nicht je Modul wie beim
+        /// BHKW (<c>Tab_ErgebnisBHKWModul</c>) —, und die Investitionsposition ist ohnehin
+        /// eine Zahl für das ganze Gewerk. Eine Aufteilung auf einzelne Kessel gibt die
+        /// Datenlage nicht her. Führen die Kessel eines Projekts unterschiedliche
+        /// Einheiten, wird deshalb nichts vorbelegt, sondern der Grund genannt — lieber
+        /// kein Wert als ein geratener.
+        /// </para>
+        /// <para>
+        /// <b>Daraus folgt die Rechenweise je Einheit:</b>
+        /// <list type="bullet">
+        ///   <item><description><b>€/a</b> — die Beträge der Kessel ADDIEREN sich; jeder
+        ///     trägt seinen eigenen Jahresbetrag bei. Braucht weder Lauf noch
+        ///     Investitionsposition.</description></item>
+        ///   <item><description><b>€/kWh</b> — Satz × Wärmemenge des jüngsten Laufs.
+        ///     Weil die Wärmemenge für alle Kessel zusammen gilt, muss auch der Satz
+        ///     eindeutig sein; bei mehreren Sätzen wäre Σ Satzᵢ × Q die vierfache Wartung
+        ///     für vier Kessel. Ohne Lauf keine Zahl (Nutzerentscheidung 3).</description></item>
+        ///   <item><description><b>%/a</b> — Satz × erfasste Investitionsposition, aus
+        ///     demselben Grund ebenfalls genau einmal. Ist die Position noch nicht
+        ///     erfasst, fehlt die Bezugsgröße.</description></item>
+        /// </list>
+        /// </para>
+        /// </remarks>
+        private static Betriebsplanwert KesselPlanwert(int projektID, string komponente,
+                                                       int komponentenID)
+        {
+            var erg = new Betriebsplanwert();
+
+            // --- Kessel des Projekts, je Gerät einmal (Befund D2) --------------------
+            DataTable dt;
+            try
+            {
+                dt = DataRepository.GetDataTable(
+                    "SELECT k.Wartungskosten, k.[" + SchemaKatalog.SPALTE_KESSEL_WARTUNG_EINHEIT + "] AS Einheit " +
+                    "FROM (SELECT DISTINCT [ID_Kessel] FROM Tab_Energieanlagen " +
+                    "      WHERE ID_Projekt = ? AND [ID_Kessel] IS NOT NULL) AS a " +
+                    "     INNER JOIN [Tab_Heizkessel] AS k ON a.[ID_Kessel] = k.ID",
+                    new OleDbParameter("@p", (Int32)projektID));
+            }
+            catch { dt = null; }
+
+            if (dt == null || dt.Rows.Count == 0)
+            { erg.Hinweis = MyResource.Resource.KOSTEN_BETRIEB_OHNE_WARTUNGSFELD; return erg; }
+
+            double summeJahr = 0;
+            var saetze = new List<double>();
+            string einheit = null;
+            bool gemischt = false;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                double betrag = Zahl(r, "Wartungskosten");
+                if (betrag <= 0.0) continue;                  // 0 = ungepflegt
+
+                string e = HeizkesselCtrl.Einheit(Text(r, "Einheit"));
+                if (einheit == null) einheit = e;
+                else if (!string.Equals(einheit, e, StringComparison.Ordinal)) gemischt = true;
+
+                summeJahr += betrag;
+                saetze.Add(betrag);
+            }
+
+            if (einheit == null)
+            { erg.Hinweis = MyResource.Resource.KOSTEN_BETRIEB_OHNE_WARTUNGSFELD; return erg; }
+
+            if (gemischt)
+            { erg.Hinweis = MyResource.Resource.KOSTEN_BETRIEB_EINHEIT_GEMISCHT; return erg; }
+
+            // --- Fester Jahresbetrag: keine weitere Bezugsgröße nötig ----------------
+            if (string.Equals(einheit, DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR, StringComparison.Ordinal))
+            {
+                erg.Betrag = summeJahr;
+                erg.Hinweis = string.Format(MyResource.Resource.KOSTEN_BETRIEB_HERL_KESSEL_JAHR,
+                                            Z(summeJahr, 2));
+                return erg;
+            }
+
+            // Beide mengenbezogenen Einheiten brauchen EINEN Satz (siehe <remarks>).
+            double satz;
+            if (!EinSatz(saetze, out satz))
+            { erg.Hinweis = MyResource.Resource.KOSTEN_BETRIEB_NICHT_ZUORDENBAR; return erg; }
+
+            // --- Anteil der Investition ---------------------------------------------
+            if (string.Equals(einheit, DbWerte.KESSEL_WARTUNG_EINHEIT_PROZENT, StringComparison.Ordinal))
+            {
+                double investition = 0;
+                if (komponentenID > 0)
+                    investition = KostenPositionCtrl.LiesBetrag(
+                        KostenPositionCtrl.FindeHauptposition(projektID, Form_Kosten.KATEGORIE_INVESTITION,
+                                                              komponentenID, komponente));
+
+                if (investition <= 0.0)
+                { erg.Hinweis = MyResource.Resource.KOSTEN_BETRIEB_OHNE_INVESTITION; return erg; }
+
+                erg.Betrag = satz / 100.0 * investition;
+                erg.Hinweis = string.Format(MyResource.Resource.KOSTEN_BETRIEB_HERL_KESSEL_PROZENT,
+                                            Z(satz, 2), Z(investition, 2), Z(erg.Betrag.Value, 2));
+                return erg;
+            }
+
+            // --- Auf die erzeugte Wärmemenge des jüngsten Laufs ----------------------
+            int idErgebnis = 0;
+            DateTime stand = DateTime.MinValue;
+            try
+            {
+                DataTable k = DataRepository.GetDataTable(
+                    "SELECT TOP 1 ID, Zeitstempel FROM Tab_Ergebnis WHERE ID_Projekt = ? ORDER BY ID DESC",
+                    new OleDbParameter("@p", (Int32)projektID));
+                if (k != null && k.Rows.Count > 0)
+                {
+                    idErgebnis = Ganz(k.Rows[0], "ID");
+                    if (k.Rows[0]["Zeitstempel"] != DBNull.Value)
+                        stand = Convert.ToDateTime(k.Rows[0]["Zeitstempel"]);
+                }
+            }
+            catch { }
+
+            if (idErgebnis <= 0)
+            { erg.Hinweis = MyResource.Resource.KOSTEN_BETRIEB_OHNE_ERGEBNIS; return erg; }
+
+            // Tab_ErgebnisHeizkessel führt EINE Zeile je Lauf (die Kessel des Projekts
+            // zusammen); Waermeproduktion in MWh/a wie alle Wärmegrößen dieser Tabelle
+            // (Konzept_Wirtschaftlichkeit 3.1), deshalb × 1000.
+            double kwh = 0;
+            bool gefunden = false;
+            try
+            {
+                DataTable w = DataRepository.GetDataTable(
+                    "SELECT Waermeproduktion FROM Tab_ErgebnisHeizkessel WHERE ID_Ergebnis = ?",
+                    new OleDbParameter("@e", (Int32)idErgebnis));
+                if (w != null && w.Rows.Count > 0)
+                {
+                    gefunden = true;
+                    foreach (DataRow r in w.Rows) kwh += Zahl(r, "Waermeproduktion") * 1000.0;
+                }
+            }
+            catch { }
+
+            if (!gefunden)
+            { erg.Hinweis = MyResource.Resource.KOSTEN_BETRIEB_OHNE_ERGEBNIS; return erg; }
+
+            if (kwh <= 0.0)
+            { erg.Hinweis = MyResource.Resource.KOSTEN_BETRIEB_OHNE_MENGE; return erg; }
+
+            erg.Betrag = satz * kwh;
+            erg.Hinweis = string.Format(MyResource.Resource.KOSTEN_BETRIEB_HERL_KESSEL_ARBEIT,
+                                        Z(satz, 4), Z(kwh, 0),
+                                        stand == DateTime.MinValue ? "-" : stand.ToString("dd.MM.yyyy HH:mm"));
+            return erg;
+        }
+
+        // ------------------------------------------------------- Wartungseinheiten
+
+        /// <summary>
+        /// Sprachneutraler Steuerwert zum gespeicherten Persistenzwert
+        /// (<see cref="DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR"/> &amp; Co.).
+        /// Unbekanntes oder Leeres gilt als fester Jahresbetrag — dieselbe Rückfallebene
+        /// wie <c>HeizkesselCtrl.Einheit</c>.
+        /// </summary>
+        internal static string WartungSchluessel(string dbWert)
+        {
+            string w = HeizkesselCtrl.Einheit(dbWert);
+            if (string.Equals(w, DbWerte.KESSEL_WARTUNG_EINHEIT_ARBEIT, StringComparison.Ordinal))
+                return WARTUNG_EUR_KWH;
+            if (string.Equals(w, DbWerte.KESSEL_WARTUNG_EINHEIT_PROZENT, StringComparison.Ordinal))
+                return WARTUNG_PROZENT_INV;
+            return WARTUNG_EUR_JAHR;
+        }
+
+        /// <summary>Gespeicherter Persistenzwert zum sprachneutralen Steuerwert.</summary>
+        internal static string WartungDbWert(string schluessel)
+        {
+            switch (schluessel)
+            {
+                case WARTUNG_EUR_KWH: return DbWerte.KESSEL_WARTUNG_EINHEIT_ARBEIT;
+                case WARTUNG_PROZENT_INV: return DbWerte.KESSEL_WARTUNG_EINHEIT_PROZENT;
+                default: return DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR;
+            }
+        }
+
+        /// <summary>Anzeigename einer Wartungseinheit (lokalisiert).</summary>
+        internal static string WartungName(string schluessel)
+        {
+            switch (schluessel)
+            {
+                case WARTUNG_EUR_KWH: return MyResource.Resource.KESSEL_WARTUNG_EINH_ARBEIT;
+                case WARTUNG_PROZENT_INV: return MyResource.Resource.KESSEL_WARTUNG_EINH_PROZENT;
+                default: return MyResource.Resource.KESSEL_WARTUNG_EINH_JAHR;
+            }
         }
 
         /// <summary>Führen alle Anlagen denselben Wartungssatz? Dann ist er eindeutig.</summary>

@@ -4486,6 +4486,9 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="KOSTEN_PLANWERT_HERL_SPEICHER" xml:space="preserve">
     <value>{0} €/kWh × {1} kWh + {2} €/kW × {3} kW + {4} €</value>
   </data>
+  <data name="KOSTEN_PLANWERT_HERL_MENGE" xml:space="preserve">
+    <value>{0} €/Modul × {1} Module</value>
+  </data>
   <data name="KOSTEN_PLANWERT_NEBENKOSTEN" xml:space="preserve">
     <value>Nebenkosten — je Posten eine eigene Zeile:</value>
   </data>
@@ -4522,8 +4525,35 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="KOSTEN_BETRIEB_NICHT_ZUORDENBAR" xml:space="preserve">
     <value>Die Wartungssätze lassen sich den Modulen des Laufs nicht eindeutig zuordnen — keine Vorbelegung.</value>
   </data>
-  <data name="KOSTEN_BETRIEB_KESSEL_UNKLAR" xml:space="preserve">
-    <value>Die Einheit von Tab_Heizkessel.Wartungskosten ist nicht belegt — keine Vorbelegung (offene Rückfrage).</value>
+  <data name="KOSTEN_BETRIEB_EINHEIT_GEMISCHT" xml:space="preserve">
+    <value>Die Kessel dieses Projekts führen unterschiedliche Einheiten für die Wartungskosten — keine Vorbelegung.</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_OHNE_INVESTITION" xml:space="preserve">
+    <value>Die Wartungskosten sind als Anteil der Investition angegeben, die Investitionsposition ist aber noch nicht erfasst — keine Vorbelegung.</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_HERL_KESSEL_JAHR" xml:space="preserve">
+    <value>Vorbelegt: {0} €/a — fester Jahresbetrag aus der Kesseltechnik.</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_HERL_KESSEL_ARBEIT" xml:space="preserve">
+    <value>Vorbelegt: {0} €/kWh × {1} kWh Wärme aus dem Lauf vom {2}.</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_HERL_KESSEL_PROZENT" xml:space="preserve">
+    <value>Vorbelegt: {0} %/a von {1} € Investition = {2} €/a.</value>
+  </data>
+  <data name="KESSEL_WARTUNG_LBL" xml:space="preserve">
+    <value>Wartungskosten</value>
+  </data>
+  <data name="KESSEL_WARTUNG_EINHEIT_LBL" xml:space="preserve">
+    <value>Einheit</value>
+  </data>
+  <data name="KESSEL_WARTUNG_EINH_JAHR" xml:space="preserve">
+    <value>€/a Jahresbetrag</value>
+  </data>
+  <data name="KESSEL_WARTUNG_EINH_ARBEIT" xml:space="preserve">
+    <value>€/kWh Wärmemenge</value>
+  </data>
+  <data name="KESSEL_WARTUNG_EINH_PROZENT" xml:space="preserve">
+    <value>%/a der Investition</value>
   </data>
   <data name="KOSTEN_BETRIEB_HERLEITUNG" xml:space="preserve">
     <value>Vorbelegt: {0} €/kWhel × {1} kWhel aus dem Lauf vom {2}.</value>

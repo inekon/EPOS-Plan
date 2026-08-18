@@ -48,6 +48,113 @@ namespace WindowsFormsApplication1
             foreach (DataRow r in dtS.Rows) Brennstoffart.Add(r["Bezeichner"].ToString());
         }
 
+        // --- SCHEMA-VORSORGE ---
+
+        /// <summary>
+        /// Stellt die Spalte <c>Wartungskosten_Einheit</c> in <c>Tab_Heizkessel</c> und
+        /// <c>Tab_Heizkessel_STAMM</c> sicher (Migrationsschritt 15) — die tolerante
+        /// Rückfallebene für den Fall, dass die Migration nie angestoßen wurde.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum es sie braucht.</b> <see cref="SchemaKatalog.Alle"/> ist ausdrücklich
+        /// der Umfang der SIMULATIONS-Eingabespalten; die Wartungseinheit gehört zum
+        /// Kostenmodul und steht deshalb nicht darin (Begründung dort). Ohne die Spalte
+        /// scheitern aber <see cref="Insert"/>, <see cref="Update"/> und
+        /// <c>HeizkesselCtrl.CopyFromStamm</c> sichtbar — genau das Fehlerbild, das
+        /// <c>StromAufschlagCtrl.StelleSpaltenSicher</c> für Schritt 12 abfängt.
+        /// </para>
+        /// <para>
+        /// <b>Ohne Dialog, Schema je Tabelle.</b> Beides übernommen aus der korrigierten
+        /// Fassung von <c>StromAufschlagCtrl.StelleSpaltenSicher</c> (Commit 87483b4):
+        /// Eine Vorsorge ist kein Bedienschritt und darf keine MessageBox zeigen, deshalb
+        /// eigene <see cref="OleDbConnection"/> statt <c>DataRepository.ExecuteSQL</c>;
+        /// und das Schema wird je Tabelle gelesen, sonst greift die Existenzprüfung für
+        /// die zweite Tabelle nie und das <c>ALTER TABLE</c> läuft bei jedem Aufruf erneut.
+        /// Echte Fehler bleiben sichtbar — sie melden sich beim folgenden Schreibzugriff.
+        /// </para>
+        /// </remarks>
+        public static void StelleSpaltenSicher()
+        {
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+
+                    Dictionary<string, HashSet<string>> schemaJeTabelle =
+                        new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+
+                    foreach (SchemaSpalte s in SchemaKatalog.Schritt15_KesselWartungseinheit)
+                    {
+                        HashSet<string> vorhanden;
+                        if (!schemaJeTabelle.TryGetValue(s.Tabelle, out vorhanden))
+                        {
+                            vorhanden = SpaltenNamen(conn, s.Tabelle);
+                            schemaJeTabelle[s.Tabelle] = vorhanden;
+                        }
+
+                        if (vorhanden == null) continue;          // Tabelle fehlt - nicht unsere Aufgabe
+                        if (vorhanden.Contains(s.Name)) continue;
+
+                        try
+                        {
+                            using (OleDbCommand cmd = new OleDbCommand(
+                                "ALTER TABLE [" + s.Tabelle + "] ADD COLUMN [" + s.Name + "] " +
+                                s.TypDefinition, conn))
+                                cmd.ExecuteNonQuery();
+
+                            // Frisch angelegte Spalte ist NULL. Dieselbe Vorbelegung wie
+                            // Migrationsschritt 15b - sonst haetten die Bestandszeilen
+                            // einen Betrag ohne Einheit.
+                            using (OleDbCommand cmd = new OleDbCommand(
+                                "UPDATE [" + s.Tabelle + "] SET [" + s.Name + "] = ? " +
+                                "WHERE [" + s.Name + "] IS NULL OR [" + s.Name + "] = ''", conn))
+                            {
+                                cmd.Parameters.Add(new OleDbParameter("@e", DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR));
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Protokoll(s.Tabelle + "." + s.Name + ": " + ex.Message);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Protokoll(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Die Spaltennamen einer Tabelle, oder <c>null</c>, wenn es die Tabelle nicht
+        /// gibt bzw. das Schema nicht lesbar ist.
+        /// </summary>
+        private static HashSet<string> SpaltenNamen(OleDbConnection conn, string tabelle)
+        {
+            try
+            {
+                DataTable cols = conn.GetOleDbSchemaTable(
+                    OleDbSchemaGuid.Columns, new object[] { null, null, tabelle, null });
+
+                if (cols == null || cols.Rows.Count == 0) return null;
+
+                HashSet<string> namen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (DataRow r in cols.Rows) namen.Add(Convert.ToString(r["COLUMN_NAME"]));
+                return namen;
+            }
+            catch { return null; }
+        }
+
+        /// <summary>Protokolliert einen Vorsorge-Fehlschlag, ohne den Anwender zu stören.</summary>
+        private static void Protokoll(string meldung)
+        {
+            try { Console.WriteLine("HeizkesselStammCtrl.StelleSpaltenSicher: " + meldung); }
+            catch { }
+        }
+
         // --- READ ---
 
         public void ReadAll(string filter = "")
@@ -123,9 +230,9 @@ namespace WindowsFormsApplication1
             string sql = @"INSERT INTO [" + TABLE + @"]
                             (ID, Bezeichner, Beschreibung, Firma, Ptherm, Brennstoff,
                              Wirkungsgrad_Gas, Wirkungsgrad_Öl, Investitionskosten, Raumbedarf,
-                             Wartungskosten, Nutzungsdauer, CO2, SO2, NOx, CO, Staub,
+                             Wartungskosten, Wartungskosten_Einheit, Nutzungsdauer, CO2, SO2, NOx, CO, Staub,
                              Betriebsbereitschaftverlust, Brennwert, Vorlauf, Ruecklauf, ReadOnly)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             OleDbParameter[] ps = {
                 new OleDbParameter("@id", neueId),
@@ -139,6 +246,7 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@inv", this.Investitionskosten),
                 new OleDbParameter("@rau", this.Raumbedarf),
                 new OleDbParameter("@war", this.Wartungskosten),
+                new OleDbParameter("@wae", HeizkesselCtrl.Einheit(this.Wartungskosten_Einheit)),
                 new OleDbParameter("@nut", this.Nutzungsdauer),
                 new OleDbParameter("@co2", this.CO2),
                 new OleDbParameter("@so2", this.SO2),
@@ -170,7 +278,7 @@ namespace WindowsFormsApplication1
             string sql = @"UPDATE [" + TABLE + @"] SET
                             Beschreibung = ?, Firma = ?, Ptherm = ?, Brennstoff = ?,
                             Wirkungsgrad_Gas = ?, Wirkungsgrad_Öl = ?, Investitionskosten = ?,
-                            Raumbedarf = ?, Wartungskosten = ?, Nutzungsdauer = ?,
+                            Raumbedarf = ?, Wartungskosten = ?, Wartungskosten_Einheit = ?, Nutzungsdauer = ?,
                             CO2 = ?, SO2 = ?, NOx = ?, CO = ?, Staub = ?,
                             Betriebsbereitschaftverlust = ?, Brennwert = ?, Vorlauf=?, Ruecklauf=?
                           WHERE Bezeichner = ?";
@@ -185,6 +293,7 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@inv", this.Investitionskosten),
                 new OleDbParameter("@rau", this.Raumbedarf),
                 new OleDbParameter("@war", this.Wartungskosten),
+                new OleDbParameter("@wae", HeizkesselCtrl.Einheit(this.Wartungskosten_Einheit)),
                 new OleDbParameter("@nut", this.Nutzungsdauer),
                 new OleDbParameter("@co2", this.CO2),
                 new OleDbParameter("@so2", this.SO2),
@@ -229,6 +338,10 @@ namespace WindowsFormsApplication1
             target.Investitionskosten = row["Investitionskosten"] != DBNull.Value ? Convert.ToDouble(row["Investitionskosten"]) : 0.0;
             target.Raumbedarf = row["Raumbedarf"] != DBNull.Value ? Convert.ToDouble(row["Raumbedarf"]) : 0.0;
             target.Wartungskosten = row["Wartungskosten"] != DBNull.Value ? Convert.ToDouble(row["Wartungskosten"]) : 0.0;
+            // Spaltenprüfung, weil eine nicht migrierte Datenbank die Spalte noch nicht führt.
+            target.Wartungskosten_Einheit = HeizkesselCtrl.Einheit(
+                row.Table.Columns.Contains(SchemaKatalog.SPALTE_KESSEL_WARTUNG_EINHEIT)
+                    ? row[SchemaKatalog.SPALTE_KESSEL_WARTUNG_EINHEIT] as string : null);
             target.Nutzungsdauer = row["Nutzungsdauer"] != DBNull.Value ? Convert.ToDouble(row["Nutzungsdauer"]) : 0.0;
             target.CO2 = row["CO2"] != DBNull.Value ? Convert.ToDouble(row["CO2"]) : 0.0;
             target.SO2 = row["SO2"] != DBNull.Value ? Convert.ToDouble(row["SO2"]) : 0.0;

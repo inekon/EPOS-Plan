@@ -4471,6 +4471,9 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="KOSTEN_PLANWERT_HERL_SPEICHER" xml:space="preserve">
     <value>{0} €/kWh × {1} kWh + {2} €/kW × {3} kW + {4} €</value>
   </data>
+  <data name="KOSTEN_PLANWERT_HERL_MENGE" xml:space="preserve">
+    <value>{0} €/module × {1} modules</value>
+  </data>
   <data name="KOSTEN_PLANWERT_NEBENKOSTEN" xml:space="preserve">
     <value>Ancillary costs — one row per item:</value>
   </data>
@@ -4507,8 +4510,35 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="KOSTEN_BETRIEB_NICHT_ZUORDENBAR" xml:space="preserve">
     <value>Maintenance rates cannot be matched unambiguously to the modules of the run — no default value.</value>
   </data>
-  <data name="KOSTEN_BETRIEB_KESSEL_UNKLAR" xml:space="preserve">
-    <value>The unit of Tab_Heizkessel.Wartungskosten is not documented — no default value (open question).</value>
+  <data name="KOSTEN_BETRIEB_EINHEIT_GEMISCHT" xml:space="preserve">
+    <value>The boilers of this project use different units for their maintenance costs — no default value.</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_OHNE_INVESTITION" xml:space="preserve">
+    <value>The maintenance costs are given as a share of the investment, but no investment item has been recorded yet — no default value.</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_HERL_KESSEL_JAHR" xml:space="preserve">
+    <value>Default: {0} €/a — fixed annual amount from the boiler data.</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_HERL_KESSEL_ARBEIT" xml:space="preserve">
+    <value>Default: {0} €/kWh × {1} kWh of heat from the run of {2}.</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_HERL_KESSEL_PROZENT" xml:space="preserve">
+    <value>Default: {0} %/a of {1} € investment = {2} €/a.</value>
+  </data>
+  <data name="KESSEL_WARTUNG_LBL" xml:space="preserve">
+    <value>Maintenance costs</value>
+  </data>
+  <data name="KESSEL_WARTUNG_EINHEIT_LBL" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="KESSEL_WARTUNG_EINH_JAHR" xml:space="preserve">
+    <value>€/a per year</value>
+  </data>
+  <data name="KESSEL_WARTUNG_EINH_ARBEIT" xml:space="preserve">
+    <value>€/kWh of heat</value>
+  </data>
+  <data name="KESSEL_WARTUNG_EINH_PROZENT" xml:space="preserve">
+    <value>%/a of investment</value>
   </data>
   <data name="KOSTEN_BETRIEB_HERLEITUNG" xml:space="preserve">
     <value>Default: {0} €/kWhel × {1} kWhel from the run of {2}.</value>
