@@ -7684,6 +7684,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollbenutzungsstunden elektrisch: ähnelt.
+        /// </summary>
+        public static string SIM_BHKW_VBH_EL {
+            get {
+                return ResourceManager.GetString("SIM_BHKW_VBH_EL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vbh thermisch, Mittel Module ähnelt.
+        /// </summary>
+        public static string SIM_BHKW_VBH_TH_MITTEL {
+            get {
+                return ResourceManager.GetString("SIM_BHKW_VBH_TH_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vbh thermisch, Summe Module ähnelt.
+        /// </summary>
+        public static string SIM_BHKW_VBH_TH_SUMME {
+            get {
+                return ResourceManager.GetString("SIM_BHKW_VBH_TH_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Laufzeitoptimiert - maximale Leistung ähnelt.
         /// </summary>
         public static string SIM_BM_RB_LAUFZEIT {

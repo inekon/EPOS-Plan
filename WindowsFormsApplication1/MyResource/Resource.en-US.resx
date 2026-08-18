@@ -998,6 +998,15 @@ from: volume × 1,16 Wh/(l·K) × (flow − return).</value>
   <data name="SIM_BHKW_MODUL_STANDARD" xml:space="preserve">
     <value>Standard CHP unit</value>
   </data>
+  <data name="SIM_BHKW_VBH_EL" xml:space="preserve">
+    <value>Full-load hours, electric:</value>
+  </data>
+  <data name="SIM_BHKW_VBH_TH_MITTEL" xml:space="preserve">
+    <value>Thermal FLH, module average</value>
+  </data>
+  <data name="SIM_BHKW_VBH_TH_SUMME" xml:space="preserve">
+    <value>Thermal FLH, sum of modules</value>
+  </data>
   <data name="SIM_BM_RB_LAUFZEIT" xml:space="preserve">
     <value>Runtime-optimised - maximum output</value>
   </data>

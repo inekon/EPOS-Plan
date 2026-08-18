@@ -1314,3 +1314,32 @@ als Fließtext erscheinen (Bericht, Etappe E7).
 | `GESETZ_KLASSE_ANZ_EF_BILANZ` | Emissionsfaktoren — reale Bilanz | Emission factors — real balance | dieselbe | **neu.** Zu `EF_BILANZ`. Gegenstück zum vorigen. |
 | `GESETZ_KLASSE_ANZ_PEF_NACHWEIS` | Primärenergiefaktoren — gesetzlicher Nachweis | Primary energy factors — statutory proof | dieselbe | **neu.** Zu `PEF_NACHWEIS`. |
 | `GESETZ_KLASSE_ANZ_UMSATZSTEUER` | Umsatzsteuer | VAT | dieselbe | **neu.** Zu `UMSATZSTEUER`. |
+
+## Nachtrag Etappe E2 — Vollbenutzungsstunden des BHKW (18.08.2026)
+
+Umsetzung der Etappe E2 aus
+[`../Reporting/Konzept_BHKW_Kosten_Erloese.md`](../Reporting/Konzept_BHKW_Kosten_Erloese.md),
+Leitentscheidung L6; Befund, Wirkung und Verifikation in
+[`../Reporting/W4_E2_Vollbenutzungsstunden_Protokoll.md`](../Reporting/W4_E2_Vollbenutzungsstunden_Protokoll.md).
+
+Drei neue Schlüssel im Katalog `MyResource/Resource.resx` (+ `.en-US.resx` + Designer).
+Zwei davon **ersetzen zur Laufzeit** die Beschriftungen `label13` und `label108` der
+BHKW-Ergebnisseite: Die Entwurfstexte lauteten „Betriebsstunden gesamt" und
+„Betriebsstunden Durchschnitt", die Felder zeigen aber Summe beziehungsweise Mittel der
+**thermischen Vollbenutzungsstunden** je Modul. Der Ersatz erfolgt in
+`Form_Simulation_Detail.InitBhkwVbhZeile` — Designer und `.resx` der Form bleiben
+unangetastet, dasselbe Muster wie bei den Speicher-Kennzahlzeilen.
+
+| Schlüssel | DE | EN | Fundstellen | Grund |
+|---|---|---|---|---|
+| `SIM_BHKW_VBH_EL` | Vollbenutzungsstunden elektrisch: | Full-load hours, electric: | `Form_Simulation_Detail.InitBhkwVbhZeile` (Beschriftung der neuen Ergebniszeile) | **neu.** Die Größe, an der der KWK-Zuschlag hängt. |
+| `SIM_BHKW_VBH_TH_SUMME` | Vbh thermisch, Summe Module | Thermal FLH, sum of modules | dieselbe (ersetzt `label13`) | **neu.** „Betriebsstunden gesamt" war falsch: Die Zahl ist eine Summe von Vollbenutzungsstunden und kann 8.760 h überschreiten. |
+| `SIM_BHKW_VBH_TH_MITTEL` | Vbh thermisch, Mittel Module | Thermal FLH, module average | dieselbe (ersetzt `label108`) | **neu.** Wie oben, für den Mittelwert. |
+
+**Nicht lokalisiert — und warum**
+
+| Wert | Grund |
+|---|---|
+| `"VbhThermisch"`, `"VbhElektrisch"` (`SchemaKatalog.SPALTE_MODUL_VBH_*`, `SPALTE_BHKW_VBH_ELEKTRISCH`) | **Persistenzwerte** — Spaltennamen in `Tab_ErgebnisBHKWModul` bzw. `Tab_ErgebnisBHKW`. Wie alle Spaltennamen umlautfrei und eingefroren. |
+| `"KWKGVbhElektrisch"` (`WirtschaftlichkeitCtrl.SPALTE_KWKG_VBH_EL`) | dito, Spalte in `Tab_ErgebnisWirtschaftlichkeit`. |
+| `"—"` im Feld der neuen Zeile, wenn keine elektrische Leistung gepflegt ist | typografische Marke ohne Wortbestand, wie die Glyphen der Kartenansicht. |
