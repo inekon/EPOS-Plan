@@ -469,7 +469,82 @@ den Bericht, nicht als stille Annahme in den Code.
 
 ---
 
-## 8 Quellen (abgerufen 18.08.2026)
+## 8 CO₂-Preis: nationaler Emissionshandel und EU-ETS 2
+
+### 8.1 Festpreisphase und Versteigerung 2026
+
+| Jahr | Preis | Grundlage |
+|---|---|---|
+| 2021 / 2022 / 2023 | 25 / 30 / 30 €/t | § 10 Abs. 2 BEHG |
+| 2024 / 2025 | 45 / 55 €/t | § 10 Abs. 2 BEHG |
+| **2026** | Korridor **55–65 €/t**, **realisiert durchgehend 65,00 €/t** | § 10 Abs. 2 BEHG; EEX-Auktionsdaten |
+| 2026 ab 03.11. | 68 €/t (Verkauf, unbegrenzte Menge) | DEHSt |
+| 2027 bis 31.08. | 70 €/t (Nachkauf von 2026er-Zertifikaten) | DEHSt |
+
+**Alle sieben Versteigerungen zwischen dem 01.07. und 12.08.2026 endeten am
+Höchstpreis von 65,00 €/t** — bei Geboten zwischen 292 und 546 Millionen
+Zertifikaten für jeweils rund 21 Millionen zugeteilte. Die Nachfrage übersteigt
+das Angebot damit um das 13- bis 26-fache; die Preisobergrenze des Korridors
+greift in jeder Auktion. Für die Wirtschaftlichkeitsrechnung heißt das: **2026 ist
+mit 65 €/t zu rechnen, nicht mit einem Mittelwert des Korridors.**
+
+Quelle: EEX veröffentlicht die Auktionsergebnisse als wöchentlich aktualisierte
+CSV (`nEHS_Auction_Reporting.csv`) — geeignet, um den Wert später automatisiert
+nachzupflegen. Die Zahlen sind in sich schlüssig: Menge mal 65 € ergibt den
+ausgewiesenen Erlös auf den Cent, und die Restmengen summieren sich exakt auf die
+von der Emissionshandelsstelle veröffentlichte Jahresmenge.
+
+### 8.2 Der europäische Emissionshandel startet 2028, nicht 2027
+
+**Gesichert:** Verordnung (EU) 2026/667 vom 11.03.2026 (Amtsblatt vom
+18.03.2026) verschiebt den Emissionshandel für Gebäude, Straßenverkehr und
+weitere Sektoren auf **2028**. Erste Abgabepflicht ist damit der 31.05.2029 für
+das Berichtsjahr 2028; bis einschließlich Berichtsjahr **2027** gilt
+ausschließlich der nationale Emissionshandel. Wer noch 2027 als Startjahr nennt,
+gibt einen überholten Stand wieder.
+
+**Für 2027 ist die Lage im Umbruch:** Nach geltendem § 10 Abs. 3 BEHG würde ein
+marktbasierter Preis gelten, abgeleitet aus dem mengengewichteten
+Durchschnittspreis europäischer Versteigerungen des vorletzten Quartals — bei
+einem ETS-1-Preis von rund 80 €/t also deutlich über dem bisherigen Korridor.
+Der Koalitionsausschuss hat am 12.05.2026 dagegen entschieden, den Korridor von
+**55 bis 65 €/t auch 2027** beizubehalten; das Kabinett hat den entsprechenden
+Gesetzentwurf am **12.08.2026** beschlossen. **Bundestag und Bundesrat stehen
+noch aus** — der Wert ist damit vorläufig, aber politisch gesetzt.
+
+### 8.3 Preisstabilität im ETS 2
+
+Rechtstext: Überschreitet der Preis **45 €/t** (Preisbasis 2020, indexiert),
+werden **20 Millionen** Zertifikate aus der Marktstabilitätsreserve freigegeben.
+Ein Kommissionsvorschlag vom 27.11.2025 will diese Menge auf 40 Millionen
+verdoppeln (bis zu zweimal je Zwölfmonatszeitraum) und die Schwelle über 2029
+hinaus verlängern; das Europäische Parlament hat dazu am 29.04.2026 in erster
+Lesung Position bezogen. **Ein verkündeter Änderungsbeschluss liegt nicht vor —
+das Verfahren läuft.**
+
+### 8.4 Preispfad für eine 20-Jahres-Rechnung
+
+**Gesichert bis einschließlich 2026** (Festpreise und realisierte Auktionen),
+**vorläufig für 2027** (Korridor 55–65 €/t, Gesetz im Verfahren), **ab 2028
+zwingend Prognose** — dort gibt es keinen Rechtspreis mehr, sondern europäische
+Börsenpreisbildung.
+
+Als Vorbelegung geeignet, jeweils mit Quellenausweis:
+
+| Szenario | Werte | Quelle | Bewertung |
+|---|---|---|---|
+| konservativ | rund 80 €/t konstant | Marktkommentare 2026 | Prognose |
+| mittel | 2028: 95 €/t, in Stufen bis 2030: 125 €/t | Projektionsbericht 2026 der Bundesregierung | halbamtlich, **nur sekundär belegt** |
+| hoch | Ø 150 €/t für 2027–2032 | Agora Energiewende A-EW_311 | Prognose, auf altem Startjahr gerechnet |
+
+**Einen amtlichen Pfad über 2030 hinaus gibt es nicht.** Der Preispfad gehört
+deshalb als frei editierbare Stützstellenreihe in die Software, mit den
+gesicherten Werten vorbelegt und einer sichtbaren Kennzeichnung, ab wann Prognose
+beginnt.
+
+---
+
+## 9 Quellen (abgerufen 18.08.2026)
 
 **Gesetzestexte** — gesetze-im-internet.de: KWKG 2025 §§ 7, 8, 9 und Stammfassung;
 StromStG §§ 2, 3, 9; StromStV § 12b; EnergieStG §§ 2, 53, 53a, 53b (weggefallen),
@@ -496,17 +571,31 @@ März 2024); BAFA-Infoblatt CO₂-Faktoren zur Bundesförderung Energie- und
 Ressourceneffizienz, Version 3.4, Stand 01.06.2026; DEHSt, nEHS Verkauf und
 Versteigerung.
 
+**CO₂-Preis** — EEX-Auktionsdaten zum nationalen Emissionshandel (CSV,
+wöchentlich aktualisiert); DEHSt, „nEHS Verkauf und Versteigerung" sowie
+„EU-ETS 2 Ausblick"; Verordnung (EU) 2026/667 (Amtsblatt 18.03.2026);
+Richtlinie 2003/87/EG Kapitel IVa und Beschluss (EU) 2015/1814;
+Kommissionsvorschlag COM(2025) 738 vom 27.11.2025; § 10 BEHG;
+Referentenentwurf und Kabinettsbeschluss zum Dritten BEHG-Änderungsgesetz
+(03.07. bzw. 12.08.2026); Projektionsbericht 2026 der Bundesregierung;
+Agora Energiewende A-EW_311.
+
 ---
 
-## 9 Offene Recherchepunkte
+## 10 Punkte, die bewusst offen geblieben sind
 
-- **Tatsächliche Auktionspreise 2026.** Die Versteigerungen laufen seit
-  01.07.2026 wöchentlich an der EEX im Korridor 55 bis 65 €/t; die erzielten
-  Zuschlagspreise sind noch nicht belegt. Gesichert sind bislang: Festpreise
-  2021–2025 (25 / 30 / 30 / 45 / 55 €/t), Korridor 2026, Verkaufsphase November
-  bis Dezember 2026 zu 68 €/t und Nachkauf 2027 zu 70 €/t.
-- **Start des europäischen Emissionshandels für Gebäude und Verkehr (ETS 2).**
-  Eine Quelle nennt die Verschiebung auf **2028** bei nationaler Überbrückung
-  2027, andere nennen 2027. Zu klären ist, ob die Verschiebung im EU-Amtsblatt
-  verkündet oder noch im Verfahren ist. **Alles ab 2027 ist damit Prognose** und
-  gehört als frei editierbarer Preispfad in die Software, nicht als fester Wert.
+Diese Angaben ließen sich nicht aus einer Primärquelle sichern und wurden
+deshalb **nicht** übernommen — lieber eine markierte Lücke als ein falscher Wert:
+
+1. **Auslösedauer des 45-Euro-Mechanismus** im ETS 2 — zwei oder drei
+   aufeinanderfolgende Monate; die Sekundärquellen widersprechen sich, der
+   konsolidierte Richtlinientext war nicht auslesbar.
+2. **Exakter Wortlaut von § 10 Abs. 3 BEHG** (Bezugspreis 2027) — nur über
+   Sekundärportale gesichert; die Zuordnung „Berechtigungen" gegenüber
+   „Emissionszertifikaten" ist auch fachlich strittig. Praktisch entschärft, falls
+   das Dritte Änderungsgesetz den Korridor festschreibt.
+3. **Zahlenreihe des Projektionsberichts 2026** — nur sekundär belegt, das
+   Original überschritt das Abruflimit. Vor Verwendung als Vorbelegung prüfen.
+4. **Enddatum der Versteigerungsphase 2026** — die Restmengenrechnung deutet auf
+   Ende August, eine Sekundärquelle nennt den 09.09.2026.
+5. **§ 53a Abs. 3 EnergieStG, Erdgassatz 4,96 €/MWh** (siehe Abschnitt 6).
