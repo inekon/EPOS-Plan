@@ -4588,4 +4588,118 @@ Mehrere Felder desselben Modultyps sind zulässig — bitte prüfen, ob das so g
   <data name="ANL_SP_NAME_ANGEPASST" xml:space="preserve">
     <value>Der Name „{0}" ist im Projekt bereits vergeben. Die Speichervariante wurde in „{1}" umbenannt.</value>
   </data>
+  <data name="GESETZ_MENUE" xml:space="preserve">
+    <value>Gesetzliche Parameter…</value>
+  </data>
+  <data name="GESETZ_TITEL" xml:space="preserve">
+    <value>Gesetzliche Parameter</value>
+  </data>
+  <data name="GESETZ_LBL_KLASSE" xml:space="preserve">
+    <value>Bereich</value>
+  </data>
+  <data name="GESETZ_LBL_HINWEIS" xml:space="preserve">
+    <value>Eine Gesetzesänderung ist eine neue Jahreszeile, kein Ändern der alten. Nur so liefert eine heute gerechnete Variante in einigen Jahren noch dieselben Zahlen.</value>
+  </data>
+  <data name="GESETZ_LBL_WERT_LEER" xml:space="preserve">
+    <value>leer = der Satz ist entfallen (nicht 0)</value>
+  </data>
+  <data name="GESETZ_SP_SCHLUESSEL" xml:space="preserve">
+    <value>Schlüssel</value>
+  </data>
+  <data name="GESETZ_SP_JAHRVON" xml:space="preserve">
+    <value>Gültig ab</value>
+  </data>
+  <data name="GESETZ_SP_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="GESETZ_SP_EINHEIT" xml:space="preserve">
+    <value>Einheit</value>
+  </data>
+  <data name="GESETZ_SP_STATUS" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="GESETZ_SP_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="GESETZ_BTN_NEU" xml:space="preserve">
+    <value>Neu…</value>
+  </data>
+  <data name="GESETZ_BTN_AENDERN" xml:space="preserve">
+    <value>Ändern…</value>
+  </data>
+  <data name="GESETZ_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="GESETZ_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="GESETZ_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="GESETZ_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="GESETZ_DLG_TITEL_NEU" xml:space="preserve">
+    <value>Neuer gesetzlicher Parameter</value>
+  </data>
+  <data name="GESETZ_DLG_TITEL_AENDERN" xml:space="preserve">
+    <value>Gesetzlichen Parameter ändern</value>
+  </data>
+  <data name="GESETZ_FRAGE_TITEL" xml:space="preserve">
+    <value>Gesetzesänderung oder Berichtigung?</value>
+  </data>
+  <data name="GESETZ_FRAGE_NEUE_ZEILE" xml:space="preserve">
+    <value>Die Zeile „{0}" gilt ab {1} und liegt damit in der Vergangenheit.
+
+Eine Gesetzesänderung gehört in eine NEUE Jahreszeile; die alte bleibt stehen, damit ältere Rechnungen nachvollziehbar bleiben.
+
+„Ja" legt eine neue Zeile an. „Nein" ändert die bestehende Zeile — das ist nur für Tippfehler gedacht.</value>
+  </data>
+  <data name="GESETZ_LOESCHEN_TITEL" xml:space="preserve">
+    <value>Gesetzlichen Parameter löschen</value>
+  </data>
+  <data name="GESETZ_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Die Zeile „{0}" (gültig ab {1}) wirklich löschen?
+
+Danach fehlt der Wert in jeder Rechnung, die dieses Jahr betrifft.</value>
+  </data>
+  <data name="GESETZ_MSG_SCHLUESSEL_FEHLT" xml:space="preserve">
+    <value>Bitte einen Schlüssel angeben.</value>
+  </data>
+  <data name="GESETZ_MSG_JAHR_UNGUELTIG" xml:space="preserve">
+    <value>„Gültig ab" muss eine Jahreszahl zwischen 1990 und 2100 sein.</value>
+  </data>
+  <data name="GESETZ_MSG_WERT_UNGUELTIG" xml:space="preserve">
+    <value>Der Wert ist keine gültige Zahl. Für einen entfallenen Satz das Feld leer lassen.</value>
+  </data>
+  <data name="GESETZ_MSG_DOPPELT" xml:space="preserve">
+    <value>Für den Schlüssel „{0}" gibt es bereits eine Zeile ab {1}.</value>
+  </data>
+  <data name="GESETZ_MSG_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>Die Zeile konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_KWKG" xml:space="preserve">
+    <value>KWK-Gesetz</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_STROMSTEUER" xml:space="preserve">
+    <value>Stromsteuer</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_ENERGIESTEUER" xml:space="preserve">
+    <value>Energiesteuer</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_CO2_PREIS" xml:space="preserve">
+    <value>CO₂-Preis</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_EF_NACHWEIS" xml:space="preserve">
+    <value>Emissionsfaktoren — gesetzlicher Nachweis</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_EF_BILANZ" xml:space="preserve">
+    <value>Emissionsfaktoren — reale Bilanz</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_PEF_NACHWEIS" xml:space="preserve">
+    <value>Primärenergiefaktoren — gesetzlicher Nachweis</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_UMSATZSTEUER" xml:space="preserve">
+    <value>Umsatzsteuer</value>
+  </data>
 </root>

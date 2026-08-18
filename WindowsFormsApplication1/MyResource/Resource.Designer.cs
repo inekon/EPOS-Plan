@@ -1941,6 +1941,336 @@ namespace WindowsFormsApplication1.MyResource {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
+        public static string GESETZ_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("GESETZ_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ändern… ähnelt.
+        /// </summary>
+        public static string GESETZ_BTN_AENDERN {
+            get {
+                return ResourceManager.GetString("GESETZ_BTN_AENDERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string GESETZ_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("GESETZ_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu… ähnelt.
+        /// </summary>
+        public static string GESETZ_BTN_NEU {
+            get {
+                return ResourceManager.GetString("GESETZ_BTN_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string GESETZ_BTN_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("GESETZ_BTN_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string GESETZ_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("GESETZ_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesetzlichen Parameter ändern ähnelt.
+        /// </summary>
+        public static string GESETZ_DLG_TITEL_AENDERN {
+            get {
+                return ResourceManager.GetString("GESETZ_DLG_TITEL_AENDERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer gesetzlicher Parameter ähnelt.
+        /// </summary>
+        public static string GESETZ_DLG_TITEL_NEU {
+            get {
+                return ResourceManager.GetString("GESETZ_DLG_TITEL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile „{0}&quot; (gültig ab {1}) wirklich löschen?
+        ///
+        ///Danach fehlt der Wert in jeder Rechnung, die dieses Jahr betrifft. ähnelt.
+        /// </summary>
+        public static string GESETZ_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("GESETZ_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile „{0}&quot; gilt ab {1} und liegt damit in der Vergangenheit.
+        ///
+        ///Eine Gesetzesänderung gehört in eine NEUE Jahreszeile; die alte bleibt stehen, damit ältere Rechnungen nachvollziehbar bleiben.
+        ///
+        ///„Ja&quot; legt eine neue Zeile an. „Nein&quot; ändert die bestehende Zeile — das ist nur für Tippfehler gedacht. ähnelt.
+        /// </summary>
+        public static string GESETZ_FRAGE_NEUE_ZEILE {
+            get {
+                return ResourceManager.GetString("GESETZ_FRAGE_NEUE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesetzesänderung oder Berichtigung? ähnelt.
+        /// </summary>
+        public static string GESETZ_FRAGE_TITEL {
+            get {
+                return ResourceManager.GetString("GESETZ_FRAGE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Preis ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_CO2_PREIS {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_CO2_PREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsfaktoren — reale Bilanz ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_EF_BILANZ {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_EF_BILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsfaktoren — gesetzlicher Nachweis ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_EF_NACHWEIS {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_EF_NACHWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_ENERGIESTEUER {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_ENERGIESTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWK-Gesetz ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_KWKG {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_KWKG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Primärenergiefaktoren — gesetzlicher Nachweis ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_PEF_NACHWEIS {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_PEF_NACHWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_STROMSTEUER {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_STROMSTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umsatzsteuer ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_UMSATZSTEUER {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_UMSATZSTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Gesetzesänderung ist eine neue Jahreszeile, kein Ändern der alten. Nur so liefert eine heute gerechnete Variante in einigen Jahren noch dieselben Zahlen. ähnelt.
+        /// </summary>
+        public static string GESETZ_LBL_HINWEIS {
+            get {
+                return ResourceManager.GetString("GESETZ_LBL_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich ähnelt.
+        /// </summary>
+        public static string GESETZ_LBL_KLASSE {
+            get {
+                return ResourceManager.GetString("GESETZ_LBL_KLASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leer = der Satz ist entfallen (nicht 0) ähnelt.
+        /// </summary>
+        public static string GESETZ_LBL_WERT_LEER {
+            get {
+                return ResourceManager.GetString("GESETZ_LBL_WERT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesetzlichen Parameter löschen ähnelt.
+        /// </summary>
+        public static string GESETZ_LOESCHEN_TITEL {
+            get {
+                return ResourceManager.GetString("GESETZ_LOESCHEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesetzliche Parameter… ähnelt.
+        /// </summary>
+        public static string GESETZ_MENUE {
+            get {
+                return ResourceManager.GetString("GESETZ_MENUE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für den Schlüssel „{0}&quot; gibt es bereits eine Zeile ab {1}. ähnelt.
+        /// </summary>
+        public static string GESETZ_MSG_DOPPELT {
+            get {
+                return ResourceManager.GetString("GESETZ_MSG_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Gültig ab&quot; muss eine Jahreszahl zwischen 1990 und 2100 sein. ähnelt.
+        /// </summary>
+        public static string GESETZ_MSG_JAHR_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("GESETZ_MSG_JAHR_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Schlüssel angeben. ähnelt.
+        /// </summary>
+        public static string GESETZ_MSG_SCHLUESSEL_FEHLT {
+            get {
+                return ResourceManager.GetString("GESETZ_MSG_SCHLUESSEL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile konnte nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string GESETZ_MSG_SPEICHERN_FEHLER {
+            get {
+                return ResourceManager.GetString("GESETZ_MSG_SPEICHERN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert ist keine gültige Zahl. Für einen entfallenen Satz das Feld leer lassen. ähnelt.
+        /// </summary>
+        public static string GESETZ_MSG_WERT_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("GESETZ_MSG_WERT_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit ähnelt.
+        /// </summary>
+        public static string GESETZ_SP_EINHEIT {
+            get {
+                return ResourceManager.GetString("GESETZ_SP_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gültig ab ähnelt.
+        /// </summary>
+        public static string GESETZ_SP_JAHRVON {
+            get {
+                return ResourceManager.GetString("GESETZ_SP_JAHRVON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string GESETZ_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("GESETZ_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel ähnelt.
+        /// </summary>
+        public static string GESETZ_SP_SCHLUESSEL {
+            get {
+                return ResourceManager.GetString("GESETZ_SP_SCHLUESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Status ähnelt.
+        /// </summary>
+        public static string GESETZ_SP_STATUS {
+            get {
+                return ResourceManager.GetString("GESETZ_SP_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string GESETZ_SP_WERT {
+            get {
+                return ResourceManager.GetString("GESETZ_SP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesetzliche Parameter ähnelt.
+        /// </summary>
+        public static string GESETZ_TITEL {
+            get {
+                return ResourceManager.GetString("GESETZ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
         public static string IMPORT_BTN_ABBRECHEN {
             get {
                 return ResourceManager.GetString("IMPORT_BTN_ABBRECHEN", resourceCulture);

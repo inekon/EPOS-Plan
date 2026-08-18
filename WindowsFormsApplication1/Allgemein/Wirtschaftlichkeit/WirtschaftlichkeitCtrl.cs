@@ -232,6 +232,11 @@ namespace WindowsFormsApplication1
                 }
             }
             catch { /* ohne Tabellen laufen Laden/Speichern in ihre eigenen Fänge */ }
+
+            // Katalog gesetzlicher Parameter (Etappe E1, Leitentscheidung L2). Eigene
+            // Verbindung, eigener Fang: Ein Fehlschlag darf die Tabellen oben nicht
+            // gefährden, und umgekehrt.
+            GesetzKatalog.StelleKatalogSicher();
         }
 
         /// <summary>Fügt eine fehlende Spalte per ALTER TABLE hinzu (still, additiv).
@@ -939,20 +944,30 @@ namespace WindowsFormsApplication1
             return reihe;
         }
 
-        /// <summary>Vbh-Staffel aus dem Katalog (JahrVon aufsteigend); Fallback = Gesetzeswerte.</summary>
+        /// <summary>
+        /// Vbh-Staffel des § 8 Abs. 4 KWKG (JahrVon aufsteigend); Fallback = Gesetzeswerte.
+        ///
+        /// <para>
+        /// <b>Quelle seit Etappe E1: <c>Tab_Gesetzesparameter</c></b>, Schlüssel
+        /// <c>KWKG_VBH_JAHRESDECKEL</c>, gelesen über <see cref="GesetzKatalog"/>. Die
+        /// Alttabelle <c>Tab_KWKG_Staffel</c> bleibt unangetastet stehen — sie wird nur
+        /// nicht mehr gelesen (Konzept L2). <see cref="TAB_KWKG_STAFFEL"/> bleibt als
+        /// Konstante erhalten, damit <c>StelleTabellenSicher</c> die Alttabelle
+        /// weiterhin anlegt und pflegt.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Ergebnisgleich.</b> Der Katalog führt die erste Stufe mit
+        /// <c>JahrVon = 2021</c> (so steht es im Gesetz), die Alttabelle mit 2020. Auf
+        /// den Lookup wirkt sich das nicht aus: <see cref="StaffelDeckel"/> beginnt mit
+        /// dem Wert der ERSTEN Zeile und überschreibt ihn erst ab dem passenden Jahr —
+        /// für 2020 und früher liefern beide Reihen 5.000 h, ab 2021 sind die Zeilen
+        /// ohnehin deckungsgleich.
+        /// </para>
+        /// </summary>
         private static List<KeyValuePair<int, double>> LadeKwkgStaffel()
         {
-            var liste = new List<KeyValuePair<int, double>>();
-            try
-            {
-                DataTable dt = DataRepository.GetDataTable(
-                    "SELECT JahrVon, MaxVbh FROM " + TAB_KWKG_STAFFEL + " ORDER BY JahrVon");
-                if (dt != null)
-                    foreach (DataRow r in dt.Rows)
-                        liste.Add(new KeyValuePair<int, double>(
-                            Convert.ToInt32(r["JahrVon"]), Convert.ToDouble(r["MaxVbh"])));
-            }
-            catch { liste.Clear(); }
+            var liste = new GesetzKatalog().Reihe(DbWerte.GESETZ_KWKG_VBH_JAHRESDECKEL);
             if (liste.Count == 0)
             {
                 int[,] f = { { 2020, 5000 }, { 2023, 4000 }, { 2025, 3500 }, { 2026, 3300 },
