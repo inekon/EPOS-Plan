@@ -56,7 +56,7 @@
             // 
             // btn_Abbrechen
             // 
-            btn_Abbrechen.Location = new System.Drawing.Point(32, 139);
+            btn_Abbrechen.Location = new System.Drawing.Point(32, 144);
             btn_Abbrechen.Margin = new System.Windows.Forms.Padding(4);
             btn_Abbrechen.Name = "btn_Abbrechen";
             btn_Abbrechen.Size = new System.Drawing.Size(88, 30);
@@ -67,7 +67,7 @@
             // 
             // btn_OK
             // 
-            btn_OK.Location = new System.Drawing.Point(243, 139);
+            btn_OK.Location = new System.Drawing.Point(243, 144);
             btn_OK.Margin = new System.Windows.Forms.Padding(4);
             btn_OK.Name = "btn_OK";
             btn_OK.Size = new System.Drawing.Size(88, 30);
@@ -82,19 +82,18 @@
             label1.Location = new System.Drawing.Point(13, 29);
             label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label1.Name = "label1";
-            label1.Size = new System.Drawing.Size(107, 17);
+            label1.Size = new System.Drawing.Size(91, 17);
             label1.TabIndex = 4;
-            label1.Text = "Energieerzeuger:";
+            label1.Text = "Energieträger:";
             // 
             // label_Variante
             // 
-            label_Variante.AutoSize = true;
             label_Variante.Location = new System.Drawing.Point(13, 72);
             label_Variante.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label_Variante.Name = "label_Variante";
-            label_Variante.Size = new System.Drawing.Size(141, 17);
+            label_Variante.Size = new System.Drawing.Size(138, 63);
             label_Variante.TabIndex = 5;
-            label_Variante.Text = "Varianten Bezeichnung:";
+            label_Variante.Text = "Energieträger Varianten Bezeichnung:";
             // 
             // Form_Kosten_Auswahl
             // 
@@ -114,7 +113,7 @@
             Name = "Form_Kosten_Auswahl";
             ShowInTaskbar = false;
             StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            Text = "Energieerzeuger Variante";
+            Text = "Energieträger Variante";
             Load += Form_Kosten_Auswahl_Load;
             ResumeLayout(false);
             PerformLayout();

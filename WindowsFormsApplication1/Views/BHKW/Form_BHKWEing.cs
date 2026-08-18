@@ -222,6 +222,9 @@ namespace WindowsFormsApplication1
 
         private void btn_OK_Click(object sender, EventArgs e)
         {
+
+
+
             DialogResult = DialogResult.OK;
             Close();
         }
@@ -382,7 +385,7 @@ namespace WindowsFormsApplication1
             dataGridView1.ClearSelection();
         }
 
-        private void btn_Hinzzu_Click(object sender, EventArgs e)
+        private void btn_Hinzu_Click(object sender, EventArgs e)
         {
             int nBrennstoff = 0;
 
@@ -847,7 +850,21 @@ namespace WindowsFormsApplication1
 
             object val = cmbBrennstoffArt.SelectedValue;
             if (val == null || val == DBNull.Value) return;
+
+            int idcarrier_alt = m.ID_Carrier;   
             m.ID_Carrier = Convert.ToInt32(val);
+
+            string sqlUpdate =
+                "UPDATE energy_Project_settings " +
+                "SET ID_Energieträger = ? " +
+                "WHERE ID_Projekt = ? AND ID_Energieträger = ?";
+
+            DataRepository.ExecuteSQL(sqlUpdate, new OleDbParameter[] {
+                new OleDbParameter("@neu", m.ID_Carrier),   // SET-Wert
+                new OleDbParameter("@pid", m_ID_Projekt),    // Filter Projekt
+                new OleDbParameter("@alt", idcarrier_alt)    // Filter bisheriger Träger
+            });
         }
+
     }
 }
