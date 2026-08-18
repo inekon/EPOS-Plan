@@ -4301,7 +4301,7 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
     <value>{0} Investitionsposition(en) · {1}</value>
   </data>
   <data name="BK_KOSTEN_LBL_KOMPONENTEN" xml:space="preserve">
-    <value>Kosten je Komponente</value>
+    <value>Investition je Komponente</value>
   </data>
   <data name="BK_KOSTEN_LBL_TRAEGER" xml:space="preserve">
     <value>Energieträger des Projekts</value>
@@ -4310,7 +4310,7 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
     <value>Komponente</value>
   </data>
   <data name="BK_KOSTEN_SP_SUMME" xml:space="preserve">
-    <value>Summe [€]</value>
+    <value>Investition [€]</value>
   </data>
   <data name="BK_KOSTEN_SUMME" xml:space="preserve">
     <value>Gesamt</value>
@@ -4329,6 +4329,9 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   </data>
   <data name="BK_KOSTEN_SP_GRUNDPREIS" xml:space="preserve">
     <value>Grundpreis [€/a]</value>
+  </data>
+  <data name="KOSTEN_LBL_PROJEKT_GESAMT" xml:space="preserve">
+    <value>PROJEKT GESAMT ({0}): {1} €</value>
   </data>
   <data name="BK_BTN_VERGLEICH_ALT" xml:space="preserve">
     <value>Projektvergleich + Bericht (alt)</value>

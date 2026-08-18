@@ -214,6 +214,1032 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stamm ähnelt.
+        /// </summary>
+        public static string BK_ART_STAMM {
+            get {
+                return ResourceManager.GetString("BK_ART_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Stammprojekt) ähnelt.
+        /// </summary>
+        public static string BK_ART_STAMMPROJEKT {
+            get {
+                return ResourceManager.GetString("BK_ART_STAMMPROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante ähnelt.
+        /// </summary>
+        public static string BK_ART_VARIANTE {
+            get {
+                return ResourceManager.GetString("BK_ART_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante anlegen ähnelt.
+        /// </summary>
+        public static string BK_BTN_ANLEGEN {
+            get {
+                return ResourceManager.GetString("BK_BTN_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante löschen ähnelt.
+        /// </summary>
+        public static string BK_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("BK_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation starten ähnelt.
+        /// </summary>
+        public static string BK_BTN_SIMULIEREN {
+            get {
+                return ResourceManager.GetString("BK_BTN_SIMULIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen aus… ähnelt.
+        /// </summary>
+        public static string BK_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("BK_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektvergleich + Bericht (alt) ähnelt.
+        /// </summary>
+        public static string BK_BTN_VERGLEICH_ALT {
+            get {
+                return ResourceManager.GetString("BK_BTN_VERGLEICH_ALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Stammprojekte ähnelt.
+        /// </summary>
+        public static string BK_CHK_NURSTAEMME {
+            get {
+                return ResourceManager.GetString("BK_CHK_NURSTAEMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Tabelle {0} konnte nicht gelesen werden — ihre Daten fehlen in der Kopie. ähnelt.
+        /// </summary>
+        public static string BK_KOMP_HINW_KINDTABELLE {
+            get {
+                return ResourceManager.GetString("BK_KOMP_HINW_KINDTABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Verweis(e) auf einen Pufferspeicher ließen sich im Ziel nicht auflösen und bleiben leer. ähnelt.
+        /// </summary>
+        public static string BK_KOMP_HINW_PUFFERVERWEIS {
+            get {
+                return ResourceManager.GetString("BK_KOMP_HINW_PUFFERVERWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Betriebsführung der Speichervariante „{0}&quot; konnte nicht angelegt werden. ähnelt.
+        /// </summary>
+        public static string BK_KOMP_HINW_VARIANTE {
+            get {
+                return ResourceManager.GetString("BK_KOMP_HINW_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die   + anlegen: {0} ähnelt.
+        /// </summary>
+        public static string BK_KOMP_ZUS_ANLEGEN {
+            get {
+                return ResourceManager.GetString("BK_KOMP_ZUS_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die   - entfernen: {0} ähnelt.
+        /// </summary>
+        public static string BK_KOMP_ZUS_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("BK_KOMP_ZUS_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die   ~ ersetzen: {0} ähnelt.
+        /// </summary>
+        public static string BK_KOMP_ZUS_ERSETZEN {
+            get {
+                return ResourceManager.GetString("BK_KOMP_ZUS_ERSETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betroffene Tabellen: ähnelt.
+        /// </summary>
+        public static string BK_KOMP_ZUS_KETTE {
+            get {
+                return ResourceManager.GetString("BK_KOMP_ZUS_KETTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewerk „{0}&quot;: Der Bestand des Ziels ({1} Komponenten) wird durch den der Quelle ({2} Komponenten) ersetzt. ähnelt.
+        /// </summary>
+        public static string BK_KOMP_ZUS_KOPF {
+            get {
+                return ResourceManager.GetString("BK_KOMP_ZUS_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht — Word- und Excel-Ausgabe ähnelt.
+        /// </summary>
+        public static string BK_KOPF_BERICHT {
+            get {
+                return ResourceManager.GetString("BK_KOPF_BERICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten — Investition, Betrieb, Energie ähnelt.
+        /// </summary>
+        public static string BK_KOPF_KOSTEN {
+            get {
+                return ResourceManager.GetString("BK_KOPF_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übersicht — Stammprojekt und Varianten ähnelt.
+        /// </summary>
+        public static string BK_KOPF_UEBERSICHT {
+            get {
+                return ResourceManager.GetString("BK_KOPF_UEBERSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeit — Kapitalwertmethode (DIN EN 17463) ähnelt.
+        /// </summary>
+        public static string BK_KOPF_WIRTSCHAFT {
+            get {
+                return ResourceManager.GetString("BK_KOPF_WIRTSCHAFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_BETRIEB {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Betriebskosten p. a. (Erwartungswert) ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_BETRIEB_HINT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_BETRIEB_HINT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenverwaltung öffnen… ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_BTN_VERWALTUNG {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_BTN_VERWALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die € ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_EINHEIT_EUR {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_EINHEIT_EUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die €/a ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_EINHEIT_EUR_A {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_EINHEIT_EUR_A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energie ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_ENERGIE {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_ENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten noch nicht berechnet — Seite „Wirtschaftlichkeit“, „Berechnen“. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_ENERGIE_FEHLT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_ENERGIE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus der gespeicherten Wirtschaftlichkeitsrechnung ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_ENERGIE_HINT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_ENERGIE_HINT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_INVEST {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Investitionspositionen (Erwartungswert) ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_INVEST_HINT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_INVEST_HINT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Projekt gewählt. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_KEIN_PROJEKT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_KEIN_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition je Komponente ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_LBL_KOMPONENTEN {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_LBL_KOMPONENTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger des Projekts ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_LBL_TRAEGER {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_LBL_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt: {0} ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_PROJEKT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abrechnungseinheit ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_SP_ABRECHNUNG {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_SP_ABRECHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitspreis [€/Einheit] ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_SP_ARBEITSPREIS {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_SP_ARBEITSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundpreis [€/a] ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_SP_GRUNDPREIS {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_SP_GRUNDPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizwert [kWh/Einheit] ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_SP_HEIZWERT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_SP_HEIZWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponente ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_SP_KOMPONENTE {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_SP_KOMPONENTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition [€] ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_SP_SUMME {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_SP_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_SP_TRAEGER {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_SP_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand: {0} ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_STAND {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Investitionsposition(en) · {1} ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_STATUS {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamt ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_SUMME {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner: ähnelt.
+        /// </summary>
+        public static string BK_LBL_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("BK_LBL_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unterschiede zum Stammprojekt — Variante „{0}“ ähnelt.
+        /// </summary>
+        public static string BK_LBL_KOMPONENTEN_DIFF {
+            get {
+                return ResourceManager.GetString("BK_LBL_KOMPONENTEN_DIFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten des Stammprojekts ähnelt.
+        /// </summary>
+        public static string BK_LBL_KOMPONENTEN_STAMM {
+            get {
+                return ResourceManager.GetString("BK_LBL_KOMPONENTEN_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stammprojekt: ähnelt.
+        /// </summary>
+        public static string BK_LBL_STAMM {
+            get {
+                return ResourceManager.GetString("BK_LBL_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Anlegen: {0} ähnelt.
+        /// </summary>
+        public static string BK_MSG_ANLEGEFEHLER {
+            get {
+                return ResourceManager.GetString("BK_MSG_ANLEGEFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante konnte nicht angelegt werden. ähnelt.
+        /// </summary>
+        public static string BK_MSG_ANLEGEN_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("BK_MSG_ANLEGEN_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Unterschied(e) gegenüber dem Stammprojekt. ähnelt.
+        /// </summary>
+        public static string BK_MSG_ANZAHL_UNTERSCHIEDE {
+            get {
+                return ResourceManager.GetString("BK_MSG_ANZAHL_UNTERSCHIEDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte Stamm oder Variante auswählen. ähnelt.
+        /// </summary>
+        public static string BK_MSG_BITTE_WAEHLEN {
+            get {
+                return ResourceManager.GetString("BK_MSG_BITTE_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Stammprojekt gewählt. ähnelt.
+        /// </summary>
+        public static string BK_MSG_KEIN_STAMM {
+            get {
+                return ResourceManager.GetString("BK_MSG_KEIN_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Unterschiede in der verglichenen Anlagen- und Gebäudekonfiguration. ähnelt.
+        /// </summary>
+        public static string BK_MSG_KEINE_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("BK_MSG_KEINE_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Projekt sind keine Komponenten hinterlegt. ähnelt.
+        /// </summary>
+        public static string BK_MSG_KEINE_KOMPONENTEN {
+            get {
+                return ResourceManager.GetString("BK_MSG_KEINE_KOMPONENTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten-Übernahme fehlgeschlagen: {0} ähnelt.
+        /// </summary>
+        public static string BK_MSG_KOMP_FEHLER {
+            get {
+                return ResourceManager.GetString("BK_MSG_KOMP_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für das Gewerk „{0}&quot; ist die Komponenten-Übernahme nicht umgesetzt. ähnelt.
+        /// </summary>
+        public static string BK_MSG_KOMP_GEWERK_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("BK_MSG_KOMP_GEWERK_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle und Ziel führen bereits denselben Komponentenbestand — nichts zu tun. ähnelt.
+        /// </summary>
+        public static string BK_MSG_KOMP_NICHTS_ZU_TUN {
+            get {
+                return ResourceManager.GetString("BK_MSG_KOMP_NICHTS_ZU_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten übernommen (Gewerk „{0}&quot;): {1} angelegt, {2} ersetzt, {3} entfernt. ähnelt.
+        /// </summary>
+        public static string BK_MSG_KOMP_OK {
+            get {
+                return ResourceManager.GetString("BK_MSG_KOMP_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Laden der Projekte: {0} ähnelt.
+        /// </summary>
+        public static string BK_MSG_LADEFEHLER {
+            get {
+                return ResourceManager.GetString("BK_MSG_LADEFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante konnte nicht gelöscht werden. ähnelt.
+        /// </summary>
+        public static string BK_MSG_LOESCHEN_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("BK_MSG_LOESCHEN_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante „{0}“ und alle zugehörigen Projektdaten unwiderruflich löschen? ähnelt.
+        /// </summary>
+        public static string BK_MSG_LOESCHEN_FRAGE {
+            get {
+                return ResourceManager.GetString("BK_MSG_LOESCHEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Löschen: {0} ähnelt.
+        /// </summary>
+        public static string BK_MSG_LOESCHFEHLER {
+            get {
+                return ResourceManager.GetString("BK_MSG_LOESCHFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte eine Variante auswählen (das Stammprojekt wird hier nicht gelöscht). ähnelt.
+        /// </summary>
+        public static string BK_MSG_NUR_VARIANTE {
+            get {
+                return ResourceManager.GetString("BK_MSG_NUR_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: FEHLER – {1} ähnelt.
+        /// </summary>
+        public static string BK_MSG_SIM_FEHLER {
+            get {
+                return ResourceManager.GetString("BK_MSG_SIM_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation abgeschlossen ({0} Projekt(e)). ähnelt.
+        /// </summary>
+        public static string BK_MSG_SIM_FERTIG {
+            get {
+                return ResourceManager.GetString("BK_MSG_SIM_FERTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: ok (Ergebnis-ID {1}) ähnelt.
+        /// </summary>
+        public static string BK_MSG_SIM_OK {
+            get {
+                return ResourceManager.GetString("BK_MSG_SIM_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler bei der Simulation: {0} ähnelt.
+        /// </summary>
+        public static string BK_MSG_SIMFEHLER {
+            get {
+                return ResourceManager.GetString("BK_MSG_SIMFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse veraltet — Simulation neu ausführen. ähnelt.
+        /// </summary>
+        public static string BK_MSG_UEB_ERGEBNIS_VERALTET {
+            get {
+                return ResourceManager.GetString("BK_MSG_UEB_ERGEBNIS_VERALTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme fehlgeschlagen: {0} ähnelt.
+        /// </summary>
+        public static string BK_MSG_UEB_FEHLER {
+            get {
+                return ResourceManager.GetString("BK_MSG_UEB_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle und Ziel führen bereits denselben Wert — nichts zu tun. ähnelt.
+        /// </summary>
+        public static string BK_MSG_UEB_GLEICH {
+            get {
+                return ResourceManager.GetString("BK_MSG_UEB_GLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Zeile bezeichnet kein einzelnes Merkmal. ähnelt.
+        /// </summary>
+        public static string BK_MSG_UEB_KEIN_FELD {
+            get {
+                return ResourceManager.GetString("BK_MSG_UEB_KEIN_FELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt keine andere Version, aus der übernommen werden könnte. ähnelt.
+        /// </summary>
+        public static string BK_MSG_UEB_KEINE_QUELLE {
+            get {
+                return ResourceManager.GetString("BK_MSG_UEB_KEINE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle führt zu diesem Merkmal keinen Datensatz. ähnelt.
+        /// </summary>
+        public static string BK_MSG_UEB_KEINE_QUELLZEILE {
+            get {
+                return ResourceManager.GetString("BK_MSG_UEB_KEINE_QUELLZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Ziel führt zu diesem Merkmal keinen Datensatz. ähnelt.
+        /// </summary>
+        public static string BK_MSG_UEB_KEINE_ZIELZEILE {
+            get {
+                return ResourceManager.GetString("BK_MSG_UEB_KEINE_ZIELZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnung nicht eindeutig: Gewerk „{0}&quot; führt in der Quelle {1} und im Ziel {2} Komponenten. Bitte statt eines einzelnen Merkmals den Komponentenbestand übernehmen. ähnelt.
+        /// </summary>
+        public static string BK_MSG_UEB_NICHT_EINDEUTIG {
+            get {
+                return ResourceManager.GetString("BK_MSG_UEB_NICHT_EINDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernommen: {0} · {1} = {2} ähnelt.
+        /// </summary>
+        public static string BK_MSG_UEB_OK {
+            get {
+                return ResourceManager.GetString("BK_MSG_UEB_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner ist der Schlüssel der Komponentenzuordnung — bitte die ganze Komponente übernehmen. ähnelt.
+        /// </summary>
+        public static string BK_MSG_UEB_SCHLUESSEL {
+            get {
+                return ResourceManager.GetString("BK_MSG_UEB_SCHLUESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert konnte nicht geschrieben werden. ähnelt.
+        /// </summary>
+        public static string BK_MSG_UEB_SCHREIBFEHLER {
+            get {
+                return ResourceManager.GetString("BK_MSG_UEB_SCHREIBFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante „{0}“ angelegt. ähnelt.
+        /// </summary>
+        public static string BK_MSG_VARIANTE_ANGELEGT {
+            get {
+                return ResourceManager.GetString("BK_MSG_VARIANTE_ANGELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante „{0}“ gelöscht. ähnelt.
+        /// </summary>
+        public static string BK_MSG_VARIANTE_GELOESCHT {
+            get {
+                return ResourceManager.GetString("BK_MSG_VARIANTE_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht ähnelt.
+        /// </summary>
+        public static string BK_NAV_BERICHT {
+            get {
+                return ResourceManager.GetString("BK_NAV_BERICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten ähnelt.
+        /// </summary>
+        public static string BK_NAV_KOSTEN {
+            get {
+                return ResourceManager.GetString("BK_NAV_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übersicht ähnelt.
+        /// </summary>
+        public static string BK_NAV_UEBERSICHT {
+            get {
+                return ResourceManager.GetString("BK_NAV_UEBERSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeit ähnelt.
+        /// </summary>
+        public static string BK_NAV_WIRTSCHAFT {
+            get {
+                return ResourceManager.GetString("BK_NAV_WIRTSCHAFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stamm: {0} ähnelt.
+        /// </summary>
+        public static string BK_PRAEFIX_STAMM {
+            get {
+                return ResourceManager.GetString("BK_PRAEFIX_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante: {0} ähnelt.
+        /// </summary>
+        public static string BK_PRAEFIX_VARIANTE {
+            get {
+                return ResourceManager.GetString("BK_PRAEFIX_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktion ähnelt.
+        /// </summary>
+        public static string BK_SP_AKTION {
+            get {
+                return ResourceManager.GetString("BK_SP_AKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
+        /// </summary>
+        public static string BK_SP_ART {
+            get {
+                return ResourceManager.GetString("BK_SP_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner ähnelt.
+        /// </summary>
+        public static string BK_SP_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("BK_SP_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewerk ähnelt.
+        /// </summary>
+        public static string BK_SP_GEWERK {
+            get {
+                return ResourceManager.GetString("BK_SP_GEWERK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Merkmal ähnelt.
+        /// </summary>
+        public static string BK_SP_MERKMAL {
+            get {
+                return ResourceManager.GetString("BK_SP_MERKMAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektname ähnelt.
+        /// </summary>
+        public static string BK_SP_PROJEKTNAME {
+            get {
+                return ResourceManager.GetString("BK_SP_PROJEKTNAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulationsstand ähnelt.
+        /// </summary>
+        public static string BK_SP_SIMSTAND {
+            get {
+                return ResourceManager.GetString("BK_SP_SIMSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string BK_SP_WERT {
+            get {
+                return ResourceManager.GetString("BK_SP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stamm ähnelt.
+        /// </summary>
+        public static string BK_SP_WERT_STAMM {
+            get {
+                return ResourceManager.GetString("BK_SP_WERT_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante ähnelt.
+        /// </summary>
+        public static string BK_SP_WERT_VARIANTE {
+            get {
+                return ResourceManager.GetString("BK_SP_WERT_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme einzelner Merkmale folgt im nächsten Paket. ähnelt.
+        /// </summary>
+        public static string BK_TIP_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("BK_TIP_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieses Merkmal aus einer anderen Version übernehmen (Stamm oder Variante). ähnelt.
+        /// </summary>
+        public static string BK_TIP_UEBERNEHMEN_FELD {
+            get {
+                return ResourceManager.GetString("BK_TIP_UEBERNEHMEN_FELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner bestimmt die Zuordnung der Komponenten selbst und kann deshalb nicht feldweise übernommen werden — dafür ist die Bestandszeile des Gewerks da. ähnelt.
+        /// </summary>
+        public static string BK_TIP_UEBERNEHMEN_GESPERRT_SCHLUESSEL {
+            get {
+                return ResourceManager.GetString("BK_TIP_UEBERNEHMEN_GESPERRT_SCHLUESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Komponentenbestand dieses Gewerks aus einer anderen Version übernehmen. ähnelt.
+        /// </summary>
+        public static string BK_TIP_UEBERNEHMEN_KOMP {
+            get {
+                return ResourceManager.GetString("BK_TIP_UEBERNEHMEN_KOMP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
+        /// </summary>
+        public static string BK_TITEL_SIMULATION {
+            get {
+                return ResourceManager.GetString("BK_TITEL_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string BK_UEB_BTN_ABBRUCH {
+            get {
+                return ResourceManager.GetString("BK_UEB_BTN_ABBRUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string BK_UEB_BTN_OK {
+            get {
+                return ResourceManager.GetString("BK_UEB_BTN_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betroffen: {0} → {1} ähnelt.
+        /// </summary>
+        public static string BK_UEB_KOMPONENTEN {
+            get {
+                return ResourceManager.GetString("BK_UEB_KOMPONENTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle: ähnelt.
+        /// </summary>
+        public static string BK_UEB_LBL_QUELLE {
+            get {
+                return ResourceManager.GetString("BK_UEB_LBL_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert der Quelle: ähnelt.
+        /// </summary>
+        public static string BK_UEB_LBL_WERT_QUELLE {
+            get {
+                return ResourceManager.GetString("BK_UEB_LBL_WERT_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert des Ziels: ähnelt.
+        /// </summary>
+        public static string BK_UEB_LBL_WERT_ZIEL {
+            get {
+                return ResourceManager.GetString("BK_UEB_LBL_WERT_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ziel: ähnelt.
+        /// </summary>
+        public static string BK_UEB_LBL_ZIEL {
+            get {
+                return ResourceManager.GetString("BK_UEB_LBL_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stammprojekt: {0} ähnelt.
+        /// </summary>
+        public static string BK_UEB_QUELLE_STAMM {
+            get {
+                return ResourceManager.GetString("BK_UEB_QUELLE_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante: {0} ähnelt.
+        /// </summary>
+        public static string BK_UEB_QUELLE_VARIANTE {
+            get {
+                return ResourceManager.GetString("BK_UEB_QUELLE_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Merkmal übernehmen ähnelt.
+        /// </summary>
+        public static string BK_UEB_TITEL_FELD {
+            get {
+                return ResourceManager.GetString("BK_UEB_TITEL_FELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten übernehmen ähnelt.
+        /// </summary>
+        public static string BK_UEB_TITEL_KOMP {
+            get {
+                return ResourceManager.GetString("BK_UEB_TITEL_KOMP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energie-Bedarf &amp; Deckung (kWh) ähnelt.
         /// </summary>
         public static string CHART_ACHSE_ENERGIEBEDARF_DECKUNG {
@@ -1740,6 +2766,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KONFIG_WAERMEPUMPE {
             get {
                 return ResourceManager.GetString("KONFIG_WAERMEPUMPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PROJEKT GESAMT ({0}): {1} € ähnelt.
+        /// </summary>
+        public static string KOSTEN_LBL_PROJEKT_GESAMT {
+            get {
+                return ResourceManager.GetString("KOSTEN_LBL_PROJEKT_GESAMT", resourceCulture);
             }
         }
         
@@ -4646,6 +5681,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Parallelverbund mit {0} - dieser Speicher hat im Lauf keinen eigenen Füllstand; Kapazität und Ergebniszeile gehören zum Leitspeicher. ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_IM_VERBUND {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_IM_VERBUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (Kaskade) ähnelt.
         /// </summary>
         public static string PSP_KARTE_KASKADE {
@@ -6052,6 +7096,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parallelverbund (mehrere Speicher als ein Vorrat) ähnelt.
+        /// </summary>
+        public static string SIM_GB_VERBUND {
+            get {
+                return ResourceManager.GetString("SIM_GB_VERBUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Hauptsenke ähnelt.
         /// </summary>
         public static string SIM_GRUPPE_HAUPTSENKE {
@@ -6417,6 +7470,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die +{0} parallel ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_VERBUND_ZUSATZ {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_VERBUND_ZUSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Simulation ähnelt.
         /// </summary>
         public static string SIM_KARTE_VERFUEGBAR {
@@ -6724,6 +7786,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_LBL_PV_UEBERSCHUSS {
             get {
                 return ResourceManager.GetString("SIM_LBL_PV_UEBERSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zusätzlich parallel geschaltete Pufferspeicher (gemeinsamer Vorrat mit dem oben gewählten Leitspeicher): ähnelt.
+        /// </summary>
+        public static string SIM_LBL_VERBUND_ZUSATZ {
+            get {
+                return ResourceManager.GetString("SIM_LBL_VERBUND_ZUSATZ", resourceCulture);
             }
         }
         
@@ -7756,6 +8827,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parallelverbund: {0} Pufferspeicher werden als EIN gemeinsamer Wärmevorrat gerechnet (Kapazitäten addiert, ein Füllstand, eine Schaltschwelle). ähnelt.
+        /// </summary>
+        public static string SIM_TIP_VERBUND {
+            get {
+                return ResourceManager.GetString("SIM_TIP_VERBUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die WP-Priorität (Doppelklick zum Ändern)
         ///Einsatz-Reihenfolge der Wärmepumpen: 1 = wird zuerst eingesetzt,
         ///die nächste deckt jeweils den verbleibenden Bedarf der Stunde. ähnelt.
@@ -7922,6 +9002,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_UEBERSICHT_TITEL {
             get {
                 return ResourceManager.GetString("SIM_UEBERSICHT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Verbund - es rechnet allein der oben gewählte Pufferspeicher. ähnelt.
+        /// </summary>
+        public static string SIM_VERBUND_KEIN_VERBUND {
+            get {
+                return ResourceManager.GetString("SIM_VERBUND_KEIN_VERBUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Speicher im Parallelverbund hat keinen eigenen Füllstand mehr - seine Kapazität gehört zum gemeinsamen Vorrat des Leitspeichers. Würde ihn zusätzlich ein anderes Ziel laden, zählte dieselbe Kapazität zweimal. ähnelt.
+        /// </summary>
+        public static string SIM_VERBUND_KONFLIKT_ERKLAERUNG {
+            get {
+                return ResourceManager.GetString("SIM_VERBUND_KONFLIKT_ERKLAERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Pufferspeicher „{0}&quot; gehört bereits zum Verbund des Leitspeichers „{1}&quot;. ähnelt.
+        /// </summary>
+        public static string SIM_VERBUND_KONFLIKT_FREMDVERBUND {
+            get {
+                return ResourceManager.GetString("SIM_VERBUND_KONFLIKT_FREMDVERBUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der gewählte Pufferspeicher „{0}&quot; ist selbst Mitglied im Verbund des Leitspeichers „{1}&quot; und kann deshalb nicht Leitspeicher eines weiteren Verbunds sein. ähnelt.
+        /// </summary>
+        public static string SIM_VERBUND_KONFLIKT_LEIT_IST_MITGLIED {
+            get {
+                return ResourceManager.GetString("SIM_VERBUND_KONFLIKT_LEIT_IST_MITGLIED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Pufferspeicher „{0}&quot; gehört nicht zu diesem Projekt oder ist nicht für die Verwendung „{1}&quot; gepflegt. ähnelt.
+        /// </summary>
+        public static string SIM_VERBUND_KONFLIKT_PASST_NICHT {
+            get {
+                return ResourceManager.GetString("SIM_VERBUND_KONFLIKT_PASST_NICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Pufferspeicher „{0}&quot; ist die Wärmequelle einer Anlage dieses Projekts und kann nicht gleichzeitig Teil eines Wärmevorrats sein. ähnelt.
+        /// </summary>
+        public static string SIM_VERBUND_KONFLIKT_QUELLE {
+            get {
+                return ResourceManager.GetString("SIM_VERBUND_KONFLIKT_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Pufferspeicher „{0}&quot; kann nicht als Verbundmitglied dienen: Die Anlage „{1}&quot; lädt ihn bereits als eigenes Senkenziel. ähnelt.
+        /// </summary>
+        public static string SIM_VERBUND_KONFLIKT_SENKE {
+            get {
+                return ResourceManager.GetString("SIM_VERBUND_KONFLIKT_SENKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verbund: {0} Speicher · Q_max gesamt {1} kWh ähnelt.
+        /// </summary>
+        public static string SIM_VERBUND_SUMME {
+            get {
+                return ResourceManager.GetString("SIM_VERBUND_SUMME", resourceCulture);
             }
         }
         
@@ -11470,1149 +12622,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VAR_VGL_TOOLTIP_OEFFNEN {
             get {
                 return ResourceManager.GetString("VAR_VGL_TOOLTIP_OEFFNEN", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Parallelverbund (mehrere Speicher als ein Vorrat) ähnelt.
-        /// </summary>
-        public static string SIM_GB_VERBUND {
-            get {
-                return ResourceManager.GetString("SIM_GB_VERBUND", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zusätzlich parallel geschaltete Pufferspeicher (gemeinsamer Vorrat mit dem oben gewählten Leitspeicher): ähnelt.
-        /// </summary>
-        public static string SIM_LBL_VERBUND_ZUSATZ {
-            get {
-                return ResourceManager.GetString("SIM_LBL_VERBUND_ZUSATZ", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Verbund: {0} Speicher · Q_max gesamt {1} kWh ähnelt.
-        /// </summary>
-        public static string SIM_VERBUND_SUMME {
-            get {
-                return ResourceManager.GetString("SIM_VERBUND_SUMME", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Verbund - es rechnet allein der oben gewählte Pufferspeicher. ähnelt.
-        /// </summary>
-        public static string SIM_VERBUND_KEIN_VERBUND {
-            get {
-                return ResourceManager.GetString("SIM_VERBUND_KEIN_VERBUND", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Pufferspeicher „{0}" kann nicht als Verbundmitglied dienen: Die Anlage „{1}" lädt ihn bereits als eigenes Senkenziel. ähnelt.
-        /// </summary>
-        public static string SIM_VERBUND_KONFLIKT_SENKE {
-            get {
-                return ResourceManager.GetString("SIM_VERBUND_KONFLIKT_SENKE", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Pufferspeicher „{0}" gehört bereits zum Verbund des Leitspeichers „{1}". ähnelt.
-        /// </summary>
-        public static string SIM_VERBUND_KONFLIKT_FREMDVERBUND {
-            get {
-                return ResourceManager.GetString("SIM_VERBUND_KONFLIKT_FREMDVERBUND", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der gewählte Pufferspeicher „{0}" ist selbst Mitglied im Verbund des Leitspeichers „{1}" und kann deshalb nicht Leitspeicher eines weiteren Verbunds sein. ähnelt.
-        /// </summary>
-        public static string SIM_VERBUND_KONFLIKT_LEIT_IST_MITGLIED {
-            get {
-                return ResourceManager.GetString("SIM_VERBUND_KONFLIKT_LEIT_IST_MITGLIED", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Pufferspeicher „{0}" ist die Wärmequelle einer Anlage dieses Projekts und kann nicht gleichzeitig Teil eines Wärmevorrats sein. ähnelt.
-        /// </summary>
-        public static string SIM_VERBUND_KONFLIKT_QUELLE {
-            get {
-                return ResourceManager.GetString("SIM_VERBUND_KONFLIKT_QUELLE", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Pufferspeicher „{0}" gehört nicht zu diesem Projekt oder ist nicht für die Verwendung „{1}" gepflegt. ähnelt.
-        /// </summary>
-        public static string SIM_VERBUND_KONFLIKT_PASST_NICHT {
-            get {
-                return ResourceManager.GetString("SIM_VERBUND_KONFLIKT_PASST_NICHT", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Speicher im Parallelverbund hat keinen eigenen Füllstand mehr - seine Kapazität gehört zum gemeinsamen Vorrat des Leitspeichers. Würde ihn zusätzlich ein anderes Ziel laden, zählte dieselbe Kapazität zweimal. ähnelt.
-        /// </summary>
-        public static string SIM_VERBUND_KONFLIKT_ERKLAERUNG {
-            get {
-                return ResourceManager.GetString("SIM_VERBUND_KONFLIKT_ERKLAERUNG", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die +{0} parallel ähnelt.
-        /// </summary>
-        public static string SIM_KARTE_VERBUND_ZUSATZ {
-            get {
-                return ResourceManager.GetString("SIM_KARTE_VERBUND_ZUSATZ", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Parallelverbund: {0} Pufferspeicher werden als EIN gemeinsamer Wärmevorrat gerechnet (Kapazitäten addiert, ein Füllstand, eine Schaltschwelle). ähnelt.
-        /// </summary>
-        public static string SIM_TIP_VERBUND {
-            get {
-                return ResourceManager.GetString("SIM_TIP_VERBUND", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Im Parallelverbund mit {0} - dieser Speicher hat im Lauf keinen eigenen Füllstand; Kapazität und Ergebniszeile gehören zum Leitspeicher. ähnelt.
-        /// </summary>
-        public static string PSP_KARTE_IM_VERBUND {
-            get {
-                return ResourceManager.GetString("PSP_KARTE_IM_VERBUND", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Übersicht ähnelt.
-        /// </summary>
-        public static string BK_NAV_UEBERSICHT {
-            get {
-                return ResourceManager.GetString("BK_NAV_UEBERSICHT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten ähnelt.
-        /// </summary>
-        public static string BK_NAV_KOSTEN {
-            get {
-                return ResourceManager.GetString("BK_NAV_KOSTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeit ähnelt.
-        /// </summary>
-        public static string BK_NAV_WIRTSCHAFT {
-            get {
-                return ResourceManager.GetString("BK_NAV_WIRTSCHAFT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht ähnelt.
-        /// </summary>
-        public static string BK_NAV_BERICHT {
-            get {
-                return ResourceManager.GetString("BK_NAV_BERICHT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Übersicht — Stammprojekt und Varianten ähnelt.
-        /// </summary>
-        public static string BK_KOPF_UEBERSICHT {
-            get {
-                return ResourceManager.GetString("BK_KOPF_UEBERSICHT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten — Investition, Betrieb, Energie ähnelt.
-        /// </summary>
-        public static string BK_KOPF_KOSTEN {
-            get {
-                return ResourceManager.GetString("BK_KOPF_KOSTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeit — Kapitalwertmethode (DIN EN 17463) ähnelt.
-        /// </summary>
-        public static string BK_KOPF_WIRTSCHAFT {
-            get {
-                return ResourceManager.GetString("BK_KOPF_WIRTSCHAFT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht — Word- und Excel-Ausgabe ähnelt.
-        /// </summary>
-        public static string BK_KOPF_BERICHT {
-            get {
-                return ResourceManager.GetString("BK_KOPF_BERICHT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stammprojekt: ähnelt.
-        /// </summary>
-        public static string BK_LBL_STAMM {
-            get {
-                return ResourceManager.GetString("BK_LBL_STAMM", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die nur Stammprojekte ähnelt.
-        /// </summary>
-        public static string BK_CHK_NURSTAEMME {
-            get {
-                return ResourceManager.GetString("BK_CHK_NURSTAEMME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner: ähnelt.
-        /// </summary>
-        public static string BK_LBL_BEZEICHNER {
-            get {
-                return ResourceManager.GetString("BK_LBL_BEZEICHNER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Variante anlegen ähnelt.
-        /// </summary>
-        public static string BK_BTN_ANLEGEN {
-            get {
-                return ResourceManager.GetString("BK_BTN_ANLEGEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Variante löschen ähnelt.
-        /// </summary>
-        public static string BK_BTN_LOESCHEN {
-            get {
-                return ResourceManager.GetString("BK_BTN_LOESCHEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation starten ähnelt.
-        /// </summary>
-        public static string BK_BTN_SIMULIEREN {
-            get {
-                return ResourceManager.GetString("BK_BTN_SIMULIEREN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
-        /// </summary>
-        public static string BK_SP_ART {
-            get {
-                return ResourceManager.GetString("BK_SP_ART", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner ähnelt.
-        /// </summary>
-        public static string BK_SP_BEZEICHNER {
-            get {
-                return ResourceManager.GetString("BK_SP_BEZEICHNER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Projektname ähnelt.
-        /// </summary>
-        public static string BK_SP_PROJEKTNAME {
-            get {
-                return ResourceManager.GetString("BK_SP_PROJEKTNAME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Simulationsstand ähnelt.
-        /// </summary>
-        public static string BK_SP_SIMSTAND {
-            get {
-                return ResourceManager.GetString("BK_SP_SIMSTAND", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stamm ähnelt.
-        /// </summary>
-        public static string BK_ART_STAMM {
-            get {
-                return ResourceManager.GetString("BK_ART_STAMM", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Variante ähnelt.
-        /// </summary>
-        public static string BK_ART_VARIANTE {
-            get {
-                return ResourceManager.GetString("BK_ART_VARIANTE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die (Stammprojekt) ähnelt.
-        /// </summary>
-        public static string BK_ART_STAMMPROJEKT {
-            get {
-                return ResourceManager.GetString("BK_ART_STAMMPROJEKT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten des Stammprojekts ähnelt.
-        /// </summary>
-        public static string BK_LBL_KOMPONENTEN_STAMM {
-            get {
-                return ResourceManager.GetString("BK_LBL_KOMPONENTEN_STAMM", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Unterschiede zum Stammprojekt — Variante „{0}“ ähnelt.
-        /// </summary>
-        public static string BK_LBL_KOMPONENTEN_DIFF {
-            get {
-                return ResourceManager.GetString("BK_LBL_KOMPONENTEN_DIFF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gewerk ähnelt.
-        /// </summary>
-        public static string BK_SP_GEWERK {
-            get {
-                return ResourceManager.GetString("BK_SP_GEWERK", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Merkmal ähnelt.
-        /// </summary>
-        public static string BK_SP_MERKMAL {
-            get {
-                return ResourceManager.GetString("BK_SP_MERKMAL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
-        /// </summary>
-        public static string BK_SP_WERT {
-            get {
-                return ResourceManager.GetString("BK_SP_WERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stamm ähnelt.
-        /// </summary>
-        public static string BK_SP_WERT_STAMM {
-            get {
-                return ResourceManager.GetString("BK_SP_WERT_STAMM", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Variante ähnelt.
-        /// </summary>
-        public static string BK_SP_WERT_VARIANTE {
-            get {
-                return ResourceManager.GetString("BK_SP_WERT_VARIANTE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aktion ähnelt.
-        /// </summary>
-        public static string BK_SP_AKTION {
-            get {
-                return ResourceManager.GetString("BK_SP_AKTION", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen aus… ähnelt.
-        /// </summary>
-        public static string BK_BTN_UEBERNEHMEN {
-            get {
-                return ResourceManager.GetString("BK_BTN_UEBERNEHMEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme einzelner Merkmale folgt im nächsten Paket. ähnelt.
-        /// </summary>
-        public static string BK_TIP_UEBERNEHMEN {
-            get {
-                return ResourceManager.GetString("BK_TIP_UEBERNEHMEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Unterschiede in der verglichenen Anlagen- und Gebäudekonfiguration. ähnelt.
-        /// </summary>
-        public static string BK_MSG_KEINE_ABWEICHUNG {
-            get {
-                return ResourceManager.GetString("BK_MSG_KEINE_ABWEICHUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Projekt sind keine Komponenten hinterlegt. ähnelt.
-        /// </summary>
-        public static string BK_MSG_KEINE_KOMPONENTEN {
-            get {
-                return ResourceManager.GetString("BK_MSG_KEINE_KOMPONENTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Unterschied(e) gegenüber dem Stammprojekt. ähnelt.
-        /// </summary>
-        public static string BK_MSG_ANZAHL_UNTERSCHIEDE {
-            get {
-                return ResourceManager.GetString("BK_MSG_ANZAHL_UNTERSCHIEDE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Stammprojekt gewählt. ähnelt.
-        /// </summary>
-        public static string BK_MSG_KEIN_STAMM {
-            get {
-                return ResourceManager.GetString("BK_MSG_KEIN_STAMM", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte eine Variante auswählen (das Stammprojekt wird hier nicht gelöscht). ähnelt.
-        /// </summary>
-        public static string BK_MSG_NUR_VARIANTE {
-            get {
-                return ResourceManager.GetString("BK_MSG_NUR_VARIANTE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte Stamm oder Variante auswählen. ähnelt.
-        /// </summary>
-        public static string BK_MSG_BITTE_WAEHLEN {
-            get {
-                return ResourceManager.GetString("BK_MSG_BITTE_WAEHLEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Variante „{0}“ und alle zugehörigen Projektdaten unwiderruflich löschen? ähnelt.
-        /// </summary>
-        public static string BK_MSG_LOESCHEN_FRAGE {
-            get {
-                return ResourceManager.GetString("BK_MSG_LOESCHEN_FRAGE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Variante „{0}“ angelegt. ähnelt.
-        /// </summary>
-        public static string BK_MSG_VARIANTE_ANGELEGT {
-            get {
-                return ResourceManager.GetString("BK_MSG_VARIANTE_ANGELEGT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Variante „{0}“ gelöscht. ähnelt.
-        /// </summary>
-        public static string BK_MSG_VARIANTE_GELOESCHT {
-            get {
-                return ResourceManager.GetString("BK_MSG_VARIANTE_GELOESCHT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Variante konnte nicht angelegt werden. ähnelt.
-        /// </summary>
-        public static string BK_MSG_ANLEGEN_FEHLGESCHLAGEN {
-            get {
-                return ResourceManager.GetString("BK_MSG_ANLEGEN_FEHLGESCHLAGEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Variante konnte nicht gelöscht werden. ähnelt.
-        /// </summary>
-        public static string BK_MSG_LOESCHEN_FEHLGESCHLAGEN {
-            get {
-                return ResourceManager.GetString("BK_MSG_LOESCHEN_FEHLGESCHLAGEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Laden der Projekte: {0} ähnelt.
-        /// </summary>
-        public static string BK_MSG_LADEFEHLER {
-            get {
-                return ResourceManager.GetString("BK_MSG_LADEFEHLER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Anlegen: {0} ähnelt.
-        /// </summary>
-        public static string BK_MSG_ANLEGEFEHLER {
-            get {
-                return ResourceManager.GetString("BK_MSG_ANLEGEFEHLER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Löschen: {0} ähnelt.
-        /// </summary>
-        public static string BK_MSG_LOESCHFEHLER {
-            get {
-                return ResourceManager.GetString("BK_MSG_LOESCHFEHLER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler bei der Simulation: {0} ähnelt.
-        /// </summary>
-        public static string BK_MSG_SIMFEHLER {
-            get {
-                return ResourceManager.GetString("BK_MSG_SIMFEHLER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation abgeschlossen ({0} Projekt(e)). ähnelt.
-        /// </summary>
-        public static string BK_MSG_SIM_FERTIG {
-            get {
-                return ResourceManager.GetString("BK_MSG_SIM_FERTIG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: ok (Ergebnis-ID {1}) ähnelt.
-        /// </summary>
-        public static string BK_MSG_SIM_OK {
-            get {
-                return ResourceManager.GetString("BK_MSG_SIM_OK", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: FEHLER – {1} ähnelt.
-        /// </summary>
-        public static string BK_MSG_SIM_FEHLER {
-            get {
-                return ResourceManager.GetString("BK_MSG_SIM_FEHLER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
-        /// </summary>
-        public static string BK_TITEL_SIMULATION {
-            get {
-                return ResourceManager.GetString("BK_TITEL_SIMULATION", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stamm: {0} ähnelt.
-        /// </summary>
-        public static string BK_PRAEFIX_STAMM {
-            get {
-                return ResourceManager.GetString("BK_PRAEFIX_STAMM", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Variante: {0} ähnelt.
-        /// </summary>
-        public static string BK_PRAEFIX_VARIANTE {
-            get {
-                return ResourceManager.GetString("BK_PRAEFIX_VARIANTE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Investition ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_INVEST {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_INVEST", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_BETRIEB {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_BETRIEB", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Energie ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_ENERGIE {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_ENERGIE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Investitionspositionen (Erwartungswert) ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_INVEST_HINT {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_INVEST_HINT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Betriebskosten p. a. (Erwartungswert) ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_BETRIEB_HINT {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_BETRIEB_HINT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die aus der gespeicherten Wirtschaftlichkeitsrechnung ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_ENERGIE_HINT {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_ENERGIE_HINT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten noch nicht berechnet — Seite „Wirtschaftlichkeit“, „Berechnen“. ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_ENERGIE_FEHLT {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_ENERGIE_FEHLT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die € ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_EINHEIT_EUR {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_EINHEIT_EUR", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die €/a ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_EINHEIT_EUR_A {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_EINHEIT_EUR_A", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenverwaltung öffnen… ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_BTN_VERWALTUNG {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_BTN_VERWALTUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt: {0} ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_PROJEKT {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_PROJEKT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Projekt gewählt. ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_KEIN_PROJEKT {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_KEIN_PROJEKT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stand: {0} ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_STAND {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_STAND", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Investitionsposition(en) · {1} ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_STATUS {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_STATUS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten je Komponente ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_LBL_KOMPONENTEN {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_LBL_KOMPONENTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger des Projekts ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_LBL_TRAEGER {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_LBL_TRAEGER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Komponente ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_SP_KOMPONENTE {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_SP_KOMPONENTE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Summe [€] ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_SP_SUMME {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_SP_SUMME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamt ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_SUMME {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_SUMME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_SP_TRAEGER {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_SP_TRAEGER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Abrechnungseinheit ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_SP_ABRECHNUNG {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_SP_ABRECHNUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Heizwert [kWh/Einheit] ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_SP_HEIZWERT {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_SP_HEIZWERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitspreis [€/Einheit] ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_SP_ARBEITSPREIS {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_SP_ARBEITSPREIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Grundpreis [€/a] ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_SP_GRUNDPREIS {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_SP_GRUNDPREIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Projektvergleich + Bericht (alt) ähnelt.
-        /// </summary>
-        public static string BK_BTN_VERGLEICH_ALT {
-            get {
-                return ResourceManager.GetString("BK_BTN_VERGLEICH_ALT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Merkmal übernehmen ähnelt.
-        /// </summary>
-        public static string BK_UEB_TITEL_FELD {
-            get {
-                return ResourceManager.GetString("BK_UEB_TITEL_FELD", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten übernehmen ähnelt.
-        /// </summary>
-        public static string BK_UEB_TITEL_KOMP {
-            get {
-                return ResourceManager.GetString("BK_UEB_TITEL_KOMP", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle: ähnelt.
-        /// </summary>
-        public static string BK_UEB_LBL_QUELLE {
-            get {
-                return ResourceManager.GetString("BK_UEB_LBL_QUELLE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ziel: ähnelt.
-        /// </summary>
-        public static string BK_UEB_LBL_ZIEL {
-            get {
-                return ResourceManager.GetString("BK_UEB_LBL_ZIEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wert der Quelle: ähnelt.
-        /// </summary>
-        public static string BK_UEB_LBL_WERT_QUELLE {
-            get {
-                return ResourceManager.GetString("BK_UEB_LBL_WERT_QUELLE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wert des Ziels: ähnelt.
-        /// </summary>
-        public static string BK_UEB_LBL_WERT_ZIEL {
-            get {
-                return ResourceManager.GetString("BK_UEB_LBL_WERT_ZIEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
-        /// </summary>
-        public static string BK_UEB_BTN_OK {
-            get {
-                return ResourceManager.GetString("BK_UEB_BTN_OK", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
-        /// </summary>
-        public static string BK_UEB_BTN_ABBRUCH {
-            get {
-                return ResourceManager.GetString("BK_UEB_BTN_ABBRUCH", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stammprojekt: {0} ähnelt.
-        /// </summary>
-        public static string BK_UEB_QUELLE_STAMM {
-            get {
-                return ResourceManager.GetString("BK_UEB_QUELLE_STAMM", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Variante: {0} ähnelt.
-        /// </summary>
-        public static string BK_UEB_QUELLE_VARIANTE {
-            get {
-                return ResourceManager.GetString("BK_UEB_QUELLE_VARIANTE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Betroffen: {0} → {1} ähnelt.
-        /// </summary>
-        public static string BK_UEB_KOMPONENTEN {
-            get {
-                return ResourceManager.GetString("BK_UEB_KOMPONENTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Dieses Merkmal aus einer anderen Version übernehmen (Stamm oder Variante). ähnelt.
-        /// </summary>
-        public static string BK_TIP_UEBERNEHMEN_FELD {
-            get {
-                return ResourceManager.GetString("BK_TIP_UEBERNEHMEN_FELD", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Den Komponentenbestand dieses Gewerks aus einer anderen Version übernehmen. ähnelt.
-        /// </summary>
-        public static string BK_TIP_UEBERNEHMEN_KOMP {
-            get {
-                return ResourceManager.GetString("BK_TIP_UEBERNEHMEN_KOMP", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner bestimmt die Zuordnung der Komponenten selbst und kann deshalb nicht feldweise übernommen werden — dafür ist die Bestandszeile des Gewerks da. ähnelt.
-        /// </summary>
-        public static string BK_TIP_UEBERNEHMEN_GESPERRT_SCHLUESSEL {
-            get {
-                return ResourceManager.GetString("BK_TIP_UEBERNEHMEN_GESPERRT_SCHLUESSEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Zeile bezeichnet kein einzelnes Merkmal. ähnelt.
-        /// </summary>
-        public static string BK_MSG_UEB_KEIN_FELD {
-            get {
-                return ResourceManager.GetString("BK_MSG_UEB_KEIN_FELD", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner ist der Schlüssel der Komponentenzuordnung — bitte die ganze Komponente übernehmen. ähnelt.
-        /// </summary>
-        public static string BK_MSG_UEB_SCHLUESSEL {
-            get {
-                return ResourceManager.GetString("BK_MSG_UEB_SCHLUESSEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt keine andere Version, aus der übernommen werden könnte. ähnelt.
-        /// </summary>
-        public static string BK_MSG_UEB_KEINE_QUELLE {
-            get {
-                return ResourceManager.GetString("BK_MSG_UEB_KEINE_QUELLE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle führt zu diesem Merkmal keinen Datensatz. ähnelt.
-        /// </summary>
-        public static string BK_MSG_UEB_KEINE_QUELLZEILE {
-            get {
-                return ResourceManager.GetString("BK_MSG_UEB_KEINE_QUELLZEILE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Ziel führt zu diesem Merkmal keinen Datensatz. ähnelt.
-        /// </summary>
-        public static string BK_MSG_UEB_KEINE_ZIELZEILE {
-            get {
-                return ResourceManager.GetString("BK_MSG_UEB_KEINE_ZIELZEILE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnung nicht eindeutig: Gewerk „{0}" führt in der Quelle {1} und im Ziel {2} Komponenten. Bitte statt eines einzelnen Merkmals den Komponentenbestand übernehmen. ähnelt.
-        /// </summary>
-        public static string BK_MSG_UEB_NICHT_EINDEUTIG {
-            get {
-                return ResourceManager.GetString("BK_MSG_UEB_NICHT_EINDEUTIG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle und Ziel führen bereits denselben Wert — nichts zu tun. ähnelt.
-        /// </summary>
-        public static string BK_MSG_UEB_GLEICH {
-            get {
-                return ResourceManager.GetString("BK_MSG_UEB_GLEICH", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert konnte nicht geschrieben werden. ähnelt.
-        /// </summary>
-        public static string BK_MSG_UEB_SCHREIBFEHLER {
-            get {
-                return ResourceManager.GetString("BK_MSG_UEB_SCHREIBFEHLER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Übernommen: {0} · {1} = {2} ähnelt.
-        /// </summary>
-        public static string BK_MSG_UEB_OK {
-            get {
-                return ResourceManager.GetString("BK_MSG_UEB_OK", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme fehlgeschlagen: {0} ähnelt.
-        /// </summary>
-        public static string BK_MSG_UEB_FEHLER {
-            get {
-                return ResourceManager.GetString("BK_MSG_UEB_FEHLER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse veraltet — Simulation neu ausführen. ähnelt.
-        /// </summary>
-        public static string BK_MSG_UEB_ERGEBNIS_VERALTET {
-            get {
-                return ResourceManager.GetString("BK_MSG_UEB_ERGEBNIS_VERALTET", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gewerk „{0}": Der Bestand des Ziels ({1} Komponenten) wird durch den der Quelle ({2} Komponenten) ersetzt. ähnelt.
-        /// </summary>
-        public static string BK_KOMP_ZUS_KOPF {
-            get {
-                return ResourceManager.GetString("BK_KOMP_ZUS_KOPF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die + anlegen: {0} ähnelt.
-        /// </summary>
-        public static string BK_KOMP_ZUS_ANLEGEN {
-            get {
-                return ResourceManager.GetString("BK_KOMP_ZUS_ANLEGEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ~ ersetzen: {0} ähnelt.
-        /// </summary>
-        public static string BK_KOMP_ZUS_ERSETZEN {
-            get {
-                return ResourceManager.GetString("BK_KOMP_ZUS_ERSETZEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die - entfernen: {0} ähnelt.
-        /// </summary>
-        public static string BK_KOMP_ZUS_ENTFERNEN {
-            get {
-                return ResourceManager.GetString("BK_KOMP_ZUS_ENTFERNEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Betroffene Tabellen: ähnelt.
-        /// </summary>
-        public static string BK_KOMP_ZUS_KETTE {
-            get {
-                return ResourceManager.GetString("BK_KOMP_ZUS_KETTE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle und Ziel führen bereits denselben Komponentenbestand — nichts zu tun. ähnelt.
-        /// </summary>
-        public static string BK_MSG_KOMP_NICHTS_ZU_TUN {
-            get {
-                return ResourceManager.GetString("BK_MSG_KOMP_NICHTS_ZU_TUN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Für das Gewerk „{0}" ist die Komponenten-Übernahme nicht umgesetzt. ähnelt.
-        /// </summary>
-        public static string BK_MSG_KOMP_GEWERK_UNBEKANNT {
-            get {
-                return ResourceManager.GetString("BK_MSG_KOMP_GEWERK_UNBEKANNT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten übernommen (Gewerk „{0}"): {1} angelegt, {2} ersetzt, {3} entfernt. ähnelt.
-        /// </summary>
-        public static string BK_MSG_KOMP_OK {
-            get {
-                return ResourceManager.GetString("BK_MSG_KOMP_OK", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten-Übernahme fehlgeschlagen: {0} ähnelt.
-        /// </summary>
-        public static string BK_MSG_KOMP_FEHLER {
-            get {
-                return ResourceManager.GetString("BK_MSG_KOMP_FEHLER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Verweis(e) auf einen Pufferspeicher ließen sich im Ziel nicht auflösen und bleiben leer. ähnelt.
-        /// </summary>
-        public static string BK_KOMP_HINW_PUFFERVERWEIS {
-            get {
-                return ResourceManager.GetString("BK_KOMP_HINW_PUFFERVERWEIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Tabelle {0} konnte nicht gelesen werden — ihre Daten fehlen in der Kopie. ähnelt.
-        /// </summary>
-        public static string BK_KOMP_HINW_KINDTABELLE {
-            get {
-                return ResourceManager.GetString("BK_KOMP_HINW_KINDTABELLE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Betriebsführung der Speichervariante „{0}" konnte nicht angelegt werden. ähnelt.
-        /// </summary>
-        public static string BK_KOMP_HINW_VARIANTE {
-            get {
-                return ResourceManager.GetString("BK_KOMP_HINW_VARIANTE", resourceCulture);
             }
         }
     }

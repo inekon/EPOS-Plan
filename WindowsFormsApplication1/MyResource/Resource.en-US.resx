@@ -4286,7 +4286,7 @@ It then feeds the overview and the overall simulation. The existing simulation r
     <value>{0} investment item(s) · {1}</value>
   </data>
   <data name="BK_KOSTEN_LBL_KOMPONENTEN" xml:space="preserve">
-    <value>Costs per component</value>
+    <value>Investment per component</value>
   </data>
   <data name="BK_KOSTEN_LBL_TRAEGER" xml:space="preserve">
     <value>Energy carriers of the project</value>
@@ -4295,7 +4295,7 @@ It then feeds the overview and the overall simulation. The existing simulation r
     <value>Component</value>
   </data>
   <data name="BK_KOSTEN_SP_SUMME" xml:space="preserve">
-    <value>Total [€]</value>
+    <value>Investment [€]</value>
   </data>
   <data name="BK_KOSTEN_SUMME" xml:space="preserve">
     <value>Total</value>
@@ -4314,6 +4314,9 @@ It then feeds the overview and the overall simulation. The existing simulation r
   </data>
   <data name="BK_KOSTEN_SP_GRUNDPREIS" xml:space="preserve">
     <value>Base price [€/a]</value>
+  </data>
+  <data name="KOSTEN_LBL_PROJEKT_GESAMT" xml:space="preserve">
+    <value>PROJECT TOTAL ({0}): {1} €</value>
   </data>
   <data name="BK_BTN_VERGLEICH_ALT" xml:space="preserve">
     <value>Project comparison + report (legacy)</value>

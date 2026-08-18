@@ -27,8 +27,9 @@ namespace WindowsFormsApplication1
     ///   wurde, statt still nachzurechnen.</item>
     /// </list>
     /// Darunter die beiden Detaillisten, die auch die Kostenverwaltung speisen:
-    /// Investitionssummen je Komponente (<c>Abfrage_KostenKomponenten</c>, wie in
-    /// <see cref="Form_Kosten"/>) und die Energieträger des Projekts
+    /// Investitionssummen je Komponente (<see cref="Form_Kosten.LiesKomponentenSummen"/>,
+    /// Kategorie 1 — dieselbe Leselogik wie in <see cref="Form_Kosten"/>)
+    /// und die Energieträger des Projekts
     /// (<c>Abfrage_Energietraeger_Effektiv</c> + <c>energy_project_settings</c> /
     /// <c>energy_carrier</c> — dieselbe Vorrangkette wie im
     /// <see cref="KostenEmissionRechner"/>: Projektwert vor Katalogwert).
@@ -281,8 +282,17 @@ namespace WindowsFormsApplication1
             Melde(string.Format(MyResource.Resource.BK_KOSTEN_STATUS, investPositionen, energieHinweis).Trim());
         }
 
-        // Investitionssummen je Komponente — dieselbe gespeicherte Abfrage, die auch
-        // die Kostenverwaltung für ihre Gesamtsumme verwendet.
+        // Investitionssummen je Komponente — dieselbe Leselogik, die auch die
+        // Kostenverwaltung für ihre Gesamtsumme verwendet (Form_Kosten.LiesKomponentenSummen).
+        //
+        // Befund D1 (18.08.2026): Hier lief zuvor die gespeicherte Abfrage
+        // Abfrage_KostenKomponenten, die NICHT nach KategorieID filtert. Die Tabelle mischte
+        // dadurch Investitions- und Betriebspositionen und widersprach der Kachel darüber:
+        // Projekt 1024 zeigte in der Kachel „Investition" 12.001,00 €, in der Zeile „Gesamt"
+        // der Tabelle aber 12.100,00 € (99 € Betriebskosten der Wärmepumpe mitgezählt).
+        // Die Tabelle gehört fachlich zur Investitions-Kachel und liest deshalb Kategorie 1;
+        // Spaltenkopf und Überschrift sagen das jetzt auch (BK_KOSTEN_SP_SUMME,
+        // BK_KOSTEN_LBL_KOMPONENTEN).
         private void LadeKomponenten(System.Globalization.CultureInfo kultur)
         {
             gridKomponenten.Columns.Add("komponente", MyResource.Resource.BK_KOSTEN_SP_KOMPONENTE);
@@ -293,9 +303,8 @@ namespace WindowsFormsApplication1
 
             try
             {
-                DataTable dt = DataRepository.GetDataTable(
-                    "SELECT Komponente, Summe FROM Abfrage_KostenKomponenten WHERE ProjektID = ?",
-                    new OleDbParameter("@p", _idProjekt));
+                DataTable dt = Form_Kosten.LiesKomponentenSummen(
+                    _idProjekt, Form_Kosten.KATEGORIE_INVESTITION);
                 if (dt == null) return;
 
                 double summe = 0;

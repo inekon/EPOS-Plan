@@ -70,6 +70,21 @@ namespace WindowsFormsApplication1
         public const string ERZEUGER_GESAMTSYSTEM = "Gesamtsystem";
 
         /// <summary>
+        /// Kostenkomponente „Pufferspeicher" — <c>Tab_KostenKomponente.Komponente</c> und
+        /// <c>Tab_Kostenfaktor.Bezeichnung</c> der zugehörigen Hauptposition.
+        /// <para>
+        /// Die übrigen sechs Kostenkomponenten heißen genauso wie die Erzeugerarten und
+        /// verwenden deshalb <see cref="ERZEUGER_WAERMEPUMPE"/> &amp; Co.; der Pufferspeicher
+        /// ist kein Erzeuger und braucht daher einen eigenen Wert. Nicht zu verwechseln mit
+        /// <see cref="WQ_TYP_PUFFERSPEICHER"/> (Wärmequellen-Typ) und
+        /// <see cref="PSP_SPEICHERTYP_PUFFER"/> (Speicherart) — gleicher Wortlaut, andere
+        /// Spalte und andere Bedeutung.
+        /// </para>
+        /// Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string KOSTEN_KOMPONENTE_PUFFERSPEICHER = "Pufferspeicher";
+
+        /// <summary>
         /// Altbestand: <c>Tool_5</c>/<c>Tool_6</c> trugen früher einen Bool-Text statt des
         /// Erzeugernamens. Bestandsdatenbanken enthalten ihn weiterhin, deshalb wird beim
         /// Lesen zusätzlich darauf verglichen (<c>Form_Simulation_Detail</c>).

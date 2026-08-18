@@ -1083,3 +1083,33 @@ sie sind Steuerwerte der Schicht 2 und dürfen sich nicht mit dem Anzeigetext be
 | Schlüssel | DE neu | EN neu | Grund |
 |---|---|---|---|
 | `SIM_TOOLTIP_CSV_HEIZKESSEL` | Heizkessel-Simulation als CSV exportieren\n(Zeitstempel, Außentemperatur, **Wärmebedarf gesamt, Wärmebedarf Kesselstufe**, Heizkessel, Restwärme) | Export boiler simulation as CSV\n(time stamp, outdoor temperature, **total heat demand, heat demand at boiler stage**, boiler, residual heat) | Die Klammer nennt die Spalten der Datei; die Datei hat eine Spalte mehr bekommen. |
+
+## Nachtrag Kostenfixes D1–D6 — Kategorie in Summen und Überschriften (18.08.2026)
+
+Die Komponententabelle der Seite „Berichte & Kosten → Kosten" und die Gesamtsumme der
+Kostenverwaltung lasen bisher die gespeicherte Abfrage `Abfrage_KostenKomponenten`, die
+**nicht** nach `KategorieID` filtert. Investitions-, Betriebs- und Energiepositionen derselben
+Komponente landeten in einer Zahl (Projekt 1024: Kachel „Investition" 12.001,00 € gegen
+Tabellenzeile „Gesamt" 12.100,00 €). Beide Ansichten lesen jetzt kategoriegetrennt über
+`Form_Kosten.LiesKomponentenSummen`. Damit ändert sich die **Bedeutung** der beiden
+Tabellenüberschriften: Sie zeigen ausschließlich Kategorie 1 und sagen das jetzt auch.
+Die Gesamtsumme der Kostenverwaltung nennt zusätzlich die Kategorie, weil Investitions- und
+Betriebskosten verschiedene Bezugsgrößen haben (€ gegenüber €/a).
+
+Die Reiterbeschriftungen von `Form_Kosten` („Investitionskosten"/„Betriebskosten"/
+„Energiekosten") bleiben unangetastete Designer-Literale und dienen dort weiterhin als
+Steuerwert (`tabMain_SelectedIndexChanged`) — ein Altbestand, der mit diesen Fixes nicht
+angefasst wurde.
+
+### Neu (1)
+
+| Schlüssel | DE | EN | Fundstellen | Grund |
+|---|---|---|---|---|
+| `KOSTEN_LBL_PROJEKT_GESAMT` | PROJEKT GESAMT ({0}): {1} € | PROJECT TOTAL ({0}): {1} € | Form_Kosten.cs (`Gesamtkosten`, `label_Gesamt`) | **neu.** Ersetzt das deutsche Literal `"PROJEKT GESAMT: …"`. `{0}` ist die Kategorie (Reitertext), `{1}` der bereits formatierte Betrag — ohne die Kategorie wäre nicht erkennbar, welche Kostenart die Zahl summiert. |
+
+### Geändert (2)
+
+| Schlüssel | DE neu | EN neu | Grund |
+|---|---|---|---|
+| `BK_KOSTEN_LBL_KOMPONENTEN` | Investition je Komponente | Investment per component | Die Tabelle zeigt seit dem Kategoriefilter nur noch Kategorie 1. „Kosten je Komponente" hätte weiterhin die Gesamtkosten aller Kategorien versprochen. |
+| `BK_KOSTEN_SP_SUMME` | Investition [€] | Investment [€] | Dieselbe Präzisierung im Spaltenkopf; die Summenzeile darunter (`BK_KOSTEN_SUMME`, „Gesamt") muss zur Kachel „Investition" passen. |

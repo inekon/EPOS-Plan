@@ -119,18 +119,33 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Schreibt das in <see cref="model"/> gehaltene Projekt-BHKW zurück. Schlüssel ist
+        /// der Primärschlüssel <c>ID</c>; ohne gesetzte ID passiert nichts.
+        /// </summary>
+        /// <remarks>
+        /// Befund D6 (18.08.2026): Der Schlüssel war <c>Bezeichner</c> <b>ohne</b>
+        /// Projektbezug. <c>Tab_BHKW</c> hält die Projektkopien aller Projekte, und eine
+        /// Projektkopie behält den Bezeichner ihrer Stammvorlage — ein Aufruf hätte also die
+        /// gleichnamigen BHKW <b>aller</b> Projekte überschrieben. Umgestellt auf den
+        /// Primärschlüssel statt auf einen zusätzlichen Projektfilter, weil ein Projekt zwei
+        /// gleichnamige Geräte führen kann (Konvention CLAUDE.md: Beziehungen über IDs);
+        /// Entfernen schied aus, weil es eine Bruchänderung an der öffentlichen Schnittstelle
+        /// wäre, während parallele Zweige offen sind. Die Methode hat derzeit keinen Aufrufer.
+        /// </remarks>
         public bool Update()
         {
             try
             {
-                // Hinweis: Bezeichner wird hier als Key verwendet
+                if (model == null || model.m_ID <= 0) return false;   // ohne Zeilenidentität nichts schreiben
+
                 string sql = @"UPDATE Tab_BHKW SET
                                Beschreibung=?, Firma=?, Motortyp=?, Ptherm=?, Pel=?,
                                Brennstoff=?, Wirkungsgrad=?, Investition_kwel=?, Raumbedarf=?,
                                Wartungskosten_kwhel=?, Nutzungsdauer=?, NOx=?, SO2=?, CO=?,
                                CO2=?, Staub=?, Grenzleistung=?, Kosten_Modul=?, Kosten_Montage=?,
                                Kosten_Lieferung=?, Kosten_Schallschutzhaube=?, Kosten_Abgasreinigung=?
-                               WHERE Bezeichner=?";
+                               WHERE ID=?";
 
                 // Nutzt das instanziierte DBCommand (wichtig für die Transaktion aus der UI)
                 DBCommand.CommandText = sql;
@@ -160,7 +175,7 @@ namespace WindowsFormsApplication1
                 DBCommand.Parameters.Add(new OleDbParameter("@lief", model.m_Kosten_Lieferung));
                 DBCommand.Parameters.Add(new OleDbParameter("@schall", model.m_Kosten_Schallschutzhaube));
                 DBCommand.Parameters.Add(new OleDbParameter("@abgas", model.m_Kosten_Abgasreinigung));
-                DBCommand.Parameters.Add(new OleDbParameter("@key", model.m_szBezeichner ?? ""));
+                DBCommand.Parameters.Add(new OleDbParameter("@key", model.m_ID));
 
                 // Falls das Command noch keine Connection von außen hat, holen wir eine kurze Standalone-Verbindung
                 bool connectionOpenedInternally = false;
