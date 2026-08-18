@@ -72,8 +72,13 @@ bitidentisch zum alten Code.
    `SimulationControl.simulation_ssp` (:149/:152) existieren nicht mehr. Der Lauf oben nutzte
    eine minimal reparierte Werkzeug-Kopie unter `%TEMP%\wpk1011\ReferenzlaufTool`
    (Zuordnung: `Speicherfuellstand_stuendlich` / `Speicherergebnis != null` /
-   `Speicherfuellstand_viertelstuendlich`; baut mit 0 Fehlern). Der Fix im Repo steht aus —
-   Aufgaben-Chip ist erstellt.
+   `Speicherfuellstand_viertelstuendlich`; baut mit 0 Fehlern). **Erledigt:** Der Fix ist mit
+   Commit `e596296` (Sync 17.08.2026, 18:17) im Repo — gleiche Spaltenquellen, aber
+   `pv_speicherfuellstand.csv` zieht in den Stromspeicher-Block: Die SoC-Datei entsteht damit
+   auch bei Speicher ohne PV (1017: 21 statt 20 CSV; bei der nächsten Basissetzung als
+   gewollte Zusatzdatei zu bewerten). Nachweis 18.08.2026: Build 0 Fehler, Projekt 1011
+   wertidentisch zur validierten Werkzeug-Kopie (Ganglinien byte-gleich), 1017 Exit 0 mit
+   plausibler SoC-Ganglinie.
 2. **`migration` endet mit Exit 1** wegen zweier Datenstand-Nachweise (kein Migrationsfehler):
    „PufferHeizung ohne WS_ID_Puffer: 2", „Anlagen ohne Ladeprio-Vorgabe: 1". Kopie und Läufe
    funktionieren; Datenpflege gelegentlich prüfen.
