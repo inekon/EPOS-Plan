@@ -61,6 +61,100 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
+        /// </summary>
+        public static string ADM_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("ADM_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner „{0}“ kommt im Katalog {1}-mal vor.
+        ///
+        ///Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird deshalb abgelehnt. Bitte die Dubletten zuerst bereinigen. ähnelt.
+        /// </summary>
+        public static string ADM_MEHRDEUTIG_TEXT {
+            get {
+                return ResourceManager.GetString("ADM_MEHRDEUTIG_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner nicht eindeutig ähnelt.
+        /// </summary>
+        public static string ADM_MEHRDEUTIG_TITEL {
+            get {
+                return ResourceManager.GetString("ADM_MEHRDEUTIG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Datensatz „{0}“ stammt aus dem Auslieferungskatalog und ist schreibgeschützt.
+        ///
+        ///Soll er trotzdem überschrieben werden? ähnelt.
+        /// </summary>
+        public static string ADM_SCHUTZ_FRAGE {
+            get {
+                return ResourceManager.GetString("ADM_SCHUTZ_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibgeschützter Datensatz ähnelt.
+        /// </summary>
+        public static string ADM_SCHUTZ_TITEL {
+            get {
+                return ResourceManager.GetString("ADM_SCHUTZ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht gespeichert ähnelt.
+        /// </summary>
+        public static string ADM_STATUS_FEHLER {
+            get {
+                return ResourceManager.GetString("ADM_STATUS_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gespeichert um {0} ähnelt.
+        /// </summary>
+        public static string ADM_STATUS_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("ADM_STATUS_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibt die angezeigten Werte in den Stammdatensatz zurück. Der Dialog bleibt geöffnet. ähnelt.
+        /// </summary>
+        public static string ADM_TIP_SPEICHERN {
+            get {
+                return ResourceManager.GetString("ADM_TIP_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Datensatz markiert — bitte links einen Eintrag auswählen. ähnelt.
+        /// </summary>
+        public static string ADM_TIP_SPEICHERN_LEER {
+            get {
+                return ResourceManager.GetString("ADM_TIP_SPEICHERN_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Änderung — es gibt nichts zu speichern. ähnelt.
+        /// </summary>
+        public static string ADM_TIP_SPEICHERN_UNVERAENDERT {
+            get {
+                return ResourceManager.GetString("ADM_TIP_SPEICHERN_UNVERAENDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gerät „{0}&quot; ist bereits im Projekt.
         ///
         ///Als zweites, baugleiches Gerät aufnehmen? Dann wird eine eigene Gerätekopie angelegt.
@@ -544,7 +638,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Arbeitspreis 0,00 bei: {0} — ohne Preis können keine Energ [rest] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Arbeitspreis 0,00 bei: {0} — ohne Preis können keine Energiekosten entstehen; im Reiter „Energiekosten&quot; der Kostenverwaltung erfassen. ähnelt.
         /// </summary>
         public static string BK_KOSTEN_ENERGIE_PREIS0 {
             get {
@@ -598,7 +692,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Ohne Kostenposition: {0} — über „Kostenverwaltung öffnen…" [rest] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Ohne Kostenposition: {0} — über „Kostenverwaltung öffnen…&quot; und dort „Planwert übernehmen…&quot; erfassen ähnelt.
         /// </summary>
         public static string BK_KOSTEN_OHNE_POSITION {
             get {
@@ -607,7 +701,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}" ist im Projekt verbaut, führt aber keine Investitionsp [rest] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}&quot; ist im Projekt verbaut, führt aber keine Investitionsposition — die Kachel „Investition&quot; zählt dieses Gewerk deshalb nicht mit. ähnelt.
         /// </summary>
         public static string BK_KOSTEN_OHNE_POSITION_HINT {
             get {
@@ -13392,95 +13486,5 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("VAR_VGL_TOOLTIP_OEFFNEN", resourceCulture);
             }
         }
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
-        /// </summary>
-        public static string ADM_BTN_SPEICHERN {
-            get {
-                return ResourceManager.GetString("ADM_BTN_SPEICHERN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibt die angezeigten Werte in den Stammdatensatz zurück. Der Dialog bleibt geöffnet. ähnelt.
-        /// </summary>
-        public static string ADM_TIP_SPEICHERN {
-            get {
-                return ResourceManager.GetString("ADM_TIP_SPEICHERN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Datensatz markiert — bitte links einen Eintrag auswählen. ähnelt.
-        /// </summary>
-        public static string ADM_TIP_SPEICHERN_LEER {
-            get {
-                return ResourceManager.GetString("ADM_TIP_SPEICHERN_LEER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Änderung — es gibt nichts zu speichern. ähnelt.
-        /// </summary>
-        public static string ADM_TIP_SPEICHERN_UNVERAENDERT {
-            get {
-                return ResourceManager.GetString("ADM_TIP_SPEICHERN_UNVERAENDERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gespeichert um {0} ähnelt.
-        /// </summary>
-        public static string ADM_STATUS_GESPEICHERT {
-            get {
-                return ResourceManager.GetString("ADM_STATUS_GESPEICHERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht gespeichert ähnelt.
-        /// </summary>
-        public static string ADM_STATUS_FEHLER {
-            get {
-                return ResourceManager.GetString("ADM_STATUS_FEHLER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibgeschützter Datensatz ähnelt.
-        /// </summary>
-        public static string ADM_SCHUTZ_TITEL {
-            get {
-                return ResourceManager.GetString("ADM_SCHUTZ_TITEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Datensatz „{0}“ stammt aus dem Auslieferungskatalog und ist schreibgeschützt.  Soll er trotzdem überschrieben werden? ähnelt.
-        /// </summary>
-        public static string ADM_SCHUTZ_FRAGE {
-            get {
-                return ResourceManager.GetString("ADM_SCHUTZ_FRAGE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner nicht eindeutig ähnelt.
-        /// </summary>
-        public static string ADM_MEHRDEUTIG_TITEL {
-            get {
-                return ResourceManager.GetString("ADM_MEHRDEUTIG_TITEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner „{0}“ kommt im Katalog {1}-mal vor.  Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird deshalb abgelehnt. Bitte die Dubletten zuerst bereinigen. ähnelt.
-        /// </summary>
-        public static string ADM_MEHRDEUTIG_TEXT {
-            get {
-                return ResourceManager.GetString("ADM_MEHRDEUTIG_TEXT", resourceCulture);
-            }
-        }
-        
     }
 }
