@@ -234,7 +234,7 @@ UTF-8-kodierten `VdiAuswahlFilter.cs` bzw. als `lbl_Filter.Text` in den `.resx`-
   Import einmal von der Datei aus durchlaufen werden.
   Nachtrag Heizkessel (18.08.2026, `%TEMP%\wpk13`): mit den sieben Herstellerkatalogen aus
   `VDI-3805-Daten\SPK-Daten` real gefahren. Parser-Scan: 816 Datensätze, alle mit Satz 710.11,
-  Brennstoffindizes (Spalte 3) 1/2/3/4/9/12/13/15/22 — deckungsgleich mit
+  Brennstoffindizes (Spalte 3) 2/3/4/9/12/13/15/22 — deckungsgleich mit
   `Tab_Brennstoff_Stamm`, keiner außerhalb 1–25. End-to-End über die Form (Weishaupt Öl,
   Buderus Gas, Mehrfachweg, Leistungsfilter 10–200 unverändert): 18 Kessel übernommen,
   Öl-/Gas-Feld und Brennstoff-ID je Kessel korrekt, 18/18 PASS. Für Wärmepumpe,
