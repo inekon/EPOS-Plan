@@ -13392,5 +13392,95 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("VAR_VGL_TOOLTIP_OEFFNEN", resourceCulture);
             }
         }
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
+        /// </summary>
+        public static string ADM_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("ADM_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibt die angezeigten Werte in den Stammdatensatz zurück. Der Dialog bleibt geöffnet. ähnelt.
+        /// </summary>
+        public static string ADM_TIP_SPEICHERN {
+            get {
+                return ResourceManager.GetString("ADM_TIP_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Datensatz markiert — bitte links einen Eintrag auswählen. ähnelt.
+        /// </summary>
+        public static string ADM_TIP_SPEICHERN_LEER {
+            get {
+                return ResourceManager.GetString("ADM_TIP_SPEICHERN_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Änderung — es gibt nichts zu speichern. ähnelt.
+        /// </summary>
+        public static string ADM_TIP_SPEICHERN_UNVERAENDERT {
+            get {
+                return ResourceManager.GetString("ADM_TIP_SPEICHERN_UNVERAENDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gespeichert um {0} ähnelt.
+        /// </summary>
+        public static string ADM_STATUS_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("ADM_STATUS_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht gespeichert ähnelt.
+        /// </summary>
+        public static string ADM_STATUS_FEHLER {
+            get {
+                return ResourceManager.GetString("ADM_STATUS_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibgeschützter Datensatz ähnelt.
+        /// </summary>
+        public static string ADM_SCHUTZ_TITEL {
+            get {
+                return ResourceManager.GetString("ADM_SCHUTZ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Datensatz „{0}“ stammt aus dem Auslieferungskatalog und ist schreibgeschützt.  Soll er trotzdem überschrieben werden? ähnelt.
+        /// </summary>
+        public static string ADM_SCHUTZ_FRAGE {
+            get {
+                return ResourceManager.GetString("ADM_SCHUTZ_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner nicht eindeutig ähnelt.
+        /// </summary>
+        public static string ADM_MEHRDEUTIG_TITEL {
+            get {
+                return ResourceManager.GetString("ADM_MEHRDEUTIG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner „{0}“ kommt im Katalog {1}-mal vor.  Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird deshalb abgelehnt. Bitte die Dubletten zuerst bereinigen. ähnelt.
+        /// </summary>
+        public static string ADM_MEHRDEUTIG_TEXT {
+            get {
+                return ResourceManager.GetString("ADM_MEHRDEUTIG_TEXT", resourceCulture);
+            }
+        }
+        
     }
 }
