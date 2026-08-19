@@ -1014,6 +1014,15 @@ sich aus: Volumen × 1,16 Wh/(l·K) × (Vorlauf − Rücklauf).</value>
   <data name="SIM_BHKW_MODUL_STANDARD" xml:space="preserve">
     <value>Standard BHKW</value>
   </data>
+  <data name="SIM_BHKW_VBH_EL" xml:space="preserve">
+    <value>Vollbenutzungsstunden elektrisch:</value>
+  </data>
+  <data name="SIM_BHKW_VBH_TH_MITTEL" xml:space="preserve">
+    <value>Vbh thermisch, Mittel Module</value>
+  </data>
+  <data name="SIM_BHKW_VBH_TH_SUMME" xml:space="preserve">
+    <value>Vbh thermisch, Summe Module</value>
+  </data>
   <data name="SIM_BM_RB_LAUFZEIT" xml:space="preserve">
     <value>Laufzeitoptimiert - maximale Leistung</value>
   </data>
@@ -4588,6 +4597,120 @@ Mehrere Felder desselben Modultyps sind zulässig — bitte prüfen, ob das so g
   <data name="ANL_SP_NAME_ANGEPASST" xml:space="preserve">
     <value>Der Name „{0}" ist im Projekt bereits vergeben. Die Speichervariante wurde in „{1}" umbenannt.</value>
   </data>
+  <data name="GESETZ_MENUE" xml:space="preserve">
+    <value>Gesetzliche Parameter…</value>
+  </data>
+  <data name="GESETZ_TITEL" xml:space="preserve">
+    <value>Gesetzliche Parameter</value>
+  </data>
+  <data name="GESETZ_LBL_KLASSE" xml:space="preserve">
+    <value>Bereich</value>
+  </data>
+  <data name="GESETZ_LBL_HINWEIS" xml:space="preserve">
+    <value>Eine Gesetzesänderung ist eine neue Jahreszeile, kein Ändern der alten. Nur so liefert eine heute gerechnete Variante in einigen Jahren noch dieselben Zahlen.</value>
+  </data>
+  <data name="GESETZ_LBL_WERT_LEER" xml:space="preserve">
+    <value>leer = der Satz ist entfallen (nicht 0)</value>
+  </data>
+  <data name="GESETZ_SP_SCHLUESSEL" xml:space="preserve">
+    <value>Schlüssel</value>
+  </data>
+  <data name="GESETZ_SP_JAHRVON" xml:space="preserve">
+    <value>Gültig ab</value>
+  </data>
+  <data name="GESETZ_SP_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="GESETZ_SP_EINHEIT" xml:space="preserve">
+    <value>Einheit</value>
+  </data>
+  <data name="GESETZ_SP_STATUS" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="GESETZ_SP_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="GESETZ_BTN_NEU" xml:space="preserve">
+    <value>Neu…</value>
+  </data>
+  <data name="GESETZ_BTN_AENDERN" xml:space="preserve">
+    <value>Ändern…</value>
+  </data>
+  <data name="GESETZ_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="GESETZ_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="GESETZ_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="GESETZ_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="GESETZ_DLG_TITEL_NEU" xml:space="preserve">
+    <value>Neuer gesetzlicher Parameter</value>
+  </data>
+  <data name="GESETZ_DLG_TITEL_AENDERN" xml:space="preserve">
+    <value>Gesetzlichen Parameter ändern</value>
+  </data>
+  <data name="GESETZ_FRAGE_TITEL" xml:space="preserve">
+    <value>Gesetzesänderung oder Berichtigung?</value>
+  </data>
+  <data name="GESETZ_FRAGE_NEUE_ZEILE" xml:space="preserve">
+    <value>Die Zeile „{0}" gilt ab {1} und liegt damit in der Vergangenheit.
+
+Eine Gesetzesänderung gehört in eine NEUE Jahreszeile; die alte bleibt stehen, damit ältere Rechnungen nachvollziehbar bleiben.
+
+„Ja" legt eine neue Zeile an. „Nein" ändert die bestehende Zeile — das ist nur für Tippfehler gedacht.</value>
+  </data>
+  <data name="GESETZ_LOESCHEN_TITEL" xml:space="preserve">
+    <value>Gesetzlichen Parameter löschen</value>
+  </data>
+  <data name="GESETZ_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Die Zeile „{0}" (gültig ab {1}) wirklich löschen?
+
+Danach fehlt der Wert in jeder Rechnung, die dieses Jahr betrifft.</value>
+  </data>
+  <data name="GESETZ_MSG_SCHLUESSEL_FEHLT" xml:space="preserve">
+    <value>Bitte einen Schlüssel angeben.</value>
+  </data>
+  <data name="GESETZ_MSG_JAHR_UNGUELTIG" xml:space="preserve">
+    <value>„Gültig ab" muss eine Jahreszahl zwischen 1990 und 2100 sein.</value>
+  </data>
+  <data name="GESETZ_MSG_WERT_UNGUELTIG" xml:space="preserve">
+    <value>Der Wert ist keine gültige Zahl. Für einen entfallenen Satz das Feld leer lassen.</value>
+  </data>
+  <data name="GESETZ_MSG_DOPPELT" xml:space="preserve">
+    <value>Für den Schlüssel „{0}" gibt es bereits eine Zeile ab {1}.</value>
+  </data>
+  <data name="GESETZ_MSG_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>Die Zeile konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_KWKG" xml:space="preserve">
+    <value>KWK-Gesetz</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_STROMSTEUER" xml:space="preserve">
+    <value>Stromsteuer</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_ENERGIESTEUER" xml:space="preserve">
+    <value>Energiesteuer</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_CO2_PREIS" xml:space="preserve">
+    <value>CO₂-Preis</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_EF_NACHWEIS" xml:space="preserve">
+    <value>Emissionsfaktoren — gesetzlicher Nachweis</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_EF_BILANZ" xml:space="preserve">
+    <value>Emissionsfaktoren — reale Bilanz</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_PEF_NACHWEIS" xml:space="preserve">
+    <value>Primärenergiefaktoren — gesetzlicher Nachweis</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_UMSATZSTEUER" xml:space="preserve">
+    <value>Umsatzsteuer</value>
+  </data>
   <data name="BK_KOSTEN_OHNE_POSITION" xml:space="preserve">
     <value>⚠ Ohne Kostenposition: {0} — über „Kostenverwaltung öffnen…" und dort „Planwert übernehmen…" erfassen</value>
   </data>
@@ -4596,5 +4719,66 @@ Mehrere Felder desselben Modultyps sind zulässig — bitte prüfen, ob das so g
   </data>
   <data name="BK_KOSTEN_ENERGIE_PREIS0" xml:space="preserve">
     <value>⚠ Arbeitspreis 0,00 bei: {0} — ohne Preis können keine Energiekosten entstehen; im Reiter „Energiekosten" der Kostenverwaltung erfassen.</value>
+  </data>
+  <data name="ADM_BTN_SPEICHERN" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="ADM_TIP_SPEICHERN" xml:space="preserve">
+    <value>Schreibt die angezeigten Werte in den Stammdatensatz zurück. Der Dialog bleibt geöffnet.</value>
+  </data>
+  <data name="ADM_TIP_SPEICHERN_LEER" xml:space="preserve">
+    <value>Kein Datensatz markiert — bitte links einen Eintrag auswählen.</value>
+  </data>
+  <data name="ADM_TIP_SPEICHERN_UNVERAENDERT" xml:space="preserve">
+    <value>Keine Änderung — es gibt nichts zu speichern.</value>
+  </data>
+  <data name="ADM_STATUS_GESPEICHERT" xml:space="preserve">
+    <value>Gespeichert um {0}</value>
+  </data>
+  <data name="ADM_STATUS_FEHLER" xml:space="preserve">
+    <value>Nicht gespeichert</value>
+  </data>
+  <data name="ADM_SCHUTZ_TITEL" xml:space="preserve">
+    <value>Schreibgeschützter Datensatz</value>
+  </data>
+  <data name="ADM_SCHUTZ_FRAGE" xml:space="preserve">
+    <value>Der Datensatz „{0}“ stammt aus dem Auslieferungskatalog und ist schreibgeschützt.
+
+Soll er trotzdem überschrieben werden?</value>
+  </data>
+  <data name="ADM_MEHRDEUTIG_TITEL" xml:space="preserve">
+    <value>Bezeichner nicht eindeutig</value>
+  </data>
+  <data name="ADM_MEHRDEUTIG_TEXT" xml:space="preserve">
+    <value>Der Bezeichner „{0}“ kommt im Katalog {1}-mal vor.
+
+Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird deshalb abgelehnt. Bitte die Dubletten zuerst bereinigen.</value>
+  </data>
+  <data name="WIRT_KWKG_ANLAGE_UEBER_GRENZE" xml:space="preserve">
+    <value>KWKG: Über der Ausschreibungsgrenze von {0} kW und deshalb ohne Zuschlag: {1} (der Weg über eine Ausschreibung nach § 8a KWKG/KWKAusV ist nicht abgebildet). Die übrigen Anlagen mit zusammen {2} kW rechnen weiter.</value>
+  </data>
+  <data name="WIRT_KWKG_ALLE_UEBER_GRENZE" xml:space="preserve">
+    <value>KWKG: Jede BHKW-Anlage des Projekts liegt über der Ausschreibungsgrenze von {0} kW ({1}) — der Zuschlag wäre nur über eine Ausschreibung nach § 8a KWKG/KWKAusV zu erlangen; Bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR" xml:space="preserve">
+    <value>KWKG: Σ installierte BHKW-Leistung {0} kW über der Ausschreibungsgrenze von {1} kW; die Leistung je Anlage ließ sich nicht ermitteln, deshalb greift die Grenze ersatzweise auf die Projektsumme; Bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_ANLAGE_HEIZOEL" xml:space="preserve">
+    <value>KWKG: Mit Heizöl betrieben und deshalb ohne Zuschlag: {0} (KWKG 2025, Neuanlagen nur noch mit Erdgas; Näherung: gilt auch für Bio-Blends). Die übrigen Anlagen mit zusammen {1} kW rechnen weiter.</value>
+  </data>
+  <data name="WIRT_KWKG_ALLE_HEIZOEL" xml:space="preserve">
+    <value>KWKG: Jede BHKW-Anlage des Projekts wird mit Heizöl betrieben ({0}) — als Neuanlage nicht mehr förderfähig (KWKG 2025, nur noch Erdgas; Näherung: gilt auch für Bio-Blends); Bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_KEINE_FOERDERFAEHIG" xml:space="preserve">
+    <value>KWKG: Keine BHKW-Anlage des Projekts ist zuschlagsberechtigt — über der Ausschreibungsgrenze von {0} kW: {1}; mit Heizöl betrieben: {2}; Bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_HEIZOEL_OHNE_IBN" xml:space="preserve">
+    <value>KWKG: Öl-BHKW ohne Inbetriebnahmedatum: {0} — als Neuanlage wäre der Zuschlag für diese Anlagen ausgeschlossen (KWKG 2025); Datum im Parameterdialog pflegen.</value>
+  </data>
+  <data name="WIRT_KWKG_HEIZOEL_JE_ANLAGE_UNKLAR" xml:space="preserve">
+    <value>KWKG: Das Projekt führt ein Öl-BHKW; welche Anlage damit betrieben wird, ließ sich nicht ermitteln, deshalb greift der Heizöl-Ausschluss ersatzweise auf alle Geräte des Projekts (KWKG 2025, Neuanlagen nur noch mit Erdgas); Bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR" xml:space="preserve">
+    <value>KWKG: Das Projekt führt ein Öl-BHKW, aber kein Inbetriebnahmedatum — als Neuanlage wäre der Zuschlag ausgeschlossen (KWKG 2025). Welche Anlage mit Öl betrieben wird, ließ sich nicht ermitteln; Datum im Parameterdialog pflegen.</value>
   </data>
 </root>

@@ -236,6 +236,12 @@ namespace WindowsFormsApplication1
             zeilen.Add(new Zeile("Einspeiseerlös [€/a]",          (e, kk) => kk.FW(e.EinspeiseerloesJahr, "N0")));
             if (mitKwkg)
                 zeilen.Add(new Zeile("KWKG-Erlös Jahr 1 [€/a]",   (e, kk) => kk.FW(e.KwkgErloesJahr1, "N0")));
+            // ETAPPE E2 (L6): die Bemessungsgrundlage der KWKG-Deckelung — ELEKTRISCHE
+            // Vollbenutzungsstunden, leistungsgewichtet. Nur, wenn sie im Datenbestand
+            // vorkommt (nie eine „0"-Zeile), genau wie die Zeilen darüber.
+            if (alle.Any(x => x.KwkgVbhElektrisch > 0))
+                zeilen.Add(new Zeile("Vbh elektrisch (KWKG-Basis) [h/a]",
+                                     (e, kk) => e.KwkgVbhElektrisch > 0 ? kk.FW(e.KwkgVbhElektrisch, "N0") : "—"));
             zeilen.Add(new Zeile("Restwert (Barwert) [€]",        (e, kk) => kk.FW(e.RestwertBarwert, "N0")));
             zeilen.Add(new Zeile("Nettobarwert über T [€]",       (e, kk) => kk.FW(e.Kapitalwert, "N0")));
             zeilen.Add(new Zeile("Kapitalwert vs. Stamm [€]",     (e, kk) => e.IstStamm ? "—" : kk.FW(e.KapitalwertDiff, "N0")));

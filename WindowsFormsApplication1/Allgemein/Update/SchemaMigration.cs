@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 18;
+        public const int ZIEL_VERSION = 19;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -375,8 +375,43 @@ namespace WindowsFormsApplication1
         /// solche Gruppe mehr; ein zweiter Lauf findet nichts. Ein abgebrochener Lauf ist
         /// unkritisch, weil jede Zeile einzeln gelöscht wird.
         /// </para>
+        ///
+        /// <para>
+        /// <b>Warum 19 und nicht 18.</b> Die Nummer 18 war beim Zusammenführen bereits an
+        /// <see cref="SCHRITT_18_BHKW_VBH"/> vergeben (Etappe E2, parallel entstanden).
+        /// Zwei Schritte mit derselben Nummer würden den Versionsmarker unbrauchbar
+        /// machen: Er hält genau eine Zahl fest, und der jeweils andere Schritt gälte
+        /// damit als erledigt, ohne je gelaufen zu sein.
+        /// </para>
         /// </summary>
-        public const int SCHRITT_18_KATALOG_DUBLETTEN = 18;
+        public const int SCHRITT_19_KATALOG_DUBLETTEN = 19;
+
+        /// <summary>
+        /// Nummer der Etappe E2 (Leitentscheidung L6 aus
+        /// <c>Konzept_BHKW_Kosten_Erloese.md</c>): die drei Vollbenutzungsstunden-Spalten
+        /// der BHKW-Ergebniszeilen.
+        ///
+        /// <b>Was der Schritt tut.</b> Rein additives DDL aus
+        /// <see cref="SchemaKatalog.Schritt18_BhkwVollbenutzungsstunden"/> —
+        /// <c>Tab_ErgebnisBHKW.VbhElektrisch</c> sowie
+        /// <c>Tab_ErgebnisBHKWModul.VbhThermisch</c> und <c>…VbhElektrisch</c>.
+        /// Kein DML, keine Beziehung, kein Index.
+        ///
+        /// <b>KEIN BACKFILL — und das ist die ehrliche Wahl.</b> Ein Lauf, der vor
+        /// Etappe E2 gerechnet wurde, hat diese Größen nie erhoben. Sie ließen sich auch
+        /// nicht nachträglich bilden: Der Nenner ist die installierte elektrische
+        /// Leistung ZUM ZEITPUNKT DES LAUFS, und die steht nirgends im Ergebnis. NULL
+        /// sagt „nicht erhoben"; die Wirtschaftlichkeit rechnet die elektrischen Vbh in
+        /// diesem Fall selbst aus <c>Stromproduktion</c> und der HEUTE installierten
+        /// Leistung — sichtbar als eigener Rechenweg, nicht als stiller Datenwert.
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): Das DDL geht über vorhandene
+        /// Spalten hinweg (<see cref="SpaltenAnlegen"/> prüft das Tabellenschema vorab).
+        /// Zusätzlich legt <c>ErgebnisCtrl</c> die Spalten unmittelbar vor dem Schreiben
+        /// selbst an, falls die Migration nie angestoßen wurde — beide Wege dürfen
+        /// beliebig oft und in beliebiger Reihenfolge laufen.
+        /// </summary>
+        public const int SCHRITT_18_BHKW_VBH = 18;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -487,17 +522,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static int DatenDublettenOffen { get; private set; }
 
-        // --- Zählwerk der Katalogbereinigung aus Schritt 18 -----------------------------
+        // --- Zählwerk der Katalogbereinigung aus Schritt 19 -----------------------------
 
         /// <summary>
-        /// 18: Katalogzeilen, die als reine Wiederholung eines bereits vorhandenen
+        /// 19: Katalogzeilen, die als reine Wiederholung eines bereits vorhandenen
         /// Eintrags gelöscht wurden — über <c>Tab_Heizkessel_STAMM</c> und
         /// <c>Tab_PV_STAMM</c> summiert.
         /// </summary>
         public static int DatenKatalogDublettenGeloescht { get; private set; }
 
         /// <summary>
-        /// 18: Katalogzeilen mit doppeltem Bezeichner, die STEHEN GEBLIEBEN sind, weil sie
+        /// 19: Katalogzeilen mit doppeltem Bezeichner, die STEHEN GEBLIEBEN sind, weil sie
         /// einen eigenen Wert tragen (oder schreibgeschützt sind). Sie stehen einzeln im
         /// Protokoll. 0 ist die Zusage „jeder Katalogname ist jetzt eindeutig".
         /// </summary>
@@ -703,14 +738,22 @@ namespace WindowsFormsApplication1
                         "Die doppelt belegten Anlagenzeilen konnten nicht überführt werden.",
                         Schritt_17_AnlagenDubletten),
 
+            // ETAPPE E2 (Leitentscheidung L6) - Vollbenutzungsstunden der BHKW-Module
+            //       und der Anlage. Nur DDL, kein DML, kein Backfill.
+            new Schritt(SCHRITT_18_BHKW_VBH,
+                        "BHKW-Vollbenutzungsstunden: VbhElektrisch in Tab_ErgebnisBHKW, " +
+                        "VbhThermisch und VbhElektrisch in Tab_ErgebnisBHKWModul (Etappe E2)",
+                        "Die Vollbenutzungsstunden-Spalten der BHKW-Ergebniszeilen konnten nicht angelegt werden.",
+                        Schritt_18_BhkwVollbenutzungsstunden),
+
             // PAKET KATALOGDUBLETTEN - die aus einem zweiten Importlauf stammenden
             //       Zwillinge in Tab_Heizkessel_STAMM und Tab_PV_STAMM entfernen
             //       (Nutzerentscheidung 18.08.2026). DML; von 16/17 unabhaengig, die
             //       arbeiten auf Anlagenzeilen, dieser Schritt auf den Katalogen.
-            new Schritt(SCHRITT_18_KATALOG_DUBLETTEN,
+            new Schritt(SCHRITT_19_KATALOG_DUBLETTEN,
                         "Doppelte Katalogeinträge aus dem zweiten Importlauf entfernen",
                         "Die doppelten Katalogeinträge konnten nicht entfernt werden.",
-                        Schritt_18_KatalogDubletten),
+                        Schritt_19_KatalogDubletten),
         };
 
         // =================================================================================
@@ -970,11 +1013,11 @@ namespace WindowsFormsApplication1
                             ? " - es gab keine doppelt belegte Anlagenzeile."
                             : " - je Zeile ein eigenes Gerät mit eigener Investition und Wartung.")));
 
-            // Schritt 18 meldet - wie 14, 16 und 17 - AUCH die 0. Sie sagt „dieser
+            // Schritt 19 meldet - wie 14, 16 und 17 - AUCH die 0. Sie sagt „dieser
             // Bestand fuehrt keinen doppelt vergebenen Katalognamen", und genau das ist
             // die Bedingung dafuer, dass Speichern und Loeschen im Katalogdialog genau
             // eine Zeile treffen.
-            l.Zeile("Katalogbereinigung (Schritt 18): " + DatenKatalogDublettenGeloescht +
+            l.Zeile("Katalogbereinigung (Schritt 19): " + DatenKatalogDublettenGeloescht +
                     " doppelte Katalogeinträge entfernt" +
                     (DatenKatalogDublettenOffen > 0
                         ? ", " + DatenKatalogDublettenOffen + " NICHT entfernt - siehe die Meldungen oben."
@@ -1192,6 +1235,20 @@ namespace WindowsFormsApplication1
         private static bool Schritt_10_KesselQuellwaerme(Lauf l)
         {
             return SpaltenAnlegen(l, SchemaKatalog.Schritt10_KesselQuellwaerme);
+        }
+
+        /// <summary>
+        /// Schritt 18 (Etappe E2, Leitentscheidung L6): die drei
+        /// Vollbenutzungsstunden-Spalten der BHKW-Ergebniszeilen.
+        ///
+        /// Derselbe additive Weg wie die Schritte 1, 2, 6, 8, 10 und 15 und aus demselben
+        /// Katalog (<see cref="SchemaKatalog.Schritt18_BhkwVollbenutzungsstunden"/>);
+        /// Begründung für Typ, fehlenden Backfill und Ordinalposition steht dort und bei
+        /// <see cref="SCHRITT_18_BHKW_VBH"/>.
+        /// </summary>
+        private static bool Schritt_18_BhkwVollbenutzungsstunden(Lauf l)
+        {
+            return SpaltenAnlegen(l, SchemaKatalog.Schritt18_BhkwVollbenutzungsstunden);
         }
 
         // =================================================================================
@@ -2348,11 +2405,11 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
-        // Schritt 18 - Katalogdubletten aus dem zweiten Importlauf entfernen
+        // Schritt 19 - Katalogdubletten aus dem zweiten Importlauf entfernen
         //              (Nutzerentscheidung 18.08.2026)
         // =================================================================================
 
-        /// <summary>Die Kataloge, die Schritt 18 bereinigt - Tabelle und Namensspalte.</summary>
+        /// <summary>Die Kataloge, die Schritt 19 bereinigt - Tabelle und Namensspalte.</summary>
         private static readonly string[][] KATALOGE_MIT_NAMEN =
         {
             new[] { SchemaKatalog.TAB_HEIZKESSEL_STAMM, "Bezeichner" },
@@ -2360,10 +2417,10 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
-        /// <b>Schritt 18.</b> Entfernt aus den Gerätekatalogen die Zeilen, die nur die
+        /// <b>Schritt 19.</b> Entfernt aus den Gerätekatalogen die Zeilen, die nur die
         /// Wiederholung eines bereits vorhandenen Eintrags sind. Begründung, Datenlage und
         /// die Abgrenzung zu Schritt 17 stehen bei
-        /// <see cref="SCHRITT_18_KATALOG_DUBLETTEN"/>.
+        /// <see cref="SCHRITT_19_KATALOG_DUBLETTEN"/>.
         ///
         /// <para>
         /// <b>Immer true</b> - dieselbe Begründung wie bei
@@ -2374,7 +2431,7 @@ namespace WindowsFormsApplication1
         /// steht einzeln im Protokoll und in <see cref="DatenKatalogDublettenOffen"/>.
         /// </para>
         /// </summary>
-        private static bool Schritt_18_KatalogDubletten(Lauf l)
+        private static bool Schritt_19_KatalogDubletten(Lauf l)
         {
             int geloescht = 0;
             int offen = 0;

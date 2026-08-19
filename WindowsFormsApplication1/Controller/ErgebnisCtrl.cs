@@ -248,8 +248,9 @@ namespace WindowsFormsApplication1
                         "Waermeproduktion, Waermeueberschuss, Stromproduktion, Betriebsstunden_Gesamt, " +
                         "Betriebsstunden_Durchschnitt, Waermebedarfsdeckung, Strombedarfsdeckung, " +
                         "Gasverbrauch, Oelverbrauch, Koks, Rapsoelverbrauch, Holzverbrauch, Kohle, " +
-                        "Sonstigverbrauch, Pellets, TierischeFette) " +
-                        "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?,?,?,?, ?,?,?)";
+                        "Sonstigverbrauch, Pellets, TierischeFette, " +
+                        SchemaKatalog.SPALTE_BHKW_VBH_ELEKTRISCH + ") " +
+                        "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?,?,?,?, ?,?,?, ?)";
                     using (OleDbCommand c = new OleDbCommand(sql, conn, trans))
                     {
                         c.Parameters.Add("@id", OleDbType.Integer).Value = bId;
@@ -274,6 +275,8 @@ namespace WindowsFormsApplication1
                         c.Parameters.Add("@a18", OleDbType.Double).Value = R(m.BHKW.Sonstigverbrauch);
                         c.Parameters.Add("@a19", OleDbType.Double).Value = R(m.BHKW.Pellets);
                         c.Parameters.Add("@a20", OleDbType.Double).Value = R(m.BHKW.TierischeFette);
+                        // ETAPPE E2: leistungsgewichtete elektrische Vollbenutzungsstunden.
+                        c.Parameters.Add("@a21", OleDbType.Double).Value = R(m.BHKW.VbhElektrisch);
                         c.ExecuteNonQuery();
                     }
 
@@ -288,8 +291,10 @@ namespace WindowsFormsApplication1
 
                         int modId = NextId(conn, trans, TAB_BHKW_MODUL);
                         string sqlM = "INSERT INTO " + TAB_BHKW_MODUL + " (" +
-                            "ID, ID_ErgebnisBHKW, Modul, Waermeproduktion, Stromproduktion, Brennstoff, Verbrauch, carrier_id) " +
-                            "VALUES (?,?,?,?,?,?,?,?)";
+                            "ID, ID_ErgebnisBHKW, Modul, Waermeproduktion, Stromproduktion, Brennstoff, Verbrauch, carrier_id, " +
+                            SchemaKatalog.SPALTE_MODUL_VBH_THERMISCH + ", " +
+                            SchemaKatalog.SPALTE_MODUL_VBH_ELEKTRISCH + ") " +
+                            "VALUES (?,?,?,?,?,?,?,?,?,?)";
                         foreach (ErgebnisBHKWModulModel mo in m.BHKW.Module)
                         {
                             double anteil = basis > 0 ? mo.Waermeproduktion / basis : 1.0 / m.BHKW.Module.Count;
@@ -312,6 +317,12 @@ namespace WindowsFormsApplication1
                                 }
                                 c.Parameters.Add("@ca", OleDbType.Integer).Value =
                                     mo.CarrierId > 0 ? (object)mo.CarrierId : DBNull.Value;
+                                // ETAPPE E2 (L6): thermische und elektrische Vbh je Modul.
+                                // Beide werden IMMER geschrieben - auch die 0. Sonst waere
+                                // "nicht erhoben" (NULL) von "erhoben und null" nicht mehr
+                                // unterscheidbar; dieselbe Begruendung wie bei Quellwaerme.
+                                c.Parameters.Add("@vth", OleDbType.Double).Value = R(mo.VbhThermisch);
+                                c.Parameters.Add("@vel", OleDbType.Double).Value = R(mo.VbhElektrisch);
                                 c.ExecuteNonQuery();
                             }
                         }
@@ -707,6 +718,10 @@ namespace WindowsFormsApplication1
                 b.Sonstigverbrauch = D(rb, "Sonstigverbrauch");
                 b.Pellets = D(rb, "Pellets");
                 b.TierischeFette = D(rb, "TierischeFette");
+                // ETAPPE E2: fehlt die Spalte (Ergebniszeile vor Schritt 18), liefert D() 0 -
+                // die Wirtschaftlichkeit rechnet die Groesse dann selbst aus Stromproduktion
+                // und installierter Leistung.
+                b.VbhElektrisch = D(rb, SchemaKatalog.SPALTE_BHKW_VBH_ELEKTRISCH);
 
                 DataTable dmod = DataRepository.GetDataTable(
                     "SELECT * FROM " + TAB_BHKW_MODUL + " WHERE ID_ErgebnisBHKW = ? ORDER BY ID",
@@ -721,6 +736,8 @@ namespace WindowsFormsApplication1
                         mo.Brennstoff = S(rm, "Brennstoff");
                         mo.Verbrauch = D(rm, "Verbrauch");
                         mo.CarrierId = I(rm, "carrier_id");
+                        mo.VbhThermisch = D(rm, SchemaKatalog.SPALTE_MODUL_VBH_THERMISCH);
+                        mo.VbhElektrisch = D(rm, SchemaKatalog.SPALTE_MODUL_VBH_ELEKTRISCH);
                         b.Module.Add(mo);
                     }
 
@@ -977,8 +994,11 @@ namespace WindowsFormsApplication1
         // Ergaenzt fehlende Brennstoffspalten in Tab_ErgebnisBHKW - einmalige, tolerante Migration.
         private static void StelleBHKWSpaltenSicher()
         {
+            // ETAPPE E2: VbhElektrisch steht mit in dieser Liste, aus demselben Grund wie
+            // die Brennstoffspalten — das INSERT der BHKW-Zeile führt sie namentlich auf.
             string[] spalten = { "Oelverbrauch", "Koks", "Rapsoelverbrauch", "Holzverbrauch", "Kohle",
-                                 "Sonstigverbrauch", "Pellets", "TierischeFette" };
+                                 "Sonstigverbrauch", "Pellets", "TierischeFette",
+                                 SchemaKatalog.SPALTE_BHKW_VBH_ELEKTRISCH };
             try
             {
                 using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
@@ -1014,6 +1034,15 @@ namespace WindowsFormsApplication1
                     ErgaenzeSpalte(conn, TAB_BHKW_MODUL, "carrier_id", "LONG");
                     ErgaenzeSpalte(conn, TAB_KESSEL_MODUL, "carrier_id", "LONG");
                     ErgaenzeSpalte(conn, TAB_KESSEL_MODUL, "Waermeproduktion", "DOUBLE");
+
+                    // ETAPPE E2 — Rückfallebene zu Migrationsschritt 18. Dieselbe
+                    // Begründung wie bei Quellwaerme: Das INSERT der Modulzeile führt die
+                    // beiden Spalten NAMENTLICH auf; fehlen sie, scheitert nicht nur die
+                    // neue Größe, sondern die ganze Modulzeile — und mit ihr der Lauf.
+                    // Die Namen kommen aus SchemaKatalog, Migration und Rückfallebene
+                    // führen keine zweite Liste.
+                    ErgaenzeSpalte(conn, TAB_BHKW_MODUL, SchemaKatalog.SPALTE_MODUL_VBH_THERMISCH, "DOUBLE");
+                    ErgaenzeSpalte(conn, TAB_BHKW_MODUL, SchemaKatalog.SPALTE_MODUL_VBH_ELEKTRISCH, "DOUBLE");
                 }
             }
             catch { /* best effort - Spalten existieren dann ggf. schon */ }

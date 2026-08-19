@@ -34,6 +34,44 @@ namespace WindowsFormsApplication1
 
             // Lastspitzenkappung einbinden (Strombedarf & Speicher → Peak-Shaving)
             InitPeakShavingMenue();
+
+            // Katalog gesetzlicher Parameter einbinden (Administration → Gesetzliche Parameter)
+            InitGesetzeMenue();
+        }
+
+        /// <summary>
+        /// Bindet die Pflegemaske „Gesetzliche Parameter" ein: Menüeintrag im Menü
+        /// Administration direkt unterhalb von „Einstellungen"
+        /// (Konzept_BHKW_Kosten_Erloese.md, Abschnitt 6, Etappe E1).
+        ///
+        /// Bewusst programmatisch, damit Designer und .resx unberührt bleiben; der
+        /// Anzeigetext kommt aus MyResource und ist damit zweisprachig.
+        /// </summary>
+        private void InitGesetzeMenue()
+        {
+            try
+            {
+                ToolStripMenuItem eintrag = new ToolStripMenuItem(
+                    MyResource.Resource.GESETZ_MENUE);
+                eintrag.Name = "MenuItem_Gesetzesparameter";
+                eintrag.Click += (s, e) =>
+                {
+                    using (Form_Gesetzesparameter frm = new Form_Gesetzesparameter())
+                        frm.ShowDialog(this);
+                };
+
+                // Direkt unterhalb von "Einstellungen" einordnen — dieselbe Stelle,
+                // an der auch die Lizenzverwaltung hängt.
+                int position = Administration.DropDownItems.IndexOf(MenuItem_Einstellungen);
+                if (position >= 0)
+                    Administration.DropDownItems.Insert(position + 1, eintrag);
+                else
+                    Administration.DropDownItems.Add(eintrag);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Menü der gesetzlichen Parameter konnte nicht eingebunden werden: " + ex.Message);
+            }
         }
 
         /// <summary>

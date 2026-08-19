@@ -61,6 +61,100 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
+        /// </summary>
+        public static string ADM_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("ADM_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner „{0}“ kommt im Katalog {1}-mal vor.
+        ///
+        ///Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird deshalb abgelehnt. Bitte die Dubletten zuerst bereinigen. ähnelt.
+        /// </summary>
+        public static string ADM_MEHRDEUTIG_TEXT {
+            get {
+                return ResourceManager.GetString("ADM_MEHRDEUTIG_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner nicht eindeutig ähnelt.
+        /// </summary>
+        public static string ADM_MEHRDEUTIG_TITEL {
+            get {
+                return ResourceManager.GetString("ADM_MEHRDEUTIG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Datensatz „{0}“ stammt aus dem Auslieferungskatalog und ist schreibgeschützt.
+        ///
+        ///Soll er trotzdem überschrieben werden? ähnelt.
+        /// </summary>
+        public static string ADM_SCHUTZ_FRAGE {
+            get {
+                return ResourceManager.GetString("ADM_SCHUTZ_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibgeschützter Datensatz ähnelt.
+        /// </summary>
+        public static string ADM_SCHUTZ_TITEL {
+            get {
+                return ResourceManager.GetString("ADM_SCHUTZ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht gespeichert ähnelt.
+        /// </summary>
+        public static string ADM_STATUS_FEHLER {
+            get {
+                return ResourceManager.GetString("ADM_STATUS_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gespeichert um {0} ähnelt.
+        /// </summary>
+        public static string ADM_STATUS_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("ADM_STATUS_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibt die angezeigten Werte in den Stammdatensatz zurück. Der Dialog bleibt geöffnet. ähnelt.
+        /// </summary>
+        public static string ADM_TIP_SPEICHERN {
+            get {
+                return ResourceManager.GetString("ADM_TIP_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Datensatz markiert — bitte links einen Eintrag auswählen. ähnelt.
+        /// </summary>
+        public static string ADM_TIP_SPEICHERN_LEER {
+            get {
+                return ResourceManager.GetString("ADM_TIP_SPEICHERN_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Änderung — es gibt nichts zu speichern. ähnelt.
+        /// </summary>
+        public static string ADM_TIP_SPEICHERN_UNVERAENDERT {
+            get {
+                return ResourceManager.GetString("ADM_TIP_SPEICHERN_UNVERAENDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gerät „{0}&quot; ist bereits im Projekt.
         ///
         ///Als zweites, baugleiches Gerät aufnehmen? Dann wird eine eigene Gerätekopie angelegt.
@@ -544,7 +638,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Arbeitspreis 0,00 bei: {0} — ohne Preis können keine Energ [rest] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Arbeitspreis 0,00 bei: {0} — ohne Preis können keine Energiekosten entstehen; im Reiter „Energiekosten&quot; der Kostenverwaltung erfassen. ähnelt.
         /// </summary>
         public static string BK_KOSTEN_ENERGIE_PREIS0 {
             get {
@@ -598,7 +692,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Ohne Kostenposition: {0} — über „Kostenverwaltung öffnen…" [rest] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Ohne Kostenposition: {0} — über „Kostenverwaltung öffnen…&quot; und dort „Planwert übernehmen…&quot; erfassen ähnelt.
         /// </summary>
         public static string BK_KOSTEN_OHNE_POSITION {
             get {
@@ -607,7 +701,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}" ist im Projekt verbaut, führt aber keine Investitionsp [rest] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}&quot; ist im Projekt verbaut, führt aber keine Investitionsposition — die Kachel „Investition&quot; zählt dieses Gewerk deshalb nicht mit. ähnelt.
         /// </summary>
         public static string BK_KOSTEN_OHNE_POSITION_HINT {
             get {
@@ -1962,6 +2056,336 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_TOOLTIP_WERT {
             get {
                 return ResourceManager.GetString("CHART_TOOLTIP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string GESETZ_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("GESETZ_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ändern… ähnelt.
+        /// </summary>
+        public static string GESETZ_BTN_AENDERN {
+            get {
+                return ResourceManager.GetString("GESETZ_BTN_AENDERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string GESETZ_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("GESETZ_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu… ähnelt.
+        /// </summary>
+        public static string GESETZ_BTN_NEU {
+            get {
+                return ResourceManager.GetString("GESETZ_BTN_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string GESETZ_BTN_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("GESETZ_BTN_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string GESETZ_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("GESETZ_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesetzlichen Parameter ändern ähnelt.
+        /// </summary>
+        public static string GESETZ_DLG_TITEL_AENDERN {
+            get {
+                return ResourceManager.GetString("GESETZ_DLG_TITEL_AENDERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer gesetzlicher Parameter ähnelt.
+        /// </summary>
+        public static string GESETZ_DLG_TITEL_NEU {
+            get {
+                return ResourceManager.GetString("GESETZ_DLG_TITEL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile „{0}&quot; (gültig ab {1}) wirklich löschen?
+        ///
+        ///Danach fehlt der Wert in jeder Rechnung, die dieses Jahr betrifft. ähnelt.
+        /// </summary>
+        public static string GESETZ_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("GESETZ_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile „{0}&quot; gilt ab {1} und liegt damit in der Vergangenheit.
+        ///
+        ///Eine Gesetzesänderung gehört in eine NEUE Jahreszeile; die alte bleibt stehen, damit ältere Rechnungen nachvollziehbar bleiben.
+        ///
+        ///„Ja&quot; legt eine neue Zeile an. „Nein&quot; ändert die bestehende Zeile — das ist nur für Tippfehler gedacht. ähnelt.
+        /// </summary>
+        public static string GESETZ_FRAGE_NEUE_ZEILE {
+            get {
+                return ResourceManager.GetString("GESETZ_FRAGE_NEUE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesetzesänderung oder Berichtigung? ähnelt.
+        /// </summary>
+        public static string GESETZ_FRAGE_TITEL {
+            get {
+                return ResourceManager.GetString("GESETZ_FRAGE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Preis ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_CO2_PREIS {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_CO2_PREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsfaktoren — reale Bilanz ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_EF_BILANZ {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_EF_BILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsfaktoren — gesetzlicher Nachweis ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_EF_NACHWEIS {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_EF_NACHWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_ENERGIESTEUER {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_ENERGIESTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWK-Gesetz ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_KWKG {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_KWKG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Primärenergiefaktoren — gesetzlicher Nachweis ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_PEF_NACHWEIS {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_PEF_NACHWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_STROMSTEUER {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_STROMSTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umsatzsteuer ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_UMSATZSTEUER {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_UMSATZSTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Gesetzesänderung ist eine neue Jahreszeile, kein Ändern der alten. Nur so liefert eine heute gerechnete Variante in einigen Jahren noch dieselben Zahlen. ähnelt.
+        /// </summary>
+        public static string GESETZ_LBL_HINWEIS {
+            get {
+                return ResourceManager.GetString("GESETZ_LBL_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich ähnelt.
+        /// </summary>
+        public static string GESETZ_LBL_KLASSE {
+            get {
+                return ResourceManager.GetString("GESETZ_LBL_KLASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leer = der Satz ist entfallen (nicht 0) ähnelt.
+        /// </summary>
+        public static string GESETZ_LBL_WERT_LEER {
+            get {
+                return ResourceManager.GetString("GESETZ_LBL_WERT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesetzlichen Parameter löschen ähnelt.
+        /// </summary>
+        public static string GESETZ_LOESCHEN_TITEL {
+            get {
+                return ResourceManager.GetString("GESETZ_LOESCHEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesetzliche Parameter… ähnelt.
+        /// </summary>
+        public static string GESETZ_MENUE {
+            get {
+                return ResourceManager.GetString("GESETZ_MENUE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für den Schlüssel „{0}&quot; gibt es bereits eine Zeile ab {1}. ähnelt.
+        /// </summary>
+        public static string GESETZ_MSG_DOPPELT {
+            get {
+                return ResourceManager.GetString("GESETZ_MSG_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Gültig ab&quot; muss eine Jahreszahl zwischen 1990 und 2100 sein. ähnelt.
+        /// </summary>
+        public static string GESETZ_MSG_JAHR_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("GESETZ_MSG_JAHR_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Schlüssel angeben. ähnelt.
+        /// </summary>
+        public static string GESETZ_MSG_SCHLUESSEL_FEHLT {
+            get {
+                return ResourceManager.GetString("GESETZ_MSG_SCHLUESSEL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile konnte nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string GESETZ_MSG_SPEICHERN_FEHLER {
+            get {
+                return ResourceManager.GetString("GESETZ_MSG_SPEICHERN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert ist keine gültige Zahl. Für einen entfallenen Satz das Feld leer lassen. ähnelt.
+        /// </summary>
+        public static string GESETZ_MSG_WERT_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("GESETZ_MSG_WERT_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit ähnelt.
+        /// </summary>
+        public static string GESETZ_SP_EINHEIT {
+            get {
+                return ResourceManager.GetString("GESETZ_SP_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gültig ab ähnelt.
+        /// </summary>
+        public static string GESETZ_SP_JAHRVON {
+            get {
+                return ResourceManager.GetString("GESETZ_SP_JAHRVON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string GESETZ_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("GESETZ_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel ähnelt.
+        /// </summary>
+        public static string GESETZ_SP_SCHLUESSEL {
+            get {
+                return ResourceManager.GetString("GESETZ_SP_SCHLUESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Status ähnelt.
+        /// </summary>
+        public static string GESETZ_SP_STATUS {
+            get {
+                return ResourceManager.GetString("GESETZ_SP_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string GESETZ_SP_WERT {
+            get {
+                return ResourceManager.GetString("GESETZ_SP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesetzliche Parameter ähnelt.
+        /// </summary>
+        public static string GESETZ_TITEL {
+            get {
+                return ResourceManager.GetString("GESETZ_TITEL", resourceCulture);
             }
         }
         
@@ -7256,6 +7680,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_BHKW_MODUL_STANDARD {
             get {
                 return ResourceManager.GetString("SIM_BHKW_MODUL_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollbenutzungsstunden elektrisch: ähnelt.
+        /// </summary>
+        public static string SIM_BHKW_VBH_EL {
+            get {
+                return ResourceManager.GetString("SIM_BHKW_VBH_EL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vbh thermisch, Mittel Module ähnelt.
+        /// </summary>
+        public static string SIM_BHKW_VBH_TH_MITTEL {
+            get {
+                return ResourceManager.GetString("SIM_BHKW_VBH_TH_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vbh thermisch, Summe Module ähnelt.
+        /// </summary>
+        public static string SIM_BHKW_VBH_TH_SUMME {
+            get {
+                return ResourceManager.GetString("SIM_BHKW_VBH_TH_SUMME", resourceCulture);
             }
         }
         
@@ -13060,6 +13511,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VAR_VGL_TOOLTIP_OEFFNEN {
             get {
                 return ResourceManager.GetString("VAR_VGL_TOOLTIP_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Jede BHKW-Anlage des Projekts wird mit Heizöl betrieben ({0}) — als Neuanlage nicht mehr förderfähig (KWKG 2025, nur noch Erdgas; Näherung: gilt auch für Bio-Blends); Bonus = 0. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_ALLE_HEIZOEL {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_ALLE_HEIZOEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Jede BHKW-Anlage des Projekts liegt über der Ausschreibungsgrenze von {0} kW ({1}) — der Zuschlag wäre nur über eine Ausschreibung nach § 8a KWKG/KWKAusV zu erlangen; Bonus = 0. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_ALLE_UEBER_GRENZE {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_ALLE_UEBER_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Mit Heizöl betrieben und deshalb ohne Zuschlag: {0} (KWKG 2025, Neuanlagen nur noch mit Erdgas; Näherung: gilt auch für Bio-Blends). Die übrigen Anlagen mit zusammen {1} kW rechnen weiter. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_ANLAGE_HEIZOEL {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_ANLAGE_HEIZOEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Über der Ausschreibungsgrenze von {0} kW und deshalb ohne Zuschlag: {1} (der Weg über eine Ausschreibung nach § 8a KWKG/KWKAusV ist nicht abgebildet). Die übrigen Anlagen mit zusammen {2} kW rechnen weiter. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_ANLAGE_UEBER_GRENZE {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_ANLAGE_UEBER_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Das Projekt führt ein Öl-BHKW; welche Anlage damit betrieben wird, ließ sich nicht ermitteln, deshalb greift der Heizöl-Ausschluss ersatzweise auf alle Geräte des Projekts (KWKG 2025, Neuanlagen nur noch mit Erdgas); Bonus = 0. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_HEIZOEL_JE_ANLAGE_UNKLAR {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_HEIZOEL_JE_ANLAGE_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Öl-BHKW ohne Inbetriebnahmedatum: {0} — als Neuanlage wäre der Zuschlag für diese Anlagen ausgeschlossen (KWKG 2025); Datum im Parameterdialog pflegen. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_HEIZOEL_OHNE_IBN {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_HEIZOEL_OHNE_IBN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Das Projekt führt ein Öl-BHKW, aber kein Inbetriebnahmedatum — als Neuanlage wäre der Zuschlag ausgeschlossen (KWKG 2025). Welche Anlage mit Öl betrieben wird, ließ sich nicht ermitteln; Datum im Parameterdialog pflegen. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Keine BHKW-Anlage des Projekts ist zuschlagsberechtigt — über der Ausschreibungsgrenze von {0} kW: {1}; mit Heizöl betrieben: {2}; Bonus = 0. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_KEINE_FOERDERFAEHIG {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_KEINE_FOERDERFAEHIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Σ installierte BHKW-Leistung {0} kW über der Ausschreibungsgrenze von {1} kW; die Leistung je Anlage ließ sich nicht ermitteln, deshalb greift die Grenze ersatzweise auf die Projektsumme; Bonus = 0. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR", resourceCulture);
             }
         }
     }

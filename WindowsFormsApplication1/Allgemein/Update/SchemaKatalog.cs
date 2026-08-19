@@ -577,6 +577,73 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_HEIZKESSEL_STAMM, SPALTE_KESSEL_WARTUNG_EINHEIT, "TEXT(20)"),
         };
 
+        public const string TAB_ERGEBNISBHKW = "Tab_ErgebnisBHKW";
+        public const string TAB_ERGEBNISBHKWMODUL = "Tab_ErgebnisBHKWModul";
+
+        /// <summary>
+        /// ETAPPE E2 — THERMISCHE Vollbenutzungsstunden je BHKW-Modul [h/a].
+        ///
+        /// <b>Warum nicht „Betriebsstunden".</b> Das Konzept
+        /// (<c>Konzept_BHKW_Kosten_Erloese.md</c>, Abschnitt 3) nannte die Spalte
+        /// zunächst so, und die Quelle heißt im Rechenkern auch
+        /// <c>SimulationBHKW.Laufzeiten[]</c>. Der Wert IST aber keine
+        /// Betriebsstundenzahl: Er entsteht als
+        /// <c>Waermeproduktion [MWh] × 1000 / P_therm [kW]</c> und ist damit eine
+        /// VOLLBENUTZUNGSSTUNDENZAHL. Taktung und Teillast bildet das Modell nicht ab —
+        /// ein Modul, das ein Jahr lang halb moduliert läuft, hat 8.760 Betriebsstunden
+        /// und 4.380 thermische Vbh.
+        ///
+        /// Eine Spalte namens <c>Betriebsstunden</c> hätte genau die Verwechslung
+        /// festgeschrieben, die diese Etappe an anderer Stelle behebt — spätestens bei
+        /// der Wartung „je Betriebsstunde" (Etappe E3, L7) hätte jemand sie für bare
+        /// Münze genommen. Der Name sagt jetzt, wie der Wert gebildet ist; dass er als
+        /// Näherung für Betriebsstunden dient, steht als Näherung dokumentiert
+        /// (<see cref="ErgebnisBHKWModulModel.VbhThermisch"/>).
+        /// </summary>
+        public const string SPALTE_MODUL_VBH_THERMISCH = "VbhThermisch";
+
+        /// <summary>
+        /// ETAPPE E2 — ELEKTRISCHE Vollbenutzungsstunden je BHKW-Modul [h/a]:
+        /// <c>Stromproduktion [MWh] × 1000 / P_el [kW]</c>. Bemessungsgrundlage des
+        /// KWK-Zuschlags; Etappe E6 deckelt damit modulscharf.
+        /// </summary>
+        public const string SPALTE_MODUL_VBH_ELEKTRISCH = "VbhElektrisch";
+
+        /// <summary>
+        /// ETAPPE E2 — LEISTUNGSGEWICHTETE elektrische Vollbenutzungsstunden der ganzen
+        /// BHKW-Anlage [h/a]: <c>Σ Stromproduktion × 1000 / Σ P_el</c>.
+        ///
+        /// <b>Warum eine eigene Spalte und kein abgeleiteter Wert.</b> Aus den
+        /// gespeicherten Größen ließe sich der Wert nur zurückrechnen, wenn man die
+        /// installierte elektrische Leistung des LAUFS kennte — die steht nirgends im
+        /// Ergebnis, und <c>Tab_BHKW</c> kann sich danach geändert haben. Genau dieselbe
+        /// Begründung wie bei <see cref="SPALTE_KESSEL_QUELLWAERME"/>.
+        /// </summary>
+        public const string SPALTE_BHKW_VBH_ELEKTRISCH = "VbhElektrisch";
+
+        /// <summary>
+        /// Schritt 18 der Migration (Etappe E2, Leitentscheidung L6) — die drei
+        /// Vollbenutzungsstunden-Spalten der BHKW-Ergebniszeilen.
+        ///
+        /// <b>DOUBLE, NULL-fähig, KEIN Backfill.</b> Ein Lauf, der vor dieser Fassung
+        /// gerechnet wurde, hat keine dieser Größen erhoben; NULL sagt „nicht erhoben",
+        /// eine 0 behauptete „erhoben und null". Die Leseseite
+        /// (<c>ErgebnisCtrl.ReadLast</c> über <c>D(row, "…")</c>) behandelt beides
+        /// gleich, und die Wirtschaftlichkeit rechnet die elektrischen Vbh in diesem
+        /// Fall selbst aus Stromproduktion und installierter Leistung.
+        ///
+        /// <b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access immer
+        /// hinten an. Folgenlos: Beide Tabellen werden ausschließlich NAMENSBASIERT
+        /// gelesen (<c>ErgebnisCtrl.ReadLast</c>), eine <c>row[0…n]</c>-Kette wie bei
+        /// <c>Tab_Einstellungen</c> gibt es hier nicht.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt18_BhkwVollbenutzungsstunden =
+        {
+            new SchemaSpalte(TAB_ERGEBNISBHKW,      SPALTE_BHKW_VBH_ELEKTRISCH,   "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISBHKWMODUL, SPALTE_MODUL_VBH_THERMISCH,   "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISBHKWMODUL, SPALTE_MODUL_VBH_ELEKTRISCH,  "DOUBLE"),
+        };
+
         /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
@@ -643,6 +710,14 @@ namespace WindowsFormsApplication1
         /// Kostenmodul. Für sie gibt es die eigene, tolerante Vorsorge unmittelbar vor dem
         /// Zugriff (<c>HeizkesselStammCtrl.StelleSpaltenSicher</c>), aufgerufen aus dem
         /// einzigen Dialog, der die Spalte schreibt.
+        ///
+        /// <see cref="Schritt18_BhkwVollbenutzungsstunden"/> ist BEWUSST NICHT aufgeführt —
+        /// dieselbe Begründung wie bei <see cref="Schritt10_KesselQuellwaerme"/>: Die
+        /// Rückfallebene soll die Spalten der EINGABEseite sicherstellen, nicht die der
+        /// Ergebnistabellen. Für die drei Ergebnisspalten gibt es die eigene, tolerante
+        /// Vorsorge unmittelbar vor dem Schreiben
+        /// (<c>ErgebnisCtrl.StelleBHKWSpaltenSicher</c> und
+        /// <c>ErgebnisCtrl.StelleModulSpaltenSicher</c>).
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {

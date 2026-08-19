@@ -114,6 +114,23 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Liest einen Stammdatensatz per Bezeichner und liefert ihn als eigenes
+        /// Model. Gedacht fuer Masken, die nur einen TEIL der Felder anzeigen und
+        /// den Rest unveraendert zurueckschreiben muessen (Form_BHKWAdmin) - so
+        /// bleibt MapRowToModel die einzige Abbildungsstelle und Update() bekommt
+        /// nie ein halb gefuelltes Model. Liefert null, wenn es den Bezeichner
+        /// nicht gibt.
+        /// </summary>
+        public BHKWStammModel ReadModel(string szBezeichner)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM " + TABLE + " WHERE Bezeichner = ?",
+                new OleDbParameter("@name", szBezeichner ?? ""));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            return MapRowToModel(dt.Rows[0]);
+        }
+
         // Liefert true, wenn der Datensatz (per ID) schreibgeschuetzt ist.
         public bool IsReadOnly(int ID)
         {

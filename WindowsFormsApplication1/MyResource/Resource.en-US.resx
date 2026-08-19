@@ -998,6 +998,15 @@ from: volume × 1,16 Wh/(l·K) × (flow − return).</value>
   <data name="SIM_BHKW_MODUL_STANDARD" xml:space="preserve">
     <value>Standard CHP unit</value>
   </data>
+  <data name="SIM_BHKW_VBH_EL" xml:space="preserve">
+    <value>Full-load hours, electric:</value>
+  </data>
+  <data name="SIM_BHKW_VBH_TH_MITTEL" xml:space="preserve">
+    <value>Thermal FLH, module average</value>
+  </data>
+  <data name="SIM_BHKW_VBH_TH_SUMME" xml:space="preserve">
+    <value>Thermal FLH, sum of modules</value>
+  </data>
   <data name="SIM_BM_RB_LAUFZEIT" xml:space="preserve">
     <value>Runtime-optimised - maximum output</value>
   </data>
@@ -4573,6 +4582,120 @@ Several arrays of the same module type are allowed — please check whether this
   <data name="ANL_SP_NAME_ANGEPASST" xml:space="preserve">
     <value>The name “{0}” is already used in this project. The storage variant was renamed to “{1}”.</value>
   </data>
+  <data name="GESETZ_MENUE" xml:space="preserve">
+    <value>Statutory parameters…</value>
+  </data>
+  <data name="GESETZ_TITEL" xml:space="preserve">
+    <value>Statutory parameters</value>
+  </data>
+  <data name="GESETZ_LBL_KLASSE" xml:space="preserve">
+    <value>Area</value>
+  </data>
+  <data name="GESETZ_LBL_HINWEIS" xml:space="preserve">
+    <value>An amendment is a new year row, not a change to the old one. Only then will a calculation made today still produce the same figures years from now.</value>
+  </data>
+  <data name="GESETZ_LBL_WERT_LEER" xml:space="preserve">
+    <value>empty = the rate has been abolished (not 0)</value>
+  </data>
+  <data name="GESETZ_SP_SCHLUESSEL" xml:space="preserve">
+    <value>Key</value>
+  </data>
+  <data name="GESETZ_SP_JAHRVON" xml:space="preserve">
+    <value>Valid from</value>
+  </data>
+  <data name="GESETZ_SP_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="GESETZ_SP_EINHEIT" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="GESETZ_SP_STATUS" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="GESETZ_SP_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="GESETZ_BTN_NEU" xml:space="preserve">
+    <value>New…</value>
+  </data>
+  <data name="GESETZ_BTN_AENDERN" xml:space="preserve">
+    <value>Edit…</value>
+  </data>
+  <data name="GESETZ_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="GESETZ_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="GESETZ_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="GESETZ_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="GESETZ_DLG_TITEL_NEU" xml:space="preserve">
+    <value>New statutory parameter</value>
+  </data>
+  <data name="GESETZ_DLG_TITEL_AENDERN" xml:space="preserve">
+    <value>Edit statutory parameter</value>
+  </data>
+  <data name="GESETZ_FRAGE_TITEL" xml:space="preserve">
+    <value>Amendment or correction?</value>
+  </data>
+  <data name="GESETZ_FRAGE_NEUE_ZEILE" xml:space="preserve">
+    <value>The row “{0}” is valid from {1} and therefore lies in the past.
+
+An amendment belongs in a NEW year row; the old one stays in place so that earlier calculations remain traceable.
+
+“Yes” creates a new row. “No” changes the existing row — that is meant for typing errors only.</value>
+  </data>
+  <data name="GESETZ_LOESCHEN_TITEL" xml:space="preserve">
+    <value>Delete statutory parameter</value>
+  </data>
+  <data name="GESETZ_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Really delete the row “{0}” (valid from {1})?
+
+After that the value will be missing from every calculation concerning that year.</value>
+  </data>
+  <data name="GESETZ_MSG_SCHLUESSEL_FEHLT" xml:space="preserve">
+    <value>Please enter a key.</value>
+  </data>
+  <data name="GESETZ_MSG_JAHR_UNGUELTIG" xml:space="preserve">
+    <value>“Valid from” must be a year between 1990 and 2100.</value>
+  </data>
+  <data name="GESETZ_MSG_WERT_UNGUELTIG" xml:space="preserve">
+    <value>The value is not a valid number. Leave the field empty for a rate that has been abolished.</value>
+  </data>
+  <data name="GESETZ_MSG_DOPPELT" xml:space="preserve">
+    <value>The key “{0}” already has a row valid from {1}.</value>
+  </data>
+  <data name="GESETZ_MSG_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>The row could not be saved.</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_KWKG" xml:space="preserve">
+    <value>CHP Act</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_STROMSTEUER" xml:space="preserve">
+    <value>Electricity tax</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_ENERGIESTEUER" xml:space="preserve">
+    <value>Energy tax</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_CO2_PREIS" xml:space="preserve">
+    <value>CO₂ price</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_EF_NACHWEIS" xml:space="preserve">
+    <value>Emission factors — statutory proof</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_EF_BILANZ" xml:space="preserve">
+    <value>Emission factors — real balance</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_PEF_NACHWEIS" xml:space="preserve">
+    <value>Primary energy factors — statutory proof</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_UMSATZSTEUER" xml:space="preserve">
+    <value>VAT</value>
+  </data>
   <data name="BK_KOSTEN_OHNE_POSITION" xml:space="preserve">
     <value>⚠ No cost item: {0} — record it via “Open cost management…” and then “Adopt engineering value…”</value>
   </data>
@@ -4581,5 +4704,66 @@ Several arrays of the same module type are allowed — please check whether this
   </data>
   <data name="BK_KOSTEN_ENERGIE_PREIS0" xml:space="preserve">
     <value>⚠ Unit price 0.00 for: {0} — without a price no energy costs can arise; enter it on the “Energy costs” tab of cost management.</value>
+  </data>
+  <data name="ADM_BTN_SPEICHERN" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="ADM_TIP_SPEICHERN" xml:space="preserve">
+    <value>Writes the values shown back into the catalogue record. The dialog stays open.</value>
+  </data>
+  <data name="ADM_TIP_SPEICHERN_LEER" xml:space="preserve">
+    <value>No record selected — please pick an entry in the list on the left.</value>
+  </data>
+  <data name="ADM_TIP_SPEICHERN_UNVERAENDERT" xml:space="preserve">
+    <value>No change — there is nothing to save.</value>
+  </data>
+  <data name="ADM_STATUS_GESPEICHERT" xml:space="preserve">
+    <value>Saved at {0}</value>
+  </data>
+  <data name="ADM_STATUS_FEHLER" xml:space="preserve">
+    <value>Not saved</value>
+  </data>
+  <data name="ADM_SCHUTZ_TITEL" xml:space="preserve">
+    <value>Write-protected record</value>
+  </data>
+  <data name="ADM_SCHUTZ_FRAGE" xml:space="preserve">
+    <value>The record “{0}” comes from the shipped catalogue and is write-protected.
+
+Overwrite it anyway?</value>
+  </data>
+  <data name="ADM_MEHRDEUTIG_TITEL" xml:space="preserve">
+    <value>Designation not unique</value>
+  </data>
+  <data name="ADM_MEHRDEUTIG_TEXT" xml:space="preserve">
+    <value>The designation “{0}” occurs {1} times in the catalogue.
+
+Saving would overwrite all of those records at once and is therefore refused. Please remove the duplicates first.</value>
+  </data>
+  <data name="WIRT_KWKG_ANLAGE_UEBER_GRENZE" xml:space="preserve">
+    <value>CHP Act: above the tendering threshold of {0} kW and therefore without bonus: {1} (the tendering route under section 8a KWKG/KWKAusV is not modelled). The remaining units totalling {2} kW continue to be calculated.</value>
+  </data>
+  <data name="WIRT_KWKG_ALLE_UEBER_GRENZE" xml:space="preserve">
+    <value>CHP Act: every CHP unit of the project exceeds the tendering threshold of {0} kW ({1}) — the bonus could only be obtained through tendering under section 8a KWKG/KWKAusV; bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR" xml:space="preserve">
+    <value>CHP Act: total installed CHP capacity {0} kW exceeds the tendering threshold of {1} kW; the capacity of the individual units could not be determined, so the threshold falls back to the project total; bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_ANLAGE_HEIZOEL" xml:space="preserve">
+    <value>CHP Act: fired with heating oil and therefore without bonus: {0} (KWKG 2025, new units only with natural gas; approximation: applies to bio blends as well). The remaining units totalling {1} kW continue to be calculated.</value>
+  </data>
+  <data name="WIRT_KWKG_ALLE_HEIZOEL" xml:space="preserve">
+    <value>CHP Act: every CHP unit of the project is fired with heating oil ({0}) — no longer eligible as a new unit (KWKG 2025, natural gas only; approximation: applies to bio blends as well); bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_KEINE_FOERDERFAEHIG" xml:space="preserve">
+    <value>CHP Act: no CHP unit of the project is eligible for the bonus — above the tendering threshold of {0} kW: {1}; fired with heating oil: {2}; bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_HEIZOEL_OHNE_IBN" xml:space="preserve">
+    <value>CHP Act: oil-fired CHP units without commissioning date: {0} — as new units their bonus would be excluded (KWKG 2025); please enter the date in the parameter dialogue.</value>
+  </data>
+  <data name="WIRT_KWKG_HEIZOEL_JE_ANLAGE_UNKLAR" xml:space="preserve">
+    <value>CHP Act: the project contains an oil-fired CHP unit; which unit is fired with oil could not be determined, so the heating-oil exclusion falls back to all devices of the project (KWKG 2025, new units only with natural gas); bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR" xml:space="preserve">
+    <value>CHP Act: the project contains an oil-fired CHP unit but no commissioning date — as a new unit the bonus would be excluded (KWKG 2025). Which unit is fired with oil could not be determined; please enter the date in the parameter dialogue.</value>
   </data>
 </root>
