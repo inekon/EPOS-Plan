@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!--
     KiKern - UI-freier, DB-freier Kern der Aufgabensteuerung des KI-Assistenten.

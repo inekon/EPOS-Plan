@@ -998,6 +998,15 @@ from: volume × 1,16 Wh/(l·K) × (flow − return).</value>
   <data name="SIM_BHKW_MODUL_STANDARD" xml:space="preserve">
     <value>Standard CHP unit</value>
   </data>
+  <data name="SIM_BHKW_VBH_EL" xml:space="preserve">
+    <value>Full-load hours, electric:</value>
+  </data>
+  <data name="SIM_BHKW_VBH_TH_MITTEL" xml:space="preserve">
+    <value>Thermal FLH, module average</value>
+  </data>
+  <data name="SIM_BHKW_VBH_TH_SUMME" xml:space="preserve">
+    <value>Thermal FLH, sum of modules</value>
+  </data>
   <data name="SIM_BM_RB_LAUFZEIT" xml:space="preserve">
     <value>Runtime-optimised - maximum output</value>
   </data>
@@ -4741,5 +4750,32 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   </data>
   <data name="KI_VORSCHAU_SCHLIESSEN" xml:space="preserve">
     <value>Close</value>
+  </data>
+  <data name="WIRT_KWKG_ANLAGE_UEBER_GRENZE" xml:space="preserve">
+    <value>CHP Act: above the tendering threshold of {0} kW and therefore without bonus: {1} (the tendering route under section 8a KWKG/KWKAusV is not modelled). The remaining units totalling {2} kW continue to be calculated.</value>
+  </data>
+  <data name="WIRT_KWKG_ALLE_UEBER_GRENZE" xml:space="preserve">
+    <value>CHP Act: every CHP unit of the project exceeds the tendering threshold of {0} kW ({1}) — the bonus could only be obtained through tendering under section 8a KWKG/KWKAusV; bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR" xml:space="preserve">
+    <value>CHP Act: total installed CHP capacity {0} kW exceeds the tendering threshold of {1} kW; the capacity of the individual units could not be determined, so the threshold falls back to the project total; bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_ANLAGE_HEIZOEL" xml:space="preserve">
+    <value>CHP Act: fired with heating oil and therefore without bonus: {0} (KWKG 2025, new units only with natural gas; approximation: applies to bio blends as well). The remaining units totalling {1} kW continue to be calculated.</value>
+  </data>
+  <data name="WIRT_KWKG_ALLE_HEIZOEL" xml:space="preserve">
+    <value>CHP Act: every CHP unit of the project is fired with heating oil ({0}) — no longer eligible as a new unit (KWKG 2025, natural gas only; approximation: applies to bio blends as well); bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_KEINE_FOERDERFAEHIG" xml:space="preserve">
+    <value>CHP Act: no CHP unit of the project is eligible for the bonus — above the tendering threshold of {0} kW: {1}; fired with heating oil: {2}; bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_HEIZOEL_OHNE_IBN" xml:space="preserve">
+    <value>CHP Act: oil-fired CHP units without commissioning date: {0} — as new units their bonus would be excluded (KWKG 2025); please enter the date in the parameter dialogue.</value>
+  </data>
+  <data name="WIRT_KWKG_HEIZOEL_JE_ANLAGE_UNKLAR" xml:space="preserve">
+    <value>CHP Act: the project contains an oil-fired CHP unit; which unit is fired with oil could not be determined, so the heating-oil exclusion falls back to all devices of the project (KWKG 2025, new units only with natural gas); bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR" xml:space="preserve">
+    <value>CHP Act: the project contains an oil-fired CHP unit but no commissioning date — as a new unit the bonus would be excluded (KWKG 2025). Which unit is fired with oil could not be determined; please enter the date in the parameter dialogue.</value>
   </data>
 </root>

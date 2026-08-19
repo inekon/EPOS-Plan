@@ -1014,6 +1014,15 @@ sich aus: Volumen × 1,16 Wh/(l·K) × (Vorlauf − Rücklauf).</value>
   <data name="SIM_BHKW_MODUL_STANDARD" xml:space="preserve">
     <value>Standard BHKW</value>
   </data>
+  <data name="SIM_BHKW_VBH_EL" xml:space="preserve">
+    <value>Vollbenutzungsstunden elektrisch:</value>
+  </data>
+  <data name="SIM_BHKW_VBH_TH_MITTEL" xml:space="preserve">
+    <value>Vbh thermisch, Mittel Module</value>
+  </data>
+  <data name="SIM_BHKW_VBH_TH_SUMME" xml:space="preserve">
+    <value>Vbh thermisch, Summe Module</value>
+  </data>
   <data name="SIM_BM_RB_LAUFZEIT" xml:space="preserve">
     <value>Laufzeitoptimiert - maximale Leistung</value>
   </data>
@@ -4756,5 +4765,32 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   </data>
   <data name="KI_VORSCHAU_SCHLIESSEN" xml:space="preserve">
     <value>Schließen</value>
+  </data>
+  <data name="WIRT_KWKG_ANLAGE_UEBER_GRENZE" xml:space="preserve">
+    <value>KWKG: Über der Ausschreibungsgrenze von {0} kW und deshalb ohne Zuschlag: {1} (der Weg über eine Ausschreibung nach § 8a KWKG/KWKAusV ist nicht abgebildet). Die übrigen Anlagen mit zusammen {2} kW rechnen weiter.</value>
+  </data>
+  <data name="WIRT_KWKG_ALLE_UEBER_GRENZE" xml:space="preserve">
+    <value>KWKG: Jede BHKW-Anlage des Projekts liegt über der Ausschreibungsgrenze von {0} kW ({1}) — der Zuschlag wäre nur über eine Ausschreibung nach § 8a KWKG/KWKAusV zu erlangen; Bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR" xml:space="preserve">
+    <value>KWKG: Σ installierte BHKW-Leistung {0} kW über der Ausschreibungsgrenze von {1} kW; die Leistung je Anlage ließ sich nicht ermitteln, deshalb greift die Grenze ersatzweise auf die Projektsumme; Bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_ANLAGE_HEIZOEL" xml:space="preserve">
+    <value>KWKG: Mit Heizöl betrieben und deshalb ohne Zuschlag: {0} (KWKG 2025, Neuanlagen nur noch mit Erdgas; Näherung: gilt auch für Bio-Blends). Die übrigen Anlagen mit zusammen {1} kW rechnen weiter.</value>
+  </data>
+  <data name="WIRT_KWKG_ALLE_HEIZOEL" xml:space="preserve">
+    <value>KWKG: Jede BHKW-Anlage des Projekts wird mit Heizöl betrieben ({0}) — als Neuanlage nicht mehr förderfähig (KWKG 2025, nur noch Erdgas; Näherung: gilt auch für Bio-Blends); Bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_KEINE_FOERDERFAEHIG" xml:space="preserve">
+    <value>KWKG: Keine BHKW-Anlage des Projekts ist zuschlagsberechtigt — über der Ausschreibungsgrenze von {0} kW: {1}; mit Heizöl betrieben: {2}; Bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_HEIZOEL_OHNE_IBN" xml:space="preserve">
+    <value>KWKG: Öl-BHKW ohne Inbetriebnahmedatum: {0} — als Neuanlage wäre der Zuschlag für diese Anlagen ausgeschlossen (KWKG 2025); Datum im Parameterdialog pflegen.</value>
+  </data>
+  <data name="WIRT_KWKG_HEIZOEL_JE_ANLAGE_UNKLAR" xml:space="preserve">
+    <value>KWKG: Das Projekt führt ein Öl-BHKW; welche Anlage damit betrieben wird, ließ sich nicht ermitteln, deshalb greift der Heizöl-Ausschluss ersatzweise auf alle Geräte des Projekts (KWKG 2025, Neuanlagen nur noch mit Erdgas); Bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR" xml:space="preserve">
+    <value>KWKG: Das Projekt führt ein Öl-BHKW, aber kein Inbetriebnahmedatum — als Neuanlage wäre der Zuschlag ausgeschlossen (KWKG 2025). Welche Anlage mit Öl betrieben wird, ließ sich nicht ermitteln; Datum im Parameterdialog pflegen.</value>
   </data>
 </root>

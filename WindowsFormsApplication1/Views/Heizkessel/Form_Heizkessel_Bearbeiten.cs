@@ -300,6 +300,24 @@ namespace WindowsFormsApplication1
 
             try
             {
+                // Tab_Heizkessel_STAMM fuehrt keinen eindeutigen Schluessel auf Bezeichner,
+                // HeizkesselStammCtrl.Update() filtert aber genau darauf. Bei einer Dublette
+                // wuerden beide Saetze zugleich ueberschrieben - deshalb hier abbrechen,
+                // statt unbemerkt zwei Katalogsaetze zu veraendern (gleiche Bremse wie in
+                // Form_Heizkessel_Admin).
+                object anz = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM [" + HeizkesselStammCtrl.TABLE + "] WHERE Bezeichner = ?",
+                    new System.Data.OleDb.OleDbParameter("@nam", m_szKessel));
+                int nAnzahl = (anz == null || anz == DBNull.Value) ? 0 : Convert.ToInt32(anz);
+                if (nAnzahl > 1)
+                {
+                    MessageBox.Show(
+                        string.Format(MyResource.Resource.ADM_MEHRDEUTIG_TEXT, m_szKessel, nAnzahl),
+                        MyResource.Resource.ADM_MEHRDEUTIG_TITEL,
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;   // Dialog bleibt offen, nichts geschrieben
+                }
+
                 InitDatensatzUpdate(ctrl);
 
                 if (ctrl.Update())

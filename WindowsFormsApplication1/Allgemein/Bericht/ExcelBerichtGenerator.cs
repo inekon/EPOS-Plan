@@ -266,6 +266,9 @@ namespace WindowsFormsApplication1
                 Tuple.Create("CO₂-Abgabe BEHG [€/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitBehg ? (double?)e.CO2AbgabeJahr : null)),
                 Tuple.Create("Einspeiseerlös [€/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => (double?)e.EinspeiseerloesJahr)),
                 Tuple.Create("KWKG-Erlös Jahr 1 [€/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitKwkg ? (double?)e.KwkgErloesJahr1 : null)),
+                // ETAPPE E2 (L6): Bemessungsgrundlage der KWKG-Deckelung — ELEKTRISCHE
+                // Vollbenutzungsstunden; 0 heißt „nicht erhoben" und bleibt leer.
+                Tuple.Create("Vbh elektrisch (KWKG-Basis) [h/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.KwkgVbhElektrisch > 0 ? (double?)e.KwkgVbhElektrisch : null)),
                 Tuple.Create("Restwert (Barwert) [€]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => (double?)e.RestwertBarwert)),
                 Tuple.Create("Nettobarwert über T [€]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.Kapitalwert)),
                 Tuple.Create("Kapitalwert vs. Stamm [€]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.IstStamm ? null : e.KapitalwertDiff)),

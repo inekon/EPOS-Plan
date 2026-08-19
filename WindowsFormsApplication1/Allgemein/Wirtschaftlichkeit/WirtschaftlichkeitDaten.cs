@@ -253,6 +253,22 @@ namespace WindowsFormsApplication1
         // Stufe W2 (Phase 7)
         public double CO2AbgabeJahr;           // BEHG-Abgabe im Jahr 1 [€/a] (0 = aus/kein Brennstoff)
         public double KwkgErloesJahr1;         // KWKG-Bonus im Jahr 1 [€/a] (0 = aus/kein BHKW)
+
+        /// <summary>
+        /// ETAPPE E2 (Leitentscheidung L6): die erreichten ELEKTRISCHEN
+        /// Vollbenutzungsstunden [h/a], leistungsgewichtet über alle BHKW-Module —
+        /// die Größe, mit der die KWKG-Deckelung rechnet.
+        ///
+        /// <para>Bis E2 wurde dafür die Summe THERMISCHER Vbh verwendet
+        /// (<c>Ergebnis.BHKW.Betriebsstunden_Gesamt</c>); sie kann 8.760 h überschreiten
+        /// und setzte den Zuschlag bei Mehrmodulanlagen zu hoch an. Der Wert steht hier,
+        /// damit Reiter und Bericht die Bemessungsgrundlage ausweisen können statt nur
+        /// ihr Ergebnis.</para>
+        ///
+        /// <para>0 = kein BHKW im Lauf, kein KWK-Strom oder keine elektrische
+        /// Nennleistung gepflegt.</para>
+        /// </summary>
+        public double KwkgVbhElektrisch;       // h/a
         public double? IRR;                    // interner Zinsfuß der Differenzreihe [%] (null beim Stamm/nie)
 
         // Stufe W3 (Phase 8)
