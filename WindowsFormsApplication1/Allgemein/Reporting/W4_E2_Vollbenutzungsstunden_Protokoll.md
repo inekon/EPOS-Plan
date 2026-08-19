@@ -803,3 +803,340 @@ Heizöl-Ausschluss und Stichtagsprüfung. **Nichts davon ist mitgeändert.**
 | `GESETZ_STROMST_GRENZE_BEFREIUNG` (2.000 kW, § 9 Abs. 1 Nr. 3 StromStG) | ebenfalls ungelesen; auch diese Grenze ist eine **Anlagen**-Nennleistung | Vorsorglich vermerkt: Bei der Umsetzung in E4 nicht wieder die Projektsumme dagegen prüfen. |
 | `LiesBhkwLeistungKW` / `PelKW` (`:1120-1160`) | Σ P_el über alle Anlagen des Projekts | **Kein Fehler.** Als Nenner der leistungsgewichteten Vbh ist die Projektsumme genau richtig; nur die Schwellenprüfung durfte sie nicht verwenden. |
 
+---
+
+# Nachtrag 2: Heizöl-Ausschluss je Anlage
+
+**Stand: 19.08.2026.** Umgesetzt auf dem Stand `006e780` (= E2 + Nachtrag 1). Damit ist der
+**Restbefund 1** aus Abschnitt N7 erledigt — der dort als „der gravierendste" bezeichnete.
+
+**Ergebnis in drei Sätzen.** Der Heizöl-Ausschluss des KWKG greift ab jetzt für **jede
+BHKW-Anlage einzeln** und stützt sich auf die **installierten Anlagen** statt auf die
+Gerätezeilen des Projekts; ein Öl-BHKW verliert seinen Zuschlaganteil, ein daneben
+stehendes Gas-BHKW behält ihn. Auf dem heutigen Datenbestand ändert sich **kein einziger
+Zahlenwert** (8/8 PASS ×2, 194/194 CSV byte-identisch, alle acht Wirtschaftlichkeitswerte
+gleich) — auch nicht bei Projekt 1024, dessen Ausschluss sich als **echter Befund**
+erwiesen hat. An präparierten Kopien springt der Zuschlag von 0 € auf bis zu
+**202.106,33 €** Barwert.
+
+---
+
+## N2-1 Warum die Änderung
+
+`BhkwMitHeizoel` (Stand `006e780`, `WirtschaftlichkeitCtrl.cs:1400-1415`) lautete
+
+```sql
+SELECT COUNT(*) FROM Tab_BHKW AS b
+INNER JOIN Tab_Brennstoff_Stamm AS bs ON b.Brennstoff = bs.ID
+WHERE b.ID_Projekt = ? AND bs.ID_Kategorie = 2
+```
+
+Zwei Mängel in einer Zeile:
+
+1. **Projektweit statt je Anlage.** Ein einziges Öl-BHKW nahm **allen** Anlagen des
+   Projekts den Zuschlag. Der Ausschluss fossiler flüssiger Brennstoffe betrifft aber die
+   **einzelne Anlage** — nichts daran wirkt auf das Nachbarmodul.
+2. **Über die Gerätezeilen statt über die installierten Anlagen.** `Tab_BHKW` nimmt jede
+   Katalogübernahme auf, auch solche, zu denen **nie eine Anlagenzeile** in
+   `Tab_Energieanlagen` entstand. Genau diesen Fehler hat E2 für `LiesBhkwLeistungKW`
+   behoben (Abschnitt 1.3: Projekt 1024 kam auf 546 kW statt 21 kW); an dieser Stelle war
+   er unbehoben.
+
+Es ist damit zum **dritten Mal** derselbe Fehlertyp in derselben Methodenfamilie: eine
+Größe, die je Anlage gilt, wurde über das Projekt gebildet. E2 hat die **Bezugsmenge** der
+Leistungssumme berichtigt, Nachtrag 1 die **Bezugsebene** der Ausschreibungsgrenze, dieser
+Nachtrag beides zugleich für den Heizöl-Ausschluss.
+
+**Was ausdrücklich NICHT geändert wurde.** Die Rechtsgrundlage bleibt die Sekundärquelle
+(`Grundlagen_KWKG_Energiesteuer_Stromsteuer.md`, Abschnitt 6 Punkt 3 — BBH-Blog vom
+13.02.2025, kein Primärbeleg), und der Ausschluss greift unverändert **nur für erkennbare
+Neuanlagen** (Inbetriebnahme ≥ 2025). Bestandsanlagen rechnen wie bisher mit ihrem
+historischen Satz weiter, Öl-Anlagen ohne Inbetriebnahmedatum bekommen wie bisher nur einen
+Hinweis. Korrigiert ist ausschließlich der **Bezug**.
+
+---
+
+## N2-2 Was umgesetzt wurde
+
+| # | Gegenstand | Datei : Zeile |
+|---|---|---|
+| 1 | Guard prüft Heizöl **je Anlage**, vier unterschiedene Fälle (nicht bestimmbar / alle ausgeschlossen / Teilausschluss / kein Ausschluss) | `Allgemein/Wirtschaftlichkeit/WirtschaftlichkeitCtrl.cs:988-1076` |
+| 2 | Brennstoffart je Anlage im Anlagenbefund (`BhkwAnlage.Heizoel`) | `WirtschaftlichkeitCtrl.cs:1246-1265` |
+| 3 | Auswahl trägt **zwei Gründelisten und einen Ausschlusszähler** — jede Anlage fehlt in den Bezugsgrößen genau einmal | `WirtschaftlichkeitCtrl.cs:1267-1360` |
+| 4 | `Anlagenauswahl` filtert beide Gründe in **einem** Durchlauf; Parameter `heizoelAusschliessen` trägt die Neuanlagen-Regel | `WirtschaftlichkeitCtrl.cs:1362-1412` |
+| 5 | Anlagenzeilen lesen jetzt zusätzlich `ID_Carrier` und `Brennstoff` und lösen die Kategorie auf | `WirtschaftlichkeitCtrl.cs:1455-1513` (`LiesBhkwAnlagen`) |
+| 6 | Kategorieauflösung Energieträger → Brennstoff → Kategorie, mit Rückfall auf die Gerätezeile | `WirtschaftlichkeitCtrl.cs:1515-1570` (`Ganzzahl`, `BrennstoffKategorie`, `LiesZuordnung`) |
+| 7 | Kategorie „Öl" als benannte Konstante statt als SQL-Literal `2` | `WirtschaftlichkeitCtrl.cs:80-97` (`BRENNSTOFF_KATEGORIE_OEL`) |
+| 8 | `BhkwMitHeizoel` bleibt, aber **nur noch als Rückfallebene**, und dokumentiert das | `WirtschaftlichkeitCtrl.cs:1624-1650` |
+| 9 | Zwei neue Katalogcaches je Lauf leeren — in `Berechne` **und** in `BaueVerlauf` | `WirtschaftlichkeitCtrl.cs:674`, `:745` |
+| 10 | Sechs Ressourcenschlüssel in beiden Sprachen samt Designer und Katalognachtrag | `MyResource/Resource.resx`, `Resource.en-US.resx`, `Resource.Designer.cs`, `Allgemein/Simulation/Lokalisierung_Katalog.md` |
+
+**Vier Quelldateien geändert** (380 Zeilen zugefügt, 56 entfernt) **und drei Dokumente**:
+dieses Protokoll, `W4_Umsetzungsstand.md`, `Allgemein/Simulation/Lokalisierung_Katalog.md`.
+**Keine Migration, kein neuer Katalogschlüssel** — die Änderung liest ausschließlich
+vorhandene Spalten.
+
+---
+
+## N2-3 Woran die Brennstoffart hängt — und warum nicht am `pricing_model`
+
+Die Aufgabe stellte die Frage, ob die Kategorie-Zuordnung (`ID_Kategorie = 2`) anderswo
+robuster gelöst ist, etwa über `ID_Carrier` und `energy_carrier.pricing_model`. Der Befund
+aus dem Schema der produktiven Datenbank (19.08.2026) trennt die beiden Teile der Frage:
+
+**Die Bezugsebene wechselt — auf `Tab_Energieanlagen.ID_Carrier`.** Seit dem
+Energieträger-Umbau trägt jede Anlagenzeile einen Trägerverweis, und er ist die
+**maßgebliche** Zuordnung: Aus ihm bildet die Anwendung Brennstoffverbrauch, Kosten und
+Emissionen (`SimulationControl.EnergietraegerZuordnungLesen`, `KostenEmissionRechner`).
+`Tab_BHKW.Brennstoff` beschreibt dagegen das **Kataloggerät**; wechselt der Anwender den
+Träger der Anlage, bleibt die Gerätezeile stehen.
+
+**Das Merkmal wechselt NICHT — die Kategorie bleibt.** `pricing_model` ist die gröbere
+Angabe:
+
+| Kategorie (`Tab_BrennstoffKategorien`) | `pricing_model` |
+|---|---|
+| **2 Öl** (Heizöl S/M/L/EL, EL schwefelarm, Bio 5/10/15/20) | `LIQUID_FUEL` |
+| **8 Rapsöl** | `LIQUID_FUEL` |
+| 9 Tierische Fette | `ANIMAL_FAT` |
+
+Über `pricing_model = 'LIQUID_FUEL'` fiele **Rapsöl** mit unter den Ausschluss — ein
+biogener Brennstoff, für den der Ausschluss fossiler flüssiger Brennstoffe gerade nicht
+gilt. Das wäre ein **neuer** Fehlbefund, eingehandelt bei der Behebung eines alten. Die
+Kategorie ist außerdem dasselbe Merkmal, das der Ausschluss schon vorher geprüft hat — die
+Änderung bleibt damit sauber auf den Bezug beschränkt und der Regressionsnachweis in
+N2-5 sauber führbar.
+
+**Der Weg ist deshalb zweistufig:**
+
+```
+1. Tab_Energieanlagen.ID_Carrier → energy_carrier.ID_Brennstoff
+                                 → Tab_Brennstoff_Stamm.ID_Kategorie
+2. (Rückfall) Tab_BHKW.Brennstoff → Tab_Brennstoff_Stamm.ID_Kategorie
+```
+
+Stufe 2 ist **kein Randfall**: Die BHKW-Anlage des Projekts 1017 („BHKW EW K 10 S [K]
+Heizol", trotz des Namens ein Stadtgas-Gerät) führt **keinen** Energieträger; die Engine
+meldet das seit Frage 21 als Warnung und rechnet weiter. Sie greift ebenso, wenn der Träger
+im Katalog fehlt oder wenn eine alte Datenbank die Tabelle `energy_carrier` gar nicht führt.
+Ergibt keine der beiden Stufen eine Kategorie, gilt die Anlage als **nicht** ölbetrieben —
+dieselbe Vorsicht, die schon der Altstand hatte (sein `COUNT(*)` zählte nur Zeilen mit
+gültigem Verbund).
+
+**Nachgemessen an den Trägerzeilen:** Alle 21 Träger der produktiven Datenbank haben einen
+gültigen `ID_Brennstoff`; für die drei BHKW-Anlagen mit Träger stimmen beide Wege überein
+(1018 Erdgas E, 1024 Heizöl L, 1030 Erdgas E).
+
+---
+
+## N2-4 Zwei Ausschlussgründe, eine Bilanz
+
+Die Bereinigung der Bezugsgrößen ist unverändert die des Nachtrags 1 (Abschnitt N3):
+
+```
+anteil   = Σ Strom der förderfähigen Anlagen / Σ Strom aller Anlagen
+bonusVoll → bonusVoll · anteil
+vbh       → Σ Strom der förderfähigen Anlagen · 1000 / Σ P_el derselben
+```
+
+Neu ist nur die **Menge** der förderfähigen Anlagen: ausgeschlossen ist, wer über der
+Ausschreibungsgrenze liegt **oder** mit Heizöl läuft. Beides entsteht in **einem**
+Durchlauf über die Anlagen, und die Summen `PelFoerderfaehigKW`/`StromFoerderfaehigMWh`
+werden nur einmal je Anlage fortgeschrieben. Eine Anlage, auf die **beide** Gründe
+zutreffen, wird deshalb **genau einmal** gekürzt — nachgewiesen in N2-5, Fall (d) gegen
+(d2): Beide liefern denselben Zuschlag und denselben Barwert auf die Nachkommastelle.
+
+**Die Meldungen trennen die Gründe, die Anlagen bleiben eindeutig.** Eine Anlage, die
+zugleich zu groß und ölbetrieben ist, erscheint **nur** in der Größen-Meldung
+(`UeberGrenze`); die Heizöl-Meldung führt die Teilmenge `NurHeizoel`. So steht keine Anlage
+zweimal im selben Hinweis. Die vollständige Liste der Öl-Anlagen (`MitHeizoel`) wird
+getrennt geführt — sie trägt den Hinweis „Öl-BHKW ohne Inbetriebnahmedatum", der auch dann
+gilt, wenn gar nichts ausgeschlossen wurde.
+
+**Eine Nebenkorrektur.** Der Zweig „keine Anlage bleibt übrig" verlangt jetzt zusätzlich
+einen **echten** Ausschluss. Ohne ihn hieße eine Restleistung von 0 nur, dass in den
+Anlagenzeilen keine elektrische Nennleistung steht; der Altstand meldete dafür „jede Anlage
+über der Ausschreibungsgrenze" mit **leerer** Aufzählung und setzte den Bonus auf 0. Dieser
+Fall rechnet jetzt unbereinigt weiter — mit derselben Leistung aus der Gerätesumme, die
+`VbhElektrisch` ohnehin schon verwendet. Kein Referenzprojekt erreicht diesen Zweig
+(alle BHKW-Anlagen führen ein gepflegtes `Pel`).
+
+---
+
+## N2-5 Wirkung — mit Zahlen
+
+**Gemeinsame Grundlage:** Wegwerf-Kopien der produktiven `Kenndaten.accdb` vom 19.08.2026.
+KWKG-Parameter der Probe wie in N5: Zuschlag Eigenstrom 4,00 ct/kWh, Einspeisung
+8,00 ct/kWh, Kontingent 30.000 h, Jahresdeckel aus der KWKG-2025-Staffel, Zins 3,0 %,
+Betrachtungszeitraum 20 a, Stichtag und Inbetriebnahme 01.01.2026, keine Stundenreihe.
+
+### N2-5.1 Bestandsprojekte — unverändert, und Projekt 1024 ist ein echter Befund
+
+| Projekt | Anlagen | Strom [MWh/a] | Vbh [h/a] | KWKG Jahr 1 **alt** | **neu** | Barwert 20 a **alt** | **neu** |
+|---|---|---|---|---|---|---|---|
+| 1017 | 1 × 10,0 kW | 28,43 | 2.842,90 | 1.137,20 €/a | 1.137,20 €/a | 10.068,70 € | 10.068,70 € |
+| 1018 | 1 × 14,5 kW | 14,96 | 1.031,63 | 598,40 €/a | 598,40 €/a | 8.902,68 € | 8.902,68 € |
+| 1024 | 1 × 21,0 kW | 73,91 | 3.519,43 | 0,00 €/a ¹ | 0,00 €/a ¹ | 0,00 € | 0,00 € |
+| 1007, 1008, 1011, 1021, 1023 | kein BHKW-Ergebnis | 0 | 0 | 0,00 €/a | 0,00 €/a | 0,00 € | 0,00 € |
+
+¹ Heizöl-Ausschluss (IBN 2026), in **beiden** Ständen — aber ab jetzt aus dem geprüften Grund.
+
+**Δ = 0,00 € in jeder Zeile.**
+
+> ### Projekt 1024: echter Befund, kein Fehlbefund
+>
+> Die Aufgabe verlangte ausdrücklich die Klärung, ob die Meldung „0 € wegen Heizöl" bei
+> Projekt 1024 auf einer verwaisten Gerätezeile beruht. **Sie tut es nicht.** Das Projekt
+> führt fünf BHKW-**Gerätezeilen**, davon zwei mit Heizöl L (`EC_Power_6kw.el FL` 6 kW und
+> `A-Tron_21_F` 21 kW) — aber genau **eine Anlagenzeile**, und die ist die ölbetriebene:
+>
+> | | Gerätezeile | Anlagenzeile | Brennstoff (Gerät) | Energieträger (Anlage) |
+> |---|---|---|---|---|
+> | **installiert** | `A-Tron_21_F`, 21 kW | ja (ID 11257) | 8 = Heizöl L (Kat. 2) | 71 = „Heizöl L var" → Heizöl L (Kat. 2) |
+> | verwaist | `EC_Power_6kw.el FL`, 6 kW | — | 8 = Heizöl L | — |
+> | verwaist | 2 × `EC_Power_15kw.el Gas`, `2G 400kw.el Gas` | — | 1 = Stadtgas | — |
+>
+> **Beide** Wege der Kategorieauflösung — Träger wie Gerät — liefern Kategorie 2. Der
+> Ausschluss bleibt also bestehen, es gibt **keine Ergebniskorrektur** zu belegen. Neu ist
+> allein, dass die Meldung die Anlage benennt: „Jede BHKW-Anlage des Projekts wird mit
+> Heizöl betrieben (A-Tron_21_F (21 kW)) …" statt der pauschalen Altmeldung.
+>
+> **Projekt 1023 ist der Gegenfall**, den der Altstand falsch behandelt hätte: elf
+> Gerätezeilen, darunter ein Öl-BHKW — und **keine einzige BHKW-Anlagenzeile**. Ein
+> Zuschlag entsteht dort heute schon deshalb nicht, weil der Lauf kein BHKW-Ergebnis
+> liefert; die Bezugskorrektur bleibt an diesem Projekt folgenlos, zeigt aber, dass der
+> Fehler im Bestand real angelegt ist.
+
+### N2-5.2 Präparierte Kopien — die Wirkung
+
+Basis ist Projekt 1018 (Gas-BHKW, 14,5 kW, 13,23 MWh). Anlagen-, Geräte- und Ergebniszeilen
+sind **auf Datenebene** präpariert (Klone der vorhandenen Zeilen mit geändertem Brennstoff,
+Träger, `Pel` und Stromsumme); **nicht neu simuliert** — der Rechenkern ist von diesem
+Nachtrag nicht berührt (N2-6, V1).
+
+| Fall | Aufbau | Jahr 1 **alt** | **neu** | Barwert 20 a **alt** | **neu** |
+|---|---|---|---|---|---|
+| **(a)** Gas- und Öl-BHKW nebeneinander | 2 × 14,5 kW, je 13,23 MWh | **0,00 €** | **529,20 €** | **0,00 €** | **7.873,16 €** |
+| **(b)** verwaiste Öl-**Gerätezeile** ohne Anlagenzeile | 1 × 14,5 kW Gas + Karteileiche | **0,00 €** | **529,20 €** | **0,00 €** | **7.873,16 €** |
+| **(c)** einzige Anlage ölbetrieben | 1 × 14,5 kW Öl | 0,00 € | 0,00 € | 0,00 € | 0,00 € |
+| **(d)** Anlage **zugleich** > 500 kW **und** Öl | 200 kW Gas + 600 kW Öl | **0,00 €** | **24.000,00 €** | **0,00 €** | **202.106,33 €** |
+| **(d2)** Gegenprobe: dieselbe Anlage nur zu groß | 200 kW Gas + 600 kW Gas | 24.000,00 € | 24.000,00 € | 202.106,33 € | 202.106,33 € |
+| **(e)** Öl **nur** am Energieträger der Anlage | Gerät Erdgas E, Träger Heizöl L | 529,20 € | **0,00 €** | 7.873,16 € | **0,00 €** |
+| **(f)** Öl **nur** an der Gerätezeile, Anlage ohne Träger | Gerät Heizöl L, `ID_Carrier` NULL | 0,00 € | 0,00 € | 0,00 € | 0,00 € |
+| **(g)** keine Anlagenzeile, Öl-Gerätezeile | Ersatzweg | 0,00 € | 0,00 € | 0,00 € | 0,00 € |
+| **(m)** gemischt, nichts bleibt übrig | 600 kW Gas + 200 kW Öl | 0,00 € | 0,00 € | 0,00 € | 0,00 € |
+
+**Die vier Kernaussagen der Tabelle:**
+
+- **(a)** ist die eigentliche Korrektur: Ein Öl-Modul nimmt dem Gas-Modul nichts mehr. Der
+  Betrag ist exakt der des einzelnen Gas-Moduls (529,20 €/a) — der Anteilsfaktor
+  13,23/26,46 = 0,5 halbiert den verdoppelten Bonus punktgenau.
+- **(b)** belegt den zweiten Mangel: Eine Gerätezeile ohne Anlagenzeile beeinflusst das
+  Ergebnis nicht mehr. Das ist derselbe Nachweis, den E2 für die Leistungssumme geführt hat.
+- **(d) gegen (d2)** belegt die Kombinierbarkeit: **byte-gleiche** Zahlen
+  (24.000,0000 €/a; 202.106,3288 €) — die doppelt betroffene Anlage wird genau einmal
+  gekürzt. Fiele sie zweimal aus den Summen, käme ein negativer oder halbierter Anteil heraus.
+- **(e)** ist der einzige Fall, in dem der neue Stand **strenger** ist als der alte: Der
+  Energieträger der Anlage schlägt den Brennstoff des Katalogeräts. Genau so rechnet die
+  Anwendung an jeder anderen Stelle auch (Verbrauch, Kosten, Emissionen) — hier wird der
+  Guard mit dem Rest der Anwendung konsistent.
+
+### N2-5.3 Die Neuanlagen-Regel bleibt unberührt
+
+| Fall | Parametrierung | alt | neu |
+|---|---|---|---|
+| (c) mit IBN **2020** | Bestandsanlage | 529,20 €/a, kein Hinweis | **identisch** |
+| (c) **ohne** IBN | Datum fehlt | 529,20 €/a + Hinweis | 529,20 €/a + Hinweis, jetzt **mit Anlagennamen** |
+| (a) **ohne** IBN | Datum fehlt, gemischt | 1.058,40 €/a + Hinweis | **identisch**, Hinweis nennt nur die Öl-Anlage |
+
+### N2-5.4 Die Meldungen
+
+| Fall | Meldung (DE) |
+|---|---|
+| Teilausschluss Heizöl | „KWKG: Mit Heizöl betrieben und deshalb ohne Zuschlag: OEL_B (14 kW) (KWKG 2025, Neuanlagen nur noch mit Erdgas; Näherung: gilt auch für Bio-Blends). Die übrigen Anlagen mit zusammen 14 kW rechnen weiter." |
+| alle Anlagen Öl | „KWKG: Jede BHKW-Anlage des Projekts wird mit Heizöl betrieben (A-Tron_21_F (21 kW)) — als Neuanlage nicht mehr förderfähig (KWKG 2025, nur noch Erdgas; Näherung: gilt auch für Bio-Blends); Bonus = 0." |
+| gemischt, nichts bleibt übrig | „KWKG: Keine BHKW-Anlage des Projekts ist zuschlagsberechtigt — über der Ausschreibungsgrenze von 500 kW: GAS_A (600 kW); mit Heizöl betrieben: OEL_200 (200 kW); Bonus = 0." |
+| Öl-Anlagen ohne IBN-Datum | „KWKG: Öl-BHKW ohne Inbetriebnahmedatum: OEL_B (14 kW) — als Neuanlage wäre der Zuschlag für diese Anlagen ausgeschlossen (KWKG 2025); Datum im Parameterdialog pflegen." |
+| Brennstoff je Anlage nicht ermittelbar | „KWKG: Das Projekt führt ein Öl-BHKW; welche Anlage damit betrieben wird, ließ sich nicht ermitteln, deshalb greift der Heizöl-Ausschluss ersatzweise auf alle Geräte des Projekts (KWKG 2025, Neuanlagen nur noch mit Erdgas); Bonus = 0." |
+| dito, ohne IBN-Datum | „KWKG: Das Projekt führt ein Öl-BHKW, aber kein Inbetriebnahmedatum — als Neuanlage wäre der Zuschlag ausgeschlossen (KWKG 2025). Welche Anlage mit Öl betrieben wird, ließ sich nicht ermitteln; Datum im Parameterdialog pflegen." |
+
+Die Altmeldung lautete in **allen** diesen Fällen gleich: „KWKG: Heizöl-BHKW sind als
+Neuanlage nicht mehr förderfähig … Bonus = 0." Sie sagte weder, **welche** Anlage gemeint
+ist, noch dass die übrigen weiterrechnen, noch ob überhaupt eine installierte Anlage
+betroffen ist. Alle sechs Texte stehen in beiden Sprachen im Katalog `MyResource`
+(Proben V13/V14). Die beiden Meldungen der Ausschreibungsgrenze aus Nachtrag 1 sind
+**wortgleich unverändert** (Probe V8).
+
+---
+
+## N2-6 Verifikation
+
+### N2-6.1 Referenzlauf A/B
+
+Beide Stände aus eigenen Exporten gebaut (`git archive 006e780` für A, Arbeitskopie für B;
+Unterschied nachgewiesen: **exakt vier Dateien**), jeweils mit dem mitgelieferten
+`Referenzlauf.csproj`. **Eine gemeinsame Wegwerf-Kopie** der produktiven Datenbank, mit dem
+B-Stand migriert, danach von beiden Ständen gelesen. Acht Projekte, Feature-Flag
+`Kaskade_Zweikanalig` **AUS und AN**.
+
+```
+Flag AUS                                   Flag AN
+Projekt_1007: PASS (29 Dateien)            Projekt_1007: PASS (29 Dateien)
+Projekt_1008: PASS (21 Dateien)            Projekt_1008: PASS (21 Dateien)
+Projekt_1011: PASS (29 Dateien)            Projekt_1011: PASS (29 Dateien)
+Projekt_1017: PASS (21 Dateien)            Projekt_1017: PASS (21 Dateien)
+Projekt_1018: PASS (22 Dateien)            Projekt_1018: PASS (22 Dateien)
+Projekt_1021: PASS (21 Dateien)            Projekt_1021: PASS (21 Dateien)
+Projekt_1023: PASS (25 Dateien)            Projekt_1023: PASS (25 Dateien)
+Projekt_1024: PASS (26 Dateien)            Projekt_1024: PASS (26 Dateien)
+
+GESAMT: PASS (2 129 527 Werte)             GESAMT: PASS (2 129 527 Werte)
+```
+
+**Byte-Vergleich: 194 von 194 CSV identisch, in beiden Flag-Stellungen.** Das ist
+erwartungsgemäß und trotzdem nicht überflüssig: Der Referenzlauf ruft die
+Wirtschaftlichkeit gar nicht auf (`grep` über `Referenzlauf/*.cs`: kein Treffer auf
+„Wirtschaftlichkeit" oder „KWKG"), er beweist also die Unversehrtheit des **Rechenkerns**,
+nicht die des Guards. Den Guard belegt der Harness in N2-6.2.
+
+### N2-6.2 Verifikationstabelle
+
+| # | Prüfung | Methode | Ergebnis |
+|---|---|---|---|
+| V1 | Engine unberührt | `git diff --name-only -- Allgemein/Simulation/` | **leer** (keine Datei) |
+| V2 | Simulationsergebnisse unverändert, Flag AUS | `Referenzlauf.exe vergleich`, gemeinsame DB-Kopie | **8/8 PASS**, 2 129 527 Werte |
+| V3 | dito, Flag AN (`Kaskade_Zweikanalig` für alle 17 Einstellungszeilen gesetzt) | dito | **8/8 PASS**, 2 129 527 Werte |
+| V4 | Byte-Identität der Ergebnisdateien | `cmp` je Datei, beide Flag-Stellungen | **194/194 gleich**, 0 Abweichungen |
+| V5 | Wirtschaftlichkeitswerte der 8 Referenzprojekte unverändert | Reflection-Harness auf `BaueKwkgReihe`/`VbhElektrisch`/`PelKW`, A gegen B, **unmigrierte und migrierte** Kopie | **8/8 wertgleich**; einzige Abweichung ist der Meldungstext von 1024 |
+| V6 | Projekt 1024: echter Befund oder verwaiste Gerätezeile? | Schema-Dump der Anlagen-, Geräte- und Trägerzeilen | **echter Befund** — die einzige Anlagenzeile ist das Öl-BHKW, beide Auflösungswege stimmen überein |
+| V7 | Fall (a) Gas + Öl nebeneinander | präparierte Kopie, A gegen B | 0,00 € → **529,20 €/a**, 7.873,16 € Barwert |
+| V8 | Fall (b) verwaiste Öl-Gerätezeile | präparierte Kopie, A gegen B | 0,00 € → **529,20 €/a**; kein Ausschluss mehr |
+| V9 | Fall (c) alle Anlagen Öl | präparierte Kopie, A gegen B | **0,00 € in beiden Ständen** |
+| V10 | Fall (d) gegen (d2): eine Anlage zugleich zu groß und Öl | zwei präparierte Kopien, B gegen B | **24.000,0000 €/a und 202.106,3288 €** in beiden — genau einmal gekürzt |
+| V11 | Träger schlägt Gerät (Fall e) | präparierte Kopie, A gegen B | 529,20 € → **0,00 €**; die Anlage wird über `ID_Carrier` erkannt |
+| V12 | Rückfall auf die Gerätezeile bei fehlendem Träger (Fall f) | präparierte Kopie, A gegen B | **0,00 € in beiden Ständen** |
+| V13 | Ersatzweg ohne Anlagenzeilen (Fall g) | präparierte Kopie, A gegen B | **0,00 € in beiden Ständen**, Hinweis nennt den Ersatzweg |
+| V14 | Meldungen der Ausschreibungsgrenze unverändert | präparierte Kopie, beide Anlagen > 500 kW | Hinweis **wortgleich** A und B |
+| V15 | Neuanlagen-Regel unberührt | IBN 2020 und IBN fehlt, je auf (a) und (c) | Bonus in A und B **gleich**; Hinweis nur präziser |
+| V16 | Ressourcen in beiden Sprachen | Harness mit `CurrentUICulture = en-US`, Fall (a) | DE- und EN-Meldung erscheinen, **Zahlen byte-gleich** (529,2000 / 7 873,1597) |
+| V17 | Ressourcen in beiden `.resx` und im Designer | `grep` je Schlüssel | **6/6** in `Resource.resx`, `Resource.en-US.resx`, `Resource.Designer.cs` |
+| V18 | Build | `MSBuild WP-Plan.sln -t:Rebuild -p:Platform=x86`, Ausgabe in den Scratch-Ordner | **0 Fehler, exakt 6 Bestandswarnungen** |
+| V19 | Kodierung und Zeilenenden | `file` je geänderter Datei, CR-Zählung, Suche nach U+FFFD | unverändert (3 × UTF-8 mit BOM, 1 × ohne), **alle Zeilen CRLF**, **0 Ersatzzeichen** |
+| V20 | Produktivdatenbank nur gelesen | `Kenndaten.laccdb` vor jedem Kopieren geprüft (nie vorhanden); alle Proben auf Wegwerf-Kopien | **erfüllt** |
+| V21 | `bin\` des Repos unberührt | jeder Build ausschließlich mit `-p:OutDir=<Scratch>` | **erfüllt** |
+
+---
+
+## N2-7 Verbleibende Restbefunde der Reihe „Projekt gegen Anlage"
+
+Restbefund 1 aus N7 ist erledigt. Die Reihe ist damit **nicht** abgeschlossen:
+
+| Fundstelle | Befund | Bewertung |
+|---|---|---|
+| `p.KwkgStichtag`, `p.KwkgInbetriebnahme` (`:958-982`) | **ein Datumspaar je Projekt**; § 6 KWKG (Stichtag, Realisierungsfrist) gilt je Anlage — und über dasselbe Datum entscheidet sich, ob der Heizöl-Ausschluss überhaupt greift | **Der neue gravierendste Restbefund.** Bei gemischten Inbetriebnahmen ist die Prüfung entweder zu streng oder zu großzügig, und ein einziges Datum entscheidet für alle Anlagen zugleich über Neuanlage/Bestandsanlage. Fachlich zu klären, gehört zu E6. |
+| `p.KwkgVbhKontingent` (`:1121`) | 30.000 h je **Projekt**; nach § 8 Abs. 1 stehen sie **jeder Anlage** zu | Bereits als E2-Punkt 2 festgehalten; die leistungsgewichtete Vbh bildet es näherungsweise ab. |
+| `p.KwkgBonus` / `KwkgBonusEinspeisung` | **ein** Satz je Projekt; § 7 staffelt nach der Leistungsklasse der Anlage | E6, Punkt 3 in Abschnitt 7. Katalogschlüssel liegen seit E1 bereit. |
+| Jahresdeckel über **eine** gemeinsame Vbh-Größe | Näherung der Zwischenlösung, unverändert aus Nachtrag 1 (N3, Grenze 1) | E6. |
+| `GESETZ_STROMST_GRENZE_BEFREIUNG` (2.000 kW, § 9 Abs. 1 Nr. 3 StromStG) | ungelesen; auch diese Grenze ist eine **Anlagen**-Nennleistung | Vorsorglich vermerkt: Bei der Umsetzung in E4 nicht die Projektsumme dagegen prüfen. |
+| `KostenEmissionRechner.cs:225-235` | BEHG-Pflicht über dieselben Kategorien (`1, 2, 3, 4, 11`) — als **Zahlenliterale**, und die Biogas-Ausnahme hängt am **Bezeichnertext** | Kein Fehler in der Bezugsebene (dort wird ohnehin je Träger gerechnet), aber dieselben Katalogschlüssel ein zweites Mal als Literal. Eine gemeinsame Konstantenquelle für die Brennstoffkategorien wäre der nächste Aufräumschritt. |
+

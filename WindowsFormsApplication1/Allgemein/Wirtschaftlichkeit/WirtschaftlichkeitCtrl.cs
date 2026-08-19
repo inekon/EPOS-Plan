@@ -38,6 +38,17 @@ namespace WindowsFormsApplication1
         private readonly Dictionary<int, List<BhkwAnlage>> _anlagenCache =
             new Dictionary<int, List<BhkwAnlage>>();
 
+        /// <summary>
+        /// Die beiden Nachschlagewerke des Heizöl-Ausschlusses (Nachtrag 2 zu E2), je
+        /// Berechne-Lauf einmal gelesen — sie sind projektunabhängige Katalogtabellen:
+        /// <c>Tab_Brennstoff_Stamm.ID → ID_Kategorie</c> und
+        /// <c>energy_carrier.id → ID_Brennstoff</c>. <c>null</c> = noch nicht gelesen.
+        /// </summary>
+        private Dictionary<int, int> _brennstoffKategorie;
+
+        /// <inheritdoc cref="_brennstoffKategorie"/>
+        private Dictionary<int, int> _carrierBrennstoff;
+
         /// <summary>Lesefassade auf Tab_Gesetzesparameter (E1); eine Instanz je Berechne-Lauf.</summary>
         private GesetzKatalog _gesetze;
 
@@ -66,6 +77,24 @@ namespace WindowsFormsApplication1
         /// kennt den Schlüssel noch nicht — dann gilt dieser Wert.</para>
         /// </summary>
         public const double KWKG_MAX_LEISTUNG_KW = 500;
+
+        /// <summary>
+        /// Kategorie „Öl" des Brennstoffkatalogs — <c>Tab_BrennstoffKategorien.ID</c> = 2,
+        /// die Kategorie der neun Heizöl-Zeilen in <c>Tab_Brennstoff_Stamm</c> (Heizöl S/M/L/EL,
+        /// EL schwefelarm, Bio 5/10/15/20).
+        ///
+        /// <para><b>Warum diese Kategorie und nicht <c>pricing_model</c>.</b> Der Code kennt mit
+        /// <c>energy_carrier.pricing_model = 'LIQUID_FUEL'</c> ein zweites, gröberes Merkmal für
+        /// „flüssig". Es umfasst neben der Kategorie 2 auch die Kategorie 8 <b>Rapsöl</b> — ein
+        /// biogener Brennstoff, für den der Ausschluss fossiler flüssiger Brennstoffe gerade nicht
+        /// gilt. Maßgeblich ist deshalb die Kategorie; sie ist zugleich das Merkmal, das der
+        /// Ausschluss schon vor diesem Nachtrag geprüft hat (siehe <see cref="BhkwMitHeizoel"/>).</para>
+        ///
+        /// <para><b>Persistenzwert</b> im Sinne der Drei-Schichten-Regel: ein in SQL verglichener
+        /// Katalogschlüssel, eingefroren. Er steht nicht in <c>DbWerte</c>, weil dort ausschließlich
+        /// die deutschen Zeichen<i>ketten</i> der Datenbank gesammelt sind.</para>
+        /// </summary>
+        public const int BRENNSTOFF_KATEGORIE_OEL = 2;
 
         // Feste Ausschläge der Sensitivitätsanalyse (W2; im Bericht ausgewiesen).
         public const double SENS_DELTA_ZINS = 1.0;      // ± Prozentpunkte
@@ -642,6 +671,7 @@ namespace WindowsFormsApplication1
             _staffelCache = null; _pelCache.Clear(); _oelCache.Clear();
             _refKesselCache.Clear();                                       // frischer Lauf
             _anlagenCache.Clear(); _gesetze = null;                        // Nachtrag zu E2
+            _brennstoffKategorie = null; _carrierBrennstoff = null;        // Nachtrag 2 zu E2
 
             foreach (string szenario in WirtschaftlichkeitSzenario.Alle)
             {
@@ -711,6 +741,8 @@ namespace WindowsFormsApplication1
 
             TarifParameter tarif = LadeTarif(daten.IdStamm);
             _staffelCache = null; _pelCache.Clear(); _oelCache.Clear();   // frischer Lauf
+            _anlagenCache.Clear(); _gesetze = null;                       // wie in Berechne
+            _brennstoffKategorie = null; _carrierBrennstoff = null;
 
             VerlaufSerie stamm = null;
             foreach (VariantenDaten v in daten.Varianten)
@@ -892,6 +924,15 @@ namespace WindowsFormsApplication1
         /// ihn; die projektweiten Bezugsgrößen werden dafür bereinigt
         /// (<see cref="Anlagenauswahl"/>). Vorher fiel der Zuschlag ganz weg, sobald die
         /// PROJEKTSUMME die Grenze überschritt.</para>
+        ///
+        /// <para><b>NACHTRAG 2 ZU E2 (19.08.2026): Heizöl-Ausschluss je ANLAGE.</b> Derselbe
+        /// Weg für den zweiten Ausschlussgrund: Ein Öl-BHKW verliert seinen Zuschlaganteil,
+        /// ein daneben stehendes Gas-BHKW behält ihn. Vorher genügte EINE Öl-Zeile in
+        /// <c>Tab_BHKW</c>, um dem ganzen Projekt den Zuschlag zu nehmen — auch dann, wenn zu
+        /// dieser Gerätezeile nie eine Anlagenzeile entstand. Beide Ausschlussgründe laufen
+        /// jetzt durch <see cref="Anlagenauswahl"/> und kürzen die Bezugsgrößen zusammen um
+        /// <b>jede ausgeschlossene Anlage genau einmal</b>, auch wenn beide Gründe auf
+        /// dieselbe Anlage zutreffen.</para>
         /// </summary>
         private double[] BaueKwkgReihe(VariantenDaten v, WirtschaftlichkeitParameter p,
                                        StromMatrix matrix, out double jahr1, out string hinweis)
@@ -944,20 +985,31 @@ namespace WindowsFormsApplication1
                 ? p.KwkgInbetriebnahme.Value.Year
                 : DateTime.Now.Year + 1;   // Planungsfall: IBN im Folgejahr (Hinweis oben)
 
-            // ------- Guard Kap. 8.4: Ausschreibungsgrenze JE ANLAGE, Heizöl-Neuanlage -------
+            // ------- Guard Kap. 8.4: Ausschreibungsgrenze und Heizöl, JE ANLAGE -------
             // NACHTRAG ZU E2 (Nutzerentscheidung 19.08.2026): Das Gesetz stellt auf die
             // EINZELNE KWK-Anlage ab — oberhalb der Grenze gibt es den Zuschlag nur über
             // eine Ausschreibung (§ 8a KWKG / KWKAusV), und dieser Weg ist hier nicht
             // bedienbar. Zwei Module zu je 300 kW sind damit ZWEI förderfähige Anlagen,
             // keine nicht förderfähige 600-kW-Anlage. Bis hierher prüfte der Guard die
             // PROJEKTSUMME und nahm einer Kaskade den Zuschlag vollständig.
+            //
+            // NACHTRAG 2 (19.08.2026): Der Heizöl-Ausschluss läuft denselben Weg. Er gilt
+            // ebenfalls je Anlage — ein Öl-BHKW ist nicht zuschlagsberechtigt, ein daneben
+            // stehendes Gas-BHKW schon. Der Ausschluss greift unverändert NUR für erkennbare
+            // Neuanlagen (IBN ≥ 2025); Bestandsanlagen rechnen mit ihrem historischen Satz
+            // weiter (Kap. 8.5.3), und die Rechtsgrundlage bleibt die Sekundärquelle aus
+            // Grundlagen_KWKG_Energiesteuer_Stromsteuer.md Abschnitt 6 Punkt 3 — daran ändert
+            // dieser Nachtrag nichts, er korrigiert ausschließlich den BEZUG.
             double grenzeKW = AusschreibungsgrenzeKW(foerderbeginn);
-            KwkgAnlagenauswahl auswahl = Anlagenauswahl(v, grenzeKW);
+            bool oelAusschluss = p.KwkgInbetriebnahme.HasValue
+                              && p.KwkgInbetriebnahme.Value.Year >= 2025;
+            KwkgAnlagenauswahl auswahl = Anlagenauswahl(v, grenzeKW, oelAusschluss);
 
             if (!auswahl.Bestimmbar)
             {
-                // Ohne zuordenbare Anlagenzeilen bleibt nur die Projektsumme — der Weg bis
-                // zu diesem Nachtrag. Er ist konservativ und wird als Ersatz ausgewiesen.
+                // Ohne zuordenbare Anlagenzeilen bleiben nur die Projektsumme und die
+                // Gerätezeilen — der Weg bis zu diesem Nachtrag. Er ist konservativ und
+                // wird als Ersatz ausgewiesen.
                 if (auswahl.PelGesamtKW > grenzeKW)
                 {
                     hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR,
@@ -965,37 +1017,63 @@ namespace WindowsFormsApplication1
                     hinweis = string.Join(" | ", hinweise);
                     return null;
                 }
-            }
-            else if (auswahl.PelFoerderfaehigKW <= 0)
-            {
-                // Jede Anlage über der Grenze — dasselbe Ergebnis wie bisher, aber aus dem
-                // richtigen Grund und mit den Anlagen im Klartext.
-                hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_ALLE_UEBER_GRENZE,
-                                           grenzeKW.ToString("N0"), auswahl.AusgeschlosseneAlsText()));
-                hinweis = string.Join(" | ", hinweise);
-                return null;
-            }
-            else if (auswahl.Ausgeschlossene.Count > 0)
-            {
-                hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_ANLAGE_UEBER_GRENZE,
-                                           grenzeKW.ToString("N0"), auswahl.AusgeschlosseneAlsText(),
-                                           auswahl.PelFoerderfaehigKW.ToString("N0")));
-            }
 
-            // Heizöl-Ausschluss nur für erkennbare NEUANLAGEN (IBN ≥ 2025) —
-            // Bestandsanlagen rechnen mit ihrem historischen Satz weiter (Kap. 8.5.3).
-            if (!_oelCache.ContainsKey(v.IdProjekt)) _oelCache[v.IdProjekt] = BhkwMitHeizoel(v.IdProjekt);
-            bool oelBhkw = _oelCache[v.IdProjekt];
-            if (p.KwkgInbetriebnahme.HasValue && p.KwkgInbetriebnahme.Value.Year >= 2025 && oelBhkw)
+                if (!_oelCache.ContainsKey(v.IdProjekt)) _oelCache[v.IdProjekt] = BhkwMitHeizoel(v.IdProjekt);
+                bool oelGeraetezeile = _oelCache[v.IdProjekt];
+                if (oelAusschluss && oelGeraetezeile)
+                {
+                    hinweise.Add(MyResource.Resource.WIRT_KWKG_HEIZOEL_JE_ANLAGE_UNKLAR);
+                    hinweis = string.Join(" | ", hinweise);
+                    return null;
+                }
+                if (!p.KwkgInbetriebnahme.HasValue && oelGeraetezeile)
+                    hinweise.Add(MyResource.Resource.WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR);
+            }
+            else if (auswahl.AnzahlAusgeschlossen > 0 && auswahl.PelFoerderfaehigKW <= 0)
             {
-                hinweise.Add("KWKG: Heizöl-BHKW sind als Neuanlage nicht mehr förderfähig " +
-                             "(KWKG 2025, nur noch Erdgas; Näherung: gilt auch für Bio-Blends); Bonus = 0.");
+                // Keine Anlage bleibt übrig — Ergebnis wie bisher (Bonus = 0), aber mit den
+                // Anlagen und dem jeweiligen Grund im Klartext. Drei Fälle, damit kein
+                // Meldungstext eine leere Aufzählung führt.
+                //
+                // Die Bedingung verlangt zusätzlich einen ECHTEN Ausschluss: Ohne ihn hieße
+                // eine Restleistung von 0 nur, dass in den Anlagenzeilen keine elektrische
+                // Nennleistung steht. Der Altstand meldete dafür „jede Anlage über der
+                // Ausschreibungsgrenze" mit LEERER Aufzählung; jetzt läuft dieser Fall
+                // unbereinigt weiter — wie vor der Prüfung je Anlage, mit der Leistung aus
+                // der Gerätesumme, die VbhElektrisch ohnehin schon verwendet hat.
+                if (auswahl.NurHeizoel.Count == 0)
+                    hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_ALLE_UEBER_GRENZE,
+                                               grenzeKW.ToString("N0"), auswahl.Klartext(auswahl.UeberGrenze)));
+                else if (auswahl.UeberGrenze.Count == 0)
+                    hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_ALLE_HEIZOEL,
+                                               auswahl.Klartext(auswahl.NurHeizoel)));
+                else
+                    hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_KEINE_FOERDERFAEHIG,
+                                               grenzeKW.ToString("N0"), auswahl.Klartext(auswahl.UeberGrenze),
+                                               auswahl.Klartext(auswahl.NurHeizoel)));
                 hinweis = string.Join(" | ", hinweise);
                 return null;
             }
-            if (!p.KwkgInbetriebnahme.HasValue && oelBhkw)
-                hinweise.Add("KWKG: Öl-BHKW ohne Inbetriebnahmedatum — als Neuanlage wäre der " +
-                             "Bonus ausgeschlossen (KWKG 2025); Datum im Parameterdialog pflegen.");
+            else
+            {
+                // Teilausschluss: je Grund eine Meldung, beide nennen die verbleibende
+                // Leistung — das ist dieselbe Zahl, weil sie nach BEIDEN Filtern übrig ist.
+                if (auswahl.UeberGrenze.Count > 0)
+                    hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_ANLAGE_UEBER_GRENZE,
+                                               grenzeKW.ToString("N0"), auswahl.Klartext(auswahl.UeberGrenze),
+                                               auswahl.PelFoerderfaehigKW.ToString("N0")));
+                if (auswahl.NurHeizoel.Count > 0)
+                    hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_ANLAGE_HEIZOEL,
+                                               auswahl.Klartext(auswahl.NurHeizoel),
+                                               auswahl.PelFoerderfaehigKW.ToString("N0")));
+
+                // Öl-Anlagen ohne Inbetriebnahmedatum werden NICHT ausgeschlossen (der
+                // Ausschluss gilt nur für Neuanlagen) — der Anwender muss aber wissen, dass
+                // das Ergebnis am fehlenden Datum hängt.
+                if (!p.KwkgInbetriebnahme.HasValue && auswahl.MitHeizoel.Count > 0)
+                    hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_HEIZOEL_OHNE_IBN,
+                                               auswahl.Klartext(auswahl.MitHeizoel)));
+            }
 
             // ---------------- Bonus bei voller Vergütung [€/a] ----------------
             //  - W3-Split: getrennte Sätze auf KWK-Eigenstrom und -Einspeisung.
@@ -1017,7 +1095,12 @@ namespace WindowsFormsApplication1
             // ist dann Zeile für Zeile die des Vorgängerstands. Was das NICHT löst, steht
             // im Protokoll: Jahresdeckel und 30.000-h-Kontingent laufen weiterhin über
             // EINE gemeinsame Vbh-Größe, statt je Anlage geführt zu werden (E6).
-            if (auswahl.Bestimmbar && auswahl.Ausgeschlossene.Count > 0)
+            //
+            // NACHTRAG 2: Der Zähler ist die Zahl der AUSGESCHLOSSENEN ANLAGEN, nicht die
+            // Länge einer Gründeliste — eine Anlage, die zugleich über der Grenze liegt und
+            // mit Heizöl läuft, fehlt in PelFoerderfaehigKW/StromFoerderfaehigMWh genau
+            // einmal und wird deshalb auch nur einmal abgezogen.
+            if (auswahl.Bestimmbar && auswahl.AnzahlAusgeschlossen > 0)
             {
                 bonusVoll *= auswahl.StromanteilFoerderfaehig;
                 vbh = auswahl.VbhFoerderfaehig;
@@ -1157,20 +1240,39 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
-        // Ausschreibungsgrenze § 8a KWKG / KWKAusV — JE ANLAGE
-        // (Nachtrag zu Etappe E2, Nutzerentscheidung 19.08.2026)
+        // Förderfähigkeit JE ANLAGE — Ausschreibungsgrenze § 8a KWKG / KWKAusV
+        // (Nachtrag zu Etappe E2) und Heizöl-Ausschluss (Nachtrag 2)
+        // Nutzerentscheidungen vom 19.08.2026
         // =====================================================================
 
-        /// <summary>Eine BHKW-Anlagenzeile des Projekts mit ihrer elektrischen Nennleistung.</summary>
+        /// <summary>
+        /// Eine BHKW-Anlagenzeile des Projekts mit ihrer elektrischen Nennleistung und
+        /// ihrer Brennstoffart.
+        /// </summary>
         private sealed class BhkwAnlage
         {
             public string Bezeichner = "";
             public double PelKW;
+
+            /// <summary>
+            /// true, wenn diese Anlage einen Brennstoff der Kategorie „Öl" fährt
+            /// (<see cref="BRENNSTOFF_KATEGORIE_OEL"/>) — ermittelt in
+            /// <see cref="LiesBhkwAnlagen"/> vorrangig über den Energieträger der
+            /// ANLAGE, ersatzweise über den Brennstoff der Gerätezeile.
+            /// </summary>
+            public bool Heizoel;
         }
 
         /// <summary>
-        /// Aufteilung der BHKW-Anlagen eines Projekts in förderfähige und solche über der
-        /// Ausschreibungsgrenze — samt der bereinigten Bezugsgrößen der Zuschlagsrechnung.
+        /// Aufteilung der BHKW-Anlagen eines Projekts in förderfähige und ausgeschlossene —
+        /// samt der bereinigten Bezugsgrößen der Zuschlagsrechnung.
+        ///
+        /// <para><b>Zwei Ausschlussgründe, eine Bilanz.</b> Ausgeschlossen wird eine Anlage,
+        /// wenn sie über der Ausschreibungsgrenze liegt <b>oder</b> mit Heizöl läuft (und der
+        /// Ölausschluss für dieses Projekt überhaupt greift). Die Gründelisten dürfen sich
+        /// überschneiden — die Summen <see cref="PelFoerderfaehigKW"/> und
+        /// <see cref="StromFoerderfaehigMWh"/> entstehen dagegen aus einem einzigen Durchlauf
+        /// über die Anlagen, sodass eine doppelt betroffene Anlage genau einmal fehlt.</para>
         ///
         /// <para><see cref="Bestimmbar"/> = false heißt: Anlagen- und Ergebnismodulzeilen
         /// ließen sich nicht paaren (kein Anlagenbestand, keine Modulzeilen, oder Namen und
@@ -1185,8 +1287,25 @@ namespace WindowsFormsApplication1
             public double StromGesamtMWh;
             public double StromFoerderfaehigMWh;
 
-            /// <summary>Anlagen über der Grenze, als Klartext „Bezeichner (n kW)".</summary>
-            public readonly List<string> Ausgeschlossene = new List<string>();
+            /// <summary>Zahl der ausgeschlossenen Anlagen — je Anlage EINS, gleich wie viele
+            /// Gründe auf sie zutreffen. Maßgeblich für die Bereinigung der Bezugsgrößen.</summary>
+            public int AnzahlAusgeschlossen;
+
+            /// <summary>Anlagen über der Ausschreibungsgrenze, als Klartext „Bezeichner (n kW)".</summary>
+            public readonly List<string> UeberGrenze = new List<string>();
+
+            /// <summary>
+            /// <b>Alle</b> ölbetriebenen Anlagen, unabhängig davon, ob der Ausschluss greift —
+            /// die Grundlage des Hinweises „Öl-BHKW ohne Inbetriebnahmedatum".
+            /// </summary>
+            public readonly List<string> MitHeizoel = new List<string>();
+
+            /// <summary>
+            /// Die Anlagen, die <b>wegen Heizöl</b> ausgeschlossen sind und <b>nicht schon</b>
+            /// über der Ausschreibungsgrenze liegen. Genau diese Teilmenge nennt die
+            /// Heizöl-Meldung — so steht keine Anlage in zwei Meldungen desselben Hinweises.
+            /// </summary>
+            public readonly List<string> NurHeizoel = new List<string>();
 
             /// <summary>Anteil der förderfähigen Anlagen an der Stromerzeugung [0…1].</summary>
             public double StromanteilFoerderfaehig
@@ -1204,9 +1323,10 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            public string AusgeschlosseneAlsText()
+            /// <summary>Eine Gründeliste als Aufzählung für die Meldung.</summary>
+            public string Klartext(List<string> anlagen)
             {
-                return string.Join(", ", Ausgeschlossene.ToArray());
+                return string.Join(", ", anlagen.ToArray());
             }
         }
 
@@ -1229,10 +1349,18 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Prüft JEDE BHKW-Anlage des Projekts einzeln gegen die Ausschreibungsgrenze und
-        /// bildet die um die ausgeschlossenen Anlagen bereinigten Bezugsgrößen.
+        /// Prüft JEDE BHKW-Anlage des Projekts einzeln gegen die Ausschreibungsgrenze und —
+        /// wenn <paramref name="heizoelAusschliessen"/> gilt — gegen den Heizöl-Ausschluss,
+        /// und bildet die um die ausgeschlossenen Anlagen bereinigten Bezugsgrößen.
         /// </summary>
-        private KwkgAnlagenauswahl Anlagenauswahl(VariantenDaten v, double grenzeKW)
+        /// <param name="heizoelAusschliessen">
+        /// true nur für erkennbare NEUANLAGEN (Inbetriebnahme ≥ 2025). Bei false werden
+        /// Öl-Anlagen zwar in <see cref="KwkgAnlagenauswahl.MitHeizoel"/> vermerkt, aber
+        /// nicht ausgeschlossen — Bestandsanlagen rechnen mit ihrem historischen Satz
+        /// weiter (Konzept Kap. 8.5.3).
+        /// </param>
+        private KwkgAnlagenauswahl Anlagenauswahl(VariantenDaten v, double grenzeKW,
+                                                  bool heizoelAusschliessen)
         {
             var a = new KwkgAnlagenauswahl();
             a.PelGesamtKW = PelKW(v.IdProjekt);
@@ -1255,13 +1383,23 @@ namespace WindowsFormsApplication1
                 a.PelGesamtKW += anlagen[i].PelKW;
                 a.StromGesamtMWh += strom[i];
 
-                if (anlagen[i].PelKW > grenzeKW)
+                // Der Bezeichner ist ein Datenwert, kein Anzeigetext; die Klammer mit dem
+                // Einheitenzeichen kommt ohne Wortbestand aus und bleibt deshalb im Code
+                // (Drei-Schichten-Regel, wie die typografischen Marken).
+                string klartext = anlagen[i].Bezeichner + " (" +
+                                  anlagen[i].PelKW.ToString("N0") + " kW)";
+
+                bool ueberGrenze = anlagen[i].PelKW > grenzeKW;
+                bool oel = anlagen[i].Heizoel;
+                if (ueberGrenze) a.UeberGrenze.Add(klartext);
+                if (oel) a.MitHeizoel.Add(klartext);
+                if (oel && heizoelAusschliessen && !ueberGrenze) a.NurHeizoel.Add(klartext);
+
+                // EIN Ausschluss je Anlage, gleich wie viele Gründe zutreffen — sonst
+                // fehlte eine doppelt betroffene Anlage zweimal in den Bezugsgrößen.
+                if (ueberGrenze || (oel && heizoelAusschliessen))
                 {
-                    // Der Bezeichner ist ein Datenwert, kein Anzeigetext; die Klammer mit
-                    // dem Einheitenzeichen kommt ohne Wortbestand aus und bleibt deshalb
-                    // im Code (Drei-Schichten-Regel, wie die typografischen Marken).
-                    a.Ausgeschlossene.Add(anlagen[i].Bezeichner + " (" +
-                                          anlagen[i].PelKW.ToString("N0") + " kW)");
+                    a.AnzahlAusgeschlossen++;
                 }
                 else
                 {
@@ -1317,18 +1455,42 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Bezeichner und elektrische Nennleistung je BHKW-ANLAGENZEILE des Projekts —
-        /// dieselbe Menge, die auch <see cref="LiesBhkwLeistungKW"/> summiert und die die
-        /// Engine rechnet (<c>Tab_Energieanlagen</c> ⋈ <c>Tab_BHKW</c>). Leere Liste, wenn
-        /// das Projekt keine Anlagenzeile führt oder die Abfrage scheitert.
+        /// Bezeichner, elektrische Nennleistung und Brennstoffart je BHKW-ANLAGENZEILE des
+        /// Projekts — dieselbe Menge, die auch <see cref="LiesBhkwLeistungKW"/> summiert und
+        /// die die Engine rechnet (<c>Tab_Energieanlagen</c> ⋈ <c>Tab_BHKW</c>). Leere Liste,
+        /// wenn das Projekt keine Anlagenzeile führt oder die Abfrage scheitert.
+        ///
+        /// <para><b>Die Brennstoffart hat zwei Quellen, in dieser Reihenfolge</b>
+        /// (Nachtrag 2 zu E2):</para>
+        /// <list type="number">
+        ///   <item><description><c>Tab_Energieanlagen.ID_Carrier</c> → <c>energy_carrier</c>
+        ///     → <c>Tab_Brennstoff_Stamm.ID_Kategorie</c>. Der Energieträger hängt an der
+        ///     ANLAGE und ist seit dem Energieträger-Umbau die maßgebliche Zuordnung: Aus ihm
+        ///     bildet die Anwendung Brennstoffkosten und Emissionen
+        ///     (<c>SimulationControl.EnergietraegerZuordnungLesen</c>,
+        ///     <c>KostenEmissionRechner</c>).</description></item>
+        ///   <item><description><c>Tab_BHKW.Brennstoff</c> →
+        ///     <c>Tab_Brennstoff_Stamm.ID_Kategorie</c> — der Weg des Altstands. Er greift,
+        ///     wenn die Anlage keinen Energieträger trägt (<c>ID_Carrier</c> NULL oder 0),
+        ///     wenn der Träger im Katalog fehlt oder wenn die Tabelle <c>energy_carrier</c>
+        ///     in einer alten Datenbank gar nicht existiert. Im Bestand vom 19.08.2026 ist
+        ///     das kein Randfall: Die BHKW-Anlage des Projekts 1017 führt keinen
+        ///     Energieträger.</description></item>
+        /// </list>
+        ///
+        /// <para><b>Warum nicht umgekehrt.</b> <c>Tab_BHKW</c> trägt den Brennstoff des
+        /// KATALOGGERÄTS. Wechselt der Anwender den Energieträger der Anlage, bleibt die
+        /// Gerätezeile stehen — der Trägerverweis ist dann die jüngere und für Kosten,
+        /// Emissionen und Bericht bereits maßgebliche Aussage.</para>
         /// </summary>
-        private static List<BhkwAnlage> LiesBhkwAnlagen(int idProjekt)
+        private List<BhkwAnlage> LiesBhkwAnlagen(int idProjekt)
         {
             var liste = new List<BhkwAnlage>();
             try
             {
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT a.Bezeichner, b.Pel FROM Tab_Energieanlagen AS a " +
+                    "SELECT a.Bezeichner, a.ID_Carrier, b.Pel, b.Brennstoff " +
+                    "FROM Tab_Energieanlagen AS a " +
                     "INNER JOIN Tab_BHKW AS b ON a.ID_BHKW = b.ID " +
                     "WHERE a.ID_Projekt = ? AND a.ID_Type = " + WizardItemClass.BHKW_TYP,
                     new OleDbParameter("@p", idProjekt));
@@ -1339,11 +1501,70 @@ namespace WindowsFormsApplication1
                     anl.Bezeichner = r["Bezeichner"] == DBNull.Value
                                    ? "" : Convert.ToString(r["Bezeichner"]).Trim();
                     anl.PelKW = r["Pel"] == DBNull.Value ? 0 : Convert.ToDouble(r["Pel"]);
+                    anl.Heizoel = BrennstoffKategorie(Ganzzahl(r, "ID_Carrier"),
+                                                      Ganzzahl(r, "Brennstoff"))
+                                  == BRENNSTOFF_KATEGORIE_OEL;
                     liste.Add(anl);
                 }
             }
             catch { liste.Clear(); }
             return liste;
+        }
+
+        /// <summary>Ganzzahlspalte einer Zeile; NULL und Lesefehler ergeben 0.</summary>
+        private static int Ganzzahl(DataRow r, string spalte)
+        {
+            if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return 0;
+            try { return Convert.ToInt32(r[spalte]); } catch { return 0; }
+        }
+
+        /// <summary>
+        /// Brennstoffkategorie einer Anlage (<c>Tab_BrennstoffKategorien.ID</c>) —
+        /// vorrangig über den Energieträger der Anlage, ersatzweise über den Brennstoff der
+        /// Gerätezeile. 0 = nicht ermittelbar (dann gilt die Anlage als nicht ölbetrieben,
+        /// wie im Altstand: <c>BhkwMitHeizoel</c> zählte nur Zeilen mit gültigem Verbund).
+        /// </summary>
+        private int BrennstoffKategorie(int idCarrier, int idBrennstoff)
+        {
+            if (_brennstoffKategorie == null)
+            {
+                _brennstoffKategorie = LiesZuordnung("SELECT ID, ID_Kategorie FROM Tab_Brennstoff_Stamm");
+                _carrierBrennstoff = LiesZuordnung("SELECT id, ID_Brennstoff FROM energy_carrier");
+            }
+
+            int kategorie;
+            int brennstoffAusTraeger;
+            if (idCarrier > 0 && _carrierBrennstoff.TryGetValue(idCarrier, out brennstoffAusTraeger)
+                              && _brennstoffKategorie.TryGetValue(brennstoffAusTraeger, out kategorie))
+                return kategorie;
+
+            if (idBrennstoff > 0 && _brennstoffKategorie.TryGetValue(idBrennstoff, out kategorie))
+                return kategorie;
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Zweispaltige Katalogabfrage als Zuordnung Schlüssel → Wert; leere Zuordnung, wenn
+        /// die Tabelle fehlt (alte Datenbank ohne <c>energy_carrier</c>) oder die Abfrage
+        /// scheitert. Zeilen mit NULL in einer der beiden Spalten werden übergangen.
+        /// </summary>
+        private static Dictionary<int, int> LiesZuordnung(string sql)
+        {
+            var zuordnung = new Dictionary<int, int>();
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(sql);
+                if (dt == null) return zuordnung;
+                foreach (DataRow r in dt.Rows)
+                {
+                    if (r[0] == DBNull.Value || r[1] == DBNull.Value) continue;
+                    try { zuordnung[Convert.ToInt32(r[0])] = Convert.ToInt32(r[1]); }
+                    catch { }
+                }
+            }
+            catch { zuordnung.Clear(); }
+            return zuordnung;
         }
 
         /// <summary>
@@ -1397,8 +1618,21 @@ namespace WindowsFormsApplication1
             return stromMWh * 1000.0 / pelKW;
         }
 
-        /// <summary>true, wenn ein BHKW des Projekts einen Öl-Träger nutzt
-        /// (Tab_BHKW.Brennstoff → Tab_Brennstoff_Stamm.ID_Kategorie 2 = Öl).</summary>
+        /// <summary>
+        /// true, wenn eine BHKW-GERÄTEZEILE des Projekts einen Öl-Brennstoff führt
+        /// (<c>Tab_BHKW.Brennstoff</c> → <c>Tab_Brennstoff_Stamm.ID_Kategorie</c> =
+        /// <see cref="BRENNSTOFF_KATEGORIE_OEL"/>).
+        ///
+        /// <para><b>NACHTRAG 2 ZU E2 — nur noch RÜCKFALLEBENE.</b> Bis dahin war das die
+        /// einzige Prüfung, und sie hatte zwei Mängel in einer Zeile: Sie galt PROJEKTWEIT
+        /// (eine Öl-Zeile nahm allen Anlagen den Zuschlag) und sie zählte GERÄTEZEILEN
+        /// (auch solche, zu denen nie eine Anlagenzeile entstand). Maßgeblich ist jetzt die
+        /// Brennstoffart je installierter Anlage aus <see cref="LiesBhkwAnlagen"/>. Diese
+        /// Abfrage greift nur noch, wenn sich die Anlagen nicht bestimmen lassen
+        /// (<see cref="KwkgAnlagenauswahl.Bestimmbar"/> = false) — dann sind die
+        /// Gerätezeilen die einzige verfügbare Aussage, genau wie bei
+        /// <see cref="LiesBhkwLeistungKW"/>, und sie ist konservativ.</para>
+        /// </summary>
         private static bool BhkwMitHeizoel(int idProjekt)
         {
             try
@@ -1406,7 +1640,7 @@ namespace WindowsFormsApplication1
                 object o = DataRepository.ExecuteScalar(
                     "SELECT COUNT(*) FROM Tab_BHKW AS b " +
                     "INNER JOIN Tab_Brennstoff_Stamm AS bs ON b.Brennstoff = bs.ID " +
-                    "WHERE b.ID_Projekt = ? AND bs.ID_Kategorie = 2",
+                    "WHERE b.ID_Projekt = ? AND bs.ID_Kategorie = " + BRENNSTOFF_KATEGORIE_OEL,
                     new OleDbParameter("@p", idProjekt));
                 if (o != null && o != DBNull.Value) return Convert.ToInt32(o) > 0;
             }
