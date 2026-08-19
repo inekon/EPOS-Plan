@@ -14,6 +14,7 @@ entschieden ist, welche Etappe läuft und welche Ergebniswirkung jede Etappe hat
 | [`W4_E3_Kostenarten_Betriebskosten_Protokoll.md`](W4_E3_Kostenarten_Betriebskosten_Protokoll.md) | Etappe E3: Kostenart und Bemessungsart an der Kostenposition (Migrationsschritt 19), negative Beträge für Erlöse, Betriebskosten-Dialog nach VDI 2067, **Zuordnung der VDI-Bezugsgrößen auf das EPOS-Plan-Modell** |
 | [`W4_E4_Steuergutschriften_Protokoll.md`](W4_E4_Steuergutschriften_Protokoll.md) | Etappe E4: Energiesteuer- (§ 53 / § 53a) und Stromsteuergutschrift (§ 9 Abs. 1 Nr. 3, § 9b) als jahresscharfe Reihen, Projektangaben der Steuerprüfung (Migrationsschritt 20), benannte Erlösreihen (L1) — **und die Recherche, die die Annahme „§ 53 entlastet nur den Stromanteil" widerlegt hat** |
 | [`W4_E5_Tarife_Strombezug_Protokoll.md`](W4_E5_Tarife_Strombezug_Protokoll.md) | Etappe E5: Tarif-Rollenmodell mit drei Leistungspreismodellen (Migrationsschritt 21), Differenzmethode „vermiedene Kosten", Preis für eingespeisten KWK-Strom, § 9b ohne BHKW — **und die Messung, die den Aufschlägen eine Wirkung von rund einem Drittel des Kapitalwerts nachweist** |
+| [`W4_E6_Zuschlag_je_Modul_Protokoll.md`](W4_E6_Zuschlag_je_Modul_Protokoll.md) | Etappe E6: KWK-Zuschlag **je BHKW-Modul** — Stichtag, Inbetriebnahme, Satz, Vbh, Jahresdeckel und Kontingent je Anlage (Migrationsschritt 22), Katalogvorschlag nach § 7 als **Tranchenstaffel**, generationsweise Nachsaat des Katalogs — **und der Befund, dass die alte Rechnung bei durchgehend gedeckelten Modulen zufällig richtig war** |
 
 ---
 
@@ -28,13 +29,15 @@ entschieden ist, welche Etappe läuft und welche Ergebniswirkung jede Etappe hat
 | **E3** | Kostenposition um Kostenart, Bemessung, Erlös-Kennzeichen, Menge und Einheitpreis erweitern (Migrationsschritt 19); Betriebskosten-Dialog nach VDI 2067 mit elf Positionen in drei Spalten | **keine für Bestandsprojekte** — Schritt 19b belegt jede Bestandszeile mit `BETRAG`, und diese Bemessungsart ist zeilengleich der Rechenweg vor E3 | **umgesetzt** (9/9 PASS, 216/216 byte-gleich, 27/27 Betriebskosten- und Kapitalwertwerte identisch, 47 Harnisch-Proben ohne Fehlschlag) |
 | **E4** | Energiesteuer- und Stromsteuergutschrift als jahresscharfe Reihen; sechs Projektangaben der Steuerprüfung (Migrationsschritt 20); `KapitalwertRechner.Rechne` auf **benannte Erlösreihen** umgestellt (L1) | **keine für Bestandsprojekte** — jede Vorbelegung von Schritt 20b ist der Wert, der keine Gutschrift auslöst | **umgesetzt** (9/9 PASS, 216/216 byte-gleich, 54/54 Wirtschaftlichkeitswerte identisch, 11/11 Handrechnungen getroffen) |
 | **E5** | Tarif-**Rollenmodell** (Bezug / Reststrom / Einspeisung) mit allen drei Leistungspreismodellen (Migrationsschritt 21); Differenzmethode „vermiedene Kosten" mit negativem Leistungsanteil; Preis für eingespeisten KWK-Strom; § 9b auch ohne BHKW; **Aufschläge hinter einem Projektschalter** | **keine für Bestandsprojekte** — `Tarif_Modus` wird mit `ZONEN` vorbelegt, der Aufschlagsschalter steht auf AUS, die KWK-Vergütung bleibt NULL | **umgesetzt** (9/9 PASS, 216/216 byte-gleich, 27/27 Wirtschaftlichkeitszeilen **zeichengleich**, 8 Wirkungsfälle = Handrechnung) |
-| **E6** | KWK-Zuschlag je Modul mit Katalogvorschlag | **ja** bei Mehrmodulanlagen | offen |
+| **E6** | KWK-Zuschlag **je Modul**: Stichtag, Inbetriebnahme, Satz, Vbh, Jahresdeckel und Kontingent je Anlage (Migrationsschritt 22); Katalogvorschlag als **Tranchenstaffel** nach § 7; generationsweise Nachsaat des Katalogs | **ja bei Mehrmodulanlagen** — aber nur, wenn die Module den Jahresdeckel **unterschiedlich** treffen oder sich in Datum, Satz oder Kontingent unterscheiden. Für Einmodulprojekte **keine** | **umgesetzt** (9/9 PASS, 216/216 byte-gleich ×2, 24/27 Wirtschaftlichkeitszeilen zeichengleich, 8/8 Handrechnungen getroffen) |
 | **E7** | Bericht (Word und Excel), Mehrjahrestabelle | Ausgabe | offen |
 | **E8** | Abnahme, neue Referenzbasis, Protokoll | eingefroren | offen |
 
 **Regel für ergebniswirksame Etappen (E2, E6):** A/B-Nachweis gegen den
 Vorgängerstand, Wirkungsbeleg mit Zahlen, danach neuer Basis-Freeze — dasselbe
-Vorgehen wie bei der Bivalenzumstellung K-3.
+Vorgehen wie bei der Bivalenzumstellung K-3. Für **E6 ist der Freeze nicht nötig**: Die
+216 Simulations-CSV sind byte-identisch, und die Wirtschaftlichkeit hat ohnehin keine
+eingefrorene Basis. `2026-08-19_B5` bleibt gültig.
 
 ---
 
@@ -84,7 +87,8 @@ widersprüchliche Begrenzungen des KWK-Bonus.
 | ~~`LiesBhkwLeistungKW` summierte **alle Gerätezeilen** statt der installierten Anlagen — Projekt 1024 kam auf 546,4 kW statt 21 kW und verlor den Zuschlag am 500-kW-Guard~~ — **behoben mit E2** | `WirtschaftlichkeitCtrl.cs:991` | **E2, erledigt** |
 | ~~Der 500-kW-Guard prüfte die **Projektsumme**; § 8a KWKG stellt auf die einzelne Anlage ab — zwei Module à 300 kW verloren den Zuschlag vollständig~~ — **behoben mit dem E2-Nachtrag** (19.08.2026) | `WirtschaftlichkeitCtrl.cs:943-985` | **E2-N, erledigt** |
 | ~~**Heizöl-Ausschluss** prüft `COUNT(*)` über alle **Gerätezeilen** des Projekts: ein einziges Öl-BHKW im Katalogbestand nimmt allen Anlagen den Zuschlag~~ — **behoben mit dem E2-Nachtrag 2** (19.08.2026); die Brennstoffart kommt jetzt vorrangig aus `Tab_Energieanlagen.ID_Carrier`, ersatzweise aus der Gerätezeile | `WirtschaftlichkeitCtrl.cs:988-1076`, `:1455-1570` | **E2-N2, erledigt** |
-| **Stichtag und Inbetriebnahme** sind ein Datumspaar je Projekt; § 6 KWKG gilt je Anlage — und dasselbe Datum entscheidet für alle Anlagen zugleich über Neuanlage/Bestandsanlage, also auch über den Heizöl-Ausschluss | `WirtschaftlichkeitCtrl.cs:958-982` | offen, E6 — **der gravierendste Restbefund der Reihe** |
+| ~~**Stichtag und Inbetriebnahme** sind ein Datumspaar je Projekt; § 6 KWKG gilt je Anlage — und dasselbe Datum entscheidet für alle Anlagen zugleich über Neuanlage/Bestandsanlage, also auch über den Heizöl-Ausschluss~~ — **behoben mit E6** (19.08.2026): `Tab_Energieanlagen` führt beide Daten je Anlage (Migrationsschritt 22), NULL fällt auf den Projektwert zurück. Gemessene Wirkung an einer präparierten Kopie: **−83,3 % Zuschlag**, wenn eine von zwei Anlagen am eigenen Stichtag scheitert | `WirtschaftlichkeitCtrl.Anlagenauswahl` | **E6, erledigt** |
+| ~~Jahresdeckel und 30.000-h-Kontingent laufen über **eine gemeinsame** leistungsgewichtete Vbh-Größe; der Zuschlagssatz ist einer je Projekt~~ — **behoben mit E6**: eine Reihe je Anlage, jahresweise summiert. Wirkung: **−25,0 %**, wenn die Module den Deckel unterschiedlich treffen; **−0,147 % Kapitalwert** bei unterschiedlichen Kontingenten | `WirtschaftlichkeitCtrl.ReiheJeAnlage` | **E6, erledigt** |
 | Energiesteuer- und Stromsteuererstattung fehlen vollständig | — | E4 |
 | ~~Vermiedener Strombezug ist keine Erlöszeile; die Bezugsgröße „Bedarf ohne Anlage" wird nirgends geführt~~ — **behoben mit E5**: `StromMatrix.Zone.BedarfMWh` samt Lastbildern (Jahres-, Sommer-, Winter-, zwölf Monatsmaxima); die Differenzmethode weist Arbeit, Leistung und Summe getrennt aus, der Leistungsanteil regelmäßig negativ | `StromMatrix.cs`, `StromTarifRechner.cs` | **E5, erledigt** |
 | ~~Ohne Photovoltaik im Projekt bekommt eingespeister BHKW-Strom **keinen Strompreis**, nur den Zuschlag~~ — **behoben mit E5**: eigene Projektangabe `Einspeiseverguetung_KWK`, und die Gruppe „Strom — Einspeisung und Bezug" ist im Parameterdialog **immer** sichtbar | `Form_WirtschaftlichkeitParameter.cs`, `WirtschaftlichkeitCtrl.BaueEingabe` | **E5, erledigt** |
@@ -211,6 +215,45 @@ widersprüchliche Begrenzungen des KWK-Bonus.
 
 ---
 
+## 3d Was Etappe E6 entschieden hat (19.08.2026)
+
+- **„Leistungsanteil" in § 7 KWKG heißt Staffel, nicht Klasse — und das ist keine Feinheit.**
+  Abs. 1 und 2 meinen **marginale Tranchen**: Eine 300-kW-Anlage bekommt 50 kW zu 8,00, 50 kW
+  zu 6,00, 150 kW zu 5,00 und 50 kW zu 4,40 ct/kWh, leistungsgewichtet **5,5667 ct/kWh**. Die
+  naheliegende Umsetzung „Klasse suchen, Satz anwenden" hätte 4,40 ct/kWh geliefert und damit
+  **21 % zu wenig**. Die angezeigte Herleitung nennt deshalb die Tranchen, nicht eine Klasse.
+- **Einspeisung und Eigennutzung sind nicht symmetrisch.** Auf eingespeisten Strom besteht der
+  Zuschlag ohne weitere Voraussetzung; auf selbst genutzten **nicht generell**, sondern nur in
+  den drei Tatbeständen des § 6 Abs. 3 mit drei verschiedenen Satzreihen. Über allem steht
+  § 7 Abs. 3a für neue Anlagen bis 50 kW (16 / 8 ct/kWh). Der Vorgabewert ist **kein
+  Tatbestand** — dann schlägt der Katalog 0 ct/kWh vor **und sagt warum**. Das ist keine
+  Lücke, sondern die Rechtslage.
+- **Der Vorschlag ersetzt den Projektsatz nicht von selbst.** Er erscheint mit seiner
+  Herleitung im Dialog; erst „Vorschlag übernehmen" schreibt ihn in die Satzfelder der
+  Anlage. Ein Vorschlag, der ungefragt gilt, ist kein Vorschlag — und hätte jede gespeicherte
+  Altrechnung mit gepflegtem KWKG-Satz still auf einen anderen Satz umgestellt.
+- **NULL ist die Vorbelegung.** Migrationsschritt 22 ist der erste der Reihe **ohne DML**:
+  Alle acht neuen Spalten bleiben leer, und jede Leseseite fällt bei NULL auf den Projektwert
+  zurück. Nachgewiesen an 97 Anlagenzeilen × 8 Spalten = 0 belegte Werte.
+- **Die alte Rechnung war bei durchgehend gedeckelten Modulen nicht falsch, sondern zufällig
+  richtig.** Solange **jedes** Modul über dem Jahresdeckel liegt, ist die Summe der
+  Modulreihen algebraisch die Projektreihe. Deshalb ändert sich am Referenzprojekt 1030 nur
+  **+0,09 €/a** — Gleitkommarest, kein Rechenweg. Die Wirkung entsteht erst, wenn die Module
+  den Deckel **unterschiedlich** treffen (−25,0 %), verschiedene Inbetriebnahmejahre haben
+  (−9,7 %), verschiedene Kontingente (−0,147 % Kapitalwert über 20 Jahre) oder wenn eine von
+  ihnen am eigenen Stichtag ausfällt (−83,3 %). **Projekt 1030 belegt die Etappe damit
+  nicht** — die Referenzmenge deckt den Fall nicht ab.
+- **Der projektweite Rechenweg bleibt vollständig erhalten** als Ersatzweg für Projekte, deren
+  Anlagen- und Ergebnismodulzeilen sich nicht paaren lassen (im Bestand: Projekt 1023). Ihn zu
+  entfernen hätte einen zweiten Rechenweg geändert, den keine Probe abdeckt.
+- **Die § 6-Prüfung bleibt projektweit, solange keine Anlage ein eigenes Datum trägt.** Die
+  Prüfung je Anlage wäre rechnerisch identisch, aber nicht **textgleich** — sie würde die
+  Anlage benennen und auf jedem Bestandsprojekt eine neue Meldung erzeugen.
+- **Offener Punkt 4 ist entschieden: generationsweise Nachsaat über eine Markerzeile.** Siehe
+  Abschnitt 5, Punkt 4.
+
+---
+
 ## 4 Etappe E1 — was gerade entsteht
 
 - **Tabelle `Tab_Gesetzesparameter`**: Schlüssel (sprachneutral, eingefroren),
@@ -246,14 +289,26 @@ widersprüchliche Begrenzungen des KWK-Bonus.
 3. **Gutschrift für eingespeisten KWK-Strom ab 2027**: Ohne amtlichen
    Verdrängungsfaktor ist jede Gutschrift eine methodische Wahl. Vorgesehen als
    Auswahlparameter mit Ausweis im Bericht.
-4. **Nachsaat fehlender Katalogschlüssel** (aus dem E2-Nachtrag, 19.08.2026):
-   `GesetzKatalog.StelleKatalogSicher` sät nur bei leerer Tabelle ein. Ein Schlüssel,
-   der nach dem ersten Seed hinzukommt, erreicht eine bereits gefüllte
-   `Tab_Gesetzesparameter` deshalb nie — beim neuen `KWKG_AUSSCHREIBUNG_GRENZE_KW` fängt
-   das die Code-Konstante auf, bei einem Schlüssel ohne Rückfallebene fiele es aus.
-   Eine additive Nachsaat wäre die allgemeine Lösung, würde aber auch bewusst gelöschte
-   Zeilen wieder auferstehen lassen. Zu entscheiden, bevor E4 bis E6 weitere Schlüssel
-   anlegen.
+4. ~~**Nachsaat fehlender Katalogschlüssel**~~ — **mit E6 entschieden und umgesetzt
+   (19.08.2026): generationsweise Nachsaat.** Jede Zeile der `GesetzKatalog.Vorbelegung`
+   trägt im **Code** eine Generationsnummer; eine **Markerzeile** in
+   `Tab_Gesetzesparameter` (`Schluessel = KATALOG_GENERATION`, `Klasse = SYSTEM`) hält fest,
+   bis zu welcher Generation diese Datenbank gesät wurde. Beim Start werden nur Zeilen einer
+   **höheren** Generation nachgesät. Damit kommen neue Schlüssel an, und eine bewusst
+   gelöschte Zeile einer älteren Generation bleibt gelöscht — der Zielkonflikt ist aufgelöst.
+   Generationen: **1** = E1-Seed (182 Zeilen), **2** = `KWKG_AUSSCHREIBUNG_GRENZE_KW` aus dem
+   E2-Nachtrag, **3** = die beiden Anlagengrenzen aus E6.
+
+   *Markerzeile statt Spalte*, begründet: Eine Spalte bräuchte DDL und wirkte damit nicht auf
+   Datenbanken, deren Tabelle vom E1-`CREATE TABLE` mit fester Spaltenliste angelegt wurde —
+   genau die, die die Nachsaat braucht. Und die Generation ist eine Eigenschaft des **Seeds**,
+   nicht der Zeile: `MAX(Generation)` über die Zeilen wäre eine falsche Wahrheit, weil das
+   Löschen aller Zeilen der jüngsten Generation sie zurückholte.
+
+   *Der Fall war nicht theoretisch:* In der produktiven `Kenndaten.accdb` vom 19.08.2026
+   fehlte `KWKG_AUSSCHREIBUNG_GRENZE_KW` tatsächlich (49 KWKG-Zeilen, dieser Schlüssel nicht
+   darunter). Nachgewiesen: 182 → 186 Zeilen beim ersten Start, 0 beim zweiten, und eine
+   gelöschte Generation-1-Zeile kommt **nicht** zurück (E6-Protokoll, V14 bis V17).
 5. **Preissteigerung der Hilfsenergie** (aus E3, 19.08.2026): Sie ist nach VDI 2067
    *bedarfs*gebunden und müsste der Energiepreisentwicklung folgen; als Kategorie-2-Position
    steigt sie bei uns mit der Betriebskosten-Preissteigerung. Eine Trennung braucht eine
@@ -296,7 +351,12 @@ werden nicht übernommen.
   trotzdem. **Mit E5 gilt dasselbe für `Tab_ProjektTarif`** (Schritt 21 gegen
   `StelleTabellenSicher`); dort greift der Migrationsschritt zusätzlich ins Leere, wenn
   die Tabelle noch gar nicht existiert — er meldet das und gilt als erledigt, statt die
-  Migration dauerhaft auf Stand 20 festzuhalten.
+  Migration dauerhaft auf Stand 20 festzuhalten. **Mit E6 trifft es erstmals eine Tabelle des
+  Rechenkerns**: Schritt 22 legt acht Spalten an `Tab_Energieanlagen` an, und
+  `WirtschaftlichkeitCtrl.StelleTabellenSicher` legt dieselben acht vorsorglich an. Der
+  Unterschied zu E3 bis E5 ist der **Leser**, nicht die Tabelle — der Rechenkern liest keine
+  dieser Spalten, deshalb stehen sie bewusst **nicht** in `SchemaKatalog.Alle` und werden von
+  der stillen Rückfallebene bei jedem Simulationsstart **nicht** mitgezogen.
 - **Komponenten-IDs an zwei Orten** (benannt mit E3): `Form_Kosten.GetKomponentenID`
   verdrahtet 1…7 hart, `UcBkKosten` und `KomponentenUebernahmeCtrl` lesen dieselbe
   Zuordnung dynamisch aus `Tab_KostenKomponente`. `BetriebskostenCtrl` musste sich für

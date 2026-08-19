@@ -14091,11 +14091,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: {0} — Inbetriebnahme nach Ablauf der Realisierungsfrist des § 6 KWKG 2025 (bis {1}); für diese Anlage kein Zuschlag. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_ANLAGE_FRIST {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_ANLAGE_FRIST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Mit Heizöl betrieben und deshalb ohne Zuschlag: {0} (KWKG 2025, Neuanlagen nur noch mit Erdgas; Näherung: gilt auch für Bio-Blends). Die übrigen Anlagen mit zusammen {1} kW rechnen weiter. ähnelt.
         /// </summary>
         public static string WIRT_KWKG_ANLAGE_HEIZOEL {
             get {
                 return ResourceManager.GetString("WIRT_KWKG_ANLAGE_HEIZOEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: {0} — Bestellung/Genehmigung nach dem {1} und damit nach geltendem Recht nicht förderfähig (§ 6 KWKG 2025, Regulierungsrisiko Novelle); für diese Anlage kein Zuschlag. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_ANLAGE_STICHTAG {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_ANLAGE_STICHTAG", resourceCulture);
             }
         }
         
@@ -14132,6 +14150,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR {
             get {
                 return ResourceManager.GetString("WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Tatbestand des § 6 Abs. 3 KWKG 2025 erfasst — auf selbst genutzten Strom gibt es dann keinen Zuschlag (§ 7 Abs. 2). ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_HERLEITUNG_KEIN_EIGENFALL {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_HERLEITUNG_KEIN_EIGENFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tatbestand des § 6 Abs. 3 Nr. 1 KWKG 2025 gilt nur bis {0} kW; diese Anlage hat {1} kW — kein Zuschlag auf selbst genutzten Strom. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_HERLEITUNG_N1_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_HERLEITUNG_N1_ZU_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne gepflegte elektrische Nennleistung lässt sich kein Zuschlagssatz vorschlagen. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_HERLEITUNG_OHNE_LEISTUNG {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_HERLEITUNG_OHNE_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kW und damit bis {1} kW, neue Anlage → {2} ct/kWh ({3}, Stand {4}); die Sonderregel geht den Leistungsanteilen vor. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_HERLEITUNG_PAUSCHAL {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_HERLEITUNG_PAUSCHAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz „{0}“ ist im Katalog „Gesetzliche Parameter“ nicht gepflegt — kein Vorschlag. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_HERLEITUNG_SATZ_FEHLT {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_HERLEITUNG_SATZ_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kW nach Leistungsanteilen: {1} → Mischsatz {2} ct/kWh ({3}, Stand {4}). ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_HERLEITUNG_TRANCHEN {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_HERLEITUNG_TRANCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Zuschlag je BHKW-Modul gerechnet — {0}. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_JE_MODUL {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_JE_MODUL", resourceCulture);
             }
         }
         
@@ -14215,7 +14296,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("WIRT_ZEILE_STEUER_HERKUNFT", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Befreiung Jahr 1 [€/a] ähnelt.
         /// </summary>
