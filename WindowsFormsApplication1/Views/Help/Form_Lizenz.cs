@@ -127,9 +127,12 @@ namespace WindowsFormsApplication1
             Button btnSuchen = new Button { Text = "Suchen", Width = 90, Dock = DockStyle.Left, Margin = new Padding(6, 0, 0, 0) };
             btnSuchen.Click += (s, e) => Suchen();
 
-            Button btnGroesser = new Button { Text = "A+", Width = 44, Dock = DockStyle.Right };
+            // Kein Dock: Kinder eines FlowLayoutPanel melden damit keine
+            // Vorzugsgröße, das AutoSize-Panel bleibt 0 breit und die
+            // Schaltflächen sind unsichtbar.
+            Button btnGroesser = new Button { Text = "A+", Width = 44, Height = 26, Margin = new Padding(6, 0, 0, 0) };
             btnGroesser.Click += (s, e) => SchriftAendern(+1f);
-            Button btnKleiner = new Button { Text = "A-", Width = 44, Dock = DockStyle.Right };
+            Button btnKleiner = new Button { Text = "A-", Width = 44, Height = 26, Margin = new Padding(6, 0, 0, 0) };
             btnKleiner.Click += (s, e) => SchriftAendern(-1f);
 
             FlowLayoutPanel links = new FlowLayoutPanel
@@ -154,12 +157,8 @@ namespace WindowsFormsApplication1
                 AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 BackColor = Color.Transparent
             };
-            Button btnWaehlen = new Button { Text = "Lizenzdatei wählen...", Width = 150, Dock = DockStyle.Right };
-            btnWaehlen.Click += (s, e) => LizenzDateiWaehlen();
-
             rechts.Controls.Add(btnGroesser);
             rechts.Controls.Add(btnKleiner);
-            rechts.Controls.Add(btnWaehlen);
 
             werkzeuge.Controls.Add(links);
             werkzeuge.Controls.Add(rechts);
@@ -206,6 +205,9 @@ namespace WindowsFormsApplication1
             Button btnSpeichern = new Button { Text = "Speichern unter...", Width = 140, Height = 30, Margin = new Padding(6, 0, 0, 0) };
             btnSpeichern.Click += (s, e) => SpeichernUnter();
 
+            Button btnWaehlen = new Button { Text = "Vereinbarung wählen...", Width = 170, Height = 30, Margin = new Padding(6, 0, 0, 0) };
+            btnWaehlen.Click += (s, e) => LizenzDateiWaehlen();
+
             if (_zustimmungAbfragen)
             {
                 Button btnAblehnen = new Button
@@ -231,6 +233,7 @@ namespace WindowsFormsApplication1
                 schalter.Controls.Add(btnAblehnen);
                 schalter.Controls.Add(btnDrucken);
                 schalter.Controls.Add(btnSpeichern);
+                schalter.Controls.Add(btnWaehlen);
 
                 this.AcceptButton = btnZustimmen;
                 this.CancelButton = btnAblehnen;
@@ -251,6 +254,7 @@ namespace WindowsFormsApplication1
                 schalter.Controls.Add(btnSchliessen);
                 schalter.Controls.Add(btnDrucken);
                 schalter.Controls.Add(btnSpeichern);
+                schalter.Controls.Add(btnWaehlen);
 
                 this.AcceptButton = btnSchliessen;
                 this.CancelButton = btnSchliessen;
@@ -293,13 +297,15 @@ namespace WindowsFormsApplication1
             if (treffer == null)
             {
                 _text.Text =
-                    "Auf diesem Rechner liegt keine Kopie der Lizenzvereinbarung." + Environment.NewLine + Environment.NewLine +
-                    "Verbindlich ist ohnehin die jeweils geltende Fassung im Netz - die aktuelle" + Environment.NewLine +
-                    "Fassung mit Stand-Datum finden Sie hier:" + Environment.NewLine +
+                    "Die Lizenzvereinbarung liegt auf epos-plan.de." + Environment.NewLine +
+                    "Verbindlich ist immer die dort veröffentlichte Fassung mit Stand-Datum:" + Environment.NewLine +
                     "  " + ONLINE_FASSUNG + Environment.NewLine + Environment.NewLine +
-                    "Wenn Sie eine Kopie im Programm anzeigen möchten, wählen Sie die Datei" + Environment.NewLine +
-                    "über die Schaltfläche \"Lizenzdatei wählen...\" oben rechts aus." + Environment.NewLine + Environment.NewLine +
-                    "Ohne Auswahl wird automatisch neben dem Programm gesucht, nach:" + Environment.NewLine +
+                    "Auf diesem Rechner liegt keine Kopie. Wenn Sie eine anzeigen möchten," + Environment.NewLine +
+                    "wählen Sie die Datei unten über \"Vereinbarung wählen...\" aus." + Environment.NewLine + Environment.NewLine +
+                    "Nicht zu verwechseln: Lizenzschlüssel und Lizenzdatei (.lic) für die" + Environment.NewLine +
+                    "Freischaltung dieses Arbeitsplatzes gehören nicht hierher, sondern unter" + Environment.NewLine +
+                    "Administration - Lizenz." + Environment.NewLine + Environment.NewLine +
+                    "Ohne Auswahl wird neben dem Programm gesucht, nach:" + Environment.NewLine +
                     "  - " + DATEINAMEN[0] + Environment.NewLine +
                     "  - " + DATEINAMEN[1] + Environment.NewLine + Environment.NewLine +
                     "Durchsuchte Verzeichnisse:" + Environment.NewLine +
