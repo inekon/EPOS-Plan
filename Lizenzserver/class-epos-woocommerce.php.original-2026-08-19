@@ -1,0 +1,1247 @@
+<?php
+/**
+ * WooCommerce-Integration für "Mein Konto" (/mein-konto/):
+ *
+ * 1. Der Menüpunkt "Lizenzschlüssel" zeigt die EPOS-Lizenzverwaltung
+ *    (dieselbe Ansicht wie das Lizenzportal) statt des leeren
+ *    "License Manager for WooCommerce"-Endpunkts (view-license-keys).
+ * 2. Die Konto-Startseite (Dashboard) erhält einen deutschen Begrüßungstext
+ *    mit Kontakt per E-Mail (info@inekon.de) statt des englischen
+ *    Platzhaltertexts mit Telefonnummer.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+class Epos_Woocommerce {
+
+	const ENDPUNKT = 'epos-lizenz';
+	const KONTAKT_EMAIL = 'info@inekon.de';
+
+	public static function init() {
+		self::endpunkt_registrieren();
+
+		add_filter( 'woocommerce_account_menu_items', array( __CLASS__, 'menue_anpassen' ), 99 );
+		add_action( 'woocommerce_account_' . self::ENDPUNKT . '_endpoint', array( __CLASS__, 'endpunkt_inhalt' ) );
+		add_filter( 'woocommerce_endpoint_' . self::ENDPUNKT . '_title', array( __CLASS__, 'endpunkt_titel' ) );
+
+		// Deutsche Konto-Startseite (überschreibt auch Theme-Vorlagen)
+		add_filter( 'wc_get_template', array( __CLASS__, 'dashboard_vorlage' ), 99, 2 );
+	}
+
+	public static function endpunkt_registrieren() {
+		add_rewrite_endpoint( self::ENDPUNKT, EP_ROOT | EP_PAGES );
+	}
+
+	/**
+	 * "Lizenzschlüssel" auf unseren Endpunkt umbiegen; den Menüpunkt des
+	 * License-Manager-Plugins (view-license-keys) dabei ersetzen.
+	 */
+	public static function menue_anpassen( $items ) {
+		$neu = array();
+		$eingefuegt = false;
+
+		foreach ( $items as $slug => $beschriftung ) {
+			if ( 'view-license-keys' === $slug ) {
+				$neu[ self::ENDPUNKT ] = 'Lizenzschlüssel';
+				$eingefuegt = true;
+				continue;
+			}
+			$neu[ $slug ] = $beschriftung;
+			// Falls kein License-Manager-Eintrag existiert: hinter "Bestellungen" einfügen
+			if ( ! $eingefuegt && 'orders' === $slug ) {
+				$neu[ self::ENDPUNKT ] = 'Lizenzschlüssel';
+				$eingefuegt = true;
+			}
+		}
+		if ( ! $eingefuegt ) {
+			$neu[ self::ENDPUNKT ] = 'Lizenzschlüssel';
+		}
+		return $neu;
+	}
+
+	public static function endpunkt_titel( $titel ) {
+		return 'Lizenzschlüssel';
+	}
+
+	/** Inhalt des Tabs: die EPOS-Lizenzverwaltung (wie im Lizenzportal). */
+	public static function endpunkt_inhalt() {
+		echo Epos_Portal::shortcode(); // phpcs:ignore -- erzeugt escaptes HTML
+	}
+
+	/** Eigene deutsche Dashboard-Vorlage für die Konto-Startseite. */
+	public static function dashboard_vorlage( $template, $template_name ) {
+		if ( 'myaccount/dashboard.php' === $template_name ) {
+			$eigene = EPOS_LIZENZ_DIR . 'templates/myaccount-dashboard.php';
+			if ( file_exists( $eigene ) ) {
+				return $eigene;
+			}
+		}
+		return $template;
+	}
+}
+
+
+/* ========================================================================
+ * Online-Vertragsschluss (Click-Wrap) gemäß Spezifikation
+ * „Rechtssicherer Online-Vertragsschluss EPOS-Plan" (Stand 02.08.2026).
+ *
+ * Tarife: Einzel (100 € p. a., 1 Nutzer), Team (200 € p. a., bis 5 Nutzer),
+ * Team Plus (500 € p. a., bis 20 Nutzer). Der Supportvertrag ist optional
+ * und kann auch nachträglich jederzeit im Kundenkonto abgeschlossen werden.
+ *
+ * Umgesetzt werden insbesondere:
+ *  - Pflicht-Checkboxen (nicht vorbelegt): Unternehmerbestätigung und
+ *    Zustimmung zur tarifspezifischen Lizenzvereinbarung (PDF verlinkt)
+ *  - optionale Support-Checkbox (PDF verlinkt)
+ *  - Bestellschaltfläche „Zahlungspflichtig bestellen", erst aktiv,
+ *    wenn die Pflicht-Checkboxen gesetzt sind
+ *  - Abruf- und Speicherbarkeit der PDFs im Checkout und als Anhang der
+ *    Bestellbestätigung (§ 312i Abs. 1 Nr. 4 BGB)
+ *  - Beweissicherung: append-only-Protokolldatensatz je Abschluss
+ *    (Zeitstempel UTC/lokal, IP, Tarif, Preis, Stand-Datum und
+ *    SHA-256-Hash der akzeptierten PDF-Fassung, E-Mail-Versand)
+ *  - Freischaltung (= Vertrags- und Laufzeitbeginn) erst nach
+ *    vollständigem Protokolldatensatz
+ * ==================================================================== */
+
+class Epos_Vertrag {
+
+	const OPTION = 'epos_vertrag_optionen';
+
+	/** Tarifdefinitionen gemäß Spezifikation Abschnitt 2, Schritt 1. */
+	public static function tarife() {
+		return array(
+			'einzel'   => array( 'name' => 'Einzel',    'preis' => 100, 'nutzer' => 1,  'nutzer_text' => '1 Nutzer',      'lizenz_typ' => 'person', 'produkt' => 'EPOS-Plan Einzel' ),
+			'team'     => array( 'name' => 'Team',      'preis' => 200, 'nutzer' => 5,  'nutzer_text' => 'bis 5 Nutzer',  'lizenz_typ' => 'firma',  'produkt' => 'EPOS-Plan Team' ),
+			'teamplus' => array( 'name' => 'Team Plus', 'preis' => 500, 'nutzer' => 20, 'nutzer_text' => 'bis 20 Nutzer', 'lizenz_typ' => 'firma',  'produkt' => 'EPOS-Plan Team Plus' ),
+			'campus'   => array(
+				'name'        => 'Campus/Student',
+				'preis'       => 50,
+				'monate'      => 12,
+				'nutzer'      => 1,
+				'nutzer_text' => '1 Nutzer',
+				'lizenz_typ'  => 'person',
+				'produkt'     => 'EPOS-Plan Campus/Student (12 Monate)',
+			),
+			'einzel3m' => array(
+				'name'        => 'Einzel (3 Monate)',
+				'auto_ende'   => true,
+				'preis'       => 35,
+				'monate'      => 3,
+				'nutzer'      => 1,
+				'nutzer_text' => '1 Nutzer',
+				'lizenz_typ'  => 'person',
+				'produkt'     => 'EPOS-Plan Einzel (3 Monate)',
+			),
+		);
+	}
+
+	public static function optionen() {
+		return wp_parse_args( (array) get_option( self::OPTION, array() ), array(
+			'dok_einzel'        => 0, 'stand_einzel'   => '02.08.2026',
+			'dok_team'          => 0, 'stand_team'     => '02.08.2026',
+			'dok_teamplus'      => 0,
+				'dok_campus'       => 0,
+				'stand_campus'     => '11.08.2026',
+				'dok_einzel3m'     => 0,
+				'stand_einzel3m'   => '11.08.2026', 'stand_teamplus' => '02.08.2026',
+			'dok_support'       => 0, 'stand_support'  => '02.08.2026',
+			'produkt_einzel'    => 0,
+			'produkt_team'      => 0,
+			'produkt_teamplus'  => 0,
+				'produkt_campus'   => 0,
+				'produkt_einzel3m' => 0,
+			'produkte_angelegt' => 0,
+		) );
+	}
+
+	public static function init() {
+		add_action( 'admin_init', array( __CLASS__, 'produkte_sicherstellen' ) );
+
+		// Checkout (Spezifikation Abschnitt 2)
+		add_filter( 'woocommerce_checkout_fields', array( __CLASS__, 'pflichtfelder' ), 20 );
+		add_action( 'woocommerce_review_order_before_submit', array( __CLASS__, 'checkout_checkboxen' ) );
+		add_action( 'woocommerce_checkout_process', array( __CLASS__, 'checkout_pruefen' ) );
+		add_action( 'woocommerce_checkout_create_order', array( __CLASS__, 'protokoll_anlegen' ), 10, 2 );
+		add_action( 'woocommerce_checkout_order_created', array( __CLASS__, 'protokoll_notiz' ) );
+		add_filter( 'woocommerce_order_button_text', array( __CLASS__, 'bestellbutton' ), 20 );
+		add_action( 'woocommerce_checkout_update_order_review', array( __CLASS__, 'checkout_support_sync' ) );
+		add_action( 'woocommerce_check_cart_items', array( __CLASS__, 'support_ohne_tarif_entfernen' ) );
+		add_action( 'woocommerce_before_add_to_cart_button', array( __CLASS__, 'produktseite_support' ) );
+		add_action( 'woocommerce_add_to_cart', array( __CLASS__, 'warenkorb_support_markieren' ), 10, 2 );
+		add_filter( 'woocommerce_add_to_cart_validation', array( __CLASS__, 'warenkorb_support_nachtragen' ), 10, 2 );
+		add_filter( 'woocommerce_add_to_cart_redirect', array( __CLASS__, 'warenkorb_weiterleitung' ) );
+		add_filter( 'woocommerce_get_item_data', array( __CLASS__, 'warenkorb_support_anzeigen' ), 10, 2 );
+
+		// Abruf-/Speicherbarkeit: PDFs an Kunden-E-Mails anhängen (§ 312i BGB)
+		add_filter( 'woocommerce_email_attachments', array( __CLASS__, 'email_anhaenge' ), 10, 3 );
+		add_action( 'woocommerce_email_sent', array( __CLASS__, 'email_vermerken' ), 10, 3 );
+
+		// Freischaltung = Vertrags- und Laufzeitbeginn (Schritt 7)
+		add_action( 'woocommerce_order_status_processing', array( __CLASS__, 'freischalten' ) );
+		add_action( 'woocommerce_order_status_completed', array( __CLASS__, 'freischalten' ) );
+
+		// Kundenkonto: Vertragsdokumente + nachträglicher Supportvertrag (Abschnitt 7)
+		add_action( 'woocommerce_account_' . Epos_Woocommerce::ENDPUNKT . '_endpoint', array( __CLASS__, 'konto_vertraege' ), 20 );
+		add_action( 'template_redirect', array( __CLASS__, 'support_aktion' ), 9 );
+	}
+
+	/* ------------------------------------------------- Dokumente */
+
+	/**
+	 * Vertragsdokument eines Tarifs (bzw. 'support') aus der Mediathek.
+	 *
+	 * @return array|null
+	 */
+	public static function dokument( $schluessel ) {
+		$opt = self::optionen();
+		$id  = isset( $opt[ 'dok_' . $schluessel ] ) ? (int) $opt[ 'dok_' . $schluessel ] : 0;
+		if ( ! $id ) {
+			return null;
+		}
+		$pfad = get_attached_file( $id );
+		if ( ! $pfad || ! file_exists( $pfad ) ) {
+			return null;
+		}
+		// SHA-256 der Fassung (Spezifikation Abschnitt 5/6), je Datei-Stand zwischengespeichert
+		$cache = '_epos_sha256_' . md5( $pfad . '|' . filemtime( $pfad ) );
+		$hash  = get_post_meta( $id, $cache, true );
+		if ( ! $hash ) {
+			$hash = hash_file( 'sha256', $pfad );
+			update_post_meta( $id, $cache, $hash );
+		}
+		return array(
+			'id'    => $id,
+			'url'   => wp_get_attachment_url( $id ),
+			'pfad'  => $pfad,
+			'stand' => isset( $opt[ 'stand_' . $schluessel ] ) ? $opt[ 'stand_' . $schluessel ] : '',
+			'hash'  => $hash,
+		);
+	}
+
+	/* ------------------------------------------------- Produkte */
+
+	/** Tarif-Produkte einmalig anlegen; Altprodukt „EPOS-Plan Basic" auf Entwurf. */
+	public static function produkte_sicherstellen() {
+		if ( ! current_user_can( 'manage_options' ) || ! function_exists( 'wc_get_product' ) ) {
+			return;
+		}
+		$opt = self::optionen();
+
+		// Einmalige Zuordnung der neuen Tarife (Campus/Student, Einzel 3 Monate) inkl. Lizenzvereinbarungen.
+		if ( empty( $opt['neue_tarife_2026'] ) ) {
+			if ( empty( $opt['produkt_campus'] ) && get_post( 5018 ) ) {
+				$opt['produkt_campus'] = 5018;
+			}
+			if ( empty( $opt['produkt_einzel3m'] ) && get_post( 5019 ) ) {
+				$opt['produkt_einzel3m'] = 5019;
+			}
+			if ( empty( $opt['dok_campus'] ) && get_post( 5020 ) ) {
+				$opt['dok_campus']   = 5020;
+				$opt['stand_campus'] = '11.08.2026';
+			}
+			if ( empty( $opt['dok_einzel3m'] ) && get_post( 5021 ) ) {
+				$opt['dok_einzel3m']   = 5021;
+				$opt['stand_einzel3m'] = '11.08.2026';
+			}
+			$opt['neue_tarife_2026'] = time();
+			update_option( self::OPTION, $opt );
+		}
+
+		if ( $opt['produkte_angelegt'] ) {
+			// Einmalige Korrektur: Mengenkauf erlauben (mehrere Lizenzen je Bestellung)
+			if ( empty( $opt['mengen_erlaubt'] ) ) {
+				foreach ( array( 'einzel', 'team', 'teamplus' ) as $mk ) {
+					if ( ! empty( $opt[ 'produkt_' . $mk ] ) ) {
+						update_post_meta( (int) $opt[ 'produkt_' . $mk ], '_sold_individually', 'no' );
+					}
+				}
+				$opt['mengen_erlaubt'] = time();
+				update_option( self::OPTION, $opt );
+			}
+			// Einmalige Korrektur: Produktbilder der Tarife setzen (Mediathek-IDs)
+			if ( empty( $opt['bilder_gesetzt'] ) ) {
+				$bilder = array( 'einzel' => 4819, 'team' => 4820, 'teamplus' => 4821 );
+				foreach ( $bilder as $bk => $bild_id ) {
+					if ( ! empty( $opt[ 'produkt_' . $bk ] ) && get_post( $bild_id ) ) {
+						update_post_meta( (int) $opt[ 'produkt_' . $bk ], '_thumbnail_id', (int) $bild_id );
+					}
+				}
+				$opt['bilder_gesetzt'] = time();
+				update_option( self::OPTION, $opt );
+			}
+			// Einmalig: Supportvertrag als eigenes (im Katalog verstecktes) Produkt anlegen
+			if ( empty( $opt['support_produkt_angelegt'] ) ) {
+				$sid       = 0;
+				$vorhanden = get_posts( array( 'post_type' => 'product', 'title' => 'Supportvertrag EPOS-Plan', 'post_status' => 'any', 'numberposts' => 1, 'fields' => 'ids' ) );
+				if ( $vorhanden ) {
+					$sid = (int) $vorhanden[0];
+				} else {
+					$sid = wp_insert_post( array(
+						'post_type'    => 'product',
+						'post_status'  => 'publish',
+						'post_title'   => 'Supportvertrag EPOS-Plan',
+						'post_excerpt' => 'Mindestabnahme eine Stunde pro Vertragsjahr (hier berechnet); 200,00 € netto je Stunde zzgl. gesetzl. USt., darüber hinausgehende Aufwände in 15-Minuten-Schritten. Erstlaufzeit bis zum Ende des laufenden Kalenderjahres, danach Verlängerung auf unbestimmte Zeit mit einer Kündigungsfrist von einem Monat (Kündigung in Textform oder über die Kündigungsschaltfläche „Verträge hier kündigen“).',
+					) );
+					if ( is_wp_error( $sid ) ) {
+						$sid = 0;
+					}
+					if ( $sid ) {
+						update_post_meta( $sid, '_regular_price', 200 );
+						update_post_meta( $sid, '_price', 200 );
+						update_post_meta( $sid, '_virtual', 'yes' );
+						update_post_meta( $sid, '_sold_individually', 'yes' );
+						update_post_meta( $sid, '_manage_stock', 'no' );
+						update_post_meta( $sid, '_tax_status', 'taxable' );
+						wp_set_object_terms( $sid, 'simple', 'product_type' );
+						wp_set_object_terms( $sid, array( 'exclude-from-catalog', 'exclude-from-search' ), 'product_visibility' );
+					}
+				}
+				if ( $sid ) {
+					$opt['produkt_support'] = (int) $sid;
+				}
+				$opt['support_produkt_angelegt'] = time();
+				update_option( self::OPTION, $opt );
+			}
+			return;
+		}
+		foreach ( self::tarife() as $key => $t ) {
+			$id = (int) $opt[ 'produkt_' . $key ];
+			if ( $id && get_post( $id ) ) {
+				continue;
+			}
+			$vorhanden = get_posts( array( 'post_type' => 'product', 'title' => $t['produkt'], 'post_status' => 'any', 'numberposts' => 1, 'fields' => 'ids' ) );
+			if ( $vorhanden ) {
+				$id = (int) $vorhanden[0];
+			} else {
+				$kurz = sprintf(
+					'Jahreslizenz EPOS-Plan, Tarif „%1$s" (%2$s). %3$d,00 € netto pro Jahr zzgl. gesetzl. USt. — Jahresvertrag, Abrechnung jährlich im Voraus.',
+					$t['name'], $t['nutzer_text'], $t['preis']
+				);
+				$lang = $kurz . ' Erstlaufzeit 12 Monate, danach Verlängerung auf unbestimmte Zeit mit einer Kündigungsfrist von einem Monat; Kündigung in Textform oder über die Kündigungsschaltfläche. Bestellbar für Unternehmen, Freiberufler, Behörden, Bildungseinrichtungen, Vereine und Privatpersonen (auch Studierende, Schülerinnen und Schüler sowie Auszubildende).';
+				$id   = wp_insert_post( array(
+					'post_type'    => 'product',
+					'post_status'  => 'publish',
+					'post_title'   => $t['produkt'],
+					'post_excerpt' => $kurz,
+					'post_content' => $lang,
+				) );
+				if ( is_wp_error( $id ) || ! $id ) {
+					continue;
+				}
+				update_post_meta( $id, '_regular_price', $t['preis'] );
+				update_post_meta( $id, '_price', $t['preis'] );
+				update_post_meta( $id, '_virtual', 'yes' );
+				update_post_meta( $id, '_sold_individually', 'no' );
+				update_post_meta( $id, '_manage_stock', 'no' );
+				update_post_meta( $id, '_tax_status', 'taxable' );
+				wp_set_object_terms( $id, 'simple', 'product_type' );
+			}
+			$opt[ 'produkt_' . $key ] = (int) $id;
+		}
+		$basic = get_posts( array( 'post_type' => 'product', 'title' => 'EPOS-Plan Basic', 'post_status' => 'publish', 'numberposts' => 1, 'fields' => 'ids' ) );
+		if ( $basic ) {
+			wp_update_post( array( 'ID' => (int) $basic[0], 'post_status' => 'draft' ) );
+		}
+		$opt['produkte_angelegt'] = time();
+		update_option( self::OPTION, $opt );
+	}
+
+	/** Tarif-Schlüssel zum Produkt im Warenkorb (oder '' wenn keiner). */
+	private static function tarif_im_warenkorb() {
+		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+			return '';
+		}
+		$opt = self::optionen();
+		foreach ( WC()->cart->get_cart() as $item ) {
+			$pid = (int) $item['product_id'];
+			foreach ( self::tarife() as $key => $t ) {
+				if ( $pid && $pid === (int) $opt[ 'produkt_' . $key ] ) {
+					return $key;
+				}
+			}
+		}
+		return '';
+	}
+
+	/** Tarif-Schlüssel einer Bestellung. */
+	public static function tarif_der_bestellung( $order ) {
+		$tarif = (string) $order->get_meta( '_epos_tarif' );
+		if ( $tarif ) {
+			return $tarif;
+		}
+		$opt = self::optionen();
+		foreach ( $order->get_items() as $item ) {
+			$pid = (int) $item->get_product_id();
+			foreach ( self::tarife() as $key => $t ) {
+				if ( $pid && $pid === (int) $opt[ 'produkt_' . $key ] ) {
+					return $key;
+				}
+			}
+		}
+		return '';
+	}
+
+	/* ------------------------------------------------- Checkout */
+
+	/** Schritt 2: Pflichtfelder (Firma) und optionale USt-IdNr. */
+	public static function pflichtfelder( $fields ) {
+		if ( ! self::tarif_im_warenkorb() ) {
+			return $fields;
+		}
+		$firma_vorhanden = isset( $fields['billing']['billing_company'] ) ? $fields['billing']['billing_company'] : array();
+		$fields['billing']['billing_company'] = wp_parse_args( array(
+			'label'    => 'Firma',
+			'required' => false,
+			'class'    => array( 'form-row-wide' ),
+			'priority' => 30,
+			'type'     => 'text',
+		), $firma_vorhanden );
+		$fields['billing']['billing_vat_id'] = array(
+			'label'    => 'USt-IdNr.',
+			'required' => false,
+			'class'    => array( 'form-row-wide' ),
+			'priority' => 35,
+			'type'     => 'text',
+		);
+		return $fields;
+	}
+
+	/** Schritte 3–6: Checkboxen, Bestellübersicht, Button-Logik. */
+	public static function checkout_checkboxen() {
+		$tarif = self::tarif_im_warenkorb();
+		if ( ! $tarif ) {
+			return;
+		}
+		$alle = self::tarife();
+		$t    = $alle[ $tarif ];
+		$dok  = self::dokument( $tarif );
+		$sup  = self::dokument( 'support' );
+
+		echo '<div class="epos-vertrag" style="margin:1.2em 0;padding:14px 16px;border:1px solid #ddd;border-radius:4px">';
+		echo '<h3 style="margin-top:0;font-size:1.05em">Vertragsschluss</h3>';
+
+		$netto_t  = (float) $t['preis'];
+		$brutto_t = $netto_t * 1.19;
+		$monate_t = isset( $t['monate'] ) ? (int) $t['monate'] : 12;
+		$zeit_t   = ( 12 === $monate_t ) ? 'pro Jahr' : 'für ' . $monate_t . ' Monate';
+		$lauf_t = ( ! empty( $t['auto_ende'] ) )
+	? 'Feste Laufzeit von ' . $monate_t . ' Monaten; der Vertrag endet automatisch, eine Kündigung ist nicht erforderlich und es findet keine automatische Verlängerung statt.'
+	: 'Erstlaufzeit ' . $monate_t . ' Monate, danach Verlängerung auf unbestimmte Zeit mit einer Kündigungsfrist von einem Monat.';
+		echo '<p style="font-size:0.92em;">Tarif <strong>' . esc_html( $t['name'] ) . '</strong> (' . esc_html( $t['nutzer_text'] ) . ') — '
+			. esc_html( number_format( $netto_t, 2, ',', '.' ) ) . ' € netto ' . esc_html( $zeit_t ) . ' zzgl. gesetzl. USt. — Endpreis '
+			. esc_html( number_format( $brutto_t, 2, ',', '.' ) ) . ' € inkl. 19 ' . '%' . ' USt. Abrechnung im Voraus. '
+			. esc_html( $lauf_t ) . '</p>';
+
+		if ( ! $dok ) {
+			echo '<p style="color:#d63638"><strong>Die Lizenzvereinbarung ist derzeit nicht abrufbar. Eine Bestellung ist im Moment nicht möglich — bitte wenden Sie sich an ' . esc_html( Epos_Woocommerce::KONTAKT_EMAIL ) . '.</strong></p></div>';
+			return;
+		}
+
+		// Schritt 3: Unternehmerbestätigung (Pflicht, nicht vorbelegt)
+		echo '<p style="margin-bottom:10px"><label style="display:flex;gap:8px;align-items:flex-start;font-size:0.92em">';
+		echo '<input type="checkbox" name="epos_unternehmer" id="epos_unternehmer" value="1" style="margin-top:4px"' . checked( true === self::checkbox_zustand( 'epos_unternehmer' ), true, false ) . '> ';
+		echo '<span>Optional: Ich bestelle als Unternehmer im Sinne des § 14 BGB, als juristische Person des öffentlichen Rechts oder als öffentlich-rechtliches Sondervermögen (Angabe nur für Rechnung und Netto-Preisausweis). Privatpersonen, Verbraucher (§ 13 BGB), Studierende, Schülerinnen und Schüler sowie Auszubildende lassen dieses Feld einfach leer und können ebenso bestellen; für Verbraucher gilt das gesetzliche Widerrufsrecht. </span>';
+		echo '</label></p>';
+
+		// Schritt 4: Zustimmung zur Lizenzvereinbarung (Pflicht, nicht vorbelegt, PDF verlinkt)
+		echo '<p style="margin-bottom:10px"><label style="display:flex;gap:8px;align-items:flex-start;font-size:0.92em">';
+		echo '<input type="checkbox" name="epos_zustimmung" id="epos_zustimmung" value="1" style="margin-top:4px"' . checked( true === self::checkbox_zustand( 'epos_zustimmung' ), true, false ) . '> ';
+		printf(
+			'<span>Ich habe die Lizenzvereinbarung und Allgemeinen Geschäftsbedingungen für die Software EPOS-Plan, Tarif „%1$s" (Stand: %2$s), gelesen und akzeptiere sie. <a href="%3$s" target="_blank" rel="noopener">[PDF öffnen/herunterladen]</a> <abbr class="required" title="erforderlich">*</abbr></span>',
+			esc_html( $t['name'] ), esc_html( $dok['stand'] ), esc_url( $dok['url'] )
+		);
+		echo '</label></p>';
+
+		// Schritt 5: Supportvertrag (optional, nicht vorbelegt)
+		if ( $sup ) {
+			echo '<p style="margin-bottom:4px"><label style="display:flex;gap:8px;align-items:flex-start;font-size:0.92em">';
+			echo '<input type="checkbox" name="epos_support" id="epos_support" value="1" style="margin-top:4px"' . checked( self::support_aktiv(), true, false ) . '> ';
+			printf(
+				'<span>Ich möchte zusätzlich den Supportvertrag (Stand: %1$s) abschließen – 200 € netto je Stunde (Endpreis 238,00 € inkl. USt.), Mindestabnahme eine Stunde pro Jahr (darüber hinaus Abrechnung in 15-Minuten-Schritten), Erstlaufzeit bis zum Ende des laufenden Kalenderjahres, danach Verlängerung auf unbestimmte Zeit mit einer Kündigungsfrist von einem Monat (Kündigung in Textform oder über die Kündigungsschaltfläche „Verträge hier kündigen“). <a href="%2$s" target="_blank" rel="noopener">[PDF öffnen/herunterladen]</a></span>',
+				esc_html( $sup['stand'] ), esc_url( $sup['url'] )
+			);
+			echo '</label></p>';
+			echo '<p style="font-size:0.85em;color:#666;margin-top:0">Optional — der Supportvertrag kann auch später jederzeit im Kundenkonto abgeschlossen werden. Bei Auswahl wird die Mindestabnahme (eine Stunde, 200,00 € netto zzgl. gesetzl. USt.) mit dieser Bestellung berechnet.</p>';
+		}
+
+		echo '</div>';
+
+		// Schritt 6: Bestellschaltfläche erst aktiv, wenn die Pflicht-Checkboxen gesetzt sind
+		echo '<script>(function(){function epv(){var u=document.getElementById("epos_zustimmung"),z=document.getElementById("epos_zustimmung"),b=document.getElementById("place_order");if(!b){return;}var ok=u&&z&&u.checked&&z.checked;b.disabled=!ok;b.style.opacity=ok?"":"0.5";b.style.cursor=ok?"":"not-allowed";}document.addEventListener("change",function(e){if(e.target&&(e.target.id==="epos_unternehmer"||e.target.id==="epos_zustimmung")){epv();}});document.addEventListener("change",function(e){if(e.target&&e.target.id==="epos_support"&&window.jQuery){jQuery(document.body).trigger("update_checkout");}});if(window.jQuery){jQuery(document.body).on("updated_checkout",epv);}epv();})();</script>';
+	}
+
+	/** Serverseitige Prüfung der Pflicht-Checkboxen. */
+	public static function checkout_pruefen() {
+		$tarif = self::tarif_im_warenkorb();
+		if ( ! $tarif ) {
+			return;
+		}
+		if ( ! self::dokument( $tarif ) ) {
+			wc_add_notice( 'Die Bestellung ist derzeit nicht möglich, da die Lizenzvereinbarung nicht abrufbar ist. Bitte wenden Sie sich an ' . Epos_Woocommerce::KONTAKT_EMAIL . '.', 'error' );
+			return;
+		}
+		if ( false ) {
+			wc_add_notice( 'Bitte bestätigen Sie, dass Sie als Unternehmer im Sinne des § 14 BGB handeln.', 'error' );
+		}
+		if ( empty( $_POST['epos_zustimmung'] ) ) {
+			wc_add_notice( 'Bitte bestätigen Sie, dass Sie die Lizenzvereinbarung und AGB gelesen haben und akzeptieren.', 'error' );
+		}
+		// Support-Position mit der Checkbox abgleichen
+		if ( ! empty( $_POST['epos_support'] ) ) {
+			self::support_position_sicherstellen();
+		} else {
+			self::support_position_entfernen();
+		}
+	}
+
+	public static function bestellbutton( $text ) {
+		return self::tarif_im_warenkorb() ? 'Zahlungspflichtig bestellen' : $text;
+	}
+
+	/** Tarif-Produktseiten: Supportvertrag als zusätzliche Option anzeigen. */
+	public static function produktseite_support() {
+		global $product;
+		if ( ! $product ) {
+			return;
+		}
+		$opt   = self::optionen();
+		$tarif = '';
+		foreach ( self::tarife() as $key => $t ) {
+			if ( (int) $product->get_id() === (int) $opt[ 'produkt_' . $key ] ) {
+				$tarif = $key;
+			}
+		}
+		if ( ! $tarif ) {
+			return;
+		}
+		$sup = self::dokument( 'support' );
+		if ( ! $sup ) {
+			return;
+		}
+		echo '<div class="epos-support-option" style="margin:1em 0;padding:12px 14px;border:1px solid #ddd;border-radius:4px;font-size:0.92em">';
+		echo '<strong>Zusätzliche Option: Supportvertrag</strong><br>';
+		printf(
+			'200 € netto je Stunde zzgl. gesetzl. USt. (Endpreis 238,00 € inkl. USt.) — Mindestabnahme eine Stunde pro Jahr, darüber hinausgehende Aufwände werden in 15-Minuten-Schritten abgerechnet. Erstlaufzeit bis zum Ende des laufenden Kalenderjahres, danach Verlängerung auf unbestimmte Zeit mit einer Kündigungsfrist von einem Monat (Kündigung in Textform oder über die Kündigungsschaltfläche „Verträge hier kündigen“). Abschluss direkt bei der Bestellung im Schritt „Vertragsschluss" — oder jederzeit später im Kundenkonto. <a href="%s" target="_blank" rel="noopener">[PDF öffnen/herunterladen]</a>',
+			esc_url( $sup['url'] )
+		);
+		echo '<p style="margin:10px 0 0"><label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer">';
+		echo '<input type="checkbox" name="epos_support_produkt" id="epos_support_produkt" value="1" style="margin-top:4px">';
+		printf(
+			'<span><strong>Supportvertrag (Stand: %s) zusätzlich abschließen</strong> — die verbindliche Bestätigung erfolgt im Bestellschritt „Vertragsschluss".</span>',
+			esc_html( $sup['stand'] )
+		);
+		echo '</label></p>';
+		echo '</div>';
+
+		// Nach dem Hinzufügen (auch per AJAX) direkt zum Warenkorb wechseln
+		printf(
+			'<script>if(window.jQuery){jQuery(document.body).on("added_to_cart",function(){window.location.href="%s";});}</script>',
+			esc_url( wc_get_cart_url() )
+		);
+	}
+
+	/**
+	 * Auswahl von der Produktseite am hinzugefügten Artikel vermerken.
+	 * Bewusst NICHT als cart_item_data (das würde eine separate Position
+	 * erzeugen) — gleiche Tarife werden so immer zu einer Position vereint.
+	 */
+	public static function warenkorb_support_markieren( $cart_item_key, $product_id ) {
+		if ( empty( $_POST['epos_support_produkt'] ) || ! function_exists( 'WC' ) || ! WC()->cart ) {
+			return;
+		}
+		$opt = self::optionen();
+		foreach ( self::tarife() as $key => $t ) {
+			if ( (int) $product_id === (int) $opt[ 'produkt_' . $key ] ) {
+				self::support_position_sicherstellen();
+			}
+		}
+	}
+
+	/** Produkt-ID des Supportvertrags. */
+	private static function support_produkt_id() {
+		$opt = self::optionen();
+		return isset( $opt['produkt_support'] ) ? (int) $opt['produkt_support'] : 0;
+	}
+
+	/** Supportvertrag als eigene Warenkorb-Position sicherstellen. */
+	public static function support_position_sicherstellen() {
+		$sid = self::support_produkt_id();
+		if ( ! $sid || ! function_exists( 'WC' ) || ! WC()->cart ) {
+			return;
+		}
+		foreach ( WC()->cart->get_cart() as $item ) {
+			if ( (int) $item['product_id'] === $sid ) {
+				return;
+			}
+		}
+		remove_action( 'woocommerce_add_to_cart', array( __CLASS__, 'warenkorb_support_markieren' ), 10 );
+		WC()->cart->add_to_cart( $sid );
+		add_action( 'woocommerce_add_to_cart', array( __CLASS__, 'warenkorb_support_markieren' ), 10, 2 );
+	}
+
+	/** Supportvertrag-Position aus dem Warenkorb entfernen. */
+	public static function support_position_entfernen() {
+		$sid = self::support_produkt_id();
+		if ( ! $sid || ! function_exists( 'WC' ) || ! WC()->cart ) {
+			return;
+		}
+		foreach ( WC()->cart->get_cart() as $key => $item ) {
+			if ( (int) $item['product_id'] === $sid ) {
+				WC()->cart->remove_cart_item( $key );
+			}
+		}
+	}
+
+	/** Checkout: Support-Checkbox mit der Warenkorb-Position abgleichen. */
+	public static function checkout_support_sync( $post_data ) {
+		if ( ! self::tarif_im_warenkorb() ) {
+			return;
+		}
+		parse_str( (string) $post_data, $pd );
+		if ( ! empty( $pd['epos_support'] ) ) {
+			self::support_position_sicherstellen();
+		} else {
+			self::support_position_entfernen();
+		}
+	}
+
+	/** Supportvertrag ohne Lizenz im Warenkorb: entfernen. */
+	public static function support_ohne_tarif_entfernen() {
+		if ( self::tarif_im_warenkorb() ) {
+			return;
+		}
+		$sid = self::support_produkt_id();
+		if ( ! $sid || ! function_exists( 'WC' ) || ! WC()->cart ) {
+			return;
+		}
+		foreach ( WC()->cart->get_cart() as $key => $item ) {
+			if ( (int) $item['product_id'] === $sid ) {
+				WC()->cart->remove_cart_item( $key );
+				wc_add_notice( 'Der Supportvertrag wurde entfernt — er kann nur zusammen mit einer Lizenz abgeschlossen werden.', 'notice' );
+			}
+		}
+	}
+
+	/** Nach „In den Warenkorb" bei Tarif-Produkten direkt zum Warenkorb. */
+	public static function warenkorb_weiterleitung( $url ) {
+		if ( ! isset( $_REQUEST['add-to-cart'] ) ) {
+			return $url;
+		}
+		$pid = (int) $_REQUEST['add-to-cart'];
+		$opt = self::optionen();
+		foreach ( self::tarife() as $key => $t ) {
+			if ( $pid && $pid === (int) $opt[ 'produkt_' . $key ] ) {
+				return wc_get_cart_url();
+			}
+		}
+		return $url;
+	}
+
+	/**
+	 * Liegt der Tarif bereits im Warenkorb (Einzelverkauf), wird die
+	 * Support-Auswahl am vorhandenen Artikel nachgetragen, statt die
+	 * erneute Zugabe an der Einzelverkaufs-Sperre scheitern zu lassen.
+	 */
+	public static function warenkorb_support_nachtragen( $gueltig, $product_id ) {
+		if ( ! $gueltig || empty( $_POST['epos_support_produkt'] ) || ! function_exists( 'WC' ) || ! WC()->cart ) {
+			return $gueltig;
+		}
+		$opt       = self::optionen();
+		$ist_tarif = false;
+		foreach ( self::tarife() as $key => $t ) {
+			if ( (int) $product_id === (int) $opt[ 'produkt_' . $key ] ) {
+				$ist_tarif = true;
+			}
+		}
+		if ( ! $ist_tarif ) {
+			return $gueltig;
+		}
+		foreach ( WC()->cart->get_cart() as $schluessel => $item ) {
+			if ( (int) $item['product_id'] === (int) $product_id ) {
+				self::support_position_sicherstellen();
+				WC()->cart->set_session();
+				// Session sofort schreiben, damit die Weiterleitung den neuen Stand sieht
+				if ( WC()->session && is_callable( array( WC()->session, 'save_data' ) ) ) {
+					WC()->session->save_data();
+				}
+				wc_add_notice( 'Der Supportvertrag wurde für den Artikel in Ihrem Warenkorb ausgewählt. Die verbindliche Bestätigung erfolgt im Bestellschritt „Vertragsschluss".', 'success' );
+				wp_safe_redirect( wc_get_cart_url() ); // direkt zum Warenkorb
+				exit;
+			}
+		}
+		return $gueltig;
+	}
+
+	/** Auswahl im Warenkorb sichtbar machen. */
+	public static function warenkorb_support_anzeigen( $item_data, $cart_item ) {
+		if ( ! empty( $cart_item['epos_support'] ) ) {
+			$item_data[] = array(
+				'key'   => 'Supportvertrag',
+				'value' => 'ausgewählt — verbindliche Bestätigung im Bestellschritt „Vertragsschluss"',
+			);
+		}
+		return $item_data;
+	}
+
+	/** Wurde der Supportvertrag auf der Produktseite vorgewählt? */
+	private static function support_vorgewaehlt() {
+		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+			return false;
+		}
+		$sid = self::support_produkt_id();
+		foreach ( WC()->cart->get_cart() as $item ) {
+			if ( ! empty( $item['epos_support'] ) ) {
+				return true;
+			}
+			if ( $sid && (int) $item['product_id'] === $sid ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** Checkbox-Zustand aus POST bzw. Checkout-AJAX (post_data) lesen. */
+	private static function checkbox_zustand( $name ) {
+		if ( isset( $_POST[ $name ] ) ) {
+			return true;
+		}
+		if ( isset( $_POST['post_data'] ) ) {
+			parse_str( (string) wp_unslash( $_POST['post_data'] ), $pd );
+			return ! empty( $pd[ $name ] );
+		}
+		return null; // kein Formularkontext
+	}
+
+	/** Ist der Supportvertrag aktuell gewählt (Checkout-Formular vor Warenkorb-Vorwahl)? */
+	private static function support_aktiv() {
+		$zustand = self::checkbox_zustand( 'epos_support' );
+		if ( null !== $zustand && ( isset( $_POST['post_data'] ) || isset( $_POST['woocommerce-process-checkout-nonce'] ) ) ) {
+			return (bool) $zustand;
+		}
+		if ( true === $zustand ) {
+			return true;
+		}
+		return self::support_vorgewaehlt();
+	}
+
+	/**
+	 * Mindestabnahme des Supportvertrags (eine Stunde, 200,00 € netto) als
+	 * Gebührenposition berechnen, sobald der Supportvertrag gewählt ist.
+	 */
+	public static function support_gebuehr( $cart ) {
+		if ( is_admin() && ! defined( 'DOING_AJAX' ) ) {
+			return;
+		}
+		if ( ! self::tarif_im_warenkorb() ) {
+			return;
+		}
+		if ( ! self::support_aktiv() ) {
+			return;
+		}
+		$cart->add_fee( 'Supportvertrag — Mindestabnahme 1 Stunde p. a.', 200, true );
+	}
+
+	/** Header-/Mini-Warenkorb: Summe inkl. gewähltem Supportvertrag anzeigen. */
+	public static function minicart_summe( $anzeige, $compound, $cart ) {
+		if ( is_cart() || is_checkout() ) {
+			return $anzeige; // dort weist die Summentabelle die Gebühr separat aus
+		}
+		if ( ! self::tarif_im_warenkorb() || ! self::support_vorgewaehlt() ) {
+			return $anzeige;
+		}
+		return wc_price( (float) $cart->get_subtotal() + 200 );
+	}
+
+	/** Mini-Warenkorb: gewählten Supportvertrag als Zeile ausweisen. */
+	public static function minicart_support_zeile() {
+		if ( self::tarif_im_warenkorb() && self::support_vorgewaehlt() ) {
+			echo '<p class="epos-minicart-support" style="margin:4px 0;font-size:0.85em">Supportvertrag — Mindestabnahme 1 Stunde: 200,00 € netto (238,00 € inkl. USt.)</p>';
+		}
+	}
+
+	/* ------------------------------------------------- Protokollierung (Abschnitt 5) */
+
+	/** Eintrag an den append-only-Protokolldatensatz der Bestellung anhängen. */
+	public static function protokoll_ergaenzen( $order, $eintrag, $speichern = true ) {
+		$p   = $order->get_meta( '_epos_vertrag_protokoll' );
+		$p   = is_array( $p ) ? $p : array();
+		$p[] = $eintrag;
+		$order->update_meta_data( '_epos_vertrag_protokoll', $p );
+		if ( $speichern ) {
+			$order->save();
+		}
+	}
+
+	/** Schritt „Bestellung abgesendet": Protokolldatensatz anlegen. */
+	public static function protokoll_anlegen( $order, $data ) {
+		$tarif = self::tarif_im_warenkorb();
+		if ( ! $tarif ) {
+			return;
+		}
+		$alle = self::tarife();
+		$t    = $alle[ $tarif ];
+		$dok  = self::dokument( $tarif );
+		$mit_support = ! empty( $_POST['epos_support'] );
+		$sup  = $mit_support ? self::dokument( 'support' ) : null;
+
+		$ip         = class_exists( 'WC_Geolocation' ) ? WC_Geolocation::get_ip_address() : ( isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : '' );
+		$zeit_utc   = gmdate( 'Y-m-d H:i:s' ) . ' UTC';
+		$zeit_lokal = date_i18n( 'd.m.Y H:i:s' );
+
+		$vat = isset( $_POST['billing_vat_id'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_vat_id'] ) ) : '';
+		if ( $vat ) {
+			$order->update_meta_data( '_billing_vat_id', $vat );
+			if ( $order->get_customer_id() ) {
+				update_user_meta( $order->get_customer_id(), 'billing_vat_id', $vat );
+			}
+		}
+
+		$order->update_meta_data( '_epos_tarif', $tarif );
+		$order->update_meta_data( '_epos_support', $mit_support ? 'ja' : 'nein' );
+
+		self::protokoll_ergaenzen( $order, array(
+			'ereignis'               => 'bestellung',
+			'zeit_utc'               => $zeit_utc,
+			'zeit_lokal'             => $zeit_lokal,
+			'ip'                     => $ip,
+			'email'                  => $order->get_billing_email(),
+			'firma'                  => $order->get_billing_company(),
+			'name'                   => trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() ),
+			'anschrift'              => trim( $order->get_billing_address_1() . ', ' . $order->get_billing_postcode() . ' ' . $order->get_billing_city() ),
+			'ust_idnr'               => $vat,
+			'tarif'                  => $t['name'],
+			'preis_netto_pa'         => number_format( $t['preis'], 2, ',', '.' ) . ' €',
+			'unternehmer_checkbox'   => 'gesetzt (' . $zeit_utc . ')',
+			'zustimmung_lizenz'      => 'gesetzt (' . $zeit_utc . ')',
+			'lizenzvereinbarung'     => $dok ? array( 'stand' => $dok['stand'], 'sha256' => $dok['hash'], 'datei' => basename( $dok['pfad'] ) ) : null,
+			'supportvertrag'         => $mit_support ? 'gesetzt (' . $zeit_utc . ')' : 'nicht gewählt',
+			'supportvertrag_fassung' => $sup ? array( 'stand' => $sup['stand'], 'sha256' => $sup['hash'], 'datei' => basename( $sup['pfad'] ) ) : null,
+		), false );
+	}
+
+	/** Zusätzlich als (unveränderliche) Bestellnotiz dokumentieren. */
+	public static function protokoll_notiz( $order ) {
+		$tarif = self::tarif_der_bestellung( $order );
+		if ( ! $tarif ) {
+			return;
+		}
+		$alle = self::tarife();
+		$t    = $alle[ $tarif ];
+		$dok  = self::dokument( $tarif );
+		$order->add_order_note( sprintf(
+			'Online-Vertragsschluss: Tarif „%s", Unternehmer-Checkbox und Zustimmung zur Lizenzvereinbarung (Stand %s, SHA-256 %s…) gesetzt. Supportvertrag: %s. IP: %s.',
+			$t['name'],
+			$dok ? $dok['stand'] : '—',
+			$dok ? substr( $dok['hash'], 0, 16 ) : '—',
+			'ja' === $order->get_meta( '_epos_support' ) ? 'ja' : 'nein',
+			class_exists( 'WC_Geolocation' ) ? WC_Geolocation::get_ip_address() : ''
+		) );
+	}
+
+	/* ------------------------------------------------- E-Mail (Abschnitt 3) */
+
+	/** PDFs der akzeptierten Fassungen an die Kunden-E-Mails anhängen. */
+	public static function email_anhaenge( $anhaenge, $email_id, $objekt ) {
+		$kunden_mails = array( 'customer_on_hold_order', 'customer_processing_order', 'customer_completed_order', 'customer_invoice', 'new_order' );
+		if ( ! in_array( $email_id, $kunden_mails, true ) || ! is_a( $objekt, 'WC_Order' ) ) {
+			return $anhaenge;
+		}
+		$tarif = self::tarif_der_bestellung( $objekt );
+		if ( ! $tarif ) {
+			return $anhaenge;
+		}
+		$dok = self::dokument( $tarif );
+		if ( $dok ) {
+			$anhaenge[] = $dok['pfad'];
+		}
+		if ( 'ja' === $objekt->get_meta( '_epos_support' ) ) {
+			$sup = self::dokument( 'support' );
+			if ( $sup ) {
+				$anhaenge[] = $sup['pfad'];
+			}
+		}
+		return $anhaenge;
+	}
+
+	/** Versand der Bestellbestätigung im Protokoll vermerken. */
+	public static function email_vermerken( $erfolgreich, $email_id, $email ) {
+		if ( ! $email || ! isset( $email->object ) || ! is_a( $email->object, 'WC_Order' ) ) {
+			return;
+		}
+		$order = $email->object;
+		if ( ! self::tarif_der_bestellung( $order ) ) {
+			return;
+		}
+		if ( 0 !== strpos( (string) $email_id, 'customer_' ) ) {
+			return;
+		}
+		self::protokoll_ergaenzen( $order, array(
+			'ereignis'   => 'bestellbestaetigung',
+			'email_typ'  => $email_id,
+			'empfaenger' => $order->get_billing_email(),
+			'zeit_utc'   => gmdate( 'Y-m-d H:i:s' ) . ' UTC',
+			'status'     => $erfolgreich ? 'versandt' : 'Versand fehlgeschlagen',
+		) );
+	}
+
+	/* ------------------------------------------------- Freischaltung (Schritt 7) */
+
+	public static function freischalten( $order_id ) {
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			return;
+		}
+		$tarif = self::tarif_der_bestellung( $order );
+		if ( ! $tarif || $order->get_meta( '_epos_lizenz_id' ) ) {
+			return;
+		}
+
+		// Freischaltung nur bei vollständigem Protokolldatensatz (Spezifikation Schritt 7)
+		$protokoll = $order->get_meta( '_epos_vertrag_protokoll' );
+		if ( empty( $protokoll ) || ! is_array( $protokoll ) ) {
+			$order->add_order_note( 'EPOS: Freischaltung zurückgestellt — Protokolldatensatz des Vertragsschlusses fehlt (Bestellung nicht über den Checkout mit Checkboxen abgeschlossen?). Lizenz bitte manuell anlegen.' );
+			return;
+		}
+
+		$alle  = self::tarife();
+		$t     = $alle[ $tarif ];
+		$firma = $order->get_billing_company();
+		if ( ! $firma ) {
+			$firma = trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() );
+		}
+		$email = $order->get_billing_email();
+
+		$ab  = gmdate( 'Y-m-d' );
+		$bis = gmdate( 'Y-m-d', strtotime( '+' . max( 1, (int) ( isset( $t['monate'] ) ? $t['monate'] : 12 ) ) . ' months' ) );
+
+		// Bestellmenge des Tarifs = Anzahl der anzulegenden Lizenzen
+		$opt   = self::optionen();
+		$menge = 0;
+		foreach ( $order->get_items() as $item ) {
+			if ( (int) $item->get_product_id() === (int) $opt[ 'produkt_' . $tarif ] ) {
+				$menge += max( 1, (int) $item->get_quantity() );
+			}
+		}
+		$menge      = max( 1, $menge );
+		$lizenz_ids = array();
+		$user       = null;
+
+		for ( $nr = 1; $nr <= $menge; $nr++ ) {
+
+		$lizenz_id = Epos_Lizenz_Cpt::anlegen( $t['lizenz_typ'], $firma, $t['nutzer'], $ab, $bis );
+		if ( is_wp_error( $lizenz_id ) ) {
+			$order->add_order_note( 'EPOS: Lizenz konnte nicht angelegt werden: ' . $lizenz_id->get_error_message() );
+			continue;
+		}
+		$lizenz_ids[] = (int) $lizenz_id;
+
+		// Der Besteller wird der ersten Lizenz zugeordnet; weitere Lizenzen
+		// belegen ihre Benutzerplätze erst bei der Aktivierung durch die Nutzer.
+		if ( 1 === $nr ) {
+			$rolle = ( 'firma' === $t['lizenz_typ'] ) ? 'epos_firmenadmin' : 'epos_benutzer';
+			$user  = Epos_Lizenz_Cpt::benutzer_zuordnen( $lizenz_id, $email, $rolle );
+			if ( is_wp_error( $user ) ) {
+				$order->add_order_note( 'EPOS: Benutzerzuordnung fehlgeschlagen: ' . $user->get_error_message() );
+				$user = null;
+			}
+		}
+
+		$schluessel = Epos_Lizenz_Cpt::schluessel_neu( $lizenz_id );
+		if ( ! is_wp_error( $schluessel ) ) {
+			Epos_Mail::schluessel_senden( $email, $schluessel['schluessel'], $firma, false );
+		}
+
+		} // Ende Mengen-Schleife
+
+		if ( empty( $lizenz_ids ) ) {
+			return;
+		}
+		$lizenz_id = $lizenz_ids[0];
+
+		$order->update_meta_data( '_epos_lizenz_id', (int) $lizenz_id );
+		$order->update_meta_data( '_epos_lizenz_ids', $lizenz_ids );
+
+		// Supportvertrag aus der Bestellung übernehmen
+		if ( 'ja' === $order->get_meta( '_epos_support' ) && $user ) {
+			self::support_vermerken( $user->ID, 'bestellung', $order->get_id() );
+		}
+
+		$zeit_utc = gmdate( 'Y-m-d H:i:s' ) . ' UTC';
+		self::protokoll_ergaenzen( $order, array(
+			'ereignis'   => 'freischaltung',
+			'lizenz_id'  => (int) $lizenz_id,
+			'lizenz_ids' => $lizenz_ids,
+			'zeit_utc'   => $zeit_utc,
+			'zeit_lokal' => date_i18n( 'd.m.Y H:i:s' ),
+			'hinweis'    => 'Vertrags- und Laufzeitbeginn (§ 9 Abs. 1 der Lizenzvereinbarung)',
+		), false );
+		$order->save();
+
+		$order->add_order_note( sprintf( 'EPOS: Lizenz %05d angelegt und freigeschaltet (Tarif „%s", gültig bis %s). Lizenzschlüssel an %s gesendet.', $lizenz_id, $t['name'], $bis, $email ) );
+
+		self::bestaetigung_senden( $order, $lizenz_id );
+	}
+
+	/** Bestellbestätigung gemäß Spezifikation Abschnitt 3 (mit Vertrags-PDFs). */
+	private static function bestaetigung_senden( $order, $lizenz_id ) {
+		$tarif = self::tarif_der_bestellung( $order );
+		$alle  = self::tarife();
+		$t     = $alle[ $tarif ];
+		$dok   = self::dokument( $tarif );
+		$mit_support = ( 'ja' === $order->get_meta( '_epos_support' ) );
+		$sup   = $mit_support ? self::dokument( 'support' ) : null;
+
+		$name    = trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() );
+		$betreff = sprintf( 'Ihre Bestellung EPOS-Plan – Tarif %s (Bestellnr. %s)', $t['name'], $order->get_order_number() );
+		$portal  = wc_get_page_permalink( 'myaccount' );
+
+		$text  = 'Sehr geehrte(r) ' . $name . ",\n\n";
+		$text .= "vielen Dank für Ihre Bestellung. Hiermit bestätigen wir den Abschluss der\nLizenzvereinbarung für die Software EPOS-Plan.\n\n";
+		$text .= '  Tarif:           ' . $t['name'] . ' (' . $t['nutzer_text'] . ")\n";
+		$text .= '  Preis:     ' . number_format( $t['preis'], 2, ',', '.' ) . ' € netto zzgl. gesetzl. USt. (Endpreis ' . number_format( $t['preis'] * 1.19, 2, ',', '.' ) . ' € inkl. gesetzl. USt.), Abrechnung im Voraus' . "\n";
+		$text .= '  Vertragsbeginn:  mit Freischaltung Ihres Zugangs am ' . date_i18n( 'd.m.Y' ) . "\n";
+		$text .= "  Laufzeit:        12 Monate, Verlängerung um jeweils 12 Monate,\n                   Kündigungsfrist 3 Monate zum Laufzeitende\n\n";
+		if ( $mit_support && $sup ) {
+			$text .= 'Zusätzlich haben Sie den Supportvertrag (Stand ' . $sup['stand'] . ") abgeschlossen –\n200 € netto je Stunde (Endpreis 238,00 € inkl. USt.), Mindestabnahme eine Stunde pro Jahr (darüber hinaus Abrechnung in 15-Minuten-Schritten), Laufzeit bis Jahresende mit automatischer\nVerlängerung um jeweils ein Jahr, kündbar jederzeit zum Jahresende.\n\n";
+		}
+		$text .= "Die von Ihnen akzeptierten Vertragsdokumente finden Sie im Anhang dieser E-Mail\nsowie jederzeit in Ihrem Nutzerkonto.\n\n";
+		$text .= 'Ihr Zugang: ' . $portal . "\n\n";
+		$text .= "Mit freundlichen Grüßen\nDr. Dirk Engelmann\nINEKON – Intelligente Energiekonzepte · Breitwiesenstr. 13 · 70565 Stuttgart\n";
+
+		$anhaenge = array();
+		if ( $dok ) {
+			$anhaenge[] = $dok['pfad'];
+		}
+		if ( $sup ) {
+			$anhaenge[] = $sup['pfad'];
+		}
+		if ( function_exists( 'epos_vertrag_datenblatt_pfad' ) ) {
+			$ausfertigung = epos_vertrag_datenblatt_pfad( $order );
+			if ( $ausfertigung ) {
+				$anhaenge[] = $ausfertigung;
+			}
+		}
+
+		$ok = wp_mail( $order->get_billing_email(), $betreff, $text, array(), $anhaenge );
+
+		self::protokoll_ergaenzen( $order, array(
+			'ereignis'   => 'bestellbestaetigung_vertragsdokumente',
+			'empfaenger' => $order->get_billing_email(),
+			'zeit_utc'   => gmdate( 'Y-m-d H:i:s' ) . ' UTC',
+			'anhaenge'   => array_map( 'basename', $anhaenge ),
+			'status'     => $ok ? 'versandt' : 'Versand fehlgeschlagen',
+		) );
+	}
+
+	/* ------------------------------------------------- Supportvertrag im Konto (Abschnitt 7) */
+
+	/** Abschluss des Supportvertrags beim Benutzer protokollieren (append-only). */
+	public static function support_vermerken( $user_id, $quelle, $order_id = 0 ) {
+		if ( get_user_meta( $user_id, '_epos_supportvertrag', true ) ) {
+			return; // besteht bereits
+		}
+		$sup = self::dokument( 'support' );
+		$ip  = class_exists( 'WC_Geolocation' ) ? WC_Geolocation::get_ip_address() : ( isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : '' );
+		update_user_meta( $user_id, '_epos_supportvertrag', array(
+			'abgeschlossen_utc'   => gmdate( 'Y-m-d H:i:s' ) . ' UTC',
+			'abgeschlossen_lokal' => date_i18n( 'd.m.Y H:i:s' ),
+			'quelle'              => $quelle,
+			'bestellung'          => (int) $order_id,
+			'ip'                  => $ip,
+			'fassung'             => $sup ? array( 'stand' => $sup['stand'], 'sha256' => $sup['hash'], 'datei' => basename( $sup['pfad'] ) ) : null,
+		) );
+
+		// Abschluss zusätzlich an der Lizenz vermerken (für Verwaltung und Portal)
+		$lizenz_id = (int) get_user_meta( $user_id, '_epos_lizenz_id', true );
+		if ( $lizenz_id && ! get_post_meta( $lizenz_id, '_epos_supportvertrag', true ) ) {
+			$eintrag = get_user_meta( $user_id, '_epos_supportvertrag', true );
+			if ( is_array( $eintrag ) ) {
+				$eintrag['benutzer'] = (int) $user_id;
+				update_post_meta( $lizenz_id, '_epos_supportvertrag', $eintrag );
+			}
+		}
+	}
+
+	/**
+	 * Supportvertrag einer Lizenz (Lizenz-Vermerk oder Abschluss eines
+	 * zugeordneten Benutzers).
+	 *
+	 * @return array|null
+	 */
+	public static function support_der_lizenz( $lizenz_id ) {
+		$rec = get_post_meta( (int) $lizenz_id, '_epos_supportvertrag', true );
+		if ( is_array( $rec ) && ! empty( $rec ) ) {
+			return $rec;
+		}
+		if ( class_exists( 'Epos_Lizenz_Cpt' ) ) {
+			foreach ( Epos_Lizenz_Cpt::benutzer( (int) $lizenz_id ) as $u ) {
+				$r = get_user_meta( $u->ID, '_epos_supportvertrag', true );
+				if ( is_array( $r ) && ! empty( $r ) ) {
+					return $r;
+				}
+			}
+		}
+		return null;
+	}
+
+	/** Für den Vertragsabschluss fehlende Rechnungsangaben des Kontos. */
+	public static function fehlende_kontodaten( $user_id ) {
+		$fehlend = array();
+		$firma   = trim( (string) get_user_meta( $user_id, 'billing_company', true ) );
+		$vor     = trim( (string) get_user_meta( $user_id, 'billing_first_name', true ) );
+		$nach    = trim( (string) get_user_meta( $user_id, 'billing_last_name', true ) );
+		if ( '' === $vor ) { $vor = trim( (string) get_user_meta( $user_id, 'first_name', true ) ); }
+		if ( '' === $nach ) { $nach = trim( (string) get_user_meta( $user_id, 'last_name', true ) ); }
+		if ( '' === $firma && ( '' === $vor || '' === $nach ) ) {
+			$fehlend[] = 'Firma bzw. vollständiger Name';
+		}
+		if ( '' === trim( (string) get_user_meta( $user_id, 'billing_address_1', true ) ) ) {
+			$fehlend[] = 'Straße und Hausnummer';
+		}
+		if ( '' === trim( (string) get_user_meta( $user_id, 'billing_postcode', true ) ) ) {
+			$fehlend[] = 'PLZ';
+		}
+		if ( '' === trim( (string) get_user_meta( $user_id, 'billing_city', true ) ) ) {
+			$fehlend[] = 'Ort';
+		}
+		return $fehlend;
+	}
+
+	/** POST-Aktion: nachträglicher Abschluss des Supportvertrags. */
+	public static function support_aktion() {
+		if ( ! is_user_logged_in() || empty( $_POST['epos_aktion'] ) || 'supportvertrag' !== sanitize_key( $_POST['epos_aktion'] ) ) {
+			return;
+		}
+		if ( ! isset( $_POST['epos_support_nonce'] ) || ! wp_verify_nonce( $_POST['epos_support_nonce'], 'epos_supportvertrag' ) ) {
+			return;
+		}
+		$user = wp_get_current_user();
+		if ( get_user_meta( $user->ID, '_epos_supportvertrag', true ) ) {
+			return;
+		}
+		$lizenz_id = (int) get_user_meta( $user->ID, '_epos_lizenz_id', true );
+		if ( $lizenz_id && self::support_der_lizenz( $lizenz_id ) ) {
+			return;
+		}
+		if ( empty( $_POST['epos_support_zustimmung'] ) ) {
+			$GLOBALS['epos_portal_meldung'] = array( 'text' => 'Bitte setzen Sie die Checkbox, um den Supportvertrag abzuschließen.', 'fehler' => true );
+			return;
+		}
+		$fehlend = self::fehlende_kontodaten( $user->ID );
+		if ( $fehlend ) {
+			$GLOBALS['epos_portal_meldung'] = array( 'text' => 'Bitte vervollständigen Sie zuerst Ihre Rechnungsangaben (' . implode( ', ', $fehlend ) . '), bevor Sie den Supportvertrag abschließen.', 'fehler' => true );
+			return;
+		}
+		$sup = self::dokument( 'support' );
+		if ( ! $sup ) {
+			$GLOBALS['epos_portal_meldung'] = array( 'text' => 'Der Supportvertrag ist derzeit nicht abrufbar. Bitte wenden Sie sich an ' . Epos_Woocommerce::KONTAKT_EMAIL . '.', 'fehler' => true );
+			return;
+		}
+
+		self::support_vermerken( $user->ID, 'konto' );
+
+		// Bestätigung mit PDF (Abschnitt 3/7)
+		$betreff = 'Ihr Supportvertrag EPOS-Plan';
+		$text  = 'Sehr geehrte(r) ' . $user->display_name . ",\n\n";
+		$text .= 'hiermit bestätigen wir den Abschluss des Supportvertrags für EPOS-Plan (Stand ' . $sup['stand'] . ").\n\n";
+		$text .= "  Vergütung:  200 € netto je Stunde zzgl. gesetzl. USt. (Endpreis 238,00 € inkl. USt.), Mindestabnahme eine Stunde pro Jahr (darüber hinaus Abrechnung in 15-Minuten-Schritten)\n";
+		$text .= "  Laufzeit:   bis zum Jahresende, automatische Verlängerung um jeweils ein\n              Kalenderjahr, kündbar jederzeit zum Jahresende\n\n";
+		$text .= "Den von Ihnen akzeptierten Supportvertrag finden Sie im Anhang dieser E-Mail\nsowie jederzeit in Ihrem Nutzerkonto.\n\n";
+		$text .= "Mit freundlichen Grüßen\nDr. Dirk Engelmann\nINEKON – Intelligente Energiekonzepte · Breitwiesenstr. 13 · 70565 Stuttgart\n";
+		wp_mail( $user->user_email, $betreff, $text, array(), array( $sup['pfad'] ) );
+
+		$GLOBALS['epos_portal_meldung'] = array( 'text' => 'Der Supportvertrag wurde abgeschlossen. Eine Bestätigung mit dem Vertragsdokument wurde an ' . $user->user_email . ' gesendet.', 'fehler' => false );
+	}
+
+	/** Konto-Tab „Lizenzschlüssel": Vertragsdokumente + Supportvertrag-Abschluss. */
+	public static function konto_vertraege() {
+		if ( ! is_user_logged_in() ) {
+			return;
+		}
+		$user_id = get_current_user_id();
+
+		echo '<div class="epos-vertraege" style="margin-top:1.5em">';
+		echo '<h3>Vertragsdokumente</h3>';
+
+		$zeilen = array();
+		$alle   = self::tarife();
+
+		// akzeptierte Lizenzvereinbarungen aus den Bestellungen des Kunden
+		if ( function_exists( 'wc_get_orders' ) ) {
+			$orders = wc_get_orders( array( 'customer_id' => $user_id, 'limit' => 25, 'orderby' => 'date', 'order' => 'DESC' ) );
+			foreach ( $orders as $order ) {
+				$tarif = (string) $order->get_meta( '_epos_tarif' );
+				if ( ! $tarif || ! isset( $alle[ $tarif ] ) ) {
+					continue;
+				}
+				$t   = $alle[ $tarif ];
+				$dok = self::dokument( $tarif );
+				if ( $dok ) {
+					$zeilen[] = sprintf(
+						'<tr><td>Lizenzvereinbarung Tarif „%s" (Stand: %s)</td><td>Bestellung %s vom %s</td><td><a href="%s" target="_blank" rel="noopener">PDF öffnen/herunterladen</a></td></tr>',
+						esc_html( $t['name'] ), esc_html( $dok['stand'] ),
+						esc_html( $order->get_order_number() ),
+						esc_html( date_i18n( 'd.m.Y', $order->get_date_created() ? $order->get_date_created()->getTimestamp() : time() ) ),
+						esc_url( $dok['url'] )
+					);
+				}
+			}
+		}
+
+		// Supportvertrag
+		$support = get_user_meta( $user_id, '_epos_supportvertrag', true );
+		if ( ! is_array( $support ) || empty( $support ) ) {
+			$konto_lizenz_id = (int) get_user_meta( $user_id, '_epos_lizenz_id', true );
+			$support         = $konto_lizenz_id ? self::support_der_lizenz( $konto_lizenz_id ) : null;
+		}
+		$sup     = self::dokument( 'support' );
+		if ( $support && is_array( $support ) && $sup ) {
+			$zeilen[] = sprintf(
+				'<tr><td>Supportvertrag (Stand: %s)</td><td>abgeschlossen am %s</td><td><a href="%s" target="_blank" rel="noopener">PDF öffnen/herunterladen</a></td></tr>',
+				esc_html( isset( $support['fassung']['stand'] ) ? $support['fassung']['stand'] : $sup['stand'] ),
+				esc_html( isset( $support['abgeschlossen_lokal'] ) ? $support['abgeschlossen_lokal'] : '—' ),
+				esc_url( $sup['url'] )
+			);
+		}
+
+		if ( $zeilen ) {
+			echo '<table class="epos-tabelle" style="border-collapse:collapse;width:100%">';
+			echo '<tr><th style="border:1px solid #ddd;padding:6px 10px;text-align:left">Dokument</th><th style="border:1px solid #ddd;padding:6px 10px;text-align:left">Abschluss</th><th style="border:1px solid #ddd;padding:6px 10px;text-align:left"></th></tr>';
+			foreach ( $zeilen as $z ) {
+				echo str_replace( '<td>', '<td style="border:1px solid #ddd;padding:6px 10px">', $z ); // phpcs:ignore
+			}
+			echo '</table>';
+		} else {
+			echo '<p>Es liegen noch keine online abgeschlossenen Vertragsdokumente vor.</p>';
+		}
+
+		// „Supportvertrag abschließen" — sichtbar, solange keiner besteht
+		if ( ! $support && $sup ) {
+			echo '<h3>Supportvertrag abschließen</h3>';
+			$fehlend = self::fehlende_kontodaten( $user_id );
+			if ( $fehlend ) {
+				echo '<p style="font-size:0.92em">Für den Vertragsabschluss werden vollständige Rechnungsangaben benötigt. Es fehlt: <strong>' . esc_html( implode( ', ', $fehlend ) ) . '</strong>.</p>';
+				echo '<p><a class="button" href="' . esc_url( wc_get_endpoint_url( 'edit-address', 'billing', wc_get_page_permalink( 'myaccount' ) ) ) . '">Rechnungsadresse vervollständigen</a></p>';
+			} else {
+			echo '<p style="font-size:0.92em">Ergänzend zur Lizenzvereinbarung können Sie jederzeit den Supportvertrag abschließen: 200 € netto je Stunde zzgl. gesetzl. USt. (Endpreis 238,00 € inkl. USt.), Mindestabnahme eine Stunde pro Jahr (darüber hinaus Abrechnung in 15-Minuten-Schritten), Laufzeit bis Jahresende mit automatischer Verlängerung um jeweils ein Kalenderjahr, kündbar jederzeit zum Jahresende.</p>';
+			echo '<form method="post" onsubmit="return confirm(&quot;Kostenpflichtige Zahlung: Möchten Sie den Supportvertrag jetzt verbindlich abschließen? Es gilt eine Mindestabnahme von einer Stunde (200 € netto) pro Jahr; darüber hinausgehende Aufwände werden in 15-Minuten-Schritten abgerechnet.&quot;)">';
+			wp_nonce_field( 'epos_supportvertrag', 'epos_support_nonce' );
+			echo '<input type="hidden" name="epos_aktion" value="supportvertrag">';
+			echo '<p><label style="display:flex;gap:8px;align-items:flex-start;font-size:0.92em">';
+			echo '<input type="checkbox" name="epos_support_zustimmung" value="1" style="margin-top:4px">';
+			printf(
+				'<span>Ich möchte den Supportvertrag (Stand: %1$s) abschließen – 200 € netto je Stunde (Endpreis 238,00 € inkl. USt.), Mindestabnahme eine Stunde pro Jahr (darüber hinaus Abrechnung in 15-Minuten-Schritten), Erstlaufzeit bis zum Ende des laufenden Kalenderjahres, danach Verlängerung auf unbestimmte Zeit mit einer Kündigungsfrist von einem Monat (Kündigung in Textform oder über die Kündigungsschaltfläche „Verträge hier kündigen“). <a href="%2$s" target="_blank" rel="noopener">[PDF öffnen/herunterladen]</a></span>',
+				esc_html( $sup['stand'] ), esc_url( $sup['url'] )
+			);
+			echo '</label></p>';
+			echo '<button type="submit" class="button button-primary">Supportvertrag zahlungspflichtig abschließen</button>';
+			echo '</form>';
+			}
+		}
+
+		echo '</div>';
+	}
+}

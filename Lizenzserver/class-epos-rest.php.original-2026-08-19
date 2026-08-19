@@ -1,0 +1,279 @@
+<?php
+/**
+ * REST-API für die Desktop-Anwendung:  /wp-json/epos/v1/…
+ *
+ * Zustandslose Absicherung: Die Aktivierung authentifiziert sich über den
+ * Lizenzschlüssel, die Nachprüfung über die Token-ID. Es werden keine
+ * WordPress-Passwörter verwendet.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+class Epos_Rest {
+
+	public static function routen_registrieren() {
+		register_rest_route( 'epos/v1', '/activate', array(
+			'methods'             => 'POST',
+			'callback'            => array( __CLASS__, 'activate' ),
+			'permission_callback' => '__return_true',
+		) );
+		register_rest_route( 'epos/v1', '/validate', array(
+			'methods'             => 'POST',
+			'callback'            => array( __CLASS__, 'validate' ),
+			'permission_callback' => '__return_true',
+		) );
+		register_rest_route( 'epos/v1', '/deactivate', array(
+			'methods'             => 'POST',
+			'callback'            => array( __CLASS__, 'deactivate' ),
+			'permission_callback' => '__return_true',
+		) );
+		register_rest_route( 'epos/v1', '/trial', array(
+			'methods'             => 'POST',
+			'callback'            => array( __CLASS__, 'trial' ),
+			'permission_callback' => '__return_true',
+		) );
+	}
+
+	/** Einfaches Rate-Limit je IP und Endpunkt. */
+	private static function rate_limit( $endpunkt, $max, $fenster_sekunden ) {
+		$ip  = isset( $_SERVER['REMOTE_ADDR'] ) ? preg_replace( '/[^0-9a-fA-F:.]/', '', $_SERVER['REMOTE_ADDR'] ) : 'unbekannt';
+		$key = 'epos_rl_' . $endpunkt . '_' . md5( $ip );
+		$n   = (int) get_transient( $key );
+		if ( $n >= $max ) {
+			return new WP_Error( 'rate_limit', 'Zu viele Anfragen. Bitte später erneut versuchen.', array( 'status' => 429 ) );
+		}
+		set_transient( $key, $n + 1, $fenster_sekunden );
+		return true;
+	}
+
+	private static function fehler( $wp_error, $status = 400 ) {
+		$daten = $wp_error->get_error_data();
+		if ( is_array( $daten ) && isset( $daten['status'] ) ) {
+			$status = $daten['status'];
+		}
+		return new WP_REST_Response( array(
+			'ok'     => false,
+			'code'   => $wp_error->get_error_code(),
+			'meldung' => $wp_error->get_error_message(),
+		), $status );
+	}
+
+	/**
+	 * POST /activate  { schluessel, email, geraete_id, geraete_name? }
+	 */
+	public static function activate( WP_REST_Request $req ) {
+		$rl = self::rate_limit( 'activate', 30, HOUR_IN_SECONDS );
+		if ( is_wp_error( $rl ) ) {
+			return self::fehler( $rl );
+		}
+
+		$schluessel  = (string) $req->get_param( 'schluessel' );
+		$email       = sanitize_email( (string) $req->get_param( 'email' ) );
+		$geraete_id  = sanitize_text_field( (string) $req->get_param( 'geraete_id' ) );
+		$geraete_name = sanitize_text_field( (string) $req->get_param( 'geraete_name' ) );
+
+		if ( ! is_email( $email ) ) {
+			return self::fehler( new WP_Error( 'email_ungueltig', 'Die E-Mail-Adresse fehlt oder ist ungültig (Beispiel: name@firma.de).' ) );
+		}
+		if ( '' === $geraete_id ) {
+			return self::fehler( new WP_Error( 'geraete_id_fehlt', 'Die Geräte-ID fehlt — bitte die Anwendung aktualisieren.' ) );
+		}
+
+		$teile = Epos_Schluessel::parsen( $schluessel );
+		if ( is_wp_error( $teile ) ) {
+			return self::fehler( $teile );
+		}
+
+		$lizenz = Epos_Lizenz_Cpt::lade( $teile['nummer'] );
+		if ( ! $lizenz || get_post_meta( $lizenz->ID, '_epos_typ', true ) !== $teile['typ'] ) {
+			return self::fehler( new WP_Error( 'lizenz_unbekannt', 'Zu diesem Schlüssel wurde keine Lizenz gefunden.' ), 404 );
+		}
+
+		$hash = get_post_meta( $lizenz->ID, '_epos_schluessel_hash', true );
+		if ( ! Epos_Schluessel::pruefen( $teile['geheimteil'], $hash ) ) {
+			return self::fehler( new WP_Error( 'schluessel_falsch', 'Der Lizenzschlüssel ist ungültig (möglicherweise wurde ein neuer erzeugt).' ), 403 );
+		}
+
+		$status = Epos_Lizenz_Cpt::status_pruefen( $lizenz );
+		if ( is_wp_error( $status ) ) {
+			return self::fehler( $status, 403 );
+		}
+
+		// Benutzer suchen oder — bei freiem Platz — selbst zuordnen
+		$user = Epos_Lizenz_Cpt::benutzer_nach_email( $lizenz->ID, $email );
+		if ( $user && 'deaktiviert' === get_user_meta( $user->ID, '_epos_status', true ) ) {
+			return self::fehler( new WP_Error( 'benutzer_deaktiviert', 'Dieser Benutzer wurde für die Lizenz deaktiviert.' ), 403 );
+		}
+		if ( ! $user ) {
+			$frist = Epos_Lizenz_Cpt::sperrfrist_aktiv( $lizenz->ID );
+			if ( $frist ) {
+				return self::fehler( new WP_Error( 'sperrfrist', 'Ein Benutzerplatz wurde kürzlich freigegeben und ist erst ab ' . $frist . ' Uhr neu belegbar.' ), 403 );
+			}
+			$user = Epos_Lizenz_Cpt::benutzer_zuordnen( $lizenz->ID, $email );
+			if ( is_wp_error( $user ) ) {
+				return self::fehler( $user, 403 );
+			}
+		}
+
+		// Gerät registrieren oder wiederverwenden
+		$geraet = Epos_Geraete::finde( $lizenz->ID, $user->ID, $geraete_id );
+		if ( $geraet && 'aktiv' !== $geraet->status ) {
+			Epos_Geraete::reaktivieren( $geraet->id );
+			$geraet = Epos_Geraete::finde( $lizenz->ID, $user->ID, $geraete_id );
+		}
+		if ( ! $geraet ) {
+			$max_geraete = (int) epos_lizenz_option( 'geraete_je_nutzer' );
+			$vorhandene  = Epos_Geraete::je_benutzer( $lizenz->ID, $user->ID );
+			if ( count( $vorhandene ) >= $max_geraete ) {
+				return self::fehler( new WP_Error( 'geraete_limit', sprintf( 'Für diesen Benutzer sind bereits %d Geräte registriert. Bitte im Lizenzportal ein Gerät freigeben.', $max_geraete ) ), 403 );
+			}
+			$geraet = Epos_Geraete::registrieren( $lizenz->ID, $user->ID, $geraete_id, $geraete_name );
+		}
+
+		Epos_Geraete::pruefung_vermerken( $geraet->id );
+
+		$token = Epos_Token::ausstellen( $lizenz, $user, $geraet );
+		if ( is_wp_error( $token ) ) {
+			return self::fehler( $token, 500 );
+		}
+
+		return new WP_REST_Response( array( 'ok' => true, 'token' => $token ), 200 );
+	}
+
+	/**
+	 * POST /validate  { token_id, geraete_id }
+	 */
+	public static function validate( WP_REST_Request $req ) {
+		$rl = self::rate_limit( 'validate', 120, HOUR_IN_SECONDS );
+		if ( is_wp_error( $rl ) ) {
+			return self::fehler( $rl );
+		}
+
+		$token_id   = sanitize_text_field( (string) $req->get_param( 'token_id' ) );
+		$geraete_id = sanitize_text_field( (string) $req->get_param( 'geraete_id' ) );
+
+		$geraet = Epos_Geraete::finde_nach_token( $token_id );
+		if ( ! $geraet || ! hash_equals( $geraet->geraete_hash, $geraete_id ) ) {
+			return self::fehler( new WP_Error( 'token_unbekannt', 'Dieses Token ist nicht (mehr) registriert. Bitte neu aktivieren.' ), 404 );
+		}
+		if ( 'aktiv' !== $geraet->status ) {
+			return self::fehler( new WP_Error( 'geraet_deaktiviert', 'Dieses Gerät wurde deaktiviert.' ), 403 );
+		}
+
+		$lizenz = Epos_Lizenz_Cpt::lade( $geraet->lizenz_id );
+		if ( ! $lizenz ) {
+			return self::fehler( new WP_Error( 'lizenz_unbekannt', 'Die zugehörige Lizenz existiert nicht mehr.' ), 404 );
+		}
+
+		$user = get_user_by( 'id', $geraet->user_id );
+		if ( ! $user || 'deaktiviert' === get_user_meta( $user->ID, '_epos_status', true ) ) {
+			return self::fehler( new WP_Error( 'benutzer_deaktiviert', 'Dieser Benutzer wurde für die Lizenz deaktiviert.' ), 403 );
+		}
+
+		$status = Epos_Lizenz_Cpt::status_pruefen( $lizenz );
+		if ( is_wp_error( $status ) ) {
+			return self::fehler( $status, 403 );
+		}
+
+		Epos_Geraete::pruefung_vermerken( $geraet->id );
+
+		$token = Epos_Token::ausstellen( $lizenz, $user, $geraet );
+		if ( is_wp_error( $token ) ) {
+			return self::fehler( $token, 500 );
+		}
+
+		return new WP_REST_Response( array( 'ok' => true, 'token' => $token ), 200 );
+	}
+
+	/**
+	 * POST /deactivate  { token_id, geraete_id }
+	 */
+	public static function deactivate( WP_REST_Request $req ) {
+		$rl = self::rate_limit( 'deactivate', 30, HOUR_IN_SECONDS );
+		if ( is_wp_error( $rl ) ) {
+			return self::fehler( $rl );
+		}
+
+		$token_id   = sanitize_text_field( (string) $req->get_param( 'token_id' ) );
+		$geraete_id = sanitize_text_field( (string) $req->get_param( 'geraete_id' ) );
+
+		$geraet = Epos_Geraete::finde_nach_token( $token_id );
+		if ( ! $geraet || ! hash_equals( $geraet->geraete_hash, $geraete_id ) ) {
+			return self::fehler( new WP_Error( 'token_unbekannt', 'Dieses Token ist nicht registriert.' ), 404 );
+		}
+
+		Epos_Geraete::deaktivieren( $geraet->id );
+
+		return new WP_REST_Response( array( 'ok' => true ), 200 );
+	}
+
+	/**
+	 * POST /trial  { email, geraete_id, name? }
+	 *
+	 * Legt eine Demo-Lizenz an und sendet den Schlüssel an die angegebene
+	 * E-Mail-Adresse — der Schlüssel kommt also nur beim Postfach-Inhaber an.
+	 */
+	public static function trial( WP_REST_Request $req ) {
+		$rl = self::rate_limit( 'trial', 5, DAY_IN_SECONDS );
+		if ( is_wp_error( $rl ) ) {
+			return self::fehler( $rl );
+		}
+
+		$email      = sanitize_email( (string) $req->get_param( 'email' ) );
+		$geraete_id = sanitize_text_field( (string) $req->get_param( 'geraete_id' ) );
+		$name       = sanitize_text_field( (string) $req->get_param( 'name' ) );
+
+		if ( ! is_email( $email ) ) {
+			return self::fehler( new WP_Error( 'email_ungueltig', 'Die E-Mail-Adresse fehlt oder ist ungültig (Beispiel: name@firma.de).' ) );
+		}
+		if ( '' === $geraete_id ) {
+			return self::fehler( new WP_Error( 'geraete_id_fehlt', 'Die Geräte-ID fehlt — bitte die Anwendung aktualisieren.' ) );
+		}
+
+		// Wiederholte Trials derselben Adresse oder Maschine unterbinden
+		if ( get_user_by( 'email', $email ) ) {
+			return self::fehler( new WP_Error( 'trial_vorhanden', 'Für diese E-Mail-Adresse wurde bereits eine Lizenz registriert.' ), 403 );
+		}
+		global $wpdb;
+		$tabelle  = Epos_Geraete::tabelle();
+		$bekannt  = $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*) FROM {$tabelle} WHERE geraete_hash = %s", $geraete_id
+		) );
+		if ( (int) $bekannt > 0 ) {
+			return self::fehler( new WP_Error( 'trial_geraet', 'Auf diesem Gerät wurde bereits eine Lizenz verwendet. Für eine Verlängerung wenden Sie sich bitte an den Vertrieb.' ), 403 );
+		}
+
+		$tage    = (int) epos_lizenz_option( 'trial_tage' );
+		$inhaber = ( '' !== $name ) ? $name : $email;
+
+		$lizenz_id = Epos_Lizenz_Cpt::anlegen(
+			'demo',
+			$inhaber,
+			1,
+			gmdate( 'Y-m-d' ),
+			gmdate( 'Y-m-d', time() + $tage * DAY_IN_SECONDS )
+		);
+		if ( is_wp_error( $lizenz_id ) ) {
+			return self::fehler( $lizenz_id, 500 );
+		}
+
+		$schluessel = Epos_Lizenz_Cpt::schluessel_neu( $lizenz_id );
+		if ( is_wp_error( $schluessel ) ) {
+			return self::fehler( $schluessel, 500 );
+		}
+
+		$user = Epos_Lizenz_Cpt::benutzer_zuordnen( $lizenz_id, $email );
+		if ( is_wp_error( $user ) ) {
+			return self::fehler( $user, 500 );
+		}
+
+		Epos_Mail::schluessel_senden( $email, $schluessel['schluessel'], $inhaber, true );
+
+		return new WP_REST_Response( array(
+			'ok'      => true,
+			'meldung' => 'Der Test-Lizenzschlüssel wurde an ' . $email . ' gesendet.',
+		), 200 );
+	}
+}
