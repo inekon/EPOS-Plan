@@ -116,8 +116,21 @@ namespace WindowsFormsApplication1
                 }));
             l.Add(new Kennzahl("eff.wp_vbh", "Vollbenutzungsstunden WP", "Heat pump full-load hours", "h/a", GR_EFFIZIENZ, "N0", false,
                 v => WP(v) == null ? (double?)null : WP(v).Vollbenutzungsstunden));
-            l.Add(new Kennzahl("eff.bhkw_bh", "Betriebsstunden BHKW", "CHP operating hours", "h/a", GR_EFFIZIENZ, "N0", false,
+            // ETAPPE E2 — die Zeile hieß bis dahin „Betriebsstunden BHKW" und zeigte
+            // Betriebsstunden_Gesamt. Der WERT ist unverändert, die BESCHRIFTUNG sagt jetzt,
+            // was er ist: die Summe THERMISCHER Vollbenutzungsstunden über alle Module. Sie
+            // kann 8.760 h überschreiten und war nie eine Betriebsstundenzahl — der
+            // Rechenkern bildet keine Taktung ab. Der Schlüssel bleibt, damit gespeicherte
+            // Baustein-Konfigurationen weiter greifen.
+            l.Add(new Kennzahl("eff.bhkw_bh", "Vollbenutzungsstunden BHKW (thermisch, Σ Module)",
+                "CHP full-load hours (thermal, sum of modules)", "h/a", GR_EFFIZIENZ, "N0", false,
                 v => BH(v) == null ? (double?)null : BH(v).Betriebsstunden_Gesamt));
+            // ETAPPE E2 (L6) — die für den KWK-Zuschlag maßgebliche Größe: leistungs-
+            // gewichtete ELEKTRISCHE Vollbenutzungsstunden. 0 heißt „nicht erhoben"
+            // (Ergebniszeile vor E2) und wird als „—" gezeigt, nicht als Null.
+            l.Add(new Kennzahl("eff.bhkw_vbh_el", "Vollbenutzungsstunden BHKW (elektrisch)",
+                "CHP full-load hours (electric)", "h/a", GR_EFFIZIENZ, "N0", false,
+                v => (BH(v) == null || BH(v).VbhElektrisch <= 0) ? (double?)null : BH(v).VbhElektrisch));
             l.Add(new Kennzahl("eff.pv_eigen", "PV-Eigenverbrauchsquote", "PV self-consumption ratio", "%", GR_EFFIZIENZ, "N1", false,
                 v =>
                 {
