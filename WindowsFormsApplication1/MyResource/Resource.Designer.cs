@@ -14154,58 +14154,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-<<<<<<< HEAD
         ///   Sucht eine lokalisierte Zeichenfolge, die Was wird gesendet? ähnelt.
         /// </summary>
         public static string KI_VORSCHAU_LINK {
             get {
                 return ResourceManager.GetString("KI_VORSCHAU_LINK", resourceCulture);
-=======
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer-Gutschrift ähnelt.
         /// </summary>
         public static string WIRT_REIHE_ENERGIESTEUER {
             get {
                 return ResourceManager.GetString("WIRT_REIHE_ENERGIESTEUER", resourceCulture);
->>>>>>> aac55ca6fc7beaa53dcad88c4d3b1679fd28896b
             }
         }
         
         /// <summary>
-<<<<<<< HEAD
         ///   Sucht eine lokalisierte Zeichenfolge, die Was wird gesendet? ähnelt.
         /// </summary>
         public static string KI_VORSCHAU_TITEL {
             get {
                 return ResourceManager.GetString("KI_VORSCHAU_TITEL", resourceCulture);
-=======
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die KWK-Zuschlag ähnelt.
         /// </summary>
         public static string WIRT_REIHE_KWKG {
             get {
                 return ResourceManager.GetString("WIRT_REIHE_KWKG", resourceCulture);
->>>>>>> aac55ca6fc7beaa53dcad88c4d3b1679fd28896b
             }
         }
         
         /// <summary>
-<<<<<<< HEAD
         ///   Sucht eine lokalisierte Zeichenfolge, die Genau dieser Text ginge bei der nächsten Frage an das Modell {0} ({1}). Es werden keine Projekt-, Kunden- oder Simulationsdaten übertragen. Der API-Schlüssel wird in einer HTTP-Kopfzeile mitgegeben und steht nicht in der Adresse. ähnelt.
         /// </summary>
         public static string KI_VORSCHAU_HINWEIS {
             get {
                 return ResourceManager.GetString("KI_VORSCHAU_HINWEIS", resourceCulture);
-=======
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Befreiung ähnelt.
         /// </summary>
         public static string WIRT_REIHE_STROMSTEUER_BEFREIUNG {
             get {
                 return ResourceManager.GetString("WIRT_REIHE_STROMSTEUER_BEFREIUNG", resourceCulture);
->>>>>>> aac55ca6fc7beaa53dcad88c4d3b1679fd28896b
             }
         }
         
         /// <summary>
-<<<<<<< HEAD
         ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
         /// </summary>
         public static string KI_VORSCHAU_SCHLIESSEN {
@@ -14214,7 +14216,7 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
-=======
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Entlastung ähnelt.
         /// </summary>
         public static string WIRT_REIHE_STROMSTEUER_ENTLASTUNG {
@@ -14258,6 +14260,5 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("WIRT_ZEILE_STROMST_ENTLASTUNG", resourceCulture);
             }
         }
->>>>>>> aac55ca6fc7beaa53dcad88c4d3b1679fd28896b
     }
 }
