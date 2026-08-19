@@ -99,6 +99,43 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string AufteilungMethode = DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF;
 
+        // ---- ETAPPE E5 — zwei Projektangaben (Migrationsschritt 21) ----
+
+        /// <summary>
+        /// Aufschläge (Netzentgelt, Umlagen, Stromsteuer, Konzessionsabgabe, Vertrieb)
+        /// in der Jahreskostenrechnung berücksichtigen. <b>Vorgabe: aus.</b>
+        ///
+        /// <para>Die Aufschläge sind seit dem Stromspeicherpaket je Energieträger
+        /// gepflegt (<c>energy_project_settings.Aufschlag_*</c>, Vorschlagswerte in
+        /// Summe 11,746 ct/kWh), wirkten aber ausschließlich in der Speichersimulation.
+        /// Gemessen an den neun Referenzprojekten (Protokoll W4_E5, Abschnitt 4) hebt
+        /// ihre Berücksichtigung die Energiekosten um rund <b>32 %</b> und
+        /// verschlechtert den Kapitalwert um rund <b>30 %</b> — eine stille Übernahme
+        /// hätte jede gespeicherte Altrechnung entwertet. Deshalb eine ausdrückliche
+        /// Angabe je Projekt.</para>
+        ///
+        /// <para><b>Zusammenspiel mit der Stromsteuer aus E4:</b> Der Aufschlagsblock
+        /// enthält die Stromsteuer (2,05 ct/kWh ≙ 20,50 €/MWh) als BELASTUNG, die
+        /// Entlastung nach § 9b StromStG (20,00 €/MWh) als GUTSCHRIFT. Beide zusammen
+        /// sind kein Doppelansatz, sondern die zwei Seiten derselben Vorschrift.
+        /// Steht dieser Schalter dagegen auf AUS und ist § 9b aktiv, enthält der
+        /// Kapitalwert eine Entlastung ohne die zugehörige Belastung — das Ergebnis
+        /// weist genau darauf hin.</para>
+        /// </summary>
+        public bool AufschlaegeAnwenden;
+
+        /// <summary>
+        /// Vergütung für eingespeisten <b>KWK</b>-Strom [€/kWh]; <c>null</c> = nicht
+        /// gepflegt (wirkt wie 0).
+        ///
+        /// <para><b>Behebt einen Bestandsmangel.</b> Bis E5 bewertete der Flat-Pfad nur
+        /// den PV-Überschuss; eingespeister BHKW-Strom bekam gar keinen Strompreis,
+        /// sondern nur den KWK-Zuschlag — und das Feld dafür war ohne
+        /// Photovoltaik-Gruppe im Parameterdialog nicht einmal sichtbar
+        /// (<c>Form_WirtschaftlichkeitParameter</c>). Ökonomisch ist das grob falsch.</para>
+        /// </summary>
+        public double? EinspeiseverguetungKWK;
+
         public DateTime? GeaendertAm;
 
         /// <summary>Kurzdarstellung als Nachweiszeile (Reiter + Bericht).</summary>
@@ -143,6 +180,13 @@ namespace WindowsFormsApplication1
             if (HocheffizienzNachweis || RaeumlicherZusammenhang)
                 t += " · Stromsteuer: hocheffizient " + (HocheffizienzNachweis ? "ja" : "nein") +
                      ", räumlicher Zusammenhang " + (RaeumlicherZusammenhang ? "ja" : "nein");
+            // ETAPPE E5: Der Aufschlagsschalter gehört in die Nachweiszeile, sobald er
+            // an ist — er verändert den größten Kostenposten um rund ein Drittel.
+            if (AufschlaegeAnwenden)
+                t += " · Aufschläge auf den Strombezug berücksichtigt";
+            if (EinspeiseverguetungKWK.HasValue && EinspeiseverguetungKWK.Value != 0)
+                t += " · Einspeisevergütung KWK " +
+                     EinspeiseverguetungKWK.Value.ToString("N3", kultur) + " €/kWh";
             return t;
         }
 
@@ -177,6 +221,18 @@ namespace WindowsFormsApplication1
         public double[] Kumuliert;      // Index = Jahr 0…N
         public double RestwertBarwert;  // zum gewählten Horizont
         public string Fehlgrund;        // != null → keine Reihe
+
+        /// <summary>
+        /// ETAPPE E7 — das vollständige Zahlungsbild dieser Linie: Netto- und
+        /// Barwertreihe UND die Jahresreihen der einzelnen Positionen (Betrieb,
+        /// Energie, CO₂-Abgabe, Ersatz, Einspeiseerlös, KWK-Zuschlag, die drei
+        /// Steuergutschriften). Es ist die Datengrundlage der Mehrjahrestabelle.
+        ///
+        /// <para><c>null</c> bei den Differenzlinien und bei jeder Linie mit
+        /// <see cref="Fehlgrund"/> — die Differenz zweier Zahlungsbilder ist kein
+        /// Zahlungsbild, und ein Bild ohne Rechnung gibt es nicht.</para>
+        /// </summary>
+        public KapitalwertRechner.Zahlungsbild Bild;
     }
 
     /// <summary>Ergebnis der Verlaufsrechnung über einen frei wählbaren Horizont
@@ -224,9 +280,63 @@ namespace WindowsFormsApplication1
         public double StaffelPreis1EurKW;
         public double StaffelPreis2EurKW;
 
+        // ---- ETAPPE E5 — Rollenmodell (Migrationsschritt 21) ----
+        //
+        // Additiv: Alles oberhalb bleibt unverändert und wird weiter gelesen. Modus
+        // ZONEN (Vorbelegung) = Bestandsverhalten der Stufe W3; ROLLEN schaltet auf
+        // Bezugs-, Reststrom- und Einspeisetarif mit der Differenzmethode um.
+
+        /// <summary>Tarifmodus, Steuerwert aus <c>DbWerte.TARIF_MODUS_*</c>.</summary>
+        public string Modus = DbWerte.TARIF_MODUS_ZONEN;
+
+        /// <summary>Preisstand des Tarifsatzes; null = nicht gepflegt (nur Ausweis,
+        /// keine Rechenwirkung). Der Altkatalog kannte ihn nur als Fließtext.</summary>
+        public DateTime? GueltigAb;
+
+        /// <summary>Bezugstarif OHNE BHKW — Referenz der vermiedenen Kosten.</summary>
+        public TarifRolle Bezug = NeueRolle("BEZUG");
+
+        /// <summary>Reststromtarif MIT BHKW — kleinere Abnahme, meist teurer.</summary>
+        public TarifRolle Reststrom = NeueRolle("RESTSTROM");
+
+        /// <summary>
+        /// Einspeisetarif — Arbeits- und Grundpreis, KEIN Leistungspreis.
+        ///
+        /// <para>Begründet: Im Altkatalog sind Sollleistung und Reduktionsfaktoren des
+        /// Einspeiseblatts leer oder 0, es gibt keinen aktiven Lesepfad, und der
+        /// Leistungserlös der Einspeisung war fest 0 (Befund 11 der Analyse, von der
+        /// Datenseite bestätigt in Abschnitt 7.1).</para>
+        /// </summary>
+        public TarifRolle Einspeisung = NeueRolle("EINSPEISUNG");
+
+        /// <summary>true, wenn das Rollenmodell der Etappe E5 gilt.</summary>
+        public bool RollenModus
+        { get { return string.Equals(Modus, DbWerte.TARIF_MODUS_ROLLEN, StringComparison.Ordinal); } }
+
+        /// <summary>Eine Rolle mit vier leeren Staffelstufen (Vorbelegung MONATLICH).</summary>
+        private static TarifRolle NeueRolle(string rolle)
+        {
+            var r = new TarifRolle { Rolle = rolle };
+            for (int i = 0; i < 4; i++) r.Stufen.Add(new LeistungsStufe());
+            return r;
+        }
+
         public string Nachweis(System.Globalization.CultureInfo kultur)
         {
             if (!Aktiv) return "Tarifstruktur inaktiv (Flat-Preise der Kostenmaske)";
+            if (RollenModus)
+            {
+                string t = "Tarif aktiv (Rollenmodell): Bezug " +
+                    Bezug.ArbeitspreisEurKWh.ToString("N4", kultur) + " €/kWh (" +
+                    Bezug.Leistungsmodell + ") · Reststrom " +
+                    Reststrom.ArbeitspreisEurKWh.ToString("N4", kultur) + " €/kWh (" +
+                    Reststrom.Leistungsmodell + ") · Einspeisung " +
+                    Einspeisung.ArbeitspreisEurKWh.ToString("N4", kultur) + " €/kWh · Winter " +
+                    WinterVonMonat + "–" + WinterBisMonat;
+                if (GueltigAb.HasValue)
+                    t += " · Preisstand " + GueltigAb.Value.ToString("dd.MM.yyyy", kultur);
+                return t;
+            }
             return "Tarif aktiv: Winter " + WinterVonMonat + "–" + WinterBisMonat +
                    " · HT Mo–Fr " + HtVonStunde + "–" + HtBisStunde + " Uhr · Bezug W/S HT/NT " +
                    PreisBezugWinterHT.ToString("N3", kultur) + "/" + PreisBezugWinterNT.ToString("N3", kultur) + "/" +
@@ -356,6 +466,70 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string SteuerHerkunft;
 
+        // ---- ETAPPE E5 — Strom und Erlöse nach der Differenzmethode ----
+        //
+        // Alle vier Werte sind 0, solange der Tarif nicht im ROLLEN-Modus steht bzw.
+        // keine Stundenreihen vorliegen. Sie sind AUSWEIS, kein zweiter Rechenweg:
+        // Der Kapitalwert nimmt die vermiedenen Kosten nicht als Erlös auf — er rechnet
+        // mit den TATSÄCHLICHEN Reststromkosten, in denen die Einsparung bereits steckt.
+        // Eine zusätzliche Erlöszeile wäre eine Doppelzählung.
+
+        /// <summary>Vermiedene Kosten, Arbeitsanteil [€/a] (Etappe E5).</summary>
+        public double VermiedenArbeitJahr;
+
+        /// <summary>
+        /// Vermiedene Kosten, Leistungsanteil [€/a] — <b>regelmäßig negativ</b>, weil der
+        /// Reststrom-Leistungspreis über dem Bezugs-Leistungspreis liegt. Eigene Zeile,
+        /// weil genau das die Kernaussage der Rechnung ist (Konzept 4.3).
+        /// </summary>
+        public double VermiedenLeistungJahr;
+
+        /// <summary>Vermiedene Kosten gesamt [€/a] (Arbeit + Leistung + Grundpreis).</summary>
+        public double VermiedenGesamtJahr;
+
+        /// <summary>
+        /// Betrag, um den die Aufschläge (Netzentgelt, Umlagen, Stromsteuer, Konzession,
+        /// Vertrieb) die Energiekosten des Jahres 1 erhöhen [€/a]. 0 = Schalter aus oder
+        /// nichts gepflegt. Der Wert steht getrennt, damit die Wirkung sichtbar bleibt,
+        /// statt in den Energiekosten zu verschwinden.
+        /// </summary>
+        public double AufschlagJahr;
+
+        // ---- ETAPPE E7 — Aufschlüsselungen und Nachweise für den Bericht ----
+        //
+        // Alle vier Größen sind AUSGABE: Sie ändern keine Rechnung, sondern zerlegen
+        // bzw. begründen Zahlen, die es vorher nur als Summe gab.
+
+        /// <summary>
+        /// Einspeiseerlös aus dem <b>PV-Überschuss</b> [€/a] (Etappe E7).
+        /// <para><see cref="EinspeiseerloesJahr"/> verschmolz bis dahin PV-Überschuss und
+        /// KWK-Einspeisung zu einer Zahl — zwei Mengen mit zwei Preisen und zwei
+        /// Rechtsgrundlagen. Die Summe der beiden Teile ist der Gesamtbetrag.</para>
+        /// </summary>
+        public double EinspeiseerloesPvJahr;
+
+        /// <summary>Einspeiseerlös aus der <b>KWK-Einspeisung</b> [€/a] (Etappe E7).</summary>
+        public double EinspeiseerloesKwkJahr;
+
+        /// <summary>
+        /// Ein Nachweis je BHKW-Modul der KWKG-Rechnung (Etappe E7, Übergabepunkt 1 aus
+        /// E6). Leer = kein modulscharfer Lauf (Ersatzweg, kein BHKW oder kein
+        /// gepflegter Satz).
+        ///
+        /// <para><b>Nicht persistiert</b>, wie schon in E6 festgehalten: Die Reihe je
+        /// Anlage entsteht bei jedem Lauf neu. Der Bericht rechnet ohnehin frisch; nur
+        /// der Rückfallpfad auf den gespeicherten Stand zeigt diesen Block nicht.</para>
+        /// </summary>
+        public List<KwkgModulNachweis> KwkgModule = new List<KwkgModulNachweis>();
+
+        /// <summary>
+        /// Die Betriebskostenpositionen dieses Szenarios mit Kostenart, Bemessungsart und
+        /// Herleitung (Etappe E7, Zweck der E3-Spalte <c>Kostenart</c>). Leer = keine
+        /// Positionen oder Datenbank ohne die Spalten aus Migrationsschritt 19.
+        /// <b>Nicht persistiert</b> — dieselbe Begründung wie oben.
+        /// </summary>
+        public List<KostenPositionNachweis> Betriebskosten = new List<KostenPositionNachweis>();
+
         public double? IRR;                    // interner Zinsfuß der Differenzreihe [%] (null beim Stamm/nie)
 
         // Stufe W3 (Phase 8)
@@ -371,6 +545,107 @@ namespace WindowsFormsApplication1
 
         /// <summary>null = Rechnung vollständig; sonst Begründung („kein Arbeitspreis …").</summary>
         public string Fehlgrund;
+    }
+
+    /// <summary>
+    /// ETAPPE E7 — der Nachweis EINES BHKW-Moduls in der KWKG-Rechnung.
+    ///
+    /// <para>Seit E6 entsteht der KWK-Zuschlag als eine Reihe je Modul mit eigenem Satz,
+    /// eigenem Inbetriebnahmejahr, eigenem Jahresdeckel und eigenem Kontingent. Bis E7
+    /// stand davon nur eine Aufzählung im Hinweisfeld — bei drei Modulen eine
+    /// unlesbare Zeile (E6-Protokoll, Übergabepunkt 1). Hier steht dieselbe Auskunft
+    /// strukturiert, damit der Bericht eine Tabelle daraus bauen kann.</para>
+    ///
+    /// <para><b>Alle Werte sind die TATSÄCHLICH angesetzten</b>, nicht die
+    /// vorgeschlagenen. <see cref="HerleitungEigen"/> und
+    /// <see cref="HerleitungEinspeisung"/> nennen zusätzlich die Tranchenrechnung des
+    /// § 7 KWKG zu diesem Modul — erst damit ist der angesetzte Satz nachvollziehbar
+    /// und eine Abweichung vom Katalog sichtbar.</para>
+    /// </summary>
+    public class KwkgModulNachweis
+    {
+        /// <summary>Bezeichner der Anlage (Datenwert aus <c>Tab_Energieanlagen</c>).</summary>
+        public string Bezeichner = "";
+
+        /// <summary>Elektrische Nennleistung [kW].</summary>
+        public double PelKW;
+
+        /// <summary>Angesetzte elektrische Vollbenutzungsstunden dieses Moduls [h/a].</summary>
+        public double VbhElektrisch;
+
+        /// <summary>Angesetzter Satz auf selbst genutzten KWK-Strom [ct/kWh].</summary>
+        public double SatzEigenCt;
+
+        /// <summary>Angesetzter Satz auf eingespeisten KWK-Strom [ct/kWh].</summary>
+        public double SatzEinspeisungCt;
+
+        /// <summary>true, wenn die Sätze aus der Anlagenzeile stammen; false = Projektwert.</summary>
+        public bool SatzAusAnlage;
+
+        /// <summary>Angesetztes Vbh-Kontingent [h].</summary>
+        public double KontingentH;
+
+        /// <summary>Fester Jahresdeckel [h/a]; 0 = degressive Staffel des § 8 Abs. 4.</summary>
+        public double JahresdeckelH;
+
+        /// <summary>Erstes Förderjahr dieses Moduls (Inbetriebnahmejahr bzw. Projektwert).</summary>
+        public int Foerderbeginn;
+
+        /// <summary>Zuschlag dieses Moduls im ersten Betrachtungsjahr [€/a].</summary>
+        public double Jahr1Eur;
+
+        /// <summary>
+        /// Erstes Betrachtungsjahr OHNE Zuschlag, weil das Kontingent erschöpft ist;
+        /// 0 = das Kontingent reicht über den ganzen Betrachtungszeitraum.
+        /// </summary>
+        public int ErschoepftAbJahr;
+
+        /// <summary>Herleitung des Eigenstromsatzes nach § 7 KWKG (Tranchen, Norm, Jahr).</summary>
+        public string HerleitungEigen = "";
+
+        /// <summary>Herleitung des Einspeisesatzes nach § 7 KWKG.</summary>
+        public string HerleitungEinspeisung = "";
+    }
+
+    /// <summary>
+    /// ETAPPE E7 — eine Betriebskostenposition mit ihrer Herleitung.
+    ///
+    /// <para>Etappe E3 hat <c>Kostenart</c>, <c>Bemessung</c>, <c>Menge</c> und
+    /// <c>Einheitpreis</c> an die Kostenposition geschrieben und im Protokoll
+    /// festgehalten, ihr Zweck sei „die Gliederung des Berichts in Etappe E7". Genau
+    /// dafür steht diese Zeile: Sie trägt, was die Rechnung angesetzt hat, und woraus
+    /// sie es gebildet hat.</para>
+    /// </summary>
+    public class KostenPositionNachweis
+    {
+        /// <summary>Bezeichnung aus <c>Tab_Kostenfaktor</c>.</summary>
+        public string Bezeichnung = "";
+
+        /// <summary>Kostengruppe des Projekts (Freitext <c>Tab_ProjektWerte.Gruppe</c>).</summary>
+        public string Gruppe = "";
+
+        /// <summary>Kostenart nach VDI 2067, Steuerwert <c>DbWerte.KOSTENART_*</c>;
+        /// leer = nicht eingeordnet.</summary>
+        public string Kostenart = "";
+
+        /// <summary>Bemessungsart, Steuerwert <c>DbWerte.BEMESSUNG_*</c>.</summary>
+        public string Bemessung = DbWerte.BEMESSUNG_BETRAG;
+
+        /// <summary>Bezugsmenge der Bemessung; <c>null</c> = nicht gepflegt.</summary>
+        public double? Menge;
+
+        /// <summary>Satz der Bemessung; <c>null</c> = nicht gepflegt.</summary>
+        public double? Einheitpreis;
+
+        /// <summary>Angesetzter Jahresbetrag [€/a] — positiv Ausgabe, negativ Einnahme.</summary>
+        public double BetragJahr;
+
+        /// <summary>true = Erlösposition (Betrag negativ).</summary>
+        public bool IstErloes;
+
+        /// <summary>true, wenn ein gepflegter Best-/Worst-Case-Betrag die Ableitung
+        /// geschlagen hat (VALERI-Muster) — dann steht kein Menge × Preis dahinter.</summary>
+        public bool SzenarioGepflegt;
     }
 
     /// <summary>

@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 20;
+        public const int ZIEL_VERSION = 22;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -430,6 +430,85 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_20_STEUERANGABEN = 20;
 
+        /// <summary>
+        /// Nummer der Etappe E5 aus <c>Konzept_BHKW_Kosten_Erloese.md</c>: das
+        /// Tarif-<b>Rollen</b>modell an <c>Tab_ProjektTarif</c> (Bezug, Reststrom,
+        /// Einspeisung — je Arbeitspreis, dazu für die beiden Bezugsrollen ein
+        /// wählbares Leistungspreismodell mit vierstufiger Staffel) und zwei
+        /// Projektangaben an <c>Tab_ProjektWirtschaftlichkeit</c> (Aufschlagsschalter,
+        /// KWK-Einspeisevergütung).
+        ///
+        /// <b>Was der Schritt tut.</b> <b>21a</b> das additive DDL aus
+        /// <see cref="SchemaKatalog.Schritt21_Tarifmodell"/> (HART: ohne die Spalten
+        /// gibt es nichts vorzubelegen). <b>21b</b> die Vorbelegung der drei
+        /// TEXT-Spalten für jede Bestandszeile ohne Wert.
+        ///
+        /// <b>ERGEBNISNEUTRAL, und daran hängt die ganze Etappe.</b> Die Vorbelegung ist
+        /// jeweils der Wert, der den Bestandsweg beibehält:
+        /// <c>Tarif_Modus = ZONEN</c> (das Zonenmodell der Stufe W3 rechnet weiter wie
+        /// bisher), <c>Bezug_/Rest_Leistungsmodell = MONATLICH</c> mit Preisen NULL
+        /// (also Leistungsanteil 0, falls jemand später auf ROLLEN umstellt, ohne Preise
+        /// zu pflegen). Die beiden neuen Angaben der Wirtschaftlichkeit sind
+        /// <c>YESNO</c> (Access legt sie mit <c>False</c> an ⇒ Aufschläge AUS) und
+        /// <c>DOUBLE</c> (bleibt NULL ⇒ keine KWK-Vergütung). Die Leseseite behandelt
+        /// einen leeren Modus genauso wie <c>ZONEN</c> — eine nicht migrierte Datenbank
+        /// rechnet deshalb ebenfalls wie bisher.
+        ///
+        /// <b>Warum der Aufschlagsschalter überhaupt existiert.</b> Netzentgelt,
+        /// Umlagen, Stromsteuer, Konzession und Vertrieb sind seit dem
+        /// Stromspeicherpaket je Energieträger gepflegt, erreichen die
+        /// Jahreskostenrechnung aber nicht. Die Messung an den neun Referenzprojekten
+        /// (Protokoll W4_E5, Abschnitt 4) ergab rund <b>+32 % Energiekosten</b> und
+        /// <b>−30 % Kapitalwert</b> — eine stille Übernahme hätte jede gespeicherte
+        /// Altrechnung entwertet.
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): Das DDL geht über vorhandene
+        /// Spalten hinweg (<see cref="SpaltenAnlegen"/> prüft das Tabellenschema vorab),
+        /// und die WHERE-Klauseln von 21b (<c>IS NULL OR = ''</c>) laufen nach dem
+        /// ersten Lauf leer. Ein gepflegter Wert wird nie angefasst. Zusätzlich legt
+        /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> die Spalten unmittelbar
+        /// vor dem Zugriff selbst an, falls die Migration nie angestoßen wurde — beide
+        /// Wege dürfen beliebig oft und in beliebiger Reihenfolge laufen.
+        /// </summary>
+        public const int SCHRITT_21_TARIFMODELL = 21;
+
+        /// <summary>
+        /// Nummer der Etappe E6 aus <c>Konzept_BHKW_Kosten_Erloese.md</c>: der
+        /// KWK-Zuschlag <b>je BHKW-Modul</b> (Nutzerentscheidung 18.08.2026, „erst damit
+        /// sind die gesetzlichen Leistungsklassen abbildbar"). Acht additive Spalten an
+        /// <c>Tab_Energieanlagen</c> — Stichtag und Inbetriebnahme je Anlage,
+        /// Anlagenart und Eigenstromfall für den Katalogvorschlag, zwei
+        /// Zuschlagssätze als Überschreibwerte, Vbh-Kontingent und Jahresdeckel.
+        ///
+        /// <b>Was der Schritt tut.</b> Nur <b>22a</b>, das additive DDL aus
+        /// <see cref="SchemaKatalog.Schritt22_KwkgJeAnlage"/>. Ein <b>22b</b> gibt es
+        /// nicht.
+        ///
+        /// <b>ERGEBNISNEUTRAL — und zwar ohne jede Vorbelegung.</b> Das ist der
+        /// Unterschied zu den Schritten 19 bis 21: Dort brauchte es eine DML-Zeile, die
+        /// den Bestandsrechenweg festschrieb (<c>BETRAG</c>, <c>KEINE</c>,
+        /// <c>ZONEN</c>). Hier ist <b>NULL selbst</b> die Vorbelegung: Jede Leseseite
+        /// fällt bei NULL auf den Projektwert zurück, den es seit W2 gibt. Eine Anlage
+        /// ohne eigenen Stichtag rechnet mit dem Projektstichtag, eine ohne eigenen Satz
+        /// mit dem Projektsatz, eine ohne eigenes Kontingent mit dem Projektkontingent.
+        /// Solange keine Anlage einen eigenen Wert trägt — der Zustand jeder
+        /// Bestandsdatenbank —, ist die Rechnung Zeile für Zeile die des Vorgängerstands.
+        ///
+        /// <b>Die eine Ausnahme, und sie ist gewollt:</b> Projekte mit <b>mehr als einem</b>
+        /// BHKW-Modul rechnen ab E6 anders, weil Jahresdeckel und Kontingent je Anlage
+        /// statt über eine gemeinsame, leistungsgewichtete Vbh-Zahl geführt werden. Das
+        /// ist die Auflösung der Restbefunde 1 und 2 aus dem E2-Protokoll und hängt
+        /// nicht an diesem Migrationsschritt, sondern an der Rechenlogik.
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): Das DDL geht über vorhandene
+        /// Spalten hinweg (<see cref="SpaltenAnlegen"/> prüft das Tabellenschema vorab).
+        /// Zusätzlich legt <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> die
+        /// Spalten unmittelbar vor dem Zugriff selbst an, falls die Migration nie
+        /// angestoßen wurde — beide Wege dürfen beliebig oft und in beliebiger
+        /// Reihenfolge laufen.
+        /// </summary>
+        public const int SCHRITT_22_KWKG_JE_ANLAGE = 22;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -530,6 +609,17 @@ namespace WindowsFormsApplication1
         /// ausdrücklich auf „keine Gutschrift".
         /// </summary>
         public static int DatenSteuerangabenVorbelegt { get; private set; }
+
+        // --- Zählwerk des Tarifmodells aus Schritt 21 (Etappe E5) ----------------------
+
+        /// <summary>
+        /// 21b: Summe der Vorbelegungen über die drei TEXT-Spalten des Tarifmodells
+        /// (Tarifmodus, Leistungsmodell Bezug, Leistungsmodell Reststrom) — also das
+        /// Dreifache der Tarifsätze beim ersten Lauf. Die Zahl ist zugleich der Nachweis
+        /// der Ergebnisneutralität: So viele Tarifsätze stehen ab jetzt ausdrücklich auf
+        /// „Zonenmodell wie bisher".
+        /// </summary>
+        public static int DatenTarifmodusVorbelegt { get; private set; }
 
         // --- Zählwerk des Pakets Anlagenzeilen-Eindeutigkeit aus Schritt 16 -------------
 
@@ -792,6 +882,28 @@ namespace WindowsFormsApplication1
                         "in Tab_ProjektWirtschaftlichkeit (Etappe E4)",
                         "Die Steuerangaben der Wirtschaftlichkeitsparameter konnten nicht angelegt werden.",
                         Schritt_20_Steuerangaben),
+
+            // ETAPPE E5 - Tarif-Rollenmodell an Tab_ProjektTarif plus Aufschlagsschalter
+            //       und KWK-Einspeiseverguetung an Tab_ProjektWirtschaftlichkeit.
+            //       DDL + DML-Vorbelegung; die Vorbelegung "ZONEN" ist das, was jede
+            //       Bestandsrechnung weiterhin genauso rechnen laesst wie bisher.
+            new Schritt(SCHRITT_21_TARIFMODELL,
+                        "Tarifmodell: Rollen Bezug/Reststrom/Einspeisung mit drei Leistungspreismodellen " +
+                        "in Tab_ProjektTarif, Aufschlagsschalter und KWK-Einspeiseverguetung " +
+                        "in Tab_ProjektWirtschaftlichkeit, Vorbelegung ZONEN (Etappe E5)",
+                        "Das Tarif-Rollenmodell konnte nicht angelegt werden.",
+                        Schritt_21_Tarifmodell),
+
+            // ETAPPE E6 - KWK-Zuschlag JE BHKW-MODUL: Stichtag, Inbetriebnahme,
+            //       Anlagenart, Eigenstromfall, zwei Zuschlagssaetze, Kontingent und
+            //       Jahresdeckel an Tab_Energieanlagen. NUR DDL, KEIN DML - hier ist
+            //       NULL selbst die Vorbelegung, weil jede Leseseite auf den
+            //       Projektwert zurueckfaellt.
+            new Schritt(SCHRITT_22_KWKG_JE_ANLAGE,
+                        "KWK-Zuschlag je Modul: Stichtag, Inbetriebnahme, Anlagenart, Eigenstromfall, " +
+                        "Zuschlagssaetze, Vbh-Kontingent und Jahresdeckel in Tab_Energieanlagen (Etappe E6)",
+                        "Die KWKG-Spalten der Energieanlagen konnten nicht angelegt werden.",
+                        Schritt_22_KwkgJeAnlage),
         };
 
         // =================================================================================
@@ -1084,6 +1196,19 @@ namespace WindowsFormsApplication1
                             : " - Unternehmensart \"" + DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE +
                               "\" und Energiesteuerentlastung \"" + DbWerte.ENERGIESTEUER_WAHL_KEINE +
                               "\": ohne ausdrueckliche Angabe des Anwenders entsteht keine Gutschrift."));
+
+            // Schritt 21 meldet aus demselben Grund AUCH die 0: Die Zahl ist der Nachweis
+            // der Ergebnisneutralitaet - so viele Tarifsaetze stehen ab jetzt ausdruecklich
+            // auf dem Zonenmodell der Stufe W3, statt still unbekannt zu sein.
+            if (StandNachher >= SCHRITT_21_TARIFMODELL)
+                l.Zeile("Tarifmodell (Schritt 21): " + DatenTarifmodusVorbelegt +
+                        " Angaben ueber drei Spalten vorbelegt" +
+                        (DatenTarifmodusVorbelegt == 0
+                            ? " - es gibt keinen Tarifsatz oder er steht bereits; der Rechenweg bleibt unveraendert."
+                            : " - Tarifmodus \"" + DbWerte.TARIF_MODUS_ZONEN +
+                              "\" und Leistungsmodell \"" + DbWerte.LEISTUNGSMODELL_MONATLICH +
+                              "\": ohne ausdrueckliche Umstellung rechnet die Anwendung wie bisher. " +
+                              "Der Aufschlagsschalter steht auf AUS (YESNO-Vorbelegung von Access)."));
 
             return alleOk && StandNachher >= ZIEL_VERSION;
         }
@@ -1468,6 +1593,133 @@ namespace WindowsFormsApplication1
             // Aussage; eine 0 behauptete "gepflegt und null".
 
             return ok;
+        }
+
+        // =================================================================================
+        // Schritt 21 (Etappe E5) - Tarif-Rollenmodell und zwei Projektangaben
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 21 (Etappe E5): das Tarif-<b>Rollen</b>modell an
+        /// <c>Tab_ProjektTarif</c> und zwei Projektangaben an
+        /// <c>Tab_ProjektWirtschaftlichkeit</c>.
+        ///
+        ///   <b>21a</b> das additive DDL aus
+        ///   <see cref="SchemaKatalog.Schritt21_Tarifmodell"/>. HART: Ohne die Spalten
+        ///   gibt es nichts vorzubelegen.
+        ///
+        ///   <b>21b</b> die Vorbelegung der drei TEXT-Spalten fuer jede Bestandszeile
+        ///   ohne Wert - jeweils mit dem Wert, der den BISHERIGEN Rechenweg beibehaelt.
+        ///
+        /// Begruendung fuer Spalten, Typen, Breiten, die vier vermiedenen Fallen des
+        /// Altkatalogs und die Ergebnisneutralitaet steht bei
+        /// <see cref="SchemaKatalog.Schritt21_Tarifmodell"/> und bei
+        /// <see cref="SCHRITT_21_TARIFMODELL"/>.
+        /// </summary>
+        private static bool Schritt_21_Tarifmodell(Lauf l)
+        {
+            // Beide Tabellen gehoeren dem Wirtschaftlichkeitsmodul und werden von
+            // WirtschaftlichkeitCtrl.StelleTabellenSicher angelegt - VOLLSTAENDIG,
+            // einschliesslich der Spalten dieses Schritts. Fehlt eine von ihnen (frische
+            // Installation, in der das Modul noch nie geoeffnet war), ist hier nichts zu
+            // tun: Der Schritt meldet das und gilt als erledigt, statt die Migration
+            // dauerhaft auf Stand 20 festzuhalten.
+            var vorhandene = new List<SchemaSpalte>();
+            foreach (var gruppe in SchemaKatalog.Schritt21_Tarifmodell
+                                                .GroupBy(s => s.Tabelle, StringComparer.OrdinalIgnoreCase))
+            {
+                if (TabellenSchema(l, gruppe.Key) != null) { vorhandene.AddRange(gruppe); continue; }
+                l.Notiz(gruppe.Key + ": Tabelle (noch) nicht vorhanden - das " +
+                        "Wirtschaftlichkeitsmodul legt sie beim ersten Zugriff mit allen " +
+                        "Spalten selbst an; Schritt 21 ueberspringt sie.");
+            }
+
+            // --- 21a) Die Spalten der vorhandenen Tabellen ---------------------------
+            if (vorhandene.Count > 0 && !SpaltenAnlegen(l, vorhandene)) return false;
+
+            bool ok = true;
+            int summe = 0;
+            if (TabellenSchema(l, SchemaKatalog.TAB_PROJEKTTARIF) == null)
+            {
+                DatenTarifmodusVorbelegt = 0;
+                return ok;
+            }
+
+            // --- 21b) Vorbelegung der drei TEXT-Spalten -------------------------------
+            // IS NULL ODER Leerstring - dieselbe Bedingung wie in 19b und 20b und aus
+            // demselben Grund: Access legt eine neue TEXT-Spalte mit NULL an, ein von
+            // Hand nachgetragenes Feld kann aber auch "" enthalten. Ein gepflegter Wert
+            // bleibt unangetastet, und genau das macht den Schritt idempotent.
+            var vorbelegung = new[]
+            {
+                new { Spalte = SchemaKatalog.SPALTE_TARIF_MODUS,
+                      Wert   = DbWerte.TARIF_MODUS_ZONEN,
+                      Zweck  = "Zonenmodell der Stufe W3 - der Rechenweg bleibt unveraendert" },
+                new { Spalte = "Bezug_Leistungsmodell",
+                      Wert   = DbWerte.LEISTUNGSMODELL_MONATLICH,
+                      Zweck  = "ohne gepflegten Monatspreis ist der Leistungsanteil 0" },
+                new { Spalte = "Rest_Leistungsmodell",
+                      Wert   = DbWerte.LEISTUNGSMODELL_MONATLICH,
+                      Zweck  = "dito fuer den Reststromtarif" }
+            };
+
+            foreach (var z in vorbelegung)
+            {
+                int n = NonQuery(l,
+                    "UPDATE [" + SchemaKatalog.TAB_PROJEKTTARIF + "] SET [" +
+                    z.Spalte + "] = ? WHERE [" + z.Spalte + "] IS NULL OR [" +
+                    z.Spalte + "] = ''",
+                    new OleDbParameter("@w", z.Wert));
+
+                if (n < 0)
+                {
+                    l.Notiz("Vorbelegung " + z.Spalte + ": UPDATE fehlgeschlagen");
+                    ok = false;
+                    continue;
+                }
+                summe += n;
+                l.Notiz(z.Spalte + ": " + n + " Tarifsaetze auf \"" + z.Wert +
+                        "\" vorbelegt (" + z.Zweck + ")");
+            }
+
+            DatenTarifmodusVorbelegt = summe;
+
+            // Aufschlaege_Anwenden braucht KEINE Vorbelegung: Access legt eine
+            // YESNO-Spalte bei jeder Bestandszeile mit False an; NULL kann dort nicht
+            // stehen. False ist genau die gewollte Vorgabe - die Aufschlaege bleiben
+            // aussen vor, bis der Anwender sie ausdruecklich einschaltet.
+            //
+            // Einspeiseverguetung_KWK und Tarif_GueltigAb bleiben bewusst NULL - "nicht
+            // gepflegt" ist die richtige Aussage. Die Leseseite behandelt NULL wie 0
+            // bzw. wie "kein Preisstand angegeben"; eine 0 im Datum gibt es ohnehin
+            // nicht. Auch die 34 Preis- und Grenzspalten bleiben NULL: Ein Preis von 0
+            // waere die Behauptung "kostenlos" statt "noch nicht erfasst".
+
+            return ok;
+        }
+
+        // =================================================================================
+        // Schritt 22 (Etappe E6) - KWK-Zuschlag je BHKW-Modul
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 22 (Etappe E6): die acht Spalten des KWK-Zuschlags <b>je Anlage</b> an
+        /// <c>Tab_Energieanlagen</c>.
+        ///
+        /// <b>Nur DDL.</b> Es gibt kein 22b — NULL ist hier die Vorbelegung, weil jede
+        /// Leseseite bei NULL auf den Projektwert zurueckfaellt. Begruendung fuer
+        /// Spalten, Typen, Breiten und die Ergebnisneutralitaet steht bei
+        /// <see cref="SchemaKatalog.Schritt22_KwkgJeAnlage"/> und bei
+        /// <see cref="SCHRITT_22_KWKG_JE_ANLAGE"/>.
+        ///
+        /// <b>HART.</b> <c>Tab_Energieanlagen</c> gehoert zum Kernschema und wird von
+        /// Schritt 1 an vorausgesetzt; fehlt sie, ist die Datenbank ohnehin unbrauchbar.
+        /// Anders als bei Schritt 21 gibt es deshalb keinen Zweig „Tabelle noch nicht
+        /// vorhanden".
+        /// </summary>
+        private static bool Schritt_22_KwkgJeAnlage(Lauf l)
+        {
+            return SpaltenAnlegen(l, SchemaKatalog.Schritt22_KwkgJeAnlage);
         }
 
         // =================================================================================

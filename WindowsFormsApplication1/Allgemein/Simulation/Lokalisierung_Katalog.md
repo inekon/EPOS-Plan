@@ -1439,3 +1439,145 @@ neue Maske `Form_Betriebskosten`.
 | `"Betriebskosten VDI 2067"` (`DbWerte.KOSTEN_GRUPPE_BETRIEB_VDI`) | dito — Wert in `Tab_ProjektWerte.Gruppe` und `Tab_KostenGruppenKatalog.GruppenName`, wie `KOSTEN_GRUPPE_ALLGEMEIN`. |
 | `"INVEST_BHKW"`, `"VBH_BHKW"` & Co. (`BetriebskostenCtrl.BEZUG_*`) | **Schlüssel**, nicht Anzeige: sprachneutral und ASCII, stehen nirgends in der Datenbank und nirgends auf dem Bildschirm. Der Anzeigename ist `VDI_BEZUG_*`. |
 | `"%"`, `"€/h"`, `"€/kWh"`, `"€"`, `"h/a"`, `"kWh/a"` (`BetriebskostenCtrl.SatzEinheit` / `MengenEinheit`) | reine **Einheitenzeichen ohne Wortbestand**, in beiden Sprachen gleich — dieselbe Ausnahme wie bei den typografischen Marken. |
+
+---
+
+## Nachtrag zu Etappe E4 — Energiesteuer- und Stromsteuergutschrift (19.08.2026)
+
+Umsetzung der Etappe **E4** aus `Konzept_BHKW_Kosten_Erloese.md`; Begründung, Wirkung und
+Verifikation im
+[`../Reporting/W4_E4_Steuergutschriften_Protokoll.md`](../Reporting/W4_E4_Steuergutschriften_Protokoll.md).
+
+**27 neue Schlüssel** in `MyResource/Resource.resx` (+ `.en-US.resx` + `Resource.Designer.cs`).
+Drei Präfixe: `STEUER_*` für die Begründungen und die Herkunftszeile, `WIRT_ZEILE_*` für die
+neuen Zeilen der Kennzahlentabelle, `WIRT_REIHE_*` für die Anzeigenamen der benannten
+Erlösreihen.
+
+### Neu (27)
+
+| Schlüssel | DE | EN | Fundstellen |
+|---|---|---|---|
+| `STEUER_ENERGIEST_NICHT_GEWAEHLT` | Energiesteuer: keine Entlastung gewählt — § 53 oder § 53a im Parameterdialog festlegen | Energy tax: no relief selected … | `SteuerGutschriftRechner.Energiesteuer` |
+| `STEUER_ENERGIEST_TRAEGER_UNKLAR` | {0} — dem Energieträger ist kein Steuersatz zugeordnet | {0} — no tax rate assigned … | dieselbe |
+| `STEUER_ENERGIEST_SATZ_FEHLT` | {0} — der Katalogsatz {1} ist nicht gepflegt | {0} — catalogue rate {1} not maintained | dieselbe |
+| `STEUER_ENERGIEST_MENGE_UNKLAR` | {0} — der auf die Stromerzeugung entfallende Brennstoff ist 0 | {0} — fuel attributable to power generation is 0 | dieselbe |
+| `STEUER_ENERGIEST_EINHEIT_UNKLAR` | {0} — nicht in die gesetzliche Einheit {1} umrechenbar (…für Kilogramm fehlt die Dichte) | {0} — cannot be converted into the statutory unit {1} … | `SteuerGutschriftRechner.EinheitGrund` |
+| `STEUER_ENERGIEST_53A_NUTZUNGSGRAD` | § 53a: Jahresnutzungsgrad {0} % unter der Schwelle von {1} % | § 53a: annual utilisation rate {0} % below … | `SteuerGutschriftRechner.NutzungsgradErfuellt` |
+| `STEUER_ENERGIEST_53A_NUTZUNGSGRAD_FEHLT` | § 53a: kein Jahresnutzungsgrad erfasst (Schwelle {0} %) | § 53a: no annual utilisation rate recorded … | dieselbe |
+| `STEUER_ENERGIEST_HO` | Erdgasmenge brennwertbezogen bemessen — Ho/Hi = {0} | natural gas quantity assessed on gross calorific value — Hs/Hi = {0} | `SteuerGutschriftRechner.MengeInGesetzlicherEinheit` (Herkunftszeile) |
+| `STEUER_ENERGIEST_HO_FEHLT` | {0} — kein Brennwert gepflegt, rund 10 % zu niedrig | {0} — no gross calorific value maintained … | dieselbe |
+| `STEUER_STROMST_HOCHEFFIZIENZ` | § 9 Abs. 1 Nr. 3: Hocheffizienz nicht nachgewiesen | § 9 (1) no. 3: high efficiency not evidenced | `SteuerGutschriftRechner.StromsteuerBefreiung` |
+| `STEUER_STROMST_RAEUMLICH` | § 9 Abs. 1 Nr. 3: räumlicher Zusammenhang (bis {0} km) nicht bestätigt | § 9 (1) no. 3: spatial connection … not confirmed | dieselbe |
+| `STEUER_STROMST_EIGEN_UNKLAR` | § 9 Abs. 1 Nr. 3: KWK-Eigenverbrauch nicht bestimmbar (keine Stundenreihen) | § 9 (1) no. 3: CHP self-consumption cannot be determined … | dieselbe |
+| `STEUER_STROMST_LEISTUNG` | § 9 Abs. 1 Nr. 3: über {0} kW je Anlage: {1}; übrige {2} kW rechnen weiter | § 9 (1) no. 3: above {0} kW per plant … | dieselbe |
+| `STEUER_STROMST_CO2` | § 9 Abs. 1 Nr. 3: über dem CO₂-Grenzwert von {0} g je kWh Energieertrag: {1} | § 9 (1) no. 3: above the CO₂ limit of {0} g … | dieselbe |
+| `STEUER_STROMST_CO2_UNKLAR` | § 9 Abs. 1 Nr. 3: direkte CO₂-Emissionen nicht bestimmbar ({0}) | § 9 (1) no. 3: direct CO₂ emissions cannot be determined ({0}) | dieselbe |
+| `STEUER_STROMST_9B_UNTERNEHMENSART` | § 9b: weder produzierendes Gewerbe noch Land- und Forstwirtschaft | § 9b: neither manufacturing industry nor agriculture … | `SteuerGutschriftRechner.StromsteuerEntlastung` |
+| `STEUER_STROMST_9B_SOCKEL` | § 9b: {0} € erreichen den Sockelbetrag von {1} € nicht | § 9b: relief of {0} € does not reach the {1} € base amount | dieselbe |
+| `STEUER_SATZ_FEHLT` | Steuer: der Katalogsatz {0} ist nicht gepflegt | Tax: catalogue rate {0} is not maintained | beide Steuerzweige |
+| `STEUER_HERKUNFT_FORMAT` | {0} = {1} {2}, gültig ab {3} ({4}) — {5} | {0} = {1} {2}, valid from {3} ({4}) — {5} | `SteuerGutschriftRechner.Herkunft` |
+| `WIRT_ZEILE_ENERGIESTEUER` | Energiesteuer-Gutschrift Jahr 1 [€/a] | Energy tax credit year 1 [€/a] | `UcWirtschaftlichkeit.ZeigeErgebnisse`, `BausteineWirtschaftlichkeit.SchreibeVergleich`, `ExcelBerichtGenerator` |
+| `WIRT_ZEILE_STROMST_BEFREIUNG` | Stromsteuer-Befreiung Jahr 1 [€/a] | Electricity tax exemption year 1 [€/a] | dieselben drei |
+| `WIRT_ZEILE_STROMST_ENTLASTUNG` | Stromsteuer-Entlastung Jahr 1 [€/a] | Electricity tax relief year 1 [€/a] | dieselben drei |
+| `WIRT_ZEILE_STEUER_HERKUNFT` | Herkunft der Steuersätze | Source of the tax rates | `UcWirtschaftlichkeit.ZeigeErgebnisse` |
+| `WIRT_REIHE_KWKG` | KWK-Zuschlag | CHP bonus | Anzeigename zu `KapitalwertRechner.ErloesReihe.KWKG` (Ausgabe folgt mit E7) |
+| `WIRT_REIHE_ENERGIESTEUER` | Energiesteuer-Gutschrift | Energy tax credit | dito `…ErloesReihe.ENERGIESTEUER` |
+| `WIRT_REIHE_STROMSTEUER_BEFREIUNG` | Stromsteuer-Befreiung | Electricity tax exemption | dito `…ErloesReihe.STROMSTEUER_BEFREIUNG` |
+| `WIRT_REIHE_STROMSTEUER_ENTLASTUNG` | Stromsteuer-Entlastung | Electricity tax relief | dito `…ErloesReihe.STROMSTEUER_ENTLASTUNG` |
+| `WIRT_ZEILE_VERMIEDEN_ARBEIT` | Vermiedene Kosten — Arbeit [€/a] | Avoided cost — energy charge [€/a] | `UcWirtschaftlichkeit.ZeigeErgebnisse`, `BausteineWirtschaftlichkeit.SchreibeVergleich`, `ExcelBerichtGenerator` (Etappe E5) |
+| `WIRT_ZEILE_VERMIEDEN_LEISTUNG` | Vermiedene Kosten — Leistung [€/a] | Avoided cost — demand charge [€/a] | dieselben drei |
+| `WIRT_ZEILE_VERMIEDEN_GESAMT` | Vermiedene Kosten gesamt [€/a] | Avoided cost total [€/a] | dieselben drei |
+| `WIRT_ZEILE_AUFSCHLAG` | Aufschläge auf den Strombezug [€/a] | Surcharges on grid supply [€/a] | dieselben drei |
+
+**Nicht lokalisiert — und warum**
+
+| Wert | Grund |
+|---|---|
+| `"KEIN_PROD_GEWERBE"`, `"PROD_GEWERBE"`, `"LAND_FORSTWIRTSCHAFT"` (`DbWerte.UNTERNEHMENSART_*`) | **Persistenzwerte** — Inhalt von `Tab_ProjektWirtschaftlichkeit.Unternehmensart`, in SQL verglichen, nach der Auslieferung eingefroren. Die ComboBox trägt `Form_WirtschaftlichkeitParameter.Steuerwahl`, das den **Wert** hält und den **Namen** anzeigt (Muster `Form_Betriebskosten.BemessungItem`). |
+| `"KEINE"`, `"PARAGRAF_53"`, `"PARAGRAF_53A"` (`DbWerte.ENERGIESTEUER_WAHL_*`) | dito — Inhalt von `…Energiesteuer_Wahl`, Vorbelegung durch Migrationsschritt 20b. |
+| `"VOLLER_BRENNSTOFF"`, `"ENERGETISCH"` (`DbWerte.AUFTEILUNG_*`) | dito — Inhalt von `…Aufteilung_Methode`. |
+| `"KWKG_ZUSCHLAG"`, `"ENERGIESTEUER_GUTSCHRIFT"`, `"STROMSTEUER_BEFREIUNG"`, `"STROMSTEUER_ENTLASTUNG"` (`KapitalwertRechner.ErloesReihe.*`) | **Schlüssel**, nicht Anzeige: sprachneutral und ASCII, stehen nirgends in der Datenbank und nirgends auf dem Bildschirm. Der Anzeigename ist `WIRT_REIHE_*`. |
+| `"ZONEN"`, `"ROLLEN"` (`DbWerte.TARIF_MODUS_*`) | **Persistenzwerte** (Etappe E5) — Inhalt von `Tab_ProjektTarif.Tarif_Modus`, in SQL verglichen, Vorbelegung durch Migrationsschritt 21b, nach der Auslieferung eingefroren. Die ComboBox in `Form_Tarifstruktur` trägt eine `Wahl`-Klasse, die den **Wert** hält und den **Namen** anzeigt (Muster `Form_WirtschaftlichkeitParameter.Steuerwahl`). |
+| `"MONATLICH"`, `"STAFFEL"`, `"JAHRESHOECHSTLAST"` (`DbWerte.LEISTUNGSMODELL_*`) | dito — Inhalt von `…Bezug_Leistungsmodell` und `…Rest_Leistungsmodell`. Längster Wert 17 Zeichen ⇒ TEXT(24). |
+| Die Beschriftungen von `Form_Tarifstruktur` (beide Modellblöcke, Staffelraster, Fußhinweis) | Der Dialog ist wie `Form_WirtschaftlichkeitParameter` **vollständig** unlokalisiert und im Code aufgebaut; er gehört als Ganzes umgestellt, nicht in Teilen. |
+| Die Beschriftungen des Blocks „BHKW — Energie- und Stromsteuer" im Parameterdialog | `Form_WirtschaftlichkeitParameter` ist **vollständig** unlokalisiert (alle Gruppen, alle Zeilen, der Fußhinweis) und im Code aufgebaut. Vier lokalisierte Zeilen darin wären keine Lokalisierung, sondern eine Inkonsistenz mehr — der Dialog gehört als Ganzes umgestellt. |
+| Katalogschlüssel in den Meldungen (`ENERGIEST_ERDGAS` & Co.) | **Schlüssel der Persistenzschicht** aus Etappe E1. Sie stehen bewusst im Klartext in der Meldung, damit der Anwender die Zeile in Administration → „Gesetzliche Parameter" wiederfindet. |
+
+---
+
+## Nachtrag zu Etappe E6 — KWK-Zuschlag je BHKW-Modul (19.08.2026)
+
+`WirtschaftlichkeitCtrl.BaueKwkgReihe` rechnet den Zuschlag ab E6 **je Anlage** und summiert
+jahresweise. Dabei entstehen drei neue Meldungen im Ergebnis und sechs Bausteine der
+**Herleitung**, die der neue Dialog „KWK-Zuschlag je BHKW-Modul" zeigt und die zugleich in den
+Ergebnishinweis wandern können.
+
+Die neun Schlüssel der Nachträge 1 und 2 zu E2 (`WIRT_KWKG_*_UEBER_GRENZE`,
+`WIRT_KWKG_*_HEIZOEL*`, `WIRT_KWKG_KEINE_FOERDERFAEHIG`, `WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR`)
+bleiben **wortgleich unverändert**.
+
+### Neu (9)
+
+| Schlüssel | Deutsch | Englisch | Fundstelle |
+|---|---|---|---|
+| `WIRT_KWKG_JE_MODUL` | KWKG: Zuschlag je BHKW-Modul gerechnet — {0}. | CHP Act: bonus calculated per CHP unit — {0}. | `WirtschaftlichkeitCtrl.ReiheJeAnlage` — erscheint **nur** bei mehr als einer Anlage oder bei mindestens einer eigenen Anlagenangabe; ein Einmodulprojekt ohne eigene Werte bekommt keine neue Meldung. |
+| `WIRT_KWKG_ANLAGE_STICHTAG` | KWKG: {0} — Bestellung/Genehmigung nach dem {1} … für diese Anlage kein Zuschlag. | CHP Act: {0} — order/permit dated after {1} … no bonus for this unit. | `WirtschaftlichkeitCtrl.Anlagenauswahl` — § 6 KWKG **je Anlage**. Die Projektmeldung des Altstands bleibt daneben bestehen und gilt, solange keine Anlage ein eigenes Datum trägt. |
+| `WIRT_KWKG_ANLAGE_FRIST` | KWKG: {0} — Inbetriebnahme nach Ablauf der Realisierungsfrist … | CHP Act: {0} — commissioning after the realisation deadline … | dieselbe |
+| `WIRT_KWKG_HERLEITUNG_TRANCHEN` | {0} kW nach Leistungsanteilen: {1} → Mischsatz {2} ct/kWh ({3}, Stand {4}). | {0} kW by capacity tranches: {1} → blended rate {2} ct/kWh ({3}, as of {4}). | `KwkgSatzRechner.Mischsatz` — die Herleitung zeigt die **Tranchen**, nicht eine Klasse. |
+| `WIRT_KWKG_HERLEITUNG_PAUSCHAL` | {0} kW und damit bis {1} kW, neue Anlage → {2} ct/kWh ({3}, Stand {4}) … | {0} kW and thus up to {1} kW, new unit → {2} ct/kWh ({3}, as of {4}) … | `KwkgSatzRechner.Pauschal` — § 7 Abs. 3a geht Abs. 1 und 2 vor. |
+| `WIRT_KWKG_HERLEITUNG_KEIN_EIGENFALL` | Kein Tatbestand des § 6 Abs. 3 KWKG 2025 erfasst … | None of the cases of section 6 (3) KWKG 2025 recorded … | `KwkgSatzRechner.Vorschlag` — der **Regelfall**: Eigenstrom bekommt nicht generell einen Zuschlag. |
+| `WIRT_KWKG_HERLEITUNG_N1_ZU_GROSS` | Der Tatbestand des § 6 Abs. 3 Nr. 1 gilt nur bis {0} kW; diese Anlage hat {1} kW … | The case of section 6 (3) no. 1 applies only up to {0} kW; this unit has {1} kW … | dieselbe |
+| `WIRT_KWKG_HERLEITUNG_SATZ_FEHLT` | Der Satz „{0}" ist im Katalog „Gesetzliche Parameter" nicht gepflegt — kein Vorschlag. | The rate “{0}” is not maintained in the “Statutory parameters” catalogue — no proposal. | `KwkgSatzRechner` — nie ein geratener Ersatzwert (Regel wie `GesetzKatalog.Wert`). |
+| `WIRT_KWKG_HERLEITUNG_OHNE_LEISTUNG` | Ohne gepflegte elektrische Nennleistung lässt sich kein Zuschlagssatz vorschlagen. | Without a maintained electrical rated capacity no bonus rate can be proposed. | dieselbe |
+
+**Nicht lokalisiert — und warum**
+
+| Wert | Grund |
+|---|---|
+| `"NEUANLAGE"`, `"MODERNISIERT"`, `"NACHGERUESTET"` (`DbWerte.KWKG_ANLAGENART_*`) | **Persistenzwerte** — Inhalt von `Tab_Energieanlagen.KWKG_Anlagenart`, in SQL verglichen, nach der Auslieferung eingefroren. Die ComboBox in `Form_KwkgModule` trägt eine `Steuerwahl`-Klasse, die den **Wert** hält und den **Namen** anzeigt. Längster Wert 13 Zeichen ⇒ TEXT(24). |
+| `"KEINER"`, `"NR1_BIS100KW"`, `"NR2_KUNDENANLAGE"`, `"NR3_STROMINTENSIV"` (`DbWerte.KWKG_EIGENFALL_*`) | dito — Inhalt von `…KWKG_Eigenstromfall`. Längster Wert 17 Zeichen ⇒ TEXT(24). |
+| `"KATALOG_GENERATION"`, `"SYSTEM"` (`DbWerte.GESETZ_KATALOG_GENERATION`, `…KLASSE_SYSTEM`) | **Verwaltungszeile** der generationsweisen Nachsaat in `Tab_Gesetzesparameter` — Schlüssel der Persistenzschicht, nie auf dem Bildschirm; die Pflegemaske blendet die Klasse aus. |
+| Die Normbezeichnungen der Herleitung (`§ 7 Abs. 1 KWKG 2025`, `§ 7 Abs. 2 i.V.m. § 6 Abs. 3 Nr. 2 KWKG 2025` …) | Paragrafenzeichen, Zahlen und die amtliche Kurzbezeichnung des Gesetzes — kein übersetzbarer Wortbestand. Sie stehen als Textbaustein im Code und werden in den lokalisierten Rahmen `{3}` eingesetzt. Dasselbe gilt für die Klammer `„(50 kW, 7.476 h/a, 4,00/8,00 ct/kWh, 30.000 h)"` der Modulaufzählung — nur Zahlen und Einheitenzeichen (Muster `KwkgAnlagenauswahl.Klartext`). |
+| Die Beschriftungen von `Form_KwkgModule` | Der Dialog folgt seinem Aufrufer `Form_WirtschaftlichkeitParameter`, und der ist **vollständig** unlokalisiert und im Code aufgebaut. Einzelne lokalisierte Zeilen darin wären keine Lokalisierung, sondern eine Inkonsistenz mehr. Die **Herleitungstexte** kommen dagegen aus `MyResource`, weil dieselben Texte auch im Ergebnis erscheinen. |
+
+---
+
+## Nachtrag zu Etappe E7 — Bericht und Mehrjahrestabelle (19.08.2026)
+
+Etappe E7 stellt die **Kennzahlentabelle der Wirtschaftlichkeit vollständig** auf `MyResource`
+um und legt die Texte der vier neuen Berichtsblöcke an. **81 Schlüssel** kommen hinzu, **sieben**
+vorhandene ändern ihren Wert. Die Umstellung ist bewusst **vollständig** und nicht in Teilen —
+der bisherige Mischzustand (fünfzehn deutsche Literale zwischen sieben lokalisierten Zeilen) war
+das Ergebnis genau solcher Teilumstellungen.
+
+### Geänderte Werte (7)
+
+| Schlüssel | vorher | nachher | Grund |
+|---|---|---|---|
+| `WIRT_ZEILE_ENERGIESTEUER` | Energiesteuer-Gutschrift **Jahr 1** [€/a] | Energiesteuer-Gutschrift [€/a] | Der Zeitbezug gehört in den Tabellenkopf (`WIRT_ZEILE_JAHR1`), nicht in vier von zweiundzwanzig Zeilentiteln. Erst dadurch passt derselbe Schlüssel in Kennzahlen- **und** Mehrjahrestabelle. |
+| `WIRT_ZEILE_STROMST_BEFREIUNG` | … **Jahr 1** … | ohne „Jahr 1" | dito |
+| `WIRT_ZEILE_STROMST_ENTLASTUNG` | … **Jahr 1** … | ohne „Jahr 1" | dito |
+| `WIRT_ZEILE_VERMIEDEN_ARBEIT` | Vermiedene Kosten **—** Arbeit [€/a] | Vermiedene Kosten**,** Arbeit [€/a] **(Ausweis)** | Komma statt Halbgeviertstrich (einheitliche Untergliederung); der Zusatz „(Ausweis)" ist keine Kosmetik — ohne ihn liest ein Prüfer die Zeile als addierbaren Erlös (E5-Protokoll, Übergabepunkt 6). |
+| `WIRT_ZEILE_VERMIEDEN_LEISTUNG` | dito | dito | dito |
+| `WIRT_ZEILE_VERMIEDEN_GESAMT` | Vermiedene Kosten gesamt [€/a] | Vermiedene Kosten, gesamt [€/a] (Ausweis) | dito |
+| `WIRT_ZEILE_AUFSCHLAG` | Aufschläge auf den Strombezug [€/a] | … **(in Energiekosten enthalten)** | E5-Protokoll, Übergabepunkt 7: Wer Energiekosten und Aufschlag addiert, zählt doppelt. |
+
+### Neu (81)
+
+| Gruppe | Schlüssel | Inhalt |
+|---|---|---|
+| Kennzahlzeilen (20) | `WIRT_ZEILE_INVESTITION`, `…BETRIEBSKOSTEN`, `…ENERGIEKOSTEN`, `…STROMKOSTEN_BEZUG`, `…STROMKOSTEN_RESTSTROM`, `…CO2_BEHG`, `…EINSPEISEERLOES`, `…EINSPEISEERLOES_PV`, `…EINSPEISEERLOES_KWK`, `…KWKG`, `…VBH_ELEKTRISCH`, `…RESTWERT`, `…NETTOBARWERT`, `…KAPITALWERT_DIFF`, `…ANNUITAET`, `…AMORTISATION`, `…IRR`, `…GESTEHUNGSKOSTEN`, `…STAMM_REFERENZ`, `…JAHR1` | Die bisher deutschen Literale der Kennzahlentabelle. **Zwei Schlüssel für eine Zeile:** Der Titel der Stromkostenzeile hängt am Tarifmodus — im Rollenmodell trägt sie den **Reststrom**betrag (Kosten *mit* Anlage) und steht direkt neben den vermiedenen Kosten, die sich auf den Bezug *ohne* Anlage beziehen. |
+| Mehrjahrestabelle (16) | `WIRT_MJ_TITEL`, `…HINWEIS`, `…JAHR`, `…INVEST_ERSATZ`, `…BETRIEB`, `…ENERGIE`, `…BEHG`, `…EINSPEISUNG`, `…NETTO`, `…BARWERT`, `…KUMULIERT`, `…RESTWERT_T`, `…PROBE`, `…ENTFAELLT`, `…NACHWEIS_TITEL`, `…NACHWEIS_HINWEIS` | Spaltenköpfe und Erläuterung des neuen Blocks. Die vier **Reihen**namen kommen aus den seit E4 vorhandenen, bis E7 toten `WIRT_REIHE_*`. |
+| Betriebskostenblock (11) | `WIRT_BK_TITEL`, `…HINWEIS`, `…SP_POSITION`, `…SP_GRUPPE`, `…SP_BEMESSUNG`, `…SP_HERLEITUNG`, `…SP_BETRAG`, `…SUMME`, `…SZENARIOWERT`, `…ABWEICHUNG`, `…OHNE_SPALTEN` | Gliederung nach `Kostenart` (Zweck der E3-Spalte). |
+| Kostenarten und Bemessungsarten (10) | `KOSTENART_KAPITALGEBUNDEN`, `…BETRIEBSGEBUNDEN`, `…BEDARFSGEBUNDEN`, `…SONSTIGE`, `…OHNE`; `BEMESSUNG_BETRAG`, `…PROZENT_INVESTITION`, `…EUR_PRO_H`, `…EUR_PRO_KWH`, `…PROZENT_BRENNSTOFFKOSTEN` | **Anzeigetexte** der gleichnamigen Steuerwerte aus `DbWerte`. Der Namensgleichklang ist Absicht und folgt dem Hinweis in `DbWerte.cs`; die Steuerwerte selbst bleiben deutsch, ASCII und eingefroren. |
+| KWKG-Modultabelle (16) | `WIRT_KWKG_MODUL_TITEL`, `…MODUL_HINWEIS`, `WIRT_KWKG_SP_*` (9), `…SATZ_QUELLE_ANLAGE`, `…SATZ_QUELLE_PROJEKT`, `…DECKEL_STAFFEL`, `…ERSCHOEPFT_NIE`, `…HERLEITUNG_ZEILE` | Tabelle statt Aufzählung (E6-Protokoll, Übergabepunkt 1). |
+| Nachweise und Matrix (8) | `WIRT_NACHWEIS_TITEL`, `…TARIF`, `…LAUFHINWEISE`, `WIRT_ERGEBNIS_VERALTET`, `WIRT_MATRIX_BEDARF`, `…BEDARF_HINWEIS` und die beiden Nachweisköpfe | Die Blöcke, die bisher nur in **einer** der beiden Ausgaben standen. |
+
+**Nicht lokalisiert — und warum**
+
+| Wert | Grund |
+|---|---|
+| `"INVESTITION"`, `"BETRIEBSKOSTEN"`, … (`WirtZeile.Schluessel`) und `"INVEST_ERSATZ"`, `"NETTO"`, `"BARWERT"`, `"KUMULIERT"` (`MehrjahresSpalte.Schluessel`) | **Schlüssel**, nicht Anzeige: sprachneutral, ASCII, nur zum Wiederfinden einer Spalte im Renderer (Abschlusszeile der Mehrjahrestabelle). Sie stehen nirgends in der Datenbank und nirgends auf dem Bildschirm. |
+| `Tab_Kostenfaktor.Bezeichnung` und `Tab_ProjektWerte.Gruppe` im Betriebskostenblock | **Datenwerte** des Anwenders („BHKW", „Wartung BHKW"). Sie stehen so in der Datenbank und werden nicht übersetzt — auch nicht im englischen Bericht. |
+| Die Einheitenzeichen der Herleitung (`h/a`, `kWh/a`, `€/h`, `€/kWh`, `%`) | `BetriebskostenCtrl.SatzEinheit` / `…MengenEinheit` — reine Einheitenzeichen ohne Wortbestand, dieselbe Ausnahme wie bisher. |
+| `„Jahres-Bezugsspitze: … (Basis der Leistungspreis-Staffel)"` und die Zonennamen `Winter HT` … | **Bestand**, von E7 nicht angefasst: Die Gesamtlokalisierung des Berichtsmoduls (82 + 18 Literale) ist ausdrücklich außerhalb dieser Etappe. E7 stellt die **Kennzahlentabelle vollständig** um und legt die **neuen** Blöcke von Anfang an lokalisiert an. |
