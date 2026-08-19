@@ -4841,7 +4841,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel der Ganglinie aus ganglinien_auflisten. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner der Ganglinie, wie ihn ganglinien_auflisten zeigt. ähnelt.
         /// </summary>
         public static string KI_REG_ERL_GANGLINIE_ID {
             get {
@@ -4895,7 +4895,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel des Projekts, in das übernommen würde. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name des Projekts, in das übernommen würde. ähnelt.
         /// </summary>
         public static string KI_REG_ERL_NACH_PROJEKT {
             get {
@@ -4904,7 +4904,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel der Kostenposition, wie ihn kostenlage_pruefen als id_position liefert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung der Kostenposition, wie sie kostenlage_pruefen zeigt. ähnelt.
         /// </summary>
         public static string KI_REG_ERL_POSITIONS_ID {
             get {
@@ -4913,7 +4913,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel des Projekts, falls die Ganglinie eine Projektganglinie ist. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name des Projekts, falls die Ganglinie eine Projektganglinie ist. ähnelt.
         /// </summary>
         public static string KI_REG_ERL_PROJEKT_ID_GANGLINIE_SUCHE {
             get {
@@ -4922,7 +4922,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel des Projekts; ohne Angabe erscheinen nur die Ganglinien des Stammkatalogs. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name des Projekts; ohne Angabe erscheinen nur die Ganglinien des Stammkatalogs. ähnelt.
         /// </summary>
         public static string KI_REG_ERL_PROJEKT_ID_GANGLINIEN {
             get {
@@ -4931,7 +4931,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel der Projekte, deren Ergebnisse gelesen werden sollen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Namen der Projekte, deren Ergebnisse gelesen werden sollen; mehrere durch Semikolon trennen. ähnelt.
         /// </summary>
         public static string KI_REG_ERL_PROJEKTE_FUER_ERGEBNISSE {
             get {
@@ -4958,7 +4958,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel des Stammprojekts, zu dem die Variante gehören soll; aus projekte_auflisten oder varianten_auflisten. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name des Stammprojekts, zu dem die Variante gehören soll. ähnelt.
         /// </summary>
         public static string KI_REG_ERL_STAMM_ID {
             get {
@@ -4967,7 +4967,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel der Speichervariante aus speichervarianten_auflisten. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart der Speichervariante, wie sie speichervarianten_auflisten zeigt. ähnelt.
         /// </summary>
         public static string KI_REG_ERL_VARIANTE_ID {
             get {
@@ -4976,7 +4976,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel des Projekts, aus dem übernommen würde. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name des Projekts, aus dem übernommen würde. ähnelt.
         /// </summary>
         public static string KI_REG_ERL_VON_PROJEKT {
             get {
@@ -5003,7 +5003,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ganglinie (ID) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganglinie ähnelt.
         /// </summary>
         public static string KI_REG_GANGLINIE_NAME {
             get {
@@ -5228,11 +5228,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zielprojekt (ID) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zielprojekt ähnelt.
         /// </summary>
         public static string KI_REG_NACH_PROJEKT_NAME {
             get {
                 return ResourceManager.GetString("KI_REG_NACH_PROJEKT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte {0} angeben. ähnelt.
+        /// </summary>
+        public static string KI_REG_NAME_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_REG_NAME_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt derzeit nichts zur Auswahl für {0}. ähnelt.
+        /// </summary>
+        public static string KI_REG_NAME_KEINE {
+            get {
+                return ResourceManager.GetString("KI_REG_NAME_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ passt auf mehrere Einträge: {1}. Bitte genauer angeben. ähnelt.
+        /// </summary>
+        public static string KI_REG_NAME_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("KI_REG_NAME_MEHRDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} „{1}“ gibt es nicht. Zur Auswahl steht: {2} ähnelt.
+        /// </summary>
+        public static string KI_REG_NAME_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_REG_NAME_UNBEKANNT", resourceCulture);
             }
         }
         
@@ -5282,7 +5318,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenposition (ID) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenposition ähnelt.
         /// </summary>
         public static string KI_REG_POSITIONS_ID_NAME {
             get {
@@ -5300,7 +5336,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel des Projekts, wie ihn projekte_auflisten liefert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name des Projekts, wie er in der Projektliste steht. ähnelt.
         /// </summary>
         public static string KI_REG_PROJEKT_ID_ERLAEUTERUNG {
             get {
@@ -5309,7 +5345,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt (ID) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt ähnelt.
         /// </summary>
         public static string KI_REG_PROJEKT_ID_NAME {
             get {
@@ -5462,7 +5498,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stammprojekt (ID) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stammprojekt ähnelt.
         /// </summary>
         public static string KI_REG_STAMM_ID_NAME {
             get {
@@ -5534,7 +5570,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Speichervariante (ID) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichervariante ähnelt.
         /// </summary>
         public static string KI_REG_VARIANTE_ID_NAME {
             get {
@@ -5552,7 +5588,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Quellprojekt (ID) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellprojekt ähnelt.
         /// </summary>
         public static string KI_REG_VON_PROJEKT_NAME {
             get {

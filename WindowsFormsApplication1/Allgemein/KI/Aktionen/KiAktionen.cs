@@ -81,15 +81,192 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class KiHilfe
     {
-        /// <summary>Standardparameter „Projekt (ID)".</summary>
-        internal static KiParameter ProjektId(string erlaeuterung = null, bool pflicht = true)
+        /// <summary>
+        /// Standardparameter „Projekt" - gefragt wird nach dem Namen, nicht nach
+        /// der Datensatznummer. Der Anwender kennt Projektnamen; IDs stehen in
+        /// keiner Maske, die er zu sehen bekommt.
+        /// </summary>
+        internal static KiParameter ProjektParameter(string erlaeuterung = null, bool pflicht = true,
+                                                     string name = "projekt", string anzeigename = null)
         {
             return new KiParameter(
-                "projekt_id", KiParameterTyp.Ganzzahl,
+                name, KiParameterTyp.Text,
                 erlaeuterung ?? KiAktionsTexte.ProjektIdErlaeuterung,
                 pflicht: pflicht,
-                anzeigename: KiAktionsTexte.ProjektIdName,
-                min: 1);
+                anzeigename: anzeigename ?? KiAktionsTexte.ProjektIdName,
+                maxLaenge: 200);
+        }
+
+        /// <summary>Ein Eintrag, aus dem sich der Anwender per Klartextnamen bedient.</summary>
+        internal sealed class Kandidat
+        {
+            internal readonly int Id;
+            internal readonly string Name;
+            internal readonly string Zusatz;
+
+            internal Kandidat(int id, string name, string zusatz)
+            {
+                Id = id;
+                Name = name ?? "";
+                Zusatz = zusatz ?? "";
+            }
+        }
+
+        /// <summary>Ergebnis einer Namensaufloesung: Treffer oder Klartextgrund.</summary>
+        internal struct Auswahl
+        {
+            internal int Id;
+            internal string Name;
+            internal string Fehler;
+
+            internal bool Ok { get { return Fehler == null; } }
+        }
+
+        /// <summary>
+        /// Waehlt anhand des Namens. Zuerst zaehlt die genaue Uebereinstimmung,
+        /// danach ein eindeutiger Teiltreffer. Bleibt es mehrdeutig, nennt die
+        /// Meldung die Kandidaten - es wird ausdruecklich nicht nach einer Nummer
+        /// gefragt, sonst waere fuer den Anwender nichts gewonnen.
+        /// </summary>
+        internal static Auswahl Waehle(string eingabe, List<Kandidat> kandidaten, string was)
+        {
+            Auswahl ergebnis = new Auswahl();
+            string gesucht = (eingabe ?? "").Trim();
+
+            if (gesucht.Length == 0)
+            {
+                ergebnis.Fehler = string.Format(CultureInfo.CurrentCulture, KiAktionsTexte.NameFehlt, was);
+                return ergebnis;
+            }
+            if (kandidaten == null || kandidaten.Count == 0)
+            {
+                ergebnis.Fehler = string.Format(CultureInfo.CurrentCulture, KiAktionsTexte.NameKeine, was);
+                return ergebnis;
+            }
+
+            List<Kandidat> genau = kandidaten.FindAll(
+                k => string.Equals(k.Name.Trim(), gesucht, StringComparison.CurrentCultureIgnoreCase));
+
+            List<Kandidat> treffer = genau.Count > 0
+                ? genau
+                : kandidaten.FindAll(
+                      k => k.Name.IndexOf(gesucht, StringComparison.CurrentCultureIgnoreCase) >= 0);
+
+            if (treffer.Count == 1)
+            {
+                ergebnis.Id = treffer[0].Id;
+                ergebnis.Name = treffer[0].Name;
+                return ergebnis;
+            }
+
+            ergebnis.Fehler = treffer.Count > 1
+                ? string.Format(CultureInfo.CurrentCulture, KiAktionsTexte.NameMehrdeutig,
+                                gesucht, Aufzaehlen(treffer))
+                : string.Format(CultureInfo.CurrentCulture, KiAktionsTexte.NameUnbekannt,
+                                was, gesucht, Aufzaehlen(kandidaten));
+            return ergebnis;
+        }
+
+        /// <summary>Kandidaten lesbar aufzaehlen; lange Listen werden gekuerzt.</summary>
+        internal static string Aufzaehlen(List<Kandidat> kandidaten)
+        {
+            const int HOECHSTENS = 12;
+
+            var teile = new List<string>();
+            for (int i = 0; i < kandidaten.Count && i < HOECHSTENS; i++)
+            {
+                Kandidat k = kandidaten[i];
+                teile.Add(k.Zusatz.Length > 0 ? k.Name + " (" + k.Zusatz + ")" : k.Name);
+            }
+
+            string text = string.Join(", ", teile);
+            if (kandidaten.Count > HOECHSTENS)
+                text += ", ... (" + (kandidaten.Count - HOECHSTENS) + ")";
+            return text;
+        }
+
+        /// <summary>
+        /// Alle Projekte als Auswahlgrundlage - dieselbe Quelle, aus der auch
+        /// projekte_auflisten schoepft. Damit kann die Auswahl nie etwas anderes
+        /// anbieten als die Liste zeigt.
+        /// </summary>
+        internal static List<Kandidat> ProjektKandidaten()
+        {
+            var liste = new List<Kandidat>();
+            try
+            {
+                var ctrl = new ProjektCtrl();
+                ctrl.ReadAll();
+                foreach (ProjektModel p in ctrl.items)
+                    liste.Add(new Kandidat(p.m_ID, p.m_szProjektname, p.m_szKunde));
+            }
+            catch { }
+            return liste;
+        }
+
+        /// <summary>Projekt aus dem genannten Parameter aufloesen.</summary>
+        internal static Auswahl ProjektWaehlen(KiAufruf a, string parameter = "projekt")
+        {
+            return Waehle(a.Text(parameter), ProjektKandidaten(), KiAktionsTexte.ProjektIdName);
+        }
+
+        /// <summary>Projekt-ID zum Namen; 0, wenn er sich nicht aufloesen laesst.</summary>
+        internal static int ProjektId(KiAufruf a, string parameter = "projekt")
+        {
+            return ProjektWaehlen(a, parameter).Id;
+        }
+
+        /// <summary>
+        /// Projekt-ID, wobei „nichts angegeben" ausdruecklich erlaubt ist und 0
+        /// ergibt - etwa bei den Ganglinien, wo ohne Projekt der Stammkatalog gilt.
+        /// </summary>
+        internal static int ProjektIdOptional(KiAufruf a, string parameter = "projekt")
+        {
+            return (a.Text(parameter) ?? "").Trim().Length == 0 ? 0 : ProjektWaehlen(a, parameter).Id;
+        }
+
+        /// <summary>Vorbedingung „der Projektname ist eindeutig aufloesbar".</summary>
+        internal static string ProjektMussAufloesbarSein(KiAufruf a, string parameter = "projekt")
+        {
+            return ProjektWaehlen(a, parameter).Fehler;
+        }
+
+
+        /// <summary>
+        /// Mehrere Projekte aus einer Aufzaehlung von Namen (Semikolon getrennt).
+        /// Unbekannte Namen werden gemeldet und nicht stillschweigend uebergangen -
+        /// sonst waertet die Aktion weniger Projekte aus, als der Anwender wollte.
+        /// </summary>
+        internal static List<int> ProjektIds(KiAufruf a, string parameter, out string fehler)
+        {
+            fehler = null;
+            List<Kandidat> kandidaten = ProjektKandidaten();
+            var ids = new List<int>();
+            var offen = new List<string>();
+
+            foreach (string teil in (a.Text(parameter) ?? "").Split(';'))
+            {
+                string name = teil.Trim();
+                if (name.Length == 0) continue;
+
+                Auswahl w = Waehle(name, kandidaten, KiAktionsTexte.ProjektIdName);
+                if (w.Ok)
+                {
+                    if (!ids.Contains(w.Id)) ids.Add(w.Id);
+                }
+                else
+                {
+                    offen.Add(w.Fehler);
+                }
+            }
+
+            if (ids.Count == 0 && offen.Count == 0)
+                fehler = string.Format(CultureInfo.CurrentCulture,
+                                       KiAktionsTexte.NameFehlt, KiAktionsTexte.ProjekteName);
+            else if (offen.Count > 0)
+                fehler = string.Join(" ", offen);
+
+            return ids;
         }
 
         /// <summary>Baut eine Ergebniszeile aus Name/Wert-Paaren.</summary>
@@ -107,20 +284,6 @@ namespace WindowsFormsApplication1
             return new List<IReadOnlyDictionary<string, object>>();
         }
 
-        /// <summary>Gibt es ein Projekt mit dieser ID?</summary>
-        internal static bool ProjektExistiert(int idProjekt)
-        {
-            if (idProjekt <= 0) return false;
-            try
-            {
-                object n = DataRepository.ExecuteScalar(
-                    "SELECT COUNT(*) FROM Tab_Projekt WHERE ID = ?",
-                    new OleDbParameter("@id", (Int32)idProjekt));
-                return n != null && n != DBNull.Value && Convert.ToInt32(n) > 0;
-            }
-            catch { return false; }
-        }
-
         /// <summary>Projektname zu einer ID; leer, wenn es die ID nicht gibt.</summary>
         internal static string ProjektName(int idProjekt)
         {
@@ -133,17 +296,6 @@ namespace WindowsFormsApplication1
                 return o == null || o == DBNull.Value ? "" : o.ToString();
             }
             catch { return ""; }
-        }
-
-        /// <summary>
-        /// Vorbedingung „das Projekt gibt es" - der haeufigste Fall. Liefert den
-        /// Klartextgrund oder <c>null</c>.
-        /// </summary>
-        internal static string ProjektMussExistieren(int idProjekt)
-        {
-            return ProjektExistiert(idProjekt)
-                ? null
-                : string.Format(CultureInfo.CurrentCulture, KiAktionsTexte.ProjektUnbekannt, idProjekt);
         }
 
         /// <summary>Zahl fuer die Ergebniszeile; <c>null</c> bleibt <c>null</c>.</summary>

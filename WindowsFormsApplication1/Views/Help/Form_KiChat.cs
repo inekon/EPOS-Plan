@@ -1154,18 +1154,22 @@ namespace WindowsFormsApplication1
 
             Label l2 = new Label
             {
-                Text = "Tageslimit (Anfragen je Arbeitsplatz):",
+                Text = "Tageslimit je Arbeitsplatz:",
                 AutoSize = true,
                 Location = new Point(14, 82)
             };
-            NumericUpDown numLimit = new NumericUpDown
+            // Nur Anzeige: Das Limit wird maschinenweit vorgegeben und soll
+            // vom Anwender nicht angehoben werden koennen.
+            Label lblLimit = new Label
             {
-                Location = new Point(300, 79),
-                Width = 80,
-                Minimum = 1,
-                Maximum = 1000,
-                Value = Math.Min(1000, Math.Max(1, KiChatService.Tageslimit))
+                Text = KiChatService.Tageslimit + " (fest vorgegeben)",
+                AutoSize = true,
+                Location = new Point(200, 82),
+                ForeColor = Color.DimGray
             };
+            new ToolTip().SetToolTip(lblLimit,
+                "Fest im Programm hinterlegt und nicht änderbar - weder hier noch über " +
+                "eine Einstellung. Eine Änderung erfordert einen neuen Programmstand.");
 
             Button btnModell = new Button
             {
@@ -1210,7 +1214,7 @@ namespace WindowsFormsApplication1
             };
 
             frm.Controls.Add(l1); frm.Controls.Add(tbKey);
-            frm.Controls.Add(l2); frm.Controls.Add(numLimit);
+            frm.Controls.Add(l2); frm.Controls.Add(lblLimit);
             frm.Controls.Add(btnModell);
             frm.Controls.Add(hinweis);
             frm.Controls.Add(chkWegB);
@@ -1221,7 +1225,6 @@ namespace WindowsFormsApplication1
             if (frm.ShowDialog(this) != DialogResult.OK) return;
 
             KiChatService.ApiKey = tbKey.Text.Trim();
-            KiChatService.Tageslimit = (int)numLimit.Value;
             KiChatService.WegBErzwingen = chkWegB.Checked;
 
             SchreibeZeile(KiChatService.IstEingerichtet

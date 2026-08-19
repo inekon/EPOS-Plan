@@ -161,7 +161,6 @@ namespace WindowsFormsApplication1
         // früheren Klartextwerts - geschrieben wird dort nichts mehr.
         private const string REG_SCHLUESSEL = @"Software\wp-plan";
         private const string REG_APIKEY = "GeminiApiKey";
-        private const string REG_LIMIT = "KiTageslimit";
         private const string REG_ZAEHLER = "KiZaehler";
         private const string REG_ZAEHLER_TAG = "KiZaehlerTag";
         private const string REG_MODELL = "KiModell";
@@ -257,15 +256,15 @@ namespace WindowsFormsApplication1
             set { SchluesselSchreiben(value ?? ""); }
         }
 
+        /// <summary>
+        /// Tageslimit je Arbeitsplatz - fest im Programm und auf keinem Weg
+        /// vom Anwender zu aendern: weder im Dialog noch ueber die Registry.
+        /// Eine Grenze, die der Begrenzte selbst hochsetzen kann, ist keine.
+        /// Aenderungen erfordern einen neuen Programmstand.
+        /// </summary>
         public static int Tageslimit
         {
-            get
-            {
-                string v = RegLesen(REG_LIMIT);
-                int limit;
-                return (v != null && int.TryParse(v, out limit) && limit > 0) ? limit : STANDARD_TAGESLIMIT;
-            }
-            set { RegSchreiben(REG_LIMIT, value.ToString()); }
+            get { return STANDARD_TAGESLIMIT; }
         }
 
         public static bool IstEingerichtet

@@ -30,13 +30,15 @@ namespace WindowsFormsApplication1
                 andockpunkt: "WirtschaftlichkeitCtrl.LadeErgebnisse / ErgebnisAktuell",
                 parameter: new[]
                 {
-                    new KiParameter("projekt_ids", KiParameterTyp.GanzzahlListe,
+                    new KiParameter("projekte", KiParameterTyp.Text,
                                     KiAktionsTexte.ErlProjekteFuerErgebnisse,
-                                    anzeigename: KiAktionsTexte.ProjekteName, min: 1)
+                                    anzeigename: KiAktionsTexte.ProjekteName, maxLaenge: 600)
                 },
                 ausfuehren: a =>
                 {
-                    var ids = new List<int>(a.IdListe("projekt_ids"));
+                    string ungeklaert;
+                    var ids = KiHilfe.ProjektIds(a, "projekte", out ungeklaert);
+                    if (ids.Count == 0) return KiErgebnis.Fehlgeschlagen(ungeklaert);
                     var ctrl = new WirtschaftlichkeitCtrl();
                     List<WirtschaftlichkeitErgebnis> ergebnisse = ctrl.LadeErgebnisse(ids);
 
@@ -86,11 +88,11 @@ namespace WindowsFormsApplication1
                 zweck: KiAktionsTexte.ZweckParameterLesen,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "WirtschaftlichkeitCtrl.LadeParameter / LadeTarif",
-                parameter: new[] { KiHilfe.ProjektId() },
-                vorbedingung: a => KiHilfe.ProjektMussExistieren(a.Id("projekt_id")),
+                parameter: new[] { KiHilfe.ProjektParameter() },
+                vorbedingung: a => KiHilfe.ProjektMussAufloesbarSein(a),
                 ausfuehren: a =>
                 {
-                    int id = a.Id("projekt_id");
+                    int id = KiHilfe.ProjektId(a);
                     var ctrl = new WirtschaftlichkeitCtrl();
 
                     WirtschaftlichkeitParameter p = ctrl.LadeParameter(id);
@@ -145,7 +147,7 @@ namespace WindowsFormsApplication1
                 andockpunkt: "KostenPositionCtrl.Pruefe / TechnikPlanwertCtrl.LiesAnlagen",
                 parameter: new[]
                 {
-                    KiHilfe.ProjektId(),
+                    KiHilfe.ProjektParameter(),
                     new KiParameter("komponente", KiParameterTyp.Aufzaehlung,
                                     KiAktionsTexte.ErlKomponente,
                                     anzeigename: KiAktionsTexte.KomponenteName,
@@ -153,10 +155,10 @@ namespace WindowsFormsApplication1
                 },
                 vorbedingung: a =>
                 {
-                    int id = a.Id("projekt_id");
+                    int id = KiHilfe.ProjektId(a);
                     string komponente = a.Text("komponente");
 
-                    string grund = KiHilfe.ProjektMussExistieren(id);
+                    string grund = KiHilfe.ProjektMussAufloesbarSein(a);
                     if (grund != null) return grund;
 
                     if (!TechnikPlanwertCtrl.Bekannt(komponente))
@@ -171,7 +173,7 @@ namespace WindowsFormsApplication1
                 },
                 ausfuehren: a =>
                 {
-                    int id = a.Id("projekt_id");
+                    int id = KiHilfe.ProjektId(a);
                     string komponente = a.Text("komponente");
 
                     int komponentenId = KomponentenId(komponente);

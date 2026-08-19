@@ -108,13 +108,11 @@ namespace WindowsFormsApplication1
                 {
                     // 0 bzw. weggelassen = nur der Stammkatalog; die Maske ist ausdruecklich
                     // auch ohne geoeffnetes Projekt nutzbar (PeakShavingCtrl.cs:142).
-                    new KiParameter("projekt_id", KiParameterTyp.Ganzzahl,
-                                    KiAktionsTexte.ErlProjektIdGanglinien,
-                                    pflicht: false, anzeigename: KiAktionsTexte.ProjektIdName, min: 0)
+                    KiHilfe.ProjektParameter(KiAktionsTexte.ErlProjektIdGanglinien, pflicht: false)
                 },
                 ausfuehren: a =>
                 {
-                    int id = a.Id("projekt_id");
+                    int id = KiHilfe.ProjektIdOptional(a);
                     List<GanglinienEintrag> liste = PeakShavingCtrl.LeseGanglinien(id);
 
                     var zeilen = KiHilfe.Liste();
@@ -171,8 +169,8 @@ namespace WindowsFormsApplication1
                 andockpunkt: "PeakShaving.MinimaleSchwelleKw",
                 parameter: new[]
                 {
-                    new KiParameter("ganglinie_id", KiParameterTyp.Ganzzahl, KiAktionsTexte.ErlGanglinieId,
-                                    anzeigename: KiAktionsTexte.GanglinieName, min: 1),
+                    new KiParameter("ganglinie", KiParameterTyp.Text, KiAktionsTexte.ErlGanglinieId,
+                                    anzeigename: KiAktionsTexte.GanglinieName, maxLaenge: 200),
                     new KiParameter("kapazitaet_kwh", KiParameterTyp.Zahl, KiAktionsTexte.ErlKapazitaet,
                                     anzeigename: KiAktionsTexte.KapazitaetName,
                                     min: 0.001, max: 10000000, einheit: "kWh"),
@@ -188,9 +186,7 @@ namespace WindowsFormsApplication1
                     new KiParameter("soc_max_prozent", KiParameterTyp.Zahl, KiAktionsTexte.ErlSocMax,
                                     pflicht: false, anzeigename: KiAktionsTexte.SocMaxName,
                                     min: 0, max: 100, einheit: "%"),
-                    new KiParameter("projekt_id", KiParameterTyp.Ganzzahl,
-                                    KiAktionsTexte.ErlProjektIdGanglinieSuche,
-                                    pflicht: false, anzeigename: KiAktionsTexte.ProjektIdName, min: 0)
+                    KiHilfe.ProjektParameter(KiAktionsTexte.ErlProjektIdGanglinieSuche, pflicht: false)
                 },
                 vorbedingung: a =>
                 {
@@ -198,15 +194,17 @@ namespace WindowsFormsApplication1
                     double socMax = a.Zahl("soc_max_prozent", StromspeicherVarianteModel.SOC_MAX_VORGABE);
                     if (socMin >= socMax) return KiAktionsTexte.SocVerdreht;
 
-                    if (Ganglinie(a.Id("ganglinie_id"), a.Id("projekt_id")) == null)
-                        return string.Format(CultureInfo.CurrentCulture, KiAktionsTexte.GanglinieUnbekannt,
-                                             a.Id("ganglinie_id"));
+                    KiHilfe.Auswahl wahl = GanglinieWaehlen(a);
+                    if (!wahl.Ok) return wahl.Fehler;
                     return null;
                 },
                 ausfuehren: a =>
                 {
-                    int idGanglinie = a.Id("ganglinie_id");
-                    GanglinienEintrag eintrag = Ganglinie(idGanglinie, a.Id("projekt_id"));
+                    KiHilfe.Auswahl wahl = GanglinieWaehlen(a);
+                    if (!wahl.Ok) return KiErgebnis.Abgelehnt(wahl.Fehler);
+
+                    int idGanglinie = wahl.Id;
+                    GanglinienEintrag eintrag = Ganglinie(idGanglinie, KiHilfe.ProjektIdOptional(a));
 
                     double[] last = PeakShavingCtrl.LeseWerte(eintrag);
                     if (last == null || last.Length == 0)
@@ -258,6 +256,24 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Sucht eine Ganglinie in Projekt und Stammkatalog; <c>null</c>, wenn unbekannt.</summary>
+        /// <summary>
+        /// Ganglinie ueber ihren Bezeichner waehlen - dieselbe Quelle, aus der
+        /// auch ganglinien_auflisten schoepft. Das Zeitintervall dient als
+        /// Unterscheidungsmerkmal, falls ein Bezeichner mehrfach vorkommt.
+        /// </summary>
+        private static KiHilfe.Auswahl GanglinieWaehlen(KiAufruf a)
+        {
+            var kandidaten = new List<KiHilfe.Kandidat>();
+            try
+            {
+                foreach (GanglinienEintrag g in PeakShavingCtrl.LeseGanglinien(KiHilfe.ProjektIdOptional(a)))
+                    kandidaten.Add(new KiHilfe.Kandidat(g.Id, g.Bezeichner, g.Zeitinterval + " min"));
+            }
+            catch { }
+
+            return KiHilfe.Waehle(a.Text("ganglinie"), kandidaten, KiAktionsTexte.GanglinieName);
+        }
+
         private static GanglinienEintrag Ganglinie(int idGanglinie, int idProjekt)
         {
             if (idGanglinie <= 0) return null;
