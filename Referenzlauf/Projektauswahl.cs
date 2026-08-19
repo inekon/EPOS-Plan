@@ -35,6 +35,16 @@ namespace WindowsFormsApplication1.Referenzlauf
         /// </summary>
         public bool QuellspeicherWP;
 
+        /// <summary>
+        /// Anzahl der BHKW-Anlagenzeilen (ID_Type = 11). Mehr als eine bedeutet eine
+        /// Kaskade aus mehreren Modulen - ein eigener Codepfad seit W4-E2: nur dort
+        /// unterscheiden sich die drei Vollbenutzungsstunden-Groessen (Summe thermisch,
+        /// ungewichtetes Mittel, leistungsgewichtet), und nur dort greift die
+        /// Ausschreibungsgrenze je Anlage statt je Projektsumme. Ohne so ein Projekt
+        /// bliebe die gesamte Kaskadenlogik des KWK-Zuschlags regressionsfrei.
+        /// </summary>
+        public int BhkwModule;
+
         public IEnumerable<string> GesetzteTools
         {
             get { return Tools.Where(t => !string.IsNullOrWhiteSpace(t)); }
@@ -168,6 +178,7 @@ namespace WindowsFormsApplication1.Referenzlauf
                 if (!profile.TryGetValue(id, out p)) continue;
                 int typ = ZuInt(r["ID_Type"]);
                 if (typ > 0) p.Anlagentypen.Add(typ);
+                if (typ == 11) p.BhkwModule++;   // Kaskadenmerkmal, siehe Projektprofil.BhkwModule
             }
 
             DataTable puffer = DataRepository.GetDataTable(
@@ -249,6 +260,12 @@ namespace WindowsFormsApplication1.Referenzlauf
             // Referenzmenge) unveraendert, es kommt nur ein Projekt hinzu.
             nimm(BesteWahl(kandidaten, ids, p => p.QuellspeicherWP, false),
                  "Pflichtkategorie: Waermepumpe mit Quellspeicher");
+            // W4-E2: die BHKW-Kaskade. Ebenfalls BEWUSST hinten angehaengt, damit die
+            // bisherigen Wahlen unveraendert bleiben. Die Profilsignatur allein reicht
+            // hier nicht - ein Projekt mit zwei BHKW-Modulen sieht darin genauso aus wie
+            // eines mit einem Modul, wuerde also nie gezogen.
+            nimm(BesteWahl(kandidaten, ids, p => p.BhkwModule > 1, false),
+                 "Pflichtkategorie: BHKW-Kaskade mit mehreren Modulen");
 
             // 2a. Auffuellen mit noch nicht vertretenen Erzeugerkombinationen.
             var toolSignaturen = new HashSet<string>(gewaehlt.Select(g => g.Item1.ToolSignatur));
