@@ -226,19 +226,39 @@ Prozentangabe ersetzt" gekennzeichnet.
 
 ```
 Energiesteuer = Satz(Träger, Jahr) × Menge in gesetzlicher Einheit
-                § 53  → voller Satz, nur auf den Stromanteil des Brennstoffs
+                § 53  → voller Satz auf den GESAMTEN BHKW-Brennstoff (siehe Korrektur)
                 § 53a → Teilsatz (Erdgas 4,42 €/MWh) auf den Gesamteinsatz
 Stromsteuer   = Befreiung § 9 Abs. 1 Nr. 3 auf den Eigenverbrauch
-                (≤ 2 MW, hocheffizient, < 270 g CO₂/kWh, 4,5 km Umkreis)
+                (≤ 2 MW JE ANLAGE, hocheffizient, < 270 g CO₂/kWh Energieertrag,
+                 4,5 km Umkreis)
               + Entlastung § 9b auf den Netzbezug (20,00 €/MWh, abzüglich 250 €/a)
 ```
 
-Die Bedingungen werden geprüft und begründet ausgewiesen, nicht stillschweigend
-angenommen — insbesondere der neue CO₂-Grenzwert, an dem Heizöl-BHKW in der Regel
-scheitern.
+> **Korrektur nach der Recherche (Etappe E4, 19.08.2026).** Dieser Abschnitt lautete
+> „§ 53 → voller Satz, **nur auf den Stromanteil** des Brennstoffs". Das ist falsch:
+> § 53 Abs. 2 Satz 1 EnergieStG stellt darauf ab, ob das Energieerzeugnis „unmittelbar am
+> Energieumwandlungsprozess" teilnimmt — beim Motor-BHKW also der **gesamte** Brennstoff;
+> die Dienstvorschrift Energieerzeugung sagt zum Schaubild des § 53 Abs. 1 ausdrücklich
+> „Wärme – genutzt oder ungenutzt – wird nicht betrachtet". Der „Anteil" des Abs. 1
+> Satz 2 betrifft die **mechanische** Energie an der Welle (Generator neben Verdichter).
+> Abzugrenzen ist **BHKW gegen Kessel**, nicht Strom gegen Wärme. Belege in
+> [`Grundlagen_KWKG_Energiesteuer_Stromsteuer.md`](../../../Grundlagen_KWKG_Energiesteuer_Stromsteuer.md),
+> Abschnitt 3.5, und in
+> [`W4_E4_Steuergutschriften_Protokoll.md`](W4_E4_Steuergutschriften_Protokoll.md),
+> Abschnitt 2. Die Aufteilungsmethode bleibt eine Projektangabe, ihr Vorgabewert ist das
+> belegte Verfahren.
+>
+> **Zwei weitere Präzisierungen aus derselben Etappe.** (1) Der CO₂-Grenzwert bezieht sich
+> auf den **Energieertrag** (Strom + Wärme), nicht auf den Brennstoff — die reinen
+> Brennstofffaktoren liegen bei Erdgas **und** Heizöl EL unter 270 g/kWh; erst der
+> Kehrwert des Nutzungsgrades trennt sie. (2) Ein Formular **„1131a" existiert nicht**;
+> zoll.de führt 1131 und 1131_25, für § 53a das Formular 1135. Abschnitt 5 dieses
+> Konzepts nennt es noch.
 
-Die Wahl zwischen § 53 und § 53a sowie deren mögliche Kombination
-(Strom- und Wärmeanteil) ist rechtlich ungeklärt (Grundlagen, Abschnitt 6) und
+Die Bedingungen werden geprüft und begründet ausgewiesen, nicht stillschweigend
+angenommen — insbesondere der CO₂-Grenzwert, an dem Heizöl-BHKW in der Regel scheitern.
+
+Die Wahl zwischen § 53 und § 53a ist rechtlich ungeklärt (Grundlagen, Abschnitt 6) und
 wird als **einstellbare Option** modelliert.
 
 ### 4.3 Strom und Erlöse
@@ -305,7 +325,7 @@ Damit werden folgende heute hart codierten Werte pflegbar: Stromsteuersätze in
 | **E1** | `Tab_Gesetzesparameter`, Seed, Admin-Maske, Lesefassade | Parameter pflegbar, noch ohne Rechenwirkung |
 | **E2** | Vbh-Korrektur (L6), Betriebsstunden je Modul persistieren | Zuschlag bei Kaskaden korrekt |
 | **E3** | Kostenposition erweitern (L5), Betriebskosten-Dialog VDI 2067 | Betriebskosten vollständig erfassbar |
-| **E4** | Energiesteuer- und Stromsteuergutschrift | Steuern in Kapitalwert und Bericht |
+| **E4** | Energiesteuer- und Stromsteuergutschrift | Steuern in Kapitalwert und Bericht — **umgesetzt 19.08.2026**, ergebnisneutral für Bestandsprojekte ([`W4_E4_Steuergutschriften_Protokoll.md`](W4_E4_Steuergutschriften_Protokoll.md)) |
 | **E5** | Tarife mit drei Leistungspreismodellen, vermiedener Strombezug | Erlösseite vollständig |
 | **E6** | KWK-Zuschlag je Modul mit Katalogvorschlag | gesetzliche Leistungsklassen abgebildet |
 | **E7** | Bericht (Word und Excel), Mehrjahrestabelle | Ausgabe |

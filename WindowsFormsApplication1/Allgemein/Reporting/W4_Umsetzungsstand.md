@@ -12,6 +12,7 @@ entschieden ist, welche Etappe läuft und welche Ergebniswirkung jede Etappe hat
 | [`W4_E1_Gesetzesparameter_Protokoll.md`](W4_E1_Gesetzesparameter_Protokoll.md) | Etappe E1: Katalog, Seed, Pflegemaske, Lesefassade |
 | [`W4_E2_Vollbenutzungsstunden_Protokoll.md`](W4_E2_Vollbenutzungsstunden_Protokoll.md) | Etappe E2: Vbh-Korrektur, Wirkungsbeleg, Migrationsschritt 18 — **plus Nachtrag 1 „500-kW-Grenze je Anlage" und Nachtrag 2 „Heizöl-Ausschluss je Anlage" (beide 19.08.2026)** |
 | [`W4_E3_Kostenarten_Betriebskosten_Protokoll.md`](W4_E3_Kostenarten_Betriebskosten_Protokoll.md) | Etappe E3: Kostenart und Bemessungsart an der Kostenposition (Migrationsschritt 19), negative Beträge für Erlöse, Betriebskosten-Dialog nach VDI 2067, **Zuordnung der VDI-Bezugsgrößen auf das EPOS-Plan-Modell** |
+| [`W4_E4_Steuergutschriften_Protokoll.md`](W4_E4_Steuergutschriften_Protokoll.md) | Etappe E4: Energiesteuer- (§ 53 / § 53a) und Stromsteuergutschrift (§ 9 Abs. 1 Nr. 3, § 9b) als jahresscharfe Reihen, Projektangaben der Steuerprüfung (Migrationsschritt 20), benannte Erlösreihen (L1) — **und die Recherche, die die Annahme „§ 53 entlastet nur den Stromanteil" widerlegt hat** |
 
 ---
 
@@ -24,7 +25,7 @@ entschieden ist, welche Etappe läuft und welche Ergebniswirkung jede Etappe hat
 | **E2-N** | *Nachtrag 1:* Ausschreibungsgrenze (500 kW) **je Anlage** statt je Projektsumme; Grenzwert aus dem Katalog | **ja — Korrektur**, wirkt nur bei mehr als einer Anlage | **umgesetzt** (8/8 PASS ×2, 194/194 byte-gleich; Wirkung an präparierten Kopien belegt) |
 | **E2-N2** | *Nachtrag 2:* Heizöl-Ausschluss **je Anlage** und über die **installierten Anlagen** statt über die Gerätezeilen; Brennstoffart vorrangig aus `Tab_Energieanlagen.ID_Carrier` | **ja — Korrektur**, wirkt bei mehr als einer Anlage und bei verwaisten Öl-Gerätezeilen | **umgesetzt** (8/8 PASS ×2, 194/194 byte-gleich, 8/8 Wirtschaftlichkeitswerte gleich; Wirkung an präparierten Kopien belegt) |
 | **E3** | Kostenposition um Kostenart, Bemessung, Erlös-Kennzeichen, Menge und Einheitpreis erweitern (Migrationsschritt 19); Betriebskosten-Dialog nach VDI 2067 mit elf Positionen in drei Spalten | **keine für Bestandsprojekte** — Schritt 19b belegt jede Bestandszeile mit `BETRAG`, und diese Bemessungsart ist zeilengleich der Rechenweg vor E3 | **umgesetzt** (9/9 PASS, 216/216 byte-gleich, 27/27 Betriebskosten- und Kapitalwertwerte identisch, 47 Harnisch-Proben ohne Fehlschlag) |
-| **E4** | Energiesteuer- und Stromsteuergutschrift | nur bei gepflegten Angaben | offen |
+| **E4** | Energiesteuer- und Stromsteuergutschrift als jahresscharfe Reihen; sechs Projektangaben der Steuerprüfung (Migrationsschritt 20); `KapitalwertRechner.Rechne` auf **benannte Erlösreihen** umgestellt (L1) | **keine für Bestandsprojekte** — jede Vorbelegung von Schritt 20b ist der Wert, der keine Gutschrift auslöst | **umgesetzt** (9/9 PASS, 216/216 byte-gleich, 54/54 Wirtschaftlichkeitswerte identisch, 11/11 Handrechnungen getroffen) |
 | **E5** | Tarife mit drei Leistungspreismodellen, vermiedener Strombezug | nur bei gepflegten Tarifen | offen |
 | **E6** | KWK-Zuschlag je Modul mit Katalogvorschlag | **ja** bei Mehrmodulanlagen | offen |
 | **E7** | Bericht (Word und Excel), Mehrjahrestabelle | Ausgabe | offen |
@@ -122,6 +123,48 @@ widersprüchliche Begrenzungen des KWK-Bonus.
 
 ---
 
+## 3b Was Etappe E4 entschieden hat (19.08.2026)
+
+- **Die tragende Annahme war falsch, und die Recherche hat sie widerlegt.** Konzept
+  (4.2) und Grundlagen (3.2) gingen davon aus, § 53 EnergieStG entlaste „nur den auf die
+  Stromerzeugung entfallenden Brennstoffanteil". **Für ein Motor-BHKW gibt es diese
+  Aufteilung nicht:** § 53 Abs. 2 Satz 1 stellt darauf ab, ob das Energieerzeugnis
+  „unmittelbar am Energieumwandlungsprozess" teilnimmt — beim Motor also der gesamte
+  Brennstoff; die Dienstvorschrift Energieerzeugung sagt „Wärme – genutzt oder ungenutzt –
+  wird nicht betrachtet". Der „Anteil" des Abs. 1 Satz 2 betrifft die **mechanische**
+  Energie an der Welle. Abzugrenzen ist **BHKW gegen Kessel**, nicht Strom gegen Wärme.
+  Fundstellen und Belastbarkeit in
+  [`Grundlagen_KWKG_Energiesteuer_Stromsteuer.md`](../../../Grundlagen_KWKG_Energiesteuer_Stromsteuer.md),
+  Abschnitt 3.5.
+- **Die Aufteilungsmethode bleibt trotzdem eine Projektangabe** — mit dem rechtlich
+  belegten Verfahren als Vorgabe (`VOLLER_BRENNSTOFF`) und der energetischen Aufteilung
+  als bewusst konservativer Option. Der Unterschied ist Faktor 2,27.
+- **Erdgas wird brennwertbezogen bemessen, die Anwendung führt Heizwerte.** Umgerechnet
+  wird über die **gepflegten** Werte des Trägers (`eff_hs / eff_hi`, Projektwert vor
+  Katalogwert), nicht über den pauschalen Vorschriftenfaktor 1,11; bei Erdgas E ergibt das
+  1,1048. Fehlt der Brennwert, rechnet die Anwendung heizwertbezogen weiter und **sagt,
+  dass die Entlastung dadurch rund 10 % zu niedrig liegt**.
+- **Der CO₂-Grenzwert des § 2 StromStG bezieht sich auf den Energieertrag**, nicht auf den
+  Brennstoff: `Faktor × Brennstoff / (Strom + Wärme)`. Erst dadurch scheitert Heizöl
+  (303 g/kWh) und Erdgas besteht (229 g/kWh) — die reinen Brennstofffaktoren liegen mit
+  266,4 und 200,9 g/kWh **beide unter 270**. Verwendet wird der EBeV-Faktor der Klasse
+  `EF_BILANZ`, nicht der Nachweiswert der Anlage 9 (L11).
+- **Ohne Stundenreihen keine Stromsteuerbefreiung.** Die Näherung „alles ist
+  Eigenverbrauch", die `StromMatrix` für den KWK-Zuschlag macht, trägt eine gegenüber dem
+  Hauptzollamt geltend gemachte Befreiung nicht.
+- **Die 2-MW-Grenze wird je Anlage geprüft** — Restbefund 3 aus dem E2-Protokoll
+  (Nachtrag 1, N7) ist damit erledigt.
+- **`energy_carrier.density` ist im gesamten Bestand leer.** Ein je Liter abgerechnetes
+  Schweröl lässt sich deshalb nicht in die gesetzliche Einheit €/1.000 kg umrechnen; die
+  Gutschrift entfällt **mit einer Begründung, die die Lücke benennt** — statt mit einer
+  geratenen Dichte. Das ist derselbe Sachverhalt, an dem die Altanwendung um den Faktor 10
+  danebenlag.
+- **Ein Formular „1131a" existiert nicht.** Konzept und Grundlagen nannten eine
+  „Betriebserklärung 1131a/1131az"; zoll.de führt 1131 und 1131_25, für § 53a das
+  Formular 1135. Die Grundlagen sind berichtigt, das Konzept trägt die Angabe noch.
+
+---
+
 ## 4 Etappe E1 — was gerade entsteht
 
 - **Tabelle `Tab_Gesetzesparameter`**: Schlüssel (sprachneutral, eingefroren),
@@ -195,7 +238,12 @@ werden nicht übernommen.
   (`KostenEmissionRechner`, `StromPreisCtrl`, eine gespeicherte Access-Abfrage).
 - **14 Kennzahlzeilen doppelt** in Word- und Excel-Generator.
 - **Zwei Migrationsmechanismen**: `SchemaMigration` mit Versionsmarker einerseits,
-  eigenes DDL in `WirtschaftlichkeitCtrl` andererseits.
+  eigenes DDL in `WirtschaftlichkeitCtrl` andererseits. **Mit E4 laufen für
+  `Tab_ProjektWirtschaftlichkeit` erstmals beide** — Migrationsschritt 20 legt die sechs
+  Spalten an und belegt sie vor, `StelleTabellenSicher` legt dieselben Spalten
+  vorsorglich an (ohne Werte). Das ist dasselbe Doppel wie bei
+  `Tab_ProjektWerte`/`KostenPositionCtrl` aus E3 und bewusst so gebaut; aufzulösen ist es
+  trotzdem.
 - **Komponenten-IDs an zwei Orten** (benannt mit E3): `Form_Kosten.GetKomponentenID`
   verdrahtet 1…7 hart, `UcBkKosten` und `KomponentenUebernahmeCtrl` lesen dieselbe
   Zuordnung dynamisch aus `Tab_KostenKomponente`. `BetriebskostenCtrl` musste sich für
