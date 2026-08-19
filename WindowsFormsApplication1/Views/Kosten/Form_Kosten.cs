@@ -19,6 +19,7 @@ namespace WindowsFormsApplication1
         // derselben Reihenfolge, deshalb gilt durchgehend KategorieID = tabMain.SelectedIndex + 1.
         internal const int KATEGORIE_INVESTITION = 1;
         internal const int KATEGORIE_BETRIEB = 2;
+        // stillgelegt (Konzept Kosten/Energieträger HF1/L1, 19.08.2026): Kategorie 3 wird nicht mehr geschrieben; Konstante bleibt für Migrationsschritt 19b
         internal const int KATEGORIE_ENERGIE = 3;
 
         public Dictionary<string, NumericUpDown> _Inputs = new Dictionary<string, NumericUpDown>();
