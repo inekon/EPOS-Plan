@@ -12,17 +12,73 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
-**`2026-08-16_B4/`** — seit dem 16.08.2026, 03:43 Uhr die gültige Referenz,
-**acht Projekte** (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024), **190 CSV,
-2 094 451 Werte**. Jeder neue Vergleich läuft gegen diesen Ordner.
+**`2026-08-19_B5/`** — seit dem 19.08.2026, 03:38 Uhr die gültige Referenz,
+**neun Projekte** (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, **1030**), **216 CSV,
+2 366 177 Werte**. Jeder neue Vergleich läuft gegen diesen Ordner.
 
-> **Die Basis ist mit Feature-Flag `Kaskade_Zweikanalig` = AUS gerechnet** und bildet damit
-> weiter den einkanaligen Altpfad ab. Das bleibt so, bis die Bestandsprojekte projektweise
-> auf die zweikanalige Kaskade umgestellt werden. Ein Lauf mit gesetztem Flag ist **kein**
-> Regressionsfall gegen diese Basis — er wird gegen den Flag-aus-Lauf desselben Codes
-> verglichen (Umsetzungsprotokoll Paket 4).
+> **Die Projektliste ist FEST VORGEGEBEN und muss bei jedem Folgelauf mitgegeben werden:**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030
+> ```
+>
+> Ohne `--projekte` wählt die Suite datengetrieben — und diese Wahl **wandert mit dem
+> Projektbestand**. Mit den Beispielprojekten 1026–1029 zieht sie inzwischen 1012 und 1026
+> herein und lässt 1008 und 1018 fallen. Für eine über die Zeit vergleichbare Basis ist das
+> untauglich: Die Ordner ließen sich nicht mehr gegeneinander stellen. B5 friert deshalb die
+> acht Projekte von B4 **plus** das neue Kaskadenprojekt ein. Die automatische Auswahl bleibt
+> als Werkzeug erhalten (`liste`), taugt aber nur zum Sichten der Projektlandschaft, nicht
+> zum Einfrieren einer Basis.
 
-### Warum die Basis auf B4 gewechselt wurde
+> **Projekt 1030 „Referenz BHKW-Kaskade (Regressionstest)" ist der Anker für
+> Mehrmodul-Kaskaden.** Zwei BHKW-Module (50 kW el / 250 kW el), Spitzenkessel,
+> Pufferspeicher, gepflegter KWKG-Satz und gepflegte Energiepreise. Es deckt als **einziges**
+> Projekt der Referenzmenge ab: die drei Vollbenutzungsstunden-Aggregate aus Etappe E2
+> (Summe thermisch 12 860,72 h, ungewichtetes Mittel 6 430,36 h, leistungsgewichtet
+> elektrisch 5 733,59 h), eine **bindende** KWKG-Deckelung (Erlös Jahr 1 44 265,13 € bei
+> Jahresdeckel 3 100 Vbh) und die Positivseite beider KWKG-Guards (beide Module unter der
+> 500-kW-Ausschreibungsgrenze, beide Erdgas). Im übrigen Bestand steht `KWKG_Bonus` auf 0 —
+> ohne 1030 wäre dieser ganze Pfad ungetestet. **Wird 1030 verändert oder gelöscht, verliert
+> die Referenzmenge ihre einzige Abdeckung dieses Pfades.**
+
+> **Das Feature-Flag `Kaskade_Zweikanalig` beschreibt die Basis nicht mehr pauschal.** Für
+> **BHKW-Projekte** (1017, 1018, 1024, 1030) ist es seit Paket BHKW-Regulär **wirkungslos** —
+> sie rechnen immer über die Speicherstufe mit herausgelöster Ladephase, der einkanalige
+> BHKW-Altpfad ist entfallen; die Engine meldet das je Projekt als `Simulation Hinweis`. Für
+> die fünf übrigen Projekte steht das Flag auf **AUS**. Im Datenbestand steht es bei 1018
+> inzwischen auf WAHR — folgenlos, weil 1018 ein BHKW-Projekt ist.
+
+### Warum die Basis auf B5 gewechselt wurde
+
+**B4 war als Maßstab ausgefallen.** Ein Lauf des unveränderten Codes gegen B4 endete zuletzt
+in **7 von 8 Projekten mit FAIL** — Ursache waren Datenänderungen des Anwenders, nicht der
+Code. Dazu kamen die Codeetappen seit dem 16.08.2026: Migrationsschritte **17 und 18**, der
+Katalog gesetzlicher Parameter (**E1**), die Vollbenutzungsstunden-Korrektur (**E2**), die
+500-kW-Grenze **je Anlage** und der Heizöl-Ausschluss **je Anlage**.
+
+**Codestand:** `ef8e537`, unverändert, gebaut aus einem `git archive HEAD`-Export außerhalb
+des Repos (`C:\Waermeplan\_b5`; 0 Fehler, 6 Bestandswarnungen). **Datenquelle:** produktive
+`Kenndaten.accdb`, Zeitstempel **19.08.2026 02:51**, Schemastand **17**, nur gelesen (keine
+`Kenndaten.laccdb`). Die Migration **17 → 18** lief ausschließlich auf der Arbeitskopie; die
+produktive Datei steht nachweislich weiter auf Schemastand 17 (Zeitstempel, Größe und MD5 vor
+und nach dem Lauf identisch).
+
+**Ein Toleranzvergleich B4 → B5 wird bewusst NICHT als PASS/FAIL geführt** — Code und Daten
+haben sich gleichzeitig geändert, das Ergebnis wäre nicht zuordenbar. Die Einordnung, welche
+Größen sich unterscheiden und warum (neue E2-Kennzahlspalten, entfallener einkanaliger
+BHKW-Altpfad, Stromspeicher über die SpeicherEngine, Datenpflege des Anwenders), steht im
+[Laufprotokoll der Basis](2026-08-19_B5/lauf_protokoll.md). Zwei Projekte (1008, 1021) sind
+gegenüber B4 unverändert byte-gleich.
+
+**Selbstvergleich der neuen Basis:** Ein zweiter Lauf desselben Codes auf derselben Quelle
+ergibt **9/9 PASS (2 366 177 Werte)** und **216/216 byte-/MD5-gleich** — die Basis ist
+reproduzierbar.
+
+## Frühere Stände
+
+`2026-08-16_B4/` bleibt als **vorheriger Stand** liegen (Codestand `3fd2787`, Schemastand 10,
+acht Projekte, 190 CSV, 2 094 451 Werte, Feature-Flag `Kaskade_Zweikanalig` durchgehend AUS).
+Warum B4 seinerzeit gesetzt wurde:
 
 **Ein Anlass: die neue Ergebnisspalte aus Etappe D4.** Vollständige Zuordnung je Projekt im
 [Laufprotokoll der Basis](2026-08-16_B4/lauf_protokoll.md).
@@ -64,13 +120,10 @@ vergleich 2026-08-15_B3 2026-08-16_B4 --ohne Heizkessel.Quellwaerme
 > Für einen belastbaren Regressionstest dieses Pfades fehlt ein Referenzprojekt mit Kessel an
 > einem Quellpuffer.
 
-**Selbstvergleich der neuen Basis:** Ein zweiter Lauf desselben Codes auf derselben Quelle
-ergibt **8/8 PASS (2 094 451 Werte)** und **190/190 byte-/MD5-gleich** — die Basis ist
-reproduzierbar.
+**Selbstvergleich von B4 seinerzeit:** Ein zweiter Lauf desselben Codes auf derselben Quelle
+ergab **8/8 PASS (2 094 451 Werte)** und **190/190 byte-/MD5-gleich**.
 
-## Frühere Stände
-
-`2026-08-15_B3/` bleibt als **vorheriger Stand** liegen (Codestand `a0a623a` + K-3,
+`2026-08-15_B3/` bleibt als **vorvorheriger Stand** liegen (Codestand `a0a623a` + K-3,
 Schemastand 9, acht Projekte, 190 CSV) — für alle Werte außer der neuen Spalte
 byte-gleich mit B4. Warum B3 seinerzeit gesetzt wurde:
 
@@ -134,7 +187,7 @@ reproduzierbar.
 **Datenquelle:** produktive `Kenndaten.accdb`, Zeitstempel **15.08.2026 22:50**, nur gelesen
 (keine `Kenndaten.laccdb`).
 
-`2026-08-15_B2/` bleibt als **vorvorheriger Stand** liegen (Codestand `925c37f`, Datenstand
+`2026-08-15_B2/` bleibt als **älterer Stand** liegen (Codestand `925c37f`, Datenstand
 15.08.2026 11:58, **neun** Projekte) — für die acht gemeinsamen Projekte byte-gleich mit B3
 und die einzige verbliebene Quelle für die Ganglinien des gelöschten Projekts 1010. Warum B2
 seinerzeit gesetzt wurde:
@@ -293,7 +346,7 @@ nennt sie in der Ausgabe. Der Zweck ist eng: Führt eine Etappe eine neue **Erge
 ein, wächst `aggregate.csv` zwangsläufig um einen Schlüssel, und gegen die eingefrorene Basis
 verdeckt diese Meldung die eigentliche Frage — *sind die Altwerte unverändert?* Genau dafür
 ist die Option da, **nicht** um Abweichungen wegzuschalten. Sobald die Basis neu gesetzt ist
-(hier: B4), laufen die Vergleiche wieder ohne Ausschluss.
+(zuletzt: B5), laufen die Vergleiche wieder ohne Ausschluss.
 
 ### `pruefen` — Plausibilität eines Laufs
 
@@ -344,11 +397,12 @@ ist zwingend, wenn parallel gearbeitet wird oder die Kopie außerhalb des Repos 
 2. **Änderung umsetzen** und die Anwendung neu bauen (`WP-Plan.sln` **und**
    `Referenzlauf.csproj`).
 3. **Neu rechnen und vergleichen** — Referenz ist die aktuelle Basis, seit dem
-   16.08.2026 also `2026-08-16_B4`:
+   19.08.2026 also `2026-08-19_B5`. **`--projekte` ist Pflicht** (siehe „Die
+   Projektauswahl"):
    ```powershell
    & $exe lauf --ziel C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket10 `
-               --projekte 1007,1008,1011,1017,1018,1021,1023,1024
-   & $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-16_B4 `
+               --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030
+   & $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-19_B5 `
                     C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket10
    ```
    `lauf` kopiert **und migriert** die Arbeitskopie selbst.
@@ -362,13 +416,13 @@ ist zwingend, wenn parallel gearbeitet wird oder die Kopie außerhalb des Repos 
 # 2. Auswahl kontrollieren (rein lesend, kopiert nichts)
 & $exe liste C:\Waermeplan\MeinTest\DB
 
-# 3. Die acht Referenzprojekte einzeln rechnen
-foreach ($id in 1007,1008,1011,1017,1018,1021,1023,1024) {
+# 3. Die NEUN Referenzprojekte einzeln rechnen (feste Liste, nicht die Automatik)
+foreach ($id in 1007,1008,1011,1017,1018,1021,1023,1024,1030) {
     & $exe projekt $id "C:\Waermeplan\MeinTest\Lauf\Projekt_$id" C:\Waermeplan\MeinTest\DB
 }
 
 # 4. Gegen die aktuelle Basis vergleichen und plausibilisieren
-& $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-16_B4 C:\Waermeplan\MeinTest\Lauf
+& $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-19_B5 C:\Waermeplan\MeinTest\Lauf
 & $exe pruefen   C:\Waermeplan\MeinTest\Lauf
 ```
 
@@ -403,29 +457,46 @@ die Projektdaten, vergleicht man Äpfel mit Birnen. Die Quelle steht im Kopf von
 
 ## Die Projektauswahl
 
+**Für jeden Vergleichslauf gilt die feste Liste. `--projekte` ist Pflicht:**
+
+```powershell
+& $exe lauf --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030
+```
+
+Neun IDs, seit Basis B5 (19.08.2026): die acht Projekte von B4 plus das Kaskadenprojekt
+**1030**. Wer sie wegläßt, bekommt einen Ordner, der sich mit der Basis nicht vergleichen
+läßt — der Vergleich meldet dann fehlende und zusätzliche Projekte, nicht Rechenabweichungen.
+
+### Warum nicht die Automatik
+
 Ohne `--projekte` wählt die Suite selbst, deterministisch und aus der Arbeitskopie heraus.
-Sie deckt zuerst **sechs** Pflichtkategorien ab — Wärmepumpe mit Pufferspeicher,
-Heizkessel, BHKW, Solarthermie, den Minimalfall „nur Wärmepumpe" und (seit Paket 7)
-Wärmepumpe mit **Quellspeicher** — und füllt dann auf neun Projekte auf: erst mit neuen
-Erzeugerkombinationen, danach mit abweichender Anlagenausstattung. Übergangen werden
-Projekte ohne Eintrag in `Tab_Einstellungen` und ohne Klimaregion; die stehen mit
-Begründung im Protokoll.
+Sie deckt zuerst **sieben** Pflichtkategorien ab — Wärmepumpe mit Pufferspeicher,
+Heizkessel, BHKW, Solarthermie, den Minimalfall „nur Wärmepumpe", (seit Paket 7)
+Wärmepumpe mit **Quellspeicher** und (seit `62322d1`) **BHKW-Kaskade mit mehreren Modulen** —
+und füllt dann auf neun Projekte auf: erst mit neuen Erzeugerkombinationen, danach mit
+abweichender Anlagenausstattung. Übergangen werden Projekte ohne Eintrag in
+`Tab_Einstellungen` und ohne Klimaregion; die stehen mit Begründung im Protokoll.
 
 Die Kategorie „Quellspeicher" steht bewusst **hinter** den fünf ursprünglichen: so bleiben
 deren Wahlen unverändert und es kommt nur ein Projekt hinzu (1021).
 
-Ändert sich die Projektlandschaft, ändert sich womöglich auch die Auswahl — und damit
-lassen sich die Ordner nicht mehr vergleichen. Wer über längere Zeit dieselbe Basis braucht,
-gibt die Projekte fest vor:
+**Diese Auswahl ist datengetrieben und wandert mit dem Projektbestand.** Das ist kein
+Schönheitsfehler, sondern der Grund für die feste Liste: Mit den Beispielprojekten 1026–1029
+zieht die Automatik seit dem 19.08.2026 **1012** („nur Wärmepumpe") und **1026**
+(Pflichtkategorie Heizkessel) herein und läßt **1008** und **1018** fallen — eine Basis, die
+so entstanden wäre, ließe sich mit keiner früheren mehr vergleichen. Die Automatik bleibt
+nützlich, um die Projektlandschaft zu sichten (`liste`), nicht um eine Basis einzufrieren.
 
-```powershell
-& $exe lauf --projekte 1007,1008,1011,1017,1018,1021,1023,1024
-```
+> **Das Kaskadenprojekt 1030 ist der Anker für Mehrmodul-BHKW.** Es ist das einzige Projekt
+> der Referenzmenge mit zwei BHKW-Modulen, gepflegtem KWKG-Satz und gepflegten Energiepreisen
+> und deckt damit als einziges die drei Vollbenutzungsstunden-Aggregate aus E2, die bindende
+> KWKG-Deckelung und die Positivseite der beiden KWKG-Guards (500-kW-Grenze, Heizöl) ab.
+> Zahlen im [Laufprotokoll der Basis](2026-08-19_B5/lauf_protokoll.md).
 
-> **Seit dem 15.08.2026 sind es acht statt neun IDs.** Projekt **1010 „Kurs EE"** hat der
-> Anwender gelöscht; es war die Kategorie **„nur Wärmepumpe"**. Bis ein Ersatzprojekt dieser
-> Kategorie nachrückt, ist die Pflichtkategorie unbesetzt — bei einer Auswahl ohne
-> `--projekte` füllt die Suite stattdessen mit einer weiteren Erzeugerkombination auf.
+> **Seit dem 15.08.2026 fehlt Projekt 1010 „Kurs EE"** — vom Anwender gelöscht, es war die
+> Kategorie **„nur Wärmepumpe"**. In der festen Liste ist diese Kategorie damit unbesetzt;
+> die Automatik füllt sie inzwischen mit 1012. Ein Nachrücken in die feste Liste wäre ein
+> bewußter Basiswechsel und kein Nebenbei-Schritt.
 
 ## Dialoge der Engine
 
