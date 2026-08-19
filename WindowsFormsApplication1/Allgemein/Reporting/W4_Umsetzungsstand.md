@@ -9,6 +9,14 @@ bewirkt hat und was offen bleibt.
 > Leser vor, L13 (Biomasse-Konvention) ist gar nicht umgesetzt, und **keine der neuen Rechenklassen
 > hat einen dauerhaften Test**. Einzelheiten in
 > [`W4_E8_Abnahme_Protokoll.md`](W4_E8_Abnahme_Protokoll.md).
+>
+> **Zwei dieser vier Vorbehalte sind am 19.08.2026 erledigt:** **L12 und L13 sind umgesetzt**
+> (Migrationsschritt 23, Katalog-Generation 4, drei Rechenwege der Emissionsbilanz, zwei
+> Biomasse-Angaben, Ausweis in Reiter, Word und Excel) — ergebnisneutral für Bestandsprojekte,
+> 216/216 byte-gleich gegen B6 und 972/972 Wirtschaftlichkeitswerte identisch gegen `3307378`.
+> Belege in [`W4_L12_L13_Methodenwechsel_Protokoll.md`](W4_L12_L13_Methodenwechsel_Protokoll.md).
+> **Offen bleiben** die Zahlenprobe gegen die Altanwendung (A8) und die fehlenden dauerhaften
+> Tests (A1).
 
 | Dokument | Inhalt |
 |---|---|
@@ -23,6 +31,7 @@ bewirkt hat und was offen bleibt.
 | [`W4_E5_Tarife_Strombezug_Protokoll.md`](W4_E5_Tarife_Strombezug_Protokoll.md) | Etappe E5: Tarif-Rollenmodell mit drei Leistungspreismodellen (Migrationsschritt 21), Differenzmethode „vermiedene Kosten", Preis für eingespeisten KWK-Strom, § 9b ohne BHKW — **und die Messung, die den Aufschlägen eine Wirkung von rund einem Drittel des Kapitalwerts nachweist** |
 | [`W4_E6_Zuschlag_je_Modul_Protokoll.md`](W4_E6_Zuschlag_je_Modul_Protokoll.md) | Etappe E6: KWK-Zuschlag **je BHKW-Modul** — Stichtag, Inbetriebnahme, Satz, Vbh, Jahresdeckel und Kontingent je Anlage (Migrationsschritt 22), Katalogvorschlag nach § 7 als **Tranchenstaffel**, generationsweise Nachsaat des Katalogs — **und der Befund, dass die alte Rechnung bei durchgehend gedeckelten Modulen zufällig richtig war** |
 | [`W4_E8_Abnahme_Protokoll.md`](W4_E8_Abnahme_Protokoll.md) | Etappe E8: **Abnahme gegen das Konzept**, Schließung der vier Prüflücken mit Zahlen, neue Referenzbasis **B6**, ehrliche Restliste — **und die acht Befunde A1 bis A8**, darunter die nie gerechnete Zahlenprobe gegen die Altanwendung |
+| [`W4_L12_L13_Methodenwechsel_Protokoll.md`](W4_L12_L13_Methodenwechsel_Protokoll.md) | Nacharbeit zu **A3 und A4**: Methodenwechsel zum 01.01.2027 (drei Rechenwege, umgeschaltet über das Gültig-ab-Datum des Katalogs) und Bilanzierungskonvention für Biomasse samt Nachhaltigkeitsnachweis (Migrationsschritt 23) — **und der Nachweis, dass die stille Konvention nicht im Code stand, sondern in den Katalogwerten des Brennstoffs** |
 | [`W4_E7_Bericht_Mehrjahrestabelle_Protokoll.md`](W4_E7_Bericht_Mehrjahrestabelle_Protokoll.md) | Etappe E7: Rückgabekanal der Einzelpositionen im `Zahlungsbild`, **Mehrjahrestabelle** in Word und Excel, KWK-Zuschlag **je Modul als Tabelle**, Betriebskosten nach **Kostenart**, eine Zeilendefinition statt dreier, sechs Divergenzen Word/Excel — **und die erste Messung, die die Wertgleichheit von Word und Excel belegt statt sie zu behaupten** |
 
 ---
@@ -41,6 +50,7 @@ bewirkt hat und was offen bleibt.
 | **E6** | KWK-Zuschlag **je Modul**: Stichtag, Inbetriebnahme, Satz, Vbh, Jahresdeckel und Kontingent je Anlage (Migrationsschritt 22); Katalogvorschlag als **Tranchenstaffel** nach § 7; generationsweise Nachsaat des Katalogs | **ja bei Mehrmodulanlagen** — aber nur, wenn die Module den Jahresdeckel **unterschiedlich** treffen oder sich in Datum, Satz oder Kontingent unterscheiden. Für Einmodulprojekte **keine** | **umgesetzt** (9/9 PASS, 216/216 byte-gleich ×2, 24/27 Wirtschaftlichkeitszeilen zeichengleich, 8/8 Handrechnungen getroffen) |
 | **E7** | Bericht (Word und Excel), Mehrjahrestabelle; Rückgabekanal der Einzelpositionen, KWK-Zuschlag je Modul als Tabelle, Betriebskosten nach Kostenart, eine Zeilendefinition für alle drei Ausgaben | **keine** — Ausgabe; der Rückgabekanal ist rein additiv und der Rechenweg der Summen zeichengleich | **umgesetzt** (216/216 byte-gleich, **864/864 Wirtschaftlichkeitswerte identisch**, Word ↔ Excel erstmals **gemessen** zeichengleich) |
 | **E8** | Abnahme gegen das Konzept, Schließung der vier Prüflücken, neue Referenzbasis **B6** | **keine** — keine Codezeile geändert | **umgesetzt** (216/216 byte-gleich gegen B5, 40/40 Harnisch-Proben ohne Fehlschlag, 0 unerwartete Dialoge; 8 Befunde dokumentiert) |
+| **L12/L13** | Methodenwechsel 01.01.2027 mit drei Rechenwegen; Bilanzierungskonvention Biomasse und Nachhaltigkeitsnachweis (Migrationsschritt 23, Katalog-Generation 4) | **keine für Bestandsprojekte** — `Bilanz_Jahr` bleibt NULL (⇒ Rechtsstand bis 31.12.2026 ⇒ Stromgutschrift wie bisher), `NULLANSATZ` und `NACHWEIS_JA` sind die Annahmen, die der Bestand still traf | **umgesetzt** (9/9 PASS, 216/216 byte-gleich gegen B6, **972/972 Wirtschaftlichkeitswerte identisch**, 8/8 Rundproben, 5/5 Handrechnungen, Ausweis in Word und Excel gemessen) |
 
 **Regel für ergebniswirksame Etappen (E2, E6):** A/B-Nachweis gegen den
 Vorgängerstand, Wirkungsbeleg mit Zahlen, danach neuer Basis-Freeze — dasselbe
@@ -77,6 +87,16 @@ Restliste: Die Wirtschaftlichkeitsrechnung ist in **keiner** eingefrorenen Basis
   beziehungsweise 860 g/kWh) entfällt **ersatzlos**; die Stromgutschrift für
   eingespeisten KWK-Strom wird abgeschafft. Beide Rechenwege müssen parallel
   vorliegen. **Für BHKW-Projekte die folgenreichste Änderung des Vorhabens.**
+  — *Umgesetzt am 19.08.2026: drei Rechenwege, umgeschaltet über die
+  2027er-Katalogzeile ohne Wert. Gemessen **−70,0 % ausgewiesene CO₂-Vermeidung**
+  am Zweimodul-BHKW; der Kapitalwert bleibt unberührt.*
+- **L13 — Bilanzierungskonvention für Biomasse.** Ob biogenes Verbrennungs-CO₂
+  mit null angesetzt wird, widerspricht sich zwischen BEHG, GModG,
+  UBA-Emissionsbilanz und UBA-CO₂-Rechner (dort 365 g/kWh); der Nullansatz des
+  BEHG setzt zusätzlich einen Nachhaltigkeitsnachweis voraus.
+  — *Umgesetzt am 19.08.2026 als zwei getrennte Einstellungen mit Ausweis. Die
+  stille Annahme stand im Brennstoffkatalog, nicht im Code, und ist die Vorgabe
+  geworden; die Alternative **dreht das Vorzeichen** der ausgewiesenen Vermeidung.*
 - **L2 — Ein Katalog statt Konstanten im Code.** Rund 60 bis 80 gesetzliche
   Parameter mit Gültig-ab-Jahr; eine Novelle ist eine neue Zeile, kein
   Überschreiben — sonst sind Altrechnungen nicht reproduzierbar.
@@ -363,6 +383,12 @@ widersprüchliche Begrenzungen des KWK-Bonus.
   stehen mit Wert `null` bereit, aber **keine Codezeile liest sie**, es gibt keinen zweiten
   Rechenweg, keinen Auswahlparameter und keinen Berichtsausweis. L13 ist gar nicht umgesetzt und war
   bis heute nicht einmal als offener Punkt geführt.
+
+  > **Erledigt am 19.08.2026** ([`W4_L12_L13_Methodenwechsel_Protokoll.md`](W4_L12_L13_Methodenwechsel_Protokoll.md)).
+  > Die Einschätzung der Abnahme war richtig — und der Befund noch etwas schärfer, als er hier
+  > steht: Die Stromgutschriftmethode war **kein fehlender Parameter**, sondern die Systemgrenze
+  > des `EmissionsBilanzRechner` selbst, und die Biomasse-Konvention stand nicht im Code, sondern
+  > in den Katalogwerten von `Tab_Brennstoff_Stamm`. Beides ist jetzt Einstellung mit Ausweis.
 - **Keine der neuen Rechenklassen hat einen Test.** L9 verlangt „Tests im vorhandenen Testprojekt";
   `SteuerGutschriftRechner`, `StromTarifRechner`, `KwkgSatzRechner` und `KapitalwertRechner` kommen
   in `SpeicherEngine.Tests` und `KiKern.Tests` **nicht vor**. Jede Messung dieser Ausbaustufe —
@@ -420,15 +446,25 @@ heutigen Stand gebracht; 7 bis 11 sind mit der Abnahme neu hinzugekommen.
 2. **Kategorie 3 „Energiekosten"**: entfernen oder als Override mit sichtbarem
    Vorrang definieren. — **Unverändert offen.** W4 hat die Kategorie nicht angefasst; erfasste
    Beträge fallen weiterhin still aus jeder Auswertung.
-3. **Gutschrift für eingespeisten KWK-Strom ab 2027** (= die Rechenseite von **L12**): Ohne
-   amtlichen Verdrängungsfaktor ist jede Gutschrift eine methodische Wahl. Vorgesehen als
-   Auswahlparameter mit Ausweis im Bericht. — **Offen und mit E8 präzisiert (Befund A3):** Die
-   **Datenseite steht** (Katalogzeilen `EF_NACHWEIS_VERDRAENGUNGSSTROMMIX` und
-   `PEF_NACHWEIS_VERDRAENGUNGSSTROMMIX` ab 2027 mit Wert `null`, also „bewusst entfallen" statt
-   „nicht gepflegt"), **die Rechenseite fehlt vollständig**: keine Codezeile liest einen der beiden
-   Schlüssel, es gibt keinen zweiten Rechenweg, keinen Auswahlparameter und keinen Berichtsausweis.
-   Das Konzept nennt L12 „für BHKW-Projekte die folgenreichste Änderung des gesamten Vorhabens" —
-   **der Punkt wird zum 01.01.2027 wirksam und ist damit terminiert.**
+3. ~~**Gutschrift für eingespeisten KWK-Strom ab 2027**~~ (= die Rechenseite von **L12**) —
+   **am 19.08.2026 umgesetzt** ([`W4_L12_L13_Methodenwechsel_Protokoll.md`](W4_L12_L13_Methodenwechsel_Protokoll.md)).
+   Drei Rechenwege (`STROMGUTSCHRIFT`, `OHNE_GUTSCHRIFT`, `SUBSTITUTION`), umgeschaltet über
+   **dasselbe Gültig-ab-Datum aus dem Katalog** — die 2027er-Zeile ohne Wert, die seit E1 niemand
+   las. Gemessen: **−963,24 t CO₂/a ausgewiesene Vermeidung (−70,0 %)** an Projekt 1030, sobald
+   das Bilanzjahr auf 2027 steht.
+
+   > **Was mit dem Punkt neu geworden ist — und zu entscheiden bleibt:** Der Stichtag hängt an der
+   > **eigenen Projektangabe `Bilanz_Jahr`** mit festem Rückfall auf **2026**, nicht am
+   > Förderjahr und nicht an der Systemuhr. Grund: `Foerderbeginn` fällt ohne Inbetriebnahme auf
+   > „aktuelles Jahr + 1" (heute 2027) und hätte jedes Bestandsprojekt sofort umgestellt; die
+   > Systemuhr bräche die Reproduzierbarkeit, die Grundlagen 7.1 ausdrücklich verlangt („ein 2026
+   > gerechneter Variantenvergleich muss 2029 dieselben Zahlen liefern"). **Folge: Der
+   > Methodenwechsel greift nicht von selbst, sondern wenn das Bilanzjahr gepflegt wird.** Wer das
+   > anders will, ändert eine Konstante — aber nicht still.
+   >
+   > **Und der Normtext fehlt weiterhin:** Abgebildet ist der **Wegfall** der Gutschrift, nicht das
+   > Zuteilungsverfahren der DIN EN 15316-4-5. Deren Text gehört nicht zur Faktenbasis; liegt er
+   > vor, ist er ein vierter Rechenweg neben den drei heutigen.
 4. ~~**Nachsaat fehlender Katalogschlüssel**~~ — **mit E6 entschieden und umgesetzt
    (19.08.2026): generationsweise Nachsaat.** Jede Zeile der `GesetzKatalog.Vorbelegung`
    trägt im **Code** eine Generationsnummer; eine **Markerzeile** in
@@ -471,10 +507,23 @@ heutigen Stand gebracht; 7 bis 11 sind mit der Abnahme neu hinzugekommen.
    Projekt (Bedarf 100 MWh, Restbezug 62, Einspeisung 34, Eigenverbrauch 38) und eine Bewertung
    jeder Abweichung gegen die 17 Befunde der Analyse. **Der gewichtigste offene Punkt der
    Ausbaustufe.**
-8. **L13 — Bilanzierungskonvention für Biomasse** (Befund **A4**): nicht umgesetzt. Es gibt weder
-   die Einstellung noch den Berichtsausweis, den L13 verlangt; Projekte mit biogenem Brennstoff
-   bekommen eine Konvention, ohne dass sie benannt wird. Der Punkt war bis zur Abnahme **überhaupt
-   nicht geführt**.
+8. ~~**L13 — Bilanzierungskonvention für Biomasse**~~ (Befund **A4**) — **am 19.08.2026
+   umgesetzt** ([`W4_L12_L13_Methodenwechsel_Protokoll.md`](W4_L12_L13_Methodenwechsel_Protokoll.md)).
+   Zwei getrennte Angaben: die **Konvention** (`NULLANSATZ` / `VERBRENNUNG`) wirkt auf die
+   Klimabilanz, der **Nachhaltigkeitsnachweis** (§ 8 EBeV 2030) auf die BEHG-Abgabe. Beide werden
+   in Reiter, Word und Excel ausgewiesen.
+
+   > **Die stille Annahme stand nicht im Code, sondern im Brennstoffkatalog:** Holz und Pellets 20,
+   > Biogas 140, Rapsöl und Tierische Fette 210 g/kWh — reine Vorkettenwerte, also biogenes
+   > Verbrennungs-CO₂ = 0. Sie ist die Vorgabe geworden. Gemessen an einem präparierten
+   > Biomasseprojekt **dreht die Konventionswahl das Vorzeichen** (+44,89 → −38,67 t/a
+   > Vermeidung); der fehlende Nachweis kostet **3.964,15 €/a** (Barwert 58.976,57 €).
+   >
+   > **Was dabei offen bleibt:** Die Bio-Heizöl-Mischungen (Kategorie 2) sind ausgenommen — ihr
+   > biogener Anteil steckt im Katalogfaktor, das Datenmodell führt ihn nicht als eigene Größe.
+   > Und `VariantenDaten.CO2Gesamt` bleibt die katalogbasierte Kennzahl; bei gewählter Konvention
+   > `VERBRENNUNG` zeigen Kennzahl und Emissionsbilanz verschiedene CO₂-Zahlen für dasselbe
+   > Projekt (im Bericht je benannt).
 9. **`Tab_Kraftwerkspark` ohne `Bezugsbasis`** (Befund **A5**): Die fünf Konzeptspalten (`CO`,
    `Staub`, `GueltigAb`, `Quelle`, `ReadOnly` und vor allem **`Bezugsbasis TEXT(12)`**) sind nie
    angelegt worden. Damit besteht der Definitionsbruch des Altkatalogs fort — Faktoren je kWh

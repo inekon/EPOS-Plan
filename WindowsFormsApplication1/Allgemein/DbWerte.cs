@@ -537,6 +537,137 @@ namespace WindowsFormsApplication1
         public const string KWKG_EIGENFALL_NR3 = "NR3_STROMINTENSIV";
 
         // =====================================================================
+        // LEITENTSCHEIDUNGEN L12 und L13 — Bilanzierung der Emissionen
+        //   Tab_ProjektWirtschaftlichkeit (Migrationsschritt 23)
+        //   Steuerwerte, sprachneutral und ASCII, in SQL verglichen, eingefroren.
+        //
+        //   L12 — Zum 01.01.2027 entfaellt der Verdraengungsstrommix (2,8 bzw.
+        //   860 g CO2-Aeq/kWh) ERSATZLOS; die Stromgutschriftmethode fuer
+        //   eingespeisten KWK-Strom ist abgeschafft (GModG, BGBl. 2026 I Nr. 226;
+        //   Grundlagen, Abschnitt 7.4). Beide Rechenwege liegen parallel vor und
+        //   werden ueber DASSELBE Gueltig-ab-Datum des Katalogs umgeschaltet —
+        //   ueber die 2027er-Jahreszeile OHNE Wert bei
+        //   GESETZ_EF_NACHWEIS_VERDRAENGUNGSSTROMMIX, nicht ueber eine Konstante.
+        //
+        //   L13 — Ob biogenes Verbrennungs-CO2 mit null angesetzt wird, widerspricht
+        //   sich zwischen BEHG, GModG, UBA-Emissionsbilanz und UBA-CO2-Rechner
+        //   (Grundlagen, Abschnitt 7.8). Die Konvention wird Einstellung mit Ausweis
+        //   im Bericht; die Vorbelegung ist die Annahme, die der Bestand still trifft.
+        // =====================================================================
+
+        /// <summary>
+        /// Bewertung des KWK-Stroms in der Emissionsbilanz: <b>nach Katalog</b> — der
+        /// Rechenweg folgt dem Gueltig-ab-Datum aus <c>Tab_Gesetzesparameter</c>.
+        /// <b>Vorbelegung</b> aller Bestandszeilen (Migrationsschritt 23b).
+        ///
+        /// <para>Fuehrt die zum Bilanzjahr gueltige Zeile von
+        /// <see cref="GESETZ_EF_NACHWEIS_VERDRAENGUNGSSTROMMIX"/> einen Wert, gilt
+        /// <see cref="EMISSIONSMETHODE_STROMGUTSCHRIFT"/>; fuehrt sie KEINEN (die
+        /// 2027er-Zeile), gilt <see cref="EMISSIONSMETHODE_OHNE_GUTSCHRIFT"/>. Das ist
+        /// der EINE Schalter aus L12 — kein zweiter daneben, der auseinanderlaufen
+        /// koennte.</para>
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string EMISSIONSMETHODE_KATALOG = "KATALOG";
+
+        /// <summary>
+        /// Emissionsbilanz mit <b>Stromgutschrift</b>: Der KWK-Strom wird in der
+        /// getrennten Referenz im Kraftwerkspark erzeugt und damit gutgeschrieben —
+        /// der Rechenweg bis 31.12.2026 und zugleich das Verhalten jedes Bestandsstands.
+        ///
+        /// <para>Ausdruecklich gewaehlt gilt er auch nach 2027 weiter. Das ist dann eine
+        /// METHODISCHE WAHL ohne Rechtsgrundlage (Grundlagen 7.4: „Einen amtlichen
+        /// Ersatz speziell fuer KWK gibt es nicht") und wird im Bericht als solche
+        /// ausgewiesen.</para>
+        /// <inheritdoc cref="EMISSIONSMETHODE_KATALOG" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string EMISSIONSMETHODE_STROMGUTSCHRIFT = "STROMGUTSCHRIFT";
+
+        /// <summary>
+        /// Emissionsbilanz <b>ohne Stromgutschrift</b>: Die getrennte Referenz erzeugt
+        /// nur noch die Waerme im Referenzkessel; fuer den KWK-Strom gibt es keine
+        /// Verdraengungsgutschrift mehr. Der Rechenweg ab 01.01.2027.
+        ///
+        /// <para><b>Abgrenzung, die im Bericht steht.</b> Das GModG ersetzt die
+        /// Stromgutschriftmethode durch eine Bewertung nach DIN EN 15316-4-5:2017-09,
+        /// Abschnitt 6.2.2.1.6.3. Der Text dieser Norm gehoert nicht zur Faktenbasis
+        /// des Vorhabens; verdrahtet ist deshalb der WEGFALL DER GUTSCHRIFT, nicht das
+        /// Zuteilungsverfahren der Norm.</para>
+        /// <inheritdoc cref="EMISSIONSMETHODE_KATALOG" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string EMISSIONSMETHODE_OHNE_GUTSCHRIFT = "OHNE_GUTSCHRIFT";
+
+        /// <summary>
+        /// Emissionsbilanz mit <b>Substitutionsfaktor</b>: Wer nach 2027 dennoch eine
+        /// Gutschrift rechnen will, setzt den UBA-Substitutionsfaktor
+        /// (<see cref="GESETZ_EF_BILANZ_SUBSTITUTION_STROM"/>) je kWh KWK-Strom an
+        /// statt den Kraftwerkspark.
+        ///
+        /// <para>Der Faktor ist fuer ERNEUERBAREN Strom hergeleitet (Photovoltaik,
+        /// 685 g CO2-Aeq/kWh fuer 2024) und keine Rechtsvorgabe. Nur CO2 — fuer SO2 und
+        /// NOx gibt es keinen belegten Substitutionswert; diese beiden bleiben deshalb
+        /// ohne Gutschrift, und der Bericht sagt das.</para>
+        /// <inheritdoc cref="EMISSIONSMETHODE_KATALOG" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string EMISSIONSMETHODE_SUBSTITUTION = "SUBSTITUTION";
+
+        /// <summary>
+        /// Bilanzierungskonvention Biomasse: biogenes Verbrennungs-CO2 wird mit
+        /// <b>null</b> angesetzt, gezaehlt wird nur die Vorkette. <b>Vorbelegung</b>
+        /// aller Bestandszeilen (Migrationsschritt 23b).
+        ///
+        /// <para><b>Das ist die Annahme, die der Bestand still trifft.</b> Der
+        /// Brennstoffkatalog fuehrt Holz und Pellets mit 20, Biogas mit 140 und
+        /// Rapsoel/Tierische Fette mit 210 g/kWh — genau die Vorkettenwerte der
+        /// Anlage 9 GEG/GModG. Dieselbe Konvention gilt bei UBA-Emissionsbilanz und
+        /// BAFA EEW. Die Einstellung macht sie sichtbar, ohne sie zu aendern.</para>
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string BIOMASSE_KONVENTION_NULL = "NULLANSATZ";
+
+        /// <summary>
+        /// Bilanzierungskonvention Biomasse: biogenes Verbrennungs-CO2 wird
+        /// <b>angesetzt</b> — der Weg des UBA-CO2-Rechners (Methodikumstellung
+        /// Maerz 2024), der als einziges der fuenf Regelwerke NICHT mit null rechnet,
+        /// sondern mit <see cref="GESETZ_EF_BILANZ_BIOGEN_VERBRENNUNG"/>.
+        ///
+        /// <para>Der Wert kommt ZUSAETZLICH zum Vorkettenwert des Brennstoffkatalogs.
+        /// Ob der UBA-CO2-Rechner seinerseits eine Vorkette aufschlaegt, ist in den
+        /// Grundlagen nicht belegt; der Bericht weist die Zusammensetzung deshalb
+        /// getrennt aus.</para>
+        /// <inheritdoc cref="BIOMASSE_KONVENTION_NULL" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string BIOMASSE_KONVENTION_VERBRENNUNG = "VERBRENNUNG";
+
+        /// <summary>
+        /// Nachhaltigkeitsnachweis nach § 8 EBeV 2030 liegt vor — der Nullansatz fuer
+        /// den Biomasseanteil eines BEHG-Brennstoffs ist damit zulaessig.
+        /// <b>Vorbelegung</b> aller Bestandszeilen (Migrationsschritt 23b) und das
+        /// Verhalten jedes Bestandsstands.
+        ///
+        /// <para><b>Warum TEXT und nicht YESNO.</b> Access belegt eine neue
+        /// YESNO-Spalte in jeder Bestandszeile mit <c>False</c>. Ein Feld
+        /// „Nachweis vorhanden" stuende danach in jedem Altprojekt auf NEIN und haette
+        /// dessen BEHG-Abgabe erhoeht — die Vorbelegung muss aber der Wert sein, der
+        /// die Bestandsrechnung fortfuehrt. Eine TEXT-Spalte mit DML-Vorbelegung und
+        /// toleranter Leseseite (leer/NULL = JA) leistet das.</para>
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string BIOMASSE_NACHWEIS_JA = "NACHWEIS_JA";
+
+        /// <summary>
+        /// Kein Nachhaltigkeitsnachweis: Fuer den Biomasseanteil eines BEHG-Brennstoffs
+        /// gilt der volle fossile Standardwert der EBeV 2030 (Pflanzenoel und Tierfette
+        /// 266,4 g/kWh), und die Menge wird abgabepflichtig.
+        ///
+        /// <para>Betroffen sind ausschliesslich BEHG-Brennstoffe. Feste Biomasse,
+        /// Biogas und Klaergas sind keine BEHG-Brennstoffe (Grundlagen 7.7) — fuer sie
+        /// aendert diese Angabe nichts.</para>
+        /// <inheritdoc cref="BIOMASSE_NACHWEIS_JA" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string BIOMASSE_NACHWEIS_NEIN = "NACHWEIS_NEIN";
+
+        // =====================================================================
         // Die zwoelf Betriebskostenpositionen nach VDI 2067
         //   Tab_Kostenfaktor.Bezeichnung (IsMainComponent = False), verwendet als
         //   Unterposition der Kategorie 2 in Tab_ProjektWerte
@@ -1278,6 +1409,23 @@ namespace WindowsFormsApplication1
         public const string GESETZ_EF_BILANZ_BAFA_KLAERSCHLAMM = "EF_BILANZ_BAFA_KLAERSCHLAMM";
         public const string GESETZ_EF_BILANZ_BAFA_FERNWAERME = "EF_BILANZ_BAFA_FERNWAERME";
         public const string GESETZ_EF_BILANZ_BAFA_STROM = "EF_BILANZ_BAFA_STROM";
+
+        /// <summary>
+        /// LEITENTSCHEIDUNG L12 — Substitutionsfaktor fuer verdraengten Strom
+        /// [g CO2-Aeq/kWh]. <b>Kein Ersatz des Verdraengungsstrommix, sondern eine
+        /// methodische Wahl</b>: Der Wert 685 stammt aus UBA CLIMATE CHANGE 11/2026 und
+        /// ist fuer PHOTOVOLTAIK hergeleitet (2024), nicht fuer KWK. Er gehoert in die
+        /// reale Bilanz, nie in einen Nachweis (L11).
+        /// </summary>
+        public const string GESETZ_EF_BILANZ_SUBSTITUTION_STROM = "EF_BILANZ_SUBSTITUTION_STROM";
+
+        /// <summary>
+        /// LEITENTSCHEIDUNG L13 — biogenes Verbrennungs-CO2 [g/kWh] fuer die Konvention
+        /// <see cref="BIOMASSE_KONVENTION_VERBRENNUNG"/>. Der UBA-CO2-Rechner ist das
+        /// einzige der fuenf Regelwerke aus Grundlagen 7.8, das biogenes
+        /// Verbrennungs-CO2 NICHT mit null ansetzt, sondern mit 365 g/kWh.
+        /// </summary>
+        public const string GESETZ_EF_BILANZ_BIOGEN_VERBRENNUNG = "EF_BILANZ_BIOGEN_VERBRENNUNG";
 
         // ---------------------------- Schluessel Primaerenergiefaktoren NACHWEIS
         //   GEG/GModG Anlage 4, Grundlagen 7.2, nicht erneuerbarer Anteil.

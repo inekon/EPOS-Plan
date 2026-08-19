@@ -360,6 +360,15 @@ namespace WindowsFormsApplication1
                     // Projektwert.
                     foreach (SchemaSpalte s in SchemaKatalog.Schritt22_KwkgJeAnlage)
                         SpalteSicher(conn, s.Tabelle, s.Name, s.TypDefinition);
+
+                    // LEITENTSCHEIDUNGEN L12/L13 — die vier Bilanzierungsangaben. Sie
+                    // entstehen regulär über Migrationsschritt 23; das hier ist die
+                    // tolerante VORSORGE unmittelbar vor dem Zugriff — dasselbe Muster
+                    // wie bei E4, E5 und E6. Die WERTE-Vorbelegung bleibt allein bei
+                    // Schritt 23b; die Leseseite behandelt leer/NULL ohnehin wie den
+                    // Vorgabewert, und ein leeres Bilanzjahr wie 2026.
+                    foreach (SchemaSpalte s in SchemaKatalog.Schritt23_Bilanzkonvention)
+                        SpalteSicher(conn, s.Tabelle, s.Name, s.TypDefinition);
                 }
             }
             catch { /* ohne Tabellen laufen Laden/Speichern in ihre eigenen Fänge */ }
@@ -448,6 +457,22 @@ namespace WindowsFormsApplication1
                     // Bestandszeile auf False, DOUBLE bleibt NULL.
                     p.AufschlaegeAnwenden = B(r, SchemaKatalog.SPALTE_PW_AUFSCHLAEGE);
                     p.EinspeiseverguetungKWK = D(r, SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK);
+
+                    // LEITENTSCHEIDUNGEN L12/L13 — Bilanzierungsangaben. Ein LEERER
+                    // Steuerwert bedeutet genau dasselbe wie der Vorgabewert; ein
+                    // leeres Bilanzjahr heißt „Rechtsstand bis 31.12.2026". Eine nicht
+                    // migrierte Datenbank verhält sich dadurch wie eine migrierte.
+                    p.BilanzJahr = (int)(D(r, SchemaKatalog.SPALTE_PW_BILANZJAHR) ?? 0);
+                    string meth = Text(r, SchemaKatalog.SPALTE_PW_EMISSIONSMETHODE);
+                    if (meth.Length > 0) p.EmissionsMethode = meth;
+                    string bkon = Text(r, SchemaKatalog.SPALTE_PW_BIOMASSE_KONVENTION);
+                    if (bkon.Length > 0) p.BiomasseKonvention = bkon;
+                    string bnw = Text(r, SchemaKatalog.SPALTE_PW_BIOMASSE_NACHWEIS);
+                    // Nur der ausdrückliche Wert NACHWEIS_NEIN entzieht den Nachweis —
+                    // leer, NULL und jeder unbekannte Bestandswert bedeuten JA und damit
+                    // die unveränderte BEHG-Abgabe.
+                    p.NachhaltigkeitsnachweisBiomasse =
+                        !string.Equals(bnw, DbWerte.BIOMASSE_NACHWEIS_NEIN, StringComparison.Ordinal);
 
                     if (r["GeaendertAm"] != DBNull.Value) p.GeaendertAm = Convert.ToDateTime(r["GeaendertAm"]);
                 }
@@ -551,6 +576,10 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_AUFTEILUNG + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_AUFSCHLAEGE + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_BILANZJAHR + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_EMISSIONSMETHODE + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_KONVENTION + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_NACHWEIS + "] = ?, " +
                     "GeaendertAm = ? WHERE ID_Projekt = ?",
                     new OleDbParameter("@z", p.Zinssatz),
                     new OleDbParameter("@t", p.Betrachtungszeitraum),
@@ -582,6 +611,15 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("@vkwk", OleDbType.Double)
                     { Value = p.EinspeiseverguetungKWK.HasValue
                               ? (object)p.EinspeiseverguetungKWK.Value : DBNull.Value },
+                    new OleDbParameter("@bjahr", OleDbType.Integer)
+                    { Value = p.BilanzJahr > 0 ? (object)p.BilanzJahr : DBNull.Value },
+                    new OleDbParameter("@meth", OleDbType.VarWChar, 30)
+                    { Value = Steuerwert(p.EmissionsMethode, DbWerte.EMISSIONSMETHODE_KATALOG) },
+                    new OleDbParameter("@bkon", OleDbType.VarWChar, 30)
+                    { Value = Steuerwert(p.BiomasseKonvention, DbWerte.BIOMASSE_KONVENTION_NULL) },
+                    new OleDbParameter("@bnw", OleDbType.VarWChar, 30)
+                    { Value = p.NachhaltigkeitsnachweisBiomasse
+                              ? DbWerte.BIOMASSE_NACHWEIS_JA : DbWerte.BIOMASSE_NACHWEIS_NEIN },
                     new OleDbParameter("@am", OleDbType.Date) { Value = DateTime.Now },
                     new OleDbParameter("@p", p.IdStamm));
                 if (rows > 0) return true;
@@ -602,8 +640,12 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_AUFTEILUNG + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_AUFSCHLAEGE + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_BILANZJAHR + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_EMISSIONSMETHODE + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_KONVENTION + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_NACHWEIS + "], " +
                     "GeaendertAm) " +
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     new OleDbParameter("@id", id),
                     new OleDbParameter("@p", p.IdStamm),
                     new OleDbParameter("@z", p.Zinssatz),
@@ -636,6 +678,15 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("@vkwk", OleDbType.Double)
                     { Value = p.EinspeiseverguetungKWK.HasValue
                               ? (object)p.EinspeiseverguetungKWK.Value : DBNull.Value },
+                    new OleDbParameter("@bjahr", OleDbType.Integer)
+                    { Value = p.BilanzJahr > 0 ? (object)p.BilanzJahr : DBNull.Value },
+                    new OleDbParameter("@meth", OleDbType.VarWChar, 30)
+                    { Value = Steuerwert(p.EmissionsMethode, DbWerte.EMISSIONSMETHODE_KATALOG) },
+                    new OleDbParameter("@bkon", OleDbType.VarWChar, 30)
+                    { Value = Steuerwert(p.BiomasseKonvention, DbWerte.BIOMASSE_KONVENTION_NULL) },
+                    new OleDbParameter("@bnw", OleDbType.VarWChar, 30)
+                    { Value = p.NachhaltigkeitsnachweisBiomasse
+                              ? DbWerte.BIOMASSE_NACHWEIS_JA : DbWerte.BIOMASSE_NACHWEIS_NEIN },
                     new OleDbParameter("@am", OleDbType.Date) { Value = DateTime.Now });
             }
             catch { return false; }
@@ -1207,7 +1258,25 @@ namespace WindowsFormsApplication1
             // BEHG (W2): nur Brennstoff-CO₂ ist abgabepflichtig; ohne vollständige
             // Faktoren (CO2Brennstoff = null) bleibt die Abgabe 0 und ist im
             // Ergebnis als 0 sichtbar (Faktoren in der Kostenmaske pflegen).
-            e.Behg = p.CO2Preis > 0 ? (v.CO2Brennstoff ?? 0) * p.CO2Preis : 0;
+            //
+            // LEITENTSCHEIDUNG L13: Fehlt der Nachhaltigkeitsnachweis nach § 8 EBeV 2030,
+            // gilt für die FLÜSSIGE Biomasse (Rapsöl, Tierische Fette) der volle fossile
+            // Standardwert der EBeV — sie wird abgabepflichtig, statt mit null anzusetzen.
+            // Feste Biomasse, Biogas und Klärgas sind keine BEHG-Brennstoffe und bleiben
+            // in jedem Fall außen vor (Grundlagen 7.7). Vorgabe ist „Nachweis liegt vor";
+            // dann ist dieser Zweig wirkungslos und die Abgabe bleibt die bisherige.
+            double behgBasisT = v.CO2Brennstoff ?? 0;
+            BilanzKonvention konv = Bilanzregeln(p);
+            double efOhneNachweis = konv.BehgOhneNachweisGJeKWh;
+            if (efOhneNachweis > 0 && v.BiogenBehgMengeMWh > 0)
+            {
+                behgBasisT += v.BiogenBehgMengeMWh * efOhneNachweis / 1000.0;   // MWh × g/kWh → t
+                e.Hinweis = Anhaengen(e.Hinweis,
+                    "Ohne Nachhaltigkeitsnachweis (§ 8 EBeV 2030): " +
+                    v.BiogenBehgMengeMWh.ToString("N0") + " MWh flüssige Biomasse mit " +
+                    efOhneNachweis.ToString("N1") + " g CO₂/kWh abgabepflichtig.");
+            }
+            e.Behg = p.CO2Preis > 0 ? behgBasisT * p.CO2Preis : 0;
 
             // ETAPPE E2 (L6): die erreichten ELEKTRISCHEN Vollbenutzungsstunden — die
             // Bezugsgröße der KWKG-Deckelung. Sie wird UNABHÄNGIG davon geführt, ob ein
@@ -1877,6 +1946,29 @@ namespace WindowsFormsApplication1
         {
             return p.KwkgInbetriebnahme.HasValue ? p.KwkgInbetriebnahme.Value.Year
                                                  : DateTime.Now.Year + 1;
+        }
+
+        /// <summary>
+        /// Die aufgelösten Bilanzierungsregeln dieses Laufs (Leitentscheidungen L12/L13),
+        /// gegen den geladenen Gesetzeskatalog bestimmt.
+        ///
+        /// <para><b>Bewusst NICHT über <see cref="Foerderbeginn"/>.</b> Das Förderjahr
+        /// fällt ohne gepflegte Inbetriebnahme auf „aktuelles Jahr + 1" zurück — heute
+        /// also auf 2027. Daran den Wegfall des Verdrängungsstrommix zu hängen, hätte
+        /// jedes Bestandsprojekt ohne Inbetriebnahmedatum sofort auf den neuen
+        /// Rechtsstand gezogen. Das Bilanzjahr ist deshalb eine eigene Projektangabe
+        /// mit festem Rückfall auf 2026 (<c>BilanzKonvention.BILANZJAHR_RUECKFALL</c>).</para>
+        /// </summary>
+        private BilanzKonvention Bilanzregeln(WirtschaftlichkeitParameter p)
+        {
+            if (_gesetze == null) _gesetze = new GesetzKatalog();
+            return BilanzKonvention.Bestimme(p, _gesetze);
+        }
+
+        /// <summary>Hinweistexte verketten (dieselbe Trennung wie in <c>Berechne</c>).</summary>
+        private static string Anhaengen(string bisher, string neu)
+        {
+            return string.IsNullOrEmpty(bisher) ? neu : bisher + " | " + neu;
         }
 
         // =====================================================================

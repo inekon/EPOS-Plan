@@ -14,6 +14,24 @@ KI-Aufgabensteuerung ist **nicht** Gegenstand dieser Abnahme.
 > einen dauerhaften Test** hat — jede Messung der Ausbaustufe ist ein Einzelnachweis, der beim
 > nächsten Build nicht mitläuft.
 
+> **Berichtigung vom 19.08.2026 (nach der Abnahme): zwei der vier Vorbehalte sind erledigt.**
+> **A3 (L12)** und **A4 (L13)** sind umgesetzt —
+> [`W4_L12_L13_Methodenwechsel_Protokoll.md`](W4_L12_L13_Methodenwechsel_Protokoll.md),
+> Migrationsschritt 23, Katalog-Generation 4. Ergebnisneutral für Bestandsprojekte (216/216
+> byte-gleich gegen B6, 972/972 Wirtschaftlichkeitswerte identisch gegen `3307378`), Wirkung mit
+> Zahlen belegt. Die Befunde A3 und A4 unten bleiben als **Zustandsbeschreibung zum
+> Abnahmezeitpunkt** stehen; ihre Einordnung „eigene Ausbaustufe" beziehungsweise „fachliche
+> Entscheidung" hat sich bestätigt. **Offen bleiben A8** (Zahlenprobe gegen die Altanwendung)
+> **und A1** (keine dauerhaften Tests).
+>
+> Ein Befund der Abnahme hat sich dabei als noch schärfer erwiesen, als er formuliert war: L12 war
+> **kein fehlender Parameter**, sondern die Systemgrenze des `EmissionsBilanzRechner` selbst — die
+> getrennte Referenz erzeugt den KWK-Strom im Kraftwerkspark, und genau das *ist* die abgeschaffte
+> Stromgutschriftmethode. Ebenso stand die Biomasse-Konvention aus A4 nicht im Code, sondern in den
+> Katalogwerten von `Tab_Brennstoff_Stamm` (Holz 20, Biogas 140, Rapsöl 210 g/kWh — reine
+> Vorkettenwerte). Die Suche „0 Codetreffer" war richtig und hat deshalb dennoch nicht alles
+> gezeigt.
+
 ---
 
 ## 1 Was diese Abnahme geprüft hat — und was nicht
@@ -46,8 +64,8 @@ Simulationskern (von W4 nicht angefasst — nachgewiesen, siehe 6).
 | **L9** | Rechenlogik ohne Datenbankzugriff, **Tests im vorhandenen Testprojekt** | **teilweise** | Die reinen Funktionen existieren (`SteuerGutschriftRechner`, `StromTarifRechner`, `KwkgSatzRechner` — DTO-Ein-/Ausgabe, kein DB-Bezug). **Tests gibt es nicht:** Weder `SpeicherEngine.Tests` noch `KiKern.Tests` nennen eine dieser Klassen. Siehe Befund **A1** |
 | **L10** | HT/NT entfällt, Vier-Preis-Struktur mit demselben Durchschnittspreis | **teilweise, begründet** | Erfüllt im **neuen** Rollenmodell (ein Arbeitspreis je Rolle). Im **Vorgabemodell `ZONEN`** bleibt HT/NT vollständig in Kraft — E5 hat es bewusst unangetastet gelassen, weil daran die Ergebnisneutralität hängt (E5-Protokoll 3.x). Das Konzept ist an dieser Stelle überholt, siehe 8 |
 | **L11** | Zwei Faktorensätze strikt getrennt, nie dieselbe Variable | **umgesetzt im Katalog und im Steuerpfad** | Klassen `EF_NACHWEIS` (30 Zeilen) und `EF_BILANZ` (36) getrennt; E4 nimmt für den CO₂-Grenzwert ausdrücklich `EF_BILANZ_EBEV_*` (`SteuerGutschriftRechner.Co2JeEnergieertrag:523-545`). **Einschränkung:** `EmissionsBilanzRechner` liest weiterhin `Tab_Kraftwerkspark` und nicht den Katalog — die Trennung wirkt im Steuerpfad, nicht in der Emissionsbilanz |
-| **L12** | Methodenwechsel 01.01.2027 abbilden, beide Rechenwege parallel, Auswahlparameter mit Ausweis im Bericht | **nicht umgesetzt (nur Datenseite)** | Der Katalog führt `EF_NACHWEIS_VERDRAENGUNGSSTROMMIX` und `PEF_NACHWEIS_VERDRAENGUNGSSTROMMIX` mit einer Jahreszeile 2027 **ohne Wert**. **Keine Codezeile liest einen der beiden Schlüssel** (Suche über alle `.cs` außerhalb von `DbWerte.cs`/`GesetzKatalog.cs`: 0 Treffer). Es gibt keinen zweiten Rechenweg, keinen Auswahlparameter und keinen Berichtsausweis. Als offener Punkt 3 im Umsetzungsstand geführt. Befund **A3** |
-| **L13** | Bilanzierungskonvention Biomasse als Einstellung mit Ausweis im Bericht | **nicht umgesetzt** | Der Seed trägt die Regel (E1), aber es gibt **keine Einstellung** und **keinen Ausweis**. Der Punkt steht auch **nicht** in der Liste offener Punkte des Umsetzungsstands — er ist zwischen E1 und E8 aus dem Blick geraten. Befund **A4** |
+| **L12** | Methodenwechsel 01.01.2027 abbilden, beide Rechenwege parallel, Auswahlparameter mit Ausweis im Bericht | **nicht umgesetzt (nur Datenseite)** | Der Katalog führt `EF_NACHWEIS_VERDRAENGUNGSSTROMMIX` und `PEF_NACHWEIS_VERDRAENGUNGSSTROMMIX` mit einer Jahreszeile 2027 **ohne Wert**. **Keine Codezeile liest einen der beiden Schlüssel** (Suche über alle `.cs` außerhalb von `DbWerte.cs`/`GesetzKatalog.cs`: 0 Treffer). Es gibt keinen zweiten Rechenweg, keinen Auswahlparameter und keinen Berichtsausweis. Als offener Punkt 3 im Umsetzungsstand geführt. Befund **A3** — **am 19.08.2026 umgesetzt**, siehe die Berichtigung im Kopf |
+| **L13** | Bilanzierungskonvention Biomasse als Einstellung mit Ausweis im Bericht | **nicht umgesetzt** | Der Seed trägt die Regel (E1), aber es gibt **keine Einstellung** und **keinen Ausweis**. Der Punkt steht auch **nicht** in der Liste offener Punkte des Umsetzungsstands — er ist zwischen E1 und E8 aus dem Blick geraten. Befund **A4** — **am 19.08.2026 umgesetzt**, siehe die Berichtigung im Kopf |
 
 ### 2.3 Einheitendisziplin (L3) — eigene Prüfung
 
@@ -334,8 +352,8 @@ oder unter 5.2 als Befund ausgewiesen.
 |---|---|---|---|
 | **A1** | **Keine der neuen Rechenklassen hat einen Test.** `SteuerGutschriftRechner`, `StromTarifRechner`, `KwkgSatzRechner` und `KapitalwertRechner` kommen in `SpeicherEngine.Tests` und `KiKern.Tests` nicht vor. L9 verlangt ausdrücklich „Tests im vorhandenen Testprojekt" | keine Rechenwirkung — aber **jede** Messung der Ausbaustufe ist ein Einzelnachweis aus einem Wegwerf-Harnisch. Beim nächsten Build läuft nichts davon mit | ein Testprojekt zu füllen ist Umsetzung, nicht Abnahme; Umfang und Schnitt sind zu entscheiden |
 | **A2** | `Tab_BHKW`/`Tab_BHKW_STAMM.Wartungsbemessung TEXT(20)` aus dem Konzept-Datenmodell ist **nicht angelegt** | keine — die Sache (genau eine Bemessung, L7) ist über `Tab_ProjektWerte.Bemessung` erfüllt | Schemaänderung; und der gewählte Weg ist der bessere (die Bemessung gehört zur Kostenposition, nicht zum Gerätekatalog). Das **Konzept** ist zu berichtigen, nicht der Code — erledigt, siehe 8 |
-| **A3** | **L12 ist nur Datenseite.** Die 2027er-Zeilen des Verdrängungsstrommix stehen im Katalog, **kein Code liest sie**; kein zweiter Rechenweg, kein Auswahlparameter, kein Berichtsausweis | ab 01.01.2027 rechnet die Emissionsbilanz unverändert weiter, ohne dass jemand die Methodenfrage gestellt bekommt. Das Konzept nennt L12 „für BHKW-Projekte die folgenreichste Änderung des gesamten Vorhabens" | eigene Ausbaustufe mit fachlicher Entscheidung (offener Punkt 3) |
-| **A4** | **L13 ist nirgends umgesetzt** — keine Einstellung, kein Ausweis für die Biomasse-Bilanzierungskonvention. Der Punkt stand bis heute **auch nicht** in den offenen Punkten | Projekte mit biogenem Brennstoff bekommen eine Konvention, ohne dass sie benannt wird | fachliche Entscheidung; ab jetzt als offener Punkt geführt (siehe 8) |
+| **A3** | **L12 ist nur Datenseite.** Die 2027er-Zeilen des Verdrängungsstrommix stehen im Katalog, **kein Code liest sie**; kein zweiter Rechenweg, kein Auswahlparameter, kein Berichtsausweis | ab 01.01.2027 rechnet die Emissionsbilanz unverändert weiter, ohne dass jemand die Methodenfrage gestellt bekommt. Das Konzept nennt L12 „für BHKW-Projekte die folgenreichste Änderung des gesamten Vorhabens" | eigene Ausbaustufe mit fachlicher Entscheidung (offener Punkt 3) — **erledigt am 19.08.2026** |
+| **A4** | **L13 ist nirgends umgesetzt** — keine Einstellung, kein Ausweis für die Biomasse-Bilanzierungskonvention. Der Punkt stand bis heute **auch nicht** in den offenen Punkten | Projekte mit biogenem Brennstoff bekommen eine Konvention, ohne dass sie benannt wird | fachliche Entscheidung; ab jetzt als offener Punkt geführt (siehe 8) — **erledigt am 19.08.2026** |
 | **A5** | **`Tab_Kraftwerkspark.Bezugsbasis`** und die vier weiteren Konzeptspalten sind nicht angelegt. Der Definitionsbruch des Altkatalogs (Faktoren je kWh Brennstoff und je kWh Strom in derselben Spalte) besteht fort | die Emissionsbilanz kann Faktoren verwechseln, ohne dass es auffällt | Schemaänderung mit Datenpflege; das Konzept nennt ihn selbst als offen — er war nur nie in der Offene-Punkte-Liste. Ab jetzt geführt |
 | **A6** | **Drei der fünf neuen Masken tragen deutsche Anzeigetexte als Literal** (`Form_WirtschaftlichkeitParameter` 23, `Form_Tarifstruktur` 30, `Form_KwkgModule` 10), obwohl Konzept Abschnitt 5 „ausschließlich über `MyResource`" verlangt. **Kein Protokoll begründet die Abweichung** | die neuen Dialoge erscheinen auf englischer Oberfläche deutsch | 63 Texte in beide `.resx` plus Designer ist eine Umsetzungsetappe. **Kein Verstoß gegen die Drei-Schichten-Regel im engeren Sinn** — es sind Anzeigetexte, die als Anzeige verwendet werden, keine Steuerwerte |
 | **A7** | **Die Stromsteuersätze in `Model/StromAufschlagModel.cs:25-70` sind weiterhin Konstanten**, obwohl Konzept Abschnitt 6 sie ausdrücklich als „pflegbar zu machen" nennt. `STROMSTEUER_REGELFALL = 2.050` ct/kWh steht neben dem Katalogwert `STROMST_REGELSATZ = 20,50 €/MWh` — **derselbe Satz an zwei Orten** | heute wertgleich. Wird im Katalog ein neues Jahr gepflegt, rechnet der Aufschlagsblock still mit dem alten Satz weiter | betrifft das Stromspeicher-Modul und den Aufschlagsblock, nicht die W4-Rechenkette. Neue doppelte Wahrheit, ab jetzt geführt |
@@ -492,9 +510,14 @@ davon liegt im Repo.
 
 1. **Zahlenprobe gegen die Altanwendung** (A8) — der einzige fehlende Nachweis, dass die neue Kette
    das Vorbild trifft.
-2. **L12, Methodenwechsel 2027** (A3) — Katalogdaten vorhanden, Rechenweg und Auswahlparameter
-   fehlen. Ab 01.01.2027 wirksam.
-3. **L13, Biomasse-Konvention** (A4) — nicht umgesetzt.
+2. ~~**L12, Methodenwechsel 2027** (A3)~~ — **am 19.08.2026 umgesetzt**
+   ([`W4_L12_L13_Methodenwechsel_Protokoll.md`](W4_L12_L13_Methodenwechsel_Protokoll.md)). Neu
+   offen daran: Der Wechsel greift über die Projektangabe `Bilanz_Jahr`, **nicht automatisch zum
+   01.01.2027** — begründet mit der Reproduzierbarkeit gespeicherter Rechnungen, und ausdrücklich
+   zur Entscheidung gestellt.
+3. ~~**L13, Biomasse-Konvention** (A4)~~ — **am 19.08.2026 umgesetzt**, mit dem Nachweis, dass die
+   bisherige Konvention in den Katalogwerten des Brennstoffs stand. Bio-Heizöl-Mischungen bleiben
+   ausgenommen (kein Feld für den biogenen Anteil).
 4. **Aufschläge: Vorgabeverhalten** — gemessen (+32 bis 34 % Energiekosten, −30 bis 33 % Kapitalwert),
    Schalter steht auf AUS, **die Entscheidung steht beim Nutzer aus** (unverändert aus E5).
 5. **§ 53 neben § 53a** — rechtlich ungeklärt, als Option modelliert; vor produktivem Einsatz mit dem
@@ -528,6 +551,10 @@ benannt haben, sind mit Zahlen geschlossen; der Rechenkern ist nachweislich unbe
 Umsetzungsetappe zu werden: die fehlende Zahlenprobe gegen die Altanwendung (A8), die nur
 datenseitig vorhandene Umsetzung von L12 (A3), die fehlende L13 (A4) und das vollständige Fehlen
 dauerhafter Tests für die neuen Rechenklassen (A1).
+
+> **Nachtrag 19.08.2026:** A3 und A4 sind mit einer eigenen Umsetzung erledigt
+> ([`W4_L12_L13_Methodenwechsel_Protokoll.md`](W4_L12_L13_Methodenwechsel_Protokoll.md)) — genau
+> auf dem Weg, den dieser Satz vorgezeichnet hat. **Zwei Vorbehalte bleiben: A8 und A1.**
 
 **Wovon ich nicht überzeugt bin und was ich ausdrücklich als Unsicherheit stehen lasse:**
 

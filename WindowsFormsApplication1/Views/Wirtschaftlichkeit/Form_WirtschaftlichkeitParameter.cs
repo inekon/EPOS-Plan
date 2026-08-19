@@ -39,6 +39,10 @@ namespace WindowsFormsApplication1
         private ComboBox cbUnternehmensart, cbEnergiesteuer, cbAufteilung;
         private CheckBox chkRaeumlich, chkHocheffizienz;
         private NumericUpDown numNutzungsgrad;
+        // LEITENTSCHEIDUNGEN L12/L13 — Bilanzierungsregeln (nur bei Brennstoff-Erzeugern).
+        private NumericUpDown numBilanzJahr;
+        private ComboBox cbEmissionsMethode, cbBiomasseKonvention;
+        private CheckBox chkNachhaltigkeit;
         // ETAPPE E6 — Einstieg in die Angaben je BHKW-Modul.
         private Button btnModule;
         private Button btnOk, btnAbbrechen;
@@ -189,6 +193,49 @@ namespace WindowsFormsApplication1
                 };
                 this.Controls.Add(lblRefKessel);
                 y += 42;
+
+                // ---------------- Bilanzierung (L12/L13) ----------------
+                //
+                // Die beiden Leitentscheidungen, die bis zur Abnahme E8 fehlten. L12:
+                // Zum 01.01.2027 entfällt der Verdrängungsstrommix ersatzlos, die
+                // Stromgutschriftmethode ist abgeschafft — beide Rechenwege liegen jetzt
+                // parallel vor, umgeschaltet über das Gültig-ab-Datum des Katalogs.
+                // L13: Die Bilanzierungskonvention für Biomasse widerspricht sich
+                // zwischen den Regelwerken und wird hier zur sichtbaren Einstellung.
+                //
+                // Jede Vorgabe führt das heutige Verhalten fort: Bilanzjahr 0 (⇒ 2026 ⇒
+                // Stromgutschrift), Nullansatz, Nachhaltigkeitsnachweis vorhanden.
+                //
+                // Anzeigetexte über MyResource — anders als die Bestandszeilen dieses
+                // Dialogs, die noch deutsche Literale tragen (offener Punkt 11 des
+                // Umsetzungsstands). Neue Texte gehen den Weg der Drei-Schichten-Regel.
+                Gruppe(MyResource.Resource.BILANZ_DLG_GRUPPE, ref y);
+                numBilanzJahr = Zeile(MyResource.Resource.BILANZ_DLG_JAHR, ref y,
+                                      0m, 2100m, 0, _parameter.BilanzJahr, 1m);
+                cbEmissionsMethode = AuswahlZeile(MyResource.Resource.BILANZ_DLG_METHODE, ref y,
+                    _parameter.EmissionsMethode,
+                    new[]
+                    {
+                        new Steuerwahl(DbWerte.EMISSIONSMETHODE_KATALOG,
+                                       MyResource.Resource.BILANZ_DLG_METHODE_KATALOG),
+                        new Steuerwahl(DbWerte.EMISSIONSMETHODE_STROMGUTSCHRIFT,
+                                       MyResource.Resource.BILANZ_DLG_METHODE_GUTSCHRIFT),
+                        new Steuerwahl(DbWerte.EMISSIONSMETHODE_OHNE_GUTSCHRIFT,
+                                       MyResource.Resource.BILANZ_DLG_METHODE_OHNE),
+                        new Steuerwahl(DbWerte.EMISSIONSMETHODE_SUBSTITUTION,
+                                       MyResource.Resource.BILANZ_DLG_METHODE_SUBSTITUTION)
+                    });
+                cbBiomasseKonvention = AuswahlZeile(MyResource.Resource.BILANZ_DLG_BIOMASSE, ref y,
+                    _parameter.BiomasseKonvention,
+                    new[]
+                    {
+                        new Steuerwahl(DbWerte.BIOMASSE_KONVENTION_NULL,
+                                       MyResource.Resource.BILANZ_DLG_BIOMASSE_NULL),
+                        new Steuerwahl(DbWerte.BIOMASSE_KONVENTION_VERBRENNUNG,
+                                       MyResource.Resource.BILANZ_DLG_BIOMASSE_VERBRENNUNG)
+                    });
+                chkNachhaltigkeit = SchalterZeile(MyResource.Resource.BILANZ_DLG_NACHWEIS,
+                                                  ref y, _parameter.NachhaltigkeitsnachweisBiomasse);
             }
 
             // ---------------- Hinweis + Schaltflächen ----------------
@@ -209,6 +256,8 @@ namespace WindowsFormsApplication1
                            "§ 53 und § 53a schließen einander aus, die Sätze und Grenzwerte " +
                            "kommen aus dem Katalog „Gesetzliche Parameter“. Der Jahresnutzungsgrad " +
                            "wird nur für § 53a gebraucht (Schwelle 70 %).";
+            if (_erzeuger.Brennstoff)
+                hinweis += " " + MyResource.Resource.BILANZ_DLG_HINWEIS;
             var lblHinweis = new Label
             {
                 Location = new Point(15, y + 4),
@@ -431,6 +480,16 @@ namespace WindowsFormsApplication1
                 _parameter.CO2Preis = (double)numCO2.Value;
                 ParkEintrag park = cbPark.SelectedItem as ParkEintrag;
                 _parameter.IdKraftwerkspark = park != null ? park.Id : 0;
+
+                // L12/L13 — Bilanzierungsregeln. Ein Bilanzjahr von 0 heißt „nicht
+                // gepflegt"; dann gilt der Rechtsstand bis 31.12.2026. Das ist die
+                // Vorgabe und zugleich das, was jede Bestandsrechnung fortführt.
+                _parameter.BilanzJahr = (int)numBilanzJahr.Value;
+                _parameter.EmissionsMethode = Gewaehlt(cbEmissionsMethode,
+                                                       DbWerte.EMISSIONSMETHODE_KATALOG);
+                _parameter.BiomasseKonvention = Gewaehlt(cbBiomasseKonvention,
+                                                         DbWerte.BIOMASSE_KONVENTION_NULL);
+                _parameter.NachhaltigkeitsnachweisBiomasse = chkNachhaltigkeit.Checked;
                 // Referenzkessel (η + Brennstoff) wird nicht mehr hier gepflegt —
                 // LadeParameter übernimmt ihn aus Tab_Heizkessel des Stammprojekts
                 // (Phase 11); _parameter enthält bereits die DB-Werte.

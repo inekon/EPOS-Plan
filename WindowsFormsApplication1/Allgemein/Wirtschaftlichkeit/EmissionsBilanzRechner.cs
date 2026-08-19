@@ -22,6 +22,17 @@ namespace WindowsFormsApplication1
     /// Rechnet LIVE aus den persistierten Jahresergebnissen (Tab_Ergebnis*) —
     /// keine eigene Persistenz nötig; Reiter, Word und Excel rufen denselben
     /// Rechner mit denselben Parametern.
+    ///
+    /// <para>
+    /// <b>Leitentscheidungen L12 und L13.</b> Die Systemgrenze oben IST die
+    /// Stromgutschriftmethode: Der KWK-Strom wird in der getrennten Referenz im
+    /// Kraftwerkspark erzeugt und damit gutgeschrieben. Genau diese Methode ist zum
+    /// 01.01.2027 abgeschafft (GModG — Grundlagen, Abschnitt 7.4). Seit L12 liegen
+    /// deshalb beide Rechenwege parallel vor, umgeschaltet über das Gültig-ab-Datum
+    /// des Verdrängungsstrommix im Gesetzeskatalog (<see cref="BilanzKonvention"/>);
+    /// L13 legt daneben offen, mit welcher Konvention biogenes Verbrennungs-CO₂
+    /// bewertet wird. Beides steht im Bericht.
+    /// </para>
     /// </summary>
     public static class EmissionsBilanzRechner
     {
@@ -129,6 +140,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static EmissionsBilanz Berechne(int idProjekt, WirtschaftlichkeitParameter p)
         {
+            return Berechne(idProjekt, p, null);
+        }
+
+        /// <summary>
+        /// Wie <see cref="Berechne(int,WirtschaftlichkeitParameter)"/>, mit bereits
+        /// aufgelösten Bilanzierungsregeln (spart den Katalogzugriff, wenn der Aufrufer
+        /// sie ohnehin hat). <paramref name="konvention"/> <c>null</c> ⇒ sie werden hier
+        /// aus dem Katalog bestimmt.
+        /// </summary>
+        public static EmissionsBilanz Berechne(int idProjekt, WirtschaftlichkeitParameter p,
+                                               BilanzKonvention konvention)
+        {
             if (p == null || p.IdKraftwerkspark <= 0) return null;
             Kraftwerkspark park = LadePark(p.IdKraftwerkspark);
             if (park == null) return null;
@@ -137,16 +160,29 @@ namespace WindowsFormsApplication1
             try { m = new ErgebnisCtrl().Load(idProjekt); } catch { }
             if (m == null) return null;
 
-            var b = new EmissionsBilanz { IdProjekt = idProjekt, ParkName = park.Bezeichner };
+            // LEITENTSCHEIDUNGEN L12/L13 — der Rechenweg dieser Bilanz und die
+            // Bilanzierungskonvention für Biomasse. Beide werden hier EINMAL aufgelöst
+            // und mit dem Ergebnis mitgegeben, damit Reiter und Bericht sie ausweisen
+            // können, statt sie zu erraten.
+            BilanzKonvention k = konvention ?? BilanzKonvention.Bestimme(p, new GesetzKatalog());
+
+            var b = new EmissionsBilanz
+            {
+                IdProjekt = idProjekt,
+                ParkName = park.Bezeichner,
+                Konvention = k
+            };
 
             // ---------------- gekoppelt: Brennstoff-Emissionen BHKW + Kessel ----------------
             double co2 = 0, so2 = 0, nox = 0, brennstoffWaerme = 0, kwkStrom = 0;
+            double biogenMWh = 0;                                 // L13
             bool co2Voll = true, so2Voll = true, noxVoll = true;   // je Schadstoff (Review Phase 8)
 
             Action<int, double> add = (carrierId, verbrauchMWh) =>
             {
                 if (verbrauchMWh <= 0) return;
                 if (carrierId <= 0) { co2Voll = so2Voll = noxVoll = false; return; }
+                if (IstBiogenerTraeger(carrierId)) biogenMWh += verbrauchMWh;   // L13
                 Faktoren f = LadeFaktoren(idProjekt, carrierId);
                 // Einheiten: MWh × 1000 kWh × Faktor ÷ 1e6 →
                 //   CO₂ [g/kWh]  → t/a  = MWh × Faktor / 1000
@@ -176,7 +212,16 @@ namespace WindowsFormsApplication1
                 return b;
             }
 
-            if (co2Voll) b.CO2GekoppeltT = co2;
+            // LEITENTSCHEIDUNG L13 — biogenes Verbrennungs-CO₂. Der Brennstoffkatalog
+            // führt für biogene Träger reine VORKETTENwerte (Holz und Pellets 20,
+            // Biogas 140, Rapsöl und Tierische Fette 210 g/kWh); das Verbrennungs-CO₂
+            // steht dort mit null. Das ist die Konvention von GEG/GModG, UBA-Emissions-
+            // bilanz und BAFA EEW — und die Vorgabe. Wer die Konvention des
+            // UBA-CO₂-Rechners wählt, bekommt den Faktor aus dem Katalog ZUSÄTZLICH auf
+            // die biogene Menge; der Betrag steht getrennt, damit sichtbar bleibt,
+            // welcher Teil aus der Wahl stammt.
+            b.CO2BiogenT = biogenMWh * k.BiogenZuschlagGJeKWh / 1000.0;   // MWh × g/kWh → t
+            if (co2Voll) b.CO2GekoppeltT = co2 + b.CO2BiogenT;
             if (so2Voll) b.SO2GekoppeltKg = so2;
             if (noxVoll) b.NOxGekoppeltKg = nox;
             if (!co2Voll || !so2Voll || !noxVoll)
@@ -192,12 +237,42 @@ namespace WindowsFormsApplication1
             double etaPark = Wirkungsgrad(park.WirkungsgradProzent);
             double verlust = Math.Min(0.99, Math.Max(0, park.NetzverlusteProzent / 100.0));
 
-            // Kraftwerkspark-Anteil (unabhängig vom Referenzkessel bestimmbar):
-            // KWK-Strom frei Verbraucher → Erzeugung inkl. Netzverluste.
-            double brennstoffPark = kwkStrom / (1.0 - verlust) / etaPark;       // MWh
-            double parkCO2 = brennstoffPark * park.CO2 / 1000.0;                // t/a
-            double parkSO2 = brennstoffPark * park.SO2 / 1000.0;                // kg/a
-            double parkNOx = brennstoffPark * park.NOx / 1000.0;
+            // -------- LEITENTSCHEIDUNG L12: die Gutschrift für den KWK-Strom --------
+            //
+            // Bis 31.12.2026 erzeugt die getrennte Referenz denselben KWK-Strom im
+            // Kraftwerkspark; genau das IST die Stromgutschriftmethode. Zum 01.01.2027
+            // entfällt der Verdrängungsstrommix ersatzlos (GModG, BGBl. 2026 I Nr. 226),
+            // die Methode ist abgeschafft und die KWK-Wärme nach DIN EN 15316-4-5 zu
+            // bewerten. Umgeschaltet wird über dasselbe Gültig-ab-Datum aus dem Katalog
+            // (BilanzKonvention) — hier steht KEINE Jahreszahl.
+            //
+            // ABGRENZUNG, die auch im Bericht steht: Verdrahtet ist der WEGFALL der
+            // Gutschrift, nicht das Zuteilungsverfahren der DIN EN 15316-4-5 — deren
+            // Text gehört nicht zur Faktenbasis des Vorhabens. Wer dennoch eine
+            // Gutschrift will, wählt den Substitutionsfaktor; das ist eine methodische
+            // Wahl ohne Rechtsvorgabe und wird als solche ausgewiesen.
+            double parkCO2 = 0, parkSO2 = 0, parkNOx = 0;
+            string nachtrag = null;    // Hinweis, der die Bestandsmeldungen nicht verdrängen darf
+            if (k.Stromgutschrift)
+            {
+                // KWK-Strom frei Verbraucher → Erzeugung inkl. Netzverluste.
+                double brennstoffPark = kwkStrom / (1.0 - verlust) / etaPark;   // MWh
+                parkCO2 = brennstoffPark * park.CO2 / 1000.0;                   // t/a
+                parkSO2 = brennstoffPark * park.SO2 / 1000.0;                   // kg/a
+                parkNOx = brennstoffPark * park.NOx / 1000.0;
+            }
+            else if (k.Substitution && k.SubstitutionsfaktorGJeKWh.HasValue)
+            {
+                // Der Substitutionsfaktor ist eine Größe je kWh STROM, kein
+                // Brennstofffaktor — Wirkungsgrad und Netzverluste des Parks gehen
+                // deshalb NICHT ein. Für SO₂ und NOx gibt es keinen belegten
+                // Substitutionswert; sie bleiben ohne Gutschrift, und der Hinweis sagt es.
+                parkCO2 = kwkStrom * k.SubstitutionsfaktorGJeKWh.Value / 1000.0;   // t/a
+                if (kwkStrom > 0)
+                    nachtrag = "Substitutionsmethode: Gutschrift nur für CO₂ — für SO₂ und NOx " +
+                               "gibt es keinen belegten Substitutionsfaktor.";
+            }
+            b.CO2GutschriftStromT = parkCO2;
 
             // Referenzkessel-Anteil je Schadstoff nur mit vorhandenem Faktor.
             double brennstoffRef = brennstoffWaerme / eta;                      // MWh Brennstoff
@@ -212,7 +287,50 @@ namespace WindowsFormsApplication1
             if (!refNoetig || rk.NOx.HasValue)
                 b.NOxGetrenntKg = (refNoetig ? brennstoffRef * rk.NOx.Value / 1000.0 : 0) + parkNOx;
 
+            // Zuletzt: die Hinweise der Bilanzierungsregeln. Sie stehen HINTER den
+            // Bestandsmeldungen, damit sie keine davon verdrängen (die Zuweisungen oben
+            // prüfen auf b.Hinweis == null).
+            if (nachtrag != null) b.Hinweis = Anhaengen(b.Hinweis, nachtrag);
+            if (k.Hinweis != null) b.Hinweis = Anhaengen(b.Hinweis, k.Hinweis);
+
             return b;
+        }
+
+        /// <summary>Hinweistexte verketten, ohne einen bestehenden zu verdrängen.</summary>
+        private static string Anhaengen(string bisher, string neu)
+        {
+            return string.IsNullOrEmpty(bisher) ? neu : bisher + " | " + neu;
+        }
+
+        /// <summary>
+        /// LEITENTSCHEIDUNG L13 — ist dieser Energieträger biogen? Entschieden über die
+        /// Brennstoffkategorie, mit derselben Regel wie im <c>KostenEmissionRechner</c>
+        /// (<see cref="BilanzKonvention.IstBiogen"/>).
+        ///
+        /// <para>Bewusst OHNE Zwischenspeicher: Je Lauf gibt es eine Handvoll Module,
+        /// und ein prozessweiter Cache über eine im Katalog pflegbare Einstufung wäre
+        /// nach der ersten Katalogänderung falsch. <c>LadeFaktoren</c> fragt aus
+        /// demselben Grund ebenfalls je Träger neu.</para>
+        /// </summary>
+        private static bool IstBiogenerTraeger(int carrierId)
+        {
+            if (carrierId <= 0) return false;
+            bool treffer = false;
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT bs.ID_Kategorie, bs.Bezeichner FROM energy_carrier AS ec " +
+                    "INNER JOIN Tab_Brennstoff_Stamm AS bs ON ec.id_brennstoff = bs.ID " +
+                    "WHERE ec.id = ?",
+                    new OleDbParameter("@c", carrierId));
+                if (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["ID_Kategorie"] != DBNull.Value)
+                    treffer = BilanzKonvention.IstBiogen(
+                        Convert.ToInt32(dt.Rows[0]["ID_Kategorie"]),
+                        dt.Rows[0]["Bezeichner"] != DBNull.Value
+                            ? dt.Rows[0]["Bezeichner"].ToString() : "");
+            }
+            catch { }
+            return treffer;
         }
 
         /// <summary>Toleranter Wirkungsgrad: ≤ 1,5 = Bruch, sonst Prozent; Klemmung [0,10 … 1,10].</summary>

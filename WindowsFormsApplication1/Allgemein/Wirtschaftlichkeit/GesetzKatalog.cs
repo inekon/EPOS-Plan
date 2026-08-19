@@ -79,6 +79,7 @@ namespace WindowsFormsApplication1
         ///   <item><term>1</term><description>Etappe E1, erster Seed (18.08.2026)</description></item>
         ///   <item><term>2</term><description>Nachtrag zu E2 (19.08.2026): <c>KWKG_AUSSCHREIBUNG_GRENZE_KW</c></description></item>
         ///   <item><term>3</term><description>Etappe E6 (19.08.2026): die beiden Anlagengrenzen des § 6 Abs. 3 Nr. 1 und des § 7 Abs. 3a</description></item>
+        ///   <item><term>4</term><description>Leitentscheidungen L12/L13 (19.08.2026): Substitutionsfaktor und biogenes Verbrennungs-CO₂</description></item>
         /// </list>
         /// </summary>
         public int Generation { get; private set; }
@@ -962,6 +963,24 @@ namespace WindowsFormsApplication1
             l.Add(N(DbWerte.GESETZ_EF_BILANZ_BAFA_KLAERSCHLAMM, EFB, 2026, 10.0, G_KWH, G, Q_BAFA));
             l.Add(N(DbWerte.GESETZ_EF_BILANZ_BAFA_FERNWAERME, EFB, 2026, 280.0, G_KWH, G, Q_BAFA));
             l.Add(N(DbWerte.GESETZ_EF_BILANZ_BAFA_STROM, EFB, 2026, 435.0, G_KWH, G, Q_BAFA));
+
+            // GENERATION 4 (Leitentscheidungen L12 und L13) — die beiden Faktoren, die
+            // eine METHODISCHE WAHL bewerten. Beide sind bewusst VORLAEUFIG: Sie stehen
+            // in der realen Bilanz und stuetzen sich auf UBA-Veroeffentlichungen, nicht
+            // auf eine Rechtsvorgabe.
+            //
+            // L12: Der Verdraengungsstrommix entfaellt zum 01.01.2027 ersatzlos; einen
+            // amtlichen Ersatz speziell fuer KWK gibt es nicht (Grundlagen 7.4). Der
+            // UBA-Substitutionsfaktor ist fuer erneuerbaren Strom hergeleitet — wer ihn
+            // auf KWK-Strom anwendet, trifft eine Wahl, und der Bericht sagt das.
+            l.Add(N(DbWerte.GESETZ_EF_BILANZ_SUBSTITUTION_STROM, EFB, 2024, 685.0, G_KWH, V,
+                    "UBA CLIMATE CHANGE 11/2026 — Substitutionsfaktor, fuer Photovoltaik 2024 hergeleitet", 4));
+
+            // L13: Das einzige der fuenf Regelwerke aus Grundlagen 7.8, das biogenes
+            // Verbrennungs-CO2 NICHT mit null ansetzt. JahrVon 2024 = Methodikumstellung
+            // des Rechners im Maerz 2024.
+            l.Add(N(DbWerte.GESETZ_EF_BILANZ_BIOGEN_VERBRENNUNG, EFB, 2024, 365.0, G_KWH, V,
+                    "UBA-CO2-Rechner, Methodikumstellung Maerz 2024 — biogenes Verbrennungs-CO2", 4));
 
             // =================================================================
             // Primärenergiefaktoren NACHWEIS (Anlage 4), nicht erneuerbarer Anteil

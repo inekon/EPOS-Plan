@@ -404,6 +404,276 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bilanzierung: Bilanzjahr {0} · KWK-Strom {1} ({2}) · Biomasse {3} · {4} ähnelt.
+        /// </summary>
+        public static string BILANZ_AUSWEIS {
+            get {
+                return ResourceManager.GetString("BILANZ_AUSWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die biogenes Verbrennungs-CO₂ mit null (GEG/GModG, UBA-Emissionsbilanz, BAFA) ähnelt.
+        /// </summary>
+        public static string BILANZ_BIOMASSE_NULL {
+            get {
+                return ResourceManager.GetString("BILANZ_BIOMASSE_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die biogenes Verbrennungs-CO₂ mit {0} g/kWh (UBA-CO₂-Rechner) ähnelt.
+        /// </summary>
+        public static string BILANZ_BIOMASSE_VERBRENNUNG {
+            get {
+                return ResourceManager.GetString("BILANZ_BIOMASSE_VERBRENNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Biogenes Verbrennungs-CO₂: ähnelt.
+        /// </summary>
+        public static string BILANZ_DLG_BIOMASSE {
+            get {
+                return ResourceManager.GetString("BILANZ_DLG_BIOMASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mit null (GEG/GModG, UBA-Bilanz) ähnelt.
+        /// </summary>
+        public static string BILANZ_DLG_BIOMASSE_NULL {
+            get {
+                return ResourceManager.GetString("BILANZ_DLG_BIOMASSE_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ansetzen (UBA-CO₂-Rechner) ähnelt.
+        /// </summary>
+        public static string BILANZ_DLG_BIOMASSE_VERBRENNUNG {
+            get {
+                return ResourceManager.GetString("BILANZ_DLG_BIOMASSE_VERBRENNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bilanzierung — Emissionsmethode und Biomasse ähnelt.
+        /// </summary>
+        public static string BILANZ_DLG_GRUPPE {
+            get {
+                return ResourceManager.GetString("BILANZ_DLG_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bilanzierung: Das Bilanzjahr entscheidet über den Rechtsstand. Ohne Angabe gilt 2026 — dann rechnet die Emissionsbilanz wie bisher mit Stromgutschrift. Ab Bilanzjahr 2027 entfällt der Verdrängungsstrommix ersatzlos; wer dennoch eine Gutschrift ansetzen will, wählt sie hier ausdrücklich, und der Bericht weist sie als methodische Wahl aus. Der Nachhaltigkeitsnachweis wirkt nur auf flüssige Biomasse (Rapsöl, tierische Fette) — feste Biomasse und Biogas sind keine BEHG-Brennstoffe. ähnelt.
+        /// </summary>
+        public static string BILANZ_DLG_HINWEIS {
+            get {
+                return ResourceManager.GetString("BILANZ_DLG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bilanzjahr (0 = Rechtsstand bis 2026): ähnelt.
+        /// </summary>
+        public static string BILANZ_DLG_JAHR {
+            get {
+                return ResourceManager.GetString("BILANZ_DLG_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bewertung KWK-Strom: ähnelt.
+        /// </summary>
+        public static string BILANZ_DLG_METHODE {
+            get {
+                return ResourceManager.GetString("BILANZ_DLG_METHODE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromgutschrift (Kraftwerkspark) ähnelt.
+        /// </summary>
+        public static string BILANZ_DLG_METHODE_GUTSCHRIFT {
+            get {
+                return ResourceManager.GetString("BILANZ_DLG_METHODE_GUTSCHRIFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nach Katalog (Stichtag) ähnelt.
+        /// </summary>
+        public static string BILANZ_DLG_METHODE_KATALOG {
+            get {
+                return ResourceManager.GetString("BILANZ_DLG_METHODE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Gutschrift (ab 2027) ähnelt.
+        /// </summary>
+        public static string BILANZ_DLG_METHODE_OHNE {
+            get {
+                return ResourceManager.GetString("BILANZ_DLG_METHODE_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Substitutionsfaktor (UBA) ähnelt.
+        /// </summary>
+        public static string BILANZ_DLG_METHODE_SUBSTITUTION {
+            get {
+                return ResourceManager.GetString("BILANZ_DLG_METHODE_SUBSTITUTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachhaltigkeitsnachweis nach § 8 EBeV 2030 liegt vor ähnelt.
+        /// </summary>
+        public static string BILANZ_DLG_NACHWEIS {
+            get {
+                return ResourceManager.GetString("BILANZ_DLG_NACHWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nach Katalog, Verdrängungsstrommix gültig ab {0} ähnelt.
+        /// </summary>
+        public static string BILANZ_HERKUNFT_KATALOG {
+            get {
+                return ResourceManager.GetString("BILANZ_HERKUNFT_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nach Katalog, aber keine Zeile zum Verdrängungsstrommix gefunden ähnelt.
+        /// </summary>
+        public static string BILANZ_HERKUNFT_KATALOG_LEER {
+            get {
+                return ResourceManager.GetString("BILANZ_HERKUNFT_KATALOG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ausdrücklich gewählt ähnelt.
+        /// </summary>
+        public static string BILANZ_HERKUNFT_WAHL {
+            get {
+                return ResourceManager.GetString("BILANZ_HERKUNFT_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bilanzierungskonvention für Biomasse widerspricht sich zwischen den Regelwerken: BEHG, GEG/GModG, UBA-Emissionsbilanz und BAFA setzen biogenes Verbrennungs-CO₂ mit null an, der UBA-CO₂-Rechner mit 365 g/kWh. Die Bio-Heizöl-Mischungen bleiben davon unberührt — ihr biogener Anteil steckt bereits im Katalogfaktor und ist im Datenmodell nicht als eigene Größe geführt. ähnelt.
+        /// </summary>
+        public static string BILANZ_HINWEIS_BIOMASSE {
+            get {
+                return ResourceManager.GetString("BILANZ_HINWEIS_BIOMASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zum 01.01.2027 entfällt der Verdrängungsstrommix ersatzlos; das GModG ersetzt die Stromgutschriftmethode durch eine Bewertung nach DIN EN 15316-4-5. Abgebildet ist der Wegfall der Gutschrift, nicht das Zuteilungsverfahren dieser Norm — deren Text gehört nicht zur Faktenbasis dieses Vorhabens. ähnelt.
+        /// </summary>
+        public static string BILANZ_HINWEIS_DIN {
+            get {
+                return ResourceManager.GetString("BILANZ_HINWEIS_DIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Substitutionsfaktor ist eine methodische Wahl, keine Rechtsvorgabe: Das Umweltbundesamt leitet ihn für erneuerbaren Strom her (Photovoltaik), nicht für KWK. Einen amtlichen Ersatz des Verdrängungsstrommix gibt es nicht. ähnelt.
+        /// </summary>
+        public static string BILANZ_HINWEIS_SUBSTITUTION {
+            get {
+                return ResourceManager.GetString("BILANZ_HINWEIS_SUBSTITUTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (nicht gepflegt) ähnelt.
+        /// </summary>
+        public static string BILANZ_JAHR_RUECKFALL {
+            get {
+                return ResourceManager.GetString("BILANZ_JAHR_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Verdrängungsgutschrift (GModG ab 01.01.2027) ähnelt.
+        /// </summary>
+        public static string BILANZ_METHODE_OHNE_GUTSCHRIFT {
+            get {
+                return ResourceManager.GetString("BILANZ_METHODE_OHNE_GUTSCHRIFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mit Stromgutschrift über den Kraftwerkspark ähnelt.
+        /// </summary>
+        public static string BILANZ_METHODE_STROMGUTSCHRIFT {
+            get {
+                return ResourceManager.GetString("BILANZ_METHODE_STROMGUTSCHRIFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mit Substitutionsfaktor {0} g CO₂-Äq/kWh ähnelt.
+        /// </summary>
+        public static string BILANZ_METHODE_SUBSTITUTION {
+            get {
+                return ResourceManager.GetString("BILANZ_METHODE_SUBSTITUTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachhaltigkeitsnachweis nach § 8 EBeV 2030 liegt vor ähnelt.
+        /// </summary>
+        public static string BILANZ_NACHWEIS_JA {
+            get {
+                return ResourceManager.GetString("BILANZ_NACHWEIS_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Nachhaltigkeitsnachweis — flüssige Biomasse voll BEHG-pflichtig ähnelt.
+        /// </summary>
+        public static string BILANZ_NACHWEIS_NEIN {
+            get {
+                return ResourceManager.GetString("BILANZ_NACHWEIS_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — ähnelt.
+        /// </summary>
+        public static string BILANZ_OHNE_WERT {
+            get {
+                return ResourceManager.GetString("BILANZ_OHNE_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon biogenes Verbrennungs-CO₂ [t/a] ähnelt.
+        /// </summary>
+        public static string BILANZ_ZEILE_BIOGEN {
+            get {
+                return ResourceManager.GetString("BILANZ_ZEILE_BIOGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die darin Gutschrift KWK-Strom [t CO₂/a] ähnelt.
+        /// </summary>
+        public static string BILANZ_ZEILE_GUTSCHRIFT {
+            get {
+                return ResourceManager.GetString("BILANZ_ZEILE_GUTSCHRIFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stamm ähnelt.
         /// </summary>
         public static string BK_ART_STAMM {

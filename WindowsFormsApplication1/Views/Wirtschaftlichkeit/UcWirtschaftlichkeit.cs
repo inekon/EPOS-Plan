@@ -341,9 +341,14 @@ namespace WindowsFormsApplication1
         {
             WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
             TarifParameter t = _ctrl.LadeTarif(_idStamm);
+            // LEITENTSCHEIDUNGEN L12/L13 — der AUSWEIS der Bilanzierungsregeln steht
+            // neben dem Parameternachweis, nicht in ihm: Er hat eine eigene Herkunft
+            // (Gesetzeskatalog statt Projektzeile) und eigene Lokalisierung.
             lblParameter.Text = "Parameter: " + p.Nachweis(BerichtTexte.Kultur) +
                                 " · Referenz: Stammprojekt · Restwert linear · " +
-                                t.Nachweis(BerichtTexte.Kultur);
+                                t.Nachweis(BerichtTexte.Kultur) + " · " +
+                                BilanzKonvention.Bestimme(p, new GesetzKatalog())
+                                                .Ausweis(BerichtTexte.Kultur);
         }
 
         // ------------------------------------------------------------- Ereignisse
