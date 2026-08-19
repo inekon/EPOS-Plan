@@ -4588,7 +4588,6 @@ Mehrere Felder desselben Modultyps sind zulässig — bitte prüfen, ob das so g
   <data name="ANL_SP_NAME_ANGEPASST" xml:space="preserve">
     <value>Der Name „{0}" ist im Projekt bereits vergeben. Die Speichervariante wurde in „{1}" umbenannt.</value>
   </data>
-<<<<<<< HEAD
   <data name="GESETZ_MENUE" xml:space="preserve">
     <value>Gesetzliche Parameter…</value>
   </data>
@@ -4702,7 +4701,7 @@ Danach fehlt der Wert in jeder Rechnung, die dieses Jahr betrifft.</value>
   </data>
   <data name="GESETZ_KLASSE_ANZ_UMSATZSTEUER" xml:space="preserve">
     <value>Umsatzsteuer</value>
-=======
+  </data>
   <data name="BK_KOSTEN_OHNE_POSITION" xml:space="preserve">
     <value>⚠ Ohne Kostenposition: {0} — über „Kostenverwaltung öffnen…" und dort „Planwert übernehmen…" erfassen</value>
   </data>
@@ -4711,7 +4710,6 @@ Danach fehlt der Wert in jeder Rechnung, die dieses Jahr betrifft.</value>
   </data>
   <data name="BK_KOSTEN_ENERGIE_PREIS0" xml:space="preserve">
     <value>⚠ Arbeitspreis 0,00 bei: {0} — ohne Preis können keine Energiekosten entstehen; im Reiter „Energiekosten" der Kostenverwaltung erfassen.</value>
->>>>>>> eafbe15227858938e527b134232853c4ce3d8563
   </data>
   <data name="ADM_BTN_SPEICHERN" xml:space="preserve">
     <value>Speichern</value>
@@ -4746,5 +4744,17 @@ Soll er trotzdem überschrieben werden?</value>
     <value>Der Bezeichner „{0}“ kommt im Katalog {1}-mal vor.
 
 Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird deshalb abgelehnt. Bitte die Dubletten zuerst bereinigen.</value>
+  </data>
+  <data name="KI_VORSCHAU_LINK" xml:space="preserve">
+    <value>Was wird gesendet?</value>
+  </data>
+  <data name="KI_VORSCHAU_TITEL" xml:space="preserve">
+    <value>Was wird gesendet?</value>
+  </data>
+  <data name="KI_VORSCHAU_HINWEIS" xml:space="preserve">
+    <value>Genau dieser Text ginge bei der nächsten Frage an das Modell {0} ({1}). Es werden keine Projekt-, Kunden- oder Simulationsdaten übertragen. Der API-Schlüssel wird in einer HTTP-Kopfzeile mitgegeben und steht nicht in der Adresse.</value>
+  </data>
+  <data name="KI_VORSCHAU_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
   </data>
 </root>

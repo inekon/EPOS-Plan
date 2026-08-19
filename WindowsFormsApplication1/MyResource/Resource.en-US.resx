@@ -4573,7 +4573,6 @@ Several arrays of the same module type are allowed — please check whether this
   <data name="ANL_SP_NAME_ANGEPASST" xml:space="preserve">
     <value>The name “{0}” is already used in this project. The storage variant was renamed to “{1}”.</value>
   </data>
-<<<<<<< HEAD
   <data name="GESETZ_MENUE" xml:space="preserve">
     <value>Statutory parameters…</value>
   </data>
@@ -4687,7 +4686,7 @@ After that the value will be missing from every calculation concerning that year
   </data>
   <data name="GESETZ_KLASSE_ANZ_UMSATZSTEUER" xml:space="preserve">
     <value>VAT</value>
-=======
+  </data>
   <data name="BK_KOSTEN_OHNE_POSITION" xml:space="preserve">
     <value>⚠ No cost item: {0} — record it via “Open cost management…” and then “Adopt engineering value…”</value>
   </data>
@@ -4696,7 +4695,6 @@ After that the value will be missing from every calculation concerning that year
   </data>
   <data name="BK_KOSTEN_ENERGIE_PREIS0" xml:space="preserve">
     <value>⚠ Unit price 0.00 for: {0} — without a price no energy costs can arise; enter it on the “Energy costs” tab of cost management.</value>
->>>>>>> eafbe15227858938e527b134232853c4ce3d8563
   </data>
   <data name="ADM_BTN_SPEICHERN" xml:space="preserve">
     <value>Save</value>
@@ -4731,5 +4729,17 @@ Overwrite it anyway?</value>
     <value>The designation “{0}” occurs {1} times in the catalogue.
 
 Saving would overwrite all of those records at once and is therefore refused. Please remove the duplicates first.</value>
+  </data>
+  <data name="KI_VORSCHAU_LINK" xml:space="preserve">
+    <value>What is transmitted?</value>
+  </data>
+  <data name="KI_VORSCHAU_TITEL" xml:space="preserve">
+    <value>What is transmitted?</value>
+  </data>
+  <data name="KI_VORSCHAU_HINWEIS" xml:space="preserve">
+    <value>This is exactly the text your next question would send to model {0} ({1}). No project, customer or simulation data is transmitted. The API key is passed in an HTTP header and is not part of the address.</value>
+  </data>
+  <data name="KI_VORSCHAU_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
   </data>
 </root>
