@@ -13000,6 +13000,177 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer § 53a EnergieStG: Jahresnutzungsgrad {0} % unter der Schwelle von {1} %; Gutschrift = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_53A_NUTZUNGSGRAD {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_53A_NUTZUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer § 53a EnergieStG: kein Jahresnutzungsgrad erfasst (Schwelle {0} %) — im Parameterdialog pflegen; Gutschrift = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_53A_NUTZUNGSGRAD_FEHLT {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_53A_NUTZUNGSGRAD_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: {0} — die Brennstoffmenge lässt sich nicht in die gesetzliche Einheit {1} umrechnen (Abrechnungseinheit {2}, Heizwert {3} kWh je Einheit; für Kilogramm fehlt die Dichte); Gutschrift = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_EINHEIT_UNKLAR {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_EINHEIT_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: Erdgasmenge brennwertbezogen bemessen — Ho/Hi = {0} aus den gepflegten Werten des Energieträgers. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_HO {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_HO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: {0} — kein Brennwert (Ho) gepflegt, deshalb heizwertbezogen gerechnet; die Entlastung fällt dadurch rund 10 % zu niedrig aus. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_HO_FEHLT {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_HO_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: {0} — der auf die Stromerzeugung entfallende Brennstoff ist 0 (Strom- oder Wärmemenge des Laufs fehlt); Gutschrift = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_MENGE_UNKLAR {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_MENGE_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: keine Entlastung gewählt — § 53 oder § 53a EnergieStG im Parameterdialog festlegen; Gutschrift = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_NICHT_GEWAEHLT {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_NICHT_GEWAEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: {0} — der Katalogsatz {1} ist nicht gepflegt (Administration → Gesetzliche Parameter); Gutschrift = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_SATZ_FEHLT {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_SATZ_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: {0} — dem Energieträger ist kein Steuersatz zugeordnet (Träger der Anlage in der Kostenmaske prüfen); Gutschrift = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_TRAEGER_UNKLAR {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_TRAEGER_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} = {1} {2}, gültig ab {3} ({4}) — {5} ähnelt.
+        /// </summary>
+        public static string STEUER_HERKUNFT_FORMAT {
+            get {
+                return ResourceManager.GetString("STEUER_HERKUNFT_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steuer: der Katalogsatz {0} ist nicht gepflegt (Administration → Gesetzliche Parameter); Gutschrift = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_SATZ_FEHLT {
+            get {
+                return ResourceManager.GetString("STEUER_SATZ_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9b StromStG: {0} € Entlastung erreichen den Sockelbetrag von {1} € je Kalenderjahr nicht; Entlastung = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_9B_SOCKEL {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_9B_SOCKEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9b StromStG: weder produzierendes Gewerbe noch Land- und Forstwirtschaft — Unternehmensart im Parameterdialog erfassen; Entlastung = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_9B_UNTERNEHMENSART {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_9B_UNTERNEHMENSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: über dem CO₂-Grenzwert von {0} g je kWh Energieertrag und deshalb ohne Befreiung: {1}. Die übrigen Anlagen mit zusammen {2} kW rechnen weiter. ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_CO2 {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: die direkten CO₂-Emissionen je kWh Energieertrag sind nicht bestimmbar ({0}) — Emissionsfaktor des Trägers im Katalog prüfen; für diese Anlagen keine Befreiung. ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_CO2_UNKLAR {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_CO2_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: der KWK-Eigenverbrauch ist nicht bestimmbar — im Lauf fehlen die Stundenreihen, und „alles Eigenverbrauch&quot; wäre für eine Steuerbefreiung keine tragfähige Näherung; Befreiung = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_EIGEN_UNKLAR {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_EIGEN_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: Hocheffizienz nicht nachgewiesen — Angabe im Parameterdialog; Befreiung = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_HOCHEFFIZIENZ {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_HOCHEFFIZIENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: über der elektrischen Nennleistung von {0} kW je Anlage und deshalb ohne Befreiung: {1}. Die übrigen Anlagen mit zusammen {2} kW rechnen weiter. ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_LEISTUNG {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: räumlicher Zusammenhang (bis {0} km nach § 12b StromStV) nicht bestätigt; Befreiung = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_RAEUMLICH {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_RAEUMLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
         /// </summary>
         public static string Text_Beschreibung {
@@ -13979,6 +14150,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR {
             get {
                 return ResourceManager.GetString("WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer-Gutschrift ähnelt.
+        /// </summary>
+        public static string WIRT_REIHE_ENERGIESTEUER {
+            get {
+                return ResourceManager.GetString("WIRT_REIHE_ENERGIESTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWK-Zuschlag ähnelt.
+        /// </summary>
+        public static string WIRT_REIHE_KWKG {
+            get {
+                return ResourceManager.GetString("WIRT_REIHE_KWKG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Befreiung ähnelt.
+        /// </summary>
+        public static string WIRT_REIHE_STROMSTEUER_BEFREIUNG {
+            get {
+                return ResourceManager.GetString("WIRT_REIHE_STROMSTEUER_BEFREIUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Entlastung ähnelt.
+        /// </summary>
+        public static string WIRT_REIHE_STROMSTEUER_ENTLASTUNG {
+            get {
+                return ResourceManager.GetString("WIRT_REIHE_STROMSTEUER_ENTLASTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer-Gutschrift Jahr 1 [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_ENERGIESTEUER {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_ENERGIESTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft der Steuersätze ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_STEUER_HERKUNFT {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_STEUER_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Befreiung Jahr 1 [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_STROMST_BEFREIUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_STROMST_BEFREIUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Entlastung Jahr 1 [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_STROMST_ENTLASTUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_STROMST_ENTLASTUNG", resourceCulture);
             }
         }
     }

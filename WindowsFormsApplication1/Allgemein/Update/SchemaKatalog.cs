@@ -737,6 +737,104 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_PROJEKTWERTE, SPALTE_PW_EINHEITPREIS, "DOUBLE"),
         };
 
+        public const string TAB_PROJEKTWIRTSCHAFT = "Tab_ProjektWirtschaftlichkeit";
+
+        /// <summary>
+        /// ETAPPE E4 — Unternehmensart des Betreibers (<c>KEIN_PROD_GEWERBE</c>,
+        /// <c>PROD_GEWERBE</c>, <c>LAND_FORSTWIRTSCHAFT</c>). Werte und Begründung:
+        /// <see cref="DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE"/>.
+        ///
+        /// <b>Voraussetzung der § 9b-Entlastung</b> (StromStG) und des § 54 EnergieStG.
+        /// Ohne produzierendes Gewerbe bzw. Land- und Forstwirtschaft gibt es keine
+        /// Stromsteuer-Entlastung auf den Netzbezug.
+        /// </summary>
+        public const string SPALTE_PW_UNTERNEHMENSART = "Unternehmensart";
+
+        /// <summary>
+        /// ETAPPE E4 — räumlicher Zusammenhang gegeben (4,5-km-Regel des § 12b StromStV).
+        /// Eine der vier Bedingungen der Stromsteuerbefreiung nach § 9 Abs. 1 Nr. 3
+        /// StromStG.
+        ///
+        /// <b>YESNO kennt kein NULL:</b> Access belegt die Spalte bei jeder Bestandszeile
+        /// mit <c>False</c> — „nicht erfasst" und „nicht gegeben" fallen hier zusammen,
+        /// und beide führen zu KEINER Gutschrift. Das ist die gewollte Richtung.
+        /// </summary>
+        public const string SPALTE_PW_RAEUMLICH = "Raeumlicher_Zusammenhang";
+
+        /// <summary>
+        /// ETAPPE E4 — Hocheffizienz nach Anhang III der Richtlinie (EU) 2023/1791
+        /// nachgewiesen (§ 2 StromStG). Zweite Bedingung der Befreiung nach
+        /// § 9 Abs. 1 Nr. 3 StromStG.
+        /// <inheritdoc cref="SPALTE_PW_RAEUMLICH" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string SPALTE_PW_HOCHEFFIZIENZ = "Hocheffizienz_Nachweis";
+
+        /// <summary>
+        /// ETAPPE E4 — Jahresnutzungsgrad der KWK-Anlage [%] im Sinne des § 3 Abs. 3
+        /// EnergieStG (genutzte mechanische und thermische Energie ÷ zugeführte Energie,
+        /// heizwertbezogen). Schwelle 70 % für § 53a EnergieStG.
+        ///
+        /// <b>Bleibt NULL</b> — „nicht gepflegt" ist die richtige Aussage; eine 0
+        /// behauptete „gepflegt und null" und wäre zugleich der Wert, der die
+        /// § 53a-Prüfung scheitern lässt. Beides führt zu keiner Gutschrift, aber die
+        /// BEGRÜNDUNG unterscheidet sich, und die soll stimmen.
+        /// </summary>
+        public const string SPALTE_PW_NUTZUNGSGRAD = "Jahresnutzungsgrad";
+
+        /// <summary>
+        /// ETAPPE E4 — gewählte Energiesteuerentlastung (<c>KEINE</c>,
+        /// <c>PARAGRAF_53</c>, <c>PARAGRAF_53A</c>). Werte und Begründung:
+        /// <see cref="DbWerte.ENERGIESTEUER_WAHL_KEINE"/>.
+        ///
+        /// <b>Die eine Spalte, an der die Ergebnisneutralität hängt.</b> Schritt 20b
+        /// belegt jede Bestandszeile mit <c>KEINE</c>, und die Leseseite behandelt
+        /// leer/NULL genauso — ohne ausdrückliche Wahl gibt es keine Gutschrift.
+        /// </summary>
+        public const string SPALTE_PW_ENERGIESTEUER_WAHL = "Energiesteuer_Wahl";
+
+        /// <summary>
+        /// ETAPPE E4 — Aufteilungsmethode des Brennstoffs auf Strom und Wärme
+        /// (<c>VOLLER_BRENNSTOFF</c>, <c>ENERGETISCH</c>). Werte, Rechtsgrundlage und
+        /// Recherchestand: <see cref="DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF"/>.
+        /// </summary>
+        public const string SPALTE_PW_AUFTEILUNG = "Aufteilung_Methode";
+
+        /// <summary>
+        /// Schritt 20 der Migration (Etappe E4) — die sechs additiven Spalten der
+        /// Steuerprüfung an <c>Tab_ProjektWirtschaftlichkeit</c>.
+        ///
+        /// <b>Warum kein <c>_STAMM</c>-Gegenstück.</b> <c>Tab_ProjektWirtschaftlichkeit</c>
+        /// ist eine reine Projekttabelle (eine Zeile je STAMMprojekt) ohne
+        /// Auslieferungskatalog; die Regel „neue Spalten immer in Projekt- UND
+        /// _STAMM-Tabelle" greift hier nicht.
+        ///
+        /// <b>ACE-Regeln.</b> <c>YESNO</c> belegt Bestandszeilen selbsttätig mit
+        /// <c>False</c>, <c>DOUBLE</c> und <c>TEXT</c> bleiben NULL. Die drei
+        /// TEXT-Spalten bekommen deshalb eine eigene DML-Vorbelegung (Schritt 20b), die
+        /// DOUBLE-Spalte nicht. Kein DDL-DEFAULT auf Fachwerten.
+        ///
+        /// <b>Spaltenbreiten.</b> Längster Steuerwert der Unternehmensart ist
+        /// <c>LAND_FORSTWIRTSCHAFT</c> (20 Zeichen) → TEXT(24); der Entlastungswahl
+        /// <c>PARAGRAF_53A</c> (12) → TEXT(20); der Aufteilung
+        /// <c>VOLLER_BRENNSTOFF</c> (17) → TEXT(30). Wer einen längeren Wert ergänzt,
+        /// muss die Breite mitziehen — sonst scheitert das UPDATE still (der Befund aus
+        /// Schritt 19, Probe C2).
+        ///
+        /// <b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access immer
+        /// hinten an. Folgenlos: <c>Tab_ProjektWirtschaftlichkeit</c> wird ausschließlich
+        /// NAMENSBASIERT gelesen (<c>WirtschaftlichkeitCtrl.LadeParameter</c> über
+        /// <c>D(r, "…")</c>); eine <c>row[0…n]</c>-Kette gibt es hier nicht.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt20_Steuerangaben =
+        {
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_UNTERNEHMENSART,     "TEXT(24)"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_RAEUMLICH,           "YESNO"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_HOCHEFFIZIENZ,       "YESNO"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_NUTZUNGSGRAD,        "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_ENERGIESTEUER_WAHL,  "TEXT(20)"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_AUFTEILUNG,          "TEXT(30)"),
+        };
+
         /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
@@ -819,6 +917,14 @@ namespace WindowsFormsApplication1
         /// Spalten gibt es die eigene, tolerante Vorsorge unmittelbar vor dem Zugriff
         /// (<c>KostenPositionCtrl.StelleSpaltenSicher</c>), aufgerufen aus dem
         /// Betriebskosten-Dialog und aus der lesenden Auswertung.
+        ///
+        /// <see cref="Schritt20_Steuerangaben"/> ist BEWUSST NICHT aufgeführt — dieselbe
+        /// Begründung: <c>Tab_ProjektWirtschaftlichkeit</c> gehört dem
+        /// Wirtschaftlichkeitsmodul, der Rechenkern liest die Tabelle nirgends. Dieses
+        /// Modul führt seine Tabellen seit W1 selbst; die tolerante Vorsorge steht
+        /// unmittelbar vor dem Zugriff in
+        /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> (dieselben sechs Spalten
+        /// über <c>SpalteSicher</c>).
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {
