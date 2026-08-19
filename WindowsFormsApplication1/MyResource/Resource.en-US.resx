@@ -5271,16 +5271,16 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Electricity tax relief</value>
   </data>
   <data name="KI_REG_PROJEKT_ID_NAME" xml:space="preserve">
-    <value>Project (ID)</value>
+    <value>Project</value>
   </data>
   <data name="KI_REG_PROJEKT_ID_ERLAEUTERUNG" xml:space="preserve">
-    <value>Key of the project as returned by projekte_auflisten.</value>
+    <value>Name of the project as shown in the project list.</value>
   </data>
   <data name="KI_REG_VON_PROJEKT_NAME" xml:space="preserve">
-    <value>Source project (ID)</value>
+    <value>Source project</value>
   </data>
   <data name="KI_REG_NACH_PROJEKT_NAME" xml:space="preserve">
-    <value>Target project (ID)</value>
+    <value>Target project</value>
   </data>
   <data name="KI_REG_GEWERK_NAME" xml:space="preserve">
     <value>Trade</value>
@@ -5295,7 +5295,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>File path</value>
   </data>
   <data name="KI_REG_GANGLINIE_NAME" xml:space="preserve">
-    <value>Load curve (ID)</value>
+    <value>Load curve</value>
   </data>
   <data name="KI_REG_ANZAHL_NAME" xml:space="preserve">
     <value>Count</value>
@@ -5358,10 +5358,10 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Names the assistant actions carried out most recently in this session.</value>
   </data>
   <data name="KI_REG_ERL_VON_PROJEKT" xml:space="preserve">
-    <value>Key of the project the data would be taken from.</value>
+    <value>Name of the project the data would be taken from.</value>
   </data>
   <data name="KI_REG_ERL_NACH_PROJEKT" xml:space="preserve">
-    <value>Key of the project the data would be transferred into.</value>
+    <value>Name of the project the data would be transferred into.</value>
   </data>
   <data name="KI_REG_ERL_GEWERK" xml:space="preserve">
     <value>Trade of the component transfer.</value>
@@ -5376,16 +5376,16 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Full path of the file to be checked (CSV or Excel).</value>
   </data>
   <data name="KI_REG_ERL_GANGLINIE_ID" xml:space="preserve">
-    <value>Key of the load curve from ganglinien_auflisten.</value>
+    <value>Identifier of the load curve as shown by ganglinien_auflisten.</value>
   </data>
   <data name="KI_REG_ERL_PROJEKTE_FUER_ERGEBNISSE" xml:space="preserve">
-    <value>Keys of the projects whose results are to be read.</value>
+    <value>Names of the projects whose results are to be read; separate several with a semicolon.</value>
   </data>
   <data name="KI_REG_ERL_PROJEKT_ID_GANGLINIEN" xml:space="preserve">
-    <value>Key of the project; without it only the load curves of the master catalogue appear.</value>
+    <value>Name of the project; without it only the load curves of the master catalogue appear.</value>
   </data>
   <data name="KI_REG_ERL_PROJEKT_ID_GANGLINIE_SUCHE" xml:space="preserve">
-    <value>Key of the project, if the load curve is a project load curve.</value>
+    <value>Name of the project, if the load curve is a project load curve.</value>
   </data>
   <data name="KI_REG_ERL_ANZAHL" xml:space="preserve">
     <value>How many of the most recently executed actions are to be named.</value>
@@ -5904,31 +5904,31 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>The write protection of record {1} in {0} could not be checked ({2}); the action is refused.</value>
   </data>
   <data name="KI_REG_STAMM_ID_NAME" xml:space="preserve">
-    <value>Master project (ID)</value>
+    <value>Master project</value>
   </data>
   <data name="KI_REG_BEZEICHNER_NAME" xml:space="preserve">
     <value>Label</value>
   </data>
   <data name="KI_REG_VARIANTE_ID_NAME" xml:space="preserve">
-    <value>Storage variant (ID)</value>
+    <value>Storage variant</value>
   </data>
   <data name="KI_REG_POSITIONS_ID_NAME" xml:space="preserve">
-    <value>Cost item (ID)</value>
+    <value>Cost item</value>
   </data>
   <data name="KI_REG_BETRAG_NAME" xml:space="preserve">
     <value>Amount</value>
   </data>
   <data name="KI_REG_ERL_STAMM_ID" xml:space="preserve">
-    <value>Key of the master project the variant should belong to; from projekte_auflisten or varianten_auflisten.</value>
+    <value>Name of the master project the variant should belong to.</value>
   </data>
   <data name="KI_REG_ERL_BEZEICHNER" xml:space="preserve">
     <value>Name of the new variant, e.g. “heat pump instead of boiler”. The project name is formed as “master - label”.</value>
   </data>
   <data name="KI_REG_ERL_VARIANTE_ID" xml:space="preserve">
-    <value>Key of the storage variant from speichervarianten_auflisten.</value>
+    <value>Operating mode of the storage variant as shown by speichervarianten_auflisten.</value>
   </data>
   <data name="KI_REG_ERL_POSITIONS_ID" xml:space="preserve">
-    <value>Key of the cost item as returned by kostenlage_pruefen in id_position.</value>
+    <value>Description of the cost item as shown by kostenlage_pruefen.</value>
   </data>
   <data name="KI_REG_ERL_BETRAG" xml:space="preserve">
     <value>New investment amount of the item in euros.</value>
@@ -6025,5 +6025,17 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   </data>
   <data name="KI_AKT_BESTAETIGUNG_VERFALLEN" xml:space="preserve">
     <value>The preview has expired — nothing was changed. Please ask again.</value>
+  </data>
+  <data name="KI_REG_NAME_FEHLT" xml:space="preserve">
+    <value>Please specify {0}.</value>
+  </data>
+  <data name="KI_REG_NAME_UNBEKANNT" xml:space="preserve">
+    <value>{0} "{1}" does not exist. Available: {2}</value>
+  </data>
+  <data name="KI_REG_NAME_MEHRDEUTIG" xml:space="preserve">
+    <value>"{0}" matches several entries: {1}. Please be more specific.</value>
+  </data>
+  <data name="KI_REG_NAME_KEINE" xml:space="preserve">
+    <value>There is currently nothing to choose from for {0}.</value>
   </data>
 </root>

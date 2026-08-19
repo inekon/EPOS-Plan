@@ -64,9 +64,8 @@ namespace WindowsFormsApplication1
                 andockpunkt: "VariantenCtrl.AnlegenAusStamm",
                 parameter: new[]
                 {
-                    new KiParameter("stamm_id", KiParameterTyp.Ganzzahl,
-                                    KiAktionsTexte.ErlStammId,
-                                    anzeigename: KiAktionsTexte.StammIdName, min: 1),
+                    KiHilfe.ProjektParameter(KiAktionsTexte.ErlStammId, name: "stammprojekt",
+                                             anzeigename: KiAktionsTexte.StammIdName),
                     new KiParameter("bezeichner", KiParameterTyp.Text,
                                     KiAktionsTexte.ErlBezeichner,
                                     anzeigename: KiAktionsTexte.BezeichnerName, maxLaenge: 60)
@@ -74,7 +73,7 @@ namespace WindowsFormsApplication1
                 vorbedingung: a => VarianteVorbedingung(a),
                 vorschau: a =>
                 {
-                    int idStamm = a.Id("stamm_id");
+                    int idStamm = KiHilfe.ProjektId(a, "stammprojekt");
                     string stammName = KiHilfe.ProjektName(idStamm);
                     string bezeichner = a.Text("bezeichner").Trim();
                     int anlagen = Skalar("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ?", idStamm);
@@ -87,7 +86,7 @@ namespace WindowsFormsApplication1
                 umkehrbar: false,
                 ausfuehren: a =>
                 {
-                    int idStamm = a.Id("stamm_id");
+                    int idStamm = KiHilfe.ProjektId(a, "stammprojekt");
                     string stammName = KiHilfe.ProjektName(idStamm);
                     string bezeichner = a.Text("bezeichner").Trim();
 
@@ -122,10 +121,10 @@ namespace WindowsFormsApplication1
 
         private static string VarianteVorbedingung(KiAufruf a)
         {
-            int idStamm = a.Id("stamm_id");
-
-            string grund = KiHilfe.ProjektMussExistieren(idStamm);
+            string grund = KiHilfe.ProjektMussAufloesbarSein(a, "stammprojekt");
             if (grund != null) return grund;
+
+            int idStamm = KiHilfe.ProjektId(a, "stammprojekt");
 
             string bezeichner = a.Text("bezeichner").Trim();
             if (bezeichner.Length == 0) return KiAktionsTexte.BezeichnerLeer;
@@ -188,16 +187,16 @@ namespace WindowsFormsApplication1
                 andockpunkt: "StromspeicherVarianteCtrl.SetzeAktiv",
                 parameter: new[]
                 {
-                    KiHilfe.ProjektId(),
-                    new KiParameter("variante_id", KiParameterTyp.Ganzzahl,
+                    KiHilfe.ProjektParameter(),
+                    new KiParameter("speichervariante", KiParameterTyp.Text,
                                     KiAktionsTexte.ErlVarianteId,
-                                    anzeigename: KiAktionsTexte.VarianteIdName, min: 1)
+                                    anzeigename: KiAktionsTexte.VarianteIdName, maxLaenge: 120)
                 },
                 vorbedingung: a => SpeichervarianteVorbedingung(a),
                 vorschau: a =>
                 {
-                    int idProjekt = a.Id("projekt_id");
-                    int idVariante = a.Id("variante_id");
+                    int idProjekt = KiHilfe.ProjektId(a);
+                    int idVariante = SpeichervarianteWaehlen(a).Id;
 
                     StromspeicherVarianteModel aktiv = new StromspeicherVarianteCtrl().ReadAktiveVariante(idProjekt);
                     StromspeicherVarianteModel ziel = Speichervariante(idProjekt, idVariante);
@@ -217,8 +216,8 @@ namespace WindowsFormsApplication1
                 umkehrbar: true,
                 ausfuehren: a =>
                 {
-                    int idProjekt = a.Id("projekt_id");
-                    int idVariante = a.Id("variante_id");
+                    int idProjekt = KiHilfe.ProjektId(a);
+                    int idVariante = SpeichervarianteWaehlen(a).Id;
 
                     var ctrl = new StromspeicherVarianteCtrl();
                     StromspeicherVarianteModel vorher = ctrl.ReadAktiveVariante(idProjekt);
@@ -257,27 +256,79 @@ namespace WindowsFormsApplication1
 
         private static string SpeichervarianteVorbedingung(KiAufruf a)
         {
-            int idProjekt = a.Id("projekt_id");
-            int idVariante = a.Id("variante_id");
-
-            string grund = KiHilfe.ProjektMussExistieren(idProjekt);
+            string grund = KiHilfe.ProjektMussAufloesbarSein(a);
             if (grund != null) return grund;
 
+            KiHilfe.Auswahl wahl;
             try
             {
-                if (Speichervariante(idProjekt, idVariante) == null)
-                    return string.Format(CultureInfo.CurrentCulture,
-                                         KiAktionsTexte.SpeichervarianteUnbekannt, idVariante, idProjekt);
+                wahl = SpeichervarianteWaehlen(a);
             }
             catch (OleDbException ex)
             {
                 return KiAktionsTexte.SpeicherTabelleFehlt + " " + ex.Message;
             }
+            if (!wahl.Ok) return wahl.Fehler;
 
-            return KiSchreibschutz.Gesperrt(StromspeicherVarianteCtrl.TABLE, "ID", idVariante);
+            return KiSchreibschutz.Gesperrt(StromspeicherVarianteCtrl.TABLE, "ID", wahl.Id);
         }
 
         /// <summary>Die Speichervariante, WENN sie zu diesem Projekt gehoert - sonst null.</summary>
+        /// <summary>
+        /// Speichervariante ueber die Betriebsart waehlen - der einzige Klartext,
+        /// den speichervarianten_auflisten zeigt. Die Berechnungsart unterscheidet
+        /// gleichlautende Betriebsarten.
+        /// </summary>
+        private static KiHilfe.Auswahl SpeichervarianteWaehlen(KiAufruf a)
+        {
+            var kandidaten = new List<KiHilfe.Kandidat>();
+            foreach (StromspeicherVarianteModel v in
+                     new StromspeicherVarianteCtrl().ReadAllByProjekt(KiHilfe.ProjektId(a)))
+            {
+                kandidaten.Add(new KiHilfe.Kandidat(v.ID, v.Betriebsart, v.Berechnungsart));
+            }
+
+            return KiHilfe.Waehle(a.Text("speichervariante"), kandidaten, KiAktionsTexte.VarianteIdName);
+        }
+
+        /// <summary>
+        /// Kostenposition ueber ihre Bezeichnung waehlen, begrenzt auf das gewaehlte
+        /// Projekt - eine fremde Position steht damit gar nicht erst zur Auswahl.
+        /// Die Komponente unterscheidet gleichlautende Bezeichnungen.
+        /// </summary>
+        private static KiHilfe.Auswahl KostenpositionWaehlen(KiAufruf a)
+        {
+            var kandidaten = new List<KiHilfe.Kandidat>();
+            int idProjekt = KiHilfe.ProjektId(a);
+
+            if (idProjekt > 0)
+            {
+                DataTable dt = null;
+                try
+                {
+                    dt = DataRepository.GetDataTable(
+                        "SELECT ID, KomponentenID, StammID FROM Tab_ProjektWerte WHERE ProjektID = ?",
+                        new OleDbParameter("@id", (Int32)idProjekt));
+                }
+                catch { }
+
+                if (dt != null)
+                {
+                    foreach (DataRow r in dt.Rows)
+                    {
+                        kandidaten.Add(new KiHilfe.Kandidat(
+                            Ganz(r, "ID"),
+                            Text("SELECT MIN(Bezeichnung) FROM Tab_Kostenfaktor WHERE StammID = ?",
+                                 Ganz(r, "StammID")),
+                            Text("SELECT MIN(Komponente) FROM Tab_KostenKomponente WHERE ID = ?",
+                                 Ganz(r, "KomponentenID"))));
+                    }
+                }
+            }
+
+            return KiHilfe.Waehle(a.Text("kostenposition"), kandidaten, KiAktionsTexte.PositionsIdName);
+        }
+
         private static StromspeicherVarianteModel Speichervariante(int idProjekt, int idVariante)
         {
             foreach (StromspeicherVarianteModel v in new StromspeicherVarianteCtrl().ReadAllByProjekt(idProjekt))
@@ -326,10 +377,10 @@ namespace WindowsFormsApplication1
                 andockpunkt: "KostenPositionCtrl.SetzeBetragNachId / LiesBetrag",
                 parameter: new[]
                 {
-                    KiHilfe.ProjektId(),
-                    new KiParameter("positions_id", KiParameterTyp.Ganzzahl,
+                    KiHilfe.ProjektParameter(),
+                    new KiParameter("kostenposition", KiParameterTyp.Text,
                                     KiAktionsTexte.ErlPositionsId,
-                                    anzeigename: KiAktionsTexte.PositionsIdName, min: 1),
+                                    anzeigename: KiAktionsTexte.PositionsIdName, maxLaenge: 200),
                     new KiParameter("betrag", KiParameterTyp.Zahl,
                                     KiAktionsTexte.ErlBetrag,
                                     anzeigename: KiAktionsTexte.BetragName,
@@ -338,7 +389,7 @@ namespace WindowsFormsApplication1
                 vorbedingung: a => KostenpositionVorbedingung(a),
                 vorschau: a =>
                 {
-                    int idPosition = a.Id("positions_id");
+                    int idPosition = KostenpositionWaehlen(a).Id;
                     double neu = a.Zahl("betrag");
                     Kostenposition k = KostenpositionLesen(idPosition);
                     double alt = k != null ? k.Betrag : 0.0;
@@ -355,8 +406,8 @@ namespace WindowsFormsApplication1
                 umkehrbar: true,
                 ausfuehren: a =>
                 {
-                    int idProjekt = a.Id("projekt_id");
-                    int idPosition = a.Id("positions_id");
+                    int idProjekt = KiHilfe.ProjektId(a);
+                    int idPosition = KostenpositionWaehlen(a).Id;
                     double neu = a.Zahl("betrag");
 
                     double alt = KostenPositionCtrl.LiesBetrag(idPosition);
@@ -387,21 +438,15 @@ namespace WindowsFormsApplication1
 
         private static string KostenpositionVorbedingung(KiAufruf a)
         {
-            int idProjekt = a.Id("projekt_id");
-            int idPosition = a.Id("positions_id");
-
-            string grund = KiHilfe.ProjektMussExistieren(idProjekt);
+            string grund = KiHilfe.ProjektMussAufloesbarSein(a);
             if (grund != null) return grund;
 
-            Kostenposition k = KostenpositionLesen(idPosition);
-            if (k == null)
-                return string.Format(CultureInfo.CurrentCulture, KiAktionsTexte.PositionUnbekannt, idPosition);
+            // Gewaehlt wird innerhalb des Projekts - eine fremde Position kann
+            // damit gar nicht erst zur Auswahl stehen.
+            KiHilfe.Auswahl wahl = KostenpositionWaehlen(a);
+            if (!wahl.Ok) return wahl.Fehler;
 
-            if (k.ProjektId != idProjekt)
-                return string.Format(CultureInfo.CurrentCulture, KiAktionsTexte.PositionFremdesProjekt,
-                                     idPosition, k.ProjektId, idProjekt);
-
-            return KiSchreibschutz.Gesperrt("Tab_ProjektWerte", "ID", idPosition);
+            return KiSchreibschutz.Gesperrt("Tab_ProjektWerte", "ID", wahl.Id);
         }
 
         /// <summary>Die Kenndaten EINER Kostenposition - fuer Vorbedingung und Vorschau.</summary>

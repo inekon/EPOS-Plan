@@ -33,24 +33,24 @@ namespace WindowsFormsApplication1
                 andockpunkt: "KomponentenUebernahmeCtrl.Planen",
                 parameter: new[]
                 {
-                    new KiParameter("von_projekt", KiParameterTyp.Ganzzahl, KiAktionsTexte.ErlVonProjekt,
-                                    anzeigename: KiAktionsTexte.VonProjektName, min: 1),
-                    new KiParameter("nach_projekt", KiParameterTyp.Ganzzahl, KiAktionsTexte.ErlNachProjekt,
-                                    anzeigename: KiAktionsTexte.NachProjektName, min: 1),
+                    KiHilfe.ProjektParameter(KiAktionsTexte.ErlVonProjekt, name: "von_projekt",
+                                             anzeigename: KiAktionsTexte.VonProjektName),
+                    KiHilfe.ProjektParameter(KiAktionsTexte.ErlNachProjekt, name: "nach_projekt",
+                                             anzeigename: KiAktionsTexte.NachProjektName),
                     new KiParameter("gewerk", KiParameterTyp.Aufzaehlung, KiAktionsTexte.ErlGewerk,
                                     anzeigename: KiAktionsTexte.GewerkName, werte: Gewerke())
                 },
                 vorbedingung: a =>
                 {
-                    int von = a.Id("von_projekt");
-                    int nach = a.Id("nach_projekt");
+                    int von = KiHilfe.ProjektId(a, "von_projekt");
+                    int nach = KiHilfe.ProjektId(a, "nach_projekt");
                     string gewerk = a.Text("gewerk");
 
                     if (von == nach) return KiAktionsTexte.GleicheProjekte;
 
-                    string grund = KiHilfe.ProjektMussExistieren(von);
+                    string grund = KiHilfe.ProjektMussAufloesbarSein(a, "von_projekt");
                     if (grund != null) return grund;
-                    grund = KiHilfe.ProjektMussExistieren(nach);
+                    grund = KiHilfe.ProjektMussAufloesbarSein(a, "nach_projekt");
                     if (grund != null) return grund;
 
                     if (!KomponentenUebernahmeCtrl.Unterstuetzt(gewerk))
@@ -61,8 +61,8 @@ namespace WindowsFormsApplication1
                 },
                 ausfuehren: a =>
                 {
-                    int von = a.Id("von_projekt");
-                    int nach = a.Id("nach_projekt");
+                    int von = KiHilfe.ProjektId(a, "von_projekt");
+                    int nach = KiHilfe.ProjektId(a, "nach_projekt");
                     string gewerk = a.Text("gewerk");
 
                     KomponentenUebernahmeCtrl.Vorschau v =
@@ -131,23 +131,23 @@ namespace WindowsFormsApplication1
                 andockpunkt: "MerkmalUebernahmeCtrl.Pruefe",
                 parameter: new[]
                 {
-                    new KiParameter("von_projekt", KiParameterTyp.Ganzzahl, KiAktionsTexte.ErlVonProjekt,
-                                    anzeigename: KiAktionsTexte.VonProjektName, min: 1),
-                    new KiParameter("nach_projekt", KiParameterTyp.Ganzzahl, KiAktionsTexte.ErlNachProjekt,
-                                    anzeigename: KiAktionsTexte.NachProjektName, min: 1),
+                    KiHilfe.ProjektParameter(KiAktionsTexte.ErlVonProjekt, name: "von_projekt",
+                                             anzeigename: KiAktionsTexte.VonProjektName),
+                    KiHilfe.ProjektParameter(KiAktionsTexte.ErlNachProjekt, name: "nach_projekt",
+                                             anzeigename: KiAktionsTexte.NachProjektName),
                     new KiParameter("merkmal", KiParameterTyp.Text, KiAktionsTexte.ErlMerkmal,
                                     anzeigename: KiAktionsTexte.MerkmalName, maxLaenge: 120)
                 },
                 vorbedingung: a =>
                 {
-                    int von = a.Id("von_projekt");
-                    int nach = a.Id("nach_projekt");
+                    int von = KiHilfe.ProjektId(a, "von_projekt");
+                    int nach = KiHilfe.ProjektId(a, "nach_projekt");
 
                     if (von == nach) return KiAktionsTexte.GleicheProjekte;
 
-                    string grund = KiHilfe.ProjektMussExistieren(von);
+                    string grund = KiHilfe.ProjektMussAufloesbarSein(a, "von_projekt");
                     if (grund != null) return grund;
-                    grund = KiHilfe.ProjektMussExistieren(nach);
+                    grund = KiHilfe.ProjektMussAufloesbarSein(a, "nach_projekt");
                     if (grund != null) return grund;
 
                     if (Merkmal(a.Text("merkmal")) == null)
@@ -157,8 +157,8 @@ namespace WindowsFormsApplication1
                 },
                 ausfuehren: a =>
                 {
-                    int von = a.Id("von_projekt");
-                    int nach = a.Id("nach_projekt");
+                    int von = KiHilfe.ProjektId(a, "von_projekt");
+                    int nach = KiHilfe.ProjektId(a, "nach_projekt");
                     AbweichungsErmittler.Merkmal f = Merkmal(a.Text("merkmal"));
 
                     MerkmalUebernahmeCtrl.Befund b = MerkmalUebernahmeCtrl.Pruefe(von, nach, f);

@@ -17335,5 +17335,41 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("WIRT_ZEILE_VERMIEDEN_LEISTUNG", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte {0} angeben. ähnelt.
+        /// </summary>
+        public static string KI_REG_NAME_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_REG_NAME_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} „{1}“ gibt es nicht. Zur Auswahl steht: {2} ähnelt.
+        /// </summary>
+        public static string KI_REG_NAME_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_REG_NAME_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ passt auf mehrere Einträge: {1}. Bitte genauer angeben. ähnelt.
+        /// </summary>
+        public static string KI_REG_NAME_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("KI_REG_NAME_MEHRDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt derzeit nichts zur Auswahl für {0}. ähnelt.
+        /// </summary>
+        public static string KI_REG_NAME_KEINE {
+            get {
+                return ResourceManager.GetString("KI_REG_NAME_KEINE", resourceCulture);
+            }
+        }
     }
 }

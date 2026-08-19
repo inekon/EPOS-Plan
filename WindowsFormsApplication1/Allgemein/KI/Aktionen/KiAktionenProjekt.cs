@@ -59,11 +59,11 @@ namespace WindowsFormsApplication1
                 zweck: KiAktionsTexte.ZweckProjektLesen,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "ProjektCtrl.ReadSingle(int)",
-                parameter: new[] { KiHilfe.ProjektId() },
-                vorbedingung: a => KiHilfe.ProjektMussExistieren(a.Id("projekt_id")),
+                parameter: new[] { KiHilfe.ProjektParameter() },
+                vorbedingung: a => KiHilfe.ProjektMussAufloesbarSein(a),
                 ausfuehren: a =>
                 {
-                    int id = a.Id("projekt_id");
+                    int id = KiHilfe.ProjektId(a);
                     var ctrl = new ProjektCtrl();
                     ctrl.ReadSingle(id);
 
@@ -107,11 +107,11 @@ namespace WindowsFormsApplication1
                 zweck: KiAktionsTexte.ZweckVariantenAuflisten,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "VariantenCtrl.LadeGruppe / StammRefDerVariante",
-                parameter: new[] { KiHilfe.ProjektId() },
-                vorbedingung: a => KiHilfe.ProjektMussExistieren(a.Id("projekt_id")),
+                parameter: new[] { KiHilfe.ProjektParameter() },
+                vorbedingung: a => KiHilfe.ProjektMussAufloesbarSein(a),
                 ausfuehren: a =>
                 {
-                    int id = a.Id("projekt_id");
+                    int id = KiHilfe.ProjektId(a);
                     var ctrl = new VariantenCtrl();
 
                     string hinweis = null;
@@ -173,11 +173,11 @@ namespace WindowsFormsApplication1
                 zweck: KiAktionsTexte.ZweckSpeichervariantenAuflisten,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "StromspeicherVarianteCtrl.ReadAllByProjekt / ReadAktiveVariante",
-                parameter: new[] { KiHilfe.ProjektId() },
-                vorbedingung: a => KiHilfe.ProjektMussExistieren(a.Id("projekt_id")),
+                parameter: new[] { KiHilfe.ProjektParameter() },
+                vorbedingung: a => KiHilfe.ProjektMussAufloesbarSein(a),
                 ausfuehren: a =>
                 {
-                    int id = a.Id("projekt_id");
+                    int id = KiHilfe.ProjektId(a);
                     var ctrl = new StromspeicherVarianteCtrl();
 
                     List<StromspeicherVarianteModel> varianten;
