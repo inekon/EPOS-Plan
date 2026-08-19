@@ -57,7 +57,6 @@ namespace WindowsFormsApplication1
         public const string TAB_SENS = "Tab_ErgebnisWirtSensitivitaet";
         public const string TAB_TARIF = "Tab_ProjektTarif";
         public const string TAB_MATRIX = "Tab_ErgebnisStromMatrix";
-        public const string TAB_KWKG_STAFFEL = "Tab_KWKG_Staffel";
 
         /// <summary>ETAPPE E2 (L6): Spalte der erreichten elektrischen
         /// Vollbenutzungsstunden in <see cref="TAB_ERGEBNIS"/>. EINE Wahrheit für
@@ -220,42 +219,6 @@ namespace WindowsFormsApplication1
                                   "Einsp_W_HT DOUBLE, Einsp_W_NT DOUBLE, Einsp_S_HT DOUBLE, Einsp_S_NT DOUBLE, " +
                                   "Staffel_Grenze DOUBLE, Staffel_Preis1 DOUBLE, Staffel_Preis2 DOUBLE, " +
                                   "GeaendertAm DATETIME)");
-                    }
-                    catch { }
-                    try
-                    {
-                    if (!TabelleVorhanden(conn, TAB_KWKG_STAFFEL))
-                        Ddl(conn, "CREATE TABLE " + TAB_KWKG_STAFFEL + " (" +
-                                  "ID LONG CONSTRAINT PK_KwkgStaffel PRIMARY KEY, " +
-                                  "JahrVon LONG, " +
-                                  "MaxVbh DOUBLE)");
-                    }
-                    catch { }
-                    try
-                    {
-                        // Vorbefüllung § 8 KWKG 2025 (Konzept Kap. 8.3) — entkoppelt von der
-                        // Tabellenanlage: greift auch, wenn ein früherer Seed abbrach oder
-                        // alle Zeilen gelöscht wurden. In den Kenndaten pflegbar; eine
-                        // künftige Novelle ist eine neue Zeile.
-                        object anz;
-                        using (var cmd = new OleDbCommand(
-                            "SELECT COUNT(*) FROM " + TAB_KWKG_STAFFEL, conn))
-                            anz = cmd.ExecuteScalar();
-                        if (anz != null && anz != DBNull.Value && Convert.ToInt32(anz) == 0)
-                        {
-                            int[,] staffel = { { 2020, 5000 }, { 2023, 4000 }, { 2025, 3500 },
-                                               { 2026, 3300 }, { 2027, 3100 }, { 2028, 2900 },
-                                               { 2029, 2700 }, { 2030, 2500 } };
-                            for (int i = 0; i < staffel.GetLength(0); i++)
-                                using (var cmd = new OleDbCommand(
-                                    "INSERT INTO " + TAB_KWKG_STAFFEL + " (ID, JahrVon, MaxVbh) VALUES (?,?,?)", conn))
-                                {
-                                    cmd.Parameters.AddWithValue("@id", i + 1);
-                                    cmd.Parameters.AddWithValue("@j", staffel[i, 0]);
-                                    cmd.Parameters.AddWithValue("@v", (double)staffel[i, 1]);
-                                    cmd.ExecuteNonQuery();
-                                }
-                        }
                     }
                     catch { }
                     try
@@ -1632,10 +1595,10 @@ namespace WindowsFormsApplication1
         /// <para>
         /// <b>Quelle seit Etappe E1: <c>Tab_Gesetzesparameter</c></b>, Schlüssel
         /// <c>KWKG_VBH_JAHRESDECKEL</c>, gelesen über <see cref="GesetzKatalog"/>. Die
-        /// Alttabelle <c>Tab_KWKG_Staffel</c> bleibt unangetastet stehen — sie wird nur
-        /// nicht mehr gelesen (Konzept L2). <see cref="TAB_KWKG_STAFFEL"/> bleibt als
-        /// Konstante erhalten, damit <c>StelleTabellenSicher</c> die Alttabelle
-        /// weiterhin anlegt und pflegt.
+        /// Alttabelle <c>Tab_KWKG_Staffel</c> wird seit Etappe K1 (19.08.2026) auch
+        /// nicht mehr ANGELEGT: Konstante und DDL/Saat sind aus
+        /// <c>StelleTabellenSicher</c> entfernt (Konzept Kosten/Energieträger, HF1).
+        /// Der endgültige <c>DROP TABLE</c> folgt in Migrationsschritt M-E (Etappe K6).
         /// </para>
         ///
         /// <para>
