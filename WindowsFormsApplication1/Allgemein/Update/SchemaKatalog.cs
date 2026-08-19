@@ -643,6 +643,100 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_ERGEBNISBHKWMODUL, SPALTE_MODUL_VBH_ELEKTRISCH,  "DOUBLE"),
         };
 
+        public const string TAB_PROJEKTWERTE = "Tab_ProjektWerte";
+
+        /// <summary>
+        /// ETAPPE E3 — Kostenart nach VDI 2067 (kapital-, bedarfs-, betriebsgebunden,
+        /// sonstige). Werte und Begründung: <see cref="DbWerte.KOSTENART_KAPITALGEBUNDEN"/>.
+        ///
+        /// <b>Keine Rechenwirkung.</b> Die Spalte gliedert die Jahreskosten für Bericht
+        /// und Auswertung; gerechnet wird über <c>KategorieID</c> und
+        /// <see cref="SPALTE_PW_BEMESSUNG"/>.
+        /// </summary>
+        public const string SPALTE_PW_KOSTENART = "Kostenart";
+
+        /// <summary>
+        /// ETAPPE E3 — Bemessungsart einer Kostenposition (<c>BETRAG</c>,
+        /// <c>PROZENT_INVESTITION</c>, <c>EUR_PRO_H</c>, <c>EUR_PRO_KWH</c>,
+        /// <c>PROZENT_BRENNSTOFFKOSTEN</c>). Werte und Begründung:
+        /// <see cref="DbWerte.BEMESSUNG_BETRAG"/>.
+        ///
+        /// <b>Die eine Spalte, an der die Ergebnisneutralität hängt.</b> Schritt 19b
+        /// belegt jede Bestandszeile mit <c>BETRAG</c>, und die Leseseite behandelt
+        /// leer/NULL genauso — eine Bestandszeile rechnet damit exakt wie bisher.
+        /// </summary>
+        public const string SPALTE_PW_BEMESSUNG = "Bemessung";
+
+        /// <summary>
+        /// ETAPPE E3 — Erlöskennzeichen (Leitentscheidung L5). Nur für solche Positionen
+        /// gibt die Eingabe negative Beträge frei; Kostenpositionen bleiben geklemmt.
+        ///
+        /// <b>Vorzeichenkonvention:</b> Der gespeicherte Betrag ist immer die
+        /// Zahlungswirkung in €/a — positiv = Ausgabe, negativ = Einnahme. Bei
+        /// <c>IstErloes = True</c> klemmt die Eingabe auf ≤ 0 statt auf ≥ 0; ein Erlös
+        /// kann deshalb nirgends als Kosten in eine Summe geraten.
+        ///
+        /// <b>YESNO kennt kein NULL.</b> Access belegt die Spalte bei jeder
+        /// Bestandszeile automatisch mit <c>False</c>; ein DML-Schritt dafür ist
+        /// überflüssig (nachgewiesen in der Verifikation zu Schritt 19).
+        /// </summary>
+        public const string SPALTE_PW_IST_ERLOES = "IstErloes";
+
+        /// <summary>
+        /// ETAPPE E3 — Bezugsmenge der Bemessung: Investitionssumme [€],
+        /// Vollbenutzungsstunden [h/a], Jahresarbeit [kWh/a] oder Brennstoffkosten
+        /// [€/a], je nach <see cref="SPALTE_PW_BEMESSUNG"/>. Zusammen mit
+        /// <see cref="SPALTE_PW_EINHEITPREIS"/> ist die Herleitung damit
+        /// <b>persistent</b> und nicht nur ein Anzeigetext (L5).
+        /// </summary>
+        public const string SPALTE_PW_MENGE = "Menge";
+
+        /// <summary>
+        /// ETAPPE E3 — Satz der Bemessung: Prozentsatz [%], €/h oder €/kWh, je nach
+        /// <see cref="SPALTE_PW_BEMESSUNG"/>.
+        /// </summary>
+        public const string SPALTE_PW_EINHEITPREIS = "Einheitpreis";
+
+        /// <summary>
+        /// Schritt 19 der Migration (Etappe E3, Leitentscheidung L5) — die fünf
+        /// additiven Spalten der Kostenposition.
+        ///
+        /// <b>Warum kein <c>_STAMM</c>-Gegenstück.</b> <c>Tab_ProjektWerte</c> ist eine
+        /// reine Projekttabelle ohne Auslieferungskatalog; der Katalog dazu ist
+        /// <c>Tab_Kostenfaktor</c> und führt nur Bezeichnung und Rolle. Die Regel „neue
+        /// Spalten immer in Projekt- UND _STAMM-Tabelle" greift hier also nicht.
+        ///
+        /// <b>ACE-Regeln.</b> <c>YESNO</c> belegt Bestandszeilen selbsttätig mit
+        /// <c>False</c>, <c>DOUBLE</c> und <c>TEXT</c> bleiben NULL. Die beiden
+        /// TEXT-Spalten bekommen deshalb eine eigene DML-Vorbelegung (Schritt 19b), die
+        /// DOUBLE-Spalten nicht: „nicht gepflegt" ist bei Menge und Einheitpreis die
+        /// richtige Aussage, eine 0 behauptete „gepflegt und null". Kein DDL-DEFAULT auf
+        /// Fachwerten.
+        ///
+        /// <b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access immer
+        /// hinten an. Folgenlos: <c>Tab_ProjektWerte</c> wird ausschließlich
+        /// NAMENSBASIERT gelesen (<c>Form_Kosten.LoadKostenFaktoren</c> über
+        /// <c>row["…"]</c>, <c>WirtschaftlichkeitCtrl.LiesInvestitionen</c>/
+        /// <c>LiesBetriebskosten</c> über <c>D(r, "…")</c>); eine
+        /// <c>row[0…n]</c>-Kette gibt es hier nicht. Die gespeicherte Abfrage
+        /// <c>Abfrage_Kostenfaktoren</c> zählt ihre Spalten ebenfalls namentlich auf und
+        /// bleibt von den neuen Feldern unberührt.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt19_Kostenarten =
+        {
+            new SchemaSpalte(TAB_PROJEKTWERTE, SPALTE_PW_KOSTENART,    "TEXT(20)"),
+            // TEXT(30) statt der im Auftrag genannten TEXT(20): Der laengste Steuerwert
+            // ist PROZENT_BRENNSTOFFKOSTEN mit 24 Zeichen. Bei TEXT(20) scheitert das
+            // UPDATE der Hilfsenergie-Position mit einem stillen SQL-Fehler (im
+            // Reflection-Harnisch als haengender Dialog aufgefallen, Probe C2). Die
+            // Kostenart bleibt bei TEXT(20) - dort ist BETRIEBSGEBUNDEN mit 16 Zeichen
+            // der laengste Wert.
+            new SchemaSpalte(TAB_PROJEKTWERTE, SPALTE_PW_BEMESSUNG,    "TEXT(30)"),
+            new SchemaSpalte(TAB_PROJEKTWERTE, SPALTE_PW_IST_ERLOES,   "YESNO"),
+            new SchemaSpalte(TAB_PROJEKTWERTE, SPALTE_PW_MENGE,        "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWERTE, SPALTE_PW_EINHEITPREIS, "DOUBLE"),
+        };
+
         /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
@@ -717,6 +811,14 @@ namespace WindowsFormsApplication1
         /// Vorsorge unmittelbar vor dem Schreiben
         /// (<c>ErgebnisCtrl.StelleBHKWSpaltenSicher</c> und
         /// <c>ErgebnisCtrl.StelleModulSpaltenSicher</c>).
+        ///
+        /// <see cref="Schritt19_Kostenarten"/> ist BEWUSST NICHT aufgeführt — dieselbe
+        /// Begründung wie bei <see cref="Schritt12_Preismodell"/> und
+        /// <see cref="Schritt15_KesselWartungseinheit"/>: <c>Tab_ProjektWerte</c> gehört
+        /// dem Kostenmodul, der Rechenkern liest die Tabelle nirgends. Für die fünf
+        /// Spalten gibt es die eigene, tolerante Vorsorge unmittelbar vor dem Zugriff
+        /// (<c>KostenPositionCtrl.StelleSpaltenSicher</c>), aufgerufen aus dem
+        /// Betriebskosten-Dialog und aus der lesenden Auswertung.
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {

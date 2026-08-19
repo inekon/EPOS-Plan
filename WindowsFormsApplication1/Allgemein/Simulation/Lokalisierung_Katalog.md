@@ -1398,3 +1398,44 @@ betroffen ist. Die drei Schlüssel des Nachtrags 1 (`WIRT_KWKG_*_UEBER_GRENZE`,
 | `"LIQUID_FUEL"`, `"ELECTRICITY"` u. a. (`energy_carrier.pricing_model`) | dito Persistenzwerte, hier sogar sprachneutral-englisch. Bewusst **nicht** als Merkmal des Heizöl-Ausschlusses verwendet — sie fassen Kategorie 2 (Öl) und Kategorie 8 (Rapsöl) zusammen; Begründung im Protokoll, Abschnitt N2-3. |
 | `Bezeichner + " (" + Pel + " kW)"` in `WirtschaftlichkeitCtrl.Anlagenauswahl` | unverändert aus Nachtrag 1: Der Bezeichner ist ein **Datenwert** des Anwenders, die Klammer trägt nur das Einheitenzeichen `kW`. |
 | Die übrigen KWKG-Hinweise derselben Methode (Stichtag, Realisierungsfrist, fehlender KWKG-Satz, Vbh nicht bestimmbar) | deutsche Literale des Bestands. Sie gehören zusammen mit den vierzehn deutschen Zeilentiteln des Wirtschaftlichkeitsreiters in **einem** Vorgang umgestellt (Begründung in Abschnitt 3.5 des E2-Protokolls); die neuen Texte laufen schon jetzt über den Katalog, weil sie neu entstehen. |
+
+## Nachtrag zu Etappe E3 — Kostenarten und Betriebskosten-Dialog (19.08.2026)
+
+Umsetzung der Etappe **E3** aus `Konzept_BHKW_Kosten_Erloese.md`; Begründung, Wirkung und
+Verifikation im
+[`../Reporting/W4_E3_Kostenarten_Betriebskosten_Protokoll.md`](../Reporting/W4_E3_Kostenarten_Betriebskosten_Protokoll.md).
+
+**43 neue Schlüssel** in `MyResource/Resource.resx` (+ `.en-US.resx` + `Resource.Designer.cs`).
+Zwei Präfixe: `KOSTEN_*` für die beiden Ergänzungen in der Kostenverwaltung, `VDI_*` für die
+neue Maske `Form_Betriebskosten`.
+
+| Schlüssel | DE | EN | Fundstellen |
+|---|---|---|---|
+| `KOSTEN_BTN_VDI2067` | ⚙ Betriebskosten VDI 2067… | ⚙ Operating costs VDI 2067… | `Form_Kosten.UpdateDetailPanel` — Knopf in der Hauptgruppe des BHKW auf dem Reiter „Betriebskosten" |
+| `KOSTEN_BEMESSUNG_HERLEITUNG` | Abgeleitet: {0} {1} × {2} {3} | Derived: {0} {1} × {2} {3} | `Form_Kosten.LoadKostenFaktoren` — Hinweis am gesperrten Betragsfeld einer abgeleiteten Position |
+| `VDI_TITEL` | Betriebskosten nach VDI 2067 | Operating costs to VDI 2067 | `Form_Betriebskosten.Aufbauen` |
+| `VDI_HINWEIS` | Kopfzeile: netto verbindlich, Brutto abgeleitet, Satz hat Vorrang | dito englisch | dieselbe |
+| `VDI_SP_POSITION` · `VDI_SP_BEMESSUNG` · `VDI_SP_SATZ` · `VDI_SP_NETTO` · `VDI_SP_BRUTTO` · `VDI_SP_BEZUG` | die sechs Spaltenköpfe | dito | dieselbe |
+| `VDI_POS_ANZ_*` (11 Schlüssel) | Anzeigenamen der elf Positionen | dito | `Form_Betriebskosten.PositionName` |
+| `VDI_BEM_ANZ_*` (5 Schlüssel) | Anzeigenamen der fünf Bemessungsarten | dito | `Form_Betriebskosten.BemessungName` |
+| `VDI_BEZUG_*` (6 Schlüssel) | Anzeigenamen der Bezugsgrößen | dito | `Form_Betriebskosten.BezugName` |
+| `VDI_BEZUG_FEHLT` | nicht ermittelbar (Simulationslauf oder Investitionsposition fehlt) | cannot be determined (…) | `Form_Betriebskosten.Bezugstext` |
+| `VDI_EMPFEHLUNG` | VDI 2067: {0}–{1} % | dito | dieselbe |
+| `VDI_ERSETZT` | Durch die Satzangabe ersetzt — der Betrag wird berechnet … | Replaced by the rate … | `Form_Betriebskosten.ZeileNachziehen` (Hinweis am gesperrten Feld) |
+| `VDI_VBH_NAEHERUNG` | Näherung: „Vollbenutzungsstunden" sind Wärme geteilt durch Leistung … | Approximation: … | `Form_Betriebskosten.Aufbauen`, Fußhinweis |
+| `VDI_HINWEIS_INSTANDHALTUNG` | Wartung und Instandhaltung BHKW sind zwei EIGENE Positionen … | Maintenance and repairs … | dieselbe |
+| `VDI_SUMME_NETTO` · `VDI_SUMME_BRUTTO` | Summenzeilen | dito | `Form_Betriebskosten.SummenNachziehen` |
+| `VDI_UST_FEHLT` | Umsatzsteuersatz nicht im Katalog gepflegt — kein Bruttobetrag | VAT rate not maintained … | dieselbe |
+| `VDI_BTN_OK` · `VDI_BTN_ABBRUCH` | Übernehmen · Abbrechen | Apply · Cancel | `Form_Betriebskosten.Aufbauen` |
+| `VDI_GESPEICHERT` | {0} Betriebskostenpositionen nach VDI 2067 gespeichert. | {0} operating cost items to VDI 2067 saved. | `Form_Kosten.btnBetriebskostenVdi_Click` |
+
+**Nicht lokalisiert — und warum**
+
+| Wert | Grund |
+|---|---|
+| `"KAPITALGEBUNDEN"`, `"BEDARFSGEBUNDEN"`, `"BETRIEBSGEBUNDEN"`, `"SONSTIGE"` (`DbWerte.KOSTENART_*`) | **Persistenzwerte** — Inhalt von `Tab_ProjektWerte.Kostenart`, in SQL verglichen und nach der Auslieferung eingefroren. ASCII und Großbuchstaben wie die 135 Katalogschlüssel aus E1. Die Anzeige läuft nicht über diese Werte: Die Kostenart hat in E3 keine sichtbare Oberfläche, sie gliedert erst den Bericht der Etappe E7. |
+| `"BETRAG"`, `"PROZENT_INVESTITION"`, `"EUR_PRO_H"`, `"EUR_PRO_KWH"`, `"PROZENT_BRENNSTOFFKOSTEN"` (`DbWerte.BEMESSUNG_*`) | dito — Inhalt von `Tab_ProjektWerte.Bemessung`. Der Anzeigename steht getrennt als `VDI_BEM_ANZ_*`; die ComboBox trägt `Form_Betriebskosten.BemessungItem`, das den **Wert** hält und den **Namen** anzeigt (Muster `Form_Gesetzesparameter.KlasseItem`). Kein Anzeigetext ist je Steuerwert. |
+| Die elf Positionsbezeichnungen (`DbWerte.VDI_POS_*`, z. B. `"Wartung BHKW"`) | **Persistenzwerte** — sie stehen als `Tab_Kostenfaktor.Bezeichnung` in der Datenbank, werden in SQL damit verglichen und ordnen der Position im Code ihre Bezugsgröße zu. Deutsch und eingefroren wie die vier Nebenkostenposten aus der Kostenübernahme (`KOSTENPOSTEN_MONTAGE` & Co.). Der Anzeigetext kommt getrennt aus `VDI_POS_ANZ_*`. |
+| `"Betriebskosten VDI 2067"` (`DbWerte.KOSTEN_GRUPPE_BETRIEB_VDI`) | dito — Wert in `Tab_ProjektWerte.Gruppe` und `Tab_KostenGruppenKatalog.GruppenName`, wie `KOSTEN_GRUPPE_ALLGEMEIN`. |
+| `"INVEST_BHKW"`, `"VBH_BHKW"` & Co. (`BetriebskostenCtrl.BEZUG_*`) | **Schlüssel**, nicht Anzeige: sprachneutral und ASCII, stehen nirgends in der Datenbank und nirgends auf dem Bildschirm. Der Anzeigename ist `VDI_BEZUG_*`. |
+| `"%"`, `"€/h"`, `"€/kWh"`, `"€"`, `"h/a"`, `"kWh/a"` (`BetriebskostenCtrl.SatzEinheit` / `MengenEinheit`) | reine **Einheitenzeichen ohne Wortbestand**, in beiden Sprachen gleich — dieselbe Ausnahme wie bei den typografischen Marken. |

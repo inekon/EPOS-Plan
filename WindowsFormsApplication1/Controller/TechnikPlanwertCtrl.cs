@@ -394,9 +394,29 @@ namespace WindowsFormsApplication1
                              Z(preisJeModul, 2), Z(a.Menge, 0)));
         }
 
-        private static void Basis(Anlage a, string schluessel, double betrag, string herleitung)
+        /// <summary>
+        /// Nimmt eine Kostenbasis auf. <b>0 gilt als ungepflegt</b> und erzeugt nie eine
+        /// Scheinauswahl.
+        /// </summary>
+        /// <param name="erloes">
+        /// true = die Basis ist eine ERLÖSposition; dann ist ein negativer Betrag zulässig
+        /// (Etappe E3, Leitentscheidung L5). Für Kostenbasen bleibt die Klemme: Ein
+        /// negativer Wert in einem Gerätekostenfeld ist ein Datenfehler und darf sich
+        /// nicht als negative Investition in die Summe schleichen.
+        /// <para>
+        /// <b>Kein Aufrufer der Etappe E3 setzt den Schalter.</b> Die zwölf
+        /// VDI-2067-Positionen sind sämtlich Kosten, und die Gerätetabellen führen kein
+        /// Erlösfeld. Der Schalter ist die eine Stelle, an der die Vorzeichenregel steht —
+        /// die Erlöszeilen der Etappen E4 (Steuergutschriften) und E5 (vermiedener
+        /// Strombezug, Einspeiseerlös) laufen hier durch, ohne dass die Regel dann an
+        /// einer zweiten Stelle nachgebaut werden muss.
+        /// </para>
+        /// </param>
+        private static void Basis(Anlage a, string schluessel, double betrag, string herleitung,
+                                  bool erloes = false)
         {
-            if (betrag <= 0.0) return;                 // 0/leer = ungepflegt, keine Scheinauswahl
+            if (betrag == 0.0) return;                 // 0/leer = ungepflegt, keine Scheinauswahl
+            if (!erloes && betrag < 0.0) return;       // negative KOSTEN sind ein Datenfehler
             a.Basiswerte.Add(new Basiswert
             { Schluessel = schluessel, Betrag = betrag, Herleitung = herleitung });
         }
