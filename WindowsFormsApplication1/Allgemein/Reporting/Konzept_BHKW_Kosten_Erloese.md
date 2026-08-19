@@ -174,6 +174,8 @@ des gesamten Vorhabens.
 > neuen Rechtsstand gezogen (`Foerderbeginn` fällt ohne Inbetriebnahme auf „aktuelles Jahr + 1",
 > heute 2027), und die Systemuhr bräche die Reproduzierbarkeit über den Jahreswechsel. Der
 > Methodenwechsel greift damit **nicht von selbst** — er greift, wenn das Bilanzjahr gepflegt wird.
+> **Am 19.08.2026 vom Anwender so entschieden**; die automatische Umstellung zum 01.01.2027 ist
+> ausdrücklich verworfen, der Punkt ist geschlossen.
 
 **L13 — Bilanzierungskonvention für Biomasse ausweisen.** Ob biogenes
 Verbrennungs-CO₂ mit null angesetzt wird, hängt vom Regelwerk ab und
