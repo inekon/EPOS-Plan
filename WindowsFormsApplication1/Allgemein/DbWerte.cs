@@ -202,6 +202,547 @@ namespace WindowsFormsApplication1
         public const string TOOL_ALTWERT_TRUE = "true";
 
         // =====================================================================
+        // Kostenart nach VDI 2067 — Tab_ProjektWerte.Kostenart (Migrationsschritt 19)
+        //
+        //   Die vier Kostenarten der VDI 2067. Sie stehen als Zeichenkette IN der
+        //   Datenbank und werden in SQL damit verglichen; sie gehoeren deshalb hierher.
+        //   ASCII und Grossbuchstaben wie die Katalogschluessel aus Etappe E1 — nach der
+        //   Auslieferung EINGEFROREN: Wer einen Wert umbenennt, macht jede gepflegte
+        //   Bestandszeile unauffindbar. Die Anzeigetexte stehen in
+        //   MyResource.Resource.KOSTENART_*.
+        //
+        //   KEINE Rechenwirkung in Etappe E3. Die Kostenart ist die Gliederung, nach der
+        //   der Bericht (Etappe E7) die Jahreskosten aufteilt; gerechnet wird ueber die
+        //   Kategorie (Tab_KostenKategorie) und die Bemessung.
+        // =====================================================================
+
+        /// <summary>
+        /// VDI 2067: Kapitalgebundene Kosten — Investitionen, Ersatzbeschaffungen,
+        /// Restwerte. Vorbelegung der Bestandszeilen der Kategorie 1
+        /// („Investitionskosten") in Migrationsschritt 19b.
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string KOSTENART_KAPITALGEBUNDEN = "KAPITALGEBUNDEN";
+
+        /// <summary>
+        /// VDI 2067: Bedarfsgebundene Kosten — Brennstoff, Strombezug, Hilfsenergie.
+        /// Vorbelegung der Bestandszeilen der Kategorie 3 („Energiekosten") in
+        /// Migrationsschritt 19b.
+        /// <inheritdoc cref="KOSTENART_KAPITALGEBUNDEN" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string KOSTENART_BEDARFSGEBUNDEN = "BEDARFSGEBUNDEN";
+
+        /// <summary>
+        /// VDI 2067: Betriebsgebundene Kosten — Wartung, Instandsetzung, Bedienung,
+        /// Personal. Vorbelegung der Bestandszeilen der Kategorie 2
+        /// („Betriebskosten") in Migrationsschritt 19b.
+        /// <inheritdoc cref="KOSTENART_KAPITALGEBUNDEN" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string KOSTENART_BETRIEBSGEBUNDEN = "BETRIEBSGEBUNDEN";
+
+        /// <summary>
+        /// VDI 2067: Sonstige Kosten — Steuern, Versicherungen, Verwaltung.
+        /// <inheritdoc cref="KOSTENART_KAPITALGEBUNDEN" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string KOSTENART_SONSTIGE = "SONSTIGE";
+
+        // =====================================================================
+        // Bemessungsart einer Kostenposition
+        //   Tab_ProjektWerte.Bemessung (Migrationsschritt 19)
+        //
+        //   Sagt, WIE der Jahresbetrag einer Position entsteht. BETRAG ist das
+        //   Verhalten aller Bestandszeilen und die Vorbelegung von Schritt 19b — damit
+        //   sich an keiner heutigen Rechnung etwas aendert. Die uebrigen vier Arten
+        //   rechnen aus Menge x Einheitpreis; beide Faktoren stehen in eigenen Spalten,
+        //   damit die Herleitung persistent ist und nicht nur als Anzeigetext existiert
+        //   (Leitentscheidung L5).
+        //
+        //   ASCII, eingefroren; Anzeigetexte in MyResource.Resource.VDI_BEM_ANZ_*.
+        //
+        //   LAENGE BEACHTEN: Der laengste Wert ist PROZENT_BRENNSTOFFKOSTEN mit 24
+        //   Zeichen. Die Spalte Tab_ProjektWerte.Bemessung ist deshalb TEXT(30) und
+        //   nicht TEXT(20); wer hier einen laengeren Wert ergaenzt, muss die Spalten-
+        //   breite mitziehen, sonst scheitert das UPDATE still.
+        // =====================================================================
+
+        /// <summary>
+        /// Fester Jahresbetrag [€/a] — <c>EingegebenerWert</c> gilt unveraendert.
+        /// Verhalten aller Bestandszeilen; auch der Rueckfallwert, wenn die Spalte
+        /// leer ist (nicht migrierte Datenbank).
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string BEMESSUNG_BETRAG = "BETRAG";
+
+        /// <summary>
+        /// Anteil einer Investitionssumme [%/a]: <c>Menge</c> = Bezugsinvestition [€],
+        /// <c>Einheitpreis</c> = Satz [%]. Betrag = Menge × Satz / 100.
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string BEMESSUNG_PROZENT_INVESTITION = "PROZENT_INVESTITION";
+
+        /// <summary>
+        /// Betrag je Vollbenutzungsstunde [€/h]: <c>Menge</c> = Vollbenutzungsstunden
+        /// [h/a], <c>Einheitpreis</c> = Satz [€/h]. Betrag = Menge × Satz.
+        /// <para>
+        /// <b>Naeherung.</b> Bezugsgroesse ist <c>Tab_ErgebnisBHKWModul.VbhThermisch</c>
+        /// — <c>Waerme / P_therm</c>. Echte Betriebsstunden bildet der Rechenkern nicht
+        /// ab (Taktung und Teillast fehlen); ein Modul mit halber Modulation hat 8.760
+        /// Betriebsstunden und 4.380 thermische Vbh. Der Dialog kennzeichnet das am Feld.
+        /// </para>
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string BEMESSUNG_EUR_PRO_H = "EUR_PRO_H";
+
+        /// <summary>
+        /// Betrag je Kilowattstunde [€/kWh]: <c>Menge</c> = Jahresmenge [kWh],
+        /// <c>Einheitpreis</c> = Satz [€/kWh]. Betrag = Menge × Satz. Beim BHKW ist die
+        /// Menge die elektrische Jahreserzeugung.
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string BEMESSUNG_EUR_PRO_KWH = "EUR_PRO_KWH";
+
+        /// <summary>
+        /// Anteil der Brennstoffkosten [%/a]: <c>Menge</c> = Summe Brennstoffkosten
+        /// [€/a], <c>Einheitpreis</c> = Satz [%]. Betrag = Menge × Satz / 100.
+        /// Bemessung der Hilfsenergiekosten nach VDI 2067.
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN = "PROZENT_BRENNSTOFFKOSTEN";
+
+        // =====================================================================
+        // ETAPPE E4 — Projektangaben der Steuerpruefung
+        //   Tab_ProjektWirtschaftlichkeit (Migrationsschritt 20)
+        //
+        //   Die gesetzlichen Bedingungen der Energie- und Stromsteuerentlastung werden
+        //   ERFASST statt angenommen. Alle Werte stehen als Zeichenkette IN der
+        //   Datenbank und werden in SQL damit verglichen; ASCII und Grossbuchstaben wie
+        //   die Katalogschluessel aus Etappe E1, nach der Auslieferung EINGEFROREN.
+        //   Anzeigetexte in MyResource.Resource.STEUER_*.
+        //
+        //   ERGEBNISNEUTRAL: Die Vorbelegung von Schritt 20b ist jeweils der Wert, der
+        //   KEINE Gutschrift ausloest (KEIN_PROD_GEWERBE, KEINE). Ohne ausdrueckliche
+        //   Angabe des Anwenders aendert sich an keiner Bestandsrechnung etwas.
+        // =====================================================================
+
+        /// <summary>
+        /// Unternehmensart: kein produzierendes Gewerbe — <b>Vorbelegung</b> aller
+        /// Bestandszeilen (Migrationsschritt 20b). Weder § 9b StromStG noch § 54
+        /// EnergieStG sind damit anwendbar; die Stromsteuer-Entlastung bleibt 0.
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string UNTERNEHMENSART_KEIN_PROD_GEWERBE = "KEIN_PROD_GEWERBE";
+
+        /// <summary>
+        /// Unternehmensart: Unternehmen des produzierenden Gewerbes im Sinne des
+        /// § 2 Nr. 3 StromStG — Voraussetzung der Entlastung nach § 9b StromStG.
+        /// <inheritdoc cref="UNTERNEHMENSART_KEIN_PROD_GEWERBE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string UNTERNEHMENSART_PROD_GEWERBE = "PROD_GEWERBE";
+
+        /// <summary>
+        /// Unternehmensart: Betrieb der Land- und Forstwirtschaft — nach § 9b StromStG
+        /// dem produzierenden Gewerbe gleichgestellt.
+        /// <inheritdoc cref="UNTERNEHMENSART_KEIN_PROD_GEWERBE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string UNTERNEHMENSART_LAND_FORST = "LAND_FORSTWIRTSCHAFT";
+
+        /// <summary>
+        /// Energiesteuerentlastung: keine — <b>Vorbelegung</b> aller Bestandszeilen
+        /// (Migrationsschritt 20b) und damit der Grund, aus dem E4 fuer Bestandsprojekte
+        /// ergebnisneutral ist.
+        ///
+        /// <para><b>Warum Auswahl und nicht Automatik.</b> § 53 und § 53a schliessen
+        /// einander aus (Dienstvorschrift Energieerzeugung, § 53a Abs. 1 „Vorbehaltlich
+        /// des § 53"), und ob sie sich anteilig kombinieren lassen, ist ungeklaert
+        /// (Grundlagen_KWKG_Energiesteuer_Stromsteuer.md, Abschnitt 6 Punkt 1). Der
+        /// Anwender waehlt die Norm, unter der er den Antrag stellt.</para>
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string ENERGIESTEUER_WAHL_KEINE = "KEINE";
+
+        /// <summary>
+        /// Energiesteuerentlastung nach § 53 EnergieStG (Steuerentlastung fuer die
+        /// Stromerzeugung, Formular 1131) — voller Steuersatz nach § 2.
+        /// <inheritdoc cref="ENERGIESTEUER_WAHL_KEINE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string ENERGIESTEUER_WAHL_53 = "PARAGRAF_53";
+
+        /// <summary>
+        /// Energiesteuerentlastung nach § 53a Abs. 5 EnergieStG (teilweise Entlastung
+        /// fuer die gekoppelte Erzeugung, Formular 1135) — Teilsatz auf den
+        /// Gesamteinsatz, Jahresnutzungsgrad mindestens 70 % vorausgesetzt.
+        /// <inheritdoc cref="ENERGIESTEUER_WAHL_KEINE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string ENERGIESTEUER_WAHL_53A = "PARAGRAF_53A";
+
+        /// <summary>
+        /// Aufteilung des Brennstoffs auf Strom und Waerme: <b>keine Aufteilung</b>, der
+        /// gesamte im BHKW eingesetzte Brennstoff ist entlastungsfaehig —
+        /// <b>Vorbelegung</b> aller Bestandszeilen (Migrationsschritt 20b) und das
+        /// rechtlich belegte Verfahren.
+        ///
+        /// <para><b>Rechtsgrundlage.</b> § 53 Abs. 2 Satz 1 EnergieStG: Energieerzeugnisse
+        /// gelten als zur Stromerzeugung verwendet, soweit sie „unmittelbar am
+        /// Energieumwandlungsprozess teilnehmen". Beim Motor-BHKW ist das der gesamte
+        /// zugefuehrte Brennstoff; die Dienstvorschrift Energieerzeugung sagt zum
+        /// Schaubild § 53 Abs. 1 ausdruecklich „Waerme – genutzt oder ungenutzt – wird
+        /// nicht betrachtet". Der „Anteil" des § 53 Abs. 2 Satz 2 betrifft die
+        /// MECHANISCHE Energie an der Welle (Generator neben Verdichter), nicht die
+        /// Waermeauskopplung. Herzurechnen ist ausschliesslich Brennstoff, der in
+        /// Kessel, Spitzenlasterzeuger, Zusatzfeuerung oder Abluftbehandlung geht — und
+        /// genau den fuehrt die Simulation ohnehin getrennt.</para>
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string AUFTEILUNG_VOLLER_BRENNSTOFF = "VOLLER_BRENNSTOFF";
+
+        /// <summary>
+        /// Aufteilung des Brennstoffs auf Strom und Waerme: <b>energetisch</b>,
+        /// Stromanteil = Brennstoff × Strom / (Strom + Waerme).
+        ///
+        /// <para><b>Kein Rechtsverfahren, sondern eine bewusst konservative Variante.</b>
+        /// Das Energiesteuerrecht kennt diese Aufteilung nicht (Recherche vom
+        /// 19.08.2026, Protokoll W4_E4). Sie steht zur Wahl, weil sie die Auslegung
+        /// abbildet, von der die Grundlagen bis dahin ausgingen, und weil sie die
+        /// Untergrenze der Gutschrift zeigt — rund Faktor 2 bis 2,5 unter dem vollen
+        /// Brennstoffeinsatz.</para>
+        /// <inheritdoc cref="AUFTEILUNG_VOLLER_BRENNSTOFF" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string AUFTEILUNG_ENERGETISCH = "ENERGETISCH";
+
+        // =====================================================================
+        // ETAPPE E5 — Tarifmodell Strom
+        //   Tab_ProjektTarif (Migrationsschritt 21)
+        //
+        //   Drei Tarifrollen (Bezug ohne BHKW, Reststrom mit BHKW, Einspeisung) und
+        //   drei Leistungspreismodelle. Alle Werte stehen als Zeichenkette IN der
+        //   Datenbank und werden in SQL damit verglichen; ASCII und Grossbuchstaben,
+        //   nach der Auslieferung EINGEFROREN. Anzeigetexte in MyResource.
+        //
+        //   ERGEBNISNEUTRAL: Vorbelegung ist ZONEN bzw. MONATLICH mit Preisen 0 —
+        //   der Rollenpfad rechnet erst, wenn der Anwender ihn ausdruecklich waehlt.
+        //
+        //   LAENGENPROBE (Lehre aus Etappe E3): Der laengste Steuerwert dieser Gruppe
+        //   ist JAHRESHOECHSTLAST mit 17 Zeichen. Die Spalten sind TEXT(24) bzw.
+        //   TEXT(12) — ein zu kurzes Feld liesse das UPDATE STILL scheitern.
+        // =====================================================================
+
+        /// <summary>
+        /// Tarifmodus: das ZONENmodell der Stufe W3 (Winter/Sommer x HT/NT, vier
+        /// Bezugs- und vier Einspeisepreise, zweistufige Leistungsstaffel) —
+        /// <b>Vorbelegung</b> aller Bestandszeilen (Migrationsschritt 21b) und damit
+        /// der Grund, aus dem E5 fuer Bestandsprojekte ergebnisneutral ist.
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string TARIF_MODUS_ZONEN = "ZONEN";
+
+        /// <summary>
+        /// Tarifmodus: das ROLLENmodell der Etappe E5 — Bezugstarif (ohne BHKW),
+        /// Reststromtarif (mit BHKW) und Einspeisetarif, je mit einem
+        /// Durchschnitts-Arbeitspreis (HT/NT entfaellt, Leitentscheidung L10) und
+        /// einem waehlbaren Leistungspreismodell. Erst dieser Modus schaltet die
+        /// Differenzmethode („vermiedene Kosten") ein.
+        /// <inheritdoc cref="TARIF_MODUS_ZONEN" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string TARIF_MODUS_ROLLEN = "ROLLEN";
+
+        /// <summary>
+        /// Leistungspreismodell: monatlicher Leistungspreis [EUR/kW*Monat] auf das
+        /// Monatsmaximum, ueber zwoelf Monate summiert — <b>Vorbelegung</b> aller
+        /// Bestandszeilen. Ohne gepflegten Preis ist der Leistungsanteil 0.
+        ///
+        /// <para>In der Altanwendung war dieses Modell nicht waehlbar, sondern hatte
+        /// stillen VORRANG vor der Staffel („Neue Eingabe Leistungspreis pro Monat
+        /// (hat Vorrang)"). Hier ist es eine von drei sichtbaren Alternativen.</para>
+        /// <inheritdoc cref="TARIF_MODUS_ZONEN" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string LEISTUNGSMODELL_MONATLICH = "MONATLICH";
+
+        /// <summary>
+        /// Leistungspreismodell: vierstufige kW-Staffel mit getrenntem Sommer- und
+        /// Wintermaximum. Die Stufengrenzen sind <b>kumulierte Obergrenzen</b> —
+        /// „500 / 2.000 / 8.000 kW" heisst: bis 500 kW Stufe 1, von 500 bis 2.000 kW
+        /// Stufe 2, von 2.000 bis 8.000 kW Stufe 3, darueber Stufe 4.
+        ///
+        /// <para><b>Abweichung vom Altkatalog, bewusst.</b> `DB-TARIF.XLS` speichert
+        /// Stufen<i>breiten</i> („500/1500/6000"), die die Staffelroutine kumulativ
+        /// aufsummiert — dieselbe Zahlenreihe bedeutet dort etwas anderes. Beim
+        /// Uebernehmen alter Tarifsaetze sind die Werte umzurechnen.</para>
+        /// <inheritdoc cref="TARIF_MODUS_ZONEN" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string LEISTUNGSMODELL_STAFFEL = "STAFFEL";
+
+        /// <summary>
+        /// Leistungspreismodell: <b>Jahres</b>hoechstlast, mit derselben vierstufigen
+        /// Staffel bewertet, aber nur EINEM Maximum — Sommer und Winter werden nicht
+        /// getrennt.
+        ///
+        /// <para><b>Abweichung vom Altkatalog, bewusst.</b> Dort war dieses Modell
+        /// keine Auswahl, sondern die versteckte Folge eines Sommerpreises von 0 (bei
+        /// 22 von 28 Tarifsaetzen der Fall). Ein Preis von 0 ist hier ein Preis von 0
+        /// und kein Modellschalter.</para>
+        /// <inheritdoc cref="TARIF_MODUS_ZONEN" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string LEISTUNGSMODELL_JAHRESHOECHSTLAST = "JAHRESHOECHSTLAST";
+
+        // =====================================================================
+        // ETAPPE E6 — Angaben JE BHKW-ANLAGE (Tab_Energieanlagen, Schritt 22)
+        //   Steuerwerte, sprachneutral und ASCII, in SQL verglichen, eingefroren.
+        //
+        //   BEIDE Spalten steuern AUSSCHLIESSLICH den KATALOGVORSCHLAG und die
+        //   angezeigte Herleitung — nie unmittelbar den Rechenweg. Gerechnet wird
+        //   mit dem Ueberschreibwert der Anlage bzw. mit dem Projektsatz. Deshalb
+        //   bleiben sie in Schritt 22 auch ohne Vorbelegung: Eine leere Angabe ist
+        //   „nicht erfasst" und aendert an keiner Bestandsrechnung etwas.
+        // =====================================================================
+
+        /// <summary>
+        /// Anlagenart nach KWKG: NEUE Anlage (§ 8 Abs. 1, 30.000 Vbh). Zugleich die
+        /// Voraussetzung der Sonderregel des § 7 Abs. 3a fuer Anlagen bis 50 kW.
+        /// Steuerwert, sprachneutral, in SQL verglichen, eingefroren.
+        /// </summary>
+        public const string KWKG_ANLAGENART_NEU = "NEUANLAGE";
+
+        /// <summary>Anlagenart: MODERNISIERT (§ 8 Abs. 2 — 6.000 / 15.000 / 30.000 Vbh
+        /// je nach Anteil an den Neuherstellungskosten).
+        /// <inheritdoc cref="KWKG_ANLAGENART_NEU" path="/summary/text()[last()]"/></summary>
+        public const string KWKG_ANLAGENART_MODERNISIERT = "MODERNISIERT";
+
+        /// <summary>Anlagenart: NACHGERUESTET (§ 8 Abs. 3 — 10.000 / 15.000 / 30.000 Vbh).
+        /// Nur diese Anlagenart bekommt oberhalb von 2 MW den abweichenden
+        /// Einspeisesatz von 3,1 statt 3,4 ct/kWh.
+        /// <inheritdoc cref="KWKG_ANLAGENART_NEU" path="/summary/text()[last()]"/></summary>
+        public const string KWKG_ANLAGENART_NACHGERUESTET = "NACHGERUESTET";
+
+        /// <summary>
+        /// Tatbestand des § 6 Abs. 3, unter dem SELBST GENUTZTER Strom zuschlagsfaehig
+        /// ist — hier: keiner. <b>Das ist der Regelfall</b>: Einen Zuschlag auf
+        /// Eigenstrom gibt es nach § 7 Abs. 2 <b>nicht generell</b>, sondern nur in den
+        /// drei Faellen des § 6 Abs. 3 (Grundlagen, Abschnitt 1.3, ausdruecklicher
+        /// Hinweis). Ohne erfassten Tatbestand schlaegt der Katalog fuer Eigenstrom
+        /// deshalb 0 ct/kWh vor und sagt warum.
+        /// <inheritdoc cref="KWKG_ANLAGENART_NEU" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string KWKG_EIGENFALL_KEINER = "KEINER";
+
+        /// <summary>§ 6 Abs. 3 Nr. 1 — Anlagen bis 100 kW elektrischer Leistung.
+        /// <inheritdoc cref="KWKG_EIGENFALL_KEINER" path="/summary/text()[last()]"/></summary>
+        public const string KWKG_EIGENFALL_NR1 = "NR1_BIS100KW";
+
+        /// <summary>§ 6 Abs. 3 Nr. 2 — Kundenanlage oder geschlossenes Verteilernetz.
+        /// <inheritdoc cref="KWKG_EIGENFALL_KEINER" path="/summary/text()[last()]"/></summary>
+        public const string KWKG_EIGENFALL_NR2 = "NR2_KUNDENANLAGE";
+
+        /// <summary>§ 6 Abs. 3 Nr. 3 — stromkostenintensives Unternehmen.
+        /// <inheritdoc cref="KWKG_EIGENFALL_KEINER" path="/summary/text()[last()]"/></summary>
+        public const string KWKG_EIGENFALL_NR3 = "NR3_STROMINTENSIV";
+
+        // =====================================================================
+        // LEITENTSCHEIDUNGEN L12 und L13 — Bilanzierung der Emissionen
+        //   Tab_ProjektWirtschaftlichkeit (Migrationsschritt 23)
+        //   Steuerwerte, sprachneutral und ASCII, in SQL verglichen, eingefroren.
+        //
+        //   L12 — Zum 01.01.2027 entfaellt der Verdraengungsstrommix (2,8 bzw.
+        //   860 g CO2-Aeq/kWh) ERSATZLOS; die Stromgutschriftmethode fuer
+        //   eingespeisten KWK-Strom ist abgeschafft (GModG, BGBl. 2026 I Nr. 226;
+        //   Grundlagen, Abschnitt 7.4). Beide Rechenwege liegen parallel vor und
+        //   werden ueber DASSELBE Gueltig-ab-Datum des Katalogs umgeschaltet —
+        //   ueber die 2027er-Jahreszeile OHNE Wert bei
+        //   GESETZ_EF_NACHWEIS_VERDRAENGUNGSSTROMMIX, nicht ueber eine Konstante.
+        //
+        //   L13 — Ob biogenes Verbrennungs-CO2 mit null angesetzt wird, widerspricht
+        //   sich zwischen BEHG, GModG, UBA-Emissionsbilanz und UBA-CO2-Rechner
+        //   (Grundlagen, Abschnitt 7.8). Die Konvention wird Einstellung mit Ausweis
+        //   im Bericht; die Vorbelegung ist die Annahme, die der Bestand still trifft.
+        // =====================================================================
+
+        /// <summary>
+        /// Bewertung des KWK-Stroms in der Emissionsbilanz: <b>nach Katalog</b> — der
+        /// Rechenweg folgt dem Gueltig-ab-Datum aus <c>Tab_Gesetzesparameter</c>.
+        /// <b>Vorbelegung</b> aller Bestandszeilen (Migrationsschritt 23b).
+        ///
+        /// <para>Fuehrt die zum Bilanzjahr gueltige Zeile von
+        /// <see cref="GESETZ_EF_NACHWEIS_VERDRAENGUNGSSTROMMIX"/> einen Wert, gilt
+        /// <see cref="EMISSIONSMETHODE_STROMGUTSCHRIFT"/>; fuehrt sie KEINEN (die
+        /// 2027er-Zeile), gilt <see cref="EMISSIONSMETHODE_OHNE_GUTSCHRIFT"/>. Das ist
+        /// der EINE Schalter aus L12 — kein zweiter daneben, der auseinanderlaufen
+        /// koennte.</para>
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string EMISSIONSMETHODE_KATALOG = "KATALOG";
+
+        /// <summary>
+        /// Emissionsbilanz mit <b>Stromgutschrift</b>: Der KWK-Strom wird in der
+        /// getrennten Referenz im Kraftwerkspark erzeugt und damit gutgeschrieben —
+        /// der Rechenweg bis 31.12.2026 und zugleich das Verhalten jedes Bestandsstands.
+        ///
+        /// <para>Ausdruecklich gewaehlt gilt er auch nach 2027 weiter. Das ist dann eine
+        /// METHODISCHE WAHL ohne Rechtsgrundlage (Grundlagen 7.4: „Einen amtlichen
+        /// Ersatz speziell fuer KWK gibt es nicht") und wird im Bericht als solche
+        /// ausgewiesen.</para>
+        /// <inheritdoc cref="EMISSIONSMETHODE_KATALOG" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string EMISSIONSMETHODE_STROMGUTSCHRIFT = "STROMGUTSCHRIFT";
+
+        /// <summary>
+        /// Emissionsbilanz <b>ohne Stromgutschrift</b>: Die getrennte Referenz erzeugt
+        /// nur noch die Waerme im Referenzkessel; fuer den KWK-Strom gibt es keine
+        /// Verdraengungsgutschrift mehr. Der Rechenweg ab 01.01.2027.
+        ///
+        /// <para><b>Abgrenzung, die im Bericht steht.</b> Das GModG ersetzt die
+        /// Stromgutschriftmethode durch eine Bewertung nach DIN EN 15316-4-5:2017-09,
+        /// Abschnitt 6.2.2.1.6.3. Der Text dieser Norm gehoert nicht zur Faktenbasis
+        /// des Vorhabens; verdrahtet ist deshalb der WEGFALL DER GUTSCHRIFT, nicht das
+        /// Zuteilungsverfahren der Norm.</para>
+        /// <inheritdoc cref="EMISSIONSMETHODE_KATALOG" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string EMISSIONSMETHODE_OHNE_GUTSCHRIFT = "OHNE_GUTSCHRIFT";
+
+        /// <summary>
+        /// Emissionsbilanz mit <b>Substitutionsfaktor</b>: Wer nach 2027 dennoch eine
+        /// Gutschrift rechnen will, setzt den UBA-Substitutionsfaktor
+        /// (<see cref="GESETZ_EF_BILANZ_SUBSTITUTION_STROM"/>) je kWh KWK-Strom an
+        /// statt den Kraftwerkspark.
+        ///
+        /// <para>Der Faktor ist fuer ERNEUERBAREN Strom hergeleitet (Photovoltaik,
+        /// 685 g CO2-Aeq/kWh fuer 2024) und keine Rechtsvorgabe. Nur CO2 — fuer SO2 und
+        /// NOx gibt es keinen belegten Substitutionswert; diese beiden bleiben deshalb
+        /// ohne Gutschrift, und der Bericht sagt das.</para>
+        /// <inheritdoc cref="EMISSIONSMETHODE_KATALOG" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string EMISSIONSMETHODE_SUBSTITUTION = "SUBSTITUTION";
+
+        /// <summary>
+        /// Bilanzierungskonvention Biomasse: biogenes Verbrennungs-CO2 wird mit
+        /// <b>null</b> angesetzt, gezaehlt wird nur die Vorkette. <b>Vorbelegung</b>
+        /// aller Bestandszeilen (Migrationsschritt 23b).
+        ///
+        /// <para><b>Das ist die Annahme, die der Bestand still trifft.</b> Der
+        /// Brennstoffkatalog fuehrt Holz und Pellets mit 20, Biogas mit 140 und
+        /// Rapsoel/Tierische Fette mit 210 g/kWh — genau die Vorkettenwerte der
+        /// Anlage 9 GEG/GModG. Dieselbe Konvention gilt bei UBA-Emissionsbilanz und
+        /// BAFA EEW. Die Einstellung macht sie sichtbar, ohne sie zu aendern.</para>
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string BIOMASSE_KONVENTION_NULL = "NULLANSATZ";
+
+        /// <summary>
+        /// Bilanzierungskonvention Biomasse: biogenes Verbrennungs-CO2 wird
+        /// <b>angesetzt</b> — der Weg des UBA-CO2-Rechners (Methodikumstellung
+        /// Maerz 2024), der als einziges der fuenf Regelwerke NICHT mit null rechnet,
+        /// sondern mit <see cref="GESETZ_EF_BILANZ_BIOGEN_VERBRENNUNG"/>.
+        ///
+        /// <para>Der Wert kommt ZUSAETZLICH zum Vorkettenwert des Brennstoffkatalogs.
+        /// Ob der UBA-CO2-Rechner seinerseits eine Vorkette aufschlaegt, ist in den
+        /// Grundlagen nicht belegt; der Bericht weist die Zusammensetzung deshalb
+        /// getrennt aus.</para>
+        /// <inheritdoc cref="BIOMASSE_KONVENTION_NULL" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string BIOMASSE_KONVENTION_VERBRENNUNG = "VERBRENNUNG";
+
+        /// <summary>
+        /// Nachhaltigkeitsnachweis nach § 8 EBeV 2030 liegt vor — der Nullansatz fuer
+        /// den Biomasseanteil eines BEHG-Brennstoffs ist damit zulaessig.
+        /// <b>Vorbelegung</b> aller Bestandszeilen (Migrationsschritt 23b) und das
+        /// Verhalten jedes Bestandsstands.
+        ///
+        /// <para><b>Warum TEXT und nicht YESNO.</b> Access belegt eine neue
+        /// YESNO-Spalte in jeder Bestandszeile mit <c>False</c>. Ein Feld
+        /// „Nachweis vorhanden" stuende danach in jedem Altprojekt auf NEIN und haette
+        /// dessen BEHG-Abgabe erhoeht — die Vorbelegung muss aber der Wert sein, der
+        /// die Bestandsrechnung fortfuehrt. Eine TEXT-Spalte mit DML-Vorbelegung und
+        /// toleranter Leseseite (leer/NULL = JA) leistet das.</para>
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string BIOMASSE_NACHWEIS_JA = "NACHWEIS_JA";
+
+        /// <summary>
+        /// Kein Nachhaltigkeitsnachweis: Fuer den Biomasseanteil eines BEHG-Brennstoffs
+        /// gilt der volle fossile Standardwert der EBeV 2030 (Pflanzenoel und Tierfette
+        /// 266,4 g/kWh), und die Menge wird abgabepflichtig.
+        ///
+        /// <para>Betroffen sind ausschliesslich BEHG-Brennstoffe. Feste Biomasse,
+        /// Biogas und Klaergas sind keine BEHG-Brennstoffe (Grundlagen 7.7) — fuer sie
+        /// aendert diese Angabe nichts.</para>
+        /// <inheritdoc cref="BIOMASSE_NACHWEIS_JA" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string BIOMASSE_NACHWEIS_NEIN = "NACHWEIS_NEIN";
+
+        // =====================================================================
+        // Die zwoelf Betriebskostenpositionen nach VDI 2067
+        //   Tab_Kostenfaktor.Bezeichnung (IsMainComponent = False), verwendet als
+        //   Unterposition der Kategorie 2 in Tab_ProjektWerte
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        //
+        //   Die Bezeichnung ist zugleich der SCHLUESSEL der Position: Sie steht in
+        //   Tab_Kostenfaktor, wird in SQL damit verglichen und ordnet der Position im
+        //   Code ihre Bezugsgroesse zu (BetriebskostenCtrl.Katalog). Deshalb deutsch,
+        //   deshalb eingefroren; der Anzeigetext kommt getrennt aus
+        //   MyResource.Resource.VDI_POS_*.
+        // =====================================================================
+
+        /// <summary>
+        /// Wartung bzw. Vollwartung des BHKW. Genau EINE Bemessung gilt — je kWh
+        /// elektrisch, je Vollbenutzungsstunde oder Prozent der BHKW-Investition
+        /// (Leitentscheidung L7). Das stille Ueberschreiben der Altanwendung
+        /// (Analyse, Befund 6) wird nicht uebernommen.
+        /// Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string VDI_POS_WARTUNG_BHKW = "Wartung BHKW";
+
+        /// <summary>
+        /// Instandhaltung des BHKW — eine EIGENE Position NEBEN der Wartung, nicht
+        /// deren Alternative. Die Altanwendung beschriftete das Feld mit „oder",
+        /// addierte den Betrag aber (Analyse, Befund 7).
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string VDI_POS_INSTANDHALTUNG_BHKW = "Instandhaltung BHKW";
+
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        public const string VDI_POS_INSTANDHALTUNG_KESSEL = "Instandhaltung Heizkessel";
+
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        public const string VDI_POS_INSTANDHALTUNG_WAERMEZENTRALE = "Instandhaltung Wärmezentrale";
+
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        public const string VDI_POS_INSTANDHALTUNG_BAULICH = "Instandhaltung bauliche Anlagen";
+
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        public const string VDI_POS_INSTANDHALTUNG_STROMEINSPEISUNG = "Instandhaltung Stromeinspeisung";
+
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        public const string VDI_POS_PERSONAL = "Personalkosten";
+
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        public const string VDI_POS_VERWALTUNG = "Steuern, Versicherung, Verwaltung";
+
+        /// <summary>
+        /// Hilfsenergiekosten — als einzige Position der Reihe nach VDI 2067 ein Anteil
+        /// der BRENNSTOFFKOSTEN, nicht einer Investition.
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string VDI_POS_HILFSENERGIE = "Hilfsenergiekosten";
+
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        public const string VDI_POS_RESERVELEISTUNG = "Reserveleistungskosten";
+
+        /// <summary>
+        /// Sonstige Kosten. Die freie Bezeichnung des Anwenders steht in der
+        /// Kostenposition selbst; dieser Wert ist der Katalogeintrag, unter dem die
+        /// Zeile gefuehrt wird.
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string VDI_POS_SONSTIGE = "Sonstige Kosten";
+
+        /// <summary>
+        /// Gruppe der zwoelf VDI-Positionen in <c>Tab_ProjektWerte.Gruppe</c> und
+        /// <c>Tab_KostenGruppenKatalog.GruppenName</c> — so stehen sie in der
+        /// Kostenverwaltung als eigener Block beisammen und sind von den frei
+        /// angelegten Positionen des Anwenders unterscheidbar.
+        /// Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string KOSTEN_GRUPPE_BETRIEB_VDI = "Betriebskosten VDI 2067";
+
+        // =====================================================================
         // Wärmesenke — Ziel der Anlage
         //   Tab_Energieanlagen.WS_Ziel, .WS_Ziel2  (Konzept 5.3)
         //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
@@ -700,6 +1241,59 @@ namespace WindowsFormsApplication1
         /// <summary>Verlaengerung in Jahren bei Genehmigung oder Beauftragung bis zum Stichtag (Novelle 2025).</summary>
         public const string GESETZ_KWKG_REALISIERUNGSFRIST = "KWKG_REALISIERUNGSFRIST";
 
+        /// <summary>
+        /// ETAPPE E6 — elektrische Nennleistung, bis zu der der Zuschlag auf SELBST
+        /// GENUTZTEN Strom nach § 6 Abs. 3 <b>Nr. 1</b> ueberhaupt in Betracht kommt
+        /// (100 kW). Oberhalb bleiben nur Nr. 2 (Kundenanlage / geschlossenes
+        /// Verteilernetz) und Nr. 3 (stromkostenintensives Unternehmen).
+        ///
+        /// <para><b>Nicht dasselbe wie <see cref="GESETZ_KWKG_LEISTUNGSSTUFE_2"/></b>,
+        /// auch wenn beide heute 100 kW betragen: Die Leistungsstufe ist eine
+        /// TRANCHENgrenze des § 7, dieser Wert eine ANLAGENgrenze des § 6 Abs. 3 Nr. 1.
+        /// Sie stehen in verschiedenen Normen und koennen sich unabhaengig
+        /// voneinander aendern.</para>
+        /// </summary>
+        public const string GESETZ_KWKG_EIGEN_N1_GRENZE = "KWKG_EIGEN_N1_GRENZE_KW";
+
+        /// <summary>
+        /// ETAPPE E6 — elektrische Nennleistung, bis zu der die Sonderregel des
+        /// § 7 Abs. 3a fuer NEUE Anlagen gilt (50 kW). Sie geht Abs. 1 und 2 vor und
+        /// ersetzt die Tranchenrechnung durch einen einheitlichen Satz.
+        /// <inheritdoc cref="GESETZ_KWKG_EIGEN_N1_GRENZE" path="/summary/para"/>
+        /// </summary>
+        public const string GESETZ_KWKG_NEUANLAGE_GRENZE = "KWKG_ZUSCHLAG_NEU_GRENZE_KW";
+
+        // ------------------------------------------- Verwaltung des Katalogs (E6)
+
+        /// <summary>
+        /// Technische Klasse der Verwaltungszeilen des Katalogs — <b>kein</b>
+        /// gesetzlicher Parameter. Zeilen dieser Klasse werden von der Pflegemaske
+        /// ausgeblendet.
+        /// </summary>
+        public const string GESETZ_KLASSE_SYSTEM = "SYSTEM";
+
+        /// <summary>
+        /// ETAPPE E6 — Markerzeile der <b>generationsweisen Nachsaat</b>: Ihr Wert ist
+        /// die hoechste Seed-Generation, die in dieser Datenbank je eingesaet wurde.
+        ///
+        /// <para><b>Warum es sie gibt.</b> Bis E6 saete
+        /// <c>GesetzKatalog.StelleKatalogSicher</c> nur in eine LEERE Tabelle ein. Ein
+        /// Schluessel, der nach dem ersten Seed hinzukam, erreichte eine bereits
+        /// gefuellte <c>Tab_Gesetzesparameter</c> deshalb nie —
+        /// <see cref="GESETZ_KWKG_AUSSCHREIBUNG_GRENZE"/> fehlt aus genau diesem Grund
+        /// in jeder Datenbank, die vor dem 19.08.2026 eingesaet wurde. Beim Start
+        /// werden jetzt nur Zeilen NEUERER Generationen nachgesaet; bewusst geloeschte
+        /// Zeilen aelterer Generationen bleiben geloescht.</para>
+        ///
+        /// <para><b>Markerzeile statt Spalte</b> (Entscheidung E6): Sie braucht kein
+        /// DDL und wirkt deshalb auch auf Datenbanken, deren Tabelle vom
+        /// E1-<c>CREATE TABLE</c> mit fester Spaltenliste angelegt wurde. Die
+        /// Generation ist ausserdem eine Eigenschaft des SEEDS, nicht der Zeile: Eine
+        /// vom Anwender angelegte oder geaenderte Zeile soll gar keine Generation
+        /// tragen.</para>
+        /// </summary>
+        public const string GESETZ_KATALOG_GENERATION = "KATALOG_GENERATION";
+
         // ------------------------------------------------ Schluessel Stromsteuer
         //   Grundlagen, Abschnitt 2. L4: Steuersatz und Entlastungssatz sind
         //   GETRENNTE Groessen — nie eine Differenz raten.
@@ -815,6 +1409,23 @@ namespace WindowsFormsApplication1
         public const string GESETZ_EF_BILANZ_BAFA_KLAERSCHLAMM = "EF_BILANZ_BAFA_KLAERSCHLAMM";
         public const string GESETZ_EF_BILANZ_BAFA_FERNWAERME = "EF_BILANZ_BAFA_FERNWAERME";
         public const string GESETZ_EF_BILANZ_BAFA_STROM = "EF_BILANZ_BAFA_STROM";
+
+        /// <summary>
+        /// LEITENTSCHEIDUNG L12 — Substitutionsfaktor fuer verdraengten Strom
+        /// [g CO2-Aeq/kWh]. <b>Kein Ersatz des Verdraengungsstrommix, sondern eine
+        /// methodische Wahl</b>: Der Wert 685 stammt aus UBA CLIMATE CHANGE 11/2026 und
+        /// ist fuer PHOTOVOLTAIK hergeleitet (2024), nicht fuer KWK. Er gehoert in die
+        /// reale Bilanz, nie in einen Nachweis (L11).
+        /// </summary>
+        public const string GESETZ_EF_BILANZ_SUBSTITUTION_STROM = "EF_BILANZ_SUBSTITUTION_STROM";
+
+        /// <summary>
+        /// LEITENTSCHEIDUNG L13 — biogenes Verbrennungs-CO2 [g/kWh] fuer die Konvention
+        /// <see cref="BIOMASSE_KONVENTION_VERBRENNUNG"/>. Der UBA-CO2-Rechner ist das
+        /// einzige der fuenf Regelwerke aus Grundlagen 7.8, das biogenes
+        /// Verbrennungs-CO2 NICHT mit null ansetzt, sondern mit 365 g/kWh.
+        /// </summary>
+        public const string GESETZ_EF_BILANZ_BIOGEN_VERBRENNUNG = "EF_BILANZ_BIOGEN_VERBRENNUNG";
 
         // ---------------------------- Schluessel Primaerenergiefaktoren NACHWEIS
         //   GEG/GModG Anlage 4, Grundlagen 7.2, nicht erneuerbarer Anteil.

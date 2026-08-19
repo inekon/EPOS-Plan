@@ -86,6 +86,21 @@ namespace WindowsFormsApplication1
         public double? CO2Spezifisch;      // g/kWh Wärme
         public double? CO2Brennstoff;      // t/a nur BEHG-pflichtige Brennstoffe (Phase 7/W2)
 
+        // LEITENTSCHEIDUNG L13 — die beiden MENGEN, an denen die Bilanzierungskonvention
+        // für Biomasse ansetzt. Bewusst Mengen und keine fertigen Emissionen: Der
+        // Emissionsfaktor hängt an der gewählten Konvention und am Bilanzjahr, und beides
+        // weiß erst der Aufrufer (BilanzKonvention). So bleibt dieser Rechner frei von
+        // der Konventionsfrage, und es gibt genau EINE Stelle, an der sie entschieden wird.
+
+        /// <summary>Brennstoffeinsatz BIOGENER Träger [MWh/a] — Holz, Pellets, Rapsöl,
+        /// Tierische Fette und Biogas. Bezugsmenge des biogenen Verbrennungs-CO₂.</summary>
+        public double BiogenMengeMWh;
+
+        /// <summary>Davon der Anteil, der zugleich BEHG-Brennstoff ist [MWh/a] — die
+        /// flüssige Biomasse (Rapsöl, Tierische Fette; EBeV 2030 Anlage 2 Teil 4).
+        /// Bezugsmenge des fehlenden Nachhaltigkeitsnachweises nach § 8 EBeV 2030.</summary>
+        public double BiogenBehgMengeMWh;
+
         /// <summary>Zeitreihen aus der In-Memory-Simulation (Phase 3; bis dahin null).</summary>
         public ZeitreihenSatz Zeitreihen;
 
