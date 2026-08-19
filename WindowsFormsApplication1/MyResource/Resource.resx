@@ -4754,4 +4754,13 @@ Soll er trotzdem überschrieben werden?</value>
 
 Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird deshalb abgelehnt. Bitte die Dubletten zuerst bereinigen.</value>
   </data>
+  <data name="WIRT_KWKG_ANLAGE_UEBER_GRENZE" xml:space="preserve">
+    <value>KWKG: Über der Ausschreibungsgrenze von {0} kW und deshalb ohne Zuschlag: {1} (der Weg über eine Ausschreibung nach § 8a KWKG/KWKAusV ist nicht abgebildet). Die übrigen Anlagen mit zusammen {2} kW rechnen weiter.</value>
+  </data>
+  <data name="WIRT_KWKG_ALLE_UEBER_GRENZE" xml:space="preserve">
+    <value>KWKG: Jede BHKW-Anlage des Projekts liegt über der Ausschreibungsgrenze von {0} kW ({1}) — der Zuschlag wäre nur über eine Ausschreibung nach § 8a KWKG/KWKAusV zu erlangen; Bonus = 0.</value>
+  </data>
+  <data name="WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR" xml:space="preserve">
+    <value>KWKG: Σ installierte BHKW-Leistung {0} kW über der Ausschreibungsgrenze von {1} kW; die Leistung je Anlage ließ sich nicht ermitteln, deshalb greift die Grenze ersatzweise auf die Projektsumme; Bonus = 0.</value>
+  </data>
 </root>

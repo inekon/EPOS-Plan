@@ -1343,3 +1343,28 @@ unangetastet, dasselbe Muster wie bei den Speicher-Kennzahlzeilen.
 | `"VbhThermisch"`, `"VbhElektrisch"` (`SchemaKatalog.SPALTE_MODUL_VBH_*`, `SPALTE_BHKW_VBH_ELEKTRISCH`) | **Persistenzwerte** — Spaltennamen in `Tab_ErgebnisBHKWModul` bzw. `Tab_ErgebnisBHKW`. Wie alle Spaltennamen umlautfrei und eingefroren. |
 | `"KWKGVbhElektrisch"` (`WirtschaftlichkeitCtrl.SPALTE_KWKG_VBH_EL`) | dito, Spalte in `Tab_ErgebnisWirtschaftlichkeit`. |
 | `"—"` im Feld der neuen Zeile, wenn keine elektrische Leistung gepflegt ist | typografische Marke ohne Wortbestand, wie die Glyphen der Kartenansicht. |
+
+## Nachtrag zu Etappe E2 — 500-kW-Grenze je Anlage (19.08.2026)
+
+Nutzerentscheidung vom 19.08.2026; Begründung, Wirkung und Verifikation im Abschnitt
+„Nachtrag: 500-kW-Grenze je Anlage" von
+[`../Reporting/W4_E2_Vollbenutzungsstunden_Protokoll.md`](../Reporting/W4_E2_Vollbenutzungsstunden_Protokoll.md).
+
+Drei neue Schlüssel im Katalog `MyResource/Resource.resx` (+ `.en-US.resx` + Designer) —
+die **erste** Lokalisierung im Bereich Wirtschaftlichkeit und damit ein neues
+Schlüsselpräfix `WIRT_`. Sie ersetzen die bisherige deutsche Literal-Meldung des
+500-kW-Guards, die nur die Projektsumme nannte.
+
+| Schlüssel | DE | EN | Fundstellen | Grund |
+|---|---|---|---|---|
+| `WIRT_KWKG_ANLAGE_UEBER_GRENZE` | KWKG: Über der Ausschreibungsgrenze von {0} kW und deshalb ohne Zuschlag: {1} (der Weg über eine Ausschreibung nach § 8a KWKG/KWKAusV ist nicht abgebildet). Die übrigen Anlagen mit zusammen {2} kW rechnen weiter. | CHP Act: above the tendering threshold of {0} kW and therefore without bonus: {1} (the tendering route under section 8a KWKG/KWKAusV is not modelled). The remaining units totalling {2} kW continue to be calculated. | `WirtschaftlichkeitCtrl.BaueKwkgReihe` | **neu.** Nennt die betroffene Anlage und sagt ausdrücklich, dass die übrigen weiterrechnen — der Kern der Korrektur. |
+| `WIRT_KWKG_ALLE_UEBER_GRENZE` | KWKG: Jede BHKW-Anlage des Projekts liegt über der Ausschreibungsgrenze von {0} kW ({1}) — der Zuschlag wäre nur über eine Ausschreibung nach § 8a KWKG/KWKAusV zu erlangen; Bonus = 0. | CHP Act: every CHP unit of the project exceeds the tendering threshold of {0} kW ({1}) — the bonus could only be obtained through tendering under section 8a KWKG/KWKAusV; bonus = 0. | dieselbe | **neu.** Löst die Altmeldung ab; Ergebnis wie bisher, Begründung jetzt die richtige. |
+| `WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR` | KWKG: Σ installierte BHKW-Leistung {0} kW über der Ausschreibungsgrenze von {1} kW; die Leistung je Anlage ließ sich nicht ermitteln, deshalb greift die Grenze ersatzweise auf die Projektsumme; Bonus = 0. | CHP Act: total installed CHP capacity {0} kW exceeds the tendering threshold of {1} kW; the capacity of the individual units could not be determined, so the threshold falls back to the project total; bonus = 0. | dieselbe | **neu.** Der Rückfallzweig ohne zuordenbare Anlagenzeilen. Er ist konservativ, und der Anwender muss wissen, dass hier ersatzweise die Projektsumme geprüft wurde. |
+
+**Nicht lokalisiert — und warum**
+
+| Wert | Grund |
+|---|---|
+| `"KWKG_AUSSCHREIBUNG_GRENZE_KW"` (`DbWerte.GESETZ_KWKG_AUSSCHREIBUNG_GRENZE`) | **Persistenzwert** — Schlüssel in `Tab_Gesetzesparameter`, sprachneutral und eingefroren wie die 135 Schlüssel aus E1. Der Anzeigename der Klasse `KWKG` steht getrennt als `GESETZ_KLASSE_ANZ_KWKG`. |
+| `Bezeichner + " (" + Pel + " kW)"` in `WirtschaftlichkeitCtrl.Anlagenauswahl` | Der Bezeichner ist ein **Datenwert** des Anwenders, die Klammer trägt nur das Einheitenzeichen `kW` — kein Wortbestand, in beiden Sprachen gleich. Dieselbe Ausnahme wie bei den typografischen Marken. |
+| Die übrigen KWKG-Hinweise derselben Methode (Stichtag, Realisierungsfrist, Heizöl) | deutsche Literale des Bestands. Sie gehören zusammen mit den vierzehn deutschen Zeilentiteln des Wirtschaftlichkeitsreiters in **einem** Vorgang umgestellt (Begründung in Abschnitt 3.5 des E2-Protokolls); die drei neuen Texte laufen schon jetzt über den Katalog, weil sie neu entstehen. |
