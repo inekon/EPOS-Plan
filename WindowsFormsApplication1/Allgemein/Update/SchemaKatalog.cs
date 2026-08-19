@@ -989,6 +989,134 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_VERGUETUNG_KWK,   "DOUBLE"),
         };
 
+        // ---------------------------------------------------------------------------
+        // ETAPPE E6 — der KWK-Zuschlag JE ANLAGE (Tab_Energieanlagen)
+        // ---------------------------------------------------------------------------
+
+        /// <summary>
+        /// ETAPPE E6 — Bestell-/Genehmigungsdatum <b>dieser Anlage</b> (§ 6 KWKG 2025).
+        /// <c>NULL</c> = kein eigener Wert, dann gilt der Projektwert
+        /// <c>Tab_ProjektWirtschaftlichkeit.KWKG_Stichtag</c> als Vorgabe.
+        ///
+        /// <b>Genau dieser Rückfall macht den Schritt ergebnisneutral.</b> Solange keine
+        /// Anlage einen eigenen Wert trägt — der Zustand jeder Bestandsdatenbank —,
+        /// prüft die Rechnung Zeile für Zeile dieselbe Fristenkette wie vorher.
+        /// </summary>
+        public const string SPALTE_EA_KWKG_STICHTAG = "KWKG_Stichtag";
+
+        /// <summary>
+        /// ETAPPE E6 — Inbetriebnahmedatum <b>dieser Anlage</b>. Es entscheidet über die
+        /// Realisierungsfrist des § 6, über das Stichtagsjahr des Zuschlagssatzes, über
+        /// den Beginn der Jahresdeckel-Staffel <b>und</b> über Neuanlage/Bestandsanlage
+        /// und damit über den Heizöl-Ausschluss.
+        /// <inheritdoc cref="SPALTE_EA_KWKG_STICHTAG" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string SPALTE_EA_KWKG_INBETRIEBNAHME = "KWKG_Inbetriebnahme";
+
+        /// <summary>
+        /// ETAPPE E6 — Anlagenart nach KWKG (<c>NEUANLAGE</c>, <c>MODERNISIERT</c>,
+        /// <c>NACHGERUESTET</c>). Werte: <see cref="DbWerte.KWKG_ANLAGENART_NEU"/>.
+        ///
+        /// <b>Ohne Rechenwirkung.</b> Die Spalte steuert ausschließlich den
+        /// KATALOGVORSCHLAG (§ 7 Abs. 3a nur für neue Anlagen, 3,1 statt 3,4 ct/kWh
+        /// über 2 MW nur für nachgerüstete) und die angezeigte Herleitung. Gerechnet
+        /// wird mit dem Überschreibwert der Anlage bzw. mit dem Projektsatz. Deshalb
+        /// <b>keine</b> DML-Vorbelegung: „nicht erfasst" ist die richtige Aussage, und
+        /// eine Vorbelegung könnte den Vorschlag verschieben.
+        ///
+        /// <b>Spaltenbreite.</b> Längster Wert <c>NACHGERUESTET</c> (13 Zeichen) →
+        /// TEXT(24). Großzügig gewählt, weil ein zu kurzes Feld das UPDATE STILL
+        /// scheitern lässt (die Lehre aus Schritt 19, Probe C2).
+        /// </summary>
+        public const string SPALTE_EA_KWKG_ANLAGENART = "KWKG_Anlagenart";
+
+        /// <summary>
+        /// ETAPPE E6 — Tatbestand des § 6 Abs. 3, unter dem selbst genutzter Strom
+        /// zuschlagsfähig ist (<c>KEINER</c>, <c>NR1_BIS100KW</c>,
+        /// <c>NR2_KUNDENANLAGE</c>, <c>NR3_STROMINTENSIV</c>). Werte:
+        /// <see cref="DbWerte.KWKG_EIGENFALL_KEINER"/>.
+        /// <inheritdoc cref="SPALTE_EA_KWKG_ANLAGENART" path="/summary/text()[last()-1]"/>
+        ///
+        /// <b>Spaltenbreite.</b> Längster Wert <c>NR3_STROMINTENSIV</c> (17 Zeichen) →
+        /// TEXT(24).
+        /// </summary>
+        public const string SPALTE_EA_KWKG_EIGENFALL = "KWKG_Eigenstromfall";
+
+        /// <summary>
+        /// ETAPPE E6 — <b>Überschreibwert</b> des Zuschlagssatzes auf eingespeisten
+        /// KWK-Strom dieser Anlage [ct/kWh]. <c>NULL</c> = kein eigener Satz, dann gilt
+        /// der Projektsatz <c>KWKG_Bonus_Einspeisung</c>.
+        ///
+        /// <b>Der Katalogvorschlag ersetzt den Projektsatz NICHT von selbst.</b> Er wird
+        /// im Dialog mit seiner Herleitung angezeigt und auf Knopfdruck in dieses Feld
+        /// übernommen — eine Entscheidung des Anwenders, keine stille Umstellung
+        /// gespeicherter Altrechnungen (Nutzerentscheidung 18.08.2026:
+        /// „überschreibbar, Herleitung wird angezeigt").
+        /// </summary>
+        public const string SPALTE_EA_KWKG_SATZ_EINSP = "KWKG_Satz_Einspeisung";
+
+        /// <summary>
+        /// ETAPPE E6 — Überschreibwert des Zuschlagssatzes auf selbst genutzten
+        /// KWK-Strom dieser Anlage [ct/kWh]; <c>NULL</c> = Projektsatz
+        /// <c>KWKG_Bonus</c>.
+        /// <inheritdoc cref="SPALTE_EA_KWKG_SATZ_EINSP" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string SPALTE_EA_KWKG_SATZ_EIGEN = "KWKG_Satz_Eigen";
+
+        /// <summary>
+        /// ETAPPE E6 — Vollbenutzungsstunden-<b>Kontingent</b> dieser Anlage [h]
+        /// (§ 8 Abs. 1: 30.000 Vbh für neue Anlagen). <c>NULL</c> = Projektwert
+        /// <c>KWKG_Vbh_Kontingent</c>.
+        ///
+        /// <b>Das Kontingent gilt je Anlage, nicht je Projekt</b> — Restbefund 2 aus dem
+        /// E2-Protokoll. Zwei Module stehen gesetzlich zwei Kontingente zu; bis E6 lief
+        /// eine gemeinsame Größe über eine leistungsgewichtete Vbh-Zahl.
+        /// </summary>
+        public const string SPALTE_EA_KWKG_KONTINGENT = "KWKG_Vbh_Kontingent";
+
+        /// <summary>
+        /// ETAPPE E6 — Jahresdeckel-<b>Override</b> dieser Anlage [h/a]. <c>NULL</c> oder
+        /// 0 = Projekt-Override, und ohne den die degressive Staffel des § 8 Abs. 4 aus
+        /// dem Katalog, bezogen auf das Inbetriebnahmejahr <b>dieser</b> Anlage.
+        /// </summary>
+        public const string SPALTE_EA_KWKG_DECKEL = "KWKG_Vbh_Jahresdeckel";
+
+        /// <summary>
+        /// Schritt 22 der Migration (Etappe E6) — die acht additiven Spalten des
+        /// KWK-Zuschlags <b>je Anlage</b> an <c>Tab_Energieanlagen</c>.
+        ///
+        /// <b>Reines DDL, KEIN DML — und daran hängt die Ergebnisneutralität.</b> Jede
+        /// Spalte bleibt NULL, und jede Leseseite fällt bei NULL auf den Projektwert
+        /// zurück. Eine Bestandsdatenbank rechnet danach Zeile für Zeile dasselbe wie
+        /// vorher; die Schritte 19b, 20b und 21b brauchten eine Vorbelegung, dieser
+        /// Schritt braucht keine. <c>DOUBLE</c> und <c>TEXT</c> bleiben in Access ohnehin
+        /// NULL, <c>YESNO</c> kommt nicht vor. Kein DDL-<c>DEFAULT</c> auf Fachwerten.
+        ///
+        /// <b>Warum kein <c>_STAMM</c>-Gegenstück.</b> <c>Tab_Energieanlagen</c> ist eine
+        /// reine PROJEKTtabelle: Sie verbindet ein Projekt mit einem Gerät und hat keinen
+        /// Auslieferungskatalog (die Katalogtabellen sind <c>Tab_BHKW_STAMM</c> und
+        /// Verwandte, und die führen Gerätetechnik, keine Projektzuordnung). Die Regel
+        /// „neue Spalten immer in Projekt- UND _STAMM-Tabelle" greift hier nicht — im
+        /// gesamten Schema existiert keine Tabelle <c>Tab_Energieanlagen_STAMM</c>.
+        ///
+        /// <b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access immer
+        /// hinten an. Folgenlos: <c>Tab_Energieanlagen</c> wird namensbasiert gelesen
+        /// (<c>WaermequelleClass</c>, <c>WaermesenkeClass</c>, <c>SimulationControl</c>,
+        /// <c>WirtschaftlichkeitCtrl.LiesBhkwAnlagen</c>). Die SELECT-Listen des
+        /// Rechenkerns zählen ihre Spalten namentlich auf und bleiben unberührt.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt22_KwkgJeAnlage =
+        {
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_KWKG_STICHTAG,       "DATETIME"),
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_KWKG_INBETRIEBNAHME, "DATETIME"),
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_KWKG_ANLAGENART,     "TEXT(24)"),
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_KWKG_EIGENFALL,      "TEXT(24)"),
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_KWKG_SATZ_EINSP,     "DOUBLE"),
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_KWKG_SATZ_EIGEN,     "DOUBLE"),
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_KWKG_KONTINGENT,     "DOUBLE"),
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_KWKG_DECKEL,         "DOUBLE"),
+        };
+
         /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
@@ -1085,6 +1213,18 @@ namespace WindowsFormsApplication1
         /// <c>Tab_ProjektWirtschaftlichkeit</c> gehören dem Wirtschaftlichkeitsmodul,
         /// der Rechenkern liest beide nirgends. Die tolerante Vorsorge steht unmittelbar
         /// vor dem Zugriff in <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>.
+        ///
+        /// <see cref="Schritt22_KwkgJeAnlage"/> ist BEWUSST NICHT aufgeführt, obwohl seine
+        /// Spalten an <c>Tab_Energieanlagen</c> hängen — der einzigen Ausnahme von der
+        /// Regel „Eingabetabelle ⇒ Rückfallebene". Grund ist der LESER, nicht die
+        /// Tabelle: Die acht Spalten gehören fachlich zum Wirtschaftlichkeitsmodul, der
+        /// Rechenkern liest keine einzige davon, und die Rückfallebene läuft bei JEDEM
+        /// Simulationsstart. Sie würde dort acht Spalten anlegen, die die Simulation nie
+        /// braucht. Die tolerante Vorsorge steht deshalb wie bei den Schritten 19 bis 21
+        /// unmittelbar vor dem Zugriff in
+        /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>; zusätzlich fällt
+        /// <c>LiesBhkwAnlagen</c> auf die Abfrage ohne die neuen Spalten zurück, wenn sie
+        /// fehlen.
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {

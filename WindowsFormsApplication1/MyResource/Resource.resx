@@ -4781,6 +4781,33 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR" xml:space="preserve">
     <value>KWKG: Das Projekt führt ein Öl-BHKW, aber kein Inbetriebnahmedatum — als Neuanlage wäre der Zuschlag ausgeschlossen (KWKG 2025). Welche Anlage mit Öl betrieben wird, ließ sich nicht ermitteln; Datum im Parameterdialog pflegen.</value>
   </data>
+  <data name="WIRT_KWKG_JE_MODUL" xml:space="preserve">
+    <value>KWKG: Zuschlag je BHKW-Modul gerechnet — {0}.</value>
+  </data>
+  <data name="WIRT_KWKG_ANLAGE_STICHTAG" xml:space="preserve">
+    <value>KWKG: {0} — Bestellung/Genehmigung nach dem {1} und damit nach geltendem Recht nicht förderfähig (§ 6 KWKG 2025, Regulierungsrisiko Novelle); für diese Anlage kein Zuschlag.</value>
+  </data>
+  <data name="WIRT_KWKG_ANLAGE_FRIST" xml:space="preserve">
+    <value>KWKG: {0} — Inbetriebnahme nach Ablauf der Realisierungsfrist des § 6 KWKG 2025 (bis {1}); für diese Anlage kein Zuschlag.</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_TRANCHEN" xml:space="preserve">
+    <value>{0} kW nach Leistungsanteilen: {1} → Mischsatz {2} ct/kWh ({3}, Stand {4}).</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_PAUSCHAL" xml:space="preserve">
+    <value>{0} kW und damit bis {1} kW, neue Anlage → {2} ct/kWh ({3}, Stand {4}); die Sonderregel geht den Leistungsanteilen vor.</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_KEIN_EIGENFALL" xml:space="preserve">
+    <value>Kein Tatbestand des § 6 Abs. 3 KWKG 2025 erfasst — auf selbst genutzten Strom gibt es dann keinen Zuschlag (§ 7 Abs. 2).</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_N1_ZU_GROSS" xml:space="preserve">
+    <value>Der Tatbestand des § 6 Abs. 3 Nr. 1 KWKG 2025 gilt nur bis {0} kW; diese Anlage hat {1} kW — kein Zuschlag auf selbst genutzten Strom.</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_SATZ_FEHLT" xml:space="preserve">
+    <value>Der Satz „{0}“ ist im Katalog „Gesetzliche Parameter“ nicht gepflegt — kein Vorschlag.</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_OHNE_LEISTUNG" xml:space="preserve">
+    <value>Ohne gepflegte elektrische Nennleistung lässt sich kein Zuschlagssatz vorschlagen.</value>
+  </data>
   <data name="KOSTEN_BTN_VDI2067" xml:space="preserve">
     <value>⚙ Betriebskosten VDI 2067…</value>
   </data>

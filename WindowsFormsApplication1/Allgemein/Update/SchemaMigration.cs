@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 21;
+        public const int ZIEL_VERSION = 22;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -472,6 +472,43 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_21_TARIFMODELL = 21;
 
+        /// <summary>
+        /// Nummer der Etappe E6 aus <c>Konzept_BHKW_Kosten_Erloese.md</c>: der
+        /// KWK-Zuschlag <b>je BHKW-Modul</b> (Nutzerentscheidung 18.08.2026, „erst damit
+        /// sind die gesetzlichen Leistungsklassen abbildbar"). Acht additive Spalten an
+        /// <c>Tab_Energieanlagen</c> — Stichtag und Inbetriebnahme je Anlage,
+        /// Anlagenart und Eigenstromfall für den Katalogvorschlag, zwei
+        /// Zuschlagssätze als Überschreibwerte, Vbh-Kontingent und Jahresdeckel.
+        ///
+        /// <b>Was der Schritt tut.</b> Nur <b>22a</b>, das additive DDL aus
+        /// <see cref="SchemaKatalog.Schritt22_KwkgJeAnlage"/>. Ein <b>22b</b> gibt es
+        /// nicht.
+        ///
+        /// <b>ERGEBNISNEUTRAL — und zwar ohne jede Vorbelegung.</b> Das ist der
+        /// Unterschied zu den Schritten 19 bis 21: Dort brauchte es eine DML-Zeile, die
+        /// den Bestandsrechenweg festschrieb (<c>BETRAG</c>, <c>KEINE</c>,
+        /// <c>ZONEN</c>). Hier ist <b>NULL selbst</b> die Vorbelegung: Jede Leseseite
+        /// fällt bei NULL auf den Projektwert zurück, den es seit W2 gibt. Eine Anlage
+        /// ohne eigenen Stichtag rechnet mit dem Projektstichtag, eine ohne eigenen Satz
+        /// mit dem Projektsatz, eine ohne eigenes Kontingent mit dem Projektkontingent.
+        /// Solange keine Anlage einen eigenen Wert trägt — der Zustand jeder
+        /// Bestandsdatenbank —, ist die Rechnung Zeile für Zeile die des Vorgängerstands.
+        ///
+        /// <b>Die eine Ausnahme, und sie ist gewollt:</b> Projekte mit <b>mehr als einem</b>
+        /// BHKW-Modul rechnen ab E6 anders, weil Jahresdeckel und Kontingent je Anlage
+        /// statt über eine gemeinsame, leistungsgewichtete Vbh-Zahl geführt werden. Das
+        /// ist die Auflösung der Restbefunde 1 und 2 aus dem E2-Protokoll und hängt
+        /// nicht an diesem Migrationsschritt, sondern an der Rechenlogik.
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): Das DDL geht über vorhandene
+        /// Spalten hinweg (<see cref="SpaltenAnlegen"/> prüft das Tabellenschema vorab).
+        /// Zusätzlich legt <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> die
+        /// Spalten unmittelbar vor dem Zugriff selbst an, falls die Migration nie
+        /// angestoßen wurde — beide Wege dürfen beliebig oft und in beliebiger
+        /// Reihenfolge laufen.
+        /// </summary>
+        public const int SCHRITT_22_KWKG_JE_ANLAGE = 22;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -856,6 +893,17 @@ namespace WindowsFormsApplication1
                         "in Tab_ProjektWirtschaftlichkeit, Vorbelegung ZONEN (Etappe E5)",
                         "Das Tarif-Rollenmodell konnte nicht angelegt werden.",
                         Schritt_21_Tarifmodell),
+
+            // ETAPPE E6 - KWK-Zuschlag JE BHKW-MODUL: Stichtag, Inbetriebnahme,
+            //       Anlagenart, Eigenstromfall, zwei Zuschlagssaetze, Kontingent und
+            //       Jahresdeckel an Tab_Energieanlagen. NUR DDL, KEIN DML - hier ist
+            //       NULL selbst die Vorbelegung, weil jede Leseseite auf den
+            //       Projektwert zurueckfaellt.
+            new Schritt(SCHRITT_22_KWKG_JE_ANLAGE,
+                        "KWK-Zuschlag je Modul: Stichtag, Inbetriebnahme, Anlagenart, Eigenstromfall, " +
+                        "Zuschlagssaetze, Vbh-Kontingent und Jahresdeckel in Tab_Energieanlagen (Etappe E6)",
+                        "Die KWKG-Spalten der Energieanlagen konnten nicht angelegt werden.",
+                        Schritt_22_KwkgJeAnlage),
         };
 
         // =================================================================================
@@ -1648,6 +1696,30 @@ namespace WindowsFormsApplication1
             // waere die Behauptung "kostenlos" statt "noch nicht erfasst".
 
             return ok;
+        }
+
+        // =================================================================================
+        // Schritt 22 (Etappe E6) - KWK-Zuschlag je BHKW-Modul
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 22 (Etappe E6): die acht Spalten des KWK-Zuschlags <b>je Anlage</b> an
+        /// <c>Tab_Energieanlagen</c>.
+        ///
+        /// <b>Nur DDL.</b> Es gibt kein 22b — NULL ist hier die Vorbelegung, weil jede
+        /// Leseseite bei NULL auf den Projektwert zurueckfaellt. Begruendung fuer
+        /// Spalten, Typen, Breiten und die Ergebnisneutralitaet steht bei
+        /// <see cref="SchemaKatalog.Schritt22_KwkgJeAnlage"/> und bei
+        /// <see cref="SCHRITT_22_KWKG_JE_ANLAGE"/>.
+        ///
+        /// <b>HART.</b> <c>Tab_Energieanlagen</c> gehoert zum Kernschema und wird von
+        /// Schritt 1 an vorausgesetzt; fehlt sie, ist die Datenbank ohnehin unbrauchbar.
+        /// Anders als bei Schritt 21 gibt es deshalb keinen Zweig „Tabelle noch nicht
+        /// vorhanden".
+        /// </summary>
+        private static bool Schritt_22_KwkgJeAnlage(Lauf l)
+        {
+            return SpaltenAnlegen(l, SchemaKatalog.Schritt22_KwkgJeAnlage);
         }
 
         // =================================================================================

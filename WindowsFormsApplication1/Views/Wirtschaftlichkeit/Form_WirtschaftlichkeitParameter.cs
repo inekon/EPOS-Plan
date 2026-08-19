@@ -39,6 +39,8 @@ namespace WindowsFormsApplication1
         private ComboBox cbUnternehmensart, cbEnergiesteuer, cbAufteilung;
         private CheckBox chkRaeumlich, chkHocheffizienz;
         private NumericUpDown numNutzungsgrad;
+        // ETAPPE E6 — Einstieg in die Angaben je BHKW-Modul.
+        private Button btnModule;
         private Button btnOk, btnAbbrechen;
 
         /// <summary>true, wenn gespeichert wurde (Aufrufer rechnet dann neu).</summary>
@@ -91,8 +93,25 @@ namespace WindowsFormsApplication1
                 numVbhDeckel = Zeile("Vbh-Deckel-Override [h/a]:", ref y, 0m, 8760m, 0, (decimal)_parameter.KwkgVbhJahresdeckel, 100m);
                 numVbhKontingent = Zeile("Vbh-Kontingent gesamt [h]:", ref y, 0m, 200000m, 0, (decimal)_parameter.KwkgVbhKontingent, 1000m);
                 numAbschlagNeg = Zeile("Abschlag Negativstunden [%]:", ref y, 0m, 50m, 1, (decimal)_parameter.KwkgAbschlagNegativ, 0.5m);
-                dtStichtag = DatumZeile("Stichtag (Bestellung/Genehmigung):", ref y, _parameter.KwkgStichtag);
-                dtInbetriebnahme = DatumZeile("Geplante Inbetriebnahme:", ref y, _parameter.KwkgInbetriebnahme);
+                // ETAPPE E6: Beide Daten sind seit E6 ausdrücklich eine VORGABE für alle
+                // Anlagen ohne eigenen Wert — § 6 KWKG stellt auf die einzelne Anlage ab,
+                // und dasselbe Datum entscheidet zugleich über Neuanlage/Bestandsanlage
+                // und damit über den Heizöl-Ausschluss. Die Beschriftung sagt das jetzt.
+                dtStichtag = DatumZeile("Stichtag, Vorgabe je Anlage:", ref y, _parameter.KwkgStichtag);
+                dtInbetriebnahme = DatumZeile("Inbetriebnahme, Vorgabe je Anlage:", ref y, _parameter.KwkgInbetriebnahme);
+
+                // ETAPPE E6 — die Angaben JE MODUL. Der Zuschlag wird seit E6 je Anlage
+                // gerechnet; die Felder darüber sind die Vorgabe für alle Anlagen ohne
+                // eigenen Wert.
+                btnModule = new Button
+                {
+                    Location = new Point(28, y),
+                    Size = new Size(402, 28),
+                    Text = "⚙ Werte je BHKW-Modul (Satz, Vbh, Kontingent, Datum)…"
+                };
+                btnModule.Click += new EventHandler(btnModule_Click);
+                this.Controls.Add(btnModule);
+                y += 36;
 
                 // ---------------- BHKW — Energie- und Stromsteuer (Etappe E4) --------
                 // Die gesetzlichen Bedingungen werden ERFASST statt angenommen. Jeder
@@ -426,6 +445,26 @@ namespace WindowsFormsApplication1
             Gespeichert = true;
             this.DialogResult = DialogResult.OK;
             Close();
+        }
+
+        /// <summary>
+        /// ETAPPE E6 — öffnet die Angaben je BHKW-Modul. Die Projektwerte dieses Dialogs
+        /// bleiben unberührt; der Modul-Dialog schreibt ausschließlich nach
+        /// <c>Tab_Energieanlagen</c> und liest die Projektangaben nur als Vorgabe.
+        /// </summary>
+        private void btnModule_Click(object sender, EventArgs e)
+        {
+            // Die beiden Daten dieses Dialogs sind die VORGABE des Modul-Dialogs und
+            // gehen in seinen Katalogvorschlag ein. Sie werden deshalb vorher aus den
+            // Steuerelementen übernommen — sonst zeigte der Vorschlag den zuletzt
+            // GESPEICHERTEN Stand, während auf dem Bildschirm schon ein anderer steht.
+            // Gespeichert wird dadurch nichts; das tut erst „Speichern".
+            _parameter.KwkgStichtag = dtStichtag.Checked ? (DateTime?)dtStichtag.Value.Date : null;
+            _parameter.KwkgInbetriebnahme = dtInbetriebnahme.Checked
+                                          ? (DateTime?)dtInbetriebnahme.Value.Date : null;
+
+            using (var f = new Form_KwkgModule(_parameter.IdStamm, "", _parameter))
+                f.ShowDialog(this);
         }
 
         /// <summary>Steuerwert der Auswahl; ohne Auswahl gilt die Vorgabe (Etappe E4).</summary>

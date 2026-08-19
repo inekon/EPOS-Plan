@@ -1502,3 +1502,40 @@ Erlösreihen.
 | Die Beschriftungen von `Form_Tarifstruktur` (beide Modellblöcke, Staffelraster, Fußhinweis) | Der Dialog ist wie `Form_WirtschaftlichkeitParameter` **vollständig** unlokalisiert und im Code aufgebaut; er gehört als Ganzes umgestellt, nicht in Teilen. |
 | Die Beschriftungen des Blocks „BHKW — Energie- und Stromsteuer" im Parameterdialog | `Form_WirtschaftlichkeitParameter` ist **vollständig** unlokalisiert (alle Gruppen, alle Zeilen, der Fußhinweis) und im Code aufgebaut. Vier lokalisierte Zeilen darin wären keine Lokalisierung, sondern eine Inkonsistenz mehr — der Dialog gehört als Ganzes umgestellt. |
 | Katalogschlüssel in den Meldungen (`ENERGIEST_ERDGAS` & Co.) | **Schlüssel der Persistenzschicht** aus Etappe E1. Sie stehen bewusst im Klartext in der Meldung, damit der Anwender die Zeile in Administration → „Gesetzliche Parameter" wiederfindet. |
+
+---
+
+## Nachtrag zu Etappe E6 — KWK-Zuschlag je BHKW-Modul (19.08.2026)
+
+`WirtschaftlichkeitCtrl.BaueKwkgReihe` rechnet den Zuschlag ab E6 **je Anlage** und summiert
+jahresweise. Dabei entstehen drei neue Meldungen im Ergebnis und sechs Bausteine der
+**Herleitung**, die der neue Dialog „KWK-Zuschlag je BHKW-Modul" zeigt und die zugleich in den
+Ergebnishinweis wandern können.
+
+Die neun Schlüssel der Nachträge 1 und 2 zu E2 (`WIRT_KWKG_*_UEBER_GRENZE`,
+`WIRT_KWKG_*_HEIZOEL*`, `WIRT_KWKG_KEINE_FOERDERFAEHIG`, `WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR`)
+bleiben **wortgleich unverändert**.
+
+### Neu (9)
+
+| Schlüssel | Deutsch | Englisch | Fundstelle |
+|---|---|---|---|
+| `WIRT_KWKG_JE_MODUL` | KWKG: Zuschlag je BHKW-Modul gerechnet — {0}. | CHP Act: bonus calculated per CHP unit — {0}. | `WirtschaftlichkeitCtrl.ReiheJeAnlage` — erscheint **nur** bei mehr als einer Anlage oder bei mindestens einer eigenen Anlagenangabe; ein Einmodulprojekt ohne eigene Werte bekommt keine neue Meldung. |
+| `WIRT_KWKG_ANLAGE_STICHTAG` | KWKG: {0} — Bestellung/Genehmigung nach dem {1} … für diese Anlage kein Zuschlag. | CHP Act: {0} — order/permit dated after {1} … no bonus for this unit. | `WirtschaftlichkeitCtrl.Anlagenauswahl` — § 6 KWKG **je Anlage**. Die Projektmeldung des Altstands bleibt daneben bestehen und gilt, solange keine Anlage ein eigenes Datum trägt. |
+| `WIRT_KWKG_ANLAGE_FRIST` | KWKG: {0} — Inbetriebnahme nach Ablauf der Realisierungsfrist … | CHP Act: {0} — commissioning after the realisation deadline … | dieselbe |
+| `WIRT_KWKG_HERLEITUNG_TRANCHEN` | {0} kW nach Leistungsanteilen: {1} → Mischsatz {2} ct/kWh ({3}, Stand {4}). | {0} kW by capacity tranches: {1} → blended rate {2} ct/kWh ({3}, as of {4}). | `KwkgSatzRechner.Mischsatz` — die Herleitung zeigt die **Tranchen**, nicht eine Klasse. |
+| `WIRT_KWKG_HERLEITUNG_PAUSCHAL` | {0} kW und damit bis {1} kW, neue Anlage → {2} ct/kWh ({3}, Stand {4}) … | {0} kW and thus up to {1} kW, new unit → {2} ct/kWh ({3}, as of {4}) … | `KwkgSatzRechner.Pauschal` — § 7 Abs. 3a geht Abs. 1 und 2 vor. |
+| `WIRT_KWKG_HERLEITUNG_KEIN_EIGENFALL` | Kein Tatbestand des § 6 Abs. 3 KWKG 2025 erfasst … | None of the cases of section 6 (3) KWKG 2025 recorded … | `KwkgSatzRechner.Vorschlag` — der **Regelfall**: Eigenstrom bekommt nicht generell einen Zuschlag. |
+| `WIRT_KWKG_HERLEITUNG_N1_ZU_GROSS` | Der Tatbestand des § 6 Abs. 3 Nr. 1 gilt nur bis {0} kW; diese Anlage hat {1} kW … | The case of section 6 (3) no. 1 applies only up to {0} kW; this unit has {1} kW … | dieselbe |
+| `WIRT_KWKG_HERLEITUNG_SATZ_FEHLT` | Der Satz „{0}" ist im Katalog „Gesetzliche Parameter" nicht gepflegt — kein Vorschlag. | The rate “{0}” is not maintained in the “Statutory parameters” catalogue — no proposal. | `KwkgSatzRechner` — nie ein geratener Ersatzwert (Regel wie `GesetzKatalog.Wert`). |
+| `WIRT_KWKG_HERLEITUNG_OHNE_LEISTUNG` | Ohne gepflegte elektrische Nennleistung lässt sich kein Zuschlagssatz vorschlagen. | Without a maintained electrical rated capacity no bonus rate can be proposed. | dieselbe |
+
+**Nicht lokalisiert — und warum**
+
+| Wert | Grund |
+|---|---|
+| `"NEUANLAGE"`, `"MODERNISIERT"`, `"NACHGERUESTET"` (`DbWerte.KWKG_ANLAGENART_*`) | **Persistenzwerte** — Inhalt von `Tab_Energieanlagen.KWKG_Anlagenart`, in SQL verglichen, nach der Auslieferung eingefroren. Die ComboBox in `Form_KwkgModule` trägt eine `Steuerwahl`-Klasse, die den **Wert** hält und den **Namen** anzeigt. Längster Wert 13 Zeichen ⇒ TEXT(24). |
+| `"KEINER"`, `"NR1_BIS100KW"`, `"NR2_KUNDENANLAGE"`, `"NR3_STROMINTENSIV"` (`DbWerte.KWKG_EIGENFALL_*`) | dito — Inhalt von `…KWKG_Eigenstromfall`. Längster Wert 17 Zeichen ⇒ TEXT(24). |
+| `"KATALOG_GENERATION"`, `"SYSTEM"` (`DbWerte.GESETZ_KATALOG_GENERATION`, `…KLASSE_SYSTEM`) | **Verwaltungszeile** der generationsweisen Nachsaat in `Tab_Gesetzesparameter` — Schlüssel der Persistenzschicht, nie auf dem Bildschirm; die Pflegemaske blendet die Klasse aus. |
+| Die Normbezeichnungen der Herleitung (`§ 7 Abs. 1 KWKG 2025`, `§ 7 Abs. 2 i.V.m. § 6 Abs. 3 Nr. 2 KWKG 2025` …) | Paragrafenzeichen, Zahlen und die amtliche Kurzbezeichnung des Gesetzes — kein übersetzbarer Wortbestand. Sie stehen als Textbaustein im Code und werden in den lokalisierten Rahmen `{3}` eingesetzt. Dasselbe gilt für die Klammer `„(50 kW, 7.476 h/a, 4,00/8,00 ct/kWh, 30.000 h)"` der Modulaufzählung — nur Zahlen und Einheitenzeichen (Muster `KwkgAnlagenauswahl.Klartext`). |
+| Die Beschriftungen von `Form_KwkgModule` | Der Dialog folgt seinem Aufrufer `Form_WirtschaftlichkeitParameter`, und der ist **vollständig** unlokalisiert und im Code aufgebaut. Einzelne lokalisierte Zeilen darin wären keine Lokalisierung, sondern eine Inkonsistenz mehr. Die **Herleitungstexte** kommen dagegen aus `MyResource`, weil dieselben Texte auch im Ergebnis erscheinen. |

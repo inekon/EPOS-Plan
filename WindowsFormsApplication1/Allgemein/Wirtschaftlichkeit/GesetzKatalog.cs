@@ -21,6 +21,13 @@ namespace WindowsFormsApplication1
     {
         public GesetzParameter(int id, string schluessel, string klasse, int jahrVon,
                                double? wert, string einheit, string status, string quelle)
+            : this(id, schluessel, klasse, jahrVon, wert, einheit, status, quelle, 1)
+        {
+        }
+
+        public GesetzParameter(int id, string schluessel, string klasse, int jahrVon,
+                               double? wert, string einheit, string status, string quelle,
+                               int generation)
         {
             Id = id;
             Schluessel = schluessel ?? "";
@@ -30,6 +37,7 @@ namespace WindowsFormsApplication1
             Einheit = einheit ?? "";
             Status = status ?? "";
             Quelle = quelle ?? "";
+            Generation = generation;
         }
 
         /// <summary>Datenbank-ID; 0, wenn die Zeile aus der Code-Rückfallebene stammt.</summary>
@@ -55,6 +63,25 @@ namespace WindowsFormsApplication1
 
         /// <summary>Fundstelle oder Veröffentlichung, aus der der Wert stammt.</summary>
         public string Quelle { get; private set; }
+
+        /// <summary>
+        /// ETAPPE E6 — <b>Seed-Generation</b> dieser Vorbelegungszeile. Sie steht
+        /// ausschließlich im Code und wird <b>nicht</b> je Zeile gespeichert; in der
+        /// Datenbank hält eine einzige Markerzeile
+        /// (<c>DbWerte.GESETZ_KATALOG_GENERATION</c>) fest, bis zu welcher Generation
+        /// eingesät wurde. Beim Start sät <see cref="GesetzKatalog.StelleKatalogSicher"/>
+        /// nur Zeilen mit einer <b>höheren</b> Generation nach.
+        ///
+        /// <para>Gelesene Datenbankzeilen tragen 1 und werten das nicht aus — die
+        /// Generation ist eine Eigenschaft des Seeds, nicht der Zeile.</para>
+        ///
+        /// <list type="table">
+        ///   <item><term>1</term><description>Etappe E1, erster Seed (18.08.2026)</description></item>
+        ///   <item><term>2</term><description>Nachtrag zu E2 (19.08.2026): <c>KWKG_AUSSCHREIBUNG_GRENZE_KW</c></description></item>
+        ///   <item><term>3</term><description>Etappe E6 (19.08.2026): die beiden Anlagengrenzen des § 6 Abs. 3 Nr. 1 und des § 7 Abs. 3a</description></item>
+        /// </list>
+        /// </summary>
+        public int Generation { get; private set; }
     }
 
     /// <summary>
@@ -178,14 +205,18 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        /// <summary>Alle im Katalog vorkommenden Klassen, alphabetisch (Auswahlliste der Maske).</summary>
+        /// <summary>Alle im Katalog vorkommenden Klassen, alphabetisch (Auswahlliste der Maske).
+        /// Die technische Klasse <c>SYSTEM</c> bleibt außen vor — die Markerzeile der
+        /// Nachsaat ist kein gesetzlicher Parameter (Etappe E6).</summary>
         public IList<string> Klassen()
         {
             Sicherstellen();
             var gesehen = new List<string>();
             foreach (KeyValuePair<string, List<GesetzParameter>> e in _reihen)
                 foreach (GesetzParameter p in e.Value)
-                    if (p.Klasse.Length > 0 && !gesehen.Contains(p.Klasse)) gesehen.Add(p.Klasse);
+                    if (p.Klasse.Length > 0 && !gesehen.Contains(p.Klasse) &&
+                        !string.Equals(p.Klasse, DbWerte.GESETZ_KLASSE_SYSTEM, StringComparison.Ordinal))
+                        gesehen.Add(p.Klasse);
             gesehen.Sort(StringComparer.Ordinal);
             return gesehen;
         }
@@ -350,29 +381,80 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Legt <c>Tab_Gesetzesparameter</c> an, falls sie fehlt, und sät sie einmalig
-        /// mit <see cref="Vorbelegung"/> ein.
+        /// Höchste Generation, die <see cref="Vorbelegung"/> führt (Etappe E6). Nach
+        /// einem Lauf von <see cref="StelleKatalogSicher"/> steht die Markerzeile
+        /// <c>DbWerte.GESETZ_KATALOG_GENERATION</c> auf diesem Wert.
+        /// </summary>
+        public static int AktuelleGeneration
+        {
+            get
+            {
+                int max = 0;
+                foreach (GesetzParameter p in Vorbelegung())
+                    if (p.Generation > max) max = p.Generation;
+                return max;
+            }
+        }
+
+        /// <summary>
+        /// Zahl der Zeilen, die der letzte Lauf von <see cref="StelleKatalogSicher"/>
+        /// <b>nachgesät</b> hat (Etappe E6) — 0 bei einer Datenbank, die schon auf der
+        /// aktuellen Generation steht. Reine Diagnosegröße für Protokoll und Prüfung.
+        /// </summary>
+        public static int ZuletztNachgesaet { get; private set; }
+
+        /// <summary>
+        /// Legt <c>Tab_Gesetzesparameter</c> an, falls sie fehlt, und sät sie
+        /// <b>generationsweise</b> ein.
         ///
         /// <para>
         /// <b>Warum kein Migrationsschritt.</b> Muster ist
         /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> (Tab_KWKG_Staffel):
-        /// CREATE plus <c>SELECT COUNT(*) == 0 ⇒ Seed</c>. Damit bekommt jede
-        /// Bestandsinstallation die Werte, ohne dass der Anwender eine Migration
-        /// anstoßen muss — der Katalog ist reine Zusatztabelle ohne Fremdschlüssel und
-        /// ohne Bezug zu Projektdaten, also genau der Fall, für den dieses Muster im
-        /// Bestand da ist. Die <c>SchemaMigration</c> bleibt dem vorbehalten, was
-        /// bestehende Zeilen anfasst (neue Spalten, Vorbelegungen, Beziehungen).
+        /// CREATE plus Seed. Damit bekommt jede Bestandsinstallation die Werte, ohne
+        /// dass der Anwender eine Migration anstoßen muss — der Katalog ist reine
+        /// Zusatztabelle ohne Fremdschlüssel und ohne Bezug zu Projektdaten, also genau
+        /// der Fall, für den dieses Muster im Bestand da ist. Die
+        /// <c>SchemaMigration</c> bleibt dem vorbehalten, was bestehende Zeilen anfasst
+        /// (neue Spalten, Vorbelegungen, Beziehungen).
         /// </para>
         ///
         /// <para>
-        /// <b>Seed und Anlage sind entkoppelt</b> — wie beim Vorbild: Der Seed greift
-        /// auch dann, wenn die Tabelle schon existiert, aber leer ist (abgebrochener
-        /// erster Versuch oder vom Anwender geleert). Ein Doppelstart legt nichts
-        /// doppelt an, weil die Zählung vorher läuft.
+        /// <b>ETAPPE E6 — generationsweise Nachsaat statt „nur bei leerer Tabelle".</b>
+        /// Bis E6 sät diese Methode ausschließlich in eine LEERE Tabelle ein. Ein
+        /// Schlüssel, der nach dem ersten Seed hinzukommt, erreicht eine bereits
+        /// gefüllte Tabelle deshalb nie. Das ist kein theoretischer Fall: In der
+        /// produktiven Datenbank vom 19.08.2026 fehlt
+        /// <c>KWKG_AUSSCHREIBUNG_GRENZE_KW</c> aus genau diesem Grund — der Schlüssel
+        /// kam mit dem Nachtrag zu Etappe E2 hinzu, der Katalog war da schon gesät. Bis
+        /// hierher fing das die Code-Konstante
+        /// <c>WirtschaftlichkeitCtrl.KWKG_MAX_LEISTUNG_KW</c> auf; ein Schlüssel ohne
+        /// Rückfallebene wäre ausgefallen.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Die Regel.</b> Jede Zeile der <see cref="Vorbelegung"/> trägt eine
+        /// <see cref="GesetzParameter.Generation"/>. Eine Markerzeile in derselben
+        /// Tabelle hält fest, bis zu welcher Generation diese Datenbank gesät wurde;
+        /// eingesät werden nur Zeilen mit einer <b>höheren</b> Generation. Damit kommen
+        /// neue Schlüssel an, und eine bewusst gelöschte Zeile einer älteren Generation
+        /// bleibt gelöscht — der Zielkonflikt aus <c>W4_Umsetzungsstand.md</c>,
+        /// Abschnitt 5, Punkt 4.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Sonderfall leere Tabelle.</b> Sie gilt als Generation 0 — also wird alles
+        /// gesät, genau wie bisher. Das deckt die frische Installation ab und den Fall,
+        /// dass der Anwender die Tabelle vollständig geleert hat.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Idempotent.</b> Ein zweiter Lauf findet den Marker auf der aktuellen
+        /// Generation und legt nichts an (<see cref="ZuletztNachgesaet"/> = 0).
         /// </para>
         /// </summary>
         public static void StelleKatalogSicher()
         {
+            ZuletztNachgesaet = 0;
             try
             {
                 using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
@@ -400,38 +482,118 @@ namespace WindowsFormsApplication1
 
                     try
                     {
-                        object anz;
-                        using (var cmd = new OleDbCommand(
-                            "SELECT COUNT(*) FROM " + TAB_GESETZESPARAMETER, conn))
-                            anz = cmd.ExecuteScalar();
-                        if (anz == null || anz == DBNull.Value || Convert.ToInt32(anz) != 0) return;
+                        int gesaet = GesaeteGeneration(conn);
+                        int ziel = AktuelleGeneration;
+                        if (gesaet >= ziel) return;
 
-                        int id = 0;
+                        int id = MaxId(conn);
+                        int neu = 0;
                         foreach (GesetzParameter p in Vorbelegung())
                         {
+                            if (p.Generation <= gesaet) continue;
                             id++;
-                            using (var cmd = new OleDbCommand(
-                                "INSERT INTO " + TAB_GESETZESPARAMETER +
-                                " (ID, Schluessel, Klasse, JahrVon, [Wert], Einheit, [Status], Quelle) " +
-                                "VALUES (?,?,?,?,?,?,?,?)", conn))
-                            {
-                                cmd.Parameters.Add("@id", OleDbType.Integer).Value = id;
-                                cmd.Parameters.Add("@sch", OleDbType.VarWChar, 60).Value = p.Schluessel;
-                                cmd.Parameters.Add("@kla", OleDbType.VarWChar, 40).Value = p.Klasse;
-                                cmd.Parameters.Add("@jv", OleDbType.Integer).Value = p.JahrVon;
-                                cmd.Parameters.Add("@wert", OleDbType.Double).Value =
-                                    p.Wert.HasValue ? (object)p.Wert.Value : DBNull.Value;
-                                cmd.Parameters.Add("@einh", OleDbType.VarWChar, 20).Value = p.Einheit;
-                                cmd.Parameters.Add("@sta", OleDbType.VarWChar, 12).Value = p.Status;
-                                cmd.Parameters.Add("@que", OleDbType.VarWChar, 120).Value = p.Quelle;
-                                cmd.ExecuteNonQuery();
-                            }
+                            Einfuegen(conn, id, p.Schluessel, p.Klasse, p.JahrVon, p.Wert,
+                                      p.Einheit, p.Status, p.Quelle);
+                            neu++;
                         }
+                        MarkerSetzen(conn, ziel, ref id);
+                        ZuletztNachgesaet = neu;
                     }
                     catch { }
                 }
             }
             catch { /* ohne Tabelle greift die Code-Rückfallebene */ }
+        }
+
+        /// <summary>
+        /// Bis zu welcher Generation diese Datenbank gesät wurde. <b>Leere Tabelle = 0</b>
+        /// (dann wird alles gesät, wie vor Etappe E6). Eine gefüllte Tabelle <b>ohne</b>
+        /// Markerzeile ist der E1-Bestand und zählt als Generation 1.
+        /// </summary>
+        private static int GesaeteGeneration(OleDbConnection conn)
+        {
+            object marker = null;
+            try
+            {
+                using (var cmd = new OleDbCommand(
+                    "SELECT MAX([Wert]) FROM " + TAB_GESETZESPARAMETER + " WHERE Schluessel = ?", conn))
+                {
+                    cmd.Parameters.Add("@s", OleDbType.VarWChar, 60).Value = DbWerte.GESETZ_KATALOG_GENERATION;
+                    marker = cmd.ExecuteScalar();
+                }
+            }
+            catch { }
+            if (marker != null && marker != DBNull.Value)
+            {
+                try { return (int)Math.Round(Convert.ToDouble(marker)); } catch { }
+            }
+
+            object anz;
+            using (var cmd = new OleDbCommand("SELECT COUNT(*) FROM " + TAB_GESETZESPARAMETER, conn))
+                anz = cmd.ExecuteScalar();
+            int zeilen = anz == null || anz == DBNull.Value ? 0 : Convert.ToInt32(anz);
+            return zeilen == 0 ? 0 : 1;
+        }
+
+        /// <summary>Höchste vergebene ID der Tabelle (0 bei leerer Tabelle) — kein AutoWert.</summary>
+        private static int MaxId(OleDbConnection conn)
+        {
+            try
+            {
+                using (var cmd = new OleDbCommand("SELECT MAX(ID) FROM " + TAB_GESETZESPARAMETER, conn))
+                {
+                    object o = cmd.ExecuteScalar();
+                    if (o != null && o != DBNull.Value) return Convert.ToInt32(o);
+                }
+            }
+            catch { }
+            return 0;
+        }
+
+        /// <summary>Legt die Markerzeile an oder hebt sie auf die erreichte Generation.</summary>
+        private static void MarkerSetzen(OleDbConnection conn, int generation, ref int id)
+        {
+            const string quelle = "EPOS-Plan — Verwaltungszeile der generationsweisen Nachsaat (Etappe E6)";
+            int betroffen = 0;
+            try
+            {
+                using (var cmd = new OleDbCommand(
+                    "UPDATE " + TAB_GESETZESPARAMETER + " SET [Wert] = ?, Quelle = ? WHERE Schluessel = ?", conn))
+                {
+                    cmd.Parameters.Add("@w", OleDbType.Double).Value = (double)generation;
+                    cmd.Parameters.Add("@q", OleDbType.VarWChar, 120).Value = quelle;
+                    cmd.Parameters.Add("@s", OleDbType.VarWChar, 60).Value = DbWerte.GESETZ_KATALOG_GENERATION;
+                    betroffen = cmd.ExecuteNonQuery();
+                }
+            }
+            catch { }
+            if (betroffen > 0) return;
+
+            id++;
+            Einfuegen(conn, id, DbWerte.GESETZ_KATALOG_GENERATION, DbWerte.GESETZ_KLASSE_SYSTEM, 0,
+                      generation, DbWerte.GESETZ_EINHEIT_OHNE, DbWerte.GESETZ_STATUS_GESICHERT, quelle);
+        }
+
+        /// <summary>Eine Zeile schreiben — derselbe Weg für Seed, Nachsaat und Marker.</summary>
+        private static void Einfuegen(OleDbConnection conn, int id, string schluessel, string klasse,
+                                      int jahrVon, double? wert, string einheit, string status, string quelle)
+        {
+            using (var cmd = new OleDbCommand(
+                "INSERT INTO " + TAB_GESETZESPARAMETER +
+                " (ID, Schluessel, Klasse, JahrVon, [Wert], Einheit, [Status], Quelle) " +
+                "VALUES (?,?,?,?,?,?,?,?)", conn))
+            {
+                cmd.Parameters.Add("@id", OleDbType.Integer).Value = id;
+                cmd.Parameters.Add("@sch", OleDbType.VarWChar, 60).Value = schluessel;
+                cmd.Parameters.Add("@kla", OleDbType.VarWChar, 40).Value = klasse;
+                cmd.Parameters.Add("@jv", OleDbType.Integer).Value = jahrVon;
+                cmd.Parameters.Add("@wert", OleDbType.Double).Value =
+                    wert.HasValue ? (object)wert.Value : DBNull.Value;
+                cmd.Parameters.Add("@einh", OleDbType.VarWChar, 20).Value = einheit;
+                cmd.Parameters.Add("@sta", OleDbType.VarWChar, 12).Value = status;
+                cmd.Parameters.Add("@que", OleDbType.VarWChar, 120).Value = quelle;
+                cmd.ExecuteNonQuery();
+            }
         }
 
         // ---------------------------------------------------------------------
@@ -536,8 +698,23 @@ namespace WindowsFormsApplication1
             // Ausschreibungsgrenze § 8a KWKG / KWKAusV — bezogen auf die EINZELNE Anlage.
             // Der Zuschlag oberhalb dieser Leistung ist nur über eine Ausschreibung zu
             // erlangen; dieser Weg ist in EPOS-Plan nicht bedienbar (Nachtrag zu E2).
+            //
+            // GENERATION 2: Dieser Schlüssel kam NACH dem ersten Seed hinzu. In jeder
+            // Datenbank, die vorher eingesät wurde, fehlt er — nachgewiesen an der
+            // produktiven Kenndaten.accdb vom 19.08.2026 (49 KWKG-Zeilen, dieser
+            // Schlüssel nicht darunter). Die generationsweise Nachsaat aus Etappe E6
+            // holt ihn nach.
             l.Add(N(DbWerte.GESETZ_KWKG_AUSSCHREIBUNG_GRENZE, KWKG, 2020, 500.0, KW, G,
-                    "KWKG 2025 § 8a i.V.m. KWKAusV — Ausschreibungspflicht je Anlage"));
+                    "KWKG 2025 § 8a i.V.m. KWKAusV — Ausschreibungspflicht je Anlage", 2));
+
+            // GENERATION 3 (Etappe E6): zwei ANLAGENgrenzen, die von den Tranchengrenzen
+            // des § 7 zu unterscheiden sind. Der Zuschlagsvorschlag je Modul braucht sie,
+            // um zwischen der Sonderregel des § 7 Abs. 3a, dem Eigenstromfall Nr. 1 und
+            // der allgemeinen Tranchenrechnung zu entscheiden.
+            l.Add(N(DbWerte.GESETZ_KWKG_NEUANLAGE_GRENZE, KWKG, 2020, 50.0, KW, G,
+                    "KWKG 2025 § 7 Abs. 3a — Anlagengrenze der Sonderregel für neue Anlagen", 3));
+            l.Add(N(DbWerte.GESETZ_KWKG_EIGEN_N1_GRENZE, KWKG, 2020, 100.0, KW, G,
+                    "KWKG 2025 § 6 Abs. 3 Nr. 1 — Anlagengrenze des Eigenstromzuschlags", 3));
 
             // Dauer der Zuschlagszahlung (§ 8). Die 60.000 Vbh für Anlagen bis 50 kW
             // gibt es seit dem KWKG 2020 nicht mehr — halbierte Dauer, verdoppelte Sätze.
@@ -846,11 +1023,13 @@ namespace WindowsFormsApplication1
             return _vorbelegung;
         }
 
-        /// <summary>Kurzschreibweise für eine Vorbelegungszeile mit Wert.</summary>
+        /// <summary>Kurzschreibweise für eine Vorbelegungszeile mit Wert; ohne Angabe
+        /// gehört sie zur Generation 1 (erster Seed, Etappe E1).</summary>
         private static GesetzParameter N(string schluessel, string klasse, int jahrVon, double wert,
-                                         string einheit, string status, string quelle)
+                                         string einheit, string status, string quelle, int generation = 1)
         {
-            return new GesetzParameter(0, schluessel, klasse, jahrVon, wert, einheit, status, quelle);
+            return new GesetzParameter(0, schluessel, klasse, jahrVon, wert, einheit, status, quelle,
+                                       generation);
         }
     }
 }

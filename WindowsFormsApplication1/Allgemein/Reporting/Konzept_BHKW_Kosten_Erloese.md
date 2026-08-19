@@ -191,6 +191,7 @@ Additiv, Migration ab Schemastand 18. Muster für neue Tabellen:
 | `Tab_ProjektTarif` | `Leistungsmodell TEXT(20)` (`MONATLICH` / `STAFFEL` / `JAHRESHOECHSTLAST`), vier **kumulierte Obergrenzen** in kW mit Sommer- und Winterpreis, monatlicher Leistungspreis, Grundpreis, `GueltigAb` — *umgesetzt mit E5 als **36 Spalten**: je Rolle (Bezug, Reststrom) ein Arbeitspreis, ein Grundpreis, `…_Leistungsmodell TEXT(24)`, ein Monatspreis und vier Staffelstufen; dazu `Tarif_Modus TEXT(12)` (`ZONEN` / `ROLLEN`), `Tarif_GueltigAb` und für die Einspeisung Arbeits- und Grundpreis. Die Einspeiserolle führt **keine** Leistungsstaffel — Begründung im E5-Protokoll, Abschnitt 2.2* |
 | `Tab_Kraftwerkspark` | `CO`, `Staub`, `GueltigAb`, `Quelle`, `ReadOnly` und vor allem **`Bezugsbasis TEXT(12)`** (`BRENNSTOFF` / `STROM`) |
 | `Tab_ProjektWirtschaftlichkeit` | Steuerparameter je Projekt: Unternehmensart, Nutzungsgrad, Hocheffizienz, räumlicher Zusammenhang, Wahl § 53 / § 53a |
+| `Tab_Energieanlagen` | *E6, Schritt 22:* `KWKG_Stichtag DATETIME`, `KWKG_Inbetriebnahme DATETIME`, `KWKG_Anlagenart TEXT(24)`, `KWKG_Eigenstromfall TEXT(24)`, `KWKG_Satz_Einspeisung DOUBLE`, `KWKG_Satz_Eigen DOUBLE`, `KWKG_Vbh_Kontingent DOUBLE`, `KWKG_Vbh_Jahresdeckel DOUBLE` — **alle NULL-fähig, NULL = Projektwert**. Kein DML, kein `_STAMM`-Gegenstück (die Tabelle hat keines) |
 
 **ACE-Regeln, die im Bestand teuer gelernt wurden:** `YESNO` belegt
 Bestandszeilen mit `False`, `DOUBLE` bleibt NULL — Vorbelegung immer als eigener
@@ -279,6 +280,23 @@ Der Zuschlagssatz wird je Modul aus dem Katalog vorgeschlagen (Leistungsklasse,
 Inbetriebnahmejahr, eingespeist oder eigengenutzt) und bleibt überschreibbar.
 Jahresdeckel (2026: 3.300 h) und Kontingent (30.000 h) gelten je Modul.
 
+> **Berichtigung nach der Umsetzung (Etappe E6, 19.08.2026).** „Leistungs**klasse**" ist die
+> falsche Vorstellung. § 7 Abs. 1 und 2 KWKG überschreiben ihre Wertetabelle mit
+> *Leistungsanteil* und meinen **marginale Tranchen**: Eine 300-kW-Anlage bekommt 50 kW zu
+> 8,00, 50 kW zu 6,00, 150 kW zu 5,00 und 50 kW zu 4,40 ct/kWh — leistungsgewichtet
+> **5,5667 ct/kWh** statt der 4,40 ct/kWh einer Klassensuche, also **21 % mehr**. Zweitens ist
+> der Zuschlag auf **selbst genutzten** Strom nicht das Spiegelbild der Einspeisung: Er besteht
+> nach Abs. 2 nur in den drei Tatbeständen des § 6 Abs. 3, und § 7 Abs. 3a (neue Anlagen bis
+> 50 kW: 16 bzw. 8 ct/kWh) geht Abs. 1 **und** 2 vor. Beides steht in
+> [`Grundlagen_KWKG_Energiesteuer_Stromsteuer.md`](../../../Grundlagen_KWKG_Energiesteuer_Stromsteuer.md),
+> Abschnitt 1.3, und ist mit E6 als Staffel umgesetzt (`KwkgSatzRechner`).
+>
+> **Und eine Präzisierung zur Wirkung:** Solange **jedes** Modul über dem Jahresdeckel liegt,
+> ist die Summe der Modulreihen algebraisch die projektweite Reihe — die alte Rechnung war
+> dann nicht falsch, sondern zufällig richtig. Die Wirkung entsteht erst bei ungleicher
+> Deckelung, verschiedenen Inbetriebnahmejahren, verschiedenen Kontingenten oder beim Ausfall
+> einer einzelnen Anlage (E6-Protokoll, Abschnitte 4.2 und 5).
+
 Die drei Begrenzungen der Altanwendung (Befund 15) werden auf **eine** reduziert:
 Kontingent und Jahresdeckel in der jahresscharfen Reihe. Die Einzeljahresanzeige
 zeigt denselben Wert wie das erste Jahr dieser Reihe.
@@ -327,7 +345,7 @@ Damit werden folgende heute hart codierten Werte pflegbar: Stromsteuersätze in
 | **E3** | Kostenposition erweitern (L5), Betriebskosten-Dialog VDI 2067 | Betriebskosten vollständig erfassbar |
 | **E4** | Energiesteuer- und Stromsteuergutschrift | Steuern in Kapitalwert und Bericht — **umgesetzt 19.08.2026**, ergebnisneutral für Bestandsprojekte ([`W4_E4_Steuergutschriften_Protokoll.md`](W4_E4_Steuergutschriften_Protokoll.md)) |
 | **E5** | Tarife mit drei Leistungspreismodellen, vermiedener Strombezug | Erlösseite vollständig — **umgesetzt 19.08.2026**, ergebnisneutral für Bestandsprojekte ([`W4_E5_Tarife_Strombezug_Protokoll.md`](W4_E5_Tarife_Strombezug_Protokoll.md)). Die Aufschläge sind gemessen (+32 bis 34 % Energiekosten, −30 bis 33 % Kapitalwert) und hinter einen Projektschalter gelegt, Vorgabe AUS |
-| **E6** | KWK-Zuschlag je Modul mit Katalogvorschlag | gesetzliche Leistungsklassen abgebildet |
+| **E6** | KWK-Zuschlag je Modul mit Katalogvorschlag | gesetzliche Leistungsklassen abgebildet — **umgesetzt 19.08.2026** (Migrationsschritt 22, [`W4_E6_Zuschlag_je_Modul_Protokoll.md`](W4_E6_Zuschlag_je_Modul_Protokoll.md)). Ergebnisneutral für Einmodulprojekte; bei Mehrmodulanlagen ändert sich das Ergebnis **nur**, wenn die Module den Jahresdeckel unterschiedlich treffen oder sich in Datum, Satz oder Kontingent unterscheiden |
 | **E7** | Bericht (Word und Excel), Mehrjahrestabelle | Ausgabe |
 | **E8** | Abnahme, neue Referenzbasis, Protokoll | eingefroren |
 

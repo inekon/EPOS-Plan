@@ -485,6 +485,58 @@ namespace WindowsFormsApplication1
         public const string LEISTUNGSMODELL_JAHRESHOECHSTLAST = "JAHRESHOECHSTLAST";
 
         // =====================================================================
+        // ETAPPE E6 — Angaben JE BHKW-ANLAGE (Tab_Energieanlagen, Schritt 22)
+        //   Steuerwerte, sprachneutral und ASCII, in SQL verglichen, eingefroren.
+        //
+        //   BEIDE Spalten steuern AUSSCHLIESSLICH den KATALOGVORSCHLAG und die
+        //   angezeigte Herleitung — nie unmittelbar den Rechenweg. Gerechnet wird
+        //   mit dem Ueberschreibwert der Anlage bzw. mit dem Projektsatz. Deshalb
+        //   bleiben sie in Schritt 22 auch ohne Vorbelegung: Eine leere Angabe ist
+        //   „nicht erfasst" und aendert an keiner Bestandsrechnung etwas.
+        // =====================================================================
+
+        /// <summary>
+        /// Anlagenart nach KWKG: NEUE Anlage (§ 8 Abs. 1, 30.000 Vbh). Zugleich die
+        /// Voraussetzung der Sonderregel des § 7 Abs. 3a fuer Anlagen bis 50 kW.
+        /// Steuerwert, sprachneutral, in SQL verglichen, eingefroren.
+        /// </summary>
+        public const string KWKG_ANLAGENART_NEU = "NEUANLAGE";
+
+        /// <summary>Anlagenart: MODERNISIERT (§ 8 Abs. 2 — 6.000 / 15.000 / 30.000 Vbh
+        /// je nach Anteil an den Neuherstellungskosten).
+        /// <inheritdoc cref="KWKG_ANLAGENART_NEU" path="/summary/text()[last()]"/></summary>
+        public const string KWKG_ANLAGENART_MODERNISIERT = "MODERNISIERT";
+
+        /// <summary>Anlagenart: NACHGERUESTET (§ 8 Abs. 3 — 10.000 / 15.000 / 30.000 Vbh).
+        /// Nur diese Anlagenart bekommt oberhalb von 2 MW den abweichenden
+        /// Einspeisesatz von 3,1 statt 3,4 ct/kWh.
+        /// <inheritdoc cref="KWKG_ANLAGENART_NEU" path="/summary/text()[last()]"/></summary>
+        public const string KWKG_ANLAGENART_NACHGERUESTET = "NACHGERUESTET";
+
+        /// <summary>
+        /// Tatbestand des § 6 Abs. 3, unter dem SELBST GENUTZTER Strom zuschlagsfaehig
+        /// ist — hier: keiner. <b>Das ist der Regelfall</b>: Einen Zuschlag auf
+        /// Eigenstrom gibt es nach § 7 Abs. 2 <b>nicht generell</b>, sondern nur in den
+        /// drei Faellen des § 6 Abs. 3 (Grundlagen, Abschnitt 1.3, ausdruecklicher
+        /// Hinweis). Ohne erfassten Tatbestand schlaegt der Katalog fuer Eigenstrom
+        /// deshalb 0 ct/kWh vor und sagt warum.
+        /// <inheritdoc cref="KWKG_ANLAGENART_NEU" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string KWKG_EIGENFALL_KEINER = "KEINER";
+
+        /// <summary>§ 6 Abs. 3 Nr. 1 — Anlagen bis 100 kW elektrischer Leistung.
+        /// <inheritdoc cref="KWKG_EIGENFALL_KEINER" path="/summary/text()[last()]"/></summary>
+        public const string KWKG_EIGENFALL_NR1 = "NR1_BIS100KW";
+
+        /// <summary>§ 6 Abs. 3 Nr. 2 — Kundenanlage oder geschlossenes Verteilernetz.
+        /// <inheritdoc cref="KWKG_EIGENFALL_KEINER" path="/summary/text()[last()]"/></summary>
+        public const string KWKG_EIGENFALL_NR2 = "NR2_KUNDENANLAGE";
+
+        /// <summary>§ 6 Abs. 3 Nr. 3 — stromkostenintensives Unternehmen.
+        /// <inheritdoc cref="KWKG_EIGENFALL_KEINER" path="/summary/text()[last()]"/></summary>
+        public const string KWKG_EIGENFALL_NR3 = "NR3_STROMINTENSIV";
+
+        // =====================================================================
         // Die zwoelf Betriebskostenpositionen nach VDI 2067
         //   Tab_Kostenfaktor.Bezeichnung (IsMainComponent = False), verwendet als
         //   Unterposition der Kategorie 2 in Tab_ProjektWerte
@@ -1057,6 +1109,59 @@ namespace WindowsFormsApplication1
 
         /// <summary>Verlaengerung in Jahren bei Genehmigung oder Beauftragung bis zum Stichtag (Novelle 2025).</summary>
         public const string GESETZ_KWKG_REALISIERUNGSFRIST = "KWKG_REALISIERUNGSFRIST";
+
+        /// <summary>
+        /// ETAPPE E6 — elektrische Nennleistung, bis zu der der Zuschlag auf SELBST
+        /// GENUTZTEN Strom nach § 6 Abs. 3 <b>Nr. 1</b> ueberhaupt in Betracht kommt
+        /// (100 kW). Oberhalb bleiben nur Nr. 2 (Kundenanlage / geschlossenes
+        /// Verteilernetz) und Nr. 3 (stromkostenintensives Unternehmen).
+        ///
+        /// <para><b>Nicht dasselbe wie <see cref="GESETZ_KWKG_LEISTUNGSSTUFE_2"/></b>,
+        /// auch wenn beide heute 100 kW betragen: Die Leistungsstufe ist eine
+        /// TRANCHENgrenze des § 7, dieser Wert eine ANLAGENgrenze des § 6 Abs. 3 Nr. 1.
+        /// Sie stehen in verschiedenen Normen und koennen sich unabhaengig
+        /// voneinander aendern.</para>
+        /// </summary>
+        public const string GESETZ_KWKG_EIGEN_N1_GRENZE = "KWKG_EIGEN_N1_GRENZE_KW";
+
+        /// <summary>
+        /// ETAPPE E6 — elektrische Nennleistung, bis zu der die Sonderregel des
+        /// § 7 Abs. 3a fuer NEUE Anlagen gilt (50 kW). Sie geht Abs. 1 und 2 vor und
+        /// ersetzt die Tranchenrechnung durch einen einheitlichen Satz.
+        /// <inheritdoc cref="GESETZ_KWKG_EIGEN_N1_GRENZE" path="/summary/para"/>
+        /// </summary>
+        public const string GESETZ_KWKG_NEUANLAGE_GRENZE = "KWKG_ZUSCHLAG_NEU_GRENZE_KW";
+
+        // ------------------------------------------- Verwaltung des Katalogs (E6)
+
+        /// <summary>
+        /// Technische Klasse der Verwaltungszeilen des Katalogs — <b>kein</b>
+        /// gesetzlicher Parameter. Zeilen dieser Klasse werden von der Pflegemaske
+        /// ausgeblendet.
+        /// </summary>
+        public const string GESETZ_KLASSE_SYSTEM = "SYSTEM";
+
+        /// <summary>
+        /// ETAPPE E6 — Markerzeile der <b>generationsweisen Nachsaat</b>: Ihr Wert ist
+        /// die hoechste Seed-Generation, die in dieser Datenbank je eingesaet wurde.
+        ///
+        /// <para><b>Warum es sie gibt.</b> Bis E6 saete
+        /// <c>GesetzKatalog.StelleKatalogSicher</c> nur in eine LEERE Tabelle ein. Ein
+        /// Schluessel, der nach dem ersten Seed hinzukam, erreichte eine bereits
+        /// gefuellte <c>Tab_Gesetzesparameter</c> deshalb nie —
+        /// <see cref="GESETZ_KWKG_AUSSCHREIBUNG_GRENZE"/> fehlt aus genau diesem Grund
+        /// in jeder Datenbank, die vor dem 19.08.2026 eingesaet wurde. Beim Start
+        /// werden jetzt nur Zeilen NEUERER Generationen nachgesaet; bewusst geloeschte
+        /// Zeilen aelterer Generationen bleiben geloescht.</para>
+        ///
+        /// <para><b>Markerzeile statt Spalte</b> (Entscheidung E6): Sie braucht kein
+        /// DDL und wirkt deshalb auch auf Datenbanken, deren Tabelle vom
+        /// E1-<c>CREATE TABLE</c> mit fester Spaltenliste angelegt wurde. Die
+        /// Generation ist ausserdem eine Eigenschaft des SEEDS, nicht der Zeile: Eine
+        /// vom Anwender angelegte oder geaenderte Zeile soll gar keine Generation
+        /// tragen.</para>
+        /// </summary>
+        public const string GESETZ_KATALOG_GENERATION = "KATALOG_GENERATION";
 
         // ------------------------------------------------ Schluessel Stromsteuer
         //   Grundlagen, Abschnitt 2. L4: Steuersatz und Entlastungssatz sind

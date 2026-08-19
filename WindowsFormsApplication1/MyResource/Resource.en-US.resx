@@ -4766,6 +4766,33 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR" xml:space="preserve">
     <value>CHP Act: the project contains an oil-fired CHP unit but no commissioning date — as a new unit the bonus would be excluded (KWKG 2025). Which unit is fired with oil could not be determined; please enter the date in the parameter dialogue.</value>
   </data>
+  <data name="WIRT_KWKG_JE_MODUL" xml:space="preserve">
+    <value>CHP Act: bonus calculated per CHP unit — {0}.</value>
+  </data>
+  <data name="WIRT_KWKG_ANLAGE_STICHTAG" xml:space="preserve">
+    <value>CHP Act: {0} — order/permit dated after {1} and therefore not eligible under current law (section 6 KWKG 2025, regulatory risk of an amendment); no bonus for this unit.</value>
+  </data>
+  <data name="WIRT_KWKG_ANLAGE_FRIST" xml:space="preserve">
+    <value>CHP Act: {0} — commissioning after the realisation deadline of section 6 KWKG 2025 (until {1}); no bonus for this unit.</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_TRANCHEN" xml:space="preserve">
+    <value>{0} kW by capacity tranches: {1} → blended rate {2} ct/kWh ({3}, as of {4}).</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_PAUSCHAL" xml:space="preserve">
+    <value>{0} kW and thus up to {1} kW, new unit → {2} ct/kWh ({3}, as of {4}); the special rule takes precedence over the capacity tranches.</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_KEIN_EIGENFALL" xml:space="preserve">
+    <value>None of the cases of section 6 (3) KWKG 2025 recorded — self-consumed electricity then receives no bonus (section 7 (2)).</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_N1_ZU_GROSS" xml:space="preserve">
+    <value>The case of section 6 (3) no. 1 KWKG 2025 applies only up to {0} kW; this unit has {1} kW — no bonus on self-consumed electricity.</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_SATZ_FEHLT" xml:space="preserve">
+    <value>The rate “{0}” is not maintained in the “Statutory parameters” catalogue — no proposal.</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_OHNE_LEISTUNG" xml:space="preserve">
+    <value>Without a maintained electrical rated capacity no bonus rate can be proposed.</value>
+  </data>
   <data name="KOSTEN_BTN_VDI2067" xml:space="preserve">
     <value>⚙ Operating costs VDI 2067…</value>
   </data>
