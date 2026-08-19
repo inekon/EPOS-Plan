@@ -221,6 +221,18 @@ namespace WindowsFormsApplication1
         public double[] Kumuliert;      // Index = Jahr 0…N
         public double RestwertBarwert;  // zum gewählten Horizont
         public string Fehlgrund;        // != null → keine Reihe
+
+        /// <summary>
+        /// ETAPPE E7 — das vollständige Zahlungsbild dieser Linie: Netto- und
+        /// Barwertreihe UND die Jahresreihen der einzelnen Positionen (Betrieb,
+        /// Energie, CO₂-Abgabe, Ersatz, Einspeiseerlös, KWK-Zuschlag, die drei
+        /// Steuergutschriften). Es ist die Datengrundlage der Mehrjahrestabelle.
+        ///
+        /// <para><c>null</c> bei den Differenzlinien und bei jeder Linie mit
+        /// <see cref="Fehlgrund"/> — die Differenz zweier Zahlungsbilder ist kein
+        /// Zahlungsbild, und ein Bild ohne Rechnung gibt es nicht.</para>
+        /// </summary>
+        public KapitalwertRechner.Zahlungsbild Bild;
     }
 
     /// <summary>Ergebnis der Verlaufsrechnung über einen frei wählbaren Horizont
@@ -483,6 +495,41 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double AufschlagJahr;
 
+        // ---- ETAPPE E7 — Aufschlüsselungen und Nachweise für den Bericht ----
+        //
+        // Alle vier Größen sind AUSGABE: Sie ändern keine Rechnung, sondern zerlegen
+        // bzw. begründen Zahlen, die es vorher nur als Summe gab.
+
+        /// <summary>
+        /// Einspeiseerlös aus dem <b>PV-Überschuss</b> [€/a] (Etappe E7).
+        /// <para><see cref="EinspeiseerloesJahr"/> verschmolz bis dahin PV-Überschuss und
+        /// KWK-Einspeisung zu einer Zahl — zwei Mengen mit zwei Preisen und zwei
+        /// Rechtsgrundlagen. Die Summe der beiden Teile ist der Gesamtbetrag.</para>
+        /// </summary>
+        public double EinspeiseerloesPvJahr;
+
+        /// <summary>Einspeiseerlös aus der <b>KWK-Einspeisung</b> [€/a] (Etappe E7).</summary>
+        public double EinspeiseerloesKwkJahr;
+
+        /// <summary>
+        /// Ein Nachweis je BHKW-Modul der KWKG-Rechnung (Etappe E7, Übergabepunkt 1 aus
+        /// E6). Leer = kein modulscharfer Lauf (Ersatzweg, kein BHKW oder kein
+        /// gepflegter Satz).
+        ///
+        /// <para><b>Nicht persistiert</b>, wie schon in E6 festgehalten: Die Reihe je
+        /// Anlage entsteht bei jedem Lauf neu. Der Bericht rechnet ohnehin frisch; nur
+        /// der Rückfallpfad auf den gespeicherten Stand zeigt diesen Block nicht.</para>
+        /// </summary>
+        public List<KwkgModulNachweis> KwkgModule = new List<KwkgModulNachweis>();
+
+        /// <summary>
+        /// Die Betriebskostenpositionen dieses Szenarios mit Kostenart, Bemessungsart und
+        /// Herleitung (Etappe E7, Zweck der E3-Spalte <c>Kostenart</c>). Leer = keine
+        /// Positionen oder Datenbank ohne die Spalten aus Migrationsschritt 19.
+        /// <b>Nicht persistiert</b> — dieselbe Begründung wie oben.
+        /// </summary>
+        public List<KostenPositionNachweis> Betriebskosten = new List<KostenPositionNachweis>();
+
         public double? IRR;                    // interner Zinsfuß der Differenzreihe [%] (null beim Stamm/nie)
 
         // Stufe W3 (Phase 8)
@@ -498,6 +545,107 @@ namespace WindowsFormsApplication1
 
         /// <summary>null = Rechnung vollständig; sonst Begründung („kein Arbeitspreis …").</summary>
         public string Fehlgrund;
+    }
+
+    /// <summary>
+    /// ETAPPE E7 — der Nachweis EINES BHKW-Moduls in der KWKG-Rechnung.
+    ///
+    /// <para>Seit E6 entsteht der KWK-Zuschlag als eine Reihe je Modul mit eigenem Satz,
+    /// eigenem Inbetriebnahmejahr, eigenem Jahresdeckel und eigenem Kontingent. Bis E7
+    /// stand davon nur eine Aufzählung im Hinweisfeld — bei drei Modulen eine
+    /// unlesbare Zeile (E6-Protokoll, Übergabepunkt 1). Hier steht dieselbe Auskunft
+    /// strukturiert, damit der Bericht eine Tabelle daraus bauen kann.</para>
+    ///
+    /// <para><b>Alle Werte sind die TATSÄCHLICH angesetzten</b>, nicht die
+    /// vorgeschlagenen. <see cref="HerleitungEigen"/> und
+    /// <see cref="HerleitungEinspeisung"/> nennen zusätzlich die Tranchenrechnung des
+    /// § 7 KWKG zu diesem Modul — erst damit ist der angesetzte Satz nachvollziehbar
+    /// und eine Abweichung vom Katalog sichtbar.</para>
+    /// </summary>
+    public class KwkgModulNachweis
+    {
+        /// <summary>Bezeichner der Anlage (Datenwert aus <c>Tab_Energieanlagen</c>).</summary>
+        public string Bezeichner = "";
+
+        /// <summary>Elektrische Nennleistung [kW].</summary>
+        public double PelKW;
+
+        /// <summary>Angesetzte elektrische Vollbenutzungsstunden dieses Moduls [h/a].</summary>
+        public double VbhElektrisch;
+
+        /// <summary>Angesetzter Satz auf selbst genutzten KWK-Strom [ct/kWh].</summary>
+        public double SatzEigenCt;
+
+        /// <summary>Angesetzter Satz auf eingespeisten KWK-Strom [ct/kWh].</summary>
+        public double SatzEinspeisungCt;
+
+        /// <summary>true, wenn die Sätze aus der Anlagenzeile stammen; false = Projektwert.</summary>
+        public bool SatzAusAnlage;
+
+        /// <summary>Angesetztes Vbh-Kontingent [h].</summary>
+        public double KontingentH;
+
+        /// <summary>Fester Jahresdeckel [h/a]; 0 = degressive Staffel des § 8 Abs. 4.</summary>
+        public double JahresdeckelH;
+
+        /// <summary>Erstes Förderjahr dieses Moduls (Inbetriebnahmejahr bzw. Projektwert).</summary>
+        public int Foerderbeginn;
+
+        /// <summary>Zuschlag dieses Moduls im ersten Betrachtungsjahr [€/a].</summary>
+        public double Jahr1Eur;
+
+        /// <summary>
+        /// Erstes Betrachtungsjahr OHNE Zuschlag, weil das Kontingent erschöpft ist;
+        /// 0 = das Kontingent reicht über den ganzen Betrachtungszeitraum.
+        /// </summary>
+        public int ErschoepftAbJahr;
+
+        /// <summary>Herleitung des Eigenstromsatzes nach § 7 KWKG (Tranchen, Norm, Jahr).</summary>
+        public string HerleitungEigen = "";
+
+        /// <summary>Herleitung des Einspeisesatzes nach § 7 KWKG.</summary>
+        public string HerleitungEinspeisung = "";
+    }
+
+    /// <summary>
+    /// ETAPPE E7 — eine Betriebskostenposition mit ihrer Herleitung.
+    ///
+    /// <para>Etappe E3 hat <c>Kostenart</c>, <c>Bemessung</c>, <c>Menge</c> und
+    /// <c>Einheitpreis</c> an die Kostenposition geschrieben und im Protokoll
+    /// festgehalten, ihr Zweck sei „die Gliederung des Berichts in Etappe E7". Genau
+    /// dafür steht diese Zeile: Sie trägt, was die Rechnung angesetzt hat, und woraus
+    /// sie es gebildet hat.</para>
+    /// </summary>
+    public class KostenPositionNachweis
+    {
+        /// <summary>Bezeichnung aus <c>Tab_Kostenfaktor</c>.</summary>
+        public string Bezeichnung = "";
+
+        /// <summary>Kostengruppe des Projekts (Freitext <c>Tab_ProjektWerte.Gruppe</c>).</summary>
+        public string Gruppe = "";
+
+        /// <summary>Kostenart nach VDI 2067, Steuerwert <c>DbWerte.KOSTENART_*</c>;
+        /// leer = nicht eingeordnet.</summary>
+        public string Kostenart = "";
+
+        /// <summary>Bemessungsart, Steuerwert <c>DbWerte.BEMESSUNG_*</c>.</summary>
+        public string Bemessung = DbWerte.BEMESSUNG_BETRAG;
+
+        /// <summary>Bezugsmenge der Bemessung; <c>null</c> = nicht gepflegt.</summary>
+        public double? Menge;
+
+        /// <summary>Satz der Bemessung; <c>null</c> = nicht gepflegt.</summary>
+        public double? Einheitpreis;
+
+        /// <summary>Angesetzter Jahresbetrag [€/a] — positiv Ausgabe, negativ Einnahme.</summary>
+        public double BetragJahr;
+
+        /// <summary>true = Erlösposition (Betrag negativ).</summary>
+        public bool IstErloes;
+
+        /// <summary>true, wenn ein gepflegter Best-/Worst-Case-Betrag die Ableitung
+        /// geschlagen hat (VALERI-Muster) — dann steht kein Menge × Preis dahinter.</summary>
+        public bool SzenarioGepflegt;
     }
 
     /// <summary>

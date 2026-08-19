@@ -359,6 +359,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fester Betrag ähnelt.
+        /// </summary>
+        public static string BEMESSUNG_BETRAG {
+            get {
+                return ResourceManager.GetString("BEMESSUNG_BETRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je Betriebsstunde ähnelt.
+        /// </summary>
+        public static string BEMESSUNG_EUR_PRO_H {
+            get {
+                return ResourceManager.GetString("BEMESSUNG_EUR_PRO_H", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je kWh ähnelt.
+        /// </summary>
+        public static string BEMESSUNG_EUR_PRO_KWH {
+            get {
+                return ResourceManager.GetString("BEMESSUNG_EUR_PRO_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die % der Brennstoffkosten ähnelt.
+        /// </summary>
+        public static string BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN {
+            get {
+                return ResourceManager.GetString("BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die % der Investition ähnelt.
+        /// </summary>
+        public static string BEMESSUNG_PROZENT_INVESTITION {
+            get {
+                return ResourceManager.GetString("BEMESSUNG_PROZENT_INVESTITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stamm ähnelt.
         /// </summary>
         public static string BK_ART_STAMM {
@@ -3655,6 +3700,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOSTEN_PLANWERT_UEBERNOMMEN {
             get {
                 return ResourceManager.GetString("KOSTEN_PLANWERT_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bedarfsgebunden ähnelt.
+        /// </summary>
+        public static string KOSTENART_BEDARFSGEBUNDEN {
+            get {
+                return ResourceManager.GetString("KOSTENART_BEDARFSGEBUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die betriebsgebunden ähnelt.
+        /// </summary>
+        public static string KOSTENART_BETRIEBSGEBUNDEN {
+            get {
+                return ResourceManager.GetString("KOSTENART_BETRIEBSGEBUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kapitalgebunden ähnelt.
+        /// </summary>
+        public static string KOSTENART_KAPITALGEBUNDEN {
+            get {
+                return ResourceManager.GetString("KOSTENART_KAPITALGEBUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht eingeordnet ähnelt.
+        /// </summary>
+        public static string KOSTENART_OHNE {
+            get {
+                return ResourceManager.GetString("KOSTENART_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die sonstige ähnelt.
+        /// </summary>
+        public static string KOSTENART_SONSTIGE {
+            get {
+                return ResourceManager.GetString("KOSTENART_SONSTIGE", resourceCulture);
             }
         }
         
@@ -14073,6 +14163,114 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Die Summe der Positionen ({0}) weicht von den angesetzten Betriebskosten ({1}) ab — die Gliederung ist unvollständig. ähnelt.
+        /// </summary>
+        public static string WIRT_BK_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("WIRT_BK_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Positionen der Kategorie 2 im Szenario „Erwartet“, gegliedert nach der Kostenart der VDI 2067. Je Position stehen die Bemessungsart und — wo die Bemessung abgeleitet ist — die Herleitung Menge × Einheitpreis. Ein gepflegter Best- oder Worst-Case-Betrag schlägt die Ableitung; solche Zeilen sind gekennzeichnet. Erlöspositionen tragen ein negatives Vorzeichen. ähnelt.
+        /// </summary>
+        public static string WIRT_BK_HINWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_BK_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gliederung nach Kostenarten nicht möglich: Die Datenbank führt die Spalten aus Migrationsschritt 19 (Kostenart, Bemessung, Menge, Einheitpreis) nicht. ähnelt.
+        /// </summary>
+        public static string WIRT_BK_OHNE_SPALTEN {
+            get {
+                return ResourceManager.GetString("WIRT_BK_OHNE_SPALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bemessung ähnelt.
+        /// </summary>
+        public static string WIRT_BK_SP_BEMESSUNG {
+            get {
+                return ResourceManager.GetString("WIRT_BK_SP_BEMESSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrag [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_BK_SP_BETRAG {
+            get {
+                return ResourceManager.GetString("WIRT_BK_SP_BETRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gruppe ähnelt.
+        /// </summary>
+        public static string WIRT_BK_SP_GRUPPE {
+            get {
+                return ResourceManager.GetString("WIRT_BK_SP_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herleitung ähnelt.
+        /// </summary>
+        public static string WIRT_BK_SP_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("WIRT_BK_SP_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Position ähnelt.
+        /// </summary>
+        public static string WIRT_BK_SP_POSITION {
+            get {
+                return ResourceManager.GetString("WIRT_BK_SP_POSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Positionen ähnelt.
+        /// </summary>
+        public static string WIRT_BK_SUMME {
+            get {
+                return ResourceManager.GetString("WIRT_BK_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenariowert gepflegt ähnelt.
+        /// </summary>
+        public static string WIRT_BK_SZENARIOWERT {
+            get {
+                return ResourceManager.GetString("WIRT_BK_SZENARIOWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten nach Kostenarten ähnelt.
+        /// </summary>
+        public static string WIRT_BK_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_BK_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Für {0} passt das Wirtschaftlichkeits-Ergebnis nicht zum Simulationslauf dieses Berichts — Bericht erneut erstellen. ähnelt.
+        /// </summary>
+        public static string WIRT_ERGEBNIS_VERALTET {
+            get {
+                return ResourceManager.GetString("WIRT_ERGEBNIS_VERALTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Jede BHKW-Anlage des Projekts wird mit Heizöl betrieben ({0}) — als Neuanlage nicht mehr förderfähig (KWKG 2025, nur noch Erdgas; Näherung: gilt auch für Bio-Blends); Bonus = 0. ähnelt.
         /// </summary>
         public static string WIRT_KWKG_ALLE_HEIZOEL {
@@ -14123,6 +14321,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_KWKG_ANLAGE_UEBER_GRENZE {
             get {
                 return ResourceManager.GetString("WIRT_KWKG_ANLAGE_UEBER_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Staffel § 8 ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_DECKEL_STAFFEL {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_DECKEL_STAFFEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die reicht über T ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_ERSCHOEPFT_NIE {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_ERSCHOEPFT_NIE", resourceCulture);
             }
         }
         
@@ -14208,6 +14424,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — Eigenstrom: {1} · Einspeisung: {2} ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_HERLEITUNG_ZEILE {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_HERLEITUNG_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Zuschlag je BHKW-Modul gerechnet — {0}. ähnelt.
         /// </summary>
         public static string WIRT_KWKG_JE_MODUL {
@@ -14231,6 +14456,330 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR {
             get {
                 return ResourceManager.GetString("WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zuschlag entsteht als eine Reihe je Anlage: eigener Satz, eigenes Inbetriebnahmejahr, eigener Jahresdeckel, eigenes Vollbenutzungsstunden-Kontingent. Die Sätze folgen § 7 KWKG 2025 als Tranchenstaffel, nicht als Leistungsklasse — die Herleitung unter der Tabelle nennt deshalb die Tranchen. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_MODUL_HINWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_MODUL_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWK-Zuschlag je Modul ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_MODUL_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_MODUL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SATZ_QUELLE_ANLAGE {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SATZ_QUELLE_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SATZ_QUELLE_PROJEKT {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SATZ_QUELLE_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Förderbeginn ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SP_BEGINN {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SP_BEGINN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresdeckel [h/a] ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SP_DECKEL {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SP_DECKEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kontingent erschöpft ab Jahr ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SP_ERSCHOEPFT {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SP_ERSCHOEPFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuschlag Jahr 1 [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SP_JAHR1 {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SP_JAHR1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kontingent [h] ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SP_KONTINGENT {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SP_KONTINGENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SP_MODUL {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SP_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die el. Leistung [kW] ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SP_PEL {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SP_PEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz Eigenstrom [ct/kWh] ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SP_SATZ_EIGEN {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SP_SATZ_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz Einspeisung [ct/kWh] ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SP_SATZ_EINSP {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SP_SATZ_EINSP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz aus ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SP_SATZQUELLE {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SP_SATZQUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vbh [h/a] ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SP_VBH {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SP_VBH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf ohne Anlage [MWh] ähnelt.
+        /// </summary>
+        public static string WIRT_MATRIX_BEDARF {
+            get {
+                return ResourceManager.GetString("WIRT_MATRIX_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Bedarf ohne Anlage“ ist der Strombedarf abzüglich PV-Eigennutzung — die Bezugsgröße der vermiedenen Kosten. Steht dort in allen Zonen 0, fehlte die Strombedarfsreihe im Lauf. ähnelt.
+        /// </summary>
+        public static string WIRT_MATRIX_BEDARF_HINWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_MATRIX_BEDARF_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Barwert ähnelt.
+        /// </summary>
+        public static string WIRT_MJ_BARWERT {
+            get {
+                return ResourceManager.GetString("WIRT_MJ_BARWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Abgabe ähnelt.
+        /// </summary>
+        public static string WIRT_MJ_BEHG {
+            get {
+                return ResourceManager.GetString("WIRT_MJ_BEHG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten ähnelt.
+        /// </summary>
+        public static string WIRT_MJ_BETRIEB {
+            get {
+                return ResourceManager.GetString("WIRT_MJ_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeiseerlös ähnelt.
+        /// </summary>
+        public static string WIRT_MJ_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("WIRT_MJ_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten ähnelt.
+        /// </summary>
+        public static string WIRT_MJ_ENERGIE {
+            get {
+                return ResourceManager.GetString("WIRT_MJ_ENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrjahresübersicht entfällt — für dieses Projekt konnte keine Zahlungsreihe gerechnet werden. ähnelt.
+        /// </summary>
+        public static string WIRT_MJ_ENTFAELLT {
+            get {
+                return ResourceManager.GetString("WIRT_MJ_ENTFAELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nominale Zahlungen je Jahr im Szenario „Erwartet“, in €. Ausgaben negativ, Einnahmen positiv; die Summe der Positionsspalten ist die Spalte „Netto nominal“. Betriebs- und Energiekosten wachsen mit ihren jeweiligen Preissteigerungssätzen, Ersatzbeschaffungen und Einspeiseerlöse bleiben nominal konstant. Der KWK-Zuschlag endet in dem Jahr, in dem das Vollbenutzungsstunden-Kontingent erschöpft ist. ähnelt.
+        /// </summary>
+        public static string WIRT_MJ_HINWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_MJ_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition und Ersatz ähnelt.
+        /// </summary>
+        public static string WIRT_MJ_INVEST_ERSATZ {
+            get {
+                return ResourceManager.GetString("WIRT_MJ_INVEST_ERSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahr ähnelt.
+        /// </summary>
+        public static string WIRT_MJ_JAHR {
+            get {
+                return ResourceManager.GetString("WIRT_MJ_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kumuliert ähnelt.
+        /// </summary>
+        public static string WIRT_MJ_KUMULIERT {
+            get {
+                return ResourceManager.GetString("WIRT_MJ_KUMULIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die folgenden Beträge stehen bewusst NICHT in der Tabelle darüber und dürfen nicht zu ihr addiert werden: Die vermiedenen Kosten stecken bereits in der kleineren Bezugsmenge, der Aufschlagsbetrag bereits in den Energiekosten. ähnelt.
+        /// </summary>
+        public static string WIRT_MJ_NACHWEIS_HINWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_MJ_NACHWEIS_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachweis — nicht Teil des Zahlungsstroms ähnelt.
+        /// </summary>
+        public static string WIRT_MJ_NACHWEIS_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_MJ_NACHWEIS_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netto nominal ähnelt.
+        /// </summary>
+        public static string WIRT_MJ_NETTO {
+            get {
+                return ResourceManager.GetString("WIRT_MJ_NETTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Probe: kumulierter Barwert in T ({0}) + Restwert-Barwert ({1}) = Nettobarwert ({2}). ähnelt.
+        /// </summary>
+        public static string WIRT_MJ_PROBE {
+            get {
+                return ResourceManager.GetString("WIRT_MJ_PROBE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert (Barwert) in T ähnelt.
+        /// </summary>
+        public static string WIRT_MJ_RESTWERT_T {
+            get {
+                return ResourceManager.GetString("WIRT_MJ_RESTWERT_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrjahresübersicht der Zahlungsströme ähnelt.
+        /// </summary>
+        public static string WIRT_MJ_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_MJ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweise dieses Berichtslaufs ähnelt.
+        /// </summary>
+        public static string WIRT_NACHWEIS_LAUFHINWEISE {
+            get {
+                return ResourceManager.GetString("WIRT_NACHWEIS_LAUFHINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tarif dieses Rechenlaufs ähnelt.
+        /// </summary>
+        public static string WIRT_NACHWEIS_TARIF {
+            get {
+                return ResourceManager.GetString("WIRT_NACHWEIS_TARIF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachweise und Hinweise ähnelt.
+        /// </summary>
+        public static string WIRT_NACHWEIS_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_NACHWEIS_TITEL", resourceCulture);
             }
         }
         
@@ -14271,7 +14820,25 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschläge auf den Strombezug [€/a] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation, dynamisch [a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_AMORTISATION {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_AMORTISATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Annuität des Kapitalwerts [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_ANNUITAET {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_ANNUITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschläge auf den Strombezug [€/a] (in Energiekosten enthalten) ähnelt.
         /// </summary>
         public static string WIRT_ZEILE_AUFSCHLAG {
             get {
@@ -14280,11 +14847,146 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer-Gutschrift Jahr 1 [€/a] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_BETRIEBSKOSTEN {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_BETRIEBSKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Abgabe nach BEHG [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_CO2_BEHG {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_CO2_BEHG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeiseerlös, gesamt [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_EINSPEISEERLOES {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_EINSPEISEERLOES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeiseerlös, KWK-Einspeisung [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_EINSPEISEERLOES_KWK {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_EINSPEISEERLOES_KWK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeiseerlös, PV-Überschuss [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_EINSPEISEERLOES_PV {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_EINSPEISEERLOES_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_ENERGIEKOSTEN {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_ENERGIEKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer-Gutschrift [€/a] ähnelt.
         /// </summary>
         public static string WIRT_ZEILE_ENERGIESTEUER {
             get {
                 return ResourceManager.GetString("WIRT_ZEILE_ENERGIESTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmegestehungskosten [€/kWh] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_GESTEHUNGSKOSTEN {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_GESTEHUNGSKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition I₀ [€] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_INVESTITION {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_INVESTITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Interner Zinsfuß [%] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_IRR {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_IRR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Beträge in €/a sind Werte des ersten Betrachtungsjahres; ihre Entwicklung über den Betrachtungszeitraum steht in der Mehrjahresübersicht. ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_JAHR1 {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_JAHR1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert gegenüber Stamm [€] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_KAPITALWERT_DIFF {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_KAPITALWERT_DIFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWK-Zuschlag [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_KWKG {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_KWKG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nettobarwert über T [€] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_NETTOBARWERT {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_NETTOBARWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert, Barwert [€] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_RESTWERT {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_RESTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Referenz) ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_STAMM_REFERENZ {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_STAMM_REFERENZ", resourceCulture);
             }
         }
         
@@ -14298,7 +15000,25 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Befreiung Jahr 1 [€/a] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombezugskosten nach Tarif [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_STROMKOSTEN_BEZUG {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_STROMKOSTEN_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reststromkosten nach Tarif [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_STROMKOSTEN_RESTSTROM {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_STROMKOSTEN_RESTSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Befreiung [€/a] ähnelt.
         /// </summary>
         public static string WIRT_ZEILE_STROMST_BEFREIUNG {
             get {
@@ -14307,7 +15027,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Entlastung Jahr 1 [€/a] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Entlastung [€/a] ähnelt.
         /// </summary>
         public static string WIRT_ZEILE_STROMST_ENTLASTUNG {
             get {
@@ -14316,7 +15036,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vermiedene Kosten — Arbeit [€/a] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollbenutzungsstunden elektrisch, KWKG-Basis [h/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_VBH_ELEKTRISCH {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_VBH_ELEKTRISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermiedene Kosten, Arbeit [€/a] (Ausweis) ähnelt.
         /// </summary>
         public static string WIRT_ZEILE_VERMIEDEN_ARBEIT {
             get {
@@ -14325,7 +15054,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vermiedene Kosten gesamt [€/a] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermiedene Kosten, gesamt [€/a] (Ausweis) ähnelt.
         /// </summary>
         public static string WIRT_ZEILE_VERMIEDEN_GESAMT {
             get {
@@ -14334,7 +15063,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vermiedene Kosten — Leistung [€/a] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermiedene Kosten, Leistung [€/a] (Ausweis) ähnelt.
         /// </summary>
         public static string WIRT_ZEILE_VERMIEDEN_LEISTUNG {
             get {

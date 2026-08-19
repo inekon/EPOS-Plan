@@ -1,6 +1,6 @@
 # Umsetzungsstand W4 — BHKW-Betriebskosten und -Erlöse
 
-**Stand: 19.08.2026.** Fortschrittsdokument der Ausbaustufe W4. Es hält fest, was
+**Stand: 19.08.2026 (nach Etappe E7).** Fortschrittsdokument der Ausbaustufe W4. Es hält fest, was
 entschieden ist, welche Etappe läuft und welche Ergebniswirkung jede Etappe hat.
 
 | Dokument | Inhalt |
@@ -15,6 +15,7 @@ entschieden ist, welche Etappe läuft und welche Ergebniswirkung jede Etappe hat
 | [`W4_E4_Steuergutschriften_Protokoll.md`](W4_E4_Steuergutschriften_Protokoll.md) | Etappe E4: Energiesteuer- (§ 53 / § 53a) und Stromsteuergutschrift (§ 9 Abs. 1 Nr. 3, § 9b) als jahresscharfe Reihen, Projektangaben der Steuerprüfung (Migrationsschritt 20), benannte Erlösreihen (L1) — **und die Recherche, die die Annahme „§ 53 entlastet nur den Stromanteil" widerlegt hat** |
 | [`W4_E5_Tarife_Strombezug_Protokoll.md`](W4_E5_Tarife_Strombezug_Protokoll.md) | Etappe E5: Tarif-Rollenmodell mit drei Leistungspreismodellen (Migrationsschritt 21), Differenzmethode „vermiedene Kosten", Preis für eingespeisten KWK-Strom, § 9b ohne BHKW — **und die Messung, die den Aufschlägen eine Wirkung von rund einem Drittel des Kapitalwerts nachweist** |
 | [`W4_E6_Zuschlag_je_Modul_Protokoll.md`](W4_E6_Zuschlag_je_Modul_Protokoll.md) | Etappe E6: KWK-Zuschlag **je BHKW-Modul** — Stichtag, Inbetriebnahme, Satz, Vbh, Jahresdeckel und Kontingent je Anlage (Migrationsschritt 22), Katalogvorschlag nach § 7 als **Tranchenstaffel**, generationsweise Nachsaat des Katalogs — **und der Befund, dass die alte Rechnung bei durchgehend gedeckelten Modulen zufällig richtig war** |
+| [`W4_E7_Bericht_Mehrjahrestabelle_Protokoll.md`](W4_E7_Bericht_Mehrjahrestabelle_Protokoll.md) | Etappe E7: Rückgabekanal der Einzelpositionen im `Zahlungsbild`, **Mehrjahrestabelle** in Word und Excel, KWK-Zuschlag **je Modul als Tabelle**, Betriebskosten nach **Kostenart**, eine Zeilendefinition statt dreier, sechs Divergenzen Word/Excel — **und die erste Messung, die die Wertgleichheit von Word und Excel belegt statt sie zu behaupten** |
 
 ---
 
@@ -30,7 +31,7 @@ entschieden ist, welche Etappe läuft und welche Ergebniswirkung jede Etappe hat
 | **E4** | Energiesteuer- und Stromsteuergutschrift als jahresscharfe Reihen; sechs Projektangaben der Steuerprüfung (Migrationsschritt 20); `KapitalwertRechner.Rechne` auf **benannte Erlösreihen** umgestellt (L1) | **keine für Bestandsprojekte** — jede Vorbelegung von Schritt 20b ist der Wert, der keine Gutschrift auslöst | **umgesetzt** (9/9 PASS, 216/216 byte-gleich, 54/54 Wirtschaftlichkeitswerte identisch, 11/11 Handrechnungen getroffen) |
 | **E5** | Tarif-**Rollenmodell** (Bezug / Reststrom / Einspeisung) mit allen drei Leistungspreismodellen (Migrationsschritt 21); Differenzmethode „vermiedene Kosten" mit negativem Leistungsanteil; Preis für eingespeisten KWK-Strom; § 9b auch ohne BHKW; **Aufschläge hinter einem Projektschalter** | **keine für Bestandsprojekte** — `Tarif_Modus` wird mit `ZONEN` vorbelegt, der Aufschlagsschalter steht auf AUS, die KWK-Vergütung bleibt NULL | **umgesetzt** (9/9 PASS, 216/216 byte-gleich, 27/27 Wirtschaftlichkeitszeilen **zeichengleich**, 8 Wirkungsfälle = Handrechnung) |
 | **E6** | KWK-Zuschlag **je Modul**: Stichtag, Inbetriebnahme, Satz, Vbh, Jahresdeckel und Kontingent je Anlage (Migrationsschritt 22); Katalogvorschlag als **Tranchenstaffel** nach § 7; generationsweise Nachsaat des Katalogs | **ja bei Mehrmodulanlagen** — aber nur, wenn die Module den Jahresdeckel **unterschiedlich** treffen oder sich in Datum, Satz oder Kontingent unterscheiden. Für Einmodulprojekte **keine** | **umgesetzt** (9/9 PASS, 216/216 byte-gleich ×2, 24/27 Wirtschaftlichkeitszeilen zeichengleich, 8/8 Handrechnungen getroffen) |
-| **E7** | Bericht (Word und Excel), Mehrjahrestabelle | Ausgabe | offen |
+| **E7** | Bericht (Word und Excel), Mehrjahrestabelle; Rückgabekanal der Einzelpositionen, KWK-Zuschlag je Modul als Tabelle, Betriebskosten nach Kostenart, eine Zeilendefinition für alle drei Ausgaben | **keine** — Ausgabe; der Rückgabekanal ist rein additiv und der Rechenweg der Summen zeichengleich | **umgesetzt** (216/216 byte-gleich, **864/864 Wirtschaftlichkeitswerte identisch**, Word ↔ Excel erstmals **gemessen** zeichengleich) |
 | **E8** | Abnahme, neue Referenzbasis, Protokoll | eingefroren | offen |
 
 **Regel für ergebniswirksame Etappen (E2, E6):** A/B-Nachweis gegen den
@@ -254,6 +255,57 @@ widersprüchliche Begrenzungen des KWK-Bonus.
 
 ---
 
+## 3e Was Etappe E7 entschieden hat (19.08.2026)
+
+- **Der Engpass war ein fehlender Kanal, kein fehlender Formatierer.** Vier benannte
+  Erlösreihen entstanden seit E4 jahresscharf, gingen in eine Summe ein und wurden verworfen;
+  vom KWK-Zuschlag überlebte allein der Wert des ersten Jahres. `Zahlungsbild` gibt seit E7 die
+  Jahresreihen der Einzelpositionen zurück. **Rein additiv:** Der Ausdruck für die Ausgaben
+  behält insbesondere `(energieJahr + behgJahr)` als **eine** Klammer, und die getrennten
+  Reihen gehen nicht in die Summe ein — sonst verschöbe sich das Ergebnis in der letzten
+  Stelle. Gemessen: 864 von 864 Werten unverändert.
+- **Das Auslaufen des KWK-Zuschlags ist jetzt sichtbar, und das ist der fachliche Zweck der
+  Tabelle.** An Projekt 1030 fällt der Zuschlag von 44.265 € über die degressive Vbh-Staffel
+  auf 18.563 € im Jahr 12 und **ab Jahr 13 auf null**, weil das 30.000-Stunden-Kontingent
+  erschöpft ist. Im bisherigen „KWKG-Erlös Jahr 1" war davon nichts zu sehen — ein Leser
+  musste annehmen, der Zuschlag laufe zwanzig Jahre.
+- **Jahre als Zeilen, Positionen als Spalten** — bei T = 20 passen 21 Jahresspalten nicht auf
+  A4, und der Kapitalwert-Verlauf im Excel-Bericht macht es seit Phase 11 bereits so. Damit
+  brauchen Word und Excel **kein zweites Layout**. Vorzeichen nach Zahlungswirkung (Ausgaben
+  negativ), damit die Summe der Positionsspalten die Nettospalte ist und die Tabelle sich
+  selbst prüft; die Abschlusszeile schließt mit dem Restwert-Barwert auf den Nettobarwert auf.
+- **Vermiedene Kosten und Aufschlagsbetrag bekommen keine Zahlungszeile.** Beide stecken
+  bereits in anderen Positionen; sie stehen als ausdrücklich beschrifteter **Nachweisblock**
+  unter der Tabelle, und ihre Titel tragen seither „(Ausweis)" beziehungsweise „(in
+  Energiekosten enthalten)". Das ist keine Kosmetik — ohne den Zusatz liest ein Prüfer die
+  Zeilen als addierbare Erlöse.
+- **Kein „Jahr 1" mehr im Zeilentitel.** Der Zeitbezug steht einmal über der Tabelle. Erst
+  dadurch passt derselbe Schlüssel in Kennzahlen- **und** Mehrjahrestabelle, und aus zwei Namen
+  für eine Größe („KWKG-Erlös Jahr 1" gegen die Reihe „KWK-Zuschlag") wird einer.
+- **Eine Zeilendefinition, drei Renderer.** Die Kennzahlenliste stand dreimal im Code. Die
+  Zahlen liefen dabei nicht auseinander — das Drumherum schon. Von den sechs belegten
+  Divergenzen zwischen Word und Excel sind **vier behoben** (Tarifnachweis, Hinweise,
+  Aktualitätswarnung, Laufwarnungen), **eine auf einen begründeten Fall reduziert** (Excel
+  lässt die Stammzelle leer, weil die Wertspalten numerisch bleiben müssen) und **eine bewusst
+  belassen** (Word zeigt nur „Erwartet" — ein Dokument ist keine Datenablage).
+- **Die Wertgleichheit von Word und Excel ist erstmals gemessen**, nicht behauptet: Jede Zeile
+  mit einer Zahl ist in beiden Ausgaben zeichengleich; die Nur-in-Word-Zeilen tragen
+  ausnahmslos „—" oder „(Referenz)".
+- **Die Kostenart aus E3 hat ihren Zweck bekommen.** Der Betriebskostenblock gliedert nach
+  VDI 2067 und zeigt je Position Bemessungsart und Herleitung Menge × Einheitpreis. Er
+  **rechnet nicht mit**, sondern beschreibt — und meldet, wenn seine Summe von der angesetzten
+  abweicht, statt zwei Zahlen nebeneinanderzustellen und zu schweigen.
+- **Die Herleitung des KWK-Satzes je Modul steht im Bericht.** Sie macht an Projekt 1030
+  sichtbar, dass der Katalog für die 250-kW-Anlage auf Eigenstrom **0 ct/kWh** vorschlägt
+  (kein Tatbestand des § 6 Abs. 3), während der Projektsatz von 4,00 ct/kWh angesetzt wird —
+  eine Abweichung, die vorher nirgends stand.
+- **Ein Bestandsfehler ist benannt, nicht nebenbei behoben:** Die Meldung „Differenzdiagramm
+  entfällt — für das Stammprojekt konnte keine Zahlungsreihe gerechnet werden" erscheint auch
+  dann, wenn es schlicht **keine Varianten** gibt. Der Befund stammt aus Phase 11; die
+  Berichtigung gehört in einen eigenen Vorgang.
+
+---
+
 ## 4 Etappe E1 — was gerade entsteht
 
 - **Tabelle `Tab_Gesetzesparameter`**: Schlüssel (sprachneutral, eingefroren),
@@ -341,7 +393,11 @@ werden nicht übernommen.
   einen Preis sind drei zu viel.
 - **Vorrangregel Projekt vor Katalog** in drei Implementierungen
   (`KostenEmissionRechner`, `StromPreisCtrl`, eine gespeicherte Access-Abfrage).
-- **14 Kennzahlzeilen doppelt** in Word- und Excel-Generator.
+- ~~**14 Kennzahlzeilen doppelt** in Word- und Excel-Generator.~~ — die Zahl war der Stand
+  **vor E2**; seither waren es +1 (E2) +3 (E4) +4 (E5) = **22 Zeilen**, und mit dem
+  Ergebnisreiter **drei** Kopien, nicht zwei. **Mit E7 aufgelöst:**
+  `Allgemein/Wirtschaftlichkeit/WirtschaftlichkeitZeilen.cs` führt die Definition einmal, die
+  drei Ausgaben rendern nur noch.
 - **Zwei Migrationsmechanismen**: `SchemaMigration` mit Versionsmarker einerseits,
   eigenes DDL in `WirtschaftlichkeitCtrl` andererseits. **Mit E4 laufen für
   `Tab_ProjektWirtschaftlichkeit` erstmals beide** — Migrationsschritt 20 legt die sechs

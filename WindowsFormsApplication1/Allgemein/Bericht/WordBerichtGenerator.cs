@@ -31,6 +31,15 @@ namespace WindowsFormsApplication1
         public const string STAMM_FILL = "F2F2F2";
         public const string RAHMEN = "BFBFBF";
 
+        /// <summary>Schriftgröße der Tabellenzellen in Halbpunkten (9 pt).</summary>
+        public const int SCHRIFT_TABELLE = 18;
+
+        /// <summary>
+        /// Schriftgröße für breite Zahlentabellen in Halbpunkten (7 pt, Etappe E7) —
+        /// die Mehrjahresübersicht führt bis zu dreizehn Spalten auf A4 hoch.
+        /// </summary>
+        public const int SCHRIFT_TABELLE_SCHMAL = 14;
+
         /// <summary>
         /// Erzeugt den Bericht. Rückgabe: Pfad der geschriebenen Datei.
         /// </summary>
@@ -184,6 +193,22 @@ namespace WindowsFormsApplication1
         {
             // Berichtssprache: bekannte Texte werden übersetzt, dynamische laufen durch.
             text = BerichtTexte.T(text);
+            MitStilRoh(styleId, text);
+        }
+
+        /// <summary>
+        /// Absatz OHNE <c>BerichtTexte.T()</c> — für Texte, die bereits aus
+        /// <c>MyResource</c> kommen und damit schon in der Berichtssprache stehen
+        /// (Etappe E7).
+        ///
+        /// <para><b>Warum das nötig ist.</b> <c>T()</c> ist ein Wörterbuch Deutsch → Englisch;
+        /// ein bereits übersetzter Text läuft heute nur deshalb unverändert durch, weil er
+        /// darin nicht vorkommt. Sobald ein deutscher <c>MyResource</c>-Wert einmal ins
+        /// Wörterbuch gerät, übersetzt die Kette doppelt. Neue und umgestellte Texte gehen
+        /// deshalb diesen Weg.</para>
+        /// </summary>
+        public void MitStilRoh(string styleId, string text)
+        {
             var p = new Paragraph(new ParagraphProperties(new ParagraphStyleId { Val = styleId }));
             p.Append(new Run(new Text(text ?? "") { Space = SpaceProcessingModeValues.Preserve }));
             Fuege(p);
@@ -197,6 +222,15 @@ namespace WindowsFormsApplication1
         public void Text(string t) { MitStil("Normal", t); }
         public void Hinweis(string t) { MitStil("Hinweis", t); }
         public void Beschriftung(string t) { MitStil("Beschriftung", t); }
+
+        /// <inheritdoc cref="MitStilRoh"/>
+        public void Ueberschrift2Roh(string t) { MitStilRoh("Heading2", t); }
+        /// <inheritdoc cref="MitStilRoh"/>
+        public void Ueberschrift3Roh(string t) { MitStilRoh("Heading3", t); }
+        /// <inheritdoc cref="MitStilRoh"/>
+        public void HinweisRoh(string t) { MitStilRoh("Hinweis", t); }
+        /// <inheritdoc cref="MitStilRoh"/>
+        public void TextRoh(string t) { MitStilRoh("Normal", t); }
 
         public void Seitenumbruch()
         { Fuege(new Paragraph(new Run(new Break { Type = BreakValues.Page }))); }
@@ -283,9 +317,22 @@ namespace WindowsFormsApplication1
 
         public TableCell Zelle(string text, int breite, bool fett, string fill, JustificationValues just)
         {
+            return Zelle(text, breite, fett, fill, just, true,
+                         WordBerichtGenerator.SCHRIFT_TABELLE);
+        }
+
+        /// <param name="uebersetzen">
+        /// false = der Text kommt bereits aus <c>MyResource</c> und darf nicht noch
+        /// einmal durch <c>BerichtTexte.T()</c> laufen (Etappe E7, siehe
+        /// <see cref="MitStilRoh"/>).
+        /// </param>
+        /// <param name="schriftHalb">Schriftgröße in Halbpunkten.</param>
+        public TableCell Zelle(string text, int breite, bool fett, string fill,
+                               JustificationValues just, bool uebersetzen, int schriftHalb)
+        {
             // Kopf-/Labelzellen (fett) durch die Berichtssprache übersetzen;
             // Datenzellen (nicht fett) bleiben unangetastet.
-            if (fett) text = BerichtTexte.T(text);
+            if (fett && uebersetzen) text = BerichtTexte.T(text);
             var tc = new TableCell();
             var tcp = new TableCellProperties();
             tcp.Append(new TableCellWidth { Type = TableWidthUnitValues.Dxa, Width = breite.ToString() });
@@ -300,7 +347,7 @@ namespace WindowsFormsApplication1
             p.Append(pp);
             var rp = new RunProperties();
             if (fett) rp.Append(new Bold());
-            rp.Append(new FontSize { Val = "18" });
+            rp.Append(new FontSize { Val = schriftHalb.ToString(CultureInfo.InvariantCulture) });
             var r = new Run();
             r.Append(rp);
             r.Append(new Text(text ?? "") { Space = SpaceProcessingModeValues.Preserve });

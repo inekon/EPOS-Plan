@@ -241,6 +241,31 @@ namespace WindowsFormsApplication1
             return summe;
         }
 
+        /// <summary>
+        /// ETAPPE E7 — der Anteil des <b>PV-Überschusses</b> am Einspeiseerlös [€/a].
+        ///
+        /// <para><see cref="Einspeiseerloes"/> bewertet PV-Überschuss und KWK-Einspeisung
+        /// gemeinsam; im Bericht sind das zwei Zeilen mit zwei Rechtsgrundlagen. Diese
+        /// Methode ändert die Gesamtsumme NICHT — der Aufrufer bildet den KWK-Anteil als
+        /// Differenz <c>Einspeiseerloes − EinspeiseerloesPv</c>, damit beide Teile
+        /// zusammen ohne Rundungsrest die ausgewiesene Summe ergeben.</para>
+        /// </summary>
+        public double EinspeiseerloesPv(TarifParameter tarif)
+        {
+            double summe = 0;
+            summe += ErloesPv(Z_WINTER_HT, tarif.PreisEinspWinterHT);
+            summe += ErloesPv(Z_WINTER_NT, tarif.PreisEinspWinterNT);
+            summe += ErloesPv(Z_SOMMER_HT, tarif.PreisEinspSommerHT);
+            summe += ErloesPv(Z_SOMMER_NT, tarif.PreisEinspSommerNT);
+            return summe;
+        }
+
+        private double ErloesPv(string zone, double preisEurKWh)
+        {
+            Zone z = Hole(zone);
+            return z == null ? 0 : z.EinspeisungPvMWh * 1000.0 * preisEurKWh;
+        }
+
         /// <summary>Zweistufige Leistungspreis-Staffel auf die Bezugsspitze [€/a].</summary>
         public double Leistungspreis(TarifParameter tarif)
         {

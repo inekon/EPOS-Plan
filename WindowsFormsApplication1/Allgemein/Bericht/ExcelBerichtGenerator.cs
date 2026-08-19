@@ -236,7 +236,12 @@ namespace WindowsFormsApplication1
             }
 
             WirtschaftlichkeitParameter p = provider.LadeParameter(daten.IdStamm);
+            TarifParameter tarifP = provider.LadeTarif(daten.IdStamm);
             ws.Cell(r, 1).Value = p.Nachweis(BerichtTexte.Kultur) +
+                // ETAPPE E7 (Divergenz D1): Der TARIFnachweis stand bisher nur im
+                // Word-Bericht. Er nennt Modell, Arbeitspreise und Preisstand — ohne ihn
+                // ist die Stromkostenzeile im Excel-Blatt nicht nachvollziehbar.
+                " · " + tarifP.Nachweis(BerichtTexte.Kultur) +
                 " · " + BerichtTexte.T("Referenz: Stammprojekt · Restwert linear") +
                 " · " + BerichtTexte.T("Rechenstand") + ": " +
                 alle[0].Zeitstempel.ToString("dd.MM.yyyy HH:mm", BerichtTexte.Kultur);
@@ -250,49 +255,36 @@ namespace WindowsFormsApplication1
                 ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#C00000");
                 r++;
             }
+
+            // ETAPPE E7 (Divergenz D3): Die Aktualitätsprüfung gegen den Simulationsstand
+            // gab es bisher nur in Word. Ein Excel-Nutzer sah nicht, dass die Zahlen zu
+            // einem anderen Lauf gehören als der Bericht.
+            var veraltet = new List<string>();
+            foreach (VariantenDaten v in daten.Varianten)
+            {
+                WirtschaftlichkeitErgebnis ea = alle.FirstOrDefault(x =>
+                    x.IdProjekt == v.IdProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+                if (ea == null || (ea.Fehlgrund == null && !provider.ErgebnisAktuell(ea)))
+                    veraltet.Add(v.IstStamm ? "Stamm" : v.Anzeige);
+            }
+            if (veraltet.Count > 0)
+            {
+                ws.Cell(r, 1).Value = string.Format(MyResource.Resource.WIRT_ERGEBNIS_VERALTET,
+                                                    string.Join(", ", veraltet));
+                ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#C00000");
+                r++;
+            }
             r++;
 
-            // Kennzahl-Zeilen: Label, Format, Wertzugriff (null = leer).
-            // BEHG-/KWKG-/IRR-Zeilen nur, wenn sie im Datenbestand vorkommen.
-            bool mitBehg = alle.Any(x => x.CO2AbgabeJahr > 0);
-            bool mitKwkg = alle.Any(x => x.KwkgErloesJahr1 > 0);
-            bool mitIrr = alle.Any(x => x.IRR.HasValue);
-            // ETAPPE E4: die drei Steuergutschriften nach derselben Regel — der Wert
-            // bleibt leer, solange KEIN Projekt der Gruppe eine Gutschrift führt.
-            bool mitEnergiesteuer = alle.Any(x => x.EnergiesteuerJahr1 > 0);
-            bool mitStromstBefreiung = alle.Any(x => x.StromsteuerBefreiungJahr1 > 0);
-            bool mitStromstEntlastung = alle.Any(x => x.StromsteuerEntlastungJahr1 > 0);
-            // ETAPPE E5: vermiedene Kosten und Aufschläge. Der Leistungsanteil ist
-            // regelmäßig NEGATIV — die Bedingung prüft deshalb auf „ungleich 0".
-            bool mitVermieden = alle.Any(x => x.VermiedenGesamtJahr != 0 || x.VermiedenArbeitJahr != 0);
-            bool mitAufschlag = alle.Any(x => x.AufschlagJahr != 0);
-            var zeilen = new List<Tuple<string, string, Func<WirtschaftlichkeitErgebnis, double?>>>
-            {
-                Tuple.Create("Investition I₀ [€]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => (double?)e.Investition)),
-                Tuple.Create("Betriebskosten [€/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.BetriebskostenJahr)),
-                Tuple.Create("Energiekosten [€/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.EnergiekostenJahr)),
-                Tuple.Create("Stromkosten Tarif [€/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.StromkostenTarif)),
-                Tuple.Create("CO₂-Abgabe BEHG [€/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitBehg ? (double?)e.CO2AbgabeJahr : null)),
-                Tuple.Create("Einspeiseerlös [€/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => (double?)e.EinspeiseerloesJahr)),
-                Tuple.Create("KWKG-Erlös Jahr 1 [€/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitKwkg ? (double?)e.KwkgErloesJahr1 : null)),
-                // ETAPPE E2 (L6): Bemessungsgrundlage der KWKG-Deckelung — ELEKTRISCHE
-                // Vollbenutzungsstunden; 0 heißt „nicht erhoben" und bleibt leer.
-                Tuple.Create("Vbh elektrisch (KWKG-Basis) [h/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.KwkgVbhElektrisch > 0 ? (double?)e.KwkgVbhElektrisch : null)),
-                Tuple.Create(MyResource.Resource.WIRT_ZEILE_ENERGIESTEUER, "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitEnergiesteuer ? (double?)e.EnergiesteuerJahr1 : null)),
-                Tuple.Create(MyResource.Resource.WIRT_ZEILE_STROMST_BEFREIUNG, "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitStromstBefreiung ? (double?)e.StromsteuerBefreiungJahr1 : null)),
-                Tuple.Create(MyResource.Resource.WIRT_ZEILE_STROMST_ENTLASTUNG, "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitStromstEntlastung ? (double?)e.StromsteuerEntlastungJahr1 : null)),
-                Tuple.Create(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_ARBEIT, "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitVermieden ? (double?)e.VermiedenArbeitJahr : null)),
-                Tuple.Create(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_LEISTUNG, "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitVermieden ? (double?)e.VermiedenLeistungJahr : null)),
-                Tuple.Create(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_GESAMT, "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitVermieden ? (double?)e.VermiedenGesamtJahr : null)),
-                Tuple.Create(MyResource.Resource.WIRT_ZEILE_AUFSCHLAG, "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitAufschlag ? (double?)e.AufschlagJahr : null)),
-                Tuple.Create("Restwert (Barwert) [€]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => (double?)e.RestwertBarwert)),
-                Tuple.Create("Nettobarwert über T [€]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.Kapitalwert)),
-                Tuple.Create("Kapitalwert vs. Stamm [€]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.IstStamm ? null : e.KapitalwertDiff)),
-                Tuple.Create("Annuität des KW [€/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.IstStamm ? null : e.AnnuitaetKW)),
-                Tuple.Create("Amortisation [a]", "#,##0.0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.IstStamm ? null : e.AmortisationJahre)),
-                Tuple.Create("Interner Zinsfuß [%]", "#,##0.0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => (e.IstStamm || !mitIrr) ? null : e.IRR)),
-                Tuple.Create("Wärmegestehungskosten [€/kWh]", "#,##0.000", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.Gestehungskosten))
-            };
+            // ETAPPE E7: EINE Zeilendefinition für Word, Excel und Ergebnisreiter
+            // (WirtschaftlichkeitZeilen). Die Liste stand bis dahin dreimal im Code.
+            List<WirtZeile> zeilen = WirtschaftlichkeitZeilen.Kennzahlen(alle, tarifP);
+
+            // Der Zeitbezug der €/a-Werte steht einmal über der Tabelle statt in vier
+            // Zeilentiteln (E7).
+            ws.Cell(r, 1).Value = MyResource.Resource.WIRT_ZEILE_JAHR1;
+            ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+            r += 2;
 
             foreach (string szenario in new[] { WirtschaftlichkeitSzenario.ERWARTET,
                                                 WirtschaftlichkeitSzenario.BEST,
@@ -320,7 +312,7 @@ namespace WindowsFormsApplication1
                 ws.Range(kopfZeile, 1, kopfZeile, c - 1).Style.Fill.BackgroundColor = KOPF;
                 r++;
 
-                foreach (var z in zeilen)
+                foreach (WirtZeile z in zeilen)
                 {
                     // Zeile komplett ausblenden, wenn kein Projekt einen Wert liefert
                     // (z. B. BEHG/KWKG deaktiviert) — Konvention „nie 0-Zeilen".
@@ -328,20 +320,37 @@ namespace WindowsFormsApplication1
                     foreach (VariantenDaten v in daten.Varianten)
                     {
                         WirtschaftlichkeitErgebnis pe = block.FirstOrDefault(x => x.IdProjekt == v.IdProjekt);
-                        if (pe != null && z.Item3(pe).HasValue) { hatWert = true; break; }
+                        if (pe == null) continue;
+                        if (z.IstText ? !string.IsNullOrEmpty(z.Text(pe)) : z.ExcelWert(pe).HasValue)
+                        { hatWert = true; break; }
                     }
                     if (!hatWert) continue;
 
-                    ws.Cell(r, 1).Value = BerichtTexte.T(z.Item1);
+                    // Der Titel kommt aus MyResource — kein BerichtTexte.T() darüber.
+                    ws.Cell(r, 1).Value = z.Titel;
                     c = 2;
                     foreach (VariantenDaten v in daten.Varianten)
                     {
                         WirtschaftlichkeitErgebnis e = block.FirstOrDefault(x => x.IdProjekt == v.IdProjekt);
-                        double? wert = e == null ? (double?)null : z.Item3(e);
-                        if (wert.HasValue)
+                        if (e != null && z.IstText)
                         {
-                            ws.Cell(r, c).Value = wert.Value;
-                            ws.Cell(r, c).Style.NumberFormat.Format = z.Item2;
+                            // Textzeile (Herkunft der Steuersätze, E7).
+                            string t = z.Text(e);
+                            if (!string.IsNullOrEmpty(t)) ws.Cell(r, c).Value = t;
+                        }
+                        else
+                        {
+                            // Wertspalten bleiben NUMERISCH: Beim Stamm bleibt die Zelle
+                            // einer Differenzkennzahl leer, statt „(Referenz)" zu tragen —
+                            // sonst wären Filter und Diagramme des Blattes hinüber. Das
+                            // ist der eine bewusst verbliebene Unterschied zu Word und
+                            // Reiter (Divergenz D5).
+                            double? wert = e == null ? (double?)null : z.ExcelWert(e);
+                            if (wert.HasValue)
+                            {
+                                ws.Cell(r, c).Value = wert.Value;
+                                ws.Cell(r, c).Style.NumberFormat.Format = z.ExcelFormat;
+                            }
                         }
                         c++;
                     }
@@ -364,15 +373,64 @@ namespace WindowsFormsApplication1
                 r++;   // Leerzeile zwischen den Szenarien
             }
 
+            // ---------------- Hinweise dieses Laufs (ETAPPE E7, Divergenz D2) ----------------
+            //
+            // e.Hinweis erschien in Excel BISHER NIRGENDS. Darin stehen sämtliche
+            // Begründungen der Etappen E2 bis E6: warum eine Gutschrift 0 ist, welcher
+            // Aufschlagssatz angesetzt wurde, welche Anlage am Stichtag scheitert, wie
+            // die vermiedenen Kosten entstehen. Ein Excel-Nutzer erfuhr davon nichts.
+            // Ausgegeben wird EINMAL aus dem Szenario „Erwartet" — wie in Word; die
+            // Texte sind über die Szenarien gleich, und dreimal derselbe Absatz wäre
+            // Lärm.
+            var mitHinweis = alle.Where(x => x.Szenario == WirtschaftlichkeitSzenario.ERWARTET &&
+                                             !string.IsNullOrEmpty(x.Hinweis)).ToList();
+            if (mitHinweis.Count > 0 || daten.Warnungen.Count > 0)
+            {
+                ws.Cell(r, 1).Value = MyResource.Resource.WIRT_NACHWEIS_TITEL;
+                ws.Cell(r, 1).Style.Font.Bold = true;
+                ws.Range(r, 1, r, 1 + daten.Varianten.Count).Style.Fill.BackgroundColor = GRUPPE;
+                r++;
+                foreach (WirtschaftlichkeitErgebnis e in mitHinweis)
+                {
+                    VariantenDaten v = daten.Varianten.FirstOrDefault(x => x.IdProjekt == e.IdProjekt);
+                    ws.Cell(r, 1).Value = "⚠ " + (v == null ? ("Projekt " + e.IdProjekt)
+                                                            : (v.IstStamm ? "Stamm" : v.Anzeige)) +
+                                          ": " + e.Hinweis;
+                    ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                    r++;
+                }
+                // ETAPPE E7 (Divergenz D6): die Warnungen des Berichtslaufs standen
+                // ebenfalls nur im Word-Anhang.
+                if (daten.Warnungen.Count > 0)
+                {
+                    ws.Cell(r, 1).Value = MyResource.Resource.WIRT_NACHWEIS_LAUFHINWEISE;
+                    ws.Cell(r, 1).Style.Font.Bold = true;
+                    r++;
+                    foreach (string wtext in daten.Warnungen)
+                    {
+                        ws.Cell(r, 1).Value = "• " + wtext;
+                        ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                        r++;
+                    }
+                }
+                r++;
+            }
+
+            // ---------------- KWK-Zuschlag je Modul (E6 → E7) ----------------
+            r = BlattKwkgModule(ws, daten, alle, r);
+
+            // ---------------- Betriebskosten nach Kostenarten (E3 → E7) ----------------
+            r = BlattBetriebskosten(ws, daten, alle, r);
+
             // ---------------- Kapitalwert-Verlauf (Phase 11, Szenario Erwartet) ----------------
             // Jahresreihen frisch aus den Berichtsdaten gerechnet (T aus den Parametern);
             // dieselben Werte wie die Diagramme in Word und im Verlaufs-Dialog.
             // Konsistenz-Gate wie im Word-Baustein (Review 11): sind Tarif/KWKG aktiv,
             // aber keine Stundenreihen im Berichtslauf, entfällt der Block mit Hinweis.
-            TarifParameter tarifV = provider.LadeTarif(daten.IdStamm);
-            bool zeitreihenNoetig = (tarifV != null && tarifV.Aktiv) ||
+            bool zeitreihenNoetig = (tarifP != null && tarifP.Aktiv) ||
                                     p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0;
             int rStart = r;
+            WirtschaftlichkeitVerlauf verlaufFuerMehrjahres = null;
             try
             {
                 if (zeitreihenNoetig &&
@@ -387,6 +445,7 @@ namespace WindowsFormsApplication1
                 {
                     WirtschaftlichkeitVerlauf verlauf = provider.BerechneVerlauf(
                         daten, p, p.Betrachtungszeitraum, WirtschaftlichkeitSzenario.ERWARTET);
+                    verlaufFuerMehrjahres = verlauf;   // E7: Grundlage der Mehrjahrestabelle
                     var mitReihe = verlauf.Absolut.Where(s => s.Kumuliert != null).ToList();
                     var mitDiff = verlauf.Differenz.Where(x => x.Kumuliert != null).ToList();
                     if (mitReihe.Count > 0)
@@ -439,7 +498,11 @@ namespace WindowsFormsApplication1
                 try { ws.Range(rStart, 1, r + 1, 2 * daten.Varianten.Count + 1).Clear(XLClearOptions.All); }
                 catch { }
                 r = rStart;
+                verlaufFuerMehrjahres = null;
             }
+
+            // ---------------- Mehrjahresübersicht der Zahlungsströme (E7) ----------------
+            r = BlattMehrjahres(ws, daten, verlaufFuerMehrjahres, alle, r);
 
             // ---------------- Sensitivitätsanalyse (W2, Szenario Erwartet) ----------------
             List<SensitivitaetZeile> sens = provider.LadeSensitivitaet(ids);
@@ -502,20 +565,24 @@ namespace WindowsFormsApplication1
                     r++;
 
                     ws.Cell(r, 1).Value = BerichtTexte.T("Zone");
-                    ws.Cell(r, 2).Value = BerichtTexte.T("Netzbezug [MWh]");
-                    ws.Cell(r, 3).Value = BerichtTexte.T("PV-Einspeisung [MWh]");
-                    ws.Cell(r, 4).Value = BerichtTexte.T("KWK-Eigenstrom [MWh]");
-                    ws.Cell(r, 5).Value = BerichtTexte.T("KWK-Einspeisung [MWh]");
-                    ws.Range(r, 1, r, 5).Style.Font.Bold = true;
-                    ws.Range(r, 1, r, 5).Style.Fill.BackgroundColor = KOPF;
+                    // ETAPPE E7: „Bedarf ohne Anlage" — seit E5 gerechnet und
+                    // persistiert, in beiden Matrixausgaben aber ungenutzt.
+                    ws.Cell(r, 2).Value = MyResource.Resource.WIRT_MATRIX_BEDARF;
+                    ws.Cell(r, 3).Value = BerichtTexte.T("Netzbezug [MWh]");
+                    ws.Cell(r, 4).Value = BerichtTexte.T("PV-Einspeisung [MWh]");
+                    ws.Cell(r, 5).Value = BerichtTexte.T("KWK-Eigenstrom [MWh]");
+                    ws.Cell(r, 6).Value = BerichtTexte.T("KWK-Einspeisung [MWh]");
+                    ws.Range(r, 1, r, 6).Style.Font.Bold = true;
+                    ws.Range(r, 1, r, 6).Style.Fill.BackgroundColor = KOPF;
                     r++;
                     foreach (string zone in StromMatrix.Zonen)
                     {
                         StromMatrix.Zone z = m.Hole(zone);
                         if (z == null) continue;
                         ws.Cell(r, 1).Value = zone;
-                        double[] werte = { z.BezugMWh, z.EinspeisungPvMWh, z.KwkEigenMWh, z.KwkEinspeisungMWh };
-                        for (int i = 0; i < 4; i++)
+                        double[] werte = { z.BedarfMWh, z.BezugMWh, z.EinspeisungPvMWh,
+                                           z.KwkEigenMWh, z.KwkEinspeisungMWh };
+                        for (int i = 0; i < werte.Length; i++)
                         {
                             ws.Cell(r, 2 + i).Value = werte[i];
                             ws.Cell(r, 2 + i).Style.NumberFormat.Format = "#,##0.0";
@@ -524,6 +591,9 @@ namespace WindowsFormsApplication1
                     }
                     r++;
                 }
+                ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MATRIX_BEDARF_HINWEIS;
+                ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                r += 2;
             }
 
             // ---------------- Emissionsbilanz (W3) ----------------
@@ -572,8 +642,306 @@ namespace WindowsFormsApplication1
             }
 
             ws.Column(1).Width = 32;
-            for (int i = 2; i <= Math.Max(5, 2 * daten.Varianten.Count); i++) ws.Column(i).Width = 18;   // Δ-Spalten des Verlaufsblocks (Review 11)
+            // Spaltenbreiten: die Mehrjahresübersicht (E7) ist mit bis zu 13 Spalten der
+            // breiteste Block des Blattes.
+            for (int i = 2; i <= Math.Max(14, 2 * daten.Varianten.Count); i++) ws.Column(i).Width = 18;
             ws.SheetView.FreezeRows(2);
+        }
+
+        // ------------------------------------------------- Mehrjahresübersicht (E7)
+
+        /// <summary>
+        /// ETAPPE E7 — je Projekt eine Tabelle mit den Jahren 0…T als Zeilen und den
+        /// Positionen des Zahlungsstroms als Spalten. Inhaltlich dieselbe Tabelle wie im
+        /// Word-Bericht; beide bauen auf <see cref="Mehrjahresbild"/> auf.
+        /// </summary>
+        private static int BlattMehrjahres(IXLWorksheet ws, BerichtsDaten daten,
+                                           WirtschaftlichkeitVerlauf verlauf,
+                                           List<WirtschaftlichkeitErgebnis> alle, int r)
+        {
+            if (verlauf == null || verlauf.Absolut.All(s => s.Bild == null)) return r;
+
+            ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MJ_TITEL;
+            ws.Cell(r, 1).Style.Font.Bold = true;
+            ws.Range(r, 1, r, 14).Style.Fill.BackgroundColor = GRUPPE;
+            r++;
+            ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MJ_HINWEIS;
+            ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+            r += 2;
+
+            foreach (VariantenDaten v in daten.Varianten)
+            {
+                VerlaufSerie serie = verlauf.Absolut.FirstOrDefault(s => s.IdProjekt == v.IdProjekt);
+                Mehrjahresbild bild = Mehrjahresbild.Baue(serie);
+
+                ws.Cell(r, 1).Value = (v.IstStamm ? "Stamm" : v.Anzeige);
+                ws.Cell(r, 1).Style.Font.Bold = true;
+                r++;
+                if (bild == null)
+                {
+                    ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MJ_ENTFAELLT +
+                        (serie != null && serie.Fehlgrund != null ? " (" + serie.Fehlgrund + ")" : "");
+                    ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                    r += 2;
+                    continue;
+                }
+
+                int spalten = bild.Spalten.Count;
+                ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MJ_JAHR;
+                for (int i = 0; i < spalten; i++) ws.Cell(r, 2 + i).Value = bild.Spalten[i].Titel;
+                ws.Range(r, 1, r, 1 + spalten).Style.Font.Bold = true;
+                ws.Range(r, 1, r, 1 + spalten).Style.Fill.BackgroundColor = KOPF;
+                r++;
+
+                for (int jahr = 0; jahr <= bild.Jahre; jahr++)
+                {
+                    ws.Cell(r, 1).Value = jahr;
+                    for (int i = 0; i < spalten; i++)
+                    {
+                        ws.Cell(r, 2 + i).Value = bild.Spalten[i].Wert(jahr);
+                        ws.Cell(r, 2 + i).Style.NumberFormat.Format = "#,##0";
+                        if (bild.Spalten[i].IstSumme)
+                            ws.Cell(r, 2 + i).Style.Fill.BackgroundColor = STAMM;
+                    }
+                    r++;
+                }
+
+                // Abschlusszeile mit dem Restwert-Barwert im Jahr T; sie schließt die
+                // kumulierte Spalte auf den Nettobarwert auf.
+                ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MJ_RESTWERT_T;
+                ws.Cell(r, 1).Style.Font.Bold = true;
+                for (int i = 0; i < spalten; i++)
+                {
+                    if (bild.Spalten[i].Schluessel == "BARWERT")
+                        ws.Cell(r, 2 + i).Value = bild.RestwertBarwert;
+                    else if (bild.Spalten[i].Schluessel == "KUMULIERT")
+                        ws.Cell(r, 2 + i).Value = bild.Kapitalwert;
+                    else continue;
+                    ws.Cell(r, 2 + i).Style.NumberFormat.Format = "#,##0";
+                    ws.Cell(r, 2 + i).Style.Font.Bold = true;
+                    ws.Cell(r, 2 + i).Style.Fill.BackgroundColor = STAMM;
+                }
+                r++;
+
+                ws.Cell(r, 1).Value = string.Format(MyResource.Resource.WIRT_MJ_PROBE,
+                    bild.KumuliertT.ToString("N0", BerichtTexte.Kultur),
+                    bild.RestwertBarwert.ToString("N0", BerichtTexte.Kultur),
+                    bild.Kapitalwert.ToString("N0", BerichtTexte.Kultur));
+                ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                r++;
+
+                // Nachweisblock: vermiedene Kosten und Aufschlagsbetrag stehen
+                // AUSSERHALB des Zahlungsstroms — beide stecken schon in anderen
+                // Positionen, eine eigene Zeile wäre eine Doppelzählung.
+                WirtschaftlichkeitErgebnis e = alle.FirstOrDefault(x =>
+                    x.IdProjekt == v.IdProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+                bool vermieden = e != null &&
+                                 (e.VermiedenGesamtJahr != 0 || e.VermiedenArbeitJahr != 0);
+                if (e != null && (vermieden || e.AufschlagJahr != 0))
+                {
+                    ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MJ_NACHWEIS_TITEL;
+                    ws.Cell(r, 1).Style.Font.Bold = true;
+                    r++;
+                    ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MJ_NACHWEIS_HINWEIS;
+                    ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                    r++;
+                    Action<string, double> nz = (label, wert) =>
+                    {
+                        ws.Cell(r, 1).Value = label;
+                        ws.Cell(r, 2).Value = wert;
+                        ws.Cell(r, 2).Style.NumberFormat.Format = "#,##0";
+                        r++;
+                    };
+                    if (vermieden)
+                    {
+                        nz(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_ARBEIT, e.VermiedenArbeitJahr);
+                        nz(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_LEISTUNG, e.VermiedenLeistungJahr);
+                        nz(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_GESAMT, e.VermiedenGesamtJahr);
+                    }
+                    if (e.AufschlagJahr != 0)
+                        nz(MyResource.Resource.WIRT_ZEILE_AUFSCHLAG, e.AufschlagJahr);
+                }
+                r++;
+            }
+            return r;
+        }
+
+        // ------------------------------------------------- KWK-Zuschlag je Modul (E7)
+
+        /// <summary>ETAPPE E7 — eine Zeile je BHKW-Modul (Übergabepunkt 1 aus E6).</summary>
+        private static int BlattKwkgModule(IXLWorksheet ws, BerichtsDaten daten,
+                                           List<WirtschaftlichkeitErgebnis> alle, int r)
+        {
+            var mitModulen = alle.Where(x => x.Szenario == WirtschaftlichkeitSzenario.ERWARTET &&
+                                             x.KwkgModule != null && x.KwkgModule.Count > 0).ToList();
+            if (mitModulen.Count == 0) return r;
+
+            ws.Cell(r, 1).Value = MyResource.Resource.WIRT_KWKG_MODUL_TITEL;
+            ws.Cell(r, 1).Style.Font.Bold = true;
+            ws.Range(r, 1, r, 10).Style.Fill.BackgroundColor = GRUPPE;
+            r++;
+            ws.Cell(r, 1).Value = MyResource.Resource.WIRT_KWKG_MODUL_HINWEIS;
+            ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+            r += 2;
+
+            string[] kopf =
+            {
+                MyResource.Resource.WIRT_KWKG_SP_MODUL,
+                MyResource.Resource.WIRT_KWKG_SP_PEL,
+                MyResource.Resource.WIRT_KWKG_SP_VBH,
+                MyResource.Resource.WIRT_KWKG_SP_SATZ_EIGEN,
+                MyResource.Resource.WIRT_KWKG_SP_SATZ_EINSP,
+                MyResource.Resource.WIRT_KWKG_SP_SATZQUELLE,
+                MyResource.Resource.WIRT_KWKG_SP_DECKEL,
+                MyResource.Resource.WIRT_KWKG_SP_KONTINGENT,
+                MyResource.Resource.WIRT_KWKG_SP_BEGINN,
+                MyResource.Resource.WIRT_KWKG_SP_JAHR1,
+                MyResource.Resource.WIRT_KWKG_SP_ERSCHOEPFT
+            };
+
+            foreach (VariantenDaten v in daten.Varianten)
+            {
+                WirtschaftlichkeitErgebnis e = mitModulen.FirstOrDefault(x => x.IdProjekt == v.IdProjekt);
+                if (e == null) continue;
+
+                ws.Cell(r, 1).Value = (v.IstStamm ? "Stamm" : v.Anzeige);
+                ws.Cell(r, 1).Style.Font.Bold = true;
+                r++;
+
+                for (int i = 0; i < kopf.Length; i++) ws.Cell(r, 1 + i).Value = kopf[i];
+                ws.Range(r, 1, r, kopf.Length).Style.Font.Bold = true;
+                ws.Range(r, 1, r, kopf.Length).Style.Fill.BackgroundColor = KOPF;
+                r++;
+
+                foreach (KwkgModulNachweis m in e.KwkgModule)
+                {
+                    ws.Cell(r, 1).Value = m.Bezeichner;
+                    Zahl(ws, r, 2, m.PelKW, "#,##0");
+                    Zahl(ws, r, 3, m.VbhElektrisch, "#,##0");
+                    Zahl(ws, r, 4, m.SatzEigenCt, "#,##0.00");
+                    Zahl(ws, r, 5, m.SatzEinspeisungCt, "#,##0.00");
+                    ws.Cell(r, 6).Value = m.SatzAusAnlage
+                        ? MyResource.Resource.WIRT_KWKG_SATZ_QUELLE_ANLAGE
+                        : MyResource.Resource.WIRT_KWKG_SATZ_QUELLE_PROJEKT;
+                    if (m.JahresdeckelH > 0) Zahl(ws, r, 7, m.JahresdeckelH, "#,##0");
+                    else ws.Cell(r, 7).Value = MyResource.Resource.WIRT_KWKG_DECKEL_STAFFEL;
+                    Zahl(ws, r, 8, m.KontingentH, "#,##0");
+                    ws.Cell(r, 9).Value = m.Foerderbeginn;
+                    Zahl(ws, r, 10, m.Jahr1Eur, "#,##0");
+                    if (m.ErschoepftAbJahr > 0) ws.Cell(r, 11).Value = m.ErschoepftAbJahr;
+                    else ws.Cell(r, 11).Value = MyResource.Resource.WIRT_KWKG_ERSCHOEPFT_NIE;
+                    r++;
+                }
+
+                foreach (KwkgModulNachweis m in e.KwkgModule)
+                {
+                    if (m.HerleitungEigen.Length == 0 && m.HerleitungEinspeisung.Length == 0) continue;
+                    ws.Cell(r, 1).Value = string.Format(MyResource.Resource.WIRT_KWKG_HERLEITUNG_ZEILE,
+                                                        m.Bezeichner, m.HerleitungEigen,
+                                                        m.HerleitungEinspeisung);
+                    ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                    r++;
+                }
+                r++;
+            }
+            return r;
+        }
+
+        // --------------------------------------- Betriebskosten nach Kostenarten (E7)
+
+        /// <summary>
+        /// ETAPPE E7 — die Betriebskostenpositionen nach Kostenart der VDI 2067, je
+        /// Position mit Bemessungsart und Herleitung. Zweck der E3-Spalte
+        /// <c>Kostenart</c>.
+        /// </summary>
+        private static int BlattBetriebskosten(IXLWorksheet ws, BerichtsDaten daten,
+                                               List<WirtschaftlichkeitErgebnis> alle, int r)
+        {
+            var mitPositionen = alle.Where(x => x.Szenario == WirtschaftlichkeitSzenario.ERWARTET &&
+                                                x.Betriebskosten != null &&
+                                                x.Betriebskosten.Count > 0).ToList();
+            if (mitPositionen.Count == 0) return r;
+
+            ws.Cell(r, 1).Value = MyResource.Resource.WIRT_BK_TITEL;
+            ws.Cell(r, 1).Style.Font.Bold = true;
+            ws.Range(r, 1, r, 6).Style.Fill.BackgroundColor = GRUPPE;
+            r++;
+            ws.Cell(r, 1).Value = MyResource.Resource.WIRT_BK_HINWEIS;
+            ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+            r += 2;
+
+            foreach (VariantenDaten v in daten.Varianten)
+            {
+                WirtschaftlichkeitErgebnis e = mitPositionen.FirstOrDefault(x => x.IdProjekt == v.IdProjekt);
+                if (e == null) continue;
+
+                ws.Cell(r, 1).Value = (v.IstStamm ? "Stamm" : v.Anzeige);
+                ws.Cell(r, 1).Style.Font.Bold = true;
+                r++;
+
+                ws.Cell(r, 1).Value = MyResource.Resource.WIRT_BK_SP_POSITION;
+                ws.Cell(r, 2).Value = MyResource.Resource.WIRT_BK_SP_GRUPPE;
+                ws.Cell(r, 3).Value = MyResource.Resource.WIRT_BK_SP_BEMESSUNG;
+                ws.Cell(r, 4).Value = MyResource.Resource.WIRT_BK_SP_HERLEITUNG;
+                ws.Cell(r, 5).Value = MyResource.Resource.WIRT_BK_SP_BETRAG;
+                ws.Range(r, 1, r, 5).Style.Font.Bold = true;
+                ws.Range(r, 1, r, 5).Style.Fill.BackgroundColor = KOPF;
+                r++;
+
+                double summe = 0;
+                foreach (string art in WirtschaftlichkeitZeilen.Kostenarten)
+                {
+                    List<KostenPositionNachweis> block = e.Betriebskosten
+                        .Where(x => string.Equals(x.Kostenart ?? "", art, StringComparison.Ordinal))
+                        .ToList();
+                    if (block.Count == 0) continue;
+
+                    ws.Cell(r, 1).Value = WirtschaftlichkeitZeilen.KostenartText(art);
+                    ws.Range(r, 1, r, 5).Style.Font.Bold = true;
+                    ws.Range(r, 1, r, 5).Style.Fill.BackgroundColor = STAMM;
+                    r++;
+
+                    foreach (KostenPositionNachweis n in block)
+                    {
+                        string herleitung = WirtschaftlichkeitZeilen.Herleitung(n, BerichtTexte.Kultur);
+                        if (herleitung.Length == 0 && n.SzenarioGepflegt)
+                            herleitung = MyResource.Resource.WIRT_BK_SZENARIOWERT;
+
+                        ws.Cell(r, 1).Value = n.Bezeichnung;
+                        ws.Cell(r, 2).Value = n.Gruppe;
+                        ws.Cell(r, 3).Value = WirtschaftlichkeitZeilen.BemessungText(n.Bemessung);
+                        ws.Cell(r, 4).Value = herleitung;
+                        Zahl(ws, r, 5, n.BetragJahr, "#,##0");
+                        r++;
+                        summe += n.BetragJahr;
+                    }
+                }
+
+                ws.Cell(r, 1).Value = MyResource.Resource.WIRT_BK_SUMME;
+                Zahl(ws, r, 5, summe, "#,##0");
+                ws.Range(r, 1, r, 5).Style.Font.Bold = true;
+                ws.Range(r, 1, r, 5).Style.Fill.BackgroundColor = KOPF;
+                r++;
+
+                if (e.BetriebskostenJahr.HasValue &&
+                    Math.Abs(summe - e.BetriebskostenJahr.Value) > 0.5)
+                {
+                    ws.Cell(r, 1).Value = string.Format(MyResource.Resource.WIRT_BK_ABWEICHUNG,
+                        summe.ToString("N2", BerichtTexte.Kultur),
+                        e.BetriebskostenJahr.Value.ToString("N2", BerichtTexte.Kultur));
+                    ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#B22222");
+                    r++;
+                }
+                r++;
+            }
+            return r;
+        }
+
+        /// <summary>Zahlwert mit Format in eine Zelle (E7-Hilfe).</summary>
+        private static void Zahl(IXLWorksheet ws, int zeile, int spalte, double wert, string format)
+        {
+            ws.Cell(zeile, spalte).Value = wert;
+            ws.Cell(zeile, spalte).Style.NumberFormat.Format = format;
         }
 
         // ------------------------------------------------------------- Detailblatt
