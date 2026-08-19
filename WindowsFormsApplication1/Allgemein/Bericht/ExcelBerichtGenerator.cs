@@ -242,6 +242,9 @@ namespace WindowsFormsApplication1
                 // Word-Bericht. Er nennt Modell, Arbeitspreise und Preisstand — ohne ihn
                 // ist die Stromkostenzeile im Excel-Blatt nicht nachvollziehbar.
                 " · " + tarifP.Nachweis(BerichtTexte.Kultur) +
+                // LEITENTSCHEIDUNGEN L12/L13: derselbe Ausweis wie im Word-Bericht —
+                // Rechtsstand der Emissionsbewertung und Konvention der Biomasse.
+                " · " + BilanzKonvention.Bestimme(p, new GesetzKatalog()).Ausweis(BerichtTexte.Kultur) +
                 " · " + BerichtTexte.T("Referenz: Stammprojekt · Restwert linear") +
                 " · " + BerichtTexte.T("Rechenstand") + ": " +
                 alle[0].Zeitstempel.ToString("dd.MM.yyyy HH:mm", BerichtTexte.Kultur);
@@ -613,9 +616,26 @@ namespace WindowsFormsApplication1
                     EmissionsBilanz b = EmissionsBilanzRechner.Berechne(v.IdProjekt, p);
                     if (b == null || (!b.CO2GekoppeltT.HasValue && !b.CO2GetrenntT.HasValue)) continue;
 
-                    ws.Cell(r, 1).Value = (v.IstStamm ? "Stamm" : v.Anzeige) + " — " + b.ParkName;
+                    ws.Cell(r, 1).Value = (v.IstStamm ? "Stamm" : v.Anzeige) +
+                        (b.Konvention == null || b.Konvention.Stromgutschrift ? " — " + b.ParkName : "");
                     ws.Cell(r, 1).Style.Font.Bold = true;
                     r++;
+
+                    // LEITENTSCHEIDUNGEN L12/L13 — derselbe Ausweis wie im Word-Bericht.
+                    if (b.Konvention != null)
+                    {
+                        ws.Cell(r, 1).Value = b.Konvention.Ausweis(BerichtTexte.Kultur);
+                        ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                        r++;
+                        if (b.Konvention.OhneGutschrift || b.Konvention.Substitution)
+                        {
+                            ws.Cell(r, 1).Value = b.Konvention.OhneGutschrift
+                                ? MyResource.Resource.BILANZ_HINWEIS_DIN
+                                : MyResource.Resource.BILANZ_HINWEIS_SUBSTITUTION;
+                            ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                            r++;
+                        }
+                    }
 
                     ws.Cell(r, 1).Value = BerichtTexte.T("Schadstoff");
                     ws.Cell(r, 2).Value = BerichtTexte.T("Gekoppelt (System)");
@@ -637,6 +657,14 @@ namespace WindowsFormsApplication1
                     bz("CO₂ [t/a]", b.CO2GekoppeltT, b.CO2GetrenntT);
                     bz("SO₂ [kg/a]", b.SO2GekoppeltKg, b.SO2GetrenntKg);
                     bz("NOx [kg/a]", b.NOxGekoppeltKg, b.NOxGetrenntKg);
+                    // Die beiden Teilbeträge aus einer WAHL: das biogene
+                    // Verbrennungs-CO₂ steckt in der gekoppelten Spalte, die Gutschrift
+                    // des KWK-Stroms in der getrennten. Eine Vermeidungsspalte hätte für
+                    // sie keine Bedeutung, deshalb je nur die zutreffende Spalte.
+                    if (b.CO2BiogenT > 0)
+                        bz(MyResource.Resource.BILANZ_ZEILE_BIOGEN, b.CO2BiogenT, null);
+                    if (b.CO2GutschriftStromT > 0)
+                        bz(MyResource.Resource.BILANZ_ZEILE_GUTSCHRIFT, null, b.CO2GutschriftStromT);
                     r++;
                 }
             }

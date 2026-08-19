@@ -136,6 +136,43 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double? EinspeiseverguetungKWK;
 
+        // ---- LEITENTSCHEIDUNGEN L12 und L13 (Migrationsschritt 23) ----
+        //
+        // Vier Angaben, die den Rechenweg der Emissionsbilanz und die Bemessung der
+        // BEHG-Abgabe SICHTBAR machen. Jede Vorgabe ist der Wert, der das heutige
+        // Verhalten fortführt — aufgelöst und ausgewiesen von <c>BilanzKonvention</c>.
+
+        /// <summary>
+        /// Bilanzjahr der Emissionsrechnung; <c>0</c> = nicht gepflegt. Dann gilt
+        /// <c>BilanzKonvention.BILANZJAHR_RUECKFALL</c> (2026, letztes Jahr des alten
+        /// Rechtsstands) — eine feste Zahl statt der Systemuhr, damit ein gespeichertes
+        /// Projekt in fünf Jahren dieselben Zahlen liefert.
+        /// </summary>
+        public int BilanzJahr;
+
+        /// <summary>
+        /// Bewertung des KWK-Stroms in der Emissionsbilanz, Steuerwert aus
+        /// <c>DbWerte.EMISSIONSMETHODE_*</c>. Vorgabe <c>KATALOG</c>: Der Rechenweg
+        /// folgt dem Gültig-ab-Datum des Verdrängungsstrommix im Katalog (L12).
+        /// </summary>
+        public string EmissionsMethode = DbWerte.EMISSIONSMETHODE_KATALOG;
+
+        /// <summary>
+        /// Bilanzierungskonvention für Biomasse, Steuerwert aus
+        /// <c>DbWerte.BIOMASSE_KONVENTION_*</c>. Vorgabe <c>NULLANSATZ</c> — die
+        /// Annahme, die der Bestand still trifft (L13).
+        /// </summary>
+        public string BiomasseKonvention = DbWerte.BIOMASSE_KONVENTION_NULL;
+
+        /// <summary>
+        /// Nachhaltigkeitsnachweis nach § 8 EBeV 2030 vorhanden. Vorgabe <c>true</c> —
+        /// der Bestand rechnet biogene Brennstoffe ohne CO₂-Abgabe, also so, als läge
+        /// der Nachweis vor. In der Datenbank steht dafür eine TEXT-Spalte, kein
+        /// YESNO: Access hätte eine neue YESNO-Spalte mit <c>False</c> belegt und damit
+        /// jedem Altprojekt den Nachweis entzogen (L13, Migrationsschritt 23).
+        /// </summary>
+        public bool NachhaltigkeitsnachweisBiomasse = true;
+
         public DateTime? GeaendertAm;
 
         /// <summary>Kurzdarstellung als Nachweiszeile (Reiter + Bericht).</summary>
@@ -375,6 +412,31 @@ namespace WindowsFormsApplication1
         public double? NOxGetrenntKg;
         public string ParkName = "";
         public string Hinweis;             // z. B. fehlende Faktoren
+
+        // ---- LEITENTSCHEIDUNGEN L12 und L13 ----
+
+        /// <summary>
+        /// Die angewandten Bilanzierungsregeln dieser Rechnung (L12/L13) — Grundlage
+        /// des Ausweises in Reiter, Word und Excel. <c>null</c> nur, wenn die Bilanz
+        /// gar nicht erst gerechnet wurde.
+        /// </summary>
+        public BilanzKonvention Konvention;
+
+        /// <summary>
+        /// Biogenes Verbrennungs-CO₂ [t/a], das die Konvention
+        /// <c>BIOMASSE_KONVENTION_VERBRENNUNG</c> dem gekoppelten System zurechnet;
+        /// 0 beim Nullansatz oder ohne biogenen Brennstoff. Steht getrennt, damit im
+        /// Bericht sichtbar bleibt, welcher Teil der gekoppelten Emission aus der
+        /// gewählten Konvention stammt und welcher aus dem Brennstoffkatalog.
+        /// </summary>
+        public double CO2BiogenT;
+
+        /// <summary>
+        /// Gutschrift des KWK-Stroms in der getrennten Referenz [t CO₂/a] — je nach
+        /// Methode aus dem Kraftwerkspark, aus dem Substitutionsfaktor oder 0. Der
+        /// Betrag, um den sich die Bilanz durch den Methodenwechsel L12 verschiebt.
+        /// </summary>
+        public double CO2GutschriftStromT;
 
         public double? CO2VermeidungT
         {

@@ -62,8 +62,12 @@ namespace WindowsFormsApplication1
                    "Zahlungsströme Variante − Stamm; ein positiver Wert bedeutet: die Variante ist " +
                    "über den Betrachtungszeitraum wirtschaftlicher als der Stamm.");
             TarifParameter tarifP = provider.LadeTarif(daten.IdStamm);
+            // LEITENTSCHEIDUNGEN L12/L13 — der Ausweis der Bilanzierungsregeln gehört in
+            // dieselbe Nachweiszeile: Er sagt, nach welchem Rechtsstand die Emissionen
+            // bewertet sind und mit welcher Konvention die Biomasse.
             k.Hinweis("Parameter dieses Rechenlaufs: " + p.Nachweis(k.Kultur) +
                       " · " + tarifP.Nachweis(k.Kultur) +
+                      " · " + BilanzKonvention.Bestimme(p, new GesetzKatalog()).Ausweis(k.Kultur) +
                       " · Restwert linear · Ersatzbeschaffungen nominal konstant. " +
                       "Energie-/Strompreise aus der Kostenmaske des jeweiligen Projekts; " +
                       "Investitions- und Betriebskosten aus den Kostenpositionen (Tab_ProjektWerte). " +
@@ -705,7 +709,18 @@ namespace WindowsFormsApplication1
                 if (b.Hinweis != null) { k.Hinweis("⚠ " + b.Hinweis); }
                 if (!b.CO2GekoppeltT.HasValue && !b.CO2GetrenntT.HasValue) continue;
 
-                k.Hinweis("Kraftwerkspark: " + b.ParkName);
+                // LEITENTSCHEIDUNGEN L12/L13 — die Regeln, nach denen diese Tabelle
+                // gerechnet ist, stehen ÜBER ihr. Der Kraftwerkspark wird nur genannt,
+                // wenn er tatsächlich eine Gutschrift trägt.
+                if (b.Konvention == null || b.Konvention.Stromgutschrift)
+                    k.Hinweis("Kraftwerkspark: " + b.ParkName);
+                if (b.Konvention != null)
+                {
+                    k.Hinweis(b.Konvention.Ausweis(k.Kultur));
+                    if (b.Konvention.OhneGutschrift) k.HinweisRoh(MyResource.Resource.BILANZ_HINWEIS_DIN);
+                    if (b.Konvention.Substitution) k.HinweisRoh(MyResource.Resource.BILANZ_HINWEIS_SUBSTITUTION);
+                    if (b.CO2BiogenT > 0) k.HinweisRoh(MyResource.Resource.BILANZ_HINWEIS_BIOMASSE);
+                }
 
                 int wLabel = 2800;
                 int wCol = (WordBerichtGenerator.INHALT_B - wLabel) / 3;
@@ -734,6 +749,16 @@ namespace WindowsFormsApplication1
                 zeile("SO₂ [kg/a]", b.SO2GekoppeltKg, b.SO2GetrenntKg);
                 zeile("NOx [kg/a]", b.NOxGekoppeltKg, b.NOxGetrenntKg);
                 k.Fuege(t);
+
+                // Die beiden Teilbeträge, die aus einer WAHL stammen und in den Zahlen
+                // oben stecken — als Zeilen unter der Tabelle statt in ihr: Eine
+                // Differenzspalte „Vermeidung" hätte für sie keine Bedeutung.
+                if (b.CO2BiogenT > 0)
+                    k.Hinweis(MyResource.Resource.BILANZ_ZEILE_BIOGEN + ": " +
+                              k.F(b.CO2BiogenT, 1) + " (im gekoppelten System enthalten)");
+                if (b.CO2GutschriftStromT > 0)
+                    k.Hinweis(MyResource.Resource.BILANZ_ZEILE_GUTSCHRIFT + ": " +
+                              k.F(b.CO2GutschriftStromT, 1) + " (in der getrennten Referenz enthalten)");
                 k.Beschriftung(" ");
             }
         }

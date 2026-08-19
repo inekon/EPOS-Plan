@@ -6026,4 +6026,94 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   <data name="KI_AKT_BESTAETIGUNG_VERFALLEN" xml:space="preserve">
     <value>The preview has expired — nothing was changed. Please ask again.</value>
   </data>
+  <data name="BILANZ_AUSWEIS" xml:space="preserve">
+    <value>Balancing: balance year {0} · CHP electricity {1} ({2}) · biomass {3} · {4}</value>
+  </data>
+  <data name="BILANZ_METHODE_STROMGUTSCHRIFT" xml:space="preserve">
+    <value>with an electricity credit from the reference power plant</value>
+  </data>
+  <data name="BILANZ_METHODE_OHNE_GUTSCHRIFT" xml:space="preserve">
+    <value>without a displacement credit (GModG from 01/01/2027)</value>
+  </data>
+  <data name="BILANZ_METHODE_SUBSTITUTION" xml:space="preserve">
+    <value>with a substitution factor of {0} g CO₂ eq./kWh</value>
+  </data>
+  <data name="BILANZ_HERKUNFT_KATALOG" xml:space="preserve">
+    <value>per catalogue, displacement mix valid from {0}</value>
+  </data>
+  <data name="BILANZ_HERKUNFT_KATALOG_LEER" xml:space="preserve">
+    <value>per catalogue, but no entry for the displacement mix was found</value>
+  </data>
+  <data name="BILANZ_HERKUNFT_WAHL" xml:space="preserve">
+    <value>chosen explicitly</value>
+  </data>
+  <data name="BILANZ_BIOMASSE_NULL" xml:space="preserve">
+    <value>biogenic combustion CO₂ set to zero (GEG/GModG, UBA emission balance, BAFA)</value>
+  </data>
+  <data name="BILANZ_BIOMASSE_VERBRENNUNG" xml:space="preserve">
+    <value>biogenic combustion CO₂ counted at {0} g/kWh (UBA CO₂ calculator)</value>
+  </data>
+  <data name="BILANZ_NACHWEIS_JA" xml:space="preserve">
+    <value>sustainability certificate under section 8 EBeV 2030 available</value>
+  </data>
+  <data name="BILANZ_NACHWEIS_NEIN" xml:space="preserve">
+    <value>without a sustainability certificate — liquid biomass fully subject to the BEHG</value>
+  </data>
+  <data name="BILANZ_JAHR_RUECKFALL" xml:space="preserve">
+    <value>(not maintained)</value>
+  </data>
+  <data name="BILANZ_OHNE_WERT" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="BILANZ_HINWEIS_DIN" xml:space="preserve">
+    <value>On 01/01/2027 the displacement electricity mix ceases to exist without replacement; the GModG replaces the electricity credit method with an assessment under DIN EN 15316-4-5. What is implemented is the loss of the credit, not the allocation procedure of that standard — its text is not part of the factual basis of this project.</value>
+  </data>
+  <data name="BILANZ_HINWEIS_SUBSTITUTION" xml:space="preserve">
+    <value>The substitution factor is a methodological choice, not a legal requirement: the Federal Environment Agency derives it for renewable electricity (photovoltaics), not for CHP. There is no official replacement for the displacement electricity mix.</value>
+  </data>
+  <data name="BILANZ_HINWEIS_BIOMASSE" xml:space="preserve">
+    <value>The balancing convention for biomass contradicts itself across the rulebooks: the BEHG, GEG/GModG, the UBA emission balance and BAFA set biogenic combustion CO₂ to zero, the UBA CO₂ calculator uses 365 g/kWh. Bio heating oil blends are not affected — their biogenic share is already contained in the catalogue factor and is not held as a separate quantity in the data model.</value>
+  </data>
+  <data name="BILANZ_ZEILE_BIOGEN" xml:space="preserve">
+    <value>of which biogenic combustion CO₂ [t/a]</value>
+  </data>
+  <data name="BILANZ_ZEILE_GUTSCHRIFT" xml:space="preserve">
+    <value>of which credit for CHP electricity [t CO₂/a]</value>
+  </data>
+  <data name="BILANZ_DLG_GRUPPE" xml:space="preserve">
+    <value>Balancing — emission method and biomass</value>
+  </data>
+  <data name="BILANZ_DLG_JAHR" xml:space="preserve">
+    <value>Balance year (0 = law as of 2026):</value>
+  </data>
+  <data name="BILANZ_DLG_METHODE" xml:space="preserve">
+    <value>CHP electricity valued as:</value>
+  </data>
+  <data name="BILANZ_DLG_METHODE_KATALOG" xml:space="preserve">
+    <value>per catalogue (effective date)</value>
+  </data>
+  <data name="BILANZ_DLG_METHODE_GUTSCHRIFT" xml:space="preserve">
+    <value>electricity credit (power plant)</value>
+  </data>
+  <data name="BILANZ_DLG_METHODE_OHNE" xml:space="preserve">
+    <value>no credit (from 2027)</value>
+  </data>
+  <data name="BILANZ_DLG_METHODE_SUBSTITUTION" xml:space="preserve">
+    <value>substitution factor (UBA)</value>
+  </data>
+  <data name="BILANZ_DLG_BIOMASSE" xml:space="preserve">
+    <value>Biogenic combustion CO₂:</value>
+  </data>
+  <data name="BILANZ_DLG_BIOMASSE_NULL" xml:space="preserve">
+    <value>set to zero (GEG/GModG, UBA)</value>
+  </data>
+  <data name="BILANZ_DLG_BIOMASSE_VERBRENNUNG" xml:space="preserve">
+    <value>count it (UBA CO₂ calculator)</value>
+  </data>
+  <data name="BILANZ_DLG_NACHWEIS" xml:space="preserve">
+    <value>Sustainability certificate under section 8 EBeV 2030 available</value>
+  </data>
+  <data name="BILANZ_DLG_HINWEIS" xml:space="preserve">
+    <value>Balancing: the balance year determines which law applies. Without an entry, 2026 applies — the emission balance then works with an electricity credit exactly as before. From balance year 2027 the displacement electricity mix ceases to exist without replacement; anyone who still wants a credit chooses it here explicitly, and the report presents it as a methodological choice. The sustainability certificate only affects liquid biomass (rapeseed oil, animal fats) — solid biomass and biogas are not BEHG fuels.</value>
+  </data>
 </root>

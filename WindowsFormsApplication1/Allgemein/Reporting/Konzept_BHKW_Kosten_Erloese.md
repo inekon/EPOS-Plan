@@ -159,6 +159,22 @@ rechnen will, trifft eine methodische Wahl — sie wird zum Auswahlparameter und
 im Bericht ausgewiesen. Für BHKW-Projekte ist das die folgenreichste Änderung
 des gesamten Vorhabens.
 
+> **Umgesetzt am 19.08.2026** ([`W4_L12_L13_Methodenwechsel_Protokoll.md`](W4_L12_L13_Methodenwechsel_Protokoll.md)),
+> Migrationsschritt 23. Die Stromgutschriftmethode steckte nicht in einer Zahl, sondern in der
+> **Systemgrenze** des `EmissionsBilanzRechner`: Die getrennte Referenz erzeugt denselben KWK-Strom
+> im Kraftwerkspark. Es gibt jetzt drei Rechenwege (`STROMGUTSCHRIFT`, `OHNE_GUTSCHRIFT`,
+> `SUBSTITUTION`), umgeschaltet über die 2027er-Katalogzeile **ohne Wert** —
+> **keine Jahreszahl im Code**. Gemessen an Projekt 1030: **−963,24 t CO₂/a ausgewiesene
+> Vermeidung, −70,0 %**, sobald das Bilanzjahr auf 2027 steht. Der Kapitalwert bleibt unberührt.
+>
+> **Zwei Abgrenzungen, die im Bericht stehen.** (1) Verdrahtet ist der **Wegfall der Gutschrift**,
+> nicht das Zuteilungsverfahren der DIN EN 15316-4-5 — deren Text gehört nicht zur Faktenbasis.
+> (2) Der Stichtag hängt an einer **eigenen Projektangabe `Bilanz_Jahr`** mit festem Rückfall auf
+> 2026, nicht am Förderjahr und nicht an der Systemuhr: Beide hätten Bestandsprojekte sofort auf den
+> neuen Rechtsstand gezogen (`Foerderbeginn` fällt ohne Inbetriebnahme auf „aktuelles Jahr + 1",
+> heute 2027), und die Systemuhr bräche die Reproduzierbarkeit über den Jahreswechsel. Der
+> Methodenwechsel greift damit **nicht von selbst** — er greift, wenn das Bilanzjahr gepflegt wird.
+
 **L13 — Bilanzierungskonvention für Biomasse ausweisen.** Ob biogenes
 Verbrennungs-CO₂ mit null angesetzt wird, hängt vom Regelwerk ab und
 widerspricht sich zwischen BEHG, GModG, UBA-Emissionsbilanz und UBA-CO₂-Rechner
@@ -166,6 +182,21 @@ widerspricht sich zwischen BEHG, GModG, UBA-Emissionsbilanz und UBA-CO₂-Rechne
 Bericht, keine stille Annahme im Code. Beim BEHG kommt hinzu, dass der Nullansatz
 **einen Nachhaltigkeitsnachweis voraussetzt** — ohne ihn gilt der volle fossile
 Standardwert.
+
+> **Umgesetzt am 19.08.2026** ([`W4_L12_L13_Methodenwechsel_Protokoll.md`](W4_L12_L13_Methodenwechsel_Protokoll.md)),
+> Migrationsschritt 23. **Die stille Annahme stand nicht im Code, sondern im Brennstoffkatalog:**
+> Holz und Pellets 20, Biogas 140, Rapsöl und Tierische Fette 210 g/kWh — durchgehend reine
+> Vorkettenwerte, also die Konvention von GEG/GModG, UBA-Emissionsbilanz und BAFA. Sie ist die
+> **Vorgabe** geworden (`NULLANSATZ`); die Alternative des UBA-CO₂-Rechners (365 g/kWh) ist
+> wählbar. Gemessen an einem präparierten Biomasseprojekt **dreht die Wahl das Vorzeichen**: aus
+> 44,89 t/a Vermeidung werden 38,67 t/a Mehremission.
+>
+> **Der Nachhaltigkeitsnachweis ist eine zweite, getrennte Angabe** und wirkt nur auf die
+> BEHG-Abgabe: Ohne ihn wird die **flüssige** Biomasse (Rapsöl, Tierische Fette; EBeV 2030 Anlage 2
+> Teil 4) mit 266,4 g/kWh abgabepflichtig — im Messfall **+3.964,15 €/a**, Barwert 58.976,57 €.
+> Feste Biomasse, Biogas und Klärgas sind keine BEHG-Brennstoffe und bleiben außen vor. In der
+> Datenbank steht dafür eine **TEXT**-Spalte, kein `YESNO`: Access hätte eine neue YESNO-Spalte in
+> jeder Bestandszeile mit `False` belegt und damit jedem Altprojekt den Nachweis entzogen.
 
 **L10 — HT/NT entfällt** (Nutzervorgabe). Die Vier-Preis-Struktur bleibt intern
 erhalten, wird aber mit demselben Durchschnittspreis belegt — genau das tut die
@@ -201,6 +232,7 @@ Additiv, Migration ab Schemastand 18. Muster für neue Tabellen:
 | `Tab_ProjektTarif` | `Leistungsmodell TEXT(20)` (`MONATLICH` / `STAFFEL` / `JAHRESHOECHSTLAST`), vier **kumulierte Obergrenzen** in kW mit Sommer- und Winterpreis, monatlicher Leistungspreis, Grundpreis, `GueltigAb` — *umgesetzt mit E5 als **36 Spalten**: je Rolle (Bezug, Reststrom) ein Arbeitspreis, ein Grundpreis, `…_Leistungsmodell TEXT(24)`, ein Monatspreis und vier Staffelstufen; dazu `Tarif_Modus TEXT(12)` (`ZONEN` / `ROLLEN`), `Tarif_GueltigAb` und für die Einspeisung Arbeits- und Grundpreis. Die Einspeiserolle führt **keine** Leistungsstaffel — Begründung im E5-Protokoll, Abschnitt 2.2* |
 | `Tab_Kraftwerkspark` | `CO`, `Staub`, `GueltigAb`, `Quelle`, `ReadOnly` und vor allem **`Bezugsbasis TEXT(12)`** (`BRENNSTOFF` / `STROM`) — **mit W4 NICHT gebaut** (Abnahme E8, Befund A5). Der Definitionsbruch des Altkatalogs besteht damit fort; der Punkt ist seit E8 in der Liste offener Punkte des Umsetzungsstands geführt (Nr. 9) |
 | `Tab_ProjektWirtschaftlichkeit` | Steuerparameter je Projekt: Unternehmensart, Nutzungsgrad, Hocheffizienz, räumlicher Zusammenhang, Wahl § 53 / § 53a |
+| `Tab_ProjektWirtschaftlichkeit` | *L12/L13, Schritt 23:* `Bilanz_Jahr LONG` (NULL = Rechtsstand bis 31.12.2026), `Emissions_Methode TEXT(30)` (`KATALOG` / `STROMGUTSCHRIFT` / `OHNE_GUTSCHRIFT` / `SUBSTITUTION`), `Biomasse_Konvention TEXT(30)` (`NULLANSATZ` / `VERBRENNUNG`), `Biomasse_Nachweis TEXT(30)` (`NACHWEIS_JA` / `NACHWEIS_NEIN`). Vorbelegung 23b: `KATALOG` / `NULLANSATZ` / `NACHWEIS_JA` — jeweils der Wert, der die Bestandsrechnung fortführt. Der Nachweis ist **TEXT statt YESNO**, weil Access YESNO in jeder Bestandszeile mit `False` belegt und damit hier in die falsche Richtung zeigte |
 | `Tab_Energieanlagen` | *E6, Schritt 22:* `KWKG_Stichtag DATETIME`, `KWKG_Inbetriebnahme DATETIME`, `KWKG_Anlagenart TEXT(24)`, `KWKG_Eigenstromfall TEXT(24)`, `KWKG_Satz_Einspeisung DOUBLE`, `KWKG_Satz_Eigen DOUBLE`, `KWKG_Vbh_Kontingent DOUBLE`, `KWKG_Vbh_Jahresdeckel DOUBLE` — **alle NULL-fähig, NULL = Projektwert**. Kein DML, kein `_STAMM`-Gegenstück (die Tabelle hat keines) |
 
 **ACE-Regeln, die im Bestand teuer gelernt wurden:** `YESNO` belegt
@@ -383,6 +415,7 @@ Damit werden folgende heute hart codierten Werte pflegbar: Stromsteuersätze in
 | **E6** | KWK-Zuschlag je Modul mit Katalogvorschlag | gesetzliche Leistungsklassen abgebildet — **umgesetzt 19.08.2026** (Migrationsschritt 22, [`W4_E6_Zuschlag_je_Modul_Protokoll.md`](W4_E6_Zuschlag_je_Modul_Protokoll.md)). Ergebnisneutral für Einmodulprojekte; bei Mehrmodulanlagen ändert sich das Ergebnis **nur**, wenn die Module den Jahresdeckel unterschiedlich treffen oder sich in Datum, Satz oder Kontingent unterscheiden |
 | **E7** | Bericht (Word und Excel), Mehrjahrestabelle | Ausgabe — **umgesetzt 19.08.2026** ([`W4_E7_Bericht_Mehrjahrestabelle_Protokoll.md`](W4_E7_Bericht_Mehrjahrestabelle_Protokoll.md)); rein additiv, 864 von 864 Wirtschaftlichkeitswerten unverändert |
 | **E8** | Abnahme, neue Referenzbasis, Protokoll | **abgeschlossen 19.08.2026** ([`W4_E8_Abnahme_Protokoll.md`](W4_E8_Abnahme_Protokoll.md)). Basis **`2026-08-19_B6`** eingefroren, 216/216 byte-gleich gegen B5; die vier Prüflücken gemessen; **acht Befunde A1–A8 dokumentiert**, keine Codezeile geändert |
+| **L12/L13** | Nacharbeit zu den Abnahmebefunden A3 und A4: Methodenwechsel 2027 und Bilanzierungskonvention Biomasse (Migrationsschritt 23) | **umgesetzt 19.08.2026** ([`W4_L12_L13_Methodenwechsel_Protokoll.md`](W4_L12_L13_Methodenwechsel_Protokoll.md)), **ergebnisneutral für Bestandsprojekte** — 216/216 byte-gleich gegen B6, 972/972 Wirtschaftlichkeitswerte identisch gegen `3307378`. Wirkung gemessen: **−70,0 % ausgewiesene CO₂-Vermeidung** ab Bilanzjahr 2027, **Vorzeichenwechsel** der Vermeidung bei der Biomasse-Konvention, **+3.964,15 €/a** CO₂-Abgabe ohne Nachhaltigkeitsnachweis |
 
 **E2 ändert Ergebnisse bewusst.** Wie bei K-3 gilt: A/B-Nachweis gegen HEAD,
 Wirkungsbeleg, neuer Basis-Freeze. Alle übrigen Etappen sind ergebnisneutral für
@@ -456,8 +489,15 @@ Bestandsprojekte ohne die neuen Angaben.
 
 7. **Nach der Abnahme E8 zusätzlich offen** (Einzelheiten im
    [`W4_E8_Abnahme_Protokoll.md`](W4_E8_Abnahme_Protokoll.md), Abschnitt 5.2): die **Zahlenprobe
-   gegen die Altanwendung** (A8, siehe Abschnitt 8); **L12** — der Methodenwechsel zum 01.01.2027
-   liegt nur als Katalogdatenseite vor, **keine Codezeile liest die 2027er-Schlüssel** (A3);
-   **L13** — die Bilanzierungskonvention für Biomasse ist nicht umgesetzt (A4); **keine Tests**
-   für die neuen Rechenklassen, obwohl L9 sie verlangt (A1); die **Lokalisierung** der drei neuen
-   Dialoge (A6) samt der doppelt beschrifteten Zeile „Hinweis" im Ergebnisreiter (B1).
+   gegen die Altanwendung** (A8, siehe Abschnitt 8); ~~**L12**~~ und ~~**L13**~~ — **beide am
+   19.08.2026 umgesetzt** (A3 und A4 erledigt, Migrationsschritt 23,
+   [`W4_L12_L13_Methodenwechsel_Protokoll.md`](W4_L12_L13_Methodenwechsel_Protokoll.md));
+   **keine Tests** für die neuen Rechenklassen, obwohl L9 sie verlangt (A1); die
+   **Lokalisierung** der drei neuen Dialoge (A6) samt der doppelt beschrifteten Zeile „Hinweis"
+   im Ergebnisreiter (B1).
+
+   > **Zwei Punkte, die mit L12/L13 neu benannt sind:** (1) Der Methodenwechsel greift **nicht
+   > automatisch** zum 01.01.2027, sondern über die Projektangabe `Bilanz_Jahr` — begründet mit der
+   > Reproduzierbarkeit gespeicherter Rechnungen. (2) `Tab_Kraftwerkspark` führt mit 560 g/kWh
+   > einen **Nachweis**wert in der realen Bilanz (Bestand aus W3, gehört zu Punkt 9 der offenen
+   > Liste); L12 hat daran nichts geändert und keinen weiteren Nachweiswert eingeführt.

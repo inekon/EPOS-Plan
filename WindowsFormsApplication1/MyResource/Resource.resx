@@ -6032,4 +6032,94 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   <data name="KI_AKT_BESTAETIGUNG_VERFALLEN" xml:space="preserve">
     <value>Die Vorschau ist verfallen — es wurde nichts geändert. Bitte neu fragen.</value>
   </data>
+  <data name="BILANZ_AUSWEIS" xml:space="preserve">
+    <value>Bilanzierung: Bilanzjahr {0} · KWK-Strom {1} ({2}) · Biomasse {3} · {4}</value>
+  </data>
+  <data name="BILANZ_METHODE_STROMGUTSCHRIFT" xml:space="preserve">
+    <value>mit Stromgutschrift über den Kraftwerkspark</value>
+  </data>
+  <data name="BILANZ_METHODE_OHNE_GUTSCHRIFT" xml:space="preserve">
+    <value>ohne Verdrängungsgutschrift (GModG ab 01.01.2027)</value>
+  </data>
+  <data name="BILANZ_METHODE_SUBSTITUTION" xml:space="preserve">
+    <value>mit Substitutionsfaktor {0} g CO₂-Äq/kWh</value>
+  </data>
+  <data name="BILANZ_HERKUNFT_KATALOG" xml:space="preserve">
+    <value>nach Katalog, Verdrängungsstrommix gültig ab {0}</value>
+  </data>
+  <data name="BILANZ_HERKUNFT_KATALOG_LEER" xml:space="preserve">
+    <value>nach Katalog, aber keine Zeile zum Verdrängungsstrommix gefunden</value>
+  </data>
+  <data name="BILANZ_HERKUNFT_WAHL" xml:space="preserve">
+    <value>ausdrücklich gewählt</value>
+  </data>
+  <data name="BILANZ_BIOMASSE_NULL" xml:space="preserve">
+    <value>biogenes Verbrennungs-CO₂ mit null (GEG/GModG, UBA-Emissionsbilanz, BAFA)</value>
+  </data>
+  <data name="BILANZ_BIOMASSE_VERBRENNUNG" xml:space="preserve">
+    <value>biogenes Verbrennungs-CO₂ mit {0} g/kWh (UBA-CO₂-Rechner)</value>
+  </data>
+  <data name="BILANZ_NACHWEIS_JA" xml:space="preserve">
+    <value>Nachhaltigkeitsnachweis nach § 8 EBeV 2030 liegt vor</value>
+  </data>
+  <data name="BILANZ_NACHWEIS_NEIN" xml:space="preserve">
+    <value>ohne Nachhaltigkeitsnachweis — flüssige Biomasse voll BEHG-pflichtig</value>
+  </data>
+  <data name="BILANZ_JAHR_RUECKFALL" xml:space="preserve">
+    <value>(nicht gepflegt)</value>
+  </data>
+  <data name="BILANZ_OHNE_WERT" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="BILANZ_HINWEIS_DIN" xml:space="preserve">
+    <value>Zum 01.01.2027 entfällt der Verdrängungsstrommix ersatzlos; das GModG ersetzt die Stromgutschriftmethode durch eine Bewertung nach DIN EN 15316-4-5. Abgebildet ist der Wegfall der Gutschrift, nicht das Zuteilungsverfahren dieser Norm — deren Text gehört nicht zur Faktenbasis dieses Vorhabens.</value>
+  </data>
+  <data name="BILANZ_HINWEIS_SUBSTITUTION" xml:space="preserve">
+    <value>Der Substitutionsfaktor ist eine methodische Wahl, keine Rechtsvorgabe: Das Umweltbundesamt leitet ihn für erneuerbaren Strom her (Photovoltaik), nicht für KWK. Einen amtlichen Ersatz des Verdrängungsstrommix gibt es nicht.</value>
+  </data>
+  <data name="BILANZ_HINWEIS_BIOMASSE" xml:space="preserve">
+    <value>Die Bilanzierungskonvention für Biomasse widerspricht sich zwischen den Regelwerken: BEHG, GEG/GModG, UBA-Emissionsbilanz und BAFA setzen biogenes Verbrennungs-CO₂ mit null an, der UBA-CO₂-Rechner mit 365 g/kWh. Die Bio-Heizöl-Mischungen bleiben davon unberührt — ihr biogener Anteil steckt bereits im Katalogfaktor und ist im Datenmodell nicht als eigene Größe geführt.</value>
+  </data>
+  <data name="BILANZ_ZEILE_BIOGEN" xml:space="preserve">
+    <value>davon biogenes Verbrennungs-CO₂ [t/a]</value>
+  </data>
+  <data name="BILANZ_ZEILE_GUTSCHRIFT" xml:space="preserve">
+    <value>darin Gutschrift KWK-Strom [t CO₂/a]</value>
+  </data>
+  <data name="BILANZ_DLG_GRUPPE" xml:space="preserve">
+    <value>Bilanzierung — Emissionsmethode und Biomasse</value>
+  </data>
+  <data name="BILANZ_DLG_JAHR" xml:space="preserve">
+    <value>Bilanzjahr (0 = Rechtsstand bis 2026):</value>
+  </data>
+  <data name="BILANZ_DLG_METHODE" xml:space="preserve">
+    <value>Bewertung KWK-Strom:</value>
+  </data>
+  <data name="BILANZ_DLG_METHODE_KATALOG" xml:space="preserve">
+    <value>nach Katalog (Stichtag)</value>
+  </data>
+  <data name="BILANZ_DLG_METHODE_GUTSCHRIFT" xml:space="preserve">
+    <value>Stromgutschrift (Kraftwerkspark)</value>
+  </data>
+  <data name="BILANZ_DLG_METHODE_OHNE" xml:space="preserve">
+    <value>ohne Gutschrift (ab 2027)</value>
+  </data>
+  <data name="BILANZ_DLG_METHODE_SUBSTITUTION" xml:space="preserve">
+    <value>Substitutionsfaktor (UBA)</value>
+  </data>
+  <data name="BILANZ_DLG_BIOMASSE" xml:space="preserve">
+    <value>Biogenes Verbrennungs-CO₂:</value>
+  </data>
+  <data name="BILANZ_DLG_BIOMASSE_NULL" xml:space="preserve">
+    <value>mit null (GEG/GModG, UBA-Bilanz)</value>
+  </data>
+  <data name="BILANZ_DLG_BIOMASSE_VERBRENNUNG" xml:space="preserve">
+    <value>ansetzen (UBA-CO₂-Rechner)</value>
+  </data>
+  <data name="BILANZ_DLG_NACHWEIS" xml:space="preserve">
+    <value>Nachhaltigkeitsnachweis nach § 8 EBeV 2030 liegt vor</value>
+  </data>
+  <data name="BILANZ_DLG_HINWEIS" xml:space="preserve">
+    <value>Bilanzierung: Das Bilanzjahr entscheidet über den Rechtsstand. Ohne Angabe gilt 2026 — dann rechnet die Emissionsbilanz wie bisher mit Stromgutschrift. Ab Bilanzjahr 2027 entfällt der Verdrängungsstrommix ersatzlos; wer dennoch eine Gutschrift ansetzen will, wählt sie hier ausdrücklich, und der Bericht weist sie als methodische Wahl aus. Der Nachhaltigkeitsnachweis wirkt nur auf flüssige Biomasse (Rapsöl, tierische Fette) — feste Biomasse und Biogas sind keine BEHG-Brennstoffe.</value>
+  </data>
 </root>

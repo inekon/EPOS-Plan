@@ -1581,3 +1581,25 @@ das Ergebnis genau solcher Teilumstellungen.
 | `Tab_Kostenfaktor.Bezeichnung` und `Tab_ProjektWerte.Gruppe` im Betriebskostenblock | **Datenwerte** des Anwenders („BHKW", „Wartung BHKW"). Sie stehen so in der Datenbank und werden nicht übersetzt — auch nicht im englischen Bericht. |
 | Die Einheitenzeichen der Herleitung (`h/a`, `kWh/a`, `€/h`, `€/kWh`, `%`) | `BetriebskostenCtrl.SatzEinheit` / `…MengenEinheit` — reine Einheitenzeichen ohne Wortbestand, dieselbe Ausnahme wie bisher. |
 | `„Jahres-Bezugsspitze: … (Basis der Leistungspreis-Staffel)"` und die Zonennamen `Winter HT` … | **Bestand**, von E7 nicht angefasst: Die Gesamtlokalisierung des Berichtsmoduls (82 + 18 Literale) ist ausdrücklich außerhalb dieser Etappe. E7 stellt die **Kennzahlentabelle vollständig** um und legt die **neuen** Blöcke von Anfang an lokalisiert an. |
+
+---
+
+## Nachtrag zu den Leitentscheidungen L12 und L13 — Bilanzierung (19.08.2026)
+
+Die Nacharbeit zu den Abnahmebefunden A3 und A4 legt **30 Schlüssel** neu an; **kein vorhandener
+Wert ändert sich**. Alle drei Dateien (`Resource.resx`, `Resource.en-US.resx`,
+`Resource.Designer.cs`) führen jeden Schlüssel genau einmal.
+
+| Gruppe | Schlüssel | Inhalt |
+|---|---|---|
+| Ausweis (13) | `BILANZ_AUSWEIS`, `BILANZ_METHODE_STROMGUTSCHRIFT`, `…_OHNE_GUTSCHRIFT`, `…_SUBSTITUTION`, `BILANZ_HERKUNFT_KATALOG`, `…_KATALOG_LEER`, `…_WAHL`, `BILANZ_BIOMASSE_NULL`, `…_VERBRENNUNG`, `BILANZ_NACHWEIS_JA`, `…_NEIN`, `BILANZ_JAHR_RUECKFALL`, `BILANZ_OHNE_WERT` | Die eine Zeile, die in Reiter, Word und Excel sagt, nach welchem Rechtsstand und mit welcher Konvention gerechnet wurde (`BilanzKonvention.Ausweis`). |
+| Berichtshinweise (3) | `BILANZ_HINWEIS_DIN`, `BILANZ_HINWEIS_SUBSTITUTION`, `BILANZ_HINWEIS_BIOMASSE` | Die drei Sätze, die eine methodische Wahl als solche kennzeichnen — Wegfall der Gutschrift gegen DIN EN 15316-4-5, Herkunft des Substitutionsfaktors, Widerspruch der Regelwerke zur Biomasse. |
+| Bilanzzeilen (2) | `BILANZ_ZEILE_BIOGEN`, `BILANZ_ZEILE_GUTSCHRIFT` | Die beiden Teilbeträge, die aus einer Wahl stammen und in den Summen der Emissionsbilanz stecken. |
+| Parameterdialog (12) | `BILANZ_DLG_GRUPPE`, `…_JAHR`, `…_METHODE`, `…_METHODE_KATALOG`, `…_METHODE_GUTSCHRIFT`, `…_METHODE_OHNE`, `…_METHODE_SUBSTITUTION`, `…_BIOMASSE`, `…_BIOMASSE_NULL`, `…_BIOMASSE_VERBRENNUNG`, `…_NACHWEIS`, `…_HINWEIS` | Der neue Block in `Form_WirtschaftlichkeitParameter`. |
+
+**Nicht lokalisiert — und warum**
+
+| Wert | Grund |
+|---|---|
+| `KATALOG`, `STROMGUTSCHRIFT`, `OHNE_GUTSCHRIFT`, `SUBSTITUTION`, `NULLANSATZ`, `VERBRENNUNG`, `NACHWEIS_JA`, `NACHWEIS_NEIN` | **Persistenzwerte** in `Tab_ProjektWirtschaftlichkeit`, in SQL damit verglichen: ASCII, eingefroren, in `DbWerte.cs`. Die Anzeigetexte dazu sind die `BILANZ_DLG_*`-Schlüssel oben. |
+| Die 23 deutschen Literale der übrigen Zeilen von `Form_WirtschaftlichkeitParameter` | **Bestand** (Befund A6, offener Punkt 11): Die Gesamtlokalisierung der drei Dialoge aus E4 bis E6 ist ausdrücklich außerhalb dieser Nacharbeit. Der neue Block ist von Anfang an lokalisiert angelegt. |

@@ -1117,6 +1117,91 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_KWKG_DECKEL,         "DOUBLE"),
         };
 
+        // ---------------------------------------------------------------------------
+        // LEITENTSCHEIDUNGEN L12 und L13 — Bilanzierungsregeln je Projekt
+        // ---------------------------------------------------------------------------
+
+        /// <summary>
+        /// L12 — <b>Bilanzjahr</b> der Emissionsrechnung. <c>NULL</c> = nicht gepflegt;
+        /// dann gilt <c>BilanzKonvention.BILANZJAHR_RUECKFALL</c> (2026, das letzte Jahr
+        /// des alten Rechtsstands).
+        ///
+        /// <b>Bleibt NULL, und das ist die Ergebnisneutralität.</b> Ein Bestandsprojekt
+        /// rechnet damit weiter nach dem Rechtsstand bis 31.12.2026 — also genau wie
+        /// bisher. Der Wegfall des Verdrängungsstrommix greift erst, wenn jemand das
+        /// Bilanzjahr auf 2027 oder später setzt. Bewusst KEIN Rückfall auf das
+        /// Systemjahr: Ein gespeichertes Projekt muss in fünf Jahren dieselben Zahlen
+        /// liefern (Grundlagen 7.1, Grund 2).
+        /// </summary>
+        public const string SPALTE_PW_BILANZJAHR = "Bilanz_Jahr";
+
+        /// <summary>
+        /// L12 — Bewertung des KWK-Stroms in der Emissionsbilanz, Steuerwert
+        /// <c>DbWerte.EMISSIONSMETHODE_*</c>. Vorbelegung <c>KATALOG</c> (Schritt 23b):
+        /// Der Rechenweg folgt dem Gültig-ab-Datum des Verdrängungsstrommix im Katalog.
+        ///
+        /// <b>Breite.</b> Längster Steuerwert ist <c>STROMGUTSCHRIFT</c> (15 Zeichen) →
+        /// TEXT(30). Ein zu kurzes Feld lässt das UPDATE STILL scheitern (Lehre aus
+        /// Schritt 19, Probe C2); die 30 sind derselbe großzügige Zuschnitt wie bei
+        /// <see cref="SPALTE_PW_AUFTEILUNG"/>.
+        /// </summary>
+        public const string SPALTE_PW_EMISSIONSMETHODE = "Emissions_Methode";
+
+        /// <summary>
+        /// L13 — Bilanzierungskonvention für Biomasse, Steuerwert
+        /// <c>DbWerte.BIOMASSE_KONVENTION_*</c>. Vorbelegung <c>NULLANSATZ</c>
+        /// (Schritt 23b) — die Annahme, die der Bestand still trifft: Der
+        /// Brennstoffkatalog führt Holz und Pellets mit 20, Biogas mit 140 und
+        /// Rapsöl/Tierische Fette mit 210 g/kWh, also reine Vorkettenwerte.
+        /// <inheritdoc cref="SPALTE_PW_EMISSIONSMETHODE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string SPALTE_PW_BIOMASSE_KONVENTION = "Biomasse_Konvention";
+
+        /// <summary>
+        /// L13 — Nachhaltigkeitsnachweis nach § 8 EBeV 2030, Steuerwert
+        /// <c>DbWerte.BIOMASSE_NACHWEIS_*</c>. Vorbelegung <c>NACHWEIS_JA</c>
+        /// (Schritt 23b).
+        ///
+        /// <b>Warum TEXT und nicht YESNO — die ACE-Falle in ihrer scharfen Form.</b>
+        /// Access belegt eine neue YESNO-Spalte in jeder Bestandszeile mit <c>False</c>.
+        /// Bei den Schaltern der Etappen E4 und E5 war das die gewollte Richtung (kein
+        /// Nachweis ⇒ keine Gutschrift). Hier ist es genau umgekehrt: <c>False</c>
+        /// hieße „kein Nachhaltigkeitsnachweis" und würde jedem Altprojekt mit
+        /// biogenem Brennstoff eine BEHG-Abgabe aufbürden, die es heute nicht hat. Eine
+        /// TEXT-Spalte lässt sich dagegen mit dem richtigen Wert vorbelegen, und die
+        /// Leseseite behandelt leer/NULL wie <c>NACHWEIS_JA</c>.
+        /// <inheritdoc cref="SPALTE_PW_EMISSIONSMETHODE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string SPALTE_PW_BIOMASSE_NACHWEIS = "Biomasse_Nachweis";
+
+        /// <summary>
+        /// Schritt 23 der Migration (Leitentscheidungen L12 und L13) — vier
+        /// Projektangaben an <c>Tab_ProjektWirtschaftlichkeit</c>, mit denen die
+        /// Bilanzierungsregeln <b>sichtbar</b> werden statt still zu gelten.
+        ///
+        /// <b>Ergebnisneutral.</b> Jede Vorbelegung ist der Wert, der das heutige
+        /// Verhalten fortführt: <c>KATALOG</c> bei einem Bilanzjahr, das NULL bleibt
+        /// (⇒ Rechtsstand 2026 ⇒ Stromgutschrift wie bisher), <c>NULLANSATZ</c> für die
+        /// Biomasse und <c>NACHWEIS_JA</c> für den Nachhaltigkeitsnachweis. Die
+        /// Leseseite behandelt leer/NULL überall genauso — eine nicht migrierte
+        /// Datenbank rechnet deshalb ebenfalls wie bisher.
+        ///
+        /// <b>Warum kein <c>_STAMM</c>-Gegenstück.</b> <c>Tab_ProjektWirtschaftlichkeit</c>
+        /// ist eine reine Projekttabelle ohne Auslieferungskatalog — dieselbe Begründung
+        /// wie bei den Schritten 20 und 21.
+        ///
+        /// <b>Ordinalposition.</b> Die Tabelle wird ausschließlich namensbasiert gelesen
+        /// (<c>WirtschaftlichkeitCtrl.LadeParameter</c> über <c>D(r, "…")</c>); das
+        /// Anhängen hinten ist folgenlos.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt23_Bilanzkonvention =
+        {
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_BILANZJAHR,          "LONG"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_EMISSIONSMETHODE,    "TEXT(30)"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_BIOMASSE_KONVENTION, "TEXT(30)"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_BIOMASSE_NACHWEIS,   "TEXT(30)"),
+        };
+
         /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
@@ -1225,6 +1310,13 @@ namespace WindowsFormsApplication1
         /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>; zusätzlich fällt
         /// <c>LiesBhkwAnlagen</c> auf die Abfrage ohne die neuen Spalten zurück, wenn sie
         /// fehlen.
+        ///
+        /// <see cref="Schritt23_Bilanzkonvention"/> ist BEWUSST NICHT aufgeführt —
+        /// dieselbe Begründung wie bei den Schritten 20 und 21:
+        /// <c>Tab_ProjektWirtschaftlichkeit</c> gehört dem Wirtschaftlichkeitsmodul, der
+        /// Rechenkern liest die Tabelle nirgends. Die tolerante Vorsorge steht
+        /// unmittelbar vor dem Zugriff in
+        /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>.
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {

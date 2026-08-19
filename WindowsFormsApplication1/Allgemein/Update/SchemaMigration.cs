@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 22;
+        public const int ZIEL_VERSION = 23;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -509,6 +509,46 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_22_KWKG_JE_ANLAGE = 22;
 
+        /// <summary>
+        /// Nummer der Leitentscheidungen <b>L12</b> und <b>L13</b> aus
+        /// <c>Konzept_BHKW_Kosten_Erloese.md</c>: vier Projektangaben an
+        /// <c>Tab_ProjektWirtschaftlichkeit</c>, die die Bilanzierungsregeln der
+        /// Emissionsrechnung <b>sichtbar</b> machen — Bilanzjahr, Bewertungsmethode des
+        /// KWK-Stroms, Bilanzierungskonvention für Biomasse und der
+        /// Nachhaltigkeitsnachweis nach § 8 EBeV 2030.
+        ///
+        /// <b>Was der Schritt tut.</b> <b>23a</b> das additive DDL aus
+        /// <see cref="SchemaKatalog.Schritt23_Bilanzkonvention"/> (HART: ohne die
+        /// Spalten gibt es nichts vorzubelegen). <b>23b</b> die Vorbelegung der drei
+        /// TEXT-Spalten für jede Bestandszeile ohne Wert.
+        ///
+        /// <b>ERGEBNISNEUTRAL, und daran hängen beide Leitentscheidungen.</b> Die
+        /// Vorbelegung ist jeweils der Wert, der die Bestandsrechnung fortführt:
+        /// <c>Emissions_Methode = KATALOG</c> bei einem <c>Bilanz_Jahr</c>, das NULL
+        /// bleibt — die Leseseite fällt dann auf 2026 zurück, den letzten Jahrgang mit
+        /// gültigem Verdrängungsstrommix, und rechnet damit weiter mit Stromgutschrift.
+        /// <c>Biomasse_Konvention = NULLANSATZ</c> ist die Annahme, die der Bestand
+        /// still trifft. <c>Biomasse_Nachweis = NACHWEIS_JA</c> hält die BEHG-Abgabe
+        /// unverändert.
+        ///
+        /// <b>Die eine ACE-Falle dieses Schritts.</b> Der Nachhaltigkeitsnachweis wäre
+        /// als <c>YESNO</c> die natürliche Wahl — und wäre falsch: Access belegt eine
+        /// neue YESNO-Spalte in jeder Bestandszeile mit <c>False</c>, also mit „kein
+        /// Nachweis". Das hätte jedem Altprojekt mit biogenem Brennstoff eine
+        /// CO₂-Abgabe aufgebürdet, die es heute nicht trägt. Bei den Schaltern der
+        /// Etappen E4 und E5 zeigte dieselbe Falle in die gewollte Richtung; hier zeigt
+        /// sie in die falsche. Deshalb TEXT mit DML-Vorbelegung.
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): Das DDL geht über vorhandene
+        /// Spalten hinweg (<see cref="SpaltenAnlegen"/> prüft das Tabellenschema
+        /// vorab), und die WHERE-Klauseln von 23b (<c>IS NULL OR = ''</c>) laufen nach
+        /// dem ersten Lauf leer. Ein gepflegter Wert wird nie angefasst. Zusätzlich
+        /// legt <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> die Spalten
+        /// unmittelbar vor dem Zugriff selbst an, falls die Migration nie angestoßen
+        /// wurde — beide Wege dürfen beliebig oft und in beliebiger Reihenfolge laufen.
+        /// </summary>
+        public const int SCHRITT_23_BILANZKONVENTION = 23;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -620,6 +660,17 @@ namespace WindowsFormsApplication1
         /// „Zonenmodell wie bisher".
         /// </summary>
         public static int DatenTarifmodusVorbelegt { get; private set; }
+
+        // --- Zählwerk der Bilanzierungsangaben aus Schritt 23 (L12/L13) ----------------
+
+        /// <summary>
+        /// 23b: Summe der Vorbelegungen über die drei TEXT-Spalten der Bilanzierung
+        /// (Bewertungsmethode, Biomasse-Konvention, Nachhaltigkeitsnachweis) — also das
+        /// Dreifache der Parametersätze beim ersten Lauf. Die Zahl ist zugleich der
+        /// Nachweis der Ergebnisneutralität: So viele Angaben stehen ab jetzt
+        /// ausdrücklich auf dem Rechenweg, den der Bestand still ging.
+        /// </summary>
+        public static int DatenBilanzangabenVorbelegt { get; private set; }
 
         // --- Zählwerk des Pakets Anlagenzeilen-Eindeutigkeit aus Schritt 16 -------------
 
@@ -904,6 +955,19 @@ namespace WindowsFormsApplication1
                         "Zuschlagssaetze, Vbh-Kontingent und Jahresdeckel in Tab_Energieanlagen (Etappe E6)",
                         "Die KWKG-Spalten der Energieanlagen konnten nicht angelegt werden.",
                         Schritt_22_KwkgJeAnlage),
+
+            // LEITENTSCHEIDUNGEN L12 und L13 - Bilanzjahr, Bewertungsmethode des
+            //       KWK-Stroms, Biomasse-Konvention und Nachhaltigkeitsnachweis an
+            //       Tab_ProjektWirtschaftlichkeit. DDL + DML-Vorbelegung; die
+            //       Vorbelegung ist jeweils der Wert, der die Bestandsrechnung
+            //       fortfuehrt - beim Nachhaltigkeitsnachweis ausdruecklich GEGEN die
+            //       ACE-Vorbelegung einer YESNO-Spalte, deshalb TEXT.
+            new Schritt(SCHRITT_23_BILANZKONVENTION,
+                        "Bilanzierung: Bilanzjahr, Bewertungsmethode KWK-Strom, Biomasse-Konvention " +
+                        "und Nachhaltigkeitsnachweis in Tab_ProjektWirtschaftlichkeit, " +
+                        "Vorbelegung KATALOG / NULLANSATZ / NACHWEIS_JA (L12 und L13)",
+                        "Die Bilanzierungsangaben der Wirtschaftlichkeitsparameter konnten nicht angelegt werden.",
+                        Schritt_23_Bilanzkonvention),
         };
 
         // =================================================================================
@@ -946,6 +1010,7 @@ namespace WindowsFormsApplication1
             DatenBemessungVorbelegt = 0;
             DatenKostenartVorbelegt = 0;
             DatenSteuerangabenVorbelegt = 0;
+            DatenBilanzangabenVorbelegt = 0;
             DatenEindeutigIndizes = 0;
             DatenEindeutigDubletten = 0;
             DatenDublettenUeberfuehrt = 0;
@@ -1209,6 +1274,21 @@ namespace WindowsFormsApplication1
                               "\" und Leistungsmodell \"" + DbWerte.LEISTUNGSMODELL_MONATLICH +
                               "\": ohne ausdrueckliche Umstellung rechnet die Anwendung wie bisher. " +
                               "Der Aufschlagsschalter steht auf AUS (YESNO-Vorbelegung von Access)."));
+
+            // Schritt 23 meldet aus demselben Grund AUCH die 0. Hier kommt hinzu, dass
+            // der Nachhaltigkeitsnachweis ausdruecklich auf JA vorbelegt wird - eine
+            // YESNO-Spalte haette ihn in jedem Altprojekt auf NEIN gestellt und dessen
+            // BEHG-Abgabe erhoeht.
+            if (StandNachher >= SCHRITT_23_BILANZKONVENTION)
+                l.Zeile("Bilanzierung (Schritt 23): " + DatenBilanzangabenVorbelegt +
+                        " Angaben ueber drei Spalten vorbelegt" +
+                        (DatenBilanzangabenVorbelegt == 0
+                            ? " - die Bilanzierungsangaben standen bereits; der Rechenweg bleibt unveraendert."
+                            : " - Bewertungsmethode \"" + DbWerte.EMISSIONSMETHODE_KATALOG +
+                              "\" bei leerem Bilanzjahr (Rechtsstand bis 31.12.2026), Biomasse \"" +
+                              DbWerte.BIOMASSE_KONVENTION_NULL + "\" und Nachhaltigkeitsnachweis \"" +
+                              DbWerte.BIOMASSE_NACHWEIS_JA +
+                              "\": die Emissionsbilanz und die BEHG-Abgabe rechnen wie bisher."));
 
             return alleOk && StandNachher >= ZIEL_VERSION;
         }
@@ -1720,6 +1800,83 @@ namespace WindowsFormsApplication1
         private static bool Schritt_22_KwkgJeAnlage(Lauf l)
         {
             return SpaltenAnlegen(l, SchemaKatalog.Schritt22_KwkgJeAnlage);
+        }
+
+        // =================================================================================
+        // Schritt 23 (Leitentscheidungen L12 und L13) - Bilanzierungsangaben
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 23 (L12/L13): die vier Bilanzierungsangaben an
+        /// <c>Tab_ProjektWirtschaftlichkeit</c>.
+        ///
+        ///   <b>23a</b> das additive DDL aus
+        ///   <see cref="SchemaKatalog.Schritt23_Bilanzkonvention"/>. HART: Ohne die
+        ///   Spalten gibt es nichts vorzubelegen.
+        ///
+        ///   <b>23b</b> die Vorbelegung der drei TEXT-Spalten fuer jede Bestandszeile
+        ///   ohne Wert - jeweils mit dem Wert, der den BISHERIGEN Rechenweg beibehaelt.
+        ///
+        /// Begruendung fuer Spalten, Typen, Breiten, die fehlende Vorbelegung des
+        /// Bilanzjahres und die Ergebnisneutralitaet steht bei
+        /// <see cref="SchemaKatalog.Schritt23_Bilanzkonvention"/> und bei
+        /// <see cref="SCHRITT_23_BILANZKONVENTION"/>.
+        /// </summary>
+        private static bool Schritt_23_Bilanzkonvention(Lauf l)
+        {
+            // --- 23a) Die vier Spalten -----------------------------------------------
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt23_Bilanzkonvention)) return false;
+
+            bool ok = true;
+            int summe = 0;
+
+            // --- 23b) Vorbelegung der drei TEXT-Spalten -------------------------------
+            // IS NULL ODER Leerstring - dieselbe Bedingung wie in den Schritten 19b bis
+            // 21b und aus demselben Grund: Access legt eine neue TEXT-Spalte mit NULL an,
+            // ein von Hand nachgetragenes Feld kann aber auch "" enthalten. Ein
+            // gepflegter Wert bleibt unangetastet, und genau das macht den Schritt
+            // idempotent.
+            var vorbelegung = new[]
+            {
+                new { Spalte = SchemaKatalog.SPALTE_PW_EMISSIONSMETHODE,
+                      Wert   = DbWerte.EMISSIONSMETHODE_KATALOG,
+                      Zweck  = "Rechenweg folgt dem Gueltig-ab-Datum des Katalogs (L12)" },
+                new { Spalte = SchemaKatalog.SPALTE_PW_BIOMASSE_KONVENTION,
+                      Wert   = DbWerte.BIOMASSE_KONVENTION_NULL,
+                      Zweck  = "biogenes Verbrennungs-CO2 mit null - die Annahme des Bestands (L13)" },
+                new { Spalte = SchemaKatalog.SPALTE_PW_BIOMASSE_NACHWEIS,
+                      Wert   = DbWerte.BIOMASSE_NACHWEIS_JA,
+                      Zweck  = "Nullansatz nach § 8 EBeV 2030 zulaessig - BEHG-Abgabe unveraendert (L13)" }
+            };
+
+            foreach (var z in vorbelegung)
+            {
+                int n = NonQuery(l,
+                    "UPDATE [" + SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + "] SET [" +
+                    z.Spalte + "] = ? WHERE [" + z.Spalte + "] IS NULL OR [" +
+                    z.Spalte + "] = ''",
+                    new OleDbParameter("@w", z.Wert));
+
+                if (n < 0)
+                {
+                    l.Notiz("Vorbelegung " + z.Spalte + ": UPDATE fehlgeschlagen");
+                    ok = false;
+                    continue;
+                }
+                summe += n;
+                l.Notiz(z.Spalte + ": " + n + " Parametersaetze auf \"" + z.Wert +
+                        "\" vorbelegt (" + z.Zweck + ")");
+            }
+
+            DatenBilanzangabenVorbelegt = summe;
+
+            // Bilanz_Jahr bleibt bewusst NULL - "nicht gepflegt" ist die richtige
+            // Aussage, und die Leseseite faellt dann auf 2026 zurueck, das letzte Jahr
+            // des alten Rechtsstands. Eine 0 im Feld waere dasselbe, aber eine
+            // eingetragene Jahreszahl behauptete eine Entscheidung, die niemand
+            // getroffen hat.
+
+            return ok;
         }
 
         // =================================================================================
