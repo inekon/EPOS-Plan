@@ -75,6 +75,10 @@
     <!-- Stromspeicher-Modul AP1: UI-freie Rechenbibliothek (net8.0, AnyCPU).
          Die Engine hat selbst keine Referenzen und bindet nichts nach. -->
     <ProjectReference Include="..\SpeicherEngine\SpeicherEngine.csproj" />
+
+    <!-- KI-Assistent B1: UI-freier, DB-freier Kern der Aufgabensteuerung
+         (net8.0, AnyCPU, ohne Paketreferenzen). Fachkonzept KI-Assistent 3.7. -->
+    <ProjectReference Include="..\KiKern\KiKern.csproj" />
   </ItemGroup>
 
   <!-- NuGet-Pakete -->

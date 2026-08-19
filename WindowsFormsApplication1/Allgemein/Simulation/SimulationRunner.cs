@@ -393,6 +393,12 @@ namespace WindowsFormsApplication1
                 b.Stromproduktion = bh.Stromproduktion_BHKW_MWh;
                 b.Betriebsstunden_Gesamt = bh.Betriebsstunden;
                 b.Betriebsstunden_Durchschnitt = bh.dLaufzeiten;
+
+                // ETAPPE E2: die leistungsgewichteten ELEKTRISCHEN Vollbenutzungsstunden.
+                // Sie sind die Bezugsgröße der KWKG-Deckelung; die beiden Zeilen darüber
+                // führen THERMISCHE Vbh und können 8.760 h überschreiten. Rein additiv —
+                // kein bestehender Wert dieser Zeile ändert sich dadurch.
+                b.VbhElektrisch = bh.VbhElektrischGesamt;
                 b.Waermebedarfsdeckung = (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
                     ? bh.Waermeproduktion_BHKW_MWh * 100.0 / simulation_Waermebedarf.Waermebedarf_Gesamt : 0;
                 b.Strombedarfsdeckung = (simulation_Strombedarf.Strombedarf_gesamt > 0)
@@ -508,6 +514,17 @@ namespace WindowsFormsApplication1
                     mo.Modul = bh.bhkw_list_Namen[i] ?? "Standard BHKW";
                     mo.Waermeproduktion = bh.s_waerme_MWh[i];
                     mo.Stromproduktion = bh.s_strom_MWh[i];
+
+                    // ETAPPE E2 (Leitentscheidung L6): die beiden Vollbenutzungsstunden-
+                    // Größen je Modul. VbhThermisch ist SimulationBHKW.Laufzeiten[i] —
+                    // bis hierher berechnet, aber nirgends gespeichert; VbhElektrisch ist
+                    // die neue, für den KWK-Zuschlag maßgebliche Größe. Beide werden nur
+                    // GESCHRIEBEN, kein Rechenweg liest sie.
+                    if (i < SimulationBHKW.MAX_BHKW)
+                    {
+                        mo.VbhThermisch = bh.Laufzeiten[i];
+                        mo.VbhElektrisch = bh.VbhElektrisch[i];
+                    }
 
                     int cid = 0;
                     if (bh.bhkw_carrier != null && mo.Modul != null)

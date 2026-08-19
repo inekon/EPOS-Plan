@@ -204,7 +204,13 @@ namespace WindowsFormsApplication1
                         new KZ("Wärmeproduktion [MWh/a]",   m => m.BHKW == null ? "–" : F(m.BHKW.Waermeproduktion, 0)),
                         new KZ("Stromproduktion [MWh/a]",   m => m.BHKW == null ? "–" : F(m.BHKW.Stromproduktion, 0)),
                         new KZ("Wärmebedarfsdeckung [%]",   m => m.BHKW == null ? "–" : F(m.BHKW.Waermebedarfsdeckung, 1)),
-                        new KZ("Betriebsstunden [h]",       m => m.BHKW == null ? "–" : F(m.BHKW.Betriebsstunden_Gesamt, 0)),
+                        // ETAPPE E2: beide Vollbenutzungsstunden-Größen, jede unter ihrem
+                        // richtigen Namen. Die obere hieß bis dahin „Betriebsstunden" — sie
+                        // ist die Summe THERMISCHER Vbh über alle Module und kann 8.760 h
+                        // überschreiten; die untere ist die für den KWK-Zuschlag
+                        // maßgebliche elektrische Größe (0 = nicht erhoben, Lauf vor E2).
+                        new KZ("Vbh thermisch, Σ Module [h/a]", m => m.BHKW == null ? "–" : F(m.BHKW.Betriebsstunden_Gesamt, 0)),
+                        new KZ("Vbh elektrisch [h/a]",          m => (m.BHKW == null || m.BHKW.VbhElektrisch <= 0) ? "–" : F(m.BHKW.VbhElektrisch, 0)),
                     }));
                 }
 
