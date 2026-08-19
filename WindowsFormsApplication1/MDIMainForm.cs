@@ -255,6 +255,13 @@ namespace WindowsFormsApplication1
                     if (hilfeMenu.DropDownItems.Count > 0)
                         hilfeMenu.DropDownItems.Add(new ToolStripSeparator());
                     hilfeMenu.DropDownItems.Add(eintrag);
+
+                    // Abschalter der Installation: ist er gesetzt, ist der Assistent
+                    // gar nicht erst erreichbar. Ausgewertet wird beim Aufklappen und
+                    // nicht einmalig beim Start - die Einstellung kann im laufenden
+                    // Programm über die Administration umgelegt werden.
+                    hilfeMenu.DropDownOpening += (s, e) =>
+                        eintrag.Available = !KiEinwilligung.Abgeschaltet;
                 }
 
                 // F1 auch unabhängig vom Menü verfügbar machen

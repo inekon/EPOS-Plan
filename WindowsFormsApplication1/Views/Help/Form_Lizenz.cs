@@ -32,6 +32,12 @@ namespace WindowsFormsApplication1
         private const string REG_SCHLUESSEL = @"Software\wp-plan";
         private const string REG_ZUSTIMMUNG = "LizenzZugestimmt";
 
+        /// <summary>Vom Anwender gewaehlter Pfad der Lizenzdatei (Registry).</summary>
+        private const string REG_LIZENZDATEI = "LizenzDatei";
+
+        /// <summary>Die jeweils geltende Fassung steht online; die App zeigt eine Kopie.</summary>
+        private const string ONLINE_FASSUNG = "https://epos-plan.de/agb/";
+
         private TabControl _register;
         private RichTextBox _text;
         private RichTextBox _hinweise;
@@ -148,8 +154,12 @@ namespace WindowsFormsApplication1
                 AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 BackColor = Color.Transparent
             };
+            Button btnWaehlen = new Button { Text = "Lizenzdatei wählen...", Width = 150, Dock = DockStyle.Right };
+            btnWaehlen.Click += (s, e) => LizenzDateiWaehlen();
+
             rechts.Controls.Add(btnGroesser);
             rechts.Controls.Add(btnKleiner);
+            rechts.Controls.Add(btnWaehlen);
 
             werkzeuge.Controls.Add(links);
             werkzeuge.Controls.Add(rechts);
@@ -283,22 +293,27 @@ namespace WindowsFormsApplication1
             if (treffer == null)
             {
                 _text.Text =
-                    "Die Lizenzdatei wurde auf diesem Rechner nicht gefunden." + Environment.NewLine + Environment.NewLine +
-                    "Erwartet wird eine der folgenden Dateien im Programm- oder Projektverzeichnis:" + Environment.NewLine +
+                    "Auf diesem Rechner liegt keine Kopie der Lizenzvereinbarung." + Environment.NewLine + Environment.NewLine +
+                    "Verbindlich ist ohnehin die jeweils geltende Fassung im Netz - die aktuelle" + Environment.NewLine +
+                    "Fassung mit Stand-Datum finden Sie hier:" + Environment.NewLine +
+                    "  " + ONLINE_FASSUNG + Environment.NewLine + Environment.NewLine +
+                    "Wenn Sie eine Kopie im Programm anzeigen möchten, wählen Sie die Datei" + Environment.NewLine +
+                    "über die Schaltfläche \"Lizenzdatei wählen...\" oben rechts aus." + Environment.NewLine + Environment.NewLine +
+                    "Ohne Auswahl wird automatisch neben dem Programm gesucht, nach:" + Environment.NewLine +
                     "  - " + DATEINAMEN[0] + Environment.NewLine +
                     "  - " + DATEINAMEN[1] + Environment.NewLine + Environment.NewLine +
                     "Durchsuchte Verzeichnisse:" + Environment.NewLine +
                     string.Join(Environment.NewLine, gesucht) + Environment.NewLine + Environment.NewLine +
-                    "Die gültige Lizenzvereinbarung erhalten Sie bei:" + Environment.NewLine +
+                    "Fragen zur Lizenz beantwortet:" + Environment.NewLine +
                     "INEKON - Intelligente Energiekonzepte, Dr. Dirk Engelmann," + Environment.NewLine +
                     "Breitwiesenstr. 13, 70565 Stuttgart";
 
-                _lblQuelle.Text = "Quelle: keine Lizenzdatei gefunden";
+                _lblQuelle.Text = "Quelle: keine örtliche Kopie - geltende Fassung unter " + ONLINE_FASSUNG;
                 return;
             }
 
             _gefundeneDatei = treffer;
-            _lblQuelle.Text = "Quelle: " + Path.GetFileName(treffer);
+            _lblQuelle.Text = "Quelle: " + treffer;
 
             try
             {
@@ -497,8 +512,81 @@ namespace WindowsFormsApplication1
         /// Durchsucht die üblichen Ablageorte nach der Lizenzdatei und
         /// protokolliert dabei die geprüften Verzeichnisse.
         /// </summary>
+        /// <summary>
+        /// Lässt den Anwender die Lizenzdatei auswählen und merkt sich den Pfad.
+        /// Nötig, weil die Datei nicht zwingend neben dem Programm liegt; ohne
+        /// diese Auswahl bliebe die Registerkarte leer.
+        /// </summary>
+        private void LizenzDateiWaehlen()
+        {
+            using (OpenFileDialog dialog = new OpenFileDialog())
+            {
+                dialog.Title = "Lizenzvereinbarung auswählen";
+                dialog.Filter = "Lizenzvereinbarung (*.rtf;*.docx;*.pdf)|*.rtf;*.docx;*.pdf|Rich Text (*.rtf)|*.rtf|Alle Dateien (*.*)|*.*";
+                dialog.CheckFileExists = true;
+
+                try
+                {
+                    string bisher = GewaehltenPfadLesen();
+                    if (!string.IsNullOrEmpty(bisher) && File.Exists(bisher))
+                        dialog.InitialDirectory = Path.GetDirectoryName(bisher);
+                }
+                catch { }
+
+                if (dialog.ShowDialog(this) != DialogResult.OK) return;
+
+                GewaehltenPfadSpeichern(dialog.FileName);
+            }
+
+            LizenzLaden();
+        }
+
+        /// <summary>Zuletzt gewählter Pfad der Lizenzdatei; leer, wenn keiner gemerkt ist.</summary>
+        private static string GewaehltenPfadLesen()
+        {
+            try
+            {
+                using (Microsoft.Win32.RegistryKey key =
+                       Microsoft.Win32.Registry.CurrentUser.OpenSubKey(REG_SCHLUESSEL))
+                {
+                    if (key == null) return "";
+                    return key.GetValue(REG_LIZENZDATEI) as string ?? "";
+                }
+            }
+            catch { return ""; }
+        }
+
+        /// <summary>Merkt den gewählten Pfad, damit die Datei beim nächsten Öffnen sofort da ist.</summary>
+        private static void GewaehltenPfadSpeichern(string pfad)
+        {
+            try
+            {
+                using (Microsoft.Win32.RegistryKey key =
+                       Microsoft.Win32.Registry.CurrentUser.CreateSubKey(REG_SCHLUESSEL))
+                {
+                    if (key != null) key.SetValue(REG_LIZENZDATEI, pfad ?? "");
+                }
+            }
+            catch { }
+        }
+
         private string DateiSuchen(System.Collections.Generic.List<string> protokoll)
         {
+            // Vorrang hat die vom Anwender ausgewaehlte Datei - sie kann irgendwo
+            // liegen und wird sonst von keiner der Suchebenen unten gefunden.
+            string gewaehlt = GewaehltenPfadLesen();
+            if (!string.IsNullOrEmpty(gewaehlt))
+            {
+                try
+                {
+                    if (File.Exists(gewaehlt)) return gewaehlt;
+                }
+                catch { }
+
+                if (protokoll != null)
+                    protokoll.Add(gewaehlt + "   (ausgewählt, aber nicht mehr vorhanden)");
+            }
+
             System.Collections.Generic.List<string> ordner = new System.Collections.Generic.List<string>();
 
             try
