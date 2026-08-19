@@ -1,7 +1,14 @@
 # Umsetzungsstand W4 — BHKW-Betriebskosten und -Erlöse
 
-**Stand: 19.08.2026 (nach Etappe E7).** Fortschrittsdokument der Ausbaustufe W4. Es hält fest, was
-entschieden ist, welche Etappe läuft und welche Ergebniswirkung jede Etappe hat.
+**Stand: 19.08.2026 — die Ausbaustufe ist mit Etappe E8 abgenommen und abgeschlossen.**
+Fortschrittsdokument der Ausbaustufe W4. Es hält fest, was entschieden ist, welche Etappe was
+bewirkt hat und was offen bleibt.
+
+> **Abnahmeurteil (E8):** abgenommen, **unter vier Vorbehalten** — die Zahlenprobe gegen die
+> Altanwendung wurde nie gerechnet, L12 (Methodenwechsel 2027) liegt nur als Katalogdatenseite ohne
+> Leser vor, L13 (Biomasse-Konvention) ist gar nicht umgesetzt, und **keine der neuen Rechenklassen
+> hat einen dauerhaften Test**. Einzelheiten in
+> [`W4_E8_Abnahme_Protokoll.md`](W4_E8_Abnahme_Protokoll.md).
 
 | Dokument | Inhalt |
 |---|---|
@@ -15,6 +22,7 @@ entschieden ist, welche Etappe läuft und welche Ergebniswirkung jede Etappe hat
 | [`W4_E4_Steuergutschriften_Protokoll.md`](W4_E4_Steuergutschriften_Protokoll.md) | Etappe E4: Energiesteuer- (§ 53 / § 53a) und Stromsteuergutschrift (§ 9 Abs. 1 Nr. 3, § 9b) als jahresscharfe Reihen, Projektangaben der Steuerprüfung (Migrationsschritt 20), benannte Erlösreihen (L1) — **und die Recherche, die die Annahme „§ 53 entlastet nur den Stromanteil" widerlegt hat** |
 | [`W4_E5_Tarife_Strombezug_Protokoll.md`](W4_E5_Tarife_Strombezug_Protokoll.md) | Etappe E5: Tarif-Rollenmodell mit drei Leistungspreismodellen (Migrationsschritt 21), Differenzmethode „vermiedene Kosten", Preis für eingespeisten KWK-Strom, § 9b ohne BHKW — **und die Messung, die den Aufschlägen eine Wirkung von rund einem Drittel des Kapitalwerts nachweist** |
 | [`W4_E6_Zuschlag_je_Modul_Protokoll.md`](W4_E6_Zuschlag_je_Modul_Protokoll.md) | Etappe E6: KWK-Zuschlag **je BHKW-Modul** — Stichtag, Inbetriebnahme, Satz, Vbh, Jahresdeckel und Kontingent je Anlage (Migrationsschritt 22), Katalogvorschlag nach § 7 als **Tranchenstaffel**, generationsweise Nachsaat des Katalogs — **und der Befund, dass die alte Rechnung bei durchgehend gedeckelten Modulen zufällig richtig war** |
+| [`W4_E8_Abnahme_Protokoll.md`](W4_E8_Abnahme_Protokoll.md) | Etappe E8: **Abnahme gegen das Konzept**, Schließung der vier Prüflücken mit Zahlen, neue Referenzbasis **B6**, ehrliche Restliste — **und die acht Befunde A1 bis A8**, darunter die nie gerechnete Zahlenprobe gegen die Altanwendung |
 | [`W4_E7_Bericht_Mehrjahrestabelle_Protokoll.md`](W4_E7_Bericht_Mehrjahrestabelle_Protokoll.md) | Etappe E7: Rückgabekanal der Einzelpositionen im `Zahlungsbild`, **Mehrjahrestabelle** in Word und Excel, KWK-Zuschlag **je Modul als Tabelle**, Betriebskosten nach **Kostenart**, eine Zeilendefinition statt dreier, sechs Divergenzen Word/Excel — **und die erste Messung, die die Wertgleichheit von Word und Excel belegt statt sie zu behaupten** |
 
 ---
@@ -32,13 +40,18 @@ entschieden ist, welche Etappe läuft und welche Ergebniswirkung jede Etappe hat
 | **E5** | Tarif-**Rollenmodell** (Bezug / Reststrom / Einspeisung) mit allen drei Leistungspreismodellen (Migrationsschritt 21); Differenzmethode „vermiedene Kosten" mit negativem Leistungsanteil; Preis für eingespeisten KWK-Strom; § 9b auch ohne BHKW; **Aufschläge hinter einem Projektschalter** | **keine für Bestandsprojekte** — `Tarif_Modus` wird mit `ZONEN` vorbelegt, der Aufschlagsschalter steht auf AUS, die KWK-Vergütung bleibt NULL | **umgesetzt** (9/9 PASS, 216/216 byte-gleich, 27/27 Wirtschaftlichkeitszeilen **zeichengleich**, 8 Wirkungsfälle = Handrechnung) |
 | **E6** | KWK-Zuschlag **je Modul**: Stichtag, Inbetriebnahme, Satz, Vbh, Jahresdeckel und Kontingent je Anlage (Migrationsschritt 22); Katalogvorschlag als **Tranchenstaffel** nach § 7; generationsweise Nachsaat des Katalogs | **ja bei Mehrmodulanlagen** — aber nur, wenn die Module den Jahresdeckel **unterschiedlich** treffen oder sich in Datum, Satz oder Kontingent unterscheiden. Für Einmodulprojekte **keine** | **umgesetzt** (9/9 PASS, 216/216 byte-gleich ×2, 24/27 Wirtschaftlichkeitszeilen zeichengleich, 8/8 Handrechnungen getroffen) |
 | **E7** | Bericht (Word und Excel), Mehrjahrestabelle; Rückgabekanal der Einzelpositionen, KWK-Zuschlag je Modul als Tabelle, Betriebskosten nach Kostenart, eine Zeilendefinition für alle drei Ausgaben | **keine** — Ausgabe; der Rückgabekanal ist rein additiv und der Rechenweg der Summen zeichengleich | **umgesetzt** (216/216 byte-gleich, **864/864 Wirtschaftlichkeitswerte identisch**, Word ↔ Excel erstmals **gemessen** zeichengleich) |
-| **E8** | Abnahme, neue Referenzbasis, Protokoll | eingefroren | offen |
+| **E8** | Abnahme gegen das Konzept, Schließung der vier Prüflücken, neue Referenzbasis **B6** | **keine** — keine Codezeile geändert | **umgesetzt** (216/216 byte-gleich gegen B5, 40/40 Harnisch-Proben ohne Fehlschlag, 0 unerwartete Dialoge; 8 Befunde dokumentiert) |
 
 **Regel für ergebniswirksame Etappen (E2, E6):** A/B-Nachweis gegen den
 Vorgängerstand, Wirkungsbeleg mit Zahlen, danach neuer Basis-Freeze — dasselbe
-Vorgehen wie bei der Bivalenzumstellung K-3. Für **E6 ist der Freeze nicht nötig**: Die
+Vorgehen wie bei der Bivalenzumstellung K-3. Für **E6 war der Freeze nicht nötig**: Die
 216 Simulations-CSV sind byte-identisch, und die Wirtschaftlichkeit hat ohnehin keine
-eingefrorene Basis. `2026-08-19_B5` bleibt gültig.
+eingefrorene Basis.
+
+**Die gültige Referenzbasis ist seit E8 [`2026-08-19_B6`](../../../Referenzlaeufe/2026-08-19_B6/lauf_protokoll.md)**
+— byte-identisch mit B5, gewechselt allein wegen der Zuordnung (Codestand nach E7, Quelle auf
+Schemastand 21). **Was sie nicht absichert, steht in ihrem Laufprotokoll** und ist der Kern der
+Restliste: Die Wirtschaftlichkeitsrechnung ist in **keiner** eingefrorenen Basis enthalten.
 
 ---
 
@@ -90,7 +103,7 @@ widersprüchliche Begrenzungen des KWK-Bonus.
 | ~~**Heizöl-Ausschluss** prüft `COUNT(*)` über alle **Gerätezeilen** des Projekts: ein einziges Öl-BHKW im Katalogbestand nimmt allen Anlagen den Zuschlag~~ — **behoben mit dem E2-Nachtrag 2** (19.08.2026); die Brennstoffart kommt jetzt vorrangig aus `Tab_Energieanlagen.ID_Carrier`, ersatzweise aus der Gerätezeile | `WirtschaftlichkeitCtrl.cs:988-1076`, `:1455-1570` | **E2-N2, erledigt** |
 | ~~**Stichtag und Inbetriebnahme** sind ein Datumspaar je Projekt; § 6 KWKG gilt je Anlage — und dasselbe Datum entscheidet für alle Anlagen zugleich über Neuanlage/Bestandsanlage, also auch über den Heizöl-Ausschluss~~ — **behoben mit E6** (19.08.2026): `Tab_Energieanlagen` führt beide Daten je Anlage (Migrationsschritt 22), NULL fällt auf den Projektwert zurück. Gemessene Wirkung an einer präparierten Kopie: **−83,3 % Zuschlag**, wenn eine von zwei Anlagen am eigenen Stichtag scheitert | `WirtschaftlichkeitCtrl.Anlagenauswahl` | **E6, erledigt** |
 | ~~Jahresdeckel und 30.000-h-Kontingent laufen über **eine gemeinsame** leistungsgewichtete Vbh-Größe; der Zuschlagssatz ist einer je Projekt~~ — **behoben mit E6**: eine Reihe je Anlage, jahresweise summiert. Wirkung: **−25,0 %**, wenn die Module den Deckel unterschiedlich treffen; **−0,147 % Kapitalwert** bei unterschiedlichen Kontingenten | `WirtschaftlichkeitCtrl.ReiheJeAnlage` | **E6, erledigt** |
-| Energiesteuer- und Stromsteuererstattung fehlen vollständig | — | E4 |
+| ~~Energiesteuer- und Stromsteuererstattung fehlen vollständig~~ — **behoben mit E4**; mit E8 an der vollen Kette gemessen: § 53a **21.598,65 €/a**, § 9 Abs. 1 Nr. 3 **28.564,62 €/a**, § 9b **61.150,17 €/a** an Projekt 1030 bei gepflegten Angaben, im Vorgabezustand durchgehend 0 € | `SteuerGutschriftRechner.cs` | **E4, erledigt** |
 | ~~Vermiedener Strombezug ist keine Erlöszeile; die Bezugsgröße „Bedarf ohne Anlage" wird nirgends geführt~~ — **behoben mit E5**: `StromMatrix.Zone.BedarfMWh` samt Lastbildern (Jahres-, Sommer-, Winter-, zwölf Monatsmaxima); die Differenzmethode weist Arbeit, Leistung und Summe getrennt aus, der Leistungsanteil regelmäßig negativ | `StromMatrix.cs`, `StromTarifRechner.cs` | **E5, erledigt** |
 | ~~Ohne Photovoltaik im Projekt bekommt eingespeister BHKW-Strom **keinen Strompreis**, nur den Zuschlag~~ — **behoben mit E5**: eigene Projektangabe `Einspeiseverguetung_KWK`, und die Gruppe „Strom — Einspeisung und Bezug" ist im Parameterdialog **immer** sichtbar | `Form_WirtschaftlichkeitParameter.cs`, `WirtschaftlichkeitCtrl.BaueEingabe` | **E5, erledigt** |
 | ~~§ 9b StromStG greift nur bei Projekten **mit BHKW**, obwohl er an keiner KWK-Anlage hängt~~ — **behoben mit E5**; greift nur bei ausdrücklich erfasster Unternehmensart und ist damit ergebnisneutral | `WirtschaftlichkeitCtrl.BaueSteuerEingabe` | **E5, erledigt** |
@@ -306,7 +319,69 @@ widersprüchliche Begrenzungen des KWK-Bonus.
 
 ---
 
-## 4 Etappe E1 — was gerade entsteht
+## 3f Was Etappe E8 entschieden hat (19.08.2026)
+
+- **Die Ausbaustufe ist abgenommen — aber nicht ohne Vorbehalt, und der wichtigste ist eine
+  Lücke im Nachweis, nicht im Code.** Konzept Abschnitt 8 verlangt als ersten Verifikationsschritt
+  die **Zahlenprobe gegen die Altanwendung** (das Beispiel des Erlös-Screenshots: vermiedene Kosten
+  3.657 / −341 / 3.316 €, Einspeiseerlös 1.028 €, Zuschlag 5.488 und 3.059 €). **Keine der sieben
+  Etappen hat sie gerechnet**, und keine begründet den Verzicht — die Suche nach jeder der sechs
+  Zahlen über alle sieben Protokolle liefert null Treffer. Damit prüft jede Handrechnung der
+  Ausbaustufe ihre Formel gegen die eigene Herleitung, aber keine prüft die Kette gegen das Vorbild,
+  das sie ablöst. Eine systematisch falsche Gesetzesauslegung könnte in allen Proben gleichzeitig
+  „stimmen". Das ist der schwerwiegendste Abnahmebefund (A8).
+- **Die vier Prüflücken sind geschlossen — und die wichtigste hat den Beleg geliefert, den die
+  Referenzmenge nicht liefern kann.** Der Wirkungsfall der Etappe E6 ist erstmals gemessen: Treffen
+  die Module den Jahresdeckel **unterschiedlich**, weicht die modulscharfe Rechnung um
+  **−25,04 %** vom projektweiten Weg ab (26.199,93 statt 34.951,20 €/a) — und über die **gepflegte**
+  E6-Spalte `KWKG_Vbh_Jahresdeckel`, auf frisch simuliertem Ergebnis, um **+61,43 %** (71.456,97
+  statt 44.265,22 €/a). Bis dahin war E6 nur an präparierten Ergebniszeilen belegt.
+- **Die volle E4/E5-Kette reproduziert die Handrechnungen des E4-Protokolls auf den Cent** —
+  21.598,65 € Energiesteuer, 28.564,62 € Stromsteuerbefreiung, 61.150,17 € Entlastung. Die
+  Etappenzahlen sind damit auf dem heutigen Stand **nachvollzogen**, nicht nur zitiert. Im
+  Vorgabezustand bleiben alle drei bei 0 € — die Ergebnisneutralität ist erneut gemessen.
+- **Der Ergebnisreiter hält, was E7 zugesagt hat, und zeigt zugleich einen Anzeigefehler.**
+  39 von 39 Werten sind zeichengleich zur zentralen Zeilendefinition. Dabei ist aufgefallen, dass
+  `UcWirtschaftlichkeit` **zwei** Zeilen mit demselben Titel „Hinweis" beschriftet — eine für den
+  Hinweis, eine für den Fehlgrund. Im Regelfall einer Vergleichsgruppe stehen beide untereinander
+  und sind nicht unterscheidbar.
+- **Drei der fünf neuen Masken sind nicht lokalisiert, und niemand hat es aufgeschrieben.**
+  `Form_WirtschaftlichkeitParameter` (23 deutsche Literale), `Form_Tarifstruktur` (30) und
+  `Form_KwkgModule` (10) greifen **kein einziges Mal** auf `MyResource` zu, obwohl Konzept
+  Abschnitt 5 „ausschließlich über `MyResource`" verlangt. Die 9 beziehungsweise 81
+  Ressourcenschlüssel aus E6 und E7 bedienen den **Bericht**, nicht die Dialoge. `Form_Betriebskosten`
+  (41 Zugriffe, 0 Literale) und `Form_Gesetzesparameter` (48/0) zeigen, dass es auch anders geht.
+- **Zwei Konzeptzeilen sind nie gebaut worden und waren in keiner Offene-Punkte-Liste geführt:**
+  `Tab_BHKW/_STAMM.Wartungsbemessung` (sachlich entbehrlich — die Bemessung sitzt seit E3 an der
+  Kostenposition, das ist der bessere Ort; das **Konzept** ist berichtigt) und
+  `Tab_Kraftwerkspark.Bezugsbasis` samt vier weiteren Spalten (**nicht** entbehrlich — der
+  Definitionsbruch des Altkatalogs, Faktoren je kWh Brennstoff und je kWh Strom in derselben Spalte,
+  besteht fort). Beides ist ab jetzt in Abschnitt 5 geführt.
+- **L12 und L13 sind die eigentliche Restarbeit der Ausbaustufe.** L12 („Methodenwechsel zum
+  01.01.2027", vom Konzept selbst als „für BHKW-Projekte die folgenreichste Änderung des gesamten
+  Vorhabens" bezeichnet) existiert ausschließlich als **Datenseite**: Die Katalogzeilen für 2027
+  stehen mit Wert `null` bereit, aber **keine Codezeile liest sie**, es gibt keinen zweiten
+  Rechenweg, keinen Auswahlparameter und keinen Berichtsausweis. L13 ist gar nicht umgesetzt und war
+  bis heute nicht einmal als offener Punkt geführt.
+- **Keine der neuen Rechenklassen hat einen Test.** L9 verlangt „Tests im vorhandenen Testprojekt";
+  `SteuerGutschriftRechner`, `StromTarifRechner`, `KwkgSatzRechner` und `KapitalwertRechner` kommen
+  in `SpeicherEngine.Tests` und `KiKern.Tests` **nicht vor**. Jede Messung dieser Ausbaustufe —
+  einschließlich der 40 Proben dieser Etappe — ist ein Einzelnachweis aus einem Wegwerf-Harnisch,
+  der beim nächsten Build nicht mitläuft. Ohne Rechenwirkung, aber es ist der Grund, warum die
+  Referenzbasis über die Wirtschaftlichkeit nichts aussagt.
+- **E8 hat keine Codezeile geändert.** Alles Gefundene ist als Befund ausgewiesen. Auch der kleine
+  Anzeigefehler B1 ist bewusst nicht behoben: Sein sauberer Weg braucht einen Ressourcenschlüssel in
+  beiden `.resx` **und** im Designer, und ein zweites deutsches Literal hätte den Lokalisierungsrest
+  vertieft, statt ihn abzubauen.
+- **Die neue Basis B6 ist byte-identisch mit B5 — und gerade das ist der Nachweis.** Zwischen beiden
+  Ständen hat die Sitzung des Anwenders die produktive Datenbank von Schemastand 17 auf 21 gezogen
+  und komprimiert (96 436 224 → 92 700 672 Byte, MD5 `66F4806A…` → `0873B892…`). Dass 216 von 216
+  CSV trotzdem gleich sind, belegt die Ergebnisneutralität der Migrationsschritte 18 bis 21 stärker,
+  als ein Lauf auf unveränderter Quelle es gekonnt hätte.
+
+---
+
+## 4 Etappe E1 — was mit ihr entstanden ist
 
 - **Tabelle `Tab_Gesetzesparameter`**: Schlüssel (sprachneutral, eingefroren),
   Klasse, Gültig ab Jahr, Wert, Einheit, Status, Quelle. Angelegt über das
@@ -331,16 +406,29 @@ widersprüchliche Begrenzungen des KWK-Bonus.
 
 ## 5 Offene Punkte
 
+**Stand nach der Abnahme E8.** Die Punkte 1 bis 6 sind die Liste aus E1 bis E7, einzeln auf den
+heutigen Stand gebracht; 7 bis 11 sind mit der Abnahme neu hinzugekommen.
+
 **Fachlich zu entscheiden:**
 
 1. **§ 53 neben § 53a EnergieStG** (Strom- und Wärmeanteil): rechtlich ungeklärt,
    deshalb als einstellbare Option modelliert. Vor produktivem Einsatz mit dem
-   Hauptzollamt klären.
+   Hauptzollamt klären. — **Unverändert offen.** E8 hat die Option in der vollen Kette gemessen
+   (§ 53a Abs. 5 auf Projekt 1030: **21.598,65 €/a**); die Rechtsfrage berührt das nicht. Dazu
+   gehört weiterhin, dass die **Dienstvorschrift Energieerzeugung** nur in der Fassung von 2014
+   vorlag (E4, offener Punkt 10).
 2. **Kategorie 3 „Energiekosten"**: entfernen oder als Override mit sichtbarem
-   Vorrang definieren.
-3. **Gutschrift für eingespeisten KWK-Strom ab 2027**: Ohne amtlichen
-   Verdrängungsfaktor ist jede Gutschrift eine methodische Wahl. Vorgesehen als
-   Auswahlparameter mit Ausweis im Bericht.
+   Vorrang definieren. — **Unverändert offen.** W4 hat die Kategorie nicht angefasst; erfasste
+   Beträge fallen weiterhin still aus jeder Auswertung.
+3. **Gutschrift für eingespeisten KWK-Strom ab 2027** (= die Rechenseite von **L12**): Ohne
+   amtlichen Verdrängungsfaktor ist jede Gutschrift eine methodische Wahl. Vorgesehen als
+   Auswahlparameter mit Ausweis im Bericht. — **Offen und mit E8 präzisiert (Befund A3):** Die
+   **Datenseite steht** (Katalogzeilen `EF_NACHWEIS_VERDRAENGUNGSSTROMMIX` und
+   `PEF_NACHWEIS_VERDRAENGUNGSSTROMMIX` ab 2027 mit Wert `null`, also „bewusst entfallen" statt
+   „nicht gepflegt"), **die Rechenseite fehlt vollständig**: keine Codezeile liest einen der beiden
+   Schlüssel, es gibt keinen zweiten Rechenweg, keinen Auswahlparameter und keinen Berichtsausweis.
+   Das Konzept nennt L12 „für BHKW-Projekte die folgenreichste Änderung des gesamten Vorhabens" —
+   **der Punkt wird zum 01.01.2027 wirksam und ist damit terminiert.**
 4. ~~**Nachsaat fehlender Katalogschlüssel**~~ — **mit E6 entschieden und umgesetzt
    (19.08.2026): generationsweise Nachsaat.** Jede Zeile der `GesetzKatalog.Vorbelegung`
    trägt im **Code** eine Generationsnummer; eine **Markerzeile** in
@@ -365,11 +453,49 @@ widersprüchliche Begrenzungen des KWK-Bonus.
    *bedarfs*gebunden und müsste der Energiepreisentwicklung folgen; als Kategorie-2-Position
    steigt sie bei uns mit der Betriebskosten-Preissteigerung. Eine Trennung braucht eine
    zweite Kostenreihe in `KapitalwertRechner.Rechne`. Solange beide Sätze gleich gepflegt
-   sind, ist der Unterschied null.
+   sind, ist der Unterschied null. — **Unverändert offen.** E7 hat `KapitalwertRechner` nur um den
+   Rückgabekanal erweitert, die Kostenreihen nicht getrennt.
 6. **Feinere Bezugsgrößen für Wärmezentrale, bauliche Anlagen und Stromeinspeisung** (aus
    E3): Der saubere Weg wäre ein Kennzeichen an der Kostengruppe („diese Gruppe ist eine
    Investitionsgruppe im Sinn der VDI 2067") — eine Spalte an `Tab_KostenGruppenKatalog`
-   und eine Pflegemaske. Eigene Entscheidung, keine Nebenwirkung von E3.
+   und eine Pflegemaske. Eigene Entscheidung, keine Nebenwirkung von E3. — **Unverändert offen.**
+   E7 zeigt die Bezugsgröße im Bericht jetzt ausdrücklich benannt an; grob bleibt sie.
+
+**Mit der Abnahme E8 hinzugekommen** (Belege im
+[`W4_E8_Abnahme_Protokoll.md`](W4_E8_Abnahme_Protokoll.md), Abschnitt 5.2):
+
+7. **Die Zahlenprobe gegen die Altanwendung fehlt** (Befund **A8**). Konzept Abschnitt 8 verlangt
+   sie als ersten Verifikationsschritt; keine der sieben Etappen hat sie gerechnet, keine begründet
+   den Verzicht. **Es gibt damit keinen Nachweis, dass die neue Kette dieselbe Aufgabe löst wie die
+   abgelöste Excel-Anwendung.** Der Vorgang braucht die Eingangsgrößen des Erlös-Screenshots als
+   Projekt (Bedarf 100 MWh, Restbezug 62, Einspeisung 34, Eigenverbrauch 38) und eine Bewertung
+   jeder Abweichung gegen die 17 Befunde der Analyse. **Der gewichtigste offene Punkt der
+   Ausbaustufe.**
+8. **L13 — Bilanzierungskonvention für Biomasse** (Befund **A4**): nicht umgesetzt. Es gibt weder
+   die Einstellung noch den Berichtsausweis, den L13 verlangt; Projekte mit biogenem Brennstoff
+   bekommen eine Konvention, ohne dass sie benannt wird. Der Punkt war bis zur Abnahme **überhaupt
+   nicht geführt**.
+9. **`Tab_Kraftwerkspark` ohne `Bezugsbasis`** (Befund **A5**): Die fünf Konzeptspalten (`CO`,
+   `Staub`, `GueltigAb`, `Quelle`, `ReadOnly` und vor allem **`Bezugsbasis TEXT(12)`**) sind nie
+   angelegt worden. Damit besteht der Definitionsbruch des Altkatalogs fort — Faktoren je kWh
+   **Brennstoff** und je kWh **Strom** stehen in derselben Spalte. Das Konzept nennt den Punkt in
+   seinem Abschnitt 9 selbst als offen („Etappe E6 oder später"); er war nur nie in diese Liste
+   übernommen worden.
+10. **Keine Tests für die neuen Rechenklassen** (Befund **A1**): L9 verlangt „Tests im vorhandenen
+    Testprojekt". `SteuerGutschriftRechner`, `StromTarifRechner`, `KwkgSatzRechner` und
+    `KapitalwertRechner` kommen in `SpeicherEngine.Tests` und `KiKern.Tests` nicht vor. Jede Messung
+    der Ausbaustufe ist ein Einzelnachweis aus einem Wegwerf-Harnisch. Ohne Rechenwirkung — aber der
+    Grund, warum kein Regressionslauf über die Wirtschaftlichkeit existiert.
+11. **Lokalisierung der drei neuen Masken** (Befund **A6**) samt der doppelten Zeilenbeschriftung
+    „Hinweis" im Ergebnisreiter (Befund **B1**, `UcWirtschaftlichkeit.cs:573-576`). 63 Anzeigetexte
+    in `Form_WirtschaftlichkeitParameter`, `Form_Tarifstruktur` und `Form_KwkgModule` gehören in
+    beide `.resx` plus Designer; B1 sollte im selben Vorgang mit erledigt werden.
+
+**Zur Referenzmenge:** Für eine *dauerhafte* Regressionsabdeckung des E6-Wirkungsfalls, der
+E4/E5-Kette und des Variantenpfads fehlt ein Referenzprojekt mit gepflegten Angaben. Ein
+ausgearbeiteter Vorschlag (Projekt **1031**, Feld für Feld mit den erwarteten Zahlen) liegt im
+[`W4_E8_Abnahme_Protokoll.md`](W4_E8_Abnahme_Protokoll.md), Abschnitt 7 — **zur Entscheidung, nicht
+ausgeführt**, weil er die produktive Datenbank verändern würde.
 
 **Recherchelücken** (im Grundlagendokument als solche markiert, nicht geraten):
 Auslösedauer des CO₂-Preisstabilitätsmechanismus, Wortlaut von § 10 Abs. 3 BEHG,
@@ -382,8 +508,19 @@ werden nicht übernommen.
 
 ---
 
-## 6 Doppelte Wahrheiten, die W4 auflösen soll
+## 6 Doppelte Wahrheiten — Bilanz nach W4
 
+**Erledigt:** eine (die dreifache Kennzahlenliste, mit E7). **Fortbestehend:** vier. **Neu
+entstanden:** zwei — beide bewusst, beide benannt. Damit hat W4 in dieser Rubrik weniger aufgeräumt,
+als der Abschnittstitel bis E7 versprach; das ist hier korrigiert.
+
+- **Der Stromsteuersatz an zwei Orten** — *neu benannt mit E8, Befund A7*. Der Katalog führt
+  `STROMST_REGELSATZ = 20,50 €/MWh` (gelesen von der Steuerrechnung der E4), `Model/StromAufschlagModel.cs`
+  führt `STROMSTEUER_REGELFALL = 2.050 ct/kWh` als **`const double`** (gelesen vom Aufschlagsblock
+  der E5, als Bestandteil der Vorschlagssumme 11,746 ct/kWh). Heute wertgleich — aber nichts hält
+  sie zusammen: Wird im Katalog ein neues Jahr gepflegt, rechnet der Aufschlagsblock still mit dem
+  alten Satz weiter. Konzept Abschnitt 6 hatte genau diese Konstanten als „pflegbar zu machen"
+  benannt; das ist nicht geschehen.
 - **BHKW-Einspeisevergütung an vier Orten** (E5 hat einen hinzugefügt, um den
   Bestandsmangel zu beheben): `energy_project_settings.Verguetung_BHKW` (wirkt nur in der
   Speichersimulation), `Tab_ProjektTarif.Einsp_*` (Zonenmodell, HT/NT),
@@ -417,7 +554,14 @@ werden nicht übernommen.
   verdrahtet 1…7 hart, `UcBkKosten` und `KomponentenUebernahmeCtrl` lesen dieselbe
   Zuordnung dynamisch aus `Tab_KostenKomponente`. `BetriebskostenCtrl` musste sich für
   einen Weg entscheiden und führt die beiden gebrauchten IDs als benannte Konstanten.
-- **Zwei Lesewege auf die Kostenposition** (entstanden mit E3): `Abfrage_Kostenfaktoren`
+- **Zwei Lesewege auf die Kostenposition** — *neu entstanden mit E3*: `Abfrage_Kostenfaktoren`
   liegt als gespeicherte Access-Abfrage außerhalb des Repos und kennt die fünf neuen
   Spalten nicht; `Form_Kosten.LoadKostenFaktoren` holt sie deshalb über einen zweiten,
-  direkten Zugriff auf `Tab_ProjektWerte` und führt sie über die ID zusammen.
+  direkten Zugriff auf `Tab_ProjektWerte` und führt sie über die ID zusammen. E7 geht denselben
+  Weg für den Betriebskostenblock des Berichts — der zweite Lesepfad ist damit nicht mehr die
+  Ausnahme, sondern der Normalfall für die neuen Spalten.
+
+> **Bilanz:** W4 hat in dieser Rubrik **eine** Doppelung aufgelöst (die Kennzahlenliste, E7),
+> **zwei** neue geschaffen (die zwei Lesewege der E3, den Stromsteuersatz an zwei Orten) und die
+> Migrationsdoppelung von drei auf **vier** Tabellen ausgeweitet. Jede davon ist begründet und
+> benannt — aber keine dieser Begründungen macht sie zu weniger als dem, was sie sind.
