@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpeicherEngine", "SpeicherE
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpeicherEngine.Tests", "SpeicherEngine.Tests\SpeicherEngine.Tests.csproj", "{1788DC6C-E0EF-4E2B-BDCE-74B4D05ECB06}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KiKern", "KiKern\KiKern.csproj", "{EDEB855C-E362-47A1-8F68-69A46B5E0B01}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KiKern.Tests", "KiKern.Tests\KiKern.Tests.csproj", "{E0A3B5FD-4326-42D3-8338-0630027C663A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -41,6 +45,22 @@ Global
 		{1788DC6C-E0EF-4E2B-BDCE-74B4D05ECB06}.Release|x64.Build.0 = Release|Any CPU
 		{1788DC6C-E0EF-4E2B-BDCE-74B4D05ECB06}.Release|x86.ActiveCfg = Release|Any CPU
 		{1788DC6C-E0EF-4E2B-BDCE-74B4D05ECB06}.Release|x86.Build.0 = Release|Any CPU
+		{EDEB855C-E362-47A1-8F68-69A46B5E0B01}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EDEB855C-E362-47A1-8F68-69A46B5E0B01}.Debug|x64.Build.0 = Debug|Any CPU
+		{EDEB855C-E362-47A1-8F68-69A46B5E0B01}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EDEB855C-E362-47A1-8F68-69A46B5E0B01}.Debug|x86.Build.0 = Debug|Any CPU
+		{EDEB855C-E362-47A1-8F68-69A46B5E0B01}.Release|x64.ActiveCfg = Release|Any CPU
+		{EDEB855C-E362-47A1-8F68-69A46B5E0B01}.Release|x64.Build.0 = Release|Any CPU
+		{EDEB855C-E362-47A1-8F68-69A46B5E0B01}.Release|x86.ActiveCfg = Release|Any CPU
+		{EDEB855C-E362-47A1-8F68-69A46B5E0B01}.Release|x86.Build.0 = Release|Any CPU
+		{E0A3B5FD-4326-42D3-8338-0630027C663A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E0A3B5FD-4326-42D3-8338-0630027C663A}.Debug|x64.Build.0 = Debug|Any CPU
+		{E0A3B5FD-4326-42D3-8338-0630027C663A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E0A3B5FD-4326-42D3-8338-0630027C663A}.Debug|x86.Build.0 = Debug|Any CPU
+		{E0A3B5FD-4326-42D3-8338-0630027C663A}.Release|x64.ActiveCfg = Release|Any CPU
+		{E0A3B5FD-4326-42D3-8338-0630027C663A}.Release|x64.Build.0 = Release|Any CPU
+		{E0A3B5FD-4326-42D3-8338-0630027C663A}.Release|x86.ActiveCfg = Release|Any CPU
+		{E0A3B5FD-4326-42D3-8338-0630027C663A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

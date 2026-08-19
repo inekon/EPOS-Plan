@@ -4754,6 +4754,18 @@ Soll er trotzdem überschrieben werden?</value>
 
 Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird deshalb abgelehnt. Bitte die Dubletten zuerst bereinigen.</value>
   </data>
+  <data name="KI_VORSCHAU_LINK" xml:space="preserve">
+    <value>Was wird gesendet?</value>
+  </data>
+  <data name="KI_VORSCHAU_TITEL" xml:space="preserve">
+    <value>Was wird gesendet?</value>
+  </data>
+  <data name="KI_VORSCHAU_HINWEIS" xml:space="preserve">
+    <value>Genau dieser Text ginge bei der nächsten Frage an das Modell {0} ({1}). Es werden keine Projekt-, Kunden- oder Simulationsdaten übertragen. Der API-Schlüssel wird in einer HTTP-Kopfzeile mitgegeben und steht nicht in der Adresse.</value>
+  </data>
+  <data name="KI_VORSCHAU_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
   <data name="WIRT_KWKG_ANLAGE_UEBER_GRENZE" xml:space="preserve">
     <value>KWKG: Über der Ausschreibungsgrenze von {0} kW und deshalb ohne Zuschlag: {1} (der Weg über eine Ausschreibung nach § 8a KWKG/KWKAusV ist nicht abgebildet). Die übrigen Anlagen mit zusammen {2} kW rechnen weiter.</value>
   </data>

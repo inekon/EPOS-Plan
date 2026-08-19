@@ -4739,6 +4739,18 @@ Overwrite it anyway?</value>
 
 Saving would overwrite all of those records at once and is therefore refused. Please remove the duplicates first.</value>
   </data>
+  <data name="KI_VORSCHAU_LINK" xml:space="preserve">
+    <value>What is transmitted?</value>
+  </data>
+  <data name="KI_VORSCHAU_TITEL" xml:space="preserve">
+    <value>What is transmitted?</value>
+  </data>
+  <data name="KI_VORSCHAU_HINWEIS" xml:space="preserve">
+    <value>This is exactly the text your next question would send to model {0} ({1}). No project, customer or simulation data is transmitted. The API key is passed in an HTTP header and is not part of the address.</value>
+  </data>
+  <data name="KI_VORSCHAU_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
   <data name="WIRT_KWKG_ANLAGE_UEBER_GRENZE" xml:space="preserve">
     <value>CHP Act: above the tendering threshold of {0} kW and therefore without bonus: {1} (the tendering route under section 8a KWKG/KWKAusV is not modelled). The remaining units totalling {2} kW continue to be calculated.</value>
   </data>
