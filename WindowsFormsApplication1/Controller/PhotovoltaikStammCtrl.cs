@@ -40,10 +40,17 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Laedt den Katalogsatz zum Bezeichner. Bei mehrfach vergebenem Bezeichner die
+        /// Zeile mit der KLEINSTEN ID - dieselbe Zusage wie
+        /// <c>HeizkesselStammCtrl.ReadSingle</c>, und aus demselben Grund: Ohne
+        /// <c>ORDER BY</c> bestimmt die ACE-Engine die Reihenfolge, zwei Lesewege koennen
+        /// dann verschiedene Zeilen liefern.
+        /// </summary>
         public void ReadSingle(string szName)
         {
             _internalList.Clear();
-            string sql = "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ?";
+            string sql = "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID";
             DataTable dt = DataRepository.GetDataTable(sql, new OleDbParameter("@bez", szName ?? (object)DBNull.Value));
 
             if (dt != null && dt.Rows.Count > 0)
@@ -65,8 +72,20 @@ namespace WindowsFormsApplication1
         public static bool IsReadOnlyStatic(string szName)
         {
             object v = DataRepository.ExecuteScalar(
-                "SELECT ReadOnly FROM [" + TABLE + "] WHERE Bezeichner = ?",
+                "SELECT ReadOnly FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID",
                 new OleDbParameter("@bez", szName ?? ""));
+            return v != null && v != DBNull.Value && Convert.ToBoolean(v);
+        }
+
+        /// <summary>
+        /// ReadOnly-Pruefung fuer GENAU eine Zeile. Die Variante ueber den Bezeichner
+        /// beantwortet bei einer Dublette die Frage nach der falschen Zeile.
+        /// </summary>
+        public static bool IsReadOnlyById(int id)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT ReadOnly FROM [" + TABLE + "] WHERE ID = ?",
+                new OleDbParameter("@id", id));
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
@@ -117,14 +136,101 @@ namespace WindowsFormsApplication1
             return ok;
         }
 
-        // Aktualisiert den Datensatz. szKey ist der urspruengliche Bezeichner (WHERE-Schluessel);
+        /// <summary>
+        /// Die IDs aller Katalogsaetze zu diesem Bezeichner, aufsteigend.
+        /// </summary>
+        /// <remarks>
+        /// <c>Tab_PV_STAMM</c> hat auf <c>Bezeichner</c> keinen eindeutigen Index. Gemessen
+        /// am 18.08.2026 auf einer Kopie der Produktivdatenbank: 11 Zeilen, davon 10 auf
+        /// fuenf doppelt vergebene Namen verteilt - alle fuenf Paare in JEDER Spalte ausser
+        /// der ID gleich, also ein zweiter Importlauf. Migrationsschritt 18 raeumt sie weg;
+        /// bis dahin (und nach einem erneuten Doppelimport) muss jeder Weg, der ueber den
+        /// Namen adressiert, den Fall kennen.
+        /// </remarks>
+        public static List<int> IdsMitBezeichner(string szName)
+        {
+            List<int> ids = new List<int>();
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID",
+                new OleDbParameter("@bez", szName ?? ""));
+
+            if (dt != null)
+                foreach (DataRow r in dt.Rows)
+                    if (r["ID"] != DBNull.Value) ids.Add(Convert.ToInt32(r["ID"]));
+
+            return ids;
+        }
+
+        /// <summary>
+        /// Loest <paramref name="szName"/> auf GENAU eine ID auf. Rueckgabe 0, wenn es
+        /// keinen oder mehr als einen Treffer gibt; im mehrdeutigen Fall mit Meldung.
+        /// </summary>
+        /// <remarks>
+        /// Der mehrdeutige Fall wird bewusst NICHT geraten. Die aufrufende Liste
+        /// (<c>Form_AdminPV</c>) fuehrt nur den Namen, die gemeinte Zeile ist daraus nicht
+        /// bestimmbar - und ein Schreibzugriff ueber den Bezeichner traefe beide. Genau
+        /// dieselbe Entscheidung wie in <c>HeizkesselStammCtrl.Delete(string)</c>.
+        /// </remarks>
+        private static int EindeutigeId(string szName, string aktion)
+        {
+            List<int> ids = IdsMitBezeichner(szName);
+
+            if (ids.Count == 0)
+            {
+                MessageBox.Show("Der Katalogeintrag \"" + (szName ?? "") + "\" wurde nicht gefunden.",
+                    "Nicht gefunden", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return 0;
+            }
+
+            if (ids.Count > 1)
+            {
+                MessageBox.Show("Der Name \"" + (szName ?? "") + "\" ist im Katalog " + ids.Count +
+                    "-mal vergeben. Es ist deshalb nicht entscheidbar, welcher Eintrag gemeint ist - " +
+                    aktion + " wurde nichts.",
+                    "Name mehrdeutig", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return 0;
+            }
+
+            return ids[0];
+        }
+
+        // Aktualisiert den Datensatz. szKey ist der urspruengliche Bezeichner;
         // this.m_szName darf einen neuen Bezeichner tragen (Umbenennung).
         public bool Update(string szKey)
         {
-            if (IsReadOnlyStatic(szKey))
+            int id = EindeutigeId(szKey, "geändert");
+            return id > 0 && Update(id);
+        }
+
+        /// <summary>
+        /// Schreibt GENAU den Katalogsatz mit dieser ID zurueck.
+        /// </summary>
+        /// <remarks>
+        /// Bis zum 18.08.2026 endete das UPDATE auf <c>WHERE Bezeichner = ?</c> und
+        /// aenderte bei einem doppelt vergebenen Namen ZWEI Katalogsaetze zugleich -
+        /// derselbe Befund wie bei <c>HeizkesselStammCtrl.Update</c>, und mit fuenf
+        /// betroffenen Paaren hier sogar der groessere Anteil des Katalogs.
+        /// </remarks>
+        public bool Update(int id)
+        {
+            if (id <= 0) return false;
+
+            if (IsReadOnlyById(id))
             {
                 MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
                     "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
+            }
+
+            // Umbenennen darf keinen bereits vergebenen Namen treffen - sonst legte
+            // ausgerechnet die Korrektur eine neue Dublette an. Greift nur bei echter
+            // Umbenennung, sonst sperrte sie das Speichern einer Bestandsdublette aus.
+            List<int> gleicheNamen = IdsMitBezeichner(this.m_szName);
+            if (gleicheNamen.Count > 0 && !gleicheNamen.Contains(id))
+            {
+                MessageBox.Show("Ein anderer Katalogeintrag trägt bereits den Namen \"" +
+                    (this.m_szName ?? "") + "\". Bitte einen eindeutigen Namen vergeben.",
+                    "Name bereits vergeben", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
 
@@ -133,7 +239,7 @@ namespace WindowsFormsApplication1
                             U_Mpp = ?, U_Leerlauf = ?, I_Mpp = ?, I_Kurzschluss = ?,
                             alpha_SC = ?, beta_OC = ?, gamma_PMP = ?, T_NOCT = ?,
                             Laenge = ?, Breite = ?, Modulkosten = ?
-                          WHERE Bezeichner = ?";
+                          WHERE ID = ?";
 
             OleDbParameter[] ps = {
                 new OleDbParameter("@bez", this.m_szName ?? ""),
@@ -152,23 +258,37 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@lae", this.m_Laenge),
                 new OleDbParameter("@bre", this.m_Breite),
                 new OleDbParameter("@mod", this.m_Modulkosten),
-                new OleDbParameter("@key", szKey ?? "")
+                new OleDbParameter("@id", id)
             };
 
             return DataRepository.ExecuteSQL(sql, ps);
         }
 
+        /// <summary>
+        /// Loescht den Katalogsatz zum Bezeichner - aber nur, wenn er eindeutig ist.
+        /// Dieselbe Anweisung loeschte bis zum 18.08.2026 bei einem doppelt vergebenen
+        /// Namen BEIDE Zeilen.
+        /// </summary>
         public bool Delete(string szName)
         {
-            if (IsReadOnlyStatic(szName))
+            int id = EindeutigeId(szName, "gelöscht");
+            return id > 0 && Delete(id);
+        }
+
+        /// <summary>Loescht GENAU den Katalogsatz mit dieser ID.</summary>
+        public bool Delete(int id)
+        {
+            if (id <= 0) return false;
+
+            if (IsReadOnlyById(id))
             {
                 MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
                     "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
 
-            string sql = "DELETE FROM [" + TABLE + "] WHERE Bezeichner = ?";
-            return DataRepository.ExecuteSQL(sql, new OleDbParameter("@bez", szName ?? ""));
+            string sql = "DELETE FROM [" + TABLE + "] WHERE ID = ?";
+            return DataRepository.ExecuteSQL(sql, new OleDbParameter("@id", id));
         }
 
         // --- MAPPING ---

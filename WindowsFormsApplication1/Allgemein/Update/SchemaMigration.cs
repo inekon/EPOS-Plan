@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 17;
+        public const int ZIEL_VERSION = 18;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -327,6 +327,57 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_17_ANLAGEN_DUBLETTEN = 17;
 
+        /// <summary>
+        /// Nummer der Katalog-Dublettenbereinigung (Nutzerentscheidung 18.08.2026).
+        ///
+        /// <para>
+        /// <b>Was er bereinigt.</b> <c>Tab_Heizkessel_STAMM</c> und <c>Tab_PV_STAMM</c>
+        /// führen doppelt vergebene Bezeichner aus einem zweimal gelaufenen Import.
+        /// Gemessen am 18.08.2026: beim Kessel 8 Namen auf 16 der 21 Zeilen, bei PV
+        /// 5 Namen auf 10 der 11 Zeilen. Die IDs bilden in beiden Tabellen zwei Blöcke;
+        /// beim Kessel mit exakt +9 Versatz. Der VDI-3805-Importer führt <c>Brennwert</c>
+        /// gar nicht in seiner INSERT-Spaltenliste — daher steht der zweite Kesselblock
+        /// durchgängig auf FALSE, während der erste die richtigen Brennwert-Flags trägt.
+        /// Bei PV sind alle fünf Paare in JEDER Spalte außer der ID gleich.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Warum Löschen und nicht Umbenennen.</b> Schritt 17 löst Anlagendubletten
+        /// verlustfrei durch Umbenennen auf, weil dort zwei gewollte Kaskadenzeilen
+        /// hinter demselben Namen stehen. Hier ist die Lage umgekehrt: Es gibt kein
+        /// zweites Gerät, nur einen zweiten Importlauf. Ein Suffix „ (2)" schriebe acht
+        /// bzw. fünf Katalogeinträge dauerhaft fest, die sich nur durch ein verlorenes
+        /// Flag unterscheiden — ein Planer bekäme in der Auswahlliste die „(2)"-Variante
+        /// eines Brennwertkessels ohne Brennwert.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Verlustfrei bleibt er trotzdem</b>, nur auf der Feldebene statt auf der
+        /// Zeilenebene: Gelöscht wird eine Zeile ausschließlich dann, wenn sie in JEDER
+        /// abweichenden Spalte den Leerwert trägt (NULL, "", 0, FALSE) und der Behalter
+        /// dort etwas stehen hat. Sie enthält damit keine Information, die nicht auch im
+        /// behaltenen Satz steht. Trägt die Dublette irgendwo einen eigenen Wert, bleibt
+        /// sie stehen und wird gemeldet — dann sind es womöglich doch zwei Geräte.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Gefahrlos für Projekte.</b> Keiner der beiden Kataloge ist Ziel eines
+        /// Fremdschlüssels (am 18.08.2026 über das FK-Schema der Produktivdatenbank
+        /// geprüft); <c>Tab_Energieanlagen.ID_Kessel</c> und <c>ID_PV</c> zeigen auf die
+        /// PROJEKT-Tabellen <c>Tab_Heizkessel</c> bzw. <c>Tab_PV</c>, und die entstehen
+        /// über <c>CopyFromStamm</c> als Wertkopien. Ein bestehendes Projekt merkt von
+        /// dieser Bereinigung nichts.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Idempotent</b> (unabhängig vom Marker): Er arbeitet auf Namensgruppen, die
+        /// AKTUELL mehrfach besetzt sind. Nach einem erfolgreichen Lauf gibt es keine
+        /// solche Gruppe mehr; ein zweiter Lauf findet nichts. Ein abgebrochener Lauf ist
+        /// unkritisch, weil jede Zeile einzeln gelöscht wird.
+        /// </para>
+        /// </summary>
+        public const int SCHRITT_18_KATALOG_DUBLETTEN = 18;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -435,6 +486,22 @@ namespace WindowsFormsApplication1
         /// Abschlussprüfung. 0 ist die Zusage „vollständig überführt".
         /// </summary>
         public static int DatenDublettenOffen { get; private set; }
+
+        // --- Zählwerk der Katalogbereinigung aus Schritt 18 -----------------------------
+
+        /// <summary>
+        /// 18: Katalogzeilen, die als reine Wiederholung eines bereits vorhandenen
+        /// Eintrags gelöscht wurden — über <c>Tab_Heizkessel_STAMM</c> und
+        /// <c>Tab_PV_STAMM</c> summiert.
+        /// </summary>
+        public static int DatenKatalogDublettenGeloescht { get; private set; }
+
+        /// <summary>
+        /// 18: Katalogzeilen mit doppeltem Bezeichner, die STEHEN GEBLIEBEN sind, weil sie
+        /// einen eigenen Wert tragen (oder schreibgeschützt sind). Sie stehen einzeln im
+        /// Protokoll. 0 ist die Zusage „jeder Katalogname ist jetzt eindeutig".
+        /// </summary>
+        public static int DatenKatalogDublettenOffen { get; private set; }
 
         /// <summary>
         /// Wurde die Eindeutigkeitsprüfung in diesem Lauf schon ausgeführt? Verhindert,
@@ -635,6 +702,15 @@ namespace WindowsFormsApplication1
                         "Doppelt belegte Anlagenzeilen in eigene Gerätekopien überführen",
                         "Die doppelt belegten Anlagenzeilen konnten nicht überführt werden.",
                         Schritt_17_AnlagenDubletten),
+
+            // PAKET KATALOGDUBLETTEN - die aus einem zweiten Importlauf stammenden
+            //       Zwillinge in Tab_Heizkessel_STAMM und Tab_PV_STAMM entfernen
+            //       (Nutzerentscheidung 18.08.2026). DML; von 16/17 unabhaengig, die
+            //       arbeiten auf Anlagenzeilen, dieser Schritt auf den Katalogen.
+            new Schritt(SCHRITT_18_KATALOG_DUBLETTEN,
+                        "Doppelte Katalogeinträge aus dem zweiten Importlauf entfernen",
+                        "Die doppelten Katalogeinträge konnten nicht entfernt werden.",
+                        Schritt_18_KatalogDubletten),
         };
 
         // =================================================================================
@@ -678,6 +754,8 @@ namespace WindowsFormsApplication1
             DatenEindeutigDubletten = 0;
             DatenDublettenUeberfuehrt = 0;
             DatenDublettenOffen = 0;
+            DatenKatalogDublettenGeloescht = 0;
+            DatenKatalogDublettenOffen = 0;
             _eindeutigkeitGeprueft = false;
 
             var l = new Lauf();
@@ -891,6 +969,18 @@ namespace WindowsFormsApplication1
                         : (DatenDublettenUeberfuehrt == 0
                             ? " - es gab keine doppelt belegte Anlagenzeile."
                             : " - je Zeile ein eigenes Gerät mit eigener Investition und Wartung.")));
+
+            // Schritt 18 meldet - wie 14, 16 und 17 - AUCH die 0. Sie sagt „dieser
+            // Bestand fuehrt keinen doppelt vergebenen Katalognamen", und genau das ist
+            // die Bedingung dafuer, dass Speichern und Loeschen im Katalogdialog genau
+            // eine Zeile treffen.
+            l.Zeile("Katalogbereinigung (Schritt 18): " + DatenKatalogDublettenGeloescht +
+                    " doppelte Katalogeinträge entfernt" +
+                    (DatenKatalogDublettenOffen > 0
+                        ? ", " + DatenKatalogDublettenOffen + " NICHT entfernt - siehe die Meldungen oben."
+                        : (DatenKatalogDublettenGeloescht == 0
+                            ? " - es gab keinen doppelt vergebenen Katalognamen."
+                            : " - jeder Katalogname ist jetzt eindeutig.")));
 
             l.Zeile("Anlagenzeilen-Eindeutigkeit (Schritt 16): " + DatenEindeutigIndizes +
                     " von " + AnlagenEindeutigkeit.SPERREN.Length + " Eindeutigkeitsindizes aktiv, " +
@@ -2255,6 +2345,194 @@ namespace WindowsFormsApplication1
 
             NonQuery(l, "DELETE FROM [" + sperre.Tabelle + "] WHERE ID = ?",
                      new OleDbParameter("@id", OleDbType.Integer) { Value = idNeu });
+        }
+
+        // =================================================================================
+        // Schritt 18 - Katalogdubletten aus dem zweiten Importlauf entfernen
+        //              (Nutzerentscheidung 18.08.2026)
+        // =================================================================================
+
+        /// <summary>Die Kataloge, die Schritt 18 bereinigt - Tabelle und Namensspalte.</summary>
+        private static readonly string[][] KATALOGE_MIT_NAMEN =
+        {
+            new[] { SchemaKatalog.TAB_HEIZKESSEL_STAMM, "Bezeichner" },
+            new[] { SchemaKatalog.TAB_PV_STAMM,         "Bezeichner" },
+        };
+
+        /// <summary>
+        /// <b>Schritt 18.</b> Entfernt aus den Gerätekatalogen die Zeilen, die nur die
+        /// Wiederholung eines bereits vorhandenen Eintrags sind. Begründung, Datenlage und
+        /// die Abgrenzung zu Schritt 17 stehen bei
+        /// <see cref="SCHRITT_18_KATALOG_DUBLETTEN"/>.
+        ///
+        /// <para>
+        /// <b>Immer true</b> - dieselbe Begründung wie bei
+        /// <see cref="Schritt_17_AnlagenDubletten"/>: Was nicht gelöscht werden konnte,
+        /// bleibt unverändert stehen, und die Datenbank verhält sich dann exakt wie
+        /// bisher. Ein <c>false</c> hielte den ganzen Migrationslauf an - für eine
+        /// Bereinigung, ohne die alles weiterläuft, das falsche Mittel. Jeder Fehlschlag
+        /// steht einzeln im Protokoll und in <see cref="DatenKatalogDublettenOffen"/>.
+        /// </para>
+        /// </summary>
+        private static bool Schritt_18_KatalogDubletten(Lauf l)
+        {
+            int geloescht = 0;
+            int offen = 0;
+
+            foreach (string[] katalog in KATALOGE_MIT_NAMEN)
+                KatalogBereinigen(l, katalog[0], katalog[1], ref geloescht, ref offen);
+
+            DatenKatalogDublettenGeloescht = geloescht;
+            DatenKatalogDublettenOffen = offen;
+
+            if (geloescht == 0 && offen == 0)
+                l.Notiz("Kein Katalog führt einen doppelt vergebenen Namen - es gab nichts zu entfernen.");
+
+            return true;
+        }
+
+        /// <summary>
+        /// Bereinigt EINEN Katalog. Je Namensgruppe behält die kleinste ID den Platz -
+        /// dieselbe Wahl wie in <see cref="GruppeUeberfuehren"/>, und hier zusätzlich die
+        /// sachlich richtige: Der erste Importlauf trug beim Kessel die korrekten
+        /// Brennwert-Flags, der zweite verlor sie.
+        /// </summary>
+        private static void KatalogBereinigen(Lauf l, string tabelle, string namensSpalte,
+                                              ref int geloescht, ref int offen)
+        {
+            DataTable dt = Abfrage(l, "SELECT * FROM [" + tabelle + "] ORDER BY [" + namensSpalte + "], ID");
+            if (dt == null)
+            {
+                l.Notiz(tabelle + ": Die Dublettensuche war nicht möglich - dieser Katalog blieb unverändert.");
+                return;
+            }
+            if (!dt.Columns.Contains(namensSpalte) || !dt.Columns.Contains("ID"))
+            {
+                l.Notiz(tabelle + ": Ohne die Spalten ID und " + namensSpalte +
+                        " lässt sich nicht entscheiden, was eine Dublette ist - der Katalog blieb unverändert.");
+                return;
+            }
+
+            // Nach Name gruppieren. Ordinal und ohne Trim: Genau so vergleicht der
+            // Schreibweg in der Datenbank, und nur diese Zeilen ueberschreiben sich
+            // gegenseitig.
+            Dictionary<string, List<DataRow>> gruppen =
+                new Dictionary<string, List<DataRow>>(StringComparer.Ordinal);
+
+            foreach (DataRow r in dt.Rows)
+            {
+                string name = Txt(r[namensSpalte]);
+                List<DataRow> liste;
+                if (!gruppen.TryGetValue(name, out liste))
+                {
+                    liste = new List<DataRow>();
+                    gruppen[name] = liste;
+                }
+                liste.Add(r);
+            }
+
+            foreach (KeyValuePair<string, List<DataRow>> g in gruppen)
+            {
+                if (g.Value.Count < 2) continue;
+
+                DataRow behalten = g.Value[0];          // ORDER BY ... , ID -> kleinste ID
+
+                for (int i = 1; i < g.Value.Count; i++)
+                {
+                    DataRow dublette = g.Value[i];
+                    int idDub = Zahl(dublette["ID"]);
+
+                    // Auslieferungsbestand nie anfassen - dieselbe Zusage, die
+                    // ReadOnly ueberall sonst traegt.
+                    if (dt.Columns.Contains("ReadOnly") && Wahr(dublette["ReadOnly"]))
+                    {
+                        l.Notiz(tabelle + ", ID " + idDub + " \"" + g.Key + "\": schreibgeschützt " +
+                                "(ReadOnly) - bleibt trotz doppeltem Namen stehen.");
+                        offen++;
+                        continue;
+                    }
+
+                    string eigenerWert = ErsteEigeneSpalte(dt, behalten, dublette);
+                    if (eigenerWert != null)
+                    {
+                        l.Notiz(tabelle + ", ID " + idDub + " \"" + g.Key + "\": trägt in " + eigenerWert +
+                                " einen eigenen Wert, den ID " + Zahl(behalten["ID"]) + " nicht hat - " +
+                                "das könnten zwei verschiedene Geräte sein. Bleibt stehen und muss " +
+                                "von Hand entschieden werden.");
+                        offen++;
+                        continue;
+                    }
+
+                    int n = NonQuery(l, "DELETE FROM [" + tabelle + "] WHERE ID = ?",
+                                     new OleDbParameter("@id", OleDbType.Integer) { Value = idDub });
+                    if (n < 0)
+                    {
+                        l.Notiz(tabelle + ", ID " + idDub + " \"" + g.Key +
+                                "\": Das Löschen schlug fehl - die Zeile bleibt unverändert stehen.");
+                        offen++;
+                        continue;
+                    }
+
+                    l.Notiz(tabelle + ", ID " + idDub + " \"" + g.Key + "\": entfernt - reine Wiederholung " +
+                            "von ID " + Zahl(behalten["ID"]) + ".");
+                    geloescht++;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Der Name der ersten Spalte, in der <paramref name="dublette"/> einen EIGENEN
+        /// Wert trägt, den <paramref name="behalten"/> nicht hat - oder <c>null</c>, wenn
+        /// die Dublette nichts beisteuert und damit gefahrlos entfallen kann.
+        /// </summary>
+        /// <remarks>
+        /// Das ist die Bedingung, die diesen Schritt trotz des Löschens verlustfrei macht.
+        /// Eine Abweichung allein genügt NICHT: Beim Kessel unterscheiden sich sechs der
+        /// acht Paare ausschließlich in <c>Brennwert</c> (TRUE beim ersten, FALSE beim
+        /// zweiten Importlauf) und eines zusätzlich in den Investitionskosten (2749,67
+        /// gegen 0). In beiden Fällen steht auf der Seite der Dublette der Leerwert - sie
+        /// weiß nichts, was der behaltene Satz nicht auch wüsste. Erst ein eigener,
+        /// nicht leerer Wert macht sie zu einem eigenständigen Gerät.
+        /// </remarks>
+        private static string ErsteEigeneSpalte(DataTable dt, DataRow behalten, DataRow dublette)
+        {
+            foreach (DataColumn c in dt.Columns)
+            {
+                if (string.Equals(c.ColumnName, "ID", StringComparison.OrdinalIgnoreCase)) continue;
+
+                object a = behalten[c];
+                object b = dublette[c];
+
+                if (string.Equals(Txt(a), Txt(b), StringComparison.Ordinal)) continue;  // gleich
+                if (Leerwert(b)) continue;                                              // Dublette leer
+
+                return c.ColumnName;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Trägt der Wert nichts bei? NULL, Leertext, die Zahl 0 und FALSE gelten als
+        /// leer. Alles, was sich nicht sicher einordnen lässt (etwa ein Datum), gilt
+        /// bewusst als NICHT leer - im Zweifel bleibt die Zeile stehen.
+        /// </summary>
+        private static bool Leerwert(object v)
+        {
+            if (v == null || v == DBNull.Value) return true;
+            if (v is bool) return !(bool)v;
+            if (v is string) return ((string)v).Trim().Length == 0;
+
+            try { return Math.Abs(Convert.ToDouble(v)) < 1e-9; }
+            catch { return false; }
+        }
+
+        /// <summary>Liest ein Ja/Nein-Feld tolerant - NULL gilt als false.</summary>
+        private static bool Wahr(object v)
+        {
+            if (v == null || v == DBNull.Value) return false;
+            try { return Convert.ToBoolean(v); }
+            catch { return false; }
         }
 
         // =================================================================================

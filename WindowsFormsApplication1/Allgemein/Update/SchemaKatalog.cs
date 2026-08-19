@@ -63,6 +63,7 @@ namespace WindowsFormsApplication1
         public const string TAB_KOSTENPROFIL = "Tab_Kostenprofil";
         public const string TAB_HEIZKESSEL = "Tab_Heizkessel";
         public const string TAB_HEIZKESSEL_STAMM = "Tab_Heizkessel_STAMM";
+        public const string TAB_PV_STAMM = "Tab_PV_STAMM";
 
         /// <summary>
         /// PAKET PARALLELVERBUND (Entscheidung des Anwenders 17.08.2026): die ZUSÄTZLICHEN

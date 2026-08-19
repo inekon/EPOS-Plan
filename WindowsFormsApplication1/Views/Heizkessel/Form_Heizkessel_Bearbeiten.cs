@@ -11,6 +11,11 @@ namespace WindowsFormsApplication1
         public string m_szKessel = "";
         private int m_mode = MODE_EDIT;
 
+        // Primaerschluessel des geladenen Katalogsatzes (Tab_Heizkessel_STAMM.ID),
+        // 0 in MODE_NEU. Ueber ihn schreibt btn_Ueberschreiben zurueck; gesetzt wird er
+        // in SetControls, wo auch die Begruendung steht.
+        private int m_nKesselId = 0;
+
         // Beim Knopfdruck geprüft (EingabenPruefen) und von InitDatensatzUpdate
         // unverändert ins Modell übernommen - so kommt "12.5" wie "12,5" als 12,5 an.
         private double m_dPtherm, m_dWirkungsgradGas, m_dWirkungsgradOel, m_dBBVerlust;
@@ -241,48 +246,80 @@ namespace WindowsFormsApplication1
             return TechnikPlanwertCtrl.WartungDbWert(e != null ? e.Schluessel : null);
         }
 
+        /// <summary>
+        /// Füllt die Maske aus dem Katalog und merkt sich die ID der geladenen Zeile.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Quelle statt zwei.</b> Bis zum 18.08.2026 kamen die Anzeigefelder aus
+        /// einem <c>RecordSet</c> und nur die Wartungskosten aus dem Controller — zwei
+        /// unabhängige Abfragen auf dieselbe Tabelle, beide ohne <c>ORDER BY</c>. Solange
+        /// <c>Bezeichner</c> eindeutig ist, fällt das nicht auf; im Bestand ist er es
+        /// achtmal nicht, und dann darf die ACE-Engine den beiden Abfragen verschiedene
+        /// Zeilen liefern — die Maske konnte Werte aus ZWEI Kesseln mischen. Jetzt liest
+        /// <see cref="HeizkesselStammCtrl.ReadSingle"/> genau einmal, sortiert nach ID,
+        /// und liefert alle Felder samt Wartungskosten und Einheit mit der dort
+        /// beschriebenen Rückfallebene für eine nicht migrierte Datenbank.
+        /// </para>
+        /// <para>
+        /// <b>Warum die ID festgehalten wird.</b> Sie ist die Adresse, unter der
+        /// <see cref="btn_Ueberschreiben_Click"/> zurückschreibt. Damit gilt: geschrieben
+        /// wird die Zeile, die auch angezeigt wurde. Vorher lief das UPDATE über den
+        /// Bezeichner und traf bei einer Dublette BEIDE Katalogsätze.
+        /// </para>
+        /// <para>
+        /// <b>Der Hinweis bei Mehrdeutigkeit hält niemanden auf.</b> Bearbeiten bleibt
+        /// möglich und ist jetzt eindeutig; die Meldung sagt nur, dass der Katalog einen
+        /// weiteren Eintrag gleichen Namens führt, den dieser Dialog nicht zeigt. Ohne
+        /// sie bliebe unerklärlich, warum derselbe Name in der Auswahlliste mehrfach
+        /// steht und die zweite Zeile sich nicht erreichen lässt.
+        /// </para>
+        /// </remarks>
         public void SetControls(string szName, string szBeschreibung)
         {
-            RecordSet rs = new RecordSet();
-
             textBox_Name.Text = szName;
             m_szKessel = szName;
             textBox_Beschreibung.Text = szBeschreibung;
 
-            rs.Open("select * from [Tab_Heizkessel_STAMM] where Bezeichner='" + szName + "'");
-            if (!rs.Next()) { rs.Close(); return; }
-
-            textBox_Hersteller.Text = rs.GetString("Firma");
-            tb_th_Leistung.Text = rs.Read("Ptherm").ToString();
-            tb_Wirkungsgrad.Text = rs.Read("Wirkungsgrad_Gas").ToString();
-            tb_Wirkungsgrad_Öl.Text = rs.Read("Wirkungsgrad_Öl").ToString();
-            tb_B_Verlust.Text = ((double)rs.Read("Betriebsbereitschaftverlust")).ToString("F2");
-            tb_Investitionskosten.Text = ((double)rs.Read("Investitionskosten")).ToString("F2");
-            tb_Nutzungsdauer.Text = rs.Read("Nutzungsdauer").ToString();
-            tb_Raumbedarf.Text = rs.Read("Raumbedarf").ToString();
-            tb_NOx.Text = rs.Read("NOx").ToString();
-            tb_CO2.Text = rs.Read("CO2").ToString();
-            tb_CO.Text = rs.Read("CO").ToString();
-            tb_SO2.Text = rs.Read("SO2").ToString();
-            tb_Staub.Text = rs.Read("Staub").ToString();
-            checkBox_Brennwert.Checked = (bool)rs.Read("Brennwert");
-            textBox_Vorlauf.Text = rs.Read("Vorlauf").ToString();
-            textBox_Ruecklauf.Text = rs.Read("Ruecklauf").ToString();
-
-            if (rs.Read("Brennstoff") != DBNull.Value)
-            {
-                int brennstoff = (int)rs.Read("Brennstoff");
-                comboBox_Brennstoff.SelectedIndex = brennstoff >= 1 ? brennstoff - 1 : 1;
-            }
-            rs.Close();
-
-            // Wartungskosten bewusst NICHT über das RecordSet: dessen Read() kennt keine
-            // Spaltenprüfung, und Wartungskosten_Einheit fehlt auf einer nicht migrierten
-            // Datenbank. Der Controller liest beides mit Rückfallebene.
             HeizkesselStammCtrl katalog = new HeizkesselStammCtrl();
             katalog.ReadSingle(szName);
+            if (katalog.rows == 0) return;
+
+            m_nKesselId = katalog.ID;
+
+            textBox_Hersteller.Text = katalog.Firma;
+            tb_th_Leistung.Text = katalog.Ptherm.ToString();
+            tb_Wirkungsgrad.Text = katalog.Wirkungsgrad_Gas.ToString();
+            tb_Wirkungsgrad_Öl.Text = katalog.Wirkungsgrad_Oel.ToString();
+            tb_B_Verlust.Text = katalog.Betriebsbereitschaftverlust.ToString("F2");
+            tb_Investitionskosten.Text = katalog.Investitionskosten.ToString("F2");
             tb_Wartungskosten.Text = katalog.Wartungskosten.ToString("F2");
             EinheitWaehlen(katalog.Wartungskosten_Einheit);
+            tb_Nutzungsdauer.Text = katalog.Nutzungsdauer.ToString();
+            tb_Raumbedarf.Text = katalog.Raumbedarf.ToString();
+            tb_NOx.Text = katalog.NOx.ToString();
+            tb_CO2.Text = katalog.CO2.ToString();
+            tb_CO.Text = katalog.CO.ToString();
+            tb_SO2.Text = katalog.SO2.ToString();
+            tb_Staub.Text = katalog.Staub.ToString();
+            checkBox_Brennwert.Checked = katalog.Brennwert;
+            textBox_Vorlauf.Text = katalog.Vorlauf.ToString();
+            textBox_Ruecklauf.Text = katalog.Ruecklauf.ToString();
+
+            // Bereichsprüfung statt roher Zuweisung: Brennstoff ist eine 1-basierte ID
+            // aus Tab_Brennstoff_Stamm, die Liste im Kombinationsfeld kann kürzer sein.
+            int brennstoffIndex = katalog.Brennstoff >= 1 ? katalog.Brennstoff - 1 : 1;
+            if (brennstoffIndex >= 0 && brennstoffIndex < comboBox_Brennstoff.Items.Count)
+                comboBox_Brennstoff.SelectedIndex = brennstoffIndex;
+
+            int gleiche = HeizkesselStammCtrl.AnzahlMitBezeichner(szName);
+            if (gleiche > 1)
+            {
+                MessageBox.Show("Der Katalog führt den Namen \"" + szName + "\" " + gleiche +
+                    "-mal. Bearbeitet wird der Eintrag mit der kleinsten ID (" + m_nKesselId +
+                    "); die übrigen bleiben unverändert.",
+                    "Name mehrdeutig", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         private void btn_Abbrechen_Click(object sender, EventArgs e)
@@ -290,26 +327,47 @@ namespace WindowsFormsApplication1
             Close();
         }
 
+        /// <summary>
+        /// Schreibt die Maske in GENAU den Katalogsatz zurück, den
+        /// <see cref="SetControls"/> geladen hat.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die ID ist die Absicherung.</b> Ohne sie fiele
+        /// <see cref="HeizkesselStammCtrl.Update"/> auf den Bezeichner zurück und träfe
+        /// bei einem doppelt vergebenen Namen beide Zeilen — der eigentliche Befund vom
+        /// 18.08.2026. <c>InitDatensatzUpdate</c> baut das Modell aus der Maske auf und
+        /// kennt die Herkunft nicht, deshalb wird die ID danach gesetzt.
+        /// </para>
+        /// <para>
+        /// <b>Ein Fehlschlag schließt den Dialog nicht mehr.</b> Vorher lief der Ablauf
+        /// nach der Fehlermeldung in dieselbe Zeile
+        /// <c>DialogResult = DialogResult.OK; Close();</c> — der Aufrufer lud die Liste
+        /// neu, als wäre gespeichert worden, und die Eingaben waren weg. Da
+        /// <see cref="HeizkesselStammCtrl.Update"/> jetzt auch aus fachlichem Grund
+        /// ablehnen kann (schreibgeschützt, Name bereits vergeben, fehlende ID) und den
+        /// Grund selbst meldet, bleibt der Dialog in diesem Fall offen.
+        /// </para>
+        /// </remarks>
         private void btn_Ueberschreiben_Click(object sender, EventArgs e)
         {
             // Erst prüfen, dann schreiben: bei ungültiger Eingabe bleibt der Dialog offen
             if (!EingabenPruefen()) return;
 
-            HeizkesselModel model = new HeizkesselModel();
             HeizkesselStammCtrl ctrl = new HeizkesselStammCtrl();
 
             try
             {
                 InitDatensatzUpdate(ctrl);
+                ctrl.ID = m_nKesselId;
 
-                if (ctrl.Update())
-                {
-                    MessageBox.Show("Datensatz gespeichert");
-                }
-                else
-                {
-                    MessageBox.Show("Fehler beim Überschreiben des Datensatzes!");
-                }
+                if (!ctrl.Update()) return;   // Grund hat Update() bereits gemeldet
+
+                // Der Aufrufer wählt über m_szKessel den Eintrag in seiner Liste wieder
+                // aus - nach einer Umbenennung ist das der NEUE Name.
+                m_szKessel = ctrl.Name;
+
+                MessageBox.Show("Datensatz gespeichert");
                 DialogResult = DialogResult.OK;
                 Close();
             }
