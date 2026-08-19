@@ -38,6 +38,14 @@ namespace WindowsFormsApplication1
     /// mit genau der KWKG-Reihe liefert Wert für Wert dasselbe wie vorher. Die Namen
     /// werden im Bericht (Etappe E7) gebraucht, um die Gutschriften einzeln
     /// auszuweisen.</para>
+    ///
+    /// <para><b>ETAPPE E7: das Zahlungsbild gibt die Einzelpositionen zurück.</b> Bis
+    /// dahin verließen dieses Verfahren nur Summen — die Jahresreihen von Betrieb,
+    /// Energie, CO₂-Abgabe, Ersatzbeschaffung, Einspeiseerlös und den benannten
+    /// Erlösreihen entstanden hier, gingen in die Nettoreihe ein und waren danach nicht
+    /// mehr zu haben. Die Mehrjahrestabelle des Berichts braucht sie einzeln; sie stehen
+    /// deshalb jetzt am <see cref="Zahlungsbild"/>. <b>Rein additiv</b> — der Rechenweg
+    /// der Summen ist unverändert, und die Referenzprobe belegt das.</para>
     /// </summary>
     public static class KapitalwertRechner
     {
@@ -121,6 +129,65 @@ namespace WindowsFormsApplication1
 
             /// <summary>Restwert zum Zeitpunkt T, unabgezinst (für den IRR).</summary>
             public double RestwertNominal;
+
+            // ---- ETAPPE E7 — der Rückgabekanal der EINZELPOSITIONEN ----
+            //
+            // Bis E7 gab dieses Bild nur die SUMMEN heraus: eine Nettoreihe, eine
+            // Barwertreihe, vier Barwertskalare. Die Jahresreihen der einzelnen
+            // Positionen entstanden in der Schleife unten, gingen in die Summe ein und
+            // wurden verworfen — vom KWK-Zuschlag überlebte allein der Wert des Jahres 1.
+            // Eine Mehrjahrestabelle nach Positionen war damit nicht baubar; es fehlte
+            // nicht ein Formatierer, sondern der Kanal.
+            //
+            // Die Felder sind REIN ADDITIV: Sie werden nur befüllt, nie gelesen, und
+            // der Rechenweg der Summen bleibt Zeichen für Zeichen der von vorher
+            // (siehe den Kommentar in der Jahresschleife). Nominal, unabgezinst,
+            // Index 1…T; Index 0 bleibt leer — dort steht die Investition.
+
+            /// <summary>Betriebskosten je Jahr [€], mit p_B fortgeschrieben.</summary>
+            public double[] BetriebJeJahr;
+
+            /// <summary>Energiekosten je Jahr [€] OHNE CO₂-Abgabe, mit p_E fortgeschrieben.</summary>
+            public double[] EnergieJeJahr;
+
+            /// <summary>CO₂-Abgabe nach BEHG je Jahr [€], mit p_E fortgeschrieben.</summary>
+            public double[] BehgJeJahr;
+
+            /// <summary>Ersatzbeschaffungen je Jahr [€] (Index 0…T; nominal konstant).</summary>
+            public double[] ErsatzJeJahr;
+
+            /// <summary>Einspeiseerlös je Jahr [€] (nominal konstant, feste Vergütung).</summary>
+            public double[] EinspeiseerloesJeJahr;
+
+            /// <summary>Die benannten Erlösreihen, wie sie hereingereicht wurden —
+            /// KWK-Zuschlag und die drei Steuergutschriften (E4). <c>null</c> = keine.
+            /// Erst hierdurch wird das Auslaufen des KWK-Zuschlags im Bericht
+            /// sichtbar.</summary>
+            public IList<ErloesReihe> ErloesReihen;
+
+            /// <summary>Nominaler Jahresbetrag einer benannten Reihe [€]; 0, wenn die
+            /// Reihe fehlt.</summary>
+            public double ReihenWert(string name, int t)
+            {
+                if (ErloesReihen == null || name == null) return 0;
+                double summe = 0;
+                foreach (ErloesReihe r in ErloesReihen)
+                    if (r != null && string.Equals(r.Name, name, StringComparison.Ordinal))
+                        summe += r.Wert(t);
+                return summe;
+            }
+
+            /// <summary>true, wenn die Reihe überhaupt einen Betrag ungleich 0 führt.</summary>
+            public bool HatReihe(string name)
+            {
+                if (ErloesReihen == null || name == null) return false;
+                foreach (ErloesReihe r in ErloesReihen)
+                    if (r != null && string.Equals(r.Name, name, StringComparison.Ordinal) &&
+                        r.JeJahr != null)
+                        for (int t = 1; t < r.JeJahr.Length; t++)
+                            if (r.JeJahr[t] != 0) return true;
+                return false;
+            }
         }
 
         /// <summary>Annuitätenfaktor a(i,n); i als Dezimalzahl (0,03), n in Jahren.</summary>
@@ -155,10 +222,21 @@ namespace WindowsFormsApplication1
             double pE = preisstEnergieProzent / 100.0;
             int T = Math.Max(1, jahre);
 
-            var z = new Zahlungsbild { BarwertReihe = new double[T + 1], NominalReihe = new double[T + 1] };
+            var z = new Zahlungsbild
+            {
+                BarwertReihe = new double[T + 1],
+                NominalReihe = new double[T + 1],
+                // ETAPPE E7 — Rückgabekanal der Einzelpositionen (rein additiv).
+                BetriebJeJahr = new double[T + 1],
+                EnergieJeJahr = new double[T + 1],
+                BehgJeJahr = new double[T + 1],
+                EinspeiseerloesJeJahr = new double[T + 1],
+                ErloesReihen = zusatzErloesReihen
+            };
 
             // ---------------- Investition t=0 + Ersatzbeschaffungen + Restwert ----------------
             double[] ersatzJeJahr = new double[T + 1];
+            z.ErsatzJeJahr = ersatzJeJahr;                    // E7: dieselbe Reihe, nicht kopiert
             double restwertT = 0;
 
             if (investitionen != null)
@@ -195,6 +273,10 @@ namespace WindowsFormsApplication1
             for (int t = 1; t <= T; t++)
             {
                 double faktor = Math.Pow(1.0 + i, -t);
+                // ACHTUNG: Der Ausdruck für ausgaben bleibt ZEICHENGLEICH der Fassung vor
+                // Etappe E7 — insbesondere bleibt (energieJahr + behgJahr) EINE Klammer.
+                // Die getrennten Reihen darunter sind Ausweis und gehen NICHT in die
+                // Summe ein; sonst verschöbe sich das Ergebnis in der letzten Stelle.
                 double ausgaben = betriebJahr * Math.Pow(1.0 + pB, t - 1)
                                 + (energieJahr + behgJahr) * Math.Pow(1.0 + pE, t - 1)
                                 + ersatzJeJahr[t];
@@ -202,6 +284,12 @@ namespace WindowsFormsApplication1
                 if (zusatzErloesReihen != null)
                     foreach (ErloesReihe reihe in zusatzErloesReihen)
                         if (reihe != null) einnahmen += reihe.Wert(t);   // KWKG + Steuern (E4)
+
+                // ETAPPE E7 — Einzelpositionen für die Mehrjahrestabelle.
+                z.BetriebJeJahr[t] = betriebJahr * Math.Pow(1.0 + pB, t - 1);
+                z.EnergieJeJahr[t] = energieJahr * Math.Pow(1.0 + pE, t - 1);
+                z.BehgJeJahr[t] = behgJahr * Math.Pow(1.0 + pE, t - 1);
+                z.EinspeiseerloesJeJahr[t] = erloesJahr;
 
                 z.BarwertAusgaben += ausgaben * faktor;
                 z.BarwertEinnahmen += einnahmen * faktor;

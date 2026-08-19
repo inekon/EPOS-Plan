@@ -48,6 +48,14 @@ namespace WindowsFormsApplication1
         // W3: Emissionsbilanzen + Parameter werden je Datenstand EINMAL ermittelt
         // (Review Phase 8 — nicht bei jedem Szenariowechsel im UI-Thread rechnen).
         private WirtschaftlichkeitParameter _parameterCache;
+
+        /// <summary>
+        /// ETAPPE E7: Der Tarif entscheidet über die Beschriftung der Stromkostenzeile
+        /// (Bezug im Zonenmodell, Reststrom im Rollenmodell). Er wird EINMAL je Sitzung
+        /// gelesen — <see cref="ZeigeErgebnisse"/> läuft bei jedem Szenariowechsel, und
+        /// eine Datenbankabfrage je Wechsel wäre Verschwendung.
+        /// </summary>
+        private TarifParameter _tarifCache;
         private readonly Dictionary<int, EmissionsBilanz> _bilanzen = new Dictionary<int, EmissionsBilanz>();
 
         // Steuerelemente
@@ -358,6 +366,7 @@ namespace WindowsFormsApplication1
                 dlg.ShowDialog(Besitzer);
                 if (dlg.Gespeichert)
                 {
+                    _tarifCache = null;   // E7: Beschriftung der Stromkostenzeile neu holen
                     ZeigeParameterzeile();
                     Melde("Tarifstruktur gespeichert — bitte neu berechnen.");
                 }
@@ -528,63 +537,27 @@ namespace WindowsFormsApplication1
                 grid.Columns[idx].FillWeight = 110;
             }
 
-            Zeile("Investition I₀ [€]", zeilen, x => W(x.Investition, "N0", kultur));
-            Zeile("Betriebskosten [€/a]", zeilen, x => W(x.BetriebskostenJahr, "N0", kultur));
-            Zeile("Energiekosten [€/a]", zeilen, x => W(x.EnergiekostenJahr, "N0", kultur));
-            if (zeilen.Any(x => x.StromkostenTarif.HasValue))   // W3: Tarifmatrix aktiv
-                Zeile("Stromkosten Tarif [€/a]", zeilen, x => W(x.StromkostenTarif, "N0", kultur));
-            if (zeilen.Any(x => x.CO2AbgabeJahr > 0))     // nur wenn BEHG aktiv (W2)
-                Zeile("CO₂-Abgabe BEHG [€/a]", zeilen, x => W(x.CO2AbgabeJahr, "N0", kultur));
-            Zeile("Einspeiseerlös [€/a]", zeilen, x => W(x.EinspeiseerloesJahr, "N0", kultur));
-            if (zeilen.Any(x => x.KwkgErloesJahr1 > 0))   // nur wenn KWKG aktiv (W2)
-                Zeile("KWKG-Erlös Jahr 1 [€/a]", zeilen, x => W(x.KwkgErloesJahr1, "N0", kultur));
-            // ETAPPE E2 (L6): die Bemessungsgrundlage der KWKG-Deckelung sichtbar machen —
-            // ELEKTRISCHE Vollbenutzungsstunden. Die Zeile erscheint, sobald irgendein
-            // Projekt der Gruppe die Größe führt; „—" heißt „nicht erhoben" (Ergebnis vor E2)
-            // oder „keine elektrische Leistung gepflegt".
-            if (zeilen.Any(x => x.KwkgVbhElektrisch > 0))
-                Zeile("Vbh elektrisch (KWKG-Basis) [h/a]", zeilen,
-                      x => x.KwkgVbhElektrisch > 0 ? W(x.KwkgVbhElektrisch, "N0", kultur) : "—");
-            // ETAPPE E4: die drei Steuergutschriften. Jede Zeile erscheint nur, wenn
-            // irgendein Projekt der Gruppe einen Betrag führt — nie eine „0"-Zeile;
-            // fehlt die Gutschrift, steht der GRUND in der Hinweiszeile unten.
-            if (zeilen.Any(x => x.EnergiesteuerJahr1 > 0))
-                Zeile(MyResource.Resource.WIRT_ZEILE_ENERGIESTEUER, zeilen,
-                      x => W(x.EnergiesteuerJahr1, "N0", kultur));
-            if (zeilen.Any(x => x.StromsteuerBefreiungJahr1 > 0))
-                Zeile(MyResource.Resource.WIRT_ZEILE_STROMST_BEFREIUNG, zeilen,
-                      x => W(x.StromsteuerBefreiungJahr1, "N0", kultur));
-            if (zeilen.Any(x => x.StromsteuerEntlastungJahr1 > 0))
-                Zeile(MyResource.Resource.WIRT_ZEILE_STROMST_ENTLASTUNG, zeilen,
-                      x => W(x.StromsteuerEntlastungJahr1, "N0", kultur));
-            if (zeilen.Any(x => !string.IsNullOrEmpty(x.SteuerHerkunft)))
-                Zeile(MyResource.Resource.WIRT_ZEILE_STEUER_HERKUNFT, zeilen,
-                      x => x.SteuerHerkunft ?? "—");
-            // ETAPPE E5: vermiedene Kosten nach der Differenzmethode und der Betrag der
-            // berücksichtigten Aufschläge. Der Leistungsanteil ist regelmäßig NEGATIV —
-            // deshalb prüft die Bedingung auf „ungleich 0", nicht auf „größer 0"; eine
-            // Zeile, die nur bei positiven Werten erscheint, verschwiege genau die
-            // Kernaussage.
-            if (zeilen.Any(x => x.VermiedenGesamtJahr != 0 || x.VermiedenArbeitJahr != 0))
+            // ETAPPE E7: EINE Zeilendefinition für Reiter, Word und Excel
+            // (WirtschaftlichkeitZeilen). Bis dahin stand dieselbe Liste dreimal im
+            // Code — hier, im Word-Baustein und im Excel-Generator.
+            //
+            // Die SICHTBARKEIT entscheidet sich über ALLE Ergebnisse der Gruppe (alle
+            // Szenarien), nicht über das gerade angezeigte — sonst zeigten Reiter und
+            // Bericht verschiedene Tabellen. Eine Zeile, die im angezeigten Szenario
+            // nirgends einen Wert hat, fällt darunter trotzdem weg.
+            if (_tarifCache == null)
             {
-                Zeile(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_ARBEIT, zeilen,
-                      x => W(x.VermiedenArbeitJahr, "N0", kultur));
-                Zeile(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_LEISTUNG, zeilen,
-                      x => W(x.VermiedenLeistungJahr, "N0", kultur));
-                Zeile(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_GESAMT, zeilen,
-                      x => W(x.VermiedenGesamtJahr, "N0", kultur));
+                try { _tarifCache = _ctrl.LadeTarif(_idStamm); }
+                catch { _tarifCache = new TarifParameter(); }
             }
-            if (zeilen.Any(x => x.AufschlagJahr != 0))
-                Zeile(MyResource.Resource.WIRT_ZEILE_AUFSCHLAG, zeilen,
-                      x => W(x.AufschlagJahr, "N0", kultur));
-            Zeile("Restwert (Barwert) [€]", zeilen, x => W(x.RestwertBarwert, "N0", kultur));
-            Zeile("Nettobarwert über T [€]", zeilen, x => W(x.Kapitalwert, "N0", kultur));
-            Zeile("Kapitalwert vs. Stamm [€]", zeilen, x => x.IstStamm ? "(Referenz)" : W(x.KapitalwertDiff, "N0", kultur));
-            Zeile("Annuität des KW [€/a]", zeilen, x => x.IstStamm ? "—" : W(x.AnnuitaetKW, "N0", kultur));
-            Zeile("Amortisation [a]", zeilen, x => x.IstStamm ? "—" : W(x.AmortisationJahre, "N1", kultur));
-            if (zeilen.Any(x => x.IRR.HasValue))
-                Zeile("Interner Zinsfuß [%]", zeilen, x => x.IstStamm ? "—" : W(x.IRR, "N1", kultur));
-            Zeile("Wärmegestehungskosten [€/kWh]", zeilen, x => W(x.Gestehungskosten, "N3", kultur));
+            foreach (WirtZeile z in WirtschaftlichkeitZeilen.Kennzahlen(_ergebnisse, _tarifCache))
+            {
+                bool hatWert = zeilen.Any(x => z.IstText
+                    ? !string.IsNullOrEmpty(z.Text(x))
+                    : (x.IstStamm && z.StammAnzeige != null) || (z.Wert != null && z.Wert(x).HasValue));
+                if (!hatWert) continue;
+                Zeile(z.Titel, zeilen, x => z.Anzeige(x, kultur));
+            }
 
             // W3: CO₂-Vermeidung gegenüber getrennter Erzeugung (aus dem Cache;
             // nur für Projekte, deren Wirtschaftlichkeits-Ergebnis zum aktuellen

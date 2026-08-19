@@ -1539,3 +1539,45 @@ bleiben **wortgleich unverändert**.
 | `"KATALOG_GENERATION"`, `"SYSTEM"` (`DbWerte.GESETZ_KATALOG_GENERATION`, `…KLASSE_SYSTEM`) | **Verwaltungszeile** der generationsweisen Nachsaat in `Tab_Gesetzesparameter` — Schlüssel der Persistenzschicht, nie auf dem Bildschirm; die Pflegemaske blendet die Klasse aus. |
 | Die Normbezeichnungen der Herleitung (`§ 7 Abs. 1 KWKG 2025`, `§ 7 Abs. 2 i.V.m. § 6 Abs. 3 Nr. 2 KWKG 2025` …) | Paragrafenzeichen, Zahlen und die amtliche Kurzbezeichnung des Gesetzes — kein übersetzbarer Wortbestand. Sie stehen als Textbaustein im Code und werden in den lokalisierten Rahmen `{3}` eingesetzt. Dasselbe gilt für die Klammer `„(50 kW, 7.476 h/a, 4,00/8,00 ct/kWh, 30.000 h)"` der Modulaufzählung — nur Zahlen und Einheitenzeichen (Muster `KwkgAnlagenauswahl.Klartext`). |
 | Die Beschriftungen von `Form_KwkgModule` | Der Dialog folgt seinem Aufrufer `Form_WirtschaftlichkeitParameter`, und der ist **vollständig** unlokalisiert und im Code aufgebaut. Einzelne lokalisierte Zeilen darin wären keine Lokalisierung, sondern eine Inkonsistenz mehr. Die **Herleitungstexte** kommen dagegen aus `MyResource`, weil dieselben Texte auch im Ergebnis erscheinen. |
+
+---
+
+## Nachtrag zu Etappe E7 — Bericht und Mehrjahrestabelle (19.08.2026)
+
+Etappe E7 stellt die **Kennzahlentabelle der Wirtschaftlichkeit vollständig** auf `MyResource`
+um und legt die Texte der vier neuen Berichtsblöcke an. **81 Schlüssel** kommen hinzu, **sieben**
+vorhandene ändern ihren Wert. Die Umstellung ist bewusst **vollständig** und nicht in Teilen —
+der bisherige Mischzustand (fünfzehn deutsche Literale zwischen sieben lokalisierten Zeilen) war
+das Ergebnis genau solcher Teilumstellungen.
+
+### Geänderte Werte (7)
+
+| Schlüssel | vorher | nachher | Grund |
+|---|---|---|---|
+| `WIRT_ZEILE_ENERGIESTEUER` | Energiesteuer-Gutschrift **Jahr 1** [€/a] | Energiesteuer-Gutschrift [€/a] | Der Zeitbezug gehört in den Tabellenkopf (`WIRT_ZEILE_JAHR1`), nicht in vier von zweiundzwanzig Zeilentiteln. Erst dadurch passt derselbe Schlüssel in Kennzahlen- **und** Mehrjahrestabelle. |
+| `WIRT_ZEILE_STROMST_BEFREIUNG` | … **Jahr 1** … | ohne „Jahr 1" | dito |
+| `WIRT_ZEILE_STROMST_ENTLASTUNG` | … **Jahr 1** … | ohne „Jahr 1" | dito |
+| `WIRT_ZEILE_VERMIEDEN_ARBEIT` | Vermiedene Kosten **—** Arbeit [€/a] | Vermiedene Kosten**,** Arbeit [€/a] **(Ausweis)** | Komma statt Halbgeviertstrich (einheitliche Untergliederung); der Zusatz „(Ausweis)" ist keine Kosmetik — ohne ihn liest ein Prüfer die Zeile als addierbaren Erlös (E5-Protokoll, Übergabepunkt 6). |
+| `WIRT_ZEILE_VERMIEDEN_LEISTUNG` | dito | dito | dito |
+| `WIRT_ZEILE_VERMIEDEN_GESAMT` | Vermiedene Kosten gesamt [€/a] | Vermiedene Kosten, gesamt [€/a] (Ausweis) | dito |
+| `WIRT_ZEILE_AUFSCHLAG` | Aufschläge auf den Strombezug [€/a] | … **(in Energiekosten enthalten)** | E5-Protokoll, Übergabepunkt 7: Wer Energiekosten und Aufschlag addiert, zählt doppelt. |
+
+### Neu (81)
+
+| Gruppe | Schlüssel | Inhalt |
+|---|---|---|
+| Kennzahlzeilen (20) | `WIRT_ZEILE_INVESTITION`, `…BETRIEBSKOSTEN`, `…ENERGIEKOSTEN`, `…STROMKOSTEN_BEZUG`, `…STROMKOSTEN_RESTSTROM`, `…CO2_BEHG`, `…EINSPEISEERLOES`, `…EINSPEISEERLOES_PV`, `…EINSPEISEERLOES_KWK`, `…KWKG`, `…VBH_ELEKTRISCH`, `…RESTWERT`, `…NETTOBARWERT`, `…KAPITALWERT_DIFF`, `…ANNUITAET`, `…AMORTISATION`, `…IRR`, `…GESTEHUNGSKOSTEN`, `…STAMM_REFERENZ`, `…JAHR1` | Die bisher deutschen Literale der Kennzahlentabelle. **Zwei Schlüssel für eine Zeile:** Der Titel der Stromkostenzeile hängt am Tarifmodus — im Rollenmodell trägt sie den **Reststrom**betrag (Kosten *mit* Anlage) und steht direkt neben den vermiedenen Kosten, die sich auf den Bezug *ohne* Anlage beziehen. |
+| Mehrjahrestabelle (16) | `WIRT_MJ_TITEL`, `…HINWEIS`, `…JAHR`, `…INVEST_ERSATZ`, `…BETRIEB`, `…ENERGIE`, `…BEHG`, `…EINSPEISUNG`, `…NETTO`, `…BARWERT`, `…KUMULIERT`, `…RESTWERT_T`, `…PROBE`, `…ENTFAELLT`, `…NACHWEIS_TITEL`, `…NACHWEIS_HINWEIS` | Spaltenköpfe und Erläuterung des neuen Blocks. Die vier **Reihen**namen kommen aus den seit E4 vorhandenen, bis E7 toten `WIRT_REIHE_*`. |
+| Betriebskostenblock (11) | `WIRT_BK_TITEL`, `…HINWEIS`, `…SP_POSITION`, `…SP_GRUPPE`, `…SP_BEMESSUNG`, `…SP_HERLEITUNG`, `…SP_BETRAG`, `…SUMME`, `…SZENARIOWERT`, `…ABWEICHUNG`, `…OHNE_SPALTEN` | Gliederung nach `Kostenart` (Zweck der E3-Spalte). |
+| Kostenarten und Bemessungsarten (10) | `KOSTENART_KAPITALGEBUNDEN`, `…BETRIEBSGEBUNDEN`, `…BEDARFSGEBUNDEN`, `…SONSTIGE`, `…OHNE`; `BEMESSUNG_BETRAG`, `…PROZENT_INVESTITION`, `…EUR_PRO_H`, `…EUR_PRO_KWH`, `…PROZENT_BRENNSTOFFKOSTEN` | **Anzeigetexte** der gleichnamigen Steuerwerte aus `DbWerte`. Der Namensgleichklang ist Absicht und folgt dem Hinweis in `DbWerte.cs`; die Steuerwerte selbst bleiben deutsch, ASCII und eingefroren. |
+| KWKG-Modultabelle (16) | `WIRT_KWKG_MODUL_TITEL`, `…MODUL_HINWEIS`, `WIRT_KWKG_SP_*` (9), `…SATZ_QUELLE_ANLAGE`, `…SATZ_QUELLE_PROJEKT`, `…DECKEL_STAFFEL`, `…ERSCHOEPFT_NIE`, `…HERLEITUNG_ZEILE` | Tabelle statt Aufzählung (E6-Protokoll, Übergabepunkt 1). |
+| Nachweise und Matrix (8) | `WIRT_NACHWEIS_TITEL`, `…TARIF`, `…LAUFHINWEISE`, `WIRT_ERGEBNIS_VERALTET`, `WIRT_MATRIX_BEDARF`, `…BEDARF_HINWEIS` und die beiden Nachweisköpfe | Die Blöcke, die bisher nur in **einer** der beiden Ausgaben standen. |
+
+**Nicht lokalisiert — und warum**
+
+| Wert | Grund |
+|---|---|
+| `"INVESTITION"`, `"BETRIEBSKOSTEN"`, … (`WirtZeile.Schluessel`) und `"INVEST_ERSATZ"`, `"NETTO"`, `"BARWERT"`, `"KUMULIERT"` (`MehrjahresSpalte.Schluessel`) | **Schlüssel**, nicht Anzeige: sprachneutral, ASCII, nur zum Wiederfinden einer Spalte im Renderer (Abschlusszeile der Mehrjahrestabelle). Sie stehen nirgends in der Datenbank und nirgends auf dem Bildschirm. |
+| `Tab_Kostenfaktor.Bezeichnung` und `Tab_ProjektWerte.Gruppe` im Betriebskostenblock | **Datenwerte** des Anwenders („BHKW", „Wartung BHKW"). Sie stehen so in der Datenbank und werden nicht übersetzt — auch nicht im englischen Bericht. |
+| Die Einheitenzeichen der Herleitung (`h/a`, `kWh/a`, `€/h`, `€/kWh`, `%`) | `BetriebskostenCtrl.SatzEinheit` / `…MengenEinheit` — reine Einheitenzeichen ohne Wortbestand, dieselbe Ausnahme wie bisher. |
+| `„Jahres-Bezugsspitze: … (Basis der Leistungspreis-Staffel)"` und die Zonennamen `Winter HT` … | **Bestand**, von E7 nicht angefasst: Die Gesamtlokalisierung des Berichtsmoduls (82 + 18 Literale) ist ausdrücklich außerhalb dieser Etappe. E7 stellt die **Kennzahlentabelle vollständig** um und legt die **neuen** Blöcke von Anfang an lokalisiert an. |
