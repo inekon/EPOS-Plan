@@ -13515,6 +13515,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Jede BHKW-Anlage des Projekts wird mit Heizöl betrieben ({0}) — als Neuanlage nicht mehr förderfähig (KWKG 2025, nur noch Erdgas; Näherung: gilt auch für Bio-Blends); Bonus = 0. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_ALLE_HEIZOEL {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_ALLE_HEIZOEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Jede BHKW-Anlage des Projekts liegt über der Ausschreibungsgrenze von {0} kW ({1}) — der Zuschlag wäre nur über eine Ausschreibung nach § 8a KWKG/KWKAusV zu erlangen; Bonus = 0. ähnelt.
         /// </summary>
         public static string WIRT_KWKG_ALLE_UEBER_GRENZE {
@@ -13524,11 +13533,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Mit Heizöl betrieben und deshalb ohne Zuschlag: {0} (KWKG 2025, Neuanlagen nur noch mit Erdgas; Näherung: gilt auch für Bio-Blends). Die übrigen Anlagen mit zusammen {1} kW rechnen weiter. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_ANLAGE_HEIZOEL {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_ANLAGE_HEIZOEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Über der Ausschreibungsgrenze von {0} kW und deshalb ohne Zuschlag: {1} (der Weg über eine Ausschreibung nach § 8a KWKG/KWKAusV ist nicht abgebildet). Die übrigen Anlagen mit zusammen {2} kW rechnen weiter. ähnelt.
         /// </summary>
         public static string WIRT_KWKG_ANLAGE_UEBER_GRENZE {
             get {
                 return ResourceManager.GetString("WIRT_KWKG_ANLAGE_UEBER_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Das Projekt führt ein Öl-BHKW; welche Anlage damit betrieben wird, ließ sich nicht ermitteln, deshalb greift der Heizöl-Ausschluss ersatzweise auf alle Geräte des Projekts (KWKG 2025, Neuanlagen nur noch mit Erdgas); Bonus = 0. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_HEIZOEL_JE_ANLAGE_UNKLAR {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_HEIZOEL_JE_ANLAGE_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Öl-BHKW ohne Inbetriebnahmedatum: {0} — als Neuanlage wäre der Zuschlag für diese Anlagen ausgeschlossen (KWKG 2025); Datum im Parameterdialog pflegen. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_HEIZOEL_OHNE_IBN {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_HEIZOEL_OHNE_IBN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Das Projekt führt ein Öl-BHKW, aber kein Inbetriebnahmedatum — als Neuanlage wäre der Zuschlag ausgeschlossen (KWKG 2025). Welche Anlage mit Öl betrieben wird, ließ sich nicht ermitteln; Datum im Parameterdialog pflegen. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Keine BHKW-Anlage des Projekts ist zuschlagsberechtigt — über der Ausschreibungsgrenze von {0} kW: {1}; mit Heizöl betrieben: {2}; Bonus = 0. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_KEINE_FOERDERFAEHIG {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_KEINE_FOERDERFAEHIG", resourceCulture);
             }
         }
         
