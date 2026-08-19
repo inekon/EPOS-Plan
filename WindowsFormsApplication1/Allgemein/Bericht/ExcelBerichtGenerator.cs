@@ -257,6 +257,11 @@ namespace WindowsFormsApplication1
             bool mitBehg = alle.Any(x => x.CO2AbgabeJahr > 0);
             bool mitKwkg = alle.Any(x => x.KwkgErloesJahr1 > 0);
             bool mitIrr = alle.Any(x => x.IRR.HasValue);
+            // ETAPPE E4: die drei Steuergutschriften nach derselben Regel — der Wert
+            // bleibt leer, solange KEIN Projekt der Gruppe eine Gutschrift führt.
+            bool mitEnergiesteuer = alle.Any(x => x.EnergiesteuerJahr1 > 0);
+            bool mitStromstBefreiung = alle.Any(x => x.StromsteuerBefreiungJahr1 > 0);
+            bool mitStromstEntlastung = alle.Any(x => x.StromsteuerEntlastungJahr1 > 0);
             var zeilen = new List<Tuple<string, string, Func<WirtschaftlichkeitErgebnis, double?>>>
             {
                 Tuple.Create("Investition I₀ [€]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => (double?)e.Investition)),
@@ -269,6 +274,9 @@ namespace WindowsFormsApplication1
                 // ETAPPE E2 (L6): Bemessungsgrundlage der KWKG-Deckelung — ELEKTRISCHE
                 // Vollbenutzungsstunden; 0 heißt „nicht erhoben" und bleibt leer.
                 Tuple.Create("Vbh elektrisch (KWKG-Basis) [h/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.KwkgVbhElektrisch > 0 ? (double?)e.KwkgVbhElektrisch : null)),
+                Tuple.Create(MyResource.Resource.WIRT_ZEILE_ENERGIESTEUER, "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitEnergiesteuer ? (double?)e.EnergiesteuerJahr1 : null)),
+                Tuple.Create(MyResource.Resource.WIRT_ZEILE_STROMST_BEFREIUNG, "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitStromstBefreiung ? (double?)e.StromsteuerBefreiungJahr1 : null)),
+                Tuple.Create(MyResource.Resource.WIRT_ZEILE_STROMST_ENTLASTUNG, "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitStromstEntlastung ? (double?)e.StromsteuerEntlastungJahr1 : null)),
                 Tuple.Create("Restwert (Barwert) [€]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => (double?)e.RestwertBarwert)),
                 Tuple.Create("Nettobarwert über T [€]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.Kapitalwert)),
                 Tuple.Create("Kapitalwert vs. Stamm [€]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.IstStamm ? null : e.KapitalwertDiff)),
