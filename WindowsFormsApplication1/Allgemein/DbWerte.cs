@@ -310,6 +310,106 @@ namespace WindowsFormsApplication1
         public const string BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN = "PROZENT_BRENNSTOFFKOSTEN";
 
         // =====================================================================
+        // ETAPPE E4 — Projektangaben der Steuerpruefung
+        //   Tab_ProjektWirtschaftlichkeit (Migrationsschritt 20)
+        //
+        //   Die gesetzlichen Bedingungen der Energie- und Stromsteuerentlastung werden
+        //   ERFASST statt angenommen. Alle Werte stehen als Zeichenkette IN der
+        //   Datenbank und werden in SQL damit verglichen; ASCII und Grossbuchstaben wie
+        //   die Katalogschluessel aus Etappe E1, nach der Auslieferung EINGEFROREN.
+        //   Anzeigetexte in MyResource.Resource.STEUER_*.
+        //
+        //   ERGEBNISNEUTRAL: Die Vorbelegung von Schritt 20b ist jeweils der Wert, der
+        //   KEINE Gutschrift ausloest (KEIN_PROD_GEWERBE, KEINE). Ohne ausdrueckliche
+        //   Angabe des Anwenders aendert sich an keiner Bestandsrechnung etwas.
+        // =====================================================================
+
+        /// <summary>
+        /// Unternehmensart: kein produzierendes Gewerbe — <b>Vorbelegung</b> aller
+        /// Bestandszeilen (Migrationsschritt 20b). Weder § 9b StromStG noch § 54
+        /// EnergieStG sind damit anwendbar; die Stromsteuer-Entlastung bleibt 0.
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string UNTERNEHMENSART_KEIN_PROD_GEWERBE = "KEIN_PROD_GEWERBE";
+
+        /// <summary>
+        /// Unternehmensart: Unternehmen des produzierenden Gewerbes im Sinne des
+        /// § 2 Nr. 3 StromStG — Voraussetzung der Entlastung nach § 9b StromStG.
+        /// <inheritdoc cref="UNTERNEHMENSART_KEIN_PROD_GEWERBE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string UNTERNEHMENSART_PROD_GEWERBE = "PROD_GEWERBE";
+
+        /// <summary>
+        /// Unternehmensart: Betrieb der Land- und Forstwirtschaft — nach § 9b StromStG
+        /// dem produzierenden Gewerbe gleichgestellt.
+        /// <inheritdoc cref="UNTERNEHMENSART_KEIN_PROD_GEWERBE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string UNTERNEHMENSART_LAND_FORST = "LAND_FORSTWIRTSCHAFT";
+
+        /// <summary>
+        /// Energiesteuerentlastung: keine — <b>Vorbelegung</b> aller Bestandszeilen
+        /// (Migrationsschritt 20b) und damit der Grund, aus dem E4 fuer Bestandsprojekte
+        /// ergebnisneutral ist.
+        ///
+        /// <para><b>Warum Auswahl und nicht Automatik.</b> § 53 und § 53a schliessen
+        /// einander aus (Dienstvorschrift Energieerzeugung, § 53a Abs. 1 „Vorbehaltlich
+        /// des § 53"), und ob sie sich anteilig kombinieren lassen, ist ungeklaert
+        /// (Grundlagen_KWKG_Energiesteuer_Stromsteuer.md, Abschnitt 6 Punkt 1). Der
+        /// Anwender waehlt die Norm, unter der er den Antrag stellt.</para>
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string ENERGIESTEUER_WAHL_KEINE = "KEINE";
+
+        /// <summary>
+        /// Energiesteuerentlastung nach § 53 EnergieStG (Steuerentlastung fuer die
+        /// Stromerzeugung, Formular 1131) — voller Steuersatz nach § 2.
+        /// <inheritdoc cref="ENERGIESTEUER_WAHL_KEINE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string ENERGIESTEUER_WAHL_53 = "PARAGRAF_53";
+
+        /// <summary>
+        /// Energiesteuerentlastung nach § 53a Abs. 5 EnergieStG (teilweise Entlastung
+        /// fuer die gekoppelte Erzeugung, Formular 1135) — Teilsatz auf den
+        /// Gesamteinsatz, Jahresnutzungsgrad mindestens 70 % vorausgesetzt.
+        /// <inheritdoc cref="ENERGIESTEUER_WAHL_KEINE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string ENERGIESTEUER_WAHL_53A = "PARAGRAF_53A";
+
+        /// <summary>
+        /// Aufteilung des Brennstoffs auf Strom und Waerme: <b>keine Aufteilung</b>, der
+        /// gesamte im BHKW eingesetzte Brennstoff ist entlastungsfaehig —
+        /// <b>Vorbelegung</b> aller Bestandszeilen (Migrationsschritt 20b) und das
+        /// rechtlich belegte Verfahren.
+        ///
+        /// <para><b>Rechtsgrundlage.</b> § 53 Abs. 2 Satz 1 EnergieStG: Energieerzeugnisse
+        /// gelten als zur Stromerzeugung verwendet, soweit sie „unmittelbar am
+        /// Energieumwandlungsprozess teilnehmen". Beim Motor-BHKW ist das der gesamte
+        /// zugefuehrte Brennstoff; die Dienstvorschrift Energieerzeugung sagt zum
+        /// Schaubild § 53 Abs. 1 ausdruecklich „Waerme – genutzt oder ungenutzt – wird
+        /// nicht betrachtet". Der „Anteil" des § 53 Abs. 2 Satz 2 betrifft die
+        /// MECHANISCHE Energie an der Welle (Generator neben Verdichter), nicht die
+        /// Waermeauskopplung. Herzurechnen ist ausschliesslich Brennstoff, der in
+        /// Kessel, Spitzenlasterzeuger, Zusatzfeuerung oder Abluftbehandlung geht — und
+        /// genau den fuehrt die Simulation ohnehin getrennt.</para>
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string AUFTEILUNG_VOLLER_BRENNSTOFF = "VOLLER_BRENNSTOFF";
+
+        /// <summary>
+        /// Aufteilung des Brennstoffs auf Strom und Waerme: <b>energetisch</b>,
+        /// Stromanteil = Brennstoff × Strom / (Strom + Waerme).
+        ///
+        /// <para><b>Kein Rechtsverfahren, sondern eine bewusst konservative Variante.</b>
+        /// Das Energiesteuerrecht kennt diese Aufteilung nicht (Recherche vom
+        /// 19.08.2026, Protokoll W4_E4). Sie steht zur Wahl, weil sie die Auslegung
+        /// abbildet, von der die Grundlagen bis dahin ausgingen, und weil sie die
+        /// Untergrenze der Gutschrift zeigt — rund Faktor 2 bis 2,5 unter dem vollen
+        /// Brennstoffeinsatz.</para>
+        /// <inheritdoc cref="AUFTEILUNG_VOLLER_BRENNSTOFF" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string AUFTEILUNG_ENERGETISCH = "ENERGETISCH";
+
+        // =====================================================================
         // Die zwoelf Betriebskostenpositionen nach VDI 2067
         //   Tab_Kostenfaktor.Bezeichnung (IsMainComponent = False), verwendet als
         //   Unterposition der Kategorie 2 in Tab_ProjektWerte

@@ -4910,4 +4910,85 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="VDI_GESPEICHERT" xml:space="preserve">
     <value>{0} Betriebskostenpositionen nach VDI 2067 gespeichert.</value>
   </data>
+  <data name="STEUER_ENERGIEST_NICHT_GEWAEHLT" xml:space="preserve">
+    <value>Energiesteuer: keine Entlastung gewählt — § 53 oder § 53a EnergieStG im Parameterdialog festlegen; Gutschrift = 0.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_TRAEGER_UNKLAR" xml:space="preserve">
+    <value>Energiesteuer: {0} — dem Energieträger ist kein Steuersatz zugeordnet (Träger der Anlage in der Kostenmaske prüfen); Gutschrift = 0.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_SATZ_FEHLT" xml:space="preserve">
+    <value>Energiesteuer: {0} — der Katalogsatz {1} ist nicht gepflegt (Administration → Gesetzliche Parameter); Gutschrift = 0.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_MENGE_UNKLAR" xml:space="preserve">
+    <value>Energiesteuer: {0} — der auf die Stromerzeugung entfallende Brennstoff ist 0 (Strom- oder Wärmemenge des Laufs fehlt); Gutschrift = 0.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_EINHEIT_UNKLAR" xml:space="preserve">
+    <value>Energiesteuer: {0} — die Brennstoffmenge lässt sich nicht in die gesetzliche Einheit {1} umrechnen (Abrechnungseinheit {2}, Heizwert {3} kWh je Einheit; für Kilogramm fehlt die Dichte); Gutschrift = 0.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_53A_NUTZUNGSGRAD" xml:space="preserve">
+    <value>Energiesteuer § 53a EnergieStG: Jahresnutzungsgrad {0} % unter der Schwelle von {1} %; Gutschrift = 0.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_53A_NUTZUNGSGRAD_FEHLT" xml:space="preserve">
+    <value>Energiesteuer § 53a EnergieStG: kein Jahresnutzungsgrad erfasst (Schwelle {0} %) — im Parameterdialog pflegen; Gutschrift = 0.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_HO" xml:space="preserve">
+    <value>Energiesteuer: Erdgasmenge brennwertbezogen bemessen — Ho/Hi = {0} aus den gepflegten Werten des Energieträgers.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_HO_FEHLT" xml:space="preserve">
+    <value>Energiesteuer: {0} — kein Brennwert (Ho) gepflegt, deshalb heizwertbezogen gerechnet; die Entlastung fällt dadurch rund 10 % zu niedrig aus.</value>
+  </data>
+  <data name="STEUER_STROMST_HOCHEFFIZIENZ" xml:space="preserve">
+    <value>Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: Hocheffizienz nicht nachgewiesen — Angabe im Parameterdialog; Befreiung = 0.</value>
+  </data>
+  <data name="STEUER_STROMST_RAEUMLICH" xml:space="preserve">
+    <value>Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: räumlicher Zusammenhang (bis {0} km nach § 12b StromStV) nicht bestätigt; Befreiung = 0.</value>
+  </data>
+  <data name="STEUER_STROMST_EIGEN_UNKLAR" xml:space="preserve">
+    <value>Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: der KWK-Eigenverbrauch ist nicht bestimmbar — im Lauf fehlen die Stundenreihen, und „alles Eigenverbrauch" wäre für eine Steuerbefreiung keine tragfähige Näherung; Befreiung = 0.</value>
+  </data>
+  <data name="STEUER_STROMST_LEISTUNG" xml:space="preserve">
+    <value>Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: über der elektrischen Nennleistung von {0} kW je Anlage und deshalb ohne Befreiung: {1}. Die übrigen Anlagen mit zusammen {2} kW rechnen weiter.</value>
+  </data>
+  <data name="STEUER_STROMST_CO2" xml:space="preserve">
+    <value>Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: über dem CO₂-Grenzwert von {0} g je kWh Energieertrag und deshalb ohne Befreiung: {1}. Die übrigen Anlagen mit zusammen {2} kW rechnen weiter.</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_UNKLAR" xml:space="preserve">
+    <value>Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: die direkten CO₂-Emissionen je kWh Energieertrag sind nicht bestimmbar ({0}) — Emissionsfaktor des Trägers im Katalog prüfen; für diese Anlagen keine Befreiung.</value>
+  </data>
+  <data name="STEUER_STROMST_9B_UNTERNEHMENSART" xml:space="preserve">
+    <value>Stromsteuer § 9b StromStG: weder produzierendes Gewerbe noch Land- und Forstwirtschaft — Unternehmensart im Parameterdialog erfassen; Entlastung = 0.</value>
+  </data>
+  <data name="STEUER_STROMST_9B_SOCKEL" xml:space="preserve">
+    <value>Stromsteuer § 9b StromStG: {0} € Entlastung erreichen den Sockelbetrag von {1} € je Kalenderjahr nicht; Entlastung = 0.</value>
+  </data>
+  <data name="STEUER_SATZ_FEHLT" xml:space="preserve">
+    <value>Steuer: der Katalogsatz {0} ist nicht gepflegt (Administration → Gesetzliche Parameter); Gutschrift = 0.</value>
+  </data>
+  <data name="STEUER_HERKUNFT_FORMAT" xml:space="preserve">
+    <value>{0} = {1} {2}, gültig ab {3} ({4}) — {5}</value>
+  </data>
+  <data name="WIRT_ZEILE_ENERGIESTEUER" xml:space="preserve">
+    <value>Energiesteuer-Gutschrift Jahr 1 [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_STROMST_BEFREIUNG" xml:space="preserve">
+    <value>Stromsteuer-Befreiung Jahr 1 [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_STROMST_ENTLASTUNG" xml:space="preserve">
+    <value>Stromsteuer-Entlastung Jahr 1 [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_STEUER_HERKUNFT" xml:space="preserve">
+    <value>Herkunft der Steuersätze</value>
+  </data>
+  <data name="WIRT_REIHE_KWKG" xml:space="preserve">
+    <value>KWK-Zuschlag</value>
+  </data>
+  <data name="WIRT_REIHE_ENERGIESTEUER" xml:space="preserve">
+    <value>Energiesteuer-Gutschrift</value>
+  </data>
+  <data name="WIRT_REIHE_STROMSTEUER_BEFREIUNG" xml:space="preserve">
+    <value>Stromsteuer-Befreiung</value>
+  </data>
+  <data name="WIRT_REIHE_STROMSTEUER_ENTLASTUNG" xml:space="preserve">
+    <value>Stromsteuer-Entlastung</value>
+  </data>
 </root>

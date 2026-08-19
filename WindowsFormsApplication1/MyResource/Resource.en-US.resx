@@ -4895,4 +4895,85 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="VDI_GESPEICHERT" xml:space="preserve">
     <value>{0} operating cost items to VDI 2067 saved.</value>
   </data>
+  <data name="STEUER_ENERGIEST_NICHT_GEWAEHLT" xml:space="preserve">
+    <value>Energy tax: no relief selected — choose § 53 or § 53a EnergieStG in the parameter dialogue; credit = 0.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_TRAEGER_UNKLAR" xml:space="preserve">
+    <value>Energy tax: {0} — no tax rate is assigned to the energy carrier (check the plant's carrier in the cost dialogue); credit = 0.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_SATZ_FEHLT" xml:space="preserve">
+    <value>Energy tax: {0} — catalogue rate {1} is not maintained (Administration → Statutory parameters); credit = 0.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_MENGE_UNKLAR" xml:space="preserve">
+    <value>Energy tax: {0} — the fuel attributable to power generation is 0 (the run has no electricity or heat figure); credit = 0.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_EINHEIT_UNKLAR" xml:space="preserve">
+    <value>Energy tax: {0} — the fuel quantity cannot be converted into the statutory unit {1} (billing unit {2}, calorific value {3} kWh per unit; density is missing for kilograms); credit = 0.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_53A_NUTZUNGSGRAD" xml:space="preserve">
+    <value>Energy tax § 53a EnergieStG: annual utilisation rate {0} % is below the {1} % threshold; credit = 0.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_53A_NUTZUNGSGRAD_FEHLT" xml:space="preserve">
+    <value>Energy tax § 53a EnergieStG: no annual utilisation rate recorded (threshold {0} %) — please maintain it in the parameter dialogue; credit = 0.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_HO" xml:space="preserve">
+    <value>Energy tax: natural gas quantity assessed on gross calorific value — Hs/Hi = {0} from the carrier's maintained values.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_HO_FEHLT" xml:space="preserve">
+    <value>Energy tax: {0} — no gross calorific value (Hs) maintained, therefore calculated on the net value; the relief is about 10 % too low as a result.</value>
+  </data>
+  <data name="STEUER_STROMST_HOCHEFFIZIENZ" xml:space="preserve">
+    <value>Electricity tax § 9 (1) no. 3 StromStG: high efficiency not evidenced — record it in the parameter dialogue; exemption = 0.</value>
+  </data>
+  <data name="STEUER_STROMST_RAEUMLICH" xml:space="preserve">
+    <value>Electricity tax § 9 (1) no. 3 StromStG: spatial connection (up to {0} km under § 12b StromStV) not confirmed; exemption = 0.</value>
+  </data>
+  <data name="STEUER_STROMST_EIGEN_UNKLAR" xml:space="preserve">
+    <value>Electricity tax § 9 (1) no. 3 StromStG: CHP self-consumption cannot be determined — the run has no hourly series, and “all self-consumed” is not a sound approximation for a tax exemption; exemption = 0.</value>
+  </data>
+  <data name="STEUER_STROMST_LEISTUNG" xml:space="preserve">
+    <value>Electricity tax § 9 (1) no. 3 StromStG: above the rated electrical output of {0} kW per plant and therefore without exemption: {1}. The remaining plants totalling {2} kW continue to be counted.</value>
+  </data>
+  <data name="STEUER_STROMST_CO2" xml:space="preserve">
+    <value>Electricity tax § 9 (1) no. 3 StromStG: above the CO₂ limit of {0} g per kWh of energy output and therefore without exemption: {1}. The remaining plants totalling {2} kW continue to be counted.</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_UNKLAR" xml:space="preserve">
+    <value>Electricity tax § 9 (1) no. 3 StromStG: direct CO₂ emissions per kWh of energy output cannot be determined ({0}) — check the carrier's emission factor in the catalogue; no exemption for these plants.</value>
+  </data>
+  <data name="STEUER_STROMST_9B_UNTERNEHMENSART" xml:space="preserve">
+    <value>Electricity tax § 9b StromStG: neither manufacturing industry nor agriculture and forestry — record the type of business in the parameter dialogue; relief = 0.</value>
+  </data>
+  <data name="STEUER_STROMST_9B_SOCKEL" xml:space="preserve">
+    <value>Electricity tax § 9b StromStG: relief of {0} € does not reach the {1} € base amount per calendar year; relief = 0.</value>
+  </data>
+  <data name="STEUER_SATZ_FEHLT" xml:space="preserve">
+    <value>Tax: catalogue rate {0} is not maintained (Administration → Statutory parameters); credit = 0.</value>
+  </data>
+  <data name="STEUER_HERKUNFT_FORMAT" xml:space="preserve">
+    <value>{0} = {1} {2}, valid from {3} ({4}) — {5}</value>
+  </data>
+  <data name="WIRT_ZEILE_ENERGIESTEUER" xml:space="preserve">
+    <value>Energy tax credit year 1 [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_STROMST_BEFREIUNG" xml:space="preserve">
+    <value>Electricity tax exemption year 1 [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_STROMST_ENTLASTUNG" xml:space="preserve">
+    <value>Electricity tax relief year 1 [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_STEUER_HERKUNFT" xml:space="preserve">
+    <value>Source of the tax rates</value>
+  </data>
+  <data name="WIRT_REIHE_KWKG" xml:space="preserve">
+    <value>CHP bonus</value>
+  </data>
+  <data name="WIRT_REIHE_ENERGIESTEUER" xml:space="preserve">
+    <value>Energy tax credit</value>
+  </data>
+  <data name="WIRT_REIHE_STROMSTEUER_BEFREIUNG" xml:space="preserve">
+    <value>Electricity tax exemption</value>
+  </data>
+  <data name="WIRT_REIHE_STROMSTEUER_ENTLASTUNG" xml:space="preserve">
+    <value>Electricity tax relief</value>
+  </data>
 </root>
