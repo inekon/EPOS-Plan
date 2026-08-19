@@ -2,6 +2,8 @@ using System;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.IO;
+using System.Net.Http;
+using System.Text.Json;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -37,6 +39,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die jeweils geltende Fassung steht online; die App zeigt eine Kopie.</summary>
         private const string ONLINE_FASSUNG = "https://epos-plan.de/agb/";
+
+        /// <summary>
+        /// Dieselbe Seite über die WordPress-Schnittstelle - liefert den reinen
+        /// Vertragstext ohne Menü und Fußbereich, dazu das Änderungsdatum.
+        /// </summary>
+        private const string ONLINE_QUELLE =
+            "https://epos-plan.de/wp-json/wp/v2/pages?slug=agb&_fields=modified,content";
 
         private TabControl _register;
         private RichTextBox _text;
@@ -157,8 +166,12 @@ namespace WindowsFormsApplication1
                 AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 BackColor = Color.Transparent
             };
+            Button btnWaehlen = new Button { Text = "Datei wählen...", Width = 130, Height = 26, Margin = new Padding(6, 0, 0, 0) };
+            btnWaehlen.Click += (s, e) => LizenzDateiWaehlen();
+
             rechts.Controls.Add(btnGroesser);
             rechts.Controls.Add(btnKleiner);
+            rechts.Controls.Add(btnWaehlen);
 
             werkzeuge.Controls.Add(links);
             werkzeuge.Controls.Add(rechts);
@@ -179,7 +192,7 @@ namespace WindowsFormsApplication1
             _register.TabPages.Add(seiteKomponenten);
 
             // --- Fußzeile ---
-            Panel unten = new Panel { Dock = DockStyle.Bottom, Height = 52, Padding = new Padding(12, 10, 12, 10) };
+            Panel unten = new Panel { Dock = DockStyle.Bottom, Height = 68, Padding = new Padding(12, 10, 12, 10) };
 
             _lblQuelle = new Label
             {
@@ -205,8 +218,8 @@ namespace WindowsFormsApplication1
             Button btnSpeichern = new Button { Text = "Speichern unter...", Width = 140, Height = 30, Margin = new Padding(6, 0, 0, 0) };
             btnSpeichern.Click += (s, e) => SpeichernUnter();
 
-            Button btnWaehlen = new Button { Text = "Vereinbarung wählen...", Width = 170, Height = 30, Margin = new Padding(6, 0, 0, 0) };
-            btnWaehlen.Click += (s, e) => LizenzDateiWaehlen();
+            Button btnAktivieren = new Button { Text = "Lizenz aktivieren...", Width = 160, Height = 30, Margin = new Padding(6, 0, 0, 0) };
+            btnAktivieren.Click += (s, e) => LizenzVerwaltungOeffnen();
 
             if (_zustimmungAbfragen)
             {
@@ -233,7 +246,7 @@ namespace WindowsFormsApplication1
                 schalter.Controls.Add(btnAblehnen);
                 schalter.Controls.Add(btnDrucken);
                 schalter.Controls.Add(btnSpeichern);
-                schalter.Controls.Add(btnWaehlen);
+                schalter.Controls.Add(btnAktivieren);
 
                 this.AcceptButton = btnZustimmen;
                 this.CancelButton = btnAblehnen;
@@ -254,7 +267,7 @@ namespace WindowsFormsApplication1
                 schalter.Controls.Add(btnSchliessen);
                 schalter.Controls.Add(btnDrucken);
                 schalter.Controls.Add(btnSpeichern);
-                schalter.Controls.Add(btnWaehlen);
+                schalter.Controls.Add(btnAktivieren);
 
                 this.AcceptButton = btnSchliessen;
                 this.CancelButton = btnSchliessen;
@@ -291,35 +304,35 @@ namespace WindowsFormsApplication1
         /// <summary>Sucht die Lizenzdatei und lädt sie in die Anzeige.</summary>
         private void LizenzLaden()
         {
-            System.Collections.Generic.List<string> gesucht = new System.Collections.Generic.List<string>();
-            string treffer = DateiSuchen(gesucht);
+            // Eine ausdrücklich gewählte Datei hat Vorrang, sonst gilt die
+            // Fassung von epos-plan.de.
+            string treffer = DateiSuchen(null);
 
             if (treffer == null)
             {
-                _text.Text =
-                    "Die Lizenzvereinbarung liegt auf epos-plan.de." + Environment.NewLine +
-                    "Verbindlich ist immer die dort veröffentlichte Fassung mit Stand-Datum:" + Environment.NewLine +
-                    "  " + ONLINE_FASSUNG + Environment.NewLine + Environment.NewLine +
-                    "Auf diesem Rechner liegt keine Kopie. Wenn Sie eine anzeigen möchten," + Environment.NewLine +
-                    "wählen Sie die Datei unten über \"Vereinbarung wählen...\" aus." + Environment.NewLine + Environment.NewLine +
-                    "Nicht zu verwechseln: Lizenzschlüssel und Lizenzdatei (.lic) für die" + Environment.NewLine +
-                    "Freischaltung dieses Arbeitsplatzes gehören nicht hierher, sondern unter" + Environment.NewLine +
-                    "Administration - Lizenz." + Environment.NewLine + Environment.NewLine +
-                    "Ohne Auswahl wird neben dem Programm gesucht, nach:" + Environment.NewLine +
-                    "  - " + DATEINAMEN[0] + Environment.NewLine +
-                    "  - " + DATEINAMEN[1] + Environment.NewLine + Environment.NewLine +
-                    "Durchsuchte Verzeichnisse:" + Environment.NewLine +
-                    string.Join(Environment.NewLine, gesucht) + Environment.NewLine + Environment.NewLine +
-                    "Fragen zur Lizenz beantwortet:" + Environment.NewLine +
-                    "INEKON - Intelligente Energiekonzepte, Dr. Dirk Engelmann," + Environment.NewLine +
-                    "Breitwiesenstr. 13, 70565 Stuttgart";
+                string stand;
+                string zwischenspeicher = ZwischenspeicherLesen(out stand);
 
-                _lblQuelle.Text = "Quelle: keine örtliche Kopie - geltende Fassung unter " + ONLINE_FASSUNG;
+                if (!string.IsNullOrEmpty(zwischenspeicher))
+                {
+                    _text.Text = zwischenspeicher;
+                    QuelleSetzen(ONLINE_FASSUNG, stand);
+                }
+                else
+                {
+                    _text.Text =
+                        "Die Lizenzvereinbarung wird von epos-plan.de geladen..." + Environment.NewLine + Environment.NewLine +
+                        "Besteht keine Verbindung, finden Sie die verbindliche Fassung unter" + Environment.NewLine +
+                        "  " + ONLINE_FASSUNG;
+                    QuelleSetzen(ONLINE_FASSUNG, null);
+                }
+
+                OnlineFassungHolen();
                 return;
             }
 
             _gefundeneDatei = treffer;
-            _lblQuelle.Text = "Quelle: " + treffer;
+            QuelleSetzen(treffer, null);
 
             try
             {
@@ -518,6 +531,160 @@ namespace WindowsFormsApplication1
         /// Durchsucht die üblichen Ablageorte nach der Lizenzdatei und
         /// protokolliert dabei die geprüften Verzeichnisse.
         /// </summary>
+        /// <summary>
+        /// Holt die geltende Fassung von epos-plan.de und legt sie örtlich ab.
+        /// Läuft im Hintergrund; scheitert der Abruf, bleibt der zuletzt
+        /// geholte Stand stehen - der Dialog soll auch ohne Netz etwas zeigen.
+        /// Übertragen werden keine Projekt- oder Kundendaten, nur ein Seitenabruf.
+        /// </summary>
+        private async void OnlineFassungHolen()
+        {
+            try
+            {
+                string json;
+                using (HttpClient http = new HttpClient())
+                {
+                    http.Timeout = TimeSpan.FromSeconds(20);
+                    http.DefaultRequestHeaders.Add("User-Agent", "EPOS-Plan");
+                    json = await http.GetStringAsync(ONLINE_QUELLE);
+                }
+
+                string text = "";
+                string stand = null;
+                using (JsonDocument doc = JsonDocument.Parse(json))
+                {
+                    JsonElement wurzel = doc.RootElement;
+                    if (wurzel.ValueKind != JsonValueKind.Array || wurzel.GetArrayLength() == 0) return;
+
+                    JsonElement seite = wurzel[0];
+                    if (seite.TryGetProperty("content", out JsonElement inhalt) &&
+                        inhalt.TryGetProperty("rendered", out JsonElement gerendert))
+                    {
+                        text = HtmlZuText(gerendert.GetString());
+                    }
+                    if (seite.TryGetProperty("modified", out JsonElement geaendert))
+                    {
+                        stand = StandFormatieren(geaendert.GetString());
+                    }
+                }
+
+                // Ein paar Zeilen wären kein Vertragstext - dann lieber den
+                // vorhandenen Stand behalten als ihn durch Bruchstücke ersetzen.
+                if (text.Length < 2000) return;
+
+                ZwischenspeicherSchreiben(text, stand);
+
+                if (!IsDisposed && string.IsNullOrEmpty(_gefundeneDatei))
+                {
+                    _text.Text = text;
+                    QuelleSetzen(ONLINE_FASSUNG, stand);
+                }
+            }
+            catch
+            {
+                // ohne Netz bleibt der Zwischenspeicher stehen
+            }
+        }
+
+        /// <summary>HTML der Vertragsseite in lesbaren Fließtext umsetzen.</summary>
+        private static string HtmlZuText(string html)
+        {
+            if (string.IsNullOrEmpty(html)) return "";
+
+            string s = html;
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"(?is)<(script|style)[^>]*>.*?</\1>", "");
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"(?i)<br\s*/?>", "\n");
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"(?i)<li[^>]*>", "  - ");
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"(?i)<h[1-6][^>]*>", "\n");
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"(?i)</(p|div|li|tr|h[1-6])>", "\n");
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"<[^>]+>", "");
+            s = System.Net.WebUtility.HtmlDecode(s);
+
+            s = s.Replace("\r\n", "\n").Replace('\r', '\n');
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"[ \t]+\n", "\n");
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"\n{3,}", "\n\n");
+            return s.Trim().Replace("\n", Environment.NewLine);
+        }
+
+        /// <summary>"2026-08-13T22:08:02" wird zu "13.08.2026".</summary>
+        private static string StandFormatieren(string roh)
+        {
+            if (string.IsNullOrEmpty(roh)) return null;
+            DateTime wert;
+            return DateTime.TryParse(roh, out wert) ? wert.ToString("dd.MM.yyyy") : roh;
+        }
+
+        /// <summary>Ablage neben den übrigen Lizenzdaten in %AppData%\wp-plan.</summary>
+        private static string ZwischenspeicherDatei(string name)
+        {
+            string pfad = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "wp-plan");
+            Directory.CreateDirectory(pfad);
+            return Path.Combine(pfad, name);
+        }
+
+        private static string ZwischenspeicherLesen(out string stand)
+        {
+            stand = null;
+            try
+            {
+                string textdatei = ZwischenspeicherDatei("lizenztext.txt");
+                if (!File.Exists(textdatei)) return "";
+
+                string standdatei = ZwischenspeicherDatei("lizenztext-stand.txt");
+                if (File.Exists(standdatei)) stand = File.ReadAllText(standdatei).Trim();
+
+                return File.ReadAllText(textdatei);
+            }
+            catch { return ""; }
+        }
+
+        private static void ZwischenspeicherSchreiben(string text, string stand)
+        {
+            try
+            {
+                File.WriteAllText(ZwischenspeicherDatei("lizenztext.txt"), text);
+                File.WriteAllText(ZwischenspeicherDatei("lizenztext-stand.txt"), stand ?? "");
+            }
+            catch { }
+        }
+
+        /// <summary>Fußzeile: Lizenzstand dieses Arbeitsplatzes und Herkunft des Textes.</summary>
+        private void QuelleSetzen(string quelle, string stand)
+        {
+            string zweite = "Quelle: " + quelle;
+            if (!string.IsNullOrEmpty(stand)) zweite += "   ·   Stand " + stand;
+
+            string status;
+            try { status = LizenzManager.StatusText(); }
+            catch { status = "Status nicht ermittelbar"; }
+
+            _lblQuelle.Text = "Lizenz: " + status + Environment.NewLine + zweite;
+        }
+
+        /// <summary>
+        /// Öffnet die Lizenzverwaltung (Schlüssel, .lic-Datei, Testversion) und
+        /// zieht danach den Status nach. Die Aktivierung selbst liegt bewusst
+        /// nur dort - zwei Eingabewege für denselben Vorgang wären eine Falle.
+        /// </summary>
+        private void LizenzVerwaltungOeffnen()
+        {
+            try
+            {
+                using (Form_LizenzVerwaltung frm = new Form_LizenzVerwaltung())
+                    frm.ShowDialog(this);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "Die Lizenzverwaltung konnte nicht geöffnet werden:" +
+                    Environment.NewLine + ex.Message, this.Text,
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            QuelleSetzen(string.IsNullOrEmpty(_gefundeneDatei) ? ONLINE_FASSUNG : _gefundeneDatei, null);
+        }
+
         /// <summary>
         /// Lässt den Anwender die Lizenzdatei auswählen und merkt sich den Pfad.
         /// Nötig, weil die Datei nicht zwingend neben dem Programm liegt; ohne

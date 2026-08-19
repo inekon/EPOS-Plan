@@ -1,0 +1,86 @@
+<?php
+/**
+ * Plugin Name:       EPOS-Lizenz
+ * Plugin URI:        https://epos-plan.de
+ * Description:       Lizenzverwaltung für EPOS-Plan: zeitlich befristete Lizenzen (Demo / Person / Firma), REST-API für die Desktop-Anwendung, signierte Lizenz-Tokens (Ed25519), Frontend-Portal zur Selbstverwaltung.
+ * Version:           1.3.0
+ * Author:            INEKON
+ * Requires at least: 6.0
+ * Requires PHP:      7.4
+ * Text Domain:       epos-lizenz
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+define( 'EPOS_LIZENZ_VERSION', '1.3.0' );
+define( 'EPOS_LIZENZ_DIR', plugin_dir_path( __FILE__ ) );
+define( 'EPOS_LIZENZ_URL', plugin_dir_url( __FILE__ ) );
+
+require_once EPOS_LIZENZ_DIR . 'includes/class-epos-schluessel.php';
+require_once EPOS_LIZENZ_DIR . 'includes/class-epos-token.php';
+require_once EPOS_LIZENZ_DIR . 'includes/class-epos-geraete.php';
+require_once EPOS_LIZENZ_DIR . 'includes/class-epos-lizenz-cpt.php';
+require_once EPOS_LIZENZ_DIR . 'includes/class-epos-rest.php';
+require_once EPOS_LIZENZ_DIR . 'includes/class-epos-mail.php';
+require_once EPOS_LIZENZ_DIR . 'includes/class-epos-portal.php';
+require_once EPOS_LIZENZ_DIR . 'includes/class-epos-profil.php';
+require_once EPOS_LIZENZ_DIR . 'includes/class-epos-woocommerce.php';
+
+/**
+ * Standard-Optionen.
+ */
+function epos_lizenz_defaults() {
+	return array(
+		'token_tage'        => 45,  // Offline-Leine: Gültigkeit eines Tokens
+		'geraete_je_nutzer' => 3,   // max. registrierte Geräte je Benutzer
+		'trial_tage'        => 30,  // Laufzeit der Demoversion
+		'kulanz_tage'       => 14,  // Kulanzfenster nach Lizenzende (nur Anzeige im Token)
+		'portal_seite'      => 0,   // Seiten-ID des Frontend-Portals
+	);
+}
+
+function epos_lizenz_option( $key ) {
+	$opts = wp_parse_args( (array) get_option( 'epos_lizenz_optionen', array() ), epos_lizenz_defaults() );
+	return isset( $opts[ $key ] ) ? $opts[ $key ] : null;
+}
+
+/**
+ * Aktivierung: Rollen, Geräte-Tabelle, Schlüsselpaar.
+ */
+function epos_lizenz_aktivierung() {
+	// Rollen
+	add_role( 'epos_benutzer', 'EPOS-Plan Benutzer', array( 'read' => true ) );
+	add_role( 'epos_firmenadmin', 'EPOS-Plan Firmen-Admin', array( 'read' => true ) );
+
+	Epos_Geraete::tabelle_anlegen();
+	Epos_Token::schluesselpaar_sicherstellen();
+
+	if ( false === get_option( 'epos_lizenz_optionen', false ) ) {
+		add_option( 'epos_lizenz_optionen', epos_lizenz_defaults() );
+	}
+
+	Epos_Lizenz_Cpt::registrieren();
+	Epos_Woocommerce::endpunkt_registrieren();
+	flush_rewrite_rules();
+}
+register_activation_hook( __FILE__, 'epos_lizenz_aktivierung' );
+
+function epos_lizenz_deaktivierung() {
+	flush_rewrite_rules();
+}
+register_deactivation_hook( __FILE__, 'epos_lizenz_deaktivierung' );
+
+// Init
+add_action( 'init', array( 'Epos_Lizenz_Cpt', 'registrieren' ) );
+add_action( 'init', array( 'Epos_Portal', 'init' ) );
+add_action( 'init', array( 'Epos_Profil', 'init' ) );
+add_action( 'init', array( 'Epos_Woocommerce', 'init' ) );
+add_action( 'init', array( 'Epos_Vertrag', 'init' ) );
+add_action( 'rest_api_init', array( 'Epos_Rest', 'routen_registrieren' ) );
+
+if ( is_admin() ) {
+	require_once EPOS_LIZENZ_DIR . 'admin/class-epos-admin.php';
+	Epos_Admin::init();
+}
