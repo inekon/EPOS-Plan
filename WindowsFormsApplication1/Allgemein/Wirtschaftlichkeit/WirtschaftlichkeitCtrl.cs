@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
+using System.Text;
 
 namespace WindowsFormsApplication1
 {
@@ -34,17 +35,119 @@ namespace WindowsFormsApplication1
         private readonly Dictionary<int, ReferenzkesselInfo> _refKesselCache =
             new Dictionary<int, ReferenzkesselInfo>();   // Review 11: LadeParameter wird oft gerufen
 
+        /// <summary>Anlagenzeilen der BHKW je Projekt (Nachtrag zu E2: Prüfung je Anlage).</summary>
+        private readonly Dictionary<int, List<BhkwAnlage>> _anlagenCache =
+            new Dictionary<int, List<BhkwAnlage>>();
+
+        /// <summary>
+        /// Die beiden Nachschlagewerke des Heizöl-Ausschlusses (Nachtrag 2 zu E2), je
+        /// Berechne-Lauf einmal gelesen — sie sind projektunabhängige Katalogtabellen:
+        /// <c>Tab_Brennstoff_Stamm.ID → ID_Kategorie</c> und
+        /// <c>energy_carrier.id → ID_Brennstoff</c>. <c>null</c> = noch nicht gelesen.
+        /// </summary>
+        private Dictionary<int, int> _brennstoffKategorie;
+
+        /// <inheritdoc cref="_brennstoffKategorie"/>
+        private Dictionary<int, int> _carrierBrennstoff;
+
+        /// <summary>Lesefassade auf Tab_Gesetzesparameter (E1); eine Instanz je Berechne-Lauf.</summary>
+        private GesetzKatalog _gesetze;
+
         public const string TAB_PARAMETER = "Tab_ProjektWirtschaftlichkeit";
         public const string TAB_ERGEBNIS = "Tab_ErgebnisWirtschaftlichkeit";
         public const string TAB_SENS = "Tab_ErgebnisWirtSensitivitaet";
         public const string TAB_TARIF = "Tab_ProjektTarif";
         public const string TAB_MATRIX = "Tab_ErgebnisStromMatrix";
-        public const string TAB_KWKG_STAFFEL = "Tab_KWKG_Staffel";
+
+        /// <summary>ETAPPE E2 (L6): Spalte der erreichten elektrischen
+        /// Vollbenutzungsstunden in <see cref="TAB_ERGEBNIS"/>. EINE Wahrheit für
+        /// Anlage, Schreib- und Leseweg.</summary>
+        public const string SPALTE_KWKG_VBH_EL = "KWKGVbhElektrisch";
+
+        /// <summary>
+        /// ETAPPE E4: die drei Steuergutschriften des ersten Betrachtungsjahres und die
+        /// Herkunft der verwendeten Sätze in <see cref="TAB_ERGEBNIS"/>.
+        ///
+        /// <para><b>Warum über <c>SpalteSicher</c> und nicht über einen
+        /// Migrationsschritt.</b> Dieses Modul führt seine ERGEBNIStabelle seit W1 selbst
+        /// und hat sie so schon zwanzigmal additiv nachgerüstet — zuletzt in E2 mit
+        /// <see cref="SPALTE_KWKG_VBH_EL"/>. Ein Migrationsschritt dafür wäre der dritte
+        /// Mechanismus für EINE Tabelle. Die PARAMETERtabelle geht denselben Weg
+        /// zusätzlich über Migrationsschritt 20 — dort verlangt der Auftrag den
+        /// Schemastand, und dort ist er auch fachlich richtig: Es sind Eingabedaten des
+        /// Anwenders, keine wiederherstellbaren Rechenergebnisse.</para>
+        /// </summary>
+        public const string SPALTE_ENERGIESTEUER = "EnergiesteuerErloes";
+
+        /// <inheritdoc cref="SPALTE_ENERGIESTEUER"/>
+        public const string SPALTE_STROMST_BEFREIUNG = "StromsteuerBefreiung";
+
+        /// <inheritdoc cref="SPALTE_ENERGIESTEUER"/>
+        public const string SPALTE_STROMST_ENTLASTUNG = "StromsteuerEntlastung";
+
+        /// <inheritdoc cref="SPALTE_ENERGIESTEUER"/>
+        public const string SPALTE_STEUER_HERKUNFT = "SteuerHerkunft";
+
+        /// <summary>
+        /// ETAPPE E5: vermiedene Kosten (Arbeit, Leistung, Summe) und der Betrag der
+        /// berücksichtigten Aufschläge in <see cref="TAB_ERGEBNIS"/>. Über
+        /// <c>SpalteSicher</c> — dieselbe Begründung wie bei
+        /// <see cref="SPALTE_ENERGIESTEUER"/>.
+        /// </summary>
+        public const string SPALTE_VERMIEDEN_ARBEIT = "VermiedenArbeit";
+
+        /// <inheritdoc cref="SPALTE_VERMIEDEN_ARBEIT"/>
+        public const string SPALTE_VERMIEDEN_LEISTUNG = "VermiedenLeistung";
+
+        /// <inheritdoc cref="SPALTE_VERMIEDEN_ARBEIT"/>
+        public const string SPALTE_VERMIEDEN_GESAMT = "VermiedenGesamt";
+
+        /// <inheritdoc cref="SPALTE_VERMIEDEN_ARBEIT"/>
+        public const string SPALTE_AUFSCHLAG_BETRAG = "AufschlagBetrag";
+
+        /// <summary>
+        /// ETAPPE E7: Aufschlüsselung des Einspeiseerlöses in PV-Überschuss und
+        /// KWK-Einspeisung in <see cref="TAB_ERGEBNIS"/>. Über <c>SpalteSicher</c> —
+        /// dieselbe Begründung wie bei <see cref="SPALTE_ENERGIESTEUER"/>. Die Summe der
+        /// beiden Spalten ist der bereits vorhandene <c>Einspeiseerloes</c>; sie sind
+        /// Zerlegung, keine zusätzliche Zahlung.
+        /// </summary>
+        public const string SPALTE_EINSPEISUNG_PV = "EinspeiseerloesPV";
+
+        /// <inheritdoc cref="SPALTE_EINSPEISUNG_PV"/>
+        public const string SPALTE_EINSPEISUNG_KWK = "EinspeiseerloesKWK";
 
         /// <summary>Fristen des § 6 KWKG 2025 (Konzept Kap. 8.2, Phase 9).</summary>
         public static readonly DateTime KWKG_STICHTAG_ENDE = new DateTime(2026, 12, 31);
         public const int KWKG_REALISIERUNG_JAHRE = 4;
-        public const double KWKG_MAX_LEISTUNG_KW = 500;   // Ausschreibungslücke > 500 kW (Kap. 8.4)
+        /// <summary>
+        /// Ausschreibungsgrenze des § 8a KWKG / der KWKAusV [kW el] — <b>je Anlage</b>,
+        /// nicht je Projektsumme (Nutzerentscheidung 19.08.2026, Nachtrag zu Etappe E2).
+        ///
+        /// <para><b>Nur noch Rückfallebene.</b> Maßgeblich ist der Katalogschlüssel
+        /// <c>KWKG_AUSSCHREIBUNG_GRENZE_KW</c> (<see cref="GesetzKatalog"/>, Etappe E1).
+        /// Eine Bestandsdatenbank, deren Katalog vor diesem Nachtrag eingesät wurde,
+        /// kennt den Schlüssel noch nicht — dann gilt dieser Wert.</para>
+        /// </summary>
+        public const double KWKG_MAX_LEISTUNG_KW = 500;
+
+        /// <summary>
+        /// Kategorie „Öl" des Brennstoffkatalogs — <c>Tab_BrennstoffKategorien.ID</c> = 2,
+        /// die Kategorie der neun Heizöl-Zeilen in <c>Tab_Brennstoff_Stamm</c> (Heizöl S/M/L/EL,
+        /// EL schwefelarm, Bio 5/10/15/20).
+        ///
+        /// <para><b>Warum diese Kategorie und nicht <c>pricing_model</c>.</b> Der Code kennt mit
+        /// <c>energy_carrier.pricing_model = 'LIQUID_FUEL'</c> ein zweites, gröberes Merkmal für
+        /// „flüssig". Es umfasst neben der Kategorie 2 auch die Kategorie 8 <b>Rapsöl</b> — ein
+        /// biogener Brennstoff, für den der Ausschluss fossiler flüssiger Brennstoffe gerade nicht
+        /// gilt. Maßgeblich ist deshalb die Kategorie; sie ist zugleich das Merkmal, das der
+        /// Ausschluss schon vor diesem Nachtrag geprüft hat (siehe <see cref="BhkwMitHeizoel"/>).</para>
+        ///
+        /// <para><b>Persistenzwert</b> im Sinne der Drei-Schichten-Regel: ein in SQL verglichener
+        /// Katalogschlüssel, eingefroren. Er steht nicht in <c>DbWerte</c>, weil dort ausschließlich
+        /// die deutschen Zeichen<i>ketten</i> der Datenbank gesammelt sind.</para>
+        /// </summary>
+        public const int BRENNSTOFF_KATEGORIE_OEL = 2;
 
         // Feste Ausschläge der Sensitivitätsanalyse (W2; im Bericht ausgewiesen).
         public const double SENS_DELTA_ZINS = 1.0;      // ± Prozentpunkte
@@ -150,42 +253,6 @@ namespace WindowsFormsApplication1
                     catch { }
                     try
                     {
-                    if (!TabelleVorhanden(conn, TAB_KWKG_STAFFEL))
-                        Ddl(conn, "CREATE TABLE " + TAB_KWKG_STAFFEL + " (" +
-                                  "ID LONG CONSTRAINT PK_KwkgStaffel PRIMARY KEY, " +
-                                  "JahrVon LONG, " +
-                                  "MaxVbh DOUBLE)");
-                    }
-                    catch { }
-                    try
-                    {
-                        // Vorbefüllung § 8 KWKG 2025 (Konzept Kap. 8.3) — entkoppelt von der
-                        // Tabellenanlage: greift auch, wenn ein früherer Seed abbrach oder
-                        // alle Zeilen gelöscht wurden. In den Kenndaten pflegbar; eine
-                        // künftige Novelle ist eine neue Zeile.
-                        object anz;
-                        using (var cmd = new OleDbCommand(
-                            "SELECT COUNT(*) FROM " + TAB_KWKG_STAFFEL, conn))
-                            anz = cmd.ExecuteScalar();
-                        if (anz != null && anz != DBNull.Value && Convert.ToInt32(anz) == 0)
-                        {
-                            int[,] staffel = { { 2020, 5000 }, { 2023, 4000 }, { 2025, 3500 },
-                                               { 2026, 3300 }, { 2027, 3100 }, { 2028, 2900 },
-                                               { 2029, 2700 }, { 2030, 2500 } };
-                            for (int i = 0; i < staffel.GetLength(0); i++)
-                                using (var cmd = new OleDbCommand(
-                                    "INSERT INTO " + TAB_KWKG_STAFFEL + " (ID, JahrVon, MaxVbh) VALUES (?,?,?)", conn))
-                                {
-                                    cmd.Parameters.AddWithValue("@id", i + 1);
-                                    cmd.Parameters.AddWithValue("@j", staffel[i, 0]);
-                                    cmd.Parameters.AddWithValue("@v", (double)staffel[i, 1]);
-                                    cmd.ExecuteNonQuery();
-                                }
-                        }
-                    }
-                    catch { }
-                    try
-                    {
                     if (!TabelleVorhanden(conn, TAB_MATRIX))
                         Ddl(conn, "CREATE TABLE " + TAB_MATRIX + " (" +
                                   "ID LONG CONSTRAINT PK_ErgMatrix PRIMARY KEY, " +
@@ -213,6 +280,13 @@ namespace WindowsFormsApplication1
                     SpalteSicher(conn, TAB_PARAMETER, "KWKG_Vbh_Kontingent", "DOUBLE");
                     SpalteSicher(conn, TAB_ERGEBNIS, "StromkostenTarif", "DOUBLE");
                     SpalteSicher(conn, TAB_ERGEBNIS, "HinweisText", "LONGTEXT");
+                    // ETAPPE E2 (L6): die Bemessungsgrundlage der KWKG-Deckelung wird
+                    // mitgeschrieben, damit ein gespeichertes Ergebnis nachvollziehbar
+                    // bleibt. Additiv über denselben Weg wie die Spalten darüber — dieses
+                    // Modul führt seine Tabellen seit jeher selbst (bekannte doppelte
+                    // Wahrheit gegenüber SchemaMigration, W4-Umsetzungsstand Abschnitt 6);
+                    // ein Migrationsschritt dafür wäre der dritte Mechanismus.
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_KWKG_VBH_EL, "DOUBLE");
                     SpalteSicher(conn, TAB_PARAMETER, "KWKG_Bonus_Einspeisung", "DOUBLE");
                     SpalteSicher(conn, TAB_PARAMETER, "ID_Kraftwerkspark", "LONG");
                     SpalteSicher(conn, TAB_PARAMETER, "RefKessel_Wirkungsgrad", "DOUBLE");
@@ -229,9 +303,71 @@ namespace WindowsFormsApplication1
                         try { Ddl(conn, "UPDATE " + TAB_PARAMETER +
                                         " SET KWKG_Vbh_Jahresdeckel = 0 WHERE KWKG_Vbh_Jahresdeckel = 3500"); }
                         catch { }
+
+                    // ETAPPE E4 — die drei Steuergutschriften und die Herkunft ihrer
+                    // Sätze im ERGEBNIS. Additiv über denselben Weg wie die Spalten
+                    // darüber (Begründung bei SPALTE_ENERGIESTEUER).
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_ENERGIESTEUER, "DOUBLE");
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_STROMST_BEFREIUNG, "DOUBLE");
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_STROMST_ENTLASTUNG, "DOUBLE");
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_STEUER_HERKUNFT, "LONGTEXT");
+
+                    // ETAPPE E4 — die sechs Projektangaben der Steuerprüfung. Sie
+                    // entstehen regulär über Migrationsschritt 20; das hier ist die
+                    // tolerante VORSORGE unmittelbar vor dem Zugriff, damit eine nie
+                    // migrierte Datenbank nicht an einer fehlenden Spalte scheitert —
+                    // dasselbe Muster wie KostenPositionCtrl.StelleSpaltenSicher (E3).
+                    // Die WERTE-Vorbelegung bleibt allein bei Schritt 20b: Die Leseseite
+                    // behandelt leer/NULL ohnehin wie „keine Gutschrift", und ein zweiter
+                    // schreibender Weg auf Anwenderdaten wäre eine Wahrheit zu viel.
+                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_UNTERNEHMENSART, "TEXT(24)");
+                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_RAEUMLICH, "YESNO");
+                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_HOCHEFFIZIENZ, "YESNO");
+                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_NUTZUNGSGRAD, "DOUBLE");
+                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_ENERGIESTEUER_WAHL, "TEXT(20)");
+                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_AUFTEILUNG, "TEXT(30)");
+
+                    // ETAPPE E5 — der Bedarf OHNE Anlage je Zone: die Bezugsgröße der
+                    // Differenzmethode. Sie fehlte im Modell vollständig.
+                    SpalteSicher(conn, TAB_MATRIX, "BedarfMWh", "DOUBLE");
+
+                    // ETAPPE E5 — vermiedene Kosten und Aufschlagsbetrag im ERGEBNIS.
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_VERMIEDEN_ARBEIT, "DOUBLE");
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_VERMIEDEN_LEISTUNG, "DOUBLE");
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_VERMIEDEN_GESAMT, "DOUBLE");
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_AUFSCHLAG_BETRAG, "DOUBLE");
+
+                    // ETAPPE E7 — Zerlegung des Einspeiseerlöses. Additiv wie oben; die
+                    // Summe der beiden Spalten ist der bereits vorhandene Gesamtbetrag.
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_EINSPEISUNG_PV, "DOUBLE");
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_EINSPEISUNG_KWK, "DOUBLE");
+
+                    // ETAPPE E5 — die Spalten des Tarif-Rollenmodells und die zwei
+                    // Projektangaben. Sie entstehen regulär über Migrationsschritt 21;
+                    // das hier ist die tolerante VORSORGE unmittelbar vor dem Zugriff,
+                    // damit eine nie migrierte Datenbank nicht an einer fehlenden Spalte
+                    // scheitert — dasselbe Muster wie bei den E4-Spalten darüber. Die
+                    // WERTE-Vorbelegung bleibt allein bei Schritt 21b: Die Leseseite
+                    // behandelt leer/NULL ohnehin wie ZONEN.
+                    foreach (SchemaSpalte s in SchemaKatalog.Schritt21_Tarifmodell)
+                        SpalteSicher(conn, s.Tabelle, s.Name, s.TypDefinition);
+
+                    // ETAPPE E6 — die acht KWKG-Spalten JE ANLAGE an Tab_Energieanlagen.
+                    // Sie entstehen regulär über Migrationsschritt 22; das hier ist die
+                    // tolerante VORSORGE unmittelbar vor dem Zugriff — dasselbe Muster
+                    // wie bei E4 und E5. Eine WERTE-Vorbelegung gibt es weder hier noch
+                    // in Schritt 22: NULL heißt „kein eigener Wert", und dann gilt der
+                    // Projektwert.
+                    foreach (SchemaSpalte s in SchemaKatalog.Schritt22_KwkgJeAnlage)
+                        SpalteSicher(conn, s.Tabelle, s.Name, s.TypDefinition);
                 }
             }
             catch { /* ohne Tabellen laufen Laden/Speichern in ihre eigenen Fänge */ }
+
+            // Katalog gesetzlicher Parameter (Etappe E1, Leitentscheidung L2). Eigene
+            // Verbindung, eigener Fang: Ein Fehlschlag darf die Tabellen oben nicht
+            // gefährden, und umgekehrt.
+            GesetzKatalog.StelleKatalogSicher();
         }
 
         /// <summary>Fügt eine fehlende Spalte per ALTER TABLE hinzu (still, additiv).
@@ -293,6 +429,26 @@ namespace WindowsFormsApplication1
                     if (r.Table.Columns.Contains("KWKG_Inbetriebnahme") && r["KWKG_Inbetriebnahme"] != DBNull.Value)
                         p.KwkgInbetriebnahme = Convert.ToDateTime(r["KWKG_Inbetriebnahme"]);
                     p.KwkgAbschlagNegativ = D(r, "KWKG_Abschlag_Negativ") ?? 0;
+
+                    // ETAPPE E4 — Steuerangaben. Ein LEERER Steuerwert bedeutet genau
+                    // dasselbe wie der Vorgabewert: keine Gutschrift. Eine nicht
+                    // migrierte Datenbank verhält sich dadurch wie eine migrierte.
+                    string art = Text(r, SchemaKatalog.SPALTE_PW_UNTERNEHMENSART);
+                    if (art.Length > 0) p.Unternehmensart = art;
+                    p.RaeumlicherZusammenhang = B(r, SchemaKatalog.SPALTE_PW_RAEUMLICH);
+                    p.HocheffizienzNachweis = B(r, SchemaKatalog.SPALTE_PW_HOCHEFFIZIENZ);
+                    p.Jahresnutzungsgrad = D(r, SchemaKatalog.SPALTE_PW_NUTZUNGSGRAD);
+                    string wahl = Text(r, SchemaKatalog.SPALTE_PW_ENERGIESTEUER_WAHL);
+                    if (wahl.Length > 0) p.EnergiesteuerWahl = wahl;
+                    string auf = Text(r, SchemaKatalog.SPALTE_PW_AUFTEILUNG);
+                    if (auf.Length > 0) p.AufteilungMethode = auf;
+
+                    // ETAPPE E5 — Aufschlagsschalter und KWK-Einspeisevergütung. Beide
+                    // sind ohne ausdrückliche Angabe wirkungslos: YESNO liegt bei jeder
+                    // Bestandszeile auf False, DOUBLE bleibt NULL.
+                    p.AufschlaegeAnwenden = B(r, SchemaKatalog.SPALTE_PW_AUFSCHLAEGE);
+                    p.EinspeiseverguetungKWK = D(r, SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK);
+
                     if (r["GeaendertAm"] != DBNull.Value) p.GeaendertAm = Convert.ToDateTime(r["GeaendertAm"]);
                 }
             }
@@ -387,6 +543,14 @@ namespace WindowsFormsApplication1
                     "KWKG_Bonus_Einspeisung = ?, ID_Kraftwerkspark = ?, " +
                     "RefKessel_Wirkungsgrad = ?, RefKessel_ID_Brennstoff = ?, " +
                     "KWKG_Stichtag = ?, KWKG_Inbetriebnahme = ?, KWKG_Abschlag_Negativ = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_UNTERNEHMENSART + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_RAEUMLICH + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_HOCHEFFIZIENZ + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_NUTZUNGSGRAD + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_ENERGIESTEUER_WAHL + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_AUFTEILUNG + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_AUFSCHLAEGE + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK + "] = ?, " +
                     "GeaendertAm = ? WHERE ID_Projekt = ?",
                     new OleDbParameter("@z", p.Zinssatz),
                     new OleDbParameter("@t", p.Betrachtungszeitraum),
@@ -404,6 +568,20 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("@st", OleDbType.Date) { Value = (object)p.KwkgStichtag ?? DBNull.Value },
                     new OleDbParameter("@ibn", OleDbType.Date) { Value = (object)p.KwkgInbetriebnahme ?? DBNull.Value },
                     new OleDbParameter("@neg", p.KwkgAbschlagNegativ),
+                    new OleDbParameter("@art", OleDbType.VarWChar, 24)
+                    { Value = Steuerwert(p.Unternehmensart, DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE) },
+                    new OleDbParameter("@raum", OleDbType.Boolean) { Value = p.RaeumlicherZusammenhang },
+                    new OleDbParameter("@heff", OleDbType.Boolean) { Value = p.HocheffizienzNachweis },
+                    new OleDbParameter("@ng", OleDbType.Double)
+                    { Value = p.Jahresnutzungsgrad.HasValue ? (object)p.Jahresnutzungsgrad.Value : DBNull.Value },
+                    new OleDbParameter("@wahl", OleDbType.VarWChar, 20)
+                    { Value = Steuerwert(p.EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_KEINE) },
+                    new OleDbParameter("@auf", OleDbType.VarWChar, 30)
+                    { Value = Steuerwert(p.AufteilungMethode, DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF) },
+                    new OleDbParameter("@aufs", OleDbType.Boolean) { Value = p.AufschlaegeAnwenden },
+                    new OleDbParameter("@vkwk", OleDbType.Double)
+                    { Value = p.EinspeiseverguetungKWK.HasValue
+                              ? (object)p.EinspeiseverguetungKWK.Value : DBNull.Value },
                     new OleDbParameter("@am", OleDbType.Date) { Value = DateTime.Now },
                     new OleDbParameter("@p", p.IdStamm));
                 if (rows > 0) return true;
@@ -415,8 +593,17 @@ namespace WindowsFormsApplication1
                     "CO2_Preis, KWKG_Bonus, KWKG_Vbh_Jahresdeckel, KWKG_Vbh_Kontingent, " +
                     "KWKG_Bonus_Einspeisung, ID_Kraftwerkspark, RefKessel_Wirkungsgrad, " +
                     "RefKessel_ID_Brennstoff, KWKG_Stichtag, KWKG_Inbetriebnahme, " +
-                    "KWKG_Abschlag_Negativ, GeaendertAm) " +
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "KWKG_Abschlag_Negativ, " +
+                    "[" + SchemaKatalog.SPALTE_PW_UNTERNEHMENSART + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_RAEUMLICH + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_HOCHEFFIZIENZ + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_NUTZUNGSGRAD + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_ENERGIESTEUER_WAHL + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_AUFTEILUNG + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_AUFSCHLAEGE + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK + "], " +
+                    "GeaendertAm) " +
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     new OleDbParameter("@id", id),
                     new OleDbParameter("@p", p.IdStamm),
                     new OleDbParameter("@z", p.Zinssatz),
@@ -435,9 +622,31 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("@st", OleDbType.Date) { Value = (object)p.KwkgStichtag ?? DBNull.Value },
                     new OleDbParameter("@ibn", OleDbType.Date) { Value = (object)p.KwkgInbetriebnahme ?? DBNull.Value },
                     new OleDbParameter("@neg", p.KwkgAbschlagNegativ),
+                    new OleDbParameter("@art", OleDbType.VarWChar, 24)
+                    { Value = Steuerwert(p.Unternehmensart, DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE) },
+                    new OleDbParameter("@raum", OleDbType.Boolean) { Value = p.RaeumlicherZusammenhang },
+                    new OleDbParameter("@heff", OleDbType.Boolean) { Value = p.HocheffizienzNachweis },
+                    new OleDbParameter("@ng", OleDbType.Double)
+                    { Value = p.Jahresnutzungsgrad.HasValue ? (object)p.Jahresnutzungsgrad.Value : DBNull.Value },
+                    new OleDbParameter("@wahl", OleDbType.VarWChar, 20)
+                    { Value = Steuerwert(p.EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_KEINE) },
+                    new OleDbParameter("@auf", OleDbType.VarWChar, 30)
+                    { Value = Steuerwert(p.AufteilungMethode, DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF) },
+                    new OleDbParameter("@aufs", OleDbType.Boolean) { Value = p.AufschlaegeAnwenden },
+                    new OleDbParameter("@vkwk", OleDbType.Double)
+                    { Value = p.EinspeiseverguetungKWK.HasValue
+                              ? (object)p.EinspeiseverguetungKWK.Value : DBNull.Value },
                     new OleDbParameter("@am", OleDbType.Date) { Value = DateTime.Now });
             }
             catch { return false; }
+        }
+
+        /// <summary>Steuerwert oder Vorgabe — ein leeres Feld darf nie in die Datenbank
+        /// geraten (Etappe E4; leer und Vorgabe bedeuten dasselbe, aber der geschriebene
+        /// Wert soll lesbar sein).</summary>
+        private static string Steuerwert(string wert, string vorgabe)
+        {
+            return string.IsNullOrEmpty(wert) ? vorgabe : wert.Trim();
         }
 
         // ------------------------------------------------------------- Erzeuger der Gruppe
@@ -528,10 +737,41 @@ namespace WindowsFormsApplication1
                     t.StaffelGrenzeKW = D(r, "Staffel_Grenze") ?? 0;
                     t.StaffelPreis1EurKW = D(r, "Staffel_Preis1") ?? 0;
                     t.StaffelPreis2EurKW = D(r, "Staffel_Preis2") ?? 0;
+
+                    // ETAPPE E5 — Rollenmodell. Ein LEERER Modus bedeutet genau
+                    // dasselbe wie der Vorgabewert ZONEN: der Bestandsrechenweg. Eine
+                    // nicht migrierte Datenbank verhält sich dadurch wie eine migrierte.
+                    string modus = Text(r, SchemaKatalog.SPALTE_TARIF_MODUS);
+                    if (modus.Length > 0) t.Modus = modus;
+                    if (r.Table.Columns.Contains(SchemaKatalog.SPALTE_TARIF_GUELTIGAB) &&
+                        r[SchemaKatalog.SPALTE_TARIF_GUELTIGAB] != DBNull.Value)
+                        t.GueltigAb = Convert.ToDateTime(r[SchemaKatalog.SPALTE_TARIF_GUELTIGAB]);
+
+                    LiesRolle(r, "Bezug_", t.Bezug);
+                    LiesRolle(r, "Rest_", t.Reststrom);
+                    t.Einspeisung.ArbeitspreisEurKWh = D(r, "Einsp_Arbeit") ?? 0;
+                    t.Einspeisung.GrundpreisEurJahr = D(r, "Einsp_Grundpreis") ?? 0;
                 }
             }
             catch { }
             return t;
+        }
+
+        /// <summary>ETAPPE E5 — eine Tarifrolle (Bezug/Reststrom) aus der Zeile lesen.</summary>
+        private static void LiesRolle(DataRow r, string prefix, TarifRolle rolle)
+        {
+            rolle.ArbeitspreisEurKWh = D(r, prefix + "Arbeit") ?? 0;
+            rolle.GrundpreisEurJahr = D(r, prefix + "Grundpreis") ?? 0;
+            rolle.MonatspreisEurKWMonat = D(r, prefix + "Monatspreis") ?? 0;
+            string modell = Text(r, prefix + "Leistungsmodell");
+            if (modell.Length > 0) rolle.Leistungsmodell = modell;
+            for (int i = 0; i < rolle.Stufen.Count && i < 4; i++)
+            {
+                string s = prefix + "Stufe" + (i + 1) + "_";
+                rolle.Stufen[i].ObergrenzeKW = D(r, s + "KW") ?? 0;
+                rolle.Stufen[i].PreisSommer = D(r, s + "Sommer") ?? 0;
+                rolle.Stufen[i].PreisWinter = D(r, s + "Winter") ?? 0;
+            }
         }
 
         public bool SpeichereTarif(TarifParameter t)
@@ -540,37 +780,26 @@ namespace WindowsFormsApplication1
             StelleTabellenSicher();
             try
             {
-                // OleDbParameter dürfen nur EINER Parameters-Collection angehören —
+                // Spaltenliste und Werte entstehen aus EINER Quelle — bei 52 Spalten
+                // wäre eine von Hand gepflegte Fragezeichenkette die klassische
+                // Fehlerquelle (ETAPPE E5; bis dahin waren es 17 Spalten).
+                // OleDbParameter dürfen nur EINER Parameters-Collection angehören,
                 // deshalb je Kommando ein frischer Satz.
-                Func<List<OleDbParameter>> werte = () => new List<OleDbParameter>
+                List<string> spalten = TarifSpalten();
+                Func<List<OleDbParameter>> werte = () => TarifWerte(t);
+
+                var setzt = new StringBuilder();
+                foreach (string s in spalten)
                 {
-                    new OleDbParameter("@a", OleDbType.Boolean) { Value = t.Aktiv },
-                    new OleDbParameter("@wv", t.WinterVonMonat),
-                    new OleDbParameter("@wb", t.WinterBisMonat),
-                    new OleDbParameter("@hv", t.HtVonStunde),
-                    new OleDbParameter("@hb", t.HtBisStunde),
-                    new OleDbParameter("@b1", t.PreisBezugWinterHT),
-                    new OleDbParameter("@b2", t.PreisBezugWinterNT),
-                    new OleDbParameter("@b3", t.PreisBezugSommerHT),
-                    new OleDbParameter("@b4", t.PreisBezugSommerNT),
-                    new OleDbParameter("@e1", t.PreisEinspWinterHT),
-                    new OleDbParameter("@e2", t.PreisEinspWinterNT),
-                    new OleDbParameter("@e3", t.PreisEinspSommerHT),
-                    new OleDbParameter("@e4", t.PreisEinspSommerNT),
-                    new OleDbParameter("@sg", t.StaffelGrenzeKW),
-                    new OleDbParameter("@s1", t.StaffelPreis1EurKW),
-                    new OleDbParameter("@s2", t.StaffelPreis2EurKW),
-                    new OleDbParameter("@am", OleDbType.Date) { Value = DateTime.Now }
-                };
+                    if (setzt.Length > 0) setzt.Append(", ");
+                    setzt.Append('[').Append(s).Append("] = ?");
+                }
 
                 List<OleDbParameter> update = werte();
                 update.Add(new OleDbParameter("@p", t.IdStamm));
                 int rows = DataRepository.ExecuteNonQuery(
-                    "UPDATE " + TAB_TARIF + " SET Aktiv = ?, Winter_Von = ?, Winter_Bis = ?, " +
-                    "HT_Von = ?, HT_Bis = ?, Bezug_W_HT = ?, Bezug_W_NT = ?, Bezug_S_HT = ?, " +
-                    "Bezug_S_NT = ?, Einsp_W_HT = ?, Einsp_W_NT = ?, Einsp_S_HT = ?, Einsp_S_NT = ?, " +
-                    "Staffel_Grenze = ?, Staffel_Preis1 = ?, Staffel_Preis2 = ?, GeaendertAm = ? " +
-                    "WHERE ID_Projekt = ?", update.ToArray());
+                    "UPDATE " + TAB_TARIF + " SET " + setzt + " WHERE ID_Projekt = ?",
+                    update.ToArray());
                 if (rows > 0) return true;
 
                 int id = DataRepository.GetMaxID(TAB_TARIF, "ID") + 1;
@@ -580,14 +809,97 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("@p", t.IdStamm)
                 };
                 insert.AddRange(werte());
+
+                var namen = new StringBuilder("ID, ID_Projekt");
+                var frage = new StringBuilder("?,?");
+                foreach (string s in spalten)
+                {
+                    namen.Append(", [").Append(s).Append(']');
+                    frage.Append(",?");
+                }
                 return DataRepository.ExecuteSQL(
-                    "INSERT INTO " + TAB_TARIF + " (ID, ID_Projekt, Aktiv, Winter_Von, Winter_Bis, " +
-                    "HT_Von, HT_Bis, Bezug_W_HT, Bezug_W_NT, Bezug_S_HT, Bezug_S_NT, " +
-                    "Einsp_W_HT, Einsp_W_NT, Einsp_S_HT, Einsp_S_NT, " +
-                    "Staffel_Grenze, Staffel_Preis1, Staffel_Preis2, GeaendertAm) " +
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", insert.ToArray());
+                    "INSERT INTO " + TAB_TARIF + " (" + namen + ") VALUES (" + frage + ")",
+                    insert.ToArray());
             }
             catch { return false; }
+        }
+
+        /// <summary>Spaltenreihenfolge des Tarifsatzes — EINE Wahrheit für UPDATE und INSERT.</summary>
+        private static List<string> TarifSpalten()
+        {
+            var s = new List<string>
+            {
+                "Aktiv", "Winter_Von", "Winter_Bis", "HT_Von", "HT_Bis",
+                "Bezug_W_HT", "Bezug_W_NT", "Bezug_S_HT", "Bezug_S_NT",
+                "Einsp_W_HT", "Einsp_W_NT", "Einsp_S_HT", "Einsp_S_NT",
+                "Staffel_Grenze", "Staffel_Preis1", "Staffel_Preis2",
+                // ETAPPE E5
+                SchemaKatalog.SPALTE_TARIF_MODUS, SchemaKatalog.SPALTE_TARIF_GUELTIGAB
+            };
+            foreach (string p in new[] { "Bezug_", "Rest_" })
+            {
+                s.Add(p + "Arbeit"); s.Add(p + "Grundpreis");
+                s.Add(p + "Leistungsmodell"); s.Add(p + "Monatspreis");
+                for (int i = 1; i <= 4; i++)
+                { s.Add(p + "Stufe" + i + "_KW"); s.Add(p + "Stufe" + i + "_Sommer"); s.Add(p + "Stufe" + i + "_Winter"); }
+            }
+            s.Add("Einsp_Arbeit"); s.Add("Einsp_Grundpreis");
+            s.Add("GeaendertAm");
+            return s;
+        }
+
+        /// <summary>Werte in der Reihenfolge von <see cref="TarifSpalten"/>.</summary>
+        private static List<OleDbParameter> TarifWerte(TarifParameter t)
+        {
+            var w = new List<OleDbParameter>
+            {
+                new OleDbParameter("@a", OleDbType.Boolean) { Value = t.Aktiv },
+                new OleDbParameter("@wv", t.WinterVonMonat),
+                new OleDbParameter("@wb", t.WinterBisMonat),
+                new OleDbParameter("@hv", t.HtVonStunde),
+                new OleDbParameter("@hb", t.HtBisStunde),
+                new OleDbParameter("@b1", t.PreisBezugWinterHT),
+                new OleDbParameter("@b2", t.PreisBezugWinterNT),
+                new OleDbParameter("@b3", t.PreisBezugSommerHT),
+                new OleDbParameter("@b4", t.PreisBezugSommerNT),
+                new OleDbParameter("@e1", t.PreisEinspWinterHT),
+                new OleDbParameter("@e2", t.PreisEinspWinterNT),
+                new OleDbParameter("@e3", t.PreisEinspSommerHT),
+                new OleDbParameter("@e4", t.PreisEinspSommerNT),
+                new OleDbParameter("@sg", t.StaffelGrenzeKW),
+                new OleDbParameter("@s1", t.StaffelPreis1EurKW),
+                new OleDbParameter("@s2", t.StaffelPreis2EurKW),
+                // ETAPPE E5: TEXT(12) — der längste Steuerwert ROLLEN hat 6 Zeichen.
+                new OleDbParameter("@mod", OleDbType.VarWChar, 12)
+                { Value = Steuerwert(t.Modus, DbWerte.TARIF_MODUS_ZONEN) },
+                new OleDbParameter("@gab", OleDbType.Date)
+                { Value = (object)t.GueltigAb ?? DBNull.Value }
+            };
+            RolleWerte(w, t.Bezug);
+            RolleWerte(w, t.Reststrom);
+            w.Add(new OleDbParameter("@ea", t.Einspeisung.ArbeitspreisEurKWh));
+            w.Add(new OleDbParameter("@eg", t.Einspeisung.GrundpreisEurJahr));
+            w.Add(new OleDbParameter("@am", OleDbType.Date) { Value = DateTime.Now });
+            return w;
+        }
+
+        /// <summary>Die 16 Werte einer Rolle in der Reihenfolge von <see cref="TarifSpalten"/>.</summary>
+        private static void RolleWerte(List<OleDbParameter> w, TarifRolle r)
+        {
+            w.Add(new OleDbParameter("@ra", r.ArbeitspreisEurKWh));
+            w.Add(new OleDbParameter("@rg", r.GrundpreisEurJahr));
+            // TEXT(24): der längste Steuerwert JAHRESHOECHSTLAST hat 17 Zeichen. Ein zu
+            // kurzes Feld ließe das UPDATE STILL scheitern (Lehre aus Etappe E3).
+            w.Add(new OleDbParameter("@rm", OleDbType.VarWChar, 24)
+            { Value = Steuerwert(r.Leistungsmodell, DbWerte.LEISTUNGSMODELL_MONATLICH) });
+            w.Add(new OleDbParameter("@rp", r.MonatspreisEurKWMonat));
+            for (int i = 0; i < 4; i++)
+            {
+                LeistungsStufe s = i < r.Stufen.Count ? r.Stufen[i] : new LeistungsStufe();
+                w.Add(new OleDbParameter("@sk" + i, s.ObergrenzeKW));
+                w.Add(new OleDbParameter("@ss" + i, s.PreisSommer));
+                w.Add(new OleDbParameter("@sw" + i, s.PreisWinter));
+            }
         }
 
         // ------------------------------------------------------------- Berechnung
@@ -608,6 +920,9 @@ namespace WindowsFormsApplication1
             TarifParameter tarif = LadeTarif(daten.IdStamm);      // W3: gilt für die ganze Gruppe
             _staffelCache = null; _pelCache.Clear(); _oelCache.Clear();
             _refKesselCache.Clear();                                       // frischer Lauf
+            _anlagenCache.Clear(); _gesetze = null;                        // Nachtrag zu E2
+            _brennstoffKategorie = null; _carrierBrennstoff = null;        // Nachtrag 2 zu E2
+            _traegerCache.Clear();                                         // Etappe E4
 
             foreach (string szenario in WirtschaftlichkeitSzenario.Alle)
             {
@@ -677,6 +992,9 @@ namespace WindowsFormsApplication1
 
             TarifParameter tarif = LadeTarif(daten.IdStamm);
             _staffelCache = null; _pelCache.Clear(); _oelCache.Clear();   // frischer Lauf
+            _anlagenCache.Clear(); _gesetze = null;                       // wie in Berechne
+            _brennstoffKategorie = null; _carrierBrennstoff = null;
+            _traegerCache.Clear();
 
             VerlaufSerie stamm = null;
             foreach (VariantenDaten v in daten.Varianten)
@@ -706,6 +1024,11 @@ namespace WindowsFormsApplication1
                     }
                     serie.Kumuliert = kum;
                     serie.RestwertBarwert = bild.RestwertBarwert;
+                    // ETAPPE E7: Das ganze Zahlungsbild wandert mit — es trägt seit E7
+                    // die Jahresreihen der Einzelpositionen, und genau die braucht die
+                    // Mehrjahrestabelle des Berichts. Bisher wurde hier alles außer der
+                    // kumulierten Summe verworfen.
+                    serie.Bild = bild;
                 }
 
                 verlauf.Absolut.Add(serie);
@@ -742,14 +1065,51 @@ namespace WindowsFormsApplication1
             public double? Energie;         // €/a (null = nicht bestimmbar)
             public double Erloes;           // €/a Einspeisevergütung (konstant)
             public double Behg;             // €/a BEHG-Abgabe Jahr 1 (steigt mit p_E)
-            public double[] KwkgReihe;      // nominale KWKG-Erlöse je Jahr (null = keine)
+
+            /// <summary>
+            /// ETAPPE E4 (L1): alle jahresscharfen Erlösreihen des Projekts, benannt —
+            /// KWK-Zuschlag und die drei Steuergutschriften. Bis E4 stand hier ein
+            /// einzelnes <c>double[] KwkgReihe</c>.
+            /// </summary>
+            public List<KapitalwertRechner.ErloesReihe> ErloesReihen =
+                new List<KapitalwertRechner.ErloesReihe>();
+
             public double KwkgJahr1;
+
+            // ETAPPE E4 — Jahr-1-Beträge der drei Steuergutschriften [€/a] und die
+            // Herkunft der verwendeten Sätze (0 bzw. null = keine Gutschrift; der Grund
+            // steht in Hinweis).
+            public double EnergiesteuerJahr1;
+            public double StromsteuerBefreiungJahr1;
+            public double StromsteuerEntlastungJahr1;
+            public string SteuerHerkunft;
+            /// <summary>ETAPPE E2 (L6): erreichte ELEKTRISCHE Vbh [h/a] — die Größe, an
+            /// der die KWKG-Deckelung hängt (0 = kein BHKW / nicht bestimmbar).</summary>
+            public double VbhElektrisch;
             public double WaermeMWh;
 
             // Stufe W3 (Phase 8)
             public StromMatrix Matrix;      // null = keine Stundenreihen im Lauf
             public double? StromkostenTarif;
             public string Hinweis;
+
+            // ETAPPE E5 — Differenzmethode und Aufschläge (reiner Ausweis; der
+            // Kapitalwert rechnet mit den tatsächlichen Reststromkosten, in denen die
+            // Einsparung bereits steckt — eine zusätzliche Erlöszeile wäre doppelt).
+            public double VermiedenArbeit;
+            public double VermiedenLeistung;
+            public double VermiedenGesamt;
+            public double AufschlagBetrag;
+
+            // ETAPPE E7 — Aufschlüsselungen und Nachweise (reine Ausgabe).
+            /// <summary>Anteil des PV-Überschusses am Einspeiseerlös [€/a].</summary>
+            public double ErloesPv;
+            /// <summary>Anteil der KWK-Einspeisung am Einspeiseerlös [€/a].</summary>
+            public double ErloesKwk;
+            /// <summary>Nachweis je BHKW-Modul der KWKG-Rechnung (E6 → E7).</summary>
+            public List<KwkgModulNachweis> KwkgModule = new List<KwkgModulNachweis>();
+            /// <summary>Betriebskostenpositionen mit Kostenart und Herleitung (E3 → E7).</summary>
+            public List<KostenPositionNachweis> Betriebskosten = new List<KostenPositionNachweis>();
         }
 
         private ProjektEingabe BaueEingabe(VariantenDaten v, WirtschaftlichkeitParameter p,
@@ -760,10 +1120,16 @@ namespace WindowsFormsApplication1
 
             e.Investitionen = LiesInvestitionen(v.IdProjekt, szenario);
             e.Betrieb = LiesBetriebskosten(v.IdProjekt, szenario);
+            // ETAPPE E7: dieselben Positionen ein zweites Mal, diesmal mit ihrer
+            // Herleitung. Der SUMMENweg oben bleibt unangetastet — der Bericht liest
+            // eine zweite, ausschließlich beschreibende Sicht, statt die Rechnung auf
+            // einen neuen Leseweg umzustellen.
+            e.Betriebskosten = LiesBetriebskostenPositionen(v.IdProjekt, szenario);
             e.Energie = v.Energiekosten;   // KostenEmissionRechner (Phase 5)
 
             double pvUeberschussMWh = v.Ergebnis.Photovoltaik != null ? v.Ergebnis.Photovoltaik.Ueberschuss : 0;
             e.Erloes = pvUeberschussMWh * 1000.0 * p.Einspeiseverguetung;
+            e.ErloesPv = e.Erloes;         // E7: Aufschlüsselung, siehe unten
             e.WaermeMWh = v.Ergebnis.Energiebedarf != null ? v.Ergebnis.Energiebedarf.Waermebedarf_Gesamt : 0;
 
             // ---------------- Strommengen-Matrix (W3) ----------------
@@ -771,12 +1137,34 @@ namespace WindowsFormsApplication1
             // sobald Reihen vorliegen (Basis des KWKG-Splits und des Berichts).
             e.Matrix = StromMatrix.Baue(v.Zeitreihen, tarif);
 
+            // ---------------- Eingespeister KWK-Strom (ETAPPE E5) ----------------
+            //
+            // BESTANDSMANGEL, hier behoben: Bis E5 bewertete der Flat-Pfad
+            // ausschließlich den PV-Überschuss. Eingespeister BHKW-Strom bekam gar
+            // keinen Strompreis, sondern nur den KWK-Zuschlag — und das Feld dafür war
+            // ohne Photovoltaik im Projekt im Parameterdialog nicht einmal sichtbar
+            // (Form_WirtschaftlichkeitParameter, PV-Gruppe). Ökonomisch ist das grob
+            // falsch: Der eingespeiste Strom wird vergütet, der Zuschlag kommt obendrauf.
+            //
+            // ERGEBNISNEUTRAL: Ohne gepflegte KWK-Vergütung (NULL) bleibt der Beitrag 0.
+            double kwkEinspeisungMWh = e.Matrix != null ? e.Matrix.KwkEinspeisungGesamtMWh : 0;
+            if (p.EinspeiseverguetungKWK.HasValue && p.EinspeiseverguetungKWK.Value != 0 &&
+                kwkEinspeisungMWh > 0)
+            {
+                e.ErloesKwk = kwkEinspeisungMWh * 1000.0 * p.EinspeiseverguetungKWK.Value;
+                e.Erloes += e.ErloesKwk;   // ETAPPE E7: derselbe Betrag, zusätzlich benannt
+            }
+
+            // ---------------- Tarif-Rollenmodell (ETAPPE E5) ----------------
+            bool rollen = tarif != null && tarif.Aktiv && tarif.RollenModus;
+            if (rollen) RechneRollentarif(v, tarif, e);
+
             // Tarifkosten ersetzen die Flat-Stromkosten NUR, wenn beide Seiten
             // bestimmbar sind (Energiekosten und Flat-Netzanteil aus Phase 5) UND
             // Zonenpreise gepflegt wurden (Review Phase 8: Aktiv + Nullpreise würde
             // den Strom sonst still kostenlos machen). Der Tarifersatz umfasst
             // Arbeits-, Grund- UND Leistungspreis der Kostenmaske.
-            if (tarif != null && tarif.Aktiv)
+            if (tarif != null && tarif.Aktiv && !rollen)
             {
                 bool preiseGepflegt = tarif.PreisBezugWinterHT > 0 || tarif.PreisBezugWinterNT > 0 ||
                                       tarif.PreisBezugSommerHT > 0 || tarif.PreisBezugSommerNT > 0;
@@ -789,6 +1177,12 @@ namespace WindowsFormsApplication1
                     e.StromkostenTarif = stromTarif;
                     e.Energie = v.Energiekosten.Value - v.StromkostenNetz.Value + stromTarif;
                     e.Erloes = e.Matrix.Einspeiseerloes(tarif);   // ersetzt PV × Flat-Vergütung
+                    // ETAPPE E7: Der Zonenerlös trägt PV-Überschuss und KWK-Einspeisung
+                    // zusammen. Der PV-Anteil wird eigens gerechnet, der KWK-Anteil als
+                    // REST gebildet — so ist die Summe der beiden Teile ohne
+                    // Rundungsrest der ausgewiesene Gesamtbetrag.
+                    e.ErloesPv = e.Matrix.EinspeiseerloesPv(tarif);
+                    e.ErloesKwk = e.Erloes - e.ErloesPv;
 
                     // Mengenabgleich Flat-Basis (Jahressumme) vs. Stundenreihe.
                     double flatMWh = v.Ergebnis.Energiebedarf != null
@@ -815,29 +1209,283 @@ namespace WindowsFormsApplication1
             // Ergebnis als 0 sichtbar (Faktoren in der Kostenmaske pflegen).
             e.Behg = p.CO2Preis > 0 ? (v.CO2Brennstoff ?? 0) * p.CO2Preis : 0;
 
+            // ETAPPE E2 (L6): die erreichten ELEKTRISCHEN Vollbenutzungsstunden — die
+            // Bezugsgröße der KWKG-Deckelung. Sie wird UNABHÄNGIG davon geführt, ob ein
+            // KWKG-Satz gepflegt ist, damit Reiter und Bericht sie auch dann zeigen
+            // können; der zugehörige Hinweis entsteht ausschließlich in BaueKwkgReihe,
+            // also nur dort, wo die Größe tatsächlich gebraucht wird.
+            string vbhHinweisUnbenutzt;
+            e.VbhElektrisch = VbhElektrisch(v, out vbhHinweisUnbenutzt);
+
             double kwkgJahr1;
             string kwkgHinweis;
-            e.KwkgReihe = BaueKwkgReihe(v, p, e.Matrix, out kwkgJahr1, out kwkgHinweis);
+            double[] kwkgReihe = BaueKwkgReihe(v, p, e.Matrix, e.KwkgModule,
+                                               out kwkgJahr1, out kwkgHinweis);
             e.KwkgJahr1 = kwkgJahr1;
+            if (kwkgReihe != null)
+                e.ErloesReihen.Add(new KapitalwertRechner.ErloesReihe(
+                    KapitalwertRechner.ErloesReihe.KWKG, kwkgReihe));
             if (kwkgHinweis != null)
                 e.Hinweis = e.Hinweis == null ? kwkgHinweis : e.Hinweis + " | " + kwkgHinweis;
+
+            // ETAPPE E4: die drei Steuergutschriften, jahresscharf nach denselben Regeln
+            // wie die KWKG-Reihe (Förderbeginn + t − 1 als Stichtagsjahr).
+            string steuerHinweis;
+            BaueSteuerReihen(v, p, e, out steuerHinweis);
+            if (steuerHinweis != null)
+                e.Hinweis = e.Hinweis == null ? steuerHinweis : e.Hinweis + " | " + steuerHinweis;
+
+            // ETAPPE E5: die Aufschläge auf den Strombezug — NACH den Steuerreihen,
+            // damit der Abgleich mit der § 9b-Entlastung beide Größen kennt.
+            RechneAufschlaege(v, p, e);
             return e;
+        }
+
+        // =====================================================================
+        // ETAPPE E5 — Tarif-Rollenmodell und Aufschläge
+        // =====================================================================
+
+        /// <summary>
+        /// Rechnet den Strom nach dem <b>Rollenmodell</b> (Tarifmodus <c>ROLLEN</c>):
+        /// Bezugstarif ohne BHKW, Reststromtarif mit BHKW, Einspeisetarif — und daraus
+        /// die vermiedenen Kosten nach der <b>Differenzmethode</b> (Konzept 4.3).
+        ///
+        /// <para><b>Was in den Kapitalwert geht, ist der Reststrom.</b> Die vermiedenen
+        /// Kosten sind eine AUSSAGE, kein zweiter Zahlungsstrom: Die Einsparung steckt
+        /// bereits darin, dass die Anlage die Bezugsmenge senkt. Wer sie zusätzlich als
+        /// Erlös bucht, zählt sie doppelt. Deshalb ersetzt hier — wie im Zonenmodell —
+        /// der Tarifbetrag den Flat-Netzanteil der Energiekosten, und die drei
+        /// Differenzzeilen werden nur ausgewiesen.</para>
+        ///
+        /// <para><b>Ohne Strombedarfsreihe keine Referenz.</b> „Bedarf ohne Anlage" lässt
+        /// sich nur aus der Stundenreihe bilden. Fehlt sie, bleiben die vermiedenen
+        /// Kosten 0 und der Hinweis sagt warum — statt eine Einsparung in Höhe der
+        /// gesamten Reststromkosten zu behaupten.</para>
+        /// </summary>
+        private void RechneRollentarif(VariantenDaten v, TarifParameter tarif, ProjektEingabe e)
+        {
+            if (e.Matrix == null)
+            {
+                Melde(e, "Tarif-Rollenmodell aktiv, aber keine (vollständigen) Stundenreihen im " +
+                         "Lauf — Flat-Preise der Kostenmaske verwendet.");
+                return;
+            }
+            bool preiseGepflegt = tarif.Reststrom.ArbeitspreisEurKWh > 0 ||
+                                  tarif.Bezug.ArbeitspreisEurKWh > 0;
+            if (!preiseGepflegt)
+            {
+                Melde(e, "Tarif-Rollenmodell aktiv, aber kein Arbeitspreis für Bezug oder " +
+                         "Reststrom gepflegt — Flat-Preise der Kostenmaske verwendet.");
+                return;
+            }
+            if (!v.Energiekosten.HasValue || !v.StromkostenNetz.HasValue)
+            {
+                Melde(e, "Tarif-Rollenmodell aktiv, aber Flat-Energiekosten unvollständig — " +
+                         "Tarifersatz nicht möglich.");
+                return;
+            }
+
+            var eingabe = new StromErloesEingabe
+            {
+                BedarfMWh = e.Matrix.BedarfGesamtMWh,
+                RestbezugMWh = e.Matrix.BezugGesamtMWh,
+                EinspeisungMWh = e.Matrix.EinspeisungPvGesamtMWh + e.Matrix.KwkEinspeisungGesamtMWh,
+                LastBedarf = e.Matrix.LastBedarf,
+                LastRestbezug = e.Matrix.LastBezug
+            };
+            StromErloesErgebnis r = StromTarifRechner.Rechne(
+                eingabe, tarif.Bezug, tarif.Reststrom, tarif.Einspeisung, BerichtTexte.Kultur);
+
+            e.StromkostenTarif = r.Reststrom.SummeEur;
+            e.Energie = v.Energiekosten.Value - v.StromkostenNetz.Value + r.Reststrom.SummeEur;
+            e.Erloes = r.EinspeiseerloesEur;   // ersetzt PV-/KWK-Bewertung über die Parameter
+
+            // ETAPPE E7: Das Rollenmodell kennt EINEN Einspeisetarif für beide Mengen —
+            // die Aufteilung kann deshalb nur MENGENPROPORTIONAL sein, und sie wird als
+            // solche benannt. Der KWK-Anteil entsteht als Rest, damit die Summe stimmt.
+            double pvMWh = e.Matrix.EinspeisungPvGesamtMWh;
+            double kwkMWh = e.Matrix.KwkEinspeisungGesamtMWh;
+            double gesamtMWh = pvMWh + kwkMWh;
+            if (gesamtMWh > 0)
+            {
+                e.ErloesPv = e.Erloes * (pvMWh / gesamtMWh);
+                e.ErloesKwk = e.Erloes - e.ErloesPv;
+            }
+            else { e.ErloesPv = 0; e.ErloesKwk = 0; }
+
+            if (e.Matrix.StrombedarfFehlt)
+                Melde(e, "Vermiedene Kosten nicht bestimmbar: Die Strombedarfs-Reihe fehlt im " +
+                         "Lauf, damit gibt es keine Bezugsgröße „Bedarf ohne Anlage\".");
+            else
+            {
+                e.VermiedenArbeit = r.VermiedenArbeitEur;
+                e.VermiedenLeistung = r.VermiedenLeistungEur;
+                e.VermiedenGesamt = r.VermiedenGesamtEur;
+                foreach (string h in r.Herleitung) Melde(e, h);
+            }
+        }
+
+        /// <summary>
+        /// Schlägt Netzentgelt, Umlagen, Stromsteuer, Konzessionsabgabe und Vertrieb auf
+        /// den Strombezug auf — <b>nur</b>, wenn das Projekt es ausdrücklich verlangt
+        /// (<see cref="WirtschaftlichkeitParameter.AufschlaegeAnwenden"/>, Vorgabe aus).
+        ///
+        /// <para><b>Eine Wahrheit für den wirksamen Aufschlag.</b> Gelesen wird derselbe
+        /// Block, mit dem die Speichersimulation rechnet
+        /// (<c>StromAufschlagCtrl.ReadStrom</c> ⇒ <c>Aufschlagssatz.WirksamCtKwh</c>:
+        /// Override im Modus Gesamtwert, sonst Summe der AKTIVEN Komponenten). Ein
+        /// eigener Rechenweg hier wäre die zweite Wahrheit, die das Fachkonzept des
+        /// Aufschlagsblocks gerade vermeidet.</para>
+        ///
+        /// <para><b>Der Betrag wird ausgewiesen, nicht versteckt.</b> Er steht als eigene
+        /// Ergebnisgröße und als Hinweiszeile mit Satz, Menge und Herkunft — sonst wäre
+        /// ein Drittel der Energiekosten eine stille Zahl. Zu beachten ist dabei: Ein
+        /// Trägersatz ohne gepflegte Werte liefert die VORSCHLAGSWERTE des Fachkonzepts
+        /// (in Summe 11,746 ct/kWh), nicht 0 — deshalb nennt der Hinweis den Satz.</para>
+        ///
+        /// <para><b>Abgleich mit der Stromsteuer aus E4.</b> Der Aufschlagsblock enthält
+        /// die Stromsteuer als BELASTUNG, § 9b StromStG die Entlastung als GUTSCHRIFT.
+        /// Zusammen sind sie kein Doppelansatz, sondern die zwei Seiten derselben
+        /// Vorschrift. Steht der Schalter dagegen auf AUS, während § 9b greift, enthält
+        /// der Kapitalwert eine Entlastung ohne die zugehörige Belastung — genau darauf
+        /// weist der Hinweis dann hin.</para>
+        /// </summary>
+        private void RechneAufschlaege(VariantenDaten v, WirtschaftlichkeitParameter p,
+                                       ProjektEingabe e)
+        {
+            // Netzbezug in der Fassung, die auch die Kosten getragen hat.
+            double netzbezugMWh = e.StromkostenTarif.HasValue && e.Matrix != null
+                ? e.Matrix.BezugGesamtMWh
+                : (v.Ergebnis.Energiebedarf != null ? v.Ergebnis.Energiebedarf.Stromrestbedarf : 0);
+
+            if (!p.AufschlaegeAnwenden)
+            {
+                // Der Widerspruch aus E4/E5 wird gemeldet, nicht verschwiegen.
+                if (e.StromsteuerEntlastungJahr1 > 0)
+                    Melde(e, "Hinweis: Die Stromsteuer-Entlastung nach § 9b wird gutgeschrieben, " +
+                             "obwohl die Stromsteuer im Bezugspreis nicht angesetzt ist (Schalter " +
+                             "„Aufschläge in der Wirtschaftlichkeit berücksichtigen\" aus). Der " +
+                             "Kapitalwert enthält damit eine Entlastung ohne die zugehörige Belastung.");
+                return;
+            }
+
+            if (netzbezugMWh <= 0)
+            {
+                Melde(e, "Aufschläge sollen berücksichtigt werden, es gibt aber keinen " +
+                         "Netzbezug (Jahressaldo ≤ 0) — kein Aufschlagsbetrag.");
+                return;
+            }
+
+            StromAufschlagModel m = null;
+            try { m = new StromAufschlagCtrl().ReadStrom(v.IdProjekt); }
+            catch { }
+            if (m == null || !m.AusDatenbank)
+            {
+                Melde(e, "Aufschläge sollen berücksichtigt werden, dem Projekt ist aber kein " +
+                         "Strom-Energieträger zugeordnet — kein Aufschlagsbetrag.");
+                return;
+            }
+
+            double ctKwh;
+            try { ctKwh = StromAufschlagCtrl.AlsAufschlagssatz(m).WirksamCtKwh; }
+            catch { return; }
+            if (ctKwh == 0)
+            {
+                Melde(e, "Aufschläge sollen berücksichtigt werden, der wirksame Aufschlag ist " +
+                         "aber 0 ct/kWh (alle Komponenten inaktiv bzw. Gesamtwert 0).");
+                return;
+            }
+
+            double betrag = netzbezugMWh * 1000.0 * ctKwh / 100.0;
+            e.AufschlagBetrag = betrag;
+            if (e.Energie.HasValue) e.Energie = e.Energie.Value + betrag;
+
+            System.Globalization.CultureInfo k = BerichtTexte.Kultur;
+            string zerlegung = string.Equals(m.Modus, DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT,
+                                             StringComparison.Ordinal)
+                ? "Gesamtwert " + m.Override.ToString("N3", k) + " ct/kWh"
+                : "Netzentgelt " + Komponente(m.Netzentgelt, m.Netzentgelt_Aktiv, k) +
+                  " + Umlagen " + Komponente(m.Umlagen, m.Umlagen_Aktiv, k) +
+                  " + Stromsteuer " + Komponente(m.Stromsteuer, m.Stromsteuer_Aktiv, k) +
+                  " + Konzession " + Komponente(m.Konzession, m.Konzession_Aktiv, k) +
+                  " + Vertrieb " + Komponente(m.Vertrieb, m.Vertrieb_Aktiv, k);
+
+            Melde(e, "Aufschläge berücksichtigt: " + ctKwh.ToString("N3", k) + " ct/kWh (" +
+                     zerlegung + ") auf " + netzbezugMWh.ToString("N1", k) + " MWh Netzbezug = " +
+                     betrag.ToString("N2", k) + " €/a.");
+
+            if (e.StromsteuerEntlastungJahr1 > 0 && m.Stromsteuer_Aktiv)
+                Melde(e, "Stromsteuer: Belastung " + m.Stromsteuer.ToString("N3", k) +
+                         " ct/kWh im Bezugspreis und Entlastung nach § 9b als Gutschrift — " +
+                         "kein Doppelansatz, sondern die zwei Seiten derselben Vorschrift.");
+        }
+
+        /// <summary>Eine Aufschlagskomponente als Text; inaktive werden als solche benannt.</summary>
+        private static string Komponente(double wert, bool aktiv, System.Globalization.CultureInfo k)
+        {
+            return aktiv ? wert.ToString("N3", k) : "0 (inaktiv)";
+        }
+
+        /// <summary>Hängt eine Meldung an den Hinweis an, ohne vorhandene zu überschreiben.</summary>
+        private static void Melde(ProjektEingabe e, string text)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+            e.Hinweis = string.IsNullOrEmpty(e.Hinweis) ? text : e.Hinweis + " | " + text;
         }
 
         /// <summary>
         /// KWKG-Bonusreihe nach KWKG 2025 (Phase 9, Konzept Kap. 8): Bonus [ct/kWh]
         /// auf KWK-Eigenstrom/-Einspeisung (W3-Split), je Kalenderjahr begrenzt durch
-        /// die DEGRESSIVE Vbh-Staffel (§ 8, Katalog Tab_KWKG_Staffel; Override über
+        /// die DEGRESSIVE Vbh-Staffel (§ 8, Katalog Tab_Gesetzesparameter; Override über
         /// den Parameter-Deckel), kumuliert bis zum Vbh-Kontingent (30.000 Vbh).
         /// Vorab die Förderfähigkeits-Prüfkette: Fristenlogik § 6 (Stichtag
-        /// 31.12.2026 + 4 Jahre Realisierung), Ausschreibungslücke &gt; 500 kW und
-        /// Heizöl-Ausschluss für Neuanlagen — Verstoß ⇒ Bonus = 0 mit Hinweis.
+        /// 31.12.2026 + 4 Jahre Realisierung), Ausschreibungsgrenze <b>je Anlage</b>
+        /// (§ 8a KWKG / KWKAusV) und Heizöl-Ausschluss für Neuanlagen — Verstoß ⇒
+        /// Bonus = 0 mit Hinweis.
         /// Negativpreis-Abschlag (§ 7 Abs. 5) als %-Näherung auf die vergüteten Vbh;
         /// die abgeschlagenen Stunden verbrauchen das Kontingent nicht.
-        /// Näherung unverändert: erreichte Vbh = Betriebsstunden des BHKW.
+        ///
+        /// <para><b>ETAPPE E2 (L6): erreichte Vbh = ELEKTRISCHE Vollbenutzungsstunden</b>
+        /// (<see cref="VbhElektrisch"/>), leistungsgewichtet über alle Module. Bis dahin
+        /// stand hier <c>Betriebsstunden_Gesamt</c> — die Summe THERMISCHER Vbh, die
+        /// 8.760 h überschreiten kann und den Zuschlag bei Kaskaden zu hoch ansetzte. Die
+        /// Rechnung bleibt projektweit; modulscharf wird sie in Etappe E6.</para>
+        ///
+        /// <para><b>NACHTRAG ZU E2 (19.08.2026): Ausschreibungsgrenze je ANLAGE.</b>
+        /// Anlagen über der Grenze verlieren ihren Zuschlaganteil, die übrigen behalten
+        /// ihn; die projektweiten Bezugsgrößen werden dafür bereinigt
+        /// (<see cref="Anlagenauswahl"/>). Vorher fiel der Zuschlag ganz weg, sobald die
+        /// PROJEKTSUMME die Grenze überschritt.</para>
+        ///
+        /// <para><b>NACHTRAG 2 ZU E2 (19.08.2026): Heizöl-Ausschluss je ANLAGE.</b> Derselbe
+        /// Weg für den zweiten Ausschlussgrund: Ein Öl-BHKW verliert seinen Zuschlaganteil,
+        /// ein daneben stehendes Gas-BHKW behält ihn. Vorher genügte EINE Öl-Zeile in
+        /// <c>Tab_BHKW</c>, um dem ganzen Projekt den Zuschlag zu nehmen — auch dann, wenn zu
+        /// dieser Gerätezeile nie eine Anlagenzeile entstand. Beide Ausschlussgründe laufen
+        /// jetzt durch <see cref="Anlagenauswahl"/> und kürzen die Bezugsgrößen zusammen um
+        /// <b>jede ausgeschlossene Anlage genau einmal</b>, auch wenn beide Gründe auf
+        /// dieselbe Anlage zutreffen.</para>
+        ///
+        /// <para><b>ETAPPE E6 (19.08.2026): eine Reihe JE ANLAGE, jahresweise summiert.</b>
+        /// Zuschlagssatz, Vollbenutzungsstunden, Jahresdeckel, Kontingent, Stichtag und
+        /// Inbetriebnahme gelten ab hier je Modul; die Reihen werden Jahr für Jahr addiert.
+        /// Damit sind die Restbefunde 1 bis 4 der „vier Grenzen der Zwischenlösung" aus dem
+        /// E2-Nachtrag aufgelöst. <b>Ergebnisneutral für Einmodulprojekte</b> — bei genau
+        /// einer Anlage ist die Summe über eine Reihe die Reihe selbst, und jede
+        /// Anlagenangabe fällt auf den Projektwert zurück. Bei mehreren Anlagen ändert sich
+        /// das Ergebnis <b>gewollt</b>: Der Deckel greift dann je Anlage statt über eine
+        /// gemeinsame, leistungsgewichtete Vbh-Zahl.</para>
+        ///
+        /// <para><b>Der Weg ohne zuordenbare Anlagenzeilen bleibt unverändert projektweit</b>
+        /// (<see cref="ReiheProjektweit"/>) — er ist derselbe Code wie vor E6.</para>
         /// </summary>
+        /// <param name="nachweise">ETAPPE E7: Wird je gerechnetem Modul um eine Zeile
+        /// ergänzt (Satz, Vbh, Deckel, Kontingent, Herleitung nach § 7). Nur der Weg je
+        /// Anlage füllt sie — der projektweite Ersatzweg kennt keine Module. <c>null</c>
+        /// ist erlaubt.</param>
         private double[] BaueKwkgReihe(VariantenDaten v, WirtschaftlichkeitParameter p,
-                                       StromMatrix matrix, out double jahr1, out string hinweis)
+                                       StromMatrix matrix, List<KwkgModulNachweis> nachweise,
+                                       out double jahr1, out string hinweis)
         {
             jahr1 = 0;
             hinweis = null;
@@ -845,65 +1493,190 @@ namespace WindowsFormsApplication1
             bool aktiv = p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0;
             if (!aktiv || v.Ergebnis == null || v.Ergebnis.BHKW == null) return null;
             double stromMWh = v.Ergebnis.BHKW.Stromproduktion;
-            double vbh = v.Ergebnis.BHKW.Betriebsstunden_Gesamt;
-            if (stromMWh <= 0 || vbh <= 0) return null;
+            if (stromMWh <= 0) return null;      // kein KWK-Strom -> nichts zu vergüten
+
+            // ETAPPE E2: die maßgebliche Größe der Deckelung. Ist sie nicht bestimmbar,
+            // sagt der Hinweis warum — statt still mit 0 weiterzurechnen (Befund D5-Regel).
+            // Sie bleibt auch nach E6 die Größe des ERSATZWEGS und die angezeigte Kennzahl.
+            string vbhHinweis;
+            double vbh = VbhElektrisch(v, out vbhHinweis);
+            if (vbh <= 0)
+            {
+                if (vbhHinweis != null) hinweis = vbhHinweis;
+                return null;
+            }
 
             // ---------------- Förderfähigkeit § 6 KWKG 2025 (Kap. 8.2) ----------------
-            if (p.KwkgStichtag.HasValue)
-            {
-                if (p.KwkgStichtag.Value.Date > KWKG_STICHTAG_ENDE)
-                {
-                    hinweis = "KWKG: Bestellung/Genehmigung nach dem 31.12.2026 — nach geltendem " +
-                              "Recht nicht förderfähig (Regulierungsrisiko Novelle); Bonus = 0.";
-                    return null;
-                }
-                // Realisierungsfrist: Dauerbetrieb bis zum ABLAUF des 4. Jahres nach
-                // dem Stichtag (§ 6, Pfad 2 — für den Bestellungs-Pfad 3 großzügig
-                // um maximal ein Jahr; im Konzept 8.5 als Näherung dokumentiert).
-                DateTime fristende = new DateTime(
-                    p.KwkgStichtag.Value.Year + KWKG_REALISIERUNG_JAHRE, 12, 31);
-                if (p.KwkgInbetriebnahme.HasValue && p.KwkgInbetriebnahme.Value.Date > fristende)
-                {
-                    hinweis = "KWKG: Inbetriebnahme nach Ablauf des " + KWKG_REALISIERUNG_JAHRE +
-                              ". Jahres nach dem Stichtag (§ 6 Realisierungsfrist, bis " +
-                              fristende.ToString("dd.MM.yyyy") + "); Bonus = 0.";
-                    return null;
-                }
-            }
-            else
-                hinweise.Add("KWKG: kein Bestell-/Genehmigungsdatum hinterlegt — " +
-                             "Förderfähigkeit ungeprüft (§ 6 KWKG 2025, Stichtag 31.12.2026).");
+            //
+            // ETAPPE E6: Die Prüfung gilt nach § 6 der EINZELNEN Anlage. Solange KEINE
+            // Anlage ein eigenes Datum trägt — der Zustand jeder Datenbank vor
+            // Migrationsschritt 22 —, ist die Prüfung je Anlage für alle Anlagen dieselbe
+            // wie die des Projekts. Dann läuft bewusst der BESTANDSBLOCK weiter: gleiche
+            // Bedingung, gleicher früher Ausstieg, gleicher Meldungstext. Trägt dagegen
+            // mindestens eine Anlage ein eigenes Datum, entscheidet die Prüfung je Anlage
+            // in Anlagenauswahl, und eine ausgefallene Anlage reißt die übrigen nicht mit.
+            List<BhkwAnlage> anlagen = BhkwAnlagen(v.IdProjekt);
+            bool eigeneFristdaten = false;
+            foreach (BhkwAnlage a in anlagen)
+                if (a.Stichtag.HasValue || a.Inbetriebnahme.HasValue) { eigeneFristdaten = true; break; }
 
-            // ---------------- Guards Kap. 8.4/8.5: > 500 kW, Heizöl-Neuanlage ----------------
-            if (!_pelCache.ContainsKey(v.IdProjekt)) _pelCache[v.IdProjekt] = LiesBhkwLeistungKW(v.IdProjekt);
-            double pelKW = _pelCache[v.IdProjekt];
-            if (pelKW > KWKG_MAX_LEISTUNG_KW)
+            if (!eigeneFristdaten)
             {
-                hinweise.Add("KWKG: Σ installierte BHKW-Leistung " + pelKW.ToString("N0") +
-                             " kW > 500 kW — seit 01.01.2026 kein Förderweg " +
-                             "(Ausschreibungslücke KWKAusV); Bonus = 0.");
+                if (p.KwkgStichtag.HasValue)
+                {
+                    if (p.KwkgStichtag.Value.Date > KWKG_STICHTAG_ENDE)
+                    {
+                        hinweis = "KWKG: Bestellung/Genehmigung nach dem 31.12.2026 — nach geltendem " +
+                                  "Recht nicht förderfähig (Regulierungsrisiko Novelle); Bonus = 0.";
+                        return null;
+                    }
+                    // Realisierungsfrist: Dauerbetrieb bis zum ABLAUF des 4. Jahres nach
+                    // dem Stichtag (§ 6, Pfad 2 — für den Bestellungs-Pfad 3 großzügig
+                    // um maximal ein Jahr; im Konzept 8.5 als Näherung dokumentiert).
+                    DateTime fristende = new DateTime(
+                        p.KwkgStichtag.Value.Year + KWKG_REALISIERUNG_JAHRE, 12, 31);
+                    if (p.KwkgInbetriebnahme.HasValue && p.KwkgInbetriebnahme.Value.Date > fristende)
+                    {
+                        hinweis = "KWKG: Inbetriebnahme nach Ablauf des " + KWKG_REALISIERUNG_JAHRE +
+                                  ". Jahres nach dem Stichtag (§ 6 Realisierungsfrist, bis " +
+                                  fristende.ToString("dd.MM.yyyy") + "); Bonus = 0.";
+                        return null;
+                    }
+                }
+                else
+                    hinweise.Add("KWKG: kein Bestell-/Genehmigungsdatum hinterlegt — " +
+                                 "Förderfähigkeit ungeprüft (§ 6 KWKG 2025, Stichtag 31.12.2026).");
+            }
+
+            int foerderbeginn = Foerderbeginn(p);
+
+            // ------- Guard Kap. 8.4: Ausschreibungsgrenze und Heizöl, JE ANLAGE -------
+            // NACHTRAG ZU E2 (Nutzerentscheidung 19.08.2026): Das Gesetz stellt auf die
+            // EINZELNE KWK-Anlage ab — oberhalb der Grenze gibt es den Zuschlag nur über
+            // eine Ausschreibung (§ 8a KWKG / KWKAusV), und dieser Weg ist hier nicht
+            // bedienbar. Zwei Module zu je 300 kW sind damit ZWEI förderfähige Anlagen,
+            // keine nicht förderfähige 600-kW-Anlage. Bis hierher prüfte der Guard die
+            // PROJEKTSUMME und nahm einer Kaskade den Zuschlag vollständig.
+            //
+            // NACHTRAG 2 (19.08.2026): Der Heizöl-Ausschluss läuft denselben Weg. Er gilt
+            // ebenfalls je Anlage — ein Öl-BHKW ist nicht zuschlagsberechtigt, ein daneben
+            // stehendes Gas-BHKW schon. Der Ausschluss greift unverändert NUR für erkennbare
+            // Neuanlagen (IBN ≥ 2025); Bestandsanlagen rechnen mit ihrem historischen Satz
+            // weiter (Kap. 8.5.3), und die Rechtsgrundlage bleibt die Sekundärquelle aus
+            // Grundlagen_KWKG_Energiesteuer_Stromsteuer.md Abschnitt 6 Punkt 3 — daran ändert
+            // dieser Nachtrag nichts, er korrigiert ausschließlich den BEZUG.
+            //
+            // ETAPPE E6: Dieselbe Kette entscheidet jetzt auch über Stichtag und
+            // Realisierungsfrist je Anlage, und die Ausschreibungsgrenze wird mit dem
+            // Inbetriebnahmejahr DIESER Anlage im Katalog nachgeschlagen.
+            double grenzeKW = AusschreibungsgrenzeKW(foerderbeginn);
+            bool oelAusschluss = p.KwkgInbetriebnahme.HasValue
+                              && p.KwkgInbetriebnahme.Value.Year >= 2025;
+            KwkgAnlagenauswahl auswahl = Anlagenauswahl(v, p, foerderbeginn, grenzeKW);
+
+            if (!auswahl.Bestimmbar)
+            {
+                // Ohne zuordenbare Anlagenzeilen bleiben nur die Projektsumme und die
+                // Gerätezeilen — der Weg bis zu diesem Nachtrag. Er ist konservativ und
+                // wird als Ersatz ausgewiesen.
+                if (auswahl.PelGesamtKW > grenzeKW)
+                {
+                    hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR,
+                                               auswahl.PelGesamtKW.ToString("N0"), grenzeKW.ToString("N0")));
+                    hinweis = string.Join(" | ", hinweise);
+                    return null;
+                }
+
+                if (!_oelCache.ContainsKey(v.IdProjekt)) _oelCache[v.IdProjekt] = BhkwMitHeizoel(v.IdProjekt);
+                bool oelGeraetezeile = _oelCache[v.IdProjekt];
+                if (oelAusschluss && oelGeraetezeile)
+                {
+                    hinweise.Add(MyResource.Resource.WIRT_KWKG_HEIZOEL_JE_ANLAGE_UNKLAR);
+                    hinweis = string.Join(" | ", hinweise);
+                    return null;
+                }
+                if (!p.KwkgInbetriebnahme.HasValue && oelGeraetezeile)
+                    hinweise.Add(MyResource.Resource.WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR);
+
+                // ERSATZWEG: die projektweite Rechnung, Zeile für Zeile der Stand vor E6.
+                double[] ersatz = ReiheProjektweit(p, matrix, stromMWh, vbh, foerderbeginn, out jahr1);
+                if (hinweise.Count > 0) hinweis = string.Join(" | ", hinweise);
+                return ersatz;
+            }
+
+            if (auswahl.AnzahlAusgeschlossen > 0 && auswahl.PelFoerderfaehigKW <= 0)
+            {
+                // Keine Anlage bleibt übrig — Ergebnis wie bisher (Bonus = 0), aber mit den
+                // Anlagen und dem jeweiligen Grund im Klartext. Drei Fälle, damit kein
+                // Meldungstext eine leere Aufzählung führt.
+                //
+                // Die Bedingung verlangt zusätzlich einen ECHTEN Ausschluss: Ohne ihn hieße
+                // eine Restleistung von 0 nur, dass in den Anlagenzeilen keine elektrische
+                // Nennleistung steht. Der Altstand meldete dafür „jede Anlage über der
+                // Ausschreibungsgrenze" mit LEERER Aufzählung; jetzt läuft dieser Fall
+                // unbereinigt weiter — wie vor der Prüfung je Anlage, mit der Leistung aus
+                // der Gerätesumme, die VbhElektrisch ohnehin schon verwendet hat.
+                Ausschlussmeldungen(auswahl, grenzeKW, hinweise);
                 hinweis = string.Join(" | ", hinweise);
                 return null;
             }
 
-            // Heizöl-Ausschluss nur für erkennbare NEUANLAGEN (IBN ≥ 2025) —
-            // Bestandsanlagen rechnen mit ihrem historischen Satz weiter (Kap. 8.5.3).
-            if (!_oelCache.ContainsKey(v.IdProjekt)) _oelCache[v.IdProjekt] = BhkwMitHeizoel(v.IdProjekt);
-            bool oelBhkw = _oelCache[v.IdProjekt];
-            if (p.KwkgInbetriebnahme.HasValue && p.KwkgInbetriebnahme.Value.Year >= 2025 && oelBhkw)
-            {
-                hinweise.Add("KWKG: Heizöl-BHKW sind als Neuanlage nicht mehr förderfähig " +
-                             "(KWKG 2025, nur noch Erdgas; Näherung: gilt auch für Bio-Blends); Bonus = 0.");
-                hinweis = string.Join(" | ", hinweise);
-                return null;
-            }
-            if (!p.KwkgInbetriebnahme.HasValue && oelBhkw)
-                hinweise.Add("KWKG: Öl-BHKW ohne Inbetriebnahmedatum — als Neuanlage wäre der " +
-                             "Bonus ausgeschlossen (KWKG 2025); Datum im Parameterdialog pflegen.");
+            // Teilausschluss: je Grund eine Meldung, alle nennen die verbleibende
+            // Leistung — das ist dieselbe Zahl, weil sie nach ALLEN Filtern übrig ist.
+            if (auswahl.UeberGrenze.Count > 0)
+                hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_ANLAGE_UEBER_GRENZE,
+                                           grenzeKW.ToString("N0"), auswahl.Klartext(auswahl.UeberGrenze),
+                                           auswahl.PelFoerderfaehigKW.ToString("N0")));
+            if (auswahl.NurHeizoel.Count > 0)
+                hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_ANLAGE_HEIZOEL,
+                                           auswahl.Klartext(auswahl.NurHeizoel),
+                                           auswahl.PelFoerderfaehigKW.ToString("N0")));
+            foreach (string s in auswahl.Fristmeldungen) hinweise.Add(s);
 
-            int foerderbeginn = p.KwkgInbetriebnahme.HasValue
-                ? p.KwkgInbetriebnahme.Value.Year
-                : DateTime.Now.Year + 1;   // Planungsfall: IBN im Folgejahr (Hinweis oben)
+            // Öl-Anlagen ohne Inbetriebnahmedatum werden NICHT ausgeschlossen (der
+            // Ausschluss gilt nur für Neuanlagen) — der Anwender muss aber wissen, dass
+            // das Ergebnis am fehlenden Datum hängt.
+            if (auswahl.OelOhneIbn.Count > 0)
+                hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_HEIZOEL_OHNE_IBN,
+                                           auswahl.Klartext(auswahl.OelOhneIbn)));
+
+            double[] reihe = ReiheJeAnlage(v, p, matrix, auswahl, foerderbeginn, hinweise,
+                                           nachweise, out jahr1);
+            if (hinweise.Count > 0) hinweis = string.Join(" | ", hinweise);
+            return reihe;
+        }
+
+        /// <summary>Die drei Meldungen für „keine Anlage bleibt übrig" — unverändert aus
+        /// dem E2-Nachtrag, nur ausgelagert.</summary>
+        private static void Ausschlussmeldungen(KwkgAnlagenauswahl auswahl, double grenzeKW,
+                                                List<string> hinweise)
+        {
+            if (auswahl.UeberGrenze.Count > 0 && auswahl.NurHeizoel.Count > 0)
+                hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_KEINE_FOERDERFAEHIG,
+                                           grenzeKW.ToString("N0"), auswahl.Klartext(auswahl.UeberGrenze),
+                                           auswahl.Klartext(auswahl.NurHeizoel)));
+            else if (auswahl.NurHeizoel.Count > 0)
+                hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_ALLE_HEIZOEL,
+                                           auswahl.Klartext(auswahl.NurHeizoel)));
+            else if (auswahl.UeberGrenze.Count > 0)
+                hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_ALLE_UEBER_GRENZE,
+                                           grenzeKW.ToString("N0"), auswahl.Klartext(auswahl.UeberGrenze)));
+            foreach (string s in auswahl.Fristmeldungen) hinweise.Add(s);
+        }
+
+        /// <summary>
+        /// Die <b>projektweite</b> Zuschlagsreihe — der Rechenweg vor Etappe E6, Zeile für
+        /// Zeile unverändert. Er greift nur noch als ERSATZWEG, wenn sich Anlagen- und
+        /// Ergebnismodulzeilen nicht paaren lassen
+        /// (<see cref="KwkgAnlagenauswahl.Bestimmbar"/> = false): kein Anlagenbestand,
+        /// keine Modulzeilen, oder Namen und Anzahl passen nicht zusammen. Dann ist die
+        /// Projektsumme die einzige verfügbare Aussage.
+        /// </summary>
+        private double[] ReiheProjektweit(WirtschaftlichkeitParameter p, StromMatrix matrix,
+                                          double stromMWh, double vbh, int foerderbeginn,
+                                          out double jahr1)
+        {
+            jahr1 = 0;
 
             // ---------------- Bonus bei voller Vergütung [€/a] ----------------
             //  - W3-Split: getrennte Sätze auf KWK-Eigenstrom und -Einspeisung.
@@ -916,7 +1689,6 @@ namespace WindowsFormsApplication1
                 bonusVoll = stromMWh * 1000.0 * (p.KwkgBonus / 100.0);
             if (bonusVoll <= 0) return null;
 
-            // ---------------- Jahresreihe: degressive Staffel + Abschlag ----------------
             if (_staffelCache == null) _staffelCache = LadeKwkgStaffel();
             List<KeyValuePair<int, double>> staffel = _staffelCache;
             double abschlag = Math.Min(100.0, Math.Max(0.0, p.KwkgAbschlagNegativ)) / 100.0;
@@ -935,24 +1707,575 @@ namespace WindowsFormsApplication1
                 rest -= verguetet;   // Negativpreis-Stunden verbrauchen das Kontingent nicht
             }
             jahr1 = reihe[1];
-            if (hinweise.Count > 0) hinweis = string.Join(" | ", hinweise);
             return reihe;
         }
 
-        /// <summary>Vbh-Staffel aus dem Katalog (JahrVon aufsteigend); Fallback = Gesetzeswerte.</summary>
-        private static List<KeyValuePair<int, double>> LadeKwkgStaffel()
+        /// <summary>
+        /// ETAPPE E6 — <b>eine Zuschlagsreihe je förderfähiger Anlage, jahresweise
+        /// summiert</b>. Das ist der Kern der Etappe.
+        ///
+        /// <para><b>Je Anlage eigen:</b> Zuschlagssatz (Überschreibwert, sonst Projektsatz),
+        /// elektrische Vollbenutzungsstunden (Modulzeile aus E2, sonst Strom × 1000 / P_el
+        /// dieser Anlage), Jahresdeckel (Anlagen-Override, sonst Projekt-Override, sonst die
+        /// Staffel des § 8 Abs. 4 ab dem Inbetriebnahmejahr DIESER Anlage) und Kontingent
+        /// (Anlagenwert, sonst Projektwert). Der Negativpreis-Abschlag bleibt projektweit —
+        /// er hängt am Strommarkt, nicht an der Anlage.</para>
+        ///
+        /// <para><b>Die eine dokumentierte Näherung: der Split Eigenstrom/Einspeisung.</b>
+        /// <see cref="StromMatrix"/> liefert ihn nur für das GANZE Projekt; modulscharfe
+        /// Stundenreihen gibt es im Modell nicht. Er wird deshalb im Verhältnis der
+        /// Stromerzeugung auf die Anlagen verteilt. Bei genau einer Anlage ist das exakt,
+        /// bei mehreren eine Annahme — dieselbe, die der E2-Nachtrag für die Kürzung schon
+        /// getroffen hat (dort als Grenze 3 der Zwischenlösung benannt). Fehlt die
+        /// Strombedarfsreihe, gilt wie bisher „alles ist Eigenverbrauch", und
+        /// <see cref="StromMatrix.StrombedarfFehlt"/> weist das aus.</para>
+        ///
+        /// <para><b>Warum das für ein Einmodulprojekt dieselbe Zahl liefert wie vorher:</b>
+        /// Die Summe über eine Reihe ist die Reihe; der Anteil dieser einen Anlage am Split
+        /// ist 1; ihre Vbh sind die leistungsgewichteten Vbh des Projekts (bei einem Modul
+        /// identisch); Satz, Deckel und Kontingent fallen auf den Projektwert zurück.</para>
+        /// </summary>
+        private double[] ReiheJeAnlage(VariantenDaten v, WirtschaftlichkeitParameter p,
+                                       StromMatrix matrix, KwkgAnlagenauswahl auswahl,
+                                       int foerderbeginn, List<string> hinweise,
+                                       List<KwkgModulNachweis> nachweise, out double jahr1)
         {
-            var liste = new List<KeyValuePair<int, double>>();
+            jahr1 = 0;
+            if (_staffelCache == null) _staffelCache = LadeKwkgStaffel();
+            List<KeyValuePair<int, double>> staffel = _staffelCache;
+            double abschlag = Math.Min(100.0, Math.Max(0.0, p.KwkgAbschlagNegativ)) / 100.0;
+            int T = Math.Max(1, p.Betrachtungszeitraum);
+
+            // Split des Projekts; ohne Stundenreihen gilt „alles Eigenverbrauch" (W2).
+            bool mitMatrix = matrix != null &&
+                             matrix.KwkEigenGesamtMWh + matrix.KwkEinspeisungGesamtMWh > 0;
+            double stromSumme = auswahl.StromGesamtMWh;
+
+            var reihe = new double[T + 1];
+            var beschreibung = new List<string>();
+            bool etwasGerechnet = false;
+
+            for (int i = 0; i < auswahl.Anlagen.Count; i++)
+            {
+                if (!auswahl.Foerderfaehig[i]) continue;
+                BhkwAnlage a = auswahl.Anlagen[i];
+                double stromAnlageMWh = StromVon(auswahl.Module[i]);
+                if (stromAnlageMWh <= 0) continue;
+
+                double anteil = stromSumme > 0 ? stromAnlageMWh / stromSumme : 0;
+                double eigenMWh = mitMatrix ? matrix.KwkEigenGesamtMWh * anteil : stromAnlageMWh;
+                double einspMWh = mitMatrix ? matrix.KwkEinspeisungGesamtMWh * anteil : 0;
+
+                double satzEigen = a.SatzEigenCt ?? p.KwkgBonus;
+                double satzEinsp = a.SatzEinspCt ?? p.KwkgBonusEinspeisung;
+                double bonusVoll = eigenMWh * 1000.0 * (satzEigen / 100.0)
+                                 + einspMWh * 1000.0 * (satzEinsp / 100.0);
+                if (bonusVoll <= 0) continue;
+
+                double vbhAnlage = VbhDerAnlage(a, auswahl.Module[i], stromAnlageMWh);
+                if (vbhAnlage <= 0) continue;
+
+                int beginn = a.Inbetriebnahme.HasValue ? a.Inbetriebnahme.Value.Year : foerderbeginn;
+                double kontingent = a.VbhKontingent.HasValue && a.VbhKontingent.Value > 0
+                                  ? a.VbhKontingent.Value : p.KwkgVbhKontingent;
+                double deckelFest = a.VbhDeckel.HasValue && a.VbhDeckel.Value > 0
+                                  ? a.VbhDeckel.Value : p.KwkgVbhJahresdeckel;
+
+                double rest = kontingent;
+                double jahr1Modul = 0;              // E7: Nachweis, kein Rechenweg
+                int erschoepftAb = 0;
+                for (int t = 1; t <= T; t++)
+                {
+                    if (rest <= 0) { if (erschoepftAb == 0) erschoepftAb = t; break; }
+                    double deckel = deckelFest > 0 ? deckelFest
+                                                   : StaffelDeckel(staffel, beginn + t - 1);
+                    double verguetet = Math.Min(vbhAnlage, Math.Min(deckel, rest)) * (1.0 - abschlag);
+                    reihe[t] += bonusVoll * (verguetet / vbhAnlage);
+                    if (t == 1) jahr1Modul = bonusVoll * (verguetet / vbhAnlage);
+                    rest -= verguetet;   // Negativpreis-Stunden verbrauchen das Kontingent nicht
+                }
+                etwasGerechnet = true;
+
+                // ETAPPE E7 — dieselben Angaben strukturiert, damit der Bericht eine
+                // Tabelle je Modul bauen kann statt einer immer längeren Hinweiszeile
+                // (Übergabepunkt 1 aus E6). Die Herleitung nach § 7 kommt aus derselben
+                // Tranchenrechnung, die auch der Dialog zeigt — sie macht den ANGESETZTEN
+                // Satz nachvollziehbar und eine Abweichung vom Katalog sichtbar.
+                if (nachweise != null)
+                {
+                    var n = new KwkgModulNachweis
+                    {
+                        Bezeichner = a.Bezeichner,
+                        PelKW = a.PelKW,
+                        VbhElektrisch = vbhAnlage,
+                        SatzEigenCt = satzEigen,
+                        SatzEinspeisungCt = satzEinsp,
+                        SatzAusAnlage = a.SatzEigenCt.HasValue || a.SatzEinspCt.HasValue,
+                        KontingentH = kontingent,
+                        JahresdeckelH = deckelFest,
+                        Foerderbeginn = beginn,
+                        Jahr1Eur = jahr1Modul,
+                        ErschoepftAbJahr = erschoepftAb
+                    };
+                    try
+                    {
+                        if (_gesetze == null) _gesetze = new GesetzKatalog();
+                        KwkgSatzVorschlag vs = KwkgSatzRechner.Vorschlag(
+                            a.PelKW, beginn, a.Anlagenart, a.Eigenfall,
+                            (s, j) => _gesetze.WertMitHerkunft(s, j), BerichtTexte.Kultur);
+                        n.HerleitungEigen = vs.HerleitungEigen ?? "";
+                        n.HerleitungEinspeisung = vs.HerleitungEinspeisung ?? "";
+                    }
+                    catch { }
+                    nachweise.Add(n);
+                }
+
+                // Der Bezeichner ist ein Datenwert, die Klammer trägt nur Zahlen und
+                // Einheitenzeichen — sie bleibt deshalb im Code (Drei-Schichten-Regel,
+                // wie bei KwkgAnlagenauswahl.Klartext).
+                beschreibung.Add(a.Bezeichner + " (" + a.PelKW.ToString("N0") + " kW, " +
+                                 vbhAnlage.ToString("N0") + " h/a, " +
+                                 satzEigen.ToString("N2") + "/" + satzEinsp.ToString("N2") + " ct/kWh, " +
+                                 kontingent.ToString("N0") + " h)");
+            }
+
+            if (!etwasGerechnet) return null;
+
+            // Die Herleitung je Modul erscheint nur, wenn es überhaupt etwas zu unterscheiden
+            // gibt: mehr als eine Anlage oder mindestens eine eigene Angabe. Bei einem
+            // Einmodulprojekt ohne eigene Angaben bleibt der Hinweistext unverändert leer —
+            // sonst hätte E6 auf jedem Bestandsprojekt eine neue Meldung erzeugt.
+            if (beschreibung.Count > 1 || auswahl.MitEigenerAngabe)
+                hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_JE_MODUL,
+                                           string.Join("; ", beschreibung.ToArray())));
+
+            jahr1 = reihe[1];
+            return reihe;
+        }
+
+        /// <summary>
+        /// Elektrische Vollbenutzungsstunden EINER Anlage [h/a] (Etappe E6). Vorrang hat der
+        /// beim Lauf berechnete Wert aus <c>Tab_ErgebnisBHKWModul.VbhElektrisch</c>
+        /// (Migrationsschritt 18) — er trägt die Leistung, die zum Zeitpunkt des Laufs
+        /// installiert war. Fehlt er (Ergebniszeile vor E2), wird er aus der Stromerzeugung
+        /// dieser Anlage und ihrer heutigen Nennleistung gebildet — dieselbe Formel, die der
+        /// Rechenkern verwendet.
+        /// </summary>
+        private static double VbhDerAnlage(BhkwAnlage a, ErgebnisBHKWModulModel modul, double stromMWh)
+        {
+            if (modul != null && modul.VbhElektrisch > 0) return modul.VbhElektrisch;
+            return a.PelKW > 0 ? stromMWh * 1000.0 / a.PelKW : 0;
+        }
+
+        /// <summary>
+        /// Erstes Kalenderjahr der jahresscharfen Reihen: das Inbetriebnahmejahr, sonst
+        /// das Folgejahr (Planungsfall). Seit Etappe E4 an EINER Stelle — die KWKG-Reihe
+        /// und die drei Steuerreihen müssen dasselbe Jahr zugrunde legen, sonst zeigen
+        /// zwei Zeilen desselben Ergebnisses verschiedene Rechtsstände.
+        /// </summary>
+        private static int Foerderbeginn(WirtschaftlichkeitParameter p)
+        {
+            return p.KwkgInbetriebnahme.HasValue ? p.KwkgInbetriebnahme.Value.Year
+                                                 : DateTime.Now.Year + 1;
+        }
+
+        // =====================================================================
+        // ETAPPE E4 — Energiesteuer- und Stromsteuergutschriften
+        // =====================================================================
+
+        /// <summary>
+        /// Baut die drei jahresscharfen Gutschriftreihen (Energiesteuer,
+        /// Stromsteuer-Befreiung, Stromsteuer-Entlastung) und hängt sie an
+        /// <see cref="ProjektEingabe.ErloesReihen"/>.
+        ///
+        /// <para><b>Jahresscharf wie die KWKG-Reihe (L1).</b> Die Sätze des Katalogs
+        /// tragen ein Gültigkeitsjahr; für jedes Betrachtungsjahr wird deshalb mit dem
+        /// Satz dieses Jahres gerechnet (<c>Förderbeginn + t − 1</c>). Auf dem heutigen
+        /// Rechtsstand sind die Sätze ab 2026 konstant, die Reihen also flach — die
+        /// Mechanik trägt aber jede künftige Novelle, ohne dass eine Altrechnung ihre
+        /// Zahlen ändert.</para>
+        ///
+        /// <para><b>Die Begründungen entstehen nur EINMAL</b>, aus dem ersten Jahr. Sonst
+        /// stünde derselbe Satz zwanzigmal im Hinweisfeld.</para>
+        ///
+        /// <para><b>Nur BHKW-Brennstoff.</b> Die Anlagenliste enthält ausschließlich
+        /// BHKW-Anlagen; Kessel- und Spitzenlastbrennstoff bleiben außen vor — genau die
+        /// Abgrenzung, die das Energiesteuerrecht verlangt.</para>
+        /// </summary>
+        private void BaueSteuerReihen(VariantenDaten v, WirtschaftlichkeitParameter p,
+                                      ProjektEingabe e, out string hinweis)
+        {
+            hinweis = null;
+            if (v == null || v.Ergebnis == null) return;
+
+            SteuerEingabe eingabe = BaueSteuerEingabe(v, p, e.Matrix);
+            if (eingabe == null) return;
+
+            if (_gesetze == null) _gesetze = new GesetzKatalog();
+            System.Globalization.CultureInfo kultur = BerichtTexte.Kultur;
+
+            int T = Math.Max(1, p.Betrachtungszeitraum);
+            int beginn = Foerderbeginn(p);
+
+            double[] energie = new double[T + 1];
+            double[] befreiung = new double[T + 1];
+            double[] entlastung = new double[T + 1];
+            var herkunft = new List<string>();
+            var begruendungen = new List<string>();
+
+            for (int t = 1; t <= T; t++)
+            {
+                int jahr = beginn + t - 1;
+                SteuerErgebnis r = SteuerGutschriftRechner.Rechne(
+                    eingabe, jahr, s => _gesetze.WertMitHerkunft(s, jahr), kultur);
+
+                energie[t] = r.EnergiesteuerEur;
+                befreiung[t] = r.StromsteuerBefreiungEur;
+                entlastung[t] = r.StromsteuerEntlastungEur;
+
+                if (t != 1) continue;                       // Texte nur aus dem ersten Jahr
+                foreach (string s in r.Begruendungen) if (!begruendungen.Contains(s)) begruendungen.Add(s);
+                foreach (string s in r.Herkunft) if (!herkunft.Contains(s)) herkunft.Add(s);
+            }
+
+            e.EnergiesteuerJahr1 = energie[1];
+            e.StromsteuerBefreiungJahr1 = befreiung[1];
+            e.StromsteuerEntlastungJahr1 = entlastung[1];
+            if (herkunft.Count > 0) e.SteuerHerkunft = string.Join(" | ", herkunft.ToArray());
+
+            // Eine Reihe ohne jeden Betrag wird gar nicht erst angehängt — sie hätte im
+            // Kapitalwert keine Wirkung und im Bericht (E7) keinen Aussagewert.
+            Reihe(e, KapitalwertRechner.ErloesReihe.ENERGIESTEUER, energie);
+            Reihe(e, KapitalwertRechner.ErloesReihe.STROMSTEUER_BEFREIUNG, befreiung);
+            Reihe(e, KapitalwertRechner.ErloesReihe.STROMSTEUER_ENTLASTUNG, entlastung);
+
+            if (begruendungen.Count > 0) hinweis = string.Join(" | ", begruendungen.ToArray());
+        }
+
+        /// <summary>Hängt eine Reihe an, sofern sie überhaupt einen Betrag führt.</summary>
+        private static void Reihe(ProjektEingabe e, string name, double[] werte)
+        {
+            for (int t = 1; t < werte.Length; t++)
+                if (werte[t] != 0)
+                {
+                    e.ErloesReihen.Add(new KapitalwertRechner.ErloesReihe(name, werte));
+                    return;
+                }
+        }
+
+        /// <summary>
+        /// Sammelt Mengen und Projektangaben für die Steuerprüfung.
+        /// <c>null</c> = kein BHKW im Lauf (dann gibt es nichts zu prüfen und nichts zu
+        /// melden).
+        ///
+        /// <para><b>Die Anlagenliste ist dieselbe wie beim KWKG-Guard</b>
+        /// (<c>Tab_Energieanlagen</c> ⋈ <c>Tab_BHKW</c>, gepaart mit den
+        /// Ergebnis-Modulzeilen). Nur so ist die 2-MW-Grenze des § 9 Abs. 1 Nr. 3
+        /// StromStG <b>je Anlage</b> prüfbar — die Grenze ist eine Anlagen-Nennleistung,
+        /// nicht die Projektsumme (Restbefund 3 aus dem E2-Protokoll).</para>
+        ///
+        /// <para><b>Ersatzweg ohne Anlagenzeilen.</b> Lassen sich Anlagen und Modulzeilen
+        /// nicht paaren, wird je Modulzeile eine Anlage gebildet und ihr die
+        /// PROJEKTSUMME der elektrischen Leistung zugeschrieben. Das ist konservativ: Es
+        /// schließt eher zu viel von der Befreiung aus als zu wenig — derselbe Zweig wie
+        /// beim KWKG-Guard.</para>
+        /// </summary>
+        private SteuerEingabe BaueSteuerEingabe(VariantenDaten v, WirtschaftlichkeitParameter p,
+                                                StromMatrix matrix)
+        {
+            List<ErgebnisBHKWModulModel> module = v.Ergebnis.BHKW != null ? v.Ergebnis.BHKW.Module : null;
+            bool hatBhkw = module != null && module.Count > 0;
+
+            // ETAPPE E5 — § 9b StromStG hängt an KEINER KWK-Anlage. Er entlastet den
+            // Netzbezug JEDES Unternehmens des produzierenden Gewerbes (und jedes
+            // Betriebs der Land- und Forstwirtschaft). Bis E4 fiel er mit der
+            // BHKW-Prüfung weg — der offene Punkt 1 des E4-Protokolls.
+            //
+            // ERGEBNISNEUTRAL: Die Erweiterung greift NUR, wenn die Unternehmensart
+            // ausdrücklich auf produzierendes Gewerbe bzw. Land- und Forstwirtschaft
+            // steht. Die Vorbelegung aus Migrationsschritt 20b ist KEIN_PROD_GEWERBE —
+            // ein Bestandsprojekt ohne BHKW liefert deshalb weiterhin null und meldet
+            // auch nichts (sonst stünde an jedem Wärmepumpenprojekt eine Begründung,
+            // warum es keine Entlastung gibt, die niemand beantragt hat).
+            bool prodGewerbe =
+                string.Equals(p.Unternehmensart, DbWerte.UNTERNEHMENSART_PROD_GEWERBE, StringComparison.Ordinal) ||
+                string.Equals(p.Unternehmensart, DbWerte.UNTERNEHMENSART_LAND_FORST, StringComparison.Ordinal);
+            if (!hatBhkw && !prodGewerbe) return null;
+
+            var eingabe = new SteuerEingabe
+            {
+                Unternehmensart = p.Unternehmensart,
+                RaeumlicherZusammenhang = p.RaeumlicherZusammenhang,
+                HocheffizienzNachweis = p.HocheffizienzNachweis,
+                JahresnutzungsgradProzent = p.Jahresnutzungsgrad,
+                EnergiesteuerWahl = p.EnergiesteuerWahl,
+                AufteilungMethode = p.AufteilungMethode
+            };
+
+            // Ohne BHKW bleibt die Anlagenliste leer — Energiesteuer und
+            // Stromsteuerbefreiung hängen an ihr und schweigen dann (E5); § 9b rechnet
+            // allein mit dem Netzbezug weiter unten.
+            if (hatBhkw)
+            {
+                List<BhkwAnlage> anlagen = BhkwAnlagen(v.IdProjekt);
+                ErgebnisBHKWModulModel[] zuordnung = anlagen.Count > 0
+                    ? ModulJeAnlage(anlagen, module) : null;
+
+                if (zuordnung != null)
+                    for (int i = 0; i < anlagen.Count; i++)
+                        eingabe.Anlagen.Add(BaueSteuerAnlage(v.IdProjekt, anlagen[i].Bezeichner,
+                            anlagen[i].PelKW, zuordnung[i], anlagen[i].IdCarrier, anlagen[i].IdBrennstoff));
+                else
+                {
+                    double pelProjekt = PelKW(v.IdProjekt);
+                    foreach (ErgebnisBHKWModulModel m in module)
+                        eingabe.Anlagen.Add(BaueSteuerAnlage(v.IdProjekt,
+                            m.Modul ?? "", pelProjekt, m, 0, 0));
+                }
+            }
+
+            // Eigenverbrauch: NUR aus der Stundenreihe. Ohne sie bleibt der Wert null,
+            // und die Befreiung entfällt mit Begründung (siehe SteuerGutschriftRechner).
+            if (matrix != null && !matrix.StrombedarfFehlt)
+                eingabe.KwkEigenMWh = matrix.KwkEigenGesamtMWh;
+
+            // Netzbezug: die Stundenreihe, sonst die Jahressumme des Laufs — beides sind
+            // gerechnete Größen desselben Laufs, keine Näherung.
+            eingabe.NetzbezugMWh = matrix != null ? matrix.BezugGesamtMWh
+                : (v.Ergebnis.Energiebedarf != null ? v.Ergebnis.Energiebedarf.Stromrestbedarf : 0);
+
+            return eingabe;
+        }
+
+        /// <summary>Eine Anlagenzeile der Steuerprüfung aus Anlagen- und Modulangaben.</summary>
+        private SteuerAnlage BaueSteuerAnlage(int idProjekt, string bezeichner, double pelKW,
+                                              ErgebnisBHKWModulModel modul,
+                                              int idCarrierAnlage, int idBrennstoffAnlage)
+        {
+            var a = new SteuerAnlage { Bezeichner = bezeichner, PelKW = pelKW };
+            if (modul != null)
+            {
+                a.BrennstoffMWh = modul.Verbrauch;
+                a.StromMWh = modul.Stromproduktion;
+                a.WaermeMWh = modul.Waermeproduktion;
+            }
+
+            // Der Träger der ERGEBNISZEILE hat Vorrang: Er ist der, mit dem der Lauf
+            // gerechnet hat. Erst wenn er fehlt, gilt der Träger der Anlagenzeile.
+            int carrier = modul != null && modul.CarrierId > 0 ? modul.CarrierId : idCarrierAnlage;
+            int brennstoff = carrier > 0 ? BrennstoffId(carrier, idBrennstoffAnlage)
+                                         : idBrennstoffAnlage;
+
+            a.SchluesselSatzVoll = EnergiesteuerSchluessel(brennstoff, false);
+            a.SchluesselSatz53a = EnergiesteuerSchluessel(brennstoff, true);
+            a.SchluesselCo2 = Co2Schluessel(brennstoff);
+            a.Fossil = FossilerBrennstoff(brennstoff);
+
+            TraegerEinheit t = Traeger(idProjekt, carrier);
+            a.EffHi = t.EffHi;
+            a.EffHs = t.EffHs;
+            a.Abrechnungseinheit = t.Einheit;
+            return a;
+        }
+
+        /// <summary>Abrechnungseinheit und Heizwerte eines Energieträgers.</summary>
+        private sealed class TraegerEinheit
+        {
+            public double EffHi;
+            public double EffHs;
+            public string Einheit = "";
+        }
+
+        /// <summary>Cache je Berechne-Lauf: (Projekt, Träger) → Einheit und Heizwerte.</summary>
+        private readonly Dictionary<string, TraegerEinheit> _traegerCache =
+            new Dictionary<string, TraegerEinheit>();
+
+        /// <summary>
+        /// Abrechnungseinheit, Heizwert und Brennwert eines Trägers — <b>Projektwert vor
+        /// Katalogwert</b>: zuerst <c>Abfrage_Energietraeger_Effektiv</c> (dieselbe
+        /// Quelle, aus der auch <c>KostenEmissionRechner</c> seine Mengen bildet),
+        /// ersatzweise die Katalogzeile <c>energy_carrier</c>. Es gibt in dieser
+        /// Anwendung keine zweite Wahrheit über Heizwerte.
+        ///
+        /// <para><b>Warum die Rückfallebene nötig ist.</b> Die gespeicherte Abfrage führt
+        /// nur die Träger, die dem Projekt in <c>energy_project_settings</c> zugeordnet
+        /// sind. Fährt eine Anlage einen Träger ohne solche Zuordnung, gäbe es sonst
+        /// weder Abrechnungseinheit noch Heizwert — und die Steuerrechnung meldete „nicht
+        /// umrechenbar", obwohl der Katalog beides führt. Der Katalogwert ist der
+        /// schwächere, aber richtige Ersatz.</para>
+        /// </summary>
+        private TraegerEinheit Traeger(int idProjekt, int carrierId)
+        {
+            var leer = new TraegerEinheit();
+            if (carrierId <= 0) return leer;
+            string key = idProjekt + "/" + carrierId;
+            TraegerEinheit gefunden;
+            if (_traegerCache.TryGetValue(key, out gefunden)) return gefunden;
+
+            var t = new TraegerEinheit();
             try
             {
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT JahrVon, MaxVbh FROM " + TAB_KWKG_STAFFEL + " ORDER BY JahrVon");
-                if (dt != null)
-                    foreach (DataRow r in dt.Rows)
-                        liste.Add(new KeyValuePair<int, double>(
-                            Convert.ToInt32(r["JahrVon"]), Convert.ToDouble(r["MaxVbh"])));
+                    "SELECT billing_unit, eff_hi, eff_hs FROM Abfrage_Energietraeger_Effektiv " +
+                    "WHERE ID_Projekt = ? AND carrier_id = ?",
+                    new OleDbParameter("@p", idProjekt), new OleDbParameter("@c", carrierId));
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    DataRow r = dt.Rows[0];
+                    t.Einheit = r["billing_unit"] != DBNull.Value
+                              ? Convert.ToString(r["billing_unit"]).Trim() : "";
+                    t.EffHi = D(r, "eff_hi") ?? 0;
+                    t.EffHs = D(r, "eff_hs") ?? 0;
+                }
             }
-            catch { liste.Clear(); }
+            catch { }
+
+            if (t.EffHi <= 0 || t.Einheit.Length == 0)
+                try
+                {
+                    DataTable dt = DataRepository.GetDataTable(
+                        "SELECT billing_unit, hi_kwh_per_unit, hs_kwh_per_unit FROM energy_carrier WHERE id = ?",
+                        new OleDbParameter("@c", carrierId));
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+                        DataRow r = dt.Rows[0];
+                        if (t.Einheit.Length == 0 && r["billing_unit"] != DBNull.Value)
+                            t.Einheit = Convert.ToString(r["billing_unit"]).Trim();
+                        if (t.EffHi <= 0) t.EffHi = D(r, "hi_kwh_per_unit") ?? 0;
+                        if (t.EffHs <= 0) t.EffHs = D(r, "hs_kwh_per_unit") ?? 0;
+                    }
+                }
+                catch { }
+
+            _traegerCache[key] = t;
+            return t;
+        }
+
+        /// <summary>
+        /// Katalogschlüssel des Energiesteuersatzes eines Brennstoffs
+        /// (<c>Tab_Brennstoff_Stamm.ID</c>); leer = kein Satz zugeordnet, dann gibt es
+        /// keine Gutschrift und eine Begründung.
+        ///
+        /// <para><b>Ausdrücklich unvollständig, und das ist Absicht.</b> Zugeordnet wird
+        /// nur, was <c>Grundlagen_KWKG_Energiesteuer_Stromsteuer.md</c> Abschnitt 3
+        /// namentlich führt. Alles Übrige — Stadtgas, Wasserstoff, Kohle und Koks nach
+        /// § 2, Biogas, Holz, Pellets, Rapsöl, tierische Fette, Fernwärme — bleibt ohne
+        /// Zuordnung. Eine geratene Einordnung wäre genau der Fehlertyp, den
+        /// Leitentscheidung L3 verhindern soll.</para>
+        ///
+        /// <para><b>Heizöl L und M zählen als Schweröl</b> (§ 2 Abs. 3 Satz 1 Nr. 2, je
+        /// 1.000 kg); nur Heizöl EL ist Gasöl im Sinne der Nr. 1 Buchst. a (je 1.000 l).
+        /// Die Bio-Blends folgen dem Heizöl EL — dieselbe Näherung, mit der schon die
+        /// BEHG-Einstufung arbeitet.</para>
+        /// </summary>
+        /// <param name="teilsatz">true = Teilsatz nach § 53a Abs. 5, false = voller Satz nach § 2.</param>
+        private static string EnergiesteuerSchluessel(int idBrennstoff, bool teilsatz)
+        {
+            switch (idBrennstoff)
+            {
+                case 2:    // Erdgas LL
+                case 3:    // Erdgas E
+                    return teilsatz ? DbWerte.GESETZ_ENERGIEST_53A5_ERDGAS
+                                    : DbWerte.GESETZ_ENERGIEST_ERDGAS;
+                case 4:    // Flüssiggas (Propan)
+                case 5:    // Flüssiggas (Butan)
+                    return teilsatz ? DbWerte.GESETZ_ENERGIEST_53A5_FLUESSIGGAS
+                                    : DbWerte.GESETZ_ENERGIEST_FLUESSIGGAS;
+                case 6:    // Heizöl S
+                case 7:    // Heizöl M
+                case 8:    // Heizöl L
+                    return teilsatz ? DbWerte.GESETZ_ENERGIEST_53A5_SCHWEROEL
+                                    : DbWerte.GESETZ_ENERGIEST_SCHWEROEL;
+                case 9:    // Heizöl EL
+                case 18:   // Heizöl Bio 5
+                case 19:   // Heizöl Bio 10
+                case 20:   // Heizöl Bio 15
+                case 21:   // Heizöl Bio 20
+                case 22:   // Heizöl EL schwefelarm
+                    return teilsatz ? DbWerte.GESETZ_ENERGIEST_53A5_HEIZOEL_EL
+                                    : DbWerte.GESETZ_ENERGIEST_HEIZOEL_EL;
+                default:
+                    return "";
+            }
+        }
+
+        /// <summary>
+        /// Katalogschlüssel des <b>direkten</b> CO₂-Faktors eines Brennstoffs
+        /// (Klasse <c>EF_BILANZ</c>, EBeV 2030 Anlage 2 Teil 4, heizwertbezogen); leer =
+        /// kein Faktor zugeordnet.
+        ///
+        /// <para><b>Nicht die Nachweiswerte der Anlage 9.</b> § 2 StromStG fragt nach den
+        /// tatsächlichen direkten Emissionen; die Nachweisfaktoren des Gebäuderechts
+        /// gehören in den Energieausweis. Leitentscheidung L11 hält die beiden Sätze
+        /// getrennt, und diese Zuordnung ist die Anwendung dieser Regel.</para>
+        /// </summary>
+        private static string Co2Schluessel(int idBrennstoff)
+        {
+            switch (idBrennstoff)
+            {
+                case 2:
+                case 3:
+                    return DbWerte.GESETZ_EF_BILANZ_EBEV_ERDGAS_HI;
+                case 4:
+                case 5:
+                    return DbWerte.GESETZ_EF_BILANZ_EBEV_FLUESSIGGAS;
+                case 6:
+                case 7:
+                case 8:
+                    return DbWerte.GESETZ_EF_BILANZ_EBEV_HEIZOEL_S;
+                case 9:
+                case 18:
+                case 19:
+                case 20:
+                case 21:
+                case 22:
+                    return DbWerte.GESETZ_EF_BILANZ_EBEV_HEIZOEL_EL;
+                case 16:   // Rapsöl
+                    return DbWerte.GESETZ_EF_BILANZ_EBEV_PFLANZENOEL;
+                default:
+                    return "";
+            }
+        }
+
+        /// <summary>
+        /// true, wenn der Brennstoff fossil ist — nur dann greift der CO₂-Grenzwert des
+        /// § 2 StromStG. Maßstab sind dieselben Kategorien, nach denen
+        /// <c>KostenEmissionRechner</c> die BEHG-Pflicht bestimmt (Gas, Öl, Koks, Kohle,
+        /// Sonstige), abzüglich Biogas — eine zweite Einstufung derselben Frage wäre eine
+        /// doppelte Wahrheit.
+        /// </summary>
+        private bool FossilerBrennstoff(int idBrennstoff)
+        {
+            if (idBrennstoff <= 0) return false;
+            if (idBrennstoff == 14) return false;               // Biogas
+            int k = BrennstoffKategorie(0, idBrennstoff);
+            return k == 1 || k == 2 || k == 3 || k == 4 || k == 11;
+        }
+
+        /// <summary>
+        /// Vbh-Staffel des § 8 Abs. 4 KWKG (JahrVon aufsteigend); Fallback = Gesetzeswerte.
+        ///
+        /// <para>
+        /// <b>Quelle seit Etappe E1: <c>Tab_Gesetzesparameter</c></b>, Schlüssel
+        /// <c>KWKG_VBH_JAHRESDECKEL</c>, gelesen über <see cref="GesetzKatalog"/>. Die
+        /// Alttabelle <c>Tab_KWKG_Staffel</c> wird seit Etappe K1 (19.08.2026) auch
+        /// nicht mehr ANGELEGT: Konstante und DDL/Saat sind aus
+        /// <c>StelleTabellenSicher</c> entfernt (Konzept Kosten/Energieträger, HF1).
+        /// Der endgültige <c>DROP TABLE</c> folgt in Migrationsschritt M-E (Etappe K6).
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Ergebnisgleich.</b> Der Katalog führt die erste Stufe mit
+        /// <c>JahrVon = 2021</c> (so steht es im Gesetz), die Alttabelle mit 2020. Auf
+        /// den Lookup wirkt sich das nicht aus: <see cref="StaffelDeckel"/> beginnt mit
+        /// dem Wert der ERSTEN Zeile und überschreibt ihn erst ab dem passenden Jahr —
+        /// für 2020 und früher liefern beide Reihen 5.000 h, ab 2021 sind die Zeilen
+        /// ohnehin deckungsgleich.
+        /// </para>
+        /// </summary>
+        private static List<KeyValuePair<int, double>> LadeKwkgStaffel()
+        {
+            var liste = new GesetzKatalog().Reihe(DbWerte.GESETZ_KWKG_VBH_JAHRESDECKEL);
             if (liste.Count == 0)
             {
                 int[,] f = { { 2020, 5000 }, { 2023, 4000 }, { 2025, 3500 }, { 2026, 3300 },
@@ -972,9 +2295,50 @@ namespace WindowsFormsApplication1
             return deckel;
         }
 
-        /// <summary>Installierte elektrische BHKW-Leistung des Projekts [kW] (Σ Tab_BHKW.Pel).</summary>
+        /// <summary>
+        /// Installierte elektrische BHKW-Leistung des Projekts [kW].
+        ///
+        /// <para><b>ETAPPE E2 — Bezugsmenge korrigiert.</b> Bis dahin lautete die Abfrage
+        /// <c>SELECT SUM(Pel) FROM Tab_BHKW WHERE ID_Projekt = ?</c> — die Summe über alle
+        /// BHKW-GERÄTEZEILEN des Projekts. Das ist nicht die installierte Leistung:
+        /// <c>Tab_BHKW</c> nimmt jede Katalogübernahme auf, auch wenn die zugehörige
+        /// Anlagenzeile nie entstand oder später gelöscht wurde. Die Simulation baut ihre
+        /// Modulliste dagegen ausschließlich aus <c>Tab_Energieanlagen</c>
+        /// (<c>SimulationControl.BHKW_Liste_Laden</c>); nur diese Geräte laufen und
+        /// erzeugen den Strom, an dem der Zuschlag hängt.</para>
+        ///
+        /// <para><b>Gemessen am Bestand (18.08.2026):</b> Projekt 1024 führt EIN
+        /// BHKW-Modul mit 21 kW, <c>Tab_BHKW</c> aber fünf Gerätezeilen mit zusammen
+        /// 546,4 kW. Die alte Summe überschritt damit die 500-kW-Schwelle des
+        /// Ausschreibungsfensters und setzte den KWK-Zuschlag auf 0 — für eine Anlage, die
+        /// nicht einmal ein Zwanzigstel dieser Leistung hat. Projekt 1023 kommt auf
+        /// 1.551,2 kW aus elf Gerätezeilen und hat überhaupt kein BHKW im Anlagenbestand.</para>
+        ///
+        /// <para><b>Rückfall auf die alte Summe</b>, wenn der Verbund keine Zeile liefert
+        /// (Anlagenzeile ohne <c>ID_BHKW</c>, Datenbank ohne Anlagenzeilen): Dann ist die
+        /// Gerätesumme die einzige verfügbare Aussage, und sie ist konservativ — sie
+        /// überschätzt die Leistung nie nach unten. Ein Projekt ohne jede Angabe liefert 0;
+        /// die Aufrufer behandeln das ausdrücklich.</para>
+        /// </summary>
         private static double LiesBhkwLeistungKW(int idProjekt)
         {
+            // 1. Σ P_el über die ANLAGENZEILEN — dieselbe Menge, die die Engine rechnet.
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT SUM(b.Pel) FROM Tab_Energieanlagen AS a " +
+                    "INNER JOIN Tab_BHKW AS b ON a.ID_BHKW = b.ID " +
+                    "WHERE a.ID_Projekt = ? AND a.ID_Type = " + WizardItemClass.BHKW_TYP,
+                    new OleDbParameter("@p", idProjekt));
+                if (o != null && o != DBNull.Value)
+                {
+                    double summe = Convert.ToDouble(o);
+                    if (summe > 0) return summe;
+                }
+            }
+            catch { }
+
+            // 2. Rückfall: Σ P_el über die Gerätezeilen (der Weg bis Etappe E2).
             try
             {
                 object o = DataRepository.ExecuteScalar(
@@ -986,8 +2350,653 @@ namespace WindowsFormsApplication1
             return 0;
         }
 
-        /// <summary>true, wenn ein BHKW des Projekts einen Öl-Träger nutzt
-        /// (Tab_BHKW.Brennstoff → Tab_Brennstoff_Stamm.ID_Kategorie 2 = Öl).</summary>
+        /// <summary>Σ P_el des Projekts [kW], einmal je Berechne-Lauf gelesen.</summary>
+        private double PelKW(int idProjekt)
+        {
+            if (!_pelCache.ContainsKey(idProjekt)) _pelCache[idProjekt] = LiesBhkwLeistungKW(idProjekt);
+            return _pelCache[idProjekt];
+        }
+
+        // =====================================================================
+        // Förderfähigkeit JE ANLAGE — Ausschreibungsgrenze § 8a KWKG / KWKAusV
+        // (Nachtrag zu Etappe E2) und Heizöl-Ausschluss (Nachtrag 2)
+        // Nutzerentscheidungen vom 19.08.2026
+        // =====================================================================
+
+        /// <summary>
+        /// Eine BHKW-Anlagenzeile des Projekts mit ihrer elektrischen Nennleistung und
+        /// ihrer Brennstoffart.
+        /// </summary>
+        private sealed class BhkwAnlage
+        {
+            public string Bezeichner = "";
+            public double PelKW;
+
+            /// <summary>
+            /// true, wenn diese Anlage einen Brennstoff der Kategorie „Öl" fährt
+            /// (<see cref="BRENNSTOFF_KATEGORIE_OEL"/>) — ermittelt in
+            /// <see cref="LiesBhkwAnlagen"/> vorrangig über den Energieträger der
+            /// ANLAGE, ersatzweise über den Brennstoff der Gerätezeile.
+            /// </summary>
+            public bool Heizoel;
+
+            /// <summary>
+            /// ETAPPE E4: <c>Tab_Energieanlagen.ID_Carrier</c> der Anlage (0 = keiner) —
+            /// über ihn kommen Abrechnungseinheit und Heizwert der Steuerrechnung.
+            /// </summary>
+            public int IdCarrier;
+
+            /// <summary>
+            /// ETAPPE E4: der aufgelöste <c>Tab_Brennstoff_Stamm.ID</c> dieser Anlage
+            /// (0 = nicht ermittelbar) — <b>dieselbe</b> zweistufige Auflösung wie bei
+            /// <see cref="Heizoel"/> (Träger vor Gerät), nur eine Ebene früher
+            /// abgegriffen. Er ordnet der Anlage ihren Energiesteuersatz und ihren
+            /// CO₂-Faktor zu.
+            /// </summary>
+            public int IdBrennstoff;
+
+            // ---------------- ETAPPE E6 — die acht Angaben je Anlage ----------------
+            //
+            // ALLE sind NULL-fähig, und NULL heißt durchgehend „kein eigener Wert, es
+            // gilt der Projektwert". Genau dieser Rückfall macht E6 für Bestandsprojekte
+            // ergebnisneutral: In jeder Datenbank vor Migrationsschritt 22 sind alle acht
+            // Felder leer, und dann rechnet die Reihe Zeile für Zeile wie vorher.
+
+            /// <summary><c>Tab_Energieanlagen.ID</c> — die Zeile, in die der Dialog
+            /// schreibt.</summary>
+            public int IdAnlage;
+
+            /// <summary><c>Tab_Energieanlagen.ID_Projekt</c> — für die Anzeige im Dialog,
+            /// der die ganze Vergleichsgruppe führt.</summary>
+            public int IdProjekt;
+
+            /// <summary>Bestell-/Genehmigungsdatum DIESER Anlage (§ 6 KWKG 2025);
+            /// <c>null</c> = Projektvorgabe.</summary>
+            public DateTime? Stichtag;
+
+            /// <summary>Inbetriebnahmedatum DIESER Anlage; <c>null</c> = Projektvorgabe.
+            /// Es entscheidet über Realisierungsfrist, Satzstichtag, Deckelstaffel und
+            /// über Neuanlage/Bestandsanlage (Heizöl-Ausschluss).</summary>
+            public DateTime? Inbetriebnahme;
+
+            /// <summary>Anlagenart, Steuerwert <c>DbWerte.KWKG_ANLAGENART_*</c>; leer =
+            /// nicht erfasst (der Vorschlag rechnet dann als Neuanlage). Ohne
+            /// Rechenwirkung — steuert nur den Katalogvorschlag.</summary>
+            public string Anlagenart = "";
+
+            /// <summary>Tatbestand des § 6 Abs. 3, Steuerwert
+            /// <c>DbWerte.KWKG_EIGENFALL_*</c>; leer = keiner. Ohne Rechenwirkung.</summary>
+            public string Eigenfall = "";
+
+            /// <summary>Überschreibwert des Einspeisesatzes [ct/kWh]; <c>null</c> =
+            /// Projektsatz <c>KwkgBonusEinspeisung</c>.</summary>
+            public double? SatzEinspCt;
+
+            /// <summary>Überschreibwert des Eigenstromsatzes [ct/kWh]; <c>null</c> =
+            /// Projektsatz <c>KwkgBonus</c>.</summary>
+            public double? SatzEigenCt;
+
+            /// <summary>Vbh-Kontingent dieser Anlage [h]; <c>null</c> = Projektwert.</summary>
+            public double? VbhKontingent;
+
+            /// <summary>Jahresdeckel-Override dieser Anlage [h/a]; <c>null</c> oder 0 =
+            /// Projekt-Override, sonst die Staffel des § 8 Abs. 4.</summary>
+            public double? VbhDeckel;
+
+            /// <summary>true, wenn diese Anlage überhaupt eine eigene E6-Angabe trägt —
+            /// die Bedingung, unter der die Rechnung von der Projektvorgabe abweicht.</summary>
+            public bool HatEigeneAngabe
+            {
+                get
+                {
+                    return Stichtag.HasValue || Inbetriebnahme.HasValue ||
+                           SatzEinspCt.HasValue || SatzEigenCt.HasValue ||
+                           VbhKontingent.HasValue || VbhDeckel.HasValue;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Aufteilung der BHKW-Anlagen eines Projekts in förderfähige und ausgeschlossene —
+        /// samt der bereinigten Bezugsgrößen der Zuschlagsrechnung.
+        ///
+        /// <para><b>Zwei Ausschlussgründe, eine Bilanz.</b> Ausgeschlossen wird eine Anlage,
+        /// wenn sie über der Ausschreibungsgrenze liegt <b>oder</b> mit Heizöl läuft (und der
+        /// Ölausschluss für dieses Projekt überhaupt greift). Die Gründelisten dürfen sich
+        /// überschneiden — die Summen <see cref="PelFoerderfaehigKW"/> und
+        /// <see cref="StromFoerderfaehigMWh"/> entstehen dagegen aus einem einzigen Durchlauf
+        /// über die Anlagen, sodass eine doppelt betroffene Anlage genau einmal fehlt.</para>
+        ///
+        /// <para><see cref="Bestimmbar"/> = false heißt: Anlagen- und Ergebnismodulzeilen
+        /// ließen sich nicht paaren (kein Anlagenbestand, keine Modulzeilen, oder Namen und
+        /// Anzahl passen nicht zusammen). Dann bleibt nur die Projektsumme — der Weg bis zu
+        /// diesem Nachtrag. Er ist konservativ: Er schließt eher zu viel aus als zu wenig.</para>
+        /// </summary>
+        private sealed class KwkgAnlagenauswahl
+        {
+            public bool Bestimmbar;
+            public double PelGesamtKW;
+            public double PelFoerderfaehigKW;
+            public double StromGesamtMWh;
+            public double StromFoerderfaehigMWh;
+
+            /// <summary>Zahl der ausgeschlossenen Anlagen — je Anlage EINS, gleich wie viele
+            /// Gründe auf sie zutreffen. Maßgeblich für die Bereinigung der Bezugsgrößen.</summary>
+            public int AnzahlAusgeschlossen;
+
+            /// <summary>Anlagen über der Ausschreibungsgrenze, als Klartext „Bezeichner (n kW)".</summary>
+            public readonly List<string> UeberGrenze = new List<string>();
+
+            /// <summary>
+            /// <b>Alle</b> ölbetriebenen Anlagen, unabhängig davon, ob der Ausschluss greift —
+            /// die Grundlage des Hinweises „Öl-BHKW ohne Inbetriebnahmedatum".
+            /// </summary>
+            public readonly List<string> MitHeizoel = new List<string>();
+
+            /// <summary>
+            /// Die Anlagen, die <b>wegen Heizöl</b> ausgeschlossen sind und <b>nicht schon</b>
+            /// über der Ausschreibungsgrenze liegen. Genau diese Teilmenge nennt die
+            /// Heizöl-Meldung — so steht keine Anlage in zwei Meldungen desselben Hinweises.
+            /// </summary>
+            public readonly List<string> NurHeizoel = new List<string>();
+
+            /// <summary>Anteil der förderfähigen Anlagen an der Stromerzeugung [0…1].</summary>
+            public double StromanteilFoerderfaehig
+            {
+                get { return StromGesamtMWh > 0 ? StromFoerderfaehigMWh / StromGesamtMWh : 0; }
+            }
+
+            /// <summary>Elektrische Vbh der förderfähigen Anlagen [h/a], leistungsgewichtet.</summary>
+            public double VbhFoerderfaehig
+            {
+                get
+                {
+                    return PelFoerderfaehigKW > 0
+                        ? StromFoerderfaehigMWh * 1000.0 / PelFoerderfaehigKW : 0;
+                }
+            }
+
+            /// <summary>Eine Gründeliste als Aufzählung für die Meldung.</summary>
+            public string Klartext(List<string> anlagen)
+            {
+                return string.Join(", ", anlagen.ToArray());
+            }
+
+            // ---------------- ETAPPE E6 ----------------
+
+            /// <summary>Die Anlagenzeilen in Lesereihenfolge — Grundlage der Reihe je Modul.</summary>
+            public readonly List<BhkwAnlage> Anlagen = new List<BhkwAnlage>();
+
+            /// <summary>Die zugeordnete Ergebnis-Modulzeile je Anlage (<c>null</c> = keine).</summary>
+            public ErgebnisBHKWModulModel[] Module = new ErgebnisBHKWModulModel[0];
+
+            /// <summary>true je Anlage, wenn KEIN Ausschlussgrund auf sie zutrifft.</summary>
+            public bool[] Foerderfaehig = new bool[0];
+
+            /// <summary>
+            /// Fertige Meldungen zu Anlagen, die an <b>Stichtag oder Realisierungsfrist</b>
+            /// des § 6 gescheitert sind (Etappe E6). Sie stehen einzeln statt als
+            /// Aufzählung, weil jede ihr eigenes Datum nennt.
+            /// </summary>
+            public readonly List<string> Fristmeldungen = new List<string>();
+
+            /// <summary>
+            /// Ölbetriebene Anlagen ohne wirksames Inbetriebnahmedatum — sie werden NICHT
+            /// ausgeschlossen (der Ausschluss gilt nur für Neuanlagen), aber der Anwender
+            /// muss wissen, dass das Ergebnis am fehlenden Datum hängt. Bis E5 hing diese
+            /// Meldung am Projektdatum; seit E6 am Datum der jeweiligen Anlage.
+            /// </summary>
+            public readonly List<string> OelOhneIbn = new List<string>();
+
+            /// <summary>true, wenn mindestens eine Anlage eine eigene E6-Angabe trägt.</summary>
+            public bool MitEigenerAngabe;
+        }
+
+        /// <summary>
+        /// Die Ausschreibungsgrenze [kW el] des Förderjahres aus dem Gesetzeskatalog
+        /// (<c>KWKG_AUSSCHREIBUNG_GRENZE_KW</c>, Etappe E1). Fehlt der Schlüssel — jede
+        /// Datenbank, deren Katalog vor diesem Nachtrag eingesät wurde —, gilt
+        /// <see cref="KWKG_MAX_LEISTUNG_KW"/> mit demselben Wert.
+        /// </summary>
+        private double AusschreibungsgrenzeKW(int jahr)
+        {
+            try
+            {
+                if (_gesetze == null) _gesetze = new GesetzKatalog();
+                double? katalog = _gesetze.Wert(DbWerte.GESETZ_KWKG_AUSSCHREIBUNG_GRENZE, jahr);
+                if (katalog.HasValue && katalog.Value > 0) return katalog.Value;
+            }
+            catch { }
+            return KWKG_MAX_LEISTUNG_KW;
+        }
+
+        /// <summary>
+        /// Prüft JEDE BHKW-Anlage des Projekts einzeln gegen die Ausschreibungsgrenze und —
+        /// wenn <paramref name="heizoelAusschliessen"/> gilt — gegen den Heizöl-Ausschluss,
+        /// und bildet die um die ausgeschlossenen Anlagen bereinigten Bezugsgrößen.
+        /// </summary>
+        /// <param name="p">
+        /// Projektparameter — Stichtag, Inbetriebnahme und Sätze wirken als <b>Vorgabe</b>
+        /// für jede Anlage ohne eigenen Wert (Etappe E6).
+        /// </param>
+        /// <param name="foerderbeginn">
+        /// Stichtagsjahr des PROJEKTS; es gilt für jede Anlage ohne eigenes
+        /// Inbetriebnahmedatum.
+        /// </param>
+        /// <param name="grenzeKW">
+        /// Ausschreibungsgrenze des Projektstichtagsjahres — sie gilt für Anlagen ohne
+        /// eigenes Datum und für den Ersatzweg. Anlagen mit eigenem Datum schlagen ihre
+        /// Grenze mit dem eigenen Jahr im Katalog nach.
+        /// </param>
+        private KwkgAnlagenauswahl Anlagenauswahl(VariantenDaten v, WirtschaftlichkeitParameter p,
+                                                  int foerderbeginn, double grenzeKW)
+        {
+            var a = new KwkgAnlagenauswahl();
+            a.PelGesamtKW = PelKW(v.IdProjekt);
+            a.StromGesamtMWh = v.Ergebnis != null && v.Ergebnis.BHKW != null
+                             ? v.Ergebnis.BHKW.Stromproduktion : 0;
+
+            List<BhkwAnlage> anlagen = BhkwAnlagen(v.IdProjekt);
+            List<ErgebnisBHKWModulModel> module = v.Ergebnis != null && v.Ergebnis.BHKW != null
+                                                ? v.Ergebnis.BHKW.Module : null;
+            if (anlagen.Count == 0 || module == null || module.Count == 0) return a;
+
+            ErgebnisBHKWModulModel[] zuordnung = ModulJeAnlage(anlagen, module);
+            if (zuordnung == null) return a;
+
+            a.Bestimmbar = true;
+            a.PelGesamtKW = 0;
+            a.StromGesamtMWh = 0;
+            a.Anlagen.AddRange(anlagen);
+            a.Module = zuordnung;
+            a.Foerderfaehig = new bool[anlagen.Count];
+
+            for (int i = 0; i < anlagen.Count; i++)
+            {
+                BhkwAnlage anl = anlagen[i];
+                a.PelGesamtKW += anl.PelKW;
+                a.StromGesamtMWh += StromVon(zuordnung[i]);
+                if (anl.HatEigeneAngabe) a.MitEigenerAngabe = true;
+
+                // Der Bezeichner ist ein Datenwert, kein Anzeigetext; die Klammer mit dem
+                // Einheitenzeichen kommt ohne Wortbestand aus und bleibt deshalb im Code
+                // (Drei-Schichten-Regel, wie die typografischen Marken).
+                string klartext = anl.Bezeichner + " (" + anl.PelKW.ToString("N0") + " kW)";
+
+                // ETAPPE E6 — die wirksamen Daten DIESER Anlage: eigener Wert, sonst
+                // Projektvorgabe. Genau dieser Rückfall hält Bestandsprojekte unverändert.
+                DateTime? stichtag = anl.Stichtag ?? p.KwkgStichtag;
+                DateTime? ibn = anl.Inbetriebnahme ?? p.KwkgInbetriebnahme;
+                int jahr = ibn.HasValue ? ibn.Value.Year : foerderbeginn;
+                double grenzeAnlage = anl.Inbetriebnahme.HasValue
+                                    ? AusschreibungsgrenzeKW(jahr) : grenzeKW;
+
+                bool ueberGrenze = anl.PelKW > grenzeAnlage;
+                bool oel = anl.Heizoel;
+                // Der Heizöl-Ausschluss gilt nur für erkennbare NEUANLAGEN. Maßgeblich ist
+                // seit E6 das Inbetriebnahmedatum DIESER Anlage (mit Projektvorgabe als
+                // Rückfall) — vorher entschied ein einziges Projektdatum für alle zugleich.
+                bool oelAusschluss = oel && ibn.HasValue && ibn.Value.Year >= 2025;
+
+                // § 6 KWKG je Anlage (Etappe E6): Stichtag und Realisierungsfrist.
+                bool nachStichtag = stichtag.HasValue && stichtag.Value.Date > KWKG_STICHTAG_ENDE;
+                bool nachFrist = false;
+                DateTime fristende = DateTime.MinValue;
+                if (!nachStichtag && stichtag.HasValue && ibn.HasValue)
+                {
+                    fristende = new DateTime(stichtag.Value.Year + KWKG_REALISIERUNG_JAHRE, 12, 31);
+                    nachFrist = ibn.Value.Date > fristende;
+                }
+
+                if (ueberGrenze) a.UeberGrenze.Add(klartext);
+                if (oel) a.MitHeizoel.Add(klartext);
+                if (oelAusschluss && !ueberGrenze) a.NurHeizoel.Add(klartext);
+                if (oel && !ibn.HasValue) a.OelOhneIbn.Add(klartext);
+                if (nachStichtag)
+                    a.Fristmeldungen.Add(string.Format(MyResource.Resource.WIRT_KWKG_ANLAGE_STICHTAG,
+                                                       klartext, KWKG_STICHTAG_ENDE.ToString("dd.MM.yyyy")));
+                else if (nachFrist)
+                    a.Fristmeldungen.Add(string.Format(MyResource.Resource.WIRT_KWKG_ANLAGE_FRIST,
+                                                       klartext, fristende.ToString("dd.MM.yyyy")));
+
+                // EIN Ausschluss je Anlage, gleich wie viele Gründe zutreffen — sonst
+                // fehlte eine mehrfach betroffene Anlage mehrfach in den Bezugsgrößen.
+                if (ueberGrenze || oelAusschluss || nachStichtag || nachFrist)
+                {
+                    a.AnzahlAusgeschlossen++;
+                }
+                else
+                {
+                    a.Foerderfaehig[i] = true;
+                    a.PelFoerderfaehigKW += anl.PelKW;
+                    a.StromFoerderfaehigMWh += StromVon(zuordnung[i]);
+                }
+            }
+            return a;
+        }
+
+        /// <summary>
+        /// Ordnet jeder Anlagenzeile ihre Stromerzeugung aus den Ergebnis-Modulzeilen zu.
+        /// Erster Weg ist der BEZEICHNER (<c>SimulationRunner</c> schreibt ihn als
+        /// <c>Modul</c>), zweiter Weg die Reihenfolge bei gleicher Anzahl — Modulzeilen
+        /// entstehen in der Reihenfolge von <c>SimulationControl.BHKW_Liste_Laden</c>,
+        /// der Bezeichner kann sich seit dem Lauf aber geändert haben.
+        /// <c>null</c> = nicht zuordenbar.
+        ///
+        /// <para><b>ETAPPE E4: liefert die MODULZEILE statt nur der Strommenge.</b> Die
+        /// Steuerrechnung braucht aus derselben Zeile zusätzlich Brennstoffverbrauch,
+        /// Wärmeproduktion und Energieträger. Das Zuordnungsverfahren ist Zeile für Zeile
+        /// unverändert — es gab keinen Grund, dafür eine zweite Fassung anzulegen.</para>
+        /// </summary>
+        private static ErgebnisBHKWModulModel[] ModulJeAnlage(List<BhkwAnlage> anlagen,
+                                                              List<ErgebnisBHKWModulModel> module)
+        {
+            var treffer = new ErgebnisBHKWModulModel[anlagen.Count];
+            bool[] belegt = new bool[module.Count];
+            int getroffen = 0;
+
+            for (int i = 0; i < anlagen.Count; i++)
+                for (int j = 0; j < module.Count; j++)
+                {
+                    if (belegt[j]) continue;
+                    string name = module[j].Modul == null ? "" : module[j].Modul.Trim();
+                    if (!string.Equals(name, anlagen[i].Bezeichner, StringComparison.OrdinalIgnoreCase))
+                        continue;
+                    belegt[j] = true;
+                    treffer[i] = module[j];
+                    getroffen++;
+                    break;
+                }
+            if (getroffen == anlagen.Count) return treffer;
+
+            if (anlagen.Count != module.Count) return null;
+            for (int i = 0; i < anlagen.Count; i++) treffer[i] = module[i];
+            return treffer;
+        }
+
+        /// <summary>Stromproduktion einer zugeordneten Modulzeile [MWh/a]; eine nicht
+        /// getroffene Zeile zählt wie bisher mit 0.</summary>
+        private static double StromVon(ErgebnisBHKWModulModel m)
+        {
+            return m == null ? 0 : m.Stromproduktion;
+        }
+
+        /// <summary>Anlagenzeilen des Projekts, einmal je Berechne-Lauf gelesen.</summary>
+        private List<BhkwAnlage> BhkwAnlagen(int idProjekt)
+        {
+            List<BhkwAnlage> liste;
+            if (_anlagenCache.TryGetValue(idProjekt, out liste)) return liste;
+            liste = LiesBhkwAnlagen(idProjekt);
+            _anlagenCache[idProjekt] = liste;
+            return liste;
+        }
+
+        /// <summary>
+        /// Bezeichner, elektrische Nennleistung und Brennstoffart je BHKW-ANLAGENZEILE des
+        /// Projekts — dieselbe Menge, die auch <see cref="LiesBhkwLeistungKW"/> summiert und
+        /// die die Engine rechnet (<c>Tab_Energieanlagen</c> ⋈ <c>Tab_BHKW</c>). Leere Liste,
+        /// wenn das Projekt keine Anlagenzeile führt oder die Abfrage scheitert.
+        ///
+        /// <para><b>Die Brennstoffart hat zwei Quellen, in dieser Reihenfolge</b>
+        /// (Nachtrag 2 zu E2):</para>
+        /// <list type="number">
+        ///   <item><description><c>Tab_Energieanlagen.ID_Carrier</c> → <c>energy_carrier</c>
+        ///     → <c>Tab_Brennstoff_Stamm.ID_Kategorie</c>. Der Energieträger hängt an der
+        ///     ANLAGE und ist seit dem Energieträger-Umbau die maßgebliche Zuordnung: Aus ihm
+        ///     bildet die Anwendung Brennstoffkosten und Emissionen
+        ///     (<c>SimulationControl.EnergietraegerZuordnungLesen</c>,
+        ///     <c>KostenEmissionRechner</c>).</description></item>
+        ///   <item><description><c>Tab_BHKW.Brennstoff</c> →
+        ///     <c>Tab_Brennstoff_Stamm.ID_Kategorie</c> — der Weg des Altstands. Er greift,
+        ///     wenn die Anlage keinen Energieträger trägt (<c>ID_Carrier</c> NULL oder 0),
+        ///     wenn der Träger im Katalog fehlt oder wenn die Tabelle <c>energy_carrier</c>
+        ///     in einer alten Datenbank gar nicht existiert. Im Bestand vom 19.08.2026 ist
+        ///     das kein Randfall: Die BHKW-Anlage des Projekts 1017 führt keinen
+        ///     Energieträger.</description></item>
+        /// </list>
+        ///
+        /// <para><b>Warum nicht umgekehrt.</b> <c>Tab_BHKW</c> trägt den Brennstoff des
+        /// KATALOGGERÄTS. Wechselt der Anwender den Energieträger der Anlage, bleibt die
+        /// Gerätezeile stehen — der Trägerverweis ist dann die jüngere und für Kosten,
+        /// Emissionen und Bericht bereits maßgebliche Aussage.</para>
+        /// </summary>
+        private List<BhkwAnlage> LiesBhkwAnlagen(int idProjekt)
+        {
+            // ETAPPE E6: Zuerst mit den acht neuen Spalten. Fehlen sie (Datenbank vor
+            // Migrationsschritt 22, in der auch StelleTabellenSicher nie lief), scheitert
+            // die Abfrage — dann greift dieselbe Abfrage ohne sie, und jede E6-Angabe
+            // bleibt leer. Das ist genau der Zustand, in dem überall der Projektwert gilt.
+            //
+            // Erkannt wird das am ERGEBNIS, nicht an einer Ausnahme: DataRepository
+            // liefert bei einem SQL-Fehler eine LEERE DataTable statt zu werfen (und
+            // meldet still, weil die Abfrage im Engine-Modus läuft). Ein Blick auf die
+            // Spaltenliste ist deshalb die einzige verlässliche Unterscheidung zwischen
+            // „Abfrage lief, Projekt hat keine BHKW-Anlage" und „Spalten fehlen".
+            DataTable dt = AnlagenTabelle(idProjekt, true);
+            bool mitE6 = dt != null && dt.Columns.Contains(SchemaKatalog.SPALTE_EA_KWKG_STICHTAG);
+            if (!mitE6) dt = AnlagenTabelle(idProjekt, false);
+
+            var liste = new List<BhkwAnlage>();
+            if (dt == null) return liste;
+            try
+            {
+                foreach (DataRow r in dt.Rows)
+                {
+                    var anl = new BhkwAnlage();
+                    anl.Bezeichner = r["Bezeichner"] == DBNull.Value
+                                   ? "" : Convert.ToString(r["Bezeichner"]).Trim();
+                    anl.PelKW = r["Pel"] == DBNull.Value ? 0 : Convert.ToDouble(r["Pel"]);
+                    anl.IdCarrier = Ganzzahl(r, "ID_Carrier");
+                    anl.IdAnlage = Ganzzahl(r, "ID");
+                    anl.IdProjekt = Ganzzahl(r, "ID_Projekt");
+                    anl.IdBrennstoff = BrennstoffId(anl.IdCarrier, Ganzzahl(r, "Brennstoff"));
+                    anl.Heizoel = BrennstoffKategorie(anl.IdCarrier, Ganzzahl(r, "Brennstoff"))
+                                  == BRENNSTOFF_KATEGORIE_OEL;
+
+                    if (mitE6)
+                    {
+                        anl.Stichtag = Datum(r, SchemaKatalog.SPALTE_EA_KWKG_STICHTAG);
+                        anl.Inbetriebnahme = Datum(r, SchemaKatalog.SPALTE_EA_KWKG_INBETRIEBNAHME);
+                        anl.Anlagenart = Text(r, SchemaKatalog.SPALTE_EA_KWKG_ANLAGENART) ?? "";
+                        anl.Eigenfall = Text(r, SchemaKatalog.SPALTE_EA_KWKG_EIGENFALL) ?? "";
+                        anl.SatzEinspCt = D(r, SchemaKatalog.SPALTE_EA_KWKG_SATZ_EINSP);
+                        anl.SatzEigenCt = D(r, SchemaKatalog.SPALTE_EA_KWKG_SATZ_EIGEN);
+                        anl.VbhKontingent = D(r, SchemaKatalog.SPALTE_EA_KWKG_KONTINGENT);
+                        anl.VbhDeckel = D(r, SchemaKatalog.SPALTE_EA_KWKG_DECKEL);
+                    }
+                    liste.Add(anl);
+                }
+            }
+            catch { liste.Clear(); }
+            return liste;
+        }
+
+        /// <summary>
+        /// Die Anlagenabfrage — mit oder ohne die acht E6-Spalten. <c>null</c> = die
+        /// Abfrage ist gescheitert (bei <paramref name="mitE6"/> in aller Regel, weil die
+        /// Spalten fehlen).
+        /// </summary>
+        private static DataTable AnlagenTabelle(int idProjekt, bool mitE6)
+        {
+            string e6 = mitE6
+                ? ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_STICHTAG + "]" +
+                  ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_INBETRIEBNAHME + "]" +
+                  ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_ANLAGENART + "]" +
+                  ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_EIGENFALL + "]" +
+                  ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_SATZ_EINSP + "]" +
+                  ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_SATZ_EIGEN + "]" +
+                  ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_KONTINGENT + "]" +
+                  ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_DECKEL + "]"
+                : "";
+            try
+            {
+                using (DataRepository.EngineModus())
+                    return DataRepository.GetDataTable(
+                        "SELECT a.ID, a.ID_Projekt, a.Bezeichner, a.ID_Carrier, " +
+                        "b.Pel, b.Brennstoff" + e6 + " " +
+                        "FROM Tab_Energieanlagen AS a " +
+                        "INNER JOIN Tab_BHKW AS b ON a.ID_BHKW = b.ID " +
+                        // KEIN ORDER BY — bewusst. Die Zuordnung Anlage ↔ Ergebnismodul
+                        // fällt bei nicht passenden Bezeichnern auf die REIHENFOLGE
+                        // zurück, und die Modulzeilen entstehen in der Reihenfolge von
+                        // SimulationControl.BHKW_Liste_Laden, das ebenfalls ohne ORDER BY
+                        // liest. Eine Sortierung hier könnte beide auseinanderlaufen
+                        // lassen.
+                        "WHERE a.ID_Projekt = ? AND a.ID_Type = " + WizardItemClass.BHKW_TYP,
+                        new OleDbParameter("@p", idProjekt));
+            }
+            catch { return null; }
+        }
+
+        /// <summary>Datumsspalte einer Zeile; NULL, fehlende Spalte und Lesefehler ergeben
+        /// <c>null</c> („kein eigener Wert" — dann gilt der Projektwert).</summary>
+        private static DateTime? Datum(DataRow r, string spalte)
+        {
+            if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return null;
+            try { return Convert.ToDateTime(r[spalte]); } catch { return null; }
+        }
+
+        /// <summary>Ganzzahlspalte einer Zeile; NULL und Lesefehler ergeben 0.</summary>
+        private static int Ganzzahl(DataRow r, string spalte)
+        {
+            if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return 0;
+            try { return Convert.ToInt32(r[spalte]); } catch { return 0; }
+        }
+
+        /// <summary>
+        /// Brennstoffkategorie einer Anlage (<c>Tab_BrennstoffKategorien.ID</c>) —
+        /// vorrangig über den Energieträger der Anlage, ersatzweise über den Brennstoff der
+        /// Gerätezeile. 0 = nicht ermittelbar (dann gilt die Anlage als nicht ölbetrieben,
+        /// wie im Altstand: <c>BhkwMitHeizoel</c> zählte nur Zeilen mit gültigem Verbund).
+        /// </summary>
+        private int BrennstoffKategorie(int idCarrier, int idBrennstoff)
+        {
+            int bs = BrennstoffId(idCarrier, idBrennstoff);
+            int kategorie;
+            return bs > 0 && _brennstoffKategorie.TryGetValue(bs, out kategorie) ? kategorie : 0;
+        }
+
+        /// <summary>
+        /// Der maßgebliche <c>Tab_Brennstoff_Stamm.ID</c> einer Anlage (0 = nicht
+        /// ermittelbar) — vorrangig über den Energieträger der ANLAGE, ersatzweise über
+        /// den Brennstoff der Gerätezeile.
+        ///
+        /// <para><b>ETAPPE E4: eine Ebene früher abgegriffen, sonst unverändert.</b> Bis
+        /// dahin bildete <see cref="BrennstoffKategorie"/> beide Stufen selbst. Die
+        /// Bedingung der ersten Stufe ist wortgleich geblieben — der Trägerweg zählt nur,
+        /// wenn er bis zu einer bekannten <b>Kategorie</b> durchläuft; sonst greift die
+        /// Gerätezeile. Damit liefert <see cref="BrennstoffKategorie"/> Zeile für Zeile
+        /// dasselbe wie vorher, und E4 kann zusätzlich den Brennstoff selbst verwenden.</para>
+        /// </summary>
+        private int BrennstoffId(int idCarrier, int idBrennstoff)
+        {
+            if (_brennstoffKategorie == null)
+            {
+                _brennstoffKategorie = LiesZuordnung("SELECT ID, ID_Kategorie FROM Tab_Brennstoff_Stamm");
+                _carrierBrennstoff = LiesZuordnung("SELECT id, ID_Brennstoff FROM energy_carrier");
+            }
+
+            int kategorie;
+            int brennstoffAusTraeger;
+            if (idCarrier > 0 && _carrierBrennstoff.TryGetValue(idCarrier, out brennstoffAusTraeger)
+                              && _brennstoffKategorie.TryGetValue(brennstoffAusTraeger, out kategorie))
+                return brennstoffAusTraeger;
+
+            if (idBrennstoff > 0 && _brennstoffKategorie.ContainsKey(idBrennstoff))
+                return idBrennstoff;
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Zweispaltige Katalogabfrage als Zuordnung Schlüssel → Wert; leere Zuordnung, wenn
+        /// die Tabelle fehlt (alte Datenbank ohne <c>energy_carrier</c>) oder die Abfrage
+        /// scheitert. Zeilen mit NULL in einer der beiden Spalten werden übergangen.
+        /// </summary>
+        private static Dictionary<int, int> LiesZuordnung(string sql)
+        {
+            var zuordnung = new Dictionary<int, int>();
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(sql);
+                if (dt == null) return zuordnung;
+                foreach (DataRow r in dt.Rows)
+                {
+                    if (r[0] == DBNull.Value || r[1] == DBNull.Value) continue;
+                    try { zuordnung[Convert.ToInt32(r[0])] = Convert.ToInt32(r[1]); }
+                    catch { }
+                }
+            }
+            catch { zuordnung.Clear(); }
+            return zuordnung;
+        }
+
+        /// <summary>
+        /// ETAPPE E2 (Leitentscheidung L6) — die ELEKTRISCHEN Vollbenutzungsstunden des
+        /// Projekts [h/a], leistungsgewichtet über alle BHKW-Module:
+        /// <c>Σ Stromproduktion [MWh] × 1000 / Σ P_el [kW]</c>.
+        ///
+        /// <para><b>Warum diese Größe und nicht die bisherige.</b> Der KWK-Zuschlag wird je
+        /// Kilowattstunde KWK-STROM gezahlt und über Vollbenutzungsstunden gedeckelt
+        /// (KWKG 2025 § 8). Bis Etappe E2 stand an dieser Stelle
+        /// <c>Ergebnis.BHKW.Betriebsstunden_Gesamt</c> — die SUMME THERMISCHER
+        /// Vollbenutzungsstunden über alle Module
+        /// (<c>SimulationBHKW.Laufzeiten[i] = Wärme_MWh[i] / P_therm[i] × 1000</c>,
+        /// aufsummiert). Zwei Fehler in einem: falsche Energieart (thermisch statt
+        /// elektrisch) und falsche Aggregation (Summe statt Gewichtung). Die Summe kann
+        /// 8.760 h überschreiten; der Deckel griff dadurch bei Kaskaden nicht mehr, und der
+        /// Zuschlag fiel systematisch zu hoch aus.</para>
+        ///
+        /// <para><b>Zwei Quellen, eine Formel.</b> Vorrang hat der beim Lauf berechnete und
+        /// gespeicherte Wert (<c>Tab_ErgebnisBHKW.VbhElektrisch</c>, Migrationsschritt 18) —
+        /// er trägt die Leistung, die ZUM ZEITPUNKT DES LAUFS installiert war, und ist
+        /// damit dieselbe Zahl, die Ergebnisreiter und Bericht zeigen. Fehlt er
+        /// (Ergebniszeile vor E2), wird er aus <c>Stromproduktion</c> und der heute
+        /// installierten Leistung gebildet — nach derselben Formel, die der Rechenkern
+        /// verwendet.</para>
+        /// </summary>
+        /// <param name="hinweis">
+        /// != null, wenn die Größe NICHT bestimmbar ist und der Anwender das wissen muss
+        /// (keine elektrische Leistung gepflegt). Kein Strom im Lauf ergibt dagegen still
+        /// 0 — dann gibt es schlicht nichts zu vergüten.
+        /// </param>
+        /// <returns>Elektrische Vollbenutzungsstunden [h/a]; 0 = nicht bestimmbar.</returns>
+        private double VbhElektrisch(VariantenDaten v, out string hinweis)
+        {
+            hinweis = null;
+            if (v == null || v.Ergebnis == null || v.Ergebnis.BHKW == null) return 0;
+
+            double stromMWh = v.Ergebnis.BHKW.Stromproduktion;
+            if (stromMWh <= 0) return 0;   // kein KWK-Strom -> keine Vollbenutzungsstunden
+
+            double gespeichert = v.Ergebnis.BHKW.VbhElektrisch;
+            if (gespeichert > 0) return gespeichert;
+
+            double pelKW = PelKW(v.IdProjekt);
+            if (pelKW <= 0)
+            {
+                hinweis = "KWKG: keine elektrische Nennleistung der BHKW gepflegt (Tab_BHKW.Pel) — " +
+                          "die elektrischen Vollbenutzungsstunden sind nicht bestimmbar; Bonus = 0.";
+                return 0;
+            }
+            return stromMWh * 1000.0 / pelKW;
+        }
+
+        /// <summary>
+        /// true, wenn eine BHKW-GERÄTEZEILE des Projekts einen Öl-Brennstoff führt
+        /// (<c>Tab_BHKW.Brennstoff</c> → <c>Tab_Brennstoff_Stamm.ID_Kategorie</c> =
+        /// <see cref="BRENNSTOFF_KATEGORIE_OEL"/>).
+        ///
+        /// <para><b>NACHTRAG 2 ZU E2 — nur noch RÜCKFALLEBENE.</b> Bis dahin war das die
+        /// einzige Prüfung, und sie hatte zwei Mängel in einer Zeile: Sie galt PROJEKTWEIT
+        /// (eine Öl-Zeile nahm allen Anlagen den Zuschlag) und sie zählte GERÄTEZEILEN
+        /// (auch solche, zu denen nie eine Anlagenzeile entstand). Maßgeblich ist jetzt die
+        /// Brennstoffart je installierter Anlage aus <see cref="LiesBhkwAnlagen"/>. Diese
+        /// Abfrage greift nur noch, wenn sich die Anlagen nicht bestimmen lassen
+        /// (<see cref="KwkgAnlagenauswahl.Bestimmbar"/> = false) — dann sind die
+        /// Gerätezeilen die einzige verfügbare Aussage, genau wie bei
+        /// <see cref="LiesBhkwLeistungKW"/>, und sie ist konservativ.</para>
+        /// </summary>
         private static bool BhkwMitHeizoel(int idProjekt)
         {
             try
@@ -995,7 +3004,7 @@ namespace WindowsFormsApplication1
                 object o = DataRepository.ExecuteScalar(
                     "SELECT COUNT(*) FROM Tab_BHKW AS b " +
                     "INNER JOIN Tab_Brennstoff_Stamm AS bs ON b.Brennstoff = bs.ID " +
-                    "WHERE b.ID_Projekt = ? AND bs.ID_Kategorie = 2",
+                    "WHERE b.ID_Projekt = ? AND bs.ID_Kategorie = " + BRENNSTOFF_KATEGORIE_OEL,
                     new OleDbParameter("@p", idProjekt));
                 if (o != null && o != DBNull.Value) return Convert.ToInt32(o) > 0;
             }
@@ -1020,7 +3029,7 @@ namespace WindowsFormsApplication1
                 (e.Energie ?? 0) * energieFaktor, e.Erloes,
                 zinsProzent, p.Betrachtungszeitraum,
                 p.PreissteigerungBetrieb, preisstEnergie,
-                e.Behg * energieFaktor, e.KwkgReihe);
+                e.Behg * energieFaktor, e.ErloesReihen);
         }
 
         /// <summary>Sensitivitätszeilen einer Variante (W2): 4 Parameter, ±Δ → KW vs. Stamm.</summary>
@@ -1056,7 +3065,9 @@ namespace WindowsFormsApplication1
             };
             // Novellen-Szenario (Kap. 8.5.7, Phase 9): KWKG-Bonus entfällt komplett
             // (−Δ) vs. Fortschreibung der heutigen Sätze (Basis = +Δ).
-            if (variante.KwkgReihe != null || stamm.KwkgReihe != null)
+            // ETAPPE E4: Gestrichen wird ausschließlich die KWKG-Reihe — die
+            // Steuergutschriften hängen an anderen Gesetzen und bleiben stehen.
+            if (HatKwkg(variante) || HatKwkg(stamm))
             {
                 KapitalwertRechner.Zahlungsbild bv = RechneBild(OhneKwkg(variante), p, z, pe, 1.0, 1.0);
                 KapitalwertRechner.Zahlungsbild bs = RechneBild(OhneKwkg(stamm), p, z, pe, 1.0, 1.0);
@@ -1072,21 +3083,38 @@ namespace WindowsFormsApplication1
             return zeilenListe;
         }
 
-        /// <summary>Flache Kopie einer Eingabe ohne KWKG-Erlösreihe (Novellen-Szenario).</summary>
+        /// <summary>true, wenn die Eingabe eine KWKG-Reihe führt (Etappe E4).</summary>
+        private static bool HatKwkg(ProjektEingabe e)
+        {
+            foreach (KapitalwertRechner.ErloesReihe r in e.ErloesReihen)
+                if (string.Equals(r.Name, KapitalwertRechner.ErloesReihe.KWKG, StringComparison.Ordinal))
+                    return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Flache Kopie einer Eingabe ohne KWKG-Erlösreihe (Novellen-Szenario).
+        /// <para><b>ETAPPE E4:</b> Es fällt genau die KWKG-Reihe weg; die
+        /// Steuergutschriften bleiben, denn das Szenario fragt nach dem Wegfall der
+        /// KWKG-Förderung, nicht nach dem Wegfall des Energie- und Stromsteuerrechts.</para>
+        /// </summary>
         private static ProjektEingabe OhneKwkg(ProjektEingabe e)
         {
-            return new ProjektEingabe
+            var kopie = new ProjektEingabe
             {
                 Investitionen = e.Investitionen,
                 Betrieb = e.Betrieb,
                 Energie = e.Energie,
                 Erloes = e.Erloes,
                 Behg = e.Behg,
-                KwkgReihe = null,
                 KwkgJahr1 = 0,
                 WaermeMWh = e.WaermeMWh,
                 Matrix = e.Matrix
             };
+            foreach (KapitalwertRechner.ErloesReihe r in e.ErloesReihen)
+                if (!string.Equals(r.Name, KapitalwertRechner.ErloesReihe.KWKG, StringComparison.Ordinal))
+                    kopie.ErloesReihen.Add(r);
+            return kopie;
         }
 
         /// <summary>Absolutes Zahlungsbild + Kennzahlen eines Projekts für ein Szenario.</summary>
@@ -1113,7 +3141,20 @@ namespace WindowsFormsApplication1
             erg.EinspeiseerloesJahr = eingabe.Erloes;
             erg.CO2AbgabeJahr = eingabe.Behg;                 // W2: BEHG
             erg.KwkgErloesJahr1 = eingabe.KwkgJahr1;          // W2/W3: KWKG
+            erg.KwkgVbhElektrisch = eingabe.VbhElektrisch;    // E2: Bezugsgröße der Deckelung
+            erg.EnergiesteuerJahr1 = eingabe.EnergiesteuerJahr1;              // E4
+            erg.StromsteuerBefreiungJahr1 = eingabe.StromsteuerBefreiungJahr1;
+            erg.StromsteuerEntlastungJahr1 = eingabe.StromsteuerEntlastungJahr1;
+            erg.SteuerHerkunft = eingabe.SteuerHerkunft;
             erg.StromkostenTarif = eingabe.StromkostenTarif;  // W3: Tarifmatrix
+            erg.VermiedenArbeitJahr = eingabe.VermiedenArbeit;        // E5
+            erg.VermiedenLeistungJahr = eingabe.VermiedenLeistung;
+            erg.VermiedenGesamtJahr = eingabe.VermiedenGesamt;
+            erg.AufschlagJahr = eingabe.AufschlagBetrag;
+            erg.EinspeiseerloesPvJahr = eingabe.ErloesPv;             // E7
+            erg.EinspeiseerloesKwkJahr = eingabe.ErloesKwk;
+            erg.KwkgModule = eingabe.KwkgModule;
+            erg.Betriebskosten = eingabe.Betriebskosten;
             erg.Hinweis = eingabe.Hinweis;
             foreach (KapitalwertRechner.InvestPosition pos in eingabe.Investitionen)
                 erg.Investition += pos.Betrag;
@@ -1174,21 +3215,167 @@ namespace WindowsFormsApplication1
 
         /// <summary>Summe der Kategorie-2-Positionen (Betriebskosten p. a., Szenariowert).
         /// <c>internal</c> aus demselben Grund wie <see cref="LiesInvestitionen"/>.</summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Etappe E3: die Bemessungsart wird ausgewertet.</b> Eine Position mit
+        /// <c>Bemessung = BETRAG</c> — und das sind nach Migrationsschritt 19b ALLE
+        /// Bestandszeilen — verhält sich Zeile für Zeile wie vorher: Der Szenariowert aus
+        /// <c>EingegebenerWert</c>/<c>BestCase</c>/<c>WorstCase</c> gilt unverändert. Nur
+        /// die vier abgeleiteten Bemessungsarten rechnen aus der persistierten Herleitung
+        /// <c>Menge × Einheitpreis</c> (<see cref="BetriebskostenCtrl.Betrag"/>).
+        /// </para>
+        /// <para>
+        /// <b>Szenarien bleiben Vorrang vor der Ableitung.</b> Ein gepflegter Best- oder
+        /// Worst-Case-Betrag schlägt die Ableitung — dasselbe VALERI-Muster wie bisher
+        /// („0/leer = kein Szenariowert gepflegt"). Ohne gepflegten Szenariowert gilt der
+        /// abgeleitete Erwartungswert in allen drei Szenarien.
+        /// </para>
+        /// <para>
+        /// <b>Zwei Abfragen, eine tolerante Rückfallebene.</b> Fehlen die Spalten aus
+        /// Schritt 19 (Datenbank nie migriert und die Vorsorge nicht durchgekommen), läuft
+        /// die alte Abfrage — also exakt der Rechenweg vor E3.
+        /// </para>
+        /// <para>
+        /// <b>Vorzeichen.</b> Der gespeicherte Betrag ist die Zahlungswirkung in €/a:
+        /// positiv = Ausgabe, negativ = Einnahme. Eine Erlösposition
+        /// (<c>IstErloes = True</c>) trägt deshalb mit negativem Vorzeichen zur Summe bei
+        /// und senkt die Betriebskosten, statt sie zu erhöhen;
+        /// <see cref="BetriebskostenCtrl.Betrag"/> erzwingt das Vorzeichen zusätzlich.
+        /// </para>
+        /// </remarks>
         internal static double LiesBetriebskosten(int idProjekt, string szenario)
         {
             double summe = 0;
+            bool mitBemessung = false;
+            try { mitBemessung = KostenPositionCtrl.StelleSpaltenSicher(); }
+            catch { }
+
             try
             {
+                string felder = "EingegebenerWert, BestCase, WorstCase";
+                if (mitBemessung)
+                    felder += ", [" + SchemaKatalog.SPALTE_PW_BEMESSUNG + "]" +
+                              ", [" + SchemaKatalog.SPALTE_PW_IST_ERLOES + "]" +
+                              ", [" + SchemaKatalog.SPALTE_PW_MENGE + "]" +
+                              ", [" + SchemaKatalog.SPALTE_PW_EINHEITPREIS + "]";
+
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT EingegebenerWert, BestCase, WorstCase " +
-                    "FROM Tab_ProjektWerte WHERE ProjektID = ? AND KategorieID = 2",
+                    "SELECT " + felder +
+                    " FROM Tab_ProjektWerte WHERE ProjektID = ? AND KategorieID = 2",
                     new OleDbParameter("@p", idProjekt));
-                if (dt != null)
-                    foreach (DataRow r in dt.Rows)
-                        summe += Szenariowert(r, szenario, "EingegebenerWert", "BestCase", "WorstCase");
+                if (dt == null) return 0;
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    double wert = Szenariowert(r, szenario, "EingegebenerWert", "BestCase", "WorstCase");
+                    if (!mitBemessung) { summe += wert; continue; }
+
+                    string bem = Text(r, SchemaKatalog.SPALTE_PW_BEMESSUNG);
+                    bool erloes = B(r, SchemaKatalog.SPALTE_PW_IST_ERLOES);
+
+                    if (string.IsNullOrEmpty(bem) ||
+                        string.Equals(bem, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal))
+                    {
+                        // Der Bestandsweg. Das Vorzeichen einer Erlöszeile wird trotzdem
+                        // erzwungen — ein Erlös darf nie als Kosten in die Summe geraten.
+                        summe += erloes && wert > 0 ? -wert : wert;
+                        continue;
+                    }
+
+                    // Ein gepflegter Szenariowert schlägt die Ableitung (VALERI-Muster).
+                    double erwartet = D(r, "EingegebenerWert") ?? 0;
+                    bool szenarioGepflegt = Math.Abs(wert - erwartet) > 1e-9;
+
+                    summe += szenarioGepflegt
+                        ? (erloes && wert > 0 ? -wert : wert)
+                        : BetriebskostenCtrl.Betrag(bem, erwartet,
+                                                    D(r, SchemaKatalog.SPALTE_PW_MENGE),
+                                                    D(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS),
+                                                    erloes);
+                }
             }
             catch { }
             return summe;
+        }
+
+        /// <summary>
+        /// ETAPPE E7 — dieselben Kategorie-2-Positionen wie
+        /// <see cref="LiesBetriebskosten"/>, aber EINZELN und mit ihrer Herleitung.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum eine zweite Leseschleife und keine Umstellung der ersten.</b> Die
+        /// Summenschleife ist der Rechenweg und wurde in E3 gegen die Referenz gestellt;
+        /// sie umzubauen, damit sie nebenbei eine Liste füllt, hieße den Rechenweg für
+        /// eine Ausgabe anzufassen. Diese Methode rechnet mit <b>denselben Regeln</b>
+        /// (<see cref="BetriebskostenCtrl.Betrag"/>, dieselbe Szenarienvorfahrt), liefert
+        /// aber nur Beschreibung. Ihre Summe muss der Summe oben entsprechen — das ist
+        /// eine Probe, die der Bericht ausweist.
+        /// </para>
+        /// <para>
+        /// <b>Der Bezeichner kommt aus <c>Tab_Kostenfaktor</c>.</b>
+        /// <c>Tab_ProjektWerte</c> trägt keinen Text; der Name der Position steht über
+        /// <c>StammID</c> im Katalog. Gelesen wird direkt, nicht über
+        /// <c>Abfrage_Kostenfaktoren</c> — die gespeicherte Access-Abfrage liegt außerhalb
+        /// des Repos und kennt die fünf Spalten aus Schritt 19 nicht (E3-Protokoll,
+        /// Restbefund 6).
+        /// </para>
+        /// </remarks>
+        internal static List<KostenPositionNachweis> LiesBetriebskostenPositionen(
+            int idProjekt, string szenario)
+        {
+            var liste = new List<KostenPositionNachweis>();
+            bool mitBemessung = false;
+            try { mitBemessung = KostenPositionCtrl.StelleSpaltenSicher(); }
+            catch { }
+            if (!mitBemessung) return liste;   // ohne Schritt 19 gibt es nichts zu gliedern
+
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT w.EingegebenerWert, w.BestCase, w.WorstCase, w.Gruppe, " +
+                    "f.Bezeichnung, w.[" + SchemaKatalog.SPALTE_PW_KOSTENART + "], " +
+                    "w.[" + SchemaKatalog.SPALTE_PW_BEMESSUNG + "], " +
+                    "w.[" + SchemaKatalog.SPALTE_PW_IST_ERLOES + "], " +
+                    "w.[" + SchemaKatalog.SPALTE_PW_MENGE + "], " +
+                    "w.[" + SchemaKatalog.SPALTE_PW_EINHEITPREIS + "] " +
+                    "FROM Tab_ProjektWerte AS w LEFT JOIN Tab_Kostenfaktor AS f " +
+                    "ON w.StammID = f.StammID " +
+                    "WHERE w.ProjektID = ? AND w.KategorieID = 2",
+                    new OleDbParameter("@p", idProjekt));
+                if (dt == null) return liste;
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    double wert = Szenariowert(r, szenario, "EingegebenerWert", "BestCase", "WorstCase");
+                    string bem = Text(r, SchemaKatalog.SPALTE_PW_BEMESSUNG);
+                    if (string.IsNullOrEmpty(bem)) bem = DbWerte.BEMESSUNG_BETRAG;
+                    bool erloes = B(r, SchemaKatalog.SPALTE_PW_IST_ERLOES);
+                    double erwartet = D(r, "EingegebenerWert") ?? 0;
+                    bool szenarioGepflegt = Math.Abs(wert - erwartet) > 1e-9;
+
+                    var n = new KostenPositionNachweis
+                    {
+                        Bezeichnung = Text(r, "Bezeichnung"),
+                        Gruppe = Text(r, "Gruppe"),
+                        Kostenart = Text(r, SchemaKatalog.SPALTE_PW_KOSTENART),
+                        Bemessung = bem,
+                        Menge = D(r, SchemaKatalog.SPALTE_PW_MENGE),
+                        Einheitpreis = D(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS),
+                        IstErloes = erloes,
+                        SzenarioGepflegt = szenarioGepflegt
+                    };
+                    n.BetragJahr =
+                        string.Equals(bem, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal)
+                            ? (erloes && wert > 0 ? -wert : wert)
+                            : (szenarioGepflegt
+                                ? (erloes && wert > 0 ? -wert : wert)
+                                : BetriebskostenCtrl.Betrag(bem, erwartet, n.Menge, n.Einheitpreis, erloes));
+                    liste.Add(n);
+                }
+            }
+            catch { }
+            return liste;
         }
 
         private static double Szenariowert(DataRow r, string szenario,
@@ -1280,8 +3467,14 @@ namespace WindowsFormsApplication1
                                     "Einspeiseverguetung, Investition, Betriebskosten, Energiekosten, Einspeiseerloes, " +
                                     "BarwertAusgaben, BarwertEinnahmen, Restwert, Kapitalwert, KapitalwertDiff, " +
                                     "AnnuitaetKW, AmortisationJahre, Gestehungskosten, " +
-                                    "IRR, CO2Abgabe, KWKGErloes, StromkostenTarif, HinweisText, Fehlgrund) " +
-                                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", conn, tx))
+                                    "IRR, CO2Abgabe, KWKGErloes, " + SPALTE_KWKG_VBH_EL + ", " +
+                                    SPALTE_ENERGIESTEUER + ", " + SPALTE_STROMST_BEFREIUNG + ", " +
+                                    SPALTE_STROMST_ENTLASTUNG + ", " + SPALTE_STEUER_HERKUNFT + ", " +
+                                    SPALTE_VERMIEDEN_ARBEIT + ", " + SPALTE_VERMIEDEN_LEISTUNG + ", " +
+                                    SPALTE_VERMIEDEN_GESAMT + ", " + SPALTE_AUFSCHLAG_BETRAG + ", " +
+                                    SPALTE_EINSPEISUNG_PV + ", " + SPALTE_EINSPEISUNG_KWK + ", " +
+                                    "StromkostenTarif, HinweisText, Fehlgrund) " +
+                                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", conn, tx))
                                 {
                                     OleDbParameterCollection ps = cmd.Parameters;
                                     ps.AddWithValue("@id", naechsteId);
@@ -1311,6 +3504,17 @@ namespace WindowsFormsApplication1
                                     ps.Add(DbWert(e.IRR));
                                     ps.AddWithValue("@behg", R(e.CO2AbgabeJahr));
                                     ps.AddWithValue("@kwkg", R(e.KwkgErloesJahr1));
+                                    ps.AddWithValue("@vbhel", R(e.KwkgVbhElektrisch));   // E2 (L6)
+                                    ps.AddWithValue("@enst", R(e.EnergiesteuerJahr1));   // E4
+                                    ps.AddWithValue("@stbe", R(e.StromsteuerBefreiungJahr1));
+                                    ps.AddWithValue("@sten", R(e.StromsteuerEntlastungJahr1));
+                                    ps.AddWithValue("@sthk", (object)e.SteuerHerkunft ?? DBNull.Value);
+                                    ps.AddWithValue("@vmar", R(e.VermiedenArbeitJahr));   // E5
+                                    ps.AddWithValue("@vmle", R(e.VermiedenLeistungJahr));
+                                    ps.AddWithValue("@vmge", R(e.VermiedenGesamtJahr));
+                                    ps.AddWithValue("@aufs", R(e.AufschlagJahr));
+                                    ps.AddWithValue("@epv", R(e.EinspeiseerloesPvJahr));   // E7
+                                    ps.AddWithValue("@ekwk", R(e.EinspeiseerloesKwkJahr));
                                     ps.Add(DbWert(e.StromkostenTarif));
                                     ps.AddWithValue("@hw", (object)e.Hinweis ?? DBNull.Value);
                                     ps.AddWithValue("@fg", (object)e.Fehlgrund ?? DBNull.Value);
@@ -1368,7 +3572,7 @@ namespace WindowsFormsApplication1
                                         using (var cmd = new OleDbCommand(
                                             "INSERT INTO " + TAB_MATRIX + " (ID, ID_Projekt, [Zone], " +
                                             "BezugMWh, EinspPvMWh, KwkEigenMWh, KwkEinspMWh, MaxBezugKW, " +
-                                            "Zeitstempel) VALUES (?,?,?,?,?,?,?,?,?)", conn, tx))
+                                            "BedarfMWh, Zeitstempel) VALUES (?,?,?,?,?,?,?,?,?,?)", conn, tx))
                                         {
                                             OleDbParameterCollection ps = cmd.Parameters;
                                             ps.AddWithValue("@id", mxId);
@@ -1379,6 +3583,7 @@ namespace WindowsFormsApplication1
                                             ps.AddWithValue("@ke", Math.Round(z.KwkEigenMWh, 3));
                                             ps.AddWithValue("@ki", Math.Round(z.KwkEinspeisungMWh, 3));
                                             ps.AddWithValue("@mx", Math.Round(kv.Value.MaxBezugKW, 1));
+                                            ps.AddWithValue("@bd", Math.Round(z.BedarfMWh, 3));   // E5
                                             ps.Add(new OleDbParameter("@zeit", OleDbType.Date) { Value = DateTime.Now });
                                             cmd.ExecuteNonQuery();
                                         }
@@ -1439,6 +3644,18 @@ namespace WindowsFormsApplication1
                             IRR = D(r, "IRR"),
                             CO2AbgabeJahr = D(r, "CO2Abgabe") ?? 0,
                             KwkgErloesJahr1 = D(r, "KWKGErloes") ?? 0,
+                            KwkgVbhElektrisch = D(r, SPALTE_KWKG_VBH_EL) ?? 0,   // E2 (L6)
+                            EnergiesteuerJahr1 = D(r, SPALTE_ENERGIESTEUER) ?? 0,          // E4
+                            StromsteuerBefreiungJahr1 = D(r, SPALTE_STROMST_BEFREIUNG) ?? 0,
+                            StromsteuerEntlastungJahr1 = D(r, SPALTE_STROMST_ENTLASTUNG) ?? 0,
+                            SteuerHerkunft = Text(r, SPALTE_STEUER_HERKUNFT).Length > 0
+                                             ? Text(r, SPALTE_STEUER_HERKUNFT) : null,
+                            VermiedenArbeitJahr = D(r, SPALTE_VERMIEDEN_ARBEIT) ?? 0,        // E5
+                            VermiedenLeistungJahr = D(r, SPALTE_VERMIEDEN_LEISTUNG) ?? 0,
+                            VermiedenGesamtJahr = D(r, SPALTE_VERMIEDEN_GESAMT) ?? 0,
+                            AufschlagJahr = D(r, SPALTE_AUFSCHLAG_BETRAG) ?? 0,
+                            EinspeiseerloesPvJahr = D(r, SPALTE_EINSPEISUNG_PV) ?? 0,        // E7
+                            EinspeiseerloesKwkJahr = D(r, SPALTE_EINSPEISUNG_KWK) ?? 0,
                             StromkostenTarif = D(r, "StromkostenTarif"),
                             Hinweis = r.Table.Columns.Contains("HinweisText") && r["HinweisText"] != DBNull.Value
                                       ? r["HinweisText"].ToString() : null,
@@ -1508,7 +3725,8 @@ namespace WindowsFormsApplication1
                             BezugMWh = D(r, "BezugMWh") ?? 0,
                             EinspeisungPvMWh = D(r, "EinspPvMWh") ?? 0,
                             KwkEigenMWh = D(r, "KwkEigenMWh") ?? 0,
-                            KwkEinspeisungMWh = D(r, "KwkEinspMWh") ?? 0
+                            KwkEinspeisungMWh = D(r, "KwkEinspMWh") ?? 0,
+                            BedarfMWh = D(r, "BedarfMWh") ?? 0        // E5
                         };
                         double mx = D(r, "MaxBezugKW") ?? 0;
                         if (mx > m.MaxBezugKW) m.MaxBezugKW = mx;
@@ -1539,6 +3757,13 @@ namespace WindowsFormsApplication1
         {
             if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return null;
             try { return Convert.ToDouble(r[spalte]); } catch { return null; }
+        }
+
+        /// <summary>Textspalte, tolerant gegen fehlende Spalte und NULL (Etappe E3).</summary>
+        private static string Text(DataRow r, string spalte)
+        {
+            if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return "";
+            try { return Convert.ToString(r[spalte]).Trim(); } catch { return ""; }
         }
 
         private static double R(double v, int dez = 2) { return Math.Round(v, dez); }

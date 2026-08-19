@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Aktionsharnisch des KI-Assistenten (Paket B1-B4, Fachkonzept 8/Etappe 1).
+
+    Ruft JEDE registrierte Aktion mindestens einmal gegen eine Arbeitskopie der
+    produktiven Datenbank auf und prueft dabei drei Zusagen:
+      * plausible Werte,
+      * GENAU EINE Protokollzeile je Ausfuehrung,
+      * kein Dialog - eine unerwartete MessageBox ist ein TESTFEHLER.
+
+    Aufbau wie Referenzlauf\Referenzlauf.csproj: Konsolen-EXE, net8.0-windows, x86,
+    Projektreferenz auf die App.
+
+    BEWUSST NICHT IN WP-Plan.sln - dasselbe Vorgehen wie beim Referenzlauf. Gebaut wird
+    ueber MSBuild.exe, weil "dotnet build" an MSB4803 scheitert (COM-Referenzen der App):
+      "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" ^
+        KiHarnisch\KiHarnisch.csproj -p:Configuration=Debug -p:Platform=x86
+
+    DbUmgebung, DialogWaechter und Protokoll werden aus Referenzlauf\ VERLINKT statt
+    kopiert: sie sind dort internal, tragen denselben Namensraum und muessen in beiden
+    Werkzeugen dasselbe tun. So gibt es keine zweite Fassung der Regel "es wird niemals
+    in die produktive Kenndaten.accdb geschrieben".
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+
+    <PlatformTarget>x86</PlatformTarget>
+    <Platforms>x86</Platforms>
+
+    <RootNamespace>WindowsFormsApplication1.Referenzlauf</RootNamespace>
+    <AssemblyName>KiHarnisch</AssemblyName>
+
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+
+    <NoWarn>$(NoWarn);CA1416;MSB3568;CS1701;CS1702;NU1701;MSB3277;NETSDK1206;WFAC010</NoWarn>
+    <SatelliteResourceLanguages>de-DE;en-US</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WindowsFormsApplication1\WindowsFormsApplication1.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Referenzlauf\DbUmgebung.cs" Link="Uebernommen\DbUmgebung.cs" />
+    <Compile Include="..\Referenzlauf\DialogWaechter.cs" Link="Uebernommen\DialogWaechter.cs" />
+    <Compile Include="..\Referenzlauf\Protokoll.cs" Link="Uebernommen\Protokoll.cs" />
+  </ItemGroup>
+
+</Project>

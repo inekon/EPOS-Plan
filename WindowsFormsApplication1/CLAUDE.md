@@ -38,7 +38,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
 | `Simulation/` | Engine: `SimulationControl`, `Init`, `SimulationRunner` + Module je Erzeuger/Bedarf (`SimulationWaermebedarf`, `…Waermepumpe`, `…BHKW`, `…PV`, `…Solarthermie`, `…SPK`, `…SSP`, `…Pufferspeicher`) |
 | `Lizenz/` | `LizenzManager`, `LizenzToken`, `LizenzServerClient`, `GeraeteId` — signiertes Token, DPAPI-Ablage, Zustände von `NichtAktiviert` bis `Lesemodus` |
 | `KI/` | `KiChatService` (Gemini 2.5 Flash-Lite über REST), `HilfeKontext`, `HilfeWissen`; API-Key in der Registry |
-| `Import/` | `VDI 3805/` (Kessel, Puffer, Kollektoren, WP), `CEC/` + `Pan/` (PV-Module), `CsvReader`, `IniFileParser` |
+| `Import/` | `VDI 3805/` (Kessel, Puffer, Kollektoren, WP), `CEC/` + `Pan/` (PV-Module), `CsvReader` |
 | `GrafikTools/` | `ChartManager`, `Form_ChartZoom`, `RoundedPanel` |
 | `Hilfe/` | `HelpCatalog` — WordPress-basiert, Standard `https://epos-plan.de` |
 | `Reporting/`, `Waermespeicher/` | **nur Konzept-/Standdokumente**, kein Code |

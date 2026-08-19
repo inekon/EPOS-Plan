@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Testprojekt des KiKern.
+
+    Vorbild ist SpeicherEngine.Tests: TargetFramework net9.0 (installiertes SDK 9.0.315),
+    xunit 2.6.2. Das Hauptprojekt WindowsFormsApplication1 wird hier bewusst NICHT
+    referenziert (COM-Referenzen, MSB4803 unter dotnet build) - der Kern ist genau so
+    geschnitten, dass er ohne die Anwendung prueffaehig ist (Fachkonzept 3.7).
+
+    Build/Test mit eigenem, kurzem Artefaktpfad, damit die x86-DLL des App-Builds nicht
+    mit dem 64-Bit-Testhost kollidiert:
+      dotnet test KiKern.Tests -p:ArtifactsPath=C:\Temp\kibart
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>KiKern.Tests</RootNamespace>
+    <AssemblyName>KiKern.Tests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="xunit" Version="2.6.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.4">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KiKern\KiKern.csproj" />
+  </ItemGroup>
+
+</Project>

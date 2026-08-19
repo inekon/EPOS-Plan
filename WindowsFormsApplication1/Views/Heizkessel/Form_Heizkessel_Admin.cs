@@ -13,6 +13,8 @@ namespace WindowsFormsApplication1
         {
             InitializeComponent();
             listBox_Kessel_DB.Items.Clear();
+
+            InitSpeichern();
         }
 
         private void Form_Heizkessel_Load(object sender, EventArgs e)
@@ -41,9 +43,12 @@ namespace WindowsFormsApplication1
             Close();
         }
 
+        // Waehrend des Fuellens ist m_bFuellen gesetzt, damit das programmatische
+        // Schreiben der Anzeigefelder nicht als Anwenderaenderung gilt.
         private void listBox_Kessel_DB_SelectedIndexChanged(object sender, EventArgs e)
         {
             RecordSet rs = new RecordSet();
+            m_bFuellen = true;
 
             rs.Open("select * from [Tab_Heizkessel_STAMM] where Bezeichner='" + listBox_Kessel_DB.Text + "'");
             if (!rs.EOF())
@@ -57,8 +62,17 @@ namespace WindowsFormsApplication1
                 checkBox_Brennwert.Checked = (bool)rs.Read("Brennwert");    
                 textBox_Vorlauf.Text = rs.Read("Vorlauf") == DBNull.Value ? "" : ((int)rs.Read("Vorlauf")).ToString();
                 textBox_Ruecklauf.Text = rs.Read("Ruecklauf") == DBNull.Value ? "" : ((int)rs.Read("Ruecklauf")).ToString();
+                m_szGeladen = (string)rs.Read("Bezeichner");
+            }
+            else
+            {
+                m_szGeladen = "";
             }
             rs.Close();
+
+            m_bFuellen = false;
+            m_bGeaendert = false;
+            SpeicherKnopfAktualisieren();
         }
 
         private void comboBox_Brennstoffart_SelectedIndexChanged(object sender, EventArgs e)
@@ -120,8 +134,17 @@ namespace WindowsFormsApplication1
             rs.Close();
         }
 
+        /// <summary>
+        /// OK speichert offene Aenderungen und schliesst danach. Vorher schloss der
+        /// Knopf nur (Befund 18.08.2026): saemtliche Infofelder dieser Maske sind
+        /// editierbar - weder Designer noch .resx sperren eines davon -, ihre
+        /// Eingaben wurden aber nirgends zurueckgeschrieben und gingen beim
+        /// Schliessen still verloren. Ist nichts geaendert, verhaelt sich OK genau
+        /// wie frueher: es wird nicht geschrieben und nichts gefragt.
+        /// </summary>
         private void btn_OK_Click(object sender, EventArgs e)
         {
+            if (m_bGeaendert && !SpeichereStammsatz()) return;   // Dialog offen lassen
             Close();
         }
 
@@ -188,9 +211,10 @@ namespace WindowsFormsApplication1
             }
         }
 
-        // Folgepaket zu ab5bf32: Beide Felder zeigen nur den ausgewählten Kessel an und
-        // werden nirgends gespeichert. Statt modal zu melden und mit Undo() zu pendeln,
-        // wird ungültiger Text jetzt nur noch eingefärbt.
+        // Folgepaket zu ab5bf32: Statt modal zu melden und mit Undo() zu pendeln, wird
+        // ungültiger Text nur noch eingefärbt. Der früher hier stehende Zusatz „werden
+        // nirgends gespeichert“ stimmt seit dem Speichern-Knopf nicht mehr: gemeldet wird
+        // beim Speichern (Program.ZahlPruefen), gefärbt weiterhin beim Tippen.
         private void textBox_Kesselleistung_TextChanged(object sender, EventArgs e)
         {
             Program.ZahlFaerben(sender);
@@ -210,5 +234,142 @@ namespace WindowsFormsApplication1
                 listBox_Kessel_DB.Items.Add(heizkesselctrl.items[i].Name);
             }
         }
+
+        #region --- Speichern (nicht schliessend) ---
+
+        // Befund 18.08.2026: Diese Maske zeigt die Kessel-Stammdaten editierbar an -
+        // weder .Designer.cs noch .resx sperren eines der Felder -, hatte aber KEINEN
+        // Speicherweg: btn_OK_Click rief bloss Close(). Derselbe Fehler wie in
+        // Form_BHKWAdmin. "Speichern" schreibt jetzt und laesst den Dialog offen,
+        // OK schreibt und schliesst danach.
+
+        private SpeichernLeiste leiste;
+
+        /// <summary>Bezeichner des angezeigten Satzes - Schluessel des UPDATE.</summary>
+        private string m_szGeladen = "";
+
+        /// <summary>true, solange die Auswahl die Anzeigefelder programmatisch setzt.</summary>
+        private bool m_bFuellen;
+
+        /// <summary>true, sobald der Anwender eines der Speicherfelder geaendert hat.</summary>
+        private bool m_bGeaendert;
+
+        /// <summary>
+        /// Haengt Speichern-Knopf und Statuszeile ein. Der Knopf sitzt in der freien
+        /// Flaeche zwischen "Neu..." und OK, die Statuszeile in der Zeile darueber
+        /// (unter den Vorlauf/Ruecklauf-Feldern); die Fenstergroesse aendert sich nicht.
+        /// </summary>
+        private void InitSpeichern()
+        {
+            // Kesselname ist der Schluessel des UPDATE (WHERE Bezeichner = ?), ein hier
+            // geaenderter Name wuerde ins Leere schreiben. Die Brennstoffart ist eine
+            // reine Nachschlage-Anzeige (Text statt ID) und kennt keinen Rueckweg.
+            // Beides also nur lesen; geaendert wird es ueber "Bearbeiten...".
+            textBox_Kesselname.ReadOnly = true;
+            textBox_Brennstoff.ReadOnly = true;
+
+            Rectangle rStatus = new Rectangle(textBox_Kesselname.Left, btn_OK.Top - 22,
+                                              btn_OK.Right - textBox_Kesselname.Left, 18);
+            leiste = new SpeichernLeiste(this, btn_OK, rStatus, btn_Speichern_Click);
+
+            foreach (Control c in Speicherfelder()) c.TextChanged += Speicherfeld_Geaendert;
+            checkBox_Brennwert.CheckedChanged += Speicherfeld_Geaendert;
+
+            // Vorlauf/Ruecklauf sind Ganzzahlen; die beiden Zahlfelder faerben bereits
+            // ueber ihre vorhandenen TextChanged-Handler.
+            textBox_Vorlauf.Validating += (s, e) => Program.GanzzahlFaerben(s);
+            textBox_Ruecklauf.Validating += (s, e) => Program.GanzzahlFaerben(s);
+
+            SpeicherKnopfAktualisieren();
+        }
+
+        /// <summary>Genau die Textfelder, die der Speicherweg zurueckschreibt.</summary>
+        private Control[] Speicherfelder()
+        {
+            return new Control[]
+            {
+                textBox_Kesselbeschreibung, textBox_Kesselleistung,
+                textBox_Investitionskosten, textBox_Vorlauf, textBox_Ruecklauf
+            };
+        }
+
+        private void Speicherfeld_Geaendert(object sender, EventArgs e)
+        {
+            if (m_bFuellen) return;          // programmatisches Fuellen ist keine Aenderung
+            m_bGeaendert = true;
+            if (leiste != null) leiste.Leeren();
+            SpeicherKnopfAktualisieren();
+        }
+
+        private void SpeicherKnopfAktualisieren()
+        {
+            if (leiste == null) return;
+            leiste.Zustand(!string.IsNullOrEmpty(m_szGeladen), m_bGeaendert);
+        }
+
+        private void btn_Speichern_Click(object sender, EventArgs e)
+        {
+            SpeichereStammsatz();       // schliesst bewusst NICHT
+        }
+
+        /// <summary>
+        /// Schreibt die angezeigten Felder in den Kessel-Stammsatz zurueck. Liefert
+        /// false, wenn nichts geschrieben wurde - der Aufrufer laesst den Dialog dann
+        /// offen.
+        /// </summary>
+        private bool SpeichereStammsatz()
+        {
+            if (string.IsNullOrEmpty(m_szGeladen)) return false;
+
+            double dPtherm, dInvest;
+            int nVorlauf, nRuecklauf;
+            if (!Program.ZahlPruefen(textBox_Kesselleistung, label14.Text.TrimEnd(' ', ':'), out dPtherm, true)) return false;
+            if (!Program.ZahlPruefen(textBox_Investitionskosten, label3.Text.TrimEnd(' ', ':'), out dInvest, true)) return false;
+            if (!Program.GanzzahlPruefen(textBox_Vorlauf, label49.Text.TrimEnd(' ', ':'), out nVorlauf, true)) return false;
+            if (!Program.GanzzahlPruefen(textBox_Ruecklauf, label48.Text.TrimEnd(' ', ':'), out nRuecklauf, true)) return false;
+
+            // Tab_Heizkessel_STAMM fuehrt keinen eindeutigen Schluessel auf Bezeichner,
+            // HeizkesselStammCtrl.Update() filtert aber genau darauf. Bei einer Dublette
+            // wuerden beide Saetze zugleich ueberschrieben - deshalb hier abbrechen,
+            // statt unbemerkt zwei Katalogsaetze zu veraendern.
+            object anz = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM [" + HeizkesselStammCtrl.TABLE + "] WHERE Bezeichner = ?",
+                new System.Data.OleDb.OleDbParameter("@nam", m_szGeladen));
+            int nAnzahl = (anz == null || anz == DBNull.Value) ? 0 : Convert.ToInt32(anz);
+            if (nAnzahl > 1)
+            {
+                MessageBox.Show(
+                    string.Format(MyResource.Resource.ADM_MEHRDEUTIG_TEXT, m_szGeladen, nAnzahl),
+                    MyResource.Resource.ADM_MEHRDEUTIG_TITEL,
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                leiste.Fehler();
+                return false;
+            }
+
+            // Satz VOLLSTAENDIG lesen und nur in den angezeigten Feldern aendern:
+            // Update() schreibt alle Spalten, ein halb gefuelltes Model wuerde
+            // Wirkungsgrade, Emissionen und Wartungskosten nullen.
+            HeizkesselStammCtrl schreiber = new HeizkesselStammCtrl();
+            schreiber.ReadSingle(m_szGeladen);
+            if (schreiber.rows == 0) { leiste.Fehler(); return false; }
+
+            schreiber.Beschreibung = textBox_Kesselbeschreibung.Text;
+            schreiber.Ptherm = dPtherm;
+            schreiber.Investitionskosten = dInvest;
+            schreiber.Brennwert = checkBox_Brennwert.Checked;
+            schreiber.Vorlauf = nVorlauf;
+            schreiber.Ruecklauf = nRuecklauf;
+
+            // Update() meldet schreibgeschuetzte Katalogsaetze selbst und liefert false;
+            // eine Uebergehen-Freigabe wie bei den BHKW-Stammdaten gibt es hier nicht.
+            if (!schreiber.Update()) { leiste.Fehler(); return false; }
+
+            m_bGeaendert = false;
+            leiste.Gespeichert();
+            SpeicherKnopfAktualisieren();
+            return true;
+        }
+
+        #endregion
     }
 }
