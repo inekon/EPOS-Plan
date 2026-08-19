@@ -1465,10 +1465,18 @@ namespace WindowsFormsApplication1
             new Dictionary<string, TraegerEinheit>();
 
         /// <summary>
-        /// Abrechnungseinheit, Heizwert und Brennwert eines Trägers aus
-        /// <c>Abfrage_Energietraeger_Effektiv</c> — <b>Projektwert vor Katalogwert</b>,
-        /// dieselbe Quelle, aus der auch <c>KostenEmissionRechner</c> seine Mengen
-        /// bildet. Es gibt in dieser Anwendung keine zweite Wahrheit über Heizwerte.
+        /// Abrechnungseinheit, Heizwert und Brennwert eines Trägers — <b>Projektwert vor
+        /// Katalogwert</b>: zuerst <c>Abfrage_Energietraeger_Effektiv</c> (dieselbe
+        /// Quelle, aus der auch <c>KostenEmissionRechner</c> seine Mengen bildet),
+        /// ersatzweise die Katalogzeile <c>energy_carrier</c>. Es gibt in dieser
+        /// Anwendung keine zweite Wahrheit über Heizwerte.
+        ///
+        /// <para><b>Warum die Rückfallebene nötig ist.</b> Die gespeicherte Abfrage führt
+        /// nur die Träger, die dem Projekt in <c>energy_project_settings</c> zugeordnet
+        /// sind. Fährt eine Anlage einen Träger ohne solche Zuordnung, gäbe es sonst
+        /// weder Abrechnungseinheit noch Heizwert — und die Steuerrechnung meldete „nicht
+        /// umrechenbar", obwohl der Katalog beides führt. Der Katalogwert ist der
+        /// schwächere, aber richtige Ersatz.</para>
         /// </summary>
         private TraegerEinheit Traeger(int idProjekt, int carrierId)
         {
@@ -1495,6 +1503,24 @@ namespace WindowsFormsApplication1
                 }
             }
             catch { }
+
+            if (t.EffHi <= 0 || t.Einheit.Length == 0)
+                try
+                {
+                    DataTable dt = DataRepository.GetDataTable(
+                        "SELECT billing_unit, hi_kwh_per_unit, hs_kwh_per_unit FROM energy_carrier WHERE id = ?",
+                        new OleDbParameter("@c", carrierId));
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+                        DataRow r = dt.Rows[0];
+                        if (t.Einheit.Length == 0 && r["billing_unit"] != DBNull.Value)
+                            t.Einheit = Convert.ToString(r["billing_unit"]).Trim();
+                        if (t.EffHi <= 0) t.EffHi = D(r, "hi_kwh_per_unit") ?? 0;
+                        if (t.EffHs <= 0) t.EffHs = D(r, "hs_kwh_per_unit") ?? 0;
+                    }
+                }
+                catch { }
+
             _traegerCache[key] = t;
             return t;
         }
