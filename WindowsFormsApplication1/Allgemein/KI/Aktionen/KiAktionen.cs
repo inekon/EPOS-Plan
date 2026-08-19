@@ -19,10 +19,12 @@ namespace WindowsFormsApplication1
     /// <c>KostenPositionCtrl</c> sind <c>internal</c> (Fachkonzept 5.5).
     /// </para>
     /// <para>
-    /// <b>Umfang dieses Pakets.</b> Nur Stufe 1 (lesend) aus Fachkonzept 5.1 - OHNE
-    /// <c>maske_oeffnen</c> und <c>projekt_oeffnen</c>: beide oeffnen blockierend-modal
-    /// (<c>MenueCtrl.cs:251-389</c>, <c>:130</c>, <c>:178</c>) und gehoeren in eine spaetere
-    /// Etappe.
+    /// <b>Umfang.</b> Stufe 1 (lesend) aus Fachkonzept 5.1 - OHNE <c>maske_oeffnen</c>
+    /// und <c>projekt_oeffnen</c>: beide oeffnen blockierend-modal
+    /// (<c>MenueCtrl.cs:251-389</c>, <c>:130</c>, <c>:178</c>) und gehoeren in eine
+    /// spaetere Etappe. Dazu seit Etappe 3 die drei Schreibaktionen der Stufe 2
+    /// (<see cref="KiAktionenSchreiben"/>). Stufe 3 (rechnen) ist noch nicht registriert;
+    /// <c>KiRiegel.HoechsteStufe</c> weist sie ohnehin ab.
     /// </para>
     /// <para>
     /// <b>Regeln, die hier eingehalten werden.</b> Nur benannte Aktionen (kein generisches
@@ -61,6 +63,13 @@ namespace WindowsFormsApplication1
 
             // ---- Sitzungsgedaechtnis
             register.Aufnehmen(KiAktionenSitzung.LetzteAktionen());
+
+            // ---- Schreibaktionen der Stufe 2 (Etappe 3, Fachkonzept 5.2). Sie laufen
+            //      NUR nach ausdruecklicher Bestaetigung; den Riegel dafuer haelt
+            //      KiAusfuehrer, nicht diese Liste.
+            register.Aufnehmen(KiAktionenSchreiben.VarianteAnlegen());
+            register.Aufnehmen(KiAktionenSchreiben.SpeichervarianteAktivSetzen());
+            register.Aufnehmen(KiAktionenSchreiben.KostenpositionSetzen());
 
             return register;
         }

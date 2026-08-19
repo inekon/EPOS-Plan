@@ -48,6 +48,10 @@ namespace WindowsFormsApplication1.Referenzlauf
             string zielWurzel = Argument(args, "--ziel") ??
                 Path.Combine(Path.GetTempPath(), "EPOS_KiHarnisch");
 
+            // Der Rechtshinweis wird an echten Registry-Werten des angemeldeten Benutzers
+            // geprueft. Sie werden hier gesichert und in JEDEM Fall wiederhergestellt.
+            Einwilligung.Sichern(_log);
+
             try
             {
                 return Lauf(zielWurzel);
@@ -58,11 +62,15 @@ namespace WindowsFormsApplication1.Referenzlauf
                 Speichern(zielWurzel);
                 return 2;
             }
+            finally
+            {
+                Einwilligung.Wiederherstellen(_log);
+            }
         }
 
         private static int Lauf(string zielWurzel)
         {
-            _log.Zeile("Aktionsharnisch KI-Assistent (Etappe 1, Pakete B1-B4)");
+            _log.Zeile("Aktionsharnisch KI-Assistent (Etappen 1 bis 3)");
             _log.Zeile("Start: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
             _log.Leerzeile();
 
@@ -92,9 +100,12 @@ namespace WindowsFormsApplication1.Referenzlauf
                     _log.Roh("      · " + a.Name + "  [" + SchutzstufeText.Schluessel(a.Stufe) + "]  -> " + a.Andockpunkt);
                 _log.Leerzeile();
 
+                // Seit Etappe 3 sind auch Schreibaktionen registriert. Was hier zaehlt,
+                // ist nicht mehr „alles Stufe 1", sondern: nichts oberhalb der Grenze,
+                // die der Riegel ueberhaupt freigibt (Fachkonzept 4.1).
                 foreach (KiAktion a in register.Alle)
-                    if (a.Stufe != Schutzstufe.Lesen)
-                        _log.FehlerZeile("Aktion " + a.Name + " ist nicht Stufe 1 - dieses Paket kennt nur Leseaktionen.");
+                    if (a.Stufe > KiRiegel.HoechsteStufe)
+                        _log.FehlerZeile("Aktion " + a.Name + " liegt oberhalb von KiRiegel.HoechsteStufe.");
 
                 // ------------------------------------------------------ Eckdaten
                 Eckdaten eck = EckdatenLesen();
@@ -126,6 +137,27 @@ namespace WindowsFormsApplication1.Referenzlauf
                 _log.Zeile("--- Einlaeufigkeit (zwei Aufrufe gleichzeitig) ---");
                 EinlaeufigkeitPruefen(eck, protokollDatei, ref zeilenVorher);
 
+                // ------------------------------------------------------ Rechtshinweis
+                // Abschalter der Installation und versionierte Einwilligung. Steht VOR
+                // der Werkzeugrunde: ohne erteilte Einwilligung darf dort nichts laufen.
+                // Der Protokollzaehler wird danach neu gesetzt - die Faelle 3 und 4
+                // fuehren echte Leseaktionen aus und schreiben dabei Protokollzeilen.
+                Einwilligung.Pruefen(_log);
+                zeilenVorher = Protokollzeilen(protokollDatei);
+
+                // ------------------------------------------------------ Werkzeugrunde
+                // Etappe 2: Absichtserkennung, Rundendeckel, Riegel, Cache-Umgehung und
+                // Datenschutzschicht - mit EINGESPEISTER Modellantwort, ohne Netz.
+                Werkzeugrunde.Pruefen(_log, protokollDatei, ref zeilenVorher);
+
+                // ------------------------------------------------------ Schreibrunde
+                // Etappe 3: Vorschau, Bestaetigung, Verfall, Sicherungspunkt,
+                // DarfSchreiben() und Schreibschutz - mit Vorher-/Nachher-Werten aus
+                // der ARBEITSKOPIE. Dass die produktive Datenbank dabei aussen vor
+                // bleibt, belegt der SHA-256-Vergleich am Ende dieses Laufs.
+                Schreibrunde.Pruefen(_log, protokollDatei, ref zeilenVorher);
+                foreach (string name in Schreibrunde.Gerufen) gerufen.Add(name);
+
                 // ------------------------------------------------------ Vollstaendigkeit
                 _log.Leerzeile();
                 foreach (KiAktion a in register.Alle)
@@ -153,6 +185,10 @@ namespace WindowsFormsApplication1.Referenzlauf
                 _log.FehlerZeile("Die produktive Datenbank hat sich VERAENDERT.");
             else
                 _log.Zeile("Die produktive Datenbank ist unveraendert.");
+
+            // ---------------------------------------------------------- Registry
+            _log.Leerzeile();
+            Einwilligung.Wiederherstellen(_log);
 
             _log.Leerzeile();
             _log.Zeile("Warnungen: " + _log.Warnungen + ", Fehler: " + _log.Fehler);
@@ -513,7 +549,7 @@ namespace WindowsFormsApplication1.Referenzlauf
             try
             {
                 _log.Speichern(Path.Combine(zielWurzel, "ki_harnisch_protokoll.md"),
-                               "Aktionsharnisch KI-Assistent (Etappe 1)",
+                               "Aktionsharnisch KI-Assistent (Etappen 1 bis 3)",
                                new[] { "Erzeugt von KiHarnisch.exe.", "" });
             }
             catch (Exception ex) { Console.WriteLine("Protokoll nicht speicherbar: " + ex.Message); }

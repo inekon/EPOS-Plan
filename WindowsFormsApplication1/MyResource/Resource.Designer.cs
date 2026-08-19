@@ -3326,6 +3326,2235 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KI-Assistent vollständig deaktivieren (keine Übertragung an einen externen Dienst) ähnelt.
+        /// </summary>
+        public static string KI_ABSCHALTER_ADMIN {
+            get {
+                return ResourceManager.GetString("KI_ABSCHALTER_ADMIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ist der Haken gesetzt, sind Menüeintrag und Chatfenster des Hilfe-Assistenten nicht erreichbar und es geht keine Anfrage an den Anbieter. Die lokale Hilfesuche bleibt unberührt. Gedacht für Installationen, in denen der externe Dienst nicht zulässig ist. ähnelt.
+        /// </summary>
+        public static string KI_ABSCHALTER_ADMIN_HINWEIS {
+            get {
+                return ResourceManager.GetString("KI_ABSCHALTER_ADMIN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diesen Rechner ist der KI-Assistent verwaltungsseitig gesperrt (HKLM\Software\wp-plan\KiDeaktiviert). Die Einstellung lässt sich hier nicht ändern. ähnelt.
+        /// </summary>
+        public static string KI_ABSCHALTER_MASCHINE {
+            get {
+                return ResourceManager.GetString("KI_ABSCHALTER_MASCHINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die KI-Funktionen sind für diese Installation deaktiviert; es wird nichts an einen externen Dienst übertragen. Die Einstellung steht unter Administration / Einstellungen / Anwendung. ähnelt.
+        /// </summary>
+        public static string KI_ABSCHALTER_MELDUNG {
+            get {
+                return ResourceManager.GetString("KI_ABSCHALTER_MELDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KI-Assistent deaktiviert ähnelt.
+        /// </summary>
+        public static string KI_ABSCHALTER_TITEL {
+            get {
+                return ResourceManager.GetString("KI_ABSCHALTER_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anfrage wurde abgebrochen. ähnelt.
+        /// </summary>
+        public static string KI_AKT_ABGEBROCHEN {
+            get {
+                return ResourceManager.GetString("KI_AKT_ABGEBROCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte zuerst eine Aktion wählen. ähnelt.
+        /// </summary>
+        public static string KI_AKT_AKTION_WAEHLEN {
+            get {
+                return ResourceManager.GetString("KI_AKT_AKTION_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausführen ähnelt.
+        /// </summary>
+        public static string KI_AKT_AUSFUEHREN {
+            get {
+                return ResourceManager.GetString("KI_AKT_AUSFUEHREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktion ausgeführt: {0} ähnelt.
+        /// </summary>
+        public static string KI_AKT_AUSGEFUEHRT {
+            get {
+                return ResourceManager.GetString("KI_AKT_AUSGEFUEHRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string KI_AKT_BESTAETIGUNG_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("KI_AKT_BESTAETIGUNG_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abgebrochen — es wurde nichts geändert. ähnelt.
+        /// </summary>
+        public static string KI_AKT_BESTAETIGUNG_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("KI_AKT_BESTAETIGUNG_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausführen ähnelt.
+        /// </summary>
+        public static string KI_AKT_BESTAETIGUNG_AUSFUEHREN {
+            get {
+                return ResourceManager.GetString("KI_AKT_BESTAETIGUNG_AUSFUEHREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bestätigt — die Aktion läuft. ähnelt.
+        /// </summary>
+        public static string KI_AKT_BESTAETIGUNG_ERTEILT {
+            get {
+                return ResourceManager.GetString("KI_AKT_BESTAETIGUNG_ERTEILT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bestätigung erforderlich ähnelt.
+        /// </summary>
+        public static string KI_AKT_BESTAETIGUNG_TITEL {
+            get {
+                return ResourceManager.GetString("KI_AKT_BESTAETIGUNG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Vorschau verfällt in {0} Sekunden. ähnelt.
+        /// </summary>
+        public static string KI_AKT_BESTAETIGUNG_VERFALL {
+            get {
+                return ResourceManager.GetString("KI_AKT_BESTAETIGUNG_VERFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorschau ist verfallen — es wurde nichts geändert. Bitte neu fragen. ähnelt.
+        /// </summary>
+        public static string KI_AKT_BESTAETIGUNG_VERFALLEN {
+            get {
+                return ResourceManager.GetString("KI_AKT_BESTAETIGUNG_VERFALLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktionsbetrieb aus: es gehen nur Hilfetexte, Ihre Frage und der Bereichsname hinaus. ähnelt.
+        /// </summary>
+        public static string KI_AKT_DATENSCHUTZ_AUS {
+            get {
+                return ResourceManager.GetString("KI_AKT_DATENSCHUTZ_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktionsbetrieb ein: Ergebnisse lesender Aktionen gehen an das Modell zurück — Bezeichner nur als Platzhalter („Name 1“), Zahlen und Schlüssel unverändert. Mit „Was wird gesendet?“ jederzeit nachprüfbar. ähnelt.
+        /// </summary>
+        public static string KI_AKT_DATENSCHUTZ_EIN {
+            get {
+                return ResourceManager.GetString("KI_AKT_DATENSCHUTZ_EIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebniszeilen: {0} ähnelt.
+        /// </summary>
+        public static string KI_AKT_ERGEBNISZEILEN {
+            get {
+                return ResourceManager.GetString("KI_AKT_ERGEBNISZEILEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anfrage konnte nicht beantwortet werden: {0} ähnelt.
+        /// </summary>
+        public static string KI_AKT_FEHLER {
+            get {
+                return ResourceManager.GetString("KI_AKT_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist kein API-Schlüssel hinterlegt. Bitte im Chatfenster über ‚Einstellungen…‘ eintragen. ähnelt.
+        /// </summary>
+        public static string KI_AKT_KEIN_SCHLUESSEL {
+            get {
+                return ResourceManager.GetString("KI_AKT_KEIN_SCHLUESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (keine Aktion ausgeführt) ähnelt.
+        /// </summary>
+        public static string KI_AKT_KEINE_AKTION {
+            get {
+                return ResourceManager.GetString("KI_AKT_KEINE_AKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Frage angegeben. ähnelt.
+        /// </summary>
+        public static string KI_AKT_KEINE_FRAGE {
+            get {
+                return ResourceManager.GetString("KI_AKT_KEINE_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Aktion läuft — bitte warten. ähnelt.
+        /// </summary>
+        public static string KI_AKT_LAEUFT {
+            get {
+                return ResourceManager.GetString("KI_AKT_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktion nicht ausgeführt: {0} — {1} ähnelt.
+        /// </summary>
+        public static string KI_AKT_NICHT_AUSGEFUEHRT {
+            get {
+                return ResourceManager.GetString("KI_AKT_NICHT_AUSGEFUEHRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktion „{0}“ verändert Daten. Es steht kein Weg zur Verfügung, die Bestätigung des Anwenders einzuholen — sie wird nicht ausgeführt. ähnelt.
+        /// </summary>
+        public static string KI_AKT_OHNE_BESTAETIGUNGSWEG {
+            get {
+                return ResourceManager.GetString("KI_AKT_OHNE_BESTAETIGUNGSWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angaben ähnelt.
+        /// </summary>
+        public static string KI_AKT_PARAMETER_TITEL {
+            get {
+                return ResourceManager.GetString("KI_AKT_PARAMETER_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt noch keine Protokolldatei ({0}). ähnelt.
+        /// </summary>
+        public static string KI_AKT_PROTOKOLL_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_AKT_PROTOKOLL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Protokoll anzeigen ähnelt.
+        /// </summary>
+        public static string KI_AKT_PROTOKOLL_LINK {
+            get {
+                return ResourceManager.GetString("KI_AKT_PROTOKOLL_LINK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktionsprotokoll ähnelt.
+        /// </summary>
+        public static string KI_AKT_PROTOKOLL_TITEL {
+            get {
+                return ResourceManager.GetString("KI_AKT_PROTOKOLL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Protokollzeile: {0} ähnelt.
+        /// </summary>
+        public static string KI_AKT_PROTOKOLLZEILE {
+            get {
+                return ResourceManager.GetString("KI_AKT_PROTOKOLLZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Runde(n), {1} ähnelt.
+        /// </summary>
+        public static string KI_AKT_RUNDEN {
+            get {
+                return ResourceManager.GetString("KI_AKT_RUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktionen zulassen (nur lesende) ähnelt.
+        /// </summary>
+        public static string KI_AKT_SCHALTER {
+            get {
+                return ResourceManager.GetString("KI_AKT_SCHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freigegeben sind ausschließlich lesende Aktionen; alles Weitere kommt mit der Bestätigungsschicht. ähnelt.
+        /// </summary>
+        public static string KI_AKT_STUFE1_HINWEIS {
+            get {
+                return ResourceManager.GetString("KI_AKT_STUFE1_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Tageslimit von {0} Anfragen ist erreicht. Die Suche in der Hilfe steht weiterhin zur Verfügung. ähnelt.
+        /// </summary>
+        public static string KI_AKT_TAGESLIMIT {
+            get {
+                return ResourceManager.GetString("KI_AKT_TAGESLIMIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weg A (Werkzeugkatalog) ähnelt.
+        /// </summary>
+        public static string KI_AKT_WEG_A {
+            get {
+                return ResourceManager.GetString("KI_AKT_WEG_A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weg B (JSON im Antworttext) ähnelt.
+        /// </summary>
+        public static string KI_AKT_WEG_B {
+            get {
+                return ResourceManager.GetString("KI_AKT_WEG_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfallweg B erzwingen (Modell ohne Werkzeuge) ähnelt.
+        /// </summary>
+        public static string KI_AKT_WEGB_EINSTELLUNG {
+            get {
+                return ResourceManager.GetString("KI_AKT_WEGB_EINSTELLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfallweg B ist in den Einstellungen erzwungen: Aktionen werden als JSON im Antworttext vorgeschlagen. ähnelt.
+        /// </summary>
+        public static string KI_AKT_WEGB_ERZWUNGEN {
+            get {
+                return ResourceManager.GetString("KI_AKT_WEGB_ERZWUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es steht kein werkzeugfähiges Modell zur Verfügung — der Assistent nutzt den Rückfallweg B (Aktionsvorschlag als JSON im Antworttext). ähnelt.
+        /// </summary>
+        public static string KI_AKT_WEGB_OHNE_MODELL {
+            get {
+                return ResourceManager.GetString("KI_AKT_WEGB_OHNE_MODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werkzeuge… ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERKZEUGE_BTN {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERKZEUGE_BTN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktionen von Hand ausführen ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERKZEUGE_TITEL {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERKZEUGE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktion wurde abgebrochen. ähnelt.
+        /// </summary>
+        public static string KI_AUS_ABGEBROCHEN {
+            get {
+                return ResourceManager.GetString("KI_AUS_ABGEBROCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktion ist fehlgeschlagen ({0}): {1} ähnelt.
+        /// </summary>
+        public static string KI_AUS_AUSNAHME {
+            get {
+                return ResourceManager.GetString("KI_AUS_AUSNAHME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktion „{0}“ hat kein Ergebnis geliefert. ähnelt.
+        /// </summary>
+        public static string KI_AUS_KEIN_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("KI_AUS_KEIN_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Lizenz erlaubt derzeit kein Schreiben. Ansehen und Exportieren bleiben möglich, Änderungen sind gesperrt. {0} ähnelt.
+        /// </summary>
+        public static string KI_AUS_KEIN_SCHREIBRECHT {
+            get {
+                return ResourceManager.GetString("KI_AUS_KEIN_SCHREIBRECHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es läuft gerade eine andere Aktion. Bitte warten Sie, bis sie fertig ist. ähnelt.
+        /// </summary>
+        public static string KI_AUS_LAEUFT_BEREITS {
+            get {
+                return ResourceManager.GetString("KI_AUS_LAEUFT_BEREITS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist ein Dialogfenster geöffnet. Bitte schließen Sie es zuerst. ähnelt.
+        /// </summary>
+        public static string KI_AUS_MODALER_DIALOG {
+            get {
+                return ResourceManager.GetString("KI_AUS_MODALER_DIALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktion „{0}“ ist nicht bestätigungspflichtig; für sie gibt es keine Vorbereitung. ähnelt.
+        /// </summary>
+        public static string KI_AUS_OHNE_BESTAETIGUNGSPFLICHT {
+            get {
+                return ResourceManager.GetString("KI_AUS_OHNE_BESTAETIGUNGSPFLICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktion „{0}“ verändert Daten, bringt aber keine Vorschau mit. Sie wird nicht ausgeführt. ähnelt.
+        /// </summary>
+        public static string KI_AUS_VORSCHAU_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_AUS_VORSCHAU_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorschau der Aktion „{0}“ blieb leer. Ohne Vorschau gibt es keine Bestätigung. ähnelt.
+        /// </summary>
+        public static string KI_AUS_VORSCHAU_LEER {
+            get {
+                return ResourceManager.GetString("KI_AUS_VORSCHAU_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Einwilligung in den Rechtshinweis wird keine Anfrage an den Anbieter gesendet. Die lokale Hilfesuche über „Nur suchen“ steht weiterhin zur Verfügung. ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Übertragung lässt sich jederzeit vollständig unterbinden: unter Administration / Einstellungen / Anwendung schaltet „KI-Assistent vollständig deaktivieren“ alle KI-Funktionen ab. Auch ohne Ihre Einwilligung wird keine Anfrage gesendet. Die lokale Hilfesuche („Nur suchen“) bleibt in beiden Fällen nutzbar und überträgt nichts. ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_ABSCHALTEN {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_ABSCHALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die • Der Werkzeugkatalog: die Namen der zugelassenen Aktionen, ihre Parameter und deren Erläuterungen. Zugelassen sind ausschließlich lesende Aktionen.
+        ///• Die Ergebnisse ausgeführter Leseaktionen. Bezeichner darin – Projekt-, Varianten- und Anlagennamen – werden vorher durch Platzhalter ersetzt („Name 1“); Zahlen, Einheiten und Schlüssel gehen unverändert mit. ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_AKTIONEN {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_AKTIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreiben Sie in die Frage nichts hinein, was die Anwendung nicht verlassen soll – insbesondere keine personenbezogenen Daten und nichts, was der Geheimhaltung unterliegt. Über „Was wird gesendet?“ im Chatfenster können Sie sich vor jedem Absenden genau anzeigen lassen, welcher Text hinausginge. ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_BEACHTEN {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_BEACHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der KI-Assistent beantwortet Ihre Fragen nicht selbst. Er übermittelt sie an einen Dienst des Anbieters Google (Gemini-Schnittstelle); die Verarbeitung findet dort statt, außerhalb dieser Anwendung. Was dabei hinausgeht, steht hier vollständig. ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_EINLEITUNG {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_EINLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Empfänger ist Google als Betreiber der Gemini-Schnittstelle. Für Art und Umfang der dortigen Verarbeitung gelten die jeweils gültigen Bedingungen des Anbieters; nach diesen Bedingungen werden Inhalte im kostenlosen Kontingent zur Produktverbesserung verwendet. Für den produktiven Einsatz ist ein kostenpflichtiger Zugang vorgesehen. ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_EMPFAENGER {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_EMPFAENGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fassung {0} ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_FASSUNG {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_FASSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KI-Assistent – Rechtshinweis zur Datenübertragung ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_FENSTER {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbankinhalte im Rohzustand, Kundenstammdaten, Simulationszeitreihen und Dateipfade werden nicht gesendet. Der API-Schlüssel wird in einer Kopfzeile der Anfrage mitgegeben und steht nicht in der aufgerufenen Adresse. ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_NICHT {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_NICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verstanden und einverstanden ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_OK {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bestätigt am {0} für Fassung {1}. Der Hinweis liegt inzwischen in Fassung {2} vor und wird deshalb erneut vorgelegt. ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_STAND_ALT {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_STAND_ALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bestätigt am {0} für Fassung {1}. ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_STAND_JA {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_STAND_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch nicht bestätigt. Ohne Einwilligung wird keine Anfrage an den Anbieter gesendet. ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_STAND_NEIN {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_STAND_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis zur Nutzung des KI-Assistenten ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_TITEL {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abschalten ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_UEB_ABSCHALTEN {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_UEB_ABSCHALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zusätzlich, wenn „Aktionen zulassen“ eingeschaltet ist ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_UEB_AKTIONEN {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_UEB_AKTIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was Sie beachten müssen ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_UEB_BEACHTEN {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_UEB_BEACHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wer die Daten erhält ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_UEB_EMPFAENGER {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_UEB_EMPFAENGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was nicht übertragen wird ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_UEB_NICHT {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_UEB_NICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was übertragen wird ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_UEB_UEBERTRAGEN {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_UEB_UEBERTRAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verantwortung und Auftragsverarbeitung ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_UEB_VERANTWORTUNG {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_UEB_VERANTWORTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die • Ihre Frage im Wortlaut. Der eingegebene Text geht unverändert hinaus – auch das, was Sie an Namen, Adressen oder sonstigen Angaben selbst hineinschreiben.
+        ///• Der Name des Bereichs, in dem Sie gerade arbeiten (zum Beispiel „Bericht“ oder „Wirtschaftlichkeit“). Er stammt aus einer festen Liste allgemeiner Bereichsnamen; Projekt-, Kunden- und Anlagennamen sind darin nicht enthalten.
+        ///• Auszüge aus der mitgelieferten Wissensbasis – feste Texte zur Bedienung des Programms. ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_UEBERTRAGEN {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_UEBERTRAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verantwortlich für den Einsatz des KI-Assistenten ist der Betreiber dieser Installation. Ob die Übermittlung an den Anbieter eine Vereinbarung zur Auftragsverarbeitung oder eine andere vertragliche Grundlage voraussetzt, muss der Betreiber selbst prüfen. Dieser Hinweis beschreibt allein den tatsächlichen Datenfluss; er ersetzt diese Prüfung nicht und trifft keine Aussage darüber, ob der Einsatz im Einzelfall zulässig ist. ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_VERANTWORTUNG {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_VERANTWORTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ihre Frage geht im Wortlaut an einen externen Dienst (Google Gemini).  ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_ZEILE {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechtshinweis anzeigen ähnelt.
+        /// </summary>
+        public static string KI_HINWEIS_ZEILE_LINK {
+            get {
+                return ResourceManager.GetString("KI_HINWEIS_ZEILE_LINK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktion „{0}“ ist deklariert, aber nicht verdrahtet. ähnelt.
+        /// </summary>
+        public static string KI_KERN_AKTION_OHNE_AUSFUEHRUNG {
+            get {
+                return ResourceManager.GetString("KI_KERN_AKTION_OHNE_AUSFUEHRUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktion „{0}“ gibt es nicht. Bekannt sind: {1}. ähnelt.
+        /// </summary>
+        public static string KI_KERN_AKTION_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_KERN_AKTION_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Antwort des Modells war leer. ähnelt.
+        /// </summary>
+        public static string KI_KERN_ANTWORT_LEER {
+            get {
+                return ResourceManager.GetString("KI_KERN_ANTWORT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ liegt mit {1} außerhalb des zulässigen Bereichs {2} bis {3}. ähnelt.
+        /// </summary>
+        public static string KI_KERN_AUSSERHALB_BEREICH {
+            get {
+                return ResourceManager.GetString("KI_KERN_AUSSERHALB_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktion ähnelt.
+        /// </summary>
+        public static string KI_KERN_FELD_AKTION {
+            get {
+                return ResourceManager.GetString("KI_KERN_FELD_AKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Andockpunkt ähnelt.
+        /// </summary>
+        public static string KI_KERN_FELD_ANDOCKPUNKT {
+            get {
+                return ResourceManager.GetString("KI_KERN_FELD_ANDOCKPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angaben ähnelt.
+        /// </summary>
+        public static string KI_KERN_FELD_ANGABEN {
+            get {
+                return ResourceManager.GetString("KI_KERN_FELD_ANGABEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gültig bis ähnelt.
+        /// </summary>
+        public static string KI_KERN_FELD_GUELTIG_BIS {
+            get {
+                return ResourceManager.GetString("KI_KERN_FELD_GUELTIG_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückholbar ähnelt.
+        /// </summary>
+        public static string KI_KERN_FELD_RUECKHOLBAR {
+            get {
+                return ResourceManager.GetString("KI_KERN_FELD_RUECKHOLBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sicherungspunkt ähnelt.
+        /// </summary>
+        public static string KI_KERN_FELD_SICHERUNG {
+            get {
+                return ResourceManager.GetString("KI_KERN_FELD_SICHERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau ähnelt.
+        /// </summary>
+        public static string KI_KERN_FELD_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KI_KERN_FELD_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkung ähnelt.
+        /// </summary>
+        public static string KI_KERN_FELD_WIRKUNG {
+            get {
+                return ResourceManager.GetString("KI_KERN_FELD_WIRKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zweck ähnelt.
+        /// </summary>
+        public static string KI_KERN_FELD_ZWECK {
+            get {
+                return ResourceManager.GetString("KI_KERN_FELD_ZWECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Vorgang wurde abgebrochen; es wurde nichts geändert. ähnelt.
+        /// </summary>
+        public static string KI_KERN_FREIGABE_ABGEBROCHEN {
+            get {
+                return ResourceManager.GetString("KI_KERN_FREIGABE_ABGEBROCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Anwender hat die Aktion abgebrochen; es wurde nichts geändert. ähnelt.
+        /// </summary>
+        public static string KI_KERN_FREIGABE_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("KI_KERN_FREIGABE_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktion „{0}“ verändert Daten und läuft nur nach ausdrücklicher Bestätigung im Chat. ähnelt.
+        /// </summary>
+        public static string KI_KERN_FREIGABE_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_KERN_FREIGABE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bestätigung gehört zu einem anderen Aufruf und gilt hier nicht. ähnelt.
+        /// </summary>
+        public static string KI_KERN_FREIGABE_FREMD {
+            get {
+                return ResourceManager.GetString("KI_KERN_FREIGABE_FREMD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diese Aktion liegt noch keine Entscheidung des Anwenders vor. ähnelt.
+        /// </summary>
+        public static string KI_KERN_FREIGABE_OFFEN {
+            get {
+                return ResourceManager.GetString("KI_KERN_FREIGABE_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Seit der Vorschau ist eine andere Aktion gelaufen; die Bestätigung gilt nicht mehr. Bitte neu anfragen. ähnelt.
+        /// </summary>
+        public static string KI_KERN_FREIGABE_UEBERHOLT {
+            get {
+                return ResourceManager.GetString("KI_KERN_FREIGABE_UEBERHOLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Bestätigung wurde bereits eingelöst. Ein Klick gilt für genau einen Aufruf. ähnelt.
+        /// </summary>
+        public static string KI_KERN_FREIGABE_VERBRAUCHT {
+            get {
+                return ResourceManager.GetString("KI_KERN_FREIGABE_VERBRAUCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorschau ist älter als eine Minute und wurde verworfen. Bitte die Aktion neu anfragen. ähnelt.
+        /// </summary>
+        public static string KI_KERN_FREIGABE_VERFALLEN {
+            get {
+                return ResourceManager.GetString("KI_KERN_FREIGABE_VERFALLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Parameter müssen als JSON-Objekt kommen. ähnelt.
+        /// </summary>
+        public static string KI_KERN_KEIN_OBJEKT {
+            get {
+                return ResourceManager.GetString("KI_KERN_KEIN_OBJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ erwartet einen Text; geliefert wurde „{1}“. ähnelt.
+        /// </summary>
+        public static string KI_KERN_KEIN_TEXT {
+            get {
+                return ResourceManager.GetString("KI_KERN_KEIN_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ erwartet ja oder nein; geliefert wurde „{1}“. ähnelt.
+        /// </summary>
+        public static string KI_KERN_KEIN_WAHRHEITSWERT {
+            get {
+                return ResourceManager.GetString("KI_KERN_KEIN_WAHRHEITSWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string KI_KERN_KEINE_ANGABEN {
+            get {
+                return ResourceManager.GetString("KI_KERN_KEINE_ANGABEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ erwartet eine ganze Zahl; geliefert wurde „{1}“. ähnelt.
+        /// </summary>
+        public static string KI_KERN_KEINE_GANZZAHL {
+            get {
+                return ResourceManager.GetString("KI_KERN_KEINE_GANZZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ erwartet eine Liste ganzer Zahlen; geliefert wurde „{1}“. ähnelt.
+        /// </summary>
+        public static string KI_KERN_KEINE_LISTE {
+            get {
+                return ResourceManager.GetString("KI_KERN_KEINE_LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ erwartet eine Zahl; geliefert wurde „{1}“. ähnelt.
+        /// </summary>
+        public static string KI_KERN_KEINE_ZAHL {
+            get {
+                return ResourceManager.GetString("KI_KERN_KEINE_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Liste „{0}“ ist leer. ähnelt.
+        /// </summary>
+        public static string KI_KERN_LISTE_LEER {
+            get {
+                return ResourceManager.GetString("KI_KERN_LISTE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Modell hat mehrere Aktionen zugleich vorgeschlagen; ausgeführt wird nur „{0}“. Ebenfalls vorgeschlagen: {1}. ähnelt.
+        /// </summary>
+        public static string KI_KERN_MEHRERE_WERKZEUGE {
+            get {
+                return ResourceManager.GetString("KI_KERN_MEHRERE_WERKZEUGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Parameter „{0}“ kennt diese Aktion nicht. Erlaubt sind: {1}. ähnelt.
+        /// </summary>
+        public static string KI_KERN_PARAMETER_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_KERN_PARAMETER_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pflichtangabe „{0}“ ({1}) fehlt. ähnelt.
+        /// </summary>
+        public static string KI_KERN_PFLICHTFELD_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_KERN_PFLICHTFELD_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktion „{0}“ gehört zu {1} und ist in dieser Ausbaustufe noch nicht freigegeben. ähnelt.
+        /// </summary>
+        public static string KI_KERN_RIEGEL_STUFE_GESPERRT {
+            get {
+                return ResourceManager.GetString("KI_KERN_RIEGEL_STUFE_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktion „{0}“ gehört zu {1} und wird noch nicht ausgeführt — das kommt mit der Bestätigungsschicht. ähnelt.
+        /// </summary>
+        public static string KI_KERN_RIEGEL_ZU {
+            get {
+                return ResourceManager.GetString("KI_KERN_RIEGEL_ZU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ja — der Vorzustand ist bekannt und lässt sich als neue, ebenfalls bestätigungspflichtige Aktion zurückschreiben ähnelt.
+        /// </summary>
+        public static string KI_KERN_RUECKHOLBAR_JA {
+            get {
+                return ResourceManager.GetString("KI_KERN_RUECKHOLBAR_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nein — die Änderung lässt sich nicht automatisch zurücknehmen ähnelt.
+        /// </summary>
+        public static string KI_KERN_RUECKHOLBAR_NEIN {
+            get {
+                return ResourceManager.GetString("KI_KERN_RUECKHOLBAR_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Assistent ist nach {0} Runden zu keiner abschließenden Antwort gekommen und bricht ab. Bitte die Frage kleiner fassen oder die Aktion von Hand wählen. ähnelt.
+        /// </summary>
+        public static string KI_KERN_RUNDENDECKEL_ERREICHT {
+            get {
+                return ResourceManager.GetString("KI_KERN_RUNDENDECKEL_ERREICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 1 – nur lesend ähnelt.
+        /// </summary>
+        public static string KI_KERN_STUFE_LESEN {
+            get {
+                return ResourceManager.GetString("KI_KERN_STUFE_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 3 – rechnet, läuft länger ähnelt.
+        /// </summary>
+        public static string KI_KERN_STUFE_RECHNEN {
+            get {
+                return ResourceManager.GetString("KI_KERN_STUFE_RECHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 2 – verändert Daten ähnelt.
+        /// </summary>
+        public static string KI_KERN_STUFE_SCHREIBEN {
+            get {
+                return ResourceManager.GetString("KI_KERN_STUFE_SCHREIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ darf nicht leer sein. ähnelt.
+        /// </summary>
+        public static string KI_KERN_TEXT_LEER {
+            get {
+                return ResourceManager.GetString("KI_KERN_TEXT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist zu lang (höchstens {1} Zeichen). ähnelt.
+        /// </summary>
+        public static string KI_KERN_TEXT_ZU_LANG {
+            get {
+                return ResourceManager.GetString("KI_KERN_TEXT_ZU_LANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist mit {1} größer als der zulässige Höchstwert {2}. ähnelt.
+        /// </summary>
+        public static string KI_KERN_UEBER_GRENZE {
+            get {
+                return ResourceManager.GetString("KI_KERN_UEBER_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist mit {1} kleiner als der zulässige Mindestwert {2}. ähnelt.
+        /// </summary>
+        public static string KI_KERN_UNTER_GRENZE {
+            get {
+                return ResourceManager.GetString("KI_KERN_UNTER_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ kennt den Wert „{1}“ nicht. Erlaubt sind: {2}. ähnelt.
+        /// </summary>
+        public static string KI_KERN_WERT_NICHT_ERLAUBT {
+            get {
+                return ResourceManager.GetString("KI_KERN_WERT_NICHT_ERLAUBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Aktion liest nur; sie ändert nichts. ähnelt.
+        /// </summary>
+        public static string KI_KERN_WIRKUNG_LESEN {
+            get {
+                return ResourceManager.GetString("KI_KERN_WIRKUNG_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Änderungsdatum von Projekt {0} konnte nicht gesetzt werden. ähnelt.
+        /// </summary>
+        public static string KI_REG_AENDERUNGSDATUM_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_REG_AENDERUNGSDATUM_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl ähnelt.
+        /// </summary>
+        public static string KI_REG_ANZAHL_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_ANZAHL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrag ähnelt.
+        /// </summary>
+        public static string KI_REG_BETRAG_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_BETRAG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Variante fehlt ein Bezeichner. ähnelt.
+        /// </summary>
+        public static string KI_REG_BEZEICHNER_LEER {
+            get {
+                return ResourceManager.GetString("KI_REG_BEZEICHNER_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner ähnelt.
+        /// </summary>
+        public static string KI_REG_BEZEICHNER_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_BEZEICHNER_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ gibt es nicht. ähnelt.
+        /// </summary>
+        public static string KI_REG_DATEI_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_REG_DATEI_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dateipfad ähnelt.
+        /// </summary>
+        public static string KI_REG_DATEIPFAD_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_DATEIPFAD_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ hat keine Varianten. ähnelt.
+        /// </summary>
+        public static string KI_REG_EINZELNES_PROJEKT {
+            get {
+                return ResourceManager.GetString("KI_REG_EINZELNES_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Ergebnis(se) zu {1} Projekt(en); {2} davon aktuell. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERGEBNISSE_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ERGEBNISSE_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zu diesen Projekten ist kein Wirtschaftlichkeitsergebnis gespeichert — bitte zuerst rechnen. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERGEBNISSE_KEINE {
+            get {
+                return ResourceManager.GetString("KI_REG_ERGEBNISSE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie viele der zuletzt ausgeführten Aktionen genannt werden sollen. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_ANZAHL {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer Investitionsbetrag der Position in Euro. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_BETRAG {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_BETRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name der neuen Variante, z. B. „Wärmepumpe statt Kessel“. Der Projektname entsteht daraus als „Stamm - Bezeichner“. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollständiger Pfad der zu prüfenden Datei (CSV oder Excel). ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_DATEIPFAD {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_DATEIPFAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel der Ganglinie aus ganglinien_auflisten. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_GANGLINIE_ID {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_GANGLINIE_ID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewerk der Komponenten-Übernahme. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_GEWERK {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_GEWERK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzbare Speicherkapazität. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenkomponente, deren Investitionsposition geprüft wird. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_KOMPONENTE {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_KOMPONENTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lade- und Entladeleistung des Speichers. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_LEISTUNG {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel des Merkmals als Tabelle.Spalte, z. B. Tab_WP.Bauart. Unbekannte Schlüssel werden mit der vollständigen Liste beantwortet. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_MERKMAL {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_MERKMAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel des Projekts, in das übernommen würde. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_NACH_PROJEKT {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_NACH_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel der Kostenposition, wie ihn kostenlage_pruefen als id_position liefert. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_POSITIONS_ID {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_POSITIONS_ID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel des Projekts, falls die Ganglinie eine Projektganglinie ist. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_PROJEKT_ID_GANGLINIE_SUCHE {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_PROJEKT_ID_GANGLINIE_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel des Projekts; ohne Angabe erscheinen nur die Ganglinien des Stammkatalogs. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_PROJEKT_ID_GANGLINIEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_PROJEKT_ID_GANGLINIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel der Projekte, deren Ergebnisse gelesen werden sollen. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_PROJEKTE_FUER_ERGEBNISSE {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_PROJEKTE_FUER_ERGEBNISSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Obere Grenze des nutzbaren Ladebands. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_SOC_MAX {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_SOC_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Untere Grenze des nutzbaren Ladebands. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_SOC_MIN {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_SOC_MIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel des Stammprojekts, zu dem die Variante gehören soll; aus projekte_auflisten oder varianten_auflisten. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_STAMM_ID {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_STAMM_ID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel der Speichervariante aus speichervarianten_auflisten. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_VARIANTE_ID {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_VARIANTE_ID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel des Projekts, aus dem übernommen würde. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_VON_PROJEKT {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_VON_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Round-Trip-Wirkungsgrad des Speichers. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_WIRKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_WIRKUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ganglinie {0} enthält keine Werte. ähnelt.
+        /// </summary>
+        public static string KI_REG_GANGLINIE_LEER {
+            get {
+                return ResourceManager.GetString("KI_REG_GANGLINIE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganglinie (ID) ähnelt.
+        /// </summary>
+        public static string KI_REG_GANGLINIE_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_GANGLINIE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt keine Ganglinie mit der Nummer {0}. ähnelt.
+        /// </summary>
+        public static string KI_REG_GANGLINIE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_REG_GANGLINIE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Ganglinie(n): {1} aus dem Projekt, {2} aus dem Katalog. ähnelt.
+        /// </summary>
+        public static string KI_REG_GANGLINIEN_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("KI_REG_GANGLINIEN_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es sind keine Ganglinien vorhanden. ähnelt.
+        /// </summary>
+        public static string KI_REG_GANGLINIEN_KEINE {
+            get {
+                return ResourceManager.GetString("KI_REG_GANGLINIEN_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewerk ähnelt.
+        /// </summary>
+        public static string KI_REG_GEWERK_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_GEWERK_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gewerk „{0}“ wird nicht unterstützt. Möglich sind: {1}. ähnelt.
+        /// </summary>
+        public static string KI_REG_GEWERK_NICHT_UNTERSTUETZT {
+            get {
+                return ResourceManager.GetString("KI_REG_GEWERK_NICHT_UNTERSTUETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quell- und Zielprojekt müssen verschiedene Projekte sein. ähnelt.
+        /// </summary>
+        public static string KI_REG_GLEICHE_PROJEKTE {
+            get {
+                return ResourceManager.GetString("KI_REG_GLEICHE_PROJEKTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzbare Kapazität ähnelt.
+        /// </summary>
+        public static string KI_REG_KAPAZITAET_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_KAPAZITAET_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt {0} ist selbst eine Variante von Projekt {1}. Eine Variante entsteht nur zu einem Stammprojekt. ähnelt.
+        /// </summary>
+        public static string KI_REG_KEIN_STAMMPROJEKT {
+            get {
+                return ResourceManager.GetString("KI_REG_KEIN_STAMMPROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponente ähnelt.
+        /// </summary>
+        public static string KI_REG_KOMPONENTE_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_KOMPONENTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt {0} ist „{1}“ nicht verbaut. ähnelt.
+        /// </summary>
+        public static string KI_REG_KOMPONENTE_NICHT_VERBAUT {
+            get {
+                return ResourceManager.GetString("KI_REG_KOMPONENTE_NICHT_VERBAUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Komponente „{0}“ führt keine Technik-Planwerte. ähnelt.
+        /// </summary>
+        public static string KI_REG_KOMPONENTE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_REG_KOMPONENTE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die erfasste Position von „{0}“ weicht von den Technik-Planwerten ab. ähnelt.
+        /// </summary>
+        public static string KI_REG_KOSTENLAGE_ABWEICHEND {
+            get {
+                return ResourceManager.GetString("KI_REG_KOSTENLAGE_ABWEICHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In Tab_KostenKomponente gibt es keinen Eintrag für „{0}“. ähnelt.
+        /// </summary>
+        public static string KI_REG_KOSTENLAGE_OHNE_KOMPONENTE {
+            get {
+                return ResourceManager.GetString("KI_REG_KOSTENLAGE_OHNE_KOMPONENTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die erfasste Position von „{0}“ passt zu den Technik-Planwerten. ähnelt.
+        /// </summary>
+        public static string KI_REG_KOSTENLAGE_PASST {
+            get {
+                return ResourceManager.GetString("KI_REG_KOSTENLAGE_PASST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei lesbar: {0} Spalte(n), Vorschlag Wertspalte {1}, Raster {2}. ähnelt.
+        /// </summary>
+        public static string KI_REG_LASTGANG_LESBAR {
+            get {
+                return ResourceManager.GetString("KI_REG_LASTGANG_LESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei ist so nicht lesbar. ähnelt.
+        /// </summary>
+        public static string KI_REG_LASTGANG_NICHT_LESBAR {
+            get {
+                return ResourceManager.GetString("KI_REG_LASTGANG_NICHT_LESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lade-/Entladeleistung ähnelt.
+        /// </summary>
+        public static string KI_REG_LEISTUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_LEISTUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} zuletzt ausgeführte Aktion(en). ähnelt.
+        /// </summary>
+        public static string KI_REG_LETZTE_AKTIONEN_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("KI_REG_LETZTE_AKTIONEN_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In dieser Sitzung wurde noch keine Aktion ausgeführt. ähnelt.
+        /// </summary>
+        public static string KI_REG_LETZTE_AKTIONEN_KEINE {
+            get {
+                return ResourceManager.GetString("KI_REG_LETZTE_AKTIONEN_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle und Ziel führen bei „{0}“ bereits denselben Wert ({1}). ähnelt.
+        /// </summary>
+        public static string KI_REG_MERKMAL_GLEICHSTAND {
+            get {
+                return ResourceManager.GetString("KI_REG_MERKMAL_GLEICHSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme möglich: „{0}“ würde von {1} auf {2} gesetzt. ähnelt.
+        /// </summary>
+        public static string KI_REG_MERKMAL_MOEGLICH {
+            get {
+                return ResourceManager.GetString("KI_REG_MERKMAL_MOEGLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Merkmal ähnelt.
+        /// </summary>
+        public static string KI_REG_MERKMAL_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_MERKMAL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme nicht möglich: {0} ähnelt.
+        /// </summary>
+        public static string KI_REG_MERKMAL_NICHT_MOEGLICH {
+            get {
+                return ResourceManager.GetString("KI_REG_MERKMAL_NICHT_MOEGLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Merkmal „{0}“ kenne ich nicht. Möglich sind: {1}. ähnelt.
+        /// </summary>
+        public static string KI_REG_MERKMAL_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_REG_MERKMAL_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zielprojekt (ID) ähnelt.
+        /// </summary>
+        public static string KI_REG_NACH_PROJEKT_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_NACH_PROJEKT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parametersatz zu Projekt {0} gelesen; Stromtarif {1}. ähnelt.
+        /// </summary>
+        public static string KI_REG_PARAMETER_GELESEN {
+            get {
+                return ResourceManager.GetString("KI_REG_PARAMETER_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Betrag der Kostenposition {0} ließ sich nicht setzen. ähnelt.
+        /// </summary>
+        public static string KI_REG_POSITION_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("KI_REG_POSITION_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kostenposition {0} gehört zu Projekt {1}, nicht zu Projekt {2}. ähnelt.
+        /// </summary>
+        public static string KI_REG_POSITION_FREMDES_PROJEKT {
+            get {
+                return ResourceManager.GetString("KI_REG_POSITION_FREMDES_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenposition {0} steht jetzt auf {1:N2} € (vorher {2:N2} €). ähnelt.
+        /// </summary>
+        public static string KI_REG_POSITION_GESETZT {
+            get {
+                return ResourceManager.GetString("KI_REG_POSITION_GESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Kostenposition mit der ID {0} gibt es nicht. ähnelt.
+        /// </summary>
+        public static string KI_REG_POSITION_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_REG_POSITION_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenposition (ID) ähnelt.
+        /// </summary>
+        public static string KI_REG_POSITIONS_ID_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_POSITIONS_ID_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt {0}: {1}. ähnelt.
+        /// </summary>
+        public static string KI_REG_PROJEKT_GELESEN {
+            get {
+                return ResourceManager.GetString("KI_REG_PROJEKT_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel des Projekts, wie ihn projekte_auflisten liefert. ähnelt.
+        /// </summary>
+        public static string KI_REG_PROJEKT_ID_ERLAEUTERUNG {
+            get {
+                return ResourceManager.GetString("KI_REG_PROJEKT_ID_ERLAEUTERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt (ID) ähnelt.
+        /// </summary>
+        public static string KI_REG_PROJEKT_ID_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_PROJEKT_ID_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt kein Projekt mit der Nummer {0}. ähnelt.
+        /// </summary>
+        public static string KI_REG_PROJEKT_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_REG_PROJEKT_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Projekte gefunden. ähnelt.
+        /// </summary>
+        public static string KI_REG_PROJEKTE_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("KI_REG_PROJEKTE_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In der Datenbank steht kein Projekt. ähnelt.
+        /// </summary>
+        public static string KI_REG_PROJEKTE_KEINE {
+            get {
+                return ResourceManager.GetString("KI_REG_PROJEKTE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekte ähnelt.
+        /// </summary>
+        public static string KI_REG_PROJEKTE_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_PROJEKTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Obere Bandgrenze ähnelt.
+        /// </summary>
+        public static string KI_REG_SOC_MAX_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_SOC_MAX_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Untere Bandgrenze ähnelt.
+        /// </summary>
+        public static string KI_REG_SOC_MIN_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_SOC_MIN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die untere Bandgrenze muss kleiner als die obere sein. ähnelt.
+        /// </summary>
+        public static string KI_REG_SOC_VERDREHT {
+            get {
+                return ResourceManager.GetString("KI_REG_SOC_VERDREHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Tabellen des Stromspeicher-Moduls fehlen in dieser Datenbank. ähnelt.
+        /// </summary>
+        public static string KI_REG_SPEICHER_TABELLE_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_REG_SPEICHER_TABELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speichervariante {0} ließ sich nicht aktiv setzen. ähnelt.
+        /// </summary>
+        public static string KI_REG_SPEICHERVARIANTE_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("KI_REG_SPEICHERVARIANTE_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichervariante {0} ist jetzt die aktive Variante von Projekt {1} (vorher: {2}). ähnelt.
+        /// </summary>
+        public static string KI_REG_SPEICHERVARIANTE_GESETZT {
+            get {
+                return ResourceManager.GetString("KI_REG_SPEICHERVARIANTE_GESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string KI_REG_SPEICHERVARIANTE_KEINE_AKTIVE {
+            get {
+                return ResourceManager.GetString("KI_REG_SPEICHERVARIANTE_KEINE_AKTIVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichervariante {0} ist bereits die aktive Variante von Projekt {1}; es wurde nichts geändert. ähnelt.
+        /// </summary>
+        public static string KI_REG_SPEICHERVARIANTE_SCHON_AKTIV {
+            get {
+                return ResourceManager.GetString("KI_REG_SPEICHERVARIANTE_SCHON_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speichervariante {0} gehört nicht zu Projekt {1}. ähnelt.
+        /// </summary>
+        public static string KI_REG_SPEICHERVARIANTE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_REG_SPEICHERVARIANTE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Speichervariante(n), aktiv: {1}. ähnelt.
+        /// </summary>
+        public static string KI_REG_SPEICHERVARIANTEN_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("KI_REG_SPEICHERVARIANTEN_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt keine Stromspeicher-Variante. ähnelt.
+        /// </summary>
+        public static string KI_REG_SPEICHERVARIANTEN_KEINE {
+            get {
+                return ResourceManager.GetString("KI_REG_SPEICHERVARIANTEN_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kleinste haltbare Spitze: {0} kW (Ausgangsspitze {1} kW, Ersparnis {2} kW). ähnelt.
+        /// </summary>
+        public static string KI_REG_SPITZE_ERMITTELT {
+            get {
+                return ResourceManager.GetString("KI_REG_SPITZE_ERMITTELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stammprojekt (ID) ähnelt.
+        /// </summary>
+        public static string KI_REG_STAMM_ID_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_STAMM_ID_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aktiv ähnelt.
+        /// </summary>
+        public static string KI_REG_TARIF_AKTIV {
+            get {
+                return ResourceManager.GetString("KI_REG_TARIF_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus ähnelt.
+        /// </summary>
+        public static string KI_REG_TARIF_AUS {
+            get {
+                return ResourceManager.GetString("KI_REG_TARIF_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme möglich: {0} anlegen, {1} ersetzen, {2} entfernen. ähnelt.
+        /// </summary>
+        public static string KI_REG_UEBERNAHME_MOEGLICH {
+            get {
+                return ResourceManager.GetString("KI_REG_UEBERNAHME_MOEGLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme nicht möglich: {0} ähnelt.
+        /// </summary>
+        public static string KI_REG_UEBERNAHME_NICHT_MOEGLICH {
+            get {
+                return ResourceManager.GetString("KI_REG_UEBERNAHME_NICHT_MOEGLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante „{0}“ angelegt: neues Projekt {1} („{2}“). ähnelt.
+        /// </summary>
+        public static string KI_REG_VARIANTE_ANGELEGT {
+            get {
+                return ResourceManager.GetString("KI_REG_VARIANTE_ANGELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt {0} ist selbst eine Variante; ich habe zum Stammprojekt {1} aufgelöst. ähnelt.
+        /// </summary>
+        public static string KI_REG_VARIANTE_AUFGELOEST {
+            get {
+                return ResourceManager.GetString("KI_REG_VARIANTE_AUFGELOEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Variante konnte nicht angelegt werden: {0} ähnelt.
+        /// </summary>
+        public static string KI_REG_VARIANTE_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("KI_REG_VARIANTE_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichervariante (ID) ähnelt.
+        /// </summary>
+        public static string KI_REG_VARIANTE_ID_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_VARIANTE_ID_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleichsgruppe von „{0}“: {1}. ähnelt.
+        /// </summary>
+        public static string KI_REG_VARIANTEN_GRUPPE {
+            get {
+                return ResourceManager.GetString("KI_REG_VARIANTEN_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellprojekt (ID) ähnelt.
+        /// </summary>
+        public static string KI_REG_VON_PROJEKT_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_VON_PROJEKT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenposition {0} gehört zu Projekt {1} („{2}“), Komponente „{3}“, Bezeichnung „{4}“.
+        ///Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N2} €). ähnelt.
+        /// </summary>
+        public static string KI_REG_VORSCHAU_KOSTENPOSITION {
+            get {
+                return ResourceManager.GetString("KI_REG_VORSCHAU_KOSTENPOSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktiv ist zurzeit Speichervariante {0}.
+        ///Ich würde Speichervariante {1} (Energieanlage {2}) aktiv setzen; die übrigen {4} Varianten des Projekts {3} werden zurückgesetzt. ähnelt.
+        /// </summary>
+        public static string KI_REG_VORSCHAU_SPEICHERVARIANTE {
+            get {
+                return ResourceManager.GetString("KI_REG_VORSCHAU_SPEICHERVARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ich würde zum Stammprojekt „{0}“ (ID {1}) die Variante „{2}“ anlegen.
+        ///Das neue Projekt hieße „{3}“ und wäre eine vollständige Kopie ({4} Energieanlagen). ähnelt.
+        /// </summary>
+        public static string KI_REG_VORSCHAU_VARIANTE_ANLEGEN {
+            get {
+                return ResourceManager.GetString("KI_REG_VORSCHAU_VARIANTE_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Danach rechnet die Wirtschaftlichkeit mit dem neuen Betrag; ein gespeichertes Ergebnis wird dadurch veraltet. ähnelt.
+        /// </summary>
+        public static string KI_REG_WIRKUNG_KOSTENPOSITION_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_WIRKUNG_KOSTENPOSITION_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Danach rechnet die Gesamtsimulation des Projekts mit dieser Speichervariante. ähnelt.
+        /// </summary>
+        public static string KI_REG_WIRKUNG_SPEICHERVARIANTE_AKTIV {
+            get {
+                return ResourceManager.GetString("KI_REG_WIRKUNG_SPEICHERVARIANTE_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Danach gibt es ein zusätzliches Projekt in der Vergleichsgruppe des Stammprojekts. ähnelt.
+        /// </summary>
+        public static string KI_REG_WIRKUNG_VARIANTE_ANLEGEN {
+            get {
+                return ResourceManager.GetString("KI_REG_WIRKUNG_VARIANTE_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Round-Trip-Wirkungsgrad ähnelt.
+        /// </summary>
+        public static string KI_REG_WIRKUNGSGRAD_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_WIRKUNGSGRAD_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Liest die gespeicherten Wirtschaftlichkeitsergebnisse mehrerer Projekte. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_ERGEBNISSE_LESEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_ERGEBNISSE_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Listet die wählbaren Stromganglinien eines Projekts und des Stammkatalogs. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_GANGLINIEN_AUFLISTEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_GANGLINIEN_AUFLISTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleicht die erfasste Investitionsposition einer Komponente mit den Technik-Planwerten. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_KOSTENLAGE_PRUEFEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_KOSTENLAGE_PRUEFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Setzt den Betrag einer vorhandenen Kostenposition eines Projekts. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_KOSTENPOSITION_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_KOSTENPOSITION_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prüft eine Lastgangdatei: Format, Spalten, Raster und Lesbarkeit. Importiert nichts. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_LASTGANG_PRUEFEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_LASTGANG_PRUEFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennt die zuletzt ausgeführten Assistentenaktionen dieser Sitzung. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_LETZTE_AKTIONEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_LETZTE_AKTIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt, ob und wie ein einzelnes Merkmal von einem Projekt in ein anderes übernommen werden könnte. Schreibt nichts. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_MERKMAL_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_MERKMAL_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ermittelt die kleinste Netzbezugsspitze, die ein Speicher über den ganzen Lastgang halten kann. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_MINIMALE_SPITZE {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_MINIMALE_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Liest Wirtschaftlichkeitsparameter und Stromtarif eines Stammprojekts. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_PARAMETER_LESEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_PARAMETER_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Liest die Kopfdaten eines Projekts (Name, Kunde, Bearbeiter, Klimaregion). ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_PROJEKT_LESEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_PROJEKT_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Listet alle Projekte der Datenbank mit Name, Kunde und Änderungsdatum. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_PROJEKTE_AUFLISTEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_PROJEKTE_AUFLISTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Macht eine Stromspeicher-Variante zur aktiven Variante ihres Projekts; alle übrigen werden zurückgesetzt. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_SPEICHERVARIANTE_AKTIV {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_SPEICHERVARIANTE_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Listet die Stromspeicher-Varianten eines Projekts und sagt, welche aktiv ist. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_SPEICHERVARIANTEN_AUFLISTEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_SPEICHERVARIANTEN_AUFLISTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt, was die Übernahme eines Gewerks von einem Projekt in ein anderes ändern würde. Schreibt nichts. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_UEBERNAHME_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_UEBERNAHME_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Legt zu einem Stammprojekt eine neue Variante an — eine vollständige Kopie des Projekts mit eigenem Namen. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_VARIANTE_ANLEGEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_VARIANTE_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Listet Stammprojekt und alle Varianten einer Vergleichsgruppe. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_VARIANTEN_AUFLISTEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_VARIANTEN_AUFLISTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist eine Katalogtabelle der Auslieferung. Katalogpflege gehört nicht zu den Aufgaben des Assistenten. ähnelt.
+        /// </summary>
+        public static string KI_SCHUTZ_KATALOG {
+            get {
+                return ResourceManager.GetString("KI_SCHUTZ_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz {1} in {0} ist als schreibgeschützt gekennzeichnet (ReadOnly). Der Assistent umgeht keinen Schreibschutz — bitte den Fachdialog verwenden. ähnelt.
+        /// </summary>
+        public static string KI_SCHUTZ_SATZ {
+            get {
+                return ResourceManager.GetString("KI_SCHUTZ_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Schreibschutz des Satzes {1} in {0} ließ sich nicht prüfen ({2}); die Aktion wird abgelehnt. ähnelt.
+        /// </summary>
+        public static string KI_SCHUTZ_UNPRUEFBAR {
+            get {
+                return ResourceManager.GetString("KI_SCHUTZ_UNPRUEFBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vor der ersten Änderung muss eine Sicherungskopie der Datenbank entstehen. Das ist nicht gelungen ({0}) — Schreibaktionen bleiben deshalb gesperrt. ähnelt.
+        /// </summary>
+        public static string KI_SICH_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("KI_SICH_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datenbank ist gerade geöffnet ({0}); die Sicherungskopie kann noch nicht geschriebene Änderungen nicht enthalten. ähnelt.
+        /// </summary>
+        public static string KI_SICH_GEOEFFNET {
+            get {
+                return ResourceManager.GetString("KI_SICH_GEOEFFNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatenbank wurde nicht gefunden ({0}). ähnelt.
+        /// </summary>
+        public static string KI_SICH_QUELLE_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_SICH_QUELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Genau dieser Text ginge bei der nächsten Frage an das Modell {0} ({1}). Es werden keine Projekt-, Kunden- oder Simulationsdaten übertragen. Der API-Schlüssel wird in einer HTTP-Kopfzeile mitgegeben und steht nicht in der Adresse. ähnelt.
         /// </summary>
         public static string KI_VORSCHAU_HINWEIS {

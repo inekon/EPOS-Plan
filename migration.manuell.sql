@@ -236,7 +236,9 @@ DELETE FROM [Z_ProjektWaermebedarf] WHERE [ID_Projekt] IN ({{PROJEKTE_ZIEL_LOESC
 DELETE FROM [Tab_Waermebedarf] WHERE [ID_Projekt] IN ({{PROJEKTE_ZIEL_LOESCHEN}});
 DELETE FROM [Z_ProjektGebaeude] WHERE [ID_Projekt] IN ({{PROJEKTE_ZIEL_LOESCHEN}});
 DELETE FROM [Tab_Gebaeude] WHERE [ID_Projekt] IN ({{PROJEKTE_ZIEL_LOESCHEN}});
-DELETE FROM [Tab_Brennstoff_Projekt] WHERE [ID_Projekt] IN ({{PROJEKTE_ZIEL_LOESCHEN}});
+-- Tab_Brennstoff_Projekt: DELETE entfernt 19.08.2026 - Altweg ohne C#-Zugriff
+--   (Konzept Kosten/Energietraeger, HF1). Die Tabelle wird in Etappe K6
+--   (Migrationsschritt M-E) gedroppt.
 DELETE FROM [Tab_ProjektWerte] WHERE [ProjektID] IN ({{PROJEKTE_ZIEL_LOESCHEN}});
 DELETE FROM [energy_price] WHERE [ID_Projekt] IN ({{PROJEKTE_ZIEL_LOESCHEN}});
 DELETE FROM [energy_project_settings] WHERE [ID_Projekt] IN ({{PROJEKTE_ZIEL_LOESCHEN}});
@@ -485,10 +487,15 @@ INNER JOIN [{{QUELLE}}].[Tab_DBTagVDaten] AS dd ON dd.[ID_TagV] = d.[ID]
 WHERE z.[ID_Projekt] IN ({{PROJEKTE_QUELLE}});
 
 -- B.11 Uebrige Projekttabellen.
-INSERT INTO [Tab_Brennstoff_Projekt] ([ID], [ID_Projekt], [ID_Stamm], [Grundpreis], [Arbeitspreis], [Leistungspreis], [Bezug])
-SELECT q.[ID]+10000, (q.[ID_Projekt]+{{PROJEKT_OFFSET}}), q.[ID_Stamm], q.[Grundpreis], q.[Arbeitspreis], q.[Leistungspreis], q.[Bezug]
-FROM [{{QUELLE}}].[Tab_Brennstoff_Projekt] AS q WHERE q.[ID_Projekt] IN ({{PROJEKTE_QUELLE}});
+-- Tab_Brennstoff_Projekt: INSERT...SELECT entfernt 19.08.2026 - Altweg ohne
+--   C#-Zugriff (Konzept Kosten/Energietraeger, HF1). Die Tabelle wird in
+--   Etappe K6 (Migrationsschritt M-E) gedroppt.
 
+-- KategorieID 3 (Energiekosten) ist stillgelegt (Konzept Kosten/Energietraeger,
+-- HF1/L1, 19.08.2026): EPOS-Plan schreibt keine Kategorie-3-Zeilen mehr. Die
+-- Altzeilen werden per Migrationsschritt geloescht (Entscheidung E3, Etappe K6);
+-- dieser Import bleibt vorerst UNVERAENDERT (kopiert KategorieID wie vorgefunden),
+-- damit Migrationen von Alt-Datenbanken nicht brechen.
 INSERT INTO [Tab_ProjektWerte] ([ID], [ProjektID], [StammID], [KomponentenID], [KategorieID], [EingegebenerWert], [Worstcase], [Bestcase], [Nutzungsdauer], [Worstcase_Nutzungsdauer], [Bestcase_Nutzungsdauer], [Einheit], [Gruppe])
 SELECT (q.[ProjektID]+{{PROJEKT_OFFSET}})*100000 + q.[ID], (q.[ProjektID]+{{PROJEKT_OFFSET}}), q.[StammID], q.[KomponentenID], q.[KategorieID], q.[EingegebenerWert], q.[Worstcase], q.[Bestcase], q.[Nutzungsdauer], q.[Worstcase_Nutzungsdauer], q.[Bestcase_Nutzungsdauer], q.[Einheit], q.[Gruppe]
 FROM [{{QUELLE}}].[Tab_ProjektWerte] AS q WHERE q.[ProjektID] IN ({{PROJEKTE_QUELLE}});

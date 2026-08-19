@@ -38,6 +38,10 @@ namespace KiKern
         /// <param name="vorbedingung">Liefert den Klartextgrund, warum es GERADE NICHT geht - sonst <c>null</c>.</param>
         /// <param name="vorschau">„Ich wuerde X tun" - schreibt nichts. Nur fuer Stufe 2 und 3 noetig.</param>
         /// <param name="wirkung">Ein Satz „was danach anders ist" fuer die Bestaetigung.</param>
+        /// <param name="umkehrbar">
+        /// Laesst sich die Aenderung als neue, ebenfalls bestaetigungspflichtige Aktion
+        /// zurueckschreiben? Steht woertlich in der Bestaetigung (Fachkonzept 4.4, Punkt 3).
+        /// </param>
         public KiAktion(string name,
                         string zweck,
                         Schutzstufe stufe,
@@ -46,7 +50,8 @@ namespace KiKern
                         Func<KiAufruf, KiErgebnis>? ausfuehren = null,
                         Func<KiAufruf, string?>? vorbedingung = null,
                         Func<KiAufruf, string>? vorschau = null,
-                        string? wirkung = null)
+                        string? wirkung = null,
+                        bool umkehrbar = false)
         {
             if (!KiName.IstGueltig(name))
                 throw new ArgumentException(
@@ -54,6 +59,16 @@ namespace KiKern
                     nameof(name));
             if (string.IsNullOrWhiteSpace(zweck))
                 throw new ArgumentException("Eine Aktion braucht einen Zweck in einem Satz.", nameof(zweck));
+
+            // VORSCHAUPFLICHT ab Stufe 2 (Fachkonzept 3.5, Punkt 1). Eine Aktion, die
+            // Daten veraendert, MUSS vorher sagen koennen, was sie veraendern wuerde -
+            // sonst bestaetigt der Anwender eine Ueberschrift. Der Riegel dagegen sitzt
+            // erst im Ablauf; diese Bedingung greift schon beim Registrieren, damit eine
+            // vergessene Vorschau nicht bis zur Laufzeit unentdeckt bleibt.
+            if (stufe != Schutzstufe.Lesen && vorschau == null)
+                throw new ArgumentException(
+                    "Die Aktion '" + name + "' gehoert zu Stufe " + (int)stufe +
+                    " und braucht deshalb eine Vorschau (Fachkonzept 3.5).", nameof(vorschau));
 
             Name = name;
             Zweck = zweck;
@@ -64,6 +79,7 @@ namespace KiKern
             Vorbedingung = vorbedingung;
             Vorschau = vorschau;
             Wirkung = wirkung ?? (stufe == Schutzstufe.Lesen ? KiTexte.WirkungLesen : "");
+            Umkehrbar = umkehrbar;
 
             var gesehen = new HashSet<string>(StringComparer.Ordinal);
             foreach (KiParameter p in Parameter)
@@ -98,6 +114,17 @@ namespace KiKern
 
         /// <summary>Ein Satz „was danach anders ist".</summary>
         public string Wirkung { get; }
+
+        /// <summary>
+        /// Laesst sich die Aenderung zurueckschreiben? (Fachkonzept 4.4, Punkt 3.)
+        /// </summary>
+        /// <remarks>
+        /// „Umkehrbar" heisst hier ausschliesslich: der Vorzustand ist VOR der Aenderung
+        /// bekannt und liesse sich als neue, ebenfalls bestaetigungspflichtige Aktion
+        /// zurueckschreiben. Es ist KEIN Rueckgaengig-Stapel und kein Versprechen der
+        /// Anwendung - den gibt es im Bestand nicht.
+        /// </remarks>
+        public bool Umkehrbar { get; }
 
         /// <summary>Pflichtparameter dieser Aktion.</summary>
         public IEnumerable<KiParameter> Pflichtparameter()
