@@ -202,6 +202,289 @@ namespace WindowsFormsApplication1
         public const string TOOL_ALTWERT_TRUE = "true";
 
         // =====================================================================
+        // Kostenart nach VDI 2067 — Tab_ProjektWerte.Kostenart (Migrationsschritt 19)
+        //
+        //   Die vier Kostenarten der VDI 2067. Sie stehen als Zeichenkette IN der
+        //   Datenbank und werden in SQL damit verglichen; sie gehoeren deshalb hierher.
+        //   ASCII und Grossbuchstaben wie die Katalogschluessel aus Etappe E1 — nach der
+        //   Auslieferung EINGEFROREN: Wer einen Wert umbenennt, macht jede gepflegte
+        //   Bestandszeile unauffindbar. Die Anzeigetexte stehen in
+        //   MyResource.Resource.KOSTENART_*.
+        //
+        //   KEINE Rechenwirkung in Etappe E3. Die Kostenart ist die Gliederung, nach der
+        //   der Bericht (Etappe E7) die Jahreskosten aufteilt; gerechnet wird ueber die
+        //   Kategorie (Tab_KostenKategorie) und die Bemessung.
+        // =====================================================================
+
+        /// <summary>
+        /// VDI 2067: Kapitalgebundene Kosten — Investitionen, Ersatzbeschaffungen,
+        /// Restwerte. Vorbelegung der Bestandszeilen der Kategorie 1
+        /// („Investitionskosten") in Migrationsschritt 19b.
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string KOSTENART_KAPITALGEBUNDEN = "KAPITALGEBUNDEN";
+
+        /// <summary>
+        /// VDI 2067: Bedarfsgebundene Kosten — Brennstoff, Strombezug, Hilfsenergie.
+        /// Vorbelegung der Bestandszeilen der Kategorie 3 („Energiekosten") in
+        /// Migrationsschritt 19b.
+        /// <inheritdoc cref="KOSTENART_KAPITALGEBUNDEN" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string KOSTENART_BEDARFSGEBUNDEN = "BEDARFSGEBUNDEN";
+
+        /// <summary>
+        /// VDI 2067: Betriebsgebundene Kosten — Wartung, Instandsetzung, Bedienung,
+        /// Personal. Vorbelegung der Bestandszeilen der Kategorie 2
+        /// („Betriebskosten") in Migrationsschritt 19b.
+        /// <inheritdoc cref="KOSTENART_KAPITALGEBUNDEN" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string KOSTENART_BETRIEBSGEBUNDEN = "BETRIEBSGEBUNDEN";
+
+        /// <summary>
+        /// VDI 2067: Sonstige Kosten — Steuern, Versicherungen, Verwaltung.
+        /// <inheritdoc cref="KOSTENART_KAPITALGEBUNDEN" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string KOSTENART_SONSTIGE = "SONSTIGE";
+
+        // =====================================================================
+        // Bemessungsart einer Kostenposition
+        //   Tab_ProjektWerte.Bemessung (Migrationsschritt 19)
+        //
+        //   Sagt, WIE der Jahresbetrag einer Position entsteht. BETRAG ist das
+        //   Verhalten aller Bestandszeilen und die Vorbelegung von Schritt 19b — damit
+        //   sich an keiner heutigen Rechnung etwas aendert. Die uebrigen vier Arten
+        //   rechnen aus Menge x Einheitpreis; beide Faktoren stehen in eigenen Spalten,
+        //   damit die Herleitung persistent ist und nicht nur als Anzeigetext existiert
+        //   (Leitentscheidung L5).
+        //
+        //   ASCII, eingefroren; Anzeigetexte in MyResource.Resource.VDI_BEM_ANZ_*.
+        //
+        //   LAENGE BEACHTEN: Der laengste Wert ist PROZENT_BRENNSTOFFKOSTEN mit 24
+        //   Zeichen. Die Spalte Tab_ProjektWerte.Bemessung ist deshalb TEXT(30) und
+        //   nicht TEXT(20); wer hier einen laengeren Wert ergaenzt, muss die Spalten-
+        //   breite mitziehen, sonst scheitert das UPDATE still.
+        // =====================================================================
+
+        /// <summary>
+        /// Fester Jahresbetrag [€/a] — <c>EingegebenerWert</c> gilt unveraendert.
+        /// Verhalten aller Bestandszeilen; auch der Rueckfallwert, wenn die Spalte
+        /// leer ist (nicht migrierte Datenbank).
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string BEMESSUNG_BETRAG = "BETRAG";
+
+        /// <summary>
+        /// Anteil einer Investitionssumme [%/a]: <c>Menge</c> = Bezugsinvestition [€],
+        /// <c>Einheitpreis</c> = Satz [%]. Betrag = Menge × Satz / 100.
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string BEMESSUNG_PROZENT_INVESTITION = "PROZENT_INVESTITION";
+
+        /// <summary>
+        /// Betrag je Vollbenutzungsstunde [€/h]: <c>Menge</c> = Vollbenutzungsstunden
+        /// [h/a], <c>Einheitpreis</c> = Satz [€/h]. Betrag = Menge × Satz.
+        /// <para>
+        /// <b>Naeherung.</b> Bezugsgroesse ist <c>Tab_ErgebnisBHKWModul.VbhThermisch</c>
+        /// — <c>Waerme / P_therm</c>. Echte Betriebsstunden bildet der Rechenkern nicht
+        /// ab (Taktung und Teillast fehlen); ein Modul mit halber Modulation hat 8.760
+        /// Betriebsstunden und 4.380 thermische Vbh. Der Dialog kennzeichnet das am Feld.
+        /// </para>
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string BEMESSUNG_EUR_PRO_H = "EUR_PRO_H";
+
+        /// <summary>
+        /// Betrag je Kilowattstunde [€/kWh]: <c>Menge</c> = Jahresmenge [kWh],
+        /// <c>Einheitpreis</c> = Satz [€/kWh]. Betrag = Menge × Satz. Beim BHKW ist die
+        /// Menge die elektrische Jahreserzeugung.
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string BEMESSUNG_EUR_PRO_KWH = "EUR_PRO_KWH";
+
+        /// <summary>
+        /// Anteil der Brennstoffkosten [%/a]: <c>Menge</c> = Summe Brennstoffkosten
+        /// [€/a], <c>Einheitpreis</c> = Satz [%]. Betrag = Menge × Satz / 100.
+        /// Bemessung der Hilfsenergiekosten nach VDI 2067.
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN = "PROZENT_BRENNSTOFFKOSTEN";
+
+        // =====================================================================
+        // ETAPPE E4 — Projektangaben der Steuerpruefung
+        //   Tab_ProjektWirtschaftlichkeit (Migrationsschritt 20)
+        //
+        //   Die gesetzlichen Bedingungen der Energie- und Stromsteuerentlastung werden
+        //   ERFASST statt angenommen. Alle Werte stehen als Zeichenkette IN der
+        //   Datenbank und werden in SQL damit verglichen; ASCII und Grossbuchstaben wie
+        //   die Katalogschluessel aus Etappe E1, nach der Auslieferung EINGEFROREN.
+        //   Anzeigetexte in MyResource.Resource.STEUER_*.
+        //
+        //   ERGEBNISNEUTRAL: Die Vorbelegung von Schritt 20b ist jeweils der Wert, der
+        //   KEINE Gutschrift ausloest (KEIN_PROD_GEWERBE, KEINE). Ohne ausdrueckliche
+        //   Angabe des Anwenders aendert sich an keiner Bestandsrechnung etwas.
+        // =====================================================================
+
+        /// <summary>
+        /// Unternehmensart: kein produzierendes Gewerbe — <b>Vorbelegung</b> aller
+        /// Bestandszeilen (Migrationsschritt 20b). Weder § 9b StromStG noch § 54
+        /// EnergieStG sind damit anwendbar; die Stromsteuer-Entlastung bleibt 0.
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string UNTERNEHMENSART_KEIN_PROD_GEWERBE = "KEIN_PROD_GEWERBE";
+
+        /// <summary>
+        /// Unternehmensart: Unternehmen des produzierenden Gewerbes im Sinne des
+        /// § 2 Nr. 3 StromStG — Voraussetzung der Entlastung nach § 9b StromStG.
+        /// <inheritdoc cref="UNTERNEHMENSART_KEIN_PROD_GEWERBE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string UNTERNEHMENSART_PROD_GEWERBE = "PROD_GEWERBE";
+
+        /// <summary>
+        /// Unternehmensart: Betrieb der Land- und Forstwirtschaft — nach § 9b StromStG
+        /// dem produzierenden Gewerbe gleichgestellt.
+        /// <inheritdoc cref="UNTERNEHMENSART_KEIN_PROD_GEWERBE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string UNTERNEHMENSART_LAND_FORST = "LAND_FORSTWIRTSCHAFT";
+
+        /// <summary>
+        /// Energiesteuerentlastung: keine — <b>Vorbelegung</b> aller Bestandszeilen
+        /// (Migrationsschritt 20b) und damit der Grund, aus dem E4 fuer Bestandsprojekte
+        /// ergebnisneutral ist.
+        ///
+        /// <para><b>Warum Auswahl und nicht Automatik.</b> § 53 und § 53a schliessen
+        /// einander aus (Dienstvorschrift Energieerzeugung, § 53a Abs. 1 „Vorbehaltlich
+        /// des § 53"), und ob sie sich anteilig kombinieren lassen, ist ungeklaert
+        /// (Grundlagen_KWKG_Energiesteuer_Stromsteuer.md, Abschnitt 6 Punkt 1). Der
+        /// Anwender waehlt die Norm, unter der er den Antrag stellt.</para>
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string ENERGIESTEUER_WAHL_KEINE = "KEINE";
+
+        /// <summary>
+        /// Energiesteuerentlastung nach § 53 EnergieStG (Steuerentlastung fuer die
+        /// Stromerzeugung, Formular 1131) — voller Steuersatz nach § 2.
+        /// <inheritdoc cref="ENERGIESTEUER_WAHL_KEINE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string ENERGIESTEUER_WAHL_53 = "PARAGRAF_53";
+
+        /// <summary>
+        /// Energiesteuerentlastung nach § 53a Abs. 5 EnergieStG (teilweise Entlastung
+        /// fuer die gekoppelte Erzeugung, Formular 1135) — Teilsatz auf den
+        /// Gesamteinsatz, Jahresnutzungsgrad mindestens 70 % vorausgesetzt.
+        /// <inheritdoc cref="ENERGIESTEUER_WAHL_KEINE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string ENERGIESTEUER_WAHL_53A = "PARAGRAF_53A";
+
+        /// <summary>
+        /// Aufteilung des Brennstoffs auf Strom und Waerme: <b>keine Aufteilung</b>, der
+        /// gesamte im BHKW eingesetzte Brennstoff ist entlastungsfaehig —
+        /// <b>Vorbelegung</b> aller Bestandszeilen (Migrationsschritt 20b) und das
+        /// rechtlich belegte Verfahren.
+        ///
+        /// <para><b>Rechtsgrundlage.</b> § 53 Abs. 2 Satz 1 EnergieStG: Energieerzeugnisse
+        /// gelten als zur Stromerzeugung verwendet, soweit sie „unmittelbar am
+        /// Energieumwandlungsprozess teilnehmen". Beim Motor-BHKW ist das der gesamte
+        /// zugefuehrte Brennstoff; die Dienstvorschrift Energieerzeugung sagt zum
+        /// Schaubild § 53 Abs. 1 ausdruecklich „Waerme – genutzt oder ungenutzt – wird
+        /// nicht betrachtet". Der „Anteil" des § 53 Abs. 2 Satz 2 betrifft die
+        /// MECHANISCHE Energie an der Welle (Generator neben Verdichter), nicht die
+        /// Waermeauskopplung. Herzurechnen ist ausschliesslich Brennstoff, der in
+        /// Kessel, Spitzenlasterzeuger, Zusatzfeuerung oder Abluftbehandlung geht — und
+        /// genau den fuehrt die Simulation ohnehin getrennt.</para>
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string AUFTEILUNG_VOLLER_BRENNSTOFF = "VOLLER_BRENNSTOFF";
+
+        /// <summary>
+        /// Aufteilung des Brennstoffs auf Strom und Waerme: <b>energetisch</b>,
+        /// Stromanteil = Brennstoff × Strom / (Strom + Waerme).
+        ///
+        /// <para><b>Kein Rechtsverfahren, sondern eine bewusst konservative Variante.</b>
+        /// Das Energiesteuerrecht kennt diese Aufteilung nicht (Recherche vom
+        /// 19.08.2026, Protokoll W4_E4). Sie steht zur Wahl, weil sie die Auslegung
+        /// abbildet, von der die Grundlagen bis dahin ausgingen, und weil sie die
+        /// Untergrenze der Gutschrift zeigt — rund Faktor 2 bis 2,5 unter dem vollen
+        /// Brennstoffeinsatz.</para>
+        /// <inheritdoc cref="AUFTEILUNG_VOLLER_BRENNSTOFF" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string AUFTEILUNG_ENERGETISCH = "ENERGETISCH";
+
+        // =====================================================================
+        // Die zwoelf Betriebskostenpositionen nach VDI 2067
+        //   Tab_Kostenfaktor.Bezeichnung (IsMainComponent = False), verwendet als
+        //   Unterposition der Kategorie 2 in Tab_ProjektWerte
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        //
+        //   Die Bezeichnung ist zugleich der SCHLUESSEL der Position: Sie steht in
+        //   Tab_Kostenfaktor, wird in SQL damit verglichen und ordnet der Position im
+        //   Code ihre Bezugsgroesse zu (BetriebskostenCtrl.Katalog). Deshalb deutsch,
+        //   deshalb eingefroren; der Anzeigetext kommt getrennt aus
+        //   MyResource.Resource.VDI_POS_*.
+        // =====================================================================
+
+        /// <summary>
+        /// Wartung bzw. Vollwartung des BHKW. Genau EINE Bemessung gilt — je kWh
+        /// elektrisch, je Vollbenutzungsstunde oder Prozent der BHKW-Investition
+        /// (Leitentscheidung L7). Das stille Ueberschreiben der Altanwendung
+        /// (Analyse, Befund 6) wird nicht uebernommen.
+        /// Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string VDI_POS_WARTUNG_BHKW = "Wartung BHKW";
+
+        /// <summary>
+        /// Instandhaltung des BHKW — eine EIGENE Position NEBEN der Wartung, nicht
+        /// deren Alternative. Die Altanwendung beschriftete das Feld mit „oder",
+        /// addierte den Betrag aber (Analyse, Befund 7).
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string VDI_POS_INSTANDHALTUNG_BHKW = "Instandhaltung BHKW";
+
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        public const string VDI_POS_INSTANDHALTUNG_KESSEL = "Instandhaltung Heizkessel";
+
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        public const string VDI_POS_INSTANDHALTUNG_WAERMEZENTRALE = "Instandhaltung Wärmezentrale";
+
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        public const string VDI_POS_INSTANDHALTUNG_BAULICH = "Instandhaltung bauliche Anlagen";
+
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        public const string VDI_POS_INSTANDHALTUNG_STROMEINSPEISUNG = "Instandhaltung Stromeinspeisung";
+
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        public const string VDI_POS_PERSONAL = "Personalkosten";
+
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        public const string VDI_POS_VERWALTUNG = "Steuern, Versicherung, Verwaltung";
+
+        /// <summary>
+        /// Hilfsenergiekosten — als einzige Position der Reihe nach VDI 2067 ein Anteil
+        /// der BRENNSTOFFKOSTEN, nicht einer Investition.
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string VDI_POS_HILFSENERGIE = "Hilfsenergiekosten";
+
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        public const string VDI_POS_RESERVELEISTUNG = "Reserveleistungskosten";
+
+        /// <summary>
+        /// Sonstige Kosten. Die freie Bezeichnung des Anwenders steht in der
+        /// Kostenposition selbst; dieser Wert ist der Katalogeintrag, unter dem die
+        /// Zeile gefuehrt wird.
+        /// <inheritdoc cref="VDI_POS_WARTUNG_BHKW" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string VDI_POS_SONSTIGE = "Sonstige Kosten";
+
+        /// <summary>
+        /// Gruppe der zwoelf VDI-Positionen in <c>Tab_ProjektWerte.Gruppe</c> und
+        /// <c>Tab_KostenGruppenKatalog.GruppenName</c> — so stehen sie in der
+        /// Kostenverwaltung als eigener Block beisammen und sind von den frei
+        /// angelegten Positionen des Anwenders unterscheidbar.
+        /// Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string KOSTEN_GRUPPE_BETRIEB_VDI = "Betriebskosten VDI 2067";
+
+        // =====================================================================
         // Wärmesenke — Ziel der Anlage
         //   Tab_Energieanlagen.WS_Ziel, .WS_Ziel2  (Konzept 5.3)
         //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)

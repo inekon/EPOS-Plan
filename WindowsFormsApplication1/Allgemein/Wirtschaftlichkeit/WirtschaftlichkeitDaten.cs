@@ -54,6 +54,51 @@ namespace WindowsFormsApplication1
         /// (§ 7 Abs. 5, W2-Näherung laut Kap. 8.5.4).</summary>
         public double KwkgAbschlagNegativ = 0.0;
 
+        // ---- ETAPPE E4 — Angaben der Steuerprüfung (Migrationsschritt 20) ----
+        //
+        // Die gesetzlichen Bedingungen der Energie- und Stromsteuerentlastung werden
+        // ERFASST statt angenommen. Jeder Vorgabewert ist der Wert, der KEINE
+        // Gutschrift auslöst — ohne ausdrückliche Angabe ändert sich an einer
+        // Bestandsrechnung nichts.
+
+        /// <summary>
+        /// Unternehmensart des Betreibers, Steuerwert aus <c>DbWerte.UNTERNEHMENSART_*</c>.
+        /// Voraussetzung der Entlastung nach § 9b StromStG (und des § 54 EnergieStG).
+        /// Vorgabe: kein produzierendes Gewerbe ⇒ keine Stromsteuer-Entlastung.
+        /// </summary>
+        public string Unternehmensart = DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE;
+
+        /// <summary>Räumlicher Zusammenhang gegeben (4,5-km-Regel, § 12b StromStV) —
+        /// eine der vier Bedingungen der Befreiung nach § 9 Abs. 1 Nr. 3 StromStG.</summary>
+        public bool RaeumlicherZusammenhang;
+
+        /// <summary>Hocheffizienz nach Anhang III der Richtlinie (EU) 2023/1791
+        /// nachgewiesen (§ 2 StromStG) — zweite Bedingung derselben Befreiung.</summary>
+        public bool HocheffizienzNachweis;
+
+        /// <summary>
+        /// Jahresnutzungsgrad der KWK-Anlage [%] im Sinne des § 3 Abs. 3 EnergieStG;
+        /// Schwelle 70 % für § 53a EnergieStG. <c>null</c> = nicht gepflegt (die
+        /// Begründung unterscheidet das von „gepflegt und zu niedrig").
+        /// </summary>
+        public double? Jahresnutzungsgrad;
+
+        /// <summary>
+        /// Gewählte Energiesteuerentlastung, Steuerwert aus
+        /// <c>DbWerte.ENERGIESTEUER_WAHL_*</c>. Vorgabe <c>KEINE</c> — § 53 und § 53a
+        /// schließen einander aus, und ihre Kombination ist rechtlich ungeklärt
+        /// (Grundlagen, Abschnitt 6 Punkt 1); der Anwender wählt die Norm.
+        /// </summary>
+        public string EnergiesteuerWahl = DbWerte.ENERGIESTEUER_WAHL_KEINE;
+
+        /// <summary>
+        /// Aufteilungsmethode des Brennstoffs auf Strom und Wärme, Steuerwert aus
+        /// <c>DbWerte.AUFTEILUNG_*</c>. Vorgabe <c>VOLLER_BRENNSTOFF</c> — das rechtlich
+        /// belegte Verfahren (§ 53 Abs. 2 Satz 1 EnergieStG i.V.m. der Dienstvorschrift
+        /// Energieerzeugung: „Wärme — genutzt oder ungenutzt — wird nicht betrachtet").
+        /// </summary>
+        public string AufteilungMethode = DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF;
+
         public DateTime? GeaendertAm;
 
         /// <summary>Kurzdarstellung als Nachweiszeile (Reiter + Bericht).</summary>
@@ -82,6 +127,22 @@ namespace WindowsFormsApplication1
                     t += ", IBN " + KwkgInbetriebnahme.Value.ToString("dd.MM.yyyy", kultur);
                 t += ")";
             }
+            // ETAPPE E4: die Steuerangaben gehören in die Nachweiszeile, sobald sie
+            // überhaupt eine Gutschrift auslösen können. Ohne Wahl und ohne
+            // produzierendes Gewerbe bleibt die Zeile unverändert wie bisher.
+            if (!string.Equals(EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_KEINE, StringComparison.Ordinal) &&
+                !string.IsNullOrEmpty(EnergiesteuerWahl))
+            {
+                t += " · Energiesteuer " + EnergiesteuerWahl + " (" + AufteilungMethode + ")";
+                if (Jahresnutzungsgrad.HasValue)
+                    t += ", Nutzungsgrad " + Jahresnutzungsgrad.Value.ToString("N1", kultur) + " %";
+            }
+            if (!string.Equals(Unternehmensart, DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE, StringComparison.Ordinal) &&
+                !string.IsNullOrEmpty(Unternehmensart))
+                t += " · Unternehmensart " + Unternehmensart;
+            if (HocheffizienzNachweis || RaeumlicherZusammenhang)
+                t += " · Stromsteuer: hocheffizient " + (HocheffizienzNachweis ? "ja" : "nein") +
+                     ", räumlicher Zusammenhang " + (RaeumlicherZusammenhang ? "ja" : "nein");
             return t;
         }
 
@@ -269,6 +330,32 @@ namespace WindowsFormsApplication1
         /// Nennleistung gepflegt.</para>
         /// </summary>
         public double KwkgVbhElektrisch;       // h/a
+
+        // ---- ETAPPE E4 — Steuergutschriften, Jahr 1 der jahresscharfen Reihen ----
+        //
+        // 0 = keine Gutschrift. Der GRUND steht immer in Hinweis (nie eine stille Null):
+        // nicht gewählt, Bedingung nicht erfüllt, Satz nicht gepflegt oder Menge nicht
+        // in die gesetzliche Einheit umrechenbar.
+
+        /// <summary>Energiesteuer-Entlastung nach § 53 bzw. § 53a Abs. 5 EnergieStG
+        /// im Jahr 1 [€/a] — nur auf den BHKW-Brennstoff, nie auf Kessel.</summary>
+        public double EnergiesteuerJahr1;
+
+        /// <summary>Stromsteuer-Befreiung nach § 9 Abs. 1 Nr. 3 StromStG im Jahr 1
+        /// [€/a] — Regelsatz auf den KWK-Eigenverbrauch.</summary>
+        public double StromsteuerBefreiungJahr1;
+
+        /// <summary>Stromsteuer-Entlastung nach § 9b StromStG im Jahr 1 [€/a] —
+        /// Entlastungssatz auf den Netzbezug abzüglich Sockelbetrag.</summary>
+        public double StromsteuerEntlastungJahr1;
+
+        /// <summary>
+        /// Herkunft der verwendeten Steuersätze (Fundstelle, Wert, Einheit, Gültigkeits-
+        /// jahr und Status je Satz) — aus <c>GesetzKatalog.WertMitHerkunft</c> gebildet.
+        /// <c>null</c> = keine Gutschrift gerechnet, also auch kein Satz verwendet.
+        /// </summary>
+        public string SteuerHerkunft;
+
         public double? IRR;                    // interner Zinsfuß der Differenzreihe [%] (null beim Stamm/nie)
 
         // Stufe W3 (Phase 8)

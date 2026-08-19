@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 18;
+        public const int ZIEL_VERSION = 20;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -354,6 +354,82 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_18_BHKW_VBH = 18;
 
+        /// <summary>
+        /// Nummer der Etappe E3 (Leitentscheidung L5 aus
+        /// <c>Konzept_BHKW_Kosten_Erloese.md</c>): die fünf Spalten der Kostenposition
+        /// — Kostenart, Bemessung, Erlöskennzeichen, Menge und Einheitpreis.
+        ///
+        /// <b>Was der Schritt tut.</b> <b>19a</b> das additive DDL aus
+        /// <see cref="SchemaKatalog.Schritt19_Kostenarten"/> (HART: ohne die Spalten gibt
+        /// es nichts vorzubelegen). <b>19b</b> die Vorbelegung der beiden TEXT-Spalten
+        /// für jede Bestandszeile ohne Wert.
+        ///
+        /// <b>ERGEBNISNEUTRAL, und daran hängt die ganze Etappe.</b> Jede Bestandszeile
+        /// bekommt <c>Bemessung = BETRAG</c> — die Bemessungsart, die sich exakt so
+        /// verhält wie der Code vor E3: <c>EingegebenerWert</c> gilt unverändert.
+        /// <c>Menge</c> und <c>Einheitpreis</c> bleiben NULL („nicht gepflegt"), und die
+        /// Leseseite behandelt eine leere <c>Bemessung</c> genauso wie <c>BETRAG</c> —
+        /// eine nicht migrierte Datenbank rechnet deshalb ebenfalls wie bisher.
+        ///
+        /// <b>Die Kostenart folgt der Kategorie, nicht pauschal „kapitalgebunden".</b>
+        /// Kategorie 1 („Investitionskosten") → <c>KAPITALGEBUNDEN</c>, Kategorie 2
+        /// („Betriebskosten") → <c>BETRIEBSGEBUNDEN</c>, Kategorie 3 („Energiekosten")
+        /// → <c>BEDARFSGEBUNDEN</c>. Das ist die VDI-2067-Systematik und **ohne jede
+        /// Rechenwirkung** — die Kostenart wird von keiner Rechnung gelesen, sie
+        /// gliedert nur die Ausgabe. Eine pauschale Vorbelegung „kapitalgebunden" wäre
+        /// für jede Wartungsposition sachlich falsch und müsste im Bericht (Etappe E7)
+        /// wieder von Hand berichtigt werden.
+        ///
+        /// <b>Kein DML für <c>IstErloes</c>.</b> Access legt eine <c>YESNO</c>-Spalte
+        /// bei jeder Bestandszeile mit <c>False</c> an; NULL kann dort nicht stehen.
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): Das DDL geht über vorhandene
+        /// Spalten hinweg (<see cref="SpaltenAnlegen"/> prüft das Tabellenschema vorab),
+        /// und die WHERE-Klausel von 19b (<c>IS NULL OR = ''</c>) läuft nach dem ersten
+        /// Lauf leer. Ein gepflegter Wert wird nie angefasst. Zusätzlich legt
+        /// <c>KostenPositionCtrl.StelleSpaltenSicher</c> die Spalten unmittelbar vor dem
+        /// Zugriff selbst an, falls die Migration nie angestoßen wurde — beide Wege
+        /// dürfen beliebig oft und in beliebiger Reihenfolge laufen.
+        /// </summary>
+        public const int SCHRITT_19_KOSTENARTEN = 19;
+
+        /// <summary>
+        /// Nummer der Etappe E4 aus <c>Konzept_BHKW_Kosten_Erloese.md</c>: die sechs
+        /// Projektangaben, mit denen die gesetzlichen Bedingungen der Energie- und
+        /// Stromsteuerentlastung <b>erfasst statt angenommen</b> werden — Unternehmensart,
+        /// räumlicher Zusammenhang, Hocheffizienznachweis, Jahresnutzungsgrad, Wahl der
+        /// Energiesteuerentlastung und Aufteilungsmethode des Brennstoffs.
+        ///
+        /// <b>Was der Schritt tut.</b> <b>20a</b> das additive DDL aus
+        /// <see cref="SchemaKatalog.Schritt20_Steuerangaben"/> (HART: ohne die Spalten
+        /// gibt es nichts vorzubelegen). <b>20b</b> die Vorbelegung der drei TEXT-Spalten
+        /// für jede Bestandszeile ohne Wert.
+        ///
+        /// <b>ERGEBNISNEUTRAL, und daran hängt die ganze Etappe.</b> Die Vorbelegung ist
+        /// jeweils der Wert, der KEINE Gutschrift auslöst:
+        /// <c>Unternehmensart = KEIN_PROD_GEWERBE</c> (keine § 9b-Entlastung),
+        /// <c>Energiesteuer_Wahl = KEINE</c> (keine Energiesteuer-Gutschrift). Die beiden
+        /// <c>YESNO</c>-Spalten legt Access mit <c>False</c> an — ohne Hocheffizienz-
+        /// nachweis und ohne räumlichen Zusammenhang gibt es keine Stromsteuerbefreiung.
+        /// <c>Jahresnutzungsgrad</c> bleibt NULL („nicht gepflegt"), und die Leseseite
+        /// behandelt eine leere <c>Energiesteuer_Wahl</c> genauso wie <c>KEINE</c> — eine
+        /// nicht migrierte Datenbank rechnet deshalb ebenfalls wie bisher.
+        ///
+        /// <b>Die Aufteilungsmethode wird auf das RECHTLICH BELEGTE Verfahren
+        /// vorbelegt</b> (<c>VOLLER_BRENNSTOFF</c>, § 53 Abs. 2 Satz 1 EnergieStG i.V.m.
+        /// der Dienstvorschrift Energieerzeugung) — ohne Rechenwirkung, solange
+        /// <c>Energiesteuer_Wahl = KEINE</c> gilt.
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): Das DDL geht über vorhandene
+        /// Spalten hinweg (<see cref="SpaltenAnlegen"/> prüft das Tabellenschema vorab),
+        /// und die WHERE-Klauseln von 20b (<c>IS NULL OR = ''</c>) laufen nach dem ersten
+        /// Lauf leer. Ein gepflegter Wert wird nie angefasst. Zusätzlich legt
+        /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> die Spalten unmittelbar vor
+        /// dem Zugriff selbst an, falls die Migration nie angestoßen wurde — beide Wege
+        /// dürfen beliebig oft und in beliebiger Reihenfolge laufen.
+        /// </summary>
+        public const int SCHRITT_20_STEUERANGABEN = 20;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -429,6 +505,31 @@ namespace WindowsFormsApplication1
         /// <c>Wartungskosten_Einheit = "€/a"</c> erhalten haben.
         /// </summary>
         public static int DatenKesselWartungseinheitVorbelegt { get; private set; }
+
+        // --- Zählwerk der Kostenarten aus Schritt 19 (Etappe E3) ------------------------
+
+        /// <summary>
+        /// 19b: Kostenpositionen, die die Vorbelegung <c>Bemessung = "BETRAG"</c>
+        /// erhalten haben — also der gesamte Bestand beim ersten Lauf.
+        /// </summary>
+        public static int DatenBemessungVorbelegt { get; private set; }
+
+        /// <summary>
+        /// 19b: Kostenpositionen, die eine <c>Kostenart</c> nach VDI 2067 erhalten haben
+        /// (aus der Kategorie abgeleitet).
+        /// </summary>
+        public static int DatenKostenartVorbelegt { get; private set; }
+
+        // --- Zählwerk der Steuerangaben aus Schritt 20 (Etappe E4) ---------------------
+
+        /// <summary>
+        /// 20b: Summe der Vorbelegungen über die drei TEXT-Spalten der Steuerprüfung
+        /// (Unternehmensart, Wahl der Energiesteuerentlastung, Aufteilungsmethode) —
+        /// also das Dreifache der Parametersätze beim ersten Lauf. Die Zahl ist zugleich
+        /// der Nachweis der Ergebnisneutralität: So viele Angaben stehen ab jetzt
+        /// ausdrücklich auf „keine Gutschrift".
+        /// </summary>
+        public static int DatenSteuerangabenVorbelegt { get; private set; }
 
         // --- Zählwerk des Pakets Anlagenzeilen-Eindeutigkeit aus Schritt 16 -------------
 
@@ -670,6 +771,27 @@ namespace WindowsFormsApplication1
                         "VbhThermisch und VbhElektrisch in Tab_ErgebnisBHKWModul (Etappe E2)",
                         "Die Vollbenutzungsstunden-Spalten der BHKW-Ergebniszeilen konnten nicht angelegt werden.",
                         Schritt_18_BhkwVollbenutzungsstunden),
+
+            // ETAPPE E3 (Leitentscheidung L5) - Kostenart, Bemessung, Erloeskennzeichen,
+            //       Menge und Einheitpreis an der Kostenposition. DDL + DML-Vorbelegung;
+            //       die Vorbelegung "BETRAG" ist das, was jede Bestandszeile weiterhin
+            //       genauso rechnen laesst wie bisher.
+            new Schritt(SCHRITT_19_KOSTENARTEN,
+                        "Kostenposition: Kostenart, Bemessung, IstErloes, Menge und Einheitpreis " +
+                        "in Tab_ProjektWerte, Vorbelegung BETRAG (Etappe E3)",
+                        "Die Kostenart- und Bemessungsspalten der Kostenpositionen konnten nicht angelegt werden.",
+                        Schritt_19_Kostenarten),
+
+            // ETAPPE E4 - Projektangaben der Steuerpruefung an
+            //       Tab_ProjektWirtschaftlichkeit. DDL + DML-Vorbelegung; die Vorbelegung
+            //       ist jeweils der Wert, der KEINE Gutschrift ausloest - genau das haelt
+            //       jede Bestandsrechnung unveraendert.
+            new Schritt(SCHRITT_20_STEUERANGABEN,
+                        "Steuerangaben: Unternehmensart, raeumlicher Zusammenhang, Hocheffizienz, " +
+                        "Jahresnutzungsgrad, Wahl der Energiesteuerentlastung und Aufteilungsmethode " +
+                        "in Tab_ProjektWirtschaftlichkeit (Etappe E4)",
+                        "Die Steuerangaben der Wirtschaftlichkeitsparameter konnten nicht angelegt werden.",
+                        Schritt_20_Steuerangaben),
         };
 
         // =================================================================================
@@ -709,6 +831,9 @@ namespace WindowsFormsApplication1
             DatenLeistungsgrenzeAngehoben = 0;
             DatenVerbundZeilen = 0;
             DatenKesselWartungseinheitVorbelegt = 0;
+            DatenBemessungVorbelegt = 0;
+            DatenKostenartVorbelegt = 0;
+            DatenSteuerangabenVorbelegt = 0;
             DatenEindeutigIndizes = 0;
             DatenEindeutigDubletten = 0;
             DatenDublettenUeberfuehrt = 0;
@@ -935,6 +1060,31 @@ namespace WindowsFormsApplication1
                         : " - die betroffenen Zeilen stehen oben; die fehlenden Indizes werden " +
                           "nach der Bereinigung beim nächsten Programmstart nachgezogen."));
 
+            // Schritt 19 meldet - wie 14, 16 und 17 - AUCH die 0. Sie sagt "auf dieser
+            // Datenbank stand die Bemessung schon", und die Zahl selbst ist der Nachweis
+            // der Ergebnisneutralitaet: So viele Bestandszeilen rechnen ab jetzt
+            // ausdruecklich als fester Jahresbetrag - also genau wie vorher.
+            if (StandNachher >= SCHRITT_19_KOSTENARTEN)
+                l.Zeile("Kostenarten (Schritt 19): " + DatenBemessungVorbelegt +
+                        " Kostenpositionen auf Bemessung \"" + DbWerte.BEMESSUNG_BETRAG +
+                        "\" vorbelegt, " + DatenKostenartVorbelegt +
+                        " nach VDI 2067 eingeordnet" +
+                        (DatenBemessungVorbelegt == 0
+                            ? " - die Bemessung war bereits gesetzt, der Rechenweg bleibt unveraendert."
+                            : " - der Rechenweg dieser Zeilen bleibt unveraendert."));
+
+            // Schritt 20 meldet aus demselben Grund AUCH die 0: Die Zahl ist der Nachweis
+            // der Ergebnisneutralitaet - so viele Angaben stehen ab jetzt ausdruecklich
+            // auf "keine Gutschrift", statt still unbekannt zu sein.
+            if (StandNachher >= SCHRITT_20_STEUERANGABEN)
+                l.Zeile("Steuerangaben (Schritt 20): " + DatenSteuerangabenVorbelegt +
+                        " Angaben ueber drei Spalten vorbelegt" +
+                        (DatenSteuerangabenVorbelegt == 0
+                            ? " - die Steuerangaben standen bereits, es entsteht keine neue Gutschrift."
+                            : " - Unternehmensart \"" + DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE +
+                              "\" und Energiesteuerentlastung \"" + DbWerte.ENERGIESTEUER_WAHL_KEINE +
+                              "\": ohne ausdrueckliche Angabe des Anwenders entsteht keine Gutschrift."));
+
             return alleOk && StandNachher >= ZIEL_VERSION;
         }
 
@@ -1151,6 +1301,173 @@ namespace WindowsFormsApplication1
         private static bool Schritt_18_BhkwVollbenutzungsstunden(Lauf l)
         {
             return SpaltenAnlegen(l, SchemaKatalog.Schritt18_BhkwVollbenutzungsstunden);
+        }
+
+        /// <summary>
+        /// Schritt 19 (Etappe E3, Leitentscheidung L5): die fünf Spalten der
+        /// Kostenposition.
+        ///
+        ///   <b>19a</b> das additive DDL aus
+        ///   <see cref="SchemaKatalog.Schritt19_Kostenarten"/>. HART: Ohne die Spalten
+        ///   gibt es nichts vorzubelegen.
+        ///
+        ///   <b>19b</b> die Vorbelegung der beiden TEXT-Spalten für jede Bestandszeile
+        ///   ohne Wert — <c>Bemessung = "BETRAG"</c> für alle, <c>Kostenart</c> je
+        ///   Kategorie.
+        ///
+        /// Begründung für Spalten, Typen, die fehlende <c>IstErloes</c>-Vorbelegung und
+        /// die Ergebnisneutralität steht bei
+        /// <see cref="SchemaKatalog.Schritt19_Kostenarten"/> und bei
+        /// <see cref="SCHRITT_19_KOSTENARTEN"/>.
+        /// </summary>
+        private static bool Schritt_19_Kostenarten(Lauf l)
+        {
+            // --- 19a) Die fünf Spalten -----------------------------------------------
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt19_Kostenarten)) return false;
+
+            bool ok = true;
+
+            // --- 19b) Bemessung = BETRAG ---------------------------------------------
+            // IS NULL ODER Leerstring: Access legt eine neue TEXT-Spalte mit NULL an, ein
+            // von Hand nachgetragenes Feld kann aber auch "" enthalten. Beides heisst
+            // "nicht gesetzt"; ein gepflegter Wert bleibt unangetastet - und genau das
+            // macht den Schritt idempotent.
+            int betroffen = NonQuery(l,
+                "UPDATE [" + SchemaKatalog.TAB_PROJEKTWERTE + "] SET [" +
+                SchemaKatalog.SPALTE_PW_BEMESSUNG + "] = ? WHERE [" +
+                SchemaKatalog.SPALTE_PW_BEMESSUNG + "] IS NULL OR [" +
+                SchemaKatalog.SPALTE_PW_BEMESSUNG + "] = ''",
+                new OleDbParameter("@b", DbWerte.BEMESSUNG_BETRAG));
+
+            if (betroffen < 0)
+            {
+                l.Notiz("Vorbelegung Bemessung: UPDATE fehlgeschlagen");
+                ok = false;
+            }
+            else
+            {
+                DatenBemessungVorbelegt = betroffen;
+                l.Notiz("Bemessung: " + betroffen + " Kostenpositionen auf \"" +
+                        DbWerte.BEMESSUNG_BETRAG + "\" vorbelegt (fester Jahresbetrag - " +
+                        "der Rechenweg des Bestands, die Betraege selbst bleiben unveraendert)");
+            }
+
+            // --- 19b) Kostenart je Kategorie -----------------------------------------
+            // VDI 2067: Kategorie 1 (Investitionskosten) ist kapitalgebunden,
+            // Kategorie 2 (Betriebskosten) betriebsgebunden, Kategorie 3 (Energiekosten)
+            // bedarfsgebunden. OHNE Rechenwirkung - die Kostenart gliedert nur die
+            // Ausgabe. Eine pauschale Vorbelegung "kapitalgebunden" waere fuer jede
+            // Wartungsposition sachlich falsch.
+            int summeArt = 0;
+            var zuordnung = new[]
+            {
+                new { Kategorie = Form_Kosten.KATEGORIE_INVESTITION, Art = DbWerte.KOSTENART_KAPITALGEBUNDEN },
+                new { Kategorie = Form_Kosten.KATEGORIE_BETRIEB,     Art = DbWerte.KOSTENART_BETRIEBSGEBUNDEN },
+                new { Kategorie = Form_Kosten.KATEGORIE_ENERGIE,     Art = DbWerte.KOSTENART_BEDARFSGEBUNDEN }
+            };
+
+            foreach (var z in zuordnung)
+            {
+                int n = NonQuery(l,
+                    "UPDATE [" + SchemaKatalog.TAB_PROJEKTWERTE + "] SET [" +
+                    SchemaKatalog.SPALTE_PW_KOSTENART + "] = ? WHERE KategorieID = ? AND ([" +
+                    SchemaKatalog.SPALTE_PW_KOSTENART + "] IS NULL OR [" +
+                    SchemaKatalog.SPALTE_PW_KOSTENART + "] = '')",
+                    new OleDbParameter("@a", z.Art),
+                    new OleDbParameter("@k", z.Kategorie));
+
+                if (n < 0)
+                {
+                    l.Notiz("Vorbelegung Kostenart (Kategorie " + z.Kategorie + "): UPDATE fehlgeschlagen");
+                    ok = false;
+                    continue;
+                }
+                summeArt += n;
+            }
+
+            DatenKostenartVorbelegt = summeArt;
+            l.Notiz("Kostenart: " + summeArt + " Kostenpositionen nach VDI 2067 eingeordnet " +
+                    "(aus der Kategorie abgeleitet, ohne Rechenwirkung)");
+
+            // IstErloes braucht KEINE Vorbelegung: Access legt eine YESNO-Spalte bei jeder
+            // Bestandszeile mit False an; NULL kann dort nicht stehen.
+            // Menge und Einheitpreis bleiben bewusst NULL - "nicht gepflegt" ist die
+            // richtige Aussage, eine 0 behauptete "gepflegt und null".
+
+            return ok;
+        }
+
+        /// <summary>
+        /// Schritt 20 (Etappe E4): die sechs Projektangaben der Steuerpruefung.
+        ///
+        ///   <b>20a</b> das additive DDL aus
+        ///   <see cref="SchemaKatalog.Schritt20_Steuerangaben"/>. HART: Ohne die Spalten
+        ///   gibt es nichts vorzubelegen.
+        ///
+        ///   <b>20b</b> die Vorbelegung der drei TEXT-Spalten fuer jede Bestandszeile
+        ///   ohne Wert - jeweils mit dem Wert, der KEINE Gutschrift ausloest.
+        ///
+        /// Begruendung fuer Spalten, Typen, Breiten, die fehlende YESNO-Vorbelegung und
+        /// die Ergebnisneutralitaet steht bei
+        /// <see cref="SchemaKatalog.Schritt20_Steuerangaben"/> und bei
+        /// <see cref="SCHRITT_20_STEUERANGABEN"/>.
+        /// </summary>
+        private static bool Schritt_20_Steuerangaben(Lauf l)
+        {
+            // --- 20a) Die sechs Spalten ----------------------------------------------
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt20_Steuerangaben)) return false;
+
+            bool ok = true;
+            int summe = 0;
+
+            // --- 20b) Vorbelegung der drei TEXT-Spalten -------------------------------
+            // IS NULL ODER Leerstring - dieselbe Bedingung wie in Schritt 19b und aus
+            // demselben Grund: Access legt eine neue TEXT-Spalte mit NULL an, ein von
+            // Hand nachgetragenes Feld kann aber auch "" enthalten. Ein gepflegter Wert
+            // bleibt unangetastet, und genau das macht den Schritt idempotent.
+            var vorbelegung = new[]
+            {
+                new { Spalte = SchemaKatalog.SPALTE_PW_UNTERNEHMENSART,
+                      Wert   = DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE,
+                      Zweck  = "keine Entlastung nach § 9b StromStG" },
+                new { Spalte = SchemaKatalog.SPALTE_PW_ENERGIESTEUER_WAHL,
+                      Wert   = DbWerte.ENERGIESTEUER_WAHL_KEINE,
+                      Zweck  = "keine Energiesteuer-Gutschrift" },
+                new { Spalte = SchemaKatalog.SPALTE_PW_AUFTEILUNG,
+                      Wert   = DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF,
+                      Zweck  = "rechtlich belegtes Verfahren, ohne Rechenwirkung bei Wahl KEINE" }
+            };
+
+            foreach (var z in vorbelegung)
+            {
+                int n = NonQuery(l,
+                    "UPDATE [" + SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + "] SET [" +
+                    z.Spalte + "] = ? WHERE [" + z.Spalte + "] IS NULL OR [" +
+                    z.Spalte + "] = ''",
+                    new OleDbParameter("@w", z.Wert));
+
+                if (n < 0)
+                {
+                    l.Notiz("Vorbelegung " + z.Spalte + ": UPDATE fehlgeschlagen");
+                    ok = false;
+                    continue;
+                }
+                summe += n;
+                l.Notiz(z.Spalte + ": " + n + " Parametersaetze auf \"" + z.Wert +
+                        "\" vorbelegt (" + z.Zweck + ")");
+            }
+
+            DatenSteuerangabenVorbelegt = summe;
+
+            // Raeumlicher_Zusammenhang und Hocheffizienz_Nachweis brauchen KEINE
+            // Vorbelegung: Access legt eine YESNO-Spalte bei jeder Bestandszeile mit
+            // False an; NULL kann dort nicht stehen. "Nicht erfasst" und "nicht gegeben"
+            // fallen damit zusammen - beide fuehren zu keiner Gutschrift, und das ist die
+            // gewollte Richtung.
+            // Jahresnutzungsgrad bleibt bewusst NULL - "nicht gepflegt" ist die richtige
+            // Aussage; eine 0 behauptete "gepflegt und null".
+
+            return ok;
         }
 
         // =================================================================================
