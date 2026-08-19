@@ -453,14 +453,17 @@ heutigen Stand gebracht; 7 bis 11 sind mit der Abnahme neu hinzugekommen.
    las. Gemessen: **−963,24 t CO₂/a ausgewiesene Vermeidung (−70,0 %)** an Projekt 1030, sobald
    das Bilanzjahr auf 2027 steht.
 
-   > **Was mit dem Punkt neu geworden ist — und zu entscheiden bleibt:** Der Stichtag hängt an der
-   > **eigenen Projektangabe `Bilanz_Jahr`** mit festem Rückfall auf **2026**, nicht am
-   > Förderjahr und nicht an der Systemuhr. Grund: `Foerderbeginn` fällt ohne Inbetriebnahme auf
-   > „aktuelles Jahr + 1" (heute 2027) und hätte jedes Bestandsprojekt sofort umgestellt; die
-   > Systemuhr bräche die Reproduzierbarkeit, die Grundlagen 7.1 ausdrücklich verlangt („ein 2026
-   > gerechneter Variantenvergleich muss 2029 dieselben Zahlen liefern"). **Folge: Der
-   > Methodenwechsel greift nicht von selbst, sondern wenn das Bilanzjahr gepflegt wird.** Wer das
-   > anders will, ändert eine Konstante — aber nicht still.
+   > **Was mit dem Punkt neu geworden ist — und am 19.08.2026 vom Anwender entschieden wurde:** Der
+   > Stichtag hängt an der **eigenen Projektangabe `Bilanz_Jahr`** mit festem Rückfall auf **2026**,
+   > nicht am Förderjahr und nicht an der Systemuhr. Grund: `Foerderbeginn` fällt ohne
+   > Inbetriebnahme auf „aktuelles Jahr + 1" (heute 2027) und hätte jedes Bestandsprojekt sofort
+   > umgestellt; die Systemuhr bräche die Reproduzierbarkeit, die Grundlagen 7.1 ausdrücklich
+   > verlangt („ein 2026 gerechneter Variantenvergleich muss 2029 dieselben Zahlen liefern").
+   > **Entscheidung: Es bleibt dabei — der Methodenwechsel greift nicht von selbst, sondern wenn
+   > das Bilanzjahr gepflegt wird.** Die automatische Umstellung zum 01.01.2027 ist ausdrücklich
+   > verworfen. **Praktische Folge:** Projekte, die nach neuem Rechtsstand bewertet werden sollen,
+   > brauchen ein gepflegtes Bilanzjahr; Dialoghinweis und Berichtsausweis nennen den tatsächlich
+   > angesetzten Stand, damit das ungepflegte Feld nicht als stille Annahme durchgeht.
    >
    > **Und der Normtext fehlt weiterhin:** Abgebildet ist der **Wegfall** der Gutschrift, nicht das
    > Zuteilungsverfahren der DIN EN 15316-4-5. Deren Text gehört nicht zur Faktenbasis; liegt er

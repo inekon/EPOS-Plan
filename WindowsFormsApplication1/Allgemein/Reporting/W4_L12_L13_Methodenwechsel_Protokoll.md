@@ -158,8 +158,15 @@ Deshalb: **eigene Projektangabe `Bilanz_Jahr`, NULL/0 = nicht gepflegt, Rückfal
 **Der Preis dieser Entscheidung, offen benannt:** Der Methodenwechsel greift **nicht von selbst**,
 wenn das Kalenderjahr 2027 anbricht. Er greift, wenn jemand das Bilanzjahr einträgt. Damit ist L12
 eine „Auswahl mit Ausweis" — in dieser Ausbaustufe die etablierte Antwort auf Rechtsunsicherheit,
-hier aber zugleich eine Antwort auf ein **Reproduzierbarkeits**problem. Wer das anders gewichtet,
-ändert eine Konstante und einen Vorgabewert; die Mechanik bleibt.
+hier aber zugleich eine Antwort auf ein **Reproduzierbarkeits**problem.
+
+**Vom Anwender entschieden am 19.08.2026: Es bleibt dabei — der Wechsel hängt an der gepflegten
+Angabe.** Die Alternative (Rückfall auf das Systemjahr, damit automatische Umstellung zum
+01.01.2027) wurde ausdrücklich verworfen. Damit ist der Punkt geschlossen und nicht länger eine
+offene Abwägung: Ein gespeichertes Projekt zeigt über jeden Jahreswechsel dieselben Zahlen, und der
+Rechtsstand ab 2027 wird je Projekt bewusst gewählt statt stillschweigend zugeteilt. Wer die
+Entscheidung künftig umdrehen will, ändert `BilanzKonvention.BILANZJAHR_RUECKFALL` und den
+Vorgabewert der Projektangabe; die Mechanik bleibt unberührt.
 
 ### 3.2 Der Nachhaltigkeitsnachweis ist TEXT, nicht YESNO — gegen die ACE-Falle
 
@@ -350,10 +357,13 @@ Bezugsmenge zu.
 
 ## 8 Übergabepunkte
 
-1. **Das Bilanzjahr ist eine Entscheidung, keine Automatik.** Wer will, dass der Methodenwechsel am
-   01.01.2027 von selbst greift, muss den Rückfallwert von 2026 auf das Systemjahr umstellen — und
-   nimmt damit in Kauf, dass gespeicherte Projekte über den Jahreswechsel andere Zahlen zeigen
-   (Abschnitt 3.1). Beides ist vertretbar; still darf keins von beidem passieren.
+1. ~~**Das Bilanzjahr ist eine Entscheidung, keine Automatik.**~~ — **entschieden am 19.08.2026:
+   Der Wechsel hängt an der gepflegten Angabe und bleibt es.** Die automatische Umstellung zum
+   01.01.2027 über das Systemjahr ist ausdrücklich verworfen; ein gespeichertes Projekt zeigt über
+   jeden Jahreswechsel dieselben Zahlen (Abschnitt 3.1). **Praktische Folge, die bleibt:** Für
+   Projekte, die nach neuem Rechtsstand bewertet werden sollen, muss das Bilanzjahr gepflegt
+   werden — der Dialoghinweis und der Berichtsausweis nennen den angesetzten Stand, damit ein
+   ungepflegtes Feld nicht als stille Annahme durchgeht.
 2. **Die DIN EN 15316-4-5 ist nicht abgebildet**, nur der Wegfall der Gutschrift. Liegt der
    Normtext vor, ist das Zuteilungsverfahren ein eigener Rechenweg neben den drei heutigen — die
    Auswahl trägt ihn ohne Umbau.
