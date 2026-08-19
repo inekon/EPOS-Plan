@@ -27,9 +27,36 @@ public partial class ucKostenZeile : UserControl
         // Programmatisch statt im Designer, damit die generierte Datei unberührt bleibt.
         numBetrag.Maximum = 100000000M;
 
+        // Untergrenze: Der Designer lässt sie auf 0, und damit machte Klemme() aus jedem
+        // negativen Betrag stillschweigend eine 0 — Erlöse waren so weder eingebbar noch
+        // darstellbar (Etappe E3, Leitentscheidung L5). Für ERLÖSpositionen wird die
+        // Grenze gespiegelt: Sie dürfen nur ≤ 0 sein, Kostenpositionen weiterhin nur ≥ 0.
+        // Damit kann ein Erlös nirgends als Kosten in eine Summe geraten — dieselbe Regel,
+        // die BetriebskostenCtrl.Betrag rechnerisch erzwingt.
+        if (pos.IstErloes)
+        {
+            numBetrag.Minimum = -100000000M;
+            numBetrag.Maximum = 0M;
+        }
+
         numDauer.DecimalPlaces = 2; // Erlaubt zwei Nachkommastellen
         numDauer.Increment = 0.5M;  // Schritte beim Klicken
         numBetrag.Value = Klemme(pos.Betrag, numBetrag.Minimum, numBetrag.Maximum);
+
+        // Abgeleitete Positionen: Der Betrag entsteht aus Menge × Einheitpreis und darf
+        // hier nicht überschrieben werden — sonst liefen der gespeicherte Betrag und die
+        // gespeicherte Herleitung auseinander. Gesperrt und SICHTBAR gekennzeichnet, nicht
+        // still geleert (Konzept 4.1; die Altanwendung leerte die Absolutfelder
+        // kommentarlos, Befund 6).
+        if (pos.Abgeleitet)
+        {
+            numBetrag.ReadOnly = true;
+            numBetrag.Increment = 0M;
+            numBetrag.BackColor = SystemColors.Control;
+            numBetrag.Cursor = Cursors.No;
+            if (!string.IsNullOrEmpty(pos.Herleitung))
+                toolTip1.SetToolTip(numBetrag, pos.Herleitung);
+        }
         numDauer.Value = Klemme(pos.Nutzungsdauer, numDauer.Minimum, numDauer.Maximum);
 
         // Events abfangen, um Änderungen zurück ins Objekt zu schreiben
@@ -183,6 +210,37 @@ public class KostenPosition
     public decimal Nutzungsdauer { get; set; }
     public string Gruppenname { get; set; }
     public bool IsMainComponent { get; set; }
-    public int StammID { get; set; } // Optional: Verweis auf die Stammdaten, falls benötigt    
+    public int StammID { get; set; } // Optional: Verweis auf die Stammdaten, falls benötigt
     public string Komponente { get; set; }
+
+    // ------------------------------------------------- Etappe E3 (Migrationsschritt 19)
+
+    /// <summary>
+    /// Erlösposition (<c>Tab_ProjektWerte.IstErloes</c>) — nur dann darf der Betrag
+    /// negativ sein. Vorbelegung false, also das Verhalten des gesamten Bestands.
+    /// </summary>
+    public bool IstErloes { get; set; }
+
+    /// <summary>
+    /// Bemessungsart (<c>DbWerte.BEMESSUNG_*</c>). Vorbelegung
+    /// <see cref="DbWerte.BEMESSUNG_BETRAG"/> — der fest eingegebene Jahresbetrag und
+    /// damit das Verhalten jeder Bestandszeile.
+    /// </summary>
+    public string Bemessung { get; set; } = DbWerte.BEMESSUNG_BETRAG;
+
+    /// <summary>
+    /// true, wenn der Betrag aus Menge × Einheitpreis entsteht und deshalb nicht von
+    /// Hand geändert werden darf.
+    /// </summary>
+    public bool Abgeleitet
+    {
+        get
+        {
+            return !string.IsNullOrEmpty(Bemessung) &&
+                   !string.Equals(Bemessung, DbWerte.BEMESSUNG_BETRAG, System.StringComparison.Ordinal);
+        }
+    }
+
+    /// <summary>Klartext der Herleitung für den Hinweis am gesperrten Feld.</summary>
+    public string Herleitung { get; set; } = "";
 }

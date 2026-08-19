@@ -3362,6 +3362,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abgeleitet: {0} {1} × {2} {3} ähnelt.
+        /// </summary>
+        public static string KOSTEN_BEMESSUNG_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("KOSTEN_BEMESSUNG_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Kessel dieses Projekts führen unterschiedliche Einheiten für die Wartungskosten — keine Vorbelegung. ähnelt.
         /// </summary>
         public static string KOSTEN_BETRIEB_EINHEIT_GEMISCHT {
@@ -3457,6 +3466,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOSTEN_BTN_PLANWERT {
             get {
                 return ResourceManager.GetString("KOSTEN_BTN_PLANWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚙ Betriebskosten VDI 2067… ähnelt.
+        /// </summary>
+        public static string KOSTEN_BTN_VDI2067 {
+            get {
+                return ResourceManager.GetString("KOSTEN_BTN_VDI2067", resourceCulture);
             }
         }
         
@@ -13511,6 +13529,375 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VAR_VGL_TOOLTIP_OEFFNEN {
             get {
                 return ResourceManager.GetString("VAR_VGL_TOOLTIP_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fester Jahresbetrag ähnelt.
+        /// </summary>
+        public static string VDI_BEM_ANZ_BETRAG {
+            get {
+                return ResourceManager.GetString("VDI_BEM_ANZ_BETRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je Vollbenutzungsstunde ähnelt.
+        /// </summary>
+        public static string VDI_BEM_ANZ_EUR_H {
+            get {
+                return ResourceManager.GetString("VDI_BEM_ANZ_EUR_H", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je kWh elektrisch ähnelt.
+        /// </summary>
+        public static string VDI_BEM_ANZ_EUR_KWH {
+            get {
+                return ResourceManager.GetString("VDI_BEM_ANZ_EUR_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die % der Brennstoffkosten ähnelt.
+        /// </summary>
+        public static string VDI_BEM_ANZ_PROZ_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("VDI_BEM_ANZ_PROZ_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die % der Investition ähnelt.
+        /// </summary>
+        public static string VDI_BEM_ANZ_PROZ_INVEST {
+            get {
+                return ResourceManager.GetString("VDI_BEM_ANZ_PROZ_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Brennstoffkosten ähnelt.
+        /// </summary>
+        public static string VDI_BEZUG_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("VDI_BEZUG_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht ermittelbar (Simulationslauf oder Investitionsposition fehlt) ähnelt.
+        /// </summary>
+        public static string VDI_BEZUG_FEHLT {
+            get {
+                return ResourceManager.GetString("VDI_BEZUG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition BHKW ähnelt.
+        /// </summary>
+        public static string VDI_BEZUG_INVEST_BHKW {
+            get {
+                return ResourceManager.GetString("VDI_BEZUG_INVEST_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionssumme des Projekts ähnelt.
+        /// </summary>
+        public static string VDI_BEZUG_INVEST_GESAMT {
+            get {
+                return ResourceManager.GetString("VDI_BEZUG_INVEST_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition Heizkessel ähnelt.
+        /// </summary>
+        public static string VDI_BEZUG_INVEST_KESSEL {
+            get {
+                return ResourceManager.GetString("VDI_BEZUG_INVEST_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromerzeugung BHKW ähnelt.
+        /// </summary>
+        public static string VDI_BEZUG_STROM {
+            get {
+                return ResourceManager.GetString("VDI_BEZUG_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollbenutzungsstunden BHKW (Näherung) ähnelt.
+        /// </summary>
+        public static string VDI_BEZUG_VBH {
+            get {
+                return ResourceManager.GetString("VDI_BEZUG_VBH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string VDI_BTN_ABBRUCH {
+            get {
+                return ResourceManager.GetString("VDI_BTN_ABBRUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string VDI_BTN_OK {
+            get {
+                return ResourceManager.GetString("VDI_BTN_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 2067: {0}–{1} % ähnelt.
+        /// </summary>
+        public static string VDI_EMPFEHLUNG {
+            get {
+                return ResourceManager.GetString("VDI_EMPFEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Durch die Satzangabe ersetzt — der Betrag wird berechnet und deshalb nicht von Hand geändert. Satz auf 0 setzen, um wieder einen festen Betrag einzugeben. ähnelt.
+        /// </summary>
+        public static string VDI_ERSETZT {
+            get {
+                return ResourceManager.GetString("VDI_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Betriebskostenpositionen nach VDI 2067 gespeichert. ähnelt.
+        /// </summary>
+        public static string VDI_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("VDI_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Beträge und alle Bezugsgrößen sind NETTO. Der Bruttobetrag ist abgeleitet und gesperrt; der Umsatzsteuersatz kommt aus dem Katalog „Gesetzliche Parameter&quot;. Eine gepflegte Satzangabe hat Vorrang — das Absolutfeld wird dann gesperrt, aber nicht geleert. ähnelt.
+        /// </summary>
+        public static string VDI_HINWEIS {
+            get {
+                return ResourceManager.GetString("VDI_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wartung und Instandhaltung BHKW sind zwei EIGENE Positionen; ihre Beträge addieren sich. Für die Wartung gilt genau eine Bemessung — die Auswahl steht in der Spalte „Bemessung&quot;. ähnelt.
+        /// </summary>
+        public static string VDI_HINWEIS_INSTANDHALTUNG {
+            get {
+                return ResourceManager.GetString("VDI_HINWEIS_INSTANDHALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsenergiekosten ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_HILFSENERGIE {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_HILFSENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandhaltung bauliche Anlagen ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_INST_BAULICH {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_INST_BAULICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandhaltung BHKW ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_INST_BHKW {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_INST_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandhaltung Stromeinspeisung ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_INST_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_INST_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandhaltung Heizkessel ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_INST_KESSEL {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_INST_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandhaltung Wärmezentrale ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_INST_ZENTRALE {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_INST_ZENTRALE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Personalkosten ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_PERSONAL {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_PERSONAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reserveleistungskosten ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_RESERVE {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_RESERVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstige Kosten ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_SONSTIGE {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steuern, Versicherung, Verwaltung ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_VERWALTUNG {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_VERWALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollwartung / Wartung BHKW ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_WARTUNG_BHKW {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_WARTUNG_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bemessung ähnelt.
+        /// </summary>
+        public static string VDI_SP_BEMESSUNG {
+            get {
+                return ResourceManager.GetString("VDI_SP_BEMESSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsgröße und Empfehlung ähnelt.
+        /// </summary>
+        public static string VDI_SP_BEZUG {
+            get {
+                return ResourceManager.GetString("VDI_SP_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrag brutto [€/a] ähnelt.
+        /// </summary>
+        public static string VDI_SP_BRUTTO {
+            get {
+                return ResourceManager.GetString("VDI_SP_BRUTTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrag netto [€/a] ähnelt.
+        /// </summary>
+        public static string VDI_SP_NETTO {
+            get {
+                return ResourceManager.GetString("VDI_SP_NETTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Position ähnelt.
+        /// </summary>
+        public static string VDI_SP_POSITION {
+            get {
+                return ResourceManager.GetString("VDI_SP_POSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz ähnelt.
+        /// </summary>
+        public static string VDI_SP_SATZ {
+            get {
+                return ResourceManager.GetString("VDI_SP_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe brutto: {0} €/a   (Umsatzsteuer {1} % aus dem Katalog) ähnelt.
+        /// </summary>
+        public static string VDI_SUMME_BRUTTO {
+            get {
+                return ResourceManager.GetString("VDI_SUMME_BRUTTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Betriebskosten netto: {0} €/a ähnelt.
+        /// </summary>
+        public static string VDI_SUMME_NETTO {
+            get {
+                return ResourceManager.GetString("VDI_SUMME_NETTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten nach VDI 2067 ähnelt.
+        /// </summary>
+        public static string VDI_TITEL {
+            get {
+                return ResourceManager.GetString("VDI_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umsatzsteuersatz nicht im Katalog gepflegt — kein Bruttobetrag ähnelt.
+        /// </summary>
+        public static string VDI_UST_FEHLT {
+            get {
+                return ResourceManager.GetString("VDI_UST_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Näherung: „Vollbenutzungsstunden&quot; sind Wärme geteilt durch Leistung, nicht die getakteten Betriebsstunden. Der Rechenkern bildet keine Taktung ab — eine Wartung je Betriebsstunde ist damit eine Schätzung. ähnelt.
+        /// </summary>
+        public static string VDI_VBH_NAEHERUNG {
+            get {
+                return ResourceManager.GetString("VDI_VBH_NAEHERUNG", resourceCulture);
             }
         }
         

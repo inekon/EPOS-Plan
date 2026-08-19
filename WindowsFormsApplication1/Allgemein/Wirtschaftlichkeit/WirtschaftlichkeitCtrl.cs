@@ -1820,18 +1820,84 @@ namespace WindowsFormsApplication1
 
         /// <summary>Summe der Kategorie-2-Positionen (Betriebskosten p. a., Szenariowert).
         /// <c>internal</c> aus demselben Grund wie <see cref="LiesInvestitionen"/>.</summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Etappe E3: die Bemessungsart wird ausgewertet.</b> Eine Position mit
+        /// <c>Bemessung = BETRAG</c> — und das sind nach Migrationsschritt 19b ALLE
+        /// Bestandszeilen — verhält sich Zeile für Zeile wie vorher: Der Szenariowert aus
+        /// <c>EingegebenerWert</c>/<c>BestCase</c>/<c>WorstCase</c> gilt unverändert. Nur
+        /// die vier abgeleiteten Bemessungsarten rechnen aus der persistierten Herleitung
+        /// <c>Menge × Einheitpreis</c> (<see cref="BetriebskostenCtrl.Betrag"/>).
+        /// </para>
+        /// <para>
+        /// <b>Szenarien bleiben Vorrang vor der Ableitung.</b> Ein gepflegter Best- oder
+        /// Worst-Case-Betrag schlägt die Ableitung — dasselbe VALERI-Muster wie bisher
+        /// („0/leer = kein Szenariowert gepflegt"). Ohne gepflegten Szenariowert gilt der
+        /// abgeleitete Erwartungswert in allen drei Szenarien.
+        /// </para>
+        /// <para>
+        /// <b>Zwei Abfragen, eine tolerante Rückfallebene.</b> Fehlen die Spalten aus
+        /// Schritt 19 (Datenbank nie migriert und die Vorsorge nicht durchgekommen), läuft
+        /// die alte Abfrage — also exakt der Rechenweg vor E3.
+        /// </para>
+        /// <para>
+        /// <b>Vorzeichen.</b> Der gespeicherte Betrag ist die Zahlungswirkung in €/a:
+        /// positiv = Ausgabe, negativ = Einnahme. Eine Erlösposition
+        /// (<c>IstErloes = True</c>) trägt deshalb mit negativem Vorzeichen zur Summe bei
+        /// und senkt die Betriebskosten, statt sie zu erhöhen;
+        /// <see cref="BetriebskostenCtrl.Betrag"/> erzwingt das Vorzeichen zusätzlich.
+        /// </para>
+        /// </remarks>
         internal static double LiesBetriebskosten(int idProjekt, string szenario)
         {
             double summe = 0;
+            bool mitBemessung = false;
+            try { mitBemessung = KostenPositionCtrl.StelleSpaltenSicher(); }
+            catch { }
+
             try
             {
+                string felder = "EingegebenerWert, BestCase, WorstCase";
+                if (mitBemessung)
+                    felder += ", [" + SchemaKatalog.SPALTE_PW_BEMESSUNG + "]" +
+                              ", [" + SchemaKatalog.SPALTE_PW_IST_ERLOES + "]" +
+                              ", [" + SchemaKatalog.SPALTE_PW_MENGE + "]" +
+                              ", [" + SchemaKatalog.SPALTE_PW_EINHEITPREIS + "]";
+
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT EingegebenerWert, BestCase, WorstCase " +
-                    "FROM Tab_ProjektWerte WHERE ProjektID = ? AND KategorieID = 2",
+                    "SELECT " + felder +
+                    " FROM Tab_ProjektWerte WHERE ProjektID = ? AND KategorieID = 2",
                     new OleDbParameter("@p", idProjekt));
-                if (dt != null)
-                    foreach (DataRow r in dt.Rows)
-                        summe += Szenariowert(r, szenario, "EingegebenerWert", "BestCase", "WorstCase");
+                if (dt == null) return 0;
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    double wert = Szenariowert(r, szenario, "EingegebenerWert", "BestCase", "WorstCase");
+                    if (!mitBemessung) { summe += wert; continue; }
+
+                    string bem = Text(r, SchemaKatalog.SPALTE_PW_BEMESSUNG);
+                    bool erloes = B(r, SchemaKatalog.SPALTE_PW_IST_ERLOES);
+
+                    if (string.IsNullOrEmpty(bem) ||
+                        string.Equals(bem, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal))
+                    {
+                        // Der Bestandsweg. Das Vorzeichen einer Erlöszeile wird trotzdem
+                        // erzwungen — ein Erlös darf nie als Kosten in die Summe geraten.
+                        summe += erloes && wert > 0 ? -wert : wert;
+                        continue;
+                    }
+
+                    // Ein gepflegter Szenariowert schlägt die Ableitung (VALERI-Muster).
+                    double erwartet = D(r, "EingegebenerWert") ?? 0;
+                    bool szenarioGepflegt = Math.Abs(wert - erwartet) > 1e-9;
+
+                    summe += szenarioGepflegt
+                        ? (erloes && wert > 0 ? -wert : wert)
+                        : BetriebskostenCtrl.Betrag(bem, erwartet,
+                                                    D(r, SchemaKatalog.SPALTE_PW_MENGE),
+                                                    D(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS),
+                                                    erloes);
+                }
             }
             catch { }
             return summe;
@@ -2188,6 +2254,13 @@ namespace WindowsFormsApplication1
         {
             if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return null;
             try { return Convert.ToDouble(r[spalte]); } catch { return null; }
+        }
+
+        /// <summary>Textspalte, tolerant gegen fehlende Spalte und NULL (Etappe E3).</summary>
+        private static string Text(DataRow r, string spalte)
+        {
+            if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return "";
+            try { return Convert.ToString(r[spalte]).Trim(); } catch { return ""; }
         }
 
         private static double R(double v, int dez = 2) { return Math.Round(v, dez); }
