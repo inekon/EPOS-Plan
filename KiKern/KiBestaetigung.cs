@@ -34,7 +34,17 @@ namespace KiKern
         /// <param name="aufruf">Der gepruefte Aufruf.</param>
         /// <param name="vorschautext">Ergebnis des Trockenlaufs (Stufe 2/3); <c>null</c> = keiner.</param>
         /// <param name="kultur">Anzeigekultur; <c>null</c> = <see cref="CultureInfo.CurrentCulture"/>.</param>
-        public static string Erzeuge(KiAufruf aufruf, string? vorschautext = null, CultureInfo? kultur = null)
+        /// <param name="sicherung">
+        /// Pfad des Sicherungspunkts dieser Sitzung (Fachkonzept 4.4, Punkt 1);
+        /// <c>null</c> = keiner noetig oder noch keiner angelegt.
+        /// </param>
+        /// <param name="gueltigBis">
+        /// Zeitpunkt, zu dem die Vorschau verfaellt (Fachkonzept 3.5, Punkt 5);
+        /// <c>null</c> = ohne Frist (Stufe 1).
+        /// </param>
+        public static string Erzeuge(KiAufruf aufruf, string? vorschautext = null,
+                                     CultureInfo? kultur = null, string? sicherung = null,
+                                     DateTime? gueltigBis = null)
         {
             if (aufruf == null) throw new ArgumentNullException(nameof(aufruf));
             CultureInfo k = kultur ?? CultureInfo.CurrentCulture;
@@ -62,6 +72,22 @@ namespace KiKern
 
             if (a.Wirkung.Length > 0)
                 sb.Append(KiTexte.FeldWirkung).Append(": ").Append(a.Wirkung).Append('\n');
+
+            // Umkehrbarkeit steht NUR bei Aktionen, die etwas veraendern - bei einer
+            // Leseaktion waere die Zeile bestenfalls Rauschen (Fachkonzept 4.4, Punkt 3).
+            if (a.Stufe != Schutzstufe.Lesen)
+                sb.Append(KiTexte.FeldRueckholbar).Append(": ")
+                  .Append(a.Umkehrbar ? KiTexte.RueckholbarJa : KiTexte.RueckholbarNein)
+                  .Append('\n');
+
+            // Der Sicherungspunkt gehoert in die Bestaetigung, nicht nur ins Protokoll:
+            // Der Anwender soll VOR dem Klick sehen, wohin der Vorzustand gesichert ist.
+            if (!string.IsNullOrWhiteSpace(sicherung))
+                sb.Append(KiTexte.FeldSicherung).Append(": ").Append(sicherung).Append('\n');
+
+            if (gueltigBis.HasValue)
+                sb.Append(KiTexte.FeldGueltigBis).Append(": ")
+                  .Append(gueltigBis.Value.ToString("HH:mm:ss", k)).Append('\n');
 
             return sb.ToString();
         }

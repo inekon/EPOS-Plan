@@ -185,10 +185,17 @@ namespace WindowsFormsApplication1
 
                     List<TechnikPlanwertCtrl.Anlage> anlagen = TechnikPlanwertCtrl.LiesAnlagen(id, komponente);
 
+                    // Die ID der Hauptposition gehoert seit Etappe 3 in das Ergebnis:
+                    // Ohne sie koennte kostenposition_setzen nicht angesteuert werden,
+                    // ohne dass das Modell eine ID erfindet.
+                    int idPosition = KostenPositionCtrl.FindeHauptposition(
+                        id, Form_Kosten.KATEGORIE_INVESTITION, komponentenId, komponente);
+
                     var zeilen = KiHilfe.Liste();
                     zeilen.Add(KiHilfe.Zeile(
                         "id_projekt", id,
                         "komponente", komponente,
+                        "id_position", idPosition,
                         "erfasst_eur", KiHilfe.Wert(ab.Erfasst),
                         "technik_eur", KiHilfe.Wert(ab.Technik),
                         "technik_vorhanden", ab.TechnikVorhanden,

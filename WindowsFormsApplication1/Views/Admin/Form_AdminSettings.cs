@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 
@@ -21,9 +22,78 @@ namespace WindowsFormsApplication1
             btn_Speichern.Click += Btn_Speichern_Click;
             btn_Abbrechen.Click += (s, e) => this.Close();
 
+            KiAbschalterAufbauen();
+
             // Standardmäßig den ersten Eintrag auswählen
             if (listBox_Rubriken.Items.Count > 0)
                 listBox_Rubriken.SelectedIndex = 0;
+        }
+
+        // ------------------------------------------------------------------
+        // Abschalter des KI-Assistenten (Rubrik „Anwendung")
+        // ------------------------------------------------------------------
+
+        /// <summary>Der Abschalter; <c>null</c>, wenn er sich nicht aufbauen ließ.</summary>
+        private CheckBox chk_KiAus;
+
+        /// <summary>
+        /// Baut den Abschalter der Installation in die Rubrik „Anwendung": setzt ihn ein
+        /// Betreiber, sind Menüeintrag und Chatfenster des KI-Assistenten nicht
+        /// erreichbar und es geht nichts an einen externen Dienst.
+        /// </summary>
+        /// <remarks>
+        /// <b>Programmatisch angelegt.</b> Designer- und .resx-Dateien bleiben unberührt
+        /// (Hausregel); die Steuerelemente hängen sich in das vorhandene
+        /// <c>panel_Allgemein</c> unterhalb des Pfadfeldes ein. Abgelegt wird nicht in
+        /// <c>Properties.Settings</c>, sondern im Registry-Zweig
+        /// <c>HKCU\Software\wp-plan</c> - dort liegen auch Sprache, Lizenzzustimmung und
+        /// die übrigen KI-Einstellungen (siehe <see cref="KiEinwilligung"/>).
+        /// </remarks>
+        private void KiAbschalterAufbauen()
+        {
+            try
+            {
+                chk_KiAus = new CheckBox
+                {
+                    Name = "chk_KiAus",
+                    Text = MyResource.Resource.KI_ABSCHALTER_ADMIN,
+                    Location = new Point(18, 96),
+                    Size = new Size(462, 38),
+                    TabIndex = 3,
+                    Checked = KiEinwilligung.Abgeschaltet
+                };
+
+                Label lbl = new Label
+                {
+                    Name = "lbl_KiAus",
+                    AutoSize = false,
+                    ForeColor = Color.DimGray,
+                    Location = new Point(36, 136),
+                    Size = new Size(444, 72),
+                    Text = MyResource.Resource.KI_ABSCHALTER_ADMIN_HINWEIS
+                };
+
+                // Ein maschinenweiter Eintrag (HKLM) ist die Sperre der Verwaltung - sie
+                // darf sich hier nicht loesen lassen.
+                if (KiEinwilligung.AbschalterMaschine)
+                {
+                    chk_KiAus.Enabled = false;
+                    lbl.Text = MyResource.Resource.KI_ABSCHALTER_MASCHINE +
+                               Environment.NewLine + Environment.NewLine + lbl.Text;
+                    lbl.ForeColor = Color.FromArgb(160, 80, 0);
+                }
+
+                panel_Allgemein.Controls.Add(chk_KiAus);
+                panel_Allgemein.Controls.Add(lbl);
+            }
+            catch { chk_KiAus = null; }
+        }
+
+        /// <summary>Schreibt den Abschalter; bei maschinenweiter Sperre passiert nichts.</summary>
+        private void KiAbschalterSpeichern()
+        {
+            if (chk_KiAus == null || !chk_KiAus.Enabled) return;
+            KiEinwilligung.Abgeschaltet = chk_KiAus.Checked;
         }
 
         private void ListBox_Rubriken_SelectedIndexChanged(object sender, EventArgs e)
@@ -116,6 +186,10 @@ namespace WindowsFormsApplication1
 
             Properties.Settings.Default.Save();
 
+            // Der Abschalter des KI-Assistenten liegt in der Registry, nicht in den
+            // Settings - deshalb hier gesondert.
+            KiAbschalterSpeichern();
+
             MessageBox.Show("Die Einstellungen wurden erfolgreich gespeichert.", "Administration", MessageBoxButtons.OK, MessageBoxIcon.Information);
             this.DialogResult = DialogResult.OK;
             this.Close();
@@ -141,6 +215,9 @@ namespace WindowsFormsApplication1
             txt_WPPrefix.Text = Properties.Settings.Default.WordPressPrefix;
             txt_PVGISUrl.Text = Properties.Settings.Default.PVGISUrl;
             txt_GEOCodUrl.Text = Properties.Settings.Default.GeoKodierung;
+
+            // Abschalter des KI-Assistenten frisch aus der Registry
+            if (chk_KiAus != null) chk_KiAus.Checked = KiEinwilligung.Abgeschaltet;
         }
 
         private void btn_Standardwerte_Click(object sender, EventArgs e)

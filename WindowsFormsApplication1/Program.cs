@@ -60,6 +60,16 @@ namespace WindowsFormsApplication1
                 Thread.CurrentThread.CurrentUICulture = culture_en;
             }
 
+            // Textlieferant des KI-Kerns einhaengen - NACH der Sprachwahl, damit
+            // KiKern seine Schluessel in der eingestellten Sprache beantwortet
+            // bekommt (Fachkonzept 3.7; KiKern darf MyResource nicht kennen).
+            KiTextlieferant.Einrichten();
+
+            // Rechtshinweis des KI-Assistenten einhaengen: erst damit gibt es ueberhaupt
+            // einen Weg zu einer Einwilligung. Ohne diesen Aufruf - Aktionsharnisch,
+            // Tests, Konsolenlauf - wird keine Anfrage an den Anbieter gesendet.
+            Form_KiHinweis.Einhaengen();
+
             // -----------------------------------------------------------------------
             // Schema-Ausrollung (ADR-001): die versionierte Migration laeuft genau
             // einmal je Programmstart, VOR dem Oeffnen der MDI-Oberflaeche.
