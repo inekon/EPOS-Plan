@@ -3362,6 +3362,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abgeleitet: {0} {1} × {2} {3} ähnelt.
+        /// </summary>
+        public static string KOSTEN_BEMESSUNG_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("KOSTEN_BEMESSUNG_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Kessel dieses Projekts führen unterschiedliche Einheiten für die Wartungskosten — keine Vorbelegung. ähnelt.
         /// </summary>
         public static string KOSTEN_BETRIEB_EINHEIT_GEMISCHT {
@@ -3457,6 +3466,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOSTEN_BTN_PLANWERT {
             get {
                 return ResourceManager.GetString("KOSTEN_BTN_PLANWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚙ Betriebskosten VDI 2067… ähnelt.
+        /// </summary>
+        public static string KOSTEN_BTN_VDI2067 {
+            get {
+                return ResourceManager.GetString("KOSTEN_BTN_VDI2067", resourceCulture);
             }
         }
         
@@ -12982,6 +13000,177 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer § 53a EnergieStG: Jahresnutzungsgrad {0} % unter der Schwelle von {1} %; Gutschrift = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_53A_NUTZUNGSGRAD {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_53A_NUTZUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer § 53a EnergieStG: kein Jahresnutzungsgrad erfasst (Schwelle {0} %) — im Parameterdialog pflegen; Gutschrift = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_53A_NUTZUNGSGRAD_FEHLT {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_53A_NUTZUNGSGRAD_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: {0} — die Brennstoffmenge lässt sich nicht in die gesetzliche Einheit {1} umrechnen (Abrechnungseinheit {2}, Heizwert {3} kWh je Einheit; für Kilogramm fehlt die Dichte); Gutschrift = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_EINHEIT_UNKLAR {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_EINHEIT_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: Erdgasmenge brennwertbezogen bemessen — Ho/Hi = {0} aus den gepflegten Werten des Energieträgers. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_HO {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_HO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: {0} — kein Brennwert (Ho) gepflegt, deshalb heizwertbezogen gerechnet; die Entlastung fällt dadurch rund 10 % zu niedrig aus. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_HO_FEHLT {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_HO_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: {0} — der auf die Stromerzeugung entfallende Brennstoff ist 0 (Strom- oder Wärmemenge des Laufs fehlt); Gutschrift = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_MENGE_UNKLAR {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_MENGE_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: keine Entlastung gewählt — § 53 oder § 53a EnergieStG im Parameterdialog festlegen; Gutschrift = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_NICHT_GEWAEHLT {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_NICHT_GEWAEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: {0} — der Katalogsatz {1} ist nicht gepflegt (Administration → Gesetzliche Parameter); Gutschrift = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_SATZ_FEHLT {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_SATZ_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: {0} — dem Energieträger ist kein Steuersatz zugeordnet (Träger der Anlage in der Kostenmaske prüfen); Gutschrift = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_TRAEGER_UNKLAR {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_TRAEGER_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} = {1} {2}, gültig ab {3} ({4}) — {5} ähnelt.
+        /// </summary>
+        public static string STEUER_HERKUNFT_FORMAT {
+            get {
+                return ResourceManager.GetString("STEUER_HERKUNFT_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steuer: der Katalogsatz {0} ist nicht gepflegt (Administration → Gesetzliche Parameter); Gutschrift = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_SATZ_FEHLT {
+            get {
+                return ResourceManager.GetString("STEUER_SATZ_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9b StromStG: {0} € Entlastung erreichen den Sockelbetrag von {1} € je Kalenderjahr nicht; Entlastung = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_9B_SOCKEL {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_9B_SOCKEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9b StromStG: weder produzierendes Gewerbe noch Land- und Forstwirtschaft — Unternehmensart im Parameterdialog erfassen; Entlastung = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_9B_UNTERNEHMENSART {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_9B_UNTERNEHMENSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: über dem CO₂-Grenzwert von {0} g je kWh Energieertrag und deshalb ohne Befreiung: {1}. Die übrigen Anlagen mit zusammen {2} kW rechnen weiter. ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_CO2 {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: die direkten CO₂-Emissionen je kWh Energieertrag sind nicht bestimmbar ({0}) — Emissionsfaktor des Trägers im Katalog prüfen; für diese Anlagen keine Befreiung. ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_CO2_UNKLAR {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_CO2_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: der KWK-Eigenverbrauch ist nicht bestimmbar — im Lauf fehlen die Stundenreihen, und „alles Eigenverbrauch&quot; wäre für eine Steuerbefreiung keine tragfähige Näherung; Befreiung = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_EIGEN_UNKLAR {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_EIGEN_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: Hocheffizienz nicht nachgewiesen — Angabe im Parameterdialog; Befreiung = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_HOCHEFFIZIENZ {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_HOCHEFFIZIENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: über der elektrischen Nennleistung von {0} kW je Anlage und deshalb ohne Befreiung: {1}. Die übrigen Anlagen mit zusammen {2} kW rechnen weiter. ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_LEISTUNG {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: räumlicher Zusammenhang (bis {0} km nach § 12b StromStV) nicht bestätigt; Befreiung = 0. ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_RAEUMLICH {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_RAEUMLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
         /// </summary>
         public static string Text_Beschreibung {
@@ -13515,6 +13704,375 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fester Jahresbetrag ähnelt.
+        /// </summary>
+        public static string VDI_BEM_ANZ_BETRAG {
+            get {
+                return ResourceManager.GetString("VDI_BEM_ANZ_BETRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je Vollbenutzungsstunde ähnelt.
+        /// </summary>
+        public static string VDI_BEM_ANZ_EUR_H {
+            get {
+                return ResourceManager.GetString("VDI_BEM_ANZ_EUR_H", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je kWh elektrisch ähnelt.
+        /// </summary>
+        public static string VDI_BEM_ANZ_EUR_KWH {
+            get {
+                return ResourceManager.GetString("VDI_BEM_ANZ_EUR_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die % der Brennstoffkosten ähnelt.
+        /// </summary>
+        public static string VDI_BEM_ANZ_PROZ_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("VDI_BEM_ANZ_PROZ_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die % der Investition ähnelt.
+        /// </summary>
+        public static string VDI_BEM_ANZ_PROZ_INVEST {
+            get {
+                return ResourceManager.GetString("VDI_BEM_ANZ_PROZ_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Brennstoffkosten ähnelt.
+        /// </summary>
+        public static string VDI_BEZUG_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("VDI_BEZUG_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht ermittelbar (Simulationslauf oder Investitionsposition fehlt) ähnelt.
+        /// </summary>
+        public static string VDI_BEZUG_FEHLT {
+            get {
+                return ResourceManager.GetString("VDI_BEZUG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition BHKW ähnelt.
+        /// </summary>
+        public static string VDI_BEZUG_INVEST_BHKW {
+            get {
+                return ResourceManager.GetString("VDI_BEZUG_INVEST_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionssumme des Projekts ähnelt.
+        /// </summary>
+        public static string VDI_BEZUG_INVEST_GESAMT {
+            get {
+                return ResourceManager.GetString("VDI_BEZUG_INVEST_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition Heizkessel ähnelt.
+        /// </summary>
+        public static string VDI_BEZUG_INVEST_KESSEL {
+            get {
+                return ResourceManager.GetString("VDI_BEZUG_INVEST_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromerzeugung BHKW ähnelt.
+        /// </summary>
+        public static string VDI_BEZUG_STROM {
+            get {
+                return ResourceManager.GetString("VDI_BEZUG_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollbenutzungsstunden BHKW (Näherung) ähnelt.
+        /// </summary>
+        public static string VDI_BEZUG_VBH {
+            get {
+                return ResourceManager.GetString("VDI_BEZUG_VBH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string VDI_BTN_ABBRUCH {
+            get {
+                return ResourceManager.GetString("VDI_BTN_ABBRUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string VDI_BTN_OK {
+            get {
+                return ResourceManager.GetString("VDI_BTN_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 2067: {0}–{1} % ähnelt.
+        /// </summary>
+        public static string VDI_EMPFEHLUNG {
+            get {
+                return ResourceManager.GetString("VDI_EMPFEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Durch die Satzangabe ersetzt — der Betrag wird berechnet und deshalb nicht von Hand geändert. Satz auf 0 setzen, um wieder einen festen Betrag einzugeben. ähnelt.
+        /// </summary>
+        public static string VDI_ERSETZT {
+            get {
+                return ResourceManager.GetString("VDI_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Betriebskostenpositionen nach VDI 2067 gespeichert. ähnelt.
+        /// </summary>
+        public static string VDI_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("VDI_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Beträge und alle Bezugsgrößen sind NETTO. Der Bruttobetrag ist abgeleitet und gesperrt; der Umsatzsteuersatz kommt aus dem Katalog „Gesetzliche Parameter&quot;. Eine gepflegte Satzangabe hat Vorrang — das Absolutfeld wird dann gesperrt, aber nicht geleert. ähnelt.
+        /// </summary>
+        public static string VDI_HINWEIS {
+            get {
+                return ResourceManager.GetString("VDI_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wartung und Instandhaltung BHKW sind zwei EIGENE Positionen; ihre Beträge addieren sich. Für die Wartung gilt genau eine Bemessung — die Auswahl steht in der Spalte „Bemessung&quot;. ähnelt.
+        /// </summary>
+        public static string VDI_HINWEIS_INSTANDHALTUNG {
+            get {
+                return ResourceManager.GetString("VDI_HINWEIS_INSTANDHALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsenergiekosten ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_HILFSENERGIE {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_HILFSENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandhaltung bauliche Anlagen ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_INST_BAULICH {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_INST_BAULICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandhaltung BHKW ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_INST_BHKW {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_INST_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandhaltung Stromeinspeisung ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_INST_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_INST_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandhaltung Heizkessel ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_INST_KESSEL {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_INST_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandhaltung Wärmezentrale ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_INST_ZENTRALE {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_INST_ZENTRALE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Personalkosten ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_PERSONAL {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_PERSONAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reserveleistungskosten ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_RESERVE {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_RESERVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstige Kosten ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_SONSTIGE {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steuern, Versicherung, Verwaltung ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_VERWALTUNG {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_VERWALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollwartung / Wartung BHKW ähnelt.
+        /// </summary>
+        public static string VDI_POS_ANZ_WARTUNG_BHKW {
+            get {
+                return ResourceManager.GetString("VDI_POS_ANZ_WARTUNG_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bemessung ähnelt.
+        /// </summary>
+        public static string VDI_SP_BEMESSUNG {
+            get {
+                return ResourceManager.GetString("VDI_SP_BEMESSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsgröße und Empfehlung ähnelt.
+        /// </summary>
+        public static string VDI_SP_BEZUG {
+            get {
+                return ResourceManager.GetString("VDI_SP_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrag brutto [€/a] ähnelt.
+        /// </summary>
+        public static string VDI_SP_BRUTTO {
+            get {
+                return ResourceManager.GetString("VDI_SP_BRUTTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrag netto [€/a] ähnelt.
+        /// </summary>
+        public static string VDI_SP_NETTO {
+            get {
+                return ResourceManager.GetString("VDI_SP_NETTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Position ähnelt.
+        /// </summary>
+        public static string VDI_SP_POSITION {
+            get {
+                return ResourceManager.GetString("VDI_SP_POSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz ähnelt.
+        /// </summary>
+        public static string VDI_SP_SATZ {
+            get {
+                return ResourceManager.GetString("VDI_SP_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe brutto: {0} €/a   (Umsatzsteuer {1} % aus dem Katalog) ähnelt.
+        /// </summary>
+        public static string VDI_SUMME_BRUTTO {
+            get {
+                return ResourceManager.GetString("VDI_SUMME_BRUTTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Betriebskosten netto: {0} €/a ähnelt.
+        /// </summary>
+        public static string VDI_SUMME_NETTO {
+            get {
+                return ResourceManager.GetString("VDI_SUMME_NETTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten nach VDI 2067 ähnelt.
+        /// </summary>
+        public static string VDI_TITEL {
+            get {
+                return ResourceManager.GetString("VDI_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umsatzsteuersatz nicht im Katalog gepflegt — kein Bruttobetrag ähnelt.
+        /// </summary>
+        public static string VDI_UST_FEHLT {
+            get {
+                return ResourceManager.GetString("VDI_UST_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Näherung: „Vollbenutzungsstunden&quot; sind Wärme geteilt durch Leistung, nicht die getakteten Betriebsstunden. Der Rechenkern bildet keine Taktung ab — eine Wartung je Betriebsstunde ist damit eine Schätzung. ähnelt.
+        /// </summary>
+        public static string VDI_VBH_NAEHERUNG {
+            get {
+                return ResourceManager.GetString("VDI_VBH_NAEHERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Jede BHKW-Anlage des Projekts wird mit Heizöl betrieben ({0}) — als Neuanlage nicht mehr förderfähig (KWKG 2025, nur noch Erdgas; Näherung: gilt auch für Bio-Blends); Bonus = 0. ähnelt.
         /// </summary>
         public static string WIRT_KWKG_ALLE_HEIZOEL {
@@ -13596,33 +14154,58 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+<<<<<<< HEAD
         ///   Sucht eine lokalisierte Zeichenfolge, die Was wird gesendet? ähnelt.
         /// </summary>
         public static string KI_VORSCHAU_LINK {
             get {
                 return ResourceManager.GetString("KI_VORSCHAU_LINK", resourceCulture);
+=======
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer-Gutschrift ähnelt.
+        /// </summary>
+        public static string WIRT_REIHE_ENERGIESTEUER {
+            get {
+                return ResourceManager.GetString("WIRT_REIHE_ENERGIESTEUER", resourceCulture);
+>>>>>>> aac55ca6fc7beaa53dcad88c4d3b1679fd28896b
             }
         }
         
         /// <summary>
+<<<<<<< HEAD
         ///   Sucht eine lokalisierte Zeichenfolge, die Was wird gesendet? ähnelt.
         /// </summary>
         public static string KI_VORSCHAU_TITEL {
             get {
                 return ResourceManager.GetString("KI_VORSCHAU_TITEL", resourceCulture);
+=======
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWK-Zuschlag ähnelt.
+        /// </summary>
+        public static string WIRT_REIHE_KWKG {
+            get {
+                return ResourceManager.GetString("WIRT_REIHE_KWKG", resourceCulture);
+>>>>>>> aac55ca6fc7beaa53dcad88c4d3b1679fd28896b
             }
         }
         
         /// <summary>
+<<<<<<< HEAD
         ///   Sucht eine lokalisierte Zeichenfolge, die Genau dieser Text ginge bei der nächsten Frage an das Modell {0} ({1}). Es werden keine Projekt-, Kunden- oder Simulationsdaten übertragen. Der API-Schlüssel wird in einer HTTP-Kopfzeile mitgegeben und steht nicht in der Adresse. ähnelt.
         /// </summary>
         public static string KI_VORSCHAU_HINWEIS {
             get {
                 return ResourceManager.GetString("KI_VORSCHAU_HINWEIS", resourceCulture);
+=======
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Befreiung ähnelt.
+        /// </summary>
+        public static string WIRT_REIHE_STROMSTEUER_BEFREIUNG {
+            get {
+                return ResourceManager.GetString("WIRT_REIHE_STROMSTEUER_BEFREIUNG", resourceCulture);
+>>>>>>> aac55ca6fc7beaa53dcad88c4d3b1679fd28896b
             }
         }
         
         /// <summary>
+<<<<<<< HEAD
         ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
         /// </summary>
         public static string KI_VORSCHAU_SCHLIESSEN {
@@ -13631,5 +14214,50 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+=======
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Entlastung ähnelt.
+        /// </summary>
+        public static string WIRT_REIHE_STROMSTEUER_ENTLASTUNG {
+            get {
+                return ResourceManager.GetString("WIRT_REIHE_STROMSTEUER_ENTLASTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer-Gutschrift Jahr 1 [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_ENERGIESTEUER {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_ENERGIESTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft der Steuersätze ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_STEUER_HERKUNFT {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_STEUER_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Befreiung Jahr 1 [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_STROMST_BEFREIUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_STROMST_BEFREIUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Entlastung Jahr 1 [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_STROMST_ENTLASTUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_STROMST_ENTLASTUNG", resourceCulture);
+            }
+        }
+>>>>>>> aac55ca6fc7beaa53dcad88c4d3b1679fd28896b
     }
 }

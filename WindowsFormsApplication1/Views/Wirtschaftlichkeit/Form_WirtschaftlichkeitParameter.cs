@@ -32,6 +32,10 @@ namespace WindowsFormsApplication1
         private NumericUpDown numKwkg, numKwkgEinsp, numVbhDeckel, numVbhKontingent, numAbschlagNeg;
         private DateTimePicker dtStichtag, dtInbetriebnahme;
         private ComboBox cbPark;
+        // ETAPPE E4 — Steuerangaben (nur bei BHKW in der Vergleichsgruppe).
+        private ComboBox cbUnternehmensart, cbEnergiesteuer, cbAufteilung;
+        private CheckBox chkRaeumlich, chkHocheffizienz;
+        private NumericUpDown numNutzungsgrad;
         private Button btnOk, btnAbbrechen;
 
         /// <summary>true, wenn gespeichert wurde (Aufrufer rechnet dann neu).</summary>
@@ -76,6 +80,37 @@ namespace WindowsFormsApplication1
                 numAbschlagNeg = Zeile("Abschlag Negativstunden [%]:", ref y, 0m, 50m, 1, (decimal)_parameter.KwkgAbschlagNegativ, 0.5m);
                 dtStichtag = DatumZeile("Stichtag (Bestellung/Genehmigung):", ref y, _parameter.KwkgStichtag);
                 dtInbetriebnahme = DatumZeile("Geplante Inbetriebnahme:", ref y, _parameter.KwkgInbetriebnahme);
+
+                // ---------------- BHKW — Energie- und Stromsteuer (Etappe E4) --------
+                // Die gesetzlichen Bedingungen werden ERFASST statt angenommen. Jeder
+                // Vorgabewert ist der, der KEINE Gutschrift auslöst.
+                Gruppe("BHKW — Energie- und Stromsteuer", ref y);
+                cbUnternehmensart = AuswahlZeile("Unternehmensart:", ref y, _parameter.Unternehmensart,
+                    new[]
+                    {
+                        new Steuerwahl(DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE, "kein produzierendes Gewerbe"),
+                        new Steuerwahl(DbWerte.UNTERNEHMENSART_PROD_GEWERBE,      "produzierendes Gewerbe"),
+                        new Steuerwahl(DbWerte.UNTERNEHMENSART_LAND_FORST,        "Land- und Forstwirtschaft")
+                    });
+                chkRaeumlich = SchalterZeile("Räumlicher Zusammenhang (4,5 km) gegeben",
+                                             ref y, _parameter.RaeumlicherZusammenhang);
+                chkHocheffizienz = SchalterZeile("Hocheffizienz nachgewiesen",
+                                                 ref y, _parameter.HocheffizienzNachweis);
+                numNutzungsgrad = Zeile("Jahresnutzungsgrad [%] (0 = nicht erfasst):", ref y,
+                                        0m, 100m, 1, (decimal)(_parameter.Jahresnutzungsgrad ?? 0), 1m);
+                cbEnergiesteuer = AuswahlZeile("Energiesteuerentlastung:", ref y, _parameter.EnergiesteuerWahl,
+                    new[]
+                    {
+                        new Steuerwahl(DbWerte.ENERGIESTEUER_WAHL_KEINE, "keine"),
+                        new Steuerwahl(DbWerte.ENERGIESTEUER_WAHL_53,    "§ 53 EnergieStG (Formular 1131)"),
+                        new Steuerwahl(DbWerte.ENERGIESTEUER_WAHL_53A,   "§ 53a Abs. 5 EnergieStG (1135)")
+                    });
+                cbAufteilung = AuswahlZeile("Brennstoff auf Strom/Wärme:", ref y, _parameter.AufteilungMethode,
+                    new[]
+                    {
+                        new Steuerwahl(DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF, "voller BHKW-Brennstoff (§ 53 Abs. 2)"),
+                        new Steuerwahl(DbWerte.AUFTEILUNG_ENERGETISCH,       "energetisch (konservativ)")
+                    });
             }
 
             // ---------------- Emissionsbilanz (Brennstoff-Erzeuger) ----------------
@@ -133,7 +168,11 @@ namespace WindowsFormsApplication1
             if (_erzeuger.Bhkw)
                 hinweis += " KWKG: Deckel-Override 0 = degressive Vbh-Staffel 2025 ab dem " +
                            "Inbetriebnahmejahr; förderfähig nur mit Stichtag bis 31.12.2026 " +
-                           "+ Realisierung bis Ablauf des 4. Folgejahres.";
+                           "+ Realisierung bis Ablauf des 4. Folgejahres." +
+                           " Steuern: Ohne ausdrückliche Angabe entsteht KEINE Gutschrift — " +
+                           "§ 53 und § 53a schließen einander aus, die Sätze und Grenzwerte " +
+                           "kommen aus dem Katalog „Gesetzliche Parameter". Der Jahresnutzungsgrad " +
+                           "wird nur für § 53a gebraucht (Schwelle 70 %).";
             var lblHinweis = new Label
             {
                 Location = new Point(15, y + 4),
@@ -241,6 +280,59 @@ namespace WindowsFormsApplication1
             return dt;
         }
 
+        /// <summary>
+        /// Ein Eintrag der Steuerauswahl (Etappe E4): sprachneutraler Steuerwert für die
+        /// Datenbank, deutscher Text für die Anzeige — die Drei-Schichten-Regel in einer
+        /// Zeile. Der Dialog ist wie seine Nachbarn nicht lokalisiert; die Steuerwerte
+        /// stehen in <see cref="DbWerte"/> und bleiben davon unberührt.
+        /// </summary>
+        private class Steuerwahl
+        {
+            public readonly string Wert;
+            private readonly string _text;
+            public Steuerwahl(string wert, string text) { Wert = wert; _text = text; }
+            public override string ToString() { return _text; }
+        }
+
+        /// <summary>Auswahlzeile über feste Steuerwerte; unbekannte Bestandswerte fallen
+        /// auf den ersten Eintrag zurück (= der Wert ohne Gutschrift).</summary>
+        private ComboBox AuswahlZeile(string beschriftung, ref int y, string wert, Steuerwahl[] eintraege)
+        {
+            var lbl = new Label { Location = new Point(28, y + 3), Size = new Size(237, 20), Text = beschriftung };
+            var cb = new ComboBox
+            {
+                Location = new Point(270, y),
+                Size = new Size(160, 23),
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+            int idx = 0;
+            for (int i = 0; i < eintraege.Length; i++)
+            {
+                cb.Items.Add(eintraege[i]);
+                if (string.Equals(eintraege[i].Wert, wert, StringComparison.Ordinal)) idx = i;
+            }
+            cb.SelectedIndex = idx;
+            this.Controls.Add(lbl);
+            this.Controls.Add(cb);
+            y += 32;
+            return cb;
+        }
+
+        /// <summary>Ja/Nein-Zeile für eine gesetzliche Bedingung.</summary>
+        private CheckBox SchalterZeile(string beschriftung, ref int y, bool wert)
+        {
+            var chk = new CheckBox
+            {
+                Location = new Point(28, y + 2),
+                Size = new Size(402, 22),
+                Text = beschriftung,
+                Checked = wert
+            };
+            this.Controls.Add(chk);
+            y += 27;
+            return chk;
+        }
+
         private class ParkEintrag
         {
             public readonly int Id;
@@ -274,6 +366,21 @@ namespace WindowsFormsApplication1
                 _parameter.KwkgAbschlagNegativ = (double)numAbschlagNeg.Value;
                 _parameter.KwkgStichtag = dtStichtag.Checked ? (DateTime?)dtStichtag.Value.Date : null;
                 _parameter.KwkgInbetriebnahme = dtInbetriebnahme.Checked ? (DateTime?)dtInbetriebnahme.Value.Date : null;
+
+                // ETAPPE E4 — Steuerangaben. 0 % Jahresnutzungsgrad heißt „nicht
+                // erfasst": Ein Nutzungsgrad von null ist fachlich kein Wert, und die
+                // Begründung soll „nicht erfasst" von „erfasst und zu niedrig"
+                // unterscheiden können.
+                _parameter.Unternehmensart = Gewaehlt(cbUnternehmensart,
+                                                      DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE);
+                _parameter.RaeumlicherZusammenhang = chkRaeumlich.Checked;
+                _parameter.HocheffizienzNachweis = chkHocheffizienz.Checked;
+                _parameter.Jahresnutzungsgrad = numNutzungsgrad.Value > 0
+                                              ? (double?)numNutzungsgrad.Value : null;
+                _parameter.EnergiesteuerWahl = Gewaehlt(cbEnergiesteuer,
+                                                        DbWerte.ENERGIESTEUER_WAHL_KEINE);
+                _parameter.AufteilungMethode = Gewaehlt(cbAufteilung,
+                                                        DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF);
             }
 
             if (_erzeuger.Brennstoff)

@@ -379,7 +379,10 @@ namespace WindowsFormsApplication1
 
                     Button btnTest = null;
                     // Der Button erscheint nur in der Hauptgruppe (z.B. "Wärmepumpe")
-                    if (f.IsMainComponent)
+                    // und nur auf dem Reiter, für den er gedacht ist: „Planwert
+                    // übernehmen…" bei den Investitionskosten, „Betriebskosten VDI 2067…"
+                    // beim BHKW auf dem Betriebskostenreiter.
+                    if (f.IsMainComponent && kategorieID == KATEGORIE_INVESTITION)
                     {
                         btnTest = new Button
                         {
@@ -399,6 +402,25 @@ namespace WindowsFormsApplication1
 
                         // Den EventHandler anhängen (Logik siehe unten)
                         btnTest.Click += (s, e) => btnTest_KostenUebernahme_Click(komponente);
+                    }
+                    else if (f.IsMainComponent && kategorieID == KATEGORIE_BETRIEB &&
+                             string.Equals(komponente, DbWerte.ERZEUGER_BHKW, StringComparison.Ordinal))
+                    {
+                        btnTest = new Button
+                        {
+                            Text = MyResource.Resource.KOSTEN_BTN_VDI2067,
+                            Height = 20,
+                            Width = 200,
+                            AutoSize = false,
+                            FlatStyle = FlatStyle.Flat,
+                            ForeColor = Color.White,
+                            BackColor = Color.FromArgb(0, 120, 215),
+                            Cursor = Cursors.Hand,
+                            Font = new Font("Segoe UI", 8, FontStyle.Bold),
+                            Location = new Point(groupTitle.PreferredWidth + 20, 5)
+                        };
+                        btnTest.FlatAppearance.BorderSize = 0;
+                        btnTest.Click += (s, e) => btnBetriebskostenVdi_Click(komponente);
                     }
 
                     // Der Lösch-Button (-)
@@ -652,6 +674,14 @@ namespace WindowsFormsApplication1
             // Repository nutzen, um die Daten zu holen
             DataTable dt = DataRepository.GetDataTable(sql, ps);
 
+            // Kostenart, Bemessung und Erlöskennzeichen kommen aus einem ZWEITEN Zugriff
+            // direkt auf Tab_ProjektWerte und werden über die ID zusammengeführt:
+            // Abfrage_Kostenfaktoren ist eine gespeicherte Access-Abfrage AUSSERHALB des
+            // Repos; sie zu erweitern erreicht keine Bestandsinstallation (dieselbe
+            // Begründung, mit der schon Abfrage_KostenKomponenten abgelöst wurde).
+            Dictionary<int, KostenPositionCtrl.Zusatz> zusatz =
+                KostenPositionCtrl.LiesZusatz(projektID, kategorieID);
+
             // Durch die Zeilen loopen (ersetzt den Reader)
             foreach (DataRow row in dt.Rows)
             {
@@ -670,6 +700,24 @@ namespace WindowsFormsApplication1
                     BestCase_Nutzungsdauer = row["BestCase_Nutzungsdauer"] != DBNull.Value ? Convert.ToDecimal(row["BestCase_Nutzungsdauer"]) : 0,
                     WorstCase_Nutzungsdauer = row["WorstCase_Nutzungsdauer"] != DBNull.Value ? Convert.ToDecimal(row["WorstCase_Nutzungsdauer"]) : 0
                 });
+            }
+
+            // Zusatzangaben anhängen. Fehlen sie (nicht migrierte Datenbank), bleibt jede
+            // Position bei BEMESSUNG_BETRAG und IstErloes = false — also beim Verhalten
+            // vor Etappe E3.
+            foreach (KostenPosition p in geladeneFaktoren)
+            {
+                KostenPositionCtrl.Zusatz z;
+                if (!zusatz.TryGetValue(p.ID, out z) || z == null) continue;
+
+                p.IstErloes = z.IstErloes;
+                p.Bemessung = z.Bemessung;
+                if (p.Abgeleitet && z.Menge.HasValue && z.Einheitpreis.HasValue)
+                    p.Herleitung = string.Format(MyResource.Resource.KOSTEN_BEMESSUNG_HERLEITUNG,
+                                                 z.Einheitpreis.Value.ToString("N4", BerichtTexte.Kultur),
+                                                 BetriebskostenCtrl.SatzEinheit(z.Bemessung),
+                                                 z.Menge.Value.ToString("N2", BerichtTexte.Kultur),
+                                                 BetriebskostenCtrl.MengenEinheit(z.Bemessung));
             }
 
             // UI aktualisieren
@@ -1080,6 +1128,33 @@ namespace WindowsFormsApplication1
 
             MessageBox.Show(string.Format(MyResource.Resource.KOSTEN_PLANWERT_UEBERNOMMEN,
                                           komponente, summe.ToString("N2", BerichtTexte.Kultur), nZeilen),
+                            this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        /// <summary>
+        /// Knopf „Betriebskosten VDI 2067…": öffnet die Maske mit den zwölf Positionen
+        /// nach VDI 2067 (Etappe E3) und liest die Positionsliste danach neu ein.
+        /// </summary>
+        /// <remarks>
+        /// Geschrieben wird ausschließlich auf ausdrückliche Bestätigung — bricht der
+        /// Anwender ab, bleibt jeder erfasste Wert stehen (Nutzerentscheidung 4 der
+        /// Kostenübernahme).
+        /// </remarks>
+        private void btnBetriebskostenVdi_Click(string komponente)
+        {
+            if (kategorieID != KATEGORIE_BETRIEB) return;
+
+            int geschrieben;
+            using (var dlg = new Form_Betriebskosten(m_ID_Projekt))
+            {
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                geschrieben = dlg.GeschriebeneZeilen;
+            }
+
+            LoadKostenFaktoren(m_ID_Projekt, komponente);
+            Gesamtkosten(komponente);
+
+            MessageBox.Show(string.Format(MyResource.Resource.VDI_GESPEICHERT, geschrieben),
                             this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 

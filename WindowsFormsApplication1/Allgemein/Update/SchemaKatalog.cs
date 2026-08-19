@@ -643,6 +643,198 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_ERGEBNISBHKWMODUL, SPALTE_MODUL_VBH_ELEKTRISCH,  "DOUBLE"),
         };
 
+        public const string TAB_PROJEKTWERTE = "Tab_ProjektWerte";
+
+        /// <summary>
+        /// ETAPPE E3 — Kostenart nach VDI 2067 (kapital-, bedarfs-, betriebsgebunden,
+        /// sonstige). Werte und Begründung: <see cref="DbWerte.KOSTENART_KAPITALGEBUNDEN"/>.
+        ///
+        /// <b>Keine Rechenwirkung.</b> Die Spalte gliedert die Jahreskosten für Bericht
+        /// und Auswertung; gerechnet wird über <c>KategorieID</c> und
+        /// <see cref="SPALTE_PW_BEMESSUNG"/>.
+        /// </summary>
+        public const string SPALTE_PW_KOSTENART = "Kostenart";
+
+        /// <summary>
+        /// ETAPPE E3 — Bemessungsart einer Kostenposition (<c>BETRAG</c>,
+        /// <c>PROZENT_INVESTITION</c>, <c>EUR_PRO_H</c>, <c>EUR_PRO_KWH</c>,
+        /// <c>PROZENT_BRENNSTOFFKOSTEN</c>). Werte und Begründung:
+        /// <see cref="DbWerte.BEMESSUNG_BETRAG"/>.
+        ///
+        /// <b>Die eine Spalte, an der die Ergebnisneutralität hängt.</b> Schritt 19b
+        /// belegt jede Bestandszeile mit <c>BETRAG</c>, und die Leseseite behandelt
+        /// leer/NULL genauso — eine Bestandszeile rechnet damit exakt wie bisher.
+        /// </summary>
+        public const string SPALTE_PW_BEMESSUNG = "Bemessung";
+
+        /// <summary>
+        /// ETAPPE E3 — Erlöskennzeichen (Leitentscheidung L5). Nur für solche Positionen
+        /// gibt die Eingabe negative Beträge frei; Kostenpositionen bleiben geklemmt.
+        ///
+        /// <b>Vorzeichenkonvention:</b> Der gespeicherte Betrag ist immer die
+        /// Zahlungswirkung in €/a — positiv = Ausgabe, negativ = Einnahme. Bei
+        /// <c>IstErloes = True</c> klemmt die Eingabe auf ≤ 0 statt auf ≥ 0; ein Erlös
+        /// kann deshalb nirgends als Kosten in eine Summe geraten.
+        ///
+        /// <b>YESNO kennt kein NULL.</b> Access belegt die Spalte bei jeder
+        /// Bestandszeile automatisch mit <c>False</c>; ein DML-Schritt dafür ist
+        /// überflüssig (nachgewiesen in der Verifikation zu Schritt 19).
+        /// </summary>
+        public const string SPALTE_PW_IST_ERLOES = "IstErloes";
+
+        /// <summary>
+        /// ETAPPE E3 — Bezugsmenge der Bemessung: Investitionssumme [€],
+        /// Vollbenutzungsstunden [h/a], Jahresarbeit [kWh/a] oder Brennstoffkosten
+        /// [€/a], je nach <see cref="SPALTE_PW_BEMESSUNG"/>. Zusammen mit
+        /// <see cref="SPALTE_PW_EINHEITPREIS"/> ist die Herleitung damit
+        /// <b>persistent</b> und nicht nur ein Anzeigetext (L5).
+        /// </summary>
+        public const string SPALTE_PW_MENGE = "Menge";
+
+        /// <summary>
+        /// ETAPPE E3 — Satz der Bemessung: Prozentsatz [%], €/h oder €/kWh, je nach
+        /// <see cref="SPALTE_PW_BEMESSUNG"/>.
+        /// </summary>
+        public const string SPALTE_PW_EINHEITPREIS = "Einheitpreis";
+
+        /// <summary>
+        /// Schritt 19 der Migration (Etappe E3, Leitentscheidung L5) — die fünf
+        /// additiven Spalten der Kostenposition.
+        ///
+        /// <b>Warum kein <c>_STAMM</c>-Gegenstück.</b> <c>Tab_ProjektWerte</c> ist eine
+        /// reine Projekttabelle ohne Auslieferungskatalog; der Katalog dazu ist
+        /// <c>Tab_Kostenfaktor</c> und führt nur Bezeichnung und Rolle. Die Regel „neue
+        /// Spalten immer in Projekt- UND _STAMM-Tabelle" greift hier also nicht.
+        ///
+        /// <b>ACE-Regeln.</b> <c>YESNO</c> belegt Bestandszeilen selbsttätig mit
+        /// <c>False</c>, <c>DOUBLE</c> und <c>TEXT</c> bleiben NULL. Die beiden
+        /// TEXT-Spalten bekommen deshalb eine eigene DML-Vorbelegung (Schritt 19b), die
+        /// DOUBLE-Spalten nicht: „nicht gepflegt" ist bei Menge und Einheitpreis die
+        /// richtige Aussage, eine 0 behauptete „gepflegt und null". Kein DDL-DEFAULT auf
+        /// Fachwerten.
+        ///
+        /// <b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access immer
+        /// hinten an. Folgenlos: <c>Tab_ProjektWerte</c> wird ausschließlich
+        /// NAMENSBASIERT gelesen (<c>Form_Kosten.LoadKostenFaktoren</c> über
+        /// <c>row["…"]</c>, <c>WirtschaftlichkeitCtrl.LiesInvestitionen</c>/
+        /// <c>LiesBetriebskosten</c> über <c>D(r, "…")</c>); eine
+        /// <c>row[0…n]</c>-Kette gibt es hier nicht. Die gespeicherte Abfrage
+        /// <c>Abfrage_Kostenfaktoren</c> zählt ihre Spalten ebenfalls namentlich auf und
+        /// bleibt von den neuen Feldern unberührt.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt19_Kostenarten =
+        {
+            new SchemaSpalte(TAB_PROJEKTWERTE, SPALTE_PW_KOSTENART,    "TEXT(20)"),
+            // TEXT(30) statt der im Auftrag genannten TEXT(20): Der laengste Steuerwert
+            // ist PROZENT_BRENNSTOFFKOSTEN mit 24 Zeichen. Bei TEXT(20) scheitert das
+            // UPDATE der Hilfsenergie-Position mit einem stillen SQL-Fehler (im
+            // Reflection-Harnisch als haengender Dialog aufgefallen, Probe C2). Die
+            // Kostenart bleibt bei TEXT(20) - dort ist BETRIEBSGEBUNDEN mit 16 Zeichen
+            // der laengste Wert.
+            new SchemaSpalte(TAB_PROJEKTWERTE, SPALTE_PW_BEMESSUNG,    "TEXT(30)"),
+            new SchemaSpalte(TAB_PROJEKTWERTE, SPALTE_PW_IST_ERLOES,   "YESNO"),
+            new SchemaSpalte(TAB_PROJEKTWERTE, SPALTE_PW_MENGE,        "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWERTE, SPALTE_PW_EINHEITPREIS, "DOUBLE"),
+        };
+
+        public const string TAB_PROJEKTWIRTSCHAFT = "Tab_ProjektWirtschaftlichkeit";
+
+        /// <summary>
+        /// ETAPPE E4 — Unternehmensart des Betreibers (<c>KEIN_PROD_GEWERBE</c>,
+        /// <c>PROD_GEWERBE</c>, <c>LAND_FORSTWIRTSCHAFT</c>). Werte und Begründung:
+        /// <see cref="DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE"/>.
+        ///
+        /// <b>Voraussetzung der § 9b-Entlastung</b> (StromStG) und des § 54 EnergieStG.
+        /// Ohne produzierendes Gewerbe bzw. Land- und Forstwirtschaft gibt es keine
+        /// Stromsteuer-Entlastung auf den Netzbezug.
+        /// </summary>
+        public const string SPALTE_PW_UNTERNEHMENSART = "Unternehmensart";
+
+        /// <summary>
+        /// ETAPPE E4 — räumlicher Zusammenhang gegeben (4,5-km-Regel des § 12b StromStV).
+        /// Eine der vier Bedingungen der Stromsteuerbefreiung nach § 9 Abs. 1 Nr. 3
+        /// StromStG.
+        ///
+        /// <b>YESNO kennt kein NULL:</b> Access belegt die Spalte bei jeder Bestandszeile
+        /// mit <c>False</c> — „nicht erfasst" und „nicht gegeben" fallen hier zusammen,
+        /// und beide führen zu KEINER Gutschrift. Das ist die gewollte Richtung.
+        /// </summary>
+        public const string SPALTE_PW_RAEUMLICH = "Raeumlicher_Zusammenhang";
+
+        /// <summary>
+        /// ETAPPE E4 — Hocheffizienz nach Anhang III der Richtlinie (EU) 2023/1791
+        /// nachgewiesen (§ 2 StromStG). Zweite Bedingung der Befreiung nach
+        /// § 9 Abs. 1 Nr. 3 StromStG.
+        /// <inheritdoc cref="SPALTE_PW_RAEUMLICH" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string SPALTE_PW_HOCHEFFIZIENZ = "Hocheffizienz_Nachweis";
+
+        /// <summary>
+        /// ETAPPE E4 — Jahresnutzungsgrad der KWK-Anlage [%] im Sinne des § 3 Abs. 3
+        /// EnergieStG (genutzte mechanische und thermische Energie ÷ zugeführte Energie,
+        /// heizwertbezogen). Schwelle 70 % für § 53a EnergieStG.
+        ///
+        /// <b>Bleibt NULL</b> — „nicht gepflegt" ist die richtige Aussage; eine 0
+        /// behauptete „gepflegt und null" und wäre zugleich der Wert, der die
+        /// § 53a-Prüfung scheitern lässt. Beides führt zu keiner Gutschrift, aber die
+        /// BEGRÜNDUNG unterscheidet sich, und die soll stimmen.
+        /// </summary>
+        public const string SPALTE_PW_NUTZUNGSGRAD = "Jahresnutzungsgrad";
+
+        /// <summary>
+        /// ETAPPE E4 — gewählte Energiesteuerentlastung (<c>KEINE</c>,
+        /// <c>PARAGRAF_53</c>, <c>PARAGRAF_53A</c>). Werte und Begründung:
+        /// <see cref="DbWerte.ENERGIESTEUER_WAHL_KEINE"/>.
+        ///
+        /// <b>Die eine Spalte, an der die Ergebnisneutralität hängt.</b> Schritt 20b
+        /// belegt jede Bestandszeile mit <c>KEINE</c>, und die Leseseite behandelt
+        /// leer/NULL genauso — ohne ausdrückliche Wahl gibt es keine Gutschrift.
+        /// </summary>
+        public const string SPALTE_PW_ENERGIESTEUER_WAHL = "Energiesteuer_Wahl";
+
+        /// <summary>
+        /// ETAPPE E4 — Aufteilungsmethode des Brennstoffs auf Strom und Wärme
+        /// (<c>VOLLER_BRENNSTOFF</c>, <c>ENERGETISCH</c>). Werte, Rechtsgrundlage und
+        /// Recherchestand: <see cref="DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF"/>.
+        /// </summary>
+        public const string SPALTE_PW_AUFTEILUNG = "Aufteilung_Methode";
+
+        /// <summary>
+        /// Schritt 20 der Migration (Etappe E4) — die sechs additiven Spalten der
+        /// Steuerprüfung an <c>Tab_ProjektWirtschaftlichkeit</c>.
+        ///
+        /// <b>Warum kein <c>_STAMM</c>-Gegenstück.</b> <c>Tab_ProjektWirtschaftlichkeit</c>
+        /// ist eine reine Projekttabelle (eine Zeile je STAMMprojekt) ohne
+        /// Auslieferungskatalog; die Regel „neue Spalten immer in Projekt- UND
+        /// _STAMM-Tabelle" greift hier nicht.
+        ///
+        /// <b>ACE-Regeln.</b> <c>YESNO</c> belegt Bestandszeilen selbsttätig mit
+        /// <c>False</c>, <c>DOUBLE</c> und <c>TEXT</c> bleiben NULL. Die drei
+        /// TEXT-Spalten bekommen deshalb eine eigene DML-Vorbelegung (Schritt 20b), die
+        /// DOUBLE-Spalte nicht. Kein DDL-DEFAULT auf Fachwerten.
+        ///
+        /// <b>Spaltenbreiten.</b> Längster Steuerwert der Unternehmensart ist
+        /// <c>LAND_FORSTWIRTSCHAFT</c> (20 Zeichen) → TEXT(24); der Entlastungswahl
+        /// <c>PARAGRAF_53A</c> (12) → TEXT(20); der Aufteilung
+        /// <c>VOLLER_BRENNSTOFF</c> (17) → TEXT(30). Wer einen längeren Wert ergänzt,
+        /// muss die Breite mitziehen — sonst scheitert das UPDATE still (der Befund aus
+        /// Schritt 19, Probe C2).
+        ///
+        /// <b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access immer
+        /// hinten an. Folgenlos: <c>Tab_ProjektWirtschaftlichkeit</c> wird ausschließlich
+        /// NAMENSBASIERT gelesen (<c>WirtschaftlichkeitCtrl.LadeParameter</c> über
+        /// <c>D(r, "…")</c>); eine <c>row[0…n]</c>-Kette gibt es hier nicht.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt20_Steuerangaben =
+        {
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_UNTERNEHMENSART,     "TEXT(24)"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_RAEUMLICH,           "YESNO"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_HOCHEFFIZIENZ,       "YESNO"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_NUTZUNGSGRAD,        "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_ENERGIESTEUER_WAHL,  "TEXT(20)"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_AUFTEILUNG,          "TEXT(30)"),
+        };
+
         /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
@@ -717,6 +909,22 @@ namespace WindowsFormsApplication1
         /// Vorsorge unmittelbar vor dem Schreiben
         /// (<c>ErgebnisCtrl.StelleBHKWSpaltenSicher</c> und
         /// <c>ErgebnisCtrl.StelleModulSpaltenSicher</c>).
+        ///
+        /// <see cref="Schritt19_Kostenarten"/> ist BEWUSST NICHT aufgeführt — dieselbe
+        /// Begründung wie bei <see cref="Schritt12_Preismodell"/> und
+        /// <see cref="Schritt15_KesselWartungseinheit"/>: <c>Tab_ProjektWerte</c> gehört
+        /// dem Kostenmodul, der Rechenkern liest die Tabelle nirgends. Für die fünf
+        /// Spalten gibt es die eigene, tolerante Vorsorge unmittelbar vor dem Zugriff
+        /// (<c>KostenPositionCtrl.StelleSpaltenSicher</c>), aufgerufen aus dem
+        /// Betriebskosten-Dialog und aus der lesenden Auswertung.
+        ///
+        /// <see cref="Schritt20_Steuerangaben"/> ist BEWUSST NICHT aufgeführt — dieselbe
+        /// Begründung: <c>Tab_ProjektWirtschaftlichkeit</c> gehört dem
+        /// Wirtschaftlichkeitsmodul, der Rechenkern liest die Tabelle nirgends. Dieses
+        /// Modul führt seine Tabellen seit W1 selbst; die tolerante Vorsorge steht
+        /// unmittelbar vor dem Zugriff in
+        /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> (dieselben sechs Spalten
+        /// über <c>SpalteSicher</c>).
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {
