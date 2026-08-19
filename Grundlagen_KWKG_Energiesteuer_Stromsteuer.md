@@ -1,7 +1,9 @@
 # Grundlagen: KWK-Gesetz, Energiesteuer, Stromsteuer
 
-**Rechtsstand: 18.08.2026.** Alle Quellen an diesem Tag abgerufen. Dieses Dokument
-ist die Faktenbasis für
+**Rechtsstand: 18.08.2026**, ergänzt am **19.08.2026** um Abschnitt **3.5**
+(Brennstoffaufteilung nach § 53 EnergieStG — es gibt sie beim Motor-BHKW nicht) und die
+daraus folgenden Berichtigungen in 3.2, 5, 6 und 9. Alle Quellen am jeweiligen Tag
+abgerufen. Dieses Dokument ist die Faktenbasis für
 [`Konzept_BHKW_Kosten_Erloese.md`](WindowsFormsApplication1/Allgemein/Reporting/Konzept_BHKW_Kosten_Erloese.md)
 und für die Pflege des Katalogs `Tab_Gesetzesparameter`.
 
@@ -188,13 +190,18 @@ worden** — das bisherige Kumulierungsverbot ist damit entfallen: Ein BHKW bis
 Stromsteuerbefreiung nach § 9 Abs. 1 Nr. 3 StromStG **und** die vollständige
 Energiesteuerentlastung nach § 53 in Anspruch nehmen.
 
-- **Umfang:** voller Steuersatz nach § 2, aber **nur für den auf die
-  Stromerzeugung entfallenden Brennstoffanteil**, nicht für den Wärmeanteil.
+- **Umfang:** voller Steuersatz nach § 2 auf den Brennstoff, der am
+  Umwandlungsprozess teilnimmt. **Für ein Motor-BHKW ist das der gesamte
+  Brennstoffeinsatz** — eine Aufteilung auf Strom- und Wärmeanteil findet
+  **nicht** statt (Einzelheiten in Abschnitt 3.5; dieser Punkt war bis zum
+  19.08.2026 falsch dargestellt).
 - Erfasst sind nur Erzeugnisse, die unmittelbar am Umwandlungsprozess teilnehmen
   (Zusatzfeuerungen, Dampferzeuger ohne Stromnutzen, Abluftbehandlung sind
   ausgenommen).
-- Antrag: Formular 1131, ab 2026 mit Betriebserklärung 1131a/1131az. Kein
-  Sockelbetrag.
+- Antrag: **Formular 1131** (zoll.de führt daneben 1131_25 für Verwendungs­zeiträume
+  bis 31.12.2025). Kein Sockelbetrag. **Ein Formular „1131a" gibt es nicht** —
+  die frühere Angabe „Betriebserklärung 1131a/1131az" ließ sich am 19.08.2026 an
+  keiner Quelle bestätigen und ist gestrichen.
 
 ### 3.3 § 53a — teilweise Entlastung für die gekoppelte Erzeugung
 
@@ -226,6 +233,100 @@ entfallen und war 2024/2025 nicht verfügbar. Antrag: Formular 1135.
 
 Heizöl 15,34 €/1.000 l · Erdgas 1,38 €/MWh · Flüssiggas 15,15 €/1.000 kg,
 Sockelbetrag 250 €/Kalenderjahr.
+
+### 3.5 Aufteilung des Brennstoffs auf Strom und Wärme — es gibt sie nicht
+
+**Ergänzt am 19.08.2026** (Recherche zur Etappe E4, Quellen unten). Dieser Abschnitt
+berichtigt eine Annahme, die in 3.2 und in Abschnitt 5 dieses Dokuments stand.
+
+**Für ein motor- oder gasturbinenbetriebenes BHKW wird der Brennstoff nach § 53
+EnergieStG nicht auf Strom- und Wärmeerzeugung aufgeteilt.** Der gesamte dem Motor
+zugeführte Brennstoff ist entlastungsfähig; die ausgekoppelte Wärme mindert den
+Anspruch nicht.
+
+**§ 53 Abs. 2 Satz 1 EnergieStG:**
+
+> „Energieerzeugnisse gelten nur dann als zur Stromerzeugung verwendet, soweit sie in
+> der Stromerzeugungsanlage unmittelbar am Energieumwandlungsprozess teilnehmen."
+
+Beim Verbrennungsmotor tut das der komplette Brennstoff. Satz 2 nimmt ausdrücklich nur
+**Komponenten** aus — Dampferzeuger ohne Stromerzeugungsnutzen, nachgeschaltete
+Abluftbehandlung, Zusatzfeuerungen mit Wärmeauskopplung vor der Wärmekraftmaschine. Das
+ist eine anlagentechnische Abgrenzung, kein energetischer Quotient. Die
+**Dienstvorschrift Energieerzeugung** der Zollverwaltung sagt zum Schaubild des
+§ 53 Abs. 1 wörtlich: „Wärme – genutzt oder ungenutzt – wird nicht betrachtet".
+
+**Der einzige gesetzlich angeordnete „Anteil"** steht in § 53 Abs. 1 Satz 2 und meint
+die **mechanische** Energie an der Welle: Treibt derselbe Motor neben dem Generator
+zusätzlich etwa einen Verdichter, wird nur der auf die Stromerzeugung entfallende
+Anteil entlastet. Für ein Standard-BHKW ist das gegenstandslos; Formular 1131 fragt den
+Tatbestand in Zeile 9 als Ankreuzfeld ab.
+
+**Vorgeschrieben ist Messen, nicht Rechnen** — § 98 Abs. 1 Satz 1 EnergieStV:
+
+> „Zur Ermittlung der entlastungsfähigen Mengen sind die zur Stromerzeugung oder zur
+> gekoppelten Erzeugung von Kraft und Wärme eingesetzten Energieerzeugnisse und die
+> weiteren eingesetzten Brennstoffe und Hilfsenergie zu messen."
+
+Satz 2 lässt andere Ermittlungsmethoden zu, wenn Messung nicht oder nur mit
+unvertretbarem Aufwand möglich ist. Das amtliche **Formular 1131** verlangt in seinem
+Berechnungsteil ausschließlich **Art und Menge** des Energieerzeugnisses (Liter, kg,
+MWh, GJ) — kein Feld für Strommenge, Wärmemenge, elektrischen Wirkungsgrad,
+Stromkennzahl oder Nutzungsgrad. Die einzige geforderte Abgrenzung nennt die Anleitung
+zu Zeile 12: Aus Gasrechnungen ist herauszurechnen, was in **Heizkesseln,
+Spitzenlastkesseln, Kochstellen und Abluftanlagen** eingesetzt wurde — also **BHKW gegen
+Kessel**, nicht Strom gegen Wärme.
+
+**Was damit nicht gilt:**
+
+| Verfahren | Befund |
+|---|---|
+| Energetische Aufteilung `Brennstoff × Strom/(Strom+Wärme)` | im Energiesteuerrecht **nicht vorgesehen**; keine Fundstelle |
+| Finnische Methode, Stromverlustmethode, AGFW FW 308 | **Negativbefund** — in keiner geprüften Primärquelle des Energiesteuerrechts; sie gehören in die Emissionsbilanzierung |
+| **Stromkennzahl** | existiert im Energiesteuerrecht **nicht**; kommt in der Dienstvorschrift kein einziges Mal vor. Der Begriff stammt aus KWKG und Richtlinie 2012/27/EU |
+| Referenzwirkungsgrade der Richtlinie 2012/27/EU | nur für den **Hocheffizienz**nachweis, nicht für die Mengenermittlung |
+
+**Die einzige verordnungsrechtliche Aufteilungsformel überhaupt** ist § 98 Abs. 2
+EnergieStV und betrifft **Dampfmengen** an mehreren Entnahmestellen: Die eingesetzten
+Energieerzeugnisse sind „den Dampfentnahmestellen entsprechend der jeweils entnommenen
+Dampfmenge und ihres Anteils an der Gesamtdampferzeugung zuzurechnen."
+
+**Eine Wirkungsgradformel gibt es**, aber für einen anderen Zweck: Für **Mikro-KWK bis
+15 kW<sub>el</sub>** lässt die Dienstvorschrift (Abs. 88–91, gestützt auf § 98 Abs. 1
+Satz 2 EnergieStV, fachlich auf VDI 2077) eine Ersatzermittlung zu —
+`B_KWK = W_KWK / η̄_el × 1,11` bei Erdgas, ohne den Faktor 1,11 bei anderen
+Energieerzeugnissen. Sie liefert den **gesamten** Brennstoffeinsatz der KWK-Einheit,
+nicht einen Stromanteil; ihr Zweck ist die Abgrenzung gegen den Zusatzkessel bei
+Geräten ohne getrennte Gaszählung.
+
+**Der Faktor 1,11 ist die Hi/Ho-Umrechnung.** Er entspricht dem Verhältnis Brennwert zu
+Heizwert nach DIN V 18599-1 Tabelle B.1 und steht dort, weil **Erdgas steuerlich
+brennwertbezogen bemessen wird**. Wer den Satz von 5,50 €/MWh auf eine heizwertbezogene
+Menge anwendet, weist rund 10 % zu wenig aus — die Ergänzung zur Einheitenfalle in
+Abschnitt 3.1.
+
+**Nutzungsgrad — legaldefiniert, aber für § 53 ohne Bedeutung.** § 3 Abs. 3 EnergieStG:
+Quotient aus der Summe der genutzten mechanischen und thermischen Energie eines
+Kalenderjahres und der zugeführten Energie, auf **Heizwertbasis**. Maßgeblich für § 3
+(begünstigte Anlage, 60 %) und § 53a (70 %) — nicht für eine Mengenaufteilung nach § 53.
+
+**Belastbarkeit:** § 53 Abs. 1 Satz 2 und Abs. 2 EnergieStG, § 3 Abs. 3 EnergieStG und
+§ 98 EnergieStV sind Primärquellen (gesetze-im-internet.de, buzer.de, abgerufen
+19.08.2026). §§ 99b und 99c EnergieStV sind „(weggefallen)"; § 99a verlangt einen
+Nutzungsgrad-**Nachweis** und enthält keine Formel. Formular 1131 lag in der **Fassung
+2019** über einen Drittspiegel vor (energiewerkstatt.de) — die Feldstruktur 2026 kann
+abweichen: **markierte Lücke**. Die Dienstvorschrift Energieerzeugung lag in der Fassung
+vom **31.01.2014** vor (E-VSF N 09 2014 Nr. 29, gespiegelt über bhkw-infozentrum.de);
+eine neuere Fassung vom 16.12.2016 ist laut Sekundärquelle in Kraft, war aber nicht frei
+abrufbar — **markierte Lücke**. Die zitierten Kernaussagen decken sich wörtlich mit der
+Anleitung zu Formular 1131.
+
+> **Folge für die Software (Etappe E4).** Vorgabeverfahren ist der **volle
+> BHKW-Brennstoff**; die energetische Aufteilung bleibt als bewusst konservative Option
+> wählbar. Der Unterschied ist erheblich: An Projekt 1030 gemessen 26.876 € gegen
+> 11.832 € im Jahr 1 — Faktor 2,27. Einzelheiten in
+> [`W4_E4_Steuergutschriften_Protokoll.md`](WindowsFormsApplication1/Allgemein/Reporting/W4_E4_Steuergutschriften_Protokoll.md),
+> Abschnitt 2.
 
 ---
 
@@ -260,7 +361,7 @@ Unternehmensart (produzierendes Gewerbe, Land- und Forstwirtschaft).
 
 | Wert in `BHKW-WP-PLAN.XLSM` | heutiger Wert | Bewertung |
 |---|---|---|
-| Energiesteuer 5,50 €/MWh Gas | 5,50 €/MWh, als volle Entlastung § 53 wieder erreichbar, aber **nur auf den Stromanteil** | Zahl korrekt, Bezugsbasis fehlt |
+| Energiesteuer 5,50 €/MWh Gas | 5,50 €/MWh, als volle Entlastung § 53 wieder erreichbar, und zwar auf den **gesamten BHKW-Brennstoff** (Abschnitt 3.5) — bemessen brennwertbezogen | Zahl korrekt; die Abgrenzung ist BHKW gegen Kessel, nicht Strom gegen Wärme |
 | 61,35 €/MWh Öl | 61,35 € je **1.000 Liter**; § 53a Abs. 5: 40,35 €/1.000 l | **Einheit falsch**, Faktor ≈ 10 |
 | 4,40 €/MWh Flüssiggas | Flüssiggas wird je 1.000 kg besteuert (60,60 voll / 19,60 nach § 53a) | **nicht zuordenbar** |
 | Stromsteuer −0,50 €/MWh | 0,50 €/MWh ist die **Restbelastung**, nicht die Erstattung (20,00 €/MWh) | konzeptionelles Missverständnis |
@@ -280,11 +381,13 @@ Unternehmensart (produzierendes Gewerbe, Land- und Forstwirtschaft).
 
 ## 6 Punkte mit verbleibender Unsicherheit
 
-1. **§ 53 (Stromanteil) neben § 53a (Wärmeanteil)** — der Wortlaut
-   („vorbehaltlich") spricht für eine anteilige Aufteilung, die Kommentarliteratur
-   durchgängig für ein Entweder-oder. Entscheidet über die Größenordnung der
-   Gutschrift; vor produktivem Einsatz mit dem Hauptzollamt klären. **Bis dahin
-   als konfigurierbare Option modelliert.**
+1. **§ 53 neben § 53a** — der Wortlaut („vorbehaltlich") spricht für eine
+   anteilige Anwendung, die Kommentarliteratur und die Dienstvorschrift (Abs. 15)
+   durchgängig für ein Entweder-oder. **Deutlich entschärft durch Abschnitt 3.5:**
+   Da § 53 den gesamten BHKW-Brennstoff erfasst, gibt es keinen „Wärmeanteil", der
+   für § 53a übrig bliebe — die Frage ist damit eher akademisch, aber vor
+   produktivem Einsatz weiterhin mit dem Hauptzollamt zu klären. **Als Auswahl
+   modelliert (`KEINE` / `PARAGRAF_53` / `PARAGRAF_53A`), nicht als Kombination.**
 2. **§ 53a Abs. 3, Erdgassatz 4,96 €/MWh** für das produzierende Gewerbe liegt
    über dem allgemeinen Satz von 4,42 €/MWh — am Volltext gegenlesen.
 3. **Ausschluss fossiler flüssiger Brennstoffe** aus der KWKG-Förderung: nur aus
@@ -547,13 +650,19 @@ beginnt.
 ## 9 Quellen (abgerufen 18.08.2026)
 
 **Gesetzestexte** — gesetze-im-internet.de: KWKG 2025 §§ 7, 8, 9 und Stammfassung;
-StromStG §§ 2, 3, 9; StromStV § 12b; EnergieStG §§ 2, 53, 53a, 53b (weggefallen),
-54. Fassungshistorie und §§ 6, 35 KWKG über buzer.de.
+StromStG §§ 2, 3, 9; StromStV § 12b; EnergieStG §§ 2, 3, 53, 53a, 53b (weggefallen),
+54; EnergieStV §§ 98, 99, 99a, 99b und 99c (die beiden letzten „weggefallen").
+Fassungshistorie und §§ 6, 35 KWKG über buzer.de, ebenso die Volltexte zu § 53
+EnergieStG und § 98 EnergieStV *(nachgetragen 19.08.2026)*.
 
 **Behörden** — BAFA: Zulassung von KWK-Anlagen, Pressemitteilung zur
 KWKG-Änderung zum 01.04.2025. Zoll: Steuerentlastung nach § 9b StromStG,
-Steuerentlastung für die Stromerzeugung, teilweise Steuerentlastung für
-KWK-Anlagen.
+Steuerentlastung für die Stromerzeugung, Steuerentlastungsvoraussetzungen,
+teilweise und vollständige Steuerentlastung für KWK-Anlagen.
+*(Nachgetragen 19.08.2026:)* **Dienstvorschrift Energieerzeugung**, E-VSF N 09 2014
+Nr. 29 vom 31.01.2014, gespiegelt über bhkw-infozentrum.de — eine neuere Fassung
+(16.12.2016) war nicht frei abrufbar. **Formular 1131** („Antrag auf Steuerentlastung
+für die Stromerzeugung"), Fassung 2019, gespiegelt über energiewerkstatt.de.
 
 **Fachkommentare** — Energie und Recht (17.03.2026), Baker Tilly (27.01.2026),
 EY (28.10.2025), LHM Energiesteuer (04.01. und 18.01.2026), BBH-Blog

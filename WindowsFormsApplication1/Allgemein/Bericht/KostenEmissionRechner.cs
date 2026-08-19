@@ -29,6 +29,11 @@ namespace WindowsFormsApplication1
     ///    Brennstoff-Kategorien Gas/Öl/Koks/Kohle/Sonstige (Tab_BrennstoffKategorien),
     ///    ausgenommen „Biogas“. Näherung: Bio-Heizöl-Blends zählen voll als fossil,
     ///    unbekannte Träger gelten als pflichtig (konservativ); Quoten erst mit W3.
+    ///  - LEITENTSCHEIDUNG L13: Zusätzlich werden die MENGEN biogener Träger geführt
+    ///    (BiogenMengeMWh, BiogenBehgMengeMWh). Bewusst Mengen und keine Emissionen —
+    ///    ob biogenes Verbrennungs-CO₂ angesetzt wird und ob der Nullansatz des § 8
+    ///    EBeV 2030 zulässig ist, entscheidet die gewählte Konvention, nicht dieser
+    ///    Rechner. Er bleibt dadurch unverändert in dem, was er bisher lieferte.
     /// </summary>
     public static class KostenEmissionRechner
     {
@@ -43,6 +48,7 @@ namespace WindowsFormsApplication1
             {
                 v.Energiekosten = null; v.StromkostenNetz = null;
                 v.CO2Gesamt = null; v.CO2Spezifisch = null; v.CO2Brennstoff = null;
+                v.BiogenMengeMWh = 0; v.BiogenBehgMengeMWh = 0;
             }
         }
 
@@ -69,12 +75,21 @@ namespace WindowsFormsApplication1
 
             // ---------------- Brennstoffe: Kosten + CO₂ ----------------
             double brennstoffKosten = 0, brennstoffCO2t = 0, behgCO2t = 0;
+            double biogenMWh = 0, biogenBehgMWh = 0;                  // L13
             bool kostenVollstaendig = verbrauchOhneTraeger <= 0;
             bool co2Vollstaendig = verbrauchOhneTraeger <= 0;
 
             foreach (KeyValuePair<int, double> kv in verbrauchJeTraeger)
             {
                 TraegerInfo info = LadeTraeger(v.IdProjekt, kv.Key);
+
+                // L13: die MENGE biogener Träger — unabhängig davon, ob ein Faktor
+                // gepflegt ist. Die Konventionsfrage entscheidet der Aufrufer.
+                if (info.Biogen)
+                {
+                    biogenMWh += kv.Value;
+                    if (info.BehgBiogen) biogenBehgMWh += kv.Value;
+                }
 
                 // Kosten: mengenbasiert (Heizwert vorhanden) oder Direktabrechnung je kWh.
                 if (info.PreisArbeit.HasValue)
@@ -123,6 +138,8 @@ namespace WindowsFormsApplication1
             double netzCO2t = netzbezugMWh * stromCO2 / 1000.0;
 
             // ---------------- Kennzahlen setzen ----------------
+            v.BiogenMengeMWh = biogenMWh;             // L13 — reine Mengen, keine Wertung
+            v.BiogenBehgMengeMWh = biogenBehgMWh;
             v.StromkostenNetz = stromKosten;
             v.Energiekosten = (kostenVollstaendig && stromKosten.HasValue)
                 ? (double?)(brennstoffKosten + stromKosten.Value)
@@ -161,6 +178,13 @@ namespace WindowsFormsApplication1
             public double? CO2;           // g/kWh (verifiziert, s. Klassenkommentar)
             public double? EffHi;         // kWh je Abrechnungseinheit (null/0 = Direktabrechnung)
             public bool BehgPflichtig = true;   // fossiler Brennstoff (Phase 7/W2)
+
+            /// <summary>L13 — biogener Träger (Holz, Pellets, Rapsöl, Tierische Fette, Biogas).</summary>
+            public bool Biogen;
+
+            /// <summary>L13 — biogener Träger, der zugleich BEHG-Brennstoff ist
+            /// (flüssige Biomasse). Nur hier wirkt ein fehlender Nachhaltigkeitsnachweis.</summary>
+            public bool BehgBiogen;
         }
 
         private static TraegerInfo LadeTraeger(int idProjekt, int carrierId)
@@ -232,6 +256,12 @@ namespace WindowsFormsApplication1
                         int k2 = (int)kat.Value;
                         info.BehgPflichtig = (k2 == 1 || k2 == 2 || k2 == 3 || k2 == 4 || k2 == 11)
                                              && !bez.Trim().Equals("Biogas", StringComparison.OrdinalIgnoreCase);
+
+                        // L13 — dieselbe Kategorieregel, EINE Stelle für beide Rechner
+                        // (BilanzKonvention). Die Einstufung ist reine Auskunft; sie
+                        // ändert an dieser Rechnung nichts.
+                        info.Biogen = BilanzKonvention.IstBiogen(k2, bez);
+                        info.BehgBiogen = info.Biogen && BilanzKonvention.IstBehgBiogen(k2);
                     }
                 }
             }

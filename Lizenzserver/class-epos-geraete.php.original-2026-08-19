@@ -1,0 +1,137 @@
+<?php
+/**
+ * Geräte-Registrierung (eigene Tabelle).
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+class Epos_Geraete {
+
+	public static function tabelle() {
+		global $wpdb;
+		return $wpdb->prefix . 'epos_geraete';
+	}
+
+	public static function tabelle_anlegen() {
+		global $wpdb;
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+
+		$tabelle = self::tabelle();
+		$charset = $wpdb->get_charset_collate();
+
+		dbDelta( "CREATE TABLE {$tabelle} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			lizenz_id BIGINT UNSIGNED NOT NULL,
+			user_id BIGINT UNSIGNED NOT NULL,
+			geraete_hash VARCHAR(128) NOT NULL,
+			token_id CHAR(36) NOT NULL,
+			name VARCHAR(190) NOT NULL DEFAULT '',
+			status VARCHAR(20) NOT NULL DEFAULT 'aktiv',
+			aktiviert_am DATETIME NOT NULL,
+			letzte_pruefung DATETIME NULL,
+			PRIMARY KEY  (id),
+			KEY lizenz_id (lizenz_id),
+			KEY user_id (user_id),
+			KEY token_id (token_id)
+		) {$charset};" );
+	}
+
+	public static function finde_nach_token( $token_id ) {
+		global $wpdb;
+		$tabelle = self::tabelle();
+		return $wpdb->get_row( $wpdb->prepare(
+			"SELECT * FROM {$tabelle} WHERE token_id = %s LIMIT 1", $token_id
+		) );
+	}
+
+	public static function finde( $lizenz_id, $user_id, $geraete_hash ) {
+		global $wpdb;
+		$tabelle = self::tabelle();
+		return $wpdb->get_row( $wpdb->prepare(
+			"SELECT * FROM {$tabelle} WHERE lizenz_id = %d AND user_id = %d AND geraete_hash = %s LIMIT 1",
+			$lizenz_id, $user_id, $geraete_hash
+		) );
+	}
+
+	public static function je_benutzer( $lizenz_id, $user_id, $nur_aktive = true ) {
+		global $wpdb;
+		$tabelle = self::tabelle();
+		$sql     = "SELECT * FROM {$tabelle} WHERE lizenz_id = %d AND user_id = %d";
+		if ( $nur_aktive ) {
+			$sql .= " AND status = 'aktiv'";
+		}
+		return $wpdb->get_results( $wpdb->prepare( $sql, $lizenz_id, $user_id ) );
+	}
+
+	public static function je_lizenz( $lizenz_id ) {
+		global $wpdb;
+		$tabelle = self::tabelle();
+		return $wpdb->get_results( $wpdb->prepare(
+			"SELECT * FROM {$tabelle} WHERE lizenz_id = %d ORDER BY user_id, aktiviert_am", $lizenz_id
+		) );
+	}
+
+	public static function registrieren( $lizenz_id, $user_id, $geraete_hash, $name = '' ) {
+		global $wpdb;
+		$wpdb->insert(
+			self::tabelle(),
+			array(
+				'lizenz_id'    => $lizenz_id,
+				'user_id'      => $user_id,
+				'geraete_hash' => $geraete_hash,
+				'token_id'     => wp_generate_uuid4(),
+				'name'         => sanitize_text_field( $name ),
+				'status'       => 'aktiv',
+				'aktiviert_am' => current_time( 'mysql', true ),
+			),
+			array( '%d', '%d', '%s', '%s', '%s', '%s', '%s' )
+		);
+		return self::finde( $lizenz_id, $user_id, $geraete_hash );
+	}
+
+	public static function reaktivieren( $id ) {
+		global $wpdb;
+		$wpdb->update(
+			self::tabelle(),
+			array( 'status' => 'aktiv', 'token_id' => wp_generate_uuid4(), 'aktiviert_am' => current_time( 'mysql', true ) ),
+			array( 'id' => $id ),
+			array( '%s', '%s', '%s' ),
+			array( '%d' )
+		);
+	}
+
+	public static function pruefung_vermerken( $id ) {
+		global $wpdb;
+		$wpdb->update(
+			self::tabelle(),
+			array( 'letzte_pruefung' => current_time( 'mysql', true ) ),
+			array( 'id' => $id ),
+			array( '%s' ),
+			array( '%d' )
+		);
+	}
+
+	public static function deaktivieren( $id ) {
+		global $wpdb;
+		$wpdb->update(
+			self::tabelle(),
+			array( 'status' => 'deaktiviert' ),
+			array( 'id' => $id ),
+			array( '%s' ),
+			array( '%d' )
+		);
+	}
+
+	public static function deaktiviere_benutzer( $lizenz_id, $user_id ) {
+		global $wpdb;
+		$wpdb->update(
+			self::tabelle(),
+			array( 'status' => 'deaktiviert' ),
+			array( 'lizenz_id' => $lizenz_id, 'user_id' => $user_id ),
+			array( '%s' ),
+			array( '%d', '%d' )
+		);
+	}
+}

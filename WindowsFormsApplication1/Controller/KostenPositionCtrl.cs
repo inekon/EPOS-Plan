@@ -37,6 +37,113 @@ namespace WindowsFormsApplication1
         /// <summary>Toleranz des Betragsvergleichs — ein halber Cent.</summary>
         private const double EPS = 0.005;
 
+        // =================================================================== Schemavorsorge
+
+        /// <summary>
+        /// Merker, damit die Vorsorge je Programmlauf nur einmal das Schema liest.
+        /// <c>null</c> = noch nicht geprüft.
+        /// </summary>
+        private static bool? _spaltenBereit;
+
+        /// <summary>
+        /// Stellt die fünf Spalten aus Migrationsschritt 19
+        /// (<see cref="SchemaKatalog.Schritt19_Kostenarten"/>) sicher — die tolerante
+        /// Rückfallebene für den Fall, dass die Migration nie angestoßen wurde, und
+        /// zugleich die Auskunft, ob die Spalten überhaupt gelesen werden dürfen.
+        /// </summary>
+        /// <returns>
+        /// true, wenn <c>Tab_ProjektWerte</c> die fünf Spalten jetzt führt. false heißt:
+        /// Der Aufrufer muss ohne sie auskommen — also genau so rechnen wie vor E3.
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum es sie braucht.</b> <see cref="SchemaKatalog.Alle"/> ist ausdrücklich
+        /// der Umfang der SIMULATIONS-Eingabespalten; <c>Tab_ProjektWerte</c> gehört zum
+        /// Kostenmodul und steht deshalb nicht darin (Begründung dort). Dasselbe Muster
+        /// wie <c>HeizkesselStammCtrl.StelleSpaltenSicher</c> für Schritt 15 und
+        /// <c>StromAufschlagCtrl.StelleSpaltenSicher</c> für Schritt 12.
+        /// </para>
+        /// <para>
+        /// <b>Ohne Dialog, Schema je Tabelle.</b> Eine Vorsorge ist kein Bedienschritt
+        /// und darf keine MessageBox zeigen — deshalb eigene <see cref="OleDbConnection"/>
+        /// statt <c>DataRepository.ExecuteSQL</c>, das seine Fehler selbst als Dialog
+        /// zeigt.
+        /// </para>
+        /// <para>
+        /// <b>Keine Vorbelegung nötig.</b> Anders als bei Schritt 15 muss eine frisch
+        /// angelegte Spalte hier nicht gefüllt werden: Die Leseseite behandelt eine leere
+        /// <c>Bemessung</c> wie <see cref="DbWerte.BEMESSUNG_BETRAG"/>. Die Vorbelegung
+        /// aus Schritt 19b ist Bequemlichkeit für die Pflegemaske, keine Bedingung der
+        /// Rechnung.
+        /// </para>
+        /// </remarks>
+        internal static bool StelleSpaltenSicher()
+        {
+            if (_spaltenBereit.HasValue) return _spaltenBereit.Value;
+
+            bool ok = false;
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+
+                    HashSet<string> vorhanden = SpaltenNamen(conn, SchemaKatalog.TAB_PROJEKTWERTE);
+                    if (vorhanden != null)
+                    {
+                        ok = true;
+                        foreach (SchemaSpalte s in SchemaKatalog.Schritt19_Kostenarten)
+                        {
+                            if (vorhanden.Contains(s.Name)) continue;
+                            try
+                            {
+                                using (OleDbCommand cmd = new OleDbCommand(
+                                    "ALTER TABLE [" + s.Tabelle + "] ADD COLUMN [" + s.Name + "] " +
+                                    s.TypDefinition, conn))
+                                    cmd.ExecuteNonQuery();
+                            }
+                            catch (Exception ex)
+                            {
+                                Protokoll(s.Tabelle + "." + s.Name + ": " + ex.Message);
+                                ok = false;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) { Protokoll(ex.Message); ok = false; }
+
+            _spaltenBereit = ok;
+            return ok;
+        }
+
+        /// <summary>
+        /// Die Spaltennamen einer Tabelle, oder <c>null</c>, wenn es die Tabelle nicht
+        /// gibt bzw. das Schema nicht lesbar ist.
+        /// </summary>
+        private static HashSet<string> SpaltenNamen(OleDbConnection conn, string tabelle)
+        {
+            try
+            {
+                DataTable cols = conn.GetOleDbSchemaTable(
+                    OleDbSchemaGuid.Columns, new object[] { null, null, tabelle, null });
+
+                if (cols == null || cols.Rows.Count == 0) return null;
+
+                var namen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (DataRow r in cols.Rows) namen.Add(Convert.ToString(r["COLUMN_NAME"]));
+                return namen;
+            }
+            catch { return null; }
+        }
+
+        /// <summary>Protokolliert einen Vorsorge-Fehlschlag, ohne den Anwender zu stören.</summary>
+        private static void Protokoll(string meldung)
+        {
+            try { Console.WriteLine("KostenPositionCtrl.StelleSpaltenSicher: " + meldung); }
+            catch { }
+        }
+
         // ------------------------------------------------------------------- Katalog
 
         /// <summary>
@@ -391,6 +498,178 @@ namespace WindowsFormsApplication1
             double max = 0;
             foreach (double w in werte) if (w > max) max = w;
             return max;
+        }
+
+        // ============================================== Kostenart und Bemessung (E3)
+
+        /// <summary>
+        /// Die Zusatzangaben einer Kostenposition aus Migrationsschritt 19. Alle Felder
+        /// sind <c>null</c>-fähig: „nicht gepflegt" ist eine eigene Aussage und wird nie
+        /// als 0 ausgedrückt.
+        /// </summary>
+        internal sealed class Zusatz
+        {
+            /// <summary>Kostenart nach VDI 2067 (<c>DbWerte.KOSTENART_*</c>), leer = nicht eingeordnet.</summary>
+            public string Kostenart = "";
+
+            /// <summary>
+            /// Bemessungsart (<c>DbWerte.BEMESSUNG_*</c>). LEER GILT ALS
+            /// <see cref="DbWerte.BEMESSUNG_BETRAG"/> — das ist die Klammer, die eine
+            /// nicht migrierte Datenbank genauso rechnen lässt wie vor Etappe E3.
+            /// </summary>
+            public string Bemessung = DbWerte.BEMESSUNG_BETRAG;
+
+            /// <summary>true = Erlösposition; der Betrag darf negativ sein.</summary>
+            public bool IstErloes;
+
+            /// <summary>Bezugsmenge der Bemessung, null = nicht gepflegt.</summary>
+            public double? Menge;
+
+            /// <summary>Satz der Bemessung, null = nicht gepflegt.</summary>
+            public double? Einheitpreis;
+        }
+
+        /// <summary>
+        /// Liest die Zusatzangaben aller Positionen eines Projekts, Schlüssel ist
+        /// <c>Tab_ProjektWerte.ID</c>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Eigene Abfrage statt Erweiterung von <c>Abfrage_Kostenfaktoren</c>.</b> Die
+        /// gespeicherte Access-Abfrage liegt AUSSERHALB des Repos; sie zu ändern erreicht
+        /// keine Bestandsinstallation (dieselbe Begründung, mit der schon
+        /// <c>Abfrage_KostenKomponenten</c> durch <c>Form_Kosten.LiesKomponentenSummen</c>
+        /// abgelöst wurde). Die fünf neuen Felder kommen deshalb über einen zweiten,
+        /// direkten Zugriff auf <c>Tab_ProjektWerte</c> und werden über die ID
+        /// zusammengeführt.
+        /// </remarks>
+        internal static Dictionary<int, Zusatz> LiesZusatz(int projektID, int kategorieID)
+        {
+            var map = new Dictionary<int, Zusatz>();
+            if (!StelleSpaltenSicher()) return map;
+
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID, [" + SchemaKatalog.SPALTE_PW_KOSTENART + "], [" +
+                    SchemaKatalog.SPALTE_PW_BEMESSUNG + "], [" +
+                    SchemaKatalog.SPALTE_PW_IST_ERLOES + "], [" +
+                    SchemaKatalog.SPALTE_PW_MENGE + "], [" +
+                    SchemaKatalog.SPALTE_PW_EINHEITPREIS + "] " +
+                    "FROM " + SchemaKatalog.TAB_PROJEKTWERTE +
+                    " WHERE ProjektID = ? AND KategorieID = ?",
+                    new OleDbParameter("@p", projektID),
+                    new OleDbParameter("@k", kategorieID));
+
+                if (dt == null) return map;
+                foreach (DataRow r in dt.Rows)
+                {
+                    if (r["ID"] == DBNull.Value) continue;
+                    map[Convert.ToInt32(r["ID"])] = AusZeile(r);
+                }
+            }
+            catch { }
+            return map;
+        }
+
+        /// <summary>Zusatzangaben einer einzelnen Position (nie null).</summary>
+        internal static Zusatz LiesZusatzNachId(int positionsID)
+        {
+            var z = new Zusatz();
+            if (positionsID <= 0 || !StelleSpaltenSicher()) return z;
+
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT [" + SchemaKatalog.SPALTE_PW_KOSTENART + "], [" +
+                    SchemaKatalog.SPALTE_PW_BEMESSUNG + "], [" +
+                    SchemaKatalog.SPALTE_PW_IST_ERLOES + "], [" +
+                    SchemaKatalog.SPALTE_PW_MENGE + "], [" +
+                    SchemaKatalog.SPALTE_PW_EINHEITPREIS + "] " +
+                    "FROM " + SchemaKatalog.TAB_PROJEKTWERTE + " WHERE ID = ?",
+                    new OleDbParameter("@id", positionsID));
+                if (dt != null && dt.Rows.Count > 0) return AusZeile(dt.Rows[0]);
+            }
+            catch { }
+            return z;
+        }
+
+        /// <summary>
+        /// Baut die Zusatzangaben aus einer Datenzeile. LEERE <c>Bemessung</c> wird zu
+        /// <see cref="DbWerte.BEMESSUNG_BETRAG"/> — die eine Stelle, an der die
+        /// Rückwärtsverträglichkeit festgeschrieben ist.
+        /// </summary>
+        private static Zusatz AusZeile(DataRow r)
+        {
+            var z = new Zusatz();
+
+            z.Kostenart = Feldtext(r, SchemaKatalog.SPALTE_PW_KOSTENART);
+
+            string bem = Feldtext(r, SchemaKatalog.SPALTE_PW_BEMESSUNG);
+            z.Bemessung = string.IsNullOrEmpty(bem) ? DbWerte.BEMESSUNG_BETRAG : bem;
+
+            object e = Feld(r, SchemaKatalog.SPALTE_PW_IST_ERLOES);
+            z.IstErloes = e != null && e != DBNull.Value && Convert.ToBoolean(e);
+
+            z.Menge = Feldzahl(r, SchemaKatalog.SPALTE_PW_MENGE);
+            z.Einheitpreis = Feldzahl(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS);
+            return z;
+        }
+
+        private static object Feld(DataRow r, string spalte)
+        {
+            try { return r.Table.Columns.Contains(spalte) ? r[spalte] : null; }
+            catch { return null; }
+        }
+
+        private static string Feldtext(DataRow r, string spalte)
+        {
+            object o = Feld(r, spalte);
+            return (o == null || o == DBNull.Value) ? "" : Convert.ToString(o).Trim();
+        }
+
+        private static double? Feldzahl(DataRow r, string spalte)
+        {
+            object o = Feld(r, spalte);
+            if (o == null || o == DBNull.Value) return null;
+            try { return Convert.ToDouble(o); }
+            catch { return null; }
+        }
+
+        /// <summary>
+        /// Schreibt Betrag UND Zusatzangaben einer vorhandenen Position in EINEM
+        /// <c>UPDATE</c> — Betrag und Herleitung dürfen nie auseinanderlaufen.
+        /// Fehlen die Spalten (nicht migrierte Datenbank), wird nur der Betrag gesetzt.
+        /// </summary>
+        internal static bool SetzeBetragMitZusatz(int positionsID, double betrag, Zusatz z)
+        {
+            if (positionsID <= 0) return false;
+            if (z == null || !StelleSpaltenSicher()) return SetzeBetragNachId(positionsID, betrag);
+
+            return DataRepository.ExecuteSQL(
+                "UPDATE " + SchemaKatalog.TAB_PROJEKTWERTE + " SET EingegebenerWert = ?, [" +
+                SchemaKatalog.SPALTE_PW_KOSTENART + "] = ?, [" +
+                SchemaKatalog.SPALTE_PW_BEMESSUNG + "] = ?, [" +
+                SchemaKatalog.SPALTE_PW_IST_ERLOES + "] = ?, [" +
+                SchemaKatalog.SPALTE_PW_MENGE + "] = ?, [" +
+                SchemaKatalog.SPALTE_PW_EINHEITPREIS + "] = ? WHERE ID = ?",
+                new OleDbParameter("@v", betrag),
+                new OleDbParameter("@a", (object)(z.Kostenart ?? "") ),
+                new OleDbParameter("@b", (object)(z.Bemessung ?? DbWerte.BEMESSUNG_BETRAG)),
+                new OleDbParameter("@e", OleDbType.Boolean) { Value = z.IstErloes },
+                ZahlOderNull("@m", z.Menge),
+                ZahlOderNull("@p", z.Einheitpreis),
+                new OleDbParameter("@id", positionsID));
+        }
+
+        /// <summary>
+        /// <c>DOUBLE</c>-Parameter, der bei <c>null</c> auch NULL schreibt — „nicht
+        /// gepflegt" bleibt damit von „gepflegt und null" unterscheidbar.
+        /// </summary>
+        private static OleDbParameter ZahlOderNull(string name, double? wert)
+        {
+            var p = new OleDbParameter(name, OleDbType.Double);
+            p.Value = wert.HasValue ? (object)wert.Value : DBNull.Value;
+            return p;
         }
     }
 }

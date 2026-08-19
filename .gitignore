@@ -381,3 +381,7 @@ dev/
 
 # Editor-Sicherungskopien
 *.bak
+
+# Zugangsdaten - niemals versionieren (Schluessel gehoert per DPAPI in %AppData%\wp-plan)
+api_gemini.txt
+*.apikey
