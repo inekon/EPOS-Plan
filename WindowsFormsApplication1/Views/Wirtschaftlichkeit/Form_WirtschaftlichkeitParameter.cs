@@ -29,6 +29,9 @@ namespace WindowsFormsApplication1
         // Steuerelemente — null, wenn die zugehörige Gruppe ausgeblendet ist.
         private NumericUpDown numZins, numJahre, numPreisE, numPreisB, numCO2;
         private NumericUpDown numEinspeisung;
+        // ETAPPE E5 — Strom: KWK-Einspeisevergütung und Aufschlagsschalter.
+        private NumericUpDown numEinspeisungKWK;
+        private CheckBox chkAufschlaege;
         private NumericUpDown numKwkg, numKwkgEinsp, numVbhDeckel, numVbhKontingent, numAbschlagNeg;
         private DateTimePicker dtStichtag, dtInbetriebnahme;
         private ComboBox cbPark;
@@ -36,6 +39,8 @@ namespace WindowsFormsApplication1
         private ComboBox cbUnternehmensart, cbEnergiesteuer, cbAufteilung;
         private CheckBox chkRaeumlich, chkHocheffizienz;
         private NumericUpDown numNutzungsgrad;
+        // ETAPPE E6 — Einstieg in die Angaben je BHKW-Modul.
+        private Button btnModule;
         private Button btnOk, btnAbbrechen;
 
         /// <summary>true, wenn gespeichert wurde (Aufrufer rechnet dann neu).</summary>
@@ -62,12 +67,22 @@ namespace WindowsFormsApplication1
             numPreisE = Zeile("Preissteigerung Energie [%/a]:", ref y, -10m, 20m, 2, (decimal)_parameter.PreissteigerungEnergie, 0.1m);
             numPreisB = Zeile("Preissteigerung Betrieb [%/a]:", ref y, -10m, 20m, 2, (decimal)_parameter.PreissteigerungBetrieb, 0.1m);
 
-            // ---------------- Photovoltaik ----------------
-            if (_erzeuger.Photovoltaik)
-            {
-                Gruppe("Photovoltaik", ref y);
-                numEinspeisung = Zeile("Einspeisevergütung PV [€/kWh]:", ref y, 0m, 2m, 4, (decimal)_parameter.Einspeiseverguetung, 0.001m);
-            }
+            // ---------------- Strom (ETAPPE E5, immer sichtbar) ----------------
+            //
+            // BESTANDSMANGEL, hier behoben: Die Einspeisevergütung stand bis E5 in der
+            // PHOTOVOLTAIK-Gruppe und war ohne PV im Projekt unsichtbar. Eingespeister
+            // BHKW-Strom bekam deshalb gar keinen Strompreis, sondern nur den
+            // KWK-Zuschlag — ökonomisch grob falsch. Beide Vergütungen stehen jetzt in
+            // einer eigenen, immer sichtbaren Gruppe, und der KWK-Strom hat einen
+            // eigenen Preis (er liegt real meist über dem PV-Preis).
+            Gruppe("Strom — Einspeisung und Bezug", ref y);
+            numEinspeisung = Zeile("Einspeisevergütung PV [€/kWh]:", ref y,
+                                   0m, 2m, 4, (decimal)_parameter.Einspeiseverguetung, 0.001m);
+            numEinspeisungKWK = Zeile("Einspeisevergütung KWK-Strom [€/kWh]:", ref y,
+                                      0m, 2m, 4, (decimal)(_parameter.EinspeiseverguetungKWK ?? 0), 0.001m);
+            chkAufschlaege = SchalterZeile("Aufschläge (Netzentgelt, Umlagen, Stromsteuer, " +
+                                           "Konzession, Vertrieb) berücksichtigen",
+                                           ref y, _parameter.AufschlaegeAnwenden);
 
             // ---------------- BHKW — KWKG 2025 ----------------
             if (_erzeuger.Bhkw)
@@ -78,8 +93,25 @@ namespace WindowsFormsApplication1
                 numVbhDeckel = Zeile("Vbh-Deckel-Override [h/a]:", ref y, 0m, 8760m, 0, (decimal)_parameter.KwkgVbhJahresdeckel, 100m);
                 numVbhKontingent = Zeile("Vbh-Kontingent gesamt [h]:", ref y, 0m, 200000m, 0, (decimal)_parameter.KwkgVbhKontingent, 1000m);
                 numAbschlagNeg = Zeile("Abschlag Negativstunden [%]:", ref y, 0m, 50m, 1, (decimal)_parameter.KwkgAbschlagNegativ, 0.5m);
-                dtStichtag = DatumZeile("Stichtag (Bestellung/Genehmigung):", ref y, _parameter.KwkgStichtag);
-                dtInbetriebnahme = DatumZeile("Geplante Inbetriebnahme:", ref y, _parameter.KwkgInbetriebnahme);
+                // ETAPPE E6: Beide Daten sind seit E6 ausdrücklich eine VORGABE für alle
+                // Anlagen ohne eigenen Wert — § 6 KWKG stellt auf die einzelne Anlage ab,
+                // und dasselbe Datum entscheidet zugleich über Neuanlage/Bestandsanlage
+                // und damit über den Heizöl-Ausschluss. Die Beschriftung sagt das jetzt.
+                dtStichtag = DatumZeile("Stichtag, Vorgabe je Anlage:", ref y, _parameter.KwkgStichtag);
+                dtInbetriebnahme = DatumZeile("Inbetriebnahme, Vorgabe je Anlage:", ref y, _parameter.KwkgInbetriebnahme);
+
+                // ETAPPE E6 — die Angaben JE MODUL. Der Zuschlag wird seit E6 je Anlage
+                // gerechnet; die Felder darüber sind die Vorgabe für alle Anlagen ohne
+                // eigenen Wert.
+                btnModule = new Button
+                {
+                    Location = new Point(28, y),
+                    Size = new Size(402, 28),
+                    Text = "⚙ Werte je BHKW-Modul (Satz, Vbh, Kontingent, Datum)…"
+                };
+                btnModule.Click += new EventHandler(btnModule_Click);
+                this.Controls.Add(btnModule);
+                y += 36;
 
                 // ---------------- BHKW — Energie- und Stromsteuer (Etappe E4) --------
                 // Die gesetzlichen Bedingungen werden ERFASST statt angenommen. Jeder
@@ -164,7 +196,11 @@ namespace WindowsFormsApplication1
                 "Die Parameter gelten für Stamm und alle Varianten der Vergleichsgruppe; " +
                 "Erzeuger-Gruppen erscheinen nur, wenn der Erzeugertyp in der Gruppe " +
                 "vorkommt (ausgeblendete Werte bleiben erhalten). Energie- und Strompreise " +
-                "kommen aus der Kostenmaske.";
+                "kommen aus der Kostenmaske." +
+                " Aufschläge: Vorgabe AUS — eingeschaltet steigen die Energiekosten " +
+                "typischerweise um rund ein Drittel (Vorschlagswerte in Summe " +
+                "11,746 ct/kWh). Gepflegt werden sie je Energieträger in der Kostenmaske; " +
+                "hier wird nur entschieden, ob die Wirtschaftlichkeit sie ansetzt.";
             if (_erzeuger.Bhkw)
                 hinweis += " KWKG: Deckel-Override 0 = degressive Vbh-Staffel 2025 ab dem " +
                            "Inbetriebnahmejahr; förderfähig nur mit Stichtag bis 31.12.2026 " +
@@ -351,11 +387,18 @@ namespace WindowsFormsApplication1
             _parameter.PreissteigerungEnergie = (double)numPreisE.Value;
             _parameter.PreissteigerungBetrieb = (double)numPreisB.Value;
 
+            // Strom (E5): immer sichtbar, deshalb immer übernommen. Ein KWK-Preis von 0
+            // heißt „nicht gepflegt" — die Unterscheidung ist wichtig, weil eine
+            // gepflegte 0 sonst wie ein Preis wirkte und der Hinweis nicht mehr sagen
+            // könnte, warum es keinen Erlös gibt.
+            _parameter.Einspeiseverguetung = (double)numEinspeisung.Value;
+            _parameter.EinspeiseverguetungKWK = numEinspeisungKWK.Value > 0
+                                              ? (double?)numEinspeisungKWK.Value : null;
+            _parameter.AufschlaegeAnwenden = chkAufschlaege.Checked;
+
             // Erzeuger-Gruppen: nur übernehmen, wenn die Gruppe sichtbar war —
             // ausgeblendete Werte bleiben unverändert (kein stilles Nullen).
             // Guard = dieselben Flags, die auch den Aufbau steuern (Review Phase 10).
-            if (_erzeuger.Photovoltaik)
-                _parameter.Einspeiseverguetung = (double)numEinspeisung.Value;
 
             if (_erzeuger.Bhkw)
             {
@@ -402,6 +445,26 @@ namespace WindowsFormsApplication1
             Gespeichert = true;
             this.DialogResult = DialogResult.OK;
             Close();
+        }
+
+        /// <summary>
+        /// ETAPPE E6 — öffnet die Angaben je BHKW-Modul. Die Projektwerte dieses Dialogs
+        /// bleiben unberührt; der Modul-Dialog schreibt ausschließlich nach
+        /// <c>Tab_Energieanlagen</c> und liest die Projektangaben nur als Vorgabe.
+        /// </summary>
+        private void btnModule_Click(object sender, EventArgs e)
+        {
+            // Die beiden Daten dieses Dialogs sind die VORGABE des Modul-Dialogs und
+            // gehen in seinen Katalogvorschlag ein. Sie werden deshalb vorher aus den
+            // Steuerelementen übernommen — sonst zeigte der Vorschlag den zuletzt
+            // GESPEICHERTEN Stand, während auf dem Bildschirm schon ein anderer steht.
+            // Gespeichert wird dadurch nichts; das tut erst „Speichern".
+            _parameter.KwkgStichtag = dtStichtag.Checked ? (DateTime?)dtStichtag.Value.Date : null;
+            _parameter.KwkgInbetriebnahme = dtInbetriebnahme.Checked
+                                          ? (DateTime?)dtInbetriebnahme.Value.Date : null;
+
+            using (var f = new Form_KwkgModule(_parameter.IdStamm, "", _parameter))
+                f.ShowDialog(this);
         }
 
         /// <summary>Steuerwert der Auswahl; ohne Auswahl gilt die Vorgabe (Etappe E4).</summary>

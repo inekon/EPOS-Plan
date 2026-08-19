@@ -4793,6 +4793,33 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR" xml:space="preserve">
     <value>KWKG: Das Projekt führt ein Öl-BHKW, aber kein Inbetriebnahmedatum — als Neuanlage wäre der Zuschlag ausgeschlossen (KWKG 2025). Welche Anlage mit Öl betrieben wird, ließ sich nicht ermitteln; Datum im Parameterdialog pflegen.</value>
   </data>
+  <data name="WIRT_KWKG_JE_MODUL" xml:space="preserve">
+    <value>KWKG: Zuschlag je BHKW-Modul gerechnet — {0}.</value>
+  </data>
+  <data name="WIRT_KWKG_ANLAGE_STICHTAG" xml:space="preserve">
+    <value>KWKG: {0} — Bestellung/Genehmigung nach dem {1} und damit nach geltendem Recht nicht förderfähig (§ 6 KWKG 2025, Regulierungsrisiko Novelle); für diese Anlage kein Zuschlag.</value>
+  </data>
+  <data name="WIRT_KWKG_ANLAGE_FRIST" xml:space="preserve">
+    <value>KWKG: {0} — Inbetriebnahme nach Ablauf der Realisierungsfrist des § 6 KWKG 2025 (bis {1}); für diese Anlage kein Zuschlag.</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_TRANCHEN" xml:space="preserve">
+    <value>{0} kW nach Leistungsanteilen: {1} → Mischsatz {2} ct/kWh ({3}, Stand {4}).</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_PAUSCHAL" xml:space="preserve">
+    <value>{0} kW und damit bis {1} kW, neue Anlage → {2} ct/kWh ({3}, Stand {4}); die Sonderregel geht den Leistungsanteilen vor.</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_KEIN_EIGENFALL" xml:space="preserve">
+    <value>Kein Tatbestand des § 6 Abs. 3 KWKG 2025 erfasst — auf selbst genutzten Strom gibt es dann keinen Zuschlag (§ 7 Abs. 2).</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_N1_ZU_GROSS" xml:space="preserve">
+    <value>Der Tatbestand des § 6 Abs. 3 Nr. 1 KWKG 2025 gilt nur bis {0} kW; diese Anlage hat {1} kW — kein Zuschlag auf selbst genutzten Strom.</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_SATZ_FEHLT" xml:space="preserve">
+    <value>Der Satz „{0}“ ist im Katalog „Gesetzliche Parameter“ nicht gepflegt — kein Vorschlag.</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_OHNE_LEISTUNG" xml:space="preserve">
+    <value>Ohne gepflegte elektrische Nennleistung lässt sich kein Zuschlagssatz vorschlagen.</value>
+  </data>
   <data name="KOSTEN_BTN_VDI2067" xml:space="preserve">
     <value>⚙ Betriebskosten VDI 2067…</value>
   </data>
@@ -4980,16 +5007,271 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>{0} = {1} {2}, gültig ab {3} ({4}) — {5}</value>
   </data>
   <data name="WIRT_ZEILE_ENERGIESTEUER" xml:space="preserve">
-    <value>Energiesteuer-Gutschrift Jahr 1 [€/a]</value>
+    <value>Energiesteuer-Gutschrift [€/a]</value>
   </data>
   <data name="WIRT_ZEILE_STROMST_BEFREIUNG" xml:space="preserve">
-    <value>Stromsteuer-Befreiung Jahr 1 [€/a]</value>
+    <value>Stromsteuer-Befreiung [€/a]</value>
   </data>
   <data name="WIRT_ZEILE_STROMST_ENTLASTUNG" xml:space="preserve">
-    <value>Stromsteuer-Entlastung Jahr 1 [€/a]</value>
+    <value>Stromsteuer-Entlastung [€/a]</value>
   </data>
   <data name="WIRT_ZEILE_STEUER_HERKUNFT" xml:space="preserve">
     <value>Herkunft der Steuersätze</value>
+  </data>
+  <data name="WIRT_ZEILE_VERMIEDEN_ARBEIT" xml:space="preserve">
+    <value>Vermiedene Kosten, Arbeit [€/a] (Ausweis)</value>
+  </data>
+  <data name="WIRT_ZEILE_VERMIEDEN_LEISTUNG" xml:space="preserve">
+    <value>Vermiedene Kosten, Leistung [€/a] (Ausweis)</value>
+  </data>
+  <data name="WIRT_ZEILE_VERMIEDEN_GESAMT" xml:space="preserve">
+    <value>Vermiedene Kosten, gesamt [€/a] (Ausweis)</value>
+  </data>
+  <data name="WIRT_ZEILE_AUFSCHLAG" xml:space="preserve">
+    <value>Aufschläge auf den Strombezug [€/a] (in Energiekosten enthalten)</value>
+  </data>
+  <data name="WIRT_ZEILE_INVESTITION" xml:space="preserve">
+    <value>Investition I₀ [€]</value>
+  </data>
+  <data name="WIRT_ZEILE_BETRIEBSKOSTEN" xml:space="preserve">
+    <value>Betriebskosten [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_ENERGIEKOSTEN" xml:space="preserve">
+    <value>Energiekosten [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_STROMKOSTEN_BEZUG" xml:space="preserve">
+    <value>Strombezugskosten nach Tarif [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_STROMKOSTEN_RESTSTROM" xml:space="preserve">
+    <value>Reststromkosten nach Tarif [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_CO2_BEHG" xml:space="preserve">
+    <value>CO₂-Abgabe nach BEHG [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_EINSPEISEERLOES" xml:space="preserve">
+    <value>Einspeiseerlös, gesamt [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_EINSPEISEERLOES_PV" xml:space="preserve">
+    <value>Einspeiseerlös, PV-Überschuss [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_EINSPEISEERLOES_KWK" xml:space="preserve">
+    <value>Einspeiseerlös, KWK-Einspeisung [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_KWKG" xml:space="preserve">
+    <value>KWK-Zuschlag [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_VBH_ELEKTRISCH" xml:space="preserve">
+    <value>Vollbenutzungsstunden elektrisch, KWKG-Basis [h/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_RESTWERT" xml:space="preserve">
+    <value>Restwert, Barwert [€]</value>
+  </data>
+  <data name="WIRT_ZEILE_NETTOBARWERT" xml:space="preserve">
+    <value>Nettobarwert über T [€]</value>
+  </data>
+  <data name="WIRT_ZEILE_KAPITALWERT_DIFF" xml:space="preserve">
+    <value>Kapitalwert gegenüber Stamm [€]</value>
+  </data>
+  <data name="WIRT_ZEILE_ANNUITAET" xml:space="preserve">
+    <value>Annuität des Kapitalwerts [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_AMORTISATION" xml:space="preserve">
+    <value>Amortisation, dynamisch [a]</value>
+  </data>
+  <data name="WIRT_ZEILE_IRR" xml:space="preserve">
+    <value>Interner Zinsfuß [%]</value>
+  </data>
+  <data name="WIRT_ZEILE_GESTEHUNGSKOSTEN" xml:space="preserve">
+    <value>Wärmegestehungskosten [€/kWh]</value>
+  </data>
+  <data name="WIRT_ZEILE_STAMM_REFERENZ" xml:space="preserve">
+    <value>(Referenz)</value>
+  </data>
+  <data name="WIRT_ZEILE_JAHR1" xml:space="preserve">
+    <value>Alle Beträge in €/a sind Werte des ersten Betrachtungsjahres; ihre Entwicklung über den Betrachtungszeitraum steht in der Mehrjahresübersicht.</value>
+  </data>
+  <data name="WIRT_MJ_TITEL" xml:space="preserve">
+    <value>Mehrjahresübersicht der Zahlungsströme</value>
+  </data>
+  <data name="WIRT_MJ_HINWEIS" xml:space="preserve">
+    <value>Nominale Zahlungen je Jahr im Szenario „Erwartet“, in €. Ausgaben negativ, Einnahmen positiv; die Summe der Positionsspalten ist die Spalte „Netto nominal“. Betriebs- und Energiekosten wachsen mit ihren jeweiligen Preissteigerungssätzen, Ersatzbeschaffungen und Einspeiseerlöse bleiben nominal konstant. Der KWK-Zuschlag endet in dem Jahr, in dem das Vollbenutzungsstunden-Kontingent erschöpft ist.</value>
+  </data>
+  <data name="WIRT_MJ_JAHR" xml:space="preserve">
+    <value>Jahr</value>
+  </data>
+  <data name="WIRT_MJ_INVEST_ERSATZ" xml:space="preserve">
+    <value>Investition und Ersatz</value>
+  </data>
+  <data name="WIRT_MJ_BETRIEB" xml:space="preserve">
+    <value>Betriebskosten</value>
+  </data>
+  <data name="WIRT_MJ_ENERGIE" xml:space="preserve">
+    <value>Energiekosten</value>
+  </data>
+  <data name="WIRT_MJ_BEHG" xml:space="preserve">
+    <value>CO₂-Abgabe</value>
+  </data>
+  <data name="WIRT_MJ_EINSPEISUNG" xml:space="preserve">
+    <value>Einspeiseerlös</value>
+  </data>
+  <data name="WIRT_MJ_NETTO" xml:space="preserve">
+    <value>Netto nominal</value>
+  </data>
+  <data name="WIRT_MJ_BARWERT" xml:space="preserve">
+    <value>Barwert</value>
+  </data>
+  <data name="WIRT_MJ_KUMULIERT" xml:space="preserve">
+    <value>Kumuliert</value>
+  </data>
+  <data name="WIRT_MJ_RESTWERT_T" xml:space="preserve">
+    <value>Restwert (Barwert) in T</value>
+  </data>
+  <data name="WIRT_MJ_PROBE" xml:space="preserve">
+    <value>Probe: kumulierter Barwert in T ({0}) + Restwert-Barwert ({1}) = Nettobarwert ({2}).</value>
+  </data>
+  <data name="WIRT_MJ_ENTFAELLT" xml:space="preserve">
+    <value>Mehrjahresübersicht entfällt — für dieses Projekt konnte keine Zahlungsreihe gerechnet werden.</value>
+  </data>
+  <data name="WIRT_MJ_NACHWEIS_TITEL" xml:space="preserve">
+    <value>Nachweis — nicht Teil des Zahlungsstroms</value>
+  </data>
+  <data name="WIRT_MJ_NACHWEIS_HINWEIS" xml:space="preserve">
+    <value>Die folgenden Beträge stehen bewusst NICHT in der Tabelle darüber und dürfen nicht zu ihr addiert werden: Die vermiedenen Kosten stecken bereits in der kleineren Bezugsmenge, der Aufschlagsbetrag bereits in den Energiekosten.</value>
+  </data>
+  <data name="WIRT_BK_TITEL" xml:space="preserve">
+    <value>Betriebskosten nach Kostenarten</value>
+  </data>
+  <data name="WIRT_BK_HINWEIS" xml:space="preserve">
+    <value>Positionen der Kategorie 2 im Szenario „Erwartet“, gegliedert nach der Kostenart der VDI 2067. Je Position stehen die Bemessungsart und — wo die Bemessung abgeleitet ist — die Herleitung Menge × Einheitpreis. Ein gepflegter Best- oder Worst-Case-Betrag schlägt die Ableitung; solche Zeilen sind gekennzeichnet. Erlöspositionen tragen ein negatives Vorzeichen.</value>
+  </data>
+  <data name="WIRT_BK_SP_POSITION" xml:space="preserve">
+    <value>Position</value>
+  </data>
+  <data name="WIRT_BK_SP_GRUPPE" xml:space="preserve">
+    <value>Gruppe</value>
+  </data>
+  <data name="WIRT_BK_SP_BEMESSUNG" xml:space="preserve">
+    <value>Bemessung</value>
+  </data>
+  <data name="WIRT_BK_SP_HERLEITUNG" xml:space="preserve">
+    <value>Herleitung</value>
+  </data>
+  <data name="WIRT_BK_SP_BETRAG" xml:space="preserve">
+    <value>Betrag [€/a]</value>
+  </data>
+  <data name="WIRT_BK_SUMME" xml:space="preserve">
+    <value>Summe der Positionen</value>
+  </data>
+  <data name="WIRT_BK_SZENARIOWERT" xml:space="preserve">
+    <value>Szenariowert gepflegt</value>
+  </data>
+  <data name="WIRT_BK_ABWEICHUNG" xml:space="preserve">
+    <value>⚠ Die Summe der Positionen ({0}) weicht von den angesetzten Betriebskosten ({1}) ab — die Gliederung ist unvollständig.</value>
+  </data>
+  <data name="WIRT_BK_OHNE_SPALTEN" xml:space="preserve">
+    <value>Gliederung nach Kostenarten nicht möglich: Die Datenbank führt die Spalten aus Migrationsschritt 19 (Kostenart, Bemessung, Menge, Einheitpreis) nicht.</value>
+  </data>
+  <data name="KOSTENART_KAPITALGEBUNDEN" xml:space="preserve">
+    <value>kapitalgebunden</value>
+  </data>
+  <data name="KOSTENART_BETRIEBSGEBUNDEN" xml:space="preserve">
+    <value>betriebsgebunden</value>
+  </data>
+  <data name="KOSTENART_BEDARFSGEBUNDEN" xml:space="preserve">
+    <value>bedarfsgebunden</value>
+  </data>
+  <data name="KOSTENART_SONSTIGE" xml:space="preserve">
+    <value>sonstige</value>
+  </data>
+  <data name="KOSTENART_OHNE" xml:space="preserve">
+    <value>nicht eingeordnet</value>
+  </data>
+  <data name="BEMESSUNG_BETRAG" xml:space="preserve">
+    <value>fester Betrag</value>
+  </data>
+  <data name="BEMESSUNG_PROZENT_INVESTITION" xml:space="preserve">
+    <value>% der Investition</value>
+  </data>
+  <data name="BEMESSUNG_EUR_PRO_H" xml:space="preserve">
+    <value>je Betriebsstunde</value>
+  </data>
+  <data name="BEMESSUNG_EUR_PRO_KWH" xml:space="preserve">
+    <value>je kWh</value>
+  </data>
+  <data name="BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN" xml:space="preserve">
+    <value>% der Brennstoffkosten</value>
+  </data>
+  <data name="WIRT_KWKG_MODUL_TITEL" xml:space="preserve">
+    <value>KWK-Zuschlag je Modul</value>
+  </data>
+  <data name="WIRT_KWKG_MODUL_HINWEIS" xml:space="preserve">
+    <value>Der Zuschlag entsteht als eine Reihe je Anlage: eigener Satz, eigenes Inbetriebnahmejahr, eigener Jahresdeckel, eigenes Vollbenutzungsstunden-Kontingent. Die Sätze folgen § 7 KWKG 2025 als Tranchenstaffel, nicht als Leistungsklasse — die Herleitung unter der Tabelle nennt deshalb die Tranchen.</value>
+  </data>
+  <data name="WIRT_KWKG_SP_MODUL" xml:space="preserve">
+    <value>Modul</value>
+  </data>
+  <data name="WIRT_KWKG_SP_PEL" xml:space="preserve">
+    <value>el. Leistung [kW]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_VBH" xml:space="preserve">
+    <value>Vbh [h/a]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_SATZ_EIGEN" xml:space="preserve">
+    <value>Satz Eigenstrom [ct/kWh]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_SATZ_EINSP" xml:space="preserve">
+    <value>Satz Einspeisung [ct/kWh]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_SATZQUELLE" xml:space="preserve">
+    <value>Satz aus</value>
+  </data>
+  <data name="WIRT_KWKG_SP_DECKEL" xml:space="preserve">
+    <value>Jahresdeckel [h/a]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_KONTINGENT" xml:space="preserve">
+    <value>Kontingent [h]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_BEGINN" xml:space="preserve">
+    <value>Förderbeginn</value>
+  </data>
+  <data name="WIRT_KWKG_SP_JAHR1" xml:space="preserve">
+    <value>Zuschlag Jahr 1 [€/a]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_ERSCHOEPFT" xml:space="preserve">
+    <value>Kontingent erschöpft ab Jahr</value>
+  </data>
+  <data name="WIRT_KWKG_SATZ_QUELLE_ANLAGE" xml:space="preserve">
+    <value>Anlage</value>
+  </data>
+  <data name="WIRT_KWKG_SATZ_QUELLE_PROJEKT" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="WIRT_KWKG_DECKEL_STAFFEL" xml:space="preserve">
+    <value>Staffel § 8</value>
+  </data>
+  <data name="WIRT_KWKG_ERSCHOEPFT_NIE" xml:space="preserve">
+    <value>reicht über T</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_ZEILE" xml:space="preserve">
+    <value>{0} — Eigenstrom: {1} · Einspeisung: {2}</value>
+  </data>
+  <data name="WIRT_NACHWEIS_TITEL" xml:space="preserve">
+    <value>Nachweise und Hinweise</value>
+  </data>
+  <data name="WIRT_NACHWEIS_TARIF" xml:space="preserve">
+    <value>Tarif dieses Rechenlaufs</value>
+  </data>
+  <data name="WIRT_NACHWEIS_LAUFHINWEISE" xml:space="preserve">
+    <value>Hinweise dieses Berichtslaufs</value>
+  </data>
+  <data name="WIRT_ERGEBNIS_VERALTET" xml:space="preserve">
+    <value>⚠ Für {0} passt das Wirtschaftlichkeits-Ergebnis nicht zum Simulationslauf dieses Berichts — Bericht erneut erstellen.</value>
+  </data>
+  <data name="WIRT_MATRIX_BEDARF" xml:space="preserve">
+    <value>Bedarf ohne Anlage [MWh]</value>
+  </data>
+  <data name="WIRT_MATRIX_BEDARF_HINWEIS" xml:space="preserve">
+    <value>„Bedarf ohne Anlage“ ist der Strombedarf abzüglich PV-Eigennutzung — die Bezugsgröße der vermiedenen Kosten. Steht dort in allen Zonen 0, fehlte die Strombedarfsreihe im Lauf.</value>
   </data>
   <data name="WIRT_REIHE_KWKG" xml:space="preserve">
     <value>KWK-Zuschlag</value>

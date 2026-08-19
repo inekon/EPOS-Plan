@@ -12,9 +12,22 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
-**`2026-08-19_B5/`** — seit dem 19.08.2026, 03:38 Uhr die gültige Referenz,
+**`2026-08-19_B6/`** — seit dem 19.08.2026, 17:16 Uhr die gültige Referenz,
 **neun Projekte** (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, **1030**), **216 CSV,
 2 366 177 Werte**. Jeder neue Vergleich läuft gegen diesen Ordner.
+
+> **B6 ist mit B5 byte-identisch** (9/9 PASS, 216/216 gleich). Der Basiswechsel erfolgt allein wegen
+> der **Zuordnung**: Gerechnet ist B6 mit dem Codestand nach Abschluss der Ausbaustufe W4
+> (`e94be10`, Etappen E3 bis E7 plus den zusammengeführten KI-Strang) und auf einer Quelle mit
+> **Schemastand 21** statt 17. Damit lässt sich eine spätere Abweichung zweifelsfrei einer
+> Folgeänderung zuschreiben. Einzelheiten und — wichtiger — die Liste **„Was diese Basis nicht
+> absichert"** stehen im [Laufprotokoll der Basis](2026-08-19_B6/lauf_protokoll.md).
+
+> **Der Referenzlauf deckt den Rechenkern ab, nicht die Wirtschaftlichkeit.** Er ruft
+> `WirtschaftlichkeitCtrl` nicht auf. Kapitalwert, KWK-Zuschlag, Steuergutschriften, Tarife und
+> Betriebskosten stehen in **keiner** eingefrorenen Basis; sie werden je Etappe als A/B gegen den
+> Vorgängerstand gemessen. Ein grünes 216/216 sagt über die Ausbaustufe W4 deshalb nur, dass sie den
+> Rechenkern nicht berührt hat.
 
 > **Die Projektliste ist FEST VORGEGEBEN und muss bei jedem Folgelauf mitgegeben werden:**
 >
@@ -48,6 +61,24 @@ Paket B1, Kapitel 9.
 > die fünf übrigen Projekte steht das Flag auf **AUS**. Im Datenbestand steht es bei 1018
 > inzwischen auf WAHR — folgenlos, weil 1018 ein BHKW-Projekt ist.
 
+### Warum die Basis auf B6 gewechselt wurde
+
+**Nicht wegen geänderter Zahlen — es hat sich keine geändert.** Der Vergleich B5 → B6 ist
+**9/9 PASS und 216/216 byte-gleich**. Gewechselt wird wegen der **Zuordnung**: Zwischen beiden Ständen
+liegen die Etappen **E3 bis E7** der Ausbaustufe W4 (Migrationsschritte 19 bis 22) und der
+zusammengeführte Strang **KI-Assistent-Aufgabensteuerung**; die Quelldatenbank ist außerdem durch die
+Sitzung des Anwenders von Schemastand **17 auf 21** gewandert und einmal komprimiert worden. Ab B6
+ist die gültige Basis mit diesem Code- und Schemastand gerechnet, und eine spätere Abweichung lässt
+sich zweifelsfrei einer Folgeänderung zuschreiben statt W4.
+
+**Codestand:** `e94be10`, unverändert, gebaut aus einem `git archive HEAD`-Export außerhalb des Repos
+(`C:\Waermeplan\_e8`; 0 Fehler, 6 Bestandswarnungen). **Datenquelle:** produktive `Kenndaten.accdb`,
+Zeitstempel **19.08.2026 14:46**, Schemastand **21**, nur gelesen (keine `Kenndaten.laccdb`). Die
+Migration **21 → 22** lief ausschließlich auf der Arbeitskopie. **Selbstvergleich:** zweiter Lauf
+desselben Codes auf derselben Quelle **9/9 PASS, 216/216 byte-gleich** — die Basis ist reproduzierbar.
+Vollständige Angaben und die Liste **„Was diese Basis nicht absichert"** im
+[Laufprotokoll der Basis](2026-08-19_B6/lauf_protokoll.md).
+
 ### Warum die Basis auf B5 gewechselt wurde
 
 **B4 war als Maßstab ausgefallen.** Ein Lauf des unveränderten Codes gegen B4 endete zuletzt
@@ -76,7 +107,12 @@ reproduzierbar.
 
 ## Frühere Stände
 
-`2026-08-16_B4/` bleibt als **vorheriger Stand** liegen (Codestand `3fd2787`, Schemastand 10,
+`2026-08-19_B5/` bleibt als **vorheriger Stand** liegen (Codestand `ef8e537`, Quelle mit Schemastand
+17, neun Projekte, 216 CSV, 2 366 177 Werte) — **für alle 216 Dateien byte-gleich mit B6** und damit
+der Beleg des Standes vor den Etappen E3 bis E7. Warum B5 seinerzeit gesetzt wurde, steht im
+Abschnitt „Warum die Basis auf B5 gewechselt wurde" darüber.
+
+`2026-08-16_B4/` bleibt als **älterer Stand** liegen (Codestand `3fd2787`, Schemastand 10,
 acht Projekte, 190 CSV, 2 094 451 Werte, Feature-Flag `Kaskade_Zweikanalig` durchgehend AUS).
 Warum B4 seinerzeit gesetzt wurde:
 
@@ -346,7 +382,7 @@ nennt sie in der Ausgabe. Der Zweck ist eng: Führt eine Etappe eine neue **Erge
 ein, wächst `aggregate.csv` zwangsläufig um einen Schlüssel, und gegen die eingefrorene Basis
 verdeckt diese Meldung die eigentliche Frage — *sind die Altwerte unverändert?* Genau dafür
 ist die Option da, **nicht** um Abweichungen wegzuschalten. Sobald die Basis neu gesetzt ist
-(zuletzt: B5), laufen die Vergleiche wieder ohne Ausschluss.
+(zuletzt: B6), laufen die Vergleiche wieder ohne Ausschluss.
 
 ### `pruefen` — Plausibilität eines Laufs
 
@@ -397,12 +433,12 @@ ist zwingend, wenn parallel gearbeitet wird oder die Kopie außerhalb des Repos 
 2. **Änderung umsetzen** und die Anwendung neu bauen (`WP-Plan.sln` **und**
    `Referenzlauf.csproj`).
 3. **Neu rechnen und vergleichen** — Referenz ist die aktuelle Basis, seit dem
-   19.08.2026 also `2026-08-19_B5`. **`--projekte` ist Pflicht** (siehe „Die
+   19.08.2026 also `2026-08-19_B6`. **`--projekte` ist Pflicht** (siehe „Die
    Projektauswahl"):
    ```powershell
    & $exe lauf --ziel C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket10 `
                --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030
-   & $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-19_B5 `
+   & $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-19_B6 `
                     C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket10
    ```
    `lauf` kopiert **und migriert** die Arbeitskopie selbst.
@@ -422,7 +458,7 @@ foreach ($id in 1007,1008,1011,1017,1018,1021,1023,1024,1030) {
 }
 
 # 4. Gegen die aktuelle Basis vergleichen und plausibilisieren
-& $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-19_B5 C:\Waermeplan\MeinTest\Lauf
+& $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-19_B6 C:\Waermeplan\MeinTest\Lauf
 & $exe pruefen   C:\Waermeplan\MeinTest\Lauf
 ```
 
@@ -491,7 +527,7 @@ nützlich, um die Projektlandschaft zu sichten (`liste`), nicht um eine Basis ei
 > der Referenzmenge mit zwei BHKW-Modulen, gepflegtem KWKG-Satz und gepflegten Energiepreisen
 > und deckt damit als einziges die drei Vollbenutzungsstunden-Aggregate aus E2, die bindende
 > KWKG-Deckelung und die Positivseite der beiden KWKG-Guards (500-kW-Grenze, Heizöl) ab.
-> Zahlen im [Laufprotokoll der Basis](2026-08-19_B5/lauf_protokoll.md).
+> Zahlen im [Laufprotokoll der Basis](2026-08-19_B6/lauf_protokoll.md).
 
 > **Seit dem 15.08.2026 fehlt Projekt 1010 „Kurs EE"** — vom Anwender gelöscht, es war die
 > Kategorie **„nur Wärmepumpe"**. In der festen Liste ist diese Kategorie damit unbesetzt;

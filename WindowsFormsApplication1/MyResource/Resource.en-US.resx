@@ -4778,6 +4778,33 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR" xml:space="preserve">
     <value>CHP Act: the project contains an oil-fired CHP unit but no commissioning date — as a new unit the bonus would be excluded (KWKG 2025). Which unit is fired with oil could not be determined; please enter the date in the parameter dialogue.</value>
   </data>
+  <data name="WIRT_KWKG_JE_MODUL" xml:space="preserve">
+    <value>CHP Act: bonus calculated per CHP unit — {0}.</value>
+  </data>
+  <data name="WIRT_KWKG_ANLAGE_STICHTAG" xml:space="preserve">
+    <value>CHP Act: {0} — order/permit dated after {1} and therefore not eligible under current law (section 6 KWKG 2025, regulatory risk of an amendment); no bonus for this unit.</value>
+  </data>
+  <data name="WIRT_KWKG_ANLAGE_FRIST" xml:space="preserve">
+    <value>CHP Act: {0} — commissioning after the realisation deadline of section 6 KWKG 2025 (until {1}); no bonus for this unit.</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_TRANCHEN" xml:space="preserve">
+    <value>{0} kW by capacity tranches: {1} → blended rate {2} ct/kWh ({3}, as of {4}).</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_PAUSCHAL" xml:space="preserve">
+    <value>{0} kW and thus up to {1} kW, new unit → {2} ct/kWh ({3}, as of {4}); the special rule takes precedence over the capacity tranches.</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_KEIN_EIGENFALL" xml:space="preserve">
+    <value>None of the cases of section 6 (3) KWKG 2025 recorded — self-consumed electricity then receives no bonus (section 7 (2)).</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_N1_ZU_GROSS" xml:space="preserve">
+    <value>The case of section 6 (3) no. 1 KWKG 2025 applies only up to {0} kW; this unit has {1} kW — no bonus on self-consumed electricity.</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_SATZ_FEHLT" xml:space="preserve">
+    <value>The rate “{0}” is not maintained in the “Statutory parameters” catalogue — no proposal.</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_OHNE_LEISTUNG" xml:space="preserve">
+    <value>Without a maintained electrical rated capacity no bonus rate can be proposed.</value>
+  </data>
   <data name="KOSTEN_BTN_VDI2067" xml:space="preserve">
     <value>⚙ Operating costs VDI 2067…</value>
   </data>
@@ -4965,16 +4992,271 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>{0} = {1} {2}, valid from {3} ({4}) — {5}</value>
   </data>
   <data name="WIRT_ZEILE_ENERGIESTEUER" xml:space="preserve">
-    <value>Energy tax credit year 1 [€/a]</value>
+    <value>Energy tax credit [€/a]</value>
   </data>
   <data name="WIRT_ZEILE_STROMST_BEFREIUNG" xml:space="preserve">
-    <value>Electricity tax exemption year 1 [€/a]</value>
+    <value>Electricity tax exemption [€/a]</value>
   </data>
   <data name="WIRT_ZEILE_STROMST_ENTLASTUNG" xml:space="preserve">
-    <value>Electricity tax relief year 1 [€/a]</value>
+    <value>Electricity tax relief [€/a]</value>
   </data>
   <data name="WIRT_ZEILE_STEUER_HERKUNFT" xml:space="preserve">
     <value>Source of the tax rates</value>
+  </data>
+  <data name="WIRT_ZEILE_VERMIEDEN_ARBEIT" xml:space="preserve">
+    <value>Avoided cost, energy charge [€/a] (disclosure)</value>
+  </data>
+  <data name="WIRT_ZEILE_VERMIEDEN_LEISTUNG" xml:space="preserve">
+    <value>Avoided cost, demand charge [€/a] (disclosure)</value>
+  </data>
+  <data name="WIRT_ZEILE_VERMIEDEN_GESAMT" xml:space="preserve">
+    <value>Avoided cost, total [€/a] (disclosure)</value>
+  </data>
+  <data name="WIRT_ZEILE_AUFSCHLAG" xml:space="preserve">
+    <value>Surcharges on grid supply [€/a] (included in energy cost)</value>
+  </data>
+  <data name="WIRT_ZEILE_INVESTITION" xml:space="preserve">
+    <value>Investment I₀ [€]</value>
+  </data>
+  <data name="WIRT_ZEILE_BETRIEBSKOSTEN" xml:space="preserve">
+    <value>Operating cost [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_ENERGIEKOSTEN" xml:space="preserve">
+    <value>Energy cost [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_STROMKOSTEN_BEZUG" xml:space="preserve">
+    <value>Grid supply cost by tariff [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_STROMKOSTEN_RESTSTROM" xml:space="preserve">
+    <value>Residual grid supply cost by tariff [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_CO2_BEHG" xml:space="preserve">
+    <value>CO₂ levy under BEHG [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_EINSPEISEERLOES" xml:space="preserve">
+    <value>Feed-in revenue, total [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_EINSPEISEERLOES_PV" xml:space="preserve">
+    <value>Feed-in revenue, PV surplus [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_EINSPEISEERLOES_KWK" xml:space="preserve">
+    <value>Feed-in revenue, CHP export [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_KWKG" xml:space="preserve">
+    <value>CHP bonus [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_VBH_ELEKTRISCH" xml:space="preserve">
+    <value>Full-load hours, electrical (CHP basis) [h/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_RESTWERT" xml:space="preserve">
+    <value>Residual value, present value [€]</value>
+  </data>
+  <data name="WIRT_ZEILE_NETTOBARWERT" xml:space="preserve">
+    <value>Net present value over T [€]</value>
+  </data>
+  <data name="WIRT_ZEILE_KAPITALWERT_DIFF" xml:space="preserve">
+    <value>NPV compared with the base [€]</value>
+  </data>
+  <data name="WIRT_ZEILE_ANNUITAET" xml:space="preserve">
+    <value>Annuity of the NPV [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_AMORTISATION" xml:space="preserve">
+    <value>Payback, dynamic [a]</value>
+  </data>
+  <data name="WIRT_ZEILE_IRR" xml:space="preserve">
+    <value>Internal rate of return [%]</value>
+  </data>
+  <data name="WIRT_ZEILE_GESTEHUNGSKOSTEN" xml:space="preserve">
+    <value>Levelised cost of heat [€/kWh]</value>
+  </data>
+  <data name="WIRT_ZEILE_STAMM_REFERENZ" xml:space="preserve">
+    <value>(reference)</value>
+  </data>
+  <data name="WIRT_ZEILE_JAHR1" xml:space="preserve">
+    <value>All amounts in €/a are values of the first year under review; their development over the review period is shown in the multi-year overview.</value>
+  </data>
+  <data name="WIRT_MJ_TITEL" xml:space="preserve">
+    <value>Multi-year overview of the cash flows</value>
+  </data>
+  <data name="WIRT_MJ_HINWEIS" xml:space="preserve">
+    <value>Nominal payments per year, scenario "Expected", in €. Expenditure negative, income positive; the sum of the position columns is the column "Net nominal". Operating and energy cost grow with their respective escalation rates, replacement investments and feed-in revenue stay nominally constant. The CHP bonus ends in the year in which the full-load hour quota is exhausted.</value>
+  </data>
+  <data name="WIRT_MJ_JAHR" xml:space="preserve">
+    <value>Year</value>
+  </data>
+  <data name="WIRT_MJ_INVEST_ERSATZ" xml:space="preserve">
+    <value>Investment and replacement</value>
+  </data>
+  <data name="WIRT_MJ_BETRIEB" xml:space="preserve">
+    <value>Operating cost</value>
+  </data>
+  <data name="WIRT_MJ_ENERGIE" xml:space="preserve">
+    <value>Energy cost</value>
+  </data>
+  <data name="WIRT_MJ_BEHG" xml:space="preserve">
+    <value>CO₂ levy</value>
+  </data>
+  <data name="WIRT_MJ_EINSPEISUNG" xml:space="preserve">
+    <value>Feed-in revenue</value>
+  </data>
+  <data name="WIRT_MJ_NETTO" xml:space="preserve">
+    <value>Net nominal</value>
+  </data>
+  <data name="WIRT_MJ_BARWERT" xml:space="preserve">
+    <value>Present value</value>
+  </data>
+  <data name="WIRT_MJ_KUMULIERT" xml:space="preserve">
+    <value>Cumulative</value>
+  </data>
+  <data name="WIRT_MJ_RESTWERT_T" xml:space="preserve">
+    <value>Residual value (present value) in T</value>
+  </data>
+  <data name="WIRT_MJ_PROBE" xml:space="preserve">
+    <value>Check: cumulative present value in T ({0}) + discounted residual value ({1}) = net present value ({2}).</value>
+  </data>
+  <data name="WIRT_MJ_ENTFAELLT" xml:space="preserve">
+    <value>Multi-year overview omitted — no cash flow series could be calculated for this project.</value>
+  </data>
+  <data name="WIRT_MJ_NACHWEIS_TITEL" xml:space="preserve">
+    <value>Disclosure — not part of the cash flow</value>
+  </data>
+  <data name="WIRT_MJ_NACHWEIS_HINWEIS" xml:space="preserve">
+    <value>The following amounts are deliberately NOT part of the table above and must not be added to it: the avoided cost is already contained in the smaller purchased volume, the surcharge amount already in the energy cost.</value>
+  </data>
+  <data name="WIRT_BK_TITEL" xml:space="preserve">
+    <value>Operating cost by cost type</value>
+  </data>
+  <data name="WIRT_BK_HINWEIS" xml:space="preserve">
+    <value>Category 2 items in the scenario "Expected", grouped by the cost type of VDI 2067. Each item states the basis of assessment and — where the assessment is derived — the derivation quantity × unit price. A maintained best or worst case amount overrides the derivation; such rows are marked. Revenue items carry a negative sign.</value>
+  </data>
+  <data name="WIRT_BK_SP_POSITION" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="WIRT_BK_SP_GRUPPE" xml:space="preserve">
+    <value>Group</value>
+  </data>
+  <data name="WIRT_BK_SP_BEMESSUNG" xml:space="preserve">
+    <value>Assessment</value>
+  </data>
+  <data name="WIRT_BK_SP_HERLEITUNG" xml:space="preserve">
+    <value>Derivation</value>
+  </data>
+  <data name="WIRT_BK_SP_BETRAG" xml:space="preserve">
+    <value>Amount [€/a]</value>
+  </data>
+  <data name="WIRT_BK_SUMME" xml:space="preserve">
+    <value>Sum of the items</value>
+  </data>
+  <data name="WIRT_BK_SZENARIOWERT" xml:space="preserve">
+    <value>scenario value maintained</value>
+  </data>
+  <data name="WIRT_BK_ABWEICHUNG" xml:space="preserve">
+    <value>⚠ The sum of the items ({0}) differs from the operating cost applied ({1}) — the breakdown is incomplete.</value>
+  </data>
+  <data name="WIRT_BK_OHNE_SPALTEN" xml:space="preserve">
+    <value>Breakdown by cost type not possible: the database does not carry the columns of migration step 19 (cost type, assessment, quantity, unit price).</value>
+  </data>
+  <data name="KOSTENART_KAPITALGEBUNDEN" xml:space="preserve">
+    <value>capital-related</value>
+  </data>
+  <data name="KOSTENART_BETRIEBSGEBUNDEN" xml:space="preserve">
+    <value>operation-related</value>
+  </data>
+  <data name="KOSTENART_BEDARFSGEBUNDEN" xml:space="preserve">
+    <value>demand-related</value>
+  </data>
+  <data name="KOSTENART_SONSTIGE" xml:space="preserve">
+    <value>other</value>
+  </data>
+  <data name="KOSTENART_OHNE" xml:space="preserve">
+    <value>not classified</value>
+  </data>
+  <data name="BEMESSUNG_BETRAG" xml:space="preserve">
+    <value>fixed amount</value>
+  </data>
+  <data name="BEMESSUNG_PROZENT_INVESTITION" xml:space="preserve">
+    <value>% of investment</value>
+  </data>
+  <data name="BEMESSUNG_EUR_PRO_H" xml:space="preserve">
+    <value>per operating hour</value>
+  </data>
+  <data name="BEMESSUNG_EUR_PRO_KWH" xml:space="preserve">
+    <value>per kWh</value>
+  </data>
+  <data name="BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN" xml:space="preserve">
+    <value>% of fuel cost</value>
+  </data>
+  <data name="WIRT_KWKG_MODUL_TITEL" xml:space="preserve">
+    <value>CHP bonus per module</value>
+  </data>
+  <data name="WIRT_KWKG_MODUL_HINWEIS" xml:space="preserve">
+    <value>The bonus is built as one series per unit: its own rate, its own commissioning year, its own annual cap, its own full-load hour quota. The rates follow section 7 KWKG 2025 as a marginal tranche scale, not as a capacity class — the derivation below the table therefore names the tranches.</value>
+  </data>
+  <data name="WIRT_KWKG_SP_MODUL" xml:space="preserve">
+    <value>Module</value>
+  </data>
+  <data name="WIRT_KWKG_SP_PEL" xml:space="preserve">
+    <value>El. capacity [kW]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_VBH" xml:space="preserve">
+    <value>Full-load hours [h/a]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_SATZ_EIGEN" xml:space="preserve">
+    <value>Rate, self-consumption [ct/kWh]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_SATZ_EINSP" xml:space="preserve">
+    <value>Rate, export [ct/kWh]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_SATZQUELLE" xml:space="preserve">
+    <value>Rate from</value>
+  </data>
+  <data name="WIRT_KWKG_SP_DECKEL" xml:space="preserve">
+    <value>Annual cap [h/a]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_KONTINGENT" xml:space="preserve">
+    <value>Quota [h]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_BEGINN" xml:space="preserve">
+    <value>Start of support</value>
+  </data>
+  <data name="WIRT_KWKG_SP_JAHR1" xml:space="preserve">
+    <value>Bonus year 1 [€/a]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_ERSCHOEPFT" xml:space="preserve">
+    <value>Quota exhausted from year</value>
+  </data>
+  <data name="WIRT_KWKG_SATZ_QUELLE_ANLAGE" xml:space="preserve">
+    <value>unit</value>
+  </data>
+  <data name="WIRT_KWKG_SATZ_QUELLE_PROJEKT" xml:space="preserve">
+    <value>project</value>
+  </data>
+  <data name="WIRT_KWKG_DECKEL_STAFFEL" xml:space="preserve">
+    <value>scale, section 8</value>
+  </data>
+  <data name="WIRT_KWKG_ERSCHOEPFT_NIE" xml:space="preserve">
+    <value>lasts beyond T</value>
+  </data>
+  <data name="WIRT_KWKG_HERLEITUNG_ZEILE" xml:space="preserve">
+    <value>{0} — self-consumption: {1} · export: {2}</value>
+  </data>
+  <data name="WIRT_NACHWEIS_TITEL" xml:space="preserve">
+    <value>Evidence and notes</value>
+  </data>
+  <data name="WIRT_NACHWEIS_TARIF" xml:space="preserve">
+    <value>Tariff of this calculation run</value>
+  </data>
+  <data name="WIRT_NACHWEIS_LAUFHINWEISE" xml:space="preserve">
+    <value>Notes of this report run</value>
+  </data>
+  <data name="WIRT_ERGEBNIS_VERALTET" xml:space="preserve">
+    <value>⚠ For {0} the economic result does not match the simulation run of this report — please create the report again.</value>
+  </data>
+  <data name="WIRT_MATRIX_BEDARF" xml:space="preserve">
+    <value>Demand without the plant [MWh]</value>
+  </data>
+  <data name="WIRT_MATRIX_BEDARF_HINWEIS" xml:space="preserve">
+    <value>"Demand without the plant" is the electricity demand less PV self-consumption — the reference quantity of the avoided cost. A zero in every zone means the demand time series was missing in the run.</value>
   </data>
   <data name="WIRT_REIHE_KWKG" xml:space="preserve">
     <value>CHP bonus</value>
