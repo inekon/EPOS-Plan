@@ -24,6 +24,7 @@ namespace WindowsFormsApplication1
         private Button _btnSuchen;
         private Button _btnEinstellungen;
         private Label _lblKontext;
+        private LinkLabel _linkVorschau;
         private Label _lblStatus;
 
         private readonly List<string> _verlauf = new List<string>();
@@ -108,7 +109,6 @@ namespace WindowsFormsApplication1
             {
                 Text = "Online-Dokumentation öffnen",
                 AutoSize = true,
-                Dock = DockStyle.Left,
                 Padding = new Padding(2, 6, 0, 0)
             };
             linkDoku.LinkClicked += (s, e) =>
@@ -120,6 +120,26 @@ namespace WindowsFormsApplication1
                 }
                 catch { }
             };
+
+            // Selbstprüfung (A5): zeigt den vollständigen Text, der übertragen würde.
+            _linkVorschau = new LinkLabel
+            {
+                Text = MyResource.Resource.KI_VORSCHAU_LINK,
+                AutoSize = true,
+                Padding = new Padding(14, 6, 0, 0)
+            };
+            _linkVorschau.LinkClicked += (s, e) => VorschauZeigen();
+
+            FlowLayoutPanel leisteLinks = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Left,
+                FlowDirection = FlowDirection.LeftToRight,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                WrapContents = false
+            };
+            leisteLinks.Controls.Add(linkDoku);
+            leisteLinks.Controls.Add(_linkVorschau);
 
             _lblStatus = new Label
             {
@@ -133,7 +153,7 @@ namespace WindowsFormsApplication1
 
             // Reihenfolge beachten: Fill zuerst, dann die andockenden Elemente
             leiste.Controls.Add(_lblStatus);
-            leiste.Controls.Add(linkDoku);
+            leiste.Controls.Add(leisteLinks);
             leiste.Controls.Add(leisteRechts);
 
             // --- Eingabebereich ---
@@ -394,6 +414,84 @@ namespace WindowsFormsApplication1
                 : "Einstellungen gespeichert - ohne Schlüssel bleibt nur die lokale Suche aktiv.",
                 Color.FromArgb(0, 120, 0), false);
             SchreibeZeile("", Color.Black, false);
+        }
+
+        /// <summary>
+        /// Selbstprüfung (A5): zeigt genau den Text, den die nächste Frage an den
+        /// Anbieter senden würde. Es wird dabei nichts gesendet und nichts gezählt.
+        /// </summary>
+        private void VorschauZeigen()
+        {
+            string text;
+            try
+            {
+                text = KiChatService.SendeVorschau(_eingabe.Text, _kontext, _verlauf);
+            }
+            catch (Exception ex)
+            {
+                text = ex.Message;
+            }
+
+            using (Form frm = new Form())
+            {
+                frm.Text = MyResource.Resource.KI_VORSCHAU_TITEL;
+                frm.StartPosition = FormStartPosition.CenterParent;
+                frm.MinimizeBox = false;
+                frm.MaximizeBox = false;
+                frm.ShowInTaskbar = false;
+                frm.ClientSize = new Size(720, 520);
+                frm.MinimumSize = new Size(520, 360);
+
+                TextBox anzeige = new TextBox
+                {
+                    Dock = DockStyle.Fill,
+                    Multiline = true,
+                    ReadOnly = true,
+                    WordWrap = false,
+                    ScrollBars = ScrollBars.Both,
+                    BackColor = Color.White,
+                    Font = new Font("Consolas", 9f),
+                    Text = text
+                };
+
+                Label kopf = new Label
+                {
+                    Dock = DockStyle.Top,
+                    Height = 66,
+                    Padding = new Padding(10, 8, 10, 4),
+                    ForeColor = Color.DimGray,
+                    Text = string.Format(MyResource.Resource.KI_VORSCHAU_HINWEIS,
+                                         KiChatService.MODELL, KiChatService.Endpunkt())
+                };
+
+                Button schliessen = new Button
+                {
+                    Text = MyResource.Resource.KI_VORSCHAU_SCHLIESSEN,
+                    DialogResult = DialogResult.OK,
+                    Width = 100,
+                    Height = 28
+                };
+
+                FlowLayoutPanel fuss = new FlowLayoutPanel
+                {
+                    Dock = DockStyle.Bottom,
+                    FlowDirection = FlowDirection.RightToLeft,
+                    AutoSize = true,
+                    AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                    WrapContents = false,
+                    Padding = new Padding(8)
+                };
+                fuss.Controls.Add(schliessen);
+
+                // Reihenfolge beachten: Fill zuerst, dann die andockenden Elemente
+                frm.Controls.Add(anzeige);
+                frm.Controls.Add(kopf);
+                frm.Controls.Add(fuss);
+                frm.AcceptButton = schliessen;
+                frm.CancelButton = schliessen;
+
+                frm.ShowDialog(this);
+            }
         }
 
         // ------------------------------------------------------------------
