@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 17;
+        public const int ZIEL_VERSION = 18;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -326,6 +326,33 @@ namespace WindowsFormsApplication1
         /// sind keine Dubletten mehr, der nächste Lauf nimmt nur den Rest.
         /// </summary>
         public const int SCHRITT_17_ANLAGEN_DUBLETTEN = 17;
+
+        /// <summary>
+        /// Nummer der Etappe E2 (Leitentscheidung L6 aus
+        /// <c>Konzept_BHKW_Kosten_Erloese.md</c>): die drei Vollbenutzungsstunden-Spalten
+        /// der BHKW-Ergebniszeilen.
+        ///
+        /// <b>Was der Schritt tut.</b> Rein additives DDL aus
+        /// <see cref="SchemaKatalog.Schritt18_BhkwVollbenutzungsstunden"/> —
+        /// <c>Tab_ErgebnisBHKW.VbhElektrisch</c> sowie
+        /// <c>Tab_ErgebnisBHKWModul.VbhThermisch</c> und <c>…VbhElektrisch</c>.
+        /// Kein DML, keine Beziehung, kein Index.
+        ///
+        /// <b>KEIN BACKFILL — und das ist die ehrliche Wahl.</b> Ein Lauf, der vor
+        /// Etappe E2 gerechnet wurde, hat diese Größen nie erhoben. Sie ließen sich auch
+        /// nicht nachträglich bilden: Der Nenner ist die installierte elektrische
+        /// Leistung ZUM ZEITPUNKT DES LAUFS, und die steht nirgends im Ergebnis. NULL
+        /// sagt „nicht erhoben"; die Wirtschaftlichkeit rechnet die elektrischen Vbh in
+        /// diesem Fall selbst aus <c>Stromproduktion</c> und der HEUTE installierten
+        /// Leistung — sichtbar als eigener Rechenweg, nicht als stiller Datenwert.
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): Das DDL geht über vorhandene
+        /// Spalten hinweg (<see cref="SpaltenAnlegen"/> prüft das Tabellenschema vorab).
+        /// Zusätzlich legt <c>ErgebnisCtrl</c> die Spalten unmittelbar vor dem Schreiben
+        /// selbst an, falls die Migration nie angestoßen wurde — beide Wege dürfen
+        /// beliebig oft und in beliebiger Reihenfolge laufen.
+        /// </summary>
+        public const int SCHRITT_18_BHKW_VBH = 18;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -635,6 +662,14 @@ namespace WindowsFormsApplication1
                         "Doppelt belegte Anlagenzeilen in eigene Gerätekopien überführen",
                         "Die doppelt belegten Anlagenzeilen konnten nicht überführt werden.",
                         Schritt_17_AnlagenDubletten),
+
+            // ETAPPE E2 (Leitentscheidung L6) - Vollbenutzungsstunden der BHKW-Module
+            //       und der Anlage. Nur DDL, kein DML, kein Backfill.
+            new Schritt(SCHRITT_18_BHKW_VBH,
+                        "BHKW-Vollbenutzungsstunden: VbhElektrisch in Tab_ErgebnisBHKW, " +
+                        "VbhThermisch und VbhElektrisch in Tab_ErgebnisBHKWModul (Etappe E2)",
+                        "Die Vollbenutzungsstunden-Spalten der BHKW-Ergebniszeilen konnten nicht angelegt werden.",
+                        Schritt_18_BhkwVollbenutzungsstunden),
         };
 
         // =================================================================================
@@ -1102,6 +1137,20 @@ namespace WindowsFormsApplication1
         private static bool Schritt_10_KesselQuellwaerme(Lauf l)
         {
             return SpaltenAnlegen(l, SchemaKatalog.Schritt10_KesselQuellwaerme);
+        }
+
+        /// <summary>
+        /// Schritt 18 (Etappe E2, Leitentscheidung L6): die drei
+        /// Vollbenutzungsstunden-Spalten der BHKW-Ergebniszeilen.
+        ///
+        /// Derselbe additive Weg wie die Schritte 1, 2, 6, 8, 10 und 15 und aus demselben
+        /// Katalog (<see cref="SchemaKatalog.Schritt18_BhkwVollbenutzungsstunden"/>);
+        /// Begründung für Typ, fehlenden Backfill und Ordinalposition steht dort und bei
+        /// <see cref="SCHRITT_18_BHKW_VBH"/>.
+        /// </summary>
+        private static bool Schritt_18_BhkwVollbenutzungsstunden(Lauf l)
+        {
+            return SpaltenAnlegen(l, SchemaKatalog.Schritt18_BhkwVollbenutzungsstunden);
         }
 
         // =================================================================================

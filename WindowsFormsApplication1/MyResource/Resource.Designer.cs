@@ -61,6 +61,100 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
+        /// </summary>
+        public static string ADM_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("ADM_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner „{0}“ kommt im Katalog {1}-mal vor.
+        ///
+        ///Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird deshalb abgelehnt. Bitte die Dubletten zuerst bereinigen. ähnelt.
+        /// </summary>
+        public static string ADM_MEHRDEUTIG_TEXT {
+            get {
+                return ResourceManager.GetString("ADM_MEHRDEUTIG_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner nicht eindeutig ähnelt.
+        /// </summary>
+        public static string ADM_MEHRDEUTIG_TITEL {
+            get {
+                return ResourceManager.GetString("ADM_MEHRDEUTIG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Datensatz „{0}“ stammt aus dem Auslieferungskatalog und ist schreibgeschützt.
+        ///
+        ///Soll er trotzdem überschrieben werden? ähnelt.
+        /// </summary>
+        public static string ADM_SCHUTZ_FRAGE {
+            get {
+                return ResourceManager.GetString("ADM_SCHUTZ_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibgeschützter Datensatz ähnelt.
+        /// </summary>
+        public static string ADM_SCHUTZ_TITEL {
+            get {
+                return ResourceManager.GetString("ADM_SCHUTZ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht gespeichert ähnelt.
+        /// </summary>
+        public static string ADM_STATUS_FEHLER {
+            get {
+                return ResourceManager.GetString("ADM_STATUS_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gespeichert um {0} ähnelt.
+        /// </summary>
+        public static string ADM_STATUS_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("ADM_STATUS_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibt die angezeigten Werte in den Stammdatensatz zurück. Der Dialog bleibt geöffnet. ähnelt.
+        /// </summary>
+        public static string ADM_TIP_SPEICHERN {
+            get {
+                return ResourceManager.GetString("ADM_TIP_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Datensatz markiert — bitte links einen Eintrag auswählen. ähnelt.
+        /// </summary>
+        public static string ADM_TIP_SPEICHERN_LEER {
+            get {
+                return ResourceManager.GetString("ADM_TIP_SPEICHERN_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Änderung — es gibt nichts zu speichern. ähnelt.
+        /// </summary>
+        public static string ADM_TIP_SPEICHERN_UNVERAENDERT {
+            get {
+                return ResourceManager.GetString("ADM_TIP_SPEICHERN_UNVERAENDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gerät „{0}&quot; ist bereits im Projekt.
         ///
         ///Als zweites, baugleiches Gerät aufnehmen? Dann wird eine eigene Gerätekopie angelegt.
@@ -544,7 +638,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Arbeitspreis 0,00 bei: {0} — ohne Preis können keine Energ [rest] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Arbeitspreis 0,00 bei: {0} — ohne Preis können keine Energiekosten entstehen; im Reiter „Energiekosten&quot; der Kostenverwaltung erfassen. ähnelt.
         /// </summary>
         public static string BK_KOSTEN_ENERGIE_PREIS0 {
             get {
@@ -598,7 +692,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Ohne Kostenposition: {0} — über „Kostenverwaltung öffnen…" [rest] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Ohne Kostenposition: {0} — über „Kostenverwaltung öffnen…&quot; und dort „Planwert übernehmen…&quot; erfassen ähnelt.
         /// </summary>
         public static string BK_KOSTEN_OHNE_POSITION {
             get {
@@ -607,7 +701,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}" ist im Projekt verbaut, führt aber keine Investitionsp [rest] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}&quot; ist im Projekt verbaut, führt aber keine Investitionsposition — die Kachel „Investition&quot; zählt dieses Gewerk deshalb nicht mit. ähnelt.
         /// </summary>
         public static string BK_KOSTEN_OHNE_POSITION_HINT {
             get {
@@ -7590,6 +7684,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollbenutzungsstunden elektrisch: ähnelt.
+        /// </summary>
+        public static string SIM_BHKW_VBH_EL {
+            get {
+                return ResourceManager.GetString("SIM_BHKW_VBH_EL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vbh thermisch, Mittel Module ähnelt.
+        /// </summary>
+        public static string SIM_BHKW_VBH_TH_MITTEL {
+            get {
+                return ResourceManager.GetString("SIM_BHKW_VBH_TH_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vbh thermisch, Summe Module ähnelt.
+        /// </summary>
+        public static string SIM_BHKW_VBH_TH_SUMME {
+            get {
+                return ResourceManager.GetString("SIM_BHKW_VBH_TH_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Laufzeitoptimiert - maximale Leistung ähnelt.
         /// </summary>
         public static string SIM_BM_RB_LAUFZEIT {
@@ -13392,93 +13513,85 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("VAR_VGL_TOOLTIP_OEFFNEN", resourceCulture);
             }
         }
+        
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Jede BHKW-Anlage des Projekts wird mit Heizöl betrieben ({0}) — als Neuanlage nicht mehr förderfähig (KWKG 2025, nur noch Erdgas; Näherung: gilt auch für Bio-Blends); Bonus = 0. ähnelt.
         /// </summary>
-        public static string ADM_BTN_SPEICHERN {
+        public static string WIRT_KWKG_ALLE_HEIZOEL {
             get {
-                return ResourceManager.GetString("ADM_BTN_SPEICHERN", resourceCulture);
+                return ResourceManager.GetString("WIRT_KWKG_ALLE_HEIZOEL", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibt die angezeigten Werte in den Stammdatensatz zurück. Der Dialog bleibt geöffnet. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Jede BHKW-Anlage des Projekts liegt über der Ausschreibungsgrenze von {0} kW ({1}) — der Zuschlag wäre nur über eine Ausschreibung nach § 8a KWKG/KWKAusV zu erlangen; Bonus = 0. ähnelt.
         /// </summary>
-        public static string ADM_TIP_SPEICHERN {
+        public static string WIRT_KWKG_ALLE_UEBER_GRENZE {
             get {
-                return ResourceManager.GetString("ADM_TIP_SPEICHERN", resourceCulture);
+                return ResourceManager.GetString("WIRT_KWKG_ALLE_UEBER_GRENZE", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Datensatz markiert — bitte links einen Eintrag auswählen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Mit Heizöl betrieben und deshalb ohne Zuschlag: {0} (KWKG 2025, Neuanlagen nur noch mit Erdgas; Näherung: gilt auch für Bio-Blends). Die übrigen Anlagen mit zusammen {1} kW rechnen weiter. ähnelt.
         /// </summary>
-        public static string ADM_TIP_SPEICHERN_LEER {
+        public static string WIRT_KWKG_ANLAGE_HEIZOEL {
             get {
-                return ResourceManager.GetString("ADM_TIP_SPEICHERN_LEER", resourceCulture);
+                return ResourceManager.GetString("WIRT_KWKG_ANLAGE_HEIZOEL", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Änderung — es gibt nichts zu speichern. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Über der Ausschreibungsgrenze von {0} kW und deshalb ohne Zuschlag: {1} (der Weg über eine Ausschreibung nach § 8a KWKG/KWKAusV ist nicht abgebildet). Die übrigen Anlagen mit zusammen {2} kW rechnen weiter. ähnelt.
         /// </summary>
-        public static string ADM_TIP_SPEICHERN_UNVERAENDERT {
+        public static string WIRT_KWKG_ANLAGE_UEBER_GRENZE {
             get {
-                return ResourceManager.GetString("ADM_TIP_SPEICHERN_UNVERAENDERT", resourceCulture);
+                return ResourceManager.GetString("WIRT_KWKG_ANLAGE_UEBER_GRENZE", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gespeichert um {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Das Projekt führt ein Öl-BHKW; welche Anlage damit betrieben wird, ließ sich nicht ermitteln, deshalb greift der Heizöl-Ausschluss ersatzweise auf alle Geräte des Projekts (KWKG 2025, Neuanlagen nur noch mit Erdgas); Bonus = 0. ähnelt.
         /// </summary>
-        public static string ADM_STATUS_GESPEICHERT {
+        public static string WIRT_KWKG_HEIZOEL_JE_ANLAGE_UNKLAR {
             get {
-                return ResourceManager.GetString("ADM_STATUS_GESPEICHERT", resourceCulture);
+                return ResourceManager.GetString("WIRT_KWKG_HEIZOEL_JE_ANLAGE_UNKLAR", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht gespeichert ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Öl-BHKW ohne Inbetriebnahmedatum: {0} — als Neuanlage wäre der Zuschlag für diese Anlagen ausgeschlossen (KWKG 2025); Datum im Parameterdialog pflegen. ähnelt.
         /// </summary>
-        public static string ADM_STATUS_FEHLER {
+        public static string WIRT_KWKG_HEIZOEL_OHNE_IBN {
             get {
-                return ResourceManager.GetString("ADM_STATUS_FEHLER", resourceCulture);
+                return ResourceManager.GetString("WIRT_KWKG_HEIZOEL_OHNE_IBN", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibgeschützter Datensatz ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Das Projekt führt ein Öl-BHKW, aber kein Inbetriebnahmedatum — als Neuanlage wäre der Zuschlag ausgeschlossen (KWKG 2025). Welche Anlage mit Öl betrieben wird, ließ sich nicht ermitteln; Datum im Parameterdialog pflegen. ähnelt.
         /// </summary>
-        public static string ADM_SCHUTZ_TITEL {
+        public static string WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR {
             get {
-                return ResourceManager.GetString("ADM_SCHUTZ_TITEL", resourceCulture);
+                return ResourceManager.GetString("WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Datensatz „{0}“ stammt aus dem Auslieferungskatalog und ist schreibgeschützt.  Soll er trotzdem überschrieben werden? ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Keine BHKW-Anlage des Projekts ist zuschlagsberechtigt — über der Ausschreibungsgrenze von {0} kW: {1}; mit Heizöl betrieben: {2}; Bonus = 0. ähnelt.
         /// </summary>
-        public static string ADM_SCHUTZ_FRAGE {
+        public static string WIRT_KWKG_KEINE_FOERDERFAEHIG {
             get {
-                return ResourceManager.GetString("ADM_SCHUTZ_FRAGE", resourceCulture);
+                return ResourceManager.GetString("WIRT_KWKG_KEINE_FOERDERFAEHIG", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner nicht eindeutig ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Σ installierte BHKW-Leistung {0} kW über der Ausschreibungsgrenze von {1} kW; die Leistung je Anlage ließ sich nicht ermitteln, deshalb greift die Grenze ersatzweise auf die Projektsumme; Bonus = 0. ähnelt.
         /// </summary>
-        public static string ADM_MEHRDEUTIG_TITEL {
+        public static string WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR {
             get {
-                return ResourceManager.GetString("ADM_MEHRDEUTIG_TITEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner „{0}“ kommt im Katalog {1}-mal vor.  Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird deshalb abgelehnt. Bitte die Dubletten zuerst bereinigen. ähnelt.
-        /// </summary>
-        public static string ADM_MEHRDEUTIG_TEXT {
-            get {
-                return ResourceManager.GetString("ADM_MEHRDEUTIG_TEXT", resourceCulture);
+                return ResourceManager.GetString("WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR", resourceCulture);
             }
         }
         

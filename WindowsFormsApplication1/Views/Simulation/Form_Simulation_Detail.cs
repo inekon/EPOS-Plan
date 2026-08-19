@@ -91,6 +91,14 @@ namespace WindowsFormsApplication1
         private TextBox tb_BhkwSpeicherdeckung;
         private Label label_BhkwSpeicherdeckungEinheit;
 
+        // ETAPPE E2 (L6): Kennzahlzeile „Vollbenutzungsstunden elektrisch"
+        // (SimulationBHKW.VbhElektrischGesamt) — die Größe, an der der KWK-Zuschlag hängt.
+        // Programmatisch wie die zwei Speicherzeilen darüber; Designer und .resx der Form
+        // bleiben unangetastet.
+        private Label label_BhkwVbhElektrisch;
+        private TextBox tb_BhkwVbhElektrisch;
+        private Label label_BhkwVbhElektrischEinheit;
+
         /// <summary>
         /// Zustand der Schaltfläche „Ergebnis speichern" (Nacharbeit Paket 8, Befund N1).
         ///
@@ -1209,6 +1217,91 @@ namespace WindowsFormsApplication1
                               TextAusFormResx("SIMDET_BHKW_SPEICHERDECKUNG", "aus dem Speicher gedeckt:"),
                               out label_BhkwSpeicherdeckung, out tb_BhkwSpeicherdeckung,
                               out label_BhkwSpeicherdeckungEinheit);
+
+            InitBhkwVbhZeile();
+        }
+
+        /// <summary>
+        /// ETAPPE E2 (Leitentscheidung L6) — legt die Kennzahlzeile
+        /// „Vollbenutzungsstunden elektrisch" unmittelbar unter die beiden vorhandenen
+        /// Vbh-Zeilen und benennt diese beiden zugleich richtig.
+        ///
+        /// <b>Warum die beiden Bestandszeilen umbenannt werden.</b> Sie hießen
+        /// „Betriebsstunden gesamt" und „Betriebsstunden Durchschnitt", zeigen aber
+        /// <c>SimulationBHKW.Betriebsstunden</c> bzw. <c>dLaufzeiten</c> — also die SUMME
+        /// beziehungsweise das MITTEL THERMISCHER Vollbenutzungsstunden je Modul
+        /// (<c>Wärme / Wärmeleistung</c>). Betriebsstunden sind das nicht: Der Rechenkern
+        /// bildet keine Taktung ab, und die Summe kann 8.760 h überschreiten. Genau diese
+        /// Verwechslung war der Fehler, den E2 in der Wirtschaftlichkeit behebt — sie im
+        /// Ergebnisreiter stehen zu lassen, hieße ihn zu konservieren.
+        ///
+        /// <b>Warum zur Laufzeit und nicht in der .resx.</b> Dieselbe Begründung wie bei
+        /// <see cref="InitBhkwSpeicherzeilen"/>: Designer und .resx der Form bleiben
+        /// unangetastet. Die Texte kommen aus dem Katalog <c>MyResource.Resource</c> und
+        /// sind damit in beiden Sprachen gepflegt (Drei-Schichten-Regel).
+        ///
+        /// <b>Warum nur bis zur Brennstoff-Überschrift nachgerückt wird.</b> Nach dem
+        /// Einschub der beiden Speicherzeilen endet der Brennstoffblock der rechten Spalte
+        /// bei y≈696 bei einer Entwurfshöhe von 721 — für weitere 32 px ist dort kein
+        /// Platz. Zwischen der letzten Deckungszeile und der Überschrift
+        /// „Brennstoffverbrauch" stehen dagegen 39 px frei; genau die werden verbraucht.
+        /// </summary>
+        private void InitBhkwVbhZeile()
+        {
+            if (tabPage_BHKW == null || textBox_Betriebsstunden_Durchschnitt == null) return;
+
+            // Die zwei Bestandszeilen richtig benennen (Beschriftung links, Einheit bleibt).
+            Control besch1 = NachbarZeile(textBox_Betriebsstunden, true);
+            if (besch1 is Label) besch1.Text = MyResource.Resource.SIM_BHKW_VBH_TH_SUMME;
+            Control besch2 = NachbarZeile(textBox_Betriebsstunden_Durchschnitt, true);
+            if (besch2 is Label) besch2.Text = MyResource.Resource.SIM_BHKW_VBH_TH_MITTEL;
+
+            TextBox muster = textBox_Betriebsstunden_Durchschnitt;
+            Control beschriftung = NachbarZeile(muster, true);
+            Control einheit = NachbarZeile(muster, false);   // trägt bereits „h/a"
+
+            int schritt = muster.Height + 7;
+            int y = muster.Bottom + 7;
+
+            // Nur den Block zwischen dieser Zeile und der Brennstoff-Überschrift schieben.
+            BhkwZeilenNachruecken(muster.Bottom + 4, BhkwBrennstoffBlockOben(), schritt);
+
+            BhkwKennzahlZeile(muster, beschriftung, einheit, y,
+                              "tb_BhkwVbhElektrisch",
+                              MyResource.Resource.SIM_BHKW_VBH_EL,
+                              out label_BhkwVbhElektrisch, out tb_BhkwVbhElektrisch,
+                              out label_BhkwVbhElektrischEinheit);
+        }
+
+        /// <summary>
+        /// Obere Kante des Brennstoffblocks der rechten Spalte — die Grenze, bis zu der
+        /// nachgerückt werden darf. Ermittelt aus den Steuerelementen selbst
+        /// (unterstes Element der Spalte), nicht aus einer Namensliste; verschiebt sich
+        /// der Entwurf, verschiebt sich die Grenze mit.
+        /// </summary>
+        private int BhkwBrennstoffBlockOben()
+        {
+            if (tabPage_BHKW == null) return int.MaxValue;
+            int grenzeLinks = (chart_BHKW_Waerme != null) ? chart_BHKW_Waerme.Right + 8 : 0;
+            int unten = int.MaxValue;
+            foreach (Control c in tabPage_BHKW.Controls)
+            {
+                if (ReferenceEquals(c, chart_BHKW_Waerme)) continue;
+                if (c.Left < grenzeLinks) continue;
+                // Der Block beginnt unterhalb der Deckungszeilen; als Anker dient das
+                // Panel der Brennstoffliste samt seiner Überschrift darüber.
+                if (c is FlowLayoutPanel && c.Top < unten) unten = c.Top;
+            }
+            if (unten == int.MaxValue) return int.MaxValue;
+
+            // Die Überschrift steht dicht über dem Panel — sie darf nicht mitwandern.
+            int ueberschrift = unten;
+            foreach (Control c in tabPage_BHKW.Controls)
+            {
+                if (c.Left < grenzeLinks) continue;
+                if (c.Top < unten && c.Top > unten - 60 && c.Top < ueberschrift) ueberschrift = c.Top;
+            }
+            return ueberschrift;
         }
 
         /// <summary>
@@ -1221,6 +1314,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void BhkwZeilenNachruecken(int abY, int dy)
         {
+            BhkwZeilenNachruecken(abY, int.MaxValue, dy);
+        }
+
+        /// <summary>
+        /// Wie oben, aber nur bis zur Höhe <paramref name="bisY"/> (ausschließlich) —
+        /// gebraucht seit Etappe E2: Unterhalb der Deckungszeilen ist genau eine Zeilenhöhe
+        /// frei, der Brennstoffblock darunter darf nicht mitwandern (er stieße sonst über
+        /// die Entwurfshöhe der Seite hinaus).
+        /// </summary>
+        private void BhkwZeilenNachruecken(int abY, int bisY, int dy)
+        {
             if (tabPage_BHKW == null || chart_BHKW_Waerme == null) return;
 
             int grenzeLinks = chart_BHKW_Waerme.Right + 8;
@@ -1230,7 +1334,7 @@ namespace WindowsFormsApplication1
             {
                 if (ReferenceEquals(c, chart_BHKW_Waerme)) continue;
                 if (c.Left < grenzeLinks) continue;
-                if (c.Top < abY) continue;
+                if (c.Top < abY || c.Top >= bisY) continue;
                 c.Location = new Point(c.Left, c.Top + dy);
             }
             tabPage_BHKW.ResumeLayout();
@@ -1400,6 +1504,11 @@ namespace WindowsFormsApplication1
             if (tb_BhkwSpeicherdeckung != null) tb_BhkwSpeicherdeckung.Visible = zeigen;
             if (label_BhkwSpeicherdeckung != null) label_BhkwSpeicherdeckung.Visible = zeigen;
             if (label_BhkwSpeicherdeckungEinheit != null) label_BhkwSpeicherdeckungEinheit.Visible = zeigen;
+
+            // ETAPPE E2: die Vbh-Zeile folgt derselben Präsenzregel.
+            if (tb_BhkwVbhElektrisch != null) tb_BhkwVbhElektrisch.Visible = zeigen;
+            if (label_BhkwVbhElektrisch != null) label_BhkwVbhElektrisch.Visible = zeigen;
+            if (label_BhkwVbhElektrischEinheit != null) label_BhkwVbhElektrischEinheit.Visible = zeigen;
         }
 
         /// <summary>
@@ -3407,8 +3516,16 @@ namespace WindowsFormsApplication1
             // Begründungen stehen im Blockkommentar dort.
             BhkwErgebnisAnzeigen();
 
+            // ETAPPE E2: Werte unverändert, Beschriftungen richtiggestellt (siehe
+            // InitBhkwVbhZeile) — beide Felder führen THERMISCHE Vollbenutzungsstunden,
+            // keine Betriebsstunden. Darunter neu die elektrischen Vbh: die Größe, an der
+            // der KWK-Zuschlag hängt und die 8.760 h nicht überschreiten kann.
             textBox_Betriebsstunden.Text = sim.simulation_bhkw.Betriebsstunden.ToString("F0");
             textBox_Betriebsstunden_Durchschnitt.Text = sim.simulation_bhkw.dLaufzeiten.ToString("F0");
+            if (tb_BhkwVbhElektrisch != null)
+                tb_BhkwVbhElektrisch.Text = sim.simulation_bhkw.VbhElektrischGesamt > 0
+                    ? sim.simulation_bhkw.VbhElektrischGesamt.ToString("F0")
+                    : "—";   // keine elektrische Nennleistung gepflegt — keine Zahl erfinden
 
             AktualisiereBrennstoffAnzeige(sim.simulation_bhkw);
 

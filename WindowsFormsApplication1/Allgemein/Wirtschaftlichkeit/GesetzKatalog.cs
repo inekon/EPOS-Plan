@@ -533,6 +533,12 @@ namespace WindowsFormsApplication1
             l.Add(N(DbWerte.GESETZ_KWKG_LEISTUNGSSTUFE_3, KWKG, 2020, 250.0, KW, G, Q_STUFE));
             l.Add(N(DbWerte.GESETZ_KWKG_LEISTUNGSSTUFE_4, KWKG, 2020, 2000.0, KW, G, Q_STUFE));
 
+            // Ausschreibungsgrenze § 8a KWKG / KWKAusV — bezogen auf die EINZELNE Anlage.
+            // Der Zuschlag oberhalb dieser Leistung ist nur über eine Ausschreibung zu
+            // erlangen; dieser Weg ist in EPOS-Plan nicht bedienbar (Nachtrag zu E2).
+            l.Add(N(DbWerte.GESETZ_KWKG_AUSSCHREIBUNG_GRENZE, KWKG, 2020, 500.0, KW, G,
+                    "KWKG 2025 § 8a i.V.m. KWKAusV — Ausschreibungspflicht je Anlage"));
+
             // Dauer der Zuschlagszahlung (§ 8). Die 60.000 Vbh für Anlagen bis 50 kW
             // gibt es seit dem KWKG 2020 nicht mehr — halbierte Dauer, verdoppelte Sätze.
             l.Add(N(DbWerte.GESETZ_KWKG_VBH_NEUANLAGE, KWKG, 2020, 30000.0, H, G,

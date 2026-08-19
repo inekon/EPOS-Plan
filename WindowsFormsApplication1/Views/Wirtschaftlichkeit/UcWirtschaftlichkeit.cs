@@ -538,6 +538,13 @@ namespace WindowsFormsApplication1
             Zeile("Einspeiseerlös [€/a]", zeilen, x => W(x.EinspeiseerloesJahr, "N0", kultur));
             if (zeilen.Any(x => x.KwkgErloesJahr1 > 0))   // nur wenn KWKG aktiv (W2)
                 Zeile("KWKG-Erlös Jahr 1 [€/a]", zeilen, x => W(x.KwkgErloesJahr1, "N0", kultur));
+            // ETAPPE E2 (L6): die Bemessungsgrundlage der KWKG-Deckelung sichtbar machen —
+            // ELEKTRISCHE Vollbenutzungsstunden. Die Zeile erscheint, sobald irgendein
+            // Projekt der Gruppe die Größe führt; „—" heißt „nicht erhoben" (Ergebnis vor E2)
+            // oder „keine elektrische Leistung gepflegt".
+            if (zeilen.Any(x => x.KwkgVbhElektrisch > 0))
+                Zeile("Vbh elektrisch (KWKG-Basis) [h/a]", zeilen,
+                      x => x.KwkgVbhElektrisch > 0 ? W(x.KwkgVbhElektrisch, "N0", kultur) : "—");
             Zeile("Restwert (Barwert) [€]", zeilen, x => W(x.RestwertBarwert, "N0", kultur));
             Zeile("Nettobarwert über T [€]", zeilen, x => W(x.Kapitalwert, "N0", kultur));
             Zeile("Kapitalwert vs. Stamm [€]", zeilen, x => x.IstStamm ? "(Referenz)" : W(x.KapitalwertDiff, "N0", kultur));
