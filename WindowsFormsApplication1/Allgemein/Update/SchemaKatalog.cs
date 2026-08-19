@@ -58,6 +58,8 @@ namespace WindowsFormsApplication1
         public const string TAB_STROMSPEICHERVARIANTE = "Tab_StromspeicherVariante";
         public const string TAB_ERGEBNISSTROMSPEICHER = "Tab_ErgebnisStromspeicher";
         public const string ENERGY_PROJECT_SETTINGS = "energy_project_settings";
+        public const string ENERGY_CONVERSION = "energy_conversion";
+        public const string ENERGY_CARRIER = "energy_carrier";
         public const string TAB_PREISREIHE = "Tab_Preisreihe";
         public const string TAB_PREISREIHEDATEN = "Tab_PreisreiheDaten";
         public const string TAB_KOSTENPROFIL = "Tab_Kostenprofil";
@@ -1203,6 +1205,82 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_BIOMASSE_NACHWEIS,   "TEXT(30)"),
         };
 
+        // ---------------------------------------------------------------------------
+        // HAUPTFORDERUNG HF2 (Konzept_Kosten_Energietraeger_EPOS-Plan.md § 4.2,
+        // Migrationsschritt M-A) — Einheiten-Konsistenz der Energieträger
+        // ---------------------------------------------------------------------------
+
+        /// <summary>
+        /// HF2 / L4 — <b>Anzeigename</b> der Umrechnungsregel. Vorbelegung durch
+        /// Schritt 25c: <c>DbWerte.UMRECHNUNG_NAME_Z_FAKTOR</c> bei gasförmigen
+        /// Trägern, sonst <c>DbWerte.UMRECHNUNG_NAME_STANDARD</c>.
+        ///
+        /// <para><b>Breite.</b> TEXT(50) — der Anwender darf den Namen ab Etappe K3
+        /// frei überschreiben, und ein zu kurzes Feld ließe das UPDATE in Access STILL
+        /// scheitern (Lehre aus Schritt 19, Probe C2). Die beiden Vorbelegungen sind
+        /// 17 bzw. 8 Zeichen lang; die 50 sind der Puffer für den freien Text.</para>
+        /// </summary>
+        public const string SPALTE_EC_FAKTOR_NAME = "faktor_name";
+
+        /// <summary>
+        /// HF2 / L3 — Regel <b>abschaltbar statt löschbar</b>: Eine deaktivierte Regel
+        /// bleibt mit ihrem Faktor stehen und ist damit weiter nachvollziehbar, zählt
+        /// aber für die kWh-Bedingung aus L2 nicht mehr mit.
+        ///
+        /// <para><b>Die bekannte ACE-Falle, hier in ihrer scharfen Form.</b> Access
+        /// belegt eine neue <c>YESNO</c>-Spalte in JEDER Bestandszeile mit
+        /// <c>False</c> — jede vorhandene Umrechnungsregel stünde damit schlagartig
+        /// auf „aus". Deshalb hebt Schritt 25b sie unmittelbar nach dem
+        /// <c>ADD COLUMN</c> auf WAHR, und zwar <b>nur dann, wenn die Spalte in
+        /// eben diesem Lauf entstanden ist</b> (Muster
+        /// <c>WirtschaftlichkeitCtrl.SpalteSicher</c>: „liefert true, wenn die Spalte
+        /// JETZT neu angelegt wurde"). Ein pauschales UPDATE bei jedem Lauf würde die
+        /// erste vom Anwender abgeschaltete Regel wieder einschalten — und weil
+        /// <c>YESNO</c> in Access kein NULL kennt, ließe sich „nie gesetzt" danach
+        /// nicht mehr von „bewusst abgeschaltet" unterscheiden.</para>
+        /// </summary>
+        public const string SPALTE_EC_AKTIV = "aktiv";
+
+        /// <summary>
+        /// Schritt 25 der Migration (Konzept Kosten/Energieträger, HF2, Etappe K2) —
+        /// die zwei additiven Spalten an <c>energy_conversion</c>.
+        ///
+        /// <b>ERGEBNISNEUTRAL, und das ist die Abnahmebedingung der Etappe.</b> Kein
+        /// Rechenpfad liest die beiden Spalten: <c>ucFuelSettings.GetConversions</c>,
+        /// <c>GetConvID</c>, <c>GetTargetUnitByConversionId</c> und
+        /// <c>WizardCtrl</c> lesen <c>energy_conversion</c> ausschließlich mit
+        /// AUSGESCHRIEBENER Spaltenliste, nie mit <c>SELECT *</c>; die Mengen- und
+        /// Kostenrechnung geht ohnehin über <c>Abfrage_Energietraeger_Effektiv</c>.
+        /// <c>factor</c>, <c>from_unit</c>, <c>to_unit</c> und <c>user_edited</c>
+        /// bleiben Byte für Byte unangetastet — der Schritt fügt zwei Spalten hinzu
+        /// und benennt, was schon da ist.
+        ///
+        /// <b>Kein DDL-DEFAULT</b> (Hausregel, siehe
+        /// <see cref="Schritt12_Preismodell"/>): Ein DEFAULT gälte nur für künftig
+        /// eingefügte Zeilen und ließe den Bestand leer bzw. auf <c>False</c> stehen.
+        /// Beide Vorbelegungen setzt der DML-Teil des Schritts.
+        ///
+        /// <b>Warum die Tabelle vorher angelegt werden muss.</b> Anders als bei allen
+        /// bisherigen Schritten ist <c>energy_conversion</c> nirgends im Code ANGELEGT
+        /// — sie kommt aus der ausgelieferten <c>Kenndaten.accdb</c> bzw. aus der
+        /// Handmigration (<c>migration.manuell.sql</c>, Abschnitt „energy_conversion:
+        /// global, Quelle gewinnt komplett"). Eine Datenbank ohne diese Herkunft hat
+        /// sie schlicht nicht, und <see cref="SchemaMigration.SpaltenAnlegen"/> würde
+        /// dort „Tabelle nicht lesbar" melden und den Schritt scheitern lassen.
+        /// Deshalb legt Schritt 25a sie bei Bedarf selbst an — mit exakt dem
+        /// Spaltensatz des Handskripts plus den zwei Neuspalten.
+        ///
+        /// <b>Nicht in <see cref="Alle"/>.</b> Dieselbe Begründung wie bei
+        /// <see cref="Schritt12_Preismodell"/>: Die stille Rückfallebene sichert die
+        /// Eingabespalten der SIMULATION. <c>energy_conversion</c> gehört dem
+        /// Kostenmodul und wird von der Engine nirgends gelesen.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt25_Einheitenkonsistenz =
+        {
+            new SchemaSpalte(ENERGY_CONVERSION, SPALTE_EC_FAKTOR_NAME, "TEXT(50)"),
+            new SchemaSpalte(ENERGY_CONVERSION, SPALTE_EC_AKTIV,       "YESNO"),
+        };
+
         /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
@@ -1318,6 +1396,15 @@ namespace WindowsFormsApplication1
         /// Rechenkern liest die Tabelle nirgends. Die tolerante Vorsorge steht
         /// unmittelbar vor dem Zugriff in
         /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>.
+        ///
+        /// <see cref="Schritt25_Einheitenkonsistenz"/> ist BEWUSST NICHT aufgeführt —
+        /// dieselbe Begründung wie bei <see cref="Schritt12_Preismodell"/>:
+        /// <c>energy_conversion</c> gehört dem Kostenmodul, die Simulation liest die
+        /// Tabelle nirgends. Hinzu kommt hier ein zweiter Grund: <see cref="Alle"/>
+        /// kennt nur additive SPALTEN, und die Tabelle selbst muss unter Umständen erst
+        /// entstehen — das kann die Rückfallebene gar nicht leisten. Die tolerante
+        /// Vorsorge übernimmt <c>EnergieEinheitenPruefung</c>, indem sie eine fehlende
+        /// Tabelle oder Spalte als Befund „Migration ausstehend" meldet statt zu werfen.
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {

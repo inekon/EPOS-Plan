@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 24;
+        public const int ZIEL_VERSION = 25;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -611,6 +611,66 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_23_BILANZKONVENTION = 23;
 
+        /// <summary>
+        /// Nummer der Etappe <b>K2</b> aus
+        /// <c>Konzept_Kosten_Energietraeger_EPOS-Plan.md</c> (Hauptforderung HF2,
+        /// Migrationsschritt <b>M-A</b>, Leitentscheidungen L2/L3/L4): die zwei
+        /// Angaben, mit denen eine Umrechnungsregel einen <b>Namen</b> und einen
+        /// <b>Schalter</b> bekommt — <c>energy_conversion.faktor_name</c> und
+        /// <c>energy_conversion.aktiv</c>.
+        ///
+        /// <para><b>Warum 25 und nicht 21.</b> Der Etappenplan des Konzepts (§ 10) ist
+        /// älter als die Migration: Zum Zeitpunkt seiner Niederschrift war 20 der
+        /// letzte vergebene Schritt. Beim Zusammenführen waren 21 bis 24 bereits an die
+        /// Etappen E5, E6, L12/L13 und die Katalogdubletten vergeben — dieselbe Lage,
+        /// die <see cref="SCHRITT_24_KATALOG_DUBLETTEN"/> schon zweimal ans Ende
+        /// gerückt hat. Zwei Schritte mit derselben Nummer würden den Versionsmarker
+        /// unbrauchbar machen: Er hält genau eine Zahl fest.</para>
+        ///
+        /// <b>Was der Schritt tut.</b> <b>25a</b> stellt die Tabelle
+        /// <c>energy_conversion</c> sicher — als EINZIGER Schritt des Vorhabens muss er
+        /// damit rechnen, dass sie gar nicht existiert (siehe unten). <b>25b</b> das
+        /// additive DDL aus
+        /// <see cref="SchemaKatalog.Schritt25_Einheitenkonsistenz"/> samt der
+        /// unmittelbar anschließenden Vorbelegung <c>aktiv = WAHR</c>. <b>25c</b> die
+        /// Vorbelegung der Namensspalte: <c>z-Faktor</c> für Regeln gasförmiger
+        /// Träger, <c>Umrechnungsfaktor</c> für alle übrigen.
+        ///
+        /// <b>ERGEBNISNEUTRAL — und daran hängt die ganze Etappe K2.</b> Der Schritt
+        /// ändert <b>keinen einzigen Bestandswert</b>: <c>factor</c>, <c>from_unit</c>,
+        /// <c>to_unit</c> und <c>user_edited</c> werden nicht angefasst, keine Zeile
+        /// wird angelegt oder gelöscht, und keine Einheit wird umbenannt (die
+        /// Nm³-Umstellung ist M-B in Etappe K3). Die zwei neuen Spalten liest kein
+        /// Rechenpfad — die Leseseite (<c>ucFuelSettings.GetConversions</c>,
+        /// <c>GetConvID</c>, <c>GetTargetUnitByConversionId</c>,
+        /// <c>WizardCtrl.FindeUmrechnungId</c>) arbeitet durchgängig mit
+        /// ausgeschriebener Spaltenliste, nie mit <c>SELECT *</c>. Der einzige neue
+        /// Leser ist <c>EnergieEinheitenPruefung</c>, und der rechnet nichts, sondern
+        /// meldet.
+        ///
+        /// <b>Die Tabelle kann FEHLEN — der Sonderfall dieses Schritts.</b>
+        /// <c>energy_conversion</c> wird von keinem Migrationsschritt und von keinem
+        /// Controller angelegt; sie stammt aus der ausgelieferten
+        /// <c>Kenndaten.accdb</c> bzw. aus <c>migration.manuell.sql</c>. Fehlt sie,
+        /// meldete <see cref="SpaltenAnlegen"/> nur „Tabelle nicht lesbar" und der
+        /// Schritt scheiterte — für immer, denn der Marker bliebe stehen. 25a legt sie
+        /// deshalb mit dem Spaltensatz des Handskripts an
+        /// (<c>ID, id_brennstoff, from_unit, to_unit, factor, user_edited</c>) und
+        /// überlässt die zwei Neuspalten dem regulären Weg 25b. Eine so entstandene
+        /// Tabelle ist LEER — die Seeds kommen mit M-B in Etappe K3.
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): Das CREATE geht über eine
+        /// vorhandene Tabelle hinweg (<see cref="IstBereitsVorhanden"/>), das DDL über
+        /// vorhandene Spalten, und die WHERE-Klauseln von 25c (<c>IS NULL OR = ''</c>)
+        /// laufen nach dem ersten Lauf leer. Ein vom Anwender gepflegter Name wird nie
+        /// angefasst. Die Vorbelegung <c>aktiv = WAHR</c> ist der eine Teil, der sich
+        /// nicht über eine WHERE-Klausel absichern lässt — <c>YESNO</c> kennt in Access
+        /// kein NULL, „nie gesetzt" und „bewusst abgeschaltet" sind danach
+        /// ununterscheidbar. Sie läuft deshalb NUR, wenn die Spalte in eben diesem Lauf
+        /// entstanden ist (Muster <c>WirtschaftlichkeitCtrl.SpalteSicher</c>).
+        /// </summary>
+        public const int SCHRITT_25_EINHEITENKONSISTENZ = 25;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -841,6 +901,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static int DatenAufschlagVorbelegt { get; private set; }
 
+        // --- Zählwerk der Einheiten-Konsistenz aus Schritt 25 (Etappe K2) --------------
+
+        /// <summary>
+        /// Schritt 25b: Umrechnungsregeln, die die Vorbelegung <c>aktiv = WAHR</c>
+        /// erhalten haben. Größer als 0 nur in dem EINEN Lauf, der die Spalte anlegt.
+        /// </summary>
+        public static int DatenUmrechnungAktiv { get; private set; }
+
+        /// <summary>
+        /// Schritt 25c: Umrechnungsregeln, die einen Namen erhalten haben — die Summe
+        /// aus <c>z-Faktor</c> (gasförmige Träger) und <c>Umrechnungsfaktor</c>.
+        /// </summary>
+        public static int DatenUmrechnungBenannt { get; private set; }
+
         /// <summary>
         /// R7: Anlagen, bei denen der Bezeichner NICHT eindeutig auflösbar war (kein
         /// Treffer oder mehrere gleichnamige Projektkopien). Der Fremdschlüssel bleibt
@@ -1055,6 +1129,19 @@ namespace WindowsFormsApplication1
                         "Doppelte Katalogeinträge aus dem zweiten Importlauf entfernen",
                         "Die doppelten Katalogeinträge konnten nicht entfernt werden.",
                         Schritt_24_KatalogDubletten),
+
+            // ETAPPE K2 (Konzept Kosten/Energieträger, HF2, Migrationsschritt M-A) -
+            //       Name und Aktiv-Schalter der Umrechnungsregel an energy_conversion.
+            //       Legt die Tabelle bei Bedarf selbst an - sie ist die einzige des
+            //       Vorhabens, die weder ein Schritt noch ein Controller anlegt.
+            //       DDL + DML-Vorbelegung; ergebnisneutral, weil kein Rechenpfad die
+            //       beiden Spalten liest und kein Bestandswert angefasst wird.
+            new Schritt(SCHRITT_25_EINHEITENKONSISTENZ,
+                        "Einheiten-Konsistenz: Tabelle energy_conversion sicherstellen, " +
+                        "Spalten faktor_name und aktiv, Vorbelegung z-Faktor / " +
+                        "Umrechnungsfaktor und aktiv = WAHR (Etappe K2, HF2/M-A)",
+                        "Die Umrechnungsregeln der Energieträger konnten nicht benannt werden.",
+                        Schritt_25_Einheitenkonsistenz),
         };
 
         // =================================================================================
@@ -1104,6 +1191,8 @@ namespace WindowsFormsApplication1
             DatenDublettenOffen = 0;
             DatenKatalogDublettenGeloescht = 0;
             DatenKatalogDublettenOffen = 0;
+            DatenUmrechnungAktiv = 0;
+            DatenUmrechnungBenannt = 0;
             _eindeutigkeitGeprueft = false;
 
             var l = new Lauf();
@@ -1978,6 +2067,257 @@ namespace WindowsFormsApplication1
             // getroffen hat.
 
             return ok;
+        }
+
+        // =================================================================================
+        // Schritt 25 - Einheiten-Konsistenz der Energieträger (Etappe K2, HF2 / M-A)
+        // =================================================================================
+
+        /// <summary>Preismodell-Code der GASFÖRMIGEN Träger in
+        /// <c>energy_carrier.pricing_model</c> — Gegenstück zu
+        /// <see cref="CARRIER_STROM"/>.
+        ///
+        /// <para>Das Konzept nennt in § 4.1 den Code <c>GAS</c>; den gibt es nicht.
+        /// Der Bestand vom 19.08.2026 führt sechs Codes (ANIMAL_FAT, ELECTRICITY,
+        /// GASEOUS_FUEL, HEAT, LIQUID_FUEL, SOLID_FUEL), und <c>Gas</c> ist der
+        /// <c>group_code</c>. Über den Gruppencode zu gehen wäre zudem falsch: Er
+        /// führt Wasserstoff unter <c>Wasserstoff</c>, obwohl dessen Preismodell
+        /// <c>GASEOUS_FUEL</c> ist — ausgerechnet der gasförmigste Träger bliebe ohne
+        /// z-Faktor.</para>
+        /// </summary>
+        private const string CARRIER_GAS = "GASEOUS_FUEL";
+
+        /// <summary>
+        /// Spaltensatz der Tabelle <c>energy_conversion</c>, wie ihn die Handmigration
+        /// führt (<c>migration.manuell.sql</c>, Abschnitt „energy_conversion: global,
+        /// Quelle gewinnt komplett"). Die zwei Neuspalten stehen bewusst NICHT hier —
+        /// sie kommen über den regulären Weg <see cref="SpaltenAnlegen"/> aus dem
+        /// Katalog, damit es für sie genau eine Wahrheit gibt.
+        /// </summary>
+        private const string SQL_CREATE_ENERGY_CONVERSION =
+            "CREATE TABLE energy_conversion (ID LONG NOT NULL PRIMARY KEY, " +
+            "id_brennstoff LONG, from_unit TEXT(16), to_unit TEXT(16), " +
+            "factor DOUBLE, user_edited YESNO)";
+
+        /// <summary>
+        /// <b>Schritt 25 (Etappe K2, Konzept Kosten/Energieträger HF2, M-A).</b> Drei
+        /// Teile in fester Reihenfolge:
+        ///
+        ///   <b>25a</b> Die Tabelle <c>energy_conversion</c> sicherstellen. HART: Ohne
+        ///   sie hätten 25b und 25c kein Ziel.
+        ///
+        ///   <b>25b</b> Die zwei Spalten aus
+        ///   <see cref="SchemaKatalog.Schritt25_Einheitenkonsistenz"/> — und, falls
+        ///   <c>aktiv</c> dabei NEU entstanden ist, unmittelbar die Vorbelegung auf
+        ///   WAHR.
+        ///
+        ///   <b>25c</b> Die Vorbelegung der Namensspalte, zweistufig: erst der
+        ///   z-Faktor der Gasträger, dann der Standardname für alles Übrige.
+        ///
+        /// <b>Die Reihenfolge von 25c ist tragend.</b> Der zweite UPDATE greift alles,
+        /// was danach noch ohne Namen dasteht. Liefe er zuerst, bekämen auch die
+        /// Gasregeln „Umrechnungsfaktor" — und der erste UPDATE fände wegen seiner
+        /// eigenen <c>IS NULL OR = ''</c>-Bedingung keine Zeile mehr. Zwei Anweisungen
+        /// in dieser Reihenfolge sind einfacher und robuster als ein
+        /// <c>IIf</c>-Ausdruck über eine Unterabfrage.
+        ///
+        /// <b>TEILERFOLG IST FEHLER.</b> Die DML-Teile werden gesammelt
+        /// (<c>ok &amp;=</c>) statt beim ersten Fehler abzubrechen — so steht im
+        /// Protokoll, was von den Vorbelegungen gelungen ist. Der Marker rückt nur bei
+        /// vollem Erfolg vor.
+        /// </summary>
+        private static bool Schritt_25_Einheitenkonsistenz(Lauf l)
+        {
+            // --- 25a) Tabelle sicherstellen ------------------------------------------
+            // Ddl() wertet "existiert bereits" als Erfolg; im Regelfall (Datenbank aus
+            // der Auslieferung oder aus der Handmigration) ist das genau der Fall.
+            if (!Ddl(l, SQL_CREATE_ENERGY_CONVERSION, "Tabelle " + SchemaKatalog.ENERGY_CONVERSION))
+                return false;
+
+            // --- 25b) Die zwei Spalten ------------------------------------------------
+            // Der Aktiv-Schalter wird VOR dem Anlegen abgefragt: Nur wenn er in DIESEM
+            // Lauf entsteht, darf die Vorbelegung pauschal laufen (Begründung an
+            // SchemaKatalog.SPALTE_EC_AKTIV).
+            bool aktivIstNeu = !SpalteVorhanden(l, SchemaKatalog.ENERGY_CONVERSION,
+                                                SchemaKatalog.SPALTE_EC_AKTIV);
+
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt25_Einheitenkonsistenz)) return false;
+
+            bool ok = true;
+
+            if (aktivIstNeu)
+            {
+                // Dieselbe ACE-Falle wie bei Extrapolation_erlaubt (Schritt 7) und
+                // Aufschlag_Anwenden (Schritt 12d): ADD COLUMN … YESNO belegt jede
+                // Bestandszeile mit False. Ohne dieses UPDATE stünde jede vorhandene
+                // Umrechnungsregel schlagartig auf "abgeschaltet".
+                int n = NonQuery(l,
+                    "UPDATE [" + SchemaKatalog.ENERGY_CONVERSION + "] SET [" +
+                    SchemaKatalog.SPALTE_EC_AKTIV + "] = TRUE");
+
+                if (n < 0)
+                {
+                    l.Notiz("Vorbelegung " + SchemaKatalog.SPALTE_EC_AKTIV + ": UPDATE fehlgeschlagen");
+                    ok = false;
+                }
+                else
+                {
+                    DatenUmrechnungAktiv = n;
+                    l.Notiz("25b: " + n + " Umrechnungsregeln auf aktiv = WAHR vorbelegt " +
+                            "(L3: Regeln sind abschaltbar, nicht löschbar - der Bestand bleibt an).");
+                }
+            }
+            else
+            {
+                l.Notiz("25b: aktiv war bereits vorhanden - keine Vorbelegung " +
+                        "(ein abgeschalteter Zustand des Anwenders bleibt erhalten).");
+            }
+
+            // --- 25c) Vorbelegung der Namensspalte ------------------------------------
+            ok &= FaktornameVorbelegen(l);
+
+            return ok;
+        }
+
+        /// <summary>
+        /// <b>25c</b>: Jede Umrechnungsregel ohne Namen bekommt einen — <c>z-Faktor</c>,
+        /// wenn ihr Brennstoff zu einem gasförmigen Träger gehört, sonst
+        /// <c>Umrechnungsfaktor</c> (L4).
+        ///
+        /// <para><b>Die Zuordnung läuft über <c>id_brennstoff</c>, nicht über den
+        /// Träger.</b> <c>energy_conversion</c> hängt am BRENNSTOFF
+        /// (<c>Tab_Brennstoff_Stamm.ID</c>), nicht am Katalogträger — mehrere Träger
+        /// können denselben Brennstoff führen (im Bestand: „Biogas", „Biogas 2",
+        /// „Biogas Variante" und „Test" alle mit <c>ID_Brennstoff = 14</c>). Gefragt
+        /// ist deshalb: „gibt es zu diesem Brennstoff überhaupt einen Gasträger?".</para>
+        ///
+        /// <para><b>ZWEI Anweisungen statt einer mit Unterabfrage — eine ACE-Falle, die
+        /// beim Trockentest aufgefallen ist.</b> Die naheliegende Fassung
+        /// <c>UPDATE … WHERE id_brennstoff IN (SELECT … WHERE pricing_model = ?)</c> mit
+        /// ZWEI Parametern (einer im <c>SET</c>, einer in der Unterabfrage) trifft in
+        /// ACE <b>null Zeilen</b> — ohne Fehler, ohne Warnung. Gegen dieselbe Datenbank
+        /// liefert die identische Bedingung als <c>SELECT COUNT(*)</c> fünf Zeilen, und
+        /// als <c>UPDATE</c> mit LITERAL in der Unterabfrage ebenfalls fünf: Der
+        /// Provider bindet Parameter innerhalb einer Unterabfrage eines UPDATE nicht in
+        /// Textreihenfolge. Ein stilles „0 Zeilen betroffen" wäre hier besonders
+        /// heimtückisch, weil der Schritt trotzdem als erfolgreich gälte und die
+        /// Gasregeln anschließend vom zweiten UPDATE den Standardnamen bekämen.
+        /// Deshalb: erst die Brennstoffnummern mit einer parametrisierten ABFRAGE
+        /// holen (dort bindet ACE korrekt), dann ein UPDATE mit ganzzahliger
+        /// IN-Liste — aus <c>int</c> gebaut und damit ohne jede
+        /// Einschleusungsmöglichkeit.</para>
+        ///
+        /// <para><b>Idempotent</b>: Beide UPDATEs greifen nur Zeilen ohne Namen
+        /// (<c>IS NULL OR = ''</c>) — dieselbe Bedingung wie in den Schritten 19b bis
+        /// 23b und aus demselben Grund: Access legt eine neue TEXT-Spalte mit NULL an,
+        /// ein von Hand nachgetragenes Feld kann aber auch "" enthalten. Ein vom
+        /// Anwender vergebener Name bleibt unangetastet.</para>
+        /// </summary>
+        private static bool FaktornameVorbelegen(Lauf l)
+        {
+            string tab = SchemaKatalog.ENERGY_CONVERSION;
+            string sp = SchemaKatalog.SPALTE_EC_FAKTOR_NAME;
+            string leer = " AND ([" + sp + "] IS NULL OR [" + sp + "] = '')";
+            bool ok = true;
+            int summe = 0;
+
+            // 1. Gasträger -> z-Faktor. Zuerst die Brennstoffnummern (Abfrage, nicht
+            //    Unterabfrage - Begründung im Methodenkommentar).
+            string gasIds = GasBrennstoffListe(l);
+
+            if (gasIds == null)
+            {
+                l.Notiz("Vorbelegung " + sp + " (z-Faktor): " + SchemaKatalog.ENERGY_CARRIER +
+                        " ist nicht lesbar - die Gasträger konnten nicht bestimmt werden.");
+                ok = false;
+            }
+            else if (gasIds.Length == 0)
+            {
+                l.Notiz("25c: kein Träger mit pricing_model = " + CARRIER_GAS +
+                        " - keine z-Faktor-Vorbelegung nötig.");
+            }
+            else
+            {
+                int gas = NonQuery(l,
+                    "UPDATE [" + tab + "] SET [" + sp + "] = ? WHERE [id_brennstoff] IN (" +
+                    gasIds + ")" + leer,
+                    new OleDbParameter("@n", DbWerte.UMRECHNUNG_NAME_Z_FAKTOR));
+
+                if (gas < 0)
+                {
+                    l.Notiz("Vorbelegung " + sp + " (z-Faktor): UPDATE fehlgeschlagen");
+                    ok = false;
+                }
+                else
+                {
+                    summe += gas;
+                    l.Notiz("25c: " + gas + " Regeln gasförmiger Träger auf \"" +
+                            DbWerte.UMRECHNUNG_NAME_Z_FAKTOR + "\" vorbelegt " +
+                            "(L4: der Faktor rechnet Betriebs- auf Normvolumen um; " +
+                            "Brennstoffe " + gasIds + ").");
+                }
+            }
+
+            // 2. Alles Übrige -> Standardname. MUSS nach Schritt 1 laufen.
+            int rest = NonQuery(l,
+                "UPDATE [" + tab + "] SET [" + sp + "] = ? WHERE ([" + sp + "] IS NULL OR [" +
+                sp + "] = '')",
+                new OleDbParameter("@n", DbWerte.UMRECHNUNG_NAME_STANDARD));
+
+            if (rest < 0)
+            {
+                l.Notiz("Vorbelegung " + sp + " (Standard): UPDATE fehlgeschlagen");
+                ok = false;
+            }
+            else
+            {
+                summe += rest;
+                l.Notiz("25c: " + rest + " übrige Regeln auf \"" +
+                        DbWerte.UMRECHNUNG_NAME_STANDARD + "\" vorbelegt.");
+            }
+
+            DatenUmrechnungBenannt = summe;
+            return ok;
+        }
+
+        /// <summary>
+        /// Die Brennstoffnummern aller gasförmigen Träger als kommagetrennte Liste für
+        /// eine <c>IN</c>-Klausel — <c>""</c>, wenn es keinen gibt, <c>null</c>, wenn
+        /// <c>energy_carrier</c> nicht lesbar ist. Die Werte durchlaufen
+        /// <see cref="Zahl"/> und sind damit <c>int</c>, bevor sie in den SQL-Text
+        /// gehen; eine Einschleusung ist ausgeschlossen.
+        /// </summary>
+        private static string GasBrennstoffListe(Lauf l)
+        {
+            DataTable dt = Abfrage(l,
+                "SELECT DISTINCT [ID_Brennstoff] FROM [" + SchemaKatalog.ENERGY_CARRIER + "] " +
+                "WHERE [pricing_model] = ? AND [ID_Brennstoff] IS NOT NULL " +
+                "ORDER BY [ID_Brennstoff]",
+                new OleDbParameter("@pm", CARRIER_GAS));
+
+            if (dt == null) return null;
+
+            var sb = new StringBuilder();
+            foreach (DataRow r in dt.Rows)
+            {
+                int id = Zahl(r["ID_Brennstoff"]);
+                if (id <= 0) continue;
+                if (sb.Length > 0) sb.Append(", ");
+                sb.Append(id.ToString(CultureInfo.InvariantCulture));
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// true, wenn die Tabelle die Spalte bereits führt. Eine nicht lesbare Tabelle
+        /// gilt als „Spalte fehlt" — der einzige Aufrufer (Schritt 25b) legt die
+        /// Tabelle unmittelbar davor an, und im Zweifel ist die Vorbelegung auf einer
+        /// leeren Tabelle folgenlos.
+        /// </summary>
+        private static bool SpalteVorhanden(Lauf l, string tabelle, string spalte)
+        {
+            DataTable schema = TabellenSchema(l, tabelle);
+            return schema != null && schema.Columns.Contains(spalte);
         }
 
         // =================================================================================

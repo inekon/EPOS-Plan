@@ -35,6 +35,15 @@ namespace WindowsFormsApplication1
         private readonly Dictionary<int, ReferenzkesselInfo> _refKesselCache =
             new Dictionary<int, ReferenzkesselInfo>();   // Review 11: LadeParameter wird oft gerufen
 
+        /// <summary>
+        /// ETAPPE K2: Projekte, deren Einheiten-Konsistenz in diesem Ctrl-Leben bereits
+        /// geprüft wurde. Aus demselben Grund wie <see cref="_refKesselCache"/> —
+        /// <see cref="LadeParameter"/> wird oft gerufen (Parameterdialog, Reiter,
+        /// Verlaufsfenster, Bericht, KI-Leseaktion), der Befund hängt aber allein am
+        /// Datenbankstand und ändert sich innerhalb eines Laufs nicht.
+        /// </summary>
+        private readonly HashSet<int> _einheitenGeprueft = new HashSet<int>();
+
         /// <summary>Anlagenzeilen der BHKW je Projekt (Nachtrag zu E2: Prüfung je Anlage).</summary>
         private readonly Dictionary<int, List<BhkwAnlage>> _anlagenCache =
             new Dictionary<int, List<BhkwAnlage>>();
@@ -490,7 +499,62 @@ namespace WindowsFormsApplication1
                 if (rk.IdBrennstoff > 0)             // ohne Träger-FK: nur η übernehmen
                     p.RefKesselIdBrennstoff = rk.IdBrennstoff;
             }
+
+            MeldeEinheitenBefunde(idStamm);
             return p;
+        }
+
+        /// <summary>
+        /// ETAPPE K2 (Konzept Kosten/Energieträger, HF2 / L2): die Befunde des
+        /// Einheitenprüfers als PROTOKOLLWARNUNG in den Lauf geben.
+        ///
+        /// <para><b>Nicht blockierend, und das ist die ganze Absicht.</b> Keine
+        /// MessageBox, kein Abbruch, kein veränderter Rückgabewert — die Rechnung läuft
+        /// unverändert weiter. Ein Träger, der kWh nicht erreicht, ist ein Mangel der
+        /// STAMMDATEN; ihn mitten im Wirtschaftlichkeitslauf zur Fehlerlage zu erklären
+        /// hieße, ein gespeichertes Projekt unbenutzbar zu machen, das gestern noch
+        /// gerechnet hat. Die blockierende Prüfung gehört an die Stelle, an der die
+        /// Daten ENTSTEHEN — beim Speichern in <c>ucFuelSettings</c>, Etappe K3.</para>
+        ///
+        /// <para><b>Warum <c>SimulationProtokoll</c>.</b> Das ist der EINE nicht
+        /// blockierende Meldekanal dieser Anwendung: prozessweit erreichbar, nie
+        /// <c>null</c>, im unbeaufsichtigten Lauf dialogfrei, und ausdrücklich
+        /// ergebnisneutral („Diese Klasse rechnet nichts. Sie sammelt Text."). Auch
+        /// <c>DataRepository</c> meldet dorthin, ist also kein Simulationsmonopol. Die
+        /// Stufe <b>Warnung</b> trifft die Lage nach der Definition der Klasse selbst:
+        /// „gerechnet wurde, aber mit einer Ersatzannahme" — die Mengenrechnung greift
+        /// bei fehlender Regelkette unmittelbar auf <c>eff_hi</c> zurück.</para>
+        ///
+        /// <para><b>Kein Einfluss auf die Referenzläufe.</b> <c>Referenzlauf</c> zählt
+        /// Warnungen über das Konsolen-Token „Simulation Warnung:" — und ruft
+        /// <see cref="LadeParameter"/> nirgends auf (die Suite rechnet Simulationen,
+        /// keine Wirtschaftlichkeit). Diese Meldungen können dort also weder auftauchen
+        /// noch eine Zählung verschieben.</para>
+        ///
+        /// <para><c>WarnungEinmal</c> statt <c>Warnung</c>: <see cref="LadeParameter"/>
+        /// wird je Sitzung vielfach gerufen, der Befund ist aber immer derselbe.</para>
+        /// </summary>
+        private void MeldeEinheitenBefunde(int idStamm)
+        {
+            if (idStamm <= 0) return;
+            if (!_einheitenGeprueft.Add(idStamm)) return;
+
+            try
+            {
+                List<EinheitenBefund> befunde = EnergieEinheitenPruefung.PruefeProjekt(idStamm);
+                if (befunde == null || befunde.Count == 0) return;
+
+                foreach (EinheitenBefund b in befunde)
+                    SimulationProtokoll.Aktuell.WarnungEinmal(
+                        "K2/EINHEITEN/" + idStamm + "/" + b.CarrierId + "/" + b.Code,
+                        "Energieträger-Einheiten (Projekt " + idStamm + "): " + b);
+            }
+            catch
+            {
+                // Eine gescheiterte PRÜFUNG darf niemals eine gelingende RECHNUNG
+                // verhindern. Der Prüfer fängt selbst schon alles ab; dieser Block ist
+                // die zweite Sicherung an der Nahtstelle zum Rechenweg.
+            }
         }
 
         /// <summary>Referenzkessel der getrennten Erzeugung aus dem Stammprojekt

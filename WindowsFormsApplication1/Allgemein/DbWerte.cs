@@ -1045,6 +1045,43 @@ namespace WindowsFormsApplication1
         public const string PREISREIHE_EINHEIT_CT_KWH = "ct/kWh";
 
         // =====================================================================
+        // Energietraeger — Anzeigename einer Umrechnungsregel
+        //   energy_conversion.faktor_name
+        //   (Konzept_Kosten_Energietraeger_EPOS-Plan.md, HF2 / L3 / L4;
+        //   Etappe K2, Migrationsschritt 25)
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        //
+        //   WARUM PERSISTENZWERT UND NICHT MyResource. Der Name STEHT in der
+        //   Datenbank, nicht nur auf dem Bildschirm: Migrationsschritt 25 belegt ihn
+        //   vor, der Anwender darf ihn ab Etappe K3 im Dialog ueberschreiben, und der
+        //   ueberschriebene Wert bleibt genau so stehen, wie er getippt wurde. Ein
+        //   lokalisierter Vorbelegungstext haette je nach Programmsprache zwei
+        //   verschiedene Werte in dieselbe Spalte geschrieben und die Frage "ist das
+        //   noch die Vorbelegung?" unbeantwortbar gemacht.
+        // =====================================================================
+
+        /// <summary>
+        /// Anzeigename der Umrechnungsregel im Regelfall — fluessige und feste Traeger
+        /// (Dichte-, Gebinde- oder Masseumrechnung).
+        /// </summary>
+        public const string UMRECHNUNG_NAME_STANDARD = "Umrechnungsfaktor";
+
+        /// <summary>
+        /// Anzeigename der Umrechnungsregel bei GASFOERMIGEN Traegern (L4): Der Faktor
+        /// rechnet dort Betriebs- auf Normvolumen um und heisst fachlich „z-Faktor".
+        ///
+        /// <para><b>Erkannt werden Gastraeger ueber
+        /// <c>energy_carrier.pricing_model = 'GASEOUS_FUEL'</c></b> — nicht ueber
+        /// <c>'GAS'</c>, wie das Konzept in § 4.1 schreibt: Diesen Preismodell-Code gibt
+        /// es nicht. Der Bestand vom 19.08.2026 kennt genau sechs Codes (ANIMAL_FAT,
+        /// ELECTRICITY, GASEOUS_FUEL, HEAT, LIQUID_FUEL, SOLID_FUEL). <c>Gas</c> ist der
+        /// <c>group_code</c> — und ueber ihn zu gehen liesse ausgerechnet den
+        /// gasfoermigsten Traeger aussen vor, denn Wasserstoff fuehrt den eigenen
+        /// Gruppencode <c>Wasserstoff</c> bei <c>pricing_model = GASEOUS_FUEL</c>.</para>
+        /// </summary>
+        public const string UMRECHNUNG_NAME_Z_FAKTOR = "z-Faktor";
+
+        // =====================================================================
         // Katalog gesetzlicher Parameter — Tab_Gesetzesparameter
         //   Konzept_BHKW_Kosten_Erloese.md, Leitentscheidung L2, Etappe E1.
         //   Faktenbasis: Grundlagen_KWKG_Energiesteuer_Stromsteuer.md (Repo-Wurzel).
