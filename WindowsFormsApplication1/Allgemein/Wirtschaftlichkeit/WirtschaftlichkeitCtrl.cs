@@ -997,7 +997,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// KWKG-Bonusreihe nach KWKG 2025 (Phase 9, Konzept Kap. 8): Bonus [ct/kWh]
         /// auf KWK-Eigenstrom/-Einspeisung (W3-Split), je Kalenderjahr begrenzt durch
-        /// die DEGRESSIVE Vbh-Staffel (§ 8, Katalog Tab_KWKG_Staffel; Override über
+        /// die DEGRESSIVE Vbh-Staffel (§ 8, Katalog Tab_Gesetzesparameter; Override über
         /// den Parameter-Deckel), kumuliert bis zum Vbh-Kontingent (30.000 Vbh).
         /// Vorab die Förderfähigkeits-Prüfkette: Fristenlogik § 6 (Stichtag
         /// 31.12.2026 + 4 Jahre Realisierung), Ausschreibungsgrenze <b>je Anlage</b>
