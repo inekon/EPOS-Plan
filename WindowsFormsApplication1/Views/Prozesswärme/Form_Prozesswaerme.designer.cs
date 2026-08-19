@@ -149,6 +149,7 @@ namespace WindowsFormsApplication1
             this.textBox_Prozess_Name.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.textBox_Prozess_Name, "textBox_Prozess_Name");
             this.textBox_Prozess_Name.Name = "textBox_Prozess_Name";
+            this.textBox_Prozess_Name.ReadOnly = true;
             // 
             // Label13
             // 
@@ -160,18 +161,21 @@ namespace WindowsFormsApplication1
             this.textBox_Jahres_Verbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.textBox_Jahres_Verbrauch, "textBox_Jahres_Verbrauch");
             this.textBox_Jahres_Verbrauch.Name = "textBox_Jahres_Verbrauch";
+            this.textBox_Jahres_Verbrauch.ReadOnly = true;
             // 
             // textBox_Beschreibung
             // 
             this.textBox_Beschreibung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.textBox_Beschreibung, "textBox_Beschreibung");
             this.textBox_Beschreibung.Name = "textBox_Beschreibung";
+            this.textBox_Beschreibung.ReadOnly = true;
             // 
             // textBox_Prozess_Type
             // 
             this.textBox_Prozess_Type.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.textBox_Prozess_Type, "textBox_Prozess_Type");
             this.textBox_Prozess_Type.Name = "textBox_Prozess_Type";
+            this.textBox_Prozess_Type.ReadOnly = true;
             // 
             // Label15
             // 
@@ -202,6 +206,7 @@ namespace WindowsFormsApplication1
             this.textBox_SummeProzesswaerme.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.textBox_SummeProzesswaerme, "textBox_SummeProzesswaerme");
             this.textBox_SummeProzesswaerme.Name = "textBox_SummeProzesswaerme";
+            this.textBox_SummeProzesswaerme.ReadOnly = true;
             // 
             // btn_Abbrechen
             // 
