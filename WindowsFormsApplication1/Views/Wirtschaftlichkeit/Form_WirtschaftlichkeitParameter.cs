@@ -171,7 +171,7 @@ namespace WindowsFormsApplication1
                            "+ Realisierung bis Ablauf des 4. Folgejahres." +
                            " Steuern: Ohne ausdrückliche Angabe entsteht KEINE Gutschrift — " +
                            "§ 53 und § 53a schließen einander aus, die Sätze und Grenzwerte " +
-                           "kommen aus dem Katalog „Gesetzliche Parameter". Der Jahresnutzungsgrad " +
+                           "kommen aus dem Katalog „Gesetzliche Parameter“. Der Jahresnutzungsgrad " +
                            "wird nur für § 53a gebraucht (Schwelle 70 %).";
             var lblHinweis = new Label
             {
@@ -402,6 +402,13 @@ namespace WindowsFormsApplication1
             Gespeichert = true;
             this.DialogResult = DialogResult.OK;
             Close();
+        }
+
+        /// <summary>Steuerwert der Auswahl; ohne Auswahl gilt die Vorgabe (Etappe E4).</summary>
+        private static string Gewaehlt(ComboBox cb, string vorgabe)
+        {
+            var w = cb != null ? cb.SelectedItem as Steuerwahl : null;
+            return w != null ? w.Wert : vorgabe;
         }
     }
 }
