@@ -410,6 +410,81 @@ namespace WindowsFormsApplication1
         public const string AUFTEILUNG_ENERGETISCH = "ENERGETISCH";
 
         // =====================================================================
+        // ETAPPE E5 — Tarifmodell Strom
+        //   Tab_ProjektTarif (Migrationsschritt 21)
+        //
+        //   Drei Tarifrollen (Bezug ohne BHKW, Reststrom mit BHKW, Einspeisung) und
+        //   drei Leistungspreismodelle. Alle Werte stehen als Zeichenkette IN der
+        //   Datenbank und werden in SQL damit verglichen; ASCII und Grossbuchstaben,
+        //   nach der Auslieferung EINGEFROREN. Anzeigetexte in MyResource.
+        //
+        //   ERGEBNISNEUTRAL: Vorbelegung ist ZONEN bzw. MONATLICH mit Preisen 0 —
+        //   der Rollenpfad rechnet erst, wenn der Anwender ihn ausdruecklich waehlt.
+        //
+        //   LAENGENPROBE (Lehre aus Etappe E3): Der laengste Steuerwert dieser Gruppe
+        //   ist JAHRESHOECHSTLAST mit 17 Zeichen. Die Spalten sind TEXT(24) bzw.
+        //   TEXT(12) — ein zu kurzes Feld liesse das UPDATE STILL scheitern.
+        // =====================================================================
+
+        /// <summary>
+        /// Tarifmodus: das ZONENmodell der Stufe W3 (Winter/Sommer x HT/NT, vier
+        /// Bezugs- und vier Einspeisepreise, zweistufige Leistungsstaffel) —
+        /// <b>Vorbelegung</b> aller Bestandszeilen (Migrationsschritt 21b) und damit
+        /// der Grund, aus dem E5 fuer Bestandsprojekte ergebnisneutral ist.
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string TARIF_MODUS_ZONEN = "ZONEN";
+
+        /// <summary>
+        /// Tarifmodus: das ROLLENmodell der Etappe E5 — Bezugstarif (ohne BHKW),
+        /// Reststromtarif (mit BHKW) und Einspeisetarif, je mit einem
+        /// Durchschnitts-Arbeitspreis (HT/NT entfaellt, Leitentscheidung L10) und
+        /// einem waehlbaren Leistungspreismodell. Erst dieser Modus schaltet die
+        /// Differenzmethode („vermiedene Kosten") ein.
+        /// <inheritdoc cref="TARIF_MODUS_ZONEN" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string TARIF_MODUS_ROLLEN = "ROLLEN";
+
+        /// <summary>
+        /// Leistungspreismodell: monatlicher Leistungspreis [EUR/kW*Monat] auf das
+        /// Monatsmaximum, ueber zwoelf Monate summiert — <b>Vorbelegung</b> aller
+        /// Bestandszeilen. Ohne gepflegten Preis ist der Leistungsanteil 0.
+        ///
+        /// <para>In der Altanwendung war dieses Modell nicht waehlbar, sondern hatte
+        /// stillen VORRANG vor der Staffel („Neue Eingabe Leistungspreis pro Monat
+        /// (hat Vorrang)"). Hier ist es eine von drei sichtbaren Alternativen.</para>
+        /// <inheritdoc cref="TARIF_MODUS_ZONEN" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string LEISTUNGSMODELL_MONATLICH = "MONATLICH";
+
+        /// <summary>
+        /// Leistungspreismodell: vierstufige kW-Staffel mit getrenntem Sommer- und
+        /// Wintermaximum. Die Stufengrenzen sind <b>kumulierte Obergrenzen</b> —
+        /// „500 / 2.000 / 8.000 kW" heisst: bis 500 kW Stufe 1, von 500 bis 2.000 kW
+        /// Stufe 2, von 2.000 bis 8.000 kW Stufe 3, darueber Stufe 4.
+        ///
+        /// <para><b>Abweichung vom Altkatalog, bewusst.</b> `DB-TARIF.XLS` speichert
+        /// Stufen<i>breiten</i> („500/1500/6000"), die die Staffelroutine kumulativ
+        /// aufsummiert — dieselbe Zahlenreihe bedeutet dort etwas anderes. Beim
+        /// Uebernehmen alter Tarifsaetze sind die Werte umzurechnen.</para>
+        /// <inheritdoc cref="TARIF_MODUS_ZONEN" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string LEISTUNGSMODELL_STAFFEL = "STAFFEL";
+
+        /// <summary>
+        /// Leistungspreismodell: <b>Jahres</b>hoechstlast, mit derselben vierstufigen
+        /// Staffel bewertet, aber nur EINEM Maximum — Sommer und Winter werden nicht
+        /// getrennt.
+        ///
+        /// <para><b>Abweichung vom Altkatalog, bewusst.</b> Dort war dieses Modell
+        /// keine Auswahl, sondern die versteckte Folge eines Sommerpreises von 0 (bei
+        /// 22 von 28 Tarifsaetzen der Fall). Ein Preis von 0 ist hier ein Preis von 0
+        /// und kein Modellschalter.</para>
+        /// <inheritdoc cref="TARIF_MODUS_ZONEN" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string LEISTUNGSMODELL_JAHRESHOECHSTLAST = "JAHRESHOECHSTLAST";
+
+        // =====================================================================
         // Die zwoelf Betriebskostenpositionen nach VDI 2067
         //   Tab_Kostenfaktor.Bezeichnung (IsMainComponent = False), verwendet als
         //   Unterposition der Kategorie 2 in Tab_ProjektWerte

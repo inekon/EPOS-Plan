@@ -835,6 +835,160 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_AUFTEILUNG,          "TEXT(30)"),
         };
 
+        // ---------------------------------------------------------------------------
+        // ETAPPE E5 — Tarifmodell Strom (Tab_ProjektTarif) und zwei Projektangaben
+        // ---------------------------------------------------------------------------
+
+        public const string TAB_PROJEKTTARIF = "Tab_ProjektTarif";
+
+        /// <summary>
+        /// ETAPPE E5 — Tarifmodus (<c>ZONEN</c> = Bestand der Stufe W3, <c>ROLLEN</c> =
+        /// Rollenmodell der Etappe E5). Werte und Begründung:
+        /// <see cref="DbWerte.TARIF_MODUS_ZONEN"/>.
+        ///
+        /// <b>Die eine Spalte, an der die Ergebnisneutralität hängt.</b> Schritt 21b
+        /// belegt jede Bestandszeile mit <c>ZONEN</c>, und die Leseseite behandelt
+        /// leer/NULL genauso — ohne ausdrückliche Wahl rechnet die Anwendung weiter mit
+        /// dem Zonenmodell aus Phase 8.
+        ///
+        /// <b>Spaltenbreite.</b> Längster Wert <c>ROLLEN</c> (6 Zeichen) → TEXT(12).
+        /// </summary>
+        public const string SPALTE_TARIF_MODUS = "Tarif_Modus";
+
+        /// <summary>
+        /// ETAPPE E5 — Preisstand des Tarifsatzes. Der Altkatalog `DB-TARIF.XLS` trug
+        /// ihn nur im Beschreibungstext („Stand 1.1.96") und überschrieb beim Speichern
+        /// ersatzlos; ohne Datum ist nicht erkennbar, aus welchem Jahr ein Preis stammt.
+        /// Bleibt NULL („nicht gepflegt") und hat keine Rechenwirkung — er wird
+        /// ausgewiesen, nicht ausgewertet.
+        /// </summary>
+        public const string SPALTE_TARIF_GUELTIGAB = "Tarif_GueltigAb";
+
+        /// <summary>
+        /// ETAPPE E5 — Aufschläge (Netzentgelt, Umlagen, Stromsteuer, Konzession,
+        /// Vertrieb) in der Jahreskostenrechnung der Wirtschaftlichkeit berücksichtigen.
+        ///
+        /// <b>Der Schalter existiert, WEIL die Wirkung groß ist.</b> Gemessen an den
+        /// neun Referenzprojekten (Protokoll W4_E5, Abschnitt 4) steigen die
+        /// Energiekosten um rund 32 %, der Kapitalwert verschlechtert sich um 30 %.
+        /// Die Aufschläge sind seit dem Stromspeicherpaket je Energieträger gepflegt,
+        /// wirkten bisher aber ausschließlich in der Speichersimulation. Eine stille
+        /// Übernahme in die Wirtschaftlichkeit hätte jede gespeicherte Altrechnung
+        /// entwertet — deshalb eine ausdrückliche Projektangabe, Vorgabe AUS.
+        ///
+        /// <b>YESNO kennt kein NULL:</b> Access belegt die Spalte bei jeder
+        /// Bestandszeile mit <c>False</c> — genau die gewollte Vorbelegung, deshalb
+        /// kein eigener DML-Schritt.
+        /// </summary>
+        public const string SPALTE_PW_AUFSCHLAEGE = "Aufschlaege_Anwenden";
+
+        /// <summary>
+        /// ETAPPE E5 — Vergütung für eingespeisten <b>KWK</b>-Strom [€/kWh].
+        ///
+        /// <b>Behebt einen Bestandsmangel.</b> Bis E5 bekam eingespeister BHKW-Strom im
+        /// Flat-Pfad gar keinen Strompreis, sondern nur den KWK-Zuschlag: Der
+        /// Erlösposten las ausschließlich den PV-Überschuss, und das zugehörige Feld war
+        /// ohne Photovoltaik-Gruppe im Parameterdialog nicht einmal sichtbar. Ökonomisch
+        /// ist das grob falsch — der eingespeiste Strom wird vergütet, der Zuschlag
+        /// kommt obendrauf.
+        ///
+        /// <b>Bleibt NULL</b> („nicht gepflegt") und wirkt dann wie 0 — ohne
+        /// ausdrückliche Angabe ändert sich an keiner Bestandsrechnung etwas.
+        /// </summary>
+        public const string SPALTE_PW_VERGUETUNG_KWK = "Einspeiseverguetung_KWK";
+
+        /// <summary>
+        /// Schritt 21 der Migration (Etappe E5) — das Tarif-Rollenmodell an
+        /// <c>Tab_ProjektTarif</c> plus zwei Projektangaben an
+        /// <c>Tab_ProjektWirtschaftlichkeit</c>.
+        ///
+        /// <b>Additiv, nichts wird ersetzt.</b> Die 16 Spalten der Stufe W3
+        /// (Zonenpreise, HT-Fenster, zweistufige Staffel) bleiben unverändert stehen und
+        /// werden weiter gelesen — <see cref="SPALTE_TARIF_MODUS"/> entscheidet, welcher
+        /// Rechenweg gilt.
+        ///
+        /// <b>Die vier Fallen des Altkatalogs</b> (`DB-TARIF.XLS`, Analyse Abschnitt 7.1)
+        /// sind hier strukturell vermieden:
+        /// <list type="number">
+        /// <item>Die Stufengrenzen sind <b>kumulierte Obergrenzen</b> in kW, keine
+        /// Stufenbreiten (<see cref="DbWerte.LEISTUNGSMODELL_STAFFEL"/>).</item>
+        /// <item>Die <b>vierte Stufe wird geführt</b> — im Altkatalog war die
+        /// Speicherzeile auskommentiert, die Stufe damit stumm der unbegrenzte Rest.</item>
+        /// <item>Das Leistungsmodell ist eine <b>sichtbare Auswahl</b>, nicht die
+        /// versteckte Schalterlogik „Sommerpreis = 0 ⇒ Jahresmaximum".</item>
+        /// <item>Ein <b>Gültig-ab-Datum</b> hält den Preisstand fest, statt ihn im
+        /// Beschreibungstext zu vermuten (Währungsfalle „DM/kW" mit Eurowerten).</item>
+        /// </list>
+        ///
+        /// <b>Warum die Einspeisung keine Leistungsstaffel bekommt.</b> Im Altkatalog
+        /// sind Sollleistung und Reduktionsfaktoren des Einspeiseblatts leer oder 0, es
+        /// gibt keinen aktiven Lesepfad, und der Leistungserlös der Einspeisung war fest
+        /// 0 (Befund 11). 16 Spalten für eine nachweislich tote Funktion anzulegen wäre
+        /// Ballast; die Rolle führt Arbeits- und Grundpreis.
+        ///
+        /// <b>Spaltenbreiten.</b> Längster Wert des Leistungsmodells ist
+        /// <c>JAHRESHOECHSTLAST</c> (17 Zeichen) → TEXT(24) laut Konzept; längster Wert
+        /// des Modus <c>ROLLEN</c> (6) → TEXT(12). Ein zu kurzes Feld lässt das UPDATE
+        /// STILL scheitern — die Lehre aus Schritt 19, Probe C2.
+        ///
+        /// <b>Warum kein <c>_STAMM</c>-Gegenstück.</b> <c>Tab_ProjektTarif</c> und
+        /// <c>Tab_ProjektWirtschaftlichkeit</c> sind reine Projekttabellen ohne
+        /// Auslieferungskatalog — dieselbe Begründung wie bei Schritt 20.
+        ///
+        /// <b>Ordinalposition.</b> Beide Tabellen werden ausschließlich NAMENSBASIERT
+        /// gelesen (<c>WirtschaftlichkeitCtrl.LadeTarif</c> / <c>LadeParameter</c> über
+        /// <c>D(r, "…")</c>); das Anhängen hinten ist folgenlos.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt21_Tarifmodell =
+        {
+            new SchemaSpalte(TAB_PROJEKTTARIF, SPALTE_TARIF_MODUS,     "TEXT(12)"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, SPALTE_TARIF_GUELTIGAB, "DATETIME"),
+
+            // Rolle 1 — Bezugstarif (ohne BHKW): Referenz der vermiedenen Kosten.
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Bezug_Arbeit",          "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Bezug_Grundpreis",      "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Bezug_Leistungsmodell", "TEXT(24)"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Bezug_Monatspreis",     "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Bezug_Stufe1_KW",       "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Bezug_Stufe1_Sommer",   "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Bezug_Stufe1_Winter",   "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Bezug_Stufe2_KW",       "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Bezug_Stufe2_Sommer",   "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Bezug_Stufe2_Winter",   "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Bezug_Stufe3_KW",       "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Bezug_Stufe3_Sommer",   "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Bezug_Stufe3_Winter",   "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Bezug_Stufe4_KW",       "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Bezug_Stufe4_Sommer",   "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Bezug_Stufe4_Winter",   "DOUBLE"),
+
+            // Rolle 2 — Reststromtarif (mit BHKW): kleinere Abnahme, meist teurer.
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Rest_Arbeit",          "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Rest_Grundpreis",      "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Rest_Leistungsmodell", "TEXT(24)"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Rest_Monatspreis",     "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Rest_Stufe1_KW",       "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Rest_Stufe1_Sommer",   "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Rest_Stufe1_Winter",   "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Rest_Stufe2_KW",       "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Rest_Stufe2_Sommer",   "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Rest_Stufe2_Winter",   "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Rest_Stufe3_KW",       "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Rest_Stufe3_Sommer",   "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Rest_Stufe3_Winter",   "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Rest_Stufe4_KW",       "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Rest_Stufe4_Sommer",   "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Rest_Stufe4_Winter",   "DOUBLE"),
+
+            // Rolle 3 — Einspeisung: Arbeits- und Grundpreis, kein Leistungspreis.
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Einsp_Arbeit",     "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTTARIF, "Einsp_Grundpreis", "DOUBLE"),
+
+            // Zwei Projektangaben der Wirtschaftlichkeit.
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_AUFSCHLAEGE,      "YESNO"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_VERGUETUNG_KWK,   "DOUBLE"),
+        };
+
         /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
@@ -925,6 +1079,12 @@ namespace WindowsFormsApplication1
         /// unmittelbar vor dem Zugriff in
         /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> (dieselben sechs Spalten
         /// über <c>SpalteSicher</c>).
+        ///
+        /// <see cref="Schritt21_Tarifmodell"/> ist BEWUSST NICHT aufgeführt — dieselbe
+        /// Begründung ein drittes Mal: <c>Tab_ProjektTarif</c> und
+        /// <c>Tab_ProjektWirtschaftlichkeit</c> gehören dem Wirtschaftlichkeitsmodul,
+        /// der Rechenkern liest beide nirgends. Die tolerante Vorsorge steht unmittelbar
+        /// vor dem Zugriff in <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>.
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {

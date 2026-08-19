@@ -1484,6 +1484,10 @@ Erlösreihen.
 | `WIRT_REIHE_ENERGIESTEUER` | Energiesteuer-Gutschrift | Energy tax credit | dito `…ErloesReihe.ENERGIESTEUER` |
 | `WIRT_REIHE_STROMSTEUER_BEFREIUNG` | Stromsteuer-Befreiung | Electricity tax exemption | dito `…ErloesReihe.STROMSTEUER_BEFREIUNG` |
 | `WIRT_REIHE_STROMSTEUER_ENTLASTUNG` | Stromsteuer-Entlastung | Electricity tax relief | dito `…ErloesReihe.STROMSTEUER_ENTLASTUNG` |
+| `WIRT_ZEILE_VERMIEDEN_ARBEIT` | Vermiedene Kosten — Arbeit [€/a] | Avoided cost — energy charge [€/a] | `UcWirtschaftlichkeit.ZeigeErgebnisse`, `BausteineWirtschaftlichkeit.SchreibeVergleich`, `ExcelBerichtGenerator` (Etappe E5) |
+| `WIRT_ZEILE_VERMIEDEN_LEISTUNG` | Vermiedene Kosten — Leistung [€/a] | Avoided cost — demand charge [€/a] | dieselben drei |
+| `WIRT_ZEILE_VERMIEDEN_GESAMT` | Vermiedene Kosten gesamt [€/a] | Avoided cost total [€/a] | dieselben drei |
+| `WIRT_ZEILE_AUFSCHLAG` | Aufschläge auf den Strombezug [€/a] | Surcharges on grid supply [€/a] | dieselben drei |
 
 **Nicht lokalisiert — und warum**
 
@@ -1493,5 +1497,8 @@ Erlösreihen.
 | `"KEINE"`, `"PARAGRAF_53"`, `"PARAGRAF_53A"` (`DbWerte.ENERGIESTEUER_WAHL_*`) | dito — Inhalt von `…Energiesteuer_Wahl`, Vorbelegung durch Migrationsschritt 20b. |
 | `"VOLLER_BRENNSTOFF"`, `"ENERGETISCH"` (`DbWerte.AUFTEILUNG_*`) | dito — Inhalt von `…Aufteilung_Methode`. |
 | `"KWKG_ZUSCHLAG"`, `"ENERGIESTEUER_GUTSCHRIFT"`, `"STROMSTEUER_BEFREIUNG"`, `"STROMSTEUER_ENTLASTUNG"` (`KapitalwertRechner.ErloesReihe.*`) | **Schlüssel**, nicht Anzeige: sprachneutral und ASCII, stehen nirgends in der Datenbank und nirgends auf dem Bildschirm. Der Anzeigename ist `WIRT_REIHE_*`. |
+| `"ZONEN"`, `"ROLLEN"` (`DbWerte.TARIF_MODUS_*`) | **Persistenzwerte** (Etappe E5) — Inhalt von `Tab_ProjektTarif.Tarif_Modus`, in SQL verglichen, Vorbelegung durch Migrationsschritt 21b, nach der Auslieferung eingefroren. Die ComboBox in `Form_Tarifstruktur` trägt eine `Wahl`-Klasse, die den **Wert** hält und den **Namen** anzeigt (Muster `Form_WirtschaftlichkeitParameter.Steuerwahl`). |
+| `"MONATLICH"`, `"STAFFEL"`, `"JAHRESHOECHSTLAST"` (`DbWerte.LEISTUNGSMODELL_*`) | dito — Inhalt von `…Bezug_Leistungsmodell` und `…Rest_Leistungsmodell`. Längster Wert 17 Zeichen ⇒ TEXT(24). |
+| Die Beschriftungen von `Form_Tarifstruktur` (beide Modellblöcke, Staffelraster, Fußhinweis) | Der Dialog ist wie `Form_WirtschaftlichkeitParameter` **vollständig** unlokalisiert und im Code aufgebaut; er gehört als Ganzes umgestellt, nicht in Teilen. |
 | Die Beschriftungen des Blocks „BHKW — Energie- und Stromsteuer" im Parameterdialog | `Form_WirtschaftlichkeitParameter` ist **vollständig** unlokalisiert (alle Gruppen, alle Zeilen, der Fußhinweis) und im Code aufgebaut. Vier lokalisierte Zeilen darin wären keine Lokalisierung, sondern eine Inkonsistenz mehr — der Dialog gehört als Ganzes umgestellt. |
 | Katalogschlüssel in den Meldungen (`ENERGIEST_ERDGAS` & Co.) | **Schlüssel der Persistenzschicht** aus Etappe E1. Sie stehen bewusst im Klartext in der Meldung, damit der Anwender die Zeile in Administration → „Gesetzliche Parameter" wiederfindet. |

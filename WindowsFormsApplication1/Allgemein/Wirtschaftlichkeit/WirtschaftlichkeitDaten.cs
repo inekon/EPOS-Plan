@@ -99,6 +99,43 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string AufteilungMethode = DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF;
 
+        // ---- ETAPPE E5 — zwei Projektangaben (Migrationsschritt 21) ----
+
+        /// <summary>
+        /// Aufschläge (Netzentgelt, Umlagen, Stromsteuer, Konzessionsabgabe, Vertrieb)
+        /// in der Jahreskostenrechnung berücksichtigen. <b>Vorgabe: aus.</b>
+        ///
+        /// <para>Die Aufschläge sind seit dem Stromspeicherpaket je Energieträger
+        /// gepflegt (<c>energy_project_settings.Aufschlag_*</c>, Vorschlagswerte in
+        /// Summe 11,746 ct/kWh), wirkten aber ausschließlich in der Speichersimulation.
+        /// Gemessen an den neun Referenzprojekten (Protokoll W4_E5, Abschnitt 4) hebt
+        /// ihre Berücksichtigung die Energiekosten um rund <b>32 %</b> und
+        /// verschlechtert den Kapitalwert um rund <b>30 %</b> — eine stille Übernahme
+        /// hätte jede gespeicherte Altrechnung entwertet. Deshalb eine ausdrückliche
+        /// Angabe je Projekt.</para>
+        ///
+        /// <para><b>Zusammenspiel mit der Stromsteuer aus E4:</b> Der Aufschlagsblock
+        /// enthält die Stromsteuer (2,05 ct/kWh ≙ 20,50 €/MWh) als BELASTUNG, die
+        /// Entlastung nach § 9b StromStG (20,00 €/MWh) als GUTSCHRIFT. Beide zusammen
+        /// sind kein Doppelansatz, sondern die zwei Seiten derselben Vorschrift.
+        /// Steht dieser Schalter dagegen auf AUS und ist § 9b aktiv, enthält der
+        /// Kapitalwert eine Entlastung ohne die zugehörige Belastung — das Ergebnis
+        /// weist genau darauf hin.</para>
+        /// </summary>
+        public bool AufschlaegeAnwenden;
+
+        /// <summary>
+        /// Vergütung für eingespeisten <b>KWK</b>-Strom [€/kWh]; <c>null</c> = nicht
+        /// gepflegt (wirkt wie 0).
+        ///
+        /// <para><b>Behebt einen Bestandsmangel.</b> Bis E5 bewertete der Flat-Pfad nur
+        /// den PV-Überschuss; eingespeister BHKW-Strom bekam gar keinen Strompreis,
+        /// sondern nur den KWK-Zuschlag — und das Feld dafür war ohne
+        /// Photovoltaik-Gruppe im Parameterdialog nicht einmal sichtbar
+        /// (<c>Form_WirtschaftlichkeitParameter</c>). Ökonomisch ist das grob falsch.</para>
+        /// </summary>
+        public double? EinspeiseverguetungKWK;
+
         public DateTime? GeaendertAm;
 
         /// <summary>Kurzdarstellung als Nachweiszeile (Reiter + Bericht).</summary>
@@ -143,6 +180,13 @@ namespace WindowsFormsApplication1
             if (HocheffizienzNachweis || RaeumlicherZusammenhang)
                 t += " · Stromsteuer: hocheffizient " + (HocheffizienzNachweis ? "ja" : "nein") +
                      ", räumlicher Zusammenhang " + (RaeumlicherZusammenhang ? "ja" : "nein");
+            // ETAPPE E5: Der Aufschlagsschalter gehört in die Nachweiszeile, sobald er
+            // an ist — er verändert den größten Kostenposten um rund ein Drittel.
+            if (AufschlaegeAnwenden)
+                t += " · Aufschläge auf den Strombezug berücksichtigt";
+            if (EinspeiseverguetungKWK.HasValue && EinspeiseverguetungKWK.Value != 0)
+                t += " · Einspeisevergütung KWK " +
+                     EinspeiseverguetungKWK.Value.ToString("N3", kultur) + " €/kWh";
             return t;
         }
 
@@ -224,9 +268,63 @@ namespace WindowsFormsApplication1
         public double StaffelPreis1EurKW;
         public double StaffelPreis2EurKW;
 
+        // ---- ETAPPE E5 — Rollenmodell (Migrationsschritt 21) ----
+        //
+        // Additiv: Alles oberhalb bleibt unverändert und wird weiter gelesen. Modus
+        // ZONEN (Vorbelegung) = Bestandsverhalten der Stufe W3; ROLLEN schaltet auf
+        // Bezugs-, Reststrom- und Einspeisetarif mit der Differenzmethode um.
+
+        /// <summary>Tarifmodus, Steuerwert aus <c>DbWerte.TARIF_MODUS_*</c>.</summary>
+        public string Modus = DbWerte.TARIF_MODUS_ZONEN;
+
+        /// <summary>Preisstand des Tarifsatzes; null = nicht gepflegt (nur Ausweis,
+        /// keine Rechenwirkung). Der Altkatalog kannte ihn nur als Fließtext.</summary>
+        public DateTime? GueltigAb;
+
+        /// <summary>Bezugstarif OHNE BHKW — Referenz der vermiedenen Kosten.</summary>
+        public TarifRolle Bezug = NeueRolle("BEZUG");
+
+        /// <summary>Reststromtarif MIT BHKW — kleinere Abnahme, meist teurer.</summary>
+        public TarifRolle Reststrom = NeueRolle("RESTSTROM");
+
+        /// <summary>
+        /// Einspeisetarif — Arbeits- und Grundpreis, KEIN Leistungspreis.
+        ///
+        /// <para>Begründet: Im Altkatalog sind Sollleistung und Reduktionsfaktoren des
+        /// Einspeiseblatts leer oder 0, es gibt keinen aktiven Lesepfad, und der
+        /// Leistungserlös der Einspeisung war fest 0 (Befund 11 der Analyse, von der
+        /// Datenseite bestätigt in Abschnitt 7.1).</para>
+        /// </summary>
+        public TarifRolle Einspeisung = NeueRolle("EINSPEISUNG");
+
+        /// <summary>true, wenn das Rollenmodell der Etappe E5 gilt.</summary>
+        public bool RollenModus
+        { get { return string.Equals(Modus, DbWerte.TARIF_MODUS_ROLLEN, StringComparison.Ordinal); } }
+
+        /// <summary>Eine Rolle mit vier leeren Staffelstufen (Vorbelegung MONATLICH).</summary>
+        private static TarifRolle NeueRolle(string rolle)
+        {
+            var r = new TarifRolle { Rolle = rolle };
+            for (int i = 0; i < 4; i++) r.Stufen.Add(new LeistungsStufe());
+            return r;
+        }
+
         public string Nachweis(System.Globalization.CultureInfo kultur)
         {
             if (!Aktiv) return "Tarifstruktur inaktiv (Flat-Preise der Kostenmaske)";
+            if (RollenModus)
+            {
+                string t = "Tarif aktiv (Rollenmodell): Bezug " +
+                    Bezug.ArbeitspreisEurKWh.ToString("N4", kultur) + " €/kWh (" +
+                    Bezug.Leistungsmodell + ") · Reststrom " +
+                    Reststrom.ArbeitspreisEurKWh.ToString("N4", kultur) + " €/kWh (" +
+                    Reststrom.Leistungsmodell + ") · Einspeisung " +
+                    Einspeisung.ArbeitspreisEurKWh.ToString("N4", kultur) + " €/kWh · Winter " +
+                    WinterVonMonat + "–" + WinterBisMonat;
+                if (GueltigAb.HasValue)
+                    t += " · Preisstand " + GueltigAb.Value.ToString("dd.MM.yyyy", kultur);
+                return t;
+            }
             return "Tarif aktiv: Winter " + WinterVonMonat + "–" + WinterBisMonat +
                    " · HT Mo–Fr " + HtVonStunde + "–" + HtBisStunde + " Uhr · Bezug W/S HT/NT " +
                    PreisBezugWinterHT.ToString("N3", kultur) + "/" + PreisBezugWinterNT.ToString("N3", kultur) + "/" +
@@ -355,6 +453,35 @@ namespace WindowsFormsApplication1
         /// <c>null</c> = keine Gutschrift gerechnet, also auch kein Satz verwendet.
         /// </summary>
         public string SteuerHerkunft;
+
+        // ---- ETAPPE E5 — Strom und Erlöse nach der Differenzmethode ----
+        //
+        // Alle vier Werte sind 0, solange der Tarif nicht im ROLLEN-Modus steht bzw.
+        // keine Stundenreihen vorliegen. Sie sind AUSWEIS, kein zweiter Rechenweg:
+        // Der Kapitalwert nimmt die vermiedenen Kosten nicht als Erlös auf — er rechnet
+        // mit den TATSÄCHLICHEN Reststromkosten, in denen die Einsparung bereits steckt.
+        // Eine zusätzliche Erlöszeile wäre eine Doppelzählung.
+
+        /// <summary>Vermiedene Kosten, Arbeitsanteil [€/a] (Etappe E5).</summary>
+        public double VermiedenArbeitJahr;
+
+        /// <summary>
+        /// Vermiedene Kosten, Leistungsanteil [€/a] — <b>regelmäßig negativ</b>, weil der
+        /// Reststrom-Leistungspreis über dem Bezugs-Leistungspreis liegt. Eigene Zeile,
+        /// weil genau das die Kernaussage der Rechnung ist (Konzept 4.3).
+        /// </summary>
+        public double VermiedenLeistungJahr;
+
+        /// <summary>Vermiedene Kosten gesamt [€/a] (Arbeit + Leistung + Grundpreis).</summary>
+        public double VermiedenGesamtJahr;
+
+        /// <summary>
+        /// Betrag, um den die Aufschläge (Netzentgelt, Umlagen, Stromsteuer, Konzession,
+        /// Vertrieb) die Energiekosten des Jahres 1 erhöhen [€/a]. 0 = Schalter aus oder
+        /// nichts gepflegt. Der Wert steht getrennt, damit die Wirkung sichtbar bleibt,
+        /// statt in den Energiekosten zu verschwinden.
+        /// </summary>
+        public double AufschlagJahr;
 
         public double? IRR;                    // interner Zinsfuß der Differenzreihe [%] (null beim Stamm/nie)
 

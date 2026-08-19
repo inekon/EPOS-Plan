@@ -14190,6 +14190,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschläge auf den Strombezug [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_AUFSCHLAG {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_AUFSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer-Gutschrift Jahr 1 [€/a] ähnelt.
         /// </summary>
         public static string WIRT_ZEILE_ENERGIESTEUER {
@@ -14206,7 +14215,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("WIRT_ZEILE_STEUER_HERKUNFT", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Befreiung Jahr 1 [€/a] ähnelt.
         /// </summary>
@@ -14222,6 +14231,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ZEILE_STROMST_ENTLASTUNG {
             get {
                 return ResourceManager.GetString("WIRT_ZEILE_STROMST_ENTLASTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermiedene Kosten — Arbeit [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_VERMIEDEN_ARBEIT {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_VERMIEDEN_ARBEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermiedene Kosten gesamt [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_VERMIEDEN_GESAMT {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_VERMIEDEN_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermiedene Kosten — Leistung [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_VERMIEDEN_LEISTUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_VERMIEDEN_LEISTUNG", resourceCulture);
             }
         }
     }
