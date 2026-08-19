@@ -149,6 +149,7 @@ namespace WindowsFormsApplication1
             textBox_Name.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(textBox_Name, "textBox_Name");
             textBox_Name.Name = "textBox_Name";
+            textBox_Name.ReadOnly = true;
             // 
             // Label13
             // 
@@ -160,18 +161,21 @@ namespace WindowsFormsApplication1
             textBox_Jahres_Verbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(textBox_Jahres_Verbrauch, "textBox_Jahres_Verbrauch");
             textBox_Jahres_Verbrauch.Name = "textBox_Jahres_Verbrauch";
+            textBox_Jahres_Verbrauch.ReadOnly = true;
             // 
             // textBox_Beschreibung
             // 
             textBox_Beschreibung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(textBox_Beschreibung, "textBox_Beschreibung");
             textBox_Beschreibung.Name = "textBox_Beschreibung";
+            textBox_Beschreibung.ReadOnly = true;
             // 
             // textBox_Type
             // 
             textBox_Type.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(textBox_Type, "textBox_Type");
             textBox_Type.Name = "textBox_Type";
+            textBox_Type.ReadOnly = true;
             // 
             // Label15
             // 
@@ -202,6 +206,7 @@ namespace WindowsFormsApplication1
             textBox_Summe.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(textBox_Summe, "textBox_Summe");
             textBox_Summe.Name = "textBox_Summe";
+            textBox_Summe.ReadOnly = true;
             // 
             // btn_Abbrechen
             // 
