@@ -148,20 +148,37 @@ namespace KiKern
         /// der Anwender eine Aktion von Hand waehlt.
         /// </remarks>
         public static string Werkzeugkatalog(IEnumerable<KiAktion> aktionen, bool eingerueckt = false)
+            => Schreibe(WerkzeugkatalogKnoten(aktionen), eingerueckt);
+
+        /// <summary>
+        /// Der Werkzeugkatalog als Knoten - die EINE Quelle fuer beide Wege der
+        /// Absichtserkennung (<see cref="KiWerkzeuge"/>, Fachkonzept 3.3).
+        /// </summary>
+        /// <param name="aktionen">Die zu beschreibenden Aktionen.</param>
+        /// <param name="parameterAuslassenWennLeer">
+        /// <c>true</c> laesst bei einer parameterlosen Aktion das Feld <c>parameters</c>
+        /// ganz weg - so verlangt es die OpenAPI-Teilmenge des Anbieters fuer
+        /// <c>functionDeclarations</c>. Fuer Anzeige und Werkzeugliste bleibt es bei
+        /// <c>false</c>, damit die Form ueber alle Aktionen gleich aussieht.
+        /// </param>
+        public static JsonArray WerkzeugkatalogKnoten(IEnumerable<KiAktion> aktionen,
+                                                      bool parameterAuslassenWennLeer = false)
         {
             if (aktionen == null) throw new ArgumentNullException(nameof(aktionen));
 
             var feld = new JsonArray();
             foreach (KiAktion a in aktionen)
             {
-                feld.Add(new JsonObject
+                var eintrag = new JsonObject
                 {
                     ["name"] = a.Name,
-                    ["description"] = a.Zweck,
-                    ["parameters"] = SchemaKnoten(a)
-                });
+                    ["description"] = a.Zweck
+                };
+                if (!parameterAuslassenWennLeer || a.Parameter.Count > 0)
+                    eintrag["parameters"] = SchemaKnoten(a);
+                feld.Add(eintrag);
             }
-            return Schreibe(feld, eingerueckt);
+            return feld;
         }
 
         /// <summary>Der Werkzeugkatalog des gesamten Registers.</summary>

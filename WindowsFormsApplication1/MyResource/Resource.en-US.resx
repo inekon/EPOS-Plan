@@ -4988,4 +4988,760 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_REIHE_STROMSTEUER_ENTLASTUNG" xml:space="preserve">
     <value>Electricity tax relief</value>
   </data>
+  <data name="KI_REG_PROJEKT_ID_NAME" xml:space="preserve">
+    <value>Project (ID)</value>
+  </data>
+  <data name="KI_REG_PROJEKT_ID_ERLAEUTERUNG" xml:space="preserve">
+    <value>Key of the project as returned by projekte_auflisten.</value>
+  </data>
+  <data name="KI_REG_VON_PROJEKT_NAME" xml:space="preserve">
+    <value>Source project (ID)</value>
+  </data>
+  <data name="KI_REG_NACH_PROJEKT_NAME" xml:space="preserve">
+    <value>Target project (ID)</value>
+  </data>
+  <data name="KI_REG_GEWERK_NAME" xml:space="preserve">
+    <value>Trade</value>
+  </data>
+  <data name="KI_REG_KOMPONENTE_NAME" xml:space="preserve">
+    <value>Component</value>
+  </data>
+  <data name="KI_REG_MERKMAL_NAME" xml:space="preserve">
+    <value>Property</value>
+  </data>
+  <data name="KI_REG_DATEIPFAD_NAME" xml:space="preserve">
+    <value>File path</value>
+  </data>
+  <data name="KI_REG_GANGLINIE_NAME" xml:space="preserve">
+    <value>Load curve (ID)</value>
+  </data>
+  <data name="KI_REG_ANZAHL_NAME" xml:space="preserve">
+    <value>Count</value>
+  </data>
+  <data name="KI_REG_PROJEKTE_NAME" xml:space="preserve">
+    <value>Projects</value>
+  </data>
+  <data name="KI_REG_KAPAZITAET_NAME" xml:space="preserve">
+    <value>Usable capacity</value>
+  </data>
+  <data name="KI_REG_LEISTUNG_NAME" xml:space="preserve">
+    <value>Charging/discharging power</value>
+  </data>
+  <data name="KI_REG_WIRKUNGSGRAD_NAME" xml:space="preserve">
+    <value>Round-trip efficiency</value>
+  </data>
+  <data name="KI_REG_SOC_MIN_NAME" xml:space="preserve">
+    <value>Lower band limit</value>
+  </data>
+  <data name="KI_REG_SOC_MAX_NAME" xml:space="preserve">
+    <value>Upper band limit</value>
+  </data>
+  <data name="KI_REG_ZWECK_PROJEKTE_AUFLISTEN" xml:space="preserve">
+    <value>Lists all projects in the database with name, customer and date of change.</value>
+  </data>
+  <data name="KI_REG_ZWECK_PROJEKT_LESEN" xml:space="preserve">
+    <value>Reads the header data of a project (name, customer, editor, climate region).</value>
+  </data>
+  <data name="KI_REG_ZWECK_VARIANTEN_AUFLISTEN" xml:space="preserve">
+    <value>Lists the master project and all variants of a comparison group.</value>
+  </data>
+  <data name="KI_REG_ZWECK_SPEICHERVARIANTEN_AUFLISTEN" xml:space="preserve">
+    <value>Lists the battery storage variants of a project and says which one is active.</value>
+  </data>
+  <data name="KI_REG_ZWECK_ERGEBNISSE_LESEN" xml:space="preserve">
+    <value>Reads the stored profitability results of several projects.</value>
+  </data>
+  <data name="KI_REG_ZWECK_PARAMETER_LESEN" xml:space="preserve">
+    <value>Reads the profitability parameters and the electricity tariff of a master project.</value>
+  </data>
+  <data name="KI_REG_ZWECK_KOSTENLAGE_PRUEFEN" xml:space="preserve">
+    <value>Compares the recorded investment item of a component with the engineering planning values.</value>
+  </data>
+  <data name="KI_REG_ZWECK_UEBERNAHME_VORSCHAU" xml:space="preserve">
+    <value>Shows what transferring a trade from one project into another would change. Writes nothing.</value>
+  </data>
+  <data name="KI_REG_ZWECK_MERKMAL_VORSCHAU" xml:space="preserve">
+    <value>Shows whether and how a single property could be transferred from one project into another. Writes nothing.</value>
+  </data>
+  <data name="KI_REG_ZWECK_LASTGANG_PRUEFEN" xml:space="preserve">
+    <value>Checks a load profile file: format, columns, time grid and readability. Imports nothing.</value>
+  </data>
+  <data name="KI_REG_ZWECK_GANGLINIEN_AUFLISTEN" xml:space="preserve">
+    <value>Lists the selectable electricity load curves of a project and of the master catalogue.</value>
+  </data>
+  <data name="KI_REG_ZWECK_MINIMALE_SPITZE" xml:space="preserve">
+    <value>Determines the smallest grid supply peak a storage unit can hold across the whole load profile.</value>
+  </data>
+  <data name="KI_REG_ZWECK_LETZTE_AKTIONEN" xml:space="preserve">
+    <value>Names the assistant actions carried out most recently in this session.</value>
+  </data>
+  <data name="KI_REG_ERL_VON_PROJEKT" xml:space="preserve">
+    <value>Key of the project the data would be taken from.</value>
+  </data>
+  <data name="KI_REG_ERL_NACH_PROJEKT" xml:space="preserve">
+    <value>Key of the project the data would be transferred into.</value>
+  </data>
+  <data name="KI_REG_ERL_GEWERK" xml:space="preserve">
+    <value>Trade of the component transfer.</value>
+  </data>
+  <data name="KI_REG_ERL_KOMPONENTE" xml:space="preserve">
+    <value>Cost component whose investment item is checked.</value>
+  </data>
+  <data name="KI_REG_ERL_MERKMAL" xml:space="preserve">
+    <value>Key of the property as table.column, e.g. Tab_WP.Bauart. Unknown keys are answered with the complete list.</value>
+  </data>
+  <data name="KI_REG_ERL_DATEIPFAD" xml:space="preserve">
+    <value>Full path of the file to be checked (CSV or Excel).</value>
+  </data>
+  <data name="KI_REG_ERL_GANGLINIE_ID" xml:space="preserve">
+    <value>Key of the load curve from ganglinien_auflisten.</value>
+  </data>
+  <data name="KI_REG_ERL_PROJEKTE_FUER_ERGEBNISSE" xml:space="preserve">
+    <value>Keys of the projects whose results are to be read.</value>
+  </data>
+  <data name="KI_REG_ERL_PROJEKT_ID_GANGLINIEN" xml:space="preserve">
+    <value>Key of the project; without it only the load curves of the master catalogue appear.</value>
+  </data>
+  <data name="KI_REG_ERL_PROJEKT_ID_GANGLINIE_SUCHE" xml:space="preserve">
+    <value>Key of the project, if the load curve is a project load curve.</value>
+  </data>
+  <data name="KI_REG_ERL_ANZAHL" xml:space="preserve">
+    <value>How many of the most recently executed actions are to be named.</value>
+  </data>
+  <data name="KI_REG_ERL_KAPAZITAET" xml:space="preserve">
+    <value>Usable storage capacity.</value>
+  </data>
+  <data name="KI_REG_ERL_LEISTUNG" xml:space="preserve">
+    <value>Charging and discharging power of the storage unit.</value>
+  </data>
+  <data name="KI_REG_ERL_WIRKUNGSGRAD" xml:space="preserve">
+    <value>Round-trip efficiency of the storage unit.</value>
+  </data>
+  <data name="KI_REG_ERL_SOC_MIN" xml:space="preserve">
+    <value>Lower limit of the usable state-of-charge band.</value>
+  </data>
+  <data name="KI_REG_ERL_SOC_MAX" xml:space="preserve">
+    <value>Upper limit of the usable state-of-charge band.</value>
+  </data>
+  <data name="KI_REG_PROJEKT_UNBEKANNT" xml:space="preserve">
+    <value>There is no project with the number {0}.</value>
+  </data>
+  <data name="KI_REG_PROJEKTE_KEINE" xml:space="preserve">
+    <value>There is no project in the database.</value>
+  </data>
+  <data name="KI_REG_PROJEKTE_GEFUNDEN" xml:space="preserve">
+    <value>{0} projects found.</value>
+  </data>
+  <data name="KI_REG_PROJEKT_GELESEN" xml:space="preserve">
+    <value>Project {0}: {1}.</value>
+  </data>
+  <data name="KI_REG_VARIANTEN_GRUPPE" xml:space="preserve">
+    <value>Comparison group of “{0}”: {1}.</value>
+  </data>
+  <data name="KI_REG_VARIANTE_AUFGELOEST" xml:space="preserve">
+    <value>Project {0} is itself a variant; I resolved it to the master project {1}.</value>
+  </data>
+  <data name="KI_REG_EINZELNES_PROJEKT" xml:space="preserve">
+    <value>“{0}” has no variants.</value>
+  </data>
+  <data name="KI_REG_SPEICHERVARIANTEN_KEINE" xml:space="preserve">
+    <value>The project does not carry a battery storage variant.</value>
+  </data>
+  <data name="KI_REG_SPEICHERVARIANTEN_GEFUNDEN" xml:space="preserve">
+    <value>{0} storage variant(s), active: {1}.</value>
+  </data>
+  <data name="KI_REG_SPEICHERVARIANTE_KEINE_AKTIVE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="KI_REG_SPEICHER_TABELLE_FEHLT" xml:space="preserve">
+    <value>The tables of the battery storage module are missing from this database.</value>
+  </data>
+  <data name="KI_REG_ERGEBNISSE_KEINE" xml:space="preserve">
+    <value>No profitability result is stored for these projects — please calculate first.</value>
+  </data>
+  <data name="KI_REG_ERGEBNISSE_GEFUNDEN" xml:space="preserve">
+    <value>{0} result(s) for {1} project(s); {2} of them up to date.</value>
+  </data>
+  <data name="KI_REG_PARAMETER_GELESEN" xml:space="preserve">
+    <value>Parameter set for project {0} read; electricity tariff {1}.</value>
+  </data>
+  <data name="KI_REG_TARIF_AKTIV" xml:space="preserve">
+    <value>active</value>
+  </data>
+  <data name="KI_REG_TARIF_AUS" xml:space="preserve">
+    <value>off</value>
+  </data>
+  <data name="KI_REG_KOMPONENTE_UNBEKANNT" xml:space="preserve">
+    <value>The component “{0}” carries no engineering planning values.</value>
+  </data>
+  <data name="KI_REG_KOMPONENTE_NICHT_VERBAUT" xml:space="preserve">
+    <value>“{1}” is not installed in project {0}.</value>
+  </data>
+  <data name="KI_REG_KOSTENLAGE_OHNE_KOMPONENTE" xml:space="preserve">
+    <value>There is no entry for “{0}” in Tab_KostenKomponente.</value>
+  </data>
+  <data name="KI_REG_KOSTENLAGE_PASST" xml:space="preserve">
+    <value>The recorded item of “{0}” matches the engineering planning values.</value>
+  </data>
+  <data name="KI_REG_KOSTENLAGE_ABWEICHEND" xml:space="preserve">
+    <value>The recorded item of “{0}” deviates from the engineering planning values.</value>
+  </data>
+  <data name="KI_REG_GLEICHE_PROJEKTE" xml:space="preserve">
+    <value>Source and target project must be different projects.</value>
+  </data>
+  <data name="KI_REG_GEWERK_NICHT_UNTERSTUETZT" xml:space="preserve">
+    <value>The trade “{0}” is not supported. Possible are: {1}.</value>
+  </data>
+  <data name="KI_REG_UEBERNAHME_MOEGLICH" xml:space="preserve">
+    <value>Transfer possible: create {0}, replace {1}, remove {2}.</value>
+  </data>
+  <data name="KI_REG_UEBERNAHME_NICHT_MOEGLICH" xml:space="preserve">
+    <value>Transfer not possible: {0}</value>
+  </data>
+  <data name="KI_REG_MERKMAL_UNBEKANNT" xml:space="preserve">
+    <value>I do not know the property “{0}”. Possible are: {1}.</value>
+  </data>
+  <data name="KI_REG_MERKMAL_MOEGLICH" xml:space="preserve">
+    <value>Transfer possible: “{0}” would be set from {1} to {2}.</value>
+  </data>
+  <data name="KI_REG_MERKMAL_GLEICHSTAND" xml:space="preserve">
+    <value>Source and target already carry the same value for “{0}” ({1}).</value>
+  </data>
+  <data name="KI_REG_MERKMAL_NICHT_MOEGLICH" xml:space="preserve">
+    <value>Transfer not possible: {0}</value>
+  </data>
+  <data name="KI_REG_DATEI_FEHLT" xml:space="preserve">
+    <value>The file “{0}” does not exist.</value>
+  </data>
+  <data name="KI_REG_LASTGANG_LESBAR" xml:space="preserve">
+    <value>File readable: {0} column(s), suggested value column {1}, time grid {2}.</value>
+  </data>
+  <data name="KI_REG_LASTGANG_NICHT_LESBAR" xml:space="preserve">
+    <value>The file cannot be read this way.</value>
+  </data>
+  <data name="KI_REG_GANGLINIEN_KEINE" xml:space="preserve">
+    <value>There are no load curves available.</value>
+  </data>
+  <data name="KI_REG_GANGLINIEN_GEFUNDEN" xml:space="preserve">
+    <value>{0} load curve(s): {1} from the project, {2} from the catalogue.</value>
+  </data>
+  <data name="KI_REG_GANGLINIE_UNBEKANNT" xml:space="preserve">
+    <value>There is no load curve with the number {0}.</value>
+  </data>
+  <data name="KI_REG_GANGLINIE_LEER" xml:space="preserve">
+    <value>Load curve {0} contains no values.</value>
+  </data>
+  <data name="KI_REG_SPITZE_ERMITTELT" xml:space="preserve">
+    <value>Smallest sustainable peak: {0} kW (initial peak {1} kW, saving {2} kW).</value>
+  </data>
+  <data name="KI_REG_SOC_VERDREHT" xml:space="preserve">
+    <value>The lower band limit must be smaller than the upper one.</value>
+  </data>
+  <data name="KI_REG_LETZTE_AKTIONEN_KEINE" xml:space="preserve">
+    <value>No action has been carried out in this session yet.</value>
+  </data>
+  <data name="KI_REG_LETZTE_AKTIONEN_GEFUNDEN" xml:space="preserve">
+    <value>{0} most recently executed action(s).</value>
+  </data>
+  <data name="KI_AUS_LAEUFT_BEREITS" xml:space="preserve">
+    <value>Another action is currently running. Please wait until it has finished.</value>
+  </data>
+  <data name="KI_AUS_MODALER_DIALOG" xml:space="preserve">
+    <value>A dialog window is open. Please close it first.</value>
+  </data>
+  <data name="KI_AUS_ABGEBROCHEN" xml:space="preserve">
+    <value>The action was cancelled.</value>
+  </data>
+  <data name="KI_AUS_AUSNAHME" xml:space="preserve">
+    <value>The action failed ({0}): {1}</value>
+  </data>
+  <data name="KI_AUS_KEIN_ERGEBNIS" xml:space="preserve">
+    <value>The action “{0}” did not return a result.</value>
+  </data>
+  <data name="KI_AKT_KEINE_FRAGE" xml:space="preserve">
+    <value>No question entered.</value>
+  </data>
+  <data name="KI_AKT_KEIN_SCHLUESSEL" xml:space="preserve">
+    <value>No API key is stored. Please enter one via ‘Settings…’ in the chat window.</value>
+  </data>
+  <data name="KI_AKT_WEGB_ERZWUNGEN" xml:space="preserve">
+    <value>Fallback path B is enforced in the settings: actions are proposed as JSON inside the answer text.</value>
+  </data>
+  <data name="KI_AKT_WEGB_OHNE_MODELL" xml:space="preserve">
+    <value>No tool-capable model is available — the assistant uses fallback path B (action proposal as JSON inside the answer text).</value>
+  </data>
+  <data name="KI_AKT_TAGESLIMIT" xml:space="preserve">
+    <value>The daily limit of {0} requests has been reached. Searching the help remains available.</value>
+  </data>
+  <data name="KI_AKT_FEHLER" xml:space="preserve">
+    <value>The request could not be answered: {0}</value>
+  </data>
+  <data name="KI_AKT_ABGEBROCHEN" xml:space="preserve">
+    <value>The request was cancelled.</value>
+  </data>
+  <data name="KI_AKT_SCHALTER" xml:space="preserve">
+    <value>Allow actions (read-only)</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_BTN" xml:space="preserve">
+    <value>Tools…</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_TITEL" xml:space="preserve">
+    <value>Run actions manually</value>
+  </data>
+  <data name="KI_AKT_AUSFUEHREN" xml:space="preserve">
+    <value>Run</value>
+  </data>
+  <data name="KI_AKT_PARAMETER_TITEL" xml:space="preserve">
+    <value>Parameters</value>
+  </data>
+  <data name="KI_AKT_PROTOKOLL_LINK" xml:space="preserve">
+    <value>Show log</value>
+  </data>
+  <data name="KI_AKT_PROTOKOLL_TITEL" xml:space="preserve">
+    <value>Action log</value>
+  </data>
+  <data name="KI_AKT_PROTOKOLL_FEHLT" xml:space="preserve">
+    <value>There is no log file yet ({0}).</value>
+  </data>
+  <data name="KI_AKT_PROTOKOLLZEILE" xml:space="preserve">
+    <value>Log line: {0}</value>
+  </data>
+  <data name="KI_AKT_LAEUFT" xml:space="preserve">
+    <value>An action is running — please wait.</value>
+  </data>
+  <data name="KI_AKT_AUSGEFUEHRT" xml:space="preserve">
+    <value>Action executed: {0}</value>
+  </data>
+  <data name="KI_AKT_NICHT_AUSGEFUEHRT" xml:space="preserve">
+    <value>Action not executed: {0} — {1}</value>
+  </data>
+  <data name="KI_AKT_STUFE1_HINWEIS" xml:space="preserve">
+    <value>Only read-only actions are released; everything else comes with the confirmation layer.</value>
+  </data>
+  <data name="KI_AKT_WEG_A" xml:space="preserve">
+    <value>Path A (tool catalogue)</value>
+  </data>
+  <data name="KI_AKT_WEG_B" xml:space="preserve">
+    <value>Path B (JSON in the answer text)</value>
+  </data>
+  <data name="KI_AKT_RUNDEN" xml:space="preserve">
+    <value>{0} round(s), {1}</value>
+  </data>
+  <data name="KI_AKT_WEGB_EINSTELLUNG" xml:space="preserve">
+    <value>Enforce fallback path B (model without tools)</value>
+  </data>
+  <data name="KI_AKT_KEINE_AKTION" xml:space="preserve">
+    <value>(no action executed)</value>
+  </data>
+  <data name="KI_AKT_ERGEBNISZEILEN" xml:space="preserve">
+    <value>Result rows: {0}</value>
+  </data>
+  <data name="KI_AKT_AKTION_WAEHLEN" xml:space="preserve">
+    <value>Please select an action first.</value>
+  </data>
+  <data name="KI_KERN_WIRKUNG_LESEN" xml:space="preserve">
+    <value>This action only reads; it changes nothing.</value>
+  </data>
+  <data name="KI_KERN_AKTION_UNBEKANNT" xml:space="preserve">
+    <value>There is no action “{0}”. Known are: {1}.</value>
+  </data>
+  <data name="KI_KERN_AKTION_OHNE_AUSFUEHRUNG" xml:space="preserve">
+    <value>The action “{0}” is declared but not wired up.</value>
+  </data>
+  <data name="KI_KERN_PFLICHTFELD_FEHLT" xml:space="preserve">
+    <value>Mandatory entry “{0}” ({1}) is missing.</value>
+  </data>
+  <data name="KI_KERN_PARAMETER_UNBEKANNT" xml:space="preserve">
+    <value>This action does not know the parameter “{0}”. Allowed are: {1}.</value>
+  </data>
+  <data name="KI_KERN_KEINE_GANZZAHL" xml:space="preserve">
+    <value>“{0}” expects a whole number; “{1}” was supplied.</value>
+  </data>
+  <data name="KI_KERN_KEINE_ZAHL" xml:space="preserve">
+    <value>“{0}” expects a number; “{1}” was supplied.</value>
+  </data>
+  <data name="KI_KERN_KEIN_TEXT" xml:space="preserve">
+    <value>“{0}” expects a text; “{1}” was supplied.</value>
+  </data>
+  <data name="KI_KERN_KEIN_WAHRHEITSWERT" xml:space="preserve">
+    <value>“{0}” expects yes or no; “{1}” was supplied.</value>
+  </data>
+  <data name="KI_KERN_KEINE_LISTE" xml:space="preserve">
+    <value>“{0}” expects a list of whole numbers; “{1}” was supplied.</value>
+  </data>
+  <data name="KI_KERN_LISTE_LEER" xml:space="preserve">
+    <value>The list “{0}” is empty.</value>
+  </data>
+  <data name="KI_KERN_AUSSERHALB_BEREICH" xml:space="preserve">
+    <value>“{0}” is {1} and thus outside the permitted range {2} to {3}.</value>
+  </data>
+  <data name="KI_KERN_UNTER_GRENZE" xml:space="preserve">
+    <value>“{0}” is {1} and thus below the permitted minimum {2}.</value>
+  </data>
+  <data name="KI_KERN_UEBER_GRENZE" xml:space="preserve">
+    <value>“{0}” is {1} and thus above the permitted maximum {2}.</value>
+  </data>
+  <data name="KI_KERN_WERT_NICHT_ERLAUBT" xml:space="preserve">
+    <value>“{0}” does not know the value “{1}”. Allowed are: {2}.</value>
+  </data>
+  <data name="KI_KERN_TEXT_ZU_LANG" xml:space="preserve">
+    <value>“{0}” is too long (at most {1} characters).</value>
+  </data>
+  <data name="KI_KERN_TEXT_LEER" xml:space="preserve">
+    <value>“{0}” must not be empty.</value>
+  </data>
+  <data name="KI_KERN_KEIN_OBJEKT" xml:space="preserve">
+    <value>The parameters must arrive as a JSON object.</value>
+  </data>
+  <data name="KI_KERN_RIEGEL_ZU" xml:space="preserve">
+    <value>The action “{0}” belongs to {1} and is not executed yet — that comes with the confirmation layer.</value>
+  </data>
+  <data name="KI_KERN_RUNDENDECKEL_ERREICHT" xml:space="preserve">
+    <value>After {0} rounds the assistant has not reached a conclusive answer and stops. Please narrow the question or choose the action manually.</value>
+  </data>
+  <data name="KI_KERN_MEHRERE_WERKZEUGE" xml:space="preserve">
+    <value>The model proposed several actions at once; only “{0}” is executed. Also proposed: {1}.</value>
+  </data>
+  <data name="KI_KERN_ANTWORT_LEER" xml:space="preserve">
+    <value>The model's answer was empty.</value>
+  </data>
+  <data name="KI_KERN_FELD_AKTION" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="KI_KERN_FELD_ZWECK" xml:space="preserve">
+    <value>Purpose</value>
+  </data>
+  <data name="KI_KERN_FELD_ANGABEN" xml:space="preserve">
+    <value>Entries</value>
+  </data>
+  <data name="KI_KERN_FELD_WIRKUNG" xml:space="preserve">
+    <value>Effect</value>
+  </data>
+  <data name="KI_KERN_FELD_VORSCHAU" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="KI_KERN_FELD_ANDOCKPUNKT" xml:space="preserve">
+    <value>Entry point</value>
+  </data>
+  <data name="KI_KERN_KEINE_ANGABEN" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="KI_KERN_STUFE_LESEN" xml:space="preserve">
+    <value>Level 1 – read-only</value>
+  </data>
+  <data name="KI_KERN_STUFE_SCHREIBEN" xml:space="preserve">
+    <value>Level 2 – changes data</value>
+  </data>
+  <data name="KI_KERN_STUFE_RECHNEN" xml:space="preserve">
+    <value>Level 3 – calculates, runs longer</value>
+  </data>
+  <data name="KI_AKT_DATENSCHUTZ_EIN" xml:space="preserve">
+    <value>Action mode on: results of read-only actions are returned to the model — identifiers only as placeholders (“Name 1”), numbers and keys unchanged. Verifiable at any time via “What is being sent?”.</value>
+  </data>
+  <data name="KI_AKT_DATENSCHUTZ_AUS" xml:space="preserve">
+    <value>Action mode off: only help texts, your question and the area name are sent.</value>
+  </data>
+  <data name="KI_HINWEIS_FENSTER" xml:space="preserve">
+    <value>AI assistant – legal notice on data transmission</value>
+  </data>
+  <data name="KI_HINWEIS_TITEL" xml:space="preserve">
+    <value>Notice on the use of the AI assistant</value>
+  </data>
+  <data name="KI_HINWEIS_FASSUNG" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
+  <data name="KI_HINWEIS_EINLEITUNG" xml:space="preserve">
+    <value>The AI assistant does not answer your questions itself. It transmits them to a service operated by Google (Gemini interface); processing takes place there, outside this application. What is sent is described below in full.</value>
+  </data>
+  <data name="KI_HINWEIS_UEB_UEBERTRAGEN" xml:space="preserve">
+    <value>What is transmitted</value>
+  </data>
+  <data name="KI_HINWEIS_UEBERTRAGEN" xml:space="preserve">
+    <value>• Your question, verbatim. The text you type is sent unchanged – including any names, addresses or other details you put into it yourself.
+• The name of the area you are currently working in (for example “Report” or “Cost-effectiveness”). It comes from a fixed list of generic area names; project, customer and plant names are not part of that list.
+• Extracts from the built-in knowledge base – fixed texts about operating the program.</value>
+  </data>
+  <data name="KI_HINWEIS_UEB_AKTIONEN" xml:space="preserve">
+    <value>Additionally, when “Allow actions” is switched on</value>
+  </data>
+  <data name="KI_HINWEIS_AKTIONEN" xml:space="preserve">
+    <value>• The tool catalogue: the names of the permitted actions, their parameters and the explanations of those parameters. Only read-only actions are permitted.
+• The results of executed read actions. Identifiers contained in them – project, variant and plant names – are replaced by placeholders beforehand (“Name 1”); figures, units and keys are sent unchanged.</value>
+  </data>
+  <data name="KI_HINWEIS_UEB_NICHT" xml:space="preserve">
+    <value>What is not transmitted</value>
+  </data>
+  <data name="KI_HINWEIS_NICHT" xml:space="preserve">
+    <value>Raw database content, customer master data, simulation time series and file paths are not sent. The API key is passed in a request header and does not appear in the address that is called.</value>
+  </data>
+  <data name="KI_HINWEIS_UEB_EMPFAENGER" xml:space="preserve">
+    <value>Who receives the data</value>
+  </data>
+  <data name="KI_HINWEIS_EMPFAENGER" xml:space="preserve">
+    <value>The recipient is Google as the operator of the Gemini interface. The provider’s terms in force at the time govern the nature and extent of the processing carried out there; under those terms, content submitted within the free tier is used for product improvement. A paid plan is intended for productive use.</value>
+  </data>
+  <data name="KI_HINWEIS_UEB_BEACHTEN" xml:space="preserve">
+    <value>What you need to bear in mind</value>
+  </data>
+  <data name="KI_HINWEIS_BEACHTEN" xml:space="preserve">
+    <value>Do not put anything into your question that must not leave the application – in particular no personal data and nothing subject to confidentiality. “What is sent?” in the chat window shows you the exact text that would go out, before every request.</value>
+  </data>
+  <data name="KI_HINWEIS_UEB_VERANTWORTUNG" xml:space="preserve">
+    <value>Responsibility and data processing agreements</value>
+  </data>
+  <data name="KI_HINWEIS_VERANTWORTUNG" xml:space="preserve">
+    <value>The operator of this installation is responsible for the use of the AI assistant. Whether transmission to the provider requires a data processing agreement or another contractual basis is for the operator to examine. This notice describes the actual data flow only; it does not replace that examination and makes no statement as to whether the use is permissible in a given case.</value>
+  </data>
+  <data name="KI_HINWEIS_UEB_ABSCHALTEN" xml:space="preserve">
+    <value>Switching it off</value>
+  </data>
+  <data name="KI_HINWEIS_ABSCHALTEN" xml:space="preserve">
+    <value>Transmission can be stopped completely at any time: under Administration / Settings / Application, “Disable AI assistant completely” switches off all AI functions. No request is sent without your consent either. Local help search (“Search only”) remains usable in both cases and transmits nothing.</value>
+  </data>
+  <data name="KI_HINWEIS_OK" xml:space="preserve">
+    <value>Understood and agreed</value>
+  </data>
+  <data name="KI_HINWEIS_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="KI_HINWEIS_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="KI_HINWEIS_STAND_NEIN" xml:space="preserve">
+    <value>Not yet confirmed. Without consent, no request is sent to the provider.</value>
+  </data>
+  <data name="KI_HINWEIS_STAND_JA" xml:space="preserve">
+    <value>Confirmed on {0} for version {1}.</value>
+  </data>
+  <data name="KI_HINWEIS_STAND_ALT" xml:space="preserve">
+    <value>Confirmed on {0} for version {1}. The notice has since been revised to version {2} and is therefore presented again.</value>
+  </data>
+  <data name="KI_HINWEIS_ZEILE" xml:space="preserve">
+    <value>Your question is sent verbatim to an external service (Google Gemini). </value>
+  </data>
+  <data name="KI_HINWEIS_ZEILE_LINK" xml:space="preserve">
+    <value>Show legal notice</value>
+  </data>
+  <data name="KI_HINWEIS_ABGELEHNT" xml:space="preserve">
+    <value>Without consent to the legal notice, no request is sent to the provider. Local help search via “Search only” remains available.</value>
+  </data>
+  <data name="KI_ABSCHALTER_TITEL" xml:space="preserve">
+    <value>AI assistant disabled</value>
+  </data>
+  <data name="KI_ABSCHALTER_MELDUNG" xml:space="preserve">
+    <value>The AI functions are disabled for this installation; nothing is transmitted to an external service. The setting is located under Administration / Settings / Application.</value>
+  </data>
+  <data name="KI_ABSCHALTER_ADMIN" xml:space="preserve">
+    <value>Disable AI assistant completely (no transmission to an external service)</value>
+  </data>
+  <data name="KI_ABSCHALTER_ADMIN_HINWEIS" xml:space="preserve">
+    <value>When ticked, the help assistant’s menu entry and chat window are unreachable and no request goes to the provider. Local help search is unaffected. Intended for installations in which the external service is not permitted.</value>
+  </data>
+  <data name="KI_ABSCHALTER_MASCHINE" xml:space="preserve">
+    <value>The AI assistant is locked for this computer by administration (HKLM\Software\wp-plan\KiDeaktiviert). The setting cannot be changed here.</value>
+  </data>
+  <data name="PSP_NAME_MINDESTFUELLSTAND" xml:space="preserve">
+    <value>minimum charge level/emergency reserve</value>
+  </data>
+  <data name="PSP_LABEL_MINDESTFUELLSTAND" xml:space="preserve">
+    <value>Minimum charge level/emergency reserve [%]:</value>
+  </data>
+  <data name="PSP_FEHLER_RESERVE_UEBER_AUS" xml:space="preserve">
+    <value>The minimum charge level must be below the switch-off threshold - otherwise the storage could no longer cover any demand.</value>
+  </data>
+  <data name="KI_KERN_FREIGABE_FEHLT" xml:space="preserve">
+    <value>The action “{0}” changes data and only runs after explicit confirmation in the chat.</value>
+  </data>
+  <data name="KI_KERN_FREIGABE_OFFEN" xml:space="preserve">
+    <value>No decision by the user is available for this action yet.</value>
+  </data>
+  <data name="KI_KERN_FREIGABE_ABGELEHNT" xml:space="preserve">
+    <value>The user cancelled the action; nothing was changed.</value>
+  </data>
+  <data name="KI_KERN_FREIGABE_VERFALLEN" xml:space="preserve">
+    <value>The preview is older than a minute and was discarded. Please request the action again.</value>
+  </data>
+  <data name="KI_KERN_FREIGABE_ABGEBROCHEN" xml:space="preserve">
+    <value>The operation was cancelled; nothing was changed.</value>
+  </data>
+  <data name="KI_KERN_FREIGABE_VERBRAUCHT" xml:space="preserve">
+    <value>This confirmation has already been used. One click covers exactly one call.</value>
+  </data>
+  <data name="KI_KERN_FREIGABE_UEBERHOLT" xml:space="preserve">
+    <value>Another action has run since the preview; the confirmation is no longer valid. Please request again.</value>
+  </data>
+  <data name="KI_KERN_FREIGABE_FREMD" xml:space="preserve">
+    <value>The confirmation belongs to a different call and does not apply here.</value>
+  </data>
+  <data name="KI_KERN_RIEGEL_STUFE_GESPERRT" xml:space="preserve">
+    <value>The action “{0}” belongs to {1} and is not yet released at this stage.</value>
+  </data>
+  <data name="KI_KERN_FELD_RUECKHOLBAR" xml:space="preserve">
+    <value>Reversible</value>
+  </data>
+  <data name="KI_KERN_RUECKHOLBAR_JA" xml:space="preserve">
+    <value>yes — the previous state is known and can be written back as a new action that also requires confirmation</value>
+  </data>
+  <data name="KI_KERN_RUECKHOLBAR_NEIN" xml:space="preserve">
+    <value>no — the change cannot be undone automatically</value>
+  </data>
+  <data name="KI_KERN_FELD_SICHERUNG" xml:space="preserve">
+    <value>Backup copy</value>
+  </data>
+  <data name="KI_KERN_FELD_GUELTIG_BIS" xml:space="preserve">
+    <value>Valid until</value>
+  </data>
+  <data name="KI_AUS_KEIN_SCHREIBRECHT" xml:space="preserve">
+    <value>The licence currently does not permit writing. Viewing and exporting remain possible, changes are blocked. {0}</value>
+  </data>
+  <data name="KI_AUS_OHNE_BESTAETIGUNGSPFLICHT" xml:space="preserve">
+    <value>The action “{0}” does not require confirmation; there is no preparation step for it.</value>
+  </data>
+  <data name="KI_AUS_VORSCHAU_FEHLT" xml:space="preserve">
+    <value>The action “{0}” changes data but does not provide a preview. It will not be executed.</value>
+  </data>
+  <data name="KI_AUS_VORSCHAU_LEER" xml:space="preserve">
+    <value>The preview of action “{0}” was empty. Without a preview there is no confirmation.</value>
+  </data>
+  <data name="KI_SICH_QUELLE_FEHLT" xml:space="preserve">
+    <value>The project database was not found ({0}).</value>
+  </data>
+  <data name="KI_SICH_GEOEFFNET" xml:space="preserve">
+    <value>The database is currently open ({0}); the backup copy cannot contain changes that have not been written yet.</value>
+  </data>
+  <data name="KI_SICH_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>A backup copy of the database must be created before the first change. That failed ({0}) — write actions therefore remain blocked.</value>
+  </data>
+  <data name="KI_SCHUTZ_SATZ" xml:space="preserve">
+    <value>Record {1} in {0} is marked read-only. The assistant never bypasses write protection — please use the specialised dialog.</value>
+  </data>
+  <data name="KI_SCHUTZ_KATALOG" xml:space="preserve">
+    <value>{0} is a shipped catalogue table. Catalogue maintenance is not among the assistant’s tasks.</value>
+  </data>
+  <data name="KI_SCHUTZ_UNPRUEFBAR" xml:space="preserve">
+    <value>The write protection of record {1} in {0} could not be checked ({2}); the action is refused.</value>
+  </data>
+  <data name="KI_REG_STAMM_ID_NAME" xml:space="preserve">
+    <value>Master project (ID)</value>
+  </data>
+  <data name="KI_REG_BEZEICHNER_NAME" xml:space="preserve">
+    <value>Label</value>
+  </data>
+  <data name="KI_REG_VARIANTE_ID_NAME" xml:space="preserve">
+    <value>Storage variant (ID)</value>
+  </data>
+  <data name="KI_REG_POSITIONS_ID_NAME" xml:space="preserve">
+    <value>Cost item (ID)</value>
+  </data>
+  <data name="KI_REG_BETRAG_NAME" xml:space="preserve">
+    <value>Amount</value>
+  </data>
+  <data name="KI_REG_ERL_STAMM_ID" xml:space="preserve">
+    <value>Key of the master project the variant should belong to; from projekte_auflisten or varianten_auflisten.</value>
+  </data>
+  <data name="KI_REG_ERL_BEZEICHNER" xml:space="preserve">
+    <value>Name of the new variant, e.g. “heat pump instead of boiler”. The project name is formed as “master - label”.</value>
+  </data>
+  <data name="KI_REG_ERL_VARIANTE_ID" xml:space="preserve">
+    <value>Key of the storage variant from speichervarianten_auflisten.</value>
+  </data>
+  <data name="KI_REG_ERL_POSITIONS_ID" xml:space="preserve">
+    <value>Key of the cost item as returned by kostenlage_pruefen in id_position.</value>
+  </data>
+  <data name="KI_REG_ERL_BETRAG" xml:space="preserve">
+    <value>New investment amount of the item in euros.</value>
+  </data>
+  <data name="KI_REG_ZWECK_VARIANTE_ANLEGEN" xml:space="preserve">
+    <value>Creates a new variant of a master project — a full copy of the project under its own name.</value>
+  </data>
+  <data name="KI_REG_ZWECK_SPEICHERVARIANTE_AKTIV" xml:space="preserve">
+    <value>Makes one electricity storage variant the active variant of its project; all others are reset.</value>
+  </data>
+  <data name="KI_REG_ZWECK_KOSTENPOSITION_SETZEN" xml:space="preserve">
+    <value>Sets the amount of an existing cost item of a project.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_VARIANTE_ANLEGEN" xml:space="preserve">
+    <value>Afterwards there is one additional project in the comparison group of the master project.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_SPEICHERVARIANTE_AKTIV" xml:space="preserve">
+    <value>Afterwards the overall simulation of the project uses this storage variant.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_KOSTENPOSITION_SETZEN" xml:space="preserve">
+    <value>Afterwards the economic calculation uses the new amount; a stored result becomes outdated.</value>
+  </data>
+  <data name="KI_REG_VORSCHAU_VARIANTE_ANLEGEN" xml:space="preserve">
+    <value>I would create the variant “{2}” for master project “{0}” (ID {1}).
+The new project would be called “{3}” and would be a full copy ({4} energy plants).</value>
+  </data>
+  <data name="KI_REG_VORSCHAU_SPEICHERVARIANTE" xml:space="preserve">
+    <value>The currently active storage variant is {0}.
+I would activate storage variant {1} (energy plant {2}); the remaining {4} variants of project {3} would be reset.</value>
+  </data>
+  <data name="KI_REG_VORSCHAU_KOSTENPOSITION" xml:space="preserve">
+    <value>Cost item {0} belongs to project {1} (“{2}”), component “{3}”, description “{4}”.
+The recorded amount is currently {5:N2} €; I would enter {6:N2} € (difference {7:N2} €).</value>
+  </data>
+  <data name="KI_REG_KEIN_STAMMPROJEKT" xml:space="preserve">
+    <value>Project {0} is itself a variant of project {1}. A variant can only be created for a master project.</value>
+  </data>
+  <data name="KI_REG_BEZEICHNER_LEER" xml:space="preserve">
+    <value>The variant is missing a label.</value>
+  </data>
+  <data name="KI_REG_VARIANTE_ANGELEGT" xml:space="preserve">
+    <value>Variant “{0}” created: new project {1} (“{2}”).</value>
+  </data>
+  <data name="KI_REG_VARIANTE_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>The variant could not be created: {0}</value>
+  </data>
+  <data name="KI_REG_SPEICHERVARIANTE_UNBEKANNT" xml:space="preserve">
+    <value>Storage variant {0} does not belong to project {1}.</value>
+  </data>
+  <data name="KI_REG_SPEICHERVARIANTE_GESETZT" xml:space="preserve">
+    <value>Storage variant {0} is now the active variant of project {1} (previously: {2}).</value>
+  </data>
+  <data name="KI_REG_SPEICHERVARIANTE_SCHON_AKTIV" xml:space="preserve">
+    <value>Storage variant {0} is already the active variant of project {1}; nothing was changed.</value>
+  </data>
+  <data name="KI_REG_SPEICHERVARIANTE_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Storage variant {0} could not be activated.</value>
+  </data>
+  <data name="KI_REG_POSITION_UNBEKANNT" xml:space="preserve">
+    <value>There is no cost item with ID {0}.</value>
+  </data>
+  <data name="KI_REG_POSITION_FREMDES_PROJEKT" xml:space="preserve">
+    <value>Cost item {0} belongs to project {1}, not to project {2}.</value>
+  </data>
+  <data name="KI_REG_POSITION_GESETZT" xml:space="preserve">
+    <value>Cost item {0} is now set to {1:N2} € (previously {2:N2} €).</value>
+  </data>
+  <data name="KI_REG_POSITION_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>The amount of cost item {0} could not be set.</value>
+  </data>
+  <data name="KI_REG_AENDERUNGSDATUM_FEHLT" xml:space="preserve">
+    <value>The modification date of project {0} could not be set.</value>
+  </data>
+  <data name="KI_AKT_OHNE_BESTAETIGUNGSWEG" xml:space="preserve">
+    <value>The action “{0}” changes data. There is no way to obtain the user’s confirmation — it will not be executed.</value>
+  </data>
+  <data name="KI_AKT_BESTAETIGUNG_TITEL" xml:space="preserve">
+    <value>Confirmation required</value>
+  </data>
+  <data name="KI_AKT_BESTAETIGUNG_AUSFUEHREN" xml:space="preserve">
+    <value>Execute</value>
+  </data>
+  <data name="KI_AKT_BESTAETIGUNG_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="KI_AKT_BESTAETIGUNG_VERFALL" xml:space="preserve">
+    <value>This preview expires in {0} seconds.</value>
+  </data>
+  <data name="KI_AKT_BESTAETIGUNG_ERTEILT" xml:space="preserve">
+    <value>Confirmed — the action is running.</value>
+  </data>
+  <data name="KI_AKT_BESTAETIGUNG_ABGELEHNT" xml:space="preserve">
+    <value>Cancelled — nothing was changed.</value>
+  </data>
+  <data name="KI_AKT_BESTAETIGUNG_VERFALLEN" xml:space="preserve">
+    <value>The preview has expired — nothing was changed. Please ask again.</value>
+  </data>
 </root>
