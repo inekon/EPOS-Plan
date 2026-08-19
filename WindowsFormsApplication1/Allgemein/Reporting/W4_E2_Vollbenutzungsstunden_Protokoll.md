@@ -513,3 +513,293 @@ nichts — dasselbe Bild wie bei `Heizkessel.Quellwaerme` in Etappe D4. Alle Gan
     nicht mehr vergleichbar (bereits in E1 belegt), und E2 fügt drei Schlüssel hinzu. Der
     Freeze gehört nach E8; bis dahin läuft jeder Vergleich als A/B auf einer gemeinsamen
     Wegwerf-Kopie.
+
+---
+
+# Nachtrag: 500-kW-Grenze je Anlage
+
+**Stand: 19.08.2026.** Nutzerentscheidung vom 19.08.2026, umgesetzt auf dem Stand
+`0892444` (= E2). Damit ist der offene Punkt **7** aus Abschnitt 7 erledigt.
+
+**Ergebnis in drei Sätzen.** Die Ausschreibungsgrenze des KWKG greift ab jetzt für **jede
+BHKW-Anlage einzeln** statt für die Projektsumme; Anlagen darüber verlieren ihren
+Zuschlaganteil, die übrigen behalten ihn. Auf dem heutigen Datenbestand ändert sich
+**nichts** — kein Referenzprojekt führt mehr als eine Anlage, und ohne gepflegten
+KWKG-Satz rechnet die Reihe ohnehin nicht (8/8 PASS, 194/194 CSV byte-identisch, Flag AUS
+**und** AN). An präparierten Kopien springt der Zuschlag von 0 € auf bis zu **606.318,99 €
+Barwert** (zwei Anlagen zu je 300 kW).
+
+---
+
+## N1 Warum die Änderung
+
+Der Guard bei `WirtschaftlichkeitCtrl.cs:919-928` (Stand `0892444`) prüfte
+
+```csharp
+double pelKW = PelKW(v.IdProjekt);           // Σ P_el ALLER Anlagen des Projekts
+if (pelKW > KWKG_MAX_LEISTUNG_KW) { … Bonus = 0 … }
+```
+
+Das Gesetz stellt aber auf die **einzelne KWK-Anlage** ab: Oberhalb von 500 kW
+elektrischer Leistung gibt es den Zuschlag nur noch über eine Ausschreibung
+(§ 8a KWKG i.V.m. KWKAusV), und dieser Weg ist in EPOS-Plan nicht bedienbar. Zwei Module
+zu je 300 kW sind damit **zwei förderfähige Anlagen**, keine nicht förderfähige
+600-kW-Anlage — der Altstand nahm einer solchen Kaskade den Zuschlag vollständig.
+
+Es ist derselbe Fehlertyp, den E2 schon einmal behoben hat (Abschnitt 1.3): eine Größe,
+die je Anlage gilt, wurde über das Projekt summiert. E2 hat die **Bezugsmenge** der Summe
+berichtigt (Anlagen- statt Gerätezeilen), dieser Nachtrag die **Bezugsebene** der Prüfung.
+
+---
+
+## N2 Was umgesetzt wurde
+
+| # | Gegenstand | Datei : Zeile |
+|---|---|---|
+| 1 | Guard prüft **jede Anlage einzeln**, drei unterschiedene Fälle (nicht bestimmbar / alle über der Grenze / einzelne über der Grenze) | `Allgemein/Wirtschaftlichkeit/WirtschaftlichkeitCtrl.cs:943-985` |
+| 2 | **Zwischenlösung**: Bonus und Vbh um die ausgeschlossenen Anlagen bereinigt | `WirtschaftlichkeitCtrl.cs:1011-1030` |
+| 3 | Prüfung und bereinigte Bezugsgrößen (`KwkgAnlagenauswahl`, `Anlagenauswahl`) | `WirtschaftlichkeitCtrl.cs:1180-1281` |
+| 4 | Zuordnung Anlagenzeile ↔ Ergebnis-Modulzeile (Bezeichner, ersatzweise Reihenfolge) | `WirtschaftlichkeitCtrl.cs:1283-1308` |
+| 5 | Anlagenzeilen mit Bezeichner und P_el lesen, je Lauf gecacht (`BhkwAnlage`, `LiesBhkwAnlagen`) | `WirtschaftlichkeitCtrl.cs:1165-1178`, `:1310-1348` |
+| 6 | Grenzwert **aus dem Katalog** statt aus der Konstanten, Konstante als Rückfallebene | `WirtschaftlichkeitCtrl.cs:1219-1232` (`AusschreibungsgrenzeKW`), `:59-68` (Konstante, jetzt dokumentierte Rückfallebene) |
+| 7 | Neuer Katalogschlüssel `KWKG_AUSSCHREIBUNG_GRENZE_KW` = 500 kW, Klasse `KWKG`, ab 2020 | `Allgemein/DbWerte.cs:652-662` (Konstante), `Allgemein/Wirtschaftlichkeit/GesetzKatalog.cs:536-541` (Seed) |
+| 8 | Caches des neuen Wegs beim Laufbeginn leeren | `WirtschaftlichkeitCtrl.cs:644` |
+| 9 | Drei Ressourcenschlüssel in beiden Sprachen samt Designer und Katalognachtrag | `MyResource/Resource.resx`, `Resource.en-US.resx`, `Resource.Designer.cs`, `Allgemein/Simulation/Lokalisierung_Katalog.md` |
+
+**Sechs Quelldateien geändert** (337 Zeilen zugefügt, 13 entfernt) **und drei Dokumente**:
+dieses Protokoll, `W4_Umsetzungsstand.md`, `Allgemein/Simulation/Lokalisierung_Katalog.md`.
+**Keine Migration** — der Katalog entsteht und wird eingesät über
+`WirtschaftlichkeitCtrl.StelleTabellenSicher` → `GesetzKatalog.StelleKatalogSicher`
+(Abschnitt N4, Probe N7).
+
+---
+
+## N3 Die Zwischenlösung — und was sie nicht löst
+
+Die Zuschlagsermittlung rechnet **projektweit**; modulscharf wird sie erst mit **E6**.
+Bis dahin werden die Bezugsgrößen vor der Reihenbildung **bereinigt**:
+
+```
+anteil   = Σ Strom der förderfähigen Anlagen / Σ Strom aller Anlagen
+bonusVoll → bonusVoll · anteil
+vbh       → Σ Strom der förderfähigen Anlagen · 1000 / Σ P_el derselben
+```
+
+Sind **alle** Anlagen über der Grenze, entfällt der Zuschlag wie bisher. Ist **keine**
+Anlage ausgeschlossen, bleiben Bonus und Vbh **unangetastet** — dann rechnet der Code
+Zeile für Zeile wie der Vorgängerstand. Genau das macht den Regressionsnachweis in
+Abschnitt N5 möglich.
+
+**Die vier Grenzen der Zwischenlösung** (alle in E6 aufzulösen):
+
+1. **Jahresdeckel und 30.000-h-Kontingent laufen weiter über EINE gemeinsame Vbh-Größe.**
+   Die bereinigte Vbh ist das leistungsgewichtete Mittel der verbleibenden Anlagen.
+   Solange alle verbleibenden Anlagen über oder alle unter dem Jahresdeckel liegen, ist
+   das mit der modulscharfen Rechnung identisch (Beweis in Abschnitt 3.2); liegt ein Teil
+   darüber und ein Teil darunter, weicht es ab. Der Ausschluss ändert daran nichts, er
+   verkleinert nur die Menge, über die gemittelt wird.
+2. **Der Zuschlagssatz bleibt einer je Projekt.** Nach § 7 hängt er von der
+   Leistungsklasse der **Anlage** ab; eine verbleibende 200-kW-Anlage bekäme einen anderen
+   Satz als eine 50-kW-Anlage. Die Katalogschlüssel dafür liegen seit E1 bereit
+   (`KWKG_ZUSCHLAG_*`), gelesen wird noch keiner.
+3. **Der Bonus wird über die STROMMENGE gekürzt, nicht über die Vergütungsregel.** Bei
+   gepflegter Stundenreihe (`StromMatrix`) entsteht `bonusVoll` aus dem Split
+   Eigenstrom/Einspeisung des **ganzen Projekts**; der Anteilsfaktor unterstellt, dass sich
+   dieser Split auf die verbleibenden Anlagen gleich verteilt. Modulscharfe Stundenreihen
+   je Anlage gibt es nicht — dieselbe Näherung, die die Rechnung schon heute für den
+   Jahresdeckel macht.
+4. **Fristen und Heizöl-Ausschluss bleiben projektweit.** § 6 (Stichtag, Realisierungs-
+   frist) und der Heizöl-Ausschluss gelten ebenfalls je Anlage, werden aber weiterhin aus
+   **einem** Parametersatz je Projekt beziehungsweise über `COUNT(*)` über alle
+   Gerätezeilen geprüft (Abschnitt N6).
+
+**Wenn die Zuordnung nicht gelingt**, fällt der Guard auf die Projektsumme zurück — den
+Weg des Altstands — und sagt das im Hinweis. Das ist der konservative Zweig: Er schließt
+eher zu viel aus als zu wenig. Er greift, wenn das Projekt keine BHKW-**Anlagenzeile**
+führt (dann liefert `LiesBhkwLeistungKW` seine Gerätezeilen-Summe), wenn der Lauf keine
+Modulzeilen hinterlassen hat, oder wenn sich Anlagen und Modulzeilen weder über den
+Bezeichner noch über die Reihenfolge paaren lassen.
+
+> **Warum die Zuordnung zwei Wege braucht.** Der Regelfall ist der Bezeichner:
+> `SimulationRunner` schreibt ihn als `Tab_ErgebnisBHKWModul.Modul`. Im echten Bestand
+> passte er vor dem Referenzlauf trotzdem nicht — Projekt 1018 führte die Anlage
+> „EC-POWER XRGI 15" und die Modulzeile „EC_Power_20kw.el_Gas" aus einem älteren Lauf.
+> Deshalb der zweite Weg über die Reihenfolge bei gleicher Anzahl; die Modulzeilen
+> entstehen in der Reihenfolge von `SimulationControl.BHKW_Liste_Laden`.
+
+**Die angezeigte Vbh bleibt die der ganzen Anlage.** `e.VbhElektrisch` (Spalte
+`KWKGVbhElektrisch`, Zeile „Vbh elektrisch (KWKG-Basis)") wird vor und unabhängig vom
+Guard gebildet — sie steht auch dann im Ergebnis, wenn gar kein KWKG-Satz gepflegt ist.
+Bei ausgeschlossenen Anlagen weicht sie deshalb von der intern verwendeten, bereinigten
+Größe ab. Das ist bewusst so: Sie unverändert zu lassen hält den Regressionsnachweis
+sauber, und die bereinigte Größe hat ohne modulscharfe Rechnung keinen eigenständigen
+Aussagewert. Fall (d) in Abschnitt N5 zeigt den Unterschied (2.500 h gegen 1.000 h).
+
+---
+
+## N4 Der Grenzwert kommt aus dem Katalog
+
+Der E1-Katalog kannte die 500 kW **nicht** — er führt die Leistungsstufen des § 7
+(50/100/250/2.000 kW), nicht die Ausschreibungsschwelle des § 8a. Der Schlüssel ist
+deshalb neu:
+
+| Schlüssel | Klasse | JahrVon | Wert | Einheit | Status | Quelle |
+|---|---|---|---|---|---|---|
+| `KWKG_AUSSCHREIBUNG_GRENZE_KW` | KWKG | 2020 | 500 | kW | GESICHERT | KWKG 2025 § 8a i.V.m. KWKAusV — Ausschreibungspflicht je Anlage |
+
+Der Seed wächst damit von 182 auf **183 Zeilen**. Gelesen wird über
+`GesetzKatalog.Wert(…, Förderbeginn)` — dieselbe Stichtagsregel wie beim Jahresdeckel;
+der Förderbeginn ist das Inbetriebnahmejahr. Fehlt der Schlüssel, gilt die Konstante
+`KWKG_MAX_LEISTUNG_KW` mit demselben Wert.
+
+**Erreicht der Seed eine Bestandsdatenbank?** Ja — und zwar aus einem Grund, der beim
+Entwurf nicht selbstverständlich war: `StelleKatalogSicher` sät nur bei
+`COUNT(*) = 0` ein, würde einen bestehenden Katalog also nicht ergänzen. Die produktive
+`Kenndaten.accdb` vom 19.08.2026 hat aber **überhaupt keine** `Tab_Gesetzesparameter` —
+E1 ist dort noch nie gelaufen. Beim nächsten Wirtschaftlichkeitslauf legt
+`StelleTabellenSicher` die Tabelle an und sät sie vollständig ein, den neuen Schlüssel
+eingeschlossen (Probe N7, nachgemessen: 183 Zeilen, ID 24).
+
+> **Was das nicht abdeckt:** Eine Datenbank, deren Katalog **vor** diesem Nachtrag
+> eingesät wurde, bekommt den Schlüssel nicht nachgereicht — dort gilt die Konstante
+> (wertgleich, Probe N9). Wer den Wert dort pflegbar haben will, legt die Zeile über
+> Administration → „Gesetzliche Parameter…" an. Eine additive Nachsaat fehlender Schlüssel
+> wäre die allgemeine Lösung; sie würde aber auch bewusst gelöschte Zeilen wieder
+> auferstehen lassen und gehört deshalb als eigener Vorgang entschieden
+> (`W4_Umsetzungsstand.md`, Abschnitt 5).
+
+---
+
+## N5 Wirkung — mit Zahlen
+
+**Gemeinsame Grundlage:** Wegwerf-Kopien der produktiven `Kenndaten.accdb` vom
+19.08.2026. KWKG-Parameter der Probe: Zuschlag Eigenstrom 4,00 ct/kWh, Einspeisung
+8,00 ct/kWh, Kontingent 30.000 h, Jahresdeckel aus der KWKG-2025-Staffel, Zins 3,0 %,
+Betrachtungszeitraum 20 a, Stichtag und Inbetriebnahme 01.01.2026, keine Stundenreihe
+(also Eigenstromsatz auf die Gesamtmenge — dieselbe Fahrweise wie in Abschnitt 4).
+
+### N5.1 Bestandsprojekte — unverändert
+
+| Projekt | Anlagen | Strom [MWh/a] | Vbh [h/a] | KWKG Jahr 1 **alt** | **neu** | Barwert 20 a **alt** | **neu** |
+|---|---|---|---|---|---|---|---|
+| 1017 | 1 × 10,0 kW | 28,43 | 2.842,90 | 1.137,20 €/a | 1.137,20 €/a | 10.068,70 € | 10.068,70 € |
+| 1018 | 1 × 14,5 kW | 14,96 | 1.031,63 | 598,40 €/a | 598,40 €/a | 8.902,68 € | 8.902,68 € |
+| 1024 | 1 × 21,0 kW | 73,91 | 3.519,43 | 0,00 €/a ¹ | 0,00 €/a ¹ | 0,00 € | 0,00 € |
+| 1007, 1008, 1011, 1021, 1023 | kein BHKW-Ergebnis | 0 | 0 | 0,00 €/a | 0,00 €/a | 0,00 € | 0,00 € |
+
+¹ Heizöl-Ausschluss (IBN 2026), in **beiden** Ständen und aus demselben Grund.
+
+**Δ = 0,00 € in jeder Zeile.** Die Werte sind zugleich die aus Abschnitt 4.1 — E2 und
+dieser Nachtrag verändern an Einanlagenprojekten nichts.
+
+### N5.2 Präparierte Kopien — die Wirkung
+
+Basis ist Projekt 1018 (Gas-BHKW). Anlagen-, Geräte- und Ergebniszeilen sind **auf
+Datenebene** präpariert: `Tab_BHKW.Pel`, eine zweite `Tab_Energieanlagen`-Zeile, eine
+zweite `Tab_ErgebnisBHKWModul`-Zeile und die Stromsummen. **Nicht neu simuliert** — der
+Rechenkern ist von diesem Nachtrag nicht berührt (Abschnitt N6, V1/V2), und die geprüfte
+Kette hängt ausschließlich an (P_el je Anlage, Strom je Modul).
+
+| Fall | Anlagen | Strom je Anlage | Vbh Anlage | Vbh **bereinigt** | Jahr 1 **alt** | **neu** | Barwert 20 a **alt** | **neu** |
+|---|---|---|---|---|---|---|---|---|
+| **(a)** zwei Anlagen à 300 kW | 300 + 300 kW | 900 + 900 MWh | 3.000 h | — (nichts ausgeschlossen) | **0,00 €** | **72.000,00 €** | **0,00 €** | **606.318,99 €** |
+| **(b)** 600 kW + 200 kW, gleiche Vbh | 600 + 200 kW | 1.800 + 600 MWh | 3.000 h | 3.000 h | **0,00 €** | **24.000,00 €** | **0,00 €** | **202.106,33 €** |
+| **(c)** eine Anlage 600 kW | 600 kW | 1.800 MWh | 3.000 h | 0 h (alle aus) | 0,00 € | 0,00 € | 0,00 € | 0,00 € |
+| **(d)** 600 kW + 200 kW, **ungleiche** Vbh | 600 + 200 kW | 1.800 + 200 MWh | 2.500 h | **1.000 h** | **0,00 €** | **8.000,00 €** | **0,00 €** | **119.019,80 €** |
+
+Nachgerechnet: In Fall (a) sind 3.000 h ≤ Jahresdeckel 2026 (3.300 h), also volle
+72.000 €/a (1.800 MWh × 4 ct/kWh); ab 2028 greift der sinkende Deckel und das
+30.000-h-Kontingent ist nach zwölf Jahren erschöpft — der Barwert 606.318,99 € ist die
+Summe dieser zwölf abgezinsten Jahresbeträge. Fall (b) ist derselbe Verlauf mit dem
+Anteilsfaktor 600/2.400 = 0,25: **exakt ein Viertel** (202.106,33 € = 606.318,99 € / 3
+gegenüber Fall a, weil dort 1.800 statt 600 MWh förderfähig sind). Fall (d) zeigt die
+bereinigte Vbh: 200 MWh auf 200 kW sind 1.000 h, weit unter jedem Jahresdeckel — die
+Reihe läuft über alle 20 Jahre durch (8.000 €/a × Rentenbarwertfaktor 14,8775 =
+119.019,80 €).
+
+Fall (c) ist die **Gegenprobe**: Eine echte 600-kW-Anlage bekommt weiterhin nichts. Die
+Änderung macht keine nicht förderfähige Anlage förderfähig, sie hört nur auf, kleine
+Anlagen für die Größe ihrer Nachbarn zu bestrafen.
+
+### N5.3 Die Meldung
+
+| Fall | Meldung (DE) |
+|---|---|
+| einzelne Anlagen über der Grenze | „KWKG: Über der Ausschreibungsgrenze von 500 kW und deshalb ohne Zuschlag: BHKW Modul 1 (600 kW) (der Weg über eine Ausschreibung nach § 8a KWKG/KWKAusV ist nicht abgebildet). Die übrigen Anlagen mit zusammen 200 kW rechnen weiter." |
+| alle Anlagen über der Grenze | „KWKG: Jede BHKW-Anlage des Projekts liegt über der Ausschreibungsgrenze von 500 kW (BHKW Modul 1 (600 kW)) — der Zuschlag wäre nur über eine Ausschreibung nach § 8a KWKG/KWKAusV zu erlangen; Bonus = 0." |
+| Leistung je Anlage nicht ermittelbar | „KWKG: Σ installierte BHKW-Leistung 800 kW über der Ausschreibungsgrenze von 500 kW; die Leistung je Anlage ließ sich nicht ermitteln, deshalb greift die Grenze ersatzweise auf die Projektsumme; Bonus = 0." |
+
+Die alte Meldung nannte nur „Σ installierte BHKW-Leistung 800 kW > 500 kW" — sie sagte
+weder, **welche** Anlage das Problem ist, noch dass die übrigen weiterrechnen. Alle drei
+Texte stehen in beiden Sprachen im Katalog `MyResource` (Probe N10/N11).
+
+---
+
+## N6 Verifikation
+
+### N6.1 Referenzlauf A/B
+
+Beide Stände aus eigenen Exporten gebaut (`git archive 0892444` für A, Arbeitskopie für
+B), jeweils mit dem mitgelieferten `Referenzlauf.csproj`. **Eine gemeinsame Wegwerf-Kopie**
+der produktiven Datenbank, mit dem B-Stand migriert, danach von beiden Ständen gelesen.
+Acht Projekte, Feature-Flag `Kaskade_Zweikanalig` **AUS und AN**.
+
+```
+Flag AUS                              Flag AN
+Projekt_1007: PASS (29 Dateien)       Projekt_1007: PASS (29 Dateien)
+Projekt_1008: PASS (21 Dateien)       Projekt_1008: PASS (21 Dateien)
+Projekt_1011: PASS (29 Dateien)       Projekt_1011: PASS (29 Dateien)
+Projekt_1017: PASS (21 Dateien)       Projekt_1017: PASS (21 Dateien)
+Projekt_1018: PASS (22 Dateien)       Projekt_1018: PASS (22 Dateien)
+Projekt_1021: PASS (21 Dateien)       Projekt_1021: PASS (21 Dateien)
+Projekt_1023: PASS (25 Dateien)       Projekt_1023: PASS (25 Dateien)
+Projekt_1024: PASS (26 Dateien)       Projekt_1024: PASS (26 Dateien)
+
+GESAMT: PASS (2 129 527 Werte)        GESAMT: PASS (2 129 527 Werte)
+```
+
+**Byte-Vergleich: 194 von 194 CSV identisch, in beiden Flag-Stellungen** — anders als bei
+E2 gibt es diesmal nicht einmal einen neuen Ergebnisschlüssel. Unter
+`Allgemein/Simulation/` ist keine **Codedatei** geändert (`git diff --name-only` liefert
+dort nur `Lokalisierung_Katalog.md`).
+
+### N6.2 Verifikationstabelle
+
+| # | Prüfung | Methode | Ergebnis |
+|---|---|---|---|
+| N1 | Simulationsergebnisse unverändert, Flag AUS | `Referenzlauf.exe vergleich`, gemeinsame DB-Kopie | **8/8 PASS**, 2 129 527 Werte |
+| N2 | dito, Flag AN (`Kaskade_Zweikanalig` für alle 16 Projekteinstellungen gesetzt) | dito | **8/8 PASS**, 2 129 527 Werte |
+| N3 | Byte-Identität der Ergebnisdateien | `cmp` je Datei, beide Flag-Stellungen | **194/194 gleich**, 0 Abweichungen |
+| N4 | Wirtschaftlichkeitswerte der 8 Referenzprojekte unverändert | Reflection-Harness auf `BaueKwkgReihe`/`VbhElektrisch`/`PelKW`, A gegen B, unmigrierte **und** migrierte Kopie | **8/8 wertgleich**, Abschnitt N5.1 |
+| N5 | Wirkung bei zwei Anlagen à 300 kW | präparierte Kopie, A gegen B | 0,00 € → **606.318,99 €** Barwert |
+| N6 | Wirkung bei 600 kW + 200 kW | präparierte Kopien (gleiche und ungleiche Vbh) | 0,00 € → **202.106,33 €** bzw. **119.019,80 €** |
+| N7 | Einzelne 600-kW-Anlage bleibt ohne Zuschlag | präparierte Kopie, A gegen B | **0,00 € in beiden Ständen** |
+| N8 | Katalogschlüssel entsteht auf einer Bestandsdatenbank | `StelleTabellenSicher` auf Wegwerf-Kopie, danach `SELECT` | Tabelle neu, **183 Zeilen**, `KWKG_AUSSCHREIBUNG_GRENZE_KW` = 500 kW (ID 24) |
+| N9 | Der Wert wird wirklich aus dem Katalog gelesen | Katalogzeile auf **250** gesetzt | Meldung und Prüfung folgen: „…Ausschreibungsgrenze von 250 kW…" |
+| N10 | Rückfallebene ohne Katalogzeile | Katalogzeile gelöscht | Grenze wieder **500 kW**, Ergebnis wertgleich |
+| N11 | Rückfall auf die Projektsumme | Anlagenzeilen des Projekts gelöscht | Ergebnis wie Altstand (Bonus 0), Hinweis nennt den Ersatzweg |
+| N12 | Zuordnung über die Reihenfolge, wenn die Bezeichner abweichen | Bestandsprojekt 1018 („EC-POWER XRGI 15" gegen „EC_Power_20kw.el_Gas") | zugeordnet, Ergebnis wertgleich zu A |
+| N13 | Ressourcen in beiden Sprachen | Harness mit `CurrentUICulture = en-US` | DE- und EN-Meldung erscheinen, **Zahlen byte-gleich** (202 106,3288 in beiden) |
+| N14 | Ressourcen in beiden `.resx` und im Designer | `grep` je Schlüssel | **3/3** in `Resource.resx`, `Resource.en-US.resx`, `Resource.Designer.cs` |
+| N15 | Build | `MSBuild WP-Plan.sln -t:Rebuild -p:Platform=x86`, Ausgabe in den Scratch-Ordner | **0 Fehler, exakt 6 Bestandswarnungen** |
+| N16 | Kodierung und Zeilenenden | `file` je geänderter Datei, CR-Zählung, Suche nach U+FFFD | unverändert (5 × UTF-8 mit BOM, 1 × ohne), **alle Zeilen CRLF**, **0 Ersatzzeichen** |
+| N17 | Produktivdatenbank nur gelesen | `Kenndaten.laccdb` vor dem Kopieren geprüft (nicht vorhanden); alle Proben auf Wegwerf-Kopien | **erfüllt** |
+| N18 | `bin\` des Repos unberührt | jeder Build ausschließlich mit `-p:OutDir=<Scratch>` | **erfüllt** |
+
+---
+
+## N7 Dieselbe Verwechslung an anderen Stellen — nur berichtet
+
+Gesucht wurde nach `KWKG_MAX_LEISTUNG_KW`, `LiesBhkwLeistungKW`, Leistungsklassen-Logik,
+Heizöl-Ausschluss und Stichtagsprüfung. **Nichts davon ist mitgeändert.**
+
+| Fundstelle | Befund | Bewertung |
+|---|---|---|
+| `BhkwMitHeizoel` (`WirtschaftlichkeitCtrl.cs:1400-1415`) | `SELECT COUNT(*) FROM Tab_BHKW … WHERE ID_Projekt = ? AND Kategorie = 2` — **zwei** Fehler auf einmal: projektweit statt je Anlage **und** über die **Gerätezeilen** statt die Anlagenzeilen | **Der gravierendste Restbefund.** Ein einziges Öl-BHKW im Katalogbestand des Projekts nimmt allen Anlagen den Zuschlag — auch wenn dazu nie eine Anlagenzeile entstand. Das ist exakt der Fehler, den E2 für `LiesBhkwLeistungKW` behoben hat, unbehoben an dieser Stelle. Auf dem heutigen Bestand betrifft es Projekt 1024 (Öl-BHKW, aber nur eine Anlage — Ergebnis zufällig richtig). |
+| `p.KwkgStichtag`, `p.KwkgInbetriebnahme` (`:911-932`) | ein Datumspaar je **Projekt**; § 6 KWKG gilt je Anlage | Bei gemischten Inbetriebnahmen ist die Prüfung entweder zu streng oder zu großzügig. Fachlich zu klären, gehört zu E6. |
+| `p.KwkgVbhKontingent` (`:1033`) | 30.000 h je **Projekt**; nach § 8 Abs. 1 stehen sie **jeder Anlage** zu | Bereits als E2-Punkt 2 festgehalten; die leistungsgewichtete Vbh bildet es näherungsweise ab. |
+| `p.KwkgBonus` / `KwkgBonusEinspeisung` | **ein** Satz je Projekt; § 7 staffelt nach der Leistungsklasse der Anlage | E6, Punkt 3 in Abschnitt 7. Katalogschlüssel liegen seit E1 bereit. |
+| `GESETZ_KWKG_LEISTUNGSSTUFE_1…4`, `GESETZ_KWKG_ZUSCHLAG_*` | im Katalog gepflegt, **von keiner Codezeile gelesen** (`grep`, 0 Treffer außerhalb von `DbWerte.cs` und `GesetzKatalog.cs`) | Erwartungsgemäß — die Leistungsklassen-Logik entsteht erst mit E6. |
+| `GESETZ_STROMST_GRENZE_BEFREIUNG` (2.000 kW, § 9 Abs. 1 Nr. 3 StromStG) | ebenfalls ungelesen; auch diese Grenze ist eine **Anlagen**-Nennleistung | Vorsorglich vermerkt: Bei der Umsetzung in E4 nicht wieder die Projektsumme dagegen prüfen. |
+| `LiesBhkwLeistungKW` / `PelKW` (`:1120-1160`) | Σ P_el über alle Anlagen des Projekts | **Kein Fehler.** Als Nenner der leistungsgewichteten Vbh ist die Projektsumme genau richtig; nur die Schwellenprüfung durfte sie nicht verwenden. |
+

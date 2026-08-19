@@ -34,6 +34,13 @@ namespace WindowsFormsApplication1
         private readonly Dictionary<int, ReferenzkesselInfo> _refKesselCache =
             new Dictionary<int, ReferenzkesselInfo>();   // Review 11: LadeParameter wird oft gerufen
 
+        /// <summary>Anlagenzeilen der BHKW je Projekt (Nachtrag zu E2: Prüfung je Anlage).</summary>
+        private readonly Dictionary<int, List<BhkwAnlage>> _anlagenCache =
+            new Dictionary<int, List<BhkwAnlage>>();
+
+        /// <summary>Lesefassade auf Tab_Gesetzesparameter (E1); eine Instanz je Berechne-Lauf.</summary>
+        private GesetzKatalog _gesetze;
+
         public const string TAB_PARAMETER = "Tab_ProjektWirtschaftlichkeit";
         public const string TAB_ERGEBNIS = "Tab_ErgebnisWirtschaftlichkeit";
         public const string TAB_SENS = "Tab_ErgebnisWirtSensitivitaet";
@@ -49,7 +56,16 @@ namespace WindowsFormsApplication1
         /// <summary>Fristen des § 6 KWKG 2025 (Konzept Kap. 8.2, Phase 9).</summary>
         public static readonly DateTime KWKG_STICHTAG_ENDE = new DateTime(2026, 12, 31);
         public const int KWKG_REALISIERUNG_JAHRE = 4;
-        public const double KWKG_MAX_LEISTUNG_KW = 500;   // Ausschreibungslücke > 500 kW (Kap. 8.4)
+        /// <summary>
+        /// Ausschreibungsgrenze des § 8a KWKG / der KWKAusV [kW el] — <b>je Anlage</b>,
+        /// nicht je Projektsumme (Nutzerentscheidung 19.08.2026, Nachtrag zu Etappe E2).
+        ///
+        /// <para><b>Nur noch Rückfallebene.</b> Maßgeblich ist der Katalogschlüssel
+        /// <c>KWKG_AUSSCHREIBUNG_GRENZE_KW</c> (<see cref="GesetzKatalog"/>, Etappe E1).
+        /// Eine Bestandsdatenbank, deren Katalog vor diesem Nachtrag eingesät wurde,
+        /// kennt den Schlüssel noch nicht — dann gilt dieser Wert.</para>
+        /// </summary>
+        public const double KWKG_MAX_LEISTUNG_KW = 500;
 
         // Feste Ausschläge der Sensitivitätsanalyse (W2; im Bericht ausgewiesen).
         public const double SENS_DELTA_ZINS = 1.0;      // ± Prozentpunkte
@@ -625,6 +641,7 @@ namespace WindowsFormsApplication1
             TarifParameter tarif = LadeTarif(daten.IdStamm);      // W3: gilt für die ganze Gruppe
             _staffelCache = null; _pelCache.Clear(); _oelCache.Clear();
             _refKesselCache.Clear();                                       // frischer Lauf
+            _anlagenCache.Clear(); _gesetze = null;                        // Nachtrag zu E2
 
             foreach (string szenario in WirtschaftlichkeitSzenario.Alle)
             {
@@ -858,8 +875,9 @@ namespace WindowsFormsApplication1
         /// die DEGRESSIVE Vbh-Staffel (§ 8, Katalog Tab_KWKG_Staffel; Override über
         /// den Parameter-Deckel), kumuliert bis zum Vbh-Kontingent (30.000 Vbh).
         /// Vorab die Förderfähigkeits-Prüfkette: Fristenlogik § 6 (Stichtag
-        /// 31.12.2026 + 4 Jahre Realisierung), Ausschreibungslücke &gt; 500 kW und
-        /// Heizöl-Ausschluss für Neuanlagen — Verstoß ⇒ Bonus = 0 mit Hinweis.
+        /// 31.12.2026 + 4 Jahre Realisierung), Ausschreibungsgrenze <b>je Anlage</b>
+        /// (§ 8a KWKG / KWKAusV) und Heizöl-Ausschluss für Neuanlagen — Verstoß ⇒
+        /// Bonus = 0 mit Hinweis.
         /// Negativpreis-Abschlag (§ 7 Abs. 5) als %-Näherung auf die vergüteten Vbh;
         /// die abgeschlagenen Stunden verbrauchen das Kontingent nicht.
         ///
@@ -868,6 +886,12 @@ namespace WindowsFormsApplication1
         /// stand hier <c>Betriebsstunden_Gesamt</c> — die Summe THERMISCHER Vbh, die
         /// 8.760 h überschreiten kann und den Zuschlag bei Kaskaden zu hoch ansetzte. Die
         /// Rechnung bleibt projektweit; modulscharf wird sie in Etappe E6.</para>
+        ///
+        /// <para><b>NACHTRAG ZU E2 (19.08.2026): Ausschreibungsgrenze je ANLAGE.</b>
+        /// Anlagen über der Grenze verlieren ihren Zuschlaganteil, die übrigen behalten
+        /// ihn; die projektweiten Bezugsgrößen werden dafür bereinigt
+        /// (<see cref="Anlagenauswahl"/>). Vorher fiel der Zuschlag ganz weg, sobald die
+        /// PROJEKTSUMME die Grenze überschritt.</para>
         /// </summary>
         private double[] BaueKwkgReihe(VariantenDaten v, WirtschaftlichkeitParameter p,
                                        StromMatrix matrix, out double jahr1, out string hinweis)
@@ -916,15 +940,46 @@ namespace WindowsFormsApplication1
                 hinweise.Add("KWKG: kein Bestell-/Genehmigungsdatum hinterlegt — " +
                              "Förderfähigkeit ungeprüft (§ 6 KWKG 2025, Stichtag 31.12.2026).");
 
-            // ---------------- Guards Kap. 8.4/8.5: > 500 kW, Heizöl-Neuanlage ----------------
-            double pelKW = PelKW(v.IdProjekt);
-            if (pelKW > KWKG_MAX_LEISTUNG_KW)
+            int foerderbeginn = p.KwkgInbetriebnahme.HasValue
+                ? p.KwkgInbetriebnahme.Value.Year
+                : DateTime.Now.Year + 1;   // Planungsfall: IBN im Folgejahr (Hinweis oben)
+
+            // ------- Guard Kap. 8.4: Ausschreibungsgrenze JE ANLAGE, Heizöl-Neuanlage -------
+            // NACHTRAG ZU E2 (Nutzerentscheidung 19.08.2026): Das Gesetz stellt auf die
+            // EINZELNE KWK-Anlage ab — oberhalb der Grenze gibt es den Zuschlag nur über
+            // eine Ausschreibung (§ 8a KWKG / KWKAusV), und dieser Weg ist hier nicht
+            // bedienbar. Zwei Module zu je 300 kW sind damit ZWEI förderfähige Anlagen,
+            // keine nicht förderfähige 600-kW-Anlage. Bis hierher prüfte der Guard die
+            // PROJEKTSUMME und nahm einer Kaskade den Zuschlag vollständig.
+            double grenzeKW = AusschreibungsgrenzeKW(foerderbeginn);
+            KwkgAnlagenauswahl auswahl = Anlagenauswahl(v, grenzeKW);
+
+            if (!auswahl.Bestimmbar)
             {
-                hinweise.Add("KWKG: Σ installierte BHKW-Leistung " + pelKW.ToString("N0") +
-                             " kW > 500 kW — seit 01.01.2026 kein Förderweg " +
-                             "(Ausschreibungslücke KWKAusV); Bonus = 0.");
+                // Ohne zuordenbare Anlagenzeilen bleibt nur die Projektsumme — der Weg bis
+                // zu diesem Nachtrag. Er ist konservativ und wird als Ersatz ausgewiesen.
+                if (auswahl.PelGesamtKW > grenzeKW)
+                {
+                    hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR,
+                                               auswahl.PelGesamtKW.ToString("N0"), grenzeKW.ToString("N0")));
+                    hinweis = string.Join(" | ", hinweise);
+                    return null;
+                }
+            }
+            else if (auswahl.PelFoerderfaehigKW <= 0)
+            {
+                // Jede Anlage über der Grenze — dasselbe Ergebnis wie bisher, aber aus dem
+                // richtigen Grund und mit den Anlagen im Klartext.
+                hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_ALLE_UEBER_GRENZE,
+                                           grenzeKW.ToString("N0"), auswahl.AusgeschlosseneAlsText()));
                 hinweis = string.Join(" | ", hinweise);
                 return null;
+            }
+            else if (auswahl.Ausgeschlossene.Count > 0)
+            {
+                hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_ANLAGE_UEBER_GRENZE,
+                                           grenzeKW.ToString("N0"), auswahl.AusgeschlosseneAlsText(),
+                                           auswahl.PelFoerderfaehigKW.ToString("N0")));
             }
 
             // Heizöl-Ausschluss nur für erkennbare NEUANLAGEN (IBN ≥ 2025) —
@@ -942,10 +997,6 @@ namespace WindowsFormsApplication1
                 hinweise.Add("KWKG: Öl-BHKW ohne Inbetriebnahmedatum — als Neuanlage wäre der " +
                              "Bonus ausgeschlossen (KWKG 2025); Datum im Parameterdialog pflegen.");
 
-            int foerderbeginn = p.KwkgInbetriebnahme.HasValue
-                ? p.KwkgInbetriebnahme.Value.Year
-                : DateTime.Now.Year + 1;   // Planungsfall: IBN im Folgejahr (Hinweis oben)
-
             // ---------------- Bonus bei voller Vergütung [€/a] ----------------
             //  - W3-Split: getrennte Sätze auf KWK-Eigenstrom und -Einspeisung.
             //  - Fallback ohne Stundenreihen: Eigenstrom-Satz auf die Gesamtmenge (W2).
@@ -956,6 +1007,26 @@ namespace WindowsFormsApplication1
             else
                 bonusVoll = stromMWh * 1000.0 * (p.KwkgBonus / 100.0);
             if (bonusVoll <= 0) return null;
+
+            // ZWISCHENLÖSUNG bis Etappe E6 (Nachtrag zu E2): Die Zuschlagsrechnung bleibt
+            // PROJEKTWEIT, wird aber um die nicht förderfähigen Anlagen BEREINIGT —
+            //   Bonus  → im Verhältnis ihrer Stromerzeugung gekürzt,
+            //   Vbh    → auf die verbleibende installierte Leistung bezogen
+            //            (Σ Strom der förderfähigen Anlagen × 1000 / Σ P_el derselben).
+            // Ist keine Anlage ausgeschlossen, bleibt beides unangetastet — die Rechnung
+            // ist dann Zeile für Zeile die des Vorgängerstands. Was das NICHT löst, steht
+            // im Protokoll: Jahresdeckel und 30.000-h-Kontingent laufen weiterhin über
+            // EINE gemeinsame Vbh-Größe, statt je Anlage geführt zu werden (E6).
+            if (auswahl.Bestimmbar && auswahl.Ausgeschlossene.Count > 0)
+            {
+                bonusVoll *= auswahl.StromanteilFoerderfaehig;
+                vbh = auswahl.VbhFoerderfaehig;
+                if (bonusVoll <= 0 || vbh <= 0)
+                {
+                    if (hinweise.Count > 0) hinweis = string.Join(" | ", hinweise);
+                    return null;   // die verbleibenden Anlagen haben nichts erzeugt
+                }
+            }
 
             // ---------------- Jahresreihe: degressive Staffel + Abschlag ----------------
             if (_staffelCache == null) _staffelCache = LadeKwkgStaffel();
@@ -1083,6 +1154,196 @@ namespace WindowsFormsApplication1
         {
             if (!_pelCache.ContainsKey(idProjekt)) _pelCache[idProjekt] = LiesBhkwLeistungKW(idProjekt);
             return _pelCache[idProjekt];
+        }
+
+        // =====================================================================
+        // Ausschreibungsgrenze § 8a KWKG / KWKAusV — JE ANLAGE
+        // (Nachtrag zu Etappe E2, Nutzerentscheidung 19.08.2026)
+        // =====================================================================
+
+        /// <summary>Eine BHKW-Anlagenzeile des Projekts mit ihrer elektrischen Nennleistung.</summary>
+        private sealed class BhkwAnlage
+        {
+            public string Bezeichner = "";
+            public double PelKW;
+        }
+
+        /// <summary>
+        /// Aufteilung der BHKW-Anlagen eines Projekts in förderfähige und solche über der
+        /// Ausschreibungsgrenze — samt der bereinigten Bezugsgrößen der Zuschlagsrechnung.
+        ///
+        /// <para><see cref="Bestimmbar"/> = false heißt: Anlagen- und Ergebnismodulzeilen
+        /// ließen sich nicht paaren (kein Anlagenbestand, keine Modulzeilen, oder Namen und
+        /// Anzahl passen nicht zusammen). Dann bleibt nur die Projektsumme — der Weg bis zu
+        /// diesem Nachtrag. Er ist konservativ: Er schließt eher zu viel aus als zu wenig.</para>
+        /// </summary>
+        private sealed class KwkgAnlagenauswahl
+        {
+            public bool Bestimmbar;
+            public double PelGesamtKW;
+            public double PelFoerderfaehigKW;
+            public double StromGesamtMWh;
+            public double StromFoerderfaehigMWh;
+
+            /// <summary>Anlagen über der Grenze, als Klartext „Bezeichner (n kW)".</summary>
+            public readonly List<string> Ausgeschlossene = new List<string>();
+
+            /// <summary>Anteil der förderfähigen Anlagen an der Stromerzeugung [0…1].</summary>
+            public double StromanteilFoerderfaehig
+            {
+                get { return StromGesamtMWh > 0 ? StromFoerderfaehigMWh / StromGesamtMWh : 0; }
+            }
+
+            /// <summary>Elektrische Vbh der förderfähigen Anlagen [h/a], leistungsgewichtet.</summary>
+            public double VbhFoerderfaehig
+            {
+                get
+                {
+                    return PelFoerderfaehigKW > 0
+                        ? StromFoerderfaehigMWh * 1000.0 / PelFoerderfaehigKW : 0;
+                }
+            }
+
+            public string AusgeschlosseneAlsText()
+            {
+                return string.Join(", ", Ausgeschlossene.ToArray());
+            }
+        }
+
+        /// <summary>
+        /// Die Ausschreibungsgrenze [kW el] des Förderjahres aus dem Gesetzeskatalog
+        /// (<c>KWKG_AUSSCHREIBUNG_GRENZE_KW</c>, Etappe E1). Fehlt der Schlüssel — jede
+        /// Datenbank, deren Katalog vor diesem Nachtrag eingesät wurde —, gilt
+        /// <see cref="KWKG_MAX_LEISTUNG_KW"/> mit demselben Wert.
+        /// </summary>
+        private double AusschreibungsgrenzeKW(int jahr)
+        {
+            try
+            {
+                if (_gesetze == null) _gesetze = new GesetzKatalog();
+                double? katalog = _gesetze.Wert(DbWerte.GESETZ_KWKG_AUSSCHREIBUNG_GRENZE, jahr);
+                if (katalog.HasValue && katalog.Value > 0) return katalog.Value;
+            }
+            catch { }
+            return KWKG_MAX_LEISTUNG_KW;
+        }
+
+        /// <summary>
+        /// Prüft JEDE BHKW-Anlage des Projekts einzeln gegen die Ausschreibungsgrenze und
+        /// bildet die um die ausgeschlossenen Anlagen bereinigten Bezugsgrößen.
+        /// </summary>
+        private KwkgAnlagenauswahl Anlagenauswahl(VariantenDaten v, double grenzeKW)
+        {
+            var a = new KwkgAnlagenauswahl();
+            a.PelGesamtKW = PelKW(v.IdProjekt);
+            a.StromGesamtMWh = v.Ergebnis != null && v.Ergebnis.BHKW != null
+                             ? v.Ergebnis.BHKW.Stromproduktion : 0;
+
+            List<BhkwAnlage> anlagen = BhkwAnlagen(v.IdProjekt);
+            List<ErgebnisBHKWModulModel> module = v.Ergebnis != null && v.Ergebnis.BHKW != null
+                                                ? v.Ergebnis.BHKW.Module : null;
+            if (anlagen.Count == 0 || module == null || module.Count == 0) return a;
+
+            double[] strom = StromJeAnlage(anlagen, module);
+            if (strom == null) return a;
+
+            a.Bestimmbar = true;
+            a.PelGesamtKW = 0;
+            a.StromGesamtMWh = 0;
+            for (int i = 0; i < anlagen.Count; i++)
+            {
+                a.PelGesamtKW += anlagen[i].PelKW;
+                a.StromGesamtMWh += strom[i];
+
+                if (anlagen[i].PelKW > grenzeKW)
+                {
+                    // Der Bezeichner ist ein Datenwert, kein Anzeigetext; die Klammer mit
+                    // dem Einheitenzeichen kommt ohne Wortbestand aus und bleibt deshalb
+                    // im Code (Drei-Schichten-Regel, wie die typografischen Marken).
+                    a.Ausgeschlossene.Add(anlagen[i].Bezeichner + " (" +
+                                          anlagen[i].PelKW.ToString("N0") + " kW)");
+                }
+                else
+                {
+                    a.PelFoerderfaehigKW += anlagen[i].PelKW;
+                    a.StromFoerderfaehigMWh += strom[i];
+                }
+            }
+            return a;
+        }
+
+        /// <summary>
+        /// Ordnet jeder Anlagenzeile ihre Stromerzeugung aus den Ergebnis-Modulzeilen zu.
+        /// Erster Weg ist der BEZEICHNER (<c>SimulationRunner</c> schreibt ihn als
+        /// <c>Modul</c>), zweiter Weg die Reihenfolge bei gleicher Anzahl — Modulzeilen
+        /// entstehen in der Reihenfolge von <c>SimulationControl.BHKW_Liste_Laden</c>,
+        /// der Bezeichner kann sich seit dem Lauf aber geändert haben.
+        /// <c>null</c> = nicht zuordenbar.
+        /// </summary>
+        private static double[] StromJeAnlage(List<BhkwAnlage> anlagen,
+                                              List<ErgebnisBHKWModulModel> module)
+        {
+            double[] strom = new double[anlagen.Count];
+            bool[] belegt = new bool[module.Count];
+            int getroffen = 0;
+
+            for (int i = 0; i < anlagen.Count; i++)
+                for (int j = 0; j < module.Count; j++)
+                {
+                    if (belegt[j]) continue;
+                    string name = module[j].Modul == null ? "" : module[j].Modul.Trim();
+                    if (!string.Equals(name, anlagen[i].Bezeichner, StringComparison.OrdinalIgnoreCase))
+                        continue;
+                    belegt[j] = true;
+                    strom[i] = module[j].Stromproduktion;
+                    getroffen++;
+                    break;
+                }
+            if (getroffen == anlagen.Count) return strom;
+
+            if (anlagen.Count != module.Count) return null;
+            for (int i = 0; i < anlagen.Count; i++) strom[i] = module[i].Stromproduktion;
+            return strom;
+        }
+
+        /// <summary>Anlagenzeilen des Projekts, einmal je Berechne-Lauf gelesen.</summary>
+        private List<BhkwAnlage> BhkwAnlagen(int idProjekt)
+        {
+            List<BhkwAnlage> liste;
+            if (_anlagenCache.TryGetValue(idProjekt, out liste)) return liste;
+            liste = LiesBhkwAnlagen(idProjekt);
+            _anlagenCache[idProjekt] = liste;
+            return liste;
+        }
+
+        /// <summary>
+        /// Bezeichner und elektrische Nennleistung je BHKW-ANLAGENZEILE des Projekts —
+        /// dieselbe Menge, die auch <see cref="LiesBhkwLeistungKW"/> summiert und die die
+        /// Engine rechnet (<c>Tab_Energieanlagen</c> ⋈ <c>Tab_BHKW</c>). Leere Liste, wenn
+        /// das Projekt keine Anlagenzeile führt oder die Abfrage scheitert.
+        /// </summary>
+        private static List<BhkwAnlage> LiesBhkwAnlagen(int idProjekt)
+        {
+            var liste = new List<BhkwAnlage>();
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT a.Bezeichner, b.Pel FROM Tab_Energieanlagen AS a " +
+                    "INNER JOIN Tab_BHKW AS b ON a.ID_BHKW = b.ID " +
+                    "WHERE a.ID_Projekt = ? AND a.ID_Type = " + WizardItemClass.BHKW_TYP,
+                    new OleDbParameter("@p", idProjekt));
+                if (dt == null) return liste;
+                foreach (DataRow r in dt.Rows)
+                {
+                    var anl = new BhkwAnlage();
+                    anl.Bezeichner = r["Bezeichner"] == DBNull.Value
+                                   ? "" : Convert.ToString(r["Bezeichner"]).Trim();
+                    anl.PelKW = r["Pel"] == DBNull.Value ? 0 : Convert.ToDouble(r["Pel"]);
+                    liste.Add(anl);
+                }
+            }
+            catch { liste.Clear(); }
+            return liste;
         }
 
         /// <summary>

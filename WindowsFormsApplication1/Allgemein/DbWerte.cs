@@ -649,6 +649,18 @@ namespace WindowsFormsApplication1
         public const string GESETZ_KWKG_LEISTUNGSSTUFE_3 = "KWKG_LEISTUNGSSTUFE_3_KW";
         public const string GESETZ_KWKG_LEISTUNGSSTUFE_4 = "KWKG_LEISTUNGSSTUFE_4_KW";
 
+        /// <summary>
+        /// Elektrische Leistung, ab der eine KWK-Anlage den Zuschlag nur noch ueber eine
+        /// AUSSCHREIBUNG erhaelt (§ 8a KWKG i.V.m. KWKAusV). Der Wert bezieht sich auf die
+        /// EINZELNE Anlage, nicht auf die Summe eines Projekts — zwei Module zu je 300 kW
+        /// sind zwei foerderfaehige Anlagen, keine nicht foerderfaehige 600-kW-Anlage.
+        ///
+        /// <para>Rueckfallebene im Code: <c>WirtschaftlichkeitCtrl.KWKG_MAX_LEISTUNG_KW</c>.
+        /// Eine Bestandsdatenbank, die vor dieser Etappe eingesaet wurde, kennt den
+        /// Schluessel noch nicht; dann gilt die Konstante mit demselben Wert.</para>
+        /// </summary>
+        public const string GESETZ_KWKG_AUSSCHREIBUNG_GRENZE = "KWKG_AUSSCHREIBUNG_GRENZE_KW";
+
         /// <summary>§ 8 Abs. 1: 30.000 Vbh fuer ALLE neuen Anlagen — die frueheren 60.000 Vbh
         /// bis 50 kW gibt es seit dem KWKG 2020 nicht mehr.</summary>
         public const string GESETZ_KWKG_VBH_NEUANLAGE = "KWKG_VBH_NEUANLAGE";

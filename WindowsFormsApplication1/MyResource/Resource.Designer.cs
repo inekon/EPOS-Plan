@@ -13513,5 +13513,32 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("VAR_VGL_TOOLTIP_OEFFNEN", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Jede BHKW-Anlage des Projekts liegt über der Ausschreibungsgrenze von {0} kW ({1}) — der Zuschlag wäre nur über eine Ausschreibung nach § 8a KWKG/KWKAusV zu erlangen; Bonus = 0. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_ALLE_UEBER_GRENZE {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_ALLE_UEBER_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Über der Ausschreibungsgrenze von {0} kW und deshalb ohne Zuschlag: {1} (der Weg über eine Ausschreibung nach § 8a KWKG/KWKAusV ist nicht abgebildet). Die übrigen Anlagen mit zusammen {2} kW rechnen weiter. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_ANLAGE_UEBER_GRENZE {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_ANLAGE_UEBER_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Σ installierte BHKW-Leistung {0} kW über der Ausschreibungsgrenze von {1} kW; die Leistung je Anlage ließ sich nicht ermitteln, deshalb greift die Grenze ersatzweise auf die Projektsumme; Bonus = 0. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_LEISTUNG_JE_ANLAGE_UNKLAR", resourceCulture);
+            }
+        }
     }
 }
