@@ -5286,16 +5286,16 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Stromsteuer-Entlastung</value>
   </data>
   <data name="KI_REG_PROJEKT_ID_NAME" xml:space="preserve">
-    <value>Projekt (ID)</value>
+    <value>Projekt</value>
   </data>
   <data name="KI_REG_PROJEKT_ID_ERLAEUTERUNG" xml:space="preserve">
-    <value>Schlüssel des Projekts, wie ihn projekte_auflisten liefert.</value>
+    <value>Name des Projekts, wie er in der Projektliste steht.</value>
   </data>
   <data name="KI_REG_VON_PROJEKT_NAME" xml:space="preserve">
-    <value>Quellprojekt (ID)</value>
+    <value>Quellprojekt</value>
   </data>
   <data name="KI_REG_NACH_PROJEKT_NAME" xml:space="preserve">
-    <value>Zielprojekt (ID)</value>
+    <value>Zielprojekt</value>
   </data>
   <data name="KI_REG_GEWERK_NAME" xml:space="preserve">
     <value>Gewerk</value>
@@ -5310,7 +5310,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Dateipfad</value>
   </data>
   <data name="KI_REG_GANGLINIE_NAME" xml:space="preserve">
-    <value>Ganglinie (ID)</value>
+    <value>Ganglinie</value>
   </data>
   <data name="KI_REG_ANZAHL_NAME" xml:space="preserve">
     <value>Anzahl</value>
@@ -5373,10 +5373,10 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Nennt die zuletzt ausgeführten Assistentenaktionen dieser Sitzung.</value>
   </data>
   <data name="KI_REG_ERL_VON_PROJEKT" xml:space="preserve">
-    <value>Schlüssel des Projekts, aus dem übernommen würde.</value>
+    <value>Name des Projekts, aus dem übernommen würde.</value>
   </data>
   <data name="KI_REG_ERL_NACH_PROJEKT" xml:space="preserve">
-    <value>Schlüssel des Projekts, in das übernommen würde.</value>
+    <value>Name des Projekts, in das übernommen würde.</value>
   </data>
   <data name="KI_REG_ERL_GEWERK" xml:space="preserve">
     <value>Gewerk der Komponenten-Übernahme.</value>
@@ -5391,16 +5391,16 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Vollständiger Pfad der zu prüfenden Datei (CSV oder Excel).</value>
   </data>
   <data name="KI_REG_ERL_GANGLINIE_ID" xml:space="preserve">
-    <value>Schlüssel der Ganglinie aus ganglinien_auflisten.</value>
+    <value>Bezeichner der Ganglinie, wie ihn ganglinien_auflisten zeigt.</value>
   </data>
   <data name="KI_REG_ERL_PROJEKTE_FUER_ERGEBNISSE" xml:space="preserve">
-    <value>Schlüssel der Projekte, deren Ergebnisse gelesen werden sollen.</value>
+    <value>Namen der Projekte, deren Ergebnisse gelesen werden sollen; mehrere durch Semikolon trennen.</value>
   </data>
   <data name="KI_REG_ERL_PROJEKT_ID_GANGLINIEN" xml:space="preserve">
-    <value>Schlüssel des Projekts; ohne Angabe erscheinen nur die Ganglinien des Stammkatalogs.</value>
+    <value>Name des Projekts; ohne Angabe erscheinen nur die Ganglinien des Stammkatalogs.</value>
   </data>
   <data name="KI_REG_ERL_PROJEKT_ID_GANGLINIE_SUCHE" xml:space="preserve">
-    <value>Schlüssel des Projekts, falls die Ganglinie eine Projektganglinie ist.</value>
+    <value>Name des Projekts, falls die Ganglinie eine Projektganglinie ist.</value>
   </data>
   <data name="KI_REG_ERL_ANZAHL" xml:space="preserve">
     <value>Wie viele der zuletzt ausgeführten Aktionen genannt werden sollen.</value>
@@ -5910,31 +5910,31 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Der Schreibschutz des Satzes {1} in {0} ließ sich nicht prüfen ({2}); die Aktion wird abgelehnt.</value>
   </data>
   <data name="KI_REG_STAMM_ID_NAME" xml:space="preserve">
-    <value>Stammprojekt (ID)</value>
+    <value>Stammprojekt</value>
   </data>
   <data name="KI_REG_BEZEICHNER_NAME" xml:space="preserve">
     <value>Bezeichner</value>
   </data>
   <data name="KI_REG_VARIANTE_ID_NAME" xml:space="preserve">
-    <value>Speichervariante (ID)</value>
+    <value>Speichervariante</value>
   </data>
   <data name="KI_REG_POSITIONS_ID_NAME" xml:space="preserve">
-    <value>Kostenposition (ID)</value>
+    <value>Kostenposition</value>
   </data>
   <data name="KI_REG_BETRAG_NAME" xml:space="preserve">
     <value>Betrag</value>
   </data>
   <data name="KI_REG_ERL_STAMM_ID" xml:space="preserve">
-    <value>Schlüssel des Stammprojekts, zu dem die Variante gehören soll; aus projekte_auflisten oder varianten_auflisten.</value>
+    <value>Name des Stammprojekts, zu dem die Variante gehören soll.</value>
   </data>
   <data name="KI_REG_ERL_BEZEICHNER" xml:space="preserve">
     <value>Name der neuen Variante, z. B. „Wärmepumpe statt Kessel“. Der Projektname entsteht daraus als „Stamm - Bezeichner“.</value>
   </data>
   <data name="KI_REG_ERL_VARIANTE_ID" xml:space="preserve">
-    <value>Schlüssel der Speichervariante aus speichervarianten_auflisten.</value>
+    <value>Betriebsart der Speichervariante, wie sie speichervarianten_auflisten zeigt.</value>
   </data>
   <data name="KI_REG_ERL_POSITIONS_ID" xml:space="preserve">
-    <value>Schlüssel der Kostenposition, wie ihn kostenlage_pruefen als id_position liefert.</value>
+    <value>Bezeichnung der Kostenposition, wie sie kostenlage_pruefen zeigt.</value>
   </data>
   <data name="KI_REG_ERL_BETRAG" xml:space="preserve">
     <value>Neuer Investitionsbetrag der Position in Euro.</value>
@@ -6121,5 +6121,17 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   </data>
   <data name="BILANZ_DLG_HINWEIS" xml:space="preserve">
     <value>Bilanzierung: Das Bilanzjahr entscheidet über den Rechtsstand. Ohne Angabe gilt 2026 — dann rechnet die Emissionsbilanz wie bisher mit Stromgutschrift. Ab Bilanzjahr 2027 entfällt der Verdrängungsstrommix ersatzlos; wer dennoch eine Gutschrift ansetzen will, wählt sie hier ausdrücklich, und der Bericht weist sie als methodische Wahl aus. Der Nachhaltigkeitsnachweis wirkt nur auf flüssige Biomasse (Rapsöl, tierische Fette) — feste Biomasse und Biogas sind keine BEHG-Brennstoffe.</value>
+  </data>
+  <data name="KI_REG_NAME_FEHLT" xml:space="preserve">
+    <value>Bitte {0} angeben.</value>
+  </data>
+  <data name="KI_REG_NAME_UNBEKANNT" xml:space="preserve">
+    <value>{0} „{1}“ gibt es nicht. Zur Auswahl steht: {2}</value>
+  </data>
+  <data name="KI_REG_NAME_MEHRDEUTIG" xml:space="preserve">
+    <value>„{0}“ passt auf mehrere Einträge: {1}. Bitte genauer angeben.</value>
+  </data>
+  <data name="KI_REG_NAME_KEINE" xml:space="preserve">
+    <value>Es gibt derzeit nichts zur Auswahl für {0}.</value>
   </data>
 </root>

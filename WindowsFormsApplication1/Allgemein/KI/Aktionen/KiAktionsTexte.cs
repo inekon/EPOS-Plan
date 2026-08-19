@@ -50,6 +50,13 @@
         internal static string PositionsIdName => MyResource.Resource.KI_REG_POSITIONS_ID_NAME;
         internal static string BetragName => MyResource.Resource.KI_REG_BETRAG_NAME;
 
+        // ================================================================ Namensaufloesung
+
+        internal static string NameFehlt => MyResource.Resource.KI_REG_NAME_FEHLT;
+        internal static string NameUnbekannt => MyResource.Resource.KI_REG_NAME_UNBEKANNT;
+        internal static string NameMehrdeutig => MyResource.Resource.KI_REG_NAME_MEHRDEUTIG;
+        internal static string NameKeine => MyResource.Resource.KI_REG_NAME_KEINE;
+
         // ================================================================ Zwecke
 
         internal static string ZweckProjekteAuflisten => MyResource.Resource.KI_REG_ZWECK_PROJEKTE_AUFLISTEN;
