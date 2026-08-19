@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -33,10 +35,22 @@ namespace WindowsFormsApplication1
     /// Datenschutz: Übertragen werden ausschließlich Hilfetexte, die Frage des
     /// Benutzers und eine grobe Kontextangabe (Maske/Registerkarte).
     /// Es werden keine Projekt-, Kunden- oder Simulationsdaten gesendet.
+    ///
+    /// Sicherheit:
+    ///  - der API-Schlüssel liegt DPAPI-verschlüsselt in %APPDATA%\wp-plan
+    ///    (gleiches Hausmuster wie die Lizenzablage), nicht mehr im Klartext
+    ///    in der Registry; ein Altbestand wird einmalig übernommen und gelöscht
+    ///  - der Schlüssel geht in der HTTP-Kopfzeile "x-goog-api-key" mit und
+    ///    steht nie in der Adresse - Query-Parameter landen in Proxy- und
+    ///    Serverprotokollen
+    ///  - SendeVorschau() liefert jederzeit genau den Text, den der nächste
+    ///    Aufruf senden würde (Selbstprüfung im Chatfenster)
     /// </summary>
     public static class KiChatService
     {
-        // Registry-Ablage (wie Sprache und CSV-Export-Pfad)
+        // Registry-Ablage (wie Sprache und CSV-Export-Pfad).
+        // ACHTUNG: REG_APIKEY dient nur noch der einmaligen Übernahme des
+        // früheren Klartextwerts - geschrieben wird dort nichts mehr.
         private const string REG_SCHLUESSEL = @"Software\wp-plan";
         private const string REG_APIKEY = "GeminiApiKey";
         private const string REG_LIMIT = "KiTageslimit";
@@ -71,6 +85,16 @@ namespace WindowsFormsApplication1
         private const int MAX_ANTWORT_TOKEN = 400;
         private const int STANDARD_TAGESLIMIT = 50;
 
+        /// <summary>Basisadresse der Generative-Language-Schnittstelle.</summary>
+        private const string BASIS_URL = "https://generativelanguage.googleapis.com/v1beta/";
+
+        /// <summary>
+        /// Kopfzeile für den API-Schlüssel. Belegt durch die Anbieterdokumentation
+        /// (ai.google.dev, "Using Gemini API keys": -H "x-goog-api-key: ...") und
+        /// durch das NuGet-Paket Mscc.GenerativeAI 3.1.0, das dieselbe Kopfzeile setzt.
+        /// </summary>
+        private const string HEADER_APIKEY = "x-goog-api-key";
+
         private static readonly HttpClient _http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
 
         // Lokaler Antwort-Cache (Frage + Kontext -> Antwort), spart Kosten
@@ -80,10 +104,14 @@ namespace WindowsFormsApplication1
         // Konfiguration
         // ------------------------------------------------------------------
 
+        /// <summary>
+        /// API-Schlüssel des Anbieters. Ablage DPAPI-verschlüsselt im Dateisystem,
+        /// siehe Abschnitt "Schlüsselablage" weiter unten.
+        /// </summary>
         public static string ApiKey
         {
-            get { return RegLesen(REG_APIKEY) ?? ""; }
-            set { RegSchreiben(REG_APIKEY, value ?? ""); }
+            get { return SchluesselLesen(); }
+            set { SchluesselSchreiben(value ?? ""); }
         }
 
         public static int Tageslimit
@@ -207,6 +235,20 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Selbstprüfung (A5): liefert genau den Text, den der nächste Aufruf an
+        /// den Anbieter senden würde — erzeugt mit demselben Prompt-Baukasten wie
+        /// <see cref="FrageAsync"/>, damit Vorschau und Wirklichkeit nicht
+        /// auseinanderlaufen können. Es wird nichts gesendet, nichts gezählt und
+        /// nichts zwischengespeichert.
+        /// </summary>
+        public static string SendeVorschau(string frage, string kontext, List<string> verlauf = null)
+        {
+            string f = string.IsNullOrWhiteSpace(frage) ? "(noch keine Frage eingegeben)" : frage.Trim();
+            List<WissensAbschnitt> treffer = HilfeWissen.Suchen(f, kontext, 4);
+            return PromptBauen(f, kontext, treffer, verlauf);
+        }
+
+        /// <summary>
         /// Baut den Prompt: knappe Rolle, Kontext, Hilfeabschnitte, Frage.
         /// Die strikte Bindung an die Abschnitte verhindert erfundene Antworten.
         /// </summary>
@@ -305,10 +347,9 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                string url = "https://generativelanguage.googleapis.com/v1beta/models?key=" +
-                             Uri.EscapeDataString(ApiKey);
-
-                using (HttpResponseMessage antwort = await _http.GetAsync(url))
+                // Schlüssel bewusst NICHT als Query-Parameter (A4)
+                using (HttpRequestMessage nachricht = new HttpRequestMessage(HttpMethod.Get, BASIS_URL + "models"))
+                using (HttpResponseMessage antwort = await SendenAsync(nachricht))
                 {
                     string body = await antwort.Content.ReadAsStringAsync();
                     if (!antwort.IsSuccessStatusCode) return null;
@@ -364,8 +405,7 @@ namespace WindowsFormsApplication1
         /// <summary>Führt den eigentlichen Aufruf mit einem konkreten Modell aus.</summary>
         private static async Task<string> AufrufenMitModellAsync(string prompt, string modell)
         {
-            string url = "https://generativelanguage.googleapis.com/v1beta/models/" +
-                         modell + ":generateContent?key=" + Uri.EscapeDataString(ApiKey);
+            string url = BASIS_URL + "models/" + modell + ":generateContent";
 
             var anfrage = new
             {
@@ -382,16 +422,38 @@ namespace WindowsFormsApplication1
 
             string json = JsonSerializer.Serialize(anfrage);
 
-            using (StringContent inhalt = new StringContent(json, Encoding.UTF8, "application/json"))
-            using (HttpResponseMessage antwort = await _http.PostAsync(url, inhalt))
+            // Schlüssel bewusst NICHT als Query-Parameter (A4)
+            using (HttpRequestMessage nachricht = new HttpRequestMessage(HttpMethod.Post, url))
             {
-                string body = await antwort.Content.ReadAsStringAsync();
+                nachricht.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                if (!antwort.IsSuccessStatusCode)
-                    throw new Exception("HTTP " + (int)antwort.StatusCode + " - " + KurzFehler(body));
+                using (HttpResponseMessage antwort = await SendenAsync(nachricht))
+                {
+                    string body = await antwort.Content.ReadAsStringAsync();
 
-                return TextAusJson(body);
+                    if (!antwort.IsSuccessStatusCode)
+                        throw new Exception("HTTP " + (int)antwort.StatusCode + " - " + KurzFehler(body));
+
+                    return TextAusJson(body);
+                }
             }
+        }
+
+        /// <summary>
+        /// Sendet die Anfrage und legt den API-Schlüssel dabei in die Kopfzeile
+        /// <c>x-goog-api-key</c>. Er darf nicht in der Adresse stehen: Query-Parameter
+        /// werden von Proxys, Gateways und Serverprotokollen mitgeschrieben.
+        /// </summary>
+        private static Task<HttpResponseMessage> SendenAsync(HttpRequestMessage nachricht)
+        {
+            nachricht.Headers.TryAddWithoutValidation(HEADER_APIKEY, ApiKey);
+            return _http.SendAsync(nachricht);
+        }
+
+        /// <summary>Adresse, an die die Anfrage geht - ohne Schlüssel.</summary>
+        public static string Endpunkt()
+        {
+            return BASIS_URL + "models/" + MODELL + ":generateContent";
         }
 
         /// <summary>Liest den Antworttext aus der JSON-Antwort.</summary>
@@ -469,6 +531,167 @@ namespace WindowsFormsApplication1
                 }
             }
             catch { }
+        }
+
+        private static void RegLoeschen(string wert)
+        {
+            try
+            {
+                using (Microsoft.Win32.RegistryKey key =
+                       Microsoft.Win32.Registry.CurrentUser.OpenSubKey(REG_SCHLUESSEL, true))
+                {
+                    if (key != null && key.GetValue(wert) != null) key.DeleteValue(wert, false);
+                }
+            }
+            catch { }
+        }
+
+        // ------------------------------------------------------------------
+        // Schlüsselablage (DPAPI) — Sicherheitsmaßnahme A3
+        //
+        // Der API-Schlüssel lag bisher im Klartext unter
+        // HKCU\Software\wp-plan\GeminiApiKey. Jeder Prozess des Benutzers und
+        // jede Registry-Sicherung konnte ihn mitlesen. Er liegt jetzt DPAPI-
+        // verschlüsselt als Datei — gleiches Hausmuster wie die Lizenzablage
+        // (LizenzManager.TokenLaden/TokenSpeichern, gleicher Ordner).
+        //
+        // Scope CurrentUser (bewusst abweichend von der Lizenz, die LocalMachine
+        // nutzt): Der Schlüssel war bisher benutzerbezogen abgelegt (HKCU) und
+        // ist ein persönliches Zugangsmittel mit Kostenfolge. LocalMachine würde
+        // jedem Windows-Konto dieses Rechners das Entschlüsseln erlauben und die
+        // Vertraulichkeit damit gegenüber heute verschlechtern. Das Lizenz-Token
+        // dagegen soll bewusst für alle Konten des Arbeitsplatzes gelten.
+        // ------------------------------------------------------------------
+
+        private static readonly object _schluesselSperre = new object();
+        private static string _schluessel;
+        private static bool _schluesselGeladen;
+
+        /// <summary>
+        /// Meldung der einmaligen Übernahme aus der Registry
+        /// (leer, wenn nichts zu übernehmen war).
+        /// </summary>
+        public static string MigrationsProtokoll { get; private set; } = "";
+
+        /// <summary>Ablageordner — derselbe wie bei der Lizenz (%APPDATA%\wp-plan).</summary>
+        private static string Verzeichnis()
+        {
+            string pfad = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "wp-plan");
+            Directory.CreateDirectory(pfad);
+            return pfad;
+        }
+
+        /// <summary>Datei mit dem DPAPI-verschlüsselten API-Schlüssel.</summary>
+        public static string SchluesselDatei()
+        {
+            return Path.Combine(Verzeichnis(), "ki-schluessel.dat");
+        }
+
+        private static string SchluesselLesen()
+        {
+            lock (_schluesselSperre)
+            {
+                if (_schluesselGeladen) return _schluessel ?? "";
+                _schluesselGeladen = true;
+                _schluessel = "";
+
+                MigriereAusRegistry();
+
+                try
+                {
+                    string datei = SchluesselDatei();
+                    if (File.Exists(datei))
+                    {
+                        byte[] klartext = ProtectedData.Unprotect(
+                            File.ReadAllBytes(datei), null, DataProtectionScope.CurrentUser);
+                        _schluessel = Encoding.UTF8.GetString(klartext);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Nicht entschlüsselbar (anderes Konto, beschädigte Datei):
+                    // verhalten wie "kein Schlüssel hinterlegt" — wie im LizenzManager.
+                    Protokoll("Schlüssel konnte nicht gelesen werden: " + ex.Message);
+                    _schluessel = "";
+                }
+
+                return _schluessel;
+            }
+        }
+
+        private static void SchluesselSchreiben(string wert)
+        {
+            lock (_schluesselSperre)
+            {
+                string neu = (wert ?? "").Trim();
+                try
+                {
+                    string datei = SchluesselDatei();
+                    if (neu.Length == 0)
+                    {
+                        if (File.Exists(datei)) File.Delete(datei);
+                    }
+                    else
+                    {
+                        byte[] verschluesselt = ProtectedData.Protect(
+                            Encoding.UTF8.GetBytes(neu), null, DataProtectionScope.CurrentUser);
+                        File.WriteAllBytes(datei, verschluesselt);
+                    }
+                    _schluessel = neu;
+                    _schluesselGeladen = true;
+
+                    // Bei jedem Schreiben: sicherstellen, dass kein Klartext zurückbleibt
+                    RegLoeschen(REG_APIKEY);
+                }
+                catch (Exception ex)
+                {
+                    Protokoll("Schlüssel konnte nicht gespeichert werden: " + ex.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Einmalige Übernahme eines noch im Klartext in der Registry liegenden
+        /// Schlüssels: verschlüsselt ablegen, Registry-Wert löschen. Läuft beim
+        /// ersten Zugriff nach der Umstellung, ohne Rückfrage, protokolliert.
+        /// </summary>
+        private static void MigriereAusRegistry()
+        {
+            string alt = null;
+            try { alt = RegLesen(REG_APIKEY); } catch { }
+            if (string.IsNullOrWhiteSpace(alt)) return;
+
+            try
+            {
+                string datei = SchluesselDatei();
+                if (!File.Exists(datei))
+                {
+                    byte[] verschluesselt = ProtectedData.Protect(
+                        Encoding.UTF8.GetBytes(alt.Trim()), null, DataProtectionScope.CurrentUser);
+                    File.WriteAllBytes(datei, verschluesselt);
+                    RegLoeschen(REG_APIKEY);
+                    Protokoll("API-Schlüssel aus der Registry übernommen, verschlüsselt abgelegt (" +
+                              datei + "); der Registry-Wert wurde gelöscht.");
+                }
+                else
+                {
+                    RegLoeschen(REG_APIKEY);
+                    Protokoll("Verschlüsselte Ablage war bereits vorhanden; der verbliebene " +
+                              "Klartextwert in der Registry wurde gelöscht.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Protokoll("Übernahme des Registry-Schlüssels fehlgeschlagen: " + ex.Message);
+            }
+        }
+
+        private static void Protokoll(string meldung)
+        {
+            MigrationsProtokoll = meldung ?? "";
+            System.Diagnostics.Debug.WriteLine("[KI] " + meldung);
+            Console.WriteLine("[KI] " + meldung);
         }
     }
 }

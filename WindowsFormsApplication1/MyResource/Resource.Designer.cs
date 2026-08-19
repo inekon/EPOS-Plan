@@ -3326,6 +3326,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Genau dieser Text ginge bei der nächsten Frage an das Modell {0} ({1}). Es werden keine Projekt-, Kunden- oder Simulationsdaten übertragen. Der API-Schlüssel wird in einer HTTP-Kopfzeile mitgegeben und steht nicht in der Adresse. ähnelt.
+        /// </summary>
+        public static string KI_VORSCHAU_HINWEIS {
+            get {
+                return ResourceManager.GetString("KI_VORSCHAU_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was wird gesendet? ähnelt.
+        /// </summary>
+        public static string KI_VORSCHAU_LINK {
+            get {
+                return ResourceManager.GetString("KI_VORSCHAU_LINK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string KI_VORSCHAU_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("KI_VORSCHAU_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was wird gesendet? ähnelt.
+        /// </summary>
+        public static string KI_VORSCHAU_TITEL {
+            get {
+                return ResourceManager.GetString("KI_VORSCHAU_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
         /// </summary>
         public static string KONFIG_BHKW {
