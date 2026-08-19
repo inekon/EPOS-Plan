@@ -560,6 +560,23 @@ namespace WindowsFormsApplication1
             if (zeilen.Any(x => !string.IsNullOrEmpty(x.SteuerHerkunft)))
                 Zeile(MyResource.Resource.WIRT_ZEILE_STEUER_HERKUNFT, zeilen,
                       x => x.SteuerHerkunft ?? "—");
+            // ETAPPE E5: vermiedene Kosten nach der Differenzmethode und der Betrag der
+            // berücksichtigten Aufschläge. Der Leistungsanteil ist regelmäßig NEGATIV —
+            // deshalb prüft die Bedingung auf „ungleich 0", nicht auf „größer 0"; eine
+            // Zeile, die nur bei positiven Werten erscheint, verschwiege genau die
+            // Kernaussage.
+            if (zeilen.Any(x => x.VermiedenGesamtJahr != 0 || x.VermiedenArbeitJahr != 0))
+            {
+                Zeile(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_ARBEIT, zeilen,
+                      x => W(x.VermiedenArbeitJahr, "N0", kultur));
+                Zeile(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_LEISTUNG, zeilen,
+                      x => W(x.VermiedenLeistungJahr, "N0", kultur));
+                Zeile(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_GESAMT, zeilen,
+                      x => W(x.VermiedenGesamtJahr, "N0", kultur));
+            }
+            if (zeilen.Any(x => x.AufschlagJahr != 0))
+                Zeile(MyResource.Resource.WIRT_ZEILE_AUFSCHLAG, zeilen,
+                      x => W(x.AufschlagJahr, "N0", kultur));
             Zeile("Restwert (Barwert) [€]", zeilen, x => W(x.RestwertBarwert, "N0", kultur));
             Zeile("Nettobarwert über T [€]", zeilen, x => W(x.Kapitalwert, "N0", kultur));
             Zeile("Kapitalwert vs. Stamm [€]", zeilen, x => x.IstStamm ? "(Referenz)" : W(x.KapitalwertDiff, "N0", kultur));

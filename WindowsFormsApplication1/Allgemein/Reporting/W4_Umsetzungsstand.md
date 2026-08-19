@@ -13,6 +13,7 @@ entschieden ist, welche Etappe läuft und welche Ergebniswirkung jede Etappe hat
 | [`W4_E2_Vollbenutzungsstunden_Protokoll.md`](W4_E2_Vollbenutzungsstunden_Protokoll.md) | Etappe E2: Vbh-Korrektur, Wirkungsbeleg, Migrationsschritt 18 — **plus Nachtrag 1 „500-kW-Grenze je Anlage" und Nachtrag 2 „Heizöl-Ausschluss je Anlage" (beide 19.08.2026)** |
 | [`W4_E3_Kostenarten_Betriebskosten_Protokoll.md`](W4_E3_Kostenarten_Betriebskosten_Protokoll.md) | Etappe E3: Kostenart und Bemessungsart an der Kostenposition (Migrationsschritt 19), negative Beträge für Erlöse, Betriebskosten-Dialog nach VDI 2067, **Zuordnung der VDI-Bezugsgrößen auf das EPOS-Plan-Modell** |
 | [`W4_E4_Steuergutschriften_Protokoll.md`](W4_E4_Steuergutschriften_Protokoll.md) | Etappe E4: Energiesteuer- (§ 53 / § 53a) und Stromsteuergutschrift (§ 9 Abs. 1 Nr. 3, § 9b) als jahresscharfe Reihen, Projektangaben der Steuerprüfung (Migrationsschritt 20), benannte Erlösreihen (L1) — **und die Recherche, die die Annahme „§ 53 entlastet nur den Stromanteil" widerlegt hat** |
+| [`W4_E5_Tarife_Strombezug_Protokoll.md`](W4_E5_Tarife_Strombezug_Protokoll.md) | Etappe E5: Tarif-Rollenmodell mit drei Leistungspreismodellen (Migrationsschritt 21), Differenzmethode „vermiedene Kosten", Preis für eingespeisten KWK-Strom, § 9b ohne BHKW — **und die Messung, die den Aufschlägen eine Wirkung von rund einem Drittel des Kapitalwerts nachweist** |
 
 ---
 
@@ -26,7 +27,7 @@ entschieden ist, welche Etappe läuft und welche Ergebniswirkung jede Etappe hat
 | **E2-N2** | *Nachtrag 2:* Heizöl-Ausschluss **je Anlage** und über die **installierten Anlagen** statt über die Gerätezeilen; Brennstoffart vorrangig aus `Tab_Energieanlagen.ID_Carrier` | **ja — Korrektur**, wirkt bei mehr als einer Anlage und bei verwaisten Öl-Gerätezeilen | **umgesetzt** (8/8 PASS ×2, 194/194 byte-gleich, 8/8 Wirtschaftlichkeitswerte gleich; Wirkung an präparierten Kopien belegt) |
 | **E3** | Kostenposition um Kostenart, Bemessung, Erlös-Kennzeichen, Menge und Einheitpreis erweitern (Migrationsschritt 19); Betriebskosten-Dialog nach VDI 2067 mit elf Positionen in drei Spalten | **keine für Bestandsprojekte** — Schritt 19b belegt jede Bestandszeile mit `BETRAG`, und diese Bemessungsart ist zeilengleich der Rechenweg vor E3 | **umgesetzt** (9/9 PASS, 216/216 byte-gleich, 27/27 Betriebskosten- und Kapitalwertwerte identisch, 47 Harnisch-Proben ohne Fehlschlag) |
 | **E4** | Energiesteuer- und Stromsteuergutschrift als jahresscharfe Reihen; sechs Projektangaben der Steuerprüfung (Migrationsschritt 20); `KapitalwertRechner.Rechne` auf **benannte Erlösreihen** umgestellt (L1) | **keine für Bestandsprojekte** — jede Vorbelegung von Schritt 20b ist der Wert, der keine Gutschrift auslöst | **umgesetzt** (9/9 PASS, 216/216 byte-gleich, 54/54 Wirtschaftlichkeitswerte identisch, 11/11 Handrechnungen getroffen) |
-| **E5** | Tarife mit drei Leistungspreismodellen, vermiedener Strombezug | nur bei gepflegten Tarifen | offen |
+| **E5** | Tarif-**Rollenmodell** (Bezug / Reststrom / Einspeisung) mit allen drei Leistungspreismodellen (Migrationsschritt 21); Differenzmethode „vermiedene Kosten" mit negativem Leistungsanteil; Preis für eingespeisten KWK-Strom; § 9b auch ohne BHKW; **Aufschläge hinter einem Projektschalter** | **keine für Bestandsprojekte** — `Tarif_Modus` wird mit `ZONEN` vorbelegt, der Aufschlagsschalter steht auf AUS, die KWK-Vergütung bleibt NULL | **umgesetzt** (9/9 PASS, 216/216 byte-gleich, 27/27 Wirtschaftlichkeitszeilen **zeichengleich**, 8 Wirkungsfälle = Handrechnung) |
 | **E6** | KWK-Zuschlag je Modul mit Katalogvorschlag | **ja** bei Mehrmodulanlagen | offen |
 | **E7** | Bericht (Word und Excel), Mehrjahrestabelle | Ausgabe | offen |
 | **E8** | Abnahme, neue Referenzbasis, Protokoll | eingefroren | offen |
@@ -85,11 +86,12 @@ widersprüchliche Begrenzungen des KWK-Bonus.
 | ~~**Heizöl-Ausschluss** prüft `COUNT(*)` über alle **Gerätezeilen** des Projekts: ein einziges Öl-BHKW im Katalogbestand nimmt allen Anlagen den Zuschlag~~ — **behoben mit dem E2-Nachtrag 2** (19.08.2026); die Brennstoffart kommt jetzt vorrangig aus `Tab_Energieanlagen.ID_Carrier`, ersatzweise aus der Gerätezeile | `WirtschaftlichkeitCtrl.cs:988-1076`, `:1455-1570` | **E2-N2, erledigt** |
 | **Stichtag und Inbetriebnahme** sind ein Datumspaar je Projekt; § 6 KWKG gilt je Anlage — und dasselbe Datum entscheidet für alle Anlagen zugleich über Neuanlage/Bestandsanlage, also auch über den Heizöl-Ausschluss | `WirtschaftlichkeitCtrl.cs:958-982` | offen, E6 — **der gravierendste Restbefund der Reihe** |
 | Energiesteuer- und Stromsteuererstattung fehlen vollständig | — | E4 |
-| Vermiedener Strombezug ist keine Erlöszeile; die Bezugsgröße „Bedarf ohne Anlage" wird nirgends geführt | `StromMatrix.cs:35-42` | E5 |
-| Ohne Photovoltaik im Projekt bekommt eingespeister BHKW-Strom **keinen Strompreis**, nur den Zuschlag | `Form_WirtschaftlichkeitParameter.cs:62-66` | E5 |
+| ~~Vermiedener Strombezug ist keine Erlöszeile; die Bezugsgröße „Bedarf ohne Anlage" wird nirgends geführt~~ — **behoben mit E5**: `StromMatrix.Zone.BedarfMWh` samt Lastbildern (Jahres-, Sommer-, Winter-, zwölf Monatsmaxima); die Differenzmethode weist Arbeit, Leistung und Summe getrennt aus, der Leistungsanteil regelmäßig negativ | `StromMatrix.cs`, `StromTarifRechner.cs` | **E5, erledigt** |
+| ~~Ohne Photovoltaik im Projekt bekommt eingespeister BHKW-Strom **keinen Strompreis**, nur den Zuschlag~~ — **behoben mit E5**: eigene Projektangabe `Einspeiseverguetung_KWK`, und die Gruppe „Strom — Einspeisung und Bezug" ist im Parameterdialog **immer** sichtbar | `Form_WirtschaftlichkeitParameter.cs`, `WirtschaftlichkeitCtrl.BaueEingabe` | **E5, erledigt** |
+| ~~§ 9b StromStG greift nur bei Projekten **mit BHKW**, obwohl er an keiner KWK-Anlage hängt~~ — **behoben mit E5**; greift nur bei ausdrücklich erfasster Unternehmensart und ist damit ergebnisneutral | `WirtschaftlichkeitCtrl.BaueSteuerEingabe` | **E5, erledigt** |
 | ~~Bemessungsarten nach VDI 2067 (Prozent, je Stunde, je kWh) fehlen; Kostenpositionen kennen nur einen Eurobetrag~~ — **behoben mit E3**: `Tab_ProjektWerte` führt `Kostenart`, `Bemessung`, `IstErloes`, `Menge` und `Einheitpreis` (Migrationsschritt 19); `WirtschaftlichkeitCtrl.LiesBetriebskosten` wertet die Bemessung aus | `Tab_ProjektWerte`, `WirtschaftlichkeitCtrl.cs:1851` | **E3, erledigt** |
 | ~~Negative Beträge für Erlöse sind nicht eingebbar~~ — **behoben mit E3**: Für Positionen mit `IstErloes` klemmt die Eingabe auf ≤ 0 statt auf ≥ 0, und der Rechenweg erzwingt das negative Vorzeichen | `ucKostenItem.cs:23-66`, `BetriebskostenCtrl.cs:261` | **E3, erledigt** |
-| Aufschläge (Netzentgelt, Umlagen, Stromsteuer, Konzession, Vertrieb) erreichen die Jahreskostenrechnung nicht | `KostenEmissionRechner.cs:106-123` | E5 |
+| ~~Aufschläge (Netzentgelt, Umlagen, Stromsteuer, Konzession, Vertrieb) erreichen die Jahreskostenrechnung nicht~~ — **mit E5 möglich gemacht, aber NICHT eingeschaltet**: neue Projektangabe `Aufschlaege_Anwenden`, Vorgabe AUS. Gemessene Wirkung **+32 bis 34 % Energiekosten, −30 bis 33 % Kapitalwert** (Protokoll W4_E5, Abschnitt 4) — **die Entscheidung, ob das Vorgabeverhalten werden soll, steht beim Nutzer aus** | `WirtschaftlichkeitCtrl.RechneAufschlaege` | **E5, umgesetzt — Entscheidung offen** |
 | Kategorie 3 „Energiekosten" ist pflegbar, wird aber von keiner Rechnung gelesen — Beträge fallen still aus jeder Auswertung | `Form_Kosten.cs` | offen, siehe 5 |
 
 ---
@@ -165,6 +167,50 @@ widersprüchliche Begrenzungen des KWK-Bonus.
 
 ---
 
+## 3c Was Etappe E5 entschieden hat (19.08.2026)
+
+- **Die Aufschläge sind gemessen, bevor sie eingeschaltet wurden — und sie sind NICHT
+  eingeschaltet.** Netzentgelt, Umlagen, Stromsteuer, Konzession und Vertrieb erreichten
+  die Jahreskostenrechnung nie. Die Erhebung über alle neun Referenzprojekte ergab: vier
+  Projekte betroffen, Wirkung **+32 bis 34 % Energiekosten** und **−30 bis 33 %
+  Kapitalwert**, an Projekt 1030 **6,39 Mio. €**. Umgesetzt als ausdrückliche
+  Projektangabe `Aufschlaege_Anwenden`, **Vorgabe AUS**; der Betrag wird als eigene
+  Größe und als Hinweiszeile mit Satz und Zerlegung ausgewiesen. **Ob daraus
+  Vorgabeverhalten wird, entscheidet der Nutzer.**
+- **Die Aktiv-Flags des Aufschlagsblocks sind kein verlässliches „Aus".** Bei Projekt
+  1030 stehen alle fünf Flags auf `False` und alle Werte auf `NULL` — der Leseweg liefert
+  trotzdem den vollen Vorschlagssatz von 11,746 ct/kWh, weil `NULL` dort „nicht gepflegt"
+  heißt und dann der Vorgabewert samt Vorgabe-Schalter gilt. Die Regel ist im
+  Speicherpaket bewusst so gebaut (Access legt `YESNO` überall mit `False` an), überrascht
+  hier aber. Deshalb nennt der Hinweis den tatsächlich angesetzten Satz.
+- **Zwei Modelle nebeneinander statt eines Umbaus.** Das Zonenmodell der Stufe W3 bleibt
+  vollständig erhalten; `Tarif_Modus` (`ZONEN` / `ROLLEN`) entscheidet. Daran hängt die
+  Ergebnisneutralität — ein leerer Modus wird wie `ZONEN` behandelt.
+- **Die vier Fallen des Altkatalogs sind strukturell vermieden**, nicht bloß im Code
+  umgangen: kumulierte Obergrenzen statt Stufenbreiten, geführte vierte Stufe, sichtbare
+  Modellauswahl statt „Sommerpreis = 0", Feld `Tarif_GueltigAb` statt Preisstand im
+  Beschreibungstext. Dazu eine fünfte stille Regel: kein Vorrang des Monatspreises vor
+  der Staffel.
+- **Eine Abweichung vom Auftrag**, begründet im Protokoll (Abschnitt 2.2): Die
+  **Einspeiserolle bekommt keine Leistungsstaffel**. Im Altkatalog sind ihre
+  Sollleistung und Reduktionsfaktoren leer oder 0, es gibt keinen aktiven Lesepfad, und
+  der Leistungserlös war fest 0 (Befund 11). 16 Spalten für eine nachweislich tote
+  Funktion wären Ballast; nachrüstbar bleibt sie.
+- **Vermiedene Kosten sind Ausweis, kein Zahlungsstrom.** Die Einsparung steckt bereits
+  in der kleineren Bezugsmenge; sie zusätzlich als Erlös zu buchen wäre eine
+  Doppelzählung. In den Kapitalwert geht der **Reststrom**betrag.
+- **Der negative Leistungsanteil ist die Kernaussage, nicht ein Sonderfall.** Deshalb
+  prüfen alle Sichtbarkeitsbedingungen auf „ungleich 0" statt „größer 0" — eine Zeile,
+  die nur bei positiven Werten erschiene, verschwiege genau diese Aussage.
+- **Stromsteuer doppelt? Nein — zwei Seiten derselben Vorschrift.** Der Aufschlagsblock
+  trägt den Regelsatz (20,50 €/MWh) als Belastung, § 9b die Entlastung (20,00 €/MWh) als
+  Gutschrift. **Der Widerspruch liegt im umgekehrten Fall**, und den gibt es im Bestand:
+  Schalter AUS und § 9b aktiv heißt Entlastung ohne Belastung. Das Ergebnis meldet es im
+  Klartext, statt es stillschweigend zu korrigieren — eine Kopplung hätte E4 nachträglich
+  verändert.
+
+---
+
 ## 4 Etappe E1 — was gerade entsteht
 
 - **Tabelle `Tab_Gesetzesparameter`**: Schlüssel (sprachneutral, eingefroren),
@@ -231,9 +277,13 @@ werden nicht übernommen.
 
 ## 6 Doppelte Wahrheiten, die W4 auflösen soll
 
-- **BHKW-Einspeisevergütung an drei Orten**: `energy_project_settings.Verguetung_BHKW`
-  (wirkt nur in der Speichersimulation), `Tab_ProjektTarif.Einsp_*` (HT/NT),
-  `WirtschaftlichkeitParameter.Einspeiseverguetung` (nur Photovoltaik).
+- **BHKW-Einspeisevergütung an vier Orten** (E5 hat einen hinzugefügt, um den
+  Bestandsmangel zu beheben): `energy_project_settings.Verguetung_BHKW` (wirkt nur in der
+  Speichersimulation), `Tab_ProjektTarif.Einsp_*` (Zonenmodell, HT/NT),
+  `Tab_ProjektTarif.Einsp_Arbeit` (Rollenmodell, E5),
+  `WirtschaftlichkeitParameter.Einspeiseverguetung_KWK` (Flat-Pfad, E5). Die Vorrangregel
+  ist eindeutig — der aktive Tarif schlägt die Parameterwerte —, aber vier Felder für
+  einen Preis sind drei zu viel.
 - **Vorrangregel Projekt vor Katalog** in drei Implementierungen
   (`KostenEmissionRechner`, `StromPreisCtrl`, eine gespeicherte Access-Abfrage).
 - **14 Kennzahlzeilen doppelt** in Word- und Excel-Generator.
@@ -243,7 +293,10 @@ werden nicht übernommen.
   Spalten an und belegt sie vor, `StelleTabellenSicher` legt dieselben Spalten
   vorsorglich an (ohne Werte). Das ist dasselbe Doppel wie bei
   `Tab_ProjektWerte`/`KostenPositionCtrl` aus E3 und bewusst so gebaut; aufzulösen ist es
-  trotzdem.
+  trotzdem. **Mit E5 gilt dasselbe für `Tab_ProjektTarif`** (Schritt 21 gegen
+  `StelleTabellenSicher`); dort greift der Migrationsschritt zusätzlich ins Leere, wenn
+  die Tabelle noch gar nicht existiert — er meldet das und gilt als erledigt, statt die
+  Migration dauerhaft auf Stand 20 festzuhalten.
 - **Komponenten-IDs an zwei Orten** (benannt mit E3): `Form_Kosten.GetKomponentenID`
   verdrahtet 1…7 hart, `UcBkKosten` und `KomponentenUebernahmeCtrl` lesen dieselbe
   Zuordnung dynamisch aus `Tab_KostenKomponente`. `BetriebskostenCtrl` musste sich für

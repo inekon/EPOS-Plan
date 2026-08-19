@@ -29,6 +29,9 @@ namespace WindowsFormsApplication1
         // Steuerelemente — null, wenn die zugehörige Gruppe ausgeblendet ist.
         private NumericUpDown numZins, numJahre, numPreisE, numPreisB, numCO2;
         private NumericUpDown numEinspeisung;
+        // ETAPPE E5 — Strom: KWK-Einspeisevergütung und Aufschlagsschalter.
+        private NumericUpDown numEinspeisungKWK;
+        private CheckBox chkAufschlaege;
         private NumericUpDown numKwkg, numKwkgEinsp, numVbhDeckel, numVbhKontingent, numAbschlagNeg;
         private DateTimePicker dtStichtag, dtInbetriebnahme;
         private ComboBox cbPark;
@@ -62,12 +65,22 @@ namespace WindowsFormsApplication1
             numPreisE = Zeile("Preissteigerung Energie [%/a]:", ref y, -10m, 20m, 2, (decimal)_parameter.PreissteigerungEnergie, 0.1m);
             numPreisB = Zeile("Preissteigerung Betrieb [%/a]:", ref y, -10m, 20m, 2, (decimal)_parameter.PreissteigerungBetrieb, 0.1m);
 
-            // ---------------- Photovoltaik ----------------
-            if (_erzeuger.Photovoltaik)
-            {
-                Gruppe("Photovoltaik", ref y);
-                numEinspeisung = Zeile("Einspeisevergütung PV [€/kWh]:", ref y, 0m, 2m, 4, (decimal)_parameter.Einspeiseverguetung, 0.001m);
-            }
+            // ---------------- Strom (ETAPPE E5, immer sichtbar) ----------------
+            //
+            // BESTANDSMANGEL, hier behoben: Die Einspeisevergütung stand bis E5 in der
+            // PHOTOVOLTAIK-Gruppe und war ohne PV im Projekt unsichtbar. Eingespeister
+            // BHKW-Strom bekam deshalb gar keinen Strompreis, sondern nur den
+            // KWK-Zuschlag — ökonomisch grob falsch. Beide Vergütungen stehen jetzt in
+            // einer eigenen, immer sichtbaren Gruppe, und der KWK-Strom hat einen
+            // eigenen Preis (er liegt real meist über dem PV-Preis).
+            Gruppe("Strom — Einspeisung und Bezug", ref y);
+            numEinspeisung = Zeile("Einspeisevergütung PV [€/kWh]:", ref y,
+                                   0m, 2m, 4, (decimal)_parameter.Einspeiseverguetung, 0.001m);
+            numEinspeisungKWK = Zeile("Einspeisevergütung KWK-Strom [€/kWh]:", ref y,
+                                      0m, 2m, 4, (decimal)(_parameter.EinspeiseverguetungKWK ?? 0), 0.001m);
+            chkAufschlaege = SchalterZeile("Aufschläge (Netzentgelt, Umlagen, Stromsteuer, " +
+                                           "Konzession, Vertrieb) berücksichtigen",
+                                           ref y, _parameter.AufschlaegeAnwenden);
 
             // ---------------- BHKW — KWKG 2025 ----------------
             if (_erzeuger.Bhkw)
@@ -164,7 +177,11 @@ namespace WindowsFormsApplication1
                 "Die Parameter gelten für Stamm und alle Varianten der Vergleichsgruppe; " +
                 "Erzeuger-Gruppen erscheinen nur, wenn der Erzeugertyp in der Gruppe " +
                 "vorkommt (ausgeblendete Werte bleiben erhalten). Energie- und Strompreise " +
-                "kommen aus der Kostenmaske.";
+                "kommen aus der Kostenmaske." +
+                " Aufschläge: Vorgabe AUS — eingeschaltet steigen die Energiekosten " +
+                "typischerweise um rund ein Drittel (Vorschlagswerte in Summe " +
+                "11,746 ct/kWh). Gepflegt werden sie je Energieträger in der Kostenmaske; " +
+                "hier wird nur entschieden, ob die Wirtschaftlichkeit sie ansetzt.";
             if (_erzeuger.Bhkw)
                 hinweis += " KWKG: Deckel-Override 0 = degressive Vbh-Staffel 2025 ab dem " +
                            "Inbetriebnahmejahr; förderfähig nur mit Stichtag bis 31.12.2026 " +
@@ -351,11 +368,18 @@ namespace WindowsFormsApplication1
             _parameter.PreissteigerungEnergie = (double)numPreisE.Value;
             _parameter.PreissteigerungBetrieb = (double)numPreisB.Value;
 
+            // Strom (E5): immer sichtbar, deshalb immer übernommen. Ein KWK-Preis von 0
+            // heißt „nicht gepflegt" — die Unterscheidung ist wichtig, weil eine
+            // gepflegte 0 sonst wie ein Preis wirkte und der Hinweis nicht mehr sagen
+            // könnte, warum es keinen Erlös gibt.
+            _parameter.Einspeiseverguetung = (double)numEinspeisung.Value;
+            _parameter.EinspeiseverguetungKWK = numEinspeisungKWK.Value > 0
+                                              ? (double?)numEinspeisungKWK.Value : null;
+            _parameter.AufschlaegeAnwenden = chkAufschlaege.Checked;
+
             // Erzeuger-Gruppen: nur übernehmen, wenn die Gruppe sichtbar war —
             // ausgeblendete Werte bleiben unverändert (kein stilles Nullen).
             // Guard = dieselben Flags, die auch den Aufbau steuern (Review Phase 10).
-            if (_erzeuger.Photovoltaik)
-                _parameter.Einspeiseverguetung = (double)numEinspeisung.Value;
 
             if (_erzeuger.Bhkw)
             {

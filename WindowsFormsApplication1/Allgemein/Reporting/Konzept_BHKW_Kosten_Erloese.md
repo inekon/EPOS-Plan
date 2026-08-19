@@ -35,11 +35,11 @@ produktiv (Phasen W1–W3, 9 und 11, siehe [`UMSETZUNGSSTAND.md`](UMSETZUNGSSTAN
 | Lücke | Belegt |
 |---|---|
 | Energiesteuer- und Stromsteuererstattung | „Energiesteuer" kommt im gesamten Code nur in Konzeptdateien vor; „Stromsteuer" nur als Bezugspreis-Aufschlag |
-| Vermiedener Strombezug als Erlöszeile | steckt nur implizit im kleineren Restbezug; die Bezugsgröße „Bedarf ohne Anlage" wird nirgends geführt |
-| Strompreis für eingespeisten BHKW-Strom ohne PV | Feld „Einspeisevergütung PV" ist ohne PV-Gruppe unsichtbar (`Form_WirtschaftlichkeitParameter.cs:62-66`) — der Strom bekommt dann nur den Zuschlag |
+| ~~Vermiedener Strombezug als Erlöszeile~~ — **behoben mit E5** | steckt nur implizit im kleineren Restbezug; die Bezugsgröße „Bedarf ohne Anlage" wird nirgends geführt |
+| ~~Strompreis für eingespeisten BHKW-Strom ohne PV~~ — **behoben mit E5** | Feld „Einspeisevergütung PV" ist ohne PV-Gruppe unsichtbar (`Form_WirtschaftlichkeitParameter.cs:62-66`) — der Strom bekommt dann nur den Zuschlag |
 | VDI-2067-Bemessungsarten (% Investition, €/h, €/kWh) | `Tab_ProjektWerte` kennt nur einen Eurobetrag; `Einheit` ist Freitext ohne Rechenwirkung |
 | Negative Beträge für Erlöse | `ucKostenItem.cs:104-109` klemmt, `TechnikPlanwertCtrl.Basis:361` verwirft ≤ 0 |
-| Aufschläge in der Jahreskostenrechnung | Netzentgelt, Umlagen, Stromsteuer, Konzession, Vertrieb sind gepflegt, wirken aber nur in der Speichersimulation |
+| Aufschläge in der Jahreskostenrechnung — **mit E5 möglich gemacht, Vorgabe AUS** | Netzentgelt, Umlagen, Stromsteuer, Konzession, Vertrieb sind gepflegt, wirken aber nur in der Speichersimulation. Gemessene Wirkung: **+32 bis 34 % Energiekosten, −30 bis 33 % Kapitalwert** — deshalb ein ausdrücklicher Projektschalter statt stiller Übernahme (E5-Protokoll, Abschnitt 4) |
 
 **Ein Rechenfehler im Bestand** ist zu korrigieren: `WirtschaftlichkeitCtrl.cs:848`
 setzt die erreichten Vollbenutzungsstunden auf `Betriebsstunden_Gesamt`. Das ist
@@ -188,7 +188,7 @@ Additiv, Migration ab Schemastand 18. Muster für neue Tabellen:
 | `Tab_ErgebnisBHKWModul` | `VbhThermisch DOUBLE`, `VbhElektrisch DOUBLE` (E2, Schritt 18) |
 | `Tab_ErgebnisWirtschaftlichkeit` | `KWKGVbhElektrisch DOUBLE` — Bemessungsgrundlage der Deckelung, über `SpalteSicher` |
 | `Tab_BHKW`, `Tab_BHKW_STAMM` | `Wartungsbemessung TEXT(20)` — analog Kessel (Schritt 15) |
-| `Tab_ProjektTarif` | `Leistungsmodell TEXT(20)` (`MONATLICH` / `STAFFEL` / `JAHRESHOECHSTLAST`), vier **kumulierte Obergrenzen** in kW mit Sommer- und Winterpreis, monatlicher Leistungspreis, Grundpreis, `GueltigAb` |
+| `Tab_ProjektTarif` | `Leistungsmodell TEXT(20)` (`MONATLICH` / `STAFFEL` / `JAHRESHOECHSTLAST`), vier **kumulierte Obergrenzen** in kW mit Sommer- und Winterpreis, monatlicher Leistungspreis, Grundpreis, `GueltigAb` — *umgesetzt mit E5 als **36 Spalten**: je Rolle (Bezug, Reststrom) ein Arbeitspreis, ein Grundpreis, `…_Leistungsmodell TEXT(24)`, ein Monatspreis und vier Staffelstufen; dazu `Tarif_Modus TEXT(12)` (`ZONEN` / `ROLLEN`), `Tarif_GueltigAb` und für die Einspeisung Arbeits- und Grundpreis. Die Einspeiserolle führt **keine** Leistungsstaffel — Begründung im E5-Protokoll, Abschnitt 2.2* |
 | `Tab_Kraftwerkspark` | `CO`, `Staub`, `GueltigAb`, `Quelle`, `ReadOnly` und vor allem **`Bezugsbasis TEXT(12)`** (`BRENNSTOFF` / `STROM`) |
 | `Tab_ProjektWirtschaftlichkeit` | Steuerparameter je Projekt: Unternehmensart, Nutzungsgrad, Hocheffizienz, räumlicher Zusammenhang, Wahl § 53 / § 53a |
 
@@ -326,7 +326,7 @@ Damit werden folgende heute hart codierten Werte pflegbar: Stromsteuersätze in
 | **E2** | Vbh-Korrektur (L6), Betriebsstunden je Modul persistieren | Zuschlag bei Kaskaden korrekt |
 | **E3** | Kostenposition erweitern (L5), Betriebskosten-Dialog VDI 2067 | Betriebskosten vollständig erfassbar |
 | **E4** | Energiesteuer- und Stromsteuergutschrift | Steuern in Kapitalwert und Bericht — **umgesetzt 19.08.2026**, ergebnisneutral für Bestandsprojekte ([`W4_E4_Steuergutschriften_Protokoll.md`](W4_E4_Steuergutschriften_Protokoll.md)) |
-| **E5** | Tarife mit drei Leistungspreismodellen, vermiedener Strombezug | Erlösseite vollständig |
+| **E5** | Tarife mit drei Leistungspreismodellen, vermiedener Strombezug | Erlösseite vollständig — **umgesetzt 19.08.2026**, ergebnisneutral für Bestandsprojekte ([`W4_E5_Tarife_Strombezug_Protokoll.md`](W4_E5_Tarife_Strombezug_Protokoll.md)). Die Aufschläge sind gemessen (+32 bis 34 % Energiekosten, −30 bis 33 % Kapitalwert) und hinter einen Projektschalter gelegt, Vorgabe AUS |
 | **E6** | KWK-Zuschlag je Modul mit Katalogvorschlag | gesetzliche Leistungsklassen abgebildet |
 | **E7** | Bericht (Word und Excel), Mehrjahrestabelle | Ausgabe |
 | **E8** | Abnahme, neue Referenzbasis, Protokoll | eingefroren |
@@ -360,9 +360,12 @@ Bestandsprojekte ohne die neuen Angaben.
    eingearbeitet und beim Nachbau zu beachten: Leistungsstaffelgrenzen werden als
    **kumulierte Obergrenze** geführt (der Altkatalog speichert Stufen*breiten*),
    und das Leistungsmodell wird eine **sichtbare Auswahl** statt der versteckten
-   Schalterlogik „Sommerpreis = 0". Beim Kraftwerkspark verhindert das neue Feld
+   Schalterlogik „Sommerpreis = 0". *Beide sind mit E5 umgesetzt, zusammen mit der
+   dritten und vierten Falle (geführte vierte Stufe, Feld `Tarif_GueltigAb`) —
+   E5-Protokoll, Abschnitt 2.3.* Beim Kraftwerkspark verhindert das neue Feld
    `Bezugsbasis`, dass Faktoren je kWh Brennstoff und je kWh Strom in derselben
-   Spalte landen — genau dieser Definitionsbruch steckt im Altkatalog.
+   Spalte landen — genau dieser Definitionsbruch steckt im Altkatalog; **er ist noch
+   offen** (Etappe E6 oder später).
 3. **§ 53 neben § 53a** rechtlich ungeklärt — als Option modelliert.
 4. **Kategorie 3 „Energiekosten"** in `Tab_ProjektWerte` ist pflegbar, wird aber
    von keiner Rechnung gelesen; dort erfasste Beträge fallen still aus jeder

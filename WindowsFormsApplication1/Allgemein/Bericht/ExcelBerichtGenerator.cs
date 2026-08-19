@@ -262,6 +262,10 @@ namespace WindowsFormsApplication1
             bool mitEnergiesteuer = alle.Any(x => x.EnergiesteuerJahr1 > 0);
             bool mitStromstBefreiung = alle.Any(x => x.StromsteuerBefreiungJahr1 > 0);
             bool mitStromstEntlastung = alle.Any(x => x.StromsteuerEntlastungJahr1 > 0);
+            // ETAPPE E5: vermiedene Kosten und Aufschläge. Der Leistungsanteil ist
+            // regelmäßig NEGATIV — die Bedingung prüft deshalb auf „ungleich 0".
+            bool mitVermieden = alle.Any(x => x.VermiedenGesamtJahr != 0 || x.VermiedenArbeitJahr != 0);
+            bool mitAufschlag = alle.Any(x => x.AufschlagJahr != 0);
             var zeilen = new List<Tuple<string, string, Func<WirtschaftlichkeitErgebnis, double?>>>
             {
                 Tuple.Create("Investition I₀ [€]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => (double?)e.Investition)),
@@ -277,6 +281,10 @@ namespace WindowsFormsApplication1
                 Tuple.Create(MyResource.Resource.WIRT_ZEILE_ENERGIESTEUER, "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitEnergiesteuer ? (double?)e.EnergiesteuerJahr1 : null)),
                 Tuple.Create(MyResource.Resource.WIRT_ZEILE_STROMST_BEFREIUNG, "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitStromstBefreiung ? (double?)e.StromsteuerBefreiungJahr1 : null)),
                 Tuple.Create(MyResource.Resource.WIRT_ZEILE_STROMST_ENTLASTUNG, "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitStromstEntlastung ? (double?)e.StromsteuerEntlastungJahr1 : null)),
+                Tuple.Create(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_ARBEIT, "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitVermieden ? (double?)e.VermiedenArbeitJahr : null)),
+                Tuple.Create(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_LEISTUNG, "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitVermieden ? (double?)e.VermiedenLeistungJahr : null)),
+                Tuple.Create(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_GESAMT, "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitVermieden ? (double?)e.VermiedenGesamtJahr : null)),
+                Tuple.Create(MyResource.Resource.WIRT_ZEILE_AUFSCHLAG, "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitAufschlag ? (double?)e.AufschlagJahr : null)),
                 Tuple.Create("Restwert (Barwert) [€]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => (double?)e.RestwertBarwert)),
                 Tuple.Create("Nettobarwert über T [€]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.Kapitalwert)),
                 Tuple.Create("Kapitalwert vs. Stamm [€]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.IstStamm ? null : e.KapitalwertDiff)),

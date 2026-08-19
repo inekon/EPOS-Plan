@@ -39,12 +39,72 @@ namespace WindowsFormsApplication1
             public double EinspeisungPvMWh;
             public double KwkEigenMWh;
             public double KwkEinspeisungMWh;
+
+            /// <summary>
+            /// ETAPPE E5 — Strombedarf <b>ohne die Anlage</b> [MWh]: die Menge, die ohne
+            /// BHKW aus dem Netz käme. Sie ist die Bezugsgröße der Differenzmethode
+            /// („Bezugskosten ohne BHKW") und fehlte bis E5 im Modell vollständig.
+            ///
+            /// <para>Gebildet als <c>Strombedarf − PV-Eigennutzung</c> je Stunde, nicht
+            /// negativ. Die Altanwendung rechnet genauso: „Photovoltaik wird vorab vom
+            /// Strombedarf abgezogen; das im Ergebnisdialog gezeigte ‚Strombedarf − PV‘
+            /// ist bereits bereinigt" (Analyse, Abschnitt 2.2). Ohne die
+            /// Strombedarfsreihe bleibt der Wert 0 und
+            /// <see cref="StrombedarfFehlt"/> sagt warum.</para>
+            /// </summary>
+            public double BedarfMWh;
         }
 
         public Dictionary<string, Zone> ZonenWerte = new Dictionary<string, Zone>();
 
         /// <summary>Jahres-Bezugsspitze [kW] (Basis der Leistungspreis-Staffel).</summary>
         public double MaxBezugKW;
+
+        // ------------------------------------------------------- Lastbilder (Etappe E5)
+
+        /// <summary>
+        /// Die Maxima EINER Bezugsgröße [kW] — die Bemessungsgrundlage aller drei
+        /// Leistungspreismodelle (Etappe E5, Leitentscheidung L7).
+        ///
+        /// <para>Ein Modell braucht genau eines davon: <c>JAHRESHOECHSTLAST</c> das
+        /// Jahresmaximum, <c>STAFFEL</c> Sommer- und Wintermaximum getrennt,
+        /// <c>MONATLICH</c> die zwölf Monatsmaxima. Alle drei werden im selben
+        /// Stundendurchlauf gebildet — die Wahl des Modells darf keinen zweiten
+        /// Durchlauf und keine zweite Wahrheit erzeugen.</para>
+        /// </summary>
+        public class Lastbild
+        {
+            /// <summary>Jahreshöchstlast [kW].</summary>
+            public double MaxJahr;
+            /// <summary>Höchstlast in der Sommerspanne [kW] (Ergänzung von <see cref="MaxWinter"/>).</summary>
+            public double MaxSommer;
+            /// <summary>Höchstlast in der Winterspanne [kW] (Monatsspanne des Tarifs).</summary>
+            public double MaxWinter;
+            /// <summary>Monatsmaxima [kW], Index 0 = Januar.</summary>
+            public double[] MaxMonat = new double[12];
+
+            /// <summary>Nimmt eine Stundenlast auf (kWh/h ≙ kW).</summary>
+            public void Nimm(double kw, int monatIndex, bool winter)
+            {
+                if (kw > MaxJahr) MaxJahr = kw;
+                if (winter) { if (kw > MaxWinter) MaxWinter = kw; }
+                else { if (kw > MaxSommer) MaxSommer = kw; }
+                if (monatIndex >= 0 && monatIndex < 12 && kw > MaxMonat[monatIndex])
+                    MaxMonat[monatIndex] = kw;
+            }
+
+            /// <summary>Summe der zwölf Monatsmaxima [kW] — Bemessung des Monatsmodells.</summary>
+            public double SummeMonatsmaxima
+            {
+                get { double s = 0; for (int i = 0; i < 12; i++) s += MaxMonat[i]; return s; }
+            }
+        }
+
+        /// <summary>ETAPPE E5 — Lastbild des Strombedarfs OHNE Anlage (Referenz).</summary>
+        public Lastbild LastBedarf = new Lastbild();
+
+        /// <summary>ETAPPE E5 — Lastbild des tatsächlichen Netzbezugs (Restbezug).</summary>
+        public Lastbild LastBezug = new Lastbild();
 
         /// <summary>true, wenn die STROMBEDARF-Reihe fehlte — der KWK-Split gilt dann
         /// als „alles Eigenstrom" und wird im Ergebnis als Hinweis ausgewiesen.</summary>
@@ -95,13 +155,29 @@ namespace WindowsFormsApplication1
             {
                 DateTime t = start.AddHours(h);
                 Zone z = m.ZonenWerte[ZonenName(t, tarif)];
+                bool winter = IstWinter(t.Month, tarif.WinterVonMonat, tarif.WinterBisMonat);
+                int monat = t.Month - 1;
 
                 double b = bezug[h] / 1000.0;                     // kWh → MWh
                 z.BezugMWh += b;
                 if (b * 1000.0 > m.MaxBezugKW) m.MaxBezugKW = b * 1000.0;   // kWh/h ≙ kW
+                m.LastBezug.Nimm(bezug[h], monat, winter);                  // E5
 
                 if (pvUeber != null && h < pvUeber.Length)
                     z.EinspeisungPvMWh += pvUeber[h] / 1000.0;
+
+                // ETAPPE E5 — der Bedarf OHNE Anlage: dieselbe Größe, die schon bisher
+                // den KWK-Eigenanteil begrenzt hat, jetzt zusätzlich als Menge und
+                // Lastbild geführt. Ohne Bedarfsreihe bleibt sie 0 (StrombedarfFehlt).
+                double bedarfOhneAnlage = 0;
+                if (bedarf != null && h < bedarf.Length)
+                {
+                    bedarfOhneAnlage = bedarf[h];
+                    if (pvGenutzt != null && h < pvGenutzt.Length) bedarfOhneAnlage -= pvGenutzt[h];
+                    if (bedarfOhneAnlage < 0) bedarfOhneAnlage = 0;
+                    z.BedarfMWh += bedarfOhneAnlage / 1000.0;
+                    m.LastBedarf.Nimm(bedarfOhneAnlage, monat, winter);
+                }
 
                 if (bhkw != null && h < bhkw.Length)
                 {
@@ -109,11 +185,9 @@ namespace WindowsFormsApplication1
                     double eigen = erz;   // ohne Bedarfsreihe: alles Eigenstrom (Hinweis via StrombedarfFehlt)
                     if (bedarf != null && h < bedarf.Length)
                     {
-                        // PV-Eigennutzung derselben Stunde vom Bedarf abziehen —
+                        // PV-Eigennutzung derselben Stunde ist oben bereits abgezogen —
                         // sonst wäre der KWK-Eigenanteil systematisch zu hoch.
-                        double restBedarf = bedarf[h];
-                        if (pvGenutzt != null && h < pvGenutzt.Length) restBedarf -= pvGenutzt[h];
-                        eigen = Math.Min(erz, Math.Max(0, restBedarf));
+                        eigen = Math.Min(erz, bedarfOhneAnlage);
                     }
                     z.KwkEigenMWh += eigen / 1000.0;
                     z.KwkEinspeisungMWh += Math.Max(0, erz - eigen) / 1000.0;
@@ -201,6 +275,22 @@ namespace WindowsFormsApplication1
         public double KwkEinspeisungGesamtMWh
         {
             get { double s = 0; foreach (Zone z in ZonenWerte.Values) s += z.KwkEinspeisungMWh; return s; }
+        }
+
+        /// <summary>PV-Einspeisung gesamt [MWh/a].</summary>
+        public double EinspeisungPvGesamtMWh
+        {
+            get { double s = 0; foreach (Zone z in ZonenWerte.Values) s += z.EinspeisungPvMWh; return s; }
+        }
+
+        /// <summary>
+        /// ETAPPE E5 — Strombedarf OHNE Anlage gesamt [MWh/a]: die Bezugsgröße der
+        /// vermiedenen Kosten. 0 zusammen mit <see cref="StrombedarfFehlt"/> heißt
+        /// „nicht bestimmbar", nicht „null".
+        /// </summary>
+        public double BedarfGesamtMWh
+        {
+            get { double s = 0; foreach (Zone z in ZonenWerte.Values) s += z.BedarfMWh; return s; }
         }
     }
 }

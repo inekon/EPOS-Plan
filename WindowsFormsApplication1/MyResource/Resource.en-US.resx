@@ -4964,6 +4964,18 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_ZEILE_STEUER_HERKUNFT" xml:space="preserve">
     <value>Source of the tax rates</value>
   </data>
+  <data name="WIRT_ZEILE_VERMIEDEN_ARBEIT" xml:space="preserve">
+    <value>Avoided cost — energy charge [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_VERMIEDEN_LEISTUNG" xml:space="preserve">
+    <value>Avoided cost — demand charge [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_VERMIEDEN_GESAMT" xml:space="preserve">
+    <value>Avoided cost total [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_AUFSCHLAG" xml:space="preserve">
+    <value>Surcharges on grid supply [€/a]</value>
+  </data>
   <data name="WIRT_REIHE_KWKG" xml:space="preserve">
     <value>CHP bonus</value>
   </data>

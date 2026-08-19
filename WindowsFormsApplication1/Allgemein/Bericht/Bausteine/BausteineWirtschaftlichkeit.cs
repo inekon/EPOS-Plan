@@ -253,6 +253,20 @@ namespace WindowsFormsApplication1
             if (alle.Any(x => x.StromsteuerEntlastungJahr1 > 0))
                 zeilen.Add(new Zeile(MyResource.Resource.WIRT_ZEILE_STROMST_ENTLASTUNG,
                                      (e, kk) => kk.FW(e.StromsteuerEntlastungJahr1, "N0")));
+            // ETAPPE E5: vermiedene Kosten nach der Differenzmethode. Der Leistungsanteil
+            // ist regelmäßig NEGATIV — die Bedingung prüft deshalb auf „ungleich 0".
+            if (alle.Any(x => x.VermiedenGesamtJahr != 0 || x.VermiedenArbeitJahr != 0))
+            {
+                zeilen.Add(new Zeile(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_ARBEIT,
+                                     (e, kk) => kk.FW(e.VermiedenArbeitJahr, "N0")));
+                zeilen.Add(new Zeile(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_LEISTUNG,
+                                     (e, kk) => kk.FW(e.VermiedenLeistungJahr, "N0")));
+                zeilen.Add(new Zeile(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_GESAMT,
+                                     (e, kk) => kk.FW(e.VermiedenGesamtJahr, "N0")));
+            }
+            if (alle.Any(x => x.AufschlagJahr != 0))
+                zeilen.Add(new Zeile(MyResource.Resource.WIRT_ZEILE_AUFSCHLAG,
+                                     (e, kk) => kk.FW(e.AufschlagJahr, "N0")));
             zeilen.Add(new Zeile("Restwert (Barwert) [€]",        (e, kk) => kk.FW(e.RestwertBarwert, "N0")));
             zeilen.Add(new Zeile("Nettobarwert über T [€]",       (e, kk) => kk.FW(e.Kapitalwert, "N0")));
             zeilen.Add(new Zeile("Kapitalwert vs. Stamm [€]",     (e, kk) => e.IstStamm ? "—" : kk.FW(e.KapitalwertDiff, "N0")));
