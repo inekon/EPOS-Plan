@@ -545,6 +545,21 @@ namespace WindowsFormsApplication1
             if (zeilen.Any(x => x.KwkgVbhElektrisch > 0))
                 Zeile("Vbh elektrisch (KWKG-Basis) [h/a]", zeilen,
                       x => x.KwkgVbhElektrisch > 0 ? W(x.KwkgVbhElektrisch, "N0", kultur) : "—");
+            // ETAPPE E4: die drei Steuergutschriften. Jede Zeile erscheint nur, wenn
+            // irgendein Projekt der Gruppe einen Betrag führt — nie eine „0"-Zeile;
+            // fehlt die Gutschrift, steht der GRUND in der Hinweiszeile unten.
+            if (zeilen.Any(x => x.EnergiesteuerJahr1 > 0))
+                Zeile(MyResource.Resource.WIRT_ZEILE_ENERGIESTEUER, zeilen,
+                      x => W(x.EnergiesteuerJahr1, "N0", kultur));
+            if (zeilen.Any(x => x.StromsteuerBefreiungJahr1 > 0))
+                Zeile(MyResource.Resource.WIRT_ZEILE_STROMST_BEFREIUNG, zeilen,
+                      x => W(x.StromsteuerBefreiungJahr1, "N0", kultur));
+            if (zeilen.Any(x => x.StromsteuerEntlastungJahr1 > 0))
+                Zeile(MyResource.Resource.WIRT_ZEILE_STROMST_ENTLASTUNG, zeilen,
+                      x => W(x.StromsteuerEntlastungJahr1, "N0", kultur));
+            if (zeilen.Any(x => !string.IsNullOrEmpty(x.SteuerHerkunft)))
+                Zeile(MyResource.Resource.WIRT_ZEILE_STEUER_HERKUNFT, zeilen,
+                      x => x.SteuerHerkunft ?? "—");
             Zeile("Restwert (Barwert) [€]", zeilen, x => W(x.RestwertBarwert, "N0", kultur));
             Zeile("Nettobarwert über T [€]", zeilen, x => W(x.Kapitalwert, "N0", kultur));
             Zeile("Kapitalwert vs. Stamm [€]", zeilen, x => x.IstStamm ? "(Referenz)" : W(x.KapitalwertDiff, "N0", kultur));
