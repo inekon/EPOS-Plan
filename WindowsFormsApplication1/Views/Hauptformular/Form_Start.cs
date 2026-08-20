@@ -1998,7 +1998,7 @@ namespace WindowsFormsApplication1
         //
         //  Programmatisch angehängt, damit Form_Start.Designer.cs und die .resx
         //  unberührt bleiben (CLAUDE.md: Designer-Dateien nicht von Hand
-        //  editieren) — dasselbe Vorgehen wie bei Form_Kosten.BauePreisreihenEinstieg.
+        //  editieren) — dasselbe Vorgehen wie bei Form_Kosten.BaueKostenprofilReiter.
         // ============================================================
 
         private UcBerichteKosten _berichteKosten;

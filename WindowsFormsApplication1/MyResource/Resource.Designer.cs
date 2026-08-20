@@ -8007,24 +8007,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenprofil bearbeiten ... ähnelt.
-        /// </summary>
-        public static string PREIS_BTN_KOSTENPROFIL {
-            get {
-                return ResourceManager.GetString("PREIS_BTN_KOSTENPROFIL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Spotmarktpreise importieren ... ähnelt.
-        /// </summary>
-        public static string PREIS_BTN_SPOTIMPORT {
-            get {
-                return ResourceManager.GetString("PREIS_BTN_SPOTIMPORT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Preis [ct/kWh] ähnelt.
         /// </summary>
         public static string PREIS_CHART_ACHSE_PREIS {
@@ -17791,6 +17773,105 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_REG_EINHEITEN_BEFUNDE {
             get {
                 return ResourceManager.GetString("KI_REG_EINHEITEN_BEFUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenprofil ähnelt.
+        /// </summary>
+        public static string KPROF_TAB_TITEL {
+            get {
+                return ResourceManager.GetString("KPROF_TAB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenprofil ähnelt.
+        /// </summary>
+        public static string KPROF_KARTE_PROFIL_TITEL {
+            get {
+                return ResourceManager.GetString("KPROF_KARTE_PROFIL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisniveau je Monat und Tagesgang je Woche [ct/kWh] — Grundlage der Speicher-Wirtschaftlichkeit. ähnelt.
+        /// </summary>
+        public static string KPROF_KARTE_PROFIL_INFO {
+            get {
+                return ResourceManager.GetString("KPROF_KARTE_PROFIL_INFO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spotmarktpreise ähnelt.
+        /// </summary>
+        public static string KPROF_KARTE_SPOT_TITEL {
+            get {
+                return ResourceManager.GetString("KPROF_KARTE_SPOT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stündliche Börsenpreise als Jahresreihe importieren und verwalten. ähnelt.
+        /// </summary>
+        public static string KPROF_KARTE_SPOT_INFO {
+            get {
+                return ResourceManager.GetString("KPROF_KARTE_SPOT_INFO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch kein Kostenprofil angelegt ähnelt.
+        /// </summary>
+        public static string KPROF_STATUS_KEIN_PROFIL {
+            get {
+                return ResourceManager.GetString("KPROF_STATUS_KEIN_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — Monatsniveau {1}–{2} ct/kWh ähnelt.
+        /// </summary>
+        public static string KPROF_STATUS_PROFIL {
+            get {
+                return ResourceManager.GetString("KPROF_STATUS_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Preisreihe importiert ähnelt.
+        /// </summary>
+        public static string KPROF_STATUS_KEINE_REIHEN {
+            get {
+                return ResourceManager.GetString("KPROF_STATUS_KEINE_REIHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Reihen, {1}–{2} ähnelt.
+        /// </summary>
+        public static string KPROF_STATUS_REIHEN {
+            get {
+                return ResourceManager.GetString("KPROF_STATUS_REIHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Reihen, {1} ähnelt.
+        /// </summary>
+        public static string KPROF_STATUS_REIHEN_EINJAHR {
+            get {
+                return ResourceManager.GetString("KPROF_STATUS_REIHEN_EINJAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Reihen, Jahr nicht gepflegt ähnelt.
+        /// </summary>
+        public static string KPROF_STATUS_REIHEN_OHNE_JAHR {
+            get {
+                return ResourceManager.GetString("KPROF_STATUS_REIHEN_OHNE_JAHR", resourceCulture);
             }
         }
         

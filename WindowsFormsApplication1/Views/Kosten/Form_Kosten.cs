@@ -15,8 +15,14 @@ namespace WindowsFormsApplication1
         private readonly Color Accent = Color.FromArgb(59, 130, 246);
         private readonly Color Surface = Color.FromArgb(248, 249, 252);
 
-        // Kostenkategorien wie in Tab_KostenKategorie. Die Reiter des Formulars stehen in
-        // derselben Reihenfolge, deshalb gilt durchgehend KategorieID = tabMain.SelectedIndex + 1.
+        // Kostenkategorien wie in Tab_KostenKategorie. Die DREI BESTANDSREITER stehen in
+        // derselben Reihenfolge, dort gilt KategorieID = tabMain.SelectedIndex + 1.
+        //
+        // ACHTUNG seit K4 (Konzept Kosten/Energieträger, HF4): Es gibt einen VIERTEN
+        // Reiter „Kostenprofil", der KEINE Kostenkategorie führt. Die Index-Arithmetik
+        // darf deshalb nirgends mehr roh stehen — jede Stelle, die eine Kategorie
+        // braucht, geht über AktuelleKategorieOderNull() und behandelt den Fall
+        // „keine Kategorie" ausdrücklich.
         internal const int KATEGORIE_INVESTITION = 1;
         internal const int KATEGORIE_BETRIEB = 2;
         // stillgelegt (Konzept Kosten/Energieträger HF1/L1, 19.08.2026): Kategorie 3 wird nicht mehr geschrieben; Konstante bleibt für Migrationsschritt 19b
@@ -45,6 +51,19 @@ namespace WindowsFormsApplication1
 
         // Variable für den Extender des aktuellen Formulars
         private HelpExtender _helpExtender;
+
+        /// <summary>
+        /// Der vierte Reiter „Kostenprofil" (K4/HF4) — programmatisch erzeugt, damit
+        /// <c>Form_Kosten.Designer.cs</c> unberührt bleibt. <c>null</c>, solange er
+        /// nicht aufgebaut ist.
+        /// </summary>
+        private TabPage tabKostenprofil;
+
+        private EinstiegsKarte _karteKostenprofil;
+        private EinstiegsKarte _karteSpotpreise;
+
+        /// <summary>Anzeige für „nicht ermittelbar" — nie eine 0, die nach Zahl aussieht.</summary>
+        private const string STRICH = "—";
 
         public Form_Kosten(int IDProjekt)
         {
@@ -90,9 +109,14 @@ namespace WindowsFormsApplication1
                 System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
                 null, flpContainer_Energiekosten, new object[] { true });
 
+            // K4/HF4 6.2: Die blaue Kopfleiste über der Trägerliste fällt weg, die Liste
+            // rückt nach oben. Muss VOR dem Befüllen laufen, damit die Liste ihre
+            // endgültige Höhe schon hat, wenn die Bindung sie zeichnet.
+            KopfzeileEnergietraegerEntfernen();
+
             FillCarrierComboBox();
             RenderEnergieTab();
-            BauePreisreihenEinstieg();
+            BaueKostenprofilReiter();
 
             // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
             // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
@@ -101,66 +125,260 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Einstieg in Spotpreisimport und Kostenprofil-Editor (AP4, Fachkonzept 4.1) —
-        /// zwei Knöpfe unter der Energieträgerliste im Reiter „Energiekosten".
+        /// Die Kostenkategorie des GERADE GEWÄHLTEN Reiters — <c>null</c>, wenn er keine
+        /// führt (seit K4 der vierte Reiter „Kostenprofil").
         /// </summary>
         /// <remarks>
         /// <para>
-        /// <b>Warum hier und nicht als eigener Menüpunkt.</b> Beides sind PREISDATEN des
-        /// Strom-Energieträgers und gehören damit dorthin, wo der Strompreis ohnehin
-        /// gepflegt wird: Arbeitspreis, Preishistorie und der Aufschlagsblock aus 4.2
-        /// stehen alle im Reiter „Energiekosten" dieses Formulars. Ein eigener
-        /// Navigationseintrag hätte die Preispflege auf zwei Orte verteilt, und der
-        /// Anwender müsste wissen, dass „Spotpreise" und „Arbeitspreis" dasselbe Feld
-        /// im Rechenweg füttern. Der Kostenbereich hat außerdem bereits seine
-        /// Verwaltungsknöpfe an genau dieser Stelle (Hinzufügen/Löschen des Trägers).
+        /// <b>Warum ein Wächter und keine Index-Arithmetik mehr.</b> Bis K4 galt
+        /// <c>KategorieID = tabMain.SelectedIndex + 1</c> an mehreren Stellen roh. Mit dem
+        /// vierten Reiter liefert dieselbe Rechnung die Kategorie 4 — die es in
+        /// <c>Tab_KostenKategorie</c> nicht gibt. Ein Datensatz mit <c>KategorieID = 4</c>
+        /// wäre in keiner Auswertung mehr sichtbar und in keiner Summe enthalten; er fiele
+        /// erst Jahre später auf. Deshalb gibt es genau EINE Stelle, die den Reiter auf
+        /// eine Kategorie abbildet, und sie darf ausdrücklich „keine" sagen.
         /// </para>
         /// <para>
-        /// Programmatisch angehängt, damit <c>Form_Kosten.Designer.cs</c> unberührt
-        /// bleibt (CLAUDE.md: Designer-Dateien nicht von Hand editieren).
+        /// Geprüft wird über die IDENTITÄT der Reiterseite, nicht über ihren Text: Die
+        /// Beschriftungen sind übersetzbar, die Seite ist es nicht. Der zusätzliche
+        /// Indexbereich fängt einen künftigen fünften Reiter mit ab.
         /// </para>
         /// </remarks>
-        private void BauePreisreihenEinstieg()
+        private int? AktuelleKategorieOderNull()
+        {
+            if (tabMain == null || tabMain.SelectedTab == null) return null;
+
+            if (tabKostenprofil != null && ReferenceEquals(tabMain.SelectedTab, tabKostenprofil))
+                return null;
+
+            int index = tabMain.SelectedIndex;
+            if (index < 0 || index > 2) return null;      // nur die drei Bestandsreiter
+
+            return index + 1;                             // 0→1 Investition, 1→2 Betrieb, 2→3 Energie
+        }
+
+        /// <summary>
+        /// Baut den vierten Reiter „Kostenprofil" (K4/HF4 6.1) mit zwei Einstiegskarten.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum ein eigener Reiter.</b> Kostenprofil und Spotmarktpreise sind
+        /// PREISVERLÄUFE über das Jahr und damit etwas anderes als die Arbeits- und
+        /// Grundpreise je Energieträger, die der Reiter „Energiekosten" pflegt. Bis K4
+        /// hingen sie als graues Panel mit zwei Knöpfen unter der Trägerliste
+        /// (<c>BauePreisreihenEinstieg</c>) — an einer Stelle, an der sie zur
+        /// darüberstehenden Liste zu gehören schienen, obwohl sie projektweit gelten und
+        /// keinem einzelnen Träger zugeordnet sind.
+        /// </para>
+        /// <para>
+        /// Programmatisch erzeugt, damit <c>Form_Kosten.Designer.cs</c> unberührt bleibt
+        /// (Hausregel CLAUDE.md: Designer-Dateien nicht von Hand editieren).
+        /// </para>
+        /// </remarks>
+        private void BaueKostenprofilReiter()
         {
             try
             {
-                Panel leiste = new Panel
+                tabKostenprofil = new TabPage(MyResource.Resource.KPROF_TAB_TITEL)
                 {
-                    Location = new Point(17, 625),
-                    Size = new Size(355, 66),
-                    BackColor = Color.LightGray
+                    Name = "tabKostenprofil",
+                    BackColor = Surface,
+                    AutoScroll = true,
+                    UseVisualStyleBackColor = false
                 };
 
-                Button btnSpot = new Button
+                _karteKostenprofil = new EinstiegsKarte
                 {
-                    Text = MyResource.Resource.PREIS_BTN_SPOTIMPORT,
-                    Location = new Point(6, 4),
-                    Size = new Size(342, 28),
-                    Font = new Font("Segoe UI", 9.75f)
+                    Location = new Point(24, 24),
+                    Size = new Size(440, 168),
+                    Titel = MyResource.Resource.KPROF_KARTE_PROFIL_TITEL,
+                    Beschreibung = MyResource.Resource.KPROF_KARTE_PROFIL_INFO
                 };
-                btnSpot.Click += (s, e) =>
+                _karteKostenprofil.Geklickt += (s, e) =>
+                {
+                    KostenprofilBearbeiten();
+                    AktualisiereKostenprofilKarte();
+                };
+
+                _karteSpotpreise = new EinstiegsKarte
+                {
+                    Location = new Point(488, 24),
+                    Size = new Size(440, 168),
+                    Titel = MyResource.Resource.KPROF_KARTE_SPOT_TITEL,
+                    Beschreibung = MyResource.Resource.KPROF_KARTE_SPOT_INFO
+                };
+                _karteSpotpreise.Geklickt += (s, e) =>
                 {
                     using (Form_SpotpreisImport dlg = new Form_SpotpreisImport(m_ID_Projekt))
                         dlg.ShowDialog(this);
+                    AktualisiereSpotpreisKarte();
                 };
 
-                Button btnProfil = new Button
-                {
-                    Text = MyResource.Resource.PREIS_BTN_KOSTENPROFIL,
-                    Location = new Point(6, 34),
-                    Size = new Size(342, 28),
-                    Font = new Font("Segoe UI", 9.75f)
-                };
-                btnProfil.Click += (s, e) => KostenprofilBearbeiten();
+                tabKostenprofil.Controls.Add(_karteKostenprofil);
+                tabKostenprofil.Controls.Add(_karteSpotpreise);
 
-                leiste.Controls.Add(btnSpot);
-                leiste.Controls.Add(btnProfil);
-                tabEnergie.Controls.Add(leiste);
-                leiste.BringToFront();
+                // Ans Ende — der Reiter steht damit als vierter hinter „Energiekosten".
+                tabMain.TabPages.Add(tabKostenprofil);
+
+                AktualisiereKostenprofilKarte();
+                AktualisiereSpotpreisKarte();
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Der Preisreihen-Einstieg konnte nicht aufgebaut werden: " + ex.Message);
+                Console.WriteLine("Der Reiter Kostenprofil konnte nicht aufgebaut werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Statuszeile der Karte „Kostenprofil": Name und Monatsniveau des ersten
+        /// Projektprofils, sonst der Hinweis, dass noch keines angelegt ist.
+        /// </summary>
+        private void AktualisiereKostenprofilKarte()
+        {
+            if (_karteKostenprofil == null) return;
+
+            try
+            {
+                KostenprofilCtrl ctrl = new KostenprofilCtrl();
+                List<KostenprofilModel> vorhandene = ctrl.ReadAllByProjekt(m_ID_Projekt);
+
+                if (vorhandene.Count == 0)
+                {
+                    _karteKostenprofil.Status = MyResource.Resource.KPROF_STATUS_KEIN_PROFIL;
+                    return;
+                }
+
+                KostenprofilModel m = vorhandene[0];
+                double min, max;
+                if (MonatsniveauSpanne(m.Monatswerte, out min, out max))
+                    _karteKostenprofil.Status = string.Format(MyResource.Resource.KPROF_STATUS_PROFIL,
+                                                              m.Bezeichner,
+                                                              min.ToString("N2", BerichtTexte.Kultur),
+                                                              max.ToString("N2", BerichtTexte.Kultur));
+                else
+                    _karteKostenprofil.Status = m.Bezeichner;
+            }
+            catch
+            {
+                // Lesefehler (z. B. Tab_Kostenprofil noch nicht migriert) bleiben still:
+                // Der Reiter ist ein Einstieg, kein Prüfbericht — eine MessageBox beim
+                // bloßen Öffnen des Kostendialogs wäre hier nur im Weg.
+                _karteKostenprofil.Status = STRICH;
+            }
+        }
+
+        /// <summary>
+        /// Statuszeile der Karte „Spotmarktpreise": Anzahl der verfügbaren Reihen und die
+        /// Spanne ihrer Kalenderjahre.
+        /// </summary>
+        private void AktualisiereSpotpreisKarte()
+        {
+            if (_karteSpotpreise == null) return;
+
+            try
+            {
+                PreisreiheCtrl ctrl = new PreisreiheCtrl();
+                List<PreisreiheModel> reihen = ctrl.ReadVerfuegbare(m_ID_Projekt);
+
+                if (reihen.Count == 0)
+                {
+                    _karteSpotpreise.Status = MyResource.Resource.KPROF_STATUS_KEINE_REIHEN;
+                    return;
+                }
+
+                int minJahr = int.MaxValue, maxJahr = int.MinValue;
+                foreach (PreisreiheModel r in reihen)
+                {
+                    if (r.Jahr <= 0) continue;                 // ungepflegtes Jahr nicht mitspannen
+                    if (r.Jahr < minJahr) minJahr = r.Jahr;
+                    if (r.Jahr > maxJahr) maxJahr = r.Jahr;
+                }
+
+                if (minJahr > maxJahr)
+                    _karteSpotpreise.Status = string.Format(MyResource.Resource.KPROF_STATUS_REIHEN_OHNE_JAHR,
+                                                            reihen.Count);
+                else if (minJahr == maxJahr)
+                    _karteSpotpreise.Status = string.Format(MyResource.Resource.KPROF_STATUS_REIHEN_EINJAHR,
+                                                            reihen.Count, minJahr);
+                else
+                    _karteSpotpreise.Status = string.Format(MyResource.Resource.KPROF_STATUS_REIHEN,
+                                                            reihen.Count, minJahr, maxJahr);
+            }
+            catch
+            {
+                _karteSpotpreise.Status = STRICH;
+            }
+        }
+
+        /// <summary>
+        /// Kleinstes und größtes Monatsniveau [ct/kWh] aus dem Ablageformat
+        /// „m1;…;m12" (InvariantCulture, wie <see cref="Form_Kostenprofil"/> es schreibt).
+        /// <c>false</c>, wenn kein einziger Wert lesbar war.
+        /// </summary>
+        private static bool MonatsniveauSpanne(string monatswerte, out double min, out double max)
+        {
+            min = 0; max = 0;
+            if (string.IsNullOrWhiteSpace(monatswerte)) return false;
+
+            bool gefunden = false;
+            foreach (string teil in monatswerte.Split(';'))
+            {
+                double w;
+                if (!double.TryParse(teil, System.Globalization.NumberStyles.Float,
+                                     System.Globalization.CultureInfo.InvariantCulture, out w))
+                    continue;
+
+                if (!gefunden) { min = w; max = w; gefunden = true; }
+                else { if (w < min) min = w; if (w > max) max = w; }
+            }
+            return gefunden;
+        }
+
+        /// <summary>
+        /// Entfernt die blaue Kopfleiste „Energieträger" über der Trägerliste
+        /// (<c>panel9</c> mit <c>label4</c>) und zieht die Liste um deren Höhe nach oben
+        /// (K4/HF4 6.2).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum programmatisch und nicht im Designer.</b> Die Hausregel in
+        /// <c>CLAUDE.md</c> untersagt das Editieren von Designer-Dateien von Hand; das
+        /// Konzept wiederholt sie für HF4 ausdrücklich. Ein Eingriff im Designer hätte
+        /// vier Stellen der <c>InitializeComponent</c> treffen müssen (Felddeklaration,
+        /// <c>new</c>, <c>SuspendLayout</c>/<c>ResumeLayout</c>, <c>Controls.Add</c>) und
+        /// wäre beim nächsten Öffnen im WinForms-Designer erneut zu verteidigen. Das
+        /// Entfernen zur Laufzeit ist an einer Stelle nachlesbar und rückstandsfrei
+        /// umkehrbar.
+        /// </para>
+        /// <para>
+        /// Die Beschriftung <c>label4</c> ist ein Kind von <c>panel9</c> und wird mit
+        /// entsorgt. <c>panel2</c>/<c>label5</c> und <c>label1</c>, die die
+        /// Bestandsaufnahme vermutet hatte, gehören zu <c>panel3</c> bzw. <c>panel5</c>
+        /// auf ANDEREN Reitern und bleiben unberührt.
+        /// </para>
+        /// </remarks>
+        private void KopfzeileEnergietraegerEntfernen()
+        {
+            try
+            {
+                if (panel9 == null || panel9.Parent == null) return;
+
+                Control eltern = panel9.Parent;                       // panel8
+                int obenNeu = panel9.Top;                             // 7
+                int gewinn = listBox_Energieträger.Top - obenNeu;     // 37 − 7 = 30
+
+                eltern.Controls.Remove(panel9);
+                panel9.Dispose();                                     // nimmt label4 mit
+
+                if (gewinn > 0)
+                {
+                    listBox_Energieträger.Top = obenNeu;
+                    listBox_Energieträger.Height += gewinn;           // Unterkante bleibt, wo sie war
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Kopfzeile der Energieträgerliste konnte nicht entfernt werden: " + ex.Message);
             }
         }
 
@@ -292,9 +510,54 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@kat", kategorieID));
         }
 
+        /// <summary>
+        /// Energiekosten p. a. des Projekts [€/a] aus <see cref="KostenEmissionRechner"/> —
+        /// <c>null</c>, wenn kein Simulationsergebnis vorliegt oder der Rechner keine
+        /// vollständige Summe bilden kann.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Derselbe Weg, den <see cref="BetriebskostenCtrl"/> für die Brennstoffkosten geht:
+        /// <c>KostenEmissionRechner</c> ist die EINE Stelle, die Verbrauchsmengen mit
+        /// Trägerpreisen und Heizwerten verrechnet. Eine zweite Preisverrechnung für das
+        /// Summen-Label wäre eine doppelte Wahrheit.
+        /// </para>
+        /// <para>
+        /// Der Rechner liefert bewusst <c>null</c> statt einer Teilsumme, wenn für einen
+        /// Träger mit Verbrauch der Preis fehlt. Diese Aussage wird hier nicht eingeebnet —
+        /// die Fußzeile zeigt dann „—".
+        /// </para>
+        /// </remarks>
+        private double? LiesEnergiekostenProJahr()
+        {
+            try
+            {
+                ErgebnisModel erg = new ErgebnisCtrl().Load(m_ID_Projekt);
+                if (erg == null) return null;
+
+                VariantenDaten v = new VariantenDaten { IdProjekt = m_ID_Projekt, Ergebnis = erg };
+                KostenEmissionRechner.Berechne(v);
+                return v.Energiekosten;
+            }
+            catch { return null; }
+        }
+
         private void Gesamtkosten(string aktuelleSelektion = "")
         {
-            decimal summeGesamt = 0;
+            // K4-Wächter: Der Reiter „Kostenprofil" führt keine Kostenkategorie — dort gibt
+            // es nichts zu summieren. Ohne diese Klammer stünde im Fuß die Summe des zuvor
+            // gewählten Reiters unter der Überschrift „Kostenprofil".
+            int? kat = AktuelleKategorieOderNull();
+            if (!kat.HasValue)
+            {
+                label_ErzeugerGesamt.Text = "-";
+                label_Gesamt.Text = string.Format(MyResource.Resource.KOSTEN_LBL_PROJEKT_GESAMT,
+                                                  kategorie, STRICH);
+                label_ErzeugerGesamt.Refresh();
+                label_Gesamt.Refresh();
+                return;
+            }
+
             decimal summeSelektion = 0;
 
             // Die Summe der AKTUELLEN Selektion direkt aus den Controls lesen (Live-Werte)
@@ -306,27 +569,48 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            // Die Gesamtsumme der GERADE ANGEZEIGTEN Kategorie aus der Datenbank.
-            DataTable dt = LiesKomponentenSummen(m_ID_Projekt, kategorieID);
-
-            // Durch die Zeilen loopen (ersetzt den Reader)
-            foreach (DataRow row in dt.Rows)
-            {
-                decimal betrag = row["Summe"] != DBNull.Value ? Convert.ToDecimal(row["Summe"]) : 0;
-                summeGesamt += betrag;
-            }
-
             // Anzeige aktualisieren
             if (aktuelleSelektion != "")
                 label_ErzeugerGesamt.Text = $"{kategorie} ({aktuelleSelektion}): {summeSelektion:N2} €";
             else
                 label_ErzeugerGesamt.Text = "-";
 
+            string gesamtText;
+
+            if (kat.Value == KATEGORIE_ENERGIE)
+            {
+                // K4/HF4 6.2: Die Fußzeile des Energie-Reiters kommt aus dem
+                // KostenEmissionRechner (Energiekosten p. a. des Projekts).
+                //
+                // Die frühere Kategorie-3-Summe aus Tab_ProjektWerte ist eine TOTE Quelle:
+                // Seit HF1/L1 (19.08.2026) wird auf Kategorie 3 nichts mehr geschrieben,
+                // die Fußzeile stand deshalb konstant auf „0,00 €". Die Lesestelle
+                // LiesKomponentenSummen(…, KATEGORIE_ENERGIE) ist für diesen Reiter damit
+                // stillgelegt; die Altzeilen-Löschung folgt K6/E3.
+                double? energie = LiesEnergiekostenProJahr();
+                gesamtText = energie.HasValue ? energie.Value.ToString("N2") : STRICH;
+            }
+            else
+            {
+                // Die Gesamtsumme der GERADE ANGEZEIGTEN Kategorie aus der Datenbank.
+                decimal summeGesamt = 0;
+                DataTable dt = LiesKomponentenSummen(m_ID_Projekt, kat.Value);
+
+                // Durch die Zeilen loopen (ersetzt den Reader)
+                foreach (DataRow row in dt.Rows)
+                {
+                    decimal betrag = row["Summe"] != DBNull.Value ? Convert.ToDecimal(row["Summe"]) : 0;
+                    summeGesamt += betrag;
+                }
+
+                gesamtText = summeGesamt.ToString("N2");
+            }
+
             // Die Kategorie steht mit im Text: Investitions-, Betriebs- und Energiekosten
             // haben verschiedene Bezugsgrößen (€ gegenüber €/a) und dürfen nicht als eine
             // Zahl gelesen werden.
             label_Gesamt.Text = string.Format(MyResource.Resource.KOSTEN_LBL_PROJEKT_GESAMT,
-                                              kategorie, summeGesamt.ToString("N2"));
+                                              kategorie, gesamtText);
 
             label_ErzeugerGesamt.Refresh();
             label_Gesamt.Refresh();
@@ -494,6 +778,11 @@ namespace WindowsFormsApplication1
 
         private void btnDeleteGroup_Click(object sender, EventArgs e)
         {
+            // K4-Wächter: Der Löschbefehl unten filtert auf KategorieID. Ohne Kategorie
+            // gibt es nichts zu löschen — und ein DELETE mit unbestimmter Kategorie ist
+            // genau die Art Befehl, die man nicht ins Blaue absetzt.
+            if (!AktuelleKategorieOderNull().HasValue) return;
+
             Button btn = (Button)sender;
             string gruppenName = btn.Tag.ToString();
 
@@ -774,7 +1063,11 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                int kategorieIDNeu = tabMain.SelectedIndex + 1;
+                // K4-Wächter: ohne Kategorie wird nichts angelegt (Reiter „Kostenprofil").
+                int? kat = AktuelleKategorieOderNull();
+                if (!kat.HasValue) return;
+                int kategorieIDNeu = kat.Value;
+
                 int komponentenID = GetKomponentenID(komponente);
                 if (komponentenID <= 0) return;
 
@@ -860,6 +1153,12 @@ namespace WindowsFormsApplication1
 
         private void AddKostenItem(string komponenete)
         {
+            // K4-Wächter: Ohne Kostenkategorie gibt es nichts zu erfassen. Die Prüfung
+            // steht VOR dem Dialog — den Anwender erst tippen zu lassen und den Datensatz
+            // danach zu verwerfen wäre die schlechtere Hälfte beider Möglichkeiten.
+            int? kat = AktuelleKategorieOderNull();
+            if (!kat.HasValue) return;
+
             // Eingabemaske öffnen (bleibt UI-Logik)
             Form_KostenfaktorItem frm = new Form_KostenfaktorItem();
 
@@ -900,7 +1199,7 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("@ein", einheit),
                     new OleDbParameter("@grp", gewaehlteGruppe),
                     new OleDbParameter("@kid", GetKomponentenID(komponenete)),
-                    new OleDbParameter("@kat", tabMain.SelectedIndex + 1)
+                    new OleDbParameter("@kat", kat.Value)
                 );
 
                 // 5. UI aktualisieren
@@ -1044,6 +1343,20 @@ namespace WindowsFormsApplication1
         {
             flpContainer_Energiekosten.Visible = false;
             kategorie = tabMain.SelectedTab.Text;
+
+            // K4: Der vierte Reiter „Kostenprofil" führt keine Kostenkategorie. Er wird
+            // ZUERST abgefangen — ohne diesen Zweig behielte kategorieID den Wert des
+            // zuvor gewählten Reiters, und jede spätere Schreibaktion hätte auf dessen
+            // Kategorie gezielt. Die Karten lesen ihren Stand beim Betreten neu, damit
+            // ein Import aus einer anderen Maske hier sichtbar wird.
+            if (tabKostenprofil != null && ReferenceEquals(tabMain.SelectedTab, tabKostenprofil))
+            {
+                kategorieID = 0;
+                AktualisiereKostenprofilKarte();
+                AktualisiereSpotpreisKarte();
+                Gesamtkosten();                       // Wächter setzt die Fußzeile auf „—"
+                return;
+            }
 
             // Reihenfolge beachten: kategorieID muss VOR Gesamtkosten() stehen — die
             // Gesamtsumme wird seit Befund D1 nach Kategorie gefiltert und hätte sonst

@@ -3022,12 +3022,6 @@ Bitte zuerst die Simulation mit Heizkessel durchführen.</value>
   <data name="PREIS_REST_HINWEIS_MODUS" xml:space="preserve">
     <value>Im Modus "aufgeschluesselt" ist der wirksame Aufschlag die Summe der aktiven Komponenten.</value>
   </data>
-  <data name="PREIS_BTN_SPOTIMPORT" xml:space="preserve">
-    <value>Spotmarktpreise importieren ...</value>
-  </data>
-  <data name="PREIS_BTN_KOSTENPROFIL" xml:space="preserve">
-    <value>Kostenprofil bearbeiten ...</value>
-  </data>
   <data name="PREIS_IMPORT_TITEL" xml:space="preserve">
     <value>Spotmarktpreise importieren</value>
   </data>
@@ -6184,5 +6178,38 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   </data>
   <data name="KI_REG_EINHEITEN_BEFUNDE" xml:space="preserve">
     <value>Einheiten-Konsistenz {1}: {0} Befund(e).</value>
+  </data>
+  <data name="KPROF_TAB_TITEL" xml:space="preserve">
+    <value>Kostenprofil</value>
+  </data>
+  <data name="KPROF_KARTE_PROFIL_TITEL" xml:space="preserve">
+    <value>Kostenprofil</value>
+  </data>
+  <data name="KPROF_KARTE_PROFIL_INFO" xml:space="preserve">
+    <value>Preisniveau je Monat und Tagesgang je Woche [ct/kWh] — Grundlage der Speicher-Wirtschaftlichkeit.</value>
+  </data>
+  <data name="KPROF_KARTE_SPOT_TITEL" xml:space="preserve">
+    <value>Spotmarktpreise</value>
+  </data>
+  <data name="KPROF_KARTE_SPOT_INFO" xml:space="preserve">
+    <value>Stündliche Börsenpreise als Jahresreihe importieren und verwalten.</value>
+  </data>
+  <data name="KPROF_STATUS_KEIN_PROFIL" xml:space="preserve">
+    <value>Noch kein Kostenprofil angelegt</value>
+  </data>
+  <data name="KPROF_STATUS_PROFIL" xml:space="preserve">
+    <value>{0} — Monatsniveau {1}–{2} ct/kWh</value>
+  </data>
+  <data name="KPROF_STATUS_KEINE_REIHEN" xml:space="preserve">
+    <value>Noch keine Preisreihe importiert</value>
+  </data>
+  <data name="KPROF_STATUS_REIHEN" xml:space="preserve">
+    <value>{0} Reihen, {1}–{2}</value>
+  </data>
+  <data name="KPROF_STATUS_REIHEN_EINJAHR" xml:space="preserve">
+    <value>{0} Reihen, {1}</value>
+  </data>
+  <data name="KPROF_STATUS_REIHEN_OHNE_JAHR" xml:space="preserve">
+    <value>{0} Reihen, Jahr nicht gepflegt</value>
   </data>
 </root>
