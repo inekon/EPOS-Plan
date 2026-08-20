@@ -45,6 +45,12 @@ namespace WindowsFormsApplication1
         private CheckBox chkNachhaltigkeit;
         // ETAPPE E6 — Einstieg in die Angaben je BHKW-Modul.
         private Button btnModule;
+        // ETAPPE K6 — KWKG-Tatbestand § 6 Abs. 3, Anlagenart § 8, Pauschale § 9
+        // und der Sprungknopf in die Pflege des CO₂-Preispfads.
+        private ComboBox cbKwkgTatbestand, cbKwkgAnlagenart;
+        private NumericUpDown numKwkgKostenanteil;
+        private CheckBox chkKwkgPauschal;
+        private Button btnGesetzeskatalog;
         private Button btnOk, btnAbbrechen;
 
         /// <summary>true, wenn gespeichert wurde (Aufrufer rechnet dann neu).</summary>
@@ -95,8 +101,48 @@ namespace WindowsFormsApplication1
                 numKwkg = Zeile("Bonus Eigenstrom [ct/kWh] (0 = aus):", ref y, 0m, 30m, 2, (decimal)_parameter.KwkgBonus, 0.1m);
                 numKwkgEinsp = Zeile("Bonus Einspeisung [ct/kWh]:", ref y, 0m, 30m, 2, (decimal)_parameter.KwkgBonusEinspeisung, 0.1m);
                 numVbhDeckel = Zeile("Vbh-Deckel-Override [h/a]:", ref y, 0m, 8760m, 0, (decimal)_parameter.KwkgVbhJahresdeckel, 100m);
-                numVbhKontingent = Zeile("Vbh-Kontingent gesamt [h]:", ref y, 0m, 200000m, 0, (decimal)_parameter.KwkgVbhKontingent, 1000m);
+                // ETAPPE K6: Das Kontingent ist jetzt ein OVERRIDE — 0 heisst „automatisch
+                // aus der Anlagenart nach § 8 KWKG". Die Beschriftung sagt das.
+                numVbhKontingent = Zeile(MyResource.Resource.WIRT_DLG_KWKG_KONTINGENT, ref y,
+                                         0m, 200000m, 0, (decimal)_parameter.KwkgVbhKontingent, 1000m);
                 numAbschlagNeg = Zeile("Abschlag Negativstunden [%]:", ref y, 0m, 50m, 1, (decimal)_parameter.KwkgAbschlagNegativ, 0.5m);
+
+                // ---- ETAPPE K6 (Konzept § 8.1, HF6) ----
+                // Der Eigenstrom-Zuschlag besteht nach § 7 Abs. 2 nur in den drei
+                // Tatbestaenden des § 6 Abs. 3. Der ERSTE Eintrag ist bewusst
+                // „(nicht angegeben)" mit dem Steuerwert LEER: Er ist der Zustand jeder
+                // Bestandszeile, und er rechnet wie bisher weiter. Erst „keiner" nimmt
+                // den Zuschlag weg — die Auswahl macht den Unterschied sichtbar.
+                cbKwkgTatbestand = AuswahlZeile(MyResource.Resource.WIRT_DLG_KWKG_TATBESTAND, ref y,
+                    _parameter.KwkgTatbestand,
+                    new[]
+                    {
+                        new Steuerwahl("", MyResource.Resource.WIRT_DLG_KWKG_OFFEN),
+                        new Steuerwahl(DbWerte.KWKG_EIGENFALL_KEINER,
+                                       MyResource.Resource.WIRT_DLG_KWKG_TATBESTAND_KEINER),
+                        new Steuerwahl(DbWerte.KWKG_EIGENFALL_NR1,
+                                       MyResource.Resource.WIRT_DLG_KWKG_TATBESTAND_NR1),
+                        new Steuerwahl(DbWerte.KWKG_EIGENFALL_NR2,
+                                       MyResource.Resource.WIRT_DLG_KWKG_TATBESTAND_NR2),
+                        new Steuerwahl(DbWerte.KWKG_EIGENFALL_NR3,
+                                       MyResource.Resource.WIRT_DLG_KWKG_TATBESTAND_NR3)
+                    });
+                cbKwkgAnlagenart = AuswahlZeile(MyResource.Resource.WIRT_DLG_KWKG_ANLAGENART, ref y,
+                    _parameter.KwkgAnlagenart,
+                    new[]
+                    {
+                        new Steuerwahl("", MyResource.Resource.WIRT_DLG_KWKG_OFFEN),
+                        new Steuerwahl(DbWerte.KWKG_ANLAGENART_NEU,
+                                       MyResource.Resource.WIRT_DLG_KWKG_ART_NEU),
+                        new Steuerwahl(DbWerte.KWKG_ANLAGENART_MODERNISIERT,
+                                       MyResource.Resource.WIRT_DLG_KWKG_ART_MOD),
+                        new Steuerwahl(DbWerte.KWKG_ANLAGENART_NACHGERUESTET,
+                                       MyResource.Resource.WIRT_DLG_KWKG_ART_NACH)
+                    });
+                numKwkgKostenanteil = Zeile(MyResource.Resource.WIRT_DLG_KWKG_KOSTENANTEIL, ref y,
+                                            0m, 100m, 1, (decimal)_parameter.KwkgKostenanteil, 5m);
+                chkKwkgPauschal = SchalterZeile(MyResource.Resource.WIRT_DLG_KWKG_PAUSCHAL,
+                                                ref y, _parameter.KwkgPauschalmodus);
                 // ETAPPE E6: Beide Daten sind seit E6 ausdrücklich eine VORGABE für alle
                 // Anlagen ohne eigenen Wert — § 6 KWKG stellt auf die einzelne Anlage ab,
                 // und dasselbe Datum entscheidet zugleich über Neuanlage/Bestandsanlage
@@ -139,7 +185,11 @@ namespace WindowsFormsApplication1
                     {
                         new Steuerwahl(DbWerte.ENERGIESTEUER_WAHL_KEINE, "keine"),
                         new Steuerwahl(DbWerte.ENERGIESTEUER_WAHL_53,    "§ 53 EnergieStG (Formular 1131)"),
-                        new Steuerwahl(DbWerte.ENERGIESTEUER_WAHL_53A,   "§ 53a Abs. 5 EnergieStG (1135)")
+                        new Steuerwahl(DbWerte.ENERGIESTEUER_WAHL_53A,   "§ 53a Abs. 5 EnergieStG (1135)"),
+                        // ETAPPE K6: § 54 mit Sockelbetrag 250 €/a. Er setzt zusätzlich
+                        // die Unternehmensart voraus und schließt § 53a Abs. 5 aus.
+                        new Steuerwahl(DbWerte.ENERGIESTEUER_WAHL_54,
+                                       MyResource.Resource.WIRT_DLG_ENERGIESTEUER_54)
                     });
                 cbAufteilung = AuswahlZeile("Brennstoff auf Strom/Wärme:", ref y, _parameter.AufteilungMethode,
                     new[]
@@ -153,7 +203,38 @@ namespace WindowsFormsApplication1
             if (_erzeuger.Brennstoff)
             {
                 Gruppe("Brennstoff — BEHG und Emissionsbilanz (BHKW/Kessel)", ref y);
-                numCO2 = Zeile("CO₂-Preis BEHG [€/t] (0 = aus):", ref y, 0m, 500m, 0, (decimal)_parameter.CO2Preis, 5m);
+
+                // ETAPPE K6 (Konzept § 8.3, Entscheidung E5): Der CO₂-Preis kommt
+                // jahresgenau aus dem Gesetzeskatalog; dieses Feld ist nur noch der
+                // OVERRIDE „konstanter Preis". 0 heißt seither nicht mehr „aus",
+                // sondern „Pfad" — die Beschriftung und die Zeile darunter sagen das.
+                numCO2 = Zeile(MyResource.Resource.WIRT_DLG_CO2, ref y,
+                               0m, 500m, 0, (decimal)_parameter.CO2Preis, 5m);
+
+                var lblCo2 = new Label
+                {
+                    Location = new Point(28, y + 3),
+                    Size = new Size(402, 20),
+                    ForeColor = Color.DimGray,
+                    Text = _parameter.CO2Preis > 0
+                        ? string.Format(MyResource.Resource.WIRT_DLG_CO2_KONSTANT_ZEILE,
+                                        _parameter.CO2Preis.ToString("N0"))
+                        : string.Format(MyResource.Resource.WIRT_DLG_CO2_PFAD_ZEILE,
+                                        Co2PrognoseAb().ToString(
+                                            System.Globalization.CultureInfo.InvariantCulture))
+                };
+                this.Controls.Add(lblCo2);
+                y += 24;
+
+                btnGesetzeskatalog = new Button
+                {
+                    Location = new Point(28, y),
+                    Size = new Size(402, 28),
+                    Text = MyResource.Resource.WIRT_DLG_CO2_KATALOG
+                };
+                btnGesetzeskatalog.Click += new EventHandler(btnGesetzeskatalog_Click);
+                this.Controls.Add(btnGesetzeskatalog);
+                y += 36;
 
                 var lblPark = new Label { Location = new Point(28, y + 3), Size = new Size(237, 20),
                                           Text = "Referenz-Kraftwerkspark:" };
@@ -255,7 +336,9 @@ namespace WindowsFormsApplication1
                            " Steuern: Ohne ausdrückliche Angabe entsteht KEINE Gutschrift — " +
                            "§ 53 und § 53a schließen einander aus, die Sätze und Grenzwerte " +
                            "kommen aus dem Katalog „Gesetzliche Parameter“. Der Jahresnutzungsgrad " +
-                           "wird nur für § 53a gebraucht (Schwelle 70 %).";
+                           "wird nur für § 53a gebraucht (Schwelle 70 %)." +
+                           " " + MyResource.Resource.WIRT_DLG_KWKG_HINWEIS +
+                           " " + MyResource.Resource.WIRT_DLG_STEUER_FORMULARE;
             if (_erzeuger.Brennstoff)
                 hinweis += " " + MyResource.Resource.BILANZ_DLG_HINWEIS;
             var lblHinweis = new Label
@@ -473,6 +556,15 @@ namespace WindowsFormsApplication1
                                                         DbWerte.ENERGIESTEUER_WAHL_KEINE);
                 _parameter.AufteilungMethode = Gewaehlt(cbAufteilung,
                                                         DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF);
+
+                // ETAPPE K6 — Tatbestand und Anlagenart mit LEERER Vorgabe: „nicht
+                // angegeben" ist hier eine gültige Aussage und darf nicht durch einen
+                // Ersatzwert überschrieben werden (anders als bei den E4-Feldern, wo
+                // leer ein Fehler wäre). Ein Kostenanteil von 0 heißt „nicht gepflegt".
+                _parameter.KwkgTatbestand = Gewaehlt(cbKwkgTatbestand, "");
+                _parameter.KwkgAnlagenart = Gewaehlt(cbKwkgAnlagenart, "");
+                _parameter.KwkgKostenanteil = (double)numKwkgKostenanteil.Value;
+                _parameter.KwkgPauschalmodus = chkKwkgPauschal.Checked;
             }
 
             if (_erzeuger.Brennstoff)
@@ -531,6 +623,39 @@ namespace WindowsFormsApplication1
         {
             var w = cb != null ? cb.SelectedItem as Steuerwahl : null;
             return w != null ? w.Wert : vorgabe;
+        }
+
+        /// <summary>
+        /// ETAPPE K6 — öffnet die Pflege der gesetzlichen Parameter mit dem CO₂-Preispfad.
+        /// Die Werte dieses Dialogs bleiben unberührt: Der Katalog ist eine eigene
+        /// Tabelle ohne Projektbezug (dasselbe Verhältnis wie beim Modul-Dialog aus E6).
+        /// </summary>
+        private void btnGesetzeskatalog_Click(object sender, EventArgs e)
+        {
+            using (var f = new Form_Gesetzesparameter())
+            {
+                f.GewaehlteKlasse = DbWerte.GESETZ_KLASSE_CO2_PREIS;
+                f.ShowDialog(this);
+            }
+        }
+
+        /// <summary>
+        /// Das erste Kalenderjahr des CO₂-Pfads mit dem Status PROGNOSE — die Zahl, die
+        /// die Zeile „Prognose ab …" nennt. Rückfall 2028, das Jahr der Entscheidung E5,
+        /// falls der Katalog (noch) keine Prognosezeile führt.
+        /// </summary>
+        private static int Co2PrognoseAb()
+        {
+            try
+            {
+                var katalog = new GesetzKatalog();
+                foreach (GesetzParameter p in katalog.AlleDerKlasse(DbWerte.GESETZ_KLASSE_CO2_PREIS))
+                    if (string.Equals(p.Schluessel, DbWerte.GESETZ_CO2_PREIS_NEHS, StringComparison.Ordinal) &&
+                        string.Equals(p.Status, DbWerte.GESETZ_STATUS_PROGNOSE, StringComparison.Ordinal))
+                        return p.JahrVon;      // AlleDerKlasse liefert nach Jahr sortiert
+            }
+            catch { }
+            return 2028;
         }
     }
 }

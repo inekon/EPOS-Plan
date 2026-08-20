@@ -20,7 +20,10 @@
 --           Ganglinien, Pufferspeicher u. a.).
 --
 -- Kopie-ID-Schema: (ID_Projekt+OFFSET)*1000 + alte Katalog-ID.
--- Zuordnungs-IDs (Z_*-Tabellen, Energieanlagen, Brennstoff_Projekt): +10000.
+-- Zuordnungs-IDs (Z_*-Tabellen, Energieanlagen): +10000.
+--   (K6, 20.08.2026: "Brennstoff_Projekt" hier gestrichen - die Tabelle
+--    Tab_Brennstoff_Projekt ist mit Migrationsschritt 29 entfallen; ihre beiden
+--    Skriptabschnitte sind schon seit K1 heraus, :239 und :490.)
 -- KONFLIKTREGELN (eindeutige Indizes im Ziel, geprueft 26.07.2026):
 --   * Projektname: Konfliktaufloesung ueber den Dialog (Platzhalter oben).
 --   * Stromverbraucher-Kopien + Typen: Suffix ' (P<Projekt>)' noetig, weil

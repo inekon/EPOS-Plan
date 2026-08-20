@@ -52,6 +52,9 @@ namespace WindowsFormsApplication1
             register.Aufnehmen(KiAktionenWirtschaft.ParameterLesen());
             register.Aufnehmen(KiAktionenWirtschaft.KostenlagePruefen());
 
+            // ---- Energietraeger-Einheiten (Konzept Kosten/Energietraeger § 4.4)
+            register.Aufnehmen(KiAktionenEnergie.EnergietraegerPruefen());
+
             // ---- Trockenlaeufe der Uebernahme
             register.Aufnehmen(KiAktionenUebernahme.UebernahmeVorschau());
             register.Aufnehmen(KiAktionenUebernahme.MerkmalVorschau());

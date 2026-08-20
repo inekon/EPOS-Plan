@@ -33,9 +33,17 @@ namespace WindowsFormsApplication1
         public double KwkgBonus = 0.0;                // [ct/kWh] KWK-Eigenstrom (0 = aus)
 
         /// <summary>Vbh-Deckel-OVERRIDE [h/a]; 0 = degressive Staffel des KWKG 2025
-        /// aus dem Katalog Tab_KWKG_Staffel (Phase 9, Konzept Kap. 8.3/8.5.1).</summary>
+        /// aus dem Gesetzeskatalog, Schlüssel <c>KWKG_VBH_JAHRESDECKEL</c> (Phase 9,
+        /// Konzept Kap. 8.3/8.5.1). <b>Nachgezogen in K6:</b> Bis hierher stand hier
+        /// „aus dem Katalog Tab_KWKG_Staffel" — die Quelle ist seit Etappe E1
+        /// <c>Tab_Gesetzesparameter</c>, und die Alttabelle ist mit Migrationsschritt 29
+        /// entfallen.</summary>
         public double KwkgVbhJahresdeckel = 0;
-        public double KwkgVbhKontingent = 30000;      // kumuliertes Vbh-Kontingent
+
+        /// <summary>Kumuliertes Vbh-Kontingent [h]. <b>Seit K6 ein OVERRIDE:</b> 0 heißt
+        /// „automatisch aus <see cref="KwkgAnlagenart"/> nach § 8 KWKG"
+        /// (<c>KwkgKontingentRechner</c>); ein Wert größer 0 gewinnt unverändert.</summary>
+        public double KwkgVbhKontingent = 30000;
 
         // ---- Stufe W3 (Phase 8) ----
         public double KwkgBonusEinspeisung = 0.0;     // [ct/kWh] KWK-Einspeisung (0 = wie Eigenstrom aus)
@@ -172,6 +180,46 @@ namespace WindowsFormsApplication1
         /// jedem Altprojekt den Nachweis entzogen (L13, Migrationsschritt 23).
         /// </summary>
         public bool NachhaltigkeitsnachweisBiomasse = true;
+
+        // ---- ETAPPE K6 — KWKG-Tatbestand, Anlagenart, Pauschale (Schritt 28) ----
+        //
+        // Vier Angaben aus Konzept § 8.1 (HF6). Drei davon bleiben ohne ausdrückliche
+        // Erfassung LEER bzw. 0 — genau das hält jede Bestandsrechnung unverändert.
+
+        /// <summary>
+        /// Tatbestand des § 6 Abs. 3 KWKG, unter dem SELBST GENUTZTER Strom
+        /// zuschlagsfähig ist; Steuerwerte <c>DbWerte.KWKG_EIGENFALL_*</c>.
+        ///
+        /// <para><b>Leer = „nicht angegeben", und daran hängt die
+        /// Ergebnisneutralität.</b> Nach § 7 Abs. 2 gibt es den Eigenstrom-Zuschlag
+        /// nicht generell, sondern nur in den drei Fällen des § 6 Abs. 3. Ein
+        /// Bestandsprojekt hat diese Angabe nie gemacht — würde die leere Angabe wie
+        /// <c>KEINER</c> wirken, verlöre jedes Altprojekt mit gepflegtem
+        /// Eigenstrom-Satz seinen Zuschlag. Leer rechnet deshalb wie bisher und meldet
+        /// den ungeprüften Tatbestand; erst die ausdrückliche Wahl <c>KEINER</c> setzt
+        /// den Eigenstrom-Satz auf 0.</para>
+        /// </summary>
+        public string KwkgTatbestand = "";
+
+        /// <summary>
+        /// Anlagenart nach § 8 KWKG; Steuerwerte <c>DbWerte.KWKG_ANLAGENART_*</c>.
+        /// Leer = nicht angegeben; dann bleibt es beim Kontingent-Override
+        /// <see cref="KwkgVbhKontingent"/>.
+        /// </summary>
+        public string KwkgAnlagenart = "";
+
+        /// <summary>Anteil an den Neuherstellungskosten [%] (§ 8 Abs. 2/3 KWKG);
+        /// 0 = nicht gepflegt. Er wählt die Kontingentstufe bei modernisierten und
+        /// nachgerüsteten Anlagen.</summary>
+        public double KwkgKostenanteil = 0.0;
+
+        /// <summary>
+        /// Pauschale nach § 9 KWKG (Anlagen bis 2 kW<sub>el</sub>): einmalige
+        /// Vorauszahlung von 4 ct/kWh für 60.000 Vbh statt der laufenden Abrechnung.
+        /// Vorgabe <c>false</c> — Access belegt die YESNO-Spalte in jeder Bestandszeile
+        /// mit <c>False</c>, und das ist zugleich der bestandswahrende Wert.
+        /// </summary>
+        public bool KwkgPauschalmodus;
 
         public DateTime? GeaendertAm;
 
@@ -473,7 +521,26 @@ namespace WindowsFormsApplication1
         public DateTime Zeitstempel = DateTime.Now;
 
         // Zahlungsgerüst (Jahr 1 bzw. t=0)
-        public double Investition;             // I₀ [€] (Kategorie 1, Szenariowert)
+
+        /// <summary>
+        /// Investitionssumme [€] (Kategorie 1, Szenariowert) — <b>vor</b> Abzug eines
+        /// Zuschusses. Das ist die Zahl, die der Anwender erfasst hat, und die
+        /// Bezugsgröße jeder prozentualen Betriebskostenbemessung.
+        /// <para>Die tatsächliche Anfangsauszahlung ist
+        /// <c>Investition − <see cref="Zuschuss"/></c>; sie steckt im
+        /// <see cref="Kapitalwert"/> und wird nicht getrennt abgelegt, damit es zu ihr
+        /// keine zweite Wahrheit gibt.</para>
+        /// </summary>
+        public double Investition;
+
+        /// <summary>
+        /// ETAPPE K5 (Konzept § 7.4, L7): angesetzter Investitionszuschuss [€], positiv.
+        /// 0 = kein Zuschuss erfasst. Er mindert I₀ einmalig — keine
+        /// Ersatzbeschaffung, kein Restwert. Ausgewiesen wird er als eigene, negativ
+        /// dargestellte Zeile („Zuschuss: −X €").
+        /// </summary>
+        public double Zuschuss;
+
         public double? BetriebskostenJahr;     // [€/a] (Kategorie 2, Szenariowert)
         public double? EnergiekostenJahr;      // [€/a] (KostenEmissionRechner; null = Preise fehlen)
         public double EinspeiseerloesJahr;     // [€/a] (PV-Überschuss × Einspeisevergütung)

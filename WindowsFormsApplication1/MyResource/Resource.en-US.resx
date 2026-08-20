@@ -3007,12 +3007,6 @@ Please run the simulation with the boiler first.</value>
   <data name="PREIS_REST_HINWEIS_MODUS" xml:space="preserve">
     <value>In "itemised" mode the effective surcharge is the sum of the active components.</value>
   </data>
-  <data name="PREIS_BTN_SPOTIMPORT" xml:space="preserve">
-    <value>Import spot market prices ...</value>
-  </data>
-  <data name="PREIS_BTN_KOSTENPROFIL" xml:space="preserve">
-    <value>Edit cost profile ...</value>
-  </data>
   <data name="PREIS_IMPORT_TITEL" xml:space="preserve">
     <value>Import spot market prices</value>
   </data>
@@ -6127,5 +6121,221 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   </data>
   <data name="KI_REG_NAME_KEINE" xml:space="preserve">
     <value>There is currently nothing to choose from for {0}.</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_TITEL" xml:space="preserve">
+    <value>Conversion rules</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_VON" xml:space="preserve">
+    <value>from</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_NACH" xml:space="preserve">
+    <value>to</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_FAKTOR" xml:space="preserve">
+    <value>Factor</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_AKTIV" xml:space="preserve">
+    <value>active</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_NEU" xml:space="preserve">
+    <value>Add rule</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_EFFEKTIV" xml:space="preserve">
+    <value>effective: 1 {0} = {1} kWh (NCV) / {2} kWh (GCV)</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_EFFEKTIV_KWH" xml:space="preserve">
+    <value>effective: billed directly in kWh</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_RIEGEL" xml:space="preserve">
+    <value>This rule cannot be deactivated — it is what takes the energy carrier to kWh. {0}</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_FAKTOR_UNGUELTIG" xml:space="preserve">
+    <value>Please enter a number greater than 0 for the factor (decimal separator comma or point).</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPEICHERN_ABGELEHNT" xml:space="preserve">
+    <value>The energy carrier was NOT saved: {0}</value>
+  </data>
+  <data name="KI_REG_ZWECK_ENERGIETRAEGER_PRUEFEN" xml:space="preserve">
+    <value>Checks the energy carriers for unit consistency: does every active carrier reach kWh — directly, via net or gross calorific value, or via an active conversion rule? Returns the list of findings; changes nothing.</value>
+  </data>
+  <data name="KI_REG_ERL_PROJEKT_FUER_EINHEITEN" xml:space="preserve">
+    <value>Name of the project. If omitted, the catalogue is checked (all active carriers with catalogue values); if given, only the carriers used in that project, with its project-level overrides.</value>
+  </data>
+  <data name="KI_REG_EINHEITEN_KATALOG" xml:space="preserve">
+    <value>catalogue</value>
+  </data>
+  <data name="KI_REG_EINHEITEN_OHNE_BEFUND" xml:space="preserve">
+    <value>Unit consistency {0}: no findings — every active energy carrier reaches kWh.</value>
+  </data>
+  <data name="KI_REG_EINHEITEN_BEFUNDE" xml:space="preserve">
+    <value>Unit consistency {1}: {0} finding(s).</value>
+  </data>
+  <data name="KPROF_TAB_TITEL" xml:space="preserve">
+    <value>Cost profile</value>
+  </data>
+  <data name="KPROF_KARTE_PROFIL_TITEL" xml:space="preserve">
+    <value>Cost profile</value>
+  </data>
+  <data name="KPROF_KARTE_PROFIL_INFO" xml:space="preserve">
+    <value>Monthly price level and weekly daily pattern [ct/kWh] — the basis of storage economics.</value>
+  </data>
+  <data name="KPROF_KARTE_SPOT_TITEL" xml:space="preserve">
+    <value>Spot market prices</value>
+  </data>
+  <data name="KPROF_KARTE_SPOT_INFO" xml:space="preserve">
+    <value>Import and manage hourly exchange prices as an annual series.</value>
+  </data>
+  <data name="KPROF_STATUS_KEIN_PROFIL" xml:space="preserve">
+    <value>No cost profile created yet</value>
+  </data>
+  <data name="KPROF_STATUS_PROFIL" xml:space="preserve">
+    <value>{0} — monthly level {1}–{2} ct/kWh</value>
+  </data>
+  <data name="KPROF_STATUS_KEINE_REIHEN" xml:space="preserve">
+    <value>No price series imported yet</value>
+  </data>
+  <data name="KPROF_STATUS_REIHEN" xml:space="preserve">
+    <value>{0} series, {1}–{2}</value>
+  </data>
+  <data name="KPROF_STATUS_REIHEN_EINJAHR" xml:space="preserve">
+    <value>{0} series, {1}</value>
+  </data>
+  <data name="KPROF_STATUS_REIHEN_OHNE_JAHR" xml:space="preserve">
+    <value>{0} series, year not maintained</value>
+  </data>
+  <data name="WIRT_ZEILE_ZUSCHUSS" xml:space="preserve">
+    <value>Grant [€]</value>
+  </data>
+  <data name="WIRT_ZUSCHUSS_UEBERHANG" xml:space="preserve">
+    <value>The recorded grant ({0} €) exceeds the total investment ({1} €). At most the investment total was applied; the initial outlay is therefore 0 €.</value>
+  </data>
+  <data name="BK_KOSTEN_ZUSCHUSS" xml:space="preserve">
+    <value>incl. grant: −{0} €</value>
+  </data>
+  <data name="KOSTEN_CHK_ZUSCHUSS" xml:space="preserve">
+    <value>This item is a grant (BAFA, KfW, construction subsidy …)</value>
+  </data>
+  <data name="KOSTEN_CHK_ZUSCHUSS_HINT" xml:space="preserve">
+    <value>Enter the amount as a positive figure. It reduces the total investment once — with no replacement purchase and no residual value. Percentage-based operating costs still use the full investment total.</value>
+  </data>
+  <data name="KOSTEN_GRUPPE_KOPF_AUF" xml:space="preserve">
+    <value>▾  {0}   ·   {1} items   ·   {2} €</value>
+  </data>
+  <data name="KOSTEN_GRUPPE_KOPF_ZU" xml:space="preserve">
+    <value>▸  {0}   ·   {1} items   ·   {2} €</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_OHNE_ART" xml:space="preserve">
+    <value>CHP Act: no plant category recorded — the full-load-hour quota under section 8 cannot be derived from it; the entered value applies.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_NEU" xml:space="preserve">
+    <value>new plant → {0} full-load hours ({1}, as of {2}); no cost threshold applies here.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_ANTEIL_FEHLT" xml:space="preserve">
+    <value>{0}: without a share of the new-build cost the tier cannot be selected (minimum threshold {1} %); no derived quota.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_ZU_KLEIN" xml:space="preserve">
+    <value>{0} % of the new-build cost is below the minimum threshold of {1} % ({2}) — no full-load-hour quota and therefore no bonus.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_STUFE" xml:space="preserve">
+    <value>{0} % of the new-build cost, tier from {1} % → {2} full-load hours ({3}, as of {4}); the minimum age of the replaced plant is not checked.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_ABGELEITET" xml:space="preserve">
+    <value>CHP Act: full-load-hour quota derived from the plant category — {0} hours. {1}</value>
+  </data>
+  <data name="WIRT_KWKG_TATBESTAND_OFFEN" xml:space="preserve">
+    <value>CHP Act: no self-consumption case under section 6(3) recorded — the bonus on self-used electricity is unchecked and is calculated with the entered rate as before.</value>
+  </data>
+  <data name="WIRT_KWKG_TATBESTAND_KEINER" xml:space="preserve">
+    <value>CHP Act: the case under section 6(3) is explicitly set to "none" — section 7(2) grants no bonus on self-used electricity; only the fed-in share is paid.</value>
+  </data>
+  <data name="WIRT_KWKG_PAUSCHALE" xml:space="preserve">
+    <value>CHP Act: lump sum under section 9 selected — one-off advance payment of {0} EUR in year 0 ({1} ct/kWh × {2} full-load hours × {3} kW); the running bonus is waived in return.</value>
+  </data>
+  <data name="WIRT_KWKG_PAUSCHALE_ZU_GROSS" xml:space="preserve">
+    <value>CHP Act: the lump sum under section 9 applies only up to {1} kW electrical output; the plant has {0} kW — the switch has no effect, the running bonus is calculated.</value>
+  </data>
+  <data name="WIRT_KWKG_PAUSCHALE_SATZ_FEHLT" xml:space="preserve">
+    <value>CHP Act: lump sum under section 9 selected, but the catalogue values are missing ({0}) — no advance payment shown.</value>
+  </data>
+  <data name="WIRT_CO2_PFAD" xml:space="preserve">
+    <value>CO₂ price: year-by-year path from the statutory catalogue — {1}: {0} EUR/t, {2}: {3} EUR/t. From {4} the value is a forecast and freely editable.</value>
+  </data>
+  <data name="WIRT_CO2_PFAD_LUECKE" xml:space="preserve">
+    <value>CO₂ price: the statutory catalogue has no value for {0} — no national emissions charge is applied for that year (maintain the CO₂ price path class).</value>
+  </data>
+  <data name="WIRT_CO2_KONSTANT" xml:space="preserve">
+    <value>CO₂ price: constant project value {0} EUR/t (override); the statutory catalogue path is not used.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_54_UNTERNEHMENSART" xml:space="preserve">
+    <value>Section 54 of the Energy Duty Act requires a manufacturing business or a farming or forestry operation — no relief.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_54_SOCKEL" xml:space="preserve">
+    <value>Section 54 of the Energy Duty Act: relief of {0} EUR is below the {1} EUR/a floor — it stays at 0 EUR.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_54_BEMESSUNG" xml:space="preserve">
+    <value>Section 54 of the Energy Duty Act relieves HEATING fuels; EPOS-Plan applies it here to the CHP fuel only — boiler and peak-load fuel are not included (known limitation of stage K6).</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_TATBESTAND" xml:space="preserve">
+    <value>Self-consumption case (section 6(3)):</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_OFFEN" xml:space="preserve">
+    <value>(not specified)</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_TATBESTAND_KEINER" xml:space="preserve">
+    <value>none — no self-consumption bonus</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_TATBESTAND_NR1" xml:space="preserve">
+    <value>No. 1 — plant up to 100 kW</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_TATBESTAND_NR2" xml:space="preserve">
+    <value>No. 2 — customer installation / closed grid</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_TATBESTAND_NR3" xml:space="preserve">
+    <value>No. 3 — electricity-cost-intensive</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_ANLAGENART" xml:space="preserve">
+    <value>Plant category (section 8):</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_ART_NEU" xml:space="preserve">
+    <value>new</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_ART_MOD" xml:space="preserve">
+    <value>modernised</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_ART_NACH" xml:space="preserve">
+    <value>retrofitted</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_KOSTENANTEIL" xml:space="preserve">
+    <value>Share of new-build cost [%]:</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_PAUSCHAL" xml:space="preserve">
+    <value>Lump sum under section 9 (only up to 2 kWel, one-off)</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_KONTINGENT" xml:space="preserve">
+    <value>Total full-load-hour quota [h] (0 = automatic):</value>
+  </data>
+  <data name="WIRT_DLG_ENERGIESTEUER_54" xml:space="preserve">
+    <value>Section 54 Energy Duty Act (form 1450)</value>
+  </data>
+  <data name="WIRT_DLG_STEUER_FORMULARE" xml:space="preserve">
+    <value>Applications and deadlines: section 9b Electricity Duty Act → form 1453 · section 53 Energy Duty Act → 1131 · section 53a(5) → 1135 · section 54 Energy Duty Act → 1450. The deadline is 31 December of the calendar year following the period of use. A 250 EUR/a floor applies to sections 9b and 54; sections 53 and 53a have none.</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_HINWEIS" xml:space="preserve">
+    <value>CHP Act (K6): under section 7(2) the self-consumption bonus exists only in the three cases of section 6(3) — if the field stays on "(not specified)", the application calculates as before and says so. A quota of 0 means "automatic from the plant category under section 8". The lump sum under section 9 replaces the running bonus with a one-off advance payment in year 0.</value>
+  </data>
+  <data name="WIRT_DLG_CO2" xml:space="preserve">
+    <value>CO₂ price nEHS [EUR/t] (0 = path):</value>
+  </data>
+  <data name="WIRT_DLG_CO2_PFAD_ZEILE" xml:space="preserve">
+    <value>CO₂ price: path from the statutory catalogue (forecast from {0})</value>
+  </data>
+  <data name="WIRT_DLG_CO2_KONSTANT_ZEILE" xml:space="preserve">
+    <value>CO₂ price: constant {0} EUR/t — the path is not used</value>
+  </data>
+  <data name="WIRT_DLG_CO2_KATALOG" xml:space="preserve">
+    <value>⚙ Maintain statutory catalogue (CO₂ price path)…</value>
   </data>
 </root>

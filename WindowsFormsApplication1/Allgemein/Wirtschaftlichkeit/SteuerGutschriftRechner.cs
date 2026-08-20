@@ -36,6 +36,10 @@ namespace WindowsFormsApplication1
         /// (<c>ENERGIEST_53A5_*</c>); leer = kein Satz zugeordnet.</summary>
         public string SchluesselSatz53a = "";
 
+        /// <summary>ETAPPE K6 — Katalogschlüssel des Teilsatzes nach § 54 EnergieStG
+        /// (<c>ENERGIEST_54_*</c>); leer = kein Satz zugeordnet.</summary>
+        public string SchluesselSatz54 = "";
+
         /// <summary>Katalogschlüssel des direkten CO₂-Faktors
         /// (<c>EF_BILANZ_EBEV_*</c>, g/kWh Brennstoff, heizwertbezogen); leer = kein
         /// Faktor zugeordnet.</summary>
@@ -208,7 +212,12 @@ namespace WindowsFormsApplication1
                                         StringComparison.Ordinal);
             bool nach53a = string.Equals(e.EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_53A,
                                          StringComparison.Ordinal);
-            if (!nach53 && !nach53a)
+            // ETAPPE K6 — § 54 EnergieStG als dritte Wahl. Er hat, anders als § 53 und
+            // § 53a, zwei zusätzliche Bedingungen: die Unternehmensart und einen
+            // Sockelbetrag von 250 €/a.
+            bool nach54 = string.Equals(e.EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_54,
+                                        StringComparison.Ordinal);
+            if (!nach53 && !nach53a && !nach54)
             {
                 // Der Regelfall für Bestandsprojekte: nichts gewählt, nichts gerechnet.
                 // Die Meldung erscheint nur, wenn überhaupt ein BHKW Brennstoff
@@ -222,12 +231,27 @@ namespace WindowsFormsApplication1
             // (§ 53a Abs. 1 EnergieStG). Die Schwelle steht im Katalog.
             if (nach53a && !NutzungsgradErfuellt(e, satz, kultur, r)) return;
 
+            // § 54 setzt ein Unternehmen des produzierenden Gewerbes bzw. einen Betrieb
+            // der Land- und Forstwirtschaft voraus — dieselbe Bedingung wie § 9b.
+            if (nach54)
+            {
+                if (!ProduzierendesGewerbe(e))
+                {
+                    r.Begruendungen.Add(MyResource.Resource.STEUER_ENERGIEST_54_UNTERNEHMENSART);
+                    return;
+                }
+                // Die Bemessungsgrundlage ist eine bewusste Lücke und wird ausgewiesen,
+                // nicht verschwiegen (Begründung an DbWerte.ENERGIESTEUER_WAHL_54).
+                r.Begruendungen.Add(MyResource.Resource.STEUER_ENERGIEST_54_BEMESSUNG);
+            }
+
             double summe = 0;
             foreach (SteuerAnlage a in e.Anlagen)
             {
                 if (a == null || a.BrennstoffMWh <= 0) continue;
 
-                string schluessel = nach53 ? a.SchluesselSatzVoll : a.SchluesselSatz53a;
+                string schluessel = nach53 ? a.SchluesselSatzVoll
+                                           : (nach54 ? a.SchluesselSatz54 : a.SchluesselSatz53a);
                 if (string.IsNullOrEmpty(schluessel))
                 {
                     r.Begruendungen.Add(string.Format(kultur,
@@ -265,7 +289,38 @@ namespace WindowsFormsApplication1
                 summe += p.Wert.Value * menge.Value;
                 r.Herkunft.Add(Herkunft(p, kultur));
             }
+
+            // ETAPPE K6 — Sockelbetrag. Nur § 54 hat einen (250 €/Kalenderjahr);
+            // § 53 und § 53a haben keinen (Grundlagen, Abschnitt 4). Er wird VOR dem
+            // Ausweis abgezogen — dieselbe Mechanik wie bei § 9b StromStG.
+            if (nach54 && summe > 0)
+            {
+                GesetzParameter sockelZeile = satz(DbWerte.GESETZ_ENERGIEST_54_SOCKELBETRAG);
+                double sockel = sockelZeile != null && sockelZeile.Wert.HasValue
+                              ? sockelZeile.Wert.Value : 0;
+                double netto = summe - sockel;
+                if (netto <= 0)
+                {
+                    r.Begruendungen.Add(string.Format(kultur,
+                        MyResource.Resource.STEUER_ENERGIEST_54_SOCKEL,
+                        summe.ToString("N2", kultur), sockel.ToString("N0", kultur)));
+                    return;                       // 0 € mit Hinweis, nie eine stille Null
+                }
+                summe = netto;
+                if (sockelZeile != null) r.Herkunft.Add(Herkunft(sockelZeile, kultur));
+            }
+
             r.EnergiesteuerEur = summe;
+        }
+
+        /// <summary>Produzierendes Gewerbe oder Land- und Forstwirtschaft — die
+        /// gemeinsame Voraussetzung von § 9b StromStG und § 54 EnergieStG (K6).</summary>
+        private static bool ProduzierendesGewerbe(SteuerEingabe e)
+        {
+            return string.Equals(e.Unternehmensart, DbWerte.UNTERNEHMENSART_PROD_GEWERBE,
+                                 StringComparison.Ordinal) ||
+                   string.Equals(e.Unternehmensart, DbWerte.UNTERNEHMENSART_LAND_FORST,
+                                 StringComparison.Ordinal);
         }
 
         /// <summary>Summe des BHKW-Brennstoffs [MWh/a] über alle Anlagen.</summary>
@@ -555,9 +610,7 @@ namespace WindowsFormsApplication1
         private static void StromsteuerEntlastung(SteuerEingabe e, Func<string, GesetzParameter> satz,
                                                   CultureInfo kultur, SteuerErgebnis r)
         {
-            bool berechtigt =
-                string.Equals(e.Unternehmensart, DbWerte.UNTERNEHMENSART_PROD_GEWERBE, StringComparison.Ordinal) ||
-                string.Equals(e.Unternehmensart, DbWerte.UNTERNEHMENSART_LAND_FORST, StringComparison.Ordinal);
+            bool berechtigt = ProduzierendesGewerbe(e);
 
             if (!berechtigt)
             {

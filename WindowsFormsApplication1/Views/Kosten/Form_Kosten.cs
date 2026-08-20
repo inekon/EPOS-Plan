@@ -15,8 +15,14 @@ namespace WindowsFormsApplication1
         private readonly Color Accent = Color.FromArgb(59, 130, 246);
         private readonly Color Surface = Color.FromArgb(248, 249, 252);
 
-        // Kostenkategorien wie in Tab_KostenKategorie. Die Reiter des Formulars stehen in
-        // derselben Reihenfolge, deshalb gilt durchgehend KategorieID = tabMain.SelectedIndex + 1.
+        // Kostenkategorien wie in Tab_KostenKategorie. Die DREI BESTANDSREITER stehen in
+        // derselben Reihenfolge, dort gilt KategorieID = tabMain.SelectedIndex + 1.
+        //
+        // ACHTUNG seit K4 (Konzept Kosten/Energieträger, HF4): Es gibt einen VIERTEN
+        // Reiter „Kostenprofil", der KEINE Kostenkategorie führt. Die Index-Arithmetik
+        // darf deshalb nirgends mehr roh stehen — jede Stelle, die eine Kategorie
+        // braucht, geht über AktuelleKategorieOderNull() und behandelt den Fall
+        // „keine Kategorie" ausdrücklich.
         internal const int KATEGORIE_INVESTITION = 1;
         internal const int KATEGORIE_BETRIEB = 2;
         // stillgelegt (Konzept Kosten/Energieträger HF1/L1, 19.08.2026): Kategorie 3 wird nicht mehr geschrieben; Konstante bleibt für Migrationsschritt 19b
@@ -37,6 +43,40 @@ namespace WindowsFormsApplication1
         private readonly Dictionary<string, string> _betriebsHinweis =
             new Dictionary<string, string>(StringComparer.Ordinal);
 
+        // ================================================================= K5b (HF5 § 7.5)
+
+        /// <summary>
+        /// Ein Gruppenblock der Positionsliste: die Kopfzeile, ihre Spaltenüberschrift und
+        /// der Ein-/Ausklappzustand. Die ZEILEN stehen bewusst NICHT hier.
+        /// </summary>
+        /// <remarks>
+        /// <b>Warum die Zeilen nicht mitgeführt werden.</b> Sie werden an drei Stellen aus
+        /// <c>flp</c> entfernt und verworfen (<c>Zeile_DeleteRequested</c>,
+        /// <c>btnDeleteGroup_Click</c>, der Neuaufbau selbst). Eine zweite Liste daneben
+        /// zeigte danach auf entsorgte Steuerelemente. Gesucht wird deshalb jedes Mal über
+        /// <c>flp.Controls</c> und das <c>Tag</c> — dieselbe Zuordnung, die der
+        /// Löschbefehl schon benutzt.
+        /// </remarks>
+        private sealed class Gruppenblock
+        {
+            public string Name;
+            public Panel Kopf;
+            public Label Titel;
+            public Panel Spaltenkopf;
+            public bool Eingeklappt;
+
+            /// <summary>„Planwert übernehmen…" bzw. „Betriebskosten VDI 2067…", falls der
+            /// Kopf einen führt. Er wird nachgerückt, wenn die Beschriftung wächst.</summary>
+            public Button Aktion;
+        }
+
+        /// <summary>
+        /// Die Gruppenblöcke der GERADE angezeigten Positionsliste, Schlüssel ist der
+        /// Gruppenname. Wird bei jedem Neuaufbau geleert.
+        /// </summary>
+        private readonly Dictionary<string, Gruppenblock> _gruppen =
+            new Dictionary<string, Gruppenblock>(StringComparer.Ordinal);
+
         /// <summary>
         /// Sperrt den Aufbau des Energieträger-Blocks, solange
         /// <see cref="FillCarrierComboBox"/> die Liste an die Daten bindet.
@@ -45,6 +85,19 @@ namespace WindowsFormsApplication1
 
         // Variable für den Extender des aktuellen Formulars
         private HelpExtender _helpExtender;
+
+        /// <summary>
+        /// Der vierte Reiter „Kostenprofil" (K4/HF4) — programmatisch erzeugt, damit
+        /// <c>Form_Kosten.Designer.cs</c> unberührt bleibt. <c>null</c>, solange er
+        /// nicht aufgebaut ist.
+        /// </summary>
+        private TabPage tabKostenprofil;
+
+        private EinstiegsKarte _karteKostenprofil;
+        private EinstiegsKarte _karteSpotpreise;
+
+        /// <summary>Anzeige für „nicht ermittelbar" — nie eine 0, die nach Zahl aussieht.</summary>
+        private const string STRICH = "—";
 
         public Form_Kosten(int IDProjekt)
         {
@@ -90,9 +143,15 @@ namespace WindowsFormsApplication1
                 System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
                 null, flpContainer_Energiekosten, new object[] { true });
 
+            // K4/HF4 6.2 (+ Nachtrag): Die blauen Kopfleisten über den linken Listen
+            // fallen auf ALLEN DREI Bestandsreitern weg, die Listen rücken nach oben.
+            // Muss VOR dem Befüllen laufen, damit die Listen ihre endgültige Höhe schon
+            // haben, wenn die Bindung sie zeichnet.
+            KopfzeilenEntfernen();
+
             FillCarrierComboBox();
             RenderEnergieTab();
-            BauePreisreihenEinstieg();
+            BaueKostenprofilReiter();
 
             // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
             // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
@@ -101,66 +160,294 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Einstieg in Spotpreisimport und Kostenprofil-Editor (AP4, Fachkonzept 4.1) —
-        /// zwei Knöpfe unter der Energieträgerliste im Reiter „Energiekosten".
+        /// Die Kostenkategorie des GERADE GEWÄHLTEN Reiters — <c>null</c>, wenn er keine
+        /// führt (seit K4 der vierte Reiter „Kostenprofil").
         /// </summary>
         /// <remarks>
         /// <para>
-        /// <b>Warum hier und nicht als eigener Menüpunkt.</b> Beides sind PREISDATEN des
-        /// Strom-Energieträgers und gehören damit dorthin, wo der Strompreis ohnehin
-        /// gepflegt wird: Arbeitspreis, Preishistorie und der Aufschlagsblock aus 4.2
-        /// stehen alle im Reiter „Energiekosten" dieses Formulars. Ein eigener
-        /// Navigationseintrag hätte die Preispflege auf zwei Orte verteilt, und der
-        /// Anwender müsste wissen, dass „Spotpreise" und „Arbeitspreis" dasselbe Feld
-        /// im Rechenweg füttern. Der Kostenbereich hat außerdem bereits seine
-        /// Verwaltungsknöpfe an genau dieser Stelle (Hinzufügen/Löschen des Trägers).
+        /// <b>Warum ein Wächter und keine Index-Arithmetik mehr.</b> Bis K4 galt
+        /// <c>KategorieID = tabMain.SelectedIndex + 1</c> an mehreren Stellen roh. Mit dem
+        /// vierten Reiter liefert dieselbe Rechnung die Kategorie 4 — die es in
+        /// <c>Tab_KostenKategorie</c> nicht gibt. Ein Datensatz mit <c>KategorieID = 4</c>
+        /// wäre in keiner Auswertung mehr sichtbar und in keiner Summe enthalten; er fiele
+        /// erst Jahre später auf. Deshalb gibt es genau EINE Stelle, die den Reiter auf
+        /// eine Kategorie abbildet, und sie darf ausdrücklich „keine" sagen.
         /// </para>
         /// <para>
-        /// Programmatisch angehängt, damit <c>Form_Kosten.Designer.cs</c> unberührt
-        /// bleibt (CLAUDE.md: Designer-Dateien nicht von Hand editieren).
+        /// Geprüft wird über die IDENTITÄT der Reiterseite, nicht über ihren Text: Die
+        /// Beschriftungen sind übersetzbar, die Seite ist es nicht. Der zusätzliche
+        /// Indexbereich fängt einen künftigen fünften Reiter mit ab.
         /// </para>
         /// </remarks>
-        private void BauePreisreihenEinstieg()
+        private int? AktuelleKategorieOderNull()
+        {
+            if (tabMain == null || tabMain.SelectedTab == null) return null;
+
+            if (tabKostenprofil != null && ReferenceEquals(tabMain.SelectedTab, tabKostenprofil))
+                return null;
+
+            int index = tabMain.SelectedIndex;
+            if (index < 0 || index > 2) return null;      // nur die drei Bestandsreiter
+
+            return index + 1;                             // 0→1 Investition, 1→2 Betrieb, 2→3 Energie
+        }
+
+        /// <summary>
+        /// Baut den vierten Reiter „Kostenprofil" (K4/HF4 6.1) mit zwei Einstiegskarten.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum ein eigener Reiter.</b> Kostenprofil und Spotmarktpreise sind
+        /// PREISVERLÄUFE über das Jahr und damit etwas anderes als die Arbeits- und
+        /// Grundpreise je Energieträger, die der Reiter „Energiekosten" pflegt. Bis K4
+        /// hingen sie als graues Panel mit zwei Knöpfen unter der Trägerliste
+        /// (<c>BauePreisreihenEinstieg</c>) — an einer Stelle, an der sie zur
+        /// darüberstehenden Liste zu gehören schienen, obwohl sie projektweit gelten und
+        /// keinem einzelnen Träger zugeordnet sind.
+        /// </para>
+        /// <para>
+        /// Programmatisch erzeugt, damit <c>Form_Kosten.Designer.cs</c> unberührt bleibt
+        /// (Hausregel CLAUDE.md: Designer-Dateien nicht von Hand editieren).
+        /// </para>
+        /// </remarks>
+        private void BaueKostenprofilReiter()
         {
             try
             {
-                Panel leiste = new Panel
+                tabKostenprofil = new TabPage(MyResource.Resource.KPROF_TAB_TITEL)
                 {
-                    Location = new Point(17, 625),
-                    Size = new Size(355, 66),
-                    BackColor = Color.LightGray
+                    Name = "tabKostenprofil",
+                    BackColor = Surface,
+                    AutoScroll = true,
+                    UseVisualStyleBackColor = false
                 };
 
-                Button btnSpot = new Button
+                _karteKostenprofil = new EinstiegsKarte
                 {
-                    Text = MyResource.Resource.PREIS_BTN_SPOTIMPORT,
-                    Location = new Point(6, 4),
-                    Size = new Size(342, 28),
-                    Font = new Font("Segoe UI", 9.75f)
+                    Location = new Point(24, 24),
+                    Size = new Size(440, 168),
+                    Titel = MyResource.Resource.KPROF_KARTE_PROFIL_TITEL,
+                    Beschreibung = MyResource.Resource.KPROF_KARTE_PROFIL_INFO
                 };
-                btnSpot.Click += (s, e) =>
+                _karteKostenprofil.Geklickt += (s, e) =>
+                {
+                    KostenprofilBearbeiten();
+                    AktualisiereKostenprofilKarte();
+                };
+
+                _karteSpotpreise = new EinstiegsKarte
+                {
+                    Location = new Point(488, 24),
+                    Size = new Size(440, 168),
+                    Titel = MyResource.Resource.KPROF_KARTE_SPOT_TITEL,
+                    Beschreibung = MyResource.Resource.KPROF_KARTE_SPOT_INFO
+                };
+                _karteSpotpreise.Geklickt += (s, e) =>
                 {
                     using (Form_SpotpreisImport dlg = new Form_SpotpreisImport(m_ID_Projekt))
                         dlg.ShowDialog(this);
+                    AktualisiereSpotpreisKarte();
                 };
 
-                Button btnProfil = new Button
-                {
-                    Text = MyResource.Resource.PREIS_BTN_KOSTENPROFIL,
-                    Location = new Point(6, 34),
-                    Size = new Size(342, 28),
-                    Font = new Font("Segoe UI", 9.75f)
-                };
-                btnProfil.Click += (s, e) => KostenprofilBearbeiten();
+                tabKostenprofil.Controls.Add(_karteKostenprofil);
+                tabKostenprofil.Controls.Add(_karteSpotpreise);
 
-                leiste.Controls.Add(btnSpot);
-                leiste.Controls.Add(btnProfil);
-                tabEnergie.Controls.Add(leiste);
-                leiste.BringToFront();
+                // Ans Ende — der Reiter steht damit als vierter hinter „Energiekosten".
+                tabMain.TabPages.Add(tabKostenprofil);
+
+                AktualisiereKostenprofilKarte();
+                AktualisiereSpotpreisKarte();
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Der Preisreihen-Einstieg konnte nicht aufgebaut werden: " + ex.Message);
+                Console.WriteLine("Der Reiter Kostenprofil konnte nicht aufgebaut werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Statuszeile der Karte „Kostenprofil": Name und Monatsniveau des ersten
+        /// Projektprofils, sonst der Hinweis, dass noch keines angelegt ist.
+        /// </summary>
+        private void AktualisiereKostenprofilKarte()
+        {
+            if (_karteKostenprofil == null) return;
+
+            try
+            {
+                KostenprofilCtrl ctrl = new KostenprofilCtrl();
+                List<KostenprofilModel> vorhandene = ctrl.ReadAllByProjekt(m_ID_Projekt);
+
+                if (vorhandene.Count == 0)
+                {
+                    _karteKostenprofil.Status = MyResource.Resource.KPROF_STATUS_KEIN_PROFIL;
+                    return;
+                }
+
+                KostenprofilModel m = vorhandene[0];
+                double min, max;
+                if (MonatsniveauSpanne(m.Monatswerte, out min, out max))
+                    _karteKostenprofil.Status = string.Format(MyResource.Resource.KPROF_STATUS_PROFIL,
+                                                              m.Bezeichner,
+                                                              min.ToString("N2", BerichtTexte.Kultur),
+                                                              max.ToString("N2", BerichtTexte.Kultur));
+                else
+                    _karteKostenprofil.Status = m.Bezeichner;
+            }
+            catch
+            {
+                // Lesefehler (z. B. Tab_Kostenprofil noch nicht migriert) bleiben still:
+                // Der Reiter ist ein Einstieg, kein Prüfbericht — eine MessageBox beim
+                // bloßen Öffnen des Kostendialogs wäre hier nur im Weg.
+                _karteKostenprofil.Status = STRICH;
+            }
+        }
+
+        /// <summary>
+        /// Statuszeile der Karte „Spotmarktpreise": Anzahl der verfügbaren Reihen und die
+        /// Spanne ihrer Kalenderjahre.
+        /// </summary>
+        private void AktualisiereSpotpreisKarte()
+        {
+            if (_karteSpotpreise == null) return;
+
+            try
+            {
+                PreisreiheCtrl ctrl = new PreisreiheCtrl();
+                List<PreisreiheModel> reihen = ctrl.ReadVerfuegbare(m_ID_Projekt);
+
+                if (reihen.Count == 0)
+                {
+                    _karteSpotpreise.Status = MyResource.Resource.KPROF_STATUS_KEINE_REIHEN;
+                    return;
+                }
+
+                int minJahr = int.MaxValue, maxJahr = int.MinValue;
+                foreach (PreisreiheModel r in reihen)
+                {
+                    if (r.Jahr <= 0) continue;                 // ungepflegtes Jahr nicht mitspannen
+                    if (r.Jahr < minJahr) minJahr = r.Jahr;
+                    if (r.Jahr > maxJahr) maxJahr = r.Jahr;
+                }
+
+                if (minJahr > maxJahr)
+                    _karteSpotpreise.Status = string.Format(MyResource.Resource.KPROF_STATUS_REIHEN_OHNE_JAHR,
+                                                            reihen.Count);
+                else if (minJahr == maxJahr)
+                    _karteSpotpreise.Status = string.Format(MyResource.Resource.KPROF_STATUS_REIHEN_EINJAHR,
+                                                            reihen.Count, minJahr);
+                else
+                    _karteSpotpreise.Status = string.Format(MyResource.Resource.KPROF_STATUS_REIHEN,
+                                                            reihen.Count, minJahr, maxJahr);
+            }
+            catch
+            {
+                _karteSpotpreise.Status = STRICH;
+            }
+        }
+
+        /// <summary>
+        /// Kleinstes und größtes Monatsniveau [ct/kWh] aus dem Ablageformat
+        /// „m1;…;m12" (InvariantCulture, wie <see cref="Form_Kostenprofil"/> es schreibt).
+        /// <c>false</c>, wenn kein einziger Wert lesbar war.
+        /// </summary>
+        private static bool MonatsniveauSpanne(string monatswerte, out double min, out double max)
+        {
+            min = 0; max = 0;
+            if (string.IsNullOrWhiteSpace(monatswerte)) return false;
+
+            bool gefunden = false;
+            foreach (string teil in monatswerte.Split(';'))
+            {
+                double w;
+                if (!double.TryParse(teil, System.Globalization.NumberStyles.Float,
+                                     System.Globalization.CultureInfo.InvariantCulture, out w))
+                    continue;
+
+                if (!gefunden) { min = w; max = w; gefunden = true; }
+                else { if (w < min) min = w; if (w > max) max = w; }
+            }
+            return gefunden;
+        }
+
+        /// <summary>
+        /// Entfernt die blauen Kopfleisten „Energieträger" über den linken Listen ALLER
+        /// DREI Bestandsreiter und zieht die jeweilige Liste um die Leistenhöhe nach oben
+        /// (K4/HF4 6.2 und K4-Nachtrag 20.08.2026).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Was weg ist.</b> Drei baugleiche Leisten, je 343 × 25 px bei (6, 7) in
+        /// <c>#1A3261</c>, mit je einer Beschriftung „Energieträger":
+        /// </para>
+        /// <list type="table">
+        ///   <item><term>Investitionskosten</term>
+        ///         <description><c>panel3</c> → <c>panel2</c> → <c>label5</c>, Liste <c>listBox_Erzeuger</c></description></item>
+        ///   <item><term>Betriebskosten</term>
+        ///         <description><c>panel4</c> → <c>panel5</c> → <c>label1</c>, Liste <c>listBox_Betriebskosten</c></description></item>
+        ///   <item><term>Energiekosten</term>
+        ///         <description><c>panel8</c> → <c>panel9</c> → <c>label4</c>, Liste <c>listBox_Energieträger</c></description></item>
+        /// </list>
+        /// <para>
+        /// <b>Warum alle drei.</b> K4 nahm zunächst nur die Leiste im Energie-Reiter. Die
+        /// Sichtabnahme zeigte die beiden anderen — und auf „Investitionskosten" ist die
+        /// Beschriftung obendrein sachlich falsch: Dort stehen GEWERKE (Heizkessel,
+        /// Pufferspeicher, BHKW), keine Energieträger. Eine falsche Überschrift ist
+        /// schlechter als keine, und da die Listen in ihrem Zusammenhang selbsterklärend
+        /// sind, fällt die Zeile ersatzlos weg statt umbenannt zu werden.
+        /// </para>
+        /// <para>
+        /// <b>Warum programmatisch und nicht im Designer.</b> Die Hausregel in
+        /// <c>CLAUDE.md</c> untersagt das Editieren von Designer-Dateien von Hand; das
+        /// Konzept wiederholt sie für HF4 ausdrücklich. Ein Eingriff im Designer hätte je
+        /// Leiste vier Stellen der <c>InitializeComponent</c> treffen müssen
+        /// (Felddeklaration, <c>new</c>, <c>SuspendLayout</c>/<c>ResumeLayout</c>,
+        /// <c>Controls.Add</c>) und wäre beim nächsten Öffnen im WinForms-Designer erneut
+        /// zu verteidigen. Das Entfernen zur Laufzeit steht an EINER Stelle, ist dort
+        /// begründet und rückstandsfrei umkehrbar.
+        /// </para>
+        /// <para>
+        /// <b>Was bleibt.</b> <c>label3</c>, <c>label2</c> und <c>label6</c>
+        /// („Energieträger auswählen", 18 pt, bei (209, 246) in <c>panel1</c>/<c>panel6</c>/
+        /// <c>panel7</c>) gehören NICHT zu den Kopfleisten: Sie stehen als Platzhalter
+        /// mitten im rechten Detailbereich und sagen dort, was zu tun ist, solange nichts
+        /// gewählt ist. Sie bleiben unberührt.
+        /// </para>
+        /// </remarks>
+        private void KopfzeilenEntfernen()
+        {
+            KopfleisteEntfernen(panel2, listBox_Erzeuger, "Investitionskosten");
+            KopfleisteEntfernen(panel5, listBox_Betriebskosten, "Betriebskosten");
+            KopfleisteEntfernen(panel9, listBox_Energieträger, "Energiekosten");
+        }
+
+        /// <summary>
+        /// Nimmt EINE Kopfleiste aus ihrem Elternpanel und zieht die darunterliegende
+        /// Liste um den gewonnenen Platz nach oben — die Unterkante der Liste bleibt, wo
+        /// sie war, damit der Abstand zu allem darunter erhalten bleibt.
+        /// </summary>
+        private void KopfleisteEntfernen(Panel leiste, Control liste, string reiter)
+        {
+            try
+            {
+                if (leiste == null || leiste.Parent == null || liste == null) return;
+
+                Control eltern = leiste.Parent;
+                int obenNeu = leiste.Top;                 // 7
+                int gewinn = liste.Top - obenNeu;         // 37 − 7 = 30
+
+                eltern.Controls.Remove(leiste);
+                leiste.Dispose();                         // nimmt die Beschriftung mit
+
+                if (gewinn > 0)
+                {
+                    liste.Top = obenNeu;
+                    liste.Height += gewinn;               // Unterkante bleibt, wo sie war
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Kopfleiste im Reiter " + reiter +
+                                  " konnte nicht entfernt werden: " + ex.Message);
             }
         }
 
@@ -292,29 +579,72 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@kat", kategorieID));
         }
 
+        /// <summary>
+        /// Energiekosten p. a. des Projekts [€/a] aus <see cref="KostenEmissionRechner"/> —
+        /// <c>null</c>, wenn kein Simulationsergebnis vorliegt oder der Rechner keine
+        /// vollständige Summe bilden kann.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Derselbe Weg, den <see cref="BetriebskostenCtrl"/> für die Brennstoffkosten geht:
+        /// <c>KostenEmissionRechner</c> ist die EINE Stelle, die Verbrauchsmengen mit
+        /// Trägerpreisen und Heizwerten verrechnet. Eine zweite Preisverrechnung für das
+        /// Summen-Label wäre eine doppelte Wahrheit.
+        /// </para>
+        /// <para>
+        /// Der Rechner liefert bewusst <c>null</c> statt einer Teilsumme, wenn für einen
+        /// Träger mit Verbrauch der Preis fehlt. Diese Aussage wird hier nicht eingeebnet —
+        /// die Fußzeile zeigt dann „—".
+        /// </para>
+        /// </remarks>
+        private double? LiesEnergiekostenProJahr()
+        {
+            try
+            {
+                ErgebnisModel erg = new ErgebnisCtrl().Load(m_ID_Projekt);
+                if (erg == null) return null;
+
+                VariantenDaten v = new VariantenDaten { IdProjekt = m_ID_Projekt, Ergebnis = erg };
+                KostenEmissionRechner.Berechne(v);
+                return v.Energiekosten;
+            }
+            catch { return null; }
+        }
+
         private void Gesamtkosten(string aktuelleSelektion = "")
         {
-            decimal summeGesamt = 0;
+            // K4-Wächter: Der Reiter „Kostenprofil" führt keine Kostenkategorie — dort gibt
+            // es nichts zu summieren. Ohne diese Klammer stünde im Fuß die Summe des zuvor
+            // gewählten Reiters unter der Überschrift „Kostenprofil".
+            int? kat = AktuelleKategorieOderNull();
+            if (!kat.HasValue)
+            {
+                label_ErzeugerGesamt.Text = "-";
+                label_Gesamt.Text = string.Format(MyResource.Resource.KOSTEN_LBL_PROJEKT_GESAMT,
+                                                  kategorie, STRICH);
+                label_ErzeugerGesamt.Refresh();
+                label_Gesamt.Refresh();
+                return;
+            }
+
             decimal summeSelektion = 0;
 
-            // Die Summe der AKTUELLEN Selektion direkt aus den Controls lesen (Live-Werte)
+            // Die Summe der AKTUELLEN Selektion direkt aus den Controls lesen (Live-Werte).
+            // K5b: Zuschusspositionen sind positiv erfasst und MINDERN die Investition —
+            // sie gehen deshalb mit negativem Vorzeichen ein, genau wie in den
+            // Gruppensummen darüber. Stünde hier die rohe Addition, widerspräche die
+            // Fußzeile den Köpfen auf demselben Bildschirm.
             foreach (Control c in flp.Controls)
             {
                 if (c is ucKostenZeile zeile)
                 {
-                    summeSelektion += zeile.Daten.Betrag;
+                    summeSelektion += zeile.Daten.IstZuschuss
+                        ? -zeile.Daten.Betrag : zeile.Daten.Betrag;
                 }
             }
 
-            // Die Gesamtsumme der GERADE ANGEZEIGTEN Kategorie aus der Datenbank.
-            DataTable dt = LiesKomponentenSummen(m_ID_Projekt, kategorieID);
-
-            // Durch die Zeilen loopen (ersetzt den Reader)
-            foreach (DataRow row in dt.Rows)
-            {
-                decimal betrag = row["Summe"] != DBNull.Value ? Convert.ToDecimal(row["Summe"]) : 0;
-                summeGesamt += betrag;
-            }
+            // K5b: Die Köpfe tragen Zähler und Summe — beide ändern sich mit jeder Zahl.
+            GruppenkoepfeNachziehen(_letzteKomponente);
 
             // Anzeige aktualisieren
             if (aktuelleSelektion != "")
@@ -322,11 +652,58 @@ namespace WindowsFormsApplication1
             else
                 label_ErzeugerGesamt.Text = "-";
 
+            string gesamtText;
+
+            if (kat.Value == KATEGORIE_ENERGIE)
+            {
+                // K4/HF4 6.2: Die Fußzeile des Energie-Reiters kommt aus dem
+                // KostenEmissionRechner (Energiekosten p. a. des Projekts).
+                //
+                // Die frühere Kategorie-3-Summe aus Tab_ProjektWerte ist eine TOTE Quelle:
+                // Seit HF1/L1 (19.08.2026) wird auf Kategorie 3 nichts mehr geschrieben,
+                // die Fußzeile stand deshalb konstant auf „0,00 €". Die Lesestelle
+                // LiesKomponentenSummen(…, KATEGORIE_ENERGIE) ist für diesen Reiter damit
+                // stillgelegt; die Altzeilen-Löschung folgt K6/E3.
+                double? energie = LiesEnergiekostenProJahr();
+                gesamtText = energie.HasValue ? energie.Value.ToString("N2") : STRICH;
+            }
+            else
+            {
+                // Die Gesamtsumme der GERADE ANGEZEIGTEN Kategorie aus der Datenbank.
+                decimal summeGesamt = 0;
+                DataTable dt = LiesKomponentenSummen(m_ID_Projekt, kat.Value);
+
+                // Durch die Zeilen loopen (ersetzt den Reader)
+                foreach (DataRow row in dt.Rows)
+                {
+                    decimal betrag = row["Summe"] != DBNull.Value ? Convert.ToDecimal(row["Summe"]) : 0;
+                    summeGesamt += betrag;
+                }
+
+                // K5b: LiesKomponentenSummen summiert die Kategorie roh — der positiv
+                // erfasste Zuschuss steckt darin und würde die Projektsumme ERHÖHEN.
+                // Abgezogen wird er hier statt in der gemeinsamen Lesemethode: Die dient
+                // auch der Komponententabelle von UcBkKosten, und deren Verhalten soll
+                // diese Etappe nicht mitverändern.
+                if (kat.Value == KATEGORIE_INVESTITION)
+                {
+                    try
+                    {
+                        double zuschuss = WirtschaftlichkeitCtrl.LiesZuschuss(
+                            m_ID_Projekt, WirtschaftlichkeitSzenario.ERWARTET);
+                        summeGesamt -= (decimal)zuschuss;
+                    }
+                    catch { }
+                }
+
+                gesamtText = summeGesamt.ToString("N2");
+            }
+
             // Die Kategorie steht mit im Text: Investitions-, Betriebs- und Energiekosten
             // haben verschiedene Bezugsgrößen (€ gegenüber €/a) und dürfen nicht als eine
             // Zahl gelesen werden.
             label_Gesamt.Text = string.Format(MyResource.Resource.KOSTEN_LBL_PROJEKT_GESAMT,
-                                              kategorie, summeGesamt.ToString("N2"));
+                                              kategorie, gesamtText);
 
             label_ErzeugerGesamt.Refresh();
             label_Gesamt.Refresh();
@@ -336,6 +713,7 @@ namespace WindowsFormsApplication1
         private void UpdateDetailPanel(string komponente, List<KostenPosition> faktoren)
         {
             flp.Controls.Clear();
+            _gruppen.Clear();                 // K5b: die Blöcke gehören zur alten Liste
             flp.SuspendLayout();
 
             // Berechnung verfügbare Innenbreite
@@ -367,7 +745,9 @@ namespace WindowsFormsApplication1
                         Tag = aktuelleGruppe.Trim() // Wichtig für die Lösch-Identifizierung
                     };
 
-                    // Das Label für den Text
+                    // Das Label für den Text. Der WORTLAUT entsteht erst in
+                    // GruppenkoepfeNachziehen (K5b) — dort stehen Positionszähler und
+                    // Gruppensumme, und die kennt man erst, wenn alle Zeilen gebaut sind.
                     Label groupTitle = new Label
                     {
                         Text = aktuelleGruppe.ToUpper().Trim(),
@@ -461,6 +841,27 @@ namespace WindowsFormsApplication1
 
                     flp.Controls.Add(headerPanel);
                     flp.Controls.Add(columnHeader);
+
+                    // --- K5b: Der Kopf wird zum Ein-/Ausklapper ------------------------
+                    // Angeklickt wird der Kopf selbst oder seine Beschriftung. Die beiden
+                    // Knöpfe darauf bleiben unberührt: Ein Click auf ein Kind-Control
+                    // erreicht das Panel nicht, „Planwert übernehmen…" und der Lösch-Knopf
+                    // arbeiten also weiter wie bisher.
+                    var block = new Gruppenblock
+                    {
+                        Name = aktuelleGruppe.Trim(),
+                        Kopf = headerPanel,
+                        Titel = groupTitle,
+                        Spaltenkopf = columnHeader,
+                        Eingeklappt = false,
+                        Aktion = btnTest
+                    };
+                    _gruppen[block.Name] = block;
+
+                    headerPanel.Cursor = Cursors.Hand;
+                    groupTitle.Cursor = Cursors.Hand;
+                    headerPanel.Click += (s, e) => GruppeUmschalten(block);
+                    groupTitle.Click += (s, e) => GruppeUmschalten(block);
                 }
 
                 var zeile = new ucKostenZeile(f);
@@ -489,11 +890,134 @@ namespace WindowsFormsApplication1
 
                 flp.Controls.Add(zeile);
             }
+
+            // K5b: Beschriftungen der Gruppenköpfe — erst jetzt sind alle Zeilen da.
+            GruppenkoepfeNachziehen(komponente);
+
             flp.ResumeLayout();
+        }
+
+        // ================================================================= K5b (HF5 § 7.5)
+
+        /// <summary>
+        /// Klappt einen Gruppenblock ein oder aus.
+        /// </summary>
+        /// <remarks>
+        /// Eingeklappt werden die Positionszeilen und die Spaltenüberschrift; der Kopf
+        /// bleibt stehen und trägt weiterhin Zähler und Summe. Die Zeilen werden nur
+        /// UNSICHTBAR, nicht entfernt — jede erfasste Zahl bleibt damit im Speicher, und
+        /// <see cref="Gesamtkosten"/> summiert unverändert über <c>flp.Controls</c>. Ein
+        /// eingeklappter Block verändert also keine einzige Summe.
+        /// </remarks>
+        private void GruppeUmschalten(Gruppenblock block)
+        {
+            if (block == null) return;
+
+            block.Eingeklappt = !block.Eingeklappt;
+            bool sichtbar = !block.Eingeklappt;
+
+            flp.SuspendLayout();
+            try
+            {
+                if (block.Spaltenkopf != null && !block.Spaltenkopf.IsDisposed)
+                    block.Spaltenkopf.Visible = sichtbar;
+
+                foreach (Control c in flp.Controls)
+                    if (c is ucKostenZeile && GleicheGruppe(c, block.Name))
+                        c.Visible = sichtbar;
+
+                KopfBeschriften(block, _letzteKomponente);
+            }
+            finally { flp.ResumeLayout(); }
+        }
+
+        /// <summary>Komponente der zuletzt aufgebauten Positionsliste (K5b).</summary>
+        private string _letzteKomponente = "";
+
+        /// <summary>true, wenn das Steuerelement zu dieser Gruppe gehört.</summary>
+        private static bool GleicheGruppe(Control c, string gruppe)
+        {
+            return c != null && c.Tag != null &&
+                   string.Equals(c.Tag.ToString(), gruppe, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Schreibt alle Gruppenköpfe neu: Komponentenname, Positionszähler, Gruppensumme.
+        /// </summary>
+        private void GruppenkoepfeNachziehen(string komponente)
+        {
+            _letzteKomponente = komponente ?? "";
+            foreach (Gruppenblock b in _gruppen.Values) KopfBeschriften(b, _letzteKomponente);
+        }
+
+        /// <summary>
+        /// Beschriftet EINEN Gruppenkopf: „▾ Wärmezentrale · 3 Positionen · 42.500 €".
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die Komponente steht vorn, nicht die Gruppe.</b> Die Liste zeigt immer genau
+        /// eine Komponente (Auswahl links); ihr Name ist die Auskunft, die der Anwender
+        /// sucht. Der freie Gruppenname aus <c>Tab_ProjektWerte.Gruppe</c> kommt nur dann
+        /// dazu, wenn er nicht die Rückfallgruppe „Allgemein" ist — sonst stünde in der
+        /// Regel „WÄRMEZENTRALE · ALLGEMEIN" da, und das Wort ohne Aussage wäre das
+        /// auffälligste im Kopf.
+        /// </para>
+        /// <para>
+        /// <b>Zuschusspositionen zählen NEGATIV.</b> Sie sind positiv erfasst und mindern
+        /// die Investition (Konzept § 7.4); eine Gruppensumme, die sie aufaddiert, wäre um
+        /// das Doppelte des Zuschusses zu hoch.
+        /// </para>
+        /// <para>
+        /// <b>Nur sichtbare Zeilen zählen? Nein — alle.</b> Der Zähler nennt den Inhalt der
+        /// Gruppe, nicht den Bildschirmausschnitt. Ein eingeklappter Kopf muss weiter
+        /// sagen, was in ihm steckt; genau dafür ist er da.
+        /// </para>
+        /// </remarks>
+        private void KopfBeschriften(Gruppenblock block, string komponente)
+        {
+            if (block == null || block.Titel == null || block.Titel.IsDisposed) return;
+
+            int anzahl = 0;
+            decimal summe = 0;
+
+            foreach (Control c in flp.Controls)
+            {
+                var zeile = c as ucKostenZeile;
+                if (zeile == null || !GleicheGruppe(c, block.Name)) continue;
+
+                anzahl++;
+                summe += zeile.Daten.IstZuschuss ? -zeile.Daten.Betrag : zeile.Daten.Betrag;
+            }
+
+            string name = string.IsNullOrEmpty(komponente) ? block.Name : komponente;
+            if (!string.Equals(block.Name, DbWerte.KOSTEN_GRUPPE_ALLGEMEIN, StringComparison.Ordinal))
+                name = name + " · " + block.Name;
+
+            block.Titel.Text = string.Format(
+                block.Eingeklappt ? MyResource.Resource.KOSTEN_GRUPPE_KOPF_ZU
+                                  : MyResource.Resource.KOSTEN_GRUPPE_KOPF_AUF,
+                name.ToUpper(),
+                anzahl,
+                summe.ToString("N2", BerichtTexte.Kultur));
+
+            // Der Aktionsknopf saß bisher hinter der KURZEN Beschriftung („ALLGEMEIN").
+            // Mit Zähler und Summe wird sie länger — ohne Nachrücken läge das Label unter
+            // dem Knopf. Der Lösch-Knopf bleibt rechts verankert und ist nicht betroffen.
+            if (block.Aktion != null && !block.Aktion.IsDisposed)
+            {
+                int x = block.Titel.Left + block.Titel.PreferredWidth + 20;
+                int grenze = block.Kopf.Width - block.Aktion.Width - 32;   // Platz für „−"
+                block.Aktion.Left = Math.Min(x, Math.Max(block.Titel.Left, grenze));
+            }
         }
 
         private void btnDeleteGroup_Click(object sender, EventArgs e)
         {
+            // K4-Wächter: Der Löschbefehl unten filtert auf KategorieID. Ohne Kategorie
+            // gibt es nichts zu löschen — und ein DELETE mit unbestimmter Kategorie ist
+            // genau die Art Befehl, die man nicht ins Blaue absetzt.
+            if (!AktuelleKategorieOderNull().HasValue) return;
+
             Button btn = (Button)sender;
             string gruppenName = btn.Tag.ToString();
 
@@ -713,6 +1237,7 @@ namespace WindowsFormsApplication1
 
                 p.IstErloes = z.IstErloes;
                 p.Bemessung = z.Bemessung;
+                p.Kostenart = z.Kostenart;      // K5: trägt das Zuschuss-Kennzeichen
                 if (p.Abgeleitet && z.Menge.HasValue && z.Einheitpreis.HasValue)
                     p.Herleitung = string.Format(MyResource.Resource.KOSTEN_BEMESSUNG_HERLEITUNG,
                                                  z.Einheitpreis.Value.ToString("N4", BerichtTexte.Kultur),
@@ -774,7 +1299,11 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                int kategorieIDNeu = tabMain.SelectedIndex + 1;
+                // K4-Wächter: ohne Kategorie wird nichts angelegt (Reiter „Kostenprofil").
+                int? kat = AktuelleKategorieOderNull();
+                if (!kat.HasValue) return;
+                int kategorieIDNeu = kat.Value;
+
                 int komponentenID = GetKomponentenID(komponente);
                 if (komponentenID <= 0) return;
 
@@ -860,6 +1389,12 @@ namespace WindowsFormsApplication1
 
         private void AddKostenItem(string komponenete)
         {
+            // K4-Wächter: Ohne Kostenkategorie gibt es nichts zu erfassen. Die Prüfung
+            // steht VOR dem Dialog — den Anwender erst tippen zu lassen und den Datensatz
+            // danach zu verwerfen wäre die schlechtere Hälfte beider Möglichkeiten.
+            int? kat = AktuelleKategorieOderNull();
+            if (!kat.HasValue) return;
+
             // Eingabemaske öffnen (bleibt UI-Logik)
             Form_KostenfaktorItem frm = new Form_KostenfaktorItem();
 
@@ -900,7 +1435,7 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("@ein", einheit),
                     new OleDbParameter("@grp", gewaehlteGruppe),
                     new OleDbParameter("@kid", GetKomponentenID(komponenete)),
-                    new OleDbParameter("@kat", tabMain.SelectedIndex + 1)
+                    new OleDbParameter("@kat", kat.Value)
                 );
 
                 // 5. UI aktualisieren
@@ -972,7 +1507,8 @@ namespace WindowsFormsApplication1
                     if (r["Komponente"] == DBNull.Value) continue;
                     string k = r["Komponente"].ToString();
                     if (k.Length == 0) continue;
-                    if (mitPositionen.Contains(k) || TechnikPlanwertCtrl.Verbaut(projektID, k))
+                    if (mitPositionen.Contains(k) || TechnikPlanwertCtrl.Verbaut(projektID, k) ||
+                        IstErfassungsgruppe(k))
                         liste.Add(k);
                 }
             }
@@ -981,6 +1517,59 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        /// <summary>
+        /// ETAPPE K5: true für die drei ERFASSUNGSGRUPPEN aus Migrationsschritt 27 —
+        /// Wärmezentrale, Bauliche Anlagen, Stromeinspeisung.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum sie immer angeboten werden.</b> Die Auswahlliste zeigt sonst nur
+        /// Gewerke, die entweder in <c>Tab_Energieanlagen</c> verbaut sind oder bereits
+        /// Kostenpositionen tragen. Die drei neuen Gruppen sind aber <b>keine Gewerke</b>:
+        /// Es gibt für sie keine Gerätetabelle und damit auch kein „verbaut"
+        /// (<c>TechnikPlanwertCtrl.Plaene</c> führt weiterhin sieben Einträge). Ohne diese
+        /// Ausnahme wären sie in einem frischen Projekt unerreichbar — man könnte keine
+        /// erste Position erfassen, und weil sie ohne Position nicht in der Liste
+        /// erscheinen, bliebe es dabei.
+        /// </para>
+        /// <para>
+        /// <b>Es ist eine Namensprüfung, keine Katalogabfrage.</b> Angeboten wird nur, was
+        /// die Anwendung als Erfassungsgruppe KENNT; eine später von Hand angelegte
+        /// Komponente ohne Gewerk und ohne Positionen bleibt draussen — genau wie bisher.
+        /// </para>
+        /// </remarks>
+        private static bool IstErfassungsgruppe(string komponente)
+        {
+            return string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE, StringComparison.Ordinal)
+                || string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_BAULICHE_ANLAGEN, StringComparison.Ordinal)
+                || string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_STROMEINSPEISUNG, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <c>Tab_KostenKomponente.ID</c> zu einem Komponentennamen; 0 = unbekannt.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>ETAPPE K5 — die Nummern der sieben Bestandskomponenten bleiben fest
+        /// verdrahtet, die neuen kommen aus der Datenbank.</b> Bis K5 war diese Methode
+        /// eine reine <c>switch</c>-Kette; sie hätte für die drei Erfassungsgruppen aus
+        /// Migrationsschritt 27 eine 0 geliefert, und damit wäre für sie keine einzige
+        /// Kostenposition anlegbar gewesen (<c>SetzeBetrag</c> bricht bei
+        /// <c>komponentenID &lt;= 0</c> ab).
+        /// </para>
+        /// <para>
+        /// <b>Warum die sieben trotzdem stehen bleiben.</b> Ihre Nummern 1…7 stehen so
+        /// auch in <c>BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL/_BHKW</c> und in jeder
+        /// Bestandszeile von <c>Tab_ProjektWerte</c>. Sie durch eine Abfrage zu ersetzen
+        /// wäre eine Verhaltensänderung an der Stelle, an der am wenigsten passieren
+        /// darf — und ohne Not: Der Nachschlag greift nur, wenn der Name keiner der
+        /// sieben ist.
+        /// </para>
+        /// <para>
+        /// <b>Ein Lauf je Fenster.</b> Das Ergebnis wird gemerkt; die Methode wird beim
+        /// Aufbau jeder Positionsliste mehrfach gerufen.
+        /// </para>
+        /// </remarks>
         private int GetKomponentenID(string Erzeuger)
         {
             switch (Erzeuger)
@@ -992,8 +1581,38 @@ namespace WindowsFormsApplication1
                 case "Stromspeicher": return 5;
                 case "Pufferspeicher": return 6;
                 case "BHKW": return 7;
-                default: return 0; // Oder eine andere Standard-ID für "Unbekannt"
+                default: return KomponentenIdAusKatalog(Erzeuger);
             }
+        }
+
+        /// <summary>Gemerkte Katalognummern der Komponenten, die nicht fest verdrahtet sind (K5).</summary>
+        private readonly Dictionary<string, int> _komponentenIdCache =
+            new Dictionary<string, int>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// <c>Tab_KostenKomponente.ID</c> aus dem Katalog; 0, wenn es den Namen dort
+        /// nicht gibt (K5). Dieselbe Abfrage wie
+        /// <c>KomponentenUebernahmeCtrl</c> und <c>KiAktionenWirtschaft</c>.
+        /// </summary>
+        private int KomponentenIdAusKatalog(string komponente)
+        {
+            if (string.IsNullOrEmpty(komponente)) return 0;
+
+            int gemerkt;
+            if (_komponentenIdCache.TryGetValue(komponente, out gemerkt)) return gemerkt;
+
+            int id = 0;
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT MIN(ID) FROM Tab_KostenKomponente WHERE Komponente = ?",
+                    new OleDbParameter("@k", komponente));
+                if (o != null && o != DBNull.Value) id = Convert.ToInt32(o);
+            }
+            catch { }
+
+            _komponentenIdCache[komponente] = id;
+            return id;
         }
 
         private void UpdateSingleRowInDatabase(KostenPosition pos)
@@ -1021,6 +1640,39 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("gn", (string)pos.Gruppenname),
                 new OleDbParameter("@id", pos.ID)
             );
+
+            KostenartSichern(pos);
+        }
+
+        /// <summary>
+        /// ETAPPE K5: schreibt die Kostenart der Position nach — sie ist der einzige
+        /// Träger des Zuschuss-Kennzeichens (<c>Form_CaseEingabe</c>).
+        /// </summary>
+        /// <remarks>
+        /// <b>Ein zweites UPDATE statt einer erweiterten Anweisung.</b> Die Spalte
+        /// <c>Kostenart</c> stammt aus Migrationsschritt 19 und fehlt in einer nie
+        /// migrierten Datenbank. Stünde sie in derselben Anweisung, scheiterte dort auch
+        /// das Speichern der Beträge — und zwar still, weil <c>ExecuteSQL</c> seinen
+        /// Fehler selbst abfängt. Getrennt bleibt der Bestandsweg unberührt: Ohne die
+        /// Spalte passiert schlicht nichts (dieselbe Regel wie in
+        /// <c>KostenPositionCtrl.SetzeBetragMitZusatz</c>).
+        /// </remarks>
+        private void KostenartSichern(KostenPosition pos)
+        {
+            if (pos == null || pos.ID <= 0) return;
+            if (string.IsNullOrEmpty(pos.Kostenart)) return;
+
+            try
+            {
+                if (!KostenPositionCtrl.StelleSpaltenSicher()) return;
+
+                DataRepository.ExecuteSQL(
+                    "UPDATE Tab_ProjektWerte SET [" + SchemaKatalog.SPALTE_PW_KOSTENART +
+                    "] = ? WHERE ID = ?",
+                    new OleDbParameter("@art", pos.Kostenart),
+                    new OleDbParameter("@id", pos.ID));
+            }
+            catch { }
         }
 
         private void listBox_Betriebskosten_SelectedIndexChanged(object sender, EventArgs e)
@@ -1044,6 +1696,20 @@ namespace WindowsFormsApplication1
         {
             flpContainer_Energiekosten.Visible = false;
             kategorie = tabMain.SelectedTab.Text;
+
+            // K4: Der vierte Reiter „Kostenprofil" führt keine Kostenkategorie. Er wird
+            // ZUERST abgefangen — ohne diesen Zweig behielte kategorieID den Wert des
+            // zuvor gewählten Reiters, und jede spätere Schreibaktion hätte auf dessen
+            // Kategorie gezielt. Die Karten lesen ihren Stand beim Betreten neu, damit
+            // ein Import aus einer anderen Maske hier sichtbar wird.
+            if (tabKostenprofil != null && ReferenceEquals(tabMain.SelectedTab, tabKostenprofil))
+            {
+                kategorieID = 0;
+                AktualisiereKostenprofilKarte();
+                AktualisiereSpotpreisKarte();
+                Gesamtkosten();                       // Wächter setzt die Fußzeile auf „—"
+                return;
+            }
 
             // Reihenfolge beachten: kategorieID muss VOR Gesamtkosten() stehen — die
             // Gesamtsumme wird seit Befund D1 nach Kategorie gefiltert und hätte sonst
