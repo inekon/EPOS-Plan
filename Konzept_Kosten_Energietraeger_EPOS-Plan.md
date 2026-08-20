@@ -293,10 +293,11 @@ Mit den Entscheidungen vom 19.08.2026 (§ 11) ist das Konzept **umsetzungsreif**
 | E1 | Pufferspeicher: eigene Komponente oder alt-treu in „Wärmezentrale"? | **eigene Komponente behalten** (Wärmezentrale ohne Puffer-Doppelung) |
 | E2 | Nahwärmenetz als neue Komponente aufnehmen? | **Nein** — Alt-Positionen Verteilnetz/Hausanschluss/Hausstation entfallen ersatzlos |
 | E3 | Kategorie-3-Altzeilen in Bestands-DBs? | **löschen** (Migrationsschritt, nach Umstellung des Summen-Labels) |
-| E4 | `Abfrage_ProjektKostenInvestBetrieb` (kein Code-Aufrufer)? | **löschen**; Kommentar in `GruppeSichern` anpassen |
+| E4 | `Abfrage_ProjektKostenInvestBetrieb` (kein Code-Aufrufer)? | **löschen**; Kommentar in `GruppeSichern` anpassen — **vollzogen 20.08.2026** (Abfragenbereinigung, s. K6-Protokoll Nachtrag) |
 | E5 | CO₂-Preispfad-Vorbelegung ab 2028? | **konservativ 80 €/t, frei editierbar** (Stützstellenreihe) |
 | E6 | z-Faktor-Seed 1,0 (ergebnisneutral), echte Zustandszahlen später fachlich? | **ja** |
 | E7 | BAFA-Mini-KWK-Staffel? | **nicht übernehmen** — nur Zuschuss-Positionsart (L7) |
+| E8 | Instandhaltung Wärmezentrale/Bauliche Anlagen/Stromeinspeisung auf die neuen Komponentengruppen umbemessen? | **Nein — beim Bestand belassen** (Bemessung bleibt Gesamt-Investition; beschlossen 20.08.2026 nach K5) |
 
 ---
 
