@@ -7,7 +7,7 @@ using System.ComponentModel;
 
 namespace WindowsFormsApplication1
 {
-    class BHKWKontextMenuCtrl : Form
+    class BHKWKontextMenuCtrl
     {
         private ToolStripMenuItem ContextMenuItemNeu;
         private ToolStripMenuItem ContextMenuItemLoeschen;

@@ -7,7 +7,7 @@ using System.ComponentModel;
 
 namespace WindowsFormsApplication1
 {
-    class SolarKontextMenuCtrl : Form
+    class SolarKontextMenuCtrl
     {
         private ToolStripMenuItem ContextMenuItemNeu;
         private ToolStripMenuItem ContextMenuItemLoeschen;

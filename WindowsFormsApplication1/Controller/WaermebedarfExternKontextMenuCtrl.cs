@@ -7,7 +7,7 @@ using System.ComponentModel;
 
 namespace WindowsFormsApplication1
 {
-    class WaermebedarfExternKontextMenuCtrl : Form
+    class WaermebedarfExternKontextMenuCtrl
     {
         private ToolStripMenuItem ContextMenuItemNeu;
         private ToolStripMenuItem ContextMenuItemLoeschen;

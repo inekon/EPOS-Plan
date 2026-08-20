@@ -7,7 +7,7 @@ using System.ComponentModel;
 
 namespace WindowsFormsApplication1
 {
-    class WPKontextMenuCtrl : Form
+    class WPKontextMenuCtrl
     {
         private ToolStripMenuItem ContextMenuItemAnzeigen;
         private ToolStripMenuItem ContextMenuItemNeu;

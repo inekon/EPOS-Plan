@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    class GebäudeKontextMenuCtrl : Form
+    class GebäudeKontextMenuCtrl
     {
         private ToolStripMenuItem ContextMenuItemNeu;
         private ToolStripMenuItem ContextMenuItemBearbeiten;
