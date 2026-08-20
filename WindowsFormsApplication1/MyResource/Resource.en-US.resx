@@ -3007,12 +3007,6 @@ Please run the simulation with the boiler first.</value>
   <data name="PREIS_REST_HINWEIS_MODUS" xml:space="preserve">
     <value>In "itemised" mode the effective surcharge is the sum of the active components.</value>
   </data>
-  <data name="PREIS_BTN_SPOTIMPORT" xml:space="preserve">
-    <value>Import spot market prices ...</value>
-  </data>
-  <data name="PREIS_BTN_KOSTENPROFIL" xml:space="preserve">
-    <value>Edit cost profile ...</value>
-  </data>
   <data name="PREIS_IMPORT_TITEL" xml:space="preserve">
     <value>Import spot market prices</value>
   </data>
@@ -6178,5 +6172,38 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   </data>
   <data name="KI_REG_EINHEITEN_BEFUNDE" xml:space="preserve">
     <value>Unit consistency {1}: {0} finding(s).</value>
+  </data>
+  <data name="KPROF_TAB_TITEL" xml:space="preserve">
+    <value>Cost profile</value>
+  </data>
+  <data name="KPROF_KARTE_PROFIL_TITEL" xml:space="preserve">
+    <value>Cost profile</value>
+  </data>
+  <data name="KPROF_KARTE_PROFIL_INFO" xml:space="preserve">
+    <value>Monthly price level and weekly daily pattern [ct/kWh] — the basis of storage economics.</value>
+  </data>
+  <data name="KPROF_KARTE_SPOT_TITEL" xml:space="preserve">
+    <value>Spot market prices</value>
+  </data>
+  <data name="KPROF_KARTE_SPOT_INFO" xml:space="preserve">
+    <value>Import and manage hourly exchange prices as an annual series.</value>
+  </data>
+  <data name="KPROF_STATUS_KEIN_PROFIL" xml:space="preserve">
+    <value>No cost profile created yet</value>
+  </data>
+  <data name="KPROF_STATUS_PROFIL" xml:space="preserve">
+    <value>{0} — monthly level {1}–{2} ct/kWh</value>
+  </data>
+  <data name="KPROF_STATUS_KEINE_REIHEN" xml:space="preserve">
+    <value>No price series imported yet</value>
+  </data>
+  <data name="KPROF_STATUS_REIHEN" xml:space="preserve">
+    <value>{0} series, {1}–{2}</value>
+  </data>
+  <data name="KPROF_STATUS_REIHEN_EINJAHR" xml:space="preserve">
+    <value>{0} series, {1}</value>
+  </data>
+  <data name="KPROF_STATUS_REIHEN_OHNE_JAHR" xml:space="preserve">
+    <value>{0} series, year not maintained</value>
   </data>
 </root>
