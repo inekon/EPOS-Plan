@@ -6,7 +6,8 @@ Grundlage: Fachkonzept `Konzept_KI-Assistent_Aufgabensteuerung.md` **Rev. 2, Kap
 Feldsicherung, Aufrufknopf; Grenzen 11.7 und alle Vorschläge am 20.08.2026 abgenommen) und Prüfung des
 Arbeitsbaums `Documents\WP-Plan` am 20.08.2026 (nach Etappe 3: Riegel, Bestätigungsschicht und drei
 Schreibaktionen liegen im Code). Auftragslage: Umsetzung beauftragt, auf Wunsch des Auftraggebers **zurückgestellt,
-bis dieses Umsetzungskonzept abgenommen ist**.
+bis dieses Umsetzungskonzept abgenommen ist**. Ergänzung vom 20.08.2026 (Fachkonzept **11.9**): Hilfe-Betrieb —
+KI-Oberfläche per Konfiguration ausblendbar, Aufrufknopf wechselt auf „Hilfe" → Arbeitspaket **F5**.
 
 > **Belegregel.** Wie im Fachkonzept: Jede Bestandsaussage trägt `Datei:Zeile`; Pfade ohne Präfix liegen unter
 > `WindowsFormsApplication1\`. Nicht Verifizierbares ist als **(Annahme)** markiert. Für dieses Konzept wurde
@@ -40,6 +41,7 @@ Rechenaktionen (Etappe 4), globales F1 (Etappe 5).
 | B8 | Hilfetexte je Control-Slug: `WordPressHelpCatalog.Get(slug)` (Tooltip + Artikel-URL, Offline-Cache); Zuordnung `HelpExtender`/`help_mapping.txt` (Datei nicht im Repo) | `Allgemein\Hilfe\HelpCatalog.cs:194`, `:209`, `:250-304` | Quelle fürs **Erklären**; Katalog referenziert Slugs nur optional |
 | B9 | Startmasken führen teils **nicht-ASCII-Controlnamen** (`tb_Wirkungsgrad_Öl`) und sind **BOM-loses cp1252** | `Form_Heizkessel_Bearbeiten.cs:528`; Encoding-Befund 18.08.2026 | Katalog-Controlpfade müssen exakt stimmen; Editieren nur byte-erhaltend (Abschnitt 6) |
 | B10 | Aktionsdeklaration erzwingt Vorschau ab Stufe 2 schon beim Registrieren | `KiKern\KiAktion.cs:63-71` | 2F-Aktionen liefern die Feldliste „alt → neu" als Vorschau — Pflicht, nicht Kür |
+| B11 | **KI-Abschalter existiert:** `KiEinwilligung.Abgeschaltet` (HKCU `KiDeaktiviert`, HKLM übersteuert und ist aus der App nicht lösbar); unterbindet jede Übertragung; blendet heute den Menüeintrag komplett aus (Auswertung beim Aufklappen) | `Allgemein\KI\KiEinwilligung.cs:80-93`, `:145-147`; `MDIMainForm.cs:259-264` | Träger des **Hilfe-Betriebs** (F5) — wiederverwenden, kein neuer Schalter |
 
 ## 3. Arbeitspakete
 
@@ -69,10 +71,14 @@ Blocktexte, `formularaktion`-Verhalten im Zusammenspiel mit `KiRiegel.BrauchtBes
 
 ### F2 — Aufrufknopf (S)
 
-* Neu `Allgemein\KI\KiAufrufKnopf.cs`: `Anbringen(Form)` nach Fachkonzept 11.8 — ≈ 24 px, Symbol ohne Text,
+* Neu `Allgemein\KI\KiAufrufKnopf.cs`: `Anbringen(Form)` nach Fachkonzept 11.8 — ≈ 24 px, schlichte
+  Beschriftung **„KI"** (Festlegung 20.08.2026, cp1252-sicher, einheitlich auf allen Systemen),
   `FlatStyle.Flat`, kein `TabStop`, `Anchor Top|Right`, gedämpft/Hover-betont, Tooltip „KI-Assistent" aus
   `MyResource` (de **und** en, ans Dateiende, Designer nachziehen). Klick → `Form_KiChat.Oeffnen(form)` (B7);
   ist der Chat schon offen, holt der Klick ihn nach vorn.
+* **Zweigestaltig (Fachkonzept 11.9):** Der Helfer liest beim Anbringen `KiEinwilligung.Abgeschaltet` (B11) —
+  gesetzt heißt Beschriftung **„Hilfe"**, Tooltip „Hilfe", gleiche Gestaltung, gleicher Platz, gleiches Ziel
+  (das Fenster entscheidet selbst über seinen Betrieb, F5). Knopfbreite passt sich der Beschriftung an.
 * Verdrahtung: **ein** Aufruf je Startmaske im Konstruktor nach `InitializeComponent()` — Designer-Dateien
   bleiben unberührt (Hausregel). Die vier Dateien sind cp1252 → byte-erhaltend editieren (Abschnitt 6).
 * Kollisionsprüfung oben rechts je Startmaske; weicht eine Maske ab, hält ihr Katalogeintrag (F3) die
@@ -111,6 +117,29 @@ Blocktexte, `formularaktion`-Verhalten im Zusammenspiel mit `KiRiegel.BrauchtBes
   registriert), 0 Fehler, Baseline-Warnungen unverändert; `dotnet test` für `KiKern.Tests` und
   `SpeicherEngine.Tests` (337/337) grün.
 
+### F5 — Hilfe-Betrieb: KI-Oberfläche per Konfiguration ausgeblendet (S–M)
+
+Umsetzung von Fachkonzept 11.9 auf dem vorhandenen Schalter `KiEinwilligung.Abgeschaltet` (B11) — es wird
+**kein neuer Schalter** eingeführt:
+
+* **Menüeintrag** (`MDIMainForm.cs:226`, heute „Hilfe-Assistent (KI)..."): Bei gesetztem Schalter heißt er
+  „Hilfe-Assistent…" ohne KI-Zusatz und **bleibt sichtbar** — die heutige Komplettausblendung
+  (`MDIMainForm.cs:264`, `Available = false`) entfällt zugunsten der Umbenennung; die dynamische Auswertung
+  beim Aufklappen bleibt. Beide Texte wandern nach `MyResource` (de und en).
+* **Chatfenster im Hilfe-Betrieb:** keine KI-Beschriftungen, keine Werkzeugliste, kein „Was wird gesendet?",
+  keine Aufgabensteuerung — nur Hilfesuche und Hilfeartikel (der Fensterbestand kann das: ohne Dienst
+  arbeitet `Form_KiChat` als lokale Hilfesuche, Fachkonzept 1.3). Auswertung bei jedem Öffnen, nicht nur
+  beim Start.
+* **Aufrufknopf:** zweigestaltig aus F2; keine weitere Arbeit hier außer dem gemeinsamen Textbestand.
+* **Sicherheitswirkung unverändert:** Dass nichts hinausgeht und keine Aktionen laufen, trägt weiterhin
+  `KiEinwilligung.Sicherstellen` (`KiEinwilligung.cs:145-147`) und der Riegel — die Ausblendung ist eine
+  reine Darstellungsfrage und ersetzt keinen Schutz.
+
+### Abgrenzung F5
+
+F5 ändert bewusst **kein** Verhalten bei nicht gesetztem Schalter; die Einwilligungslogik (`FASSUNG`,
+`Nachfragen`, `Erteilen`) bleibt unangetastet.
+
 ## 4. Ablauf einer Feldsetzung (Soll-Verhalten, konsolidiert)
 
 1. Modell schlägt `formular_ausfuellen(maske, werte)` vor → Registerprüfung wie gehabt (`KiPruefung`).
@@ -125,9 +154,10 @@ Blocktexte, `formularaktion`-Verhalten im Zusammenspiel mit `KiRiegel.BrauchtBes
 
 ## 5. Reihenfolge und Aufwand
 
-F1 → F2/F3 (F2 unabhängig, F3 braucht F1) → F4. Aufwand: F1 **S–M**, F2 **S**, F3 **M**, F4 **S**;
-gesamt **M–L** (Erfahrungswerte, **Annahme**). Jedes Paket endet baubar mit grünen Tests; Umsetzung durch
-Opus-Arbeitsaufträge je Paket, Abnahme durch den Auftraggeber nach F4 anhand Abschnitt 7.
+F1 → F2/F3/F5 (F2 und F5 unabhängig von F1, F3 braucht F1) → F4 (Abschluss mit Prüfbuild). Aufwand: F1
+**S–M**, F2 **S**, F3 **M**, F5 **S–M**, F4 **S**; gesamt **M–L** (Erfahrungswerte, **Annahme**). Jedes Paket
+endet baubar mit grünen Tests; Umsetzung durch Opus-Arbeitsaufträge je Paket, Abnahme durch den Auftraggeber
+nach F4 anhand Abschnitt 7.
 
 ## 6. Risiken und Fallen (verbindliche Arbeitsregeln)
 
@@ -157,10 +187,14 @@ Opus-Arbeitsaufträge je Paket, Abnahme durch den Auftraggeber nach F4 anhand Ab
    erscheint **weiterhin**.
 7. Prüfbuild x64 0 Fehler, Baseline-Warnungen unverändert; `KiKern.Tests` und `SpeicherEngine.Tests` grün;
    Encoding-Nachweis je berührter cp1252-Datei.
+8. **Hilfe-Betrieb** (`KiDeaktiviert=1`): Aufrufknopf zeigt „Hilfe" und öffnet die Hilfesuche; Menüeintrag
+   ohne KI-Zusatz, aber sichtbar; im Chatfenster keine KI-Beschriftung, keine Werkzeugliste, keine
+   Aufgabensteuerung; nachweislich keine Anfrage an den Dienst; der maschinenweite Schalter (HKLM)
+   überstimmt die Benutzereinstellung. Bei nicht gesetztem Schalter ist alles unverändert.
 
-## 8. Offene Detailfragen (klein, blockieren die Abnahme nicht)
+## 8. Detailfestlegungen (Auftraggeber, 20.08.2026)
 
-1. **Symbol des Aufrufknopfs:** Vorschlag schlichtes „KI" in gedämpfter Schrift (kein Emoji — cp1252-sichere
-   Darstellung, einheitlich auf allen Systemen). Alternativ eine Glyphe aus einer vorhandenen Symbolschrift.
-2. **ComboBox-Setzen per Anzeigetext:** bei Mehrdeutigkeit (zwei gleiche Einträge) wird abgelehnt — genügt das,
-   oder soll zusätzlich der Index zulässig sein? Vorschlag: nur Anzeigetext, Ablehnung bei Mehrdeutigkeit.
+1. **Symbol des Aufrufknopfs:** schlichtes **„KI"** in gedämpfter Schrift — kein Emoji, keine Symbolschrift
+   (cp1252-sichere Darstellung, einheitlich auf allen Systemen).
+2. **ComboBox-Setzen:** **nur per Anzeigetext**; bei Mehrdeutigkeit (zwei gleiche Einträge) wird mit Klartext
+   abgelehnt. Kein Setzen per Index.

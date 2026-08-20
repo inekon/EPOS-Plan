@@ -18,7 +18,12 @@ Paket-Metadaten von `Mscc.GenerativeAI` 3.1.0 im NuGet-Cache.
 > *„Setze in die Dialoge einen dezenten Button (oder ähnliches), um den KI-Assistenten aufzurufen."* —
 > ausgestaltet in **11.8** (Aufrufknopf). Im selben Zug vollständig abgenommen („setze um wie vorgeschlagen"):
 > Blockbestätigung (11.5), Befehlszeilenschalter als Entwicklerkanal (11.5, damit festgelegt), Reihenfolge
-> 3b vor Etappe 4 (11.6) und die Startmasken (11.6). **Umsetzung der Etappe 3b beauftragt.**
+> 3b vor Etappe 4 (11.6) und die Startmasken (11.6). **Umsetzung der Etappe 3b beauftragt** (zurückgestellt
+> bis zur Abnahme des Umsetzungskonzepts `Konzept_Etappe3b_Formularsteuerung.md`).
+>
+> **Ergänzung 20.08.2026,** Auftrag wörtlich: *„Alle KI-Beschriftungen/Aufrufe sollen per Konfiguration
+> ausgeblendet werden können. Das Symbol ändert sich dann auf Hilfe (Symbol/Text, analog zu KI)."* —
+> ausgestaltet in **11.9** (Hilfe-Betrieb).
 
 > **Belegregel.** Jede Aussage über den Bestand ist mit `Datei:Zeile` belegt; Pfade ohne Präfix liegen unter
 > `WindowsFormsApplication1\`, Pfade mit Präfix `SpeicherEngine\` bzw. `Referenzlauf\` im jeweiligen
@@ -1047,10 +1052,10 @@ werden nicht von Hand editiert).
 **Ausgestaltung:**
 
 * Zentraler Helfer `KiAufrufKnopf.Anbringen(Form)` (neu, `Allgemein\KI\`) — **ein** Aufruf im Konstruktor der
-  Maske, keine Änderung an Designer-Dateien. Der Helfer erzeugt einen kleinen symbolbasierten Knopf
-  (≈ 24 px, ohne Text, `FlatStyle.Flat`, ohne `TabStop`, gedämpfte Darstellung, betont erst unter dem Zeiger),
-  verankert **oben rechts** im Client-Bereich (`Anchor Top|Right`), Tooltip „KI-Assistent (F1)" über
-  `MyResource` (de und en).
+  Maske, keine Änderung an Designer-Dateien. Der Helfer erzeugt einen kleinen Knopf mit der schlichten
+  Beschriftung **„KI"** (Festlegung 20.08.2026; ≈ 24 px, `FlatStyle.Flat`, ohne `TabStop`, gedämpfte
+  Darstellung, betont erst unter dem Zeiger), verankert **oben rechts** im Client-Bereich
+  (`Anchor Top|Right`), Tooltip „KI-Assistent (F1)" über `MyResource` (de und en).
 * Klick ruft `Form_KiChat.Oeffnen(this)` (`Views\Help\Form_KiChat.cs:1354`) — die Maske wird **Besitzer** des
   Chatfensters, deshalb bleibt der Chat auch neben einem modalen Dialog bedienbar (2.5, WinForms-Verhalten wie
   in 2.5 belegt). Ist das Chatfenster bereits offen, holt der Klick es nach vorn.
@@ -1067,3 +1072,33 @@ im Konstruktor".
 **Abnahme:** Auf jeder Katalogmaske ist der Knopf sichtbar, stört keine bestehende Bedienfolge (kein Fokusklau,
 kein Tabstopp) und öffnet den Chat mit der Maske als Besitzer; aus einem modalen Dialog heraus bleibt der Chat
 bedienbar und `dialog_lesen` (11.4) nennt die Felder genau dieser Maske.
+
+### 11.9 Hilfe-Betrieb — KI-Oberfläche per Konfiguration ausgeblendet (Auftrag vom 20.08.2026)
+
+**Auftrag:** Alle KI-Beschriftungen und -Aufrufe sollen per Konfiguration ausblendbar sein; das Symbol des
+Aufrufknopfs wechselt dann auf „Hilfe" (Gestaltung analog zum „KI"-Knopf).
+
+**Der Schalter existiert bereits** und wird wiederverwendet, nicht neu erfunden: `KiEinwilligung.Abgeschaltet`
+(`Allgemein\KI\KiEinwilligung.cs:89-93`) — benutzerbezogen unter `HKCU\Software\wp-plan\KiDeaktiviert`,
+**maschinenweit** unter `HKLM\Software\wp-plan` übersteuerbar und aus der Anwendung heraus nicht lösbar
+(`:80-83`, gedacht für Kundeninstallationen, in denen der externe Dienst nicht zulässig ist). Er unterbindet
+heute schon jede Übertragung (`Sicherstellen`, `:145-147`) und blendet den Menüeintrag vollständig aus
+(`MDIMainForm.cs:259-264`, ausgewertet beim Aufklappen, nicht nur beim Start).
+
+**Neues Verhalten bei gesetztem Schalter („Hilfe-Betrieb"):** Statt die Einstiege zu entfernen, wechseln sie
+auf die Hilfe — die Hilfesuche des Fensters bleibt ja nutzbar (1.3: ohne Dienst arbeitet `Form_KiChat` als
+lokale Hilfesuche weiter):
+
+* **Aufrufknopf (11.8):** Beschriftung **„Hilfe"** statt „KI", gleiche Gestaltung, gleicher Platz, Tooltip
+  „Hilfe"; der Klick öffnet dasselbe Fenster — das Fenster entscheidet selbst über seinen Betrieb.
+* **Menüeintrag:** heißt „Hilfe-Assistent…" ohne KI-Zusatz (heute „Hilfe-Assistent (KI)...",
+  `MDIMainForm.cs:226`) und bleibt sichtbar — die heutige Komplettausblendung (`:264`) entfällt zugunsten
+  der Umbenennung.
+* **Chatfenster:** keine KI-Beschriftung, keine Werkzeugliste, kein „Was wird gesendet?", keine
+  Aufgabensteuerung — nur Hilfesuche und Hilfeartikel. Es geht **keine** Anfrage an den Dienst hinaus (das
+  garantiert der bestehende Riegel `Sicherstellen`, unabhängig von der Oberfläche).
+* **Auswertung dynamisch** wie beim Menü: Der Knopf liest den Schalter beim Anbringen (Maskenkonstruktor),
+  das Fenster bei jedem Öffnen — die Verwaltung kann den Schalter im laufenden Programm umlegen.
+
+Der Hilfe-Betrieb ist eine **Darstellungsfrage**; die Sicherheitswirkung (keine Übertragung, keine Aktionen)
+trägt weiterhin `KiEinwilligung` und der Riegel — nicht die Ausblendung.
