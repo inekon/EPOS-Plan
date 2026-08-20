@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 27;
+        public const int ZIEL_VERSION = 28;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -792,6 +792,42 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_27_KOMPONENTEN_KATALOG = 27;
 
+        /// <summary>
+        /// ETAPPE K6 (Konzept Kosten/Energieträger, HF6, Migrationsschritt M-D):
+        /// <b>KWKG-Tatbestand, Anlagenart, Kostenanteil und Pauschalmodus</b> an
+        /// <c>Tab_ProjektWirtschaftlichkeit</c> — plus die Berichtigung des
+        /// CO₂-Preispfads auf die Entscheidung E5.
+        ///
+        /// <list type="bullet">
+        ///   <item><description><b>28a</b>: das additive DDL aus
+        ///     <see cref="SchemaKatalog.Schritt28_KwkgTatbestand"/>. HART — ohne die
+        ///     Spalten gibt es nichts zu speichern.</description></item>
+        ///   <item><description><b>28b</b>: der CO₂-Preispfad ab 2028 auf
+        ///     <b>80 €/t konstant</b> (Entscheidung E5). WEICH — scheitert er, bleibt
+        ///     der Katalog wie er ist und der Schritt gilt trotzdem als gelaufen; die
+        ///     Rechnung liefert dann die Werte des mittleren Szenarios, was ein
+        ///     erklärbares Ergebnis ist und keinen Migrationsabbruch wert.</description></item>
+        /// </list>
+        ///
+        /// <b>Kein DML auf Projektzeilen — und das ist die Ergebnisneutralität.</b>
+        /// Anders als die Schritte 19b, 20b, 21b und 23b belegt dieser Schritt KEINE
+        /// Bestandszeile vor. Bei allen vier Spalten ist der leere Zustand die richtige
+        /// Aussage: <c>KWKG_Tatbestand</c> NULL heißt „nicht angegeben" und rechnet
+        /// weiter wie bisher (eine Vorbelegung mit <c>KEINER</c> nähme jedem
+        /// Bestandsprojekt den Eigenstromzuschlag), <c>KWKG_Anlagenart</c> NULL lässt
+        /// den Kontingent-Override unangetastet, <c>KWKG_Kostenanteil</c> NULL heißt
+        /// „nicht gepflegt", und die YESNO-Spalte belegt Access selbst mit
+        /// <c>False</c> — dem Wert ohne Pauschale.
+        ///
+        /// <b>Warum die Katalogberichtigung hierher gehört.</b> Der Gesetzeskatalog sät
+        /// sich generationsweise selbst nach (<c>GesetzKatalog.StelleKatalogSicher</c>),
+        /// legt aber nur NEUE Zeilen an. Eine bereits gesäte Prognosezeile, die das
+        /// Konzept verwirft, erreicht er nicht. Deshalb hier — eng gebunden an Wert UND
+        /// Quelle, damit eine vom Anwender geänderte Zeile unangetastet bleibt, und
+        /// damit zugleich idempotent: Der zweite Lauf findet nichts mehr.
+        /// </summary>
+        public const int SCHRITT_28_KWKG_TATBESTAND = 28;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -1061,6 +1097,27 @@ namespace WindowsFormsApplication1
         /// stehen und „Sonstiges" nur EINMAL entsteht (der Katalog ist flach).</summary>
         public static int DatenNebenpositionenGesaet { get; private set; }
 
+        // --- Zählwerk der Etappe K6 (Schritte 28 und 29) ------------------------------
+
+        /// <summary>28b: CO₂-Stützstellen, die auf den Pfad der Entscheidung E5
+        /// berichtigt wurden (höchstens 1 — die Zeile ab 2028).</summary>
+        public static int DatenCo2PfadBerichtigt { get; private set; }
+
+        /// <summary>28b: Stützstellen des verworfenen MITTLEREN Szenarios, die entfernt
+        /// wurden (höchstens 1 — die Zeile ab 2030).</summary>
+        public static int DatenCo2PfadEntfernt { get; private set; }
+
+        /// <summary>29: erfolgreich entfernte Alttabellen der HF1-Löschliste.</summary>
+        public static int DatenAlttabellenGeloescht { get; private set; }
+
+        /// <summary>29: Alttabellen, deren DROP scheiterte — sie bleiben stehen und
+        /// gehören in die manuelle Access-Checkliste.</summary>
+        public static int DatenAlttabellenOffen { get; private set; }
+
+        /// <summary>29: gelöschte Kategorie-3-Zeilen in <c>Tab_ProjektWerte</c>
+        /// (Entscheidung E3).</summary>
+        public static int DatenKategorie3Geloescht { get; private set; }
+
         /// <summary>
         /// R7: Anlagen, bei denen der Bezeichner NICHT eindeutig auflösbar war (kein
         /// Treffer oder mehrere gleichnamige Projektkopien). Der Fremdschlüssel bleibt
@@ -1312,6 +1369,18 @@ namespace WindowsFormsApplication1
                         "Nebenpositionen in Tab_Kostenfaktor (Etappe K5, HF5/M-C)",
                         "Der Komponenten- und Positionskatalog konnte nicht angelegt werden.",
                         Schritt_27_KomponentenKatalog),
+
+            // ETAPPE K6 (Konzept Kosten/Energieträger, HF6, Migrationsschritt M-D) -
+            //       Die vier KWKG-Projektangaben und die Berichtigung des CO2-Preispfads
+            //       auf die Entscheidung E5. Reines DDL auf Tab_ProjektWirtschaftlichkeit
+            //       plus ein eng gebundenes UPDATE/DELETE auf zwei KATALOGzeilen; keine
+            //       Projektzeile wird angefasst.
+            new Schritt(SCHRITT_28_KWKG_TATBESTAND,
+                        "KWKG-Angaben: Tatbestand § 6 Abs. 3, Anlagenart § 8, Kostenanteil " +
+                        "und Pauschalmodus § 9 in Tab_ProjektWirtschaftlichkeit; " +
+                        "CO2-Preispfad ab 2028 auf 80 €/t (Etappe K6, HF6/M-D)",
+                        "Die KWKG-Angaben der Wirtschaftlichkeitsparameter konnten nicht angelegt werden.",
+                        Schritt_28_KwkgTatbestand),
         };
 
         // =================================================================================
@@ -1369,6 +1438,11 @@ namespace WindowsFormsApplication1
             DatenKomponentenGesaet = 0;
             DatenHauptpositionenGesaet = 0;
             DatenNebenpositionenGesaet = 0;
+            DatenCo2PfadBerichtigt = 0;
+            DatenCo2PfadEntfernt = 0;
+            DatenAlttabellenGeloescht = 0;
+            DatenAlttabellenOffen = 0;
+            DatenKategorie3Geloescht = 0;
             _eindeutigkeitGeprueft = false;
 
             var l = new Lauf();
@@ -2923,6 +2997,123 @@ namespace WindowsFormsApplication1
 
             angelegt = 1;
             return true;
+        }
+
+        // =================================================================================
+        // Schritt 28 (Etappe K6, HF6/M-D) - KWKG-Angaben und CO2-Preispfad
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 28 (Etappe K6): die vier KWKG-Projektangaben an
+        /// <c>Tab_ProjektWirtschaftlichkeit</c> plus die Berichtigung des CO2-Preispfads
+        /// auf die Entscheidung E5. Begruendung fuer Spalten, Typen, Breiten und die
+        /// bewusst fehlende Vorbelegung steht bei
+        /// <see cref="SchemaKatalog.Schritt28_KwkgTatbestand"/> und bei
+        /// <see cref="SCHRITT_28_KWKG_TATBESTAND"/>.
+        /// </summary>
+        private static bool Schritt_28_KwkgTatbestand(Lauf l)
+        {
+            // --- 28a) Die vier Spalten -----------------------------------------------
+            //
+            // Wie bei Schritt 21: Tab_ProjektWirtschaftlichkeit gehoert dem
+            // Wirtschaftlichkeitsmodul und wird von WirtschaftlichkeitCtrl
+            // .StelleTabellenSicher angelegt - VOLLSTAENDIG, einschliesslich der Spalten
+            // dieses Schritts. Fehlt sie (frische Installation, in der das Modul noch nie
+            // geoeffnet war), ist hier nichts zu tun: Der Schritt meldet das und gilt als
+            // erledigt, statt die Migration dauerhaft auf Stand 27 festzuhalten.
+            if (TabellenSchema(l, SchemaKatalog.TAB_PROJEKTWIRTSCHAFT) == null)
+                l.Notiz("28a: " + SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + ": Tabelle (noch) nicht " +
+                        "vorhanden - das Wirtschaftlichkeitsmodul legt sie beim ersten Zugriff " +
+                        "mit allen Spalten selbst an; Schritt 28a ueberspringt sie.");
+            else if (!SpaltenAnlegen(l, SchemaKatalog.Schritt28_KwkgTatbestand))
+                return false;
+            else
+                l.Notiz("28a: KWKG_Tatbestand, KWKG_Anlagenart, KWKG_Kostenanteil und " +
+                        "KWKG_Pauschalmodus angelegt. KEINE Wertevorbelegung - leer heisst " +
+                        "\"nicht angegeben\" und rechnet wie bisher (Ergebnisneutralitaet).");
+
+            // --- 28b) CO2-Preispfad auf die Entscheidung E5 --------------------------
+            //
+            // WEICH: Scheitert die Berichtigung, bleibt der Katalog stehen und der Schritt
+            // gilt trotzdem als gelaufen. Die Rechnung liefert dann die Werte des
+            // mittleren Szenarios - ein erklaerbares Ergebnis, keinen Abbruch wert.
+            Co2PfadBerichtigen(l);
+            return true;
+        }
+
+        /// <summary>
+        /// <b>28b</b>: Der CO2-Preispfad ab 2028 auf <b>80 EUR/t konstant</b>
+        /// (Entscheidung E5). Zwei eng gebundene Anweisungen auf
+        /// <c>Tab_Gesetzesparameter</c>:
+        ///
+        /// <list type="number">
+        ///   <item><description>die 2028er-Stuetzstelle von 95 auf 80 EUR/t, mit neuer
+        ///     Quelle;</description></item>
+        ///   <item><description>die 2030er-Stuetzstelle (125 EUR/t) entfernen - „konstant
+        ///     ab 2028" ist EINE Stuetzstelle, eine zweite mit anderem Wert widerspraeche
+        ///     ihr.</description></item>
+        /// </list>
+        ///
+        /// <b>Warum die Bedingung Wert UND Quelle prueft.</b> Getroffen wird ausschliesslich
+        /// die unveraenderte Seed-Zeile des mittleren Szenarios. Hat der Anwender den Wert
+        /// gepflegt oder die Quelle ueberschrieben, bleibt seine Zeile stehen - die
+        /// Stuetzstellen sind laut E5 ausdruecklich frei editierbar, und eine Migration
+        /// darf eine Anwenderentscheidung nicht ueberschreiben.
+        ///
+        /// <b>Idempotent:</b> Der zweite Lauf findet weder Wert 95 noch Wert 125 mehr und
+        /// meldet 0 - unabhaengig vom Schrittmarker.
+        ///
+        /// <b>Keine Parameter in Unterabfragen</b> (ACE-Falle): Beide Anweisungen sind
+        /// flache UPDATE/DELETE auf EINE Tabelle, ohne verschachtelte SELECTs.
+        /// </summary>
+        private static void Co2PfadBerichtigen(Lauf l)
+        {
+            const string TAB = GesetzKatalog.TAB_GESETZESPARAMETER;
+            const string QUELLE_NEU =
+                "Konzept Kosten/Energietraeger E5 - konservativ, Marktkommentare 2026; frei editierbar";
+
+            if (TabellenSchema(l, TAB) == null)
+            {
+                l.Notiz("28b: " + TAB + " ist (noch) nicht vorhanden - GesetzKatalog." +
+                        "StelleKatalogSicher legt sie beim ersten Zugriff mit den Werten der " +
+                        "Entscheidung E5 an; nichts zu berichtigen.");
+                return;
+            }
+
+            int n = NonQuery(l,
+                "UPDATE [" + TAB + "] SET [Wert] = 80, [Status] = ?, Quelle = ? " +
+                "WHERE Schluessel = ? AND JahrVon = 2028 AND [Wert] = 95 " +
+                "AND Quelle LIKE '%Projektionsbericht%'",
+                new OleDbParameter("@sta", DbWerte.GESETZ_STATUS_PROGNOSE),
+                new OleDbParameter("@que", QUELLE_NEU),
+                new OleDbParameter("@sch", DbWerte.GESETZ_CO2_PREIS_NEHS));
+
+            if (n < 0)
+                l.Notiz("28b: Berichtigung der 2028er-Stuetzstelle fehlgeschlagen - der " +
+                        "CO2-Pfad bleibt auf dem mittleren Szenario. MANUELL nachzuholen " +
+                        "ueber die Maske \"Gesetzliche Parameter\".");
+            else
+            {
+                DatenCo2PfadBerichtigt = n;
+                l.Notiz("28b: " + n + " Stuetzstelle(n) ab 2028 auf 80 EUR/t gesetzt " +
+                        "(Status PROGNOSE, Entscheidung E5).");
+            }
+
+            int d = NonQuery(l,
+                "DELETE FROM [" + TAB + "] " +
+                "WHERE Schluessel = ? AND JahrVon = 2030 AND [Wert] = 125 " +
+                "AND Quelle LIKE '%Projektionsbericht%'",
+                new OleDbParameter("@sch", DbWerte.GESETZ_CO2_PREIS_NEHS));
+
+            if (d < 0)
+                l.Notiz("28b: Die 2030er-Stuetzstelle des mittleren Szenarios liess sich nicht " +
+                        "entfernen. MANUELL nachzuholen.");
+            else
+            {
+                DatenCo2PfadEntfernt = d;
+                l.Notiz("28b: " + d + " Stuetzstelle(n) des verworfenen mittleren Szenarios " +
+                        "(2030, 125 EUR/t) entfernt.");
+            }
         }
 
         // =================================================================================

@@ -510,6 +510,28 @@ namespace WindowsFormsApplication1
         public const string ENERGIESTEUER_WAHL_53A = "PARAGRAF_53A";
 
         /// <summary>
+        /// ETAPPE K6 — Energiesteuerentlastung nach § 54 EnergieStG (Heizstoffe im
+        /// produzierenden Gewerbe, „Kesselvergleich", Formular 1450) — Teilsatz
+        /// (Erdgas 1,38 €/MWh · Heizoel EL 15,34 €/1.000 l · Fluessiggas
+        /// 15,15 €/1.000 kg) <b>abzueglich eines Sockelbetrags von 250 €/Kalenderjahr</b>.
+        ///
+        /// <para><b>Zwei Voraussetzungen, beide geprueft.</b> Erstens die
+        /// Unternehmensart (produzierendes Gewerbe oder Land- und Forstwirtschaft) —
+        /// dieselbe Bedingung wie bei § 9b StromStG. Zweitens der Ausschluss gegen
+        /// § 53a Abs. 5: Beide Normen schliessen einander aus (Grundlagen, Abschnitt 4),
+        /// und die Wahl ist deshalb eine Auswahl und keine Summe.</para>
+        ///
+        /// <para><b>Bewusste Luecke, im Ergebnis ausgewiesen.</b> § 54 zielt auf
+        /// HEIZstoffe. Die Anlagenliste der Steuerpruefung fuehrt ausschliesslich BHKW;
+        /// Kessel- und Spitzenlastbrennstoff sind dort nicht enthalten. Wer § 54 waehlt,
+        /// bekommt die Entlastung deshalb nur auf den BHKW-Brennstoff, und die Rechnung
+        /// sagt das als Begruendungszeile ausdruecklich (K6-Protokoll, Abschnitt
+        /// „bewusste Luecken").</para>
+        /// <inheritdoc cref="ENERGIESTEUER_WAHL_KEINE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string ENERGIESTEUER_WAHL_54 = "PARAGRAF_54";
+
+        /// <summary>
         /// Aufteilung des Brennstoffs auf Strom und Waerme: <b>keine Aufteilung</b>, der
         /// gesamte im BHKW eingesetzte Brennstoff ist entlastungsfaehig —
         /// <b>Vorbelegung</b> aller Bestandszeilen (Migrationsschritt 20b) und das
@@ -627,6 +649,16 @@ namespace WindowsFormsApplication1
         //   mit dem Ueberschreibwert der Anlage bzw. mit dem Projektsatz. Deshalb
         //   bleiben sie in Schritt 22 auch ohne Vorbelegung: Eine leere Angabe ist
         //   „nicht erfasst" und aendert an keiner Bestandsrechnung etwas.
+        //
+        //   ETAPPE K6 (Migrationsschritt 28): DIESELBEN Steuerwerte tragen seither
+        //   auch die beiden PROJEKTangaben Tab_ProjektWirtschaftlichkeit.
+        //   KWKG_Anlagenart und KWKG_Tatbestand. Bewusst KEINE zweite Konstantenreihe:
+        //   Projekt- und Anlagenangabe laufen in denselben KwkgSatzRechner, und zwei
+        //   Wertevorraete fuer dieselbe Fachfrage waeren eine zweite Wahrheit. Das
+        //   Konzept (§ 8.1) nennt die Werte in Kleinschreibung („keiner",
+        //   „anlage_bis_100kw", „kundenanlage", „stromkostenintensiv", „neu",
+        //   „modernisiert", „nachgeruestet"); massgeblich sind die hier bereits
+        //   eingefrorenen Grossschreibungen — gleiche Bedeutung, EIN Wertevorrat.
         // =====================================================================
 
         /// <summary>

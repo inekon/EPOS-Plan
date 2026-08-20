@@ -206,6 +206,13 @@ namespace WindowsFormsApplication1
                                   "KWKG_Bonus DOUBLE, " +
                                   "KWKG_Vbh_Jahresdeckel DOUBLE, " +
                                   "KWKG_Vbh_Kontingent DOUBLE, " +
+                                  // ETAPPE K6 (HF6/M-D): die vier KWKG-Projektangaben auch im
+                                  // CREATE — sonst hätte eine frisch angelegte Tabelle sie erst
+                                  // nach dem SpalteSicher-Nachzug weiter unten.
+                                  "KWKG_Tatbestand TEXT(30), " +
+                                  "KWKG_Anlagenart TEXT(20), " +
+                                  "KWKG_Kostenanteil DOUBLE, " +
+                                  "KWKG_Pauschalmodus YESNO, " +
                                   "GeaendertAm DATETIME)");
                     }
                     catch { }
@@ -349,6 +356,16 @@ namespace WindowsFormsApplication1
                     SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_ENERGIESTEUER_WAHL, "TEXT(20)");
                     SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_AUFTEILUNG, "TEXT(30)");
 
+                    // ETAPPE K6 (HF6/M-D) — die vier KWKG-Projektangaben. Regulär legt sie
+                    // Migrationsschritt 28 an; das hier ist die tolerante VORSORGE
+                    // unmittelbar vor dem Zugriff (doppelte Schema-Wahrheit dieses Moduls,
+                    // Konzept § 9 Punkt 2). WERTE werden auch hier nicht vorbelegt: leer
+                    // heißt „nicht angegeben", und genau das hält den Bestand unverändert.
+                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_TATBESTAND, "TEXT(30)");
+                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_ANLAGENART, "TEXT(20)");
+                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL, "DOUBLE");
+                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS, "YESNO");
+
                     // ETAPPE E5 — der Bedarf OHNE Anlage je Zone: die Bezugsgröße der
                     // Differenzmethode. Sie fehlte im Modell vollständig.
                     SpalteSicher(conn, TAB_MATRIX, "BedarfMWh", "DOUBLE");
@@ -467,6 +484,16 @@ namespace WindowsFormsApplication1
                     if (r.Table.Columns.Contains("KWKG_Inbetriebnahme") && r["KWKG_Inbetriebnahme"] != DBNull.Value)
                         p.KwkgInbetriebnahme = Convert.ToDateTime(r["KWKG_Inbetriebnahme"]);
                     p.KwkgAbschlagNegativ = D(r, "KWKG_Abschlag_Negativ") ?? 0;
+
+                    // ETAPPE K6 — KWKG-Tatbestand, Anlagenart, Kostenanteil, Pauschale.
+                    // Ein LEERER Steuerwert heißt hier „nicht angegeben" und ist NICHT
+                    // gleichbedeutend mit KEINER bzw. NEUANLAGE: Ohne Erfassung rechnet
+                    // die Anwendung wie bisher und weist das aus (Begründung an
+                    // WirtschaftlichkeitParameter.KwkgTatbestand).
+                    p.KwkgTatbestand = Text(r, SchemaKatalog.SPALTE_PW_KWKG_TATBESTAND);
+                    p.KwkgAnlagenart = Text(r, SchemaKatalog.SPALTE_PW_KWKG_ANLAGENART);
+                    p.KwkgKostenanteil = D(r, SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL) ?? 0;
+                    p.KwkgPauschalmodus = B(r, SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS);
 
                     // ETAPPE E4 — Steuerangaben. Ein LEERER Steuerwert bedeutet genau
                     // dasselbe wie der Vorgabewert: keine Gutschrift. Eine nicht
@@ -664,6 +691,10 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_EMISSIONSMETHODE + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_KONVENTION + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_NACHWEIS + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_KWKG_TATBESTAND + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_KWKG_ANLAGENART + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS + "] = ?, " +
                     "GeaendertAm = ? WHERE ID_Projekt = ?",
                     new OleDbParameter("@z", p.Zinssatz),
                     new OleDbParameter("@t", p.Betrachtungszeitraum),
@@ -704,6 +735,16 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("@bnw", OleDbType.VarWChar, 30)
                     { Value = p.NachhaltigkeitsnachweisBiomasse
                               ? DbWerte.BIOMASSE_NACHWEIS_JA : DbWerte.BIOMASSE_NACHWEIS_NEIN },
+                    // ETAPPE K6 — die leere Angabe muss LEER in die Datenbank: Sie ist die
+                    // Aussage „nicht angegeben" und damit etwas anderes als KEINER bzw.
+                    // NEUANLAGE. Deshalb hier bewusst KEIN Steuerwert(...)-Rückfall.
+                    new OleDbParameter("@ktb", OleDbType.VarWChar, 30)
+                    { Value = LeerAlsNull(p.KwkgTatbestand) },
+                    new OleDbParameter("@kart", OleDbType.VarWChar, 20)
+                    { Value = LeerAlsNull(p.KwkgAnlagenart) },
+                    new OleDbParameter("@kant", OleDbType.Double)
+                    { Value = p.KwkgKostenanteil > 0 ? (object)p.KwkgKostenanteil : DBNull.Value },
+                    new OleDbParameter("@kpau", OleDbType.Boolean) { Value = p.KwkgPauschalmodus },
                     new OleDbParameter("@am", OleDbType.Date) { Value = DateTime.Now },
                     new OleDbParameter("@p", p.IdStamm));
                 if (rows > 0) return true;
@@ -728,8 +769,12 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_EMISSIONSMETHODE + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_KONVENTION + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_NACHWEIS + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_KWKG_TATBESTAND + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_KWKG_ANLAGENART + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS + "], " +
                     "GeaendertAm) " +
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     new OleDbParameter("@id", id),
                     new OleDbParameter("@p", p.IdStamm),
                     new OleDbParameter("@z", p.Zinssatz),
@@ -771,9 +816,29 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("@bnw", OleDbType.VarWChar, 30)
                     { Value = p.NachhaltigkeitsnachweisBiomasse
                               ? DbWerte.BIOMASSE_NACHWEIS_JA : DbWerte.BIOMASSE_NACHWEIS_NEIN },
+                    new OleDbParameter("@ktb", OleDbType.VarWChar, 30)
+                    { Value = LeerAlsNull(p.KwkgTatbestand) },
+                    new OleDbParameter("@kart", OleDbType.VarWChar, 20)
+                    { Value = LeerAlsNull(p.KwkgAnlagenart) },
+                    new OleDbParameter("@kant", OleDbType.Double)
+                    { Value = p.KwkgKostenanteil > 0 ? (object)p.KwkgKostenanteil : DBNull.Value },
+                    new OleDbParameter("@kpau", OleDbType.Boolean) { Value = p.KwkgPauschalmodus },
                     new OleDbParameter("@am", OleDbType.Date) { Value = DateTime.Now });
             }
             catch { return false; }
+        }
+
+        /// <summary>
+        /// ETAPPE K6 — eine leere Angabe geht als <c>NULL</c> in die Datenbank, nicht als
+        /// Leerstring. Gegenstück zu <see cref="Steuerwert"/>: Dort ist „leer" ein
+        /// Fehler und wird durch die Vorgabe ersetzt, hier ist „leer" die Aussage
+        /// „nicht angegeben" und muss erhalten bleiben.
+        /// </summary>
+        private static object LeerAlsNull(string wert)
+        {
+            if (wert == null) return DBNull.Value;
+            wert = wert.Trim();
+            return wert.Length == 0 ? (object)DBNull.Value : wert;
         }
 
         /// <summary>Steuerwert oder Vorgabe — ein leeres Feld darf nie in die Datenbank
@@ -1206,6 +1271,14 @@ namespace WindowsFormsApplication1
             public double Behg;             // €/a BEHG-Abgabe Jahr 1 (steigt mit p_E)
 
             /// <summary>
+            /// ETAPPE K6 (Konzept § 8.3, E5): die CO₂-Abgabe <b>jahresscharf</b> [€],
+            /// Index 1…T, aus dem Preispfad des Gesetzeskatalogs. <c>null</c> = kein
+            /// Pfad — dann gilt der konstante Projektwert <c>CO2_Preis</c> als Override
+            /// und <see cref="Behg"/> wird wie bisher mit p_E fortgeschrieben.
+            /// </summary>
+            public double[] BehgJeJahr;
+
+            /// <summary>
             /// ETAPPE E4 (L1): alle jahresscharfen Erlösreihen des Projekts, benannt —
             /// KWK-Zuschlag und die drei Steuergutschriften. Bis E4 stand hier ein
             /// einzelnes <c>double[] KwkgReihe</c>.
@@ -1368,7 +1441,21 @@ namespace WindowsFormsApplication1
                     v.BiogenBehgMengeMWh.ToString("N0") + " MWh flüssige Biomasse mit " +
                     efOhneNachweis.ToString("N1") + " g CO₂/kWh abgabepflichtig.");
             }
-            e.Behg = p.CO2Preis > 0 ? behgBasisT * p.CO2Preis : 0;
+            // ETAPPE K6 (Konzept § 8.3, Entscheidung E5): Der CO₂-Preis kommt
+            // JAHRESGENAU aus dem Gesetzeskatalog (Klasse CO₂-Preispfad), der
+            // Projektwert CO2_Preis ist nur noch der Override „konstanter Preis".
+            //
+            // ACHTUNG, DIE EINE GEWOLLTE ERGEBNISÄNDERUNG DER ETAPPE: Bis K6 bedeutete
+            // CO2_Preis = 0 „CO₂-Abgabe aus"; ab K6 bedeutet es „Pfad aus dem Katalog".
+            // Jedes Bestandsprojekt mit 0 bekommt damit eine BEHG-Abgabe, die es vorher
+            // nicht hatte. Das ist die im Konzept § 10 angekündigte Änderung; sie steht
+            // im Hinweisfeld des Ergebnisses, damit sie niemanden überrascht.
+            string co2Hinweis;
+            e.BehgJeJahr = BaueCo2Reihe(p, behgBasisT, out co2Hinweis);
+            e.Behg = e.BehgJeJahr != null ? e.BehgJeJahr[1]
+                                          : (p.CO2Preis > 0 ? behgBasisT * p.CO2Preis : 0);
+            if (co2Hinweis != null && behgBasisT > 0)
+                e.Hinweis = Anhaengen(e.Hinweis, co2Hinweis);
 
             // ETAPPE E2 (L6): die erreichten ELEKTRISCHEN Vollbenutzungsstunden — die
             // Bezugsgröße der KWKG-Deckelung. Sie wird UNABHÄNGIG davon geführt, ob ein
@@ -1378,10 +1465,22 @@ namespace WindowsFormsApplication1
             string vbhHinweisUnbenutzt;
             e.VbhElektrisch = VbhElektrisch(v, out vbhHinweisUnbenutzt);
 
-            double kwkgJahr1;
-            string kwkgHinweis;
-            double[] kwkgReihe = BaueKwkgReihe(v, p, e.Matrix, e.KwkgModule,
-                                               out kwkgJahr1, out kwkgHinweis);
+            // ETAPPE K6 — Pauschale § 9 KWKG VOR der laufenden Reihe: Greift sie, gibt
+            // es keinen laufenden Zuschlag mehr („damit entfällt die Einzelabrechnung").
+            double[] pauschalReihe;
+            string pauschalHinweis;
+            bool pauschalGreift = PauschaleReihe(v, p, out pauschalReihe, out pauschalHinweis);
+            if (pauschalReihe != null)
+                e.ErloesReihen.Add(new KapitalwertRechner.ErloesReihe(
+                    KapitalwertRechner.ErloesReihe.KWKG_PAUSCHALE, pauschalReihe));
+            if (pauschalHinweis != null)
+                e.Hinweis = Anhaengen(e.Hinweis, pauschalHinweis);
+
+            double kwkgJahr1 = 0;
+            string kwkgHinweis = null;
+            double[] kwkgReihe = pauschalGreift
+                ? null
+                : BaueKwkgReihe(v, p, e.Matrix, e.KwkgModule, out kwkgJahr1, out kwkgHinweis);
             e.KwkgJahr1 = kwkgJahr1;
             if (kwkgReihe != null)
                 e.ErloesReihen.Add(new KapitalwertRechner.ErloesReihe(
@@ -1651,8 +1750,35 @@ namespace WindowsFormsApplication1
             jahr1 = 0;
             hinweis = null;
             var hinweise = new List<string>();   // Meldungen kombinieren, nie überschreiben
-            bool aktiv = p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0;
-            if (!aktiv || v.Ergebnis == null || v.Ergebnis.BHKW == null) return null;
+
+            // ---------- ETAPPE K6: Eigenstrom-Tatbestand § 6 Abs. 3 (HF6) ----------
+            // Nach § 7 Abs. 2 gibt es den Zuschlag auf SELBST GENUTZTEN Strom nicht
+            // generell, sondern nur in den drei Tatbeständen des § 6 Abs. 3. Bis K6
+            // rechnete der projektweite Weg den eingetragenen Satz ungeprüft.
+            //
+            // ERGEBNISNEUTRAL FÜR DEN BESTAND, und das ist der Grund für die drei
+            // Zweige: Ein Bestandsprojekt hat die Angabe nie gemacht (Spalte NULL) —
+            // dort bleibt der Satz stehen und der Hinweis sagt, dass die Voraussetzung
+            // ungeprüft ist. Erst die AUSDRÜCKLICHE Wahl „keiner" nimmt den Satz weg.
+            double satzEigenProjekt = p.KwkgBonus;
+            string tatbestand = (p.KwkgTatbestand ?? "").Trim();
+            if (satzEigenProjekt > 0)
+            {
+                if (string.Equals(tatbestand, DbWerte.KWKG_EIGENFALL_KEINER, StringComparison.Ordinal))
+                {
+                    satzEigenProjekt = 0;
+                    hinweise.Add(MyResource.Resource.WIRT_KWKG_TATBESTAND_KEINER);
+                }
+                else if (tatbestand.Length == 0)
+                    hinweise.Add(MyResource.Resource.WIRT_KWKG_TATBESTAND_OFFEN);
+            }
+
+            bool aktiv = satzEigenProjekt > 0 || p.KwkgBonusEinspeisung > 0;
+            if (!aktiv || v.Ergebnis == null || v.Ergebnis.BHKW == null)
+            {
+                if (hinweise.Count > 0) hinweis = string.Join(" | ", hinweise);
+                return null;
+            }
             double stromMWh = v.Ergebnis.BHKW.Stromproduktion;
             if (stromMWh <= 0) return null;      // kein KWK-Strom -> nichts zu vergüten
 
@@ -1711,6 +1837,11 @@ namespace WindowsFormsApplication1
 
             int foerderbeginn = Foerderbeginn(p);
 
+            // ETAPPE K6: das Vbh-Kontingent — Override, sonst nach § 8 aus der
+            // Anlagenart abgeleitet. Der Bestand trägt einen Override und bleibt
+            // dadurch unverändert (Begründung an KontingentDesProjekts).
+            double kontingentProjekt = KontingentDesProjekts(p, foerderbeginn, hinweise);
+
             // ------- Guard Kap. 8.4: Ausschreibungsgrenze und Heizöl, JE ANLAGE -------
             // NACHTRAG ZU E2 (Nutzerentscheidung 19.08.2026): Das Gesetz stellt auf die
             // EINZELNE KWK-Anlage ab — oberhalb der Grenze gibt es den Zuschlag nur über
@@ -1760,7 +1891,8 @@ namespace WindowsFormsApplication1
                     hinweise.Add(MyResource.Resource.WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR);
 
                 // ERSATZWEG: die projektweite Rechnung, Zeile für Zeile der Stand vor E6.
-                double[] ersatz = ReiheProjektweit(p, matrix, stromMWh, vbh, foerderbeginn, out jahr1);
+                double[] ersatz = ReiheProjektweit(p, matrix, stromMWh, vbh, foerderbeginn,
+                                                   satzEigenProjekt, kontingentProjekt, out jahr1);
                 if (hinweise.Count > 0) hinweis = string.Join(" | ", hinweise);
                 return ersatz;
             }
@@ -1802,7 +1934,8 @@ namespace WindowsFormsApplication1
                                            auswahl.Klartext(auswahl.OelOhneIbn)));
 
             double[] reihe = ReiheJeAnlage(v, p, matrix, auswahl, foerderbeginn, hinweise,
-                                           nachweise, out jahr1);
+                                           nachweise, satzEigenProjekt, kontingentProjekt,
+                                           out jahr1);
             if (hinweise.Count > 0) hinweis = string.Join(" | ", hinweise);
             return reihe;
         }
@@ -1833,8 +1966,14 @@ namespace WindowsFormsApplication1
         /// keine Modulzeilen, oder Namen und Anzahl passen nicht zusammen. Dann ist die
         /// Projektsumme die einzige verfügbare Aussage.
         /// </summary>
+        /// <param name="satzEigenProjekt">ETAPPE K6: der Eigenstrom-Satz NACH der Prüfung
+        /// des § 6 Abs. 3 — identisch mit <c>p.KwkgBonus</c>, außer der Anwender hat den
+        /// Tatbestand ausdrücklich auf „keiner" gesetzt (dann 0).</param>
+        /// <param name="kontingentProjekt">ETAPPE K6: das Vbh-Kontingent — der Override
+        /// aus <c>p.KwkgVbhKontingent</c>, sonst der nach § 8 abgeleitete Wert.</param>
         private double[] ReiheProjektweit(WirtschaftlichkeitParameter p, StromMatrix matrix,
                                           double stromMWh, double vbh, int foerderbeginn,
+                                          double satzEigenProjekt, double kontingentProjekt,
                                           out double jahr1)
         {
             jahr1 = 0;
@@ -1844,10 +1983,10 @@ namespace WindowsFormsApplication1
             //  - Fallback ohne Stundenreihen: Eigenstrom-Satz auf die Gesamtmenge (W2).
             double bonusVoll;
             if (matrix != null && matrix.KwkEigenGesamtMWh + matrix.KwkEinspeisungGesamtMWh > 0)
-                bonusVoll = matrix.KwkEigenGesamtMWh * 1000.0 * (p.KwkgBonus / 100.0)
+                bonusVoll = matrix.KwkEigenGesamtMWh * 1000.0 * (satzEigenProjekt / 100.0)
                           + matrix.KwkEinspeisungGesamtMWh * 1000.0 * (p.KwkgBonusEinspeisung / 100.0);
             else
-                bonusVoll = stromMWh * 1000.0 * (p.KwkgBonus / 100.0);
+                bonusVoll = stromMWh * 1000.0 * (satzEigenProjekt / 100.0);
             if (bonusVoll <= 0) return null;
 
             if (_staffelCache == null) _staffelCache = LadeKwkgStaffel();
@@ -1856,7 +1995,7 @@ namespace WindowsFormsApplication1
 
             int T = Math.Max(1, p.Betrachtungszeitraum);
             double[] reihe = new double[T + 1];
-            double rest = p.KwkgVbhKontingent;
+            double rest = kontingentProjekt;
             for (int t = 1; t <= T; t++)
             {
                 if (rest <= 0) break;
@@ -1896,10 +2035,19 @@ namespace WindowsFormsApplication1
         /// ist 1; ihre Vbh sind die leistungsgewichteten Vbh des Projekts (bei einem Modul
         /// identisch); Satz, Deckel und Kontingent fallen auf den Projektwert zurück.</para>
         /// </summary>
+        /// <param name="satzEigenProjekt">ETAPPE K6: der Eigenstrom-Satz des PROJEKTS nach
+        /// der Prüfung des § 6 Abs. 3 — er greift für jede Anlage ohne eigenen Satz.
+        /// Trägt eine Anlage einen eigenen Wert, gilt er weiter unverändert; die Prüfung
+        /// des Tatbestands je Anlage bleibt beim Katalogvorschlag aus E6.</param>
+        /// <param name="kontingentProjekt">ETAPPE K6: das Vbh-Kontingent des PROJEKTS —
+        /// Override, sonst nach § 8 abgeleitet; Rückfall für jede Anlage ohne eigenen
+        /// Wert.</param>
         private double[] ReiheJeAnlage(VariantenDaten v, WirtschaftlichkeitParameter p,
                                        StromMatrix matrix, KwkgAnlagenauswahl auswahl,
                                        int foerderbeginn, List<string> hinweise,
-                                       List<KwkgModulNachweis> nachweise, out double jahr1)
+                                       List<KwkgModulNachweis> nachweise,
+                                       double satzEigenProjekt, double kontingentProjekt,
+                                       out double jahr1)
         {
             jahr1 = 0;
             if (_staffelCache == null) _staffelCache = LadeKwkgStaffel();
@@ -1927,7 +2075,7 @@ namespace WindowsFormsApplication1
                 double eigenMWh = mitMatrix ? matrix.KwkEigenGesamtMWh * anteil : stromAnlageMWh;
                 double einspMWh = mitMatrix ? matrix.KwkEinspeisungGesamtMWh * anteil : 0;
 
-                double satzEigen = a.SatzEigenCt ?? p.KwkgBonus;
+                double satzEigen = a.SatzEigenCt ?? satzEigenProjekt;   // K6: geprüfter Projektsatz
                 double satzEinsp = a.SatzEinspCt ?? p.KwkgBonusEinspeisung;
                 double bonusVoll = eigenMWh * 1000.0 * (satzEigen / 100.0)
                                  + einspMWh * 1000.0 * (satzEinsp / 100.0);
@@ -1938,7 +2086,7 @@ namespace WindowsFormsApplication1
 
                 int beginn = a.Inbetriebnahme.HasValue ? a.Inbetriebnahme.Value.Year : foerderbeginn;
                 double kontingent = a.VbhKontingent.HasValue && a.VbhKontingent.Value > 0
-                                  ? a.VbhKontingent.Value : p.KwkgVbhKontingent;
+                                  ? a.VbhKontingent.Value : kontingentProjekt;   // K6
                 double deckelFest = a.VbhDeckel.HasValue && a.VbhDeckel.Value > 0
                                   ? a.VbhDeckel.Value : p.KwkgVbhJahresdeckel;
 
@@ -2038,6 +2186,189 @@ namespace WindowsFormsApplication1
         {
             return p.KwkgInbetriebnahme.HasValue ? p.KwkgInbetriebnahme.Value.Year
                                                  : DateTime.Now.Year + 1;
+        }
+
+        // =====================================================================
+        // ETAPPE K6 — CO₂-Preispfad (Konzept § 8.3, Entscheidung E5)
+        // =====================================================================
+
+        /// <summary>
+        /// Die CO₂-Abgabe <b>jahresscharf</b> [€], Index 1…T — Bemessungsmenge mal dem
+        /// Preis DIESES Kalenderjahres aus der Katalogklasse CO₂-Preispfad.
+        /// <c>null</c> = kein Pfad, weil der Projektwert <c>CO2_Preis</c> als Override
+        /// gesetzt ist; dann gilt der Bestandsweg (konstanter Preis, mit p_E
+        /// fortgeschrieben).
+        ///
+        /// <para><b>Die Umkehr der Bedeutung von 0.</b> Bis K6 hieß <c>CO2_Preis = 0</c>
+        /// „CO₂-Abgabe aus". Ab K6 heißt es „Pfad aus dem Gesetzeskatalog" — so hat es
+        /// das Konzept in § 8.3 entschieden (E5). Für Bestandsprojekte ist das die eine
+        /// gewollte Ergebnisänderung dieser Etappe: Sie bekommen eine Abgabe, die sie
+        /// vorher nicht hatten. Wer den alten Zustand will, trägt einen Preis ein oder
+        /// löscht die Stützstellen der Klasse.</para>
+        ///
+        /// <para><b>Warum <see cref="Foerderbeginn"/> und nicht das Bilanzjahr.</b> Die
+        /// Abgabe ist ein ZAHLUNGSstrom der Betriebsjahre und gehört damit auf dieselbe
+        /// Zeitachse wie die KWKG- und die drei Steuerreihen (Regel aus E4: alle
+        /// jahresscharfen Reihen legen dasselbe Jahr zugrunde). Das Bilanzjahr aus L12
+        /// wählt dagegen eine METHODE der Emissionsbilanz und darf gerade nicht am
+        /// Förderbeginn hängen — die beiden Größen beantworten verschiedene Fragen.</para>
+        /// </summary>
+        private double[] BaueCo2Reihe(WirtschaftlichkeitParameter p, double behgBasisT,
+                                      out string hinweis)
+        {
+            hinweis = null;
+            System.Globalization.CultureInfo kultur = BerichtTexte.Kultur;
+
+            if (p.CO2Preis > 0)
+            {
+                hinweis = string.Format(kultur, MyResource.Resource.WIRT_CO2_KONSTANT,
+                                        p.CO2Preis.ToString("N0", kultur));
+                return null;
+            }
+
+            if (_gesetze == null) _gesetze = new GesetzKatalog();
+            int T = Math.Max(1, p.Betrachtungszeitraum);
+            int beginn = Foerderbeginn(p);
+
+            var reihe = new double[T + 1];
+            var luecken = new List<int>();
+            int prognoseAb = 0;
+            bool etwas = false;
+
+            for (int t = 1; t <= T; t++)
+            {
+                int jahr = beginn + t - 1;
+                GesetzParameter g = _gesetze.WertMitHerkunft(DbWerte.GESETZ_CO2_PREIS_NEHS, jahr);
+                if (g == null || !g.Wert.HasValue) { luecken.Add(jahr); continue; }
+                if (prognoseAb == 0 &&
+                    string.Equals(g.Status, DbWerte.GESETZ_STATUS_PROGNOSE, StringComparison.Ordinal))
+                    prognoseAb = jahr;
+                reihe[t] = behgBasisT * g.Wert.Value;
+                etwas = true;
+            }
+
+            // Kein einziges Jahr im Katalog: dann gibt es keinen Pfad, und der
+            // Bestandsweg (Override = 0 ⇒ keine Abgabe) bleibt — Befund-D5-Regel, ein
+            // ungepflegter Satz darf sich nicht als Wert durch die Rechnung schleichen.
+            if (!etwas)
+            {
+                hinweis = string.Format(kultur, MyResource.Resource.WIRT_CO2_PFAD_LUECKE,
+                                        beginn.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                return null;
+            }
+
+            double preisErstes = Preis(beginn);
+            int letztes = beginn + T - 1;
+            hinweis = string.Format(kultur, MyResource.Resource.WIRT_CO2_PFAD,
+                                    preisErstes.ToString("N0", kultur),
+                                    beginn.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                                    letztes.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                                    Preis(letztes).ToString("N0", kultur),
+                                    (prognoseAb > 0 ? prognoseAb : letztes)
+                                        .ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+            if (luecken.Count > 0)
+                hinweis += " | " + string.Format(kultur, MyResource.Resource.WIRT_CO2_PFAD_LUECKE,
+                                                 string.Join(", ", luecken.ConvertAll(
+                                                     j => j.ToString(System.Globalization.CultureInfo.InvariantCulture))
+                                                     .ToArray()));
+            return reihe;
+        }
+
+        /// <summary>Der CO₂-Preis eines Kalenderjahres [€/t]; 0 = keine Stützstelle.</summary>
+        private double Preis(int jahr)
+        {
+            if (_gesetze == null) _gesetze = new GesetzKatalog();
+            double? w = _gesetze.Wert(DbWerte.GESETZ_CO2_PREIS_NEHS, jahr);
+            return w.HasValue ? w.Value : 0;
+        }
+
+        // =====================================================================
+        // ETAPPE K6 — Vbh-Kontingent nach § 8 und Pauschale nach § 9 KWKG
+        // =====================================================================
+
+        /// <summary>
+        /// Das Vbh-Kontingent des Projekts [h]. <b>Der Override gewinnt:</b> Steht in
+        /// <c>KWKG_Vbh_Kontingent</c> ein Wert größer 0, gilt er unverändert — das ist
+        /// jede Bestandsdatenbank, und deshalb ändert Etappe K6 hier nichts. Erst ein
+        /// Kontingent von 0 <b>und</b> eine ausdrücklich erfasste Anlagenart lassen den
+        /// Wert nach § 8 KWKG ableiten (<see cref="KwkgKontingentRechner"/>).
+        /// </summary>
+        private double KontingentDesProjekts(WirtschaftlichkeitParameter p, int jahr,
+                                             List<string> hinweise)
+        {
+            if (p.KwkgVbhKontingent > 0) return p.KwkgVbhKontingent;
+            if (string.IsNullOrEmpty(p.KwkgAnlagenart)) return p.KwkgVbhKontingent;
+
+            if (_gesetze == null) _gesetze = new GesetzKatalog();
+            System.Globalization.CultureInfo kultur = BerichtTexte.Kultur;
+            KwkgKontingentVorschlag v = KwkgKontingentRechner.Ableiten(
+                p.KwkgAnlagenart, p.KwkgKostenanteil, jahr,
+                (s, j) => _gesetze.WertMitHerkunft(s, j), kultur);
+
+            if (hinweise != null)
+                hinweise.Add(string.Format(kultur, MyResource.Resource.WIRT_KWKG_KONTINGENT_ABGELEITET,
+                                           v.KontingentH.ToString("N0", kultur), v.Herleitung));
+            return v.KontingentH;
+        }
+
+        /// <summary>
+        /// ETAPPE K6 — die pauschale Vorauszahlung nach § 9 KWKG (Anlagen bis
+        /// 2 kW<sub>el</sub>): <c>0,04 €/kWh × 60.000 Vbh × P_el[kW]</c>, einmalig im
+        /// Jahr 0. Rückgabe <c>true</c> = die Pauschale greift, der <b>laufende</b>
+        /// Zuschlag entfällt dafür vollständig (§ 9: „damit entfällt die
+        /// Einzelabrechnung").
+        ///
+        /// <para>Über der Leistungsgrenze bleibt der Schalter ohne Wirkung, und der
+        /// Hinweis sagt warum — statt ihn still zu übergehen oder eine Anlage zu
+        /// begünstigen, der die Norm nicht gilt. Alle drei Zahlen (Satz, Vbh, Grenze)
+        /// stehen im Gesetzeskatalog; fehlt eine, gibt es keine Vorauszahlung und eine
+        /// Begründung.</para>
+        /// </summary>
+        private bool PauschaleReihe(VariantenDaten v, WirtschaftlichkeitParameter p,
+                                    out double[] reihe, out string hinweis)
+        {
+            reihe = null;
+            hinweis = null;
+            if (!p.KwkgPauschalmodus) return false;
+            if (v == null || v.Ergebnis == null || v.Ergebnis.BHKW == null) return false;
+
+            System.Globalization.CultureInfo kultur = BerichtTexte.Kultur;
+            if (_gesetze == null) _gesetze = new GesetzKatalog();
+            int jahr = Foerderbeginn(p);
+
+            double? grenze = _gesetze.Wert(DbWerte.GESETZ_KWKG_PAUSCHALE_GRENZE, jahr);
+            double? satzCt = _gesetze.Wert(DbWerte.GESETZ_KWKG_PAUSCHALE_BIS2KW, jahr);
+            double? vbh = _gesetze.Wert(DbWerte.GESETZ_KWKG_PAUSCHALE_BIS2KW_VBH, jahr);
+            if (!grenze.HasValue || !satzCt.HasValue || !vbh.HasValue)
+            {
+                hinweis = string.Format(MyResource.Resource.WIRT_KWKG_PAUSCHALE_SATZ_FEHLT,
+                                        DbWerte.GESETZ_KWKG_PAUSCHALE_BIS2KW);
+                return false;
+            }
+
+            double pelKW = PelKW(v.IdProjekt);
+            if (pelKW <= 0) return false;      // ohne Nennleistung nichts zu rechnen
+
+            if (pelKW > grenze.Value)
+            {
+                hinweis = string.Format(kultur, MyResource.Resource.WIRT_KWKG_PAUSCHALE_ZU_GROSS,
+                                        pelKW.ToString("N1", kultur),
+                                        grenze.Value.ToString("N0", kultur));
+                return false;                  // Schalter ignoriert, laufender Zuschlag bleibt
+            }
+
+            double betrag = satzCt.Value / 100.0 * vbh.Value * pelKW;   // €/kWh × h × kW
+            int T = Math.Max(1, p.Betrachtungszeitraum);
+            reihe = new double[T + 1];
+            reihe[0] = betrag;                 // EINMALIG im Jahr 0, nicht abgezinst
+
+            hinweis = string.Format(kultur, MyResource.Resource.WIRT_KWKG_PAUSCHALE,
+                                    betrag.ToString("N0", kultur),
+                                    satzCt.Value.ToString("N2", kultur),
+                                    vbh.Value.ToString("N0", kultur),
+                                    pelKW.ToString("N1", kultur));
+            return true;
         }
 
         /// <summary>
@@ -2252,6 +2583,7 @@ namespace WindowsFormsApplication1
 
             a.SchluesselSatzVoll = EnergiesteuerSchluessel(brennstoff, false);
             a.SchluesselSatz53a = EnergiesteuerSchluessel(brennstoff, true);
+            a.SchluesselSatz54 = Energiesteuer54Schluessel(brennstoff);     // K6
             a.SchluesselCo2 = Co2Schluessel(brennstoff);
             a.Fossil = FossilerBrennstoff(brennstoff);
 
@@ -2378,6 +2710,36 @@ namespace WindowsFormsApplication1
                 case 22:   // Heizöl EL schwefelarm
                     return teilsatz ? DbWerte.GESETZ_ENERGIEST_53A5_HEIZOEL_EL
                                     : DbWerte.GESETZ_ENERGIEST_HEIZOEL_EL;
+                default:
+                    return "";
+            }
+        }
+
+        /// <summary>
+        /// ETAPPE K6 — Katalogschlüssel des Entlastungssatzes nach § 54 EnergieStG.
+        /// Der Paragraf führt <b>nur drei</b> Heizstoffe (Erdgas 1,38 €/MWh, Heizöl EL
+        /// 15,34 €/1.000 l, Flüssiggas 15,15 €/1.000 kg); Schweröl und Kohle kommen
+        /// darin nicht vor. Für sie liefert die Methode einen leeren Schlüssel — die
+        /// Rechnung meldet dann „dem Energieträger ist kein Satz zugeordnet", statt
+        /// einen fremden Satz zu verwenden.
+        /// </summary>
+        private static string Energiesteuer54Schluessel(int idBrennstoff)
+        {
+            switch (idBrennstoff)
+            {
+                case 2:    // Erdgas LL
+                case 3:    // Erdgas E
+                    return DbWerte.GESETZ_ENERGIEST_54_ERDGAS;
+                case 4:    // Flüssiggas (Propan)
+                case 5:    // Flüssiggas (Butan)
+                    return DbWerte.GESETZ_ENERGIEST_54_FLUESSIGGAS;
+                case 9:    // Heizöl EL
+                case 18:   // Heizöl Bio 5
+                case 19:   // Heizöl Bio 10
+                case 20:   // Heizöl Bio 15
+                case 21:   // Heizöl Bio 20
+                case 22:   // Heizöl EL schwefelarm
+                    return DbWerte.GESETZ_ENERGIEST_54_HEIZOEL_EL;
                 default:
                     return "";
             }
@@ -3214,11 +3576,24 @@ namespace WindowsFormsApplication1
             // bewilligte Förderzusage über einen festen Betrag ändert sich dadurch nicht.
             // Sie skalieren hiesse zu behaupten, der Fördergeber zahle Kostensteigerungen
             // anteilig mit; das gibt keine Zusage her.
+            // ETAPPE K6: Die jahresscharfe CO₂-Reihe wird vom Energiefaktor GENAUSO
+            // skaliert wie der Skalar davor — die Sensitivität „Energiekosten ±10 %
+            // (inkl. CO₂-Abgabe)" fragt nach beidem zusammen, und die Zeile im Bericht
+            // sagt das ausdrücklich. Ohne Pfad bleibt die Reihe null und der Rechenweg
+            // ist Zeichen für Zeichen der von vorher.
+            double[] behgReihe = null;
+            if (e.BehgJeJahr != null)
+            {
+                behgReihe = new double[e.BehgJeJahr.Length];
+                for (int t = 0; t < behgReihe.Length; t++)
+                    behgReihe[t] = e.BehgJeJahr[t] * energieFaktor;
+            }
+
             return KapitalwertRechner.Rechne(invest, e.Betrieb,
                 (e.Energie ?? 0) * energieFaktor, e.Erloes,
                 zinsProzent, p.Betrachtungszeitraum,
                 p.PreissteigerungBetrieb, preisstEnergie,
-                e.Behg * energieFaktor, e.ErloesReihen, e.Zuschuss);
+                e.Behg * energieFaktor, e.ErloesReihen, e.Zuschuss, behgReihe);
         }
 
         /// <summary>Sensitivitätszeilen einer Variante (W2): 4 Parameter, ±Δ → KW vs. Stamm.</summary>
@@ -3272,13 +3647,21 @@ namespace WindowsFormsApplication1
             return zeilenListe;
         }
 
-        /// <summary>true, wenn die Eingabe eine KWKG-Reihe führt (Etappe E4).</summary>
+        /// <summary>true, wenn die Eingabe eine KWKG-Reihe führt (Etappe E4).
+        /// ETAPPE K6: Die Pauschale des § 9 zählt mit — sie ist derselbe Fördertopf und
+        /// fiele mit einer Novelle genauso weg.</summary>
         private static bool HatKwkg(ProjektEingabe e)
         {
             foreach (KapitalwertRechner.ErloesReihe r in e.ErloesReihen)
-                if (string.Equals(r.Name, KapitalwertRechner.ErloesReihe.KWKG, StringComparison.Ordinal))
-                    return true;
+                if (IstKwkgReihe(r.Name)) return true;
             return false;
+        }
+
+        /// <summary>Die beiden KWKG-Reihennamen an EINER Stelle (Etappe K6).</summary>
+        private static bool IstKwkgReihe(string name)
+        {
+            return string.Equals(name, KapitalwertRechner.ErloesReihe.KWKG, StringComparison.Ordinal) ||
+                   string.Equals(name, KapitalwertRechner.ErloesReihe.KWKG_PAUSCHALE, StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -3301,12 +3684,16 @@ namespace WindowsFormsApplication1
                 Energie = e.Energie,
                 Erloes = e.Erloes,
                 Behg = e.Behg,
+                // K6: Die CO₂-Reihe MUSS mitkopiert werden — dieselbe Begründung wie beim
+                // Zuschuss: Sonst rechnete das Novellen-Szenario gegen eine andere
+                // CO₂-Abgabe als die Basis, und die ausgewiesene Differenz enthielte sie.
+                BehgJeJahr = e.BehgJeJahr,
                 KwkgJahr1 = 0,
                 WaermeMWh = e.WaermeMWh,
                 Matrix = e.Matrix
             };
             foreach (KapitalwertRechner.ErloesReihe r in e.ErloesReihen)
-                if (!string.Equals(r.Name, KapitalwertRechner.ErloesReihe.KWKG, StringComparison.Ordinal))
+                if (!IstKwkgReihe(r.Name))          // K6: auch die Pauschale des § 9 fällt weg
                     kopie.ErloesReihen.Add(r);
             return kopie;
         }

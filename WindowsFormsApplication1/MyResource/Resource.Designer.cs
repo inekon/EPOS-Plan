@@ -17938,5 +17938,338 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: keine Anlagenart erfasst — das Vbh-Kontingent des § 8 lässt sich daraus nicht ableiten; es gil [...] ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_KONTINGENT_OHNE_ART {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_KONTINGENT_OHNE_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die neue Anlage → {0} Vbh ({1}, Stand {2}); eine Kostenschwelle gibt es hier nicht. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_KONTINGENT_NEU {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_KONTINGENT_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: ohne Anteil an den Neuherstellungskosten lässt sich die Stufe nicht wählen (Mindestschwelle {1} [...] ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_KONTINGENT_ANTEIL_FEHLT {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_KONTINGENT_ANTEIL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} % der Neuherstellungskosten liegen unter der Mindestschwelle von {1} % ({2}) — kein Vbh-Kontinge [...] ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_KONTINGENT_ZU_KLEIN {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_KONTINGENT_ZU_KLEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} % der Neuherstellungskosten, Stufe ab {1} % → {2} Vbh ({3}, Stand {4}); der Mindestabstand zur I [...] ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_KONTINGENT_STUFE {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_KONTINGENT_STUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Vbh-Kontingent aus der Anlagenart abgeleitet — {0} Vbh. {1} ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_KONTINGENT_ABGELEITET {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_KONTINGENT_ABGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: kein Eigenstrom-Tatbestand des § 6 Abs. 3 erfasst — der Zuschlag auf selbst genutzten Strom is [...] ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_TATBESTAND_OFFEN {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_TATBESTAND_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Tatbestand des § 6 Abs. 3 ausdrücklich auf „keiner“ gesetzt — auf selbst genutzten Strom gibt  [...] ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_TATBESTAND_KEINER {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_TATBESTAND_KEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Pauschale nach § 9 gewählt — einmalige Vorauszahlung {0} € im Jahr 0 ({1} ct/kWh × {2} Vbh × { [...] ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_PAUSCHALE {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_PAUSCHALE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Pauschale nach § 9 gilt nur bis {1} kW elektrischer Leistung; die Anlage hat {0} kW — der Scha [...] ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_PAUSCHALE_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_PAUSCHALE_ZU_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Pauschale nach § 9 gewählt, aber die Katalogwerte fehlen ({0}) — keine Vorauszahlung ausgewies [...] ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_PAUSCHALE_SATZ_FEHLT {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_PAUSCHALE_SATZ_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Preis: jahresgenauer Pfad aus dem Gesetzeskatalog — {1}: {0} €/t, {2}: {3} €/t. Ab {4} ist der W [...] ähnelt.
+        /// </summary>
+        public static string WIRT_CO2_PFAD {
+            get {
+                return ResourceManager.GetString("WIRT_CO2_PFAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Preis: für {0} führt der Gesetzeskatalog keinen Wert — für dieses Jahr wird keine BEHG-Abgabe an [...] ähnelt.
+        /// </summary>
+        public static string WIRT_CO2_PFAD_LUECKE {
+            get {
+                return ResourceManager.GetString("WIRT_CO2_PFAD_LUECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Preis: konstanter Projektwert {0} €/t (Override); der Pfad des Gesetzeskatalogs bleibt außen vor [...] ähnelt.
+        /// </summary>
+        public static string WIRT_CO2_KONSTANT {
+            get {
+                return ResourceManager.GetString("WIRT_CO2_KONSTANT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die § 54 EnergieStG setzt ein Unternehmen des produzierenden Gewerbes oder einen Betrieb der Land- und F [...] ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_54_UNTERNEHMENSART {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_54_UNTERNEHMENSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die § 54 EnergieStG: {0} € Entlastung liegen unter dem Sockelbetrag von {1} €/a — es bleibt bei 0 €. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_54_SOCKEL {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_54_SOCKEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die § 54 EnergieStG entlastet HEIZstoffe; EPOS-Plan bemisst ihn hier auf den BHKW-Brennstoff — Kessel- u [...] ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_54_BEMESSUNG {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_54_BEMESSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenstrom-Tatbestand (§ 6 Abs. 3): ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_KWKG_TATBESTAND {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_KWKG_TATBESTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (nicht angegeben) ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_KWKG_OFFEN {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_KWKG_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keiner — kein Eigenstromzuschlag ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_KWKG_TATBESTAND_KEINER {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_KWKG_TATBESTAND_KEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. 1 — Anlage bis 100 kW ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_KWKG_TATBESTAND_NR1 {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_KWKG_TATBESTAND_NR1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. 2 — Kundenanlage / geschl. Netz ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_KWKG_TATBESTAND_NR2 {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_KWKG_TATBESTAND_NR2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. 3 — stromkostenintensiv ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_KWKG_TATBESTAND_NR3 {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_KWKG_TATBESTAND_NR3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenart (§ 8): ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_KWKG_ANLAGENART {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_KWKG_ANLAGENART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die neu ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_KWKG_ART_NEU {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_KWKG_ART_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die modernisiert ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_KWKG_ART_MOD {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_KWKG_ART_MOD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nachgerüstet ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_KWKG_ART_NACH {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_KWKG_ART_NACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil Neuherstellungskosten [%]: ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_KWKG_KOSTENANTEIL {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_KWKG_KOSTENANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pauschale § 9 KWKG (nur bis 2 kWel, einmalig) ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_KWKG_PAUSCHAL {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_KWKG_PAUSCHAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vbh-Kontingent gesamt [h] (0 = automatisch): ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_KWKG_KONTINGENT {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_KWKG_KONTINGENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die § 54 EnergieStG (Formular 1450) ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_ENERGIESTEUER_54 {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_ENERGIESTEUER_54", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anträge und Fristen: § 9b StromStG → Formular 1453 · § 53 EnergieStG → 1131 · § 53a Abs. 5 → 1135 ·  [...] ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_STEUER_FORMULARE {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_STEUER_FORMULARE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG (K6): Der Eigenstrom-Zuschlag besteht nach § 7 Abs. 2 nur in den drei Tatbeständen des § 6 Abs. [...] ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_KWKG_HINWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_KWKG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Preis BEHG [€/t] (0 = Pfad): ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_CO2 {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Preis: Pfad aus Gesetzeskatalog (Prognose ab {0}) ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_CO2_PFAD_ZEILE {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_CO2_PFAD_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Preis: konstant {0} €/t — der Pfad bleibt außen vor ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_CO2_KONSTANT_ZEILE {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_CO2_KONSTANT_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚙ Gesetzeskatalog pflegen (CO₂-Preispfad)… ähnelt.
+        /// </summary>
+        public static string WIRT_DLG_CO2_KATALOG {
+            get {
+                return ResourceManager.GetString("WIRT_DLG_CO2_KATALOG", resourceCulture);
+            }
+        }
+        
     }
 }

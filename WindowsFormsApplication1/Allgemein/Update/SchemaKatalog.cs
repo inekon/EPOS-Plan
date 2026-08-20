@@ -1384,6 +1384,98 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(ENERGY_CONVERSION, SPALTE_EC_AKTIV,       "YESNO"),
         };
 
+        // ---------------------------------------------------------------------------
+        // ETAPPE K6 (Konzept Kosten/Energieträger, HF6, Migrationsschritt M-D) —
+        // vier KWKG-Projektangaben an Tab_ProjektWirtschaftlichkeit
+        // ---------------------------------------------------------------------------
+
+        /// <summary>
+        /// K6 — Tatbestand des § 6 Abs. 3 KWKG, unter dem SELBST GENUTZTER Strom
+        /// zuschlagsfähig ist. Steuerwerte <c>DbWerte.KWKG_EIGENFALL_*</c> —
+        /// derselbe Wertevorrat wie die Anlagenangabe
+        /// <see cref="SPALTE_EA_KWKG_EIGENFALL"/> aus Schritt 22, weil beide in
+        /// denselben <c>KwkgSatzRechner</c> laufen.
+        ///
+        /// <b>Bleibt NULL, und daran hängt die Ergebnisneutralität.</b> Ein
+        /// Bestandsprojekt hat den Tatbestand nie erfasst; würde Schritt 28 ihn mit
+        /// <c>KEINER</c> vorbelegen, verlöre jedes Altprojekt mit gepflegtem
+        /// Eigenstrom-Satz seinen Zuschlag — eine stille, große Ergebnisänderung.
+        /// <c>NULL</c> heißt deshalb „nicht angegeben": Die Rechnung läuft wie bisher
+        /// und meldet den ungeprüften Tatbestand als Hinweis. Erst die AUSDRÜCKLICHE
+        /// Wahl <c>KEINER</c> setzt den Eigenstrom-Zuschlag auf 0 — dieselbe Mechanik
+        /// wie bei <see cref="SPALTE_PW_BIOMASSE_NACHWEIS"/> (leer/NULL = der Wert,
+        /// der den Bestand fortführt).
+        ///
+        /// <b>Spaltenbreite.</b> Längster Steuerwert <c>NR2_KUNDENANLAGE</c>
+        /// (16 Zeichen) → TEXT(30) laut Konzept § 8.1; großzügig wie
+        /// <see cref="SPALTE_PW_AUFTEILUNG"/>.
+        /// </summary>
+        public const string SPALTE_PW_KWKG_TATBESTAND = "KWKG_Tatbestand";
+
+        /// <summary>
+        /// K6 — Anlagenart nach § 8 KWKG, Steuerwerte
+        /// <c>DbWerte.KWKG_ANLAGENART_*</c>. Sie leitet das Vbh-Kontingent ab
+        /// (<c>KwkgKontingentRechner</c>) und wählt oberhalb von 2 MW den
+        /// Einspeisesatz. <c>NULL</c> = nicht angegeben; dann bleibt es beim
+        /// Override <c>KWKG_Vbh_Kontingent</c>, also beim Bestandswert.
+        ///
+        /// <b>Spaltenbreite.</b> Längster Steuerwert <c>NACHGERUESTET</c>
+        /// (13 Zeichen) → TEXT(20) laut Konzept § 8.1.
+        /// </summary>
+        public const string SPALTE_PW_KWKG_ANLAGENART = "KWKG_Anlagenart";
+
+        /// <summary>
+        /// K6 — Anteil an den Neuherstellungskosten [%] (§ 8 Abs. 2/3 KWKG). Er wählt
+        /// bei modernisierten und nachgerüsteten Anlagen die Kontingentstufe:
+        /// modernisiert ≥ 25 % → 15.000 h, ≥ 50 % → 30.000 h; nachgerüstet ≥ 10 % →
+        /// 10.000 h, ≥ 25 % → 15.000 h, ≥ 50 % → 30.000 h. Bleibt NULL bzw. 0 =
+        /// nicht gepflegt; dann gibt es kein abgeleitetes Kontingent, sondern eine
+        /// Begründung.
+        /// </summary>
+        public const string SPALTE_PW_KWKG_KOSTENANTEIL = "KWKG_Kostenanteil";
+
+        /// <summary>
+        /// K6 — Pauschalmodus des § 9 KWKG für Anlagen bis 2 kW<sub>el</sub>: auf
+        /// Antrag eine einmalige Vorauszahlung von 4 ct/kWh für 60.000 Vbh statt der
+        /// laufenden Abrechnung.
+        ///
+        /// <b>YESNO kennt kein NULL:</b> Access belegt die Spalte in jeder
+        /// Bestandszeile mit <c>False</c> — genau die gewollte Vorbelegung („kein
+        /// Pauschalmodus"), deshalb kein eigener DML-Schritt. Dasselbe Muster wie
+        /// <see cref="SPALTE_PW_AUFSCHLAEGE"/>.
+        /// </summary>
+        public const string SPALTE_PW_KWKG_PAUSCHALMODUS = "KWKG_Pauschalmodus";
+
+        /// <summary>
+        /// Schritt 28 der Migration (Etappe K6, HF6/M-D) — die vier additiven
+        /// KWKG-Spalten an <c>Tab_ProjektWirtschaftlichkeit</c>.
+        ///
+        /// <b>ACE-Regeln.</b> <c>YESNO</c> belegt Bestandszeilen selbsttätig mit
+        /// <c>False</c>, <c>DOUBLE</c> und <c>TEXT</c> bleiben NULL. Hier ist NULL bei
+        /// ALLEN drei Nicht-YESNO-Spalten die richtige Vorbelegung („nicht
+        /// angegeben"), deshalb hat Schritt 28 — anders als 19b/20b/21b/23b — <b>kein
+        /// DML auf Projektzeilen</b>. Kein DDL-DEFAULT auf Fachwerten.
+        ///
+        /// <b>Warum kein <c>_STAMM</c>-Gegenstück.</b> <c>Tab_ProjektWirtschaftlichkeit</c>
+        /// ist eine reine Projekttabelle ohne Auslieferungskatalog — dieselbe
+        /// Begründung wie bei den Schritten 20, 21 und 23.
+        ///
+        /// <b>Ordinalposition.</b> Die Tabelle wird ausschließlich namensbasiert
+        /// gelesen (<c>WirtschaftlichkeitCtrl.LadeParameter</c> über <c>D(r, "…")</c>);
+        /// das Anhängen hinten ist folgenlos.
+        ///
+        /// <b>Doppelte Schema-Wahrheit.</b> <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>
+        /// legt dieselbe Tabelle selbst an; die vier Spalten stehen deshalb dort
+        /// ebenfalls (im CREATE und als <c>SpalteSicher</c>-Nachzug).
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt28_KwkgTatbestand =
+        {
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_KWKG_TATBESTAND,   "TEXT(30)"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_KWKG_ANLAGENART,   "TEXT(20)"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_KWKG_KOSTENANTEIL, "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_KWKG_PAUSCHALMODUS, "YESNO"),
+        };
+
         /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt

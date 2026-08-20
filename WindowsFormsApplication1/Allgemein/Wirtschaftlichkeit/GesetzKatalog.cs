@@ -834,10 +834,20 @@ namespace WindowsFormsApplication1
                     "EEX-Auktionen 2026 — durchgehend am Höchstpreis des Korridors zugeteilt"));
             l.Add(N(DbWerte.GESETZ_CO2_PREIS_NEHS, CO2, 2027, 65.0, EUR_T, V,
                     "Kabinettsbeschluss 12.08.2026 (3. BEHG-ÄndG); Bundestag und Bundesrat stehen aus"));
-            l.Add(N(DbWerte.GESETZ_CO2_PREIS_NEHS, CO2, 2028, 95.0, EUR_T, P,
-                    "Projektionsbericht 2026 der Bundesregierung — nur sekundär belegt"));
-            l.Add(N(DbWerte.GESETZ_CO2_PREIS_NEHS, CO2, 2030, 125.0, EUR_T, P,
-                    "Projektionsbericht 2026 der Bundesregierung — nur sekundär belegt"));
+            // ETAPPE K6, ENTSCHEIDUNG E5 (19.08.2026): ab 2028 KONSERVATIV 80 €/t,
+            // konstant und frei editierbar. Bis K6 standen hier die Stützstellen des
+            // MITTLEREN Szenarios (2028: 95 €/t, 2030: 125 €/t) aus dem
+            // Projektionsbericht — das Konzept § 8.3 hat sie ausdrücklich verworfen
+            // („Die Szenarien mittel/hoch bleiben als dokumentierte Alternativen
+            // vermerkt, werden aber nicht gesät"). Die 2030er-Stützstelle entfällt
+            // deshalb ganz: „konstant ab 2028" ist EINE Stützstelle, und eine zweite
+            // mit einem anderen Wert widerspräche ihr.
+            //
+            // Bestandsdatenbanken tragen die alten Werte bereits; sie berichtigt
+            // Migrationsschritt 28b — eng an Wert UND Quelle gebunden, damit eine vom
+            // Anwender gepflegte Zeile unangetastet bleibt.
+            l.Add(N(DbWerte.GESETZ_CO2_PREIS_NEHS, CO2, 2028, 80.0, EUR_T, P,
+                    "Konzept Kosten/Energieträger E5 — konservativ, Marktkommentare 2026; frei editierbar"));
 
             l.Add(N(DbWerte.GESETZ_CO2_PREIS_KORRIDOR_MIN, CO2, 2026, 55.0, EUR_T, G,
                     "BEHG § 10 Abs. 2 — Untergrenze des Preiskorridors 2026"));

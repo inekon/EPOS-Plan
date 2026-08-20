@@ -78,6 +78,16 @@ namespace WindowsFormsApplication1
             /// <summary>Stromsteuer-Entlastung nach § 9b StromStG (E4).</summary>
             public const string STROMSTEUER_ENTLASTUNG = "STROMSTEUER_ENTLASTUNG";
 
+            /// <summary>
+            /// ETAPPE K6 — pauschale Vorauszahlung nach § 9 KWKG für Anlagen bis
+            /// 2 kW<sub>el</sub>. Die einzige Reihe des Programms, deren Betrag im
+            /// <b>Index 0</b> steht: Das Gesetz zahlt einmalig aus, binnen zwei Monaten
+            /// nach der Zulassung, und ersetzt damit die laufende Abrechnung. Sie ist
+            /// deshalb ein Erlös im Jahr 0 — nicht, wie in der Altanwendung, eine
+            /// Minderung der Investition.
+            /// </summary>
+            public const string KWKG_PAUSCHALE = "KWKG_PAUSCHALE";
+
             public ErloesReihe(string name, double[] jeJahr)
             {
                 Name = name ?? "";
@@ -248,13 +258,23 @@ namespace WindowsFormsApplication1
         /// NACH der Positionsschleife: Ersatzreihe und Restwert entstehen aus den
         /// Bruttobeträgen und bleiben vom Zuschuss unberührt. 0 = kein Zuschuss.
         /// </param>
+        /// <param name="behgJeJahr">
+        /// ETAPPE K6 (Konzept § 8.3, Entscheidung E5): die CO₂-Abgabe
+        /// <b>jahresscharf</b> [€], Index 1…T — der jahresgenaue Preispfad des
+        /// Gesetzeskatalogs. <c>null</c> = wie bisher: <paramref name="behgJahr"/> wird
+        /// mit der Energiepreissteigerung fortgeschrieben. Der Ausdruck für die Ausgaben
+        /// bleibt in diesem Fall ZEICHENGLEICH der Fassung vor K6 — insbesondere bleibt
+        /// <c>(energieJahr + behgJahr)</c> EINE Klammer, sonst verschöbe sich das
+        /// Ergebnis in der letzten Stelle (Warnung aus Etappe E7).
+        /// </param>
         public static Zahlungsbild Rechne(List<InvestPosition> investitionen,
                                           double betriebJahr, double energieJahr, double erloesJahr,
                                           double zinsProzent, int jahre,
                                           double preisstBetriebProzent, double preisstEnergieProzent,
                                           double behgJahr = 0,
                                           IList<ErloesReihe> zusatzErloesReihen = null,
-                                          double zuschuss = 0)
+                                          double zuschuss = 0,
+                                          double[] behgJeJahr = null)
         {
             double i = zinsProzent / 100.0;
             double pB = preisstBetriebProzent / 100.0;
@@ -325,9 +345,23 @@ namespace WindowsFormsApplication1
                 z.Investition -= z.Zuschuss;
             }
 
+            // ---------------- ETAPPE K6: Einmalzahlung im Jahr 0 ----------------
+            // Index 0 einer benannten Erlösreihe ist eine EINMALZAHLUNG zum Zeitpunkt der
+            // Investition — heute nur die Pauschale des § 9 KWKG. Sie wird nicht
+            // abgezinst (t = 0) und mindert NICHT die Investition: I₀ bleibt, was die
+            // Anlage kostet, und die Zahlung steht als Einnahme daneben.
+            //
+            // ADDITIV: Jede Reihe vor K6 führt in Index 0 eine 0, damit ist einmalT0 dort
+            // 0 und beide Startwerte bleiben Zeichen für Zeichen die von vorher.
+            double einmalT0 = 0;
+            if (zusatzErloesReihen != null)
+                foreach (ErloesReihe reihe in zusatzErloesReihen)
+                    if (reihe != null) einmalT0 += reihe.Wert(0);
+
             // ---------------- Jahresreihe abzinsen ----------------
-            z.BarwertReihe[0] = -z.Investition;
-            z.NominalReihe[0] = -z.Investition;
+            z.BarwertReihe[0] = -z.Investition + einmalT0;
+            z.NominalReihe[0] = -z.Investition + einmalT0;
+            z.BarwertEinnahmen += einmalT0;
             for (int t = 1; t <= T; t++)
             {
                 double faktor = Math.Pow(1.0 + i, -t);
@@ -335,9 +369,19 @@ namespace WindowsFormsApplication1
                 // Etappe E7 — insbesondere bleibt (energieJahr + behgJahr) EINE Klammer.
                 // Die getrennten Reihen darunter sind Ausweis und gehen NICHT in die
                 // Summe ein; sonst verschöbe sich das Ergebnis in der letzten Stelle.
-                double ausgaben = betriebJahr * Math.Pow(1.0 + pB, t - 1)
-                                + (energieJahr + behgJahr) * Math.Pow(1.0 + pE, t - 1)
-                                + ersatzJeJahr[t];
+                //
+                // ETAPPE K6: Nur wenn eine jahresscharfe CO₂-Reihe hereingereicht wurde,
+                // tritt der zweite Zweig an ihre Stelle. Ohne sie (behgJeJahr = null)
+                // läuft der Bestandsausdruck unverändert — deshalb zwei Zweige und
+                // nicht eine umgeformte Zeile.
+                double behgT = behgJeJahr != null && t < behgJeJahr.Length ? behgJeJahr[t] : 0;
+                double ausgaben = behgJeJahr == null
+                    ? betriebJahr * Math.Pow(1.0 + pB, t - 1)
+                      + (energieJahr + behgJahr) * Math.Pow(1.0 + pE, t - 1)
+                      + ersatzJeJahr[t]
+                    : betriebJahr * Math.Pow(1.0 + pB, t - 1)
+                      + energieJahr * Math.Pow(1.0 + pE, t - 1) + behgT
+                      + ersatzJeJahr[t];
                 double einnahmen = erloesJahr;   // feste Einspeisevergütung, nominal konstant
                 if (zusatzErloesReihen != null)
                     foreach (ErloesReihe reihe in zusatzErloesReihen)
@@ -346,7 +390,7 @@ namespace WindowsFormsApplication1
                 // ETAPPE E7 — Einzelpositionen für die Mehrjahrestabelle.
                 z.BetriebJeJahr[t] = betriebJahr * Math.Pow(1.0 + pB, t - 1);
                 z.EnergieJeJahr[t] = energieJahr * Math.Pow(1.0 + pE, t - 1);
-                z.BehgJeJahr[t] = behgJahr * Math.Pow(1.0 + pE, t - 1);
+                z.BehgJeJahr[t] = behgJeJahr == null ? behgJahr * Math.Pow(1.0 + pE, t - 1) : behgT;
                 z.EinspeiseerloesJeJahr[t] = erloesJahr;
 
                 z.BarwertAusgaben += ausgaben * faktor;
