@@ -43,6 +43,40 @@ namespace WindowsFormsApplication1
         private readonly Dictionary<string, string> _betriebsHinweis =
             new Dictionary<string, string>(StringComparer.Ordinal);
 
+        // ================================================================= K5b (HF5 § 7.5)
+
+        /// <summary>
+        /// Ein Gruppenblock der Positionsliste: die Kopfzeile, ihre Spaltenüberschrift und
+        /// der Ein-/Ausklappzustand. Die ZEILEN stehen bewusst NICHT hier.
+        /// </summary>
+        /// <remarks>
+        /// <b>Warum die Zeilen nicht mitgeführt werden.</b> Sie werden an drei Stellen aus
+        /// <c>flp</c> entfernt und verworfen (<c>Zeile_DeleteRequested</c>,
+        /// <c>btnDeleteGroup_Click</c>, der Neuaufbau selbst). Eine zweite Liste daneben
+        /// zeigte danach auf entsorgte Steuerelemente. Gesucht wird deshalb jedes Mal über
+        /// <c>flp.Controls</c> und das <c>Tag</c> — dieselbe Zuordnung, die der
+        /// Löschbefehl schon benutzt.
+        /// </remarks>
+        private sealed class Gruppenblock
+        {
+            public string Name;
+            public Panel Kopf;
+            public Label Titel;
+            public Panel Spaltenkopf;
+            public bool Eingeklappt;
+
+            /// <summary>„Planwert übernehmen…" bzw. „Betriebskosten VDI 2067…", falls der
+            /// Kopf einen führt. Er wird nachgerückt, wenn die Beschriftung wächst.</summary>
+            public Button Aktion;
+        }
+
+        /// <summary>
+        /// Die Gruppenblöcke der GERADE angezeigten Positionsliste, Schlüssel ist der
+        /// Gruppenname. Wird bei jedem Neuaufbau geleert.
+        /// </summary>
+        private readonly Dictionary<string, Gruppenblock> _gruppen =
+            new Dictionary<string, Gruppenblock>(StringComparer.Ordinal);
+
         /// <summary>
         /// Sperrt den Aufbau des Energieträger-Blocks, solange
         /// <see cref="FillCarrierComboBox"/> die Liste an die Daten bindet.
@@ -595,14 +629,22 @@ namespace WindowsFormsApplication1
 
             decimal summeSelektion = 0;
 
-            // Die Summe der AKTUELLEN Selektion direkt aus den Controls lesen (Live-Werte)
+            // Die Summe der AKTUELLEN Selektion direkt aus den Controls lesen (Live-Werte).
+            // K5b: Zuschusspositionen sind positiv erfasst und MINDERN die Investition —
+            // sie gehen deshalb mit negativem Vorzeichen ein, genau wie in den
+            // Gruppensummen darüber. Stünde hier die rohe Addition, widerspräche die
+            // Fußzeile den Köpfen auf demselben Bildschirm.
             foreach (Control c in flp.Controls)
             {
                 if (c is ucKostenZeile zeile)
                 {
-                    summeSelektion += zeile.Daten.Betrag;
+                    summeSelektion += zeile.Daten.IstZuschuss
+                        ? -zeile.Daten.Betrag : zeile.Daten.Betrag;
                 }
             }
+
+            // K5b: Die Köpfe tragen Zähler und Summe — beide ändern sich mit jeder Zahl.
+            GruppenkoepfeNachziehen(_letzteKomponente);
 
             // Anzeige aktualisieren
             if (aktuelleSelektion != "")
@@ -638,6 +680,22 @@ namespace WindowsFormsApplication1
                     summeGesamt += betrag;
                 }
 
+                // K5b: LiesKomponentenSummen summiert die Kategorie roh — der positiv
+                // erfasste Zuschuss steckt darin und würde die Projektsumme ERHÖHEN.
+                // Abgezogen wird er hier statt in der gemeinsamen Lesemethode: Die dient
+                // auch der Komponententabelle von UcBkKosten, und deren Verhalten soll
+                // diese Etappe nicht mitverändern.
+                if (kat.Value == KATEGORIE_INVESTITION)
+                {
+                    try
+                    {
+                        double zuschuss = WirtschaftlichkeitCtrl.LiesZuschuss(
+                            m_ID_Projekt, WirtschaftlichkeitSzenario.ERWARTET);
+                        summeGesamt -= (decimal)zuschuss;
+                    }
+                    catch { }
+                }
+
                 gesamtText = summeGesamt.ToString("N2");
             }
 
@@ -655,6 +713,7 @@ namespace WindowsFormsApplication1
         private void UpdateDetailPanel(string komponente, List<KostenPosition> faktoren)
         {
             flp.Controls.Clear();
+            _gruppen.Clear();                 // K5b: die Blöcke gehören zur alten Liste
             flp.SuspendLayout();
 
             // Berechnung verfügbare Innenbreite
@@ -686,7 +745,9 @@ namespace WindowsFormsApplication1
                         Tag = aktuelleGruppe.Trim() // Wichtig für die Lösch-Identifizierung
                     };
 
-                    // Das Label für den Text
+                    // Das Label für den Text. Der WORTLAUT entsteht erst in
+                    // GruppenkoepfeNachziehen (K5b) — dort stehen Positionszähler und
+                    // Gruppensumme, und die kennt man erst, wenn alle Zeilen gebaut sind.
                     Label groupTitle = new Label
                     {
                         Text = aktuelleGruppe.ToUpper().Trim(),
@@ -780,6 +841,27 @@ namespace WindowsFormsApplication1
 
                     flp.Controls.Add(headerPanel);
                     flp.Controls.Add(columnHeader);
+
+                    // --- K5b: Der Kopf wird zum Ein-/Ausklapper ------------------------
+                    // Angeklickt wird der Kopf selbst oder seine Beschriftung. Die beiden
+                    // Knöpfe darauf bleiben unberührt: Ein Click auf ein Kind-Control
+                    // erreicht das Panel nicht, „Planwert übernehmen…" und der Lösch-Knopf
+                    // arbeiten also weiter wie bisher.
+                    var block = new Gruppenblock
+                    {
+                        Name = aktuelleGruppe.Trim(),
+                        Kopf = headerPanel,
+                        Titel = groupTitle,
+                        Spaltenkopf = columnHeader,
+                        Eingeklappt = false,
+                        Aktion = btnTest
+                    };
+                    _gruppen[block.Name] = block;
+
+                    headerPanel.Cursor = Cursors.Hand;
+                    groupTitle.Cursor = Cursors.Hand;
+                    headerPanel.Click += (s, e) => GruppeUmschalten(block);
+                    groupTitle.Click += (s, e) => GruppeUmschalten(block);
                 }
 
                 var zeile = new ucKostenZeile(f);
@@ -808,7 +890,125 @@ namespace WindowsFormsApplication1
 
                 flp.Controls.Add(zeile);
             }
+
+            // K5b: Beschriftungen der Gruppenköpfe — erst jetzt sind alle Zeilen da.
+            GruppenkoepfeNachziehen(komponente);
+
             flp.ResumeLayout();
+        }
+
+        // ================================================================= K5b (HF5 § 7.5)
+
+        /// <summary>
+        /// Klappt einen Gruppenblock ein oder aus.
+        /// </summary>
+        /// <remarks>
+        /// Eingeklappt werden die Positionszeilen und die Spaltenüberschrift; der Kopf
+        /// bleibt stehen und trägt weiterhin Zähler und Summe. Die Zeilen werden nur
+        /// UNSICHTBAR, nicht entfernt — jede erfasste Zahl bleibt damit im Speicher, und
+        /// <see cref="Gesamtkosten"/> summiert unverändert über <c>flp.Controls</c>. Ein
+        /// eingeklappter Block verändert also keine einzige Summe.
+        /// </remarks>
+        private void GruppeUmschalten(Gruppenblock block)
+        {
+            if (block == null) return;
+
+            block.Eingeklappt = !block.Eingeklappt;
+            bool sichtbar = !block.Eingeklappt;
+
+            flp.SuspendLayout();
+            try
+            {
+                if (block.Spaltenkopf != null && !block.Spaltenkopf.IsDisposed)
+                    block.Spaltenkopf.Visible = sichtbar;
+
+                foreach (Control c in flp.Controls)
+                    if (c is ucKostenZeile && GleicheGruppe(c, block.Name))
+                        c.Visible = sichtbar;
+
+                KopfBeschriften(block, _letzteKomponente);
+            }
+            finally { flp.ResumeLayout(); }
+        }
+
+        /// <summary>Komponente der zuletzt aufgebauten Positionsliste (K5b).</summary>
+        private string _letzteKomponente = "";
+
+        /// <summary>true, wenn das Steuerelement zu dieser Gruppe gehört.</summary>
+        private static bool GleicheGruppe(Control c, string gruppe)
+        {
+            return c != null && c.Tag != null &&
+                   string.Equals(c.Tag.ToString(), gruppe, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Schreibt alle Gruppenköpfe neu: Komponentenname, Positionszähler, Gruppensumme.
+        /// </summary>
+        private void GruppenkoepfeNachziehen(string komponente)
+        {
+            _letzteKomponente = komponente ?? "";
+            foreach (Gruppenblock b in _gruppen.Values) KopfBeschriften(b, _letzteKomponente);
+        }
+
+        /// <summary>
+        /// Beschriftet EINEN Gruppenkopf: „▾ Wärmezentrale · 3 Positionen · 42.500 €".
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die Komponente steht vorn, nicht die Gruppe.</b> Die Liste zeigt immer genau
+        /// eine Komponente (Auswahl links); ihr Name ist die Auskunft, die der Anwender
+        /// sucht. Der freie Gruppenname aus <c>Tab_ProjektWerte.Gruppe</c> kommt nur dann
+        /// dazu, wenn er nicht die Rückfallgruppe „Allgemein" ist — sonst stünde in der
+        /// Regel „WÄRMEZENTRALE · ALLGEMEIN" da, und das Wort ohne Aussage wäre das
+        /// auffälligste im Kopf.
+        /// </para>
+        /// <para>
+        /// <b>Zuschusspositionen zählen NEGATIV.</b> Sie sind positiv erfasst und mindern
+        /// die Investition (Konzept § 7.4); eine Gruppensumme, die sie aufaddiert, wäre um
+        /// das Doppelte des Zuschusses zu hoch.
+        /// </para>
+        /// <para>
+        /// <b>Nur sichtbare Zeilen zählen? Nein — alle.</b> Der Zähler nennt den Inhalt der
+        /// Gruppe, nicht den Bildschirmausschnitt. Ein eingeklappter Kopf muss weiter
+        /// sagen, was in ihm steckt; genau dafür ist er da.
+        /// </para>
+        /// </remarks>
+        private void KopfBeschriften(Gruppenblock block, string komponente)
+        {
+            if (block == null || block.Titel == null || block.Titel.IsDisposed) return;
+
+            int anzahl = 0;
+            decimal summe = 0;
+
+            foreach (Control c in flp.Controls)
+            {
+                var zeile = c as ucKostenZeile;
+                if (zeile == null || !GleicheGruppe(c, block.Name)) continue;
+
+                anzahl++;
+                summe += zeile.Daten.IstZuschuss ? -zeile.Daten.Betrag : zeile.Daten.Betrag;
+            }
+
+            string name = string.IsNullOrEmpty(komponente) ? block.Name : komponente;
+            if (!string.Equals(block.Name, DbWerte.KOSTEN_GRUPPE_ALLGEMEIN, StringComparison.Ordinal))
+                name = name + " · " + block.Name;
+
+            block.Titel.Text = string.Format(
+                block.Eingeklappt ? MyResource.Resource.KOSTEN_GRUPPE_KOPF_ZU
+                                  : MyResource.Resource.KOSTEN_GRUPPE_KOPF_AUF,
+                name.ToUpper(),
+                anzahl,
+                summe.ToString("N2", BerichtTexte.Kultur));
+
+            // Der Aktionsknopf saß bisher hinter der KURZEN Beschriftung („ALLGEMEIN").
+            // Mit Zähler und Summe wird sie länger — ohne Nachrücken läge das Label unter
+            // dem Knopf. Der Lösch-Knopf bleibt rechts verankert und ist nicht betroffen.
+            if (block.Aktion != null && !block.Aktion.IsDisposed)
+            {
+                int x = block.Titel.Left + block.Titel.PreferredWidth + 20;
+                int grenze = block.Kopf.Width - block.Aktion.Width - 32;   // Platz für „−"
+                block.Aktion.Left = Math.Min(x, Math.Max(block.Titel.Left, grenze));
+            }
         }
 
         private void btnDeleteGroup_Click(object sender, EventArgs e)

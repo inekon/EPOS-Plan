@@ -6221,4 +6221,10 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   <data name="KOSTEN_CHK_ZUSCHUSS_HINT" xml:space="preserve">
     <value>Enter the amount as a positive figure. It reduces the total investment once — with no replacement purchase and no residual value. Percentage-based operating costs still use the full investment total.</value>
   </data>
+  <data name="KOSTEN_GRUPPE_KOPF_AUF" xml:space="preserve">
+    <value>▾  {0}   ·   {1} items   ·   {2} €</value>
+  </data>
+  <data name="KOSTEN_GRUPPE_KOPF_ZU" xml:space="preserve">
+    <value>▸  {0}   ·   {1} items   ·   {2} €</value>
+  </data>
 </root>
