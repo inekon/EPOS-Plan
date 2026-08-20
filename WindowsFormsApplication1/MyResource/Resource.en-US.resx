@@ -6164,4 +6164,19 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   <data name="KOSTEN_UMRECHNUNG_SPEICHERN_ABGELEHNT" xml:space="preserve">
     <value>The energy carrier was NOT saved: {0}</value>
   </data>
+  <data name="KI_REG_ZWECK_ENERGIETRAEGER_PRUEFEN" xml:space="preserve">
+    <value>Checks the energy carriers for unit consistency: does every active carrier reach kWh — directly, via net or gross calorific value, or via an active conversion rule? Returns the list of findings; changes nothing.</value>
+  </data>
+  <data name="KI_REG_ERL_PROJEKT_FUER_EINHEITEN" xml:space="preserve">
+    <value>Name of the project. If omitted, the catalogue is checked (all active carriers with catalogue values); if given, only the carriers used in that project, with its project-level overrides.</value>
+  </data>
+  <data name="KI_REG_EINHEITEN_KATALOG" xml:space="preserve">
+    <value>catalogue</value>
+  </data>
+  <data name="KI_REG_EINHEITEN_OHNE_BEFUND" xml:space="preserve">
+    <value>Unit consistency {0}: no findings — every active energy carrier reaches kWh.</value>
+  </data>
+  <data name="KI_REG_EINHEITEN_BEFUNDE" xml:space="preserve">
+    <value>Unit consistency {1}: {0} finding(s).</value>
+  </data>
 </root>
