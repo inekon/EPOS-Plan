@@ -648,6 +648,109 @@ namespace WindowsFormsApplication1
 
         public const string TAB_PROJEKTWERTE = "Tab_ProjektWerte";
 
+        // =================================================================================
+        // ETAPPE K5 (Konzept Kosten/Energieträger, HF5, Migrationsschritt 27)
+        //   Der Komponenten- und Positionskatalog der Kostenerfassung.
+        // =================================================================================
+
+        /// <summary>
+        /// Katalog der Kostenkomponenten. Spalten (aus der Datenbank gelesen, 20.08.2026):
+        /// <c>ID</c> LONG (KEIN AutoWert — die Schreibwege vergeben die Nummer selbst) und
+        /// <c>Komponente</c> TEXT(255).
+        /// </summary>
+        public const string TAB_KOSTENKOMPONENTE = "Tab_KostenKomponente";
+
+        /// <summary>
+        /// Positionskatalog der Kostenerfassung. Spalten (aus der Datenbank gelesen,
+        /// 20.08.2026): <c>StammID</c> LONG (KEIN AutoWert), <c>Bezeichnung</c> TEXT(255),
+        /// <c>IsMainComponent</c> YESNO.
+        ///
+        /// <para><b>Der Katalog ist flach.</b> Es gibt keine Spalte, die eine Position an
+        /// eine Komponente bindet — die Zuordnung entsteht erst je Projekt über
+        /// <c>Tab_ProjektWerte.KomponentenID</c>. Der Seed aus Schritt 27 legt deshalb
+        /// Positionen an, ordnet sie aber nicht zu.</para>
+        ///
+        /// <para><b><c>StammID</c> ist kein AutoWert</b> — anders als der Klassenkommentar
+        /// von <c>KostenPositionCtrl</c> behauptet. <c>Form_KostenAdmin</c> rechnet mit
+        /// <c>GetMaxID + 1</c> und hat damit recht; das <c>INSERT</c> ohne <c>StammID</c>
+        /// in <c>KostenPositionCtrl.StammIdNeben</c> schreibt eine 0 und ist ein
+        /// Altbefund, der hier nur festgehalten, nicht mitbehandelt wird.</para>
+        /// </summary>
+        public const string TAB_KOSTENFAKTOR = "Tab_Kostenfaktor";
+
+        /// <summary>Spalte <c>Tab_KostenKomponente.Komponente</c>.</summary>
+        public const string SPALTE_KK_KOMPONENTE = "Komponente";
+
+        /// <summary>Spalte <c>Tab_Kostenfaktor.Bezeichnung</c>.</summary>
+        public const string SPALTE_KF_BEZEICHNUNG = "Bezeichnung";
+
+        /// <summary>Spalte <c>Tab_Kostenfaktor.StammID</c>.</summary>
+        public const string SPALTE_KF_STAMMID = "StammID";
+
+        /// <summary>Spalte <c>Tab_Kostenfaktor.IsMainComponent</c>.</summary>
+        public const string SPALTE_KF_IST_HAUPT = "IsMainComponent";
+
+        /// <summary>
+        /// Eine Erfassungsgruppe des Schritts 27: der Komponentenname und die
+        /// Positionsbezeichnungen, die ihr Katalogvorschlag umfasst.
+        /// </summary>
+        public sealed class KostenGruppeSeed
+        {
+            public KostenGruppeSeed(string komponente, string[] positionen)
+            {
+                Komponente = komponente;
+                Positionen = positionen;
+            }
+
+            /// <summary><c>Tab_KostenKomponente.Komponente</c> und zugleich die
+            /// Bezeichnung der Hauptposition (<c>IsMainComponent = True</c>).</summary>
+            public readonly string Komponente;
+
+            /// <summary>Nebenpositionen (<c>IsMainComponent = False</c>), Original-
+            /// Beschriftungen der Altanwendung.</summary>
+            public readonly string[] Positionen;
+        }
+
+        /// <summary>
+        /// ETAPPE K5 — die drei neuen Erfassungsgruppen mit ihrem Positionskatalog
+        /// (Konzept § 7.2 und § 7.3, Original-Beschriftungen aus Anhang A(a)).
+        ///
+        /// <para><b>Nahwärmenetz fehlt absichtlich</b> (Entscheidung E2 vom 19.08.2026):
+        /// Verteilnetz, Hausanschluss und Hausstation entfallen ersatzlos. Ebenso fehlt
+        /// der <b>Pufferspeicher</b> in der Wärmezentrale — er bleibt nach Entscheidung E1
+        /// eine eigene Komponente und würde hier doppelt erfasst.</para>
+        ///
+        /// <para><b>„Sonstiges" steht in jeder Gruppe.</b> Das Katalogmuster sieht es vor:
+        /// Die Altmaske führte je Gruppe drei frei benennbare Zeilen, und der
+        /// Betriebskostenkatalog hat mit <c>DbWerte.VDI_POS_SONSTIGE</c> bereits sein
+        /// Gegenstück. Weitere freie Positionen entstehen über
+        /// <c>KostenPositionCtrl.StammIdNeben</c> beim ersten Bedarf.</para>
+        /// </summary>
+        public static readonly KostenGruppeSeed[] Schritt27_Erfassungsgruppen =
+        {
+            new KostenGruppeSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE, new[]
+            {
+                DbWerte.KOSTENPOSTEN_BHKW_EINBINDUNG,
+                DbWerte.KOSTENPOSTEN_HEIZUNGSTECHNIK,
+                DbWerte.KOSTENPOSTEN_ABGASANLAGE,          // im Bestand: StammID 91
+                DbWerte.KOSTENPOSTEN_SONSTIGES
+            }),
+            new KostenGruppeSeed(DbWerte.KOSTEN_KOMPONENTE_BAULICHE_ANLAGEN, new[]
+            {
+                DbWerte.KOSTENPOSTEN_HEIZRAUM,
+                DbWerte.KOSTENPOSTEN_SCHORNSTEIN,          // im Bestand: StammID 90
+                DbWerte.KOSTENPOSTEN_BAULICHE_MASSNAHMEN,
+                DbWerte.KOSTENPOSTEN_HEIZOELLAGERUNG,
+                DbWerte.KOSTENPOSTEN_ERDGASANSCHLUSS,
+                DbWerte.KOSTENPOSTEN_SONSTIGES
+            }),
+            new KostenGruppeSeed(DbWerte.KOSTEN_KOMPONENTE_STROMEINSPEISUNG, new[]
+            {
+                DbWerte.KOSTENPOSTEN_STROMEINSPEISUNG,
+                DbWerte.KOSTENPOSTEN_SONSTIGES
+            })
+        };
+
         /// <summary>
         /// ETAPPE E3 — Kostenart nach VDI 2067 (kapital-, bedarfs-, betriebsgebunden,
         /// sonstige). Werte und Begründung: <see cref="DbWerte.KOSTENART_KAPITALGEBUNDEN"/>.

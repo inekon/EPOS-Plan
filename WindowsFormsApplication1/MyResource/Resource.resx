@@ -6212,4 +6212,19 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   <data name="KPROF_STATUS_REIHEN_OHNE_JAHR" xml:space="preserve">
     <value>{0} Reihen, Jahr nicht gepflegt</value>
   </data>
+  <data name="WIRT_ZEILE_ZUSCHUSS" xml:space="preserve">
+    <value>Zuschuss [€]</value>
+  </data>
+  <data name="WIRT_ZUSCHUSS_UEBERHANG" xml:space="preserve">
+    <value>Der erfasste Zuschuss ({0} €) übersteigt die Investitionssumme ({1} €). Angesetzt wurde höchstens die Investitionssumme; die Anfangsauszahlung steht damit auf 0 €.</value>
+  </data>
+  <data name="BK_KOSTEN_ZUSCHUSS" xml:space="preserve">
+    <value>davon Zuschuss: −{0} €</value>
+  </data>
+  <data name="KOSTEN_CHK_ZUSCHUSS" xml:space="preserve">
+    <value>Diese Position ist ein Zuschuss (BAFA, KfW, Baukostenzuschuss …)</value>
+  </data>
+  <data name="KOSTEN_CHK_ZUSCHUSS_HINT" xml:space="preserve">
+    <value>Den Betrag positiv eintragen. Er mindert die Investitionssumme einmalig — ohne Ersatzbeschaffung und ohne Restwert. Prozentuale Betriebskosten rechnen weiterhin von der vollen Investitionssumme.</value>
+  </data>
 </root>

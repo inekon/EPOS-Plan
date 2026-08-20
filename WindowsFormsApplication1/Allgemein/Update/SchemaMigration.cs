@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 26;
+        public const int ZIEL_VERSION = 27;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -745,6 +745,53 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_26_EINHEITEN_SEEDS = 26;
 
+        /// <summary>
+        /// ETAPPE K5 (Konzept Kosten/Energieträger, HF5, Migrationsschritt M-C):
+        /// <b>Komponenten- und Positionskatalog nach BHKW-Plan.</b> Reines DML auf zwei
+        /// KATALOGtabellen — keine Projektzeile wird angefasst, kein Zahlenwert geändert.
+        ///
+        /// <list type="bullet">
+        ///   <item><description><b>27a</b>: die drei Erfassungsgruppen in
+        ///     <c>Tab_KostenKomponente</c> — <i>Wärmezentrale</i>, <i>Bauliche Anlagen</i>,
+        ///     <i>Stromeinspeisung</i>.</description></item>
+        ///   <item><description><b>27b</b>: je Gruppe eine HAUPTposition in
+        ///     <c>Tab_Kostenfaktor</c> (<c>IsMainComponent = True</c>, gleicher Wortlaut
+        ///     wie die Komponente) — ohne sie fände
+        ///     <c>KostenPositionCtrl.StammIdHaupt</c> nichts, und
+        ///     <c>Form_Kosten.EnsureMainComponentExists</c> bräche wortlos ab.</description></item>
+        ///   <item><description><b>27c</b>: die Nebenpositionen des Katalogs
+        ///     (<see cref="SchemaKatalog.Schritt27_Erfassungsgruppen"/>), Original-
+        ///     Beschriftungen der Altanwendung.</description></item>
+        /// </list>
+        ///
+        /// <b>Kein Nahwärmenetz, kein doppelter Pufferspeicher</b> — Entscheidungen E2 und
+        /// E1 vom 19.08.2026, Begründung an
+        /// <see cref="DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE"/>.
+        ///
+        /// <b>Warum die Empfehlungsbereiche NICHT hier stehen.</b> Das Konzept § 7.6 sah
+        /// zwei Spalten <c>Empfehlung_von</c>/<c>Empfehlung_bis</c> an
+        /// <c>Tab_Kostenfaktor</c> vor. Der Befund vom 20.08.2026: Sie existieren bereits —
+        /// als Felder <c>EmpfehlungVon</c>/<c>EmpfehlungBis</c> des VDI-Katalogs in
+        /// <c>BetriebskostenCtrl.Katalog</c>, mit exakt den sieben Wertepaaren aus § 7.6,
+        /// und <c>Form_Betriebskosten.Bezugstext</c> zeigt sie seit Etappe E3 am Satzfeld
+        /// an. Zwei Datenbankspalten daneben wären eine zweite Wahrheit über dieselbe
+        /// Zahl — und zwar die schlechtere, weil die VDI-Positionen ihren
+        /// Empfehlungsbereich aus der Norm beziehen und nicht je Datenbank abweichen
+        /// dürfen. Der Schritt legt sie deshalb bewusst nicht an.
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): Jeder Einfügung geht ein
+        /// <c>COUNT(*)</c> auf den Namen voraus — <c>Komponente</c> bzw.
+        /// <c>Bezeichnung</c> + <c>IsMainComponent</c>. Ein zweiter Lauf legt nichts an.
+        /// Das ist auch die Regel, mit der die Bestandseinträge „Schornstein" (StammID 90)
+        /// und „Abgasanlage" (91) unangetastet bleiben.
+        ///
+        /// <b>Keine AutoWert-Annahme.</b> Weder <c>Tab_KostenKomponente.ID</c> noch
+        /// <c>Tab_Kostenfaktor.StammID</c> ist ein AutoWert (Schemabefund 20.08.2026);
+        /// beide Nummern vergibt der Schritt selbst als <c>MAX + 1</c> — dasselbe Muster
+        /// wie <c>Form_KostenAdmin.btnNeuKostenfaktor_Click</c> und Schritt 26b.
+        /// </summary>
+        public const int SCHRITT_27_KOMPONENTEN_KATALOG = 27;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -1000,6 +1047,20 @@ namespace WindowsFormsApplication1
         /// <summary>26b: neu gesäte z-Faktor-Regeln (m³ → Nm³, Faktor 1,0).</summary>
         public static int DatenZFaktorGesaet { get; private set; }
 
+        // --- Zählwerk des Komponentenkatalogs aus Schritt 27 (Etappe K5) ---------------
+
+        /// <summary>27a: neu angelegte Zeilen in <c>Tab_KostenKomponente</c> (höchstens 3).</summary>
+        public static int DatenKomponentenGesaet { get; private set; }
+
+        /// <summary>27b: neu angelegte HAUPTpositionen in <c>Tab_Kostenfaktor</c> — eine
+        /// je neuer Komponente (<c>IsMainComponent = True</c>).</summary>
+        public static int DatenHauptpositionenGesaet { get; private set; }
+
+        /// <summary>27c: neu angelegte NEBENpositionen in <c>Tab_Kostenfaktor</c>. Kleiner
+        /// als die Katalogliste, weil „Schornstein" und „Abgasanlage" im Bestand bereits
+        /// stehen und „Sonstiges" nur EINMAL entsteht (der Katalog ist flach).</summary>
+        public static int DatenNebenpositionenGesaet { get; private set; }
+
         /// <summary>
         /// R7: Anlagen, bei denen der Bezeichner NICHT eindeutig auflösbar war (kein
         /// Treffer oder mehrere gleichnamige Projektkopien). Der Fremdschlüssel bleibt
@@ -1239,6 +1300,18 @@ namespace WindowsFormsApplication1
                         "Identitätsregeln (Etappe K3, HF3/M-B)",
                         "Die Initialbefüllung der Energieträger konnte nicht ausgeführt werden.",
                         Schritt_26_EinheitenSeeds),
+
+            // ETAPPE K5 (Konzept Kosten/Energieträger, HF5, Migrationsschritt M-C) -
+            //       Die drei Erfassungsgruppen aus BHKW-Plan und ihr Positionskatalog.
+            //       Reines DML auf zwei KATALOGtabellen; keine Projektzeile wird
+            //       angefasst. Ergebnisneutral, solange niemand eine Position erfasst -
+            //       ein leerer Katalogeintrag rechnet nicht.
+            new Schritt(SCHRITT_27_KOMPONENTEN_KATALOG,
+                        "Komponentenkatalog: Wärmezentrale, Bauliche Anlagen und " +
+                        "Stromeinspeisung in Tab_KostenKomponente, Haupt- und " +
+                        "Nebenpositionen in Tab_Kostenfaktor (Etappe K5, HF5/M-C)",
+                        "Der Komponenten- und Positionskatalog konnte nicht angelegt werden.",
+                        Schritt_27_KomponentenKatalog),
         };
 
         // =================================================================================
@@ -1293,6 +1366,9 @@ namespace WindowsFormsApplication1
             DatenNormkubikTraeger = 0;
             DatenNormkubikCodes = 0;
             DatenZFaktorGesaet = 0;
+            DatenKomponentenGesaet = 0;
+            DatenHauptpositionenGesaet = 0;
+            DatenNebenpositionenGesaet = 0;
             _eindeutigkeitGeprueft = false;
 
             var l = new Lauf();
@@ -2695,6 +2771,157 @@ namespace WindowsFormsApplication1
                     DbWerte.UMRECHNUNG_NAME_Z_FAKTOR + "\" auf \"" +
                     DbWerte.UMRECHNUNG_NAME_STANDARD + "\" berichtigt - der z-Faktor ist " +
                     "ab Schritt 26b die Regel m³ → Nm³.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 27 - Komponenten- und Positionskatalog (Etappe K5, HF5/M-C)
+        // =================================================================================
+
+        /// <summary>
+        /// Legt die drei Erfassungsgruppen und ihren Positionskatalog an.
+        /// Begründung und Idempotenzzusage: <see cref="SCHRITT_27_KOMPONENTEN_KATALOG"/>.
+        /// </summary>
+        private static bool Schritt_27_KomponentenKatalog(Lauf l)
+        {
+            // Fehlt eine der beiden Katalogtabellen, ist die Datenbank keine, in der die
+            // Kostenerfassung je gelaufen wäre. Das ist ein FEHLER und kein gültiger
+            // Zustand: Beide Tabellen gehören zur Auslieferung, und ein Schritt, der
+            // stillschweigend nichts täte, ließe den Marker trotzdem auf 27 springen.
+            if (TabellenSchema(l, SchemaKatalog.TAB_KOSTENKOMPONENTE) == null)
+            {
+                l.Notiz("27: " + SchemaKatalog.TAB_KOSTENKOMPONENTE + " ist nicht lesbar.");
+                return false;
+            }
+            if (TabellenSchema(l, SchemaKatalog.TAB_KOSTENFAKTOR) == null)
+            {
+                l.Notiz("27: " + SchemaKatalog.TAB_KOSTENFAKTOR + " ist nicht lesbar.");
+                return false;
+            }
+
+            bool ok = true;
+            int komponenten = 0, haupt = 0, neben = 0;
+
+            foreach (SchemaKatalog.KostenGruppeSeed g in SchemaKatalog.Schritt27_Erfassungsgruppen)
+            {
+                int n;
+
+                if (!KomponenteSichern(l, g.Komponente, out n)) { ok = false; continue; }
+                komponenten += n;
+
+                // Die Hauptposition trägt denselben Wortlaut wie die Komponente - so
+                // findet StammIdHaupt sie, und so heissen auch die sieben Bestandsgruppen
+                // (Tab_Kostenfaktor 77..84 gegenüber Tab_KostenKomponente 1..7).
+                if (!PositionSichern(l, g.Komponente, true, out n)) { ok = false; continue; }
+                haupt += n;
+
+                foreach (string p in g.Positionen)
+                {
+                    if (!PositionSichern(l, p, false, out n)) { ok = false; continue; }
+                    neben += n;
+                }
+            }
+
+            DatenKomponentenGesaet = komponenten;
+            DatenHauptpositionenGesaet = haupt;
+            DatenNebenpositionenGesaet = neben;
+
+            l.Notiz("27a: " + komponenten + " Erfassungsgruppen in " +
+                    SchemaKatalog.TAB_KOSTENKOMPONENTE + " angelegt (E2: KEIN Nahwärmenetz; " +
+                    "E1: Pufferspeicher bleibt eigene Komponente und wird in der " +
+                    "Wärmezentrale nicht gedoppelt).");
+            l.Notiz("27b: " + haupt + " Hauptpositionen angelegt.");
+            l.Notiz("27c: " + neben + " Nebenpositionen angelegt (Original-Beschriftungen " +
+                    "aus BHKW-Plan; \"Schornstein\" und \"Abgasanlage\" stehen im Bestand " +
+                    "bereits und bleiben unangetastet).");
+            return ok;
+        }
+
+        /// <summary>
+        /// <b>27a</b>: Eine Erfassungsgruppe in <c>Tab_KostenKomponente</c>, falls sie
+        /// fehlt. <paramref name="angelegt"/> ist 1 bei Neuanlage, sonst 0.
+        /// </summary>
+        private static bool KomponenteSichern(Lauf l, string komponente, out int angelegt)
+        {
+            angelegt = 0;
+
+            object da = Scalar(l,
+                "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_KOSTENKOMPONENTE + "] " +
+                "WHERE [" + SchemaKatalog.SPALTE_KK_KOMPONENTE + "] = ?",
+                new OleDbParameter("@k", komponente));
+
+            if (da == null)
+            {
+                l.Notiz("27a: Prüfung für \"" + komponente + "\" fehlgeschlagen.");
+                return false;
+            }
+            if (Zahl(da) > 0) return true;              // schon da - idempotent
+
+            // ID ist KEIN AutoWert (Schemabefund): die Nummer selbst vergeben.
+            int neueId = Zahl(Scalar(l, "SELECT MAX([ID]) FROM [" +
+                                        SchemaKatalog.TAB_KOSTENKOMPONENTE + "]")) + 1;
+
+            int n = NonQuery(l,
+                "INSERT INTO [" + SchemaKatalog.TAB_KOSTENKOMPONENTE + "] ([ID], [" +
+                SchemaKatalog.SPALTE_KK_KOMPONENTE + "]) VALUES (?, ?)",
+                new OleDbParameter("@id", neueId),
+                new OleDbParameter("@k", komponente));
+
+            if (n <= 0)
+            {
+                l.Notiz("27a: INSERT für \"" + komponente + "\" fehlgeschlagen.");
+                return false;
+            }
+
+            angelegt = 1;
+            return true;
+        }
+
+        /// <summary>
+        /// <b>27b/27c</b>: Eine Katalogposition in <c>Tab_Kostenfaktor</c>, falls sie
+        /// fehlt. Geprüft wird auf <c>Bezeichnung</c> UND <c>IsMainComponent</c> — genau
+        /// die Merkmalskombination, mit der <c>KostenPositionCtrl</c> sucht. Eine
+        /// Bezeichnung darf deshalb zweimal vorkommen, einmal je Rolle
+        /// („Stromeinspeisung" ist beides).
+        /// </summary>
+        private static bool PositionSichern(Lauf l, string bezeichnung, bool hauptposition,
+                                            out int angelegt)
+        {
+            angelegt = 0;
+
+            object da = Scalar(l,
+                "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_KOSTENFAKTOR + "] " +
+                "WHERE [" + SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ? AND [" +
+                SchemaKatalog.SPALTE_KF_IST_HAUPT + "] = " + (hauptposition ? "TRUE" : "FALSE"),
+                new OleDbParameter("@b", bezeichnung));
+
+            if (da == null)
+            {
+                l.Notiz("27: Prüfung der Position \"" + bezeichnung + "\" fehlgeschlagen.");
+                return false;
+            }
+            if (Zahl(da) > 0) return true;              // schon da - idempotent
+
+            // StammID ist KEIN AutoWert (Schemabefund): die Nummer selbst vergeben.
+            int neueId = Zahl(Scalar(l, "SELECT MAX([" + SchemaKatalog.SPALTE_KF_STAMMID +
+                                        "]) FROM [" + SchemaKatalog.TAB_KOSTENFAKTOR + "]")) + 1;
+
+            int n = NonQuery(l,
+                "INSERT INTO [" + SchemaKatalog.TAB_KOSTENFAKTOR + "] ([" +
+                SchemaKatalog.SPALTE_KF_STAMMID + "], [" +
+                SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "], [" +
+                SchemaKatalog.SPALTE_KF_IST_HAUPT + "]) VALUES (?, ?, " +
+                (hauptposition ? "TRUE" : "FALSE") + ")",
+                new OleDbParameter("@sid", neueId),
+                new OleDbParameter("@b", bezeichnung));
+
+            if (n <= 0)
+            {
+                l.Notiz("27: INSERT der Position \"" + bezeichnung + "\" fehlgeschlagen.");
+                return false;
+            }
+
+            angelegt = 1;
             return true;
         }
 

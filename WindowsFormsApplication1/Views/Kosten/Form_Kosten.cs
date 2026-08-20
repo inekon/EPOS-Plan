@@ -1037,6 +1037,7 @@ namespace WindowsFormsApplication1
 
                 p.IstErloes = z.IstErloes;
                 p.Bemessung = z.Bemessung;
+                p.Kostenart = z.Kostenart;      // K5: trägt das Zuschuss-Kennzeichen
                 if (p.Abgeleitet && z.Menge.HasValue && z.Einheitpreis.HasValue)
                     p.Herleitung = string.Format(MyResource.Resource.KOSTEN_BEMESSUNG_HERLEITUNG,
                                                  z.Einheitpreis.Value.ToString("N4", BerichtTexte.Kultur),
@@ -1306,7 +1307,8 @@ namespace WindowsFormsApplication1
                     if (r["Komponente"] == DBNull.Value) continue;
                     string k = r["Komponente"].ToString();
                     if (k.Length == 0) continue;
-                    if (mitPositionen.Contains(k) || TechnikPlanwertCtrl.Verbaut(projektID, k))
+                    if (mitPositionen.Contains(k) || TechnikPlanwertCtrl.Verbaut(projektID, k) ||
+                        IstErfassungsgruppe(k))
                         liste.Add(k);
                 }
             }
@@ -1315,6 +1317,59 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        /// <summary>
+        /// ETAPPE K5: true für die drei ERFASSUNGSGRUPPEN aus Migrationsschritt 27 —
+        /// Wärmezentrale, Bauliche Anlagen, Stromeinspeisung.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum sie immer angeboten werden.</b> Die Auswahlliste zeigt sonst nur
+        /// Gewerke, die entweder in <c>Tab_Energieanlagen</c> verbaut sind oder bereits
+        /// Kostenpositionen tragen. Die drei neuen Gruppen sind aber <b>keine Gewerke</b>:
+        /// Es gibt für sie keine Gerätetabelle und damit auch kein „verbaut"
+        /// (<c>TechnikPlanwertCtrl.Plaene</c> führt weiterhin sieben Einträge). Ohne diese
+        /// Ausnahme wären sie in einem frischen Projekt unerreichbar — man könnte keine
+        /// erste Position erfassen, und weil sie ohne Position nicht in der Liste
+        /// erscheinen, bliebe es dabei.
+        /// </para>
+        /// <para>
+        /// <b>Es ist eine Namensprüfung, keine Katalogabfrage.</b> Angeboten wird nur, was
+        /// die Anwendung als Erfassungsgruppe KENNT; eine später von Hand angelegte
+        /// Komponente ohne Gewerk und ohne Positionen bleibt draussen — genau wie bisher.
+        /// </para>
+        /// </remarks>
+        private static bool IstErfassungsgruppe(string komponente)
+        {
+            return string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE, StringComparison.Ordinal)
+                || string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_BAULICHE_ANLAGEN, StringComparison.Ordinal)
+                || string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_STROMEINSPEISUNG, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <c>Tab_KostenKomponente.ID</c> zu einem Komponentennamen; 0 = unbekannt.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>ETAPPE K5 — die Nummern der sieben Bestandskomponenten bleiben fest
+        /// verdrahtet, die neuen kommen aus der Datenbank.</b> Bis K5 war diese Methode
+        /// eine reine <c>switch</c>-Kette; sie hätte für die drei Erfassungsgruppen aus
+        /// Migrationsschritt 27 eine 0 geliefert, und damit wäre für sie keine einzige
+        /// Kostenposition anlegbar gewesen (<c>SetzeBetrag</c> bricht bei
+        /// <c>komponentenID &lt;= 0</c> ab).
+        /// </para>
+        /// <para>
+        /// <b>Warum die sieben trotzdem stehen bleiben.</b> Ihre Nummern 1…7 stehen so
+        /// auch in <c>BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL/_BHKW</c> und in jeder
+        /// Bestandszeile von <c>Tab_ProjektWerte</c>. Sie durch eine Abfrage zu ersetzen
+        /// wäre eine Verhaltensänderung an der Stelle, an der am wenigsten passieren
+        /// darf — und ohne Not: Der Nachschlag greift nur, wenn der Name keiner der
+        /// sieben ist.
+        /// </para>
+        /// <para>
+        /// <b>Ein Lauf je Fenster.</b> Das Ergebnis wird gemerkt; die Methode wird beim
+        /// Aufbau jeder Positionsliste mehrfach gerufen.
+        /// </para>
+        /// </remarks>
         private int GetKomponentenID(string Erzeuger)
         {
             switch (Erzeuger)
@@ -1326,8 +1381,38 @@ namespace WindowsFormsApplication1
                 case "Stromspeicher": return 5;
                 case "Pufferspeicher": return 6;
                 case "BHKW": return 7;
-                default: return 0; // Oder eine andere Standard-ID für "Unbekannt"
+                default: return KomponentenIdAusKatalog(Erzeuger);
             }
+        }
+
+        /// <summary>Gemerkte Katalognummern der Komponenten, die nicht fest verdrahtet sind (K5).</summary>
+        private readonly Dictionary<string, int> _komponentenIdCache =
+            new Dictionary<string, int>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// <c>Tab_KostenKomponente.ID</c> aus dem Katalog; 0, wenn es den Namen dort
+        /// nicht gibt (K5). Dieselbe Abfrage wie
+        /// <c>KomponentenUebernahmeCtrl</c> und <c>KiAktionenWirtschaft</c>.
+        /// </summary>
+        private int KomponentenIdAusKatalog(string komponente)
+        {
+            if (string.IsNullOrEmpty(komponente)) return 0;
+
+            int gemerkt;
+            if (_komponentenIdCache.TryGetValue(komponente, out gemerkt)) return gemerkt;
+
+            int id = 0;
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT MIN(ID) FROM Tab_KostenKomponente WHERE Komponente = ?",
+                    new OleDbParameter("@k", komponente));
+                if (o != null && o != DBNull.Value) id = Convert.ToInt32(o);
+            }
+            catch { }
+
+            _komponentenIdCache[komponente] = id;
+            return id;
         }
 
         private void UpdateSingleRowInDatabase(KostenPosition pos)
@@ -1355,6 +1440,39 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("gn", (string)pos.Gruppenname),
                 new OleDbParameter("@id", pos.ID)
             );
+
+            KostenartSichern(pos);
+        }
+
+        /// <summary>
+        /// ETAPPE K5: schreibt die Kostenart der Position nach — sie ist der einzige
+        /// Träger des Zuschuss-Kennzeichens (<c>Form_CaseEingabe</c>).
+        /// </summary>
+        /// <remarks>
+        /// <b>Ein zweites UPDATE statt einer erweiterten Anweisung.</b> Die Spalte
+        /// <c>Kostenart</c> stammt aus Migrationsschritt 19 und fehlt in einer nie
+        /// migrierten Datenbank. Stünde sie in derselben Anweisung, scheiterte dort auch
+        /// das Speichern der Beträge — und zwar still, weil <c>ExecuteSQL</c> seinen
+        /// Fehler selbst abfängt. Getrennt bleibt der Bestandsweg unberührt: Ohne die
+        /// Spalte passiert schlicht nichts (dieselbe Regel wie in
+        /// <c>KostenPositionCtrl.SetzeBetragMitZusatz</c>).
+        /// </remarks>
+        private void KostenartSichern(KostenPosition pos)
+        {
+            if (pos == null || pos.ID <= 0) return;
+            if (string.IsNullOrEmpty(pos.Kostenart)) return;
+
+            try
+            {
+                if (!KostenPositionCtrl.StelleSpaltenSicher()) return;
+
+                DataRepository.ExecuteSQL(
+                    "UPDATE Tab_ProjektWerte SET [" + SchemaKatalog.SPALTE_PW_KOSTENART +
+                    "] = ? WHERE ID = ?",
+                    new OleDbParameter("@art", pos.Kostenart),
+                    new OleDbParameter("@id", pos.ID));
+            }
+            catch { }
         }
 
         private void listBox_Betriebskosten_SelectedIndexChanged(object sender, EventArgs e)
