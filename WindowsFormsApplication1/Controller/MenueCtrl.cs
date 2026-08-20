@@ -165,7 +165,6 @@ namespace WindowsFormsApplication1
                     frmmain.Add_WPKontext();
                     frmmain.Add_BHKWKontext();
                     frmmain.Add_GebäudeKontext();
-                    frmmain.Add_SpKontext();
                     frmmain.Add_HeizkesselKontext();
                     frmmain.Add_WaermebedarfExternKontext();
                     frmmain.Add_ProzesswaermeKontext();
