@@ -6170,4 +6170,19 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   <data name="KOSTEN_UMRECHNUNG_SPEICHERN_ABGELEHNT" xml:space="preserve">
     <value>Der Energieträger wurde NICHT gespeichert: {0}</value>
   </data>
+  <data name="KI_REG_ZWECK_ENERGIETRAEGER_PRUEFEN" xml:space="preserve">
+    <value>Prüft die Energieträger auf Einheiten-Konsistenz: Erreicht jeder aktive Träger kWh — unmittelbar, über Heizwert bzw. Brennwert oder über eine aktive Umrechnungsregel? Liefert die Befundliste, ändert nichts.</value>
+  </data>
+  <data name="KI_REG_ERL_PROJEKT_FUER_EINHEITEN" xml:space="preserve">
+    <value>Name des Projekts. Ohne Angabe wird der Katalog geprüft (alle aktiven Träger mit Katalogwerten); mit Angabe nur die im Projekt verwendeten Träger, mit deren Projektüberschreibungen.</value>
+  </data>
+  <data name="KI_REG_EINHEITEN_KATALOG" xml:space="preserve">
+    <value>Katalog</value>
+  </data>
+  <data name="KI_REG_EINHEITEN_OHNE_BEFUND" xml:space="preserve">
+    <value>Einheiten-Konsistenz {0}: kein Befund — jeder aktive Energieträger erreicht kWh.</value>
+  </data>
+  <data name="KI_REG_EINHEITEN_BEFUNDE" xml:space="preserve">
+    <value>Einheiten-Konsistenz {1}: {0} Befund(e).</value>
+  </data>
 </root>

@@ -17749,5 +17749,50 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prüft die Energieträger auf Einheiten-Konsistenz: Erreicht jeder aktive Träger kWh — unmittelbar, über Heizwert bzw. Brennwert oder über eine aktive Umrechnungsregel? Liefert die Befundliste, ändert nichts. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_ENERGIETRAEGER_PRUEFEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_ENERGIETRAEGER_PRUEFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name des Projekts. Ohne Angabe wird der Katalog geprüft (alle aktiven Träger mit Katalogwerten); mit Angabe nur die im Projekt verwendeten Träger, mit deren Projektüberschreibungen. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_PROJEKT_FUER_EINHEITEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_PROJEKT_FUER_EINHEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog ähnelt.
+        /// </summary>
+        public static string KI_REG_EINHEITEN_KATALOG {
+            get {
+                return ResourceManager.GetString("KI_REG_EINHEITEN_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheiten-Konsistenz {0}: kein Befund — jeder aktive Energieträger erreicht kWh. ähnelt.
+        /// </summary>
+        public static string KI_REG_EINHEITEN_OHNE_BEFUND {
+            get {
+                return ResourceManager.GetString("KI_REG_EINHEITEN_OHNE_BEFUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheiten-Konsistenz {1}: {0} Befund(e). ähnelt.
+        /// </summary>
+        public static string KI_REG_EINHEITEN_BEFUNDE {
+            get {
+                return ResourceManager.GetString("KI_REG_EINHEITEN_BEFUNDE", resourceCulture);
+            }
+        }
+        
     }
 }
