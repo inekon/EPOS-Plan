@@ -17641,5 +17641,113 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("WIRT_ZEILE_VERMIEDEN_LEISTUNG", resourceCulture);
             }
         }
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umrechnungsregeln ähnelt.
+        /// </summary>
+        public static string KOSTEN_UMRECHNUNG_TITEL {
+            get {
+                return ResourceManager.GetString("KOSTEN_UMRECHNUNG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
+        /// </summary>
+        public static string KOSTEN_UMRECHNUNG_SPALTE_NAME {
+            get {
+                return ResourceManager.GetString("KOSTEN_UMRECHNUNG_SPALTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die von ähnelt.
+        /// </summary>
+        public static string KOSTEN_UMRECHNUNG_SPALTE_VON {
+            get {
+                return ResourceManager.GetString("KOSTEN_UMRECHNUNG_SPALTE_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nach ähnelt.
+        /// </summary>
+        public static string KOSTEN_UMRECHNUNG_SPALTE_NACH {
+            get {
+                return ResourceManager.GetString("KOSTEN_UMRECHNUNG_SPALTE_NACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Faktor ähnelt.
+        /// </summary>
+        public static string KOSTEN_UMRECHNUNG_SPALTE_FAKTOR {
+            get {
+                return ResourceManager.GetString("KOSTEN_UMRECHNUNG_SPALTE_FAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aktiv ähnelt.
+        /// </summary>
+        public static string KOSTEN_UMRECHNUNG_SPALTE_AKTIV {
+            get {
+                return ResourceManager.GetString("KOSTEN_UMRECHNUNG_SPALTE_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Regel hinzufügen ähnelt.
+        /// </summary>
+        public static string KOSTEN_UMRECHNUNG_NEU {
+            get {
+                return ResourceManager.GetString("KOSTEN_UMRECHNUNG_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die effektiv: 1 {0} = {1} kWh (Hi) / {2} kWh (Hs) ähnelt.
+        /// </summary>
+        public static string KOSTEN_UMRECHNUNG_EFFEKTIV {
+            get {
+                return ResourceManager.GetString("KOSTEN_UMRECHNUNG_EFFEKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die effektiv: Abrechnung unmittelbar in kWh ähnelt.
+        /// </summary>
+        public static string KOSTEN_UMRECHNUNG_EFFEKTIV_KWH {
+            get {
+                return ResourceManager.GetString("KOSTEN_UMRECHNUNG_EFFEKTIV_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Regel lässt sich nicht abschalten — sie trägt den Energieträger nach kWh. {0} ähnelt.
+        /// </summary>
+        public static string KOSTEN_UMRECHNUNG_RIEGEL {
+            get {
+                return ResourceManager.GetString("KOSTEN_UMRECHNUNG_RIEGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte für den Faktor eine Zahl größer als 0 eingeben (Dezimaltrennzeichen Komma oder Punkt). ähnelt.
+        /// </summary>
+        public static string KOSTEN_UMRECHNUNG_FAKTOR_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KOSTEN_UMRECHNUNG_FAKTOR_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Energieträger wurde NICHT gespeichert: {0} ähnelt.
+        /// </summary>
+        public static string KOSTEN_UMRECHNUNG_SPEICHERN_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("KOSTEN_UMRECHNUNG_SPEICHERN_ABGELEHNT", resourceCulture);
+            }
+        }
+        
     }
 }

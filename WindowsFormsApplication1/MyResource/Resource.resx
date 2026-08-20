@@ -6134,4 +6134,40 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   <data name="KI_REG_NAME_KEINE" xml:space="preserve">
     <value>Es gibt derzeit nichts zur Auswahl für {0}.</value>
   </data>
+  <data name="KOSTEN_UMRECHNUNG_TITEL" xml:space="preserve">
+    <value>Umrechnungsregeln</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_VON" xml:space="preserve">
+    <value>von</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_NACH" xml:space="preserve">
+    <value>nach</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_FAKTOR" xml:space="preserve">
+    <value>Faktor</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_AKTIV" xml:space="preserve">
+    <value>aktiv</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_NEU" xml:space="preserve">
+    <value>Regel hinzufügen</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_EFFEKTIV" xml:space="preserve">
+    <value>effektiv: 1 {0} = {1} kWh (Hi) / {2} kWh (Hs)</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_EFFEKTIV_KWH" xml:space="preserve">
+    <value>effektiv: Abrechnung unmittelbar in kWh</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_RIEGEL" xml:space="preserve">
+    <value>Diese Regel lässt sich nicht abschalten — sie trägt den Energieträger nach kWh. {0}</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_FAKTOR_UNGUELTIG" xml:space="preserve">
+    <value>Bitte für den Faktor eine Zahl größer als 0 eingeben (Dezimaltrennzeichen Komma oder Punkt).</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPEICHERN_ABGELEHNT" xml:space="preserve">
+    <value>Der Energieträger wurde NICHT gespeichert: {0}</value>
+  </data>
 </root>

@@ -59,21 +59,31 @@ namespace WindowsFormsApplication1
     /// <b>Konsistenzprüfer der Energieträger-Einheiten</b> (Etappe K2, Hauptforderung
     /// HF2 aus <c>Konzept_Kosten_Energietraeger_EPOS-Plan.md</c>, Leitentscheidung L2).
     ///
-    /// <para><b>Die Fachregel, die geprüft wird.</b> Jeder aktive Energieträger muss in
-    /// kWh umrechenbar sein — entweder unmittelbar
-    /// (<c>billing_unit = kWh</c>, also Strom und Fernwärme), oder über eine aktive
-    /// Umrechnungsregel <c>billing_unit → kWh</c> mit Faktor &gt; 0, oder über eine
-    /// zweistufige Kette <c>billing_unit → X → kWh</c>. Mehr als zwei Stufen prüft der
-    /// Prüfer nicht: Das Konzept nennt in § 4.2 ausdrücklich „Kettenauflösung max. 2
-    /// Stufen", und eine unbegrenzte Suche wäre auf einem frei editierbaren
-    /// Einheiten-Textfeld eine Zyklensuche ohne fachlichen Gewinn.</para>
-    ///
-    /// <para><b>Zwei Bedingungen, nicht eine.</b> <c>energy_conversion</c> bleibt reine
-    /// EINHEITEN-Umrechnung; die Energie-Umrechnung leisten Heizwert und Brennwert
+    /// <para><b>Die Fachregel, die geprüft wird (Stand Etappe K3).</b> Ein aktiver
+    /// Energieträger erfüllt die kWh-Bedingung aus L2 auf einem von DREI Wegen:
+    /// <b>(1)</b> <c>billing_unit = kWh</c> — Strom und Fernwärme, die Menge IST die
+    /// Energie; <b>(2)</b> Heizwert oder Brennwert ist gepflegt
     /// (<c>hi_kwh_per_unit</c> / <c>hs_kwh_per_unit</c>, projektseitig
-    /// <c>custom_hi</c> / <c>custom_hs</c>). Deshalb prüft dieser Prüfer BEIDES: die
-    /// Einheitenkette UND einen brauchbaren Heizwert (Konzept § 4.2, „Klärung
-    /// Semantik").</para>
+    /// <c>custom_hi</c> / <c>custom_hs</c>) — sie sind je ABRECHNUNGSEINHEIT definiert
+    /// und leisten damit genau den Schritt nach kWh; <b>(3)</b> eine aktive Regelkette
+    /// (höchstens zwei Stufen, Faktoren &gt; 0) endet buchstäblich bei <c>kWh</c>.</para>
+    ///
+    /// <para>Mehr als zwei Stufen prüft der Prüfer nicht: Das Konzept nennt in § 4.2
+    /// ausdrücklich „Kettenauflösung max. 2 Stufen", und eine unbegrenzte Suche wäre
+    /// auf einem frei editierbaren Einheiten-Textfeld eine Zyklensuche ohne fachlichen
+    /// Gewinn.</para>
+    ///
+    /// <para><b>Weg 2 kam in Etappe K3 hinzu — die Auflösung eines Widerspruchs.</b>
+    /// <c>energy_conversion</c> bleibt reine EINHEITEN-Umrechnung; die
+    /// Energie-Umrechnung leisten Hi/Hs (Konzept § 4.2, „Klärung Semantik"). Die erste
+    /// Fassung (K2) verlangte trotzdem eine Regel bis buchstäblich <c>kWh</c> und
+    /// meldete deshalb 17 von 21 Katalogträgern als Verstoß, obwohl jeder von ihnen
+    /// einen gepflegten Heizwert trägt. Die Lücke mit Regeln „<c>l → kWh</c>" zu
+    /// schließen hätte entweder den Heizwert doppelt gepflegt (<c>factor = Hi</c>) oder
+    /// eine falsche Aussage in die Tabelle geschrieben (<c>factor = 1,0</c> ≙ „1 l =
+    /// 1 kWh"). Nachgezogen wurde deshalb der Prüfer, nicht die Datenlage. Die
+    /// ausführliche Begründung steht an
+    /// <c>SchemaMigration.SCHRITT_26_EINHEITEN_SEEDS</c>.</para>
     ///
     /// <para><b>ERGEBNISNEUTRAL.</b> Diese Klasse rechnet nichts und schreibt nichts.
     /// Sie liest und meldet — dieselbe Zusage wie bei <c>SimulationProtokoll</c>.</para>
@@ -94,6 +104,39 @@ namespace WindowsFormsApplication1
     /// Ausnahme nach außen, keine Teilaussage über Träger, die er nicht beurteilen
     /// kann.</para>
     /// </summary>
+    /// <summary>
+    /// EINE Zeile aus <c>energy_conversion</c>, wie der Trägerdialog sie zeigt und
+    /// bearbeitet (Etappe K3, Konzept § 4.3).
+    ///
+    /// <para>Sie ist bewusst öffentlich und veränderbar: Der Regelblock in
+    /// <c>ucFuelSettings</c> hält damit den BEARBEITUNGSSTAND im Speicher und kann den
+    /// Prüfer über <see cref="EnergieEinheitenPruefung.ErreichtKwh"/> fragen, ob ein
+    /// noch nicht gespeicherter Stand die kWh-Bedingung erfüllt — ohne dafür schreiben
+    /// oder die Datenbank erneut lesen zu müssen. Genau das braucht der Riegel: „Was
+    /// wäre, wenn ich DIESE Regel abschalte?"</para>
+    /// </summary>
+    public sealed class UmrechnungsRegel
+    {
+        /// <summary><c>energy_conversion.ID</c>; 0 = im Dialog neu angelegt, noch nicht gespeichert.</summary>
+        public int Id;
+
+        /// <summary><c>Tab_Brennstoff_Stamm.ID</c> — die Regel hängt am Brennstoff, nicht am Träger.</summary>
+        public int IdBrennstoff;
+
+        /// <summary>Anzeigename, Vorbelegung aus <c>DbWerte.UMRECHNUNG_NAME_*</c>.</summary>
+        public string Name = "";
+
+        public string Von = "";
+        public string Nach = "";
+        public double Faktor;
+
+        /// <summary>L3: abschaltbar statt löschbar.</summary>
+        public bool Aktiv = true;
+
+        /// <summary>L5: eine vom Anwender gepflegte Zeile wird von keiner Migration überschrieben.</summary>
+        public bool UserEdited;
+    }
+
     public static class EnergieEinheitenPruefung
     {
         // =====================================================================
@@ -173,6 +216,132 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
+        // Dialog-API (Etappe K3, Konzept § 4.3)
+        // =====================================================================
+
+        /// <summary>
+        /// Alle Regeln EINES Brennstoffs — auch die abgeschalteten, denn der Dialog soll
+        /// sie zeigen und wieder einschalten können (L3). Nie <c>null</c>.
+        ///
+        /// <para>Fehlen Tabelle oder Spalten (Datenbank vor Migrationsschritt 25), kommt
+        /// eine LEERE Liste zurück statt einer Ausnahme — der Dialog zeigt dann keinen
+        /// Regelblock, und der Verstoßhinweis nennt die ausstehende Migration.</para>
+        /// </summary>
+        public static List<UmrechnungsRegel> RegelnDesBrennstoffs(int idBrennstoff)
+        {
+            var liste = new List<UmrechnungsRegel>();
+            if (idBrennstoff <= 0) return liste;
+
+            try
+            {
+                using (var conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    if (!SchemaBereit(conn)) return liste;
+
+                    DataTable dt = Abfrage(conn,
+                        "SELECT ID, id_brennstoff, from_unit, to_unit, factor, user_edited, [" +
+                        SchemaKatalog.SPALTE_EC_FAKTOR_NAME + "], [" +
+                        SchemaKatalog.SPALTE_EC_AKTIV + "] FROM [" +
+                        SchemaKatalog.ENERGY_CONVERSION + "] WHERE id_brennstoff = ? ORDER BY ID",
+                        new OleDbParameter("@b", idBrennstoff));
+
+                    if (dt == null) return liste;
+
+                    foreach (DataRow r in dt.Rows)
+                        liste.Add(new UmrechnungsRegel
+                        {
+                            Id = Ganzzahl(r, "ID"),
+                            IdBrennstoff = Ganzzahl(r, "id_brennstoff"),
+                            Name = Text(r, SchemaKatalog.SPALTE_EC_FAKTOR_NAME),
+                            Von = Text(r, "from_unit"),
+                            Nach = Text(r, "to_unit"),
+                            Faktor = Kommazahl(r, "factor"),
+                            UserEdited = Wahr(r, "user_edited"),
+                            Aktiv = Wahr(r, SchemaKatalog.SPALTE_EC_AKTIV)
+                        });
+                }
+            }
+            catch { return new List<UmrechnungsRegel>(); }
+
+            return liste;
+        }
+
+        /// <summary>
+        /// Die Fachregel aus L2 auf einem BEARBEITUNGSSTAND, der noch nicht gespeichert
+        /// sein muss — die Frage, die der Trägerdialog laufend stellt.
+        ///
+        /// <para>Dieselben drei Wege wie in <see cref="Beurteile"/>: Identität, Hi/Hs,
+        /// ausdrückliche Regelkette. <paramref name="begruendung"/> trägt bei
+        /// <c>false</c> den deutschen Klartext für den roten Hinweis und für die
+        /// Speicherverweigerung; bei <c>true</c> bleibt sie leer.</para>
+        /// </summary>
+        /// <param name="abrechnungseinheit">Die Einheit, in der das Projekt rechnet.</param>
+        /// <param name="hi">Effektiver Heizwert [kWh/Einheit]; 0 = nicht gepflegt.</param>
+        /// <param name="hs">Effektiver Brennwert [kWh/Einheit]; 0 = nicht gepflegt.</param>
+        /// <param name="regeln">Der Bearbeitungsstand des Regelblocks.</param>
+        public static bool ErreichtKwh(string abrechnungseinheit, double hi, double hs,
+                                       IEnumerable<UmrechnungsRegel> regeln,
+                                       out string begruendung)
+        {
+            begruendung = "";
+
+            string einheit = (abrechnungseinheit ?? "").Trim();
+            if (einheit.Length == 0) einheit = "(keine Einheit)";
+
+            var t = new Traeger { StartEinheit = einheit, Hi = hi, Hs = hs, Name = "" };
+            EinheitenBefund b = Beurteile(t, Brauchbare(regeln));
+
+            // Der Heizwert-Hinweis ist KEIN Verstoß gegen L2 - der Träger erreicht kWh ja.
+            // Er darf das Speichern deshalb nicht verweigern.
+            if (b == null || b.Code == CODE_HEIZWERT_FEHLT) return true;
+
+            begruendung = b.Klartext;
+            return false;
+        }
+
+        /// <summary>
+        /// Der RIEGEL aus Konzept § 4.3: Darf die Regel an <paramref name="position"/>
+        /// abgeschaltet werden, ohne dass der Träger die kWh-Bedingung verliert?
+        ///
+        /// <para>Beantwortet wird die Frage durch Probieren: eine Kopie des
+        /// Bearbeitungsstands, in der genau diese Regel auf „aus" steht, geht durch
+        /// <see cref="ErreichtKwh"/>. Damit gibt es keine zweite Fassung der Fachregel,
+        /// die irgendwann von der ersten abweicht — der Riegel ist per Konstruktion
+        /// genau so streng wie der Prüfer.</para>
+        ///
+        /// <para>Bei einem Träger, den Hi/Hs ohnehin nach kWh bringt, ist JEDE Regel
+        /// abschaltbar — richtig so: Die Einheitenregel trägt dort nichts zur
+        /// kWh-Bedingung bei.</para>
+        /// </summary>
+        public static bool DarfAbschalten(string abrechnungseinheit, double hi, double hs,
+                                          IList<UmrechnungsRegel> regeln, int position,
+                                          out string begruendung)
+        {
+            begruendung = "";
+            if (regeln == null || position < 0 || position >= regeln.Count) return true;
+
+            var probe = new List<UmrechnungsRegel>(regeln.Count);
+            for (int i = 0; i < regeln.Count; i++)
+            {
+                UmrechnungsRegel q = regeln[i];
+                probe.Add(new UmrechnungsRegel
+                {
+                    Id = q.Id,
+                    IdBrennstoff = q.IdBrennstoff,
+                    Name = q.Name,
+                    Von = q.Von,
+                    Nach = q.Nach,
+                    Faktor = q.Faktor,
+                    UserEdited = q.UserEdited,
+                    Aktiv = (i == position) ? false : q.Aktiv
+                });
+            }
+
+            return ErreichtKwh(abrechnungseinheit, hi, hs, probe, out begruendung);
+        }
+
+        // =====================================================================
         // Der eine Prüfweg - Katalog ist der Sonderfall "kein Projekt"
         // =====================================================================
 
@@ -216,32 +385,8 @@ namespace WindowsFormsApplication1
                         List<Regel> seine;
                         if (!regeln.TryGetValue(t.IdBrennstoff, out seine)) seine = new List<Regel>();
 
-                        int stufen = KwhStufen(t.StartEinheit, seine);
-
-                        if (stufen < 0)
-                        {
-                            befunde.Add(new EinheitenBefund(t.CarrierId, t.Name,
-                                CODE_KWH_UNERREICHBAR,
-                                "Abrechnungseinheit \"" + t.StartEinheit + "\" erreicht kWh nicht: " +
-                                "es gibt keine aktive Umrechnungsregel \"" + t.StartEinheit +
-                                "\" → \"" + EINHEIT_KWH + "\" mit Faktor > 0, auch nicht über " +
-                                "eine zweistufige Kette."));
-                            continue;
-                        }
-
-                        // Die Einheit stimmt - fehlt jetzt noch der Heizwert, ist die
-                        // Menge zwar wandelbar, aber nicht in Energie. Bei kWh-Trägern
-                        // (Stufe 0) ist die Frage gegenstandslos: Dort IST die Menge
-                        // schon die Energie.
-                        if (stufen > 0 && t.Hi <= 0 && t.Hs <= 0)
-                        {
-                            befunde.Add(new EinheitenBefund(t.CarrierId, t.Name,
-                                CODE_HEIZWERT_FEHLT,
-                                "Die Einheitenkette nach kWh steht (" + stufen +
-                                " Stufe(n)), aber weder Heizwert noch Brennwert ist gepflegt " +
-                                "(hi und hs jeweils <= 0) — die Menge lässt sich damit nicht " +
-                                "in Energie überführen."));
-                        }
+                        EinheitenBefund b = Beurteile(t, seine);
+                        if (b != null) befunde.Add(b);
                     }
                 }
             }
@@ -297,6 +442,29 @@ namespace WindowsFormsApplication1
             public string Von;
             public string Nach;
             public double Faktor;
+
+            public static Regel Aus(UmrechnungsRegel u)
+            {
+                return new Regel { Von = u.Von, Nach = u.Nach, Faktor = u.Faktor };
+            }
+        }
+
+        /// <summary>
+        /// Nur die AKTIVEN Regeln mit Faktor &gt; 0 — die Menge, auf der die Kettensuche
+        /// arbeitet (L3: abgeschaltete Regeln bleiben stehen, zählen aber nicht mit).
+        /// </summary>
+        private static List<Regel> Brauchbare(IEnumerable<UmrechnungsRegel> regeln)
+        {
+            var liste = new List<Regel>();
+            if (regeln == null) return liste;
+
+            foreach (UmrechnungsRegel u in regeln)
+            {
+                if (u == null || !u.Aktiv || u.Faktor <= 0) continue;
+                if (string.IsNullOrEmpty(u.Von) || string.IsNullOrEmpty(u.Nach)) continue;
+                liste.Add(Regel.Aus(u));
+            }
+            return liste;
         }
 
         /// <summary>Ein zu prüfender Träger samt seiner EFFEKTIVEN Werte.</summary>
@@ -479,6 +647,79 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
+        /// Die Beurteilung EINES Trägers — <c>null</c> heißt „in Ordnung".
+        ///
+        /// <para><b>Drei Wege nach kWh, und alle drei zählen (Konzept § 4.2, „Klärung
+        /// Semantik").</b></para>
+        /// <list type="number">
+        ///   <item><description><b>Identität</b> — <c>billing_unit = kWh</c>. Strom und
+        ///     Fernwärme; die Menge IST die Energie.</description></item>
+        ///   <item><description><b>Heizwert bzw. Brennwert</b> — <c>hi</c> oder
+        ///     <c>hs</c> ist gepflegt. <c>hi_kwh_per_unit</c> ist definiert als „kWh je
+        ///     ABRECHNUNGSEINHEIT" (Bestand: Erdgas E 10,50 kWh/Nm³, Heizöl L
+        ///     11,20 kWh/l, Koks 8,00 kWh/kg). Der Energieschritt von der
+        ///     Abrechnungseinheit nach kWh ist damit gepflegt, und die Bedingung aus L2
+        ///     ist erfüllt.</description></item>
+        ///   <item><description><b>Ausdrückliche Regelkette</b> — eine aktive Kette
+        ///     (höchstens zwei Stufen, Faktoren &gt; 0) endet buchstäblich bei
+        ///     <c>kWh</c>. Der Weg, den ein Anwender sich selbst anlegen kann.</description></item>
+        /// </list>
+        ///
+        /// <para><b>Warum Weg 2 in Etappe K3 nachgetragen wurde.</b> Die erste Fassung
+        /// (K2) kannte nur die Wege 1 und 3 — die wörtliche Lesart von L2. Danach
+        /// verfehlten 17 der 21 Katalogträger die Bedingung, obwohl jeder von ihnen
+        /// einen gepflegten Heizwert trägt. Die Etappe K3 hätte diese Lücke laut
+        /// Konzept § 5 mit Regeln „<c>l → kWh</c>" schließen sollen; für deren Faktor
+        /// gäbe es aber nur zwei Möglichkeiten, und beide sind falsch: <c>Hi</c> wäre
+        /// die DOPPELPFLEGE des Heizwerts, die § 4.2 ausdrücklich untersagt
+        /// („<c>energy_conversion</c> bleibt EINHEITEN-Umrechnung; die
+        /// Energie-Umrechnung leisten weiterhin Hi/Hs"), und <c>1,0</c> wäre die
+        /// sachlich falsche Behauptung „1 l = 1 kWh", die ab K3 sichtbar im Regelblock
+        /// stünde. Nachgezogen wurde deshalb der PRÜFER, nicht die Datenlage. Kein
+        /// Zahlenwert wurde erfunden, und die Aussage des Prüfers ist seither die des
+        /// Konzepts.</para>
+        ///
+        /// <para><b>Die zwei Befunde bleiben trennscharf.</b>
+        /// <see cref="CODE_KWH_UNERREICHBAR"/> meldet den echten L2-Verstoß: KEINER der
+        /// drei Wege trägt. <see cref="CODE_HEIZWERT_FEHLT"/> meldet den brüchigen
+        /// Sonderfall: Der Träger erreicht kWh NUR über die Regelkette, ohne dass Hi
+        /// oder Hs gepflegt wäre. Das ist kein Verstoß, aber ein Hinweis — schaltet
+        /// jemand die Regel ab, kippt der Träger in den Verstoß, und die Abrechnungs-
+        /// und Simulationspfade lesen ohnehin Hi/Hs und nicht die Regel.</para>
+        /// </summary>
+        private static EinheitenBefund Beurteile(Traeger t, List<Regel> regeln)
+        {
+            // Weg 1: Identität.
+            if (GleicheEinheit(t.StartEinheit, EINHEIT_KWH)) return null;
+
+            bool heizwertDa = t.Hi > 0 || t.Hs > 0;
+            int stufen = KwhStufen(t.StartEinheit, regeln);
+            bool ketteDa = stufen > 0;
+
+            // Weg 2: Hi/Hs leistet den Energieschritt.
+            if (heizwertDa) return null;
+
+            // Weg 3: ausdrückliche Regelkette - aber ohne Heizwert brüchig.
+            if (ketteDa)
+                return new EinheitenBefund(t.CarrierId, t.Name,
+                    CODE_HEIZWERT_FEHLT,
+                    "Die Abrechnungseinheit \"" + t.StartEinheit + "\" erreicht kWh nur über " +
+                    "eine ausdrückliche Regelkette (" + stufen + " Stufe(n)); weder Heizwert " +
+                    "noch Brennwert ist gepflegt (hi und hs jeweils <= 0). Wird die Regel " +
+                    "abgeschaltet, erfüllt der Träger die kWh-Bedingung nicht mehr — und " +
+                    "Abrechnung wie Simulation lesen ohnehin Hi/Hs, nicht die Regel.");
+
+            // Kein Weg trägt.
+            return new EinheitenBefund(t.CarrierId, t.Name,
+                CODE_KWH_UNERREICHBAR,
+                "Abrechnungseinheit \"" + t.StartEinheit + "\" erreicht kWh auf keinem Weg: " +
+                "die Einheit ist nicht kWh, weder Heizwert noch Brennwert ist gepflegt " +
+                "(hi und hs jeweils <= 0), und es gibt keine aktive Umrechnungsregel " +
+                "\"" + t.StartEinheit + "\" → \"" + EINHEIT_KWH + "\" mit Faktor > 0, auch " +
+                "nicht über eine zweistufige Kette.");
+        }
+
+        /// <summary>
         /// Zahl der Umrechnungsstufen von <paramref name="start"/> bis kWh:
         /// <b>0</b> = die Einheit IST kWh, <b>1</b> = eine Regel genügt, <b>2</b> = über
         /// eine Zwischeneinheit, <b>-1</b> = nicht erreichbar (Befund).
@@ -558,6 +799,14 @@ namespace WindowsFormsApplication1
             if (r[spalte] == DBNull.Value) return 0;
             try { return Convert.ToInt32(r[spalte], CultureInfo.InvariantCulture); }
             catch { return 0; }
+        }
+
+        private static bool Wahr(DataRow r, string spalte)
+        {
+            if (r == null || !r.Table.Columns.Contains(spalte)) return false;
+            if (r[spalte] == DBNull.Value) return false;
+            try { return Convert.ToBoolean(r[spalte], CultureInfo.InvariantCulture); }
+            catch { return false; }
         }
 
         private static double Kommazahl(DataRow r, string spalte)

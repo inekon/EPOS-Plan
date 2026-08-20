@@ -6128,4 +6128,40 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   <data name="KI_REG_NAME_KEINE" xml:space="preserve">
     <value>There is currently nothing to choose from for {0}.</value>
   </data>
+  <data name="KOSTEN_UMRECHNUNG_TITEL" xml:space="preserve">
+    <value>Conversion rules</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_VON" xml:space="preserve">
+    <value>from</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_NACH" xml:space="preserve">
+    <value>to</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_FAKTOR" xml:space="preserve">
+    <value>Factor</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_AKTIV" xml:space="preserve">
+    <value>active</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_NEU" xml:space="preserve">
+    <value>Add rule</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_EFFEKTIV" xml:space="preserve">
+    <value>effective: 1 {0} = {1} kWh (NCV) / {2} kWh (GCV)</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_EFFEKTIV_KWH" xml:space="preserve">
+    <value>effective: billed directly in kWh</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_RIEGEL" xml:space="preserve">
+    <value>This rule cannot be deactivated — it is what takes the energy carrier to kWh. {0}</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_FAKTOR_UNGUELTIG" xml:space="preserve">
+    <value>Please enter a number greater than 0 for the factor (decimal separator comma or point).</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPEICHERN_ABGELEHNT" xml:space="preserve">
+    <value>The energy carrier was NOT saved: {0}</value>
+  </data>
 </root>
