@@ -255,11 +255,15 @@ namespace WindowsFormsApplication1
 
             // --- Kategorie 1: Investition (gleiche Leselogik wie die Kapitalwertrechnung) ---
             double invest = 0;
+            double zuschuss = 0;
             int investPositionen = 0;
             try
             {
+                // ETAPPE K5: dieselbe Leseüberladung wie der Rechenkern — die
+                // Zuschusszeilen kommen getrennt heraus und zählen deshalb weder als
+                // Investitionsposition noch in die Summe.
                 var positionen = WirtschaftlichkeitCtrl.LiesInvestitionen(
-                    _idProjekt, WirtschaftlichkeitSzenario.ERWARTET);
+                    _idProjekt, WirtschaftlichkeitSzenario.ERWARTET, out zuschuss);
                 investPositionen = positionen.Count;
                 foreach (KapitalwertRechner.InvestPosition p in positionen) invest += p.Betrag;
             }
@@ -270,6 +274,15 @@ namespace WindowsFormsApplication1
             kInvest.Wert = (investPositionen > 0)
                 ? invest.ToString("N2", kultur) + " " + MyResource.Resource.BK_KOSTEN_EINHEIT_EUR
                 : "—";
+
+            // ETAPPE K5 — der Zuschuss als eigene, negativ ausgewiesene Zeile unter dem
+            // Investitionsbetrag. Der große Wert bleibt die BRUTTO-Investitionssumme:
+            // Sie ist die Zahl, die der Anwender in der Kostenmaske erfasst hat und dort
+            // wiederfinden muss. Ohne Zuschuss bleibt die gewohnte Herkunftszeile stehen.
+            kInvest.Quelle = (zuschuss > 0)
+                ? string.Format(MyResource.Resource.BK_KOSTEN_ZUSCHUSS,
+                                zuschuss.ToString("N2", kultur))
+                : MyResource.Resource.BK_KOSTEN_INVEST_HINT;
 
             // --- Kategorie 2: Betrieb ---
             double betrieb = 0;
@@ -672,6 +685,19 @@ namespace WindowsFormsApplication1
 
             public void Setze(string titel, string quelle)
             { _titel.Text = titel; _quelle.Text = quelle; }
+
+            /// <summary>
+            /// Die Herkunftszeile, nachträglich änderbar (ETAPPE K5). Sie trägt bei der
+            /// Investitionskachel den Zuschussausweis — eine vierte Kachel wäre die
+            /// falsche Form: Der Zuschuss ist keine eigene Kostenkategorie, sondern die
+            /// Minderung genau dieser einen. Das Kachelraster ist zudem auf drei Spalten
+            /// festgelegt (<c>pnlKacheln.ColumnCount</c>).
+            /// </summary>
+            public string Quelle
+            {
+                get { return _quelle.Text; }
+                set { _quelle.Text = value ?? ""; }
+            }
 
             public string Wert
             {

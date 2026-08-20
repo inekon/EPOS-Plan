@@ -174,6 +174,14 @@
 
         internal static string AenderungsdatumFehlt => MyResource.Resource.KI_REG_AENDERUNGSDATUM_FEHLT;
 
+        // ------------------------------------------- Energietraeger-Einheiten (K3)
+
+        internal static string ZweckEnergietraegerPruefen => MyResource.Resource.KI_REG_ZWECK_ENERGIETRAEGER_PRUEFEN;
+        internal static string ErlProjektFuerEinheiten => MyResource.Resource.KI_REG_ERL_PROJEKT_FUER_EINHEITEN;
+        internal static string EinheitenKatalog => MyResource.Resource.KI_REG_EINHEITEN_KATALOG;
+        internal static string EinheitenOhneBefund => MyResource.Resource.KI_REG_EINHEITEN_OHNE_BEFUND;
+        internal static string EinheitenBefunde => MyResource.Resource.KI_REG_EINHEITEN_BEFUNDE;
+
         // ------------------------------------------------- Sicherung und Schreibschutz
 
         internal static string SicherungQuelleFehlt => MyResource.Resource.KI_SICH_QUELLE_FEHLT;

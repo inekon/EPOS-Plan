@@ -3022,12 +3022,6 @@ Bitte zuerst die Simulation mit Heizkessel durchführen.</value>
   <data name="PREIS_REST_HINWEIS_MODUS" xml:space="preserve">
     <value>Im Modus "aufgeschluesselt" ist der wirksame Aufschlag die Summe der aktiven Komponenten.</value>
   </data>
-  <data name="PREIS_BTN_SPOTIMPORT" xml:space="preserve">
-    <value>Spotmarktpreise importieren ...</value>
-  </data>
-  <data name="PREIS_BTN_KOSTENPROFIL" xml:space="preserve">
-    <value>Kostenprofil bearbeiten ...</value>
-  </data>
   <data name="PREIS_IMPORT_TITEL" xml:space="preserve">
     <value>Spotmarktpreise importieren</value>
   </data>
@@ -6133,5 +6127,221 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   </data>
   <data name="KI_REG_NAME_KEINE" xml:space="preserve">
     <value>Es gibt derzeit nichts zur Auswahl für {0}.</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_TITEL" xml:space="preserve">
+    <value>Umrechnungsregeln</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_VON" xml:space="preserve">
+    <value>von</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_NACH" xml:space="preserve">
+    <value>nach</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_FAKTOR" xml:space="preserve">
+    <value>Faktor</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPALTE_AKTIV" xml:space="preserve">
+    <value>aktiv</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_NEU" xml:space="preserve">
+    <value>Regel hinzufügen</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_EFFEKTIV" xml:space="preserve">
+    <value>effektiv: 1 {0} = {1} kWh (Hi) / {2} kWh (Hs)</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_EFFEKTIV_KWH" xml:space="preserve">
+    <value>effektiv: Abrechnung unmittelbar in kWh</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_RIEGEL" xml:space="preserve">
+    <value>Diese Regel lässt sich nicht abschalten — sie trägt den Energieträger nach kWh. {0}</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_FAKTOR_UNGUELTIG" xml:space="preserve">
+    <value>Bitte für den Faktor eine Zahl größer als 0 eingeben (Dezimaltrennzeichen Komma oder Punkt).</value>
+  </data>
+  <data name="KOSTEN_UMRECHNUNG_SPEICHERN_ABGELEHNT" xml:space="preserve">
+    <value>Der Energieträger wurde NICHT gespeichert: {0}</value>
+  </data>
+  <data name="KI_REG_ZWECK_ENERGIETRAEGER_PRUEFEN" xml:space="preserve">
+    <value>Prüft die Energieträger auf Einheiten-Konsistenz: Erreicht jeder aktive Träger kWh — unmittelbar, über Heizwert bzw. Brennwert oder über eine aktive Umrechnungsregel? Liefert die Befundliste, ändert nichts.</value>
+  </data>
+  <data name="KI_REG_ERL_PROJEKT_FUER_EINHEITEN" xml:space="preserve">
+    <value>Name des Projekts. Ohne Angabe wird der Katalog geprüft (alle aktiven Träger mit Katalogwerten); mit Angabe nur die im Projekt verwendeten Träger, mit deren Projektüberschreibungen.</value>
+  </data>
+  <data name="KI_REG_EINHEITEN_KATALOG" xml:space="preserve">
+    <value>Katalog</value>
+  </data>
+  <data name="KI_REG_EINHEITEN_OHNE_BEFUND" xml:space="preserve">
+    <value>Einheiten-Konsistenz {0}: kein Befund — jeder aktive Energieträger erreicht kWh.</value>
+  </data>
+  <data name="KI_REG_EINHEITEN_BEFUNDE" xml:space="preserve">
+    <value>Einheiten-Konsistenz {1}: {0} Befund(e).</value>
+  </data>
+  <data name="KPROF_TAB_TITEL" xml:space="preserve">
+    <value>Kostenprofil</value>
+  </data>
+  <data name="KPROF_KARTE_PROFIL_TITEL" xml:space="preserve">
+    <value>Kostenprofil</value>
+  </data>
+  <data name="KPROF_KARTE_PROFIL_INFO" xml:space="preserve">
+    <value>Preisniveau je Monat und Tagesgang je Woche [ct/kWh] — Grundlage der Speicher-Wirtschaftlichkeit.</value>
+  </data>
+  <data name="KPROF_KARTE_SPOT_TITEL" xml:space="preserve">
+    <value>Spotmarktpreise</value>
+  </data>
+  <data name="KPROF_KARTE_SPOT_INFO" xml:space="preserve">
+    <value>Stündliche Börsenpreise als Jahresreihe importieren und verwalten.</value>
+  </data>
+  <data name="KPROF_STATUS_KEIN_PROFIL" xml:space="preserve">
+    <value>Noch kein Kostenprofil angelegt</value>
+  </data>
+  <data name="KPROF_STATUS_PROFIL" xml:space="preserve">
+    <value>{0} — Monatsniveau {1}–{2} ct/kWh</value>
+  </data>
+  <data name="KPROF_STATUS_KEINE_REIHEN" xml:space="preserve">
+    <value>Noch keine Preisreihe importiert</value>
+  </data>
+  <data name="KPROF_STATUS_REIHEN" xml:space="preserve">
+    <value>{0} Reihen, {1}–{2}</value>
+  </data>
+  <data name="KPROF_STATUS_REIHEN_EINJAHR" xml:space="preserve">
+    <value>{0} Reihen, {1}</value>
+  </data>
+  <data name="KPROF_STATUS_REIHEN_OHNE_JAHR" xml:space="preserve">
+    <value>{0} Reihen, Jahr nicht gepflegt</value>
+  </data>
+  <data name="WIRT_ZEILE_ZUSCHUSS" xml:space="preserve">
+    <value>Zuschuss [€]</value>
+  </data>
+  <data name="WIRT_ZUSCHUSS_UEBERHANG" xml:space="preserve">
+    <value>Der erfasste Zuschuss ({0} €) übersteigt die Investitionssumme ({1} €). Angesetzt wurde höchstens die Investitionssumme; die Anfangsauszahlung steht damit auf 0 €.</value>
+  </data>
+  <data name="BK_KOSTEN_ZUSCHUSS" xml:space="preserve">
+    <value>davon Zuschuss: −{0} €</value>
+  </data>
+  <data name="KOSTEN_CHK_ZUSCHUSS" xml:space="preserve">
+    <value>Diese Position ist ein Zuschuss (BAFA, KfW, Baukostenzuschuss …)</value>
+  </data>
+  <data name="KOSTEN_CHK_ZUSCHUSS_HINT" xml:space="preserve">
+    <value>Den Betrag positiv eintragen. Er mindert die Investitionssumme einmalig — ohne Ersatzbeschaffung und ohne Restwert. Prozentuale Betriebskosten rechnen weiterhin von der vollen Investitionssumme.</value>
+  </data>
+  <data name="KOSTEN_GRUPPE_KOPF_AUF" xml:space="preserve">
+    <value>▾  {0}   ·   {1} Positionen   ·   {2} €</value>
+  </data>
+  <data name="KOSTEN_GRUPPE_KOPF_ZU" xml:space="preserve">
+    <value>▸  {0}   ·   {1} Positionen   ·   {2} €</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_OHNE_ART" xml:space="preserve">
+    <value>KWKG: keine Anlagenart erfasst — das Vbh-Kontingent des § 8 lässt sich daraus nicht ableiten; es gilt der eingetragene Wert.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_NEU" xml:space="preserve">
+    <value>neue Anlage → {0} Vbh ({1}, Stand {2}); eine Kostenschwelle gibt es hier nicht.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_ANTEIL_FEHLT" xml:space="preserve">
+    <value>{0}: ohne Anteil an den Neuherstellungskosten lässt sich die Stufe nicht wählen (Mindestschwelle {1} %); kein abgeleitetes Kontingent.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_ZU_KLEIN" xml:space="preserve">
+    <value>{0} % der Neuherstellungskosten liegen unter der Mindestschwelle von {1} % ({2}) — kein Vbh-Kontingent und damit kein Zuschlag.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_STUFE" xml:space="preserve">
+    <value>{0} % der Neuherstellungskosten, Stufe ab {1} % → {2} Vbh ({3}, Stand {4}); der Mindestabstand zur Inbetriebnahme der Altanlage wird nicht geprüft.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_ABGELEITET" xml:space="preserve">
+    <value>KWKG: Vbh-Kontingent aus der Anlagenart abgeleitet — {0} Vbh. {1}</value>
+  </data>
+  <data name="WIRT_KWKG_TATBESTAND_OFFEN" xml:space="preserve">
+    <value>KWKG: kein Eigenstrom-Tatbestand des § 6 Abs. 3 erfasst — der Zuschlag auf selbst genutzten Strom ist ungeprüft und wird wie bisher mit dem eingetragenen Satz gerechnet.</value>
+  </data>
+  <data name="WIRT_KWKG_TATBESTAND_KEINER" xml:space="preserve">
+    <value>KWKG: Tatbestand des § 6 Abs. 3 ausdrücklich auf „keiner“ gesetzt — auf selbst genutzten Strom gibt es nach § 7 Abs. 2 keinen Zuschlag; nur die Einspeisung wird vergütet.</value>
+  </data>
+  <data name="WIRT_KWKG_PAUSCHALE" xml:space="preserve">
+    <value>KWKG: Pauschale nach § 9 gewählt — einmalige Vorauszahlung {0} € im Jahr 0 ({1} ct/kWh × {2} Vbh × {3} kW); der laufende Zuschlag entfällt dafür.</value>
+  </data>
+  <data name="WIRT_KWKG_PAUSCHALE_ZU_GROSS" xml:space="preserve">
+    <value>KWKG: Pauschale nach § 9 gilt nur bis {1} kW elektrischer Leistung; die Anlage hat {0} kW — der Schalter bleibt ohne Wirkung, gerechnet wird der laufende Zuschlag.</value>
+  </data>
+  <data name="WIRT_KWKG_PAUSCHALE_SATZ_FEHLT" xml:space="preserve">
+    <value>KWKG: Pauschale nach § 9 gewählt, aber die Katalogwerte fehlen ({0}) — keine Vorauszahlung ausgewiesen.</value>
+  </data>
+  <data name="WIRT_CO2_PFAD" xml:space="preserve">
+    <value>CO₂-Preis: jahresgenauer Pfad aus dem Gesetzeskatalog — {1}: {0} €/t, {2}: {3} €/t. Ab {4} ist der Wert Prognose und frei editierbar.</value>
+  </data>
+  <data name="WIRT_CO2_PFAD_LUECKE" xml:space="preserve">
+    <value>CO₂-Preis: für {0} führt der Gesetzeskatalog keinen Wert — für dieses Jahr wird keine BEHG-Abgabe angesetzt (Klasse CO₂-Preispfad pflegen).</value>
+  </data>
+  <data name="WIRT_CO2_KONSTANT" xml:space="preserve">
+    <value>CO₂-Preis: konstanter Projektwert {0} €/t (Override); der Pfad des Gesetzeskatalogs bleibt außen vor.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_54_UNTERNEHMENSART" xml:space="preserve">
+    <value>§ 54 EnergieStG setzt ein Unternehmen des produzierenden Gewerbes oder einen Betrieb der Land- und Forstwirtschaft voraus — keine Entlastung.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_54_SOCKEL" xml:space="preserve">
+    <value>§ 54 EnergieStG: {0} € Entlastung liegen unter dem Sockelbetrag von {1} €/a — es bleibt bei 0 €.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_54_BEMESSUNG" xml:space="preserve">
+    <value>§ 54 EnergieStG entlastet HEIZstoffe; EPOS-Plan bemisst ihn hier auf den BHKW-Brennstoff — Kessel- und Spitzenlastbrennstoff sind nicht enthalten (bewusste Lücke der Etappe K6).</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_TATBESTAND" xml:space="preserve">
+    <value>Eigenstrom-Tatbestand (§ 6 Abs. 3):</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_OFFEN" xml:space="preserve">
+    <value>(nicht angegeben)</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_TATBESTAND_KEINER" xml:space="preserve">
+    <value>keiner — kein Eigenstromzuschlag</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_TATBESTAND_NR1" xml:space="preserve">
+    <value>Nr. 1 — Anlage bis 100 kW</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_TATBESTAND_NR2" xml:space="preserve">
+    <value>Nr. 2 — Kundenanlage / geschl. Netz</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_TATBESTAND_NR3" xml:space="preserve">
+    <value>Nr. 3 — stromkostenintensiv</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_ANLAGENART" xml:space="preserve">
+    <value>Anlagenart (§ 8):</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_ART_NEU" xml:space="preserve">
+    <value>neu</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_ART_MOD" xml:space="preserve">
+    <value>modernisiert</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_ART_NACH" xml:space="preserve">
+    <value>nachgerüstet</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_KOSTENANTEIL" xml:space="preserve">
+    <value>Anteil Neuherstellungskosten [%]:</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_PAUSCHAL" xml:space="preserve">
+    <value>Pauschale § 9 KWKG (nur bis 2 kWel, einmalig)</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_KONTINGENT" xml:space="preserve">
+    <value>Vbh-Kontingent gesamt [h] (0 = automatisch):</value>
+  </data>
+  <data name="WIRT_DLG_ENERGIESTEUER_54" xml:space="preserve">
+    <value>§ 54 EnergieStG (Formular 1450)</value>
+  </data>
+  <data name="WIRT_DLG_STEUER_FORMULARE" xml:space="preserve">
+    <value>Anträge und Fristen: § 9b StromStG → Formular 1453 · § 53 EnergieStG → 1131 · § 53a Abs. 5 → 1135 · § 54 EnergieStG → 1450. Frist ist jeweils der 31.12. des auf den Verwendungszeitraum folgenden Kalenderjahres. Sockelbetrag 250 €/a bei § 9b und § 54; § 53 und § 53a haben keinen.</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_HINWEIS" xml:space="preserve">
+    <value>KWKG (K6): Der Eigenstrom-Zuschlag besteht nach § 7 Abs. 2 nur in den drei Tatbeständen des § 6 Abs. 3 — bleibt das Feld auf „(nicht angegeben)“, rechnet die Anwendung wie bisher und weist das aus. Das Vbh-Kontingent 0 bedeutet „automatisch aus der Anlagenart nach § 8“. Die Pauschale des § 9 ersetzt den laufenden Zuschlag durch eine einmalige Vorauszahlung im Jahr 0.</value>
+  </data>
+  <data name="WIRT_DLG_CO2" xml:space="preserve">
+    <value>CO₂-Preis BEHG [€/t] (0 = Pfad):</value>
+  </data>
+  <data name="WIRT_DLG_CO2_PFAD_ZEILE" xml:space="preserve">
+    <value>CO₂-Preis: Pfad aus Gesetzeskatalog (Prognose ab {0})</value>
+  </data>
+  <data name="WIRT_DLG_CO2_KONSTANT_ZEILE" xml:space="preserve">
+    <value>CO₂-Preis: konstant {0} €/t — der Pfad bleibt außen vor</value>
+  </data>
+  <data name="WIRT_DLG_CO2_KATALOG" xml:space="preserve">
+    <value>⚙ Gesetzeskatalog pflegen (CO₂-Preispfad)…</value>
   </data>
 </root>

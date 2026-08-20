@@ -395,8 +395,34 @@ namespace WindowsFormsApplication1
         /// Summe der Investitionspositionen (Kategorie 1). <paramref name="komponentenID"/>
         /// = 0 heißt „ganzes Projekt".
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>ETAPPE K5 — ohne Zuschusspositionen.</b> Die prozentualen Bemessungen der
+        /// VDI 2067 („% der Investitionssumme") rechnen ausdrücklich <b>vor</b>
+        /// Zuschussabzug (Konzept § 7.4, letzter Punkt). Das ist keine Feinheit, sondern
+        /// beides zusammen: fachlich richtig — instand zu halten ist die Anlage, nicht der
+        /// Eigenanteil — und die Auflösung eines Alt-Widerspruchs, denn die Altanwendung
+        /// war an dieser Stelle uneinheitlich (Dialog gegen Blatt, Anhang A).
+        /// </para>
+        /// <para>
+        /// <b>Ohne den Ausschluss wäre es sogar falsch herum.</b> Ein Zuschuss steht als
+        /// POSITIVER Betrag in <c>EingegebenerWert</c> (Begründung an
+        /// <see cref="DbWerte.KOSTENART_ZUSCHUSS"/>). Eine ungefilterte Summe würde ihn
+        /// also nicht abziehen, sondern ADDIEREN — die Instandhaltung bemäße sich an einer
+        /// Investitionssumme, die es nie gab.
+        /// </para>
+        /// <para>
+        /// <b>Rückfallebene.</b> Fehlt die Spalte <c>Kostenart</c> (nie migrierte
+        /// Datenbank), läuft die Abfrage ohne die Einschränkung — also genau wie vor K5.
+        /// In einer solchen Datenbank kann es keine Zuschusszeile geben.
+        /// </para>
+        /// </remarks>
         private static double? InvestSumme(int projektID, int komponentenID)
         {
+            bool mitKostenart = false;
+            try { mitKostenart = KostenPositionCtrl.StelleSpaltenSicher(); }
+            catch { }
+
             try
             {
                 string sql = "SELECT SUM(EingegebenerWert) FROM " + SchemaKatalog.TAB_PROJEKTWERTE +
@@ -410,6 +436,14 @@ namespace WindowsFormsApplication1
                 {
                     sql += " AND KomponentenID = ?";
                     ps.Add(new OleDbParameter("@c", komponentenID));
+                }
+                if (mitKostenart)
+                {
+                    // NULL und Leerstring bleiben drin: Das sind die Bestandszeilen (bzw.
+                    // die, die Schritt 19b nicht erreicht hat), und sie sind Investitionen.
+                    sql += " AND (([" + SchemaKatalog.SPALTE_PW_KOSTENART + "] IS NULL) OR ([" +
+                           SchemaKatalog.SPALTE_PW_KOSTENART + "] <> ?))";
+                    ps.Add(new OleDbParameter("@art", DbWerte.KOSTENART_ZUSCHUSS));
                 }
 
                 object o = DataRepository.ExecuteScalar(sql, ps.ToArray());

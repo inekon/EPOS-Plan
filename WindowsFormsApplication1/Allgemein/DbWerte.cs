@@ -85,6 +85,46 @@ namespace WindowsFormsApplication1
         public const string KOSTEN_KOMPONENTE_PUFFERSPEICHER = "Pufferspeicher";
 
         // =====================================================================
+        // ETAPPE K5 — die drei ERFASSUNGSGRUPPEN aus BHKW-Plan
+        //   Tab_KostenKomponente.Komponente und Tab_Kostenfaktor.Bezeichnung der
+        //   zugehörigen Hauptposition (Migrationsschritt 27).
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        //
+        //   ANDERS ALS DIE SIEBEN BESTANDSKOMPONENTEN führen sie KEINEN
+        //   Technik-Planwert: Es gibt keine Gerätetabelle, aus der sich ihre
+        //   Investition ableiten ließe (TechnikPlanwertCtrl.Plaene bleibt bei
+        //   sieben Einträgen). Sie sind reine Erfassungsgruppen — der Anwender
+        //   trägt ihre Positionen von Hand ein.
+        //
+        //   NAHWÄRMENETZ IST BEWUSST NICHT DABEI (Entscheidung E2 vom
+        //   19.08.2026): Die Alt-Positionen Verteilnetz, Hausanschluss und
+        //   Hausstation entfallen ersatzlos; Einzelfälle deckt „Sonstiges".
+        // =====================================================================
+
+        /// <summary>
+        /// Erfassungsgruppe „Wärmezentrale" — BHKW-Einbindung, Heizungstechnik,
+        /// Abgasanlage. <b>Ohne Pufferspeicher</b>: Der bleibt nach Entscheidung E1 eine
+        /// eigene Komponente und wird hier NICHT ein zweites Mal geführt (Abweichung von
+        /// der Alt-Bemessung, die ihn in die Wärmezentrale rechnete).
+        /// Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string KOSTEN_KOMPONENTE_WAERMEZENTRALE = "Wärmezentrale";
+
+        /// <summary>
+        /// Erfassungsgruppe „Bauliche Anlagen" — Heizraum, Schornstein, bauliche
+        /// Maßnahmen, Heizöllagerung, Erdgasanschluss.
+        /// <inheritdoc cref="KOSTEN_KOMPONENTE_WAERMEZENTRALE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string KOSTEN_KOMPONENTE_BAULICHE_ANLAGEN = "Bauliche Anlagen";
+
+        /// <summary>
+        /// Erfassungsgruppe „Stromeinspeisung" — Zählerplatz, Netzanschluss,
+        /// Einspeisetechnik.
+        /// <inheritdoc cref="KOSTEN_KOMPONENTE_WAERMEZENTRALE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string KOSTEN_KOMPONENTE_STROMEINSPEISUNG = "Stromeinspeisung";
+
+        // =====================================================================
         // Nebenkosten-Positionen einer Kostenkomponente
         //   Tab_Kostenfaktor.Bezeichnung (IsMainComponent = False), verwendet als
         //   Unterposition in der Gruppe der Komponente (Tab_ProjektWerte)
@@ -113,6 +153,71 @@ namespace WindowsFormsApplication1
 
         /// <inheritdoc cref="KOSTENPOSTEN_MONTAGE"/>
         public const string KOSTENPOSTEN_ABGASREINIGUNG = "Abgasreinigung";
+
+        // =====================================================================
+        // ETAPPE K5 — Positionskatalog der drei Erfassungsgruppen
+        //   Tab_Kostenfaktor.Bezeichnung (IsMainComponent = False), gesät von
+        //   Migrationsschritt 27. ORIGINAL-BESCHRIFTUNGEN der Altanwendung
+        //   (Dial_KostenEing, Konzept Anhang A(a)) — sie sind der Wortlaut, den
+        //   die Anwender aus BHKW-Plan kennen, und deshalb wörtlich übernommen.
+        //
+        //   ZWEI DAVON GIBT ES SCHON: „Schornstein" (StammID 90) und
+        //   „Abgasanlage" (91) stehen bereits im Bestandskatalog. Der Seed legt
+        //   nur an, was fehlt — die Bezeichnung ist der Schlüssel, nicht die
+        //   StammID (dieselbe Regel wie in KostenPositionCtrl.StammIdNeben).
+        //
+        //   Der Katalog ist FLACH: Tab_Kostenfaktor führt keine Spalte, die eine
+        //   Position an eine Komponente bindet. Die Zuordnung entsteht erst in
+        //   Tab_ProjektWerte.KomponentenID, wenn der Anwender die Position in
+        //   einer Komponente erfasst. Die Gruppierung unten ist deshalb der
+        //   VORSCHLAG des Katalogs, keine Fremdschlüsselbeziehung.
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        // =====================================================================
+
+        /// <summary>Wärmezentrale: hydraulische und elektrische Einbindung des BHKW.</summary>
+        public const string KOSTENPOSTEN_BHKW_EINBINDUNG = "BHKW-Einbindung";
+
+        /// <inheritdoc cref="KOSTENPOSTEN_BHKW_EINBINDUNG"/>
+        public const string KOSTENPOSTEN_HEIZUNGSTECHNIK = "Heizungstechnik";
+
+        /// <summary>Wärmezentrale: Abgasführung ab Erzeuger (im Bestandskatalog StammID 91).</summary>
+        public const string KOSTENPOSTEN_ABGASANLAGE = "Abgasanlage";
+
+        /// <summary>Bauliche Anlagen: Raumbedarf. Die Alt-Mengenlogik „spez. Kosten €/m³ ×
+        /// Raumbedarf" bildet die vorhandene Bemessung Menge × Einheitpreis ab
+        /// (<see cref="BEMESSUNG_BETRAG"/> &amp; Co.) — keine neue Mechanik nötig.</summary>
+        public const string KOSTENPOSTEN_HEIZRAUM = "Heizraum";
+
+        /// <summary>Bauliche Anlagen (im Bestandskatalog StammID 90).</summary>
+        public const string KOSTENPOSTEN_SCHORNSTEIN = "Schornstein";
+
+        /// <inheritdoc cref="KOSTENPOSTEN_HEIZRAUM" path="/summary/text()[1]"/>
+        public const string KOSTENPOSTEN_BAULICHE_MASSNAHMEN = "Bauliche Maßnahmen";
+
+        /// <inheritdoc cref="KOSTENPOSTEN_HEIZRAUM" path="/summary/text()[1]"/>
+        public const string KOSTENPOSTEN_HEIZOELLAGERUNG = "Heizöllagerung";
+
+        /// <inheritdoc cref="KOSTENPOSTEN_HEIZRAUM" path="/summary/text()[1]"/>
+        public const string KOSTENPOSTEN_ERDGASANSCHLUSS = "Erdgasanschluss";
+
+        /// <summary>
+        /// Stromeinspeisung: die einzige Position ihrer Gruppe. Der Wortlaut ist
+        /// derselbe wie der Komponentenname — verschiedene Tabellen, kein Konflikt:
+        /// <c>Tab_KostenKomponente.Komponente</c> gegenüber
+        /// <c>Tab_Kostenfaktor.Bezeichnung</c>. Der Katalogeintrag trägt
+        /// <c>IsMainComponent = False</c>, die gleichnamige Hauptposition
+        /// <c>= True</c>; beide Lesewege unterscheiden ausdrücklich danach.
+        /// </summary>
+        public const string KOSTENPOSTEN_STROMEINSPEISUNG = "Stromeinspeisung";
+
+        /// <summary>
+        /// Frei benennbarer Auffangposten jeder Erfassungsgruppe — das Gegenstück zu
+        /// den Alt-Zeilen „Sonstiges 1–3". Statt drei nummerierter Zeilen gibt es EINE
+        /// Katalogposition; weitere entstehen über den vorhandenen „Lern"-Weg
+        /// (<c>KostenPositionCtrl.StammIdNeben</c> legt fehlende Bezeichnungen beim
+        /// ersten Bedarf selbst an).
+        /// </summary>
+        public const string KOSTENPOSTEN_SONSTIGES = "Sonstiges";
 
         /// <summary>
         /// Rückfallgruppe in <c>Tab_ProjektWerte.Gruppe</c> und
@@ -246,6 +351,35 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string KOSTENART_SONSTIGE = "SONSTIGE";
 
+        /// <summary>
+        /// ETAPPE K5 (Konzept § 7.4, Leitentscheidung L7): <b>Investitionszuschuss</b> —
+        /// BAFA, KfW, Baukostenzuschuss. Eine Position der Kategorie 1
+        /// („Investitionskosten") mit dieser Kostenart mindert die Anfangsauszahlung
+        /// I₀ <b>einmalig</b>.
+        ///
+        /// <para><b>Der Betrag wird POSITIV erfasst.</b> Ein Zuschuss ist keine
+        /// Erlösposition: <c>IstErloes</c> bleibt false, und die Zeile trägt in
+        /// <c>Tab_ProjektWerte.EingegebenerWert</c> den Zuschussbetrag als positive
+        /// Zahl. Das Vorzeichen entsteht erst im Rechenweg und im Ausweis
+        /// („Zuschuss: −X €"). Wäre er eine Erlösposition, geriete er über
+        /// <c>BetriebskostenCtrl.Betrag</c> in die JAHRESreihe — er ist aber eine
+        /// einmalige Zahlung im Jahr 0.</para>
+        ///
+        /// <para><b>Keine Ersatzbeschaffung, kein Restwert.</b> Die Altanwendung gab
+        /// dem Zuschuss eine Nutzungsdauer — und zwar die Laufvariable des zuletzt
+        /// bearbeiteten BHKW-Moduls, also eine zufällige (Konzept Anhang A(e), Fehler 1).
+        /// Hier geht die Zeile deshalb gar nicht erst als <c>InvestPosition</c> in den
+        /// <c>KapitalwertRechner</c>, sondern wird I₀-seitig abgezogen.</para>
+        ///
+        /// <para><b>GROSSBUCHSTABEN, abweichend vom Konzepttext.</b> § 7.4 schreibt
+        /// <c>"zuschuss"</c>; die vier Bestandswerte dieser Gruppe sind aber ASCII und
+        /// durchgehend groß (Kommentarblock oben). Ein einzelner kleingeschriebener
+        /// Wert wäre die Ausnahme, die jeden späteren Vergleich zur Fehlerquelle macht.
+        /// Länge 8 Zeichen — die Spalte ist TEXT(20), also unkritisch.</para>
+        /// <inheritdoc cref="KOSTENART_KAPITALGEBUNDEN" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string KOSTENART_ZUSCHUSS = "ZUSCHUSS";
+
         // =====================================================================
         // Bemessungsart einer Kostenposition
         //   Tab_ProjektWerte.Bemessung (Migrationsschritt 19)
@@ -376,6 +510,28 @@ namespace WindowsFormsApplication1
         public const string ENERGIESTEUER_WAHL_53A = "PARAGRAF_53A";
 
         /// <summary>
+        /// ETAPPE K6 — Energiesteuerentlastung nach § 54 EnergieStG (Heizstoffe im
+        /// produzierenden Gewerbe, „Kesselvergleich", Formular 1450) — Teilsatz
+        /// (Erdgas 1,38 €/MWh · Heizoel EL 15,34 €/1.000 l · Fluessiggas
+        /// 15,15 €/1.000 kg) <b>abzueglich eines Sockelbetrags von 250 €/Kalenderjahr</b>.
+        ///
+        /// <para><b>Zwei Voraussetzungen, beide geprueft.</b> Erstens die
+        /// Unternehmensart (produzierendes Gewerbe oder Land- und Forstwirtschaft) —
+        /// dieselbe Bedingung wie bei § 9b StromStG. Zweitens der Ausschluss gegen
+        /// § 53a Abs. 5: Beide Normen schliessen einander aus (Grundlagen, Abschnitt 4),
+        /// und die Wahl ist deshalb eine Auswahl und keine Summe.</para>
+        ///
+        /// <para><b>Bewusste Luecke, im Ergebnis ausgewiesen.</b> § 54 zielt auf
+        /// HEIZstoffe. Die Anlagenliste der Steuerpruefung fuehrt ausschliesslich BHKW;
+        /// Kessel- und Spitzenlastbrennstoff sind dort nicht enthalten. Wer § 54 waehlt,
+        /// bekommt die Entlastung deshalb nur auf den BHKW-Brennstoff, und die Rechnung
+        /// sagt das als Begruendungszeile ausdruecklich (K6-Protokoll, Abschnitt
+        /// „bewusste Luecken").</para>
+        /// <inheritdoc cref="ENERGIESTEUER_WAHL_KEINE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string ENERGIESTEUER_WAHL_54 = "PARAGRAF_54";
+
+        /// <summary>
         /// Aufteilung des Brennstoffs auf Strom und Waerme: <b>keine Aufteilung</b>, der
         /// gesamte im BHKW eingesetzte Brennstoff ist entlastungsfaehig —
         /// <b>Vorbelegung</b> aller Bestandszeilen (Migrationsschritt 20b) und das
@@ -493,6 +649,16 @@ namespace WindowsFormsApplication1
         //   mit dem Ueberschreibwert der Anlage bzw. mit dem Projektsatz. Deshalb
         //   bleiben sie in Schritt 22 auch ohne Vorbelegung: Eine leere Angabe ist
         //   „nicht erfasst" und aendert an keiner Bestandsrechnung etwas.
+        //
+        //   ETAPPE K6 (Migrationsschritt 28): DIESELBEN Steuerwerte tragen seither
+        //   auch die beiden PROJEKTangaben Tab_ProjektWirtschaftlichkeit.
+        //   KWKG_Anlagenart und KWKG_Tatbestand. Bewusst KEINE zweite Konstantenreihe:
+        //   Projekt- und Anlagenangabe laufen in denselben KwkgSatzRechner, und zwei
+        //   Wertevorraete fuer dieselbe Fachfrage waeren eine zweite Wahrheit. Das
+        //   Konzept (§ 8.1) nennt die Werte in Kleinschreibung („keiner",
+        //   „anlage_bis_100kw", „kundenanlage", „stromkostenintensiv", „neu",
+        //   „modernisiert", „nachgeruestet"); massgeblich sind die hier bereits
+        //   eingefrorenen Grossschreibungen — gleiche Bedeutung, EIN Wertevorrat.
         // =====================================================================
 
         /// <summary>
@@ -1043,6 +1209,87 @@ namespace WindowsFormsApplication1
         /// Engine kennt ausschliesslich ct/kWh (Fachkonzept 4.1).
         /// </summary>
         public const string PREISREIHE_EINHEIT_CT_KWH = "ct/kWh";
+
+        // =====================================================================
+        // Energietraeger — Anzeigename einer Umrechnungsregel
+        //   energy_conversion.faktor_name
+        //   (Konzept_Kosten_Energietraeger_EPOS-Plan.md, HF2 / L3 / L4;
+        //   Etappe K2, Migrationsschritt 25)
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        //
+        //   WARUM PERSISTENZWERT UND NICHT MyResource. Der Name STEHT in der
+        //   Datenbank, nicht nur auf dem Bildschirm: Migrationsschritt 25 belegt ihn
+        //   vor, der Anwender darf ihn ab Etappe K3 im Dialog ueberschreiben, und der
+        //   ueberschriebene Wert bleibt genau so stehen, wie er getippt wurde. Ein
+        //   lokalisierter Vorbelegungstext haette je nach Programmsprache zwei
+        //   verschiedene Werte in dieselbe Spalte geschrieben und die Frage "ist das
+        //   noch die Vorbelegung?" unbeantwortbar gemacht.
+        // =====================================================================
+
+        /// <summary>
+        /// Anzeigename der Umrechnungsregel im Regelfall — fluessige und feste Traeger
+        /// (Dichte-, Gebinde- oder Masseumrechnung).
+        /// </summary>
+        public const string UMRECHNUNG_NAME_STANDARD = "Umrechnungsfaktor";
+
+        /// <summary>
+        /// Anzeigename der Umrechnungsregel bei GASFOERMIGEN Traegern (L4): Der Faktor
+        /// rechnet dort Betriebs- auf Normvolumen um und heisst fachlich „z-Faktor".
+        ///
+        /// <para><b>Erkannt werden Gastraeger ueber
+        /// <c>energy_carrier.pricing_model = 'GASEOUS_FUEL'</c></b> — nicht ueber
+        /// <c>'GAS'</c>, wie das Konzept in § 4.1 schreibt: Diesen Preismodell-Code gibt
+        /// es nicht. Der Bestand vom 19.08.2026 kennt genau sechs Codes (ANIMAL_FAT,
+        /// ELECTRICITY, GASEOUS_FUEL, HEAT, LIQUID_FUEL, SOLID_FUEL). <c>Gas</c> ist der
+        /// <c>group_code</c> — und ueber ihn zu gehen liesse ausgerechnet den
+        /// gasfoermigsten Traeger aussen vor, denn Wasserstoff fuehrt den eigenen
+        /// Gruppencode <c>Wasserstoff</c> bei <c>pricing_model = GASEOUS_FUEL</c>.</para>
+        /// </summary>
+        public const string UMRECHNUNG_NAME_Z_FAKTOR = "z-Faktor";
+
+        // =====================================================================
+        // Energietraeger — Einheitencodes
+        //   energy_carrier.billing_unit, energy_conversion.from_unit/.to_unit,
+        //   energy_price.arbeitspreis_unit
+        //   (Konzept HF2/L3/L4; Etappe K3, Migrationsschritt 26)
+        //   Persistenzwert, eingefroren (Drei-Schichten-Regel)
+        //
+        //   Die Einheiten sind laut L3 FREI EDITIERBARE Textcodes - es gibt keinen
+        //   Einheitenkatalog und keine Auswahlliste. Hier stehen deshalb nur die
+        //   drei Codes, die der PROGRAMMCODE selbst kennen muss: die Zieleinheit
+        //   der Fachregel (kWh) und das Paar, das Schritt 26 umbenennt.
+        // =====================================================================
+
+        /// <summary>
+        /// Zieleinheit der kWh-Bedingung aus L2. Vergleiche laufen ueberall ohne
+        /// Ruecksicht auf Gross-/Kleinschreibung - "KWH" ist dieselbe Einheit.
+        /// </summary>
+        public const string EINHEIT_KWH = "kWh";
+
+        /// <summary>
+        /// Betriebsvolumen. Bleibt als <c>from_unit</c> des z-Faktors stehen, ist ab
+        /// Schritt 26 aber keine Abrechnungseinheit eines Gastraegers mehr.
+        ///
+        /// <para><b>Achtung, zwei verschiedene Zeichenketten.</b> Der Bestand kennt
+        /// daneben das ASCII-<c>m3</c> (in den Regeln <c>L -&gt; m3</c> und
+        /// <c>kg -&gt; m3</c> der Oel- und Festbrennstofftraeger). Das ist ein ANDERER
+        /// Code und wird von Schritt 26 ausdruecklich NICHT angefasst: Nm3 ist eine
+        /// Aussage ueber Gase, nicht ueber Heizoel.</para>
+        /// </summary>
+        public const string EINHEIT_KUBIKMETER = "m³";
+
+        /// <summary>
+        /// Normkubikmeter (0 °C, 1013,25 mbar) — ab Etappe K3 die Abrechnungseinheit
+        /// jedes gasfoermigen Traegers (L4).
+        ///
+        /// <para><b>Reine Semantik.</b> Die Umbenennung aendert KEINEN Zahlenwert: Die
+        /// Katalog-Heizwerte der Gastraeger sind seit jeher Normwerte (Erdgas E
+        /// 10,50 kWh/m3 ist der kWh/Nm3-Wert), die Umbenennung schreibt nur hin, was
+        /// gemeint war. Der Weg vom gemessenen Betriebsvolumen zum Normvolumen ist der
+        /// <see cref="UMRECHNUNG_NAME_Z_FAKTOR"/>, dessen Seed bei 1,0 steht (L5/E6) und
+        /// damit ergebnisneutral ist.</para>
+        /// </summary>
+        public const string EINHEIT_NORMKUBIKMETER = "Nm³";
 
         // =====================================================================
         // Katalog gesetzlicher Parameter — Tab_Gesetzesparameter

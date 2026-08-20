@@ -111,6 +111,20 @@ namespace WindowsFormsApplication1
 
             z.Add(Zahl("INVESTITION", MyResource.Resource.WIRT_ZEILE_INVESTITION,
                        e => (double?)e.Investition));
+
+            // ETAPPE K5 (Konzept § 7.4, L7) — der Investitionszuschuss als EIGENE Zeile,
+            // unmittelbar unter der Investition und NEGATIV dargestellt: Er ist der
+            // Betrag, um den die Anfangsauszahlung geringer ausfällt, und genau so soll
+            // ihn der Leser sehen („Zuschuss: −X €"). Gespeichert ist er positiv; das
+            // Vorzeichen entsteht erst hier, in der Anzeige.
+            //
+            // Die Zeile erscheint nur, wenn irgendein Projekt der Gruppe einen Zuschuss
+            // führt — dasselbe Muster wie bei der KWKG- und der BEHG-Zeile. Sonst stünde
+            // in jedem Bericht ohne Förderung eine Nullzeile.
+            if (Irgendein(menge, e => e.Zuschuss > 0))
+                z.Add(Zahl("ZUSCHUSS", MyResource.Resource.WIRT_ZEILE_ZUSCHUSS,
+                           e => (double?)(-e.Zuschuss)));
+
             z.Add(Zahl("BETRIEBSKOSTEN", MyResource.Resource.WIRT_ZEILE_BETRIEBSKOSTEN,
                        e => e.BetriebskostenJahr));
             z.Add(Zahl("ENERGIEKOSTEN", MyResource.Resource.WIRT_ZEILE_ENERGIEKOSTEN,

@@ -58,6 +58,8 @@ namespace WindowsFormsApplication1
         public const string TAB_STROMSPEICHERVARIANTE = "Tab_StromspeicherVariante";
         public const string TAB_ERGEBNISSTROMSPEICHER = "Tab_ErgebnisStromspeicher";
         public const string ENERGY_PROJECT_SETTINGS = "energy_project_settings";
+        public const string ENERGY_CONVERSION = "energy_conversion";
+        public const string ENERGY_CARRIER = "energy_carrier";
         public const string TAB_PREISREIHE = "Tab_Preisreihe";
         public const string TAB_PREISREIHEDATEN = "Tab_PreisreiheDaten";
         public const string TAB_KOSTENPROFIL = "Tab_Kostenprofil";
@@ -646,6 +648,109 @@ namespace WindowsFormsApplication1
 
         public const string TAB_PROJEKTWERTE = "Tab_ProjektWerte";
 
+        // =================================================================================
+        // ETAPPE K5 (Konzept Kosten/Energieträger, HF5, Migrationsschritt 27)
+        //   Der Komponenten- und Positionskatalog der Kostenerfassung.
+        // =================================================================================
+
+        /// <summary>
+        /// Katalog der Kostenkomponenten. Spalten (aus der Datenbank gelesen, 20.08.2026):
+        /// <c>ID</c> LONG (KEIN AutoWert — die Schreibwege vergeben die Nummer selbst) und
+        /// <c>Komponente</c> TEXT(255).
+        /// </summary>
+        public const string TAB_KOSTENKOMPONENTE = "Tab_KostenKomponente";
+
+        /// <summary>
+        /// Positionskatalog der Kostenerfassung. Spalten (aus der Datenbank gelesen,
+        /// 20.08.2026): <c>StammID</c> LONG (KEIN AutoWert), <c>Bezeichnung</c> TEXT(255),
+        /// <c>IsMainComponent</c> YESNO.
+        ///
+        /// <para><b>Der Katalog ist flach.</b> Es gibt keine Spalte, die eine Position an
+        /// eine Komponente bindet — die Zuordnung entsteht erst je Projekt über
+        /// <c>Tab_ProjektWerte.KomponentenID</c>. Der Seed aus Schritt 27 legt deshalb
+        /// Positionen an, ordnet sie aber nicht zu.</para>
+        ///
+        /// <para><b><c>StammID</c> ist kein AutoWert</b> — anders als der Klassenkommentar
+        /// von <c>KostenPositionCtrl</c> behauptet. <c>Form_KostenAdmin</c> rechnet mit
+        /// <c>GetMaxID + 1</c> und hat damit recht; das <c>INSERT</c> ohne <c>StammID</c>
+        /// in <c>KostenPositionCtrl.StammIdNeben</c> schreibt eine 0 und ist ein
+        /// Altbefund, der hier nur festgehalten, nicht mitbehandelt wird.</para>
+        /// </summary>
+        public const string TAB_KOSTENFAKTOR = "Tab_Kostenfaktor";
+
+        /// <summary>Spalte <c>Tab_KostenKomponente.Komponente</c>.</summary>
+        public const string SPALTE_KK_KOMPONENTE = "Komponente";
+
+        /// <summary>Spalte <c>Tab_Kostenfaktor.Bezeichnung</c>.</summary>
+        public const string SPALTE_KF_BEZEICHNUNG = "Bezeichnung";
+
+        /// <summary>Spalte <c>Tab_Kostenfaktor.StammID</c>.</summary>
+        public const string SPALTE_KF_STAMMID = "StammID";
+
+        /// <summary>Spalte <c>Tab_Kostenfaktor.IsMainComponent</c>.</summary>
+        public const string SPALTE_KF_IST_HAUPT = "IsMainComponent";
+
+        /// <summary>
+        /// Eine Erfassungsgruppe des Schritts 27: der Komponentenname und die
+        /// Positionsbezeichnungen, die ihr Katalogvorschlag umfasst.
+        /// </summary>
+        public sealed class KostenGruppeSeed
+        {
+            public KostenGruppeSeed(string komponente, string[] positionen)
+            {
+                Komponente = komponente;
+                Positionen = positionen;
+            }
+
+            /// <summary><c>Tab_KostenKomponente.Komponente</c> und zugleich die
+            /// Bezeichnung der Hauptposition (<c>IsMainComponent = True</c>).</summary>
+            public readonly string Komponente;
+
+            /// <summary>Nebenpositionen (<c>IsMainComponent = False</c>), Original-
+            /// Beschriftungen der Altanwendung.</summary>
+            public readonly string[] Positionen;
+        }
+
+        /// <summary>
+        /// ETAPPE K5 — die drei neuen Erfassungsgruppen mit ihrem Positionskatalog
+        /// (Konzept § 7.2 und § 7.3, Original-Beschriftungen aus Anhang A(a)).
+        ///
+        /// <para><b>Nahwärmenetz fehlt absichtlich</b> (Entscheidung E2 vom 19.08.2026):
+        /// Verteilnetz, Hausanschluss und Hausstation entfallen ersatzlos. Ebenso fehlt
+        /// der <b>Pufferspeicher</b> in der Wärmezentrale — er bleibt nach Entscheidung E1
+        /// eine eigene Komponente und würde hier doppelt erfasst.</para>
+        ///
+        /// <para><b>„Sonstiges" steht in jeder Gruppe.</b> Das Katalogmuster sieht es vor:
+        /// Die Altmaske führte je Gruppe drei frei benennbare Zeilen, und der
+        /// Betriebskostenkatalog hat mit <c>DbWerte.VDI_POS_SONSTIGE</c> bereits sein
+        /// Gegenstück. Weitere freie Positionen entstehen über
+        /// <c>KostenPositionCtrl.StammIdNeben</c> beim ersten Bedarf.</para>
+        /// </summary>
+        public static readonly KostenGruppeSeed[] Schritt27_Erfassungsgruppen =
+        {
+            new KostenGruppeSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE, new[]
+            {
+                DbWerte.KOSTENPOSTEN_BHKW_EINBINDUNG,
+                DbWerte.KOSTENPOSTEN_HEIZUNGSTECHNIK,
+                DbWerte.KOSTENPOSTEN_ABGASANLAGE,          // im Bestand: StammID 91
+                DbWerte.KOSTENPOSTEN_SONSTIGES
+            }),
+            new KostenGruppeSeed(DbWerte.KOSTEN_KOMPONENTE_BAULICHE_ANLAGEN, new[]
+            {
+                DbWerte.KOSTENPOSTEN_HEIZRAUM,
+                DbWerte.KOSTENPOSTEN_SCHORNSTEIN,          // im Bestand: StammID 90
+                DbWerte.KOSTENPOSTEN_BAULICHE_MASSNAHMEN,
+                DbWerte.KOSTENPOSTEN_HEIZOELLAGERUNG,
+                DbWerte.KOSTENPOSTEN_ERDGASANSCHLUSS,
+                DbWerte.KOSTENPOSTEN_SONSTIGES
+            }),
+            new KostenGruppeSeed(DbWerte.KOSTEN_KOMPONENTE_STROMEINSPEISUNG, new[]
+            {
+                DbWerte.KOSTENPOSTEN_STROMEINSPEISUNG,
+                DbWerte.KOSTENPOSTEN_SONSTIGES
+            })
+        };
+
         /// <summary>
         /// ETAPPE E3 — Kostenart nach VDI 2067 (kapital-, bedarfs-, betriebsgebunden,
         /// sonstige). Werte und Begründung: <see cref="DbWerte.KOSTENART_KAPITALGEBUNDEN"/>.
@@ -1203,6 +1308,174 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_BIOMASSE_NACHWEIS,   "TEXT(30)"),
         };
 
+        // ---------------------------------------------------------------------------
+        // HAUPTFORDERUNG HF2 (Konzept_Kosten_Energietraeger_EPOS-Plan.md § 4.2,
+        // Migrationsschritt M-A) — Einheiten-Konsistenz der Energieträger
+        // ---------------------------------------------------------------------------
+
+        /// <summary>
+        /// HF2 / L4 — <b>Anzeigename</b> der Umrechnungsregel. Vorbelegung durch
+        /// Schritt 25c: <c>DbWerte.UMRECHNUNG_NAME_Z_FAKTOR</c> bei gasförmigen
+        /// Trägern, sonst <c>DbWerte.UMRECHNUNG_NAME_STANDARD</c>.
+        ///
+        /// <para><b>Breite.</b> TEXT(50) — der Anwender darf den Namen ab Etappe K3
+        /// frei überschreiben, und ein zu kurzes Feld ließe das UPDATE in Access STILL
+        /// scheitern (Lehre aus Schritt 19, Probe C2). Die beiden Vorbelegungen sind
+        /// 17 bzw. 8 Zeichen lang; die 50 sind der Puffer für den freien Text.</para>
+        /// </summary>
+        public const string SPALTE_EC_FAKTOR_NAME = "faktor_name";
+
+        /// <summary>
+        /// HF2 / L3 — Regel <b>abschaltbar statt löschbar</b>: Eine deaktivierte Regel
+        /// bleibt mit ihrem Faktor stehen und ist damit weiter nachvollziehbar, zählt
+        /// aber für die kWh-Bedingung aus L2 nicht mehr mit.
+        ///
+        /// <para><b>Die bekannte ACE-Falle, hier in ihrer scharfen Form.</b> Access
+        /// belegt eine neue <c>YESNO</c>-Spalte in JEDER Bestandszeile mit
+        /// <c>False</c> — jede vorhandene Umrechnungsregel stünde damit schlagartig
+        /// auf „aus". Deshalb hebt Schritt 25b sie unmittelbar nach dem
+        /// <c>ADD COLUMN</c> auf WAHR, und zwar <b>nur dann, wenn die Spalte in
+        /// eben diesem Lauf entstanden ist</b> (Muster
+        /// <c>WirtschaftlichkeitCtrl.SpalteSicher</c>: „liefert true, wenn die Spalte
+        /// JETZT neu angelegt wurde"). Ein pauschales UPDATE bei jedem Lauf würde die
+        /// erste vom Anwender abgeschaltete Regel wieder einschalten — und weil
+        /// <c>YESNO</c> in Access kein NULL kennt, ließe sich „nie gesetzt" danach
+        /// nicht mehr von „bewusst abgeschaltet" unterscheiden.</para>
+        /// </summary>
+        public const string SPALTE_EC_AKTIV = "aktiv";
+
+        /// <summary>
+        /// Schritt 25 der Migration (Konzept Kosten/Energieträger, HF2, Etappe K2) —
+        /// die zwei additiven Spalten an <c>energy_conversion</c>.
+        ///
+        /// <b>ERGEBNISNEUTRAL, und das ist die Abnahmebedingung der Etappe.</b> Kein
+        /// Rechenpfad liest die beiden Spalten: <c>ucFuelSettings.GetConversions</c>,
+        /// <c>GetConvID</c>, <c>GetTargetUnitByConversionId</c> und
+        /// <c>WizardCtrl</c> lesen <c>energy_conversion</c> ausschließlich mit
+        /// AUSGESCHRIEBENER Spaltenliste, nie mit <c>SELECT *</c>; die Mengen- und
+        /// Kostenrechnung geht ohnehin über <c>Abfrage_Energietraeger_Effektiv</c>.
+        /// <c>factor</c>, <c>from_unit</c>, <c>to_unit</c> und <c>user_edited</c>
+        /// bleiben Byte für Byte unangetastet — der Schritt fügt zwei Spalten hinzu
+        /// und benennt, was schon da ist.
+        ///
+        /// <b>Kein DDL-DEFAULT</b> (Hausregel, siehe
+        /// <see cref="Schritt12_Preismodell"/>): Ein DEFAULT gälte nur für künftig
+        /// eingefügte Zeilen und ließe den Bestand leer bzw. auf <c>False</c> stehen.
+        /// Beide Vorbelegungen setzt der DML-Teil des Schritts.
+        ///
+        /// <b>Warum die Tabelle vorher angelegt werden muss.</b> Anders als bei allen
+        /// bisherigen Schritten ist <c>energy_conversion</c> nirgends im Code ANGELEGT
+        /// — sie kommt aus der ausgelieferten <c>Kenndaten.accdb</c> bzw. aus der
+        /// Handmigration (<c>migration.manuell.sql</c>, Abschnitt „energy_conversion:
+        /// global, Quelle gewinnt komplett"). Eine Datenbank ohne diese Herkunft hat
+        /// sie schlicht nicht, und <see cref="SchemaMigration.SpaltenAnlegen"/> würde
+        /// dort „Tabelle nicht lesbar" melden und den Schritt scheitern lassen.
+        /// Deshalb legt Schritt 25a sie bei Bedarf selbst an — mit exakt dem
+        /// Spaltensatz des Handskripts plus den zwei Neuspalten.
+        ///
+        /// <b>Nicht in <see cref="Alle"/>.</b> Dieselbe Begründung wie bei
+        /// <see cref="Schritt12_Preismodell"/>: Die stille Rückfallebene sichert die
+        /// Eingabespalten der SIMULATION. <c>energy_conversion</c> gehört dem
+        /// Kostenmodul und wird von der Engine nirgends gelesen.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt25_Einheitenkonsistenz =
+        {
+            new SchemaSpalte(ENERGY_CONVERSION, SPALTE_EC_FAKTOR_NAME, "TEXT(50)"),
+            new SchemaSpalte(ENERGY_CONVERSION, SPALTE_EC_AKTIV,       "YESNO"),
+        };
+
+        // ---------------------------------------------------------------------------
+        // ETAPPE K6 (Konzept Kosten/Energieträger, HF6, Migrationsschritt M-D) —
+        // vier KWKG-Projektangaben an Tab_ProjektWirtschaftlichkeit
+        // ---------------------------------------------------------------------------
+
+        /// <summary>
+        /// K6 — Tatbestand des § 6 Abs. 3 KWKG, unter dem SELBST GENUTZTER Strom
+        /// zuschlagsfähig ist. Steuerwerte <c>DbWerte.KWKG_EIGENFALL_*</c> —
+        /// derselbe Wertevorrat wie die Anlagenangabe
+        /// <see cref="SPALTE_EA_KWKG_EIGENFALL"/> aus Schritt 22, weil beide in
+        /// denselben <c>KwkgSatzRechner</c> laufen.
+        ///
+        /// <b>Bleibt NULL, und daran hängt die Ergebnisneutralität.</b> Ein
+        /// Bestandsprojekt hat den Tatbestand nie erfasst; würde Schritt 28 ihn mit
+        /// <c>KEINER</c> vorbelegen, verlöre jedes Altprojekt mit gepflegtem
+        /// Eigenstrom-Satz seinen Zuschlag — eine stille, große Ergebnisänderung.
+        /// <c>NULL</c> heißt deshalb „nicht angegeben": Die Rechnung läuft wie bisher
+        /// und meldet den ungeprüften Tatbestand als Hinweis. Erst die AUSDRÜCKLICHE
+        /// Wahl <c>KEINER</c> setzt den Eigenstrom-Zuschlag auf 0 — dieselbe Mechanik
+        /// wie bei <see cref="SPALTE_PW_BIOMASSE_NACHWEIS"/> (leer/NULL = der Wert,
+        /// der den Bestand fortführt).
+        ///
+        /// <b>Spaltenbreite.</b> Längster Steuerwert <c>NR2_KUNDENANLAGE</c>
+        /// (16 Zeichen) → TEXT(30) laut Konzept § 8.1; großzügig wie
+        /// <see cref="SPALTE_PW_AUFTEILUNG"/>.
+        /// </summary>
+        public const string SPALTE_PW_KWKG_TATBESTAND = "KWKG_Tatbestand";
+
+        /// <summary>
+        /// K6 — Anlagenart nach § 8 KWKG, Steuerwerte
+        /// <c>DbWerte.KWKG_ANLAGENART_*</c>. Sie leitet das Vbh-Kontingent ab
+        /// (<c>KwkgKontingentRechner</c>) und wählt oberhalb von 2 MW den
+        /// Einspeisesatz. <c>NULL</c> = nicht angegeben; dann bleibt es beim
+        /// Override <c>KWKG_Vbh_Kontingent</c>, also beim Bestandswert.
+        ///
+        /// <b>Spaltenbreite.</b> Längster Steuerwert <c>NACHGERUESTET</c>
+        /// (13 Zeichen) → TEXT(20) laut Konzept § 8.1.
+        /// </summary>
+        public const string SPALTE_PW_KWKG_ANLAGENART = "KWKG_Anlagenart";
+
+        /// <summary>
+        /// K6 — Anteil an den Neuherstellungskosten [%] (§ 8 Abs. 2/3 KWKG). Er wählt
+        /// bei modernisierten und nachgerüsteten Anlagen die Kontingentstufe:
+        /// modernisiert ≥ 25 % → 15.000 h, ≥ 50 % → 30.000 h; nachgerüstet ≥ 10 % →
+        /// 10.000 h, ≥ 25 % → 15.000 h, ≥ 50 % → 30.000 h. Bleibt NULL bzw. 0 =
+        /// nicht gepflegt; dann gibt es kein abgeleitetes Kontingent, sondern eine
+        /// Begründung.
+        /// </summary>
+        public const string SPALTE_PW_KWKG_KOSTENANTEIL = "KWKG_Kostenanteil";
+
+        /// <summary>
+        /// K6 — Pauschalmodus des § 9 KWKG für Anlagen bis 2 kW<sub>el</sub>: auf
+        /// Antrag eine einmalige Vorauszahlung von 4 ct/kWh für 60.000 Vbh statt der
+        /// laufenden Abrechnung.
+        ///
+        /// <b>YESNO kennt kein NULL:</b> Access belegt die Spalte in jeder
+        /// Bestandszeile mit <c>False</c> — genau die gewollte Vorbelegung („kein
+        /// Pauschalmodus"), deshalb kein eigener DML-Schritt. Dasselbe Muster wie
+        /// <see cref="SPALTE_PW_AUFSCHLAEGE"/>.
+        /// </summary>
+        public const string SPALTE_PW_KWKG_PAUSCHALMODUS = "KWKG_Pauschalmodus";
+
+        /// <summary>
+        /// Schritt 28 der Migration (Etappe K6, HF6/M-D) — die vier additiven
+        /// KWKG-Spalten an <c>Tab_ProjektWirtschaftlichkeit</c>.
+        ///
+        /// <b>ACE-Regeln.</b> <c>YESNO</c> belegt Bestandszeilen selbsttätig mit
+        /// <c>False</c>, <c>DOUBLE</c> und <c>TEXT</c> bleiben NULL. Hier ist NULL bei
+        /// ALLEN drei Nicht-YESNO-Spalten die richtige Vorbelegung („nicht
+        /// angegeben"), deshalb hat Schritt 28 — anders als 19b/20b/21b/23b — <b>kein
+        /// DML auf Projektzeilen</b>. Kein DDL-DEFAULT auf Fachwerten.
+        ///
+        /// <b>Warum kein <c>_STAMM</c>-Gegenstück.</b> <c>Tab_ProjektWirtschaftlichkeit</c>
+        /// ist eine reine Projekttabelle ohne Auslieferungskatalog — dieselbe
+        /// Begründung wie bei den Schritten 20, 21 und 23.
+        ///
+        /// <b>Ordinalposition.</b> Die Tabelle wird ausschließlich namensbasiert
+        /// gelesen (<c>WirtschaftlichkeitCtrl.LadeParameter</c> über <c>D(r, "…")</c>);
+        /// das Anhängen hinten ist folgenlos.
+        ///
+        /// <b>Doppelte Schema-Wahrheit.</b> <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>
+        /// legt dieselbe Tabelle selbst an; die vier Spalten stehen deshalb dort
+        /// ebenfalls (im CREATE und als <c>SpalteSicher</c>-Nachzug).
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt28_KwkgTatbestand =
+        {
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_KWKG_TATBESTAND,   "TEXT(30)"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_KWKG_ANLAGENART,   "TEXT(20)"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_KWKG_KOSTENANTEIL, "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_KWKG_PAUSCHALMODUS, "YESNO"),
+        };
+
         /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
@@ -1318,6 +1591,15 @@ namespace WindowsFormsApplication1
         /// Rechenkern liest die Tabelle nirgends. Die tolerante Vorsorge steht
         /// unmittelbar vor dem Zugriff in
         /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>.
+        ///
+        /// <see cref="Schritt25_Einheitenkonsistenz"/> ist BEWUSST NICHT aufgeführt —
+        /// dieselbe Begründung wie bei <see cref="Schritt12_Preismodell"/>:
+        /// <c>energy_conversion</c> gehört dem Kostenmodul, die Simulation liest die
+        /// Tabelle nirgends. Hinzu kommt hier ein zweiter Grund: <see cref="Alle"/>
+        /// kennt nur additive SPALTEN, und die Tabelle selbst muss unter Umständen erst
+        /// entstehen — das kann die Rückfallebene gar nicht leisten. Die tolerante
+        /// Vorsorge übernimmt <c>EnergieEinheitenPruefung</c>, indem sie eine fehlende
+        /// Tabelle oder Spalte als Befund „Migration ausstehend" meldet statt zu werfen.
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {
