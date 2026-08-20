@@ -1082,6 +1082,50 @@ namespace WindowsFormsApplication1
         public const string UMRECHNUNG_NAME_Z_FAKTOR = "z-Faktor";
 
         // =====================================================================
+        // Energietraeger — Einheitencodes
+        //   energy_carrier.billing_unit, energy_conversion.from_unit/.to_unit,
+        //   energy_price.arbeitspreis_unit
+        //   (Konzept HF2/L3/L4; Etappe K3, Migrationsschritt 26)
+        //   Persistenzwert, eingefroren (Drei-Schichten-Regel)
+        //
+        //   Die Einheiten sind laut L3 FREI EDITIERBARE Textcodes - es gibt keinen
+        //   Einheitenkatalog und keine Auswahlliste. Hier stehen deshalb nur die
+        //   drei Codes, die der PROGRAMMCODE selbst kennen muss: die Zieleinheit
+        //   der Fachregel (kWh) und das Paar, das Schritt 26 umbenennt.
+        // =====================================================================
+
+        /// <summary>
+        /// Zieleinheit der kWh-Bedingung aus L2. Vergleiche laufen ueberall ohne
+        /// Ruecksicht auf Gross-/Kleinschreibung - "KWH" ist dieselbe Einheit.
+        /// </summary>
+        public const string EINHEIT_KWH = "kWh";
+
+        /// <summary>
+        /// Betriebsvolumen. Bleibt als <c>from_unit</c> des z-Faktors stehen, ist ab
+        /// Schritt 26 aber keine Abrechnungseinheit eines Gastraegers mehr.
+        ///
+        /// <para><b>Achtung, zwei verschiedene Zeichenketten.</b> Der Bestand kennt
+        /// daneben das ASCII-<c>m3</c> (in den Regeln <c>L -&gt; m3</c> und
+        /// <c>kg -&gt; m3</c> der Oel- und Festbrennstofftraeger). Das ist ein ANDERER
+        /// Code und wird von Schritt 26 ausdruecklich NICHT angefasst: Nm3 ist eine
+        /// Aussage ueber Gase, nicht ueber Heizoel.</para>
+        /// </summary>
+        public const string EINHEIT_KUBIKMETER = "m³";
+
+        /// <summary>
+        /// Normkubikmeter (0 °C, 1013,25 mbar) — ab Etappe K3 die Abrechnungseinheit
+        /// jedes gasfoermigen Traegers (L4).
+        ///
+        /// <para><b>Reine Semantik.</b> Die Umbenennung aendert KEINEN Zahlenwert: Die
+        /// Katalog-Heizwerte der Gastraeger sind seit jeher Normwerte (Erdgas E
+        /// 10,50 kWh/m3 ist der kWh/Nm3-Wert), die Umbenennung schreibt nur hin, was
+        /// gemeint war. Der Weg vom gemessenen Betriebsvolumen zum Normvolumen ist der
+        /// <see cref="UMRECHNUNG_NAME_Z_FAKTOR"/>, dessen Seed bei 1,0 steht (L5/E6) und
+        /// damit ergebnisneutral ist.</para>
+        /// </summary>
+        public const string EINHEIT_NORMKUBIKMETER = "Nm³";
+
+        // =====================================================================
         // Katalog gesetzlicher Parameter — Tab_Gesetzesparameter
         //   Konzept_BHKW_Kosten_Erloese.md, Leitentscheidung L2, Etappe E1.
         //   Faktenbasis: Grundlagen_KWKG_Energiesteuer_Stromsteuer.md (Repo-Wurzel).

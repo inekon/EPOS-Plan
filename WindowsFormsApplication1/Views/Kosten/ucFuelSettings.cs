@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -44,6 +45,29 @@ namespace WindowsFormsApplication1
         /// Block wird deshalb nicht ausgegraut, sondern gar nicht erst angelegt.
         /// </summary>
         private ucStromAufschlaege _aufschlaege;
+
+        // =====================================================================
+        // ETAPPE K3 - Umrechnungsblock (Konzept Kosten/Energietraeger § 4.3)
+        // =====================================================================
+
+        /// <summary>
+        /// Bearbeitungsstand der Umrechnungsregeln dieses Brennstoffs. Der Block
+        /// arbeitet bewusst auf einer SPEICHERKOPIE: Der Prüfer beantwortet damit die
+        /// Frage „was wäre, wenn ich diese Regel abschalte?", ohne dass dafür etwas
+        /// geschrieben oder erneut gelesen werden müsste.
+        /// </summary>
+        private List<UmrechnungsRegel> _regeln = new List<UmrechnungsRegel>();
+
+        private DataGridView dgvRegeln;
+        private Label lblEffektiv;
+        private Label lblVerstoss;
+        private Button btnRegelNeu;
+
+        /// <summary>Sperre gegen Rückkopplung, während der Regelblock neu befüllt wird.</summary>
+        private bool _regelblockWirdGefuellt;
+
+        /// <summary>Höhe, um die der Block das Control wachsen lässt.</summary>
+        private const int HOEHE_UMRECHNUNGSBLOCK = 196;
 
         public ucFuelSettings(int projectId, EnergyCarrier carrier)
         {
@@ -97,6 +121,7 @@ namespace WindowsFormsApplication1
             }
 
             LoadData();
+            BaueUmrechnungsblock();   // ETAPPE K3 - vor dem Aufschlagsblock, der an this.Height andockt
             BaueAufschlagsblock();
         }
 
@@ -131,6 +156,370 @@ namespace WindowsFormsApplication1
                 // etwa auf einer Datenbank, deren Migrationsschritt 12 nicht durchlief.
                 Console.WriteLine("Der Aufschlagsblock konnte nicht aufgebaut werden: " + ex.Message);
                 _aufschlaege = null;
+            }
+        }
+
+        // =====================================================================
+        // ETAPPE K3 - Umrechnungsblock (Konzept § 4.3)
+        // =====================================================================
+
+        /// <summary>
+        /// Baut den Umrechnungsblock unter die Formelgruppe: Regelliste, Knopf
+        /// „Regel hinzufügen", Effektivanzeige und Verstoßhinweis.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Programmatisch, Designer unberührt</b> — dieselbe Hausregel und
+        /// dieselbe Bauform wie <see cref="BaueAufschlagsblock"/>. Die Bestandssteuer-
+        /// elemente unterhalb (Speichern-Knopf, Preishistorie) wandern um die Blockhöhe
+        /// nach unten, und das Control wächst mit; der Aufschlagsblock dockt danach an
+        /// die NEUE Höhe an, weshalb er nach diesem Aufruf gebaut wird.</para>
+        ///
+        /// <para><b>Ein Fehler hier darf die Preispflege nicht blockieren</b> — etwa auf
+        /// einer Datenbank vor Migrationsschritt 25, die die Spalten
+        /// <c>faktor_name</c>/<c>aktiv</c> nicht führt. Dann bleibt der Block leer und
+        /// der Hinweis nennt die ausstehende Migration.</para>
+        /// </remarks>
+        private void BaueUmrechnungsblock()
+        {
+            try
+            {
+                int oben = groupBox_Formel.Bottom + 8;
+                if (!groupBox_Formel.Visible) oben = panel1.Bottom + 8;
+
+                // Bestandssteuerelemente nach unten schieben.
+                foreach (Control c in new Control[] { btn_Save, label9, dgvHistory })
+                    if (c != null) c.Top += HOEHE_UMRECHNUNGSBLOCK;
+                this.Height += HOEHE_UMRECHNUNGSBLOCK;
+
+                var titel = new Label
+                {
+                    AutoSize = true,
+                    Location = new Point(17, oben),
+                    Text = MyResource.Resource.KOSTEN_UMRECHNUNG_TITEL
+                };
+                titel.Font = new Font(titel.Font, FontStyle.Bold);
+                this.Controls.Add(titel);
+
+                dgvRegeln = new DataGridView
+                {
+                    Location = new Point(17, oben + 20),
+                    Size = new Size(531, 104),
+                    AllowUserToAddRows = false,
+                    AllowUserToDeleteRows = false,
+                    AllowUserToResizeRows = false,
+                    RowHeadersVisible = false,
+                    SelectionMode = DataGridViewSelectionMode.CellSelect,
+                    AutoGenerateColumns = false,
+                    EditMode = DataGridViewEditMode.EditOnEnter
+                };
+                BaueRegelSpalten();
+                dgvRegeln.CellValueChanged += DgvRegeln_CellValueChanged;
+                dgvRegeln.CurrentCellDirtyStateChanged += DgvRegeln_CurrentCellDirtyStateChanged;
+                this.Controls.Add(dgvRegeln);
+
+                btnRegelNeu = new Button
+                {
+                    Location = new Point(17, oben + 130),
+                    Size = new Size(150, 25),
+                    Text = MyResource.Resource.KOSTEN_UMRECHNUNG_NEU
+                };
+                btnRegelNeu.Click += BtnRegelNeu_Click;
+                this.Controls.Add(btnRegelNeu);
+
+                lblEffektiv = new Label
+                {
+                    AutoSize = true,
+                    Location = new Point(177, oben + 134),
+                    Text = ""
+                };
+                this.Controls.Add(lblEffektiv);
+
+                // Roter Text STATT MessageBox (Konzept § 4.3): Der Hinweis steht neben
+                // der Ursache und blockiert die Bedienung nicht.
+                lblVerstoss = new Label
+                {
+                    AutoSize = false,
+                    Location = new Point(17, oben + 158),
+                    Size = new Size(531, 32),
+                    ForeColor = Color.Firebrick,
+                    Text = ""
+                };
+                this.Controls.Add(lblVerstoss);
+
+                LadeRegeln();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Der Umrechnungsblock konnte nicht aufgebaut werden: " + ex.Message);
+                dgvRegeln = null;
+            }
+        }
+
+        private void BaueRegelSpalten()
+        {
+            dgvRegeln.Columns.Clear();
+
+            dgvRegeln.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "Name",
+                HeaderText = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_NAME,
+                Width = 150
+            });
+            dgvRegeln.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "Von",
+                HeaderText = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_VON,
+                Width = 90
+            });
+            dgvRegeln.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "Nach",
+                HeaderText = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_NACH,
+                Width = 90
+            });
+            dgvRegeln.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "Faktor",
+                HeaderText = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_FAKTOR,
+                Width = 100
+            });
+            dgvRegeln.Columns.Add(new DataGridViewCheckBoxColumn
+            {
+                Name = "Aktiv",
+                HeaderText = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_AKTIV,
+                Width = 60
+            });
+        }
+
+        /// <summary>Liest die Regeln des Brennstoffs und zeigt sie an.</summary>
+        private void LadeRegeln()
+        {
+            _regeln = EnergieEinheitenPruefung.RegelnDesBrennstoffs(_carrier.ID_Brennstoff);
+            ZeigeRegeln();
+        }
+
+        private void ZeigeRegeln()
+        {
+            if (dgvRegeln == null) return;
+
+            _regelblockWirdGefuellt = true;
+            try
+            {
+                dgvRegeln.Rows.Clear();
+                foreach (UmrechnungsRegel r in _regeln)
+                    dgvRegeln.Rows.Add(r.Name, r.Von, r.Nach,
+                                       r.Faktor.ToString("0.######", CultureInfo.CurrentCulture),
+                                       r.Aktiv);
+            }
+            finally { _regelblockWirdGefuellt = false; }
+
+            AktualisiereEffektivUndVerstoss();
+        }
+
+        /// <summary>
+        /// Ein Häkchen soll sofort wirken, nicht erst beim Zellwechsel — sonst liefe der
+        /// Riegel erst, wenn der Anwender die Zeile längst verlassen hat.
+        /// </summary>
+        private void DgvRegeln_CurrentCellDirtyStateChanged(object sender, EventArgs e)
+        {
+            if (_regelblockWirdGefuellt || dgvRegeln == null) return;
+            if (dgvRegeln.IsCurrentCellDirty && dgvRegeln.CurrentCell is DataGridViewCheckBoxCell)
+                dgvRegeln.CommitEdit(DataGridViewDataErrorContexts.Commit);
+        }
+
+        private void DgvRegeln_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            if (_regelblockWirdGefuellt || dgvRegeln == null) return;
+            if (e.RowIndex < 0 || e.RowIndex >= _regeln.Count) return;
+
+            UmrechnungsRegel r = _regeln[e.RowIndex];
+            DataGridViewRow zeile = dgvRegeln.Rows[e.RowIndex];
+            string spalte = dgvRegeln.Columns[e.ColumnIndex].Name;
+
+            switch (spalte)
+            {
+                case "Name":
+                    r.Name = Convert.ToString(zeile.Cells["Name"].Value ?? "").Trim();
+                    break;
+
+                case "Von":
+                    r.Von = Convert.ToString(zeile.Cells["Von"].Value ?? "").Trim();
+                    break;
+
+                case "Nach":
+                    r.Nach = Convert.ToString(zeile.Cells["Nach"].Value ?? "").Trim();
+                    break;
+
+                case "Faktor":
+                    {
+                        // Zahlprüfung im Haus-Muster (Program.ZahlParsen: Komma ODER
+                        // Punkt). Eine unbrauchbare Eingabe wird NICHT übernommen und
+                        // die Zelle springt auf den letzten gültigen Wert zurück - der
+                        // rote Hinweis sagt, warum.
+                        string text = Convert.ToString(zeile.Cells["Faktor"].Value ?? "").Trim();
+                        double wert;
+                        if (Program.ZahlParsen(text, out wert) && wert > 0)
+                        {
+                            r.Faktor = wert;
+                            lblVerstoss.Text = "";
+                        }
+                        else
+                        {
+                            lblVerstoss.Text = MyResource.Resource.KOSTEN_UMRECHNUNG_FAKTOR_UNGUELTIG;
+                            _regelblockWirdGefuellt = true;
+                            zeile.Cells["Faktor"].Value =
+                                r.Faktor.ToString("0.######", CultureInfo.CurrentCulture);
+                            _regelblockWirdGefuellt = false;
+                            return;
+                        }
+                        break;
+                    }
+
+                case "Aktiv":
+                    {
+                        bool neu = Convert.ToBoolean(zeile.Cells["Aktiv"].Value ?? false);
+
+                        // DER RIEGEL (Konzept § 4.3): Die Regel, die den Träger nach kWh
+                        // trägt, lässt sich nicht abschalten. Gefragt wird der Prüfer -
+                        // damit gibt es keine zweite Fassung der Fachregel.
+                        if (!neu)
+                        {
+                            string grund;
+                            if (!EnergieEinheitenPruefung.DarfAbschalten(
+                                    AktuelleEinheit(), (double)numHeizwert.Value,
+                                    (double)numBrennwert.Value, _regeln, e.RowIndex, out grund))
+                            {
+                                lblVerstoss.Text = string.Format(CultureInfo.CurrentCulture,
+                                    MyResource.Resource.KOSTEN_UMRECHNUNG_RIEGEL, grund);
+                                _regelblockWirdGefuellt = true;
+                                zeile.Cells["Aktiv"].Value = true;
+                                _regelblockWirdGefuellt = false;
+                                return;
+                            }
+                        }
+                        r.Aktiv = neu;
+                        break;
+                    }
+            }
+
+            // Jede Handänderung macht die Zeile zu einer gepflegten - ab dann fasst sie
+            // keine Migration mehr an (L5).
+            r.UserEdited = true;
+            AktualisiereEffektivUndVerstoss();
+        }
+
+        private void BtnRegelNeu_Click(object sender, EventArgs e)
+        {
+            bool gas = string.Equals(_carrier.PricingModel, "GASEOUS_FUEL",
+                                     StringComparison.OrdinalIgnoreCase);
+
+            _regeln.Add(new UmrechnungsRegel
+            {
+                Id = 0,                       // 0 = neu, die ID vergibt das Speichern
+                IdBrennstoff = _carrier.ID_Brennstoff,
+                Name = gas ? DbWerte.UMRECHNUNG_NAME_Z_FAKTOR : DbWerte.UMRECHNUNG_NAME_STANDARD,
+                Von = AktuelleEinheit(),
+                Nach = "",
+                Faktor = 1,
+                Aktiv = true,
+                UserEdited = true
+            });
+            ZeigeRegeln();
+        }
+
+        /// <summary>Die Einheit, in der das Projekt gerade rechnet.</summary>
+        private string AktuelleEinheit()
+        {
+            if (cmbUnit.SelectedItem is EnergyConversion conv &&
+                !string.IsNullOrEmpty(conv.ToUnitCode))
+                return conv.ToUnitCode;
+            return _carrier.BillingUnit ?? "";
+        }
+
+        /// <summary>
+        /// Die Live-Anzeige „effektiv: 1 ⟨Einheit⟩ = X kWh (Hi) / Y kWh (Hs)" und der
+        /// rote Verstoßhinweis — beide aus demselben Bearbeitungsstand.
+        /// </summary>
+        private void AktualisiereEffektivUndVerstoss()
+        {
+            if (lblEffektiv == null || lblVerstoss == null) return;
+
+            string einheit = AktuelleEinheit();
+            double hi = (double)numHeizwert.Value;
+            double hs = (double)numBrennwert.Value;
+
+            if (string.Equals(einheit, DbWerte.EINHEIT_KWH, StringComparison.OrdinalIgnoreCase))
+                lblEffektiv.Text = MyResource.Resource.KOSTEN_UMRECHNUNG_EFFEKTIV_KWH;
+            else
+                lblEffektiv.Text = string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOSTEN_UMRECHNUNG_EFFEKTIV,
+                    einheit, hi.ToString("N2", CultureInfo.CurrentCulture),
+                    hs.ToString("N2", CultureInfo.CurrentCulture));
+
+            string grund;
+            lblVerstoss.Text = EnergieEinheitenPruefung.ErreichtKwh(einheit, hi, hs, _regeln, out grund)
+                             ? "" : grund;
+        }
+
+        /// <summary>
+        /// Schreibt den Bearbeitungsstand des Regelblocks nach <c>energy_conversion</c>.
+        ///
+        /// <para>Geschrieben wird ausschließlich, was der Anwender angefasst hat
+        /// (<c>UserEdited</c>) — der Block ist eine Pflegemaske, kein Massenschreiber.
+        /// Neue Zeilen (<c>Id = 0</c>) bekommen ihre ID als <c>MAX(ID)+1</c>, wie überall
+        /// in diesem Schema; eine Regel ohne Zieleinheit wird übersprungen statt
+        /// halbfertig gespeichert.</para>
+        /// </summary>
+        private void SpeichereRegeln()
+        {
+            if (dgvRegeln == null || _regeln == null) return;
+
+            foreach (UmrechnungsRegel r in _regeln)
+            {
+                if (!r.UserEdited) continue;
+                if (string.IsNullOrEmpty(r.Von) || string.IsNullOrEmpty(r.Nach)) continue;
+                if (r.Faktor <= 0) continue;
+
+                if (r.Id > 0)
+                {
+                    DataRepository.ExecuteSQL(
+                        "UPDATE [energy_conversion] SET [from_unit] = ?, [to_unit] = ?, " +
+                        "[factor] = ?, [user_edited] = TRUE, [" +
+                        SchemaKatalog.SPALTE_EC_FAKTOR_NAME + "] = ?, [" +
+                        SchemaKatalog.SPALTE_EC_AKTIV + "] = ? WHERE [ID] = ?",
+                        new OleDbParameter[]
+                        {
+                            new OleDbParameter("@von", r.Von),
+                            new OleDbParameter("@nach", r.Nach),
+                            new OleDbParameter("@f", r.Faktor),
+                            new OleDbParameter("@n", r.Name ?? ""),
+                            new OleDbParameter("@a", r.Aktiv),
+                            new OleDbParameter("@id", r.Id)
+                        });
+                }
+                else
+                {
+                    object max = DataRepository.ExecuteScalar(
+                        "SELECT MAX([ID]) FROM [energy_conversion]");
+                    int neueId = (max == null || max == DBNull.Value ? 0 : Convert.ToInt32(max)) + 1;
+
+                    DataRepository.ExecuteSQL(
+                        "INSERT INTO [energy_conversion] ([ID], [id_brennstoff], [from_unit], " +
+                        "[to_unit], [factor], [user_edited], [" +
+                        SchemaKatalog.SPALTE_EC_FAKTOR_NAME + "], [" +
+                        SchemaKatalog.SPALTE_EC_AKTIV + "]) VALUES (?, ?, ?, ?, ?, TRUE, ?, ?)",
+                        new OleDbParameter[]
+                        {
+                            new OleDbParameter("@id", neueId),
+                            new OleDbParameter("@b", r.IdBrennstoff),
+                            new OleDbParameter("@von", r.Von),
+                            new OleDbParameter("@nach", r.Nach),
+                            new OleDbParameter("@f", r.Faktor),
+                            new OleDbParameter("@n", r.Name ?? ""),
+                            new OleDbParameter("@a", r.Aktiv)
+                        });
+                    r.Id = neueId;
+                }
             }
         }
 
@@ -295,6 +684,7 @@ namespace WindowsFormsApplication1
                 if (_carrier.HasHs) lbl_Unit_Brennwert.Text = $"kWh/{conv.ToUnitCode}";
 
                 UpdatePricePerKWh();
+                AktualisiereEffektivUndVerstoss();   // ETAPPE K3: neue Einheit, neue Effektivzeile
 
                 _isUpdatingUi = false;
             }
@@ -319,6 +709,10 @@ namespace WindowsFormsApplication1
                 lblResult.Text = $"{result:N4} €";
                 lblFormula.Text = $"{price:N2} € ÷ {hi:N2} kWh = {result:N4} €/kWh";
             }
+
+            // ETAPPE K3: Heizwert und Brennwert gehen in die Effektivzeile und in die
+            // kWh-Bedingung ein - beide werden mit jedem Wert neu gebildet.
+            AktualisiereEffektivUndVerstoss();
         }
 
         /// <summary>Träger-ID dieses Controls (für den Zuordnungs-Check beim Schließen, Phase 7).</summary>
@@ -327,7 +721,49 @@ namespace WindowsFormsApplication1
             get { return _carrier != null ? _carrier.ID : 0; }
         }
 
-        public void SaveProjectAndHistory()
+        /// <summary>
+        /// ETAPPE K3 (Konzept § 4.3): die BLOCKIERENDE Prüfung beim Speichern.
+        ///
+        /// <para><c>false</c> heißt: Der Träger erfüllt die kWh-Bedingung aus L2 nicht,
+        /// und <paramref name="grund"/> sagt im Klartext, woran es liegt. Anders als die
+        /// Protokollwarnung im Wirtschaftlichkeitslauf (Etappe K2) ist die Prüfung hier
+        /// blockierend — das ist die Stelle, an der die Daten ENTSTEHEN, und ein Mangel
+        /// lässt sich genau hier beheben statt später in jeder Rechnung zu melden.</para>
+        ///
+        /// <para>Der Hinweis „Heizwert fehlt" blockiert NICHT: Er ist kein L2-Verstoß
+        /// (der Träger erreicht kWh über die Regelkette), sondern der Hinweis auf einen
+        /// brüchigen Zustand. Er steht im roten Feld und hindert niemanden am
+        /// Speichern.</para>
+        /// </summary>
+        public bool SpeichernErlaubt(out string grund)
+        {
+            return EnergieEinheitenPruefung.ErreichtKwh(
+                AktuelleEinheit(), (double)numHeizwert.Value, (double)numBrennwert.Value,
+                _regeln, out grund);
+        }
+
+        /// <summary>
+        /// Speichert Preise, Projektwerte und — seit Etappe K3 — die Umrechnungsregeln.
+        /// <c>false</c> = abgelehnt, weil der Träger die kWh-Bedingung verletzt; dann
+        /// wurde NICHTS geschrieben.
+        /// </summary>
+        public bool SaveProjectAndHistory()
+        {
+            string verstoss;
+            if (!SpeichernErlaubt(out verstoss))
+            {
+                // Nichts schreiben. Der rote Hinweis im Block nennt den Grund bereits;
+                // der Aufrufer entscheidet, ob er ihn zusätzlich als Meldung zeigt.
+                if (lblVerstoss != null) lblVerstoss.Text = verstoss;
+                return false;
+            }
+
+            SpeichereRegeln();
+            SpeichereWerte();
+            return true;
+        }
+
+        private void SpeichereWerte()
         {
             // Bei Strom gibt es keine Conversion aus der Combo
             //int currentConvID = _carrier.HasHi ? GetConvID(cmbUnit.SelectedItem) : -1;
@@ -467,7 +903,19 @@ namespace WindowsFormsApplication1
 
         private void btn_Save_Click(object sender, EventArgs e)
         {
-            SaveProjectAndHistory();
+            // ETAPPE K3: Der ausdrückliche Speicherbefehl bekommt eine ausdrückliche
+            // Antwort. Der rote Hinweis im Regelblock steht ohnehin schon; die Meldung
+            // ist die Bestätigung, dass NICHT gespeichert wurde.
+            if (!SaveProjectAndHistory())
+            {
+                string grund;
+                SpeichernErlaubt(out grund);
+                MessageBox.Show(string.Format(CultureInfo.CurrentCulture,
+                                    MyResource.Resource.KOSTEN_UMRECHNUNG_SPEICHERN_ABGELEHNT, grund),
+                                MyResource.Resource.KOSTEN_UMRECHNUNG_TITEL,
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
             LoadHistory(_carrier.ID, _projectId);
         }
 

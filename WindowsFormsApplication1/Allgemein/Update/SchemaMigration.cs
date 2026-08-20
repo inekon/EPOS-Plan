@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 25;
+        public const int ZIEL_VERSION = 26;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -671,6 +671,80 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_25_EINHEITENKONSISTENZ = 25;
 
+        /// <summary>
+        /// Nummer der Etappe <b>K3</b> aus
+        /// <c>Konzept_Kosten_Energietraeger_EPOS-Plan.md</c> (Hauptforderung HF3,
+        /// Migrationsschritt <b>M-B</b>, Leitentscheidungen L4/L5, Entscheidung E6):
+        /// die Initialbefüllung der Energieträger.
+        ///
+        /// <para><b>Warum 26.</b> 25 ist seit Etappe K2 vergeben; 26 ist die nächste
+        /// freie Nummer. Dieselbe Regel wie immer — der Versionsmarker hält genau eine
+        /// Zahl fest.</para>
+        ///
+        /// <b>Was der Schritt tut.</b> <b>26a</b> die Nm³-Umbenennung: Bei jedem
+        /// gasförmigen Träger wird <c>billing_unit</c> von <c>m³</c> auf <c>Nm³</c>
+        /// gesetzt, und die Einheitencodes seiner Umrechnungsregeln
+        /// (<c>from_unit</c>/<c>to_unit</c>) sowie die Preishistorie
+        /// (<c>energy_price.arbeitspreis_unit</c>) ziehen nach. <b>26b</b> der
+        /// z-Faktor-Seed: je Gas-Brennstoff eine Regel <c>m³ → Nm³</c> mit Faktor
+        /// <b>1,0</b>, benannt <c>z-Faktor</c> — nur, wo sie fehlt. <b>26c</b> die
+        /// Namensberichtigung der Identitätsregeln, die Schritt 25 pauschal
+        /// „z-Faktor" genannt hatte.
+        ///
+        /// <b>ERGEBNISNEUTRAL — Abnahmebedingung der Etappe (§ 10).</b>
+        /// <list type="bullet">
+        ///   <item><description>Die Umbenennung ist <b>reine Semantik</b>: Kein
+        ///     Zahlenwert ändert sich. Die Katalog-Heizwerte der Gasträger sind seit
+        ///     jeher Normwerte (Erdgas E: 10,50 kWh je m³ IST der kWh/Nm³-Wert); der
+        ///     Schritt schreibt nur hin, was gemeint war.</description></item>
+        ///   <item><description>Der z-Faktor-Seed steht auf <b>1,0</b>
+        ///     (Entscheidung E6) — eine Multiplikation mit 1 verschiebt nichts. Echte
+        ///     Zustandszahlen pflegt der Anwender später im Dialog.</description></item>
+        ///   <item><description>Es entsteht <b>keine</b> Regel <c>Einheit → kWh</c>.
+        ///     Begründung unten.</description></item>
+        /// </list>
+        ///
+        /// <b>Warum KEINE „Einheit → kWh"-Seeds — die Auflösung eines Widerspruchs im
+        /// Konzept.</b> Die Seed-Tabelle in § 5 nennt für Öl, Kohle und Koks eine Regel
+        /// „<c>l → kWh</c> über Hi/Hs". Für sie gäbe es nur zwei mögliche Faktoren, und
+        /// beide sind falsch:
+        /// <list type="number">
+        ///   <item><description><c>factor = Hi</c> wäre <b>Doppelpflege des
+        ///     Heizwerts</b>. Der Wert stünde dann in <c>energy_carrier.hi_kwh_per_unit</c>
+        ///     UND in <c>energy_conversion.factor</c>, und spätestens beim ersten
+        ///     Pflegevorgang driften beide auseinander. § 4.2 verbietet das
+        ///     ausdrücklich: „<c>energy_conversion</c> bleibt EINHEITEN-Umrechnung; die
+        ///     Energie-Umrechnung leisten weiterhin Hi/Hs".</description></item>
+        ///   <item><description><c>factor = 1,0</c> wäre eine <b>sachlich falsche
+        ///     Aussage</b>: „1 l = 1 kWh". Sie stünde ab Etappe K3 im Regelblock des
+        ///     Trägerdialogs und lüde jeden Anwender zum Fehlschluss ein.</description></item>
+        /// </list>
+        /// Die Auflösung steht in derselben Konzeptstelle, nur zwei Absätze weiter
+        /// („Klärung Semantik", § 4.2): <i>„Die kWh-Bedingung aus L2 gilt als erfüllt,
+        /// wenn die Einheitenkette bei einer Einheit endet, für die Hi/Hs gepflegt ist,
+        /// oder direkt bei kWh."</i> Der Energieschritt gehört Hi/Hs, nicht der
+        /// Regeltabelle. Nachgezogen wurde deshalb der PRÜFER
+        /// (<c>EnergieEinheitenPruefung</c>), nicht die Datenlage — er erkennt Hi/Hs
+        /// jetzt als den Weg nach kWh an, den das Konzept ihm zuweist. Damit liefert
+        /// <c>PruefeKatalog()</c> null Befunde, ohne dass ein einziger Zahlenwert
+        /// erfunden wurde.
+        ///
+        /// <b>Keine Faktor-0-Reparatur.</b> Sie war vorgesehen und ist gegenstandslos:
+        /// Alle 59 Bestandsregeln tragen einen Faktor &gt; 0 (<c>l → m³</c> 0,001,
+        /// <c>kg → t</c> 0,001, <c>kWh → MWh</c> 0,001, <c>kg → rm</c> 0,0021,
+        /// <c>kg → SRM</c> 0,0031). Der gegenteilige Nebenbefund im K2-Protokoll war ein
+        /// Anzeigefehler des Prüfwerkzeugs (zweistellige Rundung), kein Datenbefund.
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): Jede Anweisung trägt ihre
+        /// Einschränkung im WHERE — die Umbenennungen greifen nur <c>= 'm³'</c>, der
+        /// Seed nur fehlende Regeln, die Namensberichtigung nur den unveränderten
+        /// K2-Vorgabewert. Ein zweiter Lauf findet keine Zeile mehr.
+        ///
+        /// <b><c>user_edited = true</c> wird nie überschrieben</b> (L5) — jede
+        /// schreibende Anweisung dieses Schritts schließt solche Zeilen aus.
+        /// </summary>
+        public const int SCHRITT_26_EINHEITEN_SEEDS = 26;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -915,6 +989,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static int DatenUmrechnungBenannt { get; private set; }
 
+        // --- Zählwerk der Einheiten-Seeds aus Schritt 26 (Etappe K3) -------------------
+
+        /// <summary>26a: Katalogträger, deren <c>billing_unit</c> auf Nm³ umgestellt wurde.</summary>
+        public static int DatenNormkubikTraeger { get; private set; }
+
+        /// <summary>26a: Umrechnungsregeln und Preiszeilen, deren Einheitencode nachzog.</summary>
+        public static int DatenNormkubikCodes { get; private set; }
+
+        /// <summary>26b: neu gesäte z-Faktor-Regeln (m³ → Nm³, Faktor 1,0).</summary>
+        public static int DatenZFaktorGesaet { get; private set; }
+
         /// <summary>
         /// R7: Anlagen, bei denen der Bezeichner NICHT eindeutig auflösbar war (kein
         /// Treffer oder mehrere gleichnamige Projektkopien). Der Fremdschlüssel bleibt
@@ -1142,6 +1227,18 @@ namespace WindowsFormsApplication1
                         "Umrechnungsfaktor und aktiv = WAHR (Etappe K2, HF2/M-A)",
                         "Die Umrechnungsregeln der Energieträger konnten nicht benannt werden.",
                         Schritt_25_Einheitenkonsistenz),
+
+            // ETAPPE K3 (Konzept Kosten/Energieträger, HF3, Migrationsschritt M-B) -
+            //       Nm³ als Abrechnungseinheit der Gasträger, z-Faktor-Seed 1,0 und
+            //       die Namensberichtigung der Identitätsregeln. Reines DML, reine
+            //       Semantik: kein Zahlenwert ändert sich, und es entsteht KEINE
+            //       Regel "Einheit -> kWh" (Begründung an SCHRITT_26_EINHEITEN_SEEDS).
+            new Schritt(SCHRITT_26_EINHEITEN_SEEDS,
+                        "Einheiten-Seeds: Nm³ als Abrechnungseinheit der Gasträger, " +
+                        "z-Faktor m³ → Nm³ mit 1,0, Namensberichtigung der " +
+                        "Identitätsregeln (Etappe K3, HF3/M-B)",
+                        "Die Initialbefüllung der Energieträger konnte nicht ausgeführt werden.",
+                        Schritt_26_EinheitenSeeds),
         };
 
         // =================================================================================
@@ -1193,6 +1290,9 @@ namespace WindowsFormsApplication1
             DatenKatalogDublettenOffen = 0;
             DatenUmrechnungAktiv = 0;
             DatenUmrechnungBenannt = 0;
+            DatenNormkubikTraeger = 0;
+            DatenNormkubikCodes = 0;
+            DatenZFaktorGesaet = 0;
             _eindeutigkeitGeprueft = false;
 
             var l = new Lauf();
@@ -2318,6 +2418,284 @@ namespace WindowsFormsApplication1
         {
             DataTable schema = TabellenSchema(l, tabelle);
             return schema != null && schema.Columns.Contains(spalte);
+        }
+
+        // =================================================================================
+        // Schritt 26 - Einheiten-Seeds der Energieträger (Etappe K3, HF3 / M-B)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Schritt 26 (Etappe K3, Konzept Kosten/Energieträger HF3, M-B).</b> Drei
+        /// Teile; die Reihenfolge ist tragend, weil 26b auf der umbenannten Einheit
+        /// aufsetzt.
+        ///
+        ///   <b>26a</b> Nm³ als Abrechnungseinheit jedes gasförmigen Trägers, mit
+        ///   Nachzug in den Umrechnungsregeln und in der Preishistorie.
+        ///
+        ///   <b>26b</b> z-Faktor-Seed <c>m³ → Nm³</c> mit Faktor 1,0 je Gas-Brennstoff.
+        ///
+        ///   <b>26c</b> Namensberichtigung der Identitätsregeln aus Schritt 25.
+        ///
+        /// <b>Gasträger werden über den Brennstoff angesteuert, nicht über den Träger.</b>
+        /// <c>energy_conversion</c> und <c>energy_carrier</c> treffen sich in
+        /// <c>ID_Brennstoff</c>; mehrere Träger teilen sich einen Brennstoff (im Bestand
+        /// vier Biogas-Träger auf <c>ID_Brennstoff = 14</c>). Die Brennstoffnummern holt
+        /// deshalb <see cref="GasBrennstoffListe"/> einmal als ganzzahlige IN-Liste —
+        /// dieselbe Vorsichtsmaßnahme wie in Schritt 25c gegen die ACE-Falle
+        /// „Parameter in der Unterabfrage eines UPDATE trifft null Zeilen".
+        ///
+        /// <b>TEILERFOLG IST FEHLER.</b> Die Teile werden gesammelt (<c>ok &amp;=</c>),
+        /// damit im Protokoll steht, was gelungen ist. Der Marker rückt nur bei vollem
+        /// Erfolg vor.
+        /// </summary>
+        private static bool Schritt_26_EinheitenSeeds(Lauf l)
+        {
+            string gasIds = GasBrennstoffListe(l);
+
+            if (gasIds == null)
+            {
+                l.Notiz("26: " + SchemaKatalog.ENERGY_CARRIER + " ist nicht lesbar - " +
+                        "die Gasträger konnten nicht bestimmt werden.");
+                return false;
+            }
+
+            if (gasIds.Length == 0)
+            {
+                // Kein Gasträger im Katalog: Es gibt nichts umzubenennen und nichts zu
+                // säen. Das ist ein gültiger Zustand, kein Fehler.
+                l.Notiz("26: kein Träger mit pricing_model = " + CARRIER_GAS +
+                        " - keine Nm³-Umstellung nötig.");
+                return true;
+            }
+
+            bool ok = NormkubikUmbenennen(l, gasIds);
+            ok &= ZFaktorSaeen(l, gasIds);
+            ok &= IdentitaetsregelnBerichtigen(l, gasIds);
+
+            return ok;
+        }
+
+        /// <summary>
+        /// <b>26a</b>: <c>m³</c> → <c>Nm³</c> an drei Stellen — Abrechnungseinheit des
+        /// Trägers, Einheitencodes seiner Regeln, Einheit der Preishistorie.
+        ///
+        /// <para><b>Reine Semantik, kein Zahlenwert.</b> Die Katalog-Heizwerte der
+        /// Gasträger sind seit jeher Normwerte; die Umbenennung schreibt hin, was
+        /// gemeint war. Nichts wird umgerechnet.</para>
+        ///
+        /// <para><b>Das ASCII-<c>m3</c> bleibt unangetastet.</b> Der Bestand kennt
+        /// beide Zeichenketten: <c>m³</c> (U+00B3, bei den Gasregeln) und <c>m3</c> (in
+        /// <c>l → m3</c> und <c>kg → m3</c> der Öl- und Festbrennstoffträger). Der
+        /// Vergleich <c>= 'm³'</c> trifft nur die erste — und das ist richtig: Nm³ ist
+        /// eine Aussage über Gase, nicht über Heizöl. Die Einschränkung auf die
+        /// Gas-Brennstoffe wäre für sich schon ausreichend; die exakte Zeichenkette ist
+        /// die zweite Sicherung.</para>
+        ///
+        /// <para><b>Idempotent</b>: Nach dem ersten Lauf steht überall <c>Nm³</c>, und
+        /// <c>WHERE … = 'm³'</c> findet keine Zeile mehr — mit EINER Ausnahme, die
+        /// ausdrücklich geschützt werden muss: Der z-Faktor aus 26b heißt
+        /// <c>m³ → Nm³</c> und trägt das Betriebsvolumen absichtlich weiter als
+        /// Von-Einheit. Der Umbenennung ist er deshalb über
+        /// <c>AND [to_unit] &lt;&gt; 'Nm³'</c> entzogen. Ohne diesen Riegel machte der
+        /// zweite Lauf aus ihm die Identität <c>Nm³ → Nm³</c>, 26b säte ihn danach
+        /// erneut, und die Tabelle wüchse bei jedem Lauf weiter (im Trockentest
+        /// nachgestellt: 5 Zeilen je Durchgang).</para>
+        /// </summary>
+        private static bool NormkubikUmbenennen(Lauf l, string gasIds)
+        {
+            bool ok = true;
+            string alt = DbWerte.EINHEIT_KUBIKMETER;
+            string neu = DbWerte.EINHEIT_NORMKUBIKMETER;
+
+            // --- 1. Abrechnungseinheit des Trägers ------------------------------------
+            int traeger = NonQuery(l,
+                "UPDATE [" + SchemaKatalog.ENERGY_CARRIER + "] SET [billing_unit] = ? " +
+                "WHERE [pricing_model] = ? AND [billing_unit] = ?",
+                new OleDbParameter("@neu", neu),
+                new OleDbParameter("@pm", CARRIER_GAS),
+                new OleDbParameter("@alt", alt));
+
+            if (traeger < 0) { l.Notiz("26a: billing_unit-UPDATE fehlgeschlagen"); ok = false; }
+            else
+            {
+                DatenNormkubikTraeger = traeger;
+                l.Notiz("26a: " + traeger + " Gasträger auf billing_unit = " + neu +
+                        " umgestellt (L4, reine Semantik - kein Zahlenwert geändert).");
+            }
+
+            int codes = 0;
+
+            // --- 2. Einheitencodes der Regeln -----------------------------------------
+            // user_edited-Zeilen bleiben aussen vor (L5): Wer eine Regel von Hand
+            // gepflegt hat, hat auch ihre Einheiten gemeint.
+            // DER Z-FAKTOR IST AUSGENOMMEN - und daran hängt die Idempotenz des ganzen
+            // Schritts. Die Regel aus 26b lautet "m³ → Nm³": Ihre VON-Einheit ist
+            // absichtlich das Betriebsvolumen und muss es bleiben. Ohne diese Ausnahme
+            // machte ein zweiter Lauf aus ihr die Identität "Nm³ → Nm³", 26b säte sie
+            // daraufhin erneut, und die Regeltabelle wüchse bei jedem Lauf um eine
+            // Zeile je Gas-Brennstoff. Beim ersten Lauf ist die Ausnahme folgenlos -
+            // vor 26b gibt es keine Zeile mit to_unit = Nm³.
+            int von = NonQuery(l,
+                "UPDATE [" + SchemaKatalog.ENERGY_CONVERSION + "] SET [from_unit] = ? " +
+                "WHERE [id_brennstoff] IN (" + gasIds + ") AND [from_unit] = ? " +
+                "AND [to_unit] <> ? " +
+                "AND ([user_edited] = FALSE OR [user_edited] IS NULL)",
+                new OleDbParameter("@neu", neu), new OleDbParameter("@alt", alt),
+                new OleDbParameter("@ausnahme", neu));
+
+            if (von < 0) { l.Notiz("26a: from_unit-UPDATE fehlgeschlagen"); ok = false; }
+            else codes += von;
+
+            int nach = NonQuery(l,
+                "UPDATE [" + SchemaKatalog.ENERGY_CONVERSION + "] SET [to_unit] = ? " +
+                "WHERE [id_brennstoff] IN (" + gasIds + ") AND [to_unit] = ? " +
+                "AND ([user_edited] = FALSE OR [user_edited] IS NULL)",
+                new OleDbParameter("@neu", neu), new OleDbParameter("@alt", alt));
+
+            if (nach < 0) { l.Notiz("26a: to_unit-UPDATE fehlgeschlagen"); ok = false; }
+            else codes += nach;
+
+            // --- 3. Einheit der Preishistorie -----------------------------------------
+            // energy_price.arbeitspreis_unit trägt die Einheit, in der der gespeicherte
+            // Arbeitspreis gilt. Bliebe sie auf m³ stehen, während der Träger auf Nm³
+            // steht, behauptete die Historie eine Einheit, die es nicht mehr gibt.
+            // Der Preis-ZAHLENWERT bleibt unverändert - er galt schon immer je Nm³.
+            int preise = NonQuery(l,
+                "UPDATE [energy_price] SET [arbeitspreis_unit] = ? WHERE [arbeitspreis_unit] = ? " +
+                "AND [carrier_id] IN (SELECT [id] FROM [" + SchemaKatalog.ENERGY_CARRIER + "] " +
+                "WHERE [pricing_model] = '" + CARRIER_GAS + "')",
+                new OleDbParameter("@neu", neu), new OleDbParameter("@alt", alt));
+
+            if (preise < 0) { l.Notiz("26a: arbeitspreis_unit-UPDATE fehlgeschlagen"); ok = false; }
+            else codes += preise;
+
+            DatenNormkubikCodes = codes;
+            l.Notiz("26a: " + von + " from_unit, " + nach + " to_unit und " + preise +
+                    " Preiszeilen auf " + neu + " nachgezogen (das ASCII-\"m3\" der Öl- " +
+                    "und Festbrennstoffregeln bleibt unangetastet).");
+
+            return ok;
+        }
+
+        /// <summary>
+        /// <b>26b</b>: Je Gas-Brennstoff eine Regel <c>m³ → Nm³</c>, Faktor <b>1,0</b>,
+        /// benannt <c>z-Faktor</c>, aktiv — der Weg vom gemessenen BETRIEBSvolumen zum
+        /// NORMvolumen (L4, Konzept § 5).
+        ///
+        /// <para><b>Faktor 1,0 ist die Entscheidung E6</b> und der Grund, aus dem der
+        /// Seed ergebnisneutral ist: Eine Multiplikation mit 1 verschiebt keine Rechnung.
+        /// Die echte Zustandszahl (Druck, Temperatur, Realgasfaktor) pflegt der Anwender
+        /// im Trägerdialog — dafür gibt es ab K3 den Regelblock.</para>
+        ///
+        /// <para><b>Nur, wo sie fehlt</b> (L5: „fehlende Regeln werden ergänzt,
+        /// vorhandene nie ersetzt"). Geprüft wird je Brennstoff einzeln über
+        /// <c>SELECT COUNT(*)</c>; die ID wird als <c>MAX(ID)+1</c> vergeben — dieselbe
+        /// Vergabeart, die diese Datenbank durchgehend verwendet (kein AUTOINCREMENT auf
+        /// <c>energy_conversion.ID</c>).</para>
+        ///
+        /// <para><b>Idempotent</b>: Der zweite Lauf findet die Regel und legt nichts
+        /// an.</para>
+        /// </summary>
+        private static bool ZFaktorSaeen(Lauf l, string gasIds)
+        {
+            string alt = DbWerte.EINHEIT_KUBIKMETER;
+            string neu = DbWerte.EINHEIT_NORMKUBIKMETER;
+
+            DataTable brennstoffe = Abfrage(l,
+                "SELECT DISTINCT [ID_Brennstoff] FROM [" + SchemaKatalog.ENERGY_CARRIER + "] " +
+                "WHERE [pricing_model] = ? AND [ID_Brennstoff] IS NOT NULL " +
+                "ORDER BY [ID_Brennstoff]",
+                new OleDbParameter("@pm", CARRIER_GAS));
+
+            if (brennstoffe == null)
+            {
+                l.Notiz("26b: die Gas-Brennstoffe sind nicht lesbar - kein z-Faktor gesät.");
+                return false;
+            }
+
+            bool ok = true;
+            int gesaet = 0, vorhanden = 0;
+
+            foreach (DataRow r in brennstoffe.Rows)
+            {
+                int brennstoff = Zahl(r["ID_Brennstoff"]);
+                if (brennstoff <= 0) continue;
+
+                object da = Scalar(l,
+                    "SELECT COUNT(*) FROM [" + SchemaKatalog.ENERGY_CONVERSION + "] " +
+                    "WHERE [id_brennstoff] = ? AND [from_unit] = ? AND [to_unit] = ?",
+                    new OleDbParameter("@b", brennstoff),
+                    new OleDbParameter("@von", alt),
+                    new OleDbParameter("@nach", neu));
+
+                if (da == null) { l.Notiz("26b: Prüfung für Brennstoff " + brennstoff + " fehlgeschlagen"); ok = false; continue; }
+                if (Zahl(da) > 0) { vorhanden++; continue; }
+
+                object max = Scalar(l, "SELECT MAX([ID]) FROM [" + SchemaKatalog.ENERGY_CONVERSION + "]");
+                int neueId = Zahl(max) + 1;
+
+                int n = NonQuery(l,
+                    "INSERT INTO [" + SchemaKatalog.ENERGY_CONVERSION + "] " +
+                    "([ID], [id_brennstoff], [from_unit], [to_unit], [factor], [user_edited], [" +
+                    SchemaKatalog.SPALTE_EC_FAKTOR_NAME + "], [" + SchemaKatalog.SPALTE_EC_AKTIV + "]) " +
+                    "VALUES (?, ?, ?, ?, 1, FALSE, ?, TRUE)",
+                    new OleDbParameter("@id", neueId),
+                    new OleDbParameter("@b", brennstoff),
+                    new OleDbParameter("@von", alt),
+                    new OleDbParameter("@nach", neu),
+                    new OleDbParameter("@name", DbWerte.UMRECHNUNG_NAME_Z_FAKTOR));
+
+                if (n <= 0) { l.Notiz("26b: INSERT für Brennstoff " + brennstoff + " fehlgeschlagen"); ok = false; continue; }
+                gesaet++;
+            }
+
+            DatenZFaktorGesaet = gesaet;
+            l.Notiz("26b: " + gesaet + " z-Faktor-Regeln " + alt + " → " + neu +
+                    " mit Faktor 1,0 gesät, " + vorhanden + " bereits vorhanden " +
+                    "(Entscheidung E6: der Seed ist ergebnisneutral, die Zustandszahl " +
+                    "pflegt der Anwender).");
+            return ok;
+        }
+
+        /// <summary>
+        /// <b>26c</b>: Die IDENTITÄTSregeln der Gasträger (<c>Nm³ → Nm³</c>) heißen
+        /// wieder <c>Umrechnungsfaktor</c>.
+        ///
+        /// <para><b>Warum das eine Berichtigung ist.</b> Schritt 25c hat ALLE Regeln
+        /// eines Gasträgers pauschal „z-Faktor" genannt — zu dem Zeitpunkt gab es je
+        /// Gas-Brennstoff nur die eine Identitätsregel, und die Unterscheidung war ohne
+        /// Gegenstand. Mit dem Seed aus 26b gibt es sie: Der z-Faktor ist die Regel
+        /// <c>m³ → Nm³</c>. Eine Identitätsregel, die weiter „z-Faktor" hieße, stünde ab
+        /// K3 als zweite gleichnamige Zeile im Regelblock des Dialogs.</para>
+        ///
+        /// <para><b>Eng geführt.</b> Berichtigt wird NUR, was drei Bedingungen erfüllt:
+        /// gleiche Von- und Nach-Einheit, Name noch exakt der K2-Vorgabewert, und
+        /// <c>user_edited</c> nicht gesetzt. Ein vom Anwender vergebener Name wird
+        /// niemals angefasst — auch dann nicht, wenn er zufällig „z-Faktor" lautet und
+        /// die Zeile <c>user_edited</c> trägt.</para>
+        /// </summary>
+        private static bool IdentitaetsregelnBerichtigen(Lauf l, string gasIds)
+        {
+            int n = NonQuery(l,
+                "UPDATE [" + SchemaKatalog.ENERGY_CONVERSION + "] SET [" +
+                SchemaKatalog.SPALTE_EC_FAKTOR_NAME + "] = ? " +
+                "WHERE [id_brennstoff] IN (" + gasIds + ") AND [from_unit] = [to_unit] " +
+                "AND [" + SchemaKatalog.SPALTE_EC_FAKTOR_NAME + "] = ? " +
+                "AND ([user_edited] = FALSE OR [user_edited] IS NULL)",
+                new OleDbParameter("@neu", DbWerte.UMRECHNUNG_NAME_STANDARD),
+                new OleDbParameter("@alt", DbWerte.UMRECHNUNG_NAME_Z_FAKTOR));
+
+            if (n < 0)
+            {
+                l.Notiz("26c: Namensberichtigung der Identitätsregeln fehlgeschlagen");
+                return false;
+            }
+
+            l.Notiz("26c: " + n + " Identitätsregeln der Gasträger von \"" +
+                    DbWerte.UMRECHNUNG_NAME_Z_FAKTOR + "\" auf \"" +
+                    DbWerte.UMRECHNUNG_NAME_STANDARD + "\" berichtigt - der z-Faktor ist " +
+                    "ab Schritt 26b die Regel m³ → Nm³.");
+            return true;
         }
 
         // =================================================================================
