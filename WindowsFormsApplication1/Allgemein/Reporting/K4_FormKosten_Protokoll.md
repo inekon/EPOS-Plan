@@ -378,10 +378,14 @@ Kostendialog eines Projekts mit gepflegten Energieträgern öffnen
    Name und Monatsniveau. Karte „Spotmarktpreise" → `Form_SpotpreisImport`; nach einem
    Import steht dort die neue Reihenzahl. Beim Überfahren hebt sich die Karte hervor,
    der Zeiger wird zur Hand — **Knöpfe gibt es keine mehr**.
-3. **Kopfzeile weg, Liste oben.** Im Reiter „Energiekosten" ist der blaue Balken
-   „Energieträger" über der linken Liste verschwunden; die Liste beginnt jetzt oben am
-   grauen Feld, ihre Unterkante und der Abstand zu „➕ Hinzufügen…" / „🗑️ Löschen" sind
-   unverändert. Das graue Panel mit den zwei alten Knöpfen unter der Liste ist weg.
+3. **Kopfleisten weg, Listen oben — auf ALLEN DREI Reitern.** Der blaue Balken
+   „Energieträger" über der jeweils linken Liste ist auf **Investitionskosten**,
+   **Betriebskosten** und **Energiekosten** verschwunden; jede Liste beginnt jetzt oben
+   am grauen Feld, ihre Unterkante und die Abstände zu allem darunter
+   („➕ Hinzufügen…" / „🗑️ Löschen" bzw. „➕ Position Hinzufügen") sind unverändert.
+   Das graue Panel mit den zwei alten Knöpfen unter der Energieträgerliste ist weg.
+   Der große Platzhalter „Energieträger auswählen" mitten im rechten Bereich bleibt
+   bewusst stehen — er sagt, was zu tun ist, solange nichts gewählt ist.
 4. **Fußzeile zeigt Wert bzw. „—".** Im Reiter „Energiekosten" steht unten
    „PROJEKT GESAMT (Energiekosten): ‹Betrag› €" mit den Energiekosten p. a. aus dem
    Simulationsergebnis — **nicht mehr konstant 0,00 €**. Ohne Simulationslauf oder bei
@@ -415,3 +419,64 @@ etwas zu erfassen — es gibt dort bewusst keine Eingabe. Anschließend zurück 
 5. **Kartenbreite ist fest** (440 px, zwei Karten nebeneinander bei 24/488 px). Auf sehr
    schmalen Fenstern greift der `AutoScroll` des Reiters. Ein Fließlayout wäre möglich,
    war aber für zwei Karten Beiwerk.
+
+---
+
+## 12 Nachtrag 20.08.2026 — Kopfleisten auch auf den Reitern 1 und 2
+
+**Anlass.** Die Sichtabnahme durch Philipp bestätigte den vierten Reiter, zeigte aber,
+dass K4 nur **eine** der drei blauen Kopfleisten entfernt hatte. Auf
+**Investitionskosten** und **Betriebskosten** stand sie noch — dort obendrein **sachlich
+falsch**: Die Liste führt GEWERKE (Heizkessel, Pufferspeicher, BHKW), keine
+Energieträger. Eine falsche Überschrift ist schlechter als keine; da die Listen in ihrem
+Zusammenhang selbsterklärend sind, fällt die Zeile ersatzlos weg statt umbenannt zu
+werden.
+
+**Parent-Ketten, je Reiter frisch verifiziert** (`Form_Kosten.Designer.cs`, unverändert).
+Die drei Reiter sind baugleich aufgebaut — dieselbe Geometrie, dieselbe Farbe `#1A3261`,
+dieselbe Beschriftung:
+
+| Reiter | Container | Kopfleiste | Beschriftung | Liste |
+|---|---|---|---|---|
+| Investitionskosten (:87) | `panel3` (:101) @ (17,18) 355 × 200 | `panel2` (:121) @ (6,7) 343 × 25 | `label5` (:131) | `listBox_Erzeuger` (:111) @ (6,37) 342 × 157 |
+| Betriebskosten (:184) | `panel4` (:196) @ (17,18) 355 × 200 | `panel5` (:216) @ (6,7) 343 × 25 | `label1` (:226) | `listBox_Betriebskosten` (:206) @ (6,37) 342 × 157 |
+| Energiekosten (:281) | `panel8` (:293) @ (17,18) 355 × 601 | `panel9` (:338) @ (6,7) 343 × 25 | `label4` (:349) | `listBox_Energieträger` (:327) @ (6,37) 342 × 514 |
+
+Damit ist auch die Vermutung der Bestandsaufnahme endgültig eingeordnet: `panel2`/`label5`
+und `panel5`/`label1` sind **nicht** die Leiste des Energie-Reiters, sondern deren
+Geschwister auf den beiden anderen Reitern. Alle drei mussten weg, nur eben je an ihrem
+eigenen Ort.
+
+**Was bleibt: `label3` / `label2` / `label6`.** Die drei Beschriftungen
+„Energieträger auswählen" (18 pt, @ (209, 246), 205 × 74, `label2`/`label6` zentriert)
+sitzen in `panel1` (:153), `panel6` (:235) und `panel7` (:358) — den **rechten**
+Detailbereichen, nicht in den Kopfleisten. Sie sind Platzhalter mitten in der leeren
+Fläche und sagen dort, was zu tun ist, solange nichts gewählt ist. Sie bleiben stehen;
+K4 hatte `label6` aus demselben Grund bereits stehen lassen, der Nachtrag bleibt dabei
+konsistent.
+
+**Umsetzung** — `Views\Kosten\Form_Kosten.cs`:
+
+| Zeilen | Änderung |
+|---|---|
+| :112-116 | Aufrufstelle im Konstruktor: `KopfzeilenEntfernen()` statt `KopfzeileEnergietraegerEntfernen()`, weiterhin **vor** dem Befüllen der Listen |
+| :338-387 | `KopfzeileEnergietraegerEntfernen()` → **`KopfzeilenEntfernen()`**: dokumentiert jetzt alle drei Leisten in einer Tabelle und ruft dreimal den Helfer |
+| :389-418 | **neu** `KopfleisteEntfernen(Panel leiste, Control liste, string reiter)` — die eigentliche Mechanik, je Leiste einmal |
+
+Die Mechanik ist unverändert die aus K4: Elternpanel merken, `Top` der Leiste als neue
+Oberkante der Liste, Höhengewinn = `liste.Top − leiste.Top` (überall 30 px),
+`Controls.Remove` + `Dispose()` (nimmt die Beschriftung als Kind mit), dann Liste hoch
+und um den Gewinn höher — **die Unterkante bleibt, wo sie war**, damit die Abstände zu
+allem darunter erhalten bleiben. Für Investitions- und Betriebskosten heißt das
+157 → 187 px bei gleichbleibender Unterkante 194 (Panelhöhe 200, 6 px Rand), für
+Energiekosten unverändert 514 → 544 bei Unterkante 551.
+
+Der Helfer greift auf `null` und auf bereits entfernte Leisten nicht zu und fängt je
+Leiste einzeln ab: Scheitert eine, stehen die anderen beiden trotzdem richtig.
+
+**Build.** Inkrementell, nur `WindowsFormsApplication1.csproj`, `-m -v:m`, Debug/x86:
+**0 Fehler**, dieselben **6 vorbestehenden Warnungen** wie in § 9.2, **keine Diagnose aus
+`Form_Kosten.cs`**.
+
+**Offen.** Erneute Sichtprüfung der Punkte 3 und 5 aus § 10 durch Philipp; die übrigen
+Punkte aus § 11 bleiben unverändert bestehen.

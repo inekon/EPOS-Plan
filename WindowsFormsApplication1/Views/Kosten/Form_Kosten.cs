@@ -109,10 +109,11 @@ namespace WindowsFormsApplication1
                 System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
                 null, flpContainer_Energiekosten, new object[] { true });
 
-            // K4/HF4 6.2: Die blaue Kopfleiste über der Trägerliste fällt weg, die Liste
-            // rückt nach oben. Muss VOR dem Befüllen laufen, damit die Liste ihre
-            // endgültige Höhe schon hat, wenn die Bindung sie zeichnet.
-            KopfzeileEnergietraegerEntfernen();
+            // K4/HF4 6.2 (+ Nachtrag): Die blauen Kopfleisten über den linken Listen
+            // fallen auf ALLEN DREI Bestandsreitern weg, die Listen rücken nach oben.
+            // Muss VOR dem Befüllen laufen, damit die Listen ihre endgültige Höhe schon
+            // haben, wenn die Bindung sie zeichnet.
+            KopfzeilenEntfernen();
 
             FillCarrierComboBox();
             RenderEnergieTab();
@@ -335,50 +336,84 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Entfernt die blaue Kopfleiste „Energieträger" über der Trägerliste
-        /// (<c>panel9</c> mit <c>label4</c>) und zieht die Liste um deren Höhe nach oben
-        /// (K4/HF4 6.2).
+        /// Entfernt die blauen Kopfleisten „Energieträger" über den linken Listen ALLER
+        /// DREI Bestandsreiter und zieht die jeweilige Liste um die Leistenhöhe nach oben
+        /// (K4/HF4 6.2 und K4-Nachtrag 20.08.2026).
         /// </summary>
         /// <remarks>
         /// <para>
-        /// <b>Warum programmatisch und nicht im Designer.</b> Die Hausregel in
-        /// <c>CLAUDE.md</c> untersagt das Editieren von Designer-Dateien von Hand; das
-        /// Konzept wiederholt sie für HF4 ausdrücklich. Ein Eingriff im Designer hätte
-        /// vier Stellen der <c>InitializeComponent</c> treffen müssen (Felddeklaration,
-        /// <c>new</c>, <c>SuspendLayout</c>/<c>ResumeLayout</c>, <c>Controls.Add</c>) und
-        /// wäre beim nächsten Öffnen im WinForms-Designer erneut zu verteidigen. Das
-        /// Entfernen zur Laufzeit ist an einer Stelle nachlesbar und rückstandsfrei
-        /// umkehrbar.
+        /// <b>Was weg ist.</b> Drei baugleiche Leisten, je 343 × 25 px bei (6, 7) in
+        /// <c>#1A3261</c>, mit je einer Beschriftung „Energieträger":
+        /// </para>
+        /// <list type="table">
+        ///   <item><term>Investitionskosten</term>
+        ///         <description><c>panel3</c> → <c>panel2</c> → <c>label5</c>, Liste <c>listBox_Erzeuger</c></description></item>
+        ///   <item><term>Betriebskosten</term>
+        ///         <description><c>panel4</c> → <c>panel5</c> → <c>label1</c>, Liste <c>listBox_Betriebskosten</c></description></item>
+        ///   <item><term>Energiekosten</term>
+        ///         <description><c>panel8</c> → <c>panel9</c> → <c>label4</c>, Liste <c>listBox_Energieträger</c></description></item>
+        /// </list>
+        /// <para>
+        /// <b>Warum alle drei.</b> K4 nahm zunächst nur die Leiste im Energie-Reiter. Die
+        /// Sichtabnahme zeigte die beiden anderen — und auf „Investitionskosten" ist die
+        /// Beschriftung obendrein sachlich falsch: Dort stehen GEWERKE (Heizkessel,
+        /// Pufferspeicher, BHKW), keine Energieträger. Eine falsche Überschrift ist
+        /// schlechter als keine, und da die Listen in ihrem Zusammenhang selbsterklärend
+        /// sind, fällt die Zeile ersatzlos weg statt umbenannt zu werden.
         /// </para>
         /// <para>
-        /// Die Beschriftung <c>label4</c> ist ein Kind von <c>panel9</c> und wird mit
-        /// entsorgt. <c>panel2</c>/<c>label5</c> und <c>label1</c>, die die
-        /// Bestandsaufnahme vermutet hatte, gehören zu <c>panel3</c> bzw. <c>panel5</c>
-        /// auf ANDEREN Reitern und bleiben unberührt.
+        /// <b>Warum programmatisch und nicht im Designer.</b> Die Hausregel in
+        /// <c>CLAUDE.md</c> untersagt das Editieren von Designer-Dateien von Hand; das
+        /// Konzept wiederholt sie für HF4 ausdrücklich. Ein Eingriff im Designer hätte je
+        /// Leiste vier Stellen der <c>InitializeComponent</c> treffen müssen
+        /// (Felddeklaration, <c>new</c>, <c>SuspendLayout</c>/<c>ResumeLayout</c>,
+        /// <c>Controls.Add</c>) und wäre beim nächsten Öffnen im WinForms-Designer erneut
+        /// zu verteidigen. Das Entfernen zur Laufzeit steht an EINER Stelle, ist dort
+        /// begründet und rückstandsfrei umkehrbar.
+        /// </para>
+        /// <para>
+        /// <b>Was bleibt.</b> <c>label3</c>, <c>label2</c> und <c>label6</c>
+        /// („Energieträger auswählen", 18 pt, bei (209, 246) in <c>panel1</c>/<c>panel6</c>/
+        /// <c>panel7</c>) gehören NICHT zu den Kopfleisten: Sie stehen als Platzhalter
+        /// mitten im rechten Detailbereich und sagen dort, was zu tun ist, solange nichts
+        /// gewählt ist. Sie bleiben unberührt.
         /// </para>
         /// </remarks>
-        private void KopfzeileEnergietraegerEntfernen()
+        private void KopfzeilenEntfernen()
+        {
+            KopfleisteEntfernen(panel2, listBox_Erzeuger, "Investitionskosten");
+            KopfleisteEntfernen(panel5, listBox_Betriebskosten, "Betriebskosten");
+            KopfleisteEntfernen(panel9, listBox_Energieträger, "Energiekosten");
+        }
+
+        /// <summary>
+        /// Nimmt EINE Kopfleiste aus ihrem Elternpanel und zieht die darunterliegende
+        /// Liste um den gewonnenen Platz nach oben — die Unterkante der Liste bleibt, wo
+        /// sie war, damit der Abstand zu allem darunter erhalten bleibt.
+        /// </summary>
+        private void KopfleisteEntfernen(Panel leiste, Control liste, string reiter)
         {
             try
             {
-                if (panel9 == null || panel9.Parent == null) return;
+                if (leiste == null || leiste.Parent == null || liste == null) return;
 
-                Control eltern = panel9.Parent;                       // panel8
-                int obenNeu = panel9.Top;                             // 7
-                int gewinn = listBox_Energieträger.Top - obenNeu;     // 37 − 7 = 30
+                Control eltern = leiste.Parent;
+                int obenNeu = leiste.Top;                 // 7
+                int gewinn = liste.Top - obenNeu;         // 37 − 7 = 30
 
-                eltern.Controls.Remove(panel9);
-                panel9.Dispose();                                     // nimmt label4 mit
+                eltern.Controls.Remove(leiste);
+                leiste.Dispose();                         // nimmt die Beschriftung mit
 
                 if (gewinn > 0)
                 {
-                    listBox_Energieträger.Top = obenNeu;
-                    listBox_Energieträger.Height += gewinn;           // Unterkante bleibt, wo sie war
+                    liste.Top = obenNeu;
+                    liste.Height += gewinn;               // Unterkante bleibt, wo sie war
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Die Kopfzeile der Energieträgerliste konnte nicht entfernt werden: " + ex.Message);
+                Console.WriteLine("Die Kopfleiste im Reiter " + reiter +
+                                  " konnte nicht entfernt werden: " + ex.Message);
             }
         }
 
