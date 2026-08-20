@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    class PVKontextMenuCtrl : Form
+    class PVKontextMenuCtrl
     {
         private ToolStripMenuItem ContextMenuItemNeu;
         private ToolStripMenuItem ContextMenuItemLoeschen;

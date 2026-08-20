@@ -438,8 +438,8 @@ namespace WindowsFormsApplication1
 
         public void Add_BHKWKontext()
         {
-            WPKontextMenuCtrl ctrl = new WPKontextMenuCtrl();
-            ctrl.Init(listView_WP, m_ID_Projekt, m_szProjektname);
+            BHKWKontextMenuCtrl ctrl = new BHKWKontextMenuCtrl();
+            ctrl.Init(listView_BHKW, m_ID_Projekt, m_szProjektname);
         }
 
         public void Add_GebäudeKontext()

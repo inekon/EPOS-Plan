@@ -7,7 +7,7 @@ using System.ComponentModel;
 
 namespace WindowsFormsApplication1
 {
-    class StromganglinieKontextMenuCtrl: Form
+    class StromganglinieKontextMenuCtrl
     {
         private ToolStripMenuItem ContextMenuItemNeu;
         private ToolStripMenuItem ContextMenuItemLoeschen;
