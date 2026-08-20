@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 28;
+        public const int ZIEL_VERSION = 29;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -828,6 +828,47 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_28_KWKG_TATBESTAND = 28;
 
+        /// <summary>
+        /// ETAPPE K6 (Konzept Kosten/Energieträger, HF1, Migrationsschritt <b>M-E</b>):
+        /// <b>die Alttabellen entfernen und die Kategorie-3-Altzeilen löschen.</b> Der
+        /// Schritt, der bewusst als LETZTER kommt (Konzept § 9 Punkt 1) — was hier fällt,
+        /// darf von keinem vorherigen Schritt mehr gebraucht werden.
+        ///
+        /// <list type="bullet">
+        ///   <item><description><b>29a</b>: die beiden Beziehungen auf
+        ///     <c>Tab_Brennstoff_Projekt</c> und die Beziehung von
+        ///     <c>Tab_KostenKategorie</c> zu <c>Tab_ProjektWerte</c>. Constraints
+        ///     ZUERST — Access lässt eine Tabelle nicht fallen, solange eine Beziehung
+        ///     auf ihr liegt.</description></item>
+        ///   <item><description><b>29b</b>: <c>DROP TABLE</c> für die sieben Tabellen der
+        ///     Löschliste (Konzept § 3.2): <c>Tab_Brennstoff_Projekt</c>,
+        ///     <c>energy_unit</c>, <c>energy_group</c>, <c>Tab_KostenKategorie</c>,
+        ///     <c>Tab_KWKG_Staffel</c>, <c>Tab_BHKW_neu</c>,
+        ///     <c>Tab_BHKW_Einf</c>.</description></item>
+        ///   <item><description><b>29c</b>: <c>DELETE FROM Tab_ProjektWerte WHERE
+        ///     KategorieID = 3</c> — Entscheidung E3. Voraussetzung war die Umstellung
+        ///     des Summen-Labels auf <c>KostenEmissionRechner</c>, erledigt in
+        ///     K4.</description></item>
+        /// </list>
+        ///
+        /// <b>TOLERANT je Objekt — die tragende Eigenschaft dieses Schritts.</b> Jede
+        /// Datenbank hat eine andere Teilmenge dieser Objekte; die Arbeitskopie vom
+        /// 17.08.2026 etwa führt vier der sieben Tabellen und keine der beiden
+        /// Beziehungen. Ein „Objekt existiert nicht" ist deshalb <b>kein Fehler</b>,
+        /// sondern der Normalfall, und ein gescheitertes DROP (etwa wegen einer
+        /// Beziehung, deren Name in dieser Datenbank abweicht) lässt den Schritt
+        /// ebenfalls nicht scheitern: Er notiert das Objekt als <b>manuell</b>
+        /// nachzuholen und läuft weiter. Andernfalls hinge eine Datenbank dauerhaft auf
+        /// Stand 28, weil ein einzelner, für die Rechnung folgenloser Rest nicht fällt.
+        ///
+        /// <b>Idempotent</b>: Der zweite Lauf findet nichts mehr — alle Zähler 0.
+        ///
+        /// <b>Gespeicherte Access-Abfragen blockieren die Drops nicht</b> (sie sind keine
+        /// Objektabhängigkeit im Sinne von ACE); sie bleiben Philipps manuelle
+        /// Checkliste, Konzept Anhang B und <c>K1_Aufraeumung_Protokoll.md</c> § 6.
+        /// </summary>
+        public const int SCHRITT_29_ALTTABELLEN = 29;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -1381,6 +1422,20 @@ namespace WindowsFormsApplication1
                         "CO2-Preispfad ab 2028 auf 80 €/t (Etappe K6, HF6/M-D)",
                         "Die KWKG-Angaben der Wirtschaftlichkeitsparameter konnten nicht angelegt werden.",
                         Schritt_28_KwkgTatbestand),
+
+            // ETAPPE K6 (Konzept Kosten/Energieträger, HF1, Migrationsschritt M-E) -
+            //       ZULETZT: die sieben Alttabellen entfernen und die Kategorie-3-
+            //       Altzeilen loeschen (Entscheidung E3). Tolerant je Objekt - ein
+            //       fehlendes Objekt ist der Normalfall, ein gescheitertes DROP wird als
+            //       "manuell" notiert und laesst den Schritt trotzdem gelten.
+            new Schritt(SCHRITT_29_ALTTABELLEN,
+                        "Alttabellen entfernen: Beziehungen, dann DROP von " +
+                        "Tab_Brennstoff_Projekt, energy_unit, energy_group, " +
+                        "Tab_KostenKategorie, Tab_KWKG_Staffel, Tab_BHKW_neu und " +
+                        "Tab_BHKW_Einf; Kategorie-3-Altzeilen in Tab_ProjektWerte " +
+                        "loeschen (Etappe K6, HF1/M-E, Entscheidung E3)",
+                        "Die Alttabellen konnten nicht entfernt werden.",
+                        Schritt_29_Alttabellen),
         };
 
         // =================================================================================
@@ -3113,6 +3168,139 @@ namespace WindowsFormsApplication1
                 DatenCo2PfadEntfernt = d;
                 l.Notiz("28b: " + d + " Stuetzstelle(n) des verworfenen mittleren Szenarios " +
                         "(2030, 125 EUR/t) entfernt.");
+            }
+        }
+
+        // =================================================================================
+        // Schritt 29 (Etappe K6, HF1/M-E) - Alttabellen entfernen, Kategorie 3 loeschen
+        // =================================================================================
+
+        /// <summary>
+        /// Die sieben Tabellen der Loeschliste (Konzept § 3.2). Reihenfolge:
+        /// <c>Tab_Brennstoff_Projekt</c> zuerst, weil auf ihr die beiden Beziehungen
+        /// liegen, die 29a vorher aufloest.
+        /// </summary>
+        private static readonly string[] SCHRITT29_TABELLEN =
+        {
+            "Tab_Brennstoff_Projekt",
+            "energy_unit",
+            "energy_group",
+            "Tab_KostenKategorie",
+            "Tab_KWKG_Staffel",
+            "Tab_BHKW_neu",
+            "Tab_BHKW_Einf",
+        };
+
+        /// <summary>
+        /// Beziehungen, die VOR den Drops fallen muessen: Tabelle, auf der sie liegen,
+        /// und der Constraint-Name. Fuer <c>Tab_KostenKategorie</c> ist der Name der
+        /// Beziehung zu <c>Tab_ProjektWerte</c> nicht dokumentiert - deshalb mehrere
+        /// Kandidaten nach Access-Namenskonvention (Haupttabelle + Detailtabelle) sowie
+        /// die umgekehrte Schreibweise. Trifft keiner, ist entweder keine Beziehung da
+        /// oder sie heisst anders; dann scheitert das DROP TABLE und 29b notiert es als
+        /// manuell (Beziehungsfenster in Access, Konzept Anhang B Punkt 3).
+        /// </summary>
+        private static readonly string[][] SCHRITT29_CONSTRAINTS =
+        {
+            new[] { "Tab_Brennstoff_Projekt", "Tab_ProjektTab_Brennstoff_Projekt" },
+            new[] { "Tab_Brennstoff_Projekt", "Tab_Brennstoff_StammTab_Brennstoff_Projekt" },
+            new[] { "Tab_ProjektWerte",       "Tab_KostenKategorieTab_ProjektWerte" },
+            new[] { "Tab_ProjektWerte",       "Tab_ProjektWerteTab_KostenKategorie" },
+            new[] { "Tab_KostenKategorie",    "Tab_KostenKategorieTab_ProjektWerte" },
+        };
+
+        /// <summary>
+        /// Schritt 29 (Etappe K6, HF1/M-E). Begruendung fuer Reihenfolge, Toleranz und
+        /// Idempotenz steht bei <see cref="SCHRITT_29_ALTTABELLEN"/>.
+        /// </summary>
+        private static bool Schritt_29_Alttabellen(Lauf l)
+        {
+            // --- 29a) Constraints zuerst ---------------------------------------------
+            int cGefallen = 0;
+            foreach (string[] k in SCHRITT29_CONSTRAINTS)
+            {
+                if (TabellenSchema(l, k[0]) == null) continue;   // Tabelle gibt es nicht (mehr)
+                if (StillAusfuehren(l, "ALTER TABLE [" + k[0] + "] DROP CONSTRAINT [" + k[1] + "]"))
+                {
+                    cGefallen++;
+                    l.Notiz("29a: Beziehung " + k[1] + " auf " + k[0] + " entfernt.");
+                }
+            }
+            l.Notiz("29a: " + cGefallen + " Beziehung(en) entfernt. Ein Fehlschlag ist hier der " +
+                    "Normalfall - die meisten Datenbanken fuehren nicht alle Kandidatennamen.");
+
+            // --- 29b) DROP TABLE ------------------------------------------------------
+            int weg = 0, offen = 0;
+            foreach (string t in SCHRITT29_TABELLEN)
+            {
+                if (TabellenSchema(l, t) == null)
+                {
+                    l.Notiz("29b: " + t + ": nicht vorhanden - nichts zu tun.");
+                    continue;
+                }
+                if (StillAusfuehren(l, "DROP TABLE [" + t + "]"))
+                {
+                    weg++;
+                    l.Notiz("29b: " + t + ": entfernt.");
+                }
+                else
+                {
+                    offen++;
+                    l.Notiz("29b: " + t + ": DROP fehlgeschlagen - die Tabelle bleibt stehen. " +
+                            "MANUELL in Access entfernen (meist liegt noch eine Beziehung " +
+                            "darauf, deren Name hier nicht bekannt ist)." +
+                            (l.LetzterFehler != null ? " Meldung: " + l.LetzterFehler : ""));
+                }
+            }
+            DatenAlttabellenGeloescht = weg;
+            DatenAlttabellenOffen = offen;
+            l.Notiz("29b: " + weg + " von " + SCHRITT29_TABELLEN.Length + " Alttabellen entfernt, " +
+                    offen + " offen.");
+
+            // --- 29c) Kategorie-3-Altzeilen (Entscheidung E3) -------------------------
+            //
+            // Voraussetzung erfuellt: Seit K4 speist sich das Summen-Label
+            // "PROJEKT GESAMT (Energiekosten)" aus KostenEmissionRechner und nicht mehr
+            // aus dieser Kategorie. Die Zeilen sind seither ohne jede Wirkung; bis dahin
+            // trugen sie eine Summe, die im Reiter angezeigt wurde.
+            if (TabellenSchema(l, "Tab_ProjektWerte") == null)
+                l.Notiz("29c: Tab_ProjektWerte ist nicht lesbar - keine Kategorie-3-Bereinigung.");
+            else
+            {
+                int n = NonQuery(l, "DELETE FROM [Tab_ProjektWerte] WHERE [KategorieID] = 3");
+                if (n < 0)
+                    l.Notiz("29c: Loeschen der Kategorie-3-Zeilen fehlgeschlagen. MANUELL " +
+                            "nachzuholen (Entscheidung E3).");
+                else
+                {
+                    DatenKategorie3Geloescht = n;
+                    l.Notiz("29c: " + n + " Kategorie-3-Altzeile(n) aus Tab_ProjektWerte " +
+                            "geloescht (Entscheidung E3; das Summen-Label kommt seit K4 aus " +
+                            "KostenEmissionRechner).");
+                }
+            }
+
+            // Der Schritt gilt IMMER als gelaufen - Begruendung an SCHRITT_29_ALTTABELLEN.
+            return true;
+        }
+
+        /// <summary>
+        /// Fuehrt eine Anweisung aus und meldet nur Erfolg/Misserfolg — <b>ohne</b> die
+        /// Notiz, die <see cref="Ddl"/> schreibt. Fuer Schritt 29: Dort ist ein
+        /// Fehlschlag der Normalfall (das Objekt gibt es nicht), und jede Zeile bekommt
+        /// ihren eigenen, passenden Meldungstext.
+        /// </summary>
+        private static bool StillAusfuehren(Lauf l, string sql)
+        {
+            try
+            {
+                using (var cmd = new OleDbCommand(sql, l.Conn)) cmd.ExecuteNonQuery();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = Kurzmeldung(ex);
+                return false;
             }
         }
 

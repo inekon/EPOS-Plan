@@ -2807,7 +2807,7 @@ namespace WindowsFormsApplication1
         /// Alttabelle <c>Tab_KWKG_Staffel</c> wird seit Etappe K1 (19.08.2026) auch
         /// nicht mehr ANGELEGT: Konstante und DDL/Saat sind aus
         /// <c>StelleTabellenSicher</c> entfernt (Konzept Kosten/Energieträger, HF1).
-        /// Der endgültige <c>DROP TABLE</c> folgt in Migrationsschritt M-E (Etappe K6).
+        /// Seit Etappe K6 ist sie ganz weg — Migrationsschritt 29 (M-E) droppt sie.
         /// </para>
         ///
         /// <para>

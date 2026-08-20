@@ -44,10 +44,16 @@ namespace WindowsFormsApplication1
         private static readonly HashSet<string> KATALOG_TABELLEN = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "Tab_BrennstoffKategorien", "Tab_Typ_Energieanlagen",
-            "Tab_KostenGruppenKatalog", "Tab_KostenKategorie", "Tab_KostenKomponente", "Tab_Kostenfaktor",
-            "energy_carrier", "energy_conversion", "energy_unit", "pricing_model",
+            "Tab_KostenGruppenKatalog", "Tab_KostenKomponente", "Tab_Kostenfaktor",
+            "energy_carrier", "energy_conversion", "pricing_model",
             "Tab_Applikation",         // anwendungsweit, kein Projektbezug
             "Einfügefehler"            // Access-Fehlertabelle
+            // ETAPPE K6 (HF1, Migrationsschritt 29): "Tab_KostenKategorie" und
+            // "energy_unit" sind hier entfallen — beide Tabellen gibt es nicht mehr.
+            // Die Liste ist eine AUSSCHLUSSliste gegen den schema-getriebenen Kopierlauf
+            // (GetOleDbSchemaTable, :225-262); ein Eintrag für eine gedroppte Tabelle
+            // wäre ab jetzt nur noch irreführend: Er behauptete, es gäbe einen Katalog,
+            // der vor dem Duplizieren geschützt werden muss.
         };
 
         // Tabellen, die trotz Projektbezug NICHT dupliziert werden (feste Ausnahme).

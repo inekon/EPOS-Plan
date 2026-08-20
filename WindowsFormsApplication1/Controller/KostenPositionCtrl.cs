@@ -196,8 +196,20 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Nimmt eine Gruppe in <c>Tab_KostenGruppenKatalog</c> auf, falls sie fehlt.
-        /// Ohne diesen Eintrag verliert <c>Abfrage_ProjektKostenInvestBetrieb</c> die
-        /// Zeile (INNER JOIN über den Gruppennamen).
+        ///
+        /// <para><b>ETAPPE K6, Entscheidung E4 (19.08.2026).</b> Bis hierher stand hier
+        /// als Begründung: „Ohne diesen Eintrag verliert
+        /// <c>Abfrage_ProjektKostenInvestBetrieb</c> die Zeile (INNER JOIN über den
+        /// Gruppennamen)." Diese gespeicherte Access-Abfrage hat keinen Aufrufer im Code
+        /// und wird nach Entscheidung E4 <b>gelöscht</b> — von Hand in Access, weil eine
+        /// gespeicherte Abfrage kein Migrationsobjekt dieser Anwendung ist (Konzept
+        /// Anhang B).</para>
+        ///
+        /// <para><b>Die Methode bleibt trotzdem.</b> Der Gruppenkatalog ist nicht an die
+        /// Abfrage gebunden: <c>Form_Kosten</c> und der Investitionsreiter lesen ihn für
+        /// die Gruppenauswahl und seit K5 für die Gruppenköpfe. Ein Gruppenname, der nur
+        /// in <c>Tab_ProjektWerte</c> steht und nicht im Katalog, fehlte dort in der
+        /// Auswahlliste — genau das verhindert diese Zeile weiterhin.</para>
         /// </summary>
         internal static void GruppeSichern(string gruppe)
         {

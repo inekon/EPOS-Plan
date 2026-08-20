@@ -33,9 +33,17 @@ namespace WindowsFormsApplication1
         public double KwkgBonus = 0.0;                // [ct/kWh] KWK-Eigenstrom (0 = aus)
 
         /// <summary>Vbh-Deckel-OVERRIDE [h/a]; 0 = degressive Staffel des KWKG 2025
-        /// aus dem Katalog Tab_KWKG_Staffel (Phase 9, Konzept Kap. 8.3/8.5.1).</summary>
+        /// aus dem Gesetzeskatalog, Schlüssel <c>KWKG_VBH_JAHRESDECKEL</c> (Phase 9,
+        /// Konzept Kap. 8.3/8.5.1). <b>Nachgezogen in K6:</b> Bis hierher stand hier
+        /// „aus dem Katalog Tab_KWKG_Staffel" — die Quelle ist seit Etappe E1
+        /// <c>Tab_Gesetzesparameter</c>, und die Alttabelle ist mit Migrationsschritt 29
+        /// entfallen.</summary>
         public double KwkgVbhJahresdeckel = 0;
-        public double KwkgVbhKontingent = 30000;      // kumuliertes Vbh-Kontingent
+
+        /// <summary>Kumuliertes Vbh-Kontingent [h]. <b>Seit K6 ein OVERRIDE:</b> 0 heißt
+        /// „automatisch aus <see cref="KwkgAnlagenart"/> nach § 8 KWKG"
+        /// (<c>KwkgKontingentRechner</c>); ein Wert größer 0 gewinnt unverändert.</summary>
+        public double KwkgVbhKontingent = 30000;
 
         // ---- Stufe W3 (Phase 8) ----
         public double KwkgBonusEinspeisung = 0.0;     // [ct/kWh] KWK-Einspeisung (0 = wie Eigenstrom aus)
