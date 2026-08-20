@@ -17920,5 +17920,23 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ▾  {0}   ·   {1} Positionen   ·   {2} € ähnelt.
+        /// </summary>
+        public static string KOSTEN_GRUPPE_KOPF_AUF {
+            get {
+                return ResourceManager.GetString("KOSTEN_GRUPPE_KOPF_AUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ▸  {0}   ·   {1} Positionen   ·   {2} € ähnelt.
+        /// </summary>
+        public static string KOSTEN_GRUPPE_KOPF_ZU {
+            get {
+                return ResourceManager.GetString("KOSTEN_GRUPPE_KOPF_ZU", resourceCulture);
+            }
+        }
+        
     }
 }

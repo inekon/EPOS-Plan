@@ -6227,4 +6227,10 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   <data name="KOSTEN_CHK_ZUSCHUSS_HINT" xml:space="preserve">
     <value>Den Betrag positiv eintragen. Er mindert die Investitionssumme einmalig — ohne Ersatzbeschaffung und ohne Restwert. Prozentuale Betriebskosten rechnen weiterhin von der vollen Investitionssumme.</value>
   </data>
+  <data name="KOSTEN_GRUPPE_KOPF_AUF" xml:space="preserve">
+    <value>▾  {0}   ·   {1} Positionen   ·   {2} €</value>
+  </data>
+  <data name="KOSTEN_GRUPPE_KOPF_ZU" xml:space="preserve">
+    <value>▸  {0}   ·   {1} Positionen   ·   {2} €</value>
+  </data>
 </root>
