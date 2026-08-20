@@ -173,6 +173,46 @@ namespace WindowsFormsApplication1
         /// </summary>
         public bool NachhaltigkeitsnachweisBiomasse = true;
 
+        // ---- ETAPPE K6 — KWKG-Tatbestand, Anlagenart, Pauschale (Schritt 28) ----
+        //
+        // Vier Angaben aus Konzept § 8.1 (HF6). Drei davon bleiben ohne ausdrückliche
+        // Erfassung LEER bzw. 0 — genau das hält jede Bestandsrechnung unverändert.
+
+        /// <summary>
+        /// Tatbestand des § 6 Abs. 3 KWKG, unter dem SELBST GENUTZTER Strom
+        /// zuschlagsfähig ist; Steuerwerte <c>DbWerte.KWKG_EIGENFALL_*</c>.
+        ///
+        /// <para><b>Leer = „nicht angegeben", und daran hängt die
+        /// Ergebnisneutralität.</b> Nach § 7 Abs. 2 gibt es den Eigenstrom-Zuschlag
+        /// nicht generell, sondern nur in den drei Fällen des § 6 Abs. 3. Ein
+        /// Bestandsprojekt hat diese Angabe nie gemacht — würde die leere Angabe wie
+        /// <c>KEINER</c> wirken, verlöre jedes Altprojekt mit gepflegtem
+        /// Eigenstrom-Satz seinen Zuschlag. Leer rechnet deshalb wie bisher und meldet
+        /// den ungeprüften Tatbestand; erst die ausdrückliche Wahl <c>KEINER</c> setzt
+        /// den Eigenstrom-Satz auf 0.</para>
+        /// </summary>
+        public string KwkgTatbestand = "";
+
+        /// <summary>
+        /// Anlagenart nach § 8 KWKG; Steuerwerte <c>DbWerte.KWKG_ANLAGENART_*</c>.
+        /// Leer = nicht angegeben; dann bleibt es beim Kontingent-Override
+        /// <see cref="KwkgVbhKontingent"/>.
+        /// </summary>
+        public string KwkgAnlagenart = "";
+
+        /// <summary>Anteil an den Neuherstellungskosten [%] (§ 8 Abs. 2/3 KWKG);
+        /// 0 = nicht gepflegt. Er wählt die Kontingentstufe bei modernisierten und
+        /// nachgerüsteten Anlagen.</summary>
+        public double KwkgKostenanteil = 0.0;
+
+        /// <summary>
+        /// Pauschale nach § 9 KWKG (Anlagen bis 2 kW<sub>el</sub>): einmalige
+        /// Vorauszahlung von 4 ct/kWh für 60.000 Vbh statt der laufenden Abrechnung.
+        /// Vorgabe <c>false</c> — Access belegt die YESNO-Spalte in jeder Bestandszeile
+        /// mit <c>False</c>, und das ist zugleich der bestandswahrende Wert.
+        /// </summary>
+        public bool KwkgPauschalmodus;
+
         public DateTime? GeaendertAm;
 
         /// <summary>Kurzdarstellung als Nachweiszeile (Reiter + Bericht).</summary>

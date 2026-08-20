@@ -6233,4 +6233,115 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   <data name="KOSTEN_GRUPPE_KOPF_ZU" xml:space="preserve">
     <value>▸  {0}   ·   {1} Positionen   ·   {2} €</value>
   </data>
+  <data name="WIRT_KWKG_KONTINGENT_OHNE_ART" xml:space="preserve">
+    <value>KWKG: keine Anlagenart erfasst — das Vbh-Kontingent des § 8 lässt sich daraus nicht ableiten; es gilt der eingetragene Wert.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_NEU" xml:space="preserve">
+    <value>neue Anlage → {0} Vbh ({1}, Stand {2}); eine Kostenschwelle gibt es hier nicht.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_ANTEIL_FEHLT" xml:space="preserve">
+    <value>{0}: ohne Anteil an den Neuherstellungskosten lässt sich die Stufe nicht wählen (Mindestschwelle {1} %); kein abgeleitetes Kontingent.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_ZU_KLEIN" xml:space="preserve">
+    <value>{0} % der Neuherstellungskosten liegen unter der Mindestschwelle von {1} % ({2}) — kein Vbh-Kontingent und damit kein Zuschlag.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_STUFE" xml:space="preserve">
+    <value>{0} % der Neuherstellungskosten, Stufe ab {1} % → {2} Vbh ({3}, Stand {4}); der Mindestabstand zur Inbetriebnahme der Altanlage wird nicht geprüft.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_ABGELEITET" xml:space="preserve">
+    <value>KWKG: Vbh-Kontingent aus der Anlagenart abgeleitet — {0} Vbh. {1}</value>
+  </data>
+  <data name="WIRT_KWKG_TATBESTAND_OFFEN" xml:space="preserve">
+    <value>KWKG: kein Eigenstrom-Tatbestand des § 6 Abs. 3 erfasst — der Zuschlag auf selbst genutzten Strom ist ungeprüft und wird wie bisher mit dem eingetragenen Satz gerechnet.</value>
+  </data>
+  <data name="WIRT_KWKG_TATBESTAND_KEINER" xml:space="preserve">
+    <value>KWKG: Tatbestand des § 6 Abs. 3 ausdrücklich auf „keiner“ gesetzt — auf selbst genutzten Strom gibt es nach § 7 Abs. 2 keinen Zuschlag; nur die Einspeisung wird vergütet.</value>
+  </data>
+  <data name="WIRT_KWKG_PAUSCHALE" xml:space="preserve">
+    <value>KWKG: Pauschale nach § 9 gewählt — einmalige Vorauszahlung {0} € im Jahr 0 ({1} ct/kWh × {2} Vbh × {3} kW); der laufende Zuschlag entfällt dafür.</value>
+  </data>
+  <data name="WIRT_KWKG_PAUSCHALE_ZU_GROSS" xml:space="preserve">
+    <value>KWKG: Pauschale nach § 9 gilt nur bis {1} kW elektrischer Leistung; die Anlage hat {0} kW — der Schalter bleibt ohne Wirkung, gerechnet wird der laufende Zuschlag.</value>
+  </data>
+  <data name="WIRT_KWKG_PAUSCHALE_SATZ_FEHLT" xml:space="preserve">
+    <value>KWKG: Pauschale nach § 9 gewählt, aber die Katalogwerte fehlen ({0}) — keine Vorauszahlung ausgewiesen.</value>
+  </data>
+  <data name="WIRT_CO2_PFAD" xml:space="preserve">
+    <value>CO₂-Preis: jahresgenauer Pfad aus dem Gesetzeskatalog — {1}: {0} €/t, {2}: {3} €/t. Ab {4} ist der Wert Prognose und frei editierbar.</value>
+  </data>
+  <data name="WIRT_CO2_PFAD_LUECKE" xml:space="preserve">
+    <value>CO₂-Preis: für {0} führt der Gesetzeskatalog keinen Wert — für dieses Jahr wird keine BEHG-Abgabe angesetzt (Klasse CO₂-Preispfad pflegen).</value>
+  </data>
+  <data name="WIRT_CO2_KONSTANT" xml:space="preserve">
+    <value>CO₂-Preis: konstanter Projektwert {0} €/t (Override); der Pfad des Gesetzeskatalogs bleibt außen vor.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_54_UNTERNEHMENSART" xml:space="preserve">
+    <value>§ 54 EnergieStG setzt ein Unternehmen des produzierenden Gewerbes oder einen Betrieb der Land- und Forstwirtschaft voraus — keine Entlastung.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_54_SOCKEL" xml:space="preserve">
+    <value>§ 54 EnergieStG: {0} € Entlastung liegen unter dem Sockelbetrag von {1} €/a — es bleibt bei 0 €.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_54_BEMESSUNG" xml:space="preserve">
+    <value>§ 54 EnergieStG entlastet HEIZstoffe; EPOS-Plan bemisst ihn hier auf den BHKW-Brennstoff — Kessel- und Spitzenlastbrennstoff sind nicht enthalten (bewusste Lücke der Etappe K6).</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_TATBESTAND" xml:space="preserve">
+    <value>Eigenstrom-Tatbestand (§ 6 Abs. 3):</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_OFFEN" xml:space="preserve">
+    <value>(nicht angegeben)</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_TATBESTAND_KEINER" xml:space="preserve">
+    <value>keiner — kein Eigenstromzuschlag</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_TATBESTAND_NR1" xml:space="preserve">
+    <value>Nr. 1 — Anlage bis 100 kW</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_TATBESTAND_NR2" xml:space="preserve">
+    <value>Nr. 2 — Kundenanlage / geschl. Netz</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_TATBESTAND_NR3" xml:space="preserve">
+    <value>Nr. 3 — stromkostenintensiv</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_ANLAGENART" xml:space="preserve">
+    <value>Anlagenart (§ 8):</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_ART_NEU" xml:space="preserve">
+    <value>neu</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_ART_MOD" xml:space="preserve">
+    <value>modernisiert</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_ART_NACH" xml:space="preserve">
+    <value>nachgerüstet</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_KOSTENANTEIL" xml:space="preserve">
+    <value>Anteil Neuherstellungskosten [%]:</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_PAUSCHAL" xml:space="preserve">
+    <value>Pauschale § 9 KWKG (nur bis 2 kWel, einmalig)</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_KONTINGENT" xml:space="preserve">
+    <value>Vbh-Kontingent gesamt [h] (0 = automatisch):</value>
+  </data>
+  <data name="WIRT_DLG_ENERGIESTEUER_54" xml:space="preserve">
+    <value>§ 54 EnergieStG (Formular 1450)</value>
+  </data>
+  <data name="WIRT_DLG_STEUER_FORMULARE" xml:space="preserve">
+    <value>Anträge und Fristen: § 9b StromStG → Formular 1453 · § 53 EnergieStG → 1131 · § 53a Abs. 5 → 1135 · § 54 EnergieStG → 1450. Frist ist jeweils der 31.12. des auf den Verwendungszeitraum folgenden Kalenderjahres. Sockelbetrag 250 €/a bei § 9b und § 54; § 53 und § 53a haben keinen.</value>
+  </data>
+  <data name="WIRT_DLG_KWKG_HINWEIS" xml:space="preserve">
+    <value>KWKG (K6): Der Eigenstrom-Zuschlag besteht nach § 7 Abs. 2 nur in den drei Tatbeständen des § 6 Abs. 3 — bleibt das Feld auf „(nicht angegeben)“, rechnet die Anwendung wie bisher und weist das aus. Das Vbh-Kontingent 0 bedeutet „automatisch aus der Anlagenart nach § 8“. Die Pauschale des § 9 ersetzt den laufenden Zuschlag durch eine einmalige Vorauszahlung im Jahr 0.</value>
+  </data>
+  <data name="WIRT_DLG_CO2" xml:space="preserve">
+    <value>CO₂-Preis BEHG [€/t] (0 = Pfad):</value>
+  </data>
+  <data name="WIRT_DLG_CO2_PFAD_ZEILE" xml:space="preserve">
+    <value>CO₂-Preis: Pfad aus Gesetzeskatalog (Prognose ab {0})</value>
+  </data>
+  <data name="WIRT_DLG_CO2_KONSTANT_ZEILE" xml:space="preserve">
+    <value>CO₂-Preis: konstant {0} €/t — der Pfad bleibt außen vor</value>
+  </data>
+  <data name="WIRT_DLG_CO2_KATALOG" xml:space="preserve">
+    <value>⚙ Gesetzeskatalog pflegen (CO₂-Preispfad)…</value>
+  </data>
 </root>
