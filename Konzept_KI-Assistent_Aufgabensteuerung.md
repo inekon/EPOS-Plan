@@ -1,10 +1,24 @@
 # Fach- und Umsetzungskonzept: KI-Assistent mit Aufgabensteuerung (EPOS-Plan)
 
-Stand: 2026-08-18, Rev. 1 ·
+Stand: 2026-08-20, Rev. 2 ·
 Auftraggeber: Philipp (INEKON) ·
 Auftrag wörtlich: *„Erstelle ein Konzept, wie ich den bestehenden Chatbot erweitern kann, um Aufgaben zu steuern."* ·
 Grundlage: Prüfung des Bestands im Klon `Documents\WP-Plan` (Commit `6b63f63`, Arbeitsbaum sauber) und der
 Paket-Metadaten von `Mscc.GenerativeAI` 3.1.0 im NuGet-Cache.
+
+> **Rev. 2 (20.08.2026).** Auftrag wörtlich: *„Formularausfüllen und Werte setzen sowie Aktionen ausführen soll
+> möglich sein. Auch sollen die Parameter für die Dialoge gefunden werden — und auch erklärt werden können. Es
+> soll eine zusätzliche Sicherheit zum Setzen von Werten eingeführt werden, die vom Benutzer bestätigt werden
+> muss und die vom Entwickler auch abgeschaltet werden kann."* Das kehrt die Festlegung aus 9.5 um; die
+> Ausgestaltung steht in **Kapitel 11** (Formularsteuerung, Feldsicherung, Etappe 3b). Belegstellen der Rev. 2
+> sind gegen den Arbeitsbaum vom 20.08.2026 geprüft (nach Etappe 3; `KiRiegel`, Bestätigungsschicht und drei
+> Schreibaktionen liegen bereits im Code).
+>
+> **Abnahmerunde 20.08.2026:** Grenzen (11.7) vom Auftraggeber bestätigt. Ergänzender Auftrag wörtlich:
+> *„Setze in die Dialoge einen dezenten Button (oder ähnliches), um den KI-Assistenten aufzurufen."* —
+> ausgestaltet in **11.8** (Aufrufknopf). Im selben Zug vollständig abgenommen („setze um wie vorgeschlagen"):
+> Blockbestätigung (11.5), Befehlszeilenschalter als Entwicklerkanal (11.5, damit festgelegt), Reihenfolge
+> 3b vor Etappe 4 (11.6) und die Startmasken (11.6). **Umsetzung der Etappe 3b beauftragt.**
 
 > **Belegregel.** Jede Aussage über den Bestand ist mit `Datei:Zeile` belegt; Pfade ohne Präfix liegen unter
 > `WindowsFormsApplication1\`, Pfade mit Präfix `SpeicherEngine\` bzw. `Referenzlauf\` im jeweiligen
@@ -755,7 +769,8 @@ geschrieben in den Cache.
 ## 8. Umsetzung in Etappen
 
 Aufwandsklassen: **S** ≈ 1–2 Tage, **M** ≈ 3–6 Tage, **L** ≈ 1,5–3 Wochen (Erfahrungswerte, **Annahme**). Jede
-Etappe endet mit einem vorführbaren Zwischenstand.
+Etappe endet mit einem vorführbaren Zwischenstand. Mit Rev. 2 kommt **Etappe 3b — Formularsteuerung** hinzu
+(11.6); sie liegt zwischen Etappe 3 und 4 und zieht die Besitzer-Mechanik aus Etappe 5 teilweise vor.
 
 ### Etappe 1 — Fundament ohne KI (M)
 
@@ -857,12 +872,14 @@ Die Punkte 1–8 sind Entscheidungen, die Philipp treffen muss; 9–14 sind Risi
 4. **Darf Stufe 3 ohne Rückfrage laufen,** wenn der Anwender sie im selben Satz angefordert hat („rechne die
    Simulation für Projekt 1042")? Vorschlag: **nein** — die Bestätigung kostet einen Klick und nennt die
    Nebenwirkung „Vorgängerlauf wird ersetzt".
-5. **Soll der Assistent Formulare ausfüllen** oder nur Funktionen aufrufen? Vorschlag: **nur Funktionen.**
-   Formularfelder zu setzen hieße, den Zustand einer Maske von außen zu verändern, deren Validierung an
-   Ereignissen hängt; das umgeht jede Prüfung des Bestands. Der Assistent öffnet die Maske und sagt, was
-   einzutragen ist. *(Falls doch gewünscht: es gäbe mit `HelpExtender` und der Datei `help_mapping.txt`
-   — `Allgemein\Hilfe\HelpCatalog.cs:250-275` — bereits eine control-genaue Zuordnung als Ausgangspunkt; die
-   Mapping-Datei selbst liegt allerdings nicht im Repo.)*
+5. **Soll der Assistent Formulare ausfüllen** oder nur Funktionen aufrufen? Rev. 1 empfahl „nur Funktionen".
+   **Entschieden am 20.08.2026 (Rev. 2): Er darf ausfüllen, Werte setzen und Dialogaktionen auslösen**, und er
+   soll die Parameter der Dialoge finden und erklären können. Das damalige Gegenargument — die Validierung
+   hänge an Ereignissen, Setzen von außen umgehe jede Prüfung — ist seit `ab5bf32`/`fff27c3`/`a5e2d15`
+   weitgehend entfallen: Die Zahlenprüfung sitzt an den Aktionsknöpfen (`Program.ZahlPruefen` — `Program.cs:272`,
+   `GanzzahlPruefen` `:291`), `TextChanged` färbt nur noch (`ZahlFaerben` `:244`). Wer Felder setzt und dann den
+   Knopf auslöst, durchläuft dieselbe Prüfung wie eine Hand am Formular. Ausgestaltung, Schutzmechanik
+   (Feldsicherung) und Etappeneinordnung: **Kapitel 11**.
 6. **Umfang der ersten Ausbaustufe.** Vorschlag: die 15 Stufe-1-Aktionen aus 5.1 plus die vier häufigsten
    Schreibaktionen. Welche Schreibaktionen sind aus Ihrer Sicht die vier wichtigsten?
 7. **Tageslimit und Kosten.** Mit Werkzeugkatalog und Mehrrundenbetrieb steigt der Tokenverbrauch je Äußerung
@@ -903,3 +920,150 @@ Die Punkte 1–8 sind Entscheidungen, die Philipp treffen muss; 9–14 sind Risi
 * **Zwei Bestandslücken begrenzen den Ausbau**: kein Undo und kein automatisches Backup (4.4) sowie die
   prozessweiten Simulationszustände (2.5). Beide sind mit Disziplin beherrschbar — Sicherungspunkt und
   Einläufigkeit —, aber sie sind der Grund, warum Löschen und Katalogpflege dauerhaft draußen bleiben.
+
+---
+
+## 11. Nachtrag Rev. 2 — Formularsteuerung (Auftrag vom 20.08.2026)
+
+### 11.1 Was sich ändert — und was nicht
+
+**Neu erlaubt:** Der Assistent darf Felder freigegebener Dialoge setzen, ganze Formulare ausfüllen und
+Dialogaktionen (Knöpfe wie OK, Speichern, Berechnen) auslösen. Er soll die Parameter eines Dialogs **finden**
+(welche Felder gibt es, was steht darin) und **erklären** (was bedeutet das Feld, welche Werte sind zulässig).
+
+**Unverändert bleiben:** die Verbotsliste 1.2 in jedem Punkt (insbesondere kein `Tool.ComputerUse` — das Modell
+bekommt keine Maus und keine Tastatur; Formularsteuerung läuft als **deklarierte Aktionen** über dieselbe
+Registermechanik wie alles andere), die Grenzkonstanten des Riegels (`KiKern\KiRiegel.cs:33`, `:57`), die
+Bestätigungsschicht der DB-Schreibaktionen (3.5) und der Grundsatz, dass Bestätigungstexte nie aus Modelltext
+entstehen (9.9). Kein `SendKeys`, keine Fenster-Nachrichten: gesetzt werden Control-Eigenschaften auf dem
+UI-Thread, sonst nichts.
+
+### 11.2 Warum das heute vertretbar ist (Bestandslage)
+
+1. **Die Validierung sitzt inzwischen am Aktionsknopf, nicht mehr im Ereignis.** Mit `ab5bf32`/`fff27c3` (110
+   Stellen in 12 Dateien) und `a5e2d15` (letzte 39 Stellen in 14 Views) färbt `TextChanged` nur noch
+   (`Program.ZahlFaerben` — `Program.cs:244`, `GanzzahlFaerben` `:255`); geprüft wird beim OK-/Speichern-Knopf
+   (`ZahlPruefen` `:272`, `GanzzahlPruefen` `:291`: TryParse, sprechende Meldung, Fokus, Dialog bleibt offen).
+   Ein Assistent, der Felder setzt und dann den Knopf auslöst, durchläuft **exakt dieselbe Prüfung** wie der
+   Anwender — das Gegenargument aus 9.5 (Rev. 1) trägt für diese Masken nicht mehr. Masken, deren Prüfungen
+   noch anders verdrahtet sind, werden bei der Katalogaufnahme (11.3) einzeln geprüft.
+2. **Eine control-genaue Zuordnung samt Hilfetexten existiert.** `HelpExtender`
+   (`Allgemein\Hilfe\HelpCatalog.cs:209`) mappt Controls über `help_mapping.txt`
+   (`Formname.Controlpfad = Slug`, `:250-304`); je Slug liefert `WordPressHelpCatalog.Get` (`:194`) Tooltip und
+   Artikel-URL, offline aus dem lokalen Cache (`help_cache.json`). Das ist die Quelle für das **Erklären**.
+   Lücke: `help_mapping.txt` liegt nicht im Repo — deshalb wird sie nicht zur Grundlage der Steuerung, sondern
+   nur als Hilfequelle referenziert (11.3).
+3. **Die Bestätigungsmechanik ist seit Etappe 3 im Code.** Vorschaublock mit „Ausführen"/„Abbrechen" und
+   Verfallsanzeige (`Views\Help\Form_KiChat.cs:373`, Rückfrageweg `:453`) — die Feldsicherung (11.5) nutzt
+   denselben Block, es entsteht keine zweite Bestätigungs-UI.
+
+### 11.3 Der Dialogkatalog — eine Deklaration, drei Verwendungen (Fortschreibung 3.2)
+
+Gesteuert wird **nur, was deklariert ist**: Je freigegebener Maske ein versionierter Katalogeintrag im Code
+(`Allgemein\KI\Dialoge\`, neu) — nicht in der losen `help_mapping.txt`. Ein Eintrag nennt: Maskenname (Positivliste
+wie bei `maske_oeffnen`, 5.1), je Feld den Controlpfad, Anzeigename, Typ, Einheit, `leerErlaubt`, eine Erläuterung
+und optional den Hilfe-Slug; dazu die **auslösbaren Aktionsknöpfe als Positivliste** — Löschknöpfe sind dort per
+Bauart nie aufgeführt (1.2). Die drei Verwendungen wie in 3.2: Schema für das Modell, Prüfung in C#, Klartext für
+Bestätigung und Erklärung.
+
+Der Katalog ist testbar: Ein Katalogtest instanziiert jede deklarierte Maske und weist nach, dass jeder
+Controlpfad auflöst (Muster `FindControlRecursive`, `HelpCatalog.cs:306`) und jeder deklarierte Knopf existiert.
+Damit altert der Katalog nicht stumm, wenn eine Maske umgebaut wird.
+
+### 11.4 Neue Aktionen
+
+| Aktion | Stufe | Parameter | Verhalten |
+|---|---|---|---|
+| `dialog_lesen` | 1 | `maske` (optional: die gerade offene) | Felder, aktuelle Werte und auslösbare Knöpfe aus dem Katalog — das **Finden** der Parameter |
+| `dialog_parameter_erklaeren` | 1 | `maske`, `feld` | Erläuterung aus Katalog + Hilfetext (`WordPressHelpCatalog.Get` — `HelpCatalog.cs:194`); nennt Typ, Einheit, Leer-Regel |
+| `feld_setzen` | **2F** | `maske`, `feld`, `wert` | setzt genau ein Feld — mit Feldsicherung (11.5) |
+| `formular_ausfuellen` | **2F** | `maske`, `werte{}` | setzt mehrere Felder als **einen** bestätigten Block |
+| `dialog_aktion_ausfuehren` | **2F** | `maske`, `knopf` | löst einen Knopf der Positivliste aus — die Knopfprüfung des Bestands läuft dabei wie bei einem Klick von Hand |
+
+**Stufe 2F** („schreibend in die Oberfläche") verhält sich im Riegel wie Stufe 2: nie ohne Bestätigung
+(`KiRiegel.BrauchtBestaetigung` hängt an der Stufe, nicht an Namenslisten). DB-wirksam wird der Vorgang erst durch
+den Aktionsknopf der Maske — und dort laufen die Bestandsprüfungen (11.2). Der `KiAusfuehrer` marshalliert wie
+bisher auf den UI-Thread und setzt Control-Eigenschaften direkt (`TextBox.Text`, `CheckBox.Checked`,
+`ComboBox.SelectedItem`); `ReadOnly`- oder deaktivierte Felder werden mit Klartext abgelehnt, ebenso jedes Feld
+und jeder Knopf ohne Katalogeintrag.
+
+### 11.5 Die Feldsicherung — zusätzliche Bestätigung, entwicklerseitig abschaltbar
+
+* **Regelbetrieb:** Jede 2F-Aktion zeigt vor der Ausführung im Bestätigungsblock (`Form_KiChat.cs:373`) die
+  Liste „Feld · bisheriger Wert → neuer Wert" bzw. „Knopf ‚Speichern' wird ausgelöst". **Ein** Klick bestätigt
+  den ganzen Block (nicht jedes Feld einzeln — sonst ist Ausfüllen unbenutzbar); Verfall wie in 3.5.
+* **Entwicklerschalter:** `KiFeldsicherung.Aktiv` (neu in `KiKern`), Standard **an**. Abschaltbar
+  ausschließlich über den Entwicklerkanal — **festgelegt (Abnahme 20.08.2026): Befehlszeilenschalter
+  `/ki-feldsicherung-aus`** — ausdrücklich **nicht** über die Oberfläche und
+  **nicht** als gespeicherte Einstellung, die ein Neustart weiterträgt. Bei abgeschalteter Sicherung zeigt das
+  Chatfenster dauerhaft „Feldsicherung AUS", und jede Protokollzeile trägt den Vermerk.
+* **Reichweite — und warum hier ein Schalter erlaubt ist, wo `KiRiegel` ihn verbietet:** Der Schalter wirkt
+  **nur** auf die Feldbestätigung der 2F-Aktionen. Die Bestätigung der DB-Schreibaktionen (Stufe 2) und die
+  Sperre der Stufe 3 bleiben in jedem Fall bestehen — die Begründung „Konstante, keine Einstellung"
+  (`KiKern\KiRiegel.cs:19-24`) gilt dort unverändert. Die Feldsicherung darf ein Schalter sein, weil hinter ihr
+  zwei Verteidigungslinien stehen: die Knopfprüfung der Maske (11.2) und, sobald etwas in die Datenbank soll,
+  die unabschaltbare Stufe-2-Bestätigung.
+
+### 11.6 Etappe 3b — Formularsteuerung (M–L)
+
+* **Vorgezogen aus Etappe 5:** der Chat muss während eines offenen (ggf. modalen) Dialogs erreichbar sein —
+  `Form_KiChat.Oeffnen(IWin32Window)` nimmt den Besitzer bereits entgegen (`Views\Help\Form_KiChat.cs:1354`);
+  ohne diese Mechanik ist Formularsteuerung wegen der Modalitätsfalle (2.5) wirkungslos.
+* Dialogkatalog (11.3) mit den **Startmasken (Abnahme 20.08.2026)**: `Form_Heizkessel_Bearbeiten`, `Form_PV`,
+  `Form_PufferSp_Bearbeiten`, `Form_WP` — alle aus dem umgestellten Paketbestand von `fff27c3`; Erweiterung
+  danach maskenweise. `maske_oeffnen` für genau diese Masken freischalten.
+* Aktionen aus 11.4, Feldsicherung aus 11.5.
+* **Aufrufknopf (11.8) auf jeder Katalogmaske** — auf diesen Masken Pflicht, denn Formularsteuerung setzt den
+  erreichbaren Chat voraus.
+
+**Abnahme:** Kein Feld wird bei aktiver Sicherung ohne Klick gesetzt; ein absichtlich ungültiger Wert („abc" im
+Zahlenfeld) wird erst beim Auslösen des Aktionsknopfs von der **Bestandsprüfung** abgefangen — der Assistent
+ersetzt sie nicht; `ReadOnly`-Felder und nicht deklarierte Knöpfe werden mit Klartext abgelehnt; mit
+abgeschalteter Feldsicherung entfällt genau die Feldbestätigung, die Stufe-2-Bestätigung nachgelagerter
+DB-Aktionen bleibt nachweislich bestehen; jede Feldsetzung erzeugt eine Protokollzeile samt Sicherungszustand.
+**Test:** Katalogtests (11.3); der Aktionsharnisch öffnet jede Katalogmaske, setzt je Feldtyp einen gültigen und
+einen ungültigen Wert und löst den Knopf aus — der `DialogWaechter` (`Referenzlauf\DialogWaechter.cs`) wertet
+unerwartete MessageBoxen als Fehler, die **erwartete** Prüfmeldung des ungültigen Werts ist der Positivnachweis.
+
+### 11.7 Grenzen — vom Auftraggeber bestätigt am 20.08.2026
+
+Nicht steuerbar bleiben: Einstellungs-, Lizenz- und Katalogpflege-Masken (`_STAMM`-Pflege), Löschknöpfe jeder
+Art, Dateidialoge (`SaveFileDialog`/`OpenFileDialog` — die Pfadwahl bleibt Anwendersache, 1.2) sowie jede Maske
+und jeder Knopf ohne Katalogeintrag. Masken, deren Eingabeprüfung noch nicht auf das Knopfmuster umgestellt ist,
+kommen erst nach ihrer Umstellung in den Katalog — die Umstellung selbst ist Bestandspflege außerhalb dieses
+Konzepts.
+
+### 11.8 Der Aufrufknopf — dezenter Einstieg aus jeder Maske (Auftrag vom 20.08.2026)
+
+**Auftrag:** In die Dialoge kommt ein dezenter Knopf (oder Gleichwertiges), der den KI-Assistenten aufruft.
+
+**Warum ein programmatischer Knopf und kein Titelleisten-„?":** WinForms zeigt den Hilfeknopf der Titelleiste
+(`Form.HelpButton`) nur, wenn Minimieren- und Maximieren-Knopf abgeschaltet sind; die Fensterstile der 185 Views
+sind uneinheitlich, und weder `HelpButton` noch `HelpRequested` sind im Bestand irgendwo verdrahtet (repoweiter
+Grep: kein Treffer). Ein Titelleisten-„?" wäre also nur auf einem Teil der Masken sichtbar. Der Knopf im
+Client-Bereich funktioniert überall gleich — und programmatisches Anlegen ist ohnehin Hausregel (Designer-Dateien
+werden nicht von Hand editiert).
+
+**Ausgestaltung:**
+
+* Zentraler Helfer `KiAufrufKnopf.Anbringen(Form)` (neu, `Allgemein\KI\`) — **ein** Aufruf im Konstruktor der
+  Maske, keine Änderung an Designer-Dateien. Der Helfer erzeugt einen kleinen symbolbasierten Knopf
+  (≈ 24 px, ohne Text, `FlatStyle.Flat`, ohne `TabStop`, gedämpfte Darstellung, betont erst unter dem Zeiger),
+  verankert **oben rechts** im Client-Bereich (`Anchor Top|Right`), Tooltip „KI-Assistent (F1)" über
+  `MyResource` (de und en).
+* Klick ruft `Form_KiChat.Oeffnen(this)` (`Views\Help\Form_KiChat.cs:1354`) — die Maske wird **Besitzer** des
+  Chatfensters, deshalb bleibt der Chat auch neben einem modalen Dialog bedienbar (2.5, WinForms-Verhalten wie
+  in 2.5 belegt). Ist das Chatfenster bereits offen, holt der Klick es nach vorn.
+* Kollisionen: Führt eine Maske oben rechts bereits Bedienelemente, legt ihr Katalogeintrag (11.3) eine
+  abweichende Standardposition fest (optionales Feld `knopfposition`); die Position ist je Maske deklariert,
+  nicht je Aufruf improvisiert.
+* Der Knopf ist der **sichtbare** Weg, F1 bleibt der **Tastaturweg** (Etappe 5). Beide enden im selben
+  `Oeffnen(besitzer)`-Aufruf.
+
+**Rollout:** Etappe 3b bringt den Knopf verpflichtend auf alle Katalogmasken (11.6). Etappe 5 rollt ihn
+zusammen mit dem globalen F1 auf die übrigen Masken aus; ab dann gilt für neue Masken die Bauregel „eine Zeile
+im Konstruktor".
+
+**Abnahme:** Auf jeder Katalogmaske ist der Knopf sichtbar, stört keine bestehende Bedienfolge (kein Fokusklau,
+kein Tabstopp) und öffnet den Chat mit der Maske als Besitzer; aus einem modalen Dialog heraus bleibt der Chat
+bedienbar und `dialog_lesen` (11.4) nennt die Felder genau dieser Maske.
