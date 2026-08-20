@@ -17875,5 +17875,50 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuschuss [€] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_ZUSCHUSS {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_ZUSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der erfasste Zuschuss ({0} €) übersteigt die Investitionssumme ({1} €). ... ähnelt.
+        /// </summary>
+        public static string WIRT_ZUSCHUSS_UEBERHANG {
+            get {
+                return ResourceManager.GetString("WIRT_ZUSCHUSS_UEBERHANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Zuschuss: −{0} € ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_ZUSCHUSS {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_ZUSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Position ist ein Zuschuss (BAFA, KfW, Baukostenzuschuss …) ähnelt.
+        /// </summary>
+        public static string KOSTEN_CHK_ZUSCHUSS {
+            get {
+                return ResourceManager.GetString("KOSTEN_CHK_ZUSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Betrag positiv eintragen. Er mindert die Investitionssumme einmalig … ähnelt.
+        /// </summary>
+        public static string KOSTEN_CHK_ZUSCHUSS_HINT {
+            get {
+                return ResourceManager.GetString("KOSTEN_CHK_ZUSCHUSS_HINT", resourceCulture);
+            }
+        }
+        
     }
 }

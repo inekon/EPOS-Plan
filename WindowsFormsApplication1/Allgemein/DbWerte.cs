@@ -85,6 +85,46 @@ namespace WindowsFormsApplication1
         public const string KOSTEN_KOMPONENTE_PUFFERSPEICHER = "Pufferspeicher";
 
         // =====================================================================
+        // ETAPPE K5 — die drei ERFASSUNGSGRUPPEN aus BHKW-Plan
+        //   Tab_KostenKomponente.Komponente und Tab_Kostenfaktor.Bezeichnung der
+        //   zugehörigen Hauptposition (Migrationsschritt 27).
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        //
+        //   ANDERS ALS DIE SIEBEN BESTANDSKOMPONENTEN führen sie KEINEN
+        //   Technik-Planwert: Es gibt keine Gerätetabelle, aus der sich ihre
+        //   Investition ableiten ließe (TechnikPlanwertCtrl.Plaene bleibt bei
+        //   sieben Einträgen). Sie sind reine Erfassungsgruppen — der Anwender
+        //   trägt ihre Positionen von Hand ein.
+        //
+        //   NAHWÄRMENETZ IST BEWUSST NICHT DABEI (Entscheidung E2 vom
+        //   19.08.2026): Die Alt-Positionen Verteilnetz, Hausanschluss und
+        //   Hausstation entfallen ersatzlos; Einzelfälle deckt „Sonstiges".
+        // =====================================================================
+
+        /// <summary>
+        /// Erfassungsgruppe „Wärmezentrale" — BHKW-Einbindung, Heizungstechnik,
+        /// Abgasanlage. <b>Ohne Pufferspeicher</b>: Der bleibt nach Entscheidung E1 eine
+        /// eigene Komponente und wird hier NICHT ein zweites Mal geführt (Abweichung von
+        /// der Alt-Bemessung, die ihn in die Wärmezentrale rechnete).
+        /// Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string KOSTEN_KOMPONENTE_WAERMEZENTRALE = "Wärmezentrale";
+
+        /// <summary>
+        /// Erfassungsgruppe „Bauliche Anlagen" — Heizraum, Schornstein, bauliche
+        /// Maßnahmen, Heizöllagerung, Erdgasanschluss.
+        /// <inheritdoc cref="KOSTEN_KOMPONENTE_WAERMEZENTRALE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string KOSTEN_KOMPONENTE_BAULICHE_ANLAGEN = "Bauliche Anlagen";
+
+        /// <summary>
+        /// Erfassungsgruppe „Stromeinspeisung" — Zählerplatz, Netzanschluss,
+        /// Einspeisetechnik.
+        /// <inheritdoc cref="KOSTEN_KOMPONENTE_WAERMEZENTRALE" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string KOSTEN_KOMPONENTE_STROMEINSPEISUNG = "Stromeinspeisung";
+
+        // =====================================================================
         // Nebenkosten-Positionen einer Kostenkomponente
         //   Tab_Kostenfaktor.Bezeichnung (IsMainComponent = False), verwendet als
         //   Unterposition in der Gruppe der Komponente (Tab_ProjektWerte)
@@ -113,6 +153,71 @@ namespace WindowsFormsApplication1
 
         /// <inheritdoc cref="KOSTENPOSTEN_MONTAGE"/>
         public const string KOSTENPOSTEN_ABGASREINIGUNG = "Abgasreinigung";
+
+        // =====================================================================
+        // ETAPPE K5 — Positionskatalog der drei Erfassungsgruppen
+        //   Tab_Kostenfaktor.Bezeichnung (IsMainComponent = False), gesät von
+        //   Migrationsschritt 27. ORIGINAL-BESCHRIFTUNGEN der Altanwendung
+        //   (Dial_KostenEing, Konzept Anhang A(a)) — sie sind der Wortlaut, den
+        //   die Anwender aus BHKW-Plan kennen, und deshalb wörtlich übernommen.
+        //
+        //   ZWEI DAVON GIBT ES SCHON: „Schornstein" (StammID 90) und
+        //   „Abgasanlage" (91) stehen bereits im Bestandskatalog. Der Seed legt
+        //   nur an, was fehlt — die Bezeichnung ist der Schlüssel, nicht die
+        //   StammID (dieselbe Regel wie in KostenPositionCtrl.StammIdNeben).
+        //
+        //   Der Katalog ist FLACH: Tab_Kostenfaktor führt keine Spalte, die eine
+        //   Position an eine Komponente bindet. Die Zuordnung entsteht erst in
+        //   Tab_ProjektWerte.KomponentenID, wenn der Anwender die Position in
+        //   einer Komponente erfasst. Die Gruppierung unten ist deshalb der
+        //   VORSCHLAG des Katalogs, keine Fremdschlüsselbeziehung.
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        // =====================================================================
+
+        /// <summary>Wärmezentrale: hydraulische und elektrische Einbindung des BHKW.</summary>
+        public const string KOSTENPOSTEN_BHKW_EINBINDUNG = "BHKW-Einbindung";
+
+        /// <inheritdoc cref="KOSTENPOSTEN_BHKW_EINBINDUNG"/>
+        public const string KOSTENPOSTEN_HEIZUNGSTECHNIK = "Heizungstechnik";
+
+        /// <summary>Wärmezentrale: Abgasführung ab Erzeuger (im Bestandskatalog StammID 91).</summary>
+        public const string KOSTENPOSTEN_ABGASANLAGE = "Abgasanlage";
+
+        /// <summary>Bauliche Anlagen: Raumbedarf. Die Alt-Mengenlogik „spez. Kosten €/m³ ×
+        /// Raumbedarf" bildet die vorhandene Bemessung Menge × Einheitpreis ab
+        /// (<see cref="BEMESSUNG_BETRAG"/> &amp; Co.) — keine neue Mechanik nötig.</summary>
+        public const string KOSTENPOSTEN_HEIZRAUM = "Heizraum";
+
+        /// <summary>Bauliche Anlagen (im Bestandskatalog StammID 90).</summary>
+        public const string KOSTENPOSTEN_SCHORNSTEIN = "Schornstein";
+
+        /// <inheritdoc cref="KOSTENPOSTEN_HEIZRAUM" path="/summary/text()[1]"/>
+        public const string KOSTENPOSTEN_BAULICHE_MASSNAHMEN = "Bauliche Maßnahmen";
+
+        /// <inheritdoc cref="KOSTENPOSTEN_HEIZRAUM" path="/summary/text()[1]"/>
+        public const string KOSTENPOSTEN_HEIZOELLAGERUNG = "Heizöllagerung";
+
+        /// <inheritdoc cref="KOSTENPOSTEN_HEIZRAUM" path="/summary/text()[1]"/>
+        public const string KOSTENPOSTEN_ERDGASANSCHLUSS = "Erdgasanschluss";
+
+        /// <summary>
+        /// Stromeinspeisung: die einzige Position ihrer Gruppe. Der Wortlaut ist
+        /// derselbe wie der Komponentenname — verschiedene Tabellen, kein Konflikt:
+        /// <c>Tab_KostenKomponente.Komponente</c> gegenüber
+        /// <c>Tab_Kostenfaktor.Bezeichnung</c>. Der Katalogeintrag trägt
+        /// <c>IsMainComponent = False</c>, die gleichnamige Hauptposition
+        /// <c>= True</c>; beide Lesewege unterscheiden ausdrücklich danach.
+        /// </summary>
+        public const string KOSTENPOSTEN_STROMEINSPEISUNG = "Stromeinspeisung";
+
+        /// <summary>
+        /// Frei benennbarer Auffangposten jeder Erfassungsgruppe — das Gegenstück zu
+        /// den Alt-Zeilen „Sonstiges 1–3". Statt drei nummerierter Zeilen gibt es EINE
+        /// Katalogposition; weitere entstehen über den vorhandenen „Lern"-Weg
+        /// (<c>KostenPositionCtrl.StammIdNeben</c> legt fehlende Bezeichnungen beim
+        /// ersten Bedarf selbst an).
+        /// </summary>
+        public const string KOSTENPOSTEN_SONSTIGES = "Sonstiges";
 
         /// <summary>
         /// Rückfallgruppe in <c>Tab_ProjektWerte.Gruppe</c> und
@@ -245,6 +350,35 @@ namespace WindowsFormsApplication1
         /// <inheritdoc cref="KOSTENART_KAPITALGEBUNDEN" path="/summary/text()[last()]"/>
         /// </summary>
         public const string KOSTENART_SONSTIGE = "SONSTIGE";
+
+        /// <summary>
+        /// ETAPPE K5 (Konzept § 7.4, Leitentscheidung L7): <b>Investitionszuschuss</b> —
+        /// BAFA, KfW, Baukostenzuschuss. Eine Position der Kategorie 1
+        /// („Investitionskosten") mit dieser Kostenart mindert die Anfangsauszahlung
+        /// I₀ <b>einmalig</b>.
+        ///
+        /// <para><b>Der Betrag wird POSITIV erfasst.</b> Ein Zuschuss ist keine
+        /// Erlösposition: <c>IstErloes</c> bleibt false, und die Zeile trägt in
+        /// <c>Tab_ProjektWerte.EingegebenerWert</c> den Zuschussbetrag als positive
+        /// Zahl. Das Vorzeichen entsteht erst im Rechenweg und im Ausweis
+        /// („Zuschuss: −X €"). Wäre er eine Erlösposition, geriete er über
+        /// <c>BetriebskostenCtrl.Betrag</c> in die JAHRESreihe — er ist aber eine
+        /// einmalige Zahlung im Jahr 0.</para>
+        ///
+        /// <para><b>Keine Ersatzbeschaffung, kein Restwert.</b> Die Altanwendung gab
+        /// dem Zuschuss eine Nutzungsdauer — und zwar die Laufvariable des zuletzt
+        /// bearbeiteten BHKW-Moduls, also eine zufällige (Konzept Anhang A(e), Fehler 1).
+        /// Hier geht die Zeile deshalb gar nicht erst als <c>InvestPosition</c> in den
+        /// <c>KapitalwertRechner</c>, sondern wird I₀-seitig abgezogen.</para>
+        ///
+        /// <para><b>GROSSBUCHSTABEN, abweichend vom Konzepttext.</b> § 7.4 schreibt
+        /// <c>"zuschuss"</c>; die vier Bestandswerte dieser Gruppe sind aber ASCII und
+        /// durchgehend groß (Kommentarblock oben). Ein einzelner kleingeschriebener
+        /// Wert wäre die Ausnahme, die jeden späteren Vergleich zur Fehlerquelle macht.
+        /// Länge 8 Zeichen — die Spalte ist TEXT(20), also unkritisch.</para>
+        /// <inheritdoc cref="KOSTENART_KAPITALGEBUNDEN" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string KOSTENART_ZUSCHUSS = "ZUSCHUSS";
 
         // =====================================================================
         // Bemessungsart einer Kostenposition

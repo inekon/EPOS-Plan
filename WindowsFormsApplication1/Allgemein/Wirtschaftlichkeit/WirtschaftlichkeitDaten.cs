@@ -473,7 +473,26 @@ namespace WindowsFormsApplication1
         public DateTime Zeitstempel = DateTime.Now;
 
         // Zahlungsgerüst (Jahr 1 bzw. t=0)
-        public double Investition;             // I₀ [€] (Kategorie 1, Szenariowert)
+
+        /// <summary>
+        /// Investitionssumme [€] (Kategorie 1, Szenariowert) — <b>vor</b> Abzug eines
+        /// Zuschusses. Das ist die Zahl, die der Anwender erfasst hat, und die
+        /// Bezugsgröße jeder prozentualen Betriebskostenbemessung.
+        /// <para>Die tatsächliche Anfangsauszahlung ist
+        /// <c>Investition − <see cref="Zuschuss"/></c>; sie steckt im
+        /// <see cref="Kapitalwert"/> und wird nicht getrennt abgelegt, damit es zu ihr
+        /// keine zweite Wahrheit gibt.</para>
+        /// </summary>
+        public double Investition;
+
+        /// <summary>
+        /// ETAPPE K5 (Konzept § 7.4, L7): angesetzter Investitionszuschuss [€], positiv.
+        /// 0 = kein Zuschuss erfasst. Er mindert I₀ einmalig — keine
+        /// Ersatzbeschaffung, kein Restwert. Ausgewiesen wird er als eigene, negativ
+        /// dargestellte Zeile („Zuschuss: −X €").
+        /// </summary>
+        public double Zuschuss;
+
         public double? BetriebskostenJahr;     // [€/a] (Kategorie 2, Szenariowert)
         public double? EnergiekostenJahr;      // [€/a] (KostenEmissionRechner; null = Preise fehlen)
         public double EinspeiseerloesJahr;     // [€/a] (PV-Überschuss × Einspeisevergütung)

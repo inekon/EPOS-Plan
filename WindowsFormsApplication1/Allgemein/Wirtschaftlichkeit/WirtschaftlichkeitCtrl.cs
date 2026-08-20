@@ -126,6 +126,19 @@ namespace WindowsFormsApplication1
         /// <inheritdoc cref="SPALTE_EINSPEISUNG_PV"/>
         public const string SPALTE_EINSPEISUNG_KWK = "EinspeiseerloesKWK";
 
+        /// <summary>
+        /// ETAPPE K5 (Konzept § 7.4, L7): der angesetzte Investitionszuschuss in
+        /// <see cref="TAB_ERGEBNIS"/> [€], positiv. Über <c>SpalteSicher</c> — dieselbe
+        /// Begründung wie bei <see cref="SPALTE_ENERGIESTEUER"/>.
+        ///
+        /// <para><b>Warum eine eigene Spalte und nicht die Differenz.</b> Ohne sie
+        /// stünde in <c>Investition</c> entweder der Bruttobetrag (dann fehlte der
+        /// Zuschuss im Ausweis) oder der Nettobetrag (dann wäre die Bezugsgröße der
+        /// prozentualen Betriebskosten aus dem Ergebnis nicht mehr rekonstruierbar).
+        /// Beide Zahlen werden gebraucht, also stehen beide da.</para>
+        /// </summary>
+        public const string SPALTE_ZUSCHUSS = "Zuschuss";
+
         /// <summary>Fristen des § 6 KWKG 2025 (Konzept Kap. 8.2, Phase 9).</summary>
         public static readonly DateTime KWKG_STICHTAG_ENDE = new DateTime(2026, 12, 31);
         public const int KWKG_REALISIERUNG_JAHRE = 4;
@@ -350,6 +363,13 @@ namespace WindowsFormsApplication1
                     // Summe der beiden Spalten ist der bereits vorhandene Gesamtbetrag.
                     SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_EINSPEISUNG_PV, "DOUBLE");
                     SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_EINSPEISUNG_KWK, "DOUBLE");
+
+                    // ETAPPE K5 — der angesetzte Investitionszuschuss. Additiv über
+                    // denselben Weg; die doppelte Schema-Wahrheit dieses Moduls (§ 9.2
+                    // des Konzepts) wird damit nicht um einen dritten Mechanismus
+                    // erweitert: Ergebnisspalten führt der Controller, Eingabespalten
+                    // der Migrationskatalog.
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_ZUSCHUSS, "DOUBLE");
 
                     // ETAPPE E5 — die Spalten des Tarif-Rollenmodells und die zwei
                     // Projektangaben. Sie entstehen regulär über Migrationsschritt 21;
@@ -1176,6 +1196,10 @@ namespace WindowsFormsApplication1
         {
             public List<KapitalwertRechner.InvestPosition> Investitionen =
                 new List<KapitalwertRechner.InvestPosition>();
+            /// <summary>ETAPPE K5: Investitionszuschuss [€], positiv (0 = keiner).
+            /// Mindert I₀ einmalig; siehe <see cref="LiesInvestitionen(int,string,out double)"/>.</summary>
+            public double Zuschuss;
+
             public double Betrieb;          // €/a (Kategorie 2, Szenariowert)
             public double? Energie;         // €/a (null = nicht bestimmbar)
             public double Erloes;           // €/a Einspeisevergütung (konstant)
@@ -1233,7 +1257,11 @@ namespace WindowsFormsApplication1
             var e = new ProjektEingabe();
             if (v.Fehler != null || v.Ergebnis == null) return e;
 
-            e.Investitionen = LiesInvestitionen(v.IdProjekt, szenario);
+            // ETAPPE K5: Zuschusszeilen kommen aus derselben Abfrage, gehen aber nicht in
+            // die Positionsliste — sie mindern I₀ einmalig (Konzept § 7.4).
+            double zuschuss;
+            e.Investitionen = LiesInvestitionen(v.IdProjekt, szenario, out zuschuss);
+            e.Zuschuss = zuschuss;
             e.Betrieb = LiesBetriebskosten(v.IdProjekt, szenario);
             // ETAPPE E7: dieselben Positionen ein zweites Mal, diesmal mit ihrer
             // Herleitung. Der SUMMENweg oben bleibt unangetastet — der Bericht liest
@@ -3181,11 +3209,16 @@ namespace WindowsFormsApplication1
                     invest.Add(new KapitalwertRechner.InvestPosition
                     { Betrag = pos.Betrag * investFaktor, Nutzungsdauer = pos.Nutzungsdauer });
             }
+            // ETAPPE K5: Der Zuschuss wird vom Investitionsfaktor NICHT skaliert. Die
+            // Sensitivität fragt „was, wenn die Anlage 10 % mehr kostet?" — eine
+            // bewilligte Förderzusage über einen festen Betrag ändert sich dadurch nicht.
+            // Sie skalieren hiesse zu behaupten, der Fördergeber zahle Kostensteigerungen
+            // anteilig mit; das gibt keine Zusage her.
             return KapitalwertRechner.Rechne(invest, e.Betrieb,
                 (e.Energie ?? 0) * energieFaktor, e.Erloes,
                 zinsProzent, p.Betrachtungszeitraum,
                 p.PreissteigerungBetrieb, preisstEnergie,
-                e.Behg * energieFaktor, e.ErloesReihen);
+                e.Behg * energieFaktor, e.ErloesReihen, e.Zuschuss);
         }
 
         /// <summary>Sensitivitätszeilen einer Variante (W2): 4 Parameter, ±Δ → KW vs. Stamm.</summary>
@@ -3259,6 +3292,11 @@ namespace WindowsFormsApplication1
             var kopie = new ProjektEingabe
             {
                 Investitionen = e.Investitionen,
+                // K5: Der Zuschuss MUSS mitkopiert werden. Ohne ihn rechnete das
+                // Novellen-Szenario gegen ein anderes I₀ als die Basis, und die
+                // ausgewiesene Differenz enthielte den Zuschuss statt nur den
+                // weggefallenen KWKG-Bonus.
+                Zuschuss = e.Zuschuss,
                 Betrieb = e.Betrieb,
                 Energie = e.Energie,
                 Erloes = e.Erloes,
@@ -3326,6 +3364,20 @@ namespace WindowsFormsApplication1
             // ---------------- Kapitalwert ----------------
             bild = RechneBild(eingabe, p, p.Zinssatz, p.PreissteigerungEnergie, 1.0, 1.0);
 
+            // ETAPPE K5: Der ANGESETZTE Zuschuss - nicht der erfasste. Beide fallen
+            // auseinander, wenn jemand mehr Zuschuss als Investition erfasst hat; dann
+            // steht I₀ auf 0, und der Überhang wird als Hinweis gemeldet statt
+            // stillschweigend als Gewinn verrechnet.
+            erg.Zuschuss = bild.Zuschuss;
+            if (bild.ZuschussUeberhang > 0.005)
+            {
+                string ueberhang = string.Format(MyResource.Resource.WIRT_ZUSCHUSS_UEBERHANG,
+                    (bild.Zuschuss + bild.ZuschussUeberhang).ToString("N2", BerichtTexte.Kultur),
+                    bild.InvestitionBrutto.ToString("N2", BerichtTexte.Kultur));
+                erg.Hinweis = string.IsNullOrEmpty(erg.Hinweis)
+                    ? ueberhang : erg.Hinweis + " | " + ueberhang;
+            }
+
             erg.BarwertAusgaben = bild.BarwertAusgaben;
             erg.BarwertEinnahmen = bild.BarwertEinnahmen;
             erg.RestwertBarwert = bild.RestwertBarwert;
@@ -3347,26 +3399,108 @@ namespace WindowsFormsApplication1
         /// Leselogik verwendet und keine zweite entsteht.</para></summary>
         internal static List<KapitalwertRechner.InvestPosition> LiesInvestitionen(int idProjekt, string szenario)
         {
+            double zuschussEgal;
+            return LiesInvestitionen(idProjekt, szenario, out zuschussEgal);
+        }
+
+        /// <summary>
+        /// ETAPPE K5 (Konzept § 7.4, L7): dieselbe Leselogik, aber mit dem
+        /// <b>Zuschuss getrennt</b>. Positionen mit
+        /// <c>Kostenart = <see cref="DbWerte.KOSTENART_ZUSCHUSS"/></c> gehen NICHT in die
+        /// Positionsliste, sondern in <paramref name="zuschuss"/> — als positive Summe.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum getrennt und nicht als negative Position.</b> Eine Position bekommt im
+        /// <see cref="KapitalwertRechner"/> über ihre Nutzungsdauer eine Ersatzbeschaffung
+        /// und einen Restwert. Für eine Förderzahlung ist beides sinnlos; die
+        /// Altanwendung tat es trotzdem und nahm dafür die Laufvariable des letzten
+        /// BHKW-Moduls als Nutzungsdauer (Konzept Anhang A(e), Fehler 1). Der Zuschuss
+        /// wird deshalb I₀-seitig abgezogen.
+        /// </para>
+        /// <para>
+        /// <b>Der Zuschuss folgt den Szenarien wie jede andere Zeile.</b> Best- und
+        /// Worst-Case-Beträge gelten auch für ihn (0/leer → Erwartungswert, VALERI-Muster)
+        /// — eine Förderzusage kann ausfallen oder höher ausfallen, und das ist genau die
+        /// Art Unsicherheit, für die die Szenarien da sind.
+        /// </para>
+        /// <para>
+        /// <b>Ohne die Spalten aus Schritt 19</b> (nie migrierte Datenbank) gibt es keine
+        /// Kostenart und damit keinen Zuschuss: Der Rückfallweg liest dieselbe Abfrage wie
+        /// vor K5, und jede Zeile bleibt eine Investitionsposition. Das ist das Verhalten
+        /// des Bestands und damit richtig — eine Zuschusszeile kann in einer solchen
+        /// Datenbank gar nicht entstanden sein.
+        /// </para>
+        /// </remarks>
+        internal static List<KapitalwertRechner.InvestPosition> LiesInvestitionen(
+            int idProjekt, string szenario, out double zuschuss)
+        {
             var liste = new List<KapitalwertRechner.InvestPosition>();
+            zuschuss = 0;
+
+            bool mitKostenart = false;
+            try { mitKostenart = KostenPositionCtrl.StelleSpaltenSicher(); }
+            catch { }
+
             try
             {
+                string felder = "EingegebenerWert, BestCase, WorstCase, Nutzungsdauer, " +
+                                "BestCase_Nutzungsdauer, WorstCase_Nutzungsdauer";
+                if (mitKostenart)
+                    felder += ", [" + SchemaKatalog.SPALTE_PW_KOSTENART + "]";
+
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT EingegebenerWert, BestCase, WorstCase, Nutzungsdauer, " +
-                    "BestCase_Nutzungsdauer, WorstCase_Nutzungsdauer " +
-                    "FROM Tab_ProjektWerte WHERE ProjektID = ? AND KategorieID = 1",
+                    "SELECT " + felder +
+                    " FROM Tab_ProjektWerte WHERE ProjektID = ? AND KategorieID = 1",
                     new OleDbParameter("@p", idProjekt));
                 if (dt == null) return liste;
+
                 foreach (DataRow r in dt.Rows)
                 {
                     double betrag = Szenariowert(r, szenario, "EingegebenerWert", "BestCase", "WorstCase");
+                    if (betrag == 0) continue;
+
+                    if (mitKostenart && IstZuschuss(r))
+                    {
+                        // Der Betrag wird positiv erfasst; ein versehentlich negativer
+                        // Wert würde die Investition ERHÖHEN. Das ist nie gemeint —
+                        // deshalb der Betrag, nicht das Vorzeichen.
+                        zuschuss += Math.Abs(betrag);
+                        continue;
+                    }
+
                     double dauer = Szenariowert(r, szenario, "Nutzungsdauer",
                                                 "BestCase_Nutzungsdauer", "WorstCase_Nutzungsdauer");
-                    if (betrag != 0)
-                        liste.Add(new KapitalwertRechner.InvestPosition { Betrag = betrag, Nutzungsdauer = dauer });
+                    liste.Add(new KapitalwertRechner.InvestPosition { Betrag = betrag, Nutzungsdauer = dauer });
                 }
             }
             catch { }
             return liste;
+        }
+
+        /// <summary>true, wenn die Zeile die Kostenart „Zuschuss" trägt (K5).</summary>
+        private static bool IstZuschuss(DataRow r)
+        {
+            try
+            {
+                if (!r.Table.Columns.Contains(SchemaKatalog.SPALTE_PW_KOSTENART)) return false;
+                object o = r[SchemaKatalog.SPALTE_PW_KOSTENART];
+                if (o == null || o == DBNull.Value) return false;
+                return string.Equals(Convert.ToString(o).Trim(), DbWerte.KOSTENART_ZUSCHUSS,
+                                     StringComparison.OrdinalIgnoreCase);
+            }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// Summe der Zuschusspositionen eines Projekts [€], positiv (K5). 0 = keine.
+        /// Für Anzeigen, die die Investitionsliste nicht ohnehin lesen.
+        /// </summary>
+        internal static double LiesZuschuss(int idProjekt, string szenario)
+        {
+            double zuschuss;
+            LiesInvestitionen(idProjekt, szenario, out zuschuss);
+            return zuschuss;
         }
 
         /// <summary>Summe der Kategorie-2-Positionen (Betriebskosten p. a., Szenariowert).
@@ -3629,8 +3763,9 @@ namespace WindowsFormsApplication1
                                     SPALTE_VERMIEDEN_ARBEIT + ", " + SPALTE_VERMIEDEN_LEISTUNG + ", " +
                                     SPALTE_VERMIEDEN_GESAMT + ", " + SPALTE_AUFSCHLAG_BETRAG + ", " +
                                     SPALTE_EINSPEISUNG_PV + ", " + SPALTE_EINSPEISUNG_KWK + ", " +
+                                    SPALTE_ZUSCHUSS + ", " +
                                     "StromkostenTarif, HinweisText, Fehlgrund) " +
-                                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", conn, tx))
+                                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", conn, tx))
                                 {
                                     OleDbParameterCollection ps = cmd.Parameters;
                                     ps.AddWithValue("@id", naechsteId);
@@ -3671,6 +3806,7 @@ namespace WindowsFormsApplication1
                                     ps.AddWithValue("@aufs", R(e.AufschlagJahr));
                                     ps.AddWithValue("@epv", R(e.EinspeiseerloesPvJahr));   // E7
                                     ps.AddWithValue("@ekwk", R(e.EinspeiseerloesKwkJahr));
+                                    ps.AddWithValue("@zusch", R(e.Zuschuss));              // K5
                                     ps.Add(DbWert(e.StromkostenTarif));
                                     ps.AddWithValue("@hw", (object)e.Hinweis ?? DBNull.Value);
                                     ps.AddWithValue("@fg", (object)e.Fehlgrund ?? DBNull.Value);
@@ -3812,6 +3948,7 @@ namespace WindowsFormsApplication1
                             AufschlagJahr = D(r, SPALTE_AUFSCHLAG_BETRAG) ?? 0,
                             EinspeiseerloesPvJahr = D(r, SPALTE_EINSPEISUNG_PV) ?? 0,        // E7
                             EinspeiseerloesKwkJahr = D(r, SPALTE_EINSPEISUNG_KWK) ?? 0,
+                            Zuschuss = D(r, SPALTE_ZUSCHUSS) ?? 0,                        // K5
                             StromkostenTarif = D(r, "StromkostenTarif"),
                             Hinweis = r.Table.Columns.Contains("HinweisText") && r["HinweisText"] != DBNull.Value
                                       ? r["HinweisText"].ToString() : null,

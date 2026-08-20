@@ -16,7 +16,18 @@ public partial class ucKostenZeile : UserControl
         this.Daten = pos;
         lblName.Text = pos.Name;
         lblEinheit.Text = pos.Einheit;
-        
+
+        // ETAPPE K5: Ein Zuschuss wird POSITIV erfasst, wirkt aber mindernd. Damit
+        // niemand die Zahl für zusätzliche Kosten hält, trägt die Einheitenspalte das
+        // Minuszeichen — die Zeile liest sich dann als „12.000  − €". Der Wert selbst
+        // bleibt unangetastet; ein negatives Drehfeld hier wäre die zweite Wahrheit
+        // über dasselbe Vorzeichen (die erste steht im Rechenkern).
+        if (pos.IstZuschuss)
+        {
+            lblEinheit.Text = "− " + pos.Einheit;
+            lblName.ForeColor = Color.FromArgb(0x1B, 0x5E, 0x20);
+        }
+
         numBetrag.DecimalPlaces = 2; // Erlaubt zwei Nachkommastellen
         numBetrag.Increment = 1M;  // Schritte beim Klicken
 
@@ -243,4 +254,34 @@ public class KostenPosition
 
     /// <summary>Klartext der Herleitung für den Hinweis am gesperrten Feld.</summary>
     public string Herleitung { get; set; } = "";
+
+    // ------------------------------------------------- Etappe K5 (Konzept § 7.4)
+
+    /// <summary>
+    /// Kostenart der Position (<c>Tab_ProjektWerte.Kostenart</c>, Steuerwert
+    /// <c>DbWerte.KOSTENART_*</c>). Leer = wie bisher, also die Vorbelegung aus
+    /// Migrationsschritt 19b.
+    /// </summary>
+    public string Kostenart { get; set; } = "";
+
+    /// <summary>
+    /// true, wenn die Position ein <b>Investitionszuschuss</b> ist: Der erfasste
+    /// (positive) Betrag mindert dann die Anfangsauszahlung, statt sie zu erhöhen.
+    /// Setzen und Löschen geht über dieselbe Eigenschaft — sie ist der einzige Weg,
+    /// die Kostenart aus der Oberfläche zu ändern, und hält damit den Steuerwert
+    /// beisammen.
+    /// </summary>
+    public bool IstZuschuss
+    {
+        get
+        {
+            return string.Equals(Kostenart, DbWerte.KOSTENART_ZUSCHUSS,
+                                 System.StringComparison.OrdinalIgnoreCase);
+        }
+        set
+        {
+            if (value) Kostenart = DbWerte.KOSTENART_ZUSCHUSS;
+            else if (IstZuschuss) Kostenart = DbWerte.KOSTENART_KAPITALGEBUNDEN;
+        }
+    }
 }

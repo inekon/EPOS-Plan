@@ -6206,4 +6206,19 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   <data name="KPROF_STATUS_REIHEN_OHNE_JAHR" xml:space="preserve">
     <value>{0} series, year not maintained</value>
   </data>
+  <data name="WIRT_ZEILE_ZUSCHUSS" xml:space="preserve">
+    <value>Grant [€]</value>
+  </data>
+  <data name="WIRT_ZUSCHUSS_UEBERHANG" xml:space="preserve">
+    <value>The recorded grant ({0} €) exceeds the total investment ({1} €). At most the investment total was applied; the initial outlay is therefore 0 €.</value>
+  </data>
+  <data name="BK_KOSTEN_ZUSCHUSS" xml:space="preserve">
+    <value>incl. grant: −{0} €</value>
+  </data>
+  <data name="KOSTEN_CHK_ZUSCHUSS" xml:space="preserve">
+    <value>This item is a grant (BAFA, KfW, construction subsidy …)</value>
+  </data>
+  <data name="KOSTEN_CHK_ZUSCHUSS_HINT" xml:space="preserve">
+    <value>Enter the amount as a positive figure. It reduces the total investment once — with no replacement purchase and no residual value. Percentage-based operating costs still use the full investment total.</value>
+  </data>
 </root>

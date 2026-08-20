@@ -113,7 +113,35 @@ namespace WindowsFormsApplication1
         /// <summary>Zahlungsstrombild eines Projekts über den Betrachtungszeitraum.</summary>
         public class Zahlungsbild
         {
-            public double Investition;          // I₀ [€]
+            public double Investition;          // I₀ [€] — NACH Zuschussabzug
+
+            // ---- ETAPPE K5 — der Investitionszuschuss (Konzept § 7.4, L7) ----
+
+            /// <summary>
+            /// Summe der Investitionspositionen VOR Abzug des Zuschusses [€]. Die
+            /// Bezugsgröße jeder prozentualen Betriebskostenbemessung („% der
+            /// Investitionssumme") und die Zahl, die der Bericht als „Investition"
+            /// ausweist.
+            /// </summary>
+            public double InvestitionBrutto;
+
+            /// <summary>
+            /// Tatsächlich ANGESETZTER Zuschuss [€], positiv. Er ist auf
+            /// <see cref="InvestitionBrutto"/> geklemmt: Ein Zuschuss über der
+            /// Investitionssumme ergäbe ein negatives I₀ — also eine Zahlung, die das
+            /// Projekt im Jahr 0 einbringt. Das ist keine Investitionsrechnung mehr,
+            /// sondern eine Fehleingabe, und sie wird als solche gemeldet statt
+            /// gerechnet.
+            /// </summary>
+            public double Zuschuss;
+
+            /// <summary>
+            /// Übersteigender Teil eines zu hohen Zuschusses [€], 0 im Regelfall.
+            /// Größer als 0 heißt: Der Anwender hat mehr Zuschuss erfasst als
+            /// Investition — der Aufrufer setzt daraufhin einen Hinweis.
+            /// </summary>
+            public double ZuschussUeberhang;
+
             public double BarwertAusgaben;      // Betrieb + Energie + Ersatz [€]
             public double BarwertEinnahmen;     // Erlöse [€]
             public double RestwertBarwert;      // [€]
@@ -210,12 +238,23 @@ namespace WindowsFormsApplication1
         /// je Jahr; eine Liste mit genau der KWKG-Reihe rechnet Wert für Wert wie der
         /// frühere Parameter <c>double[] zusatzErloesJeJahr</c>.
         /// </param>
+        /// <param name="zuschuss">
+        /// ETAPPE K5 (Konzept § 7.4, L7): Investitionszuschuss [€], positiv erfasst.
+        /// Er mindert I₀ <b>einmalig</b> und wird deshalb NICHT als
+        /// <see cref="InvestPosition"/> hereingereicht: Eine Position bekäme über ihre
+        /// Nutzungsdauer eine Ersatzbeschaffung und einen Restwert, und beides ist bei
+        /// einer Förderzahlung sinnlos (die Altanwendung tat genau das, mit einer
+        /// zufälligen Nutzungsdauer — Konzept Anhang A(e)). Der Abzug geschieht deshalb
+        /// NACH der Positionsschleife: Ersatzreihe und Restwert entstehen aus den
+        /// Bruttobeträgen und bleiben vom Zuschuss unberührt. 0 = kein Zuschuss.
+        /// </param>
         public static Zahlungsbild Rechne(List<InvestPosition> investitionen,
                                           double betriebJahr, double energieJahr, double erloesJahr,
                                           double zinsProzent, int jahre,
                                           double preisstBetriebProzent, double preisstEnergieProzent,
                                           double behgJahr = 0,
-                                          IList<ErloesReihe> zusatzErloesReihen = null)
+                                          IList<ErloesReihe> zusatzErloesReihen = null,
+                                          double zuschuss = 0)
         {
             double i = zinsProzent / 100.0;
             double pB = preisstBetriebProzent / 100.0;
@@ -265,6 +304,25 @@ namespace WindowsFormsApplication1
                     double rest = n - alter;
                     if (rest > 1e-9) restwertT += pos.Betrag * (rest / n);
                 }
+            }
+
+            // ---------------- ETAPPE K5: Zuschuss mindert I₀ einmalig ----------------
+            // Der Abzug steht NACH der Positionsschleife und wirkt deshalb ausschließlich
+            // auf z.Investition — ersatzJeJahr und restwertT sind zu diesem Zeitpunkt
+            // fertig und bleiben Bruttogrößen. Genau das ist der Unterschied zur
+            // Altanwendung: Dort war der Zuschuss eine Position mit (zufälliger)
+            // Nutzungsdauer und erzeugte damit Ersatzbeschaffungen und einen Restwert
+            // auf Geld, das nie ersetzt werden muss.
+            z.InvestitionBrutto = z.Investition;
+            if (zuschuss > 0)
+            {
+                // Klemme auf die Investitionssumme: Ein negatives I₀ wäre eine Einzahlung
+                // im Jahr 0 - rechnerisch möglich, fachlich eine Fehleingabe. Der
+                // Überhang wird ausgewiesen, damit der Aufrufer ihn melden kann, statt
+                // ihn stillschweigend zu verschlucken.
+                z.Zuschuss = Math.Min(zuschuss, z.Investition);
+                z.ZuschussUeberhang = zuschuss - z.Zuschuss;
+                z.Investition -= z.Zuschuss;
             }
 
             // ---------------- Jahresreihe abzinsen ----------------
