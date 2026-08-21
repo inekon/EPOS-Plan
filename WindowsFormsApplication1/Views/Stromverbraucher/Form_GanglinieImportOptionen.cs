@@ -16,10 +16,13 @@ namespace WindowsFormsApplication1
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Der Dialog ist vollstaendig im Quelltext aufgebaut - keine
-    /// <c>.Designer.cs</c>, keine <c>.resx</c> (Projekt-CLAUDE.md: Designer- und
-    /// resx-Dateien nicht von Hand editieren). Alle Beschriftungen kommen aus
-    /// <c>MyResource</c> (<c>IMPORT_*</c>) und sind damit zweisprachig.
+    /// Die Oberflaeche steht in <c>Form_GanglinieImportOptionen.Designer.cs</c>,
+    /// weiterhin ohne eigene <c>.resx</c> (Projekt-CLAUDE.md: resx-Dateien nicht von
+    /// Hand editieren). Alle Beschriftungen kommen aus <c>MyResource</c>
+    /// (<c>IMPORT_*</c>, der Fussknopf "OK" aus dem generischen <c>SIM_BTN_OK</c>),
+    /// sind damit zweisprachig und werden in
+    /// <see cref="TexteSetzen"/> gesetzt; im Designer steht der deutsche Text als
+    /// Vorschau.
     /// </para>
     /// <para>
     /// <b>Steuerwerte sind Indizes, keine Anzeigetexte</b> (Drei-Schichten-Regel):
@@ -27,7 +30,7 @@ namespace WindowsFormsApplication1
     /// (<see cref="Trennzeichenwerte"/> u. a.), die Beschriftung steht daneben.
     /// </para>
     /// </remarks>
-    public class Form_GanglinieImportOptionen : Form
+    public partial class Form_GanglinieImportOptionen : Form
     {
         /// <summary>Steuerwerte der Trennzeichenliste, gleiche Reihenfolge wie die Beschriftungen.</summary>
         private static readonly char[] Trennzeichenwerte = { ';', ',', '\t', '|', '\0' };
@@ -61,13 +64,6 @@ namespace WindowsFormsApplication1
 
         private readonly string m_szPfad;
 
-        private ComboBox cbo_Trennzeichen, cbo_Dezimal, cbo_Wertspalte, cbo_Zeitspalte;
-        private ComboBox cbo_Einheit, cbo_Raster, cbo_Konvention, cbo_Blatt;
-        private CheckBox chk_Kopfzeile;
-        private ListView listView_Vorschau;
-        private Label lbl_Datei, lbl_Blatt, lbl_Hinweis;
-        private Button btn_Aktualisieren, btn_OK, btn_Abbrechen;
-        private GroupBox grp_Format, grp_Vorschau;
         private bool m_bAufbau = true;
 
         /// <summary>Die vom Anwender bestaetigten Leseoptionen.</summary>
@@ -83,140 +79,74 @@ namespace WindowsFormsApplication1
             m_szPfad = pfad ?? "";
             Optionen = (vorschau != null ? vorschau.Vorschlag : new GanglinienImportOptionen()).Kopie();
 
-            AufbauSteuerelemente(vorschau != null && vorschau.IstExcel);
+            // Der Designer setzt AutoScaleMode bewusst auf None und laesst
+            // AutoScaleDimensions weg: Die Anwendung laeuft DpiUnaware (app.manifest,
+            // Program.SetHighDpiMode). Der bisherige Aufbau setzte zwar
+            // AutoScaleMode.Font, aber nie AutoScaleDimensions - der Skalierungsfaktor
+            // blieb damit immer 1:1, es fand also faktisch keine Skalierung statt.
+            // None haelt genau dieses Verhalten fest.
+            InitializeComponent();
+            TexteSetzen();
+
+            // Das Tabellenblatt gibt es nur bei Excel-Quellen; die Sichtbarkeit haengt
+            // damit am Konstruktorparameter und kann nicht im Designer stehen.
+            bool istExcel = vorschau != null && vorschau.IstExcel;
+            lbl_Blatt.Visible = istExcel;
+            cbo_Blatt.Visible = istExcel;
+
             ListenFuellen(vorschau);
             OptionenInDialog();
             VorschauFuellen(vorschau);
             m_bAufbau = false;
+
+            // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
+            // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
+            // Auf ausreichend grossen Schirmen wirkungslos.
+            FensterEinpassung.Einhaengen(this);
         }
 
         // ==================================================================
-        // Aufbau
+        // Texte
         // ==================================================================
 
-        private void AufbauSteuerelemente(bool istExcel)
+        /// <summary>
+        /// Setzt alle sichtbaren Texte aus <c>MyResource</c>. Laeuft direkt nach
+        /// <c>InitializeComponent()</c> und ersetzt die dortigen Platzhalter. Die
+        /// beiden zusammengesetzten Texte - Dateiname im Kopf, Zeilenzahl in der
+        /// Vorschauueberschrift - stehen ebenfalls hier; <c>m_szPfad</c> ist zu
+        /// diesem Zeitpunkt bereits gesetzt.
+        /// </summary>
+        private void TexteSetzen()
         {
-            Text = MyResource.Resource.IMPORT_TITEL_OPTIONEN;
-            FormBorderStyle = FormBorderStyle.Sizable;
-            StartPosition = FormStartPosition.CenterParent;
-            MinimizeBox = false;
-            MaximizeBox = false;
-            ShowInTaskbar = false;
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(820, 560);
-            MinimumSize = new Size(660, 460);
+            this.Text = MyResource.Resource.IMPORT_TITEL_OPTIONEN;
 
-            lbl_Datei = new Label();
-            lbl_Datei.SetBounds(12, 10, 796, 18);
-            lbl_Datei.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            lbl_Datei.AutoEllipsis = true;
             lbl_Datei.Text = string.Format(CultureInfo.CurrentCulture,
                 MyResource.Resource.IMPORT_LBL_DATEI, Path.GetFileName(m_szPfad));
-            Controls.Add(lbl_Datei);
 
-            grp_Format = new GroupBox();
-            grp_Format.SetBounds(12, 32, 796, 178);
-            grp_Format.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             grp_Format.Text = MyResource.Resource.IMPORT_GRP_OPTIONEN;
-            Controls.Add(grp_Format);
-
-            const int sp1 = 14, sp1e = 150, sp2 = 420, sp2e = 566;
-            int y = 26;
-
-            Beschriftung(grp_Format, MyResource.Resource.IMPORT_LBL_TRENNZEICHEN, sp1, y);
-            cbo_Trennzeichen = Auswahl(grp_Format, sp1e, y, 200);
-            Beschriftung(grp_Format, MyResource.Resource.IMPORT_LBL_DEZIMALTRENNER, sp2, y);
-            cbo_Dezimal = Auswahl(grp_Format, sp2e, y, 200);
-
-            y += 30;
-            Beschriftung(grp_Format, MyResource.Resource.IMPORT_LBL_WERTSPALTE, sp1, y);
-            cbo_Wertspalte = Auswahl(grp_Format, sp1e, y, 200);
-            Beschriftung(grp_Format, MyResource.Resource.IMPORT_LBL_ZEITSPALTE, sp2, y);
-            cbo_Zeitspalte = Auswahl(grp_Format, sp2e, y, 200);
-
-            y += 30;
-            Beschriftung(grp_Format, MyResource.Resource.IMPORT_LBL_EINHEIT, sp1, y);
-            cbo_Einheit = Auswahl(grp_Format, sp1e, y, 200);
-            Beschriftung(grp_Format, MyResource.Resource.IMPORT_LBL_RASTER, sp2, y);
-            cbo_Raster = Auswahl(grp_Format, sp2e, y, 200);
-
-            y += 30;
-            Beschriftung(grp_Format, MyResource.Resource.IMPORT_LBL_KONVENTION, sp1, y);
-            cbo_Konvention = Auswahl(grp_Format, sp1e, y, 200);
-            lbl_Blatt = Beschriftung(grp_Format, MyResource.Resource.IMPORT_LBL_BLATT, sp2, y);
-            cbo_Blatt = Auswahl(grp_Format, sp2e, y, 200);
-            lbl_Blatt.Visible = istExcel;
-            cbo_Blatt.Visible = istExcel;
-
-            y += 30;
-            chk_Kopfzeile = new CheckBox();
-            chk_Kopfzeile.SetBounds(sp1, y, 340, 22);
+            lbl_Trennzeichen.Text = MyResource.Resource.IMPORT_LBL_TRENNZEICHEN;
+            lbl_Dezimal.Text = MyResource.Resource.IMPORT_LBL_DEZIMALTRENNER;
+            lbl_Wertspalte.Text = MyResource.Resource.IMPORT_LBL_WERTSPALTE;
+            lbl_Zeitspalte.Text = MyResource.Resource.IMPORT_LBL_ZEITSPALTE;
+            lbl_Einheit.Text = MyResource.Resource.IMPORT_LBL_EINHEIT;
+            lbl_Raster.Text = MyResource.Resource.IMPORT_LBL_RASTER;
+            lbl_Konvention.Text = MyResource.Resource.IMPORT_LBL_KONVENTION;
+            lbl_Blatt.Text = MyResource.Resource.IMPORT_LBL_BLATT;
             chk_Kopfzeile.Text = MyResource.Resource.IMPORT_LBL_KOPFZEILE;
-            grp_Format.Controls.Add(chk_Kopfzeile);
-
-            btn_Aktualisieren = new Button();
-            btn_Aktualisieren.SetBounds(sp2e, y - 2, 200, 26);
             btn_Aktualisieren.Text = MyResource.Resource.IMPORT_BTN_AKTUALISIEREN;
-            btn_Aktualisieren.Click += Aktualisieren_Click;
-            grp_Format.Controls.Add(btn_Aktualisieren);
 
-            grp_Vorschau = new GroupBox();
-            grp_Vorschau.SetBounds(12, 218, 796, 258);
-            grp_Vorschau.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             grp_Vorschau.Text = string.Format(CultureInfo.CurrentCulture,
                 MyResource.Resource.IMPORT_GRP_VORSCHAU, GanglinienDatei.VorschauZeilen);
-            Controls.Add(grp_Vorschau);
 
-            listView_Vorschau = new ListView();
-            listView_Vorschau.SetBounds(12, 20, 772, 228);
-            listView_Vorschau.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            listView_Vorschau.View = View.Details;
-            listView_Vorschau.FullRowSelect = true;
-            listView_Vorschau.GridLines = true;
-            listView_Vorschau.MultiSelect = false;
-            grp_Vorschau.Controls.Add(listView_Vorschau);
-
-            lbl_Hinweis = new Label();
-            lbl_Hinweis.SetBounds(12, 486, 560, 34);
-            lbl_Hinweis.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             lbl_Hinweis.Text = MyResource.Resource.IMPORT_HINWEIS_OPTIONEN;
-            Controls.Add(lbl_Hinweis);
 
-            btn_OK = new Button();
-            btn_OK.SetBounds(616, 522, 90, 26);
-            btn_OK.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btn_OK.Text = MyResource.Resource.IMPORT_BTN_OK;
-            btn_OK.DialogResult = DialogResult.OK;
-            btn_OK.Click += OK_Click;
-            Controls.Add(btn_OK);
-
-            btn_Abbrechen = new Button();
-            btn_Abbrechen.SetBounds(714, 522, 94, 26);
-            btn_Abbrechen.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            // Fusszeilen-Standard (Design-Politur 21.08.2026): Der Abschlussknopf eines
+            // Eingabedialogs heisst "OK", nicht "Einlesen" - der Fachknopf der Maske ist
+            // btn_Aktualisieren. SIM_BTN_OK ist der im Haus bereits vorhandene generische
+            // Schluessel (de "OK", en "OK"), es kommt also kein neuer Schluessel dazu.
+            // IMPORT_BTN_OK ("Einlesen"/"Import") bleibt im Katalog unangetastet.
+            btn_OK.Text = MyResource.Resource.SIM_BTN_OK;
             btn_Abbrechen.Text = MyResource.Resource.IMPORT_BTN_ABBRECHEN;
-            btn_Abbrechen.DialogResult = DialogResult.Cancel;
-            Controls.Add(btn_Abbrechen);
-
-            AcceptButton = btn_OK;
-            CancelButton = btn_Abbrechen;
-        }
-
-        private static Label Beschriftung(Control eltern, string text, int x, int y)
-        {
-            Label l = new Label();
-            l.SetBounds(x, y + 4, 132, 18);
-            l.Text = text;
-            eltern.Controls.Add(l);
-            return l;
-        }
-
-        private static ComboBox Auswahl(Control eltern, int x, int y, int breite)
-        {
-            ComboBox c = new ComboBox();
-            c.SetBounds(x, y, breite, 22);
-            c.DropDownStyle = ComboBoxStyle.DropDownList;
-            eltern.Controls.Add(c);
-            return c;
         }
 
         // ==================================================================
@@ -380,5 +310,73 @@ namespace WindowsFormsApplication1
         {
             DialogInOptionen();
         }
+
+        // ==================================================================
+        // Oberflaeche - Begruendungen zur Geometrie
+        // ==================================================================
+        //
+        // Die Steuerelemente stehen in Form_GanglinieImportOptionen.Designer.cs.
+        // Designer-Code traegt keine Kommentare; die Pixelentscheidungen stehen
+        // deshalb hier.
+        //
+        // --- Design-Politur 21.08.2026 -----------------------------------
+        //
+        // * Echttexte statt Feldnamen. Im Designer standen als Platzhalter die
+        //   Feldnamen ("lbl_Trennzeichen" usw.). Jetzt steht dort der deutsche Text
+        //   aus MyResource - als reine VORSCHAU, damit im VS-Designer zu sehen ist,
+        //   ob die Beschriftungen in ihre Felder passen. Gesetzt werden sie
+        //   weiterhin ausschliesslich in TexteSetzen(); die Maske bleibt
+        //   zweisprachig. Die beiden zusammengesetzten Texte stehen woertlich mit
+        //   ihrem Platzhalter im Designer ("Datei: {0}", "Vorschau (erste {0}
+        //   Zeilen)") - sie werden zur Laufzeit ueber string.Format gefuellt.
+        //
+        // * Das Beschriftungsraster der Formatgruppe war zu eng. Alle Labels waren
+        //   132 px breit, die Auswahllisten begannen links bei x = 150 und rechts
+        //   bei x = 566. Mit den Echttexten geht das links nicht auf:
+        //     - "Zeitstempel bezeichnet:" (lbl_Konvention) misst 132 px
+        //       (TextRenderer.MeasureText, Segoe UI 9 pt) und wurde im 132 px
+        //       breiten Feld abgeschnitten - ein Label braucht rund 6 px
+        //       Innenrand. Nach der Faustformel des Hauses (7 px je Zeichen + 8)
+        //       waeren es sogar 169 px.
+        //     - Der Abstand Label/Liste betrug links nur 4 px (Label endet bei 146,
+        //       Liste beginnt bei 150) und lag damit unter dem Mindestmass von 6 px.
+        //   Neu: linke Spalte Label x = 14 mit 170 px Breite, Liste ab x = 192;
+        //   rechte Spalte Label x = 412 mit 140 px Breite, Liste ab x = 560. Beide
+        //   Breiten decken die Faustformel ab (links 169, rechts 134) und damit
+        //   auch das Englische, wo "Unit of the values:" und "Decimal separator:"
+        //   die laengsten sind. Der Abstand Label/Liste betraegt jeweils 8 px,
+        //   zwischen linker Liste (Ende 392) und rechtem Label 20 px. Die
+        //   Listenbreite bleibt 200 px, die rechte Liste endet bei 760 und damit
+        //   36 px vor dem Gruppenrand.
+        //
+        // * btn_Aktualisieren auf 200 x 30 (vorher 200 x 26) - einheitliche
+        //   Knopfhoehe 30 im ganzen Dialog - und buendig zur rechten Listenspalte
+        //   auf x = 560. Damit die 4 px Mehrhoehe nicht an den Gruppenrand stossen,
+        //   waechst grp_Format von 178 auf 182 px Hoehe (Knopf endet bei y = 174,
+        //   8 px Rand). chk_Kopfzeile rutscht von y = 146 auf 148, damit oben 10 px
+        //   Abstand zur letzten Listenzeile bleiben (deren Unterkante liegt bei 138).
+        //
+        // * grp_Vorschau folgt auf y = 220 (vorher 218, 6 px Abstand zur nun
+        //   tieferen Formatgruppe) und wird um dieselben 2 px auf 256 gekuerzt -
+        //   die Unterkante bleibt exakt bei y = 476, die Liste darin unveraendert.
+        //
+        // * Fussknoepfe auf einheitliche 110 x 30 (vorher btn_OK 90 x 26,
+        //   btn_Abbrechen 94 x 26). Die Unterkante bleibt bei y = 548 (Rand 12),
+        //   dafuer wandert der Fuss von y = 522 auf 518. Die rechte Kante bleibt bei
+        //   x = 808 (Rand 12): btn_Abbrechen ab 698, btn_OK ab 576; der Abstand
+        //   zwischen beiden waechst von 8 auf 12 px.
+        //
+        // * lbl_Hinweis endete mit seinen 560 px Breite bei x = 572 und stiess damit
+        //   auf 4 px an den verbreiterten OK-Knopf - unter dem Mindestmass von 6 px.
+        //   Neu 556 px breit ab x = 12 (Ende 568, 8 px Luft) und auf y = 482 gehoben
+        //   (Unterkante 516, 6 px zur Vorschaugruppe, 2 px ueber dem Knopffuss).
+        //   Label und Knoepfe sind beide Bottom-verankert und das Label zusaetzlich
+        //   Left|Right - der 8-px-Abstand bleibt deshalb in jeder Fensterbreite
+        //   erhalten. Die Hoehe bleibt bei 34 px: Der Text misst 509 px und steht in
+        //   der Grundgroesse einzeilig, bei MinimumSize schrumpft das Feld auf 392 px
+        //   und der Text bricht auf zwei Zeilen (30 px) um.
+        //
+        // * ClientSize bleibt 820 x 560, MinimumSize 660 x 460 - die Politur kommt
+        //   ohne Mehrflaeche aus.
     }
 }

@@ -82,6 +82,8 @@ namespace WindowsFormsApplication1
             // bei jeder Auswahl erneut haengengelassen -> Mehrfach-Feuern + Ueberschreiben
             // von m.ID_Carrier waehrend der Bindung).
             cmbBrennstoffArt.SelectedIndexChanged += cmbBrennstoffArt_SelectedIndexChanged;
+
+            FensterEinpassung.Einhaengen(this);
         }
 
         // Konfiguriert die Auswahl-ListView (Details, Spalten Name + ID). Steuerungsname bleibt

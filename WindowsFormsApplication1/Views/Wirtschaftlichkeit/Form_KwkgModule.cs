@@ -20,24 +20,24 @@ namespace WindowsFormsApplication1
     /// Projektwert". Die Projektvorgaben stehen im Parameterdialog und sind dort als
     /// Vorgabe benannt.</para>
     ///
-    /// <para>Komplett im Code aufgebaut (kein Designer/.resx nötig) — Muster
-    /// <c>Form_WirtschaftlichkeitParameter</c>. Wie dieser ist der Dialog nicht
-    /// lokalisiert; die Herleitungstexte kommen dagegen aus <c>MyResource</c>, weil
-    /// dieselben Texte auch im Ergebnis erscheinen.</para>
+    /// <para>Die Oberfläche steht in <c>Form_KwkgModule.Designer.cs</c>, weiterhin ohne
+    /// eigene <c>.resx</c>: Der Dialog ist — wie sein Muster
+    /// <c>Form_WirtschaftlichkeitParameter</c> — nicht lokalisiert, im Designer stehen
+    /// deshalb nur Platzhalter (der Feldname) und die echten deutschen Texte setzt
+    /// <see cref="TexteSetzen"/> unmittelbar nach <c>InitializeComponent()</c>. Die
+    /// Herleitungstexte kommen dagegen aus <c>MyResource</c>, weil dieselben Texte auch
+    /// im Ergebnis erscheinen. Nicht serialisierbar und deshalb im Konstruktor-Nachlauf:
+    /// die Auswahllisten (<see cref="AuswahlListenFuellen"/> — DB-Persistenzwerte aus
+    /// <c>DbWerte</c>), die Anlagenliste (<see cref="ListeFuellen"/>), die Umbruchhöhe
+    /// des Hinweises (<see cref="HinweisHoeheAnpassen"/>) und die Erstauswahl
+    /// (<see cref="ErsteZeileWaehlen"/>).</para>
     /// </summary>
-    public class Form_KwkgModule : Form
+    public partial class Form_KwkgModule : Form
     {
         private readonly KwkgAnlagenCtrl _ctrl = new KwkgAnlagenCtrl();
         private readonly List<KwkgAnlagenAngabe> _anlagen;
         private readonly WirtschaftlichkeitParameter _projekt;
         private readonly GesetzKatalog _katalog = new GesetzKatalog();
-
-        private ListBox _liste;
-        private DateTimePicker _dtStichtag, _dtIbn;
-        private ComboBox _cbArt, _cbFall;
-        private NumericUpDown _numEinsp, _numEigen, _numKontingent, _numDeckel;
-        private Label _lblKopf, _lblVorschlag;
-        private Button _btnUebernehmen, _btnOk, _btnAbbrechen;
 
         private int _aktuell = -1;
         private bool _stumm;   // true, während der Dialog die Felder selbst füllt
@@ -49,183 +49,135 @@ namespace WindowsFormsApplication1
         {
             _projekt = projekt ?? new WirtschaftlichkeitParameter();
             _anlagen = _ctrl.LadeGruppe(idStamm, stammName);
-            Aufbauen();
+
+            // Der Designer setzt AutoScaleMode bewusst auf None und lässt
+            // AutoScaleDimensions weg: Bisher stand hier AutoScaleMode.Font OHNE
+            // AutoScaleDimensions, der Skalierfaktor blieb damit (1,1) — es wurde also
+            // faktisch nie skaliert. Die Anwendung läuft ohnehin DpiUnaware
+            // (app.manifest, Program.SetHighDpiMode). None hält genau dieses Verhalten
+            // fest und verhindert, dass ein Designer-Speichern die Skalierung erstmals
+            // scharf schaltet.
+            InitializeComponent();
+            TexteSetzen();
+            AuswahlListenFuellen();
+            ListeFuellen();
+            HinweisHoeheAnpassen();   // NACH TexteSetzen — misst den echten Text
+            ErsteZeileWaehlen();      // zuletzt, wie bisher am Ende von Aufbauen()
         }
 
-        // ------------------------------------------------------------- Aufbau
+        // -------------------------------------------------- Aufbau-Nachlauf
 
-        private void Aufbauen()
+        /// <summary>
+        /// Setzt alle sichtbaren Texte. Läuft direkt nach <c>InitializeComponent()</c> und
+        /// ersetzt die dortigen Platzhalter. Die Texte sind (wie im Bestand) deutsche
+        /// Literale — die Lokalisierung dieses Dialogs ist ein eigener Vorgang; hier steht
+        /// nur, dass sie an genau einer Stelle liegen.
+        /// </summary>
+        private void TexteSetzen()
         {
-            this.SuspendLayout();
-            this.AutoScaleMode = AutoScaleMode.Font;
-            this.Font = new Font("Segoe UI", 9f);
-
-            _liste = new ListBox
-            {
-                Location = new Point(12, 30),
-                Size = new Size(250, 230),
-                IntegralHeight = false
-            };
-            foreach (KwkgAnlagenAngabe g in _anlagen)
-                _liste.Items.Add(g.Projektname + " · " + g.Bezeichner +
-                                 " (" + g.PelKW.ToString("N0") + " kW)");
-            _liste.SelectedIndexChanged += new EventHandler(Liste_Wechsel);
-            this.Controls.Add(Beschriftung("BHKW-Anlagen der Vergleichsgruppe:", 12, 10, 250));
-            this.Controls.Add(_liste);
-
-            int x = 278, y = 30;
-            _dtStichtag = DatumZeile("Stichtag (Bestellung/Genehmigung):", x, ref y);
-            _dtIbn = DatumZeile("Inbetriebnahme:", x, ref y);
-            _cbArt = AuswahlZeile("Anlagenart:", x, ref y, new[]
-            {
-                new Steuerwahl("", "(nicht erfasst — gilt als Neuanlage)"),
-                new Steuerwahl(DbWerte.KWKG_ANLAGENART_NEU,           "neue Anlage (§ 8 Abs. 1)"),
-                new Steuerwahl(DbWerte.KWKG_ANLAGENART_MODERNISIERT,  "modernisiert (§ 8 Abs. 2)"),
-                new Steuerwahl(DbWerte.KWKG_ANLAGENART_NACHGERUESTET, "nachgerüstet (§ 8 Abs. 3)")
-            });
-            _cbFall = AuswahlZeile("Eigenstrom nach § 6 Abs. 3:", x, ref y, new[]
-            {
-                new Steuerwahl(DbWerte.KWKG_EIGENFALL_KEINER, "kein Tatbestand (kein Eigenstromzuschlag)"),
-                new Steuerwahl(DbWerte.KWKG_EIGENFALL_NR1,    "Nr. 1 — Anlage bis 100 kW"),
-                new Steuerwahl(DbWerte.KWKG_EIGENFALL_NR2,    "Nr. 2 — Kundenanlage / geschl. Netz"),
-                new Steuerwahl(DbWerte.KWKG_EIGENFALL_NR3,    "Nr. 3 — stromkostenintensiv")
-            });
-            _numEinsp = ZahlZeile("Satz Einspeisung [ct/kWh] (0 = Projektsatz):", x, ref y, 0m, 30m, 2, 0.1m);
-            _numEigen = ZahlZeile("Satz Eigenstrom [ct/kWh] (0 = Projektsatz):", x, ref y, 0m, 30m, 2, 0.1m);
-            _numKontingent = ZahlZeile("Vbh-Kontingent [h] (0 = Projektwert):", x, ref y, 0m, 200000m, 0, 1000m);
-            _numDeckel = ZahlZeile("Vbh-Jahresdeckel [h/a] (0 = Staffel):", x, ref y, 0m, 8760m, 0, 100m);
-
-            _lblKopf = new Label
-            {
-                Location = new Point(x, y + 6),
-                Size = new Size(430, 18),
-                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                Text = "Katalogvorschlag (§ 7 KWKG 2025)"
-            };
-            this.Controls.Add(_lblKopf);
-            y += 26;
-
-            _lblVorschlag = new Label
-            {
-                Location = new Point(x, y),
-                Size = new Size(430, 96),
-                ForeColor = Color.DimGray
-            };
-            this.Controls.Add(_lblVorschlag);
-            y += 102;
-
-            _btnUebernehmen = new Button
-            {
-                Location = new Point(x, y),
-                Size = new Size(200, 26),
-                Text = "Vorschlag in die Satzfelder übernehmen"
-            };
-            _btnUebernehmen.Click += new EventHandler(Uebernehmen_Klick);
-            this.Controls.Add(_btnUebernehmen);
-            y += 36;
-
-            string hinweis =
+            this.Text = "KWK-Zuschlag je BHKW-Modul";
+            _lblListe.Text = "BHKW-Anlagen der Vergleichsgruppe:";
+            _lblStichtag.Text = "Stichtag (Bestellung/Genehmigung):";
+            _lblIbn.Text = "Inbetriebnahme:";
+            _lblArt.Text = "Anlagenart:";
+            _lblFall.Text = "Eigenstrom nach § 6 Abs. 3:";
+            _lblEinsp.Text = "Satz Einspeisung [ct/kWh] (0 = Projektsatz):";
+            _lblEigen.Text = "Satz Eigenstrom [ct/kWh] (0 = Projektsatz):";
+            _lblKontingent.Text = "Vbh-Kontingent [h] (0 = Projektwert):";
+            _lblDeckel.Text = "Vbh-Jahresdeckel [h/a] (0 = Staffel):";
+            _lblKopf.Text = "Katalogvorschlag (§ 7 KWKG 2025)";
+            _btnUebernehmen.Text = "Vorschlag in die Satzfelder übernehmen";
+            _lblHinweis.Text =
                 "Leere Felder heißen „kein eigener Wert“ — dann gilt die Projektvorgabe aus dem " +
                 "Parameterdialog. Der Vorschlag wird NICHT automatisch angesetzt: Erst die " +
                 "Schaltfläche schreibt ihn in die Satzfelder, und erst dann rechnet diese Anlage " +
                 "mit einem eigenen Satz. Vollbenutzungsstunden, Jahresdeckel und Kontingent " +
                 "gelten nach § 8 KWKG je Anlage.";
-            var lblHinweis = new Label { Location = new Point(12, y + 4), ForeColor = Color.DimGray };
-            lblHinweis.Size = new Size(696, TextRenderer.MeasureText(
-                hinweis, this.Font, new Size(696, 0), TextFormatFlags.WordBreak).Height + 6);
-            lblHinweis.Text = hinweis;
-            this.Controls.Add(lblHinweis);
-            y += lblHinweis.Height + 12;
+            // Standardpaar eines Eingabedialogs: „OK" (AcceptButton) und „Abbrechen"
+            // (CancelButton). Der Knopf hieß bis zur Design-Politur 21.08.2026
+            // „Speichern"; gespeichert wird weiterhin in Speichern_Klick — nur die
+            // Beschriftung folgt jetzt dem Standard.
+            _btnOk.Text = "OK";
+            _btnAbbrechen.Text = "Abbrechen";
+        }
 
-            _btnOk = new Button
+        /// <summary>
+        /// Füllt die beiden Auswahllisten. Steht bewusst NICHT im Designer: Die Steuerwerte
+        /// sind DB-Persistenzwerte (<c>DbWerte.KWKG_*</c>) und dürfen nicht als Literale in
+        /// Designer-Code geraten; die Einträge selbst sind Objekte einer privaten Klasse und
+        /// wären ohnehin nicht serialisierbar.
+        ///
+        /// <para>Läuft unter dem <c>_stumm</c>-Wächter: Im Bestand wurde
+        /// <c>SelectedIndexChanged</c> erst NACH <c>SelectedIndex = 0</c> angehängt, das
+        /// Vorbelegen löste also kein Ereignis aus. Der Designer verdrahtet den Handler
+        /// zwangsläufig vorher — der Wächter stellt denselben Zustand her.</para>
+        /// </summary>
+        private void AuswahlListenFuellen()
+        {
+            _stumm = true;
+            try
             {
-                Location = new Point(488, y),
-                Size = new Size(120, 28),
-                Text = "Speichern"
-            };
-            _btnOk.Click += new EventHandler(Speichern_Klick);
-            _btnAbbrechen = new Button
-            {
-                Location = new Point(614, y),
-                Size = new Size(94, 28),
-                Text = "Abbrechen",
-                DialogResult = DialogResult.Cancel
-            };
-            this.Controls.Add(_btnOk);
-            this.Controls.Add(_btnAbbrechen);
+                _cbArt.Items.AddRange(new object[]
+                {
+                    new Steuerwahl("", "(nicht erfasst — gilt als Neuanlage)"),
+                    new Steuerwahl(DbWerte.KWKG_ANLAGENART_NEU,           "neue Anlage (§ 8 Abs. 1)"),
+                    new Steuerwahl(DbWerte.KWKG_ANLAGENART_MODERNISIERT,  "modernisiert (§ 8 Abs. 2)"),
+                    new Steuerwahl(DbWerte.KWKG_ANLAGENART_NACHGERUESTET, "nachgerüstet (§ 8 Abs. 3)")
+                });
+                _cbArt.SelectedIndex = 0;
 
-            this.ClientSize = new Size(720, y + 44);
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.AutoScroll = true;
-            this.MaximizeBox = false; this.MinimizeBox = false;
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.AcceptButton = _btnOk;
-            this.CancelButton = _btnAbbrechen;
-            this.Name = "Form_KwkgModule";
-            this.Text = "KWK-Zuschlag je BHKW-Modul";
-            this.ResumeLayout(false);
+                _cbFall.Items.AddRange(new object[]
+                {
+                    new Steuerwahl(DbWerte.KWKG_EIGENFALL_KEINER, "kein Tatbestand (kein Eigenstromzuschlag)"),
+                    new Steuerwahl(DbWerte.KWKG_EIGENFALL_NR1,    "Nr. 1 — Anlage bis 100 kW"),
+                    new Steuerwahl(DbWerte.KWKG_EIGENFALL_NR2,    "Nr. 2 — Kundenanlage / geschl. Netz"),
+                    new Steuerwahl(DbWerte.KWKG_EIGENFALL_NR3,    "Nr. 3 — stromkostenintensiv")
+                });
+                _cbFall.SelectedIndex = 0;
+            }
+            finally { _stumm = false; }
+        }
 
+        /// <summary>
+        /// Füllt die Anlagenliste. Steht nicht im Designer: Der Inhalt kommt aus
+        /// <c>KwkgAnlagenCtrl.LadeGruppe()</c> und hängt an den Konstruktorargumenten.
+        /// </summary>
+        private void ListeFuellen()
+        {
+            foreach (KwkgAnlagenAngabe g in _anlagen)
+                _liste.Items.Add(g.Projektname + " · " + g.Bezeichner +
+                                 " (" + g.PelKW.ToString("N0") + " kW)");
+        }
+
+        /// <summary>
+        /// Die Höhe des Hinweistextes hängt am Zeilenumbruch und ist deshalb nicht
+        /// serialisierbar. Im Designer steht der auf diesem Stand gemessene Wert
+        /// (780 × 51 px = 3 Zeilen Segoe UI 9 pt à 15 px + 6 px Luft), damit die
+        /// Festkoordinaten von <c>_btnOk</c>/<c>_btnAbbrechen</c> und die
+        /// <c>ClientSize</c> dazu passen; gemessen wird hier — nach
+        /// <see cref="TexteSetzen"/>, also am ECHTEN Text und nicht am Platzhalter.
+        ///
+        /// <para>Die Breite 780 (= ClientSize 804 − 2 × 12 px Rand) muss mit der Größe
+        /// von <c>_lblHinweis</c> im Designer übereinstimmen, sonst zeigt die
+        /// Entwurfsansicht eine andere Zeilenzahl als der laufende Dialog. Sie ist mit
+        /// der Verbreiterung des Dialogs am 21.08.2026 von 696 auf 780 gegangen; der
+        /// Text bricht zwischen rund 640 und 900 px gleichbleibend auf 3 Zeilen, die
+        /// Höhe 51 und damit die <c>ClientSize</c>-Höhe blieben deshalb unverändert.</para>
+        /// </summary>
+        private void HinweisHoeheAnpassen()
+        {
+            _lblHinweis.Size = new Size(780, TextRenderer.MeasureText(
+                _lblHinweis.Text, this.Font, new Size(780, 0), TextFormatFlags.WordBreak).Height + 6);
+        }
+
+        /// <summary>
+        /// Erstauswahl — läuft zuletzt, weil <see cref="Liste_Wechsel"/> die gefüllten
+        /// Auswahllisten braucht (wie bisher am Ende von <c>Aufbauen()</c>).
+        /// </summary>
+        private void ErsteZeileWaehlen()
+        {
             if (_liste.Items.Count > 0) _liste.SelectedIndex = 0;
             else FelderAktiv(false);
-        }
-
-        // --------------------------------------------------------- Layout-Helfer
-
-        private Label Beschriftung(string text, int x, int y, int breite)
-        {
-            return new Label { Location = new Point(x, y), Size = new Size(breite, 18), Text = text };
-        }
-
-        private DateTimePicker DatumZeile(string text, int x, ref int y)
-        {
-            this.Controls.Add(Beschriftung(text, x, y + 3, 240));
-            var dt = new DateTimePicker
-            {
-                Location = new Point(x + 244, y),
-                Size = new Size(160, 23),
-                Format = DateTimePickerFormat.Short,
-                ShowCheckBox = true,
-                Checked = false
-            };
-            this.Controls.Add(dt);
-            y += 30;
-            return dt;
-        }
-
-        private ComboBox AuswahlZeile(string text, int x, ref int y, Steuerwahl[] eintraege)
-        {
-            this.Controls.Add(Beschriftung(text, x, y + 3, 240));
-            var cb = new ComboBox
-            {
-                Location = new Point(x + 244, y),
-                Size = new Size(186, 23),
-                DropDownStyle = ComboBoxStyle.DropDownList
-            };
-            foreach (Steuerwahl w in eintraege) cb.Items.Add(w);
-            cb.SelectedIndex = 0;
-            cb.SelectedIndexChanged += new EventHandler(Feld_Wechsel);
-            this.Controls.Add(cb);
-            y += 30;
-            return cb;
-        }
-
-        private NumericUpDown ZahlZeile(string text, int x, ref int y,
-                                        decimal min, decimal max, int dez, decimal schritt)
-        {
-            this.Controls.Add(Beschriftung(text, x, y + 3, 240));
-            var num = new NumericUpDown
-            {
-                Location = new Point(x + 244, y),
-                Size = new Size(160, 23),
-                Minimum = min,
-                Maximum = max,
-                DecimalPlaces = dez,
-                Increment = schritt,
-                TextAlign = HorizontalAlignment.Right
-            };
-            this.Controls.Add(num);
-            y += 29;
-            return num;
         }
 
         /// <summary>Ein Eintrag einer Auswahlliste: sprachneutraler Steuerwert für die

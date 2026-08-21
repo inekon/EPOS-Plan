@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -17,24 +16,17 @@ namespace WindowsFormsApplication1
     /// </para>
     ///
     /// <para>
-    /// Bewusst ohne Designer-Datei aufgebaut — wie <see cref="UcBkKosten"/>: die
-    /// Maske ist eine Tabelle mit zwei Knöpfen, und der WinForms-Designer brächte drei
-    /// weitere Dateien (<c>.Designer.cs</c>, zwei <c>.resx</c>) ohne Gegenwert. Alle
-    /// Anzeigetexte kommen aus <c>MyResource</c>, die Steuerwerte der Auswahlspalte sind
-    /// die sprachneutralen Schlüssel aus <see cref="TechnikPlanwertCtrl"/>.
+    /// Der Aufbau der Maske steht in <c>Form_PlanwertUebernahme.Designer.cs</c>;
+    /// <c>.resx</c>-Dateien gibt es bewusst keine, weil alle Anzeigetexte aus
+    /// <c>MyResource</c> kommen (<see cref="TexteSetzen"/>) und im Designer nur als
+    /// Entwurfsbild stehen. Die Steuerwerte der Auswahlspalte sind die sprachneutralen
+    /// Schlüssel aus <see cref="TechnikPlanwertCtrl"/>.
     /// </para>
     /// </summary>
-    internal class Form_PlanwertUebernahme : Form
+    internal partial class Form_PlanwertUebernahme : Form
     {
         private readonly List<TechnikPlanwertCtrl.Anlage> _anlagen;
         private readonly string _komponente;
-
-        private DataGridView grid;
-        private Label lblKopf;
-        private Label lblNeben;
-        private Label lblSumme;
-        private Button btnOk;
-        private Button btnAbbruch;
 
         /// <summary>Gewählte Kostenbasis je GerätID (Schlüssel aus <see cref="TechnikPlanwertCtrl"/>).</summary>
         internal Dictionary<int, string> Wahl { get; private set; }
@@ -52,130 +44,82 @@ namespace WindowsFormsApplication1
             Wahl = new Dictionary<int, string>();
             Nebenkosten = TechnikPlanwertCtrl.Nebensummen(_anlagen);
 
-            Aufbauen();
+            // Der Designer setzt bewusst AutoScaleMode.None und KEIN AutoScaleDimensions:
+            // die Anwendung läuft DpiUnaware (app.manifest, Application.SetHighDpiMode in
+            // Program.cs), und der handgebaute Vorgänger dieser Maske hat mangels
+            // AutoScaleDimensions ebenfalls nie skaliert — das Verhalten bleibt so wie bisher.
+            InitializeComponent();
+            TexteSetzen();
+
             Fuellen();
             SummeAktualisieren();
         }
 
-        // ------------------------------------------------------------------- Aufbau
+        // --------------------------------------------------------------- Geometrie
+        //
+        // Die Steuerelemente stehen seit der Designer-Umstellung in
+        // Form_PlanwertUebernahme.Designer.cs. Designer-Code trägt keine Kommentare;
+        // die Pixelentscheidungen stehen deshalb hier.
+        //
+        // Design-Politur 21.08.2026 — Echttexte im Designer, geprüfte Abstände,
+        // einheitliche Fußknöpfe. Alle Breiten mit TextRenderer gemessen (Segoe UI 9 pt,
+        // deutsch und englisch); die Maske skaliert nicht (AutoScaleMode.None,
+        // DpiUnaware), ist aber in der Breite veränderlich (SizableToolWindow).
+        //
+        // * Beschriftungen und die vier Spaltenköpfe tragen im Designer jetzt den
+        //   deutschen Echttext aus MyResource statt des Feldnamens — der Anwender sieht
+        //   im VS-Designer das Bild der laufenden Maske. Titelzeile und Summenzeile
+        //   stehen als Formatvorlage inklusive {0} da, weil TexteSetzen() bzw.
+        //   SummeAktualisieren() genau diese Zeichenkette füllen. Die Anzeige kommt
+        //   unverändert ausschließlich aus MyResource.
+        // * lblKopf 760 x 34 -> 760 x 44: Der Kopftext misst 522 px (englisch 527 px)
+        //   und passt bei voller Breite in eine Zeile. Zieht der Anwender das Fenster
+        //   auf MinimumSize 560, bleiben nach dem Innenabstand rund 530 px — dann bricht
+        //   der Text auf zwei Zeilen (30 px) und lief mit den 8 px Innenabstand oben aus
+        //   den bisherigen 34 px heraus. 44 px fassen beide Fälle.
+        // * ClientSize 760 x 380 -> 760 x 390: gleicht die 10 px des Kopfes aus, damit
+        //   die Liste nicht kleiner startet als bisher.
+        // * Fußknöpfe einheitlich 120 x 30 (vorher 120 x 28), in panelFuss (42 px hoch)
+        //   senkrecht mittig: btnOk (498/6), btnAbbruch (628/6). Die rechte Kante der
+        //   Gruppe bleibt bei x = 748, also 12 px vom Rand; zwischen den Knöpfen liegen
+        //   jetzt 10 px statt 8. Die Verankerung Top|Right bleibt unverändert.
+        // * btnOk trägt SIM_BTN_OK („OK") statt KOSTEN_PLANWERT_BTN_OK („Übernehmen"),
+        //   btnAbbruch SIM_BTN_ABBRECHEN: Der Dialog wählt nur aus, geschrieben wird
+        //   erst in Form_Kosten nach DialogResult.OK — damit trägt die Maske den
+        //   Standardsatz OK/Abbrechen. Die beiden KOSTEN_PLANWERT-Schlüssel bleiben in
+        //   MyResource stehen.
 
-        private void Aufbauen()
+        // ------------------------------------------------------------------- Texte
+
+        /// <summary>
+        /// Alle sichtbaren Texte aus <c>MyResource</c>; im Designer stehen dieselben
+        /// Texte nur als Entwurfsbild (Drei-Schichten-Regel: Anzeige nur über MyResource).
+        /// </summary>
+        private void TexteSetzen()
         {
             Text = string.Format(MyResource.Resource.KOSTEN_PLANWERT_TITEL, _komponente);
-            StartPosition = FormStartPosition.CenterParent;
-            FormBorderStyle = FormBorderStyle.SizableToolWindow;
-            MinimizeBox = false;
-            MaximizeBox = false;
-            ClientSize = new Size(760, 380);
-            MinimumSize = new Size(560, 300);
-            Font = new Font("Segoe UI", 9f);
+            lblKopf.Text = MyResource.Resource.KOSTEN_PLANWERT_KOPF;
 
-            lblKopf = new Label
-            {
-                Dock = DockStyle.Top,
-                Height = 34,
-                Padding = new Padding(10, 8, 10, 0),
-                Text = MyResource.Resource.KOSTEN_PLANWERT_KOPF
-            };
+            spalteAnlage.HeaderText = MyResource.Resource.KOSTEN_PLANWERT_SP_ANLAGE;
+            spalteBasis.HeaderText = MyResource.Resource.KOSTEN_PLANWERT_SP_BASIS;
+            spalteBetrag.HeaderText = MyResource.Resource.KOSTEN_PLANWERT_SP_BETRAG;
+            spalteHerkunft.HeaderText = MyResource.Resource.KOSTEN_PLANWERT_SP_HERLEITUNG;
 
-            grid = new DataGridView
-            {
-                Dock = DockStyle.Fill,
-                AllowUserToAddRows = false,
-                AllowUserToDeleteRows = false,
-                AllowUserToResizeRows = false,
-                RowHeadersVisible = false,
-                SelectionMode = DataGridViewSelectionMode.CellSelect,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                EditMode = DataGridViewEditMode.EditOnEnter,
-                BackgroundColor = Color.White,
-                Margin = new Padding(10)
-            };
-            grid.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
+            btnOk.Text = MyResource.Resource.SIM_BTN_OK;
+            btnAbbruch.Text = MyResource.Resource.SIM_BTN_ABBRECHEN;
+        }
 
-            var cAnlage = new DataGridViewTextBoxColumn
-            {
-                HeaderText = MyResource.Resource.KOSTEN_PLANWERT_SP_ANLAGE,
-                ReadOnly = true,
-                FillWeight = 130
-            };
-            var cBasis = new DataGridViewComboBoxColumn
-            {
-                HeaderText = MyResource.Resource.KOSTEN_PLANWERT_SP_BASIS,
-                FillWeight = 110,
-                FlatStyle = FlatStyle.Flat,
-                DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox
-            };
-            var cBetrag = new DataGridViewTextBoxColumn
-            {
-                HeaderText = MyResource.Resource.KOSTEN_PLANWERT_SP_BETRAG,
-                ReadOnly = true,
-                FillWeight = 80
-            };
-            cBetrag.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            var cHerkunft = new DataGridViewTextBoxColumn
-            {
-                HeaderText = MyResource.Resource.KOSTEN_PLANWERT_SP_HERLEITUNG,
-                ReadOnly = true,
-                FillWeight = 150
-            };
+        // -------------------------------------------------------------- Ereignisse
 
-            grid.Columns.AddRange(cAnlage, cBasis, cBetrag, cHerkunft);
-            grid.CurrentCellDirtyStateChanged += (s, e) =>
-            {
-                if (grid.IsCurrentCellDirty) grid.CommitEdit(DataGridViewDataErrorContexts.Commit);
-            };
-            grid.CellValueChanged += (s, e) => { if (e.RowIndex >= 0) ZeileNachziehen(e.RowIndex); };
+        /// <summary>Änderung der Auswahlspalte sofort festschreiben, nicht erst beim Zellwechsel.</summary>
+        private void grid_CurrentCellDirtyStateChanged(object sender, EventArgs e)
+        {
+            if (grid.IsCurrentCellDirty) grid.CommitEdit(DataGridViewDataErrorContexts.Commit);
+        }
 
-            lblNeben = new Label { Dock = DockStyle.Top, Height = 40, Padding = new Padding(10, 6, 10, 0) };
-            lblSumme = new Label
-            {
-                Dock = DockStyle.Top,
-                Height = 26,
-                Padding = new Padding(10, 4, 10, 0),
-                Font = new Font("Segoe UI", 9.75f, FontStyle.Bold)
-            };
-
-            btnOk = new Button
-            {
-                Text = MyResource.Resource.KOSTEN_PLANWERT_BTN_OK,
-                DialogResult = DialogResult.OK,
-                Size = new Size(120, 28),
-                Anchor = AnchorStyles.Right | AnchorStyles.Top
-            };
-            btnAbbruch = new Button
-            {
-                Text = MyResource.Resource.KOSTEN_PLANWERT_BTN_ABBRUCH,
-                DialogResult = DialogResult.Cancel,
-                Size = new Size(120, 28),
-                Anchor = AnchorStyles.Right | AnchorStyles.Top
-            };
-
-            var fuss = new Panel { Dock = DockStyle.Bottom, Height = 42 };
-            btnOk.Location = new Point(fuss.Width - 260, 7);
-            btnAbbruch.Location = new Point(fuss.Width - 132, 7);
-            fuss.Controls.Add(btnOk);
-            fuss.Controls.Add(btnAbbruch);
-            fuss.Resize += (s, e) =>
-            {
-                btnOk.Left = fuss.Width - 260;
-                btnAbbruch.Left = fuss.Width - 132;
-            };
-
-            var mitte = new Panel { Dock = DockStyle.Fill, Padding = new Padding(10, 0, 10, 0) };
-            mitte.Controls.Add(grid);
-
-            var unten = new Panel { Dock = DockStyle.Bottom, Height = 70 };
-            unten.Controls.Add(lblSumme);
-            unten.Controls.Add(lblNeben);
-
-            Controls.Add(mitte);
-            Controls.Add(unten);
-            Controls.Add(fuss);
-            Controls.Add(lblKopf);
-
-            AcceptButton = btnOk;
-            CancelButton = btnAbbruch;
+        private void grid_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0) ZeileNachziehen(e.RowIndex);
         }
 
         // -------------------------------------------------------------------- Daten

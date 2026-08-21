@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 31;
+        public const int ZIEL_VERSION = 32;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -977,6 +977,80 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_31_KATALOG_UNIQUE_INDEX = 31;
 
+        /// <summary>
+        /// <b>Nachzug zu <see cref="SCHRITT_29_ALTTABELLEN"/>: die gespeicherten Abfragen,
+        /// die auf den gedroppten Alttabellen stehen geblieben sind.</b>
+        ///
+        /// <para>
+        /// <b>Der Befund.</b> Schritt 29 hat <c>Tab_KostenKategorie</c>,
+        /// <c>Tab_KWKG_Staffel</c> und <c>Tab_BHKW_neu</c> entfernt — vier gespeicherte
+        /// Access-Abfragen verweisen aber weiter darauf. Der Doc-Kommentar an Schritt 29
+        /// hat das ausdruecklich in Kauf genommen („Gespeicherte Access-Abfragen
+        /// blockieren die Drops nicht … sie bleiben Philipps manuelle Checkliste"). Die
+        /// Rechnung war richtig, die Folge nicht: <c>Form_Kosten.LoadKostenFaktoren</c>
+        /// liest <c>Abfrage_Kostenfaktoren</c>, und die joint <c>Tab_KostenKategorie</c>.
+        /// Seit dem Drop bricht der Kosteneditor bei JEDEM Gewerk mit „cannot find the
+        /// input table or query 'Tab_KostenKategorie'" ab. Eine manuelle Checkliste
+        /// erreicht keine Bestandsinstallation — deshalb dieser Schritt.
+        /// </para>
+        ///
+        /// <list type="bullet">
+        ///   <item><description><b>32a</b>: <c>Abfrage_Kostenfaktoren</c> auf das
+        ///     Soll-SQL setzen (<see cref="SCHRITT32_SQL_KOSTENFAKTOREN"/>). Der
+        ///     <c>KategorieName</c> kommt nicht mehr aus einer Katalogtabelle, sondern
+        ///     aus <c>Tab_ProjektWerte.KategorieID</c> — die Abfrage traegt die Abbildung
+        ///     1/2/3 → Name jetzt selbst. HART: Ohne diese Abfrage gibt es im
+        ///     Kosteneditor nichts anzuzeigen.</description></item>
+        ///   <item><description><b>32b</b>: <c>Abfrage_ProjektKostenInvestBetrieb</c>,
+        ///     <c>Abfrage1</c> und <c>Tab_BHKW_Einfügen_Test</c> ersatzlos entfernen.
+        ///     WEICH — sie hat kein Leser, ein Rest ist folgenlos.</description></item>
+        /// </list>
+        ///
+        /// <para>
+        /// <b>Warum die zweite Abfrage geloescht und nicht repariert wird.</b>
+        /// <c>Abfrage_ProjektKostenInvestBetrieb</c> hat keinen einzigen Aufrufer im Code
+        /// (repoweite Suche: nur Kommentare und Konzepttexte). Genau darauf beruht
+        /// <b>Entscheidung E4</b> vom 19.08.2026, festgehalten in
+        /// <c>KostenPositionCtrl.GruppeSichern</c> und als offener Haken in
+        /// <c>K1_Aufraeumung_Protokoll.md</c> § 6.1. Sie zu reparieren hiesse, fuer eine
+        /// tote Abfrage einen Kategoriennamen zu erfinden; sie zu loeschen ist der
+        /// beschlossene Weg — er wandert hier nur von der manuellen Checkliste in den
+        /// Code.
+        /// </para>
+        ///
+        /// <para>
+        /// <b><c>CREATE PROCEDURE</c>, nicht <c>CREATE VIEW</c>.</b> Die Sortierung der
+        /// Abfrage ist fachlich tragend: Sie stellt die Hauptposition an den Anfang, die
+        /// Nebenzeilen folgen darunter (<c>Kostenuebernahme_Protokoll.md</c>), und
+        /// <c>Form_Kosten</c> setzt selbst KEIN <c>ORDER BY</c>. ACE laesst in einem
+        /// <c>CREATE VIEW</c> aber kein <c>ORDER BY</c> zu — nur <c>CREATE PROCEDURE</c>
+        /// kann es. Beides ist ueber OLE DB verfuegbar (und nur dort, nicht in der
+        /// Access-Oberflaeche); DAO ueber COM braucht es deshalb nicht, die Migration
+        /// bleibt bei ihrer einen <see cref="OleDbConnection"/>.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Es wird nie blind gedroppt.</b> 32a versucht ZUERST das
+        /// <c>CREATE PROCEDURE</c>. Gelingt es, fehlte die Abfrage (frisch ausgelieferte
+        /// Datenbank) — dann ist nichts zu ersetzen. Erst die Meldung „existiert bereits"
+        /// fuehrt zu <c>DROP</c> + erneutem <c>CREATE</c>. Scheitert das erste
+        /// <c>CREATE</c> aus einem ANDEREN Grund (etwa weil eine der drei Basistabellen
+        /// fehlt), bleibt die vorhandene Abfrage unangetastet und der Schritt meldet den
+        /// Fehler. So kann kein Lauf eine bestehende Abfrage entfernen, ohne die neue
+        /// anlegen zu koennen.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Idempotent</b> (unabhaengig vom Marker): 32a schreibt bei jedem Lauf
+        /// denselben SQL-Text — ein zweiter Lauf ersetzt die Abfrage durch eine
+        /// zeichengleiche. 32b prueft je Name ueber die Schema-Rowsets, ob es das Objekt
+        /// ueberhaupt gibt; „nicht vorhanden" ist der Normalfall und kein Fehler. Der
+        /// Schritt laeuft damit auch auf einer Datenbank sauber durch, die keine der vier
+        /// Abfragen fuehrt.
+        /// </para>
+        /// </summary>
+        public const int SCHRITT_32_ABFRAGEN_ALTTABELLEN = 32;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -1309,6 +1383,20 @@ namespace WindowsFormsApplication1
         /// (Entscheidung E3).</summary>
         public static int DatenKategorie3Geloescht { get; private set; }
 
+        // --- Zählwerk des Abfragen-Nachzugs aus Schritt 32 -----------------------------
+
+        /// <summary>32a: gespeicherte Produktivabfragen, die auf das Soll-SQL gesetzt
+        /// wurden — höchstens 1 (<c>Abfrage_Kostenfaktoren</c>).</summary>
+        public static int DatenAbfragenErneuert { get; private set; }
+
+        /// <summary>32b: entfernte Altabfragen der Löschliste (höchstens 3). Kleiner,
+        /// wenn eine davon in dieser Datenbank gar nicht steht — der Normalfall.</summary>
+        public static int DatenAbfragenEntfernt { get; private set; }
+
+        /// <summary>32: Abfragen, die weder erneuert noch entfernt werden konnten. Sie
+        /// gehören in die manuelle Access-Checkliste.</summary>
+        public static int DatenAbfragenOffen { get; private set; }
+
         /// <summary>
         /// R7: Anlagen, bei denen der Bezeichner NICHT eindeutig auflösbar war (kein
         /// Treffer oder mehrere gleichnamige Projektkopien). Der Fremdschlüssel bleibt
@@ -1611,6 +1699,21 @@ namespace WindowsFormsApplication1
                         "(Dublettenpruefung D5)",
                         "Die Eindeutigkeitsindizes der Kataloge konnten nicht angelegt werden.",
                         Schritt_31_KatalogUniqueIndex),
+
+            // NACHZUG ZU SCHRITT 29 - die gespeicherten Abfragen, die auf den dort
+            //       gedroppten Alttabellen stehen geblieben sind. Muss NACH 29 stehen
+            //       (er ist dessen Folgearbeit) und ist der erste Schritt ueberhaupt,
+            //       der QueryDefs anfasst: 32a setzt Abfrage_Kostenfaktoren auf ein
+            //       Soll-SQL ohne Tab_KostenKategorie, 32b entfernt die drei Abfragen
+            //       ohne Leser.
+            new Schritt(SCHRITT_32_ABFRAGEN_ALTTABELLEN,
+                        "Gespeicherte Abfragen nachziehen: Abfrage_Kostenfaktoren ohne " +
+                        "Tab_KostenKategorie neu schreiben, Abfrage_ProjektKostenInvestBetrieb " +
+                        "(Entscheidung E4), Abfrage1 und Tab_BHKW_Einfügen_Test entfernen " +
+                        "(Nachzug zu Schritt 29)",
+                        "Die gespeicherte Abfrage Abfrage_Kostenfaktoren konnte nicht auf das " +
+                        "Soll-SQL gesetzt werden - der Kosteneditor bleibt damit unbenutzbar.",
+                        Schritt_32_AbfragenAlttabellen),
         };
 
         // =================================================================================
@@ -1677,6 +1780,9 @@ namespace WindowsFormsApplication1
             DatenAlttabellenGeloescht = 0;
             DatenAlttabellenOffen = 0;
             DatenKategorie3Geloescht = 0;
+            DatenAbfragenErneuert = 0;
+            DatenAbfragenEntfernt = 0;
+            DatenAbfragenOffen = 0;
             _eindeutigkeitGeprueft = false;
             _katalogIndizesGeprueft = false;
 
@@ -2000,6 +2106,20 @@ namespace WindowsFormsApplication1
                               DbWerte.BIOMASSE_KONVENTION_NULL + "\" und Nachhaltigkeitsnachweis \"" +
                               DbWerte.BIOMASSE_NACHWEIS_JA +
                               "\": die Emissionsbilanz und die BEHG-Abgabe rechnen wie bisher."));
+
+            // Schritt 32 meldet - wie 14, 16, 17, 24 und 30 - AUCH die 0. Sie ist hier die
+            // eigentliche Aussage: keine gespeicherte Abfrage verweist noch auf eine in
+            // Schritt 29 gedroppte Tabelle, und genau das ist die Bedingung dafuer, dass
+            // der Kosteneditor wieder oeffnet.
+            if (StandNachher >= SCHRITT_32_ABFRAGEN_ALTTABELLEN)
+                l.Zeile("Gespeicherte Abfragen (Schritt 32): " + DatenAbfragenErneuert +
+                        " Produktivabfrage erneuert, " + DatenAbfragenEntfernt + " von " +
+                        SCHRITT32_LOESCHEN.Length + " Altabfragen entfernt" +
+                        (DatenAbfragenOffen > 0
+                            ? ", " + DatenAbfragenOffen + " offen - siehe die Meldungen oben; " +
+                              "sie haben keinen Leser und aendern an keiner Rechnung etwas."
+                            : " - keine gespeicherte Abfrage verweist mehr auf eine in " +
+                              "Schritt 29 gedroppte Tabelle."));
 
             return alleOk && StandNachher >= ZIEL_VERSION;
         }
@@ -3517,6 +3637,344 @@ namespace WindowsFormsApplication1
             {
                 l.LetzterFehler = Kurzmeldung(ex);
                 return false;
+            }
+        }
+
+        // =================================================================================
+        // Schritt 32 (Nachzug zu Schritt 29) - gespeicherte Abfragen auf den Alttabellen
+        // =================================================================================
+
+        /// <summary>Die eine Produktivabfrage, die der Kosteneditor liest.</summary>
+        private const string ABFRAGE_KOSTENFAKTOREN = "Abfrage_Kostenfaktoren";
+
+        /// <summary>
+        /// <b>Soll-SQL von <see cref="ABFRAGE_KOSTENFAKTOREN"/>.</b> Es liefert exakt die
+        /// Spalten, die <c>Form_Kosten.LoadKostenFaktoren</c> auswaehlt und filtert —
+        /// <c>ID</c>, <c>ProjektID</c>, <c>StammID</c>, <c>KategorieName</c>,
+        /// <c>Komponente</c>, <c>Bezeichnung</c>, <c>Gruppe</c>, <c>EingegebenerWert</c>,
+        /// <c>WorstCase</c>, <c>BestCase</c>, <c>Nutzungsdauer</c>,
+        /// <c>WorstCase_Nutzungsdauer</c>, <c>BestCase_Nutzungsdauer</c>, <c>Einheit</c>,
+        /// <c>IsMainComponent</c>.
+        ///
+        /// <para>
+        /// <b>Drei Abweichungen vom Alt-SQL, sonst nichts.</b>
+        /// <list type="number">
+        ///   <item><description>Der Zweig ueber <c>Tab_KostenKategorie</c> faellt weg —
+        ///     die Tabelle gibt es seit Schritt 29 nicht mehr.</description></item>
+        ///   <item><description><c>KategorieName</c> entsteht stattdessen aus
+        ///     <c>Tab_ProjektWerte.KategorieID</c>. Die Abbildung 1/2/3 → Name ist
+        ///     dieselbe, die <c>Form_Kosten</c> in seinen drei Reiterzweigen fuehrt; die
+        ///     Namen stehen als Persistenzwerte im
+        ///     <see cref="SchemaKatalog.KATEGORIE_NAME_INVESTITION">Schemakatalog</see>.
+        ///     Die Spalte MUSS bleiben: <c>Form_Kosten</c> filtert ueber sie
+        ///     (<c>WHERE KategorieName = ?</c>), sie liesse sich also nicht streichen,
+        ///     ohne den Aufrufer zu aendern.</description></item>
+        ///   <item><description><c>KategorieID</c> kommt als ZUSAETZLICHE Spalte mit.
+        ///     Sie kostet nichts (der Aufrufer zaehlt seine Spalten namentlich auf) und
+        ///     macht den kuenftigen Umbau auf einen sprachneutralen Filter moeglich, ohne
+        ///     dass die Abfrage dafuer noch einmal angefasst werden muss.</description></item>
+        /// </list>
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Unveraendert:</b> beide <c>INNER JOIN</c> (ueber <c>StammID</c> zum
+        /// Positionskatalog, ueber <c>KomponentenID</c> zum Komponentenkatalog) und die
+        /// vollstaendige Sortierung. Der <c>ORDER BY</c>-Term <c>KategorieName</c> greift
+        /// jetzt auf den Ausgabealias — das ergibt dieselbe Reihenfolge wie zuvor und ist
+        /// fuer den einzigen Leser ohnehin ohne Wirkung, weil der auf genau EINE Kategorie
+        /// filtert. <c>IsMainComponent</c> steht bewusst vorn: In Access ist True = −1,
+        /// aufsteigend sortiert steht die Hauptposition damit oben.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Die fuenf Spalten aus Schritt 19</b> (<c>Kostenart</c>, <c>Bemessung</c>,
+        /// <c>IstErloes</c>, <c>Menge</c>, <c>Einheitpreis</c>) kommen bewusst NICHT mit
+        /// hinein. <c>KostenPositionCtrl.LiesZusatz</c> holt sie ueber einen zweiten,
+        /// direkten Zugriff auf <c>Tab_ProjektWerte</c> und fuehrt sie ueber die ID
+        /// zusammen; das ist der beschlossene Weg (E3, Restbefund 6). Sie hier
+        /// nachzureichen schuefe eine zweite Wahrheit, ohne einen Leser zu haben.
+        /// </para>
+        /// </summary>
+        private static readonly string SCHRITT32_SQL_KOSTENFAKTOREN =
+            "SELECT w.ID, w.ProjektID, w.StammID, w.KategorieID, " +
+            "IIf(w.KategorieID = 1, '" + SchemaKatalog.KATEGORIE_NAME_INVESTITION + "', " +
+            "IIf(w.KategorieID = 2, '" + SchemaKatalog.KATEGORIE_NAME_BETRIEB + "', " +
+            "IIf(w.KategorieID = 3, '" + SchemaKatalog.KATEGORIE_NAME_ENERGIE + "', ''))) " +
+            "AS KategorieName, " +
+            "k." + SchemaKatalog.SPALTE_KK_KOMPONENTE + ", " +
+            "f." + SchemaKatalog.SPALTE_KF_BEZEICHNUNG + ", " +
+            "w.Gruppe, w.EingegebenerWert, w.WorstCase, w.BestCase, w.Nutzungsdauer, " +
+            "w.WorstCase_Nutzungsdauer, w.BestCase_Nutzungsdauer, w.Einheit, " +
+            "f." + SchemaKatalog.SPALTE_KF_IST_HAUPT + " " +
+            "FROM (" + SchemaKatalog.TAB_PROJEKTWERTE + " AS w " +
+            "INNER JOIN " + SchemaKatalog.TAB_KOSTENFAKTOR + " AS f " +
+            "ON w." + SchemaKatalog.SPALTE_KF_STAMMID + " = f." + SchemaKatalog.SPALTE_KF_STAMMID + ") " +
+            "INNER JOIN " + SchemaKatalog.TAB_KOSTENKOMPONENTE + " AS k " +
+            "ON w.KomponentenID = k.ID " +
+            "ORDER BY f." + SchemaKatalog.SPALTE_KF_IST_HAUPT + ", KategorieName, " +
+            "k." + SchemaKatalog.SPALTE_KK_KOMPONENTE + ", w.Gruppe, " +
+            "f." + SchemaKatalog.SPALTE_KF_BEZEICHNUNG;
+
+        /// <summary>
+        /// Die drei Abfragen, die ersatzlos entfallen. Keine hat einen Aufrufer im Code.
+        ///
+        /// <list type="bullet">
+        ///   <item><description><c>Abfrage_ProjektKostenInvestBetrieb</c> — Entscheidung
+        ///     E4 vom 19.08.2026; sie joint <c>Tab_KostenKategorie</c> und den
+        ///     Gruppenkatalog ueber den Gruppennamen.</description></item>
+        ///   <item><description><c>Abfrage1</c> — ein <c>INSERT INTO Tab_BHKW … SELECT …
+        ///     FROM Tab_BHKW_neu</c>, Entwicklungsrest.</description></item>
+        ///   <item><description><c>Tab_BHKW_Einfügen_Test</c> — dasselbe als
+        ///     Select-Abfrage.</description></item>
+        /// </list>
+        ///
+        /// <para>
+        /// <b>Der dritte Name traegt einen Umlaut — diese Datei bleibt deshalb UTF-8.</b>
+        /// Ein Objektname ist tragend: Verunglueckt das „ü" beim Speichern (93 der
+        /// .cs-Dateien dieses Projekts sind NICHT UTF-8, und ein Diff merkt das nicht),
+        /// dann faellt es nirgends auf — die Abfrage bliebe einfach still stehen, und der
+        /// Schritt meldete „nicht vorhanden - nichts zu tun". Wer hier editiert, prueft
+        /// vorher die Kodierung (Hausregel CLAUDE.md).
+        /// </para>
+        /// </summary>
+        private static readonly string[] SCHRITT32_LOESCHEN =
+        {
+            "Abfrage_ProjektKostenInvestBetrieb",
+            "Abfrage1",
+            "Tab_BHKW_Einfügen_Test",
+        };
+
+        /// <summary>
+        /// Schritt 32 (Nachzug zu Schritt 29). Begruendung, Reihenfolge und Idempotenz
+        /// stehen bei <see cref="SCHRITT_32_ABFRAGEN_ALTTABELLEN"/>.
+        /// </summary>
+        private static bool Schritt_32_AbfragenAlttabellen(Lauf l)
+        {
+            int erneuert = 0, weg = 0, offen = 0;
+
+            // --- 32a) die Produktivabfrage auf das Soll-SQL setzen (HART) -------------
+            //
+            // Vorabprobe auf die drei Basistabellen. Sie sind an dieser Stelle
+            // garantiert da - Schritt 27 scheitert bereits, wenn Komponenten- oder
+            // Positionskatalog fehlt, und 29c liest Tab_ProjektWerte. Die Probe steht
+            // trotzdem hier, damit im Protokoll die TABELLE steht und nicht nur eine
+            // ACE-Meldung ueber ein "unbekanntes Objekt" im CREATE PROCEDURE.
+            foreach (string t in new[] { SchemaKatalog.TAB_PROJEKTWERTE,
+                                         SchemaKatalog.TAB_KOSTENFAKTOR,
+                                         SchemaKatalog.TAB_KOSTENKOMPONENTE })
+            {
+                if (TabellenSchema(l, t) != null) continue;
+                l.Notiz("32a: " + t + " ist nicht lesbar - " + ABFRAGE_KOSTENFAKTOREN +
+                        " kann nicht geschrieben werden.");
+                return false;
+            }
+
+            if (AbfrageSetzen(l, ABFRAGE_KOSTENFAKTOREN, SCHRITT32_SQL_KOSTENFAKTOREN))
+            {
+                erneuert = 1;
+            }
+            else
+            {
+                DatenAbfragenOffen = 1;
+                return false;   // HART - ohne diese Abfrage zeigt der Kosteneditor nichts
+            }
+
+            // --- 32b) die Abfragen ohne Leser ersatzlos entfernen (WEICH) --------------
+            foreach (string a in SCHRITT32_LOESCHEN)
+            {
+                int r = AbfrageEntfernen(l, a);
+                if (r > 0) weg++;
+                else if (r < 0) offen++;
+            }
+
+            DatenAbfragenErneuert = erneuert;
+            DatenAbfragenEntfernt = weg;
+            DatenAbfragenOffen = offen;
+
+            l.Notiz("32: " + erneuert + " Produktivabfrage erneuert, " + weg + " von " +
+                    SCHRITT32_LOESCHEN.Length + " Altabfragen entfernt, " + offen + " offen.");
+
+            // 32b ist WEICH: Eine Abfrage ohne Leser, die stehen bleibt, aendert an keiner
+            // Rechnung etwas. Sie haelt die Datenbank nicht auf Stand 31 fest - das taete
+            // sie sonst bei jedem Programmstart erneut.
+            return true;
+        }
+
+        /// <summary>
+        /// Setzt eine gespeicherte Abfrage auf ein vorgegebenes SQL — ohne je eine
+        /// vorhandene Abfrage zu entfernen, die sich danach nicht ersetzen liesse
+        /// (Reihenfolge und Begruendung bei <see cref="SCHRITT_32_ABFRAGEN_ALTTABELLEN"/>).
+        /// </summary>
+        private static bool AbfrageSetzen(Lauf l, string name, string sql)
+        {
+            string anlegen = "CREATE PROCEDURE " + name + " AS " + sql;
+            string fehler;
+
+            // 1) Der einfache Fall: Die Abfrage fehlt - dann ist sie hiermit angelegt.
+            if (AbfrageAnlegen(l, anlegen, out fehler))
+            {
+                l.Notiz("32a: " + name + ": angelegt - sie fehlte in dieser Datenbank.");
+                return true;
+            }
+
+            // 2) Ein anderer Fehler als "existiert bereits". NICHT droppen: Was hier nicht
+            //    anlegbar ist, waere nach einem DROP auch nicht wiederherstellbar.
+            if (fehler != null)
+            {
+                l.Notiz("32a: " + name + ": nicht anlegbar (" + fehler + "). Eine vorhandene " +
+                        "Abfrage bleibt UNANGETASTET - es ist nichts geloescht worden.");
+                return false;
+            }
+
+            // 3) Sie steht da, also faellt die alte Fassung und die neue kommt nach.
+            if (!AbfrageWegwerfen(l, name))
+            {
+                l.Notiz("32a: " + name + ": die alte Fassung liess sich nicht entfernen (" +
+                        (l.LetzterFehler ?? "kein Grund gemeldet") + "). Sie bleibt stehen; " +
+                        "MANUELL in Access ersetzen.");
+                return false;
+            }
+
+            if (AbfrageAnlegen(l, anlegen, out fehler))
+            {
+                l.Notiz("32a: " + name + ": auf das Soll-SQL erneuert - der Kategoriename " +
+                        "kommt jetzt aus Tab_ProjektWerte.KategorieID statt aus der in " +
+                        "Schritt 29 gedroppten Tab_KostenKategorie.");
+                return true;
+            }
+
+            l.Notiz("32a: " + name + ": die alte Fassung ist entfernt, die neue liess sich " +
+                    "NICHT anlegen (" + (fehler ?? "existiert bereits") + "). MANUELL in " +
+                    "Access nachziehen - das Soll-SQL steht in SchemaMigration.");
+            return false;
+        }
+
+        /// <summary>
+        /// Fuehrt ein <c>CREATE PROCEDURE</c> aus. Rueckgabe true bei Erfolg.
+        ///
+        /// <para>
+        /// Bei „Objekt existiert bereits" ist die Rueckgabe false und
+        /// <paramref name="fehler"/> <c>null</c> — dieser Fall ist fuer
+        /// <see cref="AbfrageSetzen"/> die Aufforderung, die alte Fassung zu ersetzen,
+        /// und ausdruecklich kein Fehler. Deshalb geht er auch NICHT in
+        /// <c>Lauf.LetzterFehler</c>: Der Schritt kann anschliessend erfolgreich enden,
+        /// und dann darf im Protokoll keine Fehlermeldung stehen.
+        /// </para>
+        /// </summary>
+        private static bool AbfrageAnlegen(Lauf l, string sql, out string fehler)
+        {
+            fehler = null;
+            try
+            {
+                using (var cmd = new OleDbCommand(sql, l.Conn)) cmd.ExecuteNonQuery();
+                return true;
+            }
+            catch (OleDbException ex)
+            {
+                if (IstBereitsVorhanden(ex)) return false;
+                fehler = Kurzmeldung(ex);
+                l.LetzterFehler = fehler;
+                return false;
+            }
+            catch (Exception ex)
+            {
+                fehler = Kurzmeldung(ex);
+                l.LetzterFehler = fehler;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Loescht eine gespeicherte Abfrage. Rueckgabe true, wenn sie danach weg ist.
+        ///
+        /// <para>
+        /// ACE fuehrt Select- und Aktionsabfragen als verschiedene Objektarten; welches
+        /// Schluesselwort greift, haengt davon ab, wie die Abfrage einst entstanden ist
+        /// (<c>Abfrage1</c> etwa ist ein <c>INSERT INTO</c>). Deshalb nacheinander
+        /// <c>DROP VIEW</c> und <c>DROP PROCEDURE</c> — das erste, das durchgeht, gewinnt.
+        /// <b><c>DROP TABLE</c> wird bewusst NICHT versucht:</b> Es traefe eine
+        /// gleichnamige TABELLE, und eine Migration darf niemals versehentlich eine
+        /// Tabelle entfernen.
+        /// </para>
+        /// </summary>
+        private static bool AbfrageWegwerfen(Lauf l, string name)
+        {
+            foreach (string wort in new[] { "VIEW", "PROCEDURE" })
+                if (StillAusfuehren(l, "DROP " + wort + " [" + name + "]")) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// <b>32b</b>: Entfernt eine Abfrage ohne Ersatz. Rueckgabe 1 = entfernt,
+        /// 0 = war nicht vorhanden (der Normalfall — jede Datenbank fuehrt eine andere
+        /// Teilmenge), −1 = vorhanden, aber nicht entfernbar.
+        ///
+        /// <para>
+        /// <b>Erst droppen, dann fragen.</b> Die Existenzprobe steht bewusst NACH dem
+        /// Loeschversuch und nicht davor: Ein gelungenes <c>DROP</c> ist der beste
+        /// Existenznachweis, den es gibt, und ein <c>DROP</c> auf ein Objekt, das es
+        /// nicht gibt, kostet nichts (<see cref="StillAusfuehren"/> schluckt es). Andersherum
+        /// haetten wir uns davon abhaengig gemacht, dass ACE eine KAPUTTE Abfrage — und
+        /// genau darum geht es hier — in seinen Schema-Rowsets ueberhaupt noch fuehrt.
+        /// Die Probe erklaert deshalb nur noch, warum ein Loeschversuch scheiterte.
+        /// </para>
+        /// </summary>
+        private static int AbfrageEntfernen(Lauf l, string name)
+        {
+            if (AbfrageWegwerfen(l, name))
+            {
+                l.Notiz("32b: " + name + ": entfernt (kein Aufrufer im Code).");
+                return 1;
+            }
+
+            if (!AbfrageVorhanden(l, name))
+            {
+                l.Notiz("32b: " + name + ": nicht vorhanden - nichts zu tun.");
+                return 0;
+            }
+
+            l.Notiz("32b: " + name + ": liess sich nicht entfernen - die Abfrage bleibt " +
+                    "stehen. MANUELL in Access loeschen; sie hat keinen Leser und richtet " +
+                    "keinen Schaden an." +
+                    (l.LetzterFehler != null ? " Meldung: " + l.LetzterFehler : ""));
+            return -1;
+        }
+
+        /// <summary>
+        /// true, wenn die Datenbank ein Objekt dieses Namens fuehrt. Dient in
+        /// <see cref="AbfrageEntfernen"/> allein der Unterscheidung „war gar nicht da"
+        /// gegen „ging nicht".
+        ///
+        /// <para>
+        /// <b>Warum nicht ueber <see cref="TabellenSchema"/>.</b> Das setzt ein
+        /// <c>SELECT TOP 1 *</c> ab — und genau das scheitert bei einer Abfrage, die auf
+        /// einer gedroppten Tabelle steht. „Nicht lesbar" hiesse dort also gerade nicht
+        /// „nicht vorhanden". Die Schema-Rowsets dagegen fuehren das Objekt, ohne es
+        /// auszufuehren: Select-Abfragen stehen bei ACE in <c>Tables</c> (mit
+        /// <c>TABLE_TYPE = VIEW</c>), Aktions- und Parameterabfragen in
+        /// <c>Procedures</c>. Ob sie eine kaputte Abfrage zuverlaessig fuehren, ist
+        /// nicht zugesichert — deshalb haengt an dieser Probe keine Loeschung mehr.
+        /// </para>
+        /// </summary>
+        private static bool AbfrageVorhanden(Lauf l, string name)
+        {
+            return SchemaZeilen(l, OleDbSchemaGuid.Tables, name) > 0
+                || SchemaZeilen(l, OleDbSchemaGuid.Procedures, name) > 0;
+        }
+
+        /// <summary>Zahl der Zeilen eines Schema-Rowsets fuer genau diesen Objektnamen.</summary>
+        private static int SchemaZeilen(Lauf l, Guid rowset, string name)
+        {
+            try
+            {
+                DataTable dt = l.Conn.GetOleDbSchemaTable(
+                    rowset, new object[] { null, null, name, null });
+                return dt == null ? 0 : dt.Rows.Count;
+            }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = Kurzmeldung(ex);
+                return 0;
             }
         }
 
@@ -6593,6 +7051,8 @@ namespace WindowsFormsApplication1
         /// Erkennt "Objekt existiert bereits" an der Jet-/ACE-Fehlernummer (SQLState) und
         /// ersatzweise am Meldungstext. Die Nummern sind sprachunabhängig:
         ///   3010 Tabelle existiert bereits
+        ///   3012 Objekt existiert bereits - die Meldung eines CREATE PROCEDURE auf eine
+        ///        schon vorhandene gespeicherte Abfrage (Schritt 32)
         ///   3283 Primärschlüssel existiert bereits
         ///   3375 Index existiert bereits
         ///   3378 Beziehung dieses Namens existiert bereits
@@ -6607,6 +7067,7 @@ namespace WindowsFormsApplication1
                 switch (e.SQLState)
                 {
                     case "3010":
+                    case "3012":
                     case "3283":
                     case "3375":
                     case "3378":

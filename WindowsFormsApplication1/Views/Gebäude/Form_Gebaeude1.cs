@@ -14,6 +14,7 @@ namespace WindowsFormsApplication1
         public Form_Gebaeude1()
         {
             InitializeComponent();
+            FensterEinpassung.Einhaengen(this);
         }
 
         private void Form_Gebaeude1_Load(object sender, EventArgs e)

@@ -649,6 +649,44 @@ namespace WindowsFormsApplication1
         public const string TAB_PROJEKTWERTE = "Tab_ProjektWerte";
 
         // =================================================================================
+        // Kategorienamen der Kostenerfassung — Tab_ProjektWerte.KategorieID 1, 2, 3
+        //
+        //   Bis Schritt 29 standen diese drei Namen als Datenzeilen in
+        //   Tab_KostenKategorie; die Tabelle ist seither gedroppt. Die Namen selbst sind
+        //   damit NICHT verschwunden: Form_Kosten filtert Abfrage_Kostenfaktoren
+        //   weiterhin ueber KategorieName und vergleicht in
+        //   tabMain_SelectedIndexChanged genau gegen diesen Wortlaut. Die einzige
+        //   verbliebene Quelle ist die KategorieID — Schritt 32 bildet sie in der
+        //   gespeicherten Abfrage darauf ab.
+        //
+        //   Persistenzwerte im Sinne der Drei-Schichten-Regel: deutsch, eingefroren, in
+        //   SQL verglichen. Sie stehen hier und nicht in DbWerte, weil sie ausser der
+        //   Migration nur noch die eine gespeicherte Abfrage betreffen; wird ein weiterer
+        //   Leser daraus, gehoeren sie nach DbWerte umgezogen.
+        // =================================================================================
+
+        /// <summary>
+        /// <c>KategorieID = 1</c> (<see cref="Form_Kosten.KATEGORIE_INVESTITION"/>).
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string KATEGORIE_NAME_INVESTITION = "Investitionskosten";
+
+        /// <summary>
+        /// <c>KategorieID = 2</c> (<see cref="Form_Kosten.KATEGORIE_BETRIEB"/>).
+        /// <inheritdoc cref="KATEGORIE_NAME_INVESTITION" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string KATEGORIE_NAME_BETRIEB = "Betriebskosten";
+
+        /// <summary>
+        /// <c>KategorieID = 3</c> (<see cref="Form_Kosten.KATEGORIE_ENERGIE"/>). Die
+        /// Kategorie ist seit HF1/L1 stillgelegt und ihre Altzeilen sind in Schritt 29c
+        /// geloescht; der Name bleibt trotzdem in der Abbildung, damit eine Datenbank mit
+        /// nicht geloeschten Restzeilen keine namenlose Zeile bekommt.
+        /// <inheritdoc cref="KATEGORIE_NAME_INVESTITION" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string KATEGORIE_NAME_ENERGIE = "Energiekosten";
+
+        // =================================================================================
         // ETAPPE K5 (Konzept Kosten/Energieträger, HF5, Migrationsschritt 27)
         //   Der Komponenten- und Positionskatalog der Kostenerfassung.
         // =================================================================================

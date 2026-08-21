@@ -60,6 +60,7 @@ namespace WindowsFormsApplication1
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(215, 230, 245);
 
             InitAuswahlListe();
+            FensterEinpassung.Einhaengen(this);
         }
 
         // Konfiguriert die Auswahl-ListView (Details, nur Bezeichner-Spalte, keine Kopfzeile).

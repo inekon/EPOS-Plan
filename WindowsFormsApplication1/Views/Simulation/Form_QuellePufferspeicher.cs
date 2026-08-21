@@ -30,35 +30,19 @@ namespace WindowsFormsApplication1
     /// ERZEUGER-Bezügen angeboten. Dieser Dialog hängt an der Wärmequelle einer Anlage
     /// und erfüllt das; eine Speicher-zu-Speicher-Verbindung entsteht hier nicht.
     ///
-    /// Das Formular wird komplett programmatisch aufgebaut (kein Designer/.resx).
+    /// Die Oberfläche steht in <c>Form_QuellePufferspeicher.Designer.cs</c>, weiterhin ohne
+    /// eigene <c>.resx</c>: Alle sichtbaren Texte kommen aus <c>MyResource</c> und werden in
+    /// <see cref="TexteSetzen"/> gesetzt. Im Designer stehen seit der Design-Politur vom
+    /// 21.08.2026 die DEUTSCHEN Fassungen derselben Ressourcen (vorher der Feldname als
+    /// Platzhalter) — allein damit die Entwurfsfläche zeigt, was der Anwender sieht;
+    /// maßgeblich bleibt <see cref="TexteSetzen"/>, das jeden dieser Texte beim Öffnen
+    /// in der eingestellten Sprache überschreibt.
+    /// Nicht serialisierbar und deshalb im Konstruktor-Nachlauf: die kulturabhängigen
+    /// Vorgabewerte (<see cref="VorgabenSetzen"/>) und die gemessene Eingabespalte
+    /// (<see cref="EingabespalteAusrichten"/>).
     /// </summary>
-    public class Form_QuellePufferspeicher : Form
+    public partial class Form_QuellePufferspeicher : Form
     {
-        private ListBox _lbSpeicher;
-        private TextBox _tbTemperatur;
-        private TextBox _tbSpreizung;
-        private TextBox _tbRegeneration;
-        private CheckBox _cbUnbegrenzt;
-        private Label _lblKapazitaet;
-        private Label _lblDaten;
-        private Label _lblLeer;
-        private Button _btnPufferAnlegen;
-
-        /// <summary>
-        /// Die Parameter der VERDAMPFERSEITE (Quelltemperatur, nutzbare Spreizung,
-        /// Regeneration, „unbegrenzt verfügbar"). Sie gelten nur für die Wärmepumpe und
-        /// sind beim Heizkessel ausgeblendet (Etappe D5b) — dort liefert der Puffer über
-        /// seinen VORLAUF einen Teil des Temperaturhubs, und alles Übrige rechnet
-        /// <c>SimulationSPK</c> aus dem Temperaturpaar des Kessels.
-        /// </summary>
-        private GroupBox _gbParameter;
-
-        /// <summary>Erklärtext rechts — je Erzeugerart Verdampferwärme oder Kaskade (D5b).</summary>
-        private Label _lblHinweisArt;
-
-        /// <summary>Kaskadenerklärung an der Stelle der Verdampfer-Parameter (D5b, nur Kessel).</summary>
-        private Label _lblKaskade;
-
         private List<WaermesenkeClass.PufferInfo> _puffer =
             new List<WaermesenkeClass.PufferInfo>();
 
@@ -141,7 +125,19 @@ namespace WindowsFormsApplication1
 
         public Form_QuellePufferspeicher()
         {
-            BaueOberflaeche();
+            // Der Designer setzt AutoScaleMode bewusst auf None und lässt
+            // AutoScaleDimensions weg: Die Maske ist ein FixedDialog mit fest
+            // gerechneten Pixelpositionen, und die Anwendung läuft DpiUnaware
+            // (app.manifest, Program.SetHighDpiMode). Vor der Designer-Umstellung
+            // wurde AutoScaleMode überhaupt nicht gesetzt, es fand also ebenfalls
+            // keine Skalierung statt — None hält genau dieses Verhalten fest.
+            InitializeComponent();
+            TexteSetzen();
+            // Erst NACH TexteSetzen(): die drei Beschriftungen haben bis dahin nur
+            // die Platzhalter des Designers und damit die falsche Breite.
+            EingabespalteAusrichten();
+            VorgabenSetzen();
+            FensterEinpassung.Einhaengen(this);
         }
 
         /// <summary>
@@ -159,171 +155,166 @@ namespace WindowsFormsApplication1
             return wert.ToString("F1", CultureInfo.CurrentCulture);
         }
 
-        private void BaueOberflaeche()
+        // ==================================================================
+        // Oberfläche — gerettete Begründungen zur Geometrie
+        // ==================================================================
+        //
+        // Die Steuerelemente stehen seit der Designer-Umstellung in
+        // Form_QuellePufferspeicher.Designer.cs. Designer-Code trägt keine Kommentare;
+        // die Pixelentscheidungen aus den Abnahmebefunden stehen deshalb hier.
+        //
+        // * ClientSize 620 x 470 (E0): 40 px höher als bisher — darunter liegt die Zeile
+        //   mit dem Leer-Hinweis und dem Absprung „Pufferspeicher anlegen…" (Muster
+        //   Form_Waermesenke). Die übrigen Maße bleiben unverändert.
+        //   ÜBERHOLT durch die Design-Politur 21.08.2026, siehe unten: 620 x 508.
+        // * _btnPufferAnlegen (330/244) und _lblLeer (14/240): Leer-Hinweis und Absprung
+        //   in die Puffer-Verwaltung (E0). Ohne diesen Weg wäre ein Projekt ohne
+        //   Pufferspeicher eine Sackgasse - vorher stand hier eine Meldung über die
+        //   STAMM-Daten, die dem Anwender nicht sagte, was zu tun ist (Muster
+        //   Form_Waermesenke, Konzept 4.2/4.3).
+        // * _lblLeer, Größe 300 x 48 (D5b): 14 px höher und 2 px weiter oben als in E0
+        //   (242/34 -> 240/48). Der Hinweis trägt jetzt zwei Fälle - „kein Projektpuffer"
+        //   und den nicht aufgelösten Alt-Bezeichner aus E0 -, und der zweite braucht
+        //   drei Zeilen. Die Liste darüber endet bei y = 238, die Rubrik darunter beginnt
+        //   bei y = 288: Der Platz ist damit vollständig ausgenutzt und nicht
+        //   überschritten (gemessen mit TextRenderer, beide Sprachen).
+        // * _gbParameter trägt die Parameter der VERDAMPFERSEITE (Quelltemperatur,
+        //   nutzbare Spreizung, Regeneration, „unbegrenzt verfügbar"). Sie gelten nur für
+        //   die Wärmepumpe und sind beim Heizkessel ausgeblendet (Etappe D5b) — dort
+        //   liefert der Puffer über seinen VORLAUF einen Teil des Temperaturhubs, und
+        //   alles Übrige rechnet SimulationSPK aus dem Temperaturpaar des Kessels.
+        // * _lblKaskade (D5b) steht beim Heizkessel an der Stelle der
+        //   Verdampfer-Parameter. Beide liegen deckungsgleich auf (14, 288) mit
+        //   590 x 130 — dasselbe Rechteck, damit die Fenstergeometrie unverändert bleibt
+        //   (der Dialog ist FixedDialog). Getauscht wird über Visible in ArtAnwenden();
+        //   Grundzustand im Designer ist die Wärmepumpe: Rubrik sichtbar,
+        //   Kaskadentext unsichtbar.
+        // * _lblHinweisArt (330/132) ist der Erklärtext rechts — je Erzeugerart
+        //   Verdampferwärme oder Kaskade (D5b). 275 x 105 ist mit TextRenderer
+        //   nachgemessen: Der längere der beiden Texte (Quellwärme) braucht bei 275 px
+        //   Breite genau 105 px in sieben Zeilen, deutsch wie englisch — kein Spielraum,
+        //   aber auch kein Überstand.
+        // * _btnOk (430/432) und _btnAbbruch (523/432) standen im Bestand als
+        //   ClientSize.Width - 190 bzw. - 97; bei ClientSize.Width = 620 sind das
+        //   genau diese beiden Werte. ÜBERHOLT durch die Design-Politur, siehe unten.
+        //
+        // ==================================================================
+        // DESIGN-POLITUR 21.08.2026
+        // ==================================================================
+        //
+        // Anlass: Im Designer standen bis dahin die Feldnamen als Platzhalter, und mit
+        // den ECHTEN Texten fiel ein Überstand auf, den kein Platzhalter zeigen konnte.
+        // Alle Maße unten sind mit TextRenderer in beiden Sprachen nachgemessen.
+        //
+        // * _cbUnbegrenzt: 285/92 -> 16/122. DER EIGENTLICHE BEFUND. Die Beschriftung
+        //   „Quelle unbegrenzt verfügbar (nur Temperatur maßgeblich)" ist als AutoSize-
+        //   Kästchen 343 px breit (englisch 336). Ab x = 285 endete sie damit bei 628 —
+        //   38 px HINTER dem rechten Rand der Rubrik (590). Eine GroupBox schneidet ihre
+        //   Kinder an der eigenen Kante ab, sichtbar fehlte also „…maßgeblich)".
+        //   In der rechten Spalte ist der Platz nicht zu beschaffen (dort stehen nur
+        //   295 px zur Verfügung), im linken Feldraster ebenfalls nicht. Das Kästchen
+        //   bekommt deshalb eine EIGENE, volle Zeile unter den drei Eingabefeldern:
+        //   x = 16 wie die Beschriftungen darüber, y = 122 (die Felder enden bei 114,
+        //   also 8 px Luft), Ende bei 359 — reichlich Reserve für Übersetzungen.
+        // * _gbParameter und _lblKaskade: 14/288 -> 14/296, 590 x 130 -> 590 x 156.
+        //   +26 px für die neue Zeile des Kästchens (Zeilenraster der Rubrik), +8 px
+        //   Versatz nach unten, damit unter _lblLeer die 6 px Mindestabstand stehen:
+        //   Der Leer-Hinweis endet bei y = 288 und stieß vorher unmittelbar an die
+        //   Rubrik. Beide Steuerelemente bleiben deckungsgleich (D5b), der Kaskadentext
+        //   braucht bei 590 px Breite 120 px und passt weiterhin.
+        // * ClientSize 620 x 470 -> 620 x 508: +38 px. Davon sind 34 px die Verschiebung
+        //   der Rubrik (26 px neue Zeile + 8 px Versatz), 4 px kommen von den 7 px, um
+        //   die die Fußknöpfe höher geworden sind - die restlichen 3 px holt sich der
+        //   untere Rand aus seinem vorher großzügigeren Maß (15 -> 12 px). Die Breite
+        //   bleibt bei 620.
+        // * _lblDaten: 275 x 90 -> 275 x 84. Die Datenzeile brauchte in keiner Sprache
+        //   mehr als 60 px (vier Zeilen), stand aber nur 4 px über _lblHinweisArt.
+        //   84 px lassen weiterhin fünf Zeilen zu und schaffen 10 px Abstand.
+        // * _btnPufferAnlegen: Höhe 28 -> 30, einheitlich mit den Fußknöpfen. Die Breite
+        //   bleibt bei 275 px: Der Text braucht 148 px (englisch 139), die 275 px sind
+        //   die Spaltenbreite der rechten Seite (_lblDaten, _lblHinweisArt) — eine
+        //   schmalere Schaltfläche würde diese Kante brechen.
+        // * _btnOk 430/432 -> 378/466 und _btnAbbruch 523/432 -> 498/466, beide
+        //   85 x 23 (WinForms-Vorgabe) -> 110 x 30. Die RECHTE KANTE der Knopfgruppe
+        //   bleibt bei x = 608 und damit 12 px vor dem Fensterrand; zwischen den Knöpfen
+        //   liegen 10 px. Nach unten bleiben 12 px, nach oben 14 px zur Rubrik. Die
+        //   Herleitung „ClientSize.Width − 190 / − 97" trägt nicht mehr, weil die Knöpfe
+        //   breiter geworden sind; maßgeblich ist jetzt die rechte Kante.
+        // * NICHT geändert: EingabespalteAusrichten() und die Entwurfsposition x = 180
+        //   der drei Eingabefelder. Die Methode misst weiter zur Laufzeit nach; dass im
+        //   Designer nun der deutsche Text steht, ändert daran nichts — deutsch ergibt
+        //   die Rechnung nach wie vor 180 (max. Right = 147), englisch 197. Ihr Hinweis
+        //   „vorher tragen die Beschriftungen nur die Designer-Platzhalter" heißt seit
+        //   der Politur: vorher tragen sie den DEUTSCHEN Entwurfstext — in jeder anderen
+        //   Sprache also weiterhin die falsche Breite.
+
+        /// <summary>
+        /// Setzt alle sichtbaren Texte aus <c>MyResource</c>. Läuft direkt nach
+        /// <c>InitializeComponent()</c> und ersetzt die dortigen Platzhalter.
+        /// </summary>
+        private void TexteSetzen()
         {
             this.Text = MyResource.Resource.SIMQ_PUFFER_TITEL;
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.MinimizeBox = false;
-            this.MaximizeBox = false;
-            // E0: 40 px höher als bisher — darunter liegt jetzt die Zeile mit dem
-            // Leer-Hinweis und dem Absprung „Pufferspeicher anlegen…" (Muster
-            // Form_Waermesenke). Die übrigen Maße bleiben unverändert.
-            this.ClientSize = new Size(620, 470);
+            _lblKopf.Text = MyResource.Resource.SIMQ_PUFFER_KOPF;
+            _btnPufferAnlegen.Text = MyResource.Resource.PSP_BTN_PUFFER_ANLEGEN;
+            _gbParameter.Text = MyResource.Resource.SIMQ_PUFFER_GB_PARAMETER;
+            _lblQuelltemperatur.Text = MyResource.Resource.SIMQ_PUFFER_QUELLTEMPERATUR;
+            _lblSpreizung.Text = MyResource.Resource.SIMQ_PUFFER_SPREIZUNG;
+            _lblRegeneration.Text = MyResource.Resource.SIMQ_PUFFER_REGENERATION;
+            _cbUnbegrenzt.Text = MyResource.Resource.SIMQ_PUFFER_CB_UNBEGRENZT;
+            _lblHinweisArt.Text = MyResource.Resource.SIMQ_PUFFER_HINWEIS_QUELLWAERME;
+            _lblKaskade.Text = MyResource.Resource.SIMQ_PUFFER_HINWEIS_KASKADE;
+            _btnOk.Text = MyResource.Resource.SIM_BTN_OK;
+            _btnAbbruch.Text = MyResource.Resource.SIM_BTN_ABBRECHEN;
+        }
 
-            Label kopf = new Label
-            {
-                Text = MyResource.Resource.SIMQ_PUFFER_KOPF,
-                AutoSize = true,
-                Font = new Font(this.Font, FontStyle.Bold),
-                Location = new Point(14, 12)
-            };
-            this.Controls.Add(kopf);
-
-            _lbSpeicher = new ListBox
-            {
-                Location = new Point(14, 38),
-                Size = new Size(300, 200)
-            };
-            _lbSpeicher.SelectedIndexChanged += (s, e) => { ZeigeSpeicherDaten(); BerechneKapazitaet(); };
-            this.Controls.Add(_lbSpeicher);
-
-            _lblDaten = new Label
-            {
-                AutoSize = false,
-                Location = new Point(330, 38),
-                Size = new Size(275, 90),
-                Text = ""
-            };
-            this.Controls.Add(_lblDaten);
-
-            // E0: Leer-Hinweis und Absprung in die Puffer-Verwaltung. Ohne diesen Weg
-            // wäre ein Projekt ohne Pufferspeicher eine Sackgasse - vorher stand hier
-            // eine Meldung über die STAMM-Daten, die dem Anwender nicht sagte, was zu
-            // tun ist (Muster Form_Waermesenke, Konzept 4.2/4.3).
-            // D5b: 14 px höher und 2 px weiter oben (242/34 -> 240/48). Der Hinweis trägt
-            // jetzt zwei Fälle - „kein Projektpuffer" und den nicht aufgelösten
-            // Alt-Bezeichner aus E0 -, und der zweite braucht drei Zeilen. Die Liste
-            // darüber endet bei y = 238, die Rubrik darunter beginnt bei y = 288: Der
-            // Platz ist damit vollständig ausgenutzt und nicht überschritten (gemessen
-            // mit TextRenderer, beide Sprachen).
-            _lblLeer = new Label
-            {
-                AutoSize = false,
-                Location = new Point(14, 240),
-                Size = new Size(300, 48),
-                ForeColor = SystemColors.GrayText,
-                Text = ""
-            };
-            this.Controls.Add(_lblLeer);
-
-            _btnPufferAnlegen = new Button
-            {
-                Text = MyResource.Resource.PSP_BTN_PUFFER_ANLEGEN,
-                Location = new Point(330, 244),
-                Size = new Size(275, 28)
-            };
-            _btnPufferAnlegen.Click += btnPufferAnlegen_Click;
-            this.Controls.Add(_btnPufferAnlegen);
-
-            // Parameter der Wärmequelle
-            GroupBox gb = new GroupBox
-            {
-                Text = MyResource.Resource.SIMQ_PUFFER_GB_PARAMETER,
-                Location = new Point(14, 288),
-                Size = new Size(590, 130)
-            };
-            this.Controls.Add(gb);
-            _gbParameter = gb;
-
-            Label l1 = new Label { Text = MyResource.Resource.SIMQ_PUFFER_QUELLTEMPERATUR, AutoSize = true, Location = new Point(16, 30) };
-            Label l2 = new Label { Text = MyResource.Resource.SIMQ_PUFFER_SPREIZUNG, AutoSize = true, Location = new Point(16, 62) };
-            Label l3 = new Label { Text = MyResource.Resource.SIMQ_PUFFER_REGENERATION, AutoSize = true, Location = new Point(16, 94) };
-
-            // Feste Pixel-Geometrie (Konzept 13.6, Hauptrisiko der programmatischen
-            // Dialoge): Die englischen Beschriftungen sind länger als die deutschen.
-            // Die Eingabespalte beginnt deshalb erst hinter der breitesten Beschriftung -
-            // auf Deutsch bleibt es bei den bisherigen 180 px, weil dort keine
-            // Beschriftung so weit reicht. Nach oben gekappt, damit die Felder nicht in
-            // die Kapazitätsanzeige (x = 285) laufen.
-            int xEingabe = Math.Max(l1.Right, Math.Max(l2.Right, l3.Right)) + 12;
+        /// <summary>
+        /// Feste Pixel-Geometrie (Konzept 13.6, Hauptrisiko der programmatischen
+        /// Dialoge): Die englischen Beschriftungen sind länger als die deutschen.
+        /// Die Eingabespalte beginnt deshalb erst hinter der breitesten Beschriftung -
+        /// auf Deutsch bleibt es bei den bisherigen 180 px, weil dort keine
+        /// Beschriftung so weit reicht. Nach oben gekappt, damit die Felder nicht in
+        /// die Kapazitätsanzeige (x = 285) laufen.
+        ///
+        /// Die 180 px des deutschen Falls stehen als Entwurfswert im Designer; diese
+        /// Methode rechnet sie zur Laufzeit nach. Sie MUSS deshalb nach
+        /// <see cref="TexteSetzen"/> laufen — vorher tragen die drei Beschriftungen nur
+        /// die Designer-Platzhalter und sind entsprechend falsch breit.
+        ///
+        /// BEFUND der Designer-Umstellung: Im Bestand wurde auf drei Labels gemessen, die
+        /// zu diesem Zeitpunkt noch KEINEN Container hatten. Eine AutoSize-Beschriftung
+        /// ohne Parent misst sich aber nicht nach — sie behält die Vorgabebreite von
+        /// 100 px. Die Rechnung ergab deshalb immer 116 + 12 = 128 und damit über die
+        /// Untergrenze stets 180, in beiden Sprachen; die englische Beschriftung
+        /// „Usable temperature spread [K]:" (Right = 185) lief also in das Eingabefeld
+        /// hinein. Jetzt sind die Labels bereits Kinder der Rubrik, die Messung greift:
+        /// Deutsch bleibt bei 180 (gemessen: max. Right = 145), Englisch ergibt 197
+        /// (max. Right = 185) — genau das, was Paket 9 / L3 beschrieben hatte
+        /// („auf Englisch rückt die Spalte um wenige Pixel nach rechts").
+        /// </summary>
+        private void EingabespalteAusrichten()
+        {
+            int xEingabe = Math.Max(_lblQuelltemperatur.Right,
+                           Math.Max(_lblSpreizung.Right, _lblRegeneration.Right)) + 12;
             if (xEingabe < 180) xEingabe = 180;
             if (xEingabe > 200) xEingabe = 200;
 
-            _tbTemperatur = new TextBox { Location = new Point(xEingabe, 27), Width = 80, Text = Vorgabe(Quelltemperatur) };
-            _tbTemperatur.TextChanged += (s, e) => BerechneKapazitaet();
+            _tbTemperatur.Left = xEingabe;
+            _tbSpreizung.Left = xEingabe;
+            _tbRegeneration.Left = xEingabe;
+        }
 
-            _tbSpreizung = new TextBox { Location = new Point(xEingabe, 59), Width = 80, Text = Vorgabe(Spreizung) };
-            _tbSpreizung.TextChanged += (s, e) => BerechneKapazitaet();
-
-            _tbRegeneration = new TextBox { Location = new Point(xEingabe, 91), Width = 80, Text = Vorgabe(Regeneration) };
-
-            _lblKapazitaet = new Label
-            {
-                AutoSize = false,
-                Location = new Point(285, 28),
-                Size = new Size(290, 40),
-                Text = ""
-            };
-
-            _cbUnbegrenzt = new CheckBox
-            {
-                Text = MyResource.Resource.SIMQ_PUFFER_CB_UNBEGRENZT,
-                AutoSize = true,
-                Location = new Point(285, 92)
-            };
-
-            gb.Controls.Add(l1);
-            gb.Controls.Add(_tbTemperatur);
-            gb.Controls.Add(l2);
-            gb.Controls.Add(_tbSpreizung);
-            gb.Controls.Add(l3);
-            gb.Controls.Add(_tbRegeneration);
-            gb.Controls.Add(_lblKapazitaet);
-            gb.Controls.Add(_cbUnbegrenzt);
-
-            _lblHinweisArt = new Label
-            {
-                AutoSize = false,
-                Location = new Point(330, 132),
-                Size = new Size(275, 105),
-                Text = MyResource.Resource.SIMQ_PUFFER_HINWEIS_QUELLWAERME
-            };
-            this.Controls.Add(_lblHinweisArt);
-
-            // D5b: Beim Heizkessel steht an der Stelle der Verdampfer-Parameter die
-            // Erklärung der Kaskade. Dasselbe Rechteck, damit die Fenstergeometrie
-            // unverändert bleibt (der Dialog ist FixedDialog).
-            _lblKaskade = new Label
-            {
-                AutoSize = false,
-                Location = new Point(14, 288),
-                Size = new Size(590, 130),
-                Visible = false,
-                Text = MyResource.Resource.SIMQ_PUFFER_HINWEIS_KASKADE
-            };
-            this.Controls.Add(_lblKaskade);
-
-            Button btnOk = new Button
-            {
-                Text = MyResource.Resource.SIM_BTN_OK,
-                DialogResult = DialogResult.OK,
-                Location = new Point(this.ClientSize.Width - 190, 432),
-                Width = 85
-            };
-            Button btnAbbruch = new Button
-            {
-                Text = MyResource.Resource.SIM_BTN_ABBRECHEN,
-                DialogResult = DialogResult.Cancel,
-                Location = new Point(this.ClientSize.Width - 97, 432),
-                Width = 85
-            };
-            btnOk.Click += btnOk_Click;
-
-            this.Controls.Add(btnOk);
-            this.Controls.Add(btnAbbruch);
-            this.AcceptButton = btnOk;
-            this.CancelButton = btnAbbruch;
+        /// <summary>
+        /// Vorbelegung der drei Eingabefelder. Steht bewusst nicht im Designer:
+        /// <see cref="Vorgabe"/> formatiert kulturabhängig, und die Werte stammen aus
+        /// den öffentlichen Feldern, die der Aufrufer erst nach dem Konstruktor setzt.
+        /// <see cref="SetControls"/> überschreibt sie unmittelbar vor dem Anzeigen erneut.
+        /// </summary>
+        private void VorgabenSetzen()
+        {
+            _tbTemperatur.Text = Vorgabe(Quelltemperatur);
+            _tbSpreizung.Text = Vorgabe(Spreizung);
+            _tbRegeneration.Text = Vorgabe(Regeneration);
         }
 
         /// <summary>
@@ -478,6 +469,26 @@ namespace WindowsFormsApplication1
             double kapazitaet = p.Gesamtvolumen * 1.16 * spreizung / 1000.0;
             _lblKapazitaet.Text = string.Format(MyResource.Resource.SIMQ_PUFFER_KAPAZITAET,
                 kapazitaet.ToString("F1"));
+        }
+
+        // ==================================================================
+        // Ereignisse
+        // ==================================================================
+
+        private void lbSpeicher_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ZeigeSpeicherDaten();
+            BerechneKapazitaet();
+        }
+
+        private void tbTemperatur_TextChanged(object sender, EventArgs e)
+        {
+            BerechneKapazitaet();
+        }
+
+        private void tbSpreizung_TextChanged(object sender, EventArgs e)
+        {
+            BerechneKapazitaet();
         }
 
         /// <summary>

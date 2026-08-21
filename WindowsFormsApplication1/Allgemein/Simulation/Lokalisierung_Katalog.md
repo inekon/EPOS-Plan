@@ -1603,3 +1603,138 @@ Wert ändert sich**. Alle drei Dateien (`Resource.resx`, `Resource.en-US.resx`,
 |---|---|
 | `KATALOG`, `STROMGUTSCHRIFT`, `OHNE_GUTSCHRIFT`, `SUBSTITUTION`, `NULLANSATZ`, `VERBRENNUNG`, `NACHWEIS_JA`, `NACHWEIS_NEIN` | **Persistenzwerte** in `Tab_ProjektWirtschaftlichkeit`, in SQL damit verglichen: ASCII, eingefroren, in `DbWerte.cs`. Die Anzeigetexte dazu sind die `BILANZ_DLG_*`-Schlüssel oben. |
 | Die 23 deutschen Literale der übrigen Zeilen von `Form_WirtschaftlichkeitParameter` | **Bestand** (Befund A6, offener Punkt 11): Die Gesamtlokalisierung der drei Dialoge aus E4 bis E6 ist ausdrücklich außerhalb dieser Nacharbeit. Der neue Block ist von Anfang an lokalisiert angelegt. |
+
+---
+
+## Nachtrag Lizenzverwaltung — `LIZ_*` (21.08.2026)
+
+Die Designer-Umstellung von `Views/Admin/Form_LizenzVerwaltung.cs` holt zugleich deren
+Lokalisierung nach: Die Maske war bis dahin **zu 100 % hart deutsch**. **31 Schlüssel** kommen
+neu hinzu, **kein vorhandener Wert ändert sich**. Alle drei Dateien (`Resource.resx`,
+`Resource.en-US.resx`, `Resource.Designer.cs`) führen jeden Schlüssel genau einmal; das Formular
+selbst hat weiterhin **keine eigene `.resx`** — die Texte setzt `TexteSetzen()` nach
+`InitializeComponent()`, im Designer stehen nur Platzhalter (Hausmuster
+`Form_SpotpreisImport`).
+
+Präfix `LIZ_`: Vor dieser Etappe gab es weder `LIZ_*` noch `LIZENZ_*` im Katalog.
+
+| Gruppe | Schlüssel | Inhalt |
+|---|---|---|
+| Rahmen und Gruppen (5) | `LIZ_TITEL`, `LIZ_GRP_STATUS`, `LIZ_GRP_AKTIVIEREN`, `LIZ_GRP_AKTIONEN`, `LIZ_BTN_SCHLIESSEN` | Fenstertitel und die drei GroupBoxen. `LIZ_TITEL` ist **nur das Wort „Lizenz"** — der vollständige Titel `Lizenz — EPOS-Plan` entsteht in `TexteSetzen()`, weil `MDIMainForm.PRODUKTNAME` eine Anwendungskonstante und kein Übersetzungsgut ist. |
+| Statusblock (3) | `LIZ_LINK_PORTAL`, `LIZ_DETAIL`, `LIZ_DETAIL_KEINE` | Der Verweis auf das Lizenzportal und die Detailzeile darüber. `LIZ_DETAIL` ist **zweizeilig mit vier Platzhaltern** (`{0}` LizenzId, `{1}` Firma, `{2}` Benutzer, `{3}` Gerätename) und ersetzt die bisherige Verkettung mit `Environment.NewLine`. |
+| Aktivierungsblock (5) | `LIZ_LBL_SCHLUESSEL`, `LIZ_LBL_EMAIL`, `LIZ_BTN_AKTIVIEREN`, `LIZ_BTN_LIC`, `LIZ_HINWEIS_AKTIVIERUNG` | Eingabezeilen und der zweizeilige Datenschutzhinweis unter den Feldern. |
+| Weitere Aktionen (2) | `LIZ_BTN_TRIAL`, `LIZ_BTN_FREIGEBEN` | Testversion anfordern und Gerät von der Lizenz lösen. |
+| Fußzeile und Ablaufmeldungen (4) | `LIZ_HINWEIS_LIC_GELADEN`, `LIZ_STATUS_AKTIVIERUNG`, `LIZ_STATUS_TRIAL`, `LIZ_STATUS_FREIGABE` | Die Zeile links unten. Die drei `…_STATUS_*` gehen als Argument an `BedienungSperren(true, …)`. |
+| Dateidialog (2) | `LIZ_DLG_LIC_TITEL`, `LIZ_DLG_LIC_FILTER` | Titel und Filterzeichenkette des `OpenFileDialog` für `.lic`-Dateien. Der Filter behält seine Pipe-Syntax und die Produktbezeichnung. |
+| Meldungen (10) | `LIZ_MSG_EINGABE_FEHLT`, `LIZ_MSG_EMAIL_UNGUELTIG`, `LIZ_MSG_AKTIVIERT`, `LIZ_MSG_AKTIVIERUNG_FEHLER`, `LIZ_MSG_LIC_OHNE_SCHLUESSEL`, `LIZ_MSG_TRIAL_EMAIL`, `LIZ_MSG_TRIAL_OK`, `LIZ_MSG_TRIAL_FEHLER`, `LIZ_MSG_FREIGEBEN_FRAGE`, `LIZ_MSG_SERVER_NICHT_ERREICHBAR` | Sämtliche `MessageBox`-Texte der Maske. `LIZ_MSG_EMAIL_UNGUELTIG` trägt `{0}` für die geprüfte Adresse, `LIZ_MSG_FREIGEBEN_FRAGE` enthält die **Leerzeile** zwischen Frage und Folgesatz als echten Umbruch. |
+
+**Zeilenumbrüche.** Die drei mehrzeiligen Werte (`LIZ_DETAIL`, `LIZ_HINWEIS_AKTIVIERUNG`,
+`LIZ_MSG_FREIGEBEN_FRAGE`) stehen als **echte Umbrüche im `<value>`**, nicht als `\n`-Escape.
+Zur Laufzeit liefert die Ressource damit `CRLF` — bei den Meldungen exakt das, was vorher
+`Environment.NewLine` erzeugt hat; beim Label-Hinweis stand vorher ein einzelnes `\n`, was
+optisch dasselbe Ergebnis hat.
+
+**Nicht lokalisiert — und warum**
+
+| Wert | Grund |
+|---|---|
+| `MDIMainForm.PRODUKTNAME` (`EPOS-Plan`) und `LizenzManager.PORTAL_URL` | **Anwendungskonstanten**, keine Anzeigetexte: Produktname und Portaladresse sind in beiden Sprachen gleich. |
+| `LizenzManager.StatusText()` | **Bestand außerhalb dieser Etappe.** Die Statuszeile oben und der Zusatz in der Erfolgsmeldung kommen aus dem Lizenzmodul; dessen Lokalisierung (`Allgemein/Lizenz/`) ist eine eigene Baustelle. |
+| `LizenzServerAntwort.Meldung` | **Servertext.** Er kommt vom Lizenzserver und wird unverändert angezeigt; die Ressource ist nur der Rückfall, wenn keine Meldung geliefert wurde. |
+| `Debug.WriteLine("Link konnte nicht geöffnet werden: …")` in `LinkOeffnen` | **Ablaufverfolgung**, keine Anzeige — dieselbe Ausnahme wie für `Console.WriteLine`- und `Exception`-Texte. |
+
+---
+
+## Nachtrag Berichtsseite — `BK_BER_*` (21.08.2026)
+
+Die Designer-Umstellung von `Views/Bericht/UcBericht.cs` holt zugleich dessen Lokalisierung nach:
+Die Seite war bis auf den Knopf „Projektvergleich + Bericht (alt)" (`BK_BTN_VERGLEICH_ALT`)
+**vollständig hart deutsch**. **37 Schlüssel** kommen neu hinzu, **sieben vorhandene werden
+mitbenutzt**, **kein vorhandener Wert ändert sich**. Alle drei Dateien (`Resource.resx`,
+`Resource.en-US.resx`, `Resource.Designer.cs`) führen jeden Schlüssel genau einmal; das Control hat
+weiterhin **keine eigene `.resx`** — die Texte setzt `TexteSetzen()` nach `InitializeComponent()`,
+im Designer stehen nur Platzhalter (Hausmuster `Form_SpotpreisImport`).
+
+**Präfix `BK_BER_` statt eines eigenen `BER_`.** `UcBericht` ist die Seite „Bericht" des Reiters
+„Berichte &amp; Kosten" und trug mit `BK_BTN_VERGLEICH_ALT` schon vor dieser Etappe einen `BK_*`-
+Schlüssel. Die `BK_*`-Gruppe führt bereits seitenweise Unterpräfixe — `BK_KOSTEN_*` für `UcBkKosten`,
+`BK_UEB_*` für den Übernahme-Dialog, `BK_KOMP_*` für die Komponenten-Übernahme; die Nabe selbst
+benutzt die flachen `BK_NAV_*`, `BK_KOPF_*`, `BK_SP_*`, `BK_ART_*`, `BK_MSG_*`. `BK_BER_*` reiht sich
+genau dort ein. Ein eigenständiges `BER_*` hätte die vier Seiten desselben Reiters auf zwei
+Katalogfamilien verteilt.
+
+| Gruppe | Schlüssel | Inhalt |
+|---|---|---|
+| Seitentitel (1) | `BK_BER_TITEL` | Titelzeile des Dialog-Wrappers bzw. Seitenüberschrift, mit `{0}` für den Stammprojektnamen. Ersetzt die bisherige Verkettung in der Eigenschaft `Titel`. |
+| Variantenliste (5) | `BK_BER_LBL_VARIANTEN`, `BK_BER_SP_SIMULATION`, `BK_BER_BTN_ALLE`, `BK_BER_BTN_KEINE`, `BK_BER_MSG_STAMM_REFERENZ` | Überschrift, vierter Spaltenkopf, die beiden Auswahlknöpfe und der Hinweis, dass die Stammzeile angehakt bleibt. `BK_BER_SP_SIMULATION` ist **„Simulation"** und damit nicht dasselbe wie `BK_SP_SIMSTAND` („Simulationsstand") der Übersichtsseite. |
+| Bausteine (2) | `BK_BER_LBL_BAUSTEINE`, `BK_BER_LBL_RECHNEN` | Überschrift der Baustein-Checkliste und der graue Rechenhinweis darunter (Hinweis statt Option, Nutzeranforderung 15.08.2026). |
+| Ausgabe und Ziel (6) | `BK_BER_LBL_AUSGABE`, `BK_BER_RB_WORD`, `BK_BER_RB_EXCEL`, `BK_BER_RB_BEIDE`, `BK_BER_LBL_ZIEL`, `BK_BER_BTN_DURCHSUCHEN` | Die drei Auswahlknöpfe des Ausgabeformats sowie Zielordnerzeile und „Durchsuchen…". **Nur die Beschriftungen** — die Steuerwerte bleiben Persistenz (siehe unten). |
+| Schaltflächen (3) | `BK_BER_BTN_ERSTELLEN`, `BK_BER_BTN_SCHLIESSEN`, `BK_BER_BTN_ABBRECHEN` | „Erstellen" und der Doppelknopf rechts unten: `SetBusy` schaltet ihn während eines Laufs von „Schließen" auf „Abbrechen" um. |
+| Statuszeile (5) | `BK_BER_STATUS_ERSTELLT`, `BK_BER_STATUS_WORD`, `BK_BER_STATUS_EXCEL`, `BK_BER_STATUS_ABGEBROCHEN`, `BK_BER_STATUS_FEHLER` | Alles, was durch `Melde()` in `lblStatus` läuft. `BK_BER_STATUS_ERSTELLT` trägt `{0}` für den Dateipfad und wird von beiden Wegen (regulär und „Vergleich (alt)") benutzt. |
+| Meldungen und Fragen (10) | `BK_BER_MSG_WIRTSCHAFT_HINWEIS`, `BK_BER_MSG_HINWEISE`, `BK_BER_MSG_VERGLEICH_FERTIG`, `BK_BER_MSG_ERSTELLT_KOPF`, `BK_BER_MSG_LAUFFEHLER`, `BK_BER_FRAGE_START`, `BK_BER_FRAGE_OEFFNEN`, `BK_BER_FRAGE_OEFFNEN_WORD`, `BK_BER_FRAGE_OEFFNEN_BERICHT`, `BK_BER_DLG_ZIELORDNER` | Sämtliche `MessageBox`-Inhalte plus die Beschreibung des Ordnerdialogs. `BK_BER_FRAGE_START` trägt `{0}` für die Anzahl der Projekte, `BK_BER_MSG_LAUFFEHLER` `{0}` für die Ausnahmemeldung. `BK_BER_MSG_HINWEISE` („Hinweise:") steht in beiden Meldungen als eigener Baustein, weil der Aufzählungspunkt `• ` und die Umbrüche im Code bleiben. |
+| Dateidialog (1) | `BK_BER_DLG_FILTER_WORD` | Filterzeichenkette des `SaveFileDialog` im Bestandsweg; behält ihre Pipe-Syntax. |
+| Fenstertitel der Meldungen (4) | `BK_BER_TITEL_ERSTELLEN`, `BK_BER_TITEL_VERGLEICH`, `BK_BER_TITEL_FEHLER`, `BK_BER_TITEL_FEHLER_VERGLEICH` | Die vier Titelzeilen der `MessageBox`-Aufrufe. „Fehler" und „Fehler beim Erstellen des Berichts" sind zwei verschiedene Titel und bleiben deshalb zwei Schlüssel. |
+
+**Mitbenutzte Schlüssel** (der Katalog führt gleiche deutsche Texte innerhalb einer Gruppe unter
+einem Schlüssel — Etappe 1, Abschnitt 5.1). `UcBericht` zeigt dieselbe Variantenliste wie
+`UcBkUebersicht` desselben Reiters und übernimmt deren Schlüssel unverändert:
+
+| Schlüssel | Verwendung in `UcBericht` |
+|---|---|
+| `BK_SP_ART`, `BK_SP_BEZEICHNER`, `BK_SP_PROJEKTNAME` | die ersten drei Spaltenköpfe von `lvVarianten` |
+| `BK_ART_STAMM`, `BK_ART_VARIANTE`, `BK_ART_STAMMPROJEKT` | die Zellwerte der Spalten „Art" und „Bezeichner" in `LadeDaten` |
+| `BK_BTN_VERGLEICH_ALT` | unverändert; wandert nur aus `InitializeComponent` nach `TexteSetzen()` |
+
+**Zeilenumbrüche.** Der einzige mehrzeilige Wert (`BK_BER_FRAGE_START`) steht als **echter Umbruch
+im `<value>`**, nicht als `\n`-Escape; zur Laufzeit liefert die Ressource `CRLF` — exakt das, was
+vorher die Literale `"\r\n\r\n"` erzeugt haben. Alle übrigen Meldungen setzen ihre Umbrüche
+weiterhin im Code zusammen, damit Aufzählungspunkte und Pfadzeilen unverändert bleiben.
+
+**Nicht lokalisiert — und warum**
+
+| Wert | Grund |
+|---|---|
+| `"Word"`, `"Excel"`, `"Beide"` in `LeseKonfigurationAusUi` und `LadeDaten` | **Persistenzwerte**: `BerichtsKonfiguration.Ausgabe` wird als JSON in `Berichtskonfiguration.KonfigJson` abgelegt und dort wieder verglichen. Deutsch und eingefroren; lokalisiert sind nur die drei Knopfbeschriftungen `BK_BER_RB_*`. |
+| `"Projektvergleich_" + … + ".docx"` (Dateinamensvorschlag) | **Dateiname, kein Anzeigetext** — dieselbe Behandlung wie der Namensstamm `"_Bericht_"` in `BerichtCtrl.ErzeugeWord/ErzeugeExcel`. |
+| `"({0}/{1}) {2}"` im Fortschrittsmelder | **Gerüst ohne Wortbestandteil**; der Text kommt aus `BerichtsDatenSammler.Fortschritt`. |
+| `BerichtsKonfiguration.AlleBausteine[].Titel` (acht Bausteinnamen) | **Bestand außerhalb dieser Etappe.** Die Titel stehen im Modell (`Allgemein/Bericht/BerichtsKonfiguration.cs`) und werden auch vom Word- und Excel-Erzeuger benutzt; ihre Lokalisierung gehört zum Berichtsmodul, nicht zur Maske. |
+
+---
+
+## Nachtrag KI-Einstellungen — `KI_EINST_*` (21.08.2026)
+
+Der Einstellungsdialog des KI-Assistenten stand bis dahin als `new Form()` mitten in
+`Form_KiChat.EinstellungenOeffnen()` und war **zu 100 % hart deutsch** (bis auf die Checkbox
+`KI_AKT_WEGB_EINSTELLUNG`). Mit dem Umzug nach `Views/Help/Form_KiEinstellungen.cs` +
+`.Designer.cs` kommen **14 Schlüssel** neu hinzu, **kein vorhandener Wert ändert sich**. Alle drei
+Dateien führen jeden Schlüssel genau einmal; der Dialog hat **keine eigene `.resx`** — die Texte
+setzt `TexteSetzen()`, die wertabhängigen `WerteUebernehmen()`.
+
+Präfix `KI_EINST_`: Die `KI_*`-Familie führt bereits `KI_AKT_*` (Aktionsbetrieb), `KI_KERN_*`
+(Kern/Prüfungen), `KI_REG_*` (Werkzeugkatalog) und `KI_VORSCHAU_*`; `KI_EINST_*` ist die Maske.
+Der Block steht in beiden `.resx` unmittelbar hinter der `KI_AKT_*`-Gruppe.
+
+| Gruppe | Schlüssel | Inhalt |
+|---|---|---|
+| Rahmen (3) | `KI_EINST_TITEL`, `KI_EINST_BTN_OK`, `KI_EINST_BTN_ABBRECHEN` | Fenstertitel und die beiden Schaltflächen unten rechts. |
+| Eingabezeilen (4) | `KI_EINST_LBL_SCHLUESSEL`, `KI_EINST_LBL_TAGESLIMIT`, `KI_EINST_LIMIT_FEST`, `KI_EINST_TIP_TAGESLIMIT` | API-Schlüsselzeile und Tageslimit. `KI_EINST_LIMIT_FEST` trägt `{0}` für den Zahlenwert aus `KiChatService.Tageslimit`; der zugehörige Kurzhinweis ist der ToolTip daneben. |
+| Modell (3) | `KI_EINST_BTN_MODELL`, `KI_EINST_HINWEIS_MODELL`, `KI_EINST_HINWEIS_MODELL_NEU` | „Modell neu erkennen" und die **erste Zeile** des Hinweisblocks in ihren beiden Fassungen (beim Öffnen und nach dem Zurücksetzen), jeweils mit `{0}` für `KiChatService.MODELL`. |
+| Hinweisabsätze (2) | `KI_EINST_HINWEIS_DATEN`, `KI_EINST_HINWEIS_KONTINGENT` | Der Datenschutz- und der Kontingentabsatz — unverändert im Wortlaut, nur getrennt abgelegt. |
+| Rückmeldung im Verlauf (2) | `KI_EINST_MSG_GESPEICHERT`, `KI_EINST_MSG_GESPEICHERT_OHNE_SCHLUESSEL` | Die beiden Zeilen, die `Form_KiChat` nach OK in den Verlauf schreibt. Sie bleiben beim Aufrufer, weil dort auch das Speichern bleibt. |
+
+**Warum der Hinweisblock in vier statt einem Schlüssel liegt.** Bisher stand der ganze Block in
+einem Literal, und „Modell neu erkennen" tauschte die erste Zeile über
+`hinweis.Text.Substring(hinweis.Text.IndexOf("\n\n"))` aus. Als **ein** mehrzeiliger
+Ressourcenwert wäre daraus ein Laufzeitfehler geworden: Mehrzeilige `<value>` liefern `CRLF`, die
+Suche nach `"\n\n"` liefe ins Leere und `Substring(-1)` wirft. Deshalb stehen Modellzeile,
+Datenschutz- und Kontingentabsatz **einzeln und einzeilig** im Katalog; `HinweisSetzen()` fügt sie
+mit demselben `"\n\n"` zusammen, das vorher im Literal stand. Die angezeigte Zeichenkette ist
+dadurch **byteweise identisch** mit der bisherigen.
+
+**Nicht lokalisiert — und warum**
+
+| Wert | Grund |
+|---|---|
+| `KiChatService.MODELL` (z. B. `gemini-2.5-flash-lite`) | **Anbieterbezeichnung**, kein Übersetzungsgut; geht als `{0}` in die Modellzeile. |
+| `KI_AKT_WEGB_EINSTELLUNG` | **Bestand** — die Checkbox war schon vor dieser Etappe lokalisiert und behält ihren Schlüssel. |
+| Registrierungs- und Ablagenamen in `KiChatService` | **Persistenz**, keine Anzeige. |

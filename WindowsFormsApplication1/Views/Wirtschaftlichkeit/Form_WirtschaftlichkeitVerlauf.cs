@@ -22,9 +22,17 @@ namespace WindowsFormsApplication1
     /// Zeichnen gesammelt und für Zeitraum-/Szenariowechsel wiederverwendet —
     /// nur die Kapitalwertrechnung läuft dann neu (schnell).
     ///
-    /// Komplett im Code aufgebaut (kein Designer/.resx nötig) — Muster Form_Bericht.
+    /// Die Oberfläche steht in <c>Form_WirtschaftlichkeitVerlauf.Designer.cs</c>, weiterhin
+    /// ohne eigene <c>.resx</c>: Im Designer stehen nur Platzhalter (der Feldname), die
+    /// echten Texte setzt <see cref="TexteSetzen"/> unmittelbar nach
+    /// <c>InitializeComponent()</c>. Nicht serialisierbar und deshalb im
+    /// Konstruktor-Nachlauf: die Vorbelegung aus der Datenbank
+    /// (<see cref="ParameterVorbelegen"/>), die Szenarioliste
+    /// (<see cref="SzenarienFuellen"/> — das sind DB-Persistenzwerte und gehören nicht in
+    /// Designer-Code) und die Deckelung auf den Arbeitsbereich
+    /// (<see cref="GroesseAufArbeitsflaecheDeckeln"/>).
     /// </summary>
-    public class Form_WirtschaftlichkeitVerlauf : Form
+    public partial class Form_WirtschaftlichkeitVerlauf : Form
     {
         private readonly int _idStamm;
         private readonly string _stammName;
@@ -39,51 +47,66 @@ namespace WindowsFormsApplication1
         /// Aufrufer sollte dann seine Anzeige auffrischen (Review Phase 11).</summary>
         public bool DatenNeuGesammelt { get; private set; }
 
-        private Label lblZeitraum, lblSzenario, lblStatus, lblRestwert;
-        private readonly ToolTip _tooltip = new ToolTip();
-        private NumericUpDown numJahre;
-        private ComboBox cbSzenario;
-        private Button btnZeichnen, btnSchliessen;
-        private PictureBox picDiff, picAbsolut;
-        private ProgressBar progress;
-
         public Form_WirtschaftlichkeitVerlauf(int idStamm, string stammName, List<int> variantenIds)
         {
             _idStamm = idStamm;
             _stammName = stammName ?? "";
             _variantenIds = variantenIds ?? new List<int>();
+
+            // Der Designer setzt AutoScaleMode bewusst auf None und lässt
+            // AutoScaleDimensions weg: Bisher stand hier AutoScaleMode.Font OHNE
+            // AutoScaleDimensions, der Skalierfaktor blieb damit (1,1) — es wurde also
+            // faktisch nie skaliert. Die Anwendung läuft ohnehin DpiUnaware
+            // (app.manifest, Program.SetHighDpiMode). None hält genau dieses Verhalten
+            // fest und verhindert, dass ein Designer-Speichern die Skalierung erstmals
+            // scharf schaltet.
             InitializeComponent();
+            TexteSetzen();
+            ParameterVorbelegen();
+            SzenarienFuellen();
+            GroesseAufArbeitsflaecheDeckeln();
+
+            // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
+            // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
+            // Auf ausreichend grossen Schirmen wirkungslos.
+            FensterEinpassung.Einhaengen(this);
         }
 
-        private void InitializeComponent()
-        {
-            this.SuspendLayout();
-            this.AutoScaleMode = AutoScaleMode.Font;
-            this.Font = new Font("Segoe UI", 9f);
+        // -------------------------------------------------- Aufbau-Nachlauf
 
-            lblZeitraum = new Label { AutoSize = true, Location = new Point(12, 16),
-                                      Text = "Zeitraum [Jahre]:" };
-            numJahre = new NumericUpDown
-            {
-                Location = new Point(118, 12),
-                Size = new Size(70, 23),
-                Minimum = 2,
-                Maximum = 60,
-                Value = 20,
-                TextAlign = HorizontalAlignment.Right
-            };
+        /// <summary>
+        /// Setzt alle sichtbaren Texte. Läuft direkt nach <c>InitializeComponent()</c> und
+        /// ersetzt die dortigen Platzhalter. Die Texte sind (wie im Bestand) deutsche
+        /// Literale — die Lokalisierung dieses Dialogs ist ein eigener Vorgang; hier steht
+        /// nur, dass sie an genau einer Stelle liegen.
+        /// </summary>
+        private void TexteSetzen()
+        {
+            this.Text = "Kapitalwert-Verlauf über den Nutzungszeitraum — Stamm: " + _stammName;
+            lblZeitraum.Text = "Zeitraum [Jahre]:";
+            lblSzenario.Text = "Szenario:";
+            btnZeichnen.Text = "Aktualisieren";
+            btnSchliessen.Text = "Schließen";
+        }
+
+        /// <summary>
+        /// Vorbelegung von <c>numJahre</c> aus den gespeicherten Parametern. Steht nicht im
+        /// Designer: Das ist ein Datenbankzugriff und hängt am Konstruktorargument.
+        /// </summary>
+        private void ParameterVorbelegen()
+        {
             WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
             if (p.Betrachtungszeitraum >= 2 && p.Betrachtungszeitraum <= 60)
                 numJahre.Value = p.Betrachtungszeitraum;
+        }
 
-            lblSzenario = new Label { AutoSize = true, Location = new Point(206, 16),
-                                      Text = "Szenario:" };
-            cbSzenario = new ComboBox
-            {
-                Location = new Point(272, 12),
-                Width = 130,
-                DropDownStyle = ComboBoxStyle.DropDownList
-            };
+        /// <summary>
+        /// Füllt die Szenarioliste. Steht bewusst NICHT im Designer: Die drei Werte sind
+        /// DB-Persistenzwerte (<c>Tab_ErgebnisWirtschaftlichkeit.Szenario</c>) und dürfen
+        /// nicht als Literale in Designer-Code oder gar in eine <c>.resx</c> geraten.
+        /// </summary>
+        private void SzenarienFuellen()
+        {
             cbSzenario.Items.AddRange(new object[]
             {
                 WirtschaftlichkeitSzenario.ERWARTET,
@@ -91,106 +114,43 @@ namespace WindowsFormsApplication1
                 WirtschaftlichkeitSzenario.WORST
             });
             cbSzenario.SelectedIndex = 0;
+        }
 
-            btnZeichnen = new Button
-            {
-                Location = new Point(418, 10),
-                Size = new Size(110, 27),
-                Text = "Aktualisieren"
-            };
-            btnZeichnen.Click += new EventHandler(btnZeichnen_Click);
-
-            btnSchliessen = new Button
-            {
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(786, 10),
-                Size = new Size(100, 27),
-                Text = "Schließen"
-            };
-            btnSchliessen.Click += (s, e) => { if (_cts != null) _cts.Cancel(); else Close(); };
-
-            picDiff = new PictureBox
-            {
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
-                Location = new Point(12, 46),
-                Size = new Size(874, 320),
-                SizeMode = PictureBoxSizeMode.Zoom,
-                BorderStyle = BorderStyle.FixedSingle,
-                BackColor = Color.White
-            };
-            picAbsolut = new PictureBox
-            {
-                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
-                Location = new Point(12, 372),
-                Size = new Size(874, 316),
-                SizeMode = PictureBoxSizeMode.Zoom,
-                BorderStyle = BorderStyle.FixedSingle,
-                BackColor = Color.White
-            };
-
-            lblRestwert = new Label
-            {
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
-                ForeColor = Color.DimGray,
-                Location = new Point(12, 694),
-                Size = new Size(874, 30),
-                AutoEllipsis = true
-            };
-            lblStatus = new Label
-            {
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
-                ForeColor = Color.DimGray,
-                Location = new Point(12, 726),
-                Size = new Size(600, 18)
-            };
-            progress = new ProgressBar
-            {
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
-                Location = new Point(636, 728),
-                Size = new Size(250, 14),
-                Visible = false
-            };
-
-            this.ClientSize = new Size(898, 744);   // Designgröße für den Layoutlauf
-            this.MinimumSize = new Size(760, 560);
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.Name = "Form_WirtschaftlichkeitVerlauf";
-            this.Text = "Kapitalwert-Verlauf über den Nutzungszeitraum — Stamm: " + _stammName;
-            this.Controls.Add(lblZeitraum);
-            this.Controls.Add(numJahre);
-            this.Controls.Add(lblSzenario);
-            this.Controls.Add(cbSzenario);
-            this.Controls.Add(btnZeichnen);
-            this.Controls.Add(btnSchliessen);
-            this.Controls.Add(picDiff);
-            this.Controls.Add(picAbsolut);
-            this.Controls.Add(lblRestwert);
-            this.Controls.Add(lblStatus);
-            this.Controls.Add(progress);
-            this.Load += (s, e) => btnZeichnen_Click(s, e);
-            this.FormClosing += (s, e) =>
-            {
-                if (_cts != null) { _cts.Cancel(); _schliessenNachAbbruch = true; e.Cancel = true; }
-            };
-            this.FormClosed += (s, e) =>
-            {
-                if (picDiff.Image != null) picDiff.Image.Dispose();
-                if (picAbsolut.Image != null) picAbsolut.Image.Dispose();
-                _tooltip.Dispose();
-            };
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
-            // ERST nach dem Layoutlauf auf den Arbeitsbereich deckeln — dann
-            // führen die Anchors die Controls korrekt nach (Review-Verifikation 11).
+        /// <summary>
+        /// ERST nach dem Layoutlauf auf den Arbeitsbereich deckeln — dann führen die
+        /// Anchors die Controls korrekt nach (Review-Verifikation 11). Die Entwurfsgröße
+        /// 898 x 744 steht im Designer und gilt für den Layoutlauf.
+        /// </summary>
+        private void GroesseAufArbeitsflaecheDeckeln()
+        {
             this.ClientSize = new Size(
                 Math.Min(898, Math.Max(744, Screen.PrimaryScreen.WorkingArea.Width - 60)),
                 Math.Min(744, Math.Max(513, Screen.PrimaryScreen.WorkingArea.Height - 90)));
+        }
 
-            // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
-            // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
-            // Auf ausreichend grossen Schirmen wirkungslos.
-            FensterEinpassung.Einhaengen(this);
+        // -------------------------------------------------- Fenster-Ereignisse
+
+        private void Form_WirtschaftlichkeitVerlauf_Load(object sender, EventArgs e)
+        {
+            btnZeichnen_Click(sender, e);
+        }
+
+        private void Form_WirtschaftlichkeitVerlauf_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (_cts != null) { _cts.Cancel(); _schliessenNachAbbruch = true; e.Cancel = true; }
+        }
+
+        private void Form_WirtschaftlichkeitVerlauf_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            if (picDiff.Image != null) picDiff.Image.Dispose();
+            if (picAbsolut.Image != null) picAbsolut.Image.Dispose();
+            // _tooltip wird NICHT mehr von Hand entsorgt: Er hängt jetzt als Komponente in
+            // components und geht über das Standard-Dispose der Designer-Datei mit.
+        }
+
+        private void btnSchliessen_Click(object sender, EventArgs e)
+        {
+            if (_cts != null) _cts.Cancel(); else Close();
         }
 
         // ------------------------------------------------------------- Zeichnen

@@ -41,6 +41,12 @@ im Bestand, nicht aus allgemeiner Vorsicht.
    (z. B. den Feldnamen — ein vergessenes Nachsetzen fällt dann sofort auf), die echten
    Texte setzt eine `TexteSetzen()`-Methode **nach** `InitializeComponent` aus
    `MyResource.Resource.*`. So bleiben `.resx` der Form praktisch leer und harmlos.
+   **Nachtrag 21.08.2026 (Design-Politur, Anwenderentscheid):** Die Designer-Dateien
+   tragen statt der Feldnamen-Platzhalter jetzt die **echten deutschen Texte**
+   (wörtlich gleich den `TexteSetzen()`-Werten), damit der VS-Designer das Realbild
+   zeigt. `TexteSetzen()` bleibt zur Laufzeit die führende Textquelle; bei
+   Textänderungen sind BEIDE Stellen zu pflegen (Katalog/TexteSetzen + Designer-
+   Vorschau), sonst zeigt der Entwurf veraltete Texte.
 2. **AutoScale ist das größte Einzelrisiko.** Die Kandidaten setzen höchstens
    `AutoScaleMode = Font` **ohne** `AutoScaleDimensions` — Skalierfaktor bleibt (1,1),
    es wird faktisch nie skaliert. Der Designer schreibt beim ersten Speichern
@@ -191,21 +197,100 @@ Fachlogik nicht anfassen.
   **Stand 20.08.2026: umgesetzt** — 10× `: Form` gestrichen, alle 7 leeren resx
   (4 Controller + `Form_Quellprofil` + `Form_ChartZoom` + `Form3Src`) und `Form3Src.cs`
   gelöscht, Build Debug/x86 grün (VS-MSBuild; `dotnet build` scheitert wegen der
-  COM-Referenzen an MSB4803). **Offen:** Entscheidung `Form_ChartZoom` (Klasse) und
-  `Form_AlsVariante` — löschen oder anbinden.
+  COM-Referenzen an MSB4803). Am 21.08.2026 auf Entscheid von Dirk abgeschlossen:
+  `Form_ChartZoom.cs` und `Form_AlsVariante.cs` gelöscht (inkl. Eintrag in
+  `HilfeKontext.cs` und CLAUDE.md-Modultabelle). **Stufe 0 damit komplett.**
 - **Stufe 1 — Piloten (A/S, ~1 Arbeitstag):** `Form_SpeicherVariantenVergleich`
   (zeigt Dispose-Konflikt, AutoScale-Verhalten und `TexteSetzen`-Mechanik an einer
   überschaubaren Form), dann `Form_SpotpreisImport` und `Form_PlanwertUebernahme`
   (beide voll lokalisiert und logikfrei). Ergebnis: validiertes Rezept.
+  **Stand 21.08.2026: umgesetzt.** Alle drei Forms sind auf `partial` + handgeschriebene
+  designer-konforme `X.Designer.cs` migriert — ohne `.resx`, `Localizable` aus,
+  `AutoScaleMode = None` (statt Font ohne Baseline, verhaltensgleich), Texte über
+  `TexteSetzen()` nach `InitializeComponent()`, Platzhalter = Feldname. Der
+  `Dispose`-Konflikt (Regel 4) ist durch Umzug der Font-Freigabe in die Designer-Dispose
+  gelöst, der `fuss.Resize`-Workaround in `Form_PlanwertUebernahme` durch feste
+  End-Locations + Anker ersetzt (Ankerbasis über `Size` vor `Controls.Add` gesichert).
+  Veraltete Querverweise in `Form_Betriebskosten.cs` und `Form_Heizkessel_Bearbeiten.cs`
+  (CP1252, byte-sicher) korrigiert. Build Debug/x86 grün. **Noch offen:** die drei
+  Dialoge einmal in der laufenden App öffnen (Layout-Sichtprüfung) und eine Form
+  probeweise im VS-Designer öffnen — dabei nicht speichern, bis geklärt ist, dass VS
+  kein `AutoScaleDimensions` einschleust.
 - **Stufe 2 — restliche A/S (~2–3 Tage):** `Form_BkUebernahme`, `Form_GanglinieProtokoll`,
   `Form_QuellePufferspeicher`, `Form_WirtschaftlichkeitVerlauf`,
   `Form_GesetzparameterZeile` + `Form_Gesetzesparameter` (Dateizerlegung),
   `Form_LizenzVerwaltung` (Lokalisierung zuerst); dazu die Inline-Extraktionen
   `BetriebsmodusBearbeiten` und `Form_TextAnzeige`.
+  **Stand 21.08.2026: umgesetzt.** Alle sechs Migrationen nach dem Stufe-1-Rezept,
+  Gesetzesparameter in zwei Dateisätze zerlegt (alle 14 `Name`-Testanker wertgleich,
+  13 internal-Prüfhaken unverändert), `Form_LizenzVerwaltung` dabei komplett auf 31
+  neue zweisprachige `LIZ_*`-Schlüssel lokalisiert (Nachtrag im Lokalisierungs-Katalog;
+  noch offen: `LizenzManager.StatusText()`, Servertexte, Menüeintrag im Hauptfenster).
+  Neu extrahiert: `Views\Help\Form_TextAnzeige` (ersetzt die zwei KiChat-Viewer,
+  Code-Klasse ohne Designer) und `Views\Simulation\Form_Betriebsmodus`
+  (Designer-Dialog; `BetriebsmodusBearbeiten()` ist jetzt 9-Zeilen-Wrapper mit
+  `using`); `EingabeDialog` bekam sein `using`. Build Debug/x86 grün, 0 neue
+  Warnungen. Befund nebenbei: Die Eingabespalten-Messung in
+  `Form_QuellePufferspeicher` war im Bestand wirkungslos (Messung vor
+  Parent-Zuordnung) — die Migration stellt die dokumentierte Absicht wieder her
+  (nur EN verschieben sich die drei Eingabefelder von 180 auf 197 px).
 - **Stufe 3 — A/M (~1 Woche):** `Form_PufferSp_Projekt`, `Form_QuelleErdreich`,
   `Form_PeakShaving`, `Form_KwkgModule`, `UcWirtschaftlichkeit`, `ucStromAufschlaege`,
   `UcBericht` (Lokalisierung zuerst), `Form_GanglinieImportOptionen`,
   KiChat-Einstellungsdialog.
+  **Stand 21.08.2026: umgesetzt.** Alle neun Pakete nach dem Rezept; Charts bleiben
+  gemäß Regel 8 im Code (`ChartAufbauen()` bei QuelleErdreich und PeakShaving); die
+  `_felder[]`/`_schalter[]`-Arrays von `ucStromAufschlaege` werden im Nachlauf aus den
+  15 aufgelösten Designer-Feldern befüllt; `UcBericht` komplett auf 37 neue
+  `BK_BER_*`-Schlüssel lokalisiert (7 vorhandene `BK_*` mitbenutzt), der
+  KiChat-Einstellungsdialog als `Views\Help\Form_KiEinstellungen` mit 14 neuen
+  `KI_EINST_*`-Schlüsseln extrahiert (ToolTip in `components`, `using` beim Aufrufer).
+  Build Debug/x86 grün, 0 neue Warnungen. **Zwei vorbestehende Layout-Altbefunde**
+  wurden dabei 1:1 reproduziert (bewusst nicht „mitgefixt") und waren separat zu
+  beheben: (a) `ucStromAufschlaege` — Override-Zeile ragt ~4 px unter die GroupBox,
+  `_lblRest` („nicht aufgeschlüsselter Rest") liegt komplett außerhalb und ist
+  unsichtbar; (b) `Form_PeakShaving` — Zeile 6 der Parametergruppe (Zins,
+  Nutzungsdauer, Herkunft) wird von der 168 px hohen GroupBox abgeschnitten.
+  **Nachlauf 21.08.2026: beide behoben.** (a) `_gbAufschlag` 232 → 270 px,
+  Steuerelement 548×300 → 548×338 (`HOEHE` = 338; der Wirt `ucFuelSettings`
+  wächst über die Konstante automatisch mit), zusätzlich die rechts über die
+  Gruppe hinausragende BHKW-Vergütungszeile eingerückt (Label 120 px, Feld
+  x=412, Einheit x=486). (b) `grpParameter` 168 → 196,
+  btn_Rechnen/chk_SoC/btn_Csv um 28 px nach unten, `tab_Ergebnis` y=354 bei
+  Höhe 402 (Unterkante 756 unverändert). Dabei ein dritter Altbefund beseitigt:
+  Die feste Chart-Hüllen-Geometrie in `ChartAufbauen()` verankerte gegen die
+  200×100-Vorgabe der im Konstruktor noch ungelayouteten Tabseite und blähte
+  sich beim ersten Layout auf 1844×632 auf — jetzt `Dock = Fill` mit
+  6-px-Padding wie auf den beiden Schwesterseiten. Belegt mit
+  Laufzeit-Screenshots des Reflection-Harness (`dev\fixshots\`).
+- **Design-Politur 21.08.2026 (nach Stufe 3, Anwenderwunsch):** Alle migrierten/neuen
+  Oberflächen außer `Form_PeakShaving`/`ucStromAufschlaege` (parallele Chip-Session,
+  Politur dort als Nacharbeit offen) zeigen im Designer jetzt Echttexte
+  (Rezept-Nachtrag in Regel 1); Abstände und Sichtbarkeit mit `TextRenderer`
+  nachgemessen und korrigiert — echte Funde dabei: KiEinstellungen-Hinweis war
+  >50 % abgeschnitten (Dialog 276→358 hoch), Berichtsseite-Radiobuttons ragten
+  über den Rand (+5 Ankerfehler), das Bezeichnerfeld der Pufferspeicher-Verwaltung
+  verdeckte das Volumen-Label vollständig, Lizenz-Statuszeile einzeilig
+  abgeschnitten, `_cbUnbegrenzt` ragte 38 px aus der Rubrik,
+  Erdreich-Spreizungsbeschriftung lief 11 px unters Eingabefeld,
+  KwkgModule-ComboBox-Vorgabe abgeschnitten (Maske 720→804 breit), sechs
+  Spaltenköpfe im Variantenvergleich zu schmal. Fußknöpfe einheitlich ≥110×30
+  (rechte Kanten konstant); OK/Abbrechen-Standard umgesetzt bei KwkgModule
+  (»Speichern«→»OK«), PlanwertUebernahme, GanglinieImportOptionen
+  (»Einlesen«→»OK«), KiEinstellungen, Betriebsmodus, QuellePufferspeicher,
+  QuelleErdreich. Begründete Sonderfälle behalten ihre Beschriftung:
+  SpotpreisImport (»Übernehmen« = Schreibvorgang), GanglinieProtokoll und
+  BkUebernahme (Bestätigungsdialoge), Verwaltungsmasken
+  PufferSp_Projekt/Gesetzesparameter/LizenzVerwaltung (Sofortwirkung, bewusst
+  ohne Abbrechen). **Offene Anwenderentscheidungen:** »Übernehmen«→»OK« bei
+  GesetzparameterZeile/BkUebernahme/GanglinieProtokoll (je Einzeiler);
+  Erdreich `_lblAenderung` braucht deutsch drei Zeilen (Vorschlag: 14 px aus dem
+  Chart holen); englisches Raster der Erdreich-Quellsystemgruppe vorbestehend
+  defekt; `UcBericht.MinimumSize 600×360` zu klein (bräuchte
+  Form_Bericht-Mitzug). Dazu Migrations-Schritt 32 (SchemaMigration): stellt die
+  von Schritt 29 zurückgelassene `Abfrage_Kostenfaktoren` neu her
+  (IIf-Kategoriename, read-only gegen die Kunden-DB getestet) und entfernt drei
+  tote Abfragen — behebt den Kosteneditor-Fehler »cannot find 'Tab_KostenKategorie'«.
 - **Stufe 4 — Kategorie B:** nur bei konkretem Anlass (z. B. wenn eine Maske ohnehin
   umgebaut wird). `Form_Lizenz` erst nach Auslagerung der Rechtsprosa.
 - **Nie:** Kategorie C und die beiden Karten-Controls.

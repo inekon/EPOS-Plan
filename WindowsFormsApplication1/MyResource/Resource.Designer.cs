@@ -1061,6 +1061,341 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string BK_BER_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("BK_BER_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle ähnelt.
+        /// </summary>
+        public static string BK_BER_BTN_ALLE {
+            get {
+                return ResourceManager.GetString("BK_BER_BTN_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Durchsuchen… ähnelt.
+        /// </summary>
+        public static string BK_BER_BTN_DURCHSUCHEN {
+            get {
+                return ResourceManager.GetString("BK_BER_BTN_DURCHSUCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erstellen ähnelt.
+        /// </summary>
+        public static string BK_BER_BTN_ERSTELLEN {
+            get {
+                return ResourceManager.GetString("BK_BER_BTN_ERSTELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine ähnelt.
+        /// </summary>
+        public static string BK_BER_BTN_KEINE {
+            get {
+                return ResourceManager.GetString("BK_BER_BTN_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string BK_BER_BTN_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("BK_BER_BTN_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Word-Dokument (*.docx)|*.docx ähnelt.
+        /// </summary>
+        public static string BK_BER_DLG_FILTER_WORD {
+            get {
+                return ResourceManager.GetString("BK_BER_DLG_FILTER_WORD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zielordner für den Bericht wählen ähnelt.
+        /// </summary>
+        public static string BK_BER_DLG_ZIELORDNER {
+            get {
+                return ResourceManager.GetString("BK_BER_DLG_ZIELORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jetzt öffnen? ähnelt.
+        /// </summary>
+        public static string BK_BER_FRAGE_OEFFNEN {
+            get {
+                return ResourceManager.GetString("BK_BER_FRAGE_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht jetzt öffnen? ähnelt.
+        /// </summary>
+        public static string BK_BER_FRAGE_OEFFNEN_BERICHT {
+            get {
+                return ResourceManager.GetString("BK_BER_FRAGE_OEFFNEN_BERICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Word-Bericht jetzt öffnen? ähnelt.
+        /// </summary>
+        public static string BK_BER_FRAGE_OEFFNEN_WORD {
+            get {
+                return ResourceManager.GetString("BK_BER_FRAGE_OEFFNEN_WORD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diesen Bericht werden {0} Projekt(e) neu simuliert und anschließend wirtschaftlich bewertet.
+        ///
+        ///Je nach Projektgröße dauert das einige Minuten. Fortfahren? ähnelt.
+        /// </summary>
+        public static string BK_BER_FRAGE_START {
+            get {
+                return ResourceManager.GetString("BK_BER_FRAGE_START", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgabe: ähnelt.
+        /// </summary>
+        public static string BK_BER_LBL_AUSGABE {
+            get {
+                return ResourceManager.GetString("BK_BER_LBL_AUSGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berichtsbausteine: ähnelt.
+        /// </summary>
+        public static string BK_BER_LBL_BAUSTEINE {
+            get {
+                return ResourceManager.GetString("BK_BER_LBL_BAUSTEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jeder Bericht rechnet neu: alle gewählten Varianten werden simuliert und wirtschaftlich bewertet. ähnelt.
+        /// </summary>
+        public static string BK_BER_LBL_RECHNEN {
+            get {
+                return ResourceManager.GetString("BK_BER_LBL_RECHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Varianten (Referenz: Stamm, fest gewählt): ähnelt.
+        /// </summary>
+        public static string BK_BER_LBL_VARIANTEN {
+            get {
+                return ResourceManager.GetString("BK_BER_LBL_VARIANTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zielordner: ähnelt.
+        /// </summary>
+        public static string BK_BER_LBL_ZIEL {
+            get {
+                return ResourceManager.GetString("BK_BER_LBL_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht erstellt: ähnelt.
+        /// </summary>
+        public static string BK_BER_MSG_ERSTELLT_KOPF {
+            get {
+                return ResourceManager.GetString("BK_BER_MSG_ERSTELLT_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweise: ähnelt.
+        /// </summary>
+        public static string BK_BER_MSG_HINWEISE {
+            get {
+                return ResourceManager.GetString("BK_BER_MSG_HINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler bei der Berichtserstellung: {0} ähnelt.
+        /// </summary>
+        public static string BK_BER_MSG_LAUFFEHLER {
+            get {
+                return ResourceManager.GetString("BK_BER_MSG_LAUFFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Stammprojekt ist die Referenz und immer enthalten. ähnelt.
+        /// </summary>
+        public static string BK_BER_MSG_STAMM_REFERENZ {
+            get {
+                return ResourceManager.GetString("BK_BER_MSG_STAMM_REFERENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht wurde erstellt (alle Projekte neu simuliert). ähnelt.
+        /// </summary>
+        public static string BK_BER_MSG_VERGLEICH_FERTIG {
+            get {
+                return ResourceManager.GetString("BK_BER_MSG_VERGLEICH_FERTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeit: wird für diesen Bericht neu berechnet (Kapitalwertmethode, alle Szenarien) — verlängert den Lauf. ähnelt.
+        /// </summary>
+        public static string BK_BER_MSG_WIRTSCHAFT_HINWEIS {
+            get {
+                return ResourceManager.GetString("BK_BER_MSG_WIRTSCHAFT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beide ähnelt.
+        /// </summary>
+        public static string BK_BER_RB_BEIDE {
+            get {
+                return ResourceManager.GetString("BK_BER_RB_BEIDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel ähnelt.
+        /// </summary>
+        public static string BK_BER_RB_EXCEL {
+            get {
+                return ResourceManager.GetString("BK_BER_RB_EXCEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Word ähnelt.
+        /// </summary>
+        public static string BK_BER_RB_WORD {
+            get {
+                return ResourceManager.GetString("BK_BER_RB_WORD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
+        /// </summary>
+        public static string BK_BER_SP_SIMULATION {
+            get {
+                return ResourceManager.GetString("BK_BER_SP_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgang abgebrochen. ähnelt.
+        /// </summary>
+        public static string BK_BER_STATUS_ABGEBROCHEN {
+            get {
+                return ResourceManager.GetString("BK_BER_STATUS_ABGEBROCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht erstellt: {0} ähnelt.
+        /// </summary>
+        public static string BK_BER_STATUS_ERSTELLT {
+            get {
+                return ResourceManager.GetString("BK_BER_STATUS_ERSTELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erzeuge Excel-Bericht… ähnelt.
+        /// </summary>
+        public static string BK_BER_STATUS_EXCEL {
+            get {
+                return ResourceManager.GetString("BK_BER_STATUS_EXCEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Erstellen des Berichts. ähnelt.
+        /// </summary>
+        public static string BK_BER_STATUS_FEHLER {
+            get {
+                return ResourceManager.GetString("BK_BER_STATUS_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erzeuge Word-Bericht… ähnelt.
+        /// </summary>
+        public static string BK_BER_STATUS_WORD {
+            get {
+                return ResourceManager.GetString("BK_BER_STATUS_WORD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht erstellen — Projekt: {0} ähnelt.
+        /// </summary>
+        public static string BK_BER_TITEL {
+            get {
+                return ResourceManager.GetString("BK_BER_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht erstellen ähnelt.
+        /// </summary>
+        public static string BK_BER_TITEL_ERSTELLEN {
+            get {
+                return ResourceManager.GetString("BK_BER_TITEL_ERSTELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler ähnelt.
+        /// </summary>
+        public static string BK_BER_TITEL_FEHLER {
+            get {
+                return ResourceManager.GetString("BK_BER_TITEL_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Erstellen des Berichts ähnelt.
+        /// </summary>
+        public static string BK_BER_TITEL_FEHLER_VERGLEICH {
+            get {
+                return ResourceManager.GetString("BK_BER_TITEL_FEHLER_VERGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektvergleich ähnelt.
+        /// </summary>
+        public static string BK_BER_TITEL_VERGLEICH {
+            get {
+                return ResourceManager.GetString("BK_BER_TITEL_VERGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Variante anlegen ähnelt.
         /// </summary>
         public static string BK_BTN_ANLEGEN {
@@ -4606,6 +4941,132 @@ namespace WindowsFormsApplication1.MyResource {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
+        public static string KI_EINST_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("KI_EINST_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modell neu erkennen ähnelt.
+        /// </summary>
+        public static string KI_EINST_BTN_MODELL {
+            get {
+                return ResourceManager.GetString("KI_EINST_BTN_MODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die OK ähnelt.
+        /// </summary>
+        public static string KI_EINST_BTN_OK {
+            get {
+                return ResourceManager.GetString("KI_EINST_BTN_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es werden ausschließlich Hilfetexte, Ihre Frage und der Bereichsname übertragen - keine Projekt-, Kunden- oder Simulationsdaten. ähnelt.
+        /// </summary>
+        public static string KI_EINST_HINWEIS_DATEN {
+            get {
+                return ResourceManager.GetString("KI_EINST_HINWEIS_DATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis: Im kostenlosen Kontingent verwendet der Anbieter die Inhalte zur Produktverbesserung. Für den produktiven Einsatz einen kostenpflichtigen Zugang nutzen. ähnelt.
+        /// </summary>
+        public static string KI_EINST_HINWEIS_KONTINGENT {
+            get {
+                return ResourceManager.GetString("KI_EINST_HINWEIS_KONTINGENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modell: {0} (kostengünstige Klasse). ähnelt.
+        /// </summary>
+        public static string KI_EINST_HINWEIS_MODELL {
+            get {
+                return ResourceManager.GetString("KI_EINST_HINWEIS_MODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modell: {0} (Vorgabe - wird beim nächsten Aufruf automatisch geprüft und bei Bedarf durch ein verfügbares ersetzt). ähnelt.
+        /// </summary>
+        public static string KI_EINST_HINWEIS_MODELL_NEU {
+            get {
+                return ResourceManager.GetString("KI_EINST_HINWEIS_MODELL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die API-Schlüssel (Google AI Studio): ähnelt.
+        /// </summary>
+        public static string KI_EINST_LBL_SCHLUESSEL {
+            get {
+                return ResourceManager.GetString("KI_EINST_LBL_SCHLUESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tageslimit je Arbeitsplatz: ähnelt.
+        /// </summary>
+        public static string KI_EINST_LBL_TAGESLIMIT {
+            get {
+                return ResourceManager.GetString("KI_EINST_LBL_TAGESLIMIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (fest vorgegeben) ähnelt.
+        /// </summary>
+        public static string KI_EINST_LIMIT_FEST {
+            get {
+                return ResourceManager.GetString("KI_EINST_LIMIT_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einstellungen gespeichert - der Assistent ist einsatzbereit. ähnelt.
+        /// </summary>
+        public static string KI_EINST_MSG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("KI_EINST_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einstellungen gespeichert - ohne Schlüssel bleibt nur die lokale Suche aktiv. ähnelt.
+        /// </summary>
+        public static string KI_EINST_MSG_GESPEICHERT_OHNE_SCHLUESSEL {
+            get {
+                return ResourceManager.GetString("KI_EINST_MSG_GESPEICHERT_OHNE_SCHLUESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fest im Programm hinterlegt und nicht änderbar - weder hier noch über eine Einstellung. Eine Änderung erfordert einen neuen Programmstand. ähnelt.
+        /// </summary>
+        public static string KI_EINST_TIP_TAGESLIMIT {
+            get {
+                return ResourceManager.GetString("KI_EINST_TIP_TAGESLIMIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KI-Assistent - Einstellungen ähnelt.
+        /// </summary>
+        public static string KI_EINST_TITEL {
+            get {
+                return ResourceManager.GetString("KI_EINST_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
         public static string KI_HINWEIS_ABBRECHEN {
             get {
                 return ResourceManager.GetString("KI_HINWEIS_ABBRECHEN", resourceCulture);
@@ -7153,6 +7614,289 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KPROF_TAB_TITEL {
             get {
                 return ResourceManager.GetString("KPROF_TAB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jetzt aktivieren ähnelt.
+        /// </summary>
+        public static string LIZ_BTN_AKTIVIEREN {
+            get {
+                return ResourceManager.GetString("LIZ_BTN_AKTIVIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät von der Lizenz lösen ähnelt.
+        /// </summary>
+        public static string LIZ_BTN_FREIGEBEN {
+            get {
+                return ResourceManager.GetString("LIZ_BTN_FREIGEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenzdatei (.lic)… ähnelt.
+        /// </summary>
+        public static string LIZ_BTN_LIC {
+            get {
+                return ResourceManager.GetString("LIZ_BTN_LIC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string LIZ_BTN_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("LIZ_BTN_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Testversion anfordern… ähnelt.
+        /// </summary>
+        public static string LIZ_BTN_TRIAL {
+            get {
+                return ResourceManager.GetString("LIZ_BTN_TRIAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenz {0} · {1}
+        ///Benutzer: {2} · Gerät: {3} ähnelt.
+        /// </summary>
+        public static string LIZ_DETAIL {
+            get {
+                return ResourceManager.GetString("LIZ_DETAIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auf diesem Arbeitsplatz ist keine Lizenz hinterlegt. ähnelt.
+        /// </summary>
+        public static string LIZ_DETAIL_KEINE {
+            get {
+                return ResourceManager.GetString("LIZ_DETAIL_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Plan Lizenzdatei (*.lic)|*.lic|Alle Dateien (*.*)|*.* ähnelt.
+        /// </summary>
+        public static string LIZ_DLG_LIC_FILTER {
+            get {
+                return ResourceManager.GetString("LIZ_DLG_LIC_FILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenzdatei laden ähnelt.
+        /// </summary>
+        public static string LIZ_DLG_LIC_TITEL {
+            get {
+                return ResourceManager.GetString("LIZ_DLG_LIC_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Aktionen ähnelt.
+        /// </summary>
+        public static string LIZ_GRP_AKTIONEN {
+            get {
+                return ResourceManager.GetString("LIZ_GRP_AKTIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktivieren ähnelt.
+        /// </summary>
+        public static string LIZ_GRP_AKTIVIEREN {
+            get {
+                return ResourceManager.GetString("LIZ_GRP_AKTIVIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenzstatus auf diesem Arbeitsplatz ähnelt.
+        /// </summary>
+        public static string LIZ_GRP_STATUS {
+            get {
+                return ResourceManager.GetString("LIZ_GRP_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktivierung benötigt einmalig eine Internetverbindung. Übertragen werden nur
+        ///Lizenzschlüssel, E-Mail und ein anonymer Geräte-Hash — keine Projekt- oder Kundendaten. ähnelt.
+        /// </summary>
+        public static string LIZ_HINWEIS_AKTIVIERUNG {
+            get {
+                return ResourceManager.GetString("LIZ_HINWEIS_AKTIVIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenzdatei geladen — bitte mit &quot;Jetzt aktivieren&quot; abschließen. ähnelt.
+        /// </summary>
+        public static string LIZ_HINWEIS_LIC_GELADEN {
+            get {
+                return ResourceManager.GetString("LIZ_HINWEIS_LIC_GELADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die E-Mail (Benutzer): ähnelt.
+        /// </summary>
+        public static string LIZ_LBL_EMAIL {
+            get {
+                return ResourceManager.GetString("LIZ_LBL_EMAIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenzschlüssel: ähnelt.
+        /// </summary>
+        public static string LIZ_LBL_SCHLUESSEL {
+            get {
+                return ResourceManager.GetString("LIZ_LBL_SCHLUESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenzportal öffnen (Benutzer und Geräte verwalten, Schlüssel neu erzeugen) ähnelt.
+        /// </summary>
+        public static string LIZ_LINK_PORTAL {
+            get {
+                return ResourceManager.GetString("LIZ_LINK_PORTAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Lizenz wurde erfolgreich aktiviert. ähnelt.
+        /// </summary>
+        public static string LIZ_MSG_AKTIVIERT {
+            get {
+                return ResourceManager.GetString("LIZ_MSG_AKTIVIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktivierung ist fehlgeschlagen. ähnelt.
+        /// </summary>
+        public static string LIZ_MSG_AKTIVIERUNG_FEHLER {
+            get {
+                return ResourceManager.GetString("LIZ_MSG_AKTIVIERUNG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte Lizenzschlüssel und E-Mail-Adresse angeben. ähnelt.
+        /// </summary>
+        public static string LIZ_MSG_EINGABE_FEHLT {
+            get {
+                return ResourceManager.GetString("LIZ_MSG_EINGABE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die E-Mail-Adresse &quot;{0}&quot; ist ungültig — bitte prüfen (Beispiel: name@firma.de). ähnelt.
+        /// </summary>
+        public static string LIZ_MSG_EMAIL_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("LIZ_MSG_EMAIL_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieses Gerät von der Lizenz lösen?
+        ///
+        ///Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuaktivierung nötig. ähnelt.
+        /// </summary>
+        public static string LIZ_MSG_FREIGEBEN_FRAGE {
+            get {
+                return ResourceManager.GetString("LIZ_MSG_FREIGEBEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In der gewählten Datei wurde kein gültiger Lizenzschlüssel gefunden. ähnelt.
+        /// </summary>
+        public static string LIZ_MSG_LIC_OHNE_SCHLUESSEL {
+            get {
+                return ResourceManager.GetString("LIZ_MSG_LIC_OHNE_SCHLUESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Lizenzserver ist zurzeit nicht erreichbar — bitte später erneut versuchen. ähnelt.
+        /// </summary>
+        public static string LIZ_MSG_SERVER_NICHT_ERREICHBAR {
+            get {
+                return ResourceManager.GetString("LIZ_MSG_SERVER_NICHT_ERREICHBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte oben eine gültige E-Mail-Adresse eintragen (Beispiel: name@firma.de) — der Test-Lizenzschlüssel wird dorthin gesendet. ähnelt.
+        /// </summary>
+        public static string LIZ_MSG_TRIAL_EMAIL {
+            get {
+                return ResourceManager.GetString("LIZ_MSG_TRIAL_EMAIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anforderung ist fehlgeschlagen. ähnelt.
+        /// </summary>
+        public static string LIZ_MSG_TRIAL_FEHLER {
+            get {
+                return ResourceManager.GetString("LIZ_MSG_TRIAL_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Test-Lizenzschlüssel wurde per E-Mail versandt. ähnelt.
+        /// </summary>
+        public static string LIZ_MSG_TRIAL_OK {
+            get {
+                return ResourceManager.GetString("LIZ_MSG_TRIAL_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktivierung läuft… ähnelt.
+        /// </summary>
+        public static string LIZ_STATUS_AKTIVIERUNG {
+            get {
+                return ResourceManager.GetString("LIZ_STATUS_AKTIVIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät wird freigegeben… ähnelt.
+        /// </summary>
+        public static string LIZ_STATUS_FREIGABE {
+            get {
+                return ResourceManager.GetString("LIZ_STATUS_FREIGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Testversion wird angefordert… ähnelt.
+        /// </summary>
+        public static string LIZ_STATUS_TRIAL {
+            get {
+                return ResourceManager.GetString("LIZ_STATUS_TRIAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenz ähnelt.
+        /// </summary>
+        public static string LIZ_TITEL {
+            get {
+                return ResourceManager.GetString("LIZ_TITEL", resourceCulture);
             }
         }
         

@@ -1078,160 +1078,40 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            using (Form frm = new Form())
+            // Die Maske selbst steht in Form_TextAnzeige - sie war wortgleich mit der
+            // Vorschau (VorschauZeigen). Maße und Maximieren-Schaltfläche werden
+            // mitgegeben, damit das Protokollfenster genau so groß bleibt wie bisher.
+            using (Form_TextAnzeige frm = new Form_TextAnzeige(
+                       MyResource.Resource.KI_AKT_PROTOKOLL_TITEL, inhalt, null,
+                       new Size(900, 480), new Size(520, 320), true))
             {
-                frm.Text = MyResource.Resource.KI_AKT_PROTOKOLL_TITEL;
-                frm.StartPosition = FormStartPosition.CenterParent;
-                frm.MinimizeBox = false;
-                frm.ShowInTaskbar = false;
-                frm.ClientSize = new Size(900, 480);
-                frm.MinimumSize = new Size(520, 320);
-
-                TextBox anzeige = new TextBox
-                {
-                    Dock = DockStyle.Fill,
-                    Multiline = true,
-                    ReadOnly = true,
-                    WordWrap = false,
-                    ScrollBars = ScrollBars.Both,
-                    BackColor = Color.White,
-                    Font = new Font("Consolas", 9f),
-                    Text = inhalt
-                };
-
-                Button schliessen = new Button
-                {
-                    Text = MyResource.Resource.KI_VORSCHAU_SCHLIESSEN,
-                    DialogResult = DialogResult.OK,
-                    Width = 100,
-                    Height = 28
-                };
-
-                FlowLayoutPanel fuss = new FlowLayoutPanel
-                {
-                    Dock = DockStyle.Bottom,
-                    FlowDirection = FlowDirection.RightToLeft,
-                    AutoSize = true,
-                    AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                    WrapContents = false,
-                    Padding = new Padding(8)
-                };
-                fuss.Controls.Add(schliessen);
-
-                frm.Controls.Add(anzeige);            // Fill zuerst
-                frm.Controls.Add(fuss);
-                frm.AcceptButton = schliessen;
-                frm.CancelButton = schliessen;
-
                 frm.ShowDialog(this);
             }
         }
 
         /// <summary>Dialog für API-Schlüssel und Tageslimit.</summary>
+        /// <remarks>
+        /// Der Fensteraufbau steht seit der Designer-Umstellung in
+        /// <see cref="Form_KiEinstellungen"/>; hier bleibt genau das, was schon
+        /// vorher hier stand: das Speichern nach OK und die Rückmeldung im
+        /// Verlauf. Neu ist allein das <c>using</c> — das frühere
+        /// <c>new Form()</c> wurde nie entsorgt.
+        /// </remarks>
         private void EinstellungenOeffnen()
         {
-            Form frm = new Form();
-            frm.Text = "KI-Assistent - Einstellungen";
-            frm.FormBorderStyle = FormBorderStyle.FixedDialog;
-            frm.StartPosition = FormStartPosition.CenterParent;
-            frm.MinimizeBox = false;
-            frm.MaximizeBox = false;
-            frm.ClientSize = new Size(500, 276);
-
-            Label l1 = new Label
+            using (Form_KiEinstellungen frm = new Form_KiEinstellungen())
             {
-                Text = "API-Schlüssel (Google AI Studio):",
-                AutoSize = true,
-                Location = new Point(14, 18)
-            };
-            TextBox tbKey = new TextBox
-            {
-                Location = new Point(14, 42),
-                Width = 470,
-                UseSystemPasswordChar = true,
-                Text = KiChatService.ApiKey
-            };
+                if (frm.ShowDialog(this) != DialogResult.OK) return;
 
-            Label l2 = new Label
-            {
-                Text = "Tageslimit je Arbeitsplatz:",
-                AutoSize = true,
-                Location = new Point(14, 82)
-            };
-            // Nur Anzeige: Das Limit wird maschinenweit vorgegeben und soll
-            // vom Anwender nicht angehoben werden koennen.
-            Label lblLimit = new Label
-            {
-                Text = KiChatService.Tageslimit + " (fest vorgegeben)",
-                AutoSize = true,
-                Location = new Point(200, 82),
-                ForeColor = Color.DimGray
-            };
-            new ToolTip().SetToolTip(lblLimit,
-                "Fest im Programm hinterlegt und nicht änderbar - weder hier noch über " +
-                "eine Einstellung. Eine Änderung erfordert einen neuen Programmstand.");
+                KiChatService.ApiKey = frm.ApiSchluessel;
+                KiChatService.WegBErzwingen = frm.WegBErzwingen;
 
-            Button btnModell = new Button
-            {
-                Text = "Modell neu erkennen",
-                Location = new Point(390, 78),
-                Size = new Size(94, 24)
-            };
-
-            Label hinweis = new Label
-            {
-                AutoSize = false,
-                Location = new Point(14, 118),
-                Size = new Size(470, 88),
-                ForeColor = Color.DimGray,
-                Text = "Modell: " + KiChatService.MODELL + " (kostengünstige Klasse).\n\n" +
-                       "Es werden ausschließlich Hilfetexte, Ihre Frage und der Bereichsname " +
-                       "übertragen - keine Projekt-, Kunden- oder Simulationsdaten.\n\n" +
-                       "Hinweis: Im kostenlosen Kontingent verwendet der Anbieter die Inhalte zur " +
-                       "Produktverbesserung. Für den produktiven Einsatz einen kostenpflichtigen " +
-                       "Zugang nutzen."
-            };
-
-            CheckBox chkWegB = new CheckBox
-            {
-                Text = MyResource.Resource.KI_AKT_WEGB_EINSTELLUNG,
-                AutoSize = true,
-                Location = new Point(14, 208),
-                Checked = KiChatService.WegBErzwingen
-            };
-
-            Button ok = new Button { Text = "OK", DialogResult = DialogResult.OK, Location = new Point(314, 236), Width = 80 };
-            Button abbruch = new Button { Text = "Abbrechen", DialogResult = DialogResult.Cancel, Location = new Point(400, 236), Width = 84 };
-
-            btnModell.Click += (s, e) =>
-            {
-                // Schlüssel zuerst übernehmen, damit die Abfrage funktioniert
-                KiChatService.ApiKey = tbKey.Text.Trim();
-                KiChatService.ModellZuruecksetzen();
-                hinweis.Text = "Modell: " + KiChatService.MODELL + " (Vorgabe - wird beim nächsten " +
-                    "Aufruf automatisch geprüft und bei Bedarf durch ein verfügbares ersetzt)." +
-                    hinweis.Text.Substring(hinweis.Text.IndexOf("\n\n"));
-            };
-
-            frm.Controls.Add(l1); frm.Controls.Add(tbKey);
-            frm.Controls.Add(l2); frm.Controls.Add(lblLimit);
-            frm.Controls.Add(btnModell);
-            frm.Controls.Add(hinweis);
-            frm.Controls.Add(chkWegB);
-            frm.Controls.Add(ok); frm.Controls.Add(abbruch);
-            frm.AcceptButton = ok;
-            frm.CancelButton = abbruch;
-
-            if (frm.ShowDialog(this) != DialogResult.OK) return;
-
-            KiChatService.ApiKey = tbKey.Text.Trim();
-            KiChatService.WegBErzwingen = chkWegB.Checked;
-
-            SchreibeZeile(KiChatService.IstEingerichtet
-                ? "Einstellungen gespeichert - der Assistent ist einsatzbereit."
-                : "Einstellungen gespeichert - ohne Schlüssel bleibt nur die lokale Suche aktiv.",
-                Color.FromArgb(0, 120, 0), false);
-            SchreibeZeile("", Color.Black, false);
+                SchreibeZeile(KiChatService.IstEingerichtet
+                    ? MyResource.Resource.KI_EINST_MSG_GESPEICHERT
+                    : MyResource.Resource.KI_EINST_MSG_GESPEICHERT_OHNE_SCHLUESSEL,
+                    Color.FromArgb(0, 120, 0), false);
+                SchreibeZeile("", Color.Black, false);
+            }
         }
 
         /// <summary>
@@ -1253,64 +1133,15 @@ namespace WindowsFormsApplication1
                 text = ex.Message;
             }
 
-            using (Form frm = new Form())
+            string kopf = string.Format(MyResource.Resource.KI_VORSCHAU_HINWEIS,
+                                        KiChatService.MODELL, KiChatService.Endpunkt());
+
+            // Dieselbe Maske wie das Aktionsprotokoll (ProtokollZeigen), nur mit
+            // Kopfzeile, kleinerem Fenster und ohne Maximieren-Schaltfläche.
+            using (Form_TextAnzeige frm = new Form_TextAnzeige(
+                       MyResource.Resource.KI_VORSCHAU_TITEL, text, kopf,
+                       new Size(720, 520), new Size(520, 360), false))
             {
-                frm.Text = MyResource.Resource.KI_VORSCHAU_TITEL;
-                frm.StartPosition = FormStartPosition.CenterParent;
-                frm.MinimizeBox = false;
-                frm.MaximizeBox = false;
-                frm.ShowInTaskbar = false;
-                frm.ClientSize = new Size(720, 520);
-                frm.MinimumSize = new Size(520, 360);
-
-                TextBox anzeige = new TextBox
-                {
-                    Dock = DockStyle.Fill,
-                    Multiline = true,
-                    ReadOnly = true,
-                    WordWrap = false,
-                    ScrollBars = ScrollBars.Both,
-                    BackColor = Color.White,
-                    Font = new Font("Consolas", 9f),
-                    Text = text
-                };
-
-                Label kopf = new Label
-                {
-                    Dock = DockStyle.Top,
-                    Height = 66,
-                    Padding = new Padding(10, 8, 10, 4),
-                    ForeColor = Color.DimGray,
-                    Text = string.Format(MyResource.Resource.KI_VORSCHAU_HINWEIS,
-                                         KiChatService.MODELL, KiChatService.Endpunkt())
-                };
-
-                Button schliessen = new Button
-                {
-                    Text = MyResource.Resource.KI_VORSCHAU_SCHLIESSEN,
-                    DialogResult = DialogResult.OK,
-                    Width = 100,
-                    Height = 28
-                };
-
-                FlowLayoutPanel fuss = new FlowLayoutPanel
-                {
-                    Dock = DockStyle.Bottom,
-                    FlowDirection = FlowDirection.RightToLeft,
-                    AutoSize = true,
-                    AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                    WrapContents = false,
-                    Padding = new Padding(8)
-                };
-                fuss.Controls.Add(schliessen);
-
-                // Reihenfolge beachten: Fill zuerst, dann die andockenden Elemente
-                frm.Controls.Add(anzeige);
-                frm.Controls.Add(kopf);
-                frm.Controls.Add(fuss);
-                frm.AcceptButton = schliessen;
-                frm.CancelButton = schliessen;
-
                 frm.ShowDialog(this);
             }
         }

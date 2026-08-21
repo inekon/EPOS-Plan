@@ -27,14 +27,26 @@ namespace WindowsFormsApplication1
     /// Stand, mit dem gerechnet wurde, warnt eine Hinweiszeile
     /// (<see cref="AenderungshinweisAktualisieren"/>).
     ///
-    /// Das Formular wird - wie Form_QuellePufferspeicher und Form_Quellprofil -
-    /// komplett programmatisch aufgebaut (kein Designer, keine .resx). Die sichtbaren
-    /// Texte kommen seit Paket 9 / L7 aus dem Ressourcenkatalog
-    /// (<c>MyResource.Resource.SIMQ_ERDREICH_*</c>, Konzept 13.6); Bodentyp-Schlüssel
-    /// und Quellsystem bleiben deutsche Persistenzwerte aus <see cref="DbWerte"/>
-    /// (Drei-Schichten-Regel).
+    /// Die Oberfläche steht seit der Designer-Umstellung in
+    /// <c>Form_QuelleErdreich.Designer.cs</c>, weiterhin ohne eigene <c>.resx</c>: Alle
+    /// sichtbaren Texte kommen aus dem Ressourcenkatalog
+    /// (<c>MyResource.Resource.SIMQ_ERDREICH_*</c>, Konzept 13.6) und werden in
+    /// <see cref="TexteSetzen"/> gesetzt. Im Designer stehen seit der Design-Politur vom
+    /// 21.08.2026 die DEUTSCHEN Fassungen derselben Ressourcen (vorher der Feldname als
+    /// Platzhalter) — allein damit die Entwurfsfläche zeigt, was der Anwender sieht;
+    /// maßgeblich bleibt <see cref="TexteSetzen"/>, das jeden dieser Texte beim Öffnen in
+    /// der eingestellten Sprache überschreibt. Bodentyp-Schlüssel und Quellsystem bleiben
+    /// deutsche Persistenzwerte aus <see cref="DbWerte"/> (Drei-Schichten-Regel).
+    ///
+    /// Nicht im Designer und deshalb im Konstruktor-Nachlauf:
+    ///   • das Vorschau-Diagramm (<see cref="ChartAufbauen"/>) - Migrationsregel 8,
+    ///     die <c>Chart</c>-Serialisierung des portierten
+    ///     <c>WinForms.DataVisualization</c> ist unter VS 2022/.NET 8 unzuverlässig;
+    ///   • die Katalog- und Klimazonenlisten (<see cref="KatalogeFuellen"/>) - beides
+    ///     sind Laufzeitdaten aus <c>ErdreichTemperatur</c> bzw. <c>VDI4640Pruefung</c>;
+    ///   • die kulturabhängigen Vorgabewerte (<see cref="VorgabenSetzen"/>).
     /// </summary>
-    public class Form_QuelleErdreich : Form
+    public partial class Form_QuelleErdreich : Form
     {
         // ---- Übergabefelder (öffentlich, wie im Bestandsmuster) -----------
 
@@ -135,22 +147,14 @@ namespace WindowsFormsApplication1
         public string HinweisFrost = "";
 
         // ---- Steuerelemente -----------------------------------------------
+        //
+        // Alle übrigen Steuerelemente sind Designer-Felder und stehen in
+        // Form_QuelleErdreich.Designer.cs. Nur das Vorschau-Diagramm bleibt hier:
+        // Es wird nach Migrationsregel 8 nicht serialisiert, sondern in
+        // ChartAufbauen() erzeugt - ein Feld bleibt es trotzdem, weil
+        // Aktualisieren() bei jeder Eingabe darauf zugreift.
 
-        private RadioButton _rbKollektor;
-        private RadioButton _rbSonde;
-        private TextBox _tbTiefe;
-        private TextBox _tbFlaeche;
-        private TextBox _tbLaenge;
-        private TextBox _tbAnzahl;
-        private ComboBox _cbBoden;
-        private ComboBox _cbZone;
-        private TextBox _tbSpreizung;
         private Chart _chart;
-        private Label _lblKennwerte;
-        private Label _lblBoden;
-        private Label _lblPruefung;
-        private Label _lblAenderung;
-        private Button _btnSimulation;
 
         private bool _uiAufbau = true;   // unterdrückt Ereignisse während SetControls
 
@@ -181,14 +185,6 @@ namespace WindowsFormsApplication1
         /// </summary>
         private bool _laufAusDialog = false;
 
-        /// <summary>
-        /// Warnfarbe der Hinweiszeile. Derselbe Bernsteinton, den
-        /// <c>Form_GanglinieProtokoll</c> für <c>PruefStufe.Warnung</c> verwendet -
-        /// bewusst NICHT das Firebrick der Grenzwertüberschreitung: Ein veralteter
-        /// Prüfstand ist ein Bedienhinweis, keine überschrittene Norm.
-        /// </summary>
-        private static readonly Color FARBE_WARNUNG = Color.FromArgb(160, 96, 0);
-
         // --- Technische Serienschlüssel (Paket 9 / L7) --------------------------------
         // Schicht 2 der Drei-Schichten-Regel: sprachneutral, ASCII, unveränderlich.
         // Der Anzeigetext steht ausschließlich in Series.LegendText.
@@ -197,7 +193,21 @@ namespace WindowsFormsApplication1
 
         public Form_QuelleErdreich()
         {
-            BaueOberflaeche();
+            // Der Designer setzt AutoScaleMode bewusst auf None und lässt
+            // AutoScaleDimensions weg: Die Maske ist ein FixedDialog mit fest
+            // gerechneten Pixelpositionen, und die Anwendung läuft DpiUnaware
+            // (app.manifest, Program.SetHighDpiMode). Vor der Designer-Umstellung
+            // wurde AutoScaleMode überhaupt nicht gesetzt, es fand also ebenfalls
+            // keine Skalierung statt — None hält genau dieses Verhalten fest.
+            InitializeComponent();
+            TexteSetzen();
+            // Diagramm zuerst: Aktualisieren() greift auf _chart.Series zu, und die
+            // beiden folgenden Schritte lösen über die Designer-Ereignisse bereits
+            // Aufrufe aus (die _uiAufbau zwar abfängt - aber die Reihenfolge soll
+            // auch ohne diese Sperre tragfähig bleiben).
+            ChartAufbauen();
+            KatalogeFuellen();
+            VorgabenSetzen();
 
             // Bereich für den KI-Hilfe-Assistenten melden (nur Bedien-Kontext,
             // keine Projekt- oder Kundendaten). Muster und Platz wie am Ende des
@@ -211,6 +221,10 @@ namespace WindowsFormsApplication1
             // Assistenten (HilfeKontext.Beschreibung), und beide Bestandsaufrufe halten
             // es genauso. Genannt werden die drei Dinge, nach denen der Anwender in
             // dieser Maske fragen kann.
+            //
+            // Die Lambda bleibt eine Lambda: Migrationsregel 5 gilt dem Parser des
+            // Designers und damit ausschließlich InitializeComponent - hier im
+            // Konstruktor-Nachlauf sieht der Designer sie nie.
             this.Activated += (s, e) =>
                 HilfeKontext.SetzeBereich("Wärmequelle Erdreich (Quellsystem, Bodentyp, Auslegungsprüfung VDI 4640)");
 
@@ -233,198 +247,199 @@ namespace WindowsFormsApplication1
             return wert.ToString("0.##", CultureInfo.CurrentCulture);
         }
 
-        // ------------------------------------------------------------------
-        // Aufbau
-        // ------------------------------------------------------------------
+        // ==================================================================
+        // Oberfläche — gerettete Begründungen zur Geometrie
+        // ==================================================================
+        //
+        // Die Steuerelemente stehen seit der Designer-Umstellung in
+        // Form_QuelleErdreich.Designer.cs. Designer-Code trägt keine Kommentare; die
+        // Pixelentscheidungen aus den Abnahmebefunden stehen deshalb hier. Die Befunde
+        // 1, 3 und 4 stammen vom 17.08.2026.
+        //
+        // * ClientSize 700 x 748. Die Höhe ist um eine Zeile gewachsen, weil die
+        //   nutzbare Spreizung ein Eingabefeld braucht (Konzept 13.1, _tbSpreizung).
+        //   BEFUNDE 1/3/4: Die Höhe wächst von 718 auf 748. Dazu gekommen sind rund
+        //   56 Pixel:
+        //     +14  die Bodenkennwerte brauchen zwei Zeilen (siehe _lblBoden),
+        //     + 8  der Spreizungs-Hinweis bricht um (siehe _lblSpreizungHinweis),
+        //     +38  die Auslegungsprüfung bekommt Hinweiszeile und Schaltfläche.
+        //   Gegengerechnet sind 26 Pixel aus der Vorschau: Das Diagramm ist von 210
+        //   auf 184 Pixel Höhe verkleinert (siehe ChartAufbauen). Das ist Absicht und
+        //   der Preis dafür, dass der Dialog NICHT über die Fensterhöhe hinauswächst,
+        //   die Windows auf einem 1366×768-Gerät noch zulässt (dort endet die
+        //   zulässige Fensterhöhe bei etwa 788 Pixeln; mit Titelzeile und Rahmen liegt
+        //   dieser Dialog bei 787). Ohne die Gegenrechnung wären OK und Abbrechen dort
+        //   unter dem unteren Bildschirmrand verschwunden - ein schlechterer Fehler als
+        //   der, der hier behoben wird.
+        //   Die Breite bleibt bei 700; alle Beschriftungen passen hinein (nachgemessen
+        //   für Deutsch und Englisch, siehe _lblBoden und _lblSpreizungHinweis).
+        //
+        // * _lblBoden (28/170, 660 x 32) ist die KENNWERTZEILE des Bodens, nicht die
+        //   Beschriftung „Bodentyp:" - die heißt _lblBodentyp (28/145).
+        //   BEFUND 1 („Text nicht sichtbar"): Die Kennwertzeile stand in einem 530 Pixel
+        //   breiten Feld ab x=150 und wurde hart abgeschnitten - gemessen brauchte sie
+        //   635 Pixel, sichtbar endete sie mitten in „Bodenart nach Tabelle A1: …".
+        //   Zwei Änderungen beheben das:
+        //     • Sie beginnt am linken Rand (x=28) und nutzt die volle Breite von
+        //       660 Pixeln statt 530.
+        //     • Sie bekommt Platz für ZWEI Zeilen (32 statt 18 Pixel). Nötig ist das
+        //       für den längsten Fall: Mit der Bodenart „Sandiger Ton" statt „Sand"
+        //       wächst der Text auf rund 683 Pixel und läuft damit auch über die volle
+        //       Breite hinaus. Bei kurzen Bodenarten bleibt es optisch eine Zeile -
+        //       AutoSize=false bricht nur um, wenn es sein muss.
+        //
+        // * Ab _lblKlimazone (y=212) liegt jede Zeile 14 Pixel tiefer als vor Befund 1 -
+        //   genau die zweite Zeile, die _lblBoden dazubekommen hat.
+        //
+        // * _lblSpreizung / _tbSpreizung (28/242 und 150/239): Eingangsgröße der zweiten
+        //   Warnbedingung (Konzept 13.1). Ohne dieses Feld war WQ_Spreizung bei einer
+        //   Erdreichquelle nicht pflegbar und die Prüfung rechnete immer mit 5 K.
+        //   x = 150 ÜBERHOLT durch die Design-Politur 21.08.2026, siehe unten: 170.
+        //
+        // * _lblSpreizungHinweis (232/242, MaximumSize 456 x 0, AutoSize=true).
+        //   Position und MaximumSize ÜBERHOLT durch die Design-Politur: 252, 436.
+        //   BEFUND 1 - der Hauptbefund. Der Hinweis ist gemessen 564 Pixel breit, begann
+        //   bei x=232 und endete damit bei 796 - also 96 Pixel HINTER dem rechten
+        //   Dialogrand (700). Sichtbar brach er mitten in „…Quelltemperatur − Spreizung
+        //   dauerh" ab.
+        //   Er bleibt an seinem Platz hinter dem Eingabefeld (das ist die Zuordnung, die
+        //   der Anwender erwartet) und darf UMBRECHEN: MaximumSize begrenzt die Breite
+        //   auf die 456 Pixel, die bis zum rechten Rand frei sind, AutoSize lässt ihn
+        //   dafür in die Höhe wachsen. Das ist das MaximumSize/AutoSize-Muster und die
+        //   kleinstmögliche Änderung - Position und Reihenfolge der Steuerelemente
+        //   bleiben, wie sie waren.
+        //   WICHTIG bei der Designer-Pflege: MaximumSize muss gesetzt sein, BEVOR der
+        //   echte Text ankommt. Das ist hier gesichert, weil im Designer nur der
+        //   Platzhalter steht und TexteSetzen() erst nach InitializeComponent läuft.
+        //   Deutsch und Englisch belegen zwei Zeilen (rund 30 Pixel). Bis zur
+        //   Vorschau-Gruppe (y=280) sind ab y=242 aber 38 Pixel frei, und die Gruppe
+        //   beginnt mit 20 Pixeln Rahmen - Reserve für längere Übersetzungen.
+        //
+        // * _gbPruefung (12/532, 676 x 168) ist von 130 auf 168 Pixel gewachsen: unter
+        //   das Prüfergebnis kommen die Hinweiszeile (Befund 4) und die Schaltfläche
+        //   „Simulation" (Befund 3) - beide gehören sachlich hierher und nirgends
+        //   sonst hin.
+        //
+        // * _lblAenderung (14/128, 500 x 34).
+        //   BEFUND 4: Sobald der Anwender eine Quell-Einstellung ändert, zeigt die
+        //   Prüfung oben noch den Stand des LETZTEN Laufs. Ohne Hinweis liest sich das
+        //   wie eine Bewertung der neuen Eingaben - sie ist es aber nicht. Die Zeile
+        //   bleibt leer, solange Anzeige und Lauf zusammenpassen; welchen der beiden
+        //   Texte sie sonst zeigt, entscheidet AenderungshinweisAktualisieren.
+        //   AutoSize=false mit zwei Zeilen Höhe: der Text bricht dann von selbst um und
+        //   schiebt die Schaltfläche daneben nicht weg (Lehre aus Befund 1).
+        //   Die ForeColor 160/96/0 ist die WARNFARBE - derselbe Bernsteinton, den
+        //   Form_GanglinieProtokoll für PruefStufe.Warnung verwendet, bewusst NICHT das
+        //   Firebrick der Grenzwertüberschreitung (PruefungAktualisieren): Ein
+        //   veralteter Prüfstand ist ein Bedienhinweis, keine überschrittene Norm.
+        //   Sie stand bis zur Designer-Umstellung als Konstante FARBE_WARNUNG im Code
+        //   und ist jetzt Designer-Eigenschaft von _lblAenderung.
+        //
+        // * _btnSimulation (528/126, 134 x 28).
+        //   BEFUND 3 („Simulation nur für diesen Bereich"): Die Prüfung war bisher nur
+        //   zu füllen, indem der Anwender den Dialog verließ und den großen
+        //   Simulationsweg ging. Der Knopf rechnet sie hier - was genau er tut und was
+        //   er bewusst NICHT tut, steht bei btnSimulation_Click.
+        //
+        // * _btnOk (510/712) und _btnAbbruch (603/712) standen im Bestand als
+        //   ClientSize.Width - 190 bzw. - 97; bei ClientSize.Width = 700 sind das genau
+        //   diese beiden Werte. ÜBERHOLT durch die Design-Politur, siehe unten.
+        //
+        // ==================================================================
+        // DESIGN-POLITUR 21.08.2026
+        // ==================================================================
+        //
+        // Anlass: Im Designer standen bis dahin die Feldnamen als Platzhalter. Mit den
+        // ECHTEN Texten in der Entwurfsfläche fiel eine Überdeckung auf, die kein
+        // Platzhalter zeigen konnte. Alle Maße unten sind mit TextRenderer in beiden
+        // Sprachen nachgemessen; ClientSize bleibt bei 700 x 748.
+        //
+        // * DIE EINGABESPALTE RÜCKT VON x = 150 AUF x = 170 — der eigentliche Befund.
+        //   „Nutzbare Spreizung [K]:" ist 133 px breit und endete ab x = 28 bei 161,
+        //   also 11 px HINTER dem Eingabefeld, das bei 150 begann. Die Beschriftung lief
+        //   damit unter das Feld (englisch „Usable temperature spread [K]:" 173 px, Ende
+        //   bei 201 - dort 51 px Überdeckung). Betroffen sind alle drei Steuerelemente
+        //   dieser Spalte, damit sie eine Spalte BLEIBEN: _cbBoden (142), _cbZone (209)
+        //   und _tbSpreizung (239) rücken von 150 auf 170. Neuer Abstand zur längsten
+        //   Beschriftung: 9 px deutsch.
+        // * Die beiden Klammerhinweise rechts der Auswahllisten rücken mit:
+        //   _lblBodentypHinweis und _lblKlimazoneHinweis von x = 392 auf 412. Die Listen
+        //   sind 230 px breit und enden jetzt bei 400; ohne das Mitrücken stünde der
+        //   Hinweis 8 px INNERHALB der Liste. Bei 412 bleiben 12 px Abstand, und der
+        //   längere der beiden Hinweise endet bei 664 - innerhalb der 688, die bis zum
+        //   rechten Rand frei sind.
+        // * _lblSpreizungHinweis: 232 -> 252, MaximumSize 456 -> 436. Das Eingabefeld
+        //   endet jetzt bei 240; 252 hält die 12 px Abstand, und 436 ist genau der Rest
+        //   bis zur rechten Kante (688). NACHGEMESSEN, weil der Hinweis vom Umbruch lebt:
+        //   Bei 436 belegt er deutsch 427 x 30 und englisch 428 x 30 - unverändert ZWEI
+        //   Zeilen. Die Reserve nach unten bleibt damit die bekannte knappe: Der Hinweis
+        //   endet bei y = 272, die Vorschau-Gruppe beginnt bei 280. Eine dritte Zeile
+        //   entsteht erst unterhalb von 416 px MaximumSize - die 436 haben also Luft,
+        //   ohne dass Vorschau-Gruppe, Diagramm (ChartAufbauen) oder Fensterhöhe
+        //   angefasst werden mussten.
+        // * _btnOk 510/712 -> 458/708 und _btnAbbruch 603/712 -> 578/708, beide
+        //   85 x 23 (WinForms-Vorgabe) -> 110 x 30. Die RECHTE KANTE der Knopfgruppe
+        //   bleibt bei x = 688 und damit 12 px vor dem Fensterrand; zwischen den Knöpfen
+        //   liegen 10 px. y rückt um 4 px nach oben, weil die höheren Knöpfe sonst nur
+        //   6 px über dem unteren Fensterrand endeten: jetzt 8 px Abstand zur
+        //   Prüfungs-Rubrik (endet bei 700) und 10 px nach unten. Die Herleitung
+        //   „ClientSize.Width − 190 / − 97" trägt nicht mehr, weil die Knöpfe breiter
+        //   geworden sind; maßgeblich ist jetzt die rechte Kante.
+        // * _btnSimulation: Höhe 28 -> 30, einheitlich mit den Fußknöpfen. Position und
+        //   Breite bleiben (528/126, 134 px); der Knopf endet damit bei y = 156 und
+        //   bleibt innerhalb der Rubrik. Die 134 px sind Spaltenbreite, nicht Textbedarf
+        //   („Simulation" braucht 75 px) - sie halten die rechte Kante der Rubrik.
+        // * NICHT geändert: ClientSize, _gbSystem, _gbVorschau, _gbPruefung, das
+        //   Diagramm in ChartAufbauen() und alle y-Werte außer denen der Fußknöpfe.
 
-        private void BaueOberflaeche()
+        /// <summary>
+        /// Setzt alle sichtbaren Texte aus <c>MyResource</c>. Läuft direkt nach
+        /// <c>InitializeComponent()</c> und ersetzt die dortigen Platzhalter.
+        /// </summary>
+        private void TexteSetzen()
         {
             this.Text = MyResource.Resource.SIMQ_ERDREICH_TITEL;
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.MinimizeBox = false;
-            this.MaximizeBox = false;
-            // Höhe um eine Zeile gewachsen: die nutzbare Spreizung braucht ein
-            // Eingabefeld (Konzept 13.1) - siehe unten bei _tbSpreizung.
-            //
-            // BEFUNDE 1/3/4 vom 17.08.2026 - die Höhe wächst von 718 auf 748. Dazu
-            // gekommen sind rund 56 Pixel:
-            //   +14  die Bodenkennwerte brauchen zwei Zeilen (siehe _lblBoden),
-            //   + 8  der Spreizungs-Hinweis bricht um (siehe lSH),
-            //   +38  die Auslegungsprüfung bekommt Hinweiszeile und Schaltfläche.
-            // Gegengerechnet sind 26 Pixel aus der Vorschau: Das Diagramm ist von 210
-            // auf 184 Pixel Höhe verkleinert (siehe _chart). Das ist Absicht und der
-            // Preis dafür, dass der Dialog NICHT über die Fensterhöhe hinauswächst, die
-            // Windows auf einem 1366×768-Gerät noch zulässt (dort endet die zulässige
-            // Fensterhöhe bei etwa 788 Pixeln; mit Titelzeile und Rahmen liegt dieser
-            // Dialog bei 787). Ohne die Gegenrechnung wären OK und Abbrechen dort unter
-            // dem unteren Bildschirmrand verschwunden - ein schlechterer Fehler als der,
-            // der hier behoben wird.
-            //
-            // Die Breite bleibt bei 700; alle Beschriftungen passen jetzt hinein
-            // (nachgemessen für Deutsch und Englisch, siehe _lblBoden und lSH).
-            this.ClientSize = new Size(700, 748);
 
-            // --- Quellsystem ------------------------------------------------
-            GroupBox gbSystem = new GroupBox
-            {
-                Text = MyResource.Resource.SIMQ_ERDREICH_GB_QUELLSYSTEM,
-                Location = new Point(12, 10),
-                Size = new Size(676, 120)
-            };
-            this.Controls.Add(gbSystem);
+            _gbSystem.Text = MyResource.Resource.SIMQ_ERDREICH_GB_QUELLSYSTEM;
+            _rbKollektor.Text = MyResource.Resource.SIMQ_ERDREICH_RB_KOLLEKTOR;
+            _lblVerlegetiefe.Text = MyResource.Resource.SIMQ_ERDREICH_VERLEGETIEFE;
+            _lblFlaeche.Text = MyResource.Resource.SIMQ_ERDREICH_FLAECHE;
+            _rbSonde.Text = MyResource.Resource.SIMQ_ERDREICH_RB_SONDE;
+            _lblLaengeSonde.Text = MyResource.Resource.SIMQ_ERDREICH_LAENGE_SONDE;
+            _lblAnzahlSonden.Text = MyResource.Resource.SIMQ_ERDREICH_ANZAHL_SONDEN;
 
-            _rbKollektor = new RadioButton
-            {
-                Text = MyResource.Resource.SIMQ_ERDREICH_RB_KOLLEKTOR,
-                AutoSize = true,
-                Checked = true,
-                Location = new Point(16, 26)
-            };
-            _rbSonde = new RadioButton
-            {
-                Text = MyResource.Resource.SIMQ_ERDREICH_RB_SONDE,
-                AutoSize = true,
-                Location = new Point(16, 76)
-            };
-            _rbKollektor.CheckedChanged += (s, e) => { SystemUmschalten(); Aktualisieren(); };
-            _rbSonde.CheckedChanged += (s, e) => { SystemUmschalten(); Aktualisieren(); };
+            _lblBodentyp.Text = MyResource.Resource.SIMQ_ERDREICH_BODENTYP;
+            _lblBodentypHinweis.Text = MyResource.Resource.SIMQ_ERDREICH_BODENTYP_HINWEIS;
+            _lblKlimazone.Text = MyResource.Resource.SIMQ_ERDREICH_KLIMAZONE;
+            _lblKlimazoneHinweis.Text = MyResource.Resource.SIMQ_ERDREICH_KLIMAZONE_HINWEIS;
+            _lblSpreizung.Text = MyResource.Resource.SIMQ_ERDREICH_SPREIZUNG;
+            _lblSpreizungHinweis.Text = MyResource.Resource.SIMQ_ERDREICH_SPREIZUNG_HINWEIS;
 
-            Label lT = new Label { Text = MyResource.Resource.SIMQ_ERDREICH_VERLEGETIEFE, AutoSize = true, Location = new Point(160, 28) };
-            _tbTiefe = new TextBox { Location = new Point(285, 25), Width = 70, Text = Vorgabe(ErdreichTemperatur.TIEFE_DEFAULT) };
-            Label lF = new Label { Text = MyResource.Resource.SIMQ_ERDREICH_FLAECHE, AutoSize = true, Location = new Point(390, 28) };
-            _tbFlaeche = new TextBox { Location = new Point(490, 25), Width = 70, Text = "0" };
+            _gbVorschau.Text = MyResource.Resource.SIMQ_ERDREICH_GB_VORSCHAU;
+            _gbPruefung.Text = MyResource.Resource.SIMQ_ERDREICH_GB_PRUEFUNG;
+            _btnSimulation.Text = MyResource.Resource.SIMQ_ERDREICH_BTN_SIMULATION;
 
-            Label lL = new Label { Text = MyResource.Resource.SIMQ_ERDREICH_LAENGE_SONDE, AutoSize = true, Location = new Point(160, 78) };
-            _tbLaenge = new TextBox { Location = new Point(285, 75), Width = 70, Text = "90" };
-            Label lA = new Label { Text = MyResource.Resource.SIMQ_ERDREICH_ANZAHL_SONDEN, AutoSize = true, Location = new Point(390, 78) };
-            _tbAnzahl = new TextBox { Location = new Point(490, 75), Width = 70, Text = "1" };
+            _btnOk.Text = MyResource.Resource.SIM_BTN_OK;
+            _btnAbbruch.Text = MyResource.Resource.SIM_BTN_ABBRECHEN;
+        }
 
-            _tbTiefe.TextChanged += (s, e) => Aktualisieren();
-            _tbFlaeche.TextChanged += (s, e) => Aktualisieren();
-            _tbLaenge.TextChanged += (s, e) => Aktualisieren();
-            _tbAnzahl.TextChanged += (s, e) => Aktualisieren();
-
-            gbSystem.Controls.Add(_rbKollektor);
-            gbSystem.Controls.Add(lT); gbSystem.Controls.Add(_tbTiefe);
-            gbSystem.Controls.Add(lF); gbSystem.Controls.Add(_tbFlaeche);
-            gbSystem.Controls.Add(_rbSonde);
-            gbSystem.Controls.Add(lL); gbSystem.Controls.Add(_tbLaenge);
-            gbSystem.Controls.Add(lA); gbSystem.Controls.Add(_tbAnzahl);
-
-            // --- Bodentyp und Klimazone -------------------------------------
-            Label lB = new Label { Text = MyResource.Resource.SIMQ_ERDREICH_BODENTYP, AutoSize = true, Location = new Point(28, 145) };
-            _cbBoden = new ComboBox
-            {
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                Location = new Point(150, 142),
-                Width = 230
-            };
-            _cbBoden.Items.AddRange(ErdreichTemperatur.KatalogAnzeige());
-            _cbBoden.SelectedIndexChanged += (s, e) => Aktualisieren();
-            Label lBH = new Label
-            {
-                Text = MyResource.Resource.SIMQ_ERDREICH_BODENTYP_HINWEIS,
-                AutoSize = true,
-                Location = new Point(392, 145)
-            };
-
-            // BEFUND 1 vom 17.08.2026 („Text nicht sichtbar"): Die Kennwertzeile stand in
-            // einem 530 Pixel breiten Feld ab x=150 und wurde hart abgeschnitten -
-            // gemessen brauchte sie 635 Pixel, sichtbar endete sie mitten in
-            // „Bodenart nach Tabelle A1: …". Zwei Änderungen beheben das:
-            //   • Sie beginnt jetzt am linken Rand (x=28) und nutzt die volle Breite
-            //     von 660 Pixeln statt 530.
-            //   • Sie bekommt Platz für ZWEI Zeilen (32 statt 18 Pixel). Nötig ist das
-            //     für den längsten Fall: Mit der Bodenart „Sandiger Ton" statt „Sand"
-            //     wächst der Text auf rund 683 Pixel und läuft damit auch über die
-            //     volle Breite hinaus. Bei kurzen Bodenarten bleibt es optisch eine
-            //     Zeile - AutoSize=false bricht nur um, wenn es sein muss.
-            _lblBoden = new Label
-            {
-                AutoSize = false,
-                Location = new Point(28, 170),
-                Size = new Size(660, 32),
-                ForeColor = SystemColors.GrayText
-            };
-
-            // Ab hier liegt jede Zeile 14 Pixel tiefer als vorher - genau die zweite
-            // Zeile, die _lblBoden dazubekommen hat.
-            Label lZ = new Label { Text = MyResource.Resource.SIMQ_ERDREICH_KLIMAZONE, AutoSize = true, Location = new Point(28, 212) };
-            _cbZone = new ComboBox
-            {
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                Location = new Point(150, 209),
-                Width = 230
-            };
-            _cbZone.Items.Add(MyResource.Resource.SIMQ_ERDREICH_ZONE_NICHT_ZUGEORDNET);
-            for (int z = 1; z <= VDI4640Pruefung.KLIMAZONEN; z++)
-            {
-                _cbZone.Items.Add(z.ToString(CultureInfo.CurrentCulture) + " — " +
-                    VDI4640Pruefung.VolllaststundenZone(z).ToString("N0", CultureInfo.CurrentCulture) + " h/a");
-            }
-            _cbZone.SelectedIndexChanged += (s, e) => Aktualisieren();
-            Label lZH = new Label
-            {
-                Text = MyResource.Resource.SIMQ_ERDREICH_KLIMAZONE_HINWEIS,
-                AutoSize = true,
-                Location = new Point(392, 212)
-            };
-
-            // --- Nutzbare Spreizung ------------------------------------------
-            // Eingangsgröße der zweiten Warnbedingung (Konzept 13.1). Ohne dieses Feld
-            // war WQ_Spreizung bei einer Erdreichquelle nicht pflegbar und die Prüfung
-            // rechnete immer mit 5 K.
-            Label lS = new Label { Text = MyResource.Resource.SIMQ_ERDREICH_SPREIZUNG, AutoSize = true, Location = new Point(28, 242) };
-            _tbSpreizung = new TextBox
-            {
-                Location = new Point(150, 239),
-                Width = 70,
-                Text = ErdreichAuswertung.SPREIZUNG_DEFAULT.ToString("0.##", CultureInfo.CurrentCulture)
-            };
-            // BEFUND 1 vom 17.08.2026 („Text nicht sichtbar"): Dieser Hinweis ist der
-            // Hauptbefund. Er ist gemessen 564 Pixel breit, begann bei x=232 und endete
-            // damit bei 796 - also 96 Pixel HINTER dem rechten Dialogrand (700). Sichtbar
-            // brach er mitten in „…Quelltemperatur − Spreizung dauerh" ab.
-            //
-            // Er bleibt an seinem Platz hinter dem Eingabefeld (das ist die Zuordnung,
-            // die der Anwender erwartet) und darf jetzt UMBRECHEN: MaximumSize begrenzt
-            // die Breite auf die 456 Pixel, die bis zum rechten Rand frei sind, AutoSize
-            // lässt ihn dafür in die Höhe wachsen. Das ist das MaximumSize/AutoSize-
-            // Muster und die kleinstmögliche Änderung - Position und Reihenfolge der
-            // Steuerelemente bleiben, wie sie waren.
-            //
-            // Deutsch und Englisch belegen damit zwei Zeilen (rund 30 Pixel). Bis zur
-            // Vorschau-Gruppe (y=290) sind ab y=242 aber 48 Pixel frei, also Platz für
-            // DREI Zeilen - Reserve für längere Übersetzungen.
-            Label lSH = new Label
-            {
-                Text = MyResource.Resource.SIMQ_ERDREICH_SPREIZUNG_HINWEIS,
-                AutoSize = true,
-                MaximumSize = new Size(456, 0),
-                Location = new Point(232, 242),
-                ForeColor = SystemColors.GrayText
-            };
-            _tbSpreizung.TextChanged += (s, e) => Aktualisieren();
-
-            this.Controls.Add(lB); this.Controls.Add(_cbBoden); this.Controls.Add(lBH);
-            this.Controls.Add(_lblBoden);
-            this.Controls.Add(lZ); this.Controls.Add(_cbZone); this.Controls.Add(lZH);
-            this.Controls.Add(lS); this.Controls.Add(_tbSpreizung); this.Controls.Add(lSH);
-
-            // --- Vorschau ----------------------------------------------------
-            GroupBox gbVorschau = new GroupBox
-            {
-                Text = MyResource.Resource.SIMQ_ERDREICH_GB_VORSCHAU,
-                Location = new Point(12, 280),
-                Size = new Size(676, 244)
-            };
-            this.Controls.Add(gbVorschau);
-
-            // 184 statt 210 Pixel hoch: die 26 Pixel gehen an die Zeilen, die Befund 1
-            // und Befund 3/4 unten brauchen - siehe die Begründung bei ClientSize. Für
-            // einen Jahresgang über zwölf Monate bleibt das Seitenverhältnis 652×184
-            // gut lesbar; die Zoom-Bedienung des Diagramms ist unberührt.
+        /// <summary>
+        /// Baut das Vorschau-Diagramm und hängt es in die Vorschau-Gruppe ein.
+        ///
+        /// Steht bewusst NICHT im Designer (Migrationsregel 8): Die Serialisierung des
+        /// portierten <c>WinForms.DataVisualization</c>-<c>Chart</c> ist unter
+        /// VS 2022/.NET 8 unzuverlässig, und ChartArea/Series/Legend würden beim ersten
+        /// Speichern der Entwurfsfläche neu geschrieben. Muster wie
+        /// <c>Form_PeakShaving</c>: das Diagramm hinter <c>InitializeComponent</c>
+        /// per Code einhängen.
+        ///
+        /// 184 statt 210 Pixel hoch: die 26 Pixel gehen an die Zeilen, die Befund 1 und
+        /// Befund 3/4 unten brauchen - siehe die Begründung bei ClientSize. Für einen
+        /// Jahresgang über zwölf Monate bleibt das Seitenverhältnis 652×184 gut lesbar;
+        /// die Zoom-Bedienung des Diagramms ist unberührt.
+        /// </summary>
+        private void ChartAufbauen()
+        {
             _chart = new Chart
             {
                 Location = new Point(12, 20),
@@ -470,89 +485,74 @@ namespace WindowsFormsApplication1
             sQuelle.Legend = "L";
             sAussen.Legend = "L";
 
-            _lblKennwerte = new Label
-            {
-                AutoSize = false,
-                Location = new Point(14, 210),
-                Size = new Size(650, 20),
-                Font = new Font(this.Font, FontStyle.Bold)
-            };
+            _gbVorschau.Controls.Add(_chart);
+        }
 
-            gbVorschau.Controls.Add(_chart);
-            gbVorschau.Controls.Add(_lblKennwerte);
+        /// <summary>
+        /// Füllt die beiden Auswahllisten. Steht nicht im Designer: Die Bodenarten
+        /// kommen aus <see cref="ErdreichTemperatur.KatalogAnzeige"/> (Anzeigetexte,
+        /// Schicht 3 — der Persistenzschlüssel wird über den INDEX zugeordnet, siehe
+        /// <see cref="AktuellerBodentyp"/>), die Klimazonen aus
+        /// <see cref="VDI4640Pruefung"/>. Beides ist Laufzeitdaten und dürfte im
+        /// Designer-Code nicht als Literal landen (Migrationsregel 7).
+        /// </summary>
+        private void KatalogeFuellen()
+        {
+            _cbBoden.Items.AddRange(ErdreichTemperatur.KatalogAnzeige());
 
-            // --- Auslegungsprüfung -------------------------------------------
-            // Die Gruppe ist von 130 auf 168 Pixel gewachsen: unter das Prüfergebnis
-            // kommen die Hinweiszeile (Befund 4) und die Schaltfläche „Simulation"
-            // (Befund 3) - beide gehören sachlich hierher und nirgends sonst hin.
-            GroupBox gbPruefung = new GroupBox
+            _cbZone.Items.Add(MyResource.Resource.SIMQ_ERDREICH_ZONE_NICHT_ZUGEORDNET);
+            for (int z = 1; z <= VDI4640Pruefung.KLIMAZONEN; z++)
             {
-                Text = MyResource.Resource.SIMQ_ERDREICH_GB_PRUEFUNG,
-                Location = new Point(12, 532),
-                Size = new Size(676, 168)
-            };
-            this.Controls.Add(gbPruefung);
+                _cbZone.Items.Add(z.ToString(CultureInfo.CurrentCulture) + " — " +
+                    VDI4640Pruefung.VolllaststundenZone(z).ToString("N0", CultureInfo.CurrentCulture) + " h/a");
+            }
+        }
 
-            _lblPruefung = new Label
-            {
-                AutoSize = false,
-                Location = new Point(14, 22),
-                Size = new Size(650, 100),
-                Font = new Font(FontFamily.GenericMonospace, 8.25f)
-            };
-            gbPruefung.Controls.Add(_lblPruefung);
+        /// <summary>
+        /// Vorbelegung der Eingabefelder. Steht bewusst nicht im Designer:
+        /// <see cref="Vorgabe"/> und die Spreizung formatieren kulturabhängig, ein
+        /// serialisiertes Literal fröre die deutsche Schreibweise ein.
+        /// <see cref="SetControls"/> überschreibt die Werte unmittelbar vor dem
+        /// Anzeigen erneut.
+        /// </summary>
+        private void VorgabenSetzen()
+        {
+            _tbTiefe.Text = Vorgabe(ErdreichTemperatur.TIEFE_DEFAULT);
+            _tbFlaeche.Text = "0";
+            _tbLaenge.Text = "90";
+            _tbAnzahl.Text = "1";
+            _tbSpreizung.Text = ErdreichAuswertung.SPREIZUNG_DEFAULT.ToString("0.##", CultureInfo.CurrentCulture);
+        }
 
-            // BEFUND 4 vom 17.08.2026: Sobald der Anwender eine Quell-Einstellung ändert,
-            // zeigt die Prüfung oben noch den Stand des LETZTEN Laufs. Ohne Hinweis liest
-            // sich das wie eine Bewertung der neuen Eingaben - sie ist es aber nicht.
-            // Die Zeile bleibt leer, solange Anzeige und Lauf zusammenpassen; welchen der
-            // beiden Texte sie sonst zeigt, entscheidet AenderungshinweisAktualisieren.
-            //
-            // AutoSize=false mit zwei Zeilen Höhe: der Text bricht dann von selbst um und
-            // schiebt die Schaltfläche daneben nicht weg (Lehre aus Befund 1).
-            _lblAenderung = new Label
-            {
-                AutoSize = false,
-                Location = new Point(14, 128),
-                Size = new Size(500, 34),
-                ForeColor = FARBE_WARNUNG
-            };
-            gbPruefung.Controls.Add(_lblAenderung);
+        // ==================================================================
+        // Ereignisse der Eingabefelder
+        // ==================================================================
+        //
+        // Bis zur Designer-Umstellung waren das sechs gleichlautende Lambdas im
+        // Aufbaucode. Migrationsregel 5: In InitializeComponent darf keine Lambda
+        // stehen, der Designer-Parser bricht daran ab. Weil alle closure-frei waren,
+        // ist die Umstellung mechanisch - gleiche Rümpfe teilen sich eine Methode.
 
-            // BEFUND 3 vom 17.08.2026 („Simulation nur für diesen Bereich"): Die Prüfung
-            // war bisher nur zu füllen, indem der Anwender den Dialog verließ und den
-            // großen Simulationsweg ging. Der Knopf rechnet sie hier - was genau er tut
-            // und was er bewusst NICHT tut, steht bei btnSimulation_Click.
-            _btnSimulation = new Button
-            {
-                Text = MyResource.Resource.SIMQ_ERDREICH_BTN_SIMULATION,
-                Location = new Point(528, 126),
-                Size = new Size(134, 28)
-            };
-            _btnSimulation.Click += btnSimulation_Click;
-            gbPruefung.Controls.Add(_btnSimulation);
+        /// <summary>Quellsystem gewechselt (Erdkollektor ↔ Erdsonde).</summary>
+        private void rbQuellsystem_CheckedChanged(object sender, EventArgs e)
+        {
+            SystemUmschalten();
+            Aktualisieren();
+        }
 
-            // --- Schaltflächen ------------------------------------------------
-            Button btnOk = new Button
-            {
-                Text = MyResource.Resource.SIM_BTN_OK,
-                DialogResult = DialogResult.OK,
-                Location = new Point(this.ClientSize.Width - 190, 712),
-                Width = 85
-            };
-            Button btnAbbruch = new Button
-            {
-                Text = MyResource.Resource.SIM_BTN_ABBRECHEN,
-                DialogResult = DialogResult.Cancel,
-                Location = new Point(this.ClientSize.Width - 97, 712),
-                Width = 85
-            };
-            btnOk.Click += btnOk_Click;
+        /// <summary>
+        /// Zahleneingabe geändert - Verlegetiefe, Fläche, Sondenlänge, Sondenanzahl
+        /// und nutzbare Spreizung teilen sich diesen Handler.
+        /// </summary>
+        private void eingabe_TextChanged(object sender, EventArgs e)
+        {
+            Aktualisieren();
+        }
 
-            this.Controls.Add(btnOk);
-            this.Controls.Add(btnAbbruch);
-            this.AcceptButton = btnOk;
-            this.CancelButton = btnAbbruch;
+        /// <summary>Bodentyp oder Klimazone gewechselt.</summary>
+        private void auswahl_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Aktualisieren();
         }
 
         // ------------------------------------------------------------------

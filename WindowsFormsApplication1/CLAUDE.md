@@ -13,6 +13,10 @@ Solution: `..\WP-Plan.sln` (Debug/Release × x86/x64).
 dotnet build ..\WP-Plan.sln -c Debug -p:Platform=x86
 ```
 
+Die Umstellung auf x64 ist analysiert und geplant (noch nicht umgesetzt) — Ist-Stand,
+Entscheidungsfragen und Pakete in
+[`../Konzept_Umstellung_64Bit_EPOS-Plan.md`](../Konzept_Umstellung_64Bit_EPOS-Plan.md).
+
 
 ## Architektur
 
@@ -37,15 +41,19 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
 | `Wirtschaftlichkeit/` | `KapitalwertRechner` (DIN EN 17463), `EmissionsBilanzRechner`, `StromMatrix`, `WirtschaftlichkeitCtrl` |
 | `Simulation/` | Engine: `SimulationControl`, `Init`, `SimulationRunner` + Module je Erzeuger/Bedarf (`SimulationWaermebedarf`, `…Waermepumpe`, `…BHKW`, `…PV`, `…Solarthermie`, `…SPK`, `…SSP`, `…Pufferspeicher`) |
 | `Lizenz/` | `LizenzManager`, `LizenzToken`, `LizenzServerClient`, `GeraeteId` — signiertes Token, DPAPI-Ablage, Zustände von `NichtAktiviert` bis `Lesemodus` |
-| `KI/` | `KiChatService` (Gemini 2.5 Flash-Lite über REST), `HilfeKontext`, `HilfeWissen`; API-Key in der Registry |
+| `KI/` | `KiChatService` (Gemini 2.5 Flash-Lite über REST), `HilfeKontext`, `HilfeWissen`; API-Key als DPAPI-Datei `%APPDATA%\wp-plan\ki-schluessel.dat` (Registry-Altwert wird einmalig migriert und gelöscht) |
 | `Import/` | `VDI 3805/` (Kessel, Puffer, Kollektoren, WP), `CEC/` + `Pan/` (PV-Module), `CsvReader` |
-| `GrafikTools/` | `ChartManager`, `Form_ChartZoom`, `RoundedPanel` |
+| `GrafikTools/` | `ChartManager`, `RoundedPanel` |
 | `Hilfe/` | `HelpCatalog` — WordPress-basiert, Standard `https://epos-plan.de` |
 | `Reporting/`, `Waermespeicher/` | **nur Konzept-/Standdokumente**, kein Code |
 
-**Datenzugriff:** `DataRepository.cs` (OLE DB, `?`-Parameter) — Standard, in 98 Dateien.
-`RecordSet.cs` (ODBC, string-konkateniertes SQL) ist Altbestand in 55 Dateien; `Program.DBConnection`
-faktisch tot. Neuer Code ausschließlich über `DataRepository`.
+**Datenzugriff:** `DataRepository.cs` (OLE DB, `?`-Parameter) — Standard, in ~140 Dateien; den
+ConnectionString (`Provider=Microsoft.ACE.OLEDB.12.0`) baut zentral `GetConnectionString()`
+(einzige Abweichung mit eigenem Provider-String: `Views/Kosten/Form_KostenfaktorItem.cs`).
+`RecordSet.cs` (string-konkateniertes SQL, ~60 Dateien) ist Altbestand, läuft aber ebenfalls über
+OLE DB — ODBC ist vollständig abgelöst: `Program.DBConnection` existiert nicht mehr, einziger
+ODBC-Rest ist die vom Build ausgeschlossene `Controller/WPTestCtrl.cs`, das Paket
+`System.Data.Odbc` ist ungenutzt. Neuer Code ausschließlich über `DataRepository`.
 
 **Rechenkern:** vollständig verwaltet in `Allgemein/BhkwPlan.cs` (Namespace `WPPlan.Core`), aufgerufen
 aus den `Simulation*`-Klassen und einigen Eingabeformularen. Keine native DLL, kein COM-Server, kein
@@ -82,7 +90,8 @@ Diese Konventionen beim Erweitern beibehalten.
 `WinForms.DataVisualization` (Chart-Port mit Original-Namespace) · `ScottPlot.WinForms` + `SkiaSharp`
 · `MathNet.Numerics` · `DocumentFormat.OpenXml` und `ClosedXML` (Berichte ohne Office) ·
 `BouncyCastle.Cryptography` + `System.Security.Cryptography.ProtectedData` (Lizenz) ·
-`System.Data.OleDb` / `.Odbc` · `Mscc.GenerativeAI`.
+`System.Data.OleDb` (das ebenfalls referenzierte `System.Data.Odbc` ist ungenutzt) ·
+`Mscc.GenerativeAI`.
 
 **`SixLabors.Fonts` ist bewusst auf 1.0.1 gepinnt** — ab 2.x gilt die Six Labors Split License.
 Vor Releases `dotnet list package --include-transitive` prüfen.

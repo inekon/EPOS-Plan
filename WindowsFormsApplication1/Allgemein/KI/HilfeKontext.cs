@@ -96,6 +96,7 @@ namespace WindowsFormsApplication1
             { "Form_AdminSettings",          B_ADMIN },
             { "Form_Gesetzesparameter",      B_ADMIN },
             { "Form_GesetzparameterZeile",   B_ADMIN },
+            { "Form_KatalogDubletten",       B_ADMIN },
             { "Form_LizenzVerwaltung",       B_LIZENZ },
             { "Form_Lizenz",                 B_LIZENZ },
 
@@ -204,7 +205,6 @@ namespace WindowsFormsApplication1
             { "Form_Stromverbraucher",       B_STROMVERBRAUCHER },
             { "Form_Stromverbraucher_Admin", B_STROMVERBRAUCHER },
 
-            { "Form_AlsVariante",            B_VARIANTEN },
             { "Form_Variantentest",          B_VARIANTEN },
 
             { "Form_Waermebedarf",           B_WAERMEBEDARF },

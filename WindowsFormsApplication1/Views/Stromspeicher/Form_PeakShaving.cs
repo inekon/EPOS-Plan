@@ -42,16 +42,17 @@ namespace WindowsFormsApplication1
     /// entschieden); Exportweg ist CSV. Beides steht als Hinweis im Formular.
     /// </para>
     /// <para>
-    /// Der Dialog ist vollstaendig im Quelltext aufgebaut - keine
-    /// <c>.Designer.cs</c>, keine <c>.resx</c> (Projektregel: Designer- und
-    /// resx-Dateien nicht von Hand editieren). Alle Beschriftungen kommen aus
-    /// <c>MyResource</c> (<c>PEAK_*</c>) und sind damit zweisprachig; Zahlen werden
-    /// nach dem Hausmuster mit <c>Program.ZahlParsen</c> /
-    /// <c>Program.ZahlPruefen</c> gelesen und mit <c>Program.ZahlFaerben</c>
-    /// gefaerbt.
+    /// Die Oberflaeche steht in <c>Form_PeakShaving.Designer.cs</c>, weiterhin ohne
+    /// eigene <c>.resx</c> (Projektregel: resx-Dateien nicht von Hand editieren). Alle
+    /// Beschriftungen kommen aus <c>MyResource</c> (<c>PEAK_*</c>) und werden in
+    /// <see cref="TexteSetzen"/> gesetzt; im Designer stehen nur Platzhalter. Das
+    /// Chart bleibt bewusst ausserhalb der Designer-Serialisierung und entsteht in
+    /// <see cref="ChartAufbauen"/>. Zahlen werden nach dem Hausmuster mit
+    /// <c>Program.ZahlParsen</c> / <c>Program.ZahlPruefen</c> gelesen und mit
+    /// <c>Program.ZahlFaerben</c> gefaerbt.
     /// </para>
     /// </remarks>
-    public class Form_PeakShaving : Form
+    public partial class Form_PeakShaving : Form
     {
         /// <summary>Serienschluessel des Charts - Steuerwerte, keine Anzeigetexte.</summary>
         private const string SerieAlt = "PS_ALT";
@@ -67,18 +68,10 @@ namespace WindowsFormsApplication1
         private ChartManager m_ChartManager;
         private bool m_bAufbau = true;
 
-        private RadioButton rad_Ganglinie, rad_Datei;
-        private ComboBox cbo_Ganglinie;
-        private Button btn_Datei, btn_Rechnen, btn_Minimal, btn_Csv, btn_Schliessen;
-        private Label lbl_Reihe, lbl_Hinweis, lbl_Herkunft;
-        private TextBox tb_P, tb_Kapazitaet, tb_SoCMin, tb_SoCMax, tb_StartSoC, tb_Eta;
-        private TextBox tb_Ziel, tb_Lp, tb_Bezugspreis;
-        private TextBox tb_CCap, tb_CPow, tb_IFix, tb_Zins, tb_Nutzungsdauer;
-        private CheckBox chk_Adaptiv, chk_Kompatibel, chk_SoC;
-        private Label lbl_Ziel;
-        private TabControl tab_Ergebnis;
-        private TabPage tabKennzahlen, tabChart, tabMonate;
-        private ListView list_Kennzahlen, list_Monate;
+        /// <summary>
+        /// Nicht im Designer, sondern in <see cref="ChartAufbauen"/> erzeugt - deshalb
+        /// steht das Feld hier und nicht in <c>Form_PeakShaving.Designer.cs</c>.
+        /// </summary>
         private Chart chart_Lastgang;
 
         /// <summary>
@@ -90,7 +83,16 @@ namespace WindowsFormsApplication1
         {
             m_ID_Projekt = idProjekt;
 
-            AufbauSteuerelemente();
+            // Der Designer setzt AutoScaleMode bewusst auf None und laesst
+            // AutoScaleDimensions weg: Die Anwendung laeuft DpiUnaware (app.manifest,
+            // Program.SetHighDpiMode). Der bisherige Aufbau setzte zwar
+            // AutoScaleMode.Font, aber nie AutoScaleDimensions - der Skalierungsfaktor
+            // blieb damit immer 1:1, es fand also faktisch keine Skalierung statt.
+            // None haelt genau dieses Verhalten fest.
+            InitializeComponent();
+            TexteSetzen();
+            ChartAufbauen();
+
             ListenFuellen();
             VorbelegungSetzen();
             m_bAufbau = false;
@@ -103,165 +105,76 @@ namespace WindowsFormsApplication1
         }
 
         // ==================================================================
+        // Texte
+        // ==================================================================
+
+        /// <summary>
+        /// Setzt alle festen sichtbaren Texte aus <c>MyResource</c>. Laeuft direkt nach
+        /// <c>InitializeComponent()</c> und ersetzt die dortigen Platzhalter.
+        /// <c>lbl_Reihe</c> und <c>lbl_Herkunft</c> fehlen hier mit Absicht: sie
+        /// bekommen ihren Text erst zur Laufzeit.
+        /// </summary>
+        private void TexteSetzen()
+        {
+            this.Text = MyResource.Resource.PEAK_TITEL;
+
+            grpQuelle.Text = MyResource.Resource.PEAK_GRP_QUELLE;
+            rad_Ganglinie.Text = MyResource.Resource.PEAK_OPT_GANGLINIE;
+            rad_Datei.Text = MyResource.Resource.PEAK_OPT_DATEI;
+            btn_Datei.Text = MyResource.Resource.PEAK_BTN_DATEI;
+
+            grpParameter.Text = MyResource.Resource.PEAK_GRP_PARAMETER;
+            lbl_P.Text = MyResource.Resource.PEAK_LBL_P;
+            lbl_Kapazitaet.Text = MyResource.Resource.PEAK_LBL_KAPAZITAET;
+            lbl_Eta.Text = MyResource.Resource.PEAK_LBL_ETA;
+            lbl_SoCMin.Text = MyResource.Resource.PEAK_LBL_SOCMIN;
+            lbl_SoCMax.Text = MyResource.Resource.PEAK_LBL_SOCMAX;
+            lbl_StartSoC.Text = MyResource.Resource.PEAK_LBL_STARTSOC;
+            lbl_Ziel.Text = MyResource.Resource.PEAK_LBL_ZIEL;
+            chk_Adaptiv.Text = MyResource.Resource.PEAK_CHK_ADAPTIV;
+            btn_Minimal.Text = MyResource.Resource.PEAK_BTN_MINIMAL;
+            lbl_Lp.Text = MyResource.Resource.PEAK_LBL_LP;
+            lbl_Bezugspreis.Text = MyResource.Resource.PEAK_LBL_BEZUGSPREIS;
+            chk_Kompatibel.Text = MyResource.Resource.PEAK_CHK_KOMPAT;
+            lbl_CCap.Text = MyResource.Resource.PEAK_LBL_CCAP;
+            lbl_CPow.Text = MyResource.Resource.PEAK_LBL_CPOW;
+            lbl_IFix.Text = MyResource.Resource.PEAK_LBL_IFIX;
+            lbl_Zins.Text = MyResource.Resource.PEAK_LBL_ZINS;
+            lbl_Nutzungsdauer.Text = MyResource.Resource.PEAK_LBL_NUTZUNGSDAUER;
+
+            btn_Rechnen.Text = MyResource.Resource.PEAK_BTN_RECHNEN;
+            chk_SoC.Text = MyResource.Resource.PEAK_CHK_SOC;
+            btn_Csv.Text = MyResource.Resource.PEAK_BTN_CSV;
+
+            tabKennzahlen.Text = MyResource.Resource.PEAK_TAB_KENNZAHLEN;
+            col_KennzahlGroesse.Text = MyResource.Resource.PEAK_SP_GROESSE;
+            col_KennzahlWert.Text = MyResource.Resource.PEAK_SP_WERT;
+            col_KennzahlEinheit.Text = MyResource.Resource.PEAK_SP_EINHEIT;
+
+            tabChart.Text = MyResource.Resource.PEAK_TAB_CHART;
+
+            tabMonate.Text = MyResource.Resource.PEAK_TAB_MONATE;
+            col_MonatName.Text = MyResource.Resource.PEAK_SP_MONAT;
+            col_MonatAlt.Text = MyResource.Resource.PEAK_SP_ALT;
+            col_MonatNeu.Text = MyResource.Resource.PEAK_SP_NEU;
+            col_MonatKappung.Text = MyResource.Resource.PEAK_SP_KAPPUNG;
+
+            lbl_Hinweis.Text = MyResource.Resource.PEAK_HINWEIS;
+            btn_Schliessen.Text = MyResource.Resource.PEAK_BTN_SCHLIESSEN;
+        }
+
+        // ==================================================================
         // Aufbau
         // ==================================================================
 
-        private void AufbauSteuerelemente()
+        /// <summary>
+        /// Baut die leere Chart-Huelle und haengt sie in die Chartseite. Bewusst
+        /// ausserhalb des Designers: Chart-Steuerelemente gehoeren nicht in die
+        /// Designer-Serialisierung. Alles Weitere - Achsen, Serien, Legende - macht
+        /// wie bisher der <c>ChartManager</c> in <see cref="ChartZeichnen"/>.
+        /// </summary>
+        private void ChartAufbauen()
         {
-            Text = MyResource.Resource.PEAK_TITEL;
-            FormBorderStyle = FormBorderStyle.Sizable;
-            StartPosition = FormStartPosition.CenterParent;
-            MinimizeBox = false;
-            MaximizeBox = true;
-            ShowInTaskbar = false;
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1060, 830);
-            MinimumSize = new Size(900, 700);
-
-            GroupBox grpQuelle = new GroupBox();
-            grpQuelle.SetBounds(12, 10, 1036, 96);
-            grpQuelle.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            grpQuelle.Text = MyResource.Resource.PEAK_GRP_QUELLE;
-            Controls.Add(grpQuelle);
-
-            rad_Ganglinie = new RadioButton();
-            rad_Ganglinie.SetBounds(14, 24, 210, 22);
-            rad_Ganglinie.Text = MyResource.Resource.PEAK_OPT_GANGLINIE;
-            rad_Ganglinie.Checked = true;
-            rad_Ganglinie.CheckedChanged += QuelleGeaendert;
-            grpQuelle.Controls.Add(rad_Ganglinie);
-
-            cbo_Ganglinie = new ComboBox();
-            cbo_Ganglinie.SetBounds(230, 23, 480, 22);
-            cbo_Ganglinie.DropDownStyle = ComboBoxStyle.DropDownList;
-            cbo_Ganglinie.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            cbo_Ganglinie.SelectedIndexChanged += QuelleGeaendert;
-            grpQuelle.Controls.Add(cbo_Ganglinie);
-
-            rad_Datei = new RadioButton();
-            rad_Datei.SetBounds(14, 54, 210, 22);
-            rad_Datei.Text = MyResource.Resource.PEAK_OPT_DATEI;
-            rad_Datei.CheckedChanged += QuelleGeaendert;
-            grpQuelle.Controls.Add(rad_Datei);
-
-            btn_Datei = new Button();
-            btn_Datei.SetBounds(230, 52, 160, 26);
-            btn_Datei.Text = MyResource.Resource.PEAK_BTN_DATEI;
-            btn_Datei.Click += Datei_Click;
-            grpQuelle.Controls.Add(btn_Datei);
-
-            lbl_Reihe = new Label();
-            lbl_Reihe.SetBounds(400, 57, 620, 18);
-            lbl_Reihe.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            lbl_Reihe.AutoEllipsis = true;
-            grpQuelle.Controls.Add(lbl_Reihe);
-
-            // ---------------------------------------------------------- Parameter
-            GroupBox grpParameter = new GroupBox();
-            grpParameter.SetBounds(12, 112, 1036, 168);
-            grpParameter.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            grpParameter.Text = MyResource.Resource.PEAK_GRP_PARAMETER;
-            Controls.Add(grpParameter);
-
-            const int s1 = 14, e1 = 210, s2 = 350, e2 = 546, s3 = 686, e3 = 882;
-            int y = 24;
-
-            Beschriftung(grpParameter, MyResource.Resource.PEAK_LBL_P, s1, y);
-            tb_P = Zahlfeld(grpParameter, e1, y);
-            Beschriftung(grpParameter, MyResource.Resource.PEAK_LBL_KAPAZITAET, s2, y);
-            tb_Kapazitaet = Zahlfeld(grpParameter, e2, y);
-            Beschriftung(grpParameter, MyResource.Resource.PEAK_LBL_ETA, s3, y);
-            tb_Eta = Zahlfeld(grpParameter, e3, y);
-
-            y += 28;
-            Beschriftung(grpParameter, MyResource.Resource.PEAK_LBL_SOCMIN, s1, y);
-            tb_SoCMin = Zahlfeld(grpParameter, e1, y);
-            Beschriftung(grpParameter, MyResource.Resource.PEAK_LBL_SOCMAX, s2, y);
-            tb_SoCMax = Zahlfeld(grpParameter, e2, y);
-            Beschriftung(grpParameter, MyResource.Resource.PEAK_LBL_STARTSOC, s3, y);
-            tb_StartSoC = Zahlfeld(grpParameter, e3, y);
-
-            y += 28;
-            lbl_Ziel = Beschriftung(grpParameter, MyResource.Resource.PEAK_LBL_ZIEL, s1, y);
-            tb_Ziel = Zahlfeld(grpParameter, e1, y);
-            chk_Adaptiv = new CheckBox();
-            chk_Adaptiv.SetBounds(s2, y, 180, 22);
-            chk_Adaptiv.Text = MyResource.Resource.PEAK_CHK_ADAPTIV;
-            chk_Adaptiv.CheckedChanged += AdaptivGeaendert;
-            grpParameter.Controls.Add(chk_Adaptiv);
-
-            btn_Minimal = new Button();
-            btn_Minimal.SetBounds(s3 - 140, y - 2, 336, 26);
-            btn_Minimal.Text = MyResource.Resource.PEAK_BTN_MINIMAL;
-            btn_Minimal.Click += Minimal_Click;
-            grpParameter.Controls.Add(btn_Minimal);
-
-            y += 28;
-            Beschriftung(grpParameter, MyResource.Resource.PEAK_LBL_LP, s1, y);
-            tb_Lp = Zahlfeld(grpParameter, e1, y);
-            Beschriftung(grpParameter, MyResource.Resource.PEAK_LBL_BEZUGSPREIS, s2, y);
-            tb_Bezugspreis = Zahlfeld(grpParameter, e2, y);
-            chk_Kompatibel = new CheckBox();
-            chk_Kompatibel.SetBounds(s3, y, 336, 22);
-            chk_Kompatibel.Text = MyResource.Resource.PEAK_CHK_KOMPAT;
-            grpParameter.Controls.Add(chk_Kompatibel);
-
-            y += 28;
-            Beschriftung(grpParameter, MyResource.Resource.PEAK_LBL_CCAP, s1, y);
-            tb_CCap = Zahlfeld(grpParameter, e1, y);
-            Beschriftung(grpParameter, MyResource.Resource.PEAK_LBL_CPOW, s2, y);
-            tb_CPow = Zahlfeld(grpParameter, e2, y);
-            Beschriftung(grpParameter, MyResource.Resource.PEAK_LBL_IFIX, s3, y);
-            tb_IFix = Zahlfeld(grpParameter, e3, y);
-
-            y += 28;
-            Beschriftung(grpParameter, MyResource.Resource.PEAK_LBL_ZINS, s1, y);
-            tb_Zins = Zahlfeld(grpParameter, e1, y);
-            Beschriftung(grpParameter, MyResource.Resource.PEAK_LBL_NUTZUNGSDAUER, s2, y);
-            tb_Nutzungsdauer = Zahlfeld(grpParameter, e2, y);
-            lbl_Herkunft = new Label();
-            lbl_Herkunft.SetBounds(s3, y + 4, 336, 18);
-            lbl_Herkunft.AutoEllipsis = true;
-            lbl_Herkunft.ForeColor = SystemColors.GrayText;
-            grpParameter.Controls.Add(lbl_Herkunft);
-
-            // ---------------------------------------------------------- Aktionen
-            btn_Rechnen = new Button();
-            btn_Rechnen.SetBounds(12, 288, 190, 30);
-            btn_Rechnen.Text = MyResource.Resource.PEAK_BTN_RECHNEN;
-            btn_Rechnen.Click += Rechnen_Click;
-            Controls.Add(btn_Rechnen);
-
-            chk_SoC = new CheckBox();
-            chk_SoC.SetBounds(216, 293, 260, 22);
-            chk_SoC.Text = MyResource.Resource.PEAK_CHK_SOC;
-            chk_SoC.Checked = true;
-            chk_SoC.CheckedChanged += SoCAnzeigeGeaendert;
-            Controls.Add(chk_SoC);
-
-            btn_Csv = new Button();
-            btn_Csv.SetBounds(858, 288, 190, 30);
-            btn_Csv.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btn_Csv.Text = MyResource.Resource.PEAK_BTN_CSV;
-            btn_Csv.Click += Csv_Click;
-            Controls.Add(btn_Csv);
-
-            // ---------------------------------------------------------- Ergebnis
-            tab_Ergebnis = new TabControl();
-            tab_Ergebnis.SetBounds(12, 326, 1036, 430);
-            tab_Ergebnis.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            Controls.Add(tab_Ergebnis);
-
-            tabKennzahlen = new TabPage(MyResource.Resource.PEAK_TAB_KENNZAHLEN);
-            tab_Ergebnis.TabPages.Add(tabKennzahlen);
-            list_Kennzahlen = Ergebnisliste();
-            list_Kennzahlen.Columns.Add(MyResource.Resource.PEAK_SP_GROESSE, 420);
-            list_Kennzahlen.Columns.Add(MyResource.Resource.PEAK_SP_WERT, 170, HorizontalAlignment.Right);
-            list_Kennzahlen.Columns.Add(MyResource.Resource.PEAK_SP_EINHEIT, 150);
-            tabKennzahlen.Controls.Add(list_Kennzahlen);
-
-            tabChart = new TabPage(MyResource.Resource.PEAK_TAB_CHART);
-            tab_Ergebnis.TabPages.Add(tabChart);
             chart_Lastgang = new Chart();
             chart_Lastgang.Name = "chart_PeakShaving";
             // Ein programmatisch erzeugtes Chart hat keine ChartArea - ChartManager.Init
@@ -269,70 +182,28 @@ namespace WindowsFormsApplication1
             chart_Lastgang.ChartAreas.Add(new ChartArea("ChartArea_PeakShaving"));
             chart_Lastgang.BackColor = Color.WhiteSmoke;
             chart_Lastgang.BorderlineColor = Color.Transparent;
-            chart_Lastgang.SetBounds(6, 6, 1016, 386);
-            chart_Lastgang.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            // 6-px-Rand rundum zur Tabseite. Feste Masse plus Vierseitenanker - so stand
+            // es hier vorher - liefern das NICHT: Der Designer setzt fuer Tabseiten keine
+            // Groesse, tabChart steht im Konstruktor also noch auf der Vorgabe 200x100.
+            // Der Anker merkt sich die Raender gegen diese Vorgabe und blaeht die Huelle
+            // beim ersten Layout um die Differenz zur echten Seitengroesse (1028x374)
+            // auf - gemessen 1844x632 statt der beabsichtigten 1016x358. Dock mit Padding
+            // haengt dagegen an der jeweils echten Seitengroesse und ist ausserdem der
+            // Weg, den die beiden anderen Seiten dieser Maske (list_Kennzahlen,
+            // list_Monate) im Designer ohnehin schon gehen.
+            tabChart.Padding = new Padding(6);
+            chart_Lastgang.Dock = DockStyle.Fill;
             tabChart.Controls.Add(chart_Lastgang);
-
-            tabMonate = new TabPage(MyResource.Resource.PEAK_TAB_MONATE);
-            tab_Ergebnis.TabPages.Add(tabMonate);
-            list_Monate = Ergebnisliste();
-            list_Monate.Columns.Add(MyResource.Resource.PEAK_SP_MONAT, 220);
-            list_Monate.Columns.Add(MyResource.Resource.PEAK_SP_ALT, 170, HorizontalAlignment.Right);
-            list_Monate.Columns.Add(MyResource.Resource.PEAK_SP_NEU, 170, HorizontalAlignment.Right);
-            list_Monate.Columns.Add(MyResource.Resource.PEAK_SP_KAPPUNG, 170, HorizontalAlignment.Right);
-            tabMonate.Controls.Add(list_Monate);
-
-            // ---------------------------------------------------------- Fusszeile
-            lbl_Hinweis = new Label();
-            lbl_Hinweis.SetBounds(12, 764, 900, 52);
-            lbl_Hinweis.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            lbl_Hinweis.Text = MyResource.Resource.PEAK_HINWEIS;
-            lbl_Hinweis.ForeColor = SystemColors.GrayText;
-            Controls.Add(lbl_Hinweis);
-
-            btn_Schliessen = new Button();
-            btn_Schliessen.SetBounds(954, 790, 94, 28);
-            btn_Schliessen.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btn_Schliessen.Text = MyResource.Resource.PEAK_BTN_SCHLIESSEN;
-            btn_Schliessen.DialogResult = DialogResult.Cancel;
-            Controls.Add(btn_Schliessen);
-
-            CancelButton = btn_Schliessen;
-        }
-
-        private static Label Beschriftung(Control eltern, string text, int x, int y)
-        {
-            Label l = new Label();
-            l.SetBounds(x, y + 4, 194, 18);
-            l.Text = text;
-            eltern.Controls.Add(l);
-            return l;
         }
 
         /// <summary>
         /// Zahlfeld nach Hausmuster: <c>Program.ZahlFaerben</c> am
-        /// <c>TextChanged</c>, gemeldet wird erst beim Knopf.
+        /// <c>TextChanged</c>, gemeldet wird erst beim Knopf. Der Designer verdrahtet
+        /// diesen Behandler an allen Eingabefeldern der Parametergruppe.
         /// </summary>
-        private static TextBox Zahlfeld(Control eltern, int x, int y)
+        private void Zahlfeld_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = new TextBox();
-            tb.SetBounds(x, y, 120, 22);
-            tb.TextAlign = HorizontalAlignment.Right;
-            tb.TextChanged += (s, e) => Program.ZahlFaerben(s);
-            eltern.Controls.Add(tb);
-            return tb;
-        }
-
-        private static ListView Ergebnisliste()
-        {
-            ListView lv = new ListView();
-            lv.Dock = DockStyle.Fill;
-            lv.View = View.Details;
-            lv.FullRowSelect = true;
-            lv.GridLines = true;
-            lv.MultiSelect = false;
-            lv.HeaderStyle = ColumnHeaderStyle.Nonclickable;
-            return lv;
+            Program.ZahlFaerben(sender);
         }
 
         // ==================================================================

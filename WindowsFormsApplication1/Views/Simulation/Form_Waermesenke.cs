@@ -170,6 +170,7 @@ namespace WindowsFormsApplication1
         public Form_Waermesenke()
         {
             BaueOberflaeche();
+            FensterEinpassung.Einhaengen(this);
         }
 
         private void BaueOberflaeche()
