@@ -533,3 +533,24 @@ dem Anlegen auf CRLF normalisiert (196 Zeilen). Kein cp1252-Fall in dieser Etapp
 **MyResource:** 37 neue Schlüssel, additiv in `Resource.resx`, `Resource.en-US.resx` und
 `Resource.Designer.cs` — je Schlüssel deutsch **und** englisch, kein bestehender Eintrag
 angefasst.
+
+---
+
+## 12 Nachtrag 20.08.2026: Abfragenbereinigung (K1-Checkliste, von Philipp beauftragt)
+
+Ausgeführt per ADOX gegen beide Datenbanken, jeweils mit Vorab-Sicherung und Referenz-Check
+(kein Überlebender referenziert einen Löschkandidaten; alle Querbezüge lagen intern unter den
+Kandidaten: `Abfrage_ProjektKostenKomponenten` → 7× `Abfrage_Kosten_*`, `Abfrage_MaxMin_Vorlauf` →
+Max/Min, `Abfrage_KenndatenKuehlung_Max` → `Abfrage_Kuehlung_MaxLast`).
+
+- **Produktiv-DB** (`%USERPROFILE%\sourceepos\WP-PLAN\Kenndaten.accdb`, per DSN TEST): 30 → 11 Abfragen,
+  **19 gelöscht**; `Abfrage_ProjektKostenEnergie` und `Abfrage_ProjektKostenInvestBetrieb` (E4) existierten dort nicht.
+- **Arbeitskopie** (`Referenzlaeufe\Arbeitskopie\Kenndaten.accdb`): 36 → 15, **21 gelöscht** (inkl. E4).
+- **Befund + Reparatur:** Der Produktiv-DB fehlte die AKTIVE `Abfrage_Energietraeger_Effektiv` (Code liest sie an
+  4 Stellen; die Migration legt sie nicht an, nur Kommentar `SchemaKatalog.cs:1356`). Definition aus der
+  Arbeitskopie übertragen (View, 356 Zeichen), Probelesen: 8 Zeilen. **Empfehlung:** Anlage der Abfrage als
+  Migrationsschritt nachrüsten, damit frische DBs sie sicher führen.
+- **Nicht gelöscht** (nicht auf der beschlossenen Liste, Kandidaten für eine eigene Runde): `Abfrage1`,
+  `Abfrage2`, `Tab_BHKW_Einfügen_Test` (nur Arbeitskopie); `Tab_StromganglinieDaten Abfrage` (Herkunft unklar).
+- Sicherungen: `WP-PLAN\Kenndaten.accdb.vor_2026-08-20_Abfragenbereinigung.bak` bzw.
+  `Documents\WP-Plan_DB-Sicherungen\` (aus dem Repo-Baum herausgehalten).
