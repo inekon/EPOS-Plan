@@ -26,6 +26,7 @@ namespace WindowsFormsApplication1
         {
             InitializeComponent();
             tt.Draw += new DrawToolTipEventHandler(this.tt_Draw);
+            FensterEinpassung.Einhaengen(this);
         }
 
         public void SetControls()

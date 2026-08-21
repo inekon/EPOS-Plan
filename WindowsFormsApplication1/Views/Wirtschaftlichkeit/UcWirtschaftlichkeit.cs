@@ -31,8 +31,16 @@ namespace WindowsFormsApplication1
     /// und die Dialogaufrufe nehmen das umgebende Formular als Besitzer.</para>
     ///
     /// Ist das übergebene Projekt eine Variante, wird automatisch ihr Stamm verwendet.
+    ///
+    /// <para>Die Oberfläche steht in <c>UcWirtschaftlichkeit.Designer.cs</c>, ohne eigene
+    /// <c>.resx</c>: Im Designer stehen nur Platzhalter (der Feldname), die echten
+    /// deutschen Texte setzt <see cref="TexteSetzen"/> unmittelbar nach
+    /// <c>InitializeComponent()</c> — die Lokalisierung dieser Seite ist ein eigener
+    /// Vorgang. Nicht serialisierbar und deshalb im Konstruktor-Nachlauf: die
+    /// Szenarioliste (<see cref="SzenarienFuellen"/> — das sind DB-Persistenzwerte und
+    /// gehören nicht in Designer-Code).</para>
     /// </summary>
-    public class UcWirtschaftlichkeit : UserControl
+    public partial class UcWirtschaftlichkeit : UserControl
     {
         private readonly int _idStamm;
         private readonly string _stammName;
@@ -57,18 +65,6 @@ namespace WindowsFormsApplication1
         /// </summary>
         private TarifParameter _tarifCache;
         private readonly Dictionary<int, EmissionsBilanz> _bilanzen = new Dictionary<int, EmissionsBilanz>();
-
-        // Steuerelemente
-        private Label lblVarianten;
-        private ListView lvVarianten;
-        private ColumnHeader colArt, colBez, colName, colSim;
-        private Label lblSzenario;
-        private ComboBox cbSzenario;
-        private DataGridView grid;
-        private Label lblParameter;
-        private Label lblStatus;
-        private ProgressBar progress;
-        private Button btnTarif, btnParameter, btnVerlauf, btnBerechnen, btnSchliessen;
 
         /// <summary>Stammprojekt-ID der angezeigten Vergleichsgruppe.</summary>
         public int IdStamm { get { return _idStamm; } }
@@ -104,159 +100,73 @@ namespace WindowsFormsApplication1
             pc.ReadSingle(_idStamm);
             _stammName = pc.rows > 0 ? pc.m_szProjektname : "";
 
+            // Der Designer setzt AutoScaleMode bewusst auf None und lässt
+            // AutoScaleDimensions weg: Bisher stand hier AutoScaleMode.Font OHNE
+            // AutoScaleDimensions, der Skalierfaktor blieb damit (1,1) — es wurde also
+            // faktisch nie skaliert. Die Anwendung läuft ohnehin DpiUnaware
+            // (app.manifest, Program.SetHighDpiMode). None hält genau dieses Verhalten
+            // fest und verhindert, dass ein Designer-Speichern die Skalierung erstmals
+            // scharf schaltet — Muster: ucFuelSettings, Form_SpotpreisImport.
             InitializeComponent();
+            TexteSetzen();
+            SzenarienFuellen();
         }
 
         /// <summary>Titelzeile für den Dialog-Wrapper bzw. die Seitenüberschrift.</summary>
-        public string Titel
+        public string Titel { get { return _titel; } }
+        private string _titel = "";
+
+        // -------------------------------------------------- Aufbau-Nachlauf
+
+        /// <summary>
+        /// Setzt alle sichtbaren Texte. Läuft direkt nach <c>InitializeComponent()</c> und
+        /// ersetzt die dortigen Platzhalter. Die Texte sind (wie im Bestand) deutsche
+        /// Literale — die Lokalisierung dieser Seite ist ein eigener Vorgang; hier steht
+        /// nur, dass sie an genau einer Stelle liegen. <see cref="Titel"/> gehört dazu:
+        /// Er ist zwar kein Steuerelementtext, wird aber vom Wirt als Fenster- bzw.
+        /// Seitenüberschrift angezeigt.
+        /// </summary>
+        private void TexteSetzen()
         {
-            get { return "Wirtschaftlichkeit (Kapitalwertmethode DIN EN 17463) — Stamm: " + _stammName; }
+            _titel = "Wirtschaftlichkeit (Kapitalwertmethode DIN EN 17463) — Stamm: " + _stammName;
+            lblVarianten.Text = "Vergleichsgruppe (Referenz: Stamm, fest gewählt):";
+            colArt.Text = "Art";
+            colBez.Text = "Bezeichner";
+            colName.Text = "Projektname";
+            colSim.Text = "Simulation";
+            lblSzenario.Text = "Szenario:";
+            btnTarif.Text = "Tarifstruktur…";
+            btnParameter.Text = "Parameter…";
+            btnVerlauf.Text = "Verlauf…";
+            btnBerechnen.Text = "Berechnen";
+            btnSchliessen.Text = "Schließen";   // im Reiter blendet SetBusy auf „Abbrechen" um
         }
 
-        // ------------------------------------------------------------- Aufbau
-
-        private void InitializeComponent()
+        /// <summary>
+        /// Füllt die Szenarioliste. Steht bewusst NICHT im Designer: Die drei Werte sind
+        /// DB-Persistenzwerte (<c>Tab_ErgebnisWirtschaftlichkeit.Szenario</c>) und dürfen
+        /// nicht als Literale in Designer-Code oder gar in eine <c>.resx</c> geraten.
+        ///
+        /// <para>Läuft unter dem <c>_initialisiere</c>-Wächter: Im Bestand wurde
+        /// <c>SelectedIndexChanged</c> erst NACH <c>SelectedIndex = 0</c> angehängt, das
+        /// Vorbelegen löste also kein <see cref="ZeigeErgebnisse"/> aus. Der Designer
+        /// verdrahtet den Handler zwangsläufig vorher — der Wächter stellt denselben
+        /// Zustand her.</para>
+        /// </summary>
+        private void SzenarienFuellen()
         {
-            this.lblVarianten = new Label();
-            this.lvVarianten = new ListView();
-            this.colArt = new ColumnHeader();
-            this.colBez = new ColumnHeader();
-            this.colName = new ColumnHeader();
-            this.colSim = new ColumnHeader();
-            this.lblSzenario = new Label();
-            this.cbSzenario = new ComboBox();
-            this.grid = new DataGridView();
-            this.lblParameter = new Label();
-            this.lblStatus = new Label();
-            this.progress = new ProgressBar();
-            this.btnTarif = new Button();
-            this.btnParameter = new Button();
-            this.btnVerlauf = new Button();
-            this.btnBerechnen = new Button();
-            this.btnSchliessen = new Button();
-            this.SuspendLayout();
-
-            // Variantenliste (oben)
-            this.lblVarianten.AutoSize = true;
-            this.lblVarianten.Location = new Point(12, 12);
-            this.lblVarianten.Text = "Vergleichsgruppe (Referenz: Stamm, fest gewählt):";
-
-            this.lvVarianten.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            this.lvVarianten.CheckBoxes = true;
-            this.lvVarianten.Columns.AddRange(new ColumnHeader[] { this.colArt, this.colBez, this.colName, this.colSim });
-            this.lvVarianten.FullRowSelect = true;
-            this.lvVarianten.HideSelection = false;
-            this.lvVarianten.Location = new Point(12, 32);
-            this.lvVarianten.MultiSelect = false;
-            this.lvVarianten.Size = new Size(876, 120);
-            this.lvVarianten.View = View.Details;
-            this.lvVarianten.ItemCheck += new ItemCheckEventHandler(this.lvVarianten_ItemCheck);
-
-            this.colArt.Text = "Art"; this.colArt.Width = 70;
-            this.colBez.Text = "Bezeichner"; this.colBez.Width = 180;
-            this.colName.Text = "Projektname"; this.colName.Width = 330;
-            this.colSim.Text = "Simulation"; this.colSim.Width = 130;
-
-            // Szenario-Umschalter
-            this.lblSzenario.AutoSize = true;
-            this.lblSzenario.Location = new Point(12, 164);
-            this.lblSzenario.Text = "Szenario:";
-
-            this.cbSzenario.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.cbSzenario.Location = new Point(78, 160);
-            this.cbSzenario.Width = 140;
-            this.cbSzenario.Items.AddRange(new object[]
+            _initialisiere = true;
+            try
             {
-                WirtschaftlichkeitSzenario.ERWARTET,
-                WirtschaftlichkeitSzenario.BEST,
-                WirtschaftlichkeitSzenario.WORST
-            });
-            this.cbSzenario.SelectedIndex = 0;
-            this.cbSzenario.SelectedIndexChanged += (s, e) => ZeigeErgebnisse();
-
-            // Ergebnis-Tabelle
-            this.grid.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            this.grid.AllowUserToAddRows = false;
-            this.grid.AllowUserToDeleteRows = false;
-            this.grid.AllowUserToResizeRows = false;
-            this.grid.ReadOnly = true;
-            this.grid.RowHeadersVisible = false;
-            this.grid.SelectionMode = DataGridViewSelectionMode.CellSelect;
-            this.grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            this.grid.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
-            this.grid.Location = new Point(12, 192);
-            this.grid.Size = new Size(876, 268);
-
-            // Parameter-Nachweiszeile
-            this.lblParameter.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            this.lblParameter.ForeColor = Color.DimGray;
-            this.lblParameter.Location = new Point(12, 468);
-            this.lblParameter.Size = new Size(876, 18);
-
-            // Status + Fortschritt
-            this.lblStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            this.lblStatus.ForeColor = Color.DimGray;
-            this.lblStatus.Location = new Point(12, 490);
-            this.lblStatus.Size = new Size(276, 18);
-
-            this.progress.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            this.progress.Location = new Point(12, 512);
-            this.progress.Size = new Size(276, 14);
-            this.progress.Visible = false;
-
-            // Schaltflächen
-            this.btnTarif.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            this.btnTarif.Location = new Point(304, 494);
-            this.btnTarif.Size = new Size(124, 30);
-            this.btnTarif.Text = "Tarifstruktur…";
-            this.btnTarif.Click += new EventHandler(this.btnTarif_Click);
-
-            this.btnParameter.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            this.btnParameter.Location = new Point(434, 494);
-            this.btnParameter.Size = new Size(110, 30);
-            this.btnParameter.Text = "Parameter…";
-            this.btnParameter.Click += new EventHandler(this.btnParameter_Click);
-
-            this.btnVerlauf.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            this.btnVerlauf.Location = new Point(550, 494);
-            this.btnVerlauf.Size = new Size(110, 30);
-            this.btnVerlauf.Text = "Verlauf…";
-            this.btnVerlauf.Click += new EventHandler(this.btnVerlauf_Click);
-
-            this.btnBerechnen.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            this.btnBerechnen.Location = new Point(666, 494);
-            this.btnBerechnen.Size = new Size(110, 30);
-            this.btnBerechnen.Text = "Berechnen";
-            this.btnBerechnen.Click += new EventHandler(this.btnBerechnen_Click);
-
-            this.btnSchliessen.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            this.btnSchliessen.Location = new Point(782, 494);
-            this.btnSchliessen.Size = new Size(106, 30);
-            this.btnSchliessen.Text = "Schließen";
-            this.btnSchliessen.Visible = false;   // im Reiter nur während eines Laufs (SetBusy)
-            this.btnSchliessen.Click += new EventHandler(this.btnSchliessen_Click);
-
-            // Control
-            this.AutoScaleMode = AutoScaleMode.Font;
-            this.Size = new Size(900, 536);
-            this.MinimumSize = new Size(640, 380);   // darunter kollabiert die Kennzahlentabelle
-            this.Font = new Font("Segoe UI", 9f);
-            this.Name = "UcWirtschaftlichkeit";
-            this.Controls.Add(this.lblVarianten);
-            this.Controls.Add(this.lvVarianten);
-            this.Controls.Add(this.lblSzenario);
-            this.Controls.Add(this.cbSzenario);
-            this.Controls.Add(this.grid);
-            this.Controls.Add(this.lblParameter);
-            this.Controls.Add(this.lblStatus);
-            this.Controls.Add(this.progress);
-            this.Controls.Add(this.btnTarif);
-            this.Controls.Add(this.btnParameter);
-            this.Controls.Add(this.btnVerlauf);
-            this.Controls.Add(this.btnBerechnen);
-            this.Controls.Add(this.btnSchliessen);
-            this.ResumeLayout(false);
-            this.PerformLayout();
+                cbSzenario.Items.AddRange(new object[]
+                {
+                    WirtschaftlichkeitSzenario.ERWARTET,
+                    WirtschaftlichkeitSzenario.BEST,
+                    WirtschaftlichkeitSzenario.WORST
+                });
+                cbSzenario.SelectedIndex = 0;
+            }
+            finally { _initialisiere = false; }
         }
 
         /// <summary>Umgebendes Formular als Dialog-Besitzer (im Reiter das Startformular).</summary>
@@ -362,6 +272,17 @@ namespace WindowsFormsApplication1
                 e.NewValue = CheckState.Checked;
                 Melde("Das Stammprojekt ist die Referenz und immer enthalten.");
             }
+        }
+
+        /// <summary>
+        /// Szenariowechsel — zeigt die Kennzahlen des gewählten Szenarios. Im Bestand ein
+        /// Lambda in <c>InitializeComponent()</c>; als benannte Methode, weil der
+        /// Designer-Parser Lambdas in <c>InitializeComponent()</c> nicht liest.
+        /// </summary>
+        private void cbSzenario_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_initialisiere) return;   // Vorbelegen aus SzenarienFuellen()
+            ZeigeErgebnisse();
         }
 
         private void btnTarif_Click(object sender, EventArgs e)

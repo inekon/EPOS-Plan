@@ -4399,6 +4399,119 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_BTN_VERGLEICH_ALT" xml:space="preserve">
     <value>Projektvergleich + Bericht (alt)</value>
   </data>
+  <data name="BK_BER_TITEL" xml:space="preserve">
+    <value>Bericht erstellen — Projekt: {0}</value>
+  </data>
+  <data name="BK_BER_LBL_VARIANTEN" xml:space="preserve">
+    <value>Varianten (Referenz: Stamm, fest gewählt):</value>
+  </data>
+  <data name="BK_BER_SP_SIMULATION" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="BK_BER_BTN_ALLE" xml:space="preserve">
+    <value>Alle</value>
+  </data>
+  <data name="BK_BER_BTN_KEINE" xml:space="preserve">
+    <value>Keine</value>
+  </data>
+  <data name="BK_BER_LBL_BAUSTEINE" xml:space="preserve">
+    <value>Berichtsbausteine:</value>
+  </data>
+  <data name="BK_BER_LBL_RECHNEN" xml:space="preserve">
+    <value>Jeder Bericht rechnet neu: alle gewählten Varianten werden simuliert und wirtschaftlich bewertet.</value>
+  </data>
+  <data name="BK_BER_LBL_AUSGABE" xml:space="preserve">
+    <value>Ausgabe:</value>
+  </data>
+  <data name="BK_BER_RB_WORD" xml:space="preserve">
+    <value>Word</value>
+  </data>
+  <data name="BK_BER_RB_EXCEL" xml:space="preserve">
+    <value>Excel</value>
+  </data>
+  <data name="BK_BER_RB_BEIDE" xml:space="preserve">
+    <value>Beide</value>
+  </data>
+  <data name="BK_BER_LBL_ZIEL" xml:space="preserve">
+    <value>Zielordner:</value>
+  </data>
+  <data name="BK_BER_BTN_DURCHSUCHEN" xml:space="preserve">
+    <value>Durchsuchen…</value>
+  </data>
+  <data name="BK_BER_BTN_ERSTELLEN" xml:space="preserve">
+    <value>Erstellen</value>
+  </data>
+  <data name="BK_BER_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="BK_BER_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="BK_BER_MSG_STAMM_REFERENZ" xml:space="preserve">
+    <value>Das Stammprojekt ist die Referenz und immer enthalten.</value>
+  </data>
+  <data name="BK_BER_MSG_WIRTSCHAFT_HINWEIS" xml:space="preserve">
+    <value>Wirtschaftlichkeit: wird für diesen Bericht neu berechnet (Kapitalwertmethode, alle Szenarien) — verlängert den Lauf.</value>
+  </data>
+  <data name="BK_BER_DLG_ZIELORDNER" xml:space="preserve">
+    <value>Zielordner für den Bericht wählen</value>
+  </data>
+  <data name="BK_BER_DLG_FILTER_WORD" xml:space="preserve">
+    <value>Word-Dokument (*.docx)|*.docx</value>
+  </data>
+  <data name="BK_BER_STATUS_ERSTELLT" xml:space="preserve">
+    <value>Bericht erstellt: {0}</value>
+  </data>
+  <data name="BK_BER_STATUS_WORD" xml:space="preserve">
+    <value>Erzeuge Word-Bericht…</value>
+  </data>
+  <data name="BK_BER_STATUS_EXCEL" xml:space="preserve">
+    <value>Erzeuge Excel-Bericht…</value>
+  </data>
+  <data name="BK_BER_STATUS_ABGEBROCHEN" xml:space="preserve">
+    <value>Vorgang abgebrochen.</value>
+  </data>
+  <data name="BK_BER_STATUS_FEHLER" xml:space="preserve">
+    <value>Fehler beim Erstellen des Berichts.</value>
+  </data>
+  <data name="BK_BER_MSG_HINWEISE" xml:space="preserve">
+    <value>Hinweise:</value>
+  </data>
+  <data name="BK_BER_MSG_VERGLEICH_FERTIG" xml:space="preserve">
+    <value>Bericht wurde erstellt (alle Projekte neu simuliert).</value>
+  </data>
+  <data name="BK_BER_FRAGE_OEFFNEN" xml:space="preserve">
+    <value>Jetzt öffnen?</value>
+  </data>
+  <data name="BK_BER_MSG_ERSTELLT_KOPF" xml:space="preserve">
+    <value>Bericht erstellt:</value>
+  </data>
+  <data name="BK_BER_FRAGE_OEFFNEN_WORD" xml:space="preserve">
+    <value>Word-Bericht jetzt öffnen?</value>
+  </data>
+  <data name="BK_BER_FRAGE_OEFFNEN_BERICHT" xml:space="preserve">
+    <value>Bericht jetzt öffnen?</value>
+  </data>
+  <data name="BK_BER_FRAGE_START" xml:space="preserve">
+    <value>Für diesen Bericht werden {0} Projekt(e) neu simuliert und anschließend wirtschaftlich bewertet.
+
+Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
+  </data>
+  <data name="BK_BER_TITEL_ERSTELLEN" xml:space="preserve">
+    <value>Bericht erstellen</value>
+  </data>
+  <data name="BK_BER_TITEL_VERGLEICH" xml:space="preserve">
+    <value>Projektvergleich</value>
+  </data>
+  <data name="BK_BER_TITEL_FEHLER" xml:space="preserve">
+    <value>Fehler</value>
+  </data>
+  <data name="BK_BER_TITEL_FEHLER_VERGLEICH" xml:space="preserve">
+    <value>Fehler beim Erstellen des Berichts</value>
+  </data>
+  <data name="BK_BER_MSG_LAUFFEHLER" xml:space="preserve">
+    <value>Fehler bei der Berichtserstellung: {0}</value>
+  </data>
   <data name="BK_UEB_TITEL_FELD" xml:space="preserve">
     <value>Merkmal übernehmen</value>
   </data>
@@ -5690,6 +5803,48 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="KI_AKT_AKTION_WAEHLEN" xml:space="preserve">
     <value>Bitte zuerst eine Aktion wählen.</value>
   </data>
+  <data name="KI_EINST_TITEL" xml:space="preserve">
+    <value>KI-Assistent - Einstellungen</value>
+  </data>
+  <data name="KI_EINST_LBL_SCHLUESSEL" xml:space="preserve">
+    <value>API-Schlüssel (Google AI Studio):</value>
+  </data>
+  <data name="KI_EINST_LBL_TAGESLIMIT" xml:space="preserve">
+    <value>Tageslimit je Arbeitsplatz:</value>
+  </data>
+  <data name="KI_EINST_LIMIT_FEST" xml:space="preserve">
+    <value>{0} (fest vorgegeben)</value>
+  </data>
+  <data name="KI_EINST_TIP_TAGESLIMIT" xml:space="preserve">
+    <value>Fest im Programm hinterlegt und nicht änderbar - weder hier noch über eine Einstellung. Eine Änderung erfordert einen neuen Programmstand.</value>
+  </data>
+  <data name="KI_EINST_BTN_MODELL" xml:space="preserve">
+    <value>Modell neu erkennen</value>
+  </data>
+  <data name="KI_EINST_HINWEIS_MODELL" xml:space="preserve">
+    <value>Modell: {0} (kostengünstige Klasse).</value>
+  </data>
+  <data name="KI_EINST_HINWEIS_MODELL_NEU" xml:space="preserve">
+    <value>Modell: {0} (Vorgabe - wird beim nächsten Aufruf automatisch geprüft und bei Bedarf durch ein verfügbares ersetzt).</value>
+  </data>
+  <data name="KI_EINST_HINWEIS_DATEN" xml:space="preserve">
+    <value>Es werden ausschließlich Hilfetexte, Ihre Frage und der Bereichsname übertragen - keine Projekt-, Kunden- oder Simulationsdaten.</value>
+  </data>
+  <data name="KI_EINST_HINWEIS_KONTINGENT" xml:space="preserve">
+    <value>Hinweis: Im kostenlosen Kontingent verwendet der Anbieter die Inhalte zur Produktverbesserung. Für den produktiven Einsatz einen kostenpflichtigen Zugang nutzen.</value>
+  </data>
+  <data name="KI_EINST_BTN_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="KI_EINST_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="KI_EINST_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Einstellungen gespeichert - der Assistent ist einsatzbereit.</value>
+  </data>
+  <data name="KI_EINST_MSG_GESPEICHERT_OHNE_SCHLUESSEL" xml:space="preserve">
+    <value>Einstellungen gespeichert - ohne Schlüssel bleibt nur die lokale Suche aktiv.</value>
+  </data>
   <data name="KI_KERN_WIRKUNG_LESEN" xml:space="preserve">
     <value>Diese Aktion liest nur; sie ändert nichts.</value>
   </data>
@@ -6523,5 +6678,102 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   </data>
   <data name="ADM_KATALOG_GEBAEUDETYP" xml:space="preserve">
     <value>Gebäudetypen (Tagesverläufe)</value>
+  </data>
+  <data name="LIZ_TITEL" xml:space="preserve">
+    <value>Lizenz</value>
+  </data>
+  <data name="LIZ_GRP_STATUS" xml:space="preserve">
+    <value>Lizenzstatus auf diesem Arbeitsplatz</value>
+  </data>
+  <data name="LIZ_LINK_PORTAL" xml:space="preserve">
+    <value>Lizenzportal öffnen (Benutzer und Geräte verwalten, Schlüssel neu erzeugen)</value>
+  </data>
+  <data name="LIZ_DETAIL" xml:space="preserve">
+    <value>Lizenz {0} · {1}
+Benutzer: {2} · Gerät: {3}</value>
+  </data>
+  <data name="LIZ_DETAIL_KEINE" xml:space="preserve">
+    <value>Auf diesem Arbeitsplatz ist keine Lizenz hinterlegt.</value>
+  </data>
+  <data name="LIZ_GRP_AKTIVIEREN" xml:space="preserve">
+    <value>Aktivieren</value>
+  </data>
+  <data name="LIZ_LBL_SCHLUESSEL" xml:space="preserve">
+    <value>Lizenzschlüssel:</value>
+  </data>
+  <data name="LIZ_BTN_LIC" xml:space="preserve">
+    <value>Lizenzdatei (.lic)…</value>
+  </data>
+  <data name="LIZ_LBL_EMAIL" xml:space="preserve">
+    <value>E-Mail (Benutzer):</value>
+  </data>
+  <data name="LIZ_BTN_AKTIVIEREN" xml:space="preserve">
+    <value>Jetzt aktivieren</value>
+  </data>
+  <data name="LIZ_HINWEIS_AKTIVIERUNG" xml:space="preserve">
+    <value>Die Aktivierung benötigt einmalig eine Internetverbindung. Übertragen werden nur
+Lizenzschlüssel, E-Mail und ein anonymer Geräte-Hash — keine Projekt- oder Kundendaten.</value>
+  </data>
+  <data name="LIZ_GRP_AKTIONEN" xml:space="preserve">
+    <value>Weitere Aktionen</value>
+  </data>
+  <data name="LIZ_BTN_TRIAL" xml:space="preserve">
+    <value>Testversion anfordern…</value>
+  </data>
+  <data name="LIZ_BTN_FREIGEBEN" xml:space="preserve">
+    <value>Gerät von der Lizenz lösen</value>
+  </data>
+  <data name="LIZ_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="LIZ_HINWEIS_LIC_GELADEN" xml:space="preserve">
+    <value>Lizenzdatei geladen — bitte mit "Jetzt aktivieren" abschließen.</value>
+  </data>
+  <data name="LIZ_STATUS_AKTIVIERUNG" xml:space="preserve">
+    <value>Aktivierung läuft…</value>
+  </data>
+  <data name="LIZ_STATUS_TRIAL" xml:space="preserve">
+    <value>Testversion wird angefordert…</value>
+  </data>
+  <data name="LIZ_STATUS_FREIGABE" xml:space="preserve">
+    <value>Gerät wird freigegeben…</value>
+  </data>
+  <data name="LIZ_DLG_LIC_TITEL" xml:space="preserve">
+    <value>Lizenzdatei laden</value>
+  </data>
+  <data name="LIZ_DLG_LIC_FILTER" xml:space="preserve">
+    <value>EPOS-Plan Lizenzdatei (*.lic)|*.lic|Alle Dateien (*.*)|*.*</value>
+  </data>
+  <data name="LIZ_MSG_EINGABE_FEHLT" xml:space="preserve">
+    <value>Bitte Lizenzschlüssel und E-Mail-Adresse angeben.</value>
+  </data>
+  <data name="LIZ_MSG_EMAIL_UNGUELTIG" xml:space="preserve">
+    <value>Die E-Mail-Adresse "{0}" ist ungültig — bitte prüfen (Beispiel: name@firma.de).</value>
+  </data>
+  <data name="LIZ_MSG_AKTIVIERT" xml:space="preserve">
+    <value>Die Lizenz wurde erfolgreich aktiviert.</value>
+  </data>
+  <data name="LIZ_MSG_AKTIVIERUNG_FEHLER" xml:space="preserve">
+    <value>Die Aktivierung ist fehlgeschlagen.</value>
+  </data>
+  <data name="LIZ_MSG_LIC_OHNE_SCHLUESSEL" xml:space="preserve">
+    <value>In der gewählten Datei wurde kein gültiger Lizenzschlüssel gefunden.</value>
+  </data>
+  <data name="LIZ_MSG_TRIAL_EMAIL" xml:space="preserve">
+    <value>Bitte oben eine gültige E-Mail-Adresse eintragen (Beispiel: name@firma.de) — der Test-Lizenzschlüssel wird dorthin gesendet.</value>
+  </data>
+  <data name="LIZ_MSG_TRIAL_OK" xml:space="preserve">
+    <value>Der Test-Lizenzschlüssel wurde per E-Mail versandt.</value>
+  </data>
+  <data name="LIZ_MSG_TRIAL_FEHLER" xml:space="preserve">
+    <value>Die Anforderung ist fehlgeschlagen.</value>
+  </data>
+  <data name="LIZ_MSG_FREIGEBEN_FRAGE" xml:space="preserve">
+    <value>Dieses Gerät von der Lizenz lösen?
+
+Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuaktivierung nötig.</value>
+  </data>
+  <data name="LIZ_MSG_SERVER_NICHT_ERREICHBAR" xml:space="preserve">
+    <value>Der Lizenzserver ist zurzeit nicht erreichbar — bitte später erneut versuchen.</value>
   </data>
 </root>

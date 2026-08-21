@@ -26,7 +26,15 @@ namespace WindowsFormsApplication1
     /// <see cref="MerkmalUebernahmeCtrl"/> und <see cref="KomponentenUebernahmeCtrl"/>.
     /// </para>
     /// </summary>
-    public class Form_BkUebernahme : Form
+    /// <remarks>
+    /// Die Oberfläche steht in <c>Form_BkUebernahme.Designer.cs</c>, weiterhin ohne eigene
+    /// <c>.resx</c>: Alle sichtbaren Texte kommen aus <c>MyResource</c> und werden in
+    /// <see cref="TexteSetzen"/> gesetzt; im Designer stehen nur Platzhalter. Was von den
+    /// Konstruktorparametern abhängt — die Beschriftungen aus <c>titel</c>,
+    /// <c>gegenstand</c> und <c>zielName</c> sowie die beiden Erscheinungsformen des
+    /// Dialogs (Wertgegenüberstellung bzw. Klartext) — wird im Konstruktor gesetzt.
+    /// </remarks>
+    public partial class Form_BkUebernahme : Form
     {
         /// <summary>Ein wählbares Quellprojekt (Stamm oder Variante derselben Gruppe).</summary>
         public class Quelle
@@ -59,14 +67,6 @@ namespace WindowsFormsApplication1
         private readonly bool _mitKlartext;
         private bool _laedt;
 
-        private TableLayoutPanel tl;
-        private Label lblGegenstand, lblQuelle, lblZiel, lblZielWert, lblQuelleWert;
-        private Label lblWertQuelleTitel, lblWertZielTitel, lblKomponenten, lblGrund;
-        private ComboBox cbQuelle;
-        private TextBox txtKlartext;
-        private FlowLayoutPanel pnlKnoepfe;
-        private Button btnOk, btnAbbrechen;
-
         /// <param name="titel">Fenstertitel (BK_UEB_TITEL_* — Anzeigetext).</param>
         /// <param name="gegenstand">Was übernommen wird: „Gewerk · Merkmal" bzw. „Gewerk".</param>
         /// <param name="zielName">Anzeigename des Zielprojekts.</param>
@@ -80,7 +80,30 @@ namespace WindowsFormsApplication1
             _lader = lader;
             _mitKlartext = mitKlartext;
 
+            // Der Designer setzt AutoScaleMode bewusst auf None und lässt
+            // AutoScaleDimensions weg: Die Anwendung läuft DpiUnaware (app.manifest,
+            // Program.SetHighDpiMode), und der bisherige Aufbau setzte AutoScaleMode
+            // überhaupt nicht — es fand also ebenfalls keine Skalierung statt. None
+            // hält genau dieses Verhalten fest.
             InitializeComponent();
+            TexteSetzen();
+
+            // Im Klartext-Modus tragen die Wertzeilen nichts bei — sie bleiben leer und
+            // werden ausgeblendet, damit der Dialog kompakt bleibt.
+            this.txtKlartext.Visible = _mitKlartext;
+            if (_mitKlartext)
+            {
+                this.lblWertQuelleTitel.Visible = false;
+                this.lblQuelleWert.Visible = false;
+                this.lblWertZielTitel.Visible = false;
+                this.lblZielWert.Visible = false;
+            }
+            else
+            {
+                // Der Designer hält die hohe Fassung (Klartextfeld) fest; ohne Klartext
+                // fallen die Zusammenfassung und ihr Platz weg.
+                this.ClientSize = new Size(520, 250);
+            }
 
             this.Text = titel ?? "";
             this.lblGegenstand.Text = gegenstand ?? "";
@@ -103,160 +126,20 @@ namespace WindowsFormsApplication1
             get { Quelle q = cbQuelle.SelectedItem as Quelle; return q != null ? q.Id : -1; }
         }
 
-        // ------------------------------------------------------------------- Aufbau
+        // ------------------------------------------------------------------- Texte
 
-        private void InitializeComponent()
+        /// <summary>
+        /// Setzt die festen sichtbaren Texte aus <c>MyResource</c>. Läuft direkt nach
+        /// <c>InitializeComponent()</c> und ersetzt die dortigen Platzhalter.
+        /// </summary>
+        private void TexteSetzen()
         {
-            this.tl = new TableLayoutPanel();
-            this.lblGegenstand = new Label();
-            this.lblQuelle = new Label();
-            this.cbQuelle = new ComboBox();
-            this.lblWertQuelleTitel = new Label();
-            this.lblQuelleWert = new Label();
-            this.lblZiel = new Label();
-            this.lblWertZielTitel = new Label();
-            this.lblZielWert = new Label();
-            this.lblKomponenten = new Label();
-            this.txtKlartext = new TextBox();
-            this.lblGrund = new Label();
-            this.pnlKnoepfe = new FlowLayoutPanel();
-            this.btnOk = new Button();
-            this.btnAbbrechen = new Button();
-            this.SuspendLayout();
-
-            this.lblGegenstand.Dock = DockStyle.Fill;
-            this.lblGegenstand.AutoSize = false;
-            this.lblGegenstand.Font = new Font("Segoe UI Semibold", 10f, FontStyle.Bold);
-            this.lblGegenstand.ForeColor = Color.FromArgb(0x1F, 0x4E, 0x79);
-            this.lblGegenstand.Margin = new Padding(0, 0, 0, 8);
-
-            this.lblQuelle.Dock = DockStyle.Fill;
-            this.lblQuelle.TextAlign = ContentAlignment.MiddleLeft;
-            this.lblQuelle.Text = MyResource.Resource.BK_UEB_LBL_QUELLE;
-
-            this.cbQuelle.Dock = DockStyle.Fill;
-            this.cbQuelle.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.cbQuelle.Margin = new Padding(0, 2, 0, 6);
-            this.cbQuelle.SelectedIndexChanged += new EventHandler(this.cbQuelle_SelectedIndexChanged);
-
-            this.lblWertQuelleTitel.Dock = DockStyle.Fill;
-            this.lblWertQuelleTitel.TextAlign = ContentAlignment.MiddleLeft;
-            this.lblWertQuelleTitel.Text = MyResource.Resource.BK_UEB_LBL_WERT_QUELLE;
-
-            this.lblQuelleWert.Dock = DockStyle.Fill;
-            this.lblQuelleWert.TextAlign = ContentAlignment.MiddleLeft;
-            this.lblQuelleWert.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
-
-            this.lblZiel.Dock = DockStyle.Fill;
-            this.lblZiel.TextAlign = ContentAlignment.MiddleLeft;
-            this.lblZiel.AutoEllipsis = true;
-
-            this.lblWertZielTitel.Dock = DockStyle.Fill;
-            this.lblWertZielTitel.TextAlign = ContentAlignment.MiddleLeft;
-            this.lblWertZielTitel.Text = MyResource.Resource.BK_UEB_LBL_WERT_ZIEL;
-
-            this.lblZielWert.Dock = DockStyle.Fill;
-            this.lblZielWert.TextAlign = ContentAlignment.MiddleLeft;
-
-            this.lblKomponenten.Dock = DockStyle.Fill;
-            this.lblKomponenten.TextAlign = ContentAlignment.MiddleLeft;
-            this.lblKomponenten.ForeColor = Color.DimGray;
-            this.lblKomponenten.AutoEllipsis = true;
-
-            this.txtKlartext.Dock = DockStyle.Fill;
-            this.txtKlartext.Multiline = true;
-            this.txtKlartext.ReadOnly = true;
-            this.txtKlartext.ScrollBars = ScrollBars.Vertical;
-            this.txtKlartext.BackColor = SystemColors.Window;
-            this.txtKlartext.Font = new Font("Segoe UI", 9f);
-            this.txtKlartext.Visible = _mitKlartext;
-
-            this.lblGrund.Dock = DockStyle.Fill;
-            this.lblGrund.TextAlign = ContentAlignment.MiddleLeft;
-            this.lblGrund.ForeColor = Color.Firebrick;
-            this.lblGrund.AutoEllipsis = true;
-
-            this.btnOk.Text = MyResource.Resource.BK_UEB_BTN_OK;
-            this.btnOk.DialogResult = DialogResult.OK;
-            this.btnOk.AutoSize = true;
-            this.btnOk.Margin = new Padding(6, 0, 0, 0);
-            this.btnOk.MinimumSize = new Size(110, 28);
-
-            this.btnAbbrechen.Text = MyResource.Resource.BK_UEB_BTN_ABBRUCH;
-            this.btnAbbrechen.DialogResult = DialogResult.Cancel;
-            this.btnAbbrechen.AutoSize = true;
-            this.btnAbbrechen.Margin = new Padding(6, 0, 0, 0);
-            this.btnAbbrechen.MinimumSize = new Size(110, 28);
-
-            this.pnlKnoepfe.Dock = DockStyle.Fill;
-            this.pnlKnoepfe.FlowDirection = FlowDirection.RightToLeft;
-            this.pnlKnoepfe.Margin = new Padding(0, 8, 0, 0);
-            this.pnlKnoepfe.Controls.Add(this.btnAbbrechen);
-            this.pnlKnoepfe.Controls.Add(this.btnOk);
-
-            // Raster: Beschriftung links, Wert rechts.
-            this.tl.Dock = DockStyle.Fill;
-            this.tl.ColumnCount = 2;
-            this.tl.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 132f));
-            this.tl.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
-            this.tl.RowCount = 9;
-            this.tl.RowStyles.Add(new RowStyle(SizeType.AutoSize));                 // 0 Gegenstand
-            this.tl.RowStyles.Add(new RowStyle(SizeType.Absolute, 30f));            // 1 Quelle
-            this.tl.RowStyles.Add(new RowStyle(SizeType.Absolute, 24f));            // 2 Quellwert
-            this.tl.RowStyles.Add(new RowStyle(SizeType.Absolute, 24f));            // 3 Ziel
-            this.tl.RowStyles.Add(new RowStyle(SizeType.Absolute, 24f));            // 4 Zielwert
-            this.tl.RowStyles.Add(new RowStyle(SizeType.Absolute, 22f));            // 5 Komponenten
-            this.tl.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));            // 6 Klartext
-            this.tl.RowStyles.Add(new RowStyle(SizeType.Absolute, 24f));            // 7 Grund
-            this.tl.RowStyles.Add(new RowStyle(SizeType.Absolute, 40f));            // 8 Knöpfe
-            this.tl.Padding = new Padding(12, 10, 12, 10);
-
-            this.tl.Controls.Add(this.lblGegenstand, 0, 0);
-            this.tl.SetColumnSpan(this.lblGegenstand, 2);
-            this.tl.Controls.Add(this.lblQuelle, 0, 1);
-            this.tl.Controls.Add(this.cbQuelle, 1, 1);
-            this.tl.Controls.Add(this.lblWertQuelleTitel, 0, 2);
-            this.tl.Controls.Add(this.lblQuelleWert, 1, 2);
-            this.tl.Controls.Add(new Label
-            {
-                Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Text = MyResource.Resource.BK_UEB_LBL_ZIEL
-            }, 0, 3);
-            this.tl.Controls.Add(this.lblZiel, 1, 3);
-            this.tl.Controls.Add(this.lblWertZielTitel, 0, 4);
-            this.tl.Controls.Add(this.lblZielWert, 1, 4);
-            this.tl.Controls.Add(this.lblKomponenten, 0, 5);
-            this.tl.SetColumnSpan(this.lblKomponenten, 2);
-            this.tl.Controls.Add(this.txtKlartext, 0, 6);
-            this.tl.SetColumnSpan(this.txtKlartext, 2);
-            this.tl.Controls.Add(this.lblGrund, 0, 7);
-            this.tl.SetColumnSpan(this.lblGrund, 2);
-            this.tl.Controls.Add(this.pnlKnoepfe, 0, 8);
-            this.tl.SetColumnSpan(this.pnlKnoepfe, 2);
-
-            // Im Klartext-Modus tragen die Wertzeilen nichts bei — sie bleiben leer und
-            // werden ausgeblendet, damit der Dialog kompakt bleibt.
-            if (_mitKlartext)
-            {
-                this.lblWertQuelleTitel.Visible = false;
-                this.lblQuelleWert.Visible = false;
-                this.lblWertZielTitel.Visible = false;
-                this.lblZielWert.Visible = false;
-            }
-
-            this.Controls.Add(this.tl);
-            this.AcceptButton = this.btnOk;
-            this.CancelButton = this.btnAbbrechen;
-            this.Font = new Font("Segoe UI", 9f);
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.ShowInTaskbar = false;
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.Name = "Form_BkUebernahme";
-            this.ClientSize = new Size(520, _mitKlartext ? 380 : 250);
-            this.ResumeLayout(false);
+            lblQuelle.Text = MyResource.Resource.BK_UEB_LBL_QUELLE;
+            lblWertQuelleTitel.Text = MyResource.Resource.BK_UEB_LBL_WERT_QUELLE;
+            lblZielTitel.Text = MyResource.Resource.BK_UEB_LBL_ZIEL;
+            lblWertZielTitel.Text = MyResource.Resource.BK_UEB_LBL_WERT_ZIEL;
+            btnOk.Text = MyResource.Resource.BK_UEB_BTN_OK;
+            btnAbbrechen.Text = MyResource.Resource.BK_UEB_BTN_ABBRUCH;
         }
 
         // ---------------------------------------------------------------- Ereignisse

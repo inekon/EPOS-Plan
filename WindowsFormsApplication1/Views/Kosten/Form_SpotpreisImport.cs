@@ -26,21 +26,17 @@ namespace WindowsFormsApplication1
     /// Schaltjahrbehandlung nicht an dieser Maske.
     /// </para>
     /// <para>
-    /// Vollständig programmatisch, ohne Designer und ohne eigene <c>.resx</c>.
+    /// Die Oberfläche steht in <c>Form_SpotpreisImport.Designer.cs</c>, weiterhin ohne
+    /// eigene <c>.resx</c>: Alle sichtbaren Texte kommen aus <c>MyResource</c> und
+    /// werden in <see cref="TexteSetzen"/> gesetzt; im Designer stehen dieselben Texte
+    /// nur als Entwurfsbild.
     /// </para>
     /// </remarks>
-    public class Form_SpotpreisImport : Form
+    public partial class Form_SpotpreisImport : Form
     {
         private readonly int _idProjekt;
         private readonly SpotpreisImportCtrl _ctrl = new SpotpreisImportCtrl();
         private SpotpreisImportCtrl.Lauf _lauf;
-
-        private TextBox _tbPfad;
-        private TextBox _tbBezeichner;
-        private CheckBox _chkStamm;
-        private TextBox _tbProtokoll;
-        private Button _btnUebernehmen;
-        private Label _lblStatus;
 
         /// <summary>Die zuletzt angelegte <c>Tab_Preisreihe.ID</c>; 0, wenn nichts gespeichert wurde.</summary>
         public int AngelegteReiheId { get; private set; }
@@ -49,129 +45,76 @@ namespace WindowsFormsApplication1
         {
             _idProjekt = idProjekt;
             PreisreiheCtrl.StelleTabellenSicher();
-            BaueOberflaeche();
+
+            // Der Designer setzt AutoScaleMode bewusst auf None und lässt
+            // AutoScaleDimensions weg: Die Maske ist ein FixedDialog mit fest
+            // gerechneten Pixelpositionen, und die Anwendung läuft DpiUnaware
+            // (app.manifest, Program.SetHighDpiMode). Vor der Designer-Umstellung
+            // wurde AutoScaleMode überhaupt nicht gesetzt, es fand also ebenfalls
+            // keine Skalierung statt — None hält genau dieses Verhalten fest.
+            InitializeComponent();
+            TexteSetzen();
         }
 
         // ==================================================================
-        // Oberfläche
+        // Oberfläche — Begründungen zur Geometrie
+        // ==================================================================
+        //
+        // Die Steuerelemente stehen seit der Designer-Umstellung in
+        // Form_SpotpreisImport.Designer.cs. Designer-Code trägt keine Kommentare;
+        // die Pixelentscheidungen stehen deshalb hier.
+        //
+        // Design-Politur 21.08.2026 — Echttexte im Designer, geprüfte Abstände,
+        // einheitliche Fußknöpfe. Alle Breiten mit TextRenderer gemessen (Segoe UI 9 pt,
+        // deutsch und englisch); die Maske skaliert nicht (AutoScaleMode.None,
+        // DpiUnaware).
+        //
+        // * Jede Beschriftung trägt im Designer jetzt den deutschen Echttext aus
+        //   MyResource statt des Feldnamens — der Anwender sieht im VS-Designer das
+        //   Bild der laufenden Maske. Die Anzeige selbst kommt unverändert aus
+        //   TexteSetzen(); die Designer-Texte werden im Betrieb sofort überschrieben.
+        //   _lblStatus bleibt bewusst LEER: Diese Zeile ist auch zur Laufzeit leer,
+        //   bis eine Datei geprüft wurde.
+        // * Fußknöpfe einheitlich 30 px hoch (vorher 23): _btnUebernehmen 120 x 30
+        //   (468/486), _btnSchliessen 110 x 30 (598/486). Die rechte Kante der Gruppe
+        //   bleibt bei x = 708 — dieselben 12 px Rand wie links; zwischen den Knöpfen
+        //   liegen 10 px, darüber 8 px zur Unterkante von _lblStatus (478).
+        // * ClientSize 720 x 520 -> 720 x 528: Die 7 px höheren Knöpfe ließen unten nur
+        //   noch 6 px Luft. Mit 528 bleiben 12 px, passend zum seitlichen Rand; die
+        //   Breite ist unverändert.
+        // * _btnWaehlen 1 px tiefer (600/62 -> 600/63): gleiche Oberkante wie das
+        //   Pfadfeld _tbPfad (110/63), beide 23 px hoch. Die Breite 108 bleibt — der
+        //   deutsche Text misst 93 px, der englische 69 px.
+        // * Gemessen und deshalb NICHT geändert: _lblInfo (696 x 46) trägt den
+        //   Hinweistext in beiden Sprachen mit zwei Zeilen (deutsch 671 x 30, englisch
+        //   653 x 30). _chkStamm (AutoSize ab x = 430) endet bei rund 654 und bleibt
+        //   damit im Formular. _lblStatus (480 x 20) fasst die längste Statusmeldung
+        //   (fett gemessen 277 px).
+        //
+        // Zwei Fachknöpfe statt OK/Abbrechen: „Uebernehmen" ist keine Bestätigung,
+        // sondern der Schreibvorgang selbst (8.760 Zeilen) und erst nach erfolgreicher
+        // Prüfung freigeschaltet — eine Beschriftung „OK" würde genau das verdecken.
+        // Der zweite Knopf trägt bereits SIM_BTN_ABBRECHEN und ist CancelButton.
+
+        // ==================================================================
+        // Texte
         // ==================================================================
 
-        private void BaueOberflaeche()
+        /// <summary>
+        /// Setzt alle sichtbaren Texte aus <c>MyResource</c>. Läuft direkt nach
+        /// <c>InitializeComponent()</c> und ersetzt die dortigen Entwurfstexte.
+        /// </summary>
+        private void TexteSetzen()
         {
             this.Text = MyResource.Resource.PREIS_IMPORT_TITEL;
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.MinimizeBox = false;
-            this.MaximizeBox = false;
-            this.ClientSize = new Size(720, 520);
-
-            this.Controls.Add(new Label
-            {
-                Text = MyResource.Resource.PREIS_IMPORT_INFO,
-                Location = new Point(12, 10),
-                Size = new Size(696, 46),
-                AutoSize = false
-            });
-
-            // --- Datei ---
-            this.Controls.Add(new Label
-            {
-                Text = MyResource.Resource.PREIS_IMPORT_LABEL_DATEI,
-                Location = new Point(12, 66),
-                AutoSize = true
-            });
-
-            _tbPfad = new TextBox
-            {
-                Location = new Point(110, 63),
-                Width = 480,
-                ReadOnly = true,
-                BackColor = SystemColors.Control
-            };
-            this.Controls.Add(_tbPfad);
-
-            Button btnWaehlen = new Button
-            {
-                Text = MyResource.Resource.PREIS_IMPORT_BTN_DATEI,
-                Location = new Point(600, 62),
-                Width = 108
-            };
-            btnWaehlen.Click += btnWaehlen_Click;
-            this.Controls.Add(btnWaehlen);
-
-            // --- Bezeichner und Ablageort ---
-            this.Controls.Add(new Label
-            {
-                Text = MyResource.Resource.PREIS_IMPORT_LABEL_BEZEICHNER,
-                Location = new Point(12, 98),
-                AutoSize = true
-            });
-
-            _tbBezeichner = new TextBox
-            {
-                Location = new Point(110, 95),
-                Width = 300
-            };
-            this.Controls.Add(_tbBezeichner);
-
-            _chkStamm = new CheckBox
-            {
-                Text = MyResource.Resource.PREIS_IMPORT_CHK_STAMM,
-                Location = new Point(430, 96),
-                AutoSize = true,
-                Checked = true
-            };
-            this.Controls.Add(_chkStamm);
-
-            // --- Protokoll ---
-            this.Controls.Add(new Label
-            {
-                Text = MyResource.Resource.PREIS_IMPORT_LABEL_PROTOKOLL,
-                Location = new Point(12, 128),
-                AutoSize = true
-            });
-
-            _tbProtokoll = new TextBox
-            {
-                Location = new Point(12, 150),
-                Size = new Size(696, 300),
-                Multiline = true,
-                ReadOnly = true,
-                ScrollBars = ScrollBars.Vertical,
-                BackColor = SystemColors.Window,
-                Font = new Font("Consolas", 9f, FontStyle.Regular)
-            };
-            this.Controls.Add(_tbProtokoll);
-
-            _lblStatus = new Label
-            {
-                Location = new Point(12, 458),
-                Size = new Size(480, 20),
-                Font = new Font("Segoe UI", 9f, FontStyle.Bold)
-            };
-            this.Controls.Add(_lblStatus);
-
-            // --- Knöpfe ---
-            _btnUebernehmen = new Button
-            {
-                Text = MyResource.Resource.PREIS_IMPORT_BTN_UEBERNEHMEN,
-                Location = new Point(this.ClientSize.Width - 230, 484),
-                Width = 120,
-                Enabled = false
-            };
-            _btnUebernehmen.Click += btnUebernehmen_Click;
-
-            Button btnSchliessen = new Button
-            {
-                Text = MyResource.Resource.SIM_BTN_ABBRECHEN,
-                DialogResult = DialogResult.Cancel,
-                Location = new Point(this.ClientSize.Width - 100, 484),
-                Width = 88
-            };
-
-            this.Controls.Add(_btnUebernehmen);
-            this.Controls.Add(btnSchliessen);
-            this.CancelButton = btnSchliessen;
+            _lblInfo.Text = MyResource.Resource.PREIS_IMPORT_INFO;
+            _lblDatei.Text = MyResource.Resource.PREIS_IMPORT_LABEL_DATEI;
+            _btnWaehlen.Text = MyResource.Resource.PREIS_IMPORT_BTN_DATEI;
+            _lblBezeichner.Text = MyResource.Resource.PREIS_IMPORT_LABEL_BEZEICHNER;
+            _chkStamm.Text = MyResource.Resource.PREIS_IMPORT_CHK_STAMM;
+            _lblProtokoll.Text = MyResource.Resource.PREIS_IMPORT_LABEL_PROTOKOLL;
+            _btnUebernehmen.Text = MyResource.Resource.PREIS_IMPORT_BTN_UEBERNEHMEN;
+            _btnSchliessen.Text = MyResource.Resource.SIM_BTN_ABBRECHEN;
         }
 
         // ==================================================================

@@ -1,74 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Globalization;
 using System.Windows.Forms;
 using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
-    /// <summary>
-    /// Uebersetzt die sprachneutralen Protokollschluessel der Engine
-    /// (<see cref="PruefMeldung"/>) in Anzeigetexte. Drei-Schichten-Regel: die
-    /// Engine liefert Schluessel und Werte, der Text kommt ausschliesslich aus
-    /// <c>MyResource</c>.
-    /// </summary>
-    public static class GanglinienProtokollText
-    {
-        /// <summary>
-        /// Anzeigetext einer Meldung. Fehlt der Schluessel im Katalog, wird die
-        /// sprachneutrale Kurzfassung angezeigt - besser als ein leeres Feld.
-        /// </summary>
-        /// <param name="m">Meldung.</param>
-        public static string Text(PruefMeldung m)
-        {
-            if (m == null) return "";
-
-            string vorlage = null;
-            try
-            {
-                vorlage = MyResource.Resource.ResourceManager.GetString(m.Schluessel, MyResource.Resource.Culture);
-            }
-            catch (Exception) { }
-
-            if (string.IsNullOrEmpty(vorlage)) return m.ToString();
-            if (m.Werte.Length == 0) return vorlage;
-
-            try
-            {
-                return string.Format(CultureInfo.CurrentCulture, vorlage, m.Werte);
-            }
-            catch (FormatException)
-            {
-                return vorlage + " (" + string.Join("; ", m.Werte) + ")";
-            }
-        }
-
-        /// <summary>Anzeigetext einer Pruefstufe.</summary>
-        /// <param name="stufe">Stufe.</param>
-        public static string StufeText(PruefStufe stufe)
-        {
-            switch (stufe)
-            {
-                case PruefStufe.Fehler: return MyResource.Resource.IMPORT_STUFE_FEHLER;
-                case PruefStufe.Warnung: return MyResource.Resource.IMPORT_STUFE_WARNUNG;
-                default: return MyResource.Resource.IMPORT_STUFE_INFO;
-            }
-        }
-
-        /// <summary>Farbe einer Pruefstufe in der Protokollliste.</summary>
-        /// <param name="stufe">Stufe.</param>
-        public static Color StufeFarbe(PruefStufe stufe)
-        {
-            switch (stufe)
-            {
-                case PruefStufe.Fehler: return Color.FromArgb(176, 0, 32);
-                case PruefStufe.Warnung: return Color.FromArgb(160, 96, 0);
-                default: return SystemColors.WindowText;
-            }
-        }
-    }
-
     /// <summary>
     /// Anzeige des Validierungsprotokolls (AP5). Ersetzt die frueheren
     /// Abbruch-MessageBoxen des Ganglinienimports: Fehler blockieren den Import,
@@ -76,18 +12,16 @@ namespace WindowsFormsApplication1
     /// zur Bestaetigung vorgelegt, ein sauberer Lauf laeuft ohne Nachfrage durch.
     /// </summary>
     /// <remarks>
-    /// Bewusst vollstaendig im Quelltext aufgebaut - keine <c>.Designer.cs</c> und
-    /// keine <c>.resx</c>, damit die Projekt-CLAUDE.md-Regel "Designer- und
-    /// resx-Dateien nicht von Hand editieren" eingehalten bleibt. Alle Texte
-    /// kommen aus <c>MyResource</c> und sind damit zweisprachig.
+    /// Die Oberflaeche steht in <c>Form_GanglinieProtokoll.Designer.cs</c>, weiterhin
+    /// ohne eigene <c>.resx</c>: Alle sichtbaren Texte kommen aus <c>MyResource</c> und
+    /// werden in <see cref="TexteSetzen"/> gesetzt; im Designer stehen nur Platzhalter.
+    /// Was von den Konstruktorparametern abhaengt - Kopftext, Beschriftung des zweiten
+    /// Knopfes, Freigabe von "Uebernehmen" und die Wahl des <c>AcceptButton</c> - sowie
+    /// das Fuellen der Liste stehen im Konstruktor. Die Uebersetzung der Engine-
+    /// Schluessel liegt in <see cref="GanglinienProtokollText"/>.
     /// </remarks>
-    public class Form_GanglinieProtokoll : Form
+    public partial class Form_GanglinieProtokoll : Form
     {
-        private ListView listView_Protokoll;
-        private Label lbl_Kopf;
-        private Button btn_OK;
-        private Button btn_Abbrechen;
-
         /// <summary>
         /// Baut den Dialog auf.
         /// </summary>
@@ -96,36 +30,19 @@ namespace WindowsFormsApplication1
         /// <param name="bestaetigungNoetig">An der Reihe wurde etwas veraendert; der Anwender muss bestaetigen.</param>
         public Form_GanglinieProtokoll(IList<PruefMeldung> meldungen, bool importMoeglich, bool bestaetigungNoetig)
         {
-            Text = MyResource.Resource.IMPORT_TITEL_PROTOKOLL;
-            FormBorderStyle = FormBorderStyle.Sizable;
-            StartPosition = FormStartPosition.CenterParent;
-            MinimizeBox = false;
-            MaximizeBox = false;
-            ShowInTaskbar = false;
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(760, 420);
-            MinimumSize = new Size(520, 300);
+            // Der Designer setzt AutoScaleMode bewusst auf None und laesst
+            // AutoScaleDimensions weg: Die Anwendung laeuft DpiUnaware (app.manifest,
+            // Program.SetHighDpiMode). Der bisherige Aufbau setzte zwar
+            // AutoScaleMode.Font, aber nie AutoScaleDimensions - der Skalierungsfaktor
+            // blieb damit immer 1:1, es fand also faktisch keine Skalierung statt.
+            // None haelt genau dieses Verhalten fest.
+            InitializeComponent();
+            TexteSetzen();
 
-            lbl_Kopf = new Label();
-            lbl_Kopf.SetBounds(12, 10, 736, 34);
-            lbl_Kopf.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             lbl_Kopf.Text = !importMoeglich
                 ? MyResource.Resource.IMPORT_KOPF_FEHLER
                 : (bestaetigungNoetig ? MyResource.Resource.IMPORT_KOPF_EINGRIFF
                                       : MyResource.Resource.IMPORT_KOPF_OK);
-            Controls.Add(lbl_Kopf);
-
-            listView_Protokoll = new ListView();
-            listView_Protokoll.SetBounds(12, 50, 736, 320);
-            listView_Protokoll.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            listView_Protokoll.View = View.Details;
-            listView_Protokoll.FullRowSelect = true;
-            listView_Protokoll.GridLines = true;
-            listView_Protokoll.MultiSelect = false;
-            listView_Protokoll.HideSelection = false;
-            listView_Protokoll.Columns.Add(MyResource.Resource.IMPORT_SPALTE_STUFE, 90);
-            listView_Protokoll.Columns.Add(MyResource.Resource.IMPORT_SPALTE_MELDUNG, 620);
-            Controls.Add(listView_Protokoll);
 
             if (meldungen != null)
             {
@@ -138,25 +55,27 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            btn_OK = new Button();
-            btn_OK.SetBounds(556, 382, 90, 26);
-            btn_OK.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btn_OK.Text = MyResource.Resource.IMPORT_BTN_UEBERNEHMEN;
-            btn_OK.DialogResult = DialogResult.OK;
             btn_OK.Enabled = importMoeglich;
-            Controls.Add(btn_OK);
 
-            btn_Abbrechen = new Button();
-            btn_Abbrechen.SetBounds(654, 382, 94, 26);
-            btn_Abbrechen.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             btn_Abbrechen.Text = importMoeglich
                 ? MyResource.Resource.IMPORT_BTN_ABBRECHEN
                 : MyResource.Resource.IMPORT_BTN_SCHLIESSEN;
-            btn_Abbrechen.DialogResult = DialogResult.Cancel;
-            Controls.Add(btn_Abbrechen);
 
             AcceptButton = importMoeglich ? btn_OK : btn_Abbrechen;
-            CancelButton = btn_Abbrechen;
+        }
+
+        // ------------------------------------------------------------------- Texte
+
+        /// <summary>
+        /// Setzt die festen sichtbaren Texte aus <c>MyResource</c>. Laeuft direkt nach
+        /// <c>InitializeComponent()</c> und ersetzt die dortigen Platzhalter.
+        /// </summary>
+        private void TexteSetzen()
+        {
+            this.Text = MyResource.Resource.IMPORT_TITEL_PROTOKOLL;
+            columnHeader_Stufe.Text = MyResource.Resource.IMPORT_SPALTE_STUFE;
+            columnHeader_Meldung.Text = MyResource.Resource.IMPORT_SPALTE_MELDUNG;
+            btn_OK.Text = MyResource.Resource.IMPORT_BTN_UEBERNEHMEN;
         }
 
         /// <summary>
@@ -179,5 +98,51 @@ namespace WindowsFormsApplication1
                 return dlg.ShowDialog(eltern) == DialogResult.OK && importMoeglich;
             }
         }
+
+        // ==================================================================
+        // Oberflaeche - Begruendungen zur Geometrie
+        // ==================================================================
+        //
+        // Die Steuerelemente stehen in Form_GanglinieProtokoll.Designer.cs.
+        // Designer-Code traegt keine Kommentare; die Pixelentscheidungen stehen
+        // deshalb hier.
+        //
+        // --- Design-Politur 21.08.2026 -----------------------------------
+        //
+        // * Echttexte statt Feldnamen. Im Designer standen als Platzhalter die
+        //   Feldnamen ("columnHeader_Stufe" usw.), lbl_Kopf und btn_Abbrechen hatten
+        //   ueberhaupt keinen Text. Damit war im VS-Designer nicht zu sehen, ob die
+        //   Beschriftungen ueberhaupt in ihre Felder passen. Jetzt steht dort der
+        //   deutsche Text aus MyResource - als reine VORSCHAU. Gesetzt wird er
+        //   weiterhin ausschliesslich in TexteSetzen() bzw. im Konstruktor; die
+        //   Maske bleibt zweisprachig.
+        //
+        // * lbl_Kopf (12/10, 736 x 34) zeigt als Vorschau IMPORT_KOPF_EINGRIFF, den
+        //   haeufigsten der drei Faelle: IMPORT_KOPF_OK ist ueber Zeigen() gar nicht
+        //   erreichbar (ein sauberer Lauf ohne Eingriff oeffnet den Dialog nicht),
+        //   und die Eingriffsmeldung ist mit 90 Zeichen zugleich die laengste.
+        //   Gemessen (TextRenderer.MeasureText, Segoe UI 9 pt) braucht sie 477 px
+        //   und passt damit einzeilig in die 736 px Feldbreite; die 34 px Hoehe
+        //   fangen den Umbruch ab, wenn das Fenster auf MinimumSize geschoben wird
+        //   (dort bleiben dem Feld noch 480 px, was gerade eben eine Zeile bleibt).
+        //   Keine Groessenaenderung noetig.
+        //
+        // * btn_Abbrechen zeigt als Vorschau "Abbrechen". Die Beschriftung haengt am
+        //   Konstruktorparameter (importMoeglich ? Abbrechen : Schliessen) und wird
+        //   deshalb weiter im Konstruktor gesetzt. "Abbrechen" gehoert zum selben
+        //   Fall wie der Kopftext der Vorschau - beides ist der Eingriffsfall.
+        //
+        // * Fussknoepfe auf einheitliche 110 x 30 (vorher btn_OK 90 x 26,
+        //   btn_Abbrechen 94 x 26). Die Unterkante bleibt bei y = 408 (Rand 12),
+        //   dafuer wandert der Fuss von y = 382 auf y = 378. Die rechte Kante bleibt
+        //   bei x = 748 (Rand 12), btn_Abbrechen beginnt also bei 638, btn_OK bei
+        //   516; der Abstand zwischen beiden waechst von 8 auf 12 px. Nach oben
+        //   bleiben 8 px zur Liste (Unterkante 370). Beide Knoepfe sind
+        //   Bottom|Right verankert - die rechte und die untere Kante bleiben damit
+        //   auch beim Aufziehen des Fensters konstant.
+        //
+        // * Die Spaltenbreiten der Liste (90 / 620) bleiben: "Stufe" braucht mit
+        //   dem laengsten Inhalt ("Warnung", 7 Zeichen) 57 px, die Summe 710 px
+        //   bleibt unter der Listenbreite von 736 px abzueglich Bildlaufleiste.
     }
 }

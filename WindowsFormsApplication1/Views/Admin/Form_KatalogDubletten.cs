@@ -60,6 +60,7 @@ namespace WindowsFormsApplication1
             BaueOberflaeche();
             TexteSetzen();
             KatalogeFuellen();
+            FensterEinpassung.Einhaengen(this);
         }
 
         // ==================================================================

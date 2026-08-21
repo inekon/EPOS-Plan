@@ -23,7 +23,28 @@ namespace WindowsFormsApplication1
     /// Aufbau immer vom Stammprojekt aus; ist eine Variante aktiv, ermittelt der
     /// Aufrufer vorher deren Stamm (VariantenCtrl.StammRefDerVariante).
     /// </summary>
-    public class UcBericht : UserControl
+    /// <remarks>
+    /// <para>
+    /// Die Oberfläche steht in <c>UcBericht.Designer.cs</c>, ohne eigene
+    /// <c>.resx</c>: Alle sichtbaren Texte kommen aus <c>MyResource</c> und werden
+    /// in <see cref="TexteSetzen"/> gesetzt; im Designer stehen nur Platzhalter.
+    /// </para>
+    /// <para>
+    /// <b>Aufbauhinweise, die vor der Designer-Umstellung als Kommentare im
+    /// Aufbaucode standen.</b> Links die Variantenliste mit „Alle"/„Keine", rechts
+    /// die Bausteinliste. <c>lblRechnen</c> ist ein Hinweis und keine Option:
+    /// Simulation und Wirtschaftlichkeit laufen vor JEDER Ausgabe neu
+    /// (Nutzeranforderung 15.08.2026) — der frühere Schalter „Vor Ausgabe neu
+    /// rechnen" entfällt bewusst. <c>btnVergleichAlt</c> ist der Bestandsweg
+    /// „Projektvergleich + Bericht (alt)"; er stand bislang im Dialog
+    /// „Projektvarianten" und ist mit dessen Wegfall auf die Berichtsseite
+    /// gewandert, damit die Funktion nicht verloren geht. <c>btnAbbrechen</c>
+    /// startet unsichtbar — eingebettet im Reiter erscheint er nur während eines
+    /// Laufs (<see cref="SetBusy"/>), im Dialog-Wrapper bleibt er stehen
+    /// (<see cref="AlsDialog"/>).
+    /// </para>
+    /// </remarks>
+    public partial class UcBericht : UserControl
     {
         private readonly int _idStamm;
         private readonly string _stammName;
@@ -32,24 +53,6 @@ namespace WindowsFormsApplication1
 
         private CancellationTokenSource _cts;
         private bool _initialisiere;       // unterdrückt ItemCheck-Logik beim Befüllen
-
-        // Steuerelemente
-        private Label lblVarianten;
-        private ListView lvVarianten;
-        private ColumnHeader colArt, colBez, colName, colSim;
-        private Button btnAlle, btnKeine;
-        private Label lblBausteine;
-        private CheckedListBox clbBausteine;
-        private Label lblRechnen;
-        private Label lblAusgabe;
-        private RadioButton rbWord, rbExcel, rbBeide;
-        private Label lblZiel;
-        private TextBox txtZiel;
-        private Button btnDurchsuchen;
-        private Button btnVergleichAlt;
-        private Label lblStatus;
-        private ProgressBar progress;
-        private Button btnErstellen, btnAbbrechen;
 
         /// <summary>Stammprojekt-ID der Vergleichsgruppe.</summary>
         public int IdStamm { get { return _idStamm; } }
@@ -73,190 +76,62 @@ namespace WindowsFormsApplication1
         {
             _idStamm = idStamm;
             _stammName = stammName ?? "";
+
+            // Der Designer setzt AutoScaleMode bewusst auf None und lässt
+            // AutoScaleDimensions weg: Vor der Designer-Umstellung stand hier Font
+            // OHNE AutoScaleDimensions — der Skalierungsfaktor war damit 1, es fand
+            // also ebenfalls keine Umrechnung der fest gerechneten Pixelpositionen
+            // statt (die Anwendung läuft DpiUnaware, siehe app.manifest und
+            // Program.SetHighDpiMode). None hält genau dieses Verhalten fest und
+            // verhindert, dass ein späteres Designer-Speichern die Skalierung über
+            // nachgetragene AutoScaleDimensions erstmals scharf schaltet.
             InitializeComponent();
+            TexteSetzen();
         }
 
         /// <summary>Titelzeile für den Dialog-Wrapper bzw. die Seitenüberschrift.</summary>
-        public string Titel { get { return "Bericht erstellen — Projekt: " + _stammName; } }
-
-        // ------------------------------------------------------------- Aufbau
-
-        private void InitializeComponent()
+        public string Titel
         {
-            this.lblVarianten = new Label();
-            this.lvVarianten = new ListView();
-            this.colArt = new ColumnHeader();
-            this.colBez = new ColumnHeader();
-            this.colName = new ColumnHeader();
-            this.colSim = new ColumnHeader();
-            this.btnAlle = new Button();
-            this.btnKeine = new Button();
-            this.lblBausteine = new Label();
-            this.clbBausteine = new CheckedListBox();
-            this.lblRechnen = new Label();
-            this.lblAusgabe = new Label();
-            this.rbWord = new RadioButton();
-            this.rbExcel = new RadioButton();
-            this.rbBeide = new RadioButton();
-            this.lblZiel = new Label();
-            this.txtZiel = new TextBox();
-            this.btnDurchsuchen = new Button();
-            this.btnVergleichAlt = new Button();
-            this.lblStatus = new Label();
-            this.progress = new ProgressBar();
-            this.btnErstellen = new Button();
-            this.btnAbbrechen = new Button();
-            this.SuspendLayout();
+            get { return string.Format(MyResource.Resource.BK_BER_TITEL, _stammName); }
+        }
 
-            // Varianten (links)
-            this.lblVarianten.AutoSize = true;
-            this.lblVarianten.Location = new Point(12, 12);
-            this.lblVarianten.Text = "Varianten (Referenz: Stamm, fest gewählt):";
+        // ==================================================================
+        // Texte
+        // ==================================================================
 
-            this.lvVarianten.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
-            this.lvVarianten.CheckBoxes = true;
-            this.lvVarianten.Columns.AddRange(new ColumnHeader[] { this.colArt, this.colBez, this.colName, this.colSim });
-            this.lvVarianten.FullRowSelect = true;
-            this.lvVarianten.HideSelection = false;
-            this.lvVarianten.Location = new Point(12, 32);
-            this.lvVarianten.MultiSelect = false;
-            this.lvVarianten.Size = new Size(470, 250);
-            this.lvVarianten.View = View.Details;
-            this.lvVarianten.ItemCheck += new ItemCheckEventHandler(this.lvVarianten_ItemCheck);
+        /// <summary>
+        /// Setzt alle sichtbaren Texte aus <c>MyResource</c>. Läuft direkt nach
+        /// <c>InitializeComponent()</c> und ersetzt die dortigen Platzhalter.
+        /// </summary>
+        private void TexteSetzen()
+        {
+            // --- Varianten (links) ----------------------------------------
+            lblVarianten.Text = MyResource.Resource.BK_BER_LBL_VARIANTEN;
+            colArt.Text = MyResource.Resource.BK_SP_ART;
+            colBez.Text = MyResource.Resource.BK_SP_BEZEICHNER;
+            colName.Text = MyResource.Resource.BK_SP_PROJEKTNAME;
+            colSim.Text = MyResource.Resource.BK_BER_SP_SIMULATION;
+            btnAlle.Text = MyResource.Resource.BK_BER_BTN_ALLE;
+            btnKeine.Text = MyResource.Resource.BK_BER_BTN_KEINE;
 
-            this.colArt.Text = "Art"; this.colArt.Width = 70;
-            this.colBez.Text = "Bezeichner"; this.colBez.Width = 130;
-            this.colName.Text = "Projektname"; this.colName.Width = 150;
-            this.colSim.Text = "Simulation"; this.colSim.Width = 110;
+            // --- Bausteine (rechts) ---------------------------------------
+            lblBausteine.Text = MyResource.Resource.BK_BER_LBL_BAUSTEINE;
+            lblRechnen.Text = MyResource.Resource.BK_BER_LBL_RECHNEN;
 
-            this.btnAlle.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            this.btnAlle.Location = new Point(12, 288);
-            this.btnAlle.Size = new Size(70, 24);
-            this.btnAlle.Text = "Alle";
-            this.btnAlle.Click += (s, e) => SetzeAlleVarianten(true);
+            // --- Ausgabe --------------------------------------------------
+            lblAusgabe.Text = MyResource.Resource.BK_BER_LBL_AUSGABE;
+            rbWord.Text = MyResource.Resource.BK_BER_RB_WORD;
+            rbExcel.Text = MyResource.Resource.BK_BER_RB_EXCEL;
+            rbBeide.Text = MyResource.Resource.BK_BER_RB_BEIDE;
 
-            this.btnKeine.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            this.btnKeine.Location = new Point(88, 288);
-            this.btnKeine.Size = new Size(70, 24);
-            this.btnKeine.Text = "Keine";
-            this.btnKeine.Click += (s, e) => SetzeAlleVarianten(false);
+            // --- Zielordner -----------------------------------------------
+            lblZiel.Text = MyResource.Resource.BK_BER_LBL_ZIEL;
+            btnDurchsuchen.Text = MyResource.Resource.BK_BER_BTN_DURCHSUCHEN;
 
-            // Bausteine (rechts)
-            this.lblBausteine.AutoSize = true;
-            this.lblBausteine.Location = new Point(498, 12);
-            this.lblBausteine.Text = "Berichtsbausteine:";
-
-            this.clbBausteine.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            this.clbBausteine.CheckOnClick = true;
-            this.clbBausteine.IntegralHeight = false;
-            this.clbBausteine.Location = new Point(498, 32);
-            this.clbBausteine.Size = new Size(220, 190);
-            this.clbBausteine.ItemCheck += new ItemCheckEventHandler(this.clbBausteine_ItemCheck);
-
-            // Rechenhinweis statt Option: Simulation und Wirtschaftlichkeit laufen
-            // vor JEDER Ausgabe neu (Nutzeranforderung 15.08.2026) — der frühere
-            // Schalter „Vor Ausgabe neu rechnen" entfällt bewusst.
-            this.lblRechnen.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            this.lblRechnen.ForeColor = Color.DimGray;
-            this.lblRechnen.Location = new Point(498, 228);
-            this.lblRechnen.Size = new Size(220, 30);
-            this.lblRechnen.Text = "Jeder Bericht rechnet neu: alle gewählten Varianten " +
-                                   "werden simuliert und wirtschaftlich bewertet.";
-
-            this.lblAusgabe.AutoSize = true;
-            this.lblAusgabe.Location = new Point(498, 260);
-            this.lblAusgabe.Text = "Ausgabe:";
-
-            this.rbWord.AutoSize = true;
-            this.rbWord.Location = new Point(560, 258);
-            this.rbWord.Text = "Word";
-            this.rbWord.Checked = true;
-
-            this.rbExcel.AutoSize = true;
-            this.rbExcel.Location = new Point(618, 258);
-            this.rbExcel.Text = "Excel";
-
-            this.rbBeide.AutoSize = true;
-            this.rbBeide.Location = new Point(672, 258);
-            this.rbBeide.Text = "Beide";
-
-            // Zielordner
-            this.lblZiel.AutoSize = true;
-            this.lblZiel.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            this.lblZiel.Location = new Point(12, 324);
-            this.lblZiel.Text = "Zielordner:";
-
-            this.txtZiel.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            this.txtZiel.Location = new Point(85, 321);
-            this.txtZiel.Size = new Size(545, 23);
-
-            this.btnDurchsuchen.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            this.btnDurchsuchen.Location = new Point(636, 320);
-            this.btnDurchsuchen.Size = new Size(82, 24);
-            this.btnDurchsuchen.Text = "Durchsuchen…";
-            this.btnDurchsuchen.Click += new EventHandler(this.btnDurchsuchen_Click);
-
-            // Status + Fortschritt
-            this.lblStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            this.lblStatus.ForeColor = Color.DimGray;
-            this.lblStatus.Location = new Point(12, 354);
-            this.lblStatus.Size = new Size(540, 18);
-
-            this.progress.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            this.progress.Location = new Point(12, 376);
-            this.progress.Size = new Size(540, 16);
-            this.progress.Visible = false;
-
-            // Bestandsweg „Projektvergleich + Bericht (alt)" — stand bislang im Dialog
-            // „Projektvarianten"; mit dessen Wegfall wandert er auf die Berichtsseite,
-            // damit die Funktion nicht verloren geht.
-            this.btnVergleichAlt.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            this.btnVergleichAlt.Location = new Point(12, 398);
-            this.btnVergleichAlt.Size = new Size(300, 26);
-            this.btnVergleichAlt.Text = MyResource.Resource.BK_BTN_VERGLEICH_ALT;
-            this.btnVergleichAlt.Click += new EventHandler(this.btnVergleichAlt_Click);
-
-            // Schaltflächen
-            this.btnErstellen.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            this.btnErstellen.Location = new Point(560, 360);
-            this.btnErstellen.Size = new Size(158, 32);
-            this.btnErstellen.Text = "Erstellen";
-            this.btnErstellen.Click += new EventHandler(this.btnErstellen_Click);
-
-            this.btnAbbrechen.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            this.btnAbbrechen.Location = new Point(560, 398);
-            this.btnAbbrechen.Size = new Size(158, 26);
-            this.btnAbbrechen.Text = "Schließen";
-            this.btnAbbrechen.Visible = false;   // im Reiter nur während eines Laufs (SetBusy)
-            this.btnAbbrechen.Click += new EventHandler(this.btnAbbrechen_Click);
-
-            // Control
-            this.AutoScaleMode = AutoScaleMode.Font;
-            this.Size = new Size(730, 436);
-            this.MinimumSize = new Size(600, 360);
-            this.Font = new Font("Segoe UI", 9f);
-            this.Name = "UcBericht";
-            this.Controls.Add(this.lblVarianten);
-            this.Controls.Add(this.lvVarianten);
-            this.Controls.Add(this.btnAlle);
-            this.Controls.Add(this.btnKeine);
-            this.Controls.Add(this.lblBausteine);
-            this.Controls.Add(this.clbBausteine);
-            this.Controls.Add(this.lblRechnen);
-            this.Controls.Add(this.lblAusgabe);
-            this.Controls.Add(this.rbWord);
-            this.Controls.Add(this.rbExcel);
-            this.Controls.Add(this.rbBeide);
-            this.Controls.Add(this.lblZiel);
-            this.Controls.Add(this.txtZiel);
-            this.Controls.Add(this.btnDurchsuchen);
-            this.Controls.Add(this.btnVergleichAlt);
-            this.Controls.Add(this.lblStatus);
-            this.Controls.Add(this.progress);
-            this.Controls.Add(this.btnErstellen);
-            this.Controls.Add(this.btnAbbrechen);
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            // --- Schaltflächen --------------------------------------------
+            btnVergleichAlt.Text = MyResource.Resource.BK_BTN_VERGLEICH_ALT;
+            btnErstellen.Text = MyResource.Resource.BK_BER_BTN_ERSTELLEN;
+            btnAbbrechen.Text = MyResource.Resource.BK_BER_BTN_SCHLIESSEN;
         }
 
         /// <summary>Umgebendes Formular als Dialog-Besitzer (im Reiter das Startformular).</summary>
@@ -305,8 +180,8 @@ namespace WindowsFormsApplication1
                 {
                     var it = new ListViewItem(new[]
                     {
-                        st.IstStamm ? "Stamm" : "Variante",
-                        st.IstStamm ? "(Stammprojekt)" : st.Variantenname,
+                        st.IstStamm ? MyResource.Resource.BK_ART_STAMM : MyResource.Resource.BK_ART_VARIANTE,
+                        st.IstStamm ? MyResource.Resource.BK_ART_STAMMPROJEKT : st.Variantenname,
                         st.Projektname,
                         st.SimStandText
                     });
@@ -352,7 +227,7 @@ namespace WindowsFormsApplication1
             if (st != null && st.IstStamm && e.NewValue != CheckState.Checked)
             {
                 e.NewValue = CheckState.Checked;
-                Melde("Das Stammprojekt ist die Referenz und immer enthalten.");
+                Melde(MyResource.Resource.BK_BER_MSG_STAMM_REFERENZ);
             }
         }
 
@@ -363,8 +238,7 @@ namespace WindowsFormsApplication1
             if (_initialisiere) return;
             int idx = IndexVon(BerichtsKonfiguration.B_WIRTSCHAFT);
             if (e.Index == idx && e.NewValue == CheckState.Checked)
-                Melde("Wirtschaftlichkeit: wird für diesen Bericht neu berechnet " +
-                      "(Kapitalwertmethode, alle Szenarien) — verlängert den Lauf.");
+                Melde(MyResource.Resource.BK_BER_MSG_WIRTSCHAFT_HINWEIS);
         }
 
         private static int IndexVon(string schluessel)
@@ -372,6 +246,22 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < BerichtsKonfiguration.AlleBausteine.Length; i++)
                 if (BerichtsKonfiguration.AlleBausteine[i].Schluessel == schluessel) return i;
             return -1;
+        }
+
+        /// <summary>
+        /// „Alle" — vor der Designer-Umstellung ein Lambda an <c>Click</c>; der
+        /// Designer verdrahtet ausschließlich Methodenverweise, deshalb steht der
+        /// Aufruf jetzt hier.
+        /// </summary>
+        private void btnAlle_Click(object sender, EventArgs e)
+        {
+            SetzeAlleVarianten(true);
+        }
+
+        /// <summary>„Keine" — wie <see cref="btnAlle_Click"/>, nur umgekehrt.</summary>
+        private void btnKeine_Click(object sender, EventArgs e)
+        {
+            SetzeAlleVarianten(false);
         }
 
         private void SetzeAlleVarianten(bool an)
@@ -387,7 +277,7 @@ namespace WindowsFormsApplication1
         {
             using (var dlg = new FolderBrowserDialog())
             {
-                dlg.Description = "Zielordner für den Bericht wählen";
+                dlg.Description = MyResource.Resource.BK_BER_DLG_ZIELORDNER;
                 if (Directory.Exists(txtZiel.Text)) dlg.SelectedPath = txtZiel.Text;
                 if (dlg.ShowDialog(Besitzer) == DialogResult.OK) txtZiel.Text = dlg.SelectedPath;
             }
@@ -442,7 +332,9 @@ namespace WindowsFormsApplication1
 
             using (SaveFileDialog sfd = new SaveFileDialog())
             {
-                sfd.Filter = "Word-Dokument (*.docx)|*.docx";
+                sfd.Filter = MyResource.Resource.BK_BER_DLG_FILTER_WORD;
+                // Dateinamensvorschlag: technischer Wert wie der Namensstamm „_Bericht_"
+                // in BerichtCtrl und deshalb bewusst nicht lokalisiert.
                 sfd.FileName = "Projektvergleich_" + _stammName + ".docx";
                 if (sfd.ShowDialog(Besitzer) != DialogResult.OK) return;
 
@@ -453,15 +345,15 @@ namespace WindowsFormsApplication1
                     // 15.08.2026) und liefert die Meldungen der Läufe zurück.
                     ProjektvergleichBericht bericht = new ProjektvergleichBericht();
                     bericht.Erzeuge(sfd.FileName, gruppe);
-                    Melde("Bericht erstellt: " + sfd.FileName);
+                    Melde(string.Format(MyResource.Resource.BK_BER_STATUS_ERSTELLT, sfd.FileName));
 
-                    string frage = "Bericht wurde erstellt (alle Projekte neu simuliert).";
+                    string frage = MyResource.Resource.BK_BER_MSG_VERGLEICH_FERTIG;
                     if (bericht.Laufmeldungen.Count > 0)
-                        frage += "\r\n\r\nHinweise:\r\n• " +
+                        frage += "\r\n\r\n" + MyResource.Resource.BK_BER_MSG_HINWEISE + "\r\n• " +
                                  string.Join("\r\n• ", bericht.Laufmeldungen);
-                    frage += "\r\n\r\nJetzt öffnen?";
+                    frage += "\r\n\r\n" + MyResource.Resource.BK_BER_FRAGE_OEFFNEN;
 
-                    if (MessageBox.Show(frage, "Projektvergleich",
+                    if (MessageBox.Show(frage, MyResource.Resource.BK_BER_TITEL_VERGLEICH,
                         MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
                         System.Diagnostics.Process.Start(
                             new System.Diagnostics.ProcessStartInfo(sfd.FileName) { UseShellExecute = true });
@@ -472,8 +364,8 @@ namespace WindowsFormsApplication1
                     string msg = ex.Message;
                     Exception inner = ex.InnerException;
                     while (inner != null) { msg += "\r\n→ " + inner.Message; inner = inner.InnerException; }
-                    Melde("Fehler beim Erstellen des Berichts.");
-                    MessageBox.Show(msg, "Fehler beim Erstellen des Berichts",
+                    Melde(MyResource.Resource.BK_BER_STATUS_FEHLER);
+                    MessageBox.Show(msg, MyResource.Resource.BK_BER_TITEL_FEHLER_VERGLEICH,
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 finally { Cursor = Cursors.Default; }
@@ -496,6 +388,9 @@ namespace WindowsFormsApplication1
             // NeuRechnen bleibt nur noch für den JSON-Bestand in der DB stehen — der
             // Berichtslauf rechnet grundsätzlich neu (siehe SammleFuerBericht).
             k.NeuRechnen = true;
+            // „Word" / „Excel" / „Beide" sind Persistenzwerte des Konfigurations-JSON
+            // (Tabelle Berichtskonfiguration) und bleiben deutsch und eingefroren;
+            // lokalisiert sind nur die Beschriftungen der drei Auswahlknöpfe.
             k.Ausgabe = rbBeide.Checked ? "Beide" : (rbExcel.Checked ? "Excel" : "Word");
             k.ZielOrdner = txtZiel.Text ?? "";
             return k;
@@ -514,10 +409,9 @@ namespace WindowsFormsApplication1
             int anzahl = 0;
             foreach (ListViewItem it in lvVarianten.Items) if (it.Checked) anzahl++;
             if (MessageBox.Show(
-                    "Für diesen Bericht werden " + anzahl + " Projekt(e) neu simuliert und " +
-                    "anschließend wirtschaftlich bewertet.\r\n\r\n" +
-                    "Je nach Projektgröße dauert das einige Minuten. Fortfahren?",
-                    "Bericht erstellen", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                    string.Format(MyResource.Resource.BK_BER_FRAGE_START, anzahl),
+                    MyResource.Resource.BK_BER_TITEL_ERSTELLEN,
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question)
                 != DialogResult.Yes)
                 return;
 
@@ -552,28 +446,30 @@ namespace WindowsFormsApplication1
                 string wordPfad = null, excelPfad = null;
                 if (konfig.Ausgabe == "Word" || konfig.Ausgabe == "Beide")
                 {
-                    Melde("Erzeuge Word-Bericht…");
+                    Melde(MyResource.Resource.BK_BER_STATUS_WORD);
                     ct.ThrowIfCancellationRequested();
                     wordPfad = await Task.Run(() => _bericht.ErzeugeWord(daten, konfig), ct);
                 }
                 if (konfig.Ausgabe == "Excel" || konfig.Ausgabe == "Beide")
                 {
-                    Melde("Erzeuge Excel-Bericht…");
+                    Melde(MyResource.Resource.BK_BER_STATUS_EXCEL);
                     ct.ThrowIfCancellationRequested();
                     excelPfad = await Task.Run(() => _bericht.ErzeugeExcel(daten, konfig), ct);
                 }
 
                 string erster = wordPfad ?? excelPfad;
-                Melde("Bericht erstellt: " + erster);
-                string meldung = "Bericht erstellt:";
+                Melde(string.Format(MyResource.Resource.BK_BER_STATUS_ERSTELLT, erster));
+                string meldung = MyResource.Resource.BK_BER_MSG_ERSTELLT_KOPF;
                 if (wordPfad != null) meldung += "\r\n" + wordPfad;
                 if (excelPfad != null) meldung += "\r\n" + excelPfad;
                 if (daten.Warnungen.Count > 0)
-                    meldung += "\r\n\r\nHinweise:\r\n• " + string.Join("\r\n• ", daten.Warnungen);
+                    meldung += "\r\n\r\n" + MyResource.Resource.BK_BER_MSG_HINWEISE + "\r\n• " +
+                               string.Join("\r\n• ", daten.Warnungen);
                 meldung += "\r\n\r\n" + (wordPfad != null && excelPfad != null
-                    ? "Word-Bericht jetzt öffnen?" : "Bericht jetzt öffnen?");
+                    ? MyResource.Resource.BK_BER_FRAGE_OEFFNEN_WORD
+                    : MyResource.Resource.BK_BER_FRAGE_OEFFNEN_BERICHT);
 
-                if (MessageBox.Show(meldung, "Bericht erstellen",
+                if (MessageBox.Show(meldung, MyResource.Resource.BK_BER_TITEL_ERSTELLEN,
                         MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
                     System.Diagnostics.Process.Start(
                         new System.Diagnostics.ProcessStartInfo(erster) { UseShellExecute = true });
@@ -581,11 +477,12 @@ namespace WindowsFormsApplication1
             }
             catch (OperationCanceledException)
             {
-                Melde("Vorgang abgebrochen.");
+                Melde(MyResource.Resource.BK_BER_STATUS_ABGEBROCHEN);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Fehler bei der Berichtserstellung: " + ex.Message, "Fehler",
+                MessageBox.Show(string.Format(MyResource.Resource.BK_BER_MSG_LAUFFEHLER, ex.Message),
+                    MyResource.Resource.BK_BER_TITEL_FEHLER,
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
@@ -611,7 +508,9 @@ namespace WindowsFormsApplication1
             btnErstellen.Enabled = !busy;
             // Eingebettet dient der Knopf allein dem Abbrechen; im Dialog bleibt er stehen.
             btnAbbrechen.Visible = AlsDialog || busy;
-            btnAbbrechen.Text = busy ? "Abbrechen" : "Schließen";
+            btnAbbrechen.Text = busy
+                ? MyResource.Resource.BK_BER_BTN_ABBRECHEN
+                : MyResource.Resource.BK_BER_BTN_SCHLIESSEN;
             this.UseWaitCursor = busy;
         }
 

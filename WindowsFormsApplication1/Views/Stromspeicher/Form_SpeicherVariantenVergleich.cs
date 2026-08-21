@@ -50,15 +50,18 @@ namespace WindowsFormsApplication1
     /// die unvollstaendige Variante der Grund, warum jemand den Vergleich oeffnet.
     /// </para>
     /// <para>
-    /// Die Maske ist vollstaendig im Quelltext aufgebaut — keine <c>.Designer.cs</c>,
-    /// keine <c>.resx</c> (Projektregel: Designer- und resx-Dateien nicht von Hand
-    /// editieren), Muster wie <c>Form_SpeicherOptimierung</c>. Alle Beschriftungen
-    /// kommen aus <c>MyResource</c> (<c>VAR_*</c>) und sind damit zweisprachig; Zahlen
-    /// werden mit <c>CultureInfo.CurrentCulture</c> angezeigt, die CSV-Ausgabe folgt den
-    /// Konventionen des Hauses (Semikolon, Dezimalkomma, UTF-8 mit BOM).
+    /// <b>Aufbau.</b> Layout und Steuerelemente stehen in
+    /// <c>Form_SpeicherVariantenVergleich.Designer.cs</c>; eine <c>.resx</c> gibt es
+    /// bewusst nicht (<c>Localizable = false</c>). Alle Beschriftungen kommen aus
+    /// <c>MyResource</c> (<c>VAR_*</c>, <c>OPT_*</c>) und werden in
+    /// <see cref="TexteSetzen"/> gesetzt — die Designer-Datei traegt an ihrer Stelle nur
+    /// Platzhalter, damit ein Designer-Speichern die zweisprachigen Texte nicht
+    /// einfriert. Zahlen werden mit <c>CultureInfo.CurrentCulture</c> angezeigt, die
+    /// CSV-Ausgabe folgt den Konventionen des Hauses (Semikolon, Dezimalkomma, UTF-8
+    /// mit BOM).
     /// </para>
     /// </remarks>
-    public class Form_SpeicherVariantenVergleich : Form
+    public partial class Form_SpeicherVariantenVergleich : Form
     {
         // ==================================================================
         // Zustand
@@ -78,14 +81,13 @@ namespace WindowsFormsApplication1
         public bool AktiveVarianteGeaendert { get; private set; }
 
         // --- Steuerelemente ---
-        private ListView list_Varianten;
-        private Label lbl_Status, lbl_Legende, lbl_Hinweis, lbl_Protokollkopf;
-        private TextBox tb_Protokoll;
-        private Button btn_Aktiv, btn_Csv, btn_Schliessen;
+        // Deklariert in Form_SpeicherVariantenVergleich.Designer.cs.
 
         /// <summary>
         /// Fettschrift der aktiven Zeile — EINMAL erzeugt. Ein <c>new Font(...)</c> je
         /// Zeile und je Auffrischung liesse GDI-Handles zurueck, die niemand freigibt.
+        /// Freigegeben wird sie im <c>Dispose</c> der Designer-Datei: Steuerelemente
+        /// raeumt die Basisklasse ab, eine lose <see cref="Font"/> nicht.
         /// </summary>
         private Font m_SchriftAktiv;
 
@@ -149,7 +151,18 @@ namespace WindowsFormsApplication1
             m_Sim = sim;
             m_ID_Projekt = idProjekt;
 
-            AufbauSteuerelemente();
+            // Die Designer-Datei setzt AutoScaleMode BEWUSST auf None. Die Anwendung
+            // laeuft DpiUnaware (app.manifest, Application.SetHighDpiMode in Program.cs),
+            // und die handgebaute Fassung dieser Maske hatte AutoScaleMode.Font OHNE
+            // AutoScaleDimensions — also faktisch keine Skalierung. None haelt genau
+            // dieses Verhalten fest; Font mit einer vom Designer beim naechsten Speichern
+            // ergaenzten Baseline wuerde die Skalierung nachtraeglich scharfschalten.
+            InitializeComponent();
+            TexteSetzen();
+
+            // Erst nach InitializeComponent: die Fettschrift leitet sich aus der dort
+            // gesetzten Listenschrift ab.
+            m_SchriftAktiv = new Font(list_Varianten.Font, FontStyle.Bold);
 
             if (!LaufVorhanden())
             {
@@ -164,131 +177,50 @@ namespace WindowsFormsApplication1
             TabelleFuellen();
         }
 
-        private void AufbauSteuerelemente()
+        /// <summary>
+        /// Setzt alle sichtbaren Texte aus <c>MyResource</c>.
+        /// </summary>
+        /// <remarks>
+        /// Getrennt von <c>InitializeComponent</c>, weil die Designer-Datei nur
+        /// Konstanten vertraegt: Ein Designer-Speichern wuerde jeden dort stehenden
+        /// Ressourcenzugriff durch den zuletzt angezeigten Text ersetzen und die Maske
+        /// damit einsprachig machen. In der Designer-Datei stehen an diesen Stellen
+        /// Platzhalter (der jeweilige Feldname).
+        /// </remarks>
+        private void TexteSetzen()
         {
             Text = MyResource.Resource.VAR_VGL_TITEL;
-            FormBorderStyle = FormBorderStyle.Sizable;
-            StartPosition = FormStartPosition.CenterParent;
-            MinimizeBox = false;
-            MaximizeBox = true;
-            ShowInTaskbar = false;
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1240, 640);
-            MinimumSize = new Size(900, 480);
 
-            lbl_Status = new Label();
-            lbl_Status.SetBounds(12, 12, 1216, 20);
-            lbl_Status.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            lbl_Status.Font = new Font("Segoe UI", 9.75f, FontStyle.Bold);
-            lbl_Status.AutoEllipsis = true;
-            Controls.Add(lbl_Status);
+            col_Aktiv.Text = MyResource.Resource.VAR_VGL_SP_AKTIV;
+            col_Bezeichnung.Text = MyResource.Resource.VAR_VGL_SP_BEZEICHNUNG;
+            col_Betriebsart.Text = MyResource.Resource.VAR_VGL_SP_BETRIEBSART;
+            col_Berechnungsart.Text = MyResource.Resource.VAR_VGL_SP_BERECHNUNGSART;
+            col_Kapazitaet.Text = MyResource.Resource.VAR_VGL_SP_KAPAZITAET;
+            col_Leistung.Text = MyResource.Resource.VAR_VGL_SP_LEISTUNG;
+            col_Investition.Text = MyResource.Resource.VAR_VGL_SP_INVESTITION;
+            col_Ertrag.Text = MyResource.Resource.VAR_VGL_SP_ERTRAG;
+            col_DeltaJ.Text = MyResource.Resource.VAR_VGL_SP_DELTAJ;
+            col_Amortisation.Text = MyResource.Resource.VAR_VGL_SP_AMORTISATION;
+            col_Npv.Text = MyResource.Resource.VAR_VGL_SP_NPV;
+            col_Vollzyklen.Text = MyResource.Resource.VAR_VGL_SP_VOLLZYKLEN;
 
-            list_Varianten = new ListView();
-            list_Varianten.SetBounds(12, 38, 1216, 300);
-            list_Varianten.Anchor = AnchorStyles.Top | AnchorStyles.Bottom
-                                    | AnchorStyles.Left | AnchorStyles.Right;
-            list_Varianten.View = View.Details;
-            list_Varianten.FullRowSelect = true;
-            list_Varianten.GridLines = true;
-            list_Varianten.MultiSelect = false;
-            list_Varianten.HideSelection = false;
-            list_Varianten.HeaderStyle = ColumnHeaderStyle.Nonclickable;
-            list_Varianten.Font = new Font("Segoe UI", 9.75f, FontStyle.Regular);
-            list_Varianten.ShowItemToolTips = true;
-            list_Varianten.DoubleClick += (s, e) => AktivSetzen();
-            m_SchriftAktiv = new Font(list_Varianten.Font, FontStyle.Bold);
-
-            list_Varianten.Columns.Add(MyResource.Resource.VAR_VGL_SP_AKTIV, 54, HorizontalAlignment.Left);
-            list_Varianten.Columns.Add(MyResource.Resource.VAR_VGL_SP_BEZEICHNUNG, 210, HorizontalAlignment.Left);
-            list_Varianten.Columns.Add(MyResource.Resource.VAR_VGL_SP_BETRIEBSART, 100, HorizontalAlignment.Left);
-            list_Varianten.Columns.Add(MyResource.Resource.VAR_VGL_SP_BERECHNUNGSART, 110, HorizontalAlignment.Left);
-            list_Varianten.Columns.Add(MyResource.Resource.VAR_VGL_SP_KAPAZITAET, 100, HorizontalAlignment.Right);
-            list_Varianten.Columns.Add(MyResource.Resource.VAR_VGL_SP_LEISTUNG, 90, HorizontalAlignment.Right);
-            list_Varianten.Columns.Add(MyResource.Resource.VAR_VGL_SP_INVESTITION, 105, HorizontalAlignment.Right);
-            list_Varianten.Columns.Add(MyResource.Resource.VAR_VGL_SP_ERTRAG, 120, HorizontalAlignment.Right);
-            list_Varianten.Columns.Add(MyResource.Resource.VAR_VGL_SP_DELTAJ, 100, HorizontalAlignment.Right);
-            list_Varianten.Columns.Add(MyResource.Resource.VAR_VGL_SP_AMORTISATION, 110, HorizontalAlignment.Right);
-            list_Varianten.Columns.Add(MyResource.Resource.VAR_VGL_SP_NPV, 110, HorizontalAlignment.Right);
-            list_Varianten.Columns.Add(MyResource.Resource.VAR_VGL_SP_VOLLZYKLEN, 100, HorizontalAlignment.Right);
-            Controls.Add(list_Varianten);
-
-            lbl_Legende = new Label();
-            lbl_Legende.SetBounds(12, 344, 1216, 18);
-            lbl_Legende.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             lbl_Legende.Text = MyResource.Resource.VAR_VGL_LEGENDE;
-            lbl_Legende.ForeColor = SystemColors.GrayText;
-            lbl_Legende.Font = new Font("Segoe UI", 8.25f, FontStyle.Regular);
-            Controls.Add(lbl_Legende);
 
-            lbl_Hinweis = new Label();
-            lbl_Hinweis.SetBounds(12, 364, 1216, 32);
-            lbl_Hinweis.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             // AP9b: Der frühere Dauerhinweis („der Gesamtlauf summiert alle Anlagen")
             // beschrieb einen Befund, der behoben ist — die Gesamtsimulation rechnet die
             // aktive Variante. Stehen bleibt die Warnung für den EINEN Fall, in dem der
             // alte Satz noch zutrifft: Ist keine Variante aktiv, fällt der Gesamtlauf auf
             // die Aggregation zurück. Ein roter Dauerhinweis wäre jetzt irreführend, ein
-            // ersatzloses Streichen ließe genau diesen Fall unkommentiert.
+            // ersatzloses Streichen ließe genau diesen Fall unkommentiert. Deshalb steht
+            // das Feld in der Designer-Datei auf Visible = false und wird erst in
+            // TabelleFuellen eingeblendet, wenn keine Variante aktiv ist.
             lbl_Hinweis.Text = MyResource.Resource.VAR_VGL_HINWEIS_KEINE_AKTIVE;
-            lbl_Hinweis.ForeColor = Color.Firebrick;
-            lbl_Hinweis.Font = new Font("Segoe UI", 8.25f, FontStyle.Regular);
-            lbl_Hinweis.Visible = false;              // erst, wenn keine Variante aktiv ist
-            Controls.Add(lbl_Hinweis);
 
-            lbl_Protokollkopf = new Label();
-            lbl_Protokollkopf.SetBounds(12, 400, 200, 18);
-            lbl_Protokollkopf.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             lbl_Protokollkopf.Text = MyResource.Resource.VAR_VGL_PROTOKOLL;
-            Controls.Add(lbl_Protokollkopf);
 
-            tb_Protokoll = new TextBox();
-            tb_Protokoll.SetBounds(12, 420, 1216, 168);
-            tb_Protokoll.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            tb_Protokoll.Multiline = true;
-            tb_Protokoll.ReadOnly = true;
-            tb_Protokoll.ScrollBars = ScrollBars.Vertical;
-            tb_Protokoll.BackColor = SystemColors.Window;
-            tb_Protokoll.Font = new Font("Segoe UI", 8.75f, FontStyle.Regular);
-            Controls.Add(tb_Protokoll);
-
-            btn_Aktiv = new Button();
-            btn_Aktiv.SetBounds(12, 596, 210, 30);
-            btn_Aktiv.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             btn_Aktiv.Text = MyResource.Resource.VAR_VGL_BTN_AKTIV;
-            btn_Aktiv.Click += (s, e) => AktivSetzen();
-            Controls.Add(btn_Aktiv);
-
-            btn_Csv = new Button();
-            btn_Csv.SetBounds(230, 596, 190, 30);
-            btn_Csv.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             btn_Csv.Text = MyResource.Resource.OPT_BTN_CSV;
-            btn_Csv.Click += Csv_Click;
-            Controls.Add(btn_Csv);
-
-            btn_Schliessen = new Button();
-            btn_Schliessen.SetBounds(1134, 596, 94, 30);
-            btn_Schliessen.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             btn_Schliessen.Text = MyResource.Resource.OPT_BTN_SCHLIESSEN;
-            btn_Schliessen.Click += (s, e) => Close();
-            Controls.Add(btn_Schliessen);
-
-            CancelButton = btn_Schliessen;
-        }
-
-        /// <summary>
-        /// Gibt die selbst erzeugte Fettschrift frei. Steuerelemente raeumt die
-        /// Basisklasse ab, eine lose <see cref="Font"/> nicht — und die Maske hat keine
-        /// <c>.Designer.cs</c>, in der das sonst stuende.
-        /// </summary>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && m_SchriftAktiv != null)
-            {
-                m_SchriftAktiv.Dispose();
-                m_SchriftAktiv = null;
-            }
-
-            base.Dispose(disposing);
         }
 
         /// <summary>
@@ -633,6 +565,17 @@ namespace WindowsFormsApplication1
         // Aktive Variante umstellen
         // ==================================================================
 
+        /// <summary>Doppelklick auf eine Zeile stellt die aktive Variante um.</summary>
+        private void Varianten_DoubleClick(object sender, EventArgs e)
+        {
+            AktivSetzen();
+        }
+
+        private void Aktiv_Click(object sender, EventArgs e)
+        {
+            AktivSetzen();
+        }
+
         /// <summary>
         /// Macht die markierte Variante zur aktiven Variante des Projekts.
         /// </summary>
@@ -831,10 +774,82 @@ namespace WindowsFormsApplication1
             return wert.Replace(";", ",").Replace("\r", " ").Replace("\n", " ");
         }
 
+        private void Schliessen_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
         private void Melden(string text)
         {
             MessageBox.Show(this, text, MyResource.Resource.VAR_VGL_TITEL,
                             MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
+
+        // ==================================================================
+        // Oberfläche — Begründungen zur Geometrie
+        // ==================================================================
+        //
+        // Die Steuerelemente stehen in Form_SpeicherVariantenVergleich.Designer.cs.
+        // Designer-Code trägt keine Kommentare; die Pixelentscheidungen stehen
+        // deshalb hier. Gemessen wurde mit TextRenderer.MeasureText in der jeweils
+        // gesetzten Schrift (Liste und Statuszeile Segoe UI 9,75 pt, Legende und
+        // Hinweis 8,25 pt, Knöpfe 9 pt) — die Faustformel „7 px je Zeichen" liegt bei
+        // diesen Texten durchweg 20 bis 30 Prozent zu hoch, weil Ziffern, Klammern
+        // und Einheitenzeichen schmal sind.
+        //
+        // --- Design-Politur 21.08.2026 -----------------------------------
+        //
+        // * Echttexte statt Feldnamen. Im Designer standen als Platzhalter die
+        //   Feldnamen („col_Kapazitaet" usw.), lbl_Status hatte überhaupt keinen
+        //   Text. Jetzt steht dort der deutsche Text aus MyResource — als reine
+        //   VORSCHAU, damit im VS-Designer zu sehen ist, ob die Beschriftungen in
+        //   ihre Felder passen. Gesetzt werden sie weiterhin ausschließlich in
+        //   TexteSetzen(); die Maske bleibt zweisprachig. lbl_Status zeigt als
+        //   Vorschau die Formatvorlage VAR_VGL_STATUS wörtlich mit ihren
+        //   Platzhaltern {0}/{1}/{2} — das ist der Normalfall der Maske (die
+        //   Fehlerfassungen VAR_VGL_KEIN_LAUF und VAR_VGL_STATUS_LEER setzt der
+        //   Konstruktor).
+        //
+        // * Sechs Spaltenüberschriften waren mit den Echttexten zu schmal und wurden
+        //   abgeschnitten. Gemessen (Kopftext + 16 px Kopfpolster) gegenüber alt:
+        //     Berechnungsart    114 → 115 (alt 110)
+        //     Kapazität [kWh]   115 → 115 (alt 100)
+        //     Leistung [kW]     102 → 102 (alt  90)
+        //     Ertrag E_a,äq …   132 → 132 (alt 120)
+        //     Amortisation [a]  117 → 118 (alt 110)
+        //     Vollzyklen [1/a]  111 → 112 (alt 100)
+        //   Aktiv (54), Bezeichnung (210), Betriebsart (100), ΔJ (100),
+        //   Investition (105) und Kapitalwert (110) reichten bereits und bleiben.
+        //   Die Spaltensumme wächst damit von 1309 auf 1373 px. Sie lag also schon
+        //   vorher über der Listenbreite von 1216 px: Die Tabelle hat in der
+        //   Grundgröße eine waagerechte Bildlaufleiste. Das bleibt so, und zwar mit
+        //   Absicht — die Alternative wäre eine ClientSize jenseits von 1400 px,
+        //   und damit ein Fenster, das auf einem 1366 x 768-Notebook nicht mehr auf
+        //   den Schirm passt (dieselbe Abwägung wie in Form_QuelleErdreich). Die
+        //   Liste ist an allen vier Seiten verankert; wer die Maske aufzieht oder
+        //   maximiert, sieht alle zwölf Spalten ohne Bildlauf.
+        //
+        // * btn_Schliessen auf 110 x 30 (vorher 94 x 30) — Mindestmaß für Fußknöpfe,
+        //   einheitlich mit den beiden anderen Knopfhöhen der Maske. Die rechte
+        //   Kante bleibt bei x = 1228 (Rand 12), der Knopf beginnt also bei 1118.
+        //
+        // * btn_Csv von x = 230 auf 232 gerückt: Der Abstand zu btn_Aktiv
+        //   (Endkante 222) wächst von 8 auf 10 px. Beide Knöpfe sind Bottom|Left
+        //   verankert, btn_Schliessen Bottom|Right — die Fußzeile hält damit in
+        //   jeder Fensterbreite links und rechts ihren Rand.
+        //
+        // * Keine Größenänderung nötig bei:
+        //     lbl_Status     (328 px Text in 1216 px, AutoEllipsis),
+        //     lbl_Legende    (723 px Text in 1216 px, eine Zeile in 18 px Höhe; auch
+        //                     bei MinimumSize 900 bleibt es eine Zeile),
+        //     lbl_Hinweis    (1236 px Text, bricht damit auf zwei Zeilen um und
+        //                     braucht 26 px — die 32 px Feldhöhe reichen bis hinunter
+        //                     zur MinimumSize; das Feld steht im Designer weiter auf
+        //                     Visible = false, siehe TexteSetzen),
+        //     lbl_Protokollkopf (55 px Text in 200 px),
+        //     btn_Aktiv      (87 px Text in 210 px),
+        //     btn_Csv        (92 px Text in 190 px).
+        //
+        // * ClientSize bleibt 1240 x 640, MinimumSize 900 x 480.
     }
 }

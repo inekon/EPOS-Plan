@@ -22,15 +22,20 @@ namespace WindowsFormsApplication1
     /// <c>row[2]…row[6]</c> (Konzept 4.3, letzter Absatz). Hier wird durchgehend über
     /// Spaltennamen gelesen.
     ///
-    /// Aufbau programmatisch nach dem Bestandsmuster <see cref="Form_QuellePufferspeicher"/>
-    /// (kein Designer, keine .resx). Texte deutsch hartkodiert bis Paket 9 (Konzept 13.6).
+    /// Die Oberfläche steht seit der Designer-Umstellung in
+    /// <c>Form_PufferSp_Projekt.Designer.cs</c>, weiterhin ohne eigene <c>.resx</c>: Alle
+    /// sichtbaren Texte kommen aus <c>MyResource</c> und werden in
+    /// <see cref="TexteSetzen"/> gesetzt; im Designer stehen nur Platzhalter. Die
+    /// Pixelentscheidungen aus den Abnahmebefunden stehen als Kommentarblock in dieser
+    /// Datei — Designer-Code trägt keine Kommentare (Muster
+    /// <see cref="Form_QuellePufferspeicher"/>).
     ///
     /// WICHTIG: Anlegen, Ändern und Entfernen wirken SOFORT auf die Datenbank — der
     /// Dialog ist eine Verwaltung, kein Formular mit Abbruch. Deshalb schließt er nur mit
     /// „Schließen" (DialogResult.OK); ein „Abbrechen", das nichts zurücknähme, wäre eine
     /// Zusage, die der Dialog nicht halten kann.
     /// </summary>
-    public class Form_PufferSp_Projekt : Form
+    public partial class Form_PufferSp_Projekt : Form
     {
         // --- Übergabe ----------------------------------------------------------------
 
@@ -43,36 +48,9 @@ namespace WindowsFormsApplication1
         /// <summary>ID des zuletzt angelegten oder ausgewählten Puffers; 0 = keiner.</summary>
         public int ID_Puffer;
 
-        // --- Oberfläche ---------------------------------------------------------------
-
-        private ListBox _lbProjekt;
-        private Button _btnNeu;
-        private Button _btnEntfernen;
-        private Button _btnKatalog;
-
-        private ComboBox _cbKatalog;
-        private TextBox _tbBezeichner;
-        private TextBox _tbVolumen;
-        private TextBox _tbVerluste;
-        private ComboBox _cbVerwendung;
-        private TextBox _tbVorlauf;
-        private TextBox _tbRuecklauf;
-        private Label _lblQmax;
-        private TextBox _tbSchwelleEin;
-        private TextBox _tbSchwelleAus;
-        private TextBox _tbSchwelleNachrang;
-
-        /// <summary>
-        /// Mindestfüllstand/Notreserve [%] (Paket BHKW-Regulär). Das vierte Schwellenfeld
-        /// der Gruppe; es wirkt AUSSCHLIESSLICH auf die Entladung im BHKW-Pfad.
-        /// </summary>
-        private TextBox _tbSchwelleReserve;
-
-        private ListView _lvLaden;
-        private ComboBox _cbEntladeprio;
-        private Label _lblEntladeInfo;
-        private Button _btnUebernehmen;
-        private Label _lblStatus;
+        // --- Innerer Zustand ----------------------------------------------------------
+        //
+        // Die Steuerelemente stehen in Form_PufferSp_Projekt.Designer.cs.
 
         private List<WaermesenkeClass.PufferInfo> _projektPuffer =
             new List<WaermesenkeClass.PufferInfo>();
@@ -115,76 +93,134 @@ namespace WindowsFormsApplication1
 
         public Form_PufferSp_Projekt()
         {
-            BaueOberflaeche();
+            // Der Designer setzt AutoScaleMode bewusst auf None und lässt
+            // AutoScaleDimensions weg: Die Maske ist ein FixedDialog mit fest
+            // gerechneten Pixelpositionen, und die Anwendung läuft DpiUnaware
+            // (app.manifest, Program.SetHighDpiMode). Vor der Designer-Umstellung
+            // wurde AutoScaleMode überhaupt nicht gesetzt, es fand also ebenfalls
+            // keine Skalierung statt — None hält genau dieses Verhalten fest.
+            InitializeComponent();
+            TexteSetzen();
+            VerwendungslisteFuellen();
+            FensterEinpassung.Einhaengen(this);
         }
 
-        private void BaueOberflaeche()
+        // ==================================================================
+        // Oberfläche — gerettete Begründungen zur Geometrie
+        // ==================================================================
+        //
+        // Die Steuerelemente stehen seit der Designer-Umstellung in
+        // Form_PufferSp_Projekt.Designer.cs. Designer-Code trägt keine Kommentare;
+        // die Pixelentscheidungen aus den Abnahmebefunden stehen deshalb hier.
+        //
+        // * ClientSize 700 x 648 (Paket BHKW-Regulär): 32 px höher als bisher (616). Die
+        //   Eigenschaftengruppe hat eine vierte Schwellenzeile für den Mindestfüllstand
+        //   bekommen; alles darunter ist um denselben Betrag nachgerückt.
+        // * _gbDaten, Größe 676 x 232: +32 für die Mindestfüllstand-Zeile.
+        // * Um dieselben 32 px nachgerückt sind _gbLaden (12/374), _lblEntladeprio
+        //   (16/538), _cbEntladeprio (180/534), _lblEntladeInfo (400/538), _lblStatus
+        //   (14/578) sowie die beiden Fußknöpfe (y = 610).
+        // * _lblMindestfuellstand (16/193) und _tbSchwelleReserve (260/190) tragen den
+        //   MINDESTFÜLLSTAND/NOTRESERVE [%] als viertes Schwellenfeld (Paket
+        //   BHKW-Regulär). Eigene Zeile, weil die Zeile der drei Schaltschwellen über die
+        //   ganze Gruppenbreite belegt ist.
+        //   Der Parameter wirkt AUSSCHLIESSLICH auf die Entladung im BHKW-Pfad (ein BHKW
+        //   braucht einen Anlaufvorrat); alle anderen Erzeuger entladen den Speicher
+        //   unverändert bis 0. Das Feld steht trotzdem an JEDEM Puffer - der Anwender
+        //   weiß beim Anlegen nicht, welcher Erzeuger den Speicher später bedient, und
+        //   eine Sichtbarkeitsregel nach Erzeugerart hätte den Wert bei einer späteren
+        //   Zuordnung stillschweigend entwertet.
+        // * _btnUebernehmen (400/610) und _btnSchliessen (550/610) standen im Bestand als
+        //   ClientSize.Width - 300 bzw. - 150; bei ClientSize.Width = 700 sind das genau
+        //   diese beiden Werte.
+        //
+        // DESIGN-POLITUR 21.08.2026
+        // Im Designer stehen jetzt die deutschen ECHTTEXTE statt der Feldnamen (auch die
+        // sechs Spaltenköpfe samt „#" und die beiden Formatvorlagen von _lblQmax und
+        // _lblEntladeInfo). TexteSetzen() bleibt unverändert und überschreibt sie beim
+        // Start; _lblQmax und _lblEntladeInfo füllt AnzeigenAktualisieren(), das über
+        // SetControls() an JEDER Aufrufstelle vor ShowDialog läuft. _lblStatus bleibt
+        // BEWUSST ohne Entwurfstext: Die Fußzeile meldet nur vollzogene Aktionen und ist
+        // beim Öffnen leer.
+        // Mit den Echttexten sind folgende Überstände aufgefallen und behoben:
+        // * _tbBezeichner 300 -> 200 px breit (rechte Kante 480 -> 380). Bei 300 px lag
+        //   _lblGesamtvolumen (x = 380) VOLLSTÄNDIG hinter dem Eingabefeld — das Feld
+        //   steht in der Z-Reihenfolge davor, die Beschriftung war unsichtbar.
+        // * _lblGesamtvolumen und _lblBereitschaftsverluste auf x = 388, _tbVolumen und
+        //   _tbVerluste auf x = 556 (vorher 380 bzw. 540). „Bereitschaftsverl.
+        //   [kWh/24h]:" misst 159 px (Segoe UI 9 pt) und stieß bei x = 380 bis 539 vor —
+        //   1 px vor dem Eingabefeld. Jetzt 9 px Abstand; die rechte Kante der Felder
+        //   liegt bei 666 und damit noch innerhalb der 676 px breiten Gruppe.
+        // * _tbSchwelleReserve 260 -> 284. Deutsch reicht 260 (Beschriftung 184 px),
+        //   Englisch nicht: „Minimum charge level/emergency reserve [%]:" misst 257 px.
+        // * _btnNeu/_btnEntfernen/_btnKatalog auf einheitlich 214 x 30 (vorher x 26) an
+        //   y = 22/58/94 — 6 px Abstand. _lbProjekt wächst mit auf 420 x 102, damit Liste
+        //   und Knopfleiste gemeinsam bei y = 124 enden; _gbListe 676 x 122 -> 676 x 134
+        //   (7 px bis zum Gruppenrahmen).
+        // * Um die daraus entstehenden 12 px nachgerückt sind _gbDaten (12/148), _gbLaden
+        //   (12/386), _lblEntladeprio (16/550), _cbEntladeprio (180/546), _lblEntladeInfo
+        //   (400/550), _lblStatus (14/590) und die beiden Fußknöpfe (y = 622).
+        // * Fußknöpfe 130 x 28 -> 130 x 30 (Mindestmaß der Politur; die 130 px Breite
+        //   bleibt). Unterkante 652, ClientSize 700 x 648 -> 700 x 662 für die 10 px Luft
+        //   darunter. Die x-Werte 400/550 und damit die rechte Kante bleiben unberührt.
+        // * _lblStatus 430 -> 380 px breit: Die Fußzeile reichte bis x = 444 und lag
+        //   damit über der Knopfspalte (ab x = 400); jetzt endet sie bei 394, also 6 px
+        //   davor.
+        // Knopf-Semantik NICHT angetastet: Der Dialog bleibt eine Verwaltung mit
+        // Sofortwirkung — „Übernehmen" (AcceptButton) und „Schließen" (CancelButton,
+        // DialogResult.OK), bewusst ohne „Abbrechen" (siehe Klassenkommentar oben).
+
+        /// <summary>
+        /// Setzt alle sichtbaren Texte aus <c>MyResource</c>. Läuft direkt nach
+        /// <c>InitializeComponent()</c> und ersetzt die dortigen Platzhalter.
+        /// </summary>
+        private void TexteSetzen()
         {
             this.Text = MyResource.Resource.PSP_PROJEKT_FENSTERTITEL;
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.MinimizeBox = false;
-            this.MaximizeBox = false;
-            // PAKET BHKW-REGULÄR: 32 px höher als bisher (616). Die Eigenschaftengruppe
-            // hat eine vierte Schwellenzeile für den Mindestfüllstand bekommen; alles
-            // darunter ist um denselben Betrag nachgerückt.
-            this.ClientSize = new Size(700, 648);
 
             // --- Bestand --------------------------------------------------------------
-            GroupBox gbListe = new GroupBox
-            {
-                Text = MyResource.Resource.PSP_PROJEKT_FENSTERTITEL,
-                Location = new Point(12, 8),
-                Size = new Size(676, 122)
-            };
-            this.Controls.Add(gbListe);
-
-            _lbProjekt = new ListBox { Location = new Point(14, 22), Size = new Size(420, 88) };
-            _lbProjekt.SelectedIndexChanged += lbProjekt_SelectedIndexChanged;
-            gbListe.Controls.Add(_lbProjekt);
-
-            _btnNeu = new Button { Text = MyResource.Resource.PSP_BTN_NEUER_PUFFERSPEICHER, Location = new Point(446, 22), Size = new Size(214, 26) };
-            _btnNeu.Click += btnNeu_Click;
-            gbListe.Controls.Add(_btnNeu);
-
-            _btnEntfernen = new Button { Text = MyResource.Resource.PSP_BTN_ENTFERNEN, Location = new Point(446, 54), Size = new Size(214, 26) };
-            _btnEntfernen.Click += btnEntfernen_Click;
-            gbListe.Controls.Add(_btnEntfernen);
-
-            _btnKatalog = new Button { Text = MyResource.Resource.PSP_BTN_KATALOG_ANSEHEN, Location = new Point(446, 86), Size = new Size(214, 26) };
-            _btnKatalog.Click += btnKatalog_Click;
-            gbListe.Controls.Add(_btnKatalog);
+            _gbListe.Text = MyResource.Resource.PSP_PROJEKT_FENSTERTITEL;
+            _btnNeu.Text = MyResource.Resource.PSP_BTN_NEUER_PUFFERSPEICHER;
+            _btnEntfernen.Text = MyResource.Resource.PSP_BTN_ENTFERNEN;
+            _btnKatalog.Text = MyResource.Resource.PSP_BTN_KATALOG_ANSEHEN;
 
             // --- Eigenschaften --------------------------------------------------------
-            GroupBox gbDaten = new GroupBox
-            {
-                Text = MyResource.Resource.PSP_GRUPPE_EIGENSCHAFTEN,
-                Location = new Point(12, 136),
-                Size = new Size(676, 232)   // +32 für die Mindestfüllstand-Zeile
-            };
-            this.Controls.Add(gbDaten);
+            _gbDaten.Text = MyResource.Resource.PSP_GRUPPE_EIGENSCHAFTEN;
+            _lblAusKatalog.Text = MyResource.Resource.PSP_LABEL_AUS_KATALOG;
+            _lblBezeichner.Text = MyResource.Resource.PSP_LABEL_BEZEICHNER;
+            _lblVerwendung.Text = MyResource.Resource.PSP_LABEL_VERWENDUNG;
+            _lblGesamtvolumen.Text = MyResource.Resource.PSP_LABEL_GESAMTVOLUMEN;
+            _lblBereitschaftsverluste.Text = MyResource.Resource.PSP_LABEL_BEREITSCHAFTSVERLUSTE;
+            _lblVorlauf.Text = MyResource.Resource.PSP_LABEL_VORLAUF;
+            _lblRuecklauf.Text = MyResource.Resource.PSP_LABEL_RUECKLAUF;
+            _lblEinschaltschwelle.Text = MyResource.Resource.PSP_LABEL_EINSCHALTSCHWELLE;
+            _lblAbschaltschwelle.Text = MyResource.Resource.PSP_LABEL_ABSCHALTSCHWELLE;
+            _lblSchwelleNachrangig.Text = MyResource.Resource.PSP_LABEL_SCHWELLE_NACHRANGIG;
+            _lblMindestfuellstand.Text = MyResource.Resource.PSP_LABEL_MINDESTFUELLSTAND;
 
-            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_AUS_KATALOG, 16, 26));
-            _cbKatalog = new ComboBox
-            {
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                Location = new Point(180, 22),
-                Width = 300
-            };
-            _cbKatalog.SelectedIndexChanged += cbKatalog_SelectedIndexChanged;
-            gbDaten.Controls.Add(_cbKatalog);
+            // --- Ladereihenfolge ------------------------------------------------------
+            _gbLaden.Text = MyResource.Resource.PSP_GRUPPE_LADEREIHENFOLGE;
+            // Die laufende Nummer ist ein Symbol, kein übersetzbarer Satz; sie steht
+            // trotzdem hier, damit ALLE Spaltenüberschriften an einer Stelle stehen.
+            _colNr.Text = "#";
+            _colAnlage.Text = MyResource.Resource.SIM_SPALTE_ANLAGE;
+            _colErzeuger.Text = MyResource.Resource.SIM_ERZEUGERNAME_ALLGEMEIN;
+            _colSenke.Text = MyResource.Resource.SIM_SPALTE_SENKE;
+            _colLadeprio.Text = MyResource.Resource.PSP_SPALTE_LADEPRIO;
+            _colLaedtBis.Text = MyResource.Resource.PSP_SPALTE_LAEDT_BIS;
 
-            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_BEZEICHNER, 16, 58));
-            _tbBezeichner = new TextBox { Location = new Point(180, 55), Width = 300 };
-            gbDaten.Controls.Add(_tbBezeichner);
+            // --- Entladepriorität -----------------------------------------------------
+            _lblEntladeprio.Text = MyResource.Resource.PSP_LABEL_ENTLADEPRIORITAET;
+            _btnUebernehmen.Text = MyResource.Resource.PSP_BTN_UEBERNEHMEN;
+            _btnSchliessen.Text = MyResource.Resource.PSP_BTN_SCHLIESSEN;
+        }
 
-            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_VERWENDUNG, 16, 90));
-            _cbVerwendung = new ComboBox
-            {
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                Location = new Point(180, 86),
-                Width = 180
-            };
+        /// <summary>
+        /// Füllt das Verwendungs-Dropdown. Steht hier statt im Designer, weil
+        /// <see cref="VerwendungItem"/> keine serialisierbare Entwurfszeit-Zutat ist.
+        /// </summary>
+        private void VerwendungslisteFuellen()
+        {
             // Befund L0-2: DB-Wert und Anzeigetext getrennt (VerwendungItem).
             //
             // ETAPPE D5b, VORGEZOGEN (Nacharbeit I-K2-4): Der KOMBISPEICHER als dritte,
@@ -213,151 +249,6 @@ namespace WindowsFormsApplication1
                     Anzeige = MyResource.Resource.PSP_VERWENDUNG_KOMBI_ANZEIGE
                 }
             });
-            _cbVerwendung.SelectedIndexChanged += Daten_Geaendert;
-            gbDaten.Controls.Add(_cbVerwendung);
-
-            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_GESAMTVOLUMEN, 380, 58));
-            _tbVolumen = new TextBox { Location = new Point(540, 55), Width = 110 };
-            _tbVolumen.TextChanged += Kapazitaet_Geaendert;
-            gbDaten.Controls.Add(_tbVolumen);
-
-            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_BEREITSCHAFTSVERLUSTE, 380, 90));
-            _tbVerluste = new TextBox { Location = new Point(540, 87), Width = 110 };
-            gbDaten.Controls.Add(_tbVerluste);
-
-            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_VORLAUF, 16, 124));
-            _tbVorlauf = new TextBox { Location = new Point(180, 121), Width = 60 };
-            _tbVorlauf.TextChanged += Kapazitaet_Geaendert;
-            gbDaten.Controls.Add(_tbVorlauf);
-
-            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_RUECKLAUF, 260, 124));
-            _tbRuecklauf = new TextBox { Location = new Point(360, 121), Width = 60 };
-            _tbRuecklauf.TextChanged += Kapazitaet_Geaendert;
-            gbDaten.Controls.Add(_tbRuecklauf);
-
-            _lblQmax = new Label
-            {
-                AutoSize = false,
-                Location = new Point(436, 124),
-                Size = new Size(220, 18),
-                Text = ""
-            };
-            gbDaten.Controls.Add(_lblQmax);
-
-            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_EINSCHALTSCHWELLE, 16, 160));
-            _tbSchwelleEin = new TextBox { Location = new Point(180, 157), Width = 60 };
-            gbDaten.Controls.Add(_tbSchwelleEin);
-
-            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_ABSCHALTSCHWELLE, 260, 160));
-            _tbSchwelleAus = new TextBox { Location = new Point(400, 157), Width = 60 };
-            gbDaten.Controls.Add(_tbSchwelleAus);
-
-            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_SCHWELLE_NACHRANGIG, 480, 160));
-            _tbSchwelleNachrang = new TextBox { Location = new Point(600, 157), Width = 56 };
-            gbDaten.Controls.Add(_tbSchwelleNachrang);
-
-            // PAKET BHKW-REGULÄR: MINDESTFÜLLSTAND/NOTRESERVE [%] als viertes
-            // Schwellenfeld. Eigene Zeile, weil die Zeile der drei Schaltschwellen über
-            // die ganze Gruppenbreite belegt ist.
-            //
-            // Der Parameter wirkt AUSSCHLIESSLICH auf die Entladung im BHKW-Pfad (ein BHKW
-            // braucht einen Anlaufvorrat); alle anderen Erzeuger entladen den Speicher
-            // unverändert bis 0. Das Feld steht trotzdem an JEDEM Puffer - der Anwender
-            // weiß beim Anlegen nicht, welcher Erzeuger den Speicher später bedient, und
-            // eine Sichtbarkeitsregel nach Erzeugerart hätte den Wert bei einer späteren
-            // Zuordnung stillschweigend entwertet.
-            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_MINDESTFUELLSTAND, 16, 193));
-            _tbSchwelleReserve = new TextBox { Location = new Point(260, 190), Width = 60 };
-            gbDaten.Controls.Add(_tbSchwelleReserve);
-
-            // --- Ladereihenfolge ------------------------------------------------------
-            GroupBox gbLaden = new GroupBox
-            {
-                Text = MyResource.Resource.PSP_GRUPPE_LADEREIHENFOLGE,
-                Location = new Point(12, 374),   // +32 (Mindestfüllstand-Zeile)
-                Size = new Size(676, 152)
-            };
-            this.Controls.Add(gbLaden);
-
-            _lvLaden = new ListView
-            {
-                Location = new Point(14, 22),
-                Size = new Size(646, 118),
-                View = View.Details,
-                FullRowSelect = true,
-                GridLines = true,
-                MultiSelect = false,
-                HeaderStyle = ColumnHeaderStyle.Nonclickable
-            };
-            _lvLaden.Columns.Add("#", 30, HorizontalAlignment.Left);
-            _lvLaden.Columns.Add(MyResource.Resource.SIM_SPALTE_ANLAGE, 220, HorizontalAlignment.Left);
-            _lvLaden.Columns.Add(MyResource.Resource.SIM_ERZEUGERNAME_ALLGEMEIN, 120, HorizontalAlignment.Left);
-            _lvLaden.Columns.Add(MyResource.Resource.SIM_SPALTE_SENKE, 90, HorizontalAlignment.Left);
-            _lvLaden.Columns.Add(MyResource.Resource.PSP_SPALTE_LADEPRIO, 80, HorizontalAlignment.Left);
-            _lvLaden.Columns.Add(MyResource.Resource.PSP_SPALTE_LAEDT_BIS, 90, HorizontalAlignment.Left);
-            gbLaden.Controls.Add(_lvLaden);
-
-            // --- Entladepriorität -----------------------------------------------------
-            Label lblEntlade = new Label
-            {
-                Text = MyResource.Resource.PSP_LABEL_ENTLADEPRIORITAET,
-                AutoSize = true,
-                Location = new Point(16, 538)   // +32 (Mindestfüllstand-Zeile)
-            };
-            this.Controls.Add(lblEntlade);
-
-            _cbEntladeprio = new ComboBox
-            {
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                Location = new Point(180, 534),   // +32
-                Width = 210
-            };
-            this.Controls.Add(_cbEntladeprio);
-
-            _lblEntladeInfo = new Label
-            {
-                AutoSize = false,
-                Location = new Point(400, 538),   // +32
-                Size = new Size(288, 32),
-                Text = ""
-            };
-            this.Controls.Add(_lblEntladeInfo);
-
-            _lblStatus = new Label
-            {
-                AutoSize = false,
-                Location = new Point(14, 578),   // +32
-                Size = new Size(430, 32),
-                Text = ""
-            };
-            this.Controls.Add(_lblStatus);
-
-            _btnUebernehmen = new Button
-            {
-                Text = MyResource.Resource.PSP_BTN_UEBERNEHMEN,
-                Location = new Point(this.ClientSize.Width - 300, 610),   // +32
-                Width = 130,
-                Height = 28
-            };
-            _btnUebernehmen.Click += btnUebernehmen_Click;
-            this.Controls.Add(_btnUebernehmen);
-
-            Button btnSchliessen = new Button
-            {
-                Text = MyResource.Resource.PSP_BTN_SCHLIESSEN,
-                DialogResult = DialogResult.OK,
-                Location = new Point(this.ClientSize.Width - 150, 610),   // +32
-                Width = 130,
-                Height = 28
-            };
-            this.Controls.Add(btnSchliessen);
-            this.AcceptButton = _btnUebernehmen;
-            this.CancelButton = btnSchliessen;
-        }
-
-        private static Label Beschriftung(string text, int x, int y)
-        {
-            return new Label { Text = text, AutoSize = true, Location = new Point(x, y) };
         }
 
         // --- Befüllen -----------------------------------------------------------------

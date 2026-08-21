@@ -73,6 +73,7 @@ namespace WindowsFormsApplication1
             LizenzLaden();
             RechtlicheHinweiseFuellen();
             KomponentenFuellen();
+            FensterEinpassung.Einhaengen(this);
         }
 
         // ------------------------------------------------------------------

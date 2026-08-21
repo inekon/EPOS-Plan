@@ -93,6 +93,7 @@ namespace WindowsFormsApplication1
         public Form_Quellprofil()
         {
             BaueOberflaeche();
+            FensterEinpassung.Einhaengen(this);
         }
 
         /// <summary>

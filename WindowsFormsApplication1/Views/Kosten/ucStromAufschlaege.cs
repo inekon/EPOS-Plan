@@ -20,9 +20,11 @@ namespace WindowsFormsApplication1
     /// Designer-Dateien nicht von Hand editieren).
     /// </para>
     /// <para>
-    /// <b>Vollständig programmatisch</b>, ohne Designer und ohne eigene <c>.resx</c> —
-    /// dasselbe Vorgehen wie bei der Speicher-Parameterseite aus AP3b. Alle sichtbaren
-    /// Texte kommen aus <c>MyResource.Resource.PREIS_*</c> und sind zweisprachig.
+    /// <b>Oberfläche im Designer, ohne eigene <c>.resx</c>.</b> Der Aufbau steht in
+    /// <c>ucStromAufschlaege.Designer.cs</c>; dort tragen alle sichtbaren Texte nur
+    /// Platzhalter (den Feldnamen). Die echten Texte kommen aus
+    /// <c>MyResource.Resource.PREIS_*</c> und <c>DbWerte</c> und werden in
+    /// <see cref="TexteSetzen"/> gesetzt — zweisprachig wie bisher.
     /// </para>
     /// <para>
     /// <b>Kulturregel:</b> Eingabe und Anzeige über <c>Program.ZahlParsen</c> /
@@ -30,31 +32,44 @@ namespace WindowsFormsApplication1
     /// ausschließlich der <c>double</c>, nie eine Zeichenkette.
     /// </para>
     /// </remarks>
-    public class ucStromAufschlaege : UserControl
+    public partial class ucStromAufschlaege : UserControl
     {
-        /// <summary>Breite des Blocks — passend zu <c>panel1</c>/<c>dgvHistory</c> in ucFuelSettings.</summary>
+        /// <summary>
+        /// Breite des Blocks — passend zu <c>panel1</c>/<c>dgvHistory</c> in ucFuelSettings.
+        /// </summary>
+        /// <remarks>
+        /// <b>Muss mit <c>this.Size</c> im Designer übereinstimmen.</b> <c>ucFuelSettings</c>
+        /// liest <see cref="HOEHE"/>, um die eigene Höhe zu vergrößern; die Designer-Größe
+        /// kann keine Konstante referenzieren und steht deshalb dort als Zahl (548, 338).
+        /// Wird eine der beiden Stellen geändert, muss die andere mitgeführt werden.
+        /// </remarks>
         public const int BREITE = 548;
 
-        /// <summary>Gesamthöhe des Blocks.</summary>
-        public const int HOEHE = 300;
+        /// <summary>Gesamthöhe des Blocks. Siehe Hinweis bei <see cref="BREITE"/>.</summary>
+        public const int HOEHE = 338;
 
-        private const int SPALTE_SCHALTER = 14;
-        private const int SPALTE_FELD = 250;
-        private const int SPALTE_EINHEIT = 350;
-        private const int ZEILE_HOEHE = 27;
+        // Das Raster, aus dem die Festkoordinaten im Designer gerechnet sind. Es stand
+        // vor der Umstellung als privater Konstantensatz hier; jetzt ist es reine
+        // Herleitung — die Wahrheit steht in ucStromAufschlaege.Designer.cs, und als
+        // Konstante hier hätte es nur den Anschein erweckt, noch etwas zu bewegen.
+        //   Spalten:  Schalter x = 14, Wertfeld x = 250, Einheit x = 350
+        //   Zeilen:   Wertfeld y = 48 + i * 27 (i = 0..4, Zeilenhöhe 27),
+        //             Schalter 2 px, Einheit 3 px tiefer als das Wertfeld
+        //   Breiten:  Schalter 250 - 14 - 8 = 228, Wertfeld 92, Summen-/Restzeile
+        //             548 - 2 * 14 = 520
 
         private readonly StromAufschlagModel _modell;
 
-        private readonly TextBox[] _felder = new TextBox[5];
-        private readonly CheckBox[] _schalter = new CheckBox[5];
+        /// <summary>
+        /// Die fünf Wertfelder in der Reihenfolge Netzentgelt, Umlagen, Stromsteuer,
+        /// Konzession, Vertrieb. Die Indexreihenfolge ist Vertrag: <see cref="ZeigeModell"/>,
+        /// <see cref="InsModell"/> und die Stromsteuer-Schnellwahl (Index 2) hängen daran.
+        /// Befüllt aus den Designer-Feldern im Konstruktor.
+        /// </summary>
+        private readonly TextBox[] _felder;
 
-        private RadioButton _rbAufgeschluesselt;
-        private RadioButton _rbGesamtwert;
-        private TextBox _tbOverride;
-        private Label _lblSumme;
-        private Label _lblRest;
-        private TextBox _tbVerguetungPv;
-        private TextBox _tbVerguetungBhkw;
+        /// <summary>Die zugehörigen Schalter, gleiche Indexreihenfolge wie <see cref="_felder"/>.</summary>
+        private readonly CheckBox[] _schalter;
 
         /// <summary>Sperrt das Zurückschreiben, solange die Felder programmatisch gefüllt werden.</summary>
         private bool _laden;
@@ -65,10 +80,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         public ucStromAufschlaege(int idProjekt, int idEnergietraeger)
         {
+            // Die Datenbankarbeit läuft wie bisher VOR dem Aufbau der Oberfläche: Wirft
+            // sie, ist kein einziges Steuerelement erzeugt, und ucFuelSettings fängt den
+            // Fehler ab, ohne eine halb aufgebaute Maske stehen zu lassen.
             StromAufschlagCtrl.StelleSpaltenSicher();
             _modell = new StromAufschlagCtrl().Read(idProjekt, idEnergietraeger);
 
-            BaueOberflaeche();
+            // Der Designer setzt AutoScaleMode bewusst NICHT. Vor der Umstellung tat es
+            // der handgebaute Aufbau ebenso wenig; damit bleibt es beim Klassenvorgabewert
+            // AutoScaleMode.Inherit, das Steuerelement übernimmt also die Regel seines
+            // Wirts (ucFuelSettings: AutoScaleMode.None). Das ist genau das bisherige
+            // Verhalten — und passend dazu, dass die Anwendung DpiUnaware läuft
+            // (app.manifest, Program.SetHighDpiMode).
+            InitializeComponent();
+
+            // Die Schleife von früher ist im Designer zu 15 benannten Feldern aufgelöst;
+            // die Logik arbeitet unverändert über die Arrays. Reihenfolge NICHT ändern.
+            _felder = new[] { _tbNetzentgelt, _tbUmlagen, _tbStromsteuer, _tbKonzession, _tbVertrieb };
+            _schalter = new[] { _chkNetzentgelt, _chkUmlagen, _chkStromsteuer, _chkKonzession, _chkVertrieb };
+
+            TexteSetzen();
             ZeigeModell();
         }
 
@@ -79,205 +110,105 @@ namespace WindowsFormsApplication1
         }
 
         // ==================================================================
-        // Oberfläche
+        // Texte
         // ==================================================================
 
-        private void BaueOberflaeche()
+        /// <summary>
+        /// Setzt alle sichtbaren Texte aus <c>MyResource</c> und <c>DbWerte</c>. Läuft
+        /// direkt nach <c>InitializeComponent()</c> und ersetzt die dortigen Platzhalter.
+        /// </summary>
+        private void TexteSetzen()
         {
-            this.Size = new Size(BREITE, HOEHE);
-            this.Font = new Font("Segoe UI", 9f, FontStyle.Regular);
-
-            GroupBox gbAufschlag = new GroupBox
-            {
-                Text = MyResource.Resource.PREIS_GRUPPE_AUFSCHLAG,
-                Location = new Point(0, 0),
-                Size = new Size(BREITE, 232),
-                Font = new Font("Segoe UI", 9f, FontStyle.Bold)
-            };
-            this.Controls.Add(gbAufschlag);
+            _gbAufschlag.Text = MyResource.Resource.PREIS_GRUPPE_AUFSCHLAG;
 
             // --- Modusumschalter (Fachkonzept 4.2) ---
-            _rbAufgeschluesselt = new RadioButton
-            {
-                Text = MyResource.Resource.PREIS_MODUS_AUFGESCHLUESSELT,
-                Location = new Point(SPALTE_SCHALTER, 22),
-                AutoSize = true,
-                Font = new Font("Segoe UI", 9f, FontStyle.Regular),
-                Checked = true
-            };
-            _rbGesamtwert = new RadioButton
-            {
-                Text = MyResource.Resource.PREIS_MODUS_GESAMTWERT,
-                Location = new Point(SPALTE_SCHALTER + 210, 22),
-                AutoSize = true,
-                Font = new Font("Segoe UI", 9f, FontStyle.Regular)
-            };
-            _rbAufgeschluesselt.CheckedChanged += (s, e) => ModusGewechselt();
-            gbAufschlag.Controls.Add(_rbAufgeschluesselt);
-            gbAufschlag.Controls.Add(_rbGesamtwert);
+            _rbAufgeschluesselt.Text = MyResource.Resource.PREIS_MODUS_AUFGESCHLUESSELT;
+            _rbGesamtwert.Text = MyResource.Resource.PREIS_MODUS_GESAMTWERT;
 
             // --- Die fünf Komponenten ---
-            string[] beschriftung =
-            {
-                MyResource.Resource.PREIS_KOMP_NETZENTGELT,
-                MyResource.Resource.PREIS_KOMP_UMLAGEN,
-                MyResource.Resource.PREIS_KOMP_STROMSTEUER,
-                MyResource.Resource.PREIS_KOMP_KONZESSION,
-                MyResource.Resource.PREIS_KOMP_VERTRIEB
-            };
+            _chkNetzentgelt.Text = MyResource.Resource.PREIS_KOMP_NETZENTGELT;
+            _chkUmlagen.Text = MyResource.Resource.PREIS_KOMP_UMLAGEN;
+            _chkStromsteuer.Text = MyResource.Resource.PREIS_KOMP_STROMSTEUER;
+            _chkKonzession.Text = MyResource.Resource.PREIS_KOMP_KONZESSION;
+            _chkVertrieb.Text = MyResource.Resource.PREIS_KOMP_VERTRIEB;
 
-            int y = 48;
-            for (int i = 0; i < 5; i++)
-            {
-                _schalter[i] = new CheckBox
-                {
-                    Text = beschriftung[i],
-                    Location = new Point(SPALTE_SCHALTER, y + 2),
-                    Size = new Size(SPALTE_FELD - SPALTE_SCHALTER - 8, 21),
-                    Font = new Font("Segoe UI", 9f, FontStyle.Regular),
-                    Checked = true
-                };
-                _schalter[i].CheckedChanged += (s, e) => SummeAktualisieren();
-                gbAufschlag.Controls.Add(_schalter[i]);
-
-                _felder[i] = new TextBox
-                {
-                    Location = new Point(SPALTE_FELD, y),
-                    Size = new Size(92, 23),
-                    TextAlign = HorizontalAlignment.Right,
-                    Font = new Font("Segoe UI", 9f, FontStyle.Regular)
-                };
-                _felder[i].TextChanged += (s, e) => { Program.ZahlFaerben(s); SummeAktualisieren(); };
-                gbAufschlag.Controls.Add(_felder[i]);
-
-                gbAufschlag.Controls.Add(new Label
-                {
-                    Text = DbWerte.PREISREIHE_EINHEIT_CT_KWH,
-                    Location = new Point(SPALTE_EINHEIT, y + 3),
-                    AutoSize = true,
-                    Font = new Font("Segoe UI", 9f, FontStyle.Regular)
-                });
-
-                y += ZEILE_HOEHE;
-            }
+            _lblEinheitNetzentgelt.Text = DbWerte.PREISREIHE_EINHEIT_CT_KWH;
+            _lblEinheitUmlagen.Text = DbWerte.PREISREIHE_EINHEIT_CT_KWH;
+            _lblEinheitStromsteuer.Text = DbWerte.PREISREIHE_EINHEIT_CT_KWH;
+            _lblEinheitKonzession.Text = DbWerte.PREISREIHE_EINHEIT_CT_KWH;
+            _lblEinheitVertrieb.Text = DbWerte.PREISREIHE_EINHEIT_CT_KWH;
 
             // --- Stromsteuer-Schnellwahl (Fachkonzept 4.2) ---
-            int yStromsteuer = 48 + 2 * ZEILE_HOEHE;
-            gbAufschlag.Controls.Add(SchnellwahlKnopf(
-                StromAufschlagModel.STROMSTEUER_REGELFALL,
-                MyResource.Resource.PREIS_STROMSTEUER_REGELFALL, 402, yStromsteuer - 1));
-            gbAufschlag.Controls.Add(SchnellwahlKnopf(
-                StromAufschlagModel.STROMSTEUER_REDUZIERT,
-                MyResource.Resource.PREIS_STROMSTEUER_REDUZIERT, 468, yStromsteuer - 1));
+            _btnStromsteuerRegelfall.Text = MyResource.Resource.PREIS_STROMSTEUER_REGELFALL;
+            _btnStromsteuerReduziert.Text = MyResource.Resource.PREIS_STROMSTEUER_REDUZIERT;
 
-            // --- Live-Summe ---
-            _lblSumme = new Label
-            {
-                Location = new Point(SPALTE_SCHALTER, y + 6),
-                Size = new Size(BREITE - 2 * SPALTE_SCHALTER, 20),
-                Font = new Font("Segoe UI", 9.5f, FontStyle.Bold)
-            };
-            gbAufschlag.Controls.Add(_lblSumme);
-
-            // --- Override-Gesamtwert und der nicht aufgeschlüsselte Rest ---
-            y += 30;
-            gbAufschlag.Controls.Add(new Label
-            {
-                Text = MyResource.Resource.PREIS_LABEL_GESAMTAUFSCHLAG,
-                Location = new Point(SPALTE_SCHALTER, y + 3),
-                Size = new Size(SPALTE_FELD - SPALTE_SCHALTER - 8, 21),
-                Font = new Font("Segoe UI", 9f, FontStyle.Regular)
-            });
-
-            _tbOverride = new TextBox
-            {
-                Location = new Point(SPALTE_FELD, y),
-                Size = new Size(92, 23),
-                TextAlign = HorizontalAlignment.Right,
-                Font = new Font("Segoe UI", 9f, FontStyle.Regular)
-            };
-            _tbOverride.TextChanged += (s, e) => { Program.ZahlFaerben(s); SummeAktualisieren(); };
-            gbAufschlag.Controls.Add(_tbOverride);
-
-            gbAufschlag.Controls.Add(new Label
-            {
-                Text = DbWerte.PREISREIHE_EINHEIT_CT_KWH,
-                Location = new Point(SPALTE_EINHEIT, y + 3),
-                AutoSize = true,
-                Font = new Font("Segoe UI", 9f, FontStyle.Regular)
-            });
-
-            _lblRest = new Label
-            {
-                Location = new Point(SPALTE_SCHALTER, y + 28),
-                Size = new Size(BREITE - 2 * SPALTE_SCHALTER, 20),
-                Font = new Font("Segoe UI", 8.5f, FontStyle.Regular),
-                ForeColor = Color.FromArgb(100, 100, 100)
-            };
-            gbAufschlag.Controls.Add(_lblRest);
+            // --- Override-Gesamtwert ---
+            _lblGesamtaufschlag.Text = MyResource.Resource.PREIS_LABEL_GESAMTAUFSCHLAG;
+            _lblEinheitOverride.Text = DbWerte.PREISREIHE_EINHEIT_CT_KWH;
 
             // --- Vergütung (Fachkonzept 4.3) ---
-            GroupBox gbVerguetung = new GroupBox
-            {
-                Text = MyResource.Resource.PREIS_GRUPPE_VERGUETUNG,
-                Location = new Point(0, 238),
-                Size = new Size(BREITE, 58),
-                Font = new Font("Segoe UI", 9f, FontStyle.Bold)
-            };
-            this.Controls.Add(gbVerguetung);
-
-            _tbVerguetungPv = VerguetungsFeld(gbVerguetung, MyResource.Resource.PREIS_LABEL_VERGUETUNG_PV,
-                                              SPALTE_SCHALTER, 22);
-            _tbVerguetungBhkw = VerguetungsFeld(gbVerguetung, MyResource.Resource.PREIS_LABEL_VERGUETUNG_BHKW,
-                                                290, 22);
+            _gbVerguetung.Text = MyResource.Resource.PREIS_GRUPPE_VERGUETUNG;
+            _lblVerguetungPv.Text = MyResource.Resource.PREIS_LABEL_VERGUETUNG_PV;
+            _lblEinheitVerguetungPv.Text = DbWerte.PREISREIHE_EINHEIT_CT_KWH;
+            _lblVerguetungBhkw.Text = MyResource.Resource.PREIS_LABEL_VERGUETUNG_BHKW;
+            _lblEinheitVerguetungBhkw.Text = DbWerte.PREISREIHE_EINHEIT_CT_KWH;
         }
 
-        private Button SchnellwahlKnopf(double wert, string beschriftung, int x, int y)
+        // ==================================================================
+        // Ereignisse
+        // ==================================================================
+
+        private void rbAufgeschluesselt_CheckedChanged(object sender, EventArgs e)
         {
-            Button b = new Button
-            {
-                Text = beschriftung,
-                Location = new Point(x, y),
-                Size = new Size(62, 24),
-                Font = new Font("Segoe UI", 8f, FontStyle.Regular)
-            };
-            b.Click += (s, e) =>
-            {
-                _felder[2].Text = wert.ToString("0.###", CultureInfo.CurrentCulture);
-                _schalter[2].Checked = true;
-            };
-            return b;
+            ModusGewechselt();
         }
 
-        private TextBox VerguetungsFeld(GroupBox eltern, string beschriftung, int x, int y)
+        /// <summary>
+        /// Gemeinsamer Schalter-Handler der fünf Komponentenzeilen — er arbeitet
+        /// ausschließlich über das Modell, nicht über <c>sender</c>.
+        /// </summary>
+        private void KomponenteSchalter_CheckedChanged(object sender, EventArgs e)
         {
-            eltern.Controls.Add(new Label
-            {
-                Text = beschriftung,
-                Location = new Point(x, y + 3),
-                Size = new Size(150, 21),
-                Font = new Font("Segoe UI", 9f, FontStyle.Regular)
-            });
+            SummeAktualisieren();
+        }
 
-            TextBox tb = new TextBox
-            {
-                Location = new Point(x + 152, y),
-                Size = new Size(70, 23),
-                TextAlign = HorizontalAlignment.Right,
-                Font = new Font("Segoe UI", 9f, FontStyle.Regular)
-            };
-            tb.TextChanged += (s, e) => Program.ZahlFaerben(s);
-            eltern.Controls.Add(tb);
+        /// <summary>
+        /// Gemeinsamer Handler der sechs Aufschlagsfelder (fünf Komponenten und der
+        /// Override-Gesamtwert): einfärben und die Live-Summe nachziehen.
+        /// </summary>
+        private void Zahlenfeld_TextChanged(object sender, EventArgs e)
+        {
+            Program.ZahlFaerben(sender);
+            SummeAktualisieren();
+        }
 
-            eltern.Controls.Add(new Label
-            {
-                Text = DbWerte.PREISREIHE_EINHEIT_CT_KWH,
-                Location = new Point(x + 226, y + 3),
-                AutoSize = true,
-                Font = new Font("Segoe UI", 9f, FontStyle.Regular)
-            });
+        /// <summary>
+        /// Die beiden Vergütungsfelder gehen NICHT in die Aufschlagssumme ein — hier
+        /// wird nur eingefärbt.
+        /// </summary>
+        private void Verguetungsfeld_TextChanged(object sender, EventArgs e)
+        {
+            Program.ZahlFaerben(sender);
+        }
 
-            return tb;
+        private void btnStromsteuerRegelfall_Click(object sender, EventArgs e)
+        {
+            StromsteuerUebernehmen(StromAufschlagModel.STROMSTEUER_REGELFALL);
+        }
+
+        private void btnStromsteuerReduziert_Click(object sender, EventArgs e)
+        {
+            StromsteuerUebernehmen(StromAufschlagModel.STROMSTEUER_REDUZIERT);
+        }
+
+        /// <summary>
+        /// Trägt einen Schnellwahlwert in die Stromsteuerzeile (Index 2) ein und schaltet
+        /// sie aktiv. Die beiden Knöpfe unterscheiden sich nur im Wert.
+        /// </summary>
+        private void StromsteuerUebernehmen(double wert)
+        {
+            _felder[2].Text = wert.ToString("0.###", CultureInfo.CurrentCulture);
+            _schalter[2].Checked = true;
         }
 
         // ==================================================================

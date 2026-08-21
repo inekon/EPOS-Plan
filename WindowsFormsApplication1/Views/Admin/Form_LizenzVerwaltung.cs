@@ -9,163 +9,120 @@ namespace WindowsFormsApplication1
     /// Lizenzverwaltung (Administration → Lizenz): Status der Lizenz auf
     /// diesem Arbeitsplatz, Aktivierung per Lizenzschlüssel oder Lizenzdatei
     /// (.lic), Anforderung einer Testversion und Freigabe des Geräts.
-    ///
-    /// Bewusst vollständig programmatisch aufgebaut (kein Designer, keine
-    /// .resx), analog zu InitMarke/InitKiHilfe in MDIMainForm.
     /// </summary>
-    public class Form_LizenzVerwaltung : Form
+    /// <remarks>
+    /// <para>
+    /// Die Oberfläche steht in <c>Form_LizenzVerwaltung.Designer.cs</c> — bis zur
+    /// Umstellung war sie vollständig programmatisch aufgebaut (analog zu
+    /// InitMarke/InitKiHilfe in MDIMainForm). Eine eigene <c>.resx</c> gibt es
+    /// weiterhin nicht: Alle sichtbaren Texte kommen aus <c>MyResource</c> und
+    /// werden in <see cref="TexteSetzen"/> gesetzt; im Designer stehen nur
+    /// Platzhalter.
+    /// </para>
+    /// <para>
+    /// Der Aufbau ist logikfrei; <see cref="StatusAnzeigen"/> läuft danach und
+    /// füllt Status, Detailzeile und die Bedienbarkeit der beiden Schaltflächen
+    /// unter „Weitere Aktionen" — diese Reihenfolge ist unverändert.
+    /// </para>
+    /// </remarks>
+    public partial class Form_LizenzVerwaltung : Form
     {
-        private Label _statusWert;
-        private Label _detailWert;
-        private TextBox _schluessel;
-        private TextBox _email;
-        private Button _aktivieren;
-        private Button _licLaden;
-        private Button _trial;
-        private Button _freigeben;
-        private Label _hinweis;
-
         public Form_LizenzVerwaltung()
         {
-            AufbauOberflaeche();
+            // Der Designer setzt AutoScaleMode bewusst auf None und lässt
+            // AutoScaleDimensions weg: Die Maske ist ein FixedDialog mit fest
+            // gerechneten Pixelpositionen, und die Anwendung läuft DpiUnaware
+            // (app.manifest, Program.SetHighDpiMode). Vor der Designer-Umstellung
+            // wurde AutoScaleMode überhaupt nicht gesetzt, es fand also ebenfalls
+            // keine Skalierung statt — None hält genau dieses Verhalten fest.
+            InitializeComponent();
+            TexteSetzen();
             StatusAnzeigen();
+
+            FensterEinpassung.Einhaengen(this);
         }
 
-        private void AufbauOberflaeche()
-        {
-            this.Text = "Lizenz — " + MDIMainForm.PRODUKTNAME;
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.ClientSize = new Size(560, 470);
-            this.Font = new Font("Segoe UI", 9f);
+        // ==================================================================
+        // Oberfläche — Begründungen zur Geometrie
+        // ==================================================================
+        //
+        // Die Steuerelemente stehen in Form_LizenzVerwaltung.Designer.cs.
+        // Designer-Code trägt keine Kommentare; die Pixelentscheidungen stehen
+        // deshalb hier (Muster Form_PufferSp_Projekt).
+        //
+        // DESIGN-POLITUR 21.08.2026
+        // * Im Designer stehen jetzt die deutschen ECHTTEXTE statt der Feldnamen.
+        //   TexteSetzen() überschreibt sie beim Start unverändert.
+        //   _statusWert und _detailWert bekommen zusätzlich einen Musterinhalt —
+        //   beide füllt StatusAnzeigen() noch im Konstruktor, der Entwurfstext ist
+        //   also reine Entwurfszeit-Anschauung. _hinweis bleibt BEWUSST leer: Die
+        //   Fußzeile meldet nur laufende Vorgänge und ist beim Öffnen leer; ein
+        //   Entwurfstext stünde dort bis zur ersten Aktion sichtbar herum.
+        // * _statusWert 504 x 22 -> 504 x 40 (Lage 24 -> 22). Der längste Status
+        //   („Die Systemuhr wurde zurückgestellt — …", Segoe UI Semibold 9,5 pt)
+        //   misst 526 px und passte damit NICHT in die 504 px; einzeilig wurde er
+        //   abgeschnitten. Zwei Zeilen brauchen 39 px.
+        // * _detailWert 504 x 44 -> 504 x 38 an y = 64 (vorher 48): Der Zweizeiler
+        //   aus LIZ_DETAIL braucht 37 px, die frei werdenden 6 px gehen an den
+        //   Statuswert. _portal rückt auf y = 105 — als AutoSize-LinkLabel ist es
+        //   21 px hoch, nicht 15 —, _statusBox wächst 120 -> 132.
+        // * _licLaden stand bei x = 418 mit 118 px Breite — rechte Kante 536 und
+        //   damit 8 px ÜBER dem Rahmen der 528 px breiten Gruppe. Neu x = 398
+        //   (rechte Kante 516, 12 px Innenrand). Damit der Abstand zum Eingabefeld
+        //   stimmt, werden _schluessel und _email von 280 auf 260 px schmaler
+        //   (rechte Kante 390, 8 px Abstand zum Knopf).
+        // * _aktivHinweis 504 x 30 -> 504 x 34: Der fest zweizeilige Hinweis
+        //   (8 pt) braucht 33 px. _aktivBox wächst dafür 168 -> 176 und rückt auf
+        //   y = 156; _aktionenBox folgt auf y = 338 (6 px Abstand).
+        // * Fußzeile: _schliessen 90 x 30 -> 110 x 30 an (434, 444). Die rechte
+        //   Kante bleibt bei x = 544 (ClientSize 560 minus 16 Rand). _hinweis wird
+        //   dafür von 428 auf 412 px schmaler (6 px Abstand zum Knopf) und rückt
+        //   auf y = 422. ClientSize 560 x 470 -> 560 x 486 (12 px unter dem Knopf).
+        // * Knopf-Semantik unverändert: Aktionsknöpfe (Aktivieren, Testversion,
+        //   Freigeben) plus „Schließen" als CancelButton. Kein OK/Abbrechen-Paar —
+        //   die Aktivierung läuft in Aktivieren_Click sofort gegen den Lizenzserver
+        //   und ist beim Schließen längst geschehen; ein „Abbrechen" würde eine
+        //   Rücknahme zusagen, die der Dialog nicht leisten kann.
 
-            int rand = 16;
-            int breite = this.ClientSize.Width - 2 * rand;
+        // ==================================================================
+        // Texte
+        // ==================================================================
+
+        /// <summary>
+        /// Setzt alle sichtbaren Texte aus <c>MyResource</c>. Läuft direkt nach
+        /// <c>InitializeComponent()</c> und ersetzt die dortigen Platzhalter.
+        /// </summary>
+        private void TexteSetzen()
+        {
+            // PRODUKTNAME ist eine Anwendungskonstante und kein Übersetzungsgut —
+            // lokalisiert wird nur das Wort davor, der Titel selbst bleibt ein
+            // zur Laufzeit zusammengesetzter Wert.
+            this.Text = MyResource.Resource.LIZ_TITEL + " — " + MDIMainForm.PRODUKTNAME;
 
             // --- Status ---------------------------------------------------
-            GroupBox statusBox = new GroupBox
-            {
-                Text = "Lizenzstatus auf diesem Arbeitsplatz",
-                Location = new Point(rand, 12),
-                Size = new Size(breite, 120),
-            };
-            _statusWert = new Label
-            {
-                Location = new Point(12, 24),
-                Size = new Size(statusBox.Width - 24, 22),
-                Font = new Font("Segoe UI Semibold", 9.5f, FontStyle.Bold),
-            };
-            _detailWert = new Label
-            {
-                Location = new Point(12, 48),
-                Size = new Size(statusBox.Width - 24, 44),
-                ForeColor = Color.FromArgb(90, 96, 102),
-            };
-            LinkLabel portal = new LinkLabel
-            {
-                Text = "Lizenzportal öffnen (Benutzer und Geräte verwalten, Schlüssel neu erzeugen)",
-                Location = new Point(12, 94),
-                AutoSize = true,
-            };
-            portal.LinkClicked += (s, e) => LinkOeffnen(LizenzManager.PORTAL_URL);
-            statusBox.Controls.Add(_statusWert);
-            statusBox.Controls.Add(_detailWert);
-            statusBox.Controls.Add(portal);
+            _statusBox.Text = MyResource.Resource.LIZ_GRP_STATUS;
+            _portal.Text = MyResource.Resource.LIZ_LINK_PORTAL;
 
             // --- Aktivierung ----------------------------------------------
-            GroupBox aktivBox = new GroupBox
-            {
-                Text = "Aktivieren",
-                Location = new Point(rand, 144),
-                Size = new Size(breite, 168),
-            };
-            Label schluesselLabel = new Label { Text = "Lizenzschlüssel:", Location = new Point(12, 28), AutoSize = true };
-            _schluessel = new TextBox
-            {
-                Location = new Point(130, 25),
-                Size = new Size(280, 24),
-                CharacterCasing = CharacterCasing.Upper,
-            };
-            _licLaden = new Button
-            {
-                Text = "Lizenzdatei (.lic)…",
-                Location = new Point(418, 24),
-                Size = new Size(118, 26),
-            };
-            _licLaden.Click += LicLaden_Click;
-
-            Label emailLabel = new Label { Text = "E-Mail (Benutzer):", Location = new Point(12, 62), AutoSize = true };
-            _email = new TextBox
-            {
-                Location = new Point(130, 59),
-                Size = new Size(280, 24),
-            };
-
-            _aktivieren = new Button
-            {
-                Text = "Jetzt aktivieren",
-                Location = new Point(130, 96),
-                Size = new Size(140, 30),
-            };
-            _aktivieren.Click += Aktivieren_Click;
-
-            Label aktivHinweis = new Label
-            {
-                Text = "Die Aktivierung benötigt einmalig eine Internetverbindung. Übertragen werden nur\n" +
-                       "Lizenzschlüssel, E-Mail und ein anonymer Geräte-Hash — keine Projekt- oder Kundendaten.",
-                Location = new Point(12, 132),
-                Size = new Size(aktivBox.Width - 24, 30),
-                ForeColor = Color.FromArgb(120, 126, 132),
-                Font = new Font("Segoe UI", 8f),
-            };
-            aktivBox.Controls.AddRange(new Control[] { schluesselLabel, _schluessel, _licLaden, emailLabel, _email, _aktivieren, aktivHinweis });
+            _aktivBox.Text = MyResource.Resource.LIZ_GRP_AKTIVIEREN;
+            _schluesselLabel.Text = MyResource.Resource.LIZ_LBL_SCHLUESSEL;
+            _licLaden.Text = MyResource.Resource.LIZ_BTN_LIC;
+            _emailLabel.Text = MyResource.Resource.LIZ_LBL_EMAIL;
+            _aktivieren.Text = MyResource.Resource.LIZ_BTN_AKTIVIEREN;
+            _aktivHinweis.Text = MyResource.Resource.LIZ_HINWEIS_AKTIVIERUNG;
 
             // --- Testversion / Freigabe -----------------------------------
-            GroupBox aktionenBox = new GroupBox
-            {
-                Text = "Weitere Aktionen",
-                Location = new Point(rand, 324),
-                Size = new Size(breite, 76),
-            };
-            _trial = new Button
-            {
-                Text = "Testversion anfordern…",
-                Location = new Point(12, 28),
-                Size = new Size(170, 30),
-            };
-            _trial.Click += Trial_Click;
-            _freigeben = new Button
-            {
-                Text = "Gerät von der Lizenz lösen",
-                Location = new Point(196, 28),
-                Size = new Size(190, 30),
-            };
-            _freigeben.Click += Freigeben_Click;
-            aktionenBox.Controls.Add(_trial);
-            aktionenBox.Controls.Add(_freigeben);
+            _aktionenBox.Text = MyResource.Resource.LIZ_GRP_AKTIONEN;
+            _trial.Text = MyResource.Resource.LIZ_BTN_TRIAL;
+            _freigeben.Text = MyResource.Resource.LIZ_BTN_FREIGEBEN;
 
             // --- Fußzeile -------------------------------------------------
-            _hinweis = new Label
-            {
-                Location = new Point(rand, 408),
-                Size = new Size(breite - 100, 52),
-                ForeColor = Color.FromArgb(90, 96, 102),
-            };
-            Button schliessen = new Button
-            {
-                Text = "Schließen",
-                Location = new Point(this.ClientSize.Width - rand - 90, 428),
-                Size = new Size(90, 30),
-                DialogResult = DialogResult.Cancel,
-            };
-            this.CancelButton = schliessen;
-
-            this.Controls.AddRange(new Control[] { statusBox, aktivBox, aktionenBox, _hinweis, schliessen });
+            _schliessen.Text = MyResource.Resource.LIZ_BTN_SCHLIESSEN;
         }
 
-        // ------------------------------------------------------------------
+        // ==================================================================
+        // Anzeige
+        // ==================================================================
 
         private void StatusAnzeigen()
         {
@@ -180,19 +137,22 @@ namespace WindowsFormsApplication1
 
             if (token != null)
             {
-                _detailWert.Text =
-                    "Lizenz " + token.LizenzId + " · " + token.Firma + Environment.NewLine +
-                    "Benutzer: " + token.Benutzer + " · Gerät: " + GeraeteId.Anzeigename();
+                _detailWert.Text = string.Format(MyResource.Resource.LIZ_DETAIL,
+                    token.LizenzId, token.Firma, token.Benutzer, GeraeteId.Anzeigename());
                 _freigeben.Enabled = true;
             }
             else
             {
-                _detailWert.Text = "Auf diesem Arbeitsplatz ist keine Lizenz hinterlegt.";
+                _detailWert.Text = MyResource.Resource.LIZ_DETAIL_KEINE;
                 _freigeben.Enabled = false;
             }
 
             _trial.Enabled = (token == null);
         }
+
+        // ==================================================================
+        // Ereignisse
+        // ==================================================================
 
         private async void Aktivieren_Click(object sender, EventArgs e)
         {
@@ -201,30 +161,30 @@ namespace WindowsFormsApplication1
 
             if (schluessel.Length == 0 || email.Length == 0)
             {
-                MessageBox.Show(this, "Bitte Lizenzschlüssel und E-Mail-Adresse angeben.",
+                MessageBox.Show(this, MyResource.Resource.LIZ_MSG_EINGABE_FEHLT,
                     this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
             if (!EmailGueltig(email))
             {
-                MessageBox.Show(this, "Die E-Mail-Adresse \"" + email + "\" ist ungültig — bitte prüfen (Beispiel: name@firma.de).",
+                MessageBox.Show(this, string.Format(MyResource.Resource.LIZ_MSG_EMAIL_UNGUELTIG, email),
                     this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            BedienungSperren(true, "Aktivierung läuft…");
+            BedienungSperren(true, MyResource.Resource.LIZ_STATUS_AKTIVIERUNG);
             LizenzServerAntwort antwort = await LizenzManager.Aktivieren(schluessel, email);
             BedienungSperren(false, null);
 
             if (antwort.Ok)
             {
-                MessageBox.Show(this, "Die Lizenz wurde erfolgreich aktiviert." + Environment.NewLine + Environment.NewLine +
+                MessageBox.Show(this, MyResource.Resource.LIZ_MSG_AKTIVIERT + Environment.NewLine + Environment.NewLine +
                     LizenzManager.StatusText(), this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 _schluessel.Clear();
             }
             else
             {
-                MessageBox.Show(this, antwort.Meldung ?? "Die Aktivierung ist fehlgeschlagen.",
+                MessageBox.Show(this, antwort.Meldung ?? MyResource.Resource.LIZ_MSG_AKTIVIERUNG_FEHLER,
                     this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             StatusAnzeigen();
@@ -234,21 +194,21 @@ namespace WindowsFormsApplication1
         {
             using OpenFileDialog dialog = new OpenFileDialog
             {
-                Title = "Lizenzdatei laden",
-                Filter = "EPOS-Plan Lizenzdatei (*.lic)|*.lic|Alle Dateien (*.*)|*.*",
+                Title = MyResource.Resource.LIZ_DLG_LIC_TITEL,
+                Filter = MyResource.Resource.LIZ_DLG_LIC_FILTER,
             };
             if (dialog.ShowDialog(this) != DialogResult.OK) return;
 
             LizenzManager.LicDateiLesen(dialog.FileName, out string schluessel, out string email);
             if (string.IsNullOrWhiteSpace(schluessel))
             {
-                MessageBox.Show(this, "In der gewählten Datei wurde kein gültiger Lizenzschlüssel gefunden.",
+                MessageBox.Show(this, MyResource.Resource.LIZ_MSG_LIC_OHNE_SCHLUESSEL,
                     this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
             _schluessel.Text = schluessel;
             if (!string.IsNullOrWhiteSpace(email)) _email.Text = email;
-            _hinweis.Text = "Lizenzdatei geladen — bitte mit \"Jetzt aktivieren\" abschließen.";
+            _hinweis.Text = MyResource.Resource.LIZ_HINWEIS_LIC_GELADEN;
         }
 
         private async void Trial_Click(object sender, EventArgs e)
@@ -256,39 +216,52 @@ namespace WindowsFormsApplication1
             string email = (_email.Text ?? "").Trim();
             if (email.Length == 0 || !EmailGueltig(email))
             {
-                MessageBox.Show(this, "Bitte oben eine gültige E-Mail-Adresse eintragen (Beispiel: name@firma.de) — der Test-Lizenzschlüssel wird dorthin gesendet.",
+                MessageBox.Show(this, MyResource.Resource.LIZ_MSG_TRIAL_EMAIL,
                     this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            BedienungSperren(true, "Testversion wird angefordert…");
+            BedienungSperren(true, MyResource.Resource.LIZ_STATUS_TRIAL);
             LizenzServerAntwort antwort = await new LizenzServerClient().TrialAnfordern(email, Environment.UserName);
             BedienungSperren(false, null);
 
             MessageBox.Show(this,
-                antwort.Meldung ?? (antwort.Ok ? "Der Test-Lizenzschlüssel wurde per E-Mail versandt." : "Die Anforderung ist fehlgeschlagen."),
+                antwort.Meldung ?? (antwort.Ok ? MyResource.Resource.LIZ_MSG_TRIAL_OK : MyResource.Resource.LIZ_MSG_TRIAL_FEHLER),
                 this.Text, MessageBoxButtons.OK, antwort.Ok ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
         }
 
         private async void Freigeben_Click(object sender, EventArgs e)
         {
             DialogResult wahl = MessageBox.Show(this,
-                "Dieses Gerät von der Lizenz lösen?" + Environment.NewLine + Environment.NewLine +
-                "Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuaktivierung nötig.",
+                MyResource.Resource.LIZ_MSG_FREIGEBEN_FRAGE,
                 this.Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (wahl != DialogResult.Yes) return;
 
-            BedienungSperren(true, "Gerät wird freigegeben…");
+            BedienungSperren(true, MyResource.Resource.LIZ_STATUS_FREIGABE);
             LizenzServerAntwort antwort = await LizenzManager.Freigeben();
             BedienungSperren(false, null);
 
             if (!antwort.Ok && antwort.NetzwerkFehler)
             {
-                MessageBox.Show(this, "Der Lizenzserver ist zurzeit nicht erreichbar — bitte später erneut versuchen.",
+                MessageBox.Show(this, MyResource.Resource.LIZ_MSG_SERVER_NICHT_ERREICHBAR,
                     this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             StatusAnzeigen();
         }
+
+        /// <summary>
+        /// Der Verweis auf das Lizenzportal. Vor der Designer-Umstellung ein
+        /// Lambda an <c>LinkClicked</c>; der Designer verdrahtet ausschließlich
+        /// Methodenverweise, deshalb steht er jetzt hier.
+        /// </summary>
+        private void Portal_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            LinkOeffnen(LizenzManager.PORTAL_URL);
+        }
+
+        // ==================================================================
+        // Hilfsmittel
+        // ==================================================================
 
         private void BedienungSperren(bool sperren, string text)
         {
@@ -320,6 +293,7 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
+                // Ablaufverfolgung, keine Anzeige — bleibt bewusst unlokalisiert.
                 Debug.WriteLine("Link konnte nicht geöffnet werden: " + ex.Message);
             }
         }

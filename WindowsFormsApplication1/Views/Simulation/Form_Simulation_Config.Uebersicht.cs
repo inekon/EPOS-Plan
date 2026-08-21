@@ -658,88 +658,15 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            Form frm = new Form();
-            frm.Text = string.Format(MyResource.Resource.SIM_BETRIEBSMODUS_FENSTERTITEL, info.Bezeichner);
-            frm.FormBorderStyle = FormBorderStyle.FixedDialog;
-            frm.StartPosition = FormStartPosition.CenterParent;
-            frm.MinimizeBox = false;
-            frm.MaximizeBox = false;
-            frm.ClientSize = new Size(520, 300);
-
-            Label kopf = new Label
+            // Die Maske steht in Form_Betriebsmodus (Views\Simulation). Sie entstand
+            // hier früher als Wegwerf-Form im Methodenrumpf und wurde nie
+            // freigegeben - das using holt das nach.
+            string modus;
+            using (Form_Betriebsmodus dlg = new Form_Betriebsmodus(info.Bezeichner, info.BM_Typ))
             {
-                Text = MyResource.Resource.SIM_BETRIEBSMODUS_KOPF,
-                AutoSize = true,
-                Font = new Font(this.Font, FontStyle.Bold),
-                Location = new Point(14, 14)
-            };
-
-            RadioButton rbLaufzeit = new RadioButton
-            {
-                Text = MyResource.Resource.SIM_BM_RB_LAUFZEIT,
-                AutoSize = true,
-                Location = new Point(24, 48)
-            };
-            Label lLaufzeit = new Label
-            {
-                Text = MyResource.Resource.SIM_BM_TEXT_LAUFZEIT,
-                AutoSize = false,
-                Size = new Size(460, 34),
-                Location = new Point(46, 70)
-            };
-
-            RadioButton rbLeistung = new RadioButton
-            {
-                Text = MyResource.Resource.SIM_BM_RB_LEISTUNG,
-                AutoSize = true,
-                Location = new Point(24, 112)
-            };
-            Label lLeistung = new Label
-            {
-                Text = MyResource.Resource.SIM_BM_TEXT_LEISTUNG,
-                AutoSize = false,
-                Size = new Size(460, 34),
-                Location = new Point(46, 134)
-            };
-
-            RadioButton rbPV = new RadioButton
-            {
-                Text = MyResource.Resource.SIM_BM_RB_PV,
-                AutoSize = true,
-                Location = new Point(24, 176)
-            };
-            Label lPV = new Label
-            {
-                Text = MyResource.Resource.SIM_BM_TEXT_PV,
-                AutoSize = false,
-                Size = new Size(460, 48),
-                Location = new Point(46, 198)
-            };
-
-            switch (info.BM_Typ)
-            {
-                case WaermequelleClass.MODUS_LEISTUNG: rbLeistung.Checked = true; break;
-                case WaermequelleClass.MODUS_PV: rbPV.Checked = true; break;
-                default: rbLaufzeit.Checked = true; break;
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                modus = dlg.GewaehlterModus;
             }
-
-            Button ok = new Button { Text = MyResource.Resource.SIM_BTN_OK, DialogResult = DialogResult.OK, Location = new Point(332, 258), Width = 85 };
-            Button abbruch = new Button { Text = MyResource.Resource.SIM_BTN_ABBRECHEN, DialogResult = DialogResult.Cancel, Location = new Point(423, 258), Width = 85 };
-
-            frm.Controls.Add(kopf);
-            frm.Controls.Add(rbLaufzeit); frm.Controls.Add(lLaufzeit);
-            frm.Controls.Add(rbLeistung); frm.Controls.Add(lLeistung);
-            frm.Controls.Add(rbPV); frm.Controls.Add(lPV);
-            frm.Controls.Add(ok);
-            frm.Controls.Add(abbruch);
-            frm.AcceptButton = ok;
-            frm.CancelButton = abbruch;
-
-            if (frm.ShowDialog(this) != DialogResult.OK) return;
-
-            string modus = WaermequelleClass.MODUS_LAUFZEIT;
-            if (rbLeistung.Checked) modus = WaermequelleClass.MODUS_LEISTUNG;
-            else if (rbPV.Checked) modus = WaermequelleClass.MODUS_PV;
 
             WaermequelleClass.WertSchreiben(info.ID, "BM_Typ", modus);
 
@@ -1236,7 +1163,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private string EingabeDialog(string titel, string beschriftung, string vorgabe)
         {
-            Form frm = new Form();
+            using Form frm = new Form();
             frm.Text = titel;
             frm.FormBorderStyle = FormBorderStyle.FixedDialog;
             frm.StartPosition = FormStartPosition.CenterParent;

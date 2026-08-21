@@ -96,9 +96,9 @@ namespace WindowsFormsApplication1
         /// <c>Form_Heizkessel_Bearbeiten.resx</c> UND in
         /// <c>Form_Heizkessel_Bearbeiten.en-US.resx</c> führt — ein von Hand ergänztes
         /// Control müsste in beiden stehen, sonst springt es beim Sprachwechsel. Denselben
-        /// Weg gehen die neueren Masken dieser Etappe (<c>Form_PlanwertUebernahme</c> kommt
-        /// ganz ohne Designer-Datei aus, <c>ucKostenItem</c> hebt seine Betragsgrenze
-        /// programmatisch an).
+        /// Weg gehen die neueren Masken dieser Etappe (<c>ucKostenItem</c> hebt seine
+        /// Betragsgrenze programmatisch an; <c>Form_PlanwertUebernahme</c> ist
+        /// inzwischen auf eine Designer-Datei migriert).
         /// </para>
         /// <para>
         /// <b>Maße relativ statt absolut.</b> Alle Positionen leiten sich aus den bereits
