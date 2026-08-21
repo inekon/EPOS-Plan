@@ -87,10 +87,43 @@ namespace WindowsFormsApplication1
         public bool Delete(string szProjekt)
         {
             PufferReferenzenLoesen(szProjekt);
+            BerichtsKonfigurationEntfernen(szProjekt);
 
             string sql = "DELETE FROM Tab_Projekt WHERE Projektname=?";
             OleDbParameter[] ps = { new OleDbParameter("@pname", szProjekt) };
             return DataRepository.ExecuteSQL(sql, ps);
+        }
+
+        /// <summary>
+        /// Entfernt die Berichtskonfigurationen aller Projekte dieses Namens VOR dem
+        /// Projekt-DELETE. Die Tabelle Berichtskonfiguration hängt an keiner
+        /// Löschweitergabe (Ad-hoc-DDL ohne Beziehung, BerichtCtrl) — verbliebe die
+        /// Zeile, kollidierte eine spätere Projektkopie am eindeutigen Index
+        /// UQ_BerichtKonfigProj, sobald die neue Projekt-ID (MAX+1) auf die verwaiste
+        /// ProjektID fällt (Duplizier-Abbruch vom 21.08.2026). Still über StilleDb:
+        /// Fehlt die Tabelle (Datenbank ohne Berichtsmodul), läuft das Löschen ohne
+        /// Dialog weiter.
+        /// </summary>
+        private static void BerichtsKonfigurationEntfernen(string szProjekt)
+        {
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID FROM Tab_Projekt WHERE Projektname=?",
+                    new OleDbParameter("@pname", szProjekt ?? ""));
+
+                if (dt == null) return;
+
+                foreach (DataRow r in dt.Rows)
+                    if (r[0] != DBNull.Value)
+                        StilleDb.NonQuery(
+                            "DELETE FROM " + BerichtCtrl.TAB_KONFIG + " WHERE ProjektID = ?",
+                            StilleDb.Par("@proj", OleDbType.Integer, Convert.ToInt32(r[0])));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Berichtskonfiguration des Projekts konnte nicht entfernt werden: " + ex.Message);
+            }
         }
 
         /// <summary>
