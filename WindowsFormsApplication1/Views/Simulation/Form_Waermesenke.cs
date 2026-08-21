@@ -1042,8 +1042,8 @@ namespace WindowsFormsApplication1
                 {
                     // Konzept 4.6: Meldung MIT Absprung "Pufferspeicher anlegen..."
                     DialogResult wahl = MessageBox.Show(
-                        string.Format(MyResource.Resource.SIM_MSG_PUFFER_ANLEGEN_FRAGE
-                                          .Replace("\n", Environment.NewLine), erg.Fehler),
+                        string.Format(Zeilenumbruch.Normalisieren(
+                            MyResource.Resource.SIM_MSG_PUFFER_ANLEGEN_FRAGE), erg.Fehler),
                         MyResource.Resource.SIM_TITEL_SENKE_PUFFER_FEHLT,
                         MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
@@ -1129,8 +1129,8 @@ namespace WindowsFormsApplication1
             if (KaskadeAutomatikAktiv &&
                 KonfigurationCtrl.KaskadeNotwendig(ID_Projekt, ID_Anlage, d)) return null;
 
-            string text = MyResource.Resource.SIM_MSG_BRAUCHWASSER_UEBERGANG
-                              .Replace("\n", Environment.NewLine);
+            string text = Zeilenumbruch.Normalisieren(
+                MyResource.Resource.SIM_MSG_BRAUCHWASSER_UEBERGANG);
 
             // Nur die Hauptsenke einer Wärmepumpe zieht die Alt-Zuordnung mit sich
             // (die Brücke wertet ausschließlich WS_Ziel der Wärmepumpen aus).

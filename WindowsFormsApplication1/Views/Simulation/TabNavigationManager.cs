@@ -57,12 +57,12 @@ public class TabNavigationManager
         };
 
         // Buttons erstellen.
-        // Die Beschriftungen stehen im Ressourcenkatalog; die .resx legt Zeilenumbrueche
-        // als LF ab (XML-Normierung), deshalb hier auf Environment.NewLine zurueckbiegen.
-        string[] names = { WindowsFormsApplication1.MyResource.Resource.SIM_NAV_UEBERSICHT.Replace("\n", Environment.NewLine),
-                           WindowsFormsApplication1.MyResource.Resource.SIM_NAV_AUTARKIE_ANALYSE.Replace("\n", Environment.NewLine),
-                           WindowsFormsApplication1.MyResource.Resource.SIM_NAV_WAERMEPRODUKTION_CHART.Replace("\n", Environment.NewLine),
-                           WindowsFormsApplication1.MyResource.Resource.SIM_NAV_STROMPRODUKTION_CHART.Replace("\n", Environment.NewLine) };
+        // Die Beschriftungen stehen im Ressourcenkatalog; Umbrueche auf die
+        // Plattformform bringen (Details in Zeilenumbruch).
+        string[] names = { Zeilenumbruch.Normalisieren(WindowsFormsApplication1.MyResource.Resource.SIM_NAV_UEBERSICHT),
+                           Zeilenumbruch.Normalisieren(WindowsFormsApplication1.MyResource.Resource.SIM_NAV_AUTARKIE_ANALYSE),
+                           Zeilenumbruch.Normalisieren(WindowsFormsApplication1.MyResource.Resource.SIM_NAV_WAERMEPRODUKTION_CHART),
+                           Zeilenumbruch.Normalisieren(WindowsFormsApplication1.MyResource.Resource.SIM_NAV_STROMPRODUKTION_CHART) };
         
         for (int i = 0; i < 4; i++)
         {
