@@ -66,6 +66,14 @@ namespace WindowsFormsApplication1
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
+        public bool Exists(string szBezeichner)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM " + TABLE + " WHERE Bezeichner = ?",
+                new OleDbParameter("@bez", szBezeichner ?? ""));
+            return v != null && v != DBNull.Value && Convert.ToInt32(v) > 0;
+        }
+
         public void FillListBox(ListBox ctrl)
         {
             ctrl.Items.Clear();

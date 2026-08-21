@@ -1025,17 +1025,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static int DatenDublettenOffen { get; private set; }
 
-        // --- Zählwerk der Katalogbereinigung aus Schritt 19 -----------------------------
+        // --- Zählwerk der Katalogbereinigung aus Schritt 24 -----------------------------
 
         /// <summary>
-        /// 19: Katalogzeilen, die als reine Wiederholung eines bereits vorhandenen
+        /// 24: Katalogzeilen, die als reine Wiederholung eines bereits vorhandenen
         /// Eintrags gelöscht wurden — über <c>Tab_Heizkessel_STAMM</c> und
         /// <c>Tab_PV_STAMM</c> summiert.
         /// </summary>
         public static int DatenKatalogDublettenGeloescht { get; private set; }
 
         /// <summary>
-        /// 19: Katalogzeilen mit doppeltem Bezeichner, die STEHEN GEBLIEBEN sind, weil sie
+        /// 24: Katalogzeilen mit doppeltem Bezeichner, die STEHEN GEBLIEBEN sind, weil sie
         /// einen eigenen Wert tragen (oder schreibgeschützt sind). Sie stehen einzeln im
         /// Protokoll. 0 ist die Zusage „jeder Katalogname ist jetzt eindeutig".
         /// </summary>
@@ -1712,11 +1712,11 @@ namespace WindowsFormsApplication1
                             ? " - es gab keine doppelt belegte Anlagenzeile."
                             : " - je Zeile ein eigenes Gerät mit eigener Investition und Wartung.")));
 
-            // Schritt 19 meldet - wie 14, 16 und 17 - AUCH die 0. Sie sagt „dieser
+            // Schritt 24 meldet - wie 14, 16 und 17 - AUCH die 0. Sie sagt „dieser
             // Bestand fuehrt keinen doppelt vergebenen Katalognamen", und genau das ist
             // die Bedingung dafuer, dass Speichern und Loeschen im Katalogdialog genau
             // eine Zeile treffen.
-            l.Zeile("Katalogbereinigung (Schritt 19): " + DatenKatalogDublettenGeloescht +
+            l.Zeile("Katalogbereinigung (Schritt 24): " + DatenKatalogDublettenGeloescht +
                     " doppelte Katalogeinträge entfernt" +
                     (DatenKatalogDublettenOffen > 0
                         ? ", " + DatenKatalogDublettenOffen + " NICHT entfernt - siehe die Meldungen oben."
