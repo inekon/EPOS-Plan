@@ -265,7 +265,8 @@ Fachlogik nicht anfassen.
   Laufzeit-Screenshots des Reflection-Harness (`dev\fixshots\`).
 - **Design-Politur 21.08.2026 (nach Stufe 3, Anwenderwunsch):** Alle migrierten/neuen
   Oberflächen außer `Form_PeakShaving`/`ucStromAufschlaege` (parallele Chip-Session,
-  Politur dort als Nacharbeit offen) zeigen im Designer jetzt Echttexte
+  Politur dort als Nacharbeit offen; **Nachtrag: am 21.08.2026 mit Commit 25a1988
+  nachgezogen**) zeigen im Designer jetzt Echttexte
   (Rezept-Nachtrag in Regel 1); Abstände und Sichtbarkeit mit `TextRenderer`
   nachgemessen und korrigiert — echte Funde dabei: KiEinstellungen-Hinweis war
   >50 % abgeschnitten (Dialog 276→358 hoch), Berichtsseite-Radiobuttons ragten
