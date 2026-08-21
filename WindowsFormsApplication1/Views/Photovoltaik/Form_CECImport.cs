@@ -615,7 +615,9 @@ namespace WindowsFormsApplication1
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 dateiPfad = openFileDialog.FileName;
-                string inhalt = File.ReadAllText(dateiPfad, Encoding.Default);
+                // PVsyst-PAN-Dateien sind ANSI kodiert: Encoding.Default waere unter
+                // .NET 8 UTF-8 und macht aus jedem Umlaut-Byte U+FFFD (siehe AnsiEncoding).
+                string inhalt = File.ReadAllText(dateiPfad, AnsiEncoding.Get());
                 PanModule m = PanDataService.ParsePan(inhalt);
 
                 RefreshModuleGrid();

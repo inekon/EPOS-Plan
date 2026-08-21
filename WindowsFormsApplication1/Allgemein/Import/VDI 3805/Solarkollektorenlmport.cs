@@ -50,10 +50,9 @@ namespace WindowsFormsApplication1
         {
             DateTime a = DateTime.Now;
 
-            // ANSI (Windows-1252) explizit statt Encoding.Default: unter .NET 8 ist
-            // Encoding.Default UTF-8 und zerlegt CP1252-Umlaute der Katalogdateien
-            // (z. B. Vaillant-Beschreibung "... Lichtdurchlässigkeit") zu U+FFFD.
-            TextReader sr = new StringReader(File.ReadAllText(filename, GetAnsiEncoding()));
+            // ANSI (Windows-1252) explizit: Encoding.Default waere unter .NET 8 UTF-8
+            // und macht aus jedem Umlaut-Byte U+FFFD (siehe AnsiEncoding).
+            TextReader sr = new StringReader(File.ReadAllText(filename, AnsiEncoding.Get()));
             var csvReader = new CsvReader(sr, ";");
 
             csvReader.BufferSize = 32768;
@@ -170,24 +169,6 @@ namespace WindowsFormsApplication1
                 bBeginn = false;
             }
         } 
-
-        // ANSI-Encoding robust über beide Runtimes (gleiche Hilfsmethode wie im
-        // HeizkesselImport):
-        //  - .NET Framework: Windows-1252 (1252) ist direkt verfügbar.
-        //  - .NET Core/5+: 1252 ist ohne CodePagesEncodingProvider NICHT verfügbar
-        //    (NotSupportedException). Dann ISO-8859-1 (Latin-1, 28591) verwenden -
-        //    für deutsche Umlaute identisch mit 1252.
-        private static Encoding GetAnsiEncoding()
-        {
-            try
-            {
-                return Encoding.GetEncoding(1252);
-            }
-            catch (NotSupportedException)
-            {
-                return Encoding.GetEncoding(28591);
-            }
-        }
 
         private static double ParseDouble(string value)
         {
