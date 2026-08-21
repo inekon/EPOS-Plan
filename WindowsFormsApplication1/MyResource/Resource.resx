@@ -6404,4 +6404,124 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   <data name="WIRT_DLG_CO2_KATALOG" xml:space="preserve">
     <value>⚙ Gesetzeskatalog pflegen (CO₂-Preispfad)…</value>
   </data>
+  <data name="ADM_DUBLETTEN_MENUE" xml:space="preserve">
+    <value>Katalog-Dubletten prüfen…</value>
+  </data>
+  <data name="ADM_DUBLETTEN_TITEL" xml:space="preserve">
+    <value>Katalog-Dublettensuche</value>
+  </data>
+  <data name="ADM_DUBLETTEN_ALLE" xml:space="preserve">
+    <value>(alle Kataloge)</value>
+  </data>
+  <data name="ADM_DUBLETTEN_PRUEFEN" xml:space="preserve">
+    <value>Prüfen</value>
+  </data>
+  <data name="ADM_DUBLETTEN_STATUS_PRUEFE" xml:space="preserve">
+    <value>prüfe {0} …</value>
+  </data>
+  <data name="ADM_DUBLETTEN_WURZEL" xml:space="preserve">
+    <value>{0} ({1} Sätze)</value>
+  </data>
+  <data name="ADM_DUBLETTEN_AST_NAMEN" xml:space="preserve">
+    <value>Namensdubletten ({0} Gruppen)</value>
+  </data>
+  <data name="ADM_DUBLETTEN_AST_INHALT" xml:space="preserve">
+    <value>Inhaltsdubletten ({0} Gruppen)</value>
+  </data>
+  <data name="ADM_DUBLETTEN_GRUPPE_INHALT" xml:space="preserve">
+    <value>gleicher Inhalt: {0}</value>
+  </data>
+  <data name="ADM_DUBLETTEN_AUSLIEFERUNG" xml:space="preserve">
+    <value>[Auslieferung]</value>
+  </data>
+  <data name="ADM_DUBLETTEN_BTN_BEREINIGEN" xml:space="preserve">
+    <value>Leere Kopien bereinigen</value>
+  </data>
+  <data name="ADM_DUBLETTEN_BTN_LOESCHEN" xml:space="preserve">
+    <value>Satz löschen…</value>
+  </data>
+  <data name="ADM_DUBLETTEN_BTN_UMBENENNEN" xml:space="preserve">
+    <value>Satz umbenennen…</value>
+  </data>
+  <data name="ADM_DUBLETTEN_BTN_PROTOKOLL" xml:space="preserve">
+    <value>Protokoll speichern…</value>
+  </data>
+  <data name="ADM_DUBLETTEN_FRAGE_BEREINIGEN" xml:space="preserve">
+    <value>{0} Gruppe(n) nach der Leerkopien-Regel bereinigen?</value>
+  </data>
+  <data name="ADM_DUBLETTEN_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Satz "{0}" (ID {1}) endgültig löschen?</value>
+  </data>
+  <data name="ADM_DUBLETTEN_VERWENDET" xml:space="preserve">
+    <value>Der Satz wird verwendet: {0}. Trotzdem löschen?</value>
+  </data>
+  <data name="ADM_DUBLETTEN_KEINE_VERWENDUNGSPRUEFUNG" xml:space="preserve">
+    <value>Für diesen Katalog ist keine Verwendungsprüfung hinterlegt – bitte nur löschen, wenn der Satz sicher nicht verwendet wird.</value>
+  </data>
+  <data name="ADM_DUBLETTEN_READONLY_GESPERRT" xml:space="preserve">
+    <value>Auslieferungssätze können hier nicht gelöscht oder umbenannt werden.</value>
+  </data>
+  <data name="ADM_DUBLETTEN_NAME_NEU" xml:space="preserve">
+    <value>Neuer Name:</value>
+  </data>
+  <data name="ADM_DUBLETTEN_KEINE" xml:space="preserve">
+    <value>Keine Dubletten gefunden.</value>
+  </data>
+  <data name="ADM_KATALOG_WP" xml:space="preserve">
+    <value>Wärmepumpen</value>
+  </data>
+  <data name="ADM_KATALOG_HEIZKESSEL" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
+  <data name="ADM_KATALOG_PUFFERSPEICHER" xml:space="preserve">
+    <value>Pufferspeicher</value>
+  </data>
+  <data name="ADM_KATALOG_SOLARKOLLEKTOREN" xml:space="preserve">
+    <value>Solarkollektoren</value>
+  </data>
+  <data name="ADM_KATALOG_PV" xml:space="preserve">
+    <value>PV-Module</value>
+  </data>
+  <data name="ADM_KATALOG_BHKW" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="ADM_KATALOG_STROMSPEICHER" xml:space="preserve">
+    <value>Stromspeicher</value>
+  </data>
+  <data name="ADM_KATALOG_GEBAEUDE" xml:space="preserve">
+    <value>Gebäude</value>
+  </data>
+  <data name="ADM_KATALOG_KLIMAREGION" xml:space="preserve">
+    <value>Klimaregionen</value>
+  </data>
+  <data name="ADM_KATALOG_BRAUCHWASSER" xml:space="preserve">
+    <value>Brauchwasser</value>
+  </data>
+  <data name="ADM_KATALOG_BRAUCHWASSERTYP" xml:space="preserve">
+    <value>Brauchwasser-Typprofile</value>
+  </data>
+  <data name="ADM_KATALOG_STROMVERBRAUCHER" xml:space="preserve">
+    <value>Stromverbraucher</value>
+  </data>
+  <data name="ADM_KATALOG_STROMVERBRAUCHERTYP" xml:space="preserve">
+    <value>Stromverbraucher-Typprofile</value>
+  </data>
+  <data name="ADM_KATALOG_PROZESSWAERME" xml:space="preserve">
+    <value>Prozesswärme</value>
+  </data>
+  <data name="ADM_KATALOG_PROZESSTYP" xml:space="preserve">
+    <value>Prozesswärme-Typprofile</value>
+  </data>
+  <data name="ADM_KATALOG_STROMGANGLINIE" xml:space="preserve">
+    <value>Stromganglinien</value>
+  </data>
+  <data name="ADM_KATALOG_SOLARGANGLINIE" xml:space="preserve">
+    <value>Solarganglinien</value>
+  </data>
+  <data name="ADM_KATALOG_WAERMEBEDARF" xml:space="preserve">
+    <value>Wärmebedarfs-Ganglinien</value>
+  </data>
+  <data name="ADM_KATALOG_GEBAEUDETYP" xml:space="preserve">
+    <value>Gebäudetypen (Tagesverläufe)</value>
+  </data>
 </root>

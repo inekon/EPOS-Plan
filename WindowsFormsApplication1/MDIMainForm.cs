@@ -37,6 +37,9 @@ namespace WindowsFormsApplication1
 
             // Katalog gesetzlicher Parameter einbinden (Administration → Gesetzliche Parameter)
             InitGesetzeMenue();
+
+            // Katalog-Dublettensuche einbinden (Administration → Katalog-Dubletten prüfen)
+            InitDublettenMenue();
         }
 
         /// <summary>
@@ -71,6 +74,48 @@ namespace WindowsFormsApplication1
             catch (Exception ex)
             {
                 Console.WriteLine("Menü der gesetzlichen Parameter konnte nicht eingebunden werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Bindet die Admin-Dublettensuche ein: Menüeintrag im Menü Administration
+        /// unterhalb von „Einstellungen" bzw. nach dem Gesetze-Eintrag
+        /// (Konzept_Dublettenpruefung_Import_EPOS-Plan.md, Abschnitt 5, Paket D3).
+        ///
+        /// Bewusst programmatisch, damit Designer und .resx unberührt bleiben; der
+        /// Anzeigetext kommt aus MyResource und ist damit zweisprachig.
+        /// </summary>
+        private void InitDublettenMenue()
+        {
+            try
+            {
+                ToolStripMenuItem eintrag = new ToolStripMenuItem(
+                    MyResource.Resource.ADM_DUBLETTEN_MENUE);
+                eintrag.Name = "MenuItem_KatalogDubletten";
+                eintrag.Click += (s, e) =>
+                {
+                    using (Form_KatalogDubletten frm = new Form_KatalogDubletten())
+                        frm.ShowDialog(this);
+                };
+
+                // Unterhalb von "Einstellungen" einordnen; hängt dort bereits der
+                // Gesetze-Eintrag (InitGesetzeMenue läuft davor), rückt dieser Eintrag
+                // dahinter — die Admin-Werkzeuge bleiben beieinander.
+                int position = Administration.DropDownItems.IndexOf(MenuItem_Einstellungen);
+                if (position >= 0)
+                {
+                    ToolStripItem gesetze = Administration.DropDownItems["MenuItem_Gesetzesparameter"];
+                    int posGesetze = gesetze != null ? Administration.DropDownItems.IndexOf(gesetze) : -1;
+                    Administration.DropDownItems.Insert((posGesetze > position ? posGesetze : position) + 1, eintrag);
+                }
+                else
+                {
+                    Administration.DropDownItems.Add(eintrag);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Menü der Katalog-Dublettensuche konnte nicht eingebunden werden: " + ex.Message);
             }
         }
 

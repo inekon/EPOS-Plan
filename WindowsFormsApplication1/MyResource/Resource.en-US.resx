@@ -6398,4 +6398,124 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   <data name="WIRT_DLG_CO2_KATALOG" xml:space="preserve">
     <value>⚙ Maintain statutory catalogue (CO₂ price path)…</value>
   </data>
+  <data name="ADM_DUBLETTEN_MENUE" xml:space="preserve">
+    <value>Check catalogue duplicates…</value>
+  </data>
+  <data name="ADM_DUBLETTEN_TITEL" xml:space="preserve">
+    <value>Catalogue duplicate search</value>
+  </data>
+  <data name="ADM_DUBLETTEN_ALLE" xml:space="preserve">
+    <value>(all catalogues)</value>
+  </data>
+  <data name="ADM_DUBLETTEN_PRUEFEN" xml:space="preserve">
+    <value>Check</value>
+  </data>
+  <data name="ADM_DUBLETTEN_STATUS_PRUEFE" xml:space="preserve">
+    <value>checking {0} …</value>
+  </data>
+  <data name="ADM_DUBLETTEN_WURZEL" xml:space="preserve">
+    <value>{0} ({1} records)</value>
+  </data>
+  <data name="ADM_DUBLETTEN_AST_NAMEN" xml:space="preserve">
+    <value>name duplicates ({0} groups)</value>
+  </data>
+  <data name="ADM_DUBLETTEN_AST_INHALT" xml:space="preserve">
+    <value>content duplicates ({0} groups)</value>
+  </data>
+  <data name="ADM_DUBLETTEN_GRUPPE_INHALT" xml:space="preserve">
+    <value>same content: {0}</value>
+  </data>
+  <data name="ADM_DUBLETTEN_AUSLIEFERUNG" xml:space="preserve">
+    <value>[factory]</value>
+  </data>
+  <data name="ADM_DUBLETTEN_BTN_BEREINIGEN" xml:space="preserve">
+    <value>Remove empty copies</value>
+  </data>
+  <data name="ADM_DUBLETTEN_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete record…</value>
+  </data>
+  <data name="ADM_DUBLETTEN_BTN_UMBENENNEN" xml:space="preserve">
+    <value>Rename record…</value>
+  </data>
+  <data name="ADM_DUBLETTEN_BTN_PROTOKOLL" xml:space="preserve">
+    <value>Save log…</value>
+  </data>
+  <data name="ADM_DUBLETTEN_FRAGE_BEREINIGEN" xml:space="preserve">
+    <value>Clean {0} group(s) using the empty-copy rule?</value>
+  </data>
+  <data name="ADM_DUBLETTEN_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Delete record "{0}" (ID {1}) permanently?</value>
+  </data>
+  <data name="ADM_DUBLETTEN_VERWENDET" xml:space="preserve">
+    <value>The record is in use: {0}. Delete anyway?</value>
+  </data>
+  <data name="ADM_DUBLETTEN_KEINE_VERWENDUNGSPRUEFUNG" xml:space="preserve">
+    <value>No usage check is available for this catalogue – only delete if you are sure the record is not in use.</value>
+  </data>
+  <data name="ADM_DUBLETTEN_READONLY_GESPERRT" xml:space="preserve">
+    <value>Factory records cannot be deleted or renamed here.</value>
+  </data>
+  <data name="ADM_DUBLETTEN_NAME_NEU" xml:space="preserve">
+    <value>New name:</value>
+  </data>
+  <data name="ADM_DUBLETTEN_KEINE" xml:space="preserve">
+    <value>No duplicates found.</value>
+  </data>
+  <data name="ADM_KATALOG_WP" xml:space="preserve">
+    <value>Heat pumps</value>
+  </data>
+  <data name="ADM_KATALOG_HEIZKESSEL" xml:space="preserve">
+    <value>Boilers</value>
+  </data>
+  <data name="ADM_KATALOG_PUFFERSPEICHER" xml:space="preserve">
+    <value>Buffer storages</value>
+  </data>
+  <data name="ADM_KATALOG_SOLARKOLLEKTOREN" xml:space="preserve">
+    <value>Solar collectors</value>
+  </data>
+  <data name="ADM_KATALOG_PV" xml:space="preserve">
+    <value>PV modules</value>
+  </data>
+  <data name="ADM_KATALOG_BHKW" xml:space="preserve">
+    <value>CHP units</value>
+  </data>
+  <data name="ADM_KATALOG_STROMSPEICHER" xml:space="preserve">
+    <value>Battery storages</value>
+  </data>
+  <data name="ADM_KATALOG_GEBAEUDE" xml:space="preserve">
+    <value>Buildings</value>
+  </data>
+  <data name="ADM_KATALOG_KLIMAREGION" xml:space="preserve">
+    <value>Climate regions</value>
+  </data>
+  <data name="ADM_KATALOG_BRAUCHWASSER" xml:space="preserve">
+    <value>Domestic hot water</value>
+  </data>
+  <data name="ADM_KATALOG_BRAUCHWASSERTYP" xml:space="preserve">
+    <value>DHW type profiles</value>
+  </data>
+  <data name="ADM_KATALOG_STROMVERBRAUCHER" xml:space="preserve">
+    <value>Electric consumers</value>
+  </data>
+  <data name="ADM_KATALOG_STROMVERBRAUCHERTYP" xml:space="preserve">
+    <value>Consumer type profiles</value>
+  </data>
+  <data name="ADM_KATALOG_PROZESSWAERME" xml:space="preserve">
+    <value>Process heat</value>
+  </data>
+  <data name="ADM_KATALOG_PROZESSTYP" xml:space="preserve">
+    <value>Process heat type profiles</value>
+  </data>
+  <data name="ADM_KATALOG_STROMGANGLINIE" xml:space="preserve">
+    <value>Electric load profiles</value>
+  </data>
+  <data name="ADM_KATALOG_SOLARGANGLINIE" xml:space="preserve">
+    <value>Solar profiles</value>
+  </data>
+  <data name="ADM_KATALOG_WAERMEBEDARF" xml:space="preserve">
+    <value>Heat demand profiles</value>
+  </data>
+  <data name="ADM_KATALOG_GEBAEUDETYP" xml:space="preserve">
+    <value>Building types (daily profiles)</value>
+  </data>
 </root>
