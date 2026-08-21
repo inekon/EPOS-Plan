@@ -27,6 +27,20 @@ namespace WindowsFormsApplication1
     /// <c>KiRiegel.HoechsteStufe</c> weist sie ohnehin ab.
     /// </para>
     /// <para>
+    /// <b><c>maske_oeffnen</c> bleibt auch nach Etappe 3b aussen vor.</b> Die vier
+    /// Startmasken der Formularsteuerung lassen sich aus dem Bestand heraus nicht
+    /// nebenwirkungsfrei oeffnen: <c>Form_Heizkessel_Bearbeiten</c>,
+    /// <c>Form_PufferSp_Bearbeiten</c> und <c>Form_PV</c> brauchen Kontext (einen
+    /// gewaehlten Katalogsatz bzw. ein offenes Projekt), und der einzige kontextfreie Weg -
+    /// <c>MenueCtrl.WP_Administration</c> (<c>Controller\MenueCtrl.cs:250</c>) - ruft
+    /// <c>ShowDialog()</c>. Blockierend-modal aus einer Aktion heraus geoeffnet, hielte er
+    /// die Einlaeufigkeitssperre UND den prozessweiten dialogfreien Modus fuer die ganze
+    /// Lebensdauer der Maske; damit waere kein einziger weiterer Assistentenaufruf mehr
+    /// moeglich - gerade die Feldsetzung, fuer die die Maske geoeffnet werden sollte.
+    /// Freigeschaltet wird die Aktion deshalb erst mit einem nicht blockierenden
+    /// Oeffnungsweg (Bestandspflege, eigene Runde).
+    /// </para>
+    /// <para>
     /// <b>Regeln, die hier eingehalten werden.</b> Nur benannte Aktionen (kein generisches
     /// SQL, keine Reflexion); Parameter primitiv oder IDs aus einer Leseaktion;
     /// Aufzaehlungswerte, die auf Datenbankwerte abbilden, stammen aus
@@ -73,6 +87,18 @@ namespace WindowsFormsApplication1
             register.Aufnehmen(KiAktionenSchreiben.VarianteAnlegen());
             register.Aufnehmen(KiAktionenSchreiben.SpeichervarianteAktivSetzen());
             register.Aufnehmen(KiAktionenSchreiben.KostenpositionSetzen());
+
+            // ---- Formularsteuerung (Etappe 3b, Fachkonzept 11.4). Die beiden lesenden
+            //      Aktionen gehoeren zu Stufe 1; die drei uebrigen sind Schreibaktionen
+            //      mit dem Kennzeichen „Formularaktion" und laufen deshalb - wie jede
+            //      Schreibaktion - nur nach ausdruecklicher Bestaetigung. Sie wirken in
+            //      eine offene Maske und nicht in die Datenbank; DB-wirksam wird der
+            //      Vorgang erst durch den Aktionsknopf der Maske.
+            register.Aufnehmen(KiAktionenDialog.DialogLesen());
+            register.Aufnehmen(KiAktionenDialog.DialogParameterErklaeren());
+            register.Aufnehmen(KiAktionenDialog.FeldSetzen());
+            register.Aufnehmen(KiAktionenDialog.FormularAusfuellen());
+            register.Aufnehmen(KiAktionenDialog.DialogAktionAusfuehren());
 
             return register;
         }

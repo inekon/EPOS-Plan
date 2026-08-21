@@ -268,7 +268,7 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                ToolStripMenuItem eintrag = new ToolStripMenuItem("Hilfe-Assistent (KI)...");
+                ToolStripMenuItem eintrag = new ToolStripMenuItem(MenuetextAssistent());
                 eintrag.ShortcutKeys = Keys.F1;
                 eintrag.ShowShortcutKeys = true;
                 eintrag.Click += (s, e) => Form_KiChat.Oeffnen(this);
@@ -301,12 +301,17 @@ namespace WindowsFormsApplication1
                         hilfeMenu.DropDownItems.Add(new ToolStripSeparator());
                     hilfeMenu.DropDownItems.Add(eintrag);
 
-                    // Abschalter der Installation: ist er gesetzt, ist der Assistent
-                    // gar nicht erst erreichbar. Ausgewertet wird beim Aufklappen und
-                    // nicht einmalig beim Start - die Einstellung kann im laufenden
-                    // Programm über die Administration umgelegt werden.
+                    // Abschalter der Installation: Er blendet den Eintrag NICHT mehr aus,
+                    // sondern benennt ihn um (Hilfe-Betrieb, Fachkonzept 11.9, Paket F5).
+                    // Grund: Das Fenster arbeitet ohne den Dienst als reine Hilfesuche
+                    // weiter - ein verschwundener Menüeintrag hätte den Anwendern also die
+                    // Hilfe genommen, obwohl sie lokal vorliegt und nichts kostet.
+                    //
+                    // Ausgewertet wird weiterhin beim Aufklappen und nicht einmalig beim
+                    // Start - die Einstellung kann im laufenden Programm über die
+                    // Administration umgelegt werden (Form_AdminSettings).
                     hilfeMenu.DropDownOpening += (s, e) =>
-                        eintrag.Available = !KiEinwilligung.Abgeschaltet;
+                        eintrag.Text = MenuetextAssistent();
                 }
 
                 // F1 auch unabhängig vom Menü verfügbar machen
@@ -324,6 +329,35 @@ namespace WindowsFormsApplication1
             {
                 Console.WriteLine("KI-Hilfe konnte nicht eingebunden werden: " + ex.Message);
             }
+        }
+
+        /// <summary>
+        /// Beschriftung des Assistenten-Menüeintrags: im Regelbetrieb mit KI-Zusatz,
+        /// im Hilfe-Betrieb ohne ihn (Fachkonzept 11.9, Umsetzungspaket F5).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum aus MyResource und nicht mehr fest im Code.</b> Der Eintrag bleibt in
+        /// beiden Betriebsarten sichtbar, also müssen auch beide Beschriftungen übersetzt
+        /// werden können. Sie stehen deshalb zweisprachig in <c>MyResource</c>
+        /// (KI_MENUE_ASSISTENT und KI_MENUE_ASSISTENT_HILFE).
+        /// </para>
+        /// <para>
+        /// <b>Warum eine gemeinsame Stelle für Anlegen und Aufklappen.</b> So trägt der
+        /// Eintrag die richtige Beschriftung schon vor dem ersten Aufklappen - das zählt,
+        /// wenn kein Menüband gefunden wurde und nur das Tastenkürzel F1 bleibt.
+        /// </para>
+        /// <para>
+        /// <b>Keine Schutzwirkung.</b> Dass im Hilfe-Betrieb nichts an den Dienst
+        /// hinausgeht, trägt <c>KiEinwilligung.Sicherstellen</c> und der Riegel; die
+        /// Beschriftung ist eine reine Darstellungsfrage.
+        /// </para>
+        /// </remarks>
+        private static string MenuetextAssistent()
+        {
+            return KiEinwilligung.Abgeschaltet
+                       ? MyResource.Resource.KI_MENUE_ASSISTENT_HILFE
+                       : MyResource.Resource.KI_MENUE_ASSISTENT;
         }
 
         /// <summary>
