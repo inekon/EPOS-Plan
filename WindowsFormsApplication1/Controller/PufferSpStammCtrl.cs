@@ -136,6 +136,35 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(sql, ps);
         }
 
+        /// <summary>
+        /// Import-Ueberschreiben (Dublettenkonzept 4.2): aktualisiert GENAU die Felder,
+        /// die der VDI-Import liefert, adressiert per ID. Vom Anwender gepflegte Felder
+        /// (Bezeichner, Investitionskosten, ReadOnly) bleiben unangetastet.
+        /// </summary>
+        /// <remarks>
+        /// Bewusst OHNE ReadOnly-Sperre: Das Ueberschreiben eines ReadOnly-Satzes ist
+        /// erlaubt und wird vorher im Konfliktdialog bestaetigt (Entscheidung 9.2 -
+        /// erlauben mit Hinweis).
+        /// </remarks>
+        public bool UpdateImport(int id)
+        {
+            if (id <= 0) return false;
+
+            string sql = @"UPDATE [" + TABLE + @"] SET
+                            Hersteller = ?, Speichertyp = ?, Bereitschaftsverluste = ?, Gesamtvolumen = ?
+                          WHERE ID = ?";
+
+            OleDbParameter[] ps = {
+                new OleDbParameter("@her", (object)(this.Firma ?? "")),
+                new OleDbParameter("@typ", (object)(this.Speichertyp ?? "")),
+                new OleDbParameter("@ver", this.Betriebsbereitschaftverlust),
+                new OleDbParameter("@vol", this.Gesamtvolumen),
+                new OleDbParameter("@id", id)
+            };
+
+            return DataRepository.ExecuteSQL(sql, ps);
+        }
+
         public bool Delete(string szName)
         {
             if (IsReadOnlyStatic(szName))

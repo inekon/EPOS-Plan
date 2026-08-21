@@ -210,6 +210,172 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(sql);
         }
 
+        // SQL und Parameter des Import-Updates - EINE Stelle fuer UpdateImport und
+        // UeberschreibeMitKennlinien, damit die Feldliste nicht auseinanderlaufen kann.
+        private string ImportUpdateSql()
+        {
+            return @"UPDATE [" + TABLE + @"] SET
+                        Firma = ?, Typ = ?, Baujahr = ?, Aufstellung = ?,
+                        Nennleistung = ?, maxPtherm = ?, Heizung = ?, Regelung = ?,
+                        Bauart = ?, Kuehlleistung = ?
+                      WHERE ID = ?";
+        }
+
+        private OleDbParameter[] ImportUpdateParameter(int id)
+        {
+            return new[] {
+                new OleDbParameter("@fir", Firma ?? (object)DBNull.Value),
+                new OleDbParameter("@typ", Typ ?? (object)DBNull.Value),
+                new OleDbParameter("@bau", Baujahr),
+                new OleDbParameter("@auf", Aufstellung ?? (object)DBNull.Value),
+                new OleDbParameter("@nen", Nennleistung),
+                new OleDbParameter("@max", maxPTherm),
+                new OleDbParameter("@hei", Heizung),
+                new OleDbParameter("@reg", Regelung ?? (object)DBNull.Value),
+                new OleDbParameter("@bart", Bauart ?? (object)DBNull.Value),
+                new OleDbParameter("@kuehl", Kuehlleistung),
+                new OleDbParameter("@id", id)
+            };
+        }
+
+        /// <summary>
+        /// Import-Ueberschreiben (Dublettenkonzept 4.2): aktualisiert GENAU die Felder,
+        /// die der VDI-Import liefert, adressiert per ID. Vom Anwender gepflegte Felder
+        /// (Bezeichner, Beschreibung, Modulkosten, ReadOnly) bleiben unangetastet.
+        /// </summary>
+        /// <remarks>
+        /// Bewusst OHNE ReadOnly-Sperre: Das Ueberschreiben eines ReadOnly-Satzes ist
+        /// erlaubt und wird vorher im Konfliktdialog bestaetigt (Entscheidung 9.2 -
+        /// erlauben mit Hinweis).
+        /// </remarks>
+        public bool UpdateImport(int id)
+        {
+            if (id <= 0) return false;
+            return DataRepository.ExecuteSQL(ImportUpdateSql(), ImportUpdateParameter(id));
+        }
+
+        /// <summary>
+        /// Import-Ueberschreiben samt Kennlinien in EINER Transaktion (Dublettenkonzept 4.2):
+        /// dasselbe Stammsatz-Update wie <see cref="UpdateImport"/>, danach werden die
+        /// Kennlinien (Waerme und Kuehlung) geloescht und durch die neuen Importzeilen
+        /// ersetzt. <paramref name="kuehlung"/> darf leer sein.
+        /// </summary>
+        /// <remarks>
+        /// Bewusst OHNE ReadOnly-Sperre: Das Ueberschreiben eines ReadOnly-Satzes ist
+        /// erlaubt und wird vorher im Konfliktdialog bestaetigt (Entscheidung 9.2 -
+        /// erlauben mit Hinweis). Transaktionsmuster wie
+        /// <c>StromganglinieStammCtrl.ImportGanglinie</c>.
+        /// </remarks>
+        public bool UeberschreibeMitKennlinien(int id,
+            IList<(int Vorlauf, int Temperatur, double COP, double Ptherm)> kenndaten,
+            IList<(int Vorlauf, int Temperatur, double COP, double Pkuehl, int Last)> kuehlung)
+        {
+            if (id <= 0) return false;
+
+            var (conn, trans) = DataRepository.BeginTransaction();
+            try
+            {
+                // (1) Stammsatz aktualisieren - identisches UPDATE wie UpdateImport
+                using (OleDbCommand c = new OleDbCommand(ImportUpdateSql(), conn, trans))
+                {
+                    c.Parameters.AddRange(ImportUpdateParameter(id));
+                    c.ExecuteNonQuery();
+                }
+
+                // (2) Alte Kennlinien beider Tabellen entfernen
+                using (OleDbCommand c = new OleDbCommand("DELETE FROM " + CURVE + " WHERE ID_WP = ?", conn, trans))
+                {
+                    c.Parameters.Add("@id", OleDbType.Integer).Value = id;
+                    c.ExecuteNonQuery();
+                }
+                using (OleDbCommand c = new OleDbCommand("DELETE FROM " + CURVE_K + " WHERE ID_WP = ?", conn, trans))
+                {
+                    c.Parameters.Add("@id", OleDbType.Integer).Value = id;
+                    c.ExecuteNonQuery();
+                }
+
+                // (3) Neue Kennlinien einfuegen. Die ID wird je Tabelle EINMAL als MAX+1
+                //     innerhalb der Transaktion ermittelt und fortlaufend hochgezaehlt.
+                if (kenndaten != null && kenndaten.Count > 0)
+                {
+                    int naechsteId;
+                    using (OleDbCommand c = new OleDbCommand("SELECT MAX(ID) FROM " + CURVE, conn, trans))
+                    {
+                        object m = c.ExecuteScalar();
+                        naechsteId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+                    }
+
+                    using (OleDbCommand c = new OleDbCommand(
+                        "INSERT INTO " + CURVE + " (ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm, ReadOnly) VALUES (?, ?, ?, ?, ?, ?, ?)", conn, trans))
+                    {
+                        var pId = c.Parameters.Add("@id", OleDbType.Integer);
+                        var pWp = c.Parameters.Add("@wp", OleDbType.Integer);
+                        var pVo = c.Parameters.Add("@vor", OleDbType.Integer);
+                        var pTe = c.Parameters.Add("@tem", OleDbType.Integer);
+                        var pCo = c.Parameters.Add("@cop", OleDbType.Double);
+                        var pPt = c.Parameters.Add("@pth", OleDbType.Double);
+                        var pRo = c.Parameters.Add("@ro", OleDbType.Boolean);
+                        foreach (var k in kenndaten)
+                        {
+                            pId.Value = naechsteId++;
+                            pWp.Value = id;
+                            pVo.Value = k.Vorlauf;
+                            pTe.Value = k.Temperatur;
+                            pCo.Value = k.COP;
+                            pPt.Value = k.Ptherm;
+                            pRo.Value = false;
+                            c.ExecuteNonQuery();
+                        }
+                    }
+                }
+
+                // Kuehlung: Tabelle hat KEIN ReadOnly, dafuer ID_Projekt - das bleibt
+                // beim Stamm-Import bewusst leer.
+                if (kuehlung != null && kuehlung.Count > 0)
+                {
+                    int naechsteId;
+                    using (OleDbCommand c = new OleDbCommand("SELECT MAX(ID) FROM " + CURVE_K, conn, trans))
+                    {
+                        object m = c.ExecuteScalar();
+                        naechsteId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+                    }
+
+                    using (OleDbCommand c = new OleDbCommand(
+                        "INSERT INTO " + CURVE_K + " (ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl, [Last]) VALUES (?, ?, ?, ?, ?, ?, ?)", conn, trans))
+                    {
+                        var pId = c.Parameters.Add("@id", OleDbType.Integer);
+                        var pWp = c.Parameters.Add("@wp", OleDbType.Integer);
+                        var pVo = c.Parameters.Add("@vor", OleDbType.Integer);
+                        var pTe = c.Parameters.Add("@tem", OleDbType.Integer);
+                        var pCo = c.Parameters.Add("@cop", OleDbType.Double);
+                        var pPk = c.Parameters.Add("@pk", OleDbType.Double);
+                        var pLa = c.Parameters.Add("@last", OleDbType.Integer);
+                        foreach (var k in kuehlung)
+                        {
+                            pId.Value = naechsteId++;
+                            pWp.Value = id;
+                            pVo.Value = k.Vorlauf;
+                            pTe.Value = k.Temperatur;
+                            pCo.Value = k.COP;
+                            pPk.Value = k.Pkuehl;
+                            pLa.Value = k.Last;
+                            c.ExecuteNonQuery();
+                        }
+                    }
+                }
+
+                trans.Commit();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                try { trans.Rollback(); } catch { }
+                MessageBox.Show("Fehler beim Überschreiben der Wärmepumpe (Stammdaten): " + ex.Message);
+                return false;
+            }
+            finally { try { conn.Close(); } catch { } }
+        }
+
         #endregion
 
         #region --- MAPPING ---

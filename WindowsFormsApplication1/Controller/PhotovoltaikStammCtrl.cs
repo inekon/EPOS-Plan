@@ -265,6 +265,47 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Import-Ueberschreiben (Dublettenkonzept 4.2): aktualisiert GENAU die Felder,
+        /// die der Import liefert, adressiert per ID. Vom Anwender gepflegte Felder
+        /// (Bezeichner, Beschreibung, Modulkosten, ReadOnly) bleiben unangetastet.
+        /// </summary>
+        /// <remarks>
+        /// Bewusst OHNE ReadOnly-Sperre: Das Ueberschreiben eines ReadOnly-Satzes ist
+        /// erlaubt und wird vorher im Konfliktdialog bestaetigt (Entscheidung 9.2 -
+        /// erlauben mit Hinweis).
+        /// </remarks>
+        public bool UpdateImport(int id)
+        {
+            if (id <= 0) return false;
+
+            string sql = @"UPDATE [" + TABLE + @"] SET
+                            Firma = ?, Leistung = ?, Wirkungsgrad = ?,
+                            U_Mpp = ?, U_Leerlauf = ?, I_Mpp = ?, I_Kurzschluss = ?,
+                            alpha_SC = ?, beta_OC = ?, gamma_PMP = ?, T_NOCT = ?,
+                            Laenge = ?, Breite = ?
+                          WHERE ID = ?";
+
+            OleDbParameter[] ps = {
+                new OleDbParameter("@fir", (object)(this.m_szFirma ?? "")),
+                new OleDbParameter("@lei", this.m_Leistung),
+                new OleDbParameter("@wir", this.m_Wirkungsgrad),
+                new OleDbParameter("@ump", this.m_U_Mpp),
+                new OleDbParameter("@ule", this.m_U_Leerlauf),
+                new OleDbParameter("@imp", this.m_I_Mpp),
+                new OleDbParameter("@iks", this.m_I_Kurzschluss),
+                new OleDbParameter("@asc", this.m_alpha_SC),
+                new OleDbParameter("@boc", this.m_beta_OC),
+                new OleDbParameter("@gam", this.m_Temp_Coeff_Pmax),
+                new OleDbParameter("@noc", this.m_T_NOCT),
+                new OleDbParameter("@lae", this.m_Laenge),
+                new OleDbParameter("@bre", this.m_Breite),
+                new OleDbParameter("@id", id)
+            };
+
+            return DataRepository.ExecuteSQL(sql, ps);
+        }
+
+        /// <summary>
         /// Loescht den Katalogsatz zum Bezeichner - aber nur, wenn er eindeutig ist.
         /// Dieselbe Anweisung loeschte bis zum 18.08.2026 bei einem doppelt vergebenen
         /// Namen BEIDE Zeilen.

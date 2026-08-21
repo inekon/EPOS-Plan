@@ -439,6 +439,48 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Import-Ueberschreiben (Dublettenkonzept 4.2): aktualisiert GENAU die Felder,
+        /// die der VDI-Import liefert, adressiert per ID. Vom Anwender gepflegte Felder
+        /// (Bezeichner, Beschreibung, Investitionskosten, Wartungskosten(_Einheit),
+        /// Nutzungsdauer, Brennwert, Vorlauf, Ruecklauf, ReadOnly) bleiben unangetastet -
+        /// der Import befuellt sie nicht.
+        /// </summary>
+        /// <remarks>
+        /// Bewusst OHNE ReadOnly-Sperre: Das Ueberschreiben eines ReadOnly-Satzes ist
+        /// erlaubt und wird vorher im Konfliktdialog bestaetigt (Entscheidung 9.2 -
+        /// erlauben mit Hinweis).
+        /// </remarks>
+        public bool UpdateImport(int id)
+        {
+            if (id <= 0) return false;
+
+            string sql = @"UPDATE [" + TABLE + @"] SET
+                            Firma = ?, Ptherm = ?, Brennstoff = ?,
+                            Wirkungsgrad_Gas = ?, Wirkungsgrad_Öl = ?, Raumbedarf = ?,
+                            CO2 = ?, SO2 = ?, NOx = ?, CO = ?, Staub = ?,
+                            Betriebsbereitschaftverlust = ?
+                          WHERE ID = ?";
+
+            OleDbParameter[] ps = {
+                new OleDbParameter("@fir", this.Firma ?? ""),
+                new OleDbParameter("@pth", this.Ptherm),
+                new OleDbParameter("@bre", this.Brennstoff),
+                new OleDbParameter("@wgg", this.Wirkungsgrad_Gas),
+                new OleDbParameter("@wgo", this.Wirkungsgrad_Oel),
+                new OleDbParameter("@rau", this.Raumbedarf),
+                new OleDbParameter("@co2", this.CO2),
+                new OleDbParameter("@so2", this.SO2),
+                new OleDbParameter("@nox", this.NOx),
+                new OleDbParameter("@co", this.CO),
+                new OleDbParameter("@sta", this.Staub),
+                new OleDbParameter("@bbv", this.Betriebsbereitschaftverlust),
+                new OleDbParameter("@id", id)
+            };
+
+            return DataRepository.ExecuteSQL(sql, ps);
+        }
+
+        /// <summary>
         /// Der Bezeichner, wie er aktuell IN DER DATENBANK unter dieser ID steht - die
         /// Vergleichsgrundlage dafuer, ob ein Speichervorgang eine Umbenennung ist.
         /// </summary>

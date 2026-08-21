@@ -61,7 +61,7 @@ namespace WindowsFormsApplication1
         }
 
         // Uebertraegt einen VDI-Eintrag in die Detailfelder. Die Felder sind auch
-        // beim Mehrfachladen der Traeger fuer die Uebernahme (InitDatensatzUpdate
+        // beim Mehrfachladen der Traeger fuer die Uebernahme (FuelleModellwerte
         // liest sie aus) - damit bleibt es bei genau einem Schreibweg.
         private void ZeigeDetails(int i)
         {
@@ -145,18 +145,55 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            string fehlertext;
-
+            // Einzelfall: die Detailfelder werden nicht neu besetzt, damit eine
+            // Korrektur von Hand erhalten bleibt. Weil Handkorrektur vorgesehen ist,
+            // wird das Zahlfeld vorab nach dem Hausmuster geprueft (sprechende
+            // Meldung, Fokus, Dialog bleibt offen); leer gilt wie bisher als 0.
             if (markiert.Count == 1)
             {
-                // Einzelfall: Meldungen und Dialogverhalten bleiben wie im Bestand;
-                // die Detailfelder werden nicht neu besetzt, damit eine Korrektur
-                // von Hand erhalten bleibt. Weil Handkorrektur vorgesehen ist,
-                // wird das Zahlfeld vorab nach dem Hausmuster geprueft (sprechende
-                // Meldung, Fokus, Dialog bleibt offen); leer gilt wie bisher als 0.
                 double dVerluste;
                 if (!Program.ZahlPruefen(textBox_Versluste, "Betriebsbereitschaftsverluste", out dVerluste, leerErlaubt: true)) return;
+            }
 
+            // Vorpruefung der gesamten Auswahl gegen den Katalog und gegen sich
+            // selbst (Konzept 4.1) - noch ohne Schreibzugriff. Quelle der Werte
+            // sind die Detailfelder (Traeger der Uebernahme): bei Mehrfachauswahl
+            // je Eintrag besetzt, im Einzelfall bleiben sie unangetastet, damit
+            // die Handkorrektur auch in die Pruefung eingeht.
+            KatalogDefinition katalog = KatalogRegistry.Finde("PUFFERSPEICHER");
+            System.Collections.Generic.List<ImportKandidat> kandidaten = new System.Collections.Generic.List<ImportKandidat>();
+            foreach (int i in markiert)
+            {
+                if (markiert.Count > 1) ZeigeDetails(i);
+                ImportKandidat kand = new ImportKandidat { Name = textBox_Name.Text, Tag = i };
+                try
+                {
+                    PufferSpModel probe = FuelleModellwerte();
+                    kand.Werte["Hersteller"] = probe.Firma;
+                    kand.Werte["Speichertyp"] = probe.Speichertyp;
+                    kand.Werte["Bereitschaftsverluste"] = probe.Betriebsbereitschaftverlust;
+                    kand.Werte["Gesamtvolumen"] = probe.Gesamtvolumen;
+                }
+                catch (FormatException)
+                {
+                    // Nicht parsbare Zahl: Vorpruefung ohne Inhaltswerte fortsetzen -
+                    // den Fehler meldet erst die Uebernahme (Bestandsphilosophie).
+                }
+                kandidaten.Add(kand);
+            }
+
+            System.Collections.Generic.List<ImportPruefung> pruefungen =
+                DublettenPruefung.PruefeKandidaten(katalog, kandidaten);
+
+            bool konflikt = false;
+            foreach (ImportPruefung p in pruefungen)
+                if (p.Befund != ImportBefund.Neu || p.NameDoppeltInAuswahl) { konflikt = true; break; }
+
+            if (!konflikt && markiert.Count == 1)
+            {
+                // Konfliktfreier Einzelfall: Meldungen und Dialogverhalten bleiben
+                // wortgleich beim Bestand.
+                string fehlertext;
                 VdiUebernahmeErgebnis einzel = UebernehmeEintrag(out fehlertext);
                 if (einzel == VdiUebernahmeErgebnis.Duplikat)
                 {
@@ -183,23 +220,80 @@ namespace WindowsFormsApplication1
                 return;
             }
 
+            System.Collections.Generic.List<KonfliktEntscheidung> entscheidungen;
+            if (konflikt)
+            {
+                // EIN Dialog fuer die ganze Auswahl statt einer Meldung je Satz.
+                entscheidungen = Form_ImportKonflikte.Zeigen(this, pruefungen,
+                    DublettenPruefung.VergebeneNamen(katalog));
+                if (entscheidungen == null) return;
+            }
+            else
+            {
+                entscheidungen = new System.Collections.Generic.List<KonfliktEntscheidung>();
+                foreach (ImportPruefung p in pruefungen)
+                    entscheidungen.Add(new KonfliktEntscheidung { Pruefung = p, Aktion = KonfliktAktion.Importieren });
+            }
+
+            FuehreAus(markiert.Count, entscheidungen);
+        }
+
+        // Fuehrt die im Konfliktdialog gewaehlten Aktionen aus und zeigt die
+        // Sammelmeldung. Auslassen zaehlt als uebersprungen.
+        private void FuehreAus(int markiertAnzahl, System.Collections.Generic.List<KonfliktEntscheidung> entscheidungen)
+        {
             int nGespeichert = 0;
             int nDuplikat = 0;
             int nFehler = 0;
+            int nUeberschrieben = 0;
+            int nUmbenannt = 0;
             Cursor alt = Cursor;
             Cursor = Cursors.WaitCursor;
             try
             {
-                foreach (int i in markiert)
+                foreach (KonfliktEntscheidung ent in entscheidungen)
                 {
-                    // Detailfelder je Eintrag besetzen - sie sind der Traeger fuer
-                    // InitDatensatzUpdate() und damit fuer die Uebernahme.
-                    ZeigeDetails(i);
+                    int i = (int)ent.Pruefung.Kandidat.Tag;
 
-                    // Ein fehlerhafter Eintrag darf den Gesamtvorgang nicht abbrechen.
-                    VdiUebernahmeErgebnis ergebnis = UebernehmeEintrag(out fehlertext);
+                    // Detailfelder je Eintrag besetzen - sie sind der Traeger fuer
+                    // FuelleModellwerte() und damit fuer die Uebernahme. Im
+                    // Einzelfall bleiben sie unangetastet, damit eine Handkorrektur
+                    // auch den Konfliktweg uebersteht (Bestandsverhalten).
+                    if (markiertAnzahl > 1) ZeigeDetails(i);
+
+                    string fehlertext;
+                    VdiUebernahmeErgebnis ergebnis;
+                    try
+                    {
+                        switch (ent.Aktion)
+                        {
+                            case KonfliktAktion.Auslassen:
+                                ergebnis = VdiUebernahmeErgebnis.Duplikat;
+                                break;
+                            case KonfliktAktion.Ueberschreiben:
+                                ergebnis = UeberschreibeEintrag(i, ent.Pruefung.Vorhanden.Id);
+                                break;
+                            case KonfliktAktion.Umbenennen:
+                                ergebnis = UebernehmeEintrag(out fehlertext, ent.NeuerName);
+                                if (ergebnis == VdiUebernahmeErgebnis.Gespeichert)
+                                    ergebnis = VdiUebernahmeErgebnis.Umbenannt;
+                                break;
+                            default:
+                                ergebnis = UebernehmeEintrag(out fehlertext);
+                                break;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Ein fehlerhafter Eintrag darf den Gesamtvorgang nicht abbrechen.
+                        Console.WriteLine("Fehler beim Einlesen von '" + ctrl._list[i].m_szName + "': " + ex.Message);
+                        ergebnis = VdiUebernahmeErgebnis.Fehler;
+                    }
+
                     if (ergebnis == VdiUebernahmeErgebnis.Gespeichert) nGespeichert++;
                     else if (ergebnis == VdiUebernahmeErgebnis.Duplikat) nDuplikat++;
+                    else if (ergebnis == VdiUebernahmeErgebnis.Ueberschrieben) nUeberschrieben++;
+                    else if (ergebnis == VdiUebernahmeErgebnis.Umbenannt) nUmbenannt++;
                     else nFehler++;
                 }
             }
@@ -208,12 +302,14 @@ namespace WindowsFormsApplication1
                 Cursor = alt;
             }
 
-            MessageBox.Show(VdiAuswahlFilter.LadeMeldung(nGespeichert, markiert.Count, nDuplikat, nFehler));
+            MessageBox.Show(VdiAuswahlFilter.LadeMeldung(nGespeichert, markiertAnzahl,
+                nDuplikat, nFehler, nUeberschrieben, nUmbenannt));
 
             // Wie im Bestand wird der Dialog nach erfolgreicher Uebernahme beendet;
             // ohne einen einzigen Treffer bleibt er offen, damit der Anwender
-            // Filter und Auswahl korrigieren kann.
-            if (nGespeichert > 0)
+            // Filter und Auswahl korrigieren kann. Ueberschreiben und Umbenennen
+            // zaehlen als Erfolg, weil sie den Katalog veraendert haben.
+            if (nGespeichert + nUeberschrieben + nUmbenannt > 0)
             {
                 this.DialogResult = DialogResult.OK;
                 Close();
@@ -223,18 +319,24 @@ namespace WindowsFormsApplication1
         // Uebernahme genau eines Eintrags in Tab_PufferSp_STAMM. Unveraenderter
         // Bestandsweg (Quelle sind die Detailfelder), nur mit Ergebnis als
         // Rueckgabewert statt MessageBox - die Meldung entscheidet der Aufrufer.
+        // nameOverride traegt beim Umbenennen (Konfliktdialog) den vom Anwender
+        // vergebenen neuen Bezeichner (Konzept 4.3); die Exists-Pruefung bleibt
+        // als zweite Verteidigungslinie hinter der Vorpruefung.
         // Der lokale Stamm-Controller heisst pspctrl, weil er sonst das Feld ctrl
         // (PufferSpImport) verdecken wuerde.
-        private VdiUebernahmeErgebnis UebernehmeEintrag(out string fehlertext)
+        private VdiUebernahmeErgebnis UebernehmeEintrag(out string fehlertext, string nameOverride = null)
         {
             fehlertext = null;
 
             try
             {
                 PufferSpStammCtrl pspctrl = new PufferSpStammCtrl();
-                if (pspctrl.Exists(textBox_Name.Text)) return VdiUebernahmeErgebnis.Duplikat;
+                PufferSpModel model = FuelleModellwerte();
+                if (nameOverride != null) model.Name = nameOverride;
 
-                if (pspctrl.InsertFrom(InitDatensatzUpdate())) return VdiUebernahmeErgebnis.Gespeichert;
+                if (pspctrl.Exists(model.Name)) return VdiUebernahmeErgebnis.Duplikat;
+
+                if (pspctrl.InsertFrom(model)) return VdiUebernahmeErgebnis.Gespeichert;
                 return VdiUebernahmeErgebnis.Fehler;
             }
             catch (Exception ex)
@@ -245,12 +347,33 @@ namespace WindowsFormsApplication1
             }
         }
 
-        PufferSpModel InitDatensatzUpdate()
+        // Ueberschreiben aus dem Konfliktdialog: aktualisiert genau die Importfelder
+        // des Bestandssatzes, adressiert per ID - Bezeichner und Anwenderfelder
+        // (Investitionskosten, ReadOnly) bleiben stehen (Konzept 4.2). Die Werte
+        // kommen wie bei der Neuanlage aus den Detailfeldern, die FuehreAus fuer
+        // den VDI-Eintrag index besetzt hat; der Stamm-Controller erbt vom Modell
+        // und wird direkt befuellt.
+        private VdiUebernahmeErgebnis UeberschreibeEintrag(int index, int bestandsId)
         {
-            PufferSpModel model = new PufferSpModel();
+            PufferSpStammCtrl pspctrl = new PufferSpStammCtrl();
+            FuelleModellwerte(pspctrl);
+
+            return pspctrl.UpdateImport(bestandsId)
+                ? VdiUebernahmeErgebnis.Ueberschrieben
+                : VdiUebernahmeErgebnis.Fehler;
+        }
+
+        // Befuellt das Modell (oder den uebergebenen Stamm-Controller - er erbt
+        // vom Modell) aus den Detailfeldern - gemeinsame Quelle fuer Vorpruefung,
+        // Neuanlage und Ueberschreiben (Muster Form_WP_einlesen). Nicht parsbare
+        // Zahlfelder werfen FormatException; das behandelt der Aufrufer.
+        PufferSpModel FuelleModellwerte(PufferSpModel model = null)
+        {
+            if (model == null) model = new PufferSpModel();
+
             model.Name = textBox_Name.Text;
             model.Firma = textBox_Firma.Text;
-            model.Speichertyp = textBox_Typ.Text;   
+            model.Speichertyp = textBox_Typ.Text;
             model.Betriebsbereitschaftverlust = Program.convertTxt2Double(textBox_Versluste.Text);
             model.Gesamtvolumen = Program.convertTxt2Int(textBox_Volumen.Text);
 

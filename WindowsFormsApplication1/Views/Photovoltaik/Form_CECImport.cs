@@ -445,21 +445,80 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            // 1. Vorabprüfung über das DataRepository (ohne Transaktion)
-            string checkSql = "SELECT COUNT(*) FROM [Tab_PV_STAMM] WHERE Bezeichner = ?";
-            OleDbParameter checkParam = new OleDbParameter("?", pvum.Name);
-            object result = DataRepository.ExecuteScalar(checkSql, checkParam);
+            // 1. Modell wie bisher aus der Auswahl befuellen - gemeinsame Quelle fuer
+            //    Vorpruefung und alle Schreibwege (CEC und PAN laufen beide hierher).
+            PhotovoltaikModel model = InitDatensatzUpdate();
 
-            if (result != null && Convert.ToInt32(result) > 0)
+            // 2. Vorpruefung gegen den Katalog (Dublettenkonzept 4.1) - ersetzt die
+            //    fruehere COUNT-Abfrage auf den Bezeichner. Die Schluessel sind die
+            //    DB-Spaltennamen der Import-Schnittmenge (KatalogRegistry "PV").
+            KatalogDefinition katalog = KatalogRegistry.Finde("PV");
+            ImportKandidat kand = new ImportKandidat { Name = model.m_szName, Tag = null };
+            kand.Werte["Firma"] = model.m_szFirma;
+            kand.Werte["Leistung"] = model.m_Leistung;
+            kand.Werte["Wirkungsgrad"] = model.m_Wirkungsgrad;
+            kand.Werte["U_Mpp"] = model.m_U_Mpp;
+            kand.Werte["U_Leerlauf"] = model.m_U_Leerlauf;
+            kand.Werte["I_Mpp"] = model.m_I_Mpp;
+            kand.Werte["I_Kurzschluss"] = model.m_I_Kurzschluss;
+            kand.Werte["alpha_SC"] = model.m_alpha_SC;
+            kand.Werte["beta_OC"] = model.m_beta_OC;
+            kand.Werte["gamma_PMP"] = model.m_Temp_Coeff_Pmax;
+            kand.Werte["T_NOCT"] = model.m_T_NOCT;
+            kand.Werte["Laenge"] = model.m_Laenge;
+            kand.Werte["Breite"] = model.m_Breite;
+
+            List<ImportPruefung> pruefungen = DublettenPruefung.PruefeKandidaten(
+                katalog, new List<ImportKandidat> { kand });
+
+            if (pruefungen[0].Befund == ImportBefund.Neu)
             {
-                MessageBox.Show("Daten bereits eingelesen!");
+                // Konfliktfreier Fall: Bestandsweg, Meldungen wortgleich.
+                SpeichereNeu(model);
                 return;
             }
 
+            // 3. Konfliktdialog (eine Zeile) und Aktions-Switch (Konzept 4.2/4.3).
+            List<KonfliktEntscheidung> entscheidungen = Form_ImportKonflikte.Zeigen(
+                this, pruefungen, DublettenPruefung.VergebeneNamen(katalog));
+            if (entscheidungen == null) return;   // Abbruch: nichts schreiben
+
+            KonfliktEntscheidung ent = entscheidungen[0];
+            switch (ent.Aktion)
+            {
+                case KonfliktAktion.Ueberschreiben:
+                    // Aktualisiert genau die Importfelder des Bestandssatzes per ID;
+                    // Bezeichner, Beschreibung, Modulkosten und ReadOnly bleiben stehen.
+                    UeberschreibeBestand(ent.Pruefung.Vorhanden.Id);
+                    break;
+
+                case KonfliktAktion.Umbenennen:
+                    // Neuanlage unter dem im Dialog vergebenen Namen.
+                    model.m_szName = ent.NeuerName;
+                    SpeichereNeu(model);
+                    break;
+
+                case KonfliktAktion.Importieren:
+                    // Bei InhaltsGleich: gewollte Variante trotzdem anlegen.
+                    SpeichereNeu(model);
+                    break;
+
+                default:
+                    // Auslassen: Meldung beibehalten, damit sich das Verhalten fuer
+                    // den Anwender nicht wortlos aendert (an dieser Stelle endete
+                    // frueher die COUNT-Pruefung).
+                    MessageBox.Show("Daten bereits eingelesen!");
+                    break;
+            }
+        }
+
+        // Bestandsweg der Neuanlage: InsertFrom mit den bisherigen Meldungen (wortgleich).
+        private void SpeichereNeu(PhotovoltaikModel model)
+        {
             try
             {
                 PhotovoltaikStammCtrl ctrl = new PhotovoltaikStammCtrl();
-                if (ctrl.InsertFrom(InitDatensatzUpdate()))
+                if (ctrl.InsertFrom(model))
                 {
                     MessageBox.Show("Datensatz erfolgreich gespeichert.");
                 }
@@ -475,9 +534,39 @@ namespace WindowsFormsApplication1
             }
         }
 
-        PhotovoltaikModel InitDatensatzUpdate()
+        // Ueberschreiben aus dem Konfliktdialog: Controller-Felder ueber
+        // InitDatensatzUpdate befuellen (der Controller erbt vom Modell) und genau
+        // die Importfelder des Bestandssatzes per ID aktualisieren
+        // (PhotovoltaikStammCtrl.UpdateImport, Dublettenkonzept 4.2).
+        private void UeberschreibeBestand(int bestandsId)
         {
-            PhotovoltaikModel model = new PhotovoltaikModel();
+            try
+            {
+                PhotovoltaikStammCtrl ctrl = new PhotovoltaikStammCtrl();
+                InitDatensatzUpdate(ctrl);
+                if (ctrl.UpdateImport(bestandsId))
+                {
+                    MessageBox.Show("Datensatz erfolgreich aktualisiert.");
+                }
+                else
+                {
+                    MessageBox.Show("Fehler beim Aktualisieren des Datensatzes!");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Aktualisieren: " + ex.Message);
+                MessageBox.Show("Fehler beim Aktualisieren des Datensatzes: " + ex.Message);
+            }
+        }
+
+        // Befuellt das uebergebene PhotovoltaikModel (bzw. ein neues) mit den Werten
+        // des selektierten Moduls - gemeinsame Quelle fuer Vorpruefung, Neuanlage und
+        // Ueberschreiben. Der Stamm-Controller erbt vom Modell und kann direkt
+        // uebergeben werden (Muster Form_Heizkessel_Bearbeiten.InitDatensatzUpdate).
+        PhotovoltaikModel InitDatensatzUpdate(PhotovoltaikModel model = null)
+        {
+            if (model == null) model = new PhotovoltaikModel();
 
             model.m_szName = pvum.Name;
             model.m_szFirma = pvum.Manufacturer;

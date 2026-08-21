@@ -2716,6 +2716,186 @@ namespace WindowsFormsApplication1.MyResource {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
+        public static string IMP_KONFLIKT_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslassen ähnelt.
+        /// </summary>
+        public static string IMP_KONFLIKT_AKTION_AUSLASSEN {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_AKTION_AUSLASSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importieren ähnelt.
+        /// </summary>
+        public static string IMP_KONFLIKT_AKTION_IMPORTIEREN {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_AKTION_IMPORTIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschreiben ähnelt.
+        /// </summary>
+        public static string IMP_KONFLIKT_AKTION_UEBERSCHREIBEN {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_AKTION_UEBERSCHREIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umbenennen ähnelt.
+        /// </summary>
+        public static string IMP_KONFLIKT_AKTION_UMBENENNEN {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_AKTION_UMBENENNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Konflikte auslassen ähnelt.
+        /// </summary>
+        public static string IMP_KONFLIKT_ALLE_AUSLASSEN {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_ALLE_AUSLASSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name kommt in der Auswahl mehrfach vor ähnelt.
+        /// </summary>
+        public static string IMP_KONFLIKT_BEFUND_AUSWAHL_DOPPELT {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_BEFUND_AUSWAHL_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bereits vorhanden (identisch) ähnelt.
+        /// </summary>
+        public static string IMP_KONFLIKT_BEFUND_IDENTISCH {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_BEFUND_IDENTISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die inhaltsgleich mit &quot;{0}&quot; ähnelt.
+        /// </summary>
+        public static string IMP_KONFLIKT_BEFUND_INHALT_GLEICH {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_BEFUND_INHALT_GLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name im Katalog mehrfach vergeben – Überschreiben nicht möglich, bitte erst über Administration bereinigen ähnelt.
+        /// </summary>
+        public static string IMP_KONFLIKT_BEFUND_NAME_MEHRFACH {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_BEFUND_NAME_MEHRFACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name bereits vorhanden – abweichend: {0} ähnelt.
+        /// </summary>
+        public static string IMP_KONFLIKT_BEFUND_NAME_VORHANDEN {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_BEFUND_NAME_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu ähnelt.
+        /// </summary>
+        public static string IMP_KONFLIKT_BEFUND_NEU {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_BEFUND_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz: Eine Überschreibung geht beim nächsten Datenbank-Update verloren. ähnelt.
+        /// </summary>
+        public static string IMP_KONFLIKT_HINWEIS_READONLY {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_HINWEIS_READONLY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Einträge, davon {1} mit Konflikt. Bitte je Zeile die Aktion wählen. ähnelt.
+        /// </summary>
+        public static string IMP_KONFLIKT_KOPF {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name &quot;{0}&quot; ist leer oder bereits vergeben. Bitte einen eindeutigen Namen eintragen. ähnelt.
+        /// </summary>
+        public static string IMP_KONFLIKT_NAME_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_NAME_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string IMP_KONFLIKT_OK {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktion ähnelt.
+        /// </summary>
+        public static string IMP_KONFLIKT_SPALTE_AKTION {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_SPALTE_AKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Befund ähnelt.
+        /// </summary>
+        public static string IMP_KONFLIKT_SPALTE_BEFUND {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_SPALTE_BEFUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eintrag (Name beim Umbenennen anpassen) ähnelt.
+        /// </summary>
+        public static string IMP_KONFLIKT_SPALTE_NAME {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_SPALTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Import: Konflikte prüfen ähnelt.
+        /// </summary>
+        public static string IMP_KONFLIKT_TITEL {
+            get {
+                return ResourceManager.GetString("IMP_KONFLIKT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
         public static string IMPORT_BTN_ABBRECHEN {
             get {
                 return ResourceManager.GetString("IMPORT_BTN_ABBRECHEN", resourceCulture);

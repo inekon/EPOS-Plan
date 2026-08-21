@@ -18,7 +18,13 @@ namespace WindowsFormsApplication1
         Duplikat,
 
         /// <summary>Uebernahme ist fehlgeschlagen (DB-Fehler o.ae.).</summary>
-        Fehler
+        Fehler,
+
+        /// <summary>Vorhandener Katalogsatz wurde durch den Import aktualisiert (Konfliktdialog: Ueberschreiben).</summary>
+        Ueberschrieben,
+
+        /// <summary>Eintrag wurde unter neuem, vom Anwender vergebenem Namen angelegt.</summary>
+        Umbenannt
     }
 
     /// <summary>
@@ -84,9 +90,37 @@ namespace WindowsFormsApplication1
         /// <param name="fehler">Zahl der fehlgeschlagenen Eintraege.</param>
         public static string LadeMeldung(int gespeichert, int markiert, int uebersprungen, int fehler)
         {
+            return LadeMeldung(gespeichert, markiert, uebersprungen, fehler, 0, 0);
+        }
+
+        /// <summary>
+        /// Baut die Statusrueckmeldung des Mehrfachladens einschliesslich der
+        /// Ergebnisse des Konfliktdialogs (Paket D2). Ueberschriebene und unter
+        /// neuem Namen angelegte Eintraege werden - wie uebersprungene und
+        /// fehlgeschlagene - nur dann aufgefuehrt, wenn es sie gibt.
+        /// </summary>
+        /// <param name="gespeichert">Zahl der neu geschriebenen Datensaetze.</param>
+        /// <param name="markiert">Zahl der markierten Eintraege (m).</param>
+        /// <param name="uebersprungen">Zahl der bereits vorhandenen Bezeichner.</param>
+        /// <param name="fehler">Zahl der fehlgeschlagenen Eintraege.</param>
+        /// <param name="ueberschrieben">Zahl der ueberschriebenen Katalogsaetze.</param>
+        /// <param name="umbenannt">Zahl der unter neuem Namen angelegten Eintraege.</param>
+        public static string LadeMeldung(int gespeichert, int markiert, int uebersprungen, int fehler,
+                                         int ueberschrieben, int umbenannt)
+        {
             string meldung = string.Format(CultureInfo.CurrentCulture,
                                            "{0} von {1} Einträgen geladen.",
                                            gespeichert, markiert);
+
+            if (ueberschrieben > 0)
+                meldung += string.Format(CultureInfo.CurrentCulture,
+                                         "{0}Überschrieben: {1}",
+                                         Environment.NewLine, ueberschrieben);
+
+            if (umbenannt > 0)
+                meldung += string.Format(CultureInfo.CurrentCulture,
+                                         "{0}Unter neuem Namen: {1}",
+                                         Environment.NewLine, umbenannt);
 
             if (uebersprungen > 0)
                 meldung += string.Format(CultureInfo.CurrentCulture,

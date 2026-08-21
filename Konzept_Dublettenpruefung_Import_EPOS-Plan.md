@@ -404,9 +404,12 @@ nicht doppelt gebaut.
 
 Reihenfolge ist wichtig — erst Bestand säubern, dann zusperren:
 
-1. **Migrationsschritt (neu, Schema-Version 25):** `KATALOGE_MIT_NAMEN` um
-   `Tab_WP_STAMM` (mit Kennlinien-Kaskade), `Tab_Pufferspeicher_STAMM`,
-   `Tab_Solarkollektoren_STAMM` erweitern — gleiche Löschregel wie Schritt 24
+1. **Migrationsschritt (neu; bei Konzepterstellung als Version 25 geplant — die
+   Migration stand bei Umsetzungsbeginn bereits auf Version 29, realisiert als
+   Schritt 30):** die Bereinigung von `KATALOGE_MIT_NAMEN` auf **alle** Kataloge der
+   `KatalogRegistry` ausweiten, bei Katalogen mit Datenblöcken (WP-Kennlinien,
+   Ganglinien) mit Kaskade und Datenblock-Gleichheitsbedingung — gleiche Löschregel
+   wie Schritt 24
    (nur leere Kopien; Rest wird gemeldet). *(Der früher hier vermerkte veraltete
    Protokolltext „Schritt 19" wurde am 21.08.2026 bereits richtiggestellt.)*
 2. **Restdubletten** (gefüllte Kopien) löst der Anwender über die Admin-Suche (5) auf.
@@ -427,8 +430,8 @@ Reihenfolge ist wichtig — erst Bestand säubern, dann zusperren:
 | **D1** | `KatalogRegistry` + `DublettenPruefung` (Normalisierung, Inhalts-Hash inkl. generischem Datenblock-Hash, Vorprüfung, Scan) | — | 6–8 h |
 | **D2** | Konfliktdialog `Form_ImportKonflikte` + Integration in die 6 Importpfade, Überschreiben/Umbenennen, ID-Updates für WP/PSP/ST, erweiterte Sammelmeldung, Lokalisierung | D1 | 12–16 h |
 | **D3** | Admin-Suche `Form_KatalogDubletten` über **alle** Admin-Kataloge (9.5) — Scan inkl. Profil-/Ganglinien-Datenblöcke, Gegenüberstellung, geführtes Bereinigen, Verwendungsprüfung, Protokoll, Menü-Einbindung | D1 | 12–16 h |
-| **D4** | Migration: Bereinigung auf alle Kataloge ausweiten (Version 25, WP-Kaskade) | D1 | 4–5 h |
-| **D5** | UNIQUE-Index als Schlussstein (7.4, beschlossen) | D1–D4 | 1–2 h |
+| **D4** | Migration: Bereinigung auf alle Kataloge ausweiten (Schritt 30, WP-Kaskade) | D1 | 4–5 h |
+| **D5** | UNIQUE-Index als Schlussstein (Schritt 31; 7.4, beschlossen) | D1–D4 | 1–2 h |
 
 Bereits vorab erledigt (21.08.2026): PAN-`static`-Anzeige-Dubletten entschärft,
 WP-Importprüfung auf parametrisiertes `Exists` umgestellt, Migrations-Protokolltext

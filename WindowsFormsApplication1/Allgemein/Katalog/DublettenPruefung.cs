@@ -293,6 +293,54 @@ namespace WindowsFormsApplication1
             return ergebnisse;
         }
 
+        /// <summary>
+        /// Je Datenblock des Katalogs ein Hash ueber die Blockzeilen GENAU EINES
+        /// Kopfsatzes; leerer Block ergibt "". Gleiche Kanonisierung wie im
+        /// Inhalts-Hash. Fuer die Migrations-Bereinigung: Eine Namensdublette darf
+        /// nur entfallen, wenn ihre Bloecke leer oder mit denen des behaltenen
+        /// Satzes identisch sind (Konzept 7.1, WP-Kaskade).
+        /// </summary>
+        public static List<string> BlockHashes(KatalogDefinition k, int id)
+        {
+            var hashes = new List<string>();
+            foreach (KatalogDatenblock b in k.Datenbloecke)
+            {
+                DataTable bt = DataRepository.GetDataTable(
+                    "SELECT * FROM [" + b.Tabelle + "] WHERE [" + b.FkSpalte + "] = ? ORDER BY " + b.Sortierung,
+                    new System.Data.OleDb.OleDbParameter("@fk", id));
+                if (bt == null || bt.Rows.Count == 0)
+                {
+                    hashes.Add("");
+                    continue;
+                }
+                StringBuilder sb = new StringBuilder();
+                foreach (DataRow z in bt.Rows)
+                {
+                    foreach (string sp in b.WertSpalten)
+                        sb.Append(Kanonisch(z.Table.Columns.Contains(sp) ? z[sp] : null)).Append('|');
+                    sb.Append('\n');
+                }
+                hashes.Add(Sha256(sb.ToString()));
+            }
+            return hashes;
+        }
+
+        /// <summary>
+        /// Alle im Katalog vergebenen Namen, normalisiert - fuer die Namensvalidierung
+        /// des Konfliktdialogs (Umbenennen, Konzept 4.3).
+        /// </summary>
+        public static HashSet<string> VergebeneNamen(KatalogDefinition k)
+        {
+            var namen = new HashSet<string>(StringComparer.Ordinal);
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT [" + k.NamensSpalte + "] FROM [" + k.Tabelle + "]");
+            if (dt != null)
+                foreach (DataRow r in dt.Rows)
+                    if (!(r[0] is DBNull))
+                        namen.Add(NormalisiereName(Convert.ToString(r[0])));
+            return namen;
+        }
+
         // ------------------------------------------------------------- Bausteine ------
 
         /// <summary>
