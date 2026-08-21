@@ -135,6 +135,68 @@ namespace WindowsFormsApplication1
             finally { try { conn.Close(); } catch { } }
         }
 
+        /// <summary>
+        /// Ersetzt beim Import-Ueberschreiben die Werte einer vorhandenen Ganglinie:
+        /// Kopfsatz und ID bleiben stehen, nur das Zeitinterval wird aktualisiert und
+        /// die Datenzeilen werden in einer Transaktion getauscht (Dublettenkonzept 4.4).
+        /// </summary>
+        /// <remarks>
+        /// Bewusst OHNE ReadOnly-Sperre: Das Ueberschreiben eines ReadOnly-Satzes ist
+        /// erlaubt und wird vorher im Konfliktdialog bestaetigt (Entscheidung 9.2 -
+        /// erlauben mit Hinweis). Transaktionsmuster wie <see cref="ImportGanglinie"/>.
+        /// </remarks>
+        public bool ErsetzeGanglinie(string szBezeichner, int zeitinterval, IList<double> werte)
+        {
+            if (werte == null || werte.Count == 0) return false;
+
+            int id = GetStammId(szBezeichner);
+            if (id <= 0) return false;
+
+            var (conn, trans) = DataRepository.BeginTransaction();
+            try
+            {
+                using (OleDbCommand c = new OleDbCommand(
+                    "UPDATE " + HEAD_STAMM + " SET Zeitinterval = ? WHERE ID = ?", conn, trans))
+                {
+                    c.Parameters.Add("@int", OleDbType.Integer).Value = zeitinterval;
+                    c.Parameters.Add("@id", OleDbType.Integer).Value = id;
+                    c.ExecuteNonQuery();
+                }
+
+                using (OleDbCommand c = new OleDbCommand(
+                    "DELETE FROM " + DATA_STAMM + " WHERE ID_Ganglinie = ?", conn, trans))
+                {
+                    c.Parameters.Add("@id", OleDbType.Integer).Value = id;
+                    c.ExecuteNonQuery();
+                }
+
+                using (OleDbCommand c = new OleDbCommand(
+                    "INSERT INTO " + DATA_STAMM + " (ID_Ganglinie, Wert, ReadOnly) VALUES (?, ?, ?)", conn, trans))
+                {
+                    var pG = c.Parameters.Add("@g", OleDbType.Integer);
+                    var pW = c.Parameters.Add("@w", OleDbType.Double);
+                    var pR = c.Parameters.Add("@r", OleDbType.Boolean);
+                    foreach (double w in werte)
+                    {
+                        pG.Value = id;
+                        pW.Value = w;
+                        pR.Value = false;
+                        c.ExecuteNonQuery();
+                    }
+                }
+
+                trans.Commit();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                try { trans.Rollback(); } catch { }
+                MessageBox.Show("Fehler beim Ersetzen der Ganglinie (Stammdaten): " + ex.Message);
+                return false;
+            }
+            finally { try { conn.Close(); } catch { } }
+        }
+
         // Projekt-Ganglinie-ID (Tab_Stromganglinie.ID) zu einem Bezeichner im Projekt, oder 0.
         public static int GetProjektGanglinieId(string szName, int idProjekt)
         {

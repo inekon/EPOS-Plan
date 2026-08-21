@@ -2896,6 +2896,66 @@ Bitte zuerst die Simulation mit Heizkessel durchführen.</value>
   <data name="IMPORT_GANGLINIE_RASTER_PASST_NICHT" xml:space="preserve">
     <value>Die Stromganglinie {0} hat {1} Werte, das gespeicherte Zeitinterval {2} verlangt {3}. Die Ganglinie wurde nicht gerechnet - bitte neu einlesen.</value>
   </data>
+  <data name="IMP_KONFLIKT_TITEL" xml:space="preserve">
+    <value>Import: Konflikte prüfen</value>
+  </data>
+  <data name="IMP_KONFLIKT_KOPF" xml:space="preserve">
+    <value>{0} Einträge, davon {1} mit Konflikt. Bitte je Zeile die Aktion wählen.</value>
+  </data>
+  <data name="IMP_KONFLIKT_SPALTE_NAME" xml:space="preserve">
+    <value>Eintrag (Name beim Umbenennen anpassen)</value>
+  </data>
+  <data name="IMP_KONFLIKT_SPALTE_BEFUND" xml:space="preserve">
+    <value>Befund</value>
+  </data>
+  <data name="IMP_KONFLIKT_SPALTE_AKTION" xml:space="preserve">
+    <value>Aktion</value>
+  </data>
+  <data name="IMP_KONFLIKT_BEFUND_NEU" xml:space="preserve">
+    <value>Neu</value>
+  </data>
+  <data name="IMP_KONFLIKT_BEFUND_IDENTISCH" xml:space="preserve">
+    <value>bereits vorhanden (identisch)</value>
+  </data>
+  <data name="IMP_KONFLIKT_BEFUND_NAME_VORHANDEN" xml:space="preserve">
+    <value>Name bereits vorhanden – abweichend: {0}</value>
+  </data>
+  <data name="IMP_KONFLIKT_BEFUND_INHALT_GLEICH" xml:space="preserve">
+    <value>inhaltsgleich mit "{0}"</value>
+  </data>
+  <data name="IMP_KONFLIKT_BEFUND_NAME_MEHRFACH" xml:space="preserve">
+    <value>Name im Katalog mehrfach vergeben – Überschreiben nicht möglich, bitte erst über Administration bereinigen</value>
+  </data>
+  <data name="IMP_KONFLIKT_BEFUND_AUSWAHL_DOPPELT" xml:space="preserve">
+    <value>Name kommt in der Auswahl mehrfach vor</value>
+  </data>
+  <data name="IMP_KONFLIKT_HINWEIS_READONLY" xml:space="preserve">
+    <value>Auslieferungssatz: Eine Überschreibung geht beim nächsten Datenbank-Update verloren.</value>
+  </data>
+  <data name="IMP_KONFLIKT_AKTION_IMPORTIEREN" xml:space="preserve">
+    <value>Importieren</value>
+  </data>
+  <data name="IMP_KONFLIKT_AKTION_AUSLASSEN" xml:space="preserve">
+    <value>Auslassen</value>
+  </data>
+  <data name="IMP_KONFLIKT_AKTION_UEBERSCHREIBEN" xml:space="preserve">
+    <value>Überschreiben</value>
+  </data>
+  <data name="IMP_KONFLIKT_AKTION_UMBENENNEN" xml:space="preserve">
+    <value>Umbenennen</value>
+  </data>
+  <data name="IMP_KONFLIKT_ALLE_AUSLASSEN" xml:space="preserve">
+    <value>Alle Konflikte auslassen</value>
+  </data>
+  <data name="IMP_KONFLIKT_NAME_UNGUELTIG" xml:space="preserve">
+    <value>Der Name "{0}" ist leer oder bereits vergeben. Bitte einen eindeutigen Namen eintragen.</value>
+  </data>
+  <data name="IMP_KONFLIKT_OK" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="IMP_KONFLIKT_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
   <data name="PREIS_HINWEIS_KEIN_STROMTRAEGER" xml:space="preserve">
     <value>Dem Projekt ist kein Strom-Energietraeger zugeordnet - es gelten die Vorgabewerte fuer Aufschlag und Verguetung.</value>
   </data>

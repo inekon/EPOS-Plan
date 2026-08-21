@@ -146,6 +146,44 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(sql, ps);
         }
 
+        /// <summary>
+        /// Import-Ueberschreiben (Dublettenkonzept 4.2): aktualisiert GENAU die Felder,
+        /// die der VDI-Import liefert, adressiert per ID. Vom Anwender gepflegte Felder
+        /// (Bezeichner, Beschreibung, Investitionskosten, ReadOnly) bleiben unangetastet.
+        /// </summary>
+        /// <remarks>
+        /// Bewusst OHNE ReadOnly-Sperre: Das Ueberschreiben eines ReadOnly-Satzes ist
+        /// erlaubt und wird vorher im Konfliktdialog bestaetigt (Entscheidung 9.2 -
+        /// erlauben mit Hinweis).
+        /// </remarks>
+        public bool UpdateImport(int id)
+        {
+            if (id <= 0) return false;
+
+            string sql = @"UPDATE [" + TABLE + @"] SET
+                            Firma = ?, Kollektortyp = ?, Modulflaeche = ?, Aperturflaeche = ?,
+                            h0 = ?, k1 = ?, k2 = ?, Kdir = ?, Kdfu = ?,
+                            Vorlauf = ?, Ruecklauf = ?
+                          WHERE ID = ?";
+
+            OleDbParameter[] ps = {
+                new OleDbParameter("@fir", (object)(this.m_szFirma ?? "")),
+                new OleDbParameter("@typ", (object)(this.m_szKollektortyp ?? "")),
+                new OleDbParameter("@mfl", this.m_Modulfläche),
+                new OleDbParameter("@afl", this.m_Aperturfläche),
+                new OleDbParameter("@h0", this.m_h0),
+                new OleDbParameter("@k1", this.m_k1),
+                new OleDbParameter("@k2", this.m_k2),
+                new OleDbParameter("@kdir", this.m_Kdir),
+                new OleDbParameter("@kdfu", this.m_Kdfu),
+                new OleDbParameter("@vor", (int)this.m_Vorlauf),
+                new OleDbParameter("@rue", (int)this.m_Ruecklauf),
+                new OleDbParameter("@id", id)
+            };
+
+            return DataRepository.ExecuteSQL(sql, ps);
+        }
+
         public bool Delete(string szName)
         {
             if (IsReadOnlyStatic(szName))

@@ -2881,6 +2881,66 @@ Please run the simulation with the boiler first.</value>
   <data name="IMPORT_GANGLINIE_RASTER_PASST_NICHT" xml:space="preserve">
     <value>Load curve {0} has {1} values, but the stored time interval {2} requires {3}. The load curve was not calculated - please import it again.</value>
   </data>
+  <data name="IMP_KONFLIKT_TITEL" xml:space="preserve">
+    <value>Import: review conflicts</value>
+  </data>
+  <data name="IMP_KONFLIKT_KOPF" xml:space="preserve">
+    <value>{0} entries, {1} with conflicts. Please choose an action per row.</value>
+  </data>
+  <data name="IMP_KONFLIKT_SPALTE_NAME" xml:space="preserve">
+    <value>Entry (edit the name when renaming)</value>
+  </data>
+  <data name="IMP_KONFLIKT_SPALTE_BEFUND" xml:space="preserve">
+    <value>Finding</value>
+  </data>
+  <data name="IMP_KONFLIKT_SPALTE_AKTION" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="IMP_KONFLIKT_BEFUND_NEU" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="IMP_KONFLIKT_BEFUND_IDENTISCH" xml:space="preserve">
+    <value>already present (identical)</value>
+  </data>
+  <data name="IMP_KONFLIKT_BEFUND_NAME_VORHANDEN" xml:space="preserve">
+    <value>name already present – differs in: {0}</value>
+  </data>
+  <data name="IMP_KONFLIKT_BEFUND_INHALT_GLEICH" xml:space="preserve">
+    <value>same content as "{0}"</value>
+  </data>
+  <data name="IMP_KONFLIKT_BEFUND_NAME_MEHRFACH" xml:space="preserve">
+    <value>name occurs multiple times in the catalogue – overwrite not possible, please clean up via Administration first</value>
+  </data>
+  <data name="IMP_KONFLIKT_BEFUND_AUSWAHL_DOPPELT" xml:space="preserve">
+    <value>name occurs more than once in the selection</value>
+  </data>
+  <data name="IMP_KONFLIKT_HINWEIS_READONLY" xml:space="preserve">
+    <value>Factory data set: an overwrite will be reverted by the next database update.</value>
+  </data>
+  <data name="IMP_KONFLIKT_AKTION_IMPORTIEREN" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="IMP_KONFLIKT_AKTION_AUSLASSEN" xml:space="preserve">
+    <value>Skip</value>
+  </data>
+  <data name="IMP_KONFLIKT_AKTION_UEBERSCHREIBEN" xml:space="preserve">
+    <value>Overwrite</value>
+  </data>
+  <data name="IMP_KONFLIKT_AKTION_UMBENENNEN" xml:space="preserve">
+    <value>Rename</value>
+  </data>
+  <data name="IMP_KONFLIKT_ALLE_AUSLASSEN" xml:space="preserve">
+    <value>Skip all conflicts</value>
+  </data>
+  <data name="IMP_KONFLIKT_NAME_UNGUELTIG" xml:space="preserve">
+    <value>The name "{0}" is empty or already taken. Please enter a unique name.</value>
+  </data>
+  <data name="IMP_KONFLIKT_OK" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="IMP_KONFLIKT_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
   <data name="PREIS_HINWEIS_KEIN_STROMTRAEGER" xml:space="preserve">
     <value>The project has no electricity energy carrier assigned - the default surcharge and feed-in values apply.</value>
   </data>

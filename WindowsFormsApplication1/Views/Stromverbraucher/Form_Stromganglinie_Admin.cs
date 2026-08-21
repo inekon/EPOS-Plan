@@ -84,7 +84,8 @@ namespace WindowsFormsApplication1
         //   GanglinienDatei.Lies      CSV/TXT ueber NReco, Excel als ein Bulk-Read
         //   GanglinienPruefung.Pruefe Raster, Einheit, Schaltjahr, Sommerzeit, Plausibilitaet
         //   Form_GanglinieProtokoll   Anzeige; Fehler blockieren, Eingriffe brauchen Bestaetigung
-        //   StromganglinieStammCtrl.ImportGanglinie  Ablage wie bisher (eine Transaktion)
+        //   DublettenPruefung/Form_ImportKonflikte   Namensabgleich gegen den Katalog (Konzept 4.1)
+        //   StromganglinieStammCtrl.ImportGanglinie/ErsetzeGanglinie  Ablage (eine Transaktion)
         //
         // Die Kopie der Quelldatei im Anwenderordner "Strom" bleibt die verlustfreie
         // Originalablage - die Datenbank fuehrt nur die normalisierte Reihe.
@@ -119,15 +120,12 @@ namespace WindowsFormsApplication1
 
             if (filebasename == "" || filebasename == null ) return;
 
-            // Datei schon eingelesen?
+            // Bezeichner = Dateiname ohne Erweiterung. Die fruehere Vorab-Pruefung
+            // gegen die ListBox entfaellt: Ob der Name im Katalog schon vergeben ist,
+            // klaert nach dem Lesen/Pruefen die DB-gestuetzte Dublettenpruefung mit
+            // Konfliktdialog (Schritt 6) - erst dann stehen Zeitinterval und Werte
+            // fuer ein Ueberschreiben bereit.
             string szBezeichner = Path.GetFileNameWithoutExtension(filebasename);
-            if (listBox_Extern.FindStringExact(szBezeichner) != ListBox.NoMatches)
-            {
-                MessageBox.Show(MyResource.Resource.IMPORT_MSG_BEREITS_VORHANDEN,
-                                MyResource.Resource.IMPORT_MSG_HINWEIS,
-                                MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
 
             // Ab hier wird die Kopie im Anwenderordner gelesen, wenn sie existiert.
             string szPfad = Path.Combine(szAppDataPath, filebasename);
@@ -187,12 +185,56 @@ namespace WindowsFormsApplication1
 
             if (!Form_GanglinieProtokoll.Zeigen(this, protokoll, moeglich, bestaetigen)) return;
 
-            // 6) Ablage - unveraendertes Transaktionsmuster des Bestands
+            // 6) DB-gestuetzte Dublettenpruefung (Konzept 4.1) - Einzelimport, daher
+            // eine Ein-Element-Liste. Sie laeuft bewusst erst NACH dem Lesen/Pruefen,
+            // damit fuer "Ueberschreiben" Zeitinterval und Werte bereitstehen.
+            KatalogDefinition k = KatalogRegistry.Finde("STROMGANGLINIE");
+            ImportKandidat kandidat = new ImportKandidat { Name = szBezeichner };
+            kandidat.Werte["Zeitinterval"] = ergebnis.Zeitinterval;
+            List<ImportPruefung> pruefungen = DublettenPruefung.PruefeKandidaten(
+                k, new List<ImportKandidat> { kandidat });
+
+            string szZielName = szBezeichner;
+            bool ueberschreiben = false;
+
+            if (pruefungen.Count > 0 && pruefungen[0].Befund != ImportBefund.Neu)
+            {
+                // EIN Konfliktdialog (eine Zeile) statt der frueheren Abbruch-Meldung.
+                // "Importieren" bietet der Dialog bei Namenskonflikt selbst nicht an.
+                List<KonfliktEntscheidung> entscheidungen = Form_ImportKonflikte.Zeigen(
+                    this, pruefungen, DublettenPruefung.VergebeneNamen(k));
+                if (entscheidungen == null) return;   // Abbruch: stiller Ausstieg
+
+                KonfliktEntscheidung ent = entscheidungen[0];
+                switch (ent.Aktion)
+                {
+                    case KonfliktAktion.Auslassen:
+                        // Meldung wie der fruehere Duplikat-Abbruch des Bestands.
+                        MessageBox.Show(MyResource.Resource.IMPORT_MSG_BEREITS_VORHANDEN,
+                                        MyResource.Resource.IMPORT_MSG_HINWEIS,
+                                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return;
+                    case KonfliktAktion.Ueberschreiben:
+                        ueberschreiben = true;
+                        break;
+                    case KonfliktAktion.Umbenennen:
+                        szZielName = ent.NeuerName;
+                        break;
+                    default:
+                        // Importieren (nur bei Befund InhaltsGleich waehlbar):
+                        // normaler Neuimport unter dem Originalnamen.
+                        break;
+                }
+            }
+
+            // 7) Ablage - unveraendertes Transaktionsmuster des Bestands
             Cursor.Current = Cursors.WaitCursor;
             bool success;
             try
             {
-                success = ctrl_stamm.ImportGanglinie(szBezeichner, ergebnis.Zeitinterval, ergebnis.Werte);
+                success = ueberschreiben
+                    ? ctrl_stamm.ErsetzeGanglinie(szZielName, ergebnis.Zeitinterval, ergebnis.Werte)
+                    : ctrl_stamm.ImportGanglinie(szZielName, ergebnis.Zeitinterval, ergebnis.Werte);
             }
             finally
             {
@@ -209,7 +251,7 @@ namespace WindowsFormsApplication1
             {
                 MessageBox.Show(string.Format(CultureInfo.CurrentCulture,
                                     MyResource.Resource.IMPORT_MSG_ERFOLG,
-                                    szBezeichner, ergebnis.Werte.Length, ergebnis.Zeitinterval),
+                                    szZielName, ergebnis.Werte.Length, ergebnis.Zeitinterval),
                                 MyResource.Resource.IMPORT_MSG_TITEL,
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
