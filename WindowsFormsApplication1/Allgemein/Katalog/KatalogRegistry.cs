@@ -31,6 +31,22 @@ namespace WindowsFormsApplication1
         public string[] WertSpalten;
     }
 
+    /// <summary>
+    /// Eine Pruefabfrage der Verwendungspruefung vor dem Loeschen (Konzept 5.3):
+    /// Zaehlt, ob der Katalogsatz aus <see cref="Tabelle"/>.<see cref="Spalte"/>
+    /// heraus referenziert wird - ueber den Bezeichner (<see cref="UeberName"/> = true)
+    /// oder ueber die Katalog-ID (false). Befuellt wird sie NUR fuer nachgewiesene
+    /// Referenzen; Kataloge mit Kopiersemantik (STAMM wird ins Projekt kopiert,
+    /// Verweise zeigen auf die Projektkopie) fuehren bewusst ein leeres Array.
+    /// </summary>
+    public class VerwendungsPruefung
+    {
+        public string Tabelle;
+        public string Spalte;
+        /// <summary>true: Vergleich gegen den Bezeichner; false: gegen die Katalog-ID.</summary>
+        public bool UeberName;
+    }
+
     /// <summary>Beschreibung eines Katalogs fuer die Dublettenpruefung.</summary>
     public class KatalogDefinition
     {
@@ -52,10 +68,45 @@ namespace WindowsFormsApplication1
         /// null = Katalog hat keinen Dateiimport.
         /// </summary>
         public string[] ImportSpalten;
+
+        /// <summary>
+        /// Nachgewiesene Verwendungsstellen des Katalogsatzes fuer die Pruefung vor dem
+        /// Loeschen (Konzept 5.3, Erhebung 21.08.2026). Leeres Array = Kopiersemantik
+        /// belegt, das Loeschen im Katalog beruehrt keine Projektdaten.
+        /// </summary>
+        public VerwendungsPruefung[] VerwendungsPruefungen = new VerwendungsPruefung[0];
     }
 
     public static class KatalogRegistry
     {
+        // ------------------------------------------------------------------------------
+        // Verwendungserhebung zu den VerwendungsPruefungen (Konzept 5.3, offener Punkt
+        // 9.3), erhoben am 21.08.2026 gegen den Code-Bestand:
+        //
+        // KOPIERSEMANTIK - Projekte KOPIEREN Katalogsaetze, alle persistierten Verweise
+        // zeigen auf die Projektkopie, nie auf die _STAMM-Tabelle. Loeschen im Katalog
+        // beruehrt darum keine Projektdaten; diese Kataloge fuehren bewusst ein LEERES
+        // VerwendungsPruefungen-Array:
+        //  - Erzeuger (WP, Heizkessel, BHKW, Pufferspeicher, Solarkollektoren, PV,
+        //    Stromspeicher): WPCtrl/HeizkesselCtrl/BHKWCtrl/PufferSpCtrl/
+        //    SolarkollektorenCtrl/PhotovoltaikCtrl/StromspeicherCtrl.CopyFromStamm -
+        //    "Beziehungen verweisen auf die Projekt-Tabelle, nicht auf STAMM".
+        //  - Gebaeude: GebaeudeStammCtrl.CopyFromStamm -> Tab_Gebaeude; Z_ProjektGebaeude
+        //    fuehrt kein ID_Gebaeude mehr (WizardCtrl.Add_Projekt_ZuordungGebäude).
+        //  - Klimaregion: KlimaregionStammCtrl.ApplyRegionToProjekt kopiert Region samt
+        //    Klimadaten/Solar; Tab_Projekt.ID_Klimaregion zeigt auf die Projektkopie.
+        //  - Profile/Ganglinien (Brauchwasser, Stromverbraucher, Prozesswaerme, Strom-/
+        //    Solarganglinie, Waermebedarf): *StammCtrl.CopyFromStamm bzw.
+        //    ApplyGanglinieToProjekt (Aufrufe in WizardCtrl.Add_*); die Z_Projekt*-Zeilen
+        //    verweisen auf die Projektkopie, die Simulation liest ausschliesslich die
+        //    Projekttabellen (SimulationStrombedarf, SimulationWaermebedarf).
+        //
+        // ECHTE REFERENZEN - nur die vier Typprofil-Kataloge werden dauerhaft
+        // referenziert, und zwar KATALOGINTERN: die Kopfsaetze verweisen ueber die
+        // Textspalte "Typ" auf den Namen des Typprofils. Diese Kataloge tragen
+        // entsprechende Pruefabfragen (UeberName = true), Fundstellen an der Definition.
+        // ------------------------------------------------------------------------------
+
         private static readonly KatalogDefinition[] _alle = new[]
         {
             new KatalogDefinition
@@ -175,7 +226,13 @@ namespace WindowsFormsApplication1
             new KatalogDefinition
             {
                 Schluessel = "BRAUCHWASSERTYP",
-                Tabelle = "Tab_Brauchwassertyp_STAMM"
+                Tabelle = "Tab_Brauchwassertyp_STAMM",
+                VerwendungsPruefungen = new[]
+                {
+                    // Brauchwasser-Koepfe verweisen per Typ = Bezeichner auf ihr Typprofil
+                    // (BrauchwasserStammCtrl.CopyFromStamm liest TYP_STAMM WHERE Bezeichner = Kopf.Typ).
+                    new VerwendungsPruefung { Tabelle = "Tab_Brauchwasser_STAMM", Spalte = "Typ", UeberName = true }
+                }
             },
             new KatalogDefinition
             {
@@ -186,7 +243,13 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "STROMVERBRAUCHERTYP",
                 Tabelle = "Tab_Stromverbrauchertyp_STAMM",
-                NamensSpalte = "Typname"
+                NamensSpalte = "Typname",
+                VerwendungsPruefungen = new[]
+                {
+                    // Stromverbraucher-Koepfe verweisen per Typ = Typname auf ihr Typprofil
+                    // (StromverbraucherStammCtrl: "Kopf verweist per Typ = Typname").
+                    new VerwendungsPruefung { Tabelle = "Tab_Stromverbraucher_STAMM", Spalte = "Typ", UeberName = true }
+                }
             },
             new KatalogDefinition
             {
@@ -196,7 +259,13 @@ namespace WindowsFormsApplication1
             new KatalogDefinition
             {
                 Schluessel = "PROZESSTYP",
-                Tabelle = "Tab_Prozesstyp_STAMM"
+                Tabelle = "Tab_Prozesstyp_STAMM",
+                VerwendungsPruefungen = new[]
+                {
+                    // Prozesswaerme-Koepfe verweisen per Typ = Bezeichner auf ihr Typprofil
+                    // (ProzesswaermeStammCtrl.CopyFromStamm liest TYP_STAMM WHERE Bezeichner = Kopf.Typ).
+                    new VerwendungsPruefung { Tabelle = "Tab_Prozesswaerme_STAMM", Spalte = "Typ", UeberName = true }
+                }
             },
             new KatalogDefinition
             {
@@ -249,6 +318,12 @@ namespace WindowsFormsApplication1
                 Schluessel = "GEBAEUDETYP",
                 Tabelle = "Tab_DBTagV_STAMM",
                 AusschlussSpalten = new[] { "Veraenderbar" },
+                VerwendungsPruefungen = new[]
+                {
+                    // Gebaeude-Katalogsaetze verweisen per Typ = Bezeichner auf ihren Tagesverlauf
+                    // (GebaeudeStammCtrl.CopyTagVForGebaeude: Katalog-Bezeichner == Gebaeudetyp).
+                    new VerwendungsPruefung { Tabelle = "Tab_Gebaeude_STAMM", Spalte = "Typ", UeberName = true }
+                },
                 Datenbloecke = new[]
                 {
                     new KatalogDatenblock

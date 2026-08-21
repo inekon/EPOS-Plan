@@ -70,6 +70,366 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (alle Kataloge) ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_ALLE {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Inhaltsdubletten ({0} Gruppen) ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_AST_INHALT {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_AST_INHALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Namensdubletten ({0} Gruppen) ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_AST_NAMEN {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_AST_NAMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die [Auslieferung] ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_AUSLIEFERUNG {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_AUSLIEFERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leere Kopien bereinigen ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_BTN_BEREINIGEN {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_BTN_BEREINIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz löschen… ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Protokoll speichern… ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_BTN_PROTOKOLL {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_BTN_PROTOKOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz umbenennen… ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_BTN_UMBENENNEN {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_BTN_UMBENENNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Gruppe(n) nach der Leerkopien-Regel bereinigen? ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_FRAGE_BEREINIGEN {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_FRAGE_BEREINIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz &quot;{0}&quot; (ID {1}) endgültig löschen? ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gleicher Inhalt: {0} ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_GRUPPE_INHALT {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_GRUPPE_INHALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Dubletten gefunden. ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_KEINE {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diesen Katalog ist keine Verwendungsprüfung hinterlegt – bitte nur löschen, wenn der Satz sicher nicht verwendet wird. ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_KEINE_VERWENDUNGSPRUEFUNG {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_KEINE_VERWENDUNGSPRUEFUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog-Dubletten prüfen… ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_MENUE {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_MENUE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer Name: ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_NAME_NEU {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_NAME_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prüfen ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_PRUEFEN {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_PRUEFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssätze können hier nicht gelöscht oder umbenannt werden. ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_READONLY_GESPERRT {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_READONLY_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die prüfe {0} … ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_STATUS_PRUEFE {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_STATUS_PRUEFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog-Dublettensuche ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_TITEL {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz wird verwendet: {0}. Trotzdem löschen? ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_VERWENDET {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_VERWENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1} Sätze) ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_WURZEL {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_WURZEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_BHKW {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_BRAUCHWASSER {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_BRAUCHWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser-Typprofile ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_BRAUCHWASSERTYP {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_BRAUCHWASSERTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudetypen (Tagesverläufe) ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_GEBAEUDETYP {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_GEBAEUDETYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_HEIZKESSEL {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregionen ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_KLIMAREGION {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_KLIMAREGION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme-Typprofile ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_PROZESSTYP {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_PROZESSTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_PROZESSWAERME {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_PROZESSWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_PUFFERSPEICHER {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_PUFFERSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Module ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_PV {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarganglinien ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_SOLARGANGLINIE {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_SOLARGANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarkollektoren ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_SOLARKOLLEKTOREN {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_SOLARKOLLEKTOREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromganglinien ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_STROMGANGLINIE {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_STROMGANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_STROMSPEICHER {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_STROMSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromverbraucher ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_STROMVERBRAUCHER {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_STROMVERBRAUCHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromverbraucher-Typprofile ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_STROMVERBRAUCHERTYP {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_STROMVERBRAUCHERTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarfs-Ganglinien ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_WAERMEBEDARF {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_WAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_WP {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner „{0}“ kommt im Katalog {1}-mal vor.
         ///
         ///Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird deshalb abgelehnt. Bitte die Dubletten zuerst bereinigen. ähnelt.
