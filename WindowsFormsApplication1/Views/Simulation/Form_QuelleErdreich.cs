@@ -44,7 +44,10 @@ namespace WindowsFormsApplication1
     ///     <c>WinForms.DataVisualization</c> ist unter VS 2022/.NET 8 unzuverlässig;
     ///   • die Katalog- und Klimazonenlisten (<see cref="KatalogeFuellen"/>) - beides
     ///     sind Laufzeitdaten aus <c>ErdreichTemperatur</c> bzw. <c>VDI4640Pruefung</c>;
-    ///   • die kulturabhängigen Vorgabewerte (<see cref="VorgabenSetzen"/>).
+    ///   • die kulturabhängigen Vorgabewerte (<see cref="VorgabenSetzen"/>);
+    ///   • das gemessene Spaltenraster der Quellsystem-Rubrik
+    ///     (<see cref="QuellsystemRasterAusrichten"/>) - der Designer kann nur EINE
+    ///     Sprache abbilden, die Spaltenkanten hängen aber an der Textbreite.
     /// </summary>
     public partial class Form_QuelleErdreich : Form
     {
@@ -201,6 +204,11 @@ namespace WindowsFormsApplication1
             // keine Skalierung statt — None hält genau dieses Verhalten fest.
             InitializeComponent();
             TexteSetzen();
+            // Erst NACH TexteSetzen(): Beschriftungen und Auswahlknöpfe der
+            // Quellsystem-Rubrik tragen bis dahin nur den DEUTSCHEN Entwurfstext und
+            // sind in jeder anderen Sprache falsch breit (Muster
+            // Form_QuellePufferspeicher.EingabespalteAusrichten).
+            QuellsystemRasterAusrichten();
             // Diagramm zuerst: Aktualisieren() greift auf _chart.Series zu, und die
             // beiden folgenden Schritte lösen über die Designer-Ereignisse bereits
             // Aufrufe aus (die _uiAufbau zwar abfängt - aber die Reihenfolge soll
@@ -264,7 +272,9 @@ namespace WindowsFormsApplication1
         //     + 8  der Spreizungs-Hinweis bricht um (siehe _lblSpreizungHinweis),
         //     +38  die Auslegungsprüfung bekommt Hinweiszeile und Schaltfläche.
         //   Gegengerechnet sind 26 Pixel aus der Vorschau: Das Diagramm ist von 210
-        //   auf 184 Pixel Höhe verkleinert (siehe ChartAufbauen). Das ist Absicht und
+        //   auf 184 Pixel Höhe verkleinert (siehe ChartAufbauen).
+        //   184 ÜBERHOLT durch die Nacharbeit zur Design-Politur, siehe unten: 170;
+        //   die Gegenrechnung wächst damit von 26 auf 40 Pixel. Das ist Absicht und
         //   der Preis dafür, dass der Dialog NICHT über die Fensterhöhe hinauswächst,
         //   die Windows auf einem 1366×768-Gerät noch zulässt (dort endet die
         //   zulässige Fensterhöhe bei etwa 788 Pixeln; mit Titelzeile und Rahmen liegt
@@ -319,8 +329,11 @@ namespace WindowsFormsApplication1
         //   das Prüfergebnis kommen die Hinweiszeile (Befund 4) und die Schaltfläche
         //   „Simulation" (Befund 3) - beide gehören sachlich hierher und nirgends
         //   sonst hin.
+        //   Lage und Höhe ÜBERHOLT durch die Nacharbeit zur Design-Politur, siehe
+        //   unten: 12/518, 676 x 182.
         //
         // * _lblAenderung (14/128, 500 x 34).
+        //   Höhe 34 ÜBERHOLT durch die Nacharbeit zur Design-Politur, siehe unten: 48.
         //   BEFUND 4: Sobald der Anwender eine Quell-Einstellung ändert, zeigt die
         //   Prüfung oben noch den Stand des LETZTEN Laufs. Ohne Hinweis liest sich das
         //   wie eine Bewertung der neuen Eingaben - sie ist es aber nicht. Die Zeile
@@ -328,6 +341,8 @@ namespace WindowsFormsApplication1
         //   Texte sie sonst zeigt, entscheidet AenderungshinweisAktualisieren.
         //   AutoSize=false mit zwei Zeilen Höhe: der Text bricht dann von selbst um und
         //   schiebt die Schaltfläche daneben nicht weg (Lehre aus Befund 1).
+        //   „Zwei Zeilen" ÜBERHOLT: der zweite der beiden Texte braucht auf Deutsch
+        //   DREI Zeilen, siehe unten.
         //   Die ForeColor 160/96/0 ist die WARNFARBE - derselbe Bernsteinton, den
         //   Form_GanglinieProtokoll für PruefStufe.Warnung verwendet, bewusst NICHT das
         //   Firebrick der Grenzwertüberschreitung (PruefungAktualisieren): Ein
@@ -391,6 +406,63 @@ namespace WindowsFormsApplication1
         //   („Simulation" braucht 75 px) - sie halten die rechte Kante der Rubrik.
         // * NICHT geändert: ClientSize, _gbSystem, _gbVorschau, _gbPruefung, das
         //   Diagramm in ChartAufbauen() und alle y-Werte außer denen der Fußknöpfe.
+        //   ÜBERHOLT durch die Nacharbeit, siehe unten: _gbVorschau, _gbPruefung und
+        //   das Diagramm sind jetzt sehr wohl geändert; unverändert bleiben allein
+        //   ClientSize, _gbSystem und die Fußknöpfe.
+        //
+        // ==================================================================
+        // NACHARBEIT ZUR DESIGN-POLITUR 21.08.2026
+        // ==================================================================
+        //
+        // Zwei Befunde, die erst mit den Echttexten IN BEIDEN SPRACHEN sichtbar wurden.
+        // Alle Maße wieder mit den echten Steuerelementen nachgemessen (Segoe UI 9 pt,
+        // 96 dpi, DpiUnaware, EnableVisualStyles wie in Program.Main); ClientSize bleibt
+        // bei 700 x 748 und die Fußknöpfe bleiben bei y = 708.
+        //
+        // ------------------------------------------------------------------
+        // (A) _lblAenderung braucht eine DRITTE ZEILE — 14 px aus dem Diagramm
+        // ------------------------------------------------------------------
+        //
+        // Gemessen bei 500 px Feldbreite (Label.GetPreferredSize, deckungsgleich mit
+        // TextRenderer.MeasureText + WordBreak):
+        //     SIMQ_ERDREICH_AENDERUNG_HINWEIS     deutsch 485 x 30, englisch 472 x 30
+        //     SIMQ_ERDREICH_SIM_NUR_GESPEICHERT   deutsch 497 x 45, englisch 493 x 30
+        // Der zweite Text („Der Lauf hat mit den GESPEICHERTEN Quelldaten gerechnet …")
+        // belegt auf DEUTSCH drei Zeilen und damit 45 px; das Feld war 34 px hoch, die
+        // dritte Zeile fiel also weg — und gerade sie trägt die Aussage, dass Grenzwert
+        // und Sondenmeter bereits mit den geänderten Eingaben gerechnet sind.
+        //
+        // Die fehlenden 14 px kommen aus der Vorschau und NICHT aus der Fensterhöhe: Der
+        // Dialog steht mit 787 px Außenhöhe schon dicht an der Grenze, die ein
+        // 1366x768-Gerät zulässt (siehe die Begründung bei ClientSize weiter oben).
+        //
+        //   _gbVorschau   676 x 244 -> 676 x 230   (Lage 12/280 unverändert, Unterkante
+        //                                           524 -> 510)
+        //   Diagramm      652 x 184 -> 652 x 170   (ChartAufbauen, Lage 12/20; Unterkante
+        //                                           innerhalb der Rubrik 204 -> 190)
+        //   _lblKennwerte 14/210    -> 14/196      (650 x 20; 6 px unter dem Diagramm und
+        //                                           14 px über der Rubrikkante — beide
+        //                                           Abstände exakt wie vorher)
+        //   _gbPruefung   12/532, 676 x 168 -> 12/518, 676 x 182
+        //                                          (14 px höher bei GLEICHER Unterkante
+        //                                           700; der Abstand zur Vorschau bleibt
+        //                                           mit 8 px unverändert, weil beide
+        //                                           Kanten um dieselben 14 px wandern)
+        //   _lblAenderung 500 x 34  -> 500 x 48    (45 px Textbedarf + 3 px Reserve)
+        //
+        // _lblPruefung (14/22, 650 x 100, endet bei 122) und _btnSimulation (528/126,
+        // 134 x 30, endet bei 156 bzw. rechts bei 662) sind nachgerechnet und bleiben
+        // unangetastet: Der Hinweis beginnt weiterhin 6 px unter dem Prüfergebnis, endet
+        // jetzt bei y = 176 und hält damit dieselben 6 px zur Rubrikkante wie vorher;
+        // waagerecht bleiben zwischen Hinweis (endet bei 514) und Schaltfläche 14 px.
+        //
+        // ------------------------------------------------------------------
+        // (B) Sprachrobustes Raster der Quellsystem-Rubrik
+        // ------------------------------------------------------------------
+        //
+        // Siehe QuellsystemRasterAusrichten(). Im Designer bleiben die DEUTSCHEN
+        // Entwurfswerte stehen (Beschriftungen 160/390, Felder 285/490) — die Methode
+        // rechnet sie zur Laufzeit nach und kommt auf Deutsch auf genau dieselben Zahlen.
 
         /// <summary>
         /// Setzt alle sichtbaren Texte aus <c>MyResource</c>. Läuft direkt nach
@@ -424,6 +496,95 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Feste Pixel-Geometrie (Konzept 13.6, Hauptrisiko der programmatischen
+        /// Dialoge): Die englischen Beschriftungen sind länger als die deutschen. Die
+        /// Quellsystem-Rubrik richtet ihre Spalten deshalb zur Laufzeit an den GEMESSENEN
+        /// Textbreiten aus - Muster
+        /// <see cref="Form_QuellePufferspeicher"/>.<c>EingabespalteAusrichten</c>.
+        ///
+        /// Sie MUSS nach <see cref="TexteSetzen"/> laufen: Vorher tragen Auswahlknöpfe
+        /// und Beschriftungen den DEUTSCHEN Entwurfstext des Designers und sind in jeder
+        /// anderen Sprache falsch breit. Die Steuerelemente sind bereits Kinder von
+        /// <c>_gbSystem</c> (der Designer hängt sie in <c>InitializeComponent</c> ein) -
+        /// nur deshalb greift die Messung überhaupt; eine AutoSize-Beschriftung OHNE
+        /// Container behält die Vorgabebreite von 100 px (BEFUND der Designer-Umstellung
+        /// bei Form_QuellePufferspeicher).
+        ///
+        /// BEFUND der Nacharbeit zur Design-Politur. Englisch überdeckten sich drei
+        /// Stellen (gemessen an den echten Steuerelementen):
+        ///   • „Horizontal ground collector" endet bei 187, „Borehole heat exchanger" bei
+        ///     171 - die Beschriftungsspalte beginnt aber schon bei x = 160. Beide
+        ///     Auswahlknöpfe liefen also UNTER die Beschriftungen.
+        ///   • „Installation depth [m]:" endet bei 284, das Eingabefeld beginnt bei 285 -
+        ///     1 px Luft, faktisch auf Stoß.
+        ///   • Beides zusammen schiebt die erste Eingabespalte so weit nach rechts, dass
+        ///     sie ohne Nachführung in die zweite Beschriftungsspalte (x = 390) liefe.
+        ///
+        /// Die Rubrik ist ein Raster aus VIER Spalten - Beschriftung/Feld für den
+        /// Kollektor links, Beschriftung/Feld für Fläche bzw. Anzahl rechts. Gerechnet
+        /// wird deshalb von links nach rechts durch, jede Spalte gegen die vorige:
+        ///   1. Beschriftungsspalte links = hinter dem breiteren der beiden Auswahlknöpfe
+        ///      (+12 px),
+        ///   2. Eingabespalte links = hinter der breiteren der beiden Beschriftungen
+        ///      (+8 px),
+        ///   3. Beschriftungsspalte rechts = hinter der linken Eingabespalte (+35 px, der
+        ///      Spaltenabstand des Entwurfs),
+        ///   4. Eingabespalte rechts = hinter der breiteren der beiden Beschriftungen
+        ///      (+8 px).
+        /// Jede Spalte ist nach unten auf ihren Entwurfswert geklemmt. Damit ist DEUTSCH
+        /// pixelgleich mit dem Designer-Bild: Dort greift in allen vier Schritten die
+        /// Untergrenze (gemessen 104 + 12 = 116 &lt; 160, 272 + 8 = 280 &lt; 285,
+        /// 355 + 35 = 390, 479 + 8 = 487 &lt; 490).
+        ///
+        /// ENGLISCH rückt das Raster nach rechts: 199 / 331 / 436 / 537. Die rechte
+        /// Eingabespalte endet damit bei 607 und bleibt innerhalb der Rubrik, die bei
+        /// 666 (676 breit abzüglich 10 px Rand) endet - 59 px Reserve für längere
+        /// Übersetzungen. Die Feldbreiten bleiben in jedem Fall unangetastet; reicht der
+        /// Platz einmal nicht, wird nur die POSITION an der rechten Kante geklemmt (die
+        /// beiden <c>if</c>-Zeilen unten). Das ist ein Notnagel gegen abgeschnittene
+        /// Felder - er nimmt eine Überdeckung in Kauf und wird von keiner der beiden
+        /// ausgelieferten Sprachen erreicht.
+        /// </summary>
+        private void QuellsystemRasterAusrichten()
+        {
+            // Entwurfswerte aus dem Designer = Untergrenzen der Rechnung.
+            const int X_LABEL_LINKS = 160;
+            const int X_FELD_LINKS = 285;
+            const int X_LABEL_RECHTS = 390;
+            const int X_FELD_RECHTS = 490;
+
+            const int ABSTAND_KNOPF_LABEL = 12;
+            const int ABSTAND_LABEL_FELD = 8;
+            // Spaltenabstand des Entwurfs: 390 - (285 + 70).
+            const int ABSTAND_SPALTEN = 35;
+            const int RAND_RECHTS = 10;
+
+            int grenze = _gbSystem.Width - RAND_RECHTS;   // 666
+
+            int xLabelLinks = Math.Max(X_LABEL_LINKS,
+                Math.Max(_rbKollektor.Right, _rbSonde.Right) + ABSTAND_KNOPF_LABEL);
+            _lblVerlegetiefe.Left = xLabelLinks;
+            _lblLaengeSonde.Left = xLabelLinks;
+
+            int xFeldLinks = Math.Max(X_FELD_LINKS,
+                Math.Max(_lblVerlegetiefe.Right, _lblLaengeSonde.Right) + ABSTAND_LABEL_FELD);
+            if (xFeldLinks + _tbTiefe.Width > grenze) xFeldLinks = grenze - _tbTiefe.Width;
+            _tbTiefe.Left = xFeldLinks;
+            _tbLaenge.Left = xFeldLinks;
+
+            int xLabelRechts = Math.Max(X_LABEL_RECHTS,
+                xFeldLinks + _tbTiefe.Width + ABSTAND_SPALTEN);
+            _lblFlaeche.Left = xLabelRechts;
+            _lblAnzahlSonden.Left = xLabelRechts;
+
+            int xFeldRechts = Math.Max(X_FELD_RECHTS,
+                Math.Max(_lblFlaeche.Right, _lblAnzahlSonden.Right) + ABSTAND_LABEL_FELD);
+            if (xFeldRechts + _tbFlaeche.Width > grenze) xFeldRechts = grenze - _tbFlaeche.Width;
+            _tbFlaeche.Left = xFeldRechts;
+            _tbAnzahl.Left = xFeldRechts;
+        }
+
+        /// <summary>
         /// Baut das Vorschau-Diagramm und hängt es in die Vorschau-Gruppe ein.
         ///
         /// Steht bewusst NICHT im Designer (Migrationsregel 8): Die Serialisierung des
@@ -433,17 +594,19 @@ namespace WindowsFormsApplication1
         /// <c>Form_PeakShaving</c>: das Diagramm hinter <c>InitializeComponent</c>
         /// per Code einhängen.
         ///
-        /// 184 statt 210 Pixel hoch: die 26 Pixel gehen an die Zeilen, die Befund 1 und
-        /// Befund 3/4 unten brauchen - siehe die Begründung bei ClientSize. Für einen
-        /// Jahresgang über zwölf Monate bleibt das Seitenverhältnis 652×184 gut lesbar;
-        /// die Zoom-Bedienung des Diagramms ist unberührt.
+        /// 170 statt 210 Pixel hoch (bis zur Nacharbeit zur Design-Politur 184): die
+        /// 40 Pixel gehen an die Zeilen, die Befund 1, Befund 3/4 und die dritte Zeile
+        /// des Änderungshinweises unten brauchen - siehe die Begründung bei ClientSize
+        /// und den Abschnitt (A) der Nacharbeit. Für einen Jahresgang über zwölf Monate
+        /// bleibt das Seitenverhältnis 652×170 gut lesbar; die Zoom-Bedienung des
+        /// Diagramms ist unberührt.
         /// </summary>
         private void ChartAufbauen()
         {
             _chart = new Chart
             {
                 Location = new Point(12, 20),
-                Size = new Size(652, 184)
+                Size = new Size(652, 170)
             };
             ChartArea ca = new ChartArea("Jahr");
             ca.AxisX.Title = MyResource.Resource.CHART_ACHSE_MONAT;

@@ -232,7 +232,7 @@
             //
             this._lblKennwerte.AutoSize = false;
             this._lblKennwerte.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this._lblKennwerte.Location = new System.Drawing.Point(14, 210);
+            this._lblKennwerte.Location = new System.Drawing.Point(14, 196);
             this._lblKennwerte.Name = "_lblKennwerte";
             this._lblKennwerte.Size = new System.Drawing.Size(650, 20);
             //
@@ -241,7 +241,7 @@
             this._gbVorschau.Controls.Add(this._lblKennwerte);
             this._gbVorschau.Location = new System.Drawing.Point(12, 280);
             this._gbVorschau.Name = "_gbVorschau";
-            this._gbVorschau.Size = new System.Drawing.Size(676, 244);
+            this._gbVorschau.Size = new System.Drawing.Size(676, 230);
             this._gbVorschau.Text = "Vorschau: Jahresgang der Quelltemperatur";
             //
             // _lblPruefung
@@ -258,7 +258,7 @@
             this._lblAenderung.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(160)))), ((int)(((byte)(96)))), ((int)(((byte)(0)))));
             this._lblAenderung.Location = new System.Drawing.Point(14, 128);
             this._lblAenderung.Name = "_lblAenderung";
-            this._lblAenderung.Size = new System.Drawing.Size(500, 34);
+            this._lblAenderung.Size = new System.Drawing.Size(500, 48);
             //
             // _btnSimulation
             //
@@ -273,9 +273,9 @@
             this._gbPruefung.Controls.Add(this._lblPruefung);
             this._gbPruefung.Controls.Add(this._lblAenderung);
             this._gbPruefung.Controls.Add(this._btnSimulation);
-            this._gbPruefung.Location = new System.Drawing.Point(12, 532);
+            this._gbPruefung.Location = new System.Drawing.Point(12, 518);
             this._gbPruefung.Name = "_gbPruefung";
-            this._gbPruefung.Size = new System.Drawing.Size(676, 168);
+            this._gbPruefung.Size = new System.Drawing.Size(676, 182);
             this._gbPruefung.Text = "Auslegungsprüfung nach VDI 4640 Blatt 2 (nach der Simulation)";
             //
             // _btnOk
