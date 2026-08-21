@@ -132,7 +132,7 @@ namespace WindowsFormsApplication1
 
         // Uebertraegt einen VDI-Eintrag in die Detailfelder. Die Felder (und die
         // Zusatzwerte szBrennstoffIndex/szBrennstoffart/szCO2/szNOx/szCO) sind auch beim
-        // Mehrfachladen der Traeger fuer die Uebernahme (InitDatensatzUpdate liest
+        // Mehrfachladen der Traeger fuer die Uebernahme (FuelleModellwerte liest
         // sie aus) - damit bleibt es bei genau einem Schreibweg.
         private void ZeigeDetails(int i)
         {
@@ -164,7 +164,44 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            if (markiert.Count == 1)
+            // Vorpruefung der gesamten Auswahl gegen den Katalog und gegen sich
+            // selbst (Konzept 4.1) - noch ohne Schreibzugriff. Quelle der Werte
+            // sind die Detailfelder (FuelleModellwerte); beim Einzelfall werden
+            // sie NICHT neu besetzt, damit eine Korrektur von Hand erhalten
+            // bleibt und die Vorpruefung genau das prueft, was gespeichert
+            // wuerde (Bestandsverhalten, siehe Einzelfall-Kommentar unten).
+            KatalogDefinition katalog = KatalogRegistry.Finde("HEIZKESSEL");
+            System.Collections.Generic.List<ImportKandidat> kandidaten =
+                new System.Collections.Generic.List<ImportKandidat>();
+            foreach (int i in markiert)
+            {
+                if (markiert.Count > 1) ZeigeDetails(i);
+                HeizkesselModel probe = new HeizkesselModel();
+                FuelleModellwerte(probe);
+                ImportKandidat kand = new ImportKandidat { Name = probe.Name, Tag = i };
+                kand.Werte["Firma"] = probe.Firma;
+                kand.Werte["Ptherm"] = probe.Ptherm;
+                kand.Werte["Brennstoff"] = probe.Brennstoff;
+                kand.Werte["Wirkungsgrad_Gas"] = probe.Wirkungsgrad_Gas;
+                kand.Werte["Wirkungsgrad_Öl"] = probe.Wirkungsgrad_Oel;
+                kand.Werte["Raumbedarf"] = probe.Raumbedarf;
+                kand.Werte["CO2"] = probe.CO2;
+                kand.Werte["SO2"] = probe.SO2;
+                kand.Werte["NOx"] = probe.NOx;
+                kand.Werte["CO"] = probe.CO;
+                kand.Werte["Staub"] = probe.Staub;
+                kand.Werte["Betriebsbereitschaftverlust"] = probe.Betriebsbereitschaftverlust;
+                kandidaten.Add(kand);
+            }
+
+            System.Collections.Generic.List<ImportPruefung> pruefungen =
+                DublettenPruefung.PruefeKandidaten(katalog, kandidaten);
+
+            bool konflikt = false;
+            foreach (ImportPruefung p in pruefungen)
+                if (p.Befund != ImportBefund.Neu || p.NameDoppeltInAuswahl) { konflikt = true; break; }
+
+            if (!konflikt && markiert.Count == 1)
             {
                 // Einzelfall: Meldungen und Dialogverhalten bleiben wie im Bestand;
                 // die Detailfelder werden nicht neu besetzt, damit eine Korrektur
@@ -195,23 +232,77 @@ namespace WindowsFormsApplication1
                 return;
             }
 
+            System.Collections.Generic.List<KonfliktEntscheidung> entscheidungen;
+            if (konflikt)
+            {
+                // EIN Dialog fuer die ganze Auswahl statt einer Meldung je Satz.
+                entscheidungen = Form_ImportKonflikte.Zeigen(this, pruefungen,
+                    DublettenPruefung.VergebeneNamen(katalog));
+                if (entscheidungen == null) return;
+            }
+            else
+            {
+                entscheidungen = new System.Collections.Generic.List<KonfliktEntscheidung>();
+                foreach (ImportPruefung p in pruefungen)
+                    entscheidungen.Add(new KonfliktEntscheidung { Pruefung = p, Aktion = KonfliktAktion.Importieren });
+            }
+
+            FuehreAus(markiert.Count, entscheidungen);
+        }
+
+        // Fuehrt die im Konfliktdialog gewaehlten Aktionen aus und zeigt die
+        // Sammelmeldung. Auslassen zaehlt als uebersprungen.
+        private void FuehreAus(int markiertAnzahl, System.Collections.Generic.List<KonfliktEntscheidung> entscheidungen)
+        {
             int nGespeichert = 0;
             int nDuplikat = 0;
             int nFehler = 0;
+            int nUeberschrieben = 0;
+            int nUmbenannt = 0;
             Cursor alt = Cursor;
             Cursor = Cursors.WaitCursor;
             try
             {
-                foreach (int i in markiert)
+                foreach (KonfliktEntscheidung ent in entscheidungen)
                 {
+                    int i = (int)ent.Pruefung.Kandidat.Tag;
+
                     // Detailfelder je Eintrag besetzen - sie sind der Traeger fuer
-                    // InitDatensatzUpdate() und damit fuer die Uebernahme.
+                    // FuelleModellwerte() und damit fuer die Uebernahme.
                     ZeigeDetails(i);
 
-                    // Ein fehlerhafter Eintrag darf den Gesamtvorgang nicht abbrechen.
-                    VdiUebernahmeErgebnis ergebnis = UebernehmeEintrag();
+                    VdiUebernahmeErgebnis ergebnis;
+                    try
+                    {
+                        switch (ent.Aktion)
+                        {
+                            case KonfliktAktion.Auslassen:
+                                ergebnis = VdiUebernahmeErgebnis.Duplikat;
+                                break;
+                            case KonfliktAktion.Ueberschreiben:
+                                ergebnis = UeberschreibeEintrag(i, ent.Pruefung.Vorhanden.Id);
+                                break;
+                            case KonfliktAktion.Umbenennen:
+                                ergebnis = UebernehmeEintrag(ent.NeuerName);
+                                if (ergebnis == VdiUebernahmeErgebnis.Gespeichert)
+                                    ergebnis = VdiUebernahmeErgebnis.Umbenannt;
+                                break;
+                            default:
+                                ergebnis = UebernehmeEintrag();
+                                break;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Ein fehlerhafter Eintrag darf den Gesamtvorgang nicht abbrechen.
+                        Console.WriteLine("Fehler beim Einlesen von '" + ctrl._list[i].m_szName + "': " + ex.Message);
+                        ergebnis = VdiUebernahmeErgebnis.Fehler;
+                    }
+
                     if (ergebnis == VdiUebernahmeErgebnis.Gespeichert) nGespeichert++;
                     else if (ergebnis == VdiUebernahmeErgebnis.Duplikat) nDuplikat++;
+                    else if (ergebnis == VdiUebernahmeErgebnis.Ueberschrieben) nUeberschrieben++;
+                    else if (ergebnis == VdiUebernahmeErgebnis.Umbenannt) nUmbenannt++;
                     else nFehler++;
                 }
             }
@@ -220,12 +311,14 @@ namespace WindowsFormsApplication1
                 Cursor = alt;
             }
 
-            MessageBox.Show(VdiAuswahlFilter.LadeMeldung(nGespeichert, markiert.Count, nDuplikat, nFehler));
+            MessageBox.Show(VdiAuswahlFilter.LadeMeldung(nGespeichert, markiertAnzahl,
+                nDuplikat, nFehler, nUeberschrieben, nUmbenannt));
 
-            // Wie im Bestand wird der Dialog nach erfolgreicher Uebernahme beendet;
+            // Wie im Bestand wird der Dialog nach erfolgreicher Uebernahme beendet -
+            // auch Ueberschreiben und Umbenennen sind erfolgreiche Uebernahmen;
             // ohne einen einzigen Treffer bleibt er offen, damit der Anwender
             // Filter und Auswahl korrigieren kann.
-            if (nGespeichert > 0)
+            if (nGespeichert > 0 || nUeberschrieben > 0 || nUmbenannt > 0)
             {
                 this.DialogResult = DialogResult.OK;
                 this.Close();
@@ -235,28 +328,38 @@ namespace WindowsFormsApplication1
         // Uebernahme genau eines Eintrags in Tab_Heizkessel_STAMM. Unveraenderter
         // Bestandsweg samt Transaktion (Quelle sind die Detailfelder), nur mit
         // Ergebnis als Rueckgabewert statt MessageBox - die Meldung und das
-        // Schliessen des Dialogs entscheidet der Aufrufer.
-        private VdiUebernahmeErgebnis UebernehmeEintrag()
+        // Schliessen des Dialogs entscheidet der Aufrufer. nameOverride traegt
+        // beim Umbenennen (Konfliktdialog) den vom Anwender vergebenen neuen
+        // Bezeichner (Konzept 4.3).
+        private VdiUebernahmeErgebnis UebernehmeEintrag(string nameOverride = null)
         {
             OleDbTransaction transaction = null;
 
             try
             {
-                // 1. Saubere Verbindung über das DataRepository öffnen
+                // 1. Model aus den Detailfeldern initialisieren; beim Umbenennen
+                //    ersetzt nameOverride den Bezeichner
+                HeizkesselModel model = new HeizkesselModel();
+                FuelleModellwerte(model);
+                if (nameOverride != null) model.Name = nameOverride;
+
+                // 2. Saubere Verbindung über das DataRepository öffnen
                 using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
                 {
                     conn.Open();
 
-                    // 2. Transaktion auf der neuen OleDbConnection starten
+                    // 3. Transaktion auf der neuen OleDbConnection starten
                     transaction = conn.BeginTransaction();
 
-                    // 3. Existenzprüfung via COUNT (Ersetzt die alte rs.Open-Logik)
+                    // 4. Existenzprüfung via COUNT (Ersetzt die alte rs.Open-Logik) -
+                    //    nach der Vorpruefung des Konfliktdialogs die zweite
+                    //    Verteidigungslinie, sie prueft auch den Umbenennen-Namen
                     string checkSql = "SELECT COUNT(*) FROM [Tab_Heizkessel_STAMM] WHERE Bezeichner = ?";
                     using (OleDbCommand checkCmd = conn.CreateCommand())
                     {
                         checkCmd.Transaction = transaction;
                         checkCmd.CommandText = checkSql;
-                        checkCmd.Parameters.Add(new OleDbParameter("?", textBox_Name.Text));
+                        checkCmd.Parameters.Add(new OleDbParameter("?", model.Name));
 
                         int count = Convert.ToInt32(checkCmd.ExecuteScalar());
                         if (count > 0)
@@ -265,9 +368,6 @@ namespace WindowsFormsApplication1
                             return VdiUebernahmeErgebnis.Duplikat;
                         }
                     }
-
-                    // 4. Model initialisieren
-                    HeizkesselModel model = InitDatensatzUpdate();
 
                     // 5. Datensatz in einem Rutsch transaktionssicher speichern
                     if (Insert(model, conn, transaction))
@@ -292,6 +392,24 @@ namespace WindowsFormsApplication1
 
                 return VdiUebernahmeErgebnis.Fehler;
             }
+        }
+
+        // Ueberschreiben aus dem Konfliktdialog: aktualisiert genau die Importfelder
+        // des Bestandssatzes per HeizkesselStammCtrl.UpdateImport(bestandsId) -
+        // ID, Bezeichner und Anwenderfelder bleiben stehen (Konzept 4.2).
+        // ZeigeDetails(index) ist in der Ausfuehrungsschleife schon gelaufen, die
+        // Detailfelder tragen also den Eintrag; Raumbedarf, SO2 und Staub bleiben
+        // wie bei der Neuanlage auf dem Modell-Vorgabewert 0.
+        private VdiUebernahmeErgebnis UeberschreibeEintrag(int index, int bestandsId)
+        {
+            // HeizkesselStammCtrl erbt von HeizkesselModel - FuelleModellwerte
+            // besetzt damit direkt die this-Felder, die UpdateImport schreibt.
+            HeizkesselStammCtrl stamm = new HeizkesselStammCtrl();
+            FuelleModellwerte(stamm);
+
+            return stamm.UpdateImport(bestandsId)
+                ? VdiUebernahmeErgebnis.Ueberschrieben
+                : VdiUebernahmeErgebnis.Fehler;
         }
 
         // Überladene Insert-Methode, die voll in der aktiven Transaktion arbeitet
@@ -349,9 +467,13 @@ namespace WindowsFormsApplication1
             }
         }
 
-        HeizkesselModel InitDatensatzUpdate()
+        // Befuellt das Modell mit genau den Werten, die der Import speichert.
+        // Quelle sind die Detailfelder samt der Zusatzwerte szBrennstoffIndex/
+        // szBrennstoffart/szCO2/szNOx/szCO (je Eintrag gesetzt durch ZeigeDetails) -
+        // gemeinsame Quelle fuer Vorpruefung, Neuanlage und Ueberschreiben.
+        // Vormals InitDatensatzUpdate().
+        void FuelleModellwerte(HeizkesselModel model)
         {
-            HeizkesselModel model = new HeizkesselModel();
             model.Name = textBox_Name.Text;
             model.Firma = textBox_Firma.Text;
             model.Beschreibung = textBox_Bauart.Text;
@@ -398,8 +520,6 @@ namespace WindowsFormsApplication1
             model.NOx = Program.convertTxt2Double(szNOx);
             model.CO2 = Program.convertTxt2Double(szCO2);
             model.CO = Program.convertTxt2Double(szCO);
-
-            return model;
         }
     }
 }
