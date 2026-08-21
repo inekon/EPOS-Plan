@@ -28,9 +28,20 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Der Haupteinstiegspunkt für die Anwendung.
         /// </summary>
+        /// <summary>
+        /// Der einzige Schalter, der die Feldsicherung des Assistenten abschaltet
+        /// (Fachkonzept 11.5, Abnahme 20.08.2026).
+        /// </summary>
+        public const string SCHALTER_FELDSICHERUNG_AUS = "/ki-feldsicherung-aus";
+
         [STAThread]
         static void Main()
         {
+            // Die Feldsicherung wird VOR allem anderen ausgewertet - vor der ersten
+            // Meldung und vor dem ersten Fenster. Sonst könnte eine Maske aufgehen und
+            // ihren Aufrufknopf anbringen, während der Zustand noch nicht feststeht.
+            FeldsicherungSchalterAuswerten();
+
             // Aktiviert die moderne High-DPI-Unterstützung (Verfügbar ab .NET Framework 4.7)
             if (Environment.OSVersion.Version.Major >= 10)
             {
@@ -119,6 +130,88 @@ namespace WindowsFormsApplication1
             Application.Run(mdifrm);
            
             Application.Exit();
+        }
+
+        /// <summary>
+        /// Wertet <see cref="SCHALTER_FELDSICHERUNG_AUS"/> aus und schaltet die
+        /// Feldsicherung des Assistenten ab, wenn er in der Befehlszeile steht
+        /// (Fachkonzept 11.5, Umsetzungskonzept Etappe 3b, Paket F4).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Diese Methode ist der EINZIGE Weg zur Abschaltung.</b> Ausdrücklich nicht
+        /// vorgesehen sind ein Menüpunkt, ein Kontrollkästchen, eine Einstellung in
+        /// <c>Properties.Settings</c> und ein Registry-Wert — alles vier trüge den Zustand
+        /// über einen Neustart hinweg, und der Anwender könnte einer einmal gesehenen
+        /// Bestätigungsfrage nicht mehr entnehmen, ob sie beim nächsten Mal wiederkommt.
+        /// Der Schalter ist ein Startzustand für Entwicklung und Prüfläufe, kein
+        /// Betriebsmodus (<see cref="KiKern.KiFeldsicherung"/>).
+        /// </para>
+        /// <para>
+        /// <b>Warum <see cref="Environment.GetCommandLineArgs"/> und kein
+        /// <c>Main(string[])</c>.</b> Der Einstiegspunkt dieser Anwendung nimmt seit jeher
+        /// keine Argumente entgegen; ihn umzubauen, wäre eine Änderung an der
+        /// Programmsignatur für eine Nebensache. Der Aufruf liefert dieselben Argumente,
+        /// nur mit dem Programmpfad an Stelle 0 — deshalb beginnt die Schleife bei 1.
+        /// </para>
+        /// <para>
+        /// <b>Nur diese eine Schreibweise, dafür ohne Rücksicht auf Groß- und
+        /// Kleinschreibung.</b> Wer den Schalter setzt, tut das absichtlich; Abwandlungen
+        /// wie <c>--ki-feldsicherung-aus</c> mit zu erlauben, würde den Abschaltkanal
+        /// verbreitern, ohne irgendetwas leichter zu machen. Unbekannte Argumente bleiben
+        /// unbeachtet — die Anwendung hat keine Befehlszeilenverarbeitung, und diese
+        /// Methode soll auch keine werden.
+        /// </para>
+        /// <para>
+        /// <b>Ein Fehlschlag darf den Start nicht kosten.</b> Bleibt die Auswertung
+        /// stecken, ist die Feldsicherung AN — die sichere Richtung.
+        /// </para>
+        /// </remarks>
+        private static void FeldsicherungSchalterAuswerten()
+        {
+            try
+            {
+                if (!FeldsicherungAusVerlangt(Environment.GetCommandLineArgs())) return;
+
+                // Der Grund steht später im Chat und in jeder Protokollzeile einer
+                // Formularaktion; er nennt deshalb den Schalter im Wortlaut.
+                KiKern.KiFeldsicherung.Abschalten(
+                    "Befehlszeilenschalter " + SCHALTER_FELDSICHERUNG_AUS);
+            }
+            catch (Exception)
+            {
+                // Im Zweifel bleibt die Sicherung an.
+            }
+        }
+
+        /// <summary>
+        /// Steht <see cref="SCHALTER_FELDSICHERUNG_AUS"/> in dieser Argumentliste?
+        /// </summary>
+        /// <param name="argumente">
+        /// Die Argumente wie von <see cref="Environment.GetCommandLineArgs"/> - Stelle 0
+        /// ist der Programmpfad und wird übersprungen.
+        /// </param>
+        /// <remarks>
+        /// Vom Abschalten getrennt, damit sich die Erkennung prüfen lässt, ohne die
+        /// Feldsicherung wirklich abzuschalten: <c>KiFeldsicherung.Abschalten</c> wirkt
+        /// einmalig und unwiderruflich für den ganzen Prozess, ein Prüflauf könnte den
+        /// Zustand also nicht wiederherstellen. Diese Methode dagegen ist eine reine
+        /// Funktion über ihrer Eingabe und wird vom Aktionsharnisch mit erfundenen
+        /// Argumentlisten befragt (<c>KiHarnisch\Katalogpruefung.cs</c>).
+        /// </remarks>
+        internal static bool FeldsicherungAusVerlangt(string[] argumente)
+        {
+            if (argumente == null) return false;
+
+            for (int i = 1; i < argumente.Length; i++)
+            {
+                string argument = (argumente[i] ?? "").Trim();
+                if (string.Equals(argument, SCHALTER_FELDSICHERUNG_AUS,
+                                  StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            return false;
         }
 
         public static bool HasValue(this double value)

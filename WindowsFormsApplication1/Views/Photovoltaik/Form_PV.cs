@@ -21,6 +21,12 @@ namespace WindowsFormsApplication1
         public Form_PV ()
         {
             InitializeComponent();
+
+            // Dezenter Einstieg in den Assistenten, oben rechts im Client-Bereich
+            // (Fachkonzept 11.8). Programmatisch, damit Designer und .resx
+            // unberuehrt bleiben.
+            KiAufrufKnopf.Anbringen(this);
+
             listBox_DB.Items.Clear();
             listBox_Auswahl.Items.Clear();
         }
@@ -256,30 +262,6 @@ namespace WindowsFormsApplication1
             {
                 if (!pvctrl.Delete(listBox_DB.Text)) return;
                 listBox_DB.Items.RemoveAt(listBox_DB.SelectedIndex);
-            }
-        }
-
-        private void btn_Speichern_Click(object sender, EventArgs e)
-        {
-            // Folgepaket zu ab5bf32: Zahlenpruefung am Aktionsknopf statt im TextChanged.
-            // Leer bleibt erlaubt und zaehlt als 0 - so verhielten sich die frueheren
-            // Ternaer-Parses. Bei ungueltiger Eingabe meldet der Helfer und der Dialog
-            // bleibt offen.
-            int neigung, azimut;
-            double anzahlModule;
-            if (!Program.GanzzahlPruefen(textBox_Neigung, "Neigung", out neigung, leerErlaubt: true)) return;
-            if (!Program.GanzzahlPruefen(textBox_Azimut, "Azimut", out azimut, leerErlaubt: true)) return;
-            if (!Program.ZahlPruefen(textBox_AnlagenLeistung, "Anzahl Module", out anzahlModule, leerErlaubt: true)) return;
-
-            for (int i = 0; i < list_pvmodel.Count; i++)
-            {
-                if (list_pvmodel[i].Bezeichner == listBox_Auswahl.Text && list_pvmodel[i].ID_Type == WizardItemClass.PV_TYP)
-                {
-                    list_pvmodel[i].m_Neigung = neigung;
-                    list_pvmodel[i].m_Azimut = azimut;
-                    list_pvmodel[i].PV_Leistung = anzahlModule;
-                    break;
-                }
             }
         }
 

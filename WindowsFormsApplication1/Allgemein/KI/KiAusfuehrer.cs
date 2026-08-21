@@ -202,7 +202,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Modalitaetsfrage: Ist gerade ein modaler Dialog offen? Alles ausser reinem
-        /// Lesen wird dann abgewiesen (Fachkonzept 3.4, Pflicht 2).
+        /// Lesen wird dann abgewiesen (Fachkonzept 3.4, Pflicht 2) - mit EINER Ausnahme:
+        /// Formularaktionen (<see cref="KiAktion.Formularaktion"/>) verlangen die offene
+        /// Maske, statt an ihr zu scheitern; die Begruendung steht bei der Weiche in
+        /// <see cref="AusfuehrenAsync(KiAufruf, KiFreigabe, CancellationToken)"/>.
         /// </summary>
         /// <remarks>
         /// Austauschbar aus demselben Grund wie <see cref="Schreibrecht"/>: Der
@@ -269,7 +272,12 @@ namespace WindowsFormsApplication1
                 return Abweisen(beginn, aufruf, projektId, KiErgebnis.Abgelehnt(gesperrt));
 
             // ---- Eine Vorbereitung gibt es nur fuer das, was bestaetigt werden muss.
-            if (!KiRiegel.BrauchtBestaetigung(aktion))
+            //      Gefragt wird ueber KiBestaetigungspflicht und nicht direkt am Riegel:
+            //      Bei abgeschalteter Feldsicherung braucht eine Formularaktion keine
+            //      Bestaetigung mehr - dann gibt es fuer sie auch nichts vorzubereiten
+            //      (Fachkonzept 11.5). Wuerde hier weiter der Riegel allein antworten,
+            //      liefen Chat und Ausfuehrer auseinander.
+            if (!KiBestaetigungspflicht.Gilt(aktion))
                 return new KiVorbereitung(null, KiErgebnis.Abgelehnt(
                     string.Format(CultureInfo.CurrentCulture, KiAusfuehrerTexte.OhneBestaetigungspflicht,
                                   aktion.Name)));
@@ -280,7 +288,10 @@ namespace WindowsFormsApplication1
 
             try
             {
-                if (ModalitaetSperrt())
+                // Modalitaetsweiche wie im Lauf (siehe AusfuehrenAsync): eine
+                // Formularaktion VERLANGT die offene Zielmaske und wird deshalb nicht
+                // deswegen abgewiesen, dass ein Dialog offen ist.
+                if (!aktion.Formularaktion && ModalitaetSperrt())
                     return Abweisen(beginn, aufruf, projektId,
                                     KiErgebnis.Abgelehnt(KiAusfuehrerTexte.ModalerDialog));
 
@@ -305,10 +316,22 @@ namespace WindowsFormsApplication1
                     return Abweisen(beginn, aufruf, projektId, KiErgebnis.Abgelehnt(lizenz));
 
                 // ---- Sicherungspunkt (Fachkonzept 4.4, Punkt 1). Fehlschlag SPERRT.
-                string sicherung;
-                string sicherungsgrund = KiSicherungspunkt.Sicherstellen(out sicherung);
-                if (sicherungsgrund != null)
-                    return Abweisen(beginn, aufruf, projektId, KiErgebnis.Abgelehnt(sicherungsgrund));
+                //
+                //      NICHT fuer reine Oberflaechen-Eintraege (Festlegung Paket F4):
+                //      feld_setzen und formular_ausfuellen tragen Text in ein Eingabefeld
+                //      ein und fassen die Datenbank nie an - eine 90-MB-Kopie sicherte dort
+                //      einen Zustand, den die Aktion gar nicht verlassen kann. Welche
+                //      Aktion den Sicherungspunkt braucht, steht an IHRER Deklaration
+                //      (KiAktion.BrauchtSicherungspunkt) und nicht hier in einer Namensliste.
+                //      dialog_aktion_ausfuehren behaelt ihn: Der ausgeloeste Knopf schreibt
+                //      ueber den Bestand sehr wohl in die Datenbank.
+                string sicherung = "";
+                if (aktion.BrauchtSicherungspunkt)
+                {
+                    string sicherungsgrund = KiSicherungspunkt.Sicherstellen(out sicherung);
+                    if (sicherungsgrund != null)
+                        return Abweisen(beginn, aufruf, projektId, KiErgebnis.Abgelehnt(sicherungsgrund));
+                }
 
                 // ---- Vorbedingung und Vorschau, dialogfrei auf dem UI-Thread.
                 Vorschaubefund befund = await AufUiThread(() => VorschauLauf(aufruf)).ConfigureAwait(true);
@@ -352,7 +375,7 @@ namespace WindowsFormsApplication1
                 KiErgebnis abgelehnt = KiErgebnis.Abgelehnt(pruefung.FehlerText());
                 KiAktion bekannt = Register.Finde(aktionsname);
                 Vermerken(DateTime.Now, aktionsname ?? "", bekannt != null ? bekannt.Stufe : Schutzstufe.Lesen,
-                          "{}", 0, abgelehnt);
+                          "{}", 0, abgelehnt, bekannt != null && bekannt.Formularaktion);
                 return Task.FromResult(abgelehnt);
             }
             return AusfuehrenAsync(pruefung.Aufruf, null, abbruch);
@@ -386,7 +409,8 @@ namespace WindowsFormsApplication1
             if (Interlocked.CompareExchange(ref _laeuft, 1, 0) != 0)
             {
                 KiErgebnis belegt = KiErgebnis.Abgelehnt(KiAusfuehrerTexte.LaeuftBereits);
-                Vermerken(beginn, aktion.Name, aktion.Stufe, aufruf.AlsJson(), projektId, belegt);
+                Vermerken(beginn, aktion.Name, aktion.Stufe, aufruf.AlsJson(), projektId, belegt,
+                          aktion.Formularaktion);
                 return belegt;
             }
 
@@ -395,17 +419,39 @@ namespace WindowsFormsApplication1
                 // ---- Modalitaet: ein offener modaler Dialog blockiert alles, was Fenster
                 //      oeffnet oder schreibt (Fachkonzept 3.4, Pflicht 2). Reines Lesen
                 //      bleibt zulaessig - es beruehrt weder Fenster noch Datenstand.
-                if (aktion.Stufe != Schutzstufe.Lesen && ModalitaetSperrt())
+                //
+                //      MODALITAETSWEICHE (Etappe 3b, Fachkonzept 11.4): Fuer eine
+                //      FORMULARAKTION wird die Sperre umgedreht. Die Sperre gibt es, weil
+                //      eine Aktion sonst hinter einem offenen Dialog in Daten oder Fenster
+                //      griffe, die der Anwender gerade in der Hand hat. Eine Formularaktion
+                //      tut das Gegenteil: Sie wirkt AUSSCHLIESSLICH in genau die Maske, vor
+                //      der der Anwender sitzt - der ganze Sinn der Formularsteuerung. Waere
+                //      sie hier gesperrt, koennte sie nie laufen, denn die vier Startmasken
+                //      werden modal geoeffnet (ShowDialog).
+                //
+                //      Was an ihre Stelle tritt, steht NICHT hier, sondern in der
+                //      Vorbedingung jeder Formularaktion (KiDialogZugriff.Aufloesen mit
+                //      mussAktivSein): Die Zielmaske muss im Katalog stehen, genau einmal
+                //      offen und das aktive Fenster sein - sonst Ablehnung im Klartext. Der
+                //      Ausfuehrer bleibt damit frei von Maskenwissen, und die Bedingung
+                //      steht bei der Aktion, die sie braucht.
+                //
+                //      Am Riegel aendert das nichts: Eine Formularaktion gehoert zu
+                //      Schutzstufe.Schreiben und braucht dieselbe Bestaetigung wie jede
+                //      andere Schreibaktion (KiRiegel haengt allein an der Stufe).
+                if (aktion.Stufe != Schutzstufe.Lesen && !aktion.Formularaktion && ModalitaetSperrt())
                 {
                     KiErgebnis modal = KiErgebnis.Abgelehnt(KiAusfuehrerTexte.ModalerDialog);
-                    Vermerken(beginn, aktion.Name, aktion.Stufe, aufruf.AlsJson(), projektId, modal);
+                    Vermerken(beginn, aktion.Name, aktion.Stufe, aufruf.AlsJson(), projektId, modal,
+                              aktion.Formularaktion);
                     return modal;
                 }
 
                 if (abbruch.IsCancellationRequested)
                 {
                     KiErgebnis weg = KiErgebnis.Abgebrochen(KiAusfuehrerTexte.Abgebrochen);
-                    Vermerken(beginn, aktion.Name, aktion.Stufe, aufruf.AlsJson(), projektId, weg);
+                    Vermerken(beginn, aktion.Name, aktion.Stufe, aufruf.AlsJson(), projektId, weg,
+                              aktion.Formularaktion);
                     return weg;
                 }
 
@@ -413,21 +459,46 @@ namespace WindowsFormsApplication1
                 {
                     KiErgebnis ohne = KiErgebnis.Abgelehnt(
                         string.Format(CultureInfo.CurrentCulture, KiTexte.AktionOhneAusfuehrung, aktion.Name));
-                    Vermerken(beginn, aktion.Name, aktion.Stufe, aufruf.AlsJson(), projektId, ohne);
+                    Vermerken(beginn, aktion.Name, aktion.Stufe, aufruf.AlsJson(), projektId, ohne,
+                              aktion.Formularaktion);
                     return ohne;
                 }
 
                 // ---- DER RIEGEL DER ETAPPE 3. Alles, was ueber Stufe 1 hinausgeht,
                 //      braucht eine gueltige, eigens fuer DIESEN Aufruf erteilte und noch
                 //      nicht eingeloeste Freigabe - sonst wird nichts geschrieben.
-                if (KiRiegel.BrauchtBestaetigung(aktion))
+                //
+                //      Gefragt wird ueber KiBestaetigungspflicht, also unter
+                //      Beruecksichtigung der Feldsicherung (Fachkonzept 11.5, Paket F4).
+                //      Fuer JEDE gewoehnliche Schreibaktion aendert das nichts; nur eine
+                //      Formularaktion kann bei abgeschalteter Sicherung ohne Freigabe
+                //      laufen. Der Zweig darunter faengt genau diesen Fall auf.
+                if (KiBestaetigungspflicht.Gilt(aktion))
                 {
                     string sperre = FreigabeEinloesen(aufruf, freigabe);
                     if (sperre != null)
                     {
                         KiErgebnis ohneKlick = KiErgebnis.Abgelehnt(sperre);
-                        Vermerken(beginn, aktion.Name, aktion.Stufe, aufruf.AlsJson(), projektId, ohneKlick);
+                        Vermerken(beginn, aktion.Name, aktion.Stufe, aufruf.AlsJson(), projektId, ohneKlick,
+                                  aktion.Formularaktion);
                         return ohneKlick;
+                    }
+                }
+                else if (aktion.Stufe != Schutzstufe.Lesen)
+                {
+                    // ABGESCHALTETE FELDSICHERUNG - und nur die. Was hier entfaellt, ist
+                    // ausschliesslich der KLICK des Anwenders; alles Uebrige der
+                    // Schreibvorbedingung bleibt stehen. Ohne diesen Zweig fielen mit der
+                    // Freigabe stillschweigend auch die Schreibrechtsfrage (Fachkonzept 4.5)
+                    // und der Sicherungspunkt weg - beides gehoert nicht zum Schalter
+                    // (Fachkonzept 11.5: „Der Schalter wirkt NUR auf die Feldbestaetigung").
+                    string vorbedingung = Schreibvorbedingung(aktion);
+                    if (vorbedingung != null)
+                    {
+                        KiErgebnis gesperrt2 = KiErgebnis.Abgelehnt(vorbedingung);
+                        Vermerken(beginn, aktion.Name, aktion.Stufe, aufruf.AlsJson(), projektId, gesperrt2,
+                                  aktion.Formularaktion);
+                        return gesperrt2;
                     }
                 }
 
@@ -440,7 +511,8 @@ namespace WindowsFormsApplication1
                 // mehr den Zustand, den der Anwender gesehen hat.
                 Interlocked.Increment(ref _laufmarke);
 
-                Vermerken(beginn, aktion.Name, aktion.Stufe, aufruf.AlsJson(), projektId, ergebnis);
+                Vermerken(beginn, aktion.Name, aktion.Stufe, aufruf.AlsJson(), projektId, ergebnis,
+                          aktion.Formularaktion);
                 return ergebnis;
             }
             finally
@@ -468,14 +540,42 @@ namespace WindowsFormsApplication1
 
             if (!freigabe.GiltFuer(aufruf)) return KiTexte.FreigabeFremd;
 
+            string vorbedingung = Schreibvorbedingung(aufruf.Aktion);
+            if (vorbedingung != null) return vorbedingung;
+
+            return freigabe.Verbrauchen(Laufmarke);
+        }
+
+        /// <summary>
+        /// Die Vorbedingungen jeder schreibenden Aktion, die NICHT am Klick des Anwenders
+        /// haengen: Schreibrecht und - wo die Aktion ihn braucht - der Sicherungspunkt.
+        /// </summary>
+        /// <returns>Der Klartextgrund, oder <c>null</c>, wenn nichts dagegen spricht.</returns>
+        /// <remarks>
+        /// <para>
+        /// Zusammengezogen, weil es zwei Wege in den Lauf gibt: den gewoehnlichen ueber die
+        /// eingeloeste Freigabe und - seit Paket F4 - den einer Formularaktion bei
+        /// abgeschalteter Feldsicherung. Beide muessen dieselben Fragen stellen; zwei
+        /// Fassungen wuerden auseinanderlaufen, und die zweite waere die laschere.
+        /// </para>
+        /// <para>
+        /// Gefragt wird auch auf dem Freigabeweg ein ZWEITES Mal (die Vorbereitung hat es
+        /// schon getan): Zwischen Vorschau und Klick kann eine Minute liegen, und in dieser
+        /// Minute kann eine Lizenz ablaufen oder die Sicherungsdatei verschwinden.
+        /// </para>
+        /// </remarks>
+        private static string Schreibvorbedingung(KiAktion aktion)
+        {
+            if (aktion == null || aktion.Stufe == Schutzstufe.Lesen) return null;
+
             string lizenz = SchreibrechtPruefen();
             if (lizenz != null) return lizenz;
 
-            string sicherung;
-            string sicherungsgrund = KiSicherungspunkt.Sicherstellen(out sicherung);
-            if (sicherungsgrund != null) return sicherungsgrund;
+            // Begruendung der Regel steht bei VorbereitenAsync.
+            if (!aktion.BrauchtSicherungspunkt) return null;
 
-            return freigabe.Verbrauchen(Laufmarke);
+            string sicherung;
+            return KiSicherungspunkt.Sicherstellen(out sicherung);
         }
 
         /// <summary>Klartextgrund, wenn die Lizenz kein Schreiben erlaubt; sonst <c>null</c>.</summary>
@@ -710,7 +810,7 @@ namespace WindowsFormsApplication1
 
             KiErgebnis ergebnis = KiErgebnis.Abgelehnt(grund ?? "");
             Vermerken(DateTime.Now, aufruf.Name, aufruf.Aktion.Stufe, aufruf.AlsJson(),
-                      ProjektAus(aufruf), ergebnis);
+                      ProjektAus(aufruf), ergebnis, aufruf.Aktion.Formularaktion);
             return ergebnis;
         }
 
@@ -718,7 +818,8 @@ namespace WindowsFormsApplication1
         private static KiVorbereitung Abweisen(DateTime beginn, KiAufruf aufruf, int projektId,
                                                KiErgebnis ergebnis)
         {
-            Vermerken(beginn, aufruf.Name, aufruf.Aktion.Stufe, aufruf.AlsJson(), projektId, ergebnis);
+            Vermerken(beginn, aufruf.Name, aufruf.Aktion.Stufe, aufruf.AlsJson(), projektId, ergebnis,
+                      aufruf.Aktion.Formularaktion);
             return new KiVorbereitung(null, ergebnis);
         }
 
@@ -726,11 +827,25 @@ namespace WindowsFormsApplication1
         /// Schreibt Protokollzeile und Sitzungseintrag - die EINE Stelle, an der ein
         /// Versuch vermerkt wird.
         /// </summary>
+        /// <param name="formularaktion">
+        /// Ist die vermerkte Aktion eine Formularaktion? Nur sie traegt den Vermerk der
+        /// abgeschalteten Feldsicherung - siehe unten.
+        /// </param>
         private static void Vermerken(DateTime zeitpunkt, string aktion, Schutzstufe stufe,
-                                      string parameterJson, int projektId, KiErgebnis ergebnis)
+                                      string parameterJson, int projektId, KiErgebnis ergebnis,
+                                      bool formularaktion = false)
         {
+            // Der Vermerk der abgeschalteten Feldsicherung (Fachkonzept 11.5) gehoert in
+            // JEDE Zeile einer Formularaktion - und nur dorthin: Der Schalter hat auf
+            // gewoehnliche Schreibaktionen keine Wirkung, ein Vermerk an ihrer Zeile
+            // behauptete also etwas Falsches. Ist die Sicherung an, liefert
+            // Protokollvermerk() leeren Text und die Zeile bleibt unveraendert.
+            string ergebnistext = ergebnis.Kurzfassung();
+            string vermerk = formularaktion ? KiFeldsicherung.Protokollvermerk() : "";
+            if (vermerk.Length > 0) ergebnistext = ergebnistext + " [" + vermerk + "]";
+
             string zeile = KiProtokoll.Zeile(zeitpunkt, aktion, stufe, parameterJson, projektId,
-                                             ergebnis.Status, ergebnis.Kurzfassung(), ergebnis.Dauer);
+                                             ergebnis.Status, ergebnistext, ergebnis.Dauer);
             LetzteProtokollzeile = zeile;
             Schreibe(zeile);
 
@@ -742,7 +857,7 @@ namespace WindowsFormsApplication1
                 Parameter = parameterJson,
                 ProjektId = projektId,
                 Status = ergebnis.Status,
-                Ergebnis = ergebnis.Kurzfassung(),
+                Ergebnis = ergebnistext,
                 DauerMs = (long)Math.Round(ergebnis.Dauer.TotalMilliseconds)
             };
 

@@ -6770,4 +6770,331 @@ The seat becomes available for another device; a new activation is required to c
   <data name="LIZ_MSG_SERVER_NICHT_ERREICHBAR" xml:space="preserve">
     <value>The license server cannot be reached at the moment — please try again later.</value>
   </data>
+  <data name="KI_KNOPF_TOOLTIP" xml:space="preserve">
+    <value>AI assistant</value>
+  </data>
+  <data name="KI_KNOPF_HILFE" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <data name="KI_MENUE_ASSISTENT" xml:space="preserve">
+    <value>Help assistant (AI)...</value>
+  </data>
+  <data name="KI_MENUE_ASSISTENT_HILFE" xml:space="preserve">
+    <value>Help assistant...</value>
+  </data>
+  <data name="KI_HILFEBETRIEB_SUCHEN_BTN" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="KI_HILFEBETRIEB_BEGRUESSUNG" xml:space="preserve">
+    <value>Enter a keyword and click “Search”. The built-in help is searched locally - no information leaves this computer.</value>
+  </data>
+  <data name="KI_DLG_MASKE_HEIZKESSEL" xml:space="preserve">
+    <value>Edit boiler</value>
+  </data>
+  <data name="KI_DLG_MASKE_PV" xml:space="preserve">
+    <value>Photovoltaic modules</value>
+  </data>
+  <data name="KI_DLG_MASKE_PUFFERSP" xml:space="preserve">
+    <value>Edit buffer storage</value>
+  </data>
+  <data name="KI_DLG_MASKE_WP" xml:space="preserve">
+    <value>Manage heat pumps</value>
+  </data>
+  <data name="KI_DLG_KNOPF_SPEICHERN" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="KI_DLG_KNOPF_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Save as</value>
+  </data>
+  <data name="KI_DLG_KNOPF_UEBERSCHREIBEN" xml:space="preserve">
+    <value>Overwrite</value>
+  </data>
+  <data name="KI_DLG_KNOPF_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="KI_DLG_KNOPF_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="KI_DLG_EINHEIT_JAHRE" xml:space="preserve">
+    <value>years</value>
+  </data>
+  <data name="KI_DLG_TYP_GANZZAHL" xml:space="preserve">
+    <value>whole number</value>
+  </data>
+  <data name="KI_DLG_TYP_ZAHL" xml:space="preserve">
+    <value>number</value>
+  </data>
+  <data name="KI_DLG_TYP_TEXT" xml:space="preserve">
+    <value>text</value>
+  </data>
+  <data name="KI_DLG_TYP_WAHRHEIT" xml:space="preserve">
+    <value>yes/no</value>
+  </data>
+  <data name="KI_DLG_TYP_AUSWAHL" xml:space="preserve">
+    <value>selection</value>
+  </data>
+  <data name="KI_DLG_LEER_ERLAUBT" xml:space="preserve">
+    <value>The field may stay empty; empty counts as 0.</value>
+  </data>
+  <data name="KI_DLG_LEER_PFLICHT" xml:space="preserve">
+    <value>The field must not be empty.</value>
+  </data>
+  <data name="KI_DLG_HK_LEISTUNG_NAME" xml:space="preserve">
+    <value>Thermal output</value>
+  </data>
+  <data name="KI_DLG_HK_LEISTUNG_ERL" xml:space="preserve">
+    <value>Rated thermal output of the boiler; basis for sizing and for the cost figures.</value>
+  </data>
+  <data name="KI_DLG_HK_WG_GAS_NAME" xml:space="preserve">
+    <value>Efficiency gas, biogas, wood and other</value>
+  </data>
+  <data name="KI_DLG_HK_WG_GAS_ERL" xml:space="preserve">
+    <value>Combustion efficiency for all fuels except oil, as a factor (e.g. 0.9).</value>
+  </data>
+  <data name="KI_DLG_HK_WG_OEL_NAME" xml:space="preserve">
+    <value>Efficiency oil</value>
+  </data>
+  <data name="KI_DLG_HK_WG_OEL_ERL" xml:space="preserve">
+    <value>Combustion efficiency in oil operation, as a factor (e.g. 0.9).</value>
+  </data>
+  <data name="KI_DLG_HK_BB_VERLUST_NAME" xml:space="preserve">
+    <value>Standby losses</value>
+  </data>
+  <data name="KI_DLG_HK_BB_VERLUST_ERL" xml:space="preserve">
+    <value>Share of the rated output lost merely by keeping the boiler ready for operation.</value>
+  </data>
+  <data name="KI_DLG_HK_INVEST_NAME" xml:space="preserve">
+    <value>Investment cost</value>
+  </data>
+  <data name="KI_DLG_HK_INVEST_ERL" xml:space="preserve">
+    <value>Purchase cost of the boiler; it enters the economic calculation.</value>
+  </data>
+  <data name="KI_DLG_HK_WARTUNG_ERL" xml:space="preserve">
+    <value>Maintenance expense of the boiler; the reference (annual amount or per unit of output) is chosen in the unit list next to it.</value>
+  </data>
+  <data name="KI_DLG_HK_RAUMBEDARF_NAME" xml:space="preserve">
+    <value>Space required</value>
+  </data>
+  <data name="KI_DLG_HK_RAUMBEDARF_ERL" xml:space="preserve">
+    <value>Installation volume of the boiler in the boiler room.</value>
+  </data>
+  <data name="KI_DLG_HK_NUTZUNGSDAUER_NAME" xml:space="preserve">
+    <value>Service life</value>
+  </data>
+  <data name="KI_DLG_HK_NUTZUNGSDAUER_ERL" xml:space="preserve">
+    <value>Assumed service life; it determines the depreciation period.</value>
+  </data>
+  <data name="KI_DLG_HK_CO2_NAME" xml:space="preserve">
+    <value>CO2</value>
+  </data>
+  <data name="KI_DLG_HK_CO2_ERL" xml:space="preserve">
+    <value>Carbon dioxide emission per unit of heat produced; the button “CO2 BEHG” derives it from the selected energy carrier.</value>
+  </data>
+  <data name="KI_DLG_HK_SO2_NAME" xml:space="preserve">
+    <value>SO2</value>
+  </data>
+  <data name="KI_DLG_HK_SO2_ERL" xml:space="preserve">
+    <value>Sulphur dioxide emission per unit of heat produced.</value>
+  </data>
+  <data name="KI_DLG_HK_NOX_NAME" xml:space="preserve">
+    <value>NOx</value>
+  </data>
+  <data name="KI_DLG_HK_NOX_ERL" xml:space="preserve">
+    <value>Nitrogen oxide emission per unit of heat produced.</value>
+  </data>
+  <data name="KI_DLG_HK_CO_NAME" xml:space="preserve">
+    <value>CO</value>
+  </data>
+  <data name="KI_DLG_HK_CO_ERL" xml:space="preserve">
+    <value>Carbon monoxide emission per unit of heat produced.</value>
+  </data>
+  <data name="KI_DLG_HK_STAUB_NAME" xml:space="preserve">
+    <value>Particulates</value>
+  </data>
+  <data name="KI_DLG_HK_STAUB_ERL" xml:space="preserve">
+    <value>Particulate emission per unit of heat produced.</value>
+  </data>
+  <data name="KI_DLG_HK_VORLAUF_NAME" xml:space="preserve">
+    <value>Flow temperature</value>
+  </data>
+  <data name="KI_DLG_HK_VORLAUF_ERL" xml:space="preserve">
+    <value>Design temperature of the heating flow.</value>
+  </data>
+  <data name="KI_DLG_HK_RUECKLAUF_NAME" xml:space="preserve">
+    <value>Return temperature</value>
+  </data>
+  <data name="KI_DLG_HK_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Design temperature of the heating return.</value>
+  </data>
+  <data name="KI_DLG_PV_NEIGUNG_NAME" xml:space="preserve">
+    <value>Tilt</value>
+  </data>
+  <data name="KI_DLG_PV_NEIGUNG_ERL" xml:space="preserve">
+    <value>Tilt angle of the module surface against the horizontal (0° flat, 90° vertical).</value>
+  </data>
+  <data name="KI_DLG_PV_AZIMUT_NAME" xml:space="preserve">
+    <value>Azimuth</value>
+  </data>
+  <data name="KI_DLG_PV_AZIMUT_ERL" xml:space="preserve">
+    <value>Orientation of the module surface against south (0° south, negative values east, positive west).</value>
+  </data>
+  <data name="KI_DLG_PV_ANZAHL_NAME" xml:space="preserve">
+    <value>Number of modules</value>
+  </data>
+  <data name="KI_DLG_PV_ANZAHL_ERL" xml:space="preserve">
+    <value>Number of modules of this type; together with the module output it gives the total output.</value>
+  </data>
+  <data name="KI_DLG_PSP_VOLUMEN_NAME" xml:space="preserve">
+    <value>Total volume</value>
+  </data>
+  <data name="KI_DLG_PSP_VOLUMEN_ERL" xml:space="preserve">
+    <value>Storage capacity of the buffer tank.</value>
+  </data>
+  <data name="KI_DLG_WP_MODULKOSTEN_NAME" xml:space="preserve">
+    <value>Module cost</value>
+  </data>
+  <data name="KI_DLG_WP_MODULKOSTEN_ERL" xml:space="preserve">
+    <value>Purchase cost of the heat pump; the entry is mandatory when saving.</value>
+  </data>
+  <data name="KI_DLG_MASKE_UNBEKANNT" xml:space="preserve">
+    <value>The form “{0}” is not released for the assistant. Released are: {1}.</value>
+  </data>
+  <data name="KI_DLG_KEINE_OFFEN" xml:space="preserve">
+    <value>No controllable form is open. Controllable are: {0}.</value>
+  </data>
+  <data name="KI_DLG_MEHRERE_OFFEN" xml:space="preserve">
+    <value>Several controllable forms are open ({0}). Please name the form explicitly.</value>
+  </data>
+  <data name="KI_DLG_NICHT_OFFEN" xml:space="preserve">
+    <value>The form “{0}” is not open.</value>
+  </data>
+  <data name="KI_DLG_MEHRFACH_OFFEN" xml:space="preserve">
+    <value>The form “{0}” is open more than once; it is not clear which one is meant.</value>
+  </data>
+  <data name="KI_DLG_NICHT_AKTIV" xml:space="preserve">
+    <value>The form “{0}” is not the active window. Entries are made only where you are actually working.</value>
+  </data>
+  <data name="KI_DLG_FELD_UNBEKANNT" xml:space="preserve">
+    <value>There is no field “{0}” in “{1}”. Known fields are: {2}.</value>
+  </data>
+  <data name="KI_DLG_KNOPF_UNBEKANNT" xml:space="preserve">
+    <value>The button “{0}” is not released in “{1}”. Released are: {2}.</value>
+  </data>
+  <data name="KI_DLG_CONTROL_FEHLT" xml:space="preserve">
+    <value>The control “{0}” ({1}) cannot be found in the open form.</value>
+  </data>
+  <data name="KI_DLG_CONTROL_ART" xml:space="preserve">
+    <value>The field “{0}” is a {1}; only text box, check box and selection list can be set.</value>
+  </data>
+  <data name="KI_DLG_CONTROL_READONLY" xml:space="preserve">
+    <value>The field “{0}” is read-only.</value>
+  </data>
+  <data name="KI_DLG_CONTROL_GESPERRT" xml:space="preserve">
+    <value>The field “{0}” cannot be operated at the moment.</value>
+  </data>
+  <data name="KI_DLG_KNOPF_GESPERRT" xml:space="preserve">
+    <value>The button “{0}” cannot be operated at the moment.</value>
+  </data>
+  <data name="KI_DLG_AUSWAHL_UNBEKANNT" xml:space="preserve">
+    <value>“{1}” is not an entry of the selection “{0}”. Available are: {2}.</value>
+  </data>
+  <data name="KI_DLG_AUSWAHL_MEHRDEUTIG" xml:space="preserve">
+    <value>The selection “{0}” lists “{1}” more than once; the entry is ambiguous.</value>
+  </data>
+  <data name="KI_DLG_FALSCHER_THREAD" xml:space="preserve">
+    <value>The field “{0}” belongs to a different UI thread; nothing is set.</value>
+  </data>
+  <data name="KI_DLG_WERTE_LEER" xml:space="preserve">
+    <value>No field was named. Expected is “field=value”, several separated by semicolons.</value>
+  </data>
+  <data name="KI_DLG_WERTE_FORMAT" xml:space="preserve">
+    <value>“{0}” is not an assignment. Expected is “field=value”, several separated by semicolons.</value>
+  </data>
+  <data name="KI_DLG_WERTE_DOPPELT" xml:space="preserve">
+    <value>The field “{0}” is named more than once.</value>
+  </data>
+  <data name="KI_DLG_OHNE_AENDERUNG" xml:space="preserve">
+    <value>In “{0}” all named fields already carry the value; there is nothing to change.</value>
+  </data>
+  <data name="KI_DLG_GELESEN" xml:space="preserve">
+    <value>“{0}”: {1} controllable fields, {2} releasable buttons.</value>
+  </data>
+  <data name="KI_DLG_ERKLAERT" xml:space="preserve">
+    <value>“{0}” in “{1}”.</value>
+  </data>
+  <data name="KI_DLG_FELD_GESETZT" xml:space="preserve">
+    <value>“{0}” now reads “{1}” (previously “{2}”).</value>
+  </data>
+  <data name="KI_DLG_FELDER_GESETZT" xml:space="preserve">
+    <value>{0} fields set in “{1}”.</value>
+  </data>
+  <data name="KI_DLG_KNOPF_AUSGELOEST" xml:space="preserve">
+    <value>The button “{0}” in “{1}” has been released.</value>
+  </data>
+  <data name="KI_DLG_KNOPF_HINWEIS" xml:space="preserve">
+    <value>Whether the entries were accepted is reported by the form itself - the assistant does not replace its check.</value>
+  </data>
+  <data name="KI_DLG_KEIN_WERT" xml:space="preserve">
+    <value>(empty)</value>
+  </data>
+  <data name="KI_REG_ZWECK_DIALOG_LESEN" xml:space="preserve">
+    <value>Names the controllable fields, their current values and the releasable buttons of an open form.</value>
+  </data>
+  <data name="KI_REG_ZWECK_DIALOG_ERKLAEREN" xml:space="preserve">
+    <value>Explains a field of an open form: display name, type, unit, empty rule and meaning.</value>
+  </data>
+  <data name="KI_REG_ZWECK_FELD_SETZEN" xml:space="preserve">
+    <value>Enters a value into exactly one field of an open form.</value>
+  </data>
+  <data name="KI_REG_ZWECK_FORMULAR_AUSFUELLEN" xml:space="preserve">
+    <value>Enters values into several fields of an open form - as one single confirmed block.</value>
+  </data>
+  <data name="KI_REG_ZWECK_DIALOG_AKTION" xml:space="preserve">
+    <value>Releases a released button of an open form; the form's own check runs just as with a click by hand.</value>
+  </data>
+  <data name="KI_REG_MASKE_NAME" xml:space="preserve">
+    <value>Form</value>
+  </data>
+  <data name="KI_REG_FELD_NAME" xml:space="preserve">
+    <value>Field</value>
+  </data>
+  <data name="KI_REG_WERT_NAME" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="KI_REG_WERTE_NAME" xml:space="preserve">
+    <value>Values</value>
+  </data>
+  <data name="KI_REG_KNOPF_NAME" xml:space="preserve">
+    <value>Button</value>
+  </data>
+  <data name="KI_REG_ERL_MASKE" xml:space="preserve">
+    <value>Type name of the form, e.g. “Form_PV”. Without an entry the currently open controllable form applies.</value>
+  </data>
+  <data name="KI_REG_ERL_FELD" xml:space="preserve">
+    <value>Logical name of the field as named by dialog_lesen.</value>
+  </data>
+  <data name="KI_REG_ERL_WERT" xml:space="preserve">
+    <value>The text to be entered - exactly as it would be typed by hand.</value>
+  </data>
+  <data name="KI_REG_ERL_WERTE" xml:space="preserve">
+    <value>Assignments “field=value”, several separated by semicolons, e.g. “nutzungsdauer=20; raumbedarf=3”.</value>
+  </data>
+  <data name="KI_REG_ERL_KNOPF" xml:space="preserve">
+    <value>Logical name of the button as named by dialog_lesen.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_FELD_SETZEN" xml:space="preserve">
+    <value>Afterwards the field carries the new text. It reaches the database only when the form's action button is released.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_FORMULAR_AUSFUELLEN" xml:space="preserve">
+    <value>Afterwards the named fields carry the new texts. They reach the database only when the form's action button is released.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_DIALOG_AKTION" xml:space="preserve">
+    <value>The form runs its own check and processes the entries - just as with a click by hand.</value>
+  </data>
+  <data name="KI_KERN_FELDSICHERUNG_AUS" xml:space="preserve">
+    <value>Field guard OFF — fields are filled in without a separate confirmation. The confirmation of data-changing actions remains in place.</value>
+  </data>
+  <data name="KI_KERN_FELDSICHERUNG_VERMERK" xml:space="preserve">
+    <value>field guard off</value>
+  </data>
 </root>

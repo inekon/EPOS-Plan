@@ -1,6 +1,7 @@
 # Umsetzungskonzept: Etappe 3b — Formularsteuerung (EPOS-Plan)
 
-Stand: 2026-08-20, Rev. 1 — **zur Abnahme** ·
+Stand: 2026-08-21, Rev. 1 — **abgenommen am 20.08.2026, umgesetzt am 21.08.2026 (F1–F5; Umsetzungsvermerke
+in Abschnitt 9; Sichtprüfung durch den Auftraggeber offen)** ·
 Auftraggeber: Philipp (INEKON) ·
 Grundlage: Fachkonzept `Konzept_KI-Assistent_Aufgabensteuerung.md` **Rev. 2, Kapitel 11** (Formularsteuerung,
 Feldsicherung, Aufrufknopf; Grenzen 11.7 und alle Vorschläge am 20.08.2026 abgenommen) und Prüfung des
@@ -198,3 +199,40 @@ nach F4 anhand Abschnitt 7.
    (cp1252-sichere Darstellung, einheitlich auf allen Systemen).
 2. **ComboBox-Setzen:** **nur per Anzeigetext**; bei Mehrdeutigkeit (zwei gleiche Einträge) wird mit Klartext
    abgelehnt. Kein Setzen per Index.
+
+## 9. Umsetzungsvermerke (21.08.2026)
+
+Alle fünf Pakete sind umgesetzt; Prüfstand: `KiKern.Tests` **430/430** grün, `SpeicherEngine.Tests` **337/337**
+grün, Voll-Rebuild x64 **0 Fehler** mit exakt den sechs Baseline-Warnungen, Laufzeit-Katalogtest Exitcode 0,
+repoweit keine Merge-Marker, resx de/en/Designer paritätisch (2108 Schlüssel). Abweichungen und Entscheidungen
+der Umsetzung:
+
+1. **`maske_oeffnen` wurde für keine der vier Startmasken freigeschaltet** (Abweichung von F3, je Maske im Code
+   begründet — `Allgemein\KI\Aktionen\KiAktionen.cs`): `Form_Heizkessel_Bearbeiten`/`Form_PufferSp_Bearbeiten`
+   öffnen nur aus den Admin-Listen mit gewähltem Katalogsatz, `Form_PV` nur mit offenem Projekt; der einzige
+   saubere Weg zu `Form_WP` ist modal und hielte Einläufigkeitssperre und `EngineModus` für die gesamte
+   Maskenlebensdauer — genau die Feldsetzung wäre blockiert. Der Assistent arbeitet mit der Maske, die der
+   Anwender geöffnet hat.
+2. **Knopfpositionen nachgemessen** statt der Konzeptschätzwerte: Heizkessel Abstand 8/176 (senkrechte
+   Knopfleiste ist bis y 168 belegt), PV 8/33, WP 8/36, Pufferspeicher Regelplatz 8/8.
+3. **Sicherungspunkt-Regel deklarativ:** `KiAktion.Datenbankwirksam` (Vorgabe `true`; `false` nur für
+   Formularaktionen zulässig, Konstruktorwache). `feld_setzen`/`formular_ausfuellen` sind nicht
+   datenbankwirksam (kein Sicherungspunkt — die Datenbank bleibt unberührt, bis ein Knopf ausgelöst wird);
+   `dialog_aktion_ausfuehren` behält den Sicherungspunkt.
+4. **Bestätigungs-Weiche an genau einer Stelle:** `KiKern\KiBestaetigungspflicht.Gilt` — Riegel unangetastet.
+   Wichtig: Bei abgeschalteter Feldsicherung bleiben **Schreibrechtsprüfung und Sicherungspunktpflicht**
+   ausdrücklich bestehen (`KiAusfuehrer.Schreibvorbedingung`); der Schalter nimmt nachweislich nur den Klick.
+5. **Laufzeit-Katalogtest** im vorhandenen `KiHarnisch\` (`--katalog`, ohne Datenbank/Registry/Fenster):
+   `Form_PV` und `Form_PufferSp_Bearbeiten` werden instanziiert und vollständig aufgelöst;
+   `Form_Heizkessel_Bearbeiten` und `Form_WP` nur statisch geprüft, weil ihre **Konstruktoren an die Datenbank
+   gehen** (`Form_Heizkessel_Bearbeiten.cs:44` erweitert sogar Tabellen) — dokumentierte Warnungen.
+6. **Bekannte Grenzen v1:** Ein Feld lässt sich nicht **leeren** (`wert` ist Pflichtparameter — ein vergessener
+   Parameter würde sonst still löschen); ComboBox-/CheckBox-Felder sind implementiert, aber noch von keinem
+   Katalogfeld belegt; Abnahmepunkt 4 („abc" → Bestandsmeldung) ist auf `Form_PV` nicht vorführbar, weil die
+   Maske keinen Speichern-Knopf bindet (verwaiste Behandler in `Form_PV`/`Form_WP` sind als eigener
+   Bestandspflege-Auftrag vermerkt).
+7. **Der Sichtprüfung des Auftraggebers vorbehalten** (Abnahmeliste Abschnitt 7): Klick-Bedienung der Knöpfe
+   (bes. Heizkessel/WP), Dialogführung von `dialog_lesen`/`erklaeren`/`setzen` am lebenden Modell, ein
+   Programmstart mit `/ki-feldsicherung-aus` (Hinweiszeile + Protokollvermerk, Stufe-2-Bestätigung bleibt)
+   und der Hilfe-Betrieb mit `KiDeaktiviert=1` inkl. HKLM-Vorrang (die Registry wurde bei der Umsetzung
+   bewusst nicht verändert).
