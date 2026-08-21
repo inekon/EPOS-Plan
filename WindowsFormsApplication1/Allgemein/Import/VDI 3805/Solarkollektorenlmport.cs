@@ -125,8 +125,16 @@ namespace WindowsFormsApplication1
                     
                     szBeschreibung = csvReader[9];
                     
-                    if (int.Parse(csvReader[10]) == 2) Modulfläche = ParseDouble(csvReader[11]);
-                    Aperturfläche = ParseDouble(csvReader[26]);
+                    // Feld 11 ist die Bezugsfläche, auf die sich h0/a1/a2 beziehen
+                    // (Solar Keymark, meist die Apertur) - sie gehört als A_ref in
+                    // die Ertragsrechnung. Feld 26 (Aperturfläche) nur als Rückfall,
+                    // wenn keine Bezugsfläche angegeben ist.
+                    Aperturfläche = ParseDouble(csvReader[11]);
+                    if (Aperturfläche == 0.0) Aperturfläche = ParseDouble(csvReader[26]);
+
+                    // Feld 25 ist die Brutto-Kollektorfläche (Rahmenaußenmaß) für
+                    // Dachbelegung/Flächenbilanz - nicht die Kennlinien-Bezugsfläche.
+                    Modulfläche = ParseDouble(csvReader[25]);
 
                     h0 = ParseDouble(csvReader[12]);
                     a1 = ParseDouble(csvReader[13]);
