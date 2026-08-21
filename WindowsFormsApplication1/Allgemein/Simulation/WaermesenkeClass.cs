@@ -858,7 +858,7 @@ namespace WindowsFormsApplication1
             {
                 erg.Ok = false;
                 erg.Fehler = string.Format(
-                    MyResource.Resource.SIM_ZWEITSENKE_GLEICH_HAUPTSENKE.Replace("\n", Environment.NewLine),
+                    Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_ZWEITSENKE_GLEICH_HAUPTSENKE),
                     ZielAnzeige(d.Ziel), PufferName(d.ID_Puffer));
                 return erg;
             }
@@ -870,7 +870,7 @@ namespace WindowsFormsApplication1
             {
                 erg.Ok = false;
                 erg.Fehler = string.Format(
-                    MyResource.Resource.SIM_PUFFER_QUELLE_UND_SENKE.Replace("\n", Environment.NewLine),
+                    Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_PUFFER_QUELLE_UND_SENKE),
                     PufferName(idQuellPuffer));
                 return erg;
             }
@@ -1011,7 +1011,7 @@ namespace WindowsFormsApplication1
             if (idPuffer <= 0)
             {
                 fehler = string.Format(
-                    MyResource.Resource.SIM_KEIN_PUFFER_GEWAEHLT.Replace("\n", Environment.NewLine),
+                    Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_KEIN_PUFFER_GEWAEHLT),
                     rolle, ZielAnzeige(ziel), VerwendungAnzeige(verlangt));
                 return false;
             }
@@ -1020,7 +1020,7 @@ namespace WindowsFormsApplication1
             if (p == null || p.ID_Projekt != idProjekt)
             {
                 fehler = string.Format(
-                    MyResource.Resource.SIM_PUFFER_FREMDES_PROJEKT.Replace("\n", Environment.NewLine),
+                    Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_PUFFER_FREMDES_PROJEKT),
                     rolle, VerwendungAnzeige(verlangt));
                 return false;
             }
@@ -1028,7 +1028,7 @@ namespace WindowsFormsApplication1
             if (!string.Equals(WirksameVerwendung(p), verlangt, StringComparison.OrdinalIgnoreCase))
             {
                 fehler = string.Format(
-                    MyResource.Resource.SIM_PUFFER_VERWENDUNG_PASST_NICHT.Replace("\n", Environment.NewLine),
+                    Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_PUFFER_VERWENDUNG_PASST_NICHT),
                     p.Bezeichner, VerwendungAnzeige(WirksameVerwendung(p)),
                     rolle, VerwendungAnzeige(verlangt));
                 return false;
@@ -1141,7 +1141,7 @@ namespace WindowsFormsApplication1
             if (rolle == null) return null;
 
             return string.Format(
-                MyResource.Resource.SIM_QUELLE_GLEICH_EIGENE_SENKE.Replace("\n", Environment.NewLine),
+                Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_QUELLE_GLEICH_EIGENE_SENKE),
                 PufferName(idQuellPuffer), rolle);
         }
 
@@ -1195,7 +1195,7 @@ namespace WindowsFormsApplication1
             if (!ring) return null;                                // zyklenfrei
 
             return string.Format(
-                MyResource.Resource.SIM_QUELLE_KASKADE_RING.Replace("\n", Environment.NewLine),
+                Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_QUELLE_KASKADE_RING),
                 bild.RingBeteiligte(ebene, idAnlage, idQuellPuffer));
         }
 
@@ -1220,7 +1220,7 @@ namespace WindowsFormsApplication1
             if (!brauchwasser) return null;
             if (ProjektHatBrauchwasser(idProjekt)) return null;
 
-            return MyResource.Resource.SIM_KEIN_BRAUCHWASSERBEDARF.Replace("\n", Environment.NewLine);
+            return Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_KEIN_BRAUCHWASSERBEDARF);
         }
 
         /// <summary>

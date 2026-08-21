@@ -142,12 +142,13 @@ namespace WindowsFormsApplication1
             // dieser Form nicht mehr (die Übersicht ist eine Kartenspalte, der
             // Verwalten-Knopf steht in der Speicherspalte).
 
-            // Zeilenumbrüche der Ressource auf die Plattformform bringen: Die .resx legt
-            // sie als LF ab (XML-Normierung), der Bestand hat hier Environment.NewLine
-            // gesetzt. Ohne die Umsetzung stünde derselbe Text mit anderen Trennzeichen
-            // im Hinweisfenster.
+            // Zeilenumbrüche der Ressource auf die Plattformform bringen. Der
+            // Ressourcenleser liefert sie zur Laufzeit bereits als CRLF (nachgemessen
+            // an den kompilierten .resources beider Sprachen) — das frühere
+            // Replace("\n", Environment.NewLine) machte daraus CR+CRLF, also eine
+            // Leerzeile je Umbruch. Details in Zeilenumbruch.
             _uebersichtTip.SetToolTip(checkBox_KaskadeZweikanalig,
-                MyResource.Resource.SIM_KASKADE_TOOLTIP.Replace("\n", Environment.NewLine));
+                Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_KASKADE_TOOLTIP));
 
             checkBox_KaskadeZweikanalig.CheckedChanged += checkBox_KaskadeZweikanalig_CheckedChanged;
             this.Controls.Add(checkBox_KaskadeZweikanalig);
@@ -352,7 +353,7 @@ namespace WindowsFormsApplication1
             checkBox_Extrapolation.Enabled = false;        // erst mit bekanntem Projekt
 
             _uebersichtTip.SetToolTip(checkBox_Extrapolation,
-                MyResource.Resource.SIM_EXTRAPOLATION_TOOLTIP.Replace("\n", Environment.NewLine));
+                Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_EXTRAPOLATION_TOOLTIP));
 
             checkBox_Extrapolation.CheckedChanged += checkBox_Extrapolation_CheckedChanged;
             this.Controls.Add(checkBox_Extrapolation);
@@ -739,7 +740,7 @@ namespace WindowsFormsApplication1
             if (!WaermequelleClass.QuellenwahlMoeglich(info.ID_Type))
             {
                 MessageBox.Show(
-                    MyResource.Resource.SIMQ_MSG_QUELLE_ART.Replace("\n", Environment.NewLine),
+                    Zeilenumbruch.Normalisieren(MyResource.Resource.SIMQ_MSG_QUELLE_ART),
                     MyResource.Resource.SIMQ_TITEL_WAERMEQUELLE,
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
@@ -1113,15 +1114,14 @@ namespace WindowsFormsApplication1
                                 // Luft-Wasser: die Konfiguration wird gar nicht gerechnet.
                                 // Das muss im Dialog stehen, sonst pflegt der Anwender
                                 // Bodentyp und Sondenlänge ins Leere (Konzept 4.5).
-                                // Umbrüche VOR dem Einsetzen umstellen (die Ressource legt
-                                // sie als LF ab, der Bestand nutzte hier \r\n).
+                                // Umbrüche VOR dem Einsetzen normalisieren (Zeilenumbruch).
                                 frmErde.HinweisErgebnis = string.Format(
-                                    MyResource.Resource.SIMQ_ERDREICH_WIRKUNGSLOS
-                                        .Replace("\n", Environment.NewLine), erdErg.Grenze);
+                                    Zeilenumbruch.Normalisieren(
+                                        MyResource.Resource.SIMQ_ERDREICH_WIRKUNGSLOS), erdErg.Grenze);
                             else if (!erdErg.MaxEntzugBelastbar)
                                 frmErde.HinweisErgebnis = string.Format(
-                                    MyResource.Resource.SIMQ_ERDREICH_KEINE_PRUEFUNG
-                                        .Replace("\n", Environment.NewLine), erdErg.Grenze);
+                                    Zeilenumbruch.Normalisieren(
+                                        MyResource.Resource.SIMQ_ERDREICH_KEINE_PRUEFUNG), erdErg.Grenze);
                             else
                             {
                                 if (erdErg.MaxEntzugGeschaetzt)

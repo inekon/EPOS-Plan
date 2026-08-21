@@ -376,10 +376,12 @@ namespace WindowsFormsApplication1
             if (k == null) { _tip.SetToolTip(this, ""); return; }
 
             string text = k.Titel;
+            // Hinweis/Warntext mischen Ressourcentexte (CRLF) und bereits mit
+            // Environment.NewLine gebaute Zeilen — Normalisieren ist idempotent.
             if (!string.IsNullOrEmpty(k.Hinweis))
-                text += Environment.NewLine + k.Hinweis.Replace("\n", Environment.NewLine);
+                text += Environment.NewLine + Zeilenumbruch.Normalisieren(k.Hinweis);
             if (k.Warnung && !string.IsNullOrEmpty(k.Warntext))
-                text += Environment.NewLine + k.Warntext.Replace("\n", Environment.NewLine);
+                text += Environment.NewLine + Zeilenumbruch.Normalisieren(k.Warntext);
 
             _tip.SetToolTip(this, text);
         }
