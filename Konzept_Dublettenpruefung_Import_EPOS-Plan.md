@@ -53,7 +53,7 @@ und stets nur mit dem Ergebnis „auslassen":
 
 | Pfad | Formular | Speicherweg → Zieltabelle | Prüfung heute | Fundstelle |
 |---|---|---|---|---|
-| Wärmepumpe (VDI 3805) | `Form_WP_einlesen` | `WPStammCtrl.Insert()` → `Tab_WP_STAMM` + `Tab_Kenndaten_STAMM` + `Tab_Kenndaten_Kuehlung_STAMM` | `RecordSet` mit **String-SQL** (nicht parametrisiert) | `Form_WP_einlesen.cs:215` |
+| Wärmepumpe (VDI 3805) | `Form_WP_einlesen` | `WPStammCtrl.Insert()` → `Tab_WP_STAMM` + `Tab_Kenndaten_STAMM` + `Tab_Kenndaten_Kuehlung_STAMM` | `Ctrl.Exists()` (seit 21.08.2026; zuvor `RecordSet` mit String-SQL) | `Form_WP_einlesen.cs:214` |
 | Heizkessel (VDI 3805) | `Form_Heizkessel_einlesen` | formular­eigenes `Insert(model, conn, tx)` → `Tab_Heizkessel_STAMM` | `SELECT COUNT(*)` in der Transaktion | `Form_Heizkessel_einlesen.cs:254` |
 | Pufferspeicher (VDI 3805) | `Form_PufferSp_einlesen` | `PufferSpStammCtrl.InsertFrom()` → `Tab_Pufferspeicher_STAMM` | `Ctrl.Exists(textBox_Name.Text)` | `Form_PufferSp_einlesen.cs:235` |
 | Solarkollektoren (VDI 3805) | `Form_SolarKollektoren_einlesen` | `SolarkollektorenStammCtrl.InsertFrom()` → `Tab_Solarkollektoren_STAMM` | `SELECT COUNT(*)` am Listeneintrag | `Form_SolarKollektoren_einlesen.cs:225` |
@@ -80,8 +80,10 @@ bei WP, Heizkessel, Pufferspeicher und Solarkollektoren; das gemeinsame Ergebnis
    verhindert nichts (dokumentiert in `PhotovoltaikStammCtrl.cs:143` und
    `HeizkesselStammCtrl.cs:234`).
 6. **Anzeige-Nebeneffekt PAN:** `PanDataService._allModules` ist `static` und wird nie
-   geleert — mehrfaches Einlesen derselben `.pan`-Datei füllt die Auswahlliste doppelt.
-7. Die WP-Prüfung per String-SQL bricht bei einem Apostroph im Typnamen.
+   geleert — mehrfaches Einlesen derselben `.pan`-Datei füllte die Auswahlliste doppelt
+   *(am 21.08.2026 entschärft: gleichnamige Module ersetzen ihren Altbestand)*.
+7. Die WP-Prüfung per String-SQL brach bei einem Apostroph im Typnamen
+   *(am 21.08.2026 behoben: parametrisiertes `WPStammCtrl.Exists`)*.
 
 ### 2.3 Vorhandene Bausteine (werden wiederverwendet, nicht neu erfunden)
 
@@ -195,6 +197,7 @@ ohne Toleranzband** (Entscheidung 9.1).
 | Solarkollektoren | `Firma, Kollektortyp, Modulflaeche, Aperturflaeche, h0, k1, k2, Kdir, Kdfu, Vorlauf, Ruecklauf` |
 | PV-Module | `Firma, Leistung, Wirkungsgrad, U_Mpp, U_Leerlauf, I_Mpp, I_Kurzschluss, alpha_SC, beta_OC, gamma_PMP, T_NOCT, Laenge, Breite` |
 | Stromganglinie | `Zeitinterval` **plus Werte-Hash** über die zugehörigen `…Daten_STAMM`-Zeilen (8.760/35.040 Werte) |
+| übrige Admin-Kataloge (BHKW, Stromspeicher, Gebäude, Klimaregion, Brauchwasser, Stromverbraucher, Prozesswärme, Solarganglinie, Wärmebedarf) | Vergleichsfelder je Katalog bei der Umsetzung aus den Feldlisten der `*StammCtrl` abgeleitet, nach derselben Regel (ohne `ID`, Name, `ReadOnly`, Beschreibung, Kosten). Kataloge mit Datenblöcken — Typ-Wochenprofile (168 Werte), Monatswerte, Jahresganglinien, Klimadaten — vergleichen Kopffelder **plus Datenblock-Hash**, wie bei WP-Kennlinien und Stromganglinie |
 
 Kostenfelder (`Modulkosten`, `Investitionskosten`, `Wartungskosten`, …) und
 `Beschreibung` zählen **nicht** zum Vergleich — sie werden vom Anwender gepflegt und
@@ -291,8 +294,8 @@ ein Verhalten, ein Text, eine Pflegestelle.
 Gleiche Systematik: `Bezeichner` = Dateiname ohne Erweiterung; die heutige reine
 ListBox-Prüfung wird durch die DB-Prüfung ersetzt (`GetStammId()` existiert bereits).
 Überschreiben = Kopfsatz behalten, Datenzeilen in einer Transaktion tauschen.
-Inhaltsvergleich (Werte-Hash) ist hier Stufe 2 (Paket D5) — der Namenskonflikt-Teil
-kommt zuerst.
+Der Inhaltsvergleich (Werte-Hash) nutzt dieselbe Datenblock-Hash-Infrastruktur, die
+der Admin-Scan ohnehin braucht (Entscheidung 9.5) — es gibt keinen Ganglinien-Sonderweg.
 
 ---
 
@@ -306,8 +309,10 @@ Neues Formular `Views\Admin\Form_KatalogDubletten` nach dem Muster
 „Einstellungen"; Eintrag in `HilfeKontext.BEREICH_JE_TYP` → `B_ADMIN` nicht vergessen).
 
 Aufbau:
-- Katalog-Auswahl (Wärmepumpe, Heizkessel, Pufferspeicher, Solarkollektoren, PV-Module,
-  BHKW, Stromspeicher; „alle") + Knopf „Prüfen".
+- Katalog-Auswahl: **alle über das Admin-Menü gepflegten Kataloge** (Entscheidung
+  9.5) — Wärmepumpe, Heizkessel, Pufferspeicher, Solarkollektoren, PV-Module, BHKW,
+  Stromspeicher, Gebäude, Klimaregion, Brauchwasser, Stromverbraucher, Prozesswärme,
+  Stromganglinie, Solarganglinie, Wärmebedarf — dazu „alle"; Knopf „Prüfen".
 - Ergebnisliste, gruppiert: erst Namensdubletten (sollten nach Absicherung der
   Invariante nur Altbestand sein), dann Inhaltsdubletten (gleicher Inhalt, andere
   Namen). Je Gruppe: Sätze mit ID, Name, `ReadOnly`-Kennzeichen, abweichende Spalten.
@@ -365,7 +370,8 @@ teilen. Die Migration bleibt idempotent und in ihrem Verhalten unverändert.
 Die fünf heterogenen Namensprüfungen (2.1) werden durch den Aufruf der zentralen
 Vorprüfung ersetzt; geprüft wird immer der Wert, der tatsächlich gespeichert wird
 (Modellwert, nicht wechselnd Textbox/Listeneintrag). Die `RecordSet`-Stelle im
-WP-Import entfällt dabei (Altbestand, String-SQL). `VdiUebernahmeErgebnis` wird um
+WP-Import ist bereits durch `WPStammCtrl.Exists` ersetzt (21.08.2026).
+`VdiUebernahmeErgebnis` wird um
 `Ueberschrieben` und `Umbenannt` erweitert, `VdiAuswahlFilter.LadeMeldung` entsprechend.
 
 Für „Überschreiben" fehlen teils ID-basierte Update-Wege: vorhanden bei Heizkessel und
@@ -401,8 +407,8 @@ Reihenfolge ist wichtig — erst Bestand säubern, dann zusperren:
 1. **Migrationsschritt (neu, Schema-Version 25):** `KATALOGE_MIT_NAMEN` um
    `Tab_WP_STAMM` (mit Kennlinien-Kaskade), `Tab_Pufferspeicher_STAMM`,
    `Tab_Solarkollektoren_STAMM` erweitern — gleiche Löschregel wie Schritt 24
-   (nur leere Kopien; Rest wird gemeldet). Nebenbefund: die Protokollzeile
-   `SchemaMigration.cs:1325` nennt noch „Schritt 19" — bei der Gelegenheit korrigieren.
+   (nur leere Kopien; Rest wird gemeldet). *(Der früher hier vermerkte veraltete
+   Protokolltext „Schritt 19" wurde am 21.08.2026 bereits richtiggestellt.)*
 2. **Restdubletten** (gefüllte Kopien) löst der Anwender über die Admin-Suche (5) auf.
 3. **Import und Pflegedialoge** verhindern ab diesem Paket jede neue Namensdublette
    (Import über den Konfliktdialog; Pflegedialoge: fehlende Namensprüfung bei der
@@ -418,14 +424,18 @@ Reihenfolge ist wichtig — erst Bestand säubern, dann zusperren:
 
 | Paket | Inhalt | Abhängig von | Aufwand |
 |---|---|---|---|
-| **D1** | `KatalogRegistry` + `DublettenPruefung` (Normalisierung, Inhalts-Hash, Vorprüfung, Scan) | — | 5–7 h |
+| **D1** | `KatalogRegistry` + `DublettenPruefung` (Normalisierung, Inhalts-Hash inkl. generischem Datenblock-Hash, Vorprüfung, Scan) | — | 6–8 h |
 | **D2** | Konfliktdialog `Form_ImportKonflikte` + Integration in die 6 Importpfade, Überschreiben/Umbenennen, ID-Updates für WP/PSP/ST, erweiterte Sammelmeldung, Lokalisierung | D1 | 12–16 h |
-| **D3** | Admin-Suche `Form_KatalogDubletten` (Scan, Gegenüberstellung, geführtes Bereinigen, Verwendungsprüfung, Protokoll, Menü-Einbindung) | D1 | 9–12 h |
-| **D4** | Migration: Bereinigung auf alle Kataloge ausweiten (Version 25, WP-Kaskade), Protokolltext „Schritt 19" richtigstellen | D1 | 4–5 h |
-| **D5** | Ganglinien-Inhaltsvergleich (Werte-Hash), PAN-`static`-Aufräumen, UNIQUE-Index als Schlussstein (7.4, beschlossen) | D1–D4 | 4–6 h |
+| **D3** | Admin-Suche `Form_KatalogDubletten` über **alle** Admin-Kataloge (9.5) — Scan inkl. Profil-/Ganglinien-Datenblöcke, Gegenüberstellung, geführtes Bereinigen, Verwendungsprüfung, Protokoll, Menü-Einbindung | D1 | 12–16 h |
+| **D4** | Migration: Bereinigung auf alle Kataloge ausweiten (Version 25, WP-Kaskade) | D1 | 4–5 h |
+| **D5** | UNIQUE-Index als Schlussstein (7.4, beschlossen) | D1–D4 | 1–2 h |
+
+Bereits vorab erledigt (21.08.2026): PAN-`static`-Anzeige-Dubletten entschärft,
+WP-Importprüfung auf parametrisiertes `Exists` umgestellt, Migrations-Protokolltext
+„Schritt 19" → „Schritt 24" richtiggestellt.
 
 Die Anwenderanforderung (1.1) ist mit **D1 + D2** erfüllt; die Admin-Prüfung (1.3) mit
-**D3**. Gesamtrahmen 34–46 h.
+**D3**. Gesamtrahmen 35–47 h.
 
 ---
 
@@ -443,9 +453,13 @@ Die Anwenderanforderung (1.1) ist mit **D1 + D2** erfüllt; die Admin-Prüfung (
 4. **UNIQUE-Index** auf `Bezeichner` — **entschieden (20.08.2026): ja, als
    Schlussstein** (7.4): eigener Migrationsschritt, nachdem Bereinigung (7.1–7.2) und
    Import-Absicherung (7.3) im Feld gelaufen sind.
-5. **Geltungsbereich Admin-Scan:** Vorschlag V1 = die fünf Herstellerkataloge + BHKW +
-   Stromspeicher; Brauchwasser/Stromverbraucher/Prozesswärme (Kopf+Typprofile) und
-   Ganglinien in einer zweiten Stufe.
+5. **Geltungsbereich Admin-Scan** — **entschieden (21.08.2026): alle Kataloge des
+   Admin-Menüs.** Die Suche deckt von Anfang an sämtliche über Administration
+   gepflegten Katalogtabellen ab: die fünf Herstellerkataloge, BHKW, Stromspeicher,
+   Gebäude, Klimaregion sowie die Profil- und Ganglinienkataloge (Brauchwasser,
+   Stromverbraucher, Prozesswärme, Strom-/Solarganglinie, Wärmebedarf) einschließlich
+   ihrer Datenblöcke im Inhaltsvergleich. Der Datenblock-Hash rückt damit aus der
+   zweiten Stufe in den Pflichtumfang (Pakete, Abschnitt 8).
 
 ---
 
