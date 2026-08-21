@@ -98,7 +98,7 @@
             this.rad_Ganglinie.Location = new System.Drawing.Point(14, 24);
             this.rad_Ganglinie.Name = "rad_Ganglinie";
             this.rad_Ganglinie.Size = new System.Drawing.Size(210, 22);
-            this.rad_Ganglinie.Text = "rad_Ganglinie";
+            this.rad_Ganglinie.Text = "Vorhandene Ganglinie";
             this.rad_Ganglinie.CheckedChanged += new System.EventHandler(this.QuelleGeaendert);
             //
             // cbo_Ganglinie
@@ -116,7 +116,7 @@
             this.rad_Datei.Location = new System.Drawing.Point(14, 54);
             this.rad_Datei.Name = "rad_Datei";
             this.rad_Datei.Size = new System.Drawing.Size(210, 22);
-            this.rad_Datei.Text = "rad_Datei";
+            this.rad_Datei.Text = "Datei importieren";
             this.rad_Datei.CheckedChanged += new System.EventHandler(this.QuelleGeaendert);
             //
             // btn_Datei
@@ -124,7 +124,7 @@
             this.btn_Datei.Location = new System.Drawing.Point(230, 52);
             this.btn_Datei.Name = "btn_Datei";
             this.btn_Datei.Size = new System.Drawing.Size(160, 26);
-            this.btn_Datei.Text = "btn_Datei";
+            this.btn_Datei.Text = "Datei wählen …";
             this.btn_Datei.Click += new System.EventHandler(this.Datei_Click);
             //
             // lbl_Reihe
@@ -144,7 +144,7 @@
             this.grpQuelle.Name = "grpQuelle";
             this.grpQuelle.Size = new System.Drawing.Size(1036, 96);
             this.grpQuelle.TabStop = false;
-            this.grpQuelle.Text = "grpQuelle";
+            this.grpQuelle.Text = "Lastgang";
             this.grpQuelle.Controls.Add(this.rad_Ganglinie);
             this.grpQuelle.Controls.Add(this.cbo_Ganglinie);
             this.grpQuelle.Controls.Add(this.rad_Datei);
@@ -156,7 +156,7 @@
             this.lbl_P.Location = new System.Drawing.Point(14, 28);
             this.lbl_P.Name = "lbl_P";
             this.lbl_P.Size = new System.Drawing.Size(194, 18);
-            this.lbl_P.Text = "lbl_P";
+            this.lbl_P.Text = "Leistung P [kW]";
             //
             // tb_P
             //
@@ -171,7 +171,7 @@
             this.lbl_Kapazitaet.Location = new System.Drawing.Point(350, 28);
             this.lbl_Kapazitaet.Name = "lbl_Kapazitaet";
             this.lbl_Kapazitaet.Size = new System.Drawing.Size(194, 18);
-            this.lbl_Kapazitaet.Text = "lbl_Kapazitaet";
+            this.lbl_Kapazitaet.Text = "Kapazität [kWh]";
             //
             // tb_Kapazitaet
             //
@@ -186,7 +186,7 @@
             this.lbl_Eta.Location = new System.Drawing.Point(686, 28);
             this.lbl_Eta.Name = "lbl_Eta";
             this.lbl_Eta.Size = new System.Drawing.Size(194, 18);
-            this.lbl_Eta.Text = "lbl_Eta";
+            this.lbl_Eta.Text = "Wirkungsgrad η_RT [-]";
             //
             // tb_Eta
             //
@@ -201,7 +201,7 @@
             this.lbl_SoCMin.Location = new System.Drawing.Point(14, 56);
             this.lbl_SoCMin.Name = "lbl_SoCMin";
             this.lbl_SoCMin.Size = new System.Drawing.Size(194, 18);
-            this.lbl_SoCMin.Text = "lbl_SoCMin";
+            this.lbl_SoCMin.Text = "Ladezustand min. [%]";
             //
             // tb_SoCMin
             //
@@ -216,7 +216,7 @@
             this.lbl_SoCMax.Location = new System.Drawing.Point(350, 56);
             this.lbl_SoCMax.Name = "lbl_SoCMax";
             this.lbl_SoCMax.Size = new System.Drawing.Size(194, 18);
-            this.lbl_SoCMax.Text = "lbl_SoCMax";
+            this.lbl_SoCMax.Text = "Ladezustand max. [%]";
             //
             // tb_SoCMax
             //
@@ -231,7 +231,7 @@
             this.lbl_StartSoC.Location = new System.Drawing.Point(686, 56);
             this.lbl_StartSoC.Name = "lbl_StartSoC";
             this.lbl_StartSoC.Size = new System.Drawing.Size(194, 18);
-            this.lbl_StartSoC.Text = "lbl_StartSoC";
+            this.lbl_StartSoC.Text = "Start-Ladezustand [%]";
             //
             // tb_StartSoC
             //
@@ -246,7 +246,7 @@
             this.lbl_Ziel.Location = new System.Drawing.Point(14, 84);
             this.lbl_Ziel.Name = "lbl_Ziel";
             this.lbl_Ziel.Size = new System.Drawing.Size(194, 18);
-            this.lbl_Ziel.Text = "lbl_Ziel";
+            this.lbl_Ziel.Text = "Zielschwelle P_ziel [kW]";
             //
             // tb_Ziel
             //
@@ -261,7 +261,7 @@
             this.chk_Adaptiv.Location = new System.Drawing.Point(350, 80);
             this.chk_Adaptiv.Name = "chk_Adaptiv";
             this.chk_Adaptiv.Size = new System.Drawing.Size(194, 22);
-            this.chk_Adaptiv.Text = "chk_Adaptiv";
+            this.chk_Adaptiv.Text = "Adaptiv (Schwelle nachziehen)";
             this.chk_Adaptiv.CheckedChanged += new System.EventHandler(this.AdaptivGeaendert);
             //
             // btn_Minimal
@@ -269,7 +269,7 @@
             this.btn_Minimal.Location = new System.Drawing.Point(546, 78);
             this.btn_Minimal.Name = "btn_Minimal";
             this.btn_Minimal.Size = new System.Drawing.Size(336, 26);
-            this.btn_Minimal.Text = "btn_Minimal";
+            this.btn_Minimal.Text = "Minimale haltbare Schwelle ermitteln";
             this.btn_Minimal.Click += new System.EventHandler(this.Minimal_Click);
             //
             // lbl_Lp
@@ -277,7 +277,7 @@
             this.lbl_Lp.Location = new System.Drawing.Point(14, 112);
             this.lbl_Lp.Name = "lbl_Lp";
             this.lbl_Lp.Size = new System.Drawing.Size(194, 18);
-            this.lbl_Lp.Text = "lbl_Lp";
+            this.lbl_Lp.Text = "Leistungspreis L_P [€/(kW·a)]";
             //
             // tb_Lp
             //
@@ -292,7 +292,7 @@
             this.lbl_Bezugspreis.Location = new System.Drawing.Point(350, 112);
             this.lbl_Bezugspreis.Name = "lbl_Bezugspreis";
             this.lbl_Bezugspreis.Size = new System.Drawing.Size(194, 18);
-            this.lbl_Bezugspreis.Text = "lbl_Bezugspreis";
+            this.lbl_Bezugspreis.Text = "Bezugspreis mittel [ct/kWh]";
             //
             // tb_Bezugspreis
             //
@@ -307,14 +307,14 @@
             this.chk_Kompatibel.Location = new System.Drawing.Point(686, 108);
             this.chk_Kompatibel.Name = "chk_Kompatibel";
             this.chk_Kompatibel.Size = new System.Drawing.Size(336, 22);
-            this.chk_Kompatibel.Text = "chk_Kompatibel";
+            this.chk_Kompatibel.Text = "Kompatibilitätsmodus (η = 1, SoC_min = 0)";
             //
             // lbl_CCap
             //
             this.lbl_CCap.Location = new System.Drawing.Point(14, 140);
             this.lbl_CCap.Name = "lbl_CCap";
             this.lbl_CCap.Size = new System.Drawing.Size(194, 18);
-            this.lbl_CCap.Text = "lbl_CCap";
+            this.lbl_CCap.Text = "Investition c_cap [€/kWh]";
             //
             // tb_CCap
             //
@@ -329,7 +329,7 @@
             this.lbl_CPow.Location = new System.Drawing.Point(350, 140);
             this.lbl_CPow.Name = "lbl_CPow";
             this.lbl_CPow.Size = new System.Drawing.Size(194, 18);
-            this.lbl_CPow.Text = "lbl_CPow";
+            this.lbl_CPow.Text = "Investition c_pow [€/kW]";
             //
             // tb_CPow
             //
@@ -344,7 +344,7 @@
             this.lbl_IFix.Location = new System.Drawing.Point(686, 140);
             this.lbl_IFix.Name = "lbl_IFix";
             this.lbl_IFix.Size = new System.Drawing.Size(194, 18);
-            this.lbl_IFix.Text = "lbl_IFix";
+            this.lbl_IFix.Text = "Investition fix [€]";
             //
             // tb_IFix
             //
@@ -359,7 +359,7 @@
             this.lbl_Zins.Location = new System.Drawing.Point(14, 168);
             this.lbl_Zins.Name = "lbl_Zins";
             this.lbl_Zins.Size = new System.Drawing.Size(194, 18);
-            this.lbl_Zins.Text = "lbl_Zins";
+            this.lbl_Zins.Text = "Kapitalzins [%]";
             //
             // tb_Zins
             //
@@ -374,7 +374,7 @@
             this.lbl_Nutzungsdauer.Location = new System.Drawing.Point(350, 168);
             this.lbl_Nutzungsdauer.Name = "lbl_Nutzungsdauer";
             this.lbl_Nutzungsdauer.Size = new System.Drawing.Size(194, 18);
-            this.lbl_Nutzungsdauer.Text = "lbl_Nutzungsdauer";
+            this.lbl_Nutzungsdauer.Text = "Nutzungsdauer [a]";
             //
             // tb_Nutzungsdauer
             //
@@ -400,7 +400,7 @@
             this.grpParameter.Name = "grpParameter";
             this.grpParameter.Size = new System.Drawing.Size(1036, 196);
             this.grpParameter.TabStop = false;
-            this.grpParameter.Text = "grpParameter";
+            this.grpParameter.Text = "Speicher- und Bewertungsparameter";
             this.grpParameter.Controls.Add(this.lbl_P);
             this.grpParameter.Controls.Add(this.tb_P);
             this.grpParameter.Controls.Add(this.lbl_Kapazitaet);
@@ -439,7 +439,7 @@
             this.btn_Rechnen.Location = new System.Drawing.Point(12, 316);
             this.btn_Rechnen.Name = "btn_Rechnen";
             this.btn_Rechnen.Size = new System.Drawing.Size(190, 30);
-            this.btn_Rechnen.Text = "btn_Rechnen";
+            this.btn_Rechnen.Text = "Berechnen";
             this.btn_Rechnen.Click += new System.EventHandler(this.Rechnen_Click);
             //
             // chk_SoC
@@ -448,7 +448,7 @@
             this.chk_SoC.Location = new System.Drawing.Point(216, 321);
             this.chk_SoC.Name = "chk_SoC";
             this.chk_SoC.Size = new System.Drawing.Size(260, 22);
-            this.chk_SoC.Text = "chk_SoC";
+            this.chk_SoC.Text = "Ladezustand im Diagramm zeigen";
             this.chk_SoC.CheckedChanged += new System.EventHandler(this.SoCAnzeigeGeaendert);
             //
             // btn_Csv
@@ -457,7 +457,7 @@
             this.btn_Csv.Location = new System.Drawing.Point(858, 316);
             this.btn_Csv.Name = "btn_Csv";
             this.btn_Csv.Size = new System.Drawing.Size(190, 30);
-            this.btn_Csv.Text = "btn_Csv";
+            this.btn_Csv.Text = "CSV-Export";
             this.btn_Csv.Click += new System.EventHandler(this.Csv_Click);
             //
             // list_Kennzahlen
@@ -477,26 +477,26 @@
             // col_KennzahlGroesse
             //
             this.col_KennzahlGroesse.Name = "col_KennzahlGroesse";
-            this.col_KennzahlGroesse.Text = "col_KennzahlGroesse";
+            this.col_KennzahlGroesse.Text = "Größe";
             this.col_KennzahlGroesse.Width = 420;
             //
             // col_KennzahlWert
             //
             this.col_KennzahlWert.Name = "col_KennzahlWert";
-            this.col_KennzahlWert.Text = "col_KennzahlWert";
+            this.col_KennzahlWert.Text = "Wert";
             this.col_KennzahlWert.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.col_KennzahlWert.Width = 170;
             //
             // col_KennzahlEinheit
             //
             this.col_KennzahlEinheit.Name = "col_KennzahlEinheit";
-            this.col_KennzahlEinheit.Text = "col_KennzahlEinheit";
+            this.col_KennzahlEinheit.Text = "Einheit";
             this.col_KennzahlEinheit.Width = 150;
             //
             // tabKennzahlen
             //
             this.tabKennzahlen.Name = "tabKennzahlen";
-            this.tabKennzahlen.Text = "tabKennzahlen";
+            this.tabKennzahlen.Text = "Kennzahlen";
             this.tabKennzahlen.Controls.Add(this.list_Kennzahlen);
             //
             // tabChart
@@ -506,7 +506,7 @@
             // baut Form_PeakShaving.ChartAufbauen() im Konstruktor-Nachlauf und haengt
             // sie hier ein; diese Seite bleibt deshalb ohne Kinder.
             this.tabChart.Name = "tabChart";
-            this.tabChart.Text = "tabChart";
+            this.tabChart.Text = "Lastgang vorher/nachher";
             //
             // list_Monate
             //
@@ -526,34 +526,34 @@
             // col_MonatName
             //
             this.col_MonatName.Name = "col_MonatName";
-            this.col_MonatName.Text = "col_MonatName";
+            this.col_MonatName.Text = "Monat";
             this.col_MonatName.Width = 220;
             //
             // col_MonatAlt
             //
             this.col_MonatAlt.Name = "col_MonatAlt";
-            this.col_MonatAlt.Text = "col_MonatAlt";
+            this.col_MonatAlt.Text = "Spitze ohne Speicher [kW]";
             this.col_MonatAlt.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.col_MonatAlt.Width = 170;
             //
             // col_MonatNeu
             //
             this.col_MonatNeu.Name = "col_MonatNeu";
-            this.col_MonatNeu.Text = "col_MonatNeu";
+            this.col_MonatNeu.Text = "Spitze mit Speicher [kW]";
             this.col_MonatNeu.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.col_MonatNeu.Width = 170;
             //
             // col_MonatKappung
             //
             this.col_MonatKappung.Name = "col_MonatKappung";
-            this.col_MonatKappung.Text = "col_MonatKappung";
+            this.col_MonatKappung.Text = "Kappung [kW]";
             this.col_MonatKappung.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.col_MonatKappung.Width = 170;
             //
             // tabMonate
             //
             this.tabMonate.Name = "tabMonate";
-            this.tabMonate.Text = "tabMonate";
+            this.tabMonate.Text = "Monatsspitzen";
             this.tabMonate.Controls.Add(this.list_Monate);
             //
             // tab_Ergebnis
@@ -576,7 +576,7 @@
             this.lbl_Hinweis.Location = new System.Drawing.Point(12, 764);
             this.lbl_Hinweis.Name = "lbl_Hinweis";
             this.lbl_Hinweis.Size = new System.Drawing.Size(900, 52);
-            this.lbl_Hinweis.Text = "lbl_Hinweis";
+            this.lbl_Hinweis.Text = "Bezugsgröße der Lastspitze ist das Jahresmaximum der Viertelstundenleistung; die Monatsauswertung steht als Option daneben. Ergebnisse werden in dieser Stufe nicht in der Datenbank gespeichert – Exportweg ist CSV. Leistungspreis und mittlerer Bezugspreis sind einzugeben; ohne sie bleibt die Monetarisierung 0.";
             //
             // btn_Schliessen
             //
@@ -585,7 +585,7 @@
             this.btn_Schliessen.Location = new System.Drawing.Point(954, 790);
             this.btn_Schliessen.Name = "btn_Schliessen";
             this.btn_Schliessen.Size = new System.Drawing.Size(94, 28);
-            this.btn_Schliessen.Text = "btn_Schliessen";
+            this.btn_Schliessen.Text = "Schließen";
             //
             // Form_PeakShaving
             //
@@ -607,7 +607,7 @@
             this.Name = "Form_PeakShaving";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Form_PeakShaving";
+            this.Text = "Lastspitzenkappung (Peak-Shaving)";
             this.grpQuelle.ResumeLayout(false);
             this.grpParameter.ResumeLayout(false);
             this.tab_Ergebnis.ResumeLayout(false);

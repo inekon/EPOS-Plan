@@ -94,7 +94,7 @@
             this._gbAufschlag.Location = new System.Drawing.Point(0, 0);
             this._gbAufschlag.Name = "_gbAufschlag";
             this._gbAufschlag.Size = new System.Drawing.Size(548, 270);
-            this._gbAufschlag.Text = "_gbAufschlag";
+            this._gbAufschlag.Text = "Aufschlaege auf den Strombezugspreis";
             //
             // _rbAufgeschluesselt
             //
@@ -103,7 +103,7 @@
             this._rbAufgeschluesselt.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular);
             this._rbAufgeschluesselt.Location = new System.Drawing.Point(14, 22);
             this._rbAufgeschluesselt.Name = "_rbAufgeschluesselt";
-            this._rbAufgeschluesselt.Text = "_rbAufgeschluesselt";
+            this._rbAufgeschluesselt.Text = "aufgeschluesselt";
             this._rbAufgeschluesselt.CheckedChanged += new System.EventHandler(this.rbAufgeschluesselt_CheckedChanged);
             //
             // _rbGesamtwert
@@ -112,7 +112,7 @@
             this._rbGesamtwert.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular);
             this._rbGesamtwert.Location = new System.Drawing.Point(224, 22);
             this._rbGesamtwert.Name = "_rbGesamtwert";
-            this._rbGesamtwert.Text = "_rbGesamtwert";
+            this._rbGesamtwert.Text = "Gesamtwert (Override)";
             //
             // _chkNetzentgelt
             //
@@ -121,7 +121,7 @@
             this._chkNetzentgelt.Location = new System.Drawing.Point(14, 50);
             this._chkNetzentgelt.Name = "_chkNetzentgelt";
             this._chkNetzentgelt.Size = new System.Drawing.Size(228, 21);
-            this._chkNetzentgelt.Text = "_chkNetzentgelt";
+            this._chkNetzentgelt.Text = "Netzentgelt Arbeit";
             this._chkNetzentgelt.CheckedChanged += new System.EventHandler(this.KomponenteSchalter_CheckedChanged);
             //
             // _tbNetzentgelt
@@ -139,7 +139,7 @@
             this._lblEinheitNetzentgelt.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular);
             this._lblEinheitNetzentgelt.Location = new System.Drawing.Point(350, 51);
             this._lblEinheitNetzentgelt.Name = "_lblEinheitNetzentgelt";
-            this._lblEinheitNetzentgelt.Text = "_lblEinheitNetzentgelt";
+            this._lblEinheitNetzentgelt.Text = "ct/kWh";
             //
             // _chkUmlagen
             //
@@ -148,7 +148,7 @@
             this._chkUmlagen.Location = new System.Drawing.Point(14, 77);
             this._chkUmlagen.Name = "_chkUmlagen";
             this._chkUmlagen.Size = new System.Drawing.Size(228, 21);
-            this._chkUmlagen.Text = "_chkUmlagen";
+            this._chkUmlagen.Text = "Umlagen (Summe)";
             this._chkUmlagen.CheckedChanged += new System.EventHandler(this.KomponenteSchalter_CheckedChanged);
             //
             // _tbUmlagen
@@ -166,7 +166,7 @@
             this._lblEinheitUmlagen.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular);
             this._lblEinheitUmlagen.Location = new System.Drawing.Point(350, 78);
             this._lblEinheitUmlagen.Name = "_lblEinheitUmlagen";
-            this._lblEinheitUmlagen.Text = "_lblEinheitUmlagen";
+            this._lblEinheitUmlagen.Text = "ct/kWh";
             //
             // _chkStromsteuer
             //
@@ -175,7 +175,7 @@
             this._chkStromsteuer.Location = new System.Drawing.Point(14, 104);
             this._chkStromsteuer.Name = "_chkStromsteuer";
             this._chkStromsteuer.Size = new System.Drawing.Size(228, 21);
-            this._chkStromsteuer.Text = "_chkStromsteuer";
+            this._chkStromsteuer.Text = "Stromsteuer";
             this._chkStromsteuer.CheckedChanged += new System.EventHandler(this.KomponenteSchalter_CheckedChanged);
             //
             // _tbStromsteuer
@@ -193,7 +193,7 @@
             this._lblEinheitStromsteuer.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular);
             this._lblEinheitStromsteuer.Location = new System.Drawing.Point(350, 105);
             this._lblEinheitStromsteuer.Name = "_lblEinheitStromsteuer";
-            this._lblEinheitStromsteuer.Text = "_lblEinheitStromsteuer";
+            this._lblEinheitStromsteuer.Text = "ct/kWh";
             //
             // _chkKonzession
             //
@@ -202,7 +202,7 @@
             this._chkKonzession.Location = new System.Drawing.Point(14, 131);
             this._chkKonzession.Name = "_chkKonzession";
             this._chkKonzession.Size = new System.Drawing.Size(228, 21);
-            this._chkKonzession.Text = "_chkKonzession";
+            this._chkKonzession.Text = "Konzessionsabgabe";
             this._chkKonzession.CheckedChanged += new System.EventHandler(this.KomponenteSchalter_CheckedChanged);
             //
             // _tbKonzession
@@ -220,7 +220,7 @@
             this._lblEinheitKonzession.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular);
             this._lblEinheitKonzession.Location = new System.Drawing.Point(350, 132);
             this._lblEinheitKonzession.Name = "_lblEinheitKonzession";
-            this._lblEinheitKonzession.Text = "_lblEinheitKonzession";
+            this._lblEinheitKonzession.Text = "ct/kWh";
             //
             // _chkVertrieb
             //
@@ -229,7 +229,7 @@
             this._chkVertrieb.Location = new System.Drawing.Point(14, 158);
             this._chkVertrieb.Name = "_chkVertrieb";
             this._chkVertrieb.Size = new System.Drawing.Size(228, 21);
-            this._chkVertrieb.Text = "_chkVertrieb";
+            this._chkVertrieb.Text = "Vertrieb";
             this._chkVertrieb.CheckedChanged += new System.EventHandler(this.KomponenteSchalter_CheckedChanged);
             //
             // _tbVertrieb
@@ -247,7 +247,7 @@
             this._lblEinheitVertrieb.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular);
             this._lblEinheitVertrieb.Location = new System.Drawing.Point(350, 159);
             this._lblEinheitVertrieb.Name = "_lblEinheitVertrieb";
-            this._lblEinheitVertrieb.Text = "_lblEinheitVertrieb";
+            this._lblEinheitVertrieb.Text = "ct/kWh";
             //
             // _btnStromsteuerRegelfall
             //
@@ -255,7 +255,7 @@
             this._btnStromsteuerRegelfall.Location = new System.Drawing.Point(402, 101);
             this._btnStromsteuerRegelfall.Name = "_btnStromsteuerRegelfall";
             this._btnStromsteuerRegelfall.Size = new System.Drawing.Size(62, 24);
-            this._btnStromsteuerRegelfall.Text = "_btnStromsteuerRegelfall";
+            this._btnStromsteuerRegelfall.Text = "2,05";
             this._btnStromsteuerRegelfall.Click += new System.EventHandler(this.btnStromsteuerRegelfall_Click);
             //
             // _btnStromsteuerReduziert
@@ -264,7 +264,7 @@
             this._btnStromsteuerReduziert.Location = new System.Drawing.Point(468, 101);
             this._btnStromsteuerReduziert.Name = "_btnStromsteuerReduziert";
             this._btnStromsteuerReduziert.Size = new System.Drawing.Size(62, 24);
-            this._btnStromsteuerReduziert.Text = "_btnStromsteuerReduziert";
+            this._btnStromsteuerReduziert.Text = "0,05";
             this._btnStromsteuerReduziert.Click += new System.EventHandler(this.btnStromsteuerReduziert_Click);
             //
             // _lblSumme
@@ -280,7 +280,7 @@
             this._lblGesamtaufschlag.Location = new System.Drawing.Point(14, 216);
             this._lblGesamtaufschlag.Name = "_lblGesamtaufschlag";
             this._lblGesamtaufschlag.Size = new System.Drawing.Size(228, 21);
-            this._lblGesamtaufschlag.Text = "_lblGesamtaufschlag";
+            this._lblGesamtaufschlag.Text = "Gesamtaufschlag";
             //
             // _tbOverride
             //
@@ -297,7 +297,7 @@
             this._lblEinheitOverride.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular);
             this._lblEinheitOverride.Location = new System.Drawing.Point(350, 216);
             this._lblEinheitOverride.Name = "_lblEinheitOverride";
-            this._lblEinheitOverride.Text = "_lblEinheitOverride";
+            this._lblEinheitOverride.Text = "ct/kWh";
             //
             // _lblRest
             //
@@ -319,7 +319,7 @@
             this._gbVerguetung.Location = new System.Drawing.Point(0, 276);
             this._gbVerguetung.Name = "_gbVerguetung";
             this._gbVerguetung.Size = new System.Drawing.Size(548, 58);
-            this._gbVerguetung.Text = "_gbVerguetung";
+            this._gbVerguetung.Text = "Verguetung fuer eingespeisten Strom";
             //
             // _lblVerguetungPv
             //
@@ -327,7 +327,7 @@
             this._lblVerguetungPv.Location = new System.Drawing.Point(14, 25);
             this._lblVerguetungPv.Name = "_lblVerguetungPv";
             this._lblVerguetungPv.Size = new System.Drawing.Size(150, 21);
-            this._lblVerguetungPv.Text = "_lblVerguetungPv";
+            this._lblVerguetungPv.Text = "Photovoltaik v_pv";
             //
             // _tbVerguetungPv
             //
@@ -344,7 +344,7 @@
             this._lblEinheitVerguetungPv.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular);
             this._lblEinheitVerguetungPv.Location = new System.Drawing.Point(240, 25);
             this._lblEinheitVerguetungPv.Name = "_lblEinheitVerguetungPv";
-            this._lblEinheitVerguetungPv.Text = "_lblEinheitVerguetungPv";
+            this._lblEinheitVerguetungPv.Text = "ct/kWh";
             //
             // _lblVerguetungBhkw
             //
@@ -352,7 +352,7 @@
             this._lblVerguetungBhkw.Location = new System.Drawing.Point(290, 25);
             this._lblVerguetungBhkw.Name = "_lblVerguetungBhkw";
             this._lblVerguetungBhkw.Size = new System.Drawing.Size(120, 21);
-            this._lblVerguetungBhkw.Text = "_lblVerguetungBhkw";
+            this._lblVerguetungBhkw.Text = "BHKW v_bhkw";
             //
             // _tbVerguetungBhkw
             //
@@ -369,7 +369,7 @@
             this._lblEinheitVerguetungBhkw.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular);
             this._lblEinheitVerguetungBhkw.Location = new System.Drawing.Point(486, 25);
             this._lblEinheitVerguetungBhkw.Name = "_lblEinheitVerguetungBhkw";
-            this._lblEinheitVerguetungBhkw.Text = "_lblEinheitVerguetungBhkw";
+            this._lblEinheitVerguetungBhkw.Text = "ct/kWh";
             //
             // ucStromAufschlaege
             //
