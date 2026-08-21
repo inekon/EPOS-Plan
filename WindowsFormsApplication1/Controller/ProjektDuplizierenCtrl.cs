@@ -57,12 +57,22 @@ namespace WindowsFormsApplication1
         };
 
         // Tabellen, die trotz Projektbezug NICHT dupliziert werden (feste Ausnahme).
-        // Aktuell keine: energy_price wird wieder mitkopiert (projekteigene Preise). Voraussetzung
+        // - energy_price wird wieder mitkopiert (projekteigene Preise). Voraussetzung
         //   ist, dass der eindeutige Index "unq_price_date" in Access um ID_Projekt erweitert wurde
         //   (dann: ID_Projekt, carrier_id, valid_from). Andernfalls kollidiert die Kopie mit dem
         //   Quellprojekt und energy_price muss hier wieder eingetragen werden.
+        // - Berichtskonfiguration gilt JE STAMMPROJEKT (BerichtCtrl.Lade faellt ohne Zeile
+        //   auf die Standardkonfiguration zurueck) - eine Kopie fuer das Zielprojekt ist
+        //   fachlich ueberfluessig. Sie war ausserdem der Ausloeser des Duplizier-Abbruchs
+        //   vom 21.08.2026: Die Tabelle haengt an keiner Loeschweitergabe, ein geloeschtes
+        //   Projekt hinterlaesst also eine verwaiste Konfigzeile. Die Kopie zielt auf
+        //   MAX(Tab_Projekt.ID)+1 - genau die ProjektID, die so eine Waise noch belegt -
+        //   und scheitert dann am eindeutigen Index UQ_BerichtKonfigProj (ProjektID).
+        //   ProjektCtrl.Delete raeumt die Konfigzeile seither mit ab; der Ausschluss hier
+        //   macht das Duplizieren zusaetzlich gegen Altwaisen im Bestand unempfindlich.
         private static readonly HashSet<string> AUSNAHME_TABELLEN = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
+            "Berichtskonfiguration"
         };
 
         // ID-Spalten, die auf Katalog-/Stammdaten zeigen und NICHT versetzt werden duerfen.
