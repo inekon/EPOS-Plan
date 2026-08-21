@@ -66,7 +66,9 @@ namespace WindowsFormsApplication1
         /// <summary>Sperre gegen Rückkopplung, während der Regelblock neu befüllt wird.</summary>
         private bool _regelblockWirdGefuellt;
 
-        /// <summary>Höhe, um die der Block das Control wachsen lässt.</summary>
+        /// <summary>Platzbedarf des Blocks ab seiner Oberkante: 190 px Inhalt plus
+        /// 6 px Abstand zum nachrückenden Bestand. Um wie viel das Control wächst,
+        /// ergibt sich daraus je Sichtbarkeitszweig in <see cref="BaueUmrechnungsblock"/>.</summary>
         private const int HOEHE_UMRECHNUNGSBLOCK = 196;
 
         public ucFuelSettings(int projectId, EnergyCarrier carrier)
@@ -169,10 +171,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// <para><b>Programmatisch, Designer unberührt</b> — dieselbe Hausregel und
-        /// dieselbe Bauform wie <see cref="BaueAufschlagsblock"/>. Die Bestandssteuer-
-        /// elemente unterhalb (Speichern-Knopf, Preishistorie) wandern um die Blockhöhe
-        /// nach unten, und das Control wächst mit; der Aufschlagsblock dockt danach an
-        /// die NEUE Höhe an, weshalb er nach diesem Aufruf gebaut wird.</para>
+        /// dieselbe Bauform wie <see cref="BaueAufschlagsblock"/>. Alle Bestandssteuer-
+        /// elemente unterhalb der Einbaustelle (Emissionsfaktoren, Speichern-Zeile samt
+        /// Gültig-ab-Datum, Preishistorie) wandern unter den Block, und das Control
+        /// wächst mit; der Aufschlagsblock dockt danach an die NEUE Höhe an, weshalb er
+        /// nach diesem Aufruf gebaut wird.</para>
         ///
         /// <para><b>Ein Fehler hier darf die Preispflege nicht blockieren</b> — etwa auf
         /// einer Datenbank vor Migrationsschritt 25, die die Spalten
@@ -186,10 +189,19 @@ namespace WindowsFormsApplication1
                 int oben = groupBox_Formel.Bottom + 8;
                 if (!groupBox_Formel.Visible) oben = panel1.Bottom + 8;
 
-                // Bestandssteuerelemente nach unten schieben.
-                foreach (Control c in new Control[] { btn_Save, label9, dgvHistory })
-                    if (c != null) c.Top += HOEHE_UMRECHNUNGSBLOCK;
-                this.Height += HOEHE_UMRECHNUNGSBLOCK;
+                // ALLES unterhalb der Einbaustelle rückt unter den Block - neben
+                // Speichern-Zeile und Preishistorie auch die Emissionsfaktoren und das
+                // Gültig-ab-Datum, die im Designer-Raster dazwischen liegen. Der Versatz
+                // hängt an der Oberkante des obersten Bestandscontrols statt an einer
+                // festen Zahl: beim Strom-Träger sitzt die Einbaustelle 77 px höher
+                // (Formelgruppe unsichtbar), eine starre Verschiebung ließe dort eine
+                // ebenso große Lücke vor der Preishistorie.
+                Control[] bestand = { label12, label11, numSO2, label3, numCO2, label10,
+                                      numNOx, btn_Save, dtpValidFrom, label9, dgvHistory };
+                int versatz = oben + HOEHE_UMRECHNUNGSBLOCK - bestand.Min(c => c.Top);
+                foreach (Control c in bestand)
+                    c.Top += versatz;
+                this.Height += versatz;
 
                 var titel = new Label
                 {
