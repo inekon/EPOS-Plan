@@ -254,12 +254,6 @@ namespace WindowsFormsApplication1
             Close();
         }
 
-        private void btn_Abbrechen_Click(object sender, EventArgs e)
-        {
-            CloseWithOK = false;
-            Close();
-        }
-
         private void listBox_WP_SelectedIndexChanged(object sender, EventArgs e)
         {
             int index = listBox_WP.SelectedIndex;
