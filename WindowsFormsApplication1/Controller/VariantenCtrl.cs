@@ -144,32 +144,62 @@ namespace WindowsFormsApplication1
         /// Kopiert projektbezogene Energieträger-Einstellungen (energy_project_settings)
         /// und die Preishistorie (energy_price) vom Stamm auf die Variante. Best effort:
         /// fehlen Kostenmodul/Tabellen, läuft der Anlegevorgang trotzdem weiter.
+        ///
+        /// <para>
+        /// NUR NOCH FALLBACK: Die generische Projektkopie (ProjektDuplizierenCtrl)
+        /// kopiert beide Tabellen über ihre ID_Projekt-Spalte bereits mit. Ein zweiter
+        /// Durchgang verletzte den eindeutigen Index unq_price_date (carrier_id,
+        /// valid_from, ID_Projekt) — Dialog „Datenbankfehler: … duplicate values …"
+        /// beim Anlegen jeder Variante mit Preiszeilen — und hinterließ in
+        /// energy_project_settings eine zweite Zeile je Energieträger (dort verhindert
+        /// kein Index die Dublette). Kopiert wird deshalb je Tabelle nur noch, wenn sie
+        /// für das ZIELprojekt noch leer ist — der Fall älterer Datenbanken, deren
+        /// Schema der generische Kopierlauf nicht abdeckt.
+        /// </para>
         /// </summary>
         public void KopiereEnergieEinstellungen(int vonProjekt, int nachProjekt)
         {
             try
             {
-                string sqlSettings =
-                    "INSERT INTO energy_project_settings " +
-                    "(ID_Projekt, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs, " +
-                    " custom_price_base, ID_Umrechnung, co2, so2, nox) " +
-                    "SELECT ?, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs, " +
-                    " custom_price_base, ID_Umrechnung, co2, so2, nox " +
-                    "FROM energy_project_settings WHERE ID_Projekt = ?";
-                DataRepository.ExecuteSQL(sqlSettings,
-                    new OleDbParameter("@neu", nachProjekt),
-                    new OleDbParameter("@von", vonProjekt));
+                if (!HatProjektZeilen("energy_project_settings", nachProjekt))
+                {
+                    string sqlSettings =
+                        "INSERT INTO energy_project_settings " +
+                        "(ID_Projekt, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs, " +
+                        " custom_price_base, ID_Umrechnung, co2, so2, nox) " +
+                        "SELECT ?, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs, " +
+                        " custom_price_base, ID_Umrechnung, co2, so2, nox " +
+                        "FROM energy_project_settings WHERE ID_Projekt = ?";
+                    DataRepository.ExecuteSQL(sqlSettings,
+                        new OleDbParameter("@neu", nachProjekt),
+                        new OleDbParameter("@von", vonProjekt));
+                }
 
-                string sqlPrices =
-                    "INSERT INTO energy_price " +
-                    "(carrier_id, id_projekt, arbeitspreis, heizwert, grundpreis, valid_from, arbeitspreis_unit, leistungspreis) " +
-                    "SELECT carrier_id, ?, arbeitspreis, heizwert, grundpreis, valid_from, arbeitspreis_unit, leistungspreis " +
-                    "FROM energy_price WHERE id_projekt = ?";
-                DataRepository.ExecuteSQL(sqlPrices,
-                    new OleDbParameter("@neu", nachProjekt),
-                    new OleDbParameter("@von", vonProjekt));
+                if (!HatProjektZeilen("energy_price", nachProjekt))
+                {
+                    string sqlPrices =
+                        "INSERT INTO energy_price " +
+                        "(carrier_id, id_projekt, arbeitspreis, heizwert, grundpreis, valid_from, arbeitspreis_unit, leistungspreis) " +
+                        "SELECT carrier_id, ?, arbeitspreis, heizwert, grundpreis, valid_from, arbeitspreis_unit, leistungspreis " +
+                        "FROM energy_price WHERE id_projekt = ?";
+                    DataRepository.ExecuteSQL(sqlPrices,
+                        new OleDbParameter("@neu", nachProjekt),
+                        new OleDbParameter("@von", vonProjekt));
+                }
             }
             catch { /* Hinweis obliegt dem Aufrufer; das Anlegen selbst gilt als gelungen */ }
+        }
+
+        /// <summary>
+        /// Hat die Tabelle bereits Zeilen zum Projekt? Stumm über <see cref="StilleDb"/>:
+        /// Fehlt Tabelle oder Spalte (ältere Datenbank), antwortet sie mit null → false,
+        /// und der Kopier-Fallback greift wie bisher.
+        /// </summary>
+        private static bool HatProjektZeilen(string tabelle, int idProjekt)
+        {
+            return StilleDb.Zahl(StilleDb.Scalar(
+                "SELECT COUNT(*) FROM [" + tabelle + "] WHERE [ID_Projekt] = ?",
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt))) > 0;
         }
 
         // ------------------------------------------------------------- Löschen
