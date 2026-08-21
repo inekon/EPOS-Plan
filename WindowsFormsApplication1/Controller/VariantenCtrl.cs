@@ -111,6 +111,10 @@ namespace WindowsFormsApplication1
 
             StelleVariantentabelleSicher();
 
+            // B5-Selbstheilung für Bestandsdatenbanken: verwaiste Zeilen räumen, bevor
+            // eine neue Projekt-ID auf eine verwaiste ID_Projekt fällt (UQ_VarProj).
+            EntferneWaisen();
+
             // Eindeutigen Projektnamen bilden: "<Stamm> - <Bezeichner>" (ggf. mit Zähler).
             string basisName = stammName + " - " + bezeichner;
             string neuerName = basisName;
@@ -242,9 +246,11 @@ namespace WindowsFormsApplication1
             int entfernt = 0;
             try
             {
+                // Jet verlangt bei zwei LEFT JOINs die Klammerung im FROM — ohne sie
+                // bricht die Abfrage mit „Syntax error (missing operator)" ab.
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT v.ID FROM " + TAB_VARIANTE + " v " +
-                    "LEFT JOIN Tab_Projekt p ON v.ID_Projekt = p.ID " +
+                    "SELECT v.ID FROM (" + TAB_VARIANTE + " v " +
+                    "LEFT JOIN Tab_Projekt p ON v.ID_Projekt = p.ID) " +
                     "LEFT JOIN Tab_Projekt s ON v.ID_ProjektRef = s.ID " +
                     "WHERE p.ID IS NULL OR s.ID IS NULL");
                 foreach (DataRow r in dt.Rows)
@@ -254,7 +260,10 @@ namespace WindowsFormsApplication1
                     entfernt++;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Tab_Variante-Waisen konnten nicht entfernt werden: " + ex.Message);
+            }
             return entfernt;
         }
 

@@ -88,6 +88,7 @@ namespace WindowsFormsApplication1
         {
             PufferReferenzenLoesen(szProjekt);
             BerichtsKonfigurationEntfernen(szProjekt);
+            VariantenVerknuepfungenEntfernen(szProjekt);
 
             string sql = "DELETE FROM Tab_Projekt WHERE Projektname=?";
             OleDbParameter[] ps = { new OleDbParameter("@pname", szProjekt) };
@@ -123,6 +124,40 @@ namespace WindowsFormsApplication1
             catch (Exception ex)
             {
                 Console.WriteLine("Berichtskonfiguration des Projekts konnte nicht entfernt werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Entfernt die Tab_Variante-Verknüpfungen aller Projekte dieses Namens VOR dem
+        /// Projekt-DELETE (Befund B5: Tab_Variante hängt an keiner Löschweitergabe).
+        /// Beide Richtungen: die Verknüpfungszeile des Projekts selbst (ID_Projekt) und
+        /// die seiner Varianten (ID_ProjektRef) — deren Projekte bleiben bestehen und
+        /// werden wieder eigenständig, wie es EntferneWaisen ebenfalls täte. Verbliebe
+        /// die Zeile, kollidierte ein späteres „Variante anlegen" am eindeutigen Index
+        /// UQ_VarProj, sobald die neue Projekt-ID auf die verwaiste ID_Projekt fällt
+        /// (gleiche Falle wie UQ_BerichtKonfigProj). Still über StilleDb: Fehlt die
+        /// Tabelle (Datenbank ohne Variantenmodul), läuft das Löschen ohne Dialog weiter.
+        /// </summary>
+        private static void VariantenVerknuepfungenEntfernen(string szProjekt)
+        {
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID FROM Tab_Projekt WHERE Projektname=?",
+                    new OleDbParameter("@pname", szProjekt ?? ""));
+
+                if (dt == null) return;
+
+                foreach (DataRow r in dt.Rows)
+                    if (r[0] != DBNull.Value)
+                        StilleDb.NonQuery(
+                            "DELETE FROM " + VariantenCtrl.TAB_VARIANTE + " WHERE ID_Projekt = ? OR ID_ProjektRef = ?",
+                            StilleDb.Par("@proj", OleDbType.Integer, Convert.ToInt32(r[0])),
+                            StilleDb.Par("@ref", OleDbType.Integer, Convert.ToInt32(r[0])));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Varianten-Verknüpfungen des Projekts konnten nicht entfernt werden: " + ex.Message);
             }
         }
 
