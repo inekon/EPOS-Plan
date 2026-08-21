@@ -50,7 +50,7 @@ namespace WindowsFormsApplication1
 
             // ANSI (Windows-1252) explizit: deterministisch fuer deutsche Umlaute (ae, oe, ue, ss),
             // unabhaengig von der System-Locale. (Encoding.Default waere locale-/runtime-abhaengig.)
-            TextReader sr = new StringReader(File.ReadAllText(filename, GetAnsiEncoding()));
+            TextReader sr = new StringReader(File.ReadAllText(filename, AnsiEncoding.Get()));
             var csvReader = new CsvReader(sr, ";");
 
             csvReader.BufferSize = 32768;
@@ -164,23 +164,6 @@ namespace WindowsFormsApplication1
             time = b - a;
             string g = String.Format("{0}.{1}", time.Seconds, time.Milliseconds.ToString().PadLeft(3, '0'));
 
-        }
-
-        // ANSI-Encoding fuer den Import robust ueber beide Runtimes:
-        //  - .NET Framework: Windows-1252 (1252) ist direkt verfuegbar.
-        //  - .NET Core/5+: 1252 ist ohne CodePagesEncodingProvider NICHT verfuegbar
-        //    (NotSupportedException). Dann ISO-8859-1 (Latin-1, 28591) verwenden - nativ
-        //    verfuegbar und fuer deutsche Umlaute (ä ö ü Ä Ö Ü ß) identisch mit 1252.
-        private static Encoding GetAnsiEncoding()
-        {
-            try
-            {
-                return Encoding.GetEncoding(1252);
-            }
-            catch (NotSupportedException)
-            {
-                return Encoding.GetEncoding(28591);
-            }
         }
 
         // Sicherer Feldzugriff: leerer String statt IndexOutOfRange, falls die Zeile

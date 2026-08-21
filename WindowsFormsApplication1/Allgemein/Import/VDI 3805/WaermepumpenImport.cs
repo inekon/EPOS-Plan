@@ -53,7 +53,9 @@ namespace WindowsFormsApplication1
         {
             DateTime a = DateTime.Now;
 
-            TextReader fileReader = File.OpenText(filename);
+            // File.OpenText liest UTF-8 - die VDI-3805-Dateien sind aber ANSI kodiert,
+            // jedes Umlaut-Byte wuerde zu U+FFFD (siehe AnsiEncoding).
+            TextReader fileReader = new StreamReader(filename, AnsiEncoding.Get());
 
             var csvReader = new CsvReader(fileReader, ";");
             csvReader.BufferSize = 32768;
