@@ -211,10 +211,7 @@ namespace WindowsFormsApplication1
 
             wpctrl.WPName = ctrl._list[index].szName;
 
-            RecordSet rs = new RecordSet();
-            rs.Open("select * from Tab_WP_STAMM where Bezeichner='" + wpctrl.WPName + "'");
-            if(rs.Next()) { rs.Close(); return VdiUebernahmeErgebnis.Duplikat; }
-            rs.Close();
+            if (wpctrl.Exists(wpctrl.WPName)) return VdiUebernahmeErgebnis.Duplikat;
 
             int nStufen = Program.convertTxt2Int(ctrl._list[index].szStufen);
             if (nStufen == 0) wpctrl.Regelung = "stetig";

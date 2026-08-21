@@ -117,6 +117,13 @@ public class PanDataService
             Date = m.YearBegin
         };
 
-        _allModules.Add(pv);
+        // Die Liste ist statisch und sammelt bewusst mehrere .pan-Dateien einer
+        // Sitzung. Ein gleichnamiges Modul (erneut eingelesene Datei) ersetzt
+        // deshalb seinen Altbestand, statt die Auswahlliste doppelt zu fuellen.
+        string name = (pv.Name ?? "").Trim();
+        int idx = _allModules.FindIndex(x =>
+            string.Equals((x.Name ?? "").Trim(), name, System.StringComparison.OrdinalIgnoreCase));
+        if (idx >= 0) _allModules[idx] = pv;
+        else _allModules.Add(pv);
     }
 }
