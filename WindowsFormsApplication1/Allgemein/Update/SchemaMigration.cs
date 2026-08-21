@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 29;
+        public const int ZIEL_VERSION = 31;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -869,6 +869,114 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_29_ALTTABELLEN = 29;
 
+        /// <summary>
+        /// Nummer der Katalogbereinigung über ALLE Kataloge (Paket <b>D4</b> des Konzepts
+        /// <c>Konzept_Dublettenpruefung_Import_EPOS-Plan.md</c>, Abschnitt 7 Punkt 1;
+        /// dort als „Version 25" geplant — bei Umsetzungsbeginn stand die Migration
+        /// bereits auf 29, deshalb 30).
+        ///
+        /// <para>
+        /// <b>Was der Schritt tut.</b> Er weitet die Regel aus
+        /// <see cref="SCHRITT_24_KATALOG_DUBLETTEN"/> von <c>Tab_Heizkessel_STAMM</c> und
+        /// <c>Tab_PV_STAMM</c> auf alle Kataloge der <see cref="KatalogRegistry"/> aus
+        /// (Konzeptentscheidung 21.08.2026, Entscheidung 9.5: Geltungsbereich sind
+        /// sämtliche Kataloge des Admin-Menüs). Schritt 24 bleibt UNVERÄNDERT stehen —
+        /// er ist ein historischer Schritt, sein Marker ist vergeben; dieser Schritt
+        /// nimmt die übrigen Kataloge nach und geht über die zwei bereits bereinigten
+        /// gefahrlos hinweg (dort gibt es keine Namensgruppe mehr, die er träfe).
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Gleiche Leerwert-Regel wie Schritt 24.</b> Gelöscht wird eine
+        /// Namensdublette nur, wenn sie in JEDER abweichenden Kopfspalte den Leerwert
+        /// trägt (NULL, "", 0, FALSE) und der behaltene Satz dort etwas stehen hat —
+        /// sie weiß dann nichts, was der Behalter nicht auch wüsste. Trägt sie irgendwo
+        /// einen eigenen Wert, bleibt sie stehen und wird gemeldet; die Auflösung
+        /// gehört dann in die Admin-Dublettensuche (Konzept, Abschnitt 7 Punkt 2).
+        /// </para>
+        ///
+        /// <para>
+        /// <b>NEU gegenüber Schritt 24: die Datenblock-Bedingung.</b> Anders als Kessel
+        /// und PV hängen an mehreren dieser Kataloge Datenblöcke (WP-Kennlinien,
+        /// Klimadaten, Ganglinien-/Verteilungswerte). Eine Dublette darf nur entfallen,
+        /// wenn ihr Block je Datenblock LEER ist oder inhaltsgleich mit dem des
+        /// Behalters (<see cref="DublettenPruefung.BlockHashes"/>) — sonst stünde
+        /// hinter dem doppelten Namen womöglich eine eigene Kennlinie, und das Löschen
+        /// wäre gerade nicht verlustfrei. Gelöscht wird kaskadierend: erst die
+        /// Blockzeilen, dann der Kopf (Konzept 7.1 — eine WP-Dublette ohne ihre
+        /// Kennlinien-Kaskade hinterließe Waisen in <c>Tab_Kenndaten_STAMM</c>).
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Idempotent</b> (unabhängig vom Marker): Er arbeitet auf Namensgruppen,
+        /// die AKTUELL mehrfach besetzt sind. Nach einem erfolgreichen Lauf gibt es
+        /// keine solche Gruppe mehr; ein zweiter Lauf findet nichts. Ein abgebrochener
+        /// Lauf ist unkritisch, weil jede Dublette einzeln (Blöcke zuerst) gelöscht
+        /// wird — ein halb geleerter Block macht den Kopfsatz beim nächsten Lauf nur
+        /// noch leichter löschbar.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Immer true</b> — dieselbe Begründung wie bei
+        /// <see cref="Schritt_24_KatalogDubletten"/>: Was nicht gelöscht werden kann,
+        /// bleibt unverändert stehen, und die Datenbank verhält sich dann exakt wie
+        /// bisher. Ein <c>false</c> hielte den ganzen Migrationslauf an — für eine
+        /// Bereinigung, ohne die alles weiterläuft, das falsche Mittel.
+        /// </para>
+        /// </summary>
+        public const int SCHRITT_30_KATALOG_DUBLETTEN_ALLE = 30;
+
+        /// <summary>
+        /// Nummer des eindeutigen Index auf die Namensspalte jedes Katalogs (Paket
+        /// <b>D5</b> des Konzepts <c>Konzept_Dublettenpruefung_Import_EPOS-Plan.md</c>,
+        /// Abschnitt 7 Punkt 4; Entscheidung 9.4 vom 20.08.2026: „ja, als
+        /// Schlussstein").
+        ///
+        /// <para>
+        /// <b>Der Schlussstein der Invariante „ein Name, ein Satz".</b> Schritt 30
+        /// räumt den Bestand, Import-Vorprüfung und Pflegedialoge verhindern neue
+        /// Namensdubletten — beides ist Code und damit umgehbar (RecordSet-Altpfade,
+        /// Handeingriffe in Access). Erst der eindeutige Index
+        /// <c>UX_&lt;Tabelle&gt;_&lt;NamensSpalte&gt;</c> macht die Invariante zu einer
+        /// Eigenschaft der DATENBANK selbst, je Katalog der
+        /// <see cref="KatalogRegistry"/>.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Nur auf dublettenfreiem Katalog anlegbar</b> — auf einem Bestand mit
+        /// Restdubletten schlägt die Indexanlage fehl (Konzept 7.4). Deshalb dasselbe
+        /// Muster wie <see cref="SCHRITT_16_ANLAGEN_EINDEUTIG"/>: Der Schritt prüft je
+        /// Katalog VORAB auf Namensdubletten; findet er welche, legt er den Index
+        /// NICHT an, nennt die Namen im Protokoll und führt sich als „übersprungen".
+        /// Der Marker wird trotzdem gesetzt; nachgezogen wird über die
+        /// Abschlussprüfung (<see cref="KatalogIndexAbschluss"/>), die bei JEDEM
+        /// weiteren Lauf fehlende Indizes anlegt, sobald der jeweilige Katalog sauber
+        /// ist — etwa nachdem der Anwender die von Schritt 30 gemeldeten Restdubletten
+        /// über die Admin-Dublettensuche aufgelöst hat. Ein Abbruch wäre das Falsche:
+        /// Ohne Index verhält sich die Datenbank exakt wie bisher.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Die Prüfung sieht dasselbe wie der Index.</b> Sie gruppiert in der
+        /// DATENBANK (GROUP BY … HAVING), denn Access vergleicht Text ohne Beachtung
+        /// der Groß-/Kleinschreibung — genau wie der Index; eine Ordinal-Gruppierung
+        /// in C# (wie beim Löschen in Schritt 24/30, wo sie die richtige ist) meldete
+        /// „sauber", wo das <c>CREATE UNIQUE INDEX</c> danach doch scheiterte. NULL
+        /// bleibt außen vor: ACE/Jet lässt in einem eindeutigen Index MEHRERE NULL zu
+        /// — dieselbe dokumentierte Eigenschaft, die
+        /// <see cref="AnlagenEindeutigkeit.SqlIndex"/> trägt.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Idempotent</b> (unabhängig vom Marker): Ein bereits vorhandener Index
+        /// gilt über <see cref="IstBereitsVorhanden"/> (Jet-Fehlernummer 3375) als
+        /// Erfolg — der Weg, über den <see cref="Ddl"/> jede Wiederholung dieses
+        /// Schritts ins Leere laufen lässt, ohne dass es dafür eine eigene
+        /// Schemaabfrage bräuchte.
+        /// </para>
+        /// </summary>
+        public const int SCHRITT_31_KATALOG_UNIQUE_INDEX = 31;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -1041,12 +1149,54 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static int DatenKatalogDublettenOffen { get; private set; }
 
+        // --- Zählwerk der Katalogbereinigung aller Kataloge aus Schritt 30 (D4) ---------
+
+        /// <summary>
+        /// 30: Katalogzeilen, die als reine Wiederholung eines bereits vorhandenen
+        /// Eintrags gelöscht wurden — über alle Kataloge der
+        /// <see cref="KatalogRegistry"/> summiert, die Datenblöcke kaskadierend zuerst.
+        /// </summary>
+        public static int DatenKatalogAlleGeloescht { get; private set; }
+
+        /// <summary>
+        /// 30: Katalogzeilen mit doppeltem Namen, die STEHEN GEBLIEBEN sind, weil sie
+        /// einen eigenen Kopfwert oder eigene Datenblockzeilen tragen (oder
+        /// schreibgeschützt sind). Sie stehen einzeln im Protokoll; die Auflösung
+        /// gehört in die Admin-Dublettensuche. 0 ist die Zusage „jeder Katalogname ist
+        /// jetzt eindeutig".
+        /// </summary>
+        public static int DatenKatalogAlleOffen { get; private set; }
+
+        // --- Zählwerk der Katalog-Eindeutigkeitsindizes aus Schritt 31 (D5) -------------
+
+        /// <summary>
+        /// 31: Zahl der ANGELEGTEN oder bereits vorhandenen Eindeutigkeitsindizes auf
+        /// den Namensspalten der Kataloge (höchstens die Zahl der Kataloge der
+        /// <see cref="KatalogRegistry"/>).
+        /// </summary>
+        public static int DatenKatalogIndizesAktiv { get; private set; }
+
+        /// <summary>
+        /// 31: Kataloge OHNE Eindeutigkeitsindex — wegen Restdubletten oder eines
+        /// fehlgeschlagenen CREATE. Sie werden nach der Bereinigung beim nächsten
+        /// Programmstart nachgezogen (<see cref="KatalogIndexAbschluss"/>).
+        /// </summary>
+        public static int DatenKatalogIndizesOffen { get; private set; }
+
         /// <summary>
         /// Wurde die Eindeutigkeitsprüfung in diesem Lauf schon ausgeführt? Verhindert,
         /// dass die Abschlussprüfung nach der Schleife dieselbe Arbeit ein zweites Mal
         /// meldet, wenn Schritt 16 im selben Lauf gerade erst gelaufen ist.
         /// </summary>
         private static bool _eindeutigkeitGeprueft;
+
+        /// <summary>
+        /// Wurde die Katalog-Indexprüfung in diesem Lauf schon ausgeführt? Dasselbe
+        /// Guard-Muster wie <see cref="_eindeutigkeitGeprueft"/>: Es verhindert, dass
+        /// die Abschlussprüfung nach der Schleife dieselbe Arbeit ein zweites Mal
+        /// meldet, wenn Schritt 31 im selben Lauf gerade erst gelaufen ist.
+        /// </summary>
+        private static bool _katalogIndizesGeprueft;
 
         // --- Zählwerk des Pakets Parallelverbund aus Schritt 14 -------------------------
 
@@ -1436,6 +1586,31 @@ namespace WindowsFormsApplication1
                         "loeschen (Etappe K6, HF1/M-E, Entscheidung E3)",
                         "Die Alttabellen konnten nicht entfernt werden.",
                         Schritt_29_Alttabellen),
+
+            // PAKET DUBLETTENPRUEFUNG, Teil D4 (Konzept Dublettenpruefung/Import,
+            //       Abschnitt 7 Punkt 1) - die Schritt-24-Bereinigung auf ALLE Kataloge
+            //       der KatalogRegistry ausweiten (Konzeptentscheidung 21.08.2026).
+            //       DML; gleiche Leerwert-Regel wie Schritt 24, NEU die Datenblock-
+            //       Bedingung: Eine Namensdublette faellt nur, wenn ihre Kennlinien-/
+            //       Ganglinienbloecke leer oder mit denen des Behalters identisch sind,
+            //       geloescht wird kaskadierend (Bloecke zuerst, Konzept 7.1).
+            new Schritt(SCHRITT_30_KATALOG_DUBLETTEN_ALLE,
+                        "Doppelte Katalogeintraege in allen Katalogen der Registry entfernen " +
+                        "(Dublettenpruefung D4)",
+                        "Die doppelten Katalogeintraege konnten nicht entfernt werden.",
+                        Schritt_30_KatalogDublettenAlle),
+
+            // PAKET DUBLETTENPRUEFUNG, Teil D5 (Konzept 7.4, Entscheidung 9.4) - der
+            //       Schlussstein der Invariante "ein Name, ein Satz": je Katalog ein
+            //       eindeutiger Index auf der Namensspalte. Nur DDL, kein DML; bei
+            //       Restdubletten uebersprungen statt gescheitert - nachgezogen wird
+            //       wie bei Schritt 16 ueber die Abschlusspruefung beim naechsten
+            //       Programmstart.
+            new Schritt(SCHRITT_31_KATALOG_UNIQUE_INDEX,
+                        "Eindeutiger Index auf die Namensspalte jedes Katalogs " +
+                        "(Dublettenpruefung D5)",
+                        "Die Eindeutigkeitsindizes der Kataloge konnten nicht angelegt werden.",
+                        Schritt_31_KatalogUniqueIndex),
         };
 
         // =================================================================================
@@ -1485,6 +1660,10 @@ namespace WindowsFormsApplication1
             DatenDublettenOffen = 0;
             DatenKatalogDublettenGeloescht = 0;
             DatenKatalogDublettenOffen = 0;
+            DatenKatalogAlleGeloescht = 0;
+            DatenKatalogAlleOffen = 0;
+            DatenKatalogIndizesAktiv = 0;
+            DatenKatalogIndizesOffen = 0;
             DatenUmrechnungAktiv = 0;
             DatenUmrechnungBenannt = 0;
             DatenNormkubikTraeger = 0;
@@ -1499,6 +1678,7 @@ namespace WindowsFormsApplication1
             DatenAlttabellenOffen = 0;
             DatenKategorie3Geloescht = 0;
             _eindeutigkeitGeprueft = false;
+            _katalogIndizesGeprueft = false;
 
             var l = new Lauf();
             string dbPfad;
@@ -1646,6 +1826,19 @@ namespace WindowsFormsApplication1
                 l.Detail();
             }
 
+            // --- Abschlussprüfung der Katalog-Eindeutigkeitsindizes (Schritt 31) -------
+            // Dasselbe Nachzieh-Muster wie Teil C darüber: Läuft, wenn Schritt 31 in
+            // DIESEM Lauf nicht ausgeführt wurde - also auf jeder bereits auf Stand 31
+            // stehenden Datenbank. Sie legt jeden Index nach, dessen Katalog inzwischen
+            // sauber ist - etwa nachdem der Anwender die von Schritt 30 gemeldeten
+            // Restdubletten über die Admin-Dublettensuche aufgelöst hat.
+            if (!_katalogIndizesGeprueft)
+            {
+                l.Zeile("Abschlusspruefung Katalog-Eindeutigkeitsindizes");
+                KatalogIndexAbschluss(l, StandNachher >= SCHRITT_31_KATALOG_UNIQUE_INDEX);
+                l.Detail();
+            }
+
             l.Leerzeile();
             l.Zeile("Schemastand nachher: " + StandNachher + "   (Zielstand " + ZIEL_VERSION + ")");
             if (IdPufferGemappt > 0 || IdPufferGenullt > 0)
@@ -1724,6 +1917,18 @@ namespace WindowsFormsApplication1
                             ? " - es gab keinen doppelt vergebenen Katalognamen."
                             : " - jeder Katalogname ist jetzt eindeutig.")));
 
+            // Schritt 30 weitet die 24er-Regel auf alle Kataloge der KatalogRegistry
+            // aus und meldet aus demselben Grund AUCH die 0: Erst "kein doppelt
+            // vergebener Katalogname" macht die Eindeutigkeitsindizes aus Schritt 31
+            // anlegbar.
+            l.Zeile("Katalogbereinigung alle Kataloge (Schritt 30): " + DatenKatalogAlleGeloescht +
+                    " doppelte Katalogeintraege entfernt" +
+                    (DatenKatalogAlleOffen > 0
+                        ? ", " + DatenKatalogAlleOffen + " NICHT entfernt - siehe die Meldungen oben."
+                        : (DatenKatalogAlleGeloescht == 0
+                            ? " - es gab keinen doppelt vergebenen Katalognamen."
+                            : " - jeder Katalogname ist jetzt eindeutig.")));
+
             l.Zeile("Anlagenzeilen-Eindeutigkeit (Schritt 16): " + DatenEindeutigIndizes +
                     " von " + AnlagenEindeutigkeit.SPERREN.Length + " Eindeutigkeitsindizes aktiv, " +
                     DatenEindeutigDubletten + " doppelt belegte Anlagenzeilen" +
@@ -1731,6 +1936,17 @@ namespace WindowsFormsApplication1
                         ? " - je Projekt und Gerät genau eine Zeile."
                         : " - die betroffenen Zeilen stehen oben; die fehlenden Indizes werden " +
                           "nach der Bereinigung beim nächsten Programmstart nachgezogen."));
+
+            // Schritt 31 meldet nach dem Muster der 16er-Zeile darueber: aktive
+            // Indizes und die Kataloge, deren Index noch aussteht - nachgezogen ueber
+            // die Abschlusspruefung, sobald der jeweilige Katalog sauber ist.
+            l.Zeile("Katalog-Eindeutigkeit (Schritt 31): " + DatenKatalogIndizesAktiv +
+                    " von " + KatalogRegistry.Alle.Count + " Eindeutigkeitsindizes aktiv" +
+                    (DatenKatalogIndizesOffen > 0
+                        ? ", " + DatenKatalogIndizesOffen + " offen - die betroffenen Kataloge " +
+                          "stehen oben; die fehlenden Indizes werden nach der Bereinigung beim " +
+                          "naechsten Programmstart nachgezogen."
+                        : " - jeder Katalogname ist durch einen eindeutigen Index gesichert."));
 
             // Schritt 19 meldet - wie 14, 16 und 17 - AUCH die 0. Sie sagt "auf dieser
             // Datenbank stand die Bemessung schon", und die Zahl selbst ist der Nachweis
@@ -4604,11 +4820,17 @@ namespace WindowsFormsApplication1
         /// weiß nichts, was der behaltene Satz nicht auch wüsste. Erst ein eigener,
         /// nicht leerer Wert macht sie zu einem eigenständigen Gerät.
         /// </remarks>
-        private static string ErsteEigeneSpalte(DataTable dt, DataRow behalten, DataRow dublette)
+        /// <param name="idSpalte">
+        /// Schlüsselspalte, die beim Vergleich übergangen wird — "ID" bei Schritt 24,
+        /// die IdSpalte der <see cref="KatalogDefinition"/> bei Schritt 30
+        /// (<c>Tab_Klimaregion_STAMM</c> führt <c>ID_Klimaregion</c>).
+        /// </param>
+        private static string ErsteEigeneSpalte(DataTable dt, DataRow behalten, DataRow dublette,
+                                                string idSpalte = "ID")
         {
             foreach (DataColumn c in dt.Columns)
             {
-                if (string.Equals(c.ColumnName, "ID", StringComparison.OrdinalIgnoreCase)) continue;
+                if (string.Equals(c.ColumnName, idSpalte, StringComparison.OrdinalIgnoreCase)) continue;
 
                 object a = behalten[c];
                 object b = dublette[c];
@@ -4643,6 +4865,356 @@ namespace WindowsFormsApplication1
             if (v == null || v == DBNull.Value) return false;
             try { return Convert.ToBoolean(v); }
             catch { return false; }
+        }
+
+        // =================================================================================
+        // Schritt 30 - Katalogbereinigung ueber alle Kataloge der Registry
+        //              (Dublettenpruefung D4, Konzeptentscheidung 21.08.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Schritt 30.</b> Entfernt aus ALLEN Katalogen der
+        /// <see cref="KatalogRegistry"/> die Zeilen, die nur die Wiederholung eines
+        /// bereits vorhandenen Eintrags sind. Begründung, Leerwert-Regel und die neue
+        /// Datenblock-Bedingung stehen bei
+        /// <see cref="SCHRITT_30_KATALOG_DUBLETTEN_ALLE"/>.
+        ///
+        /// <para>
+        /// <b>Immer true</b> — Begründung im Wortlaut an
+        /// <see cref="Schritt_24_KatalogDubletten"/>: Was nicht gelöscht werden konnte,
+        /// bleibt unverändert stehen, jeder Fehlschlag steht einzeln im Protokoll und
+        /// in <see cref="DatenKatalogAlleOffen"/>.
+        /// </para>
+        /// </summary>
+        private static bool Schritt_30_KatalogDublettenAlle(Lauf l)
+        {
+            int geloescht = 0;
+            int offen = 0;
+
+            foreach (KatalogDefinition k in KatalogRegistry.Alle)
+                KatalogBereinigenMitBloecken(l, k, ref geloescht, ref offen);
+
+            DatenKatalogAlleGeloescht = geloescht;
+            DatenKatalogAlleOffen = offen;
+
+            if (geloescht == 0 && offen == 0)
+                l.Notiz("Kein Katalog fuehrt einen doppelt vergebenen Namen - es gab nichts zu entfernen.");
+
+            return true;
+        }
+
+        /// <summary>
+        /// Bereinigt EINEN Katalog der Registry — die Verallgemeinerung von
+        /// <see cref="KatalogBereinigen"/> auf beliebige Id-/Namensspalten und auf
+        /// Kataloge MIT Datenblöcken. Je Namensgruppe behält die kleinste Id den
+        /// Platz — dieselbe Wahl wie in Schritt 24, wo der erste Importlauf die
+        /// vollständigen Werte trug.
+        /// </summary>
+        private static void KatalogBereinigenMitBloecken(Lauf l, KatalogDefinition k,
+                                                         ref int geloescht, ref int offen)
+        {
+            DataTable dt = Abfrage(l, "SELECT * FROM [" + k.Tabelle + "] ORDER BY [" +
+                                      k.NamensSpalte + "], [" + k.IdSpalte + "]");
+            if (dt == null)
+            {
+                l.Notiz(k.Tabelle + ": Die Dublettensuche war nicht moeglich - dieser Katalog " +
+                        "blieb unveraendert.");
+                return;
+            }
+            if (!dt.Columns.Contains(k.IdSpalte) || !dt.Columns.Contains(k.NamensSpalte))
+            {
+                l.Notiz(k.Tabelle + ": Ohne die Spalten " + k.IdSpalte + " und " + k.NamensSpalte +
+                        " laesst sich nicht entscheiden, was eine Dublette ist - der Katalog " +
+                        "blieb unveraendert.");
+                return;
+            }
+
+            // Nach Name gruppieren. Ordinal und ohne Trim: Genau so vergleicht der
+            // Schreibweg in der Datenbank, und nur diese Zeilen ueberschreiben sich
+            // gegenseitig (dieselbe Begruendung wie in KatalogBereinigen, Schritt 24).
+            Dictionary<string, List<DataRow>> gruppen =
+                new Dictionary<string, List<DataRow>>(StringComparer.Ordinal);
+
+            foreach (DataRow r in dt.Rows)
+            {
+                string name = Txt(r[k.NamensSpalte]);
+                List<DataRow> liste;
+                if (!gruppen.TryGetValue(name, out liste))
+                {
+                    liste = new List<DataRow>();
+                    gruppen[name] = liste;
+                }
+                liste.Add(r);
+            }
+
+            foreach (KeyValuePair<string, List<DataRow>> g in gruppen)
+            {
+                if (g.Value.Count < 2) continue;
+
+                DataRow behalten = g.Value[0];          // ORDER BY ..., IdSpalte -> kleinste Id
+                int idBehalten = Zahl(behalten[k.IdSpalte]);
+
+                // Die Block-Hashes des Behalters nur EINMAL je Gruppe ermitteln - je
+                // Datenblock eine eigene Abfrage, bei Ganglinien 8760 Zeilen je Satz.
+                List<string> behaltenBloecke = null;
+
+                for (int i = 1; i < g.Value.Count; i++)
+                {
+                    DataRow dublette = g.Value[i];
+                    int idDub = Zahl(dublette[k.IdSpalte]);
+
+                    // Auslieferungsbestand nie anfassen - dieselbe Zusage, die
+                    // ReadOnly ueberall sonst traegt.
+                    if (dt.Columns.Contains("ReadOnly") && Wahr(dublette["ReadOnly"]))
+                    {
+                        l.Notiz(k.Tabelle + ", " + k.IdSpalte + " " + idDub + " \"" + g.Key +
+                                "\": schreibgeschuetzt (ReadOnly) - bleibt trotz doppeltem " +
+                                "Namen stehen.");
+                        offen++;
+                        continue;
+                    }
+
+                    string eigenerWert = ErsteEigeneSpalte(dt, behalten, dublette, k.IdSpalte);
+                    if (eigenerWert != null)
+                    {
+                        l.Notiz(k.Tabelle + ", " + k.IdSpalte + " " + idDub + " \"" + g.Key +
+                                "\": traegt in " + eigenerWert + " einen eigenen Wert, den " +
+                                k.IdSpalte + " " + idBehalten + " nicht hat - das koennten zwei " +
+                                "verschiedene Eintraege sein. Bleibt stehen und muss von Hand " +
+                                "entschieden werden.");
+                        offen++;
+                        continue;
+                    }
+
+                    // NEU gegenueber Schritt 24: die Datenblock-Bedingung. Eine Dublette
+                    // darf nur entfallen, wenn ihr Block je Datenblock LEER ist ("" =
+                    // keine Zeilen) oder inhaltsgleich mit dem des Behalters - sonst
+                    // truege sie eine eigene Kennlinie, die das Loeschen verloere.
+                    if (k.Datenbloecke.Length > 0)
+                    {
+                        if (behaltenBloecke == null)
+                            behaltenBloecke = DublettenPruefung.BlockHashes(k, idBehalten);
+
+                        int block = EigenerDatenblock(behaltenBloecke,
+                                                      DublettenPruefung.BlockHashes(k, idDub));
+                        if (block >= 0)
+                        {
+                            l.Notiz(k.Tabelle + ", " + k.IdSpalte + " " + idDub + " \"" + g.Key +
+                                    "\": traegt eigene Kennlinien-/Datenblockwerte in " +
+                                    k.Datenbloecke[block].Tabelle + ", die " + k.IdSpalte + " " +
+                                    idBehalten + " so nicht hat - das koennten zwei verschiedene " +
+                                    "Eintraege sein. Bleibt stehen und muss von Hand entschieden " +
+                                    "werden.");
+                            offen++;
+                            continue;
+                        }
+                    }
+
+                    // Kaskade: erst die Blockzeilen, dann der Kopf (Konzept 7.1 - eine
+                    // WP-Dublette ohne ihre Kennlinien-Kaskade hinterliesse Waisen).
+                    if (!DatenbloeckeLoeschen(l, k, idDub, g.Key, ref offen)) continue;
+
+                    int n = NonQuery(l, "DELETE FROM [" + k.Tabelle + "] WHERE [" + k.IdSpalte + "] = ?",
+                                     new OleDbParameter("@id", OleDbType.Integer) { Value = idDub });
+                    if (n < 0)
+                    {
+                        l.Notiz(k.Tabelle + ", " + k.IdSpalte + " " + idDub + " \"" + g.Key +
+                                "\": Das Loeschen schlug fehl - die Zeile bleibt stehen.");
+                        offen++;
+                        continue;
+                    }
+
+                    l.Notiz(k.Tabelle + ", " + k.IdSpalte + " " + idDub + " \"" + g.Key +
+                            "\": entfernt - reine Wiederholung von " + k.IdSpalte + " " +
+                            idBehalten + ".");
+                    geloescht++;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Index des ersten Datenblocks, in dem die Dublette EIGENE Zeilen trägt, die
+        /// nicht mit denen des Behalters identisch sind — oder <c>-1</c>, wenn jeder
+        /// Block leer ("" = keine Zeilen) oder inhaltsgleich ist und die Dublette damit
+        /// gefahrlos entfallen kann. Die Blockebenen-Entsprechung von
+        /// <see cref="ErsteEigeneSpalte"/>; bewusst asymmetrisch: Ein LEERER Block der
+        /// Dublette ist kein eigener Wert, auch wenn der Behalter dort Zeilen führt.
+        /// </summary>
+        private static int EigenerDatenblock(List<string> behalter, List<string> dublette)
+        {
+            for (int i = 0; i < dublette.Count; i++)
+            {
+                string d = dublette[i];
+                if (d.Length == 0) continue;            // keine Blockzeilen - nichts beizusteuern
+
+                string b = (behalter != null && i < behalter.Count) ? behalter[i] : "";
+                if (!string.Equals(d, b, StringComparison.Ordinal)) return i;
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// Löscht die Datenblockzeilen EINER Dublette (Kaskade vor dem Kopfsatz,
+        /// Konzept 7.1). Schlägt ein Block fehl, bleibt der Kopfsatz stehen und der
+        /// Fall zählt als offen — ein bereits geleerter Block davor ist unkritisch:
+        /// Die Blöcke der Dublette waren nachweislich leer oder inhaltsgleich mit
+        /// denen des Behalters, und der nächste Lauf findet den Kopfsatz wieder.
+        /// </summary>
+        /// <returns>true, wenn alle Blockzeilen entfernt sind und der Kopf fallen darf.</returns>
+        private static bool DatenbloeckeLoeschen(Lauf l, KatalogDefinition k, int idDub,
+                                                 string name, ref int offen)
+        {
+            foreach (KatalogDatenblock b in k.Datenbloecke)
+            {
+                int n = NonQuery(l, "DELETE FROM [" + b.Tabelle + "] WHERE [" + b.FkSpalte + "] = ?",
+                                 new OleDbParameter("@fk", OleDbType.Integer) { Value = idDub });
+                if (n < 0)
+                {
+                    l.Notiz(k.Tabelle + ", " + k.IdSpalte + " " + idDub + " \"" + name +
+                            "\": Das Loeschen der Blockzeilen in " + b.Tabelle +
+                            " schlug fehl - der Kopfsatz bleibt stehen.");
+                    offen++;
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 31 - eindeutiger Index auf die Namensspalte jedes Katalogs
+        //              (Dublettenpruefung D5, Konzept 7.4 / Entscheidung 9.4)
+        // =================================================================================
+
+        /// <summary>Indexname zur Katalogtabelle, z. B. <c>UX_Tab_WP_STAMM_Bezeichner</c>.</summary>
+        private static string KatalogIndexName(KatalogDefinition k)
+        {
+            return "UX_" + k.Tabelle + "_" + k.NamensSpalte;
+        }
+
+        /// <summary>
+        /// <b>Schritt 31.</b> Legt je Katalog der Registry den eindeutigen Index auf
+        /// die Namensspalte an — aber nur, wo der Bestand bereits dublettenfrei ist.
+        ///
+        /// <para>
+        /// Die eigentliche Arbeit steht in <see cref="KatalogIndexAbschluss"/>, weil
+        /// sie zweimal gebraucht wird: hier beim erstmaligen Erreichen von Stand 31
+        /// und danach bei JEDEM weiteren Lauf als Abschlussprüfung — dasselbe
+        /// Nachzieh-Muster wie <see cref="Schritt_16_AnlagenEindeutigkeit"/>. Ein
+        /// Schritt kann das nicht leisten, er läuft nach dem Anheben des Markers nie
+        /// wieder.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Immer true.</b> Der Schritt kann fachlich nicht scheitern: Ohne Index
+        /// verhält sich die Datenbank exakt wie bisher, und die Auflösung der
+        /// Restdubletten ist eine Entscheidung des Anwenders
+        /// (Admin-Dublettensuche), kein Migrationsauftrag — dieselbe Begründung wie
+        /// bei Schritt 16.
+        /// </para>
+        /// </summary>
+        private static bool Schritt_31_KatalogUniqueIndex(Lauf l)
+        {
+            KatalogIndexAbschluss(l, true);
+            return true;
+        }
+
+        /// <summary>
+        /// Prüft je Katalog der <see cref="KatalogRegistry"/>, ob die Namensspalte
+        /// dublettenfrei ist, meldet jede Restdublette und legt — sofern erlaubt und
+        /// der Katalog sauber ist — den fehlenden Eindeutigkeitsindex an.
+        ///
+        /// <para>
+        /// Die Prüfung gruppiert in der DATENBANK und schränkt auf
+        /// <c>IS NOT NULL</c> ein, damit sie GENAU das sieht, was den Index scheitern
+        /// ließe — die Begründung im Ganzen steht bei
+        /// <see cref="SCHRITT_31_KATALOG_UNIQUE_INDEX"/>, das Vorbild ist
+        /// <see cref="AnlagenEindeutigkeit.SqlDublettenGruppen"/>.
+        /// </para>
+        /// </summary>
+        /// <param name="indizesAnlegen">
+        /// false = nur berichten. Gilt, solange der Marker die Version 31 noch nicht
+        /// erreicht hat — dann wäre das Anlegen die Arbeit eines Schritts, der gar
+        /// nicht gelaufen ist.
+        /// </param>
+        private static void KatalogIndexAbschluss(Lauf l, bool indizesAnlegen)
+        {
+            _katalogIndizesGeprueft = true;
+
+            int aktiv = 0;
+            int offen = 0;
+
+            foreach (KatalogDefinition k in KatalogRegistry.Alle)
+            {
+                DataTable dubletten = Abfrage(l,
+                    "SELECT [" + k.NamensSpalte + "], COUNT(*) AS Anzahl " +
+                    "FROM [" + k.Tabelle + "] " +
+                    "WHERE [" + k.NamensSpalte + "] IS NOT NULL " +
+                    "GROUP BY [" + k.NamensSpalte + "] " +
+                    "HAVING COUNT(*) > 1 " +
+                    "ORDER BY [" + k.NamensSpalte + "]");
+
+                if (dubletten == null)
+                {
+                    l.Notiz(k.Tabelle + ": Die Dublettenpruefung war nicht moeglich - der Index " +
+                            KatalogIndexName(k) + " wird nicht angelegt.");
+                    continue;
+                }
+
+                if (dubletten.Rows.Count > 0)
+                {
+                    offen++;
+                    NamensdublettenMelden(l, k, dubletten);
+                    l.Notiz(k.Tabelle + ": Index " + KatalogIndexName(k) + " UEBERSPRUNGEN - " +
+                            "erst nach Aufloesung der Restdubletten (Admin-Dublettensuche) " +
+                            "anlegbar. Der naechste Programmstart zieht ihn nach.");
+                    continue;
+                }
+
+                if (!indizesAnlegen) continue;
+
+                if (Ddl(l, "CREATE UNIQUE INDEX [" + KatalogIndexName(k) + "] ON [" + k.Tabelle +
+                           "] ([" + k.NamensSpalte + "])",
+                        "Eindeutigkeitsindex " + KatalogIndexName(k) + " (" + k.Schluessel + ")"))
+                {
+                    aktiv++;
+                }
+                else
+                {
+                    offen++;
+                    l.Notiz(k.Tabelle + ": Der Index konnte trotz dublettenfreiem Katalog nicht " +
+                            "angelegt werden - die Datenbank verhaelt sich unveraendert wie " +
+                            "bisher, der naechste Programmstart versucht es erneut.");
+                }
+            }
+
+            DatenKatalogIndizesAktiv = aktiv;
+            DatenKatalogIndizesOffen = offen;
+        }
+
+        /// <summary>
+        /// Meldet die mehrfach vergebenen Namen EINES Katalogs. Die Zahl der
+        /// ausgegebenen Namen ist gedeckelt, damit ein unbereinigter Katalog das
+        /// Protokoll nicht flutet — dasselbe Muster wie <see cref="DublettenMelden"/>.
+        /// </summary>
+        private static void NamensdublettenMelden(Lauf l, KatalogDefinition k, DataTable dubletten)
+        {
+            const int MAX_NAMEN = 20;
+
+            l.Notiz(k.Tabelle + ": " + dubletten.Rows.Count + " Name(n) mehrfach vergeben.");
+
+            int gezeigt = 0;
+            foreach (DataRow r in dubletten.Rows)
+            {
+                if (gezeigt >= MAX_NAMEN)
+                {
+                    l.Notiz("    ... weitere " + (dubletten.Rows.Count - MAX_NAMEN) +
+                            " Namen nicht einzeln aufgefuehrt.");
+                    break;
+                }
+
+                l.Notiz("    \"" + Txt(r[k.NamensSpalte]) + "\" (" + Zahl(r["Anzahl"]) + " Zeilen)");
+                gezeigt++;
+            }
         }
 
         // =================================================================================
