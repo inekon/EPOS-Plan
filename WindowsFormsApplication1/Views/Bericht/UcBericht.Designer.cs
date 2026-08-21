@@ -64,6 +64,33 @@
         // klein — die unten verankerte Zielordner-/Fußzeile schiebt sich dann
         // in die rechte Spalte. Eine Korrektur müsste Form_Bericht
         // (MinimumSize 700 × 420) mitziehen und ist deshalb hier offen.
+        // ÜBERHOLT durch die Nacharbeit vom 21.08.2026, siehe unten.
+        //
+        // ------------------------------------------------------------------
+        // Nacharbeit 21.08.2026 — MinimumSize 600 × 360 -> 730 × 436
+        // ------------------------------------------------------------------
+        // Die Mindestgröße steht jetzt auf dem ENTWURFSMASS. Grund ist der
+        // oben offen gelassene Befund: Die Fußzeile (lblZiel/txtZiel/
+        // btnDurchsuchen, lblStatus, progress, btnErstellen/btnAbbrechen) ist
+        // Bottom|Right verankert, die rechte Spalte (clbBausteine, lblRechnen,
+        // Ausgabe-Auswahl) Top|Right. Unterhalb von 730 × 436 wandern beide
+        // Gruppen aufeinander zu und überlagern sich — nachgemessen bei
+        // 670 × 470: btnErstellen rückt von x = 560 auf 500 und liegt damit
+        // unter der Bausteinliste.
+        //
+        // Wirkung in den beiden Wirten:
+        //  - Form_Bericht (Dialog-Hülle) zieht mit: Die Hülle setzt ihre
+        //    MinimumSize seit derselben Nacharbeit aus der eigenen Rahmen-
+        //    differenz, die CLIENT-Fläche kann dort also nicht mehr unter
+        //    730 × 436 fallen (vorher 684 × 381).
+        //  - UcBerichteKosten bettet dieses Steuerelement mit Dock = Fill in
+        //    pnlInhalt. Docking respektiert MinimumSize: Ist die Fläche
+        //    kleiner, behält die Seite ihr Maß und wird rechts/unten
+        //    abgeschnitten, statt ihr Innenraster zu verlieren. Das ist
+        //    Bestandsverhalten (pnlInhalt.AutoScroll greift bei einem
+        //    Dock = Fill-Kind nicht) und tritt erst unterhalb von 938 px
+        //    Wirtsbreite auf (730 + NAV_BREITE 208) — im Entwurf ist
+        //    UcBerichteKosten 1265 px breit, pnlInhalt also 1057 px.
 
         #region Vom Komponenten-Designer generierter Code
 
@@ -302,7 +329,7 @@
             //
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.Size = new System.Drawing.Size(730, 436);
-            this.MinimumSize = new System.Drawing.Size(600, 360);
+            this.MinimumSize = new System.Drawing.Size(730, 436);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular);
             this.Name = "UcBericht";
             this.Controls.Add(this.lblVarianten);
