@@ -31,8 +31,17 @@ namespace WindowsFormsApplication1
         private LinkLabel _linkProtokoll;
         private LinkLabel _linkHinweis;
         private Label _lblStatus;
+        private Label _lblFeldsicherung;
         private CheckBox _chkAktionen;
         private Button _btnWerkzeuge;
+
+        // Die beiden Zeilen, die im Hilfe-Betrieb ganz verschwinden (F5). Sie werden
+        // als Felder gehalten, weil das ANDOCKENDE Panel verschwinden muss: Ein
+        // unsichtbares Dock-Panel gibt seinen Platz frei, einzeln versteckte Inhalte
+        // hinterlassen dagegen einen leeren Streifen.
+        private Panel _schalterZeile;
+        private Panel _hinweisZeile;
+
         private System.Windows.Forms.Timer _sperrUhr;
 
         // --- Bestätigungsschicht (Etappe 3, Fachkonzept 3.5) ---
@@ -79,6 +88,21 @@ namespace WindowsFormsApplication1
         /// verweigerten Einwilligung löst CheckedChanged erneut aus.
         /// </summary>
         private bool _schalterLaeuft;
+
+        /// <summary>
+        /// Hilfe-Betrieb: Die KI ist für diese Installation abgeschaltet, das Fenster
+        /// arbeitet als reine Hilfesuche (Fachkonzept 11.9, Umsetzungspaket F5).
+        /// Gesetzt wird der Merker ausschließlich in <see cref="HilfeBetriebAnwenden"/>.
+        /// </summary>
+        private bool _hilfeBetrieb;
+
+        /// <summary>
+        /// Beschriftung der lokalen Suche im Regelbetrieb - dort grenzt „Nur suchen“
+        /// die kostenlose Suche gegen „Fragen“ ab. Im Hilfe-Betrieb gibt es nichts
+        /// mehr abzugrenzen, dann heißt der Knopf schlicht „Suchen“
+        /// (KI_HILFEBETRIEB_SUCHEN_BTN).
+        /// </summary>
+        private const string TEXT_SUCHEN_REGEL = "Nur suchen";
 
         public Form_KiChat()
         {
@@ -138,6 +162,25 @@ namespace WindowsFormsApplication1
                 Padding = new Padding(10, 6, 10, 0),
                 ForeColor = Color.FromArgb(0, 90, 160),
                 Text = "Kontext: (nicht erkannt)"
+            };
+
+            // Dauerhafter Hinweis, solange die Feldsicherung abgeschaltet ist (Paket F4).
+            // Sichtbarkeit und Text setzt FeldsicherungAnwenden(); bei aktiver Sicherung
+            // bleibt das Label verborgen und ein angedocktes unsichtbares Label nimmt
+            // keinen Platz weg. Gestaltung wie der Bestätigungsblock — gedämpftes Gelb
+            // mit dunkler Schrift —, damit sofort erkennbar ist, dass hier etwas vom
+            // Regelbetrieb abweicht, ohne dass es wie eine Fehlermeldung aussieht.
+            _lblFeldsicherung = new Label
+            {
+                Dock = DockStyle.Top,
+                Height = 24,
+                Visible = false,
+                Padding = new Padding(10, 4, 10, 0),
+                AutoEllipsis = true,
+                BackColor = Color.FromArgb(255, 249, 226),
+                ForeColor = Color.FromArgb(150, 90, 0),
+                Font = new Font("Segoe UI", 8.5f, FontStyle.Bold),
+                Text = ""
             };
 
             _verlaufAnzeige = new RichTextBox
@@ -246,7 +289,7 @@ namespace WindowsFormsApplication1
             // --- Dauerhafter Kurzhinweis, eine Zeile, direkt über der Linkleiste ---
             // Er sagt in einem Satz, was der eigentliche Punkt ist (die Frage geht im
             // Wortlaut hinaus) und führt auf den vollständigen Rechtshinweis.
-            Panel hinweisZeile = new Panel { Dock = DockStyle.Bottom, Height = 24, Padding = new Padding(8, 2, 8, 0) };
+            _hinweisZeile = new Panel { Dock = DockStyle.Bottom, Height = 24, Padding = new Padding(8, 2, 8, 0) };
 
             string hinweisVorn = MyResource.Resource.KI_HINWEIS_ZEILE ?? "";
             string hinweisLink = MyResource.Resource.KI_HINWEIS_ZEILE_LINK ?? "";
@@ -262,7 +305,7 @@ namespace WindowsFormsApplication1
                 LinkArea = new LinkArea(hinweisVorn.Length, hinweisLink.Length)
             };
             _linkHinweis.LinkClicked += (s, e) => Form_KiHinweis.Anzeigen(this);
-            hinweisZeile.Controls.Add(_linkHinweis);
+            _hinweisZeile.Controls.Add(_linkHinweis);
 
             // --- Eingabebereich ---
             Panel eingabeBereich = new Panel { Dock = DockStyle.Fill, Padding = new Padding(8, 8, 8, 4) };
@@ -270,7 +313,7 @@ namespace WindowsFormsApplication1
             _btnSenden = new Button { Text = "Fragen", Width = 110, Height = 30, Margin = new Padding(0, 0, 0, 6) };
             _btnSenden.Click += async (s, e) => await FrageStellen(true);
 
-            _btnSuchen = new Button { Text = "Nur suchen", Width = 110, Height = 30 };
+            _btnSuchen = new Button { Text = TEXT_SUCHEN_REGEL, Width = 110, Height = 30 };
             _btnSuchen.Click += async (s, e) => await FrageStellen(false);
 
             FlowLayoutPanel eingabeRechts = new FlowLayoutPanel
@@ -297,7 +340,7 @@ namespace WindowsFormsApplication1
             eingabeBereich.Controls.Add(eingabeRechts);
 
             // --- Schalterzeile: Aktionsbetrieb und Werkzeugliste ---
-            Panel schalter = new Panel { Dock = DockStyle.Top, Height = 32, Padding = new Padding(8, 4, 8, 0) };
+            _schalterZeile = new Panel { Dock = DockStyle.Top, Height = 32, Padding = new Padding(8, 4, 8, 0) };
 
             _chkAktionen = new CheckBox
             {
@@ -325,19 +368,25 @@ namespace WindowsFormsApplication1
             };
             _btnWerkzeuge.Click += (s, e) => WerkzeugeOeffnen();
 
-            schalter.Controls.Add(_chkAktionen);
-            schalter.Controls.Add(_btnWerkzeuge);
+            _schalterZeile.Controls.Add(_chkAktionen);
+            _schalterZeile.Controls.Add(_btnWerkzeuge);
 
             unten.Controls.Add(eingabeBereich);           // Fill zuerst
             unten.Controls.Add(leiste);
-            unten.Controls.Add(hinweisZeile);            // dockt oberhalb der Leiste an
-            unten.Controls.Add(schalter);
+            unten.Controls.Add(_hinweisZeile);           // dockt oberhalb der Leiste an
+            unten.Controls.Add(_schalterZeile);
 
             BaueBestaetigungsblock();
 
             this.Controls.Add(_verlaufAnzeige);
             this.Controls.Add(_bestaetigungBereich);
             this.Controls.Add(_lblKontext);
+
+            // Nach _lblKontext eingehängt und deshalb ÜBER ihm: Angedockt wird in
+            // umgekehrter Reihenfolge des Einfügens (dieselbe Regel, nach der weiter oben
+            // das Fill-Element zuerst eingehängt wird). Der Hinweis steht damit als
+            // oberste Zeile des Fensters — er gilt für alles, was darunter passiert.
+            this.Controls.Add(_lblFeldsicherung);
             this.Controls.Add(unten);
             this.CancelButton = btnSchliessen;
 
@@ -349,7 +398,130 @@ namespace WindowsFormsApplication1
             _sperrUhr.Tick += (s, e) => SperreAktualisieren();
             _sperrUhr.Start();
 
+            // Vor der Begrüßung: Sie fällt im Hilfe-Betrieb anders aus und braucht den
+            // Merker bereits gesetzt.
+            HilfeBetriebAnwenden();
+            FeldsicherungAnwenden();
+
             Begruessung();
+        }
+
+        // ------------------------------------------------------------------
+        // Hilfe-Betrieb (Fachkonzept 11.9, Umsetzungspaket F5)
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Legt fest, welche Bedienelemente dieses Fenster zeigt: im Regelbetrieb alle,
+        /// im Hilfe-Betrieb nur Eingabefeld, Suche und Hilfeabschnitte.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Was der Hilfe-Betrieb ist.</b> Ist die KI für diese Installation
+        /// abgeschaltet (<see cref="KiEinwilligung.Abgeschaltet"/> - benutzerbezogen unter
+        /// HKCU, maschinenweit unter HKLM und dann aus der Anwendung heraus nicht lösbar),
+        /// bleibt vom Fenster die reine Hilfesuche übrig: keine KI-Beschriftung, keine
+        /// Werkzeugliste, kein „Was wird gesendet?“, keine Aufgabensteuerung. Das Fenster
+        /// geht trotzdem auf - die Hilfe liegt lokal vor und braucht den Dienst nicht
+        /// (Fachkonzept 1.3).
+        /// </para>
+        /// <para>
+        /// <b>Warum Verstecken und kein zweiter Fensteraufbau.</b> Eine zweite
+        /// Aufbauroutine wäre eine zweite Pflegestelle für dieselben Bedienelemente und
+        /// liefe unweigerlich auseinander. Verborgene Steuerelemente bleiben dagegen
+        /// gültige Verweise: <c>SperreAktualisieren</c> und <c>VorschauZeigen</c> greifen
+        /// unverändert auf sie zu, ohne Sonderfall und ohne Prüfung auf <c>null</c>.
+        /// </para>
+        /// <para>
+        /// <b>Warum in beide Richtungen geschaltet wird.</b> Die Methode setzt jede
+        /// Sichtbarkeit ausdrücklich - im Regelbetrieb auf sichtbar, im Hilfe-Betrieb auf
+        /// verborgen. So ändert sie bei nicht gesetztem Schalter nachweislich nichts
+        /// (Abgrenzung F5) und bleibt bei mehrfachem Aufruf gutmütig.
+        /// </para>
+        /// <para>
+        /// <b>Warum bei jedem Öffnen und nicht einmal beim Programmstart.</b> Die
+        /// Verwaltung kann den Schalter im laufenden Programm umlegen
+        /// (<c>Form_AdminSettings</c>). Der Aufruf steht deshalb im Aufbau des Fensters,
+        /// und <see cref="Oeffnen"/> legt jedes Mal ein neues an - jedes Öffnen liest den
+        /// Schalter also neu, genau wie der Menüeintrag beim Aufklappen.
+        /// </para>
+        /// <para>
+        /// <b>Keine Schutzwirkung.</b> Dass nichts an den Dienst hinausgeht, trägt
+        /// <c>KiEinwilligung.Sicherstellen</c> und der Einwilligungsriegel in
+        /// <c>KiChatService</c> - nicht diese Methode. Das Ausblenden ist eine reine
+        /// Darstellungsfrage und ersetzt keinen Schutz.
+        /// </para>
+        /// </remarks>
+        private void HilfeBetriebAnwenden()
+        {
+            _hilfeBetrieb = KiEinwilligung.Abgeschaltet;
+            bool mitKi = !_hilfeBetrieb;
+
+            // „Fragen“ ist der einzige Weg zum Dienst - im Hilfe-Betrieb bleibt die
+            // Suche daneben als einziger Knopf stehen und heißt dann nur noch „Suchen“.
+            _btnSenden.Visible = mitKi;
+            _btnSuchen.Text = mitKi ? TEXT_SUCHEN_REGEL
+                                    : MyResource.Resource.KI_HILFEBETRIEB_SUCHEN_BTN;
+
+            // Aktionsbetrieb und Werkzeugliste (Aufgabensteuerung) sowie der
+            // Übertragungshinweis samt „Was wird gesendet?“ und Aktionsprotokoll: Sie
+            // beschreiben allesamt den Verkehr mit dem Dienst, den es hier nicht gibt.
+            _schalterZeile.Visible = mitKi;
+            _hinweisZeile.Visible = mitKi;
+            _linkVorschau.Visible = mitKi;
+            _linkProtokoll.Visible = mitKi;
+
+            // „Einstellungen...“ führt einzig zum API-Schlüssel und zum Modell.
+            _btnEinstellungen.Visible = mitKi;
+
+            // Der Bestätigungsblock ist ohnehin verborgen, bis eine Aktion ihn füllt;
+            // im Hilfe-Betrieb kann keine entstehen. Er wird hier nicht angefasst.
+        }
+
+        // ------------------------------------------------------------------
+        // Feldsicherung (Fachkonzept 11.5, Umsetzungspaket F4)
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Zeigt dauerhaft an, dass die Feldsicherung für diesen Programmlauf abgeschaltet
+        /// ist — und verbirgt die Zeile, solange sie an ist.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum der Hinweis dauerhaft steht und nicht einmal gemeldet wird.</b> Er
+        /// beschreibt keinen Vorgang, sondern einen Zustand: Solange er sichtbar ist,
+        /// werden Felder ohne gesonderte Bestätigung gesetzt. Eine Meldung beim Öffnen
+        /// wäre nach der dritten Frage vergessen; die Zeile bleibt stehen, solange der
+        /// Zustand gilt (Fachkonzept 11.5: „das Chatfenster zeigt dauerhaft
+        /// ‚Feldsicherung AUS'").
+        /// </para>
+        /// <para>
+        /// <b>Warum der Text aus dem Kern kommt.</b> <c>KiFeldsicherung.Chathinweis()</c>
+        /// liefert ihn fertig — dieselbe Quelle, aus der auch der Protokollvermerk stammt.
+        /// Ein hier formulierter zweiter Wortlaut könnte vom Protokoll abweichen, und der
+        /// Satz sagt bewusst auch, was WEITER gilt: Die Bestätigung datenverändernder
+        /// Aktionen bleibt bestehen.
+        /// </para>
+        /// <para>
+        /// <b>Warum die Auswertung bei jedem Öffnen genügt.</b> Der Schalter ist ein
+        /// Startzustand und lässt sich zur Laufzeit nicht mehr ändern
+        /// (<c>KiFeldsicherung.Abschalten</c> wirkt genau einmal, gerufen aus
+        /// <c>Program.Main</c>). Anders als beim Hilfe-Betrieb kann sich hier während des
+        /// Betriebs also nichts verstellen — die einmalige Auswertung im Fensteraufbau ist
+        /// deshalb keine Vereinfachung, sondern die vollständige Antwort.
+        /// </para>
+        /// <para>
+        /// <b>Im Hilfe-Betrieb ohne Wirkung.</b> Dort läuft keine Aktion und damit auch
+        /// keine Feldsetzung; ein Hinweis auf die Feldsicherung ginge ins Leere. Die Zeile
+        /// bleibt deshalb verborgen — geprüft über den Merker, den
+        /// <see cref="HilfeBetriebAnwenden"/> unmittelbar davor gesetzt hat.
+        /// </para>
+        /// </remarks>
+        private void FeldsicherungAnwenden()
+        {
+            string hinweis = _hilfeBetrieb ? "" : KiFeldsicherung.Chathinweis();
+
+            _lblFeldsicherung.Text = hinweis;
+            _lblFeldsicherung.Visible = hinweis.Length > 0;
         }
 
         // ------------------------------------------------------------------
@@ -622,6 +794,17 @@ namespace WindowsFormsApplication1
         {
             SchreibeZeile("Hilfe-Assistent", Color.FromArgb(0, 90, 160), true);
 
+            // Im Hilfe-Betrieb gibt es weder Schlüssel noch Tageskontingent, über die zu
+            // berichten wäre - nur die lokale Suche. Der Satz sagt zugleich, dass dabei
+            // nichts diesen Rechner verlässt.
+            if (_hilfeBetrieb)
+            {
+                SchreibeZeile(MyResource.Resource.KI_HILFEBETRIEB_BEGRUESSUNG,
+                    Color.Black, false);
+                SchreibeZeile("", Color.Black, false);
+                return;
+            }
+
             if (KiChatService.IstEingerichtet)
             {
                 SchreibeZeile("Stellen Sie Ihre Frage zur Bedienung oder zur Rechenlogik. " +
@@ -647,11 +830,15 @@ namespace WindowsFormsApplication1
 
         private async void Eingabe_KeyDown(object sender, KeyEventArgs e)
         {
-            // Enter sendet, Shift+Enter erzeugt eine neue Zeile
+            // Enter sendet, Shift+Enter erzeugt eine neue Zeile.
+            // Im Hilfe-Betrieb führt Enter auf die lokale Suche: Der Weg zum Dienst ist
+            // dort weder sichtbar (die Schaltfläche „Fragen“ ist verborgen) noch gangbar
+            // (der Einwilligungsriegel weist ihn ab) - Enter darf ihn nicht heimlich
+            // wieder öffnen und dem Anwender nur eine Fehlermeldung eintragen.
             if (e.KeyCode == Keys.Enter && !e.Shift)
             {
                 e.SuppressKeyPress = true;
-                await FrageStellen(true);
+                await FrageStellen(!_hilfeBetrieb);
             }
         }
 
@@ -1346,22 +1533,29 @@ namespace WindowsFormsApplication1
         /// Bequemer Einstiegspunkt für Menü, Schaltflächen oder Tastenkürzel.
         /// </summary>
         /// <remarks>
-        /// Ist der Assistent für diese Installation abgeschaltet, öffnet sich kein
-        /// Fenster, sondern es kommt eine klare Meldung. Der Menüeintrag wird dann
-        /// ohnehin ausgeblendet - die Meldung fängt die übrigen Wege ab (F1,
-        /// Schaltflächen, spätere Umschaltung im laufenden Programm).
+        /// <para>
+        /// <b>Auch bei abgeschalteter KI öffnet das Fenster.</b> Bis Paket F5 endete
+        /// dieser Weg mit einer Hinweismeldung, der Einstieg war also ganz zu. Seither
+        /// gilt der Hilfe-Betrieb (Fachkonzept 11.9): Das Fenster geht auf und arbeitet
+        /// als reine Hilfesuche - die Hilfe liegt lokal vor, kostet nichts und ist
+        /// gerade dann nützlich, wenn der Dienst nicht zur Verfügung steht. Über seinen
+        /// Betrieb entscheidet das Fenster selbst (<see cref="HilfeBetriebAnwenden"/>).
+        /// </para>
+        /// <para>
+        /// <b>Warum jeder Aufruf ein neues Fenster anlegt.</b> Das ist Bestand und bleibt
+        /// so; der Aufrufknopf der Masken (<c>KiAufrufKnopf</c>) holt ein bereits offenes
+        /// Fenster auf seiner Seite nach vorn. Für den Hilfe-Betrieb ist das erwünscht:
+        /// Jedes Öffnen liest den Schalter neu.
+        /// </para>
+        /// <para>
+        /// <b>Keine Schutzwirkung geht verloren.</b> Dass ohne Einwilligung und bei
+        /// gesetztem Abschalter nichts hinausgeht, trägt
+        /// <c>KiEinwilligung.Sicherstellen</c> und der Einwilligungsriegel in
+        /// <c>KiChatService</c> - nicht das geschlossene Fenster.
+        /// </para>
         /// </remarks>
         public static void Oeffnen(IWin32Window besitzer = null)
         {
-            if (KiEinwilligung.Abgeschaltet)
-            {
-                MessageBox.Show(besitzer ?? (IWin32Window)Form.ActiveForm,
-                                MyResource.Resource.KI_ABSCHALTER_MELDUNG,
-                                MyResource.Resource.KI_ABSCHALTER_TITEL,
-                                MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
             // Kontext ermitteln, SOLANGE das aufrufende Fenster noch aktiv ist
             string kontext = HilfeKontext.Beschreibung();
 

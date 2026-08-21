@@ -57,6 +57,12 @@ namespace WindowsFormsApplication1
         public Form_PufferSp_Bearbeiten(int mode)
         {
             InitializeComponent();
+
+            // Dezenter Einstieg in den Assistenten, oben rechts im Client-Bereich
+            // (Fachkonzept 11.8). Programmatisch, damit Designer und .resx
+            // unberuehrt bleiben.
+            KiAufrufKnopf.Anbringen(this);
+
             m_mode = mode;
             if (mode == MODE_EDIT)
             {

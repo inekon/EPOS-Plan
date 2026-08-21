@@ -23,6 +23,12 @@ namespace WindowsFormsApplication1
         public Form_WP()
         {
             InitializeComponent();
+
+            // Dezenter Einstieg in den Assistenten, oben rechts im Client-Bereich
+            // (Fachkonzept 11.8). Programmatisch, damit Designer und .resx
+            // unberuehrt bleiben.
+            KiAufrufKnopf.Anbringen(this);
+
             listBox_WP.DrawMode = DrawMode.OwnerDrawFixed;
             listBox_WP.DrawItem += listBox_WP_DrawItem;
             item = new WPModel();
@@ -35,6 +41,12 @@ namespace WindowsFormsApplication1
         public Form_WP(string wpname)
         {
             InitializeComponent();
+
+            // Dezenter Einstieg in den Assistenten, oben rechts im Client-Bereich
+            // (Fachkonzept 11.8). Programmatisch, damit Designer und .resx
+            // unberuehrt bleiben.
+            KiAufrufKnopf.Anbringen(this);
+
             listBox_WP.DrawMode = DrawMode.OwnerDrawFixed;
             listBox_WP.DrawItem += listBox_WP_DrawItem;
             item = new WPModel();

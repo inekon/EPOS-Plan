@@ -42,6 +42,15 @@ namespace KiKern
         /// Laesst sich die Aenderung als neue, ebenfalls bestaetigungspflichtige Aktion
         /// zurueckschreiben? Steht woertlich in der Bestaetigung (Fachkonzept 4.4, Punkt 3).
         /// </param>
+        /// <param name="formularaktion">
+        /// Wirkt die Aktion in eine offene MASKE statt in die Datenbank (Stufe „2F",
+        /// Fachkonzept 11.4)? Siehe <see cref="Formularaktion"/>.
+        /// </param>
+        /// <param name="datenbankwirksam">
+        /// Kann diese Aktion den Datenbestand veraendern? Siehe
+        /// <see cref="Datenbankwirksam"/>. Nur eine <paramref name="formularaktion"/> darf
+        /// hier <c>false</c> sagen.
+        /// </param>
         public KiAktion(string name,
                         string zweck,
                         Schutzstufe stufe,
@@ -51,7 +60,9 @@ namespace KiKern
                         Func<KiAufruf, string?>? vorbedingung = null,
                         Func<KiAufruf, string>? vorschau = null,
                         string? wirkung = null,
-                        bool umkehrbar = false)
+                        bool umkehrbar = false,
+                        bool formularaktion = false,
+                        bool datenbankwirksam = true)
         {
             if (!KiName.IstGueltig(name))
                 throw new ArgumentException(
@@ -70,6 +81,27 @@ namespace KiKern
                     "Die Aktion '" + name + "' gehoert zu Stufe " + (int)stufe +
                     " und braucht deshalb eine Vorschau (Fachkonzept 3.5).", nameof(vorschau));
 
+            // Eine Formularaktion auf Stufe 1 waere ein Loch: Die Bestaetigungspflicht
+            // haengt an der STUFE (KiRiegel), und die Modalitaetsweiche des Ausfuehrers
+            // laesst gerade Formularaktionen an einen offenen Dialog heran. Zusammen ergaebe
+            // das einen Eingriff in eine Maske ohne jeden Klick. Deshalb faellt der Fall
+            // schon beim Deklarieren auf - und nicht erst, wenn er laeuft.
+            if (formularaktion && stufe == Schutzstufe.Lesen)
+                throw new ArgumentException(
+                    "Die Aktion '" + name + "' ist als Formularaktion deklariert und darf deshalb " +
+                    "nicht zu Stufe 1 gehoeren (Fachkonzept 11.4).", nameof(formularaktion));
+
+            // Vom Sicherungspunkt darf sich NUR eine Aktion freistellen, die ausschliesslich
+            // in die Oberflaeche wirkt. Waere das auch einer gewoehnlichen Schreibaktion
+            // erlaubt, entstuende der eine Fall, den Fachkonzept 4.4 Punkt 1 ausschliesst:
+            // eine Aenderung am Datenbestand ohne Rueckweg. Der Fall faellt deshalb schon
+            // beim Deklarieren auf - und nicht erst, wenn die Aktion laeuft.
+            if (!formularaktion && !datenbankwirksam)
+                throw new ArgumentException(
+                    "Die Aktion '" + name + "' ist nicht als Formularaktion deklariert und darf " +
+                    "sich deshalb nicht vom Sicherungspunkt freistellen (Fachkonzept 4.4).",
+                    nameof(datenbankwirksam));
+
             Name = name;
             Zweck = zweck;
             Stufe = stufe;
@@ -80,6 +112,8 @@ namespace KiKern
             Vorschau = vorschau;
             Wirkung = wirkung ?? (stufe == Schutzstufe.Lesen ? KiTexte.WirkungLesen : "");
             Umkehrbar = umkehrbar;
+            Formularaktion = formularaktion;
+            Datenbankwirksam = datenbankwirksam;
 
             var gesehen = new HashSet<string>(StringComparer.Ordinal);
             foreach (KiParameter p in Parameter)
@@ -125,6 +159,72 @@ namespace KiKern
         /// Anwendung - den gibt es im Bestand nicht.
         /// </remarks>
         public bool Umkehrbar { get; }
+
+        /// <summary>
+        /// Wirkt die Aktion in eine offene Maske statt in die Datenbank?
+        /// (Stufe „2F", Fachkonzept 11.4.)
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Am Riegel aendert dieses Kennzeichen NICHTS.</b> Es ist keine vierte Stufe
+        /// und keine Ausnahme: Eine Formularaktion gehoert zu
+        /// <see cref="Schutzstufe.Schreiben"/> und braucht damit dieselbe Bestaetigung wie
+        /// jede andere Schreibaktion - <see cref="KiRiegel.BrauchtBestaetigung(KiAktion)"/>
+        /// haengt weiterhin allein an der Stufe. Waere das Kennzeichen eine Ausnahme,
+        /// stuende in <c>KiRiegel</c> wieder eine Namensliste, und genau die soll es dort
+        /// nicht geben.
+        /// </para>
+        /// <para>
+        /// <b>Wofuer es dann da ist.</b> Zwei Dinge im Anwendungsprojekt haengen daran:
+        /// die Modalitaetsweiche (eine Formularaktion VERLANGT die offene Zielmaske, waehrend
+        /// alle uebrigen Aktionen bei offenem modalem Dialog abgewiesen werden) und die
+        /// Feldsicherung (<see cref="KiFeldsicherung"/>), die nur fuer diese Aktionen
+        /// abschaltbar ist. Beides braucht ein Merkmal an der DEKLARATION - abgeleitet aus
+        /// dem Aktionsnamen waere es wieder eine Liste, die altert.
+        /// </para>
+        /// </remarks>
+        public bool Formularaktion { get; }
+
+        /// <summary>
+        /// Kann diese Aktion den Datenbestand veraendern? Standard <c>true</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Wofuer das Kennzeichen da ist:</b> fuer den Sicherungspunkt
+        /// (<see cref="BrauchtSicherungspunkt"/>). Vor der ersten Aenderung am Datenbestand
+        /// entsteht eine Kopie der Datenbank (Fachkonzept 4.4, Punkt 1) - bei rund 90 MB
+        /// ist das nichts, was man ohne Anlass tut. <c>feld_setzen</c> und
+        /// <c>formular_ausfuellen</c> tragen aber nur TEXT in ein Eingabefeld ein; die
+        /// Datenbank sehen sie nie. Eine Kopie dafuer sicherte einen Zustand, den die
+        /// Aktion gar nicht verlassen kann.
+        /// </para>
+        /// <para>
+        /// <b>Warum die Vorgabe <c>true</c> ist.</b> Wer das Kennzeichen vergisst, bekommt
+        /// eine ueberfluessige Kopie - wer es faelschlich auf <c>false</c> setzte, verloere
+        /// den Rueckweg. Die Vorgabe zeigt deshalb in die unschaedliche Richtung, und der
+        /// Konstruktor laesst <c>false</c> ueberhaupt nur einer
+        /// <see cref="Formularaktion"/> durchgehen.
+        /// </para>
+        /// <para>
+        /// <b>Warum am Kennzeichen und nicht am Aktionsnamen.</b> Aus dem Namen abgeleitet
+        /// waere es wieder eine Liste im Ausfuehrer, die altert - dieselbe Begruendung wie
+        /// bei <see cref="Formularaktion"/>. Und die Unterscheidung liegt nicht am Namen,
+        /// sondern an der Sache: <c>dialog_aktion_ausfuehren</c> ist ebenfalls eine
+        /// Formularaktion, loest aber einen Knopf der Maske aus - und der schreibt ueber den
+        /// Bestand sehr wohl in die Datenbank. Diese Aktion behaelt ihren Sicherungspunkt.
+        /// </para>
+        /// </remarks>
+        public bool Datenbankwirksam { get; }
+
+        /// <summary>
+        /// Muss vor dieser Aktion ein Sicherungspunkt vorliegen (Fachkonzept 4.4, Punkt 1)?
+        /// </summary>
+        /// <remarks>
+        /// Zwei Bedingungen, beide notwendig: Die Aktion muss ueber das reine Lesen
+        /// hinausgehen UND den Datenbestand erreichen koennen
+        /// (<see cref="Datenbankwirksam"/>).
+        /// </remarks>
+        public bool BrauchtSicherungspunkt => Stufe != Schutzstufe.Lesen && Datenbankwirksam;
 
         /// <summary>Pflichtparameter dieser Aktion.</summary>
         public IEnumerable<KiParameter> Pflichtparameter()

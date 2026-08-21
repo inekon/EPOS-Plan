@@ -21,6 +21,12 @@ namespace WindowsFormsApplication1
         public Form_PV ()
         {
             InitializeComponent();
+
+            // Dezenter Einstieg in den Assistenten, oben rechts im Client-Bereich
+            // (Fachkonzept 11.8). Programmatisch, damit Designer und .resx
+            // unberuehrt bleiben.
+            KiAufrufKnopf.Anbringen(this);
+
             listBox_DB.Items.Clear();
             listBox_Auswahl.Items.Clear();
         }

@@ -174,6 +174,34 @@
 
         internal static string AenderungsdatumFehlt => MyResource.Resource.KI_REG_AENDERUNGSDATUM_FEHLT;
 
+        // ------------------------------------------ Formularsteuerung (Etappe 3b, F3)
+        //
+        // Die Texte des DIALOGKATALOGS (Maskennamen, Feldnamen, Erlaeuterungen) stehen
+        // NICHT hier, sondern in KiDialogTexte: Sie gehoeren den Masken und nicht dem
+        // Aktionsregister. Hier steht nur, was die fuenf Aktionen selbst brauchen.
+
+        internal static string ZweckDialogLesen => MyResource.Resource.KI_REG_ZWECK_DIALOG_LESEN;
+        internal static string ZweckDialogErklaeren => MyResource.Resource.KI_REG_ZWECK_DIALOG_ERKLAEREN;
+        internal static string ZweckFeldSetzen => MyResource.Resource.KI_REG_ZWECK_FELD_SETZEN;
+        internal static string ZweckFormularAusfuellen => MyResource.Resource.KI_REG_ZWECK_FORMULAR_AUSFUELLEN;
+        internal static string ZweckDialogAktion => MyResource.Resource.KI_REG_ZWECK_DIALOG_AKTION;
+
+        internal static string MaskeName => MyResource.Resource.KI_REG_MASKE_NAME;
+        internal static string FeldName => MyResource.Resource.KI_REG_FELD_NAME;
+        internal static string WertName => MyResource.Resource.KI_REG_WERT_NAME;
+        internal static string WerteName => MyResource.Resource.KI_REG_WERTE_NAME;
+        internal static string KnopfName => MyResource.Resource.KI_REG_KNOPF_NAME;
+
+        internal static string ErlMaske => MyResource.Resource.KI_REG_ERL_MASKE;
+        internal static string ErlFeld => MyResource.Resource.KI_REG_ERL_FELD;
+        internal static string ErlWert => MyResource.Resource.KI_REG_ERL_WERT;
+        internal static string ErlWerte => MyResource.Resource.KI_REG_ERL_WERTE;
+        internal static string ErlKnopf => MyResource.Resource.KI_REG_ERL_KNOPF;
+
+        internal static string WirkungFeldSetzen => MyResource.Resource.KI_REG_WIRKUNG_FELD_SETZEN;
+        internal static string WirkungFormularAusfuellen => MyResource.Resource.KI_REG_WIRKUNG_FORMULAR_AUSFUELLEN;
+        internal static string WirkungDialogAktion => MyResource.Resource.KI_REG_WIRKUNG_DIALOG_AKTION;
+
         // ------------------------------------------- Energietraeger-Einheiten (K3)
 
         internal static string ZweckEnergietraegerPruefen => MyResource.Resource.KI_REG_ZWECK_ENERGIETRAEGER_PRUEFEN;
