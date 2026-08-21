@@ -25,6 +25,7 @@ namespace WindowsFormsApplication1
             
             dataGridView1.RowHeadersVisible = true;
             dataGridView1.AllowUserToAddRows = false;
+            dataGridView1.CellParsing += dataGridView1_CellParsing;
     
             dataGridView1.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.ColumnHeader);// .AllCellsExceptHeader);
             dataGridView1.Columns["ID"].Visible = false;
@@ -150,6 +151,37 @@ namespace WindowsFormsApplication1
                 }
             }
         }
-  
+
+        /// <summary>
+        /// Übernimmt den Zelltext selbst in den Spaltentyp: Ohne diesen Schritt
+        /// konvertiert der DataGridView mit CurrentCulture, und "3.5" wird unter
+        /// de-DE still zu 35 (Punkt = Tausendertrennzeichen). Geparst wird invariant
+        /// mit Komma ODER Punkt als Dezimalzeichen. Spalte 3 ist Temperatur
+        /// (Ganzzahl), 4 und 5 sind COP und Ptherm (Double). Unlesbaren Text nicht
+        /// anfassen - den verwirft schon checkValue (CellValidating läuft vorher).
+        /// </summary>
+        private void dataGridView1_CellParsing(object sender, DataGridViewCellParsingEventArgs e)
+        {
+            if (e.Value == null) return;
+            if (e.ColumnIndex == 4 || e.ColumnIndex == 5)
+            {
+                double dWert;
+                if (Program.ZahlParsen(e.Value.ToString(), out dWert))
+                {
+                    e.Value = dWert;
+                    e.ParsingApplied = true;
+                }
+            }
+            if (e.ColumnIndex == 3)
+            {
+                int nWert;
+                if (Program.GanzzahlParsen(e.Value.ToString(), out nWert))
+                {
+                    e.Value = nWert;
+                    e.ParsingApplied = true;
+                }
+            }
+        }
+
     }
 }
