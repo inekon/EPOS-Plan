@@ -31,6 +31,12 @@ namespace WindowsFormsApplication1
         public Form_Heizkessel_Bearbeiten(int mode)
         {
             InitializeComponent();
+
+            // Dezenter Einstieg in den Assistenten, oben rechts im Client-Bereich
+            // (Fachkonzept 11.8). Programmatisch, damit Designer und .resx
+            // unberuehrt bleiben.
+            KiAufrufKnopf.Anbringen(this);
+
             m_mode = mode;
 
             // Vorsorge vor dem ersten Lese-/Schreibzugriff: auf einer nicht migrierten

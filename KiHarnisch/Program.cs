@@ -35,6 +35,11 @@ namespace WindowsFormsApplication1.Referenzlauf
         private const string ORDNER_ARBEITSKOPIE = "Arbeitskopie_KI";
         private const string BEISPIELPROJEKT = "Beispiel WP WG 1";
 
+        /// <summary>
+        /// Schalter fuer den reinen Katalogtest (Paket F4): <c>KiHarnisch.exe --katalog</c>.
+        /// </summary>
+        private const string SCHALTER_KATALOG = "--katalog";
+
         private static Protokoll _log;
 
         [STAThread]
@@ -47,6 +52,17 @@ namespace WindowsFormsApplication1.Referenzlauf
 
             string zielWurzel = Argument(args, "--ziel") ??
                 Path.Combine(Path.GetTempPath(), "EPOS_KiHarnisch");
+
+            // ------------------------------------------------------------------
+            // Reiner Katalogtest - OHNE Datenbank und OHNE Registry.
+            //
+            // Er steht VOR allem anderen und kehrt danach sofort zurueck: Der volle Lauf
+            // legt eine Arbeitskopie der Datenbank an und verstellt kurzzeitig echte
+            // Registry-Werte des angemeldeten Benutzers (Einwilligung.Sichern). Beides
+            // braucht der Katalogtest nicht - und beides soll er nicht anfassen, damit er
+            // sich jederzeit und gefahrlos wiederholen laesst (Umsetzungskonzept 3b, F4).
+            // ------------------------------------------------------------------
+            if (Schalter(args, SCHALTER_KATALOG)) return NurKatalog(zielWurzel);
 
             // Der Rechtshinweis wird an echten Registry-Werten des angemeldeten Benutzers
             // geprueft. Sie werden hier gesichert und in JEDEM Fall wiederhergestellt.
@@ -66,6 +82,48 @@ namespace WindowsFormsApplication1.Referenzlauf
             {
                 Einwilligung.Wiederherstellen(_log);
             }
+        }
+
+        /// <summary>
+        /// Fuehrt AUSSCHLIESSLICH den Laufzeit-Katalogtest aus (Fachkonzept 11.3).
+        /// </summary>
+        /// <returns>0, wenn kein Fehler auftrat - sonst 1 (bzw. 2 bei Abbruch).</returns>
+        /// <remarks>
+        /// Der <c>DialogWaechter</c> klammert den Lauf wie im vollen Harnisch: Wenn beim
+        /// Bauen einer Maske eine MessageBox aufginge, waere das ein TESTFEHLER und kein
+        /// stehengebliebener Dialog, auf den niemand klickt.
+        /// </remarks>
+        private static int NurKatalog(string zielWurzel)
+        {
+            _log.Zeile("Katalogtest der Formularsteuerung (Etappe 3b, Paket F4)");
+            _log.Zeile("Start: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
+            _log.Zeile("Ohne Datenbank, ohne Registry, ohne sichtbares Fenster.");
+            _log.Leerzeile();
+
+            try
+            {
+                using (var waechter = new DialogWaechter())
+                {
+                    Katalogpruefung.Pruefen(_log);
+
+                    string[] dialoge = waechter.GeschlosseneDialoge;
+                    if (dialoge.Length == 0) _log.Zeile("DialogWaechter: kein Dialog erschienen.");
+                    else
+                        foreach (string d in dialoge)
+                            _log.FehlerZeile("UNERWARTETER DIALOG: " + d);
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.FehlerZeile("ABBRUCH: " + ex);
+                Speichern(zielWurzel);
+                return 2;
+            }
+
+            _log.Leerzeile();
+            _log.Zeile("Warnungen: " + _log.Warnungen + ", Fehler: " + _log.Fehler);
+            Speichern(zielWurzel);
+            return _log.Fehler == 0 ? 0 : 1;
         }
 
         private static int Lauf(string zielWurzel)
@@ -544,12 +602,21 @@ namespace WindowsFormsApplication1.Referenzlauf
             return null;
         }
 
+        /// <summary>Steht dieser Schalter (ohne Wert) in der Befehlszeile?</summary>
+        private static bool Schalter(string[] args, string name)
+        {
+            if (args == null) return false;
+            foreach (string a in args)
+                if (string.Equals(a, name, StringComparison.OrdinalIgnoreCase)) return true;
+            return false;
+        }
+
         private static void Speichern(string zielWurzel)
         {
             try
             {
                 _log.Speichern(Path.Combine(zielWurzel, "ki_harnisch_protokoll.md"),
-                               "Aktionsharnisch KI-Assistent (Etappen 1 bis 3)",
+                               "Aktionsharnisch KI-Assistent (Etappen 1 bis 3b)",
                                new[] { "Erzeugt von KiHarnisch.exe.", "" });
             }
             catch (Exception ex) { Console.WriteLine("Protokoll nicht speicherbar: " + ex.Message); }

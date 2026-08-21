@@ -4064,6 +4064,771 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Auswahl „{0}“ führt „{1}“ mehrfach; die Angabe ist nicht eindeutig. ähnelt.
+        /// </summary>
+        public static string KI_DLG_AUSWAHL_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("KI_DLG_AUSWAHL_MEHRDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{1}“ ist kein Eintrag der Auswahl „{0}“. Zur Wahl stehen: {2}. ähnelt.
+        /// </summary>
+        public static string KI_DLG_AUSWAHL_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_DLG_AUSWAHL_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld „{0}“ ist ein {1}; gesetzt werden können nur Textfeld, Häkchen und Auswahlliste. ähnelt.
+        /// </summary>
+        public static string KI_DLG_CONTROL_ART {
+            get {
+                return ResourceManager.GetString("KI_DLG_CONTROL_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Bedienelement „{0}“ ({1}) ist in der geöffneten Maske nicht auffindbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_CONTROL_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_DLG_CONTROL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld „{0}“ ist zurzeit nicht bedienbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_CONTROL_GESPERRT {
+            get {
+                return ResourceManager.GetString("KI_DLG_CONTROL_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld „{0}“ ist schreibgeschützt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_CONTROL_READONLY {
+            get {
+                return ResourceManager.GetString("KI_DLG_CONTROL_READONLY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahre ähnelt.
+        /// </summary>
+        public static string KI_DLG_EINHEIT_JAHRE {
+            get {
+                return ResourceManager.GetString("KI_DLG_EINHEIT_JAHRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ in „{1}“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ERKLAERT {
+            get {
+                return ResourceManager.GetString("KI_DLG_ERKLAERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld „{0}“ gehört zu einem anderen Bedienfaden; es wird nichts gesetzt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FALSCHER_THREAD {
+            get {
+                return ResourceManager.GetString("KI_DLG_FALSCHER_THREAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ steht jetzt auf „{1}“ (vorher „{2}“). ähnelt.
+        /// </summary>
+        public static string KI_DLG_FELD_GESETZT {
+            get {
+                return ResourceManager.GetString("KI_DLG_FELD_GESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld „{0}“ gibt es in „{1}“ nicht. Bekannt sind: {2}. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FELD_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_DLG_FELD_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Felder in „{1}“ gesetzt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FELDER_GESETZT {
+            get {
+                return ResourceManager.GetString("KI_DLG_FELDER_GESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} steuerbare Felder, {2} auslösbare Knöpfe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GELESEN {
+            get {
+                return ResourceManager.GetString("KI_DLG_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil der Nennleistung, der allein durch das Bereithalten des Kessels verloren geht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_BB_VERLUST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_BB_VERLUST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereitschaftsverluste ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_BB_VERLUST_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_BB_VERLUST_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kohlenmonoxid-Emission je erzeugter Wärmemenge. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_CO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_CO_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_CO_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_CO_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kohlendioxid-Emission je erzeugter Wärmemenge; der Knopf „CO2 BEHG“ leitet sie aus dem gewählten Energieträger ab. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_CO2_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_CO2_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO2 ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_CO2_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_CO2_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anschaffungskosten des Kessels; sie gehen in die Wirtschaftlichkeitsrechnung ein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_INVEST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_INVEST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_INVEST_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_INVEST_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennwärmeleistung des Kessels; Grundlage der Auslegung und der Kostenkennwerte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_LEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_LEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Thermische Leistung ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_LEISTUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_LEISTUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stickoxid-Emission je erzeugter Wärmemenge. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_NOX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_NOX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die NOx ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_NOX_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_NOX_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalkulatorische Lebensdauer; sie bestimmt den Abschreibungszeitraum. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_NUTZUNGSDAUER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_NUTZUNGSDAUER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_NUTZUNGSDAUER_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_NUTZUNGSDAUER_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufstellvolumen des Kessels im Heizraum. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_RAUMBEDARF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_RAUMBEDARF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumbedarf ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_RAUMBEDARF_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_RAUMBEDARF_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungstemperatur des Heizungsrücklaufs. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_RUECKLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_RUECKLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_RUECKLAUF_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_RUECKLAUF_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schwefeldioxid-Emission je erzeugter Wärmemenge. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_SO2_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_SO2_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die SO2 ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_SO2_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_SO2_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Staubemission je erzeugter Wärmemenge. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_STAUB_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_STAUB_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Staub ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_STAUB_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_STAUB_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungstemperatur des Heizungsvorlaufs. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_VORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_VORLAUF_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_VORLAUF_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wartungsaufwand des Kessels; die Bezugsgröße (Jahresbetrag oder je Leistungseinheit) wählt die Einheitenliste daneben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_WARTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_WARTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feuerungswirkungsgrad für alle Brennstoffe außer Öl, als Faktor (z. B. 0,9). ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_WG_GAS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_WG_GAS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad Gas, Biogas, Holz und Sonstiges ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_WG_GAS_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_WG_GAS_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feuerungswirkungsgrad bei Ölbetrieb, als Faktor (z. B. 0,9). ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_WG_OEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_WG_OEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad Öl ähnelt.
+        /// </summary>
+        public static string KI_DLG_HK_WG_OEL_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_HK_WG_OEL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (leer) ähnelt.
+        /// </summary>
+        public static string KI_DLG_KEIN_WERT {
+            get {
+                return ResourceManager.GetString("KI_DLG_KEIN_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist keine steuerbare Maske geöffnet. Steuerbar sind: {0}. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KEINE_OFFEN {
+            get {
+                return ResourceManager.GetString("KI_DLG_KEINE_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string KI_DLG_KNOPF_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("KI_DLG_KNOPF_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Knopf „{0}“ in „{1}“ wurde ausgelöst. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KNOPF_AUSGELOEST {
+            get {
+                return ResourceManager.GetString("KI_DLG_KNOPF_AUSGELOEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Knopf „{0}“ ist zurzeit nicht bedienbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KNOPF_GESPERRT {
+            get {
+                return ResourceManager.GetString("KI_DLG_KNOPF_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ob die Eingaben angenommen wurden, meldet die Maske selbst - der Assistent ersetzt ihre Prüfung nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KNOPF_HINWEIS {
+            get {
+                return ResourceManager.GetString("KI_DLG_KNOPF_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die OK ähnelt.
+        /// </summary>
+        public static string KI_DLG_KNOPF_OK {
+            get {
+                return ResourceManager.GetString("KI_DLG_KNOPF_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
+        /// </summary>
+        public static string KI_DLG_KNOPF_SPEICHERN {
+            get {
+                return ResourceManager.GetString("KI_DLG_KNOPF_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern unter ähnelt.
+        /// </summary>
+        public static string KI_DLG_KNOPF_SPEICHERN_UNTER {
+            get {
+                return ResourceManager.GetString("KI_DLG_KNOPF_SPEICHERN_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschreiben ähnelt.
+        /// </summary>
+        public static string KI_DLG_KNOPF_UEBERSCHREIBEN {
+            get {
+                return ResourceManager.GetString("KI_DLG_KNOPF_UEBERSCHREIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Knopf „{0}“ ist in „{1}“ nicht freigegeben. Freigegeben sind: {2}. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KNOPF_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_DLG_KNOPF_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld darf leer bleiben; leer zählt wie 0. ähnelt.
+        /// </summary>
+        public static string KI_DLG_LEER_ERLAUBT {
+            get {
+                return ResourceManager.GetString("KI_DLG_LEER_ERLAUBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld muss gefüllt sein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_LEER_PFLICHT {
+            get {
+                return ResourceManager.GetString("KI_DLG_LEER_PFLICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel bearbeiten ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_HEIZKESSEL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher bearbeiten ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PUFFERSP {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PUFFERSP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik-Module ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PV {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske „{0}“ ist für den Assistenten nicht freigegeben. Freigegeben sind: {1}. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen verwalten ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_WP {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es sind mehrere steuerbare Masken geöffnet ({0}). Bitte nennen Sie die Maske ausdrücklich. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MEHRERE_OFFEN {
+            get {
+                return ResourceManager.GetString("KI_DLG_MEHRERE_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske „{0}“ ist mehrfach geöffnet; es ist nicht eindeutig, welche gemeint ist. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MEHRFACH_OFFEN {
+            get {
+                return ResourceManager.GetString("KI_DLG_MEHRFACH_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske „{0}“ ist nicht das aktive Fenster. In eine Maske eingetragen wird nur dort, wo Sie gerade arbeiten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_NICHT_AKTIV {
+            get {
+                return ResourceManager.GetString("KI_DLG_NICHT_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske „{0}“ ist nicht geöffnet. ähnelt.
+        /// </summary>
+        public static string KI_DLG_NICHT_OFFEN {
+            get {
+                return ResourceManager.GetString("KI_DLG_NICHT_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In „{0}“ tragen alle genannten Felder den Wert bereits; es gibt nichts zu ändern. ähnelt.
+        /// </summary>
+        public static string KI_DLG_OHNE_AENDERUNG {
+            get {
+                return ResourceManager.GetString("KI_DLG_OHNE_AENDERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherinhalt des Pufferspeichers. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSP_VOLUMEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSP_VOLUMEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtvolumen ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSP_VOLUMEN_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSP_VOLUMEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stückzahl der Module dieses Typs; zusammen mit der Modulleistung ergibt sie die Gesamtleistung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_ANZAHL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_ANZAHL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl Module ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_ANZAHL_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_ANZAHL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausrichtung der Modulfläche gegen Süden (0° Süd, negative Werte nach Osten, positive nach Westen). ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_AZIMUT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_AZIMUT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Azimut ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_AZIMUT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_AZIMUT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neigungswinkel der Modulfläche gegen die Waagerechte (0° liegend, 90° senkrecht). ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_NEIGUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_NEIGUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neigung ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_NEIGUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_NEIGUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auswahl ähnelt.
+        /// </summary>
+        public static string KI_DLG_TYP_AUSWAHL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TYP_AUSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ganze Zahl ähnelt.
+        /// </summary>
+        public static string KI_DLG_TYP_GANZZAHL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TYP_GANZZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Text ähnelt.
+        /// </summary>
+        public static string KI_DLG_TYP_TEXT {
+            get {
+                return ResourceManager.GetString("KI_DLG_TYP_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ja/nein ähnelt.
+        /// </summary>
+        public static string KI_DLG_TYP_WAHRHEIT {
+            get {
+                return ResourceManager.GetString("KI_DLG_TYP_WAHRHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahl ähnelt.
+        /// </summary>
+        public static string KI_DLG_TYP_ZAHL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TYP_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld „{0}“ ist mehrfach genannt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WERTE_DOPPELT {
+            get {
+                return ResourceManager.GetString("KI_DLG_WERTE_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist keine Zuweisung. Erwartet wird „feld=wert“, mehrere durch Semikolon getrennt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WERTE_FORMAT {
+            get {
+                return ResourceManager.GetString("KI_DLG_WERTE_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es wurde kein Feld genannt. Erwartet wird „feld=wert“, mehrere durch Semikolon getrennt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WERTE_LEER {
+            get {
+                return ResourceManager.GetString("KI_DLG_WERTE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anschaffungskosten der Wärmepumpe; beim Speichern ist die Angabe Pflicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WP_MODULKOSTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WP_MODULKOSTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modulkosten ähnelt.
+        /// </summary>
+        public static string KI_DLG_WP_MODULKOSTEN_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WP_MODULKOSTEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geben Sie ein Stichwort ein und klicken Sie auf „Suchen“. Durchsucht wird die mitgelieferte Hilfe - dabei verlässt keine Angabe diesen Rechner. ähnelt.
+        /// </summary>
+        public static string KI_HILFEBETRIEB_BEGRUESSUNG {
+            get {
+                return ResourceManager.GetString("KI_HILFEBETRIEB_BEGRUESSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Suchen ähnelt.
+        /// </summary>
+        public static string KI_HILFEBETRIEB_SUCHEN_BTN {
+            get {
+                return ResourceManager.GetString("KI_HILFEBETRIEB_SUCHEN_BTN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string KI_HINWEIS_ABBRECHEN {
@@ -4427,6 +5192,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feldsicherung AUS — Felder werden ohne gesonderte Bestätigung gesetzt. Die Bestätigung datenverändernder Aktionen bleibt bestehen. ähnelt.
+        /// </summary>
+        public static string KI_KERN_FELDSICHERUNG_AUS {
+            get {
+                return ResourceManager.GetString("KI_KERN_FELDSICHERUNG_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feldsicherung aus ähnelt.
+        /// </summary>
+        public static string KI_KERN_FELDSICHERUNG_VERMERK {
+            get {
+                return ResourceManager.GetString("KI_KERN_FELDSICHERUNG_VERMERK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Vorgang wurde abgebrochen; es wurde nichts geändert. ähnelt.
         /// </summary>
         public static string KI_KERN_FREIGABE_ABGEBROCHEN {
@@ -4724,6 +5507,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe ähnelt.
+        /// </summary>
+        public static string KI_KNOPF_HILFE {
+            get {
+                return ResourceManager.GetString("KI_KNOPF_HILFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KI-Assistent ähnelt.
+        /// </summary>
+        public static string KI_KNOPF_TOOLTIP {
+            get {
+                return ResourceManager.GetString("KI_KNOPF_TOOLTIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe-Assistent (KI)... ähnelt.
+        /// </summary>
+        public static string KI_MENUE_ASSISTENT {
+            get {
+                return ResourceManager.GetString("KI_MENUE_ASSISTENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe-Assistent... ähnelt.
+        /// </summary>
+        public static string KI_MENUE_ASSISTENT_HILFE {
+            get {
+                return ResourceManager.GetString("KI_MENUE_ASSISTENT_HILFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Änderungsdatum von Projekt {0} konnte nicht gesetzt werden. ähnelt.
         /// </summary>
         public static string KI_REG_AENDERUNGSDATUM_FEHLT {
@@ -4877,6 +5696,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Logischer Name des Feldes, wie ihn dialog_lesen nennt. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_FELD {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_FELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner der Ganglinie, wie ihn ganglinien_auflisten zeigt. ähnelt.
         /// </summary>
         public static string KI_REG_ERL_GANGLINIE_ID {
@@ -4904,6 +5732,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Logischer Name des Knopfes, wie ihn dialog_lesen nennt. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_KNOPF {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kostenkomponente, deren Investitionsposition geprüft wird. ähnelt.
         /// </summary>
         public static string KI_REG_ERL_KOMPONENTE {
@@ -4918,6 +5755,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_REG_ERL_LEISTUNG {
             get {
                 return ResourceManager.GetString("KI_REG_ERL_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typname der Maske, z. B. „Form_PV“. Ohne Angabe gilt die gerade geöffnete steuerbare Maske. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_MASKE {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_MASKE", resourceCulture);
             }
         }
         
@@ -5030,11 +5876,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der einzutragende Text - genau so, wie er auch von Hand eingetippt würde. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_WERT {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuweisungen „feld=wert“, mehrere durch Semikolon getrennt, z. B. „nutzungsdauer=20; raumbedarf=3“. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_WERTE {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Round-Trip-Wirkungsgrad des Speichers. ähnelt.
         /// </summary>
         public static string KI_REG_ERL_WIRKUNGSGRAD {
             get {
                 return ResourceManager.GetString("KI_REG_ERL_WIRKUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feld ähnelt.
+        /// </summary>
+        public static string KI_REG_FELD_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_FELD_NAME", resourceCulture);
             }
         }
         
@@ -5125,6 +5998,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_REG_KEIN_STAMMPROJEKT {
             get {
                 return ResourceManager.GetString("KI_REG_KEIN_STAMMPROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Knopf ähnelt.
+        /// </summary>
+        public static string KI_REG_KNOPF_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_KNOPF_NAME", resourceCulture);
             }
         }
         
@@ -5224,6 +6106,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_REG_LETZTE_AKTIONEN_KEINE {
             get {
                 return ResourceManager.GetString("KI_REG_LETZTE_AKTIONEN_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maske ähnelt.
+        /// </summary>
+        public static string KI_REG_MASKE_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_MASKE_NAME", resourceCulture);
             }
         }
         
@@ -5672,6 +6563,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string KI_REG_WERT_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_WERT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte ähnelt.
+        /// </summary>
+        public static string KI_REG_WERTE_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_WERTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske führt ihre eigene Prüfung aus und verarbeitet die Eingaben - wie bei einem Klick von Hand. ähnelt.
+        /// </summary>
+        public static string KI_REG_WIRKUNG_DIALOG_AKTION {
+            get {
+                return ResourceManager.GetString("KI_REG_WIRKUNG_DIALOG_AKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld trägt danach den neuen Text. In die Datenbank kommt er erst, wenn der Aktionsknopf der Maske ausgelöst wird. ähnelt.
+        /// </summary>
+        public static string KI_REG_WIRKUNG_FELD_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_WIRKUNG_FELD_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die genannten Felder tragen danach die neuen Texte. In die Datenbank kommen sie erst, wenn der Aktionsknopf der Maske ausgelöst wird. ähnelt.
+        /// </summary>
+        public static string KI_REG_WIRKUNG_FORMULAR_AUSFUELLEN {
+            get {
+                return ResourceManager.GetString("KI_REG_WIRKUNG_FORMULAR_AUSFUELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Danach rechnet die Wirtschaftlichkeit mit dem neuen Betrag; ein gespeichertes Ergebnis wird dadurch veraltet. ähnelt.
         /// </summary>
         public static string KI_REG_WIRKUNG_KOSTENPOSITION_SETZEN {
@@ -5708,6 +6644,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löst einen freigegebenen Knopf einer geöffneten Maske aus; die Prüfung der Maske läuft dabei wie bei einem Klick von Hand. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_DIALOG_AKTION {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_DIALOG_AKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erklärt ein Feld einer geöffneten Maske: Anzeigename, Art, Einheit, Leer-Regel und Bedeutung. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_DIALOG_ERKLAEREN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_DIALOG_ERKLAEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennt die steuerbaren Felder, ihre aktuellen Werte und die auslösbaren Knöpfe einer geöffneten Maske. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_DIALOG_LESEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_DIALOG_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Prüft die Energieträger auf Einheiten-Konsistenz: Erreicht jeder aktive Träger kWh — unmittelbar, über Heizwert bzw. Brennwert oder über eine aktive Umrechnungsregel? Liefert die Befundliste, ändert nichts. ähnelt.
         /// </summary>
         public static string KI_REG_ZWECK_ENERGIETRAEGER_PRUEFEN {
@@ -5722,6 +6685,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_REG_ZWECK_ERGEBNISSE_LESEN {
             get {
                 return ResourceManager.GetString("KI_REG_ZWECK_ERGEBNISSE_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trägt in genau ein Feld einer geöffneten Maske einen Wert ein. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_FELD_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_FELD_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trägt in mehrere Felder einer geöffneten Maske Werte ein - als ein einziger bestätigter Block. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_FORMULAR_AUSFUELLEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_FORMULAR_AUSFUELLEN", resourceCulture);
             }
         }
         

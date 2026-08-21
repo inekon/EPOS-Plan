@@ -977,7 +977,13 @@ namespace WindowsFormsApplication1
                         KiAufruf aufruf = befund.Aufruf;
                         schritt.Kurzfassung = KiBestaetigung.Kurzfassung(aufruf);
 
-                        schritt.Bestaetigungspflichtig = KiRiegel.BrauchtBestaetigung(aufruf);
+                        // Gefragt wird ueber KiBestaetigungspflicht und nicht direkt am
+                        // Riegel: Bei abgeschalteter Feldsicherung laeuft eine
+                        // Formularaktion ohne Feldbestaetigung durch (Fachkonzept 11.5).
+                        // Fuer jede gewoehnliche Schreibaktion aendert sich nichts - der
+                        // Schalter erreicht sie gar nicht. Der KiAusfuehrer fragt dieselbe
+                        // Stelle, damit Chat und Ausfuehrer nicht auseinanderlaufen koennen.
+                        schritt.Bestaetigungspflichtig = KiBestaetigungspflicht.Gilt(aufruf);
 
                         string riegel = KiRiegel.PruefeStufe(aufruf);
                         if (riegel != null)

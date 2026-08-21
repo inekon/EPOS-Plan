@@ -273,5 +273,36 @@ namespace KiKern
                 default: throw new ArgumentOutOfRangeException(nameof(stufe));
             }
         }
+
+        // ------------------------------------------ Formularsteuerung (Etappe 3b)
+
+        /// <summary>Ueberschriftfeld „Maske" im Feldblock.</summary>
+        public static string FeldMaske => Hole(Vorsatz + "FELD_MASKE", "Maske");
+
+        /// <summary>
+        /// Steht im Feldblock, wo ein Wert leer ist - eine Zeile ohne alten Wert saehe
+        /// sonst aus wie ein Anzeigefehler.
+        /// </summary>
+        public static string WertLeer => Hole(Vorsatz + "WERT_LEER", "(leer)");
+
+        /// <summary>Ein Knopf der Maske wird ausgeloest. {0} = Beschriftung des Knopfes.</summary>
+        public static string KnopfWirdAusgeloest => Hole(Vorsatz + "KNOPF_WIRD_AUSGELOEST",
+            "Knopf ‚{0}' wird ausgelöst");
+
+        /// <summary>
+        /// Der dauerhafte Hinweis im Chatfenster, wenn die Feldsicherung abgeschaltet ist
+        /// (Fachkonzept 11.5). Der Satz nennt ausdruecklich auch, was WEITER gilt - sonst
+        /// liesse sich „Feldsicherung AUS" als „gar keine Bestaetigung mehr" lesen.
+        /// </summary>
+        public static string FeldsicherungAus => Hole(Vorsatz + "FELDSICHERUNG_AUS",
+            "Feldsicherung AUS — Felder werden ohne gesonderte Bestätigung gesetzt. " +
+            "Die Bestätigung datenverändernder Aktionen bleibt bestehen.");
+
+        /// <summary>
+        /// Vermerk in jeder Protokollzeile, solange die Feldsicherung abgeschaltet ist -
+        /// kurz gehalten, weil er in das Ergebnisfeld der Zeile passen muss.
+        /// </summary>
+        public static string FeldsicherungVermerk => Hole(Vorsatz + "FELDSICHERUNG_VERMERK",
+            "Feldsicherung aus");
     }
 }

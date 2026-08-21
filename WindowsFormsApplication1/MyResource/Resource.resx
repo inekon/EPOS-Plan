@@ -6344,4 +6344,331 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   <data name="WIRT_DLG_CO2_KATALOG" xml:space="preserve">
     <value>⚙ Gesetzeskatalog pflegen (CO₂-Preispfad)…</value>
   </data>
+  <data name="KI_KNOPF_TOOLTIP" xml:space="preserve">
+    <value>KI-Assistent</value>
+  </data>
+  <data name="KI_KNOPF_HILFE" xml:space="preserve">
+    <value>Hilfe</value>
+  </data>
+  <data name="KI_MENUE_ASSISTENT" xml:space="preserve">
+    <value>Hilfe-Assistent (KI)...</value>
+  </data>
+  <data name="KI_MENUE_ASSISTENT_HILFE" xml:space="preserve">
+    <value>Hilfe-Assistent...</value>
+  </data>
+  <data name="KI_HILFEBETRIEB_SUCHEN_BTN" xml:space="preserve">
+    <value>Suchen</value>
+  </data>
+  <data name="KI_HILFEBETRIEB_BEGRUESSUNG" xml:space="preserve">
+    <value>Geben Sie ein Stichwort ein und klicken Sie auf „Suchen“. Durchsucht wird die mitgelieferte Hilfe - dabei verlässt keine Angabe diesen Rechner.</value>
+  </data>
+  <data name="KI_DLG_MASKE_HEIZKESSEL" xml:space="preserve">
+    <value>Heizkessel bearbeiten</value>
+  </data>
+  <data name="KI_DLG_MASKE_PV" xml:space="preserve">
+    <value>Photovoltaik-Module</value>
+  </data>
+  <data name="KI_DLG_MASKE_PUFFERSP" xml:space="preserve">
+    <value>Pufferspeicher bearbeiten</value>
+  </data>
+  <data name="KI_DLG_MASKE_WP" xml:space="preserve">
+    <value>Wärmepumpen verwalten</value>
+  </data>
+  <data name="KI_DLG_KNOPF_SPEICHERN" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="KI_DLG_KNOPF_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Speichern unter</value>
+  </data>
+  <data name="KI_DLG_KNOPF_UEBERSCHREIBEN" xml:space="preserve">
+    <value>Überschreiben</value>
+  </data>
+  <data name="KI_DLG_KNOPF_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="KI_DLG_KNOPF_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="KI_DLG_EINHEIT_JAHRE" xml:space="preserve">
+    <value>Jahre</value>
+  </data>
+  <data name="KI_DLG_TYP_GANZZAHL" xml:space="preserve">
+    <value>ganze Zahl</value>
+  </data>
+  <data name="KI_DLG_TYP_ZAHL" xml:space="preserve">
+    <value>Zahl</value>
+  </data>
+  <data name="KI_DLG_TYP_TEXT" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="KI_DLG_TYP_WAHRHEIT" xml:space="preserve">
+    <value>ja/nein</value>
+  </data>
+  <data name="KI_DLG_TYP_AUSWAHL" xml:space="preserve">
+    <value>Auswahl</value>
+  </data>
+  <data name="KI_DLG_LEER_ERLAUBT" xml:space="preserve">
+    <value>Das Feld darf leer bleiben; leer zählt wie 0.</value>
+  </data>
+  <data name="KI_DLG_LEER_PFLICHT" xml:space="preserve">
+    <value>Das Feld muss gefüllt sein.</value>
+  </data>
+  <data name="KI_DLG_HK_LEISTUNG_NAME" xml:space="preserve">
+    <value>Thermische Leistung</value>
+  </data>
+  <data name="KI_DLG_HK_LEISTUNG_ERL" xml:space="preserve">
+    <value>Nennwärmeleistung des Kessels; Grundlage der Auslegung und der Kostenkennwerte.</value>
+  </data>
+  <data name="KI_DLG_HK_WG_GAS_NAME" xml:space="preserve">
+    <value>Wirkungsgrad Gas, Biogas, Holz und Sonstiges</value>
+  </data>
+  <data name="KI_DLG_HK_WG_GAS_ERL" xml:space="preserve">
+    <value>Feuerungswirkungsgrad für alle Brennstoffe außer Öl, als Faktor (z. B. 0,9).</value>
+  </data>
+  <data name="KI_DLG_HK_WG_OEL_NAME" xml:space="preserve">
+    <value>Wirkungsgrad Öl</value>
+  </data>
+  <data name="KI_DLG_HK_WG_OEL_ERL" xml:space="preserve">
+    <value>Feuerungswirkungsgrad bei Ölbetrieb, als Faktor (z. B. 0,9).</value>
+  </data>
+  <data name="KI_DLG_HK_BB_VERLUST_NAME" xml:space="preserve">
+    <value>Betriebsbereitschaftsverluste</value>
+  </data>
+  <data name="KI_DLG_HK_BB_VERLUST_ERL" xml:space="preserve">
+    <value>Anteil der Nennleistung, der allein durch das Bereithalten des Kessels verloren geht.</value>
+  </data>
+  <data name="KI_DLG_HK_INVEST_NAME" xml:space="preserve">
+    <value>Investitionskosten</value>
+  </data>
+  <data name="KI_DLG_HK_INVEST_ERL" xml:space="preserve">
+    <value>Anschaffungskosten des Kessels; sie gehen in die Wirtschaftlichkeitsrechnung ein.</value>
+  </data>
+  <data name="KI_DLG_HK_WARTUNG_ERL" xml:space="preserve">
+    <value>Wartungsaufwand des Kessels; die Bezugsgröße (Jahresbetrag oder je Leistungseinheit) wählt die Einheitenliste daneben.</value>
+  </data>
+  <data name="KI_DLG_HK_RAUMBEDARF_NAME" xml:space="preserve">
+    <value>Raumbedarf</value>
+  </data>
+  <data name="KI_DLG_HK_RAUMBEDARF_ERL" xml:space="preserve">
+    <value>Aufstellvolumen des Kessels im Heizraum.</value>
+  </data>
+  <data name="KI_DLG_HK_NUTZUNGSDAUER_NAME" xml:space="preserve">
+    <value>Nutzungsdauer</value>
+  </data>
+  <data name="KI_DLG_HK_NUTZUNGSDAUER_ERL" xml:space="preserve">
+    <value>Kalkulatorische Lebensdauer; sie bestimmt den Abschreibungszeitraum.</value>
+  </data>
+  <data name="KI_DLG_HK_CO2_NAME" xml:space="preserve">
+    <value>CO2</value>
+  </data>
+  <data name="KI_DLG_HK_CO2_ERL" xml:space="preserve">
+    <value>Kohlendioxid-Emission je erzeugter Wärmemenge; der Knopf „CO2 BEHG“ leitet sie aus dem gewählten Energieträger ab.</value>
+  </data>
+  <data name="KI_DLG_HK_SO2_NAME" xml:space="preserve">
+    <value>SO2</value>
+  </data>
+  <data name="KI_DLG_HK_SO2_ERL" xml:space="preserve">
+    <value>Schwefeldioxid-Emission je erzeugter Wärmemenge.</value>
+  </data>
+  <data name="KI_DLG_HK_NOX_NAME" xml:space="preserve">
+    <value>NOx</value>
+  </data>
+  <data name="KI_DLG_HK_NOX_ERL" xml:space="preserve">
+    <value>Stickoxid-Emission je erzeugter Wärmemenge.</value>
+  </data>
+  <data name="KI_DLG_HK_CO_NAME" xml:space="preserve">
+    <value>CO</value>
+  </data>
+  <data name="KI_DLG_HK_CO_ERL" xml:space="preserve">
+    <value>Kohlenmonoxid-Emission je erzeugter Wärmemenge.</value>
+  </data>
+  <data name="KI_DLG_HK_STAUB_NAME" xml:space="preserve">
+    <value>Staub</value>
+  </data>
+  <data name="KI_DLG_HK_STAUB_ERL" xml:space="preserve">
+    <value>Staubemission je erzeugter Wärmemenge.</value>
+  </data>
+  <data name="KI_DLG_HK_VORLAUF_NAME" xml:space="preserve">
+    <value>Vorlauf</value>
+  </data>
+  <data name="KI_DLG_HK_VORLAUF_ERL" xml:space="preserve">
+    <value>Auslegungstemperatur des Heizungsvorlaufs.</value>
+  </data>
+  <data name="KI_DLG_HK_RUECKLAUF_NAME" xml:space="preserve">
+    <value>Rücklauf</value>
+  </data>
+  <data name="KI_DLG_HK_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Auslegungstemperatur des Heizungsrücklaufs.</value>
+  </data>
+  <data name="KI_DLG_PV_NEIGUNG_NAME" xml:space="preserve">
+    <value>Neigung</value>
+  </data>
+  <data name="KI_DLG_PV_NEIGUNG_ERL" xml:space="preserve">
+    <value>Neigungswinkel der Modulfläche gegen die Waagerechte (0° liegend, 90° senkrecht).</value>
+  </data>
+  <data name="KI_DLG_PV_AZIMUT_NAME" xml:space="preserve">
+    <value>Azimut</value>
+  </data>
+  <data name="KI_DLG_PV_AZIMUT_ERL" xml:space="preserve">
+    <value>Ausrichtung der Modulfläche gegen Süden (0° Süd, negative Werte nach Osten, positive nach Westen).</value>
+  </data>
+  <data name="KI_DLG_PV_ANZAHL_NAME" xml:space="preserve">
+    <value>Anzahl Module</value>
+  </data>
+  <data name="KI_DLG_PV_ANZAHL_ERL" xml:space="preserve">
+    <value>Stückzahl der Module dieses Typs; zusammen mit der Modulleistung ergibt sie die Gesamtleistung.</value>
+  </data>
+  <data name="KI_DLG_PSP_VOLUMEN_NAME" xml:space="preserve">
+    <value>Gesamtvolumen</value>
+  </data>
+  <data name="KI_DLG_PSP_VOLUMEN_ERL" xml:space="preserve">
+    <value>Speicherinhalt des Pufferspeichers.</value>
+  </data>
+  <data name="KI_DLG_WP_MODULKOSTEN_NAME" xml:space="preserve">
+    <value>Modulkosten</value>
+  </data>
+  <data name="KI_DLG_WP_MODULKOSTEN_ERL" xml:space="preserve">
+    <value>Anschaffungskosten der Wärmepumpe; beim Speichern ist die Angabe Pflicht.</value>
+  </data>
+  <data name="KI_DLG_MASKE_UNBEKANNT" xml:space="preserve">
+    <value>Die Maske „{0}“ ist für den Assistenten nicht freigegeben. Freigegeben sind: {1}.</value>
+  </data>
+  <data name="KI_DLG_KEINE_OFFEN" xml:space="preserve">
+    <value>Es ist keine steuerbare Maske geöffnet. Steuerbar sind: {0}.</value>
+  </data>
+  <data name="KI_DLG_MEHRERE_OFFEN" xml:space="preserve">
+    <value>Es sind mehrere steuerbare Masken geöffnet ({0}). Bitte nennen Sie die Maske ausdrücklich.</value>
+  </data>
+  <data name="KI_DLG_NICHT_OFFEN" xml:space="preserve">
+    <value>Die Maske „{0}“ ist nicht geöffnet.</value>
+  </data>
+  <data name="KI_DLG_MEHRFACH_OFFEN" xml:space="preserve">
+    <value>Die Maske „{0}“ ist mehrfach geöffnet; es ist nicht eindeutig, welche gemeint ist.</value>
+  </data>
+  <data name="KI_DLG_NICHT_AKTIV" xml:space="preserve">
+    <value>Die Maske „{0}“ ist nicht das aktive Fenster. In eine Maske eingetragen wird nur dort, wo Sie gerade arbeiten.</value>
+  </data>
+  <data name="KI_DLG_FELD_UNBEKANNT" xml:space="preserve">
+    <value>Das Feld „{0}“ gibt es in „{1}“ nicht. Bekannt sind: {2}.</value>
+  </data>
+  <data name="KI_DLG_KNOPF_UNBEKANNT" xml:space="preserve">
+    <value>Der Knopf „{0}“ ist in „{1}“ nicht freigegeben. Freigegeben sind: {2}.</value>
+  </data>
+  <data name="KI_DLG_CONTROL_FEHLT" xml:space="preserve">
+    <value>Das Bedienelement „{0}“ ({1}) ist in der geöffneten Maske nicht auffindbar.</value>
+  </data>
+  <data name="KI_DLG_CONTROL_ART" xml:space="preserve">
+    <value>Das Feld „{0}“ ist ein {1}; gesetzt werden können nur Textfeld, Häkchen und Auswahlliste.</value>
+  </data>
+  <data name="KI_DLG_CONTROL_READONLY" xml:space="preserve">
+    <value>Das Feld „{0}“ ist schreibgeschützt.</value>
+  </data>
+  <data name="KI_DLG_CONTROL_GESPERRT" xml:space="preserve">
+    <value>Das Feld „{0}“ ist zurzeit nicht bedienbar.</value>
+  </data>
+  <data name="KI_DLG_KNOPF_GESPERRT" xml:space="preserve">
+    <value>Der Knopf „{0}“ ist zurzeit nicht bedienbar.</value>
+  </data>
+  <data name="KI_DLG_AUSWAHL_UNBEKANNT" xml:space="preserve">
+    <value>„{1}“ ist kein Eintrag der Auswahl „{0}“. Zur Wahl stehen: {2}.</value>
+  </data>
+  <data name="KI_DLG_AUSWAHL_MEHRDEUTIG" xml:space="preserve">
+    <value>Die Auswahl „{0}“ führt „{1}“ mehrfach; die Angabe ist nicht eindeutig.</value>
+  </data>
+  <data name="KI_DLG_FALSCHER_THREAD" xml:space="preserve">
+    <value>Das Feld „{0}“ gehört zu einem anderen Bedienfaden; es wird nichts gesetzt.</value>
+  </data>
+  <data name="KI_DLG_WERTE_LEER" xml:space="preserve">
+    <value>Es wurde kein Feld genannt. Erwartet wird „feld=wert“, mehrere durch Semikolon getrennt.</value>
+  </data>
+  <data name="KI_DLG_WERTE_FORMAT" xml:space="preserve">
+    <value>„{0}“ ist keine Zuweisung. Erwartet wird „feld=wert“, mehrere durch Semikolon getrennt.</value>
+  </data>
+  <data name="KI_DLG_WERTE_DOPPELT" xml:space="preserve">
+    <value>Das Feld „{0}“ ist mehrfach genannt.</value>
+  </data>
+  <data name="KI_DLG_OHNE_AENDERUNG" xml:space="preserve">
+    <value>In „{0}“ tragen alle genannten Felder den Wert bereits; es gibt nichts zu ändern.</value>
+  </data>
+  <data name="KI_DLG_GELESEN" xml:space="preserve">
+    <value>„{0}“: {1} steuerbare Felder, {2} auslösbare Knöpfe.</value>
+  </data>
+  <data name="KI_DLG_ERKLAERT" xml:space="preserve">
+    <value>„{0}“ in „{1}“.</value>
+  </data>
+  <data name="KI_DLG_FELD_GESETZT" xml:space="preserve">
+    <value>„{0}“ steht jetzt auf „{1}“ (vorher „{2}“).</value>
+  </data>
+  <data name="KI_DLG_FELDER_GESETZT" xml:space="preserve">
+    <value>{0} Felder in „{1}“ gesetzt.</value>
+  </data>
+  <data name="KI_DLG_KNOPF_AUSGELOEST" xml:space="preserve">
+    <value>Der Knopf „{0}“ in „{1}“ wurde ausgelöst.</value>
+  </data>
+  <data name="KI_DLG_KNOPF_HINWEIS" xml:space="preserve">
+    <value>Ob die Eingaben angenommen wurden, meldet die Maske selbst - der Assistent ersetzt ihre Prüfung nicht.</value>
+  </data>
+  <data name="KI_DLG_KEIN_WERT" xml:space="preserve">
+    <value>(leer)</value>
+  </data>
+  <data name="KI_REG_ZWECK_DIALOG_LESEN" xml:space="preserve">
+    <value>Nennt die steuerbaren Felder, ihre aktuellen Werte und die auslösbaren Knöpfe einer geöffneten Maske.</value>
+  </data>
+  <data name="KI_REG_ZWECK_DIALOG_ERKLAEREN" xml:space="preserve">
+    <value>Erklärt ein Feld einer geöffneten Maske: Anzeigename, Art, Einheit, Leer-Regel und Bedeutung.</value>
+  </data>
+  <data name="KI_REG_ZWECK_FELD_SETZEN" xml:space="preserve">
+    <value>Trägt in genau ein Feld einer geöffneten Maske einen Wert ein.</value>
+  </data>
+  <data name="KI_REG_ZWECK_FORMULAR_AUSFUELLEN" xml:space="preserve">
+    <value>Trägt in mehrere Felder einer geöffneten Maske Werte ein - als ein einziger bestätigter Block.</value>
+  </data>
+  <data name="KI_REG_ZWECK_DIALOG_AKTION" xml:space="preserve">
+    <value>Löst einen freigegebenen Knopf einer geöffneten Maske aus; die Prüfung der Maske läuft dabei wie bei einem Klick von Hand.</value>
+  </data>
+  <data name="KI_REG_MASKE_NAME" xml:space="preserve">
+    <value>Maske</value>
+  </data>
+  <data name="KI_REG_FELD_NAME" xml:space="preserve">
+    <value>Feld</value>
+  </data>
+  <data name="KI_REG_WERT_NAME" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="KI_REG_WERTE_NAME" xml:space="preserve">
+    <value>Werte</value>
+  </data>
+  <data name="KI_REG_KNOPF_NAME" xml:space="preserve">
+    <value>Knopf</value>
+  </data>
+  <data name="KI_REG_ERL_MASKE" xml:space="preserve">
+    <value>Typname der Maske, z. B. „Form_PV“. Ohne Angabe gilt die gerade geöffnete steuerbare Maske.</value>
+  </data>
+  <data name="KI_REG_ERL_FELD" xml:space="preserve">
+    <value>Logischer Name des Feldes, wie ihn dialog_lesen nennt.</value>
+  </data>
+  <data name="KI_REG_ERL_WERT" xml:space="preserve">
+    <value>Der einzutragende Text - genau so, wie er auch von Hand eingetippt würde.</value>
+  </data>
+  <data name="KI_REG_ERL_WERTE" xml:space="preserve">
+    <value>Zuweisungen „feld=wert“, mehrere durch Semikolon getrennt, z. B. „nutzungsdauer=20; raumbedarf=3“.</value>
+  </data>
+  <data name="KI_REG_ERL_KNOPF" xml:space="preserve">
+    <value>Logischer Name des Knopfes, wie ihn dialog_lesen nennt.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_FELD_SETZEN" xml:space="preserve">
+    <value>Das Feld trägt danach den neuen Text. In die Datenbank kommt er erst, wenn der Aktionsknopf der Maske ausgelöst wird.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_FORMULAR_AUSFUELLEN" xml:space="preserve">
+    <value>Die genannten Felder tragen danach die neuen Texte. In die Datenbank kommen sie erst, wenn der Aktionsknopf der Maske ausgelöst wird.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_DIALOG_AKTION" xml:space="preserve">
+    <value>Die Maske führt ihre eigene Prüfung aus und verarbeitet die Eingaben - wie bei einem Klick von Hand.</value>
+  </data>
+  <data name="KI_KERN_FELDSICHERUNG_AUS" xml:space="preserve">
+    <value>Feldsicherung AUS — Felder werden ohne gesonderte Bestätigung gesetzt. Die Bestätigung datenverändernder Aktionen bleibt bestehen.</value>
+  </data>
+  <data name="KI_KERN_FELDSICHERUNG_VERMERK" xml:space="preserve">
+    <value>Feldsicherung aus</value>
+  </data>
 </root>

@@ -12,6 +12,14 @@
     Aufbau wie Referenzlauf\Referenzlauf.csproj: Konsolen-EXE, net8.0-windows, x86,
     Projektreferenz auf die App.
 
+    Seit Paket F4 (Etappe 3b) traegt der Harnisch zusaetzlich den LAUFZEIT-KATALOGTEST der
+    Formularsteuerung (Katalogpruefung.cs, Fachkonzept 11.3). Er laeuft fuer sich allein -
+    aufgerufen mit dem Schalter "katalog" mit zwei fuehrenden Bindestrichen (der Wortlaut
+    steht in Program.SCHALTER_KATALOG; hier ist er nicht schreibbar, weil ein XML-Kommentar
+    keine zwei aufeinanderfolgenden Bindestriche enthalten darf).
+    Dieser Lauf braucht WEDER Datenbank NOCH Registry und zeigt kein Fenster - er laesst
+    sich deshalb jederzeit wiederholen, auch auf einem Rechner ohne EPOS-Datenbestand.
+
     BEWUSST NICHT IN WP-Plan.sln - dasselbe Vorgehen wie beim Referenzlauf. Gebaut wird
     ueber MSBuild.exe, weil "dotnet build" an MSB4803 scheitert (COM-Referenzen der App):
       "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" ^
