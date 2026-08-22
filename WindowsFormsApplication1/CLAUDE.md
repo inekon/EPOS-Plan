@@ -48,12 +48,12 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
 | `Reporting/`, `Waermespeicher/` | **nur Konzept-/Standdokumente**, kein Code |
 
 **Datenzugriff:** `DataRepository.cs` (OLE DB, `?`-Parameter) — Standard, in ~140 Dateien; den
-ConnectionString (`Provider=Microsoft.ACE.OLEDB.12.0`) baut zentral `GetConnectionString()`
-(einzige Abweichung mit eigenem Provider-String: `Views/Kosten/Form_KostenfaktorItem.cs`).
-`RecordSet.cs` (string-konkateniertes SQL, ~60 Dateien) ist Altbestand, läuft aber ebenfalls über
-OLE DB — ODBC ist vollständig abgelöst: `Program.DBConnection` existiert nicht mehr, einziger
-ODBC-Rest ist die vom Build ausgeschlossene `Controller/WPTestCtrl.cs`, das Paket
-`System.Data.Odbc` ist ungenutzt. Neuer Code ausschließlich über `DataRepository`.
+ConnectionString (`Provider=Microsoft.ACE.OLEDB.12.0`) baut zentral `GetConnectionString()` — die
+einzige Stelle im Code, an der der Provider-String steht. `RecordSet.cs` (string-konkateniertes SQL,
+~60 Dateien) ist Altbestand, läuft aber ebenfalls über OLE DB — ODBC ist vollständig entfernt:
+`Program.DBConnection` existiert nicht mehr, `Controller/WPTestCtrl.cs` ist gelöscht und das Paket
+`System.Data.Odbc` aus dem Projekt genommen (P1 der x64-Umstellung). Neuer Code ausschließlich über
+`DataRepository`.
 
 **Rechenkern:** vollständig verwaltet in `Allgemein/BhkwPlan.cs` (Namespace `WPPlan.Core`), aufgerufen
 aus den `Simulation*`-Klassen und einigen Eingabeformularen. Keine native DLL, kein COM-Server, kein
@@ -73,7 +73,7 @@ Diese Konventionen beim Erweitern beibehalten.
 - Pro Formular bis zu 5 Dateien: `X.cs`, `X.Designer.cs`, `X.resx`, `X.de-DE.resx`, `X.en-US.resx`.
   **Designer- und `.resx`-Dateien nicht von Hand editieren** — über den WinForms-Designer pflegen,
   Strings über die Satelliten-`.resx` lokalisieren.
-- Vom Build ausgeschlossen (`.csproj`): `ChartManagerNeu.cs`, `WPTestCtrl.cs`, `Form_Simulation_Kurz.*`
+- Vom Build ausgeschlossen (`.csproj`): `ChartManagerNeu.cs`, `Form_Simulation_Kurz.*`
   und die „- Kopie"-Dateien unter `Views/Simulation/`.
 - **Drei-Schichten-Regel für Texte** (Konzept 13.6, umgesetzt mit Paket 9): **Persistenz** —
   alles, was in `Kenndaten.accdb` steht oder in SQL damit verglichen wird, bleibt **deutsch und
@@ -90,7 +90,7 @@ Diese Konventionen beim Erweitern beibehalten.
 `WinForms.DataVisualization` (Chart-Port mit Original-Namespace) · `ScottPlot.WinForms` + `SkiaSharp`
 · `MathNet.Numerics` · `DocumentFormat.OpenXml` und `ClosedXML` (Berichte ohne Office) ·
 `BouncyCastle.Cryptography` + `System.Security.Cryptography.ProtectedData` (Lizenz) ·
-`System.Data.OleDb` (das ebenfalls referenzierte `System.Data.Odbc` ist ungenutzt) ·
+`System.Data.OleDb` ·
 `Mscc.GenerativeAI`.
 
 **`SixLabors.Fonts` ist bewusst auf 1.0.1 gepinnt** — ab 2.x gilt die Six Labors Split License.
