@@ -762,7 +762,70 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BEMESSUNG_PROZENT_INVESTITION", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die €/kWel: abgeleitet aus Summe / Pel ähnelt.
+        /// </summary>
+        public static string BHKW_INVEST_HINWEIS_ABGELEITET {
+            get {
+                return ResourceManager.GetString("BHKW_INVEST_HINWEIS_ABGELEITET", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die €/kWel: Bestand weicht ab, wird beim Speichern nachgezogen ähnelt.
+        /// </summary>
+        public static string BHKW_INVEST_HINWEIS_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("BHKW_INVEST_HINWEIS_ABWEICHUNG", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die €/kWel: nicht bestimmbar (Pel = 0) ähnelt.
+        /// </summary>
+        public static string BHKW_INVEST_HINWEIS_UNBESTIMMT {
+            get {
+                return ResourceManager.GetString("BHKW_INVEST_HINWEIS_UNBESTIMMT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einzelposten führen: Investitionskosten je kWel = Summe der Einzelposten geteilt durch die elektrische Leistung. Das Feld ist deshalb nicht änderbar. ähnelt.
+        /// </summary>
+        public static string BHKW_INVEST_TIP {
+            get {
+                return ResourceManager.GetString("BHKW_INVEST_TIP", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die elektrische Leistung ist 0. Investitionskosten je kWel sind damit nicht bestimmbar. Gespeichert wird die Summe der Einzelposten; Speichern bleibt möglich. ähnelt.
+        /// </summary>
+        public static string BHKW_INVEST_TIP_UNBESTIMMT {
+            get {
+                return ResourceManager.GetString("BHKW_INVEST_TIP_UNBESTIMMT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die n. b. ähnelt.
+        /// </summary>
+        public static string BHKW_INVEST_UNBESTIMMT {
+            get {
+                return ResourceManager.GetString("BHKW_INVEST_UNBESTIMMT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Einzelposten: ähnelt.
+        /// </summary>
+        public static string BHKW_SUMME_LBL {
+            get {
+                return ResourceManager.GetString("BHKW_SUMME_LBL", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bilanzierung: Bilanzjahr {0} · KWK-Strom {1} ({2}) · Biomasse {3} · {4} ähnelt.
         /// </summary>
@@ -1826,7 +1889,43 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_KOSTEN_SUMME", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Verwendet, dem Projekt aber nicht zugeordnet: {0} — ohne Zuordnung gibt es weder Preis noch Heizwert; im Reiter „Energiekosten&quot; der Kostenverwaltung ergänzen. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_TRAEGER_FEHLT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_TRAEGER_FEHLT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendet von: {0} ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_TRAEGER_HINT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_TRAEGER_HINT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Energieträger — das Projekt führt keinen Erzeuger, der Energie bezieht. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_TRAEGER_KEINE {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_TRAEGER_KEINE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Energieträger mit Projekteinstellungen — verwendet werden: {0} ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_TRAEGER_UNGEPFLEGT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_TRAEGER_UNGEPFLEGT", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die davon Zuschuss: −{0} € ähnelt.
         /// </summary>
@@ -1862,7 +1961,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_LBL_KOMPONENTEN_STAMM", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten im Vergleich — Stammprojekt und Varianten ähnelt.
         /// </summary>
@@ -1871,7 +1970,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_LBL_KOMPONENTEN_VERGLEICH", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stammprojekt: ähnelt.
         /// </summary>
@@ -1880,7 +1979,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_LBL_STAMM", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nur die ersten {0} Varianten dargestellt, {1} weitere ausgeblendet ähnelt.
         /// </summary>
@@ -1889,7 +1988,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_LBL_VARIANTEN_GEKAPPT", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Anlegen: {0} ähnelt.
         /// </summary>
@@ -2186,7 +2285,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_MSG_VARIANTE_GELOESCHT", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Merkmalszeile(n) für das Stammprojekt und {1} Variante(n). ähnelt.
         /// </summary>
@@ -2195,7 +2294,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_MSG_VERGLEICH_UMFANG", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bericht ähnelt.
         /// </summary>
@@ -18246,6 +18345,26 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SP_TOOLTIP_CSV {
             get {
                 return ResourceManager.GetString("SP_TOOLTIP_CSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Microsoft Access Database Engine ({0}) ist auf diesem Rechner nicht verfügbar. EPOS-Plan kann ohne sie nicht auf die Datenbank zugreifen.
+        ///
+        ///Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Microsoft Access Database Engine ({0}). ähnelt.
+        /// </summary>
+        public static string START_ACE_FEHLT_TEXT {
+            get {
+                return ResourceManager.GetString("START_ACE_FEHLT_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbank-Komponente fehlt ähnelt.
+        /// </summary>
+        public static string START_ACE_FEHLT_TITEL {
+            get {
+                return ResourceManager.GetString("START_ACE_FEHLT_TITEL", resourceCulture);
             }
         }
         

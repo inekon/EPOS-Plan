@@ -1,6 +1,8 @@
 # Umstellung auf 64 Bit (x64) — Analyse und Vorgehensweise
 
-Stand: 21.08.2026. Betrachtet wurden der gesamte Bestand unter `WindowsFormsApplication1`
+Stand: 22.08.2026 — P0 und P1 abgeschlossen (alle Entscheidungen getroffen, Code
+robust gemacht; Commits `b4f5543` und `14777bc`). Nächstes Paket: P2.
+Betrachtet wurden der gesamte Bestand unter `WindowsFormsApplication1`
 (ohne Altkopien und Worktrees), die Solution, alle Nebenwerkzeuge, der Installer unter
 `Setup\` sowie die aktuelle Faktenlage zur 64-bit Access Database Engine (Quellen in
 Abschnitt 9).
@@ -12,7 +14,9 @@ Prozess-Bitness passen muss. Die Anwendung soll auf **x64** umgestellt werden.
 **Entscheidung (21.08.2026):** Die Umstellung erfolgt **vollständig auf x64, ohne
 x86** — kein Doppelgleis, kein x86-Setup, keine x86-Konfigurationen im Bestand
 (Abschnitt 5.1). Der Rückweg führt ausschließlich über die Git-Historie
-(Tag vor der Umstellung, P2.1).
+(Tag vor der Umstellung, P2.1). Am 22.08.2026 wurden auch die Umsetzungsdetails
+5.2–5.4 wie vorgeschlagen entschieden — **P0 ist abgeschlossen**, die Umsetzung
+beginnt mit P1.
 
 Dieses Dokument ist reine Analyse und Planung — es wurde noch keine Zeile Code geändert.
 
@@ -57,7 +61,8 @@ x86-Setup mehr als Ausweich — dort bleibt nur der Wechsel auf 64-bit-Office od
 dokumentierte KB-5004577-Weg (Hinweisdialog im Setup, P4.2). Das ist dieselbe Reibung,
 die das heutige x86-Setup bereits in Gegenrichtung hat (sein eigener Fehlertext nennt
 „ein installiertes 64-Bit-Microsoft-Office" als häufigste Ursache,
-`EPOS-Plan.iss:186-187`). Offen sind nur noch die Umsetzungsdetails 5.2–5.4.
+`EPOS-Plan.iss:186-187`). Auch 5.2–5.4 sind entschieden (22.08.2026, Vorschläge
+unverändert angenommen) — es gibt keine offenen Entscheidungen mehr.
 
 ---
 
@@ -245,23 +250,24 @@ gesetzt (P2.1); von dort ist der letzte x86-Stand jederzeit wieder baubar, und d
 bewusst keinen Ausweich-Build — nur den Wechsel auf 64-bit-Office oder den
 KB-5004577-Weg (Hinweisdialog im Setup, P4.2).
 
-### 5.2 Umgang mit bestehenden 32-bit-Installationen beim Update
+### 5.2 Umgang mit bestehenden 32-bit-Installationen beim Update *(entschieden)*
 
 Ein x64-Setup installiert nach `Programme` statt `Programme (x86)`, und Inno Setup legt
 seinen Uninstall-Eintrag in der 64-Bit-Registry-Sicht an — die vorhandene
 32-bit-Installation wird also **nicht** automatisch als dieselbe Anwendung erkannt:
 Ergebnis wären zwei Einträge unter „Apps und Features" und zwei Programmordner.
 
-Vorschlag: Das x64-Setup erkennt die 32-bit-Installation (Uninstall-Key derselben AppId
-in der 32-Bit-Sicht bzw. `HKLM32\SOFTWARE\INEKON\EPOS-Plan`) und **deinstalliert sie
-still** vor der eigenen Installation. Die Nutzdaten sind davon nicht berührt — sie
+**Entschieden (22.08.2026):** Das x64-Setup erkennt die 32-bit-Installation
+(Uninstall-Key derselben AppId in der 32-Bit-Sicht bzw.
+`HKLM32\SOFTWARE\INEKON\EPOS-Plan`) und **deinstalliert sie still** vor der eigenen
+Installation. Die Nutzdaten sind davon nicht berührt — sie
 liegen in `%ProgramData%\EPOS_PLAN` (Datenbank) und `%APPDATA%\wp-plan` (Lizenz,
 KI-Schlüssel), beides bitness-neutral; der alte Uninstaller fasst laut
 `EPOS-Plan.iss:300-307` nur `{app}` an.
 
-### 5.3 Welche Redist wird beigelegt?
+### 5.3 Welche Redist wird beigelegt? *(entschieden: ADE 2016 x64)*
 
-Vorschlag: **ADE 2016 Redistributable x64** beilegen (funktioniert, registriert 12.0,
+**Entschieden (22.08.2026):** **ADE 2016 Redistributable x64** beilegen (funktioniert, registriert 12.0,
 identisches Setup-Muster wie heute) und im Setup-Konzept dokumentieren, dass die
 *Microsoft 365 Access Runtime* der designierte Nachfolger ist (EOL der ADE 2016 im
 Oktober 2025 ist bekannt und akzeptiert). Die vorhandene 32-bit-`AccessDatabaseEngine.exe`
@@ -269,13 +275,13 @@ in der Repo-Wurzel wird durch die x64-Fassung ersetzt — einen x86-Sonderfall g
 nach Entscheidung 5.1 nicht mehr; zur Eindeutigkeit heißt die neue Datei
 `AccessDatabaseEngine_X64.exe`, die alte wird in P5 entfernt.
 
-### 5.4 Aufräumen im selben Zug?
+### 5.4 Aufräumen im selben Zug? *(entschieden: ja)*
 
 Kleiner, risikoarmer Beifang, der die Umstellung sauberer macht: Paket
 `System.Data.Odbc` entfernen, `Controller\WPTestCtrl.cs` löschen (ist ohnehin nicht
 übersetzbar), toten `KenndatenConnectionString` aus `app.config`/Settings nehmen,
 `Form_KostenfaktorItem` auf `DataRepository.GetConnectionString()` umstellen.
-Vorschlag: ja, als eigenes kleines Paket (P1), getrennt committen.
+**Entschieden (22.08.2026):** ja — als Teil von P1, getrennt committen.
 
 ---
 
@@ -284,12 +290,22 @@ Vorschlag: ja, als eigenes kleines Paket (P1), getrennt committen.
 Sechs Pakete. P1–P3 machen die Anwendung selbst x64-fähig und nachweisbar korrekt;
 P4 stellt die Verteilung um; P5 räumt Doku und Reste auf. P0 ist die Entscheidung.
 
-### P0 — Entscheidungen aus Abschnitt 5
+### P0 — Entscheidungen aus Abschnitt 5 *(abgeschlossen 22.08.2026)*
 
-5.1 ist entschieden (vollständig x64, ohne x86). Offen sind nur noch die
-Umsetzungsdetails 5.2–5.4; die dortigen Vorschläge gelten, bis ihnen widersprochen wird.
+Alle vier Entscheidungen sind getroffen: **5.1** vollständig x64, ohne x86
+(21.08.2026); **5.2** stille Deinstallation der 32-bit-Vorinstallation; **5.3**
+ADE 2016 Redistributable x64 als beigelegte Voraussetzung; **5.4** Aufräum-Beifang in
+P1 (5.2–5.4 am 22.08.2026, Vorschläge unverändert angenommen). Die Umsetzung beginnt
+mit P1.
 
-### P1 — Code robust machen *(klein, unabhängig einspielbar)*
+### P1 — Code robust machen *(umgesetzt 22.08.2026, Commits `b4f5543` + `14777bc`)*
+
+Alle vier Punkte sind umgesetzt und mit `Platform=x86` gebaut (VS-MSBuild; `dotnet build`
+scheitert seit dem .NET-10-Preview-SDK auch beim Hauptprojekt an MSB4803).
+Die HKLM-Doppelsicht liest über die neue Hilfsmethode `LesenMaschine(RegistryView, …)`
+in `KiEinwilligung.cs`; die Startprüfung heißt `DataRepository.ProviderVorhanden()`
+und hängt in `Program.Main` direkt nach der Sprachwahl. Der Praxistest der
+Fehlermeldung auf einem Rechner ohne ACE bleibt Prüfpunkt 3 der Abnahme.
 
 1. **`KiEinwilligung.cs`**: HKLM-Lesung des Abschalters auf **beide** Registry-Sichten
    erweitern (erst 64, dann 32-Bit-Sicht; ein Treffer genügt). Damit wirken vorhandene
@@ -304,7 +320,7 @@ Umsetzungsdetails 5.2–5.4; die dortigen Vorschläge gelten, bis ihnen widerspr
    64-Bit-Access-Datenbank-Engine fehlt …", Verweis auf Setup/Redist) statt einer
    nackten `OleDbException`. Texte nach der Drei-Schichten-Regel über
    `MyResource.Resource.*` in beiden Satelliten-`.resx`.
-4. Aufräum-Beifang aus 5.4 (falls beschlossen).
+4. Aufräum-Beifang aus 5.4 (entschieden: ja) — eigener Commit.
 
 ### P2 — Build und Werkzeuge vollständig auf x64 (Entscheidung 5.1)
 
@@ -438,7 +454,7 @@ Umsetzungsdetails 5.2–5.4; die dortigen Vorschläge gelten, bis ihnen widerspr
 
 | Paket | Umfang | Aufwand |
 |---|---|---|
-| P0 Entscheidungen | 5.1 entschieden; 5.2–5.4 bestätigen | Abstimmung |
+| P0 Entscheidungen | alle getroffen (5.1: 21.08.2026, 5.2–5.4: 22.08.2026) | erledigt |
 | P1 Code robust | 2 Dateien + Startprüfung + 2 `.resx`, optional Aufräumen | 3–5 h |
 | P2 Build/Werkzeuge | Git-Tag, 4 csproj + `WP-Plan.sln`, Doku-Befehle | 1–2 h |
 | P3 Verifikation | Referenzläufe + Funktionsdurchlauf + DB-Test | 6–10 h |

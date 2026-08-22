@@ -57,7 +57,6 @@
   <!-- Dateien auf der Platte, die nie ins alte Projekt aufgenommen waren -->
   <ItemGroup>
     <Compile Remove="Allgemein\GrafikTools\ChartManagerNeu.cs" />
-    <Compile Remove="Controller\WPTestCtrl.cs" />
     <Compile Remove="Views\Simulation\Form_Simulation_Detail - Kopie.cs" />
     <Compile Remove="Views\Simulation\Form_Simulation_Detail.Designer - Kopie.cs" />
     <Compile Remove="Views\Simulation\Form_Simulation_Kurz.cs" />
@@ -93,9 +92,8 @@
     <PackageReference Include="ClosedXML" Version="0.105.1" />
     <PackageReference Include="SixLabors.Fonts" Version="1.0.1" />
 
-    <!-- Datenzugriff (Access via ACE OLEDB / ODBC) -->
+    <!-- Datenzugriff (Access via ACE OLEDB) -->
     <PackageReference Include="System.Data.OleDb" Version="8.0.1" />
-    <PackageReference Include="System.Data.Odbc" Version="8.0.1" />
 
     <!-- Konfiguration / Settings -->
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.1" />
