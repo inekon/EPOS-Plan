@@ -73,8 +73,6 @@ namespace WindowsFormsApplication1
         public float[] brauchwasserwerte = new float[8760];
         public float[] temp = new float[8760];
 
-        //public CSExeCOMServer.SimpleObject com = new CSExeCOMServer.SimpleObject();
-
         public SimulationWaermebedarf()
         {
             Classes.Simulation.Init init = new Classes.Simulation.Init();

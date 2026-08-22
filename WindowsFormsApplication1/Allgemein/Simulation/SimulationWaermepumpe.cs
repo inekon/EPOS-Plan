@@ -231,8 +231,6 @@ namespace WindowsFormsApplication1
         const int PTHERM = 2;
         const int PEL = 3;
 
-        //public CSExeCOMServer.SimpleObject com = new CSExeCOMServer.SimpleObject();
-
         public bool Berechnung()
         {
             if (wp_list.Count >= 10) return false;

@@ -8,8 +8,8 @@
     referenziert (COM-Referenzen, MSB4803 unter dotnet build) - der Kern ist genau so
     geschnitten, dass er ohne die Anwendung prueffaehig ist (Fachkonzept 3.7).
 
-    Build/Test mit eigenem, kurzem Artefaktpfad, damit die x86-DLL des App-Builds nicht
-    mit dem 64-Bit-Testhost kollidiert:
+    Build/Test mit eigenem, kurzem Artefaktpfad, damit die App-DLL des Hauptbuilds nicht
+    mit dem Testhost kollidiert:
       dotnet test KiKern.Tests -p:ArtifactsPath=C:\Temp\kibart
   -->
 

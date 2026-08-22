@@ -333,18 +333,18 @@ Nur über das MSBuild von Visual Studio — `dotnet build` scheitert an MSB4803
 ```powershell
 & "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" `
     C:\Waermeplan\WP_Plan\Referenzlauf\Referenzlauf.csproj `
-    -p:Configuration=Debug -p:Platform=x86
+    -p:Configuration=Debug -p:Platform=x64
 ```
 
 Beim allerersten Mal davor einmal `-t:Restore` mit denselben Parametern. Das Projekt ist
 bewusst **nicht** Teil von `WP-Plan.sln`.
 
-Ergebnis: `Referenzlauf\bin\x86\Debug\net8.0-windows\Referenzlauf.exe`
+Ergebnis: `Referenzlauf\bin\x64\Debug\net8.0-windows\Referenzlauf.exe`
 
 ## Bedienung
 
 ```powershell
-$exe = "C:\Waermeplan\WP_Plan\Referenzlauf\bin\x86\Debug\net8.0-windows\Referenzlauf.exe"
+$exe = "C:\Waermeplan\WP_Plan\Referenzlauf\bin\x64\Debug\net8.0-windows\Referenzlauf.exe"
 ```
 
 ### `lauf` — Stand einfrieren

@@ -768,7 +768,7 @@ namespace WindowsFormsApplication1
                 string basis = AppDomain.CurrentDomain.BaseDirectory;
                 ordner.Add(basis);
 
-                // Übergeordnete Ebenen mitnehmen: bin\x86\Debug\net8.0-windows -> Projektstamm
+                // Übergeordnete Ebenen mitnehmen: bin\x64\Debug\net8.0-windows -> Projektstamm
                 DirectoryInfo di = new DirectoryInfo(basis);
                 for (int i = 0; i < 6 && di.Parent != null; i++)
                 {

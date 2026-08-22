@@ -43,9 +43,10 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Windows-Machine-GUID. Wichtig: Die Anwendung läuft als x86 auf
-        /// 64-bit-Windows — deshalb ausdrücklich die 64-bit-Registry-Sicht
-        /// verwenden, sonst greift die WOW6432Node-Umleitung.
+        /// Windows-Machine-GUID. Seit der x64-Umstellung läuft die Anwendung als x64;
+        /// die ausdrückliche 64-bit-Registry-Sicht bleibt trotzdem richtig — sie schützte
+        /// zur x86-Zeit vor der WOW6432Node-Umleitung und hält die Geräte-ID dadurch über
+        /// beide Ären hinweg stabil (vorhandene Lizenz-Token bleiben gültig).
         /// </summary>
         private static string MachineGuid()
         {

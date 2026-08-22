@@ -5,8 +5,8 @@
 
     Bewusste Festlegungen (Fachkonzept KI-Assistent 3.2 / 3.7, Vorbild SpeicherEngine):
       * TargetFramework net8.0 (NICHT -windows): keine WinForms-, keine WPF-Bindung.
-      * Kein <PlatformTarget> -> AnyCPU. Die x86-Pflicht des Hauptprojekts kommt von
-        ACE OLEDB und geht den Kern nichts an.
+      * Kein <PlatformTarget> -> AnyCPU. Das Hauptprojekt baut x64 (ACE OLEDB als
+        64-Bit-Engine); der Kern bleibt AnyCPU, die Bitness geht ihn nichts an.
       * KEINE Paket- und KEINE Projektreferenzen. Der Kern darf weder
         WindowsFormsApplication1 noch DataRepository noch System.Windows.Forms sehen.
         JSON entsteht ausschliesslich ueber System.Text.Json aus der Basisbibliothek
