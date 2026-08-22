@@ -3,9 +3,9 @@
 ;  Inno Setup 6.3 oder neuer (wegen der Architekturbezeichner, siehe unten)
 ;
 ;  Ablage:      <Repo>\Setup\EPOS-Plan.iss
-;  Übersetzen:  Setup\build-setup.ps1   (ruft dotnet publish und ISCC auf)
+;  Übersetzen:  Setup\build-setup.ps1   (ruft MSBuild-Publish und ISCC auf)
 ;  Von Hand:    ISCC.exe EPOS-Plan.iss  (setzt eine fertige Veröffentlichung
-;                                        unter <Repo>\artifacts\publish\win-x86
+;                                        unter <Repo>\artifacts\publish\win-x64
 ;                                        voraus)
 ;
 ;  Konzept und Begründung der Entscheidungen:
@@ -34,20 +34,21 @@
 #define SetupDir       AddBackslash(SourcePath)
 #define RepoDir        SetupDir + "..\"
 
-; Ergebnis von: dotnet publish -r win-x86 --self-contained true
+; Ergebnis des MSBuild-Publish (win-x64, eigenständig) — siehe build-setup.ps1.
 #ifndef PublishDir
-  #define PublishDir   RepoDir + "artifacts\publish\win-x86"
+  #define PublishDir   RepoDir + "artifacts\publish\win-x64"
 #endif
 
 ; Auslieferungsdatenbank — NICHT die Arbeitsdatenbank aus dem Repository!
 ; Wie dieser Stand erzeugt wird, steht im Konzept, Abschnitt 6.1.
 #define VorlageDb      SetupDir + "Vorlage\Kenndaten.accdb"
 
-; Microsoft Access Database Engine 2016 Redistributable, 32 Bit
-#define AceInstaller   SetupDir + "Voraussetzungen\AccessDatabaseEngine.exe"
+; Microsoft Access Database Engine 2016 Redistributable, 64 Bit
+#define AceInstaller   SetupDir + "Voraussetzungen\AccessDatabaseEngine_X64.exe"
 
-; Version. Einzige Quelle ist die gebaute EXE; build-setup.ps1 setzt sie über
-; -p:Version an dotnet publish. Fehlt die Datei, würde
+; Version. Einzige Quelle ist die gebaute EXE; gepflegt wird sie in
+; WindowsFormsApplication1\Properties\AssemblyInfo.cs
+; (AssemblyFileVersion). Fehlt die Datei, würde
 ; GetVersionNumbersString einen leeren Wert liefern und das Setup mit
 ; unbrauchbarem Namen und leerer Version übersetzen — deshalb der Abbruch.
 #ifndef AppVersion
@@ -86,18 +87,18 @@ DisableDirPage=no
 DisableProgramGroupPage=yes
 DisableWelcomePage=no
 
-; Maschinenweite Installation nach "Programme (x86)"; die Anwenderdaten liegen
+; Maschinenweite Installation nach "Programme"; die Anwenderdaten liegen
 ; je Windows-Konto (siehe Konzept, Abschnitt 2).
 PrivilegesRequired=admin
 
-; Dokumentiert die Zielplattform. x86compatible = jedes System, das 32-Bit-
-; x86-Binärdateien ausführen kann, also x64 und ARM64 eingeschlossen.
-; ACHTUNG beim Ändern: Das frühere "x86" bedeutet seit Inno Setup 6.3
-; "x86os" — nur natives 32-Bit-Windows — und wäre hier falsch.
-ArchitecturesAllowed=x86compatible
-; ArchitecturesInstallIn64BitMode wird bewusst NICHT gesetzt: EPOS-Plan ist
-; eine 32-Bit-Anwendung (Microsoft.ACE.OLEDB.12.0 ist bitness-gebunden) und
-; gehört nach "Programme (x86)".
+; Dokumentiert die Zielplattform. x64compatible = jedes System, das 64-Bit-
+; x64-Binärdateien ausführen kann, also x64-Windows und ARM64-Windows mit
+; x64-Emulation.
+ArchitecturesAllowed=x64compatible
+; EPOS-Plan ist seit der Umstellung eine x64-Anwendung und braucht
+; Microsoft.ACE.OLEDB.12.0 als 64-Bit-Engine. Mit dem 64-Bit-Modus zeigt
+; {autopf} auf "Programme" und HKLM auf die 64-Bit-Registry-Sicht.
+ArchitecturesInstallIn64BitMode=x64compatible
 
 MinVersion=10.0
 
@@ -161,8 +162,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 
 [CustomMessages]
-german.AceInstallieren=Microsoft Access Database Engine (32 Bit) wird installiert …
-english.AceInstallieren=Installing Microsoft Access Database Engine (32-bit) …
+german.AceInstallieren=Microsoft Access Database Engine (64 Bit) wird installiert …
+english.AceInstallieren=Installing Microsoft Access Database Engine (64-bit) …
 
 german.RechteSetzen=Zugriffsrechte des gemeinsamen Datenordners werden gesetzt …
 english.RechteSetzen=Setting permissions on the shared data folder …
@@ -183,8 +184,11 @@ english.UebernahmeKopf=Your projects will be kept
 german.UebernahmeText=Auf diesem Rechner liegt bereits eine Datenbank unter%n%n    C:\ProgramData\EPOS_PLAN\Kenndaten.accdb%n%nAb dieser Version arbeitet EPOS-Plan mit einer Datenbank je Windows-Konto. Beim ersten Start übernimmt das Programm die vorhandene Datenbank einschließlich aller Projekte in Ihr Benutzerprofil. Die bisherige Datei bleibt unverändert liegen und kann nach einer Kontrolle von Hand entfernt werden.%n%nDas Setup selbst verändert Ihre Daten nicht.
 english.UebernahmeText=This computer already holds a database at%n%n    C:\ProgramData\EPOS_PLAN\Kenndaten.accdb%n%nFrom this version on, EPOS-Plan uses one database per Windows account. On first start the application copies the existing database including all projects into your user profile. The previous file is left untouched and may be removed manually after verification.%n%nSetup itself does not modify your data.
 
-german.AceFehlt=Die Microsoft Access Database Engine (32 Bit) konnte nicht installiert werden.%n%nOhne sie kann EPOS-Plan nicht auf seine Datenbank zugreifen.%n%nHäufigste Ursache ist ein installiertes 64-Bit-Microsoft-Office, das die 32-Bit-Engine blockiert. Der Weg dorthin steht in der Liesmich-Datei im Programmordner; im Zweifel hilft der Support weiter.%n%nDie Installation wird fortgesetzt.
-english.AceFehlt=The Microsoft Access Database Engine (32-bit) could not be installed.%n%nWithout it EPOS-Plan cannot access its database.%n%nThe most common cause is an installed 64-bit Microsoft Office blocking the 32-bit engine. See the readme file in the program folder, or contact support.%n%nSetup will continue.
+german.Office32Hinweis=Auf diesem Rechner ist ein 32-Bit-Microsoft-Office installiert.%n%nDie 64-Bit-Access-Engine kann daneben von Microsoft offiziell nicht unterstützt installiert werden.%n%nDie Installation wird trotzdem versucht. Schlägt sie fehl, aktualisieren Sie Office auf 64 Bit oder folgen Sie dem Microsoft-Artikel KB 5004577.
+english.Office32Hinweis=A 32-bit Microsoft Office is installed on this computer.%n%nMicrosoft does not officially support installing the 64-bit Access engine alongside it.%n%nSetup will try anyway. Should it fail, update Office to 64-bit or follow Microsoft article KB 5004577.
+
+german.AceFehlt=Die Microsoft Access Database Engine (64 Bit) konnte nicht installiert werden.%n%nOhne sie kann EPOS-Plan nicht auf seine Datenbank zugreifen.%n%nHäufigste Ursache ist ein installiertes 32-Bit-Microsoft-Office, das die 64-Bit-Engine blockiert. Abhilfe ist ein Wechsel auf 64-Bit-Office oder der Weg aus dem Microsoft-Artikel KB 5004577; er steht auch in der Liesmich-Datei im Programmordner. Im Zweifel hilft der Support weiter.%n%nDie Installation wird fortgesetzt.
+english.AceFehlt=The Microsoft Access Database Engine (64-bit) could not be installed.%n%nWithout it EPOS-Plan cannot access its database.%n%nThe most common cause is an installed 32-bit Microsoft Office blocking the 64-bit engine. Either switch Office to 64-bit or follow Microsoft article KB 5004577, which is also described in the readme file in the program folder. When in doubt, contact support.%n%nSetup will continue.
 
 german.DatenLoeschen=Sollen auch die Projektdatenbank und die Einstellungen des angemeldeten Windows-Kontos gelöscht werden?%n%n%1%n%nDiese Daten lassen sich danach nicht wiederherstellen. Daten anderer Windows-Konten bleiben in jedem Fall erhalten und sind dort von Hand zu entfernen.
 english.DatenLoeschen=Do you also want to delete the project database and settings of the signed-in Windows account?%n%n%1%n%nThis cannot be undone. Data belonging to other Windows accounts is always kept and must be removed there manually.
@@ -256,11 +260,13 @@ Name: "{autodesktop}\{#AppName}";    Filename: "{app}\{#AppExeName}"; WorkingDir
 
 [Registry]
 ; Für Support und für Werkzeuge, die den Installationsort brauchen.
-; HKLM32, weil das Setup im 32-Bit-Modus läuft.
-Root: HKLM32; Subkey: "SOFTWARE\{#AppPublisher}\{#AppName}"; \
+; HKLM (also die 64-Bit-Sicht), weil das Setup seit der x64-Umstellung im
+; 64-Bit-Modus läuft. Der alte HKLM32-Zweig einer 32-bit-Vorinstallation wird
+; in AlteX86InstallationEntfernen() mitgenommen.
+Root: HKLM; Subkey: "SOFTWARE\{#AppPublisher}\{#AppName}"; \
     ValueType: string; ValueName: "InstallDir"; ValueData: "{app}"; \
     Flags: uninsdeletevalue uninsdeletekeyifempty
-Root: HKLM32; Subkey: "SOFTWARE\{#AppPublisher}\{#AppName}"; \
+Root: HKLM; Subkey: "SOFTWARE\{#AppPublisher}\{#AppName}"; \
     ValueType: string; ValueName: "Version"; ValueData: "{#AppVersion}"; \
     Flags: uninsdeletevalue uninsdeletekeyifempty
 
@@ -270,12 +276,13 @@ Root: HKLM32; Subkey: "SOFTWARE\{#AppPublisher}\{#AppName}"; \
 ; ---------------------------------------------------------------------------
 
 [Run]
-; 9.1 Datenbanktreiber
-Filename: "{tmp}\AccessDatabaseEngine.exe"; Parameters: "/quiet"; \
+; 9.1 Datenbanktreiber. BeforeInstall warnt vor der Mischbitness mit einem
+;     vorhandenen 32-bit-Office, AfterInstall prüft den Erfolg nach.
+Filename: "{tmp}\AccessDatabaseEngine_X64.exe"; Parameters: "/quiet"; \
     StatusMsg: "{cm:AceInstallieren}"; \
     Check: not AceVorhanden; \
     Flags: waituntilterminated skipifdoesntexist; \
-    AfterInstall: AceNachpruefen
+    BeforeInstall: Office32Hinweisen; AfterInstall: AceNachpruefen
 
 ; 9.2 Rechte am gemeinsamen Datenordner reparieren.
 ;     [Dirs] setzt die vererbenden Rechte am Ordner; Dateien einer
@@ -313,24 +320,77 @@ Type: dirifempty; Name: "{app}"
 
 [Code]
 
+const
+  { Uninstall-Schlüssel der 32-bit-Vorinstallation in der 32-Bit-Registry-Sicht.
+    Der GUID-Teil muss zum AppId-Wert oben passen; dort ist die erste Klammer
+    verdoppelt, weil das für den Übersetzer eine wörtliche Klammer bedeutet — in
+    einer Pascal-Zeichenkette entfällt diese Verdopplung. }
+  AltUninstallKey = 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{3033FD58-1082-4A6E-B1F7-9D0348A36F97}_is1';
+
 var
   G_LegacyOrdner:  Boolean;   { C:\ProgramData\EPOS_PLAN gab es schon vor dieser Installation }
   G_LegacyDb:      Boolean;   { … und darin lag eine Kenndaten.accdb }
   G_HinweisSeite:  TOutputMsgWizardPage;
 
 
-{ ---- Voraussetzung: Microsoft.ACE.OLEDB.12.0 in der 32-Bit-Registrierung ----
+{ ---- Voraussetzung: Microsoft.ACE.OLEDB.12.0 in der 64-Bit-Registrierung ----
   Die Anwendung fordert ausdrücklich 12.0 an; ein vorhandenes 16.0 allein
-  genügt nicht. HKCR ist die zusammengeführte Sicht auf HKLM\SOFTWARE\Classes,
-  eine zweite Prüfung dort wäre redundant. }
+  genügt nicht. HKCR64 ist die 64-Bit-Sicht der zusammengeführten
+  Klassenregistrierung — dort registriert sich die 64-Bit-Engine.
+  Geprüft wird die ganze Kette ProgID → CLSID → InprocServer32 → Datei: Eine
+  ProgID allein kann als Leiche ohne Server dastehen, wenn eine Engine unsauber
+  entfernt wurde. }
 function AceVorhanden(): Boolean;
+var
+  Clsid, Server: String;
 begin
-  Result := RegKeyExists(HKCR32, 'Microsoft.ACE.OLEDB.12.0');
+  Result := False;
+  if RegQueryStringValue(HKCR64, 'Microsoft.ACE.OLEDB.12.0\CLSID', '', Clsid) then
+    if RegQueryStringValue(HKCR64, 'CLSID\' + Clsid + '\InprocServer32', '', Server) then
+    begin
+      Server := RemoveQuotes(Server);
+      { Pfade mit Umgebungsvariablen (REG_EXPAND_SZ) lassen sich hier nicht
+        auflösen — sie gelten als vorhanden, statt fälschlich zu fehlen. }
+      Result := (Pos('%', Server) > 0) or FileExists(Server);
+    end;
+end;
+
+
+{ 32-Bit-Microsoft-Office auf diesem Rechner? Click-to-Run hinterlegt die
+  Bitness in Configuration\Platform als 'x86' oder 'x64'. Je nachdem, welcher
+  Installer den Schlüssel geschrieben hat, steht er in der 32- oder in der
+  64-Bit-Sicht — deshalb beide prüfen. }
+function Office32Vorhanden(): Boolean;
+var
+  Plattform: String;
+begin
+  Result := False;
+  if RegQueryStringValue(HKLM32, 'SOFTWARE\Microsoft\Office\ClickToRun\Configuration',
+                         'Platform', Plattform) then
+    Result := (CompareText(Plattform, 'x86') = 0);
+
+  if not Result then
+    if RegQueryStringValue(HKLM64, 'SOFTWARE\Microsoft\Office\ClickToRun\Configuration',
+                           'Platform', Plattform) then
+      Result := (CompareText(Plattform, 'x86') = 0);
+end;
+
+
+{ Hinweis VOR dem stillen Lauf des Redistributables: Neben einem 32-Bit-Office
+  ist die 64-Bit-Engine offiziell nicht unterstützt, sie lässt sich nur über den
+  in KB 5004577 beschriebenen Weg daneben registrieren. Versucht wird es
+  trotzdem, abgebrochen wird nichts. Hängt an der [Run]-Zeile, deren Check
+  bereits sicherstellt, dass die Engine fehlt — die Meldung kommt daher genau
+  einmal. }
+procedure Office32Hinweisen();
+begin
+  if Office32Vorhanden() and (not AceVorhanden()) then
+    MsgBox(CustomMessage('Office32Hinweis'), mbInformation, MB_OK);
 end;
 
 
 { Nach dem stillen Lauf des Redistributables prüfen, ob er tatsächlich
-  gegriffen hat. Häufigster Fehlschlag: installiertes 64-Bit-Office. Die
+  gegriffen hat. Häufigster Fehlschlag: installiertes 32-Bit-Office. Die
   Installation wird nicht abgebrochen — ohne Treiber startet EPOS-Plan zwar,
   meldet aber beim ersten Datenbankzugriff einen Fehler. }
 procedure AceNachpruefen();
@@ -353,6 +413,59 @@ begin
   G_LegacyOrdner := DirExists(ExpandConstant('{commonappdata}\EPOS_PLAN'));
   G_LegacyDb     := FileExists(ExpandConstant('{commonappdata}\EPOS_PLAN\Kenndaten.accdb'));
   Result := True;
+end;
+
+
+{ ---- Übernahme einer 32-bit-Vorinstallation (Konzept, Entscheidung 5.2) ----
+  Dieses Setup installiert nach "Programme" und legt seinen Uninstall-Eintrag in
+  der 64-Bit-Sicht an. Eine vorhandene 32-bit-Installation gilt damit NICHT als
+  dieselbe Anwendung — es blieben zwei Einträge in "Apps und Features" und zwei
+  Programmordner. Sie wird deshalb vorher still entfernt.
+  Die Nutzdaten sind davon nicht berührt: Datenbank unter %ProgramData%\EPOS_PLAN
+  bzw. je Windows-Konto, Lizenz und KI-Schlüssel unter %APPDATA%\wp-plan; der
+  alte Deinstallierer fasst laut seinem [UninstallDelete] nur den Programmordner
+  an. Seine Rückfrage nach den Kontodaten kommt mit Voreinstellung "Nein" und
+  ist beim Setup-Test zu erwarten. }
+procedure AlteX86InstallationEntfernen();
+var
+  Befehl: String;
+  Ergebnis, Wartezeit: Integer;
+begin
+  if RegQueryStringValue(HKLM32, AltUninstallKey, 'UninstallString', Befehl) then
+  begin
+    Befehl := RemoveQuotes(Befehl);
+    if FileExists(Befehl) then
+    begin
+      Exec(Befehl, '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART', '',
+           SW_HIDE, ewWaitUntilTerminated, Ergebnis);
+
+      { Der Inno-Deinstallierer startet sich aus dem Temp-Ordner neu, damit er
+        sich selbst löschen kann; Exec kehrt deshalb zurück, bevor die Arbeit
+        getan ist. Also warten, bis sein Registry-Eintrag verschwunden ist —
+        höchstens zwei Minuten, danach wird ohnehin fortgefahren. }
+      Wartezeit := 0;
+      while RegKeyExists(HKLM32, AltUninstallKey) and (Wartezeit < 120000) do
+      begin
+        Sleep(500);
+        Wartezeit := Wartezeit + 500;
+      end;
+    end;
+  end;
+
+  { Rest der alten 32-Bit-Sicht: [Registry] schreibt jetzt nach HKLM, ein
+    zurückgebliebener Zweig wäre eine Karteileiche. }
+  if RegKeyExists(HKLM32, 'SOFTWARE\{#AppPublisher}\{#AppName}') then
+    RegDeleteKeyIncludingSubkeys(HKLM32, 'SOFTWARE\{#AppPublisher}\{#AppName}');
+end;
+
+
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+begin
+  { Bewusst hier und nicht in InitializeSetup: Erst an dieser Stelle steht fest,
+    dass wirklich installiert wird. Früher entfernt, stünde ein Anwender, der
+    den Assistenten noch abbricht, ganz ohne Programm da. }
+  AlteX86InstallationEntfernen();
+  Result := '';
 end;
 
 
