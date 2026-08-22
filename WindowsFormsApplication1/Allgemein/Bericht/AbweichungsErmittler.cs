@@ -18,7 +18,7 @@ namespace WindowsFormsApplication1
         public class Merkmal
         {
             public string Gewerk;      // Anzeigegruppe ("Anlage", "Wärmepumpe", …)
-            public string Tabelle;     // Quelltabelle (ID_Projekt-gefiltert)
+            public string Tabelle;     // Quelltabelle (projektbezogen, siehe ProjektDetails)
             public string Spalte;      // Spaltenname (tolerant — fehlt sie, wird übersprungen)
             public string Label;       // Anzeigename
             public string Einheit;     // "" wenn keine
@@ -29,6 +29,17 @@ namespace WindowsFormsApplication1
 
         public const int TEXT = -1;
         public const int JN = -2;
+
+        /// <summary>
+        /// Die Texte der Stufe 1 als Konstanten, nicht als Literale an zwei Stellen:
+        /// Die Seite „Übersicht" zeigt dieselben Bestandszeilen inzwischen auch OHNE
+        /// Vergleichspartner (Gegenüberstellung Stamm ↔ Varianten). Zwei Schreibweisen
+        /// derselben Kennzahl wären für den Leser zwei Kennzahlen.
+        /// </summary>
+        public const string MERKMAL_BESTAND = "Bestand";
+        public const string MERKMAL_ANZAHL = "Anzahl Komponenten";
+        public const string BESTAND_VORHANDEN = "vorhanden";
+        public const string BESTAND_FEHLT = "nicht vorhanden";
 
         /// <summary>
         /// Deklarative Feldliste (Spaltennamen gegen Kenndaten.accdb verifiziert, 11.08.2026).
@@ -112,8 +123,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Vergleicht die Konfiguration einer Variante gegen den Stamm.
-        /// Hinweis: verglichen wird je Tabelle die erste Zeile (ORDER BY ID);
-        /// unterschiedliche Einträge-Anzahlen werden als eigene Abweichung gemeldet.
+        /// Hinweis: verglichen wird je Gewerk die erste Komponente des Projekts
+        /// (erste Anlagenzeile — <c>ProjektDetails.LadeGewerk</c>); unterschiedliche
+        /// Einträge-Anzahlen werden als eigene Abweichung gemeldet.
         /// </summary>
         public static List<Abweichung> Vergleiche(ProjektDetails stamm, ProjektDetails variante)
         {
@@ -123,19 +135,19 @@ namespace WindowsFormsApplication1
             // Stufe 1: Gewerk vorhanden / nicht vorhanden + Anzahl.
             foreach (KeyValuePair<string, string> g in ProjektDetails.GewerkTabellen)
             {
-                int nS = stamm.KomponentenAnzahl.ContainsKey(g.Key) ? stamm.KomponentenAnzahl[g.Key] : 0;
-                int nV = variante.KomponentenAnzahl.ContainsKey(g.Key) ? variante.KomponentenAnzahl[g.Key] : 0;
+                int nS = Anzahl(stamm, g.Key);
+                int nV = Anzahl(variante, g.Key);
                 if ((nS > 0) != (nV > 0))
                     liste.Add(new Abweichung
                     {
-                        Gewerk = g.Key, Merkmal = "Bestand",
-                        WertStamm = nS > 0 ? "vorhanden" : "nicht vorhanden",
-                        WertVariante = nV > 0 ? "vorhanden" : "nicht vorhanden"
+                        Gewerk = g.Key, Merkmal = MERKMAL_BESTAND,
+                        WertStamm = nS > 0 ? BESTAND_VORHANDEN : BESTAND_FEHLT,
+                        WertVariante = nV > 0 ? BESTAND_VORHANDEN : BESTAND_FEHLT
                     });
                 else if (nS != nV)
                     liste.Add(new Abweichung
                     {
-                        Gewerk = g.Key, Merkmal = "Anzahl Komponenten",
+                        Gewerk = g.Key, Merkmal = MERKMAL_ANZAHL,
                         WertStamm = nS.ToString(DE), WertVariante = nV.ToString(DE)
                     });
             }
@@ -155,6 +167,32 @@ namespace WindowsFormsApplication1
             }
 
             return liste;
+        }
+
+        /// <summary>
+        /// Anzahl der Komponenten EINES GEWERKS im Projekt — die Kennzahl der
+        /// Stufe-1-Zeile „Anzahl Komponenten". Quelle ist
+        /// <see cref="ProjektDetails.KomponentenAnzahl"/>, also der über
+        /// <c>Tab_Energieanlagen</c> ermittelte VERBAUTE Bestand
+        /// (<c>ProjektDetails.LadeGewerk</c>) — NICHT der rohe Zeilenbestand der
+        /// Gerätetabelle, der auch Altkopien führt, auf die keine Anlage mehr zeigt.
+        /// Öffentlich, damit die Gegenüberstellung der Seite „Übersicht" dieselbe
+        /// Kennzahl aus derselben Quelle liest wie die Unterschiedsanzeige.
+        /// </summary>
+        public static int Anzahl(ProjektDetails d, string gewerk)
+        {
+            return (d != null && gewerk != null && d.KomponentenAnzahl.ContainsKey(gewerk))
+                ? d.KomponentenAnzahl[gewerk] : 0;
+        }
+
+        /// <summary>
+        /// Anzeigetext der Anzahlzeile: die Zahl — bei 0 das „nicht vorhanden" der
+        /// Bestandszeile. Eine „0" allein wäre in einer Gegenüberstellung ohne
+        /// Vergleichspartner nicht von einer ungezählten Zelle zu unterscheiden.
+        /// </summary>
+        public static string AnzahlText(int n)
+        {
+            return n > 0 ? n.ToString(DE) : BESTAND_FEHLT;
         }
 
         /// <summary>
