@@ -1,6 +1,7 @@
 # Umstellung auf 64 Bit (x64) — Analyse und Vorgehensweise
 
-Stand: 22.08.2026 — P0 abgeschlossen, alle Entscheidungen getroffen (Abschnitt 5).
+Stand: 22.08.2026 — P0 und P1 abgeschlossen (alle Entscheidungen getroffen, Code
+robust gemacht; Commits `b4f5543` und `14777bc`). Nächstes Paket: P2.
 Betrachtet wurden der gesamte Bestand unter `WindowsFormsApplication1`
 (ohne Altkopien und Worktrees), die Solution, alle Nebenwerkzeuge, der Installer unter
 `Setup\` sowie die aktuelle Faktenlage zur 64-bit Access Database Engine (Quellen in
@@ -297,7 +298,14 @@ ADE 2016 Redistributable x64 als beigelegte Voraussetzung; **5.4** Aufräum-Beif
 P1 (5.2–5.4 am 22.08.2026, Vorschläge unverändert angenommen). Die Umsetzung beginnt
 mit P1.
 
-### P1 — Code robust machen *(klein, unabhängig einspielbar)*
+### P1 — Code robust machen *(umgesetzt 22.08.2026, Commits `b4f5543` + `14777bc`)*
+
+Alle vier Punkte sind umgesetzt und mit `Platform=x86` gebaut (VS-MSBuild; `dotnet build`
+scheitert seit dem .NET-10-Preview-SDK auch beim Hauptprojekt an MSB4803).
+Die HKLM-Doppelsicht liest über die neue Hilfsmethode `LesenMaschine(RegistryView, …)`
+in `KiEinwilligung.cs`; die Startprüfung heißt `DataRepository.ProviderVorhanden()`
+und hängt in `Program.Main` direkt nach der Sprachwahl. Der Praxistest der
+Fehlermeldung auf einem Rechner ohne ACE bleibt Prüfpunkt 3 der Abnahme.
 
 1. **`KiEinwilligung.cs`**: HKLM-Lesung des Abschalters auf **beide** Registry-Sichten
    erweitern (erst 64, dann 32-Bit-Sicht; ein Treffer genügt). Damit wirken vorhandene
