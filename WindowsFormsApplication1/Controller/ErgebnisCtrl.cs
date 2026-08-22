@@ -92,10 +92,19 @@ namespace WindowsFormsApplication1
             StellePufferTabelleSicher();    // Tab_ErgebnisPufferspeicher (Konzept 6.6) - Rückfallebene
             StelleStromspeicherTabelleSicher(); // Tab_ErgebnisStromspeicher (AP3, Fachkonzept 7.1)
 
-            // Energieträger-Zuordnung einmal je Erzeuger bestimmen (Befund B1: echte
-            // carrier_id statt des Brennstoff-Strings — Basis für Kosten/Wirtschaftlichkeit).
-            int bhkwCarrier = CarrierIdFuerProjekt(m.ID_Projekt, "Tab_BHKW");
-            int kesselCarrier = CarrierIdFuerProjekt(m.ID_Projekt, "Tab_Heizkessel");
+            // Energieträger: Die carrier_id steht JE MODUL im Ergebnis — der Lauf setzt sie
+            // aus Tab_Energieanlagen.ID_Carrier (Befund B1, SimulationRunner), und genau so
+            // wird sie unten geschrieben. Eine projektweite Rückfallebene über den
+            // Brennstoff der Eingabetabelle stand hier bis 22.08.2026 ohne Wirkung; sie ist
+            // bewusst entfernt: Tab_BHKW/Tab_Heizkessel führen EINE ZEILE JE GERÄT
+            // (Kaskade), ein TOP 1 ohne Sortierung hätte den Träger eines beliebigen Geräts
+            // auf alle Module gestempelt, und zu einem Brennstoff gibt es mehrere
+            // energy_carrier-Sätze mit verschiedenem Heizwert und Preis. Eine fehlende
+            // Zuordnung ist ein gemeldeter Datenzustand, kein Schätzwert:
+            // SimulationControl.EnergietraegerZuordnungLesen warnt im Protokoll, und
+            // KostenEmissionRechner zählt sie als verbrauchOhneTraeger (kostenVollstaendig
+            // = false). Die Rückfallebene gehört auf die Leseseite — dort steht sie bereits
+            // (WirtschaftlichkeitCtrl.BaueSteuerAnlage: Modulträger vor Anlagenträger).
 
             var (conn, trans) = DataRepository.BeginTransaction();
             try
@@ -1361,41 +1370,6 @@ namespace WindowsFormsApplication1
             using (OleDbCommand c = new OleDbCommand(
                 "ALTER TABLE " + tabelle + " ADD COLUMN " + spalte + " " + typ, conn))
                 c.ExecuteNonQuery();
-        }
-
-        // Ermittelt die energy_carrier-ID zum Brennstoff des Erzeugers eines Projekts
-        // (eingabeTabelle: "Tab_BHKW" oder "Tab_Heizkessel"; deren Spalte Brennstoff
-        // verweist auf Tab_Brennstoff_Stamm.ID = energy_carrier.id_brennstoff).
-        // Vorrang hat der dem Projekt zugeordnete Traeger (energy_project_settings);
-        // Fallback: erster Katalogtraeger des Brennstoffs. 0 = keine Zuordnung.
-        private static int CarrierIdFuerProjekt(int idProjekt, string eingabeTabelle)
-        {
-            try
-            {
-                object bs = DataRepository.ExecuteScalar(
-                    "SELECT TOP 1 Brennstoff FROM " + eingabeTabelle + " WHERE ID_Projekt = ?",
-                    new OleDbParameter("@p", idProjekt));
-                if (bs == null || bs == DBNull.Value) return 0;
-                int idBrennstoff;
-                try { idBrennstoff = Convert.ToInt32(bs); }
-                catch { return 0; }
-                if (idBrennstoff <= 0) return 0;
-
-                object o = DataRepository.ExecuteScalar(
-                    "SELECT TOP 1 ec.id FROM energy_carrier AS ec " +
-                    "INNER JOIN energy_project_settings AS s ON s.[ID_Energieträger] = ec.id " +
-                    "WHERE ec.id_brennstoff = ? AND s.ID_Projekt = ?",
-                    new OleDbParameter("@b", idBrennstoff),
-                    new OleDbParameter("@p", idProjekt));
-                if (o != null && o != DBNull.Value) return Convert.ToInt32(o);
-
-                o = DataRepository.ExecuteScalar(
-                    "SELECT TOP 1 id FROM energy_carrier WHERE id_brennstoff = ?",
-                    new OleDbParameter("@b", idBrennstoff));
-                if (o != null && o != DBNull.Value) return Convert.ToInt32(o);
-            }
-            catch { }
-            return 0;
         }
 
         // --- Helpers ---
