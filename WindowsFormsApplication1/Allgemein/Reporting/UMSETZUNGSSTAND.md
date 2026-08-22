@@ -100,9 +100,8 @@ Compiler).
 
 1. **Build**: `dotnet restore` / VS-Build (x86); neue Pakete: ClosedXML 0.105.1,
    SixLabors.Fonts 1.0.1 (gepinnt). Compilerfehler einfach zurückmelden.
-2. **Zwei Designer-Handgriffe** (Snippets im LIESMICH): Form_Start-Button
-   „Wirtschaftlichkeit", MDI-Menüeinträge „Als Variante speichern…" /
-   „Varianten/Bericht".
+2. ~~**Zwei Designer-Handgriffe**~~ **erledigt (22.08.2026)** — beide ohne Eingriff in
+   Designer- oder `.resx`-Dateien, siehe Kap. 7.
 3. **Funktionstests** nach `PRUEFBERICHT_Rechenkern.md` Kap. 2 + 3 sowie
    Testschritte Phase 10 im LIESMICH.
 
@@ -214,3 +213,28 @@ Wirtschaftlichkeit unvollständig — …"), die Hinweistexte im
 - Referenzprojekt 1010 fehlt seit dem 15.08.2026 in der produktiven Datenbank. Die Basis
   `2026-08-15_B2` deckt damit nur noch acht Projekte ab — beim nächsten Basiswechsel
   entweder neu einfrieren oder ein Ersatzprojekt aufnehmen.
+
+## 7. Einstiegspunkte in der Oberfläche (22.08.2026)
+
+Die beiden zuletzt offenen „Designer-Handgriffe" sind erledigt — beide **ohne** Eingriff
+in `MDIMainForm.Designer.cs`, `Form_Start.Designer.cs` oder deren `.resx`
+(Projektkonvention, CLAUDE.md). Die Beschriftungen kommen deshalb aus `MyResource` und
+nicht aus der Formular-Ressource; ein Sprachwechsel startet das Programm ohnehin neu.
+
+| Einstieg | Umsetzung |
+|---|---|
+| **Wirtschaftlichkeit** | Bereits mit dem Umbau des Reiters „Berichte & Kosten" erledigt: `UcBerichteKosten` trägt die vier Seiten Übersicht / Kosten / **Wirtschaftlichkeit** / Bericht. Der geplante Einzelknopf in `Form_Start` entfällt damit; der alte Dialogweg (`Form_Variantentest`) bleibt als Rückfallnetz stehen, ist aber nicht mehr verdrahtet. |
+| **Menü „Projekte"** | `MDIMainForm.BaueVariantenMenue()` hängt beim Start zwei Einträge an: „Als Variante speichern…" (`MENU_VARIANTE_SPEICHERN`) und „Varianten und Bericht…" (`MENU_VARIANTEN_BERICHT`). |
+| **Als Variante speichern…** | Neuer Dialog `Views/Varianten/Form_AlsVariante.cs` — Oberfläche vollständig im Code (Muster `UcBkUebersicht`), keine Designer-/`.resx`-Datei. Fragt den Bezeichner ab und ruft `VariantenCtrl.AnlegenAusStamm` — **keine zweite Anlegelogik**. Ist das offene Projekt selbst eine Variante, wird ihr Stammprojekt verwendet. Danach zieht `Form_Start.VariantenAnzeigeAktualisieren()` Auswahlfeld und Reiter nach. |
+| **Varianten und Bericht…** | `Form_Start.ZeigeBerichteKosten(UcBerichteKosten.SEITE_UEBERSICHT)` — wählt `tabPage6`, baut die Seite bei Bedarf auf (das `Selected`-Ereignis bleibt aus, wenn der Reiter schon vorne liegt) und stellt sie auf „Übersicht". |
+
+Neue Ressourcenschlüssel in `MyResource` (de **und** en-US, `Resource.Designer.cs`
+mitgepflegt): `MENU_VARIANTE_SPEICHERN`, `MENU_VARIANTEN_BERICHT`, `VAR_DLG_TITEL`,
+`VAR_DLG_HINWEIS`, `VAR_MSG_KEIN_PROJEKT`. Wiederverwendet statt doppelt angelegt:
+`BK_LBL_BEZEICHNER`, `BK_BTN_ANLEGEN`, `SIM_BTN_ABBRECHEN`, `BK_MSG_VARIANTE_ANGELEGT`,
+`BK_MSG_ANLEGEN_FEHLGESCHLAGEN`, `BK_MSG_ANLEGEFEHLER`, `BK_MSG_KEIN_STAMM`.
+
+**Verifikation:** VS-MSBuild x86 (Debug) — 0 Fehler, nur Bestandswarnungen; Build in ein
+eigenes Ausgabeverzeichnis, weil die laufende Anwendung die DLLs im `bin` sperrt. Beide
+Kulturen der kompilierten Ressourcen auf die fünf Schlüssel geprüft (5/5, Umlaute und
+Anführungszeichen korrekt). **Ein Klicktest in der laufenden Anwendung steht noch aus.**

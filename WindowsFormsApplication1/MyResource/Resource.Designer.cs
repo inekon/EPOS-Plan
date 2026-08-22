@@ -4768,7 +4768,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aktionen zulassen (nur lesende) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktionen zulassen ähnelt.
         /// </summary>
         public static string KI_AKT_SCHALTER {
             get {
@@ -4777,7 +4777,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Freigegeben sind ausschließlich lesende Aktionen; alles Weitere kommt mit der Bestätigungsschicht. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lesende Aktionen laufen sofort. Aktionen, die Daten verändern, führt das Programm erst nach Ihrer ausdrücklichen Bestätigung im Einzelfall aus. ähnelt.
         /// </summary>
         public static string KI_AKT_STUFE1_HINWEIS {
             get {
@@ -5857,8 +5857,8 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die • Der Werkzeugkatalog: die Namen der zugelassenen Aktionen, ihre Parameter und deren Erläuterungen. Zugelassen sind ausschließlich lesende Aktionen.
-        ///• Die Ergebnisse ausgeführter Leseaktionen. Bezeichner darin – Projekt-, Varianten- und Anlagennamen – werden vorher durch Platzhalter ersetzt („Name 1“); Zahlen, Einheiten und Schlüssel gehen unverändert mit. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die • Der Werkzeugkatalog: die Namen der zugelassenen Aktionen, ihre Parameter und deren Erläuterungen. Lesende Aktionen laufen sofort; Aktionen, die Daten verändern, führt das Programm erst nach Ihrer ausdrücklichen Bestätigung im Einzelfall aus. Vor der ersten Änderung einer Sitzung legt es eine datierte Sicherungskopie der Datenbank an, mitgelieferte Kataloge und schreibgeschützte Datensätze bleiben ausgenommen, und gelöscht wird nichts.
+        ///• Die Ergebnisse ausgeführter Leseaktionen. Bezeichner darin – Projekt [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
         public static string KI_HINWEIS_AKTIONEN {
             get {
@@ -8878,6 +8878,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string LIZ_TITEL {
             get {
                 return ResourceManager.GetString("LIZ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Als Variante speichern… ähnelt.
+        /// </summary>
+        public static string MENU_VARIANTE_SPEICHERN {
+            get {
+                return ResourceManager.GetString("MENU_VARIANTE_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Varianten und Bericht… ähnelt.
+        /// </summary>
+        public static string MENU_VARIANTEN_BERICHT {
+            get {
+                return ResourceManager.GetString("MENU_VARIANTEN_BERICHT", resourceCulture);
             }
         }
         
@@ -18529,6 +18547,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der aktuelle Stand wird als eigenständige Variante des Stammprojekts „{0}“ gesichert. Das geöffnete Projekt bleibt unverändert. ähnelt.
+        /// </summary>
+        public static string VAR_DLG_HINWEIS {
+            get {
+                return ResourceManager.GetString("VAR_DLG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Als Variante speichern ähnelt.
+        /// </summary>
+        public static string VAR_DLG_TITEL {
+            get {
+                return ResourceManager.GetString("VAR_DLG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Als aktiv setzen ähnelt.
         /// </summary>
         public static string VAR_MENU_AKTIV {
@@ -18617,6 +18653,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VAR_MSG_GERAET_FEHLT {
             get {
                 return ResourceManager.GetString("VAR_MSG_GERAET_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist kein Projekt geöffnet. Öffnen Sie zuerst ein Projekt, das als Variante gesichert werden soll. ähnelt.
+        /// </summary>
+        public static string VAR_MSG_KEIN_PROJEKT {
+            get {
+                return ResourceManager.GetString("VAR_MSG_KEIN_PROJEKT", resourceCulture);
             }
         }
         

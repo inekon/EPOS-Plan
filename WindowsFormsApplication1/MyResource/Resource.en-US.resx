@@ -5729,7 +5729,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>The request was cancelled.</value>
   </data>
   <data name="KI_AKT_SCHALTER" xml:space="preserve">
-    <value>Allow actions (read-only)</value>
+    <value>Allow actions</value>
   </data>
   <data name="KI_AKT_WERKZEUGE_BTN" xml:space="preserve">
     <value>Tools…</value>
@@ -5765,7 +5765,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Action not executed: {0} — {1}</value>
   </data>
   <data name="KI_AKT_STUFE1_HINWEIS" xml:space="preserve">
-    <value>Only read-only actions are released; everything else comes with the confirmation layer.</value>
+    <value>Read actions run straight away. Actions that change data are carried out only after your explicit confirmation in each individual case.</value>
   </data>
   <data name="KI_AKT_WEG_A" xml:space="preserve">
     <value>Path A (tool catalogue)</value>
@@ -5956,7 +5956,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Additionally, when “Allow actions” is switched on</value>
   </data>
   <data name="KI_HINWEIS_AKTIONEN" xml:space="preserve">
-    <value>• The tool catalogue: the names of the permitted actions, their parameters and the explanations of those parameters. Only read-only actions are permitted.
+    <value>• The tool catalogue: the names of the permitted actions, their parameters and the explanations of those parameters. Read actions run straight away; actions that change data are carried out only after your explicit confirmation in each individual case. Before the first change of a session the program makes a dated backup copy of the database, supplied catalogues and write-protected records are excluded, and nothing is deleted.
 • The results of executed read actions. Identifiers contained in them – project, variant and plant names – are replaced by placeholders beforehand (“Name 1”); figures, units and keys are sent unchanged.</value>
   </data>
   <data name="KI_HINWEIS_UEB_NICHT" xml:space="preserve">
@@ -7096,5 +7096,20 @@ The seat becomes available for another device; a new activation is required to c
   </data>
   <data name="KI_KERN_FELDSICHERUNG_VERMERK" xml:space="preserve">
     <value>field guard off</value>
+  </data>
+  <data name="MENU_VARIANTE_SPEICHERN" xml:space="preserve">
+    <value>Save as variant&#8230;</value>
+  </data>
+  <data name="MENU_VARIANTEN_BERICHT" xml:space="preserve">
+    <value>Variants and report&#8230;</value>
+  </data>
+  <data name="VAR_DLG_TITEL" xml:space="preserve">
+    <value>Save as variant</value>
+  </data>
+  <data name="VAR_DLG_HINWEIS" xml:space="preserve">
+    <value>The current state is saved as a separate variant of the master project &#8220;{0}&#8221;. The open project remains unchanged.</value>
+  </data>
+  <data name="VAR_MSG_KEIN_PROJEKT" xml:space="preserve">
+    <value>No project is open. Please open the project you want to save as a variant first.</value>
   </data>
 </root>
