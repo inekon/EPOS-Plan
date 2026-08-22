@@ -8,7 +8,10 @@
 
     BEWUSST NICHT IN WP-Plan.sln aufgenommen - das Werkzeug wird separat gebaut:
       "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" ^
-        Referenzlauf\Referenzlauf.csproj -p:Configuration=Debug -p:Platform=x86
+        Referenzlauf\Referenzlauf.csproj -p:Configuration=Debug -p:Platform=x64
+    Die Plattform muss zur installierten Bitness von Microsoft.ACE.OLEDB.12.0 passen:
+    -p:Platform=x86 bei 32-bittigem ACE, -p:Platform=x64 bei 64-bittigem ACE. Passt sie
+    nicht, laesst sich die Kenndaten.accdb zur Laufzeit nicht oeffnen.
     "dotnet build" scheitert an MSB4803 (COM-Referenzen des referenzierten App-Projekts).
   -->
 
@@ -19,9 +22,11 @@
     <!-- Wegen der Projektreferenz auf die WinForms-App zwingend erforderlich. -->
     <UseWindowsForms>true</UseWindowsForms>
 
-    <!-- x86 wie die App: Microsoft.ACE.OLEDB.12.0 ist bitness-gebunden. -->
+    <!-- Vorgabe x86 wie die App: Microsoft.ACE.OLEDB.12.0 ist bitness-gebunden.
+         Auf Maschinen mit rein 64-bittigem ACE mit -p:Platform=x64 bauen; das
+         schaltet der PropertyGroup-Zweig weiter unten auf PlatformTarget x64 um. -->
     <PlatformTarget>x86</PlatformTarget>
-    <Platforms>x86</Platforms>
+    <Platforms>x86;x64</Platforms>
 
     <RootNamespace>WindowsFormsApplication1.Referenzlauf</RootNamespace>
     <AssemblyName>Referenzlauf</AssemblyName>
@@ -33,6 +38,11 @@
     <!-- Gleiche Toleranz gegenueber Legacy-Warnungen wie im App-Projekt. -->
     <NoWarn>$(NoWarn);CA1416;MSB3568;CS1701;CS1702;NU1701;MSB3277;NETSDK1206;WFAC010</NoWarn>
     <SatelliteResourceLanguages>de-DE;en-US</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <!-- Plattform-spezifische Konfigurationen (analog WindowsFormsApplication1.csproj) -->
+  <PropertyGroup Condition="'$(Platform)' == 'x64'">
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
