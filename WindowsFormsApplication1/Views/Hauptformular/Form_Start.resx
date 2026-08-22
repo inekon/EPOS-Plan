@@ -4023,7 +4023,7 @@
     <value>Segoe UI, 12pt, style=Bold</value>
   </data>
   <data name="textBox_ProjektOpen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>149, 13</value>
+    <value>149, 9</value>
   </data>
   <data name="textBox_ProjektOpen.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -4059,7 +4059,7 @@
     <value>NoControl</value>
   </data>
   <data name="label11.Location" type="System.Drawing.Point, System.Drawing">
-    <value>63, 13</value>
+    <value>63, 9</value>
   </data>
   <data name="label11.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -4233,7 +4233,7 @@
     <value>NoControl</value>
   </data>
   <data name="label_ProjektStatus.Location" type="System.Drawing.Point, System.Drawing">
-    <value>13, 10</value>
+    <value>13, 6</value>
   </data>
   <data name="label_ProjektStatus.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -4266,7 +4266,7 @@
     <value>Center</value>
   </data>
   <data name="btn_Speichern.Location" type="System.Drawing.Point, System.Drawing">
-    <value>696, 8</value>
+    <value>637, 17</value>
   </data>
   <data name="btn_Speichern.Size" type="System.Drawing.Size, System.Drawing">
     <value>29, 32</value>
@@ -4281,7 +4281,7 @@
     <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;btn_Speichern.Parent" xml:space="preserve">
-    <value>panel1</value>
+    <value>panelKlima</value>
   </data>
   <data name="&gt;&gt;btn_Speichern.ZOrder" xml:space="preserve">
     <value>0</value>
@@ -4293,7 +4293,7 @@
     <value>Segoe UI, 12pt</value>
   </data>
   <data name="label12.Location" type="System.Drawing.Point, System.Drawing">
-    <value>86, 12</value>
+    <value>86, 21</value>
   </data>
   <data name="label12.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -4314,7 +4314,7 @@
     <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;label12.Parent" xml:space="preserve">
-    <value>panel1</value>
+    <value>panelKlima</value>
   </data>
   <data name="&gt;&gt;label12.ZOrder" xml:space="preserve">
     <value>1</value>
@@ -4326,7 +4326,7 @@
     <value>NoControl</value>
   </data>
   <data name="pictureBox4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>13, 4</value>
+    <value>13, 13</value>
   </data>
   <data name="pictureBox4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -4344,19 +4344,16 @@
     <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;pictureBox4.Parent" xml:space="preserve">
-    <value>panel1</value>
+    <value>panelKlima</value>
   </data>
   <data name="&gt;&gt;pictureBox4.ZOrder" xml:space="preserve">
     <value>2</value>
-  </data>
-  <data name="comboBox_Klima.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
-    <value>Popup</value>
   </data>
   <data name="comboBox_Klima.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 12pt</value>
   </data>
   <data name="comboBox_Klima.Location" type="System.Drawing.Point, System.Drawing">
-    <value>342, 9</value>
+    <value>280, 18</value>
   </data>
   <data name="comboBox_Klima.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -4374,33 +4371,33 @@
     <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;comboBox_Klima.Parent" xml:space="preserve">
-    <value>panel1</value>
+    <value>panelKlima</value>
   </data>
   <data name="&gt;&gt;comboBox_Klima.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="panel1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>92, 126</value>
+  <data name="panelKlima.Location" type="System.Drawing.Point, System.Drawing">
+    <value>79, 119</value>
   </data>
-  <data name="panel1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="panelKlima.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
   </data>
-  <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>774, 46</value>
+  <data name="panelKlima.Size" type="System.Drawing.Size, System.Drawing">
+    <value>677, 65</value>
   </data>
-  <data name="panel1.TabIndex" type="System.Int32, mscorlib">
+  <data name="panelKlima.TabIndex" type="System.Int32, mscorlib">
     <value>112</value>
   </data>
-  <data name="&gt;&gt;panel1.Name" xml:space="preserve">
-    <value>panel1</value>
+  <data name="&gt;&gt;panelKlima.Name" xml:space="preserve">
+    <value>panelKlima</value>
   </data>
-  <data name="&gt;&gt;panel1.Type" xml:space="preserve">
+  <data name="&gt;&gt;panelKlima.Type" xml:space="preserve">
     <value>System.Windows.Forms.Panel, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;panel1.Parent" xml:space="preserve">
+  <data name="&gt;&gt;panelKlima.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="&gt;&gt;panel1.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;panelKlima.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
   <data name="btn_Help.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
@@ -4491,7 +4488,7 @@
     <value>Segoe UI, 10pt</value>
   </data>
   <data name="comboBox_Varianten.Location" type="System.Drawing.Point, System.Drawing">
-    <value>148, 44</value>
+    <value>148, 34</value>
   </data>
   <data name="comboBox_Varianten.Size" type="System.Drawing.Size, System.Drawing">
     <value>257, 25</value>
@@ -4518,7 +4515,7 @@
     <value>Microsoft Sans Serif, 10pt</value>
   </data>
   <data name="label4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>26, 48</value>
+    <value>26, 38</value>
   </data>
   <data name="label4.Size" type="System.Drawing.Size, System.Drawing">
     <value>120, 17</value>
@@ -4542,10 +4539,10 @@
     <value>0</value>
   </data>
   <data name="panelVariante.Location" type="System.Drawing.Point, System.Drawing">
-    <value>873, 110</value>
+    <value>873, 119</value>
   </data>
   <data name="panelVariante.Size" type="System.Drawing.Size, System.Drawing">
-    <value>419, 79</value>
+    <value>419, 65</value>
   </data>
   <data name="panelVariante.TabIndex" type="System.Int32, mscorlib">
     <value>114</value>

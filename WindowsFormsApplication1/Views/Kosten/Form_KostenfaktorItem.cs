@@ -1,5 +1,4 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -44,8 +43,8 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                string dbPath =  DataRepository.GetDBPath();
-                string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};Persist Security Info=False;";
+                // Provider-String zentral aus DataRepository (x64-Umstellung P1.2)
+                string connString = DataRepository.GetConnectionString();
 
                 using (OleDbConnection conn = new OleDbConnection(connString))
                 {

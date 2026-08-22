@@ -22,9 +22,18 @@ namespace WindowsFormsApplication1
         // Ueberschreiben bleibt moeglich, verlangt dann aber eine ausdrueckliche Bestaetigung.
         private bool m_bKatalogsatz = false;
 
+        // true, solange SetControls die Felder fuellt. Die TextChanged-Handler rechnen
+        // dann nichts nach - sonst wuerde schon das Oeffnen den gespeicherten Wert von
+        // Investition_kwel ueberschreiben. Bestandsdaten bleiben unangetastet, bis der
+        // Anwender etwas aendert oder speichert (Nutzerentscheid 22.08.2026).
+        private bool m_bLaden = false;
+
         public Form_DBBHKW()
         {
             InitializeComponent();
+
+            // Beschriftung der abgeleiteten Summenzeile: deutsch/englisch aus MyResource.
+            label_SummeEinzelposten.Text = MyResource.Resource.BHKW_SUMME_LBL;
 
             // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
             // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
@@ -78,6 +87,9 @@ namespace WindowsFormsApplication1
                 comboBox_Name.Text = szName;
             }
 
+            // Das Fuellen loest TextChanged aus; waehrenddessen wird nichts nachgerechnet.
+            m_bLaden = true;
+
             textBox_Beschreibung.Text = model.m_szBeschreibung;
             textBox_Motortyp.Text = model.m_szMotortyp;
             textBox_NOx.Text = model.m_NOx.ToString();
@@ -102,6 +114,15 @@ namespace WindowsFormsApplication1
             textBox_Vorlauf.Text = model.m_Vorlauf.ToString();
             textBox_Ruecklauf.Text = model.m_Ruecklauf.ToString();
 
+            m_bLaden = false;
+
+            // Sichtbar wird jetzt die Summe der Einzelposten - der Betrag, der in die
+            // Kostenrechnung geht. Das Feld "Investitionskosten" behaelt den geladenen
+            // Wert; passt er nicht zur Summe, benennt die Hinweiszeile das. Nachgezogen
+            // wird er erst beim Speichern oder sobald ein Posten bzw. Pel sich aendert.
+            SummeAnzeigen();
+            BestandHinweisAnzeigen();
+
             comboBox_Brennstoff.Items.Add("Alle");
             for (int i = 0; i < ctrl.Brennstoffart.Count; i++)
             {
@@ -116,6 +137,105 @@ namespace WindowsFormsApplication1
                 comboBox_Brennstoff.SelectedIndex = brennstoff >= 1 ? brennstoff : 1;
             }
             rs.Close();
+        }
+
+        // ------------------------------------------------------------------
+        // Die Einzelposten fuehren (Nutzerentscheid 22.08.2026, Regel in BHKWKosten):
+        // Modul + Montage + Lieferung + Schallschutzhaube + Abgasreinigung ergeben die
+        // Investition. "Investitionskosten" [EUR/kWel] ist daraus abgeleitet, nur Anzeige
+        // und schreibgeschuetzt. Zuvor fuehrten beide Wege dieselbe Groesse und liefen
+        // auseinander (A-Tron_21_F: Posten 0,00 EUR, Investition_kwel 2000 bei Pel 21).
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Summe der fuenf Einzelposten aus den Eingabefeldern [EUR]. Still geparst: ein
+        /// leeres oder ungueltiges Feld zaehlt hier wie 0 - gemeldet wird erst am
+        /// Aktionsknopf ueber EingabenPruefen.
+        /// </summary>
+        private double SummeEinzelposten()
+        {
+            return BHKWKosten.Summe(FeldWert(textBox_Modul), FeldWert(textBox_Montage),
+                                    FeldWert(textBox_Lieferung), FeldWert(textBox_Schallschutzhaube),
+                                    FeldWert(textBox_Abgasreinigung));
+        }
+
+        /// <summary>Zahlwert eines Feldes ohne Meldung; leer oder ungueltig ergibt 0.</summary>
+        private static double FeldWert(TextBox feld)
+        {
+            double wert;
+            Program.ZahlParsen(feld == null ? "" : feld.Text, out wert);
+            return wert;
+        }
+
+        /// <summary>
+        /// Zeigt die Summe der Einzelposten an - den Betrag, der in die Kostenrechnung
+        /// eingeht. Das Feld ist schreibgeschuetzt und wird nur von hier gefuellt.
+        /// </summary>
+        private void SummeAnzeigen()
+        {
+            textBox_SummeEinzelposten.Text = SummeEinzelposten().ToString("F2");
+        }
+
+        /// <summary>
+        /// Zieht das abgeleitete Feld "Investitionskosten" [EUR/kWel] den Einzelposten und
+        /// der elektrischen Leistung nach. Haengt an den TextChanged der fuenf Posten und
+        /// an dem von Pel; waehrend des Ladens (m_bLaden) passiert nichts.
+        /// </summary>
+        private void InvestitionNachziehen()
+        {
+            if (m_bLaden) return;
+
+            SummeAnzeigen();
+
+            double pel = FeldWert(textBox_el_Leistung);
+            textBox_Investitionskosten.Text =
+                BHKWKosten.JeKWelBestimmbar(pel)
+                ? BHKWKosten.JeKWel(SummeEinzelposten(), pel).ToString("F2")
+                : MyResource.Resource.BHKW_INVEST_UNBESTIMMT;
+
+            HinweisAnzeigen(pel, false);
+        }
+
+        /// <summary>
+        /// Der Zustand direkt nach dem Laden. Bei Pel = 0 gibt es keinen Wert je kWel -
+        /// dann wird das ausdruecklich angezeigt statt einer erfundenen 0,00. Sonst bleibt
+        /// der geladene Wert stehen; die Hinweiszeile sagt, ob er zur Summe passt.
+        /// </summary>
+        private void BestandHinweisAnzeigen()
+        {
+            double pel = FeldWert(textBox_el_Leistung);
+            if (!BHKWKosten.JeKWelBestimmbar(pel))
+                textBox_Investitionskosten.Text = MyResource.Resource.BHKW_INVEST_UNBESTIMMT;
+
+            HinweisAnzeigen(pel, true);
+        }
+
+        /// <summary>
+        /// Beschriftet die Hinweiszeile unter der Kostenspalte und den Hinweis am
+        /// gesperrten Feld. <paramref name="bestand"/> ist nur direkt nach dem Laden true:
+        /// dann steht im Feld noch der gespeicherte Wert, und eine Abweichung von der
+        /// Ableitung wird benannt statt still korrigiert.
+        /// </summary>
+        private void HinweisAnzeigen(double pel, bool bestand)
+        {
+            if (!BHKWKosten.JeKWelBestimmbar(pel))
+            {
+                label_InvestHinweis.Text = MyResource.Resource.BHKW_INVEST_HINWEIS_UNBESTIMMT;
+                toolTip_Hinweis.SetToolTip(textBox_Investitionskosten,
+                                           MyResource.Resource.BHKW_INVEST_TIP_UNBESTIMMT);
+                return;
+            }
+
+            toolTip_Hinweis.SetToolTip(textBox_Investitionskosten, MyResource.Resource.BHKW_INVEST_TIP);
+
+            double angezeigt;
+            bool bAbweichung = bestand
+                            && Program.ZahlParsen(textBox_Investitionskosten.Text, out angezeigt)
+                            && Math.Abs(angezeigt - BHKWKosten.JeKWel(SummeEinzelposten(), pel)) > 0.005;
+
+            label_InvestHinweis.Text = bAbweichung
+                                     ? MyResource.Resource.BHKW_INVEST_HINWEIS_ABWEICHUNG
+                                     : MyResource.Resource.BHKW_INVEST_HINWEIS_ABGELEITET;
         }
 
         private void btn_Überschreiben_Click(object sender, EventArgs e)
@@ -194,7 +314,9 @@ namespace WindowsFormsApplication1
             if (!Program.ZahlPruefen(textBox_Wirkungsgrad, "Gesamtwirkungsgrad", out werte.Wirkungsgrad, true)) return false;
             if (!Program.ZahlPruefen(textBox_Grenzleistung, "untere Grenzleistung", out werte.Grenzleistung, true)) return false;
 
-            if (!Program.ZahlPruefen(textBox_Investitionskosten, "Investitionskosten", out werte.Investition, true)) return false;
+            // "Investitionskosten" wird NICHT mehr aus dem Feld gelesen: das Feld ist
+            // abgeleitet und kann bei Pel = 0 gar keine Zahl zeigen. Der Wert entsteht
+            // weiter unten aus den geprueften Einzelposten.
             if (!Program.ZahlPruefen(textBox_Raumbedarf, "Raumbedarf", out werte.Raumbedarf, true)) return false;
             if (!Program.ZahlPruefen(textBox_Wartungskosten, "Wartungskosten", out werte.Wartungskosten, true)) return false;
             if (!Program.GanzzahlPruefen(textBox_Nutzungsdauer, "Nutzungsdauer", out werte.Nutzungsdauer, true)) return false;
@@ -204,6 +326,15 @@ namespace WindowsFormsApplication1
             if (!Program.ZahlPruefen(textBox_Lieferung, "Kosten Lieferung", out werte.Lieferung, true)) return false;
             if (!Program.ZahlPruefen(textBox_Schallschutzhaube, "Kosten Schallschutzhaube", out werte.Schallschutzhaube, true)) return false;
             if (!Program.ZahlPruefen(textBox_Abgasreinigung, "Kosten Abgasreinigung", out werte.Abgasreinigung, true)) return false;
+
+            // Der spezifische Wert entsteht hier aus den gerade geprueften Posten und Pel -
+            // nicht aus dem Anzeigefeld, das ihn nur spiegelt. Damit kann kein Speicherweg
+            // des Dialogs die beiden Groessen auseinanderlaufen lassen. Ist Pel = 0, liefert
+            // BHKWKosten.JeKWel 0; die Summe selbst steht unversehrt in den Postenspalten.
+            werte.Investition = BHKWKosten.JeKWel(
+                BHKWKosten.Summe(werte.Modul, werte.Montage, werte.Lieferung,
+                                 werte.Schallschutzhaube, werte.Abgasreinigung),
+                werte.Pel);
 
             if (!Program.GanzzahlPruefen(textBox_NOx, "NOx-Emission", out werte.NOx, true)) return false;
             if (!Program.GanzzahlPruefen(textBox_CO2, "CO2-Emission", out werte.CO2, true)) return false;
@@ -227,7 +358,7 @@ namespace WindowsFormsApplication1
             model.m_Pel = werte.Pel;
             model.m_Ptherm = werte.Ptherm;
             model.m_Wirkungsgrad = werte.Wirkungsgrad;
-            model.m_Investition_KWel = werte.Investition;
+            model.m_Investition_KWel = werte.Investition;   // abgeleitet, siehe EingabenPruefen
             model.m_Nutzungsdauer = werte.Nutzungsdauer;
             model.m_Raumbedarf = werte.Raumbedarf;
             model.m_NOx = werte.NOx;
@@ -431,11 +562,8 @@ namespace WindowsFormsApplication1
         // kein Undo() und kein Auffuellen mit "0" mehr - gemeldet wird erst beim
         // Aktionsknopf ueber EingabenPruefen. Faerbung nach dem Speichertyp in
         // InitDatensatzUpdate: ZahlFaerben fuer double, GanzzahlFaerben fuer Int32.
-        private void textBox_Investitionskosten_TextChanged(object sender, EventArgs e)
-        {
-            Program.ZahlFaerben(sender);
-        }
-
+        // Das Feld "Investitionskosten" hat keinen Handler mehr: es ist abgeleitet und
+        // schreibgeschuetzt, sein Text kommt allein aus InvestitionNachziehen().
         private void textBox_th_Leistung_TextChanged(object sender, EventArgs e)
         {
             Program.ZahlFaerben(sender);
@@ -444,6 +572,7 @@ namespace WindowsFormsApplication1
         private void textBox_el_Leistung_TextChanged(object sender, EventArgs e)
         {
             Program.ZahlFaerben(sender);
+            InvestitionNachziehen();
         }
 
         private void textBox_Wirkungsgrad_TextChanged(object sender, EventArgs e)
@@ -474,26 +603,31 @@ namespace WindowsFormsApplication1
         private void textBox_Modul_TextChanged(object sender, EventArgs e)
         {
             Program.ZahlFaerben(sender);
+            InvestitionNachziehen();
         }
 
         private void textBox_Montage_TextChanged(object sender, EventArgs e)
         {
             Program.ZahlFaerben(sender);
+            InvestitionNachziehen();
         }
 
         private void textBox_Lieferung_TextChanged(object sender, EventArgs e)
         {
             Program.ZahlFaerben(sender);
+            InvestitionNachziehen();
         }
 
         private void textBox_Schallschutzhaube_TextChanged(object sender, EventArgs e)
         {
             Program.ZahlFaerben(sender);
+            InvestitionNachziehen();
         }
 
         private void textBox_Abgasreinigung_TextChanged(object sender, EventArgs e)
         {
             Program.ZahlFaerben(sender);
+            InvestitionNachziehen();
         }
 
         private void textBox_CO2_TextChanged(object sender, EventArgs e)

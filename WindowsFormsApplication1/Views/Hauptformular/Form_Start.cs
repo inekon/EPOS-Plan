@@ -80,7 +80,6 @@ namespace WindowsFormsApplication1
 
             // DropDownStyle auf DropDownList
             comboBox_Klima.DropDownStyle = ComboBoxStyle.DropDownList;
-            comboBox_Klima.FlatStyle = FlatStyle.Popup;
             // Hintergrundfarbe auf Weiß setzen
             comboBox_Klima.BackColor = Color.White;
             // Textfarbe auf Schwarz
@@ -164,6 +163,7 @@ namespace WindowsFormsApplication1
             m_ID_Projekt = ctrl_projekt.m_ID;
 
             SetTextProjekt(m_szProjektname);
+            comboBox_Varianten.Text = m_szProjektname;
             comboBox_Klima.Text = GetProjektKlimaregion(m_ID_Projekt);
 
             label_ProjektStatus.Text = "✔";
@@ -2011,7 +2011,7 @@ namespace WindowsFormsApplication1
 
         private void comboBox_Klima_SelectedIndexChanged(object sender, EventArgs e)
         {
-            this.panel1.Focus();
+            this.panelKlima.Focus();
         }
 
         private void btn_Varianten_Click(object sender, EventArgs e)
@@ -2123,6 +2123,8 @@ namespace WindowsFormsApplication1
             if (stammId <= 0) stammId = idProjekt;
 
             string stammName = LiesProjektname(stammId);
+    
+            if (stammName == "") cb.Text = LiesProjektname(idProjekt); else cb.Text = stammName;
 
             int anzahl = 0;
             foreach (VariantenCtrl.VarianteInfo vi in _ctrl.LadeGruppe(stammId, stammName))
@@ -2145,7 +2147,7 @@ namespace WindowsFormsApplication1
             // Damit du bequem an die ID kommst (cb.SelectedValue)
             cb.DisplayMember = "Anzeige";
             cb.ValueMember = "IdProjekt";
-
+ 
             // Vorauswahl: das geöffnete Projekt, sonst erster Eintrag.
             int sel = -1;
             for (int i = 0; i < cb.Items.Count; i++)
@@ -2325,6 +2327,16 @@ namespace WindowsFormsApplication1
 
 
         private void panelVariante_Paint(object sender, PaintEventArgs e)
+        {
+            var c = (Control)sender;
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            Rectangle r = c.ClientRectangle;
+            r.Width -= 1; r.Height -= 1;            // sonst wird rechte/untere Linie abgeschnitten
+            using (GraphicsPath path = RundesRechteck(r, 8))
+            using (Pen pen = new Pen(Color.FromArgb(180, 190, 205), 1.5f))
+                e.Graphics.DrawPath(pen, path);
+        }
+        private void panelKlima_Paint(object sender, PaintEventArgs e)
         {
             var c = (Control)sender;
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;

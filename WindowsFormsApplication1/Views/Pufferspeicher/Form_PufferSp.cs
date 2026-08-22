@@ -205,7 +205,14 @@ namespace WindowsFormsApplication1
         {
             if (!row.Table.Columns.Contains(spalte)) return "";
             object wert = row[spalte];
-            return (wert == null || wert == DBNull.Value) ? "" : wert.ToString();
+            if (wert == null || wert == DBNull.Value) return "";
+
+            // Fließkommazahlen auf 1 Nachkommastelle begrenzen
+            if (wert is double d) return d.ToString("0.0");
+            if (wert is float f) return f.ToString("0.0");
+            if (wert is decimal m) return m.ToString("0.0");
+
+            return wert.ToString();
         }
 
         private void listBox_PufferSp_DB_SelectedIndexChanged(object sender, EventArgs e)

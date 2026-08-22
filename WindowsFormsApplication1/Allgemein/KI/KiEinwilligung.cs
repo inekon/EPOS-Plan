@@ -81,9 +81,22 @@ namespace WindowsFormsApplication1
         /// heraus nicht lösen - vorgesehen für Installationen, in denen der externe
         /// Dienst nicht zulässig ist.
         /// </summary>
+        /// <remarks>
+        /// Gelesen werden BEIDE Registry-Sichten, ein Treffer genügt. Grund: Die x86-Fassung
+        /// der Anwendung landete über die WOW6432Node-Umleitung tatsächlich in
+        /// <c>HKLM\SOFTWARE\WOW6432Node\wp-plan</c>, die x64-Fassung liest dagegen
+        /// <c>HKLM\SOFTWARE\wp-plan</c>. Ohne beide Sichten würden Alt-Einträge aus der
+        /// x86-Zeit nach der Umstellung stillschweigend wirkungslos - und der Schalter
+        /// wirkt so in beiden Bitnessen gleich
+        /// (Konzept_Umstellung_64Bit_EPOS-Plan.md, P1.1).
+        /// </remarks>
         public static bool AbschalterMaschine
         {
-            get { return Ist(Lesen(Registry.LocalMachine, REG_ABSCHALTER)); }
+            get
+            {
+                return Ist(LesenMaschine(RegistryView.Registry64, REG_ABSCHALTER))
+                    || Ist(LesenMaschine(RegistryView.Registry32, REG_ABSCHALTER));
+            }
         }
 
         /// <summary>
@@ -178,6 +191,23 @@ namespace WindowsFormsApplication1
             try
             {
                 using (RegistryKey key = wurzel.OpenSubKey(REG_SCHLUESSEL))
+                    return key == null ? null : key.GetValue(wert) as string;
+            }
+            catch { return null; }
+        }
+
+        /// <summary>
+        /// Liest aus HKLM in einer ausdrücklich gewählten Registry-Sicht. Auf
+        /// 32-bit-Windows liefert <see cref="RegistryView.Registry64"/> die einzige
+        /// vorhandene Sicht - ein Sonderfall ist deshalb nicht nötig, doppeltes Lesen
+        /// derselben Sicht schadet nicht.
+        /// </summary>
+        private static string LesenMaschine(RegistryView sicht, string wert)
+        {
+            try
+            {
+                using (RegistryKey basis = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, sicht))
+                using (RegistryKey key = basis.OpenSubKey(REG_SCHLUESSEL))
                     return key == null ? null : key.GetValue(wert) as string;
             }
             catch { return null; }

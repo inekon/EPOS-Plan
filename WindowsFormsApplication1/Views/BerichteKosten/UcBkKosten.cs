@@ -64,6 +64,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         private readonly List<string> _traegerOhnePreis = new List<string>();
 
+        /// <summary>
+        /// Energieträger, die das Projekt VERWENDET, die ihm aber nicht zugeordnet sind
+        /// (keine Zeile in <c>energy_project_settings</c>) — gefüllt in
+        /// <see cref="LadeTraeger"/>, gemeldet in der Statuszeile. Für sie führt
+        /// <c>Abfrage_Energietraeger_Effektiv</c> nichts, also gibt es weder Preis noch
+        /// Heizwert; sie fehlen in der Tabelle und sollen deshalb wenigstens dastehen.
+        /// </summary>
+        private readonly List<string> _traegerNichtZugeordnet = new List<string>();
+
         private readonly WirtschaftlichkeitCtrl _wirt = new WirtschaftlichkeitCtrl();
 
         // Steuerelemente
@@ -349,6 +358,14 @@ namespace WindowsFormsApplication1
                 status += "  ·  " + string.Format(MyResource.Resource.BK_KOSTEN_ENERGIE_PREIS0,
                                                   string.Join(", ", _traegerOhnePreis.ToArray()));
 
+            // Ein Träger, den das Projekt FÄHRT, dem aber keine Projekteinstellung
+            // gegenübersteht, hat in Abfrage_Energietraeger_Effektiv keine Zeile — er
+            // fehlte in der Tabelle schon vor der Filterung, nur sagte es niemand. Jetzt
+            // steht er wenigstens in der Fußzeile, statt still zu verschwinden.
+            if (_traegerNichtZugeordnet.Count > 0)
+                status += "  ·  " + string.Format(MyResource.Resource.BK_KOSTEN_TRAEGER_FEHLT,
+                                                  string.Join(", ", _traegerNichtZugeordnet.ToArray()));
+
             Melde(status);
         }
 
@@ -508,12 +525,46 @@ namespace WindowsFormsApplication1
             catch { return null; }
         }
 
-        // Energieträger des Projekts mit Abrechnungseinheit, effektivem Heizwert und
-        // den wirksamen Preisen (Projektwert vor Katalogwert — Kette wie im
-        // KostenEmissionRechner).
+        /// <summary>
+        /// Die im Projekt VERWENDETEN Energieträger mit Abrechnungseinheit, effektivem
+        /// Heizwert und den wirksamen Preisen (Projektwert vor Katalogwert — Kette wie im
+        /// <see cref="KostenEmissionRechner"/>).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Befund vom 22.08.2026: die Liste zeigte Träger, die das Projekt gar nicht
+        /// fährt.</b> Angezeigt wurde schlicht der Inhalt von
+        /// <c>Abfrage_Energietraeger_Effektiv</c> — und der stammt aus
+        /// <c>energy_project_settings</c>. Das sind EINSTELLUNGEN je Träger (Preis,
+        /// Heizwert, CO₂-Faktor), keine Verwendungsliste. Die Variante „Wöhler - Test2"
+        /// (Projekt 1024) führt dort acht Träger und zeigte alle acht, obwohl im Projekt
+        /// nur ein BHKW, ein elektrischer Heizkessel, eine Wärmepumpe und zwei
+        /// Pufferspeicher stehen. Sechs der acht konnten nie eine Kilowattstunde liefern.
+        /// </para>
+        /// <para>
+        /// <b>Gefiltert wird im Code, nicht in der Abfrage.</b>
+        /// <c>Abfrage_Energietraeger_Effektiv</c> liegt außerhalb des Repos und wird von
+        /// vier Stellen gelesen — die drei anderen schlagen gezielt EINEN Träger nach
+        /// (<see cref="KostenEmissionRechner"/>, <c>WirtschaftlichkeitCtrl.Traeger</c>,
+        /// <see cref="EnergieMengen.Menge"/>) und sind von diesem Befund nicht betroffen.
+        /// Die Verwendungsmenge kommt aus
+        /// <see cref="ProjektEnergietraegerCtrl.Verwendete"/>; dort steht auch, welches
+        /// Gewerk welchen Träger beiträgt und wann <c>ID_Carrier</c> gilt und wann das
+        /// ältere <c>Brennstoff</c>-Feld der Gerätetabelle.
+        /// </para>
+        /// <para>
+        /// <b>Die Filterung kann nur wegnehmen.</b> Ein verwendeter Träger OHNE Zuordnung
+        /// in <c>energy_project_settings</c> hat in der gespeicherten Abfrage ohnehin
+        /// keine Zeile — er stand also auch vorher nicht in der Tabelle. Neu ist, dass er
+        /// nicht mehr stillschweigend fehlt: Die Fußzeile nennt ihn. Genau dieser Fall
+        /// steht im Bestand — Projekt 1023 fährt einen Erdgas-E-Kessel, dem Projekt ist
+        /// aber nur „Elektrische Energie" zugeordnet.
+        /// </para>
+        /// </remarks>
         private void LadeTraeger(System.Globalization.CultureInfo kultur)
         {
             _traegerOhnePreis.Clear();
+            _traegerNichtZugeordnet.Clear();
 
             gridTraeger.Columns.Add("traeger", MyResource.Resource.BK_KOSTEN_SP_TRAEGER);
             gridTraeger.Columns.Add("einheit", MyResource.Resource.BK_KOSTEN_SP_ABRECHNUNG);
@@ -528,17 +579,44 @@ namespace WindowsFormsApplication1
             for (int i = 2; i <= 4; i++)
                 gridTraeger.Columns[i].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
+            // Die VERWENDUNGSMENGE — die eine Frage, die die gespeicherte Abfrage nicht
+            // beantworten kann. Scheitert sie, bleibt die Menge leer; die Tabelle sagt
+            // dann „kein Energieträger" statt eine ungefilterte Liste vorzuzeigen.
+            var verwendet = new Dictionary<int, ProjektEnergietraegerCtrl.Verwendung>();
+            try
+            {
+                foreach (ProjektEnergietraegerCtrl.Verwendung v in
+                         ProjektEnergietraegerCtrl.Verwendete(_idProjekt))
+                {
+                    verwendet[v.CarrierId] = v;
+
+                    // Verwendet, aber dem Projekt nicht zugeordnet: In
+                    // Abfrage_Energietraeger_Effektiv gibt es für ihn keine Zeile, also
+                    // auch keinen Preis und keinen Heizwert. Das gehört gesagt.
+                    if (!v.Zugeordnet)
+                        _traegerNichtZugeordnet.Add(v.Name.Length > 0
+                            ? v.Name : "#" + v.CarrierId.ToString(kultur));
+                }
+            }
+            catch { verwendet.Clear(); }
+
             try
             {
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT carrier_id, name, billing_unit, eff_hi " +
                     "FROM Abfrage_Energietraeger_Effektiv WHERE ID_Projekt = ?",
                     new OleDbParameter("@p", _idProjekt));
-                if (dt == null) return;
 
-                foreach (DataRow r in dt.Rows)
+                foreach (DataRow r in (dt != null ? dt.Rows.Cast<DataRow>()
+                                                  : Enumerable.Empty<DataRow>()))
                 {
                     int carrier = (int)(D(r, "carrier_id") ?? 0);
+
+                    // DER FILTER. Alles Weitere gilt nur für Träger, die im Projekt auch
+                    // wirklich ein Gewerk fährt.
+                    ProjektEnergietraegerCtrl.Verwendung v;
+                    if (!verwendet.TryGetValue(carrier, out v)) continue;
+
                     double? preis, grund;
                     LiesPreise(carrier, out preis, out grund);
                     double? hi = D(r, "eff_hi");
@@ -549,16 +627,53 @@ namespace WindowsFormsApplication1
                     if (!preis.HasValue || Math.Abs(preis.Value) < 1e-9)
                         _traegerOhnePreis.Add(S(r, "name"));
 
-                    gridTraeger.Rows.Add(
+                    int idx = gridTraeger.Rows.Add(
                         S(r, "name"),
                         S(r, "billing_unit"),
                         hi.HasValue ? hi.Value.ToString("N2", kultur) : "—",
                         preis.HasValue ? preis.Value.ToString("N4", kultur) : "—",
                         grund.HasValue ? grund.Value.ToString("N2", kultur) : "—");
+
+                    // Warum steht diese Zeile hier? Der Filter bleibt nur dann
+                    // nachvollziehbar, wenn er seine Begründung mitliefert.
+                    gridTraeger.Rows[idx].Cells[0].ToolTipText = string.Format(
+                        MyResource.Resource.BK_KOSTEN_TRAEGER_HINT, v.BeitraegerText);
                 }
                 gridTraeger.ClearSelection();
             }
             catch { }
+
+            if (gridTraeger.Rows.Count == 0) ZeigeKeineTraeger(verwendet.Values);
+        }
+
+        /// <summary>
+        /// Eine erklärende Zeile statt eines leeren Rasters. Ein leeres Raster sagt nicht,
+        /// OB gefiltert wurde — dieselbe Haltung wie bei den Gewerken ohne Kostenposition.
+        /// </summary>
+        /// <param name="verwendet">
+        /// Die Träger, die das Projekt fährt. Leer = das Projekt bezieht überhaupt keine
+        /// Energie, weil es keinen entsprechenden Erzeuger führt. Nicht leer und trotzdem
+        /// keine Zeile = zu keinem dieser Träger liefert
+        /// <c>Abfrage_Energietraeger_Effektiv</c> etwas; dann fehlen Preis und Heizwert,
+        /// und die Zeile nennt die Träger, um die es geht.
+        /// </param>
+        private void ZeigeKeineTraeger(ICollection<ProjektEnergietraegerCtrl.Verwendung> verwendet)
+        {
+            var namen = new List<string>();
+            foreach (ProjektEnergietraegerCtrl.Verwendung v in verwendet)
+                namen.Add(v.Name.Length > 0 ? v.Name : "#" + v.CarrierId);
+
+            string text = namen.Count > 0
+                ? string.Format(MyResource.Resource.BK_KOSTEN_TRAEGER_UNGEPFLEGT,
+                                string.Join(", ", namen.ToArray()))
+                : MyResource.Resource.BK_KOSTEN_TRAEGER_KEINE;
+
+            int idx = gridTraeger.Rows.Add(text, "", "", "", "");
+            gridTraeger.Rows[idx].DefaultCellStyle.ForeColor = Color.DimGray;
+            gridTraeger.Rows[idx].DefaultCellStyle.Font =
+                new Font(gridTraeger.Font, FontStyle.Italic);
+            gridTraeger.Rows[idx].Cells[0].ToolTipText = text;
+            gridTraeger.ClearSelection();
         }
 
         // Vorrangkette des KostenEmissionRechners: Projektwert (energy_project_settings)
@@ -635,6 +750,7 @@ namespace WindowsFormsApplication1
         public string StatusText { get { return lblStatus != null ? lblStatus.Text : ""; } }
         public int GewerkeOhnePosition { get { return _ohnePosition.Count; } }
         public int TraegerOhnePreis { get { return _traegerOhnePreis.Count; } }
+        public int TraegerNichtZugeordnet { get { return _traegerNichtZugeordnet.Count; } }
 
         // ------------------------------------------------------ Kategorie-Kachel
 
