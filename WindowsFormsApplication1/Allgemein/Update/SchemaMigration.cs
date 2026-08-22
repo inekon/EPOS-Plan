@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 35;
+        public const int ZIEL_VERSION = 36;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1227,6 +1227,58 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_35_ABFRAGEN_SPALTENNAMEN = 35;
 
+        /// <summary>
+        /// K6-NACHTRAG (Protokoll § 12, Empfehlung vom 20.08.2026): <b>die gespeicherte
+        /// Abfrage <c>Abfrage_Energietraeger_Effektiv</c> anlegen, falls sie fehlt.</b>
+        ///
+        /// Der Code liest sie an vier Stellen (<c>KostenEmissionRechner</c>,
+        /// <c>WirtschaftlichkeitCtrl</c>, <c>UcBkKosten</c>, <c>EnergieMengen</c>) —
+        /// angelegt hat sie bisher KEINE Migration: Sie stammte aus der ausgelieferten
+        /// <c>Kenndaten.accdb</c>, und der Produktiv-DB fehlte sie, bis sie am
+        /// 20.08.2026 von Hand per ADOX aus der Arbeitskopie übertragen wurde
+        /// (K6-Protokoll § 12). Eine frisch aufgesetzte Datenbank hätte sie weiterhin
+        /// nicht — genau diese Lücke schließt der Schritt.
+        ///
+        /// <b>Nummer 36, nicht 30 (Merge vom 22.08.2026).</b> Der Schritt entstand auf
+        /// einem Zweig, als 29 der höchste Stand war, und trug dort die 30. Bis zum
+        /// Merge war die 30 längst an <see cref="SCHRITT_30_KATALOG_DUBLETTEN_ALLE"/>
+        /// vergeben und der Stand auf 35 gewachsen. Da der Lauf jeden Schritt mit
+        /// <c>Nr &lt;= version</c> als „bereits erledigt" überspringt, wäre er als 30
+        /// auf keiner Datenbank ab Marker 30 je gelaufen — die Umnummerierung auf 36
+        /// ist die Bedingung dafür, dass er überhaupt wirkt.
+        ///
+        /// <b>Inhalt</b> (SELECT Zeichen für Zeichen aus der Arbeitskopie, ADOX-Auszug
+        /// vom 21.08.2026): je (<c>ID_Projekt</c>, Energieträger) der EFFEKTIVE Heiz-
+        /// und Brennwert — Projektwert vor Katalogwert, d. h. <c>custom_hi/hs</c> aus
+        /// <c>energy_project_settings</c>, und wo dieser NULL oder 0 ist, der
+        /// Katalogwert <c>hi/hs_kwh_per_unit</c> aus <c>energy_carrier</c>.
+        ///
+        /// <b>Technik: <c>CREATE VIEW</c> über die offene ACE-Verbindung.</b> Der
+        /// OLE-DB-Weg läuft im ANSI-92-Modus und nimmt die parameterlose SELECT-Sicht
+        /// samt <c>IIf</c> und Umlaut-Spaltenname an — am 21.08.2026 gegen eine
+        /// Scratch-Kopie der Arbeitskopie gemessen: Anlage OK, 22/22 Zeilen
+        /// deckungsgleich mit der Bestandsabfrage, 0 abweichende eff-Werte.
+        ///
+        /// <b>Rein additives DDL, KEIN DML.</b> Wo die Abfrage schon steht
+        /// (Arbeitskopie, reparierte Produktiv-DB), tut der Schritt NICHTS — auch eine
+        /// abweichend gepflegte Definition wird nie ersetzt, dieselbe Linie wie „ein
+        /// vom Anwender geänderter Wert wird nie überschrieben".
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): Existenz-Probe VOR der Anlage —
+        /// die Abfrage ist wie eine Tabelle SELECT-fähig, Probe über
+        /// <see cref="TabellenSchema"/> —, der zweite Lauf meldet „bereits vorhanden"
+        /// und fasst nichts an. Zusatzgurt: Die Doppel-Anlage wirft ACE-Fehler 3012
+        /// („Objekt … ist bereits vorhanden"), den <see cref="IstBereitsVorhanden"/>
+        /// bereits als Erfolg wertet.
+        ///
+        /// <b>Basistabellen sind da, wenn dieser Schritt läuft:</b> Ohne
+        /// <c>energy_project_settings</c> scheitert Schritt 12a
+        /// (<c>SpaltenAnlegen</c>), ohne <c>energy_carrier</c> Schritt 12d — eine
+        /// Datenbank ohne die Basis erreicht Schritt 36 gar nicht. Die Vorabprüfung
+        /// hier ist der Gurt dazu, mit präziser Meldung statt ACE-Fehlertext.
+        /// </summary>
+        public const int SCHRITT_36_ENERGIETRAEGER_ABFRAGE = 36;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -1554,7 +1606,7 @@ namespace WindowsFormsApplication1
         /// stehen und „Sonstiges" nur EINMAL entsteht (der Katalog ist flach).</summary>
         public static int DatenNebenpositionenGesaet { get; private set; }
 
-        // --- Zählwerk der Etappe K6 (Schritte 28 und 29) ------------------------------
+        // --- Zählwerk der Etappe K6 (Schritte 28, 29 und Nachtrag 36) -----------------
 
         /// <summary>28b: CO₂-Stützstellen, die auf den Pfad der Entscheidung E5
         /// berichtigt wurden (höchstens 1 — die Zeile ab 2028).</summary>
@@ -1574,6 +1626,10 @@ namespace WindowsFormsApplication1
         /// <summary>29: gelöschte Kategorie-3-Zeilen in <c>Tab_ProjektWerte</c>
         /// (Entscheidung E3).</summary>
         public static int DatenKategorie3Geloescht { get; private set; }
+
+        /// <summary>36: 1, wenn dieser Lauf <c>Abfrage_Energietraeger_Effektiv</c> neu
+        /// angelegt hat; 0, wenn sie schon stand.</summary>
+        public static int DatenEnergietraegerAbfrageAngelegt { get; private set; }
 
         // --- Zählwerk des Abfragen-Nachzugs aus Schritt 32 -----------------------------
 
@@ -1984,6 +2040,18 @@ namespace WindowsFormsApplication1
                         "Die gespeicherten Abfragen mit veralteten Spaltennamen konnten nicht " +
                         "nachgezogen werden.",
                         Schritt_35_AbfragenSpaltennamen),
+
+            // K6-NACHTRAG (Protokoll § 12, Empfehlung vom 20.08.2026) - die gespeicherte
+            //       Abfrage, die der Code an vier Stellen liest, aber bisher keine
+            //       Migration anlegte. Rein additives DDL; wo sie schon steht, tut der
+            //       Schritt nachweislich nichts. Nummer 36 statt der urspruenglichen 30
+            //       - Begruendung an der Schrittkonstante.
+            new Schritt(SCHRITT_36_ENERGIETRAEGER_ABFRAGE,
+                        "Gespeicherte Abfrage Abfrage_Energietraeger_Effektiv anlegen, " +
+                        "falls sie fehlt (K6-Nachtrag, Protokoll Abschnitt 12)",
+                        "Die Abfrage Abfrage_Energietraeger_Effektiv konnte nicht " +
+                        "angelegt werden.",
+                        Schritt_36_EnergietraegerAbfrage),
         };
 
         // =================================================================================
@@ -2050,6 +2118,7 @@ namespace WindowsFormsApplication1
             DatenAlttabellenGeloescht = 0;
             DatenAlttabellenOffen = 0;
             DatenKategorie3Geloescht = 0;
+            DatenEnergietraegerAbfrageAngelegt = 0;
             DatenAbfragenErneuert = 0;
             DatenAbfragenEntfernt = 0;
             DatenAbfragenOffen = 0;
@@ -2412,6 +2481,16 @@ namespace WindowsFormsApplication1
                               DbWerte.BIOMASSE_KONVENTION_NULL + "\" und Nachhaltigkeitsnachweis \"" +
                               DbWerte.BIOMASSE_NACHWEIS_JA +
                               "\": die Emissionsbilanz und die BEHG-Abgabe rechnen wie bisher."));
+
+            // Schritt 36 meldet - wie 14, 16, 17, 24 und 30 - AUCH die 0: „war bereits
+            // vorhanden" ist auf jeder bisher ausgelieferten oder reparierten
+            // Datenbank die eigentliche Aussage.
+            if (StandNachher >= SCHRITT_36_ENERGIETRAEGER_ABFRAGE)
+                l.Zeile("Energieträger-Abfrage (Schritt 36): " +
+                        SchemaKatalog.ABFRAGE_ENERGIETRAEGER_EFFEKTIV +
+                        (DatenEnergietraegerAbfrageAngelegt > 0
+                            ? " angelegt - Projektwert vor Katalogwert für Heiz- und Brennwert."
+                            : " war bereits vorhanden - nichts geändert."));
 
             // Schritt 32 meldet - wie 14, 16, 17, 24 und 30 - AUCH die 0. Sie ist hier die
             // eigentliche Aussage: keine gespeicherte Abfrage verweist noch auf eine in
@@ -4891,6 +4970,72 @@ namespace WindowsFormsApplication1
                 l.LetzterFehler = Kurzmeldung(ex);
                 return 0;
             }
+        }
+
+        // =================================================================================
+        // Schritt 36 - K6-Nachtrag: gespeicherte Abfrage Abfrage_Energietraeger_Effektiv
+        // =================================================================================
+
+        /// <summary>
+        /// Die Anweisung, mit der Schritt 36 die Abfrage anlegt. SELECT-Text Zeichen für
+        /// Zeichen aus der Arbeitskopie (ADOX-Auszug vom 21.08.2026) — nur ohne das
+        /// abschließende Semikolon, das keine Anweisung dieser Datei führt. Der
+        /// Spaltenname <c>ID_Energieträger</c> trägt seinen Umlaut wirklich, wie im
+        /// UPDATE von Schritt 12d.
+        /// </summary>
+        private const string SQL_SCHRITT36_ENERGIETRAEGER_ABFRAGE =
+            "CREATE VIEW [" + SchemaKatalog.ABFRAGE_ENERGIETRAEGER_EFFEKTIV + "] AS " +
+            "SELECT s.ID_Projekt, s.ID_Energieträger AS carrier_id, ec.code, ec.name, ec.billing_unit, " +
+            "IIf(s.custom_hi Is Null Or s.custom_hi=0,ec.hi_kwh_per_unit,s.custom_hi) AS eff_hi, " +
+            "IIf(s.custom_hs Is Null Or s.custom_hs=0,ec.hs_kwh_per_unit,s.custom_hs) AS eff_hs " +
+            "FROM " + SchemaKatalog.ENERGY_PROJECT_SETTINGS + " AS s " +
+            "INNER JOIN " + SchemaKatalog.ENERGY_CARRIER + " AS ec " +
+            "ON s.ID_Energieträger = ec.id";
+
+        /// <summary>
+        /// Schritt 36 (K6-Nachtrag, Protokoll § 12). Begründung, Messwerte und
+        /// Idempotenzzusage stehen bei <see cref="SCHRITT_36_ENERGIETRAEGER_ABFRAGE"/>.
+        /// </summary>
+        private static bool Schritt_36_EnergietraegerAbfrage(Lauf l)
+        {
+            // --- 36a) Basistabellen (Gurt - Begruendung an der Schrittkonstante) ------
+            foreach (string basis in new[] { SchemaKatalog.ENERGY_PROJECT_SETTINGS,
+                                             SchemaKatalog.ENERGY_CARRIER })
+            {
+                if (TabellenSchema(l, basis) != null) continue;
+                l.Notiz("36a: Basistabelle " + basis + " ist nicht lesbar - die " +
+                        "Abfrage laesst sich ohne sie nicht anlegen." +
+                        (l.LetzterFehler != null ? " Meldung: " + l.LetzterFehler : ""));
+                return false;
+            }
+
+            // --- 36b) Existenz-Probe: die Abfrage ist wie eine Tabelle SELECT-faehig --
+            if (TabellenSchema(l, SchemaKatalog.ABFRAGE_ENERGIETRAEGER_EFFEKTIV) != null)
+            {
+                l.Notiz("36b: " + SchemaKatalog.ABFRAGE_ENERGIETRAEGER_EFFEKTIV +
+                        " ist bereits vorhanden - nichts zu tun.");
+                return true;
+            }
+
+            // --- 36c) Anlage ----------------------------------------------------------
+            if (!Ddl(l, SQL_SCHRITT36_ENERGIETRAEGER_ABFRAGE,
+                     "Abfrage " + SchemaKatalog.ABFRAGE_ENERGIETRAEGER_EFFEKTIV))
+                return false;
+
+            // --- 36d) Probelesen (wie die Handreparatur vom 20.08.2026) ---------------
+            object n = Scalar(l, "SELECT COUNT(*) FROM [" +
+                                 SchemaKatalog.ABFRAGE_ENERGIETRAEGER_EFFEKTIV + "]");
+            if (n == null)
+            {
+                l.Notiz("36d: Probelesen der neu angelegten Abfrage fehlgeschlagen" +
+                        (l.LetzterFehler != null ? " - " + l.LetzterFehler : "") + ".");
+                return false;
+            }
+
+            DatenEnergietraegerAbfrageAngelegt = 1;
+            l.Notiz("36c/36d: " + SchemaKatalog.ABFRAGE_ENERGIETRAEGER_EFFEKTIV +
+                    " angelegt, Probelesen: " + Zahl(n) + " Zeile(n).");
+            return true;
         }
 
         // =================================================================================
