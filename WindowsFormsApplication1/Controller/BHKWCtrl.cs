@@ -147,6 +147,17 @@ namespace WindowsFormsApplication1
                                Kosten_Lieferung=?, Kosten_Schallschutzhaube=?, Kosten_Abgasreinigung=?
                                WHERE ID=?";
 
+                // Die Einzelposten fuehren (Regel in BHKWKosten, Nutzerentscheid
+                // 22.08.2026): der spezifische Wert wird hier aus den Posten und Pel
+                // abgeleitet, damit auch dieser Schreibweg die beiden Groessen nicht
+                // auseinanderlaufen lassen kann. CopyFromStamm rechnet bewusst NICHT
+                // nach: es kopiert einen Stammsatz unveraendert ins Projekt.
+                model.m_Investition_KWel = BHKWKosten.JeKWel(
+                    BHKWKosten.Summe(model.m_Kosten_Modul, model.m_Kosten_Montage,
+                                     model.m_Kosten_Lieferung, model.m_Kosten_Schallschutzhaube,
+                                     model.m_Kosten_Abgasreinigung),
+                    model.m_Pel);
+
                 // Nutzt das instanziierte DBCommand (wichtig für die Transaktion aus der UI)
                 DBCommand.CommandText = sql;
                 DBCommand.Parameters.Clear();

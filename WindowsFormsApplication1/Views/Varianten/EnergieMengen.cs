@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
 
@@ -11,15 +10,20 @@ namespace WindowsFormsApplication1
     /// Umrechnung: Menge = Verbrauch[kWh] / effektiver Heizwert[kWh je Einheit].
     /// Heizwert + Einheit kommen aus Abfrage_Energietraeger_Effektiv (custom_hi/hs
     /// des Projekts mit Fallback auf den Katalog-Default), adressiert über carrier_id.
-    /// Die Träger-id (energy_carrier.id) steht als FK in der Eingabetabelle des Erzeugers
-    /// (Tab_BHKW.Brennstoff bzw. Kessel.Brennstoff) und wird per Bezeichner zugeordnet.
+    /// Die carrier_id (energy_carrier.ID) hängt am MODUL: sie kommt aus
+    /// Tab_Energieanlagen.ID_Carrier (gelesen von SimulationControl.EnergietraegerZuordnungLesen)
+    /// und steht im Ergebnis als ErgebnisBHKWModulModel/ErgebnisHeizkesselModulModel.CarrierId.
+    /// Sie steht NICHT in Tab_BHKW.Brennstoff bzw. Tab_Heizkessel.Brennstoff: dort liegt die
+    /// Tab_Brennstoff_Stamm.ID (die Brennstoffart), nicht die energy_carrier.ID. Der Weg zurück
+    /// ist auch nicht eindeutig - energy_carrier.ID_Brennstoff zeigt zwar auf
+    /// Tab_Brennstoff_Stamm.ID, je Brennstoffart gibt es aber MEHRERE Trägerzeilen mit
+    /// unterschiedlichem Hi/Hs und Preis. Ein Modul ohne Zuordnung (CarrierId 0) bleibt deshalb
+    /// ohne Menge; das ist ein bewusst gemeldeter Datenzustand (Protokollwarnung in
+    /// EnergietraegerZuordnungLesen, kostenVollstaendig = false in KostenEmissionRechner)
+    /// und wird hier nicht geraten.
     /// </summary>
     public static class EnergieMengen
     {
-        // >>> Falls die Kessel-Eingabetabelle anders heißt, hier anpassen: <<<
-        private const string TAB_BHKW_INPUT   = "Tab_BHKW";
-        private const string TAB_KESSEL_INPUT = "Tab_Heizkessel";
-
         // Baut die 3-Spalten-Tabelle (Erzeuger | Bezeichner | Menge) für ein Projekt.
         // useHs = true -> Brennwert (Hs), sonst Heizwert (Hi).
         public static DataTable BaueBrennstoffmengen(int projektId, bool useHs = false)
@@ -31,10 +35,6 @@ namespace WindowsFormsApplication1
 
             ErgebnisModel m = new ErgebnisCtrl().Load(projektId);
             if (m == null) return tab;
-
-            // Bezeichner -> Träger-id (energy_carrier.id) aus den Eingabetabellen
-            Dictionary<string, int> bhkwCarrier   = CarrierIdMap(projektId, TAB_BHKW_INPUT);
-            Dictionary<string, int> kesselCarrier = CarrierIdMap(projektId, TAB_KESSEL_INPUT);
 
             // BHKW – je Modul; Verbrauch (Brennstoffenergie) steht bereits im Modul.
             if (m.BHKW != null && m.BHKW.Module != null)
@@ -88,53 +88,6 @@ namespace WindowsFormsApplication1
             tab.Rows.Add(erzeuger,
                          string.IsNullOrWhiteSpace(bezeichner) ? erzeuger : bezeichner,
                          menge > 0 ? string.Format("{0:N0} {1}", menge, einheit).Trim() : "–");
-        }
-
-        // Bezeichner -> Träger-id aus einer Erzeuger-Eingabetabelle (Spalte Brennstoff = FK auf energy_carrier.id).
-        private static Dictionary<string, int> CarrierIdMap(int projektId, string tabelle)
-        {
-            var map = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            try
-            {
-                DataTable dt = DataRepository.GetDataTable(
-                    "SELECT Bezeichner, Brennstoff FROM " + tabelle + " WHERE ID_Projekt = ?",
-                    new OleDbParameter("@p", projektId));
-                if (dt != null)
-                    foreach (DataRow r in dt.Rows)
-                    {
-                        string bez = r["Bezeichner"] != DBNull.Value ? r["Bezeichner"].ToString().Trim() : "";
-                        int cid = r["Brennstoff"] != DBNull.Value ? Convert.ToInt32(r["Brennstoff"]) : 0;
-                        if (bez.Length > 0 && !map.ContainsKey(bez)) map[bez] = cid;
-                    }
-            }
-            catch { /* Tabelle/Spalte ggf. anders benannt -> Menge bleibt dann 0 */ }
-            return map;
-        }
-
-        private static int CarrierFor(Dictionary<string, int> map, string bezeichner, int projektId)
-        {
-            int cid = 0;
-            map.TryGetValue(bezeichner.Trim(), out cid);
-
-            object o = DataRepository.ExecuteScalar(
-                "SELECT id_carrier FROM Tab_Energieanlagen " +
-                "WHERE bezeichner = ? AND ID_Projekt = ?",
-                new OleDbParameter("@b", bezeichner),
-                new OleDbParameter("@p", projektId));
-
-            if (o != null && o != DBNull.Value)
-                cid = Convert.ToInt32(o);
-
-            return cid;
-        }
-
-        private static double DominanterVerbrauch(ErgebnisHeizkesselModel h)
-        {
-            double[] werte = { h.Gasverbrauch, h.Oelverbrauch, h.Pellets, h.Holzverbrauch, h.Kohle,
-                               h.Koks, h.Rapsoelverbrauch, h.TierischeFette, h.Sonstigverbrauch, h.Stromverbrauch };
-            double max = 0;
-            foreach (double v in werte) if (v > max) max = v;
-            return max;
         }
 
         private static double ToD(object o)
