@@ -421,7 +421,9 @@ namespace WindowsFormsApplication1
             // Reiter blieben gesperrt und m_ID_Projekt zeigte weiter auf das zuvor
             // geoeffnete Projekt, die Wizard-Kacheln schrieben also ins falsche Projekt.
             if (Program.wizardctrl != null && Program.wizardctrl.Projektname != "")
+            { 
                 Program.startfrm?.ProjektKontextUebernehmen(Program.wizardctrl.Projektname);
+            }
         }
 
         private async void MDIMainForm_Load(object sender, EventArgs e)
@@ -457,6 +459,49 @@ namespace WindowsFormsApplication1
             this.Controls.Add(Program.startfrm);
             Program.startfrm.BringToFront();
             Program.startfrm.Show();
+
+            BaueVariantenMenue();
+        }
+
+        // ============================================================
+        //  Menü „Projekte": Einträge „Als Variante speichern…" und
+        //  „Varianten und Bericht…".
+        //
+        //  Programmatisch angehängt, damit MDIMainForm.Designer.cs und die
+        //  Satelliten-.resx unberührt bleiben (CLAUDE.md: Designer-Dateien
+        //  nicht von Hand editieren) — dasselbe Vorgehen wie bei
+        //  Form_Start.BaueBerichteKostenSeite. Die Beschriftungen kommen
+        //  deshalb aus MyResource und nicht aus der Formular-Ressource;
+        //  ein Sprachwechsel startet das Programm ohnehin neu.
+        // ============================================================
+
+        private void BaueVariantenMenue()
+        {
+            if (this.DesignMode || Projekte == null) return;
+
+            Projekte.DropDownItems.Add(new ToolStripSeparator());
+
+            ToolStripMenuItem alsVariante = new ToolStripMenuItem(MyResource.Resource.MENU_VARIANTE_SPEICHERN);
+            alsVariante.Name = "MenuItem_AlsVariante";
+            alsVariante.Click += new EventHandler(this.MenuItem_AlsVariante_Click);
+            Projekte.DropDownItems.Add(alsVariante);
+
+            ToolStripMenuItem variantenBericht = new ToolStripMenuItem(MyResource.Resource.MENU_VARIANTEN_BERICHT);
+            variantenBericht.Name = "MenuItem_VariantenBericht";
+            variantenBericht.Click += new EventHandler(this.MenuItem_VariantenBericht_Click);
+            Projekte.DropDownItems.Add(variantenBericht);
+        }
+
+        private void MenuItem_AlsVariante_Click(object sender, EventArgs e)
+        {
+            Form_Start start = Program.startfrm;
+            Form_AlsVariante.Zeige(this, start == null ? 0 : start.m_ID_Projekt,
+                                         start == null ? "" : start.m_szProjektname);
+        }
+
+        private void MenuItem_VariantenBericht_Click(object sender, EventArgs e)
+        {
+            Program.startfrm?.ZeigeBerichteKosten(UcBerichteKosten.SEITE_UEBERSICHT);
         }
 
         private void MenuItem_zuletztGeöffnet_Click(object sender, EventArgs e)

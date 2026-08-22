@@ -40,7 +40,11 @@ namespace WindowsFormsApplication1
         /// Hinweistextes (Ressourcen KI_HINWEIS_*) um eins erhöhen</b> - dann wird
         /// erneut gefragt.
         /// </summary>
-        public const int FASSUNG = 1;
+        // Fassung 2 (22.08.2026): Der Hinweis sprach von "ausschließlich lesenden
+        // Aktionen"; tatsaechlich fuehrt der Assistent nach ausdruecklicher Bestaetigung
+        // auch datenveraendernde Aktionen aus. Weil die alte Fassung damit die heutige
+        // Verarbeitung nicht mehr deckt, wird die Einwilligung erneut eingeholt.
+        public const int FASSUNG = 2;
 
         private const string REG_SCHLUESSEL = @"Software\wp-plan";
 

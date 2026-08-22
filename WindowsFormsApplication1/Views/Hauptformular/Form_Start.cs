@@ -34,6 +34,8 @@ namespace WindowsFormsApplication1
         // Hilfsklasse, die die Verbindung zwischen Controls und Hilfeseiten herstellt
         private HelpExtender _helpExtender;
 
+        private readonly ToolTip _tip = new ToolTip();
+
         public Form_Start()
         {
             InitializeComponent();
@@ -157,6 +159,7 @@ namespace WindowsFormsApplication1
             bUpdateWizardSymbole = false;
             UpdateWizardSymbole();
 
+            FuelleVariantenCombo(comboBox_Varianten, m_ID_Projekt, true);
             return true;
         }
 
@@ -2025,11 +2028,171 @@ namespace WindowsFormsApplication1
             _berichteKosten.SetzeProjekt(m_ID_Projekt);
         }
 
+        /// <summary>
+        /// Öffnet den Reiter „Berichte &amp; Kosten" und stellt ihn auf die gewünschte
+        /// Seite (Schlüssel aus <see cref="UcBerichteKosten"/>, null = zuletzt gewählte).
+        /// Einstieg aus dem MDI-Menü (Projekte › Varianten und Bericht…).
+        /// </summary>
+        public void ZeigeBerichteKosten(string seite = null)
+        {
+            if (this.DesignMode) return;
+
+            // Baut die Seite beim ersten Aufruf auf und übergibt ihr das offene Projekt.
+            // Der Umweg über die Methode ist nötig, weil das Selected-Ereignis des
+            // TabControls ausbleibt, wenn der Reiter bereits vorne liegt.
+            tabControl_Wizard.SelectedTab = tabPage6;
+            BaueBerichteKostenSeite();
+
+            if (!string.IsNullOrEmpty(seite)) _berichteKosten?.ZeigeSeite(seite);
+        }
+
+        /// <summary>
+        /// Zieht die Variantenanzeige nach, nachdem an anderer Stelle eine Variante
+        /// angelegt oder entfernt wurde (Menü „Als Variante speichern…"): Auswahlfeld
+        /// neu füllen und – falls schon aufgebaut – den Reiter „Berichte &amp; Kosten"
+        /// über das offene Projekt neu informieren.
+        /// </summary>
+        public void VariantenAnzeigeAktualisieren()
+        {
+            if (this.DesignMode) return;
+
+            FuelleVariantenCombo(comboBox_Varianten, m_ID_Projekt, true);
+            _berichteKosten?.SetzeProjekt(m_ID_Projekt);
+        }
+
         private static void EntferneAltknopf(Control knopf)
         {
             if (knopf == null || knopf.Parent == null) return;
             knopf.Parent.Controls.Remove(knopf);
             knopf.Dispose();
         }
+
+        /// <summary>
+        /// Füllt eine ComboBox mit den Projektvarianten, die zum übergebenen (geöffneten)
+        /// Projekt gehören. Ist das Projekt selbst eine Variante, werden die Varianten
+        /// seines Stammprojekts geladen. Liefert die Anzahl der eingetragenen Varianten.
+        /// </summary>
+        /// <param name="cb">die zu füllende ComboBox</param>
+        /// <param name="idProjekt">ID des geöffneten Projekts (Stamm oder Variante)</param>
+        /// <param name="mitStamm">true = das Stammprojekt als ersten Eintrag mit aufnehmen</param>
+        public int FuelleVariantenCombo(ComboBox cb, int idProjekt, bool mitStamm = false)
+        {
+            VariantenCtrl _ctrl = new VariantenCtrl();
+
+            if (cb == null) return 0;
+            cb.Items.Clear();
+            if (idProjekt <= 0) return 0;
+
+            comboBox_Varianten.SelectedIndexChanged -= comboBox_Varianten_SelectedIndexChanged;
+
+            // Stammprojekt bestimmen: ist das geöffnete Projekt eine Variante,
+            // dessen Stamm nehmen; sonst ist es selbst der Stamm.
+            int stammId = _ctrl.StammRefDerVariante(idProjekt);
+            if (stammId <= 0) stammId = idProjekt;
+
+            string stammName = LiesProjektname(stammId);
+
+            int anzahl = 0;
+            foreach (VariantenCtrl.VarianteInfo vi in _ctrl.LadeGruppe(stammId, stammName))
+            {
+                if (vi.IstStamm)
+                {
+                    if (!mitStamm) continue;
+                    cb.Items.Add(new VariantenComboItem(vi.IdProjekt, "Stamm: " + vi.Projektname, true));
+                }
+                else
+                {
+                    cb.Items.Add(new VariantenComboItem(vi.IdProjekt, vi.Projektname, false));
+                    anzahl++;
+                }
+            }
+
+            // Damit du bequem an die ID kommst (cb.SelectedValue)
+            cb.DisplayMember = "Anzeige";
+            cb.ValueMember = "IdProjekt";
+
+            // Vorauswahl: das geöffnete Projekt, sonst erster Eintrag.
+            int sel = -1;
+            for (int i = 0; i < cb.Items.Count; i++)
+                if (((VariantenComboItem)cb.Items[i]).IdProjekt == idProjekt) { sel = i; break; }
+            if (sel < 0 && cb.Items.Count > 0) sel = 0;
+
+            cb.SelectedIndex = -1;
+
+            SetzeDropDownBreite(cb);
+
+            comboBox_Varianten.SelectedIndexChanged += comboBox_Varianten_SelectedIndexChanged;
+
+            return anzahl;
+        }
+
+        private void SetzeDropDownBreite(ComboBox cb)
+        {
+            int max = cb.Width;
+            using (Graphics g = cb.CreateGraphics())
+                foreach (var item in cb.Items)
+                {
+                    int w = TextRenderer.MeasureText(g, cb.GetItemText(item), cb.Font).Width;
+                    if (w > max) max = w;
+                }
+            cb.DropDownWidth = max + SystemInformation.VerticalScrollBarWidth + 8;
+        }
+
+        // Liest den Projektnamen zu einer ID (leer, wenn nicht gefunden).
+        private string LiesProjektname(int idProjekt)
+        {
+            ProjektCtrl pc = new ProjektCtrl();
+            pc.ReadAll();
+            foreach (ProjektModel p in pc.items)
+                if (p.m_ID == idProjekt) return p.m_szProjektname;
+            return "";
+        }
+
+        // ComboBox-Eintrag für Varianten (Anzeige = Variantenname, Wert = Projekt-ID).
+        private class VariantenComboItem
+        {
+            public int IdProjekt { get; }
+            public string Anzeige { get; }
+            public bool IstStamm { get; }
+            public VariantenComboItem(int idProjekt, string anzeige, bool istStamm)
+            { IdProjekt = idProjekt; Anzeige = anzeige; IstStamm = istStamm; }
+            public override string ToString() => Anzeige;
+        }
+
+        private void comboBox_Varianten_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!(comboBox_Varianten.SelectedItem is VariantenComboItem vi)) return;  // ""/kein Item -> nichts tun
+            string name = LiesProjektname(vi.IdProjekt);
+            if (!string.IsNullOrEmpty(name))
+                ProjektKontextUebernehmen(name);
+            Invalidate(true);
+
+            _tip.SetToolTip(textBox_ProjektOpen, textBox_ProjektOpen.Text);
+            _tip.SetToolTip(comboBox_Varianten, comboBox_Varianten.Text);
+        }
+
+
+        private void panelVariante_Paint(object sender, PaintEventArgs e)
+        {
+            var c = (Control)sender;
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            Rectangle r = c.ClientRectangle;
+            r.Width -= 1; r.Height -= 1;            // sonst wird rechte/untere Linie abgeschnitten
+            using (GraphicsPath path = RundesRechteck(r, 8))
+            using (Pen pen = new Pen(Color.FromArgb(180, 190, 205), 1.5f))
+                e.Graphics.DrawPath(pen, path);
+        }
+        private GraphicsPath RundesRechteck(Rectangle r, int radius)
+        {
+            int d = radius * 2;
+            var p = new GraphicsPath();
+            p.AddArc(r.X, r.Y, d, d, 180, 90); // oben links
+            p.AddArc(r.Right - d, r.Y, d, d, 270, 90); // oben rechts
+            p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90); // unten rechts
+            p.AddArc(r.X, r.Bottom - d, d, d, 90, 90); // unten links
+            p.CloseFigure();
+            return p;
+        }
     }
 }
+

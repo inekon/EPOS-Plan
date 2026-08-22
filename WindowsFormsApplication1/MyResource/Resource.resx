@@ -5744,7 +5744,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Die Anfrage wurde abgebrochen.</value>
   </data>
   <data name="KI_AKT_SCHALTER" xml:space="preserve">
-    <value>Aktionen zulassen (nur lesende)</value>
+    <value>Aktionen zulassen</value>
   </data>
   <data name="KI_AKT_WERKZEUGE_BTN" xml:space="preserve">
     <value>Werkzeuge…</value>
@@ -5780,7 +5780,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Aktion nicht ausgeführt: {0} — {1}</value>
   </data>
   <data name="KI_AKT_STUFE1_HINWEIS" xml:space="preserve">
-    <value>Freigegeben sind ausschließlich lesende Aktionen; alles Weitere kommt mit der Bestätigungsschicht.</value>
+    <value>Lesende Aktionen laufen sofort. Aktionen, die Daten verändern, führt das Programm erst nach Ihrer ausdrücklichen Bestätigung im Einzelfall aus.</value>
   </data>
   <data name="KI_AKT_WEG_A" xml:space="preserve">
     <value>Weg A (Werkzeugkatalog)</value>
@@ -5971,7 +5971,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Zusätzlich, wenn „Aktionen zulassen“ eingeschaltet ist</value>
   </data>
   <data name="KI_HINWEIS_AKTIONEN" xml:space="preserve">
-    <value>• Der Werkzeugkatalog: die Namen der zugelassenen Aktionen, ihre Parameter und deren Erläuterungen. Zugelassen sind ausschließlich lesende Aktionen.
+    <value>• Der Werkzeugkatalog: die Namen der zugelassenen Aktionen, ihre Parameter und deren Erläuterungen. Lesende Aktionen laufen sofort; Aktionen, die Daten verändern, führt das Programm erst nach Ihrer ausdrücklichen Bestätigung im Einzelfall aus. Vor der ersten Änderung einer Sitzung legt es eine datierte Sicherungskopie der Datenbank an, mitgelieferte Kataloge und schreibgeschützte Datensätze bleiben ausgenommen, und gelöscht wird nichts.
 • Die Ergebnisse ausgeführter Leseaktionen. Bezeichner darin – Projekt-, Varianten- und Anlagennamen – werden vorher durch Platzhalter ersetzt („Name 1“); Zahlen, Einheiten und Schlüssel gehen unverändert mit.</value>
   </data>
   <data name="KI_HINWEIS_UEB_NICHT" xml:space="preserve">
@@ -7102,5 +7102,20 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   </data>
   <data name="KI_KERN_FELDSICHERUNG_VERMERK" xml:space="preserve">
     <value>Feldsicherung aus</value>
+  </data>
+  <data name="MENU_VARIANTE_SPEICHERN" xml:space="preserve">
+    <value>Als Variante speichern&#8230;</value>
+  </data>
+  <data name="MENU_VARIANTEN_BERICHT" xml:space="preserve">
+    <value>Varianten und Bericht&#8230;</value>
+  </data>
+  <data name="VAR_DLG_TITEL" xml:space="preserve">
+    <value>Als Variante speichern</value>
+  </data>
+  <data name="VAR_DLG_HINWEIS" xml:space="preserve">
+    <value>Der aktuelle Stand wird als eigenst&#228;ndige Variante des Stammprojekts &#8222;{0}&#8220; gesichert. Das ge&#246;ffnete Projekt bleibt unver&#228;ndert.</value>
+  </data>
+  <data name="VAR_MSG_KEIN_PROJEKT" xml:space="preserve">
+    <value>Es ist kein Projekt ge&#246;ffnet. &#214;ffnen Sie zuerst ein Projekt, das als Variante gesichert werden soll.</value>
   </data>
 </root>

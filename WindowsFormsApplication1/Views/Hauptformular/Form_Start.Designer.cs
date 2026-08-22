@@ -141,6 +141,7 @@
             pBox_DetailSim = new System.Windows.Forms.PictureBox();
             pictureBox_Zusammenfassung = new System.Windows.Forms.PictureBox();
             tabPage6 = new System.Windows.Forms.TabPage();
+            btn_Varianten = new System.Windows.Forms.Button();
             btn_Kosten = new System.Windows.Forms.Button();
             label21 = new System.Windows.Forms.Label();
             label22 = new System.Windows.Forms.Label();
@@ -159,7 +160,9 @@
             btn_Help = new System.Windows.Forms.Button();
             pictureBox2 = new System.Windows.Forms.PictureBox();
             pictureBox1 = new System.Windows.Forms.PictureBox();
-            btn_Varianten = new System.Windows.Forms.Button();
+            comboBox_Varianten = new System.Windows.Forms.ComboBox();
+            label4 = new System.Windows.Forms.Label();
+            panelVariante = new System.Windows.Forms.Panel();
             tabControl_Wizard.SuspendLayout();
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pBox_ProjektDetails).BeginInit();
@@ -196,6 +199,7 @@
             ((System.ComponentModel.ISupportInitialize)pictureBox4).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            panelVariante.SuspendLayout();
             SuspendLayout();
             // 
             // tabControl_Wizard
@@ -1196,6 +1200,13 @@
             tabPage6.Name = "tabPage6";
             tabPage6.UseVisualStyleBackColor = true;
             // 
+            // btn_Varianten
+            // 
+            resources.ApplyResources(btn_Varianten, "btn_Varianten");
+            btn_Varianten.Name = "btn_Varianten";
+            btn_Varianten.UseVisualStyleBackColor = true;
+            btn_Varianten.Click += btn_Varianten_Click;
+            // 
             // btn_Kosten
             // 
             resources.ApplyResources(btn_Kosten, "btn_Kosten");
@@ -1322,12 +1333,28 @@
             pictureBox1.Name = "pictureBox1";
             pictureBox1.TabStop = false;
             // 
-            // btn_Varianten
+            // comboBox_Varianten
             // 
-            resources.ApplyResources(btn_Varianten, "btn_Varianten");
-            btn_Varianten.Name = "btn_Varianten";
-            btn_Varianten.UseVisualStyleBackColor = true;
-            btn_Varianten.Click += btn_Varianten_Click;
+            resources.ApplyResources(comboBox_Varianten, "comboBox_Varianten");
+            comboBox_Varianten.FormattingEnabled = true;
+            comboBox_Varianten.Name = "comboBox_Varianten";
+            comboBox_Varianten.SelectedIndexChanged += comboBox_Varianten_SelectedIndexChanged;
+            // 
+            // label4
+            // 
+            resources.ApplyResources(label4, "label4");
+            label4.Name = "label4";
+            // 
+            // panelVariante
+            // 
+            panelVariante.Controls.Add(label4);
+            panelVariante.Controls.Add(label11);
+            panelVariante.Controls.Add(comboBox_Varianten);
+            panelVariante.Controls.Add(textBox_ProjektOpen);
+            panelVariante.Controls.Add(label_ProjektStatus);
+            resources.ApplyResources(panelVariante, "panelVariante");
+            panelVariante.Name = "panelVariante";
+            panelVariante.Paint += panelVariante_Paint;
             // 
             // Form_Start
             // 
@@ -1335,15 +1362,13 @@
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             BackColor = System.Drawing.Color.White;
             ControlBox = false;
+            Controls.Add(panelVariante);
             Controls.Add(panel1);
             Controls.Add(btn_Help);
-            Controls.Add(label_ProjektStatus);
             Controls.Add(label_Haus);
             Controls.Add(btn_Zurueck);
             Controls.Add(btn_Weiter);
             Controls.Add(label20);
-            Controls.Add(label11);
-            Controls.Add(textBox_ProjektOpen);
             Controls.Add(pictureBox2);
             Controls.Add(tabControl_Wizard);
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
@@ -1391,6 +1416,8 @@
             ((System.ComponentModel.ISupportInitialize)pictureBox4).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            panelVariante.ResumeLayout(false);
+            panelVariante.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
 
@@ -1528,5 +1555,8 @@
         private System.Windows.Forms.Button btn_Help_Kurzanleitung;
         private System.Windows.Forms.Button btn_Help_Strombedarf;
         private System.Windows.Forms.Button btn_Varianten;
+        private System.Windows.Forms.ComboBox comboBox_Varianten;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Panel panelVariante;
     }
 }
