@@ -32,5 +32,9 @@ using System.Runtime.InteropServices;
 // Sie können alle Werte angeben oder die standardmäßigen Build- und Revisionsnummern 
 // übernehmen, indem Sie "*" eingeben:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+//
+// 1.1.0.0 (August 2026): Varianten-Verwaltung, Berichtserstellung als Word- und
+// Excel-Datei, Wirtschaftlichkeitsrechnung. Die Nummer steht so auch im
+// Update-Logbuch von Wiki und Website - beide Angaben zusammen halten.
+[assembly: AssemblyVersion("1.1.0.0")]
+[assembly: AssemblyFileVersion("1.1.0.0")]
