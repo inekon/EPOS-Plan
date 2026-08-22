@@ -383,6 +383,8 @@ dev/
 Setup/Ausgabe/
 Setup/Vorlage/*.accdb
 Setup/Voraussetzungen/*.exe
+# ACE-Redist in der Repo-Wurzel (Ablageort fuer build-setup.ps1) nie committen
+/AccessDatabaseEngine*.exe
 
 # Editor-Sicherungskopien
 *.bak

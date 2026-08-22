@@ -29,8 +29,6 @@ namespace WindowsFormsApplication1
         public float[] Dauerlinie = new float[8760 * 4];
         public float[] Dauerlinie_nicht_sortiert = new float[8760 * 4];
 
-       // public CSExeCOMServer.SimpleObject com = new CSExeCOMServer.SimpleObject();
-
         public SimulationStrombedarf()
         {
             Classes.Simulation.Init init = new Classes.Simulation.Init();

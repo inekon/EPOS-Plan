@@ -1,15 +1,21 @@
 # Umstellung auf 64 Bit (x64) — Analyse und Vorgehensweise
 
-Stand: 22.08.2026 — P0 bis P3 abgeschlossen. P1: Commits `b4f5543` + `14777bc`.
-P2: Commit `31d5406` (Rückweg-Tag `letzter-x86-stand` = `3f126f4`); Solution baut
-und startet unter x64. P3: Referenzvergleich x86 ↔ x64 **GESAMT PASS**
-(9 Projekte, 2.427.467 Werte in Toleranz — Beleg in
-`Referenzlaeufe/2026-08-22_P3_x64/vergleich_x86_x64.md`); der UI-Funktionsdurchlauf
-(Prüfliste 5–8) bleibt manuelle Abnahme. Offen: P4 (in Arbeit), P5.
+Stand: 22.08.2026 — **P0 bis P5 abgeschlossen, die Umstellung ist technisch vollzogen.**
+P1: Commits `b4f5543` + `14777bc`. P2: Commit `31d5406` (Rückweg-Tag `letzter-x86-stand`
+= `3f126f4`); Solution baut und startet unter x64. P3: Referenzvergleich x86 ↔ x64
+**GESAMT PASS** (9 Projekte, 2.427.467 Werte in Toleranz — Beleg in
+`Referenzlaeufe/2026-08-22_P3_x64/vergleich_x86_x64.md`). P4: Commit `c64716f` —
+`build-setup.ps1` und `EPOS-Plan.iss` liefern x64. P5: Doku und Reste nachgezogen
+(22.08.2026).
+
+**Offen ist ausschließlich die manuelle Abnahme** — der UI-Funktionsdurchlauf
+(Prüfliste 5–8), die Setup-Testmatrix (9–10), der Mehrbenutzerfall (11) sowie die
+Beschaffung der x64-Redist. Die Liste steht am Ende in Abschnitt 10.
+
 Betrachtet wurden der gesamte Bestand unter `WindowsFormsApplication1`
 (ohne Altkopien und Worktrees), die Solution, alle Nebenwerkzeuge, der Installer unter
 `Setup\` sowie die aktuelle Faktenlage zur 64-bit Access Database Engine (Quellen in
-Abschnitt 9).
+Abschnitt 11).
 
 **Aufgabe.** EPOS-Plan wird heute zwingend als 32-bit-Anwendung (x86) gebaut und
 ausgeliefert, weil der In-Process-Datenbankprovider `Microsoft.ACE.OLEDB.12.0` zur
@@ -70,9 +76,15 @@ unverändert angenommen) — es gibt keine offenen Entscheidungen mehr.
 
 ---
 
-## 2. Ist-Stand: Wo x86 heute festgezurrt ist
+## 2. Ausgangsstand: Wo x86 festgezurrt war
 
-### 2.1 Build — vorbereitet, Default ist x86
+> **Stand 22.08.2026: durch die Umstellung überholt.** Dieser Abschnitt hält den
+> Befund **vor** P1–P4 fest — er ist die Bestandsaufnahme, aus der die Pakete
+> abgeleitet wurden, und wird bewusst nicht umgeschrieben. Sämtliche hier
+> genannten Fundstellen sind inzwischen auf x64 gezogen; den heutigen Stand
+> beschreiben die Pakete in Abschnitt 6 und die Prüfliste in Abschnitt 7.
+
+### 2.1 Build — vorbereitet, Default war x86
 
 | Fundstelle | Inhalt |
 |---|---|
@@ -182,7 +194,7 @@ ohne Zutun lesbar.
 
 ## 3. Faktenlage 64-bit Access Database Engine (Stand 2026)
 
-Kurzfassung der externen Recherche (Quellen: Abschnitt 9), verifiziert per
+Kurzfassung der externen Recherche (Quellen: Abschnitt 11), verifiziert per
 Registry-Befund auf dem Entwicklungsrechner:
 
 1. **Der ConnectionString kann unverändert bleiben.** Die *Access Database Engine 2016
@@ -326,7 +338,7 @@ Fehlermeldung auf einem Rechner ohne ACE bleibt Prüfpunkt 3 der Abnahme.
    `MyResource.Resource.*` in beiden Satelliten-`.resx`.
 4. Aufräum-Beifang aus 5.4 (entschieden: ja) — eigener Commit.
 
-### P2 — Build und Werkzeuge vollständig auf x64 (Entscheidung 5.1)
+### P2 — Build und Werkzeuge vollständig auf x64 *(umgesetzt 22.08.2026, Commit `31d5406`)*
 
 1. **Git-Tag setzen** (z. B. `letzter-x86-stand`) — einziger Rückweg und zugleich der
    Referenzpunkt, von dem der x86-Vergleichslauf in P3 gebaut wird.
@@ -345,7 +357,7 @@ Fehlermeldung auf einem Rechner ohne ACE bleibt Prüfpunkt 3 der Abnahme.
 6. Lokal `dotnet build ..\WP-Plan.sln -c Debug -p:Platform=x64`, Anwendung starten,
    Projekt öffnen — der 64-bit-Provider ist auf dem Entwicklungsrechner vorhanden.
 
-### P3 — Verifikation *(der Kern der Abnahme, Prüfliste in Abschnitt 7)*
+### P3 — Verifikation *(automatisierter Teil umgesetzt 22.08.2026; Prüfliste in Abschnitt 7, manueller Rest in Abschnitt 10)*
 
 1. **Referenzlauf doppelt**: der x86-Lauf wird vom getaggten Altstand (P2.1) gebaut,
    der x64-Lauf vom neuen Stand — das Referenzlauf-Tool jeweils nur mit VS-MSBuild
@@ -359,7 +371,20 @@ Fehlermeldung auf einem Rechner ohne ACE bleibt Prüfpunkt 3 der Abnahme.
 3. **DB-Schreibtest** ausschließlich gegen eine datierte Kopie (`DB-Backup/`-Regel;
    vorher `Kenndaten.laccdb` prüfen).
 
-### P4 — Setup und Verteilung auf x64 *(nach P0)*
+### P4 — Setup und Verteilung auf x64 *(umgesetzt 22.08.2026, Commit `c64716f`)*
+
+Veröffentlicht wird jetzt mit dem **MSBuild aus Visual Studio** statt mit
+`dotnet publish` — das SDK-MSBuild bricht an den COM-Referenzen des App-Projekts mit
+`MSB4803` ab, `ResolveComReference` gibt es nur im vollen MSBuild. Die Übernahme einer
+32-bit-Vorinstallation hängt in `PrepareToInstall` (erst dort steht fest, dass wirklich
+installiert wird) und entfernt sie still über ihre `UninstallString` aus `HKLM32`; dabei
+bleibt eine bekannte Einschränkung des **alten** Deinstallierers: Seine Rückfrage
+„Projektdatenbank löschen?" ist eine eigene `MsgBox`, auf die `/SUPPRESSMSGBOXES` nicht
+wirkt — sie erscheint beim Update sichtbar, Voreinstellung *Nein*, und daran lässt sich
+nachträglich nichts mehr ändern, weil dieser Deinstallierer bereits ausgeliefert ist.
+Noch fehlt die x64-Redist: `AccessDatabaseEngine_X64.exe` muss aus dem Microsoft Download
+Center in die **Repo-Wurzel** gelegt werden — vorher bricht `build-setup.ps1` ab, ein
+Setup-Build ist also erst danach möglich.
 
 1. **`build-setup.ps1`**: RID `win-x64`, `-p:Platform=x64`, `$PublishDir =
    artifacts\publish\win-x64`; signtool-Suche auf den x64-Ordner umstellen. Kein
@@ -382,9 +407,9 @@ Fehlermeldung auf einem Rechner ohne ACE bleibt Prüfpunkt 3 der Abnahme.
    - Unverändert lassen: `{commonappdata}\EPOS_PLAN`-Anlage samt `users-modify`-Rechten
      und `icacls`-Reparaturlauf (`:285-289`) — das ACL-Thema aus
      `BETRIEB_Mehrbenutzer_Datenbank.md` ist bitness-unabhängig.
-3. **Setup-Testmatrix** (Abschnitt 7, Punkte 8–10).
+3. **Setup-Testmatrix** (Abschnitt 7, Punkte 9–10).
 
-### P5 — Doku und Reste
+### P5 — Doku und Reste *(umgesetzt 22.08.2026)*
 
 - `CLAUDE.md` (Wurzel): „Build zwingend x86" ersetzen; `WindowsFormsApplication1\CLAUDE.md`:
   Buildbefehl, DPI-Absatz unberührt, **veralteten ODBC-Absatz zu `RecordSet.cs`
@@ -403,10 +428,10 @@ Fehlermeldung auf einem Rechner ohne ACE bleibt Prüfpunkt 3 der Abnahme.
 
 | # | Prüfung | Erwartung |
 |---|---|---|
-| 1 | `dotnet build ..\WP-Plan.sln -c Debug -p:Platform=x64` und Release-Publish `win-x64` | baut ohne neue Warnungen; Output unter `bin\x64\…` bzw. `artifacts\publish\win-x64` |
-| 2 | Start auf Rechner mit 64-bit-ACE, Projekt öffnen, Stammdaten lesen/schreiben | identisches Verhalten zum x86-Stand |
+| 1 | Bau über VS-MSBuild mit `-p:Platform=x64` (`dotnet build` scheitert an MSB4803) und Release-Publish `win-x64` | baut ohne neue Warnungen; Output unter `bin\x64\…` bzw. `artifacts\publish\win-x64` — **✔ erledigt 22.08.2026 (automatisiert)** |
+| 2 | Start auf Rechner mit 64-bit-ACE, Projekt öffnen, Stammdaten lesen/schreiben | identisches Verhalten zum x86-Stand — **✔ erledigt 22.08.2026 (automatisiert)**, abgedeckt über den Referenzlauf (Projekte öffnen und rechnen, lesend und schreibend gegen eine DB-Kopie); das Bedienen der Stammdatenmasken selbst gehört zu 5–8 |
 | 3 | Start auf Rechner **ohne** ACE | neue sprechende Meldung aus P1.3 statt roher `OleDbException` (beide Sprachen) |
-| 4 | Referenzlauf x86 (getaggter Altstand, P2.1) vs. x64 (neuer Stand), gleiche DB-Kopie | Abweichungen innerhalb der definierten Toleranz; Ausreißer per `DOTNET_EnableFMA=0` als Instruktions-Effekt bestätigt |
+| 4 | Referenzlauf x86 (getaggter Altstand, P2.1) vs. x64 (neuer Stand), gleiche DB-Kopie | Abweichungen innerhalb der definierten Toleranz; Ausreißer per `DOTNET_EnableFMA=0` als Instruktions-Effekt bestätigt — **✔ erledigt 22.08.2026 (automatisiert)**, GESAMT PASS über 9 Projekte und 2.427.467 Werte |
 | 5 | Alle Importe: VDI 3805 (Kessel, Puffer, Kollektoren, WP), CEC/PAN, CSV, Klimadaten-Excel, Ganglinien-Excel | funktionsgleich; Excel-Import auch mit 64-bit-Office (Excel-Bitness darf beliebig sein) |
 | 6 | Bericht Word + Excel, Charts, `Form_SpeicherOptimierung` (ScottPlot/Skia) | Rendering fehlerfrei — beweist, dass die win-x64-Skia-Native geladen wird |
 | 7 | Lizenz: vorhandene Aktivierung aus der x86-Ära | Token weiterhin gültig (Geräte-ID unverändert, DPAPI lesbar) — **keine Re-Aktivierung** |
@@ -414,8 +439,8 @@ Fehlermeldung auf einem Rechner ohne ACE bleibt Prüfpunkt 3 der Abnahme.
 | 9 | Setup-Matrix: (a) sauberes Win11 ohne Office → Redist wird installiert; (b) 64-bit-Office mit Access → Redist wird übersprungen; (c) 32-bit-Office → Hinweisdialog statt Blindinstallation | jeweils lauffähige Installation bzw. verständlicher Abbruch |
 | 10 | Update über bestehende 32-bit-Installation | alter Eintrag/Ordner entfernt, genau **ein** Eintrag in „Apps und Features"; `Kenndaten.accdb`, Lizenz und Einstellungen unangetastet |
 | 11 | Mehrbenutzer: zweites Windows-Konto bei geöffneter DB | Verhalten wie dokumentiert in `BETRIEB_Mehrbenutzer_Datenbank.md` (bitness-neutral) |
-| 12 | Cue-Banner in Suchfeldern sichtbar | der einzige P/Invoke funktioniert unter x64 |
-| 13 | Negativprobe „ohne x86": Solution und alle csproj enthalten keine x86-/AnyCPU-Plattform mehr, `-p:Platform=x86` schlägt fehl, in `Setup\` existiert kein `win-x86`-Pfad, keine 32-bit-Redist im Repo | Entscheidung 5.1 vollständig umgesetzt |
+| 12 | Cue-Banner in Suchfeldern sichtbar | der einzige P/Invoke funktioniert unter x64 — **manuell offen.** Der Smoke-Start der Anwendung beweist nur, dass sie startet; ob `SendMessage` den Hinweistext tatsächlich setzt, ist erst am geöffneten Suchfeld zu sehen |
+| 13 | Negativprobe „ohne x86": Solution und alle csproj enthalten keine x86-/AnyCPU-Plattform mehr, `-p:Platform=x86` schlägt fehl, in `Setup\` existiert kein `win-x86`-Pfad, keine 32-bit-Redist im Repo | Entscheidung 5.1 vollständig umgesetzt — **✔ erledigt 22.08.2026 (automatisiert)** für Solution, Haupt-csproj und Nebenwerkzeuge (`Referenzlauf`, `KiHarnisch`, Zahlen-Harness) sowie `Setup\`. **Zwei Reste offen:** die 32-bit-`AccessDatabaseEngine.exe` liegt noch in der Repo-Wurzel (Löschung siehe Abschnitt 10 d), und `dev\fixshot_src\fixshot.csproj:6` steht noch auf `x86` — ein Wegwerf-Werkzeug außerhalb der Solution, das der Umstellung nicht im Weg steht. `CSExeCOMServer` bleibt laut 2.2 bewusst unangetastet |
 
 **Vor Schritt 2 ff.:** `Kenndaten.laccdb` prüfen und datierte Kopie der `.accdb` nach
 `DB-Backup/` — die Prüfungen schreiben in die Datenbank, und `.accdb` ist von
@@ -447,31 +472,96 @@ Fehlermeldung auf einem Rechner ohne ACE bleibt Prüfpunkt 3 der Abnahme.
   im Extremfall Abstürze beim Prozessende). Das trifft x86 heute genauso; die
   Startprüfung aus P1.3 macht solche Fälle wenigstens diagnostizierbar. Bei
   Support-Fällen zuerst die Provider-Registrierung prüfen (Kette aus Abschnitt 3.5).
-- **`GitHub_Sync.bat` committet alles** (`git add -A`) — die Setup-Beilagen
-  (`Setup\Voraussetzungen\*.exe`, `Setup\Vorlage\*.accdb`, `Setup\Ausgabe\`) sind laut
-  Befund **nicht** in der `.gitignore`; vor dem ersten x64-Setup-Build die drei
-  Einträge ergänzen, sonst landet die Redist-EXE im Repo.
+- **`GitHub_Sync.bat` committet alles** (`git add -A`). Die Setup-Beilagen sind
+  inzwischen abgedeckt (`.gitignore:383-385`: `Setup/Ausgabe/`,
+  `Setup/Vorlage/*.accdb`, `Setup/Voraussetzungen/*.exe`) — **die Repo-Wurzel aber
+  nicht.** Genau dorthin gehört die x64-Redist, und sie würde ohne eigene Regel
+  mitcommittet; die alte 32-bit-`AccessDatabaseEngine.exe` liegt dort bereits
+  getrackt. Vorgehen in Abschnitt 10 d.
 
 ---
 
 ## 9. Aufwand
 
-| Paket | Umfang | Aufwand |
-|---|---|---|
-| P0 Entscheidungen | alle getroffen (5.1: 21.08.2026, 5.2–5.4: 22.08.2026) | erledigt |
-| P1 Code robust | 2 Dateien + Startprüfung + 2 `.resx`, optional Aufräumen | 3–5 h |
-| P2 Build/Werkzeuge | Git-Tag, 4 csproj + `WP-Plan.sln`, Doku-Befehle | 1–2 h |
-| P3 Verifikation | Referenzläufe + Funktionsdurchlauf + DB-Test | 6–10 h |
-| P4 Setup | `.iss` + `build-setup.ps1` + Redist + Testmatrix (3 Umgebungen) | 6–10 h |
-| P5 Doku/Reste | 2× CLAUDE.md, Setup-Konzept, Kommentarleichen | 1–2 h |
+| Paket | Umfang | Aufwand | Stand |
+|---|---|---|---|
+| P0 Entscheidungen | alle getroffen (5.1: 21.08.2026, 5.2–5.4: 22.08.2026) | erledigt | ✔ |
+| P1 Code robust | 2 Dateien + Startprüfung + 2 `.resx`, optional Aufräumen | 3–5 h | ✔ `b4f5543`, `14777bc` |
+| P2 Build/Werkzeuge | Git-Tag, 4 csproj + `WP-Plan.sln`, Doku-Befehle | 1–2 h | ✔ `31d5406` |
+| P3 Verifikation | Referenzläufe + Funktionsdurchlauf + DB-Test | 6–10 h | Referenzlauf ✔; Funktionsdurchlauf offen (Abschnitt 10 a/b) |
+| P4 Setup | `.iss` + `build-setup.ps1` + Redist + Testmatrix (3 Umgebungen) | 6–10 h | Skripte ✔ `c64716f`; Redist und Testmatrix offen (10 c/d) |
+| P5 Doku/Reste | 2× CLAUDE.md, Setup-Konzept, Kommentarleichen | 1–2 h | ✔ 22.08.2026 |
 
-**Gesamt rund 17–29 h**, davon der größte Teil Verifikation und Setup-Testmatrix.
-P1+P2 zusammen ergeben bereits eine lauffähige x64-Anwendung für den Eigenbedarf;
-auslieferbar ist der Stand erst nach P3+P4.
+Die ursprüngliche Schätzung lag bei **rund 17–29 h**. Umgesetzt ist alles, was sich ohne
+fremde Rechner und ohne Download erledigen lässt; der verbleibende Aufwand steckt fast
+vollständig im Funktionsdurchlauf und in der Setup-Testmatrix (Abschnitt 10).
+P1+P2 ergaben bereits eine lauffähige x64-Anwendung für den Eigenbedarf; **auslieferbar**
+ist der Stand erst, wenn die Punkte aus Abschnitt 10 abgehakt sind.
 
 ---
 
-## 10. Externe Quellen (Abschnitt 3)
+## 10. Offene manuelle Abnahme
+
+P0–P5 sind umgesetzt; die Umstellung ist technisch vollzogen. Was bleibt, lässt sich
+nicht automatisieren — es braucht eine Bedienung an der Oberfläche, fremde Rechner oder
+einen Download. Die Nummern verweisen auf die Prüfliste in Abschnitt 7.
+
+**(a) Funktionsdurchlauf an der Oberfläche — Prüfliste 5–8.** Sämtliche Importe
+(VDI 3805 für Kessel, Puffer, Kollektoren und Wärmepumpe, CEC/PAN, CSV, Klimadaten-Excel,
+Ganglinien-Excel — die beiden Excel-Wege laufen über Out-of-Process-COM und sind der
+eigentliche Grund, hier genau hinzusehen), Bericht als Word **und** Excel, der
+ScottPlot-Dialog `Form_SpeicherOptimierung` als einziger Skia-Konsument, die
+Lizenzaktivierung aus der x86-Ära ohne Re-Aktivierung sowie der KI-Abschalter
+`KiDeaktiviert` — dieser **je einmal** unter `HKLM\SOFTWARE\wp-plan` und unter
+`HKLM\SOFTWARE\WOW6432Node\wp-plan`, beide Sichten müssen wirken (P1.1). Dazu Prüfpunkt 12,
+der Cue-Banner in den Suchfeldern.
+
+**(b) Start ohne ACE — Prüfliste 3.** Auf einem Rechner **ohne** Access Database Engine
+starten und prüfen, dass die neue sprechende Meldung aus P1.3 erscheint statt einer nackten
+`OleDbException` — in beiden Sprachen.
+
+**(c) Setup-Testmatrix — Prüfliste 9–10.** Drei Umgebungen: sauberes Win11 ohne Office
+(Redist wird installiert), Rechner mit **64-bit-Office** und Access (Redist wird
+übersprungen), Rechner mit **32-bit-Office** (Hinweisdialog vor dem stillen Lauf, danach
+Erfolg oder sprechende Meldung — kein stiller Fehlschlag). Dazu das Update über eine
+bestehende **32-bit-Installation**: Danach darf genau **ein** Eintrag in „Apps und
+Features" stehen. Dabei erscheint die Rückfrage des **alten** Deinstallierers
+(„Projektdatenbank löschen?") sichtbar — `/SUPPRESSMSGBOXES` wirkt auf dessen eigene
+`MsgBox` nicht. Hier **„Nein"** wählen; die Voreinstellung stimmt bereits. Prüfpunkt 11
+(zweites Windows-Konto bei geöffneter DB) hängt mit dran, ist aber bitness-neutral.
+
+**(d) Redist beschaffen — und vorher die `.gitignore` nachziehen.**
+`AccessDatabaseEngine_X64.exe` (*Access Database Engine 2016 Redistributable, 64 Bit*) aus
+dem Microsoft Download Center laden und unverändert in die **Repo-Wurzel** legen; solange
+sie fehlt, bricht `build-setup.ps1` ab, ein Setup-Build ist also nicht möglich.
+
+Dabei zwei Fallen, beide am 22.08.2026 geprüft:
+
+- **Die Repo-Wurzel ist nicht ignoriert.** `.gitignore:383-385` deckt zwar
+  `Setup/Ausgabe/`, `Setup/Vorlage/*.accdb` und `Setup/Voraussetzungen/*.exe` ab — die
+  **Wurzel** aber nicht. `git check-ignore` bestätigt: Eine dort abgelegte
+  `AccessDatabaseEngine_X64.exe` würde von `GitHub_Sync.bat` (`git add -A`) mitcommittet.
+  Vor dem Download deshalb eine Regel wie `/AccessDatabaseEngine*.exe` ergänzen.
+- **Die alte 32-bit-Fassung ist bereits versioniert.** `AccessDatabaseEngine.exe` (26,5 MB)
+  liegt getrackt in der Wurzel — sie verschwindet nur über `git rm`, blosses Löschen im
+  Dateisystem erzeugt lediglich eine Löschung im Arbeitsbaum (Prüfpunkt 13). Aus der
+  Historie ist sie damit weiterhin nicht entfernt; das ist hinnehmbar, weil der
+  Rückweg-Tag ohnehin auf den x86-Stand zeigt.
+
+**(e) GitHub-Sync inklusive Tag.** `GitHub_Sync.bat` führt nur `git push origin main` aus
+und überträgt damit **keine Tags**. Der Rückweg-Tag `letzter-x86-stand` (`3f126f4`) ist
+deshalb einmal ausdrücklich zu pushen:
+
+```powershell
+git push --tags
+```
+
+Ohne diesen Schritt bleibt der einzige Rückweg auf den letzten x86-Stand an diesen einen
+Rechner gebunden.
+
+---
+
+## 11. Externe Quellen (Abschnitt 3)
 
 - Access Database Engine 2016 Redistributable — Microsoft Download Center:
   <https://www.microsoft.com/en-us/download/details.aspx?id=54920>
@@ -487,13 +577,16 @@ auslieferbar ist der Stand erst nach P3+P4.
   <https://learn.microsoft.com/en-us/answers/questions/5043822/microsoft-access-database-engine-2016-redistributa>,
   <https://learn.microsoft.com/en-us/answers/questions/5848144/oledbconnection-using-microsoft-ace-oledb-16-0-cau>
 
-## 11. Verwandte Dokumente
+## 12. Verwandte Dokumente
 
-- [`CLAUDE.md`](CLAUDE.md) — Datenhaltung, DB-Backup-Regel, ACL-Thema (in P5 anzupassen)
+- [`CLAUDE.md`](CLAUDE.md) — Datenhaltung, DB-Backup-Regel, ACL-Thema
+  *(auf x64 nachgezogen)*
 - [`WindowsFormsApplication1/CLAUDE.md`](WindowsFormsApplication1/CLAUDE.md) — Build,
-  Architektur, Kodierungs-Fallstrick (in P5 anzupassen, ODBC-Absatz veraltet)
+  Architektur, Kodierungs-Fallstrick *(auf x64 nachgezogen, ODBC-Absatz korrigiert)*
 - [`Setup/Konzept_Setup_InnoSetup_EPOS-Plan.md`](Setup/Konzept_Setup_InnoSetup_EPOS-Plan.md)
-  — bisheriges Setup-Konzept mit der x86-Festlegung
+  — Setup-Konzept, Fassung 2 *(auf x64 nachgezogen; die x86-Festlegung der Fassung 1 ist
+  dort als überholt gekennzeichnet)*
 - [`BETRIEB_Mehrbenutzer_Datenbank.md`](BETRIEB_Mehrbenutzer_Datenbank.md) — ACL/Sperrdatei,
   bitness-unabhängig, Prüfpunkt 11
 - `Referenzlaeufe/LIESMICH.md` — Bau und Aufruf des Referenzlauf-Werkzeugs (P3.1)
+  *(Bau-Abschnitt auf x64 nachgezogen)*
