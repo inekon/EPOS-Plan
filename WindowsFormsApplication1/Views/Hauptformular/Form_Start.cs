@@ -38,12 +38,14 @@ namespace WindowsFormsApplication1
         // Absicherung stehen — RegisterForm ist idempotent.
         private HelpExtender _helpExtender;
 
-        private readonly ToolTip _tip = new ToolTip();
-
         public Form_Start()
         {
             InitializeComponent();
             textBox_ProjektOpen.Text = MyResource.Resource.Text_Select;
+            // Der Projektkopf zeigt den Namen jetzt im Auswahlfeld (siehe
+            // ProjektkopfAufbauen): solange kein Projekt offen ist, steht dort
+            // derselbe Platzhalter, den bisher das blaue Textfeld trug.
+            KopfEinzeltextZeigen(MyResource.Resource.Text_Select);
             InitEventDictionary();
             _helpExtender = Program.HelpExtender;
 
@@ -85,6 +87,10 @@ namespace WindowsFormsApplication1
             comboBox_Klima.ForeColor = Color.Black;
             ComboBox_Klimaregion();
             comboBox_Klima.SetPlaceholder("Bitte zuerst ein Projekt auswählen.");
+
+            // Projektkopf rechts oben: Auswahlfeld an die Stelle des Projektnamens.
+            ProjektkopfAufbauen();
+
             btn_Speichern.Click -= btn_Speichern_Click;
             btn_Speichern.Click += btn_Speichern_Click;
 
@@ -122,6 +128,12 @@ namespace WindowsFormsApplication1
         {
             textBox_ProjektOpen.Text = szProjekt;
             pBox_ProjektDetails.Enabled = true;
+
+            // Den Namen auch im Auswahlfeld des Projektkopfs zeigen: es steht an der
+            // Stelle, an der bis dahin das blaue Textfeld stand. Diese Methode ist die
+            // gemeinsame Stelle aller Wege (auch der Menuewege ueber MenueCtrl, die
+            // ProjektKontextUebernehmen nicht durchlaufen).
+            KopfNameZeigen(szProjekt);
         }
 
         /// <summary>
@@ -1227,6 +1239,9 @@ namespace WindowsFormsApplication1
                 // MyResource.Resource.Text_Select verglichen. Ein festes deutsches
                 // Literal haette diese Pruefung im englischen Modus ausgehebelt.
                 textBox_ProjektOpen.Text = MyResource.Resource.Text_Select;
+                // Auswahlfeld des Projektkopfs mitziehen: die Gruppe des geloeschten
+                // Projekts ist weg, es bleibt der Platzhalter.
+                KopfEinzeltextZeigen(MyResource.Resource.Text_Select);
                 label_ProjektStatus.ForeColor = Color.FromArgb(192, 0, 0);
                 label_ProjektStatus.Text = "⚠";
                 comboBox_Klima.Text = "";
@@ -2114,8 +2129,11 @@ namespace WindowsFormsApplication1
             {
                 if (vi.IstStamm)
                 {
-                    if (!mitStamm) continue;
-                    cb.Items.Add(new VariantenComboItem(vi.IdProjekt, "Stamm: " + vi.Projektname, true));
+                    // Ohne Vorsatz "Stamm: ": Das Feld steht im Projektkopf an der Stelle
+                    // des frueheren blauen Projekttextes und traegt deshalb genau dessen
+                    // Format - den Projektnamen, bei Varianten "<Stamm> - <Bezeichner>".
+                    // Die Auswahllogik haengt an IdProjekt, nicht am Anzeigetext.
+                    cb.Items.Add(new VariantenComboItem(vi.IdProjekt, vi.Projektname, true));
                 }
                 else
                 {
@@ -2134,7 +2152,10 @@ namespace WindowsFormsApplication1
                 if (((VariantenComboItem)cb.Items[i]).IdProjekt == idProjekt) { sel = i; break; }
             if (sel < 0 && cb.Items.Count > 0) sel = 0;
 
-            cb.SelectedIndex = -1;
+            // Das geoeffnete Projekt bleibt sichtbar ausgewaehlt: Das Feld traegt im
+            // Projektkopf den Namen (frueher stand er im blauen Textfeld daneben).
+            // Reine Anzeige - das Ereignis ist hier abgehaengt, es wird nichts umgeschaltet.
+            cb.SelectedIndex = sel;
 
             SetzeDropDownBreite(cb);
 
@@ -2176,6 +2197,120 @@ namespace WindowsFormsApplication1
             public override string ToString() => Anzeige;
         }
 
+        /// <summary>
+        /// Baut den Projektkopf (Kasten rechts oben) um: Das Auswahlfeld fuer Stamm und
+        /// Varianten tritt an die Stelle des blauen Projektnamens - gleiche Schrift,
+        /// gleiche Farbe, flache Anmutung - und traegt damit selbst den Namen des
+        /// geoeffneten Projekts. Die zweite Zeile ("Stamm / Variante:") entfaellt, der
+        /// Kasten zieht sich auf die verbliebene Zeile zusammen.
+        ///
+        /// Das bisherige Textfeld bleibt unsichtbar bestehen: an mehreren Stellen wird
+        /// sein Text gelesen bzw. gegen den Platzhalter geprueft (Reiterwechsel,
+        /// "Weiter", Projektdetails). Es fuehrt weiter den Namen, es zeigt ihn nur
+        /// nicht mehr an.
+        ///
+        /// Bewusst programmatisch statt im Designer (Hausregel Layout).
+        /// </summary>
+        private void ProjektkopfAufbauen()
+        {
+            if (comboBox_Varianten == null || textBox_ProjektOpen == null || panelVariante == null) return;
+
+            // Optik des bisherigen Projekttextes uebernehmen. Auswahlliste bleibt
+            // Auswahlliste: im Projektkopf wird gewaehlt, nicht getippt.
+            comboBox_Varianten.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBox_Varianten.FlatStyle = FlatStyle.Flat;
+            comboBox_Varianten.BackColor = Color.White;
+            comboBox_Varianten.ForeColor = textBox_ProjektOpen.ForeColor;
+            comboBox_Varianten.Font = textBox_ProjektOpen.Font;
+
+            // An die Stelle des Textfeldes ruecken (Zeile 1, neben "Projekt:").
+            textBox_ProjektOpen.Visible = false;
+            comboBox_Varianten.Left = textBox_ProjektOpen.Left - 3;   // die Combo setzt ihren Text ein
+            comboBox_Varianten.Width = panelVariante.ClientSize.Width - comboBox_Varianten.Left - 14;
+            comboBox_Varianten.Top = label11.Top + (label11.Height - comboBox_Varianten.Height) / 2;
+
+            // Beschriftung der entfallenen zweiten Zeile entfernen ...
+            if (label4 != null)
+            {
+                panelVariante.Controls.Remove(label4);
+                label4.Dispose();
+                label4 = null;
+            }
+
+            // ... und den Kasten auf die verbliebene Zeile zusammenziehen, damit kein
+            // leerer Streifen unter dem Auswahlfeld stehen bleibt.
+            panelVariante.Height = Math.Max(label_ProjektStatus.Bottom, comboBox_Varianten.Bottom) + 10;
+            panelVariante.Invalidate();
+
+            // Aufklappbreite zur neuen Schrift/Breite nachziehen (die Liste kann schon
+            // gefuellt sein, wenn beim Start ein Projekt wiederhergestellt wurde).
+            SetzeDropDownBreite(comboBox_Varianten);
+        }
+
+        /// <summary>
+        /// Zeigt <paramref name="szName"/> im Auswahlfeld des Projektkopfs an. Enthaelt
+        /// die geladene Gruppe den Namen, wird dieser Eintrag gewaehlt; sonst wird die
+        /// Gruppe zum aktuell geoeffneten Projekt neu aufgebaut (Menuewege, die
+        /// ProjektKontextUebernehmen nicht durchlaufen); notfalls tritt der Name als
+        /// einziger Eintrag an die Stelle. Reine Anzeige: das Auswahlereignis ist dabei
+        /// abgehaengt, es wird kein Projektwechsel ausgeloest.
+        /// </summary>
+        private void KopfNameZeigen(string szName)
+        {
+            if (comboBox_Varianten == null) return;
+            if (KopfNameWaehlen(szName)) return;
+
+            if (m_ID_Projekt > 0)
+            {
+                FuelleVariantenCombo(comboBox_Varianten, m_ID_Projekt, true);
+                if (KopfNameWaehlen(szName)) return;
+            }
+
+            KopfEinzeltextZeigen(szName);
+        }
+
+        /// <summary>
+        /// Waehlt im Auswahlfeld des Projektkopfs den Eintrag mit dem Text
+        /// <paramref name="szName"/> - ohne das Auswahlereignis auszuloesen.
+        /// Liefert false, wenn es keinen solchen Eintrag gibt.
+        /// </summary>
+        private bool KopfNameWaehlen(string szName)
+        {
+            if (comboBox_Varianten == null || string.IsNullOrEmpty(szName)) return false;
+
+            for (int i = 0; i < comboBox_Varianten.Items.Count; i++)
+            {
+                object item = comboBox_Varianten.Items[i];
+                if (item == null || !string.Equals(item.ToString(), szName, StringComparison.Ordinal)) continue;
+
+                if (comboBox_Varianten.SelectedIndex != i)
+                {
+                    comboBox_Varianten.SelectedIndexChanged -= comboBox_Varianten_SelectedIndexChanged;
+                    comboBox_Varianten.SelectedIndex = i;
+                    comboBox_Varianten.SelectedIndexChanged += comboBox_Varianten_SelectedIndexChanged;
+                }
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Setzt <paramref name="szName"/> als einzigen Eintrag des Auswahlfeldes und
+        /// zeigt ihn an (Platzhalter "bitte auswaehlen!", solange kein Projekt offen
+        /// ist). Der Eintrag ist bewusst kein <see cref="VariantenComboItem"/>: das
+        /// Auswahlereignis laesst ihn deshalb wirkungslos.
+        /// </summary>
+        private void KopfEinzeltextZeigen(string szName)
+        {
+            if (comboBox_Varianten == null) return;
+
+            comboBox_Varianten.SelectedIndexChanged -= comboBox_Varianten_SelectedIndexChanged;
+            comboBox_Varianten.Items.Clear();
+            comboBox_Varianten.Items.Add(szName ?? "");
+            comboBox_Varianten.SelectedIndex = 0;
+            comboBox_Varianten.SelectedIndexChanged += comboBox_Varianten_SelectedIndexChanged;
+        }
+
         private void comboBox_Varianten_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (!(comboBox_Varianten.SelectedItem is VariantenComboItem vi)) return;  // ""/kein Item -> nichts tun
@@ -2184,8 +2319,8 @@ namespace WindowsFormsApplication1
                 ProjektKontextUebernehmen(name);
             Invalidate(true);
 
-            _tip.SetToolTip(textBox_ProjektOpen, textBox_ProjektOpen.Text);
-            _tip.SetToolTip(comboBox_Varianten, comboBox_Varianten.Text);
+            // Kein Mouseover-Hinweis mehr: Das Feld zeigt den Projektnamen jetzt selbst,
+            // ein Kurzinfo-Fenster mit demselben Text daneben stoert nur.
         }
 
 
