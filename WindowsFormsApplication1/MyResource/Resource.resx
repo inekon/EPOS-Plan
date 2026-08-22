@@ -4896,6 +4896,18 @@ Danach fehlt der Wert in jeder Rechnung, die dieses Jahr betrifft.</value>
   <data name="BK_KOSTEN_ENERGIE_PREIS0" xml:space="preserve">
     <value>⚠ Arbeitspreis 0,00 bei: {0} — ohne Preis können keine Energiekosten entstehen; im Reiter „Energiekosten" der Kostenverwaltung erfassen.</value>
   </data>
+  <data name="BK_KOSTEN_TRAEGER_HINT" xml:space="preserve">
+    <value>Verwendet von: {0}</value>
+  </data>
+  <data name="BK_KOSTEN_TRAEGER_KEINE" xml:space="preserve">
+    <value>Kein Energieträger — das Projekt führt keinen Erzeuger, der Energie bezieht.</value>
+  </data>
+  <data name="BK_KOSTEN_TRAEGER_UNGEPFLEGT" xml:space="preserve">
+    <value>Kein Energieträger mit Projekteinstellungen — verwendet werden: {0}</value>
+  </data>
+  <data name="BK_KOSTEN_TRAEGER_FEHLT" xml:space="preserve">
+    <value>⚠ Verwendet, dem Projekt aber nicht zugeordnet: {0} — ohne Zuordnung gibt es weder Preis noch Heizwert; im Reiter „Energiekosten" der Kostenverwaltung ergänzen.</value>
+  </data>
   <data name="ADM_BTN_SPEICHERN" xml:space="preserve">
     <value>Speichern</value>
   </data>
@@ -7126,5 +7138,26 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   </data>
   <data name="VAR_MSG_KEIN_PROJEKT" xml:space="preserve">
     <value>Es ist kein Projekt ge&#246;ffnet. &#214;ffnen Sie zuerst ein Projekt, das als Variante gesichert werden soll.</value>
+  </data>
+  <data name="BHKW_SUMME_LBL" xml:space="preserve">
+    <value>Summe Einzelposten:</value>
+  </data>
+  <data name="BHKW_INVEST_UNBESTIMMT" xml:space="preserve">
+    <value>n. b.</value>
+  </data>
+  <data name="BHKW_INVEST_HINWEIS_ABGELEITET" xml:space="preserve">
+    <value>&#8364;/kWel: abgeleitet aus Summe / Pel</value>
+  </data>
+  <data name="BHKW_INVEST_HINWEIS_UNBESTIMMT" xml:space="preserve">
+    <value>&#8364;/kWel: nicht bestimmbar (Pel = 0)</value>
+  </data>
+  <data name="BHKW_INVEST_HINWEIS_ABWEICHUNG" xml:space="preserve">
+    <value>&#8364;/kWel: Bestand weicht ab, wird beim Speichern nachgezogen</value>
+  </data>
+  <data name="BHKW_INVEST_TIP" xml:space="preserve">
+    <value>Die Einzelposten f&#252;hren: Investitionskosten je kWel = Summe der Einzelposten geteilt durch die elektrische Leistung. Das Feld ist deshalb nicht &#228;nderbar.</value>
+  </data>
+  <data name="BHKW_INVEST_TIP_UNBESTIMMT" xml:space="preserve">
+    <value>Die elektrische Leistung ist 0. Investitionskosten je kWel sind damit nicht bestimmbar. Gespeichert wird die Summe der Einzelposten; Speichern bleibt m&#246;glich.</value>
   </data>
 </root>
