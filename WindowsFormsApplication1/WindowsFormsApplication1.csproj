@@ -18,9 +18,9 @@
     <!-- AssemblyInfo.cs liefert die Attribute selbst -->
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 
-    <!-- WICHTIG: x86, weil Microsoft.ACE.OLEDB.12.0 bitness-gebunden ist -->
-    <PlatformTarget>x86</PlatformTarget>
-    <Platforms>x86;x64;AnyCPU</Platforms>
+    <!-- x64 - Microsoft.ACE.OLEDB.12.0 muss als 64-Bit-Engine vorliegen (Konzept_Umstellung_64Bit_EPOS-Plan.md, P2) -->
+    <PlatformTarget>x64</PlatformTarget>
+    <Platforms>x64</Platforms>
 
     <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
@@ -45,14 +45,6 @@
   <Resource Remove=".claude\**" />
   <ApplicationDefinition Remove=".claude\**" />
 </ItemGroup>
-
-  <!-- Plattform-spezifische Konfigurationen -->
-  <PropertyGroup Condition="'$(Platform)' == 'x64'">
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Platform)' == 'AnyCPU'">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-  </PropertyGroup>
 
   <!-- Dateien auf der Platte, die nie ins alte Projekt aufgenommen waren -->
   <ItemGroup>
