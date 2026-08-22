@@ -437,9 +437,18 @@ namespace WindowsFormsApplication1
                 label_OnlineDoku.Left = (this.ClientSize.Width - label_OnlineDoku.Width) / 2;
                 label_OnlineDoku.Top = (this.ClientSize.Height - label_OnlineDoku.Height) / 2;
                 label_OnlineDoku.Visible = true;
-                Program.HelpCatalog.LoadAllAsync(); // Await entfernt, wordpress zugriff asynchron, Main läuft weiter,
-                                                    // Doku wird im Hintergrund geladen, wenn Nutzer auf Doku klickt, wird geprüft ob schon geladen,
-                                                    // wenn nein, dann warten bis geladen ist, wenn ja, dann sofort öffnen
+                // Await bleibt bewusst weg: der WordPress-Zugriff läuft im
+                // Hintergrund weiter, der Start blockiert nicht.
+                //
+                // Der frühere Startwettlauf ist damit entschärft, ohne den Start zu
+                // bremsen (Konzept Hilfesystem, H3):
+                //   1. Program.Main hat den Katalog bereits mit dem Startbestand
+                //      belegt — kein Formular sieht mehr einen leeren Katalog.
+                //   2. HilfeAutomatik zieht alle bereits geöffneten Formulare nach,
+                //      sobald dieser Ladelauf durch ist (HelpCatalog.Loaded).
+                // LoadAllAsync fängt jeden Fehler selbst ab und läuft nie in eine
+                // unbeobachtete Ausnahme; die Zuweisung an _ macht das sichtbar.
+                _ = Program.HelpCatalog.LoadAllAsync();
             }
             catch (Exception ex)
             {

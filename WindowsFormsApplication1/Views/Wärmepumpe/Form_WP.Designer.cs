@@ -78,6 +78,7 @@
             this.radioButton_Waerme = new System.Windows.Forms.RadioButton();
             this.radioButton_Kuehlung = new System.Windows.Forms.RadioButton();
             this.btn_Katalog = new System.Windows.Forms.Button();
+            this.btn_Help = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -376,11 +377,26 @@
             this.btn_Katalog.UseVisualStyleBackColor = true;
             this.btn_Katalog.Click += new System.EventHandler(this.btn_Katalog_Click);
             // 
+            // btn_Help
+            // 
+            this.btn_Help.BackColor = System.Drawing.Color.Transparent;
+            this.btn_Help.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.help_icon;
+            this.btn_Help.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.btn_Help.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btn_Help.FlatAppearance.BorderSize = 0;
+            this.btn_Help.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_Help.Location = new System.Drawing.Point(833, 31);
+            this.btn_Help.Name = "btn_Help";
+            this.btn_Help.Size = new System.Drawing.Size(28, 28);
+            this.btn_Help.TabStop = false;
+            this.btn_Help.UseVisualStyleBackColor = false;
+            // 
             // Form_WP
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ControlBox = false;
+            this.Controls.Add(this.btn_Help);
             this.Controls.Add(this.btn_Katalog);
             this.Controls.Add(this.radioButton_Kuehlung);
             this.Controls.Add(this.radioButton_Waerme);
@@ -433,6 +449,7 @@
 
         #endregion
 
+        private System.Windows.Forms.Button btn_Help;
         private System.Windows.Forms.Button btn_Beenden;
         private System.Windows.Forms.Label label_WP;
         private System.Windows.Forms.Label label30;

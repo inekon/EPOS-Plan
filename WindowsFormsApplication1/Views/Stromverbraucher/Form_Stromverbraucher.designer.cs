@@ -61,6 +61,7 @@ namespace WindowsFormsApplication1
             this.textBox_Verbrauch = new System.Windows.Forms.TextBox();
             this.Label8 = new System.Windows.Forms.Label();
             this.btn_neuerWert = new System.Windows.Forms.Button();
+            this.btn_Help = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -286,10 +287,25 @@ namespace WindowsFormsApplication1
             this.btn_neuerWert.UseVisualStyleBackColor = true;
             this.btn_neuerWert.Click += new System.EventHandler(this.btn_neuerWert_Click);
             // 
+            // btn_Help
+            // 
+            this.btn_Help.BackColor = System.Drawing.Color.Transparent;
+            this.btn_Help.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.help_icon;
+            this.btn_Help.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.btn_Help.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btn_Help.FlatAppearance.BorderSize = 0;
+            this.btn_Help.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_Help.Location = new System.Drawing.Point(699, 42);
+            this.btn_Help.Name = "btn_Help";
+            this.btn_Help.Size = new System.Drawing.Size(28, 28);
+            this.btn_Help.TabStop = false;
+            this.btn_Help.UseVisualStyleBackColor = false;
+            // 
             // Form_Stromverbraucher
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.btn_Help);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.label_Type);
             this.Controls.Add(this.listView_Strom_Auswahl);
@@ -329,6 +345,7 @@ namespace WindowsFormsApplication1
 
         #endregion
 
+        private System.Windows.Forms.Button btn_Help;
         private System.Windows.Forms.Button btn_Hinzu;
 private System.Windows.Forms.Button btn_Entfernen;
 private System.Windows.Forms.Button btn_Strom_DBneu;

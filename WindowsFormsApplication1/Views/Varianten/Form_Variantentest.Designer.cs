@@ -25,6 +25,7 @@ namespace WindowsFormsApplication1
         private Button btnVergleich;
         private Button btnBericht;
         private Button btnWirtschaft;
+        private Button btn_Help;
         private Label lblStatus;
 
         protected override void Dispose(bool disposing)
@@ -52,6 +53,7 @@ namespace WindowsFormsApplication1
             this.btnBericht = new Button();
             this.btnWirtschaft = new Button();
             this.lblStatus = new Label();
+            this.btn_Help = new System.Windows.Forms.Button();
             this.SuspendLayout();
 
             // lblStamm
@@ -170,6 +172,20 @@ namespace WindowsFormsApplication1
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new Size(320, 20);
 
+            // btn_Help
+            this.btn_Help.BackColor = Color.Transparent;
+            this.btn_Help.BackgroundImage = Properties.Resources.help_icon;
+            this.btn_Help.BackgroundImageLayout = ImageLayout.Zoom;
+            this.btn_Help.Cursor = Cursors.Hand;
+            this.btn_Help.FlatAppearance.BorderSize = 0;
+            this.btn_Help.FlatStyle = FlatStyle.Flat;
+            this.btn_Help.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            this.btn_Help.Location = new Point(520, 38);
+            this.btn_Help.Name = "btn_Help";
+            this.btn_Help.Size = new Size(28, 28);
+            this.btn_Help.TabStop = false;
+            this.btn_Help.UseVisualStyleBackColor = false;
+
             // Form_Variantentest
             this.AutoScaleMode = AutoScaleMode.Font;
             this.ClientSize = new Size(560, 540);
@@ -178,6 +194,7 @@ namespace WindowsFormsApplication1
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Name = "Form_Variantentest";
             this.Text = "Projektvarianten";
+            this.Controls.Add(this.btn_Help);
             this.Controls.Add(this.lblStamm);
             this.Controls.Add(this.cbStamm);
             this.Controls.Add(this.chkNurStaemme);

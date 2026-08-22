@@ -166,6 +166,37 @@
     </Compile>
   </ItemGroup>
 
+  <!-- Hilfesystem: Zuordnung Steuerelement -> Hilfeseite (Konzept Hilfesystem, F2).
+       Die Datei wird EINGEBETTET mitgeliefert, damit die Hilfe nicht daran scheitert,
+       dass eine Textdatei beim Ausrollen vergessen wurde. Eine gleichnamige Datei
+       NEBEN DER EXE übersteuert sie zur Laufzeit — deshalb wird sie bewusst NICHT in
+       den Ausgabeordner kopiert. LogicalName festgeschrieben, damit der Ressourcenname
+       nicht am Ordnerpfad hängt. -->
+  <ItemGroup>
+    <None Remove="Allgemein\Hilfe\help_mapping.txt" />
+    <EmbeddedResource Include="Allgemein\Hilfe\help_mapping.txt">
+      <LogicalName>help_mapping.txt</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <!-- Hilfesystem: Startbestand des Katalogs (Konzept Hilfesystem, F6).
+       Ohne Netz UND ohne vorherigen Onlinelauf wäre die Hilfe beim allerersten
+       Start sonst vollständig leer. Der Bestand ist am 22.08.2026 gegen
+       https://epos-plan.de/wp-json/wp/v2/pages erhoben worden: 116 Seiten,
+       geschlüsselt über den Link-Pfad (F7) — ein slug-geschlüsselter Bestand
+       verlöre acht Seiten. Rangfolge zur Laufzeit:
+       Online > AppData-Sicherung > dieser Startbestand.
+       Reines ASCII (Umlaute als \uXXXX), damit keine Kodierung daran scheitern
+       kann. LogicalName festgeschrieben, damit der Ressourcenname nicht am
+       Ordnerpfad hängt; NICHT in den Ausgabeordner kopiert — zur Laufzeit
+       schreibt die Anwendung ihre eigene Sicherung nach AppData. -->
+  <ItemGroup>
+    <None Remove="Allgemein\Hilfe\help_cache.json" />
+    <EmbeddedResource Include="Allgemein\Hilfe\help_cache.json">
+      <LogicalName>help_cache.json</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
   <!-- Resources-Generator-Verknüpfungen -->
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
