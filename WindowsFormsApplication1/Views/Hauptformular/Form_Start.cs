@@ -151,6 +151,7 @@ namespace WindowsFormsApplication1
             m_ID_Projekt = ctrl_projekt.m_ID;
 
             SetTextProjekt(m_szProjektname);
+            comboBox_Varianten.Text = m_szProjektname;
             comboBox_Klima.Text = GetProjektKlimaregion(m_ID_Projekt);
 
             label_ProjektStatus.Text = "✔";
@@ -2107,6 +2108,8 @@ namespace WindowsFormsApplication1
             if (stammId <= 0) stammId = idProjekt;
 
             string stammName = LiesProjektname(stammId);
+    
+            if (stammName == "") cb.Text = LiesProjektname(idProjekt); else cb.Text = stammName;
 
             int anzahl = 0;
             foreach (VariantenCtrl.VarianteInfo vi in _ctrl.LadeGruppe(stammId, stammName))
@@ -2126,7 +2129,7 @@ namespace WindowsFormsApplication1
             // Damit du bequem an die ID kommst (cb.SelectedValue)
             cb.DisplayMember = "Anzeige";
             cb.ValueMember = "IdProjekt";
-
+ 
             // Vorauswahl: das geöffnete Projekt, sonst erster Eintrag.
             int sel = -1;
             for (int i = 0; i < cb.Items.Count; i++)
