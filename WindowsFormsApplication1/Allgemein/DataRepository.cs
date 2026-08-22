@@ -166,6 +166,37 @@ namespace WindowsFormsApplication1
             return connString;
         }
 
+        /// <summary>
+        /// Prüft, ob der ACE-OLE-DB-Provider registriert ist (Startprüfung der
+        /// x64-Umstellung, P1.3). Der Provider muss in der Bitness des Prozesses
+        /// vorliegen - eine 32-Bit-Access-Engine trägt einen 64-Bit-Prozess nicht.
+        ///
+        /// Liefert false NUR beim Provider-Fehler: Der meldet sich als
+        /// InvalidOperationException („provider is not registered on the local
+        /// machine") und kommt VOR jedem Dateizugriff. Alle anderen Fehler
+        /// (Datenbank fehlt, gesperrt, defekt) melden wie bisher die späteren
+        /// Zugriffe - hier gilt dafür bewusst true.
+        /// </summary>
+        public static bool ProviderVorhanden()
+        {
+            try
+            {
+                using (OleDbConnection verbindung = new OleDbConnection(GetConnectionString()))
+                {
+                    verbindung.Open();
+                }
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;   // Provider nicht registriert
+            }
+            catch (Exception)
+            {
+                return true;    // anderes Problem als der Provider - bisheriges Verhalten greift später
+            }
+        }
+
         // Für SELECT-Abfragen: Liefert Daten in den Arbeitsspeicher
         public static DataTable GetDataTable(string sql, params OleDbParameter[] parameters)
         {

@@ -7127,4 +7127,12 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   <data name="VAR_MSG_KEIN_PROJEKT" xml:space="preserve">
     <value>Es ist kein Projekt ge&#246;ffnet. &#214;ffnen Sie zuerst ein Projekt, das als Variante gesichert werden soll.</value>
   </data>
+  <data name="START_ACE_FEHLT_TITEL" xml:space="preserve">
+    <value>Datenbank-Komponente fehlt</value>
+  </data>
+  <data name="START_ACE_FEHLT_TEXT" xml:space="preserve">
+    <value>Die Microsoft Access Database Engine ({0}) ist auf diesem Rechner nicht verfügbar. EPOS-Plan kann ohne sie nicht auf die Datenbank zugreifen.
+
+Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Microsoft Access Database Engine ({0}).</value>
+  </data>
 </root>
