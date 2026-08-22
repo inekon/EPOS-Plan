@@ -1,7 +1,11 @@
 # Umstellung auf 64 Bit (x64) — Analyse und Vorgehensweise
 
-Stand: 22.08.2026 — P0 und P1 abgeschlossen (alle Entscheidungen getroffen, Code
-robust gemacht; Commits `b4f5543` und `14777bc`). Nächstes Paket: P2.
+Stand: 22.08.2026 — P0 bis P3 abgeschlossen. P1: Commits `b4f5543` + `14777bc`.
+P2: Commit `31d5406` (Rückweg-Tag `letzter-x86-stand` = `3f126f4`); Solution baut
+und startet unter x64. P3: Referenzvergleich x86 ↔ x64 **GESAMT PASS**
+(9 Projekte, 2.427.467 Werte in Toleranz — Beleg in
+`Referenzlaeufe/2026-08-22_P3_x64/vergleich_x86_x64.md`); der UI-Funktionsdurchlauf
+(Prüfliste 5–8) bleibt manuelle Abnahme. Offen: P4 (in Arbeit), P5.
 Betrachtet wurden der gesamte Bestand unter `WindowsFormsApplication1`
 (ohne Altkopien und Worktrees), die Solution, alle Nebenwerkzeuge, der Installer unter
 `Setup\` sowie die aktuelle Faktenlage zur 64-bit Access Database Engine (Quellen in
