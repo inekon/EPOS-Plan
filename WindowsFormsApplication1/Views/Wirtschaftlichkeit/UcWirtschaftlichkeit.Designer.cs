@@ -76,6 +76,7 @@
             this.btnVerlauf = new System.Windows.Forms.Button();
             this.btnBerechnen = new System.Windows.Forms.Button();
             this.btnSchliessen = new System.Windows.Forms.Button();
+            this.btn_Help = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.grid)).BeginInit();
             this.SuspendLayout();
             //
@@ -236,9 +237,25 @@
             this.btnSchliessen.Visible = false;
             this.btnSchliessen.Click += new System.EventHandler(this.btnSchliessen_Click);
             //
+            // btn_Help
+            //
+            this.btn_Help.BackColor = System.Drawing.Color.Transparent;
+            this.btn_Help.BackgroundImage = Properties.Resources.help_icon;
+            this.btn_Help.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.btn_Help.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btn_Help.FlatAppearance.BorderSize = 0;
+            this.btn_Help.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_Help.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_Help.Location = new System.Drawing.Point(858, 2);
+            this.btn_Help.Name = "btn_Help";
+            this.btn_Help.Size = new System.Drawing.Size(28, 28);
+            this.btn_Help.TabStop = false;
+            this.btn_Help.UseVisualStyleBackColor = false;
+            //
             // UcWirtschaftlichkeit
             //
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
+            this.Controls.Add(this.btn_Help);
             this.Controls.Add(this.lblVarianten);
             this.Controls.Add(this.lvVarianten);
             this.Controls.Add(this.lblSzenario);
@@ -264,6 +281,7 @@
 
         #endregion
 
+        private System.Windows.Forms.Button btn_Help;
         private System.Windows.Forms.Label lblVarianten;
         private System.Windows.Forms.ListView lvVarianten;
         private System.Windows.Forms.ColumnHeader colArt;

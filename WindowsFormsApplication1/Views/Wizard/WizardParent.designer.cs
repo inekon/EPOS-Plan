@@ -41,6 +41,7 @@
             btnCancel = new System.Windows.Forms.Button();
             btnSpeichern = new System.Windows.Forms.Button();
             pnlContent = new System.Windows.Forms.Panel();
+            btn_Help = new System.Windows.Forms.Button();
             pnlLeft.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox_App).BeginInit();
             pnlBottom.SuspendLayout();
@@ -50,6 +51,7 @@
             // 
             pnlLeft.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
             resources.ApplyResources(pnlLeft, "pnlLeft");
+            pnlLeft.Controls.Add(btn_Help);
             pnlLeft.Controls.Add(button_NeuProjekt);
             pnlLeft.Controls.Add(label_Projekt);
             pnlLeft.Controls.Add(listBox_Projekte);
@@ -142,6 +144,20 @@
             pnlContent.BackColor = System.Drawing.Color.FromArgb(224, 224, 224);
             pnlContent.Name = "pnlContent";
             // 
+            // btn_Help
+            // 
+            btn_Help.BackColor = System.Drawing.Color.Transparent;
+            btn_Help.BackgroundImage = Properties.Resources.help_icon;
+            btn_Help.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            btn_Help.Cursor = System.Windows.Forms.Cursors.Hand;
+            btn_Help.FlatAppearance.BorderSize = 0;
+            btn_Help.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            btn_Help.Location = new System.Drawing.Point(14, 162);
+            btn_Help.Name = "btn_Help";
+            btn_Help.Size = new System.Drawing.Size(28, 28);
+            btn_Help.TabStop = false;
+            btn_Help.UseVisualStyleBackColor = false;
+            // 
             // WizardParent
             // 
             resources.ApplyResources(this, "$this");
@@ -162,6 +178,7 @@
 
         #endregion
 
+        private System.Windows.Forms.Button btn_Help;
         private System.Windows.Forms.Panel pnlLeft;
         private System.Windows.Forms.Panel pnlBottom;
         private System.Windows.Forms.Panel pnlContent;

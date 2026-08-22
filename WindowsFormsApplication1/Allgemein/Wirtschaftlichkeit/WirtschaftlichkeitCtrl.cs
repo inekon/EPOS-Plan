@@ -605,10 +605,28 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Referenzkessel der getrennten Erzeugung aus dem Stammprojekt
-        /// (Phase 11): größter Kessel in Tab_Heizkessel; Wirkungsgrad je nach
+        /// (Phase 11): größter VERBAUTER Kessel; Wirkungsgrad je nach
         /// Brennstoff-Kategorie (Öl → Wirkungsgrad_Öl, sonst _Gas; 0 → der andere).
         /// Kein Kessel/kein brauchbarer Wirkungsgrad → Gefunden = false
-        /// (die gespeicherten Parameter-Vorgaben gelten weiter).</summary>
+        /// (die gespeicherten Parameter-Vorgaben gelten weiter).
+        ///
+        /// <para><b>NACHTRAG ZU E2 (22.08.2026) — Bezugsmenge wie bei
+        /// <see cref="LiesBhkwLeistungKW"/> korrigiert.</b> Bis dahin las die Abfrage
+        /// <c>WHERE ID_Projekt = ?</c> direkt auf <c>Tab_Heizkessel</c> — der Tabelle der
+        /// PROJEKTKOPIEN, in der auch Kessel stehen, deren Anlagenzeile nie entstand oder
+        /// längst gelöscht ist. <c>ORDER BY Ptherm DESC</c> kürte dann ausgerechnet den
+        /// größten dieser Altbestände zum Referenzkessel, dessen Bezeichner, Brennstoff
+        /// und Wirkungsgrad in die getrennte Erzeugung einflossen (Projekt 1023 führte am
+        /// 22.08.2026 16 verwaiste von 18 Kesselzeilen). Maßgeblich ist der Verbund über
+        /// <c>Tab_Energieanlagen.ID_Kessel</c> — BEWUSST OHNE Typfilter: Plan- (Typ 10)
+        /// wie Referenzliste (Typ 5) führen ihre Kessel absichtlich im Projekt, genau wie
+        /// die alte Abfrage beide sah.</para>
+        ///
+        /// <para><b>Rückfall auf die Gerätezeilen</b>, wenn der Verbund keine Zeile
+        /// liefert (Anlagenzeile ohne <c>ID_Kessel</c>, Datenbank ohne Anlagenzeilen) —
+        /// dieselbe Begründung wie beim BHKW: Dann ist die Gerätetabelle die einzige
+        /// verfügbare Aussage, und seit dem Aufräumlauf (<c>GeraeteWaisen</c>,
+        /// Migrationsschritt 34) führt sie ohnehin nur noch Verbautes.</para></summary>
         public ReferenzkesselInfo LiesReferenzkessel(int idStamm)
         {
             var info = new ReferenzkesselInfo();
@@ -617,10 +635,21 @@ namespace WindowsFormsApplication1
             if (_refKesselCache.TryGetValue(idStamm, out cache)) return cache;   // Review 11
             try
             {
+                // 1. Größter Kessel über die ANLAGENZEILEN — dieselbe Menge, die die
+                //    Engine rechnet und die Verwaltungsdialoge anzeigen.
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT TOP 1 Bezeichner, Brennstoff, Wirkungsgrad_Gas, [Wirkungsgrad_Öl] " +
-                    "FROM Tab_Heizkessel WHERE ID_Projekt = ? ORDER BY Ptherm DESC, ID",
+                    "SELECT TOP 1 g.Bezeichner, g.Brennstoff, g.Wirkungsgrad_Gas, g.[Wirkungsgrad_Öl] " +
+                    "FROM Tab_Heizkessel AS g INNER JOIN Tab_Energieanlagen AS a ON g.ID = a.ID_Kessel " +
+                    "WHERE a.ID_Projekt = ? ORDER BY g.Ptherm DESC, g.ID",
                     new OleDbParameter("@p", idStamm));
+
+                // 2. Rückfall: die Gerätezeilen (der Weg bis zu diesem Nachtrag).
+                if (dt == null || dt.Rows.Count == 0)
+                    dt = DataRepository.GetDataTable(
+                        "SELECT TOP 1 Bezeichner, Brennstoff, Wirkungsgrad_Gas, [Wirkungsgrad_Öl] " +
+                        "FROM Tab_Heizkessel WHERE ID_Projekt = ? ORDER BY Ptherm DESC, ID",
+                        new OleDbParameter("@p", idStamm));
+
                 if (dt == null || dt.Rows.Count == 0) { _refKesselCache[idStamm] = info; return info; }
                 DataRow r = dt.Rows[0];
 

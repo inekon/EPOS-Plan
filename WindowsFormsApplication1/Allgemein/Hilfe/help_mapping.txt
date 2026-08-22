@@ -1,0 +1,241 @@
+﻿# ===========================================================================
+# help_mapping.txt - Zuordnung Steuerelement -> Hilfeseite auf epos-plan.de
+# ===========================================================================
+#
+# Diese Datei ist die EINZIGE Stelle, an der Hilfe gepflegt wird. Sie wird als
+# eingebettete Ressource mitgeliefert (F2). Eine gleichnamige Datei NEBEN DER
+# EXE uebersteuert die eingebettete Fassung vollstaendig - damit lassen sich
+# Zuordnungen ohne Neubau korrigieren.
+#
+# Seit H3 gilt das woertlich: ein neuer Infobutton braucht KEINE Zeile
+# Programmtext mehr. HilfeAutomatik (Allgemein\Hilfe\HilfeAutomatik.cs) erfasst
+# jedes geoeffnete Formular und jedes nachgeladene UserControl von selbst (F5);
+# es genuegt, hier eine Zeile zu ergaenzen. Der Infobutton muss dafuer nur mit
+# "btn_Help" beginnen.
+#
+# Kodierung: UTF-8 (mit BOM). Beim Bearbeiten UTF-8 beibehalten, sonst gehen
+# die Umlaute in den Kommentaren verloren. Die Slugs selbst sind reines ASCII.
+#
+# ---------------------------------------------------------------------------
+# Format
+# ---------------------------------------------------------------------------
+#
+#   Praefix.Controlpfad = de-ziel | en-ziel
+#
+#   Praefix       Name des Formulars (Form.Name) bzw. der Name, mit dem
+#                 RegisterControl(container, name) aufgerufen wird.
+#   Controlpfad   Name des Steuerelements. Zwischencontainer duerfen mit
+#                 Punkten angegeben werden (ucPanel.btn_Help); die Suche
+#                 laeuft ohnehin rekursiv ueber alle Ebenen.
+#   de-ziel       Deutsche Hilfeseite - als Slug ODER als Link-Pfad (siehe F7).
+#   en-ziel       Englische Hilfeseite, gleiche Schreibweisen. Optional.
+#
+# Die Sprache entscheidet zur Laufzeit (F4): bei deutscher Oberflaeche gilt
+# das linke Ziel, bei englischer das rechte. Fehlt das Ziel der aktiven
+# Sprache im Katalog, greift automatisch das andere.
+#
+# Zeilen ab '#' sind Kommentar, Leerzeilen werden uebersprungen. Ein Ziel ohne
+# '|' gilt fuer beide Sprachen.
+#
+# ---------------------------------------------------------------------------
+# F7 - Slug ODER Pfad
+# ---------------------------------------------------------------------------
+#
+# Der Katalog ist ueber BEIDES adressierbar:
+#
+#   klimadaten                                  <- Kurzform (Slug)
+#   /epos-plan/epos-plan-grundlagen/klimadaten/ <- Link-Pfad, immer eindeutig
+#
+# Alles mit '/' gilt als Pfad, alles andere als Slug. Ein eindeutiges Pfadende
+# genuegt ("/epos-plan-grundlagen/klimadaten/").
+#
+# Warum das noetig ist: Am 22.08.2026 gegen den Livebestand gemessen teilen
+# sich 116 Seiten nur 108 eindeutige Slugs. Sieben Slugs sind doppelt vergeben:
+#
+#   installation, update, economic-analysis, heat-demand-calculation,
+#   revenue-calculation, erloesrechnung, wirtschaftlichkeitsrechnung
+#
+# Bei diesen sieben bitte IMMER den Pfad eintragen. Wer den Slug verwendet,
+# bekommt eine willkuerliche der Seiten und eine Warnung im Ausgabefenster
+# ("[Help] WARNUNG: Der Slug '...' ist mehrdeutig").
+#
+# ---------------------------------------------------------------------------
+# Zuordnungen
+# ---------------------------------------------------------------------------
+
+# --- Startformular (Assistent) ------------------------------------------
+# btn_Help sitzt NICHT im Klimaregion-Panel, sondern links davon direkt auf
+# dem Formular, oberhalb des gesamten Reiterwerks (Projekt / Waermebedarf /
+# Strombedarf / ...). Es ist die Hilfe zum Formular als Ganzem, also zum
+# Ablauf des Programms - nicht zur Klimaregion (dafuer Form_Klimadaten) und
+# nicht zur Kurzanleitung (dafuer btn_Help_Kurzanleitung auf Reiter 1).
+Form_Start.btn_Help               = epos-plan-programmablauf | program-workflow
+
+# Reiter "Projekt": Einstieg in die Bedienung.
+Form_Start.btn_Help_Kurzanleitung = epos-plan-kurzanleitung  | quick-start
+
+# Reiter "Waermebedarf".
+#
+# F7: In Pfadform, weil der englische Slug "heat-demand-calculation" DOPPELT
+# vergeben ist - einmal unter Programmablauf, einmal unter Grundlagen. Mit dem
+# Slug entschied die Reihenfolge der REST-Antwort, welches Kapitel erscheint.
+# Ziel ist der Programmablauf-Zweig, passend zur deutschen Seite; der deutsche
+# Slug "waermebedarfsberechnung" waere zwar eindeutig, steht aber der
+# Lesbarkeit halber ebenfalls als Pfad da (die Grundlagenseite heisst
+# "waermebedarfsrechnung" - ein Buchstabendreher vom Verwechseln entfernt).
+Form_Start.btn_Help_Waermebedarf  = /epos-plan/epos-plan-programmablauf/waermebedarfsberechnung/ | /english/program-workflow/heat-demand-calculation/
+
+# Reiter "Strombedarf".
+Form_Start.btn_Help_Strombedarf   = strombedarf              | electricity-demand
+
+# --- Klimadaten ----------------------------------------------------------
+Form_Klimadaten.btn_Help          = klimadaten               | climate-data
+
+# --- Kosten --------------------------------------------------------------
+Form_Kosten.btn_Help              = kostenrechnung           | cost-calculation
+
+# ===========================================================================
+# H4 - Flaechendeckung: ein Infobutton je Bereich unter Views
+# ===========================================================================
+# Reihenfolge wie im Konzept H4: Energieerzeuger, Waermebedarf, Strombedarf,
+# Simulation, dann der Rest. Je Bereich ist das fachliche Haupteinstiegs-
+# fenster verdrahtet, nicht jedes Fenster des Bereichs.
+#
+# "Notbehelf" heisst: fuer diesen Bereich gibt es auf epos-plan.de keine eigene
+# Seite; es steht der naechstgelegene Oberbegriff da. Das ist bewusst gewaehlt
+# und keine Verlegenheit - aber es ist der Ort, an dem eine neue Seite als
+# erstes gebraucht wuerde.
+
+# --- Energieerzeuger ------------------------------------------------------
+Form_WP.btn_Help                    = waermepumpe              | heat-pump
+Form_Heizkessel.btn_Help            = kessel-spitzenlast       | boilers-peak-load
+Form_BHKWEing.btn_Help              = bhkw                     | chp
+Form_SolarKollektoren.btn_Help      = solarkollektoren         | solar-collectors
+Form_PV.btn_Help                    = photovoltaik             | photovoltaics
+Form_PufferSp.btn_Help              = pufferspeicher           | buffer-storage
+Form_Stromspeicher.btn_Help         = stromspeicher            | battery-storage
+
+# --- Waermebedarf ---------------------------------------------------------
+#
+# F7: "heat-demand-calculation" ist DOPPELT vergeben (Programmablauf und
+# Grundlagen). Deshalb steht die englische Haelfte hier immer als Pfad.
+#
+# Die Aufteilung: Form_Waermebedarf ist der Programmschritt (Programmablauf),
+# Gebaeude / Brauchwasser / Prozesswaerme sind seine fachlichen Bestandteile
+# und zeigen deshalb auf die Grundlagenseite.
+Form_Waermebedarf.btn_Help          = waermebedarfsberechnung  | /english/program-workflow/heat-demand-calculation/
+# Notbehelf - keine eigene Seite "Gebaeude":
+Form_Gebaeude.btn_Help              = waermebedarfsrechnung    | /english/fundamentals/heat-demand-calculation/
+# Notbehelf - keine eigene Seite "Brauchwasser":
+Form_Brauchwasser.btn_Help          = waermebedarfsrechnung    | /english/fundamentals/heat-demand-calculation/
+# Notbehelf - keine eigene Seite "Prozesswaerme":
+Form_Prozesswaerme.btn_Help         = waermebedarfsrechnung    | /english/fundamentals/heat-demand-calculation/
+
+# --- Strombedarf ----------------------------------------------------------
+Form_Stromverbraucher.btn_Help      = strombedarfsberechnung   | electricity-demand-calculation
+
+# --- Simulation -----------------------------------------------------------
+#
+# Notbehelf - keine eigene Seite "Simulation". Das Fenster ordnet Erzeuger,
+# Pufferspeicher, Vorlauf und Ruecklauf einander zu; genau das beschreibt die
+# Seite "Hydraulikschemata".
+Form_Simulation_Config.btn_Help     = hydraulikschemata        | hydraulic-schemes
+
+# --- Wirtschaftlichkeit ---------------------------------------------------
+#
+# Das Praefix ist das UserControl, nicht das Formular: Form_Wirtschaftlichkeit
+# ist nur eine Huelle um UcWirtschaftlichkeit, und dasselbe UserControl haengt
+# auch im Reiter "Berichte & Kosten". Ueber den UserControl-Namen gilt die
+# Zeile an beiden Orten (HilfeAutomatik, UnterPraefixeAnwenden).
+#
+# F7: "wirtschaftlichkeitsrechnung" und "economic-analysis" sind beide doppelt
+# vergeben - deshalb beide Haelften als Pfad, Zweig Programmablauf.
+UcWirtschaftlichkeit.btn_Help       = /epos-plan/epos-plan-programmablauf/wirtschaftlichkeitsrechnung/ | /english/program-workflow/economic-analysis/
+
+# --- Varianten ------------------------------------------------------------
+#
+# Notbehelf - keine eigene Seite "Varianten". Das Fenster legt Varianten an
+# und stellt sie gegenueber; das ist die Energiebilanz im Vergleich.
+Form_Variantentest.btn_Help         = vergleich-energiebilanz  | energy-balance-comparison
+
+# --- Projekt --------------------------------------------------------------
+Form_ProjektSpeichernUnter.btn_Help = projektverwaltung        | project-management
+
+# --- Import ---------------------------------------------------------------
+#
+# Notbehelf - keine eigene Seite "Import". Der Konfliktdialog gehoert zum
+# Uebernehmen fremder Projekte, also zur Projektverwaltung.
+Form_ImportKonflikte.btn_Help       = projektverwaltung        | project-management
+
+# --- Wizard ---------------------------------------------------------------
+#
+# Der Assistent fuehrt Schritt fuer Schritt durch ein neues Projekt - das ist
+# genau der Stoff der Kurzanleitung.
+WizardParent.btn_Help               = epos-plan-kurzanleitung  | quick-start
+
+# --- Admin ----------------------------------------------------------------
+#
+# Notbehelf - keine eigene Seite "Administration". Das Fenster stellt Pfade,
+# Datenbank und Internetadressen ein; am naechsten liegen die
+# Systemvoraussetzungen.
+Form_AdminSettings.btn_Help         = epos-plan-systemvoraussetzungen | system-requirements
+
+# --- Help -----------------------------------------------------------------
+#
+# Form_HelpPopup ist die Hilfeanzeige selbst und bekommt keinen Infobutton -
+# er zeigte auf sich. Der Bereich wird ueber den Hilfe-Assistenten versorgt:
+# dort steht der Knopf fuer die geschriebene Hilfe neben dem Assistenten.
+Form_KiChat.btn_Help                = epos-plan-faq            | faq
+
+# ---------------------------------------------------------------------------
+# Zielvorrat fuer die Flaechendeckung (H4)
+# ---------------------------------------------------------------------------
+# Am 22.08.2026 gegen den Livebestand von epos-plan.de erhoben: 116 Seiten,
+# 116 eindeutige Pfade, 108 eindeutige Slugs. Beide Sprachen sind durchgaengig
+# vorhanden; die deutschen Slugs spiegeln die englischen NICHT, sondern sind
+# eigenstaendig benannt (bhkw <-> chp, solarkollektoren <-> solar-collectors).
+#
+# Wo der Slug eindeutig ist, steht er hier als Kurzform. Wo er es NICHT ist,
+# steht der Pfad - diese Zeilen bitte unveraendert uebernehmen (F7).
+#
+# --- Grundlagen (/epos-plan/epos-plan-grundlagen/ <-> /english/fundamentals/)
+#
+#   Klimadaten             klimadaten                   | climate-data
+#   Waermepumpe            waermepumpe                  | heat-pump
+#   Kessel / Spitzenlast   kessel-spitzenlast           | boilers-peak-load
+#   BHKW                   bhkw                         | chp
+#   Solarthermie           solarkollektoren             | solar-collectors
+#   Photovoltaik           photovoltaik                 | photovoltaics
+#   Pufferspeicher         pufferspeicher               | buffer-storage
+#   Stromspeicher          stromspeicher                | battery-storage
+#   Strombedarf            strombedarf                  | electricity-demand
+#   Hydraulikschemata      hydraulikschemata            | hydraulic-schemes
+#   Kosten                 kostenrechnung               | cost-calculation
+#   Energiebilanz          vergleich-energiebilanz      | energy-balance-comparison
+#   Waermebedarf           waermebedarfsrechnung        | /english/fundamentals/heat-demand-calculation/
+#   Erloese                /epos-plan/epos-plan-grundlagen/erloesrechnung/ | /english/fundamentals/revenue-calculation/
+#   Wirtschaftlichkeit     /epos-plan/epos-plan-grundlagen/wirtschaftlichkeitsrechnung/ | /english/fundamentals/economic-analysis/
+#
+# --- Programmablauf (/epos-plan/epos-plan-programmablauf/ <-> /english/program-workflow/)
+#
+#   Projektverwaltung      projektverwaltung            | project-management
+#   Strombedarf (Rechnung) strombedarfsberechnung       | electricity-demand-calculation
+#   Emissionen             schadstoffemissionen         | emissions
+#   Bericht drucken        bericht-drucken              | printing-the-report
+#   Waermebedarf           waermebedarfsberechnung      | /english/program-workflow/heat-demand-calculation/
+#   Erloese                /epos-plan/epos-plan-programmablauf/erloesrechnung/ | /english/program-workflow/revenue-calculation/
+#   Wirtschaftlichkeit     /epos-plan/epos-plan-programmablauf/wirtschaftlichkeitsrechnung/ | /english/program-workflow/economic-analysis/
+#
+# --- Oberste Ebene
+#
+#   Kurzanleitung          epos-plan-kurzanleitung      | quick-start
+#   Programmablauf         epos-plan-programmablauf     | program-workflow
+#   Grundlagen             epos-plan-grundlagen         | fundamentals
+#   Weitere Grundlagen     weitere-grundlagen           | further-fundamentals
+#   Systemvoraussetzungen  epos-plan-systemvoraussetzungen | system-requirements
+#   Fragen und Antworten   epos-plan-faq                | faq
+#   Anwendungsbeispiele    anwendungsbeispiele          | examples
+#   Downloads              downloads                    | downloads
+#   Installation           epos-plan-installation       | /english/installation/
+#   Installation (Seite)   /epos-plan/epos-plan-installation/installation/ | /english/installation/installation/
+#   Update                 /epos-plan/epos-plan-installation/update/       | /english/installation/update/

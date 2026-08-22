@@ -65,6 +65,7 @@ namespace WindowsFormsApplication1
             label_Type = new System.Windows.Forms.Label();
             textBox_Suche = new System.Windows.Forms.TextBox();
             label6 = new System.Windows.Forms.Label();
+            btn_Help = new System.Windows.Forms.Button();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
@@ -302,11 +303,26 @@ namespace WindowsFormsApplication1
             resources.ApplyResources(label6, "label6");
             label6.Name = "label6";
             // 
+            // btn_Help
+            // 
+            btn_Help.BackColor = System.Drawing.Color.Transparent;
+            btn_Help.BackgroundImage = Properties.Resources.help_icon;
+            btn_Help.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            btn_Help.Cursor = System.Windows.Forms.Cursors.Hand;
+            btn_Help.FlatAppearance.BorderSize = 0;
+            btn_Help.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            btn_Help.Location = new System.Drawing.Point(508, 38);
+            btn_Help.Name = "btn_Help";
+            btn_Help.Size = new System.Drawing.Size(28, 28);
+            btn_Help.TabStop = false;
+            btn_Help.UseVisualStyleBackColor = false;
+            // 
             // Form_Gebaeude
             // 
             resources.ApplyResources(this, "$this");
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             BackColor = System.Drawing.SystemColors.Control;
+            Controls.Add(btn_Help);
             Controls.Add(label6);
             Controls.Add(textBox_Suche);
             Controls.Add(label_Type);
@@ -348,6 +364,7 @@ namespace WindowsFormsApplication1
         }
 
         #endregion
+        private System.Windows.Forms.Button btn_Help;
         private System.Windows.Forms.Button btn_Entfernen;
         private System.Windows.Forms.Button btn_Hinzu;
         private System.Windows.Forms.GroupBox groupBox1;

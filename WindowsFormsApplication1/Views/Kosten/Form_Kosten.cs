@@ -83,7 +83,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private bool _traegerlisteWirdGefuellt;
 
-        // Variable für den Extender des aktuellen Formulars
+        // Verweis auf den ANWENDUNGSWEITEN Extender (F5) — keine eigene Instanz
+        // mehr. Die HilfeAutomatik erfasst dieses Formular und das zur Laufzeit
+        // eingehängte ucFuelSettings ohnehin von selbst.
         private HelpExtender _helpExtender;
 
         /// <summary>
@@ -103,8 +105,8 @@ namespace WindowsFormsApplication1
         {
             InitializeComponent(); // Lädt die Designer-Struktur
 
-            // Den Extender erstellen und mit dem bereits geladenen globalen Katalog füttern
-            _helpExtender = new HelpExtender(Program.HelpCatalog);
+            // Den anwendungsweiten Extender übernehmen (F5)
+            _helpExtender = Program.HelpExtender;
 
             m_ID_Projekt = IDProjekt;
             tabMain.SelectedIndex = 0;
@@ -475,7 +477,8 @@ namespace WindowsFormsApplication1
             // Designer-Schutz (wichtig!)
             if (this.DesignMode) return;
 
-            _helpExtender.RegisterForm(this);
+            // Die HilfeAutomatik täte das ohnehin; der Aufruf schadet nicht.
+            _helpExtender?.RegisterForm(this);
 
             // Fenster an die aktuelle Bildschirmauflösung anpassen, damit auf
             // kleineren Bildschirmen nichts abgeschnitten wird (Scrollbars in den
@@ -1942,7 +1945,9 @@ namespace WindowsFormsApplication1
                     flpContainer_Energiekosten.Controls.Add(uc);
 
                     // JETZT ERST REGISTRIEREN, da das Control nun existiert und im Panel sitzt!
-                    _helpExtender.RegisterControl(uc, "ucFuelSettings");
+                    // Die HilfeAutomatik zieht dasselbe über ihren ControlAdded-Haken
+                    // nach; der ausdrückliche Aufruf ist idempotent und bleibt stehen.
+                    _helpExtender?.RegisterControl(uc, "ucFuelSettings");
                 }
             }
         }

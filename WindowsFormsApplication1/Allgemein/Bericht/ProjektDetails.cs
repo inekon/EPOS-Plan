@@ -11,6 +11,12 @@ namespace WindowsFormsApplication1
     /// Zugriff bewusst über tolerante SQL-Reads (Spalten je DB-Stand prüfbar),
     /// nicht über die Formular-Controller — Spaltennamen sind gegen das Schema
     /// von Kenndaten.accdb verifiziert (11.08.2026).
+    ///
+    /// <para>
+    /// DER KOMPONENTENBESTAND KOMMT AUS <c>Tab_Energieanlagen</c>, nicht aus
+    /// <c>Tab_WP &amp; Co. WHERE ID_Projekt = ?</c> — siehe
+    /// <see cref="LadeGewerk"/>.
+    /// </para>
     /// </summary>
     public class ProjektDetails
     {
@@ -64,12 +70,40 @@ namespace WindowsFormsApplication1
 
             foreach (KeyValuePair<string, string> g in GewerkTabellen)
             {
-                DataTable dt = LadeTabelle(g.Value, idProjekt);
+                DataTable dt = LadeGewerk(g.Key, g.Value, idProjekt);
                 int anzahl = dt != null ? dt.Rows.Count : 0;
                 d.KomponentenAnzahl[g.Key] = anzahl;
                 if (anzahl > 0) d.Komponenten[g.Key] = dt.Rows[0];
             }
             return d;
+        }
+
+        /// <summary>
+        /// Die Komponenten EINES GEWERKS im Projekt — je Anlagenzeile eine
+        /// Gerätezeile, in der Reihenfolge der Anlagenzeilen
+        /// (<see cref="KomponentenUebernahmeCtrl.GeraeteJeAnlagenzeile"/>).
+        ///
+        /// <para>
+        /// NICHT über <c>WHERE ID_Projekt = ?</c> auf der Gerätetabelle: Die
+        /// Gerätetabellen führen Projektkopien eines Katalogsatzes, und jeder
+        /// Speichervorgang legt über <c>CopyFromStamm</c> eine NEUE Kopie an, während
+        /// <c>WErzeugerCtrl.Delete</c> nur die Anlagenzeilen räumt. In gewachsenen
+        /// Projekten — und erst recht in Varianten, die diese Historie mitkopiert
+        /// haben — steht dort Altbestand, auf den keine Anlage mehr zeigt. Gezählt
+        /// wurde er trotzdem: die Unterschiedstabelle der Seite „Übersicht“ meldete
+        /// Dutzende Komponenten und Gewerke als „vorhanden“, die das Projekt gar nicht
+        /// führt. Verbaut ist ausschließlich, was <c>Tab_Energieanlagen</c> führt —
+        /// dieselbe Liste, die die Verwaltungsdialoge unter „ausgewählt im Projekt“
+        /// zeigen und die die Simulation rechnet.
+        /// </para>
+        /// </summary>
+        private static DataTable LadeGewerk(string gewerk, string tabelle, int idProjekt)
+        {
+            KomponentenUebernahmeCtrl.GewerkPlan plan;
+            if (KomponentenUebernahmeCtrl.Plaene.TryGetValue(gewerk ?? "", out plan))
+                return KomponentenUebernahmeCtrl.GeraeteJeAnlagenzeile(plan, idProjekt);
+
+            return LadeTabelle(tabelle, idProjekt);   // Gewerk ohne Plan: wie bisher
         }
 
         private static DataTable LadeTabelle(string tabelle, int idProjekt)

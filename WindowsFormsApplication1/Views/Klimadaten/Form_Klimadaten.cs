@@ -17,14 +17,16 @@ namespace WindowsFormsApplication1
     {
         private string m_szOrtName;
 
-        // Hilfsklasse, die die Verbindung zwischen Controls und Hilfeseiten herstellt
+        // Hilfsklasse, die die Verbindung zwischen Controls und Hilfeseiten herstellt.
+        // KEINE eigene Instanz mehr (F5): der Extender ist anwendungsweit, und die
+        // HilfeAutomatik erfasst dieses Formular ohnehin von selbst.
         private HelpExtender _helpExtender;
 
         public Form_Klimadaten()
         {
             InitializeComponent();
             m_szOrtName = "";
-            _helpExtender = new HelpExtender(Program.HelpCatalog);
+            _helpExtender = Program.HelpExtender;
         }
 
         private void Form_Klimadaten_Load(object sender, EventArgs e)
@@ -49,8 +51,9 @@ namespace WindowsFormsApplication1
             initChart(chart2);
             chart2.ChartAreas[0].AxisY.MajorGrid.Interval = 10;
 
-            // jedes Control mit einem passenden Key in der Doku verbinden
-            _helpExtender.RegisterForm(this);
+            // jedes Control mit einem passenden Key in der Doku verbinden.
+            // Die HilfeAutomatik täte das ohnehin; der Aufruf schadet nicht.
+            _helpExtender?.RegisterForm(this);
         }
 
         private void initChart(Chart chart)
