@@ -81,6 +81,21 @@ namespace WindowsFormsApplication1
                 Thread.CurrentThread.CurrentUICulture = culture_en;
             }
 
+            // Startprüfung x64-Umstellung P1.3: Ohne registrierten ACE-Provider ist jede
+            // DB-Operation unmöglich — sprechende Meldung statt später einer nackten
+            // InvalidOperationException tief im Startpfad (erste Fundstelle wäre
+            // SchemaMigration.Ausfuehren). NACH der Sprachwahl, damit die Meldung in der
+            // eingestellten Sprache kommt, und VOR jedem Datenbankzugriff.
+            if (!DataRepository.ProviderVorhanden())
+            {
+                string bitness = Environment.Is64BitProcess ? "64 Bit" : "32 Bit";
+                MessageBox.Show(
+                    string.Format(MyResource.Resource.START_ACE_FEHLT_TEXT, bitness),
+                    MyResource.Resource.START_ACE_FEHLT_TITEL,
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             // Textlieferant des KI-Kerns einhaengen - NACH der Sprachwahl, damit
             // KiKern seine Schluessel in der eingestellten Sprache beantwortet
             // bekommt (Fachkonzept 3.7; KiKern darf MyResource nicht kennen).

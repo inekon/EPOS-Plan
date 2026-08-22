@@ -18250,6 +18250,26 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Microsoft Access Database Engine ({0}) ist auf diesem Rechner nicht verfügbar. EPOS-Plan kann ohne sie nicht auf die Datenbank zugreifen.
+        ///
+        ///Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Microsoft Access Database Engine ({0}). ähnelt.
+        /// </summary>
+        public static string START_ACE_FEHLT_TEXT {
+            get {
+                return ResourceManager.GetString("START_ACE_FEHLT_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbank-Komponente fehlt ähnelt.
+        /// </summary>
+        public static string START_ACE_FEHLT_TITEL {
+            get {
+                return ResourceManager.GetString("START_ACE_FEHLT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer § 53a EnergieStG: Jahresnutzungsgrad {0} % unter der Schwelle von {1} %; Gutschrift = 0. ähnelt.
         /// </summary>
         public static string STEUER_ENERGIEST_53A_NUTZUNGSGRAD {

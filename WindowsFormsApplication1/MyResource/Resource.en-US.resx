@@ -7121,4 +7121,12 @@ The seat becomes available for another device; a new activation is required to c
   <data name="VAR_MSG_KEIN_PROJEKT" xml:space="preserve">
     <value>No project is open. Please open the project you want to save as a variant first.</value>
   </data>
+  <data name="START_ACE_FEHLT_TITEL" xml:space="preserve">
+    <value>Database component missing</value>
+  </data>
+  <data name="START_ACE_FEHLT_TEXT" xml:space="preserve">
+    <value>The Microsoft Access Database Engine ({0}) is not available on this computer. EPOS-Plan cannot access its database without it.
+
+Please run the EPOS-Plan setup again or install the Microsoft Access Database Engine ({0}).</value>
+  </data>
 </root>
