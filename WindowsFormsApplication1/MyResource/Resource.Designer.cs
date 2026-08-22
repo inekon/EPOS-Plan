@@ -1961,7 +1961,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_LBL_KOMPONENTEN_STAMM", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten im Vergleich — Stammprojekt und Varianten ähnelt.
         /// </summary>
@@ -1970,7 +1970,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_LBL_KOMPONENTEN_VERGLEICH", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stammprojekt: ähnelt.
         /// </summary>
@@ -1979,7 +1979,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_LBL_STAMM", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nur die ersten {0} Varianten dargestellt, {1} weitere ausgeblendet ähnelt.
         /// </summary>
@@ -1988,7 +1988,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_LBL_VARIANTEN_GEKAPPT", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Anlegen: {0} ähnelt.
         /// </summary>
@@ -2285,7 +2285,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_MSG_VARIANTE_GELOESCHT", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Merkmalszeile(n) für das Stammprojekt und {1} Variante(n). ähnelt.
         /// </summary>
@@ -2294,7 +2294,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_MSG_VERGLEICH_UMFANG", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bericht ähnelt.
         /// </summary>
