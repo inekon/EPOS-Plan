@@ -31,7 +31,11 @@ namespace WindowsFormsApplication1
         // Value: Die Methode, die aufgerufen werden soll
         private Dictionary<string, Action<object, EventArgs>> _clickEvents;
 
-        // Hilfsklasse, die die Verbindung zwischen Controls und Hilfeseiten herstellt
+        // Hilfsklasse, die die Verbindung zwischen Controls und Hilfeseiten herstellt.
+        // KEINE eigene Instanz mehr (F5): der Extender ist anwendungsweit, und die
+        // HilfeAutomatik erfasst dieses Formular ohnehin von selbst. Der Verweis und
+        // der Aufruf in Form_Start_Load bleiben nur als ausdrückliche, wirkungsgleiche
+        // Absicherung stehen — RegisterForm ist idempotent.
         private HelpExtender _helpExtender;
 
         private readonly ToolTip _tip = new ToolTip();
@@ -41,7 +45,7 @@ namespace WindowsFormsApplication1
             InitializeComponent();
             textBox_ProjektOpen.Text = MyResource.Resource.Text_Select;
             InitEventDictionary();
-            _helpExtender = new HelpExtender(Program.HelpCatalog);
+            _helpExtender = Program.HelpExtender;
 
             // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
             // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
@@ -86,8 +90,9 @@ namespace WindowsFormsApplication1
             // Designer-Schutz (wichtig!)
             if (this.DesignMode) return;
 
-            // jedes Control mit einem passenden Key in der Doku verbinden
-            _helpExtender.RegisterForm(this);
+            // jedes Control mit einem passenden Key in der Doku verbinden.
+            // Die HilfeAutomatik täte das ohnehin; der Aufruf schadet nicht.
+            _helpExtender?.RegisterForm(this);
 
             // Scrollbars aktivieren, falls der Designer-Inhalt (1620x932 px) größer
             // ist als der verfügbare Platz – schneidet sonst auf kleineren Bildschirmen ab.
@@ -158,7 +163,19 @@ namespace WindowsFormsApplication1
             bUpdateWizardSymbole = false;
             UpdateWizardSymbole();
 
-            FuelleVariantenCombo(comboBox_Varianten, m_ID_Projekt, true);
+            // Variantenfeld nachziehen UND den Reiter "Berichte & Kosten" ueber das neue
+            // Projekt informieren.
+            //
+            // Bis hierher stand nur FuelleVariantenCombo(...). Der Reiter erfuhr von einem
+            // Projektwechsel damit ausschliesslich beim BETRETEN (tabControl_Wizard_Selecting
+            // -> BaueBerichteKostenSeite). Wer schon auf dem Reiter stand und oben im Kopfband
+            // auf eine andere Version derselben Gruppe umschaltete, liess Uebersicht, Kosten,
+            // Wirtschaftlichkeit und Bericht auf dem VORHERIGEN Projekt stehen: Das Kopfband
+            // zeigte "Woehler - Test1", die Kostenseite weiter "Projekt: Woehler" samt dessen
+            // Zahlen - und "Kostenverwaltung oeffnen..." startete Form_Kosten mit derselben
+            // falschen ID. VariantenAnzeigeAktualisieren() macht beides an einer Stelle und
+            // ist genau dafuer schon da (Menueweg "Als Variante speichern...").
+            VariantenAnzeigeAktualisieren();
             return true;
         }
 

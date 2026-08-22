@@ -61,6 +61,7 @@ namespace WindowsFormsApplication1
             btn_neuerWert = new System.Windows.Forms.Button();
             dataGridView1 = new System.Windows.Forms.DataGridView();
             label_Type = new System.Windows.Forms.Label();
+            btn_Help = new System.Windows.Forms.Button();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
@@ -285,10 +286,25 @@ namespace WindowsFormsApplication1
             resources.ApplyResources(label_Type, "label_Type");
             label_Type.Name = "label_Type";
             // 
+            // btn_Help
+            // 
+            btn_Help.BackColor = System.Drawing.Color.Transparent;
+            btn_Help.BackgroundImage = Properties.Resources.help_icon;
+            btn_Help.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            btn_Help.Cursor = System.Windows.Forms.Cursors.Hand;
+            btn_Help.FlatAppearance.BorderSize = 0;
+            btn_Help.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            btn_Help.Location = new System.Drawing.Point(755, 40);
+            btn_Help.Name = "btn_Help";
+            btn_Help.Size = new System.Drawing.Size(28, 28);
+            btn_Help.TabStop = false;
+            btn_Help.UseVisualStyleBackColor = false;
+            // 
             // Form_Brauchwasser
             // 
             resources.ApplyResources(this, "$this");
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            Controls.Add(btn_Help);
             Controls.Add(label_Type);
             Controls.Add(dataGridView1);
             Controls.Add(groupBox1);
@@ -330,6 +346,7 @@ namespace WindowsFormsApplication1
 
         #endregion
 
+        private System.Windows.Forms.Button btn_Help;
         private System.Windows.Forms.Button btn_Hinzu;
 private System.Windows.Forms.Button btn_Entfernen;
 private System.Windows.Forms.Button btn_Prozess_DBneu;

@@ -60,6 +60,7 @@
             this.comboBox_Volumen = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.comboBox_Hersteller = new System.Windows.Forms.ComboBox();
+            this.btn_Help = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -271,10 +272,25 @@
             this.comboBox_Hersteller.Name = "comboBox_Hersteller";
             this.comboBox_Hersteller.SelectedIndexChanged += new System.EventHandler(this.comboBox_Hersteller_SelectedIndexChanged);
             // 
+            // btn_Help
+            // 
+            this.btn_Help.BackColor = System.Drawing.Color.Transparent;
+            this.btn_Help.BackgroundImage = Properties.Resources.help_icon;
+            this.btn_Help.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.btn_Help.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btn_Help.FlatAppearance.BorderSize = 0;
+            this.btn_Help.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_Help.Location = new System.Drawing.Point(730, 34);
+            this.btn_Help.Name = "btn_Help";
+            this.btn_Help.Size = new System.Drawing.Size(24, 24);
+            this.btn_Help.TabStop = false;
+            this.btn_Help.UseVisualStyleBackColor = false;
+            // 
             // Form_PufferSp
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.btn_Help);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.comboBox_Volumen);
             this.Controls.Add(this.label1);
@@ -301,6 +317,7 @@
         }
 
         #endregion
+        private System.Windows.Forms.Button btn_Help;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Button btn_PufferSp_Entfernen;
         private System.Windows.Forms.Button btn_PufferSp_Hinzu;

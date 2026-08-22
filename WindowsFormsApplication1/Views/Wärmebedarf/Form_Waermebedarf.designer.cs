@@ -40,6 +40,7 @@ namespace WindowsFormsApplication1
             this.btn_Abbrechen = new System.Windows.Forms.Button();
             this.btn_OK = new System.Windows.Forms.Button();
             this.btn_Loeschen = new System.Windows.Forms.Button();
+            this.btn_Help = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // Label1
@@ -110,10 +111,25 @@ namespace WindowsFormsApplication1
             this.btn_Loeschen.UseVisualStyleBackColor = true;
             this.btn_Loeschen.Click += new System.EventHandler(this.btn_Loeschen_Click);
             // 
+            // btn_Help
+            // 
+            this.btn_Help.BackColor = System.Drawing.Color.Transparent;
+            this.btn_Help.BackgroundImage = Properties.Resources.help_icon;
+            this.btn_Help.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.btn_Help.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btn_Help.FlatAppearance.BorderSize = 0;
+            this.btn_Help.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_Help.Location = new System.Drawing.Point(783, 43);
+            this.btn_Help.Name = "btn_Help";
+            this.btn_Help.Size = new System.Drawing.Size(28, 28);
+            this.btn_Help.TabStop = false;
+            this.btn_Help.UseVisualStyleBackColor = false;
+            // 
             // Form_Waermebedarf
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.btn_Help);
             this.Controls.Add(this.btn_Loeschen);
             this.Controls.Add(this.btn_Abbrechen);
             this.Controls.Add(this.btn_OK);
@@ -134,6 +150,7 @@ namespace WindowsFormsApplication1
 
         #endregion
 
+private System.Windows.Forms.Button btn_Help;
 private System.Windows.Forms.Label Label1;
 private System.Windows.Forms.ListBox listBox_Auswahl;
 private System.Windows.Forms.Button btn_Hinzufuegen;

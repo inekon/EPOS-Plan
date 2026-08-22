@@ -4231,6 +4231,15 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_LBL_KOMPONENTEN_STAMM" xml:space="preserve">
     <value>Komponenten des Stammprojekts</value>
   </data>
+  <data name="BK_LBL_KOMPONENTEN_VERGLEICH" xml:space="preserve">
+    <value>Komponenten im Vergleich — Stammprojekt und Varianten</value>
+  </data>
+  <data name="BK_LBL_VARIANTEN_GEKAPPT" xml:space="preserve">
+    <value>nur die ersten {0} Varianten dargestellt, {1} weitere ausgeblendet</value>
+  </data>
+  <data name="BK_MSG_VERGLEICH_UMFANG" xml:space="preserve">
+    <value>{0} Merkmalszeile(n) für das Stammprojekt und {1} Variante(n).</value>
+  </data>
   <data name="BK_LBL_KOMPONENTEN_DIFF" xml:space="preserve">
     <value>Unterschiede zum Stammprojekt — Variante „{0}“</value>
   </data>

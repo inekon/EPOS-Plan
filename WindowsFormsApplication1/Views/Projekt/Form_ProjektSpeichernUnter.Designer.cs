@@ -38,6 +38,7 @@
             panel_Fortschritt = new System.Windows.Forms.Panel();
             lbl_Fortschritt = new System.Windows.Forms.Label();
             progressBar_Duplizieren = new System.Windows.Forms.ProgressBar();
+            btn_Help = new System.Windows.Forms.Button();
             panel_Fortschritt.SuspendLayout();
             SuspendLayout();
             // 
@@ -105,10 +106,25 @@
             progressBar_Duplizieren.Size = new System.Drawing.Size(380, 20);
             progressBar_Duplizieren.TabIndex = 1;
             // 
+            // btn_Help
+            // 
+            btn_Help.BackColor = System.Drawing.Color.Transparent;
+            btn_Help.BackgroundImage = Properties.Resources.help_icon;
+            btn_Help.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            btn_Help.Cursor = System.Windows.Forms.Cursors.Hand;
+            btn_Help.FlatAppearance.BorderSize = 0;
+            btn_Help.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            btn_Help.Location = new System.Drawing.Point(496, 17);
+            btn_Help.Name = "btn_Help";
+            btn_Help.Size = new System.Drawing.Size(28, 28);
+            btn_Help.TabStop = false;
+            btn_Help.UseVisualStyleBackColor = false;
+            // 
             // Form_ProjektSpeichernUnter
             // 
             resources.ApplyResources(this, "$this");
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            Controls.Add(btn_Help);
             Controls.Add(textBox_NeuerProjektName);
             Controls.Add(label2);
             Controls.Add(listView_Projekt);
@@ -126,6 +142,7 @@
 
         #endregion
 
+        private System.Windows.Forms.Button btn_Help;
         private System.Windows.Forms.Button button_Open;
         private System.Windows.Forms.Button button_Abbrechen;
         private System.Windows.Forms.Label label1;

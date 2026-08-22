@@ -274,6 +274,7 @@ namespace WindowsFormsApplication1
                     break;
 
                 case SEITE_KOSTEN:
+                    SichereMarkierung();
                     Kosten.SetzeProjekt(_idMarkiert, _nameMarkiert);
                     neu = Kosten;
                     break;
@@ -376,6 +377,45 @@ namespace WindowsFormsApplication1
             // sie sich den Stand beim nächsten Aufruf (BaueSeiteAuf).
             if (_kosten != null && ReferenceEquals(_aktiveSeite, _kosten))
                 _kosten.SetzeProjekt(_idMarkiert, _nameMarkiert);
+        }
+
+        /// <summary>
+        /// Fängt den Fall ab, dass die Kostenseite ohne Projekt dastünde.
+        ///
+        /// <para>
+        /// <see cref="_idMarkiert"/> ist mit -1 vorbelegt und wird ausschließlich vom
+        /// Ereignis <see cref="UcBkUebersicht.ProjektMarkiert"/> gefüllt. Das Ereignis
+        /// stammt aus <c>ListView.SelectedIndexChanged</c> und BLEIBT AUS, solange die
+        /// Übersichtsseite an keinem Fenster hängt (sie wird erst in
+        /// <see cref="BaueSeiteAuf"/> in die Inhaltsfläche gehängt). Wer den Reiter
+        /// betritt und ohne Umweg über die Übersicht auf „Kosten" geht, bekäme dann -1
+        /// und damit die Anzeige „kein Projekt".
+        /// </para>
+        /// <para>
+        /// Ersatz in dieser Reihenfolge: die markierte Listenzeile, sonst die Zeile des
+        /// tatsächlich GEÖFFNETEN Projekts (die Zeilen stehen auch ohne Fenster im
+        /// Steuerelement, nur die Markierung meldet sich dann nicht), sonst das
+        /// Stammprojekt der Gruppe.
+        /// </para>
+        /// </summary>
+        private void SichereMarkierung()
+        {
+            if (_idMarkiert > 0) return;
+
+            UcBkUebersicht.AuswahlZeile z = Uebersicht.AktuelleZeile
+                                            ?? Uebersicht.ZeileFuer(Uebersicht.AktuellesProjekt);
+            if (z != null)
+            {
+                _idMarkiert = z.IdProjekt;
+                _nameMarkiert = z.Projektname ?? "";
+                return;
+            }
+
+            if (_idStamm > 0)
+            {
+                _idMarkiert = _idStamm;
+                _nameMarkiert = _stammName;
+            }
         }
 
         private void VerwirfGruppenSeiten()

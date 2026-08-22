@@ -40,6 +40,7 @@ namespace WindowsFormsApplication1
         private Button _btnAlleAuslassen;
         private Button _btnOk;
         private Button _btnAbbrechen;
+        private Button btn_Help;
 
         private const string SPALTE_NAME = "NAME";
         private const string SPALTE_BEFUND = "BEFUND";
@@ -77,6 +78,9 @@ namespace WindowsFormsApplication1
             SuspendLayout();
 
             Text = "";
+            // Der Formularname ist das Praefix in help_mapping.txt; ohne ihn
+            // findet die Hilfeautomatik dieses Fenster nicht (HilfeAutomatik, F5).
+            Name = "Form_ImportKonflikte";
             StartPosition = FormStartPosition.CenterParent;
             FormBorderStyle = FormBorderStyle.Sizable;
             MinimizeBox = false;
@@ -161,6 +165,25 @@ namespace WindowsFormsApplication1
                 DialogResult = DialogResult.Cancel
             };
 
+            // Infobutton (H4). Zuordnung: help_mapping.txt - ohne Zeile dort
+            // bleibt der Knopf grau statt wirkungslos anklickbar (F3).
+            btn_Help = new Button
+            {
+                Name = "btn_Help",
+                Size = new Size(28, 28),
+                Location = new Point(210, ClientSize.Height - 40),
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
+                BackColor = Color.Transparent,
+                BackgroundImage = Properties.Resources.help_icon,
+                BackgroundImageLayout = ImageLayout.Zoom,
+                Cursor = Cursors.Hand,
+                FlatStyle = FlatStyle.Flat,
+                TabStop = false,
+                UseVisualStyleBackColor = false
+            };
+            btn_Help.FlatAppearance.BorderSize = 0;
+
+            Controls.Add(btn_Help);
             Controls.Add(_lblKopf);
             Controls.Add(_grid);
             Controls.Add(_btnAlleAuslassen);
