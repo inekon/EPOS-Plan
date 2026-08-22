@@ -905,6 +905,31 @@ namespace WindowsFormsApplication1
                 // koennen zurueck an ihre Variante (siehe Block ueber dieser Methode).
                 SpVariantenWiederherstellen(projektID);
 
+                // DIE ANDERE HAELFTE DES SPEICHERWEGS (Befund 22.08.2026).
+                //
+                // Del_Projekt_Waermeerzeuger + diese Methode schreiben die ANLAGENZEILEN
+                // neu und fassen die Geraetetabellen nicht an. Wer ein Geraet abwaehlt
+                // oder gegen ein anderes tauscht, liess dessen Projektkopie in Tab_WP &
+                // Co. also stehen - unerreichbar, aber mitgezaehlt von jeder Auswertung,
+                // die noch ueber WHERE ID_Projekt = ? liest (WirtschaftlichkeitCtrl
+                // summiert SUM(Pel) ueber Tab_BHKW, sucht den groessten Kessel ueber
+                // ORDER BY Ptherm DESC; WaermesenkeClass.ProjektPufferListe fuellt die
+                // Speicherauswahl). Auf der Arbeitskopie standen so 218 WP-Zeilen in
+                // Projekt 1023, verbaut waren zwei.
+                //
+                // WARUM HIER UND NICHT IN Del_Projekt_Waermeerzeuger. Dort waeren die
+                // Geraetezeilen VOR dem Neuschreiben weg, und das anschliessende
+                // CopyFromStamm muesste sie aus dem KATALOG neu holen: Projektbezogene
+                // Aenderungen (Investitionskosten, Vor-/Ruecklauf, Schwellen des Puffers)
+                // waeren bei jedem Speichern verloren, und ein Projektgeraet, das im
+                // Katalog nicht mehr steht, kaeme gar nicht wieder - genau der Fall, den
+                // der ID_PUFFER-Rueckfall weiter oben abfaengt. Nach dem Schreiben ist
+                // dagegen zweifelsfrei, was noch gebraucht wird.
+                //
+                // BEST EFFORT: Der Aufraeumlauf kann ein gelungenes Speichern nicht mehr
+                // scheitern lassen. Was er stehen laesst, holt der Migrationsschritt.
+                GeraeteWaisen.Aufraeumen(projektID);
+
                 Console.WriteLine("Daten erfolgreich aktualisiert.");
                 return true;
             }

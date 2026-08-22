@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 32;
+        public const int ZIEL_VERSION = 34;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1051,6 +1051,98 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_32_ABFRAGEN_ALTTABELLEN = 32;
 
+        /// <summary>
+        /// <b>Nachzug zu <see cref="SCHRITT_32_ABFRAGEN_ALTTABELLEN"/>: die dort
+        /// geschriebene <c>Abfrage_Kostenfaktoren</c> wieder LESBAR machen.</b>
+        ///
+        /// <para>
+        /// <b>Der Befund vom 22.08.2026.</b> Schritt 32 hat die Abfrage erfolgreich
+        /// angelegt — und damit den Schemamarker auf 32 gehoben —, ohne dass sie sich
+        /// lesen liess. Ihr <c>ORDER BY</c> nannte den Ausgabealias <c>KategorieName</c>
+        /// eines IIf-Ausdrucks; Access loest das auf, ACE ueber OLE DB nicht und haelt den
+        /// Namen fuer einen ungebundenen Parameter. Der Kosteneditor meldete beim Oeffnen
+        /// „Fehler beim Laden der Daten: Fuer mindestens einen erforderlichen Parameter
+        /// wurde kein Wert angegeben" und blieb mit leerem Detailbereich stehen —
+        /// derselbe Endzustand, den Schritt 32 gerade beheben sollte. Die Einzelheiten
+        /// stehen bei <see cref="SCHRITT32_AUSDRUCK_KATEGORIENAME"/>.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Warum ein eigener Schritt und keine Korrektur an 32.</b> Der Marker steht
+        /// auf jeder betroffenen Datenbank bereits auf 32; Schritt 32 wird dort nie wieder
+        /// ausgefuehrt. Nur ein NEUER Schritt erreicht diese Bestaende — dieselbe
+        /// Begruendung, mit der 32 seinerzeit zum Nachzug von 29 wurde.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Er prueft zuerst und schreibt nur bei Bedarf.</b> Eine Leseprobe
+        /// (<c>SELECT TOP 1 *</c>) entscheidet: Ist die Abfrage lesbar, bleibt sie
+        /// unangetastet — der Normalfall auf jeder Datenbank, die Schritt 32 schon mit dem
+        /// berichtigten SQL gesehen hat. Sonst wird sie ueber denselben Weg wie in 32a neu
+        /// geschrieben und die Probe wiederholt. <b>HART</b>: Besteht sie danach immer
+        /// noch nicht, gilt der Schritt als gescheitert, denn genau dann bleibt der
+        /// Kosteneditor leer.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Idempotent</b> und unabhaengig vom Marker: Ein zweiter Lauf findet die
+        /// Abfrage lesbar vor und tut nichts.
+        /// </para>
+        /// </summary>
+        public const int SCHRITT_33_ABFRAGE_LESBAR = 33;
+
+        /// <summary>
+        /// <b>Der Aufräumlauf zu den verwaisten Gerätezeilen (Befund 22.08.2026).</b>
+        ///
+        /// <para>
+        /// <b>Der Befund.</b> Die Gerätetabellen <c>Tab_WP</c>, <c>Tab_Heizkessel</c>,
+        /// <c>Tab_BHKW</c>, <c>Tab_Pufferspeicher</c>, <c>Tab_PV</c>,
+        /// <c>Tab_Solarkollektoren</c> und <c>Tab_Stromspeicher</c> sind keine
+        /// Bestandslisten, sondern Ablagen für Projektkopien eines Katalogsatzes
+        /// (Kopiersemantik, <c>KatalogRegistry</c>). Verbaut ist ausschließlich, worauf
+        /// eine Zeile in <c>Tab_Energieanlagen</c> zeigt. ENTFERNT wurden diese Kopien
+        /// bislang nur an drei Stellen von Hand; der Speicherweg (Löschen + Neuanlegen der
+        /// ANLAGENZEILEN) und das Projekt-Löschen fassten sie nicht an. Auf der
+        /// Arbeitskopie vom 22.08.2026 standen deshalb 322 von 346 Zeilen in
+        /// <c>Tab_WP</c> ohne Anlagenzeile da - in Projekt 1023 allein 216 - und mit ihnen
+        /// über 25.000 Kennlinienzeilen in <c>Tab_Kenndaten</c>.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Warum er nötig ist, obwohl der Schreibweg jetzt aufräumt.</b> Der neue
+        /// Aufräumlauf in <c>WizardCtrl.Add_WP_Waermeerzeuger</c> und
+        /// <c>WErzeugerCtrl.Delete</c> greift erst, wenn ein Projekt das nächste Mal
+        /// gespeichert oder gelöscht wird. Der Rückstand gelöschter Projekte wird
+        /// überhaupt nie mehr angefasst - er hängt an Projekt-IDs, die es in
+        /// <c>Tab_Projekt</c> nicht mehr gibt. Nur ein Migrationsschritt erreicht ihn.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>DML, und zwar löschendes</b> - der siebte DML-Schritt neben 5, 7, 9, 13, 15
+        /// und 17 und der erste, der Zeilen ENTFERNT statt sie zu ändern oder anzulegen.
+        /// Er arbeitet ausschließlich über <see cref="GeraeteWaisen"/>, also über
+        /// dieselbe Wahrheit wie der Schreibweg: zuerst die IDs parametrisiert SELECTen,
+        /// dann mit einer Liste aus Ganzzahlen löschen (ein <c>?</c> in der Unterabfrage
+        /// eines DELETE trifft bei ACE still 0 Zeilen).
+        /// </para>
+        ///
+        /// <para>
+        /// <b>GEGENMESSUNG STATT VERTRAUEN.</b> <c>Tab_WP.ID</c>, <c>Tab_Heizkessel.ID</c>,
+        /// <c>Tab_BHKW.ID</c>, <c>Tab_PV.ID</c>, <c>Tab_Solarkollektoren.ID</c> und
+        /// <c>Tab_Stromspeicher.ID</c> hängen an <c>Tab_Energieanlagen</c> mit
+        /// LÖSCHWEITERGABE: Eine falsch als verwaist erkannte Gerätezeile risse ihre
+        /// Anlagenzeile lautlos mit. Der Schritt zählt <c>Tab_Energieanlagen</c> deshalb
+        /// vorher und nachher und gilt als GESCHEITERT, wenn sich die Zahl geändert hat.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Idempotent.</b> Der zweite Lauf findet nichts mehr - und weil der Schritt
+        /// die Zahl der entfernten Zeilen protokolliert, ist "0 entfernt" zugleich der
+        /// Nachweis dafür.
+        /// </para>
+        /// </summary>
+        public const int SCHRITT_34_GERAETEWAISEN = 34;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -1272,6 +1364,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static bool _katalogIndizesGeprueft;
 
+        /// <summary>
+        /// Wurde die Leseprobe auf <c>Abfrage_Kostenfaktoren</c> in diesem Lauf schon
+        /// ausgeführt? Gleiches Guard-Muster wie <see cref="_katalogIndizesGeprueft"/>:
+        /// Schritt 33 setzt das Flag, die Abschlussprüfung nach der Schleife holt sie auf
+        /// jeder bereits auf Stand 33 stehenden Datenbank nach.
+        /// </summary>
+        private static bool _leseprobeGeprueft;
+
         // --- Zählwerk des Pakets Parallelverbund aus Schritt 14 -------------------------
 
         /// <summary>
@@ -1396,6 +1496,24 @@ namespace WindowsFormsApplication1
         /// <summary>32: Abfragen, die weder erneuert noch entfernt werden konnten. Sie
         /// gehören in die manuelle Access-Checkliste.</summary>
         public static int DatenAbfragenOffen { get; private set; }
+
+        /// <summary>33: true, wenn <c>Abfrage_Kostenfaktoren</c> die Leseprobe bestanden
+        /// hat — die Bedingung dafür, dass der Kosteneditor seine Positionsliste
+        /// überhaupt füllen kann.</summary>
+        public static bool AbfrageLeseprobe { get; private set; }
+
+        /// <summary>33: true, wenn die Abfrage dafür erst neu geschrieben werden musste
+        /// (Datenbank stand auf dem fehlerhaften Stand 32).</summary>
+        public static bool AbfrageKostenfaktorenRepariert { get; private set; }
+
+        /// <summary>34: entfernte verwaiste Gerätezeilen über alle Gewerke und Projekte.</summary>
+        public static int DatenGeraeteWaisen { get; private set; }
+
+        /// <summary>34: die Kindzeilen dazu (Kennlinien der Wärmepumpe).</summary>
+        public static int DatenGeraeteWaisenKinder { get; private set; }
+
+        /// <summary>34: Projekte, in denen etwas zu räumen war.</summary>
+        public static int DatenGeraeteWaisenProjekte { get; private set; }
 
         /// <summary>
         /// R7: Anlagen, bei denen der Bezeichner NICHT eindeutig auflösbar war (kein
@@ -1714,6 +1832,35 @@ namespace WindowsFormsApplication1
                         "Die gespeicherte Abfrage Abfrage_Kostenfaktoren konnte nicht auf das " +
                         "Soll-SQL gesetzt werden - der Kosteneditor bleibt damit unbenutzbar.",
                         Schritt_32_AbfragenAlttabellen),
+
+            // NACHZUG ZU SCHRITT 32 (Befund 22.08.2026) - die dort geschriebene
+            //       Abfrage_Kostenfaktoren war zwar angelegt, aber ueber ACE nicht
+            //       LESBAR: Ihr ORDER BY nannte den Ausgabealias eines IIf-Ausdrucks,
+            //       den der Provider fuer einen ungebundenen Parameter haelt. Auf jeder
+            //       betroffenen Datenbank steht der Marker bereits auf 32 - nur ein
+            //       neuer Schritt erreicht sie. Prueft zuerst (Leseprobe) und schreibt
+            //       nur, wenn noetig.
+            new Schritt(SCHRITT_33_ABFRAGE_LESBAR,
+                        "Leseprobe auf Abfrage_Kostenfaktoren; bei Bedarf mit " +
+                        "ausgeschriebenem Kategorie-Ausdruck im ORDER BY neu schreiben " +
+                        "(Nachzug zu Schritt 32)",
+                        "Die gespeicherte Abfrage Abfrage_Kostenfaktoren ist nicht lesbar - " +
+                        "der Kosteneditor bleibt damit unbenutzbar.",
+                        Schritt_33_AbfrageKostenfaktorenLesbar),
+
+            // PAKET GERAETEWAISEN (Befund 22.08.2026) - der Rueckstand aus der
+            //       Kopiersemantik der Geraetetabellen. Loeschendes DML ueber
+            //       GeraeteWaisen, also ueber dieselbe Wahrheit wie der reparierte
+            //       Schreibweg. Er laeuft ZULETZT: Schritt 17 legt Geraetekopien AN, und
+            //       die duerfen nicht im selben Lauf wieder eingesammelt werden, bevor
+            //       ihre Anlagenzeile darauf zeigt.
+            new Schritt(SCHRITT_34_GERAETEWAISEN,
+                        "Verwaiste Geraetezeilen entfernen: Zeilen in Tab_WP, Tab_Heizkessel, " +
+                        "Tab_BHKW, Tab_Pufferspeicher, Tab_PV, Tab_Solarkollektoren und " +
+                        "Tab_Stromspeicher, auf die keine Anlagenzeile desselben Projekts " +
+                        "mehr zeigt (Befund 22.08.2026)",
+                        "Die verwaisten Geraetezeilen konnten nicht entfernt werden.",
+                        Schritt_34_Geraetewaisen),
         };
 
         // =================================================================================
@@ -1783,6 +1930,12 @@ namespace WindowsFormsApplication1
             DatenAbfragenErneuert = 0;
             DatenAbfragenEntfernt = 0;
             DatenAbfragenOffen = 0;
+            AbfrageLeseprobe = false;
+            AbfrageKostenfaktorenRepariert = false;
+            DatenGeraeteWaisen = 0;
+            DatenGeraeteWaisenKinder = 0;
+            DatenGeraeteWaisenProjekte = 0;
+            _leseprobeGeprueft = false;
             _eindeutigkeitGeprueft = false;
             _katalogIndizesGeprueft = false;
 
@@ -1942,6 +2095,18 @@ namespace WindowsFormsApplication1
             {
                 l.Zeile("Abschlusspruefung Katalog-Eindeutigkeitsindizes");
                 KatalogIndexAbschluss(l, StandNachher >= SCHRITT_31_KATALOG_UNIQUE_INDEX);
+                l.Detail();
+            }
+
+            // --- Abschlusspruefung der Leseprobe auf Abfrage_Kostenfaktoren (Schritt 33) -
+            // Dasselbe Muster: Laeuft, wenn Schritt 33 in DIESEM Lauf nicht ausgefuehrt
+            // wurde - also auf jeder bereits auf Stand 33 stehenden Datenbank. Begruendung
+            // bei LeseprobeAbschluss; nur sinnvoll, wenn die drei Basistabellen und damit
+            // der Kostenbereich ueberhaupt migriert sind.
+            if (!_leseprobeGeprueft && StandNachher >= SCHRITT_33_ABFRAGE_LESBAR)
+            {
+                l.Zeile("Abschlusspruefung Leseprobe Abfrage_Kostenfaktoren");
+                LeseprobeAbschluss(l);
                 l.Detail();
             }
 
@@ -2120,6 +2285,34 @@ namespace WindowsFormsApplication1
                               "sie haben keinen Leser und aendern an keiner Rechnung etwas."
                             : " - keine gespeicherte Abfrage verweist mehr auf eine in " +
                               "Schritt 29 gedroppte Tabelle."));
+
+            // Schritt 33 meldet den ERFOLGSFALL mit, weil er die Bedingung dafuer nennt,
+            // dass der Kosteneditor ueberhaupt etwas anzeigen kann - und weil genau diese
+            // Aussage bei Schritt 32 gefehlt hat: Der meldete "erneuert" und liess eine
+            // Abfrage zurueck, die sich nicht lesen liess.
+            if (StandNachher >= SCHRITT_33_ABFRAGE_LESBAR)
+                l.Zeile("Leseprobe Abfrage_Kostenfaktoren (Schritt 33): " +
+                        (!AbfrageLeseprobe
+                            ? "NICHT BESTANDEN - der Kosteneditor bleibt leer; siehe die Meldungen oben."
+                            : AbfrageKostenfaktorenRepariert
+                                ? "bestanden, nachdem die Abfrage neu geschrieben wurde - sie war " +
+                                  "nicht lesbar (auf dem fehlerhaften Stand 32 stand im ORDER BY der " +
+                                  "Ausgabealias KategorieName statt des Ausdrucks)."
+                                : "bestanden - die Abfrage war bereits in Ordnung und wurde nicht angefasst."));
+
+            // Schritt 34 meldet - wie 14, 16, 17, 24, 30 und 32 - AUCH die 0. Sie ist hier
+            // der IDEMPOTENZ-NACHWEIS: Beim zweiten Programmstart steht der Marker bereits
+            // auf 34 und die Zeile faellt weg; laeuft der Schritt dagegen erneut (frische
+            // Datenbank, zurueckgesetzter Marker), muss er 0 melden.
+            if (StandNachher >= SCHRITT_34_GERAETEWAISEN)
+                l.Zeile("Verwaiste Geraetezeilen (Schritt 34): " + DatenGeraeteWaisen +
+                        " Geraetezeilen und " + DatenGeraeteWaisenKinder + " Kennlinienzeilen aus " +
+                        DatenGeraeteWaisenProjekte + " Projekten entfernt" +
+                        (DatenGeraeteWaisen == 0
+                            ? " - auf jede Geraetezeile zeigt eine Anlagenzeile ihres Projekts."
+                            : " - die Geraetetabellen fuehren jetzt nur noch, was Tab_Energieanlagen " +
+                              "auch verbaut hat (das ist die Grundlage von SUM(Pel) ueber Tab_BHKW, " +
+                              "der Kesselwahl ueber ORDER BY Ptherm DESC und der Speicherauswahl)."));
 
             return alleOk && StandNachher >= ZIEL_VERSION;
         }
@@ -3679,11 +3872,11 @@ namespace WindowsFormsApplication1
         /// <para>
         /// <b>Unveraendert:</b> beide <c>INNER JOIN</c> (ueber <c>StammID</c> zum
         /// Positionskatalog, ueber <c>KomponentenID</c> zum Komponentenkatalog) und die
-        /// vollstaendige Sortierung. Der <c>ORDER BY</c>-Term <c>KategorieName</c> greift
-        /// jetzt auf den Ausgabealias — das ergibt dieselbe Reihenfolge wie zuvor und ist
-        /// fuer den einzigen Leser ohnehin ohne Wirkung, weil der auf genau EINE Kategorie
-        /// filtert. <c>IsMainComponent</c> steht bewusst vorn: In Access ist True = −1,
-        /// aufsteigend sortiert steht die Hauptposition damit oben.
+        /// vollstaendige Sortierung. Der <c>ORDER BY</c>-Term fuer die Kategorie schreibt
+        /// den IIf-Ausdruck AUS — warum der Ausgabealias dort nicht genuegt, steht bei
+        /// <see cref="SCHRITT32_AUSDRUCK_KATEGORIENAME"/>. <c>IsMainComponent</c> steht
+        /// bewusst vorn: In Access ist True = −1, aufsteigend sortiert steht die
+        /// Hauptposition damit oben.
         /// </para>
         ///
         /// <para>
@@ -3695,11 +3888,42 @@ namespace WindowsFormsApplication1
         /// nachzureichen schuefe eine zweite Wahrheit, ohne einen Leser zu haben.
         /// </para>
         /// </summary>
-        private static readonly string SCHRITT32_SQL_KOSTENFAKTOREN =
-            "SELECT w.ID, w.ProjektID, w.StammID, w.KategorieID, " +
+        /// <summary>
+        /// <b>Der Kategoriename als Ausdruck.</b> Steht an ZWEI Stellen des Soll-SQL — in
+        /// der Auswahlliste (mit <c>AS KategorieName</c>) und im <c>ORDER BY</c> — und ist
+        /// deshalb hier EINMAL abgelegt.
+        ///
+        /// <para>
+        /// <b>Befund 22.08.2026: Der Ausdruck muss im <c>ORDER BY</c> ausgeschrieben
+        /// stehen, der Ausgabealias genuegt NICHT.</b> Die erste Fassung von Schritt 32
+        /// sortierte ueber <c>ORDER BY f.IsMainComponent, KategorieName, …</c>. Access
+        /// selbst loest den Alias auf, ACE ueber OLE DB nicht: Der Provider haelt
+        /// <c>KategorieName</c> fuer einen ungebundenen PARAMETER der gespeicherten
+        /// Abfrage. JEDER Lesezugriff — auch ein blosses <c>SELECT * FROM
+        /// Abfrage_Kostenfaktoren</c> — scheitert dann mit „Fuer mindestens einen
+        /// erforderlichen Parameter wurde kein Wert angegeben", und der Kosteneditor
+        /// zeigte einen leeren Detailbereich. Sichtbarer Nebenbefund: ACE fuehrte die
+        /// Abfrage dadurch im Schema-Rowset <c>Procedures</c> (parametrisiert) statt in
+        /// <c>Views</c>; mit ausgeschriebenem Ausdruck steht sie wieder in
+        /// <c>Views</c>.
+        /// </para>
+        ///
+        /// <para>
+        /// Die Sortierreihenfolge bleibt dieselbe: Sortiert wird nach dem ERZEUGTEN
+        /// Namen, genau wie zuvor ueber <c>Tab_KostenKategorie.KategorieName</c> — nicht
+        /// nach <c>KategorieID</c>, die eine andere Reihenfolge ergaebe. Fuer den einzigen
+        /// Leser ist der Term ohnehin ohne Wirkung, weil der auf genau EINE Kategorie
+        /// filtert.
+        /// </para>
+        /// </summary>
+        private static readonly string SCHRITT32_AUSDRUCK_KATEGORIENAME =
             "IIf(w.KategorieID = 1, '" + SchemaKatalog.KATEGORIE_NAME_INVESTITION + "', " +
             "IIf(w.KategorieID = 2, '" + SchemaKatalog.KATEGORIE_NAME_BETRIEB + "', " +
-            "IIf(w.KategorieID = 3, '" + SchemaKatalog.KATEGORIE_NAME_ENERGIE + "', ''))) " +
+            "IIf(w.KategorieID = 3, '" + SchemaKatalog.KATEGORIE_NAME_ENERGIE + "', '')))";
+
+        private static readonly string SCHRITT32_SQL_KOSTENFAKTOREN =
+            "SELECT w.ID, w.ProjektID, w.StammID, w.KategorieID, " +
+            SCHRITT32_AUSDRUCK_KATEGORIENAME + " " +
             "AS KategorieName, " +
             "k." + SchemaKatalog.SPALTE_KK_KOMPONENTE + ", " +
             "f." + SchemaKatalog.SPALTE_KF_BEZEICHNUNG + ", " +
@@ -3711,7 +3935,8 @@ namespace WindowsFormsApplication1
             "ON w." + SchemaKatalog.SPALTE_KF_STAMMID + " = f." + SchemaKatalog.SPALTE_KF_STAMMID + ") " +
             "INNER JOIN " + SchemaKatalog.TAB_KOSTENKOMPONENTE + " AS k " +
             "ON w.KomponentenID = k.ID " +
-            "ORDER BY f." + SchemaKatalog.SPALTE_KF_IST_HAUPT + ", KategorieName, " +
+            "ORDER BY f." + SchemaKatalog.SPALTE_KF_IST_HAUPT + ", " +
+            SCHRITT32_AUSDRUCK_KATEGORIENAME + ", " +
             "k." + SchemaKatalog.SPALTE_KK_KOMPONENTE + ", w.Gruppe, " +
             "f." + SchemaKatalog.SPALTE_KF_BEZEICHNUNG;
 
@@ -3779,6 +4004,23 @@ namespace WindowsFormsApplication1
                 return false;   // HART - ohne diese Abfrage zeigt der Kosteneditor nichts
             }
 
+            // LESEPROBE (Nachtrag 22.08.2026). Ein erfolgreiches CREATE PROCEDURE sagt
+            // NICHT, dass sich die Abfrage auch lesen laesst: ACE nimmt beim Anlegen jeden
+            // Bezeichner an und haelt einen, den es spaeter nicht aufloest, fuer einen
+            // Parameter. Genau so ist der Kosteneditor nach Schritt 32 leer geblieben
+            // (Befund bei SCHRITT32_AUSDRUCK_KATEGORIENAME). Der Schritt beweist ab jetzt,
+            // was er behauptet.
+            string leseFehler;
+            if (!AbfrageLesbar(l, ABFRAGE_KOSTENFAKTOREN, out leseFehler))
+            {
+                DatenAbfragenErneuert = 0;
+                DatenAbfragenOffen = 1;
+                l.Notiz("32a: " + ABFRAGE_KOSTENFAKTOREN + ": angelegt, aber NICHT lesbar (" +
+                        leseFehler + "). Das Soll-SQL in SchemaMigration ist fehlerhaft - der " +
+                        "Kosteneditor bliebe leer.");
+                return false;   // HART - eine unlesbare Abfrage ist so gut wie keine
+            }
+
             // --- 32b) die Abfragen ohne Leser ersatzlos entfernen (WEICH) --------------
             foreach (string a in SCHRITT32_LOESCHEN)
             {
@@ -3797,6 +4039,220 @@ namespace WindowsFormsApplication1
             // 32b ist WEICH: Eine Abfrage ohne Leser, die stehen bleibt, aendert an keiner
             // Rechnung etwas. Sie haelt die Datenbank nicht auf Stand 31 fest - das taete
             // sie sonst bei jedem Programmstart erneut.
+            return true;
+        }
+
+        /// <summary>
+        /// <b>Leseprobe auf eine gespeicherte Abfrage.</b> Setzt genau EINE Zeile ab
+        /// (<c>SELECT TOP 1 * FROM …</c>) und meldet, ob ACE sie ausfuehren kann.
+        ///
+        /// <para>
+        /// Sie beantwortet die Frage, die ein <c>CREATE PROCEDURE</c> offen laesst: ACE
+        /// nimmt beim ANLEGEN jeden Bezeichner an. Erst beim LESEN entscheidet sich, ob
+        /// es ihn aufloest — oder ihn fuer einen ungebundenen Parameter haelt und mit
+        /// „Fuer mindestens einen erforderlichen Parameter wurde kein Wert angegeben"
+        /// abbricht. Das ist dieselbe Meldung, die der Anwender im Kosteneditor sah, und
+        /// sie ist ueber diesen einen Aufruf im Migrationsprotokoll nachweisbar, statt
+        /// erst im Dialog aufzutauchen.
+        /// </para>
+        ///
+        /// <para>
+        /// <c>TOP 1</c> ist bewusst: Es prueft den kompletten Ausfuehrungsplan der Abfrage
+        /// (alle Joins, Ausdruecke und der <c>ORDER BY</c> muessen aufloesbar sein), holt
+        /// aber hoechstens eine Zeile. <b>Rein lesend</b> — die Probe aendert nichts.
+        /// </para>
+        /// </summary>
+        private static bool AbfrageLesbar(Lauf l, string name, out string fehler)
+        {
+            fehler = null;
+            try
+            {
+                using (var cmd = new OleDbCommand("SELECT TOP 1 * FROM [" + name + "]", l.Conn))
+                using (var rd = cmd.ExecuteReader())
+                {
+                    rd.Read();          // Rueckgabe egal: eine leere Abfrage ist lesbar
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                fehler = Kurzmeldung(ex);
+                l.LetzterFehler = fehler;
+                return false;
+            }
+        }
+
+        // =================================================================================
+        // Schritt 33 (Nachzug zu Schritt 32) - Abfrage_Kostenfaktoren wieder lesbar machen
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 33. Begruendung steht bei <see cref="SCHRITT_33_ABFRAGE_LESBAR"/>.
+        /// </summary>
+        private static bool Schritt_33_AbfrageKostenfaktorenLesbar(Lauf l)
+        {
+            _leseprobeGeprueft = true;
+            return LeseprobeUndReparatur(l, "33");
+        }
+
+        // =================================================================================
+        // Schritt 34 - verwaiste Geraetezeilen (Befund 22.08.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Raeumt je Projekt die Geraetezeilen weg, auf die keine Anlagenzeile mehr zeigt.
+        ///
+        /// <para>
+        /// <b>Die ganze Logik steht in <see cref="GeraeteWaisen"/></b> - dieselbe, die
+        /// jetzt auch am Schreibweg haengt. Dieser Schritt tut nur dreierlei: die Projekte
+        /// aufzaehlen (EINSCHLIESSLICH derer, die es in <c>Tab_Projekt</c> nicht mehr
+        /// gibt - deren Rueckstand erreicht sonst nichts mehr), den Aufraeumlauf je
+        /// Projekt anstossen und das Ergebnis gegenmessen.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>DIE GEGENMESSUNG IST DER KERN.</b> Sechs der sieben Gerätetabellen haengen
+        /// an <c>Tab_Energieanlagen</c> mit LOESCHWEITERGABE (nur die vier
+        /// Puffer-Beziehungen sind restriktiv). Eine faelschlich als verwaist erkannte
+        /// Gerätezeile risse ihre Anlagenzeile also lautlos mit - und mit ihr, ueber
+        /// FK_SpVariante_Anlage und FK_Verbund_Anlage, deren Betriebsfuehrung. Deshalb
+        /// wird <c>Tab_Energieanlagen</c> VOR und NACH dem Lauf gezaehlt; weicht die Zahl
+        /// ab, gilt der Schritt als gescheitert und der Schemamarker bleibt stehen. Der
+        /// Schaden ist damit nicht rueckgaengig gemacht (ein DELETE laesst sich nicht
+        /// zurueckholen), aber er steht im Protokoll statt unbemerkt zu bleiben.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Ein uebersprungenes Gewerk ist kein Fehlschlag.</b> Konnte
+        /// <see cref="GeraeteWaisen"/> die Verweise eines Gewerks nicht vollstaendig
+        /// lesen, laesst es dessen Zeilen ausdruecklich stehen. Der Schritt gilt dann
+        /// trotzdem als gelungen: Der Zustand ist derselbe wie vorher, nur eben
+        /// protokolliert - und der naechste Speichervorgang oder Programmstart nimmt
+        /// einen neuen Anlauf.
+        /// </para>
+        /// </summary>
+        private static bool Schritt_34_Geraetewaisen(Lauf l)
+        {
+            int anlagenVorher = Zahl(Scalar(l,
+                "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "]"));
+
+            List<int> projekte = GeraeteWaisen.ProjekteMitGeraetezeilen(l.Conn);
+            if (projekte.Count == 0)
+            {
+                l.Notiz("Keine Gerätezeile in den sieben Gerätetabellen - es gab nichts zu räumen.");
+                return true;
+            }
+
+            int geraete = 0, kinder = 0, betroffen = 0, unvollstaendig = 0;
+
+            foreach (int idProjekt in projekte)
+            {
+                GeraeteWaisen.Bericht b = GeraeteWaisen.Aufraeumen(idProjekt, l.Conn);
+
+                geraete += b.Geraete;
+                kinder += b.Kindzeilen;
+                if (b.EtwasGetan) betroffen++;
+                if (b.Unvollstaendig) unvollstaendig++;
+
+                foreach (string n in b.Notizen) l.Notiz(n);
+            }
+
+            DatenGeraeteWaisen = geraete;
+            DatenGeraeteWaisenKinder = kinder;
+            DatenGeraeteWaisenProjekte = betroffen;
+
+            int anlagenNachher = Zahl(Scalar(l,
+                "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "]"));
+
+            if (anlagenNachher != anlagenVorher)
+            {
+                l.LetzterFehler = "Tab_Energieanlagen: " + anlagenVorher + " Zeilen vorher, " +
+                                  anlagenNachher + " nachher";
+                l.Notiz("ABBRUCH: Der Aufräumlauf hat Anlagenzeilen mitgenommen (" + anlagenVorher +
+                        " -> " + anlagenNachher + "). Die Geräteverweise hängen mit Löschweitergabe " +
+                        "an Tab_Energieanlagen; eine Gerätezeile galt also zu Unrecht als verwaist. " +
+                        "Der Schemamarker bleibt stehen.");
+                return false;
+            }
+
+            if (geraete == 0 && kinder == 0)
+                l.Notiz("Keine verwaiste Gerätezeile in " + projekte.Count +
+                        " Projekten - es gab nichts zu entfernen (Idempotenz-Nachweis: Ein " +
+                        "zweiter Lauf meldet genau das).");
+            else
+                l.Notiz("Zusammen: " + geraete + " verwaiste Gerätezeilen und " + kinder +
+                        " Kindzeilen aus " + betroffen + " von " + projekte.Count +
+                        " Projekten entfernt. Tab_Energieanlagen unverändert bei " +
+                        anlagenNachher + " Zeilen.");
+
+            if (unvollstaendig > 0)
+                l.Notiz("In " + unvollstaendig + " Projekten blieb mindestens ein Gewerk " +
+                        "unangetastet (siehe die Zeilen darüber) - dort ist nichts Falsches " +
+                        "gelöscht, nur noch nicht alles geräumt.");
+
+            return true;
+        }
+
+        /// <summary>
+        /// <b>Abschlusspruefung der Leseprobe</b> — dasselbe Nachzieh-Muster wie bei den
+        /// Eindeutigkeitsindizes (Schritt 16/31): Sie laeuft, wenn Schritt 33 in DIESEM
+        /// Lauf nicht ausgefuehrt wurde, also auf jeder Datenbank, die bereits auf Stand 33
+        /// steht.
+        ///
+        /// <para>
+        /// <b>Warum dauerhaft und nicht nur einmal.</b> <c>Abfrage_Kostenfaktoren</c> liegt
+        /// AUSSERHALB des Repos und laesst sich in Access von Hand aendern. Genau eine
+        /// unbedachte Aenderung an ihrem <c>ORDER BY</c> hat den Kosteneditor lahmgelegt,
+        /// und gemerkt wurde es erst im Dialog. Die Probe kostet eine Zeile und sagt bei
+        /// JEDEM Programmstart, ob die eine Abfrage, von der der Kosteneditor abhaengt,
+        /// noch lesbar ist — und zieht sie andernfalls nach.
+        /// </para>
+        /// </summary>
+        private static void LeseprobeAbschluss(Lauf l)
+        {
+            LeseprobeUndReparatur(l, "Abschluss");
+        }
+
+        /// <summary>
+        /// Leseprobe auf <c>Abfrage_Kostenfaktoren</c>; schreibt sie nur, wenn sie nicht
+        /// lesbar ist, und prueft danach erneut. Gemeinsamer Rumpf von Schritt 33 und der
+        /// Abschlusspruefung — es soll nur EINE Fassung dieser Entscheidung geben.
+        /// </summary>
+        private static bool LeseprobeUndReparatur(Lauf l, string marke)
+        {
+            string fehler;
+
+            // Bereits in Ordnung? Dann nichts anfassen. Das ist der Normalfall auf jeder
+            // Datenbank, die Schritt 32 erst mit dem berichtigten Soll-SQL gesehen hat.
+            if (AbfrageLesbar(l, ABFRAGE_KOSTENFAKTOREN, out fehler))
+            {
+                AbfrageLeseprobe = true;
+                l.Notiz(marke + ": " + ABFRAGE_KOSTENFAKTOREN + " ist lesbar - nichts zu tun.");
+                return true;
+            }
+
+            l.Notiz(marke + ": " + ABFRAGE_KOSTENFAKTOREN + " ist NICHT lesbar (" + fehler +
+                    ") - die Abfrage wird auf das berichtigte Soll-SQL gesetzt.");
+
+            if (!AbfrageSetzen(l, ABFRAGE_KOSTENFAKTOREN, SCHRITT32_SQL_KOSTENFAKTOREN))
+            {
+                DatenAbfragenOffen = 1;
+                return false;   // HART, wie 32a - ohne diese Abfrage zeigt der Kosteneditor nichts
+            }
+
+            if (!AbfrageLesbar(l, ABFRAGE_KOSTENFAKTOREN, out fehler))
+            {
+                DatenAbfragenOffen = 1;
+                l.Notiz(marke + ": " + ABFRAGE_KOSTENFAKTOREN + ": neu geschrieben, aber weiterhin " +
+                        "NICHT lesbar (" + fehler + ").");
+                return false;
+            }
+
+            AbfrageLeseprobe = true;
+            AbfrageKostenfaktorenRepariert = true;
+            DatenAbfragenErneuert = 1;
+            l.Notiz(marke + ": " + ABFRAGE_KOSTENFAKTOREN + " erneuert und die Leseprobe bestanden - " +
+                    "der Kosteneditor kann seine Positionsliste wieder laden.");
             return true;
         }
 
@@ -7057,6 +7513,28 @@ namespace WindowsFormsApplication1
         ///   3375 Index existiert bereits
         ///   3378 Beziehung dieses Namens existiert bereits
         ///   3380 Feld existiert bereits
+        ///
+        /// <para>
+        /// <b>ACHTUNG (gemessen 22.08.2026, .NET 8 + System.Data.OleDb 8.0.1):
+        /// <c>OleDbException.Errors</c> ist bei ACE-Fehlern LEER.</b> Die Schleife über die
+        /// SQLStates läuft dadurch immer ins Leere — sie bleibt trotzdem stehen, weil sie
+        /// unter .NET Framework griff und nichts kostet, aber <b>tragend ist allein der
+        /// Textvergleich darunter</b>. Er muss deshalb jede Formulierung kennen, die eine
+        /// deutsche ACE ausgibt; die vier gemessenen sind:
+        /// <list type="bullet">
+        ///   <item><description><c>Objekt 'X' ist bereits vorhanden.</c> — CREATE PROCEDURE
+        ///     / CREATE VIEW auf eine vorhandene gespeicherte Abfrage</description></item>
+        ///   <item><description><c>Tabelle 'X' ist bereits vorhanden.</c> — CREATE TABLE</description></item>
+        ///   <item><description><c>Feld 'X' ist bereits in der Tabelle 'Y' vorhanden.</c> —
+        ///     ALTER TABLE ADD COLUMN</description></item>
+        ///   <item><description><c>Tabelle 'X' hat bereits einen Index mit dem Namen 'Y'.</c>
+        ///     — CREATE INDEX</description></item>
+        /// </list>
+        /// Von diesen vier erkannte die Liste bis zum 22.08.2026 nur die letzte: „existiert
+        /// bereits" ist keine Formulierung, die diese Datenbank je ausgibt. Die Folge trug
+        /// Schritt 33 zutage — <see cref="AbfrageSetzen"/> hielt die Kollision für einen
+        /// echten Fehler und ersetzte die gespeicherte Abfrage deshalb NIE.
+        /// </para>
         /// </summary>
         private static bool IstBereitsVorhanden(OleDbException ex)
         {
@@ -7081,6 +7559,8 @@ namespace WindowsFormsApplication1
                 || m.Contains("already has an index")
                 || m.Contains("already a relationship")
                 || m.Contains("existiert bereits")
+                || m.Contains("ist bereits vorhanden")        // Objekt / Tabelle
+                || m.Contains("ist bereits in der tabelle")   // Feld (ADD COLUMN)
                 || m.Contains("bereits einen index")
                 || m.Contains("bereits eine beziehung");
         }

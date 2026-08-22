@@ -83,12 +83,24 @@ namespace WindowsFormsApplication1
 
         private const string TAB_ANLAGEN = "Tab_Energieanlagen";
         private const string TAB_PUFFER = "Tab_Pufferspeicher";
+        private const string GEWERK_PUFFER = "Pufferspeicher";
         private const string SPALTE_ID = "ID";
         private const string SPALTE_ID_PROJEKT = "ID_Projekt";
         private const string SPALTE_BEZEICHNER = "Bezeichner";
 
-        /// <summary>Die vier Spalten, über die eine Anlagenzeile auf einen Pufferspeicher zeigt.</summary>
-        private static readonly string[] PUFFER_VERWEISE =
+        /// <summary>
+        /// Die vier Spalten, über die eine Anlagenzeile auf einen Pufferspeicher zeigt.
+        ///
+        /// <para>
+        /// ÖFFENTLICH, weil <see cref="GeraeteWaisen"/> dieselbe Liste braucht: Ob eine
+        /// Speicherzeile noch verbaut ist, entscheidet sich nicht an <c>ID_PUFFER</c>
+        /// allein, sondern an allen vieren - der Senkenspeicher einer Wärmepumpe steht in
+        /// <c>WS_ID_Puffer</c> IHRER Anlagenzeile, nicht in einer Puffer-Zeile. Eine
+        /// zweite Liste danebenzustellen hieße, die nächste Spalte an einer von zwei
+        /// Stellen zu vergessen.
+        /// </para>
+        /// </summary>
+        public static readonly string[] PUFFER_VERWEISE =
             { "ID_PUFFER", "WQ_ID_Puffer", "WS_ID_Puffer", "WS_ID_Puffer2" };
 
         /// <summary>
@@ -175,8 +187,8 @@ namespace WindowsFormsApplication1
             if (idQuelle <= 0 || idZiel <= 0 || idQuelle == idZiel)
             { v.Grund = MyResource.Resource.BK_MSG_UEB_KEINE_QUELLE; return v; }
 
-            DataTable q = Geraete(plan.Geraetetabelle, idQuelle);
-            DataTable z = Geraete(plan.Geraetetabelle, idZiel);
+            DataTable q = VerbauteGeraete(plan, idQuelle);
+            DataTable z = VerbauteGeraete(plan, idZiel);
             if (q == null || z == null)
             { v.Grund = string.Format(MyResource.Resource.BK_MSG_KOMP_GEWERK_UNBEKANNT, gewerk); return v; }
 
@@ -239,7 +251,7 @@ namespace WindowsFormsApplication1
             { fehler = MyResource.Resource.BK_MSG_UEB_KEINE_QUELLE; return false; }
 
             // --- 1) Quelle vollständig lesen (vor der Transaktion, rein lesend) --------
-            DataTable quellGeraete = Geraete(plan.Geraetetabelle, idQuelle);
+            DataTable quellGeraete = VerbauteGeraete(plan, idQuelle);
             List<int> quellAnlagenIds = AnlagenIds(idQuelle, plan.AnlagenTypen);
             var quellAnlagen = new List<WErzeugerCtrl>();
             foreach (int id in quellAnlagenIds)
@@ -264,6 +276,10 @@ namespace WindowsFormsApplication1
             }
 
             // --- 2) Zielzustand lesen -------------------------------------------------
+            // BEWUSST über Geraete() und nicht über VerbauteGeraete(): Diese Liste dient
+            // dem Aufräumen der Kindtabellen vor dem DELETE … WHERE ID_Projekt, und das
+            // räumt die Gerätetabelle ohnehin ganz — auch den Altbestand ohne
+            // Anlagenzeile. Würde hier gefiltert, blieben dessen Kindzeilen zurück.
             DataTable zielGeraete = Geraete(plan.Geraetetabelle, idZiel);
             var zielGeraeteIds = new List<int>();
             foreach (DataRow r in zielGeraete.Rows) zielGeraeteIds.Add(Ganz(r, SPALTE_ID));
@@ -440,17 +456,93 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static string TypFilter(GewerkPlan plan)
         {
-            var teile = new List<string>();
-            foreach (int t in plan.AnlagenTypen) teile.Add(t.ToString(CultureInfo.InvariantCulture));
-            return "ID_Type IN (" + string.Join(", ", teile.ToArray()) + ")";
+            return TypFilter(plan, null);
         }
 
+        /// <summary>
+        /// Wie <see cref="TypFilter(GewerkPlan)"/>, aber mit Tabellenkürzel — nötig,
+        /// sobald die Abfrage zwei Tabellen führt.
+        /// </summary>
+        private static string TypFilter(GewerkPlan plan, string alias)
+        {
+            var teile = new List<string>();
+            foreach (int t in plan.AnlagenTypen) teile.Add(t.ToString(CultureInfo.InvariantCulture));
+            return (string.IsNullOrEmpty(alias) ? "" : alias + ".") +
+                   "ID_Type IN (" + string.Join(", ", teile.ToArray()) + ")";
+        }
+
+        /// <summary>
+        /// Der ROHE Zeilenbestand der Gerätetabelle zum Projekt — einschließlich der
+        /// Zeilen, auf die keine Anlagenzeile mehr zeigt (siehe
+        /// <see cref="VerbauteGeraete"/>). Nur zum Aufräumen brauchbar, NICHT als
+        /// Komponentenbestand des Projekts.
+        /// </summary>
         private static DataTable Geraete(string tabelle, int idProjekt)
         {
             try
             {
                 return DataRepository.GetDataTable(
                     "SELECT * FROM [" + tabelle + "] WHERE ID_Projekt = ? ORDER BY ID",
+                    new OleDbParameter("@p", idProjekt));
+            }
+            catch { return null; }
+        }
+
+        /// <summary>
+        /// Die Gerätezeilen, die im Projekt VERBAUT sind: je Gerätezeile eine, auf die
+        /// mindestens eine Anlagenzeile des Gewerks zeigt.
+        ///
+        /// <para>
+        /// WARUM NICHT <see cref="Geraete"/> (also <c>WHERE ID_Projekt = ?</c> auf der
+        /// Gerätetabelle): Die Gerätetabellen führen PROJEKTKOPIEN eines Katalogsatzes
+        /// (<c>KatalogRegistry</c>, „Kopiersemantik“). Jeder Speichervorgang legt über
+        /// <c>CopyFromStamm</c> eine NEUE Kopie an, während <c>WErzeugerCtrl.Delete</c>
+        /// nur die Anlagenzeilen räumt — in gewachsenen Projekten steht dort deshalb
+        /// Altbestand, auf den nichts mehr zeigt, und eine Projektkopie erbt ihn mit.
+        /// Zum Projekt gehört ausschließlich, was <c>Tab_Energieanlagen</c> führt; das
+        /// ist auch die Liste „ausgewählt im Projekt“ der Verwaltungsdialoge und die
+        /// Grundlage der Simulation.
+        /// </para>
+        ///
+        /// <para>
+        /// JE GERÄTEZEILE EINMAL — das ist der Satz Zeilen, den der Kopierweg anlegt.
+        /// Zeigen zwei Anlagenzeilen auf dasselbe Gerät, entsteht auch im Ziel nur eine
+        /// Kopie, auf die dann beide Anlagenzeilen zeigen. Für die ANZEIGE des Bestands
+        /// zählt dagegen die Anlagenzeile (<see cref="GeraeteJeAnlagenzeile"/>).
+        /// </para>
+        /// </summary>
+        public static DataTable VerbauteGeraete(GewerkPlan plan, int idProjekt)
+        {
+            if (plan == null) return null;
+            try
+            {
+                return DataRepository.GetDataTable(
+                    "SELECT * FROM [" + plan.Geraetetabelle + "] WHERE [" + SPALTE_ID + "] IN (" +
+                    "SELECT [" + plan.AnlagenFk + "] FROM [" + TAB_ANLAGEN + "] " +
+                    "WHERE [" + SPALTE_ID_PROJEKT + "] = ? AND " + TypFilter(plan) + ") " +
+                    "ORDER BY [" + SPALTE_ID + "]",
+                    new OleDbParameter("@p", idProjekt));
+            }
+            catch { return null; }
+        }
+
+        /// <summary>
+        /// Dieselbe Auswahl wie <see cref="VerbauteGeraete"/>, aber JE ANLAGENZEILE eine
+        /// Gerätezeile und in deren Reihenfolge — der Bestand, wie ihn die
+        /// Verwaltungsdialoge unter „ausgewählt im Projekt“ auflisten. Zeigen zwei
+        /// Anlagenzeilen auf dasselbe Gerät, steht es zweimal in der Liste — dort stehen
+        /// dann auch zwei Einträge.
+        /// </summary>
+        public static DataTable GeraeteJeAnlagenzeile(GewerkPlan plan, int idProjekt)
+        {
+            if (plan == null) return null;
+            try
+            {
+                return DataRepository.GetDataTable(
+                    "SELECT g.* FROM [" + plan.Geraetetabelle + "] g " +
+                    "INNER JOIN [" + TAB_ANLAGEN + "] a ON g.[" + SPALTE_ID + "] = a.[" + plan.AnlagenFk + "] " +
+                    "WHERE a.[" + SPALTE_ID_PROJEKT + "] = ? AND " + TypFilter(plan, "a") + " " +
+                    "ORDER BY a.[" + SPALTE_ID + "]",
                     new OleDbParameter("@p", idProjekt));
             }
             catch { return null; }
@@ -703,8 +795,9 @@ namespace WindowsFormsApplication1
                 return map;
             }
 
-            DataTable q = Geraete(TAB_PUFFER, idQuelle);
-            DataTable z = Geraete(TAB_PUFFER, idZiel);
+            GewerkPlan pufferplan = Plaene[GEWERK_PUFFER];
+            DataTable q = VerbauteGeraete(pufferplan, idQuelle);
+            DataTable z = VerbauteGeraete(pufferplan, idZiel);
             if (q == null || z == null) return map;
 
             var zielNachName = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
