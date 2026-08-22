@@ -379,6 +379,11 @@ Referenzlaeufe/2026-08-15_Paket8_Nacharbeit_FlagAus/
 Referenzlaeufe/2026-08-15_Paket9_Bericht/
 dev/
 
+# Setup-Beilagen, GitHub_Sync committet sonst Redist/Vorlage
+Setup/Ausgabe/
+Setup/Vorlage/*.accdb
+Setup/Voraussetzungen/*.exe
+
 # Editor-Sicherungskopien
 *.bak
 
