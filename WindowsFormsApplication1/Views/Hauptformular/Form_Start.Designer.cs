@@ -152,7 +152,7 @@
             btn_Zurueck = new System.Windows.Forms.Button();
             label_Haus = new System.Windows.Forms.Label();
             label_ProjektStatus = new System.Windows.Forms.Label();
-            panel1 = new System.Windows.Forms.Panel();
+            panelKlima = new System.Windows.Forms.Panel();
             btn_Speichern = new System.Windows.Forms.Button();
             label12 = new System.Windows.Forms.Label();
             pictureBox4 = new System.Windows.Forms.PictureBox();
@@ -195,7 +195,7 @@
             ((System.ComponentModel.ISupportInitialize)pBox_DetailSim).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox_Zusammenfassung).BeginInit();
             tabPage6.SuspendLayout();
-            panel1.SuspendLayout();
+            panelKlima.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox4).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
@@ -1272,15 +1272,15 @@
             label_ProjektStatus.ForeColor = System.Drawing.Color.FromArgb(192, 0, 0);
             label_ProjektStatus.Name = "label_ProjektStatus";
             // 
-            // panel1
+            // panelKlima
             // 
-            panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            panel1.Controls.Add(btn_Speichern);
-            panel1.Controls.Add(label12);
-            panel1.Controls.Add(pictureBox4);
-            panel1.Controls.Add(comboBox_Klima);
-            resources.ApplyResources(panel1, "panel1");
-            panel1.Name = "panel1";
+            panelKlima.Controls.Add(btn_Speichern);
+            panelKlima.Controls.Add(label12);
+            panelKlima.Controls.Add(pictureBox4);
+            panelKlima.Controls.Add(comboBox_Klima);
+            resources.ApplyResources(panelKlima, "panelKlima");
+            panelKlima.Name = "panelKlima";
+            panelKlima.Paint += panelKlima_Paint;
             // 
             // btn_Speichern
             // 
@@ -1363,7 +1363,7 @@
             BackColor = System.Drawing.Color.White;
             ControlBox = false;
             Controls.Add(panelVariante);
-            Controls.Add(panel1);
+            Controls.Add(panelKlima);
             Controls.Add(btn_Help);
             Controls.Add(label_Haus);
             Controls.Add(btn_Zurueck);
@@ -1411,8 +1411,8 @@
             ((System.ComponentModel.ISupportInitialize)pBox_DetailSim).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox_Zusammenfassung).EndInit();
             tabPage6.ResumeLayout(false);
-            panel1.ResumeLayout(false);
-            panel1.PerformLayout();
+            panelKlima.ResumeLayout(false);
+            panelKlima.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox4).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
@@ -1546,7 +1546,7 @@
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.Button btn_Help;
-        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel panelKlima;
         private System.Windows.Forms.PictureBox pictureBox4;
         private System.Windows.Forms.ComboBox comboBox_Klima;
         private System.Windows.Forms.Label label12;
