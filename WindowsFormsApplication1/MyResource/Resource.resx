@@ -7139,7 +7139,6 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   <data name="VAR_MSG_KEIN_PROJEKT" xml:space="preserve">
     <value>Es ist kein Projekt ge&#246;ffnet. &#214;ffnen Sie zuerst ein Projekt, das als Variante gesichert werden soll.</value>
   </data>
-<<<<<<< HEAD
   <data name="START_ACE_FEHLT_TITEL" xml:space="preserve">
     <value>Datenbank-Komponente fehlt</value>
   </data>
@@ -7147,7 +7146,7 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
     <value>Die Microsoft Access Database Engine ({0}) ist auf diesem Rechner nicht verfügbar. EPOS-Plan kann ohne sie nicht auf die Datenbank zugreifen.
 
 Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Microsoft Access Database Engine ({0}).</value>
-=======
+  </data>
   <data name="BHKW_SUMME_LBL" xml:space="preserve">
     <value>Summe Einzelposten:</value>
   </data>
@@ -7168,6 +7167,5 @@ Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Micro
   </data>
   <data name="BHKW_INVEST_TIP_UNBESTIMMT" xml:space="preserve">
     <value>Die elektrische Leistung ist 0. Investitionskosten je kWel sind damit nicht bestimmbar. Gespeichert wird die Summe der Einzelposten; Speichern bleibt m&#246;glich.</value>
->>>>>>> 7ab16ad2822a18e9a384a4c52a094078bcdede80
   </data>
 </root>
