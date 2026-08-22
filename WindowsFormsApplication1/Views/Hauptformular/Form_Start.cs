@@ -80,7 +80,6 @@ namespace WindowsFormsApplication1
 
             // DropDownStyle auf DropDownList
             comboBox_Klima.DropDownStyle = ComboBoxStyle.DropDownList;
-            comboBox_Klima.FlatStyle = FlatStyle.Popup;
             // Hintergrundfarbe auf Weiß setzen
             comboBox_Klima.BackColor = Color.White;
             // Textfarbe auf Schwarz
@@ -2011,7 +2010,7 @@ namespace WindowsFormsApplication1
 
         private void comboBox_Klima_SelectedIndexChanged(object sender, EventArgs e)
         {
-            this.panel1.Focus();
+            this.panelKlima.Focus();
         }
 
         private void btn_Varianten_Click(object sender, EventArgs e)
@@ -2325,6 +2324,16 @@ namespace WindowsFormsApplication1
 
 
         private void panelVariante_Paint(object sender, PaintEventArgs e)
+        {
+            var c = (Control)sender;
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            Rectangle r = c.ClientRectangle;
+            r.Width -= 1; r.Height -= 1;            // sonst wird rechte/untere Linie abgeschnitten
+            using (GraphicsPath path = RundesRechteck(r, 8))
+            using (Pen pen = new Pen(Color.FromArgb(180, 190, 205), 1.5f))
+                e.Graphics.DrawPath(pen, path);
+        }
+        private void panelKlima_Paint(object sender, PaintEventArgs e)
         {
             var c = (Control)sender;
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
