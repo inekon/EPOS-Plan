@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 34;
+        public const int ZIEL_VERSION = 35;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1143,6 +1143,90 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_34_GERAETEWAISEN = 34;
 
+        /// <summary>
+        /// <b>Der zweite Durchgang durch die gespeicherten Abfragen (Nutzerentscheid
+        /// 22.08.2026): zwei fachlich tote loeschen, drei mit veralteten SPALTENNAMEN
+        /// wieder lesbar machen.</b>
+        ///
+        /// <para>
+        /// <b>Warum ein eigener Schritt.</b> Schritt 32 hat nur die Abfragen angefasst,
+        /// die auf den in Schritt 29 GEDROPPTEN TABELLEN standen, und Schritt 33 nur die
+        /// eine, die der Kosteneditor liest. Die Bestandsaufnahme vom 22.08.2026 hat
+        /// fuenf weitere gefunden, die sich ueber ACE nicht lesen lassen. Der Marker steht
+        /// auf jeder betroffenen Datenbank bereits auf 33 bzw. 34; nur ein NEUER Schritt
+        /// erreicht diese Bestaende - dieselbe Begruendung, mit der 32 zum Nachzug von 29
+        /// und 33 zum Nachzug von 32 wurde.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>A) Zwei Abfragen entfallen ersatzlos</b> (<see cref="SCHRITT35_LOESCHEN"/>).
+        /// <c>Abfrage_Heizkessel_Kosten</c> liest <c>Tab_Brennstoff_Projekt</c> - in
+        /// Schritt 29 entfernt - und ist fachlich durch <c>energy_carrier</c> +
+        /// <c>energy_price</c> abgeloest. <c>Abfrage_Neues_Kosten_Model</c> ist ein
+        /// kartesisches Produkt ueber sieben Tabellen OHNE <c>WHERE</c>, nie fertig
+        /// geworden, und liest die ebenfalls entfernten <c>energy_group</c> /
+        /// <c>energy_unit</c>. Keine der beiden hat einen Leser im C#-Code.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>B) Drei Abfragen werden repariert.</b> Die Ursache ist hier eine ANDERE als
+        /// in Schritt 33, obwohl ACE dieselbe Meldung ausgibt („Fuer mindestens einen
+        /// erforderlichen Parameter wurde kein Wert angegeben"): Dort war es ein
+        /// Ausgabealias im <c>ORDER BY</c>, hier sind es SPALTENNAMEN aus einer frueheren
+        /// Umbenennung, die es in der Tabelle nicht mehr gibt. Access deutet jeden
+        /// Bezeichner, den es nicht aufloesen kann, als Parameter - die Meldung sagt also
+        /// nichts ueber den Grund.
+        /// <list type="number">
+        ///   <item><description><c>Abfrage_SST</c> nannte <c>Tab_WP.WPName</c> und
+        ///     <c>Tab_WP.ID_WP</c>. Ist-Schema (gemessen 22.08.2026):
+        ///     <c>Tab_WP(ID, Bezeichner, ID_Projekt, Firma, …)</c> - beide Namen gibt es
+        ///     nicht. Soll-SQL: <see cref="SCHRITT35_SQL_SST"/>.</description></item>
+        ///   <item><description><c>Abfrage_Kuehlung_MaxLast</c> nannte
+        ///     <c>Max(Tab_Kenndaten_Kuehlung.LetzterWert)</c>. Ist-Schema:
+        ///     <c>Tab_Kenndaten_Kuehlung(ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl,
+        ///     Last)</c> - die Spalte heisst <c>Last</c>. Soll-SQL:
+        ///     <see cref="SCHRITT35_SQL_KUEHLUNG_MAXLAST"/>.</description></item>
+        ///   <item><description><c>Abfrage_KenndatenKuehlung_Max</c> ist in ihrem EIGENEN
+        ///     Text in Ordnung; sie scheiterte nur, weil ihre Kindabfrage (2) scheiterte.
+        ///     Nach deren Reparatur liest sie wieder. Die Leseprobe laeuft trotzdem, und
+        ///     ihr unveraenderter Text liegt als Rueckfall bereit
+        ///     (<see cref="SCHRITT35_SQL_KENNDATENKUEHLUNG_MAX"/>) - falls eine Datenbank
+        ///     auch an ihr etwas verstellt hat.</description></item>
+        /// </list>
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Er prueft zuerst und schreibt nur bei Bedarf</b> - Muster von Schritt 33.
+        /// Eine Leseprobe (<c>SELECT TOP 1 *</c>) entscheidet je Abfrage: Liest sie,
+        /// bleibt sie unangetastet. Sonst wird sie ueber
+        /// <see cref="AbfrageSetzen"/> auf ihr Soll-SQL gesetzt und die Probe wiederholt.
+        /// <b>Die Reihenfolge ist tragend:</b> die Kindabfrage (2) vor der Elternabfrage
+        /// (3), sonst repariert 2 die 3 nicht mehr im selben Lauf.
+        /// </para>
+        ///
+        /// <para>
+        /// <b><c>Tab_Kenndaten_Kuehlung</c> ist leer - 0 Zeilen sind das ERWARTETE
+        /// Ergebnis.</b> Die Leseprobe prueft deshalb auf „liest ohne Ausnahme", nicht auf
+        /// „liefert Zeilen"; <see cref="AbfrageLesbar"/> tut genau das seit Schritt 32.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>WEICH, wie 32b.</b> Keine der fuenf Abfragen hat einen Leser im C#-Code -
+        /// eine, die stehen bleibt, aendert an keiner Rechnung etwas. Sie darf die
+        /// Datenbank deshalb nicht auf Stand 34 festhalten, denn das hiesse: bei JEDEM
+        /// Programmstart erneut ein Fehlerbericht fuer etwas, das nichts liest. Was offen
+        /// bleibt, steht mit Zahl und Grund im Protokoll, und die Abschlusspruefung nimmt
+        /// beim naechsten Start einen neuen Anlauf.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Idempotent</b> und unabhaengig vom Marker: Der zweite Lauf findet die drei
+        /// Abfragen lesbar und die beiden anderen nicht mehr vor und meldet durchweg
+        /// „nichts zu tun".
+        /// </para>
+        /// </summary>
+        public const int SCHRITT_35_ABFRAGEN_SPALTENNAMEN = 35;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -1372,6 +1456,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static bool _leseprobeGeprueft;
 
+        /// <summary>
+        /// Wurden die fuenf Abfragen aus Schritt 35 in diesem Lauf schon geprueft?
+        /// Gleiches Guard-Muster wie <see cref="_leseprobeGeprueft"/>: Schritt 35 setzt
+        /// das Flag, die Abschlusspruefung nach der Schleife holt die Pruefung auf jeder
+        /// bereits auf Stand 35 stehenden Datenbank nach.
+        /// </summary>
+        private static bool _abfragen35Geprueft;
+
         // --- Zählwerk des Pakets Parallelverbund aus Schritt 14 -------------------------
 
         /// <summary>
@@ -1514,6 +1606,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>34: Projekte, in denen etwas zu räumen war.</summary>
         public static int DatenGeraeteWaisenProjekte { get; private set; }
+
+        // --- Zählwerk des zweiten Abfragen-Durchgangs aus Schritt 35 --------------------
+
+        /// <summary>35A: entfernte tote Abfragen (hoechstens 2). Kleiner, wenn eine davon
+        /// in dieser Datenbank gar nicht steht - beim zweiten Lauf der Normalfall.</summary>
+        public static int DatenAbfragen35Entfernt { get; private set; }
+
+        /// <summary>35B: Abfragen, die auf ihr Soll-SQL gesetzt werden mussten
+        /// (hoechstens 3). 0 heisst: alle drei waren bereits lesbar.</summary>
+        public static int DatenAbfragen35Erneuert { get; private set; }
+
+        /// <summary>35: Abfragen, die weder entfernt noch lesbar gemacht werden konnten.
+        /// Sie gehoeren in die manuelle Access-Checkliste; die Abschlusspruefung nimmt
+        /// beim naechsten Programmstart einen neuen Anlauf.</summary>
+        public static int DatenAbfragen35Offen { get; private set; }
 
         /// <summary>
         /// R7: Anlagen, bei denen der Bezeichner NICHT eindeutig auflösbar war (kein
@@ -1861,6 +1968,22 @@ namespace WindowsFormsApplication1
                         "mehr zeigt (Befund 22.08.2026)",
                         "Die verwaisten Geraetezeilen konnten nicht entfernt werden.",
                         Schritt_34_Geraetewaisen),
+
+            // ZWEITER DURCHGANG DURCH DIE GESPEICHERTEN ABFRAGEN (Nutzerentscheid
+            //       22.08.2026, Nachzug zu 32/33) - die fuenf, die die Bestandsaufnahme
+            //       noch gefunden hat: zwei fachlich tote entfallen, drei nennen
+            //       SPALTENNAMEN aus einer frueheren Umbenennung. Andere Ursache als in
+            //       Schritt 33, gleiche ACE-Meldung. WEICH wie 32b: keine der fuenf hat
+            //       einen Leser im C#-Code, sie darf die Datenbank also nicht auf Stand
+            //       34 festhalten.
+            new Schritt(SCHRITT_35_ABFRAGEN_SPALTENNAMEN,
+                        "Gespeicherte Abfragen, zweiter Durchgang: Abfrage_Heizkessel_Kosten " +
+                        "und Abfrage_Neues_Kosten_Model entfernen (fachlich tot), Abfrage_SST, " +
+                        "Abfrage_Kuehlung_MaxLast und Abfrage_KenndatenKuehlung_Max auf die " +
+                        "heutigen Spaltennamen bringen (Nutzerentscheid 22.08.2026)",
+                        "Die gespeicherten Abfragen mit veralteten Spaltennamen konnten nicht " +
+                        "nachgezogen werden.",
+                        Schritt_35_AbfragenSpaltennamen),
         };
 
         // =================================================================================
@@ -1935,7 +2058,11 @@ namespace WindowsFormsApplication1
             DatenGeraeteWaisen = 0;
             DatenGeraeteWaisenKinder = 0;
             DatenGeraeteWaisenProjekte = 0;
+            DatenAbfragen35Entfernt = 0;
+            DatenAbfragen35Erneuert = 0;
+            DatenAbfragen35Offen = 0;
             _leseprobeGeprueft = false;
+            _abfragen35Geprueft = false;
             _eindeutigkeitGeprueft = false;
             _katalogIndizesGeprueft = false;
 
@@ -2107,6 +2234,20 @@ namespace WindowsFormsApplication1
             {
                 l.Zeile("Abschlusspruefung Leseprobe Abfrage_Kostenfaktoren");
                 LeseprobeAbschluss(l);
+                l.Detail();
+            }
+
+            // --- Abschlusspruefung des zweiten Abfragen-Durchgangs (Schritt 35) --------
+            // Dasselbe Muster wie die drei Pruefungen darueber: Laeuft, wenn Schritt 35
+            // in DIESEM Lauf nicht ausgefuehrt wurde - also auf jeder bereits auf Stand
+            // 35 stehenden Datenbank. Sie ist hier besonders wichtig, weil der Schritt
+            // WEICH ist: Was er nicht schaffte, bekommt beim naechsten Programmstart
+            // einen neuen Anlauf, statt bis zur naechsten Programmfassung liegen zu
+            // bleiben. Und sie zieht nach, was jemand in Access von Hand verstellt hat.
+            if (!_abfragen35Geprueft && StandNachher >= SCHRITT_35_ABFRAGEN_SPALTENNAMEN)
+            {
+                l.Zeile("Abschlusspruefung gespeicherte Abfragen (zweiter Durchgang)");
+                Abfragen35Abschluss(l);
                 l.Detail();
             }
 
@@ -2313,6 +2454,22 @@ namespace WindowsFormsApplication1
                             : " - die Geraetetabellen fuehren jetzt nur noch, was Tab_Energieanlagen " +
                               "auch verbaut hat (das ist die Grundlage von SUM(Pel) ueber Tab_BHKW, " +
                               "der Kesselwahl ueber ORDER BY Ptherm DESC und der Speicherauswahl)."));
+
+            // Schritt 35 meldet - wie 14, 16, 17, 24, 30, 32 und 34 - AUCH die 0. Sie ist
+            // hier der IDEMPOTENZ-NACHWEIS: Der zweite Lauf findet die drei reparierten
+            // Abfragen lesbar und die beiden toten verschwunden vor und meldet 0/0/0.
+            if (StandNachher >= SCHRITT_35_ABFRAGEN_SPALTENNAMEN)
+                l.Zeile("Gespeicherte Abfragen, zweiter Durchgang (Schritt 35): " +
+                        DatenAbfragen35Entfernt + " von " + SCHRITT35_LOESCHEN.Length +
+                        " toten Abfragen entfernt, " + DatenAbfragen35Erneuert + " von " +
+                        SCHRITT35_REPARIEREN.Length + " auf die heutigen Spaltennamen gebracht" +
+                        (DatenAbfragen35Offen > 0
+                            ? ", " + DatenAbfragen35Offen + " offen - siehe die Meldungen oben; " +
+                              "sie haben keinen Leser und aendern an keiner Rechnung etwas, der " +
+                              "naechste Programmstart nimmt einen neuen Anlauf."
+                            : (DatenAbfragen35Entfernt == 0 && DatenAbfragen35Erneuert == 0
+                                ? " - es gab nichts zu tun."
+                                : " - jede verbliebene gespeicherte Abfrage laesst sich wieder lesen.")));
 
             return alleOk && StandNachher >= ZIEL_VERSION;
         }
@@ -4256,12 +4413,309 @@ namespace WindowsFormsApplication1
             return true;
         }
 
+        // =================================================================================
+        // Schritt 35 - zweiter Durchgang durch die gespeicherten Abfragen
+        // =================================================================================
+
+        /// <summary>
+        /// Die zwei Abfragen, die ersatzlos entfallen. Keine hat einen Aufrufer im Code
+        /// (geprueft 22.08.2026 ueber das ganze Repo).
+        ///
+        /// <list type="bullet">
+        ///   <item><description><c>Abfrage_Heizkessel_Kosten</c> — liest
+        ///     <c>Tab_Brennstoff_Projekt</c>, in Schritt 29 entfernt. Fachlich abgeloest
+        ///     durch <c>energy_carrier</c> + <c>energy_price</c> (<c>ID_Projekt</c>,
+        ///     <c>carrier_id</c>, <c>valid_from</c>, <c>valid_to</c>, <c>grundpreis</c>,
+        ///     <c>arbeitspreis</c>, <c>arbeitspreis_unit</c>, <c>Heizwert</c>,
+        ///     <c>leistungspreis</c>, <c>notes</c>). Ein Nachbau waere also kein Nachbau,
+        ///     sondern eine zweite Wahrheit neben dem heutigen Preismodell.</description></item>
+        ///   <item><description><c>Abfrage_Neues_Kosten_Model</c> — ein kartesisches
+        ///     Produkt ueber sieben Tabellen OHNE <c>WHERE</c> (<c>energy_unit</c> allein
+        ///     viermal), nie fertig geworden; sie liest die in Schritt 29 entfernten
+        ///     <c>energy_group</c> und <c>energy_unit</c>.</description></item>
+        /// </list>
+        ///
+        /// <para>
+        /// Beide Namen sind reines ASCII — anders als bei
+        /// <see cref="SCHRITT32_LOESCHEN"/> haengt hier also nichts an der Kodierung
+        /// dieser Datei. Sie bleibt trotzdem UTF-8 mit BOM.
+        /// </para>
+        /// </summary>
+        private static readonly string[] SCHRITT35_LOESCHEN =
+        {
+            "Abfrage_Heizkessel_Kosten",
+            "Abfrage_Neues_Kosten_Model",
+        };
+
+        /// <summary>Die Kennlinienabfrage der Waermepumpe (Vorlauf/Temperatur/COP/Ptherm).</summary>
+        private const string ABFRAGE_SST = "Abfrage_SST";
+
+        /// <summary>Die Kindabfrage der Kuehl-Kennlinien: je Geraet die groesste Laststufe.</summary>
+        private const string ABFRAGE_KUEHLUNG_MAXLAST = "Abfrage_Kuehlung_MaxLast";
+
+        /// <summary>Die Elternabfrage dazu — sie joint <see cref="ABFRAGE_KUEHLUNG_MAXLAST"/>.</summary>
+        private const string ABFRAGE_KENNDATENKUEHLUNG_MAX = "Abfrage_KenndatenKuehlung_Max";
+
+        /// <summary>
+        /// <b>Soll-SQL von <see cref="ABFRAGE_SST"/>.</b> Gegen die produktive Datenbank
+        /// geprueft (22.08.2026): 27.277 Zeilen.
+        ///
+        /// <para>
+        /// <b>Zwei Abweichungen vom Alt-SQL, sonst nichts.</b> Es nannte
+        /// <c>Tab_WP.WPName</c> und <c>Tab_WP.ID_WP</c>; das Ist-Schema ist
+        /// <c>Tab_WP(ID, Bezeichner, ID_Projekt, Firma, …)</c>. Der Name der Waermepumpe
+        /// heisst heute <c>Bezeichner</c>, und der Verweis der Kennlinienzeile geht auf
+        /// den Primaerschluessel <c>Tab_WP.ID</c>. Auswahlliste, Join-Art und Sortierung
+        /// bleiben unveraendert.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Kein Projektfilter</b> — auch das Alt-SQL hatte keinen. Die Abfrage liest
+        /// den gesamten Bestand, Projektkopien eingeschlossen; sie hat keinen Leser im
+        /// C#-Code und dient in Access dem Nachsehen von Hand.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Literale statt Katalogkonstanten.</b> <c>SchemaKatalog</c> fuehrt fuer
+        /// <c>Tab_WP</c> und <c>Tab_Kenndaten</c> keine Namenskonstanten, und dieser
+        /// Schritt ist kein Anlass, welche einzufuehren: Was hier steht, ist genau der
+        /// Text, der gegen die echte Datenbank geprueft wurde.
+        /// </para>
+        /// </summary>
+        private const string SCHRITT35_SQL_SST =
+            "SELECT Tab_WP.Bezeichner, Tab_Kenndaten.Vorlauf, Tab_Kenndaten.Temperatur, " +
+            "Tab_Kenndaten.COP, Tab_Kenndaten.Ptherm " +
+            "FROM Tab_WP INNER JOIN Tab_Kenndaten ON Tab_WP.ID = Tab_Kenndaten.ID_WP " +
+            "ORDER BY Tab_WP.Bezeichner, Tab_Kenndaten.Vorlauf, Tab_Kenndaten.Temperatur DESC";
+
+        /// <summary>
+        /// <b>Soll-SQL von <see cref="ABFRAGE_KUEHLUNG_MAXLAST"/>.</b> Gegen die produktive
+        /// Datenbank geprueft (22.08.2026): 0 Zeilen — und das ist das ERWARTETE Ergebnis,
+        /// denn <c>Tab_Kenndaten_Kuehlung</c> ist dort leer. Die Leseprobe fragt deshalb
+        /// „laeuft sie ohne Ausnahme", nicht „liefert sie Zeilen".
+        ///
+        /// <para>
+        /// <b>Eine Abweichung vom Alt-SQL.</b> Es aggregierte ueber
+        /// <c>Tab_Kenndaten_Kuehlung.LetzterWert</c>; das Ist-Schema ist
+        /// <c>Tab_Kenndaten_Kuehlung(ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl,
+        /// Last)</c> — die Spalte heisst heute <c>Last</c>. Der Ausgabealias
+        /// <c>MaxvonLast</c> bleibt stehen: <see cref="ABFRAGE_KENNDATENKUEHLUNG_MAX"/>
+        /// joint ueber ihn, und ein neuer Name broeche sie.
+        /// </para>
+        ///
+        /// <para>
+        /// <b><c>Last</c> ist in Access zugleich der Name einer Aggregatfunktion.</b>
+        /// Tabellenqualifiziert (<c>Tab_Kenndaten_Kuehlung.Last</c>) ist der Bezug
+        /// eindeutig — unqualifiziert waere er es nicht.
+        /// </para>
+        /// </summary>
+        private const string SCHRITT35_SQL_KUEHLUNG_MAXLAST =
+            "SELECT Tab_Kenndaten_Kuehlung.ID_WP, Max(Tab_Kenndaten_Kuehlung.Last) AS MaxvonLast " +
+            "FROM Tab_Kenndaten_Kuehlung " +
+            "GROUP BY Tab_Kenndaten_Kuehlung.ID_WP";
+
+        /// <summary>
+        /// <b>Soll-SQL von <see cref="ABFRAGE_KENNDATENKUEHLUNG_MAX"/> — der UNVERAENDERTE
+        /// Bestandstext.</b>
+        ///
+        /// <para>
+        /// Diese Abfrage nennt keinen veralteten Spaltennamen; sie scheiterte allein
+        /// daran, dass ihre Kindabfrage <see cref="ABFRAGE_KUEHLUNG_MAXLAST"/> scheiterte,
+        /// und ACE reicht deren ungeloesten Bezeichner als „fehlenden Parameter" nach
+        /// oben durch. Nach der Reparatur der Kindabfrage liest sie wieder — im Normalfall
+        /// wird dieser Text also NIE geschrieben.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Warum er trotzdem hier steht.</b> Die Abfrage liegt ausserhalb des Repos und
+        /// laesst sich in Access von Hand aendern (dieselbe Begruendung wie bei
+        /// <see cref="LeseprobeAbschluss"/>). Bleibt sie nach der Kindreparatur unlesbar,
+        /// ist etwas an IHR verstellt — und dann ist der Bestandstext, der nachweislich
+        /// laeuft, der richtige Rueckfall.
+        /// </para>
+        /// </summary>
+        private const string SCHRITT35_SQL_KENNDATENKUEHLUNG_MAX =
+            "SELECT Tab_Kenndaten_Kuehlung.ID, Tab_Kenndaten_Kuehlung.ID_WP, " +
+            "Tab_Kenndaten_Kuehlung.Vorlauf, Tab_Kenndaten_Kuehlung.Temperatur, " +
+            "Tab_Kenndaten_Kuehlung.COP, Tab_Kenndaten_Kuehlung.Pkuehl, " +
+            "Abfrage_Kuehlung_MaxLast.MaxvonLast AS [Last] " +
+            "FROM Abfrage_Kuehlung_MaxLast INNER JOIN Tab_Kenndaten_Kuehlung " +
+            "ON (Abfrage_Kuehlung_MaxLast.MaxvonLast = Tab_Kenndaten_Kuehlung.Last) " +
+            "AND (Abfrage_Kuehlung_MaxLast.ID_WP = Tab_Kenndaten_Kuehlung.ID_WP) " +
+            "ORDER BY Tab_Kenndaten_Kuehlung.ID_WP, Tab_Kenndaten_Kuehlung.Vorlauf, " +
+            "Tab_Kenndaten_Kuehlung.Temperatur";
+
+        /// <summary>Name und Soll-SQL einer gespeicherten Abfrage, die Schritt 35 nachzieht.</summary>
+        private sealed class Abfragesoll
+        {
+            public readonly string Name;
+            public readonly string Sql;
+            public readonly string Grund;
+
+            public Abfragesoll(string name, string sql, string grund)
+            {
+                Name = name;
+                Sql = sql;
+                Grund = grund;
+            }
+        }
+
+        /// <summary>
+        /// Die drei zu reparierenden Abfragen — <b>in genau dieser Reihenfolge</b>.
+        ///
+        /// <para>
+        /// <b>Die Reihenfolge ist tragend.</b>
+        /// <see cref="ABFRAGE_KENNDATENKUEHLUNG_MAX"/> joint
+        /// <see cref="ABFRAGE_KUEHLUNG_MAXLAST"/>; steht die Kindabfrage nicht vorher auf
+        /// ihrem Soll-SQL, faellt die Leseprobe der Elternabfrage im selben Lauf noch
+        /// einmal aus, und der Schritt schriebe sie ohne Not neu.
+        /// </para>
+        /// </summary>
+        private static readonly Abfragesoll[] SCHRITT35_REPARIEREN =
+        {
+            new Abfragesoll(ABFRAGE_SST, SCHRITT35_SQL_SST,
+                            "der Geraetename heisst Tab_WP.Bezeichner und der Verweis der " +
+                            "Kennlinienzeile geht auf Tab_WP.ID (frueher WPName / ID_WP)"),
+
+            new Abfragesoll(ABFRAGE_KUEHLUNG_MAXLAST, SCHRITT35_SQL_KUEHLUNG_MAXLAST,
+                            "die Laststufe heisst Tab_Kenndaten_Kuehlung.Last (frueher " +
+                            "LetzterWert); der Ausgabealias MaxvonLast bleibt, weil " +
+                            ABFRAGE_KENNDATENKUEHLUNG_MAX + " ueber ihn joint"),
+
+            new Abfragesoll(ABFRAGE_KENNDATENKUEHLUNG_MAX, SCHRITT35_SQL_KENNDATENKUEHLUNG_MAX,
+                            "der Bestandstext ist unveraendert - sie scheiterte nur an ihrer " +
+                            "Kindabfrage " + ABFRAGE_KUEHLUNG_MAXLAST),
+        };
+
+        /// <summary>
+        /// Schritt 35. Begruendung steht bei
+        /// <see cref="SCHRITT_35_ABFRAGEN_SPALTENNAMEN"/>.
+        /// </summary>
+        private static bool Schritt_35_AbfragenSpaltennamen(Lauf l)
+        {
+            _abfragen35Geprueft = true;
+            return Abfragen35PruefenUndNachziehen(l, "35");
+        }
+
+        /// <summary>
+        /// <b>Abschlusspruefung des zweiten Abfragen-Durchgangs</b> — dasselbe
+        /// Nachzieh-Muster wie bei <see cref="LeseprobeAbschluss"/>: Sie laeuft, wenn
+        /// Schritt 35 in DIESEM Lauf nicht ausgefuehrt wurde, also auf jeder Datenbank,
+        /// die bereits auf Stand 35 steht.
+        ///
+        /// <para>
+        /// <b>Warum dauerhaft.</b> Zwei Gruende, und beide zaehlen. Erstens ist Schritt 35
+        /// WEICH: Was er nicht schaffte, faende sonst nie wieder einen Anlauf, weil der
+        /// Marker trotzdem auf 35 steht. Zweitens liegen alle fuenf Abfragen AUSSERHALB
+        /// des Repos und lassen sich in Access von Hand aendern oder wieder anlegen — und
+        /// genau eine unbedachte Aenderung dieser Art hat sie ueberhaupt erst
+        /// unbrauchbar gemacht.
+        /// </para>
+        /// </summary>
+        private static void Abfragen35Abschluss(Lauf l)
+        {
+            Abfragen35PruefenUndNachziehen(l, "Abschluss 35");
+        }
+
+        /// <summary>
+        /// Gemeinsamer Rumpf von Schritt 35 und seiner Abschlusspruefung — es soll nur
+        /// EINE Fassung dieser Entscheidung geben (Muster von
+        /// <see cref="LeseprobeUndReparatur"/>).
+        ///
+        /// <para>
+        /// <b>Erst pruefen, nur bei Bedarf schreiben.</b> Geloescht wird ueber
+        /// <see cref="AbfrageEntfernen"/>, das ein fehlendes Objekt ausdruecklich als
+        /// Normalfall behandelt; repariert wird nur, was die Leseprobe nicht besteht.
+        /// Ein zweiter Lauf meldet dadurch durchweg „nichts zu tun".
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Rueckgabe immer true (WEICH).</b> Die Begruendung steht bei
+        /// <see cref="SCHRITT_35_ABFRAGEN_SPALTENNAMEN"/>: Keine der fuenf Abfragen hat
+        /// einen Leser im C#-Code. Was offen bleibt, steht mit Zahl und Grund im
+        /// Protokoll — festhalten darf es die Datenbank nicht.
+        /// </para>
+        /// </summary>
+        private static bool Abfragen35PruefenUndNachziehen(Lauf l, string marke)
+        {
+            int weg = 0, erneuert = 0, offen = 0;
+
+            // --- A) die zwei fachlich toten Abfragen entfernen -------------------------
+            foreach (string name in SCHRITT35_LOESCHEN)
+            {
+                int r = AbfrageEntfernen(l, name, marke + "A");
+                if (r > 0) weg++;
+                else if (r < 0) offen++;
+            }
+
+            // --- B) die drei mit veralteten Spaltennamen lesbar machen -----------------
+            //     Reihenfolge beachten: Kindabfrage vor Elternabfrage (SCHRITT35_REPARIEREN).
+            foreach (Abfragesoll a in SCHRITT35_REPARIEREN)
+            {
+                string fehler;
+
+                // Bereits in Ordnung? Dann nichts anfassen - beim zweiten Lauf der
+                // Normalfall, und bei der Elternabfrage schon beim ersten, sobald ihre
+                // Kindabfrage eine Zeile weiter oben repariert wurde.
+                if (AbfrageLesbar(l, a.Name, out fehler))
+                {
+                    l.Notiz(marke + "B: " + a.Name + " ist lesbar - nichts zu tun.");
+                    continue;
+                }
+
+                l.Notiz(marke + "B: " + a.Name + " ist NICHT lesbar (" + fehler +
+                        ") - die Abfrage wird auf ihr Soll-SQL gesetzt: " + a.Grund + ".");
+
+                if (!AbfrageSetzen(l, a.Name, a.Sql, marke + "B", a.Grund))
+                {
+                    offen++;
+                    continue;
+                }
+
+                if (!AbfrageLesbar(l, a.Name, out fehler))
+                {
+                    offen++;
+                    l.Notiz(marke + "B: " + a.Name + ": neu geschrieben, aber weiterhin NICHT " +
+                            "lesbar (" + fehler + "). Das Soll-SQL in SchemaMigration passt " +
+                            "nicht zum Schema dieser Datenbank - MANUELL in Access nachsehen.");
+                    continue;
+                }
+
+                erneuert++;
+                l.Notiz(marke + "B: " + a.Name + " erneuert und die Leseprobe bestanden.");
+            }
+
+            DatenAbfragen35Entfernt = weg;
+            DatenAbfragen35Erneuert = erneuert;
+            DatenAbfragen35Offen = offen;
+
+            l.Notiz(marke + ": " + weg + " von " + SCHRITT35_LOESCHEN.Length +
+                    " toten Abfragen entfernt, " + erneuert + " von " +
+                    SCHRITT35_REPARIEREN.Length + " Abfragen auf die heutigen Spaltennamen " +
+                    "gebracht, " + offen + " offen." +
+                    (weg == 0 && erneuert == 0 && offen == 0
+                        ? " Es gab nichts zu tun (Idempotenz-Nachweis: Genau das meldet ein " +
+                          "zweiter Lauf)."
+                        : ""));
+
+            return true;   // WEICH - Begruendung siehe Zusammenfassung oben
+        }
+
         /// <summary>
         /// Setzt eine gespeicherte Abfrage auf ein vorgegebenes SQL — ohne je eine
         /// vorhandene Abfrage zu entfernen, die sich danach nicht ersetzen liesse
         /// (Reihenfolge und Begruendung bei <see cref="SCHRITT_32_ABFRAGEN_ALTTABELLEN"/>).
         /// </summary>
-        private static bool AbfrageSetzen(Lauf l, string name, string sql)
+        /// <param name="marke">
+        /// Vorsatz der Protokollzeilen. Der Rueckfall <c>"32a"</c> haelt die Ausgabe der
+        /// Schritte 32 und 33 unveraendert; Schritt 35 gibt seine eigene Marke mit.
+        /// </param>
+        /// <param name="erneuertNotiz">
+        /// Was die Erfolgsmeldung als GRUND nennt. Der Rueckfall ist die Begruendung von
+        /// Schritt 32a — des Aufrufers, fuer den diese Hilfsmethode geschrieben wurde.
+        /// </param>
+        private static bool AbfrageSetzen(Lauf l, string name, string sql,
+                                          string marke = "32a", string erneuertNotiz = null)
         {
             string anlegen = "CREATE PROCEDURE " + name + " AS " + sql;
             string fehler;
@@ -4269,7 +4723,7 @@ namespace WindowsFormsApplication1
             // 1) Der einfache Fall: Die Abfrage fehlt - dann ist sie hiermit angelegt.
             if (AbfrageAnlegen(l, anlegen, out fehler))
             {
-                l.Notiz("32a: " + name + ": angelegt - sie fehlte in dieser Datenbank.");
+                l.Notiz(marke + ": " + name + ": angelegt - sie fehlte in dieser Datenbank.");
                 return true;
             }
 
@@ -4277,7 +4731,7 @@ namespace WindowsFormsApplication1
             //    anlegbar ist, waere nach einem DROP auch nicht wiederherstellbar.
             if (fehler != null)
             {
-                l.Notiz("32a: " + name + ": nicht anlegbar (" + fehler + "). Eine vorhandene " +
+                l.Notiz(marke + ": " + name + ": nicht anlegbar (" + fehler + "). Eine vorhandene " +
                         "Abfrage bleibt UNANGETASTET - es ist nichts geloescht worden.");
                 return false;
             }
@@ -4285,7 +4739,7 @@ namespace WindowsFormsApplication1
             // 3) Sie steht da, also faellt die alte Fassung und die neue kommt nach.
             if (!AbfrageWegwerfen(l, name))
             {
-                l.Notiz("32a: " + name + ": die alte Fassung liess sich nicht entfernen (" +
+                l.Notiz(marke + ": " + name + ": die alte Fassung liess sich nicht entfernen (" +
                         (l.LetzterFehler ?? "kein Grund gemeldet") + "). Sie bleibt stehen; " +
                         "MANUELL in Access ersetzen.");
                 return false;
@@ -4293,13 +4747,14 @@ namespace WindowsFormsApplication1
 
             if (AbfrageAnlegen(l, anlegen, out fehler))
             {
-                l.Notiz("32a: " + name + ": auf das Soll-SQL erneuert - der Kategoriename " +
-                        "kommt jetzt aus Tab_ProjektWerte.KategorieID statt aus der in " +
-                        "Schritt 29 gedroppten Tab_KostenKategorie.");
+                l.Notiz(marke + ": " + name + ": auf das Soll-SQL erneuert - " +
+                        (erneuertNotiz ?? "der Kategoriename " +
+                         "kommt jetzt aus Tab_ProjektWerte.KategorieID statt aus der in " +
+                         "Schritt 29 gedroppten Tab_KostenKategorie") + ".");
                 return true;
             }
 
-            l.Notiz("32a: " + name + ": die alte Fassung ist entfernt, die neue liess sich " +
+            l.Notiz(marke + ": " + name + ": die alte Fassung ist entfernt, die neue liess sich " +
                     "NICHT anlegen (" + (fehler ?? "existiert bereits") + "). MANUELL in " +
                     "Access nachziehen - das Soll-SQL steht in SchemaMigration.");
             return false;
@@ -4375,21 +4830,25 @@ namespace WindowsFormsApplication1
         /// Die Probe erklaert deshalb nur noch, warum ein Loeschversuch scheiterte.
         /// </para>
         /// </summary>
-        private static int AbfrageEntfernen(Lauf l, string name)
+        /// <param name="marke">
+        /// Vorsatz der Protokollzeilen. Der Rueckfall <c>"32b"</c> haelt die Ausgabe von
+        /// Schritt 32 unveraendert; Schritt 35 gibt seine eigene Marke mit.
+        /// </param>
+        private static int AbfrageEntfernen(Lauf l, string name, string marke = "32b")
         {
             if (AbfrageWegwerfen(l, name))
             {
-                l.Notiz("32b: " + name + ": entfernt (kein Aufrufer im Code).");
+                l.Notiz(marke + ": " + name + ": entfernt (kein Aufrufer im Code).");
                 return 1;
             }
 
             if (!AbfrageVorhanden(l, name))
             {
-                l.Notiz("32b: " + name + ": nicht vorhanden - nichts zu tun.");
+                l.Notiz(marke + ": " + name + ": nicht vorhanden - nichts zu tun.");
                 return 0;
             }
 
-            l.Notiz("32b: " + name + ": liess sich nicht entfernen - die Abfrage bleibt " +
+            l.Notiz(marke + ": " + name + ": liess sich nicht entfernen - die Abfrage bleibt " +
                     "stehen. MANUELL in Access loeschen; sie hat keinen Leser und richtet " +
                     "keinen Schaden an." +
                     (l.LetzterFehler != null ? " Meldung: " + l.LetzterFehler : ""));
