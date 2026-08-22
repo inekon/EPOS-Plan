@@ -23,6 +23,16 @@ namespace WindowsFormsApplication1
 
         // Der globale Katalog, auf den alle Formulare zugreifen können
         public static WordPressHelpCatalog HelpCatalog { get; private set; }
+
+        /// <summary>
+        /// Der anwendungsweite Infobutton-Extender (Konzept Hilfesystem, F5).
+        /// EINE Instanz für das ganze Programm — bisher erzeugte jedes Formular
+        /// eine eigene. <see cref="HilfeAutomatik"/> erfasst darüber jedes geöffnete
+        /// Formular und jedes nachgeladene UserControl von selbst; kein Formular
+        /// braucht dafür noch eigenen Programmtext.
+        /// </summary>
+        public static HelpExtender HelpExtender { get; private set; }
+
         private static Process _webServerProcess;
 
         /// <summary>
@@ -121,6 +131,19 @@ namespace WindowsFormsApplication1
             // dotnet tool install --global dotnet-serve
             // starten mit : dotnet serve --directory "C:\Pfad\zu\deinem\Hilfeordner" --port 8080
             HelpCatalog = new WordPressHelpCatalog(Properties.Settings.Default.WordPressUrl); // Lokaler Testserver mit Testartik
+
+            // F6 / Startwettlauf: Der Katalog wird SOFORT belegt — aus der lokalen
+            // Sicherung, sonst aus dem mitgelieferten Startbestand. MDIMainForm_Load
+            // stößt den Onlineabruf danach bewusst ohne await an; ohne diese
+            // Vorbelegung sähe jedes Formular, das früher öffnet, einen leeren
+            // Katalog. Rangfolge insgesamt: Online > AppData-Sicherung > Beilage.
+            HelpCatalog.StartbestandLaden();
+
+            // F5: EIN anwendungsweiter Extender, und eine Automatik, die jedes
+            // geöffnete Formular und jedes nachgeladene UserControl selbst erfasst.
+            // Ab hier ist help_mapping.txt die einzige Stelle, an der Hilfe
+            // gepflegt wird.
+            HelpExtender = HilfeAutomatik.Starten(HelpCatalog);
 
             // nur zum Testen, Testserver wird in dieser Funktion beim Starten des Programms automatisch aufgerufen,
             // kein separates CMD Fensetr mit Aufruf nötig

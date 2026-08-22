@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
 using Microsoft.Win32;
@@ -19,11 +20,16 @@ namespace WindowsFormsApplication1
     /// „Simulationsstand" kommt wie in Bericht und Wirtschaftlichkeit aus
     /// <see cref="BerichtsDatenSammler.ErmittleStatus"/>.
     ///
-    /// Darunter der Komponenten-Bereich: Für die Stammzeile werden alle Komponenten
-    /// des Stammprojekts angezeigt, für eine Variantenzeile nur deren Unterschiede
-    /// zum Stamm. Beides speist sich aus der vorhandenen Diff-Welt
-    /// (<see cref="ProjektDetails"/> + <see cref="AbweichungsErmittler"/>), die auch
-    /// der Bericht verwendet — es gibt bewusst keine zweite Vergleichslogik.
+    /// Darunter der Komponenten-Bereich: Auf der Stammzeile steht die GEGENÜBERSTELLUNG
+    /// aller Versionen der Gruppe — Gewerk · Merkmal · Stamm · je Variante eine Spalte,
+    /// in der Reihenfolge der oberen Liste, mit der Anzahl der verbauten Komponenten als
+    /// Kopfzeile jedes Gewerks. Damit ist der Bestandsvergleich ohne Klickerei durch die
+    /// Varianten lesbar. Auf einer Variantenzeile stehen unverändert nur deren
+    /// Unterschiede zum Stamm samt Aktionsspalte. Beides speist sich aus der vorhandenen
+    /// Diff-Welt (<see cref="ProjektDetails"/> + <see cref="AbweichungsErmittler"/>), die
+    /// auch der Bericht verwendet — es gibt bewusst keine zweite Vergleichslogik: Auch
+    /// die Anzahlzeile kommt aus <see cref="AbweichungsErmittler.Anzahl"/> und damit aus
+    /// <c>Tab_Energieanlagen</c>, nicht aus dem rohen Zeilenbestand der Gerätetabellen.
     ///
     /// Die Aktionsspalte „Übernehmen" wirkt auf beiden Stufen der Unterschiedsanzeige:
     /// Auf einer Merkmalszeile (Stufe 3) übernimmt sie GENAU DIESES EINE FELD aus einer
@@ -51,10 +57,14 @@ namespace WindowsFormsApplication1
 
         private bool _laedt;
 
-        // Zwischengespeicherte Detaildaten des Stammprojekts für den Vergleich
-        // (wird bei jedem Stammwechsel und nach jeder Simulation verworfen).
-        private ProjektDetails _stammDetails;
-        private int _stammDetailsId = -1;
+        // Zwischengespeicherte Detaildaten der GANZEN Vergleichsgruppe (Stamm und
+        // Varianten). Die Gegenüberstellung der Stammansicht braucht N+1 Ladungen;
+        // ohne Puffer läse jeder Klick in der Liste die komplette Gruppe neu. Der
+        // Puffer gehört zu genau einer Gruppe (_detailsGruppe) und wird verworfen,
+        // sobald sich der Stand ändern konnte: Gruppenwechsel, Simulation, Übernahme,
+        // Anlegen/Löschen einer Variante.
+        private readonly Dictionary<int, ProjektDetails> _details = new Dictionary<int, ProjektDetails>();
+        private int _detailsGruppe = -1;
 
         // Steuerelemente
         private TableLayoutPanel tl;
@@ -231,7 +241,7 @@ namespace WindowsFormsApplication1
             this.lblKomponenten.Dock = DockStyle.Fill;
             this.lblKomponenten.Margin = new Padding(0);
             this.lblKomponenten.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
-            this.lblKomponenten.Text = MyResource.Resource.BK_LBL_KOMPONENTEN_STAMM;
+            this.lblKomponenten.Text = MyResource.Resource.BK_LBL_KOMPONENTEN_VERGLEICH;
 
             this.gridKomp.Dock = DockStyle.Fill;
             this.gridKomp.Margin = new Padding(0);
@@ -425,6 +435,26 @@ namespace WindowsFormsApplication1
             get { return lvAuswahl.SelectedItems.Count > 0 ? lvAuswahl.SelectedItems[0].Tag as AuswahlZeile : null; }
         }
 
+        /// <summary>Das dem Reiter übergebene, tatsächlich geöffnete Projekt (-1 = keines).</summary>
+        public int AktuellesProjekt { get { return _aktuellesProjekt; } }
+
+        /// <summary>
+        /// Die Listenzeile zu einer Projekt-ID — auch dann, wenn die Liste (noch) an keinem
+        /// Fenster hängt: <c>ListView.SelectedItems</c> ist ohne Fensterhandle leer, die
+        /// Zeilen selbst stehen aber längst im Steuerelement. null, wenn die Gruppe diese
+        /// ID nicht führt.
+        /// </summary>
+        public AuswahlZeile ZeileFuer(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+            foreach (ListViewItem it in lvAuswahl.Items)
+            {
+                AuswahlZeile z = it.Tag as AuswahlZeile;
+                if (z != null && z.IdProjekt == idProjekt) return z;
+            }
+            return null;
+        }
+
         // Füllt die Liste mit dem Stammprojekt (erste Zeile) und seinen Varianten.
         private void LadeAuswahl()
         {
@@ -461,29 +491,59 @@ namespace WindowsFormsApplication1
             AktualisiereButtons();
         }
 
-        // Wählt nach dem Laden die passende Listenzeile: die zu markierende Variante,
-        // sonst das Stammprojekt (Zeile 0).
+        /// <summary>
+        /// Wählt nach dem Laden die passende Listenzeile — in dieser Reihenfolge:
+        /// <list type="number">
+        ///   <item>die ausdrücklich vorgemerkte Zeile (<c>_markiereVarianteId</c>, gesetzt
+        ///         nach einer Übernahme und beim Betreten mit geöffneter Variante) — sie hat
+        ///         Vorrang, gilt aber nur EINMAL,</item>
+        ///   <item>sonst das TATSÄCHLICH GEÖFFNETE Projekt (<c>_aktuellesProjekt</c>),
+        ///         gleich ob es der Stamm oder eine Variante der Gruppe ist,</item>
+        ///   <item>sonst das Stammprojekt (Zeile 0).</item>
+        /// </list>
+        /// Punkt 2 ist der Grund, warum die Kostenseite dem geöffneten Projekt folgt: Sie
+        /// zeigt die markierte Zeile, und die Markierung ist beim Betreten nicht mehr blind
+        /// Zeile 0. Vorher stand hier nur „vorgemerkte Variante, sonst Zeile 0" — wer den
+        /// Reiter mit einer Variante betrat, dessen Vormerkung aber schon verbraucht war
+        /// (zweites Laden derselben Gruppe, Rückkehr aus einer anderen Gruppe), landete auf
+        /// dem Stamm und bekam dessen Zahlen zu sehen.
+        /// </summary>
         private void WaehleZeile()
         {
             if (lvAuswahl.Items.Count == 0) { ZeigeKomponenten(); return; }
 
             if (_markiereVarianteId > 0)
             {
-                foreach (ListViewItem it in lvAuswahl.Items)
-                {
-                    AuswahlZeile z = it.Tag as AuswahlZeile;
-                    if (z != null && !z.IstStamm && z.IdProjekt == _markiereVarianteId)
-                    {
-                        it.Selected = true;
-                        it.EnsureVisible();
-                        _markiereVarianteId = -1;   // nur einmal (Erstladen) anwenden
-                        return;
-                    }
-                }
-                _markiereVarianteId = -1;
+                int vorgemerkt = _markiereVarianteId;
+                _markiereVarianteId = -1;                 // nur einmal (Erstladen) anwenden
+                if (MarkiereZeile(vorgemerkt)) return;
             }
 
+            if (_aktuellesProjekt > 0 && MarkiereZeile(_aktuellesProjekt)) return;
+
+            // Das geöffnete Projekt gehört nicht zu dieser Gruppe (der Anwender hat im
+            // Auswahlfeld ein anderes Stammprojekt gewählt) — dann ist der Stamm die
+            // richtige Ausgangszeile.
             lvAuswahl.Items[0].Selected = true;
+        }
+
+        /// <summary>
+        /// Markiert die Listenzeile mit dieser Projekt-ID — Stamm wie Variante, denn die
+        /// ID ist innerhalb der Gruppe eindeutig. Liefert false, wenn die Gruppe die ID
+        /// nicht führt; der Aufrufer entscheidet dann über den Ersatz.
+        /// </summary>
+        private bool MarkiereZeile(int idProjekt)
+        {
+            foreach (ListViewItem it in lvAuswahl.Items)
+            {
+                AuswahlZeile z = it.Tag as AuswahlZeile;
+                if (z == null || z.IdProjekt != idProjekt) continue;
+
+                it.Selected = true;
+                it.EnsureVisible();
+                return true;
+            }
+            return false;
         }
 
         private void AktualisiereButtons()
@@ -499,7 +559,7 @@ namespace WindowsFormsApplication1
         private void cbStamm_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_laedt) return;
-            _stammDetails = null; _stammDetailsId = -1;
+            VerwirfDetails();
             MeldeStammWechsel();
             LadeAuswahl();
         }
@@ -509,7 +569,7 @@ namespace WindowsFormsApplication1
             ProjektEintrag stamm = AktuellerStamm;
             if (stamm == null) return;
             SpeichereLetztenStamm(stamm.Id);
-            _stammDetails = null; _stammDetailsId = -1;
+            VerwirfDetails();
             Action<int, string> h = StammGewechselt;
             if (h != null) h(stamm.Id, stamm.Name);
         }
@@ -572,6 +632,7 @@ namespace WindowsFormsApplication1
                 if (!_ctrl.LoescheVariante(z.IdProjekt, z.Projektname, out fehler))
                 { Melde(fehler ?? MyResource.Resource.BK_MSG_LOESCHEN_FEHLGESCHLAGEN); return; }
 
+                VerwirfDetails();   // die Gruppe hat eine Spalte weniger
                 LadeAuswahl();
                 Melde(string.Format(MyResource.Resource.BK_MSG_VARIANTE_GELOESCHT, z.Variantenname));
             }
@@ -618,7 +679,7 @@ namespace WindowsFormsApplication1
                                                        .Replace("\n", "\n    "));
                 }
 
-                _stammDetails = null; _stammDetailsId = -1;
+                VerwirfDetails();
                 LadeAuswahl();
                 Melde(string.Format(MyResource.Resource.BK_MSG_SIM_FERTIG, laeufe.Count));
                 MessageBox.Show(string.Join("\r\n", meldungen), MyResource.Resource.BK_TITEL_SIMULATION,
@@ -631,9 +692,10 @@ namespace WindowsFormsApplication1
         // --------------------------------------------- Komponenten / Unterschiede
 
         /// <summary>
-        /// Zeigt für die Stammzeile die Komponenten des Stammprojekts, für eine
-        /// Variantenzeile deren Unterschiede zum Stamm. Beide Ansichten arbeiten mit
-        /// der deklarativen Feldliste des <see cref="AbweichungsErmittler"/>.
+        /// Zeigt für die Stammzeile die GEGENÜBERSTELLUNG von Stamm und allen Varianten
+        /// der Gruppe, für eine Variantenzeile deren Unterschiede zum Stamm. Beide
+        /// Ansichten arbeiten mit der deklarativen Feldliste des
+        /// <see cref="AbweichungsErmittler"/>.
         /// </summary>
         public void ZeigeKomponenten()
         {
@@ -644,63 +706,228 @@ namespace WindowsFormsApplication1
             AuswahlZeile z = AktuelleZeile;
             if (stamm == null || z == null)
             {
-                lblKomponenten.Text = MyResource.Resource.BK_LBL_KOMPONENTEN_STAMM;
+                lblKomponenten.Text = MyResource.Resource.BK_LBL_KOMPONENTEN_VERGLEICH;
                 return;
             }
 
-            ProjektDetails ds = StammDetails(stamm.Id);
-            if (z.IstStamm) ZeigeStammKomponenten(ds);
+            ProjektDetails ds = Details(stamm.Id, stamm.Id);
+            if (z.IstStamm) ZeigeStammVergleich(stamm, ds);
             else ZeigeUnterschiede(stamm, z, ds);
         }
 
-        private ProjektDetails StammDetails(int idStamm)
+        /// <summary>
+        /// Detaildaten eines Projekts der Gruppe — aus dem Puffer, sonst frisch geladen.
+        /// Der Puffer gehört zu GENAU EINER Gruppe: wechselt das Stammprojekt, wird er
+        /// geleert, statt Zeilen fremder Gruppen mitzuschleppen. Damit kostet das
+        /// Umschalten zwischen den Listenzeilen keine Datenbankrunde mehr — die
+        /// Gegenüberstellung braucht N+1 Ladungen, die Unterschiedsansicht zwei, und
+        /// beide greifen auf denselben Vorrat zu.
+        /// </summary>
+        private ProjektDetails Details(int idStamm, int idProjekt)
         {
-            if (_stammDetails != null && _stammDetailsId == idStamm) return _stammDetails;
-            _stammDetails = ProjektDetails.Lade(idStamm);
-            _stammDetailsId = idStamm;
-            return _stammDetails;
+            if (_detailsGruppe != idStamm) { _details.Clear(); _detailsGruppe = idStamm; }
+
+            ProjektDetails d;
+            if (_details.TryGetValue(idProjekt, out d)) return d;
+
+            d = ProjektDetails.Lade(idProjekt);
+            _details[idProjekt] = d;
+            return d;
         }
 
-        // Alle Komponenten/Merkmale des Stammprojekts (Gewerk · Merkmal · Wert).
-        private void ZeigeStammKomponenten(ProjektDetails d)
+        /// <summary>
+        /// Puffer verwerfen. Aufzurufen, sobald sich der gepufferte Stand ändern konnte:
+        /// Gruppenwechsel, Simulationslauf, Übernahme, Anlegen/Löschen einer Variante.
+        /// </summary>
+        private void VerwirfDetails()
         {
-            lblKomponenten.Text = MyResource.Resource.BK_LBL_KOMPONENTEN_STAMM;
+            _details.Clear();
+            _detailsGruppe = -1;
+        }
+
+        /// <summary>
+        /// Höchstzahl der Variantenspalten in der Gegenüberstellung. Mehr Spalten sind
+        /// auf einem Bildschirm nicht mehr zu lesen; darüber wird gekappt — aber
+        /// SICHTBAR: Überschrift und Statuszeile nennen die Zahl der ausgeblendeten
+        /// Varianten. Stilles Abschneiden ließe eine unvollständige Tabelle wie eine
+        /// vollständige aussehen.
+        /// </summary>
+        private const int MAX_VARIANTENSPALTEN = 8;
+
+        /// <summary>
+        /// Bis zu so vielen Variantenspalten füllt die Tabelle die Breite aus; darüber
+        /// bekommen die Spalten feste Breiten und die Tabelle blättert waagerecht.
+        /// </summary>
+        private const int FUELLEN_BIS_VARIANTEN = 4;
+
+        /// <summary>
+        /// Zelltext für „führt diese Version nicht". Derselbe Strich, den
+        /// <see cref="AbweichungsErmittler.Formatiere"/> für einen leeren Wert setzt und
+        /// den die Aktionsspalte für „hier nichts zu tun" verwendet — eine Schreibweise
+        /// für „hier steht nichts" statt einer zweiten.
+        /// </summary>
+        private const string OHNE_WERT = "—";
+
+        // Gegenüberstellung Stamm ↔ Varianten: Gewerk · Merkmal · Stamm · je Variante eine
+        // Spalte, in der Reihenfolge der oberen Liste. Sie ersetzt die frühere
+        // Einzelansicht des Stammprojekts: Deren eigentlicher Zweck — der Vergleich der
+        // Komponentenzahlen je Gewerk — kostete bis dahin einen Klick je Variante.
+        private void ZeigeStammVergleich(ProjektEintrag stamm, ProjektDetails ds)
+        {
+            List<AuswahlZeile> varianten = VariantenDerListe();
+            int ausgelassen = Math.Max(0, varianten.Count - MAX_VARIANTENSPALTEN);
+            if (ausgelassen > 0) varianten = varianten.GetRange(0, MAX_VARIANTENSPALTEN);
+
+            string gekappt = ausgelassen > 0
+                ? string.Format(MyResource.Resource.BK_LBL_VARIANTEN_GEKAPPT, varianten.Count, ausgelassen)
+                : "";
+            lblKomponenten.Text = MyResource.Resource.BK_LBL_KOMPONENTEN_VERGLEICH +
+                                  (gekappt.Length == 0 ? "" : " — " + gekappt);
+
+            BaueVergleichsSpalten(varianten);
+
+            // Die Versionen in Spaltenreihenfolge: Stamm zuerst, dann die Varianten.
+            var versionen = new List<ProjektDetails> { ds };
+            foreach (AuswahlZeile v in varianten) versionen.Add(Details(stamm.Id, v.IdProjekt));
+
+            int zeilen = FuelleVergleich(versionen);
+
+            gridKomp.ClearSelection();
+            if (zeilen == 0) { Melde(MyResource.Resource.BK_MSG_KEINE_KOMPONENTEN); return; }
+
+            string status = string.Format(MyResource.Resource.BK_MSG_VERGLEICH_UMFANG,
+                                          zeilen, varianten.Count);
+            Melde(gekappt.Length == 0 ? status : status + "  " + gekappt);
+        }
+
+        // Die Varianten der Gruppe in der Reihenfolge der oberen Liste — bewusst AUS der
+        // Liste gelesen und nicht neu abgefragt, damit Spaltenfolge und Listenfolge nicht
+        // auseinanderlaufen können.
+        private List<AuswahlZeile> VariantenDerListe()
+        {
+            var liste = new List<AuswahlZeile>();
+            foreach (ListViewItem it in lvAuswahl.Items)
+            {
+                AuswahlZeile z = it.Tag as AuswahlZeile;
+                if (z != null && !z.IstStamm) liste.Add(z);
+            }
+            return liste;
+        }
+
+        // Spalten der Gegenüberstellung. Bis FUELLEN_BIS_VARIANTEN füllt die Tabelle die
+        // Breite aus (der übliche Fall, eine bis vier Varianten); darüber bekommen die
+        // Spalten feste Breiten, damit sie lesbar bleiben und die Tabelle waagerecht
+        // blättert, statt alles auf Restbreiten zu quetschen.
+        private void BaueVergleichsSpalten(List<AuswahlZeile> varianten)
+        {
+            gridKomp.AutoSizeColumnsMode = varianten.Count <= FUELLEN_BIS_VARIANTEN
+                ? DataGridViewAutoSizeColumnsMode.Fill
+                : DataGridViewAutoSizeColumnsMode.None;
+            gridKomp.ScrollBars = ScrollBars.Both;
 
             gridKomp.Columns.Add("gewerk", MyResource.Resource.BK_SP_GEWERK);
             gridKomp.Columns.Add("merkmal", MyResource.Resource.BK_SP_MERKMAL);
-            gridKomp.Columns.Add("wert", MyResource.Resource.BK_SP_WERT);
-            gridKomp.Columns[0].FillWeight = 90;
-            gridKomp.Columns[1].FillWeight = 150;
-            gridKomp.Columns[2].FillWeight = 110;
-            gridKomp.Columns[2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gridKomp.Columns.Add("v0", MyResource.Resource.BK_SP_WERT_STAMM);
+            for (int i = 0; i < varianten.Count; i++)
+                gridKomp.Columns.Add("v" + (i + 1).ToString(CultureInfo.InvariantCulture),
+                                     SpaltenKopf(varianten[i]));
 
-            int gezeigt = 0;
+            Spaltenbreite(gridKomp.Columns[0], 90, 130);
+            Spaltenbreite(gridKomp.Columns[1], 150, 200);
+            for (int c = 2; c < gridKomp.Columns.Count; c++)
+            {
+                Spaltenbreite(gridKomp.Columns[c], 110, 115);
+                gridKomp.Columns[c].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            }
+        }
+
+        // FillWeight gilt im Füllmodus, Width im festen Modus - beides zu setzen kostet
+        // nichts und macht den Spaltenaufbau von der gewählten Betriebsart unabhängig.
+        private static void Spaltenbreite(DataGridViewColumn sp, int gewicht, int breite)
+        {
+            sp.FillWeight = gewicht;
+            sp.MinimumWidth = 60;
+            sp.Width = breite;
+        }
+
+        // Spaltenkopf einer Variante: ihr Bezeichner (wie in der oberen Liste); fehlt er,
+        // hilft der Projektname weiter.
+        private static string SpaltenKopf(AuswahlZeile z)
+        {
+            return string.IsNullOrEmpty(z.Variantenname) ? z.Projektname : z.Variantenname;
+        }
+
+        // Eine Zeile je Merkmal, eine Zelle je Version. Ein Gewerk erscheint, sobald es
+        // IRGENDEINE der Versionen führt - würde nur die Stamm-Probe entscheiden, verschwiege
+        // die Tabelle genau das, was die Gegenüberstellung zeigen soll: dass die Variante
+        // ein Gewerk hat, das der Stamm nicht kennt.
+        private int FuelleVergleich(List<ProjektDetails> versionen)
+        {
+            int zeilen = 0;
             foreach (string gewerk in GewerkeInReihenfolge())
             {
-                var felder = AbweichungsErmittler.Felder.Where(f => f.Gewerk == gewerk).ToList();
+                List<AbweichungsErmittler.Merkmal> felder =
+                    AbweichungsErmittler.Felder.Where(f => f.Gewerk == gewerk).ToList();
                 if (felder.Count == 0) continue;
 
-                // Gewerk nur zeigen, wenn im Projekt überhaupt eine Zeile dazu existiert.
-                DataRow probe = AbweichungsErmittler.ZeileFuer(d, felder[0]);
-                if (probe == null) continue;
+                // „Anlage" und „Gebäude" sind Konfigurationsblöcke ohne Komponentenbestand;
+                // nur die echten Gewerke der GewerkTabellen führen eine Stückzahl.
+                bool zaehlbar = ProjektDetails.GewerkTabellen.Any(g => g.Key == gewerk);
+                bool irgendwo = versionen.Any(d => AbweichungsErmittler.ZeileFuer(d, felder[0]) != null)
+                             || (zaehlbar && versionen.Any(d => AbweichungsErmittler.Anzahl(d, gewerk) > 0));
+                if (!irgendwo) continue;
 
                 bool ersteZeile = true;
+
+                // Kopfzeile des Gewerks: die Anzahl der VERBAUTEN Komponenten - dieselbe
+                // Kennzahl aus derselben Quelle wie die Stufe-1-Zeile der Unterschiede
+                // (AbweichungsErmittler.Anzahl -> ProjektDetails.KomponentenAnzahl ->
+                // Tab_Energieanlagen). Sie ist der Grund für diese Ansicht.
+                if (zaehlbar)
+                {
+                    var anzahlen = new List<string>();
+                    foreach (ProjektDetails d in versionen)
+                        anzahlen.Add(AbweichungsErmittler.AnzahlText(AbweichungsErmittler.Anzahl(d, gewerk)));
+                    SchreibeVergleichsZeile(gewerk, AbweichungsErmittler.MERKMAL_ANZAHL, anzahlen);
+                    ersteZeile = false;
+                    zeilen++;
+                }
+
                 foreach (AbweichungsErmittler.Merkmal f in felder)
                 {
-                    DataRow r = AbweichungsErmittler.ZeileFuer(d, f);
-                    if (r == null) continue;
-                    int idx = gridKomp.Rows.Add(ersteZeile ? gewerk : "",
-                                                f.Label,
-                                                AbweichungsErmittler.Formatiere(r, f));
-                    if (ersteZeile)
-                        gridKomp.Rows[idx].Cells[0].Style.Font = new Font(gridKomp.Font, FontStyle.Bold);
+                    var werte = new List<string>();
+                    bool belegt = false;
+                    foreach (ProjektDetails d in versionen)
+                    {
+                        DataRow r = AbweichungsErmittler.ZeileFuer(d, f);
+                        werte.Add(r == null ? OHNE_WERT : AbweichungsErmittler.Formatiere(r, f));
+                        if (r != null) belegt = true;
+                    }
+                    if (!belegt) continue;   // Merkmal in keiner Version belegt
+
+                    SchreibeVergleichsZeile(ersteZeile ? gewerk : "", f.Label, werte);
                     ersteZeile = false;
-                    gezeigt++;
+                    zeilen++;
                 }
             }
+            return zeilen;
+        }
 
-            gridKomp.ClearSelection();
-            if (gezeigt == 0) Melde(MyResource.Resource.BK_MSG_KEINE_KOMPONENTEN);
+        // Trägt eine Zeile ein: das Gewerk nur in der ersten Zeile seines Blocks (fett),
+        // Zellen ohne Bestand grau - der Strich allein wäre in einer Zahlenspalte leicht
+        // als Zahl zu übersehen.
+        private void SchreibeVergleichsZeile(string gewerk, string merkmal, List<string> werte)
+        {
+            var zellen = new List<object> { gewerk, merkmal };
+            foreach (string w in werte) zellen.Add(w);
+
+            DataGridViewRow zeile = gridKomp.Rows[gridKomp.Rows.Add(zellen.ToArray())];
+            if (gewerk.Length > 0)
+                zeile.Cells[0].Style.Font = new Font(gridKomp.Font, FontStyle.Bold);
+
+            for (int c = 0; c < werte.Count; c++)
+                if (werte[c] == OHNE_WERT || werte[c] == AbweichungsErmittler.BESTAND_FEHLT)
+                    zeile.Cells[2 + c].Style.ForeColor = SystemColors.GrayText;
         }
 
         // Unterschiede der Variante gegenüber dem Stamm (vorhandene Diff-Logik).
@@ -708,6 +935,10 @@ namespace WindowsFormsApplication1
         {
             lblKomponenten.Text = string.Format(MyResource.Resource.BK_LBL_KOMPONENTEN_DIFF,
                 string.IsNullOrEmpty(z.Variantenname) ? z.Projektname : z.Variantenname);
+
+            // Feste Spaltenzahl - hier füllt die Tabelle die Breite wie eh und je aus
+            // (die Gegenüberstellung kann den Modus auf „None" gestellt haben).
+            gridKomp.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
             gridKomp.Columns.Add("gewerk", MyResource.Resource.BK_SP_GEWERK);
             gridKomp.Columns.Add("merkmal", MyResource.Resource.BK_SP_MERKMAL);
@@ -733,7 +964,7 @@ namespace WindowsFormsApplication1
             spAktion.DefaultCellStyle.ForeColor = SystemColors.GrayText;
             gridKomp.Columns.Add(spAktion);
 
-            ProjektDetails dv = ProjektDetails.Lade(z.IdProjekt);
+            ProjektDetails dv = Details(stamm.Id, z.IdProjekt);
             List<Abweichung> liste = AbweichungsErmittler.Vergleiche(ds, dv);
 
             if (liste.Count == 0)
@@ -977,7 +1208,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void NachSchreibvorgang(int idZiel, string meldung)
         {
-            _stammDetails = null; _stammDetailsId = -1;
+            VerwirfDetails();
             _markiereVarianteId = idZiel;      // dieselbe Zeile bleibt markiert
             LadeAuswahl();
 

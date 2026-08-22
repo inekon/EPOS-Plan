@@ -57,6 +57,7 @@
             groupBox_PufferSp = new System.Windows.Forms.GroupBox();
             checkBox_PufferSp = new System.Windows.Forms.CheckBox();
             lblStatus = new System.Windows.Forms.Label();
+            btn_Help = new System.Windows.Forms.Button();
             groupBox_Tools.SuspendLayout();
             groupBox_PufferSp.SuspendLayout();
             SuspendLayout();
@@ -264,10 +265,25 @@
             resources.ApplyResources(lblStatus, "lblStatus");
             lblStatus.Name = "lblStatus";
             // 
+            // btn_Help
+            // 
+            btn_Help.BackColor = System.Drawing.Color.Transparent;
+            btn_Help.BackgroundImage = Properties.Resources.help_icon;
+            btn_Help.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            btn_Help.Cursor = System.Windows.Forms.Cursors.Hand;
+            btn_Help.FlatAppearance.BorderSize = 0;
+            btn_Help.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            btn_Help.Location = new System.Drawing.Point(744, 8);
+            btn_Help.Name = "btn_Help";
+            btn_Help.Size = new System.Drawing.Size(28, 28);
+            btn_Help.TabStop = false;
+            btn_Help.UseVisualStyleBackColor = false;
+            // 
             // Form_Simulation_Config
             // 
             resources.ApplyResources(this, "$this");
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            Controls.Add(btn_Help);
             Controls.Add(lblStatus);
             Controls.Add(checkBox_PufferSp);
             Controls.Add(groupBox_PufferSp);
@@ -289,6 +305,7 @@
 
         #endregion
 
+        private System.Windows.Forms.Button btn_Help;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Button btn_Loeschen;
         private System.Windows.Forms.Button btn_Hinzu;

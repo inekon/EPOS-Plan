@@ -70,7 +70,13 @@ namespace WindowsFormsApplication1
                     {
                         foreach (var eintrag in doc.RootElement.EnumerateObject())
                         {
-                            string titel = eintrag.Name;
+                            // Seit F7 (Konzept Hilfesystem) ist der Schluessel der
+                            // Link-Pfad und nicht mehr der Slug - anders gingen die
+                            // acht Seiten mit doppelt vergebenem Slug verloren. Fuer
+                            // die Stichwortsuche zaehlt weiterhin nur der letzte
+                            // Abschnitt; sonst schluegen "epos-plan", "grundlagen"
+                            // und "english" bei praktisch jeder Frage an.
+                            string titel = LetzterPfadabschnitt(eintrag.Name);
                             if (eintrag.Value.TryGetProperty("Tooltip", out var tt))
                             {
                                 string text = tt.GetString() ?? "";
@@ -85,6 +91,22 @@ namespace WindowsFormsApplication1
             {
                 Console.WriteLine("Hilfe-Cache konnte nicht gelesen werden: " + ex.Message);
             }
+        }
+
+        /// <summary>
+        /// Letzter Abschnitt eines Link-Pfades ("/a/b/c/" -> "c"). Ein Schluessel
+        /// ohne Schraegstrich bleibt unveraendert - so liest sich auch eine
+        /// aeltere, slug-geschluesselte Sicherung noch richtig.
+        /// </summary>
+        private static string LetzterPfadabschnitt(string schluessel)
+        {
+            if (string.IsNullOrEmpty(schluessel)) return "";
+
+            string kern = schluessel.Trim('/');
+            if (kern.Length == 0) return schluessel;
+
+            int letzter = kern.LastIndexOf('/');
+            return letzter < 0 ? kern : kern.Substring(letzter + 1);
         }
 
         /// <summary>

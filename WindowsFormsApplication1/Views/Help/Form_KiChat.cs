@@ -150,6 +150,9 @@ namespace WindowsFormsApplication1
         private void BaueOberflaeche()
         {
             this.Text = "Hilfe-Assistent";
+            // Der Formularname ist das Praefix in help_mapping.txt; ohne ihn
+            // findet die Hilfeautomatik dieses Fenster nicht (HilfeAutomatik, F5).
+            this.Name = "Form_KiChat";
             this.StartPosition = FormStartPosition.CenterParent;
             this.MinimizeBox = false;
             this.ClientSize = new Size(720, 580);
@@ -223,6 +226,25 @@ namespace WindowsFormsApplication1
             };
             leisteRechts.Controls.Add(btnSchliessen);        // ganz rechts
             leisteRechts.Controls.Add(_btnEinstellungen);    // links daneben
+
+            // Infobutton (H4): der Weg zur geschriebenen Hilfe, unabhaengig vom
+            // Assistenten. Zuordnung in help_mapping.txt; fehlt sie, bleibt der
+            // Knopf grau statt wirkungslos anklickbar (F3).
+            Button btn_Help = new Button
+            {
+                Name = "btn_Help",
+                Size = new Size(28, 28),
+                Margin = new Padding(6, 0, 0, 0),
+                BackColor = Color.Transparent,
+                BackgroundImage = Properties.Resources.help_icon,
+                BackgroundImageLayout = ImageLayout.Zoom,
+                Cursor = Cursors.Hand,
+                FlatStyle = FlatStyle.Flat,
+                TabStop = false,
+                UseVisualStyleBackColor = false
+            };
+            btn_Help.FlatAppearance.BorderSize = 0;
+            leisteRechts.Controls.Add(btn_Help);               // links vom Einstellungsknopf
 
             LinkLabel linkDoku = new LinkLabel
             {

@@ -5,10 +5,28 @@ using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    public partial class Form_HelpPopup : Form
+    public partial class Form_HelpPopup : Form, IMessageFilter
     {
+        // Fensternachrichten, die ein angeheftetes Popup beenden duerfen.
+        private const int WM_KEYDOWN = 0x0100;
+        private const int WM_SYSKEYDOWN = 0x0104;
+        private const int WM_LBUTTONDOWN = 0x0201;
+        private const int WM_RBUTTONDOWN = 0x0204;
+        private const int WM_MBUTTONDOWN = 0x0207;
+        private const int WM_NCLBUTTONDOWN = 0x00A1;
+        private const int WM_NCRBUTTONDOWN = 0x00A4;
+
         private string _targetUrl = "";
         private Timer _closeDelayTimer;
+
+        // Der Nachrichtenfilter laeuft nur, solange das Popup angeheftet ist.
+        private bool _filterAktiv;
+
+        /// <summary>
+        /// F1: Angeheftet bleibt das Popup stehen, bis der Anwender es schliesst
+        /// oder woanders hinklickt. Der Schliess-Timer ruht solange.
+        /// </summary>
+        public bool IstAngeheftet { get; private set; }
 
         public Form_HelpPopup()
         {
@@ -34,15 +52,36 @@ namespace WindowsFormsApplication1
             this.linkLabel_Doku.MouseEnter += (s, e) => StopCloseCheck();
         }
 
+        /// <summary>
+        /// Flüchtige Kurzinfo beim Überfahren: verschwindet wieder, sobald die
+        /// Maus Steuerelement und Popup verlassen hat.
+        /// </summary>
         public void ShowHelp(string titel, string url, Point position)
+        {
+            Anzeigen(titel, url, position, angeheftet: false);
+        }
+
+        /// <summary>
+        /// F1 - der Klick führt: Das Popup wird angeheftet und bleibt stehen, bis
+        /// der Anwender es schließt (Esc) oder woanders hin klickt.
+        /// </summary>
+        public void ShowHelpAngeheftet(string titel, string url, Point position)
+        {
+            Anzeigen(titel, url, position, angeheftet: true);
+        }
+
+        private void Anzeigen(string titel, string url, Point position, bool angeheftet)
         {
             // Verhindert, dass ein laufender Schließ-Timer das Fenster sofort wieder killt
             StopCloseCheck();
 
             _targetUrl = url;
+            IstAngeheftet = angeheftet;
 
             // Text im LinkLabel formatieren
-            linkLabel_Doku.Text = $"Kapitel: {titel}\r\n➔ Hier klicken für Online-Doku";
+            linkLabel_Doku.Text = angeheftet
+                ? $"Kapitel: {titel}\r\n➔ Hier klicken für Online-Doku\r\n(Esc oder Klick daneben schließt)"
+                : $"Kapitel: {titel}\r\n➔ Hier klicken für Online-Doku";
 
             // Y-Versatz minimal auf +25 erhöhen, um der Maus mehr "Luft" zu geben,
             // damit sie beim Erscheinen nicht direkt AUF dem Fenster landet.
@@ -52,10 +91,83 @@ namespace WindowsFormsApplication1
             {
                 this.Show();
             }
+
+            if (angeheftet) FilterEinschalten();
+            else FilterAusschalten();
+        }
+
+        /// <summary>
+        /// Löst die Anheftung und blendet das Popup aus.
+        /// </summary>
+        public void Schliessen()
+        {
+            IstAngeheftet = false;
+            FilterAusschalten();
+            StopCloseCheck();
+            this.Hide();
+        }
+
+        private void FilterEinschalten()
+        {
+            if (_filterAktiv) return;
+
+            Application.AddMessageFilter(this);
+            _filterAktiv = true;
+        }
+
+        private void FilterAusschalten()
+        {
+            if (!_filterAktiv) return;
+
+            Application.RemoveMessageFilter(this);
+            _filterAktiv = false;
+        }
+
+        /// <summary>
+        /// Solange das Popup angeheftet ist, wird anwendungsweit mitgehört: ein Klick
+        /// neben das Popup oder Esc beendet es. Das Popup wird dafür bewusst NICHT
+        /// aktiviert - der Klick soll sein eigentliches Ziel trotzdem erreichen.
+        /// </summary>
+        public bool PreFilterMessage(ref Message m)
+        {
+            if (!IstAngeheftet || !this.Visible) return false;
+
+            switch (m.Msg)
+            {
+                case WM_LBUTTONDOWN:
+                case WM_RBUTTONDOWN:
+                case WM_MBUTTONDOWN:
+                case WM_NCLBUTTONDOWN:
+                case WM_NCRBUTTONDOWN:
+                    // Ein Klick INS Popup gehört dem Popup (Link anklicken).
+                    if (!this.Bounds.Contains(Cursor.Position)) Schliessen();
+                    return false;
+
+                case WM_KEYDOWN:
+                case WM_SYSKEYDOWN:
+                    if ((Keys)m.WParam.ToInt32() == Keys.Escape)
+                    {
+                        Schliessen();
+                        return true; // Esc ist verbraucht.
+                    }
+                    return false;
+            }
+
+            return false;
+        }
+
+        protected override void OnHandleDestroyed(EventArgs e)
+        {
+            // Ein zurückgelassener Nachrichtenfilter überlebte das Fenster.
+            FilterAusschalten();
+            base.OnHandleDestroyed(e);
         }
 
         private void StartCloseCheck()
         {
+            // Angeheftet bleibt stehen - nur der Anwender schließt (F1).
+            if (IstAngeheftet) return;
+
             // Starte die Überprüfung verzögert
             _closeDelayTimer.Start();
         }
@@ -69,6 +181,9 @@ namespace WindowsFormsApplication1
         private void CloseDelayTimer_Tick(object sender, EventArgs e)
         {
             _closeDelayTimer.Stop();
+
+            // Zweiter Riegel: ein angeheftetes Popup darf der Timer nicht wegnehmen.
+            if (IstAngeheftet) return;
 
             // Jetzt prüfen wir unfehlbar anhand der echten Bildschirmkoordinaten,
             // ob sich die Maus WIRKLICH außerhalb des gesamten Popup-Fensters befindet
@@ -85,7 +200,7 @@ namespace WindowsFormsApplication1
                 try
                 {
                     Process.Start(new ProcessStartInfo { FileName = _targetUrl, UseShellExecute = true });
-                    this.Hide();
+                    Schliessen();
                 }
                 catch (Exception ex)
                 {

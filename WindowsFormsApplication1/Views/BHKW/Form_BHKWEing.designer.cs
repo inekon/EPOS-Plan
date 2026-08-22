@@ -72,6 +72,7 @@
             label18 = new System.Windows.Forms.Label();
             textBox_Vorlauf = new System.Windows.Forms.TextBox();
             textBox_Ruecklauf = new System.Windows.Forms.TextBox();
+            btn_Help = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             panel1.SuspendLayout();
             SuspendLayout();
@@ -357,10 +358,25 @@
             textBox_Ruecklauf.Name = "textBox_Ruecklauf";
             textBox_Ruecklauf.Validating += textBox_Ruecklauf_Validating;
             // 
+            // btn_Help
+            // 
+            btn_Help.BackColor = System.Drawing.Color.Transparent;
+            btn_Help.BackgroundImage = Properties.Resources.help_icon;
+            btn_Help.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            btn_Help.Cursor = System.Windows.Forms.Cursors.Hand;
+            btn_Help.FlatAppearance.BorderSize = 0;
+            btn_Help.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            btn_Help.Location = new System.Drawing.Point(826, 36);
+            btn_Help.Name = "btn_Help";
+            btn_Help.Size = new System.Drawing.Size(22, 22);
+            btn_Help.TabStop = false;
+            btn_Help.UseVisualStyleBackColor = false;
+            // 
             // Form_BHKWEing
             // 
             resources.ApplyResources(this, "$this");
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            Controls.Add(btn_Help);
             Controls.Add(textBox_Ruecklauf);
             Controls.Add(textBox_Vorlauf);
             Controls.Add(label6);
@@ -402,6 +418,7 @@
 
         #endregion
 
+        private System.Windows.Forms.Button btn_Help;
         private System.Windows.Forms.Label Label1;
 private System.Windows.Forms.Label Label5;
 private System.Windows.Forms.Label Label4;
