@@ -4881,6 +4881,18 @@ After that the value will be missing from every calculation concerning that year
   <data name="BK_KOSTEN_ENERGIE_PREIS0" xml:space="preserve">
     <value>⚠ Unit price 0.00 for: {0} — without a price no energy costs can arise; enter it on the “Energy costs” tab of cost management.</value>
   </data>
+  <data name="BK_KOSTEN_TRAEGER_HINT" xml:space="preserve">
+    <value>Used by: {0}</value>
+  </data>
+  <data name="BK_KOSTEN_TRAEGER_KEINE" xml:space="preserve">
+    <value>No energy carrier — this project has no generator that draws energy.</value>
+  </data>
+  <data name="BK_KOSTEN_TRAEGER_UNGEPFLEGT" xml:space="preserve">
+    <value>No energy carrier with project settings — the carriers in use are: {0}</value>
+  </data>
+  <data name="BK_KOSTEN_TRAEGER_FEHLT" xml:space="preserve">
+    <value>⚠ Used but not assigned to this project: {0} — without an assignment there is neither a price nor a calorific value; add it on the “Energy costs” tab of cost management.</value>
+  </data>
   <data name="ADM_BTN_SPEICHERN" xml:space="preserve">
     <value>Save</value>
   </data>
@@ -7120,5 +7132,26 @@ The seat becomes available for another device; a new activation is required to c
   </data>
   <data name="VAR_MSG_KEIN_PROJEKT" xml:space="preserve">
     <value>No project is open. Please open the project you want to save as a variant first.</value>
+  </data>
+  <data name="BHKW_SUMME_LBL" xml:space="preserve">
+    <value>Sum of items:</value>
+  </data>
+  <data name="BHKW_INVEST_UNBESTIMMT" xml:space="preserve">
+    <value>n/a</value>
+  </data>
+  <data name="BHKW_INVEST_HINWEIS_ABGELEITET" xml:space="preserve">
+    <value>&#8364;/kWel: derived from sum / Pel</value>
+  </data>
+  <data name="BHKW_INVEST_HINWEIS_UNBESTIMMT" xml:space="preserve">
+    <value>&#8364;/kWel: not determinable (Pel = 0)</value>
+  </data>
+  <data name="BHKW_INVEST_HINWEIS_ABWEICHUNG" xml:space="preserve">
+    <value>&#8364;/kWel: stored value differs, updated on save</value>
+  </data>
+  <data name="BHKW_INVEST_TIP" xml:space="preserve">
+    <value>The individual items lead: investment cost per kWel = sum of the individual items divided by the electrical power. The field is therefore not editable.</value>
+  </data>
+  <data name="BHKW_INVEST_TIP_UNBESTIMMT" xml:space="preserve">
+    <value>The electrical power is 0, so the investment cost per kWel cannot be determined. The sum of the individual items is stored; saving remains possible.</value>
   </data>
 </root>

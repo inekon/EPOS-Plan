@@ -183,6 +183,19 @@ namespace WindowsFormsApplication1
                                Vorlauf=?, Ruecklauf=?
                                WHERE Bezeichner=?";
 
+                // Die Einzelposten fuehren (Regel in BHKWKosten, Nutzerentscheid
+                // 22.08.2026): der spezifische Wert wird hier aus den Posten und Pel
+                // abgeleitet. Damit kann kein Schreibweg die beiden Groessen
+                // auseinanderlaufen lassen - auch Form_BHKWAdmin nicht, das nur Pel
+                // aendert und den vollstaendig gelesenen Satz sonst unveraendert
+                // zurueckschreibt. Der Bestand wird dadurch erst beim Speichern
+                // angeglichen, nicht schon beim Lesen oder Kopieren.
+                model.m_Investition_KWel = BHKWKosten.JeKWel(
+                    BHKWKosten.Summe(model.m_Kosten_Modul, model.m_Kosten_Montage,
+                                     model.m_Kosten_Lieferung, model.m_Kosten_Schallschutzhaube,
+                                     model.m_Kosten_Abgasreinigung),
+                    model.m_Pel);
+
                 DBCommand.CommandText = sql;
                 DBCommand.Parameters.Clear();
 

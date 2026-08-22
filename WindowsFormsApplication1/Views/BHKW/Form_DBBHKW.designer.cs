@@ -28,6 +28,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
+            toolTip_Hinweis = new System.Windows.Forms.ToolTip(components);
             btn_Abbrechen = new System.Windows.Forms.Button();
             btn_Überschreiben = new System.Windows.Forms.Button();
             btn_Speichern_Unter = new System.Windows.Forms.Button();
@@ -84,6 +86,10 @@ namespace WindowsFormsApplication1
             Label39 = new System.Windows.Forms.Label();
             textBox_Schallschutzhaube = new System.Windows.Forms.TextBox();
             Label40 = new System.Windows.Forms.Label();
+            label_InvestHinweis = new System.Windows.Forms.Label();
+            label_SummeEinzelposten = new System.Windows.Forms.Label();
+            textBox_SummeEinzelposten = new System.Windows.Forms.TextBox();
+            label_SummeEinheit = new System.Windows.Forms.Label();
             groupBox4 = new System.Windows.Forms.GroupBox();
             Label29 = new System.Windows.Forms.Label();
             Label30 = new System.Windows.Forms.Label();
@@ -480,9 +486,13 @@ namespace WindowsFormsApplication1
             groupBox3.Controls.Add(Label39);
             groupBox3.Controls.Add(textBox_Schallschutzhaube);
             groupBox3.Controls.Add(Label40);
+            groupBox3.Controls.Add(label_InvestHinweis);
+            groupBox3.Controls.Add(label_SummeEinzelposten);
+            groupBox3.Controls.Add(textBox_SummeEinzelposten);
+            groupBox3.Controls.Add(label_SummeEinheit);
             groupBox3.Location = new System.Drawing.Point(21, 386);
             groupBox3.Name = "groupBox3";
-            groupBox3.Size = new System.Drawing.Size(548, 155);
+            groupBox3.Size = new System.Drawing.Size(548, 181);
             groupBox3.TabIndex = 76;
             groupBox3.TabStop = false;
             groupBox3.Text = "Eingabedaten zur Berechnung der Kosten";
@@ -533,14 +543,16 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Investitionskosten
             // 
+            textBox_Investitionskosten.BackColor = System.Drawing.SystemColors.Control;
             textBox_Investitionskosten.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             textBox_Investitionskosten.Font = new System.Drawing.Font("Segoe UI", 8F);
             textBox_Investitionskosten.Location = new System.Drawing.Point(124, 31);
             textBox_Investitionskosten.Margin = new System.Windows.Forms.Padding(5);
             textBox_Investitionskosten.Name = "textBox_Investitionskosten";
+            textBox_Investitionskosten.ReadOnly = true;
             textBox_Investitionskosten.Size = new System.Drawing.Size(56, 22);
             textBox_Investitionskosten.TabIndex = 48;
-            textBox_Investitionskosten.TextChanged += textBox_Investitionskosten_TextChanged;
+            textBox_Investitionskosten.TabStop = false;
             // 
             // textBox_Raumbedarf
             // 
@@ -784,6 +796,51 @@ namespace WindowsFormsApplication1
             Label40.Text = "Schallschutzhaube:";
             Label40.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // label_InvestHinweis
+            // 
+            label_InvestHinweis.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            label_InvestHinweis.ForeColor = System.Drawing.SystemColors.GrayText;
+            label_InvestHinweis.Location = new System.Drawing.Point(9, 130);
+            label_InvestHinweis.Name = "label_InvestHinweis";
+            label_InvestHinweis.Size = new System.Drawing.Size(255, 36);
+            label_InvestHinweis.TabIndex = 71;
+            label_InvestHinweis.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+            // 
+            // label_SummeEinzelposten
+            // 
+            label_SummeEinzelposten.AutoSize = true;
+            label_SummeEinzelposten.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            label_SummeEinzelposten.Location = new System.Drawing.Point(270, 153);
+            label_SummeEinzelposten.Name = "label_SummeEinzelposten";
+            label_SummeEinzelposten.Size = new System.Drawing.Size(131, 17);
+            label_SummeEinzelposten.TabIndex = 72;
+            label_SummeEinzelposten.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // textBox_SummeEinzelposten
+            // 
+            textBox_SummeEinzelposten.BackColor = System.Drawing.SystemColors.Control;
+            textBox_SummeEinzelposten.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            textBox_SummeEinzelposten.Font = new System.Drawing.Font("Segoe UI", 8F);
+            textBox_SummeEinzelposten.Location = new System.Drawing.Point(418, 150);
+            textBox_SummeEinzelposten.Margin = new System.Windows.Forms.Padding(5);
+            textBox_SummeEinzelposten.Name = "textBox_SummeEinzelposten";
+            textBox_SummeEinzelposten.ReadOnly = true;
+            textBox_SummeEinzelposten.Size = new System.Drawing.Size(96, 22);
+            textBox_SummeEinzelposten.TabIndex = 73;
+            textBox_SummeEinzelposten.TabStop = false;
+            textBox_SummeEinzelposten.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // label_SummeEinheit
+            // 
+            label_SummeEinheit.AutoSize = true;
+            label_SummeEinheit.Font = new System.Drawing.Font("Tahoma", 8F);
+            label_SummeEinheit.Location = new System.Drawing.Point(521, 153);
+            label_SummeEinheit.Name = "label_SummeEinheit";
+            label_SummeEinheit.Size = new System.Drawing.Size(13, 13);
+            label_SummeEinheit.TabIndex = 74;
+            label_SummeEinheit.Text = "\u20AC";
+            label_SummeEinheit.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // groupBox4
             // 
             groupBox4.Controls.Add(Label29);
@@ -803,7 +860,7 @@ namespace WindowsFormsApplication1
             groupBox4.Controls.Add(Label38);
             groupBox4.Controls.Add(checkBox_SCR);
             groupBox4.Controls.Add(btn_Eintragen);
-            groupBox4.Location = new System.Drawing.Point(21, 546);
+            groupBox4.Location = new System.Drawing.Point(21, 572);
             groupBox4.Name = "groupBox4";
             groupBox4.Size = new System.Drawing.Size(548, 96);
             groupBox4.TabIndex = 77;
@@ -1144,7 +1201,7 @@ namespace WindowsFormsApplication1
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(791, 660);
+            ClientSize = new System.Drawing.Size(791, 686);
             Controls.Add(groupBox5);
             Controls.Add(groupBox4);
             Controls.Add(groupBox3);
@@ -1228,6 +1285,11 @@ private System.Windows.Forms.Button btn_Speichern;
         private System.Windows.Forms.Label Label39;
         private System.Windows.Forms.TextBox textBox_Schallschutzhaube;
         private System.Windows.Forms.Label Label40;
+        private System.Windows.Forms.Label label_InvestHinweis;
+        private System.Windows.Forms.Label label_SummeEinzelposten;
+        private System.Windows.Forms.TextBox textBox_SummeEinzelposten;
+        private System.Windows.Forms.Label label_SummeEinheit;
+        private System.Windows.Forms.ToolTip toolTip_Hinweis;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.Label Label29;
         private System.Windows.Forms.Label Label30;
