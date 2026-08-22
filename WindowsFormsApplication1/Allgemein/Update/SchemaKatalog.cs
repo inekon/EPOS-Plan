@@ -68,6 +68,15 @@ namespace WindowsFormsApplication1
         public const string TAB_PV_STAMM = "Tab_PV_STAMM";
 
         /// <summary>
+        /// Die gespeicherte Access-Abfrage „Projektwert vor Katalogwert" für Heiz- und
+        /// Brennwert (vier Lesestellen: <c>KostenEmissionRechner</c>,
+        /// <c>WirtschaftlichkeitCtrl</c>, <c>UcBkKosten</c>, <c>EnergieMengen</c>).
+        /// Seit Schritt 36 legt die Migration sie an, falls sie fehlt
+        /// (<see cref="SchemaMigration.SCHRITT_36_ENERGIETRAEGER_ABFRAGE"/>).
+        /// </summary>
+        public const string ABFRAGE_ENERGIETRAEGER_EFFEKTIV = "Abfrage_Energietraeger_Effektiv";
+
+        /// <summary>
         /// PAKET PARALLELVERBUND (Entscheidung des Anwenders 17.08.2026): die ZUSÄTZLICHEN
         /// Mitglieder eines Pufferverbunds je Wärmeerzeuger-Anlage.
         ///

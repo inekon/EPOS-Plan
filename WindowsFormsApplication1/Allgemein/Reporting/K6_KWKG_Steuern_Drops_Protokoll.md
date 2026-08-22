@@ -554,3 +554,66 @@ Max/Min, `Abfrage_KenndatenKuehlung_Max` → `Abfrage_Kuehlung_MaxLast`).
   `Abfrage2`, `Tab_BHKW_Einfügen_Test` (nur Arbeitskopie); `Tab_StromganglinieDaten Abfrage` (Herkunft unklar).
 - Sicherungen: `WP-PLAN\Kenndaten.accdb.vor_2026-08-20_Abfragenbereinigung.bak` bzw.
   `Documents\WP-Plan_DB-Sicherungen\` (aus dem Repo-Baum herausgehalten).
+
+---
+
+## 13 Nachtrag 21.08.2026: Migrationsschritt 30 — `Abfrage_Energietraeger_Effektiv` (Empfehlung aus § 12 umgesetzt)
+
+Die in § 12 empfohlene Nachrüstung: Die Migration legt die gespeicherte Abfrage jetzt selbst
+an, falls sie fehlt — bisher stammte sie allein aus der ausgelieferten DB bzw. der
+Handreparatur vom 20.08.2026, eine frisch aufgesetzte Datenbank hätte sie nicht gehabt
+(vier Lesestellen: `KostenEmissionRechner`, `WirtschaftlichkeitCtrl`, `UcBkKosten`,
+`EnergieMengen`).
+
+| | |
+|---|---|
+| Schritt | **30** — `SCHRITT_36_ENERGIETRAEGER_ABFRAGE` (Nummer frei; Branch stand auf der `origin/main`-Spitze `4cbf9ec`, nach Fetch gegengeprüft) |
+| `ZIEL_VERSION` | 29 → **30** (`SchemaMigration.cs:77`) |
+| Art | rein additives DDL, KEIN DML — eine vorhandene Definition wird nie ersetzt |
+| Name | neue Konstante `SchemaKatalog.ABFRAGE_ENERGIETRAEGER_EFFEKTIV`; die vier Lesestellen behalten ihre SQL-Literale (außerhalb des Auftrags) |
+
+**Technik — gemessen, nicht vermutet.** `CREATE VIEW … AS SELECT …` läuft über die offene
+ACE-OLE-DB-Verbindung der Migration (ANSI-92-Modus), samt `IIf`, `Is Null` und dem echten
+Umlaut-Spaltennamen `ID_Energieträger`; ADOX-/DAO-Interop braucht der Prozess nicht. Am
+Scratch belegt: Anlage OK; die Doppel-Anlage wirft **SQLState 3012** mit der deutschen
+ACE-Meldung „Objekt '…' **ist bereits vorhanden**." — genau diese Formulierung fing
+`IstBereitsVorhanden` bisher NICHT (die Meldungsliste kannte nur „existiert bereits").
+3012 und der Meldungstext sind dort jetzt ergänzt, als Zusatzgurt neben der Existenz-Probe
+des Schritts.
+
+**Aufbau** (`Schritt_30_EnergietraegerAbfrage`): 30a Basistabellen-Gurt
+(`energy_project_settings`, `energy_carrier` — bei Schritt 36 ohnehin garantiert, ohne sie
+scheitert schon Schritt 12); 30b Existenz-Probe (`SELECT TOP 1`, Muster `TabellenSchema`)
+→ „bereits vorhanden — nichts zu tun"; 30c `CREATE VIEW`; 30d Probelesen (`COUNT(*)`), wie
+bei der Handreparatur. Die Abschlusszeile im Migrationsprotokoll meldet AUCH die 0 („war
+bereits vorhanden") — auf Arbeitskopie und reparierter Produktiv-DB ist genau das der
+Normalfall.
+
+**Verifikation an einer Scratch-Kopie der Arbeitskopie** (kurzlebige Prozesse, je < 60 s;
+`Kenndaten_scratch2.accdb` im Sitzungs-Scratchpad, nicht im Repo-Baum):
+
+1. Das CREATE-Statement wurde **mechanisch aus dem C#-Quelltext abgeleitet**
+   (String-Fragmente + `SchemaKatalog`-Konstanten aufgelöst; 401 Zeichen, Umlaut-Prüfung
+   exakt 2× `ä`) — ein Abschreibfehler ist damit ausgeschlossen.
+2. Baseline: 22 Zeilen der Bestandsabfrage gesichert, dann `DROP VIEW` — Simulation
+   „Abfrage fehlt", der Zustand der Produktiv-DB vor dem 20.08.
+3. Lauf 1: 30a beide Basistabellen lesbar, 30b „fehlt", 30c OK, 30d 22 Zeilen;
+   **alle 22 Zeilen feldweise identisch** mit der Baseline (sortierter Volltextvergleich).
+4. Lauf 2: 30b „vorhanden" → **0 Anweisungen ausgeführt** (Zweitlauf-0-Beleg).
+5. ADOX-Objekttyp danach: **VIEW** — derselbe Typ wie bei der Handreparatur.
+
+**ACE-Parameter-Falle (K2 § 3.1): nicht einschlägig.** Das DDL ist parameterlos, das
+Probelesen ein parameterfreies `COUNT(*)` — keine Unterabfrage, kein Parameter.
+
+**Build:** VS-MSBuild x86 Debug (`/restore`, `dotnet build` scheitert bekannt an
+MSB4803/COMReference), 0 Fehler; nur die sechs bekannten Warnungen in unbeteiligten
+Dateien (CS0108/CS0109/CS4014/CS1998).
+
+**Encoding:** `SchemaMigration.cs` und `SchemaKatalog.cs` vor und nach dem Eingriff UTF-8
+**mit** BOM, durchgehend CRLF (6.259 bzw. 1.627 Zeilen, **0 einzelne LF**); dieses
+Protokoll UTF-8 ohne BOM, der Nachtrag ist in CRLF angefügt.
+
+**Grenze des Schritts:** Er stellt Existenz her, nicht Definitionsgleichheit — eine
+abweichend gepflegte Bestandsfassung bleibt unangetastet (gleiche Linie wie „ein vom
+Anwender geänderter Wert wird nie überschrieben"; als Referenzdefinition gilt der
+ADOX-Auszug aus der Arbeitskopie, § 12).
