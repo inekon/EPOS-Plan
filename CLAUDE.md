@@ -9,8 +9,9 @@ Diese Datei beschreibt **Fachdomäne, Datenmodell, Migration und Umgang mit der 
 Alles zu Code, Build und Architektur steht in
 [`WindowsFormsApplication1/CLAUDE.md`](WindowsFormsApplication1/CLAUDE.md).
 
-C#, `net8.0-windows`, WinForms (MDI), Build zwingend **x86** (ACE OLEDB); die Umstellung auf x64
-ist analysiert und geplant — siehe
+C#, `net8.0-windows`, WinForms (MDI), Build zwingend **x64** — die Access-Engine (ACE OLEDB) muss
+als 64-Bit-Fassung vorliegen. Bis 22.08.2026 x86; Umstellungsplan, offene Pakete und Rückweg
+(Git-Tag `letzter-x86-stand`) in
 [`Konzept_Umstellung_64Bit_EPOS-Plan.md`](Konzept_Umstellung_64Bit_EPOS-Plan.md). Der Rechenkern liegt
 vollständig in verwaltetem C# (`Allgemein/BhkwPlan.cs`) — die frühere native `BHKWPLAN.DLL` und der
 COM-Server `CSExeCOMServer` werden nicht mehr verwendet.

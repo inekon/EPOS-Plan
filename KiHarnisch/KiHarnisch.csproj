@@ -9,7 +9,7 @@
       * GENAU EINE Protokollzeile je Ausfuehrung,
       * kein Dialog - eine unerwartete MessageBox ist ein TESTFEHLER.
 
-    Aufbau wie Referenzlauf\Referenzlauf.csproj: Konsolen-EXE, net8.0-windows, x86,
+    Aufbau wie Referenzlauf\Referenzlauf.csproj: Konsolen-EXE, net8.0-windows, x64,
     Projektreferenz auf die App.
 
     Seit Paket F4 (Etappe 3b) traegt der Harnisch zusaetzlich den LAUFZEIT-KATALOGTEST der
@@ -23,7 +23,7 @@
     BEWUSST NICHT IN WP-Plan.sln - dasselbe Vorgehen wie beim Referenzlauf. Gebaut wird
     ueber MSBuild.exe, weil "dotnet build" an MSB4803 scheitert (COM-Referenzen der App):
       "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" ^
-        KiHarnisch\KiHarnisch.csproj -p:Configuration=Debug -p:Platform=x86
+        KiHarnisch\KiHarnisch.csproj -p:Configuration=Debug -p:Platform=x64
 
     DbUmgebung, DialogWaechter und Protokoll werden aus Referenzlauf\ VERLINKT statt
     kopiert: sie sind dort internal, tragen denselben Namensraum und muessen in beiden
@@ -36,8 +36,8 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
 
-    <PlatformTarget>x86</PlatformTarget>
-    <Platforms>x86</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <Platforms>x64</Platforms>
 
     <RootNamespace>WindowsFormsApplication1.Referenzlauf</RootNamespace>
     <AssemblyName>KiHarnisch</AssemblyName>

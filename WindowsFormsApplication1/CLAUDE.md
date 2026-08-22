@@ -7,15 +7,19 @@ Antworten und Code-Kommentare auf Deutsch.
 ## Build
 
 `net8.0-windows`, WinForms + WPF, `WinExe`, Namespace/Assembly `WindowsFormsApplication1`.
-Solution: `..\WP-Plan.sln` (Debug/Release × x86/x64).
+Solution: `..\WP-Plan.sln` (Debug/Release × x64).
 
 ```powershell
-dotnet build ..\WP-Plan.sln -c Debug -p:Platform=x86
+& "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" ..\WP-Plan.sln -p:Configuration=Debug -p:Platform=x64
 ```
 
-Die Umstellung auf x64 ist analysiert und geplant (noch nicht umgesetzt) — Ist-Stand,
-Entscheidungsfragen und Pakete in
-[`../Konzept_Umstellung_64Bit_EPOS-Plan.md`](../Konzept_Umstellung_64Bit_EPOS-Plan.md).
+`dotnet build` scheitert an den COM-Referenzen (MSB4803) — bauen nur über das MSBuild von
+Visual Studio.
+
+Build seit 22.08.2026 **x64** (Paket P2; davor x86). Ist-Stand, Entscheidungen und offene
+Pakete (P3–P5) in
+[`../Konzept_Umstellung_64Bit_EPOS-Plan.md`](../Konzept_Umstellung_64Bit_EPOS-Plan.md);
+Rückweg: Git-Tag `letzter-x86-stand`.
 
 
 ## Architektur
