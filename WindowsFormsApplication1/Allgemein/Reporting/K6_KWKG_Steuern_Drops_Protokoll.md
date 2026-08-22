@@ -543,7 +543,8 @@ Ausgeführt per ADOX gegen beide Datenbanken, jeweils mit Vorab-Sicherung und Re
 Kandidaten: `Abfrage_ProjektKostenKomponenten` → 7× `Abfrage_Kosten_*`, `Abfrage_MaxMin_Vorlauf` →
 Max/Min, `Abfrage_KenndatenKuehlung_Max` → `Abfrage_Kuehlung_MaxLast`).
 
-- **Produktiv-DB** (`%USERPROFILE%\sourceepos\WP-PLAN\Kenndaten.accdb`, per DSN TEST): 30 → 11 Abfragen,
+- **Produktiv-DB** (`%USERPROFILE%\source
+epos\WP-PLAN\Kenndaten.accdb`, per DSN TEST): 30 → 11 Abfragen,
   **19 gelöscht**; `Abfrage_ProjektKostenEnergie` und `Abfrage_ProjektKostenInvestBetrieb` (E4) existierten dort nicht.
 - **Arbeitskopie** (`Referenzlaeufe\Arbeitskopie\Kenndaten.accdb`): 36 → 15, **21 gelöscht** (inkl. E4).
 - **Befund + Reparatur:** Der Produktiv-DB fehlte die AKTIVE `Abfrage_Energietraeger_Effektiv` (Code liest sie an
