@@ -86,7 +86,14 @@ namespace KiKern
         /// <summary>
         /// Weg A: aus den <c>functionCall</c>-Teilen der Antwort einen Aufruf machen.
         /// </summary>
-        public static KiAbsichtBefund AusWerkzeugantwort(KiRegister register, KiModellantwort? antwort)
+        /// <param name="register">Das Aktionsregister.</param>
+        /// <param name="antwort">Die zerlegte Modellantwort.</param>
+        /// <param name="platzhalter">
+        /// Bezeichnertabelle der Sitzung; <c>null</c> = ohne Rueckuebersetzung der
+        /// Argumente (Aktionsharnisch, Tests ohne Datenschutzschicht).
+        /// </param>
+        public static KiAbsichtBefund AusWerkzeugantwort(KiRegister register, KiModellantwort? antwort,
+                                                         KiPlatzhalter? platzhalter = null)
         {
             if (register == null) throw new ArgumentNullException(nameof(register));
             if (antwort == null || !antwort.HatWerkzeugruf)
@@ -98,7 +105,8 @@ namespace KiKern
             for (int i = 1; i < antwort.Werkzeugrufe.Count; i++)
                 uebergangen.Add(antwort.Werkzeugrufe[i].Name);
 
-            return Bauen(register, erster.Name, erster.ArgumenteJson, antwort.Text, uebergangen);
+            return Bauen(register, erster.Name, erster.ArgumenteJson, antwort.Text, uebergangen,
+                         platzhalter);
         }
 
         // ======================================================================= Weg B
@@ -107,7 +115,15 @@ namespace KiKern
         /// Weg B: aus dem Antworttext ein JSON-Objekt herausloesen und daraus einen Aufruf
         /// machen. Kommt kein verwertbares Objekt vor, ist es eine reine Textantwort.
         /// </summary>
-        public static KiAbsichtBefund AusText(KiRegister register, string? text)
+        /// <param name="register">Das Aktionsregister.</param>
+        /// <param name="text">Der Antworttext des Modells.</param>
+        /// <param name="platzhalter">
+        /// Bezeichnertabelle der Sitzung; <c>null</c> = ohne Rueckuebersetzung der
+        /// Argumente. Der BEGLEITTEXT bleibt hier in jedem Fall unangetastet - er wird
+        /// erst unmittelbar vor der Anzeige aufgeloest.
+        /// </param>
+        public static KiAbsichtBefund AusText(KiRegister register, string? text,
+                                              KiPlatzhalter? platzhalter = null)
         {
             if (register == null) throw new ArgumentNullException(nameof(register));
 
@@ -122,7 +138,10 @@ namespace KiKern
                 if (string.Equals(name, leer, StringComparison.OrdinalIgnoreCase))
                     return KiAbsichtBefund.NurText(Ohne(text, json));
 
-            return Bauen(register, name, argumente, Ohne(text, json), new List<string>());
+            // Ohne(...) MUSS vor der Rueckuebersetzung stehen: es sucht den JSON-Block
+            // woertlich im Antworttext, und ein umgeschriebener Block waere dort nicht
+            // mehr zu finden - der Begleittext trueg das JSON dann doppelt.
+            return Bauen(register, name, argumente, Ohne(text, json), new List<string>(), platzhalter);
         }
 
         /// <summary>
@@ -177,10 +196,22 @@ namespace KiKern
         // ======================================================================= Innen
 
         /// <summary>Der gemeinsame Rest beider Wege: pruefen und Befund bauen.</summary>
+        /// <remarks>
+        /// <b>Die Platzhalter fallen VOR der Pruefung.</b> Das Modell hat die Bezeichner
+        /// nur als „Name n" gesehen (Fachkonzept 4.2) und gibt genau das zurueck. Wuerde
+        /// erst geprueft und danach uebersetzt, liefe der Platzhalter durch die
+        /// Namensaufloesung des Registers - und die suchte ein Projekt namens „Name 3".
+        /// Weil nur ZEICHENKETTEN angefasst werden, bleiben IDs und Zahlen, wie sie sind.
+        /// </remarks>
         private static KiAbsichtBefund Bauen(KiRegister register, string name, string argumenteJson,
-                                             string? text, List<string> uebergangen)
+                                             string? text, List<string> uebergangen,
+                                             KiPlatzhalter? platzhalter = null)
         {
-            KiPruefErgebnis pruefung = KiPruefung.PruefeJson(register, name, argumenteJson);
+            string argumente = platzhalter != null
+                ? platzhalter.ArgumenteAufloesen(argumenteJson)
+                : argumenteJson;
+
+            KiPruefErgebnis pruefung = KiPruefung.PruefeJson(register, name, argumente);
 
             if (uebergangen.Count > 0)
             {
