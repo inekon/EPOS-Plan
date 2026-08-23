@@ -142,7 +142,6 @@ namespace WindowsFormsApplication1
             { "Form_Kosten_VarAuswahl",      B_KOSTEN },
             { "Form_KostenfaktorItem",       B_KOSTEN },
             { "Form_Kostenprofil",           B_KOSTEN },
-            { "Form_PlanwertUebernahme",     B_KOSTEN },
             { "Form_SpotpreisImport",        B_KOSTEN },
             { "Form_Tarifstruktur",          B_KOSTEN },
 

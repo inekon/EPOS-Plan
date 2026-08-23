@@ -29,8 +29,8 @@ namespace WindowsFormsApplication1
     /// </list>
     ///
     /// <para>
-    /// <b>Ohne Designer-Datei</b> — wie <see cref="Form_Gesetzesparameter"/>
-    /// (<see cref="Form_PlanwertUebernahme"/> ist inzwischen migriert): Die Maske ist ein Raster aus zwölf
+    /// <b>Ohne Designer-Datei</b> — wie <see cref="Form_Gesetzesparameter"/>:
+    /// Die Maske ist ein Raster aus zwölf
     /// gleichartigen Zeilen, und der WinForms-Designer brächte drei weitere Dateien ohne
     /// Gegenwert. Alle Anzeigetexte kommen aus <c>MyResource</c>, alle Steuer- und
     /// Datenbankwerte aus <see cref="DbWerte"/>.

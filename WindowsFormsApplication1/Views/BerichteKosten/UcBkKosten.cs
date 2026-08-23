@@ -43,13 +43,6 @@ namespace WindowsFormsApplication1
         private string _projektname = "";
 
         /// <summary>
-        /// Zahl der Komponenten, deren erfasste Investitionsposition zu keinem
-        /// Technik-Planwert passt — gefüllt in <see cref="LadeKomponenten"/>, gemeldet in
-        /// der Statuszeile.
-        /// </summary>
-        private int _abweichungen = 0;
-
-        /// <summary>
         /// Gewerke, die im Projekt VERBAUT sind, aber keine Investitionsposition führen —
         /// gefüllt in <see cref="LadeKomponenten"/>, gemeldet in der Statuszeile. Ohne diese
         /// Liste zeigte die Seite stumm 0,00 €: Kachel, Tabelle und Fußzeile schwiegen
@@ -72,6 +65,14 @@ namespace WindowsFormsApplication1
         /// Heizwert; sie fehlen in der Tabelle und sollen deshalb wenigstens dastehen.
         /// </summary>
         private readonly List<string> _traegerNichtZugeordnet = new List<string>();
+
+        /// <summary>
+        /// Energieträger, deren Arbeitspreis sich NICHT auf kWh umrechnen lässt, weil der
+        /// effektive Heizwert fehlt oder ≤ 0 ist — gefüllt in <see cref="LadeTraeger"/>,
+        /// gemeldet in der Statuszeile. Die Spalte „Arbeitspreis [€/kWh]" zeigt für sie
+        /// „—"; ohne diese Liste stünde dort ein Strich ohne Begründung.
+        /// </summary>
+        private readonly List<string> _traegerOhneHeizwert = new List<string>();
 
         private readonly WirtschaftlichkeitCtrl _wirt = new WirtschaftlichkeitCtrl();
 
@@ -176,8 +177,12 @@ namespace WindowsFormsApplication1
 
             this.pnlListen.Dock = DockStyle.Fill;
             this.pnlListen.ColumnCount = 2;
-            this.pnlListen.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 42f));
-            this.pnlListen.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 58f));
+            // 38/62 statt 42/58 seit 23.08.2026: Die Trägertabelle führt seit dem
+            // kWh-bezogenen Arbeitspreis SECHS Spalten, die Komponententabelle nach dem
+            // Wegfall des Technik-Planwerts nur noch zwei. Die zusätzlichen vier Prozent
+            // gehen dorthin, wo sie gebraucht werden.
+            this.pnlListen.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38f));
+            this.pnlListen.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 62f));
             this.pnlListen.RowCount = 2;
             this.pnlListen.RowStyles.Add(new RowStyle(SizeType.Absolute, 22f));
             this.pnlListen.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
@@ -341,8 +346,6 @@ namespace WindowsFormsApplication1
 
             string status = string.Format(MyResource.Resource.BK_KOSTEN_STATUS,
                                           investPositionen, energieHinweis).Trim();
-            if (_abweichungen > 0)
-                status += "  ·  " + string.Format(MyResource.Resource.BK_KOSTEN_ABWEICHUNG, _abweichungen);
 
             // Ein verbautes Gewerk ohne Kostenposition ist kein Rechenfehler, sondern eine
             // FEHLENDE EINGABE — und muss als solche dastehen, statt sich hinter einer 0,00 €
@@ -366,6 +369,13 @@ namespace WindowsFormsApplication1
                 status += "  ·  " + string.Format(MyResource.Resource.BK_KOSTEN_TRAEGER_FEHLT,
                                                   string.Join(", ", _traegerNichtZugeordnet.ToArray()));
 
+            // Ohne Heizwert bleibt die Spalte „Arbeitspreis [€/kWh]" leer — ein „—" ohne
+            // Begründung ist aber genauso stumm wie die 0,00 €, die es ersetzt. Die
+            // Fußzeile nennt deshalb die Träger, denen der Heizwert fehlt.
+            if (_traegerOhneHeizwert.Count > 0)
+                status += "  ·  " + string.Format(MyResource.Resource.BK_KOSTEN_TRAEGER_HI0,
+                                                  string.Join(", ", _traegerOhneHeizwert.ToArray()));
+
             Melde(status);
         }
 
@@ -380,19 +390,23 @@ namespace WindowsFormsApplication1
         // Die Tabelle gehört fachlich zur Investitions-Kachel und liest deshalb Kategorie 1;
         // Spaltenkopf und Überschrift sagen das jetzt auch (BK_KOSTEN_SP_SUMME,
         // BK_KOSTEN_LBL_KOMPONENTEN).
+        //
+        // Nutzerentscheid 23.08.2026: Die zweite Spalte „Technik-Planwert" ist entfallen.
+        // Sie stellte neben die Summe ALLER Investitionspositionen einer Komponente den
+        // Planwert der HAUPTposition allein — zwei verschiedene Größen unter zwei
+        // Spaltenköpfen, die dasselbe zu meinen schienen. Verglichen wird der Planwert mit
+        // der Hauptposition weiterhin, aber dort, wo beide Zahlen gepflegt werden
+        // (KostenPositionCtrl.Pruefe, KomponentenUebernahmeCtrl, KI-Auskunft). Diese
+        // Tabelle zeigt jetzt nur noch die erfassten Kosten je Komponente.
         private void LadeKomponenten(System.Globalization.CultureInfo kultur)
         {
-            _abweichungen = 0;
             _ohnePosition.Clear();
 
             gridKomponenten.Columns.Add("komponente", MyResource.Resource.BK_KOSTEN_SP_KOMPONENTE);
             gridKomponenten.Columns.Add("summe", MyResource.Resource.BK_KOSTEN_SP_SUMME);
-            gridKomponenten.Columns.Add("technik", MyResource.Resource.BK_KOSTEN_SP_TECHNIK);
             gridKomponenten.Columns[0].FillWeight = 120;
             gridKomponenten.Columns[1].FillWeight = 70;
-            gridKomponenten.Columns[2].FillWeight = 70;
             gridKomponenten.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            gridKomponenten.Columns[2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
             try
             {
@@ -409,32 +423,17 @@ namespace WindowsFormsApplication1
                     double? w = D(r, "Summe");
                     summe += w ?? 0;
 
-                    // Technik-Planwert daneben, Abweichungen markiert — angezeigt, nie
-                    // überschrieben (Nutzerentscheidung 4 vom 18.08.2026). Angeglichen
-                    // wird ausschließlich in der Kostenverwaltung über
-                    // „Planwert übernehmen…".
-                    KostenPositionCtrl.Abweichung ab = Abweichung(komponente);
-
-                    int idxZeile = gridKomponenten.Rows.Add(
+                    gridKomponenten.Rows.Add(
                         komponente,
-                        w.HasValue ? w.Value.ToString("N2", kultur) : "—",
-                        (ab != null && ab.TechnikVorhanden) ? ab.Technik.ToString("N2", kultur) : "—");
-
-                    if (ab != null && ab.Abweichend)
-                    {
-                        _abweichungen++;
-                        gridKomponenten.Rows[idxZeile].DefaultCellStyle.BackColor =
-                            Color.FromArgb(0xFF, 0xF4, 0xD9);
-                        gridKomponenten.Rows[idxZeile].Cells[2].ToolTipText = ab.Text;
-                    }
+                        w.HasValue ? w.Value.ToString("N2", kultur) : "—");
                 }
 
-                ZeigeGewerkeOhnePosition(erfasst, kultur);
+                ZeigeGewerkeOhnePosition(erfasst);
 
                 if (dt.Rows.Count > 0)
                 {
                     int idx = gridKomponenten.Rows.Add(MyResource.Resource.BK_KOSTEN_SUMME,
-                                                       summe.ToString("N2", kultur), "");
+                                                       summe.ToString("N2", kultur));
                     gridKomponenten.Rows[idx].DefaultCellStyle.Font =
                         new Font(gridKomponenten.Font, FontStyle.Bold);
                 }
@@ -457,9 +456,8 @@ namespace WindowsFormsApplication1
         /// </para>
         /// <para>
         /// <b>Betrag „—", nicht 0,00 €.</b> Nichts erfasst heißt NICHT „kostet nichts". Die
-        /// Zeile geht deshalb auch nicht in die Summe ein; daneben steht der Technik-Planwert,
-        /// der bei „Planwert übernehmen…" entstünde. Angezeigt, nie geschrieben
-        /// (Nutzerentscheidung 4 vom 18.08.2026).
+        /// Zeile geht deshalb auch nicht in die Summe ein — sie sagt aus, dass hier eine
+        /// EINGABE fehlt, und wird nie selbst gefüllt (Nutzerentscheidung 4 vom 18.08.2026).
         /// </para>
         /// <para>
         /// <b>Verbaut, nicht lizenziert.</b> Maßgeblich ist
@@ -468,8 +466,7 @@ namespace WindowsFormsApplication1
         /// Startassistenten geladene Projekt beschreibt und hier ein fremdes sein kann.
         /// </para>
         /// </remarks>
-        private void ZeigeGewerkeOhnePosition(HashSet<string> erfasst,
-                                              System.Globalization.CultureInfo kultur)
+        private void ZeigeGewerkeOhnePosition(HashSet<string> erfasst)
         {
             DataTable dt;
             try
@@ -486,11 +483,7 @@ namespace WindowsFormsApplication1
                 if (komponente.Length == 0 || erfasst.Contains(komponente)) continue;
                 if (!TechnikPlanwertCtrl.Verbaut(_idProjekt, komponente)) continue;
 
-                KostenPositionCtrl.Abweichung ab = Abweichung(komponente);
-                int idx = gridKomponenten.Rows.Add(
-                    komponente,
-                    "—",
-                    (ab != null && ab.TechnikVorhanden) ? ab.Technik.ToString("N2", kultur) : "—");
+                int idx = gridKomponenten.Rows.Add(komponente, "—");
 
                 gridKomponenten.Rows[idx].DefaultCellStyle.BackColor =
                     Color.FromArgb(0xFF, 0xE6, 0xE6);
@@ -502,27 +495,6 @@ namespace WindowsFormsApplication1
 
                 _ohnePosition.Add(komponente);
             }
-        }
-
-        /// <summary>
-        /// Abweichung einer Komponente zwischen erfasster Position und Technik-Planwert —
-        /// dieselbe Prüfung, die auch die Kostenverwaltung anzeigt
-        /// (<see cref="KostenPositionCtrl.Pruefe"/>). <c>null</c>, wenn die Komponente
-        /// nicht zur Landkarte gehört.
-        /// </summary>
-        private KostenPositionCtrl.Abweichung Abweichung(string komponente)
-        {
-            try
-            {
-                int id = Convert.ToInt32(DataRepository.ExecuteScalar(
-                    "SELECT MIN(ID) FROM Tab_KostenKomponente WHERE Komponente = ?",
-                    new OleDbParameter("@k", komponente ?? "")));
-                if (id <= 0) return null;
-
-                return KostenPositionCtrl.Pruefe(_idProjekt, komponente,
-                                                 Form_Kosten.KATEGORIE_INVESTITION, id);
-            }
-            catch { return null; }
         }
 
         /// <summary>
@@ -560,23 +532,76 @@ namespace WindowsFormsApplication1
         /// steht im Bestand — Projekt 1023 fährt einen Erdgas-E-Kessel, dem Projekt ist
         /// aber nur „Elektrische Energie" zugeordnet.
         /// </para>
+        /// <para>
+        /// <b>Nutzerwunsch 23.08.2026: der Arbeitspreis auch je Kilowattstunde.</b> Von den
+        /// 21 Katalogträgern rechnen 17 NICHT in kWh ab (7× <c>L</c>, 8× <c>Nm³</c>,
+        /// 2× <c>kg</c>); nur Strom und Fernwärme tun es. Die Spalte
+        /// „Arbeitspreis [€/Einheit]" stellte damit Preise nebeneinander, die sich nicht
+        /// vergleichen lassen — 0,98 €/L und 0,35 €/kWh sagen nichts übereinander. Die
+        /// sechste Spalte rechnet deshalb <c>Arbeitspreis ÷ eff_hi</c> und macht die Zeilen
+        /// vergleichbar. Drei Festlegungen dazu:
+        /// </para>
+        /// <list type="number">
+        ///   <item><description><b>Nur der Arbeitspreis.</b> Der Grundpreis steht in €/a und
+        ///     ist mengenunabhängig — ihn durch einen Heizwert zu teilen wäre ein stiller
+        ///     Rechenfehler, keine Umrechnung.</description></item>
+        ///   <item><description><b>Bezugsgröße ist <c>eff_hi</c></b>, nicht der
+        ///     Katalogheizwert: Heizöl EL trägt im Katalog 10,00 kWh/L, Projekt 1024
+        ///     übersteuert über <c>energy_project_settings.custom_hi</c> auf 11,20 — und
+        ///     11,20 steht auch in der Nachbarspalte.</description></item>
+        ///   <item><description><b>Träger, die schon in kWh abrechnen, zeigen den Wert
+        ///     trotzdem</b> (er ist dann gleich dem Arbeitspreis, <c>eff_hi</c> = 1,00).
+        ///     Eine Spalte, die zeilenweise leer bliebe, taugt nicht zum Vergleichen —
+        ///     und genau darum geht es.</description></item>
+        /// </list>
+        /// <para>
+        /// <b>„—" statt einer Zahl</b>, wenn der Heizwert fehlt oder ≤ 0 ist (dann ist die
+        /// Umrechnung unmöglich; die Fußzeile nennt den Träger über
+        /// <c>BK_KOSTEN_TRAEGER_HI0</c>) und wenn kein Arbeitspreis gepflegt ist. Ein
+        /// Arbeitspreis von 0 ist dabei KEIN Preis, sondern eine fehlende Eingabe — dieselbe
+        /// Lesart, die <see cref="_traegerOhnePreis"/> schon anwendet. „0,0000 €/kWh" würde
+        /// behaupten, die Kilowattstunde sei umsonst; dieselbe Haltung wie beim Betrag „—"
+        /// der Gewerke ohne Kostenposition.
+        /// </para>
         /// </remarks>
         private void LadeTraeger(System.Globalization.CultureInfo kultur)
         {
             _traegerOhnePreis.Clear();
             _traegerNichtZugeordnet.Clear();
+            _traegerOhneHeizwert.Clear();
 
             gridTraeger.Columns.Add("traeger", MyResource.Resource.BK_KOSTEN_SP_TRAEGER);
             gridTraeger.Columns.Add("einheit", MyResource.Resource.BK_KOSTEN_SP_ABRECHNUNG);
             gridTraeger.Columns.Add("hi", MyResource.Resource.BK_KOSTEN_SP_HEIZWERT);
             gridTraeger.Columns.Add("arbeit", MyResource.Resource.BK_KOSTEN_SP_ARBEITSPREIS);
+            gridTraeger.Columns.Add("arbeitkwh", MyResource.Resource.BK_KOSTEN_SP_ARBEITSPREIS_KWH);
             gridTraeger.Columns.Add("grund", MyResource.Resource.BK_KOSTEN_SP_GRUNDPREIS);
-            gridTraeger.Columns[0].FillWeight = 150;
-            gridTraeger.Columns[1].FillWeight = 90;
+
+            // SECHS KÖPFE PASSEN EINZEILIG NICHT MEHR NEBENEINANDER. Gemessen bei 1040 px
+            // Seitenbreite: 622 px stehen der Tabelle zur Verfügung, die sechs Köpfe
+            // brauchen einzeilig zusammen 698 px. Ohne Umbruch kürzte der DataGridView
+            // „Arbeitspreis [€/Einheit]" und „Arbeitspreis [€/kWh]" beide auf
+            // „Arbeitspreis [€/…" — zwei Nachbarspalten mit demselben sichtbaren Kopf,
+            // und die Vergleichsspalte wäre damit unlesbar geworden, um die es hier
+            // gerade geht. Der Kopf bricht deshalb um und die Kopfzeile wächst mit.
+            // (Die Werte selbst sind schmal: die breiteste Zelle misst 105 px.)
+            gridTraeger.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            gridTraeger.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+
+            // Die Gewichte sind die bei 1040 px GEMESSENEN Mindestbreiten, nicht geraten:
+            // Träger 135 (breiteste Zelle „Elektrische Energie“ = 105 px),
+            // Abrechnungseinheit 125 — EIN Wort, das nicht umbrechen kann, also zählt hier
+            // die volle Kopfbreite von 119 px; mit den bisherigen 103 px stand sie schon
+            // vor dieser Änderung gekürzt da,
+            // die vier Zahlenspalten 90/95/92/85 gegen ihre UMBROCHENEN Köpfe (84/77/77/72 px)
+            // und ihre Zellen (höchstens 40 px). Danach ist kein Kopf mehr gekürzt.
+            gridTraeger.Columns[0].FillWeight = 135;
+            gridTraeger.Columns[1].FillWeight = 125;
             gridTraeger.Columns[2].FillWeight = 90;
-            gridTraeger.Columns[3].FillWeight = 90;
-            gridTraeger.Columns[4].FillWeight = 90;
-            for (int i = 2; i <= 4; i++)
+            gridTraeger.Columns[3].FillWeight = 95;
+            gridTraeger.Columns[4].FillWeight = 92;
+            gridTraeger.Columns[5].FillWeight = 85;
+            for (int i = 2; i <= 5; i++)
                 gridTraeger.Columns[i].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
             // Die VERWENDUNGSMENGE — die eine Frage, die die gespeicherte Abfrage nicht
@@ -624,14 +649,23 @@ namespace WindowsFormsApplication1
                     // Weder Projekt- noch Katalogpreis gepflegt: der Träger kann keine
                     // Energiekosten erzeugen. Der Grund gehört in die Statuszeile, nicht nur
                     // die 0,0000 in die Tabelle.
-                    if (!preis.HasValue || Math.Abs(preis.Value) < 1e-9)
-                        _traegerOhnePreis.Add(S(r, "name"));
+                    bool ohnePreis = !preis.HasValue || Math.Abs(preis.Value) < 1e-9;
+                    if (ohnePreis) _traegerOhnePreis.Add(S(r, "name"));
+
+                    // Kein Heizwert = keine Umrechnung. Nur melden, wenn ein Preis da ist,
+                    // den man überhaupt umrechnen wollte — sonst stünde derselbe Träger
+                    // zweimal in der Fußzeile, einmal je fehlender Angabe.
+                    bool ohneHeizwert = !hi.HasValue || hi.Value <= 0;
+                    if (ohneHeizwert && !ohnePreis) _traegerOhneHeizwert.Add(S(r, "name"));
 
                     int idx = gridTraeger.Rows.Add(
                         S(r, "name"),
                         S(r, "billing_unit"),
                         hi.HasValue ? hi.Value.ToString("N2", kultur) : "—",
                         preis.HasValue ? preis.Value.ToString("N4", kultur) : "—",
+                        (ohnePreis || ohneHeizwert)
+                            ? "—"
+                            : (preis.Value / hi.Value).ToString("N4", kultur),
                         grund.HasValue ? grund.Value.ToString("N2", kultur) : "—");
 
                     // Warum steht diese Zeile hier? Der Filter bleibt nur dann
@@ -668,7 +702,7 @@ namespace WindowsFormsApplication1
                                 string.Join(", ", namen.ToArray()))
                 : MyResource.Resource.BK_KOSTEN_TRAEGER_KEINE;
 
-            int idx = gridTraeger.Rows.Add(text, "", "", "", "");
+            int idx = gridTraeger.Rows.Add(text, "", "", "", "", "");
             gridTraeger.Rows[idx].DefaultCellStyle.ForeColor = Color.DimGray;
             gridTraeger.Rows[idx].DefaultCellStyle.Font =
                 new Font(gridTraeger.Font, FontStyle.Italic);
@@ -751,6 +785,7 @@ namespace WindowsFormsApplication1
         public int GewerkeOhnePosition { get { return _ohnePosition.Count; } }
         public int TraegerOhnePreis { get { return _traegerOhnePreis.Count; } }
         public int TraegerNichtZugeordnet { get { return _traegerNichtZugeordnet.Count; } }
+        public int TraegerOhneHeizwert { get { return _traegerOhneHeizwert.Count; } }
 
         // ------------------------------------------------------ Kategorie-Kachel
 

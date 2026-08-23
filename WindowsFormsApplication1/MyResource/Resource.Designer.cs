@@ -1630,15 +1630,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ {0} Komponente(n) weichen vom Technik-Planwert ab ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_ABWEICHUNG {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_ABWEICHUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb ähnelt.
         /// </summary>
         public static string BK_KOSTEN_BETRIEB {
@@ -1808,7 +1799,16 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_KOSTEN_SP_ARBEITSPREIS", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitspreis [€/kWh] ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_SP_ARBEITSPREIS_KWH {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_SP_ARBEITSPREIS_KWH", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Grundpreis [€/a] ähnelt.
         /// </summary>
@@ -1842,15 +1842,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_KOSTEN_SP_SUMME {
             get {
                 return ResourceManager.GetString("BK_KOSTEN_SP_SUMME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Technik-Planwert ähnelt.
-        /// </summary>
-        public static string BK_KOSTEN_SP_TECHNIK {
-            get {
-                return ResourceManager.GetString("BK_KOSTEN_SP_TECHNIK", resourceCulture);
             }
         }
         
@@ -1898,7 +1889,16 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_KOSTEN_TRAEGER_FEHLT", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Kein Heizwert bei: {0} — ohne Heizwert lässt sich der Arbeitspreis nicht auf kWh umrechnen; im Reiter „Energiekosten&quot; der Kostenverwaltung erfassen. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_TRAEGER_HI0 {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_TRAEGER_HI0", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verwendet von: {0} ähnelt.
         /// </summary>
@@ -8284,15 +8284,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 🔄 Planwert übernehmen… ähnelt.
-        /// </summary>
-        public static string KOSTEN_BTN_PLANWERT {
-            get {
-                return ResourceManager.GetString("KOSTEN_BTN_PLANWERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ⚙ Betriebskosten VDI 2067… ähnelt.
         /// </summary>
         public static string KOSTEN_BTN_VDI2067 {
@@ -8374,24 +8365,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
-        /// </summary>
-        public static string KOSTEN_PLANWERT_BTN_ABBRUCH {
-            get {
-                return ResourceManager.GetString("KOSTEN_PLANWERT_BTN_ABBRUCH", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
-        /// </summary>
-        public static string KOSTEN_PLANWERT_BTN_OK {
-            get {
-                return ResourceManager.GetString("KOSTEN_PLANWERT_BTN_OK", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} €/kWel × {1} kWel ähnelt.
         /// </summary>
         public static string KOSTEN_PLANWERT_HERL_BHKW {
@@ -8424,96 +8397,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOSTEN_PLANWERT_HERL_SPEICHER {
             get {
                 return ResourceManager.GetString("KOSTEN_PLANWERT_HERL_SPEICHER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Je Anlage festlegen, welcher Wert als Investition gilt. Die Nebenkosten entstehen als eigene Zeilen. ähnelt.
-        /// </summary>
-        public static string KOSTEN_PLANWERT_KOPF {
-            get {
-                return ResourceManager.GetString("KOSTEN_PLANWERT_KOPF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Für „{0}&quot; ist in der Technik dieses Projekts kein Kostenwert gepflegt. ähnelt.
-        /// </summary>
-        public static string KOSTEN_PLANWERT_LEER {
-            get {
-                return ResourceManager.GetString("KOSTEN_PLANWERT_LEER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nebenkosten — je Posten eine eigene Zeile: ähnelt.
-        /// </summary>
-        public static string KOSTEN_PLANWERT_NEBENKOSTEN {
-            get {
-                return ResourceManager.GetString("KOSTEN_PLANWERT_NEBENKOSTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage ähnelt.
-        /// </summary>
-        public static string KOSTEN_PLANWERT_SP_ANLAGE {
-            get {
-                return ResourceManager.GetString("KOSTEN_PLANWERT_SP_ANLAGE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenbasis ähnelt.
-        /// </summary>
-        public static string KOSTEN_PLANWERT_SP_BASIS {
-            get {
-                return ResourceManager.GetString("KOSTEN_PLANWERT_SP_BASIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Betrag [€] ähnelt.
-        /// </summary>
-        public static string KOSTEN_PLANWERT_SP_BETRAG {
-            get {
-                return ResourceManager.GetString("KOSTEN_PLANWERT_SP_BETRAG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
-        /// </summary>
-        public static string KOSTEN_PLANWERT_SP_HERLEITUNG {
-            get {
-                return ResourceManager.GetString("KOSTEN_PLANWERT_SP_HERLEITUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Hauptposition: {0} € ähnelt.
-        /// </summary>
-        public static string KOSTEN_PLANWERT_SUMME {
-            get {
-                return ResourceManager.GetString("KOSTEN_PLANWERT_SUMME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Technik-Planwert übernehmen — {0} ähnelt.
-        /// </summary>
-        public static string KOSTEN_PLANWERT_TITEL {
-            get {
-                return ResourceManager.GetString("KOSTEN_PLANWERT_TITEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}&quot;: Hauptposition auf {1} € gesetzt, {2} Nebenkostenzeile(n) abgeglichen. ähnelt.
-        /// </summary>
-        public static string KOSTEN_PLANWERT_UEBERNOMMEN {
-            get {
-                return ResourceManager.GetString("KOSTEN_PLANWERT_UEBERNOMMEN", resourceCulture);
             }
         }
         

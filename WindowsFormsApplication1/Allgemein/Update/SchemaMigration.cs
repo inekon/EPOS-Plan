@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 36;
+        public const int ZIEL_VERSION = 37;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1279,6 +1279,106 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_36_ENERGIETRAEGER_ABFRAGE = 36;
 
+        /// <summary>
+        /// BESTANDSABGLEICH DER BHKW-KOSTEN (Befund 23.08.2026): <b>Die fuenf Einzelposten
+        /// und der abgeleitete Wert <c>Investition_kwel</c> werden je Zeile in
+        /// Uebereinstimmung gebracht</b> - in <c>Tab_BHKW</c> UND <c>Tab_BHKW_STAMM</c>.
+        ///
+        /// <para>
+        /// <b>Anlass.</b> Seit dem Nutzerentscheid vom 22.08.2026 fuehren die fuenf
+        /// Einzelposten (<see cref="BHKWKosten"/>), und <c>Investition_kwel</c> ist daraus
+        /// abgeleitet. Am 23.08.2026 ist deshalb in <c>TechnikPlanwertCtrl.BasenFuellen</c>
+        /// die zweite Kostenbasis <c>BASIS_SPEZIFISCH</c> (= <c>Investition_kwel</c> *
+        /// <c>Pel</c>) fuer das BHKW entfallen: Sie war seither eine Dublette des
+        /// Postenwegs und zaehlte zusammen mit den vier Nebenposten doppelt. Fuer
+        /// Altzeilen, die NUR den spezifischen Wert tragen, heisst das aber: ihre
+        /// Investition ist ab sofort 0,00 EUR. Gemessen an <c>A-Tron_21_F</c>
+        /// (Projektzeile 1018146 in Projekt 1024, Stammsatz 67): <c>Kosten_Modul</c> und
+        /// die vier Nebenposten NULL, <c>Investition_kwel</c> 2000 bei <c>Pel</c> 21 -
+        /// 42.000,00 EUR fallen auf 0,00 EUR. Betroffen ist jede BHKW-Zeile, die noch nie
+        /// ueber den neuen Dialog gespeichert wurde.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Die Regel je Zeile</b> - vier Faelle, und nur zwei davon schreiben:
+        /// <list type="number">
+        ///   <item><description><b>Postensumme &gt; 0:</b> Die Posten fuehren.
+        ///     <c>Investition_kwel</c> wird auf <c>Summe / Pel</c> gesetzt; an den Posten
+        ///     selbst aendert sich nichts.</description></item>
+        ///   <item><description><b>Postensumme 0/NULL, <c>Investition_kwel</c> &gt; 0 und
+        ///     <c>Pel</c> &gt; 0:</b> Der spezifische Wert ist der EINZIGE vorhandene
+        ///     Betrag. Er wandert als <c>Kosten_Modul</c> = <c>Investition_kwel</c> *
+        ///     <c>Pel</c> auf den Postenweg und bleibt daneben unveraendert stehen - er
+        ///     wird NIE auf 0 gesetzt, sonst ginge der einzige Nachweis der Investition
+        ///     verloren.</description></item>
+        ///   <item><description><b><c>Pel</c> = 0/NULL:</b> Der Wert je kWel ist nicht
+        ///     bestimmbar (<see cref="BHKWKosten.JeKWelBestimmbar"/>) - jede Zahl mal 0
+        ///     ergaebe wieder 0 und verschwiege den erfassten Betrag. Die Zeile bleibt
+        ///     UNVERAENDERT und wird als offen protokolliert.</description></item>
+        ///   <item><description><b>Beides leer:</b> nichts zu tun.</description></item>
+        /// </list>
+        /// NULL und 0 werden beim LESEN gleich behandelt (Summe 0); geschrieben wird eine
+        /// 0 nirgends.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Rundungsregel: KEINE - und genau das ist die Regel.</b>
+        /// <see cref="BHKWKosten.JeKWel"/> (<c>Model\BHKWKosten.cs</c>, Zeile 58:
+        /// <c>return JeKWelBestimmbar(pel) ? summe / pel : 0.0;</c>) rundet nicht, und
+        /// <c>BHKWCtrl.Update</c> wie <c>BHKWStammCtrl.Update</c> schreiben genau diesen
+        /// ungerundeten Quotienten in die <c>Double</c>-Spalte; gerundet wird allein die
+        /// ANZEIGE des Dialogs (<c>F2</c>). Wuerde die Migration runden, schriebe der
+        /// naechste Dialogspeichervorgang eine andere Zahl, und die Gegenprobe meldete auf
+        /// ewig eine Abweichung. Der Schritt ruft deshalb dieselbe Methode auf, statt die
+        /// Formel nachzubauen: <c>16.666 / 250</c> wird als <c>66,664</c> gespeichert,
+        /// <c>21.966 / 21</c> als <c>1046</c>. Auch die Gegenrichtung bleibt ungerundet
+        /// (<c>Kosten_Modul</c> = <c>Investition_kwel</c> * <c>Pel</c>), damit die
+        /// Rueckrechnung <c>Summe / Pel</c> denselben Wert wieder ergibt.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Eine Schwelle gibt es trotzdem - fuer den VERGLEICH, nicht fuer den Wert.</b>
+        /// <see cref="SCHRITT37_SCHWELLE"/> = 0,005 EUR/kWel ist Zeichen fuer Zeichen die
+        /// Schwelle, mit der <c>Form_DBBHKW.HinweisAnzeigen</c> entscheidet, ob ein
+        /// Bestandswert "zur Ableitung passt": die halbe letzte Stelle seiner
+        /// <c>F2</c>-Anzeige. Sie faengt das Gleitkommarauschen der Rueckrechnung
+        /// <c>(inv * pel) / pel</c> ab, das sonst bei jedem Lauf eine Abweichung im
+        /// letzten Bit meldete.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>ACE-Falle (gemessen 22.08.2026).</b> Ein <c>?</c>-Parameter, den ACE nicht
+        /// eindeutig binden kann - etwa in der UNTERABFRAGE eines UPDATE -, trifft still
+        /// 0 Zeilen, ohne Fehler und ohne Wirkung. Der Schritt liest deshalb erst alle
+        /// Zeilen, rechnet in C# und setzt dann je Zeile EIN Feld ueber
+        /// <c>WHERE ID = &lt;ganzzahliges Literal&gt;</c>; Parameter ist nur der Wert.
+        /// Danach wird geprueft, dass GENAU EINE Zeile getroffen wurde, und die Zeilenzahl
+        /// beider Tabellen wird vorher und nachher gezaehlt: Dieser Schritt aendert nur
+        /// Feldwerte, er legt keine Zeile an und entfernt keine.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Idempotent</b> (unabhaengig vom Marker): Nach dem Schreiben laeuft dieselbe
+        /// Pruefung ein zweites Mal, ohne zu schreiben. Sie muss 0 Angleichungen und 0
+        /// Ableitungen melden, sonst gilt der Schritt als gescheitert. Ein zweiter
+        /// Programmlauf meldet aus demselben Grund "es gab nichts zu tun".
+        /// </para>
+        ///
+        /// <para>
+        /// <b>HART, anders als 32b und 35.</b> Diese Zeilen haben einen Leser: Die
+        /// Investition jedes BHKW geht ueber <c>TechnikPlanwertCtrl.BasenFuellen</c> in
+        /// die Kostenrechnung ein. Eine fehlende Spalte oder ein fehlgeschlagenes UPDATE
+        /// haelt den Marker deshalb zurueck. Nur der Fall <c>Pel</c> = 0 ist WEICH: Er ist
+        /// nicht reparierbar und nicht kaputt - er wird gezaehlt und benannt.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Nach Schritt 34.</b> Der raeumt verwaiste Geraetezeilen weg; was dort faellt,
+        /// muss hier nicht mehr abgeglichen werden.
+        /// </para>
+        /// </summary>
+        public const int SCHRITT_37_BHKW_POSTEN = 37;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -1516,6 +1616,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static bool _abfragen35Geprueft;
 
+        /// <summary>
+        /// Wurde der BHKW-Kostenabgleich aus Schritt 37 in diesem Lauf schon ausgefuehrt?
+        /// Gleiches Guard-Muster wie <see cref="_abfragen35Geprueft"/>: Schritt 37 setzt
+        /// das Flag, die Abschlusspruefung nach der Schleife holt den Abgleich auf jeder
+        /// bereits auf Stand 37 stehenden Datenbank nach.
+        /// </summary>
+        private static bool _bhkwPostenGeprueft;
+
         // --- Zählwerk des Pakets Parallelverbund aus Schritt 14 -------------------------
 
         /// <summary>
@@ -1677,6 +1785,22 @@ namespace WindowsFormsApplication1
         /// Sie gehoeren in die manuelle Access-Checkliste; die Abschlusspruefung nimmt
         /// beim naechsten Programmstart einen neuen Anlauf.</summary>
         public static int DatenAbfragen35Offen { get; private set; }
+
+        // --- Zaehlwerk des BHKW-Kostenabgleichs aus Schritt 37 --------------------------
+
+        /// <summary>37, Fall 1: Zeilen, deren <c>Investition_kwel</c> aus der Postensumme
+        /// nachgezogen wurde - dort fuehren die Posten.</summary>
+        public static int DatenBhkwPostenAngeglichen { get; private set; }
+
+        /// <summary>37, Fall 2: Zeilen, deren <c>Kosten_Modul</c> aus
+        /// <c>Investition_kwel</c> * <c>Pel</c> abgeleitet wurde, weil kein Posten
+        /// gepflegt war. Ohne sie ginge die Investition dieser Geraete auf 0,00 EUR.</summary>
+        public static int DatenBhkwPostenAbgeleitet { get; private set; }
+
+        /// <summary>37, Fall 3: Zeilen mit <c>Pel</c> = 0/NULL. Dort ist der Wert je kWel
+        /// nicht bestimmbar; die Zeile bleibt unberuehrt und gehoert in die Nachpflege von
+        /// Hand.</summary>
+        public static int DatenBhkwPostenOffen { get; private set; }
 
         /// <summary>
         /// R7: Anlagen, bei denen der Bezeichner NICHT eindeutig auflösbar war (kein
@@ -2052,6 +2176,23 @@ namespace WindowsFormsApplication1
                         "Die Abfrage Abfrage_Energietraeger_Effektiv konnte nicht " +
                         "angelegt werden.",
                         Schritt_36_EnergietraegerAbfrage),
+
+            // BESTANDSABGLEICH DER BHKW-KOSTEN (Befund 23.08.2026) - der Nachzug zum
+            //       Nutzerentscheid vom 22.08.2026, jetzt wo die zweite Kostenbasis
+            //       BASIS_SPEZIFISCH aus TechnikPlanwertCtrl.BasenFuellen entfallen ist.
+            //       DML auf Tab_BHKW und Tab_BHKW_STAMM; erst pruefen, nur bei Bedarf
+            //       schreiben, danach ohne Schreiben gegenmessen. Er steht NACH Schritt 34:
+            //       Was der als verwaiste Geraetezeile entfernt, muss hier nicht mehr
+            //       abgeglichen werden.
+            new Schritt(SCHRITT_37_BHKW_POSTEN,
+                        "BHKW-Kosten abgleichen: Investition_kwel aus den fuenf Einzelposten " +
+                        "nachziehen und, wo nur der spezifische Wert gepflegt ist, daraus " +
+                        "Kosten_Modul ableiten - in Tab_BHKW und Tab_BHKW_STAMM " +
+                        "(Befund 23.08.2026)",
+                        "Die BHKW-Kosten konnten nicht abgeglichen werden - Geraetezeilen, die " +
+                        "nur Investition_kwel fuehren, gehen sonst mit 0,00 EUR in die " +
+                        "Kostenrechnung ein.",
+                        Schritt_37_BhkwPosten),
         };
 
         // =================================================================================
@@ -2130,8 +2271,12 @@ namespace WindowsFormsApplication1
             DatenAbfragen35Entfernt = 0;
             DatenAbfragen35Erneuert = 0;
             DatenAbfragen35Offen = 0;
+            DatenBhkwPostenAngeglichen = 0;
+            DatenBhkwPostenAbgeleitet = 0;
+            DatenBhkwPostenOffen = 0;
             _leseprobeGeprueft = false;
             _abfragen35Geprueft = false;
+            _bhkwPostenGeprueft = false;
             _eindeutigkeitGeprueft = false;
             _katalogIndizesGeprueft = false;
 
@@ -2317,6 +2462,19 @@ namespace WindowsFormsApplication1
             {
                 l.Zeile("Abschlusspruefung gespeicherte Abfragen (zweiter Durchgang)");
                 Abfragen35Abschluss(l);
+                l.Detail();
+            }
+
+            // --- Abschlusspruefung des BHKW-Kostenabgleichs (Schritt 37) ---------------
+            // Dasselbe Muster wie die vier Pruefungen darueber: Laeuft, wenn Schritt 37 in
+            // DIESEM Lauf nicht ausgefuehrt wurde - also auf jeder bereits auf Stand 37
+            // stehenden Datenbank. Sie prueft zuerst und schreibt nur, wenn beide Seiten
+            // einer Zeile auseinandergelaufen sind; im Normalfall kostet sie vier SELECTs
+            // und meldet "nichts zu tun". Begruendung bei BhkwPostenAbschluss.
+            if (!_bhkwPostenGeprueft && StandNachher >= SCHRITT_37_BHKW_POSTEN)
+            {
+                l.Zeile("Abschlusspruefung BHKW-Kosten (Einzelposten und Investition_kwel)");
+                BhkwPostenAbschluss(l);
                 l.Detail();
             }
 
@@ -2549,6 +2707,25 @@ namespace WindowsFormsApplication1
                             : (DatenAbfragen35Entfernt == 0 && DatenAbfragen35Erneuert == 0
                                 ? " - es gab nichts zu tun."
                                 : " - jede verbliebene gespeicherte Abfrage laesst sich wieder lesen.")));
+
+            // Schritt 37 meldet - wie 14, 16, 17, 24, 30, 32, 34 und 35 - AUCH die 0. Sie
+            // ist hier der IDEMPOTENZ-NACHWEIS: Der zweite Lauf findet beide Seiten jeder
+            // BHKW-Zeile in Uebereinstimmung vor und meldet 0/0. Die Zahl "offen" steht
+            // ausdruecklich daneben - sie ist der einzige Rest, den dieser Schritt nicht
+            // heilen kann und auch nicht heilen darf.
+            if (StandNachher >= SCHRITT_37_BHKW_POSTEN)
+                l.Zeile("BHKW-Kosten (Schritt 37): " + DatenBhkwPostenAngeglichen +
+                        " x Investition_kwel aus den Einzelposten nachgezogen, " +
+                        DatenBhkwPostenAbgeleitet + " x Kosten_Modul aus Investition_kwel " +
+                        "abgeleitet, " + DatenBhkwPostenOffen + " offen" +
+                        (DatenBhkwPostenOffen > 0
+                            ? " (Pel = 0 - der Wert je kWel ist dort nicht bestimmbar, die " +
+                              "Zeilen bleiben unveraendert und sind von Hand nachzupflegen)"
+                            : "") +
+                        (DatenBhkwPostenAngeglichen == 0 && DatenBhkwPostenAbgeleitet == 0
+                            ? " - beide Seiten stimmen ueberein; es gab nichts zu tun."
+                            : " - jede BHKW-Zeile fuehrt ihre Investition jetzt in den fuenf " +
+                              "Einzelposten, aus denen TechnikPlanwertCtrl.BasenFuellen sie liest."));
 
             return alleOk && StandNachher >= ZIEL_VERSION;
         }
@@ -5036,6 +5213,369 @@ namespace WindowsFormsApplication1
             l.Notiz("36c/36d: " + SchemaKatalog.ABFRAGE_ENERGIETRAEGER_EFFEKTIV +
                     " angelegt, Probelesen: " + Zahl(n) + " Zeile(n).");
             return true;
+        }
+
+        // =================================================================================
+        // Schritt 37 - Bestandsabgleich der BHKW-Kosten (Posten <-> Investition_kwel)
+        // =================================================================================
+
+        /// <summary>
+        /// Die beiden Tabellen, die Schritt 37 abgleicht - Projektseite und Stammseite.
+        /// Beide fuehren dieselben Spalten (<c>BHKWCtrl.Update</c> und
+        /// <c>BHKWStammCtrl.Update</c> schreiben dasselbe SQL Feld fuer Feld), und beide
+        /// muessen abgeglichen werden: <c>BHKWCtrl.CopyFromStamm</c> kopiert einen
+        /// Stammsatz UNVERAENDERT ins Projekt und rechnet bewusst nicht nach - bliebe die
+        /// Stammseite schief, entstuenden daraus weiter schiefe Projektzeilen.
+        /// </summary>
+        private static readonly string[] SCHRITT37_TABELLEN = { "Tab_BHKW", "Tab_BHKW_STAMM" };
+
+        /// <summary>
+        /// Die fuenf Einzelposten in genau der Reihenfolge, in der <c>BHKWKosten.Summe</c>
+        /// sie addiert. <c>Kosten_Modul</c> steht vorn: In ihn legt Fall 2 den einzigen
+        /// vorhandenen Betrag, und aus ihm liest <c>TechnikPlanwertCtrl.BasenFuellen</c>
+        /// die Kostenbasis des BHKW.
+        /// </summary>
+        private static readonly string[] SCHRITT37_POSTEN =
+        {
+            "Kosten_Modul", "Kosten_Montage", "Kosten_Lieferung",
+            "Kosten_Schallschutzhaube", "Kosten_Abgasreinigung"
+        };
+
+        /// <summary>Die uebrigen Spalten, die der Abgleich braucht.</summary>
+        private static readonly string[] SCHRITT37_SCHLUESSEL =
+        {
+            "ID", "Bezeichner", "Pel", "Investition_kwel"
+        };
+
+        /// <summary>
+        /// Schwelle, ab der zwei Betraege je kWel als verschieden gelten [EUR/kWel]. Das
+        /// ist KEINE Rundung des gespeicherten Werts - der bleibt ungerundet, Begruendung
+        /// bei <see cref="SCHRITT_37_BHKW_POSTEN"/> -, sondern allein die
+        /// Vergleichsschwelle, und sie ist dieselbe wie im Dialog:
+        /// <c>Form_DBBHKW.HinweisAnzeigen</c> nennt eine Abweichung erst ab
+        /// <c>&gt; 0.005</c>, der halben letzten Stelle seiner <c>F2</c>-Anzeige.
+        /// </summary>
+        private const double SCHRITT37_SCHWELLE = 0.005;
+
+        /// <summary>Zaehlwerk EINER Tabelle aus dem Bestandsabgleich.</summary>
+        private sealed class BhkwBilanz
+        {
+            /// <summary>Fall 1: <c>Investition_kwel</c> aus der Postensumme nachgezogen.</summary>
+            public int Angeglichen;
+
+            /// <summary>Fall 2: <c>Kosten_Modul</c> aus <c>Investition_kwel</c> * <c>Pel</c>
+            /// abgeleitet.</summary>
+            public int Abgeleitet;
+
+            /// <summary>Fall 3: <c>Pel</c> = 0/NULL - Zeile unberuehrt.</summary>
+            public int Offen;
+
+            /// <summary>Beide Seiten passen bereits zusammen.</summary>
+            public int Stimmig;
+
+            /// <summary>Fall 4: weder Posten noch <c>Investition_kwel</c>.</summary>
+            public int Leer;
+
+            /// <summary>Mindestens ein Lese- oder Schreibfehler; der Schritt scheitert.</summary>
+            public bool Fehler;
+        }
+
+        /// <summary>
+        /// Schritt 37. Anlass, Regel, Rundung und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_37_BHKW_POSTEN"/>.
+        /// </summary>
+        private static bool Schritt_37_BhkwPosten(Lauf l)
+        {
+            _bhkwPostenGeprueft = true;
+            return BhkwPostenAbgleichen(l, "37");
+        }
+
+        /// <summary>
+        /// <b>Abschlusspruefung des BHKW-Kostenabgleichs</b> - dasselbe Nachzieh-Muster wie
+        /// bei <see cref="LeseprobeAbschluss"/> und <see cref="Abfragen35Abschluss"/>: Sie
+        /// laeuft, wenn Schritt 37 in DIESEM Lauf nicht ausgefuehrt wurde, also auf jeder
+        /// Datenbank, die bereits auf Stand 37 steht.
+        ///
+        /// <para>
+        /// <b>Warum dauerhaft.</b> Beide Geraetetabellen lassen sich in Access von Hand
+        /// aendern, und genau das Auseinanderlaufen der zwei Wege war der Befund. Die
+        /// Pruefung kostet zwei SELECTs je Tabelle und beantwortet bei jedem Programmstart
+        /// die Frage, an der die Kostenrechnung haengt: Steht die Investition jedes BHKW
+        /// noch dort, wo <c>TechnikPlanwertCtrl.BasenFuellen</c> sie liest? Geschrieben
+        /// wird nur, wenn nicht.
+        /// </para>
+        /// </summary>
+        private static void BhkwPostenAbschluss(Lauf l)
+        {
+            BhkwPostenAbgleichen(l, "Abschluss 37");
+        }
+
+        /// <summary>
+        /// Gemeinsamer Rumpf von Schritt 37 und seiner Abschlusspruefung - es soll nur EINE
+        /// Fassung dieser Entscheidung geben (Muster von
+        /// <see cref="Abfragen35PruefenUndNachziehen"/>).
+        ///
+        /// <para>
+        /// Je Tabelle vier Handgriffe: Zeilenzahl messen, abgleichen, Zeilenzahl erneut
+        /// messen (dieser Schritt darf keine Zeile anlegen oder entfernen), danach dieselbe
+        /// Pruefung OHNE Schreiben als Gegenprobe. Erst wenn beide Tabellen durch sind,
+        /// stehen die Zahlen im Zaehlwerk und die Zusammenfassung im Protokoll.
+        /// </para>
+        /// </summary>
+        private static bool BhkwPostenAbgleichen(Lauf l, string marke)
+        {
+            int angeglichen = 0, abgeleitet = 0, offen = 0, stimmig = 0, leer = 0;
+            bool fehler = false;
+
+            foreach (string tabelle in SCHRITT37_TABELLEN)
+            {
+                object vorher = Scalar(l, "SELECT COUNT(*) FROM [" + tabelle + "]");
+                if (vorher == null)
+                {
+                    l.Notiz(marke + ": " + tabelle + " ist nicht zaehlbar" +
+                            (l.LetzterFehler != null ? " (" + l.LetzterFehler + ")" : "") +
+                            " - ohne diese Zahl kann der Abgleich nichts belegen.");
+                    fehler = true;
+                    continue;
+                }
+
+                BhkwBilanz b = BhkwTabelleAbgleichen(l, tabelle, marke, false);
+
+                angeglichen += b.Angeglichen;
+                abgeleitet += b.Abgeleitet;
+                offen += b.Offen;
+                stimmig += b.Stimmig;
+                leer += b.Leer;
+                if (b.Fehler) fehler = true;
+
+                int nachher = Zahl(Scalar(l, "SELECT COUNT(*) FROM [" + tabelle + "]"));
+                if (nachher != Zahl(vorher))
+                {
+                    l.Notiz(marke + ": ABBRUCH - " + tabelle + " hatte " + Zahl(vorher) +
+                            " Zeilen und hat jetzt " + nachher + ". Dieser Schritt aendert nur " +
+                            "Feldwerte; er legt keine Zeile an und entfernt keine.");
+                    fehler = true;
+                    continue;
+                }
+
+                // Gegenprobe: dieselbe Pruefung, diesmal ohne zu schreiben. Sie ist der
+                // Idempotenznachweis IM SELBEN LAUF - was hier noch zu tun waere, waere
+                // beim naechsten Programmstart erneut zu tun.
+                BhkwBilanz p = BhkwTabelleAbgleichen(l, tabelle, marke + "-Gegenprobe", true);
+                if (p.Angeglichen > 0 || p.Abgeleitet > 0)
+                {
+                    l.Notiz(marke + ": ABBRUCH - die Gegenprobe auf " + tabelle + " findet " +
+                            "weiterhin " + p.Angeglichen + " nachzuziehende und " + p.Abgeleitet +
+                            " abzuleitende Zeilen. Der Abgleich hat nicht gegriffen.");
+                    fehler = true;
+                    continue;
+                }
+
+                l.Notiz(marke + ": " + tabelle + " (" + nachher + " Zeilen unveraendert): " +
+                        b.Angeglichen + " x Investition_kwel nachgezogen, " + b.Abgeleitet +
+                        " x Kosten_Modul abgeleitet, " + b.Stimmig + " bereits stimmig, " +
+                        b.Leer + " ohne jede Kostenangabe, " + b.Offen + " offen (Pel = 0). " +
+                        "Gegenprobe: nichts mehr zu tun.");
+            }
+
+            DatenBhkwPostenAngeglichen = angeglichen;
+            DatenBhkwPostenAbgeleitet = abgeleitet;
+            DatenBhkwPostenOffen = offen;
+
+            l.Notiz(marke + ": zusammen " + angeglichen + " angeglichen, " + abgeleitet +
+                    " abgeleitet, " + offen + " offen; " + stimmig + " Zeilen waren bereits " +
+                    "stimmig, " + leer + " fuehren ueberhaupt keine Kosten." +
+                    (angeglichen == 0 && abgeleitet == 0
+                        ? " Es gab nichts zu tun (Idempotenz-Nachweis: Genau das meldet ein " +
+                          "zweiter Lauf)."
+                        : ""));
+
+            return !fehler;
+        }
+
+        /// <summary>
+        /// Gleicht EINE Tabelle ab. Mit <paramref name="nurPruefen"/> wird nichts
+        /// geschrieben und nichts je Zeile protokolliert - dann zaehlt die Methode bloss,
+        /// was zu tun WAERE. Genau das ist die Gegenprobe.
+        ///
+        /// <para>
+        /// <b>Gerechnet wird mit <c>BHKWKosten</c>, nicht mit einer eigenen Formel.</b>
+        /// Summe und Quotient kommen aus derselben Klasse, aus der sie auch der Dialog und
+        /// die beiden Schreibwege holen - anders liefe der Bestand nach der naechsten
+        /// Speicherung wieder auseinander.
+        /// </para>
+        /// </summary>
+        private static BhkwBilanz BhkwTabelleAbgleichen(Lauf l, string tabelle, string marke,
+                                                        bool nurPruefen)
+        {
+            var b = new BhkwBilanz();
+
+            // --- Spalten pruefen ------------------------------------------------------
+            // Die fuenf Posten stammen aus der ausgelieferten Kenndaten.accdb, nicht aus
+            // dem Spaltenkatalog. Deshalb die ausdrueckliche Probe statt einer Annahme:
+            // Ohne sie waere jede Aussage dieses Schritts erfunden.
+            DataTable schema = TabellenSchema(l, tabelle);
+            if (schema == null)
+            {
+                l.Notiz(marke + ": " + tabelle + " ist nicht lesbar" +
+                        (l.LetzterFehler != null ? " (" + l.LetzterFehler + ")" : "") + ".");
+                b.Fehler = true;
+                return b;
+            }
+
+            foreach (string spalte in SCHRITT37_SCHLUESSEL)
+            {
+                if (schema.Columns.Contains(spalte)) continue;
+                l.Notiz(marke + ": " + tabelle + " fuehrt die Spalte " + spalte +
+                        " nicht - der Abgleich braucht sie.");
+                b.Fehler = true;
+            }
+
+            foreach (string spalte in SCHRITT37_POSTEN)
+            {
+                if (schema.Columns.Contains(spalte)) continue;
+                l.Notiz(marke + ": " + tabelle + " fuehrt den Kostenposten " + spalte +
+                        " nicht - der Abgleich braucht ihn.");
+                b.Fehler = true;
+            }
+
+            if (b.Fehler) return b;
+
+            DataTable dt = Abfrage(l,
+                "SELECT " + string.Join(", ", SCHRITT37_SCHLUESSEL) + ", " +
+                string.Join(", ", SCHRITT37_POSTEN) + " FROM [" + tabelle + "] ORDER BY ID");
+            if (dt == null)
+            {
+                b.Fehler = true;
+                return b;
+            }
+
+            foreach (DataRow r in dt.Rows)
+            {
+                int id = Zahl(r["ID"]);
+                string name = Txt(r["Bezeichner"]);
+                if (name.Length == 0) name = "(ohne Bezeichner)";
+
+                // NULL und 0 lesen sich gleich: beides ergibt in der Summe 0. Geschrieben
+                // wird eine 0 nirgends - dazu unten Fall 2.
+                double pel = Kommazahl(r["Pel"]);
+                double inv = Kommazahl(r["Investition_kwel"]);
+                double summe = BHKWKosten.Summe(Kommazahl(r["Kosten_Modul"]),
+                                                Kommazahl(r["Kosten_Montage"]),
+                                                Kommazahl(r["Kosten_Lieferung"]),
+                                                Kommazahl(r["Kosten_Schallschutzhaube"]),
+                                                Kommazahl(r["Kosten_Abgasreinigung"]));
+
+                // --- Fall 4: beides leer - es gibt nichts abzugleichen -----------------
+                if (summe <= 0.0 && inv <= 0.0)
+                {
+                    b.Leer++;
+                    continue;
+                }
+
+                // --- Fall 3: Pel = 0/NULL - nicht bestimmbar, Zeile unberuehrt ---------
+                if (!BHKWKosten.JeKWelBestimmbar(pel))
+                {
+                    b.Offen++;
+                    if (!nurPruefen)
+                        l.Notiz(marke + ": " + tabelle + " ID " + id + " \"" + name +
+                                "\": Pel = " + Anzeige(pel) + " - der Wert je kWel ist nicht " +
+                                "bestimmbar, die Zeile bleibt unveraendert (Posten " +
+                                Anzeige(summe) + " EUR, Investition_kwel " + Anzeige(inv) +
+                                " EUR/kWel). Von Hand nachzupflegen.");
+                    continue;
+                }
+
+                if (id <= 0)
+                {
+                    l.Notiz(marke + ": " + tabelle + " \"" + name + "\": ohne Zeilenidentitaet " +
+                            "wird nichts geschrieben.");
+                    b.Fehler = true;
+                    continue;
+                }
+
+                // --- Fall 1: die Posten fuehren - Investition_kwel nachziehen ----------
+                if (summe > 0.0)
+                {
+                    double soll = BHKWKosten.JeKWel(summe, pel);
+                    if (Math.Abs(soll - inv) <= SCHRITT37_SCHWELLE)
+                    {
+                        b.Stimmig++;
+                        continue;
+                    }
+
+                    b.Angeglichen++;
+                    if (nurPruefen) continue;
+
+                    if (!BhkwFeldSetzen(l, tabelle, "Investition_kwel", id, soll, marke))
+                    {
+                        b.Angeglichen--;
+                        b.Fehler = true;
+                        continue;
+                    }
+
+                    l.Notiz(marke + ": " + tabelle + " ID " + id + " \"" + name +
+                            "\": Posten " + Anzeige(summe) + " EUR bei Pel " + Anzeige(pel) +
+                            " kW - Investition_kwel " + Anzeige(inv) + " -> " + Anzeige(soll) +
+                            " EUR/kWel. Die fuenf Posten bleiben unveraendert.");
+                    continue;
+                }
+
+                // --- Fall 2: der spezifische Wert ist der EINZIGE vorhandene Betrag ----
+                // Er wandert nach Kosten_Modul und bleibt daneben stehen. Auf 0 gesetzt
+                // wird er nicht - das waere der Verlust des einzigen Nachweises.
+                double modul = inv * pel;
+
+                b.Abgeleitet++;
+                if (nurPruefen) continue;
+
+                if (!BhkwFeldSetzen(l, tabelle, "Kosten_Modul", id, modul, marke))
+                {
+                    b.Abgeleitet--;
+                    b.Fehler = true;
+                    continue;
+                }
+
+                l.Notiz(marke + ": " + tabelle + " ID " + id + " \"" + name +
+                        "\": kein Posten gepflegt, Investition_kwel " + Anzeige(inv) +
+                        " EUR/kWel bei Pel " + Anzeige(pel) + " kW - Kosten_Modul leer -> " +
+                        Anzeige(modul) + " EUR. Investition_kwel bleibt bei " + Anzeige(inv) +
+                        "; genau diese Zahl leitet BHKWKosten.JeKWel daraus wieder ab.");
+            }
+
+            return b;
+        }
+
+        /// <summary>
+        /// Setzt EIN Zahlenfeld EINER Zeile und misst gegen, dass genau eine Zeile
+        /// getroffen wurde.
+        ///
+        /// <para>
+        /// <b>ACE-Falle (gemessen 22.08.2026):</b> Ein <c>?</c>-Parameter, den ACE nicht
+        /// eindeutig binden kann - etwa in der Unterabfrage eines UPDATE -, trifft STILL
+        /// 0 Zeilen: kein Fehler, keine Meldung, keine Wirkung. Der Schluessel geht deshalb
+        /// als ganzzahliges Literal in das SQL; er stammt aus <c>Zahl(...)</c> und ist
+        /// damit nachweislich eine Zahl. Parameter bleibt allein der WERT - als Text
+        /// formatiert wuerde ein <c>Double</c> seine letzten Stellen verlieren, und genau
+        /// die entscheiden hier ueber "stimmt ueberein".
+        /// </para>
+        /// </summary>
+        private static bool BhkwFeldSetzen(Lauf l, string tabelle, string spalte, int id,
+                                           double wert, string marke)
+        {
+            int n = NonQuery(l,
+                "UPDATE [" + tabelle + "] SET [" + spalte + "]=? WHERE ID=" +
+                id.ToString(CultureInfo.InvariantCulture),
+                new OleDbParameter("@wert", wert));
+
+            if (n == 1) return true;
+
+            l.Notiz(marke + ": " + tabelle + " ID " + id + ": " + spalte +
+                    " liess sich nicht setzen - " +
+                    (n < 0 ? "das UPDATE ist fehlgeschlagen"
+                           : n + " Zeilen getroffen statt einer") +
+                    (l.LetzterFehler != null ? " (" + l.LetzterFehler + ")" : "") + ".");
+            return false;
         }
 
         // =================================================================================

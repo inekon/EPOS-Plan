@@ -65,8 +65,8 @@ namespace WindowsFormsApplication1
             public Panel Spaltenkopf;
             public bool Eingeklappt;
 
-            /// <summary>„Planwert übernehmen…" bzw. „Betriebskosten VDI 2067…", falls der
-            /// Kopf einen führt. Er wird nachgerückt, wenn die Beschriftung wächst.</summary>
+            /// <summary>„Betriebskosten VDI 2067…", falls der Kopf einen führt. Er wird
+            /// nachgerückt, wenn die Beschriftung wächst.</summary>
             public Button Aktion;
         }
 
@@ -726,9 +726,9 @@ namespace WindowsFormsApplication1
             // Falls ein kleiner Sicherheitsabstand zum rechten Rand sein soll (z.B. 5 Pixel):
             targetWidth -= 5;
 
-            // Hinweiszeile über der Liste: Abweichung zum Technik-Planwert (Investition)
-            // bzw. Grund/Herleitung der Betriebskosten-Vorbelegung. Beides ist eine
-            // Mitteilung, kein Eingabefeld — deshalb steht sie vor der ersten Gruppe.
+            // Hinweiszeile über der Liste: Grund bzw. Herleitung der
+            // Betriebskosten-Vorbelegung. Das ist eine Mitteilung, kein Eingabefeld —
+            // deshalb steht sie vor der ersten Gruppe.
             HinweiszeileAnlegen(komponente, targetWidth);
 
             string aktuelleGruppe = "";
@@ -762,33 +762,22 @@ namespace WindowsFormsApplication1
                     };
 
                     Button btnTest = null;
-                    // Der Button erscheint nur in der Hauptgruppe (z.B. "Wärmepumpe")
-                    // und nur auf dem Reiter, für den er gedacht ist: „Planwert
-                    // übernehmen…" bei den Investitionskosten, „Betriebskosten VDI 2067…"
-                    // beim BHKW auf dem Betriebskostenreiter.
-                    if (f.IsMainComponent && kategorieID == KATEGORIE_INVESTITION)
-                    {
-                        btnTest = new Button
-                        {
-                            Text = MyResource.Resource.KOSTEN_BTN_PLANWERT,
-                            Height = 20,
-                            Width = 160,
-                            AutoSize = false,
-                            FlatStyle = FlatStyle.Flat,
-                            ForeColor = Color.White,
-                            BackColor = Color.FromArgb(0, 120, 215), // Blau für "Aktion"
-                            Cursor = Cursors.Hand,
-                            Font = new Font("Segoe UI", 8, FontStyle.Bold),
-                            // Positionierung rechts vom Text:
-                            Location = new Point(groupTitle.PreferredWidth + 20, 5)
-                        };
-                        btnTest.FlatAppearance.BorderSize = 0;
-
-                        // Den EventHandler anhängen (Logik siehe unten)
-                        btnTest.Click += (s, e) => btnTest_KostenUebernahme_Click(komponente);
-                    }
-                    else if (f.IsMainComponent && kategorieID == KATEGORIE_BETRIEB &&
-                             string.Equals(komponente, DbWerte.ERZEUGER_BHKW, StringComparison.Ordinal))
+                    // Der Button erscheint nur in der Hauptgruppe (z.B. "BHKW") und nur auf
+                    // dem Reiter, für den er gedacht ist: „Betriebskosten VDI 2067…" beim
+                    // BHKW auf dem Betriebskostenreiter.
+                    //
+                    // NUTZERENTSCHEID 23.08.2026: „Planwert übernehmen…" ist entfallen. Der
+                    // Knopf stand auf JEDER Hauptgruppe des Investitionsreiters — auch auf
+                    // „Bauliche Anlagen", „Wärmezentrale" und „Stromeinspeisung", die gar
+                    // keine Technik und damit keinen Planwert haben; dort meldete er nur
+                    // „für … sind keine Technik-Planwerte hinterlegt". Was er anbot, war ohne
+                    // Kenntnis der Kostenbasen nicht zu erraten, und zu holen gab es zuletzt
+                    // nur beim BHKW etwas.
+                    // Die Vorbelegung beim ERSTEN Anwählen bleibt unberührt
+                    // (EnsureMainComponentExists, NebenkostenAnlegen); von hier aus wird
+                    // kein erfasster Betrag mehr überschrieben.
+                    if (f.IsMainComponent && kategorieID == KATEGORIE_BETRIEB &&
+                        string.Equals(komponente, DbWerte.ERZEUGER_BHKW, StringComparison.Ordinal))
                     {
                         btnTest = new Button
                         {
@@ -846,10 +835,10 @@ namespace WindowsFormsApplication1
                     flp.Controls.Add(columnHeader);
 
                     // --- K5b: Der Kopf wird zum Ein-/Ausklapper ------------------------
-                    // Angeklickt wird der Kopf selbst oder seine Beschriftung. Die beiden
-                    // Knöpfe darauf bleiben unberührt: Ein Click auf ein Kind-Control
-                    // erreicht das Panel nicht, „Planwert übernehmen…" und der Lösch-Knopf
-                    // arbeiten also weiter wie bisher.
+                    // Angeklickt wird der Kopf selbst oder seine Beschriftung. Die Knöpfe
+                    // darauf bleiben unberührt: Ein Click auf ein Kind-Control erreicht das
+                    // Panel nicht, „Betriebskosten VDI 2067…" und der Lösch-Knopf arbeiten
+                    // also weiter wie bisher.
                     var block = new Gruppenblock
                     {
                         Name = aktuelleGruppe.Trim(),
@@ -1740,68 +1729,6 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Knopf „Planwert übernehmen…": stellt die Technik-Planwerte <b>je Anlage</b> zur
-        /// Wahl (<see cref="Form_PlanwertUebernahme"/>) und schreibt danach Hauptposition
-        /// und Nebenkostenzeilen.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// Bis 18.08.2026 nahm der Knopf ohne Rückfrage den Inhalt genau eines Feldes je
-        /// Gewerk. Das war beim BHKW die kleinere von zwei gepflegten Zahlen
-        /// (<c>Kosten_Modul</c> statt <c>Investition_kwel × Pel</c>) und ignorierte die vier
-        /// Nebenkostenfelder vollständig. Jetzt entscheidet der Anwender, und die
-        /// Nebenkosten entstehen als eigene, einzeln änderbare Zeilen
-        /// (Nutzerentscheidungen 1 und 2).
-        /// </para>
-        /// <para>
-        /// Übernommen wird nur auf ausdrückliche Bestätigung — <b>nie automatisch</b>
-        /// (Nutzerentscheidung 4). Bricht der Anwender ab, bleibt jeder erfasste Wert stehen.
-        /// </para>
-        /// </remarks>
-        private void btnTest_KostenUebernahme_Click(string komponente)
-        {
-            // Nur die Investitionskosten haben einen Technik-Planwert; auf den anderen
-            // Reitern wäre der Knopf sinnlos (Betriebskosten sind €/a, Energiekosten
-            // haben ihre eigene Maske).
-            if (kategorieID != KATEGORIE_INVESTITION) return;
-
-            var anlagen = TechnikPlanwertCtrl.LiesAnlagen(m_ID_Projekt, komponente);
-            if (anlagen.Count == 0)
-            {
-                MessageBox.Show(string.Format(MyResource.Resource.KOSTEN_PLANWERT_LEER, komponente),
-                                this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            double summe;
-            List<TechnikPlanwertCtrl.Nebenposten> nebenkosten;
-            using (var dlg = new Form_PlanwertUebernahme(komponente, anlagen))
-            {
-                if (dlg.ShowDialog(this) != DialogResult.OK) return;
-                summe = dlg.Hauptsumme;
-                nebenkosten = dlg.Nebenkosten;
-            }
-
-            int komponentenID = GetKomponentenID(komponente);
-            int hauptID = KostenPositionCtrl.FindeHauptposition(m_ID_Projekt, KATEGORIE_INVESTITION,
-                                                                komponentenID, komponente);
-            if (hauptID > 0) KostenPositionCtrl.SetzeBetragNachId(hauptID, summe);
-
-            int nZeilen = KostenPositionCtrl.SchreibeNebenkosten(
-                m_ID_Projekt, KATEGORIE_INVESTITION, komponentenID, nebenkosten,
-                DbWerte.KOSTEN_GRUPPE_ALLGEMEIN, KostenPositionCtrl.Nebenmodus.Abgleichen);
-
-            // Neu einlesen statt die Zeilen von Hand nachzuziehen: die Nebenkosten können
-            // gerade erst entstanden sein, und die Abweichungsanzeige muss ohnehin neu.
-            LoadKostenFaktoren(m_ID_Projekt, komponente);
-            Gesamtkosten(komponente);
-
-            MessageBox.Show(string.Format(MyResource.Resource.KOSTEN_PLANWERT_UEBERNOMMEN,
-                                          komponente, summe.ToString("N2", BerichtTexte.Kultur), nZeilen),
-                            this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        /// <summary>
         /// Knopf „Betriebskosten VDI 2067…": öffnet die Maske mit den zwölf Positionen
         /// nach VDI 2067 (Etappe E3) und liest die Positionsliste danach neu ein.
         /// </summary>
@@ -1829,28 +1756,26 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Hinweiszeile über der Positionsliste: Abweichung zum Technik-Planwert
-        /// (Investitionskosten) bzw. Herleitung oder Grund der ausgebliebenen Vorbelegung
-        /// (Betriebskosten). Ohne Mitteilung entsteht keine Zeile.
+        /// Hinweiszeile über der Positionsliste: Herleitung oder Grund der ausgebliebenen
+        /// Vorbelegung der Betriebskosten. Ohne Mitteilung entsteht keine Zeile.
         /// </summary>
+        /// <remarks>
+        /// NUTZERENTSCHEID 23.08.2026: Der Investitionszweig ist entfallen. Er meldete
+        /// „Weicht vom Technik-Planwert ab: erfasst X, Technik Y. Über ‚Planwert
+        /// übernehmen…' angleichen." — ein Verweis auf einen Knopf, den es nicht mehr gibt,
+        /// und ein Vergleich zwischen der HAUPTposition und dem Planwert, den der Anwender
+        /// an dieser Stelle weder nachvollziehen noch auflösen konnte.
+        /// <see cref="KostenPositionCtrl.Pruefe"/> selbst bleibt: davon leben die
+        /// Komponentenübernahme (<see cref="KomponentenUebernahmeCtrl"/>) und die
+        /// KI-Auskunft, die den Vergleich im Klartext beantworten.
+        /// </remarks>
         private void HinweiszeileAnlegen(string komponente, int breite)
         {
             string text = "";
             Color farbe = Color.FromArgb(0x33, 0x33, 0x33);
             Color flaeche = Color.FromArgb(0xF4, 0xF6, 0xFA);
 
-            if (kategorieID == KATEGORIE_INVESTITION)
-            {
-                KostenPositionCtrl.Abweichung ab = KostenPositionCtrl.Pruefe(
-                    m_ID_Projekt, komponente, KATEGORIE_INVESTITION, GetKomponentenID(komponente));
-                if (ab.Abweichend)
-                {
-                    text = ab.Text;
-                    farbe = Color.FromArgb(0x8A, 0x4B, 0x00);
-                    flaeche = Color.FromArgb(0xFF, 0xF4, 0xD9);
-                }
-            }
-            else if (kategorieID == KATEGORIE_BETRIEB)
+            if (kategorieID == KATEGORIE_BETRIEB)
             {
                 string h;
                 if (!_betriebsHinweis.TryGetValue(komponente ?? "", out h))
@@ -1890,12 +1815,14 @@ namespace WindowsFormsApplication1
         /// des Befundes D2 (mehrere Anlagenzeilen auf dasselbe Gerät).
         /// </para>
         /// <para>
-        /// <b>Mehrdeutige Anlagen tragen hier 0 bei.</b> Beim BHKW konkurrieren
-        /// <c>Kosten_Modul</c> und <c>Investition_kwel × Pel</c> — für dieselbe Anlage
-        /// zwei gültige, weit auseinanderliegende Zahlen (Beispielmodul „2G 250kw.el Gas":
-        /// 16.666 € gegen 163.400 €). Welche gilt, entscheidet der Anwender im Dialog
-        /// <see cref="Form_PlanwertUebernahme"/>; still eine davon einzutragen wäre geraten.
-        /// Die Abweichungsanzeige weist genau darauf hin, solange nichts gewählt ist.
+        /// <b>Seit dem 23.08.2026 ist kein Gewerk mehr mehrdeutig.</b> Beim BHKW
+        /// konkurrierten <c>Kosten_Modul</c> und <c>Investition_kwel × Pel</c>; seit
+        /// <c>Investition_kwel</c> aus den fünf Einzelposten ABGELEITET wird, ist die
+        /// zweite Basis eine Dublette und entfallen. Jedes Gewerk legt damit höchstens
+        /// EINE Kostenbasis je Anlage an, <c>TechnikPlanwertCtrl.Hauptsumme</c> liefert
+        /// hier also stets den eindeutigen Wert. Die Basiswert-Maschinerie
+        /// (<c>BASIS_*</c>, <c>Mehrdeutig</c>) steht weiterhin in
+        /// <see cref="TechnikPlanwertCtrl"/>; ihr Rückbau ist ein eigener Schritt.
         /// </para>
         /// </remarks>
         private double GetModulKosten(int projektID, string komponente)
