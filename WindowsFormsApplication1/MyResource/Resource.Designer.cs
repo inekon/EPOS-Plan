@@ -762,7 +762,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BEMESSUNG_PROZENT_INVESTITION", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die €/kWel: abgeleitet aus Summe / Pel ähnelt.
         /// </summary>
@@ -771,7 +771,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BHKW_INVEST_HINWEIS_ABGELEITET", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die €/kWel: Bestand weicht ab, wird beim Speichern nachgezogen ähnelt.
         /// </summary>
@@ -780,7 +780,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BHKW_INVEST_HINWEIS_ABWEICHUNG", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die €/kWel: nicht bestimmbar (Pel = 0) ähnelt.
         /// </summary>
@@ -789,7 +789,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BHKW_INVEST_HINWEIS_UNBESTIMMT", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Einzelposten führen: Investitionskosten je kWel = Summe der Einzelposten geteilt durch die elektrische Leistung. Das Feld ist deshalb nicht änderbar. ähnelt.
         /// </summary>
@@ -798,7 +798,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BHKW_INVEST_TIP", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die elektrische Leistung ist 0. Investitionskosten je kWel sind damit nicht bestimmbar. Gespeichert wird die Summe der Einzelposten; Speichern bleibt möglich. ähnelt.
         /// </summary>
@@ -807,7 +807,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BHKW_INVEST_TIP_UNBESTIMMT", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die n. b. ähnelt.
         /// </summary>
@@ -816,7 +816,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BHKW_INVEST_UNBESTIMMT", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Summe Einzelposten: ähnelt.
         /// </summary>
@@ -825,7 +825,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BHKW_SUMME_LBL", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bilanzierung: Bilanzjahr {0} · KWK-Strom {1} ({2}) · Biomasse {3} · {4} ähnelt.
         /// </summary>
@@ -1889,7 +1889,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_KOSTEN_SUMME", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Verwendet, dem Projekt aber nicht zugeordnet: {0} — ohne Zuordnung gibt es weder Preis noch Heizwert; im Reiter „Energiekosten&quot; der Kostenverwaltung ergänzen. ähnelt.
         /// </summary>
@@ -1898,7 +1898,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_KOSTEN_TRAEGER_FEHLT", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verwendet von: {0} ähnelt.
         /// </summary>
@@ -1907,7 +1907,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_KOSTEN_TRAEGER_HINT", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kein Energieträger — das Projekt führt keinen Erzeuger, der Energie bezieht. ähnelt.
         /// </summary>
@@ -1916,7 +1916,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_KOSTEN_TRAEGER_KEINE", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kein Energieträger mit Projekteinstellungen — verwendet werden: {0} ähnelt.
         /// </summary>
@@ -1925,7 +1925,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_KOSTEN_TRAEGER_UNGEPFLEGT", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die davon Zuschuss: −{0} € ähnelt.
         /// </summary>

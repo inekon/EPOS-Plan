@@ -4023,13 +4023,13 @@
     <value>Segoe UI, 12pt, style=Bold</value>
   </data>
   <data name="textBox_ProjektOpen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>149, 9</value>
+    <value>134, 12</value>
   </data>
   <data name="textBox_ProjektOpen.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
   </data>
   <data name="textBox_ProjektOpen.Size" type="System.Drawing.Size, System.Drawing">
-    <value>256, 22</value>
+    <value>254, 22</value>
   </data>
   <data name="textBox_ProjektOpen.TabIndex" type="System.Int32, mscorlib">
     <value>57</value>
@@ -4059,7 +4059,7 @@
     <value>NoControl</value>
   </data>
   <data name="label11.Location" type="System.Drawing.Point, System.Drawing">
-    <value>63, 9</value>
+    <value>53, 12</value>
   </data>
   <data name="label11.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -4491,7 +4491,7 @@
     <value>148, 34</value>
   </data>
   <data name="comboBox_Varianten.Size" type="System.Drawing.Size, System.Drawing">
-    <value>257, 25</value>
+    <value>331, 25</value>
   </data>
   <data name="comboBox_Varianten.TabIndex" type="System.Int32, mscorlib">
     <value>113</value>
@@ -4539,10 +4539,10 @@
     <value>0</value>
   </data>
   <data name="panelVariante.Location" type="System.Drawing.Point, System.Drawing">
-    <value>873, 119</value>
+    <value>776, 119</value>
   </data>
   <data name="panelVariante.Size" type="System.Drawing.Size, System.Drawing">
-    <value>419, 65</value>
+    <value>489, 65</value>
   </data>
   <data name="panelVariante.TabIndex" type="System.Int32, mscorlib">
     <value>114</value>

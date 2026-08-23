@@ -836,6 +836,7 @@
             label2_pBox_BHKW.Cursor = System.Windows.Forms.Cursors.Hand;
             label2_pBox_BHKW.ForeColor = System.Drawing.Color.DimGray;
             label2_pBox_BHKW.Name = "label2_pBox_BHKW";
+            label2_pBox_BHKW.Click += pBox_BHKW_Click;
             // 
             // label_pBox_BHKW
             // 
@@ -843,6 +844,7 @@
             label_pBox_BHKW.BackColor = System.Drawing.Color.White;
             label_pBox_BHKW.Cursor = System.Windows.Forms.Cursors.Hand;
             label_pBox_BHKW.Name = "label_pBox_BHKW";
+            label_pBox_BHKW.Click += pBox_BHKW_Click;
             // 
             // label2_pBox_Solarthermie
             // 
