@@ -5462,7 +5462,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Project</value>
   </data>
   <data name="KI_REG_PROJEKT_ID_ERLAEUTERUNG" xml:space="preserve">
-    <value>Name of the project as shown in the project list.</value>
+    <value>Name of the project as shown in the project list. Pass it on unchanged from the user's question — name, partial name, ID or placeholder “Name n”; it is resolved locally in the program.</value>
   </data>
   <data name="KI_REG_VON_PROJEKT_NAME" xml:space="preserve">
     <value>Source project</value>
@@ -5546,10 +5546,10 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Names the assistant actions carried out most recently in this session.</value>
   </data>
   <data name="KI_REG_ERL_VON_PROJEKT" xml:space="preserve">
-    <value>Name of the project the data would be taken from.</value>
+    <value>Name of the project the data would be taken from. Pass it on unchanged from the user's question — name, partial name, ID or placeholder “Name n”; it is resolved locally in the program.</value>
   </data>
   <data name="KI_REG_ERL_NACH_PROJEKT" xml:space="preserve">
-    <value>Name of the project the data would be transferred into.</value>
+    <value>Name of the project the data would be transferred into. Pass it on unchanged from the user's question — name, partial name, ID or placeholder “Name n”; it is resolved locally in the program.</value>
   </data>
   <data name="KI_REG_ERL_GEWERK" xml:space="preserve">
     <value>Trade of the component transfer.</value>
@@ -5567,13 +5567,13 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Identifier of the load curve as shown by ganglinien_auflisten.</value>
   </data>
   <data name="KI_REG_ERL_PROJEKTE_FUER_ERGEBNISSE" xml:space="preserve">
-    <value>Names of the projects whose results are to be read; separate several with a semicolon.</value>
+    <value>Names of the projects whose results are to be read; separate several with a semicolon. Pass it on unchanged from the user's question — name, partial name, ID or placeholder “Name n”; it is resolved locally in the program.</value>
   </data>
   <data name="KI_REG_ERL_PROJEKT_ID_GANGLINIEN" xml:space="preserve">
-    <value>Name of the project; without it only the load curves of the master catalogue appear.</value>
+    <value>Name of the project; without it only the load curves of the master catalogue appear. Pass it on unchanged from the user's question — name, partial name, ID or placeholder “Name n”; it is resolved locally in the program.</value>
   </data>
   <data name="KI_REG_ERL_PROJEKT_ID_GANGLINIE_SUCHE" xml:space="preserve">
-    <value>Name of the project, if the load curve is a project load curve.</value>
+    <value>Name of the project, if the load curve is a project load curve. Pass it on unchanged from the user's question — name, partial name, ID or placeholder “Name n”; it is resolved locally in the program.</value>
   </data>
   <data name="KI_REG_ERL_ANZAHL" xml:space="preserve">
     <value>How many of the most recently executed actions are to be named.</value>
@@ -6149,7 +6149,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Amount</value>
   </data>
   <data name="KI_REG_ERL_STAMM_ID" xml:space="preserve">
-    <value>Name of the master project the variant should belong to.</value>
+    <value>Name of the master project the variant should belong to. Pass it on unchanged from the user's question — name, partial name, ID or placeholder “Name n”; it is resolved locally in the program.</value>
   </data>
   <data name="KI_REG_ERL_BEZEICHNER" xml:space="preserve">
     <value>Name of the new variant, e.g. “heat pump instead of boiler”. The project name is formed as “master - label”.</value>
@@ -6398,7 +6398,7 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
     <value>Checks the energy carriers for unit consistency: does every active carrier reach kWh — directly, via net or gross calorific value, or via an active conversion rule? Returns the list of findings; changes nothing.</value>
   </data>
   <data name="KI_REG_ERL_PROJEKT_FUER_EINHEITEN" xml:space="preserve">
-    <value>Name of the project. If omitted, the catalogue is checked (all active carriers with catalogue values); if given, only the carriers used in that project, with its project-level overrides.</value>
+    <value>Name of the project. If omitted, the catalogue is checked (all active carriers with catalogue values); if given, only the carriers used in that project, with its project-level overrides. Pass it on unchanged from the user's question — name, partial name, ID or placeholder “Name n”; it is resolved locally in the program.</value>
   </data>
   <data name="KI_REG_EINHEITEN_KATALOG" xml:space="preserve">
     <value>catalogue</value>
@@ -7161,5 +7161,20 @@ Please run the EPOS-Plan setup again or install the Microsoft Access Database En
   </data>
   <data name="BHKW_INVEST_TIP_UNBESTIMMT" xml:space="preserve">
     <value>The electrical power is 0, so the investment cost per kWel cannot be determined. The sum of the individual items is stored; saving remains possible.</value>
+  </data>
+  <data name="KI_REG_ERL_SUCHTEXT" xml:space="preserve">
+    <value>Part of the project or customer name as the user stated it; upper and lower case do not matter.</value>
+  </data>
+  <data name="KI_REG_PROJEKT_SUCHE_GEFUNDEN" xml:space="preserve">
+    <value>{0} of {1} projects match “{2}”.</value>
+  </data>
+  <data name="KI_REG_PROJEKT_SUCHE_KEINE" xml:space="preserve">
+    <value>None of the {1} projects matches “{0}”. The comparison was made locally against the complete project list, so the result is complete.</value>
+  </data>
+  <data name="KI_REG_SUCHTEXT_NAME" xml:space="preserve">
+    <value>Search text</value>
+  </data>
+  <data name="KI_REG_ZWECK_PROJEKT_SUCHEN" xml:space="preserve">
+    <value>Searches for projects whose name or customer contains the search text. The comparison runs locally against the complete project list, so no match really does mean that there is no such project.</value>
   </data>
 </root>

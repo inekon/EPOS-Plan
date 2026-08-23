@@ -57,6 +57,11 @@ namespace WindowsFormsApplication1
 
             // ---- Projekte, Varianten, Speichervarianten
             register.Aufnehmen(KiAktionenProjekt.ProjekteAuflisten());
+
+            // projekt_suchen gehoert unmittelbar daneben: Es ist die Antwort auf die
+            // Frage „gibt es ein Projekt X?", die sich aus der platzgehaltenen Liste
+            // NICHT beantworten laesst (Fachkonzept 4.2, Fehlerfall 23.08.2026).
+            register.Aufnehmen(KiAktionenProjekt.ProjektSuchen());
             register.Aufnehmen(KiAktionenProjekt.ProjektLesen());
             register.Aufnehmen(KiAktionenProjekt.VariantenAuflisten());
             register.Aufnehmen(KiAktionenProjekt.SpeichervariantenAuflisten());
@@ -153,10 +158,18 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Waehlt anhand des Namens. Zuerst zaehlt die genaue Uebereinstimmung,
-        /// danach ein eindeutiger Teiltreffer. Bleibt es mehrdeutig, nennt die
-        /// Meldung die Kandidaten - es wird ausdruecklich nicht nach einer Nummer
-        /// gefragt, sonst waere fuer den Anwender nichts gewonnen.
+        /// danach die reine Datensatznummer, zuletzt ein eindeutiger Teiltreffer.
+        /// Bleibt es mehrdeutig, nennt die Meldung die Kandidaten - es wird
+        /// ausdruecklich nicht nach einer Nummer gefragt, sonst waere fuer den
+        /// Anwender nichts gewonnen.
         /// </summary>
+        /// <remarks>
+        /// <b>Warum die Nummer ueberhaupt gilt.</b> In den Rueckmeldungen an das Modell
+        /// werden Bezeichner platzgehalten, IDs aber NICHT (Fachkonzept 4.2). Die Zahl aus
+        /// einer Ergebniszeile ist damit der einzige Bezug, den das Modell woertlich
+        /// zurueckgeben kann. Sie zaehlt erst NACH der genauen Namensuebereinstimmung -
+        /// heisst ein Projekt tatsaechlich „12", gewinnt sein Name.
+        /// </remarks>
         internal static Auswahl Waehle(string eingabe, List<Kandidat> kandidaten, string was)
         {
             Auswahl ergebnis = new Auswahl();
@@ -175,6 +188,19 @@ namespace WindowsFormsApplication1
 
             List<Kandidat> genau = kandidaten.FindAll(
                 k => string.Equals(k.Name.Trim(), gesucht, StringComparison.CurrentCultureIgnoreCase));
+
+            int nummer;
+            if (genau.Count == 0
+                && int.TryParse(gesucht, NumberStyles.Integer, CultureInfo.InvariantCulture, out nummer))
+            {
+                Kandidat ueberId = kandidaten.Find(k => k.Id == nummer);
+                if (ueberId != null)
+                {
+                    ergebnis.Id = ueberId.Id;
+                    ergebnis.Name = ueberId.Name;
+                    return ergebnis;
+                }
+            }
 
             List<Kandidat> treffer = genau.Count > 0
                 ? genau

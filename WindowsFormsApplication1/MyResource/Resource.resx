@@ -5477,7 +5477,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Projekt</value>
   </data>
   <data name="KI_REG_PROJEKT_ID_ERLAEUTERUNG" xml:space="preserve">
-    <value>Name des Projekts, wie er in der Projektliste steht.</value>
+    <value>Name des Projekts, wie er in der Projektliste steht. Übergib ihn unverändert aus der Anwenderfrage — Name, Teilname, ID oder Platzhalter „Name n“; aufgelöst wird lokal im Programm.</value>
   </data>
   <data name="KI_REG_VON_PROJEKT_NAME" xml:space="preserve">
     <value>Quellprojekt</value>
@@ -5561,10 +5561,10 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Nennt die zuletzt ausgeführten Assistentenaktionen dieser Sitzung.</value>
   </data>
   <data name="KI_REG_ERL_VON_PROJEKT" xml:space="preserve">
-    <value>Name des Projekts, aus dem übernommen würde.</value>
+    <value>Name des Projekts, aus dem übernommen würde. Übergib ihn unverändert aus der Anwenderfrage — Name, Teilname, ID oder Platzhalter „Name n“; aufgelöst wird lokal im Programm.</value>
   </data>
   <data name="KI_REG_ERL_NACH_PROJEKT" xml:space="preserve">
-    <value>Name des Projekts, in das übernommen würde.</value>
+    <value>Name des Projekts, in das übernommen würde. Übergib ihn unverändert aus der Anwenderfrage — Name, Teilname, ID oder Platzhalter „Name n“; aufgelöst wird lokal im Programm.</value>
   </data>
   <data name="KI_REG_ERL_GEWERK" xml:space="preserve">
     <value>Gewerk der Komponenten-Übernahme.</value>
@@ -5582,13 +5582,13 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Bezeichner der Ganglinie, wie ihn ganglinien_auflisten zeigt.</value>
   </data>
   <data name="KI_REG_ERL_PROJEKTE_FUER_ERGEBNISSE" xml:space="preserve">
-    <value>Namen der Projekte, deren Ergebnisse gelesen werden sollen; mehrere durch Semikolon trennen.</value>
+    <value>Namen der Projekte, deren Ergebnisse gelesen werden sollen; mehrere durch Semikolon trennen. Übergib ihn unverändert aus der Anwenderfrage — Name, Teilname, ID oder Platzhalter „Name n“; aufgelöst wird lokal im Programm.</value>
   </data>
   <data name="KI_REG_ERL_PROJEKT_ID_GANGLINIEN" xml:space="preserve">
-    <value>Name des Projekts; ohne Angabe erscheinen nur die Ganglinien des Stammkatalogs.</value>
+    <value>Name des Projekts; ohne Angabe erscheinen nur die Ganglinien des Stammkatalogs. Übergib ihn unverändert aus der Anwenderfrage — Name, Teilname, ID oder Platzhalter „Name n“; aufgelöst wird lokal im Programm.</value>
   </data>
   <data name="KI_REG_ERL_PROJEKT_ID_GANGLINIE_SUCHE" xml:space="preserve">
-    <value>Name des Projekts, falls die Ganglinie eine Projektganglinie ist.</value>
+    <value>Name des Projekts, falls die Ganglinie eine Projektganglinie ist. Übergib ihn unverändert aus der Anwenderfrage — Name, Teilname, ID oder Platzhalter „Name n“; aufgelöst wird lokal im Programm.</value>
   </data>
   <data name="KI_REG_ERL_ANZAHL" xml:space="preserve">
     <value>Wie viele der zuletzt ausgeführten Aktionen genannt werden sollen.</value>
@@ -6155,7 +6155,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Betrag</value>
   </data>
   <data name="KI_REG_ERL_STAMM_ID" xml:space="preserve">
-    <value>Name des Stammprojekts, zu dem die Variante gehören soll.</value>
+    <value>Name des Stammprojekts, zu dem die Variante gehören soll. Übergib ihn unverändert aus der Anwenderfrage — Name, Teilname, ID oder Platzhalter „Name n“; aufgelöst wird lokal im Programm.</value>
   </data>
   <data name="KI_REG_ERL_BEZEICHNER" xml:space="preserve">
     <value>Name der neuen Variante, z. B. „Wärmepumpe statt Kessel“. Der Projektname entsteht daraus als „Stamm - Bezeichner“.</value>
@@ -6404,7 +6404,7 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
     <value>Prüft die Energieträger auf Einheiten-Konsistenz: Erreicht jeder aktive Träger kWh — unmittelbar, über Heizwert bzw. Brennwert oder über eine aktive Umrechnungsregel? Liefert die Befundliste, ändert nichts.</value>
   </data>
   <data name="KI_REG_ERL_PROJEKT_FUER_EINHEITEN" xml:space="preserve">
-    <value>Name des Projekts. Ohne Angabe wird der Katalog geprüft (alle aktiven Träger mit Katalogwerten); mit Angabe nur die im Projekt verwendeten Träger, mit deren Projektüberschreibungen.</value>
+    <value>Name des Projekts. Ohne Angabe wird der Katalog geprüft (alle aktiven Träger mit Katalogwerten); mit Angabe nur die im Projekt verwendeten Träger, mit deren Projektüberschreibungen. Übergib ihn unverändert aus der Anwenderfrage — Name, Teilname, ID oder Platzhalter „Name n“; aufgelöst wird lokal im Programm.</value>
   </data>
   <data name="KI_REG_EINHEITEN_KATALOG" xml:space="preserve">
     <value>Katalog</value>
@@ -7167,5 +7167,20 @@ Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Micro
   </data>
   <data name="BHKW_INVEST_TIP_UNBESTIMMT" xml:space="preserve">
     <value>Die elektrische Leistung ist 0. Investitionskosten je kWel sind damit nicht bestimmbar. Gespeichert wird die Summe der Einzelposten; Speichern bleibt m&#246;glich.</value>
+  </data>
+  <data name="KI_REG_ERL_SUCHTEXT" xml:space="preserve">
+    <value>Wortteil aus Projektname oder Kundenname, so wie ihn der Anwender genannt hat; Groß- und Kleinschreibung ist gleichgültig.</value>
+  </data>
+  <data name="KI_REG_PROJEKT_SUCHE_GEFUNDEN" xml:space="preserve">
+    <value>{0} von {1} Projekten passen zu „{2}“.</value>
+  </data>
+  <data name="KI_REG_PROJEKT_SUCHE_KEINE" xml:space="preserve">
+    <value>Unter den {1} Projekten passt keines zu „{0}“. Der Abgleich erfolgte lokal über die vollständige Projektliste; das Ergebnis ist damit vollständig.</value>
+  </data>
+  <data name="KI_REG_SUCHTEXT_NAME" xml:space="preserve">
+    <value>Suchtext</value>
+  </data>
+  <data name="KI_REG_ZWECK_PROJEKT_SUCHEN" xml:space="preserve">
+    <value>Sucht Projekte, deren Name oder Kunde den Suchtext enthält. Der Abgleich läuft lokal über die vollständige Projektliste; kein Treffer bedeutet deshalb wirklich, dass es kein solches Projekt gibt.</value>
   </data>
 </root>

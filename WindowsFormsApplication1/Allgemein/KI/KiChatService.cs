@@ -462,6 +462,16 @@ namespace WindowsFormsApplication1
                 sb.AppendLine("Jede Zahl, die du nennst, stammt aus einem Aktionsergebnis oder aus einem " +
                               "Hilfeabschnitt. Erfinde weder Zahlen noch Bezeichner.");
                 sb.AppendLine("Bezeichner erscheinen als Platzhalter („Name 1“); übernimm sie unverändert.");
+                // Der Fehlerfall vom 23.08.2026: Das Modell listete die Projekte,
+                // fand den Namen aus der Frage in den Platzhalterzeilen nicht wieder
+                // und erklaerte das Projekt fuer nicht vorhanden. Es muss deshalb
+                // ausdruecklich wissen, dass der Namensabgleich NICHT seine Aufgabe
+                // ist, sondern die des Programms.
+                sb.AppendLine("Ein Namensvergleich zwischen Frage und Ergebniszeilen ist damit unmöglich - er ist nicht deine Aufgabe.");
+                sb.AppendLine("Projekt- und Variantennamen aus der Frage übergibst du unverändert als Parameter, auch Teilnamen; "
+                              + "aufgelöst werden sie lokal im Programm.");
+                sb.AppendLine("Willst du wissen, ob es ein Projekt gibt, nimm projekt_suchen - es vergleicht die Klarnamen.");
+                sb.AppendLine("Behaupte NIE, ein Projekt gebe es nicht, nur weil sein Name in Platzhalterzeilen nicht auftaucht.");
             }
             else
             {
@@ -946,9 +956,14 @@ namespace WindowsFormsApplication1
                     if (!eingespeist) ZaehlerErhoehen();
 
                     KiModellantwort modellantwort = KiModellantwort.Lesen(rumpf);
+                    // Die Platzhaltertabelle geht MIT hinein: Das Modell kennt Bezeichner
+                    // nur als „Name n“ (Fachkonzept 4.2) und gibt genau das als Parameter
+                    // zurück. Aufgelöst wird VOR der Prüfung, sonst suchte die
+                    // Namensauflösung des Registers ein Projekt namens „Name 3“. Betroffen
+                    // sind nur Textwerte; IDs und Zahlen bleiben, wie sie sind.
                     KiAbsichtBefund befund = wegB
-                        ? KiAbsicht.AusText(reg, modellantwort.Text)
-                        : KiAbsicht.AusWerkzeugantwort(reg, modellantwort);
+                        ? KiAbsicht.AusText(reg, modellantwort.Text, platzhalter)
+                        : KiAbsicht.AusWerkzeugantwort(reg, modellantwort, platzhalter);
 
                     if (!befund.HatAbsicht)
                     {
