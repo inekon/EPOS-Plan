@@ -81,11 +81,134 @@ namespace KiKern
             return ergebnis;
         }
 
+        /// <summary>
+        /// Der Rueckweg fuer EINEN Argumentwert: aus „Name 3" wird wieder der Klarname.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum es das braucht.</b> Der Hinweg ersetzt JEDEN Bezeichner einer
+        /// Ergebniszeile vollstaendig (<see cref="KiRueckmeldung"/>). Das Modell kennt
+        /// Projekte und Varianten danach nur noch als „Name n" - und uebergibt genau das
+        /// als Parameter, wenn es sich auf eine Ergebniszeile bezieht. Ohne diesen
+        /// Rueckweg suchte die Namensaufloesung des Registers nach einem Projekt namens
+        /// „Name 3" und fande keines: der Aufruf scheiterte, obwohl Modell und Programm
+        /// dasselbe meinen.
+        /// </para>
+        /// <para>
+        /// <b>Zwei Faelle in einer Methode.</b> Ist der GANZE Wert ein bekannter
+        /// Platzhalter, steht danach genau der Klarname da - auch dann, wenn dieser selbst
+        /// wie ein Platzhalter aussaehe. Sonst wird ueber <see cref="Aufloesen"/> jeder
+        /// EINGEBETTETE Platzhalter ersetzt; so bleibt eine Semikolonliste
+        /// („Name 3; Name 5") eine Semikolonliste, und „Name 12" wird nicht als „Name 1"
+        /// mit angehaengter Zwoelf missdeutet.
+        /// </para>
+        /// <para>
+        /// Unbekannter Text geht unveraendert durch. Das ist der Regelfall, wenn der
+        /// Anwender einen Klarnamen selbst getippt hat - er soll die lokale
+        /// Namensaufloesung unbeschadet erreichen.
+        /// </para>
+        /// </remarks>
+        public string KlarnameOderText(string? text)
+        {
+            if (string.IsNullOrEmpty(text)) return text ?? "";
+
+            string? genau = Klarname(text!.Trim());
+            if (genau != null) return genau;
+
+            return Aufloesen(text);
+        }
+
+        /// <summary>
+        /// Der Rueckweg fuer die ARGUMENTE eines Werkzeugaufrufs: jeder Textwert des
+        /// JSON-Objekts laeuft durch <see cref="KlarnameOderText"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Nur Zeichenketten.</b> Zahlen, Wahrheitswerte und ID-Listen gehen unberuehrt
+        /// durch - sie waren nie platzgehalten und haben mit der Bezeichnertabelle nichts
+        /// zu tun. Wuerde hier eine ID angefasst, entstuende genau die Verwechslung, die
+        /// die Platzhalterung vermeiden soll.
+        /// </para>
+        /// <para>
+        /// <b>Fehlertoleranz mit Absicht.</b> Ist der Argumenttext kein JSON-Objekt, geht
+        /// er unveraendert zurueck. Die Beanstandung gehoert der Parameterpruefung
+        /// (<see cref="KiPruefung"/>), die dem Modell einen Klartextgrund nennen kann -
+        /// hier waere sie nur eine zweite, stille Fehlerquelle.
+        /// </para>
+        /// </remarks>
+        public string ArgumenteAufloesen(string? argumenteJson)
+        {
+            if (string.IsNullOrWhiteSpace(argumenteJson)) return argumenteJson ?? "";
+            if (_nachPlatzhalter.Count == 0) return argumenteJson!;
+
+            try
+            {
+                JsonNode? wurzel = JsonNode.Parse(argumenteJson!);
+                if (!(wurzel is JsonObject)) return argumenteJson!;
+
+                JsonNode? neu = Umschreiben(wurzel);
+                return neu == null ? argumenteJson! : neu.ToJsonString(ArgumentSchreibweise);
+            }
+            catch (JsonException)
+            {
+                return argumenteJson!;
+            }
+        }
+
         /// <summary>Leert die Tabelle (Sitzungswechsel, Tests).</summary>
         public void Leeren()
         {
             _nachKlarname.Clear();
             _nachPlatzhalter.Clear();
+        }
+
+        // ===================================================================== Innen
+
+        /// <summary>
+        /// Kompakt und ohne Maskierung der Umlaute - der Text geht sofort wieder in
+        /// <see cref="KiPruefung.PruefeJson"/> und soll dabei lesbar bleiben.
+        /// </summary>
+        private static readonly JsonSerializerOptions ArgumentSchreibweise = new JsonSerializerOptions
+        {
+            WriteIndented = false,
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
+
+        /// <summary>
+        /// Baut den Knoten NEU auf, statt ihn zu aendern: ein Knoten mit Elternteil laesst
+        /// sich nicht umhaengen, und ein Woerterbuch waehrend der Aufzaehlung zu
+        /// beschreiben ist ohnehin nicht erlaubt.
+        /// </summary>
+        private JsonNode? Umschreiben(JsonNode? knoten)
+        {
+            switch (knoten)
+            {
+                case null:
+                    return null;
+
+                case JsonObject objekt:
+                    {
+                        var neu = new JsonObject();
+                        foreach (KeyValuePair<string, JsonNode?> e in objekt)
+                            neu[e.Key] = Umschreiben(e.Value);
+                        return neu;
+                    }
+
+                case JsonArray feld:
+                    {
+                        var neu = new JsonArray();
+                        foreach (JsonNode? glied in feld) neu.Add(Umschreiben(glied));
+                        return neu;
+                    }
+
+                case JsonValue wert:
+                    return wert.TryGetValue(out string? s)
+                        ? JsonValue.Create(KlarnameOderText(s))
+                        : wert.DeepClone();
+
+                default:
+                    return knoten.DeepClone();
+            }
         }
     }
 
