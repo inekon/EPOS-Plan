@@ -62,6 +62,8 @@ namespace WindowsFormsApplication1
                     using (Form_Gesetzesparameter frm = new Form_Gesetzesparameter())
                         frm.ShowDialog(this);
                 };
+                eintrag.Image = Properties.Resources.gesetzliche_parameter_32;
+                eintrag.ImageScaling = ToolStripItemImageScaling.None;
 
                 // Direkt unterhalb von "Einstellungen" einordnen — dieselbe Stelle,
                 // an der auch die Lizenzverwaltung hängt.
@@ -378,7 +380,8 @@ namespace WindowsFormsApplication1
                     using (Form_LizenzVerwaltung frm = new Form_LizenzVerwaltung())
                         frm.ShowDialog(this);
                 };
-
+                eintrag.Image = Properties.Resources.lizenzen_32;
+                eintrag.ImageScaling = ToolStripItemImageScaling.None;
                 // Direkt unterhalb von "Einstellungen" einordnen
                 int position = Administration.DropDownItems.IndexOf(MenuItem_Einstellungen);
                 if (position >= 0)
@@ -421,7 +424,7 @@ namespace WindowsFormsApplication1
             // Reiter blieben gesperrt und m_ID_Projekt zeigte weiter auf das zuvor
             // geoeffnete Projekt, die Wizard-Kacheln schrieben also ins falsche Projekt.
             if (Program.wizardctrl != null && Program.wizardctrl.Projektname != "")
-            { 
+            {
                 Program.startfrm?.ProjektKontextUebernehmen(Program.wizardctrl.Projektname);
             }
         }
@@ -575,19 +578,19 @@ namespace WindowsFormsApplication1
         private void MenuItem_WaermebedarfExtern_Click(object sender, EventArgs e)
         {
             MenueCtrl ctrl = new MenueCtrl();
-            ctrl.WaermebedarfExtern(); 
+            ctrl.WaermebedarfExtern();
         }
 
         private void MenuItem_Prozesswaerme_Click(object sender, EventArgs e)
         {
             MenueCtrl ctrl = new MenueCtrl();
-            ctrl.Prozesswaerme(); 
+            ctrl.Prozesswaerme();
         }
 
         private void MenuItem_Stromverbraucher_Click(object sender, EventArgs e)
         {
             MenueCtrl ctrl = new MenueCtrl();
-            ctrl.Stromverbraucher(); 
+            ctrl.Stromverbraucher();
         }
 
         private void MenuItem_Stromganglinie_Click(object sender, EventArgs e)
@@ -701,7 +704,7 @@ namespace WindowsFormsApplication1
             MenueCtrl ctrl = new MenueCtrl();
             ctrl.SolarThermieImport();
         }
-        
+
         private void MenuItem_Import_Heizkessel_Click(object sender, EventArgs e)
         {
             MenueCtrl ctrl = new MenueCtrl();
@@ -753,7 +756,7 @@ namespace WindowsFormsApplication1
 
         private void kostenAdminToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Form_KostenAdmin frm = new Form_KostenAdmin();  
+            Form_KostenAdmin frm = new Form_KostenAdmin();
             frm.ShowDialog();
         }
 
@@ -786,6 +789,11 @@ namespace WindowsFormsApplication1
             {
                 Debug.WriteLine("Fehler beim Öffnen des Links: " + ex.Message);
             }
+        }
+
+        private void MenuItem_ExportImport_Click(object sender, EventArgs e)
+        {
+            ProjektDuplizierenCtrl.ZeigeExportImportDialog(this);
         }
     }
 }

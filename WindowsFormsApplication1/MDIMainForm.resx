@@ -163,6 +163,15 @@
   <data name="MenuItem_ProjektLöschen.Text" xml:space="preserve">
     <value>Löschen...</value>
   </data>
+  <data name="toolStripSeparator5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>184, 6</value>
+  </data>
+  <data name="MenuItem_ExportImport.Size" type="System.Drawing.Size, System.Drawing">
+    <value>187, 26</value>
+  </data>
+  <data name="MenuItem_ExportImport.Text" xml:space="preserve">
+    <value>Export/Import</value>
+  </data>
   <data name="Projekte.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 12pt</value>
   </data>
@@ -338,18 +347,6 @@
   <data name="MenuItem_ST_Import.Text" xml:space="preserve">
     <value>Import Solarthermie VDI 3805</value>
   </data>
-  <data name="MenuItem_Kosten.Size" type="System.Drawing.Size, System.Drawing">
-    <value>308, 26</value>
-  </data>
-  <data name="MenuItem_Kosten.Text" xml:space="preserve">
-    <value>Kosten</value>
-  </data>
-  <data name="kostenAdminToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>308, 26</value>
-  </data>
-  <data name="kostenAdminToolStripMenuItem.Text" xml:space="preserve">
-    <value>Kosten Admin</value>
-  </data>
   <data name="MenuItem_DatImport.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
     <value>None</value>
   </data>
@@ -358,6 +355,55 @@
   </data>
   <data name="MenuItem_DatImport.Text" xml:space="preserve">
     <value>Daten &amp;&amp; Import</value>
+  </data>
+  <data name="MenuItem_Kosten.Size" type="System.Drawing.Size, System.Drawing">
+    <value>177, 26</value>
+  </data>
+  <data name="MenuItem_Kosten.Text" xml:space="preserve">
+    <value>Kosten</value>
+  </data>
+  <data name="kostenAdminToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>177, 26</value>
+  </data>
+  <data name="kostenAdminToolStripMenuItem.Text" xml:space="preserve">
+    <value>Kosten Admin</value>
+  </data>
+  <data name="MenuItem_KostenVerwaltung.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        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
+        aaQ86s/zfwCxxrKyYGpBHQAAAABJRU5ErkJggg==
+</value>
+  </data>
+  <data name="MenuItem_KostenVerwaltung.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
+    <value>None</value>
+  </data>
+  <data name="MenuItem_KostenVerwaltung.Size" type="System.Drawing.Size, System.Drawing">
+    <value>273, 38</value>
+  </data>
+  <data name="MenuItem_KostenVerwaltung.Text" xml:space="preserve">
+    <value>Kosten</value>
   </data>
   <data name="MenuItem_GebBearbeiten.Size" type="System.Drawing.Size, System.Drawing">
     <value>181, 26</value>
@@ -379,6 +425,9 @@
   </data>
   <data name="MenuItem_Gebaeude.Text" xml:space="preserve">
     <value>Gebäude</value>
+  </data>
+  <data name="MenuItem_Einstellungen.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
+    <value>None</value>
   </data>
   <data name="MenuItem_Einstellungen.Size" type="System.Drawing.Size, System.Drawing">
     <value>273, 38</value>
@@ -1414,6 +1463,18 @@
   <data name="&gt;&gt;MenuItem_ProjektLöschen.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;toolStripSeparator5.Name" xml:space="preserve">
+    <value>toolStripSeparator5</value>
+  </data>
+  <data name="&gt;&gt;toolStripSeparator5.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_ExportImport.Name" xml:space="preserve">
+    <value>MenuItem_ExportImport</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_ExportImport.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;Administration.Name" xml:space="preserve">
     <value>Administration</value>
   </data>
@@ -1574,6 +1635,12 @@
     <value>MenuItem_ST_Import</value>
   </data>
   <data name="&gt;&gt;MenuItem_ST_Import.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_KostenVerwaltung.Name" xml:space="preserve">
+    <value>MenuItem_KostenVerwaltung</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_KostenVerwaltung.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;MenuItem_Kosten.Name" xml:space="preserve">

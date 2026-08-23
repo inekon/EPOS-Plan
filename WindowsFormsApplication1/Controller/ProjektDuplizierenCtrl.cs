@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -134,7 +134,7 @@ namespace WindowsFormsApplication1
         private Dictionary<string, string> _echteFks = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         // ---- interne Struktur einer zu kopierenden Tabelle ----
-        private class Spec
+        internal class Spec
         {
             public string Tabelle;
             public string Pk;
@@ -241,7 +241,7 @@ namespace WindowsFormsApplication1
         }
 
         // Ermittelt die zu kopierenden Tabellen generisch aus dem Schema.
-        private List<Spec> ErmittlePlan(OleDbConnection conn, OleDbTransaction trans)
+        internal List<Spec> ErmittlePlan(OleDbConnection conn, OleDbTransaction trans)
         {
             // Zuerst die deklarierten Beziehungen einlesen (fuer Reihenfolge + Offset-Ziel).
             _echteFks = LiesEchteFks(conn, trans);
@@ -579,7 +579,7 @@ namespace WindowsFormsApplication1
         }
 
         // Liefert die Zieltabelle, deren Offset auf diese Spalte anzuwenden ist (oder null = nicht versetzen).
-        private string ErmittleZieltabelle(string tabelle, string col, string pk)
+        internal string ErmittleZieltabelle(string tabelle, string col, string pk)
         {
             if (string.Equals(col, pk, StringComparison.OrdinalIgnoreCase)) return tabelle;              // PK -> self
             if (string.Equals(col, "ID_Projekt", StringComparison.OrdinalIgnoreCase) ||
@@ -596,6 +596,14 @@ namespace WindowsFormsApplication1
             string ziel;
             if (FK_MAP.TryGetValue(col, out ziel)) return ziel;                                          // interner FK
             return null;                                                                                 // unbekannt -> unveraendert lassen
+        }
+
+        public static int ZeigeExportImportDialog(IWin32Window owner = null)
+        {
+            using (var dlg = new Form_ProjektExportImport())
+            {
+                return dlg.ShowDialog(owner) == DialogResult.OK ? dlg.ImportierteProjektId : -1;
+            }
         }
     }
 }

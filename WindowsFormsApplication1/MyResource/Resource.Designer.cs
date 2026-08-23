@@ -1799,7 +1799,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_KOSTEN_SP_ARBEITSPREIS", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitspreis [€/kWh] ähnelt.
         /// </summary>
@@ -1808,7 +1808,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_KOSTEN_SP_ARBEITSPREIS_KWH", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Grundpreis [€/a] ähnelt.
         /// </summary>
@@ -1889,7 +1889,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_KOSTEN_TRAEGER_FEHLT", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Kein Heizwert bei: {0} — ohne Heizwert lässt sich der Arbeitspreis nicht auf kWh umrechnen; im Reiter „Energiekosten&quot; der Kostenverwaltung erfassen. ähnelt.
         /// </summary>
@@ -1898,7 +1898,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_KOSTEN_TRAEGER_HI0", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verwendet von: {0} ähnelt.
         /// </summary>

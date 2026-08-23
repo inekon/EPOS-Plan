@@ -40,6 +40,8 @@
             MenuItem_zuletztGeöffnet = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             MenuItem_ProjektLöschen = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            MenuItem_ExportImport = new System.Windows.Forms.ToolStripMenuItem();
             Administration = new System.Windows.Forms.ToolStripMenuItem();
             MenuItem_WBundHeizung = new System.Windows.Forms.ToolStripMenuItem();
             MenuItem_Brauchwasser = new System.Windows.Forms.ToolStripMenuItem();
@@ -67,6 +69,7 @@
             MeniItem_VDI3805 = new System.Windows.Forms.ToolStripMenuItem();
             MenuItem_PV_Import_CEC = new System.Windows.Forms.ToolStripMenuItem();
             MenuItem_ST_Import = new System.Windows.Forms.ToolStripMenuItem();
+            MenuItem_KostenVerwaltung = new System.Windows.Forms.ToolStripMenuItem();
             MenuItem_Kosten = new System.Windows.Forms.ToolStripMenuItem();
             kostenAdminToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             MenuItem_Gebaeude = new System.Windows.Forms.ToolStripMenuItem();
@@ -93,7 +96,7 @@
             // 
             // Projekte
             // 
-            Projekte.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { MenuItem_ProjektNeu, toolStripSeparator1, MenuItem_ProjektOeffnen, toolStripSeparator2, MenuItem_ProjektBearbeiten, toolStripSeparator3, MenuItem_zuletztGeöffnet, toolStripSeparator4, MenuItem_ProjektLöschen });
+            Projekte.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { MenuItem_ProjektNeu, toolStripSeparator1, MenuItem_ProjektOeffnen, toolStripSeparator2, MenuItem_ProjektBearbeiten, toolStripSeparator3, MenuItem_zuletztGeöffnet, toolStripSeparator4, MenuItem_ProjektLöschen, toolStripSeparator5, MenuItem_ExportImport });
             resources.ApplyResources(Projekte, "Projekte");
             Projekte.Name = "Projekte";
             Projekte.Tag = "Projekte";
@@ -148,10 +151,21 @@
             resources.ApplyResources(MenuItem_ProjektLöschen, "MenuItem_ProjektLöschen");
             MenuItem_ProjektLöschen.Click += MenuItem_ProjektLöschen_Click;
             // 
+            // toolStripSeparator5
+            // 
+            toolStripSeparator5.Name = "toolStripSeparator5";
+            resources.ApplyResources(toolStripSeparator5, "toolStripSeparator5");
+            // 
+            // MenuItem_ExportImport
+            // 
+            MenuItem_ExportImport.Name = "MenuItem_ExportImport";
+            resources.ApplyResources(MenuItem_ExportImport, "MenuItem_ExportImport");
+            MenuItem_ExportImport.Click += MenuItem_ExportImport_Click;
+            // 
             // Administration
             // 
             Administration.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            Administration.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { MenuItem_WBundHeizung, MenuItem_StromBedarfundSp, MenuItem_Energiesysteme, MenuItem_Klima, MenuItem_DatImport, MenuItem_Gebaeude, MenuItem_Einstellungen });
+            Administration.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { MenuItem_WBundHeizung, MenuItem_StromBedarfundSp, MenuItem_Energiesysteme, MenuItem_Klima, MenuItem_DatImport, MenuItem_KostenVerwaltung, MenuItem_Gebaeude, MenuItem_Einstellungen });
             resources.ApplyResources(Administration, "Administration");
             Administration.Name = "Administration";
             // 
@@ -284,7 +298,7 @@
             // 
             // MenuItem_DatImport
             // 
-            MenuItem_DatImport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { MenuItem_Import_Heizkessel, MenuItem_PufferSp_VDI3805, MeniItem_VDI3805, MenuItem_PV_Import_CEC, MenuItem_ST_Import, MenuItem_Kosten, kostenAdminToolStripMenuItem });
+            MenuItem_DatImport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { MenuItem_Import_Heizkessel, MenuItem_PufferSp_VDI3805, MeniItem_VDI3805, MenuItem_PV_Import_CEC, MenuItem_ST_Import });
             MenuItem_DatImport.Image = Properties.Resources.Menue5;
             resources.ApplyResources(MenuItem_DatImport, "MenuItem_DatImport");
             MenuItem_DatImport.Name = "MenuItem_DatImport";
@@ -319,6 +333,12 @@
             resources.ApplyResources(MenuItem_ST_Import, "MenuItem_ST_Import");
             MenuItem_ST_Import.Click += MenuItem_ST_Import_Click;
             // 
+            // MenuItem_KostenVerwaltung
+            // 
+            MenuItem_KostenVerwaltung.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { MenuItem_Kosten, kostenAdminToolStripMenuItem });
+            resources.ApplyResources(MenuItem_KostenVerwaltung, "MenuItem_KostenVerwaltung");
+            MenuItem_KostenVerwaltung.Name = "MenuItem_KostenVerwaltung";
+            // 
             // MenuItem_Kosten
             // 
             MenuItem_Kosten.Name = "MenuItem_Kosten";
@@ -352,8 +372,9 @@
             // 
             // MenuItem_Einstellungen
             // 
-            MenuItem_Einstellungen.Name = "MenuItem_Einstellungen";
+            MenuItem_Einstellungen.Image = Properties.Resources.einstellungen_32;
             resources.ApplyResources(MenuItem_Einstellungen, "MenuItem_Einstellungen");
+            MenuItem_Einstellungen.Name = "MenuItem_Einstellungen";
             MenuItem_Einstellungen.Click += MenuItem_Einstellungen_Click;
             // 
             // Help
@@ -481,6 +502,9 @@
         private System.Windows.Forms.Label label_OnlineDoku;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Einstellungen;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Dokumentation;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_KostenVerwaltung;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_ExportImport;
     }
 }
 
