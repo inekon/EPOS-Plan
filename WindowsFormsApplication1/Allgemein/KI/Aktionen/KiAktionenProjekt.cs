@@ -48,6 +48,86 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
+        // projekt_suchen
+        // =====================================================================
+
+        /// <summary>
+        /// Projekte, deren Name oder Kunde den Suchtext enthaelt. Andockpunkt
+        /// <c>ProjektCtrl.ReadAll()</c> ueber <see cref="KiHilfe.ProjektKandidaten"/>;
+        /// gefiltert wird LOKAL.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum es diese Aktion gibt.</b> Die Datenschutzschicht ersetzt jeden
+        /// Bezeichner der Ergebniszeilen durch einen Platzhalter (Fachkonzept 4.2). Das
+        /// Modell kann einen Namen aus der Anwenderfrage in einer Ergebnisliste deshalb
+        /// NIE wiederfinden - es zog daraus im Betrieb den falschen Schluss, das Projekt
+        /// gebe es nicht (Fehlerfall 23.08.2026). Hier vergleicht das PROGRAMM, nicht das
+        /// Modell: Es sieht die Klarnamen und kann die Frage beantworten, die das Modell
+        /// selbst nicht beantworten kann.
+        /// </para>
+        /// <para>
+        /// <b>Dieselbe Quelle wie die Namensaufloesung.</b> Gefiltert wird
+        /// <see cref="KiHilfe.ProjektKandidaten"/> - genau die Liste, aus der auch
+        /// <see cref="KiHilfe.Waehle"/> schoepft. Damit gilt: Was diese Aktion als Treffer
+        /// meldet, nimmt der Parameter „Projekt" hinterher auch an.
+        /// </para>
+        /// <para>
+        /// <b>Kein Treffer ist ein ORDENTLICHES Ergebnis</b>, kein Fehler. Der Abgleich
+        /// lief lokal ueber die vollstaendige Liste; das Ergebnis ist damit vollstaendig
+        /// und belastbar - anders als der Blick des Modells auf zwanzig Platzhalterzeilen.
+        /// Der Ergebnissatz sagt das ausdruecklich, damit das Modell nicht noch einmal
+        /// aus einer Anzeigebeschraenkung eine Tatsache macht.
+        /// </para>
+        /// </remarks>
+        internal static KiAktion ProjektSuchen()
+        {
+            return new KiAktion(
+                name: "projekt_suchen",
+                zweck: KiAktionsTexte.ZweckProjektSuchen,
+                stufe: Schutzstufe.Lesen,
+                andockpunkt: "ProjektCtrl.ReadAll (lokaler Teiltreffer)",
+                parameter: new[]
+                {
+                    new KiParameter("suchtext", KiParameterTyp.Text,
+                                    KiAktionsTexte.ErlSuchtext,
+                                    anzeigename: KiAktionsTexte.SuchtextName, maxLaenge: 200)
+                },
+                ausfuehren: a =>
+                {
+                    string gesucht = (a.Text("suchtext") ?? "").Trim();
+                    List<KiHilfe.Kandidat> alle = KiHilfe.ProjektKandidaten();
+
+                    var zeilen = KiHilfe.Liste();
+                    foreach (KiHilfe.Kandidat k in alle)
+                    {
+                        // CurrentCultureIgnoreCase wie in KiHilfe.Waehle - beide Stellen
+                        // muessen dieselbe Vorstellung von „passt" haben, sonst bietet die
+                        // Suche etwas an, das die Aufloesung danach ablehnt.
+                        bool trifft =
+                            k.Name.IndexOf(gesucht, StringComparison.CurrentCultureIgnoreCase) >= 0
+                            || k.Zusatz.IndexOf(gesucht, StringComparison.CurrentCultureIgnoreCase) >= 0;
+                        if (!trifft) continue;
+
+                        zeilen.Add(KiHilfe.Zeile(
+                            "id", k.Id,
+                            "projektname", KiHilfe.Text(k.Name),
+                            "kunde", KiHilfe.Text(k.Zusatz)));
+                    }
+
+                    if (zeilen.Count == 0)
+                        return KiErgebnis.Ok(string.Format(CultureInfo.CurrentCulture,
+                                                           KiAktionsTexte.ProjektSucheKeine,
+                                                           gesucht, alle.Count));
+
+                    return KiErgebnis.Ok(string.Format(CultureInfo.CurrentCulture,
+                                                       KiAktionsTexte.ProjektSucheGefunden,
+                                                       zeilen.Count, alle.Count, gesucht),
+                                         zeilen);
+                });
+        }
+
+        // =====================================================================
         // projekt_lesen
         // =====================================================================
 

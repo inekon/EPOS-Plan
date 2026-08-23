@@ -38,6 +38,7 @@
         internal static string GanglinieName => MyResource.Resource.KI_REG_GANGLINIE_NAME;
         internal static string AnzahlName => MyResource.Resource.KI_REG_ANZAHL_NAME;
         internal static string ProjekteName => MyResource.Resource.KI_REG_PROJEKTE_NAME;
+        internal static string SuchtextName => MyResource.Resource.KI_REG_SUCHTEXT_NAME;
         internal static string KapazitaetName => MyResource.Resource.KI_REG_KAPAZITAET_NAME;
         internal static string LeistungName => MyResource.Resource.KI_REG_LEISTUNG_NAME;
         internal static string WirkungsgradName => MyResource.Resource.KI_REG_WIRKUNGSGRAD_NAME;
@@ -60,6 +61,7 @@
         // ================================================================ Zwecke
 
         internal static string ZweckProjekteAuflisten => MyResource.Resource.KI_REG_ZWECK_PROJEKTE_AUFLISTEN;
+        internal static string ZweckProjektSuchen => MyResource.Resource.KI_REG_ZWECK_PROJEKT_SUCHEN;
         internal static string ZweckProjektLesen => MyResource.Resource.KI_REG_ZWECK_PROJEKT_LESEN;
         internal static string ZweckVariantenAuflisten => MyResource.Resource.KI_REG_ZWECK_VARIANTEN_AUFLISTEN;
         internal static string ZweckSpeichervariantenAuflisten => MyResource.Resource.KI_REG_ZWECK_SPEICHERVARIANTEN_AUFLISTEN;
@@ -87,6 +89,7 @@
         internal static string ErlDateipfad => MyResource.Resource.KI_REG_ERL_DATEIPFAD;
         internal static string ErlGanglinieId => MyResource.Resource.KI_REG_ERL_GANGLINIE_ID;
         internal static string ErlProjekteFuerErgebnisse => MyResource.Resource.KI_REG_ERL_PROJEKTE_FUER_ERGEBNISSE;
+        internal static string ErlSuchtext => MyResource.Resource.KI_REG_ERL_SUCHTEXT;
         internal static string ErlProjektIdGanglinien => MyResource.Resource.KI_REG_ERL_PROJEKT_ID_GANGLINIEN;
         internal static string ErlProjektIdGanglinieSuche => MyResource.Resource.KI_REG_ERL_PROJEKT_ID_GANGLINIE_SUCHE;
         internal static string ErlAnzahl => MyResource.Resource.KI_REG_ERL_ANZAHL;
@@ -117,6 +120,8 @@
         internal static string ProjektUnbekannt => MyResource.Resource.KI_REG_PROJEKT_UNBEKANNT;
         internal static string ProjekteKeine => MyResource.Resource.KI_REG_PROJEKTE_KEINE;
         internal static string ProjekteGefunden => MyResource.Resource.KI_REG_PROJEKTE_GEFUNDEN;
+        internal static string ProjektSucheGefunden => MyResource.Resource.KI_REG_PROJEKT_SUCHE_GEFUNDEN;
+        internal static string ProjektSucheKeine => MyResource.Resource.KI_REG_PROJEKT_SUCHE_KEINE;
         internal static string ProjektGelesen => MyResource.Resource.KI_REG_PROJEKT_GELESEN;
         internal static string VariantenGruppe => MyResource.Resource.KI_REG_VARIANTEN_GRUPPE;
         internal static string VarianteAufgeloest => MyResource.Resource.KI_REG_VARIANTE_AUFGELOEST;
