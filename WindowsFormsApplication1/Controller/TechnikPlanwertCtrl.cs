@@ -15,12 +15,14 @@ namespace WindowsFormsApplication1
     /// <para>
     /// <b>Warum es diese Klasse gibt.</b> Bis 18.08.2026 zog <c>Form_Kosten.GetModulKosten</c>
     /// je Gewerk genau EIN Feld (BHKW: <c>Kosten_Modul</c>, Kessel/Puffer/Solar:
-    /// <c>Investitionskosten</c>, WP/PV/Speicher: <c>Modulkosten</c>). Damit fiel beim BHKW
-    /// der eigentliche Kostentreiber unter den Tisch: das Beispielmodul „2G 250kw.el Gas"
-    /// trägt <c>Kosten_Modul</c> = 16.666 €, aber <c>Investition_kwel</c> = 653,60 €/kWel bei
-    /// 250 kWel — also 163.400 €. Beide Zahlen sind gepflegt, keine ist „richtiger"; die
-    /// Entscheidung gehört dem Anwender (Nutzerentscheidung 1 vom 18.08.2026), und zwar
-    /// <b>je Anlage</b>, weil ein Projekt Module mit und ohne spezifischen Preis mischt.
+    /// <c>Investitionskosten</c>, WP/PV/Speicher: <c>Modulkosten</c>) — und traf damit weder
+    /// die Nebenposten des BHKW noch die Formel des Stromspeichers noch die Stückzahl von
+    /// Photovoltaik und Solarthermie. Beim BHKW standen zudem zwei gepflegte Zahlen
+    /// nebeneinander, die auseinanderliefen (<c>Kosten_Modul</c> gegen
+    /// <c>Investition_kwel</c> × <c>Pel</c>); die Wahl lag beim Anwender
+    /// (Nutzerentscheidung 1 vom 18.08.2026). Seit dem Nutzerentscheid vom 22.08.2026 führen
+    /// beim BHKW die fünf Einzelposten, und <c>Investition_kwel</c> wird daraus abgeleitet
+    /// (<c>BHKWKosten</c>) — die zweite Basis wäre nur noch eine Dublette und ist entfallen.
     /// </para>
     ///
     /// <para>
@@ -276,10 +278,19 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// <para>
-        /// <b>BHKW</b> ist das einzige Gewerk mit ZWEI konkurrierenden Kostenfeldern in der
+        /// <b>BHKW</b> führte bis 22.08.2026 ZWEI konkurrierende Kostenfelder in der
         /// Gerätetabelle: <c>Kosten_Modul</c> (absolut) und <c>Investition_kwel</c>
         /// (spezifisch, €/kWel — Beschriftung des Katalogdialogs
-        /// <c>Form_DBBHKW.designer.cs</c>). Nur hier entsteht eine echte Auswahl.
+        /// <c>Form_DBBHKW.designer.cs</c>). Seit dem Nutzerentscheid vom 22.08.2026 führen
+        /// die FÜNF Einzelposten (<c>Kosten_Modul</c> und die vier Nebenposten Montage,
+        /// Lieferung, Schallschutzhaube, Abgasreinigung); <c>Investition_kwel</c> wird als
+        /// <c>Summe / Pel</c> daraus ABGELEITET und ist schreibgeschützt (<c>BHKWKosten</c>,
+        /// <c>Form_DBBHKW</c>, <c>BHKWCtrl.Update</c>, <c>BHKWStammCtrl.Update</c>). Damit ist
+        /// <c>Investition_kwel</c> × <c>Pel</c> dieselbe Zahl wie <c>Kosten_Modul</c> plus die
+        /// vier Nebenposten — keine Alternative mehr, sondern eine Dublette, die neben den
+        /// <c>Neben(…)</c>-Zeilen Montage, Lieferung, Schallschutzhaube und Abgasreinigung ein
+        /// zweites Mal zählen würde. Das BHKW liefert deshalb nur noch
+        /// <see cref="BASIS_MODULPREIS"/>; eine Auswahl entsteht hier nicht mehr.
         /// </para>
         /// <para>
         /// <b>Stromspeicher</b> führt drei Kostenfelder, die zusammen EINE Formel bilden:
@@ -294,6 +305,8 @@ namespace WindowsFormsApplication1
         /// <para>
         /// <b>Die übrigen fünf Gewerke</b> führen genau ein Kostenfeld und bleiben einfeldrig
         /// (Nutzerentscheidung 1: „falls ein Gewerk nur ein Feld hat, bleibt es einfeldrig").
+        /// Seit dem Wegfall der zweiten BHKW-Basis liefert damit JEDES Gewerk höchstens eine
+        /// Basis je Anlage — <see cref="Anlage.Mehrdeutig"/> kann nicht mehr wahr werden.
         /// </para>
         /// </remarks>
         private static void BasenFuellen(string komponente, DataRow r, Anlage a)
@@ -303,14 +316,9 @@ namespace WindowsFormsApplication1
                 case DbWerte.ERZEUGER_BHKW:
                     {
                         double modul = Zahl(r, "Kosten_Modul");
-                        double spez = Zahl(r, "Investition_kwel");
-                        double pel = Zahl(r, "Pel");
 
                         Basis(a, BASIS_MODULPREIS, modul,
                               Herleitung(MyResource.Resource.KOSTEN_PLANWERT_HERL_FELD, "Kosten_Modul"));
-                        Basis(a, BASIS_SPEZIFISCH, spez * pel,
-                              Herleitung(MyResource.Resource.KOSTEN_PLANWERT_HERL_BHKW,
-                                         Z(spez, 2), Z(pel, 2)));
 
                         Neben(a, DbWerte.KOSTENPOSTEN_MONTAGE, Zahl(r, "Kosten_Montage"));
                         Neben(a, DbWerte.KOSTENPOSTEN_LIEFERUNG, Zahl(r, "Kosten_Lieferung"));

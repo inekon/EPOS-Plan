@@ -4384,6 +4384,9 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_KOSTEN_SP_ARBEITSPREIS" xml:space="preserve">
     <value>Unit price [€/unit]</value>
   </data>
+  <data name="BK_KOSTEN_SP_ARBEITSPREIS_KWH" xml:space="preserve">
+    <value>Unit price [€/kWh]</value>
+  </data>
   <data name="BK_KOSTEN_SP_GRUNDPREIS" xml:space="preserve">
     <value>Base price [€/a]</value>
   </data>
@@ -4617,27 +4620,6 @@ Depending on the project size this takes several minutes. Continue?</value>
   <data name="BK_KOMP_HINW_VARIANTE" xml:space="preserve">
     <value>The operating parameters of storage variant "{0}" could not be created.</value>
   </data>
-  <data name="KOSTEN_BTN_PLANWERT" xml:space="preserve">
-    <value>🔄 Apply engineering value…</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_TITEL" xml:space="preserve">
-    <value>Apply engineering value — {0}</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_KOPF" xml:space="preserve">
-    <value>Choose per unit which value counts as the investment. Ancillary costs are created as separate rows.</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_SP_ANLAGE" xml:space="preserve">
-    <value>Unit</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_SP_BASIS" xml:space="preserve">
-    <value>Cost basis</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_SP_BETRAG" xml:space="preserve">
-    <value>Amount [€]</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_SP_HERLEITUNG" xml:space="preserve">
-    <value>Origin</value>
-  </data>
   <data name="KOSTEN_PLANWERT_BASIS_MODUL" xml:space="preserve">
     <value>Module price</value>
   </data>
@@ -4658,24 +4640,6 @@ Depending on the project size this takes several minutes. Continue?</value>
   </data>
   <data name="KOSTEN_PLANWERT_HERL_MENGE" xml:space="preserve">
     <value>{0} €/module × {1} modules</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_NEBENKOSTEN" xml:space="preserve">
-    <value>Ancillary costs — one row per item:</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_SUMME" xml:space="preserve">
-    <value>Main item: {0} €</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_BTN_OK" xml:space="preserve">
-    <value>Apply</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_BTN_ABBRUCH" xml:space="preserve">
-    <value>Cancel</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_LEER" xml:space="preserve">
-    <value>No cost value is maintained in this project's engineering data for "{0}".</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_UEBERNOMMEN" xml:space="preserve">
-    <value>"{0}": main item set to {1} €, {2} ancillary row(s) reconciled.</value>
   </data>
   <data name="KOSTEN_ABWEICHUNG" xml:space="preserve">
     <value>Differs from the engineering value: recorded {0} €, engineering {1} €. Use "Apply engineering value…" to align.</value>
@@ -4727,12 +4691,6 @@ Depending on the project size this takes several minutes. Continue?</value>
   </data>
   <data name="KOSTEN_BETRIEB_HERLEITUNG" xml:space="preserve">
     <value>Default: {0} €/kWhel × {1} kWhel from the run of {2}.</value>
-  </data>
-  <data name="BK_KOSTEN_SP_TECHNIK" xml:space="preserve">
-    <value>Engineering value</value>
-  </data>
-  <data name="BK_KOSTEN_ABWEICHUNG" xml:space="preserve">
-    <value>⚠ {0} component(s) differ from the engineering value</value>
   </data>
   <data name="BK_KOMP_HINW_KOSTEN" xml:space="preserve">
     <value>Cost item "{0}" was left unchanged and now differs from the engineering value — align it in cost management via "Apply engineering value…".</value>
@@ -4892,6 +4850,9 @@ After that the value will be missing from every calculation concerning that year
   </data>
   <data name="BK_KOSTEN_TRAEGER_FEHLT" xml:space="preserve">
     <value>⚠ Used but not assigned to this project: {0} — without an assignment there is neither a price nor a calorific value; add it on the “Energy costs” tab of cost management.</value>
+  </data>
+  <data name="BK_KOSTEN_TRAEGER_HI0" xml:space="preserve">
+    <value>⚠ No calorific value for: {0} — without it the unit price cannot be converted to kWh; enter it on the “Energy costs” tab of cost management.</value>
   </data>
   <data name="ADM_BTN_SPEICHERN" xml:space="preserve">
     <value>Save</value>

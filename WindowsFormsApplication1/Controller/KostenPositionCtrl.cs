@@ -10,10 +10,10 @@ namespace WindowsFormsApplication1
     /// (<c>Tab_ProjektWerte</c> + Katalog <c>Tab_Kostenfaktor</c>).
     ///
     /// <para>
-    /// <b>Warum getrennt von <see cref="Form_Kosten"/>.</b> Dieselben Regeln brauchen drei
-    /// Aufrufer: die Kostenverwaltung (Anlegen und Übernehmen), die Kostenseite von
-    /// „Berichte &amp; Kosten" (nur Abweichungsanzeige) und der Übernahmedialog
-    /// <see cref="Form_PlanwertUebernahme"/>. Eine zweite Kopie der Regeln wäre genau die
+    /// <b>Warum getrennt von <see cref="Form_Kosten"/>.</b> Dieselben Regeln brauchen
+    /// mehrere Aufrufer: die Kostenverwaltung (Anlegen und Vorbelegen), die
+    /// Komponentenübernahme (<see cref="KomponentenUebernahmeCtrl"/>) und die KI-Auskunft
+    /// zur Kostenlage. Eine zweite Kopie der Regeln wäre genau die
     /// Sorte Doppelpflege, an der die Kostenseite schon einmal auseinandergelaufen ist
     /// (Befund D1).
     /// </para>

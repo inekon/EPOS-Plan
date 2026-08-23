@@ -4399,6 +4399,9 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_KOSTEN_SP_ARBEITSPREIS" xml:space="preserve">
     <value>Arbeitspreis [€/Einheit]</value>
   </data>
+  <data name="BK_KOSTEN_SP_ARBEITSPREIS_KWH" xml:space="preserve">
+    <value>Arbeitspreis [€/kWh]</value>
+  </data>
   <data name="BK_KOSTEN_SP_GRUNDPREIS" xml:space="preserve">
     <value>Grundpreis [€/a]</value>
   </data>
@@ -4632,27 +4635,6 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
   <data name="BK_KOMP_HINW_VARIANTE" xml:space="preserve">
     <value>Die Betriebsführung der Speichervariante „{0}" konnte nicht angelegt werden.</value>
   </data>
-  <data name="KOSTEN_BTN_PLANWERT" xml:space="preserve">
-    <value>🔄 Planwert übernehmen…</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_TITEL" xml:space="preserve">
-    <value>Technik-Planwert übernehmen — {0}</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_KOPF" xml:space="preserve">
-    <value>Je Anlage festlegen, welcher Wert als Investition gilt. Die Nebenkosten entstehen als eigene Zeilen.</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_SP_ANLAGE" xml:space="preserve">
-    <value>Anlage</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_SP_BASIS" xml:space="preserve">
-    <value>Kostenbasis</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_SP_BETRAG" xml:space="preserve">
-    <value>Betrag [€]</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_SP_HERLEITUNG" xml:space="preserve">
-    <value>Herkunft</value>
-  </data>
   <data name="KOSTEN_PLANWERT_BASIS_MODUL" xml:space="preserve">
     <value>Modulpreis</value>
   </data>
@@ -4673,24 +4655,6 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
   </data>
   <data name="KOSTEN_PLANWERT_HERL_MENGE" xml:space="preserve">
     <value>{0} €/Modul × {1} Module</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_NEBENKOSTEN" xml:space="preserve">
-    <value>Nebenkosten — je Posten eine eigene Zeile:</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_SUMME" xml:space="preserve">
-    <value>Hauptposition: {0} €</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_BTN_OK" xml:space="preserve">
-    <value>Übernehmen</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_BTN_ABBRUCH" xml:space="preserve">
-    <value>Abbrechen</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_LEER" xml:space="preserve">
-    <value>Für „{0}" ist in der Technik dieses Projekts kein Kostenwert gepflegt.</value>
-  </data>
-  <data name="KOSTEN_PLANWERT_UEBERNOMMEN" xml:space="preserve">
-    <value>„{0}": Hauptposition auf {1} € gesetzt, {2} Nebenkostenzeile(n) abgeglichen.</value>
   </data>
   <data name="KOSTEN_ABWEICHUNG" xml:space="preserve">
     <value>Weicht vom Technik-Planwert ab: erfasst {0} €, Technik {1} €. Über „Planwert übernehmen…" angleichen.</value>
@@ -4742,12 +4706,6 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
   </data>
   <data name="KOSTEN_BETRIEB_HERLEITUNG" xml:space="preserve">
     <value>Vorbelegt: {0} €/kWhel × {1} kWhel aus dem Lauf vom {2}.</value>
-  </data>
-  <data name="BK_KOSTEN_SP_TECHNIK" xml:space="preserve">
-    <value>Technik-Planwert</value>
-  </data>
-  <data name="BK_KOSTEN_ABWEICHUNG" xml:space="preserve">
-    <value>⚠ {0} Komponente(n) weichen vom Technik-Planwert ab</value>
   </data>
   <data name="BK_KOMP_HINW_KOSTEN" xml:space="preserve">
     <value>Die Kostenposition „{0}" wurde nicht verändert und weicht jetzt vom Technik-Planwert ab — in der Kostenverwaltung über „Planwert übernehmen…" angleichen.</value>
@@ -4907,6 +4865,9 @@ Danach fehlt der Wert in jeder Rechnung, die dieses Jahr betrifft.</value>
   </data>
   <data name="BK_KOSTEN_TRAEGER_FEHLT" xml:space="preserve">
     <value>⚠ Verwendet, dem Projekt aber nicht zugeordnet: {0} — ohne Zuordnung gibt es weder Preis noch Heizwert; im Reiter „Energiekosten" der Kostenverwaltung ergänzen.</value>
+  </data>
+  <data name="BK_KOSTEN_TRAEGER_HI0" xml:space="preserve">
+    <value>⚠ Kein Heizwert bei: {0} — ohne Heizwert lässt sich der Arbeitspreis nicht auf kWh umrechnen; im Reiter „Energiekosten" der Kostenverwaltung erfassen.</value>
   </data>
   <data name="ADM_BTN_SPEICHERN" xml:space="preserve">
     <value>Speichern</value>
