@@ -1478,6 +1478,70 @@ namespace WindowsFormsApplication1
         /// <summary>Umsatzsteuer — loest die 40-fach hart codierte 1,19 ab (L8).</summary>
         public const string GESETZ_KLASSE_UMSATZSTEUER = "UMSATZSTEUER";
 
+        /// <summary>EEG-Photovoltaik (PV-Konzept § 6.2, Etappe P2): anzulegende
+        /// Werte, Degression, Abschläge, § 51/§ 51a, Kappung.</summary>
+        public const string GESETZ_KLASSE_EEG = "EEG";
+
+        // =====================================================================
+        // EEG-Photovoltaik — Schlüssel der Klasse EEG (Etappe P2, Saat-Generation 5)
+        //   Persistenzwerte, eingefroren (Drei-Schichten-Regel).
+        //   Basiswerte der Fassung IBN 30.07.2022–31.01.2024 (§ 49 EEG);
+        //   der EegSatzRechner degressiert UNRUNDET (Nachtrag N1) und rundet nur
+        //   den Ausgabewert.
+        // =====================================================================
+
+        /// <summary>AW-Basiswert Überschusseinspeisung bis 10 kWp [ct/kWh].</summary>
+        public const string GESETZ_EEG_AW_BASIS_UE_10 = "EEG_AW_BASIS_UE_10";
+        public const string GESETZ_EEG_AW_BASIS_UE_40 = "EEG_AW_BASIS_UE_40";
+        public const string GESETZ_EEG_AW_BASIS_UE_100 = "EEG_AW_BASIS_UE_100";
+        public const string GESETZ_EEG_AW_BASIS_UE_400 = "EEG_AW_BASIS_UE_400";
+        public const string GESETZ_EEG_AW_BASIS_UE_1000 = "EEG_AW_BASIS_UE_1000";
+
+        /// <summary>Zuschlag Volleinspeisung auf den Basiswert je Klasse [ct/kWh].</summary>
+        public const string GESETZ_EEG_AW_VOLL_ZUSCHLAG_10 = "EEG_AW_VOLL_ZUSCHLAG_10";
+        public const string GESETZ_EEG_AW_VOLL_ZUSCHLAG_40 = "EEG_AW_VOLL_ZUSCHLAG_40";
+        public const string GESETZ_EEG_AW_VOLL_ZUSCHLAG_100 = "EEG_AW_VOLL_ZUSCHLAG_100";
+        public const string GESETZ_EEG_AW_VOLL_ZUSCHLAG_400 = "EEG_AW_VOLL_ZUSCHLAG_400";
+        public const string GESETZ_EEG_AW_VOLL_ZUSCHLAG_1000 = "EEG_AW_VOLL_ZUSCHLAG_1000";
+
+        /// <summary>Degression je Halbjahresstichtag (1.2./1.8., erstmals 01.02.2024) [%].</summary>
+        public const string GESETZ_EEG_DEGRESSION_HALBJAHR = "EEG_DEGRESSION_HALBJAHR";
+
+        /// <summary>Abschlag der festen Einspeisevergütung auf den AW (§ 53 Abs. 1) [ct/kWh].</summary>
+        public const string GESETZ_EEG_EV_ABSCHLAG = "EEG_EV_ABSCHLAG";
+
+        /// <summary>Abschlag der Ausfallvergütung (§ 53 Abs. 3) [%] — nur Anlagen &gt; 100 kW (N3).</summary>
+        public const string GESETZ_EEG_AUSFALLVERG_ABSCHLAG = "EEG_AUSFALLVERG_ABSCHLAG";
+
+        /// <summary>Obergrenze der festen Einspeisevergütung (§ 21 Abs. 1 Nr. 1) [kW].</summary>
+        public const string GESETZ_EEG_EV_GRENZE_KW = "EEG_EV_GRENZE_KW";
+
+        /// <summary>Obergrenze der unentgeltlichen Abnahme (§ 21 Abs. 1 Nr. 2, N4) [kW].</summary>
+        public const string GESETZ_EEG_UNENTGELTLICH_GRENZE_KW = "EEG_UNENTGELTLICH_GRENZE_KW";
+
+        /// <summary>Ausschreibungsgrenze — darüber AW = Zuschlagswert (manuell) [kW].</summary>
+        public const string GESETZ_EEG_AUSSCHREIBUNG_GRENZE_KW = "EEG_AUSSCHREIBUNG_GRENZE_KW";
+
+        /// <summary>§ 51-Verschonungsgrenze: darunter erst ab iMSys-Einbau [kW].</summary>
+        public const string GESETZ_EEG_51_GRENZE_KW = "EEG_51_GRENZE_KW";
+
+        /// <summary>§ 51a-Kompensationsfaktor Solar (0,5 Viertelstunden je Ausfall-Viertelstunde).</summary>
+        public const string GESETZ_EEG_51A_FAKTOR_SOLAR = "EEG_51A_FAKTOR_SOLAR";
+
+        /// <summary>§ 51a-Monatskontingent verlängerbarer Viertelstunden, Monat 1–12 (Anhang der
+        /// Festlegung; ertragsgewichtet). Schlüssel + laufende Monatsnummer.</summary>
+        public const string GESETZ_EEG_51A_VLVST_MONAT_PRAEFIX = "EEG_51A_VLVST_MONAT_";
+
+        /// <summary>60-%-Wirkleistungsbegrenzung ohne iMSys (§ 9 Abs. 2) [%].</summary>
+        public const string GESETZ_EEG_KAPPUNG_PROZENT = "EEG_KAPPUNG_PROZENT";
+
+        /// <summary>Vergütungsdauer (§ 25 Abs. 1) [Jahre] — zzgl. Inbetriebnahmemonate.</summary>
+        public const string GESETZ_EEG_VERGUETUNGSDAUER = "EEG_VERGUETUNGSDAUER";
+
+        /// <summary>Solarpaket-I-Erhöhung &gt; 40 kW [ct/kWh] — Status VORLAEUFIG
+        /// (§ 101 EEG, EU-Beihilfevorbehalt): NICHT anwenden (F8/N.2).</summary>
+        public const string GESETZ_EEG_SOLARPAKET_AUFSCHLAG = "EEG_SOLARPAKET_AUFSCHLAG";
+
         // --------------------------------------------------------------- Status
 
         /// <summary>Aus einer Primaerquelle belegt und in Kraft.</summary>
