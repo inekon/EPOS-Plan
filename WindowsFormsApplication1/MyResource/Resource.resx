@@ -7144,4 +7144,169 @@ Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Micro
   <data name="KI_REG_ZWECK_PROJEKT_SUCHEN" xml:space="preserve">
     <value>Sucht Projekte, deren Name oder Kunde den Suchtext enthält. Der Abgleich läuft lokal über die vollständige Projektliste; kein Treffer bedeutet deshalb wirklich, dass es kein solches Projekt gibt.</value>
   </data>
+  <data name="KDLG_TITEL" xml:space="preserve">
+    <value>Kostenverwaltung {0}</value>
+  </data>
+  <data name="KDLG_UNTERTITEL_INVEST" xml:space="preserve">
+    <value>Investitionskosten nach VDI 2067</value>
+  </data>
+  <data name="KDLG_UNTERTITEL_BETRIEB" xml:space="preserve">
+    <value>Betriebskosten nach VDI 2067</value>
+  </data>
+  <data name="KDLG_TAB_KOSTEN" xml:space="preserve">
+    <value>Kosten Invest/Betrieb</value>
+  </data>
+  <data name="KDLG_TAB_ERTRAG" xml:space="preserve">
+    <value>Ertrag/Bonus</value>
+  </data>
+  <data name="KDLG_TAB_ERTRAG_HINWEIS" xml:space="preserve">
+    <value>Der Reiter „Ertrag/Bonus“ folgt in Etappe KD5 (BHKW: KWKG und Steuern; Photovoltaik: EEG-Vergütung).</value>
+  </data>
+  <data name="KDLG_BANNER" xml:space="preserve">
+    <value>Alle Beträge und alle Bezugsgrößen sind NETTO. Der Umsatzsteuersatz kommt aus dem Katalog „gesetzliche Parameter“. Eine gepflegte Satzangabe hat Vorrang — das Absolutfeld wird dann gesperrt, aber nicht geleert.</value>
+  </data>
+  <data name="KDLG_LBL_KOMPONENTE" xml:space="preserve">
+    <value>Komponente:</value>
+  </data>
+  <data name="KDLG_KAT_INVEST" xml:space="preserve">
+    <value>Investitionskosten</value>
+  </data>
+  <data name="KDLG_KAT_BETRIEB" xml:space="preserve">
+    <value>Betriebskosten</value>
+  </data>
+  <data name="KDLG_LBL_VARIANTE" xml:space="preserve">
+    <value>Variante:</value>
+  </data>
+  <data name="KDLG_BTN_NEU" xml:space="preserve">
+    <value>Neu…</value>
+  </data>
+  <data name="KDLG_BTN_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Speichern unter…</value>
+  </data>
+  <data name="KDLG_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="KDLG_BTN_POSITION" xml:space="preserve">
+    <value>+ Position hinzufügen</value>
+  </data>
+  <data name="KDLG_SP_AKTIONEN" xml:space="preserve">
+    <value>Aktionen</value>
+  </data>
+  <data name="KDLG_SP_POSITION" xml:space="preserve">
+    <value>Position</value>
+  </data>
+  <data name="KDLG_SP_BEMESSUNG" xml:space="preserve">
+    <value>Bemessung</value>
+  </data>
+  <data name="KDLG_SP_SATZ" xml:space="preserve">
+    <value>Satz</value>
+  </data>
+  <data name="KDLG_SP_BETRAG" xml:space="preserve">
+    <value>Betrag netto [€]</value>
+  </data>
+  <data name="KDLG_SP_BETRAG_JAHR" xml:space="preserve">
+    <value>Betrag netto [€/a]</value>
+  </data>
+  <data name="KDLG_SP_NUTZUNG" xml:space="preserve">
+    <value>Nutzungsdauer [a]</value>
+  </data>
+  <data name="KDLG_SP_WORSTBEST" xml:space="preserve">
+    <value>Worst/Best</value>
+  </data>
+  <data name="KDLG_SUMME_NETTO_INVEST" xml:space="preserve">
+    <value>Summe Investitionskosten netto: {0} €</value>
+  </data>
+  <data name="KDLG_SUMME_NETTO_BETRIEB" xml:space="preserve">
+    <value>Summe Betriebskosten netto: {0} €/a</value>
+  </data>
+  <data name="KDLG_SUMME_BRUTTO" xml:space="preserve">
+    <value>Summe brutto: {0} (Umsatzsteuer {1} % aus dem Katalog)</value>
+  </data>
+  <data name="KDLG_READONLY_HINWEIS" xml:space="preserve">
+    <value>Auslieferungsvorlage (schreibgeschützt) — zum Ändern „Speichern unter…“ verwenden.</value>
+  </data>
+  <data name="KDLG_TT_KETTE" xml:space="preserve">
+    <value>Satz und Betrag netto sind verknüpft und werden bei Eingabe umgerechnet.</value>
+  </data>
+  <data name="KDLG_TT_WORSTBEST" xml:space="preserve">
+    <value>Worst/Best wird je Projektposition gepflegt („Eingabe Worst/Best Case“), nicht in der Stammvorlage.</value>
+  </data>
+  <data name="KDLG_TT_BETRAG_ADMIN" xml:space="preserve">
+    <value>Bezugsgröße erst im Projekt bekannt — der Betrag entsteht bei der Übernahme.</value>
+  </data>
+  <data name="KDLG_MSG_NEU_NAME" xml:space="preserve">
+    <value>Name der neuen Variante:</value>
+  </data>
+  <data name="KDLG_MSG_NEU_TITEL" xml:space="preserve">
+    <value>Neue Variante</value>
+  </data>
+  <data name="KDLG_MSG_KOPIE_TITEL" xml:space="preserve">
+    <value>Speichern unter</value>
+  </data>
+  <data name="KDLG_MSG_LOESCHEN" xml:space="preserve">
+    <value>Variante „{0}“ wirklich löschen?</value>
+  </data>
+  <data name="KDLG_MSG_READONLY" xml:space="preserve">
+    <value>Auslieferungsvorlagen sind schreibgeschützt.</value>
+  </data>
+  <data name="KDLG_MSG_POS_LOESCHEN" xml:space="preserve">
+    <value>Position „{0}“ löschen?</value>
+  </data>
+  <data name="KDLG_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>Der Name ist bereits vergeben oder leer.</value>
+  </data>
+  <data name="KDLG_MENUE_VORLAGEN" xml:space="preserve">
+    <value>Kostenvorlagen (Komponenten)…</value>
+  </data>
+  <data name="KDLG_POS_NEU_VORGABE" xml:space="preserve">
+    <value>Neue Position</value>
+  </data>
+  <data name="BM_BETRAG" xml:space="preserve">
+    <value>fester Betrag</value>
+  </data>
+  <data name="BM_JAHRESBETRAG" xml:space="preserve">
+    <value>fester Jahresbetrag</value>
+  </data>
+  <data name="BM_P_INVESTITION" xml:space="preserve">
+    <value>% der Investition</value>
+  </data>
+  <data name="BM_P_ERZEUGER" xml:space="preserve">
+    <value>% der Erzeugerkosten</value>
+  </data>
+  <data name="BM_P_BRENNSTOFF" xml:space="preserve">
+    <value>% der Brennstoffkosten</value>
+  </data>
+  <data name="BM_P_STROM" xml:space="preserve">
+    <value>% der Stromkosten</value>
+  </data>
+  <data name="BM_KWH_THERMISCH" xml:space="preserve">
+    <value>je kWh thermisch</value>
+  </data>
+  <data name="BM_KWH_ELEKTRISCH" xml:space="preserve">
+    <value>je kWh elektrisch</value>
+  </data>
+  <data name="BM_KW_LEISTUNG" xml:space="preserve">
+    <value>je kW Leistung</value>
+  </data>
+  <data name="BM_KW_HEIZLEISTUNG" xml:space="preserve">
+    <value>je kW Heizleistung</value>
+  </data>
+  <data name="BM_KW_ELEKTRISCH" xml:space="preserve">
+    <value>je kW elektrisch</value>
+  </data>
+  <data name="BM_KWP" xml:space="preserve">
+    <value>je kWp Leistung</value>
+  </data>
+  <data name="BM_KWH_KAPAZITAET" xml:space="preserve">
+    <value>je kWh Kapazität</value>
+  </data>
+  <data name="BM_M2_KOLLEKTOR" xml:space="preserve">
+    <value>je m² Kollektorfläche</value>
+  </data>
+  <data name="BM_KWH" xml:space="preserve">
+    <value>je kWh</value>
+  </data>
+  <data name="BM_STUNDE" xml:space="preserve">
+    <value>je Stunde</value>
+  </data>
 </root>
