@@ -960,6 +960,21 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(ENERGY_CARRIER,   SPALTE_EC_PRICE_POWER_MODUS, "TEXT(10)"),
         };
 
+        /// <summary>Spalte <c>Tab_Preisreihe.ID_Energietraeger</c> (LONG, nullable) —
+        /// Etappe KD4 (Konzept Kostendialoge § 7.1, FK6a): NULL = Spot-Preisreihe
+        /// (Bestand); gesetzt = saisonale Leistungspreis-Reihe dieses Trägers
+        /// (Auflösung Monat, Einheit EUR/kW/Monat, 12 Werte). Zusammen mit
+        /// <c>ID_Projekt</c>: NULL = Stammreihe des Katalogs, gesetzt = Projektreihe
+        /// (gilt vor der Stammreihe).</summary>
+        public const string SPALTE_PR_ID_ENERGIETRAEGER = "ID_Energietraeger";
+
+        /// <summary>Die Spalten-Nachrüstung des Schritts 40 (Etappe KD4, FK6a) —
+        /// nullable, reine Strukturerweiterung; Bestandsreihen bleiben Spotreihen.</summary>
+        public static readonly SchemaSpalte[] Schritt40_Spalten =
+        {
+            new SchemaSpalte(TAB_PREISREIHE, SPALTE_PR_ID_ENERGIETRAEGER, "LONG"),
+        };
+
         /// <summary>Eine Position einer Auslieferungsvorlage (Schritt 39).</summary>
         public sealed class VorlagenPositionSeed
         {

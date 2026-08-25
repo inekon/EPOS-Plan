@@ -125,6 +125,183 @@ namespace WindowsFormsApplication1
             LoadData();
             BaueUmrechnungsblock();   // ETAPPE K3 - vor dem Aufschlagsblock, der an this.Height andockt
             BaueAufschlagsblock();
+            BaueLeistungspreisZusatz();   // ETAPPE KD4 (FK6/FK6a) - nach LoadData, das die Einheit setzt
+
+            // KD4: Katalogkontext (Projekt 0, Form_Energietraeger im Admin-Menü) —
+            // die Katalogpreis-Pflege kommt mit den Trägervarianten (§ 7.1); bis
+            // dahin nur lesen. Modus und Saisonreihen bleiben pflegbar.
+            if (_projectId <= 0)
+            {
+                btn_Save.Enabled = false;
+                new ToolTip().SetToolTip(btn_Save, TKd4("KDLG_ET_KATALOG_NUR_LESEN",
+                    "Katalogpreise sind hier noch nicht pflegbar (folgt mit den Trägervarianten)."));
+            }
+        }
+
+        // =====================================================================
+        // ETAPPE KD4 (Konzept Kostendialoge § 7.1, FK6/FK6a) — Leistungspreis:
+        // Modus (Jahr/Monat), saisonale Reihen, Strom-Sonderfall.
+        // =====================================================================
+
+        private ComboBox cmbLeistungsModus;
+        private Button btnSaisonSaetze;
+        private Label lblLeistungsHinweis;
+
+        /// <summary>
+        /// Ergänzt die Leistungspreis-Zeile: Modus-Klappliste (schreibt
+        /// <c>energy_carrier.price_power_modus</c> — der Modus ist KATALOGSACHE je
+        /// Träger, auch im Projektkontext; dokumentierte Zwischenlösung) und den
+        /// Zugang zu den Saisonreihen (FK6a). Beim Stromträger wird das Feld
+        /// GESPERRT: Der Strom-Leistungspreis ist die Tarifstruktur
+        /// (StromMatrix, Migrationsschritt 21) — keine zweite Wahrheit.
+        /// Programmatisch nach dem Bestandsmuster der übrigen Zusatzblöcke.
+        /// </summary>
+        private void BaueLeistungspreisZusatz()
+        {
+            Control eltern = numLeistungspreis.Parent;
+            if (eltern == null) return;
+
+            bool istStrom = string.Equals(_carrier.PricingModel, "ELECTRICITY",
+                                          StringComparison.OrdinalIgnoreCase);
+            if (istStrom)
+            {
+                // Beim Strom ist der Leistungspreis TARIFWELT (StromMatrix,
+                // Schritt 21): has_powerprice ist dort false, das Feld unsichtbar —
+                // der Hinweis sagt dem Suchenden, wo die Wahrheit liegt.
+                numLeistungspreis.Enabled = false;
+                lblLeistungsHinweis = new Label
+                {
+                    AutoSize = true,
+                    ForeColor = Color.FromArgb(90, 90, 90),
+                    Location = new Point(lbl_Leistungspreis.Left, lbl_Leistungspreis.Top),
+                    Text = TKd4("KDLG_LP_STROM_TARIF",
+                        "Leistungspreis Strom: über die Tarifstruktur.")
+                };
+                eltern.Controls.Add(lblLeistungsHinweis);
+                return;
+            }
+
+            if (!_carrier.HasPowerPrice) return;
+
+            cmbLeistungsModus = new ComboBox
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Width = 160,
+                Location = new Point(lbl_Unit_Leistungspreis.Right + 12,
+                                     numLeistungspreis.Top - 1)
+            };
+            cmbLeistungsModus.Items.Add(TKd4("KDLG_LP_MODUS_JAHR", "Jahresleistungspreis"));
+            cmbLeistungsModus.Items.Add(TKd4("KDLG_LP_MODUS_MONAT", "Monatsleistungspreis"));
+            cmbLeistungsModus.SelectedIndex = string.Equals(LiesLeistungsModus(),
+                DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal) ? 1 : 0;
+            SetzeLeistungsEinheit();
+            cmbLeistungsModus.SelectedIndexChanged += (s, e) =>
+            {
+                SchreibeLeistungsModus();
+                SetzeLeistungsEinheit();
+            };
+            eltern.Controls.Add(cmbLeistungsModus);
+
+            btnSaisonSaetze = new Button
+            {
+                Text = TKd4("KDLG_LP_SAISON", "Saisonale Sätze…"),
+                Size = new Size(130, 26),
+                Location = new Point(cmbLeistungsModus.Right + 8, numLeistungspreis.Top - 2)
+            };
+            btnSaisonSaetze.Click += (s, e) =>
+            {
+                using (Form_LeistungspreisReihe dlg = new Form_LeistungspreisReihe())
+                {
+                    dlg.SetControls(_projectId, _carrier.ID, _carrier.Name);
+                    dlg.ShowDialog(FindForm());
+                }
+                ZeigeReihenStatus();
+            };
+            eltern.Controls.Add(btnSaisonSaetze);
+
+            lblLeistungsHinweis = new Label
+            {
+                AutoSize = true,
+                ForeColor = Color.FromArgb(90, 90, 90),
+                Location = new Point(btnSaisonSaetze.Right + 10, numLeistungspreis.Top + 3)
+            };
+            eltern.Controls.Add(lblLeistungsHinweis);
+            ZeigeReihenStatus();
+        }
+
+        /// <summary>Einheit des Leistungspreis-Felds je Modus — €/(kW·a) bzw.
+        /// €/(kW·Monat); ersetzt die frühere €/&lt;Bezugseinheit&gt;-Beschriftung
+        /// (der Leistungspreis bemisst sich nach kW, nicht nach der Brennstoffeinheit).</summary>
+        private void SetzeLeistungsEinheit()
+        {
+            if (!_carrier.HasPowerPrice) return;
+            bool monat = cmbLeistungsModus != null
+                ? cmbLeistungsModus.SelectedIndex == 1
+                : string.Equals(LiesLeistungsModus(),
+                    DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal);
+            lbl_Unit_Leistungspreis.Text = monat ? "€/(kW·Monat)" : "€/(kW·a)";
+        }
+
+        private string LiesLeistungsModus()
+        {
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT price_power_modus FROM energy_carrier WHERE id = ?",
+                    new OleDbParameter("@id", _carrier.ID));
+                string s = (o == null || o == DBNull.Value) ? null : Convert.ToString(o);
+                return string.Equals(s, DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal)
+                    ? DbWerte.LEISTUNGSPREIS_MODUS_MONAT
+                    : DbWerte.LEISTUNGSPREIS_MODUS_JAHR;
+            }
+            catch { return DbWerte.LEISTUNGSPREIS_MODUS_JAHR; }
+        }
+
+        private void SchreibeLeistungsModus()
+        {
+            try
+            {
+                DataRepository.ExecuteSQL(
+                    "UPDATE energy_carrier SET price_power_modus = ? WHERE id = ?",
+                    new OleDbParameter("@m", cmbLeistungsModus.SelectedIndex == 1
+                        ? DbWerte.LEISTUNGSPREIS_MODUS_MONAT
+                        : DbWerte.LEISTUNGSPREIS_MODUS_JAHR),
+                    new OleDbParameter("@id", _carrier.ID));
+            }
+            catch (Exception ex)
+            {
+                DataRepository.FehlerMelden(
+                    "Der Leistungspreis-Modus konnte nicht gespeichert werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>Statuszeile: gilt eine Saisonreihe (Projekt- vor Stammreihe)?</summary>
+        private void ZeigeReihenStatus()
+        {
+            if (lblLeistungsHinweis == null) return;
+            try
+            {
+                PreisreiheModel r = new PreisreiheCtrl().ReadTraegerReihe(_projectId, _carrier.ID);
+                lblLeistungsHinweis.Text = r == null
+                    ? ""
+                    : string.Format(CultureInfo.CurrentCulture,
+                        TKd4("KDLG_LP_REIHE_STATUS", "Saisonreihe {0} ({1}) — gilt vor dem Satz."),
+                        r.Jahr,
+                        r.IstStamm ? TKd4("KDLG_LPR_EBENE_STAMM", "Stammreihe (Katalog)")
+                                   : TKd4("KDLG_LPR_EBENE_PROJEKT", "Projektreihe"));
+            }
+            catch { lblLeistungsHinweis.Text = ""; }
+        }
+
+        /// <summary>MyResource mit deutschem Rückfall (Drei-Schichten-Regel).</summary>
+        private static string TKd4(string schluessel, string rueckfall)
+        {
+            try
+            {
+                string s = MyResource.Resource.ResourceManager.GetString(schluessel);
+                return string.IsNullOrEmpty(s) ? rueckfall : s;
+            }
+            catch { return rueckfall; }
         }
 
         /// <summary>
@@ -626,7 +803,7 @@ namespace WindowsFormsApplication1
             if (cmbUnit.SelectedItem is EnergyConversion conv)
             {
                 lbl_Unit_Arbeitspreis.Text = $"€/{conv.ToUnitCode}";
-                lbl_Unit_Leistungspreis.Text = $"€/{conv.ToUnitCode}";
+                SetzeLeistungsEinheit();   // KD4: kW-Bezug, nicht Brennstoffeinheit
                 lbl_Unit_Heizwert.Text = $"kWh/{conv.ToUnitCode}";
                 lbl_Unit_Brennwert.Text = $"kWh/{conv.ToUnitCode}";
             }
@@ -692,7 +869,7 @@ namespace WindowsFormsApplication1
                 lbl_Unit_Arbeitspreis.Text = $"€/{conv.ToUnitCode}";
                 lbl_Unit_Heizwert.Text = $"kWh/{conv.ToUnitCode}";
 
-                if (_carrier.HasPowerPrice) lbl_Unit_Leistungspreis.Text = $"€/{conv.ToUnitCode}";
+                if (_carrier.HasPowerPrice) SetzeLeistungsEinheit();   // KD4: kW-Bezug
                 if (_carrier.HasHs) lbl_Unit_Brennwert.Text = $"kWh/{conv.ToUnitCode}";
 
                 UpdatePricePerKWh();

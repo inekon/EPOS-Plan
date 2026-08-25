@@ -7312,4 +7312,79 @@ Please run the EPOS-Plan setup again or install the Microsoft Access Database En
   <data name="KDLG_UEB_VORSCHAU" xml:space="preserve">
     <value>The source contains {0} items. The target project already has {1} items for this component — existing ones remain untouched, only missing ones are created. The origin is recorded per item.</value>
   </data>
+  <data name="KDLG_ET_KATALOG_NUR_LESEN" xml:space="preserve">
+    <value>Catalogue prices cannot be edited here yet (coming with carrier variants).</value>
+  </data>
+  <data name="KDLG_ET_KONTEXT_KATALOG" xml:space="preserve">
+    <value>Context: catalogue (master data)</value>
+  </data>
+  <data name="KDLG_ET_KONTEXT_PROJEKT" xml:space="preserve">
+    <value>Context: project {0}</value>
+  </data>
+  <data name="KDLG_ET_LISTE" xml:space="preserve">
+    <value>Energy carriers</value>
+  </data>
+  <data name="KDLG_ET_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="KDLG_ET_SPOT_KEINE" xml:space="preserve">
+    <value>No price series available yet.</value>
+  </data>
+  <data name="KDLG_ET_SPOT_STATUS" xml:space="preserve">
+    <value>{0} series, years {1}–{2}</value>
+  </data>
+  <data name="KDLG_ET_TITEL" xml:space="preserve">
+    <value>Energy carrier management</value>
+  </data>
+  <data name="KDLG_KOSTEN_ET_KNOPF" xml:space="preserve">
+    <value>Energy carriers…</value>
+  </data>
+  <data name="KDLG_LPR_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="KDLG_LPR_ALLES_NULL" xml:space="preserve">
+    <value>All twelve rates are 0 — please use “Delete series” to remove the series.</value>
+  </data>
+  <data name="KDLG_LPR_EBENE_PROJEKT" xml:space="preserve">
+    <value>Project series</value>
+  </data>
+  <data name="KDLG_LPR_EBENE_STAMM" xml:space="preserve">
+    <value>Master series (catalogue)</value>
+  </data>
+  <data name="KDLG_LPR_HINWEIS_STAMM" xml:space="preserve">
+    <value>Prefilled from the master series ({0}); saving creates a project series that takes precedence.</value>
+  </data>
+  <data name="KDLG_LPR_HINWEIS_VORRANG" xml:space="preserve">
+    <value>A maintained series takes precedence over the flat rate.</value>
+  </data>
+  <data name="KDLG_LPR_JAHR" xml:space="preserve">
+    <value>Year:</value>
+  </data>
+  <data name="KDLG_LPR_LOESCHEN" xml:space="preserve">
+    <value>Delete series</value>
+  </data>
+  <data name="KDLG_LPR_TITEL" xml:space="preserve">
+    <value>Seasonal capacity price rates</value>
+  </data>
+  <data name="KDLG_LPR_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="KDLG_LP_MODUS_JAHR" xml:space="preserve">
+    <value>Annual capacity price</value>
+  </data>
+  <data name="KDLG_LP_MODUS_MONAT" xml:space="preserve">
+    <value>Monthly capacity price</value>
+  </data>
+  <data name="KDLG_LP_REIHE_STATUS" xml:space="preserve">
+    <value>Seasonal series {0} ({1}) — takes precedence over the flat rate.</value>
+  </data>
+  <data name="KDLG_LP_SAISON" xml:space="preserve">
+    <value>Seasonal rates…</value>
+  </data>
+  <data name="KDLG_LP_STROM_TARIF" xml:space="preserve">
+    <value>Electricity capacity price: managed via the tariff structure.</value>
+  </data>
+  <data name="KDLG_MENUE_ENERGIETRAEGER" xml:space="preserve">
+    <value>Energy carrier management…</value>
+  </data>
 </root>

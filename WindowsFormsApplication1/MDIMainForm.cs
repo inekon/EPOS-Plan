@@ -72,6 +72,24 @@ namespace WindowsFormsApplication1
                 };
 
                 MenuItem_KostenVerwaltung.DropDownItems.Add(eintrag);
+
+                // KD4 (§ 3.1): Energieträgerverwaltung im Admin-Kontext (Katalog).
+                string textEt = null;
+                try { textEt = MyResource.Resource.ResourceManager.GetString("KDLG_MENUE_ENERGIETRAEGER"); }
+                catch { }
+                if (string.IsNullOrEmpty(textEt)) textEt = "Energieträgerverwaltung…";
+
+                ToolStripMenuItem eintragEt = new ToolStripMenuItem(textEt);
+                eintragEt.Name = "MenuItem_Energietraeger";
+                eintragEt.Click += (s, e) =>
+                {
+                    using (Form_Energietraeger frm = new Form_Energietraeger())
+                    {
+                        frm.SetControls(0);
+                        frm.ShowDialog(this);
+                    }
+                };
+                MenuItem_KostenVerwaltung.DropDownItems.Add(eintragEt);
             }
             catch (Exception ex)
             {

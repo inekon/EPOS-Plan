@@ -151,9 +151,16 @@ namespace WindowsFormsApplication1
             // haben, wenn die Bindung sie zeichnet.
             KopfzeilenEntfernen();
 
-            FillCarrierComboBox();
-            RenderEnergieTab();
-            BaueKostenprofilReiter();
+            // Ä1 (Konzept Kostendialoge § 6.4, Etappe KD4): Der Kosteneditor führt nur
+            // noch Investitions- und Betriebskosten. Energie-Reiter und Kostenprofil-
+            // Reiter sind in die Energieträgerverwaltung (Form_Energietraeger)
+            // umgezogen. Der Reiter wird PROGRAMMATISCH entfernt, damit die
+            // Designer-Datei unberührt bleibt — dasselbe Muster, mit dem der
+            // Kostenprofil-Reiter einst angebaut wurde. Sein Bestandscode
+            // (FillCarrierComboBox, RenderEnergieTab, listBox-Handler) bleibt stehen
+            // und ist ohne den Reiter unerreichbar.
+            tabMain.TabPages.Remove(tabEnergie);
+            BaueEnergietraegerKnopf();
 
             // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
             // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
@@ -195,7 +202,45 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Übergangs-Einstieg (Etappe KD4, bis KD6): unten rechts ein Knopf
+        /// „Energieträger…", der die Energieträgerverwaltung im Projektkontext
+        /// öffnet. Die endgültigen Projekt-Einstiege (§ 3.2: Anlagendialog
+        /// „Energiekosten…", Berichte &amp; Kosten) kommen mit KD6 — bis dahin
+        /// bliebe der frühere Energie-Reiter sonst ohne erreichbaren Nachfolger.
+        /// </summary>
+        private void BaueEnergietraegerKnopf()
+        {
+            string text = null;
+            try { text = MyResource.Resource.ResourceManager.GetString("KDLG_KOSTEN_ET_KNOPF"); }
+            catch { }
+            if (string.IsNullOrEmpty(text)) text = "Energieträger…";
+
+            Panel fuss = new Panel { Dock = DockStyle.Bottom, Height = 44, BackColor = Surface };
+            Button knopf = new Button
+            {
+                Text = text,
+                Size = new Size(190, 30),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                UseVisualStyleBackColor = true
+            };
+            knopf.Click += (s, e) =>
+            {
+                using (Form_Energietraeger frm = new Form_Energietraeger())
+                {
+                    frm.SetControls(m_ID_Projekt);
+                    frm.ShowDialog(this);
+                }
+            };
+            fuss.Controls.Add(knopf);
+            Controls.Add(fuss);
+            knopf.Location = new Point(fuss.ClientSize.Width - knopf.Width - 16, 7);
+        }
+
+        /// <summary>
         /// Baut den vierten Reiter „Kostenprofil" (K4/HF4 6.1) mit zwei Einstiegskarten.
+        /// Seit KD4 (Ä1) NICHT mehr aufgerufen — die Karten leben beim Stromträger der
+        /// Energieträgerverwaltung (<see cref="Form_Energietraeger"/>); der Rückbau
+        /// dieses Codes folgt mit KD6/FK8 (erst schreibgeschützt, dann entfernen).
         /// </summary>
         /// <remarks>
         /// <para>
