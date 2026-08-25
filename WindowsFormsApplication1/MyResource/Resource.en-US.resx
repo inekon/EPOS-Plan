@@ -7390,4 +7390,160 @@ Please run the EPOS-Plan setup again or install the Microsoft Access Database En
   <data name="SIM_PV_V1_BHKW_GETRENNT" xml:space="preserve">
     <value>CHP electricity surplus of {0:N0} kWh reported separately from the PV feed-in (finding V1).</value>
   </data>
+  <data name="PVW_51A" xml:space="preserve">
+    <value>Sec. 51a compensation (term extension)</value>
+  </data>
+  <data name="PVW_51_ALTANLAGE" xml:space="preserve">
+    <value>does not apply: commissioned before 25 Feb 2025.</value>
+  </data>
+  <data name="PVW_51_GREIFT" xml:space="preserve">
+    <value>applies from the first negative quarter-hour.</value>
+  </data>
+  <data name="PVW_51_IMSYS" xml:space="preserve">
+    <value>applies from {0} (year after smart-meter installation).</value>
+  </data>
+  <data name="PVW_51_VERSCHONT" xml:space="preserve">
+    <value>does not apply: plant &lt; 100 kW without smart meter.</value>
+  </data>
+  <data name="PVW_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="PVW_AKTIV" xml:space="preserve">
+    <value>Apply remuneration</value>
+  </data>
+  <data name="PVW_ANWENDEN" xml:space="preserve">
+    <value>Apply:</value>
+  </data>
+  <data name="PVW_AUSFALL" xml:space="preserve">
+    <value>Share of feed-in energy lost [%]:</value>
+  </data>
+  <data name="PVW_AUTO" xml:space="preserve">
+    <value>Automatic</value>
+  </data>
+  <data name="PVW_AW_OVERRIDE" xml:space="preserve">
+    <value>(override)</value>
+  </data>
+  <data name="PVW_AW_OVR" xml:space="preserve">
+    <value>AW override [ct/kWh] (0 = catalogue):</value>
+  </data>
+  <data name="PVW_BEZUG_REIHE" xml:space="preserve">
+    <value>Value grid consumption hourly from the price series</value>
+  </data>
+  <data name="PVW_DV" xml:space="preserve">
+    <value>DM fee [ct/kWh]:</value>
+  </data>
+  <data name="PVW_EV" xml:space="preserve">
+    <value>Fixed feed-in tariff</value>
+  </data>
+  <data name="PVW_EV_GESPERRT" xml:space="preserve">
+    <value>Fixed tariff only up to 100 kW (sec. 21 (1) no. 1 EEG).</value>
+  </data>
+  <data name="PVW_EV_SATZ" xml:space="preserve">
+    <value>Fixed tariff (AW − {0:0.00}): {1:0.00} ct/kWh</value>
+  </data>
+  <data name="PVW_G_51" xml:space="preserve">
+    <value>Remuneration loss (sec. 51 / 51a)</value>
+  </data>
+  <data name="PVW_G_ANLAGE" xml:space="preserve">
+    <value>Plant</value>
+  </data>
+  <data name="PVW_G_AW" xml:space="preserve">
+    <value>Applicable value</value>
+  </data>
+  <data name="PVW_G_BEZUG" xml:space="preserve">
+    <value>Electricity price / consumption valuation</value>
+  </data>
+  <data name="PVW_G_KAPPUNG" xml:space="preserve">
+    <value>60 % active-power limitation (sec. 9 (2) EEG)</value>
+  </data>
+  <data name="PVW_G_VERMARKTUNG" xml:space="preserve">
+    <value>Marketing</value>
+  </data>
+  <data name="PVW_G_VORSCHAU" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="PVW_HINWEIS_21C" xml:space="preserve">
+    <value>Without active assignment at the grid operator, plants &lt; 200 kW default to unpaid acceptance (sec. 21c EEG).</value>
+  </data>
+  <data name="PVW_IBN" xml:space="preserve">
+    <value>Commissioning date:</value>
+  </data>
+  <data name="PVW_IBN_PFLICHT" xml:space="preserve">
+    <value>Please enter the commissioning date.</value>
+  </data>
+  <data name="PVW_IMSYS" xml:space="preserve">
+    <value>Smart-meter installation year (0 = none):</value>
+  </data>
+  <data name="PVW_JA" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="PVW_KAP_AN" xml:space="preserve">
+    <value>active: feed-in capped at 60 % of kWp (no smart meter).</value>
+  </data>
+  <data name="PVW_KAP_AUS" xml:space="preserve">
+    <value>switched off.</value>
+  </data>
+  <data name="PVW_KAP_INAKTIV" xml:space="preserve">
+    <value>does not apply (direct marketing or smart meter present).</value>
+  </data>
+  <data name="PVW_KEINE" xml:space="preserve">
+    <value>No remuneration (free of charge)</value>
+  </data>
+  <data name="PVW_KNOPF" xml:space="preserve">
+    <value>Photovoltaics…</value>
+  </data>
+  <data name="PVW_KWP" xml:space="preserve">
+    <value>Installed capacity:</value>
+  </data>
+  <data name="PVW_KWP_OVERRIDE" xml:space="preserve">
+    <value> — override {0:N1}</value>
+  </data>
+  <data name="PVW_KWP_OVR" xml:space="preserve">
+    <value>Override [kWp] (0 = none):</value>
+  </data>
+  <data name="PVW_KWP_WERT" xml:space="preserve">
+    <value>calculated {0:N1} kWp</value>
+  </data>
+  <data name="PVW_MP" xml:space="preserve">
+    <value>Direct marketing with market premium</value>
+  </data>
+  <data name="PVW_NEIN" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="PVW_PPA" xml:space="preserve">
+    <value>Other direct marketing / PPA</value>
+  </data>
+  <data name="PVW_PPA_AUFSCHLAG" xml:space="preserve">
+    <value>PPA premium on spot [ct/kWh]:</value>
+  </data>
+  <data name="PVW_PPA_PREIS" xml:space="preserve">
+    <value>PPA fixed price [ct/kWh] (0 = none):</value>
+  </data>
+  <data name="PVW_STROMSTEUER" xml:space="preserve">
+    <value>Self-consumption from plants ≤ 2 MW in spatial context is exempt from electricity tax (sec. 9 StromStG); supplying third parties follows different rules.</value>
+  </data>
+  <data name="PVW_TITEL" xml:space="preserve">
+    <value>PV remuneration (EEG)</value>
+  </data>
+  <data name="PVW_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="PVW_UEBERSCHUSS" xml:space="preserve">
+    <value>Surplus feed-in</value>
+  </data>
+  <data name="PVW_VOLL" xml:space="preserve">
+    <value>Full feed-in</value>
+  </data>
+  <data name="PVW_VORSCHAU" xml:space="preserve">
+    <value>Feed-in {0:N1} MWh/a · rate year 1: {1:0.00} ct/kWh · revenue year 1: {2:N0} €/a · remuneration loss {3:N0} kWh ({4:N0} €) · sec. 51a credit {5:N0} € (year {6})</value>
+  </data>
+  <data name="PVW_VORSCHAU_OHNE_ERGEBNIS" xml:space="preserve">
+    <value>No simulation result yet — the preview shows quantities and revenue after a run; the rates above already apply.</value>
+  </data>
+  <data name="PVW_WARN_AUSSCHREIBUNG" xml:space="preserve">
+    <value>above 1 MW: tendering — AW override required.</value>
+  </data>
+  <data name="PVW_WARN_STROMSTEUER" xml:space="preserve">
+    <value>above 2 MW: check electricity tax on self-consumption.</value>
+  </data>
 </root>
