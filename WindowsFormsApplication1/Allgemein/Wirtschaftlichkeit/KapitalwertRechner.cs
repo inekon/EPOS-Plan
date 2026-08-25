@@ -88,6 +88,16 @@ namespace WindowsFormsApplication1
             /// </summary>
             public const string KWKG_PAUSCHALE = "KWKG_PAUSCHALE";
 
+            /// <summary>
+            /// ETAPPE P4 (PV-Konzept § 4.6): die jahresscharfe PV-Einspeisevergütung
+            /// aus dem Vergütungsdialog (<c>PvErloesRechner</c>). Ersetzt bei aktivem
+            /// Dialog den PV-Anteil des konstanten Einspeiseerlöses — nach Ablauf der
+            /// Vergütungsdauer fällt die Reihe auf den Marktwert (Direktvermarktung)
+            /// bzw. 0 (feste EV) zurück; die § 51a-Gutschrift liegt im letzten
+            /// Vergütungsjahr.
+            /// </summary>
+            public const string PV_VERGUETUNG = "PV_VERGUETUNG";
+
             public ErloesReihe(string name, double[] jeJahr)
             {
                 Name = name ?? "";
