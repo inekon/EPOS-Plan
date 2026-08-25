@@ -1,6 +1,6 @@
 # Konzept: Photovoltaik-Wirtschaftlichkeit EPOS-Plan — Eingabedialog und Rechenmodell
 
-**Rev. 1 — 25.08.2026 — zur Abnahme durch Philipp**
+**Rev. 1 — 25.08.2026 — zur Abnahme durch Philipp** · Nachtrag 1 (25.08.2026): Abgleich pv@now/PV-Now, siehe Ende des Dokuments — enthält zwei Korrekturen am Rechenmodell (Degressionsmethode, Marktprämien-Systematik)
 
 Auftrag: Es soll ein Dialog für die Eingabe der relevanten Daten zur Photovoltaik-Wirtschaftlichkeitsberechnung
 entstehen. Abzubilden sind Eigenstromnutzung, Einspeisung, Vergütungsausfall (negative Spotpreise), flexible
@@ -533,3 +533,142 @@ EEG 2012" (2024: 5,858; 2025: 6,170) ist **nicht** der für die Marktprämie ma�
 
 Gemessener Förderverlust je Kohorte (LfL, SMARD-Profil): Neuanlagen 2023: 6,7 % → 2024: 14,5 % →
 2025: 23,4 % der Solararbeit; Alt-Kohorte „ab 2016, ≥ 500 kWp": 2025 nur 3,8 %.
+
+---
+
+## Nachtrag 1 (25.08.2026) — Abgleich mit pv@now („PV-Now", DGS Franken)
+
+Quellen (Ordner `PV-Konzept_PV-Now\`, Stand 25.08.2026): `Betreibermodelle_Verguetungen_PV_Uebersicht (1).docx`
+(Systematik des pv@now manager 10.0.0: Betreibermodelle, Erlöswege, Rechtsrahmen),
+`Betreibermodelle_Verguetungen_PV (2).xlsx` (11 Blätter: Modellkatalog, Erlöswege, Methodik,
+Kennzahlen-Herleitung, Vergütungssätze, Marktwerte, Projektvergleich „INEKON Schulung 01"),
+`kennzahlen_modell.py` (monatsgenaue Nachbildung beider Schulungspläne, 250 Monate, Abgleich gegen
+Tool-Werte, Ø-Abweichung 0,20 %). Alle Angaben netto, ct/kWh.
+
+### N.1 Korrekturen am Rev.-1-Rechenmodell
+
+**N1 — Degression rechnet auf unrundeter Basis (Korrektur zu § „Degression").** Rev. 1 schreibt
+„1 % je Halbjahr, je Schritt auf 2 Nachkommastellen gerundet". Die von der BNetzA mitveröffentlichten
+**unrundeten** Werte beweisen die andere Methode — Basis bleibt unrundet, gerundet wird nur der
+Ausgabewert: 8,60 × 0,99⁵ = 8,17851 → feste EV 7,77851 (BNetzA-Wert exakt); ebenso
+7,50 × 0,99⁵ − 0,40 = 6,73243 ✔, 6,20 × 0,99⁵ − 0,40 = 5,49614 ✔, Voll 13,40 × 0,99⁵ − 0,40
+= 12,34327 ✔. Schrittweises Runden liefert an Zwischenstichtagen abweichende Werte (z. B. 08/2024:
+8,42 statt 8,43). **Folge für `EegSatzRechner`:** intern mit unrundeter Kette rechnen
+(`Basis × 0,99^n`), Rundung auf 2 Nachkommastellen erst am anzuwendenden Satz; die
+Rev.-1-Unit-Tests gegen alle 16 BNetzA-Werte bleiben das Abnahmekriterium und sind um die
+unrundeten Werte (Blatt „Vergütungssätze" Block 3) zu ergänzen. Nächste Absenkung: 01.02.2027.
+
+**N2 — Marktprämie mit Jahresmarktwert (Prüfpunkt mit Korrekturempfehlung).** Rev. 1 formuliert den
+DV-Erlös monatlich: `MW_solar(Monat) + max(0, AW_mix − MW_solar(Monat))`. pv@now setzt für
+Inbetriebnahme **ab 01.01.2023** die Jahresmarktwert-Systematik an: Marktprämie
+`MP = max(0, AW_mix − Jahresmarktwert Solar)`, einheitlich fürs Kalenderjahr (2025: 4,508; 2024:
+4,624 ct/kWh); der Spoterlös bleibt zeitaufgelöst. Der Unterschied ist materiell: die monatliche
+max(0,…)-Klammer kappt Monate mit MW > AW (z. B. Januar 2026: 11,019 ct/kWh) und verschenkt dort
+die Prämiendifferenz. Da `Tab_ProjektPhotovoltaik` bereits `MarktwertJahresmittel` führt, ist die
+Umstellung modellseitig klein: **Erlös DV = Spoterlös (zeitaufgelöst) + MP (Jahr)**; die
+Monatsmarktwerte bleiben für die Bewertung des Spoterlöses und für § 51-Zeitfenster relevant.
+Altanlagen-Monatssystematik ist nicht erforderlich (F9: EPOS-Plan plant Neuanlagen).
+
+**N3 — Ausfallvergütung nur > 100 kW.** Zum vorhandenen `EEG_AUSFALLVERGUETUNG_ABSCHLAG` (20 %,
+also 80 % des AW) kommt die Zulässigkeitsregel: Anspruch nur für Anlagen **> 100 kW**
+(§ 21 Abs. 1 Nr. 3 i. V. m. § 53 Abs. 3 EEG), begrenzt auf max. 3 Monate in Folge und 6 Monate je
+Kalenderjahr. pv@now weist den Satz fälschlich auch bei 30 kWp aus — **nicht nachbauen**; der
+Dialog blendet die Option unterhalb 100 kW aus.
+
+**N4 — Unentgeltliche Abnahme mit 200-kW-Grenze.** Die Vermarktungsform `PV_KEINE` (unentgeltliche
+Abnahme, § 21 Abs. 1 Nr. 2 EEG) gilt nur für Anlagen **< 200 kW**; kein 0,40-ct-Abzug. Als
+Plausibilitätsregel im Dialog ergänzen.
+
+**N5 — Vorbelegung DV-Entgelt.** Rev. 1 belegt `DvEntgelt` mit 0,3 ct/kWh vor (Bandbreite 0,1–0,6);
+pv@now nutzt 0,40 ct/kWh (Analogie zur Vermarktungspauschale § 53 Abs. 1 Nr. 2). Empfehlung:
+**0,40** übernehmen — Rechenergebnisse werden damit unmittelbar mit pv@now-Rechnungen vergleichbar;
+editierbar bleibt der Wert ohnehin. (Abstimmung Philipp.)
+
+### N.2 Bestätigte Rev.-1-Festlegungen
+
+pv@now bestätigt ohne Abweichung: anzulegende Werte 08/2026–01/2027 (Überschuss 8,10/7,06/5,84/
+5,84/5,84 · Voll 12,62/10,64/10,64/8,85/7,63; feste EV je −0,40: 7,70/6,66/5,44 bzw. 12,22/10,24/
+10,24) · feste EV nur ≤ 100 kW · leistungsanteiliger Mischsatz (§ 23c EEG; Gegenbeispiele 30 kWp
+→ AW 7,41 / 100 kWp → AW 6,43 decken sich mit der Rev.-1-Methode) · MP ≥ 0 ·
+Solarpaket-Aufschlag +1,5 ct/kWh **nicht anwenden** (§ 101 EEG, EU-Beihilfevorbehalt; ebenso
+ausgesetzt: § 48 Abs. 1b Agri-PV, § 37b, § 37d; Clawback-Risiko offen) · § 51 ab erster negativer
+Viertelstunde für IBN ab 25.02.2025, Ausnahmen < 100 kW bis iMSys-Einbau und < 2 kW; in der
+Direktvermarktung keine Kappung · § 51a-Nachholung Faktor 0,5 mit ertragsgewichteten
+Monatskontingenten · 60-%-Kappung § 9 Abs. 2 bei fester EV ohne iMSys · Vergütungsdauer 20 Jahre
+zzgl. Inbetriebnahmemonate (§ 25 Abs. 1) · Jahresmarktwerte 2024 = 4,624 / 2025 = 4,508 ct/kWh
+samt Verwechslungswarnung zum „Marktwert Solar(a) nach § 33 EEG 2012" (2025: 6,17) ·
+Eigenverbrauch ist keine Vergütung, sondern vermiedener Netzbezug zum vollen Arbeitspreis
+(Fallbeispiel: 45,83 ct/kWh Bezug gegen 7,47 ct/kWh Einspeisung — Verhältnis 6,1 : 1; stützt die
+stundenscharfe Bezugsbewertung, F10).
+
+### N.3 Ergänzungen aus pv@now (Übernahmevorschläge)
+
+1. **Betreibermodell-Achse bestätigt F1-Zuschnitt.** pv@now trennt Betreibermodell (Rollen
+   Investor/Betreiber/Eigentümer/Verbraucher; 5 Familien, 25 Modelle) vom Erlösmodell — Kennzahlen
+   sind akteursbezogen. EPOS-Plan rechnet die Personalunion I = B = G = V (Bauherr); dafür genügen
+   Einspeiseart (Überschuss/Voll) + Vermarktungsform aus Rev. 1 vollständig. Mieterstrom-/Miet-/
+   Teilmietmodelle wären Mehrparteien-Rechnungen → außen vor, Katalogschlüssel reserviert
+   (F1-Empfehlung gestärkt). Für den reservierten Mieterstrom-Schlüssel die aktuellen Zuschläge
+   notiert: IBN 08/2026–01/2027: 2,51 / 2,33 / 1,57 ct/kWh (≤ 10 / ≤ 40 / ≤ 1.000 kW).
+2. **Monatsmarktwerte 2026 für die Saat** (Anhang A, Spalte 2026, bisher leer): Jan 11,019 ·
+   Feb 7,717 · Mär 5,455 · Apr 1,317 · Mai 3,163 · Jun 6,190 · Jul 5,226 ct/kWh (August bei
+   Erstellung noch unveröffentlicht). Der April-Wert zeigt die solare Kannibalisierung.
+3. **Kennzahlen-Ausweis der Vorschau (Gruppe 7) erweitern:** Stromgestehungskosten **LCOE₀**
+   (KZS = 0) zusätzlich zum diskontierten LCOE — nur LCOE₀ ist mit einem Vergütungssatz
+   vergleichbar; **Eigenverbrauchsquote und Autarkiegrad stets als Paar** anzeigen (Fallbeispiel
+   83 % vs. 26 % — einzeln entsteht ein falscher Eindruck); Kennzahl „Vorteil durch PV je Jahr
+   [€/a]". Alles Anzeige aus dem vorhandenen Rechenweg, keine Zweitrechnung.
+4. **EEG-Novelle 2027 (Regierungsentwurf, Kabinett 29.07.2026)** substantiiert F11: Wegfall der
+   festen EV für Neuanlagen, DV-Pflicht, einheitlicher AW 6,2 ct/kWh, Übergangszahlung 36 Monate
+   mit sinkenden Schwellen (2027 < 50 kW, 2028 < 25 kW, 2029/30 < 7 kW, ab 2031 keine), DV-Bonus
+   bis 1,5 ct/kWh (< 25 kW, max. 48 Monate), dauerhafte Einspeisekappung 50 % Dach / 70 %
+   Freifläche. Kein geltendes Recht — Enum-/Katalogreserve wie in F11 empfohlen genügt;
+   zusätzlich Hinweiszeile im Dialog bei Inbetriebnahmedatum ab 2027 („Rechtslage Entwurfsstand;
+   Bestandsschutz § 25 EEG bei IBN bis 31.12.2026").
+5. **Anhaltswerte Strompreis** für die Vorbelegungsprüfung: BDEW 08/2026 Haushalte 37,0 ct/kWh
+   (Quelle ohne Netto-/Brutto-Kennzeichnung), Industrie/Gewerbe Mittelspannung 17,2 ct/kWh netto;
+   PPA Solar DE 2025: 3,5–4,5 ct/kWh (deckt die Rev.-1-Vorbelegung PpaPreis).
+
+### N.4 Referenz-Testfall für die Abnahme (Etappe P6)
+
+Der pv@now-Schulungsfall „INEKON Schulung 01" wird Referenz-Testfall des EPOS-Rechenwegs:
+30 kWp · 1.078 kWh/(kWp·a) (PVGIS Stuttgart) · Leistungsminderung 5 % über Laufzeit · Investition
+54.000 € (100 % EK) · KZS 3,5 % · 250 Monate (20 Jahre + 10 IBN-Monate) · Gesamtbedarf
+100.000 kWh/a (Lastprofil G4) · Netzstrompreis 30 ct/kWh, +4 %/a · Plan Überschuss: EV-Quote
+83,4 %, feste EV 7,47 ct/kWh (Mischsatz IBN 2023), Betriebskosten 2.040 €/a · Plan Volleinspeisung:
+11,60 ct/kWh, 1.600 €/a. Soll-Kennzahlen (pv@now): Kapitalwert **+92.568 €** / **−22.979 €**,
+IRR 15,99 % / −2,10 %, Amortisation 8/9 Jahre bzw. keine, LCOE 17,85/16,47 (LCOE₀ 14,64/13,25)
+ct/kWh. `kennzahlen_modell.py` (Ordner PV-Konzept_PV-Now, reines Python ohne Abhängigkeiten)
+reproduziert diese Werte monatsgenau mit Ø 0,20 % Abweichung und dient als **Prüfstand**: Der
+EPOS-Rechenweg muss den Fall in derselben Größenordnung treffen (Toleranzvorschlag ±1 % auf den
+Kapitalwert; Abweichungsquellen dokumentieren — EPOS rechnet jahresweise/ValERI, pv@now
+monatsgenau). Bekannte Sensitivitäten der Annahmen (aus dem Modellabgleich): LCOE-Menge
+undiskontiert 7,25 % · Minderung erst am Laufzeitende 4,9 % · Messkosten als PV-Ausgabe 3,6 %.
+
+Hinweis daraus für die Betriebskosten-Vorlage Photovoltaik (Kostendialoge-Konzept, Folie 24):
+Zählermiete/Messstellenbetrieb nur ansetzen, soweit **PV-bedingt** — mit und ohne PV identische
+Messkosten sind ergebnisneutral und verfälschen sonst den PV-Vergleich.
+
+### N.5 Bewusst nicht übernommen
+
+Mehrparteien-Kennzahlensätze (je Akteur getrennte Auswertung), Anlagenmiete/Teilmiete/Dachpacht als
+Zahlungsströme, Umsatzsteuer-Logik (Nullsteuersatz § 12 Abs. 3 UStG, Kleinunternehmerregelung),
+Ertragsteuereffekte (AfA, IAB, Sonder-AfA § 7g), Kreditfinanzierung (bis 2 Kredite), Rückbau-/
+Restwertposten als eigene Dialogfelder — kollidiert mit den bestehenden Nicht-Zielen (netto, keine
+Finanzierungsrechnung, ValERI-Systematik) bzw. mit der Ein-Akteur-Sicht von EPOS-Plan.
+Ausschreibungsergebnisse und PPA-Marktreihen bleiben Anhaltswerte, keine Katalogdaten.
+
+### N.6 Wirkung auf die offenen Fragen
+
+- **F1** (Mieterstrom/GGV): Empfehlung „außen vor, Schlüssel reservieren" durch die
+  Betreibermodell-Systematik bestätigt; aktuelle Zuschlagssätze notiert (N.3 Nr. 1).
+- **F5** (Ausfallanteil-Vorbelegung 20 %): unverändert; pv@now liefert dazu keinen Gegenwert.
+- **F9** (keine Altanlagen-Staffeln): bestätigt — N2 betrifft nur die Neuanlagen-Systematik.
+- **F10** (stundenscharfe Bezugsbewertung sofort): gestärkt durch das 6,1:1-Verhältnis (N.2).
+- **F11** (Novelle 2027): Entwurfsstand konkretisiert (N.3 Nr. 4), Empfehlung unverändert.
+- **Neu F13:** Feld „Anlagenart" (Gebäude / Lärmschutzwand / Sonstige nach § 48 Abs. 1) aufnehmen
+  oder Gebäude fest annehmen? Empfehlung: Gebäude fest vorbelegt, Katalogreserve für „Sonstige"
+  (Freiflächensätze 6,59/6,19 ct/kWh nur als Katalogzeilen, kein Dialogpfad).
+- **Neu F14:** Anlagen > 1 MW ohne Ausschreibung (§ 48 Abs. 1a: 2026 1. Segment 5,48 / Gebäude
+  10,16 ct/kWh, kalenderjahresbezogen, keine § 49-Degression) und Ausschreibungspfad (§ 22 Abs. 3)
+  abbilden? Empfehlung: nein — Rev.-1-Warnschwellen (kWp > 1.000 / > 2.000) genügen, Katalogreserve.
