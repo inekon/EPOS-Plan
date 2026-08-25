@@ -22,11 +22,44 @@ namespace WindowsFormsApplication1
     /// tatsächlich vorhandenen Spalten eingefügt; Tabellen, die es in der Ziel-DB nicht (mehr)
     /// gibt, werden übersprungen. Neue Ziel-Spalten müssen nullable/mit Default sein.
     /// </summary>
+    // =====================================================================================
+    //  VERWANDTSCHAFT MIT DEM MIGRATIONS-TOOL (AccessMigration, eigenständiges Tool)
+    // -------------------------------------------------------------------------------------
+    //  Diese Klasse und das Migrations-Tool lösen dasselbe Grundproblem – Access-Daten mit
+    //  AutoWert-Surrogatschlüsseln zwischen Datenbanken bewegen, ohne Fremdschlüssel zu
+    //  zerreißen –, nur in unterschiedlichem Umfang:
+    //    * Migrations-Tool:  ganze DB (alt -> neue Versions-Vorlage), Kataloge INKLUSIVE.
+    //    * Diese Klasse:     EIN Projekt in eine .wpx-Datei und zurück; Kataloge werden
+    //                        NICHT mitkopiert, sondern im Ziel per Name wiedergefunden.
+    //
+    //  Gleiche Konzepte, gleiche Fallen – wer eines pflegt, sollte das andere kennen:
+    //    * Natürlicher Schlüssel statt Autowert-ID:
+    //        hier  KATALOG_NATURALKEY / KATALOG_SPALTE_ZU_TABELLE (fest verdrahtet)
+    //        Tool  "matchColumns" in migration.config.json (+ automatische Ableitung aus
+    //              den Unique-Indizes des Schemas; die JSON listet nur Ausnahmen).
+    //    * FK-Umschlüsselung alt_ID -> neu_ID über den natürlichen Schlüssel des Elterns.
+    //    * Original-IDs beibehalten, damit Verweise auflösen:
+    //        hier  "fill"-Verfahren (FuelleKatalog)      Tool  "preserveIdTables".
+    //    * Wertkonvertierung auf den Zielspaltentyp:
+    //        hier  Passe()                               Tool  ValueCoercion.Coerce().
+    //    * Verwaiste/fehlerhafte Zeilen überspringen statt abzubrechen:
+    //        hier  Selbstheilung (NulleVerwaisteFks + Retry)  Tool  "skipRowsOnError".
+    //    * AUTOWERT-Zähler nach dem Einfügen expliziter IDs nachziehen (sonst Fehler 3022):
+    //        hier  ReseedAutoWerte()                     Tool  AutoNumberReseeder.
+    //    * Umbenennungen (Tabelle/Feld) über Software-Updates hinweg:
+    //        hier  (noch) nicht behandelt                Tool  "tableRenames"/"columnRenames".
+    //
+    //  KÜNFTIGE VEREINHEITLICHUNG (bewusst noch NICHT umgesetzt):
+    //    Die fest verdrahteten Listen könnten durch dieselbe migration.config.json ersetzt
+    //    werden (matchColumns = natürliche Schlüssel, tableRenames/columnRenames = Alias-Map),
+    //    ergänzt um Laufzeit-Ableitung aus Schema-Beziehungen (GetOleDbSchemaTable) und
+    //    Unique-Indizes. Bis dahin gelten die Listen unten als Fallback.
+    // =====================================================================================
     public class ProjektExportImportCtrl
     {
         private const string FORMAT = "wp-projekt";
         private const int FORMAT_VER = 1;
-        private const int SCHEMA_VER = 29;
+        private const int SCHEMA_VER = 0;
 
         private readonly ProjektDuplizierenCtrl _dup = new ProjektDuplizierenCtrl();
 
@@ -228,11 +261,21 @@ namespace WindowsFormsApplication1
                 else ueberschreibId = existierId;   // Ueberschreiben
             }
 
+            // Beziehungen auf einer FRISCHEN Verbindung lesen (vor der Transaktion), damit das
+            // Schema-Rowset zuverlässig kommt und die FK-Behandlung sicher greift.
+            _fks = null;
+            try
+            {
+                using (var schemaConn = new OleDbConnection(DataRepository.GetConnectionString()))
+                { schemaConn.Open(); _fks = LiesFremdschluessel(schemaConn); }
+            }
+            catch { _fks = null; }
+
             var tx = DataRepository.BeginTransaction();
             OleDbConnection conn = tx.Item1; OleDbTransaction trans = tx.Item2;
             try
             {
-                _fks = LiesFremdschluessel(conn);
+                if (_fks == null || _fks.Count == 0) _fks = LiesFremdschluessel(conn);   // Fallback über Transaktionsverbindung
                 _projektTabellen = new HashSet<string>(man.tables.Select(x => x.name), StringComparer.OrdinalIgnoreCase);
                 _fkKeys = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
                 int schritt = 0;
@@ -288,7 +331,8 @@ namespace WindowsFormsApplication1
 
                     foreach (var row in tableRows[t.name])
                     {
-                        var cols = new List<string>(); var ph = new List<string>(); var ps = new List<OleDbParameter>();
+                        var colNames = new List<string>(); var cols = new List<string>(); var ph = new List<string>();
+                        var vals = new List<object>(); var typen = new List<Type>();
                         int i = 0;
                         foreach (var kv in row)
                         {
@@ -297,36 +341,50 @@ namespace WindowsFormsApplication1
                                           kv.Key.Equals("Projektname", StringComparison.OrdinalIgnoreCase))
                                 ? ziel
                                 : Umschluessele(t.name, kv.Key, t.pk, kv.Value, offset, katMap);
-                            // Verwaister Fremdschlüssel (kein passender Elterndatensatz) -> NULL.
-                            // Betrifft leere UND nicht-leere Werte, deren Ziel-Zeile fehlt (RI wurde
-                            // ohne Altdatenprüfung aktiviert). Projekt-Eigentabellen sind ausgenommen,
-                            // da deren Eltern erst in dieser Transaktion (versetzt) entstehen.
+                            // Vorab-Behandlung verwaister/leerer FK-Werte (siehe unten auch die Selbstheilung).
                             if (fkByCol.TryGetValue(kv.Key, out var fk) && val != null && !(val is DBNull))
                             {
                                 string sv = Convert.ToString(val);
                                 if (string.IsNullOrWhiteSpace(sv))
-                                    val = null;   // leerer Verweis = kein Verweis -> IMMER NULL (auch bei Projekttabellen)
-                                else if (!_projektTabellen.Contains(fk.RefTab) &&
-                                         !LadeElternSchluessel(conn, trans, fk.RefTab, fk.RefCol).Contains(sv))
-                                    val = null;   // verwaister Katalogverweis -> NULL (Projekt-Eltern entstehen erst in der Transaktion)
+                                    val = null;   // leerer Verweis = kein Verweis -> NULL
+                                else if (!_projektTabellen.Contains(fk.RefTab))
+                                {
+                                    var set = LadeElternSchluessel(conn, trans, fk.RefTab, fk.RefCol);
+                                    if (!set.Contains(sv))
+                                    {
+                                        if (val is string && StelleTextKatalogSicher(conn, trans, fk.RefTab, fk.RefCol, sv))
+                                            set.Add(sv);   // Namen anlernen, Wert bleibt
+                                        else
+                                            val = null;
+                                    }
+                                }
                             }
-                            cols.Add("[" + kv.Key + "]"); string p = "@p" + (i++); ph.Add(p);
-                            ps.Add(MacheParam(p, val, zielTypen[kv.Key]));
+                            colNames.Add(kv.Key); cols.Add("[" + kv.Key + "]"); ph.Add("@p" + (i++));
+                            vals.Add(val); typen.Add(zielTypen[kv.Key]);
                         }
                         if (cols.Count == 0) continue;
-                        using (var c = new OleDbCommand(
-                            "INSERT INTO [" + t.name + "] (" + string.Join(",", cols) + ") VALUES (" + string.Join(",", ph) + ")",
-                            conn, trans))
+
+                        Exception err = FuehreInsertAus(t.name, cols, ph, vals, typen, conn, trans);
+                        if (err != null)
                         {
-                            c.Parameters.AddRange(ps.ToArray());
-                            try { c.ExecuteNonQuery(); }
-                            catch (Exception ex) { throw new Exception("\r\n" + VolleDiagnose(t.name, cols, ps, zielTypen, conn, trans) + ":: " + ex.Message, ex); }
+                            // SELBSTHEILUNG: tatsächlich verwaiste FK-Werte (in der Transaktion geprüft)
+                            // nullen und den INSERT genau einmal wiederholen. Unabhängig von der Vorab-Logik.
+                            int genullt = NulleVerwaisteFks(t.name, colNames, vals, conn, trans);
+                            if (genullt > 0) err = FuehreInsertAus(t.name, cols, ph, vals, typen, conn, trans);
+                            if (err != null)
+                                throw new Exception("\r\n" + VolleDiagnoseWerte(t.name, colNames, vals, typen, conn, trans) + ":: " + err.Message, err);
                         }
                     }
                 }
 
                 trans.Commit();
                 fortschritt?.Report(new ProjektDuplizierenCtrl.Fortschritt { Aktuell = gesamt, Gesamt = gesamt, Tabelle = "" });
+
+                // Nach dem Import die AutoWert-Zähler der kopierten Tabellen auf MAX+1 setzen.
+                // Beim Einfügen expliziter (versetzter) IDs führt ACE den Zähler NICHT nach – die
+                // Anwendung bekäme sonst beim nächsten regulären Insert eine bereits vergebene ID
+                // (Fehler 3022 "doppelter Schlüssel"). Läuft nach dem Commit, ohne den Import zu gefährden.
+                try { ReseedAutoWerte(man); } catch { }
 
                 string projPk = man.tables.First(x => x.name.Equals("Tab_Projekt", StringComparison.OrdinalIgnoreCase)).pk;
                 long altProjId = tableRows["Tab_Projekt"][0][projPk].GetInt64();
@@ -338,6 +396,76 @@ namespace WindowsFormsApplication1
                 fehler = ex.Message; return -1;
             }
             finally { try { trans.Dispose(); } catch { } try { conn.Dispose(); } catch { } }
+        }
+
+        // ---- AutoWert-Zähler nachziehen ----------------------------------------------------
+        // Setzt für die kopierten Projekt-Tabellen den AutoWert-Zähler auf MAX(pk)+1.
+        // Nur ECHTE AutoWert-Spalten werden angefasst (über ADOX erkannt) – sonst würde
+        // ALTER ... COUNTER eine manuelle Long-Spalte fälschlich in einen AutoWert umwandeln.
+        // Ohne ADOX (leere Erkennung) wird bewusst NICHTS geändert.
+        private void ReseedAutoWerte(Manifest man)
+        {
+            HashSet<string> autoSpalten = LiesAutoWertSpalten();
+            if (autoSpalten.Count == 0) return;   // keine sichere Erkennung -> nichts anfassen
+
+            // Eigene Verbindung: Fehler landen in unserem catch, KEINE MessageBox von DataRepository.
+            using (var conn = new OleDbConnection(DataRepository.GetConnectionString()))
+            {
+                try { conn.Open(); } catch { return; }
+                foreach (var t in man.tables)
+                {
+                    if (string.IsNullOrEmpty(t.pk)) continue;
+                    if (!autoSpalten.Contains(t.name + "||" + t.pk)) continue;   // nur echte AutoWerte
+                    try
+                    {
+                        long max = 0;
+                        using (var c = new OleDbCommand("SELECT MAX([" + t.pk + "]) FROM [" + t.name + "]", conn))
+                        { object o = c.ExecuteScalar(); if (o != null && o != DBNull.Value) max = Convert.ToInt64(o); }
+                        // Zähler auf MAX+1 setzen. Schlägt bei beziehungsgebundenen Eltern-Spalten
+                        // fehl (z. B. Tab_Projekt.ID) – dann bleibt der Zähler unverändert (still abgefangen).
+                        using (var c = new OleDbCommand(
+                            "ALTER TABLE [" + t.name + "] ALTER COLUMN [" + t.pk + "] COUNTER(" + (max + 1) + ",1)", conn))
+                            c.ExecuteNonQuery();
+                    }
+                    catch { }
+                }
+            }
+        }
+
+        // Liest die AutoWert-Spalten der DB über ADOX (spät gebunden -> keine feste Projekt-
+        // referenz nötig). Rückgabe "Tabelle||Spalte". Leeres Set = ADOX nicht verfügbar.
+        private HashSet<string> LiesAutoWertSpalten()
+        {
+            var res = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            object catObj = null;
+            try
+            {
+                Type tCat = Type.GetTypeFromProgID("ADOX.Catalog");
+                if (tCat == null) return res;
+                catObj = Activator.CreateInstance(tCat);
+                dynamic cat = catObj;
+                cat.ActiveConnection = DataRepository.GetConnectionString();
+                foreach (dynamic tbl in cat.Tables)
+                {
+                    string typ = Convert.ToString(tbl.Type);
+                    if (!string.Equals(typ, "TABLE", StringComparison.OrdinalIgnoreCase)) continue;
+                    foreach (dynamic col in tbl.Columns)
+                    {
+                        try
+                        {
+                            object v = col.Properties["Autoincrement"].Value;
+                            if (v is bool b && b) res.Add(Convert.ToString(tbl.Name) + "||" + Convert.ToString(col.Name));
+                        }
+                        catch { }
+                    }
+                }
+            }
+            catch { res.Clear(); }
+            finally
+            {
+                try { if (catObj != null) System.Runtime.InteropServices.Marshal.ReleaseComObject(catObj); } catch { }
+            }
+            return res;
         }
 
         // ---- Umschlüsselung ----------------------------------------------------------------
@@ -615,6 +743,94 @@ namespace WindowsFormsApplication1
             return p;
         }
 
+        // Führt den INSERT aus – ZWEISTUFIG:
+        //  1) mit Parametern (sicher für Text/Memo/Datum, z. B. Tab_Projekt),
+        //  2) scheitert das, als Fallback mit LITERALEN Werten. Grund: Access/ACE lehnt in manchen
+        //     Fällen (z. B. expliziter AutoWert-PK) den gebundenen Parameter ab, akzeptiert aber
+        //     denselben Wert als Literal (genau wie die Duplizierung via INSERT ... SELECT).
+        // Gibt null bei Erfolg zurück, sonst die (erste) Ausnahme.
+        private Exception FuehreInsertAus(string tab, List<string> cols, List<string> ph,
+            List<object> vals, List<Type> typen, OleDbConnection conn, OleDbTransaction trans)
+        {
+            Exception ersteAusnahme;
+            // 1) Versuch mit Parametern.
+            try
+            {
+                using (var c = new OleDbCommand(
+                    "INSERT INTO [" + tab + "] (" + string.Join(",", cols) + ") VALUES (" + string.Join(",", ph) + ")",
+                    conn, trans))
+                {
+                    for (int q = 0; q < ph.Count; q++) c.Parameters.Add(MacheParam(ph[q], vals[q], typen[q]));
+                    c.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex) { ersteAusnahme = ex; }
+
+            // 2) Fallback mit literalen Werten.
+            try
+            {
+                var lit = new List<string>();
+                for (int q = 0; q < cols.Count; q++)
+                    lit.Add(AlsSqlLiteral(q < vals.Count ? vals[q] : null, q < typen.Count ? typen[q] : null));
+                string sql = "INSERT INTO [" + tab + "] (" + string.Join(", ", cols) + ") VALUES (" +
+                             string.Join(", ", lit) + ")";
+                using (var c = new OleDbCommand(sql, conn, trans))
+                    c.ExecuteNonQuery();
+                return null;
+            }
+            catch { return ersteAusnahme; }   // beide Wege gescheitert -> ersten Fehler melden
+        }
+
+        // Formatiert einen Wert als Access-SQL-Literal (für den Literal-Fallback).
+        private static string AlsSqlLiteral(object v, Type ziel)
+        {
+            if (v == null || v == DBNull.Value) return "NULL";
+            if (v is bool b) return b ? "True" : "False";
+            if (v is DateTime dt) return "#" + dt.ToString("MM/dd/yyyy HH:mm:ss") + "#";  // US-Format = ACE-sicher
+            if (v is string s) return "'" + s.Replace("'", "''") + "'";
+            if (v is double || v is float || v is decimal || v is long || v is int || v is short || v is byte)
+                return Convert.ToString(v, System.Globalization.CultureInfo.InvariantCulture);
+            return "'" + Convert.ToString(v, System.Globalization.CultureInfo.InvariantCulture).Replace("'", "''") + "'";
+        }
+
+        // Setzt jeden FK-Wert der Zeile, dessen Elterndatensatz (in der Transaktion geprüft) fehlt,
+        // auf NULL. Projektinterne Ziele bleiben unangetastet (Eltern entstehen erst in der Transaktion).
+        // Gibt die Anzahl genullter Werte zurück.
+        private int NulleVerwaisteFks(string tab, List<string> colNames, List<object> vals,
+            OleDbConnection conn, OleDbTransaction trans)
+        {
+            if (_fks == null || !_fks.TryGetValue(tab, out var list)) return 0;
+            int n = 0;
+            foreach (var fk in list)
+            {
+                int idx = colNames.FindIndex(c => c.Equals(fk.Col, StringComparison.OrdinalIgnoreCase));
+                if (idx < 0) continue;
+                object v = vals[idx];
+                if (v == null || v == DBNull.Value) continue;
+                string sv = Convert.ToString(v);
+                if (string.IsNullOrWhiteSpace(sv)) { vals[idx] = null; n++; continue; }
+                if (_projektTabellen.Contains(fk.RefTab)) continue;
+                if (!FkExistiert(conn, trans, fk.RefTab, fk.RefCol, v)) { vals[idx] = null; n++; }
+            }
+            return n;
+        }
+
+        // Diagnose auf Basis der Wertliste (nach evtl. Nullung), delegiert an VolleDiagnose.
+        private string VolleDiagnoseWerte(string tab, List<string> colNames, List<object> vals,
+            List<Type> typen, OleDbConnection conn, OleDbTransaction trans)
+        {
+            var cols = new List<string>(); var ps = new List<OleDbParameter>();
+            var typMap = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
+            for (int q = 0; q < colNames.Count; q++)
+            {
+                cols.Add("[" + colNames[q] + "]");
+                ps.Add(MacheParam("@d" + q, vals[q], typen[q]));
+                typMap[colNames[q]] = typen[q];
+            }
+            return VolleDiagnose(tab, cols, ps, typMap, conn, trans);
+        }
+
         // Vollständige Fehlerdiagnose für einen fehlgeschlagenen Zeilen-INSERT: Tabelle, jede
         // Spalte mit Zieltyp/Werttyp/echtem Wert, und für jede Access-Beziehung, ob der Eltern-
         // datensatz existiert – geprüft IN der laufenden Transaktion (sieht in-txn-Eltern).
@@ -652,23 +868,31 @@ namespace WindowsFormsApplication1
             return sb.ToString();
         }
 
+        // Existiert ein referenzierter Elterndatensatz? Prüft NUR gegen den gecachten
+        // Elternschlüssel-Satz (keine Einzelabfrage, keine zweite Verbindung -> keine Locks/Hänger).
         private bool FkExistiert(OleDbConnection conn, OleDbTransaction trans, string refTab, string refCol, object v)
+        {
+            if (v == null || v == DBNull.Value) return true;
+            var set = LadeElternSchluessel(conn, trans, refTab, refCol);
+            return set.Contains(Convert.ToString(v));
+        }
+
+        // Stellt sicher, dass ein Text-Schlüssel im (globalen) Katalog existiert: legt ihn per
+        // Name an, falls er fehlt (Insert-if-not-exists, wie die vorhandene "Lern"-Logik).
+        // So bleiben Verweise per Name auch beim Import in eine andere DB gültig.
+        private bool StelleTextKatalogSicher(OleDbConnection conn, OleDbTransaction trans, string refTab, string refCol, string wert)
         {
             try
             {
-                using (var c = new OleDbCommand("SELECT COUNT(*) FROM [" + refTab + "] WHERE [" + refCol + "] = ?", conn, trans))
-                { c.Parameters.Add(new OleDbParameter("@v", v)); return Convert.ToInt32(c.ExecuteScalar()) > 0; }
-            }
-            catch
-            {
-                try
+                using (var ins = new OleDbCommand("INSERT INTO [" + refTab + "] ([" + refCol + "]) VALUES (?)", conn, trans))
                 {
-                    object cnt = DataRepository.ExecuteScalar(
-                        "SELECT COUNT(*) FROM [" + refTab + "] WHERE [" + refCol + "] = ?", new OleDbParameter("@v", v));
-                    return Convert.ToInt32(cnt) > 0;
+                    var p = new OleDbParameter("@v", OleDbType.VarWChar) { Value = wert };
+                    ins.Parameters.Add(p);
+                    ins.ExecuteNonQuery();
                 }
-                catch { return true; }   // unbekannt -> nicht fälschlich als Fehler markieren
+                return true;
             }
+            catch { return false; }   // z. B. weitere NOT-NULL-Spalten ohne Default -> Aufrufer nullt den Verweis
         }
 
         // Lädt (einmalig, gecacht) die vorhandenen Schlüsselwerte einer Elterntabelle als Text.
@@ -688,36 +912,6 @@ namespace WindowsFormsApplication1
             catch { }
             _fkKeys[key] = s;
             return s;
-        }
-
-        // Prüft bei einem INSERT-Fehler gezielt jeden Fremdschlüssel der Zeile: existiert der
-        // referenzierte Datensatz im Elterntisch? Nennt die genaue Spalte/Wert/Zieltabelle.
-        // Liest auf frischer Verbindung (committete Daten), unabhängig von der Import-Transaktion.
-        private string FkDiagnose(string tab, List<string> cols, List<OleDbParameter> ps)
-        {
-            if (_fks == null || !_fks.TryGetValue(tab, out var list)) return "";
-            var sb = new StringBuilder();
-            foreach (var fk in list)
-            {
-                // Eltern, die in DIESER Transaktion erst angelegt werden (Projekt-Eigentabellen),
-                // sind auf frischer Verbindung noch nicht sichtbar -> nicht als "fehlt" melden.
-                if (_projektTabellen != null && _projektTabellen.Contains(fk.RefTab)) continue;
-                int idx = cols.FindIndex(c => c.Trim('[', ']', ' ').Equals(fk.Col, StringComparison.OrdinalIgnoreCase));
-                if (idx < 0 || idx >= ps.Count) continue;
-                object v = ps[idx].Value;
-                if (v == null || v == DBNull.Value) continue;
-                try
-                {
-                    object cnt = DataRepository.ExecuteScalar(
-                        "SELECT COUNT(*) FROM [" + fk.RefTab + "] WHERE [" + fk.RefCol + "] = ?",
-                        new OleDbParameter("@v", v));
-                    if (Convert.ToInt32(cnt) == 0)
-                        sb.Append(fk.Col).Append("=").Append(v).Append(" fehlt in ")
-                          .Append(fk.RefTab).Append("[").Append(fk.RefCol).Append("]; ");
-                }
-                catch { }
-            }
-            return sb.Length == 0 ? "" : "  [FK-Prüfung: " + sb.ToString().TrimEnd() + "]";
         }
 
         private static Type TypVon(Dictionary<string, Type> map, string spalte) =>
