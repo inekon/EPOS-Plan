@@ -34,6 +34,14 @@ Kopplungslogik (Einheiten je Zeile, 🔗 nur bei absoluten Bemessungen, Summenfu
 Katalog-USt, gesperrte Pflege bei ReadOnly). Bekannte Artefakte des Offscreen-Modus:
 TextBox-Inhalte und Emojis erscheinen erst im echten Fenster.
 
+## 2b. Design-Nachtrag (Entscheidung Philipp, 25.08.2026)
+
+Alle Dialoge in **einheitlichem App-Design** statt Web-Mockup-Optik: Navy-Kopfleiste
+RGB (15, 31, 61) mit weißem Titel + hellblauem Untertitel (Muster `Form_Kosten.pnlHeader`),
+Spaltenkopf RGB (26, 50, 97) weiß, Navy-Summenfuß — umgesetzt in `Form_KostenKomponente`,
+`Form_VorlagenPosition` und `Form_VariantenName`; als Designregel für KD3–KD6 im Konzept
+§ 12 festgehalten. Spaltentitel „Nutzungsdauer" auf „Nutzung [a]" gekürzt.
+
 ## 3. Umsetzungsentscheidungen (für die Sichtabnahme)
 
 1. **Komponentenwahl als Klappliste** im Kopf statt der Kartenübersicht aus § 5.1 — für die

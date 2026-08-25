@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
             //
             // pnlKopf
             //
-            this.pnlKopf.BackColor = System.Drawing.Color.White;
+            this.pnlKopf.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(31)))), ((int)(((byte)(61)))));
             this.pnlKopf.Controls.Add(this.lblTitel);
             this.pnlKopf.Controls.Add(this.lblUntertitel);
             this.pnlKopf.Dock = System.Windows.Forms.DockStyle.Top;
@@ -87,6 +87,7 @@ namespace WindowsFormsApplication1
             //
             this.lblTitel.AutoSize = true;
             this.lblTitel.Font = new System.Drawing.Font("Segoe UI", 15.75F, System.Drawing.FontStyle.Bold);
+            this.lblTitel.ForeColor = System.Drawing.Color.White;
             this.lblTitel.Location = new System.Drawing.Point(14, 10);
             this.lblTitel.Name = "lblTitel";
             this.lblTitel.Size = new System.Drawing.Size(260, 30);
@@ -96,7 +97,7 @@ namespace WindowsFormsApplication1
             // lblUntertitel
             //
             this.lblUntertitel.AutoSize = true;
-            this.lblUntertitel.ForeColor = System.Drawing.Color.DimGray;
+            this.lblUntertitel.ForeColor = System.Drawing.Color.LightSteelBlue;
             this.lblUntertitel.Location = new System.Drawing.Point(16, 44);
             this.lblUntertitel.Name = "lblUntertitel";
             this.lblUntertitel.Size = new System.Drawing.Size(180, 15);
@@ -141,7 +142,8 @@ namespace WindowsFormsApplication1
             //
             // pnlRasterKopf
             //
-            this.pnlRasterKopf.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.pnlRasterKopf.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(50)))), ((int)(((byte)(97)))));
+            this.pnlRasterKopf.ForeColor = System.Drawing.Color.White;
             this.pnlRasterKopf.Controls.Add(this.lblSpAktionen);
             this.pnlRasterKopf.Controls.Add(this.lblSpPosition);
             this.pnlRasterKopf.Controls.Add(this.lblSpBemessung);
@@ -373,6 +375,8 @@ namespace WindowsFormsApplication1
             //
             // pnlFuss
             //
+            this.pnlFuss.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(31)))), ((int)(((byte)(61)))));
+            this.pnlFuss.ForeColor = System.Drawing.Color.White;
             this.pnlFuss.Controls.Add(this.btnPositionNeu);
             this.pnlFuss.Controls.Add(this.lblSummeNetto);
             this.pnlFuss.Controls.Add(this.lblSummeBrutto);
