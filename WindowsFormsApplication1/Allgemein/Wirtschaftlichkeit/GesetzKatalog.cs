@@ -1048,6 +1048,59 @@ namespace WindowsFormsApplication1
             l.Add(N(DbWerte.GESETZ_UMSATZSTEUER_REGELSATZ, UST, 2007, 19.0, PROZ, G,
                     "UStG § 12 Abs. 1 — Regelsteuersatz seit 01.01.2007"));
 
+            // =================================================================
+            // Generation 5 — EEG-Photovoltaik (PV-Konzept § 6.2, Etappe P2).
+            // Basiswerte der Fassung IBN 30.07.2022–31.01.2024; der EegSatzRechner
+            // degressiert ab 01.02.2024 halbjährlich UNRUNDET (Nachtrag N1) und
+            // rundet nur den Ausgabewert. Alle 16 BNetzA-Werte 08/2026 sind
+            // Unit-Test-Soll (Etappenabnahme P2).
+            // =================================================================
+            const string EEG = DbWerte.GESETZ_KLASSE_EEG;
+            const string Q_EEG49 = "§ 49 EEG i. V. m. BNetzA-Tabelle der anzulegenden Werte";
+            const string Q_EEG53 = "§ 53 EEG";
+
+            l.Add(N(DbWerte.GESETZ_EEG_AW_BASIS_UE_10, EEG, 2022, 8.60, CT, G, Q_EEG49 + ", Überschuss bis 10 kW", 5));
+            l.Add(N(DbWerte.GESETZ_EEG_AW_BASIS_UE_40, EEG, 2022, 7.50, CT, G, Q_EEG49 + ", Überschuss bis 40 kW", 5));
+            l.Add(N(DbWerte.GESETZ_EEG_AW_BASIS_UE_100, EEG, 2022, 6.20, CT, G, Q_EEG49 + ", Überschuss bis 100 kW", 5));
+            l.Add(N(DbWerte.GESETZ_EEG_AW_BASIS_UE_400, EEG, 2022, 6.20, CT, G, Q_EEG49 + ", Überschuss bis 400 kW", 5));
+            l.Add(N(DbWerte.GESETZ_EEG_AW_BASIS_UE_1000, EEG, 2022, 6.20, CT, G, Q_EEG49 + ", Überschuss bis 1.000 kW", 5));
+
+            l.Add(N(DbWerte.GESETZ_EEG_AW_VOLL_ZUSCHLAG_10, EEG, 2022, 4.8, CT, G, Q_EEG49 + ", Voll-Zuschlag bis 10 kW", 5));
+            l.Add(N(DbWerte.GESETZ_EEG_AW_VOLL_ZUSCHLAG_40, EEG, 2022, 3.8, CT, G, Q_EEG49 + ", Voll-Zuschlag bis 40 kW", 5));
+            l.Add(N(DbWerte.GESETZ_EEG_AW_VOLL_ZUSCHLAG_100, EEG, 2022, 5.1, CT, G, Q_EEG49 + ", Voll-Zuschlag bis 100 kW", 5));
+            l.Add(N(DbWerte.GESETZ_EEG_AW_VOLL_ZUSCHLAG_400, EEG, 2022, 3.2, CT, G, Q_EEG49 + ", Voll-Zuschlag bis 400 kW", 5));
+            l.Add(N(DbWerte.GESETZ_EEG_AW_VOLL_ZUSCHLAG_1000, EEG, 2022, 1.9, CT, G, Q_EEG49 + ", Voll-Zuschlag bis 1.000 kW", 5));
+
+            l.Add(N(DbWerte.GESETZ_EEG_DEGRESSION_HALBJAHR, EEG, 2024, 1.0, PROZ, G,
+                    "§ 49 Abs. 1 EEG — 1 % je Halbjahresstichtag (1.2./1.8.), erstmals 01.02.2024", 5));
+            l.Add(N(DbWerte.GESETZ_EEG_EV_ABSCHLAG, EEG, 2022, 0.4, CT, G,
+                    Q_EEG53 + " Abs. 1 — feste Einspeisevergütung = AW − 0,4 ct/kWh", 5));
+            l.Add(N(DbWerte.GESETZ_EEG_AUSFALLVERG_ABSCHLAG, EEG, 2022, 20.0, PROZ, G,
+                    Q_EEG53 + " Abs. 3 — Ausfallvergütung 80 % des AW, nur Anlagen > 100 kW (N3)", 5));
+            l.Add(N(DbWerte.GESETZ_EEG_EV_GRENZE_KW, EEG, 2022, 100.0, KW, G,
+                    "§ 21 Abs. 1 Nr. 1 EEG — feste Einspeisevergütung nur bis 100 kW", 5));
+            l.Add(N(DbWerte.GESETZ_EEG_UNENTGELTLICH_GRENZE_KW, EEG, 2022, 200.0, KW, G,
+                    "§ 21 Abs. 1 Nr. 2 EEG — unentgeltliche Abnahme nur < 200 kW (N4)", 5));
+            l.Add(N(DbWerte.GESETZ_EEG_AUSSCHREIBUNG_GRENZE_KW, EEG, 2022, 1000.0, KW, G,
+                    "§ 22 EEG — darüber Ausschreibung, AW = Zuschlagswert (manuelle Eingabe)", 5));
+            l.Add(N(DbWerte.GESETZ_EEG_51_GRENZE_KW, EEG, 2025, 100.0, KW, G,
+                    "§ 51 EEG (Solarspitzengesetz) — darunter verschont bis iMSys-Einbau", 5));
+            l.Add(N(DbWerte.GESETZ_EEG_51A_FAKTOR_SOLAR, EEG, 2025, 0.5, OHNE,
+                    G, "§ 51a EEG — Verlängerung um 0,5 Viertelstunden je Ausfall-Viertelstunde (Solar)", 5));
+            l.Add(N(DbWerte.GESETZ_EEG_KAPPUNG_PROZENT, EEG, 2023, 60.0, PROZ, G,
+                    "§ 9 Abs. 2 EEG — Wirkleistungsbegrenzung ohne iMSys", 5));
+            l.Add(N(DbWerte.GESETZ_EEG_VERGUETUNGSDAUER, EEG, 2022, 20.0, JAHR, G,
+                    "§ 25 Abs. 1 EEG — 20 Jahre zzgl. Inbetriebnahmemonate", 5));
+            l.Add(N(DbWerte.GESETZ_EEG_SOLARPAKET_AUFSCHLAG, EEG, 2024, 1.5, CT,
+                    DbWerte.GESETZ_STATUS_VORLAEUFIG,
+                    "§ 101 EEG — Solarpaket I, +1,5 ct/kWh > 40 kW; EU-Beihilfevorbehalt, NICHT anwenden (F8)", 5));
+
+            // § 51a-Monatskontingente verlängerbarer Viertelstunden (ertragsgewichtet).
+            int[] vlvst = { 87, 189, 340, 442, 490, 508, 498, 453, 371, 231, 118, 73 };
+            for (int mon = 1; mon <= 12; mon++)
+                l.Add(N(DbWerte.GESETZ_EEG_51A_VLVST_MONAT_PRAEFIX + mon, EEG, 2025, vlvst[mon - 1],
+                        OHNE, G, "§ 51a EEG — Monatskontingent Viertelstunden, Monat " + mon, 5));
+
             _vorbelegung = l;
             return _vorbelegung;
         }
