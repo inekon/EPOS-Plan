@@ -1324,10 +1324,25 @@ namespace WindowsFormsApplication1
         public const string PREISREIHE_AUFLOESUNG_VIERTELSTUNDE = "Viertelstunde";
 
         /// <summary>
-        /// Einheit jeder Preisreihe. Sprachneutral und zugleich Anzeigeeinheit — die
+        /// 12 Monatswerte — saisonale Leistungspreis-Reihen je Energieträger
+        /// (Konzept Kostendialoge § 7.1, FK6a; Etappe KD4). Monatsreihen sind KEINE
+        /// Spotreihen: Auswahllisten und Stichtagsregel der Simulation
+        /// (<c>PreisreiheCtrl.ReadVerfuegbare</c>) filtern auf Stunde/Viertelstunde.
+        /// </summary>
+        public const string PREISREIHE_AUFLOESUNG_MONAT = "Monat";
+
+        /// <summary>
+        /// Einheit der Spot-Preisreihen. Sprachneutral und zugleich Anzeigeeinheit — die
         /// Engine kennt ausschliesslich ct/kWh (Fachkonzept 4.1).
         /// </summary>
         public const string PREISREIHE_EINHEIT_CT_KWH = "ct/kWh";
+
+        /// <summary>
+        /// Einheit der Leistungspreis-Reihen [€ je kW und Monat] — Etappe KD4 (FK6a).
+        /// Reihen dieser Einheit gehören immer einem Energieträger
+        /// (<c>Tab_Preisreihe.ID_Energietraeger</c>) und tragen 12 Monatswerte.
+        /// </summary>
+        public const string PREISREIHE_EINHEIT_EUR_KW_MONAT = "EUR/kW/Monat";
 
         // =====================================================================
         // Energietraeger — Anzeigename einer Umrechnungsregel

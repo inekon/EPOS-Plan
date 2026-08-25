@@ -29,6 +29,15 @@
         /// </summary>
         public int Jahr;
 
+        /// <summary>
+        /// Energietraeger, dem die Reihe gehoert (Etappe KD4, FK6a). 0 = KEIN Traeger:
+        /// die Reihe ist eine gewoehnliche Spot-Preisreihe (Bestand); in der Datenbank
+        /// steht dafuer NULL (dieselbe FK-Regel wie bei <see cref="ID_Projekt"/>).
+        /// Gesetzt = saisonale Leistungspreis-Reihe des Traegers: Aufloesung Monat,
+        /// Einheit EUR/kW/Monat, 12 Werte.
+        /// </summary>
+        public int ID_Energietraeger;
+
         /// <summary>Werte aus <see cref="DbWerte"/>.PREISREIHE_AUFLOESUNG_*.</summary>
         public string Aufloesung = DbWerte.PREISREIHE_AUFLOESUNG_STUNDE;
 

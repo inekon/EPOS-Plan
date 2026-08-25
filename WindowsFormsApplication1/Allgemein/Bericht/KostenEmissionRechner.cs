@@ -47,6 +47,7 @@ namespace WindowsFormsApplication1
             catch
             {
                 v.Energiekosten = null; v.StromkostenNetz = null;
+                v.EnergieLeistungsanteil = null;
                 v.CO2Gesamt = null; v.CO2Spezifisch = null; v.CO2Brennstoff = null;
                 v.BiogenMengeMWh = 0; v.BiogenBehgMengeMWh = 0;
             }
@@ -79,6 +80,12 @@ namespace WindowsFormsApplication1
             bool kostenVollstaendig = verbrauchOhneTraeger <= 0;
             bool co2Vollstaendig = verbrauchOhneTraeger <= 0;
 
+            // KD4/FK6: Leistungsanteil der Gasträger; der Stromträger bleibt außen
+            // vor (sein Leistungspreis ist die Tarifstruktur, Schritt 21).
+            double leistungsAnteil = 0;
+            bool leistungGepflegt = false;
+            int stromCarrierId = FindeStromTraeger(v.IdProjekt);
+
             foreach (KeyValuePair<int, double> kv in verbrauchJeTraeger)
             {
                 TraegerInfo info = LadeTraeger(v.IdProjekt, kv.Key);
@@ -107,6 +114,31 @@ namespace WindowsFormsApplication1
                 }
                 else kostenVollstaendig = false;
 
+                // Leistungspreis (Etappe KD4/FK6): Basis ist die VORGEHALTENE
+                // Anschlussleistung aus den Gerätedaten (§ 7.1-Umsetzung); Modus
+                // JAHR = Satz × kW, MONAT = Satz × kW × 12. Eine gepflegte
+                // Saisonreihe (FK6a) gilt vor dem konstanten Satz: Summe der zwölf
+                // Monatssätze × kW. Fehlt die Basis (keine plausible
+                // Geräteleistung), entsteht bewusst KEIN Anteil — ein Fantasiewert
+                // wäre schlimmer als ein fehlender.
+                if ((info.ReihenSummeJeKW.HasValue || info.PreisLeistung.HasValue) &&
+                    kv.Key != stromCarrierId)
+                {
+                    double kw = AnschlussleistungKW(v.IdProjekt, kv.Key);
+                    if (kw > 0)
+                    {
+                        double anteil = info.ReihenSummeJeKW.HasValue
+                            ? info.ReihenSummeJeKW.Value * kw
+                            : (string.Equals(info.LeistungsModus,
+                                   DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal)
+                                ? info.PreisLeistung.Value * kw * 12.0
+                                : info.PreisLeistung.Value * kw);
+                        brennstoffKosten += anteil;
+                        leistungsAnteil += anteil;
+                        leistungGepflegt = true;
+                    }
+                }
+
                 // CO₂ (g/kWh, s. Klassenkommentar).
                 if (info.CO2.HasValue && info.CO2.Value > 0)
                 {
@@ -122,7 +154,7 @@ namespace WindowsFormsApplication1
             double netzbezugMWh = m.Energiebedarf != null ? m.Energiebedarf.Stromrestbedarf : 0;
             double? stromKosten = null;
             double stromCO2 = STROMMIX_CO2_G_JE_KWH;   // Vorgabewert, falls kein Träger gepflegt
-            int stromCarrier = FindeStromTraeger(v.IdProjekt);
+            int stromCarrier = stromCarrierId;   // bereits vor der Brennstoffschleife bestimmt (KD4)
             if (stromCarrier > 0)
             {
                 TraegerInfo strom = LadeTraeger(v.IdProjekt, stromCarrier);
@@ -145,6 +177,9 @@ namespace WindowsFormsApplication1
                 ? (double?)(brennstoffKosten + stromKosten.Value)
                 : (kostenVollstaendig && verbrauchJeTraeger.Count > 0 && netzbezugMWh <= 0
                     ? (double?)brennstoffKosten : null);
+
+            // KD4/FK6: Leistungsanteil getrennt ausweisen (in Energiekosten enthalten).
+            v.EnergieLeistungsanteil = leistungGepflegt ? (double?)leistungsAnteil : null;
 
             bool hatBrennstoff = verbrauchJeTraeger.Count > 0 || verbrauchOhneTraeger > 0;
             if (!hatBrennstoff)
@@ -185,6 +220,82 @@ namespace WindowsFormsApplication1
             /// <summary>L13 — biogener Träger, der zugleich BEHG-Brennstoff ist
             /// (flüssige Biomasse). Nur hier wirkt ein fehlender Nachhaltigkeitsnachweis.</summary>
             public bool BehgBiogen;
+
+            /// <summary>Leistungspreis (Etappe KD4/FK6): Projektwert vor Katalogwert,
+            /// 0 zählt wie beim Arbeitspreis als NICHT GEPFLEGT (Befund D5).
+            /// Einheit je <see cref="LeistungsModus"/>: €/(kW·a) bzw. €/(kW·Monat).</summary>
+            public double? PreisLeistung;
+
+            /// <summary><c>energy_carrier.price_power_modus</c> — JAHR (Vorgabe) oder
+            /// MONAT; der Modus ist Katalogsache je Träger (FK6), keine Projektgröße.</summary>
+            public string LeistungsModus = DbWerte.LEISTUNGSPREIS_MODUS_JAHR;
+
+            /// <summary>FK6a — Summe der 12 Monatssätze der saisonalen
+            /// Leistungspreis-Reihe [€/(kW·a)-äquivalent]; null = keine Reihe
+            /// gepflegt. Eine gepflegte Reihe gilt VOR dem konstanten Satz
+            /// (§ 7.1); Projektreihe vor Stammreihe löst
+            /// <see cref="PreisreiheCtrl.ReadTraegerReihe"/> auf.</summary>
+            public double? ReihenSummeJeKW;
+        }
+
+        /// <summary>
+        /// Vorgehaltene Anschlussleistung eines Trägers [kW] aus den GERÄTEDATEN der
+        /// Projektanlagen (Etappe KD4, Konzept Kostendialoge § 7.1): BHKW
+        /// (Pel + Ptherm) / η_gesamt, Kessel Ptherm / η. Bewusst Gerätedaten statt
+        /// Simulationszeitreihe: Der Gas-Leistungspreis bepreist die VORGEHALTENE
+        /// Leistung des Anschlusses, und Ergebnis-Zeitreihen werden hausregelkonform
+        /// nicht persistiert. Wirkungsgrade werden nach dem Parser-Muster normiert
+        /// (Wert &gt; 1,5 = Prozentangabe ÷ 100); außerhalb (0; 1,5] wird die Anlage
+        /// übersprungen — Basis fehlt statt Fantasiewert.
+        /// </summary>
+        internal static double AnschlussleistungKW(int idProjekt, int carrierId)
+        {
+            double summe = 0;
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT b.Pel AS BhkwPel, b.Ptherm AS BhkwPth, b.Wirkungsgrad AS BhkwEta, " +
+                    "h.Ptherm AS KesselPth, h.Wirkungsgrad_Gas AS KesselEtaGas, " +
+                    "h.[Wirkungsgrad_Öl] AS KesselEtaOel " +
+                    "FROM (Tab_Energieanlagen AS e LEFT JOIN Tab_BHKW AS b ON e.ID_BHKW = b.ID) " +
+                    "LEFT JOIN Tab_Heizkessel AS h ON e.ID_Kessel = h.ID " +
+                    "WHERE e.ID_Projekt = ? AND e.ID_Carrier = ?",
+                    new OleDbParameter("@p", idProjekt), new OleDbParameter("@c", carrierId));
+                if (dt == null) return 0;
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    double? bhkwPel = W(r, "BhkwPel"), bhkwPth = W(r, "BhkwPth");
+                    if (bhkwPel.HasValue || bhkwPth.HasValue)
+                    {
+                        double eta = EtaNormiert(W(r, "BhkwEta"));
+                        if (eta > 0)
+                            summe += ((bhkwPel ?? 0) + (bhkwPth ?? 0)) / eta;
+                        continue;
+                    }
+
+                    double? kesselPth = W(r, "KesselPth");
+                    if (kesselPth.HasValue && kesselPth.Value > 0)
+                    {
+                        double etaGas = EtaNormiert(W(r, "KesselEtaGas"));
+                        double etaOel = EtaNormiert(W(r, "KesselEtaOel"));
+                        double eta = etaGas > 0 ? etaGas : etaOel;
+                        if (eta > 0) summe += kesselPth.Value / eta;
+                    }
+                }
+            }
+            catch { }
+            return summe;
+        }
+
+        /// <summary>Wirkungsgrad-Normierung (Parser-Muster): &gt; 1,5 gilt als
+        /// Prozentangabe; außerhalb (0; 1,5] bleibt 0 („Basis fehlt").</summary>
+        private static double EtaNormiert(double? eta)
+        {
+            if (!eta.HasValue || eta.Value <= 0) return 0;
+            double e = eta.Value;
+            if (e > 1.5) e /= 100.0;
+            return (e > 0 && e <= 1.5) ? e : 0;
         }
 
         private static TraegerInfo LadeTraeger(int idProjekt, int carrierId)
@@ -200,33 +311,68 @@ namespace WindowsFormsApplication1
             }
             catch { }
 
-            double? sPreis = null, sGrund = null, sCO2 = null;
+            double? sPreis = null, sGrund = null, sCO2 = null, sLeistung = null;
             try
             {
                 DataTable s = DataRepository.GetDataTable(
-                    "SELECT custom_price_work, custom_price_base, co2 FROM energy_project_settings " +
+                    "SELECT custom_price_work, custom_price_base, custom_price_power, co2 " +
+                    "FROM energy_project_settings " +
                     "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
                     new OleDbParameter("@p", idProjekt), new OleDbParameter("@c", carrierId));
                 if (s != null && s.Rows.Count > 0)
                 {
                     sPreis = W(s.Rows[0], "custom_price_work");
                     sGrund = W(s.Rows[0], "custom_price_base");
+                    sLeistung = W(s.Rows[0], "custom_price_power");
                     sCO2 = W(s.Rows[0], "co2");
                 }
             }
             catch { }
 
-            double? kPreis = null, kGrund = null, kCO2 = null;
+            double? kPreis = null, kGrund = null, kCO2 = null, kLeistung = null;
             try
             {
                 DataTable k = DataRepository.GetDataTable(
-                    "SELECT price_work, price_base, co2 FROM energy_carrier WHERE id = ?",
+                    "SELECT price_work, price_base, price_power, price_power_modus, co2 " +
+                    "FROM energy_carrier WHERE id = ?",
                     new OleDbParameter("@c", carrierId));
                 if (k != null && k.Rows.Count > 0)
                 {
                     kPreis = W(k.Rows[0], "price_work");
                     kGrund = W(k.Rows[0], "price_base");
+                    kLeistung = W(k.Rows[0], "price_power");
                     kCO2 = W(k.Rows[0], "co2");
+
+                    object modus = k.Rows[0]["price_power_modus"];
+                    if (modus != null && modus != DBNull.Value &&
+                        string.Equals(Convert.ToString(modus),
+                            DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal))
+                        info.LeistungsModus = DbWerte.LEISTUNGSPREIS_MODUS_MONAT;
+                }
+            }
+            catch { }
+
+            // Leistungspreis: Projektwert vor Katalogwert, 0 = nicht gepflegt
+            // (dieselbe Regel wie beim Arbeitspreis, Befund D5).
+            if (sLeistung.HasValue && sLeistung.Value > 0) info.PreisLeistung = sLeistung;
+            else if (kLeistung.HasValue && kLeistung.Value > 0) info.PreisLeistung = kLeistung;
+
+            // FK6a: saisonale Leistungspreis-Reihe (12 Monatssätze). Sie gilt vor dem
+            // konstanten Satz; die Ebenen (Projekt vor Stamm) löst der Controller auf.
+            try
+            {
+                PreisreiheCtrl prc = new PreisreiheCtrl();
+                PreisreiheModel reihe = prc.ReadTraegerReihe(idProjekt, carrierId);
+                if (reihe != null && string.Equals(reihe.Einheit,
+                        DbWerte.PREISREIHE_EINHEIT_EUR_KW_MONAT, StringComparison.Ordinal))
+                {
+                    double[] werte = prc.ReadWerte(reihe.ID);
+                    if (werte != null && werte.Length > 0)
+                    {
+                        double summe = 0;
+                        foreach (double wert in werte) summe += wert;
+                        if (summe > 0) info.ReihenSummeJeKW = summe;
+                    }
                 }
             }
             catch { }

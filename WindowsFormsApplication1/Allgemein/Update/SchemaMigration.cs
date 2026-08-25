@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 39;
+        public const int ZIEL_VERSION = 40;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1439,6 +1439,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_39_KOSTENVORLAGEN_SEED = 39;
 
+        /// <summary>
+        /// Schritt 40 - <b>Etappe KD4</b> (Konzept Kostendialoge § 7.1, Entscheidung
+        /// FK6a): <c>Tab_Preisreihe.ID_Energietraeger</c> — saisonale
+        /// Leistungspreis-Reihen je Energieträger nach dem Preisreihen-Muster
+        /// (12 Monatswerte, Einheit EUR/kW/Monat), bewusst NICHT als weitere
+        /// Katalogspalten. NULL = die Reihe ist eine gewöhnliche Spot-Preisreihe;
+        /// die Spot-Auswahllisten (<c>PreisreiheCtrl.ReadVerfuegbare</c>) filtern
+        /// Trägerreihen aus, damit die Stichtagsregel der Simulation keine
+        /// Monatsreihe kürt.
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker): reine Spalten-Nachrüstung
+        /// über <see cref="SpaltenAnlegen"/> (vorhandene Spalte wird übersprungen);
+        /// bei NEU angelegten Datenbanken bringt <see cref="SQL_CREATE_PREISREIHE"/>
+        /// die Spalte bereits mit.</para>
+        /// </summary>
+        public const int SCHRITT_40_LEISTUNGSPREISREIHE = 40;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -2272,6 +2289,15 @@ namespace WindowsFormsApplication1
                         "Die Auslieferungsvorlagen konnten nicht gesaet werden - der " +
                         "Komponenten-Kostendialog (KD2) haette keine Standardvariante.",
                         Schritt_39_KostenvorlagenSeed),
+
+            // KD4 (Konzept Kostendialoge Paragraf 7.1, FK6a): Traegerbezug der
+            // Preisreihen fuer saisonale Leistungspreis-Saetze.
+            new Schritt(SCHRITT_40_LEISTUNGSPREISREIHE,
+                        "Leistungspreis-Reihen: Tab_Preisreihe um ID_Energietraeger " +
+                        "ergaenzen (Etappe KD4, FK6a)",
+                        "Der Traegerbezug der Preisreihen konnte nicht angelegt werden - " +
+                        "ohne ihn gibt es keine saisonalen Leistungspreis-Saetze (FK6a).",
+                        Schritt_40_Leistungspreisreihe),
         };
 
         // =================================================================================
@@ -5686,6 +5712,13 @@ namespace WindowsFormsApplication1
             return SpaltenAnlegen(l, SchemaKatalog.Schritt38_Spalten);
         }
 
+        /// <summary>Schritt 40. Anlass und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_40_LEISTUNGSPREISREIHE"/>.</summary>
+        private static bool Schritt_40_Leistungspreisreihe(Lauf l)
+        {
+            return SpaltenAnlegen(l, SchemaKatalog.Schritt40_Spalten);
+        }
+
         /// <summary>Nullbarer Parameter mit ausdruecklichem OleDb-Typ - ein DBNull ohne
         /// Typ kann der Provider nicht binden.</summary>
         private static OleDbParameter ParamOderNull(string name, OleDbType typ, object wert)
@@ -6407,7 +6440,10 @@ namespace WindowsFormsApplication1
         public const string SQL_CREATE_PREISREIHE =
             "CREATE TABLE Tab_Preisreihe (ID LONG NOT NULL PRIMARY KEY, " +
             "ID_Projekt LONG, Bezeichner TEXT(255), Jahr LONG, " +
-            "Aufloesung TEXT(50), Einheit TEXT(50))";
+            "Aufloesung TEXT(50), Einheit TEXT(50), ID_Energietraeger LONG)";
+        // ID_Energietraeger: seit Schritt 40 (Etappe KD4, FK6a) Teil des CREATE, damit
+        // auch die tolerante Rueckfallebene (PreisreiheCtrl.StelleTabellenSicher) die
+        // Spalte mitbringt; Bestandstabellen ruestet Schritt 40 nach.
 
         /// <summary>Index über den Projektbezug - der Suchweg der Auswahllisten.</summary>
         public const string SQL_INDEX_PREISREIHE =

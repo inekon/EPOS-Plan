@@ -80,8 +80,19 @@ namespace WindowsFormsApplication1
 
         // Verrechnete Kosten-/Emissionswerte (KostenEmissionRechner, Phase 5) —
         // null = mangels Preisen/Faktoren nicht bestimmbar (Anzeige „—").
-        public double? Energiekosten;      // €/a (Brennstoffe + Netzstrom inkl. Grundpreise)
+        public double? Energiekosten;      // €/a (Brennstoffe + Netzstrom inkl. Grund- und Leistungspreisen)
         public double? StromkostenNetz;    // €/a (Netzbezug)
+
+        /// <summary>
+        /// Leistungspreis-Anteil der Brennstoffkosten [€/a] (Etappe KD4, Konzept
+        /// Kostendialoge § 7.1, Entscheidung FK6): Jahres- bzw. Monatsleistungspreis
+        /// der GASTRÄGER × vorgehaltene Anschlussleistung (Gerätedaten). In
+        /// <see cref="Energiekosten"/> ENTHALTEN, hier getrennt ausgewiesen.
+        /// null = kein Träger mit gepflegtem Leistungspreis; der Stromträger bleibt
+        /// außen vor — sein Leistungspreis ist die Tarifstruktur (Schritt 21,
+        /// keine zweite Wahrheit).
+        /// </summary>
+        public double? EnergieLeistungsanteil;
         public double? CO2Gesamt;          // t/a
         public double? CO2Spezifisch;      // g/kWh Wärme
         public double? CO2Brennstoff;      // t/a nur BEHG-pflichtige Brennstoffe (Phase 7/W2)

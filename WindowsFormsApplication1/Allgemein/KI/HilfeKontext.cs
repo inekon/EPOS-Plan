@@ -147,6 +147,8 @@ namespace WindowsFormsApplication1
             { "Form_VariantenName",          B_KOSTEN },
             { "Form_Kostenprofil",           B_KOSTEN },
             { "Form_SpotpreisImport",        B_KOSTEN },
+            { "Form_Energietraeger",         B_KOSTEN },
+            { "Form_LeistungspreisReihe",    B_KOSTEN },
             { "Form_Tarifstruktur",          B_KOSTEN },
 
             { "Form_AdminPV",                B_PHOTOVOLTAIK },

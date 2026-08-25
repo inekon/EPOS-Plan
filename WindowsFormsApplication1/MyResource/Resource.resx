@@ -7318,4 +7318,79 @@ Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Micro
   <data name="KDLG_UEB_VORSCHAU" xml:space="preserve">
     <value>Die Quelle enthält {0} Positionen. Das Zielprojekt führt für diese Komponente bereits {1} Positionen — vorhandene bleiben unberührt, nur fehlende werden angelegt. Die Herkunft wird je Position vermerkt.</value>
   </data>
+  <data name="KDLG_ET_KATALOG_NUR_LESEN" xml:space="preserve">
+    <value>Katalogpreise sind hier noch nicht pflegbar (folgt mit den Trägervarianten).</value>
+  </data>
+  <data name="KDLG_ET_KONTEXT_KATALOG" xml:space="preserve">
+    <value>Kontext: Katalog (Stammdaten)</value>
+  </data>
+  <data name="KDLG_ET_KONTEXT_PROJEKT" xml:space="preserve">
+    <value>Kontext: Projekt {0}</value>
+  </data>
+  <data name="KDLG_ET_LISTE" xml:space="preserve">
+    <value>Energieträger</value>
+  </data>
+  <data name="KDLG_ET_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="KDLG_ET_SPOT_KEINE" xml:space="preserve">
+    <value>Noch keine Preisreihe vorhanden.</value>
+  </data>
+  <data name="KDLG_ET_SPOT_STATUS" xml:space="preserve">
+    <value>{0} Reihe(n), Jahre {1}–{2}</value>
+  </data>
+  <data name="KDLG_ET_TITEL" xml:space="preserve">
+    <value>Energieträgerverwaltung</value>
+  </data>
+  <data name="KDLG_KOSTEN_ET_KNOPF" xml:space="preserve">
+    <value>Energieträger…</value>
+  </data>
+  <data name="KDLG_LPR_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="KDLG_LPR_ALLES_NULL" xml:space="preserve">
+    <value>Alle zwölf Sätze sind 0 — zum Entfernen der Reihe bitte „Reihe löschen“ verwenden.</value>
+  </data>
+  <data name="KDLG_LPR_EBENE_PROJEKT" xml:space="preserve">
+    <value>Projektreihe</value>
+  </data>
+  <data name="KDLG_LPR_EBENE_STAMM" xml:space="preserve">
+    <value>Stammreihe (Katalog)</value>
+  </data>
+  <data name="KDLG_LPR_HINWEIS_STAMM" xml:space="preserve">
+    <value>Vorbelegt aus der Stammreihe ({0}); gespeichert wird eine Projektreihe, die vorgeht.</value>
+  </data>
+  <data name="KDLG_LPR_HINWEIS_VORRANG" xml:space="preserve">
+    <value>Eine gepflegte Reihe gilt vor dem konstanten Satz.</value>
+  </data>
+  <data name="KDLG_LPR_JAHR" xml:space="preserve">
+    <value>Jahr:</value>
+  </data>
+  <data name="KDLG_LPR_LOESCHEN" xml:space="preserve">
+    <value>Reihe löschen</value>
+  </data>
+  <data name="KDLG_LPR_TITEL" xml:space="preserve">
+    <value>Saisonale Leistungspreis-Sätze</value>
+  </data>
+  <data name="KDLG_LPR_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="KDLG_LP_MODUS_JAHR" xml:space="preserve">
+    <value>Jahresleistungspreis</value>
+  </data>
+  <data name="KDLG_LP_MODUS_MONAT" xml:space="preserve">
+    <value>Monatsleistungspreis</value>
+  </data>
+  <data name="KDLG_LP_REIHE_STATUS" xml:space="preserve">
+    <value>Saisonreihe {0} ({1}) — gilt vor dem Satz.</value>
+  </data>
+  <data name="KDLG_LP_SAISON" xml:space="preserve">
+    <value>Saisonale Sätze…</value>
+  </data>
+  <data name="KDLG_LP_STROM_TARIF" xml:space="preserve">
+    <value>Leistungspreis Strom: über die Tarifstruktur.</value>
+  </data>
+  <data name="KDLG_MENUE_ENERGIETRAEGER" xml:space="preserve">
+    <value>Energieträgerverwaltung…</value>
+  </data>
 </root>
