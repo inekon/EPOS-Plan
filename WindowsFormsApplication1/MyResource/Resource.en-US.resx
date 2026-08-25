@@ -7138,4 +7138,169 @@ Please run the EPOS-Plan setup again or install the Microsoft Access Database En
   <data name="KI_REG_ZWECK_PROJEKT_SUCHEN" xml:space="preserve">
     <value>Searches for projects whose name or customer contains the search text. The comparison runs locally against the complete project list, so no match really does mean that there is no such project.</value>
   </data>
+  <data name="KDLG_TITEL" xml:space="preserve">
+    <value>Cost management {0}</value>
+  </data>
+  <data name="KDLG_UNTERTITEL_INVEST" xml:space="preserve">
+    <value>Capital costs according to VDI 2067</value>
+  </data>
+  <data name="KDLG_UNTERTITEL_BETRIEB" xml:space="preserve">
+    <value>Operating costs according to VDI 2067</value>
+  </data>
+  <data name="KDLG_TAB_KOSTEN" xml:space="preserve">
+    <value>Costs capex/opex</value>
+  </data>
+  <data name="KDLG_TAB_ERTRAG" xml:space="preserve">
+    <value>Revenue/bonus</value>
+  </data>
+  <data name="KDLG_TAB_ERTRAG_HINWEIS" xml:space="preserve">
+    <value>The revenue/bonus tab follows in stage KD5 (CHP: KWKG and taxes; photovoltaics: EEG remuneration).</value>
+  </data>
+  <data name="KDLG_BANNER" xml:space="preserve">
+    <value>All amounts and all reference quantities are NET. The VAT rate comes from the “statutory parameters” catalogue. A maintained rate takes precedence — the absolute field is then locked but not cleared.</value>
+  </data>
+  <data name="KDLG_LBL_KOMPONENTE" xml:space="preserve">
+    <value>Component:</value>
+  </data>
+  <data name="KDLG_KAT_INVEST" xml:space="preserve">
+    <value>Capital costs</value>
+  </data>
+  <data name="KDLG_KAT_BETRIEB" xml:space="preserve">
+    <value>Operating costs</value>
+  </data>
+  <data name="KDLG_LBL_VARIANTE" xml:space="preserve">
+    <value>Variant:</value>
+  </data>
+  <data name="KDLG_BTN_NEU" xml:space="preserve">
+    <value>New…</value>
+  </data>
+  <data name="KDLG_BTN_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Save as…</value>
+  </data>
+  <data name="KDLG_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="KDLG_BTN_POSITION" xml:space="preserve">
+    <value>+ Add item</value>
+  </data>
+  <data name="KDLG_SP_AKTIONEN" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="KDLG_SP_POSITION" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="KDLG_SP_BEMESSUNG" xml:space="preserve">
+    <value>Basis</value>
+  </data>
+  <data name="KDLG_SP_SATZ" xml:space="preserve">
+    <value>Rate</value>
+  </data>
+  <data name="KDLG_SP_BETRAG" xml:space="preserve">
+    <value>Net amount [€]</value>
+  </data>
+  <data name="KDLG_SP_BETRAG_JAHR" xml:space="preserve">
+    <value>Net amount [€/a]</value>
+  </data>
+  <data name="KDLG_SP_NUTZUNG" xml:space="preserve">
+    <value>Service life [a]</value>
+  </data>
+  <data name="KDLG_SP_WORSTBEST" xml:space="preserve">
+    <value>Worst/best</value>
+  </data>
+  <data name="KDLG_SUMME_NETTO_INVEST" xml:space="preserve">
+    <value>Total capital costs net: {0} €</value>
+  </data>
+  <data name="KDLG_SUMME_NETTO_BETRIEB" xml:space="preserve">
+    <value>Total operating costs net: {0} €/a</value>
+  </data>
+  <data name="KDLG_SUMME_BRUTTO" xml:space="preserve">
+    <value>Total gross: {0} (VAT {1} % from the catalogue)</value>
+  </data>
+  <data name="KDLG_READONLY_HINWEIS" xml:space="preserve">
+    <value>Factory template (read-only) — use “Save as…” to modify.</value>
+  </data>
+  <data name="KDLG_TT_KETTE" xml:space="preserve">
+    <value>Rate and net amount are linked and converted on input.</value>
+  </data>
+  <data name="KDLG_TT_WORSTBEST" xml:space="preserve">
+    <value>Worst/best is maintained per project item (“worst/best case entry”), not in the master template.</value>
+  </data>
+  <data name="KDLG_TT_BETRAG_ADMIN" xml:space="preserve">
+    <value>Reference quantity known only in the project — the amount is derived on adoption.</value>
+  </data>
+  <data name="KDLG_MSG_NEU_NAME" xml:space="preserve">
+    <value>Name of the new variant:</value>
+  </data>
+  <data name="KDLG_MSG_NEU_TITEL" xml:space="preserve">
+    <value>New variant</value>
+  </data>
+  <data name="KDLG_MSG_KOPIE_TITEL" xml:space="preserve">
+    <value>Save as</value>
+  </data>
+  <data name="KDLG_MSG_LOESCHEN" xml:space="preserve">
+    <value>Really delete variant “{0}”?</value>
+  </data>
+  <data name="KDLG_MSG_READONLY" xml:space="preserve">
+    <value>Factory templates are read-only.</value>
+  </data>
+  <data name="KDLG_MSG_POS_LOESCHEN" xml:space="preserve">
+    <value>Delete item “{0}”?</value>
+  </data>
+  <data name="KDLG_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>The name is already in use or empty.</value>
+  </data>
+  <data name="KDLG_MENUE_VORLAGEN" xml:space="preserve">
+    <value>Cost templates (components)…</value>
+  </data>
+  <data name="KDLG_POS_NEU_VORGABE" xml:space="preserve">
+    <value>New item</value>
+  </data>
+  <data name="BM_BETRAG" xml:space="preserve">
+    <value>fixed amount</value>
+  </data>
+  <data name="BM_JAHRESBETRAG" xml:space="preserve">
+    <value>fixed annual amount</value>
+  </data>
+  <data name="BM_P_INVESTITION" xml:space="preserve">
+    <value>% of investment</value>
+  </data>
+  <data name="BM_P_ERZEUGER" xml:space="preserve">
+    <value>% of generator costs</value>
+  </data>
+  <data name="BM_P_BRENNSTOFF" xml:space="preserve">
+    <value>% of fuel costs</value>
+  </data>
+  <data name="BM_P_STROM" xml:space="preserve">
+    <value>% of electricity costs</value>
+  </data>
+  <data name="BM_KWH_THERMISCH" xml:space="preserve">
+    <value>per kWh thermal</value>
+  </data>
+  <data name="BM_KWH_ELEKTRISCH" xml:space="preserve">
+    <value>per kWh electric</value>
+  </data>
+  <data name="BM_KW_LEISTUNG" xml:space="preserve">
+    <value>per kW capacity</value>
+  </data>
+  <data name="BM_KW_HEIZLEISTUNG" xml:space="preserve">
+    <value>per kW heating capacity</value>
+  </data>
+  <data name="BM_KW_ELEKTRISCH" xml:space="preserve">
+    <value>per kW electric</value>
+  </data>
+  <data name="BM_KWP" xml:space="preserve">
+    <value>per kWp capacity</value>
+  </data>
+  <data name="BM_KWH_KAPAZITAET" xml:space="preserve">
+    <value>per kWh capacity</value>
+  </data>
+  <data name="BM_M2_KOLLEKTOR" xml:space="preserve">
+    <value>per m² collector area</value>
+  </data>
+  <data name="BM_KWH" xml:space="preserve">
+    <value>per kWh</value>
+  </data>
+  <data name="BM_STUNDE" xml:space="preserve">
+    <value>per hour</value>
+  </data>
 </root>

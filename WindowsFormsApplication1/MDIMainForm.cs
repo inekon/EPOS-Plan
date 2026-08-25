@@ -40,6 +40,43 @@ namespace WindowsFormsApplication1
 
             // Katalog-Dublettensuche einbinden (Administration → Katalog-Dubletten prüfen)
             InitDublettenMenue();
+
+            // Kostenvorlagen-Pflege einbinden (Administration → Kosten → Kostenvorlagen)
+            InitKostenvorlagenMenue();
+        }
+
+        /// <summary>
+        /// Bindet den Komponenten-Kostendialog (Stammvorlagen) ein: Menüeintrag im
+        /// Untermenü Administration → Kosten, unterhalb der Bestandseinträge
+        /// (Konzept Kostendialoge Rev. 1.2, § 3.1/Ä5 — Etappe KD2; der vollständige
+        /// Menü-Umbau folgt mit KD4/KD6).
+        ///
+        /// Bewusst programmatisch, damit Designer und .resx unberührt bleiben; der
+        /// Anzeigetext kommt aus MyResource und ist damit zweisprachig.
+        /// </summary>
+        private void InitKostenvorlagenMenue()
+        {
+            try
+            {
+                string text = null;
+                try { text = MyResource.Resource.ResourceManager.GetString("KDLG_MENUE_VORLAGEN"); }
+                catch { }
+                if (string.IsNullOrEmpty(text)) text = "Kostenvorlagen (Komponenten)…";
+
+                ToolStripMenuItem eintrag = new ToolStripMenuItem(text);
+                eintrag.Name = "MenuItem_Kostenvorlagen";
+                eintrag.Click += (s, e) =>
+                {
+                    using (Form_KostenKomponente frm = new Form_KostenKomponente())
+                        frm.ShowDialog(this);
+                };
+
+                MenuItem_KostenVerwaltung.DropDownItems.Add(eintrag);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Menü der Kostenvorlagen konnte nicht eingebunden werden: " + ex.Message);
+            }
         }
 
         /// <summary>
