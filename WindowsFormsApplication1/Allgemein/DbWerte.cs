@@ -125,6 +125,40 @@ namespace WindowsFormsApplication1
         public const string KOSTEN_KOMPONENTE_STROMEINSPEISUNG = "Stromeinspeisung";
 
         // =====================================================================
+        // ETAPPE KD1 — die sechs BESTANDS-Techniknamen als Konstanten
+        //   Tab_KostenKomponente.Komponente, IDs 1..5 und 7 der Auslieferung
+        //   (an der Produktiv-DB nachgemessen, 25.08.2026). Bisher standen sie
+        //   nur als Datenzeilen in der Datenbank und als Literale in
+        //   KomponentenUebernahmeCtrl/Form_Kosten; die Vorlagen-Seeds des
+        //   Migrationsschritts 39 brauchen sie als EINE Wahrheit.
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        // =====================================================================
+
+        /// <summary>Bestandskomponente „Wärmepumpe" (<c>Tab_KostenKomponente.ID = 1</c>).
+        /// Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).</summary>
+        public const string KOSTEN_KOMPONENTE_WAERMEPUMPE = "Wärmepumpe";
+
+        /// <summary>Bestandskomponente „Heizkessel" (<c>ID = 2</c>).
+        /// <inheritdoc cref="KOSTEN_KOMPONENTE_WAERMEPUMPE" path="/summary/text()[last()]"/></summary>
+        public const string KOSTEN_KOMPONENTE_HEIZKESSEL = "Heizkessel";
+
+        /// <summary>Bestandskomponente „Photovoltaik" (<c>ID = 3</c>).
+        /// <inheritdoc cref="KOSTEN_KOMPONENTE_WAERMEPUMPE" path="/summary/text()[last()]"/></summary>
+        public const string KOSTEN_KOMPONENTE_PHOTOVOLTAIK = "Photovoltaik";
+
+        /// <summary>Bestandskomponente „Solarthermie" (<c>ID = 4</c>).
+        /// <inheritdoc cref="KOSTEN_KOMPONENTE_WAERMEPUMPE" path="/summary/text()[last()]"/></summary>
+        public const string KOSTEN_KOMPONENTE_SOLARTHERMIE = "Solarthermie";
+
+        /// <summary>Bestandskomponente „Stromspeicher" (<c>ID = 5</c>).
+        /// <inheritdoc cref="KOSTEN_KOMPONENTE_WAERMEPUMPE" path="/summary/text()[last()]"/></summary>
+        public const string KOSTEN_KOMPONENTE_STROMSPEICHER = "Stromspeicher";
+
+        /// <summary>Bestandskomponente „BHKW" (<c>ID = 7</c>).
+        /// <inheritdoc cref="KOSTEN_KOMPONENTE_WAERMEPUMPE" path="/summary/text()[last()]"/></summary>
+        public const string KOSTEN_KOMPONENTE_BHKW = "BHKW";
+
+        // =====================================================================
         // Nebenkosten-Positionen einer Kostenkomponente
         //   Tab_Kostenfaktor.Bezeichnung (IsMainComponent = False), verwendet als
         //   Unterposition in der Gruppe der Komponente (Tab_ProjektWerte)
@@ -442,6 +476,91 @@ namespace WindowsFormsApplication1
         /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/>
         /// </summary>
         public const string BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN = "PROZENT_BRENNSTOFFKOSTEN";
+
+        // =====================================================================
+        // ETAPPE KD1 — Bemessungsarten der Kostenvorlagen
+        //   Tab_KostenVorlagePosition.Bemessung und (nach Übernahme)
+        //   Tab_ProjektWerte.Bemessung (Migrationsschritt 38/39).
+        //
+        //   Der Katalog aus Konzept Kostendialoge Rev. 1.2, § 5.3: Die
+        //   technischen Bezugsgrößen (kW, kWp, kWh Kapazität, m²) bekommen je
+        //   einen EIGENEN Persistenzwert, weil die Bezugsgröße komponenten-
+        //   abhängig aufgelöst wird (TechnikPlanwertCtrl-Kette, Etappe KD2) und
+        //   ein generisches "EUR_PRO_KW" beim Speicher (kWh) oder der
+        //   Solarthermie (m²) nicht unterscheidbar wäre.
+        //
+        //   BESTAND BLEIBT: BETRAG, EUR_PRO_H, EUR_PRO_KWH,
+        //   PROZENT_INVESTITION, PROZENT_BRENNSTOFFKOSTEN gelten unverändert;
+        //   Altdaten werden NICHT migriert. "fester Jahresbetrag" und "€/a"
+        //   der Vorlage sind EIN Persistenzwert (JAHRESBETRAG, § 5.3).
+        //   ASCII und Grossbuchstaben, nach der Auslieferung EINGEFROREN
+        //   (Drei-Schichten-Regel); Anzeigetexte folgen in Etappe KD2.
+        // =====================================================================
+
+        /// <summary>Fester Jahresbetrag [€/a] — Betriebskosten ohne Bezugsgröße.
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_JAHRESBETRAG = "JAHRESBETRAG";
+
+        /// <summary>Je erzeugter kWh Wärme [€/kWh] — Bezugsgröße Wärmeproduktion des
+        /// jüngsten Simulationslaufs.
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_EUR_PRO_KWH_THERMISCH = "EUR_PRO_KWH_THERMISCH";
+
+        /// <summary>Je erzeugter/bezogener kWh Strom [€/kWh] — Bezugsgröße aus dem
+        /// jüngsten Simulationslauf.
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH = "EUR_PRO_KWH_ELEKTRISCH";
+
+        /// <summary>Je kW thermischer Nennleistung [€/kW] (Heizkessel).
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_EUR_PRO_KW_LEISTUNG = "EUR_PRO_KW_LEISTUNG";
+
+        /// <summary>Je kW Heizleistung [€/kW] (Wärmepumpe).
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG = "EUR_PRO_KW_HEIZLEISTUNG";
+
+        /// <summary>Je kW elektrischer Nennleistung [€/kW] (BHKW).
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_EUR_PRO_KW_ELEKTRISCH = "EUR_PRO_KW_ELEKTRISCH";
+
+        /// <summary>Je kWp installierter Leistung [€/kWp] (Photovoltaik; kWp rechnerisch,
+        /// geteilte Hilfsfunktion aus PV-Konzept Befund V3).
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_EUR_PRO_KWP = "EUR_PRO_KWP";
+
+        /// <summary>Je kWh Speicherkapazität [€/kWh] (Puffer-/Stromspeicher).
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_EUR_PRO_KWH_KAPAZITAET = "EUR_PRO_KWH_KAPAZITAET";
+
+        /// <summary>Je m² Kollektorfläche [€/m²] (Solarthermie).
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_EUR_PRO_M2_KOLLEKTOR = "EUR_PRO_M2_KOLLEKTOR";
+
+        /// <summary>Anteil des Betrags der Hauptposition [%] („% der Erzeugerkosten").
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_PROZENT_ERZEUGERKOSTEN = "PROZENT_ERZEUGERKOSTEN";
+
+        /// <summary>Anteil der Stromkosten des Trägerbezugs [%] — Basis kommt DIREKT aus
+        /// der Energieträgerwelt (KL7/FK3: keine Positionszeile im Betriebskosten-Raster).
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_PROZENT_STROMKOSTEN = "PROZENT_STROMKOSTEN";
+
+        // =====================================================================
+        // ETAPPE KD1 — Leistungspreis-Modus der Energieträger
+        //   energy_carrier.price_power_modus und (Übersteuerung, Etappe KD4)
+        //   energy_project_settings (Migrationsschritt 38; Konzept Kostendialoge
+        //   Rev. 1.2, § 7.1, Entscheidung FK6).
+        //   ASCII, eingefroren (Drei-Schichten-Regel); Rechenwirkung in KD4.
+        // =====================================================================
+
+        /// <summary>Jahresleistungspreis [€/(kW·a)] × Jahreshöchstlast des
+        /// Trägerbezugs. Persistenzwert, eingefroren (Drei-Schichten-Regel).</summary>
+        public const string LEISTUNGSPREIS_MODUS_JAHR = "JAHR";
+
+        /// <summary>Monatsleistungspreis [€/(kW·Monat)] × Monatshöchstlast, über
+        /// zwölf Monate summiert (FK6).
+        /// <inheritdoc cref="LEISTUNGSPREIS_MODUS_JAHR" path="/summary/text()[last()]"/></summary>
+        public const string LEISTUNGSPREIS_MODUS_MONAT = "MONAT";
 
         // =====================================================================
         // ETAPPE E4 — Projektangaben der Steuerpruefung
