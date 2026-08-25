@@ -7208,7 +7208,7 @@ Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Micro
     <value>Betrag netto [€/a]</value>
   </data>
   <data name="KDLG_SP_NUTZUNG" xml:space="preserve">
-    <value>Nutzungsdauer [a]</value>
+    <value>Nutzung [a]</value>
   </data>
   <data name="KDLG_SP_WORSTBEST" xml:space="preserve">
     <value>Worst/Best</value>

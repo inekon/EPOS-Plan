@@ -543,7 +543,15 @@ verschiebt die Zahlung, er indexiert sie nicht), keine Finanzierungsrechnung.
 
 ## 12. Gestaltungsmuster (folienübergreifend)
 
-Die Mockups definieren ein einheitliches Muster für alle Kostendialoge:
+**Designentscheidung Philipp (25.08.2026, KD2):** Alle Kostendialoge erscheinen in einem
+**einheitlichen Design nach App-Bestand**, nicht in der Web-Optik der Mockups („ähnliches
+Design, muss nicht wie Vorlage sein"). Konkret: dunkelblaue Kopfleiste RGB (15, 31, 61) mit
+weißem Titel und hellblauem Untertitel (Muster `Form_Kosten.pnlHeader`), Sektions-/
+Spaltenkopfleisten RGB (26, 50, 97) mit weißer Schrift, dunkelblauer Summenfuß, gelbes
+schließbares Hinweisbanner, Standard-Buttons. Diese Optik gilt für **alle** KD-Dialoge
+(auch Zeileneditor, Namensdialog und die kommenden KD3–KD6-Dialoge).
+
+Die Mockups definieren darüber hinaus das Strukturmuster für alle Kostendialoge:
 
 1. Kopfzeile: Titel + Untertitel + Info-Knopf (blau, rund — bestehendes `i`-Muster).
 2. Reiterzeile unterhalb des Kopfs; aktiver Reiter farbig.

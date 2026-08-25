@@ -20,7 +20,7 @@ namespace WindowsFormsApplication1
         /// <summary>Titel, Frage und Vorbelegung vor <c>ShowDialog</c> setzen.</summary>
         public void SetControls(string titel, string frage, string vorbelegung)
         {
-            if (!string.IsNullOrEmpty(titel)) Text = titel;
+            if (!string.IsNullOrEmpty(titel)) { Text = titel; lblKopfTitel.Text = titel; }
             if (!string.IsNullOrEmpty(frage)) lblFrage.Text = frage;
             txtName.Text = vorbelegung ?? "";
             txtName.SelectAll();

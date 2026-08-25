@@ -7202,7 +7202,7 @@ Please run the EPOS-Plan setup again or install the Microsoft Access Database En
     <value>Net amount [€/a]</value>
   </data>
   <data name="KDLG_SP_NUTZUNG" xml:space="preserve">
-    <value>Service life [a]</value>
+    <value>Life [a]</value>
   </data>
   <data name="KDLG_SP_WORSTBEST" xml:space="preserve">
     <value>Worst/best</value>
