@@ -7303,4 +7303,13 @@ Please run the EPOS-Plan setup again or install the Microsoft Access Database En
   <data name="BM_STUNDE" xml:space="preserve">
     <value>per hour</value>
   </data>
+  <data name="KDLG_BTN_UEBERNAHME" xml:space="preserve">
+    <value>Adopt into project…</value>
+  </data>
+  <data name="KDLG_UEB_QUELLE_VORLAGE" xml:space="preserve">
+    <value>From the current template/variant</value>
+  </data>
+  <data name="KDLG_UEB_VORSCHAU" xml:space="preserve">
+    <value>The source contains {0} items. The target project already has {1} items for this component — existing ones remain untouched, only missing ones are created. The origin is recorded per item.</value>
+  </data>
 </root>

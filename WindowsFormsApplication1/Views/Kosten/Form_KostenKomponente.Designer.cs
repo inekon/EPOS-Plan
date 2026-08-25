@@ -57,6 +57,7 @@ namespace WindowsFormsApplication1
             this.btnSpeichernUnter = new System.Windows.Forms.Button();
             this.btnVarianteLoeschen = new System.Windows.Forms.Button();
             this.pnlFuss = new System.Windows.Forms.Panel();
+            this.btnUebernahme = new System.Windows.Forms.Button();
             this.btnPositionNeu = new System.Windows.Forms.Button();
             this.lblSummeNetto = new System.Windows.Forms.Label();
             this.lblSummeBrutto = new System.Windows.Forms.Label();
@@ -377,6 +378,7 @@ namespace WindowsFormsApplication1
             //
             this.pnlFuss.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(31)))), ((int)(((byte)(61)))));
             this.pnlFuss.ForeColor = System.Drawing.Color.White;
+            this.pnlFuss.Controls.Add(this.btnUebernahme);
             this.pnlFuss.Controls.Add(this.btnPositionNeu);
             this.pnlFuss.Controls.Add(this.lblSummeNetto);
             this.pnlFuss.Controls.Add(this.lblSummeBrutto);
@@ -386,8 +388,21 @@ namespace WindowsFormsApplication1
             this.pnlFuss.Size = new System.Drawing.Size(996, 64);
             this.pnlFuss.TabIndex = 0;
             //
+            // btnUebernahme
+            //
+            this.btnUebernahme.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnUebernahme.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnUebernahme.Location = new System.Drawing.Point(806, 6);
+            this.btnUebernahme.Name = "btnUebernahme";
+            this.btnUebernahme.Size = new System.Drawing.Size(182, 27);
+            this.btnUebernahme.TabIndex = 3;
+            this.btnUebernahme.Text = "In Projekt übernehmen…";
+            this.btnUebernahme.UseVisualStyleBackColor = true;
+            this.btnUebernahme.Click += new System.EventHandler(this.btnUebernahme_Click);
+            //
             // btnPositionNeu
             //
+            this.btnPositionNeu.ForeColor = System.Drawing.SystemColors.ControlText;
             this.btnPositionNeu.Location = new System.Drawing.Point(8, 6);
             this.btnPositionNeu.Name = "btnPositionNeu";
             this.btnPositionNeu.Size = new System.Drawing.Size(170, 27);
@@ -493,6 +508,7 @@ namespace WindowsFormsApplication1
         private System.Windows.Forms.Button btnSpeichernUnter;
         private System.Windows.Forms.Button btnVarianteLoeschen;
         private System.Windows.Forms.Panel pnlFuss;
+        private System.Windows.Forms.Button btnUebernahme;
         private System.Windows.Forms.Button btnPositionNeu;
         private System.Windows.Forms.Label lblSummeNetto;
         private System.Windows.Forms.Label lblSummeBrutto;
