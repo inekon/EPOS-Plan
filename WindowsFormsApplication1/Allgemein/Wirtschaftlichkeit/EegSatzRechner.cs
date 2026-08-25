@@ -83,9 +83,10 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class EegSatzRechner
     {
-        /// <summary>Einspeiseart-Steuerwerte (Tab_ProjektPhotovoltaik.Einspeiseart).</summary>
-        public const string EINSPEISEART_UEBERSCHUSS = "PV_UEBERSCHUSS";
-        public const string EINSPEISEART_VOLL = "PV_VOLL";
+        /// <summary>Einspeiseart-Steuerwerte (Tab_ProjektPhotovoltaik.Einspeiseart) —
+        /// Persistenzwerte liegen zentral in <see cref="DbWerte"/> (P3).</summary>
+        public const string EINSPEISEART_UEBERSCHUSS = DbWerte.PV_EINSPEISEART_UEBERSCHUSS;
+        public const string EINSPEISEART_VOLL = DbWerte.PV_EINSPEISEART_VOLL;
 
         /// <summary>Erster Degressionsstichtag (§ 49 EEG i. d. F. Solarpaket).</summary>
         private static readonly DateTime DegressionsBeginn = new DateTime(2024, 2, 1);

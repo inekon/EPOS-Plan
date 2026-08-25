@@ -1101,6 +1101,15 @@ namespace WindowsFormsApplication1
                 l.Add(N(DbWerte.GESETZ_EEG_51A_VLVST_MONAT_PRAEFIX + mon, EEG, 2025, vlvst[mon - 1],
                         OHNE, G, "§ 51a EEG — Monatskontingent Viertelstunden, Monat " + mon, 5));
 
+            // =================================================================
+            // Generation 6 — amtliche Jahresmarktwerte Solar (Etappe P3, N2):
+            // Marktprämien-Basis MP = max(0, AW_mix − JW); je Jahr eine Zeile
+            // (JahrVon-Stichtagsmuster). 2026 folgt nach Veröffentlichung.
+            // =================================================================
+            const string Q_JW = "netztransparenz.de, Jahresmarktwert Solar (§ 23a EEG)";
+            l.Add(N(DbWerte.GESETZ_EEG_JAHRESMARKTWERT_SOLAR, EEG, 2024, 4.624, CT, G, Q_JW + ", 2024", 6));
+            l.Add(N(DbWerte.GESETZ_EEG_JAHRESMARKTWERT_SOLAR, EEG, 2025, 4.508, CT, G, Q_JW + ", 2025", 6));
+
             _vorbelegung = l;
             return _vorbelegung;
         }

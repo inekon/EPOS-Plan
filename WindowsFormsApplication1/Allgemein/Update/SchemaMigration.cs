@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 40;
+        public const int ZIEL_VERSION = 41;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1456,6 +1456,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_40_LEISTUNGSPREISREIHE = 40;
 
+        /// <summary>
+        /// Schritt 41 - <b>Etappe P3</b> (PV-Konzept § 6.1/§ 6.3):
+        /// <c>Tab_ProjektPhotovoltaik</c> (PV-Vergütungsangaben je Stammprojekt,
+        /// Muster Tab_ProjektTarif; <c>Aktiv = false</c> heißt exakt Bestandsverhalten
+        /// — Abnahmekriterium) und die Marktwert-Solar-Stammreihen 2024/2025/2026
+        /// (Tab_Preisreihe, Auflösung Monat, ct/kWh, Bezeichner „Marktwert Solar";
+        /// 2026 mit den 7 veröffentlichten Monaten Jan–Jul).
+        ///
+        /// <para><b>Idempotent:</b> CREATE/INDEX über <see cref="Ddl"/>; die Reihen
+        /// werden nur gesät, wenn zum Bezeichner und Jahr noch keine Stammreihe
+        /// existiert — ein Zweitlauf meldet 0 neue Reihen.</para>
+        /// </summary>
+        public const int SCHRITT_41_PROJEKTPHOTOVOLTAIK = 41;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -2298,6 +2312,15 @@ namespace WindowsFormsApplication1
                         "Der Traegerbezug der Preisreihen konnte nicht angelegt werden - " +
                         "ohne ihn gibt es keine saisonalen Leistungspreis-Saetze (FK6a).",
                         Schritt_40_Leistungspreisreihe),
+
+            // P3 (PV-Konzept Paragraf 6.1/6.3): PV-Verguetungstabelle und
+            // Marktwert-Solar-Stammreihen.
+            new Schritt(SCHRITT_41_PROJEKTPHOTOVOLTAIK,
+                        "PV-Verguetung: Tab_ProjektPhotovoltaik anlegen und " +
+                        "Marktwert-Solar-Monatsreihen 2024/2025/2026 saeen (Etappe P3)",
+                        "Die PV-Verguetungstabelle konnte nicht angelegt werden - ohne " +
+                        "sie gibt es keinen PV-Verguetungsdialog (PV-Konzept).",
+                        Schritt_41_ProjektPhotovoltaik),
         };
 
         // =================================================================================
@@ -5717,6 +5740,71 @@ namespace WindowsFormsApplication1
         private static bool Schritt_40_Leistungspreisreihe(Lauf l)
         {
             return SpaltenAnlegen(l, SchemaKatalog.Schritt40_Spalten);
+        }
+
+        /// <summary>Schritt 41. Anlass und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_41_PROJEKTPHOTOVOLTAIK"/>.</summary>
+        private static bool Schritt_41_ProjektPhotovoltaik(Lauf l)
+        {
+            // --- 41a) Tabelle + eindeutiger Projektindex -----------------------------
+            if (!Ddl(l, SchemaKatalog.SQL_CREATE_PROJEKTPHOTOVOLTAIK,
+                     "Tabelle " + SchemaKatalog.TAB_PROJEKTPHOTOVOLTAIK)) return false;
+            if (!Ddl(l, SchemaKatalog.SQL_INDEX_PROJEKTPHOTOVOLTAIK,
+                     "Index idx_ProjektPhotovoltaik")) return false;
+
+            // --- 41b) Marktwert-Solar-Stammreihen (Anhang A; 2026 Jan-Jul) -----------
+            // Werte ct/kWh, netztransparenz.de (Paragraf 23a EEG). Vor Freigabe gegen
+            // den CSV-Download verifizieren (Pruefschritt P3, Konzept 6.3).
+            double[][] jahre =
+            {
+                new[] { 7.535, 5.875, 4.965, 3.795, 3.161, 4.635, 3.554, 4.263, 4.512, 6.752, 10.076, 11.171 },
+                new[] { 11.511, 11.099, 5.027, 3.041, 1.997, 1.843, 5.923, 3.832, 4.307, 6.980, 9.102, 9.373 },
+                new[] { 11.019, 7.717, 5.455, 1.317, 3.163, 6.190, 5.226 },
+            };
+            int[] jahrVon = { 2024, 2025, 2026 };
+
+            int neu = 0, vorhanden = 0;
+            for (int j = 0; j < jahre.Length; j++)
+            {
+                object da = Scalar(l,
+                    "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_PREISREIHE + "] " +
+                    "WHERE Bezeichner = ? AND Jahr = ? AND ID_Projekt IS NULL",
+                    new OleDbParameter("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
+                    new OleDbParameter("@j", jahrVon[j]));
+                if (da != null && Convert.ToInt32(da) > 0) { vorhanden++; continue; }
+
+                object maxKopf = Scalar(l, "SELECT MAX(ID) FROM [" + SchemaKatalog.TAB_PREISREIHE + "]");
+                int kopfId = (maxKopf == null || maxKopf == DBNull.Value ? 0 : Convert.ToInt32(maxKopf)) + 1;
+                if (NonQuery(l,
+                        "INSERT INTO [" + SchemaKatalog.TAB_PREISREIHE + "] " +
+                        "(ID, ID_Projekt, Bezeichner, Jahr, Aufloesung, Einheit, ID_Energietraeger) " +
+                        "VALUES (?, NULL, ?, ?, ?, ?, NULL)",
+                        new OleDbParameter("@id", kopfId),
+                        new OleDbParameter("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
+                        new OleDbParameter("@j", jahrVon[j]),
+                        new OleDbParameter("@a", DbWerte.PREISREIHE_AUFLOESUNG_MONAT),
+                        new OleDbParameter("@e", DbWerte.PREISREIHE_EINHEIT_CT_KWH)) < 0)
+                    return false;
+
+                object maxDaten = Scalar(l, "SELECT MAX(ID) FROM [Tab_PreisreiheDaten]");
+                int datenId = maxDaten == null || maxDaten == DBNull.Value ? 0 : Convert.ToInt32(maxDaten);
+                foreach (double wert in jahre[j])
+                {
+                    datenId++;
+                    if (NonQuery(l,
+                            "INSERT INTO [Tab_PreisreiheDaten] (ID, ID_Preisreihe, Wert) VALUES (?, ?, ?)",
+                            new OleDbParameter("@id", datenId),
+                            new OleDbParameter("@k", kopfId),
+                            new OleDbParameter("@w", wert)) < 0)
+                        return false;
+                }
+                neu++;
+            }
+
+            l.Zeile("Marktwert Solar (Schritt 41): " + neu + " Stammreihe(n) gesaet, " +
+                    vorhanden + " bereits vorhanden - die Monatsmarktwerte 2024/2025 und " +
+                    "Jan-Jul 2026 stehen fuer die Marktpraemien- und Paragraf-51-Rechnung bereit.");
+            return true;
         }
 
         /// <summary>Nullbarer Parameter mit ausdruecklichem OleDb-Typ - ein DBNull ohne

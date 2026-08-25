@@ -1542,6 +1542,44 @@ namespace WindowsFormsApplication1
         /// (§ 101 EEG, EU-Beihilfevorbehalt): NICHT anwenden (F8/N.2).</summary>
         public const string GESETZ_EEG_SOLARPAKET_AUFSCHLAG = "EEG_SOLARPAKET_AUFSCHLAG";
 
+        /// <summary>Amtlicher JAHRESmarktwert Solar [ct/kWh] je Kalenderjahr
+        /// (netztransparenz.de, § 23a EEG) — die Marktprämien-Basis der
+        /// Jahresmarktwert-Systematik (Nachtrag N2): MP = max(0, AW_mix − JW).
+        /// Je Jahr eine Katalogzeile (JahrVon-Stichtagsmuster). NICHT der
+        /// „Jahresmittelwert nach § 33 EEG 2012" (Verwechslungswarnung N.2).</summary>
+        public const string GESETZ_EEG_JAHRESMARKTWERT_SOLAR = "EEG_JAHRESMARKTWERT_SOLAR";
+
+        // =====================================================================
+        // PV-Vergütung — Steuerwerte der Tab_ProjektPhotovoltaik (Etappe P3)
+        //   Persistenzwerte, eingefroren (Drei-Schichten-Regel).
+        // =====================================================================
+
+        /// <summary>Vermarktungsform: feste Einspeisevergütung (§ 21 Abs. 1 Nr. 1, nur ≤ 100 kW).</summary>
+        public const string PV_VERMARKTUNG_EV = "PV_EV";
+        /// <summary>Direktvermarktung mit Marktprämie (§§ 20, 23a EEG).</summary>
+        public const string PV_VERMARKTUNG_MARKTPRAEMIE = "PV_MARKTPRAEMIE";
+        /// <summary>Sonstige Direktvermarktung / PPA (fester Preis oder Spot ± Aufschlag).</summary>
+        public const string PV_VERMARKTUNG_SONSTIGE_DV = "PV_SONSTIGE_DV";
+        /// <summary>Keine Vergütung (unentgeltliche Abnahme, &lt; 200 kW — N4).</summary>
+        public const string PV_VERMARKTUNG_KEINE = "PV_KEINE";
+
+        /// <summary>Einspeiseart Überschusseinspeisung.</summary>
+        public const string PV_EINSPEISEART_UEBERSCHUSS = "PV_UEBERSCHUSS";
+        /// <summary>Einspeiseart Volleinspeisung (AW-Spalte „Voll"; Eigenverbrauch 0).</summary>
+        public const string PV_EINSPEISEART_VOLL = "PV_VOLL";
+
+        /// <summary>Dreiwege-Schalter (Par51_Anwenden, Kappung60_Anwenden): Regel
+        /// automatisch anwenden.</summary>
+        public const string PV_SCHALTER_AUTO = "AUTO";
+        public const string PV_SCHALTER_JA = "JA";
+        public const string PV_SCHALTER_NEIN = "NEIN";
+
+        /// <summary>Bezeichner der Marktwert-Stammreihen in <c>Tab_Preisreihe</c>
+        /// (Auflösung Monat, Einheit ct/kWh, ID_Projekt NULL; je Kalenderjahr eine
+        /// Reihe). Datenwert in der Datenbank — deutsch und eingefroren
+        /// (dasselbe Muster wie <c>energy_conversion.faktor_name</c>).</summary>
+        public const string PV_MARKTWERT_BEZEICHNER = "Marktwert Solar";
+
         // --------------------------------------------------------------- Status
 
         /// <summary>Aus einer Primaerquelle belegt und in Kraft.</summary>
