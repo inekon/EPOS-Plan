@@ -7393,4 +7393,7 @@ Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Micro
   <data name="KDLG_MENUE_ENERGIETRAEGER" xml:space="preserve">
     <value>Energieträgerverwaltung…</value>
   </data>
+  <data name="SIM_PV_V1_BHKW_GETRENNT" xml:space="preserve">
+    <value>BHKW-Stromüberschuss von {0:N0} kWh getrennt von der PV-Einspeisung ausgewiesen (Befund V1).</value>
+  </data>
 </root>

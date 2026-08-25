@@ -7387,4 +7387,7 @@ Please run the EPOS-Plan setup again or install the Microsoft Access Database En
   <data name="KDLG_MENUE_ENERGIETRAEGER" xml:space="preserve">
     <value>Energy carrier management…</value>
   </data>
+  <data name="SIM_PV_V1_BHKW_GETRENNT" xml:space="preserve">
+    <value>CHP electricity surplus of {0:N0} kWh reported separately from the PV feed-in (finding V1).</value>
+  </data>
 </root>

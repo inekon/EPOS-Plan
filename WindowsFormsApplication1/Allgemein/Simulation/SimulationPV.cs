@@ -53,6 +53,18 @@ namespace WindowsFormsApplication1
         public float[] Reststrom_viertelstunde = new float[8760 * 4];
         public float[] Ueberschuss_viertelstunde = new float[8760 * 4];
 
+        /// <summary>
+        /// V1 (PV-Konzept § 2.3, Etappe P1): BHKW-Stromüberschuss, der als NEGATIVER
+        /// Restbedarf im übergebenen Strombedarf steht (der BHKW-Abzug klemmt bewusst
+        /// nicht auf 0, damit die SpeicherEngine ihn laden kann). Er ist KEINE
+        /// PV-Erzeugung und gehört nicht in <see cref="Ueberschuss"/> — sonst würde
+        /// er als PV-Einspeisung vergütet. Hier getrennt ausgewiesen [kWh je Stunde].
+        /// </summary>
+        public float[] BhkwUeberschuss = new float[8760];
+
+        /// <summary>Jahressumme von <see cref="BhkwUeberschuss"/> [kWh].</summary>
+        public float BhkwUeberschuss_gesamt = 0;
+
         // Statistiken
         public double Stromproduktion_Max = 0;
         public double MaxPSolar = 0;
@@ -65,6 +77,8 @@ namespace WindowsFormsApplication1
             Array.Clear(Stromproduktion_Theoretisch, 0, Stromproduktion_Theoretisch.Length);
             Array.Clear(Reststrom, 0, Reststrom.Length);
             Array.Clear(Ueberschuss, 0, Ueberschuss.Length);
+            Array.Clear(BhkwUeberschuss, 0, BhkwUeberschuss.Length);
+            BhkwUeberschuss_gesamt = 0;
             Array.Clear(pvPotentialGesamt_stuendlich, 0, pvPotentialGesamt_stuendlich.Length);
             Modul_Ergebnisse.Clear();
         }
@@ -136,7 +150,17 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < 8760; i++)
             {
                 double erzeugung = pvPotentialGesamt_stuendlich[i];
-                double bedarf = Strombedarf_stuendlich[i];
+                double bedarfRoh = Strombedarf_stuendlich[i];
+
+                // V1 (PV-Konzept § 2.3, Etappe P1): Ein NEGATIVER Restbedarf ist
+                // BHKW-Überschuss — kein Bedarf und keine PV-Größe. Ohne die Klemme
+                // wurde Min(erzeugung, bedarf) negativ und der BHKW-Überschuss
+                // wanderte über „erzeugung − direktVerbrauch" in die PV-Einspeise-
+                // reihe (Projekt 1018: 24.532 negative Viertelstunden). Für Projekte
+                // ohne BHKW-Überschuss ist bedarfRoh nie negativ — ihr Ergebnis
+                // bleibt identisch (Abnahmekriterium P1).
+                double bedarf = Math.Max(0, bedarfRoh);
+                BhkwUeberschuss[i] = (float)Math.Max(0, -bedarfRoh);
 
                 Stromproduktion_Theoretisch[i] = (float)erzeugung;
 
@@ -154,6 +178,7 @@ namespace WindowsFormsApplication1
             // SUMMEN & KONVERTIERUNG
             Stromproduktion_gesamt = Stromproduktion.Sum();
             Stromproduktion_Theoretisch_gesamt = Stromproduktion_Theoretisch.Sum();
+            BhkwUeberschuss_gesamt = BhkwUeberschuss.Sum();
 
             // Für den Chart aufbereiten
             Stromproduktion_viertelstunde = Stundenwerte_zu_viertelstunden(Stromproduktion);

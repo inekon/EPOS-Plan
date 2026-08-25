@@ -52,7 +52,31 @@ namespace WindowsFormsApplication1
                 if (sim.bSimulationPV && sim.simulation_pv != null)
                 {
                     z.Reihen[ZeitreihenSatz.PV_GENUTZT] = D(sim.simulation_pv.Stromproduktion);
-                    z.Reihen[ZeitreihenSatz.PV_UEBERSCHUSS] = D(sim.simulation_pv.Ueberschuss);
+
+                    // V2 (PV-Konzept § 2.3, Etappe P1): Die Einspeisereihe ist der
+                    // Überschuss NACH der Speicherladung — geladene Energie wirkt als
+                    // vermiedener Netzbezug, nicht als Einspeisung. Ladung je Stunde =
+                    // Summe der vier Viertelstunden (LadungAcKwh der SpeicherEngine).
+                    double[] pvUeb = D(sim.simulation_pv.Ueberschuss);
+                    if (sim.Speicherergebnis != null &&
+                        sim.Speicherergebnis.LadungAcKwh != null &&
+                        sim.Speicherergebnis.LadungAcKwh.Length == pvUeb.Length * 4)
+                    {
+                        double[] ladung = sim.Speicherergebnis.LadungAcKwh;
+                        for (int h = 0; h < pvUeb.Length; h++)
+                        {
+                            double lad = ladung[h * 4] + ladung[h * 4 + 1] +
+                                         ladung[h * 4 + 2] + ladung[h * 4 + 3];
+                            pvUeb[h] = Math.Max(0, pvUeb[h] - lad);
+                        }
+                    }
+                    z.Reihen[ZeitreihenSatz.PV_UEBERSCHUSS] = pvUeb;
+
+                    // V1: BHKW-Überschuss als eigene Reihe — er stand bis P1 in der
+                    // PV-Überschussreihe (falsches Etikett).
+                    if (sim.simulation_pv.BhkwUeberschuss_gesamt > 0.5f)
+                        z.Reihen[ZeitreihenSatz.BHKW_UEBERSCHUSS] =
+                            D(sim.simulation_pv.BhkwUeberschuss);
                 }
 
                 // Stromspeicher: seit AP2b eigenes Gewerk mit eigenem Flag - der SOC
