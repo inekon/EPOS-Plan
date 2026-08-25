@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 37;
+        public const int ZIEL_VERSION = 39;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1379,6 +1379,66 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_37_BHKW_POSTEN = 37;
 
+        /// <summary>
+        /// Schritt 38 - <b>Etappe KD1</b> (Konzept Kostendialoge Rev. 1.2, § 4/§ 14):
+        /// die Strukturen der bewerteten Kostenvorlagen.
+        ///
+        /// <para>
+        /// <b>Was passiert.</b> Zwei neue Stammtabellen
+        /// <c>Tab_KostenVorlage</c>/<c>Tab_KostenVorlagePosition</c> (Kopf/Positionen,
+        /// Löschweitergabe, MAX+1-Vergabe wie <c>Tab_Preisreihe</c>) und vier
+        /// Spalten-Nachrüstungen: <c>Tab_ProjektWerte.VorlageID</c> (Übernahme-Herkunft,
+        /// § 4.2) und <c>.StartJahr</c> (Entscheidung FK10, Rechenwirkung erst KD6)
+        /// sowie <c>energy_carrier.price_power</c>/<c>.price_power_modus</c>
+        /// (Entscheidung FK6, Rechenwirkung erst KD4). Alles nullable, KEIN DDL-DEFAULT
+        /// auf Fachwerten (Hausregel).
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Ergebnisneutral:</b> reine Strukturerweiterung - vor KD2/KD4/KD6 wertet
+        /// kein Leser die neuen Spalten aus; Referenzläufe müssen byte-identisch
+        /// bleiben (Abnahmekriterium KD1).
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Idempotent</b> (unabhängig vom Marker): CREATE/INDEX/CONSTRAINT laufen
+        /// über <see cref="Ddl"/> („bereits vorhanden" ist Erfolg), die Spalten über
+        /// <see cref="SpaltenAnlegen"/> (vorhandene werden übersprungen).
+        /// </para>
+        /// </summary>
+        public const int SCHRITT_38_KOSTENVORLAGEN = 38;
+
+        /// <summary>
+        /// Schritt 39 - <b>Etappe KD1</b>: die 20 Auslieferungsvorlagen
+        /// (<see cref="SchemaKatalog.Schritt39_Vorlagen"/> - 10 Komponenten ×
+        /// Investition/Betrieb, Positionslisten wörtlich aus den Vorlagen-Folien 8-24
+        /// bzw. den K5-Katalogen).
+        ///
+        /// <para>
+        /// <b>Seeds ohne erfundene Werte:</b> <c>IstStandard = ReadOnly = TRUE</c>;
+        /// Sätze, Beträge und Nutzungsdauern bleiben NULL („nicht gepflegt", nie 0);
+        /// Empfehlungsbereiche nur, wo die K5-Katalogdaten sie belegen. Entscheidung
+        /// FK3: die Folien-Zeilen „Brennstoffkosten"/„Stromkosten (Verdichter)" werden
+        /// bewusst NICHT gesät - Energiekosten erscheinen nie im Betriebskosten-Raster.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Idempotent:</b> Existiert die Standardvariante einer Komponente+Kategorie
+        /// bereits (gleicher Name), bleibt sie samt Positionen unangetastet - der
+        /// Anwender könnte sie in Access bewusst geändert haben; der Zweitlauf meldet
+        /// 0 Änderungen. Fehlt eine Komponente (ältere Datenbank), legt
+        /// <see cref="KomponenteSichern"/> sie an (Muster Schritt 27).
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Rücknahme je Vorlage:</b> Scheitert das Säen einer Vorlage mittendrin,
+        /// wird ihr Kopf gelöscht (die Löschweitergabe räumt die Teilpositionen ab)
+        /// und der Schritt gilt als gescheitert - halb gesäte Vorlagen soll es nicht
+        /// geben; der nächste Lauf ergänzt nur die fehlenden.
+        /// </para>
+        /// </summary>
+        public const int SCHRITT_39_KOSTENVORLAGEN_SEED = 39;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -2193,6 +2253,25 @@ namespace WindowsFormsApplication1
                         "nur Investition_kwel fuehren, gehen sonst mit 0,00 EUR in die " +
                         "Kostenrechnung ein.",
                         Schritt_37_BhkwPosten),
+
+            // KD1 (Konzept Kostendialoge Rev. 1.2): Strukturen und Auslieferungs-Seeds
+            // der bewerteten Stammvorlagen. Begruendung und Idempotenzzusage bei den
+            // Schrittkonstanten.
+            new Schritt(SCHRITT_38_KOSTENVORLAGEN,
+                        "Kostenvorlagen-Strukturen: Tab_KostenVorlage/-Position anlegen, " +
+                        "Tab_ProjektWerte um VorlageID/StartJahr und energy_carrier um " +
+                        "price_power/price_power_modus ergaenzen (Etappe KD1)",
+                        "Die Vorlagen-Strukturen konnten nicht angelegt werden - ohne sie " +
+                        "gibt es keine Stammvorlagen je Komponente (Konzept Kostendialoge).",
+                        Schritt_38_Kostenvorlagen),
+
+            new Schritt(SCHRITT_39_KOSTENVORLAGEN_SEED,
+                        "Auslieferungsvorlagen saeen: 20 Standardvorlagen (10 Komponenten x " +
+                        "Investition/Betrieb) mit den Positionslisten der Vorlagen-Folien, " +
+                        "Saetze bewusst leer (Etappe KD1)",
+                        "Die Auslieferungsvorlagen konnten nicht gesaet werden - der " +
+                        "Komponenten-Kostendialog (KD2) haette keine Standardvariante.",
+                        Schritt_39_KostenvorlagenSeed),
         };
 
         // =================================================================================
@@ -5576,6 +5655,190 @@ namespace WindowsFormsApplication1
                            : n + " Zeilen getroffen statt einer") +
                     (l.LetzterFehler != null ? " (" + l.LetzterFehler + ")" : "") + ".");
             return false;
+        }
+
+        // =================================================================================
+        // Schritt 38/39 - Etappe KD1 (Konzept Kostendialoge Rev. 1.2): Kostenvorlagen
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 38. Anlass, Umfang und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_38_KOSTENVORLAGEN"/>.
+        /// </summary>
+        private static bool Schritt_38_Kostenvorlagen(Lauf l)
+        {
+            // --- 38a) Kopf- und Positionstabelle -------------------------------------
+            if (!Ddl(l, SchemaKatalog.SQL_CREATE_KOSTENVORLAGE,
+                     "Tabelle " + SchemaKatalog.TAB_KOSTENVORLAGE)) return false;
+            if (!Ddl(l, SchemaKatalog.SQL_INDEX_KOSTENVORLAGE,
+                     "Index idx_KostenVorlage")) return false;
+
+            if (!Ddl(l, SchemaKatalog.SQL_CREATE_KOSTENVORLAGEPOSITION,
+                     "Tabelle " + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION)) return false;
+            if (!Ddl(l, SchemaKatalog.SQL_INDEX_KOSTENVORLAGEPOSITION,
+                     "Index idx_KostenVorlagePosition")) return false;
+            if (!Ddl(l, SchemaKatalog.SQL_FK_KOSTENVORLAGEPOSITION,
+                     "Loeschweitergabe FK_KostenVorlagePos")) return false;
+
+            // --- 38b) Spalten-Nachruestungen -----------------------------------------
+            // Tab_ProjektWerte.VorlageID/StartJahr, energy_carrier.price_power(_modus);
+            // alle nullable, Vorbelegung gibt es bewusst NICHT (NULL = nicht gepflegt).
+            return SpaltenAnlegen(l, SchemaKatalog.Schritt38_Spalten);
+        }
+
+        /// <summary>Nullbarer Parameter mit ausdruecklichem OleDb-Typ - ein DBNull ohne
+        /// Typ kann der Provider nicht binden.</summary>
+        private static OleDbParameter ParamOderNull(string name, OleDbType typ, object wert)
+        {
+            var p = new OleDbParameter(name, typ);
+            p.Value = wert ?? DBNull.Value;
+            return p;
+        }
+
+        /// <summary>
+        /// Schritt 39. Anlass, Seed-Regeln und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_39_KOSTENVORLAGEN_SEED"/>.
+        /// </summary>
+        private static bool Schritt_39_KostenvorlagenSeed(Lauf l)
+        {
+            if (TabellenSchema(l, SchemaKatalog.TAB_KOSTENVORLAGE) == null ||
+                TabellenSchema(l, SchemaKatalog.TAB_KOSTENVORLAGEPOSITION) == null)
+            {
+                l.Notiz("39: Vorlagentabellen sind nicht lesbar - Schritt 38 ist nicht gelaufen.");
+                return false;
+            }
+
+            bool ok = true;
+            int vorlagen = 0, positionen = 0, komponentenNeu = 0, vorhanden = 0;
+
+            foreach (SchemaKatalog.KostenVorlagenSeed v in SchemaKatalog.Schritt39_Vorlagen)
+            {
+                // Komponente aufloesen; fehlt sie (aeltere Datenbank), legt das
+                // idempotente Muster aus Schritt 27 sie an.
+                int neu;
+                if (!KomponenteSichern(l, v.Komponente, out neu)) { ok = false; continue; }
+                komponentenNeu += neu;
+
+                object idObj = Scalar(l,
+                    "SELECT MAX([ID]) FROM [" + SchemaKatalog.TAB_KOSTENKOMPONENTE + "] " +
+                    "WHERE [" + SchemaKatalog.SPALTE_KK_KOMPONENTE + "] = ?",
+                    new OleDbParameter("@k", v.Komponente));
+                if (idObj == null || idObj == DBNull.Value)
+                {
+                    l.Notiz("39: Komponente \"" + v.Komponente + "\" ist nicht aufloesbar.");
+                    ok = false;
+                    continue;
+                }
+                int komponentenId = Zahl(idObj);
+
+                // Standardvariante schon da? Dann samt Positionen unangetastet lassen -
+                // Idempotenz: der Zweitlauf meldet 0 Aenderungen.
+                object da = Scalar(l,
+                    "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_KOSTENVORLAGE + "] " +
+                    "WHERE [" + SchemaKatalog.SPALTE_KV_KOMPONENTENID + "] = ? AND [" +
+                    SchemaKatalog.SPALTE_KV_KATEGORIEID + "] = ? AND [" +
+                    SchemaKatalog.SPALTE_KV_NAME + "] = ?",
+                    new OleDbParameter("@kid", komponentenId),
+                    new OleDbParameter("@kat", v.KategorieId),
+                    new OleDbParameter("@n", SchemaKatalog.VORLAGE_NAME_STANDARD));
+                if (da == null) { ok = false; continue; }
+                if (Zahl(da) > 0) { vorhanden++; continue; }
+
+                // ID ist KEIN AutoWert (Hausmuster ADR-001): MAX+1 selbst vergeben.
+                int vorlageId = Zahl(Scalar(l, "SELECT MAX([ID]) FROM [" +
+                                               SchemaKatalog.TAB_KOSTENVORLAGE + "]")) + 1;
+
+                int kopf = NonQuery(l,
+                    "INSERT INTO [" + SchemaKatalog.TAB_KOSTENVORLAGE + "] ([ID], [" +
+                    SchemaKatalog.SPALTE_KV_KOMPONENTENID + "], [" +
+                    SchemaKatalog.SPALTE_KV_KATEGORIEID + "], [" +
+                    SchemaKatalog.SPALTE_KV_NAME + "], [" +
+                    SchemaKatalog.SPALTE_KV_IST_STANDARD + "], [" +
+                    SchemaKatalog.SPALTE_KV_READONLY + "], [" +
+                    SchemaKatalog.SPALTE_KV_GEAENDERT_AM + "]) " +
+                    "VALUES (?, ?, ?, ?, TRUE, TRUE, ?)",
+                    new OleDbParameter("@id", vorlageId),
+                    new OleDbParameter("@kid", komponentenId),
+                    new OleDbParameter("@kat", v.KategorieId),
+                    new OleDbParameter("@n", SchemaKatalog.VORLAGE_NAME_STANDARD),
+                    ParamOderNull("@am", OleDbType.Date, DateTime.Now));
+                if (kopf <= 0)
+                {
+                    l.Notiz("39: INSERT der Vorlage \"" + v.Komponente + "\" (Kategorie " +
+                            v.KategorieId + ") fehlgeschlagen.");
+                    ok = false;
+                    continue;
+                }
+
+                bool posOk = true;
+                int sort = 0;
+                foreach (SchemaKatalog.VorlagenPositionSeed p in v.Positionen)
+                {
+                    sort += 10;
+
+                    // StammID aus dem Positionslexikon, falls der Wortlaut dort steht;
+                    // NULL bei freier Vorlagenposition (KL2). MAX statt Einzelwert, weil
+                    // eine Bezeichnung je Rolle doppelt vorkommen darf (Schritt 27).
+                    object sid = Scalar(l,
+                        "SELECT MAX([" + SchemaKatalog.SPALTE_KF_STAMMID + "]) FROM [" +
+                        SchemaKatalog.TAB_KOSTENFAKTOR + "] WHERE [" +
+                        SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ?",
+                        new OleDbParameter("@b", p.Bezeichnung));
+
+                    int posId = Zahl(Scalar(l, "SELECT MAX([ID]) FROM [" +
+                                               SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "]")) + 1;
+
+                    int pn = NonQuery(l,
+                        "INSERT INTO [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] ([ID], [" +
+                        SchemaKatalog.SPALTE_KVP_VORLAGEID + "], [" +
+                        SchemaKatalog.SPALTE_KVP_STAMMID + "], [" +
+                        SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "], [" +
+                        SchemaKatalog.SPALTE_KVP_KOSTENART + "], [" +
+                        SchemaKatalog.SPALTE_KVP_BEMESSUNG + "], [" +
+                        SchemaKatalog.SPALTE_KVP_IST_ERLOES + "], [" +
+                        SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_VON + "], [" +
+                        SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_BIS + "], [" +
+                        SchemaKatalog.SPALTE_KVP_SORTIERUNG + "]) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)",
+                        new OleDbParameter("@id", posId),
+                        new OleDbParameter("@vid", vorlageId),
+                        ParamOderNull("@sid", OleDbType.Integer,
+                                      sid == null || sid == DBNull.Value ? null : (object)Zahl(sid)),
+                        new OleDbParameter("@b", p.Bezeichnung),
+                        new OleDbParameter("@ka", p.Kostenart),
+                        new OleDbParameter("@bm", p.Bemessung),
+                        ParamOderNull("@ev", OleDbType.Double,
+                                      p.EmpfehlungVon.HasValue ? (object)p.EmpfehlungVon.Value : null),
+                        ParamOderNull("@eb", OleDbType.Double,
+                                      p.EmpfehlungBis.HasValue ? (object)p.EmpfehlungBis.Value : null),
+                        new OleDbParameter("@so", sort));
+                    if (pn <= 0) { posOk = false; break; }
+                    positionen++;
+                }
+
+                if (!posOk)
+                {
+                    // Halb gesaete Vorlage zuruecknehmen - die Loeschweitergabe raeumt
+                    // die Teilpositionen ab. ID als ganzzahliges Literal (ACE-Falle:
+                    // kein Parameter noetig, kein Parameter riskiert).
+                    l.Notiz("39: Positionen der Vorlage \"" + v.Komponente + "\" (Kategorie " +
+                            v.KategorieId + ") unvollstaendig - Vorlage wird zurueckgenommen.");
+                    NonQuery(l, "DELETE FROM [" + SchemaKatalog.TAB_KOSTENVORLAGE +
+                                "] WHERE [ID] = " + vorlageId);
+                    ok = false;
+                    continue;
+                }
+
+                vorlagen++;
+            }
+
+            l.Notiz("39a: " + vorlagen + " Standardvorlagen angelegt, " + vorhanden +
+                    " bereits vorhanden" +
+                    (komponentenNeu > 0 ? ", " + komponentenNeu + " Komponenten ergaenzt" : "") + ".");
+            l.Notiz("39b: " + positionen + " Vorlagenpositionen gesaet - Saetze, Betraege und " +
+                    "Nutzungsdauern bewusst leer (Struktur ohne erfundene Preise, Konzept " +
+                    "Kostendialoge § 4.3); FK3: keine Energiekosten-Zeilen im Betriebskatalog.");
+            return ok;
         }
 
         // =================================================================================
