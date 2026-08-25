@@ -317,6 +317,21 @@ namespace WindowsFormsApplication1
             if (KostenVorlagenCtrl.VorlageLoeschen(v.Id)) VariantenLaden(null);
         }
 
+        // ----------------------------------------------------------- Übernahme ---
+
+        /// <summary>KD3 (§ 8): Übernahme-Dialog — Zielprojekt und Quelle wählen,
+        /// Klartext-Vorschau, Schreiben über <see cref="KostenVorlagenUebernahmeCtrl"/>.</summary>
+        private void btnUebernahme_Click(object sender, EventArgs e)
+        {
+            string name = cmbKomponente.SelectedIndex >= 0
+                ? (string)cmbKomponente.Items[cmbKomponente.SelectedIndex] : "";
+            using (var dlg = new Form_VorlagenUebernahme())
+            {
+                dlg.SetControls(KomponentenId, name, KategorieId, Variante);
+                dlg.ShowDialog(this);
+            }
+        }
+
         // -------------------------------------------------------------- Diverses ---
 
         private void btnBannerZu_Click(object sender, EventArgs e)
@@ -340,6 +355,7 @@ namespace WindowsFormsApplication1
             btnVarianteNeu.Text = Text_("KDLG_BTN_NEU", btnVarianteNeu.Text);
             btnSpeichernUnter.Text = Text_("KDLG_BTN_SPEICHERN_UNTER", btnSpeichernUnter.Text);
             btnPositionNeu.Text = Text_("KDLG_BTN_POSITION", btnPositionNeu.Text);
+            btnUebernahme.Text = Text_("KDLG_BTN_UEBERNAHME", btnUebernahme.Text);
             lblSpAktionen.Text = Text_("KDLG_SP_AKTIONEN", lblSpAktionen.Text);
             lblSpPosition.Text = Text_("KDLG_SP_POSITION", lblSpPosition.Text);
             lblSpBemessung.Text = Text_("KDLG_SP_BEMESSUNG", lblSpBemessung.Text);

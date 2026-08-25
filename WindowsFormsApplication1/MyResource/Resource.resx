@@ -7309,4 +7309,13 @@ Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Micro
   <data name="BM_STUNDE" xml:space="preserve">
     <value>je Stunde</value>
   </data>
+  <data name="KDLG_BTN_UEBERNAHME" xml:space="preserve">
+    <value>In Projekt übernehmen…</value>
+  </data>
+  <data name="KDLG_UEB_QUELLE_VORLAGE" xml:space="preserve">
+    <value>Aus der aktuellen Vorlage/Variante</value>
+  </data>
+  <data name="KDLG_UEB_VORSCHAU" xml:space="preserve">
+    <value>Die Quelle enthält {0} Positionen. Das Zielprojekt führt für diese Komponente bereits {1} Positionen — vorhandene bleiben unberührt, nur fehlende werden angelegt. Die Herkunft wird je Position vermerkt.</value>
+  </data>
 </root>

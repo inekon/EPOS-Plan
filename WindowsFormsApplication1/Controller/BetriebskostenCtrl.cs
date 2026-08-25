@@ -264,8 +264,13 @@ namespace WindowsFormsApplication1
             double wert;
 
             if (string.IsNullOrEmpty(bemessung) ||
-                string.Equals(bemessung, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal))
+                string.Equals(bemessung, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal) ||
+                string.Equals(bemessung, DbWerte.BEMESSUNG_JAHRESBETRAG, StringComparison.Ordinal))
             {
+                // JAHRESBETRAG ist die zweite ABSOLUTE Art (Etappe KD1/KD3, Konzept
+                // Kostendialoge § 5.3): fester Jahresbetrag ohne Bezugsgröße — er trägt
+                // seinen Wert wie BETRAG direkt in EingegebenerWert. Ohne diesen Zweig
+                // fiele er unten in die "nicht gepflegt = 0"-Klammer.
                 wert = eingegeben;
             }
             else
@@ -278,10 +283,20 @@ namespace WindowsFormsApplication1
                 double m = menge.Value, s = satz.Value;
 
                 if (string.Equals(bemessung, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal) ||
-                    string.Equals(bemessung, DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN, StringComparison.Ordinal))
+                    string.Equals(bemessung, DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN, StringComparison.Ordinal) ||
+                    string.Equals(bemessung, DbWerte.BEMESSUNG_PROZENT_ERZEUGERKOSTEN, StringComparison.Ordinal) ||
+                    string.Equals(bemessung, DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN, StringComparison.Ordinal))
                     wert = m * s / 100.0;
                 else if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_H, StringComparison.Ordinal) ||
-                         string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH, StringComparison.Ordinal))
+                         string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH, StringComparison.Ordinal) ||
+                         string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH, StringComparison.Ordinal) ||
+                         string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal) ||
+                         string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, StringComparison.Ordinal) ||
+                         string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG, StringComparison.Ordinal) ||
+                         string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, StringComparison.Ordinal) ||
+                         string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWP, StringComparison.Ordinal) ||
+                         string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET, StringComparison.Ordinal) ||
+                         string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_M2_KOLLEKTOR, StringComparison.Ordinal))
                     wert = m * s;
                 else
                     wert = eingegeben;      // unbekannter Wert: wie BETRAG, nie stillschweigend 0
@@ -306,6 +321,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static string SatzEinheit(string bemessung)
         {
+            // Die KD-Bemessungen (Etappe KD1+) tragen ihre Einheit im BemessungKatalog —
+            // EINE Wahrheit für Alt-Dialog und Komponenten-Kostendialog.
+            BemessungKatalog.Info kd = BemessungKatalog.Finde(bemessung);
+            if (kd != null &&
+                !string.Equals(bemessung, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal))
+                return kd.Einheit;
+
             if (string.Equals(bemessung, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal) ||
                 string.Equals(bemessung, DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN, StringComparison.Ordinal))
                 return "%";
