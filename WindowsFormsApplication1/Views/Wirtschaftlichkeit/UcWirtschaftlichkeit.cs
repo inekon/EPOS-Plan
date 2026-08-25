@@ -110,6 +110,55 @@ namespace WindowsFormsApplication1
             InitializeComponent();
             TexteSetzen();
             SzenarienFuellen();
+            BauePhotovoltaikKnopf();
+        }
+
+        // ================================================================= P5
+
+        /// <summary>Andockpunkt des PV-Vergütungsdialogs (PV-Konzept § 7).</summary>
+        private Button btnPhotovoltaik;
+
+        /// <summary>
+        /// ETAPPE P5: Knopf „Photovoltaik…" links neben „Tarifstruktur…" —
+        /// PROGRAMMATISCH, damit die Designer-Datei unberührt bleibt (dasselbe
+        /// Muster wie die übrigen Bestands-Zusätze). Sichtbar nur, wenn die
+        /// Vergleichsgruppe PV-Anlagen führt (<c>ErzeugerDerGruppe</c>).
+        /// </summary>
+        private void BauePhotovoltaikKnopf()
+        {
+            btnPhotovoltaik = new Button
+            {
+                Size = btnTarif.Size,
+                Anchor = btnTarif.Anchor,
+                Location = new System.Drawing.Point(btnTarif.Left - btnTarif.Width - 6, btnTarif.Top),
+                UseVisualStyleBackColor = true,
+                Text = "Photovoltaik…"
+            };
+            try
+            {
+                string t = MyResource.Resource.ResourceManager.GetString("PVW_KNOPF");
+                if (!string.IsNullOrEmpty(t)) btnPhotovoltaik.Text = t;
+            }
+            catch { }
+            try
+            {
+                btnPhotovoltaik.Visible = new WirtschaftlichkeitCtrl()
+                    .ErzeugerDerGruppe(_idStamm).Photovoltaik;
+            }
+            catch { }
+            btnPhotovoltaik.Click += btnPhotovoltaik_Click;
+            Controls.Add(btnPhotovoltaik);
+        }
+
+        private void btnPhotovoltaik_Click(object sender, EventArgs e)
+        {
+            using (var dlg = new Form_PhotovoltaikVerguetung())
+            {
+                dlg.SetControls(_idStamm);
+                dlg.ShowDialog(Besitzer);
+                if (dlg.Gespeichert)
+                    Melde("PV-Vergütung gespeichert — bitte neu berechnen.");
+            }
         }
 
         /// <summary>Titelzeile für den Dialog-Wrapper bzw. die Seitenüberschrift.</summary>
@@ -539,6 +588,7 @@ namespace WindowsFormsApplication1
             lvVarianten.Enabled = !busy;
             cbSzenario.Enabled = !busy;
             btnTarif.Enabled = !busy;
+            if (btnPhotovoltaik != null) btnPhotovoltaik.Enabled = !busy;
             btnParameter.Enabled = !busy;
             btnVerlauf.Enabled = !busy;
             btnBerechnen.Enabled = !busy;
