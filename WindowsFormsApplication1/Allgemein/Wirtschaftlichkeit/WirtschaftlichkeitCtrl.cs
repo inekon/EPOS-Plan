@@ -1349,6 +1349,10 @@ namespace WindowsFormsApplication1
             public double ErloesKwk;
             /// <summary>Nachweis je BHKW-Modul der KWKG-Rechnung (E6 → E7).</summary>
             public List<KwkgModulNachweis> KwkgModule = new List<KwkgModulNachweis>();
+
+            /// <summary>ETAPPE P4: Ergebnis des PV-Vergütungsdialogs (null =
+            /// Dialog inaktiv — dann gilt exakt der Bestandsrechenweg).</summary>
+            public PvErloesErgebnis PvVerguetung;
             /// <summary>Betriebskostenpositionen mit Kostenart und Herleitung (E3 → E7).</summary>
             public List<KostenPositionNachweis> Betriebskosten = new List<KostenPositionNachweis>();
         }
@@ -1448,6 +1452,15 @@ namespace WindowsFormsApplication1
                     e.Hinweis = "Tarifstruktur aktiv, aber Flat-Energiekosten unvollständig — " +
                                 "Tarifersatz nicht möglich.";
             }
+
+            // ---------------- PV-Vergütung (PV-Konzept, ETAPPE P4) ----------------
+            // Ist der Vergütungsdialog AKTIV, ersetzt seine jahresscharfe Reihe
+            // (ErloesReihe.PV_VERGUETUNG) die PV-Bewertung des gerade aktiven Pfades
+            // (Flat/Rollen/Tarif) — EINE Vergütungswahrheit (Befund V4, F7). Der Platz
+            // NACH allen drei Pfaden ist Absicht: Jeder von ihnen führt e.ErloesPv,
+            // also wird genau dieser Anteil aus dem konstanten Erlös herausgelöst.
+            // Inaktiv (Aktiv = false) ändert sich NICHTS — Abnahmekriterium P4.
+            RechnePvVerguetung(v, p, e);
 
             // BEHG (W2): nur Brennstoff-CO₂ ist abgabepflichtig; ohne vollständige
             // Faktoren (CO2Brennstoff = null) bleibt die Abgabe 0 und ist im
@@ -1639,6 +1652,83 @@ namespace WindowsFormsApplication1
         /// der Kapitalwert eine Entlastung ohne die zugehörige Belastung — genau darauf
         /// weist der Hinweis dann hin.</para>
         /// </summary>
+        /// <summary>
+        /// ETAPPE P4 (PV-Konzept § 4.4/§ 4.6): rechnet bei AKTIVEM Vergütungsdialog
+        /// die jahresscharfe PV-Erlösreihe und ersetzt damit den PV-Anteil des
+        /// konstanten Einspeiseerlöses. Stufe 2 (gemessener § 51-Ausfall, Spoterlös,
+        /// Kappung) greift von selbst, wenn Stundenreihen des Laufs und eine
+        /// Spot-Preisreihe des Projekts vorliegen — sonst rechnet Stufe 1 mit der
+        /// Ausfall-Pauschale. Fehler kippen den Lauf nicht (Hinweis statt Absturz).
+        /// </summary>
+        private void RechnePvVerguetung(VariantenDaten v, WirtschaftlichkeitParameter p,
+                                        ProjektEingabe e)
+        {
+            try
+            {
+                ProjektPhotovoltaikCtrl pvc = new ProjektPhotovoltaikCtrl();
+                ProjektPhotovoltaikModel pv = pvc.Lies(v.IdProjekt);
+                if (pv == null || !pv.Aktiv) return;
+
+                double kwp = PhotovoltaikCtrl.KwpDesProjekts(v.IdProjekt);
+                double einspMWh = v.Ergebnis != null && v.Ergebnis.Photovoltaik != null
+                    ? v.Ergebnis.Photovoltaik.Ueberschuss : 0;   // nach V2 (P1)
+
+                double[] einspStunden = null;
+                if (v.Zeitreihen != null)
+                {
+                    double[] reihe = v.Zeitreihen.Hole(ZeitreihenSatz.PV_UEBERSCHUSS);
+                    if (reihe != null && reihe.Length >= 8760) einspStunden = reihe;
+                }
+
+                // Spot-Preisreihe des Projekts — dieselbe Stichtagsregel wie die
+                // Speicherwelt (eine Preiswahrheit je Projekt, F10).
+                double[] spot = null;
+                try
+                {
+                    PreisreiheCtrl prc = new PreisreiheCtrl();
+                    PreisreiheModel kopf = prc.ReadZumJahr(v.IdProjekt, pv.Inbetriebnahme.Year);
+                    if (kopf != null)
+                    {
+                        double[] werte = prc.ReadWerte(kopf.ID);
+                        if (werte != null && werte.Length >= 8760)
+                            spot = werte.Length >= 8760 * 4
+                                ? ViertelstundenZuStundenMittel(werte)
+                                : werte;
+                    }
+                }
+                catch { }
+
+                GesetzKatalog katalog = new GesetzKatalog();
+                PvErloesErgebnis pe = PvErloesRechner.Rechne(pv, kwp, einspMWh,
+                    einspStunden, spot, p.Betrachtungszeitraum, katalog.Wert,
+                    jahr => pvc.Jahresmarktwert(jahr, pv), BerichtTexte.Kultur);
+
+                // Der bisherige PV-Anteil (des jeweils aktiven Pfades) verlässt den
+                // konstanten Erlös; die Dialog-Reihe übernimmt.
+                e.Erloes -= e.ErloesPv;
+                e.ErloesPv = pe.JeJahr != null && pe.JeJahr.Length > 1 ? pe.JeJahr[1] : 0;
+                e.ErloesReihen.Add(new KapitalwertRechner.ErloesReihe(
+                    KapitalwertRechner.ErloesReihe.PV_VERGUETUNG, pe.JeJahr));
+                e.PvVerguetung = pe;
+                e.Hinweis = Anhaengen(e.Hinweis, "PV-Vergütungsdialog aktiv: " + pe.Herleitung);
+            }
+            catch (Exception ex)
+            {
+                e.Hinweis = Anhaengen(e.Hinweis,
+                    "PV-Vergütung nicht gerechnet: " + ex.Message);
+            }
+        }
+
+        /// <summary>Viertelstundenpreise [ct/kWh] → Stundenmittel (8.760 Werte).</summary>
+        private static double[] ViertelstundenZuStundenMittel(double[] viertel)
+        {
+            double[] stunden = new double[8760];
+            for (int h = 0; h < 8760 && h * 4 + 3 < viertel.Length; h++)
+                stunden[h] = (viertel[h * 4] + viertel[h * 4 + 1] +
+                              viertel[h * 4 + 2] + viertel[h * 4 + 3]) / 4.0;
+            return stunden;
+        }
+
         private void RechneAufschlaege(VariantenDaten v, WirtschaftlichkeitParameter p,
                                        ProjektEingabe e)
         {
