@@ -975,6 +975,30 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_PREISREIHE, SPALTE_PR_ID_ENERGIETRAEGER, "LONG"),
         };
 
+        /// <summary>PV-Vergütungsangaben je Stammprojekt (PV-Konzept § 6.1, Etappe P3;
+        /// Muster Tab_ProjektTarif: Aktiv-Schalter, eine Zeile je Projekt).</summary>
+        public const string TAB_PROJEKTPHOTOVOLTAIK = "Tab_ProjektPhotovoltaik";
+
+        /// <summary>
+        /// CREATE der PV-Vergütungstabelle (Schritt 41). Alle Fachspalten nullable —
+        /// NULL heißt durchgängig „nicht gepflegt / Rückfall", nie 0; Vorbelegungen
+        /// (DvEntgelt 0,40 — N5; Ausfallanteil 20 % — F5) setzt der Controller beim
+        /// Anlegen, bewusst KEIN DDL-DEFAULT (Hausregel).
+        /// </summary>
+        public const string SQL_CREATE_PROJEKTPHOTOVOLTAIK =
+            "CREATE TABLE Tab_ProjektPhotovoltaik (ID LONG NOT NULL PRIMARY KEY, " +
+            "ID_Projekt LONG, Aktiv YESNO, Vermarktungsform TEXT(30), " +
+            "Einspeiseart TEXT(20), Inbetriebnahme DATETIME, KwpOverride DOUBLE, " +
+            "AwOverride DOUBLE, DvEntgelt DOUBLE, PpaPreis DOUBLE, " +
+            "PpaSpotAufschlag DOUBLE, Par51_Anwenden TEXT(20), IMSys_Einbaujahr LONG, " +
+            "AusfallanteilProzent DOUBLE, Par51a_Kompensieren YESNO, " +
+            "Kappung60_Anwenden TEXT(20), MarktwertJahresmittel DOUBLE, " +
+            "MarktwertEntwicklung DOUBLE, BezugAusPreisreihe YESNO, GeaendertAm DATETIME)";
+
+        /// <summary>Eine Zeile je Stammprojekt — der eindeutige Suchweg.</summary>
+        public const string SQL_INDEX_PROJEKTPHOTOVOLTAIK =
+            "CREATE UNIQUE INDEX idx_ProjektPhotovoltaik ON Tab_ProjektPhotovoltaik (ID_Projekt)";
+
         /// <summary>Eine Position einer Auslieferungsvorlage (Schritt 39).</summary>
         public sealed class VorlagenPositionSeed
         {
