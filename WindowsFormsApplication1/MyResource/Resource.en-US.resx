@@ -7546,4 +7546,76 @@ Please run the EPOS-Plan setup again or install the Microsoft Access Database En
   <data name="PVW_WARN_STROMSTEUER" xml:space="preserve">
     <value>above 2 MW: check electricity tax on self-consumption.</value>
   </data>
+  <data name="KDLG_ERTRAG_BTN_GESETZE" xml:space="preserve">
+    <value>Statutory parameters…</value>
+  </data>
+  <data name="KDLG_ERTRAG_DAUER" xml:space="preserve">
+    <value>New plants: {0} full-load hours funding quota. Annual caps [FLh/a]: {1}(quota override per plant in the economics module).</value>
+  </data>
+  <data name="KDLG_ERTRAG_EIGEN" xml:space="preserve">
+    <value>Self-consumed CHP electricity (sec. 7 (2), only within the cases of sec. 6 (3) — e.g. plant ≤ 100 kW): up to 50 kW {0} · 50–100 kW {1} ct/kWh. Case and plant type are maintained PER PLANT in the economics module (CHP modules) — no duplicate maintenance here.</value>
+  </data>
+  <data name="KDLG_ERTRAG_EINSP_TITEL" xml:space="preserve">
+    <value>Fed-in CHP electricity (tranches):</value>
+  </data>
+  <data name="KDLG_ERTRAG_FK7" xml:space="preserve">
+    <value>FK7: The ELECTRICITY-PRICE part of the CHP feed-in remuneration stays in the project's tariff structure (Einsp_* is purely CHP) — this tab displays the statutory CHP/tax figures; calculation is done exclusively by the KwkgSatzRechner and the tax credit calculators of the economics module. Project-related switches (case, plant type, sec. 9 lump-sum mode, quota override) are maintained there per plant.</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_DAUER" xml:space="preserve">
+    <value>Funding duration and annual caps</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_KWKG" xml:space="preserve">
+    <value>CHP surcharge (sec. 7 KWKG 2025) — display from the statutory catalogue</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_PV" xml:space="preserve">
+    <value>PV remuneration (EEG) — one remuneration truth (V4/F7)</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_STEUERN" xml:space="preserve">
+    <value>Tax privileges (HF6, rates from the statutory catalogue)</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_VERWEISE" xml:space="preserve">
+    <value>Maintenance places (one truth per figure)</value>
+  </data>
+  <data name="KDLG_ERTRAG_LEER" xml:space="preserve">
+    <value>This component has no recurring revenue — grants/subsidies run as a subsidy position within the investment costs (FK5).</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV" xml:space="preserve">
+    <value>PV remuneration is maintained PER MASTER PROJECT in the remuneration dialog — the same form the “Photovoltaics…” button of the economics tab opens (one remuneration truth, finding V4). Applicable value, marketing form, sec. 51/51a and the 60 % limitation act on the NPV via the PV revenue series.</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV_OEFFNEN" xml:space="preserve">
+    <value>Open PV remuneration dialog…</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV_PROJEKT" xml:space="preserve">
+    <value>Master project:</value>
+  </data>
+  <data name="KDLG_ERTRAG_SONDERREGEL" xml:space="preserve">
+    <value>Special rule for new plants ≤ 50 kWel (sec. 7 (3a)): fed-in {0} · not fed-in {1} ct/kWh — takes precedence over paras 1 and 2.</value>
+  </data>
+  <data name="KDLG_ERTRAG_ST_53A" xml:space="preserve">
+    <value>Energy tax relief sec. 53a (5) EnergieStG: natural gas {0} €/MWh · fuel oil {1} €/1,000 l · LPG {2} €/1,000 kg (minimum efficiency {3} %).</value>
+  </data>
+  <data name="KDLG_ERTRAG_ST_9B" xml:space="preserve">
+    <value>Electricity tax relief sec. 9b StromStG: {0} €/MWh, base amount {1} €/a.</value>
+  </data>
+  <data name="KDLG_ERTRAG_ST_BEFREIUNG" xml:space="preserve">
+    <value>Electricity tax exemption sec. 9 (1) no. 3 StromStG: high-efficiency plants ≤ 2 MW in spatial context (4.5 km); CO₂ criterion from 2026.</value>
+  </data>
+  <data name="KDLG_ERTRAG_T100" xml:space="preserve">
+    <value>above 50 up to 100 kW</value>
+  </data>
+  <data name="KDLG_ERTRAG_T250" xml:space="preserve">
+    <value>above 100 up to 250 kW</value>
+  </data>
+  <data name="KDLG_ERTRAG_T2MW" xml:space="preserve">
+    <value>above 250 kW up to 2 MW</value>
+  </data>
+  <data name="KDLG_ERTRAG_T50" xml:space="preserve">
+    <value>up to 50 kW</value>
+  </data>
+  <data name="KDLG_ERTRAG_UE2MW" xml:space="preserve">
+    <value>above 2 MW (new/modernised)</value>
+  </data>
+  <data name="KDLG_ERTRAG_UE2MWN" xml:space="preserve">
+    <value>above 2 MW (retrofitted)</value>
+  </data>
 </root>
