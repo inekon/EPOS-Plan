@@ -188,7 +188,11 @@ namespace WindowsFormsApplication1
             colName.Text = "Projektname";
             colSim.Text = "Simulation";
             lblSzenario.Text = "Szenario:";
-            btnTarif.Text = "Tarifstruktur…";
+            // Ä16: Tarifstruktur (und Strom-Leistungspreis) werden im
+            // Energieträgerdialog gepflegt — der Einstieg hier entfällt, der
+            // PV-Knopf rückt auf seinen Platz.
+            btnTarif.Visible = false;
+            btnPhotovoltaik.Location = btnTarif.Location;
             btnParameter.Text = "Parameter…";
             btnVerlauf.Text = "Verlauf…";
             btnBerechnen.Text = "Berechnen";
