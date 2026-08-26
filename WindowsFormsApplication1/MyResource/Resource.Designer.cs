@@ -4732,6 +4732,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschläge in der Wirtschaftlichkeit berücksichtigen ähnelt.
+        /// </summary>
+        public static string KDLG_AUFSCHLAG_ANWENDEN {
+            get {
+                return ResourceManager.GetString("KDLG_AUFSCHLAG_ANWENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Alle Beträge und alle Bezugsgrößen sind NETTO. Der Umsatzsteuersatz kommt aus dem Katalog „gesetzliche Parameter“. Eine gepflegte Satzangabe hat Vorrang — das Absolutfeld wird dann gesperrt, aber nicht geleert. ähnelt.
         /// </summary>
         public static string KDLG_BANNER {
@@ -4818,6 +4827,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_BTN_UEBERNAHME_PROJEKT {
             get {
                 return ResourceManager.GetString("KDLG_BTN_UEBERNAHME_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugspreis inkl. Aufschläge: {0:N2} ct/kWh  (Arbeitspreis {1:N2} + Aufschlag {2:N2}) ähnelt.
+        /// </summary>
+        public static string KDLG_EFFEKTIVPREIS {
+            get {
+                return ResourceManager.GetString("KDLG_EFFEKTIVPREIS", resourceCulture);
             }
         }
         
@@ -5034,6 +5052,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_ERTRAG_UE2MWN {
             get {
                 return ResourceManager.GetString("KDLG_ERTRAG_UE2MWN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string KDLG_ET_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("KDLG_ET_ABBRECHEN", resourceCulture);
             }
         }
         
@@ -5430,6 +5457,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_LP_STROM_TARIF {
             get {
                 return ResourceManager.GetString("KDLG_LP_STROM_TARIF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tarifstruktur… ähnelt.
+        /// </summary>
+        public static string KDLG_LP_STROM_TARIF_BTN {
+            get {
+                return ResourceManager.GetString("KDLG_LP_STROM_TARIF_BTN", resourceCulture);
             }
         }
         
