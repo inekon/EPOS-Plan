@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -59,6 +60,10 @@ namespace WindowsFormsApplication1
             // entfernt - der Pufferspeicher wird jetzt über die Zuordnung in der
             // Simulation-Konfiguration gepflegt. Gespeicherte Werte bleiben erhalten.
             groupBox1.Visible = false;
+
+            // Ä19: Die Kostenzeile ersetzt die Modulkosten in JEDEM Zustand des
+            // Dialogs — auch vor SetControls (leerer Neuanlage-Fall).
+            KostenAnzeigeEinrichten();
         }
 
         public Wizard_WPItem(string wpname)
@@ -77,6 +82,10 @@ namespace WindowsFormsApplication1
 
             // Pufferspeicher-Bereich entfernt (siehe Kommentar im anderen Konstruktor)
             groupBox1.Visible = false;
+
+            // Ä19: Die Kostenzeile ersetzt die Modulkosten in JEDEM Zustand des
+            // Dialogs — auch vor SetControls (leerer Neuanlage-Fall).
+            KostenAnzeigeEinrichten();
         }
 
         /// <summary>
@@ -165,6 +174,7 @@ namespace WindowsFormsApplication1
                 textBox_Anteil.Text = item.Solaranteil.ToString();
                 textBox_Nutzungszeit.Text = item.Nutzungszeit.ToString();
                 textBox_PHeizstab.Text = item.Heizung.ToString();
+                KostenAnzeigeEinrichten();   // Ä19: Kosten statt Modulkosten
   
 
                 // WP spezifische Daten im Dialog mit anzeigen
@@ -320,6 +330,125 @@ namespace WindowsFormsApplication1
             }
             return;
         }
+        // ================================================================= Ä19
+
+        /// <summary>Ä19 (Nutzerauftrag 26.08.2026): Geräte-„Modulkosten“ sind
+        /// Kostendialog-Sache — die Zeile weicht den KOMPONENTENSUMMEN (Invest/Betrieb
+        /// der Wärmepumpe aus der Kostenverwaltung) und dem Einstieg „Kosten
+        /// bearbeiten…“ (Projektmodus, Komponente Wärmepumpe). Das Feld bleibt im
+        /// Designer (resx-Layout unangetastet) und wird nur verborgen; sein Wert
+        /// läuft im Speicherweg unverändert mit.</summary>
+        private Button btnKosten;
+        private Label lblKostenSummen;
+
+        private void KostenAnzeigeEinrichten()
+        {
+            if (btnKosten != null) { KostenSummenAnzeigen(); return; }
+
+            Control eltern = textBox_Modulkosten.Parent;
+            if (eltern == null) return;
+            int links = label32 != null ? 29 : textBox_Modulkosten.Left - 112;
+            int oben = textBox_Modulkosten.Top;
+
+            // ENTFERNEN statt Verbergen: Der Offscreen-Weg (DrawToBitmap) dieser
+            // Alt-Dialoge zeichnet per Visible=false versteckte Controls weiter
+            // (Befund Ä19). Das Textfeld wird nur ausgehängt — sein Wert läuft im
+            // Speicherweg unverändert mit. label32/label33 sind Beschriftung und
+            // €-Kästchen der Zeile (Namen aus dem Layout-Dump).
+            eltern.Controls.Remove(textBox_Modulkosten);
+            foreach (string name in new[] { "label32", "label33" })
+            {
+                Control[] c = this.Controls.Find(name, true);
+                if (c.Length > 0 &&
+                    ((c[0].Text ?? "").StartsWith("Modulkosten") || c[0].Text == "€"))
+                {
+                    c[0].Parent.Controls.Remove(c[0]);
+                    c[0].Dispose();
+                }
+            }
+
+            btnKosten = new Button
+            {
+                Text = TWpi("WPI_BTN_KOSTEN", "Kosten bearbeiten…"),
+                Location = new Point(links, oben - 2),
+                Size = new Size(150, 25),
+                UseVisualStyleBackColor = true
+            };
+            btnKosten.Click += new EventHandler(btnKosten_Click);
+            eltern.Controls.Add(btnKosten);
+            btnKosten.BringToFront();
+
+            lblKostenSummen = new Label
+            {
+                AutoSize = true,
+                ForeColor = Color.FromArgb(26, 50, 97),
+                Location = new Point(links + 158, oben + 2)
+            };
+            eltern.Controls.Add(lblKostenSummen);
+            lblKostenSummen.BringToFront();
+
+            KostenSummenAnzeigen();
+        }
+
+        /// <summary>Invest-/Betriebssumme der Komponente Wärmepumpe dieses Projekts.</summary>
+        private void KostenSummenAnzeigen()
+        {
+            if (lblKostenSummen == null) return;
+            if (btnKosten != null)
+                btnKosten.Enabled = item != null && item.ID_Projekt > 0;
+            try
+            {
+                double invest = KomponentenSumme(Form_Kosten.KATEGORIE_INVESTITION);
+                double betrieb = KomponentenSumme(Form_Kosten.KATEGORIE_BETRIEB);
+                lblKostenSummen.Text = string.Format(
+                    TWpi("WPI_KOSTEN_SUMMEN", "Invest {0:N0} € · Betrieb {1:N0} €/a"),
+                    invest, betrieb);
+            }
+            catch { lblKostenSummen.Text = ""; }
+        }
+
+        private double KomponentenSumme(int kategorie)
+        {
+            if (item == null || item.ID_Projekt <= 0) return 0;
+            System.Data.DataTable dt = Form_Kosten.LiesKomponentenSummen(item.ID_Projekt, kategorie);
+            if (dt == null) return 0;
+            foreach (System.Data.DataRow r in dt.Rows)
+                if (string.Equals(Convert.ToString(r["Komponente"]), DbWerte.ERZEUGER_WAERMEPUMPE,
+                                  StringComparison.Ordinal))
+                    return r["Summe"] != DBNull.Value ? Convert.ToDouble(r["Summe"]) : 0;
+            return 0;
+        }
+
+        private void btnKosten_Click(object sender, EventArgs e)
+        {
+            if (item == null || item.ID_Projekt <= 0) return;
+            string projektname = "";
+            try
+            {
+                var pc = new ProjektCtrl();
+                pc.ReadSingle(item.ID_Projekt);
+                if (pc.rows > 0) projektname = pc.m_szProjektname;
+            }
+            catch { }
+            using (var dlg = new Form_KostenKomponente())
+            {
+                dlg.SetProjekt(item.ID_Projekt, projektname, DbWerte.ERZEUGER_WAERMEPUMPE);
+                dlg.ShowDialog(this);
+            }
+            KostenSummenAnzeigen();
+        }
+
+        /// <summary>MyResource mit deutschem Rückfall (Drei-Schichten-Regel).</summary>
+        private static string TWpi(string schluessel, string rueckfall)
+        {
+            try
+            {
+                string s = MyResource.Resource.ResourceManager.GetString(schluessel);
+                return string.IsNullOrEmpty(s) ? rueckfall : s;
+            }
+            catch { return rueckfall; }
+        }
+
         private void btn_WP_Click(object sender, EventArgs e)
         {
             Form_WP frm = new Form_WP(listBox_WP.Text);

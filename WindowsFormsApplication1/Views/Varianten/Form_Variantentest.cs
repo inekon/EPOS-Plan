@@ -263,6 +263,9 @@ namespace WindowsFormsApplication1
                 string bezeichner = (txtBezeichner.Text ?? "").Trim();
                 txtBezeichner.Clear();
                 AktualisiereStammCombo(stamm.Id);   // Combo neu (neue Variante -> Stammstatus), Auswahl beibehalten
+                // Ä19: Auch die Varianten-Klappliste des Projektkopfs kennt die neue
+                // Variante sofort (bisher zog nur der Menüweg über Form_AlsVariante nach).
+                Program.startfrm?.VariantenAnzeigeAktualisieren();
                 Melde("Variante '" + bezeichner + "' angelegt.");
             }
             catch (Exception ex) { Melde("Fehler beim Anlegen: " + ex.Message); }

@@ -50,6 +50,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private readonly List<string> _ohnePosition = new List<string>();
 
+        /// <summary>Ä19: Komponenten mit Kostenpositionen, aber ohne verbaute Anlage.</summary>
+        private readonly List<string> _nichtVerbaut = new List<string>();
+
         /// <summary>
         /// Energieträger des Projekts mit Arbeitspreis 0 — gefüllt in
         /// <see cref="LadeTraeger"/>. Solange hier etwas steht, können die Energiekosten
@@ -175,6 +178,8 @@ namespace WindowsFormsApplication1
 
             BereiteGridVor(this.gridKomponenten);
             this.gridKomponenten.Margin = new Padding(0, 0, 8, 0);
+            // Ä19: Die Auswahl einer Anlage kennzeichnet ihren Energieträger rechts.
+            this.gridKomponenten.SelectionChanged += new EventHandler(this.gridKomponenten_SelectionChanged);
 
             this.lblTraeger.Dock = DockStyle.Fill;
             this.lblTraeger.Margin = new Padding(8, 0, 0, 0);
@@ -366,6 +371,13 @@ namespace WindowsFormsApplication1
                 status += "  ·  " + string.Format(MyResource.Resource.BK_KOSTEN_OHNE_POSITION,
                                                   string.Join(", ", _ohnePosition.ToArray()));
 
+            // Ä19: Kostenpositionen ohne verbaute Anlage (siehe LadeKomponenten).
+            if (_nichtVerbaut.Count > 0)
+                status += "  ·  " + string.Format(
+                    Text_("BK_KOSTEN_STATUS_NICHT_VERBAUT",
+                          "Kostenpositionen ohne verbaute Anlage: {0}"),
+                    string.Join(", ", _nichtVerbaut.ToArray()));
+
             // 0,00 €/a Energiekosten bei ungepflegtem Arbeitspreis: die Zahl ist rechnerisch
             // richtig und trotzdem wertlos, solange niemand sagt, warum sie null ist.
             if (energieNull && _traegerOhnePreis.Count > 0)
@@ -412,30 +424,40 @@ namespace WindowsFormsApplication1
         private void LadeKomponenten(System.Globalization.CultureInfo kultur)
         {
             _ohnePosition.Clear();
+            _nichtVerbaut.Clear();
 
-            gridKomponenten.Columns.Add("komponente", MyResource.Resource.BK_KOSTEN_SP_KOMPONENTE);
+            // Ä19 (Nutzerauftrag 26.08.2026): Die Liste zeigt ANLAGEN, nicht
+            // Komponentengruppen — zwei Wärmepumpen sind zwei Zeilen, und die
+            // Auswahl einer Zeile kennzeichnet rechts den Träger der Anlage.
+            // GEPFLEGT werden die Kosten weiterhin je KOMPONENTE (FK2): Die
+            // Summen stehen an der ERSTEN Anlage ihrer Komponente, Folgeanlagen
+            // zeigen „—“ mit Tooltip — so bleibt die Gesamtzeile die
+            // Projektsumme, ohne doppelt zu zählen.
+            gridKomponenten.Columns.Add("komponente", Text_("BK_KOSTEN_SP_ANLAGE", "Anlage / Komponente"));
             gridKomponenten.Columns.Add("summe", MyResource.Resource.BK_KOSTEN_SP_SUMME);
-            // ETAPPE KD6 (§ 10): Betriebskosten je Komponente — als dritte Spalte im
-            // selben Raster statt einer zweiten Tabelle (gleiche Information, gleiche
-            // Leselogik LiesKomponentenSummen, Kategorie 2; dokumentierte Abweichung
-            // vom Wortlaut „eigene Tabelle“).
+            // ETAPPE KD6 (§ 10): Betriebskosten als dritte Spalte im selben Raster.
             gridKomponenten.Columns.Add("betrieb", Text_("BK_KOSTEN_SP_BETRIEB", "Betrieb [€/a]"));
-            gridKomponenten.Columns[0].FillWeight = 120;
-            gridKomponenten.Columns[1].FillWeight = 70;
+            gridKomponenten.Columns[0].FillWeight = 140;
+            gridKomponenten.Columns[1].FillWeight = 60;
             gridKomponenten.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            gridKomponenten.Columns[2].FillWeight = 70;
+            gridKomponenten.Columns[2].FillWeight = 60;
             gridKomponenten.Columns[2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
             try
             {
-                DataTable dt = Form_Kosten.LiesKomponentenSummen(
-                    _idProjekt, Form_Kosten.KATEGORIE_INVESTITION);
-                if (dt == null) return;
-
-                // KD6 (§ 10): Betriebssummen je Komponente aus derselben Leselogik.
+                // Summen je Komponente — dieselbe Leselogik wie bisher (KD6 § 10).
+                var investJe = new Dictionary<string, double>(StringComparer.Ordinal);
                 var betriebJe = new Dictionary<string, double>(StringComparer.Ordinal);
                 try
                 {
+                    DataTable it = Form_Kosten.LiesKomponentenSummen(
+                        _idProjekt, Form_Kosten.KATEGORIE_INVESTITION);
+                    if (it != null)
+                        foreach (DataRow r2 in it.Rows)
+                        {
+                            double? w2 = D(r2, "Summe");
+                            if (w2.HasValue) investJe[S(r2, "Komponente")] = w2.Value;
+                        }
                     DataTable bt2 = Form_Kosten.LiesKomponentenSummen(
                         _idProjekt, Form_Kosten.KATEGORIE_BETRIEB);
                     if (bt2 != null)
@@ -447,36 +469,86 @@ namespace WindowsFormsApplication1
                 }
                 catch { }
 
-                double summe = 0, summeBetrieb = 0;
-                var erfasst = new HashSet<string>(StringComparer.Ordinal);
-                foreach (DataRow r in dt.Rows)
-                {
-                    string komponente = S(r, "Komponente");
-                    erfasst.Add(komponente);
-                    double? w = D(r, "Summe");
-                    summe += w ?? 0;
+                List<ProjektEnergietraegerCtrl.AnlagenEintrag> anlagen =
+                    ProjektEnergietraegerCtrl.AnlagenMitTraeger(_idProjekt);
 
-                    double bWert;
-                    bool hatB = betriebJe.TryGetValue(komponente, out bWert);
+                double summe = 0, summeBetrieb = 0;
+                var ausgewiesen = new HashSet<string>(StringComparer.Ordinal);
+                foreach (ProjektEnergietraegerCtrl.AnlagenEintrag a in anlagen)
+                {
+                    bool erste = !ausgewiesen.Contains(a.Komponente);
+                    double invest, bWert;
+                    bool hatI = investJe.TryGetValue(a.Komponente, out invest);
+                    bool hatB = betriebJe.TryGetValue(a.Komponente, out bWert);
+
+                    string name = string.IsNullOrEmpty(a.Bezeichner)
+                        ? a.Komponente
+                        : a.Komponente + " — " + a.Bezeichner;
+
+                    int idx = gridKomponenten.Rows.Add(
+                        name,
+                        (erste && hatI) ? invest.ToString("N2", kultur) : "—",
+                        (erste && hatB) ? bWert.ToString("N2", kultur) : "—");
+                    gridKomponenten.Rows[idx].Tag = a;
+
+                    if (erste)
+                    {
+                        ausgewiesen.Add(a.Komponente);
+                        if (hatI) summe += invest;
+                        if (hatB) summeBetrieb += bWert;
+                        if (!hatI && !hatB)
+                        {
+                            // Verbaut ohne Kostenposition: FEHLENDE EINGABE, kein
+                            // Nullbetrag (Nutzerentscheidung 4 vom 18.08.2026).
+                            gridKomponenten.Rows[idx].DefaultCellStyle.BackColor =
+                                Color.FromArgb(0xFF, 0xE6, 0xE6);
+                            string hinweis = string.Format(
+                                MyResource.Resource.BK_KOSTEN_OHNE_POSITION_HINT, a.Komponente);
+                            foreach (DataGridViewCell c in gridKomponenten.Rows[idx].Cells)
+                                c.ToolTipText = hinweis;
+                            if (!_ohnePosition.Contains(a.Komponente))
+                                _ohnePosition.Add(a.Komponente);
+                        }
+                    }
+                    else
+                    {
+                        string hinweis = Text_("BK_KOSTEN_JE_KOMPONENTE",
+                            "Kosten werden je Komponente gepflegt — die Summe steht an der ersten Anlage der Komponente.");
+                        foreach (DataGridViewCell c in gridKomponenten.Rows[idx].Cells)
+                            c.ToolTipText = hinweis;
+                    }
+                }
+
+                // Ä19: Kostenpositionen OHNE verbaute Anlage (z. B. aus der
+                // Variantenkopie eines anderen Gewerks). Sie RECHNEN in Kachel und
+                // Wirtschaftlichkeit mit — sie zu verschweigen wäre eine stille
+                // Falschausweisung (Kachel ≠ Tabelle). Gelbe Warnzeile statt
+                // normaler Zeile; die Fußzeile nennt sie zusätzlich.
+                var reste = new List<string>();
+                foreach (string k in investJe.Keys) if (!ausgewiesen.Contains(k)) reste.Add(k);
+                foreach (string k in betriebJe.Keys)
+                    if (!ausgewiesen.Contains(k) && !reste.Contains(k)) reste.Add(k);
+                foreach (string k in reste)
+                {
+                    ausgewiesen.Add(k);
+                    double invest, bWert;
+                    bool hatI = investJe.TryGetValue(k, out invest);
+                    bool hatB = betriebJe.TryGetValue(k, out bWert);
+                    if (hatI) summe += invest;
                     if (hatB) summeBetrieb += bWert;
 
-                    gridKomponenten.Rows.Add(
-                        komponente,
-                        w.HasValue ? w.Value.ToString("N2", kultur) : "—",
+                    int idx = gridKomponenten.Rows.Add(
+                        string.Format(Text_("BK_KOSTEN_NICHT_VERBAUT", "{0} — nicht verbaut"), k),
+                        hatI ? invest.ToString("N2", kultur) : "—",
                         hatB ? bWert.ToString("N2", kultur) : "—");
+                    gridKomponenten.Rows[idx].DefaultCellStyle.BackColor =
+                        Color.FromArgb(0xFF, 0xF4, 0xCC);
+                    string hinweis = Text_("BK_KOSTEN_NICHT_VERBAUT_HINT",
+                        "Kostenpositionen ohne verbaute Anlage — sie rechnen in der Wirtschaftlichkeit mit; bitte prüfen oder in der Kostenverwaltung löschen.");
+                    foreach (DataGridViewCell c in gridKomponenten.Rows[idx].Cells)
+                        c.ToolTipText = hinweis;
+                    _nichtVerbaut.Add(k);
                 }
-
-                // Komponenten, die NUR Betriebskosten führen, fehlen in der
-                // Invest-Liste — sie bekommen eine eigene Zeile (— / Betrag).
-                foreach (KeyValuePair<string, double> kv in betriebJe)
-                {
-                    if (erfasst.Contains(kv.Key)) continue;
-                    erfasst.Add(kv.Key);
-                    summeBetrieb += kv.Value;
-                    gridKomponenten.Rows.Add(kv.Key, "—", kv.Value.ToString("N2", kultur));
-                }
-
-                ZeigeGewerkeOhnePosition(erfasst);
 
                 if (gridKomponenten.Rows.Count > 0)
                 {
@@ -491,60 +563,17 @@ namespace WindowsFormsApplication1
             catch { }
         }
 
-        /// <summary>
-        /// Hängt für jedes im Projekt VERBAUTE Gewerk OHNE Investitionsposition eine Zeile an.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// <b>Der Fall, den das sichtbar macht.</b> Die Tabelle entstand bisher allein aus
-        /// <c>Tab_ProjektWerte</c> (<see cref="Form_Kosten.LiesKomponentenSummen"/>). Ein
-        /// Gewerk, für das noch NIE eine Kostenposition erfasst wurde, kam darin nicht vor —
-        /// die Seite zeigte eine leere Liste, 0,00 € in der Kachel und „0 Investitionsposition(en)"
-        /// in der Fußzeile, ohne dass irgendwo stand, dass das Projekt überhaupt ein solches
-        /// Gewerk hat. Genau so trat der Befund beim Projekt „BHKW Test München" auf.
-        /// </para>
-        /// <para>
-        /// <b>Betrag „—", nicht 0,00 €.</b> Nichts erfasst heißt NICHT „kostet nichts". Die
-        /// Zeile geht deshalb auch nicht in die Summe ein — sie sagt aus, dass hier eine
-        /// EINGABE fehlt, und wird nie selbst gefüllt (Nutzerentscheidung 4 vom 18.08.2026).
-        /// </para>
-        /// <para>
-        /// <b>Verbaut, nicht lizenziert.</b> Maßgeblich ist
-        /// <see cref="TechnikPlanwertCtrl.Verbaut"/> über <c>Tab_Energieanlagen</c> DIESES
-        /// Projekts — nicht der Wizard-Status <c>Program.startfrm.status</c>, der das im
-        /// Startassistenten geladene Projekt beschreibt und hier ein fremdes sein kann.
-        /// </para>
-        /// </remarks>
-        private void ZeigeGewerkeOhnePosition(HashSet<string> erfasst)
+        /// <summary>Ä19: kennzeichnet rechts den Energieträger der gewählten Anlage.</summary>
+        private void gridKomponenten_SelectionChanged(object sender, EventArgs e)
         {
-            DataTable dt;
-            try
-            {
-                dt = DataRepository.GetDataTable(
-                    "SELECT Komponente FROM Tab_KostenKomponente ORDER BY ID");
-            }
-            catch { return; }
-            if (dt == null) return;
-
-            foreach (DataRow r in dt.Rows)
-            {
-                string komponente = S(r, "Komponente");
-                if (komponente.Length == 0 || erfasst.Contains(komponente)) continue;
-                if (!TechnikPlanwertCtrl.Verbaut(_idProjekt, komponente)) continue;
-
-                int idx = gridKomponenten.Rows.Add(komponente, "—");
-
-                gridKomponenten.Rows[idx].DefaultCellStyle.BackColor =
-                    Color.FromArgb(0xFF, 0xE6, 0xE6);
-
-                string hinweis = string.Format(
-                    MyResource.Resource.BK_KOSTEN_OHNE_POSITION_HINT, komponente);
-                gridKomponenten.Rows[idx].Cells[0].ToolTipText = hinweis;
-                gridKomponenten.Rows[idx].Cells[1].ToolTipText = hinweis;
-
-                _ohnePosition.Add(komponente);
-            }
+            if (gridKomponenten.CurrentRow == null) return;
+            var a = gridKomponenten.CurrentRow.Tag as ProjektEnergietraegerCtrl.AnlagenEintrag;
+            gridTraeger.ClearSelection();
+            if (a == null || a.CarrierId <= 0) return;
+            foreach (DataGridViewRow r in gridTraeger.Rows)
+                if (r.Tag is int && (int)r.Tag == a.CarrierId) { r.Selected = true; break; }
         }
+
 
         /// <summary>
         /// Die im Projekt VERWENDETEN Energieträger mit Abrechnungseinheit, effektivem
@@ -721,6 +750,8 @@ namespace WindowsFormsApplication1
                             : (preis.Value / hi.Value).ToString("N4", kultur),
                         grund.HasValue ? grund.Value.ToString("N2", kultur) : "—",
                         LeistungspreisText(carrier, kultur));
+                    // Ä19: Schlüssel für die Anlagen-Auswahl (Träger kennzeichnen).
+                    gridTraeger.Rows[idx].Tag = carrier;
 
                     // Warum steht diese Zeile hier? Der Filter bleibt nur dann
                     // nachvollziehbar, wenn er seine Begründung mitliefert.
@@ -867,7 +898,13 @@ namespace WindowsFormsApplication1
             // Projektmodus — der alte Editor Form_Kosten ist kein Einstieg mehr.
             using (var dlg = new Form_KostenKomponente())
             {
-                dlg.SetProjekt(_idProjekt, _projektname);
+                // Ä19: vorgewählt wird die Komponente der GEWÄHLTEN Anlagenzeile —
+                // in einer Heizkessel-Variante öffnet der Dialog damit den Kessel,
+                // nicht mehr die erste Komponente der Katalogreihenfolge.
+                var aw = gridKomponenten.CurrentRow != null
+                    ? gridKomponenten.CurrentRow.Tag as ProjektEnergietraegerCtrl.AnlagenEintrag
+                    : null;
+                dlg.SetProjekt(_idProjekt, _projektname, aw != null ? aw.Komponente : null);
                 if (f != null) dlg.ShowDialog(f); else dlg.ShowDialog();
             }
             Aktualisiere();   // Kompaktwerte nach der Pflege auffrischen

@@ -323,3 +323,40 @@ neue Strom-Verhalten umgestellt); pv6 28/28; Sweep 115/0/5; Fehlerjagd
 Strom) auf frisch migrierter Produktivkopie (41→44); Sichtbelege
 ae18_tarif_bhkw/pv/strom.png und ae18_et_strom.png (FormDump um
 DUMP_SICHT/DUMP_TRAEGER erweitert).
+
+## Nachtrag Ä19 (26.08.2026) — Anlagenbezug und Kostenzugang der Anlagendialoge
+
+Nutzerauftrag (5 Screenshots): Variantenwechsel zeigte fremde Komponenten,
+die Kosten-Seite soll je ANLAGE listen und den Träger der gewählten Anlage
+kennzeichnen, der Kostendialog gehört in die Anlagendialoge (statt
+Modulkosten), und der Admin-Kontext braucht dieselbe Fußleiste.
+
+- Kosten-Seite: Überschrift „Anlagenkomponenten“; Zeile je Anlagenzeile
+  (`AnlagenMitTraeger`), Komponentensumme an der ersten Anlage (FK2 bleibt
+  Pflegeebene), gelbe Warnzeile für Positionen ohne verbaute Anlage
+  (Variantenkopie-Befund — Kachel und Tabelle bleiben deckungsgleich),
+  Träger-Kennzeichnung über Row-Tags, „Kostenverwaltung öffnen…“ mit der
+  Komponente der Auswahl.
+- Varianten-Anlegen aus Übersicht/Variantentest ruft jetzt
+  `Program.startfrm?.VariantenAnzeigeAktualisieren()` — die Klappliste des
+  Projektkopfs kennt die neue Variante sofort.
+- Wizard_WPItem: Modulkosten-Zeile AUSGEHÄNGT (nicht nur unsichtbar — der
+  Offscreen-Weg zeichnet Visible=false in den Alt-Dialogen weiter); Ersatz:
+  Summenzeile + „Kosten bearbeiten…“ (auch im leeren Zustand, Knopf dann
+  gesperrt), btn_WP heißt „Parameter Bearbeiten…“ (beide resx).
+  Form_WP ohne Modulkosten-Zeile; Speicherwege unverändert (Feldwert
+  läuft mit).
+- Form_KostenKomponente: Fußleiste OK/Speichern/Abbrechen in BEIDEN
+  Kontexten; `ZeileBauen` setzt `NurExplizitSpeichern` zentral — die
+  Ä12-Semantik gilt damit auch im Adminkontext (kd2 blieb grün, die Suite
+  testet die Controller-Schreibwege).
+
+Offen als Folgerunde: analoge Umstellung PV/Stromspeicher/Solar
+(BHKW/Kessel tragen die §-9-Leiste seit KD6), echte Instanzkosten je
+Anlage (Datenmodell), Bereinigungsangebot für kopierte Positionen beim
+Varianten-Anlegen.
+
+Nachweise: kd6 72/72 (V1–V5), kd2/kd4/pv6 grün, Sweep 115/0/5,
+Fehlerjagd 0 Befunde (frische Produktivkopie); FormDump kann jetzt auch
+UserControls (Trägerform + SetzeProjekt via DUMP_PROJEKT); Sichtbelege
+ae19_anlagenliste/wp_detail/wp_datenbank/admin_fuss.png.

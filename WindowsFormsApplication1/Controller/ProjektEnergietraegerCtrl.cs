@@ -213,6 +213,82 @@ namespace WindowsFormsApplication1
         /// <summary>Klartext für den Heizstab einer Anlagenzeile (kein Gewerk der Kostenlandkarte).</summary>
         private const string HEIZSTAB = "Heizstab";
 
+        // ================================================================= Ä19
+
+        /// <summary>
+        /// Ä19: EINE Zeile je Anlagenzeile des Projekts — für die Anlagenliste der
+        /// Kosten-Seite (zwei Wärmepumpen = zwei Einträge). Der Träger ist der, den
+        /// die Anlage beiträgt (dieselben Auflösungsstufen wie <see cref="Verwendete"/>:
+        /// Brenner über Anlagenverweis vor Geräte-Brennstoff, elektrische Gewerke über
+        /// den Stromträger des Projekts); 0 = keiner (Solarthermie/Puffer beziehen
+        /// keine Energie).
+        /// </summary>
+        internal sealed class AnlagenEintrag
+        {
+            /// <summary><c>Tab_Energieanlagen.ID</c>.</summary>
+            public int AnlageId;
+            public string Bezeichner = "";
+            /// <summary>Kostenkomponente (DbWerte-Persistenzwert).</summary>
+            public string Komponente = "";
+            /// <summary><c>energy_carrier.id</c>; 0 = keiner.</summary>
+            public int CarrierId;
+        }
+
+        /// <summary>Die Anlagenzeilen des Projekts in Anlagereihenfolge — leere
+        /// Liste ist ein gültiges Ergebnis (Projekt ohne Anlagen).</summary>
+        internal static List<AnlagenEintrag> AnlagenMitTraeger(int projektID)
+        {
+            var ergebnis = new List<AnlagenEintrag>();
+            if (projektID <= 0) return ergebnis;
+
+            List<Traeger> katalog = Katalog();
+            HashSet<int> zugeordnet = Zugeordnete(projektID);
+            DataTable anlagen = Anlagen(projektID);
+            if (anlagen == null) return ergebnis;
+
+            Dictionary<int, int> bhkwBrennstoff = GeraeteBrennstoff(projektID, "ID_BHKW", "Tab_BHKW");
+            Dictionary<int, int> kesselBrennstoff = GeraeteBrennstoff(projektID, "ID_Kessel", "Tab_Heizkessel");
+            int stromTraeger = -1;
+
+            foreach (DataRow r in anlagen.Rows)
+            {
+                var e = new AnlagenEintrag
+                {
+                    AnlageId = Ganz(r, "ID"),
+                    Bezeichner = Text(r, "Bezeichner")
+                };
+                int idCarrier = Ganz(r, SchemaKatalog.SPALTE_ID_CARRIER);
+
+                int geraet = Ganz(r, "ID_BHKW");
+                if (geraet > 0)
+                {
+                    e.Komponente = DbWerte.ERZEUGER_BHKW;
+                    e.CarrierId = BrennerTraeger(katalog, zugeordnet, idCarrier, bhkwBrennstoff, geraet);
+                }
+                else if ((geraet = Ganz(r, "ID_Kessel")) > 0)
+                {
+                    e.Komponente = DbWerte.ERZEUGER_HEIZKESSEL;
+                    e.CarrierId = BrennerTraeger(katalog, zugeordnet, idCarrier, kesselBrennstoff, geraet);
+                }
+                else if (Ganz(r, "ID_WP") > 0) e.Komponente = DbWerte.ERZEUGER_WAERMEPUMPE;
+                else if (Ganz(r, "ID_PV") > 0) e.Komponente = DbWerte.ERZEUGER_PHOTOVOLTAIK;
+                else if (Ganz(r, "ID_SP") > 0) e.Komponente = DbWerte.ERZEUGER_STROMSPEICHER;
+                else if (Ganz(r, "ID_Solar") > 0) e.Komponente = DbWerte.ERZEUGER_SOLARTHERMIE;
+                else if (Ganz(r, "ID_PUFFER") > 0) e.Komponente = DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER;
+                else continue;   // leere Anlagenzeile — nichts anzuzeigen
+
+                bool elektrisch = Ganz(r, "ID_WP") > 0 || Ganz(r, "ID_PV") > 0 || Ganz(r, "ID_SP") > 0;
+                if (e.CarrierId <= 0 && (elektrisch || Ja(r, "Heizstab")))
+                {
+                    if (stromTraeger < 0) stromTraeger = StromTraeger(katalog, zugeordnet, projektID);
+                    if (stromTraeger > 0) e.CarrierId = stromTraeger;
+                }
+
+                ergebnis.Add(e);
+            }
+            return ergebnis;
+        }
+
         // ------------------------------------------------------------- Trägerauflösung
 
         /// <summary>
