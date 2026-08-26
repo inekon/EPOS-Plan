@@ -508,7 +508,11 @@ namespace WindowsFormsApplication1
                 ? (string)cmbKomponente.Items[cmbKomponente.SelectedIndex] : "";
             using (var dlg = new Form_VorlagenUebernahme())
             {
-                dlg.SetControls(KomponentenId, name, KategorieId, Variante);
+                // Ä11: Im Projektmodus steht das Ziel fest; die Quellvorlage
+                // (Standard oder Variante des Admin-Katalogs) wählt der Dialog.
+                dlg.SetControls(KomponentenId, name, KategorieId,
+                                ProjektModus ? null : Variante,
+                                ProjektModus ? _idProjekt : 0);
                 dlg.ShowDialog(this);
             }
             // Projektmodus: Übernommene Positionen sofort zeigen (§ 8-Fluss).

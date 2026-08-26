@@ -7314,7 +7314,7 @@ dauer [a]</value>
     <value>In Projekt übernehmen…</value>
   </data>
   <data name="KDLG_UEB_QUELLE_VORLAGE" xml:space="preserve">
-    <value>Aus der aktuellen Vorlage/Variante</value>
+    <value>Aus Vorlage/Variante:</value>
   </data>
   <data name="KDLG_UEB_VORSCHAU" xml:space="preserve">
     <value>Die Quelle enthält {0} Positionen. Das Zielprojekt führt für diese Komponente bereits {1} Positionen — vorhandene bleiben unberührt, nur fehlende werden angelegt. Die Herkunft wird je Position vermerkt.</value>
