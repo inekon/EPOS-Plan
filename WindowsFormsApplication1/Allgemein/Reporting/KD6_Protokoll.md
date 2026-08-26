@@ -255,3 +255,31 @@ wählen. Beim Aufruf aus dem Projektmodus steht das ZIELPROJEKT fest
 Nachweise: kd6-Smoke 53/53 (B10 Ziel fest/gesperrt, B11 Vorlagenliste
 gefüllt), kd3-Regression (Übernahme-Mechanik) grün, Layout-Sweep 120/0,
 Fehlerjagd auf frischer Produktiv-Kopie 0 Befunde.
+
+---
+
+## Nachtrag Ä12 (26.08.2026, Nutzerauftrag)
+
+Projektmodus der Kostenverwaltung — Editieren, Speichern, Abbrechen
+(Investitions- UND Betriebskosten):
+
+- **Zeilen-Editor (Stift) aktiv:** öffnet `Form_VorlagenPosition` mit der
+  Projektzeile; das OK des Editors schreibt sofort über den
+  Projekt-Schreibweg.
+- **Speichern-Knopf:** übernimmt alle Zeilenfelder und schreibt sie in
+  das AKTUELLE Projekt; die Fußsumme bestätigt mit Uhrzeit.
+- **Abbrechen OHNE Datenübernahme:** Dafür ist der Autosave des
+  Projektmodus abgeschaltet (`ucVorlagenZeile.NurExplizitSpeichern`) —
+  Feldänderungen leben bis „Speichern“ nur im Objekt; „Abbrechen“ (oder
+  das Schließen-X) verwirft sie. Bewusst sofort geschrieben bleiben
+  Anlegen („+ Position“/Neu-Zeile), Löschen (Papierkorb mit Rückfrage),
+  der Zeilen-Editor und ± (Worst/Best/Startjahr) — sie haben eigene
+  Bestätigungen. Auch der Komponenten-/Kategorienwechsel verwirft
+  ungespeicherte Feldänderungen (dokumentiertes Verhalten).
+  Der Stammkontext behält das Sofort-Speichern des Bestands; Speichern/
+  Abbrechen sind dort verborgen.
+
+Nachweise: kd6-Smoke 56/56 (B12 Stift sichtbar; B13 Feldänderung lässt
+die DB unberührt, erst `JetztSpeichern` schreibt — danach Urzustand
+wiederhergestellt; B14 Knöpfe nur im Projektmodus); kd2-Regression
+(Stamm-Sofortspeichern) grün; Layout-Sweep 120/0.
