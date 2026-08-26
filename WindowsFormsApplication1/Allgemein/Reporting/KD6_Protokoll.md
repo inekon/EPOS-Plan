@@ -427,3 +427,12 @@ Quelle anbieten, „Zuordnung funktioniert nicht“.
 Nachweise: kd6 85/85 (X1–X6), kd2/kd4/pv6 grün, Sweep 115/0/5,
 Fehlerjagd 0 Befunde (frische Produktivkopie 41→46); Beleg
 ae21_uebernahme_anlage.png.
+
+### Ä21-Nachfix „ID 67" (27.08.2026)
+
+Die WP-Detailansicht überschrieb beim Öffnen (programmatische Vorwahl in
+SetControls) die PROJEKT-Geräte-Id des Listeneintrags mit der
+Stammkatalog-Id — das zweite „Ändern.." der Verwaltung meldete dann
+„Datensatz (ID 67) nicht gefunden". Fix: stille Füllung
+(m_bStilleFuellung); nur echte Nutzerauswahl wechselt die Id, der
+Neu-Fluss bleibt unverändert. kd6-X7 sichert das Verhalten ab (86/86).
