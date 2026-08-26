@@ -712,6 +712,15 @@ namespace WindowsFormsApplication1
             comboBox4.SelectedValue = Konfiguration.m_Tool_4;
             comboBox5.SelectedValue = Konfiguration.m_Tool_5;
             comboBox6.SelectedValue = Konfiguration.m_Tool_6;
+
+            // Ä15 (Nutzerabnahme 26.08.2026): Im Projekt ANGELEGTE Anlagen
+            // erscheinen von selbst als gewählte Komponenten — auch ohne je
+            // gespeicherte Konfiguration. SelectedValue setzt die Combo, deren
+            // Bestands-Handler hakt die Checkbox und baut die Karten; eine
+            // gespeicherte Auswahl bleibt unangetastet, ergänzt wird nur
+            // Fehlendes (Wahrheit: TechnikPlanwertCtrl.Verbaut — dieselbe wie
+            // Kostendialoge und Berichte).
+            VerbauteAnlagenVorwaehlen();
             
             // Rückgabewert wird seit D1 nicht mehr gebraucht (er belieferte die
             // Vorbelegung der entfallenen Alt-Rubrik); _zuordnungen wird weiter gefüllt.
@@ -756,6 +765,41 @@ namespace WindowsFormsApplication1
         /// "Speichern" (Delete/Insert-Zyklus) würde die gerade erzeugte Zeile wieder
         /// wegschreiben.
         /// </summary>
+        /// <summary>Ä15: verbaute Wärmeerzeuger in freie Auswahlplätze heben;
+        /// PV und Stromspeicher auf ihre festen Plätze (Combo 5/6).</summary>
+        private void VerbauteAnlagenVorwaehlen()
+        {
+            try
+            {
+                var paare = new[]
+                {
+                    new { Cb = checkBox1, Combo = comboBox1 },
+                    new { Cb = checkBox2, Combo = comboBox2 },
+                    new { Cb = checkBox3, Combo = comboBox3 },
+                    new { Cb = checkBox4, Combo = comboBox4 }
+                };
+                foreach (string erzeuger in ErzeugerKatalog.WAERMEERZEUGER)
+                {
+                    if (!TechnikPlanwertCtrl.Verbaut(m_ID_Projekt, erzeuger)) continue;
+                    bool schon = false;
+                    foreach (var p in paare)
+                        if (GetDbValue(p.Combo) == erzeuger) schon = true;
+                    if (schon) continue;
+                    foreach (var p in paare)
+                        if (!p.Cb.Checked && string.IsNullOrEmpty(GetDbValue(p.Combo)))
+                        { p.Combo.SelectedValue = erzeuger; break; }
+                }
+
+                if (TechnikPlanwertCtrl.Verbaut(m_ID_Projekt, DbWerte.ERZEUGER_PHOTOVOLTAIK) &&
+                    GetDbValue(comboBox5) != DbWerte.ERZEUGER_PHOTOVOLTAIK)
+                    comboBox5.SelectedValue = DbWerte.ERZEUGER_PHOTOVOLTAIK;
+                if (TechnikPlanwertCtrl.Verbaut(m_ID_Projekt, DbWerte.ERZEUGER_STROMSPEICHER) &&
+                    GetDbValue(comboBox6) != DbWerte.ERZEUGER_STROMSPEICHER)
+                    comboBox6.SelectedValue = DbWerte.ERZEUGER_STROMSPEICHER;
+            }
+            catch { /* Vorwahl ist Komfort — sie darf das Öffnen nie verhindern */ }
+        }
+
         private Z_ProjektPufferSpCtrl ZuordnungenLaden()
         {
             Z_ProjektPufferSpCtrl ctrlpsp = new Z_ProjektPufferSpCtrl();
