@@ -1200,10 +1200,14 @@ namespace WindowsFormsApplication1
 
         public string GetTargetUnitByConversionId(int idumrechnung)
         {
+            // Befund 26.08.2026: Eine leere oder verwaiste Umrechnungs-ID (z. B.
+            // ein frisch aus dem Katalog übernommener Träger, ID_Umrechnung noch
+            // NULL) liefert KEINE Zeile — der Rückgabewert von Next() wurde nie
+            // ausgewertet und Read warf „No data exists for the row/column“.
+            // Ohne Zeile gilt schlicht: keine Zieleinheit.
             RecordSet rs = new RecordSet();
             rs.Open("select to_unit from energy_conversion where id=" + idumrechnung);
-            rs.Next();
-            string unit = (string)rs.Read("to_Unit");
+            string unit = rs.Next() ? (string)rs.Read("to_Unit") : null;
             rs.Close();
             return unit;
         }
