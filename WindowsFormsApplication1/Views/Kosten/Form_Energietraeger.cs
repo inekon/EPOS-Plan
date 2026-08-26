@@ -42,7 +42,11 @@ namespace WindowsFormsApplication1
             Text = T("KDLG_ET_TITEL", "Energieträgerverwaltung");
             lblKopfTitel.Text = Text;
             lblListeTitel.Text = T("KDLG_ET_LISTE", "Energieträger");
-            btnSchliessen.Text = T("KDLG_ET_SCHLIESSEN", "Schließen");
+            // Ä14: einheitliche Fußleiste — OK (speichern + verlassen),
+            // Speichern (bleibt offen), Abbrechen (keine Datenübernahme).
+            btnSchliessen.Text = T("KDLG_ET_ABBRECHEN", "Abbrechen");
+            btnOk.Text = T("KDLG_BTN_OK", "OK");
+            btnSpeichern.Text = T("KDLG_BTN_SPEICHERN", "Speichern");
         }
 
         /// <summary>Kontext setzen und Liste laden — vor <c>ShowDialog</c>.
@@ -141,14 +145,14 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Bestandsverhalten des Energie-Reiters: Das offene <see cref="ucFuelSettings"/>
-        /// wird beim Trägerwechsel und beim Schließen gespeichert (nur Projektkontext;
-        /// nur, wenn der Träger dem Projekt noch zugeordnet ist — sonst würde ein
-        /// gelöschter Träger wieder angelegt; Logik aus <c>Form_Kosten.OnFormClosing</c>).
+        /// Ä14: Die offene Trägerkarte wird NUR NOCH EXPLIZIT gespeichert (OK/
+        /// Speichern) — Abbrechen und Trägerwechsel übernehmen nichts (dieselbe
+        /// Semantik wie die Kostenverwaltung, Ä12). Im Projektkontext nur, wenn
+        /// der Träger dem Projekt noch zugeordnet ist; im Katalogkontext schreibt
+        /// <c>SaveProjectAndHistory</c> über seinen Katalogzweig.
         /// </summary>
         private void SpeichereOffenes()
         {
-            if (_projektId <= 0) return;
             try
             {
                 foreach (Control c in pnlInhalt.Controls)
@@ -156,26 +160,41 @@ namespace WindowsFormsApplication1
                     ucFuelSettings uc = c as ucFuelSettings;
                     if (uc == null) continue;
 
-                    int zugeordnet = Convert.ToInt32(DataRepository.ExecuteScalar(
-                        "SELECT COUNT(*) FROM energy_project_settings " +
-                        "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
-                        new System.Data.OleDb.OleDbParameter("@p", _projektId),
-                        new System.Data.OleDb.OleDbParameter("@c", uc.CarrierId)));
-                    if (zugeordnet > 0) uc.SaveProjectAndHistory();
+                    if (_projektId > 0)
+                    {
+                        int zugeordnet = Convert.ToInt32(DataRepository.ExecuteScalar(
+                            "SELECT COUNT(*) FROM energy_project_settings " +
+                            "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                            new System.Data.OleDb.OleDbParameter("@p", _projektId),
+                            new System.Data.OleDb.OleDbParameter("@c", uc.CarrierId)));
+                        if (zugeordnet == 0) continue;
+                    }
+                    uc.SaveProjectAndHistory();
                 }
             }
-            catch { /* Wechsel/Schließen nie am Speichern scheitern lassen */ }
+            catch { /* Speichern nie zum Absturz machen — Fehlerpfad meldet selbst */ }
         }
 
-        protected override void OnFormClosing(FormClosingEventArgs e)
+        /// <summary>Ä14: OK = speichern und verlassen.</summary>
+        private void btnOk_Click(object sender, EventArgs e)
         {
             SpeichereOffenes();
-            base.OnFormClosing(e);
+            DialogResult = DialogResult.OK;
+            Close();
+        }
+
+        /// <summary>Ä14: Speichern der angezeigten Trägerkarte, Dialog bleibt offen.</summary>
+        private void btnSpeichern_Click(object sender, EventArgs e)
+        {
+            SpeichereOffenes();
+            lblKontext.Text = lblKontext.Text.Split('—')[0].TrimEnd() + " — " +
+                string.Format(T("KDLG_GESPEICHERT", "gespeichert {0:HH:mm} Uhr"), DateTime.Now);
         }
 
         private void ZeigeTraeger(EnergyCarrier c)
         {
-            SpeichereOffenes();
+            // Ä14: Der Wechsel speichert NICHT mehr still — ungespeicherte
+            // Kartenänderungen verfallen (wie in der Kostenverwaltung, Ä12).
             pnlInhalt.SuspendLayout();
             pnlInhalt.Controls.Clear();
             _karteKostenprofil = null;
