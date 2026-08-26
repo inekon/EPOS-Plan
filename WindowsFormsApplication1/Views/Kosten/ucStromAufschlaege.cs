@@ -104,6 +104,20 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Der aktuelle Stand — nach <see cref="Uebernehmen"/> der gespeicherte.</summary>
+        /// <summary>Ä16: der aktuell wirksame Aufschlag [ct/kWh] (UI-Stand).</summary>
+        public double WirksamCtKwh
+        {
+            get
+            {
+                InsModell();
+                return StromAufschlagCtrl.AlsAufschlagssatz(_modell).WirksamCtKwh;
+            }
+        }
+
+        /// <summary>Ä16: der wirksame Aufschlag hat sich geändert (Modus, Wert,
+        /// Komponente) — für die Effektivpreis-Zeile des Trägerdialogs.</summary>
+        public event EventHandler WirksamGeaendert;
+
         public StromAufschlagModel Modell
         {
             get { return _modell; }
@@ -328,6 +342,8 @@ namespace WindowsFormsApplication1
             _lblRest.ForeColor = satz.NichtAufgeschluesselterRestCtKwh < 0.0
                 ? Color.Firebrick
                 : Color.FromArgb(100, 100, 100);
+
+            if (WirksamGeaendert != null) WirksamGeaendert(this, EventArgs.Empty);
         }
 
         private static double Zahl(TextBox feld, double vorgabe)
