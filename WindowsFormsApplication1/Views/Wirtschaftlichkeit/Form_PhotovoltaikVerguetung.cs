@@ -277,6 +277,16 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>P6 (Konzept 6.3): netztransparenz-CSV in die Marktwert-Stammreihen.</summary>
+        /// <summary>Ä18 (Nutzerauftrag 26.08.2026): Der PV-Anteil der Tarifstruktur
+        /// — die Einspeisepreise beider Modelle — liegt „unter PV-Wirtschaftlichkeit“
+        /// und öffnet hier in der Komponentensicht.</summary>
+        private void btnTarifPv_Click(object sender, EventArgs e)
+        {
+            if (_idStamm <= 0) return;
+            using (var f = new Form_Tarifstruktur(_idStamm, TarifSicht.Photovoltaik))
+                f.ShowDialog(this);
+        }
+
         private void btnMarktwerte_Click(object sender, EventArgs e)
         {
             using (var dlg = new OpenFileDialog
@@ -391,6 +401,7 @@ namespace WindowsFormsApplication1
             lblVorschauTitel.Text = T("PVW_G_VORSCHAU", "Vorschau");
             btnUebernehmen.Text = T("PVW_UEBERNEHMEN", "Übernehmen");
             btnAbbrechen.Text = T("PVW_ABBRECHEN", "Abbrechen");
+            btnTarifPv.Text = T("PVW_BTN_TARIF", "Einspeise-Tarif…");
         }
 
         /// <summary>MyResource mit deutschem Rückfall (Drei-Schichten-Regel).</summary>

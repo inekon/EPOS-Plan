@@ -7847,4 +7847,13 @@ dauer [a]</value>
   <data name="KDLG_EFFEKTIVPREIS" xml:space="preserve">
     <value>Bezugspreis inkl. Aufschläge: {0:N2} ct/kWh  (Arbeitspreis {1:N2} + Aufschlag {2:N2})</value>
   </data>
+  <data name="WIRT_BTN_BHKW_TARIF" xml:space="preserve">
+    <value>BHKW-Tarif…</value>
+  </data>
+  <data name="WIRT_BTN_STROM_TARIF" xml:space="preserve">
+    <value>Strombezug…</value>
+  </data>
+  <data name="PVW_BTN_TARIF" xml:space="preserve">
+    <value>Einspeise-Tarif…</value>
+  </data>
 </root>

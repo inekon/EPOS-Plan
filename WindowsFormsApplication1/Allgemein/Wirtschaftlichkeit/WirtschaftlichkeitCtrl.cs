@@ -917,6 +917,9 @@ namespace WindowsFormsApplication1
             public bool Bhkw;
             public bool Photovoltaik;
             public bool Heizkessel;
+            /// <summary>Ä18: Wärmepumpe in der Gruppe — Anker des
+            /// Strombezug-Tarifeinstiegs auf der Wirtschaftlichkeitsseite.</summary>
+            public bool Waermepumpe;
             /// <summary>Brennstoff-Erzeuger vorhanden (BHKW oder Kessel) — Emissionsbilanz sinnvoll.</summary>
             public bool Brennstoff { get { return Bhkw || Heizkessel; } }
         }
@@ -943,6 +946,7 @@ namespace WindowsFormsApplication1
             f.Bhkw = ErzeugerVorhanden("Tab_BHKW", ids);
             f.Photovoltaik = ErzeugerVorhanden("Tab_PV", ids);
             f.Heizkessel = ErzeugerVorhanden("Tab_Heizkessel", ids);
+            f.Waermepumpe = ErzeugerVorhanden("Tab_WP", ids);
             return f;
         }
 

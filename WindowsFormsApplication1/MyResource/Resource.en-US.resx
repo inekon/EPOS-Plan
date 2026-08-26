@@ -7841,4 +7841,13 @@ life [a]</value>
   <data name="KDLG_EFFEKTIVPREIS" xml:space="preserve">
     <value>Purchase price incl. surcharges: {0:N2} ct/kWh  (energy rate {1:N2} + surcharge {2:N2})</value>
   </data>
+  <data name="WIRT_BTN_BHKW_TARIF" xml:space="preserve">
+    <value>CHP tariff…</value>
+  </data>
+  <data name="WIRT_BTN_STROM_TARIF" xml:space="preserve">
+    <value>Grid supply…</value>
+  </data>
+  <data name="PVW_BTN_TARIF" xml:space="preserve">
+    <value>Feed-in tariff…</value>
+  </data>
 </root>

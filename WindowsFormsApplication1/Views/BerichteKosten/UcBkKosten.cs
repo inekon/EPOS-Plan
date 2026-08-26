@@ -769,8 +769,12 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// KD6 (§ 10): der effektive Leistungspreis eines Trägers als JAHRESWERT
         /// [€/(kW·a)] — custom_price_power vor price_power (0 = nicht gepflegt,
-        /// Befund-D5-Regel), Monatsmodus × 12; Strom liefert „—“ (Tarifwelt,
-        /// Schritt 21). Dieselbe Vorrangkette wie KostenEmissionRechner.LadeTraeger.
+        /// Befund-D5-Regel), Monatsmodus × 12. Dieselbe Vorrangkette wie
+        /// KostenEmissionRechner.LadeTraeger. Ä18: Der frühere Strom-Kurzschluss
+        /// („—", Tarifwelt) ist entfallen — der Stromträger pflegt seinen
+        /// Flat-Leistungspreis seit Migrationsschritt 44 wie jeder andere Träger,
+        /// und die Spalte zeigt ihn; die Tarifstruktur bleibt das Detailmodell
+        /// und ersetzt die Flat-Preise nur, wenn sie aktiv ist.
         /// </summary>
         private string LeistungspreisText(int carrierId, System.Globalization.CultureInfo kultur)
         {
@@ -781,10 +785,6 @@ namespace WindowsFormsApplication1
                     "FROM energy_carrier WHERE id = ?",
                     new OleDbParameter("@c", carrierId));
                 if (k == null || k.Rows.Count == 0) return "—";
-
-                if (string.Equals(S(k.Rows[0], "pricing_model"), "ELECTRICITY",
-                                  StringComparison.OrdinalIgnoreCase))
-                    return "—";   // Strom: Tarifstruktur, keine zweite Wahrheit
 
                 double? satz = null;
                 DataTable s = DataRepository.GetDataTable(
