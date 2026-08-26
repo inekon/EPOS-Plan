@@ -181,12 +181,49 @@ namespace WindowsFormsApplication1
         public static UebernahmeErgebnis AusProjekt(int zielProjektId, int quellProjektId,
                                                     int komponentenId, int kategorieId)
         {
+            return AusProjekt(zielProjektId, quellProjektId, komponentenId, kategorieId, -1, 0);
+        }
+
+        /// <summary>Ä21: Übernahme von einer QUELL-ANLAGE (auch desselben
+        /// Projekts — „weitere Wärmepumpe aus der vorhandenen befüllen“) in die
+        /// ZIEL-Anlage. quellAnlage: &gt;0 = nur diese Anlage, 0 = Positionen ohne
+        /// Zuordnung, -1 = alle (Bestandsverhalten).</summary>
+        public static UebernahmeErgebnis AusProjekt(int zielProjektId, int quellProjektId,
+                                                    int komponentenId, int kategorieId,
+                                                    int quellAnlage, int zielAnlage)
+        {
             var e = new UebernahmeErgebnis();
-            if (zielProjektId <= 0 || quellProjektId <= 0 || zielProjektId == quellProjektId)
+            bool anlagenVerschieden = quellAnlage > 0 && zielAnlage > 0 && quellAnlage != zielAnlage;
+            if (zielProjektId <= 0 || quellProjektId <= 0 ||
+                (zielProjektId == quellProjektId && !anlagenVerschieden))
             {
                 e.Fehler = true;
-                e.Meldungen.Add("Quelle und Ziel müssen verschiedene Projekte sein.");
+                e.Meldungen.Add("Quelle und Ziel müssen verschiedene Projekte oder " +
+                                "verschiedene Anlagen sein.");
                 return e;
+            }
+
+            bool spalteDa = false;
+            try { spalteDa = KostenPositionCtrl.StelleSpaltenSicher(); } catch { }
+
+            string quellFilter = "";
+            var quellParameter = new List<OleDbParameter>
+            {
+                new OleDbParameter("@p", quellProjektId),
+                new OleDbParameter("@c", komponentenId),
+                new OleDbParameter("@k", kategorieId)
+            };
+            if (spalteDa && quellAnlage > 0)
+            {
+                quellFilter = " AND ID_Anlage = ?";
+                quellParameter.Add(new OleDbParameter("@a", quellAnlage));
+            }
+            else if (spalteDa && quellAnlage == 0)
+            {
+                // Projekt-Id als LITERAL — ACE-Unterabfragen-Falle (Ä21-Befund).
+                quellFilter = " AND (ID_Anlage IS NULL OR ID_Anlage NOT IN " +
+                              "(SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = " +
+                              quellProjektId + "))";
             }
 
             DataTable dt = DataRepository.GetDataTable(
@@ -199,10 +236,9 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_PW_EINHEITPREIS + "], [" +
                 SchemaKatalog.SPALTE_PW_VORLAGEID + "], [" +
                 SchemaKatalog.SPALTE_PW_STARTJAHR + "] " +
-                "FROM Tab_ProjektWerte WHERE ProjektID = ? AND KomponentenID = ? AND KategorieID = ?",
-                new OleDbParameter("@p", quellProjektId),
-                new OleDbParameter("@c", komponentenId),
-                new OleDbParameter("@k", kategorieId));
+                "FROM Tab_ProjektWerte WHERE ProjektID = ? AND KomponentenID = ? AND KategorieID = ?" +
+                quellFilter,
+                quellParameter.ToArray());
 
             foreach (DataRow r in dt.Rows)
             {
@@ -210,8 +246,11 @@ namespace WindowsFormsApplication1
                 int stammId = Convert.ToInt32(r["StammID"]);
                 if (stammId <= 0) continue;
 
-                if (KostenPositionCtrl.FindePosition(zielProjektId, kategorieId,
-                        komponentenId, stammId) > 0)
+                if ((spalteDa && zielAnlage > 0)
+                    ? FindePositionAnlage(zielProjektId, kategorieId,
+                                          komponentenId, stammId, zielAnlage) > 0
+                    : KostenPositionCtrl.FindePosition(zielProjektId, kategorieId,
+                          komponentenId, stammId) > 0)
                 {
                     e.Uebersprungen++;
                     continue;
@@ -249,7 +288,25 @@ namespace WindowsFormsApplication1
                     Roh(r, SchemaKatalog.SPALTE_PW_VORLAGEID, OleDbType.Integer),
                     Roh(r, SchemaKatalog.SPALTE_PW_STARTJAHR, OleDbType.Integer));
 
-                if (n == 1) e.Angelegt++;
+                if (n == 1)
+                {
+                    e.Angelegt++;
+                    // Ä21: Der frisch kopierten Zeile die Ziel-Anlage samt
+                    // Geräteanker geben (MAX(ID) = eben eingefügte Zeile).
+                    if (spalteDa && zielAnlage > 0)
+                    {
+                        object neuId = DataRepository.ExecuteScalar(
+                            "SELECT MAX(ID) FROM Tab_ProjektWerte WHERE ProjektID = ? AND " +
+                            "KomponentenID = ? AND KategorieID = ? AND StammID = ?",
+                            new OleDbParameter("@p", zielProjektId),
+                            new OleDbParameter("@c", komponentenId),
+                            new OleDbParameter("@k", kategorieId),
+                            new OleDbParameter("@s", stammId));
+                        if (neuId != null && neuId != DBNull.Value)
+                            KostenProjektPositionenCtrl.AnlageZuordnen(
+                                Convert.ToInt32(neuId), zielAnlage);
+                    }
+                }
                 else
                 {
                     e.Fehler = true;
@@ -260,6 +317,40 @@ namespace WindowsFormsApplication1
             e.Meldungen.Add(e.Angelegt + " Positionen aus dem Quellprojekt kopiert, " +
                             e.Uebersprungen + " bereits vorhanden.");
             return e;
+        }
+
+        /// <summary>Ä21: Positionszahl je Anlage (idAnlage &gt; 0), ohne Zuordnung
+        /// (0) oder gesamt (-1) — Grundlage der anlagenbezogenen Vorschau.</summary>
+        public static int VorhandeneImProjekt(int projektId, int komponentenId,
+                                              int kategorieId, int idAnlage)
+        {
+            bool spalteDa = false;
+            try { spalteDa = KostenPositionCtrl.StelleSpaltenSicher(); } catch { }
+            if (!spalteDa || idAnlage < 0)
+                return VorhandeneImProjekt(projektId, komponentenId, kategorieId);
+
+            string filter; var ps = new List<OleDbParameter>
+            {
+                new OleDbParameter("@p", projektId),
+                new OleDbParameter("@c", komponentenId),
+                new OleDbParameter("@k", kategorieId)
+            };
+            if (idAnlage > 0)
+            {
+                filter = " AND ID_Anlage = ?";
+                ps.Add(new OleDbParameter("@a", idAnlage));
+            }
+            else
+            {
+                // Projekt-Id als LITERAL — ACE-Unterabfragen-Falle (Ä21-Befund).
+                filter = " AND (ID_Anlage IS NULL OR ID_Anlage NOT IN " +
+                         "(SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = " +
+                         projektId + "))";
+            }
+            object o = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ProjektID = ? AND " +
+                "KomponentenID = ? AND KategorieID = ?" + filter, ps.ToArray());
+            return (o == null || o == DBNull.Value) ? 0 : Convert.ToInt32(o);
         }
 
         // ----------------------------------------------------------------- intern ---

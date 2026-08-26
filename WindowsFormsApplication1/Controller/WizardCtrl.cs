@@ -43,6 +43,21 @@ namespace WindowsFormsApplication1
 
         public bool Del_Projekt_ID_Waermeerzeuger(int projektID, int ID_Waermeerzeuger)
         {
+            // Ä21: Das gezielte Entfernen EINER Anlage nimmt ihre Kostenpositionen
+            // mit (Nutzerauftrag 27.08.2026: eine nicht angelegte Anlage darf keine
+            // Kosten hinterlassen). NUR hier — die Typ-/Alle-Löschwege sind auch
+            // der destruktive Wizard-Neuaufbau; dort heilt die Zuordnung über den
+            // Geräteanker (KostenProjektPositionenCtrl.ZuordnungReparieren).
+            try
+            {
+                if (KostenPositionCtrl.StelleSpaltenSicher())
+                    DataRepository.ExecuteSQL(
+                        "DELETE FROM Tab_ProjektWerte WHERE ProjektID = ? AND ID_Anlage = ?",
+                        new OleDbParameter("@p", projektID),
+                        new OleDbParameter("@a", ID_Waermeerzeuger));
+            }
+            catch { }
+
             return DataRepository.ExecuteSQL("DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID = ?",
                 new OleDbParameter[] { new OleDbParameter("@pID", projektID), new OleDbParameter("@id", ID_Waermeerzeuger) });
         }

@@ -393,3 +393,37 @@ gelten.“ — die in Ä19 angekündigte Datenmodell-Etappe.
 Nachweise: kd6 79/79 (W0–W6), kd2/kd4/pv6 grün, Sweep 115/0/5,
 Fehlerjagd 0 Befunde auf frisch migrierter Produktivkopie (41→45);
 Sichtbelege ae20_kostenverwaltung_anlage.png, ae20_anlagensummen.png.
+
+## Nachtrag Ä21 (27.08.2026) — wizardfeste Anlagenkosten, Übernahme von Anlagen
+
+Nutzerbefunde: WP-Positionen in der Heizkessel-Variante („warum steht die
+dort? ändere“), Übernahme soll die BEREITS VORHANDENE Wärmepumpe als
+Quelle anbieten, „Zuordnung funktioniert nicht“.
+
+- URSACHENKETTE: Der Anlagen-Wizard löscht Anlagenzeilen und legt sie mit
+  neuen IDs an — eine reine ID-Zuordnung (Ä20) verwaist dabei. Deshalb
+  GERÄTEANKER `ID_AnlageGeraet` (Schritt 46) + `ZuordnungReparieren`
+  (Selbstheilung vor jedem UI-Aufbau; ohne wiedergefundenes Gerät wird die
+  Zuordnung ehrlich gelöst statt still falsch zu bleiben).
+- Einzel-Anlage-Löschen (`WizardCtrl.Del_Projekt_ID_Waermeerzeuger`)
+  nimmt die Positionen der Anlage mit; die Typ-/Alle-Löschwege bleiben
+  unberührt (das ist auch der Wizard-Neuaufbau — dort heilt der Anker).
+  BESTAND: Doppelklick auf die gelbe Zeile der Kosten-Seite löscht die
+  losen Positionen nach Rückfrage (Einzellöschung, keine Subquery).
+- Übernahme: „Aus Projekt/Anlage“ — Quell-Anlagen-Klappliste je
+  gewähltem Projekt (auch das EIGENE), `AusProjekt(…, quellAnlage,
+  zielAnlage)` mit zielanlagenbezogenem NurAnlegen-Check und Anker auf den
+  Kopien; Vorschau zählt je Ziel-Anlage (vorher komponentenweit — genau
+  das ließ die Übernahme „nicht funktionieren“: „führt bereits 7
+  Positionen“ bei leerer zweiter Anlage).
+- ACE-LEKTION (neu gemessen): Parameter + Unterabfrage binden in falscher
+  Reihenfolge — auch SELECT liefert still 0 Zeilen (Literal 1 /
+  Parameter 0). Alle Subquery-Stellen der Anlagenkosten nutzen
+  Int-Literale; Memory-Eintrag präzisiert.
+- Gemessen: `Tab_Energieanlagen` führt UNIQUE (ID_Projekt, ID_WP/…) je
+  Gewerk — die Duplikat-Meldung beim Zweitverbau desselben Geräts ist
+  Bestandsschutz (Gerätekopie nach Rückfrage ist der reguläre Weg).
+
+Nachweise: kd6 85/85 (X1–X6), kd2/kd4/pv6 grün, Sweep 115/0/5,
+Fehlerjagd 0 Befunde (frische Produktivkopie 41→46); Beleg
+ae21_uebernahme_anlage.png.

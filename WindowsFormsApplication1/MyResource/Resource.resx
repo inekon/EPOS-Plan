@@ -7317,7 +7317,7 @@ dauer [a]</value>
     <value>Aus Vorlage/Variante:</value>
   </data>
   <data name="KDLG_UEB_VORSCHAU" xml:space="preserve">
-    <value>Die Quelle enthält {0} Positionen. Das Zielprojekt führt für diese Komponente bereits {1} Positionen — vorhandene bleiben unberührt, nur fehlende werden angelegt. Die Herkunft wird je Position vermerkt.</value>
+    <value>Die Quelle enthält {0} Positionen. Das Ziel (diese Anlage) führt bereits {1} Positionen — vorhandene bleiben unberührt, nur fehlende werden angelegt. Die Herkunft wird je Position vermerkt.</value>
   </data>
   <data name="KDLG_ET_KATALOG_NUR_LESEN" xml:space="preserve">
     <value>Katalogpreise sind hier noch nicht pflegbar (folgt mit den Trägervarianten).</value>
@@ -7863,10 +7863,10 @@ dauer [a]</value>
     <value>Kosten werden je Komponente gepflegt — die Summe steht an der ersten Anlage der Komponente.</value>
   </data>
   <data name="BK_KOSTEN_NICHT_VERBAUT" xml:space="preserve">
-    <value>{0} — nicht verbaut</value>
+    <value>{0} — ohne Anlagenzuordnung</value>
   </data>
   <data name="BK_KOSTEN_NICHT_VERBAUT_HINT" xml:space="preserve">
-    <value>Kostenpositionen ohne verbaute Anlage — sie rechnen in der Wirtschaftlichkeit mit; bitte prüfen oder in der Kostenverwaltung löschen.</value>
+    <value>Kostenpositionen ohne (gültige) Anlagenzuordnung — sie rechnen in der Wirtschaftlichkeit mit. Doppelklick löscht sie nach Rückfrage; bearbeiten: Kostenverwaltung, Eintrag „(ohne Anlagenzuordnung)“.</value>
   </data>
   <data name="BK_KOSTEN_STATUS_NICHT_VERBAUT" xml:space="preserve">
     <value>Kostenpositionen ohne verbaute Anlage: {0}</value>
@@ -7876,5 +7876,22 @@ dauer [a]</value>
   </data>
   <data name="WPI_KOSTEN_SUMMEN" xml:space="preserve">
     <value>Invest {0:N0} € · Betrieb {1:N0} €/a</value>
+  </data>
+  <data name="KDLG_UEB_QUELLE_PROJEKT" xml:space="preserve">
+    <value>Aus Projekt/Anlage:</value>
+  </data>
+  <data name="KDLG_UEB_QUELLE_LOSE" xml:space="preserve">
+    <value>(ohne Anlagenzuordnung)</value>
+  </data>
+  <data name="BK_KOSTEN_LOSE_LOESCHEN" xml:space="preserve">
+    <value>Alle Kostenpositionen ohne Anlagenzuordnung der Komponente „{0}“ löschen?
+
+Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis dahin in der Wirtschaftlichkeit mit.</value>
+  </data>
+  <data name="BK_KOSTEN_LOSE_TITEL" xml:space="preserve">
+    <value>Positionen ohne Anlagenzuordnung</value>
+  </data>
+  <data name="BK_KOSTEN_LOSE_GELOESCHT" xml:space="preserve">
+    <value>{0} Position(en) der Komponente „{1}“ gelöscht.</value>
   </data>
 </root>

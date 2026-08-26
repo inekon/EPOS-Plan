@@ -132,22 +132,27 @@ namespace WindowsFormsApplication1
                                 ok = false;
                             }
                         }
-                        // Ä20 (Migrationsschritt 45): Anlagenbezug der Positionen —
-                        // die Lese-/Schreibwege filtern fest nach ID_Anlage.
-                        if (!vorhanden.Contains(SchemaKatalog.SPALTE_PW_ID_ANLAGE))
+                        // Ä20/Ä21 (Migrationsschritte 45/46): Anlagenbezug der
+                        // Positionen samt Geräteanker — die Lese-/Schreibwege
+                        // filtern fest nach ID_Anlage, die Reparatur braucht
+                        // ID_AnlageGeraet.
+                        foreach (string spalte in new[]
+                                 { SchemaKatalog.SPALTE_PW_ID_ANLAGE,
+                                   SchemaKatalog.SPALTE_PW_ID_ANLAGE_GERAET })
                         {
+                            if (vorhanden.Contains(spalte)) continue;
                             try
                             {
                                 using (OleDbCommand cmd = new OleDbCommand(
                                     "ALTER TABLE [" + SchemaKatalog.TAB_PROJEKTWERTE +
-                                    "] ADD COLUMN [" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "] LONG",
+                                    "] ADD COLUMN [" + spalte + "] LONG",
                                     conn))
                                     cmd.ExecuteNonQuery();
                             }
                             catch (Exception ex)
                             {
                                 Protokoll(SchemaKatalog.TAB_PROJEKTWERTE + "." +
-                                          SchemaKatalog.SPALTE_PW_ID_ANLAGE + ": " + ex.Message);
+                                          spalte + ": " + ex.Message);
                                 ok = false;
                             }
                         }

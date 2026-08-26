@@ -74,10 +74,14 @@ namespace WindowsFormsApplication1
             else if (spalteDa && idAnlage == 0)
             {
                 // NULL oder Verweis auf eine geloeschte Anlage — beides ist die
-                // „ohne Anlagenzuordnung“-Pflege der Oberflaeche.
+                // „ohne Anlagenzuordnung“-Pflege der Oberflaeche. Die Projekt-Id
+                // steht als LITERAL in der Unterabfrage: ACE bindet positionale
+                // Parameter bei Unterabfragen in falscher Reihenfolge, die Abfrage
+                // traefe still 0 Zeilen (Ä21-Befund, dieselbe Falle wie beim
+                // UPDATE mit Unterabfrage).
                 filter = "AND (w.ID_Anlage IS NULL OR w.ID_Anlage NOT IN " +
-                         "(SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = ?)) ";
-                parameter.Add(new OleDbParameter("@p2", projektId));
+                         "(SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = " +
+                         projektId + ")) ";
             }
 
             DataTable dt = DataRepository.GetDataTable(
@@ -199,9 +203,143 @@ namespace WindowsFormsApplication1
             try { spalteDa = KostenPositionCtrl.StelleSpaltenSicher(); } catch { }
             if (!spalteDa) return;
             DataRepository.ExecuteSQL(
-                "UPDATE Tab_ProjektWerte SET ID_Anlage = ? WHERE ID = ?",
+                "UPDATE Tab_ProjektWerte SET ID_Anlage = ?, ID_AnlageGeraet = ? WHERE ID = ?",
                 new OleDbParameter("@a", idAnlage),
+                Zahl("@g", GeraetDerAnlage(idAnlage)),
                 new OleDbParameter("@id", idPosition));
+        }
+
+        /// <summary>Ä21: der Gerätewert der Anlagenzeile (erste gesetzte
+        /// Verweisspalte) — der wizardfeste Anker; null = keiner.</summary>
+        internal static double? GeraetDerAnlage(int idAnlage)
+        {
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID_WP, ID_Kessel, ID_BHKW, ID_PV, ID_Solar, ID_SP, ID_PUFFER " +
+                    "FROM Tab_Energieanlagen WHERE ID = ?",
+                    new OleDbParameter("@id", idAnlage));
+                if (dt == null || dt.Rows.Count == 0) return null;
+                foreach (string s in new[] { "ID_WP", "ID_Kessel", "ID_BHKW", "ID_PV",
+                                             "ID_Solar", "ID_SP", "ID_PUFFER" })
+                {
+                    object o = dt.Rows[0][s];
+                    if (o != DBNull.Value && Convert.ToInt32(o) > 0) return Convert.ToInt32(o);
+                }
+            }
+            catch { }
+            return null;
+        }
+
+        /// <summary>
+        /// Ä21: SELBSTHEILUNG der Anlagenzuordnung. Der Anlagen-Wizard löscht
+        /// Anlagenzeilen und legt sie mit NEUEN IDs an (dokumentiert in
+        /// <c>AnlagenEindeutigkeit</c>) — Positionen zeigten danach ins Leere.
+        /// Verwaiste Zuordnungen werden hier über Komponente + Geräteanker auf die
+        /// neue Anlagenzeile umgeschlüsselt; ohne Treffer (Gerät entfernt) bleibt
+        /// die Position „ohne Anlagenzuordnung“ sichtbar. Läuft vor jedem
+        /// UI-Aufbau (Kosten-Seite, Kostenverwaltung) — ein COUNT bei gesundem
+        /// Bestand.
+        /// </summary>
+        internal static void ZuordnungReparieren(int projektId)
+        {
+            if (projektId <= 0) return;
+            bool spalteDa = false;
+            try { spalteDa = KostenPositionCtrl.StelleSpaltenSicher(); } catch { }
+            if (!spalteDa) return;
+
+            // Projekt-Id als LITERAL: ACE bindet Parameter bei Unterabfragen in
+            // falscher Reihenfolge (Ä21-Befund).
+            object n = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ProjektID = " + projektId +
+                " AND ID_Anlage IS NOT NULL AND ID_Anlage NOT IN " +
+                "(SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = " + projektId + ")");
+            if (n == null || n == DBNull.Value || Convert.ToInt32(n) == 0) return;
+
+            // Landkarte Komponente -> Verweisspalte (dieselbe wie Migration 45/46).
+            var verweise = new Dictionary<int, string>();
+            try
+            {
+                var namen = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    { DbWerte.ERZEUGER_WAERMEPUMPE,             "ID_WP" },
+                    { DbWerte.ERZEUGER_HEIZKESSEL,              "ID_Kessel" },
+                    { DbWerte.ERZEUGER_BHKW,                    "ID_BHKW" },
+                    { DbWerte.ERZEUGER_PHOTOVOLTAIK,            "ID_PV" },
+                    { DbWerte.ERZEUGER_SOLARTHERMIE,            "ID_Solar" },
+                    { DbWerte.ERZEUGER_STROMSPEICHER,           "ID_SP" },
+                    { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, "ID_PUFFER" }
+                };
+                DataTable komp = DataRepository.GetDataTable(
+                    "SELECT ID, Komponente FROM Tab_KostenKomponente");
+                if (komp != null)
+                    foreach (DataRow r in komp.Rows)
+                    {
+                        string sp;
+                        if (namen.TryGetValue(Convert.ToString(r["Komponente"]), out sp))
+                            verweise[Convert.ToInt32(r["ID"])] = sp;
+                    }
+            }
+            catch { return; }
+
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID, KomponentenID, ID_AnlageGeraet FROM Tab_ProjektWerte " +
+                "WHERE ProjektID = " + projektId + " AND ID_Anlage IS NOT NULL AND " +
+                "ID_Anlage NOT IN (SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = " +
+                projektId + ")");
+            if (dt == null) return;
+
+            var neueAnlage = new Dictionary<string, object>();   // "kid|geraet" -> ID oder DBNull
+            foreach (DataRow r in dt.Rows)
+            {
+                int kid = r["KomponentenID"] == DBNull.Value ? 0 : Convert.ToInt32(r["KomponentenID"]);
+                string sp2;
+                if (!verweise.TryGetValue(kid, out sp2)) continue;
+
+                object geraet = r["ID_AnlageGeraet"];
+                string schluessel = kid + "|" + (geraet == DBNull.Value ? "-" : geraet.ToString());
+                object ziel;
+                if (!neueAnlage.TryGetValue(schluessel, out ziel))
+                {
+                    ziel = DBNull.Value;
+                    if (geraet != DBNull.Value)
+                        ziel = DataRepository.ExecuteScalar(
+                            "SELECT MIN(ID) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND [" +
+                            sp2 + "] = ?",
+                            new OleDbParameter("@p", projektId),
+                            new OleDbParameter("@g", Convert.ToInt32(geraet)));
+                    neueAnlage[schluessel] = ziel ?? DBNull.Value;
+                }
+
+                if (ziel == null || ziel == DBNull.Value)
+                {
+                    // Gerät existiert nicht mehr im Projekt: Zuordnung EHRLICH lösen —
+                    // die Position erscheint als „ohne Anlagenzuordnung“.
+                    DataRepository.ExecuteSQL(
+                        "UPDATE Tab_ProjektWerte SET ID_Anlage = NULL WHERE ID = ?",
+                        new OleDbParameter("@id", Convert.ToInt32(r["ID"])));
+                }
+                else
+                    DataRepository.ExecuteSQL(
+                        "UPDATE Tab_ProjektWerte SET ID_Anlage = ? WHERE ID = ?",
+                        new OleDbParameter("@a", Convert.ToInt32(ziel)),
+                        new OleDbParameter("@id", Convert.ToInt32(r["ID"])));
+            }
+        }
+
+        /// <summary>Ä21: alle Positionen einer Komponente OHNE (gültige)
+        /// Anlagenzuordnung löschen — der Aufräumweg der gelben Zeilen der
+        /// Kosten-Seite (z. B. Variantenreste eines nicht übernommenen Gewerks).
+        /// Läuft über die Einzellöschung (keine Unterabfragen im DELETE —
+        /// ACE-Falle).</summary>
+        internal static int LoseLoeschen(int projektId, int komponentenId)
+        {
+            int geloescht = 0;
+            foreach (int kategorie in new[] { Form_Kosten.KATEGORIE_INVESTITION,
+                                              Form_Kosten.KATEGORIE_BETRIEB })
+                foreach (Zeile z in Lies(projektId, komponentenId, kategorie, 0))
+                    if (Loeschen(z.Raster.Id)) geloescht++;
+            return geloescht;
         }
 
         /// <summary>Neue Projektposition (Muster der Übernahme-Mechanik, § 8);

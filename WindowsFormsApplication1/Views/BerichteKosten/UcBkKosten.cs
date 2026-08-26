@@ -180,6 +180,8 @@ namespace WindowsFormsApplication1
             this.gridKomponenten.Margin = new Padding(0, 0, 8, 0);
             // Ä19: Die Auswahl einer Anlage kennzeichnet ihren Energieträger rechts.
             this.gridKomponenten.SelectionChanged += new EventHandler(this.gridKomponenten_SelectionChanged);
+            // Ä21: Doppelklick löscht die Positionen einer gelben Zeile (Rückfrage).
+            this.gridKomponenten.CellDoubleClick += new DataGridViewCellEventHandler(this.gridKomponenten_CellDoubleClick);
 
             this.lblTraeger.Dock = DockStyle.Fill;
             this.lblTraeger.Margin = new Padding(8, 0, 0, 0);
@@ -443,6 +445,11 @@ namespace WindowsFormsApplication1
             gridKomponenten.Columns[2].FillWeight = 60;
             gridKomponenten.Columns[2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
+            // Ä21: Selbstheilung VOR dem Lesen — der Anlagen-Wizard vergibt beim
+            // Neuaufbau neue Anlagen-IDs; verwaiste Zuordnungen kommen über den
+            // Geräteanker zurück an ihre Anlage.
+            try { KostenProjektPositionenCtrl.ZuordnungReparieren(_idProjekt); } catch { }
+
             try
             {
                 // Ä20: Summen je ANLAGENZEILE (Migrationsschritt 45). „Lose“ heißt:
@@ -530,8 +537,11 @@ namespace WindowsFormsApplication1
                         hatB ? bWert.ToString("N2", kultur) : "—");
                     gridKomponenten.Rows[idx].DefaultCellStyle.BackColor =
                         Color.FromArgb(0xFF, 0xF4, 0xCC);
+                    // Ä21: Der Tag trägt den Komponentennamen — Doppelklick löscht
+                    // die losen Positionen nach Rückfrage (gridKomponenten_DoubleClick).
+                    gridKomponenten.Rows[idx].Tag = k;
                     string hinweis = Text_("BK_KOSTEN_NICHT_VERBAUT_HINT",
-                        "Kostenpositionen ohne verbaute Anlage — sie rechnen in der Wirtschaftlichkeit mit; bitte prüfen oder in der Kostenverwaltung löschen.");
+                        "Kostenpositionen ohne (gültige) Anlagenzuordnung — sie rechnen in der Wirtschaftlichkeit mit. Doppelklick löscht sie nach Rückfrage; bearbeiten: Kostenverwaltung, Eintrag „(ohne Anlagenzuordnung)“.");
                     foreach (DataGridViewCell c in gridKomponenten.Rows[idx].Cells)
                         c.ToolTipText = hinweis;
                     _nichtVerbaut.Add(k);
@@ -594,6 +604,41 @@ namespace WindowsFormsApplication1
                 }
             }
             catch { }
+        }
+
+        /// <summary>Ä21: Doppelklick auf eine gelbe Zeile löscht die Positionen
+        /// ohne (gültige) Anlagenzuordnung dieser Komponente — mit Rückfrage samt
+        /// Anzahl; der Weg läuft über die Einzellöschung des Controllers.</summary>
+        private void gridKomponenten_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0) return;
+            string komponente = gridKomponenten.Rows[e.RowIndex].Tag as string;
+            if (string.IsNullOrEmpty(komponente)) return;
+
+            object kid = null;
+            try
+            {
+                kid = DataRepository.ExecuteScalar(
+                    "SELECT ID FROM Tab_KostenKomponente WHERE Komponente = ?",
+                    new OleDbParameter("@k", komponente));
+            }
+            catch { }
+            if (kid == null || kid == DBNull.Value) return;
+
+            if (MessageBox.Show(
+                    string.Format(Text_("BK_KOSTEN_LOSE_LOESCHEN",
+                        "Alle Kostenpositionen ohne Anlagenzuordnung der Komponente „{0}“ " +
+                        "löschen?\n\nSie stammen z. B. aus einer Variantenkopie ohne dieses " +
+                        "Gewerk und rechnen bis dahin in der Wirtschaftlichkeit mit."),
+                        komponente),
+                    Text_("BK_KOSTEN_LOSE_TITEL", "Positionen ohne Anlagenzuordnung"),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                return;
+
+            int n = KostenProjektPositionenCtrl.LoseLoeschen(_idProjekt, Convert.ToInt32(kid));
+            Melde(string.Format(Text_("BK_KOSTEN_LOSE_GELOESCHT",
+                "{0} Position(en) der Komponente „{1}“ gelöscht."), n, komponente));
+            Aktualisiere();
         }
 
         /// <summary>Ä19: kennzeichnet rechts den Energieträger der gewählten Anlage.</summary>

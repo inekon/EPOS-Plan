@@ -153,6 +153,8 @@ namespace WindowsFormsApplication1
 
         private void AnlagenlisteFuellen(int vorwahlAnlage, string vorwahlKomponente)
         {
+            // Ä21: verwaiste Zuordnungen zuerst heilen (Wizard-Neuaufbau).
+            try { KostenProjektPositionenCtrl.ZuordnungReparieren(_idProjekt); } catch { }
             _anlagenListe = ProjektEnergietraegerCtrl.AnlagenMitTraeger(_idProjekt);
             HashSet<string> lose = LoseKomponenten();
 

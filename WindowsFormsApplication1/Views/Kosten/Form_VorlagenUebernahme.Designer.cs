@@ -37,6 +37,7 @@ namespace WindowsFormsApplication1
             this.rbQuelleVorlage = new System.Windows.Forms.RadioButton();
             this.rbQuelleProjekt = new System.Windows.Forms.RadioButton();
             this.cmbQuellProjekt = new System.Windows.Forms.ComboBox();
+            this.cmbQuellAnlage = new System.Windows.Forms.ComboBox();
             this.lblVorschau = new System.Windows.Forms.Label();
             this.btnUebernehmen = new System.Windows.Forms.Button();
             this.btnAbbrechen = new System.Windows.Forms.Button();
@@ -132,12 +133,22 @@ namespace WindowsFormsApplication1
             this.cmbQuellProjekt.Name = "cmbQuellProjekt";
             this.cmbQuellProjekt.Size = new System.Drawing.Size(336, 23);
             this.cmbQuellProjekt.TabIndex = 6;
-            this.cmbQuellProjekt.SelectedIndexChanged += new System.EventHandler(this.Auswahl_Geaendert);
+            this.cmbQuellProjekt.SelectedIndexChanged += new System.EventHandler(this.QuellProjekt_Geaendert);
+            //
+            // cmbQuellAnlage
+            //
+            this.cmbQuellAnlage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbQuellAnlage.Enabled = false;
+            this.cmbQuellAnlage.Location = new System.Drawing.Point(190, 177);
+            this.cmbQuellAnlage.Name = "cmbQuellAnlage";
+            this.cmbQuellAnlage.Size = new System.Drawing.Size(336, 23);
+            this.cmbQuellAnlage.TabIndex = 7;
+            this.cmbQuellAnlage.SelectedIndexChanged += new System.EventHandler(this.Auswahl_Geaendert);
             //
             // lblVorschau
             //
             this.lblVorschau.BackColor = System.Drawing.Color.LemonChiffon;
-            this.lblVorschau.Location = new System.Drawing.Point(14, 186);
+            this.lblVorschau.Location = new System.Drawing.Point(14, 215);
             this.lblVorschau.Name = "lblVorschau";
             this.lblVorschau.Padding = new System.Windows.Forms.Padding(6);
             this.lblVorschau.Size = new System.Drawing.Size(512, 78);
@@ -146,7 +157,7 @@ namespace WindowsFormsApplication1
             //
             // btnUebernehmen
             //
-            this.btnUebernehmen.Location = new System.Drawing.Point(320, 278);
+            this.btnUebernehmen.Location = new System.Drawing.Point(320, 307);
             this.btnUebernehmen.Name = "btnUebernehmen";
             this.btnUebernehmen.Size = new System.Drawing.Size(110, 27);
             this.btnUebernehmen.TabIndex = 8;
@@ -157,7 +168,7 @@ namespace WindowsFormsApplication1
             // btnAbbrechen
             //
             this.btnAbbrechen.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnAbbrechen.Location = new System.Drawing.Point(438, 278);
+            this.btnAbbrechen.Location = new System.Drawing.Point(438, 307);
             this.btnAbbrechen.Name = "btnAbbrechen";
             this.btnAbbrechen.Size = new System.Drawing.Size(88, 27);
             this.btnAbbrechen.TabIndex = 9;
@@ -170,7 +181,7 @@ namespace WindowsFormsApplication1
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnAbbrechen;
-            this.ClientSize = new System.Drawing.Size(544, 319);
+            this.ClientSize = new System.Drawing.Size(544, 348);
             this.Controls.Add(this.pnlKopf);
             this.Controls.Add(this.lblKontext);
             this.Controls.Add(this.lblZiel);
@@ -179,6 +190,7 @@ namespace WindowsFormsApplication1
             this.Controls.Add(this.rbQuelleVorlage);
             this.Controls.Add(this.rbQuelleProjekt);
             this.Controls.Add(this.cmbQuellProjekt);
+            this.Controls.Add(this.cmbQuellAnlage);
             this.Controls.Add(this.lblVorschau);
             this.Controls.Add(this.btnUebernehmen);
             this.Controls.Add(this.btnAbbrechen);
@@ -206,6 +218,7 @@ namespace WindowsFormsApplication1
         private System.Windows.Forms.RadioButton rbQuelleVorlage;
         private System.Windows.Forms.RadioButton rbQuelleProjekt;
         private System.Windows.Forms.ComboBox cmbQuellProjekt;
+        private System.Windows.Forms.ComboBox cmbQuellAnlage;
         private System.Windows.Forms.Label lblVorschau;
         private System.Windows.Forms.Button btnUebernehmen;
         private System.Windows.Forms.Button btnAbbrechen;
