@@ -67,6 +67,10 @@ namespace WindowsFormsApplication1
             finally { _wirdGefuellt = false; }
 
             pnlInhalt.Controls.Clear();
+
+            // Erster Träger vorgewählt — ein leerer Detailbereich sah wie ein
+            // fehlender Dialog aus (Befund 26.08.2026, Katalogkontext).
+            if (lstTraeger.Items.Count > 0) lstTraeger.SelectedIndex = 0;
         }
 
         private void lstTraeger_SelectedIndexChanged(object sender, EventArgs e)

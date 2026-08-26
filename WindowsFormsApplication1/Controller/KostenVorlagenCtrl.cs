@@ -120,7 +120,8 @@ namespace WindowsFormsApplication1
                     KategorieId = kategorieId,
                     Name = Convert.ToString(r[1]),
                     IstStandard = r[2] != DBNull.Value && Convert.ToBoolean(r[2]),
-                    NurLesen = r[3] != DBNull.Value && Convert.ToBoolean(r[3]),
+                    // Ä8: Flag nur noch Herkunftsmarker — die UI zeigt alles editierbar.
+                    NurLesen = false,
                 });
             return liste;
         }
@@ -165,16 +166,30 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        /// <summary>ReadOnly-Flag einer Vorlage (true auch bei unbekannter ID —
-        /// im Zweifel kein Schreiben).</summary>
+        /// <summary>
+        /// Ä8 (Nutzerentscheid 26.08.2026): Der Schreibschutz der
+        /// Auslieferungsvorlagen ist AUFGEHOBEN — für Investitions- UND
+        /// Betriebskostenvorlagen. Die Auslieferungswerte dürfen direkt gepflegt
+        /// werden; das <c>ReadOnly</c>-Flag bleibt in der Datenbank als reiner
+        /// Herkunftsmarker der Saat stehen. Einziger Restschutz: Die
+        /// STANDARD-Vorlage einer Komponente kann nicht gelöscht werden
+        /// (<see cref="VorlageLoeschen"/>) — sie ist die Quelle von
+        /// „Speichern unter…" und der Übernahme-Mechanik (§ 8), und die
+        /// KD1-Saat läuft nicht erneut.
+        /// </summary>
         public static bool IstNurLesen(int vorlageId)
         {
+            return false;
+        }
+
+        /// <summary>true, wenn die Vorlage die Standardvorlage ihrer Komponente ist.</summary>
+        public static bool IstStandard(int vorlageId)
+        {
             object o = DataRepository.ExecuteScalar(
-                "SELECT [" + SchemaKatalog.SPALTE_KV_READONLY + "] FROM [" +
+                "SELECT [" + SchemaKatalog.SPALTE_KV_IST_STANDARD + "] FROM [" +
                 SchemaKatalog.TAB_KOSTENVORLAGE + "] WHERE [ID] = ?",
                 new OleDbParameter("@id", vorlageId));
-            if (o == null || o == DBNull.Value) return true;
-            return Convert.ToBoolean(o);
+            return o != null && o != DBNull.Value && Convert.ToBoolean(o);
         }
 
         /// <summary>Umsatzsteuersatz [%] aus dem Gesetzeskatalog
@@ -250,7 +265,7 @@ namespace WindowsFormsApplication1
         /// ReadOnly-Vorlagen sind geschützt.</summary>
         public static bool VorlageLoeschen(int vorlageId)
         {
-            if (IstNurLesen(vorlageId)) return false;
+            if (IstStandard(vorlageId)) return false;   // Ä8-Restschutz (s. IstNurLesen)
             return DataRepository.ExecuteNonQuery(
                 "DELETE FROM [" + SchemaKatalog.TAB_KOSTENVORLAGE + "] WHERE [ID] = ?",
                 new OleDbParameter("@id", vorlageId)) == 1;
