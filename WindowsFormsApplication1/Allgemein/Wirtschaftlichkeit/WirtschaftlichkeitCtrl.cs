@@ -139,6 +139,28 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string SPALTE_ZUSCHUSS = "Zuschuss";
 
+        /// <summary>
+        /// ETAPPE P6 (PV-Konzept § 6.4): Ausweis des PV-Vergütungsdialogs in
+        /// <see cref="TAB_ERGEBNIS"/>. Über <c>SpalteSicher</c> — dieselbe
+        /// Begründung wie bei <see cref="SPALTE_ENERGIESTEUER"/>. Gefüllt nur bei
+        /// aktivem Dialog (Form leer = Bestandsweg ohne Dialog).
+        /// </summary>
+        public const string SPALTE_PV_FORM = "PvVerguetungsform";
+        /// <inheritdoc cref="SPALTE_PV_FORM"/>
+        public const string SPALTE_PV_AW = "PvAnzulegenderWert";
+        /// <inheritdoc cref="SPALTE_PV_FORM"/>
+        public const string SPALTE_PV_MARKTPRAEMIE = "PvMarktpraemie";
+        /// <inheritdoc cref="SPALTE_PV_FORM"/>
+        public const string SPALTE_PV_AUSFALL_KWH = "PvVerguetungsausfallKwh";
+        /// <inheritdoc cref="SPALTE_PV_FORM"/>
+        public const string SPALTE_PV_AUSFALL_EUR = "PvVerguetungsausfall";
+        /// <inheritdoc cref="SPALTE_PV_FORM"/>
+        public const string SPALTE_PV_51A = "PvKompensation51a";
+        /// <inheritdoc cref="SPALTE_PV_FORM"/>
+        public const string SPALTE_PV_KAPPUNG_KWH = "PvKappungsverlustKwh";
+        /// <inheritdoc cref="SPALTE_PV_FORM"/>
+        public const string SPALTE_PV_VERMIEDEN = "PvVermiedenerBezug";
+
         /// <summary>Fristen des § 6 KWKG 2025 (Konzept Kap. 8.2, Phase 9).</summary>
         public static readonly DateTime KWKG_STICHTAG_ENDE = new DateTime(2026, 12, 31);
         public const int KWKG_REALISIERUNG_JAHRE = 4;
@@ -387,6 +409,14 @@ namespace WindowsFormsApplication1
                     // erweitert: Ergebnisspalten führt der Controller, Eingabespalten
                     // der Migrationskatalog.
                     SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_ZUSCHUSS, "DOUBLE");
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_PV_FORM, "TEXT(50)");   // P6
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_PV_AW, "DOUBLE");
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_PV_MARKTPRAEMIE, "DOUBLE");
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_PV_AUSFALL_KWH, "DOUBLE");
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_PV_AUSFALL_EUR, "DOUBLE");
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_PV_51A, "DOUBLE");
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_PV_KAPPUNG_KWH, "DOUBLE");
+                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_PV_VERMIEDEN, "DOUBLE");
 
                     // ETAPPE E5 — die Spalten des Tarif-Rollenmodells und die zwei
                     // Projektangaben. Sie entstehen regulär über Migrationsschritt 21;
@@ -3843,6 +3873,57 @@ namespace WindowsFormsApplication1
             return kopie;
         }
 
+        /// <summary>
+        /// ETAPPE P6 (§ 6.4): vermiedener Netzbezug durch PV-Eigenverbrauch [€/a],
+        /// INFORMATIV — Jahr-1-Sicht: (Erzeugung − Überschuss) × Strom-Arbeitspreis.
+        /// Preis über dieselbe Vorrangkette wie die Energiekostenrechnung
+        /// (<c>custom_price</c> des Projekts vor <c>price</c> des Katalogs,
+        /// 0 = nicht gepflegt, Befund D5; Stromträger wie
+        /// <c>KostenEmissionRechner.FindeStromTraeger</c>). KEIN Bestandteil des
+        /// Kapitalwerts; im ROLLEN-Modus tragen die E5-Zeilen die Systemsicht.
+        /// </summary>
+        private static double? PvVermiedenerBezugAusweis(VariantenDaten v)
+        {
+            try
+            {
+                if (v.Ergebnis == null || v.Ergebnis.Photovoltaik == null) return null;
+                double evMWh = v.Ergebnis.Photovoltaik.Stromproduktion
+                             - v.Ergebnis.Photovoltaik.Ueberschuss;
+                if (evMWh <= 0.0005) return null;
+                double? preis = StromArbeitspreisEurJeKwh(v.IdProjekt);
+                if (!preis.HasValue) return null;
+                return evMWh * 1000.0 * preis.Value;
+            }
+            catch { return null; }
+        }
+
+        /// <summary>Arbeitspreis Strom [€/kWh] des Projekt-Stromträgers; null = keiner gepflegt.</summary>
+        internal static double? StromArbeitspreisEurJeKwh(int idProjekt)
+        {
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT TOP 1 s.custom_price, ec.price " +
+                    "FROM energy_project_settings AS s " +
+                    "INNER JOIN energy_carrier AS ec ON s.[ID_Energieträger] = ec.id " +
+                    "WHERE s.ID_Projekt = ? AND ec.pricing_model = 'ELECTRICITY'",
+                    new OleDbParameter("@p", idProjekt));
+                if (dt == null || dt.Rows.Count == 0) return null;
+                DataRow r = dt.Rows[0];
+                double? projektwert = D2(r, "custom_price");
+                if (projektwert.HasValue && projektwert.Value > 0) return projektwert;
+                double? katalogwert = D2(r, "price");
+                return katalogwert.HasValue && katalogwert.Value > 0 ? katalogwert : null;
+            }
+            catch { return null; }
+        }
+
+        private static double? D2(DataRow r, string spalte)
+        {
+            if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return null;
+            try { return Convert.ToDouble(r[spalte]); } catch { return null; }
+        }
+
         /// <summary>Absolutes Zahlungsbild + Kennzahlen eines Projekts für ein Szenario.</summary>
         private WirtschaftlichkeitErgebnis RechneProjekt(VariantenDaten v, WirtschaftlichkeitParameter p,
                                                          ProjektEingabe eingabe, string szenario,
@@ -3879,6 +3960,22 @@ namespace WindowsFormsApplication1
             erg.AufschlagJahr = eingabe.AufschlagBetrag;
             erg.EinspeiseerloesPvJahr = eingabe.ErloesPv;             // E7
             erg.EinspeiseerloesKwkJahr = eingabe.ErloesKwk;
+
+            // ETAPPE P6 (PV-Konzept § 6.4): Ausweis des Vergütungsdialogs — die
+            // Reihe selbst steckt längst in eingabe.ErloesReihen (P4); hier wird
+            // ihre Herkunft für Reiter, Bericht und Persistenz festgehalten.
+            if (eingabe.PvVerguetung != null)
+            {
+                PvErloesErgebnis pv = eingabe.PvVerguetung;
+                erg.PvVerguetungsform = pv.Vermarktungsform ?? "";
+                erg.PvAnzulegenderWert = pv.AwMixCt;
+                erg.PvMarktpraemie = pv.MarktpraemieEurJahr1;
+                erg.PvVerguetungsausfallKwh = pv.VerguetungsausfallKwh;
+                erg.PvVerguetungsausfall = pv.VerguetungsausfallEur;
+                erg.PvKompensation51a = pv.Kompensation51aEur;
+                erg.PvKappungsverlustKwh = pv.KappungsverlustKwh;
+                erg.PvVermiedenerBezug = PvVermiedenerBezugAusweis(v);
+            }
             erg.KwkgModule = eingabe.KwkgModule;
             erg.Betriebskosten = eingabe.Betriebskosten;
             erg.Hinweis = eingabe.Hinweis;
@@ -4368,8 +4465,12 @@ namespace WindowsFormsApplication1
                                     SPALTE_VERMIEDEN_GESAMT + ", " + SPALTE_AUFSCHLAG_BETRAG + ", " +
                                     SPALTE_EINSPEISUNG_PV + ", " + SPALTE_EINSPEISUNG_KWK + ", " +
                                     SPALTE_ZUSCHUSS + ", " +
+                                    SPALTE_PV_FORM + ", " + SPALTE_PV_AW + ", " +
+                                    SPALTE_PV_MARKTPRAEMIE + ", " + SPALTE_PV_AUSFALL_KWH + ", " +
+                                    SPALTE_PV_AUSFALL_EUR + ", " + SPALTE_PV_51A + ", " +
+                                    SPALTE_PV_KAPPUNG_KWH + ", " + SPALTE_PV_VERMIEDEN + ", " +
                                     "StromkostenTarif, HinweisText, Fehlgrund) " +
-                                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", conn, tx))
+                                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", conn, tx))
                                 {
                                     OleDbParameterCollection ps = cmd.Parameters;
                                     ps.AddWithValue("@id", naechsteId);
@@ -4411,6 +4512,14 @@ namespace WindowsFormsApplication1
                                     ps.AddWithValue("@epv", R(e.EinspeiseerloesPvJahr));   // E7
                                     ps.AddWithValue("@ekwk", R(e.EinspeiseerloesKwkJahr));
                                     ps.AddWithValue("@zusch", R(e.Zuschuss));              // K5
+                                    ps.AddWithValue("@pvf", e.PvVerguetungsform ?? "");    // P6
+                                    ps.Add(DbWert(e.PvAnzulegenderWert));
+                                    ps.AddWithValue("@pvmp", R(e.PvMarktpraemie));
+                                    ps.AddWithValue("@pvak", R(e.PvVerguetungsausfallKwh));
+                                    ps.AddWithValue("@pvae", R(e.PvVerguetungsausfall));
+                                    ps.AddWithValue("@pv51", R(e.PvKompensation51a));
+                                    ps.AddWithValue("@pvkw", R(e.PvKappungsverlustKwh));
+                                    ps.Add(DbWert(e.PvVermiedenerBezug));
                                     ps.Add(DbWert(e.StromkostenTarif));
                                     ps.AddWithValue("@hw", (object)e.Hinweis ?? DBNull.Value);
                                     ps.AddWithValue("@fg", (object)e.Fehlgrund ?? DBNull.Value);
@@ -4552,7 +4661,15 @@ namespace WindowsFormsApplication1
                             AufschlagJahr = D(r, SPALTE_AUFSCHLAG_BETRAG) ?? 0,
                             EinspeiseerloesPvJahr = D(r, SPALTE_EINSPEISUNG_PV) ?? 0,        // E7
                             EinspeiseerloesKwkJahr = D(r, SPALTE_EINSPEISUNG_KWK) ?? 0,
-                            Zuschuss = D(r, SPALTE_ZUSCHUSS) ?? 0,                        // K5
+                            Zuschuss = D(r, SPALTE_ZUSCHUSS) ?? 0,
+                            PvVerguetungsform = Text(r, SPALTE_PV_FORM),                  // P6
+                            PvAnzulegenderWert = D(r, SPALTE_PV_AW),
+                            PvMarktpraemie = D(r, SPALTE_PV_MARKTPRAEMIE) ?? 0,
+                            PvVerguetungsausfallKwh = D(r, SPALTE_PV_AUSFALL_KWH) ?? 0,
+                            PvVerguetungsausfall = D(r, SPALTE_PV_AUSFALL_EUR) ?? 0,
+                            PvKompensation51a = D(r, SPALTE_PV_51A) ?? 0,
+                            PvKappungsverlustKwh = D(r, SPALTE_PV_KAPPUNG_KWH) ?? 0,
+                            PvVermiedenerBezug = D(r, SPALTE_PV_VERMIEDEN),                        // K5
                             StromkostenTarif = D(r, "StromkostenTarif"),
                             Hinweis = r.Table.Columns.Contains("HinweisText") && r["HinweisText"] != DBNull.Value
                                       ? r["HinweisText"].ToString() : null,

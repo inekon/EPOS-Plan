@@ -7654,4 +7654,70 @@ Please run the EPOS-Plan setup again or install the Microsoft Access Database En
   <data name="KDLG_BTN_KATALOG" xml:space="preserve">
     <value>Item catalog…</value>
   </data>
+  <data name="WIRT_ZEILE_PV_51A" xml:space="preserve">
+    <value>PV: compensation § 51a (final remuneration year) [€]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_AUSFALL_EUR" xml:space="preserve">
+    <value>PV: remuneration loss § 51 [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_AUSFALL_KWH" xml:space="preserve">
+    <value>PV: remuneration loss § 51 [kWh/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_AW" xml:space="preserve">
+    <value>PV: applicable value AW_mix [ct/kWh]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM" xml:space="preserve">
+    <value>PV remuneration (marketing form)</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM_DV" xml:space="preserve">
+    <value>other direct marketing (PPA)</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM_EV" xml:space="preserve">
+    <value>fixed feed-in tariff</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM_KEINE" xml:space="preserve">
+    <value>uncompensated feed-in</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM_MP" xml:space="preserve">
+    <value>direct marketing with market premium</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_KAPPUNG" xml:space="preserve">
+    <value>PV: curtailment loss 60 % [kWh/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_MARKTPRAEMIE" xml:space="preserve">
+    <value>PV: market premium year 1 [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_VERMIEDEN" xml:space="preserve">
+    <value>PV: avoided grid purchase (informative) [€/a]</value>
+  </data>
+  <data name="PVW_KZ_LCOE" xml:space="preserve">
+    <value>Levelised cost of electricity: {0:N2} ct/kWh (LCOE₀, comparable to a tariff) · {1:N2} ct/kWh (discounted)</value>
+  </data>
+  <data name="PVW_KZ_MIT_SPEICHER" xml:space="preserve">
+    <value> (with storage)</value>
+  </data>
+  <data name="PVW_KZ_OHNE_KOSTEN" xml:space="preserve">
+    <value>PV costs (investment/operation) not maintained — LCOE and benefit omitted.</value>
+  </data>
+  <data name="PVW_KZ_OHNE_PREIS" xml:space="preserve">
+    <value>Electricity energy rate not maintained — savings share omitted.</value>
+  </data>
+  <data name="PVW_KZ_QUOTEN" xml:space="preserve">
+    <value>Self-consumption ratio {0:N1} % · self-sufficiency {1} %{2}</value>
+  </data>
+  <data name="PVW_KZ_VORTEIL" xml:space="preserve">
+    <value>Benefit from PV: {0:N0} €/a</value>
+  </data>
+  <data name="PVW_BTN_MARKTWERTE" xml:space="preserve">
+    <value>Import market values…</value>
+  </data>
+  <data name="PVW_IMPORT_FEHLER" xml:space="preserve">
+    <value>Import failed: </value>
+  </data>
+  <data name="PVW_IMPORT_FILTER" xml:space="preserve">
+    <value>CSV files (*.csv)|*.csv|All files (*.*)|*.*</value>
+  </data>
+  <data name="PVW_IMPORT_OK" xml:space="preserve">
+    <value>Market values imported: </value>
+  </data>
 </root>

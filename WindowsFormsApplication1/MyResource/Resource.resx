@@ -7660,4 +7660,70 @@ Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Micro
   <data name="KDLG_BTN_KATALOG" xml:space="preserve">
     <value>Positionskatalog…</value>
   </data>
+  <data name="WIRT_ZEILE_PV_51A" xml:space="preserve">
+    <value>PV: Kompensation § 51a (letztes Vergütungsjahr) [€]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_AUSFALL_EUR" xml:space="preserve">
+    <value>PV: Vergütungsausfall § 51 [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_AUSFALL_KWH" xml:space="preserve">
+    <value>PV: Vergütungsausfall § 51 [kWh/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_AW" xml:space="preserve">
+    <value>PV: anzulegender Wert AW_mix [ct/kWh]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM" xml:space="preserve">
+    <value>PV-Vergütung (Vermarktungsform)</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM_DV" xml:space="preserve">
+    <value>sonstige Direktvermarktung (PPA)</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM_EV" xml:space="preserve">
+    <value>feste Einspeisevergütung</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM_KEINE" xml:space="preserve">
+    <value>unentgeltliche Abnahme</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM_MP" xml:space="preserve">
+    <value>Direktvermarktung mit Marktprämie</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_KAPPUNG" xml:space="preserve">
+    <value>PV: Kappungsverlust 60 % [kWh/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_MARKTPRAEMIE" xml:space="preserve">
+    <value>PV: Marktprämie Jahr 1 [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_VERMIEDEN" xml:space="preserve">
+    <value>PV: vermiedener Netzbezug (Ausweis) [€/a]</value>
+  </data>
+  <data name="PVW_KZ_LCOE" xml:space="preserve">
+    <value>Stromgestehungskosten: {0:N2} ct/kWh (LCOE₀, mit Satz vergleichbar) · {1:N2} ct/kWh (diskontiert)</value>
+  </data>
+  <data name="PVW_KZ_MIT_SPEICHER" xml:space="preserve">
+    <value> (mit Speicher)</value>
+  </data>
+  <data name="PVW_KZ_OHNE_KOSTEN" xml:space="preserve">
+    <value>PV-Kosten (Investition/Betrieb) nicht gepflegt — LCOE und Vorteil entfallen.</value>
+  </data>
+  <data name="PVW_KZ_OHNE_PREIS" xml:space="preserve">
+    <value>Strom-Arbeitspreis nicht gepflegt — Ersparnisanteil entfällt.</value>
+  </data>
+  <data name="PVW_KZ_QUOTEN" xml:space="preserve">
+    <value>Eigenverbrauchsquote {0:N1} % · Autarkiegrad {1} %{2}</value>
+  </data>
+  <data name="PVW_KZ_VORTEIL" xml:space="preserve">
+    <value>Vorteil durch PV: {0:N0} €/a</value>
+  </data>
+  <data name="PVW_BTN_MARKTWERTE" xml:space="preserve">
+    <value>Marktwerte importieren…</value>
+  </data>
+  <data name="PVW_IMPORT_FEHLER" xml:space="preserve">
+    <value>Import nicht möglich: </value>
+  </data>
+  <data name="PVW_IMPORT_FILTER" xml:space="preserve">
+    <value>CSV-Dateien (*.csv)|*.csv|Alle Dateien (*.*)|*.*</value>
+  </data>
+  <data name="PVW_IMPORT_OK" xml:space="preserve">
+    <value>Marktwerte übernommen: </value>
+  </data>
 </root>
