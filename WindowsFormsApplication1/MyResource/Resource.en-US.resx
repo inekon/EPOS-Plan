@@ -7202,7 +7202,8 @@ Please run the EPOS-Plan setup again or install the Microsoft Access Database En
     <value>Net amount [€/a]</value>
   </data>
   <data name="KDLG_SP_NUTZUNG" xml:space="preserve">
-    <value>Service life [a]</value>
+    <value>Service
+life [a]</value>
   </data>
   <data name="KDLG_SP_WORSTBEST" xml:space="preserve">
     <value>Worst/best</value>
@@ -7797,5 +7798,26 @@ Please run the EPOS-Plan setup again or install the Microsoft Access Database En
   </data>
   <data name="KDLG_ET_STAMM_SPEICHERN" xml:space="preserve">
     <value>Apply</value>
+  </data>
+  <data name="KDLG_ET_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="KDLG_ET_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply from catalog…</value>
+  </data>
+  <data name="KDLG_ET_ENTFERNEN_FRAGE" xml:space="preserve">
+    <value>Remove carrier „{0}“ from the project? (The catalog entry remains.)</value>
+  </data>
+  <data name="KDLG_ET_ENTFERNEN_GESPERRT" xml:space="preserve">
+    <value>Not possible: {0}</value>
+  </data>
+  <data name="KDLG_ET_UEBERNAHME_LEER" xml:space="preserve">
+    <value>All catalog carriers are already assigned to the project.</value>
+  </data>
+  <data name="KDLG_ET_UEBERNAHME_OK" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="KDLG_ET_UEBERNAHME_TITEL" xml:space="preserve">
+    <value>Apply from catalog</value>
   </data>
 </root>

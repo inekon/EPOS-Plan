@@ -74,6 +74,7 @@ namespace WindowsFormsApplication1
             pnlInhalt.Controls.Clear();
 
             if (_projektId <= 0) KatalogLeisteSicherstellen();
+            else ProjektLeisteSicherstellen();
 
             // Erster Träger vorgewählt — ein leerer Detailbereich sah wie ein
             // fehlender Dialog aus (Befund 26.08.2026, Katalogkontext).
@@ -306,6 +307,106 @@ namespace WindowsFormsApplication1
             int projekt = _projektId;
             SetControls(projekt);
             if (auswahlId > 0) WaehleTraeger(auswahlId);
+        }
+
+        // ---- Ä10: Projektkontext — Übernahme aus dem Katalog -----------------
+        private Panel _projektLeiste;
+
+        /// <summary>Ä10 (KD4-Punkt § 7.2): Katalogträger ins Projekt übernehmen
+        /// bzw. eine Zuordnung wieder lösen (Anlagen schützen ihre Träger).</summary>
+        private void ProjektLeisteSicherstellen()
+        {
+            if (_projektLeiste != null) return;
+
+            _projektLeiste = new Panel { Height = 38, Dock = DockStyle.Bottom };
+            var btnUebernehmen = new Button
+            {
+                Text = T("KDLG_ET_BTN_UEBERNEHMEN", "Aus Katalog übernehmen…"),
+                Location = new Point(4, 6),
+                Size = new Size(170, 26),
+                UseVisualStyleBackColor = true
+            };
+            btnUebernehmen.Click += (s, e) => KatalogUebernahme();
+            var btnEntfernen = new Button
+            {
+                Text = T("KDLG_ET_BTN_ENTFERNEN", "Entfernen"),
+                Location = new Point(178, 6),
+                Size = new Size(90, 26),
+                UseVisualStyleBackColor = true
+            };
+            btnEntfernen.Click += (s, e) =>
+            {
+                var c = lstTraeger.SelectedItem as EnergyCarrier;
+                if (c == null) return;
+                if (MessageBox.Show(string.Format(
+                            T("KDLG_ET_ENTFERNEN_FRAGE",
+                              "Träger „{0}“ aus dem Projekt entfernen? (Der Katalogeintrag bleibt.)"),
+                            c.Name),
+                        Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                    return;
+                string grund;
+                if (EnergietraegerKatalogCtrl.AusProjektEntfernen(_projektId, c.ID, out grund))
+                    ListeNeuLaden(0);
+                else
+                    MessageBox.Show(string.Format(
+                            T("KDLG_ET_ENTFERNEN_GESPERRT", "Nicht möglich: {0}"), grund),
+                        Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            };
+            _projektLeiste.Controls.Add(btnUebernehmen);
+            _projektLeiste.Controls.Add(btnEntfernen);
+            lstTraeger.Parent.Controls.Add(_projektLeiste);
+        }
+
+        /// <summary>Mehrfachauswahl der noch nicht zugeordneten Katalogträger.</summary>
+        private void KatalogUebernahme()
+        {
+            List<EnergyCarrier> frei = EnergietraegerKatalogCtrl.NichtZugeordnete(_projektId);
+            if (frei.Count == 0)
+            {
+                MessageBox.Show(T("KDLG_ET_UEBERNAHME_LEER",
+                        "Alle Katalogträger sind dem Projekt bereits zugeordnet."),
+                    Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using (var dlg = new Form())
+            {
+                dlg.Text = T("KDLG_ET_UEBERNAHME_TITEL", "Aus Katalog übernehmen");
+                dlg.FormBorderStyle = FormBorderStyle.FixedDialog;
+                dlg.MinimizeBox = false; dlg.MaximizeBox = false;
+                dlg.StartPosition = FormStartPosition.CenterParent;
+                dlg.ClientSize = new Size(360, 380);
+
+                var liste = new CheckedListBox
+                {
+                    Location = new Point(12, 12),
+                    Size = new Size(336, 316),
+                    CheckOnClick = true
+                };
+                foreach (EnergyCarrier c in frei) liste.Items.Add(c.Name);
+                var ok = new Button
+                {
+                    Text = T("KDLG_ET_UEBERNAHME_OK", "Übernehmen"),
+                    DialogResult = DialogResult.OK,
+                    Location = new Point(152, 340), Size = new Size(95, 27)
+                };
+                var abbruch = new Button
+                {
+                    Text = T("PVW_ABBRECHEN", "Abbrechen"),
+                    DialogResult = DialogResult.Cancel,
+                    Location = new Point(253, 340), Size = new Size(95, 27)
+                };
+                dlg.Controls.Add(liste); dlg.Controls.Add(ok); dlg.Controls.Add(abbruch);
+                dlg.AcceptButton = ok; dlg.CancelButton = abbruch;
+
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+
+                int letzter = 0;
+                foreach (int i in liste.CheckedIndices)
+                    if (EnergietraegerKatalogCtrl.InsProjekt(_projektId, frei[i].ID))
+                        letzter = frei[i].ID;
+                if (letzter > 0) ListeNeuLaden(letzter);
+            }
         }
 
         /// <summary>Statuszeilen der Karten (kompakte Fassung der Form_Kosten-Logik).</summary>

@@ -142,6 +142,79 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@id", carrierId));
         }
 
+        // ------------------------------------------ Projektzuordnung (Ä10) ---
+        //
+        // Der offene KD4-Punkt § 7.2: Katalogträger werden dem Projekt per
+        // Zuordnungszeile in energy_project_settings zugeteilt — alle
+        // custom_-Felder bleiben NULL, es GELTEN also die Katalogwerte (eine
+        // Wahrheit; Projektwerte entstehen erst durch Pflege im Projektkontext).
+
+        /// <summary>Katalogträger, die dem Projekt noch nicht zugeordnet sind.</summary>
+        internal static List<EnergyCarrier> NichtZugeordnete(int projektId)
+        {
+            var zugeordnet = new HashSet<int>();
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT [ID_Energieträger] FROM energy_project_settings WHERE ID_Projekt = ?",
+                    new OleDbParameter("@p", projektId));
+                if (dt != null)
+                    foreach (DataRow r in dt.Rows)
+                        if (r[0] != DBNull.Value) zugeordnet.Add(Convert.ToInt32(r[0]));
+            }
+            catch { }
+
+            var frei = new List<EnergyCarrier>();
+            foreach (EnergyCarrier c in Form_Kosten.GetAllCarriers(0))
+                if (!zugeordnet.Contains(c.ID)) frei.Add(c);
+            return frei;
+        }
+
+        /// <summary>Katalogträger ins Projekt übernehmen (idempotent).</summary>
+        internal static bool InsProjekt(int projektId, int carrierId)
+        {
+            if (projektId <= 0 || carrierId <= 0) return false;
+            object da = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM energy_project_settings " +
+                "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                new OleDbParameter("@p", projektId),
+                new OleDbParameter("@c", carrierId));
+            if (da != null && Convert.ToInt32(da) > 0) return true;
+
+            return DataRepository.ExecuteSQL(
+                "INSERT INTO energy_project_settings (ID_Projekt, [ID_Energieträger]) " +
+                "VALUES (?, ?)",
+                new OleDbParameter("@p", projektId),
+                new OleDbParameter("@c", carrierId));
+        }
+
+        /// <summary>Zuordnung lösen; Anlagen des Projekts halten den Träger.</summary>
+        internal static bool AusProjektEntfernen(int projektId, int carrierId, out string grund)
+        {
+            grund = "";
+            object a = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM Tab_Energieanlagen " +
+                "WHERE ID_Projekt = ? AND ID_Carrier = ?",
+                new OleDbParameter("@p", projektId),
+                new OleDbParameter("@c", carrierId));
+            int anlagen = (a == null || a == DBNull.Value) ? 0 : Convert.ToInt32(a);
+            if (anlagen > 0)
+            {
+                grund = anlagen + " Anlage(n) des Projekts verwenden den Träger.";
+                return false;
+            }
+
+            DataRepository.ExecuteSQL(
+                "DELETE FROM energy_price WHERE id_projekt = ? AND carrier_id = ?",
+                new OleDbParameter("@p", projektId),
+                new OleDbParameter("@c", carrierId));
+            return DataRepository.ExecuteSQL(
+                "DELETE FROM energy_project_settings " +
+                "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                new OleDbParameter("@p", projektId),
+                new OleDbParameter("@c", carrierId));
+        }
+
         // ------------------------------------------------------------- Helfer ---
 
         private static int NaechsteId()
