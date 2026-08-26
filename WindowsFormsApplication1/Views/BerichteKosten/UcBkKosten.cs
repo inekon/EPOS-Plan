@@ -122,6 +122,13 @@ namespace WindowsFormsApplication1
             this.lblProjekt.TextAlign = ContentAlignment.MiddleLeft;
             this.lblProjekt.Text = MyResource.Resource.BK_KOSTEN_KEIN_PROJEKT;
 
+            this.btnTraeger.Dock = DockStyle.Fill;
+            this.btnTraeger.Margin = new Padding(12, 0, 0, 0);
+            this.btnTraeger.AutoSize = true;
+            this.btnTraeger.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            this.btnTraeger.Text = Text_("BK_KOSTEN_BTN_TRAEGER", "Energieträgerverwaltung…");
+            this.btnTraeger.Click += new EventHandler(this.btnTraeger_Click);
+
             this.btnVerwaltung.Dock = DockStyle.Fill;
             this.btnVerwaltung.Margin = new Padding(12, 0, 0, 0);
             this.btnVerwaltung.AutoSize = true;
@@ -130,14 +137,16 @@ namespace WindowsFormsApplication1
             this.btnVerwaltung.Click += new EventHandler(this.btnVerwaltung_Click);
 
             this.pnlKopf.Dock = DockStyle.Fill;
-            this.pnlKopf.ColumnCount = 2;
+            this.pnlKopf.ColumnCount = 3;
             this.pnlKopf.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
+            this.pnlKopf.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             this.pnlKopf.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             this.pnlKopf.RowCount = 1;
             this.pnlKopf.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
             this.pnlKopf.Margin = new Padding(0, 0, 0, 8);
             this.pnlKopf.Controls.Add(this.lblProjekt, 0, 0);
-            this.pnlKopf.Controls.Add(this.btnVerwaltung, 1, 0);
+            this.pnlKopf.Controls.Add(this.btnTraeger, 1, 0);
+            this.pnlKopf.Controls.Add(this.btnVerwaltung, 2, 0);
 
             // --- Drei Kategorie-Kacheln ---
             this.kInvest.Setze(MyResource.Resource.BK_KOSTEN_INVEST,
@@ -258,11 +267,13 @@ namespace WindowsFormsApplication1
                 lblProjekt.Text = MyResource.Resource.BK_KOSTEN_KEIN_PROJEKT;
                 kInvest.Wert = "—"; kBetrieb.Wert = "—"; kEnergie.Wert = "—";
                 btnVerwaltung.Enabled = false;
+                btnTraeger.Enabled = false;
                 Melde("");
                 return;
             }
 
             btnVerwaltung.Enabled = true;
+            btnTraeger.Enabled = true;
             lblProjekt.Text = string.Format(MyResource.Resource.BK_KOSTEN_PROJEKT, _projektname);
 
             var kultur = BerichtTexte.Kultur;
@@ -846,16 +857,35 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------- Aktionen
 
+        private readonly Button btnTraeger = new Button();
+
         private void btnVerwaltung_Click(object sender, EventArgs e)
         {
             if (_idProjekt <= 0) return;
             Form f = this.FindForm();
-            using (var dlg = new Form_Kosten(_idProjekt))
+            // KD6a (§ 3.2): Der Einstieg führt in den NEUEN Kostendialog im
+            // Projektmodus — der alte Editor Form_Kosten ist kein Einstieg mehr.
+            using (var dlg = new Form_KostenKomponente())
             {
-                dlg.m_ID_Projekt = _idProjekt;
+                dlg.SetProjekt(_idProjekt, _projektname);
                 if (f != null) dlg.ShowDialog(f); else dlg.ShowDialog();
             }
             Aktualisiere();   // Kompaktwerte nach der Pflege auffrischen
+        }
+
+        /// <summary>KD6a: direkter Einstieg in die Energieträgerverwaltung im
+        /// Projektkontext — dieselbe Pflege wie über Administration, vorgefiltert
+        /// auf das Projekt.</summary>
+        private void btnTraeger_Click(object sender, EventArgs e)
+        {
+            if (_idProjekt <= 0) return;
+            Form f = this.FindForm();
+            using (var dlg = new Form_Energietraeger())
+            {
+                dlg.SetControls(_idProjekt);
+                if (f != null) dlg.ShowDialog(f); else dlg.ShowDialog();
+            }
+            Aktualisiere();
         }
 
         // -------------------------------------------------------------- Helfer
@@ -890,7 +920,9 @@ namespace WindowsFormsApplication1
         /// Eine Kategorie-Kachel: Überschrift, großer Wert, kleine Herkunftszeile.
         /// Bewusst schlicht gehalten (Rahmen + Flächenfarbe des Hausstils).
         /// </summary>
-        private class Kachel : TableLayoutPanel
+        // KD6a: internal — die Wirtschaftlichkeitsseite nutzt DIESELBE Karte
+        // (eine Gestaltungs-Wahrheit statt einer Kopie).
+        internal class Kachel : TableLayoutPanel
         {
             private readonly Label _titel = new Label();
             private readonly Label _wert = new Label();

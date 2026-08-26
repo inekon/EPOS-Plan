@@ -7202,7 +7202,7 @@ Please run the EPOS-Plan setup again or install the Microsoft Access Database En
     <value>Net amount [€/a]</value>
   </data>
   <data name="KDLG_SP_NUTZUNG" xml:space="preserve">
-    <value>Life [a]</value>
+    <value>Service life [a]</value>
   </data>
   <data name="KDLG_SP_WORSTBEST" xml:space="preserve">
     <value>Worst/best</value>
@@ -7719,5 +7719,41 @@ Please run the EPOS-Plan setup again or install the Microsoft Access Database En
   </data>
   <data name="PVW_IMPORT_OK" xml:space="preserve">
     <value>Market values imported: </value>
+  </data>
+  <data name="BK_KOSTEN_BTN_TRAEGER" xml:space="preserve">
+    <value>Energy carrier management…</value>
+  </data>
+  <data name="KDLG_BTN_UEBERNAHME_PROJEKT" xml:space="preserve">
+    <value>Apply from template…</value>
+  </data>
+  <data name="KDLG_TITEL_PROJEKT" xml:space="preserve">
+    <value>Cost management {0} — {1}</value>
+  </data>
+  <data name="KDLG_TT_BETRAG_PROJEKT" xml:space="preserve">
+    <value>Calculated from rate and the project's reference quantity.</value>
+  </data>
+  <data name="WIRT_KACHEL_AMORTISATION" xml:space="preserve">
+    <value>Payback</value>
+  </data>
+  <data name="WIRT_KACHEL_ANNUITAET" xml:space="preserve">
+    <value>Annuity</value>
+  </data>
+  <data name="WIRT_KACHEL_BESTE" xml:space="preserve">
+    <value>best variant: {0}</value>
+  </data>
+  <data name="WIRT_KACHEL_IRR" xml:space="preserve">
+    <value>Internal rate of return</value>
+  </data>
+  <data name="WIRT_KACHEL_KEINE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="WIRT_KACHEL_KW" xml:space="preserve">
+    <value>NPV vs. base project</value>
+  </data>
+  <data name="WIRT_KACHEL_NUR_STAMM" xml:space="preserve">
+    <value>only base project computed</value>
+  </data>
+  <data name="WIRT_KACHEL_STAMM_KW" xml:space="preserve">
+    <value>net present value of the base project</value>
   </data>
 </root>

@@ -1532,7 +1532,7 @@ namespace WindowsFormsApplication1
         /// zeigten nur Gewerke, die im (Assistenten-)Projekt vorkommen.
         /// </para>
         /// </remarks>
-        private static List<string> ProjektKomponenten(int projektID)
+        internal static List<string> ProjektKomponenten(int projektID)
         {
             var liste = new List<string>();
             if (projektID <= 0) return liste;

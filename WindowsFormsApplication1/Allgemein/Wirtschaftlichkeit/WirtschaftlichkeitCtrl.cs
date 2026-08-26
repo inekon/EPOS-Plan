@@ -3897,26 +3897,34 @@ namespace WindowsFormsApplication1
             catch { return null; }
         }
 
-        /// <summary>Arbeitspreis Strom [€/kWh] des Projekt-Stromträgers; null = keiner gepflegt.</summary>
+        /// <summary>Arbeitspreis Strom [€/kWh] des Projekt-Stromträgers; null = keiner gepflegt.
+        /// <para><c>custom_price</c> ist eine Lazy-Spalte und fehlt auf nie berührten
+        /// Datenbanken (Produktiv-Befund 26.08.2026) - sie wird deshalb vor dem
+        /// Zugriff still geprobt statt blind angefragt.</para></summary>
         internal static double? StromArbeitspreisEurJeKwh(int idProjekt)
         {
             try
             {
+                // Bestandsspalten der Kostenwelt: custom_price_work (Projekt) vor
+                // price_work (Katalog) - NICHT "custom_price"/"price" (Befund
+                // 26.08.2026: diese Namen existieren nur auf der Testkopie, der
+                // Produktivbestand kennt sie nicht -> ACE-Parameterfehler).
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT TOP 1 s.custom_price, ec.price " +
+                    "SELECT TOP 1 s.custom_price_work AS Projektpreis, ec.price_work AS price " +
                     "FROM energy_project_settings AS s " +
                     "INNER JOIN energy_carrier AS ec ON s.[ID_Energieträger] = ec.id " +
                     "WHERE s.ID_Projekt = ? AND ec.pricing_model = 'ELECTRICITY'",
                     new OleDbParameter("@p", idProjekt));
                 if (dt == null || dt.Rows.Count == 0) return null;
                 DataRow r = dt.Rows[0];
-                double? projektwert = D2(r, "custom_price");
+                double? projektwert = D2(r, "Projektpreis");
                 if (projektwert.HasValue && projektwert.Value > 0) return projektwert;
                 double? katalogwert = D2(r, "price");
                 return katalogwert.HasValue && katalogwert.Value > 0 ? katalogwert : null;
             }
             catch { return null; }
         }
+
 
         private static double? D2(DataRow r, string spalte)
         {
@@ -4125,14 +4133,27 @@ namespace WindowsFormsApplication1
         private static bool StartjahrSpalteVorhanden()
         {
             if (_startjahrSpalte.HasValue) return _startjahrSpalte.Value;
-            try
-            {
-                DataRepository.ExecuteScalar(
-                    "SELECT MAX([" + SchemaKatalog.SPALTE_PW_STARTJAHR + "]) FROM Tab_ProjektWerte");
-                _startjahrSpalte = true;
-            }
-            catch { _startjahrSpalte = false; }
+            _startjahrSpalte = SpalteVorhanden("Tab_ProjektWerte",
+                                               SchemaKatalog.SPALTE_PW_STARTJAHR);
             return _startjahrSpalte.Value;
+        }
+
+        /// <summary>
+        /// Stille Spaltenprobe: <c>DataRepository</c> meldet Abfragefehler selbst
+        /// (MessageBox) und WIRFT NICHT - eine Probe per try/catch griffe also nie
+        /// und zeigte dem Anwender einen Scheinfehler. Die Probe laeuft deshalb im
+        /// <c>EngineModus</c> (Meldungen wandern still in die Sammelliste) und
+        /// wertet die Liste aus. Befund 26.08.2026 (Produktiv-DB ohne Lazy-Spalte).
+        /// </summary>
+        internal static bool SpalteVorhanden(string tabelle, string spalte)
+        {
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();                  // Liste leeren
+                DataRepository.ExecuteScalar(
+                    "SELECT MAX([" + spalte + "]) FROM [" + tabelle + "]");
+                return DataRepository.StilleFehlerAbholen().Length == 0;
+            }
         }
 
         /// <summary>KD6 (§ 11): <c>Tab_ProjektWerte.StartJahr</c> der Zeile —

@@ -7208,7 +7208,7 @@ Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Micro
     <value>Betrag netto [€/a]</value>
   </data>
   <data name="KDLG_SP_NUTZUNG" xml:space="preserve">
-    <value>Nutzung [a]</value>
+    <value>Nutzungsdauer [a]</value>
   </data>
   <data name="KDLG_SP_WORSTBEST" xml:space="preserve">
     <value>Worst/Best</value>
@@ -7725,5 +7725,41 @@ Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Micro
   </data>
   <data name="PVW_IMPORT_OK" xml:space="preserve">
     <value>Marktwerte übernommen: </value>
+  </data>
+  <data name="BK_KOSTEN_BTN_TRAEGER" xml:space="preserve">
+    <value>Energieträgerverwaltung…</value>
+  </data>
+  <data name="KDLG_BTN_UEBERNAHME_PROJEKT" xml:space="preserve">
+    <value>Aus Vorlage übernehmen…</value>
+  </data>
+  <data name="KDLG_TITEL_PROJEKT" xml:space="preserve">
+    <value>Kostenverwaltung {0} — {1}</value>
+  </data>
+  <data name="KDLG_TT_BETRAG_PROJEKT" xml:space="preserve">
+    <value>Aus Satz und Bezugsgröße des Projekts berechnet.</value>
+  </data>
+  <data name="WIRT_KACHEL_AMORTISATION" xml:space="preserve">
+    <value>Amortisation</value>
+  </data>
+  <data name="WIRT_KACHEL_ANNUITAET" xml:space="preserve">
+    <value>Annuität</value>
+  </data>
+  <data name="WIRT_KACHEL_BESTE" xml:space="preserve">
+    <value>beste Variante: {0}</value>
+  </data>
+  <data name="WIRT_KACHEL_IRR" xml:space="preserve">
+    <value>Interner Zinsfuß</value>
+  </data>
+  <data name="WIRT_KACHEL_KEINE" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="WIRT_KACHEL_KW" xml:space="preserve">
+    <value>Kapitalwert ggü. Stamm</value>
+  </data>
+  <data name="WIRT_KACHEL_NUR_STAMM" xml:space="preserve">
+    <value>nur Stammprojekt gerechnet</value>
+  </data>
+  <data name="WIRT_KACHEL_STAMM_KW" xml:space="preserve">
+    <value>Nettobarwert des Stammprojekts</value>
   </data>
 </root>

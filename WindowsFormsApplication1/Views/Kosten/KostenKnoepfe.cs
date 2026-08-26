@@ -97,9 +97,11 @@ namespace WindowsFormsApplication1
         {
             if (projektId > 0)
             {
-                using (var dlg = new Form_Kosten(projektId))
+                // KD6a: Der Projektkontext läuft über den NEUEN Kostendialog —
+                // Form_Kosten bleibt nur noch Logikträger (LiesKomponentenSummen u. a.).
+                using (var dlg = new Form_KostenKomponente())
                 {
-                    dlg.WaehleKomponente(komponente, betrieb);
+                    dlg.SetProjekt(projektId, ProjektName(projektId), komponente, betrieb);
                     dlg.ShowDialog(eigner);
                 }
             }
@@ -128,6 +130,18 @@ namespace WindowsFormsApplication1
                 if (tb != null) tb.ReadOnly = true;
                 else c.Enabled = false;
             }
+        }
+
+        private static string ProjektName(int projektId)
+        {
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT Projektname FROM Tab_Projekt WHERE ID = ?",
+                    new System.Data.OleDb.OleDbParameter("@p", projektId));
+                return o == null || o == DBNull.Value ? "" : Convert.ToString(o);
+            }
+            catch { return ""; }
         }
 
         /// <summary>Der FK8-Standardhinweis (für die Leiste).</summary>

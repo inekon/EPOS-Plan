@@ -31,6 +31,12 @@ namespace WindowsFormsApplication1
         private IList<KostenVorlageKopf> _varianten;
         private bool _fuellt;
 
+        // ---- PROJEKTMODUS (KD6a, § 3.2/§ 5 dritter Kontext) ------------------
+        private int _idProjekt;
+        private string _projektname = "";
+        private List<KostenProjektPositionenCtrl.Zeile> _projektZeilen;
+        private bool ProjektModus { get { return _idProjekt > 0; } }
+
         /// <summary>ETAPPE KD5 (§ 6): Inhalt des Reiters „Ertrag/Bonus".</summary>
         private ucErtragBonus _ertrag;
 
@@ -72,6 +78,51 @@ namespace WindowsFormsApplication1
             rbBetrieb.Checked = true;
         }
 
+        /// <summary>
+        /// PROJEKTMODUS (KD6a): Der Dialog pflegt die Tab_ProjektWerte-Positionen
+        /// des Projekts — gleiche Optik und Bedienung wie der Stammkontext, aber
+        /// ohne Variantenzeile; „Übernehmen“ holt Vorlagen INS Projekt (§ 8),
+        /// ± pflegt Worst/Best und Startjahr je Position (§ 11).
+        /// </summary>
+        public void SetProjekt(int idProjekt, string projektname,
+                               string komponente = null, bool betrieb = false)
+        {
+            _idProjekt = idProjekt;
+            _projektname = projektname ?? "";
+
+            // Komponentenauswahl des Projekts: verbaute Anlagen und Komponenten
+            // mit Positionen, Ä7-gefiltert — dieselbe Wahrheit wie der alte
+            // Kosteneditor (Form_Kosten.ProjektKomponenten).
+            var namen = new HashSet<string>(Form_Kosten.ProjektKomponenten(idProjekt),
+                                            StringComparer.Ordinal);
+            var projektKomponenten = new List<KeyValuePair<int, string>>();
+            foreach (KeyValuePair<int, string> k in KostenVorlagenCtrl.Komponenten())
+                if (namen.Contains(k.Value)) projektKomponenten.Add(k);
+
+            _fuellt = true;
+            _komponenten = projektKomponenten;
+            cmbKomponente.Items.Clear();
+            foreach (KeyValuePair<int, string> k in _komponenten)
+                cmbKomponente.Items.Add(k.Value);
+            if (cmbKomponente.Items.Count > 0) cmbKomponente.SelectedIndex = 0;
+            _fuellt = false;
+
+            // Variantenpflege ist Stammsache — im Projekt verschwindet die Zeile.
+            lblVariante.Visible = false;
+            cmbVariante.Visible = false;
+            btnVarianteNeu.Visible = false;
+            btnSpeichernUnter.Visible = false;
+            btnVarianteLoeschen.Visible = false;
+            lblReadOnly.Visible = false;
+            btnUebernahme.Text = Text_("KDLG_BTN_UEBERNAHME_PROJEKT",
+                                       "Aus Vorlage übernehmen…");
+
+            if (betrieb) rbBetrieb.Checked = true;
+            if (!string.IsNullOrEmpty(komponente)) SetControls(komponente);
+
+            Kontext_Geaendert(this, EventArgs.Empty);
+        }
+
         // ------------------------------------------------------------- Kontext ---
 
         private int KomponentenId
@@ -101,7 +152,8 @@ namespace WindowsFormsApplication1
         {
             if (_fuellt) return;
             KopfAnzeigen();
-            VariantenLaden(null);
+            if (ProjektModus) RasterAufbauen();
+            else VariantenLaden(null);
             ErtragReiterSteuern();
         }
 
@@ -138,7 +190,10 @@ namespace WindowsFormsApplication1
         {
             string name = cmbKomponente.SelectedIndex >= 0
                 ? (string)cmbKomponente.Items[cmbKomponente.SelectedIndex] : "";
-            lblTitel.Text = string.Format(Text_("KDLG_TITEL", "Kostenverwaltung {0}"), name);
+            lblTitel.Text = ProjektModus
+                ? string.Format(Text_("KDLG_TITEL_PROJEKT", "Kostenverwaltung {0} — {1}"),
+                                name, _projektname)
+                : string.Format(Text_("KDLG_TITEL", "Kostenverwaltung {0}"), name);
             lblUntertitel.Text = rbInvest.Checked
                 ? Text_("KDLG_UNTERTITEL_INVEST", "Investitionskosten nach VDI 2067")
                 : Text_("KDLG_UNTERTITEL_BETRIEB", "Betriebskosten nach VDI 2067");
@@ -173,6 +228,8 @@ namespace WindowsFormsApplication1
             foreach (ucVorlagenZeile z in _zeilen) { pnlZeilen.Controls.Remove(z); z.Dispose(); }
             _zeilen.Clear();
 
+            if (ProjektModus) { ProjektRasterAufbauen(); return; }
+
             KostenVorlageKopf v = Variante;
             bool nurLesen = v == null || v.NurLesen;
             lblReadOnly.Visible = v != null && v.NurLesen;
@@ -197,6 +254,89 @@ namespace WindowsFormsApplication1
             SummenAnzeigen();
         }
 
+        /// <summary>Projektzweig des Rasters (KD6a): Zeilen aus
+        /// <see cref="KostenProjektPositionenCtrl"/>, Schreibwege injiziert.</summary>
+        private void ProjektRasterAufbauen()
+        {
+            btnPositionNeu.Enabled = KomponentenId > 0;
+            _projektZeilen = KomponentenId > 0
+                ? KostenProjektPositionenCtrl.Lies(_idProjekt, KomponentenId, KategorieId)
+                : new List<KostenProjektPositionenCtrl.Zeile>();
+
+            int y = 2;
+            foreach (KostenProjektPositionenCtrl.Zeile pz in _projektZeilen)
+            {
+                ucVorlagenZeile z = ZeileBauen(y);
+                ProjektWegeSetzen(z);
+                z.Zeige(pz.Raster, rbInvest.Checked, false);
+                y += 36;
+            }
+            if (KomponentenId > 0)
+            {
+                ucVorlagenZeile neu = ZeileBauen(y);
+                ProjektWegeSetzen(neu);
+                neu.ZeigeNeu(0, rbInvest.Checked, false);
+            }
+            pnlZeilen.ResumeLayout();
+            SummenAnzeigen();
+        }
+
+        private void ProjektWegeSetzen(ucVorlagenZeile z)
+        {
+            z.ProjektModus = true;
+            z.SpeichernWeg = ProjektZeileSichern;
+            z.NeuWeg = (name, kostenart, bemessung) =>
+                KostenProjektPositionenCtrl.Neu(_idProjekt, KomponentenId, KategorieId,
+                                                name, kostenart, bemessung);
+            z.WorstBestAngefordert += Zeile_WorstBestAngefordert;
+        }
+
+        private bool ProjektZeileSichern(KostenVorlagenPosition raster)
+        {
+            KostenProjektPositionenCtrl.Zeile pz = ProjektZeileZu(raster);
+            return pz != null && KostenProjektPositionenCtrl.Speichern(pz);
+        }
+
+        private KostenProjektPositionenCtrl.Zeile ProjektZeileZu(KostenVorlagenPosition raster)
+        {
+            if (_projektZeilen == null || raster == null) return null;
+            foreach (KostenProjektPositionenCtrl.Zeile pz in _projektZeilen)
+                if (ReferenceEquals(pz.Raster, raster)) return pz;
+            return null;
+        }
+
+        /// <summary>± im Projektmodus: Worst/Best + Startjahr über den KD6-Dialog
+        /// (<see cref="Form_CaseEingabe"/>) — dieselbe Eingabe wie der Kosteneditor.</summary>
+        private void Zeile_WorstBestAngefordert(object sender, KostenVorlagenPosition raster)
+        {
+            KostenProjektPositionenCtrl.Zeile pz = ProjektZeileZu(raster);
+            if (pz == null) return;
+
+            var daten = new KostenPosition
+            {
+                ID = raster.Id,
+                Name = raster.Bezeichnung,
+                Betrag = (decimal)(raster.BetragNetto ?? 0),
+                BestCase = (decimal)pz.Best,
+                WorstCase = (decimal)pz.Worst,
+                BestCase_Nutzungsdauer = (decimal)pz.BestNutzung,
+                WorstCase_Nutzungsdauer = (decimal)pz.WorstNutzung,
+                Nutzungsdauer = (decimal)(raster.Nutzungsdauer ?? 0),
+                IstErloes = raster.IstErloes,
+                StartJahr = pz.StartJahr
+            };
+            using (var frm = new Form_CaseEingabe(daten))
+            {
+                if (frm.ShowDialog(this) != DialogResult.OK) return;
+                pz.Best = (double)daten.BestCase;
+                pz.Worst = (double)daten.WorstCase;
+                pz.BestNutzung = (double)daten.BestCase_Nutzungsdauer;
+                pz.WorstNutzung = (double)daten.WorstCase_Nutzungsdauer;
+                pz.StartJahr = daten.StartJahr;
+                KostenProjektPositionenCtrl.CaseSichern(pz);
+            }
+        }
+
         private ucVorlagenZeile ZeileBauen(int y)
         {
             var z = new ucVorlagenZeile();
@@ -218,7 +358,10 @@ namespace WindowsFormsApplication1
                     string.Format(Text_("KDLG_MSG_POS_LOESCHEN", "Position „{0}\" löschen?"), p.Bezeichnung),
                     Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
                 return;
-            if (KostenVorlagenCtrl.PositionLoeschen(p.Id)) RasterAufbauen();
+            bool geloescht = ProjektModus
+                ? KostenProjektPositionenCtrl.Loeschen(p.Id)
+                : KostenVorlagenCtrl.PositionLoeschen(p.Id);
+            if (geloescht) RasterAufbauen();
         }
 
         private void Zeile_EditorAngefordert(object sender, KostenVorlagenPosition p)
@@ -234,6 +377,18 @@ namespace WindowsFormsApplication1
 
         private void btnPositionNeu_Click(object sender, EventArgs e)
         {
+            if (ProjektModus)
+            {
+                string kostenartP = rbInvest.Checked
+                    ? DbWerte.KOSTENART_KAPITALGEBUNDEN : DbWerte.KOSTENART_BETRIEBSGEBUNDEN;
+                string bemessungP = rbInvest.Checked
+                    ? DbWerte.BEMESSUNG_BETRAG : DbWerte.BEMESSUNG_JAHRESBETRAG;
+                if (KostenProjektPositionenCtrl.Neu(_idProjekt, KomponentenId, KategorieId,
+                        Text_("KDLG_POS_NEU_VORGABE", "Neue Position"), kostenartP, bemessungP) != 0)
+                    RasterAufbauen();
+                return;
+            }
+
             KostenVorlageKopf v = Variante;
             if (v == null) return;
             if (v.NurLesen)
@@ -364,6 +519,8 @@ namespace WindowsFormsApplication1
                 dlg.SetControls(KomponentenId, name, KategorieId, Variante);
                 dlg.ShowDialog(this);
             }
+            // Projektmodus: Übernommene Positionen sofort zeigen (§ 8-Fluss).
+            if (ProjektModus) RasterAufbauen();
         }
 
         // -------------------------------------------------------------- Diverses ---
