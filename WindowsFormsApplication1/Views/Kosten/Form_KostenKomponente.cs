@@ -90,17 +90,12 @@ namespace WindowsFormsApplication1
             _idProjekt = idProjekt;
             _projektname = projektname ?? "";
 
-            // Komponentenauswahl des Projekts: verbaute Anlagen und Komponenten
-            // mit Positionen, Ä7-gefiltert — dieselbe Wahrheit wie der alte
-            // Kosteneditor (Form_Kosten.ProjektKomponenten).
-            var namen = new HashSet<string>(Form_Kosten.ProjektKomponenten(idProjekt),
-                                            StringComparer.Ordinal);
-            var projektKomponenten = new List<KeyValuePair<int, string>>();
-            foreach (KeyValuePair<int, string> k in KostenVorlagenCtrl.Komponenten())
-                if (namen.Contains(k.Value)) projektKomponenten.Add(k);
-
+            // Ä10: Im Projektmodus stehen ALLE Anlagen-Komponenten (Ä7) zur
+            // Wahl — auch solche ohne Anlage/Positionen. Nur so lässt sich eine
+            // Stammvorlage für eine noch leere Komponente übernehmen (§ 8);
+            // das Raster zeigt bis dahin nur die „+ Neue Position…“-Zeile.
             _fuellt = true;
-            _komponenten = projektKomponenten;
+            _komponenten = KostenVorlagenCtrl.Komponenten();
             cmbKomponente.Items.Clear();
             foreach (KeyValuePair<int, string> k in _komponenten)
                 cmbKomponente.Items.Add(k.Value);

@@ -7208,7 +7208,8 @@ Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Micro
     <value>Betrag netto [€/a]</value>
   </data>
   <data name="KDLG_SP_NUTZUNG" xml:space="preserve">
-    <value>Nutzungsdauer [a]</value>
+    <value>Nutzungs-
+dauer [a]</value>
   </data>
   <data name="KDLG_SP_WORSTBEST" xml:space="preserve">
     <value>Worst/Best</value>
@@ -7803,5 +7804,26 @@ Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Micro
   </data>
   <data name="KDLG_ET_STAMM_SPEICHERN" xml:space="preserve">
     <value>Übernehmen</value>
+  </data>
+  <data name="KDLG_ET_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="KDLG_ET_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Aus Katalog übernehmen…</value>
+  </data>
+  <data name="KDLG_ET_ENTFERNEN_FRAGE" xml:space="preserve">
+    <value>Träger „{0}“ aus dem Projekt entfernen? (Der Katalogeintrag bleibt.)</value>
+  </data>
+  <data name="KDLG_ET_ENTFERNEN_GESPERRT" xml:space="preserve">
+    <value>Nicht möglich: {0}</value>
+  </data>
+  <data name="KDLG_ET_UEBERNAHME_LEER" xml:space="preserve">
+    <value>Alle Katalogträger sind dem Projekt bereits zugeordnet.</value>
+  </data>
+  <data name="KDLG_ET_UEBERNAHME_OK" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="KDLG_ET_UEBERNAHME_TITEL" xml:space="preserve">
+    <value>Aus Katalog übernehmen</value>
   </data>
 </root>

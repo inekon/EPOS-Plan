@@ -211,3 +211,30 @@ Anlagendialoge, Ertragsreiter, Übernahme-Dialog, Wirtschaftlichkeitsseite,
 Projektmodus) 0 Befunde; Sichtbeleg `ae9_et_katalogpflege.png`.
 Feststoffe ohne Brennstoff-Stammtreffer führen ID_Brennstoff 0
 (Katalogwerte tragen Preis/Emission; Verknüpfung auf Zuruf).
+
+---
+
+## Nachtrag Ä10 (26.08.2026, Nutzerauftrag)
+
+Katalog-Übernahmen in die PROJEKT-Dialoge:
+
+- **Energieträgerverwaltung (Projektkontext):** Leiste „Aus Katalog
+  übernehmen…“ (Mehrfachauswahl der noch nicht zugeordneten
+  Katalogträger; die Zuordnung entsteht mit leeren custom-Feldern — es
+  gelten die KATALOGwerte, eine Wahrheit) und „Entfernen“ (Anlagen des
+  Projekts schützen ihren Träger; projektbezogene Preishistorie wird mit
+  gelöst). Damit ist der offene KD4-Punkt § 7.2 (Träger-Übernahme)
+  ERLEDIGT.
+- **Kostenverwaltung (Projektmodus):** Die Komponenten-Klappliste bietet
+  jetzt ALLE sieben Anlagen-Komponenten an — auch ohne Anlage/Positionen;
+  nur so lässt sich „Aus Vorlage übernehmen…“ (§ 8) für eine noch leere
+  Komponente nutzen.
+- **Kopfzeilen-Fix:** „Betrag netto [€]“ (688 + 110) überdeckte den
+  Nutzungsdauer-Kopf (780) — Köpfe jetzt spaltenbündig zu den
+  Rasterfeldern (688/108, 800/72, zweizeilig „Nutzungs-/dauer [a]“).
+
+Nachweise: kd6-Smoke 51/51 (neu T10–T13: Flüssiggas zuordnen → Liste
+führt den Träger → lösen; Entfernen-Guard am verbauten Erdgas 63);
+Fehlerjagd auf frischer Produktiv-Kopie 0 Befunde; Sichtbeleg
+`ae10_et_projekt.png`. Beobachtung aus der Jagd: Die Produktiv-DB stand
+bereits auf 43 — der stille 42/43-Lauf beim Nutzer war erfolgreich.
