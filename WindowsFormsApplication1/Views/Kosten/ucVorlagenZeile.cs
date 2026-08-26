@@ -63,6 +63,12 @@ namespace WindowsFormsApplication1
         /// <summary>± gedrückt (nur Projektmodus); der Aufrufer öffnet Form_CaseEingabe.</summary>
         public event EventHandler<KostenVorlagenPosition> WorstBestAngefordert;
 
+        /// <summary>Ä12: true = Feldänderungen bleiben im Objekt und gehen ERST
+        /// mit <see cref="JetztSpeichern"/> in die Datenbank (Speichern-Knopf des
+        /// Projektmodus; „Abbrechen“ verwirft sie). Anlegen, Löschen, Editor und
+        /// Worst/Best schreiben weiterhin sofort — sie haben eigene Bestätigungen.</summary>
+        public bool NurExplizitSpeichern;
+
         public ucVorlagenZeile()
         {
             InitializeComponent();
@@ -103,7 +109,9 @@ namespace WindowsFormsApplication1
             btnLoeschen.Enabled = schreibbar;
 
             btnWorstBest.Enabled = ProjektModus && schreibbar;
-            btnEditor.Visible = !ProjektModus;   // der Zeileneditor gehört zur Vorlage
+            // Ä12: Der Stift öffnet auch im Projektmodus den Zeileneditor —
+            // gesichert wird dort über den injizierten Projekt-Schreibweg.
+            btnEditor.Visible = true;
 
             KopplungAnwenden();
             EmpfehlungAnzeigen();
@@ -179,11 +187,38 @@ namespace WindowsFormsApplication1
             Speichern();
         }
 
-        /// <summary>Felder → Position → Datenbank; danach Kopplung nachziehen.</summary>
+        /// <summary>Ä12: expliziter Sicherungsaufruf (Speichern-Knopf) —
+        /// übernimmt die Feldwerte und schreibt über den aktiven Weg; die
+        /// Neu-Zeile legt bei gefülltem Namen an.</summary>
+        public void JetztSpeichern()
+        {
+            if (_neuModus) { NeuAnlegenVersuchen(); return; }
+            if (_pos == null || _nurLesen) return;
+            FelderUebernehmen();
+            InDatenbank();
+        }
+
+        /// <summary>Felder → Position (→ Datenbank, außer im deferred Modus Ä12).</summary>
         private void Speichern()
         {
             if (_pos == null || _nurLesen) return;
+            FelderUebernehmen();
 
+            // Ä12: Projektmodus schreibt erst mit dem Speichern-Knopf — bis
+            // dahin lebt die Änderung nur im Objekt (Abbrechen verwirft sie).
+            if (NurExplizitSpeichern)
+            {
+                _fuellt = true;
+                KopplungAnwenden();
+                _fuellt = false;
+                if (PositionGeaendert != null) PositionGeaendert(this, EventArgs.Empty);
+                return;
+            }
+            InDatenbank();
+        }
+
+        private void FelderUebernehmen()
+        {
             string name = txtBezeichnung.Text.Trim();
             if (name.Length > 0) _pos.Bezeichnung = name;
             else txtBezeichnung.Text = _pos.Bezeichnung;   // leerer Name: zurücksetzen
@@ -200,7 +235,10 @@ namespace WindowsFormsApplication1
                 _pos.BetragNetto = _pos.Satz;
             else
                 _pos.BetragNetto = null;
+        }
 
+        private void InDatenbank()
+        {
             bool gesichert = SpeichernWeg != null
                 ? SpeichernWeg(_pos)
                 : KostenVorlagenCtrl.PositionSpeichern(_pos);

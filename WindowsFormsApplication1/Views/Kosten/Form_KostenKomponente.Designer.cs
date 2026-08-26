@@ -60,6 +60,8 @@ namespace WindowsFormsApplication1
             this.btnUebernahme = new System.Windows.Forms.Button();
             this.btnKatalog = new System.Windows.Forms.Button();
             this.btnPositionNeu = new System.Windows.Forms.Button();
+            this.btnSpeichern = new System.Windows.Forms.Button();
+            this.btnAbbrechen = new System.Windows.Forms.Button();
             this.lblSummeNetto = new System.Windows.Forms.Label();
             this.lblSummeBrutto = new System.Windows.Forms.Label();
             this.tpErtrag = new System.Windows.Forms.TabPage();
@@ -382,6 +384,8 @@ namespace WindowsFormsApplication1
             this.pnlFuss.Controls.Add(this.btnUebernahme);
             this.pnlFuss.Controls.Add(this.btnKatalog);
             this.pnlFuss.Controls.Add(this.btnPositionNeu);
+            this.pnlFuss.Controls.Add(this.btnSpeichern);
+            this.pnlFuss.Controls.Add(this.btnAbbrechen);
             this.pnlFuss.Controls.Add(this.lblSummeNetto);
             this.pnlFuss.Controls.Add(this.lblSummeBrutto);
             this.pnlFuss.Dock = System.Windows.Forms.DockStyle.Bottom;
@@ -417,6 +421,30 @@ namespace WindowsFormsApplication1
             // btnPositionNeu
             //
             this.btnPositionNeu.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnSpeichern.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnSpeichern.Location = new System.Drawing.Point(8, 35);
+            this.btnSpeichern.Name = "btnSpeichern";
+            this.btnSpeichern.Size = new System.Drawing.Size(100, 27);
+            this.btnSpeichern.TabIndex = 10;
+            this.btnSpeichern.Text = "Speichern";
+            this.btnSpeichern.UseVisualStyleBackColor = true;
+            this.btnSpeichern.Visible = false;
+            this.btnSpeichern.Click += new System.EventHandler(this.btnSpeichern_Click);
+            //
+            // btnAbbrechen
+            //
+            this.btnAbbrechen.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnAbbrechen.Location = new System.Drawing.Point(114, 35);
+            this.btnAbbrechen.Name = "btnAbbrechen";
+            this.btnAbbrechen.Size = new System.Drawing.Size(100, 27);
+            this.btnAbbrechen.TabIndex = 11;
+            this.btnAbbrechen.Text = "Abbrechen";
+            this.btnAbbrechen.UseVisualStyleBackColor = true;
+            this.btnAbbrechen.Visible = false;
+            this.btnAbbrechen.Click += new System.EventHandler(this.btnAbbrechen_Click);
+            //
+            // btnPositionNeu
+            //
             this.btnPositionNeu.Location = new System.Drawing.Point(8, 6);
             this.btnPositionNeu.Name = "btnPositionNeu";
             this.btnPositionNeu.Size = new System.Drawing.Size(170, 27);
@@ -525,6 +553,8 @@ namespace WindowsFormsApplication1
         private System.Windows.Forms.Button btnUebernahme;
         private System.Windows.Forms.Button btnKatalog;
         private System.Windows.Forms.Button btnPositionNeu;
+        private System.Windows.Forms.Button btnSpeichern;
+        private System.Windows.Forms.Button btnAbbrechen;
         private System.Windows.Forms.Label lblSummeNetto;
         private System.Windows.Forms.Label lblSummeBrutto;
         private System.Windows.Forms.TabPage tpErtrag;

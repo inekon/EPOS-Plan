@@ -112,6 +112,10 @@ namespace WindowsFormsApplication1
             btnUebernahme.Text = Text_("KDLG_BTN_UEBERNAHME_PROJEKT",
                                        "Aus Vorlage übernehmen…");
 
+            // Ä12: explizites Speichern/Abbrechen gibt es nur im Projektmodus.
+            btnSpeichern.Visible = true;
+            btnAbbrechen.Visible = true;
+
             if (betrieb) rbBetrieb.Checked = true;
             if (!string.IsNullOrEmpty(komponente)) SetControls(komponente);
 
@@ -279,6 +283,7 @@ namespace WindowsFormsApplication1
         private void ProjektWegeSetzen(ucVorlagenZeile z)
         {
             z.ProjektModus = true;
+            z.NurExplizitSpeichern = true;   // Ä12: erst „Speichern“ schreibt
             z.SpeichernWeg = ProjektZeileSichern;
             z.NeuWeg = (name, kostenart, bemessung) =>
                 KostenProjektPositionenCtrl.Neu(_idProjekt, KomponentenId, KategorieId,
@@ -364,10 +369,35 @@ namespace WindowsFormsApplication1
             using (var dlg = new Form_VorlagenPosition())
             {
                 dlg.SetControls(p);
-                if (dlg.ShowDialog(this) == DialogResult.OK &&
-                    KostenVorlagenCtrl.PositionSpeichern(p))
-                    RasterAufbauen();
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                // Ä12: Der Editor hat sein eigenes OK — er schreibt SOFORT,
+                // im Projektmodus über den Projekt-Schreibweg.
+                bool ok = ProjektModus
+                    ? ProjektZeileSichern(p)
+                    : KostenVorlagenCtrl.PositionSpeichern(p);
+                if (ok) RasterAufbauen();
             }
+        }
+
+        /// <summary>Ä12: übernimmt alle Zeilenfelder und schreibt sie in das
+        /// AKTUELLE Ziel (Projektpositionen; im Stammkontext ist der Knopf
+        /// verborgen, dort gilt das Sofort-Speichern des Bestands). Die
+        /// Fußsumme bestätigt mit Uhrzeit.</summary>
+        private void btnSpeichern_Click(object sender, EventArgs e)
+        {
+            foreach (ucVorlagenZeile z in _zeilen) z.JetztSpeichern();
+            RasterAufbauen();
+            lblSummeNetto.Text += "   — " + string.Format(
+                Text_("KDLG_GESPEICHERT", "gespeichert {0:HH:mm} Uhr"), DateTime.Now);
+        }
+
+        /// <summary>Ä12: schließen OHNE Datenübernahme — ungespeicherte
+        /// Feldänderungen verfallen (Anlegen/Löschen/Editor/± haben eigene
+        /// Bestätigungen und sind bereits geschrieben).</summary>
+        private void btnAbbrechen_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
+            Close();
         }
 
         private void btnPositionNeu_Click(object sender, EventArgs e)
@@ -544,6 +574,8 @@ namespace WindowsFormsApplication1
             btnPositionNeu.Text = Text_("KDLG_BTN_POSITION", btnPositionNeu.Text);
             btnUebernahme.Text = Text_("KDLG_BTN_UEBERNAHME", btnUebernahme.Text);
             btnKatalog.Text = Text_("KDLG_BTN_KATALOG", btnKatalog.Text);
+            btnSpeichern.Text = Text_("KDLG_BTN_SPEICHERN", btnSpeichern.Text);
+            btnAbbrechen.Text = Text_("KDLG_BTN_ABBRECHEN", btnAbbrechen.Text);
             lblSpAktionen.Text = Text_("KDLG_SP_AKTIONEN", lblSpAktionen.Text);
             lblSpPosition.Text = Text_("KDLG_SP_POSITION", lblSpPosition.Text);
             lblSpBemessung.Text = Text_("KDLG_SP_BEMESSUNG", lblSpBemessung.Text);
