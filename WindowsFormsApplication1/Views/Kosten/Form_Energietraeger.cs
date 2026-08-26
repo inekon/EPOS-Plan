@@ -47,6 +47,11 @@ namespace WindowsFormsApplication1
 
         /// <summary>Kontext setzen und Liste laden — vor <c>ShowDialog</c>.
         /// <paramref name="projektId"/> 0 = Katalogkontext.</summary>
+        // ---- Ä9: Katalogpflege (nur Katalogkontext) --------------------------
+        private Panel _katalogLeiste;
+        private TextBox _txtStammName;
+        private ComboBox _cmbStammGruppe;
+
         public void SetControls(int projektId)
         {
             _projektId = projektId > 0 ? projektId : 0;
@@ -67,6 +72,8 @@ namespace WindowsFormsApplication1
             finally { _wirdGefuellt = false; }
 
             pnlInhalt.Controls.Clear();
+
+            if (_projektId <= 0) KatalogLeisteSicherstellen();
 
             // Erster Träger vorgewählt — ein leerer Detailbereich sah wie ein
             // fehlender Dialog aus (Befund 26.08.2026, Katalogkontext).
@@ -182,6 +189,42 @@ namespace WindowsFormsApplication1
                 y += 162;
             }
 
+            // Ä9: Im Katalogkontext ist der Stammkopf EDITIERBAR — Bezeichnung
+            // und Gruppen-Zuordnung schreiben direkt in die Katalogzeile.
+            if (_projektId <= 0)
+            {
+                var lblN = new Label { Text = T("KDLG_ET_STAMM_NAME", "Bezeichnung:"),
+                    Location = new Point(12, y + 4), AutoSize = true };
+                _txtStammName = new TextBox { Text = c.Name,
+                    Location = new Point(110, y), Width = 260 };
+                var lblG = new Label { Text = T("KDLG_ET_STAMM_GRUPPE", "Gruppe:"),
+                    Location = new Point(390, y + 4), AutoSize = true };
+                _cmbStammGruppe = new ComboBox { Location = new Point(450, y), Width = 160,
+                    DropDownStyle = ComboBoxStyle.DropDown };
+                foreach (string g in EnergietraegerKatalogCtrl.Gruppen())
+                    _cmbStammGruppe.Items.Add(g);
+                _cmbStammGruppe.Text = c.GroupCode ?? "";
+                var btnStamm = new Button { Text = T("KDLG_ET_STAMM_SPEICHERN", "Übernehmen"),
+                    Location = new Point(624, y - 1), Size = new Size(110, 26) };
+                int stammId = c.ID;
+                btnStamm.Click += (s2, e2) =>
+                {
+                    if (EnergietraegerKatalogCtrl.Umbenennen(stammId,
+                            _txtStammName.Text, _cmbStammGruppe.Text))
+                        ListeNeuLaden(stammId);
+                    else
+                        MessageBox.Show(T("KDLG_ET_STAMM_FEHLER",
+                                "Bezeichnung darf nicht leer sein."), Text,
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                };
+                pnlInhalt.Controls.Add(lblN);
+                pnlInhalt.Controls.Add(_txtStammName);
+                pnlInhalt.Controls.Add(lblG);
+                pnlInhalt.Controls.Add(_cmbStammGruppe);
+                pnlInhalt.Controls.Add(btnStamm);
+                y += 34;
+            }
+
             ucFuelSettings uc = new ucFuelSettings(_projektId, c)
             {
                 Name = "ucFuelSettings",
@@ -192,6 +235,77 @@ namespace WindowsFormsApplication1
             pnlInhalt.Controls.Add(uc);
 
             pnlInhalt.ResumeLayout();
+        }
+
+        /// <summary>Ä9: Verwaltungsleiste des Katalogkontexts — Neu, Variante
+        /// (Kopie mit eigenem Emissions-/Preissatz je Träger), Löschen.</summary>
+        private void KatalogLeisteSicherstellen()
+        {
+            if (_katalogLeiste != null) return;
+
+            _katalogLeiste = new Panel { Height = 38, Dock = DockStyle.Bottom };
+            var btnNeu = KatalogKnopf(T("KDLG_ET_BTN_NEU", "Neu…"), 4);
+            btnNeu.Click += (s, e) =>
+            {
+                using (var dlg = new Form_VariantenName())
+                {
+                    dlg.SetControls(T("KDLG_ET_NEU_TITEL", "Neuer Energieträger"),
+                        T("KDLG_ET_NEU_NAME", "Bezeichnung des neuen Trägers:"),
+                        T("KDLG_ET_NEU_VORGABE", "Neuer Energieträger"));
+                    if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                    int id = EnergietraegerKatalogCtrl.Neu(dlg.Ergebnis, null);
+                    if (id > 0) ListeNeuLaden(id);
+                }
+            };
+            var btnVariante = KatalogKnopf(T("KDLG_ET_BTN_VARIANTE", "Variante"), 78);
+            btnVariante.Click += (s, e) =>
+            {
+                var c = lstTraeger.SelectedItem as EnergyCarrier;
+                if (c == null) return;
+                int id = EnergietraegerKatalogCtrl.Variante(c.ID);
+                if (id > 0) ListeNeuLaden(id);
+            };
+            var btnLoeschen = KatalogKnopf(T("KDLG_ET_BTN_LOESCHEN", "Löschen"), 152);
+            btnLoeschen.Click += (s, e) =>
+            {
+                var c = lstTraeger.SelectedItem as EnergyCarrier;
+                if (c == null) return;
+                if (MessageBox.Show(string.Format(
+                            T("KDLG_ET_LOESCHEN_FRAGE", "Energieträger „{0}“ löschen?"), c.Name),
+                        Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                    return;
+                string grund;
+                if (EnergietraegerKatalogCtrl.Loeschen(c.ID, out grund))
+                    ListeNeuLaden(0);
+                else
+                    MessageBox.Show(string.Format(
+                            T("KDLG_ET_LOESCHEN_GESPERRT",
+                              "Der Träger wird verwendet und bleibt erhalten: {0}"), grund),
+                        Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            };
+            _katalogLeiste.Controls.Add(btnNeu);
+            _katalogLeiste.Controls.Add(btnVariante);
+            _katalogLeiste.Controls.Add(btnLoeschen);
+            lstTraeger.Parent.Controls.Add(_katalogLeiste);
+        }
+
+        private static Button KatalogKnopf(string text, int x)
+        {
+            return new Button
+            {
+                Text = text,
+                Location = new Point(x, 6),
+                Size = new Size(70, 26),
+                UseVisualStyleBackColor = true
+            };
+        }
+
+        /// <summary>Liste neu aus der Datenbank laden und Auswahl setzen (0 = erste).</summary>
+        private void ListeNeuLaden(int auswahlId)
+        {
+            int projekt = _projektId;
+            SetControls(projekt);
+            if (auswahlId > 0) WaehleTraeger(auswahlId);
         }
 
         /// <summary>Statuszeilen der Karten (kompakte Fassung der Form_Kosten-Logik).</summary>

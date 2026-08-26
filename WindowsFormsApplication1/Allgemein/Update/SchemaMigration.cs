@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 41;
+        public const int ZIEL_VERSION = 43;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -2321,6 +2321,16 @@ namespace WindowsFormsApplication1
                         "Die PV-Verguetungstabelle konnte nicht angelegt werden - ohne " +
                         "sie gibt es keinen PV-Verguetungsdialog (PV-Konzept).",
                         Schritt_41_ProjektPhotovoltaik),
+
+            new Schritt(42,
+                        "Katalogtraeger Fluessiggas saeen (Nachtrag Ä9)",
+                        "Der Katalogtraeger Fluessiggas konnte nicht angelegt werden.",
+                        Schritt_42_Fluessiggas),
+
+            new Schritt(43,
+                        "Fehlende VDI-3805-Katalogtraeger nachsaeen (Nachtrag Ä9)",
+                        "Die VDI-3805-Katalogtraeger konnten nicht angelegt werden.",
+                        Schritt_43_VdiTraeger),
         };
 
         // =================================================================================
@@ -5740,6 +5750,149 @@ namespace WindowsFormsApplication1
         private static bool Schritt_40_Leistungspreisreihe(Lauf l)
         {
             return SpaltenAnlegen(l, SchemaKatalog.Schritt40_Spalten);
+        }
+
+        /// <summary>
+        /// Schritt 42 — Nachtrag Ä9 (Nutzerabnahme 26.08.2026): Der Katalog
+        /// führte kein Flüssiggas. Saat mit Standardwerten (Propan):
+        /// Hi 12,87 / Hs 14,00 kWh/kg (DIN 51622-Größenordnung), CO2 239 g/kWh
+        /// (BEHG-Faktor 0,0663 t CO2/GJ × 3,6 GJ/MWh), Preise 0 = nicht
+        /// gepflegt. Idempotent über den Namen; ID per MAX+1 (ADR-001). Der
+        /// Brennstoff-Stammverweis wird per Namenssuche verknüpft, wenn der
+        /// Stamm einen Flüssiggas-Eintrag führt — sonst 0 mit Protokollhinweis.
+        /// </summary>
+        private static bool Schritt_42_Fluessiggas(Lauf l)
+        {
+            object da = Scalar(l,
+                "SELECT COUNT(*) FROM energy_carrier WHERE [name] = ?",
+                new OleDbParameter("@n", "Flüssiggas"));
+            if (da != null && Convert.ToInt32(da) > 0)
+            {
+                l.Zeile("Fluessiggas (Schritt 42): bereits vorhanden - nichts zu tun.");
+                return true;
+            }
+
+            int idBrennstoff = BrennstoffStammId("Flüssiggas");
+
+            object max = Scalar(l, "SELECT MAX(id) FROM energy_carrier");
+            int id = ((max == null || max == DBNull.Value) ? 0 : Convert.ToInt32(max)) + 1;
+            if (NonQuery(l,
+                    "INSERT INTO energy_carrier " +
+                    "(id, ID_Brennstoff, [name], code, group_code, pricing_model, billing_unit, " +
+                    " hi_kwh_per_unit, hs_kwh_per_unit, price_work, price_base, price_power, " +
+                    " co2, so2, nox, is_active) " +
+                    "VALUES (?, ?, 'Flüssiggas', 'Fluessiggas', 'Gas', 'GASEOUS_FUEL', 'kg', " +
+                    " 12.87, 14.0, 0, 0, 0, 239, 0, 0, TRUE)",
+                    new OleDbParameter("@id", id),
+                    new OleDbParameter("@b", idBrennstoff)) < 0)
+                return false;
+
+            l.Zeile("Fluessiggas (Schritt 42): als Katalogtraeger " + id + " gesaet" +
+                    (idBrennstoff > 0
+                        ? " (Brennstoff-Stamm " + idBrennstoff + ")."
+                        : " (ohne Brennstoff-Stammverweis - im Stamm fehlt Fluessiggas)."));
+            return true;
+        }
+
+        /// <summary>
+        /// Brennstoff-Stammverweis per Namenssuche — STILL: <c>ExecuteScalar</c>
+        /// meldet Abfragefehler selbst als MessageBox (Befund 26.08.2026: der
+        /// frühere Spaltenname-Ratelauf öffnete beim App-Start drei Boxen und
+        /// ließ die Migration wie gescheitert wirken). Die Stammspalte heißt
+        /// <c>Bezeichner</c>; die Probe läuft trotzdem im EngineModus, damit ein
+        /// abweichender Altbestand nie wieder eine Box auslöst.
+        /// </summary>
+        private static int BrennstoffStammId(string namensanfang)
+        {
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                object b = DataRepository.ExecuteScalar(
+                    "SELECT MAX(ID) FROM Tab_Brennstoff_Stamm WHERE [Bezeichner] LIKE ?",
+                    new OleDbParameter("@n", namensanfang + "%"));
+                DataRepository.StilleFehlerAbholen();
+                return (b == null || b == DBNull.Value) ? 0 : Convert.ToInt32(b);
+            }
+        }
+
+        /// <summary>
+        /// Schritt 43 — Nachtrag Ä9, zweiter Teil (Nutzerauftrag 26.08.2026:
+        /// „Flüssiggas fehlt → prüfe auch andere Gruppen aus der VDI 3805“):
+        /// Der Katalog folgt der VDI-3805-Energieträgersystematik (die
+        /// <c>code</c>-Werte des Bestands tragen die VDI-Bezeichner). Gegen die
+        /// klassische Trägerliste fehlten die festen Brennstoffe — nachgesät
+        /// werden Steinkohle, Braunkohlebrikett (Gruppe „Kohle“) sowie
+        /// Scheitholz, Holzpellets, Holzhackschnitzel (Gruppe „Holz“; biogen,
+        /// CO2 = 0 wie der Bestands-Biogas-Eintrag). Heiz-/Brennwerte in kWh/kg
+        /// (Literatur-Standardwerte), Preise 0 = nicht gepflegt. Je Träger
+        /// idempotent über den Namen; ID per MAX+1; Preismodell wie der
+        /// Bestands-Feststoff Koks (Rückfall GASEOUS_FUEL).
+        /// </summary>
+        private static bool Schritt_43_VdiTraeger(Lauf l)
+        {
+            string modell = "GASEOUS_FUEL";
+            try
+            {
+                object m = DataRepository.ExecuteScalar(
+                    "SELECT pricing_model FROM energy_carrier WHERE [name] = 'Koks'");
+                if (m != null && m != DBNull.Value && Convert.ToString(m).Length > 0)
+                    modell = Convert.ToString(m);
+            }
+            catch { }
+
+            object[][] traeger =
+            {
+                //            Name                     Gruppe   Hi     Hs     CO2 [g/kWh]
+                new object[] { "Steinkohle",           "Kohle", 8.14,  8.41,  340.0 },
+                new object[] { "Braunkohlebrikett",    "Kohle", 5.35,  5.70,  400.0 },
+                new object[] { "Scheitholz",           "Holz",  4.10,  4.50,  0.0 },
+                new object[] { "Holzpellets",          "Holz",  4.80,  5.20,  0.0 },
+                new object[] { "Holzhackschnitzel",    "Holz",  3.90,  4.30,  0.0 },
+            };
+
+            int neu = 0, vorhanden = 0;
+            foreach (object[] t in traeger)
+            {
+                string name = (string)t[0];
+                object da = Scalar(l,
+                    "SELECT COUNT(*) FROM energy_carrier WHERE [name] = ?",
+                    new OleDbParameter("@n", name));
+                if (da != null && Convert.ToInt32(da) > 0) { vorhanden++; continue; }
+
+                object max = Scalar(l, "SELECT MAX(id) FROM energy_carrier");
+                int id = ((max == null || max == DBNull.Value) ? 0 : Convert.ToInt32(max)) + 1;
+                if (NonQuery(l,
+                        "INSERT INTO energy_carrier " +
+                        "(id, ID_Brennstoff, [name], code, group_code, pricing_model, billing_unit, " +
+                        " hi_kwh_per_unit, hs_kwh_per_unit, price_work, price_base, price_power, " +
+                        " co2, so2, nox, is_active) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, 'kg', ?, ?, 0, 0, 0, ?, 0, 0, TRUE)",
+                        new OleDbParameter("@id", id),
+                        new OleDbParameter("@b", BrennstoffStammId(name)),
+                        new OleDbParameter("@n", name),
+                        new OleDbParameter("@c", name),
+                        new OleDbParameter("@g", (string)t[1]),
+                        new OleDbParameter("@m", modell),
+                        new OleDbParameter("@hi", (double)t[2]),
+                        new OleDbParameter("@hs", (double)t[3]),
+                        new OleDbParameter("@co2", (double)t[4])) < 0)
+                    return false;
+                neu++;
+            }
+
+            // Nachzug: ein bereits (durch Schritt 42 mit dem alten Ratelauf)
+            // gesätes Flüssiggas ohne Brennstoffverweis wird nachverknüpft.
+            int flgStamm = BrennstoffStammId("Flüssiggas");
+            if (flgStamm > 0)
+                NonQuery(l,
+                    "UPDATE energy_carrier SET ID_Brennstoff = ? " +
+                    "WHERE [name] = 'Flüssiggas' AND ID_Brennstoff = 0",
+                    new OleDbParameter("@b", flgStamm));
+
+            l.Zeile("VDI-3805-Traeger (Schritt 43): " + neu + " gesät, " + vorhanden +
+                    " bereits vorhanden (Steinkohle, Braunkohlebrikett, Scheitholz, " +
+                    "Holzpellets, Holzhackschnitzel).");
+            return true;
         }
 
         /// <summary>Schritt 41. Anlass und Idempotenzzusage stehen bei

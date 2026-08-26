@@ -127,15 +127,14 @@ namespace WindowsFormsApplication1
             BaueAufschlagsblock();
             BaueLeistungspreisZusatz();   // ETAPPE KD4 (FK6/FK6a) - nach LoadData, das die Einheit setzt
 
-            // KD4: Katalogkontext (Projekt 0, Form_Energietraeger im Admin-Menü) —
-            // die Katalogpreis-Pflege kommt mit den Trägervarianten (§ 7.1); bis
-            // dahin nur lesen. Modus und Saisonreihen bleiben pflegbar.
+            // Ä9 (26.08.2026): Der Katalogkontext (Projekt 0) SCHREIBT jetzt —
+            // „Speichern“ aktualisiert die Katalogzeile selbst (energy_carrier),
+            // ohne Projekt-Settings und ohne Preishistorie. Die KD4-Sperre ist
+            // damit Geschichte; Trägervarianten laufen über die Katalogleiste des
+            // Dialogs (EnergietraegerKatalogCtrl.Variante).
             if (_projectId <= 0)
-            {
-                btn_Save.Enabled = false;
-                new ToolTip().SetToolTip(btn_Save, TKd4("KDLG_ET_KATALOG_NUR_LESEN",
-                    "Katalogpreise sind hier noch nicht pflegbar (folgt mit den Trägervarianten)."));
-            }
+                new ToolTip().SetToolTip(btn_Save, TKd4("KDLG_ET_KATALOG_SPEICHERN",
+                    "Schreibt die KATALOGwerte dieses Trägers (gilt überall, wo kein Projektwert gepflegt ist)."));
         }
 
         // =====================================================================
@@ -967,6 +966,46 @@ namespace WindowsFormsApplication1
             double currentCO2 = (double)numCO2.Value;
             double currentSO2 = (double)numSO2.Value;
             double currentNOx = (double)numNOx.Value;
+
+            // Ä9: Katalogkontext — die Werte gehen in die Katalogzeile selbst;
+            // Historie (energy_price) und Projekt-Settings sind Projektsache.
+            if (_projectId <= 0)
+            {
+                DataRepository.ExecuteSQL(
+                    @"UPDATE energy_carrier
+                      SET price_work = ?, price_base = ?, price_power = ?,
+                          hi_kwh_per_unit = ?, hs_kwh_per_unit = ?,
+                          co2 = ?, so2 = ?, nox = ?
+                      WHERE id = ?",
+                    new OleDbParameter("@ap", Math.Round(currentPriceBase, 4)),
+                    new OleDbParameter("@gp", Math.Round(currentGroundPrice, 4)),
+                    new OleDbParameter("@lp", Math.Round(currentPowerPrice, 4)),
+                    new OleDbParameter("@hi", Math.Round(currentHiBase, 4)),
+                    new OleDbParameter("@hs", Math.Round(currentHsBase, 4)),
+                    new OleDbParameter("@co2", currentCO2),
+                    new OleDbParameter("@so2", currentSO2),
+                    new OleDbParameter("@nox", currentNOx),
+                    new OleDbParameter("@id", _carrier.ID));
+
+                _carrier.price_work = currentPriceBase;
+                _carrier.price_base = currentGroundPrice;
+                _carrier.price_power = currentPowerPrice;
+                _carrier.HiKwhPerUnit = currentHiBase;
+                _carrier.HsKwhPerUnit = currentHsBase;
+                _carrier.CO2 = currentCO2;
+                _carrier.SO2 = currentSO2;
+                _carrier.NOx = currentNOx;
+
+                _dbWorkPrice = currentPriceBase;
+                _dbGroundPrice = currentGroundPrice;
+                _dbPowerPrice = currentPowerPrice;
+                _dbHi = currentHiBase;
+                _dbHs = currentHsBase;
+                _dbCO2 = currentCO2;
+                _dbSO2 = currentSO2;
+                _dbNOx = currentNOx;
+                return;
+            }
 
             // Das vom Benutzer gewählte (ggf. zukünftige) Datum abgreifen
             DateTime chosenDate = dtpValidFrom.Value;
