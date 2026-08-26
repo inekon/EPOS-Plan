@@ -7829,4 +7829,7 @@ life [a]</value>
   <data name="KDLG_BTN_ABBRECHEN" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="KDLG_ET_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
 </root>

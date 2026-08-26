@@ -7835,4 +7835,7 @@ dauer [a]</value>
   <data name="KDLG_BTN_ABBRECHEN" xml:space="preserve">
     <value>Abbrechen</value>
   </data>
+  <data name="KDLG_ET_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
 </root>

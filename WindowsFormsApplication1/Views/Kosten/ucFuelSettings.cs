@@ -1274,7 +1274,7 @@ namespace WindowsFormsApplication1
             dgvHistory.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "grundpreis",
-                HeaderText = "Grundpreis",
+                HeaderText = "Grundpreis [€/a]",
                 Width = 85,
                 DefaultCellStyle = new DataGridViewCellStyle { Format = "N2" },
             });
