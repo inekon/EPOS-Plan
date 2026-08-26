@@ -41,9 +41,44 @@ namespace WindowsFormsApplication1
 
         internal static List<Zeile> Lies(int projektId, int komponentenId, int kategorieId)
         {
+            // Bestandssignatur: ALLE Positionen der Komponente (Rechen-/Smokewege).
+            return Lies(projektId, komponentenId, kategorieId, -1);
+        }
+
+        /// <summary>Ä20: Positionen EINER Anlage (<paramref name="idAnlage"/> &gt; 0),
+        /// der „ohne Anlagenzuordnung“-Pflege (0: NULL oder verwaiste Verweise)
+        /// oder aller Anlagen (-1). Auf einer Datenbank ohne die Spalte fällt der
+        /// Filter weg (Bestandsverhalten der Vorsorge).</summary>
+        internal static List<Zeile> Lies(int projektId, int komponentenId, int kategorieId,
+                                         int idAnlage)
+        {
             var liste = new List<Zeile>();
             Dictionary<int, KostenPositionCtrl.Zusatz> zusaetze =
                 KostenPositionCtrl.LiesZusatz(projektId, kategorieId);
+
+            bool spalteDa = false;
+            try { spalteDa = KostenPositionCtrl.StelleSpaltenSicher(); } catch { }
+
+            string filter = "";
+            var parameter = new List<OleDbParameter>
+            {
+                new OleDbParameter("@p", projektId),
+                new OleDbParameter("@k", komponentenId),
+                new OleDbParameter("@g", kategorieId)
+            };
+            if (spalteDa && idAnlage > 0)
+            {
+                filter = "AND w.ID_Anlage = ? ";
+                parameter.Add(new OleDbParameter("@a", idAnlage));
+            }
+            else if (spalteDa && idAnlage == 0)
+            {
+                // NULL oder Verweis auf eine geloeschte Anlage — beides ist die
+                // „ohne Anlagenzuordnung“-Pflege der Oberflaeche.
+                filter = "AND (w.ID_Anlage IS NULL OR w.ID_Anlage NOT IN " +
+                         "(SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = ?)) ";
+                parameter.Add(new OleDbParameter("@p2", projektId));
+            }
 
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT w.ID, w.StammID, w.EingegebenerWert, w.Nutzungsdauer, " +
@@ -52,10 +87,9 @@ namespace WindowsFormsApplication1
                 "FROM Tab_ProjektWerte AS w INNER JOIN Tab_Kostenfaktor AS k " +
                 "ON w.StammID = k.StammID " +
                 "WHERE w.ProjektID = ? AND w.KomponentenID = ? AND w.KategorieID = ? " +
+                filter +
                 "ORDER BY w.ID",
-                new OleDbParameter("@p", projektId),
-                new OleDbParameter("@k", komponentenId),
-                new OleDbParameter("@g", kategorieId));
+                parameter.ToArray());
             if (dt == null) return liste;
 
             foreach (DataRow r in dt.Rows)
@@ -148,9 +182,32 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        /// <summary>Neue Projektposition (Muster der Übernahme-Mechanik, § 8).</summary>
+        /// <summary>Bestandssignatur — Position ohne Anlagenbezug.</summary>
         internal static int Neu(int projektId, int komponentenId, int kategorieId,
                                 string name, string kostenart, string bemessung)
+        {
+            return Neu(projektId, komponentenId, kategorieId, name, kostenart, bemessung, 0);
+        }
+
+        /// <summary>Ä20: die Anlagenzeile, zu der eine Position gehört, nachtragen.
+        /// Still — die Vorsorge legt die Spalte an; scheitert sie, bleibt die
+        /// Position komponentenweit (Ausweis „ohne Anlagenzuordnung“).</summary>
+        internal static void AnlageZuordnen(int idPosition, int idAnlage)
+        {
+            if (idPosition <= 0 || idAnlage <= 0) return;
+            bool spalteDa = false;
+            try { spalteDa = KostenPositionCtrl.StelleSpaltenSicher(); } catch { }
+            if (!spalteDa) return;
+            DataRepository.ExecuteSQL(
+                "UPDATE Tab_ProjektWerte SET ID_Anlage = ? WHERE ID = ?",
+                new OleDbParameter("@a", idAnlage),
+                new OleDbParameter("@id", idPosition));
+        }
+
+        /// <summary>Neue Projektposition (Muster der Übernahme-Mechanik, § 8);
+        /// Ä20: mit Anlagenbezug (<paramref name="idAnlage"/> 0 = ohne).</summary>
+        internal static int Neu(int projektId, int komponentenId, int kategorieId,
+                                string name, string kostenart, string bemessung, int idAnlage)
         {
             int stammId = KostenVorlagenUebernahmeCtrl.StammIdSicher(name);
             if (stammId <= 0) return 0;
@@ -170,6 +227,7 @@ namespace WindowsFormsApplication1
                 Menge = null,
                 Einheitpreis = null
             });
+            if (idAnlage > 0) AnlageZuordnen(id, idAnlage);
             return id;
         }
 

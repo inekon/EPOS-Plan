@@ -390,7 +390,8 @@ namespace WindowsFormsApplication1
             KostenSummenAnzeigen();
         }
 
-        /// <summary>Invest-/Betriebssumme der Komponente Wärmepumpe dieses Projekts.</summary>
+        /// <summary>Ä20: Invest-/Betriebssumme DIESER Anlage (Tab_ProjektWerte.ID_Anlage
+        /// = Anlagenzeile item.ID); vor Migrationsschritt 45 bzw. ohne Anlage 0.</summary>
         private void KostenSummenAnzeigen()
         {
             if (lblKostenSummen == null) return;
@@ -398,8 +399,8 @@ namespace WindowsFormsApplication1
                 btnKosten.Enabled = item != null && item.ID_Projekt > 0;
             try
             {
-                double invest = KomponentenSumme(Form_Kosten.KATEGORIE_INVESTITION);
-                double betrieb = KomponentenSumme(Form_Kosten.KATEGORIE_BETRIEB);
+                double invest = AnlagenSumme(Form_Kosten.KATEGORIE_INVESTITION);
+                double betrieb = AnlagenSumme(Form_Kosten.KATEGORIE_BETRIEB);
                 lblKostenSummen.Text = string.Format(
                     TWpi("WPI_KOSTEN_SUMMEN", "Invest {0:N0} € · Betrieb {1:N0} €/a"),
                     invest, betrieb);
@@ -407,16 +408,19 @@ namespace WindowsFormsApplication1
             catch { lblKostenSummen.Text = ""; }
         }
 
-        private double KomponentenSumme(int kategorie)
+        private double AnlagenSumme(int kategorie)
         {
-            if (item == null || item.ID_Projekt <= 0) return 0;
-            System.Data.DataTable dt = Form_Kosten.LiesKomponentenSummen(item.ID_Projekt, kategorie);
-            if (dt == null) return 0;
-            foreach (System.Data.DataRow r in dt.Rows)
-                if (string.Equals(Convert.ToString(r["Komponente"]), DbWerte.ERZEUGER_WAERMEPUMPE,
-                                  StringComparison.Ordinal))
-                    return r["Summe"] != DBNull.Value ? Convert.ToDouble(r["Summe"]) : 0;
-            return 0;
+            if (item == null || item.ID <= 0 || item.ID_Projekt <= 0) return 0;
+            bool spalteDa = false;
+            try { spalteDa = KostenPositionCtrl.StelleSpaltenSicher(); } catch { }
+            if (!spalteDa) return 0;
+            object o = DataRepository.ExecuteScalar(
+                "SELECT SUM(EingegebenerWert) FROM Tab_ProjektWerte " +
+                "WHERE ProjektID = ? AND KategorieID = ? AND ID_Anlage = ?",
+                new OleDbParameter("@p", item.ID_Projekt),
+                new OleDbParameter("@k", kategorie),
+                new OleDbParameter("@a", item.ID));
+            return (o == null || o == DBNull.Value) ? 0 : Convert.ToDouble(o);
         }
 
         private void btnKosten_Click(object sender, EventArgs e)
@@ -432,7 +436,9 @@ namespace WindowsFormsApplication1
             catch { }
             using (var dlg = new Form_KostenKomponente())
             {
-                dlg.SetProjekt(item.ID_Projekt, projektname, DbWerte.ERZEUGER_WAERMEPUMPE);
+                // Ä20: direkt die Kosten DIESER Anlage (item.ID = Anlagenzeile).
+                dlg.SetProjekt(item.ID_Projekt, projektname, DbWerte.ERZEUGER_WAERMEPUMPE,
+                               false, item.ID);
                 dlg.ShowDialog(this);
             }
             KostenSummenAnzeigen();

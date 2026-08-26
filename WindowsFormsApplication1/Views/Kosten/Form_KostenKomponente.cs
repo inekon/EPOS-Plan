@@ -74,8 +74,13 @@ namespace WindowsFormsApplication1
         public void SetControls(string komponente)
         {
             for (int i = 0; i < cmbKomponente.Items.Count; i++)
-                if (string.Equals((string)cmbKomponente.Items[i], komponente, StringComparison.Ordinal))
+            {
+                object it = cmbKomponente.Items[i];
+                var w = it as AnlagenWahl;   // Ä20: Projektmodus listet Anlagen
+                string name = w != null ? w.Komponente : it as string;
+                if (string.Equals(name, komponente, StringComparison.Ordinal))
                 { cmbKomponente.SelectedIndex = i; break; }
+            }
         }
 
         /// <summary>Auf die Betriebskosten-Sicht schalten (Aufruf „Betriebskosten…"
@@ -92,21 +97,23 @@ namespace WindowsFormsApplication1
         /// ± pflegt Worst/Best und Startjahr je Position (§ 11).
         /// </summary>
         public void SetProjekt(int idProjekt, string projektname,
-                               string komponente = null, bool betrieb = false)
+                               string komponente = null, bool betrieb = false,
+                               int idAnlage = 0)
         {
             _idProjekt = idProjekt;
             _projektname = projektname ?? "";
 
-            // Ä10: Im Projektmodus stehen ALLE Anlagen-Komponenten (Ä7) zur
-            // Wahl — auch solche ohne Anlage/Positionen. Nur so lässt sich eine
-            // Stammvorlage für eine noch leere Komponente übernehmen (§ 8);
-            // das Raster zeigt bis dahin nur die „+ Neue Position…“-Zeile.
+            // Ä20 (Nutzerauftrag 26.08.2026): Im Projektmodus wählt die Klappliste
+            // ANLAGEN — je Anlagenzeile ein Eintrag „Komponente — Bezeichner“, die
+            // Positionen hängen an der Anlage (Tab_ProjektWerte.ID_Anlage,
+            // Migrationsschritt 45). Der Ä10-Grundsatz bleibt: Komponenten OHNE
+            // Anlage stehen als „(keine Anlage im Projekt)“ bereit, damit die
+            // §-8-Übernahme in leere Komponenten möglich bleibt; Positionen ohne
+            // (gültige) Zuordnung bekommen den Pflege-Eintrag
+            // „(ohne Anlagenzuordnung)“.
             _fuellt = true;
-            _komponenten = KostenVorlagenCtrl.Komponenten();
-            cmbKomponente.Items.Clear();
-            foreach (KeyValuePair<int, string> k in _komponenten)
-                cmbKomponente.Items.Add(k.Value);
-            if (cmbKomponente.Items.Count > 0) cmbKomponente.SelectedIndex = 0;
+            _komponenten = KostenVorlagenCtrl.Komponenten();   // Name→Id-Landkarte (Ä7)
+            AnlagenlisteFuellen(idAnlage, komponente);
             _fuellt = false;
 
             // Variantenpflege ist Stammsache — im Projekt verschwindet die Zeile.
@@ -126,9 +133,115 @@ namespace WindowsFormsApplication1
             btnAbbrechen.Visible = true;
 
             if (betrieb) rbBetrieb.Checked = true;
-            if (!string.IsNullOrEmpty(komponente)) SetControls(komponente);
 
             Kontext_Geaendert(this, EventArgs.Empty);
+        }
+
+        /// <summary>Ä20: ein Klapplisten-Eintrag des Projektmodus — eine Anlage
+        /// (AnlageId &gt; 0) oder der Sammel-/Leereintrag einer Komponente.</summary>
+        private sealed class AnlagenWahl
+        {
+            public readonly string Komponente;
+            public readonly int AnlageId;
+            private readonly string _text;
+            public AnlagenWahl(string komponente, int anlageId, string text)
+            { Komponente = komponente; AnlageId = anlageId; _text = text; }
+            public override string ToString() { return _text; }
+        }
+
+        private List<ProjektEnergietraegerCtrl.AnlagenEintrag> _anlagenListe;
+
+        private void AnlagenlisteFuellen(int vorwahlAnlage, string vorwahlKomponente)
+        {
+            _anlagenListe = ProjektEnergietraegerCtrl.AnlagenMitTraeger(_idProjekt);
+            HashSet<string> lose = LoseKomponenten();
+
+            cmbKomponente.Items.Clear();
+            var mitAnlage = new HashSet<string>(StringComparer.Ordinal);
+            int vorwahl = -1;
+
+            foreach (ProjektEnergietraegerCtrl.AnlagenEintrag a in _anlagenListe)
+            {
+                if (!KostenVorlagenCtrl.IstWaehlbar(a.Komponente)) continue;   // Ä7
+                mitAnlage.Add(a.Komponente);
+                string text = string.IsNullOrEmpty(a.Bezeichner)
+                    ? a.Komponente : a.Komponente + " — " + a.Bezeichner;
+                int idx = cmbKomponente.Items.Add(new AnlagenWahl(a.Komponente, a.AnlageId, text));
+                if (vorwahl < 0 &&
+                    ((vorwahlAnlage > 0 && a.AnlageId == vorwahlAnlage) ||
+                     (vorwahlAnlage <= 0 && vorwahlKomponente != null &&
+                      string.Equals(a.Komponente, vorwahlKomponente, StringComparison.Ordinal))))
+                    vorwahl = idx;
+            }
+
+            foreach (KeyValuePair<int, string> k in _komponenten)
+            {
+                bool hatAnlagen = mitAnlage.Contains(k.Value);
+                bool hatLose = lose.Contains(k.Value);
+                if (hatAnlagen && !hatLose) continue;
+                string text = hatLose
+                    ? string.Format(Text_("KDLG_ANLAGE_LOSE", "{0} (ohne Anlagenzuordnung)"), k.Value)
+                    : string.Format(Text_("KDLG_ANLAGE_KEINE", "{0} (keine Anlage im Projekt)"), k.Value);
+                int idx = cmbKomponente.Items.Add(new AnlagenWahl(k.Value, 0, text));
+                if (vorwahl < 0 && vorwahlAnlage <= 0 && vorwahlKomponente != null &&
+                    string.Equals(k.Value, vorwahlKomponente, StringComparison.Ordinal))
+                    vorwahl = idx;
+            }
+
+            if (cmbKomponente.Items.Count > 0)
+                cmbKomponente.SelectedIndex = vorwahl >= 0 ? vorwahl : 0;
+        }
+
+        /// <summary>Komponenten, die Positionen ohne (gültige) Anlagenzuordnung
+        /// führen — sie brauchen den Pflege-Eintrag.</summary>
+        private HashSet<string> LoseKomponenten()
+        {
+            var s = new HashSet<string>(StringComparer.Ordinal);
+            try
+            {
+                var ids = new HashSet<int>();
+                foreach (ProjektEnergietraegerCtrl.AnlagenEintrag a in _anlagenListe)
+                    ids.Add(a.AnlageId);
+                foreach (int kat in new[] { Form_Kosten.KATEGORIE_INVESTITION,
+                                            Form_Kosten.KATEGORIE_BETRIEB })
+                {
+                    System.Data.DataTable t = Form_Kosten.LiesAnlagenSummen(_idProjekt, kat);
+                    if (t == null) continue;
+                    foreach (System.Data.DataRow r in t.Rows)
+                    {
+                        bool loseZeile = r["ID_Anlage"] == DBNull.Value ||
+                                         !ids.Contains(Convert.ToInt32(r["ID_Anlage"]));
+                        if (loseZeile) s.Add(Convert.ToString(r["Komponente"]));
+                    }
+                }
+            }
+            catch { }
+            return s;
+        }
+
+        /// <summary>Komponente des gewählten Eintrags — im Projektmodus aus der
+        /// AnlagenWahl, im Stammkontext der Listentext (Ä20).</summary>
+        private string AktuelleKomponente
+        {
+            get
+            {
+                object it = cmbKomponente.SelectedIndex >= 0
+                    ? cmbKomponente.Items[cmbKomponente.SelectedIndex] : null;
+                var w = it as AnlagenWahl;
+                return w != null ? w.Komponente : (it as string ?? "");
+            }
+        }
+
+        /// <summary>Ä20: Anlagenzeile des gewählten Eintrags (0 = ohne Anlage).</summary>
+        private int AnlagenId
+        {
+            get
+            {
+                object it = cmbKomponente.SelectedIndex >= 0
+                    ? cmbKomponente.Items[cmbKomponente.SelectedIndex] : null;
+                var w = it as AnlagenWahl;
+                return w != null ? w.AnlageId : 0;
+            }
         }
 
         // ------------------------------------------------------------- Kontext ---
@@ -137,6 +250,15 @@ namespace WindowsFormsApplication1
         {
             get
             {
+                if (ProjektModus)
+                {
+                    // Ä20: Die Klappliste führt Anlagen — die Komponenten-Id kommt
+                    // aus der Namenslandkarte.
+                    string name = AktuelleKomponente;
+                    foreach (KeyValuePair<int, string> k in _komponenten)
+                        if (string.Equals(k.Value, name, StringComparison.Ordinal)) return k.Key;
+                    return 0;
+                }
                 int i = cmbKomponente.SelectedIndex;
                 return (i >= 0 && i < _komponenten.Count) ? _komponenten[i].Key : 0;
             }
@@ -172,8 +294,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void ErtragReiterSteuern()
         {
-            string name = cmbKomponente.SelectedIndex >= 0
-                ? (string)cmbKomponente.Items[cmbKomponente.SelectedIndex] : "";
+            string name = AktuelleKomponente;
             bool zeigen = ucErtragBonus.HatInhalt(name);
             bool drin = tabHaupt.TabPages.Contains(tpErtrag);
 
@@ -196,11 +317,14 @@ namespace WindowsFormsApplication1
 
         private void KopfAnzeigen()
         {
-            string name = cmbKomponente.SelectedIndex >= 0
-                ? (string)cmbKomponente.Items[cmbKomponente.SelectedIndex] : "";
+            string name = AktuelleKomponente;
+            // Ä20: Der Projektmodus trägt die ANLAGE im Titel („Kostenverwaltung
+            // Wärmepumpe — CS5800i … — Projekt“).
+            string anzeige = cmbKomponente.SelectedIndex >= 0
+                ? cmbKomponente.Items[cmbKomponente.SelectedIndex].ToString() : name;
             lblTitel.Text = ProjektModus
                 ? string.Format(Text_("KDLG_TITEL_PROJEKT", "Kostenverwaltung {0} — {1}"),
-                                name, _projektname)
+                                anzeige, _projektname)
                 : string.Format(Text_("KDLG_TITEL", "Kostenverwaltung {0}"), name);
             lblUntertitel.Text = rbInvest.Checked
                 ? Text_("KDLG_UNTERTITEL_INVEST", "Investitionskosten nach VDI 2067")
@@ -267,8 +391,9 @@ namespace WindowsFormsApplication1
         private void ProjektRasterAufbauen()
         {
             btnPositionNeu.Enabled = KomponentenId > 0;
+            // Ä20: nur die Positionen der gewählten Anlage (0 = ohne Zuordnung).
             _projektZeilen = KomponentenId > 0
-                ? KostenProjektPositionenCtrl.Lies(_idProjekt, KomponentenId, KategorieId)
+                ? KostenProjektPositionenCtrl.Lies(_idProjekt, KomponentenId, KategorieId, AnlagenId)
                 : new List<KostenProjektPositionenCtrl.Zeile>();
 
             int y = 2;
@@ -296,7 +421,7 @@ namespace WindowsFormsApplication1
             z.SpeichernWeg = ProjektZeileSichern;
             z.NeuWeg = (name, kostenart, bemessung) =>
                 KostenProjektPositionenCtrl.Neu(_idProjekt, KomponentenId, KategorieId,
-                                                name, kostenart, bemessung);
+                                                name, kostenart, bemessung, AnlagenId);
             z.WorstBestAngefordert += Zeile_WorstBestAngefordert;
         }
 
@@ -556,15 +681,16 @@ namespace WindowsFormsApplication1
         /// Klartext-Vorschau, Schreiben über <see cref="KostenVorlagenUebernahmeCtrl"/>.</summary>
         private void btnUebernahme_Click(object sender, EventArgs e)
         {
-            string name = cmbKomponente.SelectedIndex >= 0
-                ? (string)cmbKomponente.Items[cmbKomponente.SelectedIndex] : "";
+            string name = AktuelleKomponente;
             using (var dlg = new Form_VorlagenUebernahme())
             {
                 // Ä11: Im Projektmodus steht das Ziel fest; die Quellvorlage
                 // (Standard oder Variante des Admin-Katalogs) wählt der Dialog.
+                // Ä20: übernommen wird in die GEWÄHLTE Anlage.
                 dlg.SetControls(KomponentenId, name, KategorieId,
                                 ProjektModus ? null : Variante,
-                                ProjektModus ? _idProjekt : 0);
+                                ProjektModus ? _idProjekt : 0,
+                                ProjektModus ? AnlagenId : 0);
                 dlg.ShowDialog(this);
             }
             // Projektmodus: Übernommene Positionen sofort zeigen (§ 8-Fluss).

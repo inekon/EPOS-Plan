@@ -132,6 +132,25 @@ namespace WindowsFormsApplication1
                                 ok = false;
                             }
                         }
+                        // Ä20 (Migrationsschritt 45): Anlagenbezug der Positionen —
+                        // die Lese-/Schreibwege filtern fest nach ID_Anlage.
+                        if (!vorhanden.Contains(SchemaKatalog.SPALTE_PW_ID_ANLAGE))
+                        {
+                            try
+                            {
+                                using (OleDbCommand cmd = new OleDbCommand(
+                                    "ALTER TABLE [" + SchemaKatalog.TAB_PROJEKTWERTE +
+                                    "] ADD COLUMN [" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "] LONG",
+                                    conn))
+                                    cmd.ExecuteNonQuery();
+                            }
+                            catch (Exception ex)
+                            {
+                                Protokoll(SchemaKatalog.TAB_PROJEKTWERTE + "." +
+                                          SchemaKatalog.SPALTE_PW_ID_ANLAGE + ": " + ex.Message);
+                                ok = false;
+                            }
+                        }
                     }
                 }
             }

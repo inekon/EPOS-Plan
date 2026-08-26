@@ -445,41 +445,36 @@ namespace WindowsFormsApplication1
 
             try
             {
-                // Summen je Komponente — dieselbe Leselogik wie bisher (KD6 § 10).
-                var investJe = new Dictionary<string, double>(StringComparer.Ordinal);
-                var betriebJe = new Dictionary<string, double>(StringComparer.Ordinal);
-                try
-                {
-                    DataTable it = Form_Kosten.LiesKomponentenSummen(
-                        _idProjekt, Form_Kosten.KATEGORIE_INVESTITION);
-                    if (it != null)
-                        foreach (DataRow r2 in it.Rows)
-                        {
-                            double? w2 = D(r2, "Summe");
-                            if (w2.HasValue) investJe[S(r2, "Komponente")] = w2.Value;
-                        }
-                    DataTable bt2 = Form_Kosten.LiesKomponentenSummen(
-                        _idProjekt, Form_Kosten.KATEGORIE_BETRIEB);
-                    if (bt2 != null)
-                        foreach (DataRow r2 in bt2.Rows)
-                        {
-                            double? w2 = D(r2, "Summe");
-                            if (w2.HasValue) betriebJe[S(r2, "Komponente")] = w2.Value;
-                        }
-                }
-                catch { }
-
+                // Ä20: Summen je ANLAGENZEILE (Migrationsschritt 45). „Lose“ heißt:
+                // ID_Anlage NULL oder Verweis auf eine gelöschte Anlage — beides
+                // erscheint als gelbe Zeile je Komponente und zählt in die Summe
+                // (Kachel = Tabelle). Fällt die Spalte auf einer Alt-Datenbank aus
+                // (LiesAnlagenSummen = null), bleiben die Anlagenzeilen ohne Betrag.
                 List<ProjektEnergietraegerCtrl.AnlagenEintrag> anlagen =
                     ProjektEnergietraegerCtrl.AnlagenMitTraeger(_idProjekt);
+                var anlagenIds = new HashSet<int>();
+                foreach (ProjektEnergietraegerCtrl.AnlagenEintrag a in anlagen)
+                    anlagenIds.Add(a.AnlageId);
+
+                var investAnlage = new Dictionary<int, double>();
+                var betriebAnlage = new Dictionary<int, double>();
+                var investLose = new Dictionary<string, double>(StringComparer.Ordinal);
+                var betriebLose = new Dictionary<string, double>(StringComparer.Ordinal);
+                var komponentenMitPositionen = new HashSet<string>(StringComparer.Ordinal);
+                AnlagenSummenLesen(Form_Kosten.KATEGORIE_INVESTITION, anlagen, anlagenIds,
+                                   investAnlage, investLose, komponentenMitPositionen);
+                AnlagenSummenLesen(Form_Kosten.KATEGORIE_BETRIEB, anlagen, anlagenIds,
+                                   betriebAnlage, betriebLose, komponentenMitPositionen);
 
                 double summe = 0, summeBetrieb = 0;
-                var ausgewiesen = new HashSet<string>(StringComparer.Ordinal);
+                var rotGemeldet = new HashSet<string>(StringComparer.Ordinal);
                 foreach (ProjektEnergietraegerCtrl.AnlagenEintrag a in anlagen)
                 {
-                    bool erste = !ausgewiesen.Contains(a.Komponente);
                     double invest, bWert;
-                    bool hatI = investJe.TryGetValue(a.Komponente, out invest);
-                    bool hatB = betriebJe.TryGetValue(a.Komponente, out bWert);
+                    bool hatI = investAnlage.TryGetValue(a.AnlageId, out invest);
+                    bool hatB = betriebAnlage.TryGetValue(a.AnlageId, out bWert);
+                    if (hatI) summe += invest;
+                    if (hatB) summeBetrieb += bWert;
 
                     string name = string.IsNullOrEmpty(a.Bezeichner)
                         ? a.Komponente
@@ -487,58 +482,50 @@ namespace WindowsFormsApplication1
 
                     int idx = gridKomponenten.Rows.Add(
                         name,
-                        (erste && hatI) ? invest.ToString("N2", kultur) : "—",
-                        (erste && hatB) ? bWert.ToString("N2", kultur) : "—");
+                        hatI ? invest.ToString("N2", kultur) : "—",
+                        hatB ? bWert.ToString("N2", kultur) : "—");
                     gridKomponenten.Rows[idx].Tag = a;
 
-                    if (erste)
+                    if (!komponentenMitPositionen.Contains(a.Komponente))
                     {
-                        ausgewiesen.Add(a.Komponente);
-                        if (hatI) summe += invest;
-                        if (hatB) summeBetrieb += bWert;
-                        if (!hatI && !hatB)
+                        // Die KOMPONENTE hat nirgends eine Position: FEHLENDE
+                        // EINGABE, kein Nullbetrag (Nutzerentscheidung 4, 18.08.2026).
+                        gridKomponenten.Rows[idx].DefaultCellStyle.BackColor =
+                            Color.FromArgb(0xFF, 0xE6, 0xE6);
+                        string hinweis = string.Format(
+                            MyResource.Resource.BK_KOSTEN_OHNE_POSITION_HINT, a.Komponente);
+                        foreach (DataGridViewCell c in gridKomponenten.Rows[idx].Cells)
+                            c.ToolTipText = hinweis;
+                        if (!rotGemeldet.Contains(a.Komponente))
                         {
-                            // Verbaut ohne Kostenposition: FEHLENDE EINGABE, kein
-                            // Nullbetrag (Nutzerentscheidung 4 vom 18.08.2026).
-                            gridKomponenten.Rows[idx].DefaultCellStyle.BackColor =
-                                Color.FromArgb(0xFF, 0xE6, 0xE6);
-                            string hinweis = string.Format(
-                                MyResource.Resource.BK_KOSTEN_OHNE_POSITION_HINT, a.Komponente);
-                            foreach (DataGridViewCell c in gridKomponenten.Rows[idx].Cells)
-                                c.ToolTipText = hinweis;
-                            if (!_ohnePosition.Contains(a.Komponente))
-                                _ohnePosition.Add(a.Komponente);
+                            rotGemeldet.Add(a.Komponente);
+                            _ohnePosition.Add(a.Komponente);
                         }
                     }
-                    else
+                    else if (!hatI && !hatB)
                     {
-                        string hinweis = Text_("BK_KOSTEN_JE_KOMPONENTE",
-                            "Kosten werden je Komponente gepflegt — die Summe steht an der ersten Anlage der Komponente.");
+                        string hinweis = Text_("BK_KOSTEN_ANLAGE_OHNE_POSITIONEN",
+                            "Diese Anlage führt keine eigenen Positionen — „Kosten bearbeiten…“ im Anlagendialog oder die Kostenverwaltung pflegt sie je Anlage.");
                         foreach (DataGridViewCell c in gridKomponenten.Rows[idx].Cells)
                             c.ToolTipText = hinweis;
                     }
                 }
 
-                // Ä19: Kostenpositionen OHNE verbaute Anlage (z. B. aus der
-                // Variantenkopie eines anderen Gewerks). Sie RECHNEN in Kachel und
-                // Wirtschaftlichkeit mit — sie zu verschweigen wäre eine stille
-                // Falschausweisung (Kachel ≠ Tabelle). Gelbe Warnzeile statt
-                // normaler Zeile; die Fußzeile nennt sie zusätzlich.
+                // Gelbe Zeilen: Positionen ohne (gültige) Anlagenzuordnung —
+                // Variantenreste, Erfassungsgruppen-Altdaten (Ä7), gelöschte Anlagen.
                 var reste = new List<string>();
-                foreach (string k in investJe.Keys) if (!ausgewiesen.Contains(k)) reste.Add(k);
-                foreach (string k in betriebJe.Keys)
-                    if (!ausgewiesen.Contains(k) && !reste.Contains(k)) reste.Add(k);
+                foreach (string k in investLose.Keys) reste.Add(k);
+                foreach (string k in betriebLose.Keys) if (!reste.Contains(k)) reste.Add(k);
                 foreach (string k in reste)
                 {
-                    ausgewiesen.Add(k);
                     double invest, bWert;
-                    bool hatI = investJe.TryGetValue(k, out invest);
-                    bool hatB = betriebJe.TryGetValue(k, out bWert);
+                    bool hatI = investLose.TryGetValue(k, out invest);
+                    bool hatB = betriebLose.TryGetValue(k, out bWert);
                     if (hatI) summe += invest;
                     if (hatB) summeBetrieb += bWert;
 
                     int idx = gridKomponenten.Rows.Add(
-                        string.Format(Text_("BK_KOSTEN_NICHT_VERBAUT", "{0} — nicht verbaut"), k),
+                        string.Format(Text_("BK_KOSTEN_NICHT_VERBAUT", "{0} — ohne Anlagenzuordnung"), k),
                         hatI ? invest.ToString("N2", kultur) : "—",
                         hatB ? bWert.ToString("N2", kultur) : "—");
                     gridKomponenten.Rows[idx].DefaultCellStyle.BackColor =
@@ -559,6 +546,52 @@ namespace WindowsFormsApplication1
                         new Font(gridKomponenten.Font, FontStyle.Bold);
                 }
                 gridKomponenten.ClearSelection();
+            }
+            catch { }
+        }
+
+        /// <summary>Ä20: Summen einer Kategorie je Anlage einlesen; „lose“ Zeilen
+        /// (NULL oder gelöschte Anlage) laufen je Komponente auf. Rückfall ohne
+        /// Spalte: Komponentensummen als lose Zeilen, damit nichts verschwindet.</summary>
+        private void AnlagenSummenLesen(int kategorie,
+            List<ProjektEnergietraegerCtrl.AnlagenEintrag> anlagen, HashSet<int> anlagenIds,
+            Dictionary<int, double> jeAnlage, Dictionary<string, double> jeLose,
+            HashSet<string> komponentenMitPositionen)
+        {
+            try
+            {
+                DataTable t = Form_Kosten.LiesAnlagenSummen(_idProjekt, kategorie);
+                if (t == null)
+                {
+                    DataTable alt = Form_Kosten.LiesKomponentenSummen(_idProjekt, kategorie);
+                    if (alt != null)
+                        foreach (DataRow r in alt.Rows)
+                        {
+                            double? w = D(r, "Summe");
+                            if (!w.HasValue) continue;
+                            string k = S(r, "Komponente");
+                            jeLose[k] = w.Value;
+                            komponentenMitPositionen.Add(k);
+                        }
+                    return;
+                }
+                foreach (DataRow r in t.Rows)
+                {
+                    double? w = D(r, "Summe");
+                    if (!w.HasValue) continue;
+                    string k = S(r, "Komponente");
+                    komponentenMitPositionen.Add(k);
+                    bool lose = r["ID_Anlage"] == DBNull.Value ||
+                                !anlagenIds.Contains(Convert.ToInt32(r["ID_Anlage"]));
+                    if (lose)
+                    {
+                        double alt2;
+                        jeLose.TryGetValue(k, out alt2);
+                        jeLose[k] = alt2 + w.Value;
+                    }
+                    else
+                        jeAnlage[Convert.ToInt32(r["ID_Anlage"])] = w.Value;
+                }
             }
             catch { }
         }
@@ -904,7 +937,8 @@ namespace WindowsFormsApplication1
                 var aw = gridKomponenten.CurrentRow != null
                     ? gridKomponenten.CurrentRow.Tag as ProjektEnergietraegerCtrl.AnlagenEintrag
                     : null;
-                dlg.SetProjekt(_idProjekt, _projektname, aw != null ? aw.Komponente : null);
+                dlg.SetProjekt(_idProjekt, _projektname, aw != null ? aw.Komponente : null,
+                               false, aw != null ? aw.AnlageId : 0);
                 if (f != null) dlg.ShowDialog(f); else dlg.ShowDialog();
             }
             Aktualisiere();   // Kompaktwerte nach der Pflege auffrischen

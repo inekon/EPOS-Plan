@@ -646,6 +646,27 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@kat", kategorieID));
         }
 
+        /// <summary>Ä20: dieselbe Summe je ANLAGENZEILE (Spalten Komponente,
+        /// ID_Anlage, Summe; ID_Anlage NULL = ohne Anlagenzuordnung). <c>null</c>,
+        /// wenn die Spalte auf dieser Datenbank nicht anlegbar ist — der Aufrufer
+        /// fällt dann auf die Komponentensummen zurück.</summary>
+        internal static DataTable LiesAnlagenSummen(int projektID, int kategorieID)
+        {
+            bool spalteDa = false;
+            try { spalteDa = KostenPositionCtrl.StelleSpaltenSicher(); } catch { }
+            if (!spalteDa) return null;
+
+            string sql = @"SELECT k.Komponente, w.ID_Anlage, Sum(w.EingegebenerWert) AS Summe
+                           FROM Tab_KostenKomponente AS k
+                                INNER JOIN Tab_ProjektWerte AS w ON k.ID = w.KomponentenID
+                           WHERE w.ProjektID = ? AND w.KategorieID = ?
+                           GROUP BY k.Komponente, w.ID_Anlage";
+
+            return DataRepository.GetDataTable(sql,
+                new OleDbParameter("@pid", projektID),
+                new OleDbParameter("@kat", kategorieID));
+        }
+
         /// <summary>
         /// Energiekosten p. a. des Projekts [€/a] aus <see cref="KostenEmissionRechner"/> —
         /// <c>null</c>, wenn kein Simulationsergebnis vorliegt oder der Rechner keine

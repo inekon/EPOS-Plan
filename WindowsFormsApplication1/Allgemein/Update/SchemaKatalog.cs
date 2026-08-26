@@ -903,6 +903,14 @@ namespace WindowsFormsApplication1
         /// Entscheidung FK10, Rechenwirkung in Etappe KD6 (§ 11).</summary>
         public const string SPALTE_PW_STARTJAHR = "StartJahr";
 
+        /// <summary>Ä20 (Migrationsschritt 45): <c>Tab_ProjektWerte.ID_Anlage</c>
+        /// (LONG, nullable) — die ANLAGENZEILE (<c>Tab_Energieanlagen.ID</c>), zu der
+        /// eine Kostenposition gehört. NULL = keine (gültige) Zuordnung: Altbestände
+        /// nicht verbauter Komponenten, Erfassungsgruppen-Altdaten (Ä7) und
+        /// Übernahmen in Komponenten ohne Anlage. Die Rechenkerne aggregieren je
+        /// Projekt und lesen die Spalte nicht; sie steuert Pflege und Ausweis.</summary>
+        public const string SPALTE_PW_ID_ANLAGE = "ID_Anlage";
+
         /// <summary>Spalte <c>energy_carrier.price_power</c> (DOUBLE, nullable) —
         /// Leistungspreis des Katalogträgers; Einheit je <see cref="SPALTE_EC_PRICE_POWER_MODUS"/>.
         /// Projektseitig existiert <c>energy_project_settings.custom_price_power</c> bereits;

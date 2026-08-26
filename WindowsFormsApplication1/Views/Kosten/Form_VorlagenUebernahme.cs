@@ -22,6 +22,9 @@ namespace WindowsFormsApplication1
         private IList<KeyValuePair<int, string>> _projekte;
         private bool _fuellt;
 
+        /// <summary>Ä20: Ziel-Anlage der Übernahme (0 = ohne Anlagenbezug).</summary>
+        private int _zielAnlageId;
+
         public Form_VorlagenUebernahme()
         {
             InitializeComponent();
@@ -34,8 +37,9 @@ namespace WindowsFormsApplication1
         /// <paramref name="zielProjektId"/> &gt; 0 steht das Zielprojekt fest
         /// (Aufruf aus dem Projektmodus der Kostenverwaltung).</summary>
         public void SetControls(int komponentenId, string komponentenName, int kategorieId,
-                                KostenVorlageKopf vorlage, int zielProjektId = 0)
+                                KostenVorlageKopf vorlage, int zielProjektId = 0, int zielAnlageId = 0)
         {
+            _zielAnlageId = zielAnlageId;   // Ä20: Ziel-Anlage der Übernahme
             _fuellt = true;
             _komponentenId = komponentenId;
             _kategorieId = kategorieId;
@@ -143,7 +147,7 @@ namespace WindowsFormsApplication1
         private void btnUebernehmen_Click(object sender, EventArgs e)
         {
             UebernahmeErgebnis ergebnis = rbQuelleVorlage.Checked
-                ? KostenVorlagenUebernahmeCtrl.AusVorlage(ZielProjektId, QuellVorlage)
+                ? KostenVorlagenUebernahmeCtrl.AusVorlage(ZielProjektId, QuellVorlage, _zielAnlageId)
                 : KostenVorlagenUebernahmeCtrl.AusProjekt(ZielProjektId, QuellProjektId,
                                                           _komponentenId, _kategorieId);
 

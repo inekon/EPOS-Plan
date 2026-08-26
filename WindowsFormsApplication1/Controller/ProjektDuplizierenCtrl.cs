@@ -99,7 +99,12 @@ namespace WindowsFormsApplication1
             {"ID_Klimaregion","Tab_Klimaregion"}, {"ID_ProjektGebaeude","Z_ProjektGebaeude"},
             {"ID_Gebaeude","Tab_Gebaeude"}, {"ID_TagV","Tab_DBTagV"},
             {"ID_Stromverbraucher","Tab_Stromverbraucher"}, {"ID_Prozesswaerme","Tab_Prozesswaerme"},
-            {"ID_Brauchwasser","Tab_Brauchwasser"}
+            {"ID_Brauchwasser","Tab_Brauchwasser"},
+            // Ä20: Anlagenbezug der Kostenpositionen (Tab_ProjektWerte.ID_Anlage,
+            // Migrationsschritt 45). Ohne Versatz zeigten die Positionen einer
+            // Variante auf die Anlagen des QUELLprojekts und stünden dort als
+            // „ohne Anlagenzuordnung“ da.
+            {"ID_Anlage","Tab_Energieanlagen"}
         };
 
         // Mehrdeutige FK-Spalten (gleicher Name, verschiedene Zieltabellen) -> je Tabelle aufgeloest.
