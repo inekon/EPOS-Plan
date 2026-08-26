@@ -7756,4 +7756,7 @@ Please run the EPOS-Plan setup again or install the Microsoft Access Database En
   <data name="WIRT_KACHEL_STAMM_KW" xml:space="preserve">
     <value>net present value of the base project</value>
   </data>
+  <data name="KDLG_MSG_STANDARD_LOESCHEN" xml:space="preserve">
+    <value>The standard template cannot be deleted — variants can.</value>
+  </data>
 </root>

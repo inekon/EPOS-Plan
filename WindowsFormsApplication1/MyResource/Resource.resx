@@ -7762,4 +7762,7 @@ Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Micro
   <data name="WIRT_KACHEL_STAMM_KW" xml:space="preserve">
     <value>Nettobarwert des Stammprojekts</value>
   </data>
+  <data name="KDLG_MSG_STANDARD_LOESCHEN" xml:space="preserve">
+    <value>Die Standardvorlage kann nicht gelöscht werden — Varianten schon.</value>
+  </data>
 </root>

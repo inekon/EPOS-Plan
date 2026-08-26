@@ -1966,7 +1966,19 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@p", ID_Projekt),
             };
 
-            DataTable dt = DataRepository.GetDataTable(sql, ps);
+            // KD6a-Nachtrag (Befund 26.08.2026): Im KATALOGkontext (Projekt 0)
+            // lieferte der Zuordnungs-Join eine leere Liste — die
+            // Energieträgerverwaltung unter Administration blieb leer. Der
+            // Katalog listet alle Träger direkt (der Mapper liest nur ec.* + Flags).
+            if (ID_Projekt <= 0)
+                sql = @"SELECT ec.*, pm.has_hi, pm.has_hs, pm.has_powerprice
+                        FROM energy_carrier AS ec
+                             LEFT JOIN pricing_model AS pm ON ec.pricing_model = pm.code
+                        ORDER BY ec.name";
+
+            DataTable dt = ID_Projekt <= 0
+                ? DataRepository.GetDataTable(sql)
+                : DataRepository.GetDataTable(sql, ps);
 
             foreach (DataRow row in dt.Rows)
             {

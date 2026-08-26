@@ -391,12 +391,6 @@ namespace WindowsFormsApplication1
 
             KostenVorlageKopf v = Variante;
             if (v == null) return;
-            if (v.NurLesen)
-            {
-                MessageBox.Show(Text_("KDLG_MSG_READONLY", "Auslieferungsvorlagen sind schreibgeschützt."),
-                    Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
             string kostenart = rbInvest.Checked
                 ? DbWerte.KOSTENART_KAPITALGEBUNDEN : DbWerte.KOSTENART_BETRIEBSGEBUNDEN;
             string bemessung = rbInvest.Checked
@@ -493,9 +487,12 @@ namespace WindowsFormsApplication1
         {
             KostenVorlageKopf v = Variante;
             if (v == null) return;
-            if (v.NurLesen)
+            if (v.IstStandard)
             {
-                MessageBox.Show(Text_("KDLG_MSG_READONLY", "Auslieferungsvorlagen sind schreibgeschützt."),
+                // Ä8-Restschutz: Die Standardvorlage ist Quelle von „Speichern
+                // unter…" und Übernahme — Varianten sind löschbar, sie nicht.
+                MessageBox.Show(Text_("KDLG_MSG_STANDARD_LOESCHEN",
+                        "Die Standardvorlage kann nicht gelöscht werden — Varianten schon."),
                     Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
