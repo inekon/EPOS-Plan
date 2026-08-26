@@ -1,13 +1,14 @@
 # Konzept: Brauchwasser, Heizung und Pufferspeicher — Dreikanalbilanz, Schichtspeicher, Booster-Wärmepumpe
 
-**Fassung 2** · Stand 27.08.2026 · Branch `Pufferspeicher` · Status: **weitgehend entschieden** —
-offen sind nur noch **F11** (BHKW-Senkenzahl) und **F13** (Kennlinienrand); zu beiden steht die
-Erläuterung in Kapitel 12, die Entscheidung wird nachgereicht.
+**Fassung 2** · Stand 27.08.2026 · Branch `Pufferspeicher` · Status: **alle Rückfragen
+entschieden** — zuletzt F11 (BHKW: Fahrweisen-Umbau auf n Senken je Stufe) und F13
+(Kennlinienrand: Kappung + Protokoll). Umsetzungsstart nach Landung von `kostenformulare` in
+`main` (Kapitel 9).
 
 | Fassung | Inhalt |
 |---|---|
 | 1 | Erstfassung nach Ist-Analyse (9 Prüfläufe) und 3 adversarialen Reviews; Entscheidungen F1 (Altpfad entfällt), F7 (Schichtmodell N = 1…10, Default 1), F17 (R-Prozess automatisch) und Merge-Strategie (`kostenformulare` landet zuerst in `main`) |
-| **2** | Entscheidungen F2–F6, F8–F10, F12, F14–F18 eingearbeitet: Netzverluste **anteilig** auf die Kanäle (F2), **Kalender vereinheitlicht** (F3), Senkentabelle mit unbegrenztem Rang (F4), **F5-Alternative** — sechs Senkenziele bleiben, Pufferklassen werden ein **Klassen-Set** aus drei Nutzungs-Flags (Kombi = {Heizung, Brauchwasser}), Warnkriterienkatalog statt pauschalem Hinweis (F6), Herkunftsrechnung je Speicher (F8), Booster als Anzeigeregel (F9), Knappheitsreihenfolge projektweit übersteuerbar über neue `Tab_Einstellungen`-Spalte (F10), Quellprofile in die DB (F12), F14–F16/F18 wie empfohlen. **Neu:** Heizkessel-Quellpuffer ausdrücklich verankert (8.4). Migrationsblock jetzt **45–51** |
+| **2** | Entscheidungen F2–F6, F8–F10, F12, F14–F18 eingearbeitet: Netzverluste **anteilig** auf die Kanäle (F2), **Kalender vereinheitlicht** (F3), Senkentabelle mit unbegrenztem Rang (F4), **F5-Alternative** — sechs Senkenziele bleiben, Pufferklassen werden ein **Klassen-Set** aus drei Nutzungs-Flags (Kombi = {Heizung, Brauchwasser}), Warnkriterienkatalog statt pauschalem Hinweis (F6), Herkunftsrechnung je Speicher (F8), Booster als Anzeigeregel (F9), Knappheitsreihenfolge projektweit übersteuerbar über neue `Tab_Einstellungen`-Spalte (F10), Quellprofile in die DB (F12), F14–F16/F18 wie empfohlen. Nachgereicht: **F11 = Fahrweisen-Umbau** (n Senken je BHKW-Stufe, Wärmeraum als Summe, Reservierungsliste) und **F13 = Kappung + Protokoll**. **Neu:** Heizkessel-Quellpuffer ausdrücklich verankert (8.4). Migrationsblock jetzt **45–51** |
 
 **Bezug:** [`Konzept_Simulation_QuellenSenken.md`](Konzept_Simulation_QuellenSenken.md) (Fassung 12 —
 inzwischen **umgesetzt** in den Paketen B0, 1–9, D1–D5b, K3, BHKW-Regulär und Parallelverbund; die
@@ -386,14 +387,19 @@ heute muss jede Zweitsenke ein Puffer sein (`WaermesenkeClass.cs:328-335`), „P
 direkt" ist also nicht abbildbar. Das Durchsatzbudget je Kanal funktioniert unverändert, nur
 indiziert.
 
-**Einschränkung BHKW:** Die drei Fahrweisen schalten alle Motoren gemeinsam gegen einen Wärmeraum
-zu (`SimulationBHKW.cs:931-992`); eine Senke je *Modul* wäre neue Physik (Paket-6-Entscheidung).
-Zusätzlich ist die BHKW-Stufe hart auf **zwei Senkenplätze** gebaut: `Auftrag_Haupt`/`Auftrag_Zweit`,
-genau ein Reservierungsfeld, `ZweitsenkenRaum()` nur aus dem zweiten Auftrag
-(`SimulationBHKW.cs:831-834, :1088, :1112-1116`; `Kaskadenschleife.cs:654-681` füllt nur zwei
-Slots). Es bleibt deshalb bei **höchstens zwei Senken je BHKW-Stufe (Rang 1/2)** — der Senkendialog
-erzwingt das für BHKW-Anlagen (F11); eine Verallgemeinerung (Wärmeraum = Σ Ladefähigkeit aller
-Puffersenken, Reservierung als Liste je Zielspeicher) ist als Ausbaustufe vorgemerkt.
+**BHKW (F11 ✔ entschieden 27.08.2026: Fahrweisen-Umbau — n Senken auch für das BHKW):** Die drei
+Fahrweisen schalten alle Motoren gemeinsam gegen einen Wärmeraum zu (`SimulationBHKW.cs:931-992`);
+heute ist die Stufe hart auf zwei Senkenplätze gebaut (`Auftrag_Haupt`/`Auftrag_Zweit`, genau ein
+Reservierungsfeld, `ZweitsenkenRaum()` nur aus dem zweiten Auftrag —
+`SimulationBHKW.cs:831-834, :1088, :1112-1116`; `Kaskadenschleife.cs:654-681`). Der Umbau in
+Paket S1: die Auftragsslots werden eine **Liste je Stufe**; der Wärmeraum der Zuschaltentscheidung
+in Phase B ist der offene Kanalbedarf **plus die Summe der Ladefähigkeiten aller Puffersenken**
+der Stufe (jede mit ihrer aufgelösten Obergrenze); die Reservierung wird eine **Liste je
+Zielspeicher** (Reservieren in Phase B, Freigeben unmittelbar vor dem jeweiligen Ladevorgang —
+die N3-Regel gilt je Auftrag). Die Paket-6-Abgrenzung „keine neue Physik" wird damit für die
+**Senkenbemessung** bewusst revidiert; unverändert bleibt: **eine** Senkenliste je Stufe, keine
+Senke je einzelnem Motor-Modul. Ergebnisänderung für BHKW-Projekte mit Mehrfachsenken (11.2);
+Aufwand +3–4 PT in S1.
 
 ### 5.3 Senkendialog
 
@@ -759,7 +765,8 @@ Rückfall-ΔT-Projekt, 7.3); Senkentabellen-Migration; Klassen-Set-Migration (`V
 `T_Nutz = RL_eff`. Bewusst ergebnisändernd (dokumentierter Vorher/Nachher-Vergleich je
 Referenzprojekt): V0-Fixes, Dreikanal-Herauslösung der Prozesswärme (mit Migrationsregel
 R-Prozess), **Netzverlust-Umverteilung auf die Kanäle** (F2), **Kalender-Vereinheitlichung** (F3),
-Altpfad-Stilllegung, Booster-/Kessel-Temperaturkopplung.
+Altpfad-Stilllegung, Booster-/Kessel-Temperaturkopplung, **BHKW-Fahrweisen-Umbau** (F11 — betrifft
+BHKW-Projekte mit Mehrfachsenken).
 
 ### 11.3 Energieprobe je Stunde
 
@@ -779,8 +786,7 @@ Feld) vor jeder Parallelisierung.
 
 ## 12. Rückfragen an den Produktverantwortlichen
 
-„✔" = entschieden (mit Datum), „◉" = Empfehlung bei noch offener Frage. Stand Fassung 2 sind
-**alle Fragen außer F11 und F13 entschieden**; zu beiden steht unten die Erläuterung.
+„✔" = entschieden (mit Datum). Stand Fassung 2 sind **alle achtzehn Rückfragen entschieden**.
 
 **F1 — Altpfad abschaffen?** ✔ **Entschieden 27.08.2026: Ja** (L1). Konsequenz: Bestandsprojekte
 ohne Flag ändern ihr Ergebnis; Referenzbasis wird neu eingefroren, Ergebnisänderungen je
@@ -797,7 +803,7 @@ gezogen (4.2). Energiewirkungsfrei, aber jede Profil-Stundenganglinie verschiebt
 dokumentierte Ergebnisänderung (11.2). Das neue 365-Tage-Quellprofil (8.1) ist kalenderunabhängig.
 
 **F4 — Senkenanzahl?** ✔ **Entschieden 27.08.2026: Zuordnungstabelle mit unbegrenztem Rang**
-(praktisch 1–4, UI bietet Hinzufügen bis 4; Ausnahme BHKW → F11).
+(praktisch 1–4, UI bietet Hinzufügen bis 4; gilt nach F11 auch für das BHKW).
 
 **F5 — Ziel-Vereinfachung und Kombi?** ✔ **Entschieden 27.08.2026: Alternative** — die sechs
 Zielwerte bleiben (+ neu `PufferProzess`), und die Pufferklassen werden ein **Klassen-Set** aus
@@ -826,37 +832,26 @@ eine neue `Tab_Einstellungen`-Spalte** `Kanal_Knappheitsreihenfolge` (Default
 `BRAUCHWASSER;PROZESS;HEIZUNG`, Schritt 46; Details 4.3). Mit dem Klassen-Set (F5) ist auch die
 Prozess-Position ab K2 wirksam.
 
-**F11 — BHKW-Senkenzahl? — ERLÄUTERUNG, Entscheidung offen.** Das BHKW ist der einzige Erzeuger,
-dessen Motoren **gemeinsam je Stufe** zugeschaltet werden: Die drei Fahrweisen entscheiden je
-Stunde „wie viele Motoren laufen?" gegen **einen** Wärmeraum (Kanalbedarf + Ladefähigkeit genau
-einer Puffersenke, `SimulationBHKW.cs:931-992`). Der Code hat dafür exakt **zwei Senkenplätze**
-(`Auftrag_Haupt`/`Auftrag_Zweit`), **ein** Reservierungsfeld (`_reservierterSpeicher`, sichert den
-in Phase B verplanten Wärmeraum gegen vorrangige Lader) und `ZweitsenkenRaum()` nur aus dem
-zweiten Auftrag (`:831-834, :1088, :1112-1116`). **Konsequenz von „mehr als zwei Senken":** die
-Zuschaltung müsste gegen die Summe aller Puffersenken bemessen und die Reservierung zur Liste je
-Zielspeicher werden — ein Umbau der Fahrweisenlogik, den Paket 6 als „neue Physik" ausdrücklich
-abgelehnt hat. Ohne Umbau wäre die Zuschaltung ab Rang 3 systematisch zu klein und die
-Reservierung schützte nur einen Speicher (genau der Verwurf-Fehler N3, gemessen 12,06 MWh).
-**Empfehlung:** höchstens zwei Senken je BHKW-Stufe (Rang 1/2), vom Senkendialog erzwungen;
-Verallgemeinerung als Ausbaustufe. **Alternative:** Fahrweisen-Umbau jetzt (≈ +3–4 PT in S1,
-Ergebnisänderung aller BHKW-Projekte mit Mehrfachsenken).
+**F11 — BHKW-Senkenzahl?** ✔ **Entschieden 27.08.2026: Fahrweisen-Umbau jetzt** — auch das BHKW
+erhält n Senken je Stufe. Hintergrund: Die drei Fahrweisen entscheiden je Stunde „wie viele
+Motoren laufen?" gegen **einen** Wärmeraum; der Code hat heute exakt zwei Senkenplätze und ein
+Reservierungsfeld. Der Umbau (Wärmeraum = Kanalbedarf + Σ Ladefähigkeit aller Puffersenken,
+Reservierung als Liste je Zielspeicher) ist in 5.2 spezifiziert und Paket S1 zugeordnet
+(+3–4 PT); die Paket-6-Abgrenzung „keine neue Physik" wird für die Senkenbemessung bewusst
+revidiert. Unverändert bleibt: eine Senkenliste je Stufe, keine Senke je einzelnem Motor-Modul.
+Ergebnisänderung für BHKW-Projekte mit Mehrfachsenken (11.2).
 
 **F12 — Quellprofile in die DB?** ✔ **Entschieden 27.08.2026: Ja** — 8760er-Profile als
 Kopf/Daten-Tabellen, Tagesprofil = 365 Tageswerte als neue Profil-Betriebsart; `WQ_CSV`-Pfad nur
 noch Import-Quelle.
 
-**F13 — Kennlinienrand? — ERLÄUTERUNG, Entscheidung offen.** Die WP-Kennlinien stammen aus
-Herstellerdaten (Tab_Kenndaten, VDI-3805-Import) und haben Stützstellen typischerweise nur bis
-~20 °C Quelltemperatur — eine Booster-WP zieht aber aus einem 30–50 °C warmen Puffer, liegt also
-**regelmäßig oberhalb der obersten Stützstelle**. Zwei Umgangsweisen: **(a) Kappung** (Empfehlung):
-oberhalb der Tabelle gilt der COP der obersten Stützstelle — konservativ (der echte COP wäre
-besser), erfindet keine Herstellerdaten, wird künftig protokolliert statt still
-(`SimulationWaermepumpe.cs:1670`); der Booster wird dadurch tendenziell etwas zu schlecht
-bewertet. **(b) Extrapolation**: lineare Fortschreibung der Kennlinie über die Tabelle hinaus —
-bildet den Temperaturvorteil ab, extrapoliert aber jenseits der Herstellerangaben (Risiko
-systematischer Überschätzung von COP und JAZ, keine Datengrundlage). **Dritter Weg** (ergänzend zu
-a, kein Ersatz): Hochtemperatur-Kennfelder importieren, wo der Hersteller sie liefert — dann
-erübrigt sich die Frage für diese Geräte. **Empfehlung: (a) Kappung + Protokollwarnung.**
+**F13 — Kennlinienrand?** ✔ **Entschieden 27.08.2026: Kappung + Protokollwarnung.** Oberhalb der
+obersten Kennlinien-Stützstelle (beim Booster mit 30–50 °C Pufferquelle der Normalfall,
+Herstellerdaten meist bis ~20 °C) gilt der COP der obersten Stützstelle — konservativ, keine
+erfundenen Herstellerdaten; die Kappungsstunden werden künftig protokolliert statt still
+verschluckt (`SimulationWaermepumpe.cs:1670`). Keine Extrapolation. Ergänzend bleibt der Import
+von Hochtemperatur-Kennfeldern offen, wo Hersteller sie liefern — für diese Geräte greift die
+Kappung dann nicht mehr.
 
 **F14 — Detailansicht angleichen?** ✔ **Entschieden 27.08.2026: Ja** (V0-7): Anzeigeformeln =
 Runner-Formeln; sichtbare Änderung der angezeigten Deckungsgrade in Bestandsprojekten mit Puffer
@@ -891,7 +886,7 @@ Reihenfolge ist Abhängigkeitsreihenfolge; jedes Paket einzeln lieferbar und ver
 | **V0** | Bestandsfehler + Referenzbasis: V0-1…V0-9, vier neue Referenzprojekte, Basis neu einfrieren | 2.3, 11.1 | 6–8 |
 | **K1** | Dreikanal-Bedarf: `Kanalsatz`, Kanalbildung ohne Residuum, **Netzverluste anteilig** (F2), **Kalender-Vereinheitlichung** (F3), gemeinsame Profilroutine (zwei Quellmodi), `DataRepository`-Umstellung der Bedarfsrechnung, Ganglinien-Kanalzuordnung, Energieprobe | 4 · Schritt 45 | 7–9 |
 | **K2** | Kaskade dreikanalig: `SenkeAbziehen` mit Maske, Entladeordnungen/Durchsatzbudget indiziert, **kanalindizierte Deckungs-/Zurechnungsbuchführung** (4.1/4.4), **Klassen-Set-Flags + Knappheitsreihenfolge-Spalte** (6.1, F10) | 4.3, 6.1 · Schritt 46 | 7–9 |
-| **S1** | Senkentabelle `Z_AnlageSenke` + Migration (inkl. R-Prozess) + Ladephasen je Rang + Senkendialog-Umbau + Projektkopie (`KINDER`/`FK_MAP`) | 5 · Schritt 47 | 7–9 |
+| **S1** | Senkentabelle `Z_AnlageSenke` + Migration (inkl. R-Prozess) + Ladephasen je Rang + **BHKW-Fahrweisen-Umbau** (F11: Wärmeraum als Summe, Reservierungsliste) + Senkendialog-Umbau + Projektkopie (`KINDER`/`FK_MAP`) | 5 · Schritt 47 | 10–13 |
 | **S2** | Freie Zuordnung mit Warnkriterien W1–W5; Schema-/Kartenanpassungen (Prozessknoten, Senkenketten-Chips, Kessel-Quellkette) | 6.2, 10 | 4–5 |
 | **A1** | Altpfad-Rückbau: Weiche, Flag, WP-Altschleife, SPK/Solar-Altwege, Temperaturübernahme + `Z_ProjektPufferSp`-Stilllegung, `Form_KonfigPufferspeicher` entfällt, toter Code (8.3) | 3/L1 · Schritt 48 | 6–8 |
 | **E1** | Ergebnis/Bericht je Kanal (Persistenz + Anzeige; Engine-Buchführung kommt aus K2); `puffer_wp`-Ablösung; `Tab_ErgebnisPufferspeicher`-Erweiterung | 4.4, 6.3 · Schritt 49 | 4–5 |
@@ -900,7 +895,7 @@ Reihenfolge ist Abhängigkeitsreihenfolge; jedes Paket einzeln lieferbar und ver
 | **B1** | Booster: Temperaturkopplung WP **und Heizkessel** (Schnittstellenwechsel `Quelltemperatur` → Stundenabfrage, 8.2/8.4), Kennlinien-Protokoll, Badge/Schema, WP-Guards | 8.2–8.4 | 6–8 |
 | **Q1** | Quellen-Ausbau: Bauart-Bindung, Tagesprofil, Profile in DB, Schlüssel- statt Indexkopplung | 8.1 · Schritt 51 | 4–6 |
 | **L** | Lokalisierung + Dokumentation (Katalog-Nachträge, Migrationshinweis, Fassung 3 dieses Konzepts) | 10 | 2–3 |
-| | **Summe** | | **64–84** |
+| | **Summe** | | **67–88** |
 
 Meilenstein-Schnitte: nach **A1** ist Z1 im Kern erreicht (ein Rechenweg); nach **E1** ist Z3
 durchgängig (Bedarf → Kaskade → Ergebnis → Bericht); nach **B1** ist Z4 erreicht. P1 (mit seinem
