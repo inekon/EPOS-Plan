@@ -112,7 +112,8 @@ namespace WindowsFormsApplication1
             btnUebernahme.Text = Text_("KDLG_BTN_UEBERNAHME_PROJEKT",
                                        "Aus Vorlage übernehmen…");
 
-            // Ä12: explizites Speichern/Abbrechen gibt es nur im Projektmodus.
+            // Ä12/Ä13: explizite Knöpfe gibt es nur im Projektmodus.
+            btnOk.Visible = true;
             btnSpeichern.Visible = true;
             btnAbbrechen.Visible = true;
 
@@ -383,6 +384,14 @@ namespace WindowsFormsApplication1
         /// AKTUELLE Ziel (Projektpositionen; im Stammkontext ist der Knopf
         /// verborgen, dort gilt das Sofort-Speichern des Bestands). Die
         /// Fußsumme bestätigt mit Uhrzeit.</summary>
+        /// <summary>Ä13: OK = speichern und verlassen.</summary>
+        private void btnOk_Click(object sender, EventArgs e)
+        {
+            foreach (ucVorlagenZeile z in _zeilen) z.JetztSpeichern();
+            DialogResult = DialogResult.OK;
+            Close();
+        }
+
         private void btnSpeichern_Click(object sender, EventArgs e)
         {
             foreach (ucVorlagenZeile z in _zeilen) z.JetztSpeichern();
@@ -576,6 +585,7 @@ namespace WindowsFormsApplication1
             btnKatalog.Text = Text_("KDLG_BTN_KATALOG", btnKatalog.Text);
             btnSpeichern.Text = Text_("KDLG_BTN_SPEICHERN", btnSpeichern.Text);
             btnAbbrechen.Text = Text_("KDLG_BTN_ABBRECHEN", btnAbbrechen.Text);
+            btnOk.Text = Text_("KDLG_BTN_OK", btnOk.Text);
             lblSpAktionen.Text = Text_("KDLG_SP_AKTIONEN", lblSpAktionen.Text);
             lblSpPosition.Text = Text_("KDLG_SP_POSITION", lblSpPosition.Text);
             lblSpBemessung.Text = Text_("KDLG_SP_BEMESSUNG", lblSpBemessung.Text);

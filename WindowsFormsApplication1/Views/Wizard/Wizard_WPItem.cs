@@ -329,13 +329,20 @@ namespace WindowsFormsApplication1
             WPCtrl wpctrl = new WPCtrl();
             wpctrl.ReadAll("ID=" + item.ID_WP);
 
-            textBox_Beschreibung.Text = wpctrl.items[0].Beschreibung;
-            textBox_Baujahr.Text = wpctrl.items[0].Baujahr.ToString();
-            textBox_Leistungsstufen.Text = wpctrl.items[0].Regelung;
-            textBox_Waermepumpentyp.Text = wpctrl.items[0].Typ;
-            textBox_Hersteller.Text = wpctrl.items[0].Firma;
-            textBox_Modulkosten.Text = wpctrl.items[0].Modulkosten.ToString();
-            textBox_Nennleistung.Text = wpctrl.items[0].Nennleistung.ToString();
+            // Befund 26.08.2026: Wurde die Waermepumpe im Dialog geloescht oder
+            // ist ID_WP nicht (mehr) vergeben, kommt eine LEERE Liste zurueck -
+            // der ungepruefte items[0]-Zugriff warf eine
+            // ArgumentOutOfRangeException. Dann bleibt die Anzeige unveraendert.
+            if (wpctrl.items == null || wpctrl.items.Count == 0) return;
+
+            var wp = wpctrl.items[0];
+            textBox_Beschreibung.Text = wp.Beschreibung;
+            textBox_Baujahr.Text = wp.Baujahr.ToString();
+            textBox_Leistungsstufen.Text = wp.Regelung;
+            textBox_Waermepumpentyp.Text = wp.Typ;
+            textBox_Hersteller.Text = wp.Firma;
+            textBox_Modulkosten.Text = wp.Modulkosten.ToString();
+            textBox_Nennleistung.Text = wp.Nennleistung.ToString();
         }
         private void checkBox_Bivalent_CheckedChanged(object sender, EventArgs e)
         {

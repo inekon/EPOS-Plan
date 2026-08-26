@@ -62,11 +62,34 @@ namespace WindowsFormsApplication1
                 : T("KDLG_ET_KONTEXT_KATALOG", "Kontext: Katalog (Stammdaten)");
 
             _wirdGefuellt = true;
+            _ersterTraegerIndex = -1;
             try
             {
+                // Ä13 (Nutzerauftrag 26.08.2026): Die Liste zeigt die Träger unter
+                // ihren GRUPPEN (group_code) — Köpfe sind nicht wählbar.
                 List<EnergyCarrier> traeger = Form_Kosten.GetAllCarriers(_projektId);
-                lstTraeger.DataSource = traeger;
-                lstTraeger.DisplayMember = "Name";
+                traeger.Sort((a, b) =>
+                {
+                    int g = string.Compare(a.GroupCode ?? "", b.GroupCode ?? "",
+                                           StringComparison.CurrentCultureIgnoreCase);
+                    return g != 0 ? g : string.Compare(a.Name, b.Name,
+                                           StringComparison.CurrentCultureIgnoreCase);
+                });
+                lstTraeger.DataSource = null;
+                lstTraeger.Items.Clear();
+                string gruppe = null;
+                foreach (EnergyCarrier c in traeger)
+                {
+                    string g = string.IsNullOrEmpty(c.GroupCode)
+                        ? T("KDLG_ET_GRUPPE_SONSTIGE", "Sonstige") : c.GroupCode;
+                    if (!string.Equals(g, gruppe, StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        gruppe = g;
+                        lstTraeger.Items.Add(new TraegerEintrag(g));
+                    }
+                    int idx = lstTraeger.Items.Add(new TraegerEintrag(c));
+                    if (_ersterTraegerIndex < 0) _ersterTraegerIndex = idx;
+                }
                 lstTraeger.SelectedIndex = -1;
             }
             finally { _wirdGefuellt = false; }
@@ -78,13 +101,33 @@ namespace WindowsFormsApplication1
 
             // Erster Träger vorgewählt — ein leerer Detailbereich sah wie ein
             // fehlender Dialog aus (Befund 26.08.2026, Katalogkontext).
-            if (lstTraeger.Items.Count > 0) lstTraeger.SelectedIndex = 0;
+            if (_ersterTraegerIndex >= 0) lstTraeger.SelectedIndex = _ersterTraegerIndex;
         }
+
+        private int _ersterTraegerIndex = -1;
 
         private void lstTraeger_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_wirdGefuellt) return;
-            ZeigeTraeger(lstTraeger.SelectedItem as EnergyCarrier);
+            var eintrag = lstTraeger.SelectedItem as TraegerEintrag;
+            if (eintrag != null && eintrag.Traeger == null)
+            {
+                // Gruppenkopf: auf den nächsten Träger weiterspringen.
+                int i = lstTraeger.SelectedIndex + 1;
+                if (i < lstTraeger.Items.Count) lstTraeger.SelectedIndex = i;
+                return;
+            }
+            ZeigeTraeger(eintrag != null ? eintrag.Traeger : null);
+        }
+
+        /// <summary>Listeneintrag der Ä13-Gruppierung: Gruppenkopf oder Träger.</summary>
+        private sealed class TraegerEintrag
+        {
+            public readonly EnergyCarrier Traeger;   // null = Gruppenkopf
+            private readonly string _text;
+            public TraegerEintrag(string gruppe) { _text = "▪ " + gruppe; }
+            public TraegerEintrag(EnergyCarrier c) { Traeger = c; _text = "      " + c.Name; }
+            public override string ToString() { return _text; }
         }
 
         /// <summary>ETAPPE KD6 (§ 9): Vorwahl des Trägers — „Energiekosten…" aus dem
@@ -92,7 +135,8 @@ namespace WindowsFormsApplication1
         public void WaehleTraeger(int carrierId)
         {
             for (int i = 0; i < lstTraeger.Items.Count; i++)
-                if (lstTraeger.Items[i] is EnergyCarrier c && c.ID == carrierId)
+                if (lstTraeger.Items[i] is TraegerEintrag te && te.Traeger != null &&
+                    te.Traeger.ID == carrierId)
                 { lstTraeger.SelectedIndex = i; return; }
         }
 
@@ -261,7 +305,8 @@ namespace WindowsFormsApplication1
             var btnVariante = KatalogKnopf(T("KDLG_ET_BTN_VARIANTE", "Variante"), 78);
             btnVariante.Click += (s, e) =>
             {
-                var c = lstTraeger.SelectedItem as EnergyCarrier;
+                var gewaehlt = lstTraeger.SelectedItem as TraegerEintrag;
+                EnergyCarrier c = gewaehlt != null ? gewaehlt.Traeger : null;
                 if (c == null) return;
                 int id = EnergietraegerKatalogCtrl.Variante(c.ID);
                 if (id > 0) ListeNeuLaden(id);
