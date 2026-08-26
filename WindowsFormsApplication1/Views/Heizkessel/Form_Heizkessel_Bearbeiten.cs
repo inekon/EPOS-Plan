@@ -43,6 +43,7 @@ namespace WindowsFormsApplication1
             // Datenbank fehlt Wartungskosten_Einheit noch (Migrationsschritt 15).
             HeizkesselStammCtrl.StelleSpaltenSicher();
             WartungsfeldAufbauen();
+            KostenzugriffAnbringen();   // ETAPPE KD6 (§ 9, FK8)
 
             if (mode == MODE_EDIT)
             {
@@ -118,6 +119,25 @@ namespace WindowsFormsApplication1
         /// dritten vorhandenen Zeile statt auf einer vierten neuen.
         /// </para>
         /// </remarks>
+        /// <summary>
+        /// ETAPPE KD6 (Konzept Kostendialoge § 9, FK8): Die eingebetteten
+        /// Kostenfelder („Eingabedaten zur Berechnung der Kosten") werden eine
+        /// Version lang SCHREIBGESCHÜTZT — gepflegt wird in der Stammvorlage —
+        /// und unten kommt der Kosten-Block mit den drei Aufrufen an
+        /// (Serienbaustein <see cref="KostenKnoepfe"/>). Die Gerätewerte bleiben
+        /// Datenquelle der Planwert-Übernahme, kein zweiter Pflegeort.
+        /// </summary>
+        private void KostenzugriffAnbringen()
+        {
+            KostenKnoepfe.Sperren(tb_Investitionskosten, tb_Raumbedarf, tb_Nutzungsdauer,
+                                  tb_Wartungskosten, cb_WartungEinheit);
+            var leiste = KostenKnoepfe.Leiste(this, DbWerte.KOSTEN_KOMPONENTE_HEIZKESSEL,
+                () => 0, () => null, KostenKnoepfe.Fk8Hinweis());
+            leiste.Dock = System.Windows.Forms.DockStyle.Bottom;
+            Controls.Add(leiste);
+            Height += 46;
+        }
+
         private void WartungsfeldAufbauen()
         {
             if (groupBox3 == null || tb_Investitionskosten == null) return;

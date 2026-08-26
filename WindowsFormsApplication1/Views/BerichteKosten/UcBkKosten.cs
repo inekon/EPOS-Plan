@@ -404,9 +404,16 @@ namespace WindowsFormsApplication1
 
             gridKomponenten.Columns.Add("komponente", MyResource.Resource.BK_KOSTEN_SP_KOMPONENTE);
             gridKomponenten.Columns.Add("summe", MyResource.Resource.BK_KOSTEN_SP_SUMME);
+            // ETAPPE KD6 (§ 10): Betriebskosten je Komponente — als dritte Spalte im
+            // selben Raster statt einer zweiten Tabelle (gleiche Information, gleiche
+            // Leselogik LiesKomponentenSummen, Kategorie 2; dokumentierte Abweichung
+            // vom Wortlaut „eigene Tabelle“).
+            gridKomponenten.Columns.Add("betrieb", Text_("BK_KOSTEN_SP_BETRIEB", "Betrieb [€/a]"));
             gridKomponenten.Columns[0].FillWeight = 120;
             gridKomponenten.Columns[1].FillWeight = 70;
             gridKomponenten.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gridKomponenten.Columns[2].FillWeight = 70;
+            gridKomponenten.Columns[2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
             try
             {
@@ -414,7 +421,22 @@ namespace WindowsFormsApplication1
                     _idProjekt, Form_Kosten.KATEGORIE_INVESTITION);
                 if (dt == null) return;
 
-                double summe = 0;
+                // KD6 (§ 10): Betriebssummen je Komponente aus derselben Leselogik.
+                var betriebJe = new Dictionary<string, double>(StringComparer.Ordinal);
+                try
+                {
+                    DataTable bt2 = Form_Kosten.LiesKomponentenSummen(
+                        _idProjekt, Form_Kosten.KATEGORIE_BETRIEB);
+                    if (bt2 != null)
+                        foreach (DataRow r2 in bt2.Rows)
+                        {
+                            double? w2 = D(r2, "Summe");
+                            if (w2.HasValue) betriebJe[S(r2, "Komponente")] = w2.Value;
+                        }
+                }
+                catch { }
+
+                double summe = 0, summeBetrieb = 0;
                 var erfasst = new HashSet<string>(StringComparer.Ordinal);
                 foreach (DataRow r in dt.Rows)
                 {
@@ -423,17 +445,33 @@ namespace WindowsFormsApplication1
                     double? w = D(r, "Summe");
                     summe += w ?? 0;
 
+                    double bWert;
+                    bool hatB = betriebJe.TryGetValue(komponente, out bWert);
+                    if (hatB) summeBetrieb += bWert;
+
                     gridKomponenten.Rows.Add(
                         komponente,
-                        w.HasValue ? w.Value.ToString("N2", kultur) : "—");
+                        w.HasValue ? w.Value.ToString("N2", kultur) : "—",
+                        hatB ? bWert.ToString("N2", kultur) : "—");
+                }
+
+                // Komponenten, die NUR Betriebskosten führen, fehlen in der
+                // Invest-Liste — sie bekommen eine eigene Zeile (— / Betrag).
+                foreach (KeyValuePair<string, double> kv in betriebJe)
+                {
+                    if (erfasst.Contains(kv.Key)) continue;
+                    erfasst.Add(kv.Key);
+                    summeBetrieb += kv.Value;
+                    gridKomponenten.Rows.Add(kv.Key, "—", kv.Value.ToString("N2", kultur));
                 }
 
                 ZeigeGewerkeOhnePosition(erfasst);
 
-                if (dt.Rows.Count > 0)
+                if (gridKomponenten.Rows.Count > 0)
                 {
                     int idx = gridKomponenten.Rows.Add(MyResource.Resource.BK_KOSTEN_SUMME,
-                                                       summe.ToString("N2", kultur));
+                                                       summe.ToString("N2", kultur),
+                                                       summeBetrieb.ToString("N2", kultur));
                     gridKomponenten.Rows[idx].DefaultCellStyle.Font =
                         new Font(gridKomponenten.Font, FontStyle.Bold);
                 }
@@ -576,6 +614,10 @@ namespace WindowsFormsApplication1
             gridTraeger.Columns.Add("arbeit", MyResource.Resource.BK_KOSTEN_SP_ARBEITSPREIS);
             gridTraeger.Columns.Add("arbeitkwh", MyResource.Resource.BK_KOSTEN_SP_ARBEITSPREIS_KWH);
             gridTraeger.Columns.Add("grund", MyResource.Resource.BK_KOSTEN_SP_GRUNDPREIS);
+            // ETAPPE KD6 (§ 10, § 7.1): der effektive Leistungspreis als Jahreswert —
+            // Monatssätze × 12, dieselbe Vorrangkette wie im KostenEmissionRechner
+            // (Projekt vor Katalog, 0 = nicht gepflegt); Strom zeigt „—“ (Tarifwelt).
+            gridTraeger.Columns.Add("leistung", Text_("BK_KOSTEN_SP_LEISTUNGSPREIS", "Leistungspreis [€/(kW·a)]"));
 
             // SECHS KÖPFE PASSEN EINZEILIG NICHT MEHR NEBENEINANDER. Gemessen bei 1040 px
             // Seitenbreite: 622 px stehen der Tabelle zur Verfügung, die sechs Köpfe
@@ -666,7 +708,8 @@ namespace WindowsFormsApplication1
                         (ohnePreis || ohneHeizwert)
                             ? "—"
                             : (preis.Value / hi.Value).ToString("N4", kultur),
-                        grund.HasValue ? grund.Value.ToString("N2", kultur) : "—");
+                        grund.HasValue ? grund.Value.ToString("N2", kultur) : "—",
+                        LeistungspreisText(carrier, kultur));
 
                     // Warum steht diese Zeile hier? Der Filter bleibt nur dann
                     // nachvollziehbar, wenn er seine Begründung mitliefert.
@@ -712,6 +755,60 @@ namespace WindowsFormsApplication1
 
         // Vorrangkette des KostenEmissionRechners: Projektwert (energy_project_settings)
         // schlägt Katalogwert (energy_carrier).
+        /// <summary>
+        /// KD6 (§ 10): der effektive Leistungspreis eines Trägers als JAHRESWERT
+        /// [€/(kW·a)] — custom_price_power vor price_power (0 = nicht gepflegt,
+        /// Befund-D5-Regel), Monatsmodus × 12; Strom liefert „—“ (Tarifwelt,
+        /// Schritt 21). Dieselbe Vorrangkette wie KostenEmissionRechner.LadeTraeger.
+        /// </summary>
+        private string LeistungspreisText(int carrierId, System.Globalization.CultureInfo kultur)
+        {
+            try
+            {
+                DataTable k = DataRepository.GetDataTable(
+                    "SELECT price_power, price_power_modus, pricing_model " +
+                    "FROM energy_carrier WHERE id = ?",
+                    new OleDbParameter("@c", carrierId));
+                if (k == null || k.Rows.Count == 0) return "—";
+
+                if (string.Equals(S(k.Rows[0], "pricing_model"), "ELECTRICITY",
+                                  StringComparison.OrdinalIgnoreCase))
+                    return "—";   // Strom: Tarifstruktur, keine zweite Wahrheit
+
+                double? satz = null;
+                DataTable s = DataRepository.GetDataTable(
+                    "SELECT custom_price_power FROM energy_project_settings " +
+                    "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                    new OleDbParameter("@p", _idProjekt), new OleDbParameter("@c", carrierId));
+                if (s != null && s.Rows.Count > 0)
+                {
+                    double? cw = D(s.Rows[0], "custom_price_power");
+                    if (cw.HasValue && cw.Value > 0) satz = cw;
+                }
+                if (!satz.HasValue)
+                {
+                    double? kw = D(k.Rows[0], "price_power");
+                    if (kw.HasValue && kw.Value > 0) satz = kw;
+                }
+                if (!satz.HasValue) return "—";
+
+                bool monat = string.Equals(S(k.Rows[0], "price_power_modus"),
+                    DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal);
+                return (monat ? satz.Value * 12.0 : satz.Value).ToString("N2", kultur);
+            }
+            catch { return "—"; }
+        }
+
+        private static string Text_(string schluessel, string rueckfall)
+        {
+            try
+            {
+                string t = MyResource.Resource.ResourceManager.GetString(schluessel);
+                return string.IsNullOrEmpty(t) ? rueckfall : t;
+            }
+            catch { return rueckfall; }
+        }
+
         private void LiesPreise(int carrierId, out double? arbeit, out double? grund)
         {
             arbeit = null; grund = null;

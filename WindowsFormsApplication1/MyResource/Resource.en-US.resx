@@ -7618,4 +7618,37 @@ Please run the EPOS-Plan setup again or install the Microsoft Access Database En
   <data name="KDLG_ERTRAG_UE2MWN" xml:space="preserve">
     <value>above 2 MW (retrofitted)</value>
   </data>
+  <data name="BK_KOSTEN_SP_BETRIEB" xml:space="preserve">
+    <value>Operation [€/a]</value>
+  </data>
+  <data name="BK_KOSTEN_SP_LEISTUNGSPREIS" xml:space="preserve">
+    <value>Capacity price [€/(kW·a)]</value>
+  </data>
+  <data name="KDLG_FK8_HINWEIS" xml:space="preserve">
+    <value>Maintained in the cost dialog — fields are read-only.</value>
+  </data>
+  <data name="KDLG_KNOPF_BETRIEB" xml:space="preserve">
+    <value>Operating costs…</value>
+  </data>
+  <data name="KDLG_KNOPF_ENERGIE" xml:space="preserve">
+    <value>Energy costs…</value>
+  </data>
+  <data name="KDLG_KNOPF_INVEST" xml:space="preserve">
+    <value>Investment costs…</value>
+  </data>
+  <data name="KOSTEN_CASE_ABSOLUT" xml:space="preserve">
+    <value>Absolute input [€]</value>
+  </data>
+  <data name="KOSTEN_CASE_PROZENT" xml:space="preserve">
+    <value>Input in % of the expected value</value>
+  </data>
+  <data name="KOSTEN_CASE_STARTJAHR" xml:space="preserve">
+    <value>Start year (0 = immediately; year X: payment/operation from X):</value>
+  </data>
+  <data name="KOSTEN_CASE_UMRECHNUNG" xml:space="preserve">
+    <value>results in: best {0:N2} € · worst {1:N2} €</value>
+  </data>
+  <data name="KDLG_FK8_KURZ" xml:space="preserve">
+    <value>Maintained in the cost dialog.</value>
+  </data>
 </root>
