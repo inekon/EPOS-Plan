@@ -7835,4 +7835,16 @@ dauer [a]</value>
   <data name="KDLG_BTN_ABBRECHEN" xml:space="preserve">
     <value>Abbrechen</value>
   </data>
+  <data name="KDLG_ET_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="KDLG_LP_STROM_TARIF_BTN" xml:space="preserve">
+    <value>Tarifstruktur…</value>
+  </data>
+  <data name="KDLG_AUFSCHLAG_ANWENDEN" xml:space="preserve">
+    <value>Aufschläge in der Wirtschaftlichkeit berücksichtigen</value>
+  </data>
+  <data name="KDLG_EFFEKTIVPREIS" xml:space="preserve">
+    <value>Bezugspreis inkl. Aufschläge: {0:N2} ct/kWh  (Arbeitspreis {1:N2} + Aufschlag {2:N2})</value>
+  </data>
 </root>

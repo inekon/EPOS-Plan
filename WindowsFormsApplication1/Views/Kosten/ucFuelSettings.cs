@@ -45,6 +45,24 @@ namespace WindowsFormsApplication1
         /// Block wird deshalb nicht ausgegraut, sondern gar nicht erst angelegt.
         /// </summary>
         private ucStromAufschlaege _aufschlaege;
+        private Label _lblEffektivpreis;
+        private CheckBox _chkAufschlagAnwenden;
+
+        /// <summary>Ä16: Bezugspreis = Arbeitspreis + wirksamer Aufschlag [ct/kWh].</summary>
+        private void EffektivpreisAnzeigen()
+        {
+            if (_lblEffektivpreis == null || _aufschlaege == null) return;
+            try
+            {
+                double arbeitCt = (double)numArbeitspreis.Value * 100.0;
+                double aufschlagCt = _aufschlaege.WirksamCtKwh;
+                _lblEffektivpreis.Text = string.Format(
+                    TKd4("KDLG_EFFEKTIVPREIS",
+                        "Bezugspreis inkl. Aufschläge: {0:N2} ct/kWh  (Arbeitspreis {1:N2} + Aufschlag {2:N2})"),
+                    arbeitCt + aufschlagCt, arbeitCt, aufschlagCt);
+            }
+            catch { _lblEffektivpreis.Text = ""; }
+        }
 
         // =====================================================================
         // ETAPPE K3 - Umrechnungsblock (Konzept Kosten/Energietraeger § 4.3)
@@ -177,6 +195,34 @@ namespace WindowsFormsApplication1
                         "Leistungspreis Strom: über die Tarifstruktur.")
                 };
                 eltern.Controls.Add(lblLeistungsHinweis);
+
+                // Ä16 (Nutzerauftrag 26.08.2026): Tarifstruktur (und damit der
+                // Strom-Leistungspreis) wird HIER gepflegt — der Einstieg auf der
+                // Wirtschaftlichkeitsseite ist entfallen.
+                if (_projectId > 0)
+                {
+                    var btnTarifStrom = new Button
+                    {
+                        Text = TKd4("KDLG_LP_STROM_TARIF_BTN", "Tarifstruktur…"),
+                        Location = new Point(lblLeistungsHinweis.Right + 12,
+                                             lbl_Leistungspreis.Top - 4),
+                        Size = new Size(120, 25),
+                        UseVisualStyleBackColor = true
+                    };
+                    btnTarifStrom.Click += (s, e2) =>
+                    {
+                        int idStamm = _projectId;
+                        try
+                        {
+                            int refId = new VariantenCtrl().StammRefDerVariante(_projectId);
+                            if (refId > 0) idStamm = refId;
+                        }
+                        catch { }
+                        using (var f = new Form_Tarifstruktur(idStamm))
+                            f.ShowDialog(FindForm());
+                    };
+                    eltern.Controls.Add(btnTarifStrom);
+                }
                 return;
             }
 
@@ -327,6 +373,53 @@ namespace WindowsFormsApplication1
                 _aufschlaege.Location = new Point(17, this.Height + 8);
                 this.Height += ucStromAufschlaege.HOEHE + 16;
                 this.Controls.Add(_aufschlaege);
+
+                // Ä16: Der Gesamtpreis inkl. Aufschlag steht IM Dialog, und die
+                // Entscheidung „Aufschläge in der Wirtschaftlichkeit anwenden“
+                // wird HIER getroffen (der Parameterdialog zeigt sie nur noch).
+                _lblEffektivpreis = new Label
+                {
+                    AutoSize = true,
+                    Font = new Font("Segoe UI", 9.75f, FontStyle.Bold),
+                    ForeColor = Color.FromArgb(26, 50, 97),
+                    Location = new Point(17, _aufschlaege.Location.Y + ucStromAufschlaege.HOEHE + 4)
+                };
+                this.Controls.Add(_lblEffektivpreis);
+
+                if (_projectId > 0)
+                {
+                    _chkAufschlagAnwenden = new CheckBox
+                    {
+                        AutoSize = true,
+                        Text = TKd4("KDLG_AUFSCHLAG_ANWENDEN",
+                            "Aufschläge in der Wirtschaftlichkeit berücksichtigen"),
+                        Location = new Point(17,
+                            _aufschlaege.Location.Y + ucStromAufschlaege.HOEHE + 28)
+                    };
+                    try
+                    {
+                        _chkAufschlagAnwenden.Checked = new WirtschaftlichkeitCtrl()
+                            .LadeParameter(_projectId).AufschlaegeAnwenden;
+                    }
+                    catch { }
+                    _chkAufschlagAnwenden.CheckedChanged += (s, e2) =>
+                    {
+                        try
+                        {
+                            var ctrlW = new WirtschaftlichkeitCtrl();
+                            WirtschaftlichkeitParameter pw = ctrlW.LadeParameter(_projectId);
+                            pw.AufschlaegeAnwenden = _chkAufschlagAnwenden.Checked;
+                            ctrlW.SpeichereParameter(pw);
+                        }
+                        catch { }
+                    };
+                    this.Controls.Add(_chkAufschlagAnwenden);
+                }
+                this.Height += 52;
+
+                _aufschlaege.WirksamGeaendert += (s, e2) => EffektivpreisAnzeigen();
+                numArbeitspreis.ValueChanged += (s, e2) => EffektivpreisAnzeigen();
+                EffektivpreisAnzeigen();
             }
             catch (Exception ex)
             {
@@ -1200,10 +1293,14 @@ namespace WindowsFormsApplication1
 
         public string GetTargetUnitByConversionId(int idumrechnung)
         {
+            // Befund 26.08.2026: Eine leere oder verwaiste Umrechnungs-ID (z. B.
+            // ein frisch aus dem Katalog übernommener Träger, ID_Umrechnung noch
+            // NULL) liefert KEINE Zeile — der Rückgabewert von Next() wurde nie
+            // ausgewertet und Read warf „No data exists for the row/column“.
+            // Ohne Zeile gilt schlicht: keine Zieleinheit.
             RecordSet rs = new RecordSet();
             rs.Open("select to_unit from energy_conversion where id=" + idumrechnung);
-            rs.Next();
-            string unit = (string)rs.Read("to_Unit");
+            string unit = rs.Next() ? (string)rs.Read("to_Unit") : null;
             rs.Close();
             return unit;
         }
@@ -1270,7 +1367,7 @@ namespace WindowsFormsApplication1
             dgvHistory.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "grundpreis",
-                HeaderText = "Grundpreis",
+                HeaderText = "Grundpreis [€/a]",
                 Width = 85,
                 DefaultCellStyle = new DataGridViewCellStyle { Format = "N2" },
             });

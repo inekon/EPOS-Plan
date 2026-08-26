@@ -42,7 +42,11 @@ namespace WindowsFormsApplication1
             Text = T("KDLG_ET_TITEL", "Energieträgerverwaltung");
             lblKopfTitel.Text = Text;
             lblListeTitel.Text = T("KDLG_ET_LISTE", "Energieträger");
-            btnSchliessen.Text = T("KDLG_ET_SCHLIESSEN", "Schließen");
+            // Ä14: einheitliche Fußleiste — OK (speichern + verlassen),
+            // Speichern (bleibt offen), Abbrechen (keine Datenübernahme).
+            btnSchliessen.Text = T("KDLG_ET_ABBRECHEN", "Abbrechen");
+            btnOk.Text = T("KDLG_BTN_OK", "OK");
+            btnSpeichern.Text = T("KDLG_BTN_SPEICHERN", "Speichern");
         }
 
         /// <summary>Kontext setzen und Liste laden — vor <c>ShowDialog</c>.
@@ -62,11 +66,34 @@ namespace WindowsFormsApplication1
                 : T("KDLG_ET_KONTEXT_KATALOG", "Kontext: Katalog (Stammdaten)");
 
             _wirdGefuellt = true;
+            _ersterTraegerIndex = -1;
             try
             {
+                // Ä13 (Nutzerauftrag 26.08.2026): Die Liste zeigt die Träger unter
+                // ihren GRUPPEN (group_code) — Köpfe sind nicht wählbar.
                 List<EnergyCarrier> traeger = Form_Kosten.GetAllCarriers(_projektId);
-                lstTraeger.DataSource = traeger;
-                lstTraeger.DisplayMember = "Name";
+                traeger.Sort((a, b) =>
+                {
+                    int g = string.Compare(a.GroupCode ?? "", b.GroupCode ?? "",
+                                           StringComparison.CurrentCultureIgnoreCase);
+                    return g != 0 ? g : string.Compare(a.Name, b.Name,
+                                           StringComparison.CurrentCultureIgnoreCase);
+                });
+                lstTraeger.DataSource = null;
+                lstTraeger.Items.Clear();
+                string gruppe = null;
+                foreach (EnergyCarrier c in traeger)
+                {
+                    string g = string.IsNullOrEmpty(c.GroupCode)
+                        ? T("KDLG_ET_GRUPPE_SONSTIGE", "Sonstige") : c.GroupCode;
+                    if (!string.Equals(g, gruppe, StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        gruppe = g;
+                        lstTraeger.Items.Add(new TraegerEintrag(g));
+                    }
+                    int idx = lstTraeger.Items.Add(new TraegerEintrag(c));
+                    if (_ersterTraegerIndex < 0) _ersterTraegerIndex = idx;
+                }
                 lstTraeger.SelectedIndex = -1;
             }
             finally { _wirdGefuellt = false; }
@@ -78,13 +105,33 @@ namespace WindowsFormsApplication1
 
             // Erster Träger vorgewählt — ein leerer Detailbereich sah wie ein
             // fehlender Dialog aus (Befund 26.08.2026, Katalogkontext).
-            if (lstTraeger.Items.Count > 0) lstTraeger.SelectedIndex = 0;
+            if (_ersterTraegerIndex >= 0) lstTraeger.SelectedIndex = _ersterTraegerIndex;
         }
+
+        private int _ersterTraegerIndex = -1;
 
         private void lstTraeger_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_wirdGefuellt) return;
-            ZeigeTraeger(lstTraeger.SelectedItem as EnergyCarrier);
+            var eintrag = lstTraeger.SelectedItem as TraegerEintrag;
+            if (eintrag != null && eintrag.Traeger == null)
+            {
+                // Gruppenkopf: auf den nächsten Träger weiterspringen.
+                int i = lstTraeger.SelectedIndex + 1;
+                if (i < lstTraeger.Items.Count) lstTraeger.SelectedIndex = i;
+                return;
+            }
+            ZeigeTraeger(eintrag != null ? eintrag.Traeger : null);
+        }
+
+        /// <summary>Listeneintrag der Ä13-Gruppierung: Gruppenkopf oder Träger.</summary>
+        private sealed class TraegerEintrag
+        {
+            public readonly EnergyCarrier Traeger;   // null = Gruppenkopf
+            private readonly string _text;
+            public TraegerEintrag(string gruppe) { _text = "▪ " + gruppe; }
+            public TraegerEintrag(EnergyCarrier c) { Traeger = c; _text = "      " + c.Name; }
+            public override string ToString() { return _text; }
         }
 
         /// <summary>ETAPPE KD6 (§ 9): Vorwahl des Trägers — „Energiekosten…" aus dem
@@ -92,19 +139,20 @@ namespace WindowsFormsApplication1
         public void WaehleTraeger(int carrierId)
         {
             for (int i = 0; i < lstTraeger.Items.Count; i++)
-                if (lstTraeger.Items[i] is EnergyCarrier c && c.ID == carrierId)
+                if (lstTraeger.Items[i] is TraegerEintrag te && te.Traeger != null &&
+                    te.Traeger.ID == carrierId)
                 { lstTraeger.SelectedIndex = i; return; }
         }
 
         /// <summary>
-        /// Bestandsverhalten des Energie-Reiters: Das offene <see cref="ucFuelSettings"/>
-        /// wird beim Trägerwechsel und beim Schließen gespeichert (nur Projektkontext;
-        /// nur, wenn der Träger dem Projekt noch zugeordnet ist — sonst würde ein
-        /// gelöschter Träger wieder angelegt; Logik aus <c>Form_Kosten.OnFormClosing</c>).
+        /// Ä14: Die offene Trägerkarte wird NUR NOCH EXPLIZIT gespeichert (OK/
+        /// Speichern) — Abbrechen und Trägerwechsel übernehmen nichts (dieselbe
+        /// Semantik wie die Kostenverwaltung, Ä12). Im Projektkontext nur, wenn
+        /// der Träger dem Projekt noch zugeordnet ist; im Katalogkontext schreibt
+        /// <c>SaveProjectAndHistory</c> über seinen Katalogzweig.
         /// </summary>
         private void SpeichereOffenes()
         {
-            if (_projektId <= 0) return;
             try
             {
                 foreach (Control c in pnlInhalt.Controls)
@@ -112,26 +160,41 @@ namespace WindowsFormsApplication1
                     ucFuelSettings uc = c as ucFuelSettings;
                     if (uc == null) continue;
 
-                    int zugeordnet = Convert.ToInt32(DataRepository.ExecuteScalar(
-                        "SELECT COUNT(*) FROM energy_project_settings " +
-                        "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
-                        new System.Data.OleDb.OleDbParameter("@p", _projektId),
-                        new System.Data.OleDb.OleDbParameter("@c", uc.CarrierId)));
-                    if (zugeordnet > 0) uc.SaveProjectAndHistory();
+                    if (_projektId > 0)
+                    {
+                        int zugeordnet = Convert.ToInt32(DataRepository.ExecuteScalar(
+                            "SELECT COUNT(*) FROM energy_project_settings " +
+                            "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                            new System.Data.OleDb.OleDbParameter("@p", _projektId),
+                            new System.Data.OleDb.OleDbParameter("@c", uc.CarrierId)));
+                        if (zugeordnet == 0) continue;
+                    }
+                    uc.SaveProjectAndHistory();
                 }
             }
-            catch { /* Wechsel/Schließen nie am Speichern scheitern lassen */ }
+            catch { /* Speichern nie zum Absturz machen — Fehlerpfad meldet selbst */ }
         }
 
-        protected override void OnFormClosing(FormClosingEventArgs e)
+        /// <summary>Ä14: OK = speichern und verlassen.</summary>
+        private void btnOk_Click(object sender, EventArgs e)
         {
             SpeichereOffenes();
-            base.OnFormClosing(e);
+            DialogResult = DialogResult.OK;
+            Close();
+        }
+
+        /// <summary>Ä14: Speichern der angezeigten Trägerkarte, Dialog bleibt offen.</summary>
+        private void btnSpeichern_Click(object sender, EventArgs e)
+        {
+            SpeichereOffenes();
+            lblKontext.Text = lblKontext.Text.Split('—')[0].TrimEnd() + " — " +
+                string.Format(T("KDLG_GESPEICHERT", "gespeichert {0:HH:mm} Uhr"), DateTime.Now);
         }
 
         private void ZeigeTraeger(EnergyCarrier c)
         {
-            SpeichereOffenes();
+            // Ä14: Der Wechsel speichert NICHT mehr still — ungespeicherte
+            // Kartenänderungen verfallen (wie in der Kostenverwaltung, Ä12).
             pnlInhalt.SuspendLayout();
             pnlInhalt.Controls.Clear();
             _karteKostenprofil = null;
@@ -261,7 +324,8 @@ namespace WindowsFormsApplication1
             var btnVariante = KatalogKnopf(T("KDLG_ET_BTN_VARIANTE", "Variante"), 78);
             btnVariante.Click += (s, e) =>
             {
-                var c = lstTraeger.SelectedItem as EnergyCarrier;
+                var gewaehlt = lstTraeger.SelectedItem as TraegerEintrag;
+                EnergyCarrier c = gewaehlt != null ? gewaehlt.Traeger : null;
                 if (c == null) return;
                 int id = EnergietraegerKatalogCtrl.Variante(c.ID);
                 if (id > 0) ListeNeuLaden(id);
