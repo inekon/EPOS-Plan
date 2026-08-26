@@ -32,6 +32,16 @@ namespace WindowsFormsApplication1
         private ProjektPhotovoltaikModel _modell;
         private double _kwpRechnerisch;
         private double _einspeisungMWh;
+
+        // ---- Kennzahlen-Grundlagen (P6, N.3) — alles vorhandene Wahrheiten ----
+        private double _erzeugungMWh;                 // Simulationsergebnis
+        private double _bedarfMWh;
+        private double? _evQuoteSpeicher;             // Speicherrechnung, falls gelaufen
+        private double? _autarkieSpeicher;
+        private double? _investPv;                    // Kostenwelt, Komponente Photovoltaik
+        private double? _betriebPv;
+        private double? _strompreisEurKwh;            // Vorrangkette der Energiekosten
+        private WirtschaftlichkeitParameter _wirtParameter;
         private bool _laden;
 
         /// <summary>true, wenn „Übernehmen" erfolgreich geschrieben hat.</summary>
@@ -62,8 +72,36 @@ namespace WindowsFormsApplication1
                 {
                     ErgebnisModel erg = new ErgebnisCtrl().Load(idStamm);
                     if (erg != null && erg.Photovoltaik != null)
+                    {
                         _einspeisungMWh = erg.Photovoltaik.Ueberschuss;
+                        _erzeugungMWh = erg.Photovoltaik.Stromproduktion;
+                        _bedarfMWh = erg.Photovoltaik.Strombedarf;
+                    }
+                    // Quoten MIT Speicher aus der Speicherrechnung (N.3: stets als
+                    // Paar); bei mehreren Anlagen die erste Zeile mit Werten.
+                    if (erg != null && erg.Stromspeicher != null)
+                        foreach (ErgebnisStromspeicherModel sp in erg.Stromspeicher)
+                            if (sp.Eigenverbrauchsquote > 0 || sp.Autarkiegrad > 0)
+                            {
+                                _evQuoteSpeicher = sp.Eigenverbrauchsquote;
+                                _autarkieSpeicher = sp.Autarkiegrad;
+                                break;
+                            }
                 }
+                catch { }
+
+                // PV-Kosten aus der Kostenwelt (dieselbe Leselogik wie Bericht und
+                // Kostendialog); Betrieb: fehlende Zeile bleibt null (nicht 0).
+                _investPv = null; _betriebPv = null;
+                try
+                {
+                    _investPv = KomponentenSumme(idStamm, Form_Kosten.KATEGORIE_INVESTITION);
+                    _betriebPv = KomponentenSumme(idStamm, Form_Kosten.KATEGORIE_BETRIEB);
+                }
+                catch { }
+                try { _strompreisEurKwh = WirtschaftlichkeitCtrl.StromArbeitspreisEurJeKwh(idStamm); }
+                catch { }
+                try { _wirtParameter = new WirtschaftlichkeitCtrl().LadeParameter(idStamm); }
                 catch { }
 
                 chkAktiv.Checked = _modell.Aktiv;
@@ -199,6 +237,22 @@ namespace WindowsFormsApplication1
                     pe.Kompensation51aEur, pe.LetztesVerguetungsjahr)
                 : T("PVW_VORSCHAU_OHNE_ERGEBNIS",
                     "Noch kein Simulationsergebnis — die Vorschau zeigt erst nach einem Lauf Mengen und Erlöse; die Sätze oben gelten bereits.");
+
+            // Kennzahlzeile (P6, N.3 Nr. 3) — aus denselben Wahrheiten, keine
+            // Zweitrechnung: Vergütungsreihe pe, Kosten aus der Kostenwelt,
+            // Mengen aus dem Lauf, Zins/T/Preissteigerung der Wirtschaftlichkeit.
+            if (_erzeugungMWh > 0 && _wirtParameter != null)
+            {
+                PvKennzahlen kz = PvKennzahlenRechner.Rechne(
+                    _erzeugungMWh, _einspeisungMWh, _bedarfMWh,
+                    _evQuoteSpeicher, _autarkieSpeicher,
+                    _investPv, _betriebPv,
+                    _wirtParameter.Zinssatz, _wirtParameter.Betrachtungszeitraum,
+                    _wirtParameter.PreissteigerungEnergie,
+                    _strompreisEurKwh, pe.JeJahr, CultureInfo.CurrentCulture);
+                lblKennzahlen.Text = PvKennzahlenRechner.Anzeige(kz, CultureInfo.CurrentCulture);
+            }
+            else lblKennzahlen.Text = "—";
         }
 
         // =====================================================================
@@ -220,6 +274,42 @@ namespace WindowsFormsApplication1
                 DialogResult = DialogResult.OK;
                 Close();
             }
+        }
+
+        /// <summary>P6 (Konzept 6.3): netztransparenz-CSV in die Marktwert-Stammreihen.</summary>
+        private void btnMarktwerte_Click(object sender, EventArgs e)
+        {
+            using (var dlg = new OpenFileDialog
+            {
+                Filter = T("PVW_IMPORT_FILTER", "CSV-Dateien (*.csv)|*.csv|Alle Dateien (*.*)|*.*"),
+                Title = btnMarktwerte.Text
+            })
+            {
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                string bericht;
+                bool ok = _ctrl.ImportiereMarktwerteCsv(dlg.FileName, out bericht);
+                MessageBox.Show(ok
+                        ? T("PVW_IMPORT_OK", "Marktwerte übernommen: ") + bericht
+                        : T("PVW_IMPORT_FEHLER", "Import nicht möglich: ") + bericht,
+                    Text, MessageBoxButtons.OK,
+                    ok ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+                if (ok) Aktualisieren();
+            }
+        }
+
+        /// <summary>Summe der PV-Komponente einer Kostenkategorie; null = keine Zeile.</summary>
+        private static double? KomponentenSumme(int idProjekt, int kategorie)
+        {
+            System.Data.DataTable dt = Form_Kosten.LiesKomponentenSummen(idProjekt, kategorie);
+            if (dt == null) return null;
+            foreach (System.Data.DataRow r in dt.Rows)
+            {
+                if (!string.Equals(Convert.ToString(r["Komponente"]),
+                                   DbWerte.KOSTEN_KOMPONENTE_PHOTOVOLTAIK, StringComparison.Ordinal))
+                    continue;
+                return r["Summe"] == DBNull.Value ? (double?)null : Convert.ToDouble(r["Summe"]);
+            }
+            return null;
         }
 
         /// <summary>Maske → Modell (0 in den Override-Feldern heißt NULL).</summary>

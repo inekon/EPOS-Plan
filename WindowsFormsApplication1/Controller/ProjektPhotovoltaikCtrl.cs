@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
 
@@ -111,6 +112,167 @@ namespace WindowsFormsApplication1
         /// gepflegt — dann greift die Rueckfallkette des Aufrufers
         /// (<see cref="Jahresmarktwert"/>, Fortschreibung in Etappe P4).
         /// </summary>
+        /// <summary>
+        /// ETAPPE P6 (Konzept 6.3, Prüfschritt aus P3): Monatsmarktwerte Solar aus
+        /// einer CSV in die Stammreihen übernehmen (Bezeichner „Marktwert Solar“,
+        /// eine Reihe je Jahr, Auflösung Monat, ct/kWh). Verstanden werden:
+        ///  a) der netztransparenz-Export — Kopfzeile mit einer „Solar“-Spalte,
+        ///     je Zeile ein Monat („MM.JJJJ“, „JJJJ-MM“ oder deutscher
+        ///     Monatsname + Jahr), und
+        ///  b) die einfache Liste „Jahr;Monat;Wert“.
+        /// Trenner Semikolon oder Tabulator, Dezimalkomma und -punkt. Je Jahr wird
+        /// die Stammreihe KOMPLETT ersetzt (die CSV ist die Quelle der Wahrheit);
+        /// ein angebrochenes Jahr ist zulässig, solange die Monate lückenlos bei
+        /// Januar beginnen (Tab_PreisreiheDaten kennt nur die Reihenfolge).
+        /// </summary>
+        public bool ImportiereMarktwerteCsv(string pfad, out string bericht)
+        {
+            bericht = "";
+            string[] zeilen;
+            try
+            {
+                byte[] roh = System.IO.File.ReadAllBytes(pfad);
+                string text;
+                try { text = new System.Text.UTF8Encoding(false, true).GetString(roh); }
+                catch (System.Text.DecoderFallbackException)
+                { text = System.Text.Encoding.Latin1.GetString(roh); }
+                zeilen = text.Replace("\r\n", "\n").Split('\n');
+            }
+            catch (Exception ex) { bericht = ex.Message; return false; }
+
+            var jahre = new SortedDictionary<int, double?[]>();
+            int spalteSolar = -1;
+            foreach (string zeileRoh in zeilen)
+            {
+                string zeile = zeileRoh.Trim();
+                if (zeile.Length == 0) continue;
+                string[] felder = zeile.Split(zeile.IndexOf('\t') >= 0 ? '\t' : ';');
+
+                // Kopfzeile des netztransparenz-Formats: Spalte mit „Solar“.
+                if (spalteSolar < 0)
+                {
+                    for (int i = 1; i < felder.Length; i++)
+                        if (felder[i].IndexOf("Solar", StringComparison.OrdinalIgnoreCase) >= 0)
+                        { spalteSolar = i; break; }
+                    if (spalteSolar >= 0) continue;
+                }
+
+                int jahr, monat; double wert;
+                if (felder.Length >= 3 &&
+                    int.TryParse(felder[0].Trim(), out jahr) && jahr >= 2000 && jahr <= 2099 &&
+                    int.TryParse(felder[1].Trim(), out monat) && monat >= 1 && monat <= 12 &&
+                    Zahl(felder[2], out wert))
+                    Merke(jahre, jahr, monat, wert);                       // Format b
+                else if (spalteSolar > 0 && felder.Length > spalteSolar &&
+                         MonatJahr(felder[0], out jahr, out monat) &&
+                         Zahl(felder[spalteSolar], out wert))
+                    Merke(jahre, jahr, monat, wert);                       // Format a
+            }
+
+            if (jahre.Count == 0)
+            { bericht = "Keine Marktwert-Zeilen erkannt (erwartet: netztransparenz-Export mit Solar-Spalte oder Jahr;Monat;Wert)."; return false; }
+
+            var teile = new List<string>();
+            foreach (KeyValuePair<int, double?[]> kv in jahre)
+            {
+                int n = 0;
+                while (n < 12 && kv.Value[n].HasValue) n++;
+                for (int i = n; i < 12; i++)
+                    if (kv.Value[i].HasValue)
+                    { bericht = "Jahr " + kv.Key + ": Monatslücke vor Monat " + (i + 1) + " — die Reihe braucht lückenlose Monate ab Januar."; return false; }
+                if (n == 0) continue;
+
+                object kopf = DataRepository.ExecuteScalar(
+                    "SELECT MAX(ID) FROM [" + SchemaKatalog.TAB_PREISREIHE + "] " +
+                    "WHERE Bezeichner = ? AND Jahr = ? AND ID_Projekt IS NULL",
+                    new OleDbParameter("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
+                    new OleDbParameter("@j", kv.Key));
+                int kopfId;
+                if (kopf != null && kopf != DBNull.Value)
+                {
+                    kopfId = Convert.ToInt32(kopf);
+                    DataRepository.ExecuteSQL(
+                        "DELETE FROM [Tab_PreisreiheDaten] WHERE ID_Preisreihe = " + kopfId);
+                }
+                else
+                {
+                    kopfId = DataRepository.GetMaxID(SchemaKatalog.TAB_PREISREIHE) + 1;
+                    DataRepository.ExecuteSQL(
+                        "INSERT INTO [" + SchemaKatalog.TAB_PREISREIHE + "] " +
+                        "(ID, ID_Projekt, Bezeichner, Jahr, Aufloesung, Einheit, ID_Energietraeger) " +
+                        "VALUES (?, NULL, ?, ?, ?, ?, NULL)",
+                        new OleDbParameter("@id", kopfId),
+                        new OleDbParameter("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
+                        new OleDbParameter("@j", kv.Key),
+                        new OleDbParameter("@a", DbWerte.PREISREIHE_AUFLOESUNG_MONAT),
+                        new OleDbParameter("@e", DbWerte.PREISREIHE_EINHEIT_CT_KWH));
+                }
+
+                int datenId = DataRepository.GetMaxID("Tab_PreisreiheDaten");
+                for (int m = 0; m < n; m++)
+                {
+                    datenId++;
+                    DataRepository.ExecuteSQL(
+                        "INSERT INTO [Tab_PreisreiheDaten] (ID, ID_Preisreihe, Wert) VALUES (?, ?, ?)",
+                        new OleDbParameter("@id", datenId),
+                        new OleDbParameter("@k", kopfId),
+                        new OleDbParameter("@w", kv.Value[m].Value));
+                }
+                teile.Add(kv.Key + ": " + n + (n == 12 ? " Monate" : " Monate (Jan–" + n + ")"));
+            }
+            bericht = string.Join(" · ", teile.ToArray());
+            return teile.Count > 0;
+        }
+
+        private static void Merke(SortedDictionary<int, double?[]> jahre, int jahr, int monat, double wert)
+        {
+            if (!jahre.ContainsKey(jahr)) jahre[jahr] = new double?[12];
+            jahre[jahr][monat - 1] = wert;
+        }
+
+        private static bool Zahl(string text, out double wert)
+        {
+            return double.TryParse((text ?? "").Trim().Replace(",", "."),
+                System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out wert);
+        }
+
+        private static readonly string[] MONATSNAMEN =
+        {
+            "Januar", "Februar", "März", "April", "Mai", "Juni",
+            "Juli", "August", "September", "Oktober", "November", "Dezember"
+        };
+
+        /// <summary>„MM.JJJJ“, „JJJJ-MM“ oder „‹Monatsname› JJJJ“ (auch „Mrz“) → Jahr/Monat.</summary>
+        private static bool MonatJahr(string feld, out int jahr, out int monat)
+        {
+            jahr = 0; monat = 0;
+            string t = (feld ?? "").Trim();
+            if (t.Length == 0) return false;
+            string[] p1 = t.Split('.');
+            if (p1.Length >= 2 && int.TryParse(p1[0], out monat) && monat >= 1 && monat <= 12 &&
+                int.TryParse(p1[p1.Length - 1].Substring(0, Math.Min(4, p1[p1.Length - 1].Length)), out jahr) &&
+                jahr >= 2000 && jahr <= 2099)
+                return true;
+            string[] p2 = t.Split('-');
+            if (p2.Length == 2 && int.TryParse(p2[0], out jahr) && jahr >= 2000 && jahr <= 2099 &&
+                int.TryParse(p2[1], out monat) && monat >= 1 && monat <= 12)
+                return true;
+            for (int i = 0; i < 12; i++)
+            {
+                string kurz = i == 2 ? "Mrz" : MONATSNAMEN[i].Substring(0, 3);
+                if (t.StartsWith(MONATSNAMEN[i], StringComparison.OrdinalIgnoreCase) ||
+                    t.StartsWith(kurz, StringComparison.OrdinalIgnoreCase))
+                {
+                    int leer = t.LastIndexOf(' ');
+                    if (leer > 0 && int.TryParse(t.Substring(leer + 1), out jahr) &&
+                        jahr >= 2000 && jahr <= 2099)
+                    { monat = i + 1; return true; }
+                }
+            }
+            return false;
+        }
+
         public double? MarktwertMonatCt(int jahr, int monat)
         {
             if (monat < 1 || monat > 12) return null;

@@ -20648,6 +20648,114 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge (Etappe P6, PV-Ausweiszeilen).
+        /// </summary>
+        public static string WIRT_ZEILE_PV_FORM {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_FORM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge (Etappe P6, PV-Ausweiszeilen).
+        /// </summary>
+        public static string WIRT_ZEILE_PV_AW {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_AW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge (Etappe P6, PV-Ausweiszeilen).
+        /// </summary>
+        public static string WIRT_ZEILE_PV_MARKTPRAEMIE {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_MARKTPRAEMIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge (Etappe P6, PV-Ausweiszeilen).
+        /// </summary>
+        public static string WIRT_ZEILE_PV_AUSFALL_KWH {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_AUSFALL_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge (Etappe P6, PV-Ausweiszeilen).
+        /// </summary>
+        public static string WIRT_ZEILE_PV_AUSFALL_EUR {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_AUSFALL_EUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge (Etappe P6, PV-Ausweiszeilen).
+        /// </summary>
+        public static string WIRT_ZEILE_PV_51A {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_51A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge (Etappe P6, PV-Ausweiszeilen).
+        /// </summary>
+        public static string WIRT_ZEILE_PV_KAPPUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_KAPPUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge (Etappe P6, PV-Ausweiszeilen).
+        /// </summary>
+        public static string WIRT_ZEILE_PV_VERMIEDEN {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_VERMIEDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge (Etappe P6, PV-Ausweiszeilen).
+        /// </summary>
+        public static string WIRT_ZEILE_PV_FORM_EV {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_FORM_EV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge (Etappe P6, PV-Ausweiszeilen).
+        /// </summary>
+        public static string WIRT_ZEILE_PV_FORM_MP {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_FORM_MP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge (Etappe P6, PV-Ausweiszeilen).
+        /// </summary>
+        public static string WIRT_ZEILE_PV_FORM_DV {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_FORM_DV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge (Etappe P6, PV-Ausweiszeilen).
+        /// </summary>
+        public static string WIRT_ZEILE_PV_FORM_KEINE {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_FORM_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der erfasste Zuschuss ({0} €) übersteigt die Investitionssumme ({1} €). Angesetzt wurde höchstens die Investitionssumme; die Anfangsauszahlung steht damit auf 0 €. ähnelt.
         /// </summary>
         public static string WIRT_ZUSCHUSS_UEBERHANG {

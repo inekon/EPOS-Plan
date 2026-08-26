@@ -78,6 +78,8 @@
             this.pnlVorschauKopf = new System.Windows.Forms.Panel();
             this.lblVorschauTitel = new System.Windows.Forms.Label();
             this.lblVorschau = new System.Windows.Forms.Label();
+            this.lblKennzahlen = new System.Windows.Forms.Label();
+            this.btnMarktwerte = new System.Windows.Forms.Button();
             this.btnUebernehmen = new System.Windows.Forms.Button();
             this.btnAbbrechen = new System.Windows.Forms.Button();
             this.pnlKopf.SuspendLayout();
@@ -514,13 +516,32 @@
             //
             this.lblVorschau.Location = new System.Drawing.Point(16, 586);
             this.lblVorschau.Name = "lblVorschau";
-            this.lblVorschau.Size = new System.Drawing.Size(882, 56);
+            this.lblVorschau.Size = new System.Drawing.Size(882, 42);
             this.lblVorschau.TabIndex = 8;
             this.lblVorschau.Text = "—";
+            // 
+            // lblKennzahlen
+            // 
+            this.lblKennzahlen.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(50)))), ((int)(((byte)(97)))));
+            this.lblKennzahlen.Location = new System.Drawing.Point(16, 630);
+            this.lblKennzahlen.Name = "lblKennzahlen";
+            this.lblKennzahlen.Size = new System.Drawing.Size(882, 44);
+            this.lblKennzahlen.TabIndex = 12;
+            this.lblKennzahlen.Text = "—";
             //
             // btnUebernehmen
             //
-            this.btnUebernehmen.Location = new System.Drawing.Point(672, 652);
+            this.btnMarktwerte.Location = new System.Drawing.Point(16, 682);
+            this.btnMarktwerte.Name = "btnMarktwerte";
+            this.btnMarktwerte.Size = new System.Drawing.Size(200, 27);
+            this.btnMarktwerte.TabIndex = 13;
+            this.btnMarktwerte.Text = "Marktwerte importieren…";
+            this.btnMarktwerte.UseVisualStyleBackColor = true;
+            this.btnMarktwerte.Click += new System.EventHandler(this.btnMarktwerte_Click);
+            //
+            // btnUebernehmen
+            //
+            this.btnUebernehmen.Location = new System.Drawing.Point(672, 682);
             this.btnUebernehmen.Name = "btnUebernehmen";
             this.btnUebernehmen.Size = new System.Drawing.Size(110, 30);
             this.btnUebernehmen.TabIndex = 9;
@@ -531,7 +552,7 @@
             // btnAbbrechen
             //
             this.btnAbbrechen.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnAbbrechen.Location = new System.Drawing.Point(788, 652);
+            this.btnAbbrechen.Location = new System.Drawing.Point(788, 682);
             this.btnAbbrechen.Name = "btnAbbrechen";
             this.btnAbbrechen.Size = new System.Drawing.Size(110, 30);
             this.btnAbbrechen.TabIndex = 10;
@@ -543,7 +564,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnAbbrechen;
-            this.ClientSize = new System.Drawing.Size(914, 694);
+            this.ClientSize = new System.Drawing.Size(914, 724);
             this.Controls.Add(this.pnlKopf);
             this.Controls.Add(this.grpAnlage);
             this.Controls.Add(this.grpVermarktung);
@@ -553,6 +574,8 @@
             this.Controls.Add(this.grpKappung);
             this.Controls.Add(this.pnlVorschauKopf);
             this.Controls.Add(this.lblVorschau);
+            this.Controls.Add(this.lblKennzahlen);
+            this.Controls.Add(this.btnMarktwerte);
             this.Controls.Add(this.btnUebernehmen);
             this.Controls.Add(this.btnAbbrechen);
             this.Font = new System.Drawing.Font("Segoe UI", 9F);
@@ -640,6 +663,8 @@
         private System.Windows.Forms.Panel pnlVorschauKopf;
         private System.Windows.Forms.Label lblVorschauTitel;
         private System.Windows.Forms.Label lblVorschau;
+        private System.Windows.Forms.Label lblKennzahlen;
+        private System.Windows.Forms.Button btnMarktwerte;
         private System.Windows.Forms.Button btnUebernehmen;
         private System.Windows.Forms.Button btnAbbrechen;
     }

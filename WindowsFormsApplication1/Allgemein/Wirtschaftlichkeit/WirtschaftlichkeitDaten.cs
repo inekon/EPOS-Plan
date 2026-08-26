@@ -640,6 +640,43 @@ namespace WindowsFormsApplication1
         /// <summary>Einspeiseerlös aus der <b>KWK-Einspeisung</b> [€/a] (Etappe E7).</summary>
         public double EinspeiseerloesKwkJahr;
 
+        // ---- ETAPPE P6 (PV-Konzept § 6.4) — Ausweis des PV-Vergütungsdialogs ----
+        //
+        // Gefüllt nur, wenn der Dialog aktiv war (PvVerguetungsform nicht leer).
+        // Alles AUSWEIS aus PvErloesErgebnis — der Kapitalwert nimmt die Reihe
+        // ErloesReihe.PV_VERGUETUNG; hier steht ihre Herkunft für Reiter und Bericht.
+
+        /// <summary>Vermarktungsform des Laufs (DbWerte.PV_VERMARKTUNG_*); leer = Dialog inaktiv.</summary>
+        public string PvVerguetungsform = "";
+
+        /// <summary>Anzulegender Wert AW_mix [ct/kWh] (§ 23c-Mix der gerundeten Klassenwerte).</summary>
+        public double? PvAnzulegenderWert;
+
+        /// <summary>Marktprämie im Jahr 1 [€/a]; 0 = feste EV bzw. keine Prämie.</summary>
+        public double PvMarktpraemie;
+
+        /// <summary>§ 51 EEG: entfallene Vergütungsmenge [kWh/a], Jahr-1-Sicht.</summary>
+        public double PvVerguetungsausfallKwh;
+
+        /// <summary>§ 51 EEG: entgangener Betrag [€/a].</summary>
+        public double PvVerguetungsausfall;
+
+        /// <summary>§ 51a EEG: Gutschrift im letzten Vergütungsjahr [€, nominal].</summary>
+        public double PvKompensation51a;
+
+        /// <summary>60-%-Kappung (§ 9 Abs. 2 EEG): verlorene Menge [kWh/a]; 0 = keine Kappung.</summary>
+        public double PvKappungsverlustKwh;
+
+        /// <summary>
+        /// Vermiedener Netzbezug durch PV-Eigenverbrauch [€/a], INFORMATIV —
+        /// Jahr-1-Sicht: (Erzeugung − Überschuss) × Strom-Arbeitspreis derselben
+        /// Vorrangkette wie die Energiekosten. KEIN Bestandteil des Kapitalwerts:
+        /// Der rechnet mit den tatsächlichen Reststromkosten, in denen die
+        /// Einsparung bereits steckt (dieselbe Begründung wie bei den
+        /// E5-Ausweiszeilen). null = kein Strompreis ermittelbar.
+        /// </summary>
+        public double? PvVermiedenerBezug;
+
         /// <summary>
         /// Ein Nachweis je BHKW-Modul der KWKG-Rechnung (Etappe E7, Übergabepunkt 1 aus
         /// E6). Leer = kein modulscharfer Lauf (Ersatzweg, kein BHKW oder kein
