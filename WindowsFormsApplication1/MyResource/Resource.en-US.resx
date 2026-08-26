@@ -7308,7 +7308,7 @@ life [a]</value>
     <value>Adopt into project…</value>
   </data>
   <data name="KDLG_UEB_QUELLE_VORLAGE" xml:space="preserve">
-    <value>From the current template/variant</value>
+    <value>From template/variant:</value>
   </data>
   <data name="KDLG_UEB_VORSCHAU" xml:space="preserve">
     <value>The source contains {0} items. The target project already has {1} items for this component — existing ones remain untouched, only missing ones are created. The origin is recorded per item.</value>

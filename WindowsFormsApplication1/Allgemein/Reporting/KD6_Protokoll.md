@@ -238,3 +238,20 @@ führt den Träger → lösen; Entfernen-Guard am verbauten Erdgas 63);
 Fehlerjagd auf frischer Produktiv-Kopie 0 Befunde; Sichtbeleg
 `ae10_et_projekt.png`. Beobachtung aus der Jagd: Die Produktiv-DB stand
 bereits auf 43 — der stille 42/43-Lauf beim Nutzer war erfolgreich.
+
+---
+
+## Nachtrag Ä11 (26.08.2026, Nutzerauftrag)
+
+**Übernahme-Dialog: Katalogvorlagen als wählbare Quelle.** Die Quelle
+„Aus Vorlage/Variante“ ist jetzt eine Klappliste ALLER Vorlagen und
+Varianten des Admin-Katalogs (Komponente + Kategorie; Standard zuerst,
+Vorauswahl = die im Stammkontext geöffnete Variante). Vorher war die
+Quelle auf die „aktuelle“ Variante fixiert — im Projektmodus, der keine
+Variantenzeile mehr hat, ließ sich damit überhaupt keine Katalogvorlage
+wählen. Beim Aufruf aus dem Projektmodus steht das ZIELPROJEKT fest
+(vorbelegt und gesperrt); im Stammkontext bleibt die freie Zielwahl.
+
+Nachweise: kd6-Smoke 53/53 (B10 Ziel fest/gesperrt, B11 Vorlagenliste
+gefüllt), kd3-Regression (Übernahme-Mechanik) grün, Layout-Sweep 120/0,
+Fehlerjagd auf frischer Produktiv-Kopie 0 Befunde.

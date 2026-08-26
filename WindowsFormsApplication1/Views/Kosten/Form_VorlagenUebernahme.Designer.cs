@@ -33,6 +33,7 @@ namespace WindowsFormsApplication1
             this.lblKontext = new System.Windows.Forms.Label();
             this.lblZiel = new System.Windows.Forms.Label();
             this.cmbZielProjekt = new System.Windows.Forms.ComboBox();
+            this.cmbQuellVorlage = new System.Windows.Forms.ComboBox();
             this.rbQuelleVorlage = new System.Windows.Forms.RadioButton();
             this.rbQuelleProjekt = new System.Windows.Forms.RadioButton();
             this.cmbQuellProjekt = new System.Windows.Forms.ComboBox();
@@ -97,12 +98,21 @@ namespace WindowsFormsApplication1
             this.rbQuelleVorlage.Checked = true;
             this.rbQuelleVorlage.Location = new System.Drawing.Point(17, 122);
             this.rbQuelleVorlage.Name = "rbQuelleVorlage";
-            this.rbQuelleVorlage.Size = new System.Drawing.Size(220, 19);
+            this.rbQuelleVorlage.Size = new System.Drawing.Size(160, 19);
             this.rbQuelleVorlage.TabIndex = 4;
             this.rbQuelleVorlage.TabStop = true;
-            this.rbQuelleVorlage.Text = "Aus der aktuellen Vorlage/Variante";
+            this.rbQuelleVorlage.Text = "Aus Vorlage/Variante:";
             this.rbQuelleVorlage.UseVisualStyleBackColor = true;
             this.rbQuelleVorlage.CheckedChanged += new System.EventHandler(this.Auswahl_Geaendert);
+            //
+            // cmbQuellVorlage
+            //
+            this.cmbQuellVorlage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbQuellVorlage.Location = new System.Drawing.Point(190, 120);
+            this.cmbQuellVorlage.Name = "cmbQuellVorlage";
+            this.cmbQuellVorlage.Size = new System.Drawing.Size(336, 23);
+            this.cmbQuellVorlage.TabIndex = 9;
+            this.cmbQuellVorlage.SelectedIndexChanged += new System.EventHandler(this.Auswahl_Geaendert);
             //
             // rbQuelleProjekt
             //
@@ -165,6 +175,7 @@ namespace WindowsFormsApplication1
             this.Controls.Add(this.lblKontext);
             this.Controls.Add(this.lblZiel);
             this.Controls.Add(this.cmbZielProjekt);
+            this.Controls.Add(this.cmbQuellVorlage);
             this.Controls.Add(this.rbQuelleVorlage);
             this.Controls.Add(this.rbQuelleProjekt);
             this.Controls.Add(this.cmbQuellProjekt);
@@ -191,6 +202,7 @@ namespace WindowsFormsApplication1
         private System.Windows.Forms.Label lblKontext;
         private System.Windows.Forms.Label lblZiel;
         private System.Windows.Forms.ComboBox cmbZielProjekt;
+        private System.Windows.Forms.ComboBox cmbQuellVorlage;
         private System.Windows.Forms.RadioButton rbQuelleVorlage;
         private System.Windows.Forms.RadioButton rbQuelleProjekt;
         private System.Windows.Forms.ComboBox cmbQuellProjekt;

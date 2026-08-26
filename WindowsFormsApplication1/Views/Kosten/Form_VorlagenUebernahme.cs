@@ -18,7 +18,7 @@ namespace WindowsFormsApplication1
     {
         private int _komponentenId;
         private int _kategorieId;
-        private KostenVorlageKopf _vorlage;
+        private IList<KostenVorlageKopf> _vorlagen;
         private IList<KeyValuePair<int, string>> _projekte;
         private bool _fuellt;
 
@@ -27,38 +27,66 @@ namespace WindowsFormsApplication1
             InitializeComponent();
         }
 
-        /// <summary>Kontext vor <c>ShowDialog</c> übergeben (der Aufrufer bestimmt
-        /// Komponente, Kategorie und die aktuell angezeigte Vorlage).</summary>
+        /// <summary>Kontext vor <c>ShowDialog</c> übergeben. Die Quelle „Vorlage“
+        /// bietet ALLE Vorlagen/Varianten des Admin-Katalogs dieser Komponente und
+        /// Kategorie an (Ä11 — Nutzerauftrag 26.08.2026); <paramref name="vorlage"/>
+        /// ist nur die VORAUSWAHL (null = Standard). Mit
+        /// <paramref name="zielProjektId"/> &gt; 0 steht das Zielprojekt fest
+        /// (Aufruf aus dem Projektmodus der Kostenverwaltung).</summary>
         public void SetControls(int komponentenId, string komponentenName, int kategorieId,
-                                KostenVorlageKopf vorlage)
+                                KostenVorlageKopf vorlage, int zielProjektId = 0)
         {
             _fuellt = true;
             _komponentenId = komponentenId;
             _kategorieId = kategorieId;
-            _vorlage = vorlage;
 
             lblKontext.Text = komponentenName + " · " +
                 (kategorieId == Form_Kosten.KATEGORIE_BETRIEB
                     ? Text_("KDLG_KAT_BETRIEB", "Betriebskosten")
                     : Text_("KDLG_KAT_INVEST", "Investitionskosten"));
-            rbQuelleVorlage.Text = Text_("KDLG_UEB_QUELLE_VORLAGE", "Aus der aktuellen Vorlage/Variante") +
-                (vorlage != null ? " („" + vorlage.Name + "\")" : "");
-            rbQuelleVorlage.Enabled = vorlage != null;
-            if (vorlage == null) rbQuelleProjekt.Checked = true;
+
+            // Ä11: Vorlagenliste des Admin-Katalogs als wählbare Quelle.
+            _vorlagen = KostenVorlagenCtrl.Vorlagen(komponentenId, kategorieId);
+            cmbQuellVorlage.Items.Clear();
+            int vorwahl = 0;
+            for (int i = 0; i < _vorlagen.Count; i++)
+            {
+                cmbQuellVorlage.Items.Add(_vorlagen[i].Name);
+                if (vorlage != null && _vorlagen[i].Id == vorlage.Id) vorwahl = i;
+            }
+            if (cmbQuellVorlage.Items.Count > 0) cmbQuellVorlage.SelectedIndex = vorwahl;
+            rbQuelleVorlage.Text = Text_("KDLG_UEB_QUELLE_VORLAGE", "Aus Vorlage/Variante:");
+            rbQuelleVorlage.Enabled = _vorlagen.Count > 0;
+            if (_vorlagen.Count == 0) rbQuelleProjekt.Checked = true;
 
             _projekte = KostenVorlagenUebernahmeCtrl.Projekte();
             cmbZielProjekt.Items.Clear();
             cmbQuellProjekt.Items.Clear();
-            foreach (KeyValuePair<int, string> p in _projekte)
+            int zielIndex = 0;
+            for (int i = 0; i < _projekte.Count; i++)
             {
-                cmbZielProjekt.Items.Add(p.Value + "  [" + p.Key + "]");
-                cmbQuellProjekt.Items.Add(p.Value + "  [" + p.Key + "]");
+                cmbZielProjekt.Items.Add(_projekte[i].Value + "  [" + _projekte[i].Key + "]");
+                cmbQuellProjekt.Items.Add(_projekte[i].Value + "  [" + _projekte[i].Key + "]");
+                if (zielProjektId > 0 && _projekte[i].Key == zielProjektId) zielIndex = i;
             }
-            if (cmbZielProjekt.Items.Count > 0) cmbZielProjekt.SelectedIndex = 0;
+            if (cmbZielProjekt.Items.Count > 0) cmbZielProjekt.SelectedIndex = zielIndex;
             if (cmbQuellProjekt.Items.Count > 0) cmbQuellProjekt.SelectedIndex = 0;
+
+            // Projektmodus: Das Ziel IST das geöffnete Projekt — keine Umwahl.
+            cmbZielProjekt.Enabled = zielProjektId <= 0;
             _fuellt = false;
 
             VorschauAktualisieren();
+        }
+
+        /// <summary>Die in der Klappliste gewählte Quellvorlage (null = keine).</summary>
+        private KostenVorlageKopf QuellVorlage
+        {
+            get
+            {
+                int i = cmbQuellVorlage.SelectedIndex;
+                return (_vorlagen != null && i >= 0 && i < _vorlagen.Count) ? _vorlagen[i] : null;
+            }
         }
 
         private int ZielProjektId
@@ -83,6 +111,7 @@ namespace WindowsFormsApplication1
         {
             if (_fuellt) return;
             cmbQuellProjekt.Enabled = rbQuelleProjekt.Checked;
+            cmbQuellVorlage.Enabled = rbQuelleVorlage.Checked;
             VorschauAktualisieren();
         }
 
@@ -94,8 +123,9 @@ namespace WindowsFormsApplication1
 
             int vorhanden = KostenVorlagenUebernahmeCtrl.VorhandeneImProjekt(
                 ziel, _komponentenId, _kategorieId);
+            KostenVorlageKopf quellVorlage = QuellVorlage;
             int quelle = rbQuelleVorlage.Checked
-                ? (_vorlage != null ? KostenVorlagenCtrl.Positionen(_vorlage.Id).Count : 0)
+                ? (quellVorlage != null ? KostenVorlagenCtrl.Positionen(quellVorlage.Id).Count : 0)
                 : KostenVorlagenUebernahmeCtrl.VorhandeneImProjekt(
                       QuellProjektId, _komponentenId, _kategorieId);
 
@@ -113,7 +143,7 @@ namespace WindowsFormsApplication1
         private void btnUebernehmen_Click(object sender, EventArgs e)
         {
             UebernahmeErgebnis ergebnis = rbQuelleVorlage.Checked
-                ? KostenVorlagenUebernahmeCtrl.AusVorlage(ZielProjektId, _vorlage)
+                ? KostenVorlagenUebernahmeCtrl.AusVorlage(ZielProjektId, QuellVorlage)
                 : KostenVorlagenUebernahmeCtrl.AusProjekt(ZielProjektId, QuellProjektId,
                                                           _komponentenId, _kategorieId);
 
