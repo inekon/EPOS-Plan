@@ -91,8 +91,11 @@ namespace WindowsFormsApplication1
             numEinspeisungKWK = Zeile("Einspeisevergütung KWK-Strom [€/kWh]:", ref y,
                                       0m, 2m, 4, (decimal)(_parameter.EinspeiseverguetungKWK ?? 0), 0.001m);
             chkAufschlaege = SchalterZeile("Aufschläge (Netzentgelt, Umlagen, Stromsteuer, " +
-                                           "Konzession, Vertrieb) berücksichtigen",
+                                           "Konzession, Vertrieb) berücksichtigen — " +
+                                           "Pflege im Energieträgerdialog (Strom)",
                                            ref y, _parameter.AufschlaegeAnwenden);
+            // Ä16: Die AUSWAHL liegt im Energieträgerdialog; hier nur noch Anzeige.
+            chkAufschlaege.Enabled = false;
 
             // ---------------- BHKW — KWKG 2025 ----------------
             if (_erzeuger.Bhkw)
@@ -526,7 +529,7 @@ namespace WindowsFormsApplication1
             _parameter.Einspeiseverguetung = (double)numEinspeisung.Value;
             _parameter.EinspeiseverguetungKWK = numEinspeisungKWK.Value > 0
                                               ? (double?)numEinspeisungKWK.Value : null;
-            _parameter.AufschlaegeAnwenden = chkAufschlaege.Checked;
+            // Ä16: Das Flag pflegt der Energieträgerdialog — hier nicht mehr schreiben.
 
             // Erzeuger-Gruppen: nur übernehmen, wenn die Gruppe sichtbar war —
             // ausgeblendete Werte bleiben unverändert (kein stilles Nullen).

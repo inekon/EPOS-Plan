@@ -37,6 +37,8 @@
             this.lblListeTitel = new System.Windows.Forms.Label();
             this.pnlFuss = new System.Windows.Forms.Panel();
             this.btnSchliessen = new System.Windows.Forms.Button();
+            this.btnOk = new System.Windows.Forms.Button();
+            this.btnSpeichern = new System.Windows.Forms.Button();
             this.pnlInhalt = new System.Windows.Forms.Panel();
             this.pnlKopf.SuspendLayout();
             this.pnlListe.SuspendLayout();
@@ -125,12 +127,36 @@
             //
             // pnlFuss
             //
+            this.pnlFuss.Controls.Add(this.btnOk);
+            this.pnlFuss.Controls.Add(this.btnSpeichern);
             this.pnlFuss.Controls.Add(this.btnSchliessen);
             this.pnlFuss.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.pnlFuss.Location = new System.Drawing.Point(300, 632);
             this.pnlFuss.Name = "pnlFuss";
             this.pnlFuss.Size = new System.Drawing.Size(784, 48);
             this.pnlFuss.TabIndex = 3;
+            //
+            // btnOk
+            //
+            this.btnOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnOk.Location = new System.Drawing.Point(430, 9);
+            this.btnOk.Name = "btnOk";
+            this.btnOk.Size = new System.Drawing.Size(110, 30);
+            this.btnOk.TabIndex = 11;
+            this.btnOk.Text = "OK";
+            this.btnOk.UseVisualStyleBackColor = true;
+            this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
+            //
+            // btnSpeichern
+            //
+            this.btnSpeichern.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnSpeichern.Location = new System.Drawing.Point(546, 9);
+            this.btnSpeichern.Name = "btnSpeichern";
+            this.btnSpeichern.Size = new System.Drawing.Size(110, 30);
+            this.btnSpeichern.TabIndex = 12;
+            this.btnSpeichern.Text = "Speichern";
+            this.btnSpeichern.UseVisualStyleBackColor = true;
+            this.btnSpeichern.Click += new System.EventHandler(this.btnSpeichern_Click);
             //
             // btnSchliessen
             //
@@ -188,6 +214,8 @@
         private System.Windows.Forms.ListBox lstTraeger;
         private System.Windows.Forms.Panel pnlFuss;
         private System.Windows.Forms.Button btnSchliessen;
+        private System.Windows.Forms.Button btnOk;
+        private System.Windows.Forms.Button btnSpeichern;
         private System.Windows.Forms.Panel pnlInhalt;
     }
 }

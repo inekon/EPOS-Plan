@@ -134,7 +134,8 @@ namespace WindowsFormsApplication1
             {
                 Size = btnTarif.Size,
                 Anchor = btnTarif.Anchor,
-                Location = new System.Drawing.Point(btnTarif.Left - btnTarif.Width - 6, btnTarif.Top),
+                // Ä16: nimmt den Platz des entfallenen Tarif-Knopfs ein.
+                Location = btnTarif.Location,
                 UseVisualStyleBackColor = true,
                 Text = "Photovoltaik…"
             };
@@ -188,7 +189,11 @@ namespace WindowsFormsApplication1
             colName.Text = "Projektname";
             colSim.Text = "Simulation";
             lblSzenario.Text = "Szenario:";
-            btnTarif.Text = "Tarifstruktur…";
+            // Ä16: Tarifstruktur (und Strom-Leistungspreis) werden im
+            // Energieträgerdialog gepflegt — der Einstieg hier entfällt.
+            // (Der PV-Knopf entsteht erst NACH TexteSetzen und nimmt den Platz
+            // bei seiner Erzeugung ein — hier wäre er noch null.)
+            btnTarif.Visible = false;
             btnParameter.Text = "Parameter…";
             btnVerlauf.Text = "Verlauf…";
             btnBerechnen.Text = "Berechnen";

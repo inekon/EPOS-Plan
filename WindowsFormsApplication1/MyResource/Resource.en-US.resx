@@ -7829,4 +7829,16 @@ life [a]</value>
   <data name="KDLG_BTN_ABBRECHEN" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="KDLG_ET_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="KDLG_LP_STROM_TARIF_BTN" xml:space="preserve">
+    <value>Tariff structure…</value>
+  </data>
+  <data name="KDLG_AUFSCHLAG_ANWENDEN" xml:space="preserve">
+    <value>Apply surcharges in the profitability calculation</value>
+  </data>
+  <data name="KDLG_EFFEKTIVPREIS" xml:space="preserve">
+    <value>Purchase price incl. surcharges: {0:N2} ct/kWh  (energy rate {1:N2} + surcharge {2:N2})</value>
+  </data>
 </root>
