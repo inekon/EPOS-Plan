@@ -7256,7 +7256,7 @@ Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Micro
     <value>Der Name ist bereits vergeben oder leer.</value>
   </data>
   <data name="KDLG_MENUE_VORLAGEN" xml:space="preserve">
-    <value>Kostenvorlagen (Komponenten)…</value>
+    <value>Kostenverwaltung …</value>
   </data>
   <data name="KDLG_POS_NEU_VORGABE" xml:space="preserve">
     <value>Neue Position</value>
@@ -7656,5 +7656,8 @@ Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Micro
   </data>
   <data name="KDLG_FK8_KURZ" xml:space="preserve">
     <value>Gepflegt wird im Kostendialog.</value>
+  </data>
+  <data name="KDLG_BTN_KATALOG" xml:space="preserve">
+    <value>Positionskatalog…</value>
   </data>
 </root>

@@ -1564,42 +1564,15 @@ namespace WindowsFormsApplication1
                     if (r["Komponente"] == DBNull.Value) continue;
                     string k = r["Komponente"].ToString();
                     if (k.Length == 0) continue;
-                    if (mitPositionen.Contains(k) || TechnikPlanwertCtrl.Verbaut(projektID, k) ||
-                        IstErfassungsgruppe(k))
+                    // Ä7: Erfassungsgruppen erscheinen nicht mehr automatisch —
+                    // nur noch verbaute Anlagen und Komponenten mit Positionen.
+                    if (mitPositionen.Contains(k) || TechnikPlanwertCtrl.Verbaut(projektID, k))
                         liste.Add(k);
                 }
             }
             catch { }
 
             return liste;
-        }
-
-        /// <summary>
-        /// ETAPPE K5: true für die drei ERFASSUNGSGRUPPEN aus Migrationsschritt 27 —
-        /// Wärmezentrale, Bauliche Anlagen, Stromeinspeisung.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// <b>Warum sie immer angeboten werden.</b> Die Auswahlliste zeigt sonst nur
-        /// Gewerke, die entweder in <c>Tab_Energieanlagen</c> verbaut sind oder bereits
-        /// Kostenpositionen tragen. Die drei neuen Gruppen sind aber <b>keine Gewerke</b>:
-        /// Es gibt für sie keine Gerätetabelle und damit auch kein „verbaut"
-        /// (<c>TechnikPlanwertCtrl.Plaene</c> führt weiterhin sieben Einträge). Ohne diese
-        /// Ausnahme wären sie in einem frischen Projekt unerreichbar — man könnte keine
-        /// erste Position erfassen, und weil sie ohne Position nicht in der Liste
-        /// erscheinen, bliebe es dabei.
-        /// </para>
-        /// <para>
-        /// <b>Es ist eine Namensprüfung, keine Katalogabfrage.</b> Angeboten wird nur, was
-        /// die Anwendung als Erfassungsgruppe KENNT; eine später von Hand angelegte
-        /// Komponente ohne Gewerk und ohne Positionen bleibt draussen — genau wie bisher.
-        /// </para>
-        /// </remarks>
-        private static bool IstErfassungsgruppe(string komponente)
-        {
-            return string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE, StringComparison.Ordinal)
-                || string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_BAULICHE_ANLAGEN, StringComparison.Ordinal)
-                || string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_STROMEINSPEISUNG, StringComparison.Ordinal);
         }
 
         /// <summary>

@@ -58,6 +58,7 @@ namespace WindowsFormsApplication1
             this.btnVarianteLoeschen = new System.Windows.Forms.Button();
             this.pnlFuss = new System.Windows.Forms.Panel();
             this.btnUebernahme = new System.Windows.Forms.Button();
+            this.btnKatalog = new System.Windows.Forms.Button();
             this.btnPositionNeu = new System.Windows.Forms.Button();
             this.lblSummeNetto = new System.Windows.Forms.Label();
             this.lblSummeBrutto = new System.Windows.Forms.Label();
@@ -379,6 +380,7 @@ namespace WindowsFormsApplication1
             this.pnlFuss.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(31)))), ((int)(((byte)(61)))));
             this.pnlFuss.ForeColor = System.Drawing.Color.White;
             this.pnlFuss.Controls.Add(this.btnUebernahme);
+            this.pnlFuss.Controls.Add(this.btnKatalog);
             this.pnlFuss.Controls.Add(this.btnPositionNeu);
             this.pnlFuss.Controls.Add(this.lblSummeNetto);
             this.pnlFuss.Controls.Add(this.lblSummeBrutto);
@@ -399,6 +401,18 @@ namespace WindowsFormsApplication1
             this.btnUebernahme.Text = "In Projekt übernehmen…";
             this.btnUebernahme.UseVisualStyleBackColor = true;
             this.btnUebernahme.Click += new System.EventHandler(this.btnUebernahme_Click);
+            // 
+            // btnKatalog
+            // 
+            this.btnKatalog.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnKatalog.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnKatalog.Location = new System.Drawing.Point(806, 35);
+            this.btnKatalog.Name = "btnKatalog";
+            this.btnKatalog.Size = new System.Drawing.Size(182, 24);
+            this.btnKatalog.TabIndex = 9;
+            this.btnKatalog.Text = "Positionskatalog…";
+            this.btnKatalog.UseVisualStyleBackColor = true;
+            this.btnKatalog.Click += new System.EventHandler(this.btnKatalog_Click);
             //
             // btnPositionNeu
             //
@@ -509,6 +523,7 @@ namespace WindowsFormsApplication1
         private System.Windows.Forms.Button btnVarianteLoeschen;
         private System.Windows.Forms.Panel pnlFuss;
         private System.Windows.Forms.Button btnUebernahme;
+        private System.Windows.Forms.Button btnKatalog;
         private System.Windows.Forms.Button btnPositionNeu;
         private System.Windows.Forms.Label lblSummeNetto;
         private System.Windows.Forms.Label lblSummeBrutto;
