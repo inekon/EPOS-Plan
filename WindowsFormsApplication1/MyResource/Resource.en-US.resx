@@ -7311,7 +7311,7 @@ life [a]</value>
     <value>From template/variant:</value>
   </data>
   <data name="KDLG_UEB_VORSCHAU" xml:space="preserve">
-    <value>The source contains {0} items. The target project already has {1} items for this component — existing ones remain untouched, only missing ones are created. The origin is recorded per item.</value>
+    <value>The source holds {0} items. The target (this plant) already holds {1} items — existing ones stay untouched, only missing ones are created. The origin is recorded per item.</value>
   </data>
   <data name="KDLG_ET_KATALOG_NUR_LESEN" xml:space="preserve">
     <value>Catalogue prices cannot be edited here yet (coming with carrier variants).</value>
@@ -7857,10 +7857,10 @@ life [a]</value>
     <value>Costs are maintained per component — the total is shown at the component's first plant.</value>
   </data>
   <data name="BK_KOSTEN_NICHT_VERBAUT" xml:space="preserve">
-    <value>{0} — not installed</value>
+    <value>{0} — no plant assignment</value>
   </data>
   <data name="BK_KOSTEN_NICHT_VERBAUT_HINT" xml:space="preserve">
-    <value>Cost items without an installed plant — they still enter the profitability figures; please review or delete them in the cost management dialog.</value>
+    <value>Cost items without a (valid) plant assignment — they still enter the profitability figures. Double-click deletes them after confirmation; edit them via the cost management entry “(no plant assignment)”.</value>
   </data>
   <data name="BK_KOSTEN_STATUS_NICHT_VERBAUT" xml:space="preserve">
     <value>Cost items without an installed plant: {0}</value>
@@ -7870,5 +7870,22 @@ life [a]</value>
   </data>
   <data name="WPI_KOSTEN_SUMMEN" xml:space="preserve">
     <value>Capex {0:N0} € · Opex {1:N0} €/a</value>
+  </data>
+  <data name="KDLG_UEB_QUELLE_PROJEKT" xml:space="preserve">
+    <value>From project/plant:</value>
+  </data>
+  <data name="KDLG_UEB_QUELLE_LOSE" xml:space="preserve">
+    <value>(no plant assignment)</value>
+  </data>
+  <data name="BK_KOSTEN_LOSE_LOESCHEN" xml:space="preserve">
+    <value>Delete all cost items of component “{0}” without a plant assignment?
+
+They typically stem from a variant copy without this trade and keep entering the profitability figures until removed.</value>
+  </data>
+  <data name="BK_KOSTEN_LOSE_TITEL" xml:space="preserve">
+    <value>Items without plant assignment</value>
+  </data>
+  <data name="BK_KOSTEN_LOSE_GELOESCHT" xml:space="preserve">
+    <value>{0} item(s) of component “{1}” deleted.</value>
   </data>
 </root>

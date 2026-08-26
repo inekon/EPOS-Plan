@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 45;
+        public const int ZIEL_VERSION = 46;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -2352,6 +2352,15 @@ namespace WindowsFormsApplication1
                         "Der Anlagenbezug der Kostenpositionen konnte nicht angelegt " +
                         "werden - die Kostenverwaltung je Anlage braucht die Spalte.",
                         Schritt_45_Anlagenkosten),
+
+            // Ä21: Der Wizard baut Anlagenzeilen destruktiv neu (neue IDs) — der
+            // Geräteanker macht die Kostenzuordnung dagegen reparierbar.
+            new Schritt(46,
+                        "Anlagenkosten-Geräteanker: Tab_ProjektWerte.ID_AnlageGeraet " +
+                        "anlegen und aus den bestehenden Zuordnungen befuellen (Ä21)",
+                        "Der Geräteanker der Kostenpositionen konnte nicht angelegt " +
+                        "werden - die Zuordnung ueberlebt den Anlagen-Wizard sonst nicht.",
+                        Schritt_46_AnlagenGeraeteanker),
         };
 
         // =================================================================================
@@ -5799,6 +5808,63 @@ namespace WindowsFormsApplication1
         /// Erfassungsgruppen-Altdaten (Ä7) und Variantenreste — bleiben NULL und
         /// erscheinen in der Oberfläche als „ohne Anlagenzuordnung“.
         /// </summary>
+        /// <summary>
+        /// Ä21 (27.08.2026): Geräteanker der Anlagenkosten. Die Spalte wird
+        /// angelegt (idempotent) und für alle zugeordneten Positionen aus der
+        /// aktuellen Anlagenzeile befüllt (ein UPDATE-JOIN je Komponente).
+        /// </summary>
+        private static bool Schritt_46_AnlagenGeraeteanker(Lauf l)
+        {
+            try
+            {
+                using (var cmd = new OleDbCommand(
+                    "ALTER TABLE Tab_ProjektWerte ADD COLUMN ID_AnlageGeraet LONG", l.Conn))
+                    cmd.ExecuteNonQuery();
+            }
+            catch { /* Spalte existiert bereits */ }
+
+            object probe = Scalar(l,
+                "SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ID_AnlageGeraet IS NULL");
+            if (probe == null)
+            {
+                l.Zeile("Geräteanker (Schritt 46): Spalte ID_AnlageGeraet nicht anlegbar.");
+                return false;
+            }
+
+            var verweise = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                { DbWerte.ERZEUGER_WAERMEPUMPE,             "ID_WP" },
+                { DbWerte.ERZEUGER_HEIZKESSEL,              "ID_Kessel" },
+                { DbWerte.ERZEUGER_BHKW,                    "ID_BHKW" },
+                { DbWerte.ERZEUGER_PHOTOVOLTAIK,            "ID_PV" },
+                { DbWerte.ERZEUGER_SOLARTHERMIE,            "ID_Solar" },
+                { DbWerte.ERZEUGER_STROMSPEICHER,           "ID_SP" },
+                { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, "ID_PUFFER" }
+            };
+
+            int befuellt = 0;
+            DataTable komp = Abfrage(l, "SELECT ID, Komponente FROM Tab_KostenKomponente");
+            if (komp != null)
+                foreach (DataRow k in komp.Rows)
+                {
+                    string name = Convert.ToString(k["Komponente"]);
+                    int kid = Convert.ToInt32(k["ID"]);
+                    string spalte;
+                    if (!verweise.TryGetValue(name, out spalte)) continue;
+
+                    // Access-UPDATE mit JOIN — ohne Parameter (kid ist int),
+                    // damit die ACE-Unterabfragen-Falle nicht greift.
+                    befuellt += NonQuery(l,
+                        "UPDATE Tab_ProjektWerte AS w INNER JOIN Tab_Energieanlagen AS a " +
+                        "ON w.ID_Anlage = a.ID SET w.ID_AnlageGeraet = a.[" + spalte + "] " +
+                        "WHERE w.KomponentenID = " + kid + " AND w.ID_AnlageGeraet IS NULL");
+                }
+
+            l.Zeile("Geräteanker (Schritt 46): " + befuellt +
+                    " Position(en) mit dem Gerät ihrer Anlage verankert.");
+            return true;
+        }
+
         private static bool Schritt_45_Anlagenkosten(Lauf l)
         {
             try

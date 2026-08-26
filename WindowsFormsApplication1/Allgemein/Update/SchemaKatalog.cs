@@ -911,6 +911,15 @@ namespace WindowsFormsApplication1
         /// Projekt und lesen die Spalte nicht; sie steuert Pflege und Ausweis.</summary>
         public const string SPALTE_PW_ID_ANLAGE = "ID_Anlage";
 
+        /// <summary>Ä21 (Migrationsschritt 46): das GERÄT der zugeordneten Anlage
+        /// (Wert der Verweisspalte, z. B. <c>Tab_WP.ID</c>). Der Anker, der den
+        /// destruktiven Wizard-Neuaufbau überlebt: Anlagenzeilen werden dort
+        /// gelöscht und mit NEUEN IDs angelegt (dokumentiert in
+        /// <c>AnlagenEindeutigkeit</c>/<c>GeraeteWaisen</c>), die Gerätezeilen
+        /// bleiben. <c>KostenProjektPositionenCtrl.ZuordnungReparieren</c> findet
+        /// über Komponente + Gerät die neue Anlagenzeile.</summary>
+        public const string SPALTE_PW_ID_ANLAGE_GERAET = "ID_AnlageGeraet";
+
         /// <summary>Spalte <c>energy_carrier.price_power</c> (DOUBLE, nullable) —
         /// Leistungspreis des Katalogträgers; Einheit je <see cref="SPALTE_EC_PRICE_POWER_MODUS"/>.
         /// Projektseitig existiert <c>energy_project_settings.custom_price_power</c> bereits;

@@ -25,6 +25,12 @@ namespace WindowsFormsApplication1
         /// <summary>Ä20: Ziel-Anlage der Übernahme (0 = ohne Anlagenbezug).</summary>
         private int _zielAnlageId;
 
+        /// <summary>Ä21: Komponentenname (für die Quell-Anlagenliste) und die
+        /// Einträge der Quell-Anlagen-Klappliste (AnlageId; 0 = ohne Zuordnung).</summary>
+        private string _komponentenName = "";
+        private readonly List<KeyValuePair<int, string>> _quellAnlagen =
+            new List<KeyValuePair<int, string>>();
+
         public Form_VorlagenUebernahme()
         {
             InitializeComponent();
@@ -42,6 +48,7 @@ namespace WindowsFormsApplication1
             _zielAnlageId = zielAnlageId;   // Ä20: Ziel-Anlage der Übernahme
             _fuellt = true;
             _komponentenId = komponentenId;
+            _komponentenName = komponentenName ?? "";
             _kategorieId = kategorieId;
 
             lblKontext.Text = komponentenName + " · " +
@@ -76,8 +83,18 @@ namespace WindowsFormsApplication1
             if (cmbZielProjekt.Items.Count > 0) cmbZielProjekt.SelectedIndex = zielIndex;
             if (cmbQuellProjekt.Items.Count > 0) cmbQuellProjekt.SelectedIndex = 0;
 
-            // Projektmodus: Das Ziel IST das geöffnete Projekt — keine Umwahl.
+            // Ä21: „Aus anderem Projekt“ heißt jetzt Projekt UND Anlage — damit
+            // eine weitere Wärmepumpe die Kosten der bereits vorhandenen übernehmen
+            // kann, ist auch das EIGENE Projekt eine gültige Quelle.
+            rbQuelleProjekt.Text = Text_("KDLG_UEB_QUELLE_PROJEKT", "Aus Projekt/Anlage:");
+
+            // Projektmodus: Das Ziel IST das geöffnete Projekt — keine Umwahl;
+            // die Quelle startet dann sinnvollerweise beim eigenen Projekt.
             cmbZielProjekt.Enabled = zielProjektId <= 0;
+            if (zielProjektId > 0)
+                for (int i = 0; i < _projekte.Count; i++)
+                    if (_projekte[i].Key == zielProjektId) { cmbQuellProjekt.SelectedIndex = i; break; }
+            QuellAnlagenFuellen();
             _fuellt = false;
 
             VorschauAktualisieren();
@@ -115,8 +132,64 @@ namespace WindowsFormsApplication1
         {
             if (_fuellt) return;
             cmbQuellProjekt.Enabled = rbQuelleProjekt.Checked;
+            cmbQuellAnlage.Enabled = rbQuelleProjekt.Checked;
             cmbQuellVorlage.Enabled = rbQuelleVorlage.Checked;
             VorschauAktualisieren();
+        }
+
+        /// <summary>Ä21: Projektwechsel der Quelle — Anlagenliste nachziehen.</summary>
+        private void QuellProjekt_Geaendert(object sender, EventArgs e)
+        {
+            if (_fuellt) return;
+            _fuellt = true;
+            QuellAnlagenFuellen();
+            _fuellt = false;
+            Auswahl_Geaendert(sender, e);
+        }
+
+        /// <summary>Die Anlagen der Komponente im gewählten Quellprojekt — plus
+        /// „(ohne Anlagenzuordnung)“, wenn dort lose Positionen liegen.</summary>
+        private void QuellAnlagenFuellen()
+        {
+            _quellAnlagen.Clear();
+            cmbQuellAnlage.Items.Clear();
+            int projekt = QuellProjektId;
+            if (projekt <= 0) return;
+
+            foreach (ProjektEnergietraegerCtrl.AnlagenEintrag a in
+                     ProjektEnergietraegerCtrl.AnlagenMitTraeger(projekt))
+            {
+                if (!string.Equals(a.Komponente, _komponentenName, StringComparison.Ordinal))
+                    continue;
+                string text = string.IsNullOrEmpty(a.Bezeichner)
+                    ? a.Komponente : a.Komponente + " — " + a.Bezeichner;
+                _quellAnlagen.Add(new KeyValuePair<int, string>(a.AnlageId, text));
+            }
+
+            int lose = KostenVorlagenUebernahmeCtrl.VorhandeneImProjekt(
+                           projekt, _komponentenId, _kategorieId, 0) +
+                       KostenVorlagenUebernahmeCtrl.VorhandeneImProjekt(
+                           projekt, _komponentenId,
+                           _kategorieId == Form_Kosten.KATEGORIE_BETRIEB
+                               ? Form_Kosten.KATEGORIE_INVESTITION
+                               : Form_Kosten.KATEGORIE_BETRIEB, 0);
+            if (lose > 0 || _quellAnlagen.Count == 0)
+                _quellAnlagen.Add(new KeyValuePair<int, string>(0,
+                    Text_("KDLG_UEB_QUELLE_LOSE", "(ohne Anlagenzuordnung)")));
+
+            foreach (KeyValuePair<int, string> q in _quellAnlagen)
+                cmbQuellAnlage.Items.Add(q.Value);
+            if (cmbQuellAnlage.Items.Count > 0) cmbQuellAnlage.SelectedIndex = 0;
+        }
+
+        /// <summary>Ä21: gewählte Quell-Anlage (0 = ohne Zuordnung).</summary>
+        private int QuellAnlageId
+        {
+            get
+            {
+                int i = cmbQuellAnlage.SelectedIndex;
+                return (i >= 0 && i < _quellAnlagen.Count) ? _quellAnlagen[i].Key : 0;
+            }
         }
 
         /// <summary>Klartext-Vorschau (§ 8 Nr. 3) — nur Zählen, kein Schreiben.</summary>
@@ -125,13 +198,15 @@ namespace WindowsFormsApplication1
             int ziel = ZielProjektId;
             if (ziel <= 0) { lblVorschau.Text = ""; return; }
 
+            // Ä21: Ziel und Quelle zählen ANLAGENBEZOGEN — sonst behauptete die
+            // Vorschau bei einer leeren zweiten Anlage „führt bereits 7 Positionen“.
             int vorhanden = KostenVorlagenUebernahmeCtrl.VorhandeneImProjekt(
-                ziel, _komponentenId, _kategorieId);
+                ziel, _komponentenId, _kategorieId, _zielAnlageId > 0 ? _zielAnlageId : -1);
             KostenVorlageKopf quellVorlage = QuellVorlage;
             int quelle = rbQuelleVorlage.Checked
                 ? (quellVorlage != null ? KostenVorlagenCtrl.Positionen(quellVorlage.Id).Count : 0)
                 : KostenVorlagenUebernahmeCtrl.VorhandeneImProjekt(
-                      QuellProjektId, _komponentenId, _kategorieId);
+                      QuellProjektId, _komponentenId, _kategorieId, QuellAnlageId);
 
             lblVorschau.Text = string.Format(
                 Text_("KDLG_UEB_VORSCHAU",
@@ -141,7 +216,9 @@ namespace WindowsFormsApplication1
                 quelle, vorhanden);
 
             btnUebernehmen.Enabled = quelle > 0 &&
-                (rbQuelleVorlage.Checked || QuellProjektId != ziel);
+                (rbQuelleVorlage.Checked || QuellProjektId != ziel ||
+                 (QuellAnlageId != _zielAnlageId &&
+                  (QuellAnlageId > 0 || _zielAnlageId > 0)));
         }
 
         private void btnUebernehmen_Click(object sender, EventArgs e)
@@ -149,7 +226,8 @@ namespace WindowsFormsApplication1
             UebernahmeErgebnis ergebnis = rbQuelleVorlage.Checked
                 ? KostenVorlagenUebernahmeCtrl.AusVorlage(ZielProjektId, QuellVorlage, _zielAnlageId)
                 : KostenVorlagenUebernahmeCtrl.AusProjekt(ZielProjektId, QuellProjektId,
-                                                          _komponentenId, _kategorieId);
+                                                          _komponentenId, _kategorieId,
+                                                          QuellAnlageId, _zielAnlageId);
 
             MessageBox.Show(string.Join(Environment.NewLine, ergebnis.Meldungen), Text,
                 MessageBoxButtons.OK,
