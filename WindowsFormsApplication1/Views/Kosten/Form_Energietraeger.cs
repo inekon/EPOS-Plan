@@ -75,6 +75,15 @@ namespace WindowsFormsApplication1
             ZeigeTraeger(lstTraeger.SelectedItem as EnergyCarrier);
         }
 
+        /// <summary>ETAPPE KD6 (§ 9): Vorwahl des Trägers — „Energiekosten…" aus dem
+        /// Anlagendialog springt direkt auf den Träger der Komponente.</summary>
+        public void WaehleTraeger(int carrierId)
+        {
+            for (int i = 0; i < lstTraeger.Items.Count; i++)
+                if (lstTraeger.Items[i] is EnergyCarrier c && c.ID == carrierId)
+                { lstTraeger.SelectedIndex = i; return; }
+        }
+
         /// <summary>
         /// Bestandsverhalten des Energie-Reiters: Das offene <see cref="ucFuelSettings"/>
         /// wird beim Trägerwechsel und beim Schließen gespeichert (nur Projektkontext;

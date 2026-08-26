@@ -202,6 +202,25 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// ETAPPE KD6 (§ 9): Vorwahl von Komponente und Kategorie — die Knöpfe
+        /// „Investitionskosten…"/„Betriebskosten…" des Anlagendialogs springen
+        /// direkt auf die Gruppe der Komponente im passenden Reiter.
+        /// </summary>
+        public void WaehleKomponente(string komponente, bool betrieb)
+        {
+            try
+            {
+                tabMain.SelectedTab = betrieb ? tabWartung : tabInvest;
+
+                Gruppenblock block;
+                if (!string.IsNullOrEmpty(komponente) &&
+                    _gruppen.TryGetValue(komponente, out block) && block.Kopf != null)
+                    flp.ScrollControlIntoView(block.Kopf);
+            }
+            catch { /* Vorwahl ist Komfort — der Dialog öffnet trotzdem */ }
+        }
+
+        /// <summary>
         /// Übergangs-Einstieg (Etappe KD4, bis KD6): unten rechts ein Knopf
         /// „Energieträger…", der die Energieträgerverwaltung im Projektkontext
         /// öffnet. Die endgültigen Projekt-Einstiege (§ 3.2: Anlagendialog
@@ -1275,6 +1294,7 @@ namespace WindowsFormsApplication1
                 p.IstErloes = z.IstErloes;
                 p.Bemessung = z.Bemessung;
                 p.Kostenart = z.Kostenart;      // K5: trägt das Zuschuss-Kennzeichen
+                p.StartJahr = z.StartJahr;      // KD6 (§ 11, FK10)
                 if (p.Abgeleitet && z.Menge.HasValue && z.Einheitpreis.HasValue)
                     p.Herleitung = string.Format(MyResource.Resource.KOSTEN_BEMESSUNG_HERLEITUNG,
                                                  z.Einheitpreis.Value.ToString("N4", BerichtTexte.Kultur),
@@ -1679,6 +1699,30 @@ namespace WindowsFormsApplication1
             );
 
             KostenartSichern(pos);
+            StartjahrSichern(pos);
+        }
+
+        /// <summary>
+        /// ETAPPE KD6 (§ 11, FK10): schreibt das Startjahr der Position nach —
+        /// getrennt aus demselben Grund wie <see cref="KostenartSichern"/> (die
+        /// Spalte stammt aus Migrationsschritt 38 und darf das Speichern der
+        /// Beträge nie mitreißen). NULL = t0, nie 0 (Hausregel).
+        /// </summary>
+        private void StartjahrSichern(KostenPosition pos)
+        {
+            if (pos == null || pos.ID <= 0) return;
+            try
+            {
+                if (!KostenPositionCtrl.StelleSpaltenSicher()) return;
+
+                DataRepository.ExecuteSQL(
+                    "UPDATE Tab_ProjektWerte SET [" + SchemaKatalog.SPALTE_PW_STARTJAHR +
+                    "] = ? WHERE ID = ?",
+                    new OleDbParameter("@sj", OleDbType.Integer)
+                    { Value = pos.StartJahr > 1 ? (object)pos.StartJahr : DBNull.Value },
+                    new OleDbParameter("@id", pos.ID));
+            }
+            catch { /* Vorsorgeweg — der Betragsspeicherweg bleibt unberührt */ }
         }
 
         /// <summary>

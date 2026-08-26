@@ -7624,4 +7624,37 @@ Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Micro
   <data name="KDLG_ERTRAG_UE2MWN" xml:space="preserve">
     <value>über 2 MW (nachgerüstet)</value>
   </data>
+  <data name="BK_KOSTEN_SP_BETRIEB" xml:space="preserve">
+    <value>Betrieb [€/a]</value>
+  </data>
+  <data name="BK_KOSTEN_SP_LEISTUNGSPREIS" xml:space="preserve">
+    <value>Leistungspreis [€/(kW·a)]</value>
+  </data>
+  <data name="KDLG_FK8_HINWEIS" xml:space="preserve">
+    <value>Gepflegt wird im Kostendialog — Felder schreibgeschützt.</value>
+  </data>
+  <data name="KDLG_KNOPF_BETRIEB" xml:space="preserve">
+    <value>Betriebskosten…</value>
+  </data>
+  <data name="KDLG_KNOPF_ENERGIE" xml:space="preserve">
+    <value>Energiekosten…</value>
+  </data>
+  <data name="KDLG_KNOPF_INVEST" xml:space="preserve">
+    <value>Investitionskosten…</value>
+  </data>
+  <data name="KOSTEN_CASE_ABSOLUT" xml:space="preserve">
+    <value>Eingabe absolut [€]</value>
+  </data>
+  <data name="KOSTEN_CASE_PROZENT" xml:space="preserve">
+    <value>Eingabe in % vom Erwartungswert</value>
+  </data>
+  <data name="KOSTEN_CASE_STARTJAHR" xml:space="preserve">
+    <value>Startjahr (0 = sofort; Jahr X: Zahlung/Betrieb ab X):</value>
+  </data>
+  <data name="KOSTEN_CASE_UMRECHNUNG" xml:space="preserve">
+    <value>ergibt: Best {0:N2} € · Worst {1:N2} €</value>
+  </data>
+  <data name="KDLG_FK8_KURZ" xml:space="preserve">
+    <value>Gepflegt wird im Kostendialog.</value>
+  </data>
 </root>

@@ -1353,6 +1353,13 @@ namespace WindowsFormsApplication1
             /// <summary>ETAPPE P4: Ergebnis des PV-Vergütungsdialogs (null =
             /// Dialog inaktiv — dann gilt exakt der Bestandsrechenweg).</summary>
             public PvErloesErgebnis PvVerguetung;
+
+            /// <summary>ETAPPE KD6 (§ 11, FK10): Betriebskostenpositionen mit
+            /// Startjahr ≥ 2 als (Betrag €/a, Startjahr) — sie laufen in der
+            /// Kapitalwertreihe erst ab ihrem Jahr; <see cref="Betrieb"/> trägt
+            /// nur noch den Sofort-Anteil.</summary>
+            public List<KeyValuePair<double, int>> BetriebAbJahr =
+                new List<KeyValuePair<double, int>>();
             /// <summary>Betriebskostenpositionen mit Kostenart und Herleitung (E3 → E7).</summary>
             public List<KostenPositionNachweis> Betriebskosten = new List<KostenPositionNachweis>();
         }
@@ -1368,7 +1375,24 @@ namespace WindowsFormsApplication1
             double zuschuss;
             e.Investitionen = LiesInvestitionen(v.IdProjekt, szenario, out zuschuss);
             e.Zuschuss = zuschuss;
-            e.Betrieb = LiesBetriebskosten(v.IdProjekt, szenario);
+            List<KeyValuePair<double, int>> betriebAbJahr;
+            e.Betrieb = LiesBetriebskosten(v.IdProjekt, szenario, out betriebAbJahr);
+            e.BetriebAbJahr = betriebAbJahr;
+
+            // ETAPPE KD6 (§ 11, FK10): Sind Startjahre gesetzt, laufen Investition
+            // (samt Ersatz/Restwert) und Betriebskosten der Position erst ab ihrem
+            // Jahr. Die ENERGIEKOSTEN bleiben die Gesamtrechnung des Simulationslaufs
+            // — die Simulation kennt keine Startjahre je Komponente; der Hinweis
+            // macht die dokumentierte Vereinfachung sichtbar statt still.
+            bool startjahre = betriebAbJahr.Count > 0;
+            if (!startjahre)
+                foreach (KapitalwertRechner.InvestPosition ip in e.Investitionen)
+                    if (ip.StartJahr > 1) { startjahre = true; break; }
+            if (startjahre)
+                e.Hinweis = Anhaengen(e.Hinweis,
+                    "Startjahre gesetzt (FK10): Investition und Betriebskosten der " +
+                    "Positionen laufen ab ihrem Jahr; die Energiekosten bleiben die " +
+                    "Gesamtrechnung des Simulationslaufs.");
             // ETAPPE E7: dieselben Positionen ein zweites Mal, diesmal mit ihrer
             // Herleitung. Der SUMMENweg oben bleibt unangetastet — der Bericht liest
             // eine zweite, ausschließlich beschreibende Sicht, statt die Rechnung auf
@@ -3688,7 +3712,8 @@ namespace WindowsFormsApplication1
                 invest = new List<KapitalwertRechner.InvestPosition>();
                 foreach (KapitalwertRechner.InvestPosition pos in e.Investitionen)
                     invest.Add(new KapitalwertRechner.InvestPosition
-                    { Betrag = pos.Betrag * investFaktor, Nutzungsdauer = pos.Nutzungsdauer });
+                    { Betrag = pos.Betrag * investFaktor, Nutzungsdauer = pos.Nutzungsdauer,
+                      StartJahr = pos.StartJahr });   // KD6: Startjahr wandert mit (Sensitivität)
             }
             // ETAPPE K5: Der Zuschuss wird vom Investitionsfaktor NICHT skaliert. Die
             // Sensitivität fragt „was, wenn die Anlage 10 % mehr kostet?" — eine
@@ -3712,7 +3737,8 @@ namespace WindowsFormsApplication1
                 (e.Energie ?? 0) * energieFaktor, e.Erloes,
                 zinsProzent, p.Betrachtungszeitraum,
                 p.PreissteigerungBetrieb, preisstEnergie,
-                e.Behg * energieFaktor, e.ErloesReihen, e.Zuschuss, behgReihe);
+                e.Behg * energieFaktor, e.ErloesReihen, e.Zuschuss, behgReihe,
+                e.BetriebAbJahr);
         }
 
         /// <summary>Sensitivitätszeilen einer Variante (W2): 4 Parameter, ±Δ → KW vs. Stamm.</summary>
@@ -3954,6 +3980,12 @@ namespace WindowsFormsApplication1
                                 "BestCase_Nutzungsdauer, WorstCase_Nutzungsdauer";
                 if (mitKostenart)
                     felder += ", [" + SchemaKatalog.SPALTE_PW_KOSTENART + "]";
+                // ETAPPE KD6 (§ 11, FK10): das Startjahr je Position — die Spalte kommt
+                // mit Migrationsschritt 38. Sie wird nur ANGEFRAGT, wenn sie existiert:
+                // Ein SELECT auf eine fehlende Spalte würde die GANZE Abfrage kippen
+                // und die Investitionsliste still leeren (der catch unten schluckt).
+                if (StartjahrSpalteVorhanden())
+                    felder += ", [" + SchemaKatalog.SPALTE_PW_STARTJAHR + "]";
 
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT " + felder +
@@ -3977,11 +4009,48 @@ namespace WindowsFormsApplication1
 
                     double dauer = Szenariowert(r, szenario, "Nutzungsdauer",
                                                 "BestCase_Nutzungsdauer", "WorstCase_Nutzungsdauer");
-                    liste.Add(new KapitalwertRechner.InvestPosition { Betrag = betrag, Nutzungsdauer = dauer });
+                    liste.Add(new KapitalwertRechner.InvestPosition
+                    {
+                        Betrag = betrag,
+                        Nutzungsdauer = dauer,
+                        StartJahr = StartJahrDerZeile(r)
+                    });
                 }
             }
             catch { }
             return liste;
+        }
+
+        /// <summary>Einmal je Prozess geprüft: existiert <c>Tab_ProjektWerte.StartJahr</c>
+        /// (Migrationsschritt 38)? Auf älteren Datenbanken bleibt alles t0.</summary>
+        private static bool? _startjahrSpalte;
+
+        private static bool StartjahrSpalteVorhanden()
+        {
+            if (_startjahrSpalte.HasValue) return _startjahrSpalte.Value;
+            try
+            {
+                DataRepository.ExecuteScalar(
+                    "SELECT MAX([" + SchemaKatalog.SPALTE_PW_STARTJAHR + "]) FROM Tab_ProjektWerte");
+                _startjahrSpalte = true;
+            }
+            catch { _startjahrSpalte = false; }
+            return _startjahrSpalte.Value;
+        }
+
+        /// <summary>KD6 (§ 11): <c>Tab_ProjektWerte.StartJahr</c> der Zeile —
+        /// 0 = t0 (NULL, fehlende Spalte oder Werte &lt; 2).</summary>
+        private static int StartJahrDerZeile(DataRow r)
+        {
+            try
+            {
+                if (!r.Table.Columns.Contains(SchemaKatalog.SPALTE_PW_STARTJAHR)) return 0;
+                object o = r[SchemaKatalog.SPALTE_PW_STARTJAHR];
+                if (o == null || o == DBNull.Value) return 0;
+                int j = Convert.ToInt32(o);
+                return j > 1 ? j : 0;
+            }
+            catch { return 0; }
         }
 
         /// <summary>true, wenn die Zeile die Kostenart „Zuschuss" trägt (K5).</summary>
@@ -4041,7 +4110,25 @@ namespace WindowsFormsApplication1
         /// </remarks>
         internal static double LiesBetriebskosten(int idProjekt, string szenario)
         {
+            List<KeyValuePair<double, int>> abJahrEgal;
+            double sofort = LiesBetriebskosten(idProjekt, szenario, out abJahrEgal);
+            // Bestandssicht: die GESAMTsumme p. a. (Anzeigen/Berichte) — Startjahre
+            // betreffen nur die zeitliche Verteilung in der Kapitalwertreihe.
+            foreach (KeyValuePair<double, int> vb in abJahrEgal) sofort += vb.Key;
+            return sofort;
+        }
+
+        /// <summary>
+        /// ETAPPE KD6 (§ 11, FK10): dieselbe Leselogik, aber Positionen mit
+        /// <c>StartJahr ≥ 2</c> GETRENNT — sie gehen als (Betrag, Startjahr)-Paare
+        /// in <paramref name="abJahr"/> und laufen in der Kapitalwertreihe erst ab
+        /// ihrem Jahr; der Rückgabewert ist nur noch der Sofort-Anteil (t0).
+        /// </summary>
+        internal static double LiesBetriebskosten(int idProjekt, string szenario,
+                                                  out List<KeyValuePair<double, int>> abJahr)
+        {
             double summe = 0;
+            abJahr = new List<KeyValuePair<double, int>>();
             bool mitBemessung = false;
             try { mitBemessung = KostenPositionCtrl.StelleSpaltenSicher(); }
             catch { }
@@ -4054,6 +4141,8 @@ namespace WindowsFormsApplication1
                               ", [" + SchemaKatalog.SPALTE_PW_IST_ERLOES + "]" +
                               ", [" + SchemaKatalog.SPALTE_PW_MENGE + "]" +
                               ", [" + SchemaKatalog.SPALTE_PW_EINHEITPREIS + "]";
+                if (StartjahrSpalteVorhanden())
+                    felder += ", [" + SchemaKatalog.SPALTE_PW_STARTJAHR + "]";
 
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT " + felder +
@@ -4064,30 +4153,39 @@ namespace WindowsFormsApplication1
                 foreach (DataRow r in dt.Rows)
                 {
                     double wert = Szenariowert(r, szenario, "EingegebenerWert", "BestCase", "WorstCase");
-                    if (!mitBemessung) { summe += wert; continue; }
+                    int start = StartJahrDerZeile(r);
+                    double beitrag;
 
-                    string bem = Text(r, SchemaKatalog.SPALTE_PW_BEMESSUNG);
-                    bool erloes = B(r, SchemaKatalog.SPALTE_PW_IST_ERLOES);
-
-                    if (string.IsNullOrEmpty(bem) ||
-                        string.Equals(bem, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal))
+                    if (!mitBemessung) beitrag = wert;
+                    else
                     {
-                        // Der Bestandsweg. Das Vorzeichen einer Erlöszeile wird trotzdem
-                        // erzwungen — ein Erlös darf nie als Kosten in die Summe geraten.
-                        summe += erloes && wert > 0 ? -wert : wert;
-                        continue;
+                        string bem = Text(r, SchemaKatalog.SPALTE_PW_BEMESSUNG);
+                        bool erloes = B(r, SchemaKatalog.SPALTE_PW_IST_ERLOES);
+
+                        if (string.IsNullOrEmpty(bem) ||
+                            string.Equals(bem, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal))
+                        {
+                            // Der Bestandsweg. Das Vorzeichen einer Erlöszeile wird trotzdem
+                            // erzwungen — ein Erlös darf nie als Kosten in die Summe geraten.
+                            beitrag = erloes && wert > 0 ? -wert : wert;
+                        }
+                        else
+                        {
+                            // Ein gepflegter Szenariowert schlägt die Ableitung (VALERI-Muster).
+                            double erwartet = D(r, "EingegebenerWert") ?? 0;
+                            bool szenarioGepflegt = Math.Abs(wert - erwartet) > 1e-9;
+
+                            beitrag = szenarioGepflegt
+                                ? (erloes && wert > 0 ? -wert : wert)
+                                : BetriebskostenCtrl.Betrag(bem, erwartet,
+                                                            D(r, SchemaKatalog.SPALTE_PW_MENGE),
+                                                            D(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS),
+                                                            erloes);
+                        }
                     }
 
-                    // Ein gepflegter Szenariowert schlägt die Ableitung (VALERI-Muster).
-                    double erwartet = D(r, "EingegebenerWert") ?? 0;
-                    bool szenarioGepflegt = Math.Abs(wert - erwartet) > 1e-9;
-
-                    summe += szenarioGepflegt
-                        ? (erloes && wert > 0 ? -wert : wert)
-                        : BetriebskostenCtrl.Betrag(bem, erwartet,
-                                                    D(r, SchemaKatalog.SPALTE_PW_MENGE),
-                                                    D(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS),
-                                                    erloes);
+                    if (start > 1) abJahr.Add(new KeyValuePair<double, int>(beitrag, start));
+                    else summe += beitrag;
                 }
             }
             catch { }
