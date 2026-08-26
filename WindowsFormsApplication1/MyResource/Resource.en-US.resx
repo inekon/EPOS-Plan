@@ -7250,7 +7250,7 @@ Please run the EPOS-Plan setup again or install the Microsoft Access Database En
     <value>The name is already in use or empty.</value>
   </data>
   <data name="KDLG_MENUE_VORLAGEN" xml:space="preserve">
-    <value>Cost templates (components)…</value>
+    <value>Cost management …</value>
   </data>
   <data name="KDLG_POS_NEU_VORGABE" xml:space="preserve">
     <value>New item</value>
@@ -7650,5 +7650,8 @@ Please run the EPOS-Plan setup again or install the Microsoft Access Database En
   </data>
   <data name="KDLG_FK8_KURZ" xml:space="preserve">
     <value>Maintained in the cost dialog.</value>
+  </data>
+  <data name="KDLG_BTN_KATALOG" xml:space="preserve">
+    <value>Item catalog…</value>
   </data>
 </root>

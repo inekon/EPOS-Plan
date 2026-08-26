@@ -47,7 +47,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Bindet den Komponenten-Kostendialog (Stammvorlagen) ein: Menüeintrag im
-        /// Untermenü Administration → Kosten, unterhalb der Bestandseinträge
+        /// Untermenü Administration → Kosten (Ä7: die Alteinträge „Kosten“/„Kosten
+        /// Admin“ sind entfernt; der Positionskatalog hängt als Knopf in der
+        /// Kostenverwaltung), unterhalb der Bestandseinträge
         /// (Konzept Kostendialoge Rev. 1.2, § 3.1/Ä5 — Etappe KD2; der vollständige
         /// Menü-Umbau folgt mit KD4/KD6).
         ///
@@ -61,7 +63,7 @@ namespace WindowsFormsApplication1
                 string text = null;
                 try { text = MyResource.Resource.ResourceManager.GetString("KDLG_MENUE_VORLAGEN"); }
                 catch { }
-                if (string.IsNullOrEmpty(text)) text = "Kostenvorlagen (Komponenten)…";
+                if (string.IsNullOrEmpty(text)) text = "Kostenverwaltung …";
 
                 ToolStripMenuItem eintrag = new ToolStripMenuItem(text);
                 eintrag.Name = "MenuItem_Kostenvorlagen";
@@ -793,25 +795,6 @@ namespace WindowsFormsApplication1
         private void MenuItem_PV_Import_PAN_Click(object sender, EventArgs e)
         {
             Main_PV_Test frm = new Main_PV_Test();
-            frm.ShowDialog();
-        }
-
-        private void MenuItem_Kosten_Click(object sender, EventArgs e)
-        {
-            int id = Program.startfrm.m_ID_Projekt;
-            if (id != 0)
-            {
-                using (var form = new Form_Kosten(id))
-                {
-                    form.ShowDialog(); // Öffnet das Fenster als modaler Dialog
-                }
-            }
-            else MessageBox.Show("Projekt auswählen!");
-        }
-
-        private void kostenAdminToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Form_KostenAdmin frm = new Form_KostenAdmin();
             frm.ShowDialog();
         }
 

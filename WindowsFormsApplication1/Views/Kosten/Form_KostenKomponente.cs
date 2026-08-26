@@ -390,12 +390,21 @@ namespace WindowsFormsApplication1
             btnSpeichernUnter.Text = Text_("KDLG_BTN_SPEICHERN_UNTER", btnSpeichernUnter.Text);
             btnPositionNeu.Text = Text_("KDLG_BTN_POSITION", btnPositionNeu.Text);
             btnUebernahme.Text = Text_("KDLG_BTN_UEBERNAHME", btnUebernahme.Text);
+            btnKatalog.Text = Text_("KDLG_BTN_KATALOG", btnKatalog.Text);
             lblSpAktionen.Text = Text_("KDLG_SP_AKTIONEN", lblSpAktionen.Text);
             lblSpPosition.Text = Text_("KDLG_SP_POSITION", lblSpPosition.Text);
             lblSpBemessung.Text = Text_("KDLG_SP_BEMESSUNG", lblSpBemessung.Text);
             lblSpSatz.Text = Text_("KDLG_SP_SATZ", lblSpSatz.Text);
             lblSpNutzung.Text = Text_("KDLG_SP_NUTZUNG", lblSpNutzung.Text);
             lblSpWorstBest.Text = Text_("KDLG_SP_WORSTBEST", lblSpWorstBest.Text);
+        }
+
+        /// <summary>§ 3.1/Ä7: Katalogpflege der Positionsbezeichnungen — als
+        /// Unterfunktion der Kostenverwaltung statt eines eigenen Menüeintrags.</summary>
+        private void btnKatalog_Click(object sender, EventArgs e)
+        {
+            using (var frm = new Form_KostenAdmin())
+                frm.ShowDialog(this);
         }
 
         private static string Text_(string schluessel, string rueckfall)

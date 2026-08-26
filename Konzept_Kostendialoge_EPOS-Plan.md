@@ -122,6 +122,11 @@ Heutige Einträge „Kosten" / „Kosten Admin" (`MDIMainForm.cs:608-625`) werde
 `Form_KostenAdmin`/`Form_KostenfaktorItem` (Katalogpflege der Positionsbezeichnungen) bleiben als
 Unterfunktion der Kostenverwaltung erreichbar (Knopf „Positionskatalog …"), verschwinden aus dem Menü.
 
+**Umgesetzt 26.08.2026 (Ä7):** Alteinträge „Kosten"/„Kosten Admin" aus dem Menü entfernt,
+Menütext „Kostenverwaltung …" (Konzeptwortlaut), Knopf „Positionskatalog…" im Fuß der
+Kostenverwaltung öffnet `Form_KostenAdmin`; Komponentenauswahl gemäß Ä7 auf die sieben
+Anlagen-Komponenten begrenzt (Dropdown der Kostenverwaltung, Blöcke des Projekt-Kosteneditors).
+
 ### 3.2 Projekt-Einstiege
 
 | Einstieg | Verhalten |
@@ -592,6 +597,7 @@ erstellt**, damit sie ohne KI-Unterstützung nachbearbeitbar sind (Ä6). Umsetzu
 | Ä4 | Bruttosumme als Anzeige im Dialogfuß (USt aus Gesetzeskatalog) | ergänzt „netto rechnen" um „brutto anzeigen"; keine Rechenwirkung |
 | Ä5 | Admin-Menü Kosten zweigeteilt (Kostenverwaltung / Energieträgerverwaltung); `Form_KostenAdmin` verlässt das Menü | Folie 3 |
 | Ä6 | Neue Kostendialoge werden WinForms-Designer-fähig erstellt (Nachbearbeitung ohne KI); bewusste Abweichung von der Rev.-2-Hausregel „programmatische UI" für diese neuen Formulare | Entscheidung Philipp 25.08.2026 (FK1); Regeln in § 12 |
+| Ä7 | Komponentenauswahl überall nur die SIEBEN Anlagen-Komponenten des Projektbaums (Wärmepumpe, Heizkessel, Photovoltaik, Solarthermie, Stromspeicher, Pufferspeicher, BHKW) — zentrale Wahrheit `KostenVorlagenCtrl.WaehlbareKomponenten`. Die Erfassungsgruppen Wärmezentrale/Bauliche Anlagen/Stromeinspeisung bleiben als Datensätze samt Vorlagenpositionen erhalten (Altpositionen rechnen und berichten weiter), werden aber nirgends mehr angeboten; im Projekt-Kosteneditor erscheinen sie nur noch mit vorhandenen Positionen. Menü Administration→Kosten nur noch „Kostenverwaltung …" + „Energieträgerverwaltung …" (Alteinträge „Kosten"/„Kosten Admin" entfernt; Positionskatalog = Knopf in der Kostenverwaltung, § 3.1) | Entscheidung Philipp 26.08.2026 (Screenshot-Abgleich Komponenten-Wizard); **umgesetzt 26.08.2026** |
 
 Alle übrigen Beschlüsse (L1–L9, E1–E8, insbesondere E2 „kein Nahwärmenetz", L7 Zuschuss, L8
 Gesetzeswerte, Netto-Prinzip, ValERI) gelten unverändert.

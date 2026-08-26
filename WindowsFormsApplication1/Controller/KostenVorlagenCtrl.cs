@@ -53,7 +53,35 @@ namespace WindowsFormsApplication1
     {
         // ------------------------------------------------------------------ Lesen ---
 
-        /// <summary>Alle Kostenkomponenten (ID, Name), Reihenfolge der Auslieferung.</summary>
+        /// <summary>
+        /// Ä7 (Entscheidung Philipp 26.08.2026): Zur AUSWAHL stehen überall nur die
+        /// sieben Anlagen-Komponenten des Projektbaums — dieselben Kacheln, die der
+        /// Komponenten-Wizard anbietet. Die Erfassungsgruppen der KD1-Saat
+        /// (Wärmezentrale, Bauliche Anlagen, Stromeinspeisung) bleiben als
+        /// Datensätze samt Vorlagenpositionen erhalten — vorhandene Projektdaten
+        /// dazu werden weiter gerechnet und berichtet —, werden aber nirgends mehr
+        /// zur Auswahl angeboten.
+        /// </summary>
+        public static readonly string[] WaehlbareKomponenten =
+        {
+            DbWerte.KOSTEN_KOMPONENTE_WAERMEPUMPE,
+            DbWerte.KOSTEN_KOMPONENTE_HEIZKESSEL,
+            DbWerte.KOSTEN_KOMPONENTE_PHOTOVOLTAIK,
+            DbWerte.KOSTEN_KOMPONENTE_SOLARTHERMIE,
+            DbWerte.KOSTEN_KOMPONENTE_STROMSPEICHER,
+            DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER,
+            DbWerte.KOSTEN_KOMPONENTE_BHKW
+        };
+
+        /// <summary>true, wenn die Komponente zur Auswahl angeboten wird (Ä7).</summary>
+        public static bool IstWaehlbar(string komponente)
+        {
+            foreach (string k in WaehlbareKomponenten)
+                if (string.Equals(k, komponente, StringComparison.Ordinal)) return true;
+            return false;
+        }
+
+        /// <summary>Die wählbaren Kostenkomponenten (Ä7; ID, Name), Reihenfolge der Auslieferung.</summary>
         public static IList<KeyValuePair<int, string>> Komponenten()
         {
             var liste = new List<KeyValuePair<int, string>>();
@@ -61,8 +89,11 @@ namespace WindowsFormsApplication1
                 "SELECT [ID], [" + SchemaKatalog.SPALTE_KK_KOMPONENTE + "] FROM [" +
                 SchemaKatalog.TAB_KOSTENKOMPONENTE + "] ORDER BY [ID]");
             foreach (DataRow r in dt.Rows)
-                liste.Add(new KeyValuePair<int, string>(
-                    Convert.ToInt32(r[0]), Convert.ToString(r[1])));
+            {
+                string name = Convert.ToString(r[1]);
+                if (!IstWaehlbar(name)) continue;   // Ä7
+                liste.Add(new KeyValuePair<int, string>(Convert.ToInt32(r[0]), name));
+            }
             return liste;
         }
 
