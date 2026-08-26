@@ -283,3 +283,43 @@ Nachweise: kd6-Smoke 56/56 (B12 Stift sichtbar; B13 Feldänderung lässt
 die DB unberührt, erst `JetztSpeichern` schreibt — danach Urzustand
 wiederhergestellt; B14 Knöpfe nur im Projektmodus); kd2-Regression
 (Stamm-Sofortspeichern) grün; Layout-Sweep 120/0.
+
+## Nachtrag Ä18 (26.08.2026) — Tarifstruktur komponentenbezogen, Strom-Leistungspreis
+
+Nutzerauftrag: Die Tarifstruktur gehört nicht in den Energieträgerdialog,
+sondern KOMPONENTENBEZOGEN in die Wirtschaftlichkeit (BHKW, PV, Wärme-
+pumpe …); im Energieträgerdialog soll stattdessen ein Leistungspreis mit
+Jahr/Monat-Auswahl pflegbar sein.
+
+- Migrationsschritt 44 (ZIEL_VERSION 44): `pricing_model.has_powerprice`
+  für ELECTRICITY — der Stromträger läuft im ET-Dialog durch denselben
+  Leistungspreis-Zweig wie Gas (Satz + Jahres-/Monatsmodus + Saison-
+  reihen, FK6/FK6a). Der KD4-Sonderfall (Feld gesperrt, „über die
+  Tarifstruktur“) und der Ä16-Tarifknopf sind entfernt; § 7.1 gilt
+  damit wie ursprünglich konzipiert. Die Leistungspreis-Spalte der
+  Kosten-Seite (§ 10) zeigt den Strom-Satz (Kurzschluss „—“ entfernt).
+  GRENZE: In der trägerbezogenen Energiekosten-Schiene hat Strom keine
+  Anschlussleistung aus Gerätedaten — der Flat-Satz wird gepflegt und
+  angezeigt, eine Rechenwirkung wäre eine eigene Etappe.
+- `Form_Tarifstruktur`: neues enum `TarifSicht` (Komplett, Strombezug,
+  Bhkw, Photovoltaik). EIN Tarifsatz je Stamm bleibt die Wahrheit; eine
+  Sicht BAUT nur ihre Blöcke (kein Ein-/Ausblenden — Verrutsch-Falle),
+  der Speichervorgang übernimmt nur gebaute Felder (Rest bleibt, per
+  Smoke belegt). Geteilte Felder tragen den Zusatz „geteiltes Feld“,
+  jede Teilsicht eine Hinweiszeile.
+- Einstiege: `UcWirtschaftlichkeit` baut neben dem PV-Knopf
+  „BHKW-Tarif…“ (sichtbar bei BHKW in der Gruppe) und „Strombezug…“
+  (sichtbar bei Wärmepumpe in der Gruppe ODER aktiver Tarifstruktur —
+  sonst ließe sie sich nicht mehr abschalten); `ErzeugerFlags` führt
+  dazu neu `Waermepumpe` (Tab_WP). `Form_PhotovoltaikVerguetung`
+  erhält den Fußknopf „Einspeise-Tarif…“ (PV-Sicht) — Designer-Datei
+  ergänzt. Drei neue MyResource-Schlüssel de+en.
+
+Nachweise: kd6 67/67 (U1 Feldpräsenz je Sicht, U2 Teilsicht-Speichern
+erhält den fremden Marker und räumt die Testzeile weg, U3 ET-Strom
+aktiv ohne Tarif-Einstieg, U4 Seiten-Knöpfe); kd4 21/21 (E3 auf das
+neue Strom-Verhalten umgestellt); pv6 28/28; Sweep 115/0/5; Fehlerjagd
+0 Befunde inkl. zweier neuer Stationen (Tarifsichten bauen, ET-Karte
+Strom) auf frisch migrierter Produktivkopie (41→44); Sichtbelege
+ae18_tarif_bhkw/pv/strom.png und ae18_et_strom.png (FormDump um
+DUMP_SICHT/DUMP_TRAEGER erweitert).
