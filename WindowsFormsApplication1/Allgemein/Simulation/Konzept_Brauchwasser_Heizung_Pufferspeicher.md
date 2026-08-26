@@ -1,7 +1,11 @@
 # Konzept: Brauchwasser, Heizung und Pufferspeicher — Dreikanalbilanz, Schichtspeicher, Booster-Wärmepumpe
 
-**Fassung 1** · Stand 26.08.2026 · Branch `Pufferspeicher` · Status: **Entwurf zur Abstimmung** — die
-Rückfragen in Kapitel 12 sind vor Umsetzungsbeginn zu entscheiden; zu jeder steht eine Empfehlung.
+**Fassung 1** · Stand 27.08.2026 · Branch `Pufferspeicher` · Status: **teilentschieden** — am
+27.08.2026 wurden entschieden: **F1** (Altpfad entfällt ersatzlos), **F7** (Schichtmodell wie
+vorgeschlagen: N je Speicher 1–10, Default 1), **F17** (R-Prozess automatisch, Rang nach
+Heizkreiszeile) sowie die **Merge-Strategie** (Landung von `kostenformulare` in `main` abwarten,
+Kapitel 9). Die übrigen Rückfragen in Kapitel 12 sind vor Umsetzungsbeginn zu entscheiden; zu
+jeder steht eine Empfehlung.
 
 **Bezug:** [`Konzept_Simulation_QuellenSenken.md`](Konzept_Simulation_QuellenSenken.md) (Fassung 12 —
 inzwischen **umgesetzt** in den Paketen B0, 1–9, D1–D5b, K3, BHKW-Regulär und Parallelverbund; die
@@ -630,7 +634,10 @@ weil `Pufferspeicher` noch auf dem `main`-Stand steht — jede Umsetzungswoche o
 Konfliktrisiko in genau diesen Dateien. **Entscheidend:** `kostenformulare` führt die
 `SchemaMigration` bereits bis **`ZIEL_VERSION = 44`** fort (u. a. `SCHRITT_38_KOSTENVORLAGEN` …
 `SCHRITT_41_PROJEKTPHOTOVOLTAIK`). Vorgehen: `kostenformulare` **zuerst** nach `Pufferspeicher`
-mergen (bzw. dessen Landung in `main` abwarten), erst dann mit Paket V0 beginnen.
+mergen bzw. dessen Landung in `main` abwarten, erst dann mit Paket V0 beginnen.
+**Entschieden 27.08.2026:** Es wird die **Landung von `kostenformulare` in `main` abgewartet**;
+danach wird `main` nach `Pufferspeicher` gemergt und die Umsetzung beginnt auf dem gemeinsamen
+Stand. Bis dahin keine Code-Pakete auf `Pufferspeicher`.
 
 Die Schritte der `SchemaMigration` tragen **ganzzahlige Nummern**, und jeder erfolgreiche Schritt
 hebt den Marker `Tab_Applikation.SchemaVersion` einzeln an (`SchemaMigration.cs:1825-1837, :2400`;
@@ -720,9 +727,9 @@ Feld) vor jeder Parallelisierung.
 Jede Frage mit Empfehlung; „◉" = Empfehlung. Die Antworten werden als Entscheidungen E1… in
 Fassung 2 eingearbeitet.
 
-**F1 — Altpfad abschaffen?** ◉ Ja (L1). Konsequenz: Bestandsprojekte ohne Flag ändern ihr
-Ergebnis; Referenzbasis wird neu eingefroren, Ergebnisänderungen je Referenzprojekt dokumentiert.
-Alternative: Altpfad behalten → jede Neuerung dreifach, Dreikanal im Altpfad nicht darstellbar.
+**F1 — Altpfad abschaffen?** ✔ **Entschieden 27.08.2026: Ja** (L1). Konsequenz: Bestandsprojekte
+ohne Flag ändern ihr Ergebnis; Referenzbasis wird neu eingefroren, Ergebnisänderungen je
+Referenzprojekt dokumentiert.
 
 **F2 — Netzverluste im Dreikanalmodell?** ◉ Vorbelegung unverändert 100 % Heizkanal
 (altverhaltenserhaltend), aber als explizite, parametrierbare Zuordnung (Erweiterung: anteilig je
@@ -750,10 +757,9 @@ Begründungstext) **und** Protokollwarnung im Lauf; hart bleiben Kurzschluss und
 darf wirklich jede Konstellation gerechnet werden (z. B. 35-°C-Erzeuger lädt 60-°C-BW-Puffer — mit
 Schichtmodell sichtbar wirkungslos, ohne still schönfärbend)?
 
-**F7 — Schichtmodell-Tiefe?** ◉ N je Speicher konfigurierbar 1…10, Default 1; nur Senken-/
-Kombi-Speicher; `T_Nutz` zunächst nur für Brauchwasser; keine Schicht-Persistenz je Stunde.
-Alternativen: festes N (weniger flexibel), Zwei-Zonen-Modell (kann Booster-Temperatur nicht
-liefern), Persistenz je Schicht (Datenvolumen).
+**F7 — Schichtmodell-Tiefe?** ✔ **Entschieden 27.08.2026: wie vorgeschlagen** — N je Speicher
+konfigurierbar 1…10, Default 1; nur Senken-/Kombi-Speicher; `T_Nutz` zunächst nur für
+Brauchwasser; keine Schicht-Persistenz je Stunde.
 
 **F8 — Schichtmodell-Randfragen?** ◉ Herkunftsrechnung bleibt je Speicher; Verbund und Schichtung
 schließen sich je Rechenspeicher aus; Ergebnisänderung durch N > 1 ist eine bewusste
@@ -794,12 +800,10 @@ Prozess-Eintrag in `Z_Projekt_Prozesswaerme` mit Wirkung auf WP-Kennfeld und Erz
 Ohne Temperaturniveau bleibt die Trennung eine Mengenbilanz — für Bericht und Speicherführung
 ausreichend, für Exergie-Aussagen nicht.
 
-**F17 — Migrationsregel R-Prozess bestätigt?** Bestandsprojekte mit Prozesswärme decken den
-Prozessbedarf heute implizit über den Heizkanal. ◉ Bei der Migration (Schritt 46) erhält jede
-Anlage mit Direktsenke Heizkreis und Bedarfsart `Beides` oder `Heizung` eine zusätzliche
-Senkenzeile `Ziel='Prozesswaerme'` **nach** ihrer Heizkreiszeile (4.4) — die Rangfolge
-„Heizung vor Prozess je Anlage" ist damit festgelegt und hier zu bestätigen. Alternative
-(keine Regel): der Prozesskanal bliebe in allen Bestandsprojekten ungedeckt — nicht vertretbar.
+**F17 — Migrationsregel R-Prozess bestätigt?** ✔ **Entschieden 27.08.2026: Ja, automatisch.**
+Bei der Migration (Schritt 46) erhält jede Anlage mit Direktsenke Heizkreis und Bedarfsart
+`Beides` oder `Heizung` eine zusätzliche Senkenzeile `Ziel='Prozesswaerme'` **nach** ihrer
+Heizkreiszeile (4.4); die Rangfolge „Heizung vor Prozess je Anlage" ist damit festgelegt.
 
 **F18 — Kanalzuordnung externer Wärmeganglinien?** ◉ Neue Spalte `Z_ProjektWaermebedarf.Kanal`
 (Schritt 45), Vorbelegung `Heizung` (altverhaltenserhaltend); der Anwender kann eine importierte
