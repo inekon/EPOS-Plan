@@ -153,3 +153,24 @@ DataRepository-EngineModus gegen eine frische Kopie der Produktiv-DB):
 Smoke kd6 37/37 (neu B0–B9 + B7b: Anlegen/Speichern/Case/Startjahr/Löschen
 rückstandsfrei, Dialogaufbau, Variantenzeile aus, Träger-Knopf); Regression
 kd2–kd5, pv1–pv6 grün; Layout-Sweep 120 Formulare 0 Befunde.
+
+---
+
+## Nachtrag Ä8 (26.08.2026, Nutzerentscheid)
+
+- **Schreibschutz der Auslieferungsvorlagen aufgehoben** — für Investitions-
+  UND Betriebskostenvorlagen. Zentral in `KostenVorlagenCtrl.IstNurLesen`
+  (immer false; das DB-Flag bleibt Herkunftsmarker der Saat); das rote
+  Banner und alle Sperren entfallen damit überall. Restschutz: die
+  STANDARD-Vorlage einer Komponente bleibt unlöschbar (Quelle von
+  „Speichern unter…" und der Übernahme; die KD1-Saat läuft nicht erneut)
+  — Varianten sind löschbar. kd2-Smoke umgestellt: Schreiben auf die
+  Auslieferung ERLAUBT und spurenfrei (Urzustand wird zurückgeschrieben),
+  Standard-Löschung abgelehnt.
+- **Energieträgerverwaltung, Katalogkontext:** Der Menüeinstieg zeigte einen
+  leeren Dialog — `Form_Kosten.GetAllCarriers` las nur die
+  Projektzuordnungen (`energy_project_settings`), bei Projekt 0 also
+  nichts. Neuer Katalogzweig listet alle Katalogträger (`energy_carrier`
+  direkt); der erste Träger ist vorgewählt, damit der Detailbereich nie
+  leer wirkt. Sichtbeleg `ae8_et_katalog.png` (Produktiv-Kopie, 20 Träger).
+  Weiter offen (KD4-Vermerk): Katalogpreis-Schreibweg des Katalogkontexts.
