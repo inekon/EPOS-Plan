@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 43;
+        public const int ZIEL_VERSION = 44;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -2331,6 +2331,17 @@ namespace WindowsFormsApplication1
                         "Fehlende VDI-3805-Katalogtraeger nachsaeen (Nachtrag Ä9)",
                         "Die VDI-3805-Katalogtraeger konnten nicht angelegt werden.",
                         Schritt_43_VdiTraeger),
+
+            // Ä18 (Nutzerauftrag 26.08.2026): Der Strom-Leistungspreis wird wie bei
+            // den uebrigen Traegern im Energietraegerdialog gepflegt (Jahres- oder
+            // Monatssatz); das Preismodell ELECTRICITY braucht dafuer das
+            // Leistungspreis-Merkmal.
+            new Schritt(44,
+                        "Strom-Leistungspreis freischalten: pricing_model ELECTRICITY " +
+                        "erhaelt has_powerprice (Nachtrag Ä18)",
+                        "Der Strom-Leistungspreis konnte nicht freigeschaltet werden - " +
+                        "das Leistungspreisfeld des Stromtraegers bliebe verborgen.",
+                        Schritt_44_StromLeistungspreis),
         };
 
         // =================================================================================
@@ -5761,6 +5772,24 @@ namespace WindowsFormsApplication1
         /// Brennstoff-Stammverweis wird per Namenssuche verknüpft, wenn der
         /// Stamm einen Flüssiggas-Eintrag führt — sonst 0 mit Protokollhinweis.
         /// </summary>
+        /// <summary>
+        /// Ä18 (26.08.2026): Das Preismodell ELECTRICITY erhaelt das
+        /// Leistungspreis-Merkmal - damit zeigt der Energietraegerdialog beim Strom
+        /// dasselbe Leistungspreisfeld (Jahr/Monat, FK6) wie bei Gas und Fernwaerme.
+        /// Die Tarifstruktur bleibt das Detailmodell der Wirtschaftlichkeitsseite
+        /// (komponentenbezogene Sichten); der Flat-Leistungspreis ist ihr einfaches
+        /// Gegenstueck in der Kostenmaske. Idempotent: Ein bereits gesetztes Merkmal
+        /// wird nicht veraendert.
+        /// </summary>
+        private static bool Schritt_44_StromLeistungspreis(Lauf l)
+        {
+            NonQuery(l,
+                "UPDATE pricing_model SET has_powerprice = true WHERE code = 'ELECTRICITY'");
+            object o = Scalar(l,
+                "SELECT has_powerprice FROM pricing_model WHERE code = 'ELECTRICITY'");
+            return o != null && o != DBNull.Value && Convert.ToBoolean(o);
+        }
+
         private static bool Schritt_42_Fluessiggas(Lauf l)
         {
             object da = Scalar(l,

@@ -122,6 +122,15 @@ namespace WindowsFormsApplication1
         /// <summary>Andockpunkt des PV-Vergütungsdialogs (PV-Konzept § 7).</summary>
         private Button btnPhotovoltaik;
 
+        /// <summary>Ä18: BHKW-Sicht der Tarifstruktur (Rollenmodell samt Referenz
+        /// und Einspeisung) — sichtbar, wenn die Gruppe ein BHKW führt.</summary>
+        private Button btnBhkwTarif;
+
+        /// <summary>Ä18: Einkaufsseite der Tarifstruktur (Zonen-Bezugspreise,
+        /// Staffel, Bezugsrolle) — sichtbar bei Wärmepumpe in der Gruppe oder
+        /// aktiver Tarifstruktur (sonst gäbe es keinen Weg, sie abzuschalten).</summary>
+        private Button btnStromTarif;
+
         /// <summary>
         /// ETAPPE P5: Knopf „Photovoltaik…" links neben „Tarifstruktur…" —
         /// PROGRAMMATISCH, damit die Designer-Datei unberührt bleibt (dasselbe
@@ -145,14 +154,72 @@ namespace WindowsFormsApplication1
                 if (!string.IsNullOrEmpty(t)) btnPhotovoltaik.Text = t;
             }
             catch { }
-            try
-            {
-                btnPhotovoltaik.Visible = new WirtschaftlichkeitCtrl()
-                    .ErzeugerDerGruppe(_idStamm).Photovoltaik;
-            }
+            WirtschaftlichkeitCtrl.ErzeugerFlags flags = null;
+            try { flags = new WirtschaftlichkeitCtrl().ErzeugerDerGruppe(_idStamm); }
             catch { }
+            btnPhotovoltaik.Visible = flags != null && flags.Photovoltaik;
             btnPhotovoltaik.Click += btnPhotovoltaik_Click;
             Controls.Add(btnPhotovoltaik);
+
+            // Ä18 (Nutzerauftrag 26.08.2026): Die Tarifstruktur wird KOMPONENTEN-
+            // BEZOGEN gepflegt — der Sammel-Einstieg btnTarif bleibt unsichtbar
+            // (Ä16). „BHKW-Tarif…“ öffnet die BHKW-Sicht (Differenzmethode),
+            // „Strombezug…“ die Einkaufsseite (Wärmepumpe & Verbraucher); der
+            // PV-Anteil liegt im PV-Vergütungsdialog (Knopf „Einspeise-Tarif…“).
+            btnBhkwTarif = new Button
+            {
+                Size = btnTarif.Size,
+                Anchor = btnTarif.Anchor,
+                Location = new Point(btnTarif.Left - btnTarif.Width - 6, btnTarif.Top),
+                UseVisualStyleBackColor = true,
+                Text = "BHKW-Tarif…"
+            };
+            try
+            {
+                string t = MyResource.Resource.ResourceManager.GetString("WIRT_BTN_BHKW_TARIF");
+                if (!string.IsNullOrEmpty(t)) btnBhkwTarif.Text = t;
+            }
+            catch { }
+            btnBhkwTarif.Visible = flags != null && flags.Bhkw;
+            btnBhkwTarif.Click += delegate { TarifSichtOeffnen(TarifSicht.Bhkw); };
+            Controls.Add(btnBhkwTarif);
+
+            bool tarifAktiv = false;
+            try { tarifAktiv = _ctrl.LadeTarif(_idStamm).Aktiv; }
+            catch { }
+            btnStromTarif = new Button
+            {
+                Size = btnTarif.Size,
+                Anchor = btnTarif.Anchor,
+                Location = new Point(btnTarif.Left - 2 * (btnTarif.Width + 6), btnTarif.Top),
+                UseVisualStyleBackColor = true,
+                Text = "Strombezug…"
+            };
+            try
+            {
+                string t = MyResource.Resource.ResourceManager.GetString("WIRT_BTN_STROM_TARIF");
+                if (!string.IsNullOrEmpty(t)) btnStromTarif.Text = t;
+            }
+            catch { }
+            btnStromTarif.Visible = (flags != null && flags.Waermepumpe) || tarifAktiv;
+            btnStromTarif.Click += delegate { TarifSichtOeffnen(TarifSicht.Strombezug); };
+            Controls.Add(btnStromTarif);
+        }
+
+        /// <summary>Ä18: öffnet die Tarifstruktur in einer Komponentensicht —
+        /// derselbe Nachlauf wie beim früheren Sammel-Einstieg (btnTarif_Click).</summary>
+        private void TarifSichtOeffnen(TarifSicht sicht)
+        {
+            using (var dlg = new Form_Tarifstruktur(_idStamm, sicht))
+            {
+                dlg.ShowDialog(Besitzer);
+                if (dlg.Gespeichert)
+                {
+                    _tarifCache = null;   // E7: Beschriftung der Stromkostenzeile neu holen
+                    ZeigeParameterzeile();
+                    Melde("Tarifstruktur gespeichert — bitte neu berechnen.");
+                }
+            }
         }
 
         private void btnPhotovoltaik_Click(object sender, EventArgs e)
@@ -682,6 +749,8 @@ namespace WindowsFormsApplication1
             cbSzenario.Enabled = !busy;
             btnTarif.Enabled = !busy;
             if (btnPhotovoltaik != null) btnPhotovoltaik.Enabled = !busy;
+            if (btnBhkwTarif != null) btnBhkwTarif.Enabled = !busy;
+            if (btnStromTarif != null) btnStromTarif.Enabled = !busy;
             btnParameter.Enabled = !busy;
             btnVerlauf.Enabled = !busy;
             btnBerechnen.Enabled = !busy;

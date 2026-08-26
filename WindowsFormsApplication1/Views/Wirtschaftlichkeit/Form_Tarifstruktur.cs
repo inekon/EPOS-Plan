@@ -31,6 +31,28 @@ namespace WindowsFormsApplication1
     /// scrollenden Formular (Befund d49075e). Enabled ist hier ohnehin die ehrlichere
     /// Anzeige — die Werte des anderen Modells bleiben lesbar und erhalten.
     /// </summary>
+    /// <summary>
+    /// Ä18 (Nutzerauftrag 26.08.2026): Komponentensicht des Tarifdialogs. Es gilt
+    /// weiterhin EIN Tarifsatz je Stamm (Tab_ProjektTarif) — die Sicht bestimmt nur,
+    /// welche Blöcke der Dialog baut. Geteilte Felder (Kopf, Einspeisepreise,
+    /// Bezugs-Referenzrolle) erscheinen in mehreren Sichten und meinen dieselben
+    /// Werte; nicht gebaute Felder behält der Speichervorgang unverändert bei.
+    /// </summary>
+    public enum TarifSicht
+    {
+        /// <summary>Alle Blöcke (Bestandsverhalten, Rueckfall).</summary>
+        Komplett,
+        /// <summary>Strom-EINKAUF: Zonen-Bezugspreise, Leistungspreis-Staffel und
+        /// die Bezugsrolle — die Tarifseite der Wärmepumpe und aller Verbraucher.</summary>
+        Strombezug,
+        /// <summary>BHKW: das Rollenmodell (Differenzmethode) samt Referenzbezug
+        /// und Einspeisung sowie die Zonen-Einspeisepreise (KWK-Anteil).</summary>
+        Bhkw,
+        /// <summary>Photovoltaik: die Einspeisepreise beider Modelle
+        /// (Zonenpreise bzw. Rollen-Einspeisung).</summary>
+        Photovoltaik
+    }
+
     public class Form_Tarifstruktur : Form
     {
         private const int BREITE = 620;
@@ -59,10 +81,33 @@ namespace WindowsFormsApplication1
         public bool Gespeichert { get; private set; }
 
         public Form_Tarifstruktur(int idStamm)
+            : this(idStamm, TarifSicht.Komplett)
+        {
+        }
+
+        /// <summary>Ä18: Aufruf in einer Komponentensicht (Wirtschaftlichkeitsseite
+        /// bzw. PV-Vergütungsdialog).</summary>
+        public Form_Tarifstruktur(int idStamm, TarifSicht sicht)
         {
             _tarif = _ctrl.LadeTarif(idStamm);
+            _sicht = sicht;
             InitializeComponent();
         }
+
+        private readonly TarifSicht _sicht;
+
+        // Ä18 — welcher Block in dieser Sicht gebaut wird. Die Bezugsrolle bleibt
+        // auch in der BHKW-Sicht stehen: Sie ist die REFERENZ der Differenzmethode.
+        private bool MitZonenBezug
+        { get { return _sicht == TarifSicht.Komplett || _sicht == TarifSicht.Strombezug; } }
+        private bool MitZonenEinspeisung
+        { get { return _sicht != TarifSicht.Strombezug; } }
+        private bool MitRolleBezug
+        { get { return _sicht != TarifSicht.Photovoltaik; } }
+        private bool MitRolleReststrom
+        { get { return _sicht == TarifSicht.Komplett || _sicht == TarifSicht.Bhkw; } }
+        private bool MitRolleEinspeisung
+        { get { return _sicht != TarifSicht.Strombezug; } }
 
         /// <summary>Die Eingabefelder EINER Tarifrolle (Bezug oder Reststrom).</summary>
         private class RollenFelder
@@ -110,6 +155,23 @@ namespace WindowsFormsApplication1
 
             dtGueltigAb = DatumZeile(this, "Preisstand (gültig ab):", 28, ref y, _tarif.GueltigAb);
 
+            if (_sicht != TarifSicht.Komplett)
+            {
+                // Ä18: Die Sicht zeigt einen AUSSCHNITT desselben Tarifsatzes — das
+                // muss dastehen, sonst wirken die anderen Sichten wie eigene Tarife.
+                var lblSicht = new Label
+                {
+                    Location = new Point(15, y),
+                    Size = new Size(BREITE - 30, 30),
+                    ForeColor = Color.DimGray,
+                    Text = "Komponentensicht: Es gilt EIN Tarifsatz je Stamm. Kopfdaten und " +
+                           "geteilte Preisfelder erscheinen in mehreren Sichten und meinen " +
+                           "dieselben Werte."
+                };
+                this.Controls.Add(lblSicht);
+                y += 34;
+            }
+
             Gruppe(this, "Zeitzonen (HT gilt Mo–Fr; Referenzjahr 2026)", ref y);
             numWinterVon = Zeile(this, "Winter von Monat:", 28, ref y, 1, 12, 0, _tarif.WinterVonMonat, 1);
             numWinterBis = Zeile(this, "Winter bis Monat:", 28, ref y, 1, 12, 0, _tarif.WinterBisMonat, 1);
@@ -152,7 +214,17 @@ namespace WindowsFormsApplication1
             this.AcceptButton = btnOk;
             this.CancelButton = btnAbbrechen;
             this.Name = "Form_Tarifstruktur";
-            this.Text = "Tarifstruktur Strom";
+            switch (_sicht)
+            {
+                case TarifSicht.Strombezug:
+                    this.Text = "Tarifstruktur Strombezug (Wärmepumpe & Verbraucher)"; break;
+                case TarifSicht.Bhkw:
+                    this.Text = "Tarifstruktur BHKW (Strom)"; break;
+                case TarifSicht.Photovoltaik:
+                    this.Text = "Tarifstruktur PV-Einspeisung"; break;
+                default:
+                    this.Text = "Tarifstruktur Strom"; break;
+            }
             this.ResumeLayout(false);
         }
 
@@ -164,27 +236,38 @@ namespace WindowsFormsApplication1
             {
                 Location = new Point(15, y),
                 Size = new Size(BREITE - 30, 330),
-                Text = "Zonenmodell (Stufe W3) — vier Zonenpreise, zweistufige Staffel"
+                Text = MitZonenBezug
+                    ? "Zonenmodell (Stufe W3) — vier Zonenpreise, zweistufige Staffel"
+                    : "Zonenmodell (Stufe W3) — Einspeisepreise"
             };
             this.Controls.Add(grpZonen);
             int gy = 22;
 
-            Gruppe(grpZonen, "Bezugspreise [€/kWh]", ref gy);
-            numBezugWHT = Zeile(grpZonen, "Winter HT:", 20, ref gy, 0, 5, 4, (decimal)_tarif.PreisBezugWinterHT, 0.005m);
-            numBezugWNT = Zeile(grpZonen, "Winter NT:", 20, ref gy, 0, 5, 4, (decimal)_tarif.PreisBezugWinterNT, 0.005m);
-            numBezugSHT = Zeile(grpZonen, "Sommer HT:", 20, ref gy, 0, 5, 4, (decimal)_tarif.PreisBezugSommerHT, 0.005m);
-            numBezugSNT = Zeile(grpZonen, "Sommer NT:", 20, ref gy, 0, 5, 4, (decimal)_tarif.PreisBezugSommerNT, 0.005m);
+            if (MitZonenBezug)
+            {
+                Gruppe(grpZonen, "Bezugspreise [€/kWh]", ref gy);
+                numBezugWHT = Zeile(grpZonen, "Winter HT:", 20, ref gy, 0, 5, 4, (decimal)_tarif.PreisBezugWinterHT, 0.005m);
+                numBezugWNT = Zeile(grpZonen, "Winter NT:", 20, ref gy, 0, 5, 4, (decimal)_tarif.PreisBezugWinterNT, 0.005m);
+                numBezugSHT = Zeile(grpZonen, "Sommer HT:", 20, ref gy, 0, 5, 4, (decimal)_tarif.PreisBezugSommerHT, 0.005m);
+                numBezugSNT = Zeile(grpZonen, "Sommer NT:", 20, ref gy, 0, 5, 4, (decimal)_tarif.PreisBezugSommerNT, 0.005m);
+            }
 
-            Gruppe(grpZonen, "Einspeisepreise [€/kWh] (PV- und KWK-Einspeisung)", ref gy);
-            numEinspWHT = Zeile(grpZonen, "Winter HT:", 20, ref gy, 0, 5, 4, (decimal)_tarif.PreisEinspWinterHT, 0.005m);
-            numEinspWNT = Zeile(grpZonen, "Winter NT:", 20, ref gy, 0, 5, 4, (decimal)_tarif.PreisEinspWinterNT, 0.005m);
-            numEinspSHT = Zeile(grpZonen, "Sommer HT:", 20, ref gy, 0, 5, 4, (decimal)_tarif.PreisEinspSommerHT, 0.005m);
-            numEinspSNT = Zeile(grpZonen, "Sommer NT:", 20, ref gy, 0, 5, 4, (decimal)_tarif.PreisEinspSommerNT, 0.005m);
+            if (MitZonenEinspeisung)
+            {
+                Gruppe(grpZonen, "Einspeisepreise [€/kWh] (PV- und KWK-Einspeisung — geteiltes Feld)", ref gy);
+                numEinspWHT = Zeile(grpZonen, "Winter HT:", 20, ref gy, 0, 5, 4, (decimal)_tarif.PreisEinspWinterHT, 0.005m);
+                numEinspWNT = Zeile(grpZonen, "Winter NT:", 20, ref gy, 0, 5, 4, (decimal)_tarif.PreisEinspWinterNT, 0.005m);
+                numEinspSHT = Zeile(grpZonen, "Sommer HT:", 20, ref gy, 0, 5, 4, (decimal)_tarif.PreisEinspSommerHT, 0.005m);
+                numEinspSNT = Zeile(grpZonen, "Sommer NT:", 20, ref gy, 0, 5, 4, (decimal)_tarif.PreisEinspSommerNT, 0.005m);
+            }
 
-            Gruppe(grpZonen, "Leistungspreis-Staffel (auf die Jahres-Bezugsspitze)", ref gy);
-            numGrenze = Zeile(grpZonen, "Staffelgrenze [kW]:", 20, ref gy, 0, 100000, 0, (decimal)_tarif.StaffelGrenzeKW, 10);
-            numPreis1 = Zeile(grpZonen, "Preis bis Grenze [€/kW·a]:", 20, ref gy, 0, 1000, 2, (decimal)_tarif.StaffelPreis1EurKW, 1);
-            numPreis2 = Zeile(grpZonen, "Preis über Grenze [€/kW·a]:", 20, ref gy, 0, 1000, 2, (decimal)_tarif.StaffelPreis2EurKW, 1);
+            if (MitZonenBezug)
+            {
+                Gruppe(grpZonen, "Leistungspreis-Staffel (auf die Jahres-Bezugsspitze)", ref gy);
+                numGrenze = Zeile(grpZonen, "Staffelgrenze [kW]:", 20, ref gy, 0, 100000, 0, (decimal)_tarif.StaffelGrenzeKW, 10);
+                numPreis1 = Zeile(grpZonen, "Preis bis Grenze [€/kW·a]:", 20, ref gy, 0, 1000, 2, (decimal)_tarif.StaffelPreis1EurKW, 1);
+                numPreis2 = Zeile(grpZonen, "Preis über Grenze [€/kW·a]:", 20, ref gy, 0, 1000, 2, (decimal)_tarif.StaffelPreis2EurKW, 1);
+            }
 
             grpZonen.Height = gy + 12;
             y += grpZonen.Height + 12;
@@ -201,15 +284,21 @@ namespace WindowsFormsApplication1
             this.Controls.Add(grpRollen);
             int gy = 22;
 
-            _bezug = BaueRolle(grpRollen, "Bezugstarif OHNE BHKW (Referenz)", _tarif.Bezug, ref gy);
-            _rest = BaueRolle(grpRollen, "Reststromtarif MIT BHKW (kleinere Abnahme, meist teurer)",
-                              _tarif.Reststrom, ref gy);
+            if (MitRolleBezug)
+                _bezug = BaueRolle(grpRollen, "Bezugstarif OHNE BHKW (Referenz)", _tarif.Bezug, ref gy);
+            if (MitRolleReststrom)
+                _rest = BaueRolle(grpRollen, "Reststromtarif MIT BHKW (kleinere Abnahme, meist teurer)",
+                                  _tarif.Reststrom, ref gy);
 
-            Gruppe(grpRollen, "Einspeisung (kein Leistungspreis — Befund 11 der Altanwendung)", ref gy);
-            numEinspArbeit = Zeile(grpRollen, "Einspeisepreis [€/kWh]:", 20, ref gy,
-                                   0, 5, 4, (decimal)_tarif.Einspeisung.ArbeitspreisEurKWh, 0.005m);
-            numEinspGrund = Zeile(grpRollen, "Grundpreis [€/a]:", 20, ref gy,
-                                  0, 1000000, 2, (decimal)_tarif.Einspeisung.GrundpreisEurJahr, 10);
+            if (MitRolleEinspeisung)
+            {
+                Gruppe(grpRollen, "Einspeisung (kein Leistungspreis — Befund 11 der Altanwendung; " +
+                                  "geteiltes Feld für PV- und KWK-Einspeisung)", ref gy);
+                numEinspArbeit = Zeile(grpRollen, "Einspeisepreis [€/kWh]:", 20, ref gy,
+                                       0, 5, 4, (decimal)_tarif.Einspeisung.ArbeitspreisEurKWh, 0.005m);
+                numEinspGrund = Zeile(grpRollen, "Grundpreis [€/a]:", 20, ref gy,
+                                      0, 1000000, 2, (decimal)_tarif.Einspeisung.GrundpreisEurJahr, 10);
+            }
 
             string hinweis =
                 "Die Staffelgrenzen sind KUMULIERTE Obergrenzen: „500 / 2.000 / 8.000 kW“ heißt " +
@@ -217,16 +306,19 @@ namespace WindowsFormsApplication1
                 "Eine Obergrenze von 0 bedeutet „nach oben offen“ und beendet die Staffel. " +
                 "Der Altkatalog speichert an dieser Stelle Stufen-BREITEN — alte Zahlenreihen sind " +
                 "vor der Übernahme umzurechnen.";
-            var lbl = new Label
+            if (MitRolleBezug || MitRolleReststrom)
             {
-                Location = new Point(20, gy + 4),
-                ForeColor = Color.DimGray,
-                Text = hinweis
-            };
-            lbl.Size = new Size(BREITE - 70, TextRenderer.MeasureText(
-                hinweis, this.Font, new Size(BREITE - 70, 0), TextFormatFlags.WordBreak).Height + 6);
-            grpRollen.Controls.Add(lbl);
-            gy += lbl.Height + 10;
+                var lbl = new Label
+                {
+                    Location = new Point(20, gy + 4),
+                    ForeColor = Color.DimGray,
+                    Text = hinweis
+                };
+                lbl.Size = new Size(BREITE - 70, TextRenderer.MeasureText(
+                    hinweis, this.Font, new Size(BREITE - 70, 0), TextFormatFlags.WordBreak).Height + 6);
+                grpRollen.Controls.Add(lbl);
+                gy += lbl.Height + 10;
+            }
 
             grpRollen.Height = gy;
             y += grpRollen.Height + 12;
@@ -411,7 +503,7 @@ namespace WindowsFormsApplication1
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            if (chkAktiv.Checked && !rollen &&
+            if (chkAktiv.Checked && !rollen && numBezugWHT != null &&
                 numBezugWHT.Value <= 0 && numBezugWNT.Value <= 0 &&
                 numBezugSHT.Value <= 0 && numBezugSNT.Value <= 0)
             {
@@ -419,7 +511,7 @@ namespace WindowsFormsApplication1
                     "die Berechnung fällt dann auf die Flat-Preise der Kostenmaske zurück.",
                     "Tarifstruktur", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
-            if (chkAktiv.Checked && rollen &&
+            if (chkAktiv.Checked && rollen && _bezug != null && _rest != null &&
                 _bezug.Arbeit.Value <= 0 && _rest.Arbeit.Value <= 0)
             {
                 MessageBox.Show("Das Rollenmodell ist aktiv, aber weder für den Bezug noch für den " +
@@ -435,22 +527,37 @@ namespace WindowsFormsApplication1
             _tarif.WinterBisMonat = (int)numWinterBis.Value;
             _tarif.HtVonStunde = (int)numHtVon.Value;
             _tarif.HtBisStunde = (int)numHtBis.Value;
-            _tarif.PreisBezugWinterHT = (double)numBezugWHT.Value;
-            _tarif.PreisBezugWinterNT = (double)numBezugWNT.Value;
-            _tarif.PreisBezugSommerHT = (double)numBezugSHT.Value;
-            _tarif.PreisBezugSommerNT = (double)numBezugSNT.Value;
-            _tarif.PreisEinspWinterHT = (double)numEinspWHT.Value;
-            _tarif.PreisEinspWinterNT = (double)numEinspWNT.Value;
-            _tarif.PreisEinspSommerHT = (double)numEinspSHT.Value;
-            _tarif.PreisEinspSommerNT = (double)numEinspSNT.Value;
-            _tarif.StaffelGrenzeKW = (double)numGrenze.Value;
-            _tarif.StaffelPreis1EurKW = (double)numPreis1.Value;
-            _tarif.StaffelPreis2EurKW = (double)numPreis2.Value;
+            // Ä18: Nur die in dieser Sicht GEBAUTEN Felder überschreiben den
+            // geladenen Satz — alles andere behält seine Werte (eine Wahrheit,
+            // mehrere Fenster).
+            if (numBezugWHT != null)
+            {
+                _tarif.PreisBezugWinterHT = (double)numBezugWHT.Value;
+                _tarif.PreisBezugWinterNT = (double)numBezugWNT.Value;
+                _tarif.PreisBezugSommerHT = (double)numBezugSHT.Value;
+                _tarif.PreisBezugSommerNT = (double)numBezugSNT.Value;
+            }
+            if (numEinspWHT != null)
+            {
+                _tarif.PreisEinspWinterHT = (double)numEinspWHT.Value;
+                _tarif.PreisEinspWinterNT = (double)numEinspWNT.Value;
+                _tarif.PreisEinspSommerHT = (double)numEinspSHT.Value;
+                _tarif.PreisEinspSommerNT = (double)numEinspSNT.Value;
+            }
+            if (numGrenze != null)
+            {
+                _tarif.StaffelGrenzeKW = (double)numGrenze.Value;
+                _tarif.StaffelPreis1EurKW = (double)numPreis1.Value;
+                _tarif.StaffelPreis2EurKW = (double)numPreis2.Value;
+            }
 
-            RolleUebernehmen(_bezug, _tarif.Bezug);
-            RolleUebernehmen(_rest, _tarif.Reststrom);
-            _tarif.Einspeisung.ArbeitspreisEurKWh = (double)numEinspArbeit.Value;
-            _tarif.Einspeisung.GrundpreisEurJahr = (double)numEinspGrund.Value;
+            if (_bezug != null) RolleUebernehmen(_bezug, _tarif.Bezug);
+            if (_rest != null) RolleUebernehmen(_rest, _tarif.Reststrom);
+            if (numEinspArbeit != null)
+            {
+                _tarif.Einspeisung.ArbeitspreisEurKWh = (double)numEinspArbeit.Value;
+                _tarif.Einspeisung.GrundpreisEurJahr = (double)numEinspGrund.Value;
+            }
 
             if (!_ctrl.SpeichereTarif(_tarif))
             {

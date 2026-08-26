@@ -82,6 +82,7 @@
             this.btnMarktwerte = new System.Windows.Forms.Button();
             this.btnUebernehmen = new System.Windows.Forms.Button();
             this.btnAbbrechen = new System.Windows.Forms.Button();
+            this.btnTarifPv = new System.Windows.Forms.Button();
             this.pnlKopf.SuspendLayout();
             this.grpAnlage.SuspendLayout();
             this.grpVermarktung.SuspendLayout();
@@ -539,6 +540,16 @@
             this.btnMarktwerte.UseVisualStyleBackColor = true;
             this.btnMarktwerte.Click += new System.EventHandler(this.btnMarktwerte_Click);
             //
+            // btnTarifPv
+            //
+            this.btnTarifPv.Location = new System.Drawing.Point(224, 682);
+            this.btnTarifPv.Name = "btnTarifPv";
+            this.btnTarifPv.Size = new System.Drawing.Size(170, 27);
+            this.btnTarifPv.TabIndex = 14;
+            this.btnTarifPv.Text = "Einspeise-Tarif…";
+            this.btnTarifPv.UseVisualStyleBackColor = true;
+            this.btnTarifPv.Click += new System.EventHandler(this.btnTarifPv_Click);
+            //
             // btnUebernehmen
             //
             this.btnUebernehmen.Location = new System.Drawing.Point(672, 682);
@@ -576,6 +587,7 @@
             this.Controls.Add(this.lblVorschau);
             this.Controls.Add(this.lblKennzahlen);
             this.Controls.Add(this.btnMarktwerte);
+            this.Controls.Add(this.btnTarifPv);
             this.Controls.Add(this.btnUebernehmen);
             this.Controls.Add(this.btnAbbrechen);
             this.Font = new System.Drawing.Font("Segoe UI", 9F);
@@ -667,5 +679,6 @@
         private System.Windows.Forms.Button btnMarktwerte;
         private System.Windows.Forms.Button btnUebernehmen;
         private System.Windows.Forms.Button btnAbbrechen;
+        private System.Windows.Forms.Button btnTarifPv;
     }
 }

@@ -168,64 +168,23 @@ namespace WindowsFormsApplication1
         /// Ergänzt die Leistungspreis-Zeile: Modus-Klappliste (schreibt
         /// <c>energy_carrier.price_power_modus</c> — der Modus ist KATALOGSACHE je
         /// Träger, auch im Projektkontext; dokumentierte Zwischenlösung) und den
-        /// Zugang zu den Saisonreihen (FK6a). Beim Stromträger wird das Feld
-        /// GESPERRT: Der Strom-Leistungspreis ist die Tarifstruktur
-        /// (StromMatrix, Migrationsschritt 21) — keine zweite Wahrheit.
-        /// Programmatisch nach dem Bestandsmuster der übrigen Zusatzblöcke.
+        /// Zugang zu den Saisonreihen (FK6a).
+        ///
+        /// <para>Ä18 (Nutzerauftrag 26.08.2026): Der frühere Strom-Sonderfall
+        /// (Feld gesperrt, Verweis bzw. Einstieg zur Tarifstruktur) ist entfallen —
+        /// der Stromträger pflegt seinen FLAT-Leistungspreis hier wie jeder andere
+        /// Träger (Jahres-/Monatssatz, Migrationsschritt 44 schaltet das Merkmal
+        /// frei). Die Tarifstruktur ist das DETAILMODELL und wird komponentenbezogen
+        /// auf der Wirtschaftlichkeitsseite gepflegt (Strombezug/BHKW/PV); ist sie
+        /// aktiv, ersetzt sie die Flat-Strompreise einschließlich dieses Satzes.</para>
         /// </summary>
         private void BaueLeistungspreisZusatz()
         {
             Control eltern = numLeistungspreis.Parent;
             if (eltern == null) return;
 
-            bool istStrom = string.Equals(_carrier.PricingModel, "ELECTRICITY",
-                                          StringComparison.OrdinalIgnoreCase);
-            if (istStrom)
-            {
-                // Beim Strom ist der Leistungspreis TARIFWELT (StromMatrix,
-                // Schritt 21): has_powerprice ist dort false, das Feld unsichtbar —
-                // der Hinweis sagt dem Suchenden, wo die Wahrheit liegt.
-                numLeistungspreis.Enabled = false;
-                lblLeistungsHinweis = new Label
-                {
-                    AutoSize = true,
-                    ForeColor = Color.FromArgb(90, 90, 90),
-                    Location = new Point(lbl_Leistungspreis.Left, lbl_Leistungspreis.Top),
-                    Text = TKd4("KDLG_LP_STROM_TARIF",
-                        "Leistungspreis Strom: über die Tarifstruktur.")
-                };
-                eltern.Controls.Add(lblLeistungsHinweis);
-
-                // Ä16 (Nutzerauftrag 26.08.2026): Tarifstruktur (und damit der
-                // Strom-Leistungspreis) wird HIER gepflegt — der Einstieg auf der
-                // Wirtschaftlichkeitsseite ist entfallen.
-                if (_projectId > 0)
-                {
-                    var btnTarifStrom = new Button
-                    {
-                        Text = TKd4("KDLG_LP_STROM_TARIF_BTN", "Tarifstruktur…"),
-                        Location = new Point(lblLeistungsHinweis.Right + 12,
-                                             lbl_Leistungspreis.Top - 4),
-                        Size = new Size(120, 25),
-                        UseVisualStyleBackColor = true
-                    };
-                    btnTarifStrom.Click += (s, e2) =>
-                    {
-                        int idStamm = _projectId;
-                        try
-                        {
-                            int refId = new VariantenCtrl().StammRefDerVariante(_projectId);
-                            if (refId > 0) idStamm = refId;
-                        }
-                        catch { }
-                        using (var f = new Form_Tarifstruktur(idStamm))
-                            f.ShowDialog(FindForm());
-                    };
-                    eltern.Controls.Add(btnTarifStrom);
-                }
-                return;
-            }
-
+            // Ä18: kein Strom-Sonderfall mehr — ELECTRICITY führt has_powerprice
+            // seit Migrationsschritt 44 und läuft durch denselben Zweig wie Gas.
             if (!_carrier.HasPowerPrice) return;
 
             cmbLeistungsModus = new ComboBox
