@@ -63,12 +63,41 @@ namespace WindowsFormsApplication1
             return (o == null || o == DBNull.Value) ? 0 : Convert.ToInt32(o);
         }
 
+        /// <summary>Ä20: Dublettensuche je Anlage (NULL-tolerant über die Vorsorge).</summary>
+        private static int FindePositionAnlage(int projektId, int kategorieId,
+                                               int komponentenId, int stammId, int idAnlage)
+        {
+            bool spalteDa = false;
+            try { spalteDa = KostenPositionCtrl.StelleSpaltenSicher(); } catch { }
+            if (!spalteDa)
+                return KostenPositionCtrl.FindePosition(projektId, kategorieId,
+                                                        komponentenId, stammId);
+            object o = DataRepository.ExecuteScalar(
+                "SELECT MIN(ID) FROM Tab_ProjektWerte WHERE ProjektID = ? AND " +
+                "KategorieID = ? AND KomponentenID = ? AND StammID = ? AND ID_Anlage = ?",
+                new OleDbParameter("@p", projektId),
+                new OleDbParameter("@g", kategorieId),
+                new OleDbParameter("@k", komponentenId),
+                new OleDbParameter("@s", stammId),
+                new OleDbParameter("@a", idAnlage));
+            return (o == null || o == DBNull.Value) ? 0 : Convert.ToInt32(o);
+        }
+
         // ------------------------------------------------- Vorlage -> Projekt ---
 
         /// <summary>
         /// Übernimmt eine Stammvorlage (Standard oder Variante) in ein Projekt.
         /// </summary>
         public static UebernahmeErgebnis AusVorlage(int projektId, KostenVorlageKopf vorlage)
+        {
+            return AusVorlage(projektId, vorlage, 0);
+        }
+
+        /// <summary>Ä20: Übernahme in EINE Anlage — der NurAnlegen-Dublettencheck
+        /// läuft dann je Anlage (dieselbe Position darf an einer zweiten Anlage
+        /// erneut entstehen), und jede neue Zeile trägt die Anlagenzeile.</summary>
+        public static UebernahmeErgebnis AusVorlage(int projektId, KostenVorlageKopf vorlage,
+                                                    int idAnlage)
         {
             var e = new UebernahmeErgebnis();
             if (vorlage == null || projektId <= 0)
@@ -92,9 +121,13 @@ namespace WindowsFormsApplication1
                     continue;
                 }
 
-                // Vorhandene Zeile bleibt unberührt (NurAnlegen-Muster).
-                if (KostenPositionCtrl.FindePosition(projektId, vorlage.KategorieId,
-                        vorlage.KomponentenId, stammId) > 0)
+                // Vorhandene Zeile bleibt unberührt (NurAnlegen-Muster) — Ä20:
+                // mit Anlagenbezug zählt nur eine Dublette AN DERSELBEN Anlage.
+                if (idAnlage > 0
+                    ? FindePositionAnlage(projektId, vorlage.KategorieId,
+                                          vorlage.KomponentenId, stammId, idAnlage) > 0
+                    : KostenPositionCtrl.FindePosition(projektId, vorlage.KategorieId,
+                          vorlage.KomponentenId, stammId) > 0)
                 {
                     e.Uebersprungen++;
                     continue;
@@ -129,6 +162,7 @@ namespace WindowsFormsApplication1
                 }
 
                 HerkunftUndNutzungsdauer(id, vorlage.Id, p.Nutzungsdauer);
+                if (idAnlage > 0) KostenProjektPositionenCtrl.AnlageZuordnen(id, idAnlage);
                 e.Angelegt++;
             }
 

@@ -360,3 +360,36 @@ Nachweise: kd6 72/72 (V1–V5), kd2/kd4/pv6 grün, Sweep 115/0/5,
 Fehlerjagd 0 Befunde (frische Produktivkopie); FormDump kann jetzt auch
 UserControls (Trägerform + SetzeProjekt via DUMP_PROJEKT); Sichtbelege
 ae19_anlagenliste/wp_detail/wp_datenbank/admin_fuss.png.
+
+## Nachtrag Ä20 (26.08.2026) — Kosten je Anlage
+
+Nutzerauftrag: „Die Kostenverwaltung soll einer Anlage (z. B. Wärmepumpe
+CS5800i) jeweils zugeordnet sein … Dieses Schema sollte für alle Anlagen
+gelten.“ — die in Ä19 angekündigte Datenmodell-Etappe.
+
+- `Tab_ProjektWerte.ID_Anlage` (nullable) + Vorsorge in
+  `KostenPositionCtrl.StelleSpaltenSicher`; Migrationsschritt 45
+  (ZIEL_VERSION 45) ordnet den Bestand der jeweils ERSTEN verbauten
+  Anlage der Komponente zu — auf der Testkopie 81 Positionen, 3
+  Komponenten ohne Anlage bleiben „ohne Anlagenzuordnung“ (NULL).
+- Projektduplizierer: FK_MAP-Eintrag ID_Anlage → Tab_Energieanlagen —
+  Variantenkopien zeigen auf die KOPIE-Anlagen (W5-belegt); ohne den
+  Eintrag stünden alle kopierten Positionen als verwaist da.
+- Controller: `KostenProjektPositionenCtrl.Lies/Neu(…, idAnlage)`
+  (0 = NULL-oder-verwaist-Pflege, -1 = alle/Bestandssignatur),
+  `AnlageZuordnen`; `Form_Kosten.LiesAnlagenSummen` (Komponente +
+  ID_Anlage); `KostenVorlagenUebernahmeCtrl.AusVorlage(…, idAnlage)`
+  mit anlagenbezogenem NurAnlegen-Check.
+- UI: Kostenverwaltungs-Projektmodus listet ANLAGEN (AnlagenWahl;
+  Titel „Kostenverwaltung BHKW — BHKW EW M 50 S [K] Erdgas — …“),
+  Ä10-Einträge „(keine Anlage im Projekt)“ bleiben; Kosten-Seite
+  summiert je Anlage (gelb: ohne Anlagenzuordnung, zählt mit; rot nur
+  Komponenten gänzlich ohne Positionen); Anlagenauswahl öffnet die
+  Kostenverwaltung mit der Anlage; Wizard_WPItem zeigt und pflegt die
+  Summen seiner Anlagenzeile (item.ID).
+- Rechenkerne unverändert (Aggregation je Projekt — Kapitalwert,
+  Betriebskosten, Energiekosten lesen ID_Anlage nicht).
+
+Nachweise: kd6 79/79 (W0–W6), kd2/kd4/pv6 grün, Sweep 115/0/5,
+Fehlerjagd 0 Befunde auf frisch migrierter Produktivkopie (41→45);
+Sichtbelege ae20_kostenverwaltung_anlage.png, ae20_anlagensummen.png.

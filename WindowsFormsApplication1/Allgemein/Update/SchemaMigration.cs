@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 44;
+        public const int ZIEL_VERSION = 45;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -2342,6 +2342,16 @@ namespace WindowsFormsApplication1
                         "Der Strom-Leistungspreis konnte nicht freigeschaltet werden - " +
                         "das Leistungspreisfeld des Stromtraegers bliebe verborgen.",
                         Schritt_44_StromLeistungspreis),
+
+            // Ä20 (Nutzerauftrag 26.08.2026): Kostenpositionen werden je ANLAGE
+            // gepflegt — Tab_ProjektWerte traegt die Anlagenzeile, der Bestand wird
+            // der jeweils ersten verbauten Anlage seiner Komponente zugeordnet.
+            new Schritt(45,
+                        "Anlagenkosten: Tab_ProjektWerte.ID_Anlage anlegen und den " +
+                        "Bestand der jeweils ersten verbauten Anlage zuordnen (Ä20)",
+                        "Der Anlagenbezug der Kostenpositionen konnte nicht angelegt " +
+                        "werden - die Kostenverwaltung je Anlage braucht die Spalte.",
+                        Schritt_45_Anlagenkosten),
         };
 
         // =================================================================================
@@ -5781,6 +5791,85 @@ namespace WindowsFormsApplication1
         /// Gegenstueck in der Kostenmaske. Idempotent: Ein bereits gesetztes Merkmal
         /// wird nicht veraendert.
         /// </summary>
+        /// <summary>
+        /// Ä20 (26.08.2026): Kostenpositionen je ANLAGE. Die Spalte wird angelegt
+        /// (idempotent), dann bekommt jede Bestandsposition ohne Zuordnung die
+        /// jeweils ERSTE verbaute Anlage ihrer Komponente (MIN(Tab_Energieanlagen.ID)
+        /// mit gesetzter Verweisspalte). Positionen ohne verbaute Anlage —
+        /// Erfassungsgruppen-Altdaten (Ä7) und Variantenreste — bleiben NULL und
+        /// erscheinen in der Oberfläche als „ohne Anlagenzuordnung“.
+        /// </summary>
+        private static bool Schritt_45_Anlagenkosten(Lauf l)
+        {
+            try
+            {
+                using (var cmd = new OleDbCommand(
+                    "ALTER TABLE Tab_ProjektWerte ADD COLUMN ID_Anlage LONG", l.Conn))
+                    cmd.ExecuteNonQuery();
+            }
+            catch { /* Spalte existiert bereits */ }
+
+            object probe = Scalar(l, "SELECT COUNT(*) FROM Tab_ProjektWerte");
+            object probeSpalte = Scalar(l,
+                "SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ID_Anlage IS NULL");
+            if (probe == null || probeSpalte == null)
+            {
+                l.Zeile("Anlagenkosten (Schritt 45): Spalte ID_Anlage nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            var verweise = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                { DbWerte.ERZEUGER_WAERMEPUMPE,             "ID_WP" },
+                { DbWerte.ERZEUGER_HEIZKESSEL,              "ID_Kessel" },
+                { DbWerte.ERZEUGER_BHKW,                    "ID_BHKW" },
+                { DbWerte.ERZEUGER_PHOTOVOLTAIK,            "ID_PV" },
+                { DbWerte.ERZEUGER_SOLARTHERMIE,            "ID_Solar" },
+                { DbWerte.ERZEUGER_STROMSPEICHER,           "ID_SP" },
+                { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, "ID_PUFFER" }
+            };
+
+            int zugeordnet = 0, ohneAnlage = 0;
+            DataTable komp = Abfrage(l, "SELECT ID, Komponente FROM Tab_KostenKomponente");
+            if (komp != null)
+                foreach (DataRow k in komp.Rows)
+                {
+                    string name = Convert.ToString(k["Komponente"]);
+                    int kid = Convert.ToInt32(k["ID"]);
+                    string spalte;
+                    if (!verweise.TryGetValue(name, out spalte)) continue;
+
+                    DataTable projekte = Abfrage(l,
+                        "SELECT DISTINCT ProjektID FROM Tab_ProjektWerte " +
+                        "WHERE KomponentenID = ? AND ID_Anlage IS NULL",
+                        new OleDbParameter("@k", kid));
+                    if (projekte == null) continue;
+
+                    foreach (DataRow pr in projekte.Rows)
+                    {
+                        if (pr["ProjektID"] == DBNull.Value) continue;
+                        int pid = Convert.ToInt32(pr["ProjektID"]);
+                        object a = Scalar(l,
+                            "SELECT MIN(ID) FROM Tab_Energieanlagen " +
+                            "WHERE ID_Projekt = ? AND [" + spalte + "] IS NOT NULL",
+                            new OleDbParameter("@p", pid));
+                        if (a == null || a == DBNull.Value) { ohneAnlage++; continue; }
+                        zugeordnet += NonQuery(l,
+                            "UPDATE Tab_ProjektWerte SET ID_Anlage = ? " +
+                            "WHERE ProjektID = ? AND KomponentenID = ? AND ID_Anlage IS NULL",
+                            new OleDbParameter("@a", Convert.ToInt32(a)),
+                            new OleDbParameter("@p", pid),
+                            new OleDbParameter("@k", kid));
+                    }
+                }
+
+            l.Zeile("Anlagenkosten (Schritt 45): " + zugeordnet +
+                    " Position(en) der jeweils ersten verbauten Anlage zugeordnet; " +
+                    ohneAnlage + " Projekt-Komponenten ohne verbaute Anlage bleiben " +
+                    "ohne Zuordnung (Ausweis \"ohne Anlagenzuordnung\").");
+            return true;
+        }
+
         private static bool Schritt_44_StromLeistungspreis(Lauf l)
         {
             NonQuery(l,
