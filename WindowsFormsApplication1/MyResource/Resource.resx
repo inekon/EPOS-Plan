@@ -7552,4 +7552,76 @@ Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Micro
   <data name="PVW_WARN_STROMSTEUER" xml:space="preserve">
     <value>über 2 MW: Stromsteuer auf Eigenverbrauch prüfen.</value>
   </data>
+  <data name="KDLG_ERTRAG_BTN_GESETZE" xml:space="preserve">
+    <value>Gesetzesparameter…</value>
+  </data>
+  <data name="KDLG_ERTRAG_DAUER" xml:space="preserve">
+    <value>Neue Anlagen: {0} Vollbenutzungsstunden Förderkontingent. Jahresdeckel [Vbh/a]: {1}(Kontingent-Override je Anlage in der Wirtschaftlichkeit).</value>
+  </data>
+  <data name="KDLG_ERTRAG_EIGEN" xml:space="preserve">
+    <value>Selbst genutzter KWK-Strom (§ 7 Abs. 2, nur in den Tatbeständen des § 6 Abs. 3 — z. B. Anlage ≤ 100 kW): bis 50 kW {0} · 50–100 kW {1} ct/kWh. Tatbestand und Anlagenart werden JE ANLAGE in der Wirtschaftlichkeit gepflegt (KWKG-Module) — hier keine Zweitpflege.</value>
+  </data>
+  <data name="KDLG_ERTRAG_EINSP_TITEL" xml:space="preserve">
+    <value>Eingespeister KWK-Strom (Tranchen):</value>
+  </data>
+  <data name="KDLG_ERTRAG_FK7" xml:space="preserve">
+    <value>FK7: Der STROMPREIS-Teil der BHKW-Einspeisevergütung bleibt in der Tarifstruktur des Projekts (Einsp_* ist rein KWK) — dieser Reiter zeigt die gesetzlichen KWKG-/Steuergrößen an; gerechnet wird ausschließlich vom KwkgSatzRechner und den Steuer-Gutschriftrechnern der Wirtschaftlichkeit. Projektbezogene Schalter (Tatbestand, Anlagenart, Pauschalmodus § 9, Kontingent-Override) werden dort je Anlage gepflegt.</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_DAUER" xml:space="preserve">
+    <value>Förderdauer und Jahresdeckel</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_KWKG" xml:space="preserve">
+    <value>KWKG-Zuschlag (§ 7 KWKG 2025) — Anzeige aus dem Gesetzeskatalog</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_PV" xml:space="preserve">
+    <value>PV-Vergütung (EEG) — eine Vergütungswahrheit (V4/F7)</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_STEUERN" xml:space="preserve">
+    <value>Steuervergünstigungen (HF6, Sätze aus dem Gesetzeskatalog)</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_VERWEISE" xml:space="preserve">
+    <value>Pflegeorte (eine Wahrheit je Größe)</value>
+  </data>
+  <data name="KDLG_ERTRAG_LEER" xml:space="preserve">
+    <value>Diese Komponente führt keine laufenden Erträge — Förderungen/Zuschüsse laufen als Zuschuss-Position in den Investitionskosten (FK5).</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV" xml:space="preserve">
+    <value>Die PV-Vergütung wird STAMMPROJEKTBEZOGEN im Vergütungsdialog gepflegt — demselben Formular, das auch der Knopf „Photovoltaik…“ im Wirtschaftlichkeits-Reiter öffnet (eine Vergütungswahrheit, Befund V4). Anzulegender Wert, Vermarktungsform, § 51/§ 51a und 60-%-Begrenzung wirken über die PV-Erlösreihe direkt in der Kapitalwertrechnung.</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV_OEFFNEN" xml:space="preserve">
+    <value>PV-Vergütungsdialog öffnen…</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV_PROJEKT" xml:space="preserve">
+    <value>Stammprojekt:</value>
+  </data>
+  <data name="KDLG_ERTRAG_SONDERREGEL" xml:space="preserve">
+    <value>Sonderregel neue Anlagen ≤ 50 kWel (§ 7 Abs. 3a): eingespeist {0} · nicht eingespeist {1} ct/kWh — geht Abs. 1 und 2 vor.</value>
+  </data>
+  <data name="KDLG_ERTRAG_ST_53A" xml:space="preserve">
+    <value>Energiesteuer-Entlastung § 53a Abs. 5 EnergieStG: Erdgas {0} €/MWh · Heizöl {1} €/1.000 l · Flüssiggas {2} €/1.000 kg (Mindestnutzungsgrad {3} %).</value>
+  </data>
+  <data name="KDLG_ERTRAG_ST_9B" xml:space="preserve">
+    <value>Stromsteuer-Entlastung § 9b StromStG: {0} €/MWh, Sockelbetrag {1} €/a.</value>
+  </data>
+  <data name="KDLG_ERTRAG_ST_BEFREIUNG" xml:space="preserve">
+    <value>Stromsteuer-Befreiung § 9 Abs. 1 Nr. 3 StromStG: hocheffiziente Anlagen ≤ 2 MW im räumlichen Zusammenhang (4,5 km); ab 2026 CO₂-Kriterium.</value>
+  </data>
+  <data name="KDLG_ERTRAG_T100" xml:space="preserve">
+    <value>über 50 bis 100 kW</value>
+  </data>
+  <data name="KDLG_ERTRAG_T250" xml:space="preserve">
+    <value>über 100 bis 250 kW</value>
+  </data>
+  <data name="KDLG_ERTRAG_T2MW" xml:space="preserve">
+    <value>über 250 kW bis 2 MW</value>
+  </data>
+  <data name="KDLG_ERTRAG_T50" xml:space="preserve">
+    <value>bis 50 kW</value>
+  </data>
+  <data name="KDLG_ERTRAG_UE2MW" xml:space="preserve">
+    <value>über 2 MW (neu/modernisiert)</value>
+  </data>
+  <data name="KDLG_ERTRAG_UE2MWN" xml:space="preserve">
+    <value>über 2 MW (nachgerüstet)</value>
+  </data>
 </root>

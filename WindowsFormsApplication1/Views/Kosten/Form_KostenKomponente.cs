@@ -31,10 +31,20 @@ namespace WindowsFormsApplication1
         private IList<KostenVorlageKopf> _varianten;
         private bool _fuellt;
 
+        /// <summary>ETAPPE KD5 (§ 6): Inhalt des Reiters „Ertrag/Bonus".</summary>
+        private ucErtragBonus _ertrag;
+
         public Form_KostenKomponente()
         {
             InitializeComponent();
             TexteAnwenden();
+
+            // KD5: Der Platzhalter weicht dem echten Reiterinhalt (BHKW: HF6-Anzeige;
+            // PV: Vergütungsdialog-Einstieg; sonst blendet FK5 den Reiter aus).
+            lblErtragHinweis.Visible = false;
+            _ertrag = new ucErtragBonus { Dock = DockStyle.Fill };
+            tpErtrag.Controls.Add(_ertrag);
+            _ertrag.BringToFront();
 
             _fuellt = true;
             _komponenten = KostenVorlagenCtrl.Komponenten();
@@ -92,6 +102,30 @@ namespace WindowsFormsApplication1
             if (_fuellt) return;
             KopfAnzeigen();
             VariantenLaden(null);
+            ErtragReiterSteuern();
+        }
+
+        /// <summary>
+        /// ETAPPE KD5 / FK5: Der Reiter „Ertrag/Bonus" existiert nur für BHKW und
+        /// Photovoltaik — bei allen übrigen Komponenten wird die Reiterseite
+        /// ENTFERNT (nicht nur geleert), damit sie gar nicht erst anwählbar ist.
+        /// </summary>
+        private void ErtragReiterSteuern()
+        {
+            string name = cmbKomponente.SelectedIndex >= 0
+                ? (string)cmbKomponente.Items[cmbKomponente.SelectedIndex] : "";
+            bool zeigen = ucErtragBonus.HatInhalt(name);
+            bool drin = tabHaupt.TabPages.Contains(tpErtrag);
+
+            if (zeigen && !drin) tabHaupt.TabPages.Add(tpErtrag);
+            else if (!zeigen && drin)
+            {
+                if (ReferenceEquals(tabHaupt.SelectedTab, tpErtrag))
+                    tabHaupt.SelectedTab = tpKosten;
+                tabHaupt.TabPages.Remove(tpErtrag);
+            }
+
+            if (zeigen && _ertrag != null) _ertrag.Zeige(name);
         }
 
         private void cmbVariante_SelectedIndexChanged(object sender, EventArgs e)
