@@ -153,7 +153,12 @@ namespace WindowsFormsApplication1
             {
                 item = m_werzitemlist.ElementAt(index);
 
-                listBox_WP.Text = item.Bezeichner;
+                // Ä21-Fix: stille Vorwahl — der Auswahl-Handler darf die
+                // Projekt-Geräte-Id dieses Listeneintrags nicht mit der
+                // Stammkatalog-Id überschreiben (siehe m_bStilleFuellung).
+                m_bStilleFuellung = true;
+                try { listBox_WP.Text = item.Bezeichner; }
+                finally { m_bStilleFuellung = false; }
                 textBox_Abschalttemp.Text = item.Abschaltpunkt.ToString();
                 comboBox_Betriebsart.Text = item.Betriebsart;
                 checkBox_Bivalent.Checked = item.Bivalenter_Betrieb;
@@ -269,13 +274,37 @@ namespace WindowsFormsApplication1
             CloseWithOK = false;
             Close();
         }
+        /// <summary>
+        /// Ä21-Fix (Nutzerbefund 27.08.2026, „Datensatz ID 67 nicht gefunden"):
+        /// true, während SetControls die Auswahl PROGRAMMATISCH setzt. Der
+        /// Auswahl-Handler schrieb bisher bei JEDER Textzuweisung die
+        /// STAMMKATALOG-Id (Tab_WP_STAMM) in <c>item.ID_WP</c> — item ist aber die
+        /// Referenz in die Projektliste der Verwaltung, deren ID_WP die
+        /// PROJEKT-Geräte-Id (Tab_WP) trägt. Nach dem ersten Öffnen der
+        /// Detailansicht zeigte der Listeneintrag damit auf den Katalog, und das
+        /// nächste „Ändern.." fand die Geräte-Id nicht mehr. Nur eine ECHTE
+        /// Nutzerauswahl darf die Id wechseln (der Speicherweg materialisiert
+        /// die Stammwahl dann wie im Neu-Fluss).
+        /// </summary>
+        private bool m_bStilleFuellung;
+
         private void listBox_WP_SelectedIndexChanged(object sender, EventArgs e)
         {
             FillVorlaufCombo(listBox_WP.Text);
             WPStammCtrl wpctrl = new WPStammCtrl();
             wpctrl.ReadSingle("select * from Tab_WP_STAMM where Bezeichner='" + listBox_WP.Text + "'");
-            m_nID_WP = wpctrl.ID;
-            item.ID_WP = wpctrl.ID;
+            if (m_bStilleFuellung)
+            {
+                // Programmatische Vorwahl: Anzeige (Stammfelder, Kennlinien) laufen
+                // lassen, aber die Projekt-Geräte-Id des Eintrags behalten — auch
+                // für btn_OK, das item.ID_WP aus m_nID_WP setzt.
+                m_nID_WP = item.ID_WP;
+            }
+            else
+            {
+                m_nID_WP = wpctrl.ID;
+                item.ID_WP = wpctrl.ID;
+            }
             // WP spezifische Daten im Dialog mit anzeigen
 
             // WP spezifische Daten im Dialog mit anzeigen
