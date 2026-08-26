@@ -7765,4 +7765,43 @@ Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Micro
   <data name="KDLG_MSG_STANDARD_LOESCHEN" xml:space="preserve">
     <value>Die Standardvorlage kann nicht gelöscht werden — Varianten schon.</value>
   </data>
+  <data name="KDLG_ET_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="KDLG_ET_BTN_NEU" xml:space="preserve">
+    <value>Neu…</value>
+  </data>
+  <data name="KDLG_ET_BTN_VARIANTE" xml:space="preserve">
+    <value>Variante</value>
+  </data>
+  <data name="KDLG_ET_KATALOG_SPEICHERN" xml:space="preserve">
+    <value>Schreibt die KATALOGwerte dieses Trägers (gilt überall, wo kein Projektwert gepflegt ist).</value>
+  </data>
+  <data name="KDLG_ET_LOESCHEN_FRAGE" xml:space="preserve">
+    <value>Energieträger „{0}“ löschen?</value>
+  </data>
+  <data name="KDLG_ET_LOESCHEN_GESPERRT" xml:space="preserve">
+    <value>Der Träger wird verwendet und bleibt erhalten: {0}</value>
+  </data>
+  <data name="KDLG_ET_NEU_NAME" xml:space="preserve">
+    <value>Bezeichnung des neuen Trägers:</value>
+  </data>
+  <data name="KDLG_ET_NEU_TITEL" xml:space="preserve">
+    <value>Neuer Energieträger</value>
+  </data>
+  <data name="KDLG_ET_NEU_VORGABE" xml:space="preserve">
+    <value>Neuer Energieträger</value>
+  </data>
+  <data name="KDLG_ET_STAMM_FEHLER" xml:space="preserve">
+    <value>Bezeichnung darf nicht leer sein.</value>
+  </data>
+  <data name="KDLG_ET_STAMM_GRUPPE" xml:space="preserve">
+    <value>Gruppe:</value>
+  </data>
+  <data name="KDLG_ET_STAMM_NAME" xml:space="preserve">
+    <value>Bezeichnung:</value>
+  </data>
+  <data name="KDLG_ET_STAMM_SPEICHERN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
 </root>

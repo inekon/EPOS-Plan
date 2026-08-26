@@ -7759,4 +7759,43 @@ Please run the EPOS-Plan setup again or install the Microsoft Access Database En
   <data name="KDLG_MSG_STANDARD_LOESCHEN" xml:space="preserve">
     <value>The standard template cannot be deleted — variants can.</value>
   </data>
+  <data name="KDLG_ET_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="KDLG_ET_BTN_NEU" xml:space="preserve">
+    <value>New…</value>
+  </data>
+  <data name="KDLG_ET_BTN_VARIANTE" xml:space="preserve">
+    <value>Variant</value>
+  </data>
+  <data name="KDLG_ET_KATALOG_SPEICHERN" xml:space="preserve">
+    <value>Writes the CATALOG values of this carrier (applies wherever no project value is maintained).</value>
+  </data>
+  <data name="KDLG_ET_LOESCHEN_FRAGE" xml:space="preserve">
+    <value>Delete energy carrier „{0}“?</value>
+  </data>
+  <data name="KDLG_ET_LOESCHEN_GESPERRT" xml:space="preserve">
+    <value>The carrier is in use and remains: {0}</value>
+  </data>
+  <data name="KDLG_ET_NEU_NAME" xml:space="preserve">
+    <value>Name of the new carrier:</value>
+  </data>
+  <data name="KDLG_ET_NEU_TITEL" xml:space="preserve">
+    <value>New energy carrier</value>
+  </data>
+  <data name="KDLG_ET_NEU_VORGABE" xml:space="preserve">
+    <value>New energy carrier</value>
+  </data>
+  <data name="KDLG_ET_STAMM_FEHLER" xml:space="preserve">
+    <value>The name must not be empty.</value>
+  </data>
+  <data name="KDLG_ET_STAMM_GRUPPE" xml:space="preserve">
+    <value>Group:</value>
+  </data>
+  <data name="KDLG_ET_STAMM_NAME" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="KDLG_ET_STAMM_SPEICHERN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
 </root>

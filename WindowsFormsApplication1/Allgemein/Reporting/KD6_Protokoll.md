@@ -174,3 +174,40 @@ kd2–kd5, pv1–pv6 grün; Layout-Sweep 120 Formulare 0 Befunde.
   direkt); der erste Träger ist vorgewählt, damit der Detailbereich nie
   leer wirkt. Sichtbeleg `ae8_et_katalog.png` (Produktiv-Kopie, 20 Träger).
   Weiter offen (KD4-Vermerk): Katalogpreis-Schreibweg des Katalogkontexts.
+
+---
+
+## Nachtrag Ä9 (26.08.2026, Nutzerauftrag)
+
+**Energieträgerverwaltung als echte Katalogpflege** (der offene KD4-Punkt):
+
+- Katalogleiste **Neu… / Variante / Löschen** (neuer UI-freier
+  `EnergietraegerKatalogCtrl`; Löschen mit Verwendungsschutz — Projekt-
+  zuordnungen und Anlagenverweise halten den Träger, der Grund wird
+  benannt). Die **Variante** kopiert die komplette Katalogzeile — genau der
+  Weg zu abweichenden Emissionswerten je Träger.
+- **Stammkopf editierbar**: Bezeichnung + Gruppen-Klappliste (vorhandene
+  Gruppen, freie Eingabe erlaubt), „Übernehmen“ schreibt die Katalogzeile.
+- **„Speichern“ im Katalogkontext** schreibt jetzt die KATALOGwerte
+  (Arbeits-/Grund-/Leistungspreis, Hi/Hs, CO2/SO2/NOx) direkt in
+  `energy_carrier` — die KD4-Lesesperre ist Geschichte.
+- **Saat**: Schritt 42 Flüssiggas (kg; Hi 12,87 / Hs 14,00 kWh/kg; CO2
+  239 g/kWh aus dem BEHG-Faktor 0,0663 t/GJ; Brennstoff-Stammverweis per
+  [Bezeichner]-Suche), Schritt 43 VDI-3805-Feststoffe: Steinkohle (340),
+  Braunkohlebrikett (400) [Gruppe Kohle], Scheitholz, Holzpellets,
+  Holzhackschnitzel [Gruppe Holz; biogen CO2 = 0 wie Biogas-Bestand].
+  Je Träger idempotent; Preise 0 = nicht gepflegt.
+- **Befundfixe**: Der 42er-Brennstoff-Lookup riet Spaltennamen und löste
+  beim App-Start drei Fehlerboxen aus (ExecuteScalar meldet selbst; die
+  Migration wirkte gescheitert) → fester `[Bezeichner]`-Lookup, still im
+  EngineModus, plus Nachzug für ein bereits ohne Verweis gesätes
+  Flüssiggas. `DataRepository`-Fehlermeldungen tragen jetzt die ABFRAGE
+  im Text — jede künftige Box verortet sich selbst.
+
+Nachweise: kd6-Smoke 47/47 (T1–T9 + T1b: Saat, Neu/Umbenennen/Gruppe/
+Variante/Katalog-Speichern/Löschguard/spurenfrei); Migration 41→43 auf
+frischer Produktiv-Kopie ohne Boxen; Fehlerjagd (erweitert um
+Anlagendialoge, Ertragsreiter, Übernahme-Dialog, Wirtschaftlichkeitsseite,
+Projektmodus) 0 Befunde; Sichtbeleg `ae9_et_katalogpflege.png`.
+Feststoffe ohne Brennstoff-Stammtreffer führen ID_Brennstoff 0
+(Katalogwerte tragen Preis/Emission; Verknüpfung auf Zuruf).
