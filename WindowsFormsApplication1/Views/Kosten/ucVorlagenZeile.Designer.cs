@@ -135,6 +135,7 @@ namespace WindowsFormsApplication1
             this.btnWorstBest.Enabled = false;
             this.btnWorstBest.Location = new System.Drawing.Point(872, 5);
             this.btnWorstBest.Name = "btnWorstBest";
+            this.btnWorstBest.Click += new System.EventHandler(this.btnWorstBest_Click);
             this.btnWorstBest.Size = new System.Drawing.Size(48, 25);
             this.btnWorstBest.TabIndex = 9;
             this.btnWorstBest.Text = "+/-";

@@ -114,3 +114,42 @@ bzw. die fünf BHKW-Einzelposten.
 - Entfernen der gesperrten Felder (zweiter FK8-Schritt) in einer
   Folgeversion.
 - KD1 (Namensglättung) auf Zuruf des Nutzers.
+
+---
+
+## Nachtrag KD6a (26.08.2026, Nutzerabnahme)
+
+Die Sichtabnahme ergab vier Punkte; alle am selben Tag umgesetzt:
+
+1. **Projektmodus der Kostenverwaltung** (der in KD3 auf KD6 verschobene
+   dritte Kontext des § 5): `Form_KostenKomponente.SetProjekt` zeigt die
+   Tab_ProjektWerte-Positionen im Vorlagen-Raster. Neuer UI-freier
+   `KostenProjektPositionenCtrl` über die Bestands-Schreibwege
+   (`SetzeBetragMitZusatz`, `StammIdSicher`, Betrag aus
+   `BetriebskostenCtrl.Betrag`); `ucVorlagenZeile` bekam injizierbare
+   Sicherungswege (SpeichernWeg/NeuWeg), berechnete Betragsanzeige und den
+   ±-Weg in `Form_CaseEingabe` (Worst/Best + Startjahr, § 11).
+   Einstiege umgehängt: „Kostenverwaltung öffnen…" (Berichte & Kosten)
+   und die drei Anlagendialog-Knöpfe (§ 9) öffnen den neuen Dialog;
+   `Form_Kosten` ist kein Einstieg mehr (bleibt Logikträger).
+2. **Energieträger-Direkteinstieg** auf der Kosten-Seite (Knopf neben der
+   Kostenverwaltung, Projektkontext).
+3. **Nutzungsdauer-Spaltenkopf** war abgeschnitten → Kopf „Nutzungsdauer
+   [a]" mit angepasster Breite (780/92, bündig zur Worst/Best-Spalte).
+4. **Wirtschaftlichkeitsübersicht** in der Kartensprache der Kosten-Seite:
+   vier Kennzahl-Kacheln (Kapitalwert ggü. Stamm, Annuität, Amortisation,
+   IRR der besten Variante; Kachel-Control jetzt geteilt).
+
+**Fehlerbild „Für mindestens einen erforderlichen Parameter…" an der Wurzel
+behoben:** Der P6-Strompreisleser fragte `custom_price`/`price` an — Spalten,
+die nur auf der Testkopie existieren; der Produktivbestand führt
+`custom_price_work`/`price_work`. Dazu war die StartJahr-Spaltenprobe
+wirkungslos (`ExecuteScalar` wirft nie, er meldet selbst) — jetzt stille
+Probe über den EngineModus (`SpalteVorhanden`). Nachweis: neuer
+Runner-Modus **Fehlerjagd** (alle neuen UI-/Rechenwege im
+DataRepository-EngineModus gegen eine frische Kopie der Produktiv-DB):
+**0 Befunde**.
+
+Smoke kd6 37/37 (neu B0–B9 + B7b: Anlegen/Speichern/Case/Startjahr/Löschen
+rückstandsfrei, Dialogaufbau, Variantenzeile aus, Träger-Knopf); Regression
+kd2–kd5, pv1–pv6 grün; Layout-Sweep 120 Formulare 0 Befunde.

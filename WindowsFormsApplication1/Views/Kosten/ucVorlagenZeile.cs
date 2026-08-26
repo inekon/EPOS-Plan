@@ -44,6 +44,25 @@ namespace WindowsFormsApplication1
         /// <summary>Neu-Modus: eine Position wurde angelegt (Raster neu aufbauen).</summary>
         public event EventHandler NeuAngelegt;
 
+        // ---- PROJEKTMODUS (KD6a, § 3.2/§ 5 dritter Kontext) --------------------
+        //
+        // Die Zeile kennt ihre Persistenz nicht mehr fest: Ohne gesetzte Wege
+        // gilt der Vorlagen-Bestand (KostenVorlagenCtrl); der Projektmodus der
+        // Kostenverwaltung hängt hier seine Projekt-Schreibwege ein.
+
+        /// <summary>Sichern-Weg; null = Vorlagen-Bestand.</summary>
+        public Func<KostenVorlagenPosition, bool> SpeichernWeg;
+
+        /// <summary>Anlegen-Weg (Name, Kostenart, Bemessung) → neue Id; null = Vorlage.</summary>
+        public Func<string, string, string, int> NeuWeg;
+
+        /// <summary>true = Projektmodus: satzbasierte Beträge werden BERECHNET
+        /// angezeigt (statt „—“), ± öffnet die Worst/Best-Eingabe.</summary>
+        public bool ProjektModus;
+
+        /// <summary>± gedrückt (nur Projektmodus); der Aufrufer öffnet Form_CaseEingabe.</summary>
+        public event EventHandler<KostenVorlagenPosition> WorstBestAngefordert;
+
         public ucVorlagenZeile()
         {
             InitializeComponent();
@@ -83,9 +102,18 @@ namespace WindowsFormsApplication1
             btnEditor.Enabled = schreibbar;
             btnLoeschen.Enabled = schreibbar;
 
+            btnWorstBest.Enabled = ProjektModus && schreibbar;
+            btnEditor.Visible = !ProjektModus;   // der Zeileneditor gehört zur Vorlage
+
             KopplungAnwenden();
             EmpfehlungAnzeigen();
             _fuellt = false;
+        }
+
+        private void btnWorstBest_Click(object sender, EventArgs e)
+        {
+            if (ProjektModus && _pos != null && WorstBestAngefordert != null)
+                WorstBestAngefordert(this, _pos);
         }
 
         /// <summary>Abschlusszeile „+ Neue Position hinzufügen…" (FK2).</summary>
@@ -173,7 +201,10 @@ namespace WindowsFormsApplication1
             else
                 _pos.BetragNetto = null;
 
-            if (KostenVorlagenCtrl.PositionSpeichern(_pos))
+            bool gesichert = SpeichernWeg != null
+                ? SpeichernWeg(_pos)
+                : KostenVorlagenCtrl.PositionSpeichern(_pos);
+            if (gesichert)
             {
                 _fuellt = true;
                 KopplungAnwenden();
@@ -193,7 +224,10 @@ namespace WindowsFormsApplication1
             string kostenart = _istInvest ? DbWerte.KOSTENART_KAPITALGEBUNDEN
                                           : DbWerte.KOSTENART_BETRIEBSGEBUNDEN;
 
-            if (KostenVorlagenCtrl.PositionNeu(_vorlageIdNeu, name, kostenart, bemessung) != 0)
+            int neuId = NeuWeg != null
+                ? NeuWeg(name, kostenart, bemessung)
+                : KostenVorlagenCtrl.PositionNeu(_vorlageIdNeu, name, kostenart, bemessung);
+            if (neuId != 0)
             {
                 txtBezeichnung.Text = "";
                 if (NeuAngelegt != null) NeuAngelegt(this, EventArgs.Empty);
@@ -243,6 +277,15 @@ namespace WindowsFormsApplication1
                 lblKette.Visible = true;
                 tip.SetToolTip(txtBetrag, Text_("KDLG_TT_KETTE",
                     "Satz und Betrag netto sind verknüpft und werden bei Eingabe umgerechnet."));
+            }
+            else if (ProjektModus)
+            {
+                // Projektkontext: Die Bezugsgröße existiert — der BERECHNETE
+                // Betrag wird angezeigt (derselbe Rechenweg wie der Rechenkern).
+                txtBetrag.Text = _pos != null ? ZahlText(_pos.BetragNetto) : "";
+                lblKette.Visible = false;
+                tip.SetToolTip(txtBetrag, Text_("KDLG_TT_BETRAG_PROJEKT",
+                    "Aus Satz und Bezugsgröße des Projekts berechnet."));
             }
             else
             {

@@ -127,6 +127,15 @@ Menütext „Kostenverwaltung …" (Konzeptwortlaut), Knopf „Positionskatalog�
 Kostenverwaltung öffnet `Form_KostenAdmin`; Komponentenauswahl gemäß Ä7 auf die sieben
 Anlagen-Komponenten begrenzt (Dropdown der Kostenverwaltung, Blöcke des Projekt-Kosteneditors).
 
+**Nachtrag KD6a (26.08.2026, Nutzerabnahme):** Der Projekt-Einstieg „Kostenverwaltung öffnen…"
+und die Anlagendialog-Knöpfe (§ 9) führen jetzt in den NEUEN Kostendialog im **Projektmodus**
+(`Form_KostenKomponente.SetProjekt` — der in KD3 auf KD6 verschobene dritte Kontext des § 5):
+gleiche Optik und Bedienung wie der Stammkontext, ohne Variantenzeile; „Aus Vorlage übernehmen…"
+= §-8-Mechanik, ± = Worst/Best + Startjahr (§ 11). `Form_Kosten` ist kein Einstieg mehr und bleibt
+Logikträger (Summen-/Positionslesewege). Daneben neuer Direkteinstieg „Energieträgerverwaltung…"
+auf der Kosten-Seite. Die Wirtschaftlichkeitsübersicht erhielt die Kartensprache der Kosten-Seite
+(vier Kennzahl-Kacheln: Kapitalwert ggue. Stamm, Annuität, Amortisation, IRR der besten Variante).
+
 ### 3.2 Projekt-Einstiege
 
 | Einstieg | Verhalten |
@@ -598,6 +607,7 @@ erstellt**, damit sie ohne KI-Unterstützung nachbearbeitbar sind (Ä6). Umsetzu
 | Ä5 | Admin-Menü Kosten zweigeteilt (Kostenverwaltung / Energieträgerverwaltung); `Form_KostenAdmin` verlässt das Menü | Folie 3 |
 | Ä6 | Neue Kostendialoge werden WinForms-Designer-fähig erstellt (Nachbearbeitung ohne KI); bewusste Abweichung von der Rev.-2-Hausregel „programmatische UI" für diese neuen Formulare | Entscheidung Philipp 25.08.2026 (FK1); Regeln in § 12 |
 | Ä7 | Komponentenauswahl überall nur die SIEBEN Anlagen-Komponenten des Projektbaums (Wärmepumpe, Heizkessel, Photovoltaik, Solarthermie, Stromspeicher, Pufferspeicher, BHKW) — zentrale Wahrheit `KostenVorlagenCtrl.WaehlbareKomponenten`. Die Erfassungsgruppen Wärmezentrale/Bauliche Anlagen/Stromeinspeisung bleiben als Datensätze samt Vorlagenpositionen erhalten (Altpositionen rechnen und berichten weiter), werden aber nirgends mehr angeboten; im Projekt-Kosteneditor erscheinen sie nur noch mit vorhandenen Positionen. Menü Administration→Kosten nur noch „Kostenverwaltung …" + „Energieträgerverwaltung …" (Alteinträge „Kosten"/„Kosten Admin" entfernt; Positionskatalog = Knopf in der Kostenverwaltung, § 3.1) | Entscheidung Philipp 26.08.2026 (Screenshot-Abgleich Komponenten-Wizard); **umgesetzt 26.08.2026** |
+| KD6a | Projektmodus der Kostenverwaltung (§ 5 dritter Kontext, aus KD3 verschoben): `SetProjekt` mit Tab_ProjektWerte-Raster über die Bestands-Schreibwege (`KostenProjektPositionenCtrl`), Einstiege § 3.2/§ 9 umgehängt, Energieträger-Direkteinstieg, Nutzungsdauer-Spaltenkopf, Kennzahl-Kacheln der Wirtschaftlichkeitsübersicht; Fehlerbild „erforderlicher Parameter“ an der Wurzel behoben (P6-Preisleser nutzte Testkopie-Spaltennamen `custom_price`/`price` statt `custom_price_work`/`price_work`; stille Spaltenprobe repariert — `ExecuteScalar` wirft nie) | Nutzerabnahme 26.08.2026 (Screenshots); kd6-Smoke 37/37 (B0–B9), Fehlerjagd auf Produktiv-Kopie 0 Befunde, Sweep 120/0 |
 
 Alle übrigen Beschlüsse (L1–L9, E1–E8, insbesondere E2 „kein Nahwärmenetz", L7 Zuschuss, L8
 Gesetzeswerte, Netto-Prinzip, ValERI) gelten unverändert.

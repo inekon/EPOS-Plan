@@ -64,6 +64,9 @@ namespace WindowsFormsApplication1
         /// eine Datenbankabfrage je Wechsel wäre Verschwendung.
         /// </summary>
         private TarifParameter _tarifCache;
+
+        // ---- KD6a: Kennzahl-Kacheln (gleiche Karte wie die Kosten-Seite) --------
+        private UcBkKosten.Kachel _kKapitalwert, _kAnnuitaet, _kAmortisation, _kIrr;
         private readonly Dictionary<int, EmissionsBilanz> _bilanzen = new Dictionary<int, EmissionsBilanz>();
 
         /// <summary>Stammprojekt-ID der angezeigten Vergleichsgruppe.</summary>
@@ -108,6 +111,7 @@ namespace WindowsFormsApplication1
             // fest und verhindert, dass ein Designer-Speichern die Skalierung erstmals
             // scharf schaltet — Muster: ucFuelSettings, Form_SpotpreisImport.
             InitializeComponent();
+            KachelnBauen();
             TexteSetzen();
             SzenarienFuellen();
             BauePhotovoltaikKnopf();
@@ -487,6 +491,89 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------- Anzeige
 
+        /// <summary>
+        /// KD6a (Nutzerabnahme 26.08.2026): Die Wirtschaftlichkeitsübersicht bekommt
+        /// die Kartensprache der Kosten-Seite — vier Kennzahl-Kacheln über der
+        /// Vergleichstabelle. Reine ANZEIGE der bereits berechneten Ergebniswerte
+        /// (beste Variante gegenüber Stamm im gewählten Szenario).
+        /// </summary>
+        private void KachelnBauen()
+        {
+            var pnl = new TableLayoutPanel
+            {
+                Location = new System.Drawing.Point(12, 194),
+                Size = new System.Drawing.Size(876, 58),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
+                ColumnCount = 4,
+                RowCount = 1
+            };
+            for (int i = 0; i < 4; i++)
+                pnl.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25f));
+            pnl.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
+
+            _kKapitalwert = new UcBkKosten.Kachel();
+            _kAnnuitaet = new UcBkKosten.Kachel();
+            _kAmortisation = new UcBkKosten.Kachel();
+            _kIrr = new UcBkKosten.Kachel();
+            _kKapitalwert.Setze(T("WIRT_KACHEL_KW", "Kapitalwert ggue. Stamm"), "");
+            _kAnnuitaet.Setze(T("WIRT_KACHEL_ANNUITAET", "Annuität"), "");
+            _kAmortisation.Setze(T("WIRT_KACHEL_AMORTISATION", "Amortisation"), "");
+            _kIrr.Setze(T("WIRT_KACHEL_IRR", "Interner Zinsfuß"), "");
+            pnl.Controls.Add(_kKapitalwert, 0, 0);
+            pnl.Controls.Add(_kAnnuitaet, 1, 0);
+            pnl.Controls.Add(_kAmortisation, 2, 0);
+            pnl.Controls.Add(_kIrr, 3, 0);
+            Controls.Add(pnl);
+        }
+
+        private void KachelnAktualisieren(List<WirtschaftlichkeitErgebnis> zeilen)
+        {
+            var kultur = BerichtTexte.Kultur;
+            WirtschaftlichkeitErgebnis beste = null;
+            foreach (WirtschaftlichkeitErgebnis x in zeilen)
+                if (!x.IstStamm && x.KapitalwertDiff.HasValue &&
+                    (beste == null || x.KapitalwertDiff.Value > beste.KapitalwertDiff.Value))
+                    beste = x;
+
+            if (beste != null)
+            {
+                string name = _namen.ContainsKey(beste.IdProjekt)
+                    ? _namen[beste.IdProjekt] : beste.Anzeige;
+                string quelle = string.Format(T("WIRT_KACHEL_BESTE", "beste Variante: {0}"), name);
+                _kKapitalwert.Wert = beste.KapitalwertDiff.Value.ToString("N0", kultur) + " €";
+                _kKapitalwert.Quelle = quelle;
+                _kAnnuitaet.Wert = beste.AnnuitaetKW.HasValue
+                    ? beste.AnnuitaetKW.Value.ToString("N0", kultur) + " €/a" : "—";
+                _kAnnuitaet.Quelle = quelle;
+                _kAmortisation.Wert = beste.AmortisationJahre.HasValue
+                    ? beste.AmortisationJahre.Value.ToString("N1", kultur) + " a"
+                    : T("WIRT_KACHEL_KEINE", "keine");
+                _kAmortisation.Quelle = quelle;
+                _kIrr.Wert = beste.IRR.HasValue
+                    ? beste.IRR.Value.ToString("N1", kultur) + " %" : "—";
+                _kIrr.Quelle = quelle;
+                return;
+            }
+
+            WirtschaftlichkeitErgebnis stamm = zeilen.Find(x => x.IstStamm);
+            string q = T("WIRT_KACHEL_NUR_STAMM", "nur Stammprojekt gerechnet");
+            _kKapitalwert.Wert = stamm != null && stamm.Kapitalwert.HasValue
+                ? stamm.Kapitalwert.Value.ToString("N0", kultur) + " €" : "—";
+            _kKapitalwert.Quelle = stamm != null
+                ? T("WIRT_KACHEL_STAMM_KW", "Nettobarwert des Stammprojekts") : "";
+            _kAnnuitaet.Wert = "—"; _kAnnuitaet.Quelle = q;
+            _kAmortisation.Wert = "—"; _kAmortisation.Quelle = q;
+            _kIrr.Wert = "—"; _kIrr.Quelle = q;
+        }
+
+        private static string T(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
+
         private void ZeigeErgebnisse()
         {
             string szenario = cbSzenario.SelectedItem as string ?? WirtschaftlichkeitSzenario.ERWARTET;
@@ -499,6 +586,7 @@ namespace WindowsFormsApplication1
                 .Where(x => x.Szenario == szenario)
                 .OrderByDescending(x => x.IstStamm)
                 .ToList();
+            KachelnAktualisieren(zeilen);
             if (zeilen.Count == 0) return;
 
             grid.Columns.Add("kennzahl", "Kennzahl");

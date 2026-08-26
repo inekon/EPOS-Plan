@@ -207,9 +207,9 @@ namespace WindowsFormsApplication1
             // lblSpNutzung
             //
             this.lblSpNutzung.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.lblSpNutzung.Location = new System.Drawing.Point(800, 6);
+            this.lblSpNutzung.Location = new System.Drawing.Point(780, 6);
             this.lblSpNutzung.Name = "lblSpNutzung";
-            this.lblSpNutzung.Size = new System.Drawing.Size(70, 30);
+            this.lblSpNutzung.Size = new System.Drawing.Size(92, 30);
             this.lblSpNutzung.TabIndex = 5;
             this.lblSpNutzung.Text = "Nutzung [a]";
             //
