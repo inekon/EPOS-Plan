@@ -4358,7 +4358,7 @@ It then feeds the overview and the overall simulation. The existing simulation r
     <value>{0} investment item(s) · {1}</value>
   </data>
   <data name="BK_KOSTEN_LBL_KOMPONENTEN" xml:space="preserve">
-    <value>Investment per component</value>
+    <value>Plant components</value>
   </data>
   <data name="BK_KOSTEN_LBL_TRAEGER" xml:space="preserve">
     <value>Energy carriers of the project</value>
@@ -7849,5 +7849,26 @@ life [a]</value>
   </data>
   <data name="PVW_BTN_TARIF" xml:space="preserve">
     <value>Feed-in tariff…</value>
+  </data>
+  <data name="BK_KOSTEN_SP_ANLAGE" xml:space="preserve">
+    <value>Plant / component</value>
+  </data>
+  <data name="BK_KOSTEN_JE_KOMPONENTE" xml:space="preserve">
+    <value>Costs are maintained per component — the total is shown at the component's first plant.</value>
+  </data>
+  <data name="BK_KOSTEN_NICHT_VERBAUT" xml:space="preserve">
+    <value>{0} — not installed</value>
+  </data>
+  <data name="BK_KOSTEN_NICHT_VERBAUT_HINT" xml:space="preserve">
+    <value>Cost items without an installed plant — they still enter the profitability figures; please review or delete them in the cost management dialog.</value>
+  </data>
+  <data name="BK_KOSTEN_STATUS_NICHT_VERBAUT" xml:space="preserve">
+    <value>Cost items without an installed plant: {0}</value>
+  </data>
+  <data name="WPI_BTN_KOSTEN" xml:space="preserve">
+    <value>Edit costs…</value>
+  </data>
+  <data name="WPI_KOSTEN_SUMMEN" xml:space="preserve">
+    <value>Capex {0:N0} € · Opex {1:N0} €/a</value>
   </data>
 </root>

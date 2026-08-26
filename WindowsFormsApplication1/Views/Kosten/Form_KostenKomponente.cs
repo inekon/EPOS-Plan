@@ -43,6 +43,13 @@ namespace WindowsFormsApplication1
         public Form_KostenKomponente()
         {
             InitializeComponent();
+
+            // Ä19: OK/Speichern/Abbrechen auch im ADMIN-Kontext (Katalogpflege) —
+            // dieselbe Fußleiste wie im Projektmodus; der Designer hält sie
+            // ausgeblendet, damit Alt-Aufrufer ohne Kontext nichts Falsches zeigen.
+            btnOk.Visible = true;
+            btnSpeichern.Visible = true;
+            btnAbbrechen.Visible = true;
             TexteAnwenden();
 
             // KD5: Der Platzhalter weicht dem echten Reiterinhalt (BHKW: HF6-Anzeige;
@@ -112,7 +119,8 @@ namespace WindowsFormsApplication1
             btnUebernahme.Text = Text_("KDLG_BTN_UEBERNAHME_PROJEKT",
                                        "Aus Vorlage übernehmen…");
 
-            // Ä12/Ä13: explizite Knöpfe gibt es nur im Projektmodus.
+            // Ä12/Ä13: explizite Knöpfe — seit Ä19 in beiden Kontexten sichtbar
+            // (der Konstruktor zeigt sie bereits; hier bleibt die Zusicherung).
             btnOk.Visible = true;
             btnSpeichern.Visible = true;
             btnAbbrechen.Visible = true;
@@ -341,6 +349,11 @@ namespace WindowsFormsApplication1
         private ucVorlagenZeile ZeileBauen(int y)
         {
             var z = new ucVorlagenZeile();
+            // Ä19 (Nutzerauftrag 26.08.2026): Die Ä12-Semantik gilt jetzt in BEIDEN
+            // Kontexten — Feldänderungen leben bis „Speichern“/„OK“ nur im Objekt,
+            // „Abbrechen“ und Kontextwechsel verwerfen sie. Anlegen/Löschen/Editor/±
+            // schreiben weiter sofort (eigene Bestätigungen).
+            z.NurExplizitSpeichern = true;
             z.Location = new System.Drawing.Point(0, y);
             z.Width = Math.Max(pnlZeilen.ClientSize.Width - 4, 928);
             z.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
@@ -380,10 +393,10 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Ä12: übernimmt alle Zeilenfelder und schreibt sie in das
-        /// AKTUELLE Ziel (Projektpositionen; im Stammkontext ist der Knopf
-        /// verborgen, dort gilt das Sofort-Speichern des Bestands). Die
-        /// Fußsumme bestätigt mit Uhrzeit.</summary>
+        /// <summary>Ä12/Ä19: übernimmt alle Zeilenfelder und schreibt sie in das
+        /// AKTUELLE Ziel — Projektpositionen im Projektmodus, die Katalogvorlage im
+        /// Adminkontext (seit Ä19 gilt die deferred-Semantik in beiden Kontexten).
+        /// Die Fußsumme bestätigt mit Uhrzeit.</summary>
         /// <summary>Ä13: OK = speichern und verlassen.</summary>
         private void btnOk_Click(object sender, EventArgs e)
         {

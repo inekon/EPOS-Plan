@@ -4373,7 +4373,7 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
     <value>{0} Investitionsposition(en) · {1}</value>
   </data>
   <data name="BK_KOSTEN_LBL_KOMPONENTEN" xml:space="preserve">
-    <value>Investition je Komponente</value>
+    <value>Anlagenkomponenten</value>
   </data>
   <data name="BK_KOSTEN_LBL_TRAEGER" xml:space="preserve">
     <value>Energieträger des Projekts</value>
@@ -7855,5 +7855,26 @@ dauer [a]</value>
   </data>
   <data name="PVW_BTN_TARIF" xml:space="preserve">
     <value>Einspeise-Tarif…</value>
+  </data>
+  <data name="BK_KOSTEN_SP_ANLAGE" xml:space="preserve">
+    <value>Anlage / Komponente</value>
+  </data>
+  <data name="BK_KOSTEN_JE_KOMPONENTE" xml:space="preserve">
+    <value>Kosten werden je Komponente gepflegt — die Summe steht an der ersten Anlage der Komponente.</value>
+  </data>
+  <data name="BK_KOSTEN_NICHT_VERBAUT" xml:space="preserve">
+    <value>{0} — nicht verbaut</value>
+  </data>
+  <data name="BK_KOSTEN_NICHT_VERBAUT_HINT" xml:space="preserve">
+    <value>Kostenpositionen ohne verbaute Anlage — sie rechnen in der Wirtschaftlichkeit mit; bitte prüfen oder in der Kostenverwaltung löschen.</value>
+  </data>
+  <data name="BK_KOSTEN_STATUS_NICHT_VERBAUT" xml:space="preserve">
+    <value>Kostenpositionen ohne verbaute Anlage: {0}</value>
+  </data>
+  <data name="WPI_BTN_KOSTEN" xml:space="preserve">
+    <value>Kosten bearbeiten…</value>
+  </data>
+  <data name="WPI_KOSTEN_SUMMEN" xml:space="preserve">
+    <value>Invest {0:N0} € · Betrieb {1:N0} €/a</value>
   </data>
 </root>
