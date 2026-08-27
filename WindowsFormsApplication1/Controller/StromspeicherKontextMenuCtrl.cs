@@ -244,7 +244,8 @@ namespace WindowsFormsApplication1
 
             frm.list_spmodel.Clear();
             ListViewItem item = listView_SP.Items[indexes[0]];
-            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID=" + AnlagenId(item));
+            int idAnlage = AnlagenId(item);
+            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID=" + idAnlage);
             if (werzctrl.rows <= 0) return;
 
             // Vollstaendig gelesenes Modell durchreichen - dieselbe Ursache wie im
@@ -260,10 +261,8 @@ namespace WindowsFormsApplication1
 
             if (frm.DialogResult == DialogResult.OK)
             {
-                WizardCtrl wizctrl = new WizardCtrl();
                 // Datenbank aktualisieren
-                wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
-                wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_spmodel);
+                BearbeiteteAnlageZurueckschreiben(idAnlage, id_type, frm.list_spmodel);
 
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
@@ -271,6 +270,56 @@ namespace WindowsFormsApplication1
 
                 Program.mainfrm.SetSPControl(m_szProjektname);
             }
+        }
+
+        /// <summary>
+        /// Schreibt die bearbeitete Anlagenzeile ueber den Bestandsweg zurueck, ohne die
+        /// uebrigen Zeilen des Typs zu verlieren: alle Zeilen des Typs laden, die
+        /// bearbeitete darin ersetzen und die VOLLSTAENDIGE Liste neu schreiben -
+        /// dasselbe Muster wie <c>WPKontextMenuCtrl.ContextMenuItemBearbeiten_Click</c>.
+        /// </summary>
+        /// <remarks>
+        /// Der fruehere Weg (<c>Del_Projekt_Waermeerzeuger(Projekt, Typ)</c> und dann
+        /// <c>Add_WP_Waermeerzeuger</c> mit genau EINER Zeile) loeschte ALLE Anlagenzeilen
+        /// des Typs und legte nur die bearbeitete wieder an. Seit AP9 ist jede weitere
+        /// Speichervariante genau so eine Zeile (Kommentarblock unten) - die uebrigen
+        /// Varianten des Projekts waren damit weg, mitsamt ihrer
+        /// <c>Tab_StromspeicherVariante</c>-Saetze (Loeschweitergabe). Die AP9b-Rettung
+        /// aendert daran nichts: Sie stellt Betriebsparameter nur auf Anlagenzeilen
+        /// zurueck, die die Add-Liste erneut enthaelt.
+        /// </remarks>
+        private void BearbeiteteAnlageZurueckschreiben(int idAnlage, int id_type,
+                                                       List<WErzeugerModel> bearbeitet)
+        {
+            // Ohne bearbeitete Zeile gibt es nichts zu schreiben - Del + Add mit leerer
+            // Liste waere genau der Rundumschlag, den diese Methode ausschliesst.
+            if (bearbeitet == null || bearbeitet.Count == 0) return;
+
+            WErzeugerCtrl alleCtrl = new WErzeugerCtrl();
+            alleCtrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + id_type);
+
+            List<WErzeugerModel> liste = new List<WErzeugerModel>();
+            bool ersetzt = false;
+            for (int i = 0; i < alleCtrl.rows; i++)
+            {
+                if (alleCtrl.items[i].ID == idAnlage)
+                {
+                    liste.Add(bearbeitet[0]);
+                    ersetzt = true;
+                }
+                else
+                {
+                    liste.Add(alleCtrl.items[i]);
+                }
+            }
+
+            // Die Zeile ist zwischenzeitlich nicht mehr da (etwa parallel geloescht):
+            // Die bearbeitete kommt wie bisher (wieder) hinein, statt still zu verfallen.
+            if (!ersetzt) liste.Add(bearbeitet[0]);
+
+            WizardCtrl wizctrl = new WizardCtrl();
+            wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
+            wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, liste);
         }
 
         // =====================================================================
