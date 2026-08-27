@@ -1738,3 +1738,60 @@ dadurch **byteweise identisch** mit der bisherigen.
 | `KiChatService.MODELL` (z. B. `gemini-2.5-flash-lite`) | **Anbieterbezeichnung**, kein Übersetzungsgut; geht als `{0}` in die Modellzeile. |
 | `KI_AKT_WEGB_EINSTELLUNG` | **Bestand** — die Checkbox war schon vor dieser Etappe lokalisiert und behält ihren Schlüssel. |
 | Registrierungs- und Ablagenamen in `KiChatService` | **Persistenz**, keine Anzeige. |
+---
+
+## Nachtrag Paket S2 — Warnkriterienkatalog (27.08.2026)
+
+Paket S2 setzt den **Warnkriterienkatalog W1–W5** aus Konzept 6.2 (Entscheidung F6) um. Neu sind
+**14 Schlüssel**, **einer entfällt** (K2-O5); Bestand danach **2571 Schlüssel** in beiden `.resx`
+und in `Resource.Designer.cs`.
+
+Neues Präfix `SIMWARN_*` — die Texte des Katalogs. Sie erscheinen an **drei** Stellen mit
+demselben Wortlaut: im Senkendialog beim Speichern, als Mouseover des Warn-Chips auf der
+Erzeugerkarte und als Zeile im Laufprotokoll. Genau deshalb liegen sie im Katalog und nicht an
+einer der drei Stellen.
+
+### Neu (14)
+
+| Schlüssel | DE | EN | Fundstellen |
+|---|---|---|---|
+| `SIMWARN_W1_ZIEL_AUSSERHALB_SET` | Anlage „{0}" (Rang {1}): Der Speicher „{2}" wird als {3} geladen, sein Klassen-Set lautet aber {4}. Der Kanal {5} fehlt — … | Unit "{0}" (rank {1}): … | `Warnkriterien.ZeilePruefen` |
+| `SIMWARN_W2_BAUFORM_WIDERSPRUCH` | Speicher „{0}": Die Bauform „{1}" ist auf Warmwasser ausgelegt, das Klassen-Set lautet aber {2}. … | Storage "{0}": design type "{1}" … | `Warnkriterien.SpeicherPruefen` |
+| `SIMWARN_W3_VORLAUF_ZU_NIEDRIG` | Anlage „{0}": Der Erzeuger-Vorlauf {1} °C liegt unter dem wirksamen Vorlauf {2} °C des Zielspeichers „{3}". … | Unit "{0}": the generator flow temperature … | `Warnkriterien.ZeilePruefen` |
+| `SIMWARN_W5_QUELLE_OHNE_LADER` | Anlage „{0}": Der Speicher „{1}" ist ihre Wärmequelle, wird aber von keiner Anlage dieses Projekts geladen. … | Unit "{0}": storage "{1}" is its heat source … | `Warnkriterien.QuelleOhneLaderPruefen` |
+| `SIMWARN_HART_RING` | Die Quellbezüge der Pufferspeicher bilden einen RING: {0}. … | The buffer-storage source references form a LOOP: {0}. … | `Warnkriterien.RingPruefen` |
+| `SIMWARN_HART_LEERES_SET` | Speicher „{0}": Das Klassen-Set ist leer — kein Kanal entlädt ihn. … | Storage "{0}": the class set is empty … | `Warnkriterien.SpeicherPruefen` |
+| `SIMWARN_TRENNER` | `␠+␠` | `␠+␠` | `Warnkriterien.Verbinden` — der Verbinder zwischen zwei Kanalnamen („Heizung + Brauchwasser"). Eigener Schlüssel, weil er zwischen **übersetzten** Wörtern steht. |
+| `SIMWARN_DIALOG_KOPF` | Die Zuordnung ist zulässig und wird gespeichert, gilt aber als unplausibel: | The assignment is permitted and will be saved, but it is considered implausible: | `Form_Waermesenke.btnOk_Click` |
+| `SIMWARN_KARTE_CHIP` | Konfiguration prüfen | check configuration | `Form_Simulation_Config.Karten.WarnChip` |
+| `SIMWARN_KARTE_CHIP_TIP` | Der Warnkriterienkatalog (Konzept 6.2) meldet zu dieser Anlage: | The warning-criteria catalogue (concept 6.2) reports for this unit: | wie oben |
+| `PSP_KLASSENSET_LEER` | ohne Nutzung | no usage | `Warnkriterien.KlassenSetAnzeige` — die Anzeige des LEEREN Sets. |
+| `SIM_PUFFERGRUPPE_KOPF` | `— {0} —` | `— {0} —` | `Form_Waermesenke.FuelleCombo` — Gruppenkopf der nach Klassen-Set gruppierten Speicherauswahl. |
+| `PSP_MELDUNG_KLASSENSETWECHSEL` | Die Nutzung des Pufferspeichers „{0}" wird von {1} auf {2} umgestellt. … | The usage of buffer storage "{0}" is being changed … | `Form_PufferSp_Projekt.KlassenSetWechselBestaetigt` |
+| `PSP_TITEL_KLASSENSET_AENDERN` | Nutzung ändern | Change usage | wie oben |
+
+### Entfallen (1)
+
+| Schlüssel | Grund |
+|---|---|
+| `PSP_FEHLER_VERWENDUNG_PFLICHT` | **Ticket K2-O5.** „Die Verwendung ist ein Pflichtfeld: Heizung oder Brauchwasser (Konzept 5.1)." Repo-weit ohne Fundstelle — der Dialog `Form_PufferSp_Projekt` prüft seit Paket K2 das **Klassen-Set** (mindestens ein Häkchen) und nicht mehr die Verwendungs-ComboBox, und der Text nennt nur zwei der drei Klassen. Aus `Resource.resx`, `Resource.en-US.resx` und `Resource.Designer.cs` entfernt. |
+
+### Wiederverwendet statt neu
+
+| Fall | Schlüssel | Grund |
+|---|---|---|
+| Kriterium `HART_KURZSCHLUSS` | `SIM_PUFFER_QUELLE_UND_SENKE` | Der Katalog übernimmt den Guard aus `Form_Waermesenke.ListePruefen`. Ein eigener Text hätte denselben Sachverhalt zweimal formuliert — und die Dialogmeldung hätte sich für den Anwender ohne Grund geändert. |
+| Dritter Abnehmerknoten im Schema | `KANAL_PROZESS_ANZEIGE` | „Prozesswärme" steht bereits als Kanalname im Katalog; ein zweiter Schlüssel für dasselbe Wort wäre eine Gabelung beim Übersetzen. |
+| Prozess-Badge der Speicherknoten | `KANAL_PROZESS_ANZEIGE` | wie oben. |
+
+### Ohne Fundstelle seit S2 (nicht entfernt)
+
+Drei Schlüssel der abgelösten **Verwendungs-Sperre** stehen ohne Fundstelle da. Sie werden hier
+nur vermerkt und **nicht** entfernt: Die Alt-Verwendung selbst wird erst mit Paket A1
+(Schritt 51) stillgelegt, und der Aufräumschnitt gehört in dasselbe Paket.
+
+| Schlüssel | Bis wann benutzt |
+|---|---|
+| `SIM_PUFFER_VERWENDUNG_PASST_NICHT` | `WaermesenkeClass.PufferPasst` — die dritte Prüfung ist mit S2 entfallen (Konzept 6.2). |
+| `PSP_MELDUNG_VERWENDUNGSWECHSEL` | `Form_PufferSp_Projekt.VerwendungswechselBestaetigt` — abgelöst durch `PSP_MELDUNG_KLASSENSETWECHSEL` (K2-O8). |
+| `PSP_TITEL_VERWENDUNG_AENDERN` | wie oben, abgelöst durch `PSP_TITEL_KLASSENSET_AENDERN`. |

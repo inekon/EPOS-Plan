@@ -661,9 +661,6 @@ Ohne Quellpuffer steht hier 0,00.</value>
   <data name="PSP_FEHLER_VERLUSTE" xml:space="preserve">
     <value>Die Bereitschaftsverluste müssen eine Zahl ≥ 0 sein [kWh/24h].</value>
   </data>
-  <data name="PSP_FEHLER_VERWENDUNG_PFLICHT" xml:space="preserve">
-    <value>Die Verwendung ist ein Pflichtfeld: Heizung oder Brauchwasser (Konzept 5.1).</value>
-  </data>
   <data name="PSP_FEHLER_VOLUMEN" xml:space="preserve">
     <value>Bitte ein Gesamtvolumen in Litern eintragen (ganze Zahl größer 0).</value>
   </data>
@@ -8019,5 +8016,53 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
   </data>
   <data name="KANAL_PROZESS_ANZEIGE" xml:space="preserve">
     <value>Prozesswärme</value>
+  </data>
+  <data name="SIMWARN_W1_ZIEL_AUSSERHALB_SET" xml:space="preserve">
+    <value>Anlage „{0}" (Rang {1}): Der Speicher „{2}" wird als {3} geladen, sein Klassen-Set lautet aber {4}. Der Kanal {5} fehlt — was mit diesem Zweck geladen wird, entlädt der Speicher nie.</value>
+  </data>
+  <data name="SIMWARN_W2_BAUFORM_WIDERSPRUCH" xml:space="preserve">
+    <value>Speicher „{0}": Die Bauform „{1}" ist auf Warmwasser ausgelegt, das Klassen-Set lautet aber {2}. Die Warmwasserseite des Behälters bleibt ungenutzt.</value>
+  </data>
+  <data name="SIMWARN_W3_VORLAUF_ZU_NIEDRIG" xml:space="preserve">
+    <value>Anlage „{0}": Der Erzeuger-Vorlauf {1} °C liegt unter dem wirksamen Vorlauf {2} °C des Zielspeichers „{3}". Der Erzeuger kann den Speicher nie auf Solltemperatur laden.</value>
+  </data>
+  <data name="SIMWARN_W5_QUELLE_OHNE_LADER" xml:space="preserve">
+    <value>Anlage „{0}": Der Speicher „{1}" ist ihre Wärmequelle, wird aber von keiner Anlage dieses Projekts geladen. Nach der Startfüllung liefe die Quelle leer.</value>
+  </data>
+  <data name="SIMWARN_HART_RING" xml:space="preserve">
+    <value>Die Quellbezüge der Pufferspeicher bilden einen RING: {0}. Es gibt keine Rechenreihenfolge, in der jeder Erzeuger nach seinem Puffer rechnet — bitte die Wärmequelle einer der beteiligten Anlagen ändern.</value>
+  </data>
+  <data name="SIMWARN_HART_LEERES_SET" xml:space="preserve">
+    <value>Speicher „{0}": Das Klassen-Set ist leer — kein Kanal entlädt ihn. Mindestens eine Nutzung (Heizung, Brauchwasser, Prozesswärme) muss gesetzt sein.</value>
+  </data>
+  <data name="SIMWARN_TRENNER" xml:space="preserve">
+    <value> + </value>
+  </data>
+  <data name="SIMWARN_DIALOG_KOPF" xml:space="preserve">
+    <value>Die Zuordnung ist zulässig und wird gespeichert, gilt aber als unplausibel:</value>
+  </data>
+  <data name="SIMWARN_KARTE_CHIP" xml:space="preserve">
+    <value>Konfiguration prüfen</value>
+  </data>
+  <data name="SIMWARN_KARTE_CHIP_TIP" xml:space="preserve">
+    <value>Der Warnkriterienkatalog (Konzept 6.2) meldet zu dieser Anlage:</value>
+  </data>
+  <data name="PSP_KLASSENSET_LEER" xml:space="preserve">
+    <value>ohne Nutzung</value>
+  </data>
+  <data name="SIM_PUFFERGRUPPE_KOPF" xml:space="preserve">
+    <value>— {0} —</value>
+  </data>
+  <data name="PSP_MELDUNG_KLASSENSETWECHSEL" xml:space="preserve">
+    <value>Die Nutzung des Pufferspeichers „{0}" wird von {1} auf {2} umgestellt.
+
+Der Speicher ist zugeordnet:
+  • {3}
+
+Zuordnungen auf einen Kanal, den der Speicher danach nicht mehr bedient, werden künftig als Warnung gemeldet (Kriterium W1) — gesperrt sind sie nicht mehr.
+Nutzung trotzdem ändern?</value>
+  </data>
+  <data name="PSP_TITEL_KLASSENSET_AENDERN" xml:space="preserve">
+    <value>Nutzung ändern</value>
   </data>
 </root>

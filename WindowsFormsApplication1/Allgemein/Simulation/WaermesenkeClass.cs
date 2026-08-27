@@ -1235,7 +1235,24 @@ namespace WindowsFormsApplication1
             return summe;
         }
 
-        /// <summary>Existiert der Puffer im Projekt und passt seine Verwendung zum Ziel?</summary>
+        /// <summary>
+        /// Existiert der gewählte Puffer überhaupt und gehört er zu DIESEM Projekt?
+        ///
+        /// <para><b>PAKET S2 — die dritte Prüfung ist entfallen</b> (Konzept 6.2,
+        /// Entscheidung F6). Bis S1 verlangte diese Methode zusätzlich, dass die
+        /// <c>Verwendung</c> des Speichers GENAU zum Senkenziel passt: ein Kombi-Ziel nur
+        /// auf einen Kombi-Puffer, ein Heizungs-Ziel nur auf einen Heizungs-Puffer
+        /// (Meldung <c>SIM_PUFFER_VERWENDUNG_PASST_NICHT</c>). Das war die SPERRE, die
+        /// das Konzept ausdrücklich aufhebt: Zuordnungen sind frei, unplausible bekommen
+        /// eine Warnung. An ihre Stelle tritt Kriterium W1 des
+        /// <see cref="Warnkriterien"/>-Katalogs — es prüft dieselbe Frage gegen das
+        /// KLASSEN-SET (und damit auch für das Ziel <c>PufferProzess</c>, für das es gar
+        /// keine <c>Verwendung</c> gibt) und meldet sie im Dialog und beim Laufstart.</para>
+        ///
+        /// <para>Was BLEIBT, sind die beiden echten Blocker: kein Speicher gewählt und
+        /// ein Speicher, der einem anderen Projekt gehört. Beide führen zum Absprung in
+        /// die Pufferverwaltung (<c>AbsprungPufferVerwaltung</c>).</para>
+        /// </summary>
         private static bool PufferPasst(int idProjekt, int idPuffer, string ziel,
                                         string rolle, out string fehler)
         {
@@ -1259,15 +1276,7 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
-            if (!string.Equals(WirksameVerwendung(p), verlangt, StringComparison.OrdinalIgnoreCase))
-            {
-                fehler = string.Format(
-                    Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_PUFFER_VERWENDUNG_PASST_NICHT),
-                    p.Bezeichner, VerwendungAnzeige(WirksameVerwendung(p)),
-                    rolle, VerwendungAnzeige(verlangt));
-                return false;
-            }
-
+            // PAKET S2: Hier stand die Verwendungsprüfung — siehe Kopfkommentar.
             return true;
         }
 

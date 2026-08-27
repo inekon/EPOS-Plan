@@ -36,5 +36,25 @@ namespace WindowsFormsApplication1
             if (string.IsNullOrEmpty(text)) return text;
             return text.Replace("\r\n", "\n").Replace("\n", Environment.NewLine);
         }
+
+        /// <summary>
+        /// Das Gegenstück für ZEILENORIENTIERTE Ausgaben: alle Umbrüche werden zu einem
+        /// Leerzeichen, Mehrfachleerzeichen fallen zusammen.
+        ///
+        /// <para>Gebraucht wird das, wo ein Text, der für eine MessageBox mit Absätzen
+        /// geschrieben ist, in eine EINZEILE muss — das Simulationsprotokoll
+        /// (<see cref="SimulationProtokoll"/>) führt eine Meldung je Zeile, und ein
+        /// eingebetteter Umbruch zerlegte sie dort in zwei Meldungen, von denen die
+        /// zweite ohne Kopf dasteht. Der Wortlaut bleibt derselbe; nur die Absätze
+        /// werden zu Satzabständen.</para>
+        /// </summary>
+        public static string Einzeilig(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+
+            string s = text.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", " ");
+            while (s.Contains("  ")) s = s.Replace("  ", " ");
+            return s.Trim();
+        }
     }
 }

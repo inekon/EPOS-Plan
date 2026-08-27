@@ -612,6 +612,11 @@ namespace WindowsFormsApplication1
                 SpalteLeeren(flow_Erzeuger, null);
                 _verfuegbarVersteckt = 0;
 
+                // PAKET S2: die Warnbefunde des Projekts EINMAL je Auffrischung — nicht
+                // je Karte. Der Katalog liest Anlagen, Senkenlisten und Speicherzeilen;
+                // ein Aufruf je Karte wäre bei fünf Erzeugern fünfmal dieselbe Auskunft.
+                WarnbefundeSammeln();
+
                 WaermeerzeugerGruppe();
                 StromGruppe(label2.Text, comboBox5, checkBox5,
                             ErzeugerKatalog.STROMERZEUGER, WizardItemClass.PV_TYP);
@@ -1266,6 +1271,7 @@ namespace WindowsFormsApplication1
             QuellenChip(info, chips);
             SenkenChips(info, chips);
             TemperaturChip(info, chips);
+            WarnChip(info, chips);
 
             if (info.IstWaermepumpe)
             {
@@ -1286,6 +1292,67 @@ namespace WindowsFormsApplication1
             }
 
             return chips;
+        }
+
+        /// <summary>
+        /// PAKET S2 — die Befunde des Warnkriterienkatalogs (Konzept 6.2) je Anlage,
+        /// EINMAL je Auffrischung der Kartenspalte gesammelt.
+        ///
+        /// <para>Aufgenommen werden nur Befunde MIT Anlagenbezug. Die rein
+        /// speicherbezogenen (W2, leeres Klassen-Set) und der projektweite Ring gehören
+        /// nicht an eine Erzeugerkarte; sie stehen im Laufprotokoll und — soweit sie den
+        /// Speicher betreffen — künftig an der Speicherkarte (Paket P2).</para>
+        /// </summary>
+        private Dictionary<int, List<string>> _warnbefunde = new Dictionary<int, List<string>>();
+
+        private void WarnbefundeSammeln()
+        {
+            _warnbefunde = new Dictionary<int, List<string>>();
+            if (m_ID_Projekt <= 0) return;
+
+            foreach (Warnbefund b in Warnkriterien.PruefeProjekt(m_ID_Projekt))
+            {
+                if (b == null || b.ID_Anlage <= 0 || string.IsNullOrEmpty(b.Text)) continue;
+
+                List<string> texte;
+                if (!_warnbefunde.TryGetValue(b.ID_Anlage, out texte))
+                {
+                    texte = new List<string>();
+                    _warnbefunde[b.ID_Anlage] = texte;
+                }
+
+                string zeile = Zeilenumbruch.Einzeilig(b.Text);
+                if (!texte.Contains(zeile)) texte.Add(zeile);
+            }
+        }
+
+        /// <summary>
+        /// Der WARN-Chip einer Erzeugerkarte (Konzept 6.2): ein dezentes Amber-Chip mit
+        /// den Befunden im Mouseover, sonst gar nichts.
+        ///
+        /// <para><b>Kein Modaldialog beim Öffnen.</b> Der Katalog meldet
+        /// Konfigurationen, die zulässig sind — sie zu blockieren oder mit einer
+        /// MessageBox zu quittieren, wäre genau die Bevormundung, die Entscheidung F6
+        /// abgeschafft hat. Die ausführliche Meldung bekommt der Anwender dort, wo er
+        /// die Zuordnung einstellt (Senkendialog) und im Laufprotokoll.</para>
+        ///
+        /// <para>Der Chip führt in den SENKENDIALOG (<c>ChipZiel.Senke</c>): Alle
+        /// anlagenbezogenen Kriterien — W1, W3 und der Kurzschluss — hängen an einer
+        /// Senkenzeile, und dort wird sie geändert.</para>
+        /// </summary>
+        private void WarnChip(AnlagenInfo info, List<ErzeugerKarte.ChipDaten> chips)
+        {
+            List<string> texte;
+            if (!_warnbefunde.TryGetValue(info.ID, out texte) || texte.Count == 0) return;
+
+            chips.Add(new ErzeugerKarte.ChipDaten
+            {
+                Text = MyResource.Resource.SIMWARN_KARTE_CHIP,
+                Stil = ErzeugerKarte.ChipStil.Warnung,
+                Hinweis = MyResource.Resource.SIMWARN_KARTE_CHIP_TIP + Environment.NewLine +
+                          "• " + string.Join(Environment.NewLine + "• ", texte.ToArray()),
+                Ziel = ErzeugerKarte.ChipZiel.Senke
+            });
         }
 
         /// <summary>
