@@ -22,7 +22,7 @@ außerhalb des Rechenkerns bzw. in Vorschau-/Speicher-/Kopierwegen.
 
 | # | Punkt | Ziel |
 |---|---|---|
-| FR-1 | **Puffer-Verlust im Del+Add-Speicherweg** (`WizardCtrl.Del_Projekt_Waermeerzeuger` löscht `ID_Type = 12`, `Add_WP_Waermeerzeuger` schreibt nur Erzeuger zurück, `GeraeteWaisen.Aufraeumen` räumt die Puffer; Feldbeleg: Kopien 1027/1009 mit `WS_Ziel='PufferHeizung'` und `WS_ID_Puffer = NULL`) | **S1, vorrangig** |
+| FR-1 | **Puffer-Verlust im Del+Add-Speicherweg** (`WizardCtrl.Del_Projekt_Waermeerzeuger` löscht `ID_Type = 12`, `Add_WP_Waermeerzeuger` schreibt nur Erzeuger zurück, `GeraeteWaisen.Aufraeumen` räumt die Puffer; Feldbeleg: Kopien 1027/1009 mit `WS_Ziel='PufferHeizung'` und `WS_ID_Puffer = NULL`) | **behoben 27.08.2026**: typlose Del-Überladung verschont `ID_Type = 12`, Wizard nimmt die 12er-Modelle aus der Speicherliste — Beleg und Wirkungsanalyse in [`FR1_PufferVerlust_Protokoll.md`](FR1_PufferVerlust_Protokoll.md) |
 | FR-2 | Einheiten-Bruch Ergebnisdialog Stromverbraucher: Vorschau rechnet kWh-Stundenwerte, Projektpfad MWh — beide beschriftet MWh (Altbestand) | Einzelfix |
 | FR-3 | `SIMQ_MSG_LUFT_WASSER` um den Bauart-Änderungsweg ergänzen (de+en) | Paket L |
 | FR-4 | Altlast-Kostenpositionen mit toten/fremden Ankern in 1040–1042 (u. a. 3.000,50 € Puffer in 1041, 3.775 € Solar mit projektfremdem Anker) — Anwenderentscheid via Kostenverwaltung („ohne Anlagenzuordnung" umhängen) | Anwender |
