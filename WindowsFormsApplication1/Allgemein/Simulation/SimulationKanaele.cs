@@ -385,8 +385,9 @@ namespace WindowsFormsApplication1
     /// Oberfläche kanalbezogener Parameter blieben ein eigener Ausbauschritt.
     ///
     /// Die Reihenfolge der Indizes ist KEINE Rangfolge. Die Knappheitsreihenfolge des
-    /// Abzugs (Konzept 4.3: Brauchwasser → Prozess → Heizung) ist eine eigene Größe und
-    /// gehört nach K2.
+    /// Abzugs (Konzept 4.3: Brauchwasser → Prozess → Heizung) ist eine eigene Größe —
+    /// seit Paket K2 steht sie als <see cref="KnappheitsReihenfolge"/> daneben und wird
+    /// je Lauf aus der Projekteinstellung gebildet.
     /// </summary>
     public static class Kanal
     {
@@ -438,6 +439,111 @@ namespace WindowsFormsApplication1
                 default: return DbWerte.KANAL_HEIZUNG;
             }
         }
+
+        // ==============================================================
+        // KNAPPHEITSREIHENFOLGE (Konzept 4.3, Entscheidung F10 — Paket K2)
+        // ==============================================================
+
+        /// <summary>
+        /// Vorbelegung der Knappheitsreihenfolge: BRAUCHWASSER → PROZESS → HEIZUNG
+        /// (Konzept 4.3). Warmwasser zuerst ist das Komfortkriterium der App
+        /// („Beides (Warmwasser zuerst)"), Prozess vor Heizung die Abwägung
+        /// Produktionsausfall gegen Raumkomfort.
+        ///
+        /// Das Feld ist <c>private</c> und wird NIE herausgegeben: Ein öffentliches
+        /// <c>int[]</c> wäre veränderlich, und ein einziger Schreibzugriff irgendwo im
+        /// Haus verstellte die Abzugsregel des gesamten Rechenkerns. Kopien liefert
+        /// <see cref="KnappheitVorgabe"/>; die einzige Stelle, die das Feld direkt liest,
+        /// ist <see cref="KnappheitsReihenfolge"/> selbst.
+        /// </summary>
+        private static readonly int[] KNAPPHEIT_STANDARD = { BRAUCHWASSER, PROZESS, HEIZUNG };
+
+        /// <summary>Eine EIGENE Kopie der Vorbelegung {B, P, H} (siehe <see cref="KNAPPHEIT_STANDARD"/>).</summary>
+        public static int[] KnappheitVorgabe()
+        {
+            return (int[])KNAPPHEIT_STANDARD.Clone();
+        }
+
+        /// <summary>
+        /// Parst die projektweite Übersteuerung der Knappheitsreihenfolge
+        /// (<c>Tab_Einstellungen.Kanal_Knappheitsreihenfolge</c>, Konzept 4.3/F10) in ein
+        /// Feld von Kanalindizes.
+        ///
+        /// FORMAT: sprachneutrale ASCII-Schlüssel, getrennt durch Semikolon —
+        /// <c>BRAUCHWASSER;PROZESS;HEIZUNG</c>. Das sind KEINE Anzeigetexte und keine
+        /// Persistenzwerte der Kanalspalte (die heißen deutsch „Brauchwasser" /
+        /// „Prozesswaerme" / „Heizung", <see cref="DbWerte.KANAL_HEIZUNG"/> &amp; Co.),
+        /// sondern Steuerwerte nach der zweiten Schicht der Drei-Schichten-Regel; sie
+        /// stehen als <c>DbWerte.KNAPPHEIT_*</c>. Komma wird als Trenner mitakzeptiert —
+        /// die Spalte wird von Hand gepflegt, und ein Komma ist der wahrscheinlichste
+        /// Tippfehler.
+        ///
+        /// GÜLTIG ist ausschließlich eine Reihenfolge, die JEDEN Kanal GENAU EINMAL nennt.
+        /// Alles andere (leer, unbekannter Schlüssel, doppelter Kanal, fehlender Kanal)
+        /// ergibt die Vorbelegung {B, P, H} und EINE Protokollwarnung je Lauf. Eine
+        /// unvollständige Reihenfolge zu „ergänzen" wäre die schlechtere Wahl: Der
+        /// Anwender bekäme eine Ordnung, die er nicht eingestellt hat, und keine Meldung
+        /// darüber, dass seine Eingabe unbrauchbar war.
+        /// </summary>
+        /// <param name="spec">Rohtext der Projekteinstellung; <c>null</c>/leer = Vorbelegung.</param>
+        public static int[] KnappheitsReihenfolge(string spec)
+        {
+            if (string.IsNullOrWhiteSpace(spec)) return KnappheitVorgabe();
+
+            string[] teile = spec.Split(new char[] { ';', ',' },
+                                        StringSplitOptions.RemoveEmptyEntries);
+
+            int[] ordnung = new int[ANZAHL];
+            bool[] gesehen = new bool[ANZAHL];
+            int n = 0;
+            bool ok = teile.Length == ANZAHL;
+
+            for (int i = 0; ok && i < teile.Length; i++)
+            {
+                int kanal = AusSchluessel(teile[i]);
+                if (kanal < 0 || gesehen[kanal]) { ok = false; break; }
+
+                gesehen[kanal] = true;
+                ordnung[n++] = kanal;
+            }
+
+            if (!ok || n != ANZAHL)
+            {
+                SimulationProtokoll.Aktuell.WarnungEinmal(
+                    "knappheitsreihenfolge-ungueltig",
+                    "Knappheitsreihenfolge: Die Projekteinstellung „" + spec.Trim() +
+                    "\" ist unbrauchbar - erwartet werden die drei Schlüssel " +
+                    DbWerte.KNAPPHEIT_BRAUCHWASSER + ";" + DbWerte.KNAPPHEIT_PROZESS + ";" +
+                    DbWerte.KNAPPHEIT_HEIZUNG + " in beliebiger Reihenfolge, jeder genau " +
+                    "einmal. Gerechnet wird mit der Vorbelegung " +
+                    Name(BRAUCHWASSER) + " -> " + Name(PROZESS) + " -> " + Name(HEIZUNG) + ".");
+                return KnappheitVorgabe();
+            }
+
+            return ordnung;
+        }
+
+        /// <summary>
+        /// Abbildung STEUERWERT (<c>DbWerte.KNAPPHEIT_*</c>) → Kanalindex; −1 = unbekannt.
+        ///
+        /// Der Vergleich ist tolerant gegen Groß-/Kleinschreibung und umgebende
+        /// Leerzeichen (die Spalte wird von Hand gepflegt), aber NICHT gegen andere
+        /// Schreibweisen: Ein unbekannter Schlüssel muss auffallen, sonst rechnete der
+        /// Lauf still mit einer anderen Reihenfolge als der eingestellten.
+        /// </summary>
+        private static int AusSchluessel(string schluessel)
+        {
+            if (string.IsNullOrWhiteSpace(schluessel)) return -1;
+
+            string wert = schluessel.Trim();
+            if (string.Equals(wert, DbWerte.KNAPPHEIT_BRAUCHWASSER, StringComparison.OrdinalIgnoreCase))
+                return BRAUCHWASSER;
+            if (string.Equals(wert, DbWerte.KNAPPHEIT_PROZESS, StringComparison.OrdinalIgnoreCase))
+                return PROZESS;
+            if (string.Equals(wert, DbWerte.KNAPPHEIT_HEIZUNG, StringComparison.OrdinalIgnoreCase))
+                return HEIZUNG;
+            return -1;
+        }
     }
 
     /// <summary>
@@ -445,10 +551,12 @@ namespace WindowsFormsApplication1
     /// die Verallgemeinerung von <see cref="Waermekanaele"/> auf <see cref="Kanal.ANZAHL"/>
     /// indizierte Kanäle.
     ///
-    /// Sie ersetzt <see cref="Waermekanaele"/> NICHT sofort: Die Kaskade rechnet bis
-    /// Paket K2 zweikanalig weiter und bekommt ihre Kanäle über die Übergangsabbildung
-    /// <c>SimulationWaermebedarf.Kanaele()</c>. Der Kanalsatz ist die Größe, an der K2
-    /// direkt andockt (<c>SimulationWaermebedarf.KanaeleDrei()</c>).
+    /// SEIT PAKET K2 ist sie die Transportstruktur des GANZEN Rechenwegs: Die Kaskade
+    /// holt ihre Kanäle über <c>SimulationWaermebedarf.KanaeleDrei()</c> und schreibt die
+    /// Restbedarfe in dieselbe Struktur zurück. Die Übergangsabbildung
+    /// <c>SimulationWaermebedarf.Kanaele()</c> auf <see cref="Waermekanaele"/> hat damit
+    /// keinen Aufrufer mehr; <see cref="Waermekanaele"/> bleibt allein als die in
+    /// Konzept 6.1 spezifizierte Kanalarithmetik samt ihrem Selbsttest bestehen.
     ///
     /// Feldgrößen wie im gesamten Rechenkern fest verdrahtet: 8760 Stunden,
     /// <c>float</c>-Vektoren mit Zwischenrechnung in <c>double</c>.
@@ -645,6 +753,10 @@ namespace WindowsFormsApplication1
         ///      Energieprobe des Laufs prüft (Konzept 11.3)
         ///   6. <see cref="Kanal.AusText"/>: die drei Persistenzwerte, dazu leer, null
         ///      und Unfug → Heizkanal
+        ///   7. <see cref="Kanal.KnappheitsReihenfolge"/> (Paket K2): Vorbelegung
+        ///      {B, P, H} als EIGENER Vektor, gültige Übersteuerung, tolerante
+        ///      Schreibweise — und Rückfall auf die Vorbelegung bei jeder unbrauchbaren
+        ///      Eingabe (leer, Unfug, unvollständig, doppelt, zu viele)
         /// </summary>
         public static string Selbsttest()
         {
@@ -767,6 +879,52 @@ namespace WindowsFormsApplication1
             sb.AppendLine("6. Kanal.AusText(): Persistenzwerte und Vorbelegung Heizung = " +
                           (textOk ? "OK" : "FEHLER"));
             if (!textOk) allesOk = false;
+
+            // --- 7. Kanal.KnappheitsReihenfolge (Paket K2, F10) -------------
+            // Zugesichert: die Vorbelegung, eine gültige Übersteuerung, und dass JEDE
+            // unbrauchbare Eingabe auf die Vorbelegung zurückfällt statt eine halbe
+            // Ordnung zu liefern (fehlender Kanal, doppelter Kanal, Unfug, leer).
+            int[] vorgabe = Kanal.KnappheitVorgabe();
+            bool knappOk = vorgabe.Length == Kanal.ANZAHL &&
+                           vorgabe[0] == Kanal.BRAUCHWASSER && vorgabe[1] == Kanal.PROZESS &&
+                           vorgabe[2] == Kanal.HEIZUNG;
+
+            // Eigener Vektor? (dieselbe Aliasing-Falle wie bei Summe())
+            vorgabe[0] = -1;
+            knappOk &= Kanal.KnappheitVorgabe()[0] == Kanal.BRAUCHWASSER;
+
+            int[] uebersteuert = Kanal.KnappheitsReihenfolge(
+                DbWerte.KNAPPHEIT_HEIZUNG + ";" + DbWerte.KNAPPHEIT_BRAUCHWASSER + ";" +
+                DbWerte.KNAPPHEIT_PROZESS);
+            knappOk &= uebersteuert.Length == Kanal.ANZAHL && uebersteuert[0] == Kanal.HEIZUNG &&
+                       uebersteuert[1] == Kanal.BRAUCHWASSER && uebersteuert[2] == Kanal.PROZESS;
+
+            // Kleinschreibung und Leerzeichen sind zulässig, Komma als Trenner auch.
+            int[] locker = Kanal.KnappheitsReihenfolge(
+                " " + DbWerte.KNAPPHEIT_PROZESS.ToLowerInvariant() + " , " +
+                DbWerte.KNAPPHEIT_HEIZUNG + " ; " + DbWerte.KNAPPHEIT_BRAUCHWASSER);
+            knappOk &= locker[0] == Kanal.PROZESS && locker[1] == Kanal.HEIZUNG &&
+                       locker[2] == Kanal.BRAUCHWASSER;
+
+            string[] unbrauchbar =
+            {
+                null, "", "   ", "Unfug",
+                DbWerte.KNAPPHEIT_BRAUCHWASSER,                                  // unvollständig
+                DbWerte.KNAPPHEIT_BRAUCHWASSER + ";" + DbWerte.KNAPPHEIT_BRAUCHWASSER +
+                    ";" + DbWerte.KNAPPHEIT_HEIZUNG,                             // doppelt
+                DbWerte.KNAPPHEIT_BRAUCHWASSER + ";" + DbWerte.KNAPPHEIT_PROZESS + ";" +
+                    DbWerte.KNAPPHEIT_HEIZUNG + ";" + DbWerte.KNAPPHEIT_HEIZUNG  // zu viele
+            };
+            foreach (string s in unbrauchbar)
+            {
+                int[] r = Kanal.KnappheitsReihenfolge(s);
+                knappOk &= r.Length == Kanal.ANZAHL && r[0] == Kanal.BRAUCHWASSER &&
+                           r[1] == Kanal.PROZESS && r[2] == Kanal.HEIZUNG;
+            }
+
+            sb.AppendLine("7. Kanal.KnappheitsReihenfolge(): Vorbelegung, Übersteuerung und " +
+                          "Rückfall bei unbrauchbarer Eingabe = " + (knappOk ? "OK" : "FEHLER"));
+            if (!knappOk) allesOk = false;
 
             sb.AppendLine();
             sb.AppendLine(allesOk ? "ERGEBNIS: alle Pruefungen bestanden."
@@ -1011,13 +1169,13 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// Transportstruktur der zweikanaligen Kaskade (Konzept 6.1: „kein neuer Datentyp in
+    /// Transportstruktur der DREIKANALIGEN Kaskade (Konzept 6.1: „kein neuer Datentyp in
     /// den Erzeugermodulen, sondern eine Transportklasse in <c>SimulationControl</c>").
     ///
     /// Sie trägt alles, was die Stundenschleife der Reihenfolge-Invariante (6.3) braucht
     /// und was ein Erzeugermodul nicht selbst wissen kann: die Speicher-Registry, die
-    /// Entladereihenfolge je Kanal (3.6), die vorsortierten Ladeaufträge (3.4/3.5) und
-    /// die Senkenzuordnung je Modul (3.1).
+    /// Entladereihenfolge je Kanal (3.6), die Knappheitsreihenfolge des Laufs (4.3), die
+    /// vorsortierten Ladeaufträge (3.4/3.5) und die Senkenzuordnung je Modul (3.1).
     ///
     /// Aufgebaut wird sie EINMAL je Lauf von <c>SimulationControl</c>; die Module lesen
     /// nur. Die Speicherinstanzen sind dieselben Objekte wie in der Registry — es gibt
@@ -1035,11 +1193,40 @@ namespace WindowsFormsApplication1
         /// </summary>
         public List<SimulationPufferspeicher> AlleSpeicher = new List<SimulationPufferspeicher>();
 
-        /// <summary>Heizungs-Puffer in Entladereihenfolge (Konzept 3.6), Phasen A und E.</summary>
-        public List<SimulationPufferspeicher> EntladenHeizung = new List<SimulationPufferspeicher>();
+        /// <summary>
+        /// Entladereihenfolge JE KANAL (Konzept 3.6), Phasen A und E —
+        /// <c>Entladen[<see cref="Kanal.HEIZUNG"/>]</c> usw. Ersetzt seit Paket K2 die
+        /// beiden Einzellisten <c>EntladenHeizung</c>/<c>EntladenBrauchwasser</c>.
+        ///
+        /// Ein Speicher steht in der Liste JEDES Kanals seines Klassen-Sets (Konzept 6.1);
+        /// dieselbe Instanz kann also mehrfach vorkommen — genau das ist der
+        /// Kombispeicher, verallgemeinert. Die Reihenfolge, in der die Kanäle abgearbeitet
+        /// werden, ist die Knappheitsreihenfolge <see cref="Knappheit"/> (4.3).
+        ///
+        /// Die Listen werden im Konstruktor angelegt; das äußere Feld bleibt zuweisbar,
+        /// weil <c>SimulationControl</c> die fertigen Ordnungen einhängt.
+        /// </summary>
+        public List<SimulationPufferspeicher>[] Entladen = new List<SimulationPufferspeicher>[Kanal.ANZAHL];
 
-        /// <summary>Brauchwasser-Puffer in Entladereihenfolge (Konzept 3.6), Phasen A und E.</summary>
-        public List<SimulationPufferspeicher> EntladenBrauchwasser = new List<SimulationPufferspeicher>();
+        /// <summary>
+        /// KNAPPHEITSREIHENFOLGE des Laufs (Konzept 4.3, F10): die Kanalindizes in der
+        /// Ordnung, in der ein knappes Wärmeangebot vergeben wird. Vorbelegung
+        /// {BRAUCHWASSER, PROZESS, HEIZUNG}; übersteuert wird sie projektweit über
+        /// <c>Tab_Einstellungen.Kanal_Knappheitsreihenfolge</c>
+        /// (<see cref="Kanal.KnappheitsReihenfolge"/>).
+        ///
+        /// Sie gilt an DREI Stellen und deshalb nur EINMAL hier: im Abzug
+        /// (<c>Kaskadenschleife.SenkeAbziehen</c>), in der Entladung eines Speichers mit
+        /// mehrelementigem Klassen-Set (Phasen A/E — die verallgemeinerte Kombi-Regel K-1)
+        /// und bei der Abbuchung des Durchsatzbudgets.
+        /// </summary>
+        public int[] Knappheit = Kanal.KnappheitVorgabe();
+
+        public Kaskadenkontext()
+        {
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+                Entladen[k] = new List<SimulationPufferspeicher>();
+        }
 
         /// <summary>
         /// Ladeaufträge in der Reihenfolge für Stunden OHNE PV-Überschuss (Konzept 3.4).
@@ -1090,10 +1277,27 @@ namespace WindowsFormsApplication1
             return pvUeberschuss ? LadenMitPV : LadenOhnePV;
         }
 
-        /// <summary>Entladereihenfolge des Kanals, den ein Speicher mit dieser Verwendung bedient.</summary>
+        /// <summary>
+        /// Entladereihenfolge EINES Kanals (Konzept 3.6). Ein unbekannter Index liefert
+        /// eine leere Liste statt einer Ausnahme — der Rechenkern bleibt dialogfrei, und
+        /// ein Kanal ohne Speicher ist der Normalfall.
+        /// </summary>
+        public List<SimulationPufferspeicher> Entladeordnung(int kanal)
+        {
+            if (Entladen == null || kanal < 0 || kanal >= Entladen.Length || Entladen[kanal] == null)
+                return new List<SimulationPufferspeicher>();
+            return Entladen[kanal];
+        }
+
+        /// <summary>
+        /// ÜBERGANGSBRÜCKE der zweikanaligen Fassung (Paket K2). Sie bleibt allein für
+        /// Aufrufer, die noch in Heiz-/Warmwasser-Begriffen denken; neuer Code benutzt
+        /// <see cref="Entladeordnung(int)"/>. Der PROZESSkanal ist über sie nicht
+        /// erreichbar — das ist Absicht, sie soll nicht wachsen.
+        /// </summary>
         public List<SimulationPufferspeicher> Entladeordnung(bool brauchwasser)
         {
-            return brauchwasser ? EntladenBrauchwasser : EntladenHeizung;
+            return Entladeordnung(brauchwasser ? Kanal.BRAUCHWASSER : Kanal.HEIZUNG);
         }
 
         /// <summary>true, wenn mindestens ein KOMBISPEICHER im Lauf mitrechnet (D5a).</summary>

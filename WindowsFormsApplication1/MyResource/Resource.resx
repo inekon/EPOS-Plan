@@ -607,6 +607,9 @@ Ohne Quellpuffer steht hier 0,00.</value>
   <data name="PSP_FEHLER_EIN_KLEINER_AUS" xml:space="preserve">
     <value>Die Einschaltschwelle muss kleiner als die Abschaltschwelle sein.</value>
   </data>
+  <data name="PSP_FEHLER_KLASSENSET_LEER" xml:space="preserve">
+    <value>Mindestens eine Nutzung muss angehakt sein: Heizung, Brauchwasser oder Prozesswärme. Einen Speicher ohne Nutzung entlädt keine Anlage (Konzept 6.1).</value>
+  </data>
   <data name="PSP_FEHLER_NACHRANG_UEBER_AUS" xml:space="preserve">
     <value>Die Abschaltschwelle für nachrangige Erzeuger darf die Abschaltschwelle nicht überschreiten - sie ist die Reservezone für den Vorrang (Konzept 3.4).</value>
   </data>
@@ -664,6 +667,9 @@ Ohne Quellpuffer steht hier 0,00.</value>
   <data name="PSP_GRUPPE_LADEREIHENFOLGE" xml:space="preserve">
     <value>Ladereihenfolge dieses Speichers (aus den Erzeugerzuordnungen)</value>
   </data>
+  <data name="PSP_HINWEIS_KLASSENSET_OHNE_ALTWERT" xml:space="preserve">
+    <value>Set ohne Alt-Entsprechung — führend sind die Häkchen. Die Verwendung darüber zeigt nur den nächstliegenden Altwert.</value>
+  </data>
   <data name="PSP_KANALWORT_BRAUCHWASSERSPEICHER" xml:space="preserve">
     <value>Brauchwasserspeicher</value>
   </data>
@@ -699,6 +705,9 @@ Ohne Quellpuffer steht hier 0,00.</value>
   </data>
   <data name="PSP_LABEL_GESAMTVOLUMEN" xml:space="preserve">
     <value>Gesamtvolumen [l]:</value>
+  </data>
+  <data name="PSP_LABEL_KLASSENSET" xml:space="preserve">
+    <value>Nutzung (Klassen-Set):</value>
   </data>
   <data name="PSP_LABEL_RUECKLAUF" xml:space="preserve">
     <value>Rücklauf [°C]:</value>

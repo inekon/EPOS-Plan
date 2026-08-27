@@ -111,6 +111,22 @@ namespace WindowsFormsApplication1
                     Convert.ToBoolean(row[SchemaKatalog.SPALTE_EXTRAPOLATION_ERLAUBT]) ||
                     ExtrapolationVorbelegungFehlt();
 
+                // --- Kanal-Knappheitsreihenfolge (Paket K2, Konzept 4.3, F10) ---------
+                //
+                // Drittes Feld nach demselben namensbasierten Muster: Die Ordinalkette
+                // oben endet bei row[22], und sie soll dort enden. Fehlt die Spalte
+                // (Datenbank noch nicht auf Schemastand 49) oder steht dort NULL bzw.
+                // ein Leerwert, gilt DbWerte.KNAPPHEIT_DEFAULT - also genau die
+                // Reihenfolge, die die Kaskade vor diesem Paket fest verdrahtet kannte.
+                //
+                // Wie bei den beiden Feldern darueber wird der Wert in BEIDEN Zweigen
+                // gesetzt und nicht nur bei Treffer: ein wiederverwendetes Model
+                // duerfte sonst die Reihenfolge des zuvor gelesenen Projekts behalten.
+                model.Kanal_Knappheitsreihenfolge = KnappheitsreihenfolgeOderDefault(
+                    dt.Columns.Contains(SchemaKatalog.SPALTE_KANAL_KNAPPHEITSREIHENFOLGE)
+                        ? row[SchemaKatalog.SPALTE_KANAL_KNAPPHEITSREIHENFOLGE]
+                        : null);
+
                 rows = 1;
             }
         }
@@ -434,6 +450,80 @@ namespace WindowsFormsApplication1
             return betroffen > 0;
         }
 
+        // --- Kanal-Knappheitsreihenfolge (Paket K2, Konzept 4.3, Entscheidung F10) -----
+
+        /// <summary>
+        /// Der Wert eines gelesenen Feldes; <c>null</c>, <c>DBNull</c> und Leerwert
+        /// ergeben <see cref="DbWerte.KNAPPHEIT_DEFAULT"/> — die Vorbelegung nach F10
+        /// und zugleich die bis Paket K2 fest verdrahtete Reihenfolge.
+        ///
+        /// <para>Bewusst OHNE inhaltliche Prüfung: Ein unbekanntes Glied oder ein
+        /// fehlender Kanal ist kein Grund, den Anwenderwillen zu verwerfen. Die
+        /// Auswertung im Rechenkern ist tolerant — sie übergeht, was sie nicht kennt,
+        /// und ergänzt fehlende Kanäle hinten in der Reihenfolge des Vorgabewerts.</para>
+        /// </summary>
+        public static string KnappheitsreihenfolgeOderDefault(object feld)
+        {
+            if (feld == null || feld == DBNull.Value) return DbWerte.KNAPPHEIT_DEFAULT;
+
+            string wert = (feld.ToString() ?? "").Trim();
+            return wert.Length == 0 ? DbWerte.KNAPPHEIT_DEFAULT : wert;
+        }
+
+        /// <summary>
+        /// Liest die Knappheitsreihenfolge eines Projekts DIALOGFREI — für Aufrufer, die
+        /// nicht den ganzen Einstellungssatz laden (Rechenkern, Oberfläche).
+        ///
+        /// Fehlende Spalte, fehlende Zeile, NULL und Leerwert liefern gleichermaßen
+        /// <see cref="DbWerte.KNAPPHEIT_DEFAULT"/>.
+        /// </summary>
+        public static string KnappheitsreihenfolgeLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return DbWerte.KNAPPHEIT_DEFAULT;
+
+            object v = StilleDb.Scalar(
+                "SELECT [" + SchemaKatalog.SPALTE_KANAL_KNAPPHEITSREIHENFOLGE + "] " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+
+            return KnappheitsreihenfolgeOderDefault(v);
+        }
+
+        /// <summary>
+        /// Schreibt die Knappheitsreihenfolge eines Projekts.
+        ///
+        /// Bewusst ein EIGENES, zielgenaues UPDATE statt einer Erweiterung von
+        /// <see cref="Update"/> — dieselbe Begründung wie bei
+        /// <see cref="KaskadeZweikanaligSchreiben"/> und
+        /// <see cref="ExtrapolationErlaubtSchreiben"/>: Die Spaltenlisten von
+        /// <see cref="Insert"/>/<see cref="Update"/> hängen an der Ordinalkette in
+        /// <see cref="ReadSingle"/>, und auf einer Datenbank ohne die Spalte würde ein
+        /// erweitertes UPDATE das Speichern der GESAMTEN Konfiguration scheitern lassen.
+        ///
+        /// Ein leerer Wert wird als <see cref="DbWerte.KNAPPHEIT_DEFAULT"/> geschrieben,
+        /// nicht als NULL: Die Spalte soll die geltende Reihenfolge zeigen, auch wenn
+        /// sie die Vorgabe ist.
+        ///
+        /// Dialogfrei (Konzept 13.4). Rückgabe false, wenn keine Zeile getroffen wurde
+        /// oder die Spalte fehlt.
+        /// </summary>
+        public static bool KnappheitsreihenfolgeSchreiben(int idProjekt, string reihenfolge)
+        {
+            if (idProjekt <= 0) return false;
+
+            string wert = (reihenfolge ?? "").Trim();
+            if (wert.Length == 0) wert = DbWerte.KNAPPHEIT_DEFAULT;
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" +
+                SchemaKatalog.SPALTE_KANAL_KNAPPHEITSREIHENFOLGE + "] = ? " +
+                "WHERE ID_Projekt = ?",
+                StilleDb.Par("@wert", OleDbType.VarWChar, wert),
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+
+            return betroffen > 0;
+        }
+
         public bool Insert(int ID_Projekt)
         {
             try
@@ -490,6 +580,14 @@ namespace WindowsFormsApplication1
                 // Zeile stünde jedes NEUE Projekt auf "Extrapolation verboten" und
                 // damit auf anderem Verhalten als der migrierte Bestand.
                 ExtrapolationErlaubtSchreiben(ID_Projekt, true);
+
+                // PAKET K2 (F10): dieselbe Nachreichung für die Knappheitsreihenfolge.
+                // Anders als beim Ja/Nein-Feld darüber wäre NULL hier kein Fehler - die
+                // Leseseite macht daraus ohnehin den Vorgabewert. Geschrieben wird sie
+                // trotzdem, damit ein neues Projekt dieselbe Zeile zeigt wie ein
+                // migriertes: Die Spalte soll die geltende Reihenfolge nennen, nicht
+                // schweigen.
+                KnappheitsreihenfolgeSchreiben(ID_Projekt, DbWerte.KNAPPHEIT_DEFAULT);
                 return true;
             }
             catch (Exception ex)

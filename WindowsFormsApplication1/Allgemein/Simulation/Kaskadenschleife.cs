@@ -4,15 +4,16 @@ using System.Collections.Generic;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die Stundenschleife der zweikanaligen Kaskade — die Reihenfolge-Invariante aus
+    /// Die Stundenschleife der DREIKANALIGEN Kaskade — die Reihenfolge-Invariante aus
     /// Konzept 6.3 für ALLE speicherfähigen Erzeuger.
     ///
     /// <code>
     /// je Stunde h:
-    ///   A) Vorabentladung   — Speicher decken Bedarf in IHREM Kanal (Hysterese),
-    ///                         Reihenfolge nach Entladepriorität (3.6)
+    ///   A) Vorabentladung   — Speicher decken Bedarf in JEDEM Kanal ihres Klassen-Sets
+    ///                         (Hysterese), Kanäle in KNAPPHEITSREIHENFOLGE (4.3),
+    ///                         darin Reihenfolge nach Entladepriorität (3.6)
     ///   B) Bedarfsdeckung   — Erzeugerstufen in KASKADENREIHENFOLGE, je Stufe nur
-    ///                         Anlagen mit Hauptsenke HEIZKREIS, SenkeAbziehen(WS_Typ)
+    ///                         Anlagen mit Hauptsenke HEIZKREIS, SenkeAbziehen(Maske)
     ///   C) Speicherladung   — Anlagen mit Hauptsenke PUFFER_*, KASKADENÜBERGREIFEND
     ///                         nach Ladepriorität der Stunde (3.4/3.5), KEIN SenkeAbziehen
     ///   D) Zweitsenken      — aus dem verbleibenden Ladepotenzial, gleiche Ordnung
@@ -20,6 +21,14 @@ namespace WindowsFormsApplication1
     ///   F) Heizstab         — auf den dann verbleibenden Kanalrest
     ///   G) StundeAbschliessen je Registry-Speicher — GENAU EINMAL
     /// </code>
+    ///
+    /// PAKET K2 — WAS SICH GEGENÜBER DER ZWEIKANALIGEN FASSUNG GEÄNDERT HAT: Der
+    /// Stundenzustand ist ein <c>double[Kanal.ANZAHL]</c> statt zweier
+    /// <c>ref</c>-Parameter, die Entladeordnung eine Liste JE KANAL, das Durchsatzbudget
+    /// ein Kanalfeld, und die Zurechnung der Speicherentladung läuft nach Erzeugerart
+    /// UND Kanal (Konzept 4.1). Zwei INTERIMSREGELN (I1, I2 — siehe den eigenen Abschnitt
+    /// weiter unten) halten dabei die je Stunde gedeckte SUMME identisch zur
+    /// zweikanaligen Rechnung; sie fallen mit Paket S1.
     ///
     /// WARUM DIE SCHLEIFE IN PAKET 5 AUS DEM WÄRMEPUMPEN-MODUL HERAUSGEWANDERT IST:
     /// In Etappe 4b war die Wärmepumpe der einzige Erzeuger mit Senkenauswertung, und die
@@ -124,20 +133,136 @@ namespace WindowsFormsApplication1
         /// <summary>Erzeugerarten der Phase B je Ebene, in Kaskadenreihenfolge.</summary>
         private List<int>[] _bedarfJeEbene;
 
-        /// <summary>true, wenn ein KOMBISPEICHER mitrechnet (Etappe D5a, K-1).</summary>
-        private bool _hatKombi;
+        /// <summary>
+        /// KNAPPHEITSREIHENFOLGE dieses Laufs (Konzept 4.3) — aufgelöst zu Beginn von
+        /// <see cref="Rechnen"/> aus <c>Kaskadenkontext.Knappheit</c>, damit die
+        /// Stundenschleife nicht 8760-mal durch zwei Null-Prüfungen läuft.
+        /// </summary>
+        private int[] _knappheit = Kanal.KnappheitVorgabe();
 
         /// <summary>
-        /// Hysterese-Entscheidung der laufenden Phase A je Speicher (Etappe D5a).
+        /// Hysterese-Entscheidung der laufenden Phase A je Speicher (Etappe D5a,
+        /// verallgemeinert in Paket K2).
         ///
-        /// Ein Kombispeicher steht in BEIDEN Entladereihenfolgen und wird in Phase A
-        /// deshalb zweimal besucht. <see cref="SimulationPufferspeicher.HystereseFortschreiben"/>
-        /// ist aber ein ZUSTANDSÜBERGANG: Der zweite Aufruf sähe den bereits abgesenkten
-        /// Füllstand und könnte den Speicher mitten in der Stunde in den Nachladebetrieb
-        /// kippen. Die Entscheidung fällt deshalb je Speicher und Stunde genau einmal.
+        /// Ein Speicher mit MEHRELEMENTIGEM Klassen-Set steht in mehreren
+        /// Entladereihenfolgen und wird in Phase A deshalb mehrfach besucht.
+        /// <see cref="SimulationPufferspeicher.HystereseFortschreiben"/> ist aber ein
+        /// ZUSTANDSÜBERGANG: Der zweite Aufruf sähe den bereits abgesenkten Füllstand und
+        /// könnte den Speicher mitten in der Stunde in den Nachladebetrieb kippen. Die
+        /// Entscheidung fällt deshalb je Speicher und Stunde genau einmal.
+        ///
+        /// SEIT PAKET K2 OHNE VORBEDINGUNG. Bis dahin lief die Merkung nur, wenn ein
+        /// Kombispeicher mitrechnete; mit der Interimsregel I2 steht JEDER Heizungspuffer
+        /// zusätzlich im Prozesskanal und wird damit zweimal besucht. Für einen Speicher,
+        /// der nur einmal besucht wird, ist die Merkung wirkungsgleich mit dem direkten
+        /// Aufruf — sie kostet einen Wörterbuchzugriff und nimmt dafür eine Fallunterscheidung
+        /// heraus, die genau einmal falsch sein müsste, um still falsch zu rechnen.
         /// </summary>
         private readonly Dictionary<SimulationPufferspeicher, bool> _hysteresePhaseA =
             new Dictionary<SimulationPufferspeicher, bool>();
+
+        // ==================================================================
+        // INTERIMSREGELN I1 UND I2 — ABRISSPUNKT: PAKET S1
+        //
+        // Bis Paket K1 war die Prozesswärme TEIL DES HEIZKANALS: Der Bedarf lief über
+        // die Übergangsabbildung „Heiz = HEIZUNG + PROZESS" in die Kaskade, und jede
+        // Anlage mit Bedarfsart „Heizung" oder „Beides" hat ihn mitgedeckt. Mit K2
+        // rechnet die Kaskade dreikanalig — es gibt aber noch KEINE Senkenzeilen, die
+        // eine Anlage ausdrücklich dem Prozesskanal zuordnen (das leistet erst S1 mit
+        // Z_AnlageSenke und der Migrationsregel R-Prozess, Konzept 5.1/4.4).
+        //
+        // Ohne die beiden Regeln unten bliebe der Prozesskanal in JEDEM Bestandsprojekt
+        // ungedeckt — die Deckung fiele um genau den Prozessanteil, und der Vergleich
+        // gegen die Referenzbasis wäre nicht mehr die Prüfung eines Strukturumbaus,
+        // sondern die Messung eines Fachfehlers.
+        //
+        //   I1  Direktsenken:  Bedarfsart „Beides"     -> Maske {B, P, H}
+        //                                „Heizung"     -> Maske {P, H}
+        //                                „Warmwasser"  -> Maske {B}
+        //   I2  Entladeordnung: ein Speicher, dessen Klassen-Set HEIZUNG enthält,
+        //                       bedient übergangsweise auch PROZESS (Set ∪ {P}).
+        //
+        // MESSLATTE BEIDER REGELN: Mit ihnen und der Knappheitsreihenfolge
+        // B -> P -> H ist die je Stunde GEDECKTE SUMME identisch zur zweikanaligen
+        // Rechnung — neu ist allein die Aufteilung zwischen P und H. Das ist der
+        // Freibeweis dieses Pakets und der Grund, warum beide Regeln ZENTRAL stehen:
+        // je eine Methode, ein Abrisspunkt, keine verteilten Sonderfälle.
+        //
+        // ABRISS MIT S1: I1 verschwindet, sobald die Kanalmaske aus der Senkenzeile
+        // kommt (Z_AnlageSenke.Ziel/Bedarfsart); I2, sobald das Klassen-Set des
+        // Speichers die Prozesswärme selbst führt. Beide Methoden sind dann ersatzlos
+        // zu löschen, nicht zu „vereinfachen".
+        // ==================================================================
+
+        /// <summary>
+        /// Kanalmaske {H} / {B} / {P} — je eine unveränderliche Instanz, siehe
+        /// <see cref="SenkeAbziehen(bool[], double, double[], int[])"/>.
+        /// </summary>
+        private static readonly bool[][] MASKE_EINZELKANAL = MaskenBauen();
+
+        /// <summary>I1: Maske der Bedarfsart „Warmwasser" = {BRAUCHWASSER}.</summary>
+        private static readonly bool[] MASKE_WARMWASSER = MaskeBauen(Kanal.BRAUCHWASSER);
+
+        /// <summary>I1: Maske der Bedarfsart „Heizung" = {PROZESS, HEIZUNG} — siehe Kopf.</summary>
+        private static readonly bool[] MASKE_HEIZUNG_I1 = MaskeBauen(Kanal.PROZESS, Kanal.HEIZUNG);
+
+        /// <summary>I1: Maske der Bedarfsart „Beides" = {BRAUCHWASSER, PROZESS, HEIZUNG}.</summary>
+        private static readonly bool[] MASKE_BEIDES_I1 =
+            MaskeBauen(Kanal.BRAUCHWASSER, Kanal.PROZESS, Kanal.HEIZUNG);
+
+        private static bool[] MaskeBauen(params int[] kanaele)
+        {
+            bool[] m = new bool[Kanal.ANZAHL];
+            for (int i = 0; i < kanaele.Length; i++) m[kanaele[i]] = true;
+            return m;
+        }
+
+        private static bool[][] MaskenBauen()
+        {
+            bool[][] m = new bool[Kanal.ANZAHL][];
+            for (int k = 0; k < Kanal.ANZAHL; k++) m[k] = MaskeBauen(k);
+            return m;
+        }
+
+        /// <summary>
+        /// <b>INTERIMSREGEL I1</b> (siehe Kopf des Abschnitts): Kanalmaske einer
+        /// DIREKTSENKE aus ihrer Bedarfsart <c>WS_Typ</c>.
+        ///
+        /// Die gelieferten Masken sind gemeinsam benutzte, UNVERÄNDERLICHE Instanzen —
+        /// <see cref="SenkeAbziehen(bool[], double, double[], int[])"/> liest sie nur. Wer sie beschriebe, verstellte die
+        /// Abzugsregel aller folgenden Stunden.
+        /// </summary>
+        public static bool[] DirektsenkeMaske(string wsTyp)
+        {
+            if (wsTyp == WaermequelleClass.SENKE_WARMWASSER) return MASKE_WARMWASSER;
+            if (wsTyp == WaermequelleClass.SENKE_HEIZUNG) return MASKE_HEIZUNG_I1;
+            return MASKE_BEIDES_I1;      // SENKE_BEIDES und alles Unbekannte
+        }
+
+        /// <summary>
+        /// <b>INTERIMSREGEL I2</b> (siehe Kopf des Abschnitts): Entlädt dieser Speicher
+        /// in den angefragten Kanal?
+        ///
+        /// Sie ist die EINE Stelle, an der die Interims-Erweiterung des Klassen-Sets
+        /// wirkt — und sie muss von BEIDEN Seiten gelesen werden, die davon abhängen:
+        /// vom Aufbau der Entladelisten (<c>SimulationControl</c>) und vom
+        /// Durchsatzbudget (<see cref="DurchlassBudget"/>/<see cref="DurchlassBuchen"/>).
+        /// Liefe das Budget über das reine Klassen-Set, während die Entladung I2 folgt,
+        /// bekäme die hydraulische Weiche eines Heizungspuffers den Prozessbedarf nicht
+        /// mehr zu sehen — und genau daran hinge die Summengleichheit gegen die
+        /// zweikanalige Rechnung.
+        ///
+        /// Das PERSISTIERTE Set bleibt unangetastet (siehe
+        /// <see cref="SimulationPufferspeicher.BedientKanal(int)"/>).
+        /// </summary>
+        public static bool EntladetKanal(SimulationPufferspeicher sp, int kanal)
+        {
+            if (sp == null) return false;
+            if (sp.BedientKanal(kanal)) return true;
+
+            // I2: Heizung im Set -> Prozesswärme wird interimsweise mitbedient.
+            return kanal == Kanal.PROZESS && sp.BedientKanal(Kanal.HEIZUNG);
+        }
 
         // ------------------------------------------------------------------
         // ZURECHNUNG DER SPEICHERENTLADUNG (Paket-5-Nacharbeit, Befund N2)
@@ -182,12 +307,34 @@ namespace WindowsFormsApplication1
         private readonly Dictionary<SimulationPufferspeicher, double[]> _inhaltsanteile =
             new Dictionary<SimulationPufferspeicher, double[]>();
 
-        /// <summary>Bedarfsdeckende Speicherentladung je Erzeugerart [kWh].</summary>
+        /// <summary>
+        /// Bedarfsdeckende Speicherentladung je Erzeugerart [kWh] — das AGGREGAT über
+        /// alle Kanäle.
+        ///
+        /// Es bleibt neben der kanalindizierten Buchführung bestehen und wird weiter
+        /// getrennt fortgeschrieben: <c>SimulationRunner</c> und die Ergebnispersistenz
+        /// lesen über <c>Modul.Speicherentladung_Anteil</c> genau diese Zahl, und sie
+        /// soll sich mit Paket K2 nicht um die Rundung einer Summenbildung verschieben.
+        /// </summary>
         private readonly double[] _entladungJeArt = new double[ART_ANZAHL];
 
         /// <summary>
+        /// Dieselbe Jahressumme, aber KANALINDIZIERT (Konzept 4.1, letzte Tabellenzeilen,
+        /// und 4.4): <c>_entladungJeArtKanal[art][kanal]</c> [kWh].
+        ///
+        /// Die Entladung eines Speichers wird der Erzeugerart UND dem bedienten Kanal
+        /// zugerechnet — die Voraussetzung für Deckungsgrade je Kanal. Sie geht als
+        /// <c>Modul.Speicherentladung_Kanal</c> an die Erzeugermodule; die Skalare
+        /// bleiben daneben bestehen (siehe <see cref="_entladungJeArt"/>).
+        ///
+        /// JAGGED, nicht <c>[,]</c>: Eine Zeile muss als <c>double[]</c> an ein Modul
+        /// übergeben werden können, ohne sie vorher umzukopieren.
+        /// </summary>
+        private readonly double[][] _entladungJeArtKanal = ZeilenBauen();
+
+        /// <summary>
         /// Dieselbe Zurechnung, aber nur für die LAUFENDE Stunde [kWh] (Nacharbeit
-        /// Paket 6, Befund N4).
+        /// Paket 6, Befund N4) — seit Paket K2 ebenfalls kanalindiziert.
         ///
         /// Der Restwärmebedarf eines Erzeugers ist „Stufeneingang − Direktdeckung −
         /// zugerechnete Entladung". Als Jahressumme steht er in
@@ -195,7 +342,19 @@ namespace WindowsFormsApplication1
         /// zeigt, braucht sie den Stundenwert der Zurechnung — die Jahressumme allein
         /// lässt sich nicht auf Stunden verteilen.
         /// </summary>
-        private readonly double[] _entladungJeArtStunde = new double[ART_ANZAHL];
+        private readonly double[][] _entladungJeArtStunde = ZeilenBauen();
+
+        private static double[][] ZeilenBauen()
+        {
+            double[][] z = new double[ART_ANZAHL][];
+            for (int a = 0; a < ART_ANZAHL; a++) z[a] = new double[Kanal.ANZAHL];
+            return z;
+        }
+
+        private static void ZeilenNullen(double[][] z)
+        {
+            for (int a = 0; a < ART_ANZAHL; a++) Array.Clear(z[a], 0, z[a].Length);
+        }
 
         /// <summary>Erzeugerart (<c>ProjektPuffer.TYP_*</c>) als Index; −1 = nicht geführt.</summary>
         private static int ArtIndex(int typ)
@@ -229,11 +388,19 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Eine bedarfsdeckende Entladung nach den Anteilen am aktuellen Inhalt auf die
-        /// Erzeugerarten aufteilen.
+        /// Erzeugerarten aufteilen — und zusätzlich dem KANAL zurechnen, in den sie
+        /// geflossen ist (Konzept 4.1/4.4, Paket K2).
+        ///
+        /// Die INHALTSANTEILE selbst bleiben eindimensional je Speicher (Konzept 7.6):
+        /// Ein Vorrat ist eine Mischung nach Herkunft, nicht nach Verwendungszweck — es
+        /// gibt keine „Brauchwasser-kWh" im Behälter. Kanalindiziert wird allein die
+        /// AUSGABE, also die Frage, welcher Bedarf mit dieser Wärme gedeckt wurde.
         /// </summary>
-        private void Anteil_Entladen(SimulationPufferspeicher sp, double gedeckt)
+        /// <param name="kanal">Bedarfskanal, den diese Entladung gedeckt hat.</param>
+        private void Anteil_Entladen(SimulationPufferspeicher sp, double gedeckt, int kanal)
         {
             if (sp == null || gedeckt <= 0) return;
+            if (kanal < 0 || kanal >= Kanal.ANZAHL) return;
 
             double[] a = Anteile(sp);
             double summe = 0;
@@ -251,8 +418,31 @@ namespace WindowsFormsApplication1
                 if (teil > a[i]) teil = a[i];
                 a[i] -= teil;
                 _entladungJeArt[i] += teil;
-                _entladungJeArtStunde[i] += teil;      // N4: Stundenwert für die Ganglinie
+                _entladungJeArtKanal[i][kanal] += teil;
+                _entladungJeArtStunde[i][kanal] += teil;   // N4: Stundenwert für die Ganglinie
             }
+        }
+
+        /// <summary>
+        /// Zurechnung einer Entnahme, deren Kanal nicht feststeht — die Entnahme eines
+        /// nachgelagerten Erzeugers aus seinem Quellpuffer mit DIREKTDECKUNG
+        /// (<c>Quellentnahme.Ziel == null</c>, Etappe D5a).
+        ///
+        /// Das Modul meldet die Menge, nicht den Kanal: Es hat sie über sein eigenes
+        /// <c>SenkeAbziehen</c> auf mehrere Kanäle verteilt. Für die ART-Summe ist das
+        /// gleichgültig — sie ist die Größe, die der Runner liest. Die KANALZEILE bekommt
+        /// die Menge deshalb auf dem Heizkanal, der altverhaltenserhaltenden Vorbelegung
+        /// des ganzen Kanalmodells (Konzept 4.2/F18).
+        ///
+        /// Der Fall tritt heute nur bei Wärmepumpe und Heizkessel MIT Quellpuffer auf und
+        /// betrifft ausschließlich die kanalfeine Aufteilung der Ergebnisanzeige (E1),
+        /// nie eine Bilanzsumme. Mit der einheitlichen <c>Stunde_*</c>-Schnittstelle aus
+        /// S1 kann das Modul den Kanal mitmelden; bis dahin steht die Näherung hier an
+        /// EINER Stelle statt in vier Modulen.
+        /// </summary>
+        private void Anteil_Entladen(SimulationPufferspeicher sp, double gedeckt)
+        {
+            Anteil_Entladen(sp, gedeckt, Kanal.HEIZUNG);
         }
 
         /// <summary>
@@ -338,57 +528,105 @@ namespace WindowsFormsApplication1
         // Kanäle — und die Abbuchung muss auf beide gehen. Vier Kopien dieser Regel
         // wären vier Gelegenheiten, sie unterschiedlich zu treffen.
         //
-        // OHNE Kombispeicher liefern beide Methoden Anweisung für Anweisung das, was
-        // vorher in den Modulen stand.
+        // PAKET K2: Das Budget ist jetzt double[Kanal.ANZAHL], und maßgeblich sind die
+        // Kanäle, in die der Speicher WIRKLICH ENTLÄDT (EntladetKanal, also samt
+        // Interimsregel I2) — nicht sein persistiertes Klassen-Set. Beide Größen dürfen
+        // hier nicht auseinanderlaufen: Das Budget ist die Vorhersage dessen, was die
+        // Phasen A/E aus dem Speicher wieder herausholen.
+        //
+        // Ein Speicher mit genau einem Kanal rechnet Anweisung für Anweisung wie zuvor.
         // ------------------------------------------------------------------
 
         /// <summary>
         /// Absehbare Entnahme, die dieser Speicher in der laufenden Stunde zusätzlich
-        /// durchreichen kann [kWh] (Nutzerentscheidung zu Befund 4b-1).
+        /// durchreichen kann [kWh] (Nutzerentscheidung zu Befund 4b-1) — die Summe der
+        /// offenen Bedarfe ALLER Kanäle, die er entlädt, gedeckelt auf seine
+        /// Entnahmefähigkeit.
         /// </summary>
         public static double DurchlassBudget(SimulationPufferspeicher sp, double[] absehbar)
         {
             if (sp == null || absehbar == null) return 0;
 
-            double offen;
-            if (sp.IstKombi)
-            {
-                // D5a: EIN Vorrat für beide Kanäle - also auch ein gemeinsames Budget.
-                offen = (absehbar[0] > 0 ? absehbar[0] : 0) + (absehbar[1] > 0 ? absehbar[1] : 0);
-            }
-            else
-            {
-                int kanal = sp.IstBrauchwasserkanal ? 1 : 0;
-                offen = absehbar[kanal] > 0 ? absehbar[kanal] : 0;
-            }
+            double offen = 0;
+            for (int k = 0; k < Kanal.ANZAHL && k < absehbar.Length; k++)
+                if (absehbar[k] > 0 && EntladetKanal(sp, k)) offen += absehbar[k];
 
             return Math.Min(offen, sp.Entnahmefaehigkeit());
         }
 
         /// <summary>
-        /// Bucht den tatsächlich genutzten Durchlass vom Budget ab. Beim Kombispeicher
-        /// zuerst vom WARMWASSERkanal — dieselbe Vorrangregel, mit der die Entladung
-        /// arbeitet (K-1).
+        /// Bucht den tatsächlich genutzten Durchlass vom Budget ab — in der
+        /// KNAPPHEITSREIHENFOLGE des Laufs (Konzept 4.3). Sie ist dieselbe Ordnung, in
+        /// der die Entladung den Vorrat vergibt; die frühere Sonderregel „beim
+        /// Kombispeicher zuerst vom Warmwasserkanal" (K-1) ist genau ihr Sonderfall und
+        /// geht darin auf.
         /// </summary>
         public static void DurchlassBuchen(SimulationPufferspeicher sp, double[] absehbar,
                                            double genutzt)
         {
             if (sp == null || absehbar == null || genutzt <= 0) return;
 
-            if (!sp.IstKombi)
+            int[] ordnung = KnappheitDesLaufs();
+            double offen = genutzt;
+
+            for (int i = 0; i < ordnung.Length; i++)
             {
-                int kanal = sp.IstBrauchwasserkanal ? 1 : 0;
-                absehbar[kanal] -= genutzt;
-                if (absehbar[kanal] < 0) absehbar[kanal] = 0;
-                return;
+                int k = ordnung[i];
+                if (k < 0 || k >= absehbar.Length) continue;
+                if (!EntladetKanal(sp, k)) continue;
+
+                double teil = Math.Min(offen, absehbar[k] > 0 ? absehbar[k] : 0);
+                absehbar[k] -= teil;
+                if (absehbar[k] < 0) absehbar[k] = 0;
+
+                offen -= teil;
+                if (offen <= 0) return;
             }
 
-            double ww = Math.Min(genutzt, absehbar[1] > 0 ? absehbar[1] : 0);
-            absehbar[1] -= ww;
-            if (absehbar[1] < 0) absehbar[1] = 0;
+            // Rest ohne Deckung im Budget: Er kann nur aus einer Rundung stammen (das
+            // Modul hat gegen DASSELBE Budget geladen). Der letzte bediente Kanal trägt
+            // ihn - dieselbe Klemmung wie bisher, nur ohne feste Kanalnummer.
+            for (int i = ordnung.Length - 1; i >= 0 && offen > 0; i--)
+            {
+                int k = ordnung[i];
+                if (k < 0 || k >= absehbar.Length) continue;
+                if (!EntladetKanal(sp, k)) continue;
 
-            absehbar[0] -= (genutzt - ww);
-            if (absehbar[0] < 0) absehbar[0] = 0;
+                absehbar[k] -= offen;
+                if (absehbar[k] < 0) absehbar[k] = 0;
+                return;
+            }
+        }
+
+        /// <summary>
+        /// Knappheitsreihenfolge des LAUFENDEN Laufs für die beiden statischen Methoden,
+        /// die die Erzeugermodule rufen (<see cref="DurchlassBuchen"/> und die
+        /// Kompatibilitätsfassung von <see cref="SenkeAbziehen(string, double, double[])"/>).
+        ///
+        /// WARUM EIN STATISCHES FELD. Beide Methoden sind static, weil sie aus vier
+        /// Modulen und aus den VEKTORSTUFEN heraus gerufen werden — also auch außerhalb
+        /// von <see cref="Rechnen"/>, wo es gar keine Schleifeninstanz gibt. Die
+        /// Reihenfolge ist eine Eigenschaft des LAUFS, nicht des Aufrufers; sie durch
+        /// vier Modulsignaturen zu reichen hieße, sie an vier Stellen setzen zu können.
+        /// Gesetzt wird sie genau einmal, von <c>SimulationControl</c> zu Beginn der
+        /// zweikanaligen Kaskade (<see cref="KnappheitFuerLauf"/>).
+        /// </summary>
+        private static int[] _knappheitLauf = Kanal.KnappheitVorgabe();
+
+        /// <summary>
+        /// Setzt die Knappheitsreihenfolge des Laufs (siehe <see cref="_knappheitLauf"/>).
+        /// <c>null</c> oder eine unbrauchbare Länge stellen die Vorbelegung wieder her —
+        /// ein Lauf ohne gesetzte Reihenfolge rechnet mit {B, P, H}.
+        /// </summary>
+        public static void KnappheitFuerLauf(int[] ordnung)
+        {
+            _knappheitLauf = (ordnung != null && ordnung.Length == Kanal.ANZAHL)
+                ? ordnung : Kanal.KnappheitVorgabe();
+        }
+
+        private static int[] KnappheitDesLaufs()
+        {
+            return _knappheitLauf ?? Kanal.KnappheitVorgabe();
         }
 
         /// <summary>
@@ -417,7 +655,7 @@ namespace WindowsFormsApplication1
         /// die nächste Stufe der Kaskade weiterrechnet.
         /// </summary>
         /// <returns>false = Abbruch (Kennlinienauswertung der Wärmepumpe).</returns>
-        public bool Rechnen(Waermekanaele kanaele)
+        public bool Rechnen(Kanalsatz kanaele)
         {
             if (kanaele == null || Kontext == null) return false;
 
@@ -430,13 +668,18 @@ namespace WindowsFormsApplication1
             // Ergebnis zu speichern.
             if (!EbenenAufloesen()) return false;
 
-            _hatKombi = Kontext.HatKombispeicher();
+            // PAKET K2: Knappheitsreihenfolge des Laufs EINMAL auflösen - sie steuert
+            // Abzug, Entladung und Durchsatzabbuchung (Konzept 4.3).
+            _knappheit = (Kontext.Knappheit != null && Kontext.Knappheit.Length == Kanal.ANZAHL)
+                ? Kontext.Knappheit : Kanal.KnappheitVorgabe();
+            KnappheitFuerLauf(_knappheit);
 
             List<double> biv = new List<double>();
 
             // N2: Zurechnung der Speicherentladung auf den Laufanfang.
             _inhaltsanteile.Clear();
             Array.Clear(_entladungJeArt, 0, _entladungJeArt.Length);
+            ZeilenNullen(_entladungJeArtKanal);
 
             if (MitWP)
             {
@@ -467,20 +710,28 @@ namespace WindowsFormsApplication1
                     Bedarfsreihenfolge[Bedarfsreihenfolge.Count - 1] == ProjektPuffer.TYP_BHKW;
 
             // Absehbare Entnahme je Kanal in der laufenden Stunde [kWh] — der Durchsatz
-            // der hydraulischen Weiche (Nutzerentscheidung zu 4b-1). Index 0 = Heizkanal,
-            // 1 = Warmwasserkanal. Das Budget wird über die Phasen C und D hinweg NUR
+            // der hydraulischen Weiche (Nutzerentscheidung zu 4b-1), indiziert nach
+            // <see cref="Kanal"/>. Das Budget wird über die Phasen C und D hinweg NUR
             // EINMAL vergeben: Zwei Speicher desselben Kanals dürfen nicht beide dieselbe
             // Entnahme durchreichen, sonst bliebe nach Phase E Wärme im Speicher stehen,
             // die niemand angefordert hat.
-            double[] absehbar = new double[2];
+            double[] absehbar = new double[Kanal.ANZAHL];
+
+            // STUNDENZUSTAND der Kanäle [kWh] — der Restbedarf, den die Phasen A bis F
+            // fortschreiben. EIN Feld statt der beiden ref-Parameter rest_heiz/rest_ww:
+            // Es wird an die Module durchgereicht und dort IN PLACE verändert; damit gibt
+            // es keine Modulsignatur mehr, die beim Hinzukommen eines Kanals wächst.
+            // Bewusst VOR der Stundenschleife angelegt und je Stunde neu befüllt (dieselbe
+            // Konvention wie beim Budget) — 8760 Feldanlagen wären reine Arbeit für den
+            // Sammler.
+            double[] rest = new double[Kanal.ANZAHL];
 
             for (int stunde = 0; stunde < 8760; stunde++)
             {
-                double rest_heiz = kanaele.Heiz[stunde];
-                double rest_ww = kanaele.WW[stunde];
+                for (int k = 0; k < Kanal.ANZAHL; k++) rest[k] = kanaele.Bedarf[k][stunde];
 
                 // N4: Zurechnung der Entladung auf den Anfang DIESER Stunde.
-                Array.Clear(_entladungJeArtStunde, 0, _entladungJeArtStunde.Length);
+                ZeilenNullen(_entladungJeArtStunde);
 
                 // N3: Reservierungen der Vorstunde verfallen. Sie gelten nur innerhalb
                 // einer Stunde - zwischen Phase B (Motorzuschaltung) und Phase C/D
@@ -491,9 +742,9 @@ namespace WindowsFormsApplication1
 
                 // STUFENEINGANG je Erzeugerstufe (N1): der Kanalstand VOR Phase A.
                 if (MitWP) WP.Zweikanalig_StundeStart(stunde);
-                if (MitSolar) Solar.Stunde_Start(stunde, rest_heiz, rest_ww);
-                if (MitKessel) Kessel.Stunde_Start(stunde, rest_heiz, rest_ww);
-                if (MitBHKW) BHKW.Stunde_Start(stunde, rest_heiz, rest_ww);
+                if (MitSolar) Solar.Stunde_Start(stunde, rest);
+                if (MitKessel) Kessel.Stunde_Start(stunde, rest);
+                if (MitBHKW) BHKW.Stunde_Start(stunde, rest);
 
                 double pvRest = (pvUeberschussVektor != null && stunde < pvUeberschussVektor.Length)
                     ? pvUeberschussVektor[stunde] : 0;
@@ -510,7 +761,7 @@ namespace WindowsFormsApplication1
                         q.Laden(q.RegenerationProStunde, stunde);
 
                 // --- A) Vorabentladung ------------------------------------------------
-                Entladephase(stunde, true, ref rest_heiz, ref rest_ww);
+                Entladephase(stunde, true, rest);
 
                 // --- B/C/D je RECHENEBENE (Etappe D5a) ---------------------------------
                 // Mit genau einer Ebene - jedes Bestandsprojekt - läuft der Rumpf einmal
@@ -528,30 +779,30 @@ namespace WindowsFormsApplication1
                         if (art == ProjektPuffer.TYP_WP && MitWP)
                         {
                             if (!WP.Zweikanalig_Bedarfsphase(stunde, Kontext, pvUeberschuss, pvRest,
-                                                             ref rest_heiz, ref rest_ww))
+                                                             rest))
                                 return false;
                             QuellentnahmenVerbuchen(WP.Quellentnahmen);
                         }
                         else if (art == ProjektPuffer.TYP_SOLARTHERMIE && MitSolar)
                         {
-                            Solar.Stunde_Bedarf(stunde, ref rest_heiz, ref rest_ww);
+                            Solar.Stunde_Bedarf(stunde, rest);
                         }
                         else if (art == ProjektPuffer.TYP_KESSEL && MitKessel)
                         {
-                            Kessel.Stunde_Bedarf(stunde, ref rest_heiz, ref rest_ww);
+                            Kessel.Stunde_Bedarf(stunde, rest);
                             QuellentnahmenVerbuchen(Kessel.Quellentnahmen);
                         }
                         else if (art == ProjektPuffer.TYP_BHKW && MitBHKW)
                         {
-                            BHKW.Stunde_Bedarf(stunde, pvUeberschuss, ref rest_heiz, ref rest_ww);
+                            BHKW.Stunde_Bedarf(stunde, pvUeberschuss, rest);
                         }
                     }
 
                     // Durchsatzbudget der Stunde festhalten — Stand NACH der
                     // Bedarfsdeckung. Genau diesen Rest kann Phase E aus den Speichern
                     // ziehen; zwischen C und E verändert ihn nichts.
-                    absehbar[0] = rest_heiz > 0 ? rest_heiz : 0;
-                    absehbar[1] = rest_ww > 0 ? rest_ww : 0;
+                    for (int k = 0; k < Kanal.ANZAHL; k++)
+                        absehbar[k] = rest[k] > 0 ? rest[k] : 0;
 
                     // --- C) Speicherladung (Hauptsenken) ---------------------------------
                     Ladephase(stunde, false, pvUeberschuss, ref pvRest, absehbar, ebene);
@@ -567,18 +818,19 @@ namespace WindowsFormsApplication1
                     // Der gespeicherte INHALT bleibt liegen — ihn holt Phase E am Ende der
                     // Stunde, nachdem alle Ebenen ihre Quellentnahme hatten.
                     if (ebene < _maxEbene)
-                        DurchsatzPhase(stunde, ref rest_heiz, ref rest_ww);
+                        DurchsatzPhase(stunde, rest);
                 }
 
                 // --- E) Nachentladung -----------------------------------------------------
-                Entladephase(stunde, false, ref rest_heiz, ref rest_ww);
+                Entladephase(stunde, false, rest);
 
                 // Bivalenzpunkt — dieselbe Stelle wie im Altpfad: nach der Entladung,
-                // vor dem Heizstab.
-                if (MitWP && rest_heiz + rest_ww > 0) biv.Add(WP.Temperatur[stunde]);
+                // vor dem Heizstab. Maßgeblich ist der offene GESAMTbedarf; welcher Kanal
+                // ihn trägt, spielt für die Bivalenztemperatur keine Rolle.
+                if (MitWP && RestSumme(rest) > 0) biv.Add(WP.Temperatur[stunde]);
 
                 // --- F) Heizstab ----------------------------------------------------------
-                if (MitWP) WP.Heizstabphase(stunde, ref rest_heiz, ref rest_ww);
+                if (MitWP) WP.Heizstabphase(stunde, rest);
 
                 // --- G) StundeAbschliessen je Registry-Speicher, GENAU EINMAL -------------
                 foreach (SimulationPufferspeicher sp in Kontext.AlleSpeicher)
@@ -606,12 +858,13 @@ namespace WindowsFormsApplication1
 
                 // Restbedarf in die Kanäle zurückschreiben — Eingang der nächsten Stufe
                 // der Kaskade.
-                if (rest_heiz < 0) rest_heiz = 0;
-                if (rest_ww < 0) rest_ww = 0;
-                kanaele.Heiz[stunde] = (float)rest_heiz;
-                kanaele.WW[stunde] = (float)rest_ww;
+                for (int k = 0; k < Kanal.ANZAHL; k++)
+                {
+                    if (rest[k] < 0) rest[k] = 0;
+                    kanaele.Bedarf[k][stunde] = (float)rest[k];
+                }
 
-                if (MitWP) WP.Zweikanalig_StundeEnde(stunde, rest_heiz, rest_ww);
+                if (MitWP) WP.Zweikanalig_StundeEnde(stunde, rest);
 
                 // Solarthermie: Was weder gedeckt noch gespeichert wurde, ist verworfen.
                 if (MitSolar) Solar.Stunde_Ende(stunde);
@@ -621,7 +874,10 @@ namespace WindowsFormsApplication1
                 // Größe, als Überlauf des Pendelspeichers). Dazu die Ganglinie seines
                 // Restwärmebedarfs, gebildet an der BHKW-Position aus Stufeneingang,
                 // Direktdeckung und der ihm in dieser Stunde zugerechneten Entladung (N4).
-                if (MitBHKW) BHKW.Stunde_Ende(stunde, _entladungJeArtStunde[ART_BHKW]);
+                // Die Ganglinie des BHKW-Restwärmebedarfs ist eine KANALLOSE Größe
+                // („Stufeneingang − Direktdeckung − zugerechnete Entladung", N4); sie
+                // bekommt deshalb die Kanalsumme der Stundenzurechnung.
+                if (MitBHKW) BHKW.Stunde_Ende(stunde, ZeilenSumme(_entladungJeArtStunde[ART_BHKW]));
 
             } // end alle Stunden
 
@@ -633,12 +889,64 @@ namespace WindowsFormsApplication1
             // N2: Zugerechnete Speicherentladung an die Erzeugermodule geben. Sie ist der
             // zweite Summand ihres EIGENANTEILS an der Bedarfsdeckung; den ersten
             // (Direktdeckung) führt jedes Modul selbst.
-            if (MitWP) WP.Speicherentladung_Anteil = _entladungJeArt[ART_WP];
-            if (MitSolar) Solar.Speicherentladung_Anteil = _entladungJeArt[ART_SOLAR];
-            if (MitKessel) Kessel.Speicherentladung_Anteil = _entladungJeArt[ART_KESSEL];
-            if (MitBHKW) BHKW.Speicherentladung_Anteil = _entladungJeArt[ART_BHKW];
+            //
+            // PAKET K2: dazu die KANALZEILE derselben Größe (Konzept 4.1/4.4). Der Skalar
+            // bleibt die führende Zahl für Runner und Ergebnispersistenz und wird
+            // ausdrücklich NICHT aus der Zeile aufsummiert — er ist getrennt akkumuliert
+            // und soll sich durch den Umbau nicht um die Rundung einer Summe verschieben.
+            if (MitWP)
+            {
+                WP.Speicherentladung_Anteil = _entladungJeArt[ART_WP];
+                KanalzeileUebergeben(ART_WP, WP.Speicherentladung_Kanal);
+            }
+            if (MitSolar)
+            {
+                Solar.Speicherentladung_Anteil = _entladungJeArt[ART_SOLAR];
+                KanalzeileUebergeben(ART_SOLAR, Solar.Speicherentladung_Kanal);
+            }
+            if (MitKessel)
+            {
+                Kessel.Speicherentladung_Anteil = _entladungJeArt[ART_KESSEL];
+                KanalzeileUebergeben(ART_KESSEL, Kessel.Speicherentladung_Kanal);
+            }
+            if (MitBHKW)
+            {
+                BHKW.Speicherentladung_Anteil = _entladungJeArt[ART_BHKW];
+                KanalzeileUebergeben(ART_BHKW, BHKW.Speicherentladung_Kanal);
+            }
 
             return true;
+        }
+
+        /// <summary>
+        /// Schreibt die Kanalzeile einer Erzeugerart in das Zielfeld des Moduls [kWh].
+        ///
+        /// KOPIERT statt zugewiesen: Das Modul legt sein Feld selbst an und nullt es in
+        /// seiner Vorbereitung; ein ausgetauschtes Array wäre eine Aliasing-Falle für
+        /// jeden, der sich die Referenz gemerkt hat (Regel B0-2).
+        /// </summary>
+        private void KanalzeileUebergeben(int art, double[] ziel)
+        {
+            if (ziel == null) return;
+
+            double[] quelle = _entladungJeArtKanal[art];
+            for (int k = 0; k < Kanal.ANZAHL && k < ziel.Length; k++) ziel[k] = quelle[k];
+        }
+
+        /// <summary>Summe einer Kanalzeile [kWh].</summary>
+        private static double ZeilenSumme(double[] zeile)
+        {
+            double s = 0;
+            for (int k = 0; k < zeile.Length; k++) s += zeile[k];
+            return s;
+        }
+
+        /// <summary>Offener Gesamtbedarf über alle Kanäle [kWh].</summary>
+        private static double RestSumme(double[] rest)
+        {
+            double s = 0;
+            for (int k = 0; k < Kanal.ANZAHL && k < rest.Length; k++) s += rest[k];
+            return s;
         }
 
         /// <summary>
@@ -1023,7 +1331,7 @@ namespace WindowsFormsApplication1
         /// Speicher unabhängig von der Hysterese auf den noch offenen Rest zu — genau wie
         /// die heutige Entladung vor Heizstab und Folge-Erzeuger.
         /// </param>
-        private void Entladephase(int stunde, bool vorab, ref double rest_heiz, ref double rest_ww)
+        private void Entladephase(int stunde, bool vorab, double[] rest)
         {
             if (!vorab)
             {
@@ -1035,60 +1343,52 @@ namespace WindowsFormsApplication1
                 // Kanals hängen bleibt, der in der Entladeordnung vor ihm steht. Bei nur
                 // einem Speicher je Kanal — dem heute geprüften Fall — ändert die
                 // Vorziehung nichts: dieselbe Menge, derselbe Speicher.
-                DurchsatzPhase(stunde, ref rest_heiz, ref rest_ww);
+                DurchsatzPhase(stunde, rest);
             }
             else
             {
-                // D5a: Die Hysterese-Entscheidung dieser Stunde beginnt neu (siehe
+                // Die Hysterese-Entscheidung dieser Stunde beginnt neu (siehe
                 // _hysteresePhaseA).
-                if (_hatKombi) _hysteresePhaseA.Clear();
+                _hysteresePhaseA.Clear();
             }
 
-            // KANALREIHENFOLGE (Etappe D5a, Entwurfsentscheidung K-1):
+            // KANALREIHENFOLGE = KNAPPHEITSREIHENFOLGE (Konzept 4.3, Paket K2).
             //
-            // OHNE Kombispeicher sind die beiden Listen disjunkt und rühren getrennte
-            // Größen an — die Reihenfolge ist dann gleichgültig, und sie bleibt bewusst
-            // die bisherige (Heizung zuerst). Das ist keine Kosmetik: Die
-            // Zurechnungssummen der Herkunftsrechnung sind double-Akkumulatoren, und eine
-            // vertauschte Additionsreihenfolge kann ihr letztes Bit verändern. Die
-            // Regressionszusage „Flag an, unverändertes Projekt = byte-gleich" hängt
-            // daran.
+            // Bis K1 stand hier eine Fallunterscheidung: ohne Kombispeicher „Heizung
+            // zuerst" (die bisherige Reihenfolge, bewusst festgehalten), mit
+            // Kombispeicher „Warmwasser zuerst" (Entwurfsentscheidung K-1, die
+            // App-Konvention „Beides (Warmwasser zuerst)"). Beide Fälle gehen in der
+            // Knappheitsreihenfolge auf: Sie IST die Aussage „reicht der Vorrat nicht für
+            // alle Kanäle, bekommt dieser zuerst" — nur eben für drei Kanäle, projektweit
+            // einstellbar und an allen drei Stellen dieselbe (Abzug, Entladung,
+            // Durchsatzabbuchung). Die kanalweise Entladereihenfolge (3.6) bleibt
+            // innerhalb jedes Kanaldurchlaufs unangetastet.
             //
-            // MIT Kombispeicher steht derselbe Speicher in BEIDEN Listen und bedient
-            // beide Kanäle aus EINEM Vorrat. Reicht er nicht für beide, gilt WARMWASSER
-            // ZUERST — die App-Konvention „Beides (Warmwasser zuerst)", umgesetzt als
-            // vollständiger Warmwasserdurchlauf VOR dem Heizungsdurchlauf. Die
-            // kanalweise Entladereihenfolge (3.6) bleibt innerhalb jedes Durchlaufs
-            // unangetastet.
-            if (_hatKombi)
+            // DOKUMENTIERTE FOLGE FÜR BESTANDSPROJEKTE OHNE KOMBISPEICHER: Die beiden
+            // Kanaldurchläufe tauschen die Reihenfolge (jetzt Brauchwasser zuerst). Auf
+            // disjunkten Speicherlisten ändert das die vergebene Wärme nicht — wohl aber
+            // die Additionsreihenfolge der double-Akkumulatoren der Herkunftsrechnung.
+            // Die Byte-Zusage aus Etappe D5a ist damit auf einen Toleranzvergleich
+            // zurückgenommen (Konzept 11.2, Rundungsklasse).
+            for (int i = 0; i < _knappheit.Length; i++)
             {
-                EntladeKanal(Kontext.EntladenBrauchwasser, true, vorab, stunde, ref rest_heiz, ref rest_ww);
-                EntladeKanal(Kontext.EntladenHeizung, false, vorab, stunde, ref rest_heiz, ref rest_ww);
-            }
-            else
-            {
-                EntladeKanal(Kontext.EntladenHeizung, false, vorab, stunde, ref rest_heiz, ref rest_ww);
-                EntladeKanal(Kontext.EntladenBrauchwasser, true, vorab, stunde, ref rest_heiz, ref rest_ww);
+                int kanal = _knappheit[i];
+                EntladeKanal(Kontext.Entladeordnung(kanal), kanal, vorab, stunde, rest);
             }
         }
 
         /// <summary>
-        /// Rückgabe des DURCHSATZES beider Kanäle — als eigene Methode, weil sie seit
+        /// Rückgabe des DURCHSATZES aller Kanäle — als eigene Methode, weil sie seit
         /// Etappe D5a an zwei Stellen steht: vor der Nachentladung (Phase E) und zwischen
         /// zwei Rechenebenen der Kaskade. Kanalreihenfolge wie in
-        /// <see cref="Entladephase"/> (K-1).
+        /// <see cref="Entladephase"/> (Knappheitsreihenfolge, 4.3).
         /// </summary>
-        private void DurchsatzPhase(int stunde, ref double rest_heiz, ref double rest_ww)
+        private void DurchsatzPhase(int stunde, double[] rest)
         {
-            if (_hatKombi)
+            for (int i = 0; i < _knappheit.Length; i++)
             {
-                DurchsatzEntladen(Kontext.EntladenBrauchwasser, true, stunde, ref rest_heiz, ref rest_ww);
-                DurchsatzEntladen(Kontext.EntladenHeizung, false, stunde, ref rest_heiz, ref rest_ww);
-            }
-            else
-            {
-                DurchsatzEntladen(Kontext.EntladenHeizung, false, stunde, ref rest_heiz, ref rest_ww);
-                DurchsatzEntladen(Kontext.EntladenBrauchwasser, true, stunde, ref rest_heiz, ref rest_ww);
+                int kanal = _knappheit[i];
+                DurchsatzEntladen(Kontext.Entladeordnung(kanal), kanal, stunde, rest);
             }
         }
 
@@ -1097,8 +1397,8 @@ namespace WindowsFormsApplication1
         /// hinausgeht — der Durchfluss dieser Stunde (siehe <see cref="Entladephase"/>).
         /// Ohne Durchlass in Phase C gibt es diesen Anteil nicht, und die Methode tut nichts.
         /// </summary>
-        private void DurchsatzEntladen(List<SimulationPufferspeicher> speicher, bool brauchwasser,
-                                       int stunde, ref double rest_heiz, ref double rest_ww)
+        private void DurchsatzEntladen(List<SimulationPufferspeicher> speicher, int kanal,
+                                       int stunde, double[] rest)
         {
             if (speicher == null) return;
 
@@ -1110,27 +1410,28 @@ namespace WindowsFormsApplication1
                 double ueber = sp.SOC - sp.Q_max;
                 if (ueber <= 0) continue;
 
-                double bedarf = brauchwasser ? rest_ww : rest_heiz;
+                double bedarf = rest[kanal];
                 if (bedarf <= 0) continue;
 
                 double gedeckt = sp.Entladen(Math.Min(ueber, bedarf), stunde);
                 if (gedeckt <= 0) continue;
 
-                SenkeAbziehen(brauchwasser ? WaermequelleClass.SENKE_WARMWASSER
-                                           : WaermequelleClass.SENKE_HEIZUNG,
-                              gedeckt, ref rest_ww, ref rest_heiz);
+                // KANAL DES DURCHLAUFS entscheidet — die Menge stammt aus der
+                // Entladeordnung genau dieses Kanals, und nur seinen Bedarf darf sie
+                // decken (Konzept 6.3).
+                SenkeAbziehen(MASKE_EINZELKANAL[kanal], gedeckt, rest, _knappheit);
 
-                Anteil_Entladen(sp, gedeckt);   // N2: Eigenanteil der Lader
+                Anteil_Entladen(sp, gedeckt, kanal);   // N2: Eigenanteil der Lader
 
 #if DEBUG
                 if (Entladeprobe != null)
-                    Entladeprobe(stunde, false, brauchwasser, sp.ID_Pufferspeicher, gedeckt, sp.SOC);
+                    Entladeprobe(stunde, false, kanal, sp.ID_Pufferspeicher, gedeckt, sp.SOC);
 #endif
             }
         }
 
-        private void EntladeKanal(List<SimulationPufferspeicher> speicher, bool brauchwasser,
-                                  bool vorab, int stunde, ref double rest_heiz, ref double rest_ww)
+        private void EntladeKanal(List<SimulationPufferspeicher> speicher, int kanal,
+                                  bool vorab, int stunde, double[] rest)
         {
             if (speicher == null) return;
 
@@ -1143,13 +1444,14 @@ namespace WindowsFormsApplication1
                 // wenn sein Kanal gerade keinen Bedarf hat — sonst bliebe ein Speicher
                 // ohne Bedarf für immer im zuletzt gesetzten Zustand.
                 //
-                // D5a: Ein Kombispeicher wird in dieser Phase zweimal besucht (er steht in
-                // beiden Kanallisten). Fortgeschrieben wird trotzdem nur einmal je Stunde
-                // — HystereseFortschreiben ist ein Zustandsübergang, kein Test.
+                // Ein Speicher mit mehrelementigem Klassen-Set wird in dieser Phase
+                // mehrfach besucht (er steht in mehreren Kanallisten). Fortgeschrieben
+                // wird trotzdem nur einmal je Stunde — HystereseFortschreiben ist ein
+                // Zustandsübergang, kein Test.
                 bool darfEntladen = vorab ? HystereseDerStunde(sp) : true;
                 if (!darfEntladen) continue;
 
-                double bedarf = brauchwasser ? rest_ww : rest_heiz;
+                double bedarf = rest[kanal];
                 if (bedarf <= 0) continue;
 
                 // PAKET BHKW-REGULÄR: MINDESTFÜLLSTAND/NOTRESERVE. Diese eine Zeile ist
@@ -1192,21 +1494,30 @@ namespace WindowsFormsApplication1
                 double gedeckt = sp.Entladen(bedarf, stunde);
                 if (gedeckt <= 0) continue;
 
-                // KANAL DES PUFFERS entscheidet, nicht SENKE_BEIDES (Konzept 6.3):
-                // Ein Brauchwasserspeicher darf keinen Heizbedarf decken.
-                SenkeAbziehen(brauchwasser ? WaermequelleClass.SENKE_WARMWASSER
-                                           : WaermequelleClass.SENKE_HEIZUNG,
-                              gedeckt, ref rest_ww, ref rest_heiz);
+                // KANAL DES DURCHLAUFS entscheidet, nicht die Bedarfsart (Konzept 6.3):
+                // Ein Brauchwasserspeicher darf keinen Heizbedarf decken. Ein Speicher
+                // mit mehrelementigem Set kommt für jeden seiner Kanäle EINMAL hierher —
+                // die Aufteilung entsteht aus der Knappheitsreihenfolge der Durchläufe,
+                // nicht aus einer Maske.
+                SenkeAbziehen(MASKE_EINZELKANAL[kanal], gedeckt, rest, _knappheit);
 
-                Anteil_Entladen(sp, gedeckt);   // N2: Eigenanteil der Lader
+                Anteil_Entladen(sp, gedeckt, kanal);   // N2: Eigenanteil der Lader
 
 #if DEBUG
                 if (Entladeprobe != null)
-                    Entladeprobe(stunde, vorab, brauchwasser, sp.ID_Pufferspeicher, gedeckt, sp.SOC);
+                    Entladeprobe(stunde, vorab, kanal, sp.ID_Pufferspeicher, gedeckt, sp.SOC);
 #endif
 
                 // Reicht der Speicher nicht, muss wieder nachgeladen werden.
-                if (vorab && (brauchwasser ? rest_ww : rest_heiz) > 0.0001) sp.LaedtGerade = true;
+                //
+                // GEMESSEN WIRD DER KANAL DIESES DURCHLAUFS. Bis K1 war das bei einem
+                // Heizungspuffer der zusammengefasste Rest aus Heizung UND Prozess; jetzt
+                // sind es zwei Durchläufe mit je eigenem Rest. Die Markierung fällt
+                // dadurch in genau einem Grenzfall anders aus: wenn beide Kanalreste für
+                // sich unter 0,0001 kWh liegen, zusammen aber darüber. Das ist ein
+                // Zehntelwattstundenbereich; ihn zu behalten hieße, den Speicher an einer
+                // Summe zu messen, die er im Dreikanalmodell gar nicht mehr sieht.
+                if (vorab && rest[kanal] > 0.0001) sp.LaedtGerade = true;
             }
         }
 
@@ -1216,17 +1527,18 @@ namespace WindowsFormsApplication1
         /// PRÜFHAKEN der Entladung — ausschließlich im Debug-Build, nach dem Muster von
         /// <see cref="Waermekanaele.Selbsttest"/> (kein Prüfcode im Release-Assembly).
         ///
-        /// Die Knappheitsregel K-1 des Kombispeichers („reicht der Inhalt nicht für
-        /// beide Bedarfe, gilt Warmwasser zuerst") ist eine Aussage über die REIHENFOLGE
-        /// innerhalb einer Stunde. Aus den Jahres- und Stundenganglinien der
-        /// Ergebnispersistenz lässt sie sich nicht ablesen: Dort steht die Entladung als
-        /// EINE Zahl je Speicher und Stunde, ohne Kanal. Der Haken macht sie messbar,
+        /// Die Knappheitsregel (Konzept 4.3; bis K1 die Kombi-Sonderregel K-1 „reicht der
+        /// Inhalt nicht für beide Bedarfe, gilt Warmwasser zuerst") ist eine Aussage über
+        /// die REIHENFOLGE innerhalb einer Stunde. Aus den Jahres- und Stundenganglinien
+        /// der Ergebnispersistenz lässt sie sich nicht ablesen: Dort steht die Entladung
+        /// als EINE Zahl je Speicher und Stunde, ohne Kanal. Der Haken macht sie messbar,
         /// ohne dem Rechenkern eine Ausgabe zu geben.
         ///
-        /// Parameter: Stunde, Phase A (<c>true</c>) oder E, Warmwasserkanal, Puffer-ID,
-        /// gedeckte Menge [kWh], Füllstand danach [kWh].
+        /// Parameter: Stunde, Phase A (<c>true</c>) oder E, KANALINDEX
+        /// (<see cref="Kanal"/>; bis Paket K2 ein <c>bool</c> „Warmwasserkanal"),
+        /// Puffer-ID, gedeckte Menge [kWh], Füllstand danach [kWh].
         /// </summary>
-        public static Action<int, bool, bool, int, double, double> Entladeprobe;
+        public static Action<int, bool, int, int, double, double> Entladeprobe;
 
 #endif
 
@@ -1234,14 +1546,11 @@ namespace WindowsFormsApplication1
         /// Hysterese-Entscheidung der Phase A, je Speicher und Stunde GENAU EINMAL
         /// gebildet (Etappe D5a — siehe <see cref="_hysteresePhaseA"/>).
         ///
-        /// Ohne Kombispeicher wird jeder Speicher ohnehin nur einmal besucht; dann geht
-        /// der Aufruf ohne Umweg über das Wörterbuch, und das Verhalten ist Anweisung für
-        /// Anweisung das bisherige.
+        /// Wird ein Speicher nur einmal besucht, liefert die Merkung genau das, was der
+        /// direkte Aufruf liefern würde — der Unterschied ist ein Wörterbuchzugriff.
         /// </summary>
         private bool HystereseDerStunde(SimulationPufferspeicher sp)
         {
-            if (!_hatKombi || !sp.IstKombi) return sp.HystereseFortschreiben();
-
             bool entscheidung;
             if (_hysteresePhaseA.TryGetValue(sp, out entscheidung)) return entscheidung;
 
@@ -1251,14 +1560,114 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Zieht die erzeugte Wärmemenge vom passenden Bedarfsanteil ab.
-        /// Bei der Wärmesenke "Beides" gilt Warmwasservorrang: zuerst wird der
-        /// Warmwasserbedarf gedeckt, der Rest geht auf die Heizwärme.
+        /// Zieht eine Wärmemenge von den Bedarfskanälen einer KANALMASKE ab, in der
+        /// vorgegebenen Reihenfolge (Konzept 4.3) — die eine Abzugsregel des
+        /// Rechenkerns.
         ///
         /// EINE Implementierung für alle Stufen (Paket 5): Wärmepumpe, Solarthermie,
-        /// Heizkessel, Heizstab und Speicherentladung müssen dieselbe Kanalregel
-        /// benutzen, sonst laufen die Kanäle auseinander. Der Rumpf ist der aus
-        /// <c>SimulationWaermepumpe</c>, unverändert.
+        /// Heizkessel, BHKW, Heizstab und Speicherentladung müssen dieselbe Kanalregel
+        /// benutzen, sonst laufen die Kanäle auseinander.
+        ///
+        /// <para><b>Regel.</b> Die Menge wird der Reihe nach auf die maskierten Kanäle
+        /// verteilt; jeder Kanal nimmt höchstens seinen offenen Bedarf auf. Was danach
+        /// übrig ist, VERFÄLLT — die Deckung kann den Bedarf nicht überschreiten. Genau
+        /// das tat die zweikanalige Fassung mit ihrer Klemmung auf 0, nur ohne es
+        /// zurückzumelden.</para>
+        ///
+        /// <para><b>Warum ein Rückgabewert.</b> Ein Aufrufer, der 10 kWh anbietet und
+        /// 6 kWh los wird, muss das erfahren können — sonst schreibt er sich eine Deckung
+        /// gut, die nie stattgefunden hat. Bis Paket K2 stand diese Prüfung, wo sie stand,
+        /// oder gar nicht; jetzt liefert die Regel sie mit. Wer sie nicht braucht,
+        /// ignoriert den Wert (der Rechenkern tut das an vielen Stellen bewusst,
+        /// Konvention B0).</para>
+        ///
+        /// <para><b>Nichtnegativität.</b> Am Ende wird JEDER Kanal auf ≥ 0 geklemmt, nicht
+        /// nur die maskierten. Das ist keine Bequemlichkeit, sondern die Zusage der
+        /// zweikanaligen Fassung, die beide Kanäle bei jedem Aufruf geklemmt hat: Der
+        /// Rest, mit dem die nächste Stufe rechnet, ist nie negativ.</para>
+        /// </summary>
+        /// <param name="maske">
+        /// Kanäle, aus denen abgezogen werden darf (Länge <see cref="Kanal.ANZAHL"/>);
+        /// <c>null</c> = alle. Die Masken der Direktsenken liefert
+        /// <see cref="DirektsenkeMaske"/>; sie sind GETEILTE, unveränderliche Instanzen
+        /// und werden hier nur gelesen.
+        /// </param>
+        /// <param name="menge">Angebotene Wärmemenge [kWh]; ≤ 0 ist ein No-op.</param>
+        /// <param name="rest">Stundenzustand der Kanäle [kWh], wird IN PLACE verändert.</param>
+        /// <param name="reihenfolge">
+        /// Kanalindizes in Abzugsreihenfolge; <c>null</c> = Knappheitsreihenfolge des
+        /// Laufs.
+        /// </param>
+        /// <returns>Tatsächlich abgezogene Summe [kWh].</returns>
+        public static double SenkeAbziehen(bool[] maske, double menge, double[] rest,
+                                           int[] reihenfolge)
+        {
+            if (rest == null) return 0;
+
+            double gezogen = 0;
+
+            if (menge > 0)
+            {
+                int[] ordnung = (reihenfolge != null && reihenfolge.Length > 0)
+                    ? reihenfolge : KnappheitDesLaufs();
+                double offen = menge;
+
+                for (int i = 0; i < ordnung.Length; i++)
+                {
+                    int k = ordnung[i];
+                    if (k < 0 || k >= rest.Length) continue;
+                    if (maske != null && (k >= maske.Length || !maske[k])) continue;
+                    if (rest[k] <= 0) continue;
+
+                    double teil = Math.Min(offen, rest[k]);
+                    rest[k] -= teil;
+                    gezogen += teil;
+
+                    offen -= teil;
+                    if (offen <= 0) break;
+                }
+            }
+
+            for (int k = 0; k < rest.Length; k++)
+                if (rest[k] < 0) rest[k] = 0;
+
+            return gezogen;
+        }
+
+        /// <summary>
+        /// KOMPATIBILITÄTSFASSUNG für die Erzeugermodule: Abzug nach der BEDARFSART einer
+        /// Direktsenke (<c>WS_Typ</c>) statt nach einer Kanalmaske.
+        ///
+        /// Sie löst zwei Dinge selbst auf, die der Aufrufer nicht kennen soll: die
+        /// Kanalmaske der Bedarfsart (<see cref="DirektsenkeMaske"/>, INTERIMSREGEL I1)
+        /// und die Knappheitsreihenfolge des Laufs (<see cref="KnappheitFuerLauf"/>).
+        /// Sie ist der Ersatz für alle bisherigen Aufrufe der Form
+        /// <c>SenkeAbziehen(wsTyp, menge, ref rest_ww, ref rest_heiz)</c>.
+        ///
+        /// Sie bleibt über I1 hinaus bestehen: Die Bedarfsart ist eine Größe des
+        /// Datenmodells (Konzept 4.4), und die Module sollen sie weiterhin reichen dürfen,
+        /// ohne die Maskenbildung zu kennen. Mit Paket S1 ändert sich allein, WAS
+        /// <see cref="DirektsenkeMaske"/> zurückgibt.
+        /// </summary>
+        /// <returns>Tatsächlich abgezogene Summe [kWh].</returns>
+        public static double SenkeAbziehen(string wsTyp, double menge, double[] rest)
+        {
+            return SenkeAbziehen(DirektsenkeMaske(wsTyp), menge, rest, KnappheitDesLaufs());
+        }
+
+        /// <summary>
+        /// ZWEIKANALIGE FASSUNG — <b>ausschließlich für den einkanaligen ALTPFAD</b>
+        /// (<c>SimulationWaermepumpe.SenkeAbziehen</c>, Bedarfs- und Heizstabschleife des
+        /// Altwegs).
+        ///
+        /// Der Rumpf ist Zeile für Zeile der vor Paket K2 gültige und bleibt es: Der
+        /// Altpfad ist die Rückfallebene und darf sich durch den Dreikanal-Umbau um kein
+        /// Bit verschieben. Er kennt keinen Prozesskanal — sein Bedarfsvektor ist die
+        /// Summe, und „Heizung" heißt dort genau das, was es immer hieß.
+        ///
+        /// <b>KEIN neuer Aufrufer.</b> Wer dreikanalig rechnet, nimmt
+        /// <see cref="SenkeAbziehen(string, double, double[])"/>. Diese Fassung entfällt
+        /// mit dem Altpfad-Rückbau (Paket A1).
         /// </summary>
         public static void SenkeAbziehen(string senke, double menge,
                                          ref double rest_ww, ref double rest_heiz)

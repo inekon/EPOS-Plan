@@ -979,6 +979,46 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double Speicherentladung_Anteil = 0;
 
+        // ------------------------------------------------------------------
+        // KANALINDIZIERTE DECKUNGSBUCHFÜHRUNG (Paket K2, Konzept 4.4)
+        //
+        // Die drei Felder sind eine ZUSÄTZLICHE Aufschlüsselung der bereits
+        // vorhandenen Skalare — nicht ihr Ersatz. Es gilt je Lauf
+        //
+        //   Σ Direktdeckung_Kanal[k]      == Direktdeckung_gesamt
+        //   Σ Speicherentladung_Kanal[k]  == Speicherentladung_Anteil
+        //   Σ Heizstab_Kanal[k]           == Heizstab_gesamt
+        //
+        // bis auf die Rundungsklasse der getrennten Kanalarithmetik (die Skalare
+        // summieren EINEN double-Strom, die Kanalfelder Kanal.ANZAHL getrennte).
+        // SimulationRunner und Form_Simulation_Detail lesen weiterhin die Skalare;
+        // die Kanalfelder sind die Voraussetzung für die Deckungsgrade je Kanal
+        // (Paket E1, Konzept 4.4).
+        //
+        // Der Kanal einer Buchung wird NICHT hier entschieden: Er ergibt sich aus
+        // dem Kanal, von dem SenkeAbziehen tatsächlich abgezogen hat (gemessen über
+        // die rest-Differenz, siehe Kanalabzug am Dateiende).
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Direkt gedeckter Momentanbedarf je Kanal [kWh] (Phase B) — die
+        /// Aufschlüsselung von <see cref="Direktdeckung_gesamt"/>.
+        /// </summary>
+        public double[] Direktdeckung_Kanal = new double[Kanal.ANZAHL];
+
+        /// <summary>
+        /// Anteil dieses Erzeugers an der bedarfsdeckenden Speicherentladung je Kanal
+        /// [kWh] — die Aufschlüsselung von <see cref="Speicherentladung_Anteil"/>.
+        /// Gefüllt von der <see cref="Kaskadenschleife"/>, wie der Skalar selbst.
+        /// </summary>
+        public double[] Speicherentladung_Kanal = new double[Kanal.ANZAHL];
+
+        /// <summary>
+        /// Heizstabwärme je Kanal [kWh] (Phase F) — die Aufschlüsselung von
+        /// <see cref="Heizstab_gesamt"/>.
+        /// </summary>
+        public double[] Heizstab_Kanal = new double[Kanal.ANZAHL];
+
         private int _zkModule = 0;
         private Ladeauftrag[] _zkHauptauftrag = new Ladeauftrag[0];
         private Ladeauftrag[] _zkZweitauftrag = new Ladeauftrag[0];
@@ -988,26 +1028,47 @@ namespace WindowsFormsApplication1
         private bool[] _zkPvGebunden = new bool[0];      // Modul im Betriebsmodus PV (13.5)
 
         /// <summary>
+        /// K2: Kanalsplit der Direktdeckung EINER Moduliteration [kWh] — Zwischenablage
+        /// zwischen dem Abzug und der Buchung in <see cref="Direktdeckung_Kanal"/>.
+        ///
+        /// Nötig, weil die Nacharbeit E-K1-3 die gerade gebuchte Direktdeckung anteilig
+        /// wieder zurücknimmt (Quellwärme aus einem Kaskadenpuffer gehört dessen Lader).
+        /// Auf dem Skalar ist das ein einfaches <c>-=</c>; der Kanalsplit derselben
+        /// Buchung muss dieselbe Rücknahme erfahren, sonst liefe die Zusage
+        /// „Σ Kanal == Skalar" auseinander. Zurückgenommen wird PROPORTIONAL zu der
+        /// Buchung, die gerade erfolgt ist — das ist keine neue Verteilregel, sondern die
+        /// Umkehrung EINER Buchung mit bekanntem Kanalsplit.
+        /// </summary>
+        private readonly double[] _deckungIteration = new double[Kanal.ANZAHL];
+
+        /// <summary>
         /// Beginn des zweikanaligen Laufs: Eingangsgrößen festhalten, Zähler nullen,
         /// Senkenspeicher zurücksetzen und die Ladeaufträge je Modul auflösen.
         ///
         /// Voraussetzung: <see cref="Vorbereiten_Zweikanalig"/> ist gelaufen und
         /// <paramref name="kontext"/> ist aufgebaut.
         /// </summary>
-        public bool Zweikanalig_Start(Waermekanaele kanaele, Kaskadenkontext kontext)
+        public bool Zweikanalig_Start(Kanalsatz kanaele, Kaskadenkontext kontext)
         {
             if (kanaele == null || kontext == null) return false;
 
             // Eingangsgrößen als EIGENE Vektoren festhalten (kein Aliasing auf die
-            // Kanäle, die gleich fortgeschrieben werden — B0-2).
+            // Kanäle, die gleich fortgeschrieben werden — B0-2). PAKET K2: Der
+            // Gesamtbedarf ist die Summe ALLER Kanäle; Bezug des Warmwasserbedarfs ist
+            // der Brauchwasserkanal.
             Waermebedarf_stuendlich = kanaele.Summe();
-            Warmwasserbedarf_stuendlich = (float[])kanaele.WW.Clone();
+            Warmwasserbedarf_stuendlich = (float[])kanaele.Brauchwasser.Clone();
 
             WP_Strombedarf_gesamt = 0;
             WP_Waermeproduktion_gesamt = 0;
             Heizstab_gesamt = 0;
             WP_Laufzeit = 0;
             Bivalenzpunkt = -100;
+
+            // K2: die Kanalaufschlüsselung derselben Größen mit auf den Laufanfang.
+            Array.Clear(Direktdeckung_Kanal, 0, Kanal.ANZAHL);
+            Array.Clear(Speicherentladung_Kanal, 0, Kanal.ANZAHL);
+            Array.Clear(Heizstab_Kanal, 0, Kanal.ANZAHL);
 
             // Senkenspeicher auf den Laufanfang. QUELLspeicher NICHT: sie starten
             // gefüllt (WaermequelleClass.Quellspeicher setzt SOC = Q_max), ein Reset
@@ -1058,11 +1119,17 @@ namespace WindowsFormsApplication1
         /// Phase B der Reihenfolge-Invariante (Konzept 6.3) für die Wärmepumpen-Module:
         /// Bedarfsdeckung in Anlagenpriorität, Kennlinie, Betriebsarten, Sperrzeiten,
         /// Quellbegrenzung und die Bestimmung des Ladepotenzials der Stunde.
+        ///
+        /// <para>PAKET K2: <paramref name="rest"/> ist der offene Bedarf je Kanal
+        /// (<see cref="Kanal.HEIZUNG"/>, <see cref="Kanal.BRAUCHWASSER"/>,
+        /// <see cref="Kanal.PROZESS"/>) und tritt an die Stelle des Paares
+        /// <c>ref rest_heiz, ref rest_ww</c>. Das Feld wird IN-PLACE fortgeschrieben —
+        /// dieselbe Rolle, die vorher die <c>ref</c>-Parameter hatten.</para>
         /// </summary>
         /// <returns>false = Abbruch der Kennlinienauswertung.</returns>
         public bool Zweikanalig_Bedarfsphase(int stunde, Kaskadenkontext kontext,
                                              bool pvUeberschuss, double pvRest,
-                                             ref double rest_heiz, ref double rest_ww)
+                                             double[] rest)
         {
                 int module = _zkModule;
                 Ladeauftrag[] hauptauftrag = _zkHauptauftrag;
@@ -1097,7 +1164,7 @@ namespace WindowsFormsApplication1
                     // Im Altpfad steht hier der aggregierte Rest_waerme; das ist im
                     // Speicherbetrieb nicht mehr die maßgebliche Größe.
                     double verfuegbar = Verfuegbar(zuordnung, hauptauftrag[index],
-                                                   rest_heiz, rest_ww, pvUeberschuss);
+                                                   rest, pvUeberschuss);
 
                     // Betriebsarten-Steuerung (unverändert zum Altpfad, nur die
                     // Bezugsgröße des Alternativbetriebs ist jetzt kanalgerecht)
@@ -1150,8 +1217,8 @@ namespace WindowsFormsApplication1
                     // ABBRUCHBEDINGUNG (Konzept 6.3): aus „kein Bedarf" wird
                     // „kein Bedarf UND kein Ladepotenzial". Ein Modul mit Zweitsenke muss
                     // auch dann laufen, wenn sein Kanal gerade nichts verlangt.
-                    bool kannLaden = Ladefaehig(hauptauftrag[index], pvUeberschuss, rest_heiz, rest_ww) ||
-                                     Ladefaehig(zweitauftrag[index], pvUeberschuss, rest_heiz, rest_ww);
+                    bool kannLaden = Ladefaehig(hauptauftrag[index], pvUeberschuss, rest) ||
+                                     Ladefaehig(zweitauftrag[index], pvUeberschuss, rest);
                     if (verfuegbar <= 0 && !kannLaden) continue;
 
                     // Betriebsmodus -> Ladepotenzial dieser Stunde
@@ -1160,6 +1227,9 @@ namespace WindowsFormsApplication1
 
                     float vorherTherm = WP_Waermeproduktion_stuendlich[stunde];
                     float vorherEl = WP_Strombedarf_stuendlich[stunde];
+
+                    // K2: Kanalsplit dieser Moduliteration leeren (siehe Feldkommentar).
+                    Array.Clear(_deckungIteration, 0, Kanal.ANZAHL);
 
                     // Bedarfsdeckung NUR bei Hauptsenke Heizkreis. Eine Anlage mit
                     // Puffer-Hauptsenke lädt ausschließlich (Phase C) — genau daraus
@@ -1184,7 +1254,7 @@ namespace WindowsFormsApplication1
                                 Modul_WP_Laufzeit[index] += 1;
                             }
 
-                            SenkeAbziehen(zuordnung.WSTyp, result[PTHERM], ref rest_ww, ref rest_heiz);
+                            SenkeAbziehen(zuordnung.WSTyp, result[PTHERM], rest, _deckungIteration);
                             Direktdeckung_gesamt += result[PTHERM];   // N2: Eigenanteil
                         }
                         else
@@ -1203,7 +1273,7 @@ namespace WindowsFormsApplication1
                                 Modul_WP_Laufzeit[index] += (verfuegbar / (float)result[PTHERM]);
                             }
 
-                            SenkeAbziehen(zuordnung.WSTyp, verfuegbar, ref rest_ww, ref rest_heiz);
+                            SenkeAbziehen(zuordnung.WSTyp, verfuegbar, rest, _deckungIteration);
                             Direktdeckung_gesamt += verfuegbar;       // N2: Eigenanteil
                         }
                     }
@@ -1244,9 +1314,18 @@ namespace WindowsFormsApplication1
                             {
                                 Direktdeckung_gesamt -= geliefert;
                                 if (Direktdeckung_gesamt < 0) Direktdeckung_gesamt = 0;
+
+                                // K2: dieselbe Rücknahme auf dem Kanalsplit derselben
+                                // Buchung — proportional, damit Σ Kanal == Skalar bleibt.
+                                DeckungIterationKuerzen(geliefert);
                             }
                         }
                     }
+
+                    // K2: Kanalsplit dieser Moduliteration festschreiben — NACH der
+                    // Korrektur E-K1-3, wie beim Skalar auch.
+                    for (int k = 0; k < Kanal.ANZAHL; k++)
+                        Direktdeckung_Kanal[k] += _deckungIteration[k];
 
                     // Was vom Ladepotenzial nach der Bedarfsdeckung übrig ist, steht den
                     // Phasen C und D zur Verfügung.
@@ -1258,10 +1337,14 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        /// <summary>Stundenende: der Restbedarf der Stunde nach allen Phasen.</summary>
-        public void Zweikanalig_StundeEnde(int stunde, double rest_heiz, double rest_ww)
+        /// <summary>
+        /// Stundenende: der Restbedarf der Stunde nach allen Phasen — die Summe ÜBER ALLE
+        /// Kanäle (K2). Ohne Prozesswärmeanteil ist das Zeichen für Zeichen die bisherige
+        /// Größe <c>rest_heiz + rest_ww</c>.
+        /// </summary>
+        public void Zweikanalig_StundeEnde(int stunde, double[] rest)
         {
-            waermerestbedarf_stuendlich[stunde] = (float)(rest_heiz + rest_ww);
+            waermerestbedarf_stuendlich[stunde] = (float)Kanalabzug.Summe(rest);
         }
 
         /// <summary>Abschluss des zweikanaligen Laufs: Sortierung, Jahressummen, Bivalenzpunkt.</summary>
@@ -1300,45 +1383,33 @@ namespace WindowsFormsApplication1
         /// unangetastet: Phase C lädt weiterhin ohne <c>SenkeAbziehen</c>, Phase E
         /// entlädt — nur darf die Aufnahme einer Stunde jetzt die freie Kapazität um die
         /// im selben Zeitschritt absehbare Entnahme übersteigen.
+        ///
+        /// <para>PAKET K2: Die drei WS_Typ-Fälle sind durch EINE Frage ersetzt — „wie viel
+        /// offener Bedarf steht auf den Kanälen, die diese Bedarfsart bedient?". Beantwortet
+        /// wird sie von <see cref="Kanalabzug.Offen"/>, also von der EINEN Kanalregel
+        /// (<c>Kaskadenschleife.SenkeAbziehen</c>) selbst. Die Maske hier ein zweites Mal
+        /// zu bilden hieße, dieselbe Zuordnung an fünf Stellen zu führen — genau das, was
+        /// Paket 5 mit <c>SenkeAbziehen</c> abgeschafft hat.</para>
+        ///
+        /// <para>Der Fall <c>zuordnung == null</c> ist damit kein Sonderfall mehr: Ein
+        /// <c>null</c>-Eintrag in <c>Kaskadenkontext.SenkeJeModul</c> bedeutet ausdrücklich
+        /// „Vorbelegung Heizkreis / Bedarfsart Beides", und genau so wird er gerechnet.</para>
         /// </summary>
         private double Verfuegbar(Senkenzuordnung zuordnung, Ladeauftrag haupt,
-                                  double rest_heiz, double rest_ww, bool pvUeberschuss)
+                                  double[] rest, bool pvUeberschuss)
         {
-            if (zuordnung == null) return rest_ww + rest_heiz;
+            if (zuordnung == null)
+                return Kanalabzug.Offen(WaermequelleClass.SENKE_BEIDES, rest);
 
             if (zuordnung.Haupt != Senke.Heizkreis)
             {
                 if (haupt == null || haupt.Speicher == null) return 0;
-                return haupt.Speicher.Bilanzraum(haupt.ObergrenzeStunde(pvUeberschuss),
-                                                 Kanalbedarf(haupt.Speicher, rest_heiz, rest_ww));
+                return haupt.Speicher.Bilanzraum(
+                    haupt.ObergrenzeStunde(pvUeberschuss),
+                    Kanalabzug.OffenFuerSpeicher(haupt.Speicher, rest));
             }
 
-            if (zuordnung.WSTyp == WaermequelleClass.SENKE_WARMWASSER) return rest_ww;
-            if (zuordnung.WSTyp == WaermequelleClass.SENKE_HEIZUNG) return rest_heiz;
-            return rest_ww + rest_heiz;
-        }
-
-        /// <summary>
-        /// Offener Bedarf des Kanals, den DIESER Speicher bedient (Konzept 3.2). Ein
-        /// Brauchwasserspeicher sieht den WW-Kanal, jeder andere den Heizkanal — dieselbe
-        /// Regel wie bei der Entladung (<see cref="EntladeKanal"/>).
-        ///
-        /// <para>NACHARBEIT E-K2-3: Der KOMBISPEICHER bedient beide Kanäle aus einem
-        /// Vorrat, sein Durchsatz ist deshalb die Summe beider — dieselbe Regel, die
-        /// <see cref="Kaskadenschleife.DurchlassBudget"/> in den Ladephasen anwendet.
-        /// Ohne diese Zeile rechnete Phase B mit „nur Heizbedarf" und Phase C mit
-        /// „Heiz + Warmwasser" auf demselben Speicher: In einer Sommerstunde
-        /// (<c>rest_heiz = 0</c>, offener Warmwasserbedarf, Kombispeicher auf
-        /// Abschaltschwelle) war der Bilanzraum 0, das Modul wurde übersprungen und der
-        /// Heizstab sprang ein, obwohl der Kombispeicher den Bedarf hätte durchreichen
-        /// können. Ohne Kombispeicher ist der Ausdruck Zeichen für Zeichen der
-        /// bisherige.</para>
-        /// </summary>
-        private static double Kanalbedarf(SimulationPufferspeicher sp, double rest_heiz, double rest_ww)
-        {
-            if (sp == null) return 0;
-            if (sp.IstKombi) return rest_heiz + rest_ww;
-            return sp.IstBrauchwasserkanal ? rest_ww : rest_heiz;
+            return Kanalabzug.Offen(zuordnung.WSTyp, rest);
         }
 
         /// <summary>
@@ -1428,13 +1499,13 @@ namespace WindowsFormsApplication1
         /// true, wenn der Auftrag in dieser Stunde noch Wärme aufnehmen kann — Ladung in
         /// den Speicher ODER Durchsatz zur Last (Bilanzraum, siehe <see cref="Verfuegbar"/>).
         /// </summary>
-        private static bool Ladefaehig(Ladeauftrag auftrag, bool pvUeberschuss,
-                                       double rest_heiz, double rest_ww)
+        private static bool Ladefaehig(Ladeauftrag auftrag, bool pvUeberschuss, double[] rest)
         {
             if (auftrag == null || auftrag.Speicher == null) return false;
 
-            return auftrag.Speicher.Bilanzraum(auftrag.ObergrenzeStunde(pvUeberschuss),
-                                               Kanalbedarf(auftrag.Speicher, rest_heiz, rest_ww)) > 0;
+            return auftrag.Speicher.Bilanzraum(
+                       auftrag.ObergrenzeStunde(pvUeberschuss),
+                       Kanalabzug.OffenFuerSpeicher(auftrag.Speicher, rest)) > 0;
         }
 
         /// <summary>
@@ -1617,23 +1688,29 @@ namespace WindowsFormsApplication1
         /// Die Aufteilung auf die Kanäle folgt dem Warmwasservorrang von
         /// <c>SENKE_BEIDES</c>; die Additionslogik ist die aus B0-5 (<c>+=</c> statt
         /// <c>=</c>, sonst überschreiben sich die Modulbeiträge in der Ganglinie).
+        ///
+        /// <para>PAKET K2: Der aggregierte Rest ist der offene Bedarf der Kanäle, die
+        /// <c>SENKE_BEIDES</c> bedient — dieselbe Größe, gegen die gleich abgezogen wird,
+        /// und deshalb aus derselben Quelle (<see cref="Kanalabzug.Offen"/>) statt aus
+        /// einer zweiten Summenbildung. <see cref="Heizstab_Kanal"/> nimmt die
+        /// Aufschlüsselung des Abzugs auf.</para>
         /// </summary>
-        public void Heizstabphase(int stunde, ref double rest_heiz, ref double rest_ww)
+        public void Heizstabphase(int stunde, double[] rest)
         {
             if (!Mit_Heizstab) return;
 
             for (int index = 0; index < wp_model.Count; index++)
             {
-                double rest = rest_heiz + rest_ww;
-                if (rest <= 0) break;
+                double offen = Kanalabzug.Offen(WaermequelleClass.SENKE_BEIDES, rest);
+                if (offen <= 0) break;
                 if (WP_Heizung[index] <= 0) continue;
 
-                double menge = Math.Min(rest, WP_Heizung[index]);
+                double menge = Math.Min(offen, WP_Heizung[index]);
                 Heizstab_stuendlich[stunde] += (float)menge;
                 Heizstab_gesamt += menge;
                 Modul_Heizstab[index] += menge;
 
-                SenkeAbziehen(WaermequelleClass.SENKE_BEIDES, menge, ref rest_ww, ref rest_heiz);
+                SenkeAbziehen(WaermequelleClass.SENKE_BEIDES, menge, rest, Heizstab_Kanal);
             }
         }
 
@@ -1670,6 +1747,47 @@ namespace WindowsFormsApplication1
             // Warmwasservorrang benutzen. Der Rumpf ist unverändert übernommen; der
             // einkanalige Altpfad ruft weiter diese Methode.
             Kaskadenschleife.SenkeAbziehen(senke, menge, ref rest_ww, ref rest_heiz);
+        }
+
+        /// <summary>
+        /// KANALINDIZIERTE Fassung (Paket K2) — dieselbe Regel, aber auf dem Kanalfeld
+        /// <paramref name="rest"/>, und mit der Aufschlüsselung des Abzugs nach Kanälen.
+        ///
+        /// <paramref name="jeKanal"/> nimmt die tatsächlich abgezogenen Beträge je Kanal
+        /// auf (<c>+=</c>). Sie werden GEMESSEN — aus der Differenz von
+        /// <paramref name="rest"/> vor und nach dem Abzug —, nicht nach einer eigenen
+        /// Regel verteilt: Welcher Kanal wie viel abgibt, entscheidet allein
+        /// <see cref="Kaskadenschleife.SenkeAbziehen(string, double, double[])"/>
+        /// (Kanalmaske und Knappheitsreihenfolge, Konzept 4.3).
+        /// </summary>
+        private void SenkeAbziehen(string senke, double menge, double[] rest, double[] jeKanal)
+        {
+            Kanalabzug.Abziehen(senke, menge, rest, jeKanal);
+        }
+
+        /// <summary>
+        /// Nimmt <paramref name="menge"/> von der Direktdeckung DIESER Moduliteration
+        /// zurück — die Kanalfassung der Korrektur E-K1-3 (Quellwärme aus einem
+        /// Kaskadenpuffer gehört dessen Lader, nicht der Wärmepumpe).
+        ///
+        /// Zurückgenommen wird PROPORTIONAL zum Kanalsplit derselben Buchung. Das ist
+        /// keine neue Verteilregel: Es ist die Umkehrung genau einer Buchung, deren
+        /// Kanalanteile bekannt sind. Konstruktiv gilt
+        /// <c>menge ≤ Σ _deckungIteration</c> (die Quellentnahme kann die erzeugte und
+        /// gebuchte Wärme nicht übersteigen); der Faktor wird trotzdem bei 0 geklemmt,
+        /// wie der Skalar auch.
+        /// </summary>
+        private void DeckungIterationKuerzen(double menge)
+        {
+            double summe = 0;
+            for (int k = 0; k < Kanal.ANZAHL; k++) summe += _deckungIteration[k];
+            if (summe <= 0) return;
+
+            double faktor = (summe - menge) / summe;
+            if (faktor < 0) faktor = 0;
+            if (faktor >= 1) return;
+
+            for (int k = 0; k < Kanal.ANZAHL; k++) _deckungIteration[k] *= faktor;
         }
 
         /// <summary>
@@ -1904,6 +2022,151 @@ namespace WindowsFormsApplication1
             // unverändert nach der Formel aus B0-7b.
             Direktdeckung_gesamt = 0;
             Speicherentladung_Anteil = 0;
+
+            // K2: die Kanalaufschlüsselung derselben Größen (Konzept 4.4).
+            Array.Clear(Direktdeckung_Kanal, 0, Kanal.ANZAHL);
+            Array.Clear(Speicherentladung_Kanal, 0, Kanal.ANZAHL);
+            Array.Clear(Heizstab_Kanal, 0, Kanal.ANZAHL);
+        }
+    }
+
+    /// <summary>
+    /// Kanalabzug auf dem indizierten Restbedarfsfeld (Paket K2, Konzept 4.1/4.3) — die
+    /// Brücke, über die ALLE vier Erzeugermodule denselben Abzug benutzen.
+    ///
+    /// <para><b>Warum es diese Klasse gibt.</b> Die eine Kanalregel ist und bleibt
+    /// <see cref="Kaskadenschleife.SenkeAbziehen(string, double, double[])"/>: Sie löst
+    /// Kanalmaske und Knappheitsreihenfolge auf. Die Module brauchen darüber hinaus zwei
+    /// Größen, die man aus ihr ABLEITEN, aber nicht ohne Wissen über die Maske selbst
+    /// bilden kann:</para>
+    ///
+    /// <list type="number">
+    /// <item><see cref="Offen"/> — der offene Bedarf GENAU DER Kanäle, die eine Bedarfsart
+    /// bedient. Bis Paket K1 stand dafür in jedem Modul dieselbe Dreifach-Verzweigung
+    /// (<c>Warmwasser → rest_ww</c>, <c>Heizung → rest_heiz</c>, sonst die Summe). Sie
+    /// hier ein viertes und fünftes Mal auszuschreiben hieße, die Kanalzuordnung an fünf
+    /// Stellen zu führen — dieselbe Doppelung, die Paket 5 mit <c>SenkeAbziehen</c>
+    /// beseitigt hat, und mit dem Klassen-Set (Konzept 6.1) würde sie alle fünf Stellen
+    /// betreffen.</item>
+    /// <item><see cref="Abziehen"/> — der Abzug MIT Aufschlüsselung, welcher Kanal wie
+    /// viel abgegeben hat (Konzept 4.4, Voraussetzung für die Deckungsgrade je Kanal).</item>
+    /// </list>
+    ///
+    /// <para>Beide führen KEINE eigene Kanalzuordnung: <see cref="Offen"/> liest die
+    /// Maske, die <see cref="Kaskadenschleife.DirektsenkeMaske"/> für dieselbe Bedarfsart
+    /// liefert (heute Interimsregel I1), und <see cref="Abziehen"/> MISST die
+    /// Aufschlüsselung an der Differenz von <c>rest</c> vor und nach dem Abzug. Damit
+    /// kann diese Klasse von der einen Kanalregel nicht abweichen, und eine geänderte
+    /// Maske oder Knappheitsreihenfolge wirkt hier ohne Nacharbeit — insbesondere der
+    /// Abriss von I1 mit Paket S1.</para>
+    ///
+    /// <para><b>Sie gehört nicht auf Dauer hierher.</b> Der Ort ist
+    /// <see cref="Kaskadenschleife"/>, neben der Regel, die sie befragt; sie steht hier
+    /// nur, weil der Modulteil von K2 getrennt vom Enginekern entstanden ist. Beim
+    /// Zusammenführen wandert sie dorthin — die Aufrufstellen ändern sich dabei nicht.</para>
+    /// </summary>
+    internal static class Kanalabzug
+    {
+        [ThreadStatic] private static double[] _vorher;
+
+        /// <summary>
+        /// Offener Bedarf ÜBER ALLE Kanäle [kWh] — der Stufeneingang bzw. der Restbedarf,
+        /// den die Module als EINE Zahl führen (Ganglinien, Maxima, Jahressummen). Vor
+        /// K2 stand dafür überall <c>rest_heiz + rest_ww</c>.
+        /// </summary>
+        public static double Summe(double[] rest)
+        {
+            if (rest == null) return 0;
+
+            double s = 0;
+            for (int k = 0; k < Kanal.ANZAHL && k < rest.Length; k++) s += rest[k];
+            return s;
+        }
+
+        /// <summary>
+        /// Offener Bedarf der Kanäle, in die DIESER Speicher entlädt [kWh] — die
+        /// Durchsatzgröße eines Puffers als hydraulische Weiche (Bilanzraum, Konzept 3.4).
+        /// Bis Paket K1 stand dafür in der Wärmepumpe und im BHKW je eine
+        /// Fallunterscheidung <c>IstKombi / IstBrauchwasserkanal</c>.
+        ///
+        /// <para>Maßgeblich ist <see cref="Kaskadenschleife.EntladetKanal"/> und nicht das
+        /// reine Klassen-Set des Speichers: Dieselbe Frage beantwortet
+        /// <see cref="Kaskadenschleife.DurchlassBudget"/> beim Vergeben des
+        /// Durchsatzbudgets, und beide Seiten müssen dieselbe Antwort bekommen — sonst
+        /// schätzt die Bedarfsphase einen Durchsatz, den die Ladephase nicht vergibt.</para>
+        ///
+        /// <para>NACHARBEIT E-K2-3, die Vorgeschichte dieser Regel: Der KOMBISPEICHER
+        /// bedient beide Kanäle aus einem Vorrat, sein Durchsatz ist deshalb die Summe
+        /// beider. Solange die Bedarfsphase mit „nur Heizbedarf" rechnete und die
+        /// Ladephase mit „Heiz + Warmwasser", war in einer Sommerstunde
+        /// (kein Heizbedarf, offener Warmwasserbedarf, Kombispeicher auf Abschaltschwelle)
+        /// der Bilanzraum 0: Das Modul wurde übersprungen und der Heizstab sprang ein,
+        /// obwohl der Kombispeicher den Bedarf hätte durchreichen können.</para>
+        /// </summary>
+        public static double OffenFuerSpeicher(SimulationPufferspeicher sp, double[] rest)
+        {
+            if (sp == null || rest == null) return 0;
+
+            double offen = 0;
+            for (int k = 0; k < Kanal.ANZAHL && k < rest.Length; k++)
+                if (rest[k] > 0 && Kaskadenschleife.EntladetKanal(sp, k)) offen += rest[k];
+
+            return offen;
+        }
+
+        /// <summary>
+        /// Offener Bedarf der Kanäle, die die Bedarfsart <paramref name="wsTyp"/> bedient
+        /// [kWh] — die Bezugsgröße, gegen die ein Erzeuger seine Stundenproduktion
+        /// begrenzt.
+        ///
+        /// Gezählt werden GENAU die Kanäle der Maske und nur ihre POSITIVEN Restbeträge —
+        /// dieselben Kanäle und dieselbe Bedingung, unter denen
+        /// <see cref="Kaskadenschleife.SenkeAbziehen(string, double, double[])"/> gleich
+        /// abziehen wird. Damit ist der Rückgabewert exakt die Menge, die dieser Abzug
+        /// höchstens unterbringen kann.
+        /// </summary>
+        public static double Offen(string wsTyp, double[] rest)
+        {
+            if (rest == null) return 0;
+
+            bool[] maske = Kaskadenschleife.DirektsenkeMaske(wsTyp);
+
+            double offen = 0;
+            for (int k = 0; k < Kanal.ANZAHL && k < rest.Length; k++)
+            {
+                if (maske != null && (k >= maske.Length || !maske[k])) continue;
+                if (rest[k] > 0) offen += rest[k];
+            }
+            return offen;
+        }
+
+        /// <summary>
+        /// Zieht <paramref name="menge"/> nach der einen Kanalregel von
+        /// <paramref name="rest"/> ab und schreibt die tatsächlich abgezogenen Beträge je
+        /// Kanal auf <paramref name="jeKanal"/> auf (<c>+=</c>; <c>null</c> = keine
+        /// Aufschlüsselung gewünscht).
+        /// </summary>
+        /// <returns>tatsächlich abgezogene Gesamtmenge [kWh]</returns>
+        public static double Abziehen(string wsTyp, double menge, double[] rest, double[] jeKanal)
+        {
+            if (rest == null || menge <= 0) return 0;
+
+            double[] vorher = _vorher;
+            if (vorher == null) { vorher = new double[Kanal.ANZAHL]; _vorher = vorher; }
+
+            Array.Copy(rest, vorher, Kanal.ANZAHL);
+            Kaskadenschleife.SenkeAbziehen(wsTyp, menge, rest);
+
+            double summe = 0;
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+            {
+                double abgezogen = vorher[k] - rest[k];
+                if (abgezogen == 0) continue;
+
+                summe += abgezogen;
+                if (jeKanal != null) jeKanal[k] += abgezogen;
+            }
+            return summe;
         }
     }
 }

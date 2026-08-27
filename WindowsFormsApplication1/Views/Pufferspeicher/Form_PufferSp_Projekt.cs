@@ -91,6 +91,21 @@ namespace WindowsFormsApplication1
             public override string ToString() { return Anzeige; }
         }
 
+        // --- Klassen-Set (Paket K2, Migrationsschritt 49, Konzept 6.1) ----------------
+        //
+        // Die drei Häkchen sind FÜHREND; die Verwendungs-ComboBox darüber bleibt als
+        // Bestandsanzeige stehen und zeigt den abgeleiteten Altwert. Aufbau und Regeln
+        // stehen in KlassenSetAufbauen().
+
+        private Label _lblKlassenSet;
+        private CheckBox _chkNutzungHeizung;
+        private CheckBox _chkNutzungBrauchwasser;
+        private CheckBox _chkNutzungProzess;
+        private ToolTip _ttKlassenSet;
+
+        /// <summary>Sperre gegen das gegenseitige Nachziehen von ComboBox und Häkchen.</summary>
+        private bool _klassenSetSpiegelt;
+
         public Form_PufferSp_Projekt()
         {
             // Der Designer setzt AutoScaleMode bewusst auf None und lässt
@@ -102,6 +117,12 @@ namespace WindowsFormsApplication1
             InitializeComponent();
             TexteSetzen();
             VerwendungslisteFuellen();
+
+            // PAKET K2: die drei Klassen-Set-Häkchen. Programmatisch, nicht im Designer
+            // (Konzept 10) - und VOR FensterEinpassung, weil die Maske dabei um eine
+            // Zeile wächst und die Einpassung das Entwurfsmaß beim ersten Aufruf misst.
+            KlassenSetAufbauen();
+
             FensterEinpassung.Einhaengen(this);
         }
 
@@ -251,6 +272,235 @@ namespace WindowsFormsApplication1
             });
         }
 
+        // ==================================================================
+        // Klassen-Set (Paket K2, Migrationsschritt 49, Konzept 6.1)
+        // ==================================================================
+        //
+        // WAS SICH ÄNDERT. Ein Pufferspeicher trug bisher EINE Verwendung: Heizung,
+        // Brauchwasser oder „Kombi" für beides. Jetzt trägt er ein SET aus drei
+        // unabhängigen Klassen - auch {Heizung, Prozesswärme} oder {H, B, P} sind
+        // möglich, und „Kombi" ist nur noch der Anzeigename des Sets {H, B}.
+        //
+        // WARUM DIE COMBOBOX BLEIBT. Der risikoärmere Weg (Konzept 10 nennt die
+        // Häkchen „statt der ComboBox"): Bis Paket S2 lesen Anzeigen, Auswahllisten und
+        // Meldungen weiter Tab_Pufferspeicher.Verwendung - die Puffer-Liste dieses
+        // Dialogs, der Senkendialog, die Speicherkarte, die Entladereihenfolge. Wäre
+        // die ComboBox schon jetzt weg, verschwände auch die Anzeige dieses Altwerts,
+        // während er noch wirkt. Sie bleibt deshalb sichtbar und funktionsfähig; die
+        // Häkchen spiegeln das Set, und beim Speichern wird IMMER BEIDES geschrieben:
+        // die Flags als führende Wahrheit, die Verwendung als abgeleiteter Altwert.
+        //
+        // DIE INTERAKTIONSREGEL. Beide Richtungen ziehen einander nach:
+        //   ComboBox geändert -> Häkchen werden abgeleitet gesetzt (Heizung -> {H},
+        //     Brauchwasser -> {B}, Kombi -> {H, B}).
+        //   Häkchen geändert  -> ComboBox geht auf den passenden Altwert. Für Sets
+        //     OHNE Alt-Entsprechung ({P}, {H, P}, {B, P}, {H, B, P}) gibt es keinen -
+        //     dann steht dort der NÄCHSTLIEGENDE Wert, und ein Kurzhinweis am
+        //     Steuerelement sagt, dass die Häkchen führen.
+        // _klassenSetSpiegelt verhindert dabei das gegenseitige Aufschaukeln.
+        //
+        // PFLICHT. Mindestens ein Häkchen (Konzept 6.1) - ein Speicher, den niemand
+        // entlädt, wäre sinnlos. Geprüft wird beim Übernehmen, nicht beim Klicken:
+        // Wer von {H} auf {B} umstellt, muss zwischendurch durch das leere Set gehen.
+
+        /// <summary>Höhe der neu eingefügten Häkchenzeile [px].</summary>
+        private const int KLASSENSET_ZEILENHOEHE = 30;
+
+        /// <summary>
+        /// Oberkante, ab der die Steuerelemente der Eigenschaftengruppe nachrücken.
+        /// Die Verwendungszeile liegt bei 86/90, die Vorlaufzeile bei 121/124 — der
+        /// Schnitt liegt dazwischen.
+        /// </summary>
+        private const int KLASSENSET_SCHNITT = 110;
+
+        /// <summary>Oberkante der Häkchen in der neuen Zeile.</summary>
+        private const int KLASSENSET_Y = 120;
+
+        /// <summary>Linke Kante der Häkchenreihe — dieselbe Spalte wie alle Eingabefelder.</summary>
+        private const int KLASSENSET_X = 180;
+
+        /// <summary>Abstand zwischen zwei Häkchen [px].</summary>
+        private const int KLASSENSET_ABSTAND = 14;
+
+        /// <summary>
+        /// Baut die Häkchenzeile PROGRAMMATISCH auf und schafft ihr Platz.
+        ///
+        /// <para>Die Maske ist ein <c>FixedDialog</c> mit fest gerechneten
+        /// Pixelpositionen (siehe Geometrieblock oben) und läuft DpiUnaware. Eine neue
+        /// Zeile heißt deshalb: alles unterhalb um <see cref="KLASSENSET_ZEILENHOEHE"/>
+        /// nachrücken, die Eigenschaftengruppe und die Fensterhöhe um denselben Betrag
+        /// wachsen lassen. Genau das tut diese Methode — in derselben Rechnung, mit der
+        /// die Abnahmebefunde die Zeilen bisher von Hand verschoben haben.</para>
+        ///
+        /// <para>Die Beschriftungen der drei Häkchen kommen aus den KANAL-Ressourcen und
+        /// nicht aus den <c>PSP_VERWENDUNG_*</c>-Texten: Gefragt ist hier, welche KANÄLE
+        /// der Speicher bedient, und diese Ressourcenfamilie ist genau dafür da und in
+        /// beiden Sprachen vollständig (einschließlich Prozesswärme, wo es keinen
+        /// Verwendungs-Text gibt).</para>
+        /// </summary>
+        private void KlassenSetAufbauen()
+        {
+            // --- 1. Platz schaffen ----------------------------------------------------
+            foreach (Control c in _gbDaten.Controls)
+                if (c.Top > KLASSENSET_SCHNITT) c.Top += KLASSENSET_ZEILENHOEHE;
+
+            _gbDaten.Height += KLASSENSET_ZEILENHOEHE;
+
+            foreach (Control c in this.Controls)
+                if (c != _gbDaten && c.Top > _gbDaten.Top) c.Top += KLASSENSET_ZEILENHOEHE;
+
+            this.ClientSize = new Size(this.ClientSize.Width,
+                                       this.ClientSize.Height + KLASSENSET_ZEILENHOEHE);
+
+            // --- 2. Steuerelemente ----------------------------------------------------
+            _lblKlassenSet = new Label();
+            _lblKlassenSet.Name = "_lblKlassenSet";
+            _lblKlassenSet.AutoSize = true;
+            _lblKlassenSet.Location = new Point(16, KLASSENSET_Y + 2);
+            _lblKlassenSet.Text = MyResource.Resource.PSP_LABEL_KLASSENSET;
+
+            _chkNutzungHeizung =
+                KlassenSetHaekchen("_chkNutzungHeizung", MyResource.Resource.KANAL_HEIZUNG_ANZEIGE);
+            _chkNutzungBrauchwasser =
+                KlassenSetHaekchen("_chkNutzungBrauchwasser", MyResource.Resource.KANAL_BRAUCHWASSER_ANZEIGE);
+            _chkNutzungProzess =
+                KlassenSetHaekchen("_chkNutzungProzess", MyResource.Resource.KANAL_PROZESS_ANZEIGE);
+
+            _gbDaten.Controls.Add(_lblKlassenSet);
+            _gbDaten.Controls.Add(_chkNutzungHeizung);
+            _gbDaten.Controls.Add(_chkNutzungBrauchwasser);
+            _gbDaten.Controls.Add(_chkNutzungProzess);
+
+            // Nebeneinander, jedes so breit wie sein Text - die deutsche und die
+            // englische Beschriftung sind unterschiedlich lang, feste Breiten schnitten
+            // in einer der beiden Sprachen ab.
+            int x = KLASSENSET_X;
+            foreach (CheckBox c in new[] { _chkNutzungHeizung, _chkNutzungBrauchwasser, _chkNutzungProzess })
+            {
+                c.Location = new Point(x, KLASSENSET_Y);
+                x += c.PreferredSize.Width + KLASSENSET_ABSTAND;
+            }
+
+            // Tabreihenfolge: unmittelbar hinter die Verwendungs-ComboBox. Alle
+            // Steuerelemente dieser Maske tragen TabIndex 0, die Reihenfolge ergibt sich
+            // damit aus dem Platz in der Kindliste.
+            int nachVerwendung = _gbDaten.Controls.GetChildIndex(_cbVerwendung) + 1;
+            _gbDaten.Controls.SetChildIndex(_lblKlassenSet, nachVerwendung);
+            _gbDaten.Controls.SetChildIndex(_chkNutzungHeizung, nachVerwendung + 1);
+            _gbDaten.Controls.SetChildIndex(_chkNutzungBrauchwasser, nachVerwendung + 2);
+            _gbDaten.Controls.SetChildIndex(_chkNutzungProzess, nachVerwendung + 3);
+
+            // --- 3. Verdrahtung -------------------------------------------------------
+            // Der Kurzhinweis kommt in den Komponentenbehälter des Formulars, damit ihn
+            // dessen Dispose mit abräumt. Der Designer hat ihn nie angelegt (die Maske
+            // führte bisher keine Komponente), also entsteht er hier.
+            if (components == null) components = new System.ComponentModel.Container();
+            _ttKlassenSet = new ToolTip(components);
+            _ttKlassenSet.AutoPopDelay = 10000;
+
+            _cbVerwendung.SelectedIndexChanged += Verwendung_Geaendert;
+            _chkNutzungHeizung.CheckedChanged += KlassenSet_Geaendert;
+            _chkNutzungBrauchwasser.CheckedChanged += KlassenSet_Geaendert;
+            _chkNutzungProzess.CheckedChanged += KlassenSet_Geaendert;
+
+            // Anfangszustand: die Vorbelegung der ComboBox (Heizung) auf die Häkchen.
+            KlassenSetSetzen(PufferSpCtrl.KlassenSetAusVerwendung(GewaehlteVerwendung()));
+        }
+
+        private static CheckBox KlassenSetHaekchen(string name, string text)
+        {
+            CheckBox c = new CheckBox();
+            c.Name = name;
+            c.AutoSize = true;
+            c.Text = text;
+            return c;
+        }
+
+        /// <summary>Das an den Häkchen abgelesene Set — die führende Wahrheit der Maske.</summary>
+        private PufferSpCtrl.KlassenSet GewaehltesKlassenSet()
+        {
+            return new PufferSpCtrl.KlassenSet(_chkNutzungHeizung.Checked,
+                                               _chkNutzungBrauchwasser.Checked,
+                                               _chkNutzungProzess.Checked);
+        }
+
+        /// <summary>
+        /// Setzt die Häkchen OHNE die ComboBox nachzuziehen (die Sperre
+        /// <see cref="_klassenSetSpiegelt"/> unterbricht die Gegenrichtung) und frischt
+        /// den Kurzhinweis auf.
+        /// </summary>
+        private void KlassenSetSetzen(PufferSpCtrl.KlassenSet set)
+        {
+            if (set == null || _chkNutzungHeizung == null) return;
+
+            _klassenSetSpiegelt = true;
+            try
+            {
+                _chkNutzungHeizung.Checked = set.Heizung;
+                _chkNutzungBrauchwasser.Checked = set.Brauchwasser;
+                _chkNutzungProzess.Checked = set.Prozess;
+            }
+            finally
+            {
+                _klassenSetSpiegelt = false;
+            }
+
+            KlassenSetHinweisAktualisieren();
+        }
+
+        /// <summary>
+        /// Der Kurzhinweis an der ComboBox: Nur für Sets, die der Altwert nicht
+        /// verlustfrei abbildet, steht dort „führend sind die Häkchen". Für {H}, {B} und
+        /// {H, B} bleibt er leer — dort sagt die ComboBox die volle Wahrheit.
+        /// </summary>
+        private void KlassenSetHinweisAktualisieren()
+        {
+            if (_ttKlassenSet == null) return;
+
+            PufferSpCtrl.KlassenSet set = GewaehltesKlassenSet();
+            string hinweis = set.HatAltEntsprechung
+                ? ""
+                : MyResource.Resource.PSP_HINWEIS_KLASSENSET_OHNE_ALTWERT;
+
+            _ttKlassenSet.SetToolTip(_cbVerwendung, hinweis);
+            _ttKlassenSet.SetToolTip(_lblKlassenSet, hinweis);
+        }
+
+        /// <summary>ComboBox geändert → die Häkchen werden abgeleitet gesetzt.</summary>
+        private void Verwendung_Geaendert(object sender, EventArgs e)
+        {
+            if (_klassenSetSpiegelt) return;
+            KlassenSetSetzen(PufferSpCtrl.KlassenSetAusVerwendung(GewaehlteVerwendung()));
+        }
+
+        /// <summary>
+        /// Häkchen geändert → die ComboBox geht auf den abgeleiteten Altwert.
+        ///
+        /// Das LEERE Set wird hier NICHT abgefangen: Wer von „nur Heizung" auf „nur
+        /// Brauchwasser" umstellt, muss zwischendurch durch das leere Set gehen. Eine
+        /// Meldung an dieser Stelle machte jede zweite Umstellung zum Hindernislauf; die
+        /// Pflichtprüfung sitzt deshalb im Übernehmen (<see cref="EingabenLesen"/>).
+        /// </summary>
+        private void KlassenSet_Geaendert(object sender, EventArgs e)
+        {
+            if (_klassenSetSpiegelt) return;
+
+            string vorher = GewaehlteVerwendung();
+
+            _klassenSetSpiegelt = true;
+            try { VerwendungWaehlen(GewaehltesKlassenSet().Verwendung); }
+            finally { _klassenSetSpiegelt = false; }
+
+            KlassenSetHinweisAktualisieren();
+
+            // Hat sich der Altwert mitgeändert, hat die ComboBox über den
+            // Designer-Behandler Daten_Geaendert bereits aufgefrischt - sonst hier
+            // nachholen. Die Reihenfolge-Anzeigen fragen die Datenbank ab; sie zweimal
+            // je Klick zu holen, wäre der teurere Weg zum selben Bild.
+            if (!_aktualisiert && string.Equals(vorher, GewaehlteVerwendung(), StringComparison.Ordinal))
+                AnzeigenAktualisieren();
+        }
+
         // --- Befüllen -----------------------------------------------------------------
 
         /// <summary>Lädt Katalog und Projektbestand; danach ist der Dialog bereit.</summary>
@@ -392,6 +642,12 @@ namespace WindowsFormsApplication1
                             ? WaermesenkeClass.VERWENDUNG_BRAUCHWASSER
                             : WaermesenkeClass.VERWENDUNG_HEIZUNG);
 
+                // PAKET K2: die Häkchen mitziehen. Ausdrücklich und nicht dem Ereignis
+                // überlassen - hat die ComboBox schon auf dem Zielwert gestanden, feuert
+                // SelectedIndexChanged nicht, und die Häkchen behielten das Set des
+                // zuvor bearbeiteten Speichers.
+                KlassenSetSetzen(PufferSpCtrl.KlassenSetAusVerwendung(GewaehlteVerwendung()));
+
                 // Vorbelegung aus den SYSTEMVORGABEN des Projekts (Konzept 4.3, Punkt 3):
                 // kleinster Vorlauf und größter Rücklauf über die Erzeuger. Fehlen sie,
                 // bleiben die Felder leer - eine erfundene Vorbelegung wäre bei einem
@@ -439,6 +695,15 @@ namespace WindowsFormsApplication1
                 _tbVolumen.Text = p.Gesamtvolumen.ToString(CultureInfo.InvariantCulture);
                 _tbVerluste.Text = p.Bereitschaftsverluste.ToString("0.###");
                 VerwendungWaehlen(WaermesenkeClass.WirksameVerwendung(p));
+
+                // PAKET K2: Das KLASSEN-SET ist führend und kann mehr aussagen als der
+                // Altwert ({Heizung, Prozess} etwa steht in der ComboBox als „Heizung").
+                // Es wird deshalb NACH der ComboBox gesetzt und überschreibt die eben
+                // abgeleiteten Häkchen. Gelesen wird es aus der Datenbank statt aus
+                // PufferInfo: Die Puffer-Liste des Dialogs stammt aus
+                // WaermesenkeClass.ProjektPufferListe, und deren Datensatz führt bis zur
+                // Engine-Umstellung nur die Verwendung.
+                KlassenSetSetzen(PufferSpCtrl.KlassenSetLesen(p.ID));
 
                 _tbVorlauf.Text = p.Vorlauf > 0 ? p.Vorlauf.ToString(CultureInfo.InvariantCulture) : "";
                 _tbRuecklauf.Text = p.Ruecklauf > 0 ? p.Ruecklauf.ToString(CultureInfo.InvariantCulture) : "";
@@ -776,11 +1041,12 @@ namespace WindowsFormsApplication1
             int volumen, entladeprio;
             double verluste, schwelleEin, schwelleAus, schwelleNachrang, schwelleReserve;
             int? vorlauf, ruecklauf;
+            PufferSpCtrl.KlassenSet klassenSet;
 
             if (!EingabenLesen(out bezeichner, out verwendung, out volumen, out verluste,
                                out vorlauf, out ruecklauf, out schwelleEin, out schwelleAus,
                                out schwelleNachrang, out entladeprio, out schwelleReserve,
-                               out fehler))
+                               out klassenSet, out fehler))
             {
                 MessageBox.Show(fehler, MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER,
                                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -798,7 +1064,8 @@ namespace WindowsFormsApplication1
                 int neueId = PufferSpCtrl.ProjektPufferAnlegen(
                     ID_Projekt, bezeichner, hersteller, speichertyp, volumen, verluste,
                     investition, verwendung, vorlauf, ruecklauf,
-                    schwelleEin, schwelleAus, schwelleNachrang, entladeprio, schwelleReserve);
+                    schwelleEin, schwelleAus, schwelleNachrang, entladeprio, schwelleReserve,
+                    klassenSet.Heizung, klassenSet.Brauchwasser, klassenSet.Prozess);
 
                 if (neueId <= 0)
                 {
@@ -822,7 +1089,8 @@ namespace WindowsFormsApplication1
                 if (!PufferSpCtrl.ProjektPufferAendern(
                         _bearbeiteteId, ID_Projekt, bezeichner, hersteller, speichertyp, volumen,
                         verluste, investition, verwendung, vorlauf, ruecklauf,
-                        schwelleEin, schwelleAus, schwelleNachrang, entladeprio, schwelleReserve))
+                        schwelleEin, schwelleAus, schwelleNachrang, entladeprio, schwelleReserve,
+                        klassenSet.Heizung, klassenSet.Brauchwasser, klassenSet.Prozess))
                 {
                     MessageBox.Show(MyResource.Resource.PSP_MELDUNG_AENDERN_FEHLGESCHLAGEN,
                                     MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER,
@@ -984,10 +1252,19 @@ namespace WindowsFormsApplication1
                                    out double verluste, out int? vorlauf, out int? ruecklauf,
                                    out double schwelleEin, out double schwelleAus,
                                    out double schwelleNachrang, out int entladeprio,
-                                   out double schwelleReserve, out string fehler)
+                                   out double schwelleReserve,
+                                   out PufferSpCtrl.KlassenSet klassenSet, out string fehler)
         {
             bezeichner = (_tbBezeichner.Text ?? "").Trim();
-            verwendung = GewaehlteVerwendung();   // DB-Wert, nicht der Anzeigetext (L0-2)
+
+            // PAKET K2: Gespeichert wird IMMER BEIDES - die Häkchen als führende
+            // Wahrheit und die davon abgeleitete Verwendung als Altwert für die bis
+            // Paket S2 nicht umgestellten Anzeigen. Die ComboBox wird dafür NICHT
+            // gelesen: Sie folgt den Häkchen, und bei einem Set ohne Alt-Entsprechung
+            // zeigt sie ohnehin nur den nächstliegenden Wert.
+            klassenSet = GewaehltesKlassenSet();
+            verwendung = klassenSet.Verwendung;   // DB-Wert, nicht der Anzeigetext (L0-2)
+
             volumen = 0;
             verluste = 0;
             vorlauf = null;
@@ -1005,9 +1282,13 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
-            if (verwendung.Length == 0)
+            // PFLICHT: mindestens ein Häkchen (Konzept 6.1). Das leere Set wäre ein
+            // Speicher, den keine einzige Entladeordnung führt - er nähme Wärme auf und
+            // gäbe sie nie ab. Die frühere Pflichtprüfung „Verwendung gewählt?" ist damit
+            // abgelöst: Die Verwendung wird jetzt abgeleitet und kann nicht leer sein.
+            if (klassenSet.Leer)
             {
-                fehler = MyResource.Resource.PSP_FEHLER_VERWENDUNG_PFLICHT;
+                fehler = MyResource.Resource.PSP_FEHLER_KLASSENSET_LEER;
                 return false;
             }
 

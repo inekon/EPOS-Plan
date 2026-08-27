@@ -13099,7 +13099,16 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("PSP_FEHLER_EIN_KLEINER_AUS", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestens eine Nutzung muss angehakt sein: Heizung, Brauchwasser oder Prozesswärme. Einen Speicher ohne Nutzung entlädt keine Anlage (Konzept 6.1). ähnelt.
+        /// </summary>
+        public static string PSP_FEHLER_KLASSENSET_LEER {
+            get {
+                return ResourceManager.GetString("PSP_FEHLER_KLASSENSET_LEER", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Abschaltschwelle für nachrangige Erzeuger darf die Abschaltschwelle nicht überschreiten - sie ist die Reservezone für den Vorrang (Konzept 3.4). ähnelt.
         /// </summary>
@@ -13270,7 +13279,16 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("PSP_GRUPPE_LADEREIHENFOLGE", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Set ohne Alt-Entsprechung — führend sind die Häkchen. Die Verwendung darüber zeigt nur den nächstliegenden Altwert. ähnelt.
+        /// </summary>
+        public static string PSP_HINWEIS_KLASSENSET_OHNE_ALTWERT {
+            get {
+                return ResourceManager.GetString("PSP_HINWEIS_KLASSENSET_OHNE_ALTWERT", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasserspeicher ähnelt.
         /// </summary>
@@ -13549,7 +13567,16 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("PSP_LABEL_GESAMTVOLUMEN", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung (Klassen-Set): ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_KLASSENSET {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_KLASSENSET", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Mindestfüllstand/Notreserve [%]: ähnelt.
         /// </summary>

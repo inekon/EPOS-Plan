@@ -103,9 +103,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// EFFEKTIVER Rechenweg des Laufs: <c>true</c> = Speicherstufen-Mechanik
-        /// (<see cref="Kaskade_Zweikanalig"/>) auf den beiden Bedarfskanälen mit
-        /// herausgelöster Ladephase (Reihenfolge-Invariante 6.3), <c>false</c> = der
-        /// einkanalige Altpfad.
+        /// (<see cref="Kaskade_Zweikanalig"/>) auf den — seit Paket K2 DREI —
+        /// Bedarfskanälen mit herausgelöster Ladephase (Reihenfolge-Invariante 6.3),
+        /// <c>false</c> = der einkanalige Altpfad. Name und Persistenzwert des Flags
+        /// bleiben „Kaskade_Zweikanalig"; es ist der Schalter zwischen den beiden
+        /// Rechenwegen, nicht die Angabe einer Kanalzahl (die Spalte wird mit Paket A1
+        /// ohnehin stillgelegt).
         ///
         /// ZWEI QUELLEN speisen das Feld (siehe die Zuweisung in <c>Do_Simulation</c>):
         ///
@@ -749,15 +752,25 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void Kaskade_Zweikanalig()
         {
-            // Kanäle aus dem Bedarf holen (Konzept 4.2, Paket K1): Der Bedarf ist seit K1
-            // DREIKANALIG gerechnet; Kanaele() ist bis Paket K2 die Übergangsabbildung auf
-            // die zweikanalige Kaskade - Heiz = HEIZUNG + PROZESS, WW = BRAUCHWASSER.
+            // Kanäle aus dem Bedarf holen (Konzept 4.2/4.1): Seit Paket K2 rechnet die
+            // Kaskade auf DENSELBEN drei Kanälen, mit denen der Bedarf gebildet wurde -
+            // die Übergangsabbildung Kanaele() (Heiz = HEIZUNG + PROZESS) ist damit
+            // abgelöst und hat keinen Aufrufer mehr.
             //
             // Die frühere Kappungsmeldung entfällt mit den Kappungsfällen selbst: Es gibt
             // kein Residuum mehr, aus dem ein negativer Heizkanal entstehen könnte. An
             // ihre Stelle tritt die Energieprobe der Kanalbildung (Konzept 11.3), die
             // SimulationWaermebedarf selbst in das Lauf-Protokoll meldet.
-            Waermekanaele kanaele = simulation_Waermebedarf.Kanaele();
+            Kanalsatz kanaele = simulation_Waermebedarf.KanaeleDrei();
+
+            // KNAPPHEITSREIHENFOLGE des Laufs (Konzept 4.3, F10) - EINMAL aufgelöst und
+            // an beide Verbraucher gegeben: an die statischen Regeln, die die
+            // Erzeugermodule und die Vektorstufen rufen (Kaskadenschleife.SenkeAbziehen,
+            // DurchlassBuchen), und über den Kaskadenkontext an die Stundenschleife.
+            // Die Auflösung steht VOR jeder Stufe: Auch eine Vektorstufe zieht über
+            // dieselbe Regel ab.
+            _knappheit = Kanal.KnappheitsReihenfolge(ctrl_konfig.model.Kanal_Knappheitsreihenfolge);
+            Kaskadenschleife.KnappheitFuerLauf(_knappheit);
 
             float[] temp;
 
@@ -823,7 +836,7 @@ namespace WindowsFormsApplication1
                     // Rückfallebene: Bricht die Kennlinienauswertung ab, bleiben die
                     // Kanäle unverändert - dasselbe, was der Altpfad mit
                     // "Ausgang = Eingang" tut.
-                    Waermekanaele vorher = kanaele.Clone();
+                    Kanalsatz vorher = kanaele.Clone();
 
                     Speicherstufe_Rechnen(kanaele,
                         Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich),
@@ -831,10 +844,8 @@ namespace WindowsFormsApplication1
                         ctrl_konfig.model.m_Kessel_Betriebsbereitschaft);
 
                     if (m_bError)
-                    {
-                        Array.Copy(vorher.Heiz, kanaele.Heiz, Waermekanaele.STUNDEN_JAHR);
-                        Array.Copy(vorher.WW, kanaele.WW, Waermekanaele.STUNDEN_JAHR);
-                    }
+                        for (int k = 0; k < Kanal.ANZAHL; k++)
+                            Array.Copy(vorher.Bedarf[k], kanaele.Bedarf[k], Kanalsatz.STUNDEN_JAHR);
 
                     if (_wpInSchleife)
                     {
@@ -925,8 +936,8 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            // Ergebnis der Wärmeseite: die Summe der beiden Restkanäle. Ein EIGENER
-            // Vektor - im Altpfad zeigt Rest_Waermebedarf_stuendlich auf das
+            // Ergebnis der Wärmeseite: die Summe der DREI Restkanäle (Paket K2). Ein
+            // EIGENER Vektor - im Altpfad zeigt Rest_Waermebedarf_stuendlich auf das
             // Ausgangsarray des letzten Moduls (Aliasing, B0-2).
             Rest_Waermebedarf_stuendlich = kanaele.Summe();
 
@@ -1064,6 +1075,15 @@ namespace WindowsFormsApplication1
         private bool _bhkwInSchleife = false;
 
         /// <summary>
+        /// KNAPPHEITSREIHENFOLGE dieses Laufs (Konzept 4.3, F10) — aufgelöst zu Beginn
+        /// von <see cref="Kaskade_Zweikanalig"/> aus der Projekteinstellung
+        /// <c>Tab_Einstellungen.Kanal_Knappheitsreihenfolge</c> und von dort in den
+        /// <see cref="Kaskadenkontext"/> gereicht. Vorbelegung {Brauchwasser, Prozess,
+        /// Heizung}; der einkanalige Altpfad liest sie nicht.
+        /// </summary>
+        private int[] _knappheit = Kanal.KnappheitVorgabe();
+
+        /// <summary>
         /// true, wenn der Heizkessel ALLEIN wegen einer Puffer-QUELLE in der
         /// Stundenschleife rechnet (Nacharbeit E-K2-4). Dann muss ein Quellbezug auch
         /// wirklich entstehen — sonst rechnet der Kessel anders als bisher, ohne dass
@@ -1175,7 +1195,7 @@ namespace WindowsFormsApplication1
         ///
         /// Die Kanäle werden dabei in place fortgeschrieben.
         /// </summary>
-        private void Speicherstufe_Rechnen(Waermekanaele kanaele, float[] Strombedarf,
+        private void Speicherstufe_Rechnen(Kanalsatz kanaele, float[] Strombedarf,
                                            bool bHeizstab, int nBereitschaft)
         {
             WaermequelleClass.SchemaSicherstellen();
@@ -1546,7 +1566,7 @@ namespace WindowsFormsApplication1
         /// tatsächliche Rest statt der Vektordifferenz <c>Bedarf − Produktion</c>
         /// (Bilanzfehler aus Konzept 6.5 / 2.2, Punkt 8).
         /// </summary>
-        private void Simulation_BHKW_Ctrl_Zweikanalig(Waermekanaele kanaele, float[] Strombedarf)
+        private void Simulation_BHKW_Ctrl_Zweikanalig(Kanalsatz kanaele, float[] Strombedarf)
         {
             BHKW_Liste_Laden();
 
@@ -1656,6 +1676,10 @@ namespace WindowsFormsApplication1
                 sp.ID_Projekt = p.ID_Projekt;
                 sp.Verwendung = WaermesenkeClass.WirksameVerwendung(p);
 
+                // PAKET K2: Klassen-Set aus der Projektkopie - wie in Block 2 des
+                // Registry-Aufbaus.
+                KlassenSetUebernehmen(sp, true);
+
                 // RÜCKFALL 20 K statt 10 K (Befund N2): Die Altformel
                 // „Liter · 20 / 860" hatte für den Pendelspeicher eine Spreizung von
                 // 20 K fest verdrahtet. Bleibt sie ungepflegt, ist 20 K deshalb der
@@ -1684,13 +1708,14 @@ namespace WindowsFormsApplication1
             // gepflegter Entladeprio gehört an seine Stelle in der Ordnung des Kanals
             // (Konzept 3.6) — dieselbe Reihenfolge, die die Pufferverwaltung anzeigt.
             //
-            // NACHARBEIT I-K2-1: über BedientKanal, nicht über IstBrauchwasserkanal. Ein
-            // KOMBISPEICHER als Ersatz-Pendelspeicher gehört in BEIDE Kanallisten; über
-            // IstBrauchwasserkanal (für ihn false) landete er nur im Heizkanal, und die
-            // Warmwasserhälfte fiel still aus. Für jeden anderen Speicher ist genau eine
-            // der beiden Bedingungen wahr - dieselbe Einsortierung wie zuvor.
-            if (sp.BedientKanal(false)) EntladeordnungEinsortieren(k.Entladeordnung(false), sp, false);
-            if (sp.BedientKanal(true)) EntladeordnungEinsortieren(k.Entladeordnung(true), sp, true);
+            // NACHARBEIT I-K2-1, verallgemeinert in Paket K2: über EntladetKanal, nicht
+            // über IstBrauchwasserkanal. Ein Speicher mit mehrelementigem Klassen-Set
+            // gehört in JEDE seiner Kanallisten; über IstBrauchwasserkanal (für einen
+            // Kombispeicher false) landete er nur im Heizkanal, und die andere Hälfte fiel
+            // still aus.
+            for (int kanal = 0; kanal < Kanal.ANZAHL; kanal++)
+                if (Kaskadenschleife.EntladetKanal(sp, kanal))
+                    EntladeordnungEinsortieren(k.Entladeordnung(kanal), sp, kanal);
 
             Ladeauftrag a = new Ladeauftrag();
             a.Modulindex = 0;
@@ -1730,29 +1755,27 @@ namespace WindowsFormsApplication1
         /// dort nicht (Projektzuordnung inkonsistent), kommt er ans Ende; das ist das
         /// Verhalten des Sicherheitsnetzes im Kontextaufbau.
         /// </summary>
-        /// <param name="brauchwasser">
-        /// Kanal, in den einsortiert wird (Nacharbeit I-K2-1). Er bestimmt zugleich, gegen
-        /// welche SOLL-Ordnung die Position gesucht wird; beim Kombispeicher wird die
-        /// Methode je Kanal einmal gerufen.
+        /// <param name="kanal">
+        /// Kanal, in den einsortiert wird (Nacharbeit I-K2-1, Paket K2 auf den Kanalindex
+        /// umgestellt). Er bestimmt zugleich, gegen welche SOLL-Ordnung die Position
+        /// gesucht wird; bei mehrelementigem Klassen-Set wird die Methode je Kanal einmal
+        /// gerufen.
         /// </param>
         private void EntladeordnungEinsortieren(List<SimulationPufferspeicher> ordnung,
-                                                SimulationPufferspeicher sp, bool brauchwasser)
+                                                SimulationPufferspeicher sp, int kanal)
         {
             if (ordnung == null || sp == null || ordnung.Contains(sp)) return;
 
-            string verwendung = brauchwasser
-                ? WaermesenkeClass.VERWENDUNG_BRAUCHWASSER : WaermesenkeClass.VERWENDUNG_HEIZUNG;
-
-            List<Ladeordnung.EntladeEintrag> soll =
-                Ladeordnung.Entladereihenfolge(m_ID_Projekt, verwendung);
+            string kanalname = Kanal.Name(kanal);
+            List<Ladeordnung.EntladeEintrag> soll = EntladeordnungQuelle(kanal);
 
             int platz = Ladeordnung.Position(soll, sp.ID_Pufferspeicher);
             if (platz <= 0)
             {
-                Protokoll.HinweisEinmal("pendelspeicher-entladeordnung-" + verwendung + "-" +
+                Protokoll.HinweisEinmal("pendelspeicher-entladeordnung-" + kanalname + "-" +
                                   sp.ID_Pufferspeicher,
                                   "BHKW-Pendelspeicher: Der Speicher " + sp.ID_Pufferspeicher +
-                                  " steht nicht in der Entladereihenfolge des Kanals " + verwendung +
+                                  " steht nicht in der Entladereihenfolge des Kanals " + kanalname +
                                   " - er wird ans Ende gestellt.");
                 ordnung.Add(sp);
                 return;
@@ -1822,7 +1845,7 @@ namespace WindowsFormsApplication1
         /// Heizkessel als zweikanalige VEKTORSTUFE (Paket 5): eigene Jahresschleife an der
         /// Kaskadenposition, ohne Speicherbeteiligung.
         /// </summary>
-        private void Simulation_SPK_Ctrl_Zweikanalig(Waermekanaele kanaele, float[] Strombedarf,
+        private void Simulation_SPK_Ctrl_Zweikanalig(Kanalsatz kanaele, float[] Strombedarf,
                                                      int nBereitschaft)
         {
             SPK_Liste_Laden();
@@ -1839,7 +1862,7 @@ namespace WindowsFormsApplication1
         /// Solarthermie als zweikanalige VEKTORSTUFE (Paket 5): eigene Jahresschleife an
         /// der Kaskadenposition, ohne Speicherbeteiligung.
         /// </summary>
-        private void Simulation_Solarthermie_Ctrl_Zweikanalig(Waermekanaele kanaele)
+        private void Simulation_Solarthermie_Ctrl_Zweikanalig(Kanalsatz kanaele)
         {
             Solar_Liste_Laden();
 
@@ -1965,12 +1988,16 @@ namespace WindowsFormsApplication1
             Kaskadenkontext k = new Kaskadenkontext();
             k.ID_Projekt = m_ID_Projekt;
 
+            // Knappheitsreihenfolge des Laufs (4.3) - dieselbe Auflösung, die
+            // Kaskade_Zweikanalig schon an die statischen Regeln gegeben hat.
+            k.Knappheit = _knappheit;
+
             // --- 1. Speichermenge des Laufs (Phase G) --------------------------------
             k.AlleSpeicher.AddRange(RegistrySpeicher());
 
-            // --- 2. Entladereihenfolge je Kanal (Konzept 3.6) ------------------------
-            k.EntladenHeizung = EntladeordnungAufbauen(k, WaermesenkeClass.VERWENDUNG_HEIZUNG);
-            k.EntladenBrauchwasser = EntladeordnungAufbauen(k, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER);
+            // --- 2. Entladereihenfolge JE KANAL (Konzept 3.6, Paket K2) --------------
+            for (int kanal = 0; kanal < Kanal.ANZAHL; kanal++)
+                k.Entladen[kanal] = EntladeordnungAufbauen(k, kanal);
 
             // --- 3. Senkenzuordnung je WP-Modul (Konzept 3.1) ------------------------
             for (int index = 0; index < simulation_wp.wp_list.Count; index++)
@@ -2030,24 +2057,36 @@ namespace WindowsFormsApplication1
         /// trägt in der Projektkopie oft keine Verwendung und zählte damit als
         /// Heizungspuffer — er würde sonst seinen Vorrat an den Heizkreis abgeben,
         /// obwohl er die Wärmequelle der Wärmepumpe ist.
+        ///
+        /// <para><b>ZUGEHÖRIGKEIT über <c>Kaskadenschleife.EntladetKanal</c></b> (Paket
+        /// K2) — also samt der Interimsregel I2. Sie ist dieselbe Frage, die das
+        /// Durchsatzbudget stellt; beide MÜSSEN dieselbe Antwort bekommen, sonst
+        /// verspräche die hydraulische Weiche einen Bedarf, den die Entladung nicht
+        /// bedienen darf (oder umgekehrt).</para>
+        ///
+        /// <para><b>ORDNUNGSQUELLE des Prozesskanals.</b> <see cref="Ladeordnung"/> kennt
+        /// nur die beiden persistierten Kanäle — eine Spalte „Verwendung = Prozess" gibt
+        /// es nicht. Für den PROZESSkanal wird die Ordnung deshalb aus BEIDEN
+        /// Kanalabfragen zusammengesetzt und nach derselben Regel sortiert
+        /// (Entladepriorität, bei Gleichstand die Puffer-ID). Führt das Projekt keinen
+        /// Speicher mit eigenem Prozess-Flag — jedes Bestandsprojekt —, ist das Ergebnis
+        /// Element für Element die Heizungsordnung: genau die Liste, aus der die
+        /// zweikanalige Rechnung den zusammengefassten Heiz-/Prozessbedarf gedeckt hat.
+        /// </para>
         /// </summary>
-        private List<SimulationPufferspeicher> EntladeordnungAufbauen(Kaskadenkontext k, string verwendung)
+        private List<SimulationPufferspeicher> EntladeordnungAufbauen(Kaskadenkontext k, int kanal)
         {
             List<SimulationPufferspeicher> liste = new List<SimulationPufferspeicher>();
-            bool brauchwasser = string.Equals(verwendung, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER,
-                                              StringComparison.Ordinal);
+            string kanalname = Kanal.Name(kanal);
 
-            foreach (Ladeordnung.EntladeEintrag e in
-                     Ladeordnung.Entladereihenfolge(m_ID_Projekt, verwendung))
+            foreach (Ladeordnung.EntladeEintrag e in EntladeordnungQuelle(kanal))
             {
                 SimulationPufferspeicher sp;
                 if (!speicherRegistry.TryGetValue(e.ID_Puffer, out sp) || sp == null) continue;
                 if (!sp.ImRechenpfad || sp.IstQuelle) continue;
-                // D5a: BedientKanal statt IstBrauchwasserkanal - ein KOMBISPEICHER steht
-                // in BEIDEN Entladereihenfolgen, je Kanal an der Stelle seiner
-                // Entladepriorität. Für jeden anderen Speicher ist die Frage dieselbe wie
-                // zuvor.
-                if (!sp.BedientKanal(brauchwasser)) continue;
+                // Ein Speicher steht in der Entladeordnung JEDES Kanals seines
+                // Klassen-Sets, je Kanal an der Stelle seiner Entladepriorität.
+                if (!Kaskadenschleife.EntladetKanal(sp, kanal)) continue;
                 if (!liste.Contains(sp)) liste.Add(sp);
             }
 
@@ -2057,16 +2096,58 @@ namespace WindowsFormsApplication1
             foreach (SimulationPufferspeicher sp in k.AlleSpeicher)
             {
                 if (sp == null || sp.IstQuelle) continue;
-                if (!sp.BedientKanal(brauchwasser)) continue;      // D5a: Kombi in beiden
+                if (!Kaskadenschleife.EntladetKanal(sp, kanal)) continue;
                 if (liste.Contains(sp)) continue;
 
-                Protokoll.HinweisEinmal("entladeordnung-nachtrag-" + verwendung + "-" +
+                Protokoll.HinweisEinmal("entladeordnung-nachtrag-" + kanalname + "-" +
                                   sp.ID_Pufferspeicher,
                                   "Speicher " + sp.ID_Pufferspeicher + " (" + sp.BezeichnerAnzeige() +
-                                  ") steht nicht in der Entladereihenfolge des Kanals " + verwendung +
+                                  ") steht nicht in der Entladereihenfolge des Kanals " + kanalname +
                                   " - er wird ans Ende gestellt.");
                 liste.Add(sp);
             }
+
+            return liste;
+        }
+
+        /// <summary>
+        /// SOLL-Ordnung eines Kanals aus <see cref="Ladeordnung"/> (siehe
+        /// <see cref="EntladeordnungAufbauen"/>): für die beiden persistierten Kanäle die
+        /// eine Abfrage, für den PROZESSkanal die sortierte Vereinigung beider.
+        /// </summary>
+        private List<Ladeordnung.EntladeEintrag> EntladeordnungQuelle(int kanal)
+        {
+            if (kanal == Kanal.BRAUCHWASSER)
+                return Ladeordnung.Entladereihenfolge(m_ID_Projekt,
+                                                      WaermesenkeClass.VERWENDUNG_BRAUCHWASSER);
+
+            List<Ladeordnung.EntladeEintrag> liste =
+                Ladeordnung.Entladereihenfolge(m_ID_Projekt, WaermesenkeClass.VERWENDUNG_HEIZUNG);
+
+            if (kanal != Kanal.PROZESS) return liste;
+
+            // Prozesskanal: Speicher, deren PERSISTIERTES Set nur Brauchwasser und
+            // Prozess führt, stehen nicht in der Heizungsordnung. Sie kommen dazu und die
+            // Liste wird nach derselben Regel sortiert, die Ladeordnung selbst benutzt -
+            // ohne solche Speicher (jedes Bestandsprojekt) ist die Sortierung ein No-op
+            // auf einer bereits sortierten Liste.
+            bool ergaenzt = false;
+            foreach (Ladeordnung.EntladeEintrag e in
+                     Ladeordnung.Entladereihenfolge(m_ID_Projekt,
+                                                    WaermesenkeClass.VERWENDUNG_BRAUCHWASSER))
+            {
+                if (Ladeordnung.Position(liste, e.ID_Puffer) > 0) continue;
+                liste.Add(e);
+                ergaenzt = true;
+            }
+
+            if (ergaenzt)
+                liste.Sort(delegate (Ladeordnung.EntladeEintrag a, Ladeordnung.EntladeEintrag b)
+                {
+                    int c = a.Prio.CompareTo(b.Prio);
+                    if (c != 0) return c;
+                    return a.ID_Puffer.CompareTo(b.ID_Puffer);
+                });
 
             return liste;
         }
@@ -2272,6 +2353,60 @@ namespace WindowsFormsApplication1
         /// Heizungspuffern zeigt <c>puffer_wp</c> deshalb auf den zuerst aufgenommenen,
         /// nicht auf den zuerst entladenen.
         /// </summary>
+        /// <summary>
+        /// Übernimmt das KLASSEN-SET eines Speichers aus der Projektkopie in das
+        /// Rechenobjekt (Konzept 6.1, Schritt 49 — Paket K2) und zieht die Anzeige-/
+        /// Ergebnisrolle <c>Verwendung</c> konsistent nach.
+        ///
+        /// <para><b>NUR IM ZWEIKANALIGEN WEG.</b> Der einkanalige Altpfad kennt keine
+        /// Kanäle; dort bleibt das Set leer, und <c>BedientKanal</c> antwortet weiter aus
+        /// <c>Verwendung</c> — Anweisung für Anweisung wie vor diesem Paket. Ohne diese
+        /// Schranke bekäme etwa die Detailansicht im Altpfad plötzlich eine
+        /// Kombi-Kennzeichnung an einem Speicher, den der Altpfad ausdrücklich wie einen
+        /// Heizungspuffer rechnet.</para>
+        ///
+        /// <para><b>Warum die Rolle nachgezogen wird.</b> <c>Verwendung</c> ist seit
+        /// Schritt 49 Lese-Altlast — die Wahrheit über die Kanäle steht im Set. Die Rolle
+        /// wird trotzdem gebraucht (Ergebniszeile, Anzeige, Vollzyklen-Bezug); sie darf
+        /// dann aber nicht etwas anderes behaupten als das Set. Abgeleitet wird sie über
+        /// dieselbe eine Regel, mit der auch jeder Schreibweg der Puffertabelle arbeitet
+        /// (<c>PufferSpCtrl.VerwendungAusKlassenSet</c>). Auf einem migrierten Bestand
+        /// stimmen beide ohnehin überein, und die Zuweisung ist wirkungslos.</para>
+        ///
+        /// <para><b>AUSNAHME Block 1 des Registry-Aufbaus</b> (Senkenspeicher der
+        /// Wärmepumpe aus <c>Z_ProjektPufferSp</c>): Dort wird die Rolle bewusst gesetzt
+        /// und darf nicht überschrieben werden (Regressionszusage, siehe dort). Der
+        /// Aufrufer übergibt deshalb <paramref name="ausProjektkopie"/> = false, und das
+        /// Set wird aus genau dieser Rolle abgeleitet. Die Ausnahme fällt mit der
+        /// Stilllegung von <c>Z_ProjektPufferSp</c> (Paket A1, Schritt 51).</para>
+        /// </summary>
+        /// <param name="ausProjektkopie">
+        /// true = die drei Flags aus <c>Tab_Pufferspeicher</c> lesen; false = das Set aus
+        /// der bereits gesetzten <c>Verwendung</c> ableiten.
+        /// </param>
+        private void KlassenSetUebernehmen(SimulationPufferspeicher sp, bool ausProjektkopie)
+        {
+            if (sp == null || sp.IstQuelle) return;
+            if (!KaskadeZweikanalig) return;
+
+            PufferSpCtrl.KlassenSet set = (ausProjektkopie && sp.ID_Pufferspeicher > 0)
+                ? PufferSpCtrl.KlassenSetLesen(sp.ID_Pufferspeicher)
+                : PufferSpCtrl.KlassenSetAusVerwendung(sp.Verwendung);
+
+            sp.KlassenSetSetzen(set.Heizung, set.Brauchwasser, set.Prozess);
+
+            string rolle = PufferSpCtrl.VerwendungAusKlassenSet(set.Heizung, set.Brauchwasser,
+                                                                set.Prozess);
+            if (string.Equals(rolle, sp.Verwendung, StringComparison.Ordinal)) return;
+
+            Protokoll.HinweisEinmal("klassenset-rolle-" + sp.ID_Pufferspeicher,
+                              "Speicher " + sp.ID_Pufferspeicher + " (" + sp.BezeichnerAnzeige() +
+                              "): Das Klassen-Set " + sp.KlassenSetText() + " passt nicht zur " +
+                              "Alt-Verwendung „" + sp.Verwendung + "\". Gerechnet wird das Set; " +
+                              "die Rolle in Anzeige und Ergebniszeile lautet „" + rolle + "\".");
+            sp.Verwendung = rolle;
+        }
+
         public SimulationPufferspeicher ErsterHeizpuffer()
         {
             foreach (int id in _speicherReihenfolge)
@@ -2443,6 +2578,14 @@ namespace WindowsFormsApplication1
                                 WaermesenkeClass.PufferLesen(psp.items[0].ID))))
                         ? SimulationPufferspeicher.VERWENDUNG_KOMBI
                         : SimulationPufferspeicher.VERWENDUNG_HEIZUNG;
+
+                    // PAKET K2: Klassen-Set AUS DIESER ROLLE, nicht aus den Flags der
+                    // Projektkopie - die Rolle ist hier eine bewusste Entscheidung dieses
+                    // Blocks (siehe oben), und ein davon abweichendes Set nähme dem
+                    // Altweg genau die Regressionszusage. Begründung und Abrisspunkt
+                    // (Paket A1) stehen an KlassenSetUebernehmen.
+                    KlassenSetUebernehmen(pufferWp, false);
+
                     pufferWp.Init(psp.items[0].Gesamtvolumen,
                                   vorlauf,
                                   ruecklauf,
@@ -2501,6 +2644,11 @@ namespace WindowsFormsApplication1
                 sp.ID_Pufferspeicher = p.ID;
                 sp.ID_Projekt = p.ID_Projekt;
                 sp.Verwendung = WaermesenkeClass.WirksameVerwendung(p);
+
+                // PAKET K2: Klassen-Set aus den drei Flags der Projektkopie (Schritt 49).
+                // Auf migriertem Bestand ist es die Ableitung aus genau der Verwendung,
+                // die eine Zeile höher zugewiesen wurde - dann ändert der Aufruf nichts.
+                KlassenSetUebernehmen(sp, true);
 
                 // TEMPERATUR-VORRANGKETTE wie in Block 1 (Paket 1d, in der Paket-4-Review
                 // nachgezogen): Die Projektkopie ist die führende Ablage; steht dort kein

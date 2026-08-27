@@ -600,6 +600,9 @@ Without a source buffer this reads 0.00.</value>
   <data name="PSP_FEHLER_EIN_KLEINER_AUS" xml:space="preserve">
     <value>The switch-on threshold must be lower than the switch-off threshold.</value>
   </data>
+  <data name="PSP_FEHLER_KLASSENSET_LEER" xml:space="preserve">
+    <value>At least one use must be ticked: heating, domestic hot water or process heat. A storage without a use is discharged by no plant at all (concept 6.1).</value>
+  </data>
   <data name="PSP_FEHLER_NACHRANG_UEBER_AUS" xml:space="preserve">
     <value>The switch-off threshold for lower-priority heat generators must not exceed the switch-off threshold - it is the reserve zone for the priority (concept 3.4).</value>
   </data>
@@ -654,6 +657,9 @@ Without a source buffer this reads 0.00.</value>
   <data name="PSP_GRUPPE_LADEREIHENFOLGE" xml:space="preserve">
     <value>Charging order of this storage (from the generator assignments)</value>
   </data>
+  <data name="PSP_HINWEIS_KLASSENSET_OHNE_ALTWERT" xml:space="preserve">
+    <value>Set without a legacy equivalent — the check boxes are what counts. The use above only shows the closest legacy value.</value>
+  </data>
   <data name="PSP_KANALWORT_BRAUCHWASSERSPEICHER" xml:space="preserve">
     <value>DHW storage unit</value>
   </data>
@@ -689,6 +695,9 @@ Without a source buffer this reads 0.00.</value>
   </data>
   <data name="PSP_LABEL_GESAMTVOLUMEN" xml:space="preserve">
     <value>Total volume [l]:</value>
+  </data>
+  <data name="PSP_LABEL_KLASSENSET" xml:space="preserve">
+    <value>Use (class set):</value>
   </data>
   <data name="PSP_LABEL_RUECKLAUF" xml:space="preserve">
     <value>Return [°C]:</value>

@@ -81,6 +81,33 @@
         /// </summary>
         public bool Extrapolation_erlaubt;
 
+        /// <summary>
+        /// Projektweite KANAL-KNAPPHEITSREIHENFOLGE (Paket K2, Konzept
+        /// Brauchwasser/Heizung/Pufferspeicher § 4.3, Entscheidung F10 vom 27.08.2026),
+        /// Spalte <c>Tab_Einstellungen.Kanal_Knappheitsreihenfolge</c>.
+        /// <b>Vorbelegung <see cref="DbWerte.KNAPPHEIT_DEFAULT"/></b>
+        /// (<c>BRAUCHWASSER;PROZESS;HEIZUNG</c>).
+        ///
+        /// <para>Sie beantwortet die Frage, die sich mit der dreikanaligen Kaskade
+        /// erstmals stellt: In welcher Rangfolge wird eine mehrelementige Kanalmaske
+        /// bedient, wenn die Wärme nicht für alle reicht? Bis hierher kannte
+        /// <c>SenkeAbziehen</c> nur „Warmwasser vor Heizung", fest verdrahtet; der
+        /// Vorgabewert ist genau diese Regel, um den Prozesskanal ergänzt
+        /// (Produktionsausfall wiegt schwerer als Raumkomfort).</para>
+        ///
+        /// <para>Der Wert ist eine LISTE sprachneutraler ASCII-Schlüssel, getrennt
+        /// durch Semikolon — kein Anzeigetext und kein einzelner Steuerwert. Die
+        /// Ausnahme von der Deutsch-Regel ist in <c>DbWerte</c> begründet
+        /// (Konzept Kapitel 15).</para>
+        ///
+        /// <para>Gelesen wird NAMENSBASIERT (<c>KonfigurationCtrl.ReadSingle</c>), nicht
+        /// über die Ordinalkette row[0..22]; geschrieben ausschließlich über
+        /// <see cref="KonfigurationCtrl.KnappheitsreihenfolgeSchreiben"/> — dieselbe
+        /// Begründung wie bei <see cref="Kaskade_Zweikanalig"/> und
+        /// <see cref="Extrapolation_erlaubt"/>.</para>
+        /// </summary>
+        public string Kanal_Knappheitsreihenfolge = DbWerte.KNAPPHEIT_DEFAULT;
+
         public KonfigurationModel()
         {
             m_ID = 0;
@@ -108,6 +135,9 @@
             Pendelspeicher = 0;
             Kaskade_Zweikanalig = false;
             Extrapolation_erlaubt = true;   // Vorbelegung: erlaubt (Konzept 13.4, Paket 8)
+            // Vorbelegung BRAUCHWASSER;PROZESS;HEIZUNG (Paket K2, F10) - die bis dahin
+            // fest verdrahtete Reihenfolge, um den Prozesskanal ergaenzt.
+            Kanal_Knappheitsreihenfolge = DbWerte.KNAPPHEIT_DEFAULT;
         }
     }
 }

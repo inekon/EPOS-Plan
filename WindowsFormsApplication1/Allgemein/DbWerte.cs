@@ -1092,6 +1092,51 @@ namespace WindowsFormsApplication1
         public const string KANAL_PROZESS = "Prozesswaerme";
 
         // =====================================================================
+        // Kanal-Knappheitsreihenfolge
+        //   Tab_Einstellungen.Kanal_Knappheitsreihenfolge  (Migrationsschritt 49,
+        //   Konzept Brauchwasser/Heizung/Pufferspeicher § 4.3, Rückfrage F10)
+        //
+        //   BEWUSSTE AUSNAHME VON DER DEUTSCH-REGEL. Die übrigen Persistenzwerte
+        //   dieser Datei sind deutsch und eingefroren; diese hier sind
+        //   SPRACHNEUTRALE ASCII-SCHLÜSSEL. So legt es Konzept Kapitel 15
+        //   ausdrücklich fest: Der Spaltenwert ist keine Wertaufzählung mit
+        //   Anzeigebezug, sondern eine REIHENFOLGE — eine Liste von Schlüsseln,
+        //   die zerlegt, umsortiert und wieder zusammengesetzt wird. Umlaute und
+        //   deutsche Schreibweisen wären dort nur eine weitere Fehlerquelle
+        //   (Kodierungsschäden mit U+FFFD treffen genau solche Vergleiche).
+        //
+        //   PERSISTENZFORMAT der Spalte: die drei Schlüssel, getrennt durch
+        //   Semikolon, in der gewünschten Rangfolge — z. B.
+        //   "BRAUCHWASSER;PROZESS;HEIZUNG". Der Leser ist tolerant: unbekannte
+        //   Glieder werden übergangen, fehlende Kanäle hinten in der Reihenfolge
+        //   des Vorgabewerts ergänzt, NULL/leer bedeutet den Vorgabewert.
+        //
+        //   FACHLICHE BEGRÜNDUNG der Vorbelegung (4.3): Warmwasser-Vorrang wie
+        //   bisher (Komfortkriterium), Prozess vor Heizung (ein Produktionsausfall
+        //   wiegt schwerer als Raumkomfort).
+        // =====================================================================
+
+        /// <summary>Steuerwert des Brauchwasserkanals in der Knappheitsreihenfolge.</summary>
+        public const string KNAPPHEIT_BRAUCHWASSER = "BRAUCHWASSER";
+
+        /// <summary>Steuerwert des Prozesswärmekanals in der Knappheitsreihenfolge.</summary>
+        public const string KNAPPHEIT_PROZESS = "PROZESS";
+
+        /// <summary>Steuerwert des Heizkanals in der Knappheitsreihenfolge.</summary>
+        public const string KNAPPHEIT_HEIZUNG = "HEIZUNG";
+
+        /// <summary>
+        /// Vorbelegung der Spalte <c>Tab_Einstellungen.Kanal_Knappheitsreihenfolge</c>
+        /// (Migrationsschritt 49) und Rückfallwert bei NULL, Leerwert oder fehlender
+        /// Spalte: <c>BRAUCHWASSER;PROZESS;HEIZUNG</c> — die drei Schlüssel oben in
+        /// genau dieser Rangfolge. Bewusst als LITERAL geschrieben und nicht aus den
+        /// drei Konstanten zusammengesetzt: Der Wert steht so auch im
+        /// Migrationsskript und in der Datenbank, und er soll im Quelltext genauso
+        /// lesbar sein wie dort.
+        /// </summary>
+        public const string KNAPPHEIT_DEFAULT = "BRAUCHWASSER;PROZESS;HEIZUNG";
+
+        // =====================================================================
         // Wärmequelle
         //   Tab_Energieanlagen.WQ_Typ
         //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
