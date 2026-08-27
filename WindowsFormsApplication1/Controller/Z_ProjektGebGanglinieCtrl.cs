@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
     class Z_ProjektGebGanglinieCtrl : Z_ProjWaermebedarfModel
     {
+        /// <summary>Ergebnis der einmaligen Spaltenvorsorge (siehe <see cref="StelleKanalSpalteSicher"/>).</summary>
+        private static bool? _kanalSpalteBereit;
+
         private List<Z_ProjWaermebedarfModel> _internalList = new List<Z_ProjWaermebedarfModel>();
         public int rows => _internalList.Count;
         public new List<Z_ProjWaermebedarfModel> items => _internalList;
@@ -45,8 +49,121 @@ namespace WindowsFormsApplication1
                 else if (dt.Columns.Contains("m_szBezeichner") && row["m_szBezeichner"] != DBNull.Value)
                     item.m_szBezeichner = row["m_szBezeichner"].ToString();
 
+                // Kanalzuordnung (Migrationsschritt 48, F18). Doppelt tolerant:
+                // fehlende Spalte (Datenbank vor der Migration) UND NULL/Leerwert
+                // fallen auf Heizung zurueck - genau der Weg, den jede externe
+                // Ganglinie vor diesem Schritt nahm.
+                item.Kanal = KanalOderHeizung(
+                    dt.Columns.Contains(SchemaKatalog.SPALTE_ZPW_KANAL)
+                        ? row[SchemaKatalog.SPALTE_ZPW_KANAL]
+                        : null);
+
                 // Das Element der dynamischen Liste hinzufügen
                 _internalList.Add(item);
+            }
+        }
+
+        /// <summary>
+        /// Tolerante Vorsorge für <c>Z_ProjektWaermebedarf.Kanal</c>
+        /// (Migrationsschritt 48) unmittelbar vor dem SCHREIBEN.
+        ///
+        /// <para>Die Leseseite braucht sie nicht — <see cref="ReadAll"/> prüft den
+        /// Spaltennamen und fällt auf Heizung zurück. Der Speicherweg dagegen schreibt
+        /// die Spalte ausgeschrieben; fehlte sie, scheiterte das INSERT und mit ihm das
+        /// Speichern der ganzen Zuordnung. Dasselbe Muster wie
+        /// <c>KostenPositionCtrl.StelleSpaltenSicher</c> für die Schritte 19/38/45/46:
+        /// eigene Verbindung statt <c>DataRepository</c>, weil eine Vorsorge kein
+        /// Bedienschritt ist und keine MessageBox zeigen darf. Einmal je Prozess.</para>
+        /// </summary>
+        internal static bool StelleKanalSpalteSicher()
+        {
+            if (_kanalSpalteBereit.HasValue) return _kanalSpalteBereit.Value;
+
+            bool ok = false;
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    try
+                    {
+                        using (OleDbCommand cmd = new OleDbCommand(
+                            "ALTER TABLE [" + SchemaKatalog.Z_PROJEKTWAERMEBEDARF +
+                            "] ADD COLUMN [" + SchemaKatalog.SPALTE_ZPW_KANAL + "] TEXT(50)", conn))
+                            cmd.ExecuteNonQuery();
+                    }
+                    catch { /* Spalte existiert bereits - der Regelfall nach Schritt 48 */ }
+
+                    // Nachweis statt Annahme: erst diese Leseprobe belegt, dass die
+                    // Spalte da ist (das ALTER schluckt jeden Fehler, auch einen echten).
+                    using (OleDbCommand probe = new OleDbCommand(
+                        "SELECT COUNT(*) FROM [" + SchemaKatalog.Z_PROJEKTWAERMEBEDARF +
+                        "] WHERE [" + SchemaKatalog.SPALTE_ZPW_KANAL + "] IS NULL", conn))
+                    {
+                        probe.ExecuteScalar();
+                        ok = true;
+                    }
+                }
+            }
+            catch { ok = false; }
+
+            _kanalSpalteBereit = ok;
+            return ok;
+        }
+
+        /// <summary>
+        /// Der Kanal eines gelesenen Feldes; NULL, DBNull und Leerwert ergeben
+        /// <see cref="DbWerte.KANAL_HEIZUNG"/> (Vorbelegung nach F18).
+        /// </summary>
+        public static string KanalOderHeizung(object feld)
+        {
+            if (feld == null || feld == DBNull.Value) return DbWerte.KANAL_HEIZUNG;
+            string wert = feld.ToString().Trim();
+            return wert.Length == 0 ? DbWerte.KANAL_HEIZUNG : wert;
+        }
+
+        /// <summary>
+        /// Die gespeicherten Kanäle eines Projekts, nach <c>ID_Z</c> aufgeschlüsselt.
+        ///
+        /// <para>Notwendig, weil der Speicherweg der Zuordnung LÖSCHEN + NEU ANLEGEN
+        /// ist (<c>WizardCtrl.Del_WaermebedarfExtern</c> +
+        /// <c>Add_WaermebedarfExtern</c>): Wer eine Modellliste aus einer
+        /// ausgeschriebenen SELECT-Liste oder aus den ListView-Spalten der Startseite
+        /// aufbaut, hat den Kanal nicht dabei und würde ihn beim nächsten Speichern
+        /// still auf Heizung zurücksetzen. Diese Methode holt ihn zurück, bevor
+        /// gespeichert wird.</para>
+        /// </summary>
+        public static Dictionary<int, string> KanaeleLesen(int idProjekt)
+        {
+            var map = new Dictionary<int, string>();
+            if (idProjekt <= 0) return map;
+
+            // Bewusst SELECT * : so bleibt der Weg auch auf einer Datenbank ohne
+            // Migrationsschritt 48 lesbar (ReadAll prueft den Spaltennamen selbst).
+            Z_ProjektGebGanglinieCtrl ctrl = new Z_ProjektGebGanglinieCtrl();
+            ctrl.ReadAll("select * from Z_ProjektWaermebedarf where ID_Projekt=" + idProjekt);
+
+            foreach (Z_ProjWaermebedarfModel item in ctrl.items)
+                if (item.m_ID_Z > 0) map[item.m_ID_Z] = KanalOderHeizung(item.Kanal);
+
+            return map;
+        }
+
+        /// <summary>
+        /// Trägt die gespeicherten Kanäle in eine bereits gefüllte Modellliste nach —
+        /// Zuordnung über <c>ID_Z</c>. Zeilen ohne Treffer (neu hinzugefügte
+        /// Ganglinien, <c>ID_Z = 0</c>) behalten ihren Wert.
+        /// </summary>
+        public static void KanaeleNachladen(int idProjekt, IEnumerable<Z_ProjWaermebedarfModel> liste)
+        {
+            if (liste == null) return;
+            Dictionary<int, string> map = KanaeleLesen(idProjekt);
+            if (map.Count == 0) return;
+
+            foreach (Z_ProjWaermebedarfModel item in liste)
+            {
+                string kanal;
+                if (item != null && map.TryGetValue(item.m_ID_Z, out kanal)) item.Kanal = kanal;
             }
         }
     }

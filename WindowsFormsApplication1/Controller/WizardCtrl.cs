@@ -1278,22 +1278,34 @@ namespace WindowsFormsApplication1
         {
             int nextID = DataRepository.GetMaxID("Z_ProjektWaermebedarf", "ID_Z") + 1;
 
+            // Migrationsschritt 48 (F18): Der Speicherweg der Zuordnung ist LOESCHEN +
+            // NEU ANLEGEN. Die Kanalspalte muss deshalb in JEDER Schreibstelle stehen -
+            // sonst faellt der Kanal beim naechsten Speichern still auf Heizung zurueck.
+            // Die Vorsorge legt sie auf einer noch nicht migrierten Datenbank an.
+            bool kanalSpalte = Z_ProjektGebGanglinieCtrl.StelleKanalSpalteSicher();
+
             foreach (var item in list)
             {
                 // Stamm-Ganglinie (+ Daten) bei Bedarf ins Projekt kopieren und die Projekt-Ganglinie-ID verwenden.
                 int projGanglinieId = WaermebedarfStammCtrl.ApplyGanglinieToProjekt(item.m_szBezeichner, projektID);
                 if (projGanglinieId <= 0) projGanglinieId = item.m_ID_Ganglinie;
 
-                string sql = "INSERT INTO Z_ProjektWaermebedarf (ID_Z, ID_Projekt, ID_Ganglinie, Bezeichner) VALUES (?, ?, ?, ?)";
+                string sql = kanalSpalte
+                    ? "INSERT INTO Z_ProjektWaermebedarf (ID_Z, ID_Projekt, ID_Ganglinie, Bezeichner, Kanal) VALUES (?, ?, ?, ?, ?)"
+                    : "INSERT INTO Z_ProjektWaermebedarf (ID_Z, ID_Projekt, ID_Ganglinie, Bezeichner) VALUES (?, ?, ?, ?)";
 
-                OleDbParameter[] ps = {
+                var ps = new List<OleDbParameter>
+                {
                     new OleDbParameter("@id", nextID++),
                     new OleDbParameter("@pID", projektID),
                     new OleDbParameter("@gID", projGanglinieId),
                     new OleDbParameter("@bez", item.m_szBezeichner ?? "")
                 };
+                if (kanalSpalte)
+                    ps.Add(new OleDbParameter("@kanal",
+                        Z_ProjektGebGanglinieCtrl.KanalOderHeizung(item.Kanal)));
 
-                if (!DataRepository.ExecuteSQL(sql, ps)) return false;
+                if (!DataRepository.ExecuteSQL(sql, ps.ToArray())) return false;
             }
             return true;
         }

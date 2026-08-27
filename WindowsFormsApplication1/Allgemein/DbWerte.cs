@@ -1061,6 +1061,37 @@ namespace WindowsFormsApplication1
         public const string WS_TYP_HEIZUNG = "Heizung";
 
         // =====================================================================
+        // Bedarfskanal
+        //   Z_ProjektWaermebedarf.Kanal  (Migrationsschritt 48, Konzept
+        //   Brauchwasser/Heizung/Pufferspeicher § 4.2, Rückfrage F18)
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        //
+        //   Die drei Kanäle des Bedarfsmodells (L3: kein Residuum mehr). Der
+        //   Rechenkern indiziert sie (KANAL_HEIZUNG = 0 usw., L2); DIESE Werte sind
+        //   ausschließlich das, was in der Datenbank steht — nie ein Anzeigetext und
+        //   nie ein Index. Die Anzeige läuft über MyResource.Resource.KANAL_*_ANZEIGE.
+        //
+        //   LEER oder NULL gilt überall als Heizung: So steht die Spalte in jeder
+        //   Zeile, die vor Schritt 48 entstanden ist, und so bleibt eine Datenbank
+        //   ohne die Spalte verhaltensgleich zum Bestand (F18: Vorbelegung „Heizung"
+        //   ist altverhaltenserhaltend).
+        // =====================================================================
+
+        /// <summary>Raumwärme — der Vorbelegungs- und Rückfallwert (leer/NULL = Heizung).</summary>
+        public const string KANAL_HEIZUNG = "Heizung";
+
+        /// <summary>Trinkwarmwasser.</summary>
+        public const string KANAL_BRAUCHWASSER = "Brauchwasser";
+
+        /// <summary>
+        /// Prozesswärme. Bewusst OHNE Umlaut geschrieben („Prozesswaerme"), wie
+        /// <see cref="WS_ZIEL_PUFFER_HEIZUNG"/> &amp; Co. — der Wert wird in SQL
+        /// verglichen, und die Altdaten-Beschädigung mit U+FFFD aus früheren
+        /// Importen trifft genau solche Vergleiche.
+        /// </summary>
+        public const string KANAL_PROZESS = "Prozesswaerme";
+
+        // =====================================================================
         // Wärmequelle
         //   Tab_Energieanlagen.WQ_Typ
         //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)

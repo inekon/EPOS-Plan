@@ -51,6 +51,7 @@ namespace WindowsFormsApplication1
         public const string TAB_EINSTELLUNGEN = "Tab_Einstellungen";
         public const string TAB_APPLIKATION = "Tab_Applikation";
         public const string Z_PROJEKTPUFFERSP = "Z_ProjektPufferSp";
+        public const string Z_PROJEKTWAERMEBEDARF = "Z_ProjektWaermebedarf";
         public const string TAB_ERGEBNISPUFFERSPEICHER = "Tab_ErgebnisPufferspeicher";
         public const string TAB_ERGEBNISHEIZKESSEL = "Tab_ErgebnisHeizkessel";
         public const string TAB_STROMSPEICHER = "Tab_Stromspeicher";
@@ -1015,6 +1016,19 @@ namespace WindowsFormsApplication1
         /// <summary>Eine Zeile je Stammprojekt — der eindeutige Suchweg.</summary>
         public const string SQL_INDEX_PROJEKTPHOTOVOLTAIK =
             "CREATE UNIQUE INDEX idx_ProjektPhotovoltaik ON Tab_ProjektPhotovoltaik (ID_Projekt)";
+
+        /// <summary>
+        /// K1 (Migrationsschritt 48, Konzept Brauchwasser/Heizung/Pufferspeicher § 4.2,
+        /// Entscheidung F18): <c>Z_ProjektWaermebedarf.Kanal</c> (TEXT 50) — der
+        /// BEDARFSKANAL einer dem Projekt zugeordneten externen Wärmeganglinie.
+        /// Werte sind ausschließlich die <c>DbWerte.KANAL_*</c>-Steuerwerte; NULL oder
+        /// leer gilt überall als <see cref="DbWerte.KANAL_HEIZUNG"/> — genau das
+        /// Bestandsverhalten, in dem jede importierte Ganglinie in den Heizbedarf lief.
+        ///
+        /// <para>Die Spalte steht BEWUSST NICHT in <see cref="Alle"/>: Begründung dort
+        /// im Sammelkommentar.</para>
+        /// </summary>
+        public const string SPALTE_ZPW_KANAL = "Kanal";
 
         /// <summary>Eine Position einer Auslieferungsvorlage (Schritt 39).</summary>
         public sealed class VorlagenPositionSeed
@@ -2127,6 +2141,16 @@ namespace WindowsFormsApplication1
         /// entstehen — das kann die Rückfallebene gar nicht leisten. Die tolerante
         /// Vorsorge übernimmt <c>EnergieEinheitenPruefung</c>, indem sie eine fehlende
         /// Tabelle oder Spalte als Befund „Migration ausstehend" meldet statt zu werfen.
+        ///
+        /// <see cref="SPALTE_ZPW_KANAL"/> (Schritt 48) ist BEWUSST NICHT aufgeführt,
+        /// obwohl es eine EINGABEspalte ist, die der Rechenkern liest — anders als bei
+        /// <see cref="Schritt13_Mindestfuellstand"/> hängt hier kein Lauf an ihr: Jeder
+        /// Leser der Zuordnung arbeitet mit <c>SELECT *</c> und prüft den Spaltennamen
+        /// (<c>Z_ProjektGebGanglinieCtrl.ReadAll</c>), in keiner ausgeschriebenen
+        /// SELECT-Liste steht sie. Fehlt die Spalte, bleibt <c>Kanal</c> leer, und leer
+        /// heißt laut <see cref="DbWerte.KANAL_HEIZUNG"/> genau das Bestandsverhalten.
+        /// Damit gilt hier dieselbe Linie wie bei den Schritten 45 bis 47, deren Spalten
+        /// ebenfalls nur die Migration anlegt.
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {

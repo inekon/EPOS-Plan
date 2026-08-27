@@ -749,18 +749,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void Kaskade_Zweikanalig()
         {
-            // Kanäle aus dem Bedarf bilden (Konzept 3.2): HEIZUNG als Residuum NACH dem
-            // Netzverlust-Aufschlag, BRAUCHWASSER = brauchwasserwerte.
+            // Kanäle aus dem Bedarf holen (Konzept 4.2, Paket K1): Der Bedarf ist seit K1
+            // DREIKANALIG gerechnet; Kanaele() ist bis Paket K2 die Übergangsabbildung auf
+            // die zweikanalige Kaskade - Heiz = HEIZUNG + PROZESS, WW = BRAUCHWASSER.
+            //
+            // Die frühere Kappungsmeldung entfällt mit den Kappungsfällen selbst: Es gibt
+            // kein Residuum mehr, aus dem ein negativer Heizkanal entstehen könnte. An
+            // ihre Stelle tritt die Energieprobe der Kanalbildung (Konzept 11.3), die
+            // SimulationWaermebedarf selbst in das Lauf-Protokoll meldet.
             Waermekanaele kanaele = simulation_Waermebedarf.Kanaele();
-
-            // Datenkorrektur am Bedarf: gehört als WARNUNG in das Lauf-Protokoll
-            // (Protokollkanal-Nachzug). Der Zähler ist bereits über das ganze Jahr
-            // aggregiert - eine Meldung je Lauf, kein Meldungssturm.
-            if (simulation_Waermebedarf.Kanal_Kappungen > 0)
-                Protokoll.Warnung("Kanalbildung: in " + simulation_Waermebedarf.Kanal_Kappungen +
-                                  " Stunden lag der Brauchwasserwert über dem Gesamtbedarf (" +
-                                  simulation_Waermebedarf.Kanal_Kappung_kWh.ToString("0.###") +
-                                  " kWh gekappt) - der Heizkanal wurde auf 0 gesetzt.");
 
             float[] temp;
 

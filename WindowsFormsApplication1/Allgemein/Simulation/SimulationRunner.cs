@@ -150,6 +150,10 @@ namespace WindowsFormsApplication1
             simulation_Waermebedarf.Waermebedarf_berechnen(idProjekt, nKlimaregion);
 
             simulation_Strombedarf.m_ID_Projekt = idProjekt;
+            // K1 (F3): denselben Klimadaten-Kalender wie die Wärmerechnung verwenden -
+            // erspart der Stromrechnung die eigene Klimadaten-Lesung und schließt aus,
+            // dass beide Bedarfsarten je einen anderen Wochentag ermitteln.
+            simulation_Strombedarf.WochentagJan1 = simulation_Waermebedarf.WochentagJan1;
             simulation_Strombedarf.Berechnung(idProjekt);
 
             // PAKET 8 (Konzept 13.4): Bricht die Strombedarfsrechnung ab, war das bisher
