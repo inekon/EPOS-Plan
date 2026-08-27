@@ -137,8 +137,14 @@ namespace WindowsFormsApplication1
                 bool absolut = info != null && info.Absolut;
                 double startBetrag = absolut && p.Satz.HasValue ? p.Satz.Value : 0.0;
 
+                // Ä25: MIT Anlagenbezug schreiben. Der Dublettencheck oben lief seit
+                // Ä20 je Anlage, das SCHREIBEN aber weiter anlagenblind — bei einer
+                // zweiten Anlage derselben Komponente (Regelfall Pufferspeicher) traf
+                // SetzeBetrag die Position der ERSTEN Anlage, überschrieb ihren Betrag
+                // mit dem Vorlagen-Startwert und AnlageZuordnen unten hängte sie an die
+                // Ziel-Anlage um. Genau so verschwanden erfasste Pufferkosten.
                 int id = KostenPositionCtrl.SetzeBetrag(projektId, vorlage.KategorieId,
-                    vorlage.KomponentenId, stammId, startBetrag, gruppe, true);
+                    vorlage.KomponentenId, stammId, startBetrag, gruppe, true, idAnlage);
                 if (id <= 0)
                 {
                     e.Fehler = true;

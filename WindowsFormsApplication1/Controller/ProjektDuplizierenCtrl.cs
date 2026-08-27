@@ -204,6 +204,33 @@ namespace WindowsFormsApplication1
                 if (!offset.ContainsKey("Tab_Projekt"))
                 { try { trans.Rollback(); } catch { } MessageBox.Show("Projekt konnte nicht gelesen werden."); return -1; }
 
+                // 2b) DIE NEUE PROJEKT-ID MUSS IN JEDER PROJEKTTABELLE FREI SEIN, nicht nur in
+                //     Tab_Projekt (Befund 27.08.2026, Fehler D-a).
+                //
+                //     Der Offset aus 2) legt die Kopie auf MAX(Tab_Projekt.ID) + 1. Diese ID ist
+                //     nach einem Projekt-Loeschen WIEDERVERWENDET: Von den Projekttabellen haengen
+                //     nur wenige mit Loeschweitergabe an Tab_Projekt (Tab_Pufferspeicher,
+                //     Tab_Energieanlagen, Tab_Einstellungen, die Z_*-Zuordnungen). Alle uebrigen -
+                //     Tab_WP, Tab_Heizkessel, Tab_BHKW, Tab_PV, Tab_Solarkollektoren,
+                //     Tab_Stromspeicher, Tab_Brauchwasser(typ), Tab_Prozesswaerme, Tab_Stromganglinie,
+                //     Tab_Stromverbraucher(typ), Tab_Waermebedarf, Tab_Ergebnis* - behalten ihre
+                //     Zeilen (siehe GeraeteWaisen). Faellt die Kopie auf eine solche ID, ERBT sie
+                //     den Rueckstand des geloeschten Projekts: Die Kopie zeigt Komponenten in
+                //     Solarthermie, Stromspeicher oder Photovoltaik, die das Ausgangsprojekt nie
+                //     hatte. Gemessen an einer Arbeitskopie: Kopie von Projekt 1040 auf die ID des
+                //     zuvor geloeschten 1042 -> 3 statt 1 Waermepumpe, 2 statt 1 Heizkessel,
+                //     70 080 statt 35 040 Stromganglinien-Werte.
+                //
+                //     Der normale Weg hat das Problem nicht: Tab_Projekt.ID ist ein AutoWert, und
+                //     der vergibt keine ID zweimal (ProjektCtrl.Insert schreibt die Spalte gar
+                //     nicht mit). Nur diese Kopie setzt die ID selbst - also korrigiert sie sich
+                //     auch hier.
+                //
+                //     KEIN LOESCHEN: Der Rueckstand bleibt unangetastet, die Kopie weicht ihm nur
+                //     aus. Die ID kann dadurch nur STEIGEN, nie sinken.
+                long freieId = FreieProjektId(conn, trans, specs, srcId + offset["Tab_Projekt"]);
+                offset["Tab_Projekt"] = freieId - srcId;
+
                 // 3) Kopieren. Nur Tabellen mit Quellzeilen (offset vorhanden) werden gezaehlt/gemeldet.
                 var zuKopieren = new List<Spec>();
                 foreach (Spec s in specs)
@@ -561,6 +588,57 @@ namespace WindowsFormsApplication1
             offset = max - min + 1;
             if (offset < 1) offset = 1;
             return true;
+        }
+
+        /// <summary>
+        /// Die erste Projekt-ID ab <paramref name="vorschlag"/>, zu der KEINE Tabelle des
+        /// Kopierplans mehr eine Zeile fuehrt.
+        ///
+        /// <para>
+        /// Gefragt wird jede Plantabelle mit eigener Projektspalte (<c>ID_Projekt</c> bzw.
+        /// <c>ProjektID</c>) nach ihrem groessten Wert. Ist er kleiner als der Vorschlag,
+        /// liegt dort kein Rueckstand ueber dem Vorschlag - dann bleibt es beim Vorschlag.
+        /// Sonst rueckt die Kopie hinter den hoechsten gefundenen Wert. Tabellen ohne
+        /// eigene Projektspalte (die FK-gebundenen Kindtabellen) brauchen nicht gefragt zu
+        /// werden: Sie haengen an einer dieser Tabellen und sind ohne ihren Elternsatz
+        /// nicht erreichbar.
+        /// </para>
+        ///
+        /// <para>
+        /// Eine Tabelle, die sich nicht lesen laesst, wird UEBERSPRUNGEN - dieselbe
+        /// Vorsicht wie in <see cref="BerechneOffset"/>. Die Kopie liegt dann schlimmstenfalls
+        /// so wie vorher, nie schlechter.
+        /// </para>
+        /// </summary>
+        private long FreieProjektId(OleDbConnection conn, OleDbTransaction trans, List<Spec> specs, long vorschlag)
+        {
+            long hoechste = vorschlag - 1;
+
+            foreach (Spec s in specs)
+            {
+                string spalte = null;
+                if (s.Cols != null)
+                {
+                    if (Enthaelt(s.Cols, "ID_Projekt")) spalte = "ID_Projekt";
+                    else if (Enthaelt(s.Cols, "ProjektID")) spalte = "ProjektID";
+                }
+                if (spalte == null) continue;
+
+                try
+                {
+                    using (var c = new OleDbCommand(
+                        "SELECT MAX([" + spalte + "]) FROM [" + s.Tabelle + "]", conn, trans))
+                    {
+                        object v = c.ExecuteScalar();
+                        if (v == null || v == DBNull.Value) continue;
+                        long max = Convert.ToInt64(v);
+                        if (max > hoechste) hoechste = max;
+                    }
+                }
+                catch { /* Tabelle nicht lesbar -> ueberspringen, nie nach unten korrigieren */ }
+            }
+
+            return hoechste + 1;
         }
 
         // Baut das generische INSERT ... SELECT.

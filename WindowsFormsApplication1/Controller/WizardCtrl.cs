@@ -980,6 +980,42 @@ namespace WindowsFormsApplication1
                 //
                 // BEST EFFORT: Der Aufraeumlauf kann ein gelungenes Speichern nicht mehr
                 // scheitern lassen. Was er stehen laesst, holt der Migrationsschritt.
+
+                // Ä25 (Nutzerbefund 27.08.2026, „Pufferkosten verschwinden“):
+                // ZUORDNUNG UND ANKER NACHZIEHEN - und zwar VOR dem Aufraeumlauf.
+                //
+                // Loeschen + Neuanlegen hat allen Kostenpositionen des Projekts die
+                // Anlagen-Id unter den Fuessen weggezogen (neue AutoWerte). Geheilt
+                // wurde das bisher erst beim naechsten UI-Aufbau ueber
+                // KostenProjektPositionenCtrl.ZuordnungReparieren (Kosten-Seite,
+                // Kostenverwaltung) - die Heilung laeuft ueber den GERAETEANKER.
+                // Genau dieses Zeitfenster ist die Gefahr: GeraeteWaisen.Aufraeumen
+                // direkt darunter loescht Geraetekopien, auf die keine Anlagenzeile
+                // mehr zeigt, und mit der Geraetezeile stirbt der Anker. Danach ist
+                // die Zuordnung nicht mehr herleitbar und die Position steht als
+                // „ohne Anlagenzuordnung" da - beim Pufferspeicher der haeufigste
+                // Fall, weil ein Projekt dort mehrere Anlagen fuehrt und der
+                // Speichersatz oft komplett neu gesetzt wird.
+                //
+                // An DIESER Stelle stehen die alten Geraetezeilen noch:
+                // ZuordnungReparieren findet ueber den Anker die neue Anlagenzeile,
+                // AnkerNachziehen schreibt den Anker danach aus ihr neu - dieselbe
+                // Ableitung, die Migrationsschritt 47 einmalig fuer den Bestand
+                // macht. Ein LAUFZEIT-Nachzug statt eines neuen Migrationsschritts,
+                // weil der Nummernblock ab 48 bereits von den Puffer-Paketen belegt
+                // ist.
+                //
+                // GRENZE (bewusst): Entfernt der Anwender eine Anlage ganz aus der
+                // Verwaltung, gibt es keine Zeile mehr, auf die zu heilen waere -
+                // die Zuordnung wird dann wie bisher ehrlich geloest (gelbe Zeile).
+                // BEST EFFORT - ein gelungenes Speichern scheitert daran nicht.
+                try
+                {
+                    KostenProjektPositionenCtrl.ZuordnungReparieren(projektID);
+                    KostenProjektPositionenCtrl.AnkerNachziehen(projektID);
+                }
+                catch { }
+
                 GeraeteWaisen.Aufraeumen(projektID);
 
                 Console.WriteLine("Daten erfolgreich aktualisiert.");

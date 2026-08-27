@@ -434,6 +434,80 @@ namespace WindowsFormsApplication1
         /// = Anlagenzeile item.ID); vor Migrationsschritt 45 bzw. ohne Anlage 0.</summary>
         private ToolTip _kostenTip;
 
+        /// <summary>
+        /// Ä25 (Nutzerbefund 27.08.2026): „Kosten bearbeiten…“ blieb GESPERRT,
+        /// obwohl die Wärmepumpe im Projekt verbaut ist.
+        ///
+        /// <para><b>Ursache.</b> Der Knopf hing allein an zwei Feldern des
+        /// LISTENOBJEKTS: <c>item.ID</c> (Anlagenzeile) und <c>item.ID_Projekt</c>.
+        /// Beide trägt es nicht in jedem Einstieg. Ein Eintrag aus „Neu…“
+        /// (<c>Form_WPAuswahl.btn_Neu_Click</c>, <c>WPKontextMenuCtrl</c>, Wizard)
+        /// startet mit 0/0; der Del+Add-Speicherweg schreibt seit Ä24 zwar die
+        /// frische Anlagen-Id zurück (<c>WizardCtrl.Add_WP_Waermeerzeuger</c>),
+        /// <c>ID_Projekt</c> aber NICHT. Nach dem Speichern stand die Anlage damit
+        /// in der Datenbank, während der Dialog sie weiter für eine Neuanlage
+        /// hielt — Knopf grau, Summenzeile „Invest — · Betrieb —“.</para>
+        ///
+        /// <para><b>Behebung: Anker beim Öffnen nachziehen</b> — dasselbe Muster wie
+        /// <c>KostenProjektPositionenCtrl.ZuordnungReparieren</c> (Ä21) und
+        /// Migrationsschritt 47. Die Anlagenzeile wird aus der Datenbank geholt:
+        /// erst über <c>item.ID</c> (die Zeile liefert dann das Projekt), sonst über
+        /// den GERÄTEANKER — Projekt-Gerätekopie <c>Tab_WP.ID</c> →
+        /// <c>Tab_Energieanlagen.ID_WP</c> desselben Projekts. Der Verbund mit
+        /// <c>Tab_WP</c> hält Stammkatalog-Ids heraus (eine Katalogzeile trägt kein
+        /// <c>ID_Projekt</c> dieses Projekts — dieselbe Prüfung wie
+        /// <c>WizardCtrl.PufferGehoertZuProjekt</c>). Findet auch das nichts, ist die
+        /// Anlage wirklich noch nicht gespeichert: der Ä22-Fall, in dem der Knopf
+        /// gesperrt bleibt und der Tooltip den Weg nennt.</para>
+        /// </summary>
+        /// <returns>true, wenn <c>item.ID</c> und <c>item.ID_Projekt</c> danach eine
+        /// GESPEICHERTE Anlagenzeile bezeichnen.</returns>
+        private bool AnlagenzeileNachziehen()
+        {
+            if (item == null) return false;
+            try
+            {
+                // 1) Gültige Anlagen-Id am Listenobjekt: Die Zeile selbst nennt das
+                //    Projekt — das heilt den Ä24-Rückschreibfall (ID gesetzt,
+                //    ID_Projekt 0).
+                if (item.ID > 0)
+                {
+                    object p = DataRepository.ExecuteScalar(
+                        "SELECT ID_Projekt FROM Tab_Energieanlagen WHERE ID = ?",
+                        new OleDbParameter("@id", item.ID));
+                    if (p != null && p != DBNull.Value && Convert.ToInt32(p) > 0)
+                    {
+                        item.ID_Projekt = Convert.ToInt32(p);
+                        return true;
+                    }
+                }
+
+                // 2) Sonst über den Geräteanker. Projekt: das des Listenobjekts,
+                //    ersatzweise das GEÖFFNETE Projekt — der Dialog wird nur aus
+                //    dessen Verwaltung heraus aufgerufen.
+                int projekt = item.ID_Projekt;
+                if (projekt <= 0 && Program.startfrm != null)
+                    projekt = Program.startfrm.m_ID_Projekt;
+                if (projekt <= 0 || item.ID_WP <= 0) return false;
+
+                // Ids als LITERALE: ACE bindet positionale Parameter im Verbund
+                // nicht verlässlich (Ä21-Befund, dieselbe Falle wie bei
+                // Unterabfragen).
+                object a = DataRepository.ExecuteScalar(
+                    "SELECT MIN(a.ID) FROM Tab_Energieanlagen AS a " +
+                    "INNER JOIN Tab_WP AS g ON a.ID_WP = g.ID " +
+                    "WHERE a.ID_Projekt = " + projekt +
+                    " AND g.ID_Projekt = " + projekt +
+                    " AND a.ID_WP = " + item.ID_WP);
+                if (a == null || a == DBNull.Value) return false;
+
+                item.ID = Convert.ToInt32(a);
+                item.ID_Projekt = projekt;
+                return true;
+            }
+            catch { return false; }
+        }
+
         private void KostenSummenAnzeigen()
         {
             if (lblKostenSummen == null) return;
@@ -442,7 +516,9 @@ namespace WindowsFormsApplication1
             // nicht gespeicherten Neuanlage gibt es sie nicht. Der Knopf bleibt
             // dann gesperrt, sagt aber im Tooltip warum und wie es weitergeht;
             // die Summen zeigen „—“ statt einer falschen 0.
-            bool bereit = item != null && item.ID > 0 && item.ID_Projekt > 0;
+            // Ä25: Vorher wird die Anlagenzeile NACHGEZOGEN (siehe dort) — sonst
+            // bliebe der Knopf auch bei längst gespeicherter Anlage grau.
+            bool bereit = AnlagenzeileNachziehen();
             if (btnKosten != null)
             {
                 btnKosten.Enabled = bereit;
