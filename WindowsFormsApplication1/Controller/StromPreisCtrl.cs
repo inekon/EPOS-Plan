@@ -177,7 +177,28 @@ namespace WindowsFormsApplication1
             e.BezugspreisMittelCtKwh = mittel;
 
             // --- Verguetung (Fachkonzept 4.3) ----------------------------------
-            e.VerguetungPvCtKwh = SpeicherEingang.KonstanteReihe(aufschlagModel.Verguetung_PV, anzahlIntervalle);
+            // ETAPPE P4 (Befund V4, Entscheidung F7): Ist der PV-Verguetungsdialog
+            // AKTIV, ist ER die fuehrende Verguetungswahrheit - v_pv kommt aus dem
+            // Dialogsatz (Stufe 1, mengenunabhaengig), nicht mehr aus Verguetung_PV
+            // des Aufschlagsblocks. Inaktiv bleibt alles beim Bestand.
+            double vpvCt = aufschlagModel.Verguetung_PV;
+            try
+            {
+                ProjektPhotovoltaikCtrl pvc = new ProjektPhotovoltaikCtrl();
+                ProjektPhotovoltaikModel pvDialog = pvc.Lies(idProjekt);
+                double? fuehrend = PvErloesRechner.VpvCtKwh(pvDialog,
+                    PhotovoltaikCtrl.KwpDesProjekts(idProjekt),
+                    new GesetzKatalog().Wert,
+                    jahr => pvc.Jahresmarktwert(jahr, pvDialog));
+                if (fuehrend.HasValue)
+                {
+                    vpvCt = fuehrend.Value;
+                    HinweisErgaenzen("PV-Vergütungsdialog führt die Einspeisevergütung: " +
+                                     vpvCt.ToString("N2") + " ct/kWh (V4/F7).");
+                }
+            }
+            catch { /* fuehrender Satz ist Komfort - der Lauf kippt daran nicht */ }
+            e.VerguetungPvCtKwh = SpeicherEingang.KonstanteReihe(vpvCt, anzahlIntervalle);
             e.VerguetungBhkwCtKwh = SpeicherEingang.KonstanteReihe(aufschlagModel.Verguetung_BHKW, anzahlIntervalle);
 
             // --- Verkaufserloes (Fachkonzept 2.2 / 6.5, AP10) ------------------

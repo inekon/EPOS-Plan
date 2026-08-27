@@ -91,8 +91,16 @@ namespace WindowsFormsApplication1
             numEinspeisungKWK = Zeile("Einspeisevergütung KWK-Strom [€/kWh]:", ref y,
                                       0m, 2m, 4, (decimal)(_parameter.EinspeiseverguetungKWK ?? 0), 0.001m);
             chkAufschlaege = SchalterZeile("Aufschläge (Netzentgelt, Umlagen, Stromsteuer, " +
-                                           "Konzession, Vertrieb) berücksichtigen",
+                                           "Konzession, Vertrieb) berücksichtigen — " +
+                                           "Pflege im Energieträgerdialog (Strom)",
                                            ref y, _parameter.AufschlaegeAnwenden);
+            // Ä16: Die AUSWAHL liegt im Energieträgerdialog; hier nur noch Anzeige.
+            // Ä18-Nachzug: Die einzeilige SchalterZeile (402 px) schnitt den Zusatz
+            // „berücksichtigen — Pflege im Energieträgerdialog (Strom)" unsichtbar ab —
+            // der Dialog sah aus wie vor Ä16. Zweizeilig zeigen und y nachziehen.
+            chkAufschlaege.Size = new Size(402, 38);
+            y += 16;
+            chkAufschlaege.Enabled = false;
 
             // ---------------- BHKW — KWKG 2025 ----------------
             if (_erzeuger.Bhkw)
@@ -328,7 +336,8 @@ namespace WindowsFormsApplication1
                 " Aufschläge: Vorgabe AUS — eingeschaltet steigen die Energiekosten " +
                 "typischerweise um rund ein Drittel (Vorschlagswerte in Summe " +
                 "11,746 ct/kWh). Gepflegt werden sie je Energieträger in der Kostenmaske; " +
-                "hier wird nur entschieden, ob die Wirtschaftlichkeit sie ansetzt.";
+                "OB die Wirtschaftlichkeit sie ansetzt, wird im Energieträgerdialog " +
+                "(Strom) entschieden — der Haken hier zeigt die Wahl nur an.";
             if (_erzeuger.Bhkw)
                 hinweis += " KWKG: Deckel-Override 0 = degressive Vbh-Staffel 2025 ab dem " +
                            "Inbetriebnahmejahr; förderfähig nur mit Stichtag bis 31.12.2026 " +
@@ -526,7 +535,7 @@ namespace WindowsFormsApplication1
             _parameter.Einspeiseverguetung = (double)numEinspeisung.Value;
             _parameter.EinspeiseverguetungKWK = numEinspeisungKWK.Value > 0
                                               ? (double?)numEinspeisungKWK.Value : null;
-            _parameter.AufschlaegeAnwenden = chkAufschlaege.Checked;
+            // Ä16: Das Flag pflegt der Energieträgerdialog — hier nicht mehr schreiben.
 
             // Erzeuger-Gruppen: nur übernehmen, wenn die Gruppe sichtbar war —
             // ausgeblendete Werte bleiben unverändert (kein stilles Nullen).

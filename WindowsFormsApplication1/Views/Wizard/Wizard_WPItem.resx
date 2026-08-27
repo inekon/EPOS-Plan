@@ -1800,7 +1800,7 @@
     <value>149</value>
   </data>
   <data name="btn_WP.Text" xml:space="preserve">
-    <value>Bearbeiten...</value>
+    <value>Parameter Bearbeiten...</value>
   </data>
   <data name="&gt;&gt;btn_WP.Name" xml:space="preserve">
     <value>btn_WP</value>

@@ -704,7 +704,27 @@ namespace WindowsFormsApplication1
                 var pvs = sim.simulation_pv;
                 ErgebnisPhotovoltaikModel pvm = new ErgebnisPhotovoltaikModel();
                 pvm.Stromproduktion = pvs.Stromproduktion.Sum() / 1000.0;
-                pvm.Ueberschuss = pvs.Ueberschuss.Sum() / 1000.0;
+
+                // V2 (PV-Konzept § 2.3, Etappe P1): In den Speicher geladene
+                // PV-Energie ist KEINE Einspeisung — sie wirkt bereits als
+                // vermiedener Netzbezug (Entladung senkt den Restbedarf). Die
+                // Einspeisemenge ist deshalb max(0, Überschuss − Ladung) je
+                // Viertelstunde; die Ladereihe (LadungAcKwh) hält die
+                // SpeicherEngine genau dafür vor. Ohne Speicherlauf bleibt die
+                // Formel der Bestand (Summe des Überschusses).
+                if (sim.Speicherergebnis != null &&
+                    sim.Speicherergebnis.LadungAcKwh != null &&
+                    sim.Speicherergebnis.LadungAcKwh.Length == pvs.Ueberschuss_viertelstunde.Length)
+                {
+                    double[] ladungKwh = sim.Speicherergebnis.LadungAcKwh;
+                    double einspKwh = 0;
+                    for (int vi = 0; vi < ladungKwh.Length; vi++)
+                        einspKwh += Math.Max(0,
+                            pvs.Ueberschuss_viertelstunde[vi] * 0.25 - ladungKwh[vi]);
+                    pvm.Ueberschuss = einspKwh / 1000.0;
+                }
+                else
+                    pvm.Ueberschuss = pvs.Ueberschuss.Sum() / 1000.0;
                 pvm.Strombedarf = pvs.Strombedarf.Sum() / 4000.0;
                 pvm.Reststrombedarf = sim.Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0;
                 pvm.Strombedarfsdeckung = (pvs.Strombedarf_stuendlich.Sum() > 0)

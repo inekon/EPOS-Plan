@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -105,6 +105,54 @@ namespace WindowsFormsApplication1
                             catch (Exception ex)
                             {
                                 Protokoll(s.Tabelle + "." + s.Name + ": " + ex.Message);
+                                ok = false;
+                            }
+                        }
+
+                        // ETAPPE KD6 (§ 11, FK10): dieselbe Vorsorge für die
+                        // Tab_ProjektWerte-Spalten des Schritts 38 (VorlageID,
+                        // StartJahr) — die Leser fragen sie fest an. Nur die
+                        // PW-Spalten; die energy_carrier-Spalten des Schritts
+                        // gehören nicht in diese Vorsorge.
+                        foreach (SchemaSpalte s in SchemaKatalog.Schritt38_Spalten)
+                        {
+                            if (!string.Equals(s.Tabelle, SchemaKatalog.TAB_PROJEKTWERTE,
+                                               StringComparison.Ordinal)) continue;
+                            if (vorhanden.Contains(s.Name)) continue;
+                            try
+                            {
+                                using (OleDbCommand cmd = new OleDbCommand(
+                                    "ALTER TABLE [" + s.Tabelle + "] ADD COLUMN [" + s.Name + "] " +
+                                    s.TypDefinition, conn))
+                                    cmd.ExecuteNonQuery();
+                            }
+                            catch (Exception ex)
+                            {
+                                Protokoll(s.Tabelle + "." + s.Name + ": " + ex.Message);
+                                ok = false;
+                            }
+                        }
+                        // Ä20/Ä21 (Migrationsschritte 45/46): Anlagenbezug der
+                        // Positionen samt Geräteanker — die Lese-/Schreibwege
+                        // filtern fest nach ID_Anlage, die Reparatur braucht
+                        // ID_AnlageGeraet.
+                        foreach (string spalte in new[]
+                                 { SchemaKatalog.SPALTE_PW_ID_ANLAGE,
+                                   SchemaKatalog.SPALTE_PW_ID_ANLAGE_GERAET })
+                        {
+                            if (vorhanden.Contains(spalte)) continue;
+                            try
+                            {
+                                using (OleDbCommand cmd = new OleDbCommand(
+                                    "ALTER TABLE [" + SchemaKatalog.TAB_PROJEKTWERTE +
+                                    "] ADD COLUMN [" + spalte + "] LONG",
+                                    conn))
+                                    cmd.ExecuteNonQuery();
+                            }
+                            catch (Exception ex)
+                            {
+                                Protokoll(SchemaKatalog.TAB_PROJEKTWERTE + "." +
+                                          spalte + ": " + ex.Message);
                                 ok = false;
                             }
                         }
@@ -539,6 +587,10 @@ namespace WindowsFormsApplication1
 
             /// <summary>Satz der Bemessung, null = nicht gepflegt.</summary>
             public double? Einheitpreis;
+
+            /// <summary>ETAPPE KD6 (§ 11, FK10): Startjahr der Position —
+            /// 0 = t0 (NULL in der Datenbank), X ≥ 2 = Zahlung/Betrieb ab Jahr X.</summary>
+            public int StartJahr;
         }
 
         /// <summary>
@@ -566,7 +618,8 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.SPALTE_PW_BEMESSUNG + "], [" +
                     SchemaKatalog.SPALTE_PW_IST_ERLOES + "], [" +
                     SchemaKatalog.SPALTE_PW_MENGE + "], [" +
-                    SchemaKatalog.SPALTE_PW_EINHEITPREIS + "] " +
+                    SchemaKatalog.SPALTE_PW_EINHEITPREIS + "], [" +
+                    SchemaKatalog.SPALTE_PW_STARTJAHR + "] " +
                     "FROM " + SchemaKatalog.TAB_PROJEKTWERTE +
                     " WHERE ProjektID = ? AND KategorieID = ?",
                     new OleDbParameter("@p", projektID),
@@ -596,7 +649,8 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.SPALTE_PW_BEMESSUNG + "], [" +
                     SchemaKatalog.SPALTE_PW_IST_ERLOES + "], [" +
                     SchemaKatalog.SPALTE_PW_MENGE + "], [" +
-                    SchemaKatalog.SPALTE_PW_EINHEITPREIS + "] " +
+                    SchemaKatalog.SPALTE_PW_EINHEITPREIS + "], [" +
+                    SchemaKatalog.SPALTE_PW_STARTJAHR + "] " +
                     "FROM " + SchemaKatalog.TAB_PROJEKTWERTE + " WHERE ID = ?",
                     new OleDbParameter("@id", positionsID));
                 if (dt != null && dt.Rows.Count > 0) return AusZeile(dt.Rows[0]);
@@ -624,6 +678,9 @@ namespace WindowsFormsApplication1
 
             z.Menge = Feldzahl(r, SchemaKatalog.SPALTE_PW_MENGE);
             z.Einheitpreis = Feldzahl(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS);
+
+            double? start = Feldzahl(r, SchemaKatalog.SPALTE_PW_STARTJAHR);
+            z.StartJahr = start.HasValue && start.Value > 1 ? (int)start.Value : 0;
             return z;
         }
 

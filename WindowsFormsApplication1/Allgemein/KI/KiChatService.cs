@@ -165,6 +165,7 @@ namespace WindowsFormsApplication1
         private const string REG_ZAEHLER_TAG = "KiZaehlerTag";
         private const string REG_MODELL = "KiModell";
         private const string REG_WEG_B = "KiWegB";
+        private const string REG_AKTIONEN = "KiAktionen";
 
         /// <summary>
         /// Bevorzugte Modelle in absteigender Reihenfolge (günstig zuerst).
@@ -770,6 +771,19 @@ namespace WindowsFormsApplication1
         {
             get { return RegLesen(REG_WEG_B) == "1"; }
             set { RegSchreiben(REG_WEG_B, value ? "1" : "0"); }
+        }
+
+        /// <summary>
+        /// Merker des Schalters „Aktionen zulassen“ (Registry, wie die übrigen
+        /// KI-Einstellungen): Der Chat-Dialog stellt den Zustand beim nächsten
+        /// Öffnen wieder her. Der Schutz liegt NICHT hier — das Einschalten läuft
+        /// unverändert über die Einwilligung (<see cref="KiEinwilligung"/>); der
+        /// Merker wird beim Wiederherstellen nur angewandt, wenn sie vorliegt.
+        /// </summary>
+        public static bool AktionenZulassen
+        {
+            get { return RegLesen(REG_AKTIONEN) == "1"; }
+            set { RegSchreiben(REG_AKTIONEN, value ? "1" : "0"); }
         }
 
         /// <summary>

@@ -4373,7 +4373,7 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
     <value>{0} Investitionsposition(en) · {1}</value>
   </data>
   <data name="BK_KOSTEN_LBL_KOMPONENTEN" xml:space="preserve">
-    <value>Investition je Komponente</value>
+    <value>Anlagenkomponenten</value>
   </data>
   <data name="BK_KOSTEN_LBL_TRAEGER" xml:space="preserve">
     <value>Energieträger des Projekts</value>
@@ -7143,5 +7143,764 @@ Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Micro
   </data>
   <data name="KI_REG_ZWECK_PROJEKT_SUCHEN" xml:space="preserve">
     <value>Sucht Projekte, deren Name oder Kunde den Suchtext enthält. Der Abgleich läuft lokal über die vollständige Projektliste; kein Treffer bedeutet deshalb wirklich, dass es kein solches Projekt gibt.</value>
+  </data>
+  <data name="KDLG_TITEL" xml:space="preserve">
+    <value>Kostenverwaltung {0}</value>
+  </data>
+  <data name="KDLG_UNTERTITEL_INVEST" xml:space="preserve">
+    <value>Investitionskosten nach VDI 2067</value>
+  </data>
+  <data name="KDLG_UNTERTITEL_BETRIEB" xml:space="preserve">
+    <value>Betriebskosten nach VDI 2067</value>
+  </data>
+  <data name="KDLG_TAB_KOSTEN" xml:space="preserve">
+    <value>Kosten Invest/Betrieb</value>
+  </data>
+  <data name="KDLG_TAB_ERTRAG" xml:space="preserve">
+    <value>Ertrag/Bonus</value>
+  </data>
+  <data name="KDLG_TAB_ERTRAG_HINWEIS" xml:space="preserve">
+    <value>Der Reiter „Ertrag/Bonus“ folgt in Etappe KD5 (BHKW: KWKG und Steuern; Photovoltaik: EEG-Vergütung).</value>
+  </data>
+  <data name="KDLG_BANNER" xml:space="preserve">
+    <value>Alle Beträge und alle Bezugsgrößen sind NETTO. Der Umsatzsteuersatz kommt aus dem Katalog „gesetzliche Parameter“. Eine gepflegte Satzangabe hat Vorrang — das Absolutfeld wird dann gesperrt, aber nicht geleert.</value>
+  </data>
+  <data name="KDLG_LBL_KOMPONENTE" xml:space="preserve">
+    <value>Komponente:</value>
+  </data>
+  <data name="KDLG_KAT_INVEST" xml:space="preserve">
+    <value>Investitionskosten</value>
+  </data>
+  <data name="KDLG_KAT_BETRIEB" xml:space="preserve">
+    <value>Betriebskosten</value>
+  </data>
+  <data name="KDLG_LBL_VARIANTE" xml:space="preserve">
+    <value>Variante:</value>
+  </data>
+  <data name="KDLG_BTN_NEU" xml:space="preserve">
+    <value>Neu…</value>
+  </data>
+  <data name="KDLG_BTN_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Speichern unter…</value>
+  </data>
+  <data name="KDLG_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="KDLG_BTN_POSITION" xml:space="preserve">
+    <value>+ Position hinzufügen</value>
+  </data>
+  <data name="KDLG_SP_AKTIONEN" xml:space="preserve">
+    <value>Aktionen</value>
+  </data>
+  <data name="KDLG_SP_POSITION" xml:space="preserve">
+    <value>Position</value>
+  </data>
+  <data name="KDLG_SP_BEMESSUNG" xml:space="preserve">
+    <value>Bemessung</value>
+  </data>
+  <data name="KDLG_SP_SATZ" xml:space="preserve">
+    <value>Satz</value>
+  </data>
+  <data name="KDLG_SP_BETRAG" xml:space="preserve">
+    <value>Betrag netto [€]</value>
+  </data>
+  <data name="KDLG_SP_BETRAG_JAHR" xml:space="preserve">
+    <value>Betrag netto [€/a]</value>
+  </data>
+  <data name="KDLG_SP_NUTZUNG" xml:space="preserve">
+    <value>Nutzungs-
+dauer [a]</value>
+  </data>
+  <data name="KDLG_SP_WORSTBEST" xml:space="preserve">
+    <value>Worst/Best</value>
+  </data>
+  <data name="KDLG_SUMME_NETTO_INVEST" xml:space="preserve">
+    <value>Summe Investitionskosten netto: {0} €</value>
+  </data>
+  <data name="KDLG_SUMME_NETTO_BETRIEB" xml:space="preserve">
+    <value>Summe Betriebskosten netto: {0} €/a</value>
+  </data>
+  <data name="KDLG_SUMME_BRUTTO" xml:space="preserve">
+    <value>Summe brutto: {0} (Umsatzsteuer {1} % aus dem Katalog)</value>
+  </data>
+  <data name="KDLG_READONLY_HINWEIS" xml:space="preserve">
+    <value>Auslieferungsvorlage (schreibgeschützt) — zum Ändern „Speichern unter…“ verwenden.</value>
+  </data>
+  <data name="KDLG_TT_KETTE" xml:space="preserve">
+    <value>Satz und Betrag netto sind verknüpft und werden bei Eingabe umgerechnet.</value>
+  </data>
+  <data name="KDLG_TT_WORSTBEST" xml:space="preserve">
+    <value>Worst/Best wird je Projektposition gepflegt („Eingabe Worst/Best Case“), nicht in der Stammvorlage.</value>
+  </data>
+  <data name="KDLG_TT_BETRAG_ADMIN" xml:space="preserve">
+    <value>Bezugsgröße erst im Projekt bekannt — der Betrag entsteht bei der Übernahme.</value>
+  </data>
+  <data name="KDLG_MSG_NEU_NAME" xml:space="preserve">
+    <value>Name der neuen Variante:</value>
+  </data>
+  <data name="KDLG_MSG_NEU_TITEL" xml:space="preserve">
+    <value>Neue Variante</value>
+  </data>
+  <data name="KDLG_MSG_KOPIE_TITEL" xml:space="preserve">
+    <value>Speichern unter</value>
+  </data>
+  <data name="KDLG_MSG_LOESCHEN" xml:space="preserve">
+    <value>Variante „{0}“ wirklich löschen?</value>
+  </data>
+  <data name="KDLG_MSG_READONLY" xml:space="preserve">
+    <value>Auslieferungsvorlagen sind schreibgeschützt.</value>
+  </data>
+  <data name="KDLG_MSG_POS_LOESCHEN" xml:space="preserve">
+    <value>Position „{0}“ löschen?</value>
+  </data>
+  <data name="KDLG_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>Der Name ist bereits vergeben oder leer.</value>
+  </data>
+  <data name="KDLG_MENUE_VORLAGEN" xml:space="preserve">
+    <value>Kostenverwaltung …</value>
+  </data>
+  <data name="KDLG_POS_NEU_VORGABE" xml:space="preserve">
+    <value>Neue Position</value>
+  </data>
+  <data name="BM_BETRAG" xml:space="preserve">
+    <value>fester Betrag</value>
+  </data>
+  <data name="BM_JAHRESBETRAG" xml:space="preserve">
+    <value>fester Jahresbetrag</value>
+  </data>
+  <data name="BM_P_INVESTITION" xml:space="preserve">
+    <value>% der Investition</value>
+  </data>
+  <data name="BM_P_ERZEUGER" xml:space="preserve">
+    <value>% der Erzeugerkosten</value>
+  </data>
+  <data name="BM_P_BRENNSTOFF" xml:space="preserve">
+    <value>% der Brennstoffkosten</value>
+  </data>
+  <data name="BM_P_STROM" xml:space="preserve">
+    <value>% der Stromkosten</value>
+  </data>
+  <data name="BM_KWH_THERMISCH" xml:space="preserve">
+    <value>je kWh thermisch</value>
+  </data>
+  <data name="BM_KWH_ELEKTRISCH" xml:space="preserve">
+    <value>je kWh elektrisch</value>
+  </data>
+  <data name="BM_KW_LEISTUNG" xml:space="preserve">
+    <value>je kW Leistung</value>
+  </data>
+  <data name="BM_KW_HEIZLEISTUNG" xml:space="preserve">
+    <value>je kW Heizleistung</value>
+  </data>
+  <data name="BM_KW_ELEKTRISCH" xml:space="preserve">
+    <value>je kW elektrisch</value>
+  </data>
+  <data name="BM_KWP" xml:space="preserve">
+    <value>je kWp Leistung</value>
+  </data>
+  <data name="BM_KWH_KAPAZITAET" xml:space="preserve">
+    <value>je kWh Kapazität</value>
+  </data>
+  <data name="BM_M2_KOLLEKTOR" xml:space="preserve">
+    <value>je m² Kollektorfläche</value>
+  </data>
+  <data name="BM_KWH" xml:space="preserve">
+    <value>je kWh</value>
+  </data>
+  <data name="BM_STUNDE" xml:space="preserve">
+    <value>je Stunde</value>
+  </data>
+  <data name="KDLG_BTN_UEBERNAHME" xml:space="preserve">
+    <value>In Projekt übernehmen…</value>
+  </data>
+  <data name="KDLG_UEB_QUELLE_VORLAGE" xml:space="preserve">
+    <value>Aus Vorlage/Variante:</value>
+  </data>
+  <data name="KDLG_UEB_VORSCHAU" xml:space="preserve">
+    <value>Die Quelle enthält {0} Positionen. Das Ziel (diese Anlage) führt bereits {1} Positionen — vorhandene bleiben unberührt, nur fehlende werden angelegt. Die Herkunft wird je Position vermerkt.</value>
+  </data>
+  <data name="KDLG_ET_KATALOG_NUR_LESEN" xml:space="preserve">
+    <value>Katalogpreise sind hier noch nicht pflegbar (folgt mit den Trägervarianten).</value>
+  </data>
+  <data name="KDLG_ET_KONTEXT_KATALOG" xml:space="preserve">
+    <value>Kontext: Katalog (Stammdaten)</value>
+  </data>
+  <data name="KDLG_ET_KONTEXT_PROJEKT" xml:space="preserve">
+    <value>Kontext: Projekt {0}</value>
+  </data>
+  <data name="KDLG_ET_LISTE" xml:space="preserve">
+    <value>Energieträger</value>
+  </data>
+  <data name="KDLG_ET_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="KDLG_ET_SPOT_KEINE" xml:space="preserve">
+    <value>Noch keine Preisreihe vorhanden.</value>
+  </data>
+  <data name="KDLG_ET_SPOT_STATUS" xml:space="preserve">
+    <value>{0} Reihe(n), Jahre {1}–{2}</value>
+  </data>
+  <data name="KDLG_ET_TITEL" xml:space="preserve">
+    <value>Energieträgerverwaltung</value>
+  </data>
+  <data name="KDLG_KOSTEN_ET_KNOPF" xml:space="preserve">
+    <value>Energieträger…</value>
+  </data>
+  <data name="KDLG_LPR_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="KDLG_LPR_ALLES_NULL" xml:space="preserve">
+    <value>Alle zwölf Sätze sind 0 — zum Entfernen der Reihe bitte „Reihe löschen“ verwenden.</value>
+  </data>
+  <data name="KDLG_LPR_EBENE_PROJEKT" xml:space="preserve">
+    <value>Projektreihe</value>
+  </data>
+  <data name="KDLG_LPR_EBENE_STAMM" xml:space="preserve">
+    <value>Stammreihe (Katalog)</value>
+  </data>
+  <data name="KDLG_LPR_HINWEIS_STAMM" xml:space="preserve">
+    <value>Vorbelegt aus der Stammreihe ({0}); gespeichert wird eine Projektreihe, die vorgeht.</value>
+  </data>
+  <data name="KDLG_LPR_HINWEIS_VORRANG" xml:space="preserve">
+    <value>Eine gepflegte Reihe gilt vor dem konstanten Satz.</value>
+  </data>
+  <data name="KDLG_LPR_JAHR" xml:space="preserve">
+    <value>Jahr:</value>
+  </data>
+  <data name="KDLG_LPR_LOESCHEN" xml:space="preserve">
+    <value>Reihe löschen</value>
+  </data>
+  <data name="KDLG_LPR_TITEL" xml:space="preserve">
+    <value>Saisonale Leistungspreis-Sätze</value>
+  </data>
+  <data name="KDLG_LPR_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="KDLG_LP_MODUS_JAHR" xml:space="preserve">
+    <value>Jahresleistungspreis</value>
+  </data>
+  <data name="KDLG_LP_MODUS_MONAT" xml:space="preserve">
+    <value>Monatsleistungspreis</value>
+  </data>
+  <data name="KDLG_LP_REIHE_STATUS" xml:space="preserve">
+    <value>Saisonreihe {0} ({1}) — gilt vor dem Satz.</value>
+  </data>
+  <data name="KDLG_LP_SAISON" xml:space="preserve">
+    <value>Saisonale Sätze…</value>
+  </data>
+  <data name="KDLG_LP_STROM_TARIF" xml:space="preserve">
+    <value>Leistungspreis Strom: über die Tarifstruktur.</value>
+  </data>
+  <data name="KDLG_MENUE_ENERGIETRAEGER" xml:space="preserve">
+    <value>Energieträgerverwaltung…</value>
+  </data>
+  <data name="SIM_PV_V1_BHKW_GETRENNT" xml:space="preserve">
+    <value>BHKW-Stromüberschuss von {0:N0} kWh getrennt von der PV-Einspeisung ausgewiesen (Befund V1).</value>
+  </data>
+  <data name="PVW_51A" xml:space="preserve">
+    <value>§ 51a-Kompensation (Laufzeitverlängerung)</value>
+  </data>
+  <data name="PVW_51_ALTANLAGE" xml:space="preserve">
+    <value>greift nicht: Inbetriebnahme vor dem 25.02.2025.</value>
+  </data>
+  <data name="PVW_51_GREIFT" xml:space="preserve">
+    <value>greift ab der ersten negativen Viertelstunde.</value>
+  </data>
+  <data name="PVW_51_IMSYS" xml:space="preserve">
+    <value>greift ab {0} (Folgejahr des iMSys-Einbaus).</value>
+  </data>
+  <data name="PVW_51_VERSCHONT" xml:space="preserve">
+    <value>greift nicht: Anlage &lt; 100 kW ohne iMSys.</value>
+  </data>
+  <data name="PVW_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="PVW_AKTIV" xml:space="preserve">
+    <value>Vergütung anwenden</value>
+  </data>
+  <data name="PVW_ANWENDEN" xml:space="preserve">
+    <value>Anwenden:</value>
+  </data>
+  <data name="PVW_AUSFALL" xml:space="preserve">
+    <value>Ausfallanteil der Einspeisearbeit [%]:</value>
+  </data>
+  <data name="PVW_AUTO" xml:space="preserve">
+    <value>Automatisch</value>
+  </data>
+  <data name="PVW_AW_OVERRIDE" xml:space="preserve">
+    <value>(Override)</value>
+  </data>
+  <data name="PVW_AW_OVR" xml:space="preserve">
+    <value>AW-Override [ct/kWh] (0 = Katalog):</value>
+  </data>
+  <data name="PVW_BEZUG_REIHE" xml:space="preserve">
+    <value>Netzbezug stundenscharf aus Preiszeitreihe bewerten</value>
+  </data>
+  <data name="PVW_DV" xml:space="preserve">
+    <value>DV-Entgelt [ct/kWh]:</value>
+  </data>
+  <data name="PVW_EV" xml:space="preserve">
+    <value>Feste Einspeisevergütung</value>
+  </data>
+  <data name="PVW_EV_GESPERRT" xml:space="preserve">
+    <value>Feste EV nur bis 100 kW (§ 21 Abs. 1 Nr. 1 EEG).</value>
+  </data>
+  <data name="PVW_EV_SATZ" xml:space="preserve">
+    <value>Feste EV (AW − {0:0.00}): {1:0.00} ct/kWh</value>
+  </data>
+  <data name="PVW_G_51" xml:space="preserve">
+    <value>Vergütungsausfall (§ 51 / § 51a)</value>
+  </data>
+  <data name="PVW_G_ANLAGE" xml:space="preserve">
+    <value>Anlage</value>
+  </data>
+  <data name="PVW_G_AW" xml:space="preserve">
+    <value>Anzulegender Wert</value>
+  </data>
+  <data name="PVW_G_BEZUG" xml:space="preserve">
+    <value>Strompreis / Bezugsbewertung</value>
+  </data>
+  <data name="PVW_G_KAPPUNG" xml:space="preserve">
+    <value>60-%-Wirkleistungsbegrenzung (§ 9 Abs. 2 EEG)</value>
+  </data>
+  <data name="PVW_G_VERMARKTUNG" xml:space="preserve">
+    <value>Vermarktung</value>
+  </data>
+  <data name="PVW_G_VORSCHAU" xml:space="preserve">
+    <value>Vorschau</value>
+  </data>
+  <data name="PVW_HINWEIS_21C" xml:space="preserve">
+    <value>Ohne aktive Zuordnung beim Netzbetreiber gilt &lt; 200 kW die unentgeltliche Abnahme (§ 21c EEG).</value>
+  </data>
+  <data name="PVW_IBN" xml:space="preserve">
+    <value>Inbetriebnahme:</value>
+  </data>
+  <data name="PVW_IBN_PFLICHT" xml:space="preserve">
+    <value>Bitte das Inbetriebnahmedatum angeben.</value>
+  </data>
+  <data name="PVW_IMSYS" xml:space="preserve">
+    <value>iMSys-Einbaujahr (0 = keins):</value>
+  </data>
+  <data name="PVW_JA" xml:space="preserve">
+    <value>Ja</value>
+  </data>
+  <data name="PVW_KAP_AN" xml:space="preserve">
+    <value>aktiv: Einspeisung auf 60 % der kWp begrenzt (ohne iMSys).</value>
+  </data>
+  <data name="PVW_KAP_AUS" xml:space="preserve">
+    <value>abgeschaltet.</value>
+  </data>
+  <data name="PVW_KAP_INAKTIV" xml:space="preserve">
+    <value>greift nicht (Direktvermarktung oder iMSys vorhanden).</value>
+  </data>
+  <data name="PVW_KEINE" xml:space="preserve">
+    <value>Keine Vergütung (unentgeltlich)</value>
+  </data>
+  <data name="PVW_KNOPF" xml:space="preserve">
+    <value>Photovoltaik…</value>
+  </data>
+  <data name="PVW_KWP" xml:space="preserve">
+    <value>Installierte Leistung:</value>
+  </data>
+  <data name="PVW_KWP_OVERRIDE" xml:space="preserve">
+    <value> — Override {0:N1}</value>
+  </data>
+  <data name="PVW_KWP_OVR" xml:space="preserve">
+    <value>Override [kWp] (0 = keiner):</value>
+  </data>
+  <data name="PVW_KWP_WERT" xml:space="preserve">
+    <value>rechnerisch {0:N1} kWp</value>
+  </data>
+  <data name="PVW_MP" xml:space="preserve">
+    <value>Direktvermarktung mit Marktprämie</value>
+  </data>
+  <data name="PVW_NEIN" xml:space="preserve">
+    <value>Nein</value>
+  </data>
+  <data name="PVW_PPA" xml:space="preserve">
+    <value>Sonstige Direktvermarktung / PPA</value>
+  </data>
+  <data name="PVW_PPA_AUFSCHLAG" xml:space="preserve">
+    <value>PPA-Aufschlag auf Spot [ct/kWh]:</value>
+  </data>
+  <data name="PVW_PPA_PREIS" xml:space="preserve">
+    <value>PPA-Festpreis [ct/kWh] (0 = keiner):</value>
+  </data>
+  <data name="PVW_STROMSTEUER" xml:space="preserve">
+    <value>Eigenverbrauch aus Anlagen ≤ 2 MW im räumlichen Zusammenhang ist stromsteuerfrei (§ 9 StromStG); bei Lieferung an Dritte gelten andere Regeln.</value>
+  </data>
+  <data name="PVW_TITEL" xml:space="preserve">
+    <value>PV-Vergütung (EEG)</value>
+  </data>
+  <data name="PVW_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="PVW_UEBERSCHUSS" xml:space="preserve">
+    <value>Überschusseinspeisung</value>
+  </data>
+  <data name="PVW_VOLL" xml:space="preserve">
+    <value>Volleinspeisung</value>
+  </data>
+  <data name="PVW_VORSCHAU" xml:space="preserve">
+    <value>Einspeisung {0:N1} MWh/a · Satz Jahr 1: {1:0.00} ct/kWh · Erlös Jahr 1: {2:N0} €/a · Vergütungsausfall {3:N0} kWh ({4:N0} €) · § 51a-Gutschrift {5:N0} € (Jahr {6})</value>
+  </data>
+  <data name="PVW_VORSCHAU_OHNE_ERGEBNIS" xml:space="preserve">
+    <value>Noch kein Simulationsergebnis — die Vorschau zeigt erst nach einem Lauf Mengen und Erlöse; die Sätze oben gelten bereits.</value>
+  </data>
+  <data name="PVW_WARN_AUSSCHREIBUNG" xml:space="preserve">
+    <value>über 1 MW: Ausschreibung — AW-Override nötig.</value>
+  </data>
+  <data name="PVW_WARN_STROMSTEUER" xml:space="preserve">
+    <value>über 2 MW: Stromsteuer auf Eigenverbrauch prüfen.</value>
+  </data>
+  <data name="KDLG_ERTRAG_BTN_GESETZE" xml:space="preserve">
+    <value>Gesetzesparameter…</value>
+  </data>
+  <data name="KDLG_ERTRAG_DAUER" xml:space="preserve">
+    <value>Neue Anlagen: {0} Vollbenutzungsstunden Förderkontingent. Jahresdeckel [Vbh/a]: {1}(Kontingent-Override je Anlage in der Wirtschaftlichkeit).</value>
+  </data>
+  <data name="KDLG_ERTRAG_EIGEN" xml:space="preserve">
+    <value>Selbst genutzter KWK-Strom (§ 7 Abs. 2, nur in den Tatbeständen des § 6 Abs. 3 — z. B. Anlage ≤ 100 kW): bis 50 kW {0} · 50–100 kW {1} ct/kWh. Tatbestand und Anlagenart werden JE ANLAGE in der Wirtschaftlichkeit gepflegt (KWKG-Module) — hier keine Zweitpflege.</value>
+  </data>
+  <data name="KDLG_ERTRAG_EINSP_TITEL" xml:space="preserve">
+    <value>Eingespeister KWK-Strom (Tranchen):</value>
+  </data>
+  <data name="KDLG_ERTRAG_FK7" xml:space="preserve">
+    <value>FK7: Der STROMPREIS-Teil der BHKW-Einspeisevergütung bleibt in der Tarifstruktur des Projekts (Einsp_* ist rein KWK) — dieser Reiter zeigt die gesetzlichen KWKG-/Steuergrößen an; gerechnet wird ausschließlich vom KwkgSatzRechner und den Steuer-Gutschriftrechnern der Wirtschaftlichkeit. Projektbezogene Schalter (Tatbestand, Anlagenart, Pauschalmodus § 9, Kontingent-Override) werden dort je Anlage gepflegt.</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_DAUER" xml:space="preserve">
+    <value>Förderdauer und Jahresdeckel</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_KWKG" xml:space="preserve">
+    <value>KWKG-Zuschlag (§ 7 KWKG 2025) — Anzeige aus dem Gesetzeskatalog</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_PV" xml:space="preserve">
+    <value>PV-Vergütung (EEG) — eine Vergütungswahrheit (V4/F7)</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_STEUERN" xml:space="preserve">
+    <value>Steuervergünstigungen (HF6, Sätze aus dem Gesetzeskatalog)</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_VERWEISE" xml:space="preserve">
+    <value>Pflegeorte (eine Wahrheit je Größe)</value>
+  </data>
+  <data name="KDLG_ERTRAG_LEER" xml:space="preserve">
+    <value>Diese Komponente führt keine laufenden Erträge — Förderungen/Zuschüsse laufen als Zuschuss-Position in den Investitionskosten (FK5).</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV" xml:space="preserve">
+    <value>Die PV-Vergütung wird STAMMPROJEKTBEZOGEN im Vergütungsdialog gepflegt — demselben Formular, das auch der Knopf „Photovoltaik…“ im Wirtschaftlichkeits-Reiter öffnet (eine Vergütungswahrheit, Befund V4). Anzulegender Wert, Vermarktungsform, § 51/§ 51a und 60-%-Begrenzung wirken über die PV-Erlösreihe direkt in der Kapitalwertrechnung.</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV_OEFFNEN" xml:space="preserve">
+    <value>PV-Vergütungsdialog öffnen…</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV_PROJEKT" xml:space="preserve">
+    <value>Stammprojekt:</value>
+  </data>
+  <data name="KDLG_ERTRAG_SONDERREGEL" xml:space="preserve">
+    <value>Sonderregel neue Anlagen ≤ 50 kWel (§ 7 Abs. 3a): eingespeist {0} · nicht eingespeist {1} ct/kWh — geht Abs. 1 und 2 vor.</value>
+  </data>
+  <data name="KDLG_ERTRAG_ST_53A" xml:space="preserve">
+    <value>Energiesteuer-Entlastung § 53a Abs. 5 EnergieStG: Erdgas {0} €/MWh · Heizöl {1} €/1.000 l · Flüssiggas {2} €/1.000 kg (Mindestnutzungsgrad {3} %).</value>
+  </data>
+  <data name="KDLG_ERTRAG_ST_9B" xml:space="preserve">
+    <value>Stromsteuer-Entlastung § 9b StromStG: {0} €/MWh, Sockelbetrag {1} €/a.</value>
+  </data>
+  <data name="KDLG_ERTRAG_ST_BEFREIUNG" xml:space="preserve">
+    <value>Stromsteuer-Befreiung § 9 Abs. 1 Nr. 3 StromStG: hocheffiziente Anlagen ≤ 2 MW im räumlichen Zusammenhang (4,5 km); ab 2026 CO₂-Kriterium.</value>
+  </data>
+  <data name="KDLG_ERTRAG_T100" xml:space="preserve">
+    <value>über 50 bis 100 kW</value>
+  </data>
+  <data name="KDLG_ERTRAG_T250" xml:space="preserve">
+    <value>über 100 bis 250 kW</value>
+  </data>
+  <data name="KDLG_ERTRAG_T2MW" xml:space="preserve">
+    <value>über 250 kW bis 2 MW</value>
+  </data>
+  <data name="KDLG_ERTRAG_T50" xml:space="preserve">
+    <value>bis 50 kW</value>
+  </data>
+  <data name="KDLG_ERTRAG_UE2MW" xml:space="preserve">
+    <value>über 2 MW (neu/modernisiert)</value>
+  </data>
+  <data name="KDLG_ERTRAG_UE2MWN" xml:space="preserve">
+    <value>über 2 MW (nachgerüstet)</value>
+  </data>
+  <data name="BK_KOSTEN_SP_BETRIEB" xml:space="preserve">
+    <value>Betrieb [€/a]</value>
+  </data>
+  <data name="BK_KOSTEN_SP_LEISTUNGSPREIS" xml:space="preserve">
+    <value>Leistungspreis [€/(kW·a)]</value>
+  </data>
+  <data name="KDLG_FK8_HINWEIS" xml:space="preserve">
+    <value>Gepflegt wird im Kostendialog — Felder schreibgeschützt.</value>
+  </data>
+  <data name="KDLG_KNOPF_BETRIEB" xml:space="preserve">
+    <value>Betriebskosten…</value>
+  </data>
+  <data name="KDLG_KNOPF_ENERGIE" xml:space="preserve">
+    <value>Energiekosten…</value>
+  </data>
+  <data name="KDLG_KNOPF_INVEST" xml:space="preserve">
+    <value>Investitionskosten…</value>
+  </data>
+  <data name="KOSTEN_CASE_ABSOLUT" xml:space="preserve">
+    <value>Eingabe absolut [€]</value>
+  </data>
+  <data name="KOSTEN_CASE_PROZENT" xml:space="preserve">
+    <value>Eingabe in % vom Erwartungswert</value>
+  </data>
+  <data name="KOSTEN_CASE_STARTJAHR" xml:space="preserve">
+    <value>Startjahr (0 = sofort; Jahr X: Zahlung/Betrieb ab X):</value>
+  </data>
+  <data name="KOSTEN_CASE_UMRECHNUNG" xml:space="preserve">
+    <value>ergibt: Best {0:N2} € · Worst {1:N2} €</value>
+  </data>
+  <data name="KDLG_FK8_KURZ" xml:space="preserve">
+    <value>Gepflegt wird im Kostendialog.</value>
+  </data>
+  <data name="KDLG_BTN_KATALOG" xml:space="preserve">
+    <value>Positionskatalog…</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_51A" xml:space="preserve">
+    <value>PV: Kompensation § 51a (letztes Vergütungsjahr) [€]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_AUSFALL_EUR" xml:space="preserve">
+    <value>PV: Vergütungsausfall § 51 [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_AUSFALL_KWH" xml:space="preserve">
+    <value>PV: Vergütungsausfall § 51 [kWh/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_AW" xml:space="preserve">
+    <value>PV: anzulegender Wert AW_mix [ct/kWh]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM" xml:space="preserve">
+    <value>PV-Vergütung (Vermarktungsform)</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM_DV" xml:space="preserve">
+    <value>sonstige Direktvermarktung (PPA)</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM_EV" xml:space="preserve">
+    <value>feste Einspeisevergütung</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM_KEINE" xml:space="preserve">
+    <value>unentgeltliche Abnahme</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM_MP" xml:space="preserve">
+    <value>Direktvermarktung mit Marktprämie</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_KAPPUNG" xml:space="preserve">
+    <value>PV: Kappungsverlust 60 % [kWh/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_MARKTPRAEMIE" xml:space="preserve">
+    <value>PV: Marktprämie Jahr 1 [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_VERMIEDEN" xml:space="preserve">
+    <value>PV: vermiedener Netzbezug (Ausweis) [€/a]</value>
+  </data>
+  <data name="PVW_KZ_LCOE" xml:space="preserve">
+    <value>Stromgestehungskosten: {0:N2} ct/kWh (LCOE₀, mit Satz vergleichbar) · {1:N2} ct/kWh (diskontiert)</value>
+  </data>
+  <data name="PVW_KZ_MIT_SPEICHER" xml:space="preserve">
+    <value> (mit Speicher)</value>
+  </data>
+  <data name="PVW_KZ_OHNE_KOSTEN" xml:space="preserve">
+    <value>PV-Kosten (Investition/Betrieb) nicht gepflegt — LCOE und Vorteil entfallen.</value>
+  </data>
+  <data name="PVW_KZ_OHNE_PREIS" xml:space="preserve">
+    <value>Strom-Arbeitspreis nicht gepflegt — Ersparnisanteil entfällt.</value>
+  </data>
+  <data name="PVW_KZ_QUOTEN" xml:space="preserve">
+    <value>Eigenverbrauchsquote {0:N1} % · Autarkiegrad {1} %{2}</value>
+  </data>
+  <data name="PVW_KZ_VORTEIL" xml:space="preserve">
+    <value>Vorteil durch PV: {0:N0} €/a</value>
+  </data>
+  <data name="PVW_BTN_MARKTWERTE" xml:space="preserve">
+    <value>Marktwerte importieren…</value>
+  </data>
+  <data name="PVW_IMPORT_FEHLER" xml:space="preserve">
+    <value>Import nicht möglich: </value>
+  </data>
+  <data name="PVW_IMPORT_FILTER" xml:space="preserve">
+    <value>CSV-Dateien (*.csv)|*.csv|Alle Dateien (*.*)|*.*</value>
+  </data>
+  <data name="PVW_IMPORT_OK" xml:space="preserve">
+    <value>Marktwerte übernommen: </value>
+  </data>
+  <data name="BK_KOSTEN_BTN_TRAEGER" xml:space="preserve">
+    <value>Energieträgerverwaltung…</value>
+  </data>
+  <data name="KDLG_BTN_UEBERNAHME_PROJEKT" xml:space="preserve">
+    <value>Aus Vorlage übernehmen…</value>
+  </data>
+  <data name="KDLG_TITEL_PROJEKT" xml:space="preserve">
+    <value>Kostenverwaltung {0} — {1}</value>
+  </data>
+  <data name="KDLG_TT_BETRAG_PROJEKT" xml:space="preserve">
+    <value>Aus Satz und Bezugsgröße des Projekts berechnet.</value>
+  </data>
+  <data name="WIRT_KACHEL_AMORTISATION" xml:space="preserve">
+    <value>Amortisation</value>
+  </data>
+  <data name="WIRT_KACHEL_ANNUITAET" xml:space="preserve">
+    <value>Annuität</value>
+  </data>
+  <data name="WIRT_KACHEL_BESTE" xml:space="preserve">
+    <value>beste Variante: {0}</value>
+  </data>
+  <data name="WIRT_KACHEL_IRR" xml:space="preserve">
+    <value>Interner Zinsfuß</value>
+  </data>
+  <data name="WIRT_KACHEL_KEINE" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="WIRT_KACHEL_KW" xml:space="preserve">
+    <value>Kapitalwert ggü. Stamm</value>
+  </data>
+  <data name="WIRT_KACHEL_NUR_STAMM" xml:space="preserve">
+    <value>nur Stammprojekt gerechnet</value>
+  </data>
+  <data name="WIRT_KACHEL_STAMM_KW" xml:space="preserve">
+    <value>Nettobarwert des Stammprojekts</value>
+  </data>
+  <data name="KDLG_MSG_STANDARD_LOESCHEN" xml:space="preserve">
+    <value>Die Standardvorlage kann nicht gelöscht werden — Varianten schon.</value>
+  </data>
+  <data name="KDLG_ET_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="KDLG_ET_BTN_NEU" xml:space="preserve">
+    <value>Neu…</value>
+  </data>
+  <data name="KDLG_ET_BTN_VARIANTE" xml:space="preserve">
+    <value>Variante</value>
+  </data>
+  <data name="KDLG_ET_KATALOG_SPEICHERN" xml:space="preserve">
+    <value>Schreibt die KATALOGwerte dieses Trägers (gilt überall, wo kein Projektwert gepflegt ist).</value>
+  </data>
+  <data name="KDLG_ET_LOESCHEN_FRAGE" xml:space="preserve">
+    <value>Energieträger „{0}“ löschen?</value>
+  </data>
+  <data name="KDLG_ET_LOESCHEN_GESPERRT" xml:space="preserve">
+    <value>Der Träger wird verwendet und bleibt erhalten: {0}</value>
+  </data>
+  <data name="KDLG_ET_NEU_NAME" xml:space="preserve">
+    <value>Bezeichnung des neuen Trägers:</value>
+  </data>
+  <data name="KDLG_ET_NEU_TITEL" xml:space="preserve">
+    <value>Neuer Energieträger</value>
+  </data>
+  <data name="KDLG_ET_NEU_VORGABE" xml:space="preserve">
+    <value>Neuer Energieträger</value>
+  </data>
+  <data name="KDLG_ET_STAMM_FEHLER" xml:space="preserve">
+    <value>Bezeichnung darf nicht leer sein.</value>
+  </data>
+  <data name="KDLG_ET_STAMM_GRUPPE" xml:space="preserve">
+    <value>Gruppe:</value>
+  </data>
+  <data name="KDLG_ET_STAMM_NAME" xml:space="preserve">
+    <value>Bezeichnung:</value>
+  </data>
+  <data name="KDLG_ET_STAMM_SPEICHERN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="KDLG_ET_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="KDLG_ET_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Aus Katalog übernehmen…</value>
+  </data>
+  <data name="KDLG_ET_ENTFERNEN_FRAGE" xml:space="preserve">
+    <value>Träger „{0}“ aus dem Projekt entfernen? (Der Katalogeintrag bleibt.)</value>
+  </data>
+  <data name="KDLG_ET_ENTFERNEN_GESPERRT" xml:space="preserve">
+    <value>Nicht möglich: {0}</value>
+  </data>
+  <data name="KDLG_ET_UEBERNAHME_LEER" xml:space="preserve">
+    <value>Alle Katalogträger sind dem Projekt bereits zugeordnet.</value>
+  </data>
+  <data name="KDLG_ET_UEBERNAHME_OK" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="KDLG_ET_UEBERNAHME_TITEL" xml:space="preserve">
+    <value>Aus Katalog übernehmen</value>
+  </data>
+  <data name="KDLG_GESPEICHERT" xml:space="preserve">
+    <value>gespeichert {0:HH:mm} Uhr</value>
+  </data>
+  <data name="KDLG_BTN_SPEICHERN" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="KDLG_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="KDLG_ET_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="KDLG_LP_STROM_TARIF_BTN" xml:space="preserve">
+    <value>Tarifstruktur…</value>
+  </data>
+  <data name="KDLG_AUFSCHLAG_ANWENDEN" xml:space="preserve">
+    <value>Aufschläge in der Wirtschaftlichkeit berücksichtigen</value>
+  </data>
+  <data name="KDLG_EFFEKTIVPREIS" xml:space="preserve">
+    <value>Bezugspreis inkl. Aufschläge: {0:N2} ct/kWh  (Arbeitspreis {1:N2} + Aufschlag {2:N2})</value>
+  </data>
+  <data name="WIRT_BTN_BHKW_TARIF" xml:space="preserve">
+    <value>BHKW-Tarif…</value>
+  </data>
+  <data name="WIRT_BTN_STROM_TARIF" xml:space="preserve">
+    <value>Strombezug…</value>
+  </data>
+  <data name="PVW_BTN_TARIF" xml:space="preserve">
+    <value>Einspeise-Tarif…</value>
+  </data>
+  <data name="BK_KOSTEN_SP_ANLAGE" xml:space="preserve">
+    <value>Anlage / Komponente</value>
+  </data>
+  <data name="BK_KOSTEN_JE_KOMPONENTE" xml:space="preserve">
+    <value>Kosten werden je Komponente gepflegt — die Summe steht an der ersten Anlage der Komponente.</value>
+  </data>
+  <data name="BK_KOSTEN_NICHT_VERBAUT" xml:space="preserve">
+    <value>{0} — ohne Anlagenzuordnung</value>
+  </data>
+  <data name="BK_KOSTEN_NICHT_VERBAUT_HINT" xml:space="preserve">
+    <value>Kostenpositionen ohne (gültige) Anlagenzuordnung — sie rechnen in der Wirtschaftlichkeit mit. Doppelklick löscht sie nach Rückfrage; bearbeiten: Kostenverwaltung, Eintrag „(ohne Anlagenzuordnung)“.</value>
+  </data>
+  <data name="BK_KOSTEN_STATUS_NICHT_VERBAUT" xml:space="preserve">
+    <value>Kostenpositionen ohne verbaute Anlage: {0}</value>
+  </data>
+  <data name="WPI_BTN_KOSTEN" xml:space="preserve">
+    <value>Kosten bearbeiten…</value>
+  </data>
+  <data name="WPI_KOSTEN_SUMMEN" xml:space="preserve">
+    <value>Invest {0:N0} € · Betrieb {1:N0} €/a</value>
+  </data>
+  <data name="KDLG_UEB_QUELLE_PROJEKT" xml:space="preserve">
+    <value>Aus Projekt/Anlage:</value>
+  </data>
+  <data name="KDLG_UEB_QUELLE_LOSE" xml:space="preserve">
+    <value>(ohne Anlagenzuordnung)</value>
+  </data>
+  <data name="BK_KOSTEN_LOSE_LOESCHEN" xml:space="preserve">
+    <value>Alle Kostenpositionen ohne Anlagenzuordnung der Komponente „{0}“ löschen?
+
+Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis dahin in der Wirtschaftlichkeit mit.</value>
+  </data>
+  <data name="BK_KOSTEN_LOSE_TITEL" xml:space="preserve">
+    <value>Positionen ohne Anlagenzuordnung</value>
+  </data>
+  <data name="BK_KOSTEN_LOSE_GELOESCHT" xml:space="preserve">
+    <value>{0} Position(en) der Komponente „{1}“ gelöscht.</value>
+  </data>
+  <data name="WPI_TIP_KOSTEN" xml:space="preserve">
+    <value>Kostenverwaltung dieser Anlage öffnen (Projektmodus).</value>
+  </data>
+  <data name="WPI_TIP_KOSTEN_NEU" xml:space="preserve">
+    <value>Kosten werden je ANLAGE gepflegt — die Wärmepumpe zuerst mit OK anlegen und speichern; danach über „Ändern..“ die Kosten bearbeiten.</value>
+  </data>
+  <data name="WPI_KOSTEN_KEINE" xml:space="preserve">
+    <value>Invest — · Betrieb —</value>
   </data>
 </root>

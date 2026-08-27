@@ -99,7 +99,12 @@ namespace WindowsFormsApplication1
             {"ID_Klimaregion","Tab_Klimaregion"}, {"ID_ProjektGebaeude","Z_ProjektGebaeude"},
             {"ID_Gebaeude","Tab_Gebaeude"}, {"ID_TagV","Tab_DBTagV"},
             {"ID_Stromverbraucher","Tab_Stromverbraucher"}, {"ID_Prozesswaerme","Tab_Prozesswaerme"},
-            {"ID_Brauchwasser","Tab_Brauchwasser"}
+            {"ID_Brauchwasser","Tab_Brauchwasser"},
+            // Ä20: Anlagenbezug der Kostenpositionen (Tab_ProjektWerte.ID_Anlage,
+            // Migrationsschritt 45). Ohne Versatz zeigten die Positionen einer
+            // Variante auf die Anlagen des QUELLprojekts und stünden dort als
+            // „ohne Anlagenzuordnung“ da.
+            {"ID_Anlage","Tab_Energieanlagen"}
         };
 
         // Mehrdeutige FK-Spalten (gleicher Name, verschiedene Zieltabellen) -> je Tabelle aufgeloest.
@@ -223,7 +228,17 @@ namespace WindowsFormsApplication1
                     fortschritt.Report(new Fortschritt { Aktuell = gesamt, Gesamt = gesamt, Tabelle = "" });
 
                 trans.Commit();
-                return (int)(srcId + offset["Tab_Projekt"]);
+
+                // Ä24: Geräteanker der kopierten Kostenpositionen auf die
+                // KOPIERTEN Geräte umstellen. Der generische Lauf versetzt
+                // ID_Anlage (FK_MAP); ID_AnlageGeraet kann er nicht versetzen —
+                // die Zieltabelle hängt an der Komponente. Ohne den Nachzug
+                // zeigten die Anker auf die Geräte des QUELLprojekts, und der
+                // erste Anlagen-Wizard-Lauf der Kopie löste die Zuordnungen
+                // (Befund 27.08.2026: WP-Positionen der Varianten 1038/1039).
+                int neuId = (int)(srcId + offset["Tab_Projekt"]);
+                try { KostenProjektPositionenCtrl.AnkerNachziehen(neuId); } catch { }
+                return neuId;
             }
             catch (Exception ex)
             {

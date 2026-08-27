@@ -159,12 +159,12 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.grid.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.grid.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.grid.Location = new System.Drawing.Point(12, 192);
+            this.grid.Location = new System.Drawing.Point(12, 258);
             this.grid.Name = "grid";
             this.grid.ReadOnly = true;
             this.grid.RowHeadersVisible = false;
             this.grid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-            this.grid.Size = new System.Drawing.Size(876, 268);
+            this.grid.Size = new System.Drawing.Size(876, 202);
             //
             // lblParameter
             //

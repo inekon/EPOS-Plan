@@ -218,10 +218,24 @@ namespace WindowsFormsApplication1
                 }
                 catch (Exception ex)
                 {
-                    FehlerMelden("Fehler beim Laden der Daten: " + ex.Message);
+                    FehlerMelden("Fehler beim Laden der Daten: " + ex.Message + KurzSql(sql));
                     return new DataTable();
                 }
             }
+        }
+
+        /// <summary>
+        /// Diagnosezusatz der Fehlermeldungen (26.08.2026): Die Box „Für mindestens
+        /// einen erforderlichen Parameter …“ nennt ohne die Abfrage weder Ort noch
+        /// Ursache — der Anfang des SQL macht jede Meldung selbstverortend.
+        /// </summary>
+        private static string KurzSql(string sql)
+        {
+            if (string.IsNullOrEmpty(sql)) return "";
+            string s = sql.Replace("\r", " ").Replace("\n", " ").Trim();
+            while (s.IndexOf("  ", StringComparison.Ordinal) >= 0) s = s.Replace("  ", " ");
+            if (s.Length > 160) s = s.Substring(0, 160) + "…";
+            return Environment.NewLine + Environment.NewLine + "Abfrage: " + s;
         }
 
         // Für INSERT, UPDATE, DELETE
@@ -329,7 +343,7 @@ namespace WindowsFormsApplication1
                 }
                 catch (Exception ex)
                 {
-                    FehlerMelden("Datenbankfehler (Scalar): " + ex.Message);
+                    FehlerMelden("Datenbankfehler (Scalar): " + ex.Message + KurzSql(sql));
                     return null;
                 }
             }

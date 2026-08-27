@@ -102,9 +102,26 @@ namespace WindowsFormsApplication1
             return 0;
         }
 
+        /// <summary>ETAPPE KD6 (§ 9): einmal gebaut (nicht im Wizard-Modus).</summary>
+        private bool _kostenLeisteGebaut;
+
+        /// <summary>ETAPPE KD6 (§ 9): Kosten-Aufrufe des Projekt-Anlagendialogs —
+        /// Projekt und Träger werden zur KLICKZEIT aufgelöst (Delegaten), weil
+        /// <c>SetControls</c> das Projekt erst nach dem Konstruktor setzt.</summary>
+        private void KostenzugriffAnbringen()
+        {
+            var leiste = KostenKnoepfe.Leiste(this, DbWerte.KOSTEN_KOMPONENTE_HEIZKESSEL,
+                () => m_ID_Projekt,
+                () => KostenKnoepfe.TraegerDerKomponente(m_ID_Projekt, "ID_Kessel"));
+            leiste.Dock = DockStyle.Bottom;
+            Controls.Add(leiste);
+            Height += 46;
+        }
+
         public void SetControls(int IDProjekt, bool bWizard = false)
         {
             m_ID_Projekt = IDProjekt;
+            if (!bWizard && !_kostenLeisteGebaut) { _kostenLeisteGebaut = true; KostenzugriffAnbringen(); }
             if (bWizard)
             {
                 m_bWizard = true;

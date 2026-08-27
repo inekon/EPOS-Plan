@@ -156,7 +156,7 @@
     <value>kW</value>
   </data>
   <data name="btn_WP.Text" xml:space="preserve">
-    <value>Bearbeiten...</value>
+    <value>Parameter Bearbeiten...</value>
   </data>
   <data name="textBox_PHeizstab.Text" xml:space="preserve">
     <value>17</value>
