@@ -7894,4 +7894,13 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
   <data name="BK_KOSTEN_LOSE_GELOESCHT" xml:space="preserve">
     <value>{0} Position(en) der Komponente „{1}“ gelöscht.</value>
   </data>
+  <data name="WPI_TIP_KOSTEN" xml:space="preserve">
+    <value>Kostenverwaltung dieser Anlage öffnen (Projektmodus).</value>
+  </data>
+  <data name="WPI_TIP_KOSTEN_NEU" xml:space="preserve">
+    <value>Kosten werden je ANLAGE gepflegt — die Wärmepumpe zuerst mit OK anlegen und speichern; danach über „Ändern..“ die Kosten bearbeiten.</value>
+  </data>
+  <data name="WPI_KOSTEN_KEINE" xml:space="preserve">
+    <value>Invest — · Betrieb —</value>
+  </data>
 </root>

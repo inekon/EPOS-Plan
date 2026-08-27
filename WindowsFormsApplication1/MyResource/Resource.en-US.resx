@@ -7888,4 +7888,13 @@ They typically stem from a variant copy without this trade and keep entering the
   <data name="BK_KOSTEN_LOSE_GELOESCHT" xml:space="preserve">
     <value>{0} item(s) of component “{1}” deleted.</value>
   </data>
+  <data name="WPI_TIP_KOSTEN" xml:space="preserve">
+    <value>Open this plant's cost management (project mode).</value>
+  </data>
+  <data name="WPI_TIP_KOSTEN_NEU" xml:space="preserve">
+    <value>Costs are maintained per PLANT — create and save the heat pump with OK first; then edit its costs via “Change..”.</value>
+  </data>
+  <data name="WPI_KOSTEN_KEINE" xml:space="preserve">
+    <value>Capex — · Opex —</value>
+  </data>
 </root>

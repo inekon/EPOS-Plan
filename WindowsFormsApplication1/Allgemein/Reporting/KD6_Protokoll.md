@@ -436,3 +436,22 @@ Stammkatalog-Id — das zweite „Ändern.." der Verwaltung meldete dann
 „Datensatz (ID 67) nicht gefunden". Fix: stille Füllung
 (m_bStilleFuellung); nur echte Nutzerauswahl wechselt die Id, der
 Neu-Fluss bleibt unverändert. kd6-X7 sichert das Verhalten ab (86/86).
+
+### Ä22 (27.08.2026) — WP-Verwaltung zweistufig, Kosten-Knopf bei Neuanlage
+
+Nutzerbefunde: „Kosten bearbeiten…" bei Neuanlage ausgegraut; „ID 67"
+erneut beim Ändern.
+
+- Ein FRISCH angelegter Listeneintrag trägt bis zum Verwaltungs-OK
+  designbedingt die STAMM-Id (der Wizard materialisiert erst beim
+  Speichern). „Ändern.."/Aufbau lasen aber nur Tab_WP → Box bzw.
+  items[0]-Crash. Jetzt liest `GeraetedatenFuellen` zweistufig
+  (Projektgerät vor Stammkatalog) an allen drei Stellen der Verwaltung;
+  die Meldung kommt nur noch, wenn die Id in KEINER der beiden Tabellen
+  steht (kd6-X8).
+- „Kosten bearbeiten…" hängt an der ANLAGENZEILE (item.ID) — bei einer
+  ungespeicherten Neuanlage gibt es sie nicht: Der Knopf bleibt gesperrt,
+  erklärt das aber im Tooltip (erst OK/speichern, dann über „Ändern..");
+  die Summenzeile zeigt „Invest — · Betrieb —" statt einer falschen 0.
+
+Nachweise: kd6 87/87, Sweep 115/0/5.
