@@ -65,16 +65,10 @@ namespace WindowsFormsApplication1
                     item.Solaranteil = list_werzmodel[n].Solaranteil;
                     item.ID_WP = list_werzmodel[n].ID_WP;
 
-                    WPCtrl wpctrl = new WPCtrl();
-                    wpctrl.ReadAll("ID=" + item.ID_WP);
-                    item.Regelung = wpctrl.items[0].Regelung;
-                    item.Nennleistung = wpctrl.items[0].Nennleistung;
-                    item.Modulkosten = wpctrl.items[0].Modulkosten;
-                    item.Baujahr = wpctrl.items[0].Baujahr;
-                    item.Beschreibung = wpctrl.items[0].Beschreibung;
-                    item.Firma = wpctrl.items[0].Firma;
-                    item.Typ = wpctrl.items[0].Typ;
-                    item.Heizung = wpctrl.items[0].Heizung;
+                    // Ä22: zweistufig (Projekt vor Stamm) statt items[0]-Zugriff —
+                    // ein frischer Eintrag mit Stamm-Id ließ den Aufbau sonst
+                    // abstürzen; ohne Treffer bleibt die Zeile mit Grunddaten stehen.
+                    GeraetedatenFuellen(item, item.ID_WP);
 
                     lvitem.Text = item.Bezeichner;
                     lvitem.SubItems.Add(item.Nennleistung.ToString());
@@ -87,6 +81,41 @@ namespace WindowsFormsApplication1
             }
             listView_WP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView_WP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+        }
+
+        /// <summary>
+        /// Ä22: Gerätedaten ZWEISTUFIG — Projektgerät (Tab_WP) vor Stammkatalog
+        /// (Tab_WP_STAMM). Ein frisch angelegter Listeneintrag trägt bis zum
+        /// Speichern die STAMM-Id (Neu-Fluss materialisiert erst beim
+        /// Verwaltungs-OK) — er ist damit trotzdem anzeig- und änderbar, statt in
+        /// „Datensatz nicht gefunden“ zu laufen. false = in keiner der beiden
+        /// Tabellen (dann zeigt der Aufrufer die präzisierte Meldung).
+        /// </summary>
+        internal static bool GeraetedatenFuellen(WErzeugerModel ziel, int idWp)
+        {
+            if (ziel == null || idWp <= 0) return false;
+
+            WPModel quelle = null;
+            WPCtrl wpctrl = new WPCtrl();
+            wpctrl.ReadAll("ID=" + idWp);
+            if (wpctrl.items.Count > 0) quelle = wpctrl.items[0];
+            else
+            {
+                WPStammCtrl stamm = new WPStammCtrl();
+                stamm.ReadAll("ID=" + idWp);
+                if (stamm.rows > 0) quelle = stamm.items[0];
+            }
+            if (quelle == null) return false;
+
+            ziel.Regelung = quelle.Regelung;
+            ziel.Nennleistung = quelle.Nennleistung;
+            ziel.Modulkosten = quelle.Modulkosten;
+            ziel.Baujahr = quelle.Baujahr;
+            ziel.Beschreibung = quelle.Beschreibung;
+            ziel.Firma = quelle.Firma;
+            ziel.Typ = quelle.Typ;
+            ziel.Heizung = quelle.Heizung;
+            return true;
         }
 
         private Form getWizardPage()
@@ -152,23 +181,15 @@ namespace WindowsFormsApplication1
 
                 if (idwp > 0)
                 {
-                    WPStammCtrl wpctrl = new WPStammCtrl();
-                    wpctrl.ReadAll("ID=" + idwp);
-                    if (wpctrl.rows == 0)
+                    // Ä22: zweistufig — der Eintrag kann ein Projektgerät (Tab_WP)
+                    // oder eine noch nicht gespeicherte Stammwahl (Tab_WP_STAMM) sein.
+                    if (!GeraetedatenFuellen(frm.m_werzitemlist[index], idwp))
                     {
-                        MessageBox.Show("Der Wärmepumpen-Stammdatensatz (ID " + idwp +
-                            ") wurde in der Datenbank nicht gefunden!", "Wärmepumpe",
+                        MessageBox.Show("Die Wärmepumpe (ID " + idwp + ") wurde weder bei den " +
+                            "Projektgeräten noch im Stammkatalog gefunden!", "Wärmepumpe",
                             MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
-                    frm.m_werzitemlist[index].Regelung = wpctrl.items[0].Regelung;
-                    frm.m_werzitemlist[index].Nennleistung = wpctrl.items[0].Nennleistung;
-                    frm.m_werzitemlist[index].Modulkosten = wpctrl.items[0].Modulkosten;
-                    frm.m_werzitemlist[index].Baujahr = wpctrl.items[0].Baujahr;
-                    frm.m_werzitemlist[index].Beschreibung = wpctrl.items[0].Beschreibung;
-                    frm.m_werzitemlist[index].Firma = wpctrl.items[0].Firma;
-                    frm.m_werzitemlist[index].Typ = wpctrl.items[0].Typ;
-                    frm.m_werzitemlist[index].Heizung = wpctrl.items[0].Heizung;
 
                     frm.SetControls(index);
                     frm.ShowDialog();
@@ -208,23 +229,17 @@ namespace WindowsFormsApplication1
                     return;
                 }
 
-                WPCtrl wpctrl = new WPCtrl();
-                wpctrl.ReadAll("ID=" + frm.m_werzitemlist[index].ID_WP);
-                if (wpctrl.items.Count == 0)
+                // Ä22: zweistufig (Projektgerät vor Stammkatalog) — „Ändern..“
+                // funktioniert damit auch auf einem frisch angelegten Eintrag,
+                // dessen ID_WP bis zum Speichern die Stamm-Id ist (Befund
+                // „Datensatz (ID 67) nicht gefunden“).
+                if (!GeraetedatenFuellen(frm.m_werzitemlist[index], frm.m_werzitemlist[index].ID_WP))
                 {
-                    MessageBox.Show("Der Wärmepumpen-Datensatz (ID " + frm.m_werzitemlist[index].ID_WP +
-                        ") wurde in der Datenbank nicht gefunden!", "Wärmepumpe",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Die Wärmepumpe (ID " + frm.m_werzitemlist[index].ID_WP +
+                        ") wurde weder bei den Projektgeräten noch im Stammkatalog gefunden!",
+                        "Wärmepumpe", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
-                frm.m_werzitemlist[index].Regelung = wpctrl.items[0].Regelung;
-                frm.m_werzitemlist[index].Nennleistung = wpctrl.items[0].Nennleistung;
-                frm.m_werzitemlist[index].Modulkosten = wpctrl.items[0].Modulkosten;
-                frm.m_werzitemlist[index].Baujahr = wpctrl.items[0].Baujahr;
-                frm.m_werzitemlist[index].Beschreibung = wpctrl.items[0].Beschreibung;
-                frm.m_werzitemlist[index].Firma = wpctrl.items[0].Firma;
-                frm.m_werzitemlist[index].Typ = wpctrl.items[0].Typ;
-                frm.m_werzitemlist[index].Heizung = wpctrl.items[0].Heizung;
                 frm.SetControls(index);
                 frm.ShowDialog();
                 if (!frm.CloseWithOK) return;

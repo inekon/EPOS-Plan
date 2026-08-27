@@ -421,11 +421,34 @@ namespace WindowsFormsApplication1
 
         /// <summary>Ä20: Invest-/Betriebssumme DIESER Anlage (Tab_ProjektWerte.ID_Anlage
         /// = Anlagenzeile item.ID); vor Migrationsschritt 45 bzw. ohne Anlage 0.</summary>
+        private ToolTip _kostenTip;
+
         private void KostenSummenAnzeigen()
         {
             if (lblKostenSummen == null) return;
+
+            // Ä22: Kosten hängen an der ANLAGENZEILE (item.ID) — bei einer noch
+            // nicht gespeicherten Neuanlage gibt es sie nicht. Der Knopf bleibt
+            // dann gesperrt, sagt aber im Tooltip warum und wie es weitergeht;
+            // die Summen zeigen „—“ statt einer falschen 0.
+            bool bereit = item != null && item.ID > 0 && item.ID_Projekt > 0;
             if (btnKosten != null)
-                btnKosten.Enabled = item != null && item.ID_Projekt > 0;
+            {
+                btnKosten.Enabled = bereit;
+                if (_kostenTip == null) _kostenTip = new ToolTip();
+                _kostenTip.SetToolTip(btnKosten, bereit
+                    ? TWpi("WPI_TIP_KOSTEN",
+                        "Kostenverwaltung dieser Anlage öffnen (Projektmodus).")
+                    : TWpi("WPI_TIP_KOSTEN_NEU",
+                        "Kosten werden je ANLAGE gepflegt — die Wärmepumpe zuerst mit " +
+                        "OK anlegen und speichern; danach über „Ändern..“ die Kosten " +
+                        "bearbeiten."));
+            }
+            if (!bereit)
+            {
+                lblKostenSummen.Text = TWpi("WPI_KOSTEN_KEINE", "Invest — · Betrieb —");
+                return;
+            }
             try
             {
                 double invest = AnlagenSumme(Form_Kosten.KATEGORIE_INVESTITION);
