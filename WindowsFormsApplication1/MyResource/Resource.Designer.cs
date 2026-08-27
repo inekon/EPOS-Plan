@@ -17356,11 +17356,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser: Zum Eintrag &apos;{0}&apos; ist im Projekt kein Datensatz hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0. ähnelt.
+        /// </summary>
+        public static string SIMENG_BRAUCHWASSER_KOPF_FEHLT {
+            get {
+                return ResourceManager.GetString("SIMENG_BRAUCHWASSER_KOPF_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser: Der Typ des Eintrags &apos;{0}&apos; ist nicht definiert. Die Rechnung wurde abgebrochen; ihr Anteil bleibt 0. ähnelt.
         /// </summary>
         public static string SIMENG_BRAUCHWASSER_TYP_UNDEFINIERT {
             get {
                 return ResourceManager.GetString("SIMENG_BRAUCHWASSER_TYP_UNDEFINIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser: Zum Typ &apos;{0}&apos; des Eintrags &apos;{1}&apos; ist im Projekt kein Wochenprofil hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0. ähnelt.
+        /// </summary>
+        public static string SIMENG_BRAUCHWASSER_TYPPROFIL_FEHLT {
+            get {
+                return ResourceManager.GetString("SIMENG_BRAUCHWASSER_TYPPROFIL_FEHLT", resourceCulture);
             }
         }
         
@@ -17518,11 +17536,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme: Zum Prozess &apos;{0}&apos; ist im Projekt kein Datensatz hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0. ähnelt.
+        /// </summary>
+        public static string SIMENG_PROZESSWAERME_KOPF_FEHLT {
+            get {
+                return ResourceManager.GetString("SIMENG_PROZESSWAERME_KOPF_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme: Der Typ des Prozesses &apos;{0}&apos; ist nicht definiert. Die Prozesswärme-Rechnung wurde abgebrochen; ihr Anteil bleibt 0. ähnelt.
         /// </summary>
         public static string SIMENG_PROZESSWAERME_TYP_UNDEFINIERT {
             get {
                 return ResourceManager.GetString("SIMENG_PROZESSWAERME_TYP_UNDEFINIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme: Zum Typ &apos;{0}&apos; des Prozesses &apos;{1}&apos; ist im Projekt kein Wochenprofil hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0. ähnelt.
+        /// </summary>
+        public static string SIMENG_PROZESSWAERME_TYPPROFIL_FEHLT {
+            get {
+                return ResourceManager.GetString("SIMENG_PROZESSWAERME_TYPPROFIL_FEHLT", resourceCulture);
             }
         }
         
@@ -17698,6 +17734,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf: Die externe Ganglinie {0} hat {1} Werte statt 8760 oder 35040. Die Ganglinie wurde nicht gerechnet - bitte neu einlesen. ähnelt.
+        /// </summary>
+        public static string SIMENG_WAERMEGANGLINIE_RASTER_PASST_NICHT {
+            get {
+                return ResourceManager.GetString("SIMENG_WAERMEGANGLINIE_RASTER_PASST_NICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage &apos;{0}&apos; rechnet bivalent-alternativ mit einer Bivalenztemperatur von 0 °C — dem Vorbelegungswert des Eingabefelds. Unterhalb von 0 °C bleibt die Wärmepumpe aus und der zweite Wärmeerzeuger übernimmt allein. Ist das nicht beabsichtigt, die Bivalenztemperatur der Anlage pflegen. ähnelt.
         /// </summary>
         public static string SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG {
@@ -17721,6 +17766,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_WP_EXTRAPOLATION_VERBOTEN {
             get {
                 return ResourceManager.GetString("SIMENG_WP_EXTRAPOLATION_VERBOTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe &apos;{0}&apos;: Die Quelltemperatur überschreitet in {1} Stunden die obere Stützstelle der Kennlinie ({2} °C). Für diese Stunden gilt der COP der obersten Stützstelle; es wird nicht extrapoliert. Liefert der Hersteller ein Hochtemperatur-Kennfeld, sollte die Kennlinie um höhere Stützstellen ergänzt werden. ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_KAPPUNG_OBEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_KAPPUNG_OBEN_HINWEIS", resourceCulture);
             }
         }
         

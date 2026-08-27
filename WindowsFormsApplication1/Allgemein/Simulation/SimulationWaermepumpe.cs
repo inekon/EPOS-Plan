@@ -197,6 +197,23 @@ namespace WindowsFormsApplication1
         public bool Extrapolation_Erlaubt = true;
 
         /// <summary>
+        /// V0-9 (Entscheidung F13): Stunden je Modul, in denen die Quelltemperatur ÜBER
+        /// der obersten Kennlinien-Stützstelle lag und deshalb auf sie gekappt wurde.
+        ///
+        /// Die Kappung selbst bleibt — oberhalb der obersten Stützstelle gilt deren COP,
+        /// konservativ und ohne erfundene Herstellerdaten; extrapoliert wird nach oben
+        /// ausdrücklich nicht. Sie war bisher nur STILL: Bei einem Booster (Quelle =
+        /// warmer Puffer mit 30–50 °C, Herstellerkennlinien meist bis ~20 °C) ist der
+        /// Fall der Normalfall, und der Anwender erfuhr nichts davon. Gezählt wird
+        /// deshalb je Modul und EINMAL je Lauf gemeldet
+        /// (<see cref="KappungObenMelden"/>) — <c>berechne_wptherm</c> läuft je Modul
+        /// bis zu 8760-mal, eine Meldung je Stunde wäre unlesbar.
+        ///
+        /// ERGEBNISNEUTRAL: reine Zählung neben der Rechnung.
+        /// </summary>
+        private int[] Modul_Kappung_Oben = new int[MAX_WP];
+
+        /// <summary>
         /// Fehlertext eines dialogfrei abgebrochenen Laufs (Paket 8, Konzept 13.4). Leer,
         /// wenn nichts anlag. <c>SimulationControl</c> holt ihn ab und reicht ihn über
         /// <see cref="SimulationControl.Fehlertext"/> an den Aufrufer weiter —
@@ -283,6 +300,11 @@ namespace WindowsFormsApplication1
             // jedem Fall (siehe berechne_wptherm, der Zweig hinter "if (!extrapolation)"
             // endet vor der Rechnung).
             extrapolation = false;
+
+            // V0-9: Der Kappungszähler gehört aus demselben Grund in den Rücksetzblock -
+            // dieselbe Instanz rechnet im MDI-Fenster beliebig viele Läufe, und die
+            // Stundenzahl der Meldung wäre sonst die Summe aller bisherigen Läufe.
+            Array.Clear(Modul_Kappung_Oben, 0, Modul_Kappung_Oben.Length);
 
             Init();
 
@@ -515,7 +537,7 @@ namespace WindowsFormsApplication1
                     // (Außenluft bzw. Wärmequelle bei Sole-/Wasser-Wasser-WP).
                     // Betriebsarten/Abschaltpunkt weiter unten bleiben bewusst auf
                     // der Außentemperatur (bivalenzrelevant ist das Außenklima).
-                    result = berechne_wptherm(wp_quelltemp[index][stunde], model, kenndaten );
+                    result = berechne_wptherm(wp_quelltemp[index][stunde], model, kenndaten, index);
                     if (result[STATUS] == 0)
                     {
                         for (int i = 0; i < MAX_WP; i++)
@@ -828,6 +850,9 @@ namespace WindowsFormsApplication1
 
             Cursor.Current = Cursors.Default;
 
+            // V0-9: Ende des Jahresdurchlaufs im Altpfad - Kappungsstunden melden.
+            KappungObenMelden();
+
             if (biv.Count > 0)
                 Bivalenzpunkt = biv.Max();
             return true;
@@ -1059,7 +1084,7 @@ namespace WindowsFormsApplication1
                     Senkenzuordnung zuordnung = kontext.SenkeJeModul[index];
                     SimulationPufferspeicher quelle = wp_quellspeicher[index];
 
-                    double[] result = berechne_wptherm(wp_quelltemp[index][stunde], model, kenndaten);
+                    double[] result = berechne_wptherm(wp_quelltemp[index][stunde], model, kenndaten, index);
                     if (result[STATUS] == 0)
                     {
                         AbbruchAufraeumen();
@@ -1250,6 +1275,9 @@ namespace WindowsFormsApplication1
             Array.ForEach(waermerestbedarf_stuendlich, value => waermerestbedarf_gesamt += value);
 
             Cursor.Current = Cursors.Default;
+
+            // V0-9: Ende des Jahresdurchlaufs im zweikanaligen Weg - Kappungsstunden melden.
+            KappungObenMelden();
 
             if (biv != null && biv.Count > 0)
                 Bivalenzpunkt = biv.Max();
@@ -1644,7 +1672,43 @@ namespace WindowsFormsApplication1
             Kaskadenschleife.SenkeAbziehen(senke, menge, ref rest_ww, ref rest_heiz);
         }
 
-        double[] berechne_wptherm(float temperatur, WErzeugerModel model, _Kenndaten kenndaten)
+        /// <summary>
+        /// V0-9 (F13): meldet die Kennlinienkappung nach OBEN — je Modul einmal je Lauf,
+        /// mit Anlagenbezeichnung, Zahl der gekappten Stunden und der obersten
+        /// Stützstellen-Temperatur.
+        ///
+        /// Gerufen an den beiden Endstellen des Jahresdurchlaufs: am Ende von
+        /// <see cref="Berechnung_Stundenschleife"/> (Altpfad) und in
+        /// <see cref="Zweikanalig_Ende"/> (zweikanaliger Weg). Eine gemeinsame Endstelle
+        /// gibt es nicht — beide Rechenwege schließen mit ihrem eigenen Abschlussblock
+        /// (Heapsort, Jahressummen, Bivalenzpunkt); geteilt wird deshalb diese Methode.
+        ///
+        /// Der Einmal-Schlüssel ist sprachneutral (Schicht 2) und trägt den Modulindex:
+        /// Zwei gleichnamige Anlagen derselben Kaskade sollen beide gemeldet werden.
+        /// </summary>
+        private void KappungObenMelden()
+        {
+            for (int i = 0; i < wp_model.Count && i < MAX_WP; i++)
+            {
+                if (Modul_Kappung_Oben[i] <= 0) continue;
+                if (i >= wp_kenndaten.Count || wp_kenndaten[i] == null || wp_kenndaten[i].anz < 1) continue;
+
+                string bezeichner = (wp_model[i] != null && wp_model[i].Bezeichner != null)
+                                    ? wp_model[i].Bezeichner : "";
+                string obergrenze = wp_kenndaten[i].dat[0].Temperatur.ToString("F1");
+
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                    "WP_Kappung_Oben_" + i + "_" + bezeichner,
+                    string.Format(MyResource.Resource.SIMENG_WP_KAPPUNG_OBEN_HINWEIS,
+                                  bezeichner, Modul_Kappung_Oben[i], obergrenze));
+            }
+        }
+
+        // V0-9: Der Parameter "index" ist der Modulindex innerhalb der Kaskade. Er wird
+        // ausschließlich für den Kappungszähler Modul_Kappung_Oben gebraucht und geht in
+        // die Rechnung nicht ein. Beide Aufrufketten (Altpfad-Stundenschleife und
+        // Zweikanalig_Bedarfsphase) führen ihn ohnehin als Schleifenvariable.
+        double[] berechne_wptherm(float temperatur, WErzeugerModel model, _Kenndaten kenndaten, int index)
         {
 
             double[] result = new double[4] { 0, 0, 0, 0 };
@@ -1669,6 +1733,13 @@ namespace WindowsFormsApplication1
 
             if (temperatur >= t_maxSST)
             {
+                // V0-9 (F13): Kappung auf die oberste Stützstelle - unverändert, aber ab
+                // jetzt gezählt. Nur der ECHTE Überschreitungsfall wird gezählt; bei
+                // Gleichstand liefert die Stützstelle den exakten Wert, das ist keine
+                // Kappung. Gemeldet wird einmal am Ende des Laufs, siehe
+                // KappungObenMelden. Die Rechnung darunter ist unberührt.
+                if (temperatur > t_maxSST && index >= 0 && index < MAX_WP) Modul_Kappung_Oben[index]++;
+
                 // t grösser als max sst der Kennlinie
                 cop = cop_maxSST;
                 ptherm = ptherm_maxSST;

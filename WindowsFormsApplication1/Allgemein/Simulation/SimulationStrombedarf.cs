@@ -165,6 +165,14 @@ namespace WindowsFormsApplication1
             List<string> stromprofil_list = new List<string>();
             float[] temp = new float[8760];
 
+            // Paket V0, Befund V0-2: Ergebnisvektor über ALLE Stromprofile.
+            // Bis hierher rechnete jedes Profil in "temp", und StromWocheToJahr
+            // ÜBERSCHREIBT alle 8760 Werte — die Aufsummierung war auskommentiert, also
+            // wirkte nur das zuletzt gelesene Profil. "temp" bleibt der Rechenpuffer je
+            // Profil, "summe" trägt das Ergebnis. Bei genau einem Profil ist das Ergebnis
+            // bitgleich zum bisherigen Verhalten.
+            float[] summe = new float[8760];
+
             // NACHARBEIT PAKET 8, BEFUND N6: Das gerade bearbeitete Stromprofil, damit der
             // Sammel-catch unten sagen kann, WORAN es lag. Die häufigste Ursache ist eine
             // InvalidCastException aus "(double)rs.Read(...)" - ein leeres Monats- oder
@@ -239,10 +247,13 @@ namespace WindowsFormsApplication1
                         //temp = com.I_strom_wochetojahr(wochen_werte, monats_werte, mo_anfang, mo_ende);
                         WPPlan.Core.BhkwPlan.StromWocheToJahr(wochen_werte, monats_werte, temp, mo_anfang, mo_ende);
                         //com.CSharp_I_vectoren_addieren(temp, prozesswerte);
+
+                        // V0-2: Profil aufaddieren statt es das vorige überschreiben zu lassen.
+                        WPPlan.Core.BhkwPlan.VectorenAddieren(temp, summe);
                     }
                     rs.Close();
                 }
-                return temp;
+                return summe;
             }
             catch (SystemException ex)
             {

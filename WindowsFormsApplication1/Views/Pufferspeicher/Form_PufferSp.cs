@@ -23,6 +23,14 @@ namespace WindowsFormsApplication1
         // zugehoerige Modell und damit dessen ID_PUFFER.
         private List<WErzeugerModel> _linkeListe = new List<WErzeugerModel>();
 
+        // V0-9: Parallelliste zur RECHTEN ListBox (Katalogauswahl) - dieselbe Bauart wie
+        // _linkeListe, aber nur die STAMM-ID je Zeile. Der Katalog kann gleichnamige
+        // Einträge enthalten (VDI-3805-Import), und die Liste wird aus drei Quellen mit
+        // unterschiedlicher Sortierung gefüllt (Load, SetFilter, btn_Bearbeiten) - der
+        // ListBox-Index passt deshalb auf keine Modelliste, und der Bezeichner allein ist
+        // nicht eindeutig. Die Löschung adressiert über diese ID.
+        private List<int> _katalogIds = new List<int>();
+
         public int m_nType = WizardItemClass.PUFFER_TYP;
         public int m_ID_Projekt = 0;
         int startindex = 100000;
@@ -33,6 +41,7 @@ namespace WindowsFormsApplication1
         {
             InitializeComponent();
             listBox_Pufferspeicher_DB.Items.Clear();
+            _katalogIds.Clear();
             listBox_Pufferspeicher.Items.Clear();
         }
 
@@ -68,6 +77,7 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < pufferspctrl.rows; i++)
             {
                 listBox_Pufferspeicher_DB.Items.Add(pufferspctrl.items[i].Name);
+                _katalogIds.Add(pufferspctrl.items[i].ID);
             }
 
             pufferspctrl.ReadAll();
@@ -255,6 +265,7 @@ namespace WindowsFormsApplication1
             string szFilter = PufferSpFilter.HerstellerSql(comboBox_Hersteller);
 
             listBox_Pufferspeicher_DB.Items.Clear();
+            _katalogIds.Clear();
             if (szFilter == "")
                 sql = "select * from Tab_Pufferspeicher_STAMM where " + szFilterVolumen + " order by Bezeichner";
             else
@@ -265,6 +276,7 @@ namespace WindowsFormsApplication1
             while (rs.Next())
             {
                 listBox_Pufferspeicher_DB.Items.Add((string)rs.Read("Bezeichner"));
+                _katalogIds.Add(Convert.ToInt32(rs.Read("ID")));
             }
             rs.Close();
         }
@@ -278,16 +290,19 @@ namespace WindowsFormsApplication1
             listBox_Pufferspeicher_DB.SelectedItems.Clear();
             ctrl.PufferSp();
             listBox_Pufferspeicher_DB.Items.Clear();
+            _katalogIds.Clear();
             pufferspctrl.ReadAll();
             for (int i = 0; i < pufferspctrl.rows; i++)
             {
                 listBox_Pufferspeicher_DB.Items.Add(pufferspctrl.items[i].Name);
+                _katalogIds.Add(pufferspctrl.items[i].ID);
             }
         }
 
         private void btn_Löschen_Click(object sender, EventArgs e)
         {
-            if (listBox_Pufferspeicher_DB.SelectedIndex == -1)
+            int index = listBox_Pufferspeicher_DB.SelectedIndex;
+            if (index == -1 || index >= _katalogIds.Count)
             {
                 MessageBox.Show(MyResource.Resource.PSP_MELDUNG_MODUL_WAEHLEN);
                 return;
@@ -303,9 +318,13 @@ namespace WindowsFormsApplication1
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Warning) != DialogResult.Yes) return;
 
-            if (!pufferspctrl.Delete(listBox_Pufferspeicher_DB.Text)) return;
+            // V0-9: Gelöscht wird über die STAMM-ID der gewählten Zeile. Der frühere
+            // Weg über den Bezeichner traf bei gleichnamigen Katalogeinträgen alle
+            // Namensvettern auf einmal.
+            if (!pufferspctrl.Delete(_katalogIds[index])) return;
 
-            listBox_Pufferspeicher_DB.Items.RemoveAt(listBox_Pufferspeicher_DB.SelectedIndex);
+            listBox_Pufferspeicher_DB.Items.RemoveAt(index);
+            _katalogIds.RemoveAt(index);
         }
 
  
