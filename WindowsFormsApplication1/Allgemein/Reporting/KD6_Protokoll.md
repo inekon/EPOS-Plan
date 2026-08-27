@@ -543,3 +543,12 @@ gelöscht. Vorab-Verifikation traf exakt die gemessene Lage (7/21.000,
 19.000 (CS5800i) + 14.000 (CS7800iLW) = 33.000 €. Ältere lose Reste in
 1007 (Solarthermie 1, BHKW 1) und 1011 (BHKW 2) blieben unangetastet —
 löschbar jederzeit per Doppelklick auf die gelbe Zeile.
+
+**Nachtrag Ä24 — Alt-Reste 1007/1011 (27.08.2026, Nutzerfreigabe):** Auch die
+letzten vier losen Positionen des Bestands wurden auf Nutzeranweisung
+entfernt (App geschlossen, Sicherung
+`K:\backup_kenndaten_2026-08-27_vor_altreste.accdb`): Projekt 1007 je eine
+Solarthermie- und BHKW-Position (0 €), Projekt 1011 zwei BHKW-Positionen
+(30 € Invest + 30 € Betrieb). Vorab-Zählprüfung traf exakt 4; verwaiste,
+noch heilbare Positionen gab es keine. Nachmessung über ALLE Projekte:
+0 lose Positionen anlagenfähiger Komponenten — der Bestand ist bereinigt.
