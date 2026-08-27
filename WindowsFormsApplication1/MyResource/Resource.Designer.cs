@@ -13164,15 +13164,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Verwendung ist ein Pflichtfeld: Heizung oder Brauchwasser (Konzept 5.1). ähnelt.
-        /// </summary>
-        public static string PSP_FEHLER_VERWENDUNG_PFLICHT {
-            get {
-                return ResourceManager.GetString("PSP_FEHLER_VERWENDUNG_PFLICHT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bitte ein Gesamtvolumen in Litern eintragen (ganze Zahl größer 0). ähnelt.
         /// </summary>
         public static string PSP_FEHLER_VOLUMEN {
@@ -13506,6 +13497,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Nutzung ähnelt.
+        /// </summary>
+        public static string PSP_KLASSENSET_LEER {
+            get {
+                return ResourceManager.GetString("PSP_KLASSENSET_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abschaltschwelle [%]: ähnelt.
         /// </summary>
         public static string PSP_LABEL_ABSCHALTSCHWELLE {
@@ -13771,6 +13771,21 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_MELDUNG_KATALOG_LOESCHEN {
             get {
                 return ResourceManager.GetString("PSP_MELDUNG_KATALOG_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzung des Pufferspeichers „{0}&quot; wird von {1} auf {2} umgestellt.
+        ///
+        ///Der Speicher ist zugeordnet:
+        ///  • {3}
+        ///
+        ///Zuordnungen auf einen Kanal, den der Speicher danach nicht mehr bedient, werden künftig als Warnung gemeldet (Kriterium W1) — gesperrt sind sie nicht mehr.
+        ///Nutzung trotzdem ändern? ähnelt.
+        /// </summary>
+        public static string PSP_MELDUNG_KLASSENSETWECHSEL {
+            get {
+                return ResourceManager.GetString("PSP_MELDUNG_KLASSENSETWECHSEL", resourceCulture);
             }
         }
         
@@ -14254,6 +14269,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_TITEL_KATALOG_LOESCHUNG {
             get {
                 return ResourceManager.GetString("PSP_TITEL_KATALOG_LOESCHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung ändern ähnelt.
+        /// </summary>
+        public static string PSP_TITEL_KLASSENSET_AENDERN {
+            get {
+                return ResourceManager.GetString("PSP_TITEL_KLASSENSET_AENDERN", resourceCulture);
             }
         }
         
@@ -16591,6 +16615,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_PUFFER_VERWENDUNG_PASST_NICHT {
             get {
                 return ResourceManager.GetString("SIM_PUFFER_VERWENDUNG_PASST_NICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — {0} — ähnelt.
+        /// </summary>
+        public static string SIM_PUFFERGRUPPE_KOPF {
+            get {
+                return ResourceManager.GetString("SIM_PUFFERGRUPPE_KOPF", resourceCulture);
             }
         }
         
@@ -19526,6 +19559,96 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_WPTYP_NICHT_GEPFLEGT {
             get {
                 return ResourceManager.GetString("SIMQ_WPTYP_NICHT_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zuordnung ist zulässig und wird gespeichert, gilt aber als unplausibel: ähnelt.
+        /// </summary>
+        public static string SIMWARN_DIALOG_KOPF {
+            get {
+                return ResourceManager.GetString("SIMWARN_DIALOG_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher „{0}&quot;: Das Klassen-Set ist leer — kein Kanal entlädt ihn. Mindestens eine Nutzung (Heizung, Brauchwasser, Prozesswärme) muss gesetzt sein. ähnelt.
+        /// </summary>
+        public static string SIMWARN_HART_LEERES_SET {
+            get {
+                return ResourceManager.GetString("SIMWARN_HART_LEERES_SET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quellbezüge der Pufferspeicher bilden einen RING: {0}. Es gibt keine Rechenreihenfolge, in der jeder Erzeuger nach seinem Puffer rechnet — bitte die Wärmequelle einer der beteiligten Anlagen ändern. ähnelt.
+        /// </summary>
+        public static string SIMWARN_HART_RING {
+            get {
+                return ResourceManager.GetString("SIMWARN_HART_RING", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konfiguration prüfen ähnelt.
+        /// </summary>
+        public static string SIMWARN_KARTE_CHIP {
+            get {
+                return ResourceManager.GetString("SIMWARN_KARTE_CHIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Warnkriterienkatalog (Konzept 6.2) meldet zu dieser Anlage: ähnelt.
+        /// </summary>
+        public static string SIMWARN_KARTE_CHIP_TIP {
+            get {
+                return ResourceManager.GetString("SIMWARN_KARTE_CHIP_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  +  ähnelt.
+        /// </summary>
+        public static string SIMWARN_TRENNER {
+            get {
+                return ResourceManager.GetString("SIMWARN_TRENNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage „{0}&quot; (Rang {1}): Der Speicher „{2}&quot; wird als {3} geladen, sein Klassen-Set lautet aber {4}. Der Kanal {5} fehlt — was mit diesem Zweck geladen wird, entlädt der Speicher nie. ähnelt.
+        /// </summary>
+        public static string SIMWARN_W1_ZIEL_AUSSERHALB_SET {
+            get {
+                return ResourceManager.GetString("SIMWARN_W1_ZIEL_AUSSERHALB_SET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher „{0}&quot;: Die Bauform „{1}&quot; ist auf Warmwasser ausgelegt, das Klassen-Set lautet aber {2}. Die Warmwasserseite des Behälters bleibt ungenutzt. ähnelt.
+        /// </summary>
+        public static string SIMWARN_W2_BAUFORM_WIDERSPRUCH {
+            get {
+                return ResourceManager.GetString("SIMWARN_W2_BAUFORM_WIDERSPRUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage „{0}&quot;: Der Erzeuger-Vorlauf {1} °C liegt unter dem wirksamen Vorlauf {2} °C des Zielspeichers „{3}&quot;. Der Erzeuger kann den Speicher nie auf Solltemperatur laden. ähnelt.
+        /// </summary>
+        public static string SIMWARN_W3_VORLAUF_ZU_NIEDRIG {
+            get {
+                return ResourceManager.GetString("SIMWARN_W3_VORLAUF_ZU_NIEDRIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage „{0}&quot;: Der Speicher „{1}&quot; ist ihre Wärmequelle, wird aber von keiner Anlage dieses Projekts geladen. Nach der Startfüllung liefe die Quelle leer. ähnelt.
+        /// </summary>
+        public static string SIMWARN_W5_QUELLE_OHNE_LADER {
+            get {
+                return ResourceManager.GetString("SIMWARN_W5_QUELLE_OHNE_LADER", resourceCulture);
             }
         }
         

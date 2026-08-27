@@ -651,9 +651,6 @@ Without a source buffer this reads 0.00.</value>
   <data name="PSP_FEHLER_VERLUSTE" xml:space="preserve">
     <value>The standby losses must be a number ≥ 0 [kWh/24h].</value>
   </data>
-  <data name="PSP_FEHLER_VERWENDUNG_PFLICHT" xml:space="preserve">
-    <value>The use is a mandatory field: heating or domestic hot water (concept 5.1).</value>
-  </data>
   <data name="PSP_FEHLER_VOLUMEN" xml:space="preserve">
     <value>Please enter a total volume in litres (whole number greater than 0).</value>
   </data>
@@ -8013,5 +8010,53 @@ They typically stem from a variant copy without this trade and keep entering the
   </data>
   <data name="KANAL_PROZESS_ANZEIGE" xml:space="preserve">
     <value>Process heat</value>
+  </data>
+  <data name="SIMWARN_W1_ZIEL_AUSSERHALB_SET" xml:space="preserve">
+    <value>Unit "{0}" (rank {1}): storage "{2}" is charged as {3}, but its class set is {4}. Channel {5} is missing — heat charged for this purpose is never discharged by this storage.</value>
+  </data>
+  <data name="SIMWARN_W2_BAUFORM_WIDERSPRUCH" xml:space="preserve">
+    <value>Storage "{0}": design type "{1}" is built for domestic hot water, but the class set is {2}. The hot-water side of the tank remains unused.</value>
+  </data>
+  <data name="SIMWARN_W3_VORLAUF_ZU_NIEDRIG" xml:space="preserve">
+    <value>Unit "{0}": the generator flow temperature of {1} °C is below the effective flow temperature of {2} °C of target storage "{3}". The generator can never charge the storage to its set temperature.</value>
+  </data>
+  <data name="SIMWARN_W5_QUELLE_OHNE_LADER" xml:space="preserve">
+    <value>Unit "{0}": storage "{1}" is its heat source but is not charged by any unit of this project. After the initial fill the source would run empty.</value>
+  </data>
+  <data name="SIMWARN_HART_RING" xml:space="preserve">
+    <value>The buffer-storage source references form a LOOP: {0}. There is no calculation order in which every generator runs after its buffer — please change the heat source of one of the units involved.</value>
+  </data>
+  <data name="SIMWARN_HART_LEERES_SET" xml:space="preserve">
+    <value>Storage "{0}": the class set is empty — no channel discharges it. At least one usage (heating, domestic hot water, process heat) must be set.</value>
+  </data>
+  <data name="SIMWARN_TRENNER" xml:space="preserve">
+    <value> + </value>
+  </data>
+  <data name="SIMWARN_DIALOG_KOPF" xml:space="preserve">
+    <value>The assignment is permitted and will be saved, but it is considered implausible:</value>
+  </data>
+  <data name="SIMWARN_KARTE_CHIP" xml:space="preserve">
+    <value>check configuration</value>
+  </data>
+  <data name="SIMWARN_KARTE_CHIP_TIP" xml:space="preserve">
+    <value>The warning-criteria catalogue (concept 6.2) reports for this unit:</value>
+  </data>
+  <data name="PSP_KLASSENSET_LEER" xml:space="preserve">
+    <value>no usage</value>
+  </data>
+  <data name="SIM_PUFFERGRUPPE_KOPF" xml:space="preserve">
+    <value>— {0} —</value>
+  </data>
+  <data name="PSP_MELDUNG_KLASSENSETWECHSEL" xml:space="preserve">
+    <value>The usage of buffer storage "{0}" is being changed from {1} to {2}.
+
+The storage is assigned to:
+  • {3}
+
+Assignments to a channel the storage no longer serves will be reported as a warning from now on (criterion W1) — they are no longer blocked.
+Change the usage anyway?</value>
+  </data>
+  <data name="PSP_TITEL_KLASSENSET_AENDERN" xml:space="preserve">
+    <value>Change usage</value>
   </data>
 </root>

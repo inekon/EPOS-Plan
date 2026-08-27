@@ -1082,9 +1082,10 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                // Konzept 5.2, Konsistenzregel: Ein Verwendungswechsel an einem bereits
-                // zugeordneten Speicher darf nicht still durchgehen.
-                if (!VerwendungswechselBestaetigt(verwendung)) return;
+                // Konzept 5.2, Konsistenzregel: Ein Nutzungswechsel an einem bereits
+                // zugeordneten Speicher darf nicht still durchgehen (K2-O8: gemessen wird
+                // seit S2 das KLASSEN-SET, nicht mehr der abgeleitete Altwert).
+                if (!KlassenSetWechselBestaetigt(klassenSet)) return;
 
                 if (!PufferSpCtrl.ProjektPufferAendern(
                         _bearbeiteteId, ID_Projekt, bezeichner, hersteller, speichertyp, volumen,
@@ -1107,49 +1108,60 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Rückfrage vor dem Wechsel der Verwendung eines bereits REFERENZIERTEN
-        /// Speichers; <c>true</c> = weitermachen.
+        /// Rückfrage vor dem Wechsel der NUTZUNG (Klassen-Set) eines bereits
+        /// REFERENZIERTEN Speichers; <c>true</c> = weitermachen.
         ///
-        /// Die Verwendung entscheidet, welche Senke den Speicher überhaupt wählen darf
-        /// (<c>WaermesenkeClass.PufferPasst</c>). Wird sie an einem Speicher umgestellt,
-        /// den eine Anlage schon als Haupt- oder Zweitsenke führt, passt diese Zuordnung
-        /// hinterher nicht mehr: Der Senkendialog blockiert beim nächsten Öffnen mit
-        /// „falsche Verwendung", und bis dahin steht in der Anlage eine Senke, die die
-        /// Prüfung nach 4.6 nicht mehr bestehen würde. Deshalb die Rückfrage MIT der
-        /// Liste der betroffenen Anlagen.
+        /// <para><b>PAKET S2, Ticket K2-O8 — geprüft wird das SET, nicht mehr der
+        /// Altwert.</b> Bis K2 verglich die Rückfrage <c>Verwendung</c> gegen
+        /// <c>Verwendung</c>. Seit dem Klassen-Set hat dieser Altwert für vier der acht
+        /// Sets keine genaue Entsprechung mehr (<c>PufferSpCtrl.KlassenSet.Verwendung</c>
+        /// liefert dann den nächstliegenden): Ein Wechsel von {H} auf {H, P} ändert die
+        /// abgeleitete Verwendung NICHT — beide ergeben „Heizung" — und ging deshalb
+        /// still durch, obwohl der Speicher danach einen Kanal mehr bedient. Verglichen
+        /// werden jetzt die drei Flags; damit schlägt jede echte Änderung an.</para>
         ///
-        /// Die Rückfrage sitzt hier im Dialog und nicht in
+        /// <para><b>Die Begründung hat sich mitgeändert.</b> Früher war eine
+        /// unpassende Zuordnung nach dem Wechsel GESPERRT — der Senkendialog wies sie
+        /// beim nächsten Öffnen ab. Seit S2 (Konzept 6.2) ist sie zulässig und erzeugt
+        /// eine Warnung (Kriterium W1). Die Rückfrage bleibt trotzdem: Sie ist der
+        /// einzige Moment, in dem der Anwender sieht, WELCHE Anlagen sein Wechsel
+        /// betrifft. Nur der Meldungstext sagt jetzt „wird gewarnt" statt „muss neu
+        /// gesetzt werden" (<c>PSP_MELDUNG_KLASSENSETWECHSEL</c>).</para>
+        ///
+        /// <para>Die Rückfrage sitzt hier im Dialog und nicht in
         /// <c>PufferSpCtrl.ProjektPufferAendern</c>: die Ctrl-Bausteine aus Paket 2 sind
         /// durchgehend dialogfrei (Konzept 13.4), damit die headless laufenden Proben und
         /// der Referenzlauf sie benutzen können. Eine MessageBox dort brächte den
-        /// nächsten Lauf zum Stehen.
+        /// nächsten Lauf zum Stehen.</para>
         /// </summary>
-        private bool VerwendungswechselBestaetigt(string verwendungNeu)
+        private bool KlassenSetWechselBestaetigt(PufferSpCtrl.KlassenSet setNeu)
         {
-            if (_bearbeiteteId <= 0) return true;
+            if (_bearbeiteteId <= 0 || setNeu == null) return true;
 
             WaermesenkeClass.PufferInfo alt = WaermesenkeClass.PufferLesen(_bearbeiteteId);
             if (alt == null) return true;
 
-            string verwendungAlt = WaermesenkeClass.WirksameVerwendung(alt);
-            if (string.Equals(verwendungAlt, verwendungNeu, StringComparison.OrdinalIgnoreCase))
+            PufferSpCtrl.KlassenSet setAlt = PufferSpCtrl.KlassenSetLesen(_bearbeiteteId);
+            if (setAlt.Heizung == setNeu.Heizung &&
+                setAlt.Brauchwasser == setNeu.Brauchwasser &&
+                setAlt.Prozess == setNeu.Prozess)
                 return true;
 
             List<string> referenzen = PufferSpCtrl.ReferenzenAufPuffer(_bearbeiteteId);
             if (referenzen.Count == 0) return true;
 
-            // Die beiden Verwendungen sind DB-Werte und werden für die Meldung übersetzt
+            // Die beiden Sets sind Steuerwerte und werden für die Meldung übersetzt
             // (Befund L0-2) - sonst mischte die englische Meldung die Sprachen.
             return MessageBox.Show(
                 string.Format(
                     // Umbrüche der Ressource VOR dem Einsetzen auf die Plattformform
                     // bringen (Details in Zeilenumbruch).
-                    Zeilenumbruch.Normalisieren(MyResource.Resource.PSP_MELDUNG_VERWENDUNGSWECHSEL),
+                    Zeilenumbruch.Normalisieren(MyResource.Resource.PSP_MELDUNG_KLASSENSETWECHSEL),
                     alt.Bezeichner,
-                    WaermesenkeClass.VerwendungAnzeige(verwendungAlt),
-                    WaermesenkeClass.VerwendungAnzeige(verwendungNeu),
+                    Warnkriterien.KlassenSetAnzeige(setAlt),
+                    Warnkriterien.KlassenSetAnzeige(setNeu),
                     string.Join(Environment.NewLine + "  • ", referenzen)),
-                MyResource.Resource.PSP_TITEL_VERWENDUNG_AENDERN, MessageBoxButtons.YesNo,
+                MyResource.Resource.PSP_TITEL_KLASSENSET_AENDERN, MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning) == DialogResult.Yes;
         }
 

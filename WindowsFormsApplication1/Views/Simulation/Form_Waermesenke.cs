@@ -164,6 +164,22 @@ namespace WindowsFormsApplication1
         private List<WaermesenkeClass.PufferInfo> _pufferKombi =
             new List<WaermesenkeClass.PufferInfo>();
 
+        /// <summary>
+        /// PAKET S2 — ALLE Projekt-Puffer, ungefiltert (Konzept 6.2). Das ist seit S2 die
+        /// Auswahlmenge des Speicher-Dropdowns: Zuordnungen sind frei, unplausible
+        /// bekommen eine Warnung statt einer Sperre.
+        /// </summary>
+        private List<WaermesenkeClass.PufferInfo> _pufferAlle =
+            new List<WaermesenkeClass.PufferInfo>();
+
+        /// <summary>
+        /// Klassen-Set je Puffer-ID — die Gruppierung des Dropdowns und der Gruppenkopf.
+        /// EINMAL beim Öffnen gelesen; ein Nachschlag je Listeneintrag wäre bei 80
+        /// Pufferkopien (Projekt 1023) eine Abfrage je Zeile.
+        /// </summary>
+        private Dictionary<int, PufferSpCtrl.KlassenSet> _klassenSetJePuffer =
+            new Dictionary<int, PufferSpCtrl.KlassenSet>();
+
         private bool _aktualisiert;   // verhindert Event-Rückkopplung beim Befüllen
 
         // --- Sichtbare Texte des Parallelverbunds ------------------------------------
@@ -410,6 +426,9 @@ namespace WindowsFormsApplication1
                 Location = new Point(150, 54),
                 Width = 430
             };
+            // PAKET S2: Die Kopfkorrektur steht VOR der Übernahme in die Zeile — sonst
+            // stünde ein Gruppenkopf für einen Wimpernschlag als Puffer der Zeile da.
+            _cbPuffer.SelectedIndexChanged += Puffer_Ausgewaehlt;
             _cbPuffer.SelectedIndexChanged += Auswahl_Geaendert;
 
             Label lblBedarf = new Label
@@ -905,7 +924,7 @@ namespace WindowsFormsApplication1
 
                 ZielWaehlen(z.Ziel);
                 PufferListeFuerZiel(z.Ziel);
-                PufferWaehlen(_cbPuffer, PufferlisteZuZiel(z.Ziel), z.ID_Puffer);
+                PufferWaehlen(_cbPuffer, z.ID_Puffer);
 
                 if (string.Equals(z.Bedarfsart, WaermequelleClass.SENKE_WARMWASSER, StringComparison.Ordinal))
                     _cbBedarfsart.SelectedIndex = 1;
@@ -1170,11 +1189,15 @@ namespace WindowsFormsApplication1
             return false;
         }
 
-        /// <summary>Die Puffer-Liste des Ziels auf RANG 1 (Bezugsgröße des Verbunds).</summary>
+        /// <summary>
+        /// Die Puffer-Liste des Ziels auf RANG 1 (Bezugsgröße des Verbunds) — weiterhin
+        /// die nach <c>Verwendung</c> GEFILTERTE Liste, siehe
+        /// <see cref="PufferlisteVerbund"/>.
+        /// </summary>
         private List<WaermesenkeClass.PufferInfo> Hauptsenkenliste()
         {
             if (_zeilen.Count == 0) return new List<WaermesenkeClass.PufferInfo>();
-            return PufferlisteZuZiel(_zeilen[0].Ziel);
+            return PufferlisteVerbund(_zeilen[0].Ziel);
         }
 
         /// <summary>Die gehakten Verbundmitglieder als Puffer-IDs; nie <c>null</c>.</summary>
@@ -1241,41 +1264,84 @@ namespace WindowsFormsApplication1
 
         // --- Puffer-Auswahllisten -----------------------------------------------------
 
+        /// <summary>
+        /// Lädt die Auswahlmengen des Dialogs.
+        ///
+        /// <para><b>PAKET S2 — die sperrende Filterung ist gefallen</b> (Konzept 6.2,
+        /// Entscheidung F6). Bis S1 zeigte das Speicher-Dropdown nur die Puffer, deren
+        /// <c>Verwendung</c> genau zum gewählten Ziel passte, und
+        /// <c>WaermesenkeClass.Pruefen</c> wies beim Speichern alles andere ab. Seit S2
+        /// zeigt es <see cref="_pufferAlle"/> — ALLE Projekt-Puffer, gruppiert nach
+        /// Klassen-Set —, und eine unplausible Zuordnung erzeugt eine WARNUNG
+        /// (<see cref="Warnkriterien"/>, Kriterium W1) statt einer Sperre.</para>
+        ///
+        /// <para><b>Die drei gefilterten Listen bleiben</b>, aber nur noch für zwei
+        /// Zwecke: die Vorbelegung von „Hinzufügen" (der Regelfall bleibt der
+        /// Heizungspuffer) und die Kandidatenliste des PARALLELVERBUNDS
+        /// (<see cref="PufferlisteVerbund"/>). Für den Verbund ist die Filterung KEINE
+        /// Altlast: <c>AnlagePufferVerbundCtrl.KonfliktPruefen</c> weist einen Verbund
+        /// aus gemischten Verwendungen beim Speichern weiterhin ab (Grund
+        /// <c>GRUND_PASST_NICHT</c>), und eine Auswahl anzubieten, die die Prüfung
+        /// zurückweist, wäre eine Sackgasse. Der Verbund ist eigenes Paketgebiet.</para>
+        /// </summary>
         private void PufferListenLaden()
         {
-            // SENKENZIEL-Sicht, nicht Kanalsicht (WaermesenkeClass.ProjektPufferListe):
-            // Ein Kombi-Ziel verlangt einen Kombi-Puffer, ein Heizungs-Ziel einen
-            // Heizungs-Puffer (Konzept Abschnitt 7). Genau dasselbe prüft
-            // WaermesenkeClass.Pruefen beim Speichern - Auswahl und Validierung dürfen
-            // nicht auseinanderlaufen.
             _pufferHeizung = WaermesenkeClass.ProjektPufferListe(ID_Projekt, WaermesenkeClass.VERWENDUNG_HEIZUNG);
             _pufferBrauchwasser = WaermesenkeClass.ProjektPufferListe(ID_Projekt, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER);
             _pufferKombi = WaermesenkeClass.ProjektPufferListe(ID_Projekt, WaermesenkeClass.VERWENDUNG_KOMBI);
+
+            _pufferAlle = WaermesenkeClass.ProjektPufferListe(ID_Projekt, null);
+            _klassenSetJePuffer = PufferSpCtrl.KlassenSetsJeProjekt(ID_Projekt);
+        }
+
+        /// <summary>
+        /// Das Klassen-Set eines Puffers aus dem beim Öffnen gelesenen Verzeichnis;
+        /// unbekannte IDs bekommen die Vorbelegung {Heizung} — dieselbe Antwort wie
+        /// <c>PufferSpCtrl.KlassenSetLesen</c> auf einen unbekannten Speicher.
+        /// </summary>
+        private PufferSpCtrl.KlassenSet KlassenSetVon(int idPuffer)
+        {
+            PufferSpCtrl.KlassenSet set;
+            if (_klassenSetJePuffer.TryGetValue(idPuffer, out set) && set != null) return set;
+            return new PufferSpCtrl.KlassenSet(true, false, false);
+        }
+
+        /// <summary>
+        /// Ein GRUPPENKOPF im Speicher-Dropdown — „— Heizung + Brauchwasser —".
+        ///
+        /// Eine gewöhnliche <c>ComboBox</c> kennt keine Gruppen; der Kopf ist deshalb ein
+        /// eigener Eintrag, der nicht ausgewählt bleiben kann
+        /// (<see cref="Puffer_Ausgewaehlt"/> springt auf den nächsten echten Eintrag).
+        /// Er trägt sein Klassen-Set mit, damit die Ordnung nachvollziehbar bleibt.
+        /// </summary>
+        private sealed class Gruppenkopf
+        {
+            public string Text = "";
+            public override string ToString() { return Text; }
         }
 
         /// <summary>
         /// Die Auswahlliste, die zu einem Ziel gehört; leer bei Direktsenken.
         ///
-        /// <para><b>Das S1-Ziel <c>PufferProzess</c> bekommt vorerst die HEIZUNGS-Liste.</b>
-        /// Zwei Gründe, beide vorübergehend:</para>
-        ///
-        /// <para>1. Fachlich ist das heute richtig. Die Interimsregel I2 aus Paket K2 —
-        /// „ein Speicher mit Heizung im Klassen-Set bedient übergangsweise auch den
-        /// Prozesskanal" — ist die EINZIGE Verbindung, die die Entladeordnung derzeit zum
-        /// Prozesskanal kennt. Ein Behälter, der nur Brauchwasser oder nur Prozess
-        /// führt, würde für Prozesswärme von niemandem entladen; ihn hier anzubieten,
-        /// hieße eine Ladung ohne Abnehmer zu erlauben.</para>
-        ///
-        /// <para>2. <c>WaermesenkeClass.PufferPasst</c> sperrt weiterhin nach
-        /// <c>Verwendung</c> und kennt für <c>PufferProzess</c> keine
-        /// (<c>VerwendungZuZiel</c> liefert <c>null</c>). Eine Auswahl anzubieten, die die
-        /// Prüfung beim Speichern zurückweist, wäre eine Sackgasse.</para>
-        ///
-        /// <para>Konzept 6.2 hebt die sperrende Filterung mit Paket S2 auf (alle
-        /// Projekt-Puffer, gruppiert nach Klassen-Set, Warnkriterien W1–W6 statt
-        /// Sperre) — dann steht hier <c>ProjektPufferListe(ID_Projekt, null)</c>.</para>
+        /// <para><b>PAKET S2: Für JEDES Puffer-Ziel ist das dieselbe Liste</b> — alle
+        /// Projekt-Puffer (Konzept 6.2). Bis S1 hing die Liste am Ziel: Ein Kombi-Ziel
+        /// verlangte einen Kombi-Puffer, ein Heizungs-Ziel einen Heizungs-Puffer, und
+        /// <c>PufferProzess</c> bekam ersatzweise die Heizungsliste, weil es dafür gar
+        /// keine <c>Verwendung</c> gibt. Was damals GESPERRT war — ein Prozess-Ziel auf
+        /// einen Brauchwasserspeicher, ein Heizungs-Ziel auf einen Kombispeicher —, ist
+        /// jetzt WÄHLBAR und erzeugt beim Speichern eine Warnung (Kriterium W1), falls
+        /// das Klassen-Set des Speichers den Kanal nicht führt.</para>
         /// </summary>
         private List<WaermesenkeClass.PufferInfo> PufferlisteZuZiel(string ziel)
+        {
+            return IstPufferZiel(ziel) ? _pufferAlle : new List<WaermesenkeClass.PufferInfo>();
+        }
+
+        /// <summary>
+        /// Die Kandidatenliste des PARALLELVERBUNDS — sie behält die Filterung nach
+        /// <c>Verwendung</c> (Begründung in <see cref="PufferListenLaden"/>).
+        /// </summary>
+        private List<WaermesenkeClass.PufferInfo> PufferlisteVerbund(string ziel)
         {
             if (string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_HEIZUNG, StringComparison.Ordinal) ||
                 string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_PROZESS, StringComparison.Ordinal))
@@ -1293,21 +1359,112 @@ namespace WindowsFormsApplication1
             FuelleCombo(_cbPuffer, PufferlisteZuZiel(ziel));
         }
 
-        private static void FuelleCombo(ComboBox cb, List<WaermesenkeClass.PufferInfo> liste)
+        /// <summary>
+        /// Füllt das Speicher-Dropdown mit GRUPPENKÖPFEN je Klassen-Set (Konzept 6.2:
+        /// „die Puffer-Auswahl zeigt alle Projekt-Puffer, gruppiert nach Klassen-Set").
+        ///
+        /// <para>Die Gruppen stehen in einer festen, sprachneutralen Ordnung: nach der
+        /// Bitmaske Heizung=1, Brauchwasser=2, Prozess=4 aufsteigend, also {H}, {B},
+        /// {H,B}, {P}, {H,P}, {B,P}, {H,B,P}. Sie ist unabhängig von der Sprache der
+        /// Oberfläche — sonst sprängen die Gruppen beim Sprachwechsel um. Innerhalb
+        /// einer Gruppe bleibt die Reihenfolge der Datenbankabfrage (Bezeichner, ID).</para>
+        ///
+        /// <para>Ein EINZIGES Klassen-Set im Projekt — der Regelfall jedes
+        /// Bestandsprojekts — bekommt KEINEN Kopf: Eine Gruppenüberschrift über der
+        /// ganzen Liste teilt nichts ein und kostet nur eine Zeile.</para>
+        /// </summary>
+        private void FuelleCombo(ComboBox cb, List<WaermesenkeClass.PufferInfo> liste)
         {
             int alteId = AktuelleId(cb);
             cb.Items.Clear();
-            foreach (WaermesenkeClass.PufferInfo p in liste) cb.Items.Add(p);
-            if (cb.Items.Count > 0) cb.SelectedIndex = 0;
-            if (alteId > 0) PufferWaehlen(cb, liste, alteId);
+
+            int letzteMaske = -1;
+            bool mitKoepfen = MaskenAnzahl(liste) > 1;
+
+            foreach (WaermesenkeClass.PufferInfo p in liste)
+            {
+                if (p == null) continue;
+
+                int maske = Maske(KlassenSetVon(p.ID));
+                if (mitKoepfen && maske != letzteMaske)
+                {
+                    cb.Items.Add(new Gruppenkopf
+                    {
+                        Text = string.Format(MyResource.Resource.SIM_PUFFERGRUPPE_KOPF,
+                                             Warnkriterien.KlassenSetAnzeige(KlassenSetVon(p.ID)))
+                    });
+                    letzteMaske = maske;
+                }
+
+                cb.Items.Add(p);
+            }
+
+            ErstenEchtenWaehlen(cb);
+            if (alteId > 0) PufferWaehlen(cb, alteId);
         }
 
-        private static void PufferWaehlen(ComboBox cb, List<WaermesenkeClass.PufferInfo> liste, int idPuffer)
+        /// <summary>Bitmaske eines Klassen-Sets: Heizung 1, Brauchwasser 2, Prozess 4.</summary>
+        private static int Maske(PufferSpCtrl.KlassenSet set)
+        {
+            if (set == null) return 0;
+            return (set.Heizung ? 1 : 0) + (set.Brauchwasser ? 2 : 0) + (set.Prozess ? 4 : 0);
+        }
+
+        /// <summary>Zahl der VERSCHIEDENEN Klassen-Sets in einer Pufferliste.</summary>
+        private int MaskenAnzahl(List<WaermesenkeClass.PufferInfo> liste)
+        {
+            List<int> masken = new List<int>();
+            foreach (WaermesenkeClass.PufferInfo p in liste)
+            {
+                if (p == null) continue;
+                int m = Maske(KlassenSetVon(p.ID));
+                if (!masken.Contains(m)) masken.Add(m);
+            }
+            return masken.Count;
+        }
+
+        /// <summary>Wählt den ersten Eintrag, der kein Gruppenkopf ist.</summary>
+        private static void ErstenEchtenWaehlen(ComboBox cb)
+        {
+            for (int i = 0; i < cb.Items.Count; i++)
+                if (cb.Items[i] is WaermesenkeClass.PufferInfo) { cb.SelectedIndex = i; return; }
+        }
+
+        /// <summary>
+        /// Ein Gruppenkopf ist kein Speicher: Wird er gewählt (Tastatur, Mausrad), rückt
+        /// die Auswahl auf den Eintrag darunter. Der Kopf bleibt sichtbar, aber nie
+        /// gewählt — sonst stünde in der Zeile eine Senke ohne Puffer.
+        /// </summary>
+        private void Puffer_Ausgewaehlt(object sender, EventArgs e)
+        {
+            if (!(_cbPuffer.SelectedItem is Gruppenkopf)) return;
+
+            for (int i = _cbPuffer.SelectedIndex + 1; i < _cbPuffer.Items.Count; i++)
+                if (_cbPuffer.Items[i] is WaermesenkeClass.PufferInfo)
+                {
+                    _cbPuffer.SelectedIndex = i;
+                    return;
+                }
+
+            ErstenEchtenWaehlen(_cbPuffer);
+        }
+
+        /// <summary>
+        /// Stellt das Dropdown auf einen Puffer.
+        ///
+        /// <para>PAKET S2: Gesucht wird über die EINTRÄGE des Steuerelements, nicht über
+        /// den Index in der Quellliste — zwischen den Puffern stehen seit S2
+        /// Gruppenköpfe, und beide Zählungen laufen deshalb auseinander. Die Quellliste
+        /// wird dafür gar nicht mehr gebraucht.</para>
+        /// </summary>
+        private static void PufferWaehlen(ComboBox cb, int idPuffer)
         {
             if (idPuffer <= 0) return;
-            for (int i = 0; i < liste.Count; i++)
+
+            for (int i = 0; i < cb.Items.Count; i++)
             {
-                if (liste[i].ID == idPuffer) { cb.SelectedIndex = i; return; }
+                WaermesenkeClass.PufferInfo p = cb.Items[i] as WaermesenkeClass.PufferInfo;
+                if (p != null && p.ID == idPuffer) { cb.SelectedIndex = i; return; }
             }
         }
 
@@ -1505,7 +1662,7 @@ namespace WindowsFormsApplication1
                 {
                     PufferListeFuerZiel(_zeilen[index].Ziel);
                     if (frm.ID_Puffer > 0)
-                        PufferWaehlen(_cbPuffer, PufferlisteZuZiel(_zeilen[index].Ziel), frm.ID_Puffer);
+                        PufferWaehlen(_cbPuffer, frm.ID_Puffer);
                 }
 
                 // PAKET PARALLELVERBUND: Ein gerade angelegter Puffer soll auch als
@@ -1581,11 +1738,44 @@ namespace WindowsFormsApplication1
             string uebergang = BrauchwasserUebergangsHinweis(neu);
             if (uebergang != null) hinweise.Add(uebergang);
 
+            // PAKET S2 (Konzept 6.2): die WEICHEN Warnkriterien. Sie blockieren nicht —
+            // gespeichert ist zu diesem Zeitpunkt schon —, sie begründen nur, warum die
+            // eben gespeicherte Zuordnung als unplausibel gilt. Sie gehen in DIESELBE
+            // MessageBox wie die beiden Hinweise darüber; nur das Symbol wird zum
+            // Warnzeichen, damit der Unterschied zu einer bloßen Auskunft sichtbar ist.
+            List<string> warnungen = WeicheBefunde();
+            if (warnungen.Count > 0)
+                hinweise.Add(MyResource.Resource.SIMWARN_DIALOG_KOPF + Environment.NewLine +
+                             "  • " + string.Join(Environment.NewLine + "  • ", warnungen.ToArray()));
+
             if (hinweise.Count > 0)
                 MessageBox.Show(string.Join(Environment.NewLine + Environment.NewLine, hinweise),
-                                MyResource.Resource.SIM_SENKE_TITEL, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                MyResource.Resource.SIM_SENKE_TITEL, MessageBoxButtons.OK,
+                                warnungen.Count > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
 
             Daten = neu;
+        }
+
+        /// <summary>
+        /// Die WEICHEN Befunde des Warnkriterienkatalogs über die gespeicherte
+        /// Senkenliste, als fertige Anzeigezeilen; nie <c>null</c>.
+        ///
+        /// <para>Geprüft wird NACH dem Schreiben: Der Katalog liest den Quellbezug und
+        /// die Speicherdaten aus der Datenbank, und die Senkenzeilen sollen zu dem
+        /// Zustand passen, der jetzt dort steht. Die HARTEN Befunde stehen nicht darin —
+        /// sie sind schon in <see cref="ListePruefen"/> abgefangen worden, lange bevor
+        /// geschrieben wurde.</para>
+        /// </summary>
+        private List<string> WeicheBefunde()
+        {
+            List<string> texte = new List<string>();
+
+            foreach (Warnbefund b in Warnkriterien.NurWeiche(
+                         Warnkriterien.PruefeSenken(ID_Projekt, ID_Anlage, _zeilen)))
+                if (b != null && !string.IsNullOrEmpty(b.Text))
+                    texte.Add(Zeilenumbruch.Einzeilig(b.Text));
+
+            return texte;
         }
 
         /// <summary>
@@ -1598,7 +1788,6 @@ namespace WindowsFormsApplication1
             // steht aber hier, weil alles Folgende sie voraussetzt.
             if (_zeilen.Count == 0) return MyResource.Resource.SIM_MSG_SENKE_LETZTE_ZEILE;
 
-            int idQuellPuffer = WaermesenkeClass.QuellPufferDerAnlage(ID_Projekt, ID_Anlage);
             List<int> gesehen = new List<int>();
 
             for (int i = 0; i < _zeilen.Count; i++)
@@ -1624,17 +1813,21 @@ namespace WindowsFormsApplication1
                         MyResource.Resource.SIM_MSG_SENKE_DOPPELT,
                         WaermesenkeClass.PufferName(z.ID_Puffer));
                 gesehen.Add(z.ID_Puffer);
-
-                // KURZSCHLUSS (Bestandsguard, jetzt über alle Ränge): Derselbe Puffer als
-                // Quelle UND Senke derselben Anlage. Pruefen prüft die Ränge 1 und 2 noch
-                // einmal - doppelt geprüft ist hier harmlos, ungeprüft wäre es ein Ring.
-                if (idQuellPuffer > 0 && idQuellPuffer == z.ID_Puffer)
-                    return string.Format(
-                        Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_PUFFER_QUELLE_UND_SENKE),
-                        WaermesenkeClass.PufferName(idQuellPuffer));
             }
 
-            return null;
+            // KURZSCHLUSS (derselbe Puffer als Quelle UND Ladeziel dieser Anlage):
+            //
+            // PAKET S2 — der Guard steht jetzt im WARNKRITERIENKATALOG und nicht mehr
+            // hier. Er prüft dasselbe über alle Ränge, mit derselben Auflösung des
+            // Quellpuffers (Fremdschlüssel, sonst Alt-Bezeichner) und mit demselben
+            // Meldungstext; die Zeile darüber ist deshalb ersatzlos entfallen, statt
+            // zwei Stellen mit derselben Regel zu pflegen. Der zweite Guard in
+            // WaermesenkeClass.Pruefen (Ränge 1/2) und der Engine-Guard E-K2-1 bleiben
+            // als tiefere Verteidigungslinien unangetastet.
+            Warnbefund hart = Warnkriterien.ErsterHarter(
+                Warnkriterien.PruefeSenken(ID_Projekt, ID_Anlage, _zeilen));
+
+            return hart != null ? Zeilenumbruch.Normalisieren(hart.Text) : null;
         }
 
         /// <summary>

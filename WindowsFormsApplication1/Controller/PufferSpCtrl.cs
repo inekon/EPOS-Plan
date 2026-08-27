@@ -845,6 +845,41 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Klassen-Sets ALLER Puffer eines Projekts in EINER Abfrage; nie
+        /// <c>null</c>, Schlüssel ist die Puffer-ID (PAKET S2).
+        ///
+        /// <para>Das Gegenstück zu <see cref="KlassenSetLesen"/> für Aufrufer, die
+        /// ohnehin alle Speicher eines Projekts brauchen: die Speicherauswahl des
+        /// Senkendialogs und das Schemamodell. Ein Aufruf je Speicher wäre bei Projekt
+        /// 1023 der Referenzmenge — über 80 Pufferkopien aus wiederholtem „Projekt
+        /// duplizieren" — eine Abfrage je Listeneintrag beim Öffnen des Dialogs.</para>
+        ///
+        /// <para>Abgeleitet wird über dieselbe eine Regel
+        /// (<see cref="KlassenSetAusZeile"/>), also mit demselben Rückfall auf
+        /// <c>Verwendung</c>, wenn die Flags des Schemastands 49 fehlen. Still und
+        /// dialogfrei wie die Einzelfassung.</para>
+        /// </summary>
+        public static Dictionary<int, KlassenSet> KlassenSetsJeProjekt(int idProjekt)
+        {
+            Dictionary<int, KlassenSet> sets = new Dictionary<int, KlassenSet>();
+            if (idProjekt <= 0) return sets;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT * FROM Tab_Pufferspeicher WHERE ID_Projekt = ?",
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+            if (dt == null) return sets;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                int id = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                if (id <= 0 || sets.ContainsKey(id)) continue;
+                sets[id] = KlassenSetAusZeile(r);
+            }
+
+            return sets;
+        }
+
+        /// <summary>
         /// Das zu schreibende Klassen-Set aus Altwert UND ausdrücklicher Vorgabe: Jedes
         /// Flag, das der Aufrufer setzt, gewinnt; die übrigen kommen aus
         /// <paramref name="verwendung"/>. Ein LEERES Ergebnis wird auf {Heizung}

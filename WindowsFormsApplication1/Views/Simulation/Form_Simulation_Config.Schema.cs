@@ -223,6 +223,11 @@ namespace WindowsFormsApplication1
         {
             if (modell == null || m_ID_Projekt <= 0) return;
 
+            // PAKET S2: Der Warn-Chip ist Teil der Kartenkurzinfo und muss deshalb auch
+            // hier frisch sein — die Schema-Ansicht kann aufgefrischt werden, ohne dass
+            // die Kartenspalte neu gebaut wurde (Umschalter).
+            WarnbefundeSammeln();
+
             // Erzeugerkarten: die Chips der Karte als Zeilen.
             Dictionary<int, string> chips = new Dictionary<int, string>();
             foreach (string dbWert in KaskadeBelegt())

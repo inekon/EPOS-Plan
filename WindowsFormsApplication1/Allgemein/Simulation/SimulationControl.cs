@@ -529,6 +529,10 @@ namespace WindowsFormsApplication1
                                   "dieser Lauf rechnet ZWEIKANALIG mit herausgelöster " +
                                   "Ladephase (Konzept 6.3).");
 
+            // PAKET S2 (Konzept 6.2, Entscheidung F6): Der Warnkriterienkatalog am
+            // Laufstart.
+            WarnkriterienMelden();
+
             Stundentemperatur = simulation_Waermebedarf.Stundentemperatur;
             Restwaerme = 0;
             Reststrom = simulation_Strombedarf.Strombedarf_gesamt; //MWh
@@ -3277,6 +3281,48 @@ namespace WindowsFormsApplication1
                 "Speicherstufe statt als eigene Vektorstufe. Das kann die Zahlen gegenüber " +
                 "einem Lauf ohne Quellenangabe verändern; die Wärmequelle ist zu " +
                 "bereinigen oder zu vervollständigen.");
+        }
+
+        /// <summary>
+        /// PAKET S2 — der WARNKRITERIENKATALOG (Konzept 6.2, Entscheidung F6) am
+        /// Laufstart: <see cref="Warnkriterien.PruefeProjekt"/> und jeder Befund als
+        /// Zeile im Protokollkanal.
+        ///
+        /// <para><b>NUR PROTOKOLL, kein Abbruch — auch bei harten Befunden.</b> Der
+        /// Kurzschluss („Quelle = eigenes Ladeziel") und der Ring in der Kaskadenkette
+        /// haben ihre Guards TIEFER: <see cref="QuellbezuegeAufbauen"/> laesst den
+        /// Quellbezug bei Kurzschluss gar nicht erst entstehen (E-K2-1), und die
+        /// Ebenen-Relaxation der <c>Kaskadenschleife</c> bricht bei einem Ring den Lauf
+        /// mit eigenem Fehlertext ab. Ein zweiter Abbruch von hier aus wuerde dieselbe
+        /// Sache zweimal melden und dem Anwender die genauere der beiden Meldungen
+        /// nehmen. Der Katalog meldet deshalb VORAB und in derselben Sprache wie der
+        /// Dialog — mehr nicht.</para>
+        ///
+        /// <para>Die Stelle ist bewusst NACH dem Registry-Aufbau und VOR beiden
+        /// Rechenwegen gewaehlt: Der Katalog arbeitet auf der KONFIGURATION (Anlagen,
+        /// Senkenlisten, Speicherzeilen) und braucht die Registry nicht — aber die
+        /// Meldungen sollen im Protokoll hinter dem Rechenweg-Hinweis und vor allem
+        /// stehen, was die Module melden. Auch der einkanalige Altpfad wird damit
+        /// geprueft; die Konfiguration ist dieselbe, gleich welcher Weg sie rechnet.</para>
+        ///
+        /// <para><see cref="SimulationProtokoll.WarnungEinmal"/> mit dem Kriterium und
+        /// den beteiligten IDs als Schluessel: Ein Befund, der aus zwei Richtungen
+        /// entsteht (etwa ein Kurzschluss, den zwei Senkenzeilen derselben Anlage
+        /// erzeugen), steht dann trotzdem nur einmal im Protokoll.</para>
+        /// </summary>
+        private void WarnkriterienMelden()
+        {
+            List<Warnbefund> befunde = Warnkriterien.PruefeProjekt(m_ID_Projekt);
+            if (befunde == null || befunde.Count == 0) return;
+
+            foreach (Warnbefund b in befunde)
+            {
+                if (b == null || string.IsNullOrEmpty(b.Text)) continue;
+
+                Protokoll.WarnungEinmal(
+                    "warnkriterium-" + b.Kriterium + "-" + b.ID_Anlage + "-" + b.ID_Puffer,
+                    Zeilenumbruch.Einzeilig(b.Text));
+            }
         }
 
         /// <summary>
