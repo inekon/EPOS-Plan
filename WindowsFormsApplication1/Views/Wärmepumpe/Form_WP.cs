@@ -20,9 +20,35 @@ namespace WindowsFormsApplication1
         /// </summary>
         private bool m_bGeladen = false;
 
+        /// <summary>Ä19: Geräte-Modulkosten werden nicht mehr hier gepflegt — die
+        /// Kosten laufen über die Kostenverwaltung (Komponente Wärmepumpe). Die Zeile
+        /// wird verborgen; das Feld bleibt befüllt, damit der bestehende Speicherweg
+        /// (Pflichtprüfung + Update) den Altwert unverändert mitschreibt.</summary>
+        private void ModulkostenVerbergen()
+        {
+            Control eltern = textBox_Modulkosten.Parent;
+            if (eltern == null) return;
+            // ENTFERNEN statt Verbergen: Der Offscreen-Weg (DrawToBitmap) dieser
+            // Alt-Dialoge zeichnet per Visible=false versteckte Controls weiter
+            // (Befund Ä19). Das Textfeld wird nur ausgehängt — sein Text bleibt
+            // für Pflichtprüfung und Update-Speicherweg lesbar.
+            eltern.Controls.Remove(textBox_Modulkosten);
+            foreach (string name in new[] { "label32", "label33" })
+            {
+                Control[] c = this.Controls.Find(name, true);
+                if (c.Length > 0 &&
+                    ((c[0].Text ?? "").StartsWith("Modulkosten") || c[0].Text == "€"))
+                {
+                    c[0].Parent.Controls.Remove(c[0]);
+                    c[0].Dispose();
+                }
+            }
+        }
+
         public Form_WP()
         {
             InitializeComponent();
+            ModulkostenVerbergen();   // Ä19
 
             // Dezenter Einstieg in den Assistenten, oben rechts im Client-Bereich
             // (Fachkonzept 11.8). Programmatisch, damit Designer und .resx
@@ -41,6 +67,7 @@ namespace WindowsFormsApplication1
         public Form_WP(string wpname)
         {
             InitializeComponent();
+            ModulkostenVerbergen();   // Ä19
 
             // Dezenter Einstieg in den Assistenten, oben rechts im Client-Bereich
             // (Fachkonzept 11.8). Programmatisch, damit Designer und .resx

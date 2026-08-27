@@ -88,6 +88,16 @@ namespace WindowsFormsApplication1
             /// </summary>
             public const string KWKG_PAUSCHALE = "KWKG_PAUSCHALE";
 
+            /// <summary>
+            /// ETAPPE P4 (PV-Konzept § 4.6): die jahresscharfe PV-Einspeisevergütung
+            /// aus dem Vergütungsdialog (<c>PvErloesRechner</c>). Ersetzt bei aktivem
+            /// Dialog den PV-Anteil des konstanten Einspeiseerlöses — nach Ablauf der
+            /// Vergütungsdauer fällt die Reihe auf den Marktwert (Direktvermarktung)
+            /// bzw. 0 (feste EV) zurück; die § 51a-Gutschrift liegt im letzten
+            /// Vergütungsjahr.
+            /// </summary>
+            public const string PV_VERGUETUNG = "PV_VERGUETUNG";
+
             public ErloesReihe(string name, double[] jeJahr)
             {
                 Name = name ?? "";
@@ -118,12 +128,26 @@ namespace WindowsFormsApplication1
         {
             public double Betrag;          // [€]
             public double Nutzungsdauer;   // [a]; < 1 → wie Betrachtungszeitraum
+
+            /// <summary>
+            /// ETAPPE KD6 (Konzept Kostendialoge § 11, FK10): Startzeitpunkt der
+            /// Investition. ≤ 1 = t0 (Bestand, zeichengleicher Rechenweg); Jahr
+            /// X ≥ 2 = die Zahlung fällt erst im Jahr X (abgezinst über die
+            /// Nominalreihe), Nutzungsdauer/Ersatz zählen ab X. Der Startzeitpunkt
+            /// VERSCHIEBT die Zahlung, er indexiert sie nicht (keine
+            /// Preissteigerung auf Investitionen).
+            /// </summary>
+            public int StartJahr;
         }
 
         /// <summary>Zahlungsstrombild eines Projekts über den Betrachtungszeitraum.</summary>
         public class Zahlungsbild
         {
             public double Investition;          // I₀ [€] — NACH Zuschussabzug
+
+            /// <summary>ETAPPE KD6 (§ 11): Summe der Positionen mit Startjahr ≥ 2 [€]
+            /// — sie zahlen über die Jahresreihe, nicht über I₀ (reiner Ausweis).</summary>
+            public double InvestitionVerschoben;
 
             // ---- ETAPPE K5 — der Investitionszuschuss (Konzept § 7.4, L7) ----
 
@@ -274,7 +298,8 @@ namespace WindowsFormsApplication1
                                           double behgJahr = 0,
                                           IList<ErloesReihe> zusatzErloesReihen = null,
                                           double zuschuss = 0,
-                                          double[] behgJeJahr = null)
+                                          double[] behgJeJahr = null,
+                                          IList<KeyValuePair<double, int>> betriebAbJahr = null)
         {
             double i = zinsProzent / 100.0;
             double pB = preisstBetriebProzent / 100.0;
@@ -306,12 +331,37 @@ namespace WindowsFormsApplication1
                     // Nutzungsdauern < 1 a sind fachlich nicht sinnvoll → wie T behandeln
                     // (verhindert zugleich exzessive Ersatz-Schleifen bei Fehleingaben).
                     double n = pos.Nutzungsdauer >= 1.0 ? pos.Nutzungsdauer : T;
-                    z.Investition += pos.Betrag;
 
-                    // Ersatz auf ganze Jahre gerundet: tj = round(k·n), 1 ≤ tj < T
-                    // (im letzten Betrachtungsjahr wird nicht mehr ersetzt).
-                    int letzteBeschaffung = 0;
-                    for (double t = n; ; t += n)
+                    // ETAPPE KD6 (§ 11, FK10): Positionen mit Startjahr X ≥ 2 zahlen
+                    // erst im Jahr X — über die Jahresreihe (dort wird abgezinst),
+                    // NICHT über I₀. Ersatzkette und Restwert zählen ab X. Für
+                    // StartJahr ≤ 1 bleibt der Rechenweg Zeichen für Zeichen der
+                    // von vorher.
+                    int start = pos.StartJahr > 1 ? pos.StartJahr : 0;
+                    if (start > T)
+                    {
+                        // Investition außerhalb des Betrachtungszeitraums: keine
+                        // Zahlung, kein Ersatz, kein Restwert — nur Ausweis.
+                        z.InvestitionVerschoben += pos.Betrag;
+                        continue;
+                    }
+
+                    int letzteBeschaffung;
+                    if (start == 0)
+                    {
+                        z.Investition += pos.Betrag;
+                        letzteBeschaffung = 0;
+                    }
+                    else
+                    {
+                        z.InvestitionVerschoben += pos.Betrag;
+                        ersatzJeJahr[start] += pos.Betrag;
+                        letzteBeschaffung = start;
+                    }
+
+                    // Ersatz auf ganze Jahre gerundet: tj = round(start + k·n),
+                    // 1 ≤ tj < T (im letzten Betrachtungsjahr wird nicht mehr ersetzt).
+                    for (double t = start + n; ; t += n)
                     {
                         int tj = (int)Math.Round(t);
                         if (tj >= T) break;
@@ -375,11 +425,22 @@ namespace WindowsFormsApplication1
                 // läuft der Bestandsausdruck unverändert — deshalb zwei Zweige und
                 // nicht eine umgeformte Zeile.
                 double behgT = behgJeJahr != null && t < behgJeJahr.Length ? behgJeJahr[t] : 0;
+
+                // ETAPPE KD6 (§ 11, FK10): Betriebskosten von Positionen mit
+                // Startjahr X laufen erst ab t ≥ X — mit derselben Preissteigerung
+                // ab t0 (der Betrag ist heutiges Preisniveau, gezahlt ab X). Ohne
+                // solche Positionen ist betriebT == betriebJahr (bitgleich) und der
+                // Ausdruck rechnet Zeichen für Zeichen wie vorher.
+                double betriebT = betriebJahr;
+                if (betriebAbJahr != null)
+                    foreach (KeyValuePair<double, int> vb in betriebAbJahr)
+                        if (t >= vb.Value) betriebT += vb.Key;
+
                 double ausgaben = behgJeJahr == null
-                    ? betriebJahr * Math.Pow(1.0 + pB, t - 1)
+                    ? betriebT * Math.Pow(1.0 + pB, t - 1)
                       + (energieJahr + behgJahr) * Math.Pow(1.0 + pE, t - 1)
                       + ersatzJeJahr[t]
-                    : betriebJahr * Math.Pow(1.0 + pB, t - 1)
+                    : betriebT * Math.Pow(1.0 + pB, t - 1)
                       + energieJahr * Math.Pow(1.0 + pE, t - 1) + behgT
                       + ersatzJeJahr[t];
                 double einnahmen = erloesJahr;   // feste Einspeisevergütung, nominal konstant
@@ -388,7 +449,7 @@ namespace WindowsFormsApplication1
                         if (reihe != null) einnahmen += reihe.Wert(t);   // KWKG + Steuern (E4)
 
                 // ETAPPE E7 — Einzelpositionen für die Mehrjahrestabelle.
-                z.BetriebJeJahr[t] = betriebJahr * Math.Pow(1.0 + pB, t - 1);
+                z.BetriebJeJahr[t] = betriebT * Math.Pow(1.0 + pB, t - 1);
                 z.EnergieJeJahr[t] = energieJahr * Math.Pow(1.0 + pE, t - 1);
                 z.BehgJeJahr[t] = behgJeJahr == null ? behgJahr * Math.Pow(1.0 + pE, t - 1) : behgT;
                 z.EinspeiseerloesJeJahr[t] = erloesJahr;

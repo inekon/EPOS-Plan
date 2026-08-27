@@ -605,6 +605,19 @@ namespace WindowsFormsApplication1
                 temp = Simulation_Photovoltaik_Ctrl(Rest_Strombedarf_viertelstuendlich);
                 Rest_Strombedarf_viertelstuendlich = SubVectors(Rest_Strombedarf_viertelstuendlich, temp);
                 bSimulationPV = true;
+
+                // V1 (PV-Konzept § 2.3, Etappe P1): BHKW-Überschuss läuft nicht mehr
+                // als PV-Einspeisung, sondern getrennt — der Hinweis macht die
+                // Korrektur im Laufprotokoll sichtbar (Abnahmekriterium P1).
+                if (simulation_pv.BhkwUeberschuss_gesamt > 0.5f)
+                {
+                    string v1Text = null;
+                    try { v1Text = MyResource.Resource.ResourceManager.GetString("SIM_PV_V1_BHKW_GETRENNT"); }
+                    catch { }
+                    if (string.IsNullOrEmpty(v1Text))
+                        v1Text = "BHKW-Stromüberschuss von {0:N0} kWh getrennt von der PV-Einspeisung ausgewiesen.";
+                    Protokoll.Hinweis(string.Format(v1Text, simulation_pv.BhkwUeberschuss_gesamt));
+                }
             }
 
             // ***********************************************************************

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -16,8 +16,8 @@ namespace WindowsFormsApplication1
         // in SetControls, wo auch die Begruendung steht.
         private int m_nKesselId = 0;
 
-        // Beim Knopfdruck geprüft (EingabenPruefen) und von InitDatensatzUpdate
-        // unverändert ins Modell übernommen - so kommt "12.5" wie "12,5" als 12,5 an.
+        // Beim Knopfdruck geprÃ¼ft (EingabenPruefen) und von InitDatensatzUpdate
+        // unverÃ¤ndert ins Modell Ã¼bernommen - so kommt "12.5" wie "12,5" als 12,5 an.
         private double m_dPtherm, m_dWirkungsgradGas, m_dWirkungsgradOel, m_dBBVerlust;
         private double m_dInvestitionskosten, m_dNutzungsdauer, m_dRaumbedarf;
         private double m_dNOx, m_dCO2, m_dCO, m_dSO2, m_dStaub;
@@ -43,6 +43,7 @@ namespace WindowsFormsApplication1
             // Datenbank fehlt Wartungskosten_Einheit noch (Migrationsschritt 15).
             HeizkesselStammCtrl.StelleSpaltenSicher();
             WartungsfeldAufbauen();
+            KostenzugriffAnbringen();   // ETAPPE KD6 (Â§ 9, FK8)
 
             if (mode == MODE_EDIT)
             {
@@ -60,7 +61,7 @@ namespace WindowsFormsApplication1
                 textBox_Hersteller.Text = "";
                 tb_th_Leistung.Text = "0";
                 tb_Wirkungsgrad.Text = "0.94";
-                tb_Wirkungsgrad_Öl.Text = "0";
+                tb_Wirkungsgrad_Ã–l.Text = "0";
                 tb_B_Verlust.Text = "0";
                 tb_Investitionskosten.Text = "0";
                 tb_Wartungskosten.Text = "0";
@@ -79,20 +80,20 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Ergänzt die Kostenrubrik („Eingabedaten zur Berechnung der Kosten") um
-        /// Wartungskosten und ihre Bezugsgröße — Umsetzung der Nutzerentscheidung vom
-        /// 18.08.2026, Punkt 1: Die Einheit ist wählbar statt fest verdrahtet.
+        /// ErgÃ¤nzt die Kostenrubrik (â€žEingabedaten zur Berechnung der Kosten") um
+        /// Wartungskosten und ihre BezugsgrÃ¶ÃŸe â€” Umsetzung der Nutzerentscheidung vom
+        /// 18.08.2026, Punkt 1: Die Einheit ist wÃ¤hlbar statt fest verdrahtet.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// <b>Warum dieser Dialog.</b> Er ist der EINZIGE Eingabeweg für Kesseldaten —
+        /// <b>Warum dieser Dialog.</b> Er ist der EINZIGE Eingabeweg fÃ¼r Kesseldaten â€”
         /// sowohl der Katalogbrowser <c>Form_Heizkessel_Admin</c> als auch der
-        /// Projektdialog <c>Form_Heizkessel</c> öffnen für „Bearbeiten" dieses Formular;
+        /// Projektdialog <c>Form_Heizkessel</c> Ã¶ffnen fÃ¼r â€žBearbeiten" dieses Formular;
         /// die Kostenfelder <c>Investitionskosten</c>, <c>Raumbedarf</c> und
-        /// <c>Nutzungsdauer</c> stehen bereits hier. Damit ist er das Gegenstück zu
+        /// <c>Nutzungsdauer</c> stehen bereits hier. Damit ist er das GegenstÃ¼ck zu
         /// <c>Form_DBBHKW</c>, wo die BHKW-Wartungskosten mit dem Einheitensuffix
-        /// „€ / kWhel" sitzen. In die Projektkopie <c>Tab_Heizkessel</c> gelangen die
-        /// Werte auf demselben Weg wie alle übrigen: über
+        /// â€žâ‚¬ / kWhel" sitzen. In die Projektkopie <c>Tab_Heizkessel</c> gelangen die
+        /// Werte auf demselben Weg wie alle Ã¼brigen: Ã¼ber
         /// <c>HeizkesselCtrl.CopyFromStamm</c>.
         /// </para>
         /// <para>
@@ -100,37 +101,63 @@ namespace WindowsFormsApplication1
         /// <c>.resx</c>-Dateien werden nicht von Hand editiert. Der WinForms-Designer
         /// scheidet hier praktisch aus, weil dieses Formular seine Koordinaten in
         /// <c>Form_Heizkessel_Bearbeiten.resx</c> UND in
-        /// <c>Form_Heizkessel_Bearbeiten.en-US.resx</c> führt — ein von Hand ergänztes
-        /// Control müsste in beiden stehen, sonst springt es beim Sprachwechsel. Denselben
+        /// <c>Form_Heizkessel_Bearbeiten.en-US.resx</c> fÃ¼hrt â€” ein von Hand ergÃ¤nztes
+        /// Control mÃ¼sste in beiden stehen, sonst springt es beim Sprachwechsel. Denselben
         /// Weg gehen die neueren Masken dieser Etappe (<c>ucKostenItem</c> hebt seine
         /// Betragsgrenze programmatisch an; <c>Form_PlanwertUebernahme</c> ist
         /// inzwischen auf eine Designer-Datei migriert).
         /// </para>
         /// <para>
-        /// <b>Maße relativ statt absolut.</b> Alle Positionen leiten sich aus den bereits
-        /// vorhandenen Controls der Rubrik ab. Damit stimmt das Ergebnis unabhängig davon,
-        /// ob und wie stark <c>AutoScaleMode.Font</c> das Formular gestreckt hat — feste
-        /// Pixelwerte aus der Designer-Datei wären nur bei der Entwurfsauflösung richtig.
-        /// Die Rubrik wächst dabei nach RECHTS in den freien Bereich; wie weit, sagt
+        /// <b>MaÃŸe relativ statt absolut.</b> Alle Positionen leiten sich aus den bereits
+        /// vorhandenen Controls der Rubrik ab. Damit stimmt das Ergebnis unabhÃ¤ngig davon,
+        /// ob und wie stark <c>AutoScaleMode.Font</c> das Formular gestreckt hat â€” feste
+        /// Pixelwerte aus der Designer-Datei wÃ¤ren nur bei der EntwurfsauflÃ¶sung richtig.
+        /// Die Rubrik wÃ¤chst dabei nach RECHTS in den freien Bereich; wie weit, sagt
         /// <see cref="FreieBreite"/>, statt eine Zahl aus der Designer-Datei abzuschreiben.
-        /// Nach unten wächst sie NICHT — dort stehen nur wenige Pixel bis
-        /// <c>groupBox4</c> zur Verfügung, deshalb liegt die Einheitenauswahl auf der
+        /// Nach unten wÃ¤chst sie NICHT â€” dort stehen nur wenige Pixel bis
+        /// <c>groupBox4</c> zur VerfÃ¼gung, deshalb liegt die Einheitenauswahl auf der
         /// dritten vorhandenen Zeile statt auf einer vierten neuen.
         /// </para>
         /// </remarks>
+        /// <summary>
+        /// ETAPPE KD6 (Konzept Kostendialoge Â§ 9, FK8): Die eingebetteten
+        /// Kostenfelder (â€žEingabedaten zur Berechnung der Kosten") werden eine
+        /// Version lang SCHREIBGESCHÃœTZT â€” gepflegt wird in der Stammvorlage â€”
+        /// und unten kommt der Kosten-Block mit den drei Aufrufen an
+        /// (Serienbaustein <see cref="KostenKnoepfe"/>). Die GerÃ¤tewerte bleiben
+        /// Datenquelle der Planwert-Ãœbernahme, kein zweiter Pflegeort.
+        /// </summary>
+        private void KostenzugriffAnbringen()
+        {
+            KostenKnoepfe.Sperren(tb_Investitionskosten, tb_Raumbedarf, tb_Nutzungsdauer,
+                                  tb_Wartungskosten, cb_WartungEinheit);
+            var leiste = KostenKnoepfe.Leiste(this, DbWerte.KOSTEN_KOMPONENTE_HEIZKESSEL,
+                () => 0, () => null, KostenKnoepfe.Fk8Hinweis());
+            leiste.Dock = System.Windows.Forms.DockStyle.Bottom;
+            Controls.Add(leiste);
+            Height += 46;
+        }
+
         private void WartungsfeldAufbauen()
         {
             if (groupBox3 == null || tb_Investitionskosten == null) return;
 
-            // Rechte Spalte hinter dem Einheitenzeichen der linken Spalte beginnen.
-            int spalte = (Label17 != null ? Label17.Right : tb_Investitionskosten.Right) + 20;
-            int feldX = spalte + 100;
+            // Rechte Spalte hinter dem BREITESTEN Einheitenzeichen der linken Spalte
+            // beginnen (Nutzerbefund 25.08.2026: der alte Anker war das schmale
+            // â€žâ‚¬"-Label â€” das breitere â€žJahre" ragte unter die Einheiten-Klappliste).
+            int rechtsMax = tb_Investitionskosten.Right;
+            foreach (Control c in groupBox3.Controls)
+                if (c is Label && c.Left >= tb_Investitionskosten.Right - 4 &&
+                    c.Left <= tb_Investitionskosten.Right + 60)
+                    rechtsMax = Math.Max(rechtsMax, c.Right);
+            int spalte = rechtsMax + 24;
+            int feldX = spalte + 110;
             int zeile1 = tb_Investitionskosten.Top;
             int zeile2 = (tb_Raumbedarf != null ? tb_Raumbedarf.Top : zeile1 + 27);
             int zeile3 = (tb_Nutzungsdauer != null ? tb_Nutzungsdauer.Top : zeile2 + 27);
 
-            // Wie breit die Rubrik höchstens werden darf, ohne den rechten Nachbarn
-            // zu überdecken.
+            // Wie breit die Rubrik hÃ¶chstens werden darf, ohne den rechten Nachbarn
+            // zu Ã¼berdecken.
             int maxRechts = FreieBreite() - 12;
 
             Label lblWartung = new Label
@@ -156,22 +183,26 @@ namespace WindowsFormsApplication1
                 Location = new Point(spalte, zeile2 + 2)
             };
 
-            // Die Auswahl steht UNTER ihrer Beschriftung und nutzt die Spalte in voller
-            // Breite: neben der Beschriftung blieben je nach Schriftgröße unter 120 Pixel
-            // übrig, in denen „€/a Jahresbetrag" abgeschnitten würde.
-            int breite = Math.Min(220, maxRechts - spalte);
+            // Beschriftung und Auswahl auf DERSELBEN Zeile (zeile2) â€” bÃ¼ndig zur
+            // Feldspalte des Wartungsbetrags; die frÃ¼here dritte Zeile schob die
+            // Klappliste unter das â€žJahre"-Label der linken Spalte. Reicht der Platz
+            // rechts nicht (â€žâ‚¬/a Jahresbetrag" braucht ~180 px), rÃ¼ckt die Auswahl
+            // wie frÃ¼her auf zeile3 unter die Beschriftung â€” dann aber ebenfalls in
+            // der Feldspalte, nicht mehr unter dem linken Einheitenzeichen.
+            int breite = Math.Min(220, maxRechts - feldX);
+            bool zweizeilig = breite < 150;
             cb_WartungEinheit = new ComboBox
             {
                 Name = "cb_WartungEinheit",
-                Location = new Point(spalte, zeile3),
-                Width = Math.Max(100, breite),
+                Location = zweizeilig ? new Point(feldX, zeile3) : new Point(feldX, zeile2),
+                Width = Math.Max(140, breite),
                 DropDownWidth = 240,
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 TabIndex = tb_Investitionskosten.TabIndex + 2
             };
 
-            // Der STEUERWERT jedes Eintrags ist der sprachneutrale Schlüssel, angezeigt
-            // wird der lokalisierte Name — kein Anzeigetext ist je Steuerwert
+            // Der STEUERWERT jedes Eintrags ist der sprachneutrale SchlÃ¼ssel, angezeigt
+            // wird der lokalisierte Name â€” kein Anzeigetext ist je Steuerwert
             // (Drei-Schichten-Regel, Konzept 13.6).
             foreach (string s in TechnikPlanwertCtrl.WARTUNG_SCHLUESSEL)
                 cb_WartungEinheit.Items.Add(new EinheitItem(s));
@@ -182,23 +213,30 @@ namespace WindowsFormsApplication1
             groupBox3.Controls.Add(lblEinheit);
             groupBox3.Controls.Add(cb_WartungEinheit);
 
+            // Elemente einer Zeile auf eine Linie bringen (Nutzerbefund 25.08.2026):
+            // Beschriftungen mittig zur FeldhÃ¶he statt mit festem +2-Versatz.
+            lblWartung.Top = tb_Wartungskosten.Top +
+                (tb_Wartungskosten.Height - lblWartung.Height) / 2;
+            lblEinheit.Top = cb_WartungEinheit.Top +
+                (cb_WartungEinheit.Height - lblEinheit.Height) / 2;
+
             // Rubrik so weit verbreitern, wie die neue Spalte es verlangt - aber nie
-            // über den freien Bereich hinaus.
+            // Ã¼ber den freien Bereich hinaus.
             int noetig = Math.Max(tb_Wartungskosten.Right, cb_WartungEinheit.Right) + 12;
             groupBox3.Width = Math.Max(groupBox3.Width, Math.Min(noetig, maxRechts + 12));
         }
 
         /// <summary>
-        /// Die größte lokale Breite, die <c>groupBox3</c> annehmen darf, ohne einen
-        /// rechts davon liegenden Nachbarn zu überdecken.
+        /// Die grÃ¶ÃŸte lokale Breite, die <c>groupBox3</c> annehmen darf, ohne einen
+        /// rechts davon liegenden Nachbarn zu Ã¼berdecken.
         /// </summary>
         /// <remarks>
-        /// Ermittelt aus den tatsächlichen Geschwistern des Formulars statt aus einer
+        /// Ermittelt aus den tatsÃ¤chlichen Geschwistern des Formulars statt aus einer
         /// abgeschriebenen Koordinate: Die Rubriken liegen im Designer nebeneinander
         /// (<c>groupBox5</c> beginnt rechts von <c>groupBox3</c>), und ihre Positionen
         /// stehen in zwei <c>.resx</c>-Dateien, die sich beim Sprachwechsel
-        /// unterscheiden dürfen. Eine feste Zahl im Code wäre in genau einer Sprache und
-        /// bei genau einer Schriftgröße richtig.
+        /// unterscheiden dÃ¼rfen. Eine feste Zahl im Code wÃ¤re in genau einer Sprache und
+        /// bei genau einer SchriftgrÃ¶ÃŸe richtig.
         /// </remarks>
         private int FreieBreite()
         {
@@ -216,10 +254,10 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Ein Eintrag der Einheitenauswahl: trägt den sprachneutralen Steuerwert und
+        /// Ein Eintrag der Einheitenauswahl: trÃ¤gt den sprachneutralen Steuerwert und
         /// zeigt den lokalisierten Namen. Bewusst ein eigener Typ statt des
-        /// <c>Format</c>-Ereignisses von <see cref="ListControl"/> — das setzt
-        /// <c>FormattingEnabled</c> voraus und feuert nur über einen Umweg, den ein
+        /// <c>Format</c>-Ereignisses von <see cref="ListControl"/> â€” das setzt
+        /// <c>FormattingEnabled</c> voraus und feuert nur Ã¼ber einen Umweg, den ein
         /// Kopfrechner beim Lesen nicht nachvollzieht.
         /// </summary>
         private sealed class EinheitItem
@@ -253,32 +291,32 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Füllt die Maske aus dem Katalog und merkt sich die ID der geladenen Zeile.
+        /// FÃ¼llt die Maske aus dem Katalog und merkt sich die ID der geladenen Zeile.
         /// </summary>
         /// <remarks>
         /// <para>
         /// <b>Eine Quelle statt zwei.</b> Bis zum 18.08.2026 kamen die Anzeigefelder aus
-        /// einem <c>RecordSet</c> und nur die Wartungskosten aus dem Controller — zwei
-        /// unabhängige Abfragen auf dieselbe Tabelle, beide ohne <c>ORDER BY</c>. Solange
-        /// <c>Bezeichner</c> eindeutig ist, fällt das nicht auf; im Bestand ist er es
+        /// einem <c>RecordSet</c> und nur die Wartungskosten aus dem Controller â€” zwei
+        /// unabhÃ¤ngige Abfragen auf dieselbe Tabelle, beide ohne <c>ORDER BY</c>. Solange
+        /// <c>Bezeichner</c> eindeutig ist, fÃ¤llt das nicht auf; im Bestand ist er es
         /// achtmal nicht, und dann darf die ACE-Engine den beiden Abfragen verschiedene
-        /// Zeilen liefern — die Maske konnte Werte aus ZWEI Kesseln mischen. Jetzt liest
+        /// Zeilen liefern â€” die Maske konnte Werte aus ZWEI Kesseln mischen. Jetzt liest
         /// <see cref="HeizkesselStammCtrl.ReadSingle"/> genau einmal, sortiert nach ID,
         /// und liefert alle Felder samt Wartungskosten und Einheit mit der dort
-        /// beschriebenen Rückfallebene für eine nicht migrierte Datenbank.
+        /// beschriebenen RÃ¼ckfallebene fÃ¼r eine nicht migrierte Datenbank.
         /// </para>
         /// <para>
         /// <b>Warum die ID festgehalten wird.</b> Sie ist die Adresse, unter der
-        /// <see cref="btn_Ueberschreiben_Click"/> zurückschreibt. Damit gilt: geschrieben
-        /// wird die Zeile, die auch angezeigt wurde. Vorher lief das UPDATE über den
-        /// Bezeichner und traf bei einer Dublette BEIDE Katalogsätze.
+        /// <see cref="btn_Ueberschreiben_Click"/> zurÃ¼ckschreibt. Damit gilt: geschrieben
+        /// wird die Zeile, die auch angezeigt wurde. Vorher lief das UPDATE Ã¼ber den
+        /// Bezeichner und traf bei einer Dublette BEIDE KatalogsÃ¤tze.
         /// </para>
         /// <para>
-        /// <b>Der Hinweis bei Mehrdeutigkeit hält niemanden auf.</b> Bearbeiten bleibt
-        /// möglich und ist jetzt eindeutig; die Meldung sagt nur, dass der Katalog einen
-        /// weiteren Eintrag gleichen Namens führt, den dieser Dialog nicht zeigt. Ohne
-        /// sie bliebe unerklärlich, warum derselbe Name in der Auswahlliste mehrfach
-        /// steht und die zweite Zeile sich nicht erreichen lässt.
+        /// <b>Der Hinweis bei Mehrdeutigkeit hÃ¤lt niemanden auf.</b> Bearbeiten bleibt
+        /// mÃ¶glich und ist jetzt eindeutig; die Meldung sagt nur, dass der Katalog einen
+        /// weiteren Eintrag gleichen Namens fÃ¼hrt, den dieser Dialog nicht zeigt. Ohne
+        /// sie bliebe unerklÃ¤rlich, warum derselbe Name in der Auswahlliste mehrfach
+        /// steht und die zweite Zeile sich nicht erreichen lÃ¤sst.
         /// </para>
         /// </remarks>
         public void SetControls(string szName, string szBeschreibung)
@@ -296,7 +334,7 @@ namespace WindowsFormsApplication1
             textBox_Hersteller.Text = katalog.Firma;
             tb_th_Leistung.Text = katalog.Ptherm.ToString();
             tb_Wirkungsgrad.Text = katalog.Wirkungsgrad_Gas.ToString();
-            tb_Wirkungsgrad_Öl.Text = katalog.Wirkungsgrad_Oel.ToString();
+            tb_Wirkungsgrad_Ã–l.Text = katalog.Wirkungsgrad_Oel.ToString();
             tb_B_Verlust.Text = katalog.Betriebsbereitschaftverlust.ToString("F2");
             tb_Investitionskosten.Text = katalog.Investitionskosten.ToString("F2");
             tb_Wartungskosten.Text = katalog.Wartungskosten.ToString("F2");
@@ -312,8 +350,8 @@ namespace WindowsFormsApplication1
             textBox_Vorlauf.Text = katalog.Vorlauf.ToString();
             textBox_Ruecklauf.Text = katalog.Ruecklauf.ToString();
 
-            // Bereichsprüfung statt roher Zuweisung: Brennstoff ist eine 1-basierte ID
-            // aus Tab_Brennstoff_Stamm, die Liste im Kombinationsfeld kann kürzer sein.
+            // BereichsprÃ¼fung statt roher Zuweisung: Brennstoff ist eine 1-basierte ID
+            // aus Tab_Brennstoff_Stamm, die Liste im Kombinationsfeld kann kÃ¼rzer sein.
             int brennstoffIndex = katalog.Brennstoff >= 1 ? katalog.Brennstoff - 1 : 1;
             if (brennstoffIndex >= 0 && brennstoffIndex < comboBox_Brennstoff.Items.Count)
                 comboBox_Brennstoff.SelectedIndex = brennstoffIndex;
@@ -321,9 +359,9 @@ namespace WindowsFormsApplication1
             int gleiche = HeizkesselStammCtrl.AnzahlMitBezeichner(szName);
             if (gleiche > 1)
             {
-                MessageBox.Show("Der Katalog führt den Namen \"" + szName + "\" " + gleiche +
+                MessageBox.Show("Der Katalog fÃ¼hrt den Namen \"" + szName + "\" " + gleiche +
                     "-mal. Bearbeitet wird der Eintrag mit der kleinsten ID (" + m_nKesselId +
-                    "); die übrigen bleiben unverändert.",
+                    "); die Ã¼brigen bleiben unverÃ¤ndert.",
                     "Name mehrdeutig", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
@@ -334,30 +372,30 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Schreibt die Maske in GENAU den Katalogsatz zurück, den
+        /// Schreibt die Maske in GENAU den Katalogsatz zurÃ¼ck, den
         /// <see cref="SetControls"/> geladen hat.
         /// </summary>
         /// <remarks>
         /// <para>
         /// <b>Die ID ist die Absicherung.</b> Ohne sie fiele
-        /// <see cref="HeizkesselStammCtrl.Update"/> auf den Bezeichner zurück und träfe
-        /// bei einem doppelt vergebenen Namen beide Zeilen — der eigentliche Befund vom
+        /// <see cref="HeizkesselStammCtrl.Update"/> auf den Bezeichner zurÃ¼ck und trÃ¤fe
+        /// bei einem doppelt vergebenen Namen beide Zeilen â€” der eigentliche Befund vom
         /// 18.08.2026. <c>InitDatensatzUpdate</c> baut das Modell aus der Maske auf und
         /// kennt die Herkunft nicht, deshalb wird die ID danach gesetzt.
         /// </para>
         /// <para>
-        /// <b>Ein Fehlschlag schließt den Dialog nicht mehr.</b> Vorher lief der Ablauf
+        /// <b>Ein Fehlschlag schlieÃŸt den Dialog nicht mehr.</b> Vorher lief der Ablauf
         /// nach der Fehlermeldung in dieselbe Zeile
-        /// <c>DialogResult = DialogResult.OK; Close();</c> — der Aufrufer lud die Liste
-        /// neu, als wäre gespeichert worden, und die Eingaben waren weg. Da
+        /// <c>DialogResult = DialogResult.OK; Close();</c> â€” der Aufrufer lud die Liste
+        /// neu, als wÃ¤re gespeichert worden, und die Eingaben waren weg. Da
         /// <see cref="HeizkesselStammCtrl.Update"/> jetzt auch aus fachlichem Grund
-        /// ablehnen kann (schreibgeschützt, Name bereits vergeben, fehlende ID) und den
+        /// ablehnen kann (schreibgeschÃ¼tzt, Name bereits vergeben, fehlende ID) und den
         /// Grund selbst meldet, bleibt der Dialog in diesem Fall offen.
         /// </para>
         /// </remarks>
         private void btn_Ueberschreiben_Click(object sender, EventArgs e)
         {
-            // Erst prüfen, dann schreiben: bei ungültiger Eingabe bleibt der Dialog offen
+            // Erst prÃ¼fen, dann schreiben: bei ungÃ¼ltiger Eingabe bleibt der Dialog offen
             if (!EingabenPruefen()) return;
 
             HeizkesselStammCtrl ctrl = new HeizkesselStammCtrl();
@@ -387,7 +425,7 @@ namespace WindowsFormsApplication1
 
                 if (!ctrl.Update()) return;   // Grund hat Update() bereits gemeldet
 
-                // Der Aufrufer wählt über m_szKessel den Eintrag in seiner Liste wieder
+                // Der Aufrufer wÃ¤hlt Ã¼ber m_szKessel den Eintrag in seiner Liste wieder
                 // aus - nach einer Umbenennung ist das der NEUE Name.
                 m_szKessel = ctrl.Name;
 
@@ -397,7 +435,7 @@ namespace WindowsFormsApplication1
             }
             catch
             {
-                MessageBox.Show("Fehler beim Überschreiben des Datensatzes!");
+                MessageBox.Show("Fehler beim Ãœberschreiben des Datensatzes!");
             }
         }
 
@@ -431,10 +469,10 @@ namespace WindowsFormsApplication1
             return ctrl.Insert();
         }
 
-        // Folgepaket zu ab5bf32: Die TextChanged-Handler färben nur noch. Gemeldet wird
-        // erst beim Speichern (EingabenPruefen), damit keine Zwischeneingabe modal stört
-        // und das früher hier stehende Undo() nicht mehr zwischen Fehleingabe und
-        // Leerstand pendeln kann. Das Auffüllen leerer Felder mit "0" entfällt; leer
+        // Folgepaket zu ab5bf32: Die TextChanged-Handler fÃ¤rben nur noch. Gemeldet wird
+        // erst beim Speichern (EingabenPruefen), damit keine Zwischeneingabe modal stÃ¶rt
+        // und das frÃ¼her hier stehende Undo() nicht mehr zwischen Fehleingabe und
+        // Leerstand pendeln kann. Das AuffÃ¼llen leerer Felder mit "0" entfÃ¤llt; leer
         // gilt beim Speichern weiterhin als 0.
         private void tb_th_Leistung_TextChanged(object sender, EventArgs e)
         {
@@ -446,7 +484,7 @@ namespace WindowsFormsApplication1
             Program.ZahlFaerben(sender);
         }
 
-        private void tb_Wirkungsgrad_Öl_TextChanged(object sender, EventArgs e)
+        private void tb_Wirkungsgrad_Ã–l_TextChanged(object sender, EventArgs e)
         {
             Program.ZahlFaerben(sender);
         }
@@ -506,16 +544,16 @@ namespace WindowsFormsApplication1
             // Wir holen uns den Namen aus der Liste der BrennstoffCtrl
             string name = comboBox_Brennstoff.Text;
 
-            // Logik für CO2-Werte basierend auf dem Namen
-            if (name.ToUpper().Contains("ÖL"))
+            // Logik fÃ¼r CO2-Werte basierend auf dem Namen
+            if (name.ToUpper().Contains("Ã–L"))
             {
                 tb_CO2.Text = "290880";
             }
-            else if (name.ToUpper().Contains("GAS") && !name.Contains("Flüssiggas"))
+            else if (name.ToUpper().Contains("GAS") && !name.Contains("FlÃ¼ssiggas"))
             {
                 tb_CO2.Text = "201600";
             }
-            else if (name.Contains("Flüssiggas"))
+            else if (name.Contains("FlÃ¼ssiggas"))
             {
                 tb_CO2.Text = "238680";
             }
@@ -523,15 +561,15 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Prüft alle Zahlenfelder beim Knopfdruck (Folgepaket zu ab5bf32): sprechende
+        /// PrÃ¼ft alle Zahlenfelder beim Knopfdruck (Folgepaket zu ab5bf32): sprechende
         /// Meldung, Fokus ins Feld, Dialog bleibt offen. Leer gilt wie bisher als 0 -
-        /// früher füllte der TextChanged leere Felder sofort mit "0" auf.
+        /// frÃ¼her fÃ¼llte der TextChanged leere Felder sofort mit "0" auf.
         /// </summary>
         private bool EingabenPruefen()
         {
             if (!Program.ZahlPruefen(tb_th_Leistung, "Thermische Leistung", out m_dPtherm, leerErlaubt: true)) return false;
             if (!Program.ZahlPruefen(tb_Wirkungsgrad, "Wirkungsgrad Gas, Biogas, Holz und Sonstiges", out m_dWirkungsgradGas, leerErlaubt: true)) return false;
-            if (!Program.ZahlPruefen(tb_Wirkungsgrad_Öl, "Wirkungsgrad Öl", out m_dWirkungsgradOel, leerErlaubt: true)) return false;
+            if (!Program.ZahlPruefen(tb_Wirkungsgrad_Ã–l, "Wirkungsgrad Ã–l", out m_dWirkungsgradOel, leerErlaubt: true)) return false;
             if (!Program.ZahlPruefen(tb_B_Verlust, "Betriebsbereitschaftsverluste", out m_dBBVerlust, leerErlaubt: true)) return false;
             if (!Program.ZahlPruefen(tb_Investitionskosten, "Investitionskosten", out m_dInvestitionskosten, leerErlaubt: true)) return false;
             if (!Program.ZahlPruefen(tb_Wartungskosten, MyResource.Resource.KESSEL_WARTUNG_LBL, out m_dWartungskosten, leerErlaubt: true)) return false;
@@ -543,7 +581,7 @@ namespace WindowsFormsApplication1
             if (!Program.ZahlPruefen(tb_CO, "CO", out m_dCO, leerErlaubt: true)) return false;
             if (!Program.ZahlPruefen(tb_Staub, "Staub", out m_dStaub, leerErlaubt: true)) return false;
             if (!Program.GanzzahlPruefen(textBox_Vorlauf, "Vorlauf", out m_nVorlauf, leerErlaubt: true)) return false;
-            if (!Program.GanzzahlPruefen(textBox_Ruecklauf, "Rücklauf", out m_nRuecklauf, leerErlaubt: true)) return false;
+            if (!Program.GanzzahlPruefen(textBox_Ruecklauf, "RÃ¼cklauf", out m_nRuecklauf, leerErlaubt: true)) return false;
 
             return true;
         }
@@ -560,8 +598,8 @@ namespace WindowsFormsApplication1
             // Zahlen kommen fertig geparst aus EingabenPruefen
             model.Ptherm = m_dPtherm;
 
-            // Brennstoff: Sicherstellen, dass ein gültiger Index gewählt wurde
-            // Falls nichts gewählt ist (-1), wird hier die ID 1 gesetzt
+            // Brennstoff: Sicherstellen, dass ein gÃ¼ltiger Index gewÃ¤hlt wurde
+            // Falls nichts gewÃ¤hlt ist (-1), wird hier die ID 1 gesetzt
             model.Brennstoff = comboBox_Brennstoff.SelectedIndex >= 0
                                ? comboBox_Brennstoff.SelectedIndex + 1
                                : 1;
@@ -572,7 +610,7 @@ namespace WindowsFormsApplication1
             model.Investitionskosten = m_dInvestitionskosten;
             // Bis zum 18.08.2026 fehlten diese beiden Zeilen: InitDatensatzUpdate setzte
             // Wartungskosten nie, das frisch angelegte Modell trug 0, und jedes Speichern
-            // schrieb den Wert im Katalog auf 0 zurück. Genau deshalb stand das Feld in
+            // schrieb den Wert im Katalog auf 0 zurÃ¼ck. Genau deshalb stand das Feld in
             // allen 21 Katalog- und 44 Projektzeilen auf 0.
             model.Wartungskosten = m_dWartungskosten;
             model.Wartungskosten_Einheit = GewaehlteEinheit();
@@ -592,8 +630,8 @@ namespace WindowsFormsApplication1
 
         private void btn_Speichern_Unter_Click(object sender, EventArgs e)
         {
-            // Prüfung vor der Namensabfrage, damit kein Name für einen Datensatz
-            // vergeben wird, der anschließend an der Zahlenprüfung scheitert
+            // PrÃ¼fung vor der Namensabfrage, damit kein Name fÃ¼r einen Datensatz
+            // vergeben wird, der anschlieÃŸend an der ZahlenprÃ¼fung scheitert
             if (!EingabenPruefen()) return;
 
             Form_Sp_ItemNeu frmLabel = new Form_Sp_ItemNeu();
@@ -604,7 +642,7 @@ namespace WindowsFormsApplication1
             {
                 HeizkesselModel model = new HeizkesselModel();
 
-                // Zuerst das Model mit den UI-Daten füllen
+                // Zuerst das Model mit den UI-Daten fÃ¼llen
                 model = InitDatensatzUpdate();
 
                 // Den neuen Namen aus dem Dialog setzen
@@ -629,7 +667,7 @@ namespace WindowsFormsApplication1
 
         private void btn_Speichern_Click(object sender, EventArgs e)
         {
-            // Erst prüfen, dann anlegen: bei ungültiger Eingabe bleibt der Dialog offen
+            // Erst prÃ¼fen, dann anlegen: bei ungÃ¼ltiger Eingabe bleibt der Dialog offen
             if (!EingabenPruefen()) return;
 
             try
@@ -656,8 +694,8 @@ namespace WindowsFormsApplication1
             }
         }
 
-        // Vorlauf/Rücklauf werden als ganze Grad gespeichert (Modellfelder int),
-        // deshalb hier die Ganzzahl-Färbung.
+        // Vorlauf/RÃ¼cklauf werden als ganze Grad gespeichert (Modellfelder int),
+        // deshalb hier die Ganzzahl-FÃ¤rbung.
         private void textBox_Vorlauf_TextChanged(object sender, EventArgs e)
         {
             Program.GanzzahlFaerben(sender);

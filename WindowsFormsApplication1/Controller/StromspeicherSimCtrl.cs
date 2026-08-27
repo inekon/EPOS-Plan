@@ -699,6 +699,23 @@ namespace WindowsFormsApplication1
             return ziel;
         }
 
+        /// <summary>
+        /// Ladung je Viertelstunde als Leistung [kW] — das Gegenstück zu
+        /// <see cref="EntladungLeistungKw"/>. Gebraucht für Befund V2 (PV-Konzept
+        /// § 2.3, Etappe P1): In den Speicher geladene Erzeugung ist KEINE
+        /// Einspeisung; die Einspeisemenge ist max(0, Überschuss − Ladung) je
+        /// Intervall. Die Reihe <c>LadungAcKwh</c> hält die Engine genau dafür vor.
+        /// </summary>
+        public static float[] LadungLeistungKw(SpeicherErgebnis ergebnis)
+        {
+            if (ergebnis == null) throw new ArgumentNullException(nameof(ergebnis));
+
+            double[] energieKwh = ergebnis.LadungAcKwh;
+            float[] ziel = new float[energieKwh.Length];
+            for (int i = 0; i < energieKwh.Length; i++) ziel[i] = (float)(energieKwh[i] / INTERVALL_H);
+            return ziel;
+        }
+
         // =================================================================
         // Zeitreihen
         // =================================================================

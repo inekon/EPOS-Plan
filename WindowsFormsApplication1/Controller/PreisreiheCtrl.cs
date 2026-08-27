@@ -106,9 +106,17 @@ namespace WindowsFormsApplication1
         {
             _internalList.Clear();
 
+            // Nur SPOTREIHEN: Traegerreihen (KD4/FK6a, ID_Energietraeger gesetzt) und
+            // Monatsreihen gehoeren nicht in die Spot-Auswahl - sonst wuerde die
+            // Stichtagsregel (ReadZumJahr) der Simulation eine Leistungspreis-Reihe
+            // mit 12 Werten als Spotreihe kueren.
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT * FROM [" + TABLE_KOPF + "] " +
-                "WHERE ID_Projekt IS NULL OR ID_Projekt = ? ORDER BY Jahr DESC, Bezeichner",
+                "WHERE (ID_Projekt IS NULL OR ID_Projekt = ?) " +
+                "AND ID_Energietraeger IS NULL " +
+                "AND (Aufloesung = '" + DbWerte.PREISREIHE_AUFLOESUNG_STUNDE + "' " +
+                "OR Aufloesung = '" + DbWerte.PREISREIHE_AUFLOESUNG_VIERTELSTUNDE + "') " +
+                "ORDER BY Jahr DESC, Bezeichner",
                 new OleDbParameter("@proj", idProjekt));
 
             if (dt == null) return _internalList;
@@ -120,6 +128,38 @@ namespace WindowsFormsApplication1
                 _internalList.Add(m);
             }
             return _internalList;
+        }
+
+        /// <summary>
+        /// Die geltende Leistungspreis-Reihe eines Energietraegers (Etappe KD4, FK6a):
+        /// Projektreihe vor Stammreihe, je Ebene die mit dem juengsten Jahr.
+        /// <c>null</c>, wenn der Traeger keine Reihe hat - dann gilt der konstante
+        /// Satz (<c>price_power</c> bzw. <c>custom_price_power</c>).
+        /// </summary>
+        public PreisreiheModel ReadTraegerReihe(int idProjekt, int idEnergietraeger)
+        {
+            if (idEnergietraeger <= 0) return null;
+
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + TABLE_KOPF + "] " +
+                "WHERE ID_Energietraeger = ? AND (ID_Projekt IS NULL OR ID_Projekt = ?) " +
+                "ORDER BY Jahr DESC",
+                new OleDbParameter("@traeger", idEnergietraeger),
+                new OleDbParameter("@proj", idProjekt));
+
+            if (dt == null || dt.Rows.Count == 0) return null;
+
+            PreisreiheModel projekt = null, stamm = null;
+            foreach (DataRow r in dt.Rows)
+            {
+                PreisreiheModel m = AusZeile(dt, r);
+                if (m.ID_Projekt > 0) { if (projekt == null) projekt = m; }
+                else if (stamm == null) stamm = m;
+            }
+
+            PreisreiheModel treffer = projekt ?? stamm;
+            if (treffer != null) treffer.Werteanzahl = Werteanzahl(treffer.ID);
+            return treffer;
         }
 
         /// <summary>Eine Reihe ueber ihre ID; <c>null</c>, wenn es sie nicht gibt.</summary>
@@ -248,8 +288,9 @@ namespace WindowsFormsApplication1
                 int neueId = MaxId(conn, trans, TABLE_KOPF) + 1;
 
                 using (OleDbCommand c = new OleDbCommand(
-                    "INSERT INTO [" + TABLE_KOPF + "] (ID, ID_Projekt, Bezeichner, Jahr, Aufloesung, Einheit) " +
-                    "VALUES (?, ?, ?, ?, ?, ?)", conn, trans))
+                    "INSERT INTO [" + TABLE_KOPF + "] (ID, ID_Projekt, Bezeichner, Jahr, " +
+                    "Aufloesung, Einheit, ID_Energietraeger) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)", conn, trans))
                 {
                     c.Parameters.Add("@id", OleDbType.Integer).Value = neueId;
                     c.Parameters.Add("@proj", OleDbType.Integer).Value =
@@ -260,6 +301,8 @@ namespace WindowsFormsApplication1
                         kopf.Aufloesung ?? DbWerte.PREISREIHE_AUFLOESUNG_STUNDE;
                     c.Parameters.Add("@einh", OleDbType.VarWChar).Value =
                         kopf.Einheit ?? DbWerte.PREISREIHE_EINHEIT_CT_KWH;
+                    c.Parameters.Add("@traeger", OleDbType.Integer).Value =
+                        kopf.ID_Energietraeger > 0 ? (object)kopf.ID_Energietraeger : DBNull.Value;
                     c.ExecuteNonQuery();
                 }
 
@@ -343,6 +386,7 @@ namespace WindowsFormsApplication1
 
             m.ID = Zahl(dt, r, "ID");
             m.ID_Projekt = Zahl(dt, r, "ID_Projekt");
+            m.ID_Energietraeger = Zahl(dt, r, "ID_Energietraeger");
             m.Bezeichner = Text(dt, r, "Bezeichner");
             m.Jahr = Zahl(dt, r, "Jahr");
 

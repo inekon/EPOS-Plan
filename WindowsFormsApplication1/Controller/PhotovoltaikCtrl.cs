@@ -179,6 +179,29 @@ namespace WindowsFormsApplication1
 
         #region --- STAMM -> PROJEKT KOPIE (analog HeizkesselCtrl/BHKWCtrl) ---
 
+        /// <summary>
+        /// V3 (PV-Konzept § 2.3, Etappe P1): installierte PV-Leistung eines Projekts
+        /// [kWp] — die GETEILTE Hilfsfunktion für Simulation, Vergütungsdialog und
+        /// EEG-Größenklassen. <c>Tab_Energieanlagen.PV_Leistung</c> ist die
+        /// MODULANZAHL (kein kW!); kWp gibt es nur rechnerisch:
+        /// Σ (<c>Tab_PV.Leistung</c> [W je Modul] × Modulanzahl) / 1000.
+        /// 0 = keine PV-Anlagen bzw. keine gepflegte Modulleistung.
+        /// </summary>
+        public static double KwpDesProjekts(int idProjekt)
+        {
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT SUM(p.Leistung * a.PV_Leistung) " +
+                    "FROM Tab_Energieanlagen AS a INNER JOIN Tab_PV AS p ON a.ID_PV = p.ID " +
+                    "WHERE a.ID_Projekt = ? AND a.ID_Type = ?",
+                    new OleDbParameter("@p", idProjekt),
+                    new OleDbParameter("@t", WizardItemClass.PV_TYP));
+                return (o == null || o == DBNull.Value) ? 0 : Convert.ToDouble(o) / 1000.0;
+            }
+            catch { return 0; }
+        }
+
         // Liefert die Projekt-ID (Tab_PV.ID) eines Bezeichners im Projekt, oder 0.
         public int GetProjektId(string szBezeichner, int idProjekt)
         {

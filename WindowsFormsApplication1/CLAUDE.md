@@ -117,7 +117,8 @@ COM-Referenzen: `Microsoft.Office.Interop.Excel`, `VBIDE` (`EmbedInteropTypes=Tr
   `Photovoltaik`, `Varianten`, `Wirtschaftlichkeit` haben keine `de-DE.resx`. Bei neuen sichtbaren
   Texten in bestehenden Ordnern beide Satelliten-Dateien pflegen.
 - `.gitignore` schließt `*.accdb` aus — Datenbankänderungen landen nie im Commit.
-  `..\GitHub_Sync.bat` committet mit `git add -A` und pusht nach `origin/main`.
+  `..\GitHub_Sync.bat` committet mit `git add -A` und synchronisiert den aktuell
+  ausgecheckten Branch mit seinem GitHub-Gegenstück (seit 26.08.2026; vorher fest `origin/main`).
 
 ## Stand & Konzepte
 

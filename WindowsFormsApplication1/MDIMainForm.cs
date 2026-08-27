@@ -40,6 +40,63 @@ namespace WindowsFormsApplication1
 
             // Katalog-Dublettensuche einbinden (Administration → Katalog-Dubletten prüfen)
             InitDublettenMenue();
+
+            // Kostenvorlagen-Pflege einbinden (Administration → Kosten → Kostenvorlagen)
+            InitKostenvorlagenMenue();
+        }
+
+        /// <summary>
+        /// Bindet den Komponenten-Kostendialog (Stammvorlagen) ein: Menüeintrag im
+        /// Untermenü Administration → Kosten (Ä7: die Alteinträge „Kosten“/„Kosten
+        /// Admin“ sind entfernt; der Positionskatalog hängt als Knopf in der
+        /// Kostenverwaltung), unterhalb der Bestandseinträge
+        /// (Konzept Kostendialoge Rev. 1.2, § 3.1/Ä5 — Etappe KD2; der vollständige
+        /// Menü-Umbau folgt mit KD4/KD6).
+        ///
+        /// Bewusst programmatisch, damit Designer und .resx unberührt bleiben; der
+        /// Anzeigetext kommt aus MyResource und ist damit zweisprachig.
+        /// </summary>
+        private void InitKostenvorlagenMenue()
+        {
+            try
+            {
+                string text = null;
+                try { text = MyResource.Resource.ResourceManager.GetString("KDLG_MENUE_VORLAGEN"); }
+                catch { }
+                if (string.IsNullOrEmpty(text)) text = "Kostenverwaltung …";
+
+                ToolStripMenuItem eintrag = new ToolStripMenuItem(text);
+                eintrag.Name = "MenuItem_Kostenvorlagen";
+                eintrag.Click += (s, e) =>
+                {
+                    using (Form_KostenKomponente frm = new Form_KostenKomponente())
+                        frm.ShowDialog(this);
+                };
+
+                MenuItem_KostenVerwaltung.DropDownItems.Add(eintrag);
+
+                // KD4 (§ 3.1): Energieträgerverwaltung im Admin-Kontext (Katalog).
+                string textEt = null;
+                try { textEt = MyResource.Resource.ResourceManager.GetString("KDLG_MENUE_ENERGIETRAEGER"); }
+                catch { }
+                if (string.IsNullOrEmpty(textEt)) textEt = "Energieträgerverwaltung…";
+
+                ToolStripMenuItem eintragEt = new ToolStripMenuItem(textEt);
+                eintragEt.Name = "MenuItem_Energietraeger";
+                eintragEt.Click += (s, e) =>
+                {
+                    using (Form_Energietraeger frm = new Form_Energietraeger())
+                    {
+                        frm.SetControls(0);
+                        frm.ShowDialog(this);
+                    }
+                };
+                MenuItem_KostenVerwaltung.DropDownItems.Add(eintragEt);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Menü der Kostenvorlagen konnte nicht eingebunden werden: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -738,25 +795,6 @@ namespace WindowsFormsApplication1
         private void MenuItem_PV_Import_PAN_Click(object sender, EventArgs e)
         {
             Main_PV_Test frm = new Main_PV_Test();
-            frm.ShowDialog();
-        }
-
-        private void MenuItem_Kosten_Click(object sender, EventArgs e)
-        {
-            int id = Program.startfrm.m_ID_Projekt;
-            if (id != 0)
-            {
-                using (var form = new Form_Kosten(id))
-                {
-                    form.ShowDialog(); // Öffnet das Fenster als modaler Dialog
-                }
-            }
-            else MessageBox.Show("Projekt auswählen!");
-        }
-
-        private void kostenAdminToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Form_KostenAdmin frm = new Form_KostenAdmin();
             frm.ShowDialog();
         }
 

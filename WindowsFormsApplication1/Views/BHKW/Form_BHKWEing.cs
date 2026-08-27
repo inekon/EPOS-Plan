@@ -243,6 +243,22 @@ namespace WindowsFormsApplication1
             SetFilter();
         }
 
+        /// <summary>ETAPPE KD6 (§ 9): einmal gebaut (nicht im Wizard-Modus).</summary>
+        private bool _kostenLeisteGebaut;
+
+        /// <summary>ETAPPE KD6 (§ 9): Kosten-Aufrufe des Projekt-BHKW-Dialogs —
+        /// Projekt und Träger zur KLICKZEIT aufgelöst (m_ID_Projekt setzt der
+        /// Aufrufer teils erst nach SetControls).</summary>
+        private void KostenzugriffAnbringen()
+        {
+            var leiste = KostenKnoepfe.Leiste(this, DbWerte.KOSTEN_KOMPONENTE_BHKW,
+                () => m_ID_Projekt,
+                () => KostenKnoepfe.TraegerDerKomponente(m_ID_Projekt, "ID_BHKW"));
+            leiste.Dock = DockStyle.Bottom;
+            Controls.Add(leiste);
+            Height += 46;
+        }
+
         public void SetControls(string szProjekt, bool bWizard = false)
         {
             if (bWizard)
@@ -254,6 +270,11 @@ namespace WindowsFormsApplication1
                 wizardparent = (WizardParent)getWizardPage();
                 list_werzmodel = wizardparent.list_werzmodel;
                 m_bWizard = bWizard;
+            }
+            else if (!_kostenLeisteGebaut)
+            {
+                _kostenLeisteGebaut = true;
+                KostenzugriffAnbringen();
             }
 
             m_szProjekt = szProjekt;

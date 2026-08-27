@@ -45,6 +45,24 @@ namespace WindowsFormsApplication1
         /// Block wird deshalb nicht ausgegraut, sondern gar nicht erst angelegt.
         /// </summary>
         private ucStromAufschlaege _aufschlaege;
+        private Label _lblEffektivpreis;
+        private CheckBox _chkAufschlagAnwenden;
+
+        /// <summary>Ä16: Bezugspreis = Arbeitspreis + wirksamer Aufschlag [ct/kWh].</summary>
+        private void EffektivpreisAnzeigen()
+        {
+            if (_lblEffektivpreis == null || _aufschlaege == null) return;
+            try
+            {
+                double arbeitCt = (double)numArbeitspreis.Value * 100.0;
+                double aufschlagCt = _aufschlaege.WirksamCtKwh;
+                _lblEffektivpreis.Text = string.Format(
+                    TKd4("KDLG_EFFEKTIVPREIS",
+                        "Bezugspreis inkl. Aufschläge: {0:N2} ct/kWh  (Arbeitspreis {1:N2} + Aufschlag {2:N2})"),
+                    arbeitCt + aufschlagCt, arbeitCt, aufschlagCt);
+            }
+            catch { _lblEffektivpreis.Text = ""; }
+        }
 
         // =====================================================================
         // ETAPPE K3 - Umrechnungsblock (Konzept Kosten/Energietraeger § 4.3)
@@ -125,6 +143,169 @@ namespace WindowsFormsApplication1
             LoadData();
             BaueUmrechnungsblock();   // ETAPPE K3 - vor dem Aufschlagsblock, der an this.Height andockt
             BaueAufschlagsblock();
+            BaueLeistungspreisZusatz();   // ETAPPE KD4 (FK6/FK6a) - nach LoadData, das die Einheit setzt
+
+            // Ä9 (26.08.2026): Der Katalogkontext (Projekt 0) SCHREIBT jetzt —
+            // „Speichern“ aktualisiert die Katalogzeile selbst (energy_carrier),
+            // ohne Projekt-Settings und ohne Preishistorie. Die KD4-Sperre ist
+            // damit Geschichte; Trägervarianten laufen über die Katalogleiste des
+            // Dialogs (EnergietraegerKatalogCtrl.Variante).
+            if (_projectId <= 0)
+                new ToolTip().SetToolTip(btn_Save, TKd4("KDLG_ET_KATALOG_SPEICHERN",
+                    "Schreibt die KATALOGwerte dieses Trägers (gilt überall, wo kein Projektwert gepflegt ist)."));
+        }
+
+        // =====================================================================
+        // ETAPPE KD4 (Konzept Kostendialoge § 7.1, FK6/FK6a) — Leistungspreis:
+        // Modus (Jahr/Monat), saisonale Reihen, Strom-Sonderfall.
+        // =====================================================================
+
+        private ComboBox cmbLeistungsModus;
+        private Button btnSaisonSaetze;
+        private Label lblLeistungsHinweis;
+
+        /// <summary>
+        /// Ergänzt die Leistungspreis-Zeile: Modus-Klappliste (schreibt
+        /// <c>energy_carrier.price_power_modus</c> — der Modus ist KATALOGSACHE je
+        /// Träger, auch im Projektkontext; dokumentierte Zwischenlösung) und den
+        /// Zugang zu den Saisonreihen (FK6a).
+        ///
+        /// <para>Ä18 (Nutzerauftrag 26.08.2026): Der frühere Strom-Sonderfall
+        /// (Feld gesperrt, Verweis bzw. Einstieg zur Tarifstruktur) ist entfallen —
+        /// der Stromträger pflegt seinen FLAT-Leistungspreis hier wie jeder andere
+        /// Träger (Jahres-/Monatssatz, Migrationsschritt 44 schaltet das Merkmal
+        /// frei). Die Tarifstruktur ist das DETAILMODELL und wird komponentenbezogen
+        /// auf der Wirtschaftlichkeitsseite gepflegt (Strombezug/BHKW/PV); ist sie
+        /// aktiv, ersetzt sie die Flat-Strompreise einschließlich dieses Satzes.</para>
+        /// </summary>
+        private void BaueLeistungspreisZusatz()
+        {
+            Control eltern = numLeistungspreis.Parent;
+            if (eltern == null) return;
+
+            // Ä18: kein Strom-Sonderfall mehr — ELECTRICITY führt has_powerprice
+            // seit Migrationsschritt 44 und läuft durch denselben Zweig wie Gas.
+            if (!_carrier.HasPowerPrice) return;
+
+            cmbLeistungsModus = new ComboBox
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Width = 160,
+                Location = new Point(lbl_Unit_Leistungspreis.Right + 12,
+                                     numLeistungspreis.Top - 1)
+            };
+            cmbLeistungsModus.Items.Add(TKd4("KDLG_LP_MODUS_JAHR", "Jahresleistungspreis"));
+            cmbLeistungsModus.Items.Add(TKd4("KDLG_LP_MODUS_MONAT", "Monatsleistungspreis"));
+            cmbLeistungsModus.SelectedIndex = string.Equals(LiesLeistungsModus(),
+                DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal) ? 1 : 0;
+            SetzeLeistungsEinheit();
+            cmbLeistungsModus.SelectedIndexChanged += (s, e) =>
+            {
+                SchreibeLeistungsModus();
+                SetzeLeistungsEinheit();
+            };
+            eltern.Controls.Add(cmbLeistungsModus);
+
+            btnSaisonSaetze = new Button
+            {
+                Text = TKd4("KDLG_LP_SAISON", "Saisonale Sätze…"),
+                Size = new Size(130, 26),
+                Location = new Point(cmbLeistungsModus.Right + 8, numLeistungspreis.Top - 2)
+            };
+            btnSaisonSaetze.Click += (s, e) =>
+            {
+                using (Form_LeistungspreisReihe dlg = new Form_LeistungspreisReihe())
+                {
+                    dlg.SetControls(_projectId, _carrier.ID, _carrier.Name);
+                    dlg.ShowDialog(FindForm());
+                }
+                ZeigeReihenStatus();
+            };
+            eltern.Controls.Add(btnSaisonSaetze);
+
+            lblLeistungsHinweis = new Label
+            {
+                AutoSize = true,
+                ForeColor = Color.FromArgb(90, 90, 90),
+                Location = new Point(btnSaisonSaetze.Right + 10, numLeistungspreis.Top + 3)
+            };
+            eltern.Controls.Add(lblLeistungsHinweis);
+            ZeigeReihenStatus();
+        }
+
+        /// <summary>Einheit des Leistungspreis-Felds je Modus — €/(kW·a) bzw.
+        /// €/(kW·Monat); ersetzt die frühere €/&lt;Bezugseinheit&gt;-Beschriftung
+        /// (der Leistungspreis bemisst sich nach kW, nicht nach der Brennstoffeinheit).</summary>
+        private void SetzeLeistungsEinheit()
+        {
+            if (!_carrier.HasPowerPrice) return;
+            bool monat = cmbLeistungsModus != null
+                ? cmbLeistungsModus.SelectedIndex == 1
+                : string.Equals(LiesLeistungsModus(),
+                    DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal);
+            lbl_Unit_Leistungspreis.Text = monat ? "€/(kW·Monat)" : "€/(kW·a)";
+        }
+
+        private string LiesLeistungsModus()
+        {
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT price_power_modus FROM energy_carrier WHERE id = ?",
+                    new OleDbParameter("@id", _carrier.ID));
+                string s = (o == null || o == DBNull.Value) ? null : Convert.ToString(o);
+                return string.Equals(s, DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal)
+                    ? DbWerte.LEISTUNGSPREIS_MODUS_MONAT
+                    : DbWerte.LEISTUNGSPREIS_MODUS_JAHR;
+            }
+            catch { return DbWerte.LEISTUNGSPREIS_MODUS_JAHR; }
+        }
+
+        private void SchreibeLeistungsModus()
+        {
+            try
+            {
+                DataRepository.ExecuteSQL(
+                    "UPDATE energy_carrier SET price_power_modus = ? WHERE id = ?",
+                    new OleDbParameter("@m", cmbLeistungsModus.SelectedIndex == 1
+                        ? DbWerte.LEISTUNGSPREIS_MODUS_MONAT
+                        : DbWerte.LEISTUNGSPREIS_MODUS_JAHR),
+                    new OleDbParameter("@id", _carrier.ID));
+            }
+            catch (Exception ex)
+            {
+                DataRepository.FehlerMelden(
+                    "Der Leistungspreis-Modus konnte nicht gespeichert werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>Statuszeile: gilt eine Saisonreihe (Projekt- vor Stammreihe)?</summary>
+        private void ZeigeReihenStatus()
+        {
+            if (lblLeistungsHinweis == null) return;
+            try
+            {
+                PreisreiheModel r = new PreisreiheCtrl().ReadTraegerReihe(_projectId, _carrier.ID);
+                lblLeistungsHinweis.Text = r == null
+                    ? ""
+                    : string.Format(CultureInfo.CurrentCulture,
+                        TKd4("KDLG_LP_REIHE_STATUS", "Saisonreihe {0} ({1}) — gilt vor dem Satz."),
+                        r.Jahr,
+                        r.IstStamm ? TKd4("KDLG_LPR_EBENE_STAMM", "Stammreihe (Katalog)")
+                                   : TKd4("KDLG_LPR_EBENE_PROJEKT", "Projektreihe"));
+            }
+            catch { lblLeistungsHinweis.Text = ""; }
+        }
+
+        /// <summary>MyResource mit deutschem Rückfall (Drei-Schichten-Regel).</summary>
+        private static string TKd4(string schluessel, string rueckfall)
+        {
+            try
+            {
+                string s = MyResource.Resource.ResourceManager.GetString(schluessel);
+                return string.IsNullOrEmpty(s) ? rueckfall : s;
+            }
+            catch { return rueckfall; }
         }
 
         /// <summary>
@@ -151,6 +332,53 @@ namespace WindowsFormsApplication1
                 _aufschlaege.Location = new Point(17, this.Height + 8);
                 this.Height += ucStromAufschlaege.HOEHE + 16;
                 this.Controls.Add(_aufschlaege);
+
+                // Ä16: Der Gesamtpreis inkl. Aufschlag steht IM Dialog, und die
+                // Entscheidung „Aufschläge in der Wirtschaftlichkeit anwenden“
+                // wird HIER getroffen (der Parameterdialog zeigt sie nur noch).
+                _lblEffektivpreis = new Label
+                {
+                    AutoSize = true,
+                    Font = new Font("Segoe UI", 9.75f, FontStyle.Bold),
+                    ForeColor = Color.FromArgb(26, 50, 97),
+                    Location = new Point(17, _aufschlaege.Location.Y + ucStromAufschlaege.HOEHE + 4)
+                };
+                this.Controls.Add(_lblEffektivpreis);
+
+                if (_projectId > 0)
+                {
+                    _chkAufschlagAnwenden = new CheckBox
+                    {
+                        AutoSize = true,
+                        Text = TKd4("KDLG_AUFSCHLAG_ANWENDEN",
+                            "Aufschläge in der Wirtschaftlichkeit berücksichtigen"),
+                        Location = new Point(17,
+                            _aufschlaege.Location.Y + ucStromAufschlaege.HOEHE + 28)
+                    };
+                    try
+                    {
+                        _chkAufschlagAnwenden.Checked = new WirtschaftlichkeitCtrl()
+                            .LadeParameter(_projectId).AufschlaegeAnwenden;
+                    }
+                    catch { }
+                    _chkAufschlagAnwenden.CheckedChanged += (s, e2) =>
+                    {
+                        try
+                        {
+                            var ctrlW = new WirtschaftlichkeitCtrl();
+                            WirtschaftlichkeitParameter pw = ctrlW.LadeParameter(_projectId);
+                            pw.AufschlaegeAnwenden = _chkAufschlagAnwenden.Checked;
+                            ctrlW.SpeichereParameter(pw);
+                        }
+                        catch { }
+                    };
+                    this.Controls.Add(_chkAufschlagAnwenden);
+                }
+                this.Height += 52;
+
+                _aufschlaege.WirksamGeaendert += (s, e2) => EffektivpreisAnzeigen();
+                numArbeitspreis.ValueChanged += (s, e2) => EffektivpreisAnzeigen();
+                EffektivpreisAnzeigen();
             }
             catch (Exception ex)
             {
@@ -626,7 +854,7 @@ namespace WindowsFormsApplication1
             if (cmbUnit.SelectedItem is EnergyConversion conv)
             {
                 lbl_Unit_Arbeitspreis.Text = $"€/{conv.ToUnitCode}";
-                lbl_Unit_Leistungspreis.Text = $"€/{conv.ToUnitCode}";
+                SetzeLeistungsEinheit();   // KD4: kW-Bezug, nicht Brennstoffeinheit
                 lbl_Unit_Heizwert.Text = $"kWh/{conv.ToUnitCode}";
                 lbl_Unit_Brennwert.Text = $"kWh/{conv.ToUnitCode}";
             }
@@ -692,7 +920,7 @@ namespace WindowsFormsApplication1
                 lbl_Unit_Arbeitspreis.Text = $"€/{conv.ToUnitCode}";
                 lbl_Unit_Heizwert.Text = $"kWh/{conv.ToUnitCode}";
 
-                if (_carrier.HasPowerPrice) lbl_Unit_Leistungspreis.Text = $"€/{conv.ToUnitCode}";
+                if (_carrier.HasPowerPrice) SetzeLeistungsEinheit();   // KD4: kW-Bezug
                 if (_carrier.HasHs) lbl_Unit_Brennwert.Text = $"kWh/{conv.ToUnitCode}";
 
                 UpdatePricePerKWh();
@@ -790,6 +1018,46 @@ namespace WindowsFormsApplication1
             double currentCO2 = (double)numCO2.Value;
             double currentSO2 = (double)numSO2.Value;
             double currentNOx = (double)numNOx.Value;
+
+            // Ä9: Katalogkontext — die Werte gehen in die Katalogzeile selbst;
+            // Historie (energy_price) und Projekt-Settings sind Projektsache.
+            if (_projectId <= 0)
+            {
+                DataRepository.ExecuteSQL(
+                    @"UPDATE energy_carrier
+                      SET price_work = ?, price_base = ?, price_power = ?,
+                          hi_kwh_per_unit = ?, hs_kwh_per_unit = ?,
+                          co2 = ?, so2 = ?, nox = ?
+                      WHERE id = ?",
+                    new OleDbParameter("@ap", Math.Round(currentPriceBase, 4)),
+                    new OleDbParameter("@gp", Math.Round(currentGroundPrice, 4)),
+                    new OleDbParameter("@lp", Math.Round(currentPowerPrice, 4)),
+                    new OleDbParameter("@hi", Math.Round(currentHiBase, 4)),
+                    new OleDbParameter("@hs", Math.Round(currentHsBase, 4)),
+                    new OleDbParameter("@co2", currentCO2),
+                    new OleDbParameter("@so2", currentSO2),
+                    new OleDbParameter("@nox", currentNOx),
+                    new OleDbParameter("@id", _carrier.ID));
+
+                _carrier.price_work = currentPriceBase;
+                _carrier.price_base = currentGroundPrice;
+                _carrier.price_power = currentPowerPrice;
+                _carrier.HiKwhPerUnit = currentHiBase;
+                _carrier.HsKwhPerUnit = currentHsBase;
+                _carrier.CO2 = currentCO2;
+                _carrier.SO2 = currentSO2;
+                _carrier.NOx = currentNOx;
+
+                _dbWorkPrice = currentPriceBase;
+                _dbGroundPrice = currentGroundPrice;
+                _dbPowerPrice = currentPowerPrice;
+                _dbHi = currentHiBase;
+                _dbHs = currentHsBase;
+                _dbCO2 = currentCO2;
+                _dbSO2 = currentSO2;
+                _dbNOx = currentNOx;
+                return;
+            }
 
             // Das vom Benutzer gewählte (ggf. zukünftige) Datum abgreifen
             DateTime chosenDate = dtpValidFrom.Value;
@@ -984,10 +1252,14 @@ namespace WindowsFormsApplication1
 
         public string GetTargetUnitByConversionId(int idumrechnung)
         {
+            // Befund 26.08.2026: Eine leere oder verwaiste Umrechnungs-ID (z. B.
+            // ein frisch aus dem Katalog übernommener Träger, ID_Umrechnung noch
+            // NULL) liefert KEINE Zeile — der Rückgabewert von Next() wurde nie
+            // ausgewertet und Read warf „No data exists for the row/column“.
+            // Ohne Zeile gilt schlicht: keine Zieleinheit.
             RecordSet rs = new RecordSet();
             rs.Open("select to_unit from energy_conversion where id=" + idumrechnung);
-            rs.Next();
-            string unit = (string)rs.Read("to_Unit");
+            string unit = rs.Next() ? (string)rs.Read("to_Unit") : null;
             rs.Close();
             return unit;
         }
@@ -1054,7 +1326,7 @@ namespace WindowsFormsApplication1
             dgvHistory.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "grundpreis",
-                HeaderText = "Grundpreis",
+                HeaderText = "Grundpreis [€/a]",
                 Width = 85,
                 DefaultCellStyle = new DataGridViewCellStyle { Format = "N2" },
             });

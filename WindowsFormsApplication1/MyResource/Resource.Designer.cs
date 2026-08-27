@@ -1648,6 +1648,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträgerverwaltung… ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_BTN_TRAEGER {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_BTN_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kostenverwaltung öffnen… ähnelt.
         /// </summary>
         public static string BK_KOSTEN_BTN_VERWALTUNG {
@@ -1810,6 +1819,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb [€/a] ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_SP_BETRIEB {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_SP_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Grundpreis [€/a] ähnelt.
         /// </summary>
         public static string BK_KOSTEN_SP_GRUNDPREIS {
@@ -1833,6 +1851,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_KOSTEN_SP_KOMPONENTE {
             get {
                 return ResourceManager.GetString("BK_KOSTEN_SP_KOMPONENTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis [€/(kW·a)] ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_SP_LEISTUNGSPREIS {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_SP_LEISTUNGSPREIS", resourceCulture);
             }
         }
         
@@ -2580,6 +2607,150 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_UEB_TITEL_KOMP {
             get {
                 return ResourceManager.GetString("BK_UEB_TITEL_KOMP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fester Betrag ähnelt.
+        /// </summary>
+        public static string BM_BETRAG {
+            get {
+                return ResourceManager.GetString("BM_BETRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fester Jahresbetrag ähnelt.
+        /// </summary>
+        public static string BM_JAHRESBETRAG {
+            get {
+                return ResourceManager.GetString("BM_JAHRESBETRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je kW elektrisch ähnelt.
+        /// </summary>
+        public static string BM_KW_ELEKTRISCH {
+            get {
+                return ResourceManager.GetString("BM_KW_ELEKTRISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je kW Heizleistung ähnelt.
+        /// </summary>
+        public static string BM_KW_HEIZLEISTUNG {
+            get {
+                return ResourceManager.GetString("BM_KW_HEIZLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je kW Leistung ähnelt.
+        /// </summary>
+        public static string BM_KW_LEISTUNG {
+            get {
+                return ResourceManager.GetString("BM_KW_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je kWh ähnelt.
+        /// </summary>
+        public static string BM_KWH {
+            get {
+                return ResourceManager.GetString("BM_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je kWh elektrisch ähnelt.
+        /// </summary>
+        public static string BM_KWH_ELEKTRISCH {
+            get {
+                return ResourceManager.GetString("BM_KWH_ELEKTRISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je kWh Kapazität ähnelt.
+        /// </summary>
+        public static string BM_KWH_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("BM_KWH_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je kWh thermisch ähnelt.
+        /// </summary>
+        public static string BM_KWH_THERMISCH {
+            get {
+                return ResourceManager.GetString("BM_KWH_THERMISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je kWp Leistung ähnelt.
+        /// </summary>
+        public static string BM_KWP {
+            get {
+                return ResourceManager.GetString("BM_KWP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je m² Kollektorfläche ähnelt.
+        /// </summary>
+        public static string BM_M2_KOLLEKTOR {
+            get {
+                return ResourceManager.GetString("BM_M2_KOLLEKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die % der Brennstoffkosten ähnelt.
+        /// </summary>
+        public static string BM_P_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("BM_P_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die % der Erzeugerkosten ähnelt.
+        /// </summary>
+        public static string BM_P_ERZEUGER {
+            get {
+                return ResourceManager.GetString("BM_P_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die % der Investition ähnelt.
+        /// </summary>
+        public static string BM_P_INVESTITION {
+            get {
+                return ResourceManager.GetString("BM_P_INVESTITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die % der Stromkosten ähnelt.
+        /// </summary>
+        public static string BM_P_STROM {
+            get {
+                return ResourceManager.GetString("BM_P_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je Stunde ähnelt.
+        /// </summary>
+        public static string BM_STUNDE {
+            get {
+                return ResourceManager.GetString("BM_STUNDE", resourceCulture);
             }
         }
         
@@ -4557,6 +4728,1159 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMPORT_TRENN_TABULATOR {
             get {
                 return ResourceManager.GetString("IMPORT_TRENN_TABULATOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschläge in der Wirtschaftlichkeit berücksichtigen ähnelt.
+        /// </summary>
+        public static string KDLG_AUFSCHLAG_ANWENDEN {
+            get {
+                return ResourceManager.GetString("KDLG_AUFSCHLAG_ANWENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Beträge und alle Bezugsgrößen sind NETTO. Der Umsatzsteuersatz kommt aus dem Katalog „gesetzliche Parameter“. Eine gepflegte Satzangabe hat Vorrang — das Absolutfeld wird dann gesperrt, aber nicht geleert. ähnelt.
+        /// </summary>
+        public static string KDLG_BANNER {
+            get {
+                return ResourceManager.GetString("KDLG_BANNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string KDLG_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("KDLG_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Positionskatalog… ähnelt.
+        /// </summary>
+        public static string KDLG_BTN_KATALOG {
+            get {
+                return ResourceManager.GetString("KDLG_BTN_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string KDLG_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KDLG_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu… ähnelt.
+        /// </summary>
+        public static string KDLG_BTN_NEU {
+            get {
+                return ResourceManager.GetString("KDLG_BTN_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die + Position hinzufügen ähnelt.
+        /// </summary>
+        public static string KDLG_BTN_POSITION {
+            get {
+                return ResourceManager.GetString("KDLG_BTN_POSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
+        /// </summary>
+        public static string KDLG_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("KDLG_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern unter… ähnelt.
+        /// </summary>
+        public static string KDLG_BTN_SPEICHERN_UNTER {
+            get {
+                return ResourceManager.GetString("KDLG_BTN_SPEICHERN_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In Projekt übernehmen… ähnelt.
+        /// </summary>
+        public static string KDLG_BTN_UEBERNAHME {
+            get {
+                return ResourceManager.GetString("KDLG_BTN_UEBERNAHME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus Vorlage übernehmen… ähnelt.
+        /// </summary>
+        public static string KDLG_BTN_UEBERNAHME_PROJEKT {
+            get {
+                return ResourceManager.GetString("KDLG_BTN_UEBERNAHME_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugspreis inkl. Aufschläge: {0:N2} ct/kWh  (Arbeitspreis {1:N2} + Aufschlag {2:N2}) ähnelt.
+        /// </summary>
+        public static string KDLG_EFFEKTIVPREIS {
+            get {
+                return ResourceManager.GetString("KDLG_EFFEKTIVPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesetzesparameter… ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_BTN_GESETZE {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_BTN_GESETZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neue Anlagen: {0} Vollbenutzungsstunden Förderkontingent. Jahresdeckel [Vbh/a]: {1}(Kontingent-Override je Anlage in der Wirtschaftlichkeit). ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_DAUER {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_DAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Selbst genutzter KWK-Strom (§ 7 Abs. 2, nur in den Tatbeständen des § 6 Abs. 3 — z. B. Anlage ≤ 100 kW): bis 50 kW {0} · 50–100 kW {1} ct/kWh. Tatbestand und Anlagenart werden JE ANLAGE in der Wirtschaftlichkeit gepflegt (KWKG-Module) — hier keine Zweitpflege. ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_EIGEN {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingespeister KWK-Strom (Tranchen): ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_EINSP_TITEL {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_EINSP_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die FK7: Der STROMPREIS-Teil der BHKW-Einspeisevergütung bleibt in der Tarifstruktur des Projekts (Einsp_* ist rein KWK) — dieser Reiter zeigt die gesetzlichen KWKG-/Steuergrößen an; gerechnet wird ausschließlich vom KwkgSatzRechner und den Steuer-Gutschriftrechnern der Wirtschaftlichkeit. Projektbezogene Schalter (Tatbestand, Anlagenart, Pauschalmodus § 9, Kontingent-Override) werden dort je Anlage gepflegt. ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_FK7 {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_FK7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Förderdauer und Jahresdeckel ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_G_DAUER {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_G_DAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG-Zuschlag (§ 7 KWKG 2025) — Anzeige aus dem Gesetzeskatalog ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_G_KWKG {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_G_KWKG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Vergütung (EEG) — eine Vergütungswahrheit (V4/F7) ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_G_PV {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_G_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steuervergünstigungen (HF6, Sätze aus dem Gesetzeskatalog) ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_G_STEUERN {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_G_STEUERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pflegeorte (eine Wahrheit je Größe) ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_G_VERWEISE {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_G_VERWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Komponente führt keine laufenden Erträge — Förderungen/Zuschüsse laufen als Zuschuss-Position in den Investitionskosten (FK5). ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_LEER {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die PV-Vergütung wird STAMMPROJEKTBEZOGEN im Vergütungsdialog gepflegt — demselben Formular, das auch der Knopf „Photovoltaik…“ im Wirtschaftlichkeits-Reiter öffnet (eine Vergütungswahrheit, Befund V4). Anzulegender Wert, Vermarktungsform, § 51/§ 51a und 60-%-Begrenzung wirken über die PV-Erlösreihe direkt in der Kapitalwertrechnung. ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_PV {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Vergütungsdialog öffnen… ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_PV_OEFFNEN {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_PV_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stammprojekt: ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_PV_PROJEKT {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_PV_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonderregel neue Anlagen ≤ 50 kWel (§ 7 Abs. 3a): eingespeist {0} · nicht eingespeist {1} ct/kWh — geht Abs. 1 und 2 vor. ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_SONDERREGEL {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_SONDERREGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer-Entlastung § 53a Abs. 5 EnergieStG: Erdgas {0} €/MWh · Heizöl {1} €/1.000 l · Flüssiggas {2} €/1.000 kg (Mindestnutzungsgrad {3} %). ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_ST_53A {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_ST_53A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Entlastung § 9b StromStG: {0} €/MWh, Sockelbetrag {1} €/a. ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_ST_9B {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_ST_9B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Befreiung § 9 Abs. 1 Nr. 3 StromStG: hocheffiziente Anlagen ≤ 2 MW im räumlichen Zusammenhang (4,5 km); ab 2026 CO₂-Kriterium. ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_ST_BEFREIUNG {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_ST_BEFREIUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die über 50 bis 100 kW ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_T100 {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_T100", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die über 100 bis 250 kW ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_T250 {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_T250", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die über 250 kW bis 2 MW ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_T2MW {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_T2MW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bis 50 kW ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_T50 {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_T50", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die über 2 MW (neu/modernisiert) ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_UE2MW {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_UE2MW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die über 2 MW (nachgerüstet) ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_UE2MWN {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_UE2MWN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string KDLG_ET_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("KDLG_ET_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
+        /// </summary>
+        public static string KDLG_ET_BTN_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("KDLG_ET_BTN_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string KDLG_ET_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KDLG_ET_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu… ähnelt.
+        /// </summary>
+        public static string KDLG_ET_BTN_NEU {
+            get {
+                return ResourceManager.GetString("KDLG_ET_BTN_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus Katalog übernehmen… ähnelt.
+        /// </summary>
+        public static string KDLG_ET_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KDLG_ET_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante ähnelt.
+        /// </summary>
+        public static string KDLG_ET_BTN_VARIANTE {
+            get {
+                return ResourceManager.GetString("KDLG_ET_BTN_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Träger „{0}“ aus dem Projekt entfernen? (Der Katalogeintrag bleibt.) ähnelt.
+        /// </summary>
+        public static string KDLG_ET_ENTFERNEN_FRAGE {
+            get {
+                return ResourceManager.GetString("KDLG_ET_ENTFERNEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht möglich: {0} ähnelt.
+        /// </summary>
+        public static string KDLG_ET_ENTFERNEN_GESPERRT {
+            get {
+                return ResourceManager.GetString("KDLG_ET_ENTFERNEN_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogpreise sind hier noch nicht pflegbar (folgt mit den Trägervarianten). ähnelt.
+        /// </summary>
+        public static string KDLG_ET_KATALOG_NUR_LESEN {
+            get {
+                return ResourceManager.GetString("KDLG_ET_KATALOG_NUR_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibt die KATALOGwerte dieses Trägers (gilt überall, wo kein Projektwert gepflegt ist). ähnelt.
+        /// </summary>
+        public static string KDLG_ET_KATALOG_SPEICHERN {
+            get {
+                return ResourceManager.GetString("KDLG_ET_KATALOG_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kontext: Katalog (Stammdaten) ähnelt.
+        /// </summary>
+        public static string KDLG_ET_KONTEXT_KATALOG {
+            get {
+                return ResourceManager.GetString("KDLG_ET_KONTEXT_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kontext: Projekt {0} ähnelt.
+        /// </summary>
+        public static string KDLG_ET_KONTEXT_PROJEKT {
+            get {
+                return ResourceManager.GetString("KDLG_ET_KONTEXT_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger ähnelt.
+        /// </summary>
+        public static string KDLG_ET_LISTE {
+            get {
+                return ResourceManager.GetString("KDLG_ET_LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger „{0}“ löschen? ähnelt.
+        /// </summary>
+        public static string KDLG_ET_LOESCHEN_FRAGE {
+            get {
+                return ResourceManager.GetString("KDLG_ET_LOESCHEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Träger wird verwendet und bleibt erhalten: {0} ähnelt.
+        /// </summary>
+        public static string KDLG_ET_LOESCHEN_GESPERRT {
+            get {
+                return ResourceManager.GetString("KDLG_ET_LOESCHEN_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung des neuen Trägers: ähnelt.
+        /// </summary>
+        public static string KDLG_ET_NEU_NAME {
+            get {
+                return ResourceManager.GetString("KDLG_ET_NEU_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer Energieträger ähnelt.
+        /// </summary>
+        public static string KDLG_ET_NEU_TITEL {
+            get {
+                return ResourceManager.GetString("KDLG_ET_NEU_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer Energieträger ähnelt.
+        /// </summary>
+        public static string KDLG_ET_NEU_VORGABE {
+            get {
+                return ResourceManager.GetString("KDLG_ET_NEU_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string KDLG_ET_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("KDLG_ET_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Preisreihe vorhanden. ähnelt.
+        /// </summary>
+        public static string KDLG_ET_SPOT_KEINE {
+            get {
+                return ResourceManager.GetString("KDLG_ET_SPOT_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Reihe(n), Jahre {1}–{2} ähnelt.
+        /// </summary>
+        public static string KDLG_ET_SPOT_STATUS {
+            get {
+                return ResourceManager.GetString("KDLG_ET_SPOT_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung darf nicht leer sein. ähnelt.
+        /// </summary>
+        public static string KDLG_ET_STAMM_FEHLER {
+            get {
+                return ResourceManager.GetString("KDLG_ET_STAMM_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gruppe: ähnelt.
+        /// </summary>
+        public static string KDLG_ET_STAMM_GRUPPE {
+            get {
+                return ResourceManager.GetString("KDLG_ET_STAMM_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung: ähnelt.
+        /// </summary>
+        public static string KDLG_ET_STAMM_NAME {
+            get {
+                return ResourceManager.GetString("KDLG_ET_STAMM_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string KDLG_ET_STAMM_SPEICHERN {
+            get {
+                return ResourceManager.GetString("KDLG_ET_STAMM_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträgerverwaltung ähnelt.
+        /// </summary>
+        public static string KDLG_ET_TITEL {
+            get {
+                return ResourceManager.GetString("KDLG_ET_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Katalogträger sind dem Projekt bereits zugeordnet. ähnelt.
+        /// </summary>
+        public static string KDLG_ET_UEBERNAHME_LEER {
+            get {
+                return ResourceManager.GetString("KDLG_ET_UEBERNAHME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string KDLG_ET_UEBERNAHME_OK {
+            get {
+                return ResourceManager.GetString("KDLG_ET_UEBERNAHME_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus Katalog übernehmen ähnelt.
+        /// </summary>
+        public static string KDLG_ET_UEBERNAHME_TITEL {
+            get {
+                return ResourceManager.GetString("KDLG_ET_UEBERNAHME_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gepflegt wird im Kostendialog — Felder schreibgeschützt. ähnelt.
+        /// </summary>
+        public static string KDLG_FK8_HINWEIS {
+            get {
+                return ResourceManager.GetString("KDLG_FK8_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gepflegt wird im Kostendialog. ähnelt.
+        /// </summary>
+        public static string KDLG_FK8_KURZ {
+            get {
+                return ResourceManager.GetString("KDLG_FK8_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gespeichert {0:HH:mm} Uhr ähnelt.
+        /// </summary>
+        public static string KDLG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("KDLG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten ähnelt.
+        /// </summary>
+        public static string KDLG_KAT_BETRIEB {
+            get {
+                return ResourceManager.GetString("KDLG_KAT_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten ähnelt.
+        /// </summary>
+        public static string KDLG_KAT_INVEST {
+            get {
+                return ResourceManager.GetString("KDLG_KAT_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten… ähnelt.
+        /// </summary>
+        public static string KDLG_KNOPF_BETRIEB {
+            get {
+                return ResourceManager.GetString("KDLG_KNOPF_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten… ähnelt.
+        /// </summary>
+        public static string KDLG_KNOPF_ENERGIE {
+            get {
+                return ResourceManager.GetString("KDLG_KNOPF_ENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten… ähnelt.
+        /// </summary>
+        public static string KDLG_KNOPF_INVEST {
+            get {
+                return ResourceManager.GetString("KDLG_KNOPF_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger… ähnelt.
+        /// </summary>
+        public static string KDLG_KOSTEN_ET_KNOPF {
+            get {
+                return ResourceManager.GetString("KDLG_KOSTEN_ET_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponente: ähnelt.
+        /// </summary>
+        public static string KDLG_LBL_KOMPONENTE {
+            get {
+                return ResourceManager.GetString("KDLG_LBL_KOMPONENTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante: ähnelt.
+        /// </summary>
+        public static string KDLG_LBL_VARIANTE {
+            get {
+                return ResourceManager.GetString("KDLG_LBL_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresleistungspreis ähnelt.
+        /// </summary>
+        public static string KDLG_LP_MODUS_JAHR {
+            get {
+                return ResourceManager.GetString("KDLG_LP_MODUS_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monatsleistungspreis ähnelt.
+        /// </summary>
+        public static string KDLG_LP_MODUS_MONAT {
+            get {
+                return ResourceManager.GetString("KDLG_LP_MODUS_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Saisonreihe {0} ({1}) — gilt vor dem Satz. ähnelt.
+        /// </summary>
+        public static string KDLG_LP_REIHE_STATUS {
+            get {
+                return ResourceManager.GetString("KDLG_LP_REIHE_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Saisonale Sätze… ähnelt.
+        /// </summary>
+        public static string KDLG_LP_SAISON {
+            get {
+                return ResourceManager.GetString("KDLG_LP_SAISON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis Strom: über die Tarifstruktur. ähnelt.
+        /// </summary>
+        public static string KDLG_LP_STROM_TARIF {
+            get {
+                return ResourceManager.GetString("KDLG_LP_STROM_TARIF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tarifstruktur… ähnelt.
+        /// </summary>
+        public static string KDLG_LP_STROM_TARIF_BTN {
+            get {
+                return ResourceManager.GetString("KDLG_LP_STROM_TARIF_BTN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string KDLG_LPR_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("KDLG_LPR_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle zwölf Sätze sind 0 — zum Entfernen der Reihe bitte „Reihe löschen“ verwenden. ähnelt.
+        /// </summary>
+        public static string KDLG_LPR_ALLES_NULL {
+            get {
+                return ResourceManager.GetString("KDLG_LPR_ALLES_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektreihe ähnelt.
+        /// </summary>
+        public static string KDLG_LPR_EBENE_PROJEKT {
+            get {
+                return ResourceManager.GetString("KDLG_LPR_EBENE_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stammreihe (Katalog) ähnelt.
+        /// </summary>
+        public static string KDLG_LPR_EBENE_STAMM {
+            get {
+                return ResourceManager.GetString("KDLG_LPR_EBENE_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt aus der Stammreihe ({0}); gespeichert wird eine Projektreihe, die vorgeht. ähnelt.
+        /// </summary>
+        public static string KDLG_LPR_HINWEIS_STAMM {
+            get {
+                return ResourceManager.GetString("KDLG_LPR_HINWEIS_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine gepflegte Reihe gilt vor dem konstanten Satz. ähnelt.
+        /// </summary>
+        public static string KDLG_LPR_HINWEIS_VORRANG {
+            get {
+                return ResourceManager.GetString("KDLG_LPR_HINWEIS_VORRANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahr: ähnelt.
+        /// </summary>
+        public static string KDLG_LPR_JAHR {
+            get {
+                return ResourceManager.GetString("KDLG_LPR_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihe löschen ähnelt.
+        /// </summary>
+        public static string KDLG_LPR_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KDLG_LPR_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Saisonale Leistungspreis-Sätze ähnelt.
+        /// </summary>
+        public static string KDLG_LPR_TITEL {
+            get {
+                return ResourceManager.GetString("KDLG_LPR_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string KDLG_LPR_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KDLG_LPR_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträgerverwaltung… ähnelt.
+        /// </summary>
+        public static string KDLG_MENUE_ENERGIETRAEGER {
+            get {
+                return ResourceManager.GetString("KDLG_MENUE_ENERGIETRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenverwaltung … ähnelt.
+        /// </summary>
+        public static string KDLG_MENUE_VORLAGEN {
+            get {
+                return ResourceManager.GetString("KDLG_MENUE_VORLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern unter ähnelt.
+        /// </summary>
+        public static string KDLG_MSG_KOPIE_TITEL {
+            get {
+                return ResourceManager.GetString("KDLG_MSG_KOPIE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante „{0}“ wirklich löschen? ähnelt.
+        /// </summary>
+        public static string KDLG_MSG_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KDLG_MSG_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name ist bereits vergeben oder leer. ähnelt.
+        /// </summary>
+        public static string KDLG_MSG_NAME_BELEGT {
+            get {
+                return ResourceManager.GetString("KDLG_MSG_NAME_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name der neuen Variante: ähnelt.
+        /// </summary>
+        public static string KDLG_MSG_NEU_NAME {
+            get {
+                return ResourceManager.GetString("KDLG_MSG_NEU_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neue Variante ähnelt.
+        /// </summary>
+        public static string KDLG_MSG_NEU_TITEL {
+            get {
+                return ResourceManager.GetString("KDLG_MSG_NEU_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Position „{0}“ löschen? ähnelt.
+        /// </summary>
+        public static string KDLG_MSG_POS_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KDLG_MSG_POS_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungsvorlagen sind schreibgeschützt. ähnelt.
+        /// </summary>
+        public static string KDLG_MSG_READONLY {
+            get {
+                return ResourceManager.GetString("KDLG_MSG_READONLY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Standardvorlage kann nicht gelöscht werden — Varianten schon. ähnelt.
+        /// </summary>
+        public static string KDLG_MSG_STANDARD_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KDLG_MSG_STANDARD_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neue Position ähnelt.
+        /// </summary>
+        public static string KDLG_POS_NEU_VORGABE {
+            get {
+                return ResourceManager.GetString("KDLG_POS_NEU_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungsvorlage (schreibgeschützt) — zum Ändern „Speichern unter…“ verwenden. ähnelt.
+        /// </summary>
+        public static string KDLG_READONLY_HINWEIS {
+            get {
+                return ResourceManager.GetString("KDLG_READONLY_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktionen ähnelt.
+        /// </summary>
+        public static string KDLG_SP_AKTIONEN {
+            get {
+                return ResourceManager.GetString("KDLG_SP_AKTIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bemessung ähnelt.
+        /// </summary>
+        public static string KDLG_SP_BEMESSUNG {
+            get {
+                return ResourceManager.GetString("KDLG_SP_BEMESSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrag netto [€] ähnelt.
+        /// </summary>
+        public static string KDLG_SP_BETRAG {
+            get {
+                return ResourceManager.GetString("KDLG_SP_BETRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrag netto [€/a] ähnelt.
+        /// </summary>
+        public static string KDLG_SP_BETRAG_JAHR {
+            get {
+                return ResourceManager.GetString("KDLG_SP_BETRAG_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungs-
+        ///dauer [a] ähnelt.
+        /// </summary>
+        public static string KDLG_SP_NUTZUNG {
+            get {
+                return ResourceManager.GetString("KDLG_SP_NUTZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Position ähnelt.
+        /// </summary>
+        public static string KDLG_SP_POSITION {
+            get {
+                return ResourceManager.GetString("KDLG_SP_POSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz ähnelt.
+        /// </summary>
+        public static string KDLG_SP_SATZ {
+            get {
+                return ResourceManager.GetString("KDLG_SP_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Worst/Best ähnelt.
+        /// </summary>
+        public static string KDLG_SP_WORSTBEST {
+            get {
+                return ResourceManager.GetString("KDLG_SP_WORSTBEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe brutto: {0} (Umsatzsteuer {1} % aus dem Katalog) ähnelt.
+        /// </summary>
+        public static string KDLG_SUMME_BRUTTO {
+            get {
+                return ResourceManager.GetString("KDLG_SUMME_BRUTTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Betriebskosten netto: {0} €/a ähnelt.
+        /// </summary>
+        public static string KDLG_SUMME_NETTO_BETRIEB {
+            get {
+                return ResourceManager.GetString("KDLG_SUMME_NETTO_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Investitionskosten netto: {0} € ähnelt.
+        /// </summary>
+        public static string KDLG_SUMME_NETTO_INVEST {
+            get {
+                return ResourceManager.GetString("KDLG_SUMME_NETTO_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ertrag/Bonus ähnelt.
+        /// </summary>
+        public static string KDLG_TAB_ERTRAG {
+            get {
+                return ResourceManager.GetString("KDLG_TAB_ERTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Reiter „Ertrag/Bonus“ folgt in Etappe KD5 (BHKW: KWKG und Steuern; Photovoltaik: EEG-Vergütung). ähnelt.
+        /// </summary>
+        public static string KDLG_TAB_ERTRAG_HINWEIS {
+            get {
+                return ResourceManager.GetString("KDLG_TAB_ERTRAG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten Invest/Betrieb ähnelt.
+        /// </summary>
+        public static string KDLG_TAB_KOSTEN {
+            get {
+                return ResourceManager.GetString("KDLG_TAB_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenverwaltung {0} ähnelt.
+        /// </summary>
+        public static string KDLG_TITEL {
+            get {
+                return ResourceManager.GetString("KDLG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenverwaltung {0} — {1} ähnelt.
+        /// </summary>
+        public static string KDLG_TITEL_PROJEKT {
+            get {
+                return ResourceManager.GetString("KDLG_TITEL_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsgröße erst im Projekt bekannt — der Betrag entsteht bei der Übernahme. ähnelt.
+        /// </summary>
+        public static string KDLG_TT_BETRAG_ADMIN {
+            get {
+                return ResourceManager.GetString("KDLG_TT_BETRAG_ADMIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus Satz und Bezugsgröße des Projekts berechnet. ähnelt.
+        /// </summary>
+        public static string KDLG_TT_BETRAG_PROJEKT {
+            get {
+                return ResourceManager.GetString("KDLG_TT_BETRAG_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz und Betrag netto sind verknüpft und werden bei Eingabe umgerechnet. ähnelt.
+        /// </summary>
+        public static string KDLG_TT_KETTE {
+            get {
+                return ResourceManager.GetString("KDLG_TT_KETTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Worst/Best wird je Projektposition gepflegt („Eingabe Worst/Best Case“), nicht in der Stammvorlage. ähnelt.
+        /// </summary>
+        public static string KDLG_TT_WORSTBEST {
+            get {
+                return ResourceManager.GetString("KDLG_TT_WORSTBEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus Vorlage/Variante: ähnelt.
+        /// </summary>
+        public static string KDLG_UEB_QUELLE_VORLAGE {
+            get {
+                return ResourceManager.GetString("KDLG_UEB_QUELLE_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle enthält {0} Positionen. Das Zielprojekt führt für diese Komponente bereits {1} Positionen — vorhandene bleiben unberührt, nur fehlende werden angelegt. Die Herkunft wird je Position vermerkt. ähnelt.
+        /// </summary>
+        public static string KDLG_UEB_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KDLG_UEB_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten nach VDI 2067 ähnelt.
+        /// </summary>
+        public static string KDLG_UNTERTITEL_BETRIEB {
+            get {
+                return ResourceManager.GetString("KDLG_UNTERTITEL_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten nach VDI 2067 ähnelt.
+        /// </summary>
+        public static string KDLG_UNTERTITEL_INVEST {
+            get {
+                return ResourceManager.GetString("KDLG_UNTERTITEL_INVEST", resourceCulture);
             }
         }
         
@@ -8289,6 +9613,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOSTEN_BTN_VDI2067 {
             get {
                 return ResourceManager.GetString("KOSTEN_BTN_VDI2067", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe absolut [€] ähnelt.
+        /// </summary>
+        public static string KOSTEN_CASE_ABSOLUT {
+            get {
+                return ResourceManager.GetString("KOSTEN_CASE_ABSOLUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe in % vom Erwartungswert ähnelt.
+        /// </summary>
+        public static string KOSTEN_CASE_PROZENT {
+            get {
+                return ResourceManager.GetString("KOSTEN_CASE_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Startjahr (0 = sofort; Jahr X: Zahlung/Betrieb ab X): ähnelt.
+        /// </summary>
+        public static string KOSTEN_CASE_STARTJAHR {
+            get {
+                return ResourceManager.GetString("KOSTEN_CASE_STARTJAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ergibt: Best {0:N2} € · Worst {1:N2} € ähnelt.
+        /// </summary>
+        public static string KOSTEN_CASE_UMRECHNUNG {
+            get {
+                return ResourceManager.GetString("KOSTEN_CASE_UMRECHNUNG", resourceCulture);
             }
         }
         
@@ -12835,6 +14195,564 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die greift nicht: Inbetriebnahme vor dem 25.02.2025. ähnelt.
+        /// </summary>
+        public static string PVW_51_ALTANLAGE {
+            get {
+                return ResourceManager.GetString("PVW_51_ALTANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die greift ab der ersten negativen Viertelstunde. ähnelt.
+        /// </summary>
+        public static string PVW_51_GREIFT {
+            get {
+                return ResourceManager.GetString("PVW_51_GREIFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die greift ab {0} (Folgejahr des iMSys-Einbaus). ähnelt.
+        /// </summary>
+        public static string PVW_51_IMSYS {
+            get {
+                return ResourceManager.GetString("PVW_51_IMSYS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die greift nicht: Anlage &lt; 100 kW ohne iMSys. ähnelt.
+        /// </summary>
+        public static string PVW_51_VERSCHONT {
+            get {
+                return ResourceManager.GetString("PVW_51_VERSCHONT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die § 51a-Kompensation (Laufzeitverlängerung) ähnelt.
+        /// </summary>
+        public static string PVW_51A {
+            get {
+                return ResourceManager.GetString("PVW_51A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string PVW_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("PVW_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergütung anwenden ähnelt.
+        /// </summary>
+        public static string PVW_AKTIV {
+            get {
+                return ResourceManager.GetString("PVW_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anwenden: ähnelt.
+        /// </summary>
+        public static string PVW_ANWENDEN {
+            get {
+                return ResourceManager.GetString("PVW_ANWENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausfallanteil der Einspeisearbeit [%]: ähnelt.
+        /// </summary>
+        public static string PVW_AUSFALL {
+            get {
+                return ResourceManager.GetString("PVW_AUSFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Automatisch ähnelt.
+        /// </summary>
+        public static string PVW_AUTO {
+            get {
+                return ResourceManager.GetString("PVW_AUTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Override) ähnelt.
+        /// </summary>
+        public static string PVW_AW_OVERRIDE {
+            get {
+                return ResourceManager.GetString("PVW_AW_OVERRIDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die AW-Override [ct/kWh] (0 = Katalog): ähnelt.
+        /// </summary>
+        public static string PVW_AW_OVR {
+            get {
+                return ResourceManager.GetString("PVW_AW_OVR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug stundenscharf aus Preiszeitreihe bewerten ähnelt.
+        /// </summary>
+        public static string PVW_BEZUG_REIHE {
+            get {
+                return ResourceManager.GetString("PVW_BEZUG_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Marktwerte importieren… ähnelt.
+        /// </summary>
+        public static string PVW_BTN_MARKTWERTE {
+            get {
+                return ResourceManager.GetString("PVW_BTN_MARKTWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DV-Entgelt [ct/kWh]: ähnelt.
+        /// </summary>
+        public static string PVW_DV {
+            get {
+                return ResourceManager.GetString("PVW_DV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feste Einspeisevergütung ähnelt.
+        /// </summary>
+        public static string PVW_EV {
+            get {
+                return ResourceManager.GetString("PVW_EV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feste EV nur bis 100 kW (§ 21 Abs. 1 Nr. 1 EEG). ähnelt.
+        /// </summary>
+        public static string PVW_EV_GESPERRT {
+            get {
+                return ResourceManager.GetString("PVW_EV_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feste EV (AW − {0:0.00}): {1:0.00} ct/kWh ähnelt.
+        /// </summary>
+        public static string PVW_EV_SATZ {
+            get {
+                return ResourceManager.GetString("PVW_EV_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergütungsausfall (§ 51 / § 51a) ähnelt.
+        /// </summary>
+        public static string PVW_G_51 {
+            get {
+                return ResourceManager.GetString("PVW_G_51", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage ähnelt.
+        /// </summary>
+        public static string PVW_G_ANLAGE {
+            get {
+                return ResourceManager.GetString("PVW_G_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzulegender Wert ähnelt.
+        /// </summary>
+        public static string PVW_G_AW {
+            get {
+                return ResourceManager.GetString("PVW_G_AW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strompreis / Bezugsbewertung ähnelt.
+        /// </summary>
+        public static string PVW_G_BEZUG {
+            get {
+                return ResourceManager.GetString("PVW_G_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 60-%-Wirkleistungsbegrenzung (§ 9 Abs. 2 EEG) ähnelt.
+        /// </summary>
+        public static string PVW_G_KAPPUNG {
+            get {
+                return ResourceManager.GetString("PVW_G_KAPPUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermarktung ähnelt.
+        /// </summary>
+        public static string PVW_G_VERMARKTUNG {
+            get {
+                return ResourceManager.GetString("PVW_G_VERMARKTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau ähnelt.
+        /// </summary>
+        public static string PVW_G_VORSCHAU {
+            get {
+                return ResourceManager.GetString("PVW_G_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne aktive Zuordnung beim Netzbetreiber gilt &lt; 200 kW die unentgeltliche Abnahme (§ 21c EEG). ähnelt.
+        /// </summary>
+        public static string PVW_HINWEIS_21C {
+            get {
+                return ResourceManager.GetString("PVW_HINWEIS_21C", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Inbetriebnahme: ähnelt.
+        /// </summary>
+        public static string PVW_IBN {
+            get {
+                return ResourceManager.GetString("PVW_IBN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte das Inbetriebnahmedatum angeben. ähnelt.
+        /// </summary>
+        public static string PVW_IBN_PFLICHT {
+            get {
+                return ResourceManager.GetString("PVW_IBN_PFLICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Import nicht möglich:  ähnelt.
+        /// </summary>
+        public static string PVW_IMPORT_FEHLER {
+            get {
+                return ResourceManager.GetString("PVW_IMPORT_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Dateien (*.csv)|*.csv|Alle Dateien (*.*)|*.* ähnelt.
+        /// </summary>
+        public static string PVW_IMPORT_FILTER {
+            get {
+                return ResourceManager.GetString("PVW_IMPORT_FILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Marktwerte übernommen:  ähnelt.
+        /// </summary>
+        public static string PVW_IMPORT_OK {
+            get {
+                return ResourceManager.GetString("PVW_IMPORT_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die iMSys-Einbaujahr (0 = keins): ähnelt.
+        /// </summary>
+        public static string PVW_IMSYS {
+            get {
+                return ResourceManager.GetString("PVW_IMSYS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ja ähnelt.
+        /// </summary>
+        public static string PVW_JA {
+            get {
+                return ResourceManager.GetString("PVW_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aktiv: Einspeisung auf 60 % der kWp begrenzt (ohne iMSys). ähnelt.
+        /// </summary>
+        public static string PVW_KAP_AN {
+            get {
+                return ResourceManager.GetString("PVW_KAP_AN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abgeschaltet. ähnelt.
+        /// </summary>
+        public static string PVW_KAP_AUS {
+            get {
+                return ResourceManager.GetString("PVW_KAP_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die greift nicht (Direktvermarktung oder iMSys vorhanden). ähnelt.
+        /// </summary>
+        public static string PVW_KAP_INAKTIV {
+            get {
+                return ResourceManager.GetString("PVW_KAP_INAKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Vergütung (unentgeltlich) ähnelt.
+        /// </summary>
+        public static string PVW_KEINE {
+            get {
+                return ResourceManager.GetString("PVW_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik… ähnelt.
+        /// </summary>
+        public static string PVW_KNOPF {
+            get {
+                return ResourceManager.GetString("PVW_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Installierte Leistung: ähnelt.
+        /// </summary>
+        public static string PVW_KWP {
+            get {
+                return ResourceManager.GetString("PVW_KWP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  — Override {0:N1} ähnelt.
+        /// </summary>
+        public static string PVW_KWP_OVERRIDE {
+            get {
+                return ResourceManager.GetString("PVW_KWP_OVERRIDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Override [kWp] (0 = keiner): ähnelt.
+        /// </summary>
+        public static string PVW_KWP_OVR {
+            get {
+                return ResourceManager.GetString("PVW_KWP_OVR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die rechnerisch {0:N1} kWp ähnelt.
+        /// </summary>
+        public static string PVW_KWP_WERT {
+            get {
+                return ResourceManager.GetString("PVW_KWP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromgestehungskosten: {0:N2} ct/kWh (LCOE₀, mit Satz vergleichbar) · {1:N2} ct/kWh (diskontiert) ähnelt.
+        /// </summary>
+        public static string PVW_KZ_LCOE {
+            get {
+                return ResourceManager.GetString("PVW_KZ_LCOE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  (mit Speicher) ähnelt.
+        /// </summary>
+        public static string PVW_KZ_MIT_SPEICHER {
+            get {
+                return ResourceManager.GetString("PVW_KZ_MIT_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Kosten (Investition/Betrieb) nicht gepflegt — LCOE und Vorteil entfallen. ähnelt.
+        /// </summary>
+        public static string PVW_KZ_OHNE_KOSTEN {
+            get {
+                return ResourceManager.GetString("PVW_KZ_OHNE_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom-Arbeitspreis nicht gepflegt — Ersparnisanteil entfällt. ähnelt.
+        /// </summary>
+        public static string PVW_KZ_OHNE_PREIS {
+            get {
+                return ResourceManager.GetString("PVW_KZ_OHNE_PREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenverbrauchsquote {0:N1} % · Autarkiegrad {1} %{2} ähnelt.
+        /// </summary>
+        public static string PVW_KZ_QUOTEN {
+            get {
+                return ResourceManager.GetString("PVW_KZ_QUOTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorteil durch PV: {0:N0} €/a ähnelt.
+        /// </summary>
+        public static string PVW_KZ_VORTEIL {
+            get {
+                return ResourceManager.GetString("PVW_KZ_VORTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Direktvermarktung mit Marktprämie ähnelt.
+        /// </summary>
+        public static string PVW_MP {
+            get {
+                return ResourceManager.GetString("PVW_MP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nein ähnelt.
+        /// </summary>
+        public static string PVW_NEIN {
+            get {
+                return ResourceManager.GetString("PVW_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstige Direktvermarktung / PPA ähnelt.
+        /// </summary>
+        public static string PVW_PPA {
+            get {
+                return ResourceManager.GetString("PVW_PPA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PPA-Aufschlag auf Spot [ct/kWh]: ähnelt.
+        /// </summary>
+        public static string PVW_PPA_AUFSCHLAG {
+            get {
+                return ResourceManager.GetString("PVW_PPA_AUFSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PPA-Festpreis [ct/kWh] (0 = keiner): ähnelt.
+        /// </summary>
+        public static string PVW_PPA_PREIS {
+            get {
+                return ResourceManager.GetString("PVW_PPA_PREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenverbrauch aus Anlagen ≤ 2 MW im räumlichen Zusammenhang ist stromsteuerfrei (§ 9 StromStG); bei Lieferung an Dritte gelten andere Regeln. ähnelt.
+        /// </summary>
+        public static string PVW_STROMSTEUER {
+            get {
+                return ResourceManager.GetString("PVW_STROMSTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Vergütung (EEG) ähnelt.
+        /// </summary>
+        public static string PVW_TITEL {
+            get {
+                return ResourceManager.GetString("PVW_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string PVW_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("PVW_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschusseinspeisung ähnelt.
+        /// </summary>
+        public static string PVW_UEBERSCHUSS {
+            get {
+                return ResourceManager.GetString("PVW_UEBERSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volleinspeisung ähnelt.
+        /// </summary>
+        public static string PVW_VOLL {
+            get {
+                return ResourceManager.GetString("PVW_VOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisung {0:N1} MWh/a · Satz Jahr 1: {1:0.00} ct/kWh · Erlös Jahr 1: {2:N0} €/a · Vergütungsausfall {3:N0} kWh ({4:N0} €) · § 51a-Gutschrift {5:N0} € (Jahr {6}) ähnelt.
+        /// </summary>
+        public static string PVW_VORSCHAU {
+            get {
+                return ResourceManager.GetString("PVW_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch kein Simulationsergebnis — die Vorschau zeigt erst nach einem Lauf Mengen und Erlöse; die Sätze oben gelten bereits. ähnelt.
+        /// </summary>
+        public static string PVW_VORSCHAU_OHNE_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("PVW_VORSCHAU_OHNE_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die über 1 MW: Ausschreibung — AW-Override nötig. ähnelt.
+        /// </summary>
+        public static string PVW_WARN_AUSSCHREIBUNG {
+            get {
+                return ResourceManager.GetString("PVW_WARN_AUSSCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die über 2 MW: Stromsteuer auf Eigenverbrauch prüfen. ähnelt.
+        /// </summary>
+        public static string PVW_WARN_STROMSTEUER {
+            get {
+                return ResourceManager.GetString("PVW_WARN_STROMSTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ansicht: ähnelt.
         /// </summary>
         public static string SIM_ANSICHT_LABEL {
@@ -14419,6 +16337,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_PUFFER_VERWENDUNG_PASST_NICHT {
             get {
                 return ResourceManager.GetString("SIM_PUFFER_VERWENDUNG_PASST_NICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Stromüberschuss von {0:N0} kWh getrennt von der PV-Einspeisung ausgewiesen (Befund V1). ähnelt.
+        /// </summary>
+        public static string SIM_PV_V1_BHKW_GETRENNT {
+            get {
+                return ResourceManager.GetString("SIM_PV_V1_BHKW_GETRENNT", resourceCulture);
             }
         }
         
@@ -19739,6 +21666,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation ähnelt.
+        /// </summary>
+        public static string WIRT_KACHEL_AMORTISATION {
+            get {
+                return ResourceManager.GetString("WIRT_KACHEL_AMORTISATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Annuität ähnelt.
+        /// </summary>
+        public static string WIRT_KACHEL_ANNUITAET {
+            get {
+                return ResourceManager.GetString("WIRT_KACHEL_ANNUITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die beste Variante: {0} ähnelt.
+        /// </summary>
+        public static string WIRT_KACHEL_BESTE {
+            get {
+                return ResourceManager.GetString("WIRT_KACHEL_BESTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Interner Zinsfuß ähnelt.
+        /// </summary>
+        public static string WIRT_KACHEL_IRR {
+            get {
+                return ResourceManager.GetString("WIRT_KACHEL_IRR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string WIRT_KACHEL_KEINE {
+            get {
+                return ResourceManager.GetString("WIRT_KACHEL_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert ggü. Stamm ähnelt.
+        /// </summary>
+        public static string WIRT_KACHEL_KW {
+            get {
+                return ResourceManager.GetString("WIRT_KACHEL_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Stammprojekt gerechnet ähnelt.
+        /// </summary>
+        public static string WIRT_KACHEL_NUR_STAMM {
+            get {
+                return ResourceManager.GetString("WIRT_KACHEL_NUR_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nettobarwert des Stammprojekts ähnelt.
+        /// </summary>
+        public static string WIRT_KACHEL_STAMM_KW {
+            get {
+                return ResourceManager.GetString("WIRT_KACHEL_STAMM_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Jede BHKW-Anlage des Projekts wird mit Heizöl betrieben ({0}) — als Neuanlage nicht mehr förderfähig (KWKG 2025, nur noch Erdgas; Näherung: gilt auch für Bio-Blends); Bonus = 0. ähnelt.
         /// </summary>
         public static string WIRT_KWKG_ALLE_HEIZOEL {
@@ -20536,6 +22535,114 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ZEILE_NETTOBARWERT {
             get {
                 return ResourceManager.GetString("WIRT_ZEILE_NETTOBARWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV: Kompensation § 51a (letztes Vergütungsjahr) [€] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_PV_51A {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_51A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV: Vergütungsausfall § 51 [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_PV_AUSFALL_EUR {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_AUSFALL_EUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV: Vergütungsausfall § 51 [kWh/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_PV_AUSFALL_KWH {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_AUSFALL_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV: anzulegender Wert AW_mix [ct/kWh] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_PV_AW {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_AW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Vergütung (Vermarktungsform) ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_PV_FORM {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_FORM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die sonstige Direktvermarktung (PPA) ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_PV_FORM_DV {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_FORM_DV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die feste Einspeisevergütung ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_PV_FORM_EV {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_FORM_EV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unentgeltliche Abnahme ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_PV_FORM_KEINE {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_FORM_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Direktvermarktung mit Marktprämie ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_PV_FORM_MP {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_FORM_MP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV: Kappungsverlust 60 % [kWh/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_PV_KAPPUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_KAPPUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV: Marktprämie Jahr 1 [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_PV_MARKTPRAEMIE {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_MARKTPRAEMIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV: vermiedener Netzbezug (Ausweis) [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_PV_VERMIEDEN {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_VERMIEDEN", resourceCulture);
             }
         }
         

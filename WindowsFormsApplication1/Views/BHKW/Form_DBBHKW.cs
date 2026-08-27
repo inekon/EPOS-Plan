@@ -39,6 +39,20 @@ namespace WindowsFormsApplication1
             // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
             // Auf ausreichend grossen Schirmen wirkungslos.
             FensterEinpassung.Einhaengen(this);
+
+            // ETAPPE KD6 (Konzept Kostendialoge Paragraf 9, FK8): Die Kosten-
+            // Einzelposten, Wartungskosten und Nutzungsdauer sind schreibgeschuetzt -
+            // gepflegt wird in der Stammvorlage; die Geraetewerte bleiben Datenquelle
+            // der Planwert-Uebernahme (kein zweiter Pflegeort). Unten kommt der
+            // Kosten-Block mit den drei Aufrufen an (Serienbaustein KostenKnoepfe).
+            KostenKnoepfe.Sperren(textBox_Modul, textBox_Montage, textBox_Lieferung,
+                                  textBox_Schallschutzhaube, textBox_Abgasreinigung,
+                                  textBox_Wartungskosten, textBox_Nutzungsdauer);
+            var kostenLeiste = KostenKnoepfe.Leiste(this, DbWerte.KOSTEN_KOMPONENTE_BHKW,
+                () => 0, () => null, KostenKnoepfe.Fk8Hinweis());
+            kostenLeiste.Dock = DockStyle.Bottom;
+            Controls.Add(kostenLeiste);
+            Height += 46;
         }
 
         private void btn_Abbrechen_Click(object sender, EventArgs e)

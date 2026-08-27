@@ -255,6 +255,15 @@ public class KostenPosition
     /// <summary>Klartext der Herleitung für den Hinweis am gesperrten Feld.</summary>
     public string Herleitung { get; set; } = "";
 
+    // ------------------------------------------------- Etappe KD6 (Konzept § 11, FK10)
+
+    /// <summary>
+    /// Startjahr der Position (<c>Tab_ProjektWerte.StartJahr</c>): 0 = t0
+    /// (NULL in der Datenbank, Bestand); X ≥ 2 = Investition erst im Jahr X,
+    /// Betrieb ab X — Rechenwirkung im <c>KapitalwertRechner</c>.
+    /// </summary>
+    public int StartJahr { get; set; }
+
     // ------------------------------------------------- Etappe K5 (Konzept § 7.4)
 
     /// <summary>

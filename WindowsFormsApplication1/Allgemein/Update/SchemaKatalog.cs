@@ -798,6 +798,486 @@ namespace WindowsFormsApplication1
             })
         };
 
+        // =================================================================================
+        // ETAPPE KD1 (Konzept Kostendialoge Rev. 1.2, § 4) — bewertete Stammvorlagen
+        //   mit Varianten je Komponente (Migrationsschritte 38/39).
+        //
+        //   Der flache Katalog Tab_Kostenfaktor bleibt Positionslexikon (KL2); die
+        //   Vorlagen tragen zusätzlich Bemessung, Satz und Empfehlungsbereich. NULL
+        //   heißt durchgängig "nicht gepflegt", nie 0 — die Auslieferungs-Seeds lassen
+        //   deshalb alle Sätze und Nutzungsdauern leer (Struktur ohne erfundene Preise,
+        //   § 4.3).
+        // =================================================================================
+
+        /// <summary>
+        /// Kopftabelle der Kostenvorlagen — eine Zeile je Komponente, Kategorie und
+        /// Variante. <c>IstStandard</c>: genau eine Standardvariante je
+        /// Komponente+Kategorie (Prüfregel der Pflege, kein DB-Constraint);
+        /// <c>ReadOnly</c>: Auslieferungs-Seeds nach dem Muster von
+        /// <c>Tab_Brennstoff_Stamm.ReadOnly</c> — nur über "Speichern unter" kopierbar.
+        /// </summary>
+        public const string TAB_KOSTENVORLAGE = "Tab_KostenVorlage";
+
+        /// <summary>Positionen einer Vorlage; Löschweitergabe über
+        /// <c>FK_KostenVorlagePos</c> (Muster <c>FK_PreisreiheDaten</c>).</summary>
+        public const string TAB_KOSTENVORLAGEPOSITION = "Tab_KostenVorlagePosition";
+
+        /// <summary>Spalte <c>Tab_KostenVorlage.KomponentenID</c> → <see cref="TAB_KOSTENKOMPONENTE"/>.ID.</summary>
+        public const string SPALTE_KV_KOMPONENTENID = "KomponentenID";
+
+        /// <summary>Spalte <c>Tab_KostenVorlage.KategorieID</c> (1 = Investition, 2 = Betrieb;
+        /// <see cref="Form_Kosten.KATEGORIE_INVESTITION"/>).</summary>
+        public const string SPALTE_KV_KATEGORIEID = "KategorieID";
+
+        /// <summary>Spalte <c>Tab_KostenVorlage.Name</c> — Variantenname; die
+        /// Auslieferungsvorlage heißt <see cref="VORLAGE_NAME_STANDARD"/>.</summary>
+        public const string SPALTE_KV_NAME = "Name";
+
+        /// <summary>Spalte <c>Tab_KostenVorlage.IstStandard</c> (YESNO).</summary>
+        public const string SPALTE_KV_IST_STANDARD = "IstStandard";
+
+        /// <summary>Spalte <c>Tab_KostenVorlage.ReadOnly</c> (YESNO).</summary>
+        public const string SPALTE_KV_READONLY = "ReadOnly";
+
+        /// <summary>Spalte <c>Tab_KostenVorlage.Bemerkung</c> (MEMO).</summary>
+        public const string SPALTE_KV_BEMERKUNG = "Bemerkung";
+
+        /// <summary>Spalte <c>Tab_KostenVorlage.GeaendertAm</c> (DATETIME).</summary>
+        public const string SPALTE_KV_GEAENDERT_AM = "GeaendertAm";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.VorlageID</c> → <see cref="TAB_KOSTENVORLAGE"/>.ID.</summary>
+        public const string SPALTE_KVP_VORLAGEID = "VorlageID";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.StammID</c> → <see cref="TAB_KOSTENFAKTOR"/>
+        /// (nullable — NULL bei freier Position ohne Lexikoneintrag).</summary>
+        public const string SPALTE_KVP_STAMMID = "StammID";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.Bezeichnung</c> (TEXT 255).</summary>
+        public const string SPALTE_KVP_BEZEICHNUNG = "Bezeichnung";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.Kostenart</c> —
+        /// <see cref="DbWerte.KOSTENART_KAPITALGEBUNDEN"/> u. a.</summary>
+        public const string SPALTE_KVP_KOSTENART = "Kostenart";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.Bemessung</c> —
+        /// <see cref="DbWerte.BEMESSUNG_BETRAG"/> u. a. (Katalog § 5.3).</summary>
+        public const string SPALTE_KVP_BEMESSUNG = "Bemessung";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.Satz</c> (DOUBLE, nullable) — Satz in
+        /// der Einheit der Bemessung; NULL = nicht gepflegt.</summary>
+        public const string SPALTE_KVP_SATZ = "Satz";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.BetragNetto</c> (DOUBLE, nullable) —
+        /// nur bei absoluten Bemessungen; sonst Ableitung erst im Projekt (§ 5.4).</summary>
+        public const string SPALTE_KVP_BETRAG_NETTO = "BetragNetto";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.IstErloes</c> (YESNO) — wie
+        /// <see cref="SPALTE_PW_IST_ERLOES"/>.</summary>
+        public const string SPALTE_KVP_IST_ERLOES = "IstErloes";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.Nutzungsdauer</c> (DOUBLE, nullable) —
+        /// VDI-2067-Nutzungsdauer [a] als Vorbelegung (Folie 7 / § 4.1); die Seeds lassen
+        /// sie leer, Normwerte werden nicht erfunden.</summary>
+        public const string SPALTE_KVP_NUTZUNGSDAUER = "Nutzungsdauer";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.Empfehlung_von</c> (DOUBLE, nullable) —
+        /// Hinweisbereich, Rolle wie <see cref="SPALTE_KF_BEZEICHNUNG"/>-Katalogempfehlungen.</summary>
+        public const string SPALTE_KVP_EMPFEHLUNG_VON = "Empfehlung_von";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.Empfehlung_bis</c> (DOUBLE, nullable).</summary>
+        public const string SPALTE_KVP_EMPFEHLUNG_BIS = "Empfehlung_bis";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.Sortierung</c> (LONG) — Reihenfolge im
+        /// Raster, Seeds in Zehnerschritten.</summary>
+        public const string SPALTE_KVP_SORTIERUNG = "Sortierung";
+
+        /// <summary>Name der Auslieferungsvariante (Persistenzwert, deutsch, eingefroren;
+        /// Anzeigename folgt in KD2 über MyResource).</summary>
+        public const string VORLAGE_NAME_STANDARD = "Standard";
+
+        /// <summary>Herkunftsvermerk der Vorlagen-Übernahme in <c>Tab_ProjektWerte</c>
+        /// (nullable; NIE stille Kopplung — reine Anzeige/Abgleich, § 4.2).</summary>
+        public const string SPALTE_PW_VORLAGEID = "VorlageID";
+
+        /// <summary>Startjahr der Investition je Position (LONG, nullable; NULL = t0) —
+        /// Entscheidung FK10, Rechenwirkung in Etappe KD6 (§ 11).</summary>
+        public const string SPALTE_PW_STARTJAHR = "StartJahr";
+
+        /// <summary>Ä20 (Migrationsschritt 45): <c>Tab_ProjektWerte.ID_Anlage</c>
+        /// (LONG, nullable) — die ANLAGENZEILE (<c>Tab_Energieanlagen.ID</c>), zu der
+        /// eine Kostenposition gehört. NULL = keine (gültige) Zuordnung: Altbestände
+        /// nicht verbauter Komponenten, Erfassungsgruppen-Altdaten (Ä7) und
+        /// Übernahmen in Komponenten ohne Anlage. Die Rechenkerne aggregieren je
+        /// Projekt und lesen die Spalte nicht; sie steuert Pflege und Ausweis.</summary>
+        public const string SPALTE_PW_ID_ANLAGE = "ID_Anlage";
+
+        /// <summary>Ä21 (Migrationsschritt 46): das GERÄT der zugeordneten Anlage
+        /// (Wert der Verweisspalte, z. B. <c>Tab_WP.ID</c>). Der Anker, der den
+        /// destruktiven Wizard-Neuaufbau überlebt: Anlagenzeilen werden dort
+        /// gelöscht und mit NEUEN IDs angelegt (dokumentiert in
+        /// <c>AnlagenEindeutigkeit</c>/<c>GeraeteWaisen</c>), die Gerätezeilen
+        /// bleiben. <c>KostenProjektPositionenCtrl.ZuordnungReparieren</c> findet
+        /// über Komponente + Gerät die neue Anlagenzeile.</summary>
+        public const string SPALTE_PW_ID_ANLAGE_GERAET = "ID_AnlageGeraet";
+
+        /// <summary>Spalte <c>energy_carrier.price_power</c> (DOUBLE, nullable) —
+        /// Leistungspreis des Katalogträgers; Einheit je <see cref="SPALTE_EC_PRICE_POWER_MODUS"/>.
+        /// Projektseitig existiert <c>energy_project_settings.custom_price_power</c> bereits;
+        /// Rechenwirkung in Etappe KD4 (FK6).</summary>
+        public const string SPALTE_EC_PRICE_POWER = "price_power";
+
+        /// <summary>Spalte <c>energy_carrier.price_power_modus</c> (TEXT 10) —
+        /// <see cref="DbWerte.LEISTUNGSPREIS_MODUS_JAHR"/> / <see cref="DbWerte.LEISTUNGSPREIS_MODUS_MONAT"/>;
+        /// NULL = nicht gepflegt (kein Leistungspreis).</summary>
+        public const string SPALTE_EC_PRICE_POWER_MODUS = "price_power_modus";
+
+        /// <summary>
+        /// Kopftabelle der Vorlagen. <b>ID explizit LONG, kein AutoWert</b> — Hausmuster
+        /// seit ADR-001 (MAX+1, wie <c>Tab_Preisreihe</c>); <c>[Name]</c>/<c>[ReadOnly]</c>
+        /// in Klammern, weil ACE beide sonst als Schlüsselwort liest.
+        /// </summary>
+        public const string SQL_CREATE_KOSTENVORLAGE =
+            "CREATE TABLE Tab_KostenVorlage (ID LONG NOT NULL PRIMARY KEY, " +
+            "KomponentenID LONG, KategorieID LONG, [Name] TEXT(100), " +
+            "IstStandard YESNO, [ReadOnly] YESNO, Bemerkung MEMO, GeaendertAm DATETIME)";
+
+        /// <summary>Suchweg der Variantenlisten (Komponente + Kategorie).</summary>
+        public const string SQL_INDEX_KOSTENVORLAGE =
+            "CREATE INDEX idx_KostenVorlage ON Tab_KostenVorlage (KomponentenID, KategorieID)";
+
+        /// <summary>Positionen; alle Fachwerte nullable (NULL = nicht gepflegt).</summary>
+        public const string SQL_CREATE_KOSTENVORLAGEPOSITION =
+            "CREATE TABLE Tab_KostenVorlagePosition (ID LONG NOT NULL PRIMARY KEY, " +
+            "VorlageID LONG, StammID LONG, Bezeichnung TEXT(255), Kostenart TEXT(20), " +
+            "Bemessung TEXT(30), Satz DOUBLE, BetragNetto DOUBLE, IstErloes YESNO, " +
+            "Nutzungsdauer DOUBLE, Empfehlung_von DOUBLE, Empfehlung_bis DOUBLE, " +
+            "Sortierung LONG)";
+
+        /// <summary>Der einzige Suchweg auf die Positionen.</summary>
+        public const string SQL_INDEX_KOSTENVORLAGEPOSITION =
+            "CREATE INDEX idx_KostenVorlagePosition ON Tab_KostenVorlagePosition (VorlageID)";
+
+        /// <summary>Löschweitergabe Kopf → Positionen (Begründung wie
+        /// <c>SQL_FK_PREISREIHEDATEN</c>: MAX+1-Vergabe macht Waisen später fremd).</summary>
+        public const string SQL_FK_KOSTENVORLAGEPOSITION =
+            "ALTER TABLE Tab_KostenVorlagePosition ADD CONSTRAINT FK_KostenVorlagePos " +
+            "FOREIGN KEY (VorlageID) REFERENCES Tab_KostenVorlage (ID) ON DELETE CASCADE";
+
+        /// <summary>
+        /// Die vier Spalten-Nachrüstungen des Schritts 38 (Muster
+        /// <see cref="Schritt19_Kostenarten"/>): Herkunft und Startjahr an
+        /// <c>Tab_ProjektWerte</c>, Leistungspreis und Modus an <c>energy_carrier</c>.
+        /// Alle nullable — reine Strukturerweiterung, ergebnisneutral.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt38_Spalten =
+        {
+            new SchemaSpalte(TAB_PROJEKTWERTE, SPALTE_PW_VORLAGEID,        "LONG"),
+            new SchemaSpalte(TAB_PROJEKTWERTE, SPALTE_PW_STARTJAHR,        "LONG"),
+            new SchemaSpalte(ENERGY_CARRIER,   SPALTE_EC_PRICE_POWER,      "DOUBLE"),
+            new SchemaSpalte(ENERGY_CARRIER,   SPALTE_EC_PRICE_POWER_MODUS, "TEXT(10)"),
+        };
+
+        /// <summary>Spalte <c>Tab_Preisreihe.ID_Energietraeger</c> (LONG, nullable) —
+        /// Etappe KD4 (Konzept Kostendialoge § 7.1, FK6a): NULL = Spot-Preisreihe
+        /// (Bestand); gesetzt = saisonale Leistungspreis-Reihe dieses Trägers
+        /// (Auflösung Monat, Einheit EUR/kW/Monat, 12 Werte). Zusammen mit
+        /// <c>ID_Projekt</c>: NULL = Stammreihe des Katalogs, gesetzt = Projektreihe
+        /// (gilt vor der Stammreihe).</summary>
+        public const string SPALTE_PR_ID_ENERGIETRAEGER = "ID_Energietraeger";
+
+        /// <summary>Die Spalten-Nachrüstung des Schritts 40 (Etappe KD4, FK6a) —
+        /// nullable, reine Strukturerweiterung; Bestandsreihen bleiben Spotreihen.</summary>
+        public static readonly SchemaSpalte[] Schritt40_Spalten =
+        {
+            new SchemaSpalte(TAB_PREISREIHE, SPALTE_PR_ID_ENERGIETRAEGER, "LONG"),
+        };
+
+        /// <summary>PV-Vergütungsangaben je Stammprojekt (PV-Konzept § 6.1, Etappe P3;
+        /// Muster Tab_ProjektTarif: Aktiv-Schalter, eine Zeile je Projekt).</summary>
+        public const string TAB_PROJEKTPHOTOVOLTAIK = "Tab_ProjektPhotovoltaik";
+
+        /// <summary>
+        /// CREATE der PV-Vergütungstabelle (Schritt 41). Alle Fachspalten nullable —
+        /// NULL heißt durchgängig „nicht gepflegt / Rückfall", nie 0; Vorbelegungen
+        /// (DvEntgelt 0,40 — N5; Ausfallanteil 20 % — F5) setzt der Controller beim
+        /// Anlegen, bewusst KEIN DDL-DEFAULT (Hausregel).
+        /// </summary>
+        public const string SQL_CREATE_PROJEKTPHOTOVOLTAIK =
+            "CREATE TABLE Tab_ProjektPhotovoltaik (ID LONG NOT NULL PRIMARY KEY, " +
+            "ID_Projekt LONG, Aktiv YESNO, Vermarktungsform TEXT(30), " +
+            "Einspeiseart TEXT(20), Inbetriebnahme DATETIME, KwpOverride DOUBLE, " +
+            "AwOverride DOUBLE, DvEntgelt DOUBLE, PpaPreis DOUBLE, " +
+            "PpaSpotAufschlag DOUBLE, Par51_Anwenden TEXT(20), IMSys_Einbaujahr LONG, " +
+            "AusfallanteilProzent DOUBLE, Par51a_Kompensieren YESNO, " +
+            "Kappung60_Anwenden TEXT(20), MarktwertJahresmittel DOUBLE, " +
+            "MarktwertEntwicklung DOUBLE, BezugAusPreisreihe YESNO, GeaendertAm DATETIME)";
+
+        /// <summary>Eine Zeile je Stammprojekt — der eindeutige Suchweg.</summary>
+        public const string SQL_INDEX_PROJEKTPHOTOVOLTAIK =
+            "CREATE UNIQUE INDEX idx_ProjektPhotovoltaik ON Tab_ProjektPhotovoltaik (ID_Projekt)";
+
+        /// <summary>Eine Position einer Auslieferungsvorlage (Schritt 39).</summary>
+        public sealed class VorlagenPositionSeed
+        {
+            public VorlagenPositionSeed(string bezeichnung, string kostenart, string bemessung,
+                                        double? empfehlungVon = null, double? empfehlungBis = null)
+            {
+                Bezeichnung = bezeichnung;
+                Kostenart = kostenart;
+                Bemessung = bemessung;
+                EmpfehlungVon = empfehlungVon;
+                EmpfehlungBis = empfehlungBis;
+            }
+
+            /// <summary><c>Tab_KostenVorlagePosition.Bezeichnung</c> — Wortlaut der
+            /// Vorlagen-Folien 8–24 bzw. der K5-Kataloge.</summary>
+            public readonly string Bezeichnung;
+
+            /// <summary>VDI-2067-Kostenart (<c>DbWerte.KOSTENART_*</c>).</summary>
+            public readonly string Kostenart;
+
+            /// <summary>Bemessungsart (<c>DbWerte.BEMESSUNG_*</c>, Katalog § 5.3).</summary>
+            public readonly string Bemessung;
+
+            /// <summary>Empfehlungsbereich [%] aus den K5-Katalogdaten; NULL = keiner.</summary>
+            public readonly double? EmpfehlungVon;
+
+            /// <inheritdoc cref="EmpfehlungVon"/>
+            public readonly double? EmpfehlungBis;
+        }
+
+        /// <summary>Eine Auslieferungsvorlage: Komponente, Kategorie, Positionsliste.</summary>
+        public sealed class KostenVorlagenSeed
+        {
+            public KostenVorlagenSeed(string komponente, int kategorieId,
+                                      VorlagenPositionSeed[] positionen)
+            {
+                Komponente = komponente;
+                KategorieId = kategorieId;
+                Positionen = positionen;
+            }
+
+            /// <summary><c>Tab_KostenKomponente.Komponente</c> (an der Produktiv-DB
+            /// nachgemessene Bestandsnamen, <c>DbWerte.KOSTEN_KOMPONENTE_*</c>).</summary>
+            public readonly string Komponente;
+
+            /// <summary>1 = Investition, 2 = Betrieb (<see cref="Form_Kosten.KATEGORIE_INVESTITION"/>).</summary>
+            public readonly int KategorieId;
+
+            /// <summary>Positionen in Anzeige-Reihenfolge (Sortierung = Index × 10).</summary>
+            public readonly VorlagenPositionSeed[] Positionen;
+        }
+
+        // Kurzformen NUR für die Lesbarkeit der Seed-Tabelle darunter.
+        private const string ART_KAP    = DbWerte.KOSTENART_KAPITALGEBUNDEN;
+        private const string ART_BETR   = DbWerte.KOSTENART_BETRIEBSGEBUNDEN;
+        private const string ART_BEDARF = DbWerte.KOSTENART_BEDARFSGEBUNDEN;
+        private const string ART_SONST  = DbWerte.KOSTENART_SONSTIGE;
+        private const string BM_BETRAG  = DbWerte.BEMESSUNG_BETRAG;
+        private const string BM_JAHR    = DbWerte.BEMESSUNG_JAHRESBETRAG;
+        private const string BM_PINV    = DbWerte.BEMESSUNG_PROZENT_INVESTITION;
+        private const string BM_PERZ    = DbWerte.BEMESSUNG_PROZENT_ERZEUGERKOSTEN;
+        private const string BM_PBRENN  = DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN;
+        private const string BM_PSTROM  = DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN;
+        private const string BM_KWH_TH  = DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH;
+        private const string BM_KWH_EL  = DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH;
+
+        /// <summary>
+        /// Die 20 Auslieferungsvorlagen (10 Komponenten × Investition/Betrieb) des
+        /// Schritts 39 — Positionslisten wörtlich aus den Vorlagen-Folien 8/9/14/15/16
+        /// (Investition) und 19–24 (Betrieb), Minimal-Vorlagen aus den K5-Katalogen
+        /// (Konzept § 5.6/§ 5.7).
+        ///
+        /// <b>Bewusste Abweichung von den Folien 20/21 (Entscheidung FK3):</b>
+        /// „Brennstoffkosten" und „Stromkosten (Verdichter)" fehlen — Energiekosten
+        /// erscheinen ausschließlich in der Energieträgerwelt (KL7); die
+        /// %-Bemessungen <c>PROZENT_BRENNSTOFFKOSTEN</c>/<c>PROZENT_STROMKOSTEN</c>
+        /// holen ihre Basis direkt von dort.
+        /// </summary>
+        public static readonly KostenVorlagenSeed[] Schritt39_Vorlagen =
+        {
+            // ------------------------- Investition (Folien 8/9/14/15/16) ----------------
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_HEIZKESSEL, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed("Wärmeerzeuger (Kessel)", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG),
+                new VorlagenPositionSeed("Zubehör", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("MSR-Technik / Automation", ART_KAP, BM_PERZ),
+                new VorlagenPositionSeed("Abgasanlage / Schornstein", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Montage und Installation", ART_KAP, BM_PINV),
+                new VorlagenPositionSeed("Bauliche Anlagen", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Planung / Baunebenkosten", ART_KAP, BM_PINV),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_BHKW, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed("BHKW-Modul (Kompaktaggregat)", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH),
+                new VorlagenPositionSeed("Spitzenlastkessel / Zubehör", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Wärmespeicher (Puffer)", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("MSR-Technik / Schaltanlage", ART_KAP, BM_PERZ),
+                new VorlagenPositionSeed("Abgasanlage / Schalldämpfer", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Montage und Einbringung", ART_KAP, BM_PINV),
+                new VorlagenPositionSeed("Bauliche Anlagen (Schallschutz)", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Planung / Baunebenkosten", ART_KAP, BM_PINV),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEPUMPE, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed("Wärmepumpe (Aggregat)", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG),
+                new VorlagenPositionSeed("Erschließung (Sonden/Kollektor/Luft)", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Zubehör", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("MSR-Technik / Automation", ART_KAP, BM_PERZ),
+                new VorlagenPositionSeed("Montage, Installation & Kältetechnik", ART_KAP, BM_PINV),
+                new VorlagenPositionSeed("Bauliche Anlagen (Fundament/Bohrung)", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Planung / Baunebenkosten", ART_KAP, BM_PINV),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_SOLARTHERMIE, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed("Sonnenkollektoren", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_M2_KOLLEKTOR),
+                new VorlagenPositionSeed("Zubehör (Montagesystem/Solarstation)", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Wärmespeicher (Solarspeicher)", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("MSR-Technik / Solarregler", ART_KAP, BM_PERZ),
+                new VorlagenPositionSeed("Montage und Verrohrung", ART_KAP, BM_PINV),
+                new VorlagenPositionSeed("Bauliche Anlagen (Gerüst etc.)", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Planung / Baunebenkosten", ART_KAP, BM_PINV),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PHOTOVOLTAIK, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed("PV-Module", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KWP),
+                new VorlagenPositionSeed("Wechselrichter", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Montagesystem / Unterkonstruktion", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Batteriespeicher", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET),
+                new VorlagenPositionSeed("Elektrotechnik / Netzanschluss", ART_KAP, BM_PERZ),
+                new VorlagenPositionSeed("Montage und Installation", ART_KAP, BM_PINV),
+                new VorlagenPositionSeed("Bauliche Anlagen (Gerüst etc.)", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Planung / Baunebenkosten", ART_KAP, BM_PINV),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed("Speicher", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_SONSTIGES, ART_KAP, BM_BETRAG),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_STROMSPEICHER, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed("Speicher", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_SONSTIGES, ART_KAP, BM_BETRAG),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_BHKW_EINBINDUNG, ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_HEIZUNGSTECHNIK, ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_ABGASANLAGE, ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_SONSTIGES, ART_KAP, BM_BETRAG),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_BAULICHE_ANLAGEN, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_HEIZRAUM, ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_SCHORNSTEIN, ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_BAULICHE_MASSNAHMEN, ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_HEIZOELLAGERUNG, ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_ERDGASANSCHLUSS, ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_SONSTIGES, ART_KAP, BM_BETRAG),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_STROMEINSPEISUNG, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_STROMEINSPEISUNG, ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_SONSTIGES, ART_KAP, BM_BETRAG),
+            }),
+
+            // ------------------------- Betrieb (Folien 19-24) ---------------------------
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_BHKW, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Vollwartung / Wartung BHKW", ART_BETR, BM_KWH_EL),
+                new VorlagenPositionSeed("Instandhaltung BHKW", ART_BETR, BM_PINV, 3.0, 9.0),
+                new VorlagenPositionSeed("Instandhaltung Heizkessel", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Instandhaltung Wärmezentrale", ART_BETR, BM_PINV, 1.8, 2.2),
+                new VorlagenPositionSeed("Instandhaltung bauliche Anlagen", ART_BETR, BM_PINV, 1.0, 1.5),
+                new VorlagenPositionSeed("Instandhaltung Stromeinspeisung", ART_BETR, BM_PINV, 1.8, 2.2),
+                new VorlagenPositionSeed("Personalkosten", ART_BETR, BM_PINV, 1.0, 4.0),
+                new VorlagenPositionSeed("Steuern, Versicherung, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
+                new VorlagenPositionSeed("Hilfsenergiekosten", ART_BEDARF, BM_PBRENN),
+                new VorlagenPositionSeed("Reserveleistungskosten", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_HEIZKESSEL, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Vollwartung / Wartung Kessel", ART_BETR, BM_KWH_TH),
+                new VorlagenPositionSeed("Instandhaltung Heizkessel", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Instandhaltung bauliche Anlagen", ART_BETR, BM_PINV, 1.0, 1.5),
+                new VorlagenPositionSeed("Hilfsenergiekosten (Strom)", ART_BEDARF, BM_PBRENN),
+                new VorlagenPositionSeed("Schornsteinfeger / Messung", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Personalkosten / Bedienung", ART_BETR, BM_PINV, 1.0, 4.0),
+                new VorlagenPositionSeed("Steuern, Versicherung, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEPUMPE, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Wartung Wärmepumpe", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Instandhaltung Wärmepumpe", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Instandhaltung Umweltwärmequelle", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Instandhaltung bauliche Anlagen", ART_BETR, BM_PINV, 1.0, 1.5),
+                new VorlagenPositionSeed("Hilfsenergiekosten (Pumpen)", ART_BEDARF, BM_PSTROM),
+                new VorlagenPositionSeed("Dichtheitsprüfung (Kältemittel)", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Personalkosten / Bedienung", ART_BETR, BM_PINV, 1.0, 4.0),
+                new VorlagenPositionSeed("Steuern, Versicherung, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_SOLARTHERMIE, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Wartung Solarthermie-Anlage", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Instandhaltung Sonnenkollektoren", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Instandhaltung Solarspeicher / Zubehör", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Instandhaltung bauliche Anlagen", ART_BETR, BM_PINV, 1.0, 1.5),
+                new VorlagenPositionSeed("Hilfsenergiekosten (Solarpumpe)", ART_BEDARF, BM_KWH_EL),
+                new VorlagenPositionSeed("Prüfung / Tausch Wärmeträgermedium", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Personalkosten / Bedienung", ART_BETR, BM_PINV, 1.0, 4.0),
+                new VorlagenPositionSeed("Steuern, Versicherung, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Wartung / Sichtprüfung Speicher", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Instandhaltung Pufferspeicher", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Instandhaltung Dämmung / Isolierung", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Instandhaltung Armaturen / Pumpen", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Hilfsenergiekosten (Speicherladepumpe)", ART_BEDARF, BM_KWH_EL),
+                new VorlagenPositionSeed("Wasserbehandlung / Nachspeisung", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Personalkosten / Bedienung", ART_BETR, BM_PINV, 1.0, 4.0),
+                new VorlagenPositionSeed("Versicherung, Steuern, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PHOTOVOLTAIK, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Wartung / Inspektion PV-Anlage", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Instandhaltung PV-Module / Gestell", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Instandhaltung Wechselrichter / Speicher", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Reinigung der PV-Module", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Zählermiete / Messstellenbetrieb", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Telekommunikation / Monitoring", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Personalkosten / Bedienung", ART_BETR, BM_PINV, 1.0, 4.0),
+                new VorlagenPositionSeed("Versicherung, Steuern, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_STROMSPEICHER, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Wartung / Sichtprüfung Speicher", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Instandhaltung Stromspeicher", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Instandhaltung Wärmezentrale", ART_BETR, BM_PINV, 1.8, 2.2),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_BAULICHE_ANLAGEN, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Instandhaltung bauliche Anlagen", ART_BETR, BM_PINV, 1.0, 1.5),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_STROMEINSPEISUNG, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Instandhaltung Stromeinspeisung", ART_BETR, BM_PINV, 1.8, 2.2),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
+        };
+
         /// <summary>
         /// ETAPPE E3 — Kostenart nach VDI 2067 (kapital-, bedarfs-, betriebsgebunden,
         /// sonstige). Werte und Begründung: <see cref="DbWerte.KOSTENART_KAPITALGEBUNDEN"/>.

@@ -71,7 +71,10 @@
             // 
             // Form_Hinweis
             // 
-            AutoScaleDimensions = new System.Drawing.SizeF(9F, 21F);
+            // 25.08.2026 (Layout-Sweep): Basis von 9,21 auf die tatsächliche
+            // Laufzeitbasis gesetzt — die gespeicherten Positionen gelten für den
+            // 12pt-Entwurf; die alte Basis staucht sie zur Laufzeit auf ~78 %.
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(361, 155);
             ControlBox = false;

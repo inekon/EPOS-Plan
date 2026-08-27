@@ -1,4 +1,4 @@
-namespace WindowsFormsApplication1
+ï»¿namespace WindowsFormsApplication1
 {
     partial class Form_Heizkessel_Bearbeiten
     {
@@ -10,7 +10,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Verwendete Ressourcen bereinigen.
         /// </summary>
-        /// <param name="disposing">True, wenn verwaltete Ressourcen gelöscht werden sollen; andernfalls False.</param>
+        /// <param name="disposing">True, wenn verwaltete Ressourcen gelÃ¶scht werden sollen; andernfalls False.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -23,8 +23,8 @@ namespace WindowsFormsApplication1
         #region Vom Windows Form-Designer generierter Code
 
         /// <summary>
-        /// Erforderliche Methode für die Designerunterstützung.
-        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// Erforderliche Methode fÃ¼r die DesignerunterstÃ¼tzung.
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geÃ¤ndert werden.
         /// </summary>
         private void InitializeComponent()
         {
@@ -56,7 +56,7 @@ namespace WindowsFormsApplication1
             Label8 = new System.Windows.Forms.Label();
             tb_th_Leistung = new System.Windows.Forms.TextBox();
             tb_Wirkungsgrad = new System.Windows.Forms.TextBox();
-            tb_Wirkungsgrad_Öl = new System.Windows.Forms.TextBox();
+            tb_Wirkungsgrad_Ã–l = new System.Windows.Forms.TextBox();
             tb_B_Verlust = new System.Windows.Forms.TextBox();
             Label9 = new System.Windows.Forms.Label();
             Label10 = new System.Windows.Forms.Label();
@@ -191,7 +191,7 @@ namespace WindowsFormsApplication1
             groupBox2.Controls.Add(Label8);
             groupBox2.Controls.Add(tb_th_Leistung);
             groupBox2.Controls.Add(tb_Wirkungsgrad);
-            groupBox2.Controls.Add(tb_Wirkungsgrad_Öl);
+            groupBox2.Controls.Add(tb_Wirkungsgrad_Ã–l);
             groupBox2.Controls.Add(tb_B_Verlust);
             groupBox2.Controls.Add(Label9);
             groupBox2.Controls.Add(Label10);
@@ -290,12 +290,12 @@ namespace WindowsFormsApplication1
             tb_Wirkungsgrad.Name = "tb_Wirkungsgrad";
             tb_Wirkungsgrad.TextChanged += tb_Wirkungsgrad_TextChanged;
             // 
-            // tb_Wirkungsgrad_Öl
+            // tb_Wirkungsgrad_Ã–l
             // 
-            tb_Wirkungsgrad_Öl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            resources.ApplyResources(tb_Wirkungsgrad_Öl, "tb_Wirkungsgrad_Öl");
-            tb_Wirkungsgrad_Öl.Name = "tb_Wirkungsgrad_Öl";
-            tb_Wirkungsgrad_Öl.TextChanged += tb_Wirkungsgrad_Öl_TextChanged;
+            tb_Wirkungsgrad_Ã–l.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(tb_Wirkungsgrad_Ã–l, "tb_Wirkungsgrad_Ã–l");
+            tb_Wirkungsgrad_Ã–l.Name = "tb_Wirkungsgrad_Ã–l";
+            tb_Wirkungsgrad_Ã–l.TextChanged += tb_Wirkungsgrad_Ã–l_TextChanged;
             // 
             // tb_B_Verlust
             // 
@@ -582,7 +582,7 @@ namespace WindowsFormsApplication1
         private System.Windows.Forms.Label Label8;
         private System.Windows.Forms.TextBox tb_th_Leistung;
         private System.Windows.Forms.TextBox tb_Wirkungsgrad;
-        private System.Windows.Forms.TextBox tb_Wirkungsgrad_Öl;
+        private System.Windows.Forms.TextBox tb_Wirkungsgrad_Ã–l;
         private System.Windows.Forms.TextBox tb_B_Verlust;
         private System.Windows.Forms.Label Label9;
         private System.Windows.Forms.Label Label10;

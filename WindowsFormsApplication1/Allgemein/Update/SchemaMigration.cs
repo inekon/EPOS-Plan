@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 37;
+        public const int ZIEL_VERSION = 47;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1379,6 +1379,97 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_37_BHKW_POSTEN = 37;
 
+        /// <summary>
+        /// Schritt 38 - <b>Etappe KD1</b> (Konzept Kostendialoge Rev. 1.2, § 4/§ 14):
+        /// die Strukturen der bewerteten Kostenvorlagen.
+        ///
+        /// <para>
+        /// <b>Was passiert.</b> Zwei neue Stammtabellen
+        /// <c>Tab_KostenVorlage</c>/<c>Tab_KostenVorlagePosition</c> (Kopf/Positionen,
+        /// Löschweitergabe, MAX+1-Vergabe wie <c>Tab_Preisreihe</c>) und vier
+        /// Spalten-Nachrüstungen: <c>Tab_ProjektWerte.VorlageID</c> (Übernahme-Herkunft,
+        /// § 4.2) und <c>.StartJahr</c> (Entscheidung FK10, Rechenwirkung erst KD6)
+        /// sowie <c>energy_carrier.price_power</c>/<c>.price_power_modus</c>
+        /// (Entscheidung FK6, Rechenwirkung erst KD4). Alles nullable, KEIN DDL-DEFAULT
+        /// auf Fachwerten (Hausregel).
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Ergebnisneutral:</b> reine Strukturerweiterung - vor KD2/KD4/KD6 wertet
+        /// kein Leser die neuen Spalten aus; Referenzläufe müssen byte-identisch
+        /// bleiben (Abnahmekriterium KD1).
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Idempotent</b> (unabhängig vom Marker): CREATE/INDEX/CONSTRAINT laufen
+        /// über <see cref="Ddl"/> („bereits vorhanden" ist Erfolg), die Spalten über
+        /// <see cref="SpaltenAnlegen"/> (vorhandene werden übersprungen).
+        /// </para>
+        /// </summary>
+        public const int SCHRITT_38_KOSTENVORLAGEN = 38;
+
+        /// <summary>
+        /// Schritt 39 - <b>Etappe KD1</b>: die 20 Auslieferungsvorlagen
+        /// (<see cref="SchemaKatalog.Schritt39_Vorlagen"/> - 10 Komponenten ×
+        /// Investition/Betrieb, Positionslisten wörtlich aus den Vorlagen-Folien 8-24
+        /// bzw. den K5-Katalogen).
+        ///
+        /// <para>
+        /// <b>Seeds ohne erfundene Werte:</b> <c>IstStandard = ReadOnly = TRUE</c>;
+        /// Sätze, Beträge und Nutzungsdauern bleiben NULL („nicht gepflegt", nie 0);
+        /// Empfehlungsbereiche nur, wo die K5-Katalogdaten sie belegen. Entscheidung
+        /// FK3: die Folien-Zeilen „Brennstoffkosten"/„Stromkosten (Verdichter)" werden
+        /// bewusst NICHT gesät - Energiekosten erscheinen nie im Betriebskosten-Raster.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Idempotent:</b> Existiert die Standardvariante einer Komponente+Kategorie
+        /// bereits (gleicher Name), bleibt sie samt Positionen unangetastet - der
+        /// Anwender könnte sie in Access bewusst geändert haben; der Zweitlauf meldet
+        /// 0 Änderungen. Fehlt eine Komponente (ältere Datenbank), legt
+        /// <see cref="KomponenteSichern"/> sie an (Muster Schritt 27).
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Rücknahme je Vorlage:</b> Scheitert das Säen einer Vorlage mittendrin,
+        /// wird ihr Kopf gelöscht (die Löschweitergabe räumt die Teilpositionen ab)
+        /// und der Schritt gilt als gescheitert - halb gesäte Vorlagen soll es nicht
+        /// geben; der nächste Lauf ergänzt nur die fehlenden.
+        /// </para>
+        /// </summary>
+        public const int SCHRITT_39_KOSTENVORLAGEN_SEED = 39;
+
+        /// <summary>
+        /// Schritt 40 - <b>Etappe KD4</b> (Konzept Kostendialoge § 7.1, Entscheidung
+        /// FK6a): <c>Tab_Preisreihe.ID_Energietraeger</c> — saisonale
+        /// Leistungspreis-Reihen je Energieträger nach dem Preisreihen-Muster
+        /// (12 Monatswerte, Einheit EUR/kW/Monat), bewusst NICHT als weitere
+        /// Katalogspalten. NULL = die Reihe ist eine gewöhnliche Spot-Preisreihe;
+        /// die Spot-Auswahllisten (<c>PreisreiheCtrl.ReadVerfuegbare</c>) filtern
+        /// Trägerreihen aus, damit die Stichtagsregel der Simulation keine
+        /// Monatsreihe kürt.
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker): reine Spalten-Nachrüstung
+        /// über <see cref="SpaltenAnlegen"/> (vorhandene Spalte wird übersprungen);
+        /// bei NEU angelegten Datenbanken bringt <see cref="SQL_CREATE_PREISREIHE"/>
+        /// die Spalte bereits mit.</para>
+        /// </summary>
+        public const int SCHRITT_40_LEISTUNGSPREISREIHE = 40;
+
+        /// <summary>
+        /// Schritt 41 - <b>Etappe P3</b> (PV-Konzept § 6.1/§ 6.3):
+        /// <c>Tab_ProjektPhotovoltaik</c> (PV-Vergütungsangaben je Stammprojekt,
+        /// Muster Tab_ProjektTarif; <c>Aktiv = false</c> heißt exakt Bestandsverhalten
+        /// — Abnahmekriterium) und die Marktwert-Solar-Stammreihen 2024/2025/2026
+        /// (Tab_Preisreihe, Auflösung Monat, ct/kWh, Bezeichner „Marktwert Solar";
+        /// 2026 mit den 7 veröffentlichten Monaten Jan–Jul).
+        ///
+        /// <para><b>Idempotent:</b> CREATE/INDEX über <see cref="Ddl"/>; die Reihen
+        /// werden nur gesät, wenn zum Bezeichner und Jahr noch keine Stammreihe
+        /// existiert — ein Zweitlauf meldet 0 neue Reihen.</para>
+        /// </summary>
+        public const int SCHRITT_41_PROJEKTPHOTOVOLTAIK = 41;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -2193,6 +2284,96 @@ namespace WindowsFormsApplication1
                         "nur Investition_kwel fuehren, gehen sonst mit 0,00 EUR in die " +
                         "Kostenrechnung ein.",
                         Schritt_37_BhkwPosten),
+
+            // KD1 (Konzept Kostendialoge Rev. 1.2): Strukturen und Auslieferungs-Seeds
+            // der bewerteten Stammvorlagen. Begruendung und Idempotenzzusage bei den
+            // Schrittkonstanten.
+            new Schritt(SCHRITT_38_KOSTENVORLAGEN,
+                        "Kostenvorlagen-Strukturen: Tab_KostenVorlage/-Position anlegen, " +
+                        "Tab_ProjektWerte um VorlageID/StartJahr und energy_carrier um " +
+                        "price_power/price_power_modus ergaenzen (Etappe KD1)",
+                        "Die Vorlagen-Strukturen konnten nicht angelegt werden - ohne sie " +
+                        "gibt es keine Stammvorlagen je Komponente (Konzept Kostendialoge).",
+                        Schritt_38_Kostenvorlagen),
+
+            new Schritt(SCHRITT_39_KOSTENVORLAGEN_SEED,
+                        "Auslieferungsvorlagen saeen: 20 Standardvorlagen (10 Komponenten x " +
+                        "Investition/Betrieb) mit den Positionslisten der Vorlagen-Folien, " +
+                        "Saetze bewusst leer (Etappe KD1)",
+                        "Die Auslieferungsvorlagen konnten nicht gesaet werden - der " +
+                        "Komponenten-Kostendialog (KD2) haette keine Standardvariante.",
+                        Schritt_39_KostenvorlagenSeed),
+
+            // KD4 (Konzept Kostendialoge Paragraf 7.1, FK6a): Traegerbezug der
+            // Preisreihen fuer saisonale Leistungspreis-Saetze.
+            new Schritt(SCHRITT_40_LEISTUNGSPREISREIHE,
+                        "Leistungspreis-Reihen: Tab_Preisreihe um ID_Energietraeger " +
+                        "ergaenzen (Etappe KD4, FK6a)",
+                        "Der Traegerbezug der Preisreihen konnte nicht angelegt werden - " +
+                        "ohne ihn gibt es keine saisonalen Leistungspreis-Saetze (FK6a).",
+                        Schritt_40_Leistungspreisreihe),
+
+            // P3 (PV-Konzept Paragraf 6.1/6.3): PV-Verguetungstabelle und
+            // Marktwert-Solar-Stammreihen.
+            new Schritt(SCHRITT_41_PROJEKTPHOTOVOLTAIK,
+                        "PV-Verguetung: Tab_ProjektPhotovoltaik anlegen und " +
+                        "Marktwert-Solar-Monatsreihen 2024/2025/2026 saeen (Etappe P3)",
+                        "Die PV-Verguetungstabelle konnte nicht angelegt werden - ohne " +
+                        "sie gibt es keinen PV-Verguetungsdialog (PV-Konzept).",
+                        Schritt_41_ProjektPhotovoltaik),
+
+            new Schritt(42,
+                        "Katalogtraeger Fluessiggas saeen (Nachtrag Ä9)",
+                        "Der Katalogtraeger Fluessiggas konnte nicht angelegt werden.",
+                        Schritt_42_Fluessiggas),
+
+            new Schritt(43,
+                        "Fehlende VDI-3805-Katalogtraeger nachsaeen (Nachtrag Ä9)",
+                        "Die VDI-3805-Katalogtraeger konnten nicht angelegt werden.",
+                        Schritt_43_VdiTraeger),
+
+            // Ä18 (Nutzerauftrag 26.08.2026): Der Strom-Leistungspreis wird wie bei
+            // den uebrigen Traegern im Energietraegerdialog gepflegt (Jahres- oder
+            // Monatssatz); das Preismodell ELECTRICITY braucht dafuer das
+            // Leistungspreis-Merkmal.
+            new Schritt(44,
+                        "Strom-Leistungspreis freischalten: pricing_model ELECTRICITY " +
+                        "erhaelt has_powerprice (Nachtrag Ä18)",
+                        "Der Strom-Leistungspreis konnte nicht freigeschaltet werden - " +
+                        "das Leistungspreisfeld des Stromtraegers bliebe verborgen.",
+                        Schritt_44_StromLeistungspreis),
+
+            // Ä20 (Nutzerauftrag 26.08.2026): Kostenpositionen werden je ANLAGE
+            // gepflegt — Tab_ProjektWerte traegt die Anlagenzeile, der Bestand wird
+            // der jeweils ersten verbauten Anlage seiner Komponente zugeordnet.
+            new Schritt(45,
+                        "Anlagenkosten: Tab_ProjektWerte.ID_Anlage anlegen und den " +
+                        "Bestand der jeweils ersten verbauten Anlage zuordnen (Ä20)",
+                        "Der Anlagenbezug der Kostenpositionen konnte nicht angelegt " +
+                        "werden - die Kostenverwaltung je Anlage braucht die Spalte.",
+                        Schritt_45_Anlagenkosten),
+
+            // Ä21: Der Wizard baut Anlagenzeilen destruktiv neu (neue IDs) — der
+            // Geräteanker macht die Kostenzuordnung dagegen reparierbar.
+            new Schritt(46,
+                        "Anlagenkosten-Geräteanker: Tab_ProjektWerte.ID_AnlageGeraet " +
+                        "anlegen und aus den bestehenden Zuordnungen befuellen (Ä21)",
+                        "Der Geräteanker der Kostenpositionen konnte nicht angelegt " +
+                        "werden - die Zuordnung ueberlebt den Anlagen-Wizard sonst nicht.",
+                        Schritt_46_AnlagenGeraeteanker),
+
+            // Ä24: Der Duplizierer versetzte ID_Anlage, aber nicht den
+            // komponentenabhängigen Geräteanker — Variantenkopien ankerten an
+            // den Geräten des Quellprojekts und verloren die Zuordnung beim
+            // ersten Anlagen-Wizard-Lauf. Der Schritt leitet die Anker aller
+            // GÜLTIG zugeordneten Positionen aus ihrer Anlagenzeile neu ab.
+            new Schritt(47,
+                        "Anlagenkosten-Geräteanker aus den gültigen Zuordnungen " +
+                        "neu ableiten (Ä24: Variantenkopien ankerten am Quellprojekt)",
+                        "Die Geräteanker der Kostenpositionen konnten nicht neu " +
+                        "abgeleitet werden - Variantenkopien verlieren ihre " +
+                        "Zuordnung sonst beim ersten Anlagen-Wizard-Lauf.",
+                        Schritt_47_AnkerNachziehen),
         };
 
         // =================================================================================
@@ -5579,6 +5760,614 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
+        // Schritt 38/39 - Etappe KD1 (Konzept Kostendialoge Rev. 1.2): Kostenvorlagen
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 38. Anlass, Umfang und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_38_KOSTENVORLAGEN"/>.
+        /// </summary>
+        private static bool Schritt_38_Kostenvorlagen(Lauf l)
+        {
+            // --- 38a) Kopf- und Positionstabelle -------------------------------------
+            if (!Ddl(l, SchemaKatalog.SQL_CREATE_KOSTENVORLAGE,
+                     "Tabelle " + SchemaKatalog.TAB_KOSTENVORLAGE)) return false;
+            if (!Ddl(l, SchemaKatalog.SQL_INDEX_KOSTENVORLAGE,
+                     "Index idx_KostenVorlage")) return false;
+
+            if (!Ddl(l, SchemaKatalog.SQL_CREATE_KOSTENVORLAGEPOSITION,
+                     "Tabelle " + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION)) return false;
+            if (!Ddl(l, SchemaKatalog.SQL_INDEX_KOSTENVORLAGEPOSITION,
+                     "Index idx_KostenVorlagePosition")) return false;
+            if (!Ddl(l, SchemaKatalog.SQL_FK_KOSTENVORLAGEPOSITION,
+                     "Loeschweitergabe FK_KostenVorlagePos")) return false;
+
+            // --- 38b) Spalten-Nachruestungen -----------------------------------------
+            // Tab_ProjektWerte.VorlageID/StartJahr, energy_carrier.price_power(_modus);
+            // alle nullable, Vorbelegung gibt es bewusst NICHT (NULL = nicht gepflegt).
+            return SpaltenAnlegen(l, SchemaKatalog.Schritt38_Spalten);
+        }
+
+        /// <summary>Schritt 40. Anlass und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_40_LEISTUNGSPREISREIHE"/>.</summary>
+        private static bool Schritt_40_Leistungspreisreihe(Lauf l)
+        {
+            return SpaltenAnlegen(l, SchemaKatalog.Schritt40_Spalten);
+        }
+
+        /// <summary>
+        /// Schritt 42 — Nachtrag Ä9 (Nutzerabnahme 26.08.2026): Der Katalog
+        /// führte kein Flüssiggas. Saat mit Standardwerten (Propan):
+        /// Hi 12,87 / Hs 14,00 kWh/kg (DIN 51622-Größenordnung), CO2 239 g/kWh
+        /// (BEHG-Faktor 0,0663 t CO2/GJ × 3,6 GJ/MWh), Preise 0 = nicht
+        /// gepflegt. Idempotent über den Namen; ID per MAX+1 (ADR-001). Der
+        /// Brennstoff-Stammverweis wird per Namenssuche verknüpft, wenn der
+        /// Stamm einen Flüssiggas-Eintrag führt — sonst 0 mit Protokollhinweis.
+        /// </summary>
+        /// <summary>
+        /// Ä18 (26.08.2026): Das Preismodell ELECTRICITY erhaelt das
+        /// Leistungspreis-Merkmal - damit zeigt der Energietraegerdialog beim Strom
+        /// dasselbe Leistungspreisfeld (Jahr/Monat, FK6) wie bei Gas und Fernwaerme.
+        /// Die Tarifstruktur bleibt das Detailmodell der Wirtschaftlichkeitsseite
+        /// (komponentenbezogene Sichten); der Flat-Leistungspreis ist ihr einfaches
+        /// Gegenstueck in der Kostenmaske. Idempotent: Ein bereits gesetztes Merkmal
+        /// wird nicht veraendert.
+        /// </summary>
+        /// <summary>
+        /// Ä20 (26.08.2026): Kostenpositionen je ANLAGE. Die Spalte wird angelegt
+        /// (idempotent), dann bekommt jede Bestandsposition ohne Zuordnung die
+        /// jeweils ERSTE verbaute Anlage ihrer Komponente (MIN(Tab_Energieanlagen.ID)
+        /// mit gesetzter Verweisspalte). Positionen ohne verbaute Anlage —
+        /// Erfassungsgruppen-Altdaten (Ä7) und Variantenreste — bleiben NULL und
+        /// erscheinen in der Oberfläche als „ohne Anlagenzuordnung“.
+        /// </summary>
+        /// <summary>
+        /// Ä21 (27.08.2026): Geräteanker der Anlagenkosten. Die Spalte wird
+        /// angelegt (idempotent) und für alle zugeordneten Positionen aus der
+        /// aktuellen Anlagenzeile befüllt (ein UPDATE-JOIN je Komponente).
+        /// </summary>
+        private static bool Schritt_46_AnlagenGeraeteanker(Lauf l)
+        {
+            try
+            {
+                using (var cmd = new OleDbCommand(
+                    "ALTER TABLE Tab_ProjektWerte ADD COLUMN ID_AnlageGeraet LONG", l.Conn))
+                    cmd.ExecuteNonQuery();
+            }
+            catch { /* Spalte existiert bereits */ }
+
+            object probe = Scalar(l,
+                "SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ID_AnlageGeraet IS NULL");
+            if (probe == null)
+            {
+                l.Zeile("Geräteanker (Schritt 46): Spalte ID_AnlageGeraet nicht anlegbar.");
+                return false;
+            }
+
+            var verweise = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                { DbWerte.ERZEUGER_WAERMEPUMPE,             "ID_WP" },
+                { DbWerte.ERZEUGER_HEIZKESSEL,              "ID_Kessel" },
+                { DbWerte.ERZEUGER_BHKW,                    "ID_BHKW" },
+                { DbWerte.ERZEUGER_PHOTOVOLTAIK,            "ID_PV" },
+                { DbWerte.ERZEUGER_SOLARTHERMIE,            "ID_Solar" },
+                { DbWerte.ERZEUGER_STROMSPEICHER,           "ID_SP" },
+                { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, "ID_PUFFER" }
+            };
+
+            int befuellt = 0;
+            DataTable komp = Abfrage(l, "SELECT ID, Komponente FROM Tab_KostenKomponente");
+            if (komp != null)
+                foreach (DataRow k in komp.Rows)
+                {
+                    string name = Convert.ToString(k["Komponente"]);
+                    int kid = Convert.ToInt32(k["ID"]);
+                    string spalte;
+                    if (!verweise.TryGetValue(name, out spalte)) continue;
+
+                    // Access-UPDATE mit JOIN — ohne Parameter (kid ist int),
+                    // damit die ACE-Unterabfragen-Falle nicht greift.
+                    befuellt += NonQuery(l,
+                        "UPDATE Tab_ProjektWerte AS w INNER JOIN Tab_Energieanlagen AS a " +
+                        "ON w.ID_Anlage = a.ID SET w.ID_AnlageGeraet = a.[" + spalte + "] " +
+                        "WHERE w.KomponentenID = " + kid + " AND w.ID_AnlageGeraet IS NULL");
+                }
+
+            l.Zeile("Geräteanker (Schritt 46): " + befuellt +
+                    " Position(en) mit dem Gerät ihrer Anlage verankert.");
+            return true;
+        }
+
+        /// <summary>
+        /// Ä24 (27.08.2026): Anker-Konsistenz. Schritt 46 befüllte nur LEERE
+        /// Anker; Variantenkopien trugen aber den 1:1 mitkopierten Anker des
+        /// QUELLprojekts (der Duplizierer kann die komponentenabhängige
+        /// Zieltabelle nicht versetzen). Für alle Positionen mit gültiger
+        /// Anlagenzuordnung wird der Anker aus der Anlagenzeile neu abgeleitet
+        /// (Überschreiben mit der Wahrheit; idempotent). Laufende Pflege:
+        /// <c>KostenProjektPositionenCtrl.AnkerNachziehen</c> nach jedem
+        /// Duplizieren, Gerätetausch-Umzug im Wizard-Speicherweg.
+        /// </summary>
+        private static bool Schritt_47_AnkerNachziehen(Lauf l)
+        {
+            object probe = Scalar(l,
+                "SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ID_AnlageGeraet IS NULL");
+            if (probe == null)
+            {
+                l.Zeile("Geräteanker-Nachzug (Schritt 47): Spalte ID_AnlageGeraet fehlt.");
+                return false;
+            }
+
+            var verweise = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                { DbWerte.ERZEUGER_WAERMEPUMPE,             "ID_WP" },
+                { DbWerte.ERZEUGER_HEIZKESSEL,              "ID_Kessel" },
+                { DbWerte.ERZEUGER_BHKW,                    "ID_BHKW" },
+                { DbWerte.ERZEUGER_PHOTOVOLTAIK,            "ID_PV" },
+                { DbWerte.ERZEUGER_SOLARTHERMIE,            "ID_Solar" },
+                { DbWerte.ERZEUGER_STROMSPEICHER,           "ID_SP" },
+                { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, "ID_PUFFER" }
+            };
+
+            int nachgezogen = 0;
+            DataTable komp = Abfrage(l, "SELECT ID, Komponente FROM Tab_KostenKomponente");
+            if (komp != null)
+                foreach (DataRow k in komp.Rows)
+                {
+                    string name = Convert.ToString(k["Komponente"]);
+                    int kid = Convert.ToInt32(k["ID"]);
+                    string spalte;
+                    if (!verweise.TryGetValue(name, out spalte)) continue;
+
+                    // UPDATE mit JOIN, kid als Literal (ACE-Bindungsfalle); der
+                    // ID_Projekt-Vergleich schuetzt vor Fremdzuordnungen.
+                    nachgezogen += NonQuery(l,
+                        "UPDATE Tab_ProjektWerte AS w INNER JOIN Tab_Energieanlagen AS a " +
+                        "ON w.ID_Anlage = a.ID SET w.ID_AnlageGeraet = a.[" + spalte + "] " +
+                        "WHERE w.KomponentenID = " + kid +
+                        " AND a.ID_Projekt = w.ProjektID");
+                }
+
+            l.Zeile("Geräteanker-Nachzug (Schritt 47): " + nachgezogen +
+                    " Position(en) aus ihrer Anlagenzeile abgeleitet.");
+            return true;
+        }
+
+        private static bool Schritt_45_Anlagenkosten(Lauf l)
+        {
+            try
+            {
+                using (var cmd = new OleDbCommand(
+                    "ALTER TABLE Tab_ProjektWerte ADD COLUMN ID_Anlage LONG", l.Conn))
+                    cmd.ExecuteNonQuery();
+            }
+            catch { /* Spalte existiert bereits */ }
+
+            object probe = Scalar(l, "SELECT COUNT(*) FROM Tab_ProjektWerte");
+            object probeSpalte = Scalar(l,
+                "SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ID_Anlage IS NULL");
+            if (probe == null || probeSpalte == null)
+            {
+                l.Zeile("Anlagenkosten (Schritt 45): Spalte ID_Anlage nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            var verweise = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                { DbWerte.ERZEUGER_WAERMEPUMPE,             "ID_WP" },
+                { DbWerte.ERZEUGER_HEIZKESSEL,              "ID_Kessel" },
+                { DbWerte.ERZEUGER_BHKW,                    "ID_BHKW" },
+                { DbWerte.ERZEUGER_PHOTOVOLTAIK,            "ID_PV" },
+                { DbWerte.ERZEUGER_SOLARTHERMIE,            "ID_Solar" },
+                { DbWerte.ERZEUGER_STROMSPEICHER,           "ID_SP" },
+                { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, "ID_PUFFER" }
+            };
+
+            int zugeordnet = 0, ohneAnlage = 0;
+            DataTable komp = Abfrage(l, "SELECT ID, Komponente FROM Tab_KostenKomponente");
+            if (komp != null)
+                foreach (DataRow k in komp.Rows)
+                {
+                    string name = Convert.ToString(k["Komponente"]);
+                    int kid = Convert.ToInt32(k["ID"]);
+                    string spalte;
+                    if (!verweise.TryGetValue(name, out spalte)) continue;
+
+                    DataTable projekte = Abfrage(l,
+                        "SELECT DISTINCT ProjektID FROM Tab_ProjektWerte " +
+                        "WHERE KomponentenID = ? AND ID_Anlage IS NULL",
+                        new OleDbParameter("@k", kid));
+                    if (projekte == null) continue;
+
+                    foreach (DataRow pr in projekte.Rows)
+                    {
+                        if (pr["ProjektID"] == DBNull.Value) continue;
+                        int pid = Convert.ToInt32(pr["ProjektID"]);
+                        object a = Scalar(l,
+                            "SELECT MIN(ID) FROM Tab_Energieanlagen " +
+                            "WHERE ID_Projekt = ? AND [" + spalte + "] IS NOT NULL",
+                            new OleDbParameter("@p", pid));
+                        if (a == null || a == DBNull.Value) { ohneAnlage++; continue; }
+                        zugeordnet += NonQuery(l,
+                            "UPDATE Tab_ProjektWerte SET ID_Anlage = ? " +
+                            "WHERE ProjektID = ? AND KomponentenID = ? AND ID_Anlage IS NULL",
+                            new OleDbParameter("@a", Convert.ToInt32(a)),
+                            new OleDbParameter("@p", pid),
+                            new OleDbParameter("@k", kid));
+                    }
+                }
+
+            l.Zeile("Anlagenkosten (Schritt 45): " + zugeordnet +
+                    " Position(en) der jeweils ersten verbauten Anlage zugeordnet; " +
+                    ohneAnlage + " Projekt-Komponenten ohne verbaute Anlage bleiben " +
+                    "ohne Zuordnung (Ausweis \"ohne Anlagenzuordnung\").");
+            return true;
+        }
+
+        private static bool Schritt_44_StromLeistungspreis(Lauf l)
+        {
+            NonQuery(l,
+                "UPDATE pricing_model SET has_powerprice = true WHERE code = 'ELECTRICITY'");
+            object o = Scalar(l,
+                "SELECT has_powerprice FROM pricing_model WHERE code = 'ELECTRICITY'");
+            return o != null && o != DBNull.Value && Convert.ToBoolean(o);
+        }
+
+        private static bool Schritt_42_Fluessiggas(Lauf l)
+        {
+            object da = Scalar(l,
+                "SELECT COUNT(*) FROM energy_carrier WHERE [name] = ?",
+                new OleDbParameter("@n", "Flüssiggas"));
+            if (da != null && Convert.ToInt32(da) > 0)
+            {
+                l.Zeile("Fluessiggas (Schritt 42): bereits vorhanden - nichts zu tun.");
+                return true;
+            }
+
+            int idBrennstoff = BrennstoffStammId("Flüssiggas");
+
+            object max = Scalar(l, "SELECT MAX(id) FROM energy_carrier");
+            int id = ((max == null || max == DBNull.Value) ? 0 : Convert.ToInt32(max)) + 1;
+            if (NonQuery(l,
+                    "INSERT INTO energy_carrier " +
+                    "(id, ID_Brennstoff, [name], code, group_code, pricing_model, billing_unit, " +
+                    " hi_kwh_per_unit, hs_kwh_per_unit, price_work, price_base, price_power, " +
+                    " co2, so2, nox, is_active) " +
+                    "VALUES (?, ?, 'Flüssiggas', 'Fluessiggas', 'Gas', 'GASEOUS_FUEL', 'kg', " +
+                    " 12.87, 14.0, 0, 0, 0, 239, 0, 0, TRUE)",
+                    new OleDbParameter("@id", id),
+                    new OleDbParameter("@b", idBrennstoff)) < 0)
+                return false;
+
+            l.Zeile("Fluessiggas (Schritt 42): als Katalogtraeger " + id + " gesaet" +
+                    (idBrennstoff > 0
+                        ? " (Brennstoff-Stamm " + idBrennstoff + ")."
+                        : " (ohne Brennstoff-Stammverweis - im Stamm fehlt Fluessiggas)."));
+            return true;
+        }
+
+        /// <summary>
+        /// Brennstoff-Stammverweis per Namenssuche — STILL: <c>ExecuteScalar</c>
+        /// meldet Abfragefehler selbst als MessageBox (Befund 26.08.2026: der
+        /// frühere Spaltenname-Ratelauf öffnete beim App-Start drei Boxen und
+        /// ließ die Migration wie gescheitert wirken). Die Stammspalte heißt
+        /// <c>Bezeichner</c>; die Probe läuft trotzdem im EngineModus, damit ein
+        /// abweichender Altbestand nie wieder eine Box auslöst.
+        /// </summary>
+        private static int BrennstoffStammId(string namensanfang)
+        {
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                object b = DataRepository.ExecuteScalar(
+                    "SELECT MAX(ID) FROM Tab_Brennstoff_Stamm WHERE [Bezeichner] LIKE ?",
+                    new OleDbParameter("@n", namensanfang + "%"));
+                DataRepository.StilleFehlerAbholen();
+                return (b == null || b == DBNull.Value) ? 0 : Convert.ToInt32(b);
+            }
+        }
+
+        /// <summary>
+        /// Schritt 43 — Nachtrag Ä9, zweiter Teil (Nutzerauftrag 26.08.2026:
+        /// „Flüssiggas fehlt → prüfe auch andere Gruppen aus der VDI 3805“):
+        /// Der Katalog folgt der VDI-3805-Energieträgersystematik (die
+        /// <c>code</c>-Werte des Bestands tragen die VDI-Bezeichner). Gegen die
+        /// klassische Trägerliste fehlten die festen Brennstoffe — nachgesät
+        /// werden Steinkohle, Braunkohlebrikett (Gruppe „Kohle“) sowie
+        /// Scheitholz, Holzpellets, Holzhackschnitzel (Gruppe „Holz“; biogen,
+        /// CO2 = 0 wie der Bestands-Biogas-Eintrag). Heiz-/Brennwerte in kWh/kg
+        /// (Literatur-Standardwerte), Preise 0 = nicht gepflegt. Je Träger
+        /// idempotent über den Namen; ID per MAX+1; Preismodell wie der
+        /// Bestands-Feststoff Koks (Rückfall GASEOUS_FUEL).
+        /// </summary>
+        private static bool Schritt_43_VdiTraeger(Lauf l)
+        {
+            string modell = "GASEOUS_FUEL";
+            try
+            {
+                object m = DataRepository.ExecuteScalar(
+                    "SELECT pricing_model FROM energy_carrier WHERE [name] = 'Koks'");
+                if (m != null && m != DBNull.Value && Convert.ToString(m).Length > 0)
+                    modell = Convert.ToString(m);
+            }
+            catch { }
+
+            object[][] traeger =
+            {
+                //            Name                     Gruppe   Hi     Hs     CO2 [g/kWh]
+                new object[] { "Steinkohle",           "Kohle", 8.14,  8.41,  340.0 },
+                new object[] { "Braunkohlebrikett",    "Kohle", 5.35,  5.70,  400.0 },
+                new object[] { "Scheitholz",           "Holz",  4.10,  4.50,  0.0 },
+                new object[] { "Holzpellets",          "Holz",  4.80,  5.20,  0.0 },
+                new object[] { "Holzhackschnitzel",    "Holz",  3.90,  4.30,  0.0 },
+            };
+
+            int neu = 0, vorhanden = 0;
+            foreach (object[] t in traeger)
+            {
+                string name = (string)t[0];
+                object da = Scalar(l,
+                    "SELECT COUNT(*) FROM energy_carrier WHERE [name] = ?",
+                    new OleDbParameter("@n", name));
+                if (da != null && Convert.ToInt32(da) > 0) { vorhanden++; continue; }
+
+                object max = Scalar(l, "SELECT MAX(id) FROM energy_carrier");
+                int id = ((max == null || max == DBNull.Value) ? 0 : Convert.ToInt32(max)) + 1;
+                if (NonQuery(l,
+                        "INSERT INTO energy_carrier " +
+                        "(id, ID_Brennstoff, [name], code, group_code, pricing_model, billing_unit, " +
+                        " hi_kwh_per_unit, hs_kwh_per_unit, price_work, price_base, price_power, " +
+                        " co2, so2, nox, is_active) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, 'kg', ?, ?, 0, 0, 0, ?, 0, 0, TRUE)",
+                        new OleDbParameter("@id", id),
+                        new OleDbParameter("@b", BrennstoffStammId(name)),
+                        new OleDbParameter("@n", name),
+                        new OleDbParameter("@c", name),
+                        new OleDbParameter("@g", (string)t[1]),
+                        new OleDbParameter("@m", modell),
+                        new OleDbParameter("@hi", (double)t[2]),
+                        new OleDbParameter("@hs", (double)t[3]),
+                        new OleDbParameter("@co2", (double)t[4])) < 0)
+                    return false;
+                neu++;
+            }
+
+            // Nachzug: ein bereits (durch Schritt 42 mit dem alten Ratelauf)
+            // gesätes Flüssiggas ohne Brennstoffverweis wird nachverknüpft.
+            int flgStamm = BrennstoffStammId("Flüssiggas");
+            if (flgStamm > 0)
+                NonQuery(l,
+                    "UPDATE energy_carrier SET ID_Brennstoff = ? " +
+                    "WHERE [name] = 'Flüssiggas' AND ID_Brennstoff = 0",
+                    new OleDbParameter("@b", flgStamm));
+
+            l.Zeile("VDI-3805-Traeger (Schritt 43): " + neu + " gesät, " + vorhanden +
+                    " bereits vorhanden (Steinkohle, Braunkohlebrikett, Scheitholz, " +
+                    "Holzpellets, Holzhackschnitzel).");
+            return true;
+        }
+
+        /// <summary>Schritt 41. Anlass und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_41_PROJEKTPHOTOVOLTAIK"/>.</summary>
+        private static bool Schritt_41_ProjektPhotovoltaik(Lauf l)
+        {
+            // --- 41a) Tabelle + eindeutiger Projektindex -----------------------------
+            if (!Ddl(l, SchemaKatalog.SQL_CREATE_PROJEKTPHOTOVOLTAIK,
+                     "Tabelle " + SchemaKatalog.TAB_PROJEKTPHOTOVOLTAIK)) return false;
+            if (!Ddl(l, SchemaKatalog.SQL_INDEX_PROJEKTPHOTOVOLTAIK,
+                     "Index idx_ProjektPhotovoltaik")) return false;
+
+            // --- 41b) Marktwert-Solar-Stammreihen (Anhang A; 2026 Jan-Jul) -----------
+            // Werte ct/kWh, netztransparenz.de (Paragraf 23a EEG). Vor Freigabe gegen
+            // den CSV-Download verifizieren (Pruefschritt P3, Konzept 6.3).
+            double[][] jahre =
+            {
+                new[] { 7.535, 5.875, 4.965, 3.795, 3.161, 4.635, 3.554, 4.263, 4.512, 6.752, 10.076, 11.171 },
+                new[] { 11.511, 11.099, 5.027, 3.041, 1.997, 1.843, 5.923, 3.832, 4.307, 6.980, 9.102, 9.373 },
+                new[] { 11.019, 7.717, 5.455, 1.317, 3.163, 6.190, 5.226 },
+            };
+            int[] jahrVon = { 2024, 2025, 2026 };
+
+            int neu = 0, vorhanden = 0;
+            for (int j = 0; j < jahre.Length; j++)
+            {
+                object da = Scalar(l,
+                    "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_PREISREIHE + "] " +
+                    "WHERE Bezeichner = ? AND Jahr = ? AND ID_Projekt IS NULL",
+                    new OleDbParameter("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
+                    new OleDbParameter("@j", jahrVon[j]));
+                if (da != null && Convert.ToInt32(da) > 0) { vorhanden++; continue; }
+
+                object maxKopf = Scalar(l, "SELECT MAX(ID) FROM [" + SchemaKatalog.TAB_PREISREIHE + "]");
+                int kopfId = (maxKopf == null || maxKopf == DBNull.Value ? 0 : Convert.ToInt32(maxKopf)) + 1;
+                if (NonQuery(l,
+                        "INSERT INTO [" + SchemaKatalog.TAB_PREISREIHE + "] " +
+                        "(ID, ID_Projekt, Bezeichner, Jahr, Aufloesung, Einheit, ID_Energietraeger) " +
+                        "VALUES (?, NULL, ?, ?, ?, ?, NULL)",
+                        new OleDbParameter("@id", kopfId),
+                        new OleDbParameter("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
+                        new OleDbParameter("@j", jahrVon[j]),
+                        new OleDbParameter("@a", DbWerte.PREISREIHE_AUFLOESUNG_MONAT),
+                        new OleDbParameter("@e", DbWerte.PREISREIHE_EINHEIT_CT_KWH)) < 0)
+                    return false;
+
+                object maxDaten = Scalar(l, "SELECT MAX(ID) FROM [Tab_PreisreiheDaten]");
+                int datenId = maxDaten == null || maxDaten == DBNull.Value ? 0 : Convert.ToInt32(maxDaten);
+                foreach (double wert in jahre[j])
+                {
+                    datenId++;
+                    if (NonQuery(l,
+                            "INSERT INTO [Tab_PreisreiheDaten] (ID, ID_Preisreihe, Wert) VALUES (?, ?, ?)",
+                            new OleDbParameter("@id", datenId),
+                            new OleDbParameter("@k", kopfId),
+                            new OleDbParameter("@w", wert)) < 0)
+                        return false;
+                }
+                neu++;
+            }
+
+            l.Zeile("Marktwert Solar (Schritt 41): " + neu + " Stammreihe(n) gesaet, " +
+                    vorhanden + " bereits vorhanden - die Monatsmarktwerte 2024/2025 und " +
+                    "Jan-Jul 2026 stehen fuer die Marktpraemien- und Paragraf-51-Rechnung bereit.");
+            return true;
+        }
+
+        /// <summary>Nullbarer Parameter mit ausdruecklichem OleDb-Typ - ein DBNull ohne
+        /// Typ kann der Provider nicht binden.</summary>
+        private static OleDbParameter ParamOderNull(string name, OleDbType typ, object wert)
+        {
+            var p = new OleDbParameter(name, typ);
+            p.Value = wert ?? DBNull.Value;
+            return p;
+        }
+
+        /// <summary>
+        /// Schritt 39. Anlass, Seed-Regeln und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_39_KOSTENVORLAGEN_SEED"/>.
+        /// </summary>
+        private static bool Schritt_39_KostenvorlagenSeed(Lauf l)
+        {
+            if (TabellenSchema(l, SchemaKatalog.TAB_KOSTENVORLAGE) == null ||
+                TabellenSchema(l, SchemaKatalog.TAB_KOSTENVORLAGEPOSITION) == null)
+            {
+                l.Notiz("39: Vorlagentabellen sind nicht lesbar - Schritt 38 ist nicht gelaufen.");
+                return false;
+            }
+
+            bool ok = true;
+            int vorlagen = 0, positionen = 0, komponentenNeu = 0, vorhanden = 0;
+
+            foreach (SchemaKatalog.KostenVorlagenSeed v in SchemaKatalog.Schritt39_Vorlagen)
+            {
+                // Komponente aufloesen; fehlt sie (aeltere Datenbank), legt das
+                // idempotente Muster aus Schritt 27 sie an.
+                int neu;
+                if (!KomponenteSichern(l, v.Komponente, out neu)) { ok = false; continue; }
+                komponentenNeu += neu;
+
+                object idObj = Scalar(l,
+                    "SELECT MAX([ID]) FROM [" + SchemaKatalog.TAB_KOSTENKOMPONENTE + "] " +
+                    "WHERE [" + SchemaKatalog.SPALTE_KK_KOMPONENTE + "] = ?",
+                    new OleDbParameter("@k", v.Komponente));
+                if (idObj == null || idObj == DBNull.Value)
+                {
+                    l.Notiz("39: Komponente \"" + v.Komponente + "\" ist nicht aufloesbar.");
+                    ok = false;
+                    continue;
+                }
+                int komponentenId = Zahl(idObj);
+
+                // Standardvariante schon da? Dann samt Positionen unangetastet lassen -
+                // Idempotenz: der Zweitlauf meldet 0 Aenderungen.
+                object da = Scalar(l,
+                    "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_KOSTENVORLAGE + "] " +
+                    "WHERE [" + SchemaKatalog.SPALTE_KV_KOMPONENTENID + "] = ? AND [" +
+                    SchemaKatalog.SPALTE_KV_KATEGORIEID + "] = ? AND [" +
+                    SchemaKatalog.SPALTE_KV_NAME + "] = ?",
+                    new OleDbParameter("@kid", komponentenId),
+                    new OleDbParameter("@kat", v.KategorieId),
+                    new OleDbParameter("@n", SchemaKatalog.VORLAGE_NAME_STANDARD));
+                if (da == null) { ok = false; continue; }
+                if (Zahl(da) > 0) { vorhanden++; continue; }
+
+                // ID ist KEIN AutoWert (Hausmuster ADR-001): MAX+1 selbst vergeben.
+                int vorlageId = Zahl(Scalar(l, "SELECT MAX([ID]) FROM [" +
+                                               SchemaKatalog.TAB_KOSTENVORLAGE + "]")) + 1;
+
+                int kopf = NonQuery(l,
+                    "INSERT INTO [" + SchemaKatalog.TAB_KOSTENVORLAGE + "] ([ID], [" +
+                    SchemaKatalog.SPALTE_KV_KOMPONENTENID + "], [" +
+                    SchemaKatalog.SPALTE_KV_KATEGORIEID + "], [" +
+                    SchemaKatalog.SPALTE_KV_NAME + "], [" +
+                    SchemaKatalog.SPALTE_KV_IST_STANDARD + "], [" +
+                    SchemaKatalog.SPALTE_KV_READONLY + "], [" +
+                    SchemaKatalog.SPALTE_KV_GEAENDERT_AM + "]) " +
+                    "VALUES (?, ?, ?, ?, TRUE, TRUE, ?)",
+                    new OleDbParameter("@id", vorlageId),
+                    new OleDbParameter("@kid", komponentenId),
+                    new OleDbParameter("@kat", v.KategorieId),
+                    new OleDbParameter("@n", SchemaKatalog.VORLAGE_NAME_STANDARD),
+                    ParamOderNull("@am", OleDbType.Date, DateTime.Now));
+                if (kopf <= 0)
+                {
+                    l.Notiz("39: INSERT der Vorlage \"" + v.Komponente + "\" (Kategorie " +
+                            v.KategorieId + ") fehlgeschlagen.");
+                    ok = false;
+                    continue;
+                }
+
+                bool posOk = true;
+                int sort = 0;
+                foreach (SchemaKatalog.VorlagenPositionSeed p in v.Positionen)
+                {
+                    sort += 10;
+
+                    // StammID aus dem Positionslexikon, falls der Wortlaut dort steht;
+                    // NULL bei freier Vorlagenposition (KL2). MAX statt Einzelwert, weil
+                    // eine Bezeichnung je Rolle doppelt vorkommen darf (Schritt 27).
+                    object sid = Scalar(l,
+                        "SELECT MAX([" + SchemaKatalog.SPALTE_KF_STAMMID + "]) FROM [" +
+                        SchemaKatalog.TAB_KOSTENFAKTOR + "] WHERE [" +
+                        SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ?",
+                        new OleDbParameter("@b", p.Bezeichnung));
+
+                    int posId = Zahl(Scalar(l, "SELECT MAX([ID]) FROM [" +
+                                               SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "]")) + 1;
+
+                    int pn = NonQuery(l,
+                        "INSERT INTO [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] ([ID], [" +
+                        SchemaKatalog.SPALTE_KVP_VORLAGEID + "], [" +
+                        SchemaKatalog.SPALTE_KVP_STAMMID + "], [" +
+                        SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "], [" +
+                        SchemaKatalog.SPALTE_KVP_KOSTENART + "], [" +
+                        SchemaKatalog.SPALTE_KVP_BEMESSUNG + "], [" +
+                        SchemaKatalog.SPALTE_KVP_IST_ERLOES + "], [" +
+                        SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_VON + "], [" +
+                        SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_BIS + "], [" +
+                        SchemaKatalog.SPALTE_KVP_SORTIERUNG + "]) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)",
+                        new OleDbParameter("@id", posId),
+                        new OleDbParameter("@vid", vorlageId),
+                        ParamOderNull("@sid", OleDbType.Integer,
+                                      sid == null || sid == DBNull.Value ? null : (object)Zahl(sid)),
+                        new OleDbParameter("@b", p.Bezeichnung),
+                        new OleDbParameter("@ka", p.Kostenart),
+                        new OleDbParameter("@bm", p.Bemessung),
+                        ParamOderNull("@ev", OleDbType.Double,
+                                      p.EmpfehlungVon.HasValue ? (object)p.EmpfehlungVon.Value : null),
+                        ParamOderNull("@eb", OleDbType.Double,
+                                      p.EmpfehlungBis.HasValue ? (object)p.EmpfehlungBis.Value : null),
+                        new OleDbParameter("@so", sort));
+                    if (pn <= 0) { posOk = false; break; }
+                    positionen++;
+                }
+
+                if (!posOk)
+                {
+                    // Halb gesaete Vorlage zuruecknehmen - die Loeschweitergabe raeumt
+                    // die Teilpositionen ab. ID als ganzzahliges Literal (ACE-Falle:
+                    // kein Parameter noetig, kein Parameter riskiert).
+                    l.Notiz("39: Positionen der Vorlage \"" + v.Komponente + "\" (Kategorie " +
+                            v.KategorieId + ") unvollstaendig - Vorlage wird zurueckgenommen.");
+                    NonQuery(l, "DELETE FROM [" + SchemaKatalog.TAB_KOSTENVORLAGE +
+                                "] WHERE [ID] = " + vorlageId);
+                    ok = false;
+                    continue;
+                }
+
+                vorlagen++;
+            }
+
+            l.Notiz("39a: " + vorlagen + " Standardvorlagen angelegt, " + vorhanden +
+                    " bereits vorhanden" +
+                    (komponentenNeu > 0 ? ", " + komponentenNeu + " Komponenten ergaenzt" : "") + ".");
+            l.Notiz("39b: " + positionen + " Vorlagenpositionen gesaet - Saetze, Betraege und " +
+                    "Nutzungsdauern bewusst leer (Struktur ohne erfundene Preise, Konzept " +
+                    "Kostendialoge § 4.3); FK3: keine Energiekosten-Zeilen im Betriebskatalog.");
+            return ok;
+        }
+
+        // =================================================================================
         // Schritt 9 - Datenregel R7 (Etappe E0): Quellpuffer-Bezeichner -> Fremdschlüssel
         // =================================================================================
 
@@ -6144,7 +6933,10 @@ namespace WindowsFormsApplication1
         public const string SQL_CREATE_PREISREIHE =
             "CREATE TABLE Tab_Preisreihe (ID LONG NOT NULL PRIMARY KEY, " +
             "ID_Projekt LONG, Bezeichner TEXT(255), Jahr LONG, " +
-            "Aufloesung TEXT(50), Einheit TEXT(50))";
+            "Aufloesung TEXT(50), Einheit TEXT(50), ID_Energietraeger LONG)";
+        // ID_Energietraeger: seit Schritt 40 (Etappe KD4, FK6a) Teil des CREATE, damit
+        // auch die tolerante Rueckfallebene (PreisreiheCtrl.StelleTabellenSicher) die
+        // Spalte mitbringt; Bestandstabellen ruestet Schritt 40 nach.
 
         /// <summary>Index über den Projektbezug - der Suchweg der Auswahllisten.</summary>
         public const string SQL_INDEX_PREISREIHE =
