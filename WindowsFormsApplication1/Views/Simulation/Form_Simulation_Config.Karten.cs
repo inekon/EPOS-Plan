@@ -1358,12 +1358,34 @@ namespace WindowsFormsApplication1
             });
         }
 
+        /// <summary>
+        /// Die SENKENKETTE einer Erzeugerkarte (Konzept 5.3).
+        ///
+        /// <b>PAKET S1.</b> Eine Anlage hat nicht mehr zwei Senkenplätze, sondern eine
+        /// geordnete Liste (<c>Z_AnlageSenke</c>). Die Karte zeigt sie als Kette:
+        /// „Senke: Heizkreis · Zweitsenke: Puffer P1 · → Puffer P2".
+        ///
+        /// <b>Die ersten beiden Chips bleiben, was sie waren</b> — Beschriftung,
+        /// Kreisziffer, Verbund-Zusatz und Ziel unverändert. Sie lesen weiterhin
+        /// <c>info.Senke</c>, also die auf die Altspalten gespiegelten Ränge 1 und 2, die
+        /// aus derselben Projektabfrage kommen wie alle anderen Kartendaten. Eine Anlage
+        /// mit einer oder zwei Senken — jedes Bestandsprojekt — sieht damit exakt aus wie
+        /// vorher. Neu sind ausschließlich die Chips ab Rang 3.
+        ///
+        /// <b>Eine Ausnahme:</b> Die beiden S1-Ziele Prozesswärme lassen sich in den
+        /// Altspalten nicht ausdrücken (dort steht die Übergangsentsprechung Heizung).
+        /// Steht auf Rang 1 oder 2 ein solches Ziel, wird der Chiptext aus der Kette
+        /// gesetzt — sonst zeigte die Karte eine Senke, die der Anwender nicht eingestellt
+        /// hat.
+        /// </summary>
         private void SenkenChips(AnlagenInfo info, List<ErzeugerKarte.ChipDaten> chips)
         {
+            List<Z_AnlageSenkeModel> kette = Senkenkette(info.ID);
+
             bool pufferSenke = WaermesenkeClass.IstPufferZiel(info.Senke.Ziel) &&
                                info.Senke.ID_Puffer > 0;
 
-            string text = WaermesenkeAnzeige(info);
+            string text = KettenText(kette, 0, WaermesenkeAnzeige(info));
             string hinweis = MyResource.Resource.SIM_TIP_SENKE;
 
             if (pufferSenke)
@@ -1406,7 +1428,7 @@ namespace WindowsFormsApplication1
                 Ziel = ErzeugerKarte.ChipZiel.Senke
             });
 
-            string zweit = ZweitsenkeAnzeige(info);
+            string zweit = KettenText(kette, 1, ZweitsenkeAnzeige(info));
             bool zweitPuffer = info.Senke.HatZweitsenke &&
                                WaermesenkeClass.IstPufferZiel(info.Senke.Ziel2) &&
                                info.Senke.ID_Puffer2 > 0;
@@ -1426,6 +1448,72 @@ namespace WindowsFormsApplication1
                 Hinweis = MyResource.Resource.SIM_TIP_ZWEITSENKE,
                 Ziel = ErzeugerKarte.ChipZiel.Zweitsenke
             });
+
+            // --- Ränge ab 3 (Paket S1) ------------------------------------------------
+            //
+            // Sie tragen dasselbe Chipziel wie die Zweitsenke: Der Doppelklick führt in
+            // denselben Dialog, weil die Senken einer Anlage fachlich EINE Einstellung
+            // sind. Die Ladeposition steht wie bei den beiden ersten Chips dahinter — die
+            // Ladeordnung kennt „Zweitsenke" als Boolean, und jeder Rang über 1 ist dort
+            // eine Zweitsenke (dieselbe Ableitung wie in der Engine).
+            for (int i = 2; i < kette.Count; i++)
+            {
+                Z_AnlageSenkeModel z = kette[i];
+                if (z == null) continue;
+
+                string weiter = Form_Waermesenke.SenkeAnzeige(z);
+                bool weiterPuffer = z.ID_Puffer > 0;
+
+                if (weiterPuffer)
+                {
+                    List<Ladeordnung.LadeEintrag> ordnungN =
+                        Ladeordnung.Ladereihenfolge(m_ID_Projekt, z.ID_Puffer);
+                    int positionN = Ladeordnung.Position(ordnungN, info.ID, true);
+                    if (positionN > 0) weiter += " " + KartenStil.Kreisziffer(positionN);
+                }
+
+                chips.Add(new ErzeugerKarte.ChipDaten
+                {
+                    Text = string.Format(MyResource.Resource.SIM_KARTE_SENKE_WEITER, weiter),
+                    Stil = weiterPuffer ? ErzeugerKarte.ChipStil.Senke : ErzeugerKarte.ChipStil.Neutral,
+                    Hinweis = MyResource.Resource.SIM_TIP_ZWEITSENKE,
+                    Ziel = ErzeugerKarte.ChipZiel.Zweitsenke
+                });
+            }
+        }
+
+        /// <summary>
+        /// Die Senkenliste einer Anlage aus <c>Z_AnlageSenke</c>; LEER, solange die
+        /// Tabelle fehlt (Migration ist eine eigene Anwendung) oder die Anlage keine Zeile
+        /// hat. Leer heißt: Die Karte zeigt genau das, was sie vor Paket S1 gezeigt hat.
+        ///
+        /// Ein Lesezugriff je Erzeugerkarte — dieselbe Größenordnung wie die
+        /// Nachbaraufrufe der Karte (<c>VerbundLesen</c>, <c>Ladereihenfolge</c>,
+        /// <c>PufferLesen</c>).
+        /// </summary>
+        private static List<Z_AnlageSenkeModel> Senkenkette(int idAnlage)
+        {
+            if (idAnlage <= 0 || !Z_AnlageSenkeCtrl.SpalteVorhanden())
+                return new List<Z_AnlageSenkeModel>();
+
+            List<Z_AnlageSenkeModel> liste = new Z_AnlageSenkeCtrl().LesenJeAnlage(idAnlage);
+            return liste != null ? liste : new List<Z_AnlageSenkeModel>();
+        }
+
+        /// <summary>
+        /// Chiptext für Rang <paramref name="index"/>: der BESTANDSTEXT, außer bei einem
+        /// Prozesswärme-Ziel — das können die Altspalten nicht ausdrücken, und dann ist
+        /// die Kette die einzige Quelle, die die Wahrheit kennt (siehe
+        /// <see cref="SenkenChips"/>).
+        /// </summary>
+        private static string KettenText(List<Z_AnlageSenkeModel> kette, int index, string bestand)
+        {
+            if (kette == null || index < 0 || index >= kette.Count) return bestand;
+
+            Z_AnlageSenkeModel z = kette[index];
+            if (z == null || !Form_Waermesenke.IstProzessZiel(z.Ziel)) return bestand;
+
+            return Form_Waermesenke.SenkeAnzeige(z);
         }
 
         /// <summary>

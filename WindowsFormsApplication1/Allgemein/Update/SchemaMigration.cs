@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 49;
+        public const int ZIEL_VERSION = 50;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1535,6 +1535,69 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_49_KLASSENSET = 49;
 
+        /// <summary>
+        /// Schritt 50 - <b>Paket S1</b> (Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 5.1, Entscheidungen L4/L5 und F17 vom 27.08.2026): die SENKENLISTE
+        /// <see cref="SchemaKatalog.Z_ANLAGESENKE"/> - zwei feste Senkenplätze werden
+        /// eine geordnete Liste beliebiger Länge.
+        ///
+        /// <para><b>50a</b> - die Tabelle samt Index über
+        /// (<c>ID_Anlage</c>, <c>Rang</c>). HART: Ohne sie gibt es nichts zu migrieren,
+        /// der Schritt bricht sofort ab. <c>ID</c> ist ein AUTOINCREMENT und damit die
+        /// EINE Ausnahme von der <c>MAX(ID)+1</c>-Hausregel dieses Schemas - sie ist
+        /// hier zwingend: <c>Z_AnlagePufferVerbund.ID_Senke</c> (50b) verweist auf diese
+        /// IDs, und die DML unten schreibt bis zu drei Zeilen je Anlage in einem Zug.
+        /// Eine selbst gezählte ID müsste dabei nach JEDEM Insert neu ermittelt werden -
+        /// genau die Lücke, durch die zwei gleichzeitige Schreiber dieselbe Nummer
+        /// bekämen.</para>
+        ///
+        /// <para><b>50b</b> - die beiden Beziehungen und
+        /// <see cref="SchemaKatalog.SPALTE_VERBUND_ID_SENKE"/>. Die beiden Seiten sind
+        /// BEWUSST VERSCHIEDEN, und die Wahl ist gemessen, nicht geraten:
+        /// <see cref="SQL_FK_SENKE_PUFFER"/> ist RESTRIKTIV (ein Speicher darf nicht
+        /// stillschweigend verschwinden, Konzept § 5.1),
+        /// <see cref="SQL_FK_SENKE_ANLAGE"/> läuft dagegen MIT Löschweitergabe — sonst
+        /// ließe sich nach der Migration kein Projekt mehr speichern. Die Begründung
+        /// samt Messung steht bei den beiden Konstanten.</para>
+        ///
+        /// <para><b>50c</b> - die DML-Übernahme, der zehnte DML-Teil neben 5, 7, 9, 13,
+        /// 15, 17, 48b, 49c und 49d. Je Anlage entsteht Rang 1 aus
+        /// <c>WS_Ziel</c>/<c>WS_Typ</c>/<c>WS_ID_Puffer</c>/… und - falls
+        /// <c>WS_Ziel2</c> belegt ist - Rang 2 aus den <c>*2</c>-Spalten. Die
+        /// Ziel-Textwerte werden UNVERÄNDERT übernommen (F5-Alternative: keine
+        /// Wertablösung). Anlagen ohne jedes <c>WS_Ziel</c> bekommen
+        /// <c>Heizkreis</c>/<c>Beides</c> - die Rang-1-Pflicht aus § 5.1 und exakt die
+        /// Normalisierung, die <c>WaermesenkeClass</c> beim Lesen ohnehin vornimmt.
+        /// <c>Ladeprio_PV</c> erbt nur Rang 1 (es gibt kein <c>WS_Ladeprio_PV2</c>).</para>
+        ///
+        /// <para><b>50d - Regel R-Prozess</b> (§ 4.4/§ 5.1, Entscheidung F17): Führt das
+        /// Projekt Prozesswärme, bekommt jede Anlage mit Direktsenke <c>Heizkreis</c>
+        /// und Bedarfsart <c>Beides</c> oder <c>Heizung</c> eine zusätzliche Zeile
+        /// <c>Ziel = Prozesswaerme</c> UNMITTELBAR NACH ihrer Heizkreiszeile. Ohne diese
+        /// Regel verlöre jedes Bestandsprojekt mit Prozesswärme seine bisherige
+        /// (implizite) Prozessdeckung - eine Ergebnisänderung weit über die beabsichtigte
+        /// hinaus. „Unmittelbar nach" ist wörtlich zu nehmen: Liegt hinter der
+        /// Heizkreiszeile noch ein Rang, werden die höheren Ränge um eins hochgeschoben,
+        /// damit Prozess davor einsortiert wird (die Rangfolge „Heizung vor Prozess je
+        /// Anlage" ist damit festgelegt).</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker) über eine ZWEISTUFIGE Probe:
+        /// Das <c>CREATE TABLE</c> läuft über <see cref="Ddl"/> (bereits vorhanden gilt
+        /// als Erfolg), und die DML läuft nur, wenn die Tabelle danach LEER ist. Eine
+        /// zeilenweise Bedingung wie in Schritt 48/49 wäre hier falsch: Der Schritt legt
+        /// Zeilen AN, und beim zweiten Lauf gäbe es kein Merkmal, das eine migrierte von
+        /// einer vom Anwender ergänzten Zeile unterscheidet - er verdoppelte die
+        /// Senkenliste jedes Projekts.</para>
+        ///
+        /// <para><b>Die Altspalten bleiben.</b> <c>WS_Ziel</c>, <c>WS_Typ</c>,
+        /// <c>WS_ID_Puffer</c>, <c>WS_Ladeprio</c>, <c>WS_Ladegrenze</c>,
+        /// <c>WS_Ladeprio_PV</c> und der komplette <c>*2</c>-Satz werden LESE-ALTLAST,
+        /// nicht gelöscht (Muster <c>WQ_Puffer</c> → <c>WQ_ID_Puffer</c>). Solange ein
+        /// Leser die Slots noch bedient, ist das Entfernen der Spalten die eine
+        /// Änderung, die sich nicht zurücknehmen lässt.</para>
+        /// </summary>
+        public const int SCHRITT_50_SENKENTABELLE = 50;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -1793,6 +1856,25 @@ namespace WindowsFormsApplication1
         /// Mitgliedschaften der Lauf danach aggregiert.
         /// </summary>
         public static int DatenVerbundZeilen { get; private set; }
+
+        // --- Zählwerk der Senkenübernahme aus Schritt 50 (Paket S1) --------------------
+
+        /// <summary>50c: Anlagen, für die eine Rang-1-Senkenzeile entstanden ist.</summary>
+        public static int DatenSenkenAnlagen { get; private set; }
+
+        /// <summary>
+        /// 50c: Anlagen mit belegtem <c>WS_Ziel2</c>, die eine zweite Senkenzeile
+        /// bekommen haben. Der Wert belegt, wie viele Projekte die Zweitsenke überhaupt
+        /// nutzen — die Zahl, an der sich der Nutzen der Liste zuerst zeigt.
+        /// </summary>
+        public static int DatenSenkenRang2 { get; private set; }
+
+        /// <summary>
+        /// 50d: nach Regel R-Prozess (F17) zusätzlich angelegte
+        /// <c>Prozesswaerme</c>-Zeilen. 0 heißt: kein Bestandsprojekt führt
+        /// Prozesswärme, die Regel hat nichts geändert.
+        /// </summary>
+        public static int DatenSenkenProzess { get; private set; }
 
         // --- Zählwerk der Datenregel R7 aus Schritt 9 (Etappe E0) ---------------------
 
@@ -2460,6 +2542,17 @@ namespace WindowsFormsApplication1
                         "Das Klassen-Set der Pufferspeicher konnte nicht angelegt " +
                         "werden - die dreikanalige Entladung braucht die Spalten.",
                         Schritt_49_Klassenset),
+
+            // S1 (L4/L5 und F17): Die zwei festen Senkenplaetze werden eine geordnete
+            // Liste. Begruendung, Teilgliederung und Idempotenzzusage bei der
+            // Schrittkonstanten.
+            new Schritt(SCHRITT_50_SENKENTABELLE,
+                        "Senkenliste: Z_AnlageSenke anlegen, die Senken-Slots als Raenge " +
+                        "uebernehmen (inkl. Regel R-Prozess) und Z_AnlagePufferVerbund " +
+                        "um ID_Senke erweitern (Paket S1, L4/L5/F17)",
+                        "Die Senkenliste konnte nicht angelegt werden - mehr als zwei " +
+                        "Senken je Anlage braucht die Tabelle.",
+                        Schritt_50_Senkentabelle),
         };
 
         // =================================================================================
@@ -2498,6 +2591,9 @@ namespace WindowsFormsApplication1
             DatenReserveVorbelegt = 0;
             DatenLeistungsgrenzeAngehoben = 0;
             DatenVerbundZeilen = 0;
+            DatenSenkenAnlagen = 0;
+            DatenSenkenRang2 = 0;
+            DatenSenkenProzess = 0;
             DatenKesselWartungseinheitVorbelegt = 0;
             DatenBemessungVorbelegt = 0;
             DatenKostenartVorbelegt = 0;
@@ -6259,6 +6355,328 @@ namespace WindowsFormsApplication1
                     "im Bestand ueberall aus. " + reihenfolge + " Projekteinstellung(en) " +
                     "auf die Knappheitsreihenfolge '" + DbWerte.KNAPPHEIT_DEFAULT +
                     "' vorbelegt.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 50 - Senkenliste Z_AnlageSenke (Paket S1, Konzept § 5.1)
+        // =================================================================================
+
+        /// <summary>
+        /// Die Senkenliste. <c>ID</c> ist ein AUTOINCREMENT — die EINE Ausnahme von der
+        /// <c>MAX(ID)+1</c>-Hausregel dieses Schemas, begründet bei
+        /// <see cref="SCHRITT_50_SENKENTABELLE"/>.
+        ///
+        /// <b>Keine DEFAULT-Werte auf den FK-Spalten</b> wie überall in diesem Schema:
+        /// Eine 0 verletzte die restriktive Beziehung, „nicht gesetzt" ist NULL.
+        /// <c>Anschlusshoehe</c> bleibt bewusst leer (Vorgriff Paket P1).
+        /// </summary>
+        public const string SQL_CREATE_ANLAGESENKE =
+            "CREATE TABLE Z_AnlageSenke (ID AUTOINCREMENT PRIMARY KEY, " +
+            "ID_Anlage LONG NOT NULL, Rang LONG NOT NULL, Ziel TEXT(50), " +
+            "Bedarfsart TEXT(50), ID_Puffer LONG, Ladeprio LONG, Ladeprio_PV LONG, " +
+            "Ladegrenze DOUBLE, Anschlusshoehe DOUBLE)";
+
+        /// <summary>
+        /// Der Suchweg jedes Lesers: die Senken EINER Anlage in Rangfolge
+        /// (<c>Z_AnlageSenkeCtrl.LesenJeAnlage</c>, die Ladephasen je Rang aus § 5.2).
+        /// KEIN eindeutiger Index über (ID_Anlage, Rang): Während des Umsortierens im
+        /// Dialog ist ein Rang zwangsläufig doppelt belegt, und die Schreibseite räumt
+        /// die Anlage ohnehin komplett und schreibt sie neu.
+        /// </summary>
+        public const string SQL_INDEX_ANLAGESENKE =
+            "CREATE INDEX idx_AnlageSenke ON Z_AnlageSenke (ID_Anlage, Rang)";
+
+        /// <summary>
+        /// Verweis auf die ANLAGE — MIT LÖSCHWEITERGABE, Muster <c>FK_Verbund_Anlage</c>
+        /// und <c>FK_SpVariante_Anlage</c>.
+        ///
+        /// <b>Warum hier CASCADE — und warum das die einzige Möglichkeit ist.</b>
+        /// Konzept § 5.1 nennt für Schritt 50 „FK-Beziehungen ohne Löschweitergabe" und
+        /// verweist auf Schritt 4. Dort geht es aber um die PUFFER-Seite: Restriktiv
+        /// verhindert, dass mit einem Speicher stillschweigend eine Wärmepumpe
+        /// mitgelöscht wird. Auf der ANLAGEN-Seite ist die Wirkung eine ganz andere, und
+        /// sie wurde am 27.08.2026 auf einer Arbeitskopie gemessen: Der Speicherweg
+        /// aller Erzeuger ist Löschen + Neuanlegen
+        /// (<c>WizardCtrl.Del_Projekt_Waermeerzeuger</c> +
+        /// <c>Add_WP_Waermeerzeuger</c>), und mit restriktiver Beziehung scheitert
+        /// bereits das <c>DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ?</c>
+        /// („Der Datensatz kann nicht gelöscht oder geändert werden, da die Tabelle
+        /// 'Z_AnlageSenke' in Beziehung stehende Datensätze enthält") — es ließe sich
+        /// nach der Migration kein einziges Projekt mehr speichern. Dieselbe Begründung
+        /// trägt schon <c>FK_Verbund_Anlage</c>: Eine Senkenzeile ist ein
+        /// UNSELBSTÄNDIGER Anhang der Anlage; sie sagt nur, wohin diese eine Anlage
+        /// liefert.
+        ///
+        /// <b>Was CASCADE kostet und wer es trägt.</b> Ohne Gegenmaßnahme räumte jedes
+        /// Speichern die Senkenliste des Projekts ab — die neuen Anlagenzeilen bekommen
+        /// AutoWert-IDs, die alten Senkenzeilen fallen weg. Deshalb rettet
+        /// <c>WizardCtrl</c> sie über den Del+Add-Weg hinweg, nach demselben Muster wie
+        /// die Betriebsparameter der Speichervarianten (AP9b) und die
+        /// Puffer-Anlagenzeilen (FR-1). Die Alternative — restriktiv und ein
+        /// ausdrückliches Vorab-DELETE an jeder der zehn Aufrufstellen — wäre zehnmal
+        /// dieselbe Wahrheit, und die elfte Aufrufstelle legte das Programm lahm.
+        /// </summary>
+        public const string SQL_FK_SENKE_ANLAGE =
+            "ALTER TABLE Z_AnlageSenke ADD CONSTRAINT FK_AnlageSenke_Anlage " +
+            "FOREIGN KEY (ID_Anlage) REFERENCES Tab_Energieanlagen (ID) ON DELETE CASCADE";
+
+        /// <summary>
+        /// Verweis auf den PUFFER — RESTRIKTIV, Muster <see cref="FkRestriktiv"/> und
+        /// <c>FK_Verbund_Puffer</c>: Ein Speicher ist ein echter Behälter mit Kapazität
+        /// und Investition, er darf nicht mit einem Löschklick stillschweigend
+        /// verschwinden. <c>PufferSpCtrl.ReferenzenAufPuffer</c> meldet die Senkenzeile,
+        /// <c>ReferenzenLoesen</c> räumt sie nach Bestätigung weg.
+        /// </summary>
+        public const string SQL_FK_SENKE_PUFFER =
+            "ALTER TABLE Z_AnlageSenke ADD CONSTRAINT FK_AnlageSenke_Puffer " +
+            "FOREIGN KEY (ID_Puffer) REFERENCES Tab_Pufferspeicher (ID)";
+
+        /// <summary>
+        /// Die Anlagentypen, die eine Wärmesenke führen: Wärmepumpe (1), Solarthermie
+        /// (2), Heizkessel (10), BHKW (11) und ihre Referenz-Zwillinge (5, 7, 8).
+        /// NICHT dabei: Photovoltaik (3, 9), Stromspeicher (4, 6) — sie erzeugen keine
+        /// Wärme — und vor allem der PUFFERSPEICHER (12): Seine Anlagenzeile ist der
+        /// Behälter selbst, nicht sein Belader. Bekäme sie eine Senke, stünde in der
+        /// Liste ein Speicher, der sich selbst lädt.
+        ///
+        /// Fest im SQL statt als Parameter: OleDb bindet nach POSITION, und eine
+        /// IN-Liste aus Parametern wäre genau die Reihenfolgefalle. Die Werte sind
+        /// Konstanten des Programms, keine Anwendereingabe.
+        /// </summary>
+        private static readonly string SENKE_ERZEUGERTYPEN =
+            WizardItemClass.WP_TYP + ", " + WizardItemClass.SOLAR_TYP + ", " +
+            WizardItemClass.REF_KESSEL_TYP + ", " + WizardItemClass.REF_WP_TYP + ", " +
+            WizardItemClass.REF_SOLAR_TYP + ", " + WizardItemClass.KESSEL_TYP + ", " +
+            WizardItemClass.BHKW_TYP;
+
+        /// <summary>
+        /// Die Auswahl der Anlagen, die eine Senkenzeile bekommen: ein
+        /// Wärmeerzeuger-Typ ODER — sicherheitshalber — eine Zeile, die trotz fremden
+        /// Typs ein <c>WS_Ziel</c> trägt. Eine solche Zeile hat der Bestand zwar nicht
+        /// (gemessen: <c>WS_Ziel</c> steht ausschließlich an den Typen 1, 2, 10, 11),
+        /// aber sie zu übergehen hieße, ihre Konfiguration beim Umstieg zu verlieren.
+        /// </summary>
+        private static readonly string SENKE_ANLAGENFILTER =
+            "(a.ID_Type IN (" + SENKE_ERZEUGERTYPEN + ")" +
+            " OR (a.WS_Ziel IS NOT NULL AND Trim(a.WS_Ziel) <> ''))";
+
+        /// <summary>
+        /// L4/L5 und F17 (27.08.2026): die SENKENLISTE. Anlass, Teilgliederung und
+        /// Idempotenzzusage: <see cref="SCHRITT_50_SENKENTABELLE"/>.
+        /// </summary>
+        private static bool Schritt_50_Senkentabelle(Lauf l)
+        {
+            // --- 50a) Tabelle und Index ----------------------------------------------
+            // HART: Ohne die Tabelle gibt es nichts zu migrieren.
+            if (!Ddl(l, SQL_CREATE_ANLAGESENKE, "Tabelle " + SchemaKatalog.Z_ANLAGESENKE))
+                return false;
+
+            if (!Ddl(l, SQL_INDEX_ANLAGESENKE, "Index idx_AnlageSenke"))
+                l.Notiz("Index idx_AnlageSenke fehlt - nur ein Tempoverlust beim Lesen " +
+                        "der Senken einer Anlage.");
+
+            // Nachweis statt Annahme: Erst diese Leseprobe belegt, dass die Tabelle da
+            // UND lesbar ist - Ddl schluckt ein "existiert bereits", und genau dieser
+            // Zaehler entscheidet unten ueber die Idempotenz.
+            object probe = Scalar(l, "SELECT COUNT(*) FROM [" + SchemaKatalog.Z_ANLAGESENKE + "]");
+            if (probe == null)
+            {
+                l.Zeile("Senkenliste (Schritt 50): " + SchemaKatalog.Z_ANLAGESENKE +
+                        " ist nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            // --- 50b) Beziehungen und Z_AnlagePufferVerbund.ID_Senke -------------------
+            // WEICH wie in Schritt 14: Fehlt eine Beziehung auf einer fremden Datenbank,
+            // bleibt die Ablage benutzbar; das Aufraeumen leisten die Anwendungswege, die
+            // es ohnehin ausdruecklich tun.
+            if (!Ddl(l, SQL_FK_SENKE_ANLAGE, "Beziehung FK_AnlageSenke_Anlage (mit Loeschweitergabe)"))
+                l.Notiz("Beziehung FK_AnlageSenke_Anlage fehlt - Senkenzeilen geloeschter " +
+                        "Anlagen bleiben stehen; Z_AnlageSenkeCtrl.SchreibenJeAnlage raeumt " +
+                        "sie beim naechsten Speichern der Senke weg.");
+
+            if (!Ddl(l, SQL_FK_SENKE_PUFFER, "Beziehung FK_AnlageSenke_Puffer (restriktiv)"))
+                l.Notiz("Beziehung FK_AnlageSenke_Puffer fehlt - ein geloeschter Puffer " +
+                        "koennte als Senkenziel verwaisen; PufferSpCtrl.ReferenzenLoesen " +
+                        "raeumt die Referenz trotzdem ausdruecklich weg.");
+
+            try
+            {
+                using (var cmd = new OleDbCommand(
+                    "ALTER TABLE " + SchemaKatalog.Z_ANLAGEPUFFERVERBUND +
+                    " ADD COLUMN [" + SchemaKatalog.SPALTE_VERBUND_ID_SENKE + "] LONG", l.Conn))
+                    cmd.ExecuteNonQuery();
+                l.Notiz("Spalte " + SchemaKatalog.Z_ANLAGEPUFFERVERBUND + "." +
+                        SchemaKatalog.SPALTE_VERBUND_ID_SENKE + ": angelegt");
+            }
+            catch { /* Spalte (oder die Verbundtabelle) existiert bereits */ }
+
+            // --- Idempotenz-Weiche ----------------------------------------------------
+            // ZEILENPROBE statt zeilenweiser WHERE-Bedingung: Der Schritt LEGT Zeilen AN,
+            // und beim Zweitlauf gaebe es kein Merkmal, das eine migrierte von einer vom
+            // Anwender ergaenzten Zeile unterscheidet - er verdoppelte die Senkenliste
+            // jedes Projekts. Steht schon irgendetwas drin, ist die Uebernahme gelaufen.
+            if (Convert.ToInt32(probe) > 0)
+            {
+                l.Zeile("Senkenliste (Schritt 50): " + SchemaKatalog.Z_ANLAGESENKE +
+                        " enthaelt bereits " + Convert.ToInt32(probe) + " Zeile(n) - die " +
+                        "Datenuebernahme wurde uebersprungen (idempotent).");
+                return true;
+            }
+
+            // --- 50c) Rang 1 aus den Hauptsenken-Spalten -------------------------------
+            //
+            // ZIEL-TEXTWERTE UNVERAENDERT (F5-Alternative: keine Wertabloesung). Nur der
+            // LEERE Fall wird gefuellt: 'Heizkreis'/'Beides' ist die Rang-1-Pflicht aus
+            // § 5.1 und exakt die Normalisierung, die WaermesenkeClass.Normalisieren beim
+            // Lesen ohnehin vornimmt - der Wert ist damit verhaltensneutral.
+            //
+            // IIf statt Nz: Nz ist eine VBA-Funktion der Access-Anwendung und ueber ACE
+            // nicht verfuegbar; IIf ist es.
+            string zielRang1 =
+                "IIf(a.WS_Ziel IS NULL OR Trim(a.WS_Ziel) = '', '" +
+                DbWerte.WS_ZIEL_HEIZKREIS + "', a.WS_Ziel)";
+            string bedarfsartRang1 =
+                "IIf(a.WS_Typ IS NULL OR Trim(a.WS_Typ) = '', '" +
+                DbWerte.WS_TYP_BEIDES + "', a.WS_Typ)";
+
+            int rang1 = NonQuery(l,
+                "INSERT INTO [" + SchemaKatalog.Z_ANLAGESENKE + "] " +
+                "([" + SchemaKatalog.SPALTE_SENKE_ID_ANLAGE + "], [" + SchemaKatalog.SPALTE_SENKE_RANG + "], " +
+                " [" + SchemaKatalog.SPALTE_SENKE_ZIEL + "], [" + SchemaKatalog.SPALTE_SENKE_BEDARFSART + "], " +
+                " [" + SchemaKatalog.SPALTE_SENKE_ID_PUFFER + "], [" + SchemaKatalog.SPALTE_SENKE_LADEPRIO + "], " +
+                " [" + SchemaKatalog.SPALTE_SENKE_LADEPRIO_PV + "], [" + SchemaKatalog.SPALTE_SENKE_LADEGRENZE + "]) " +
+                "SELECT a.ID, 1, " + zielRang1 + ", " + bedarfsartRang1 + ", a.WS_ID_Puffer, " +
+                "       IIf(a.WS_Ladeprio IS NULL, 0, a.WS_Ladeprio), " +
+                "       IIf(a.WS_Ladeprio_PV IS NULL, 0, a.WS_Ladeprio_PV), " +
+                "       IIf(a.WS_Ladegrenze IS NULL, 0, a.WS_Ladegrenze) " +
+                "FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] a " +
+                "WHERE " + SENKE_ANLAGENFILTER);
+            if (rang1 < 0) return false;
+            DatenSenkenAnlagen = rang1;
+
+            // --- 50c) Rang 2 aus den Zweitsenken-Spalten -------------------------------
+            //
+            // NUR bei belegtem WS_Ziel2 - eine leere Zweitsenke ist keine Senke.
+            // Ladeprio_PV = 0: Eine Spalte WS_Ladeprio_PV2 gibt es nicht, die
+            // PV-Sonderregel hing konstruktiv an der Hauptsenke (Ladeordnung). Das ist
+            // exakt das Bestandsverhalten, kein Verlust.
+            // Bedarfsart 'Beides': Sie ist nur bei Ziel = Heizkreis wirksam, und eine
+            // Zweitsenke IST im Bestand immer ein Puffer-Ziel - der Wert ist damit die
+            // neutrale Vorbelegung des Modells, nicht eine erfundene Aussage.
+            int rang2 = NonQuery(l,
+                "INSERT INTO [" + SchemaKatalog.Z_ANLAGESENKE + "] " +
+                "([" + SchemaKatalog.SPALTE_SENKE_ID_ANLAGE + "], [" + SchemaKatalog.SPALTE_SENKE_RANG + "], " +
+                " [" + SchemaKatalog.SPALTE_SENKE_ZIEL + "], [" + SchemaKatalog.SPALTE_SENKE_BEDARFSART + "], " +
+                " [" + SchemaKatalog.SPALTE_SENKE_ID_PUFFER + "], [" + SchemaKatalog.SPALTE_SENKE_LADEPRIO + "], " +
+                " [" + SchemaKatalog.SPALTE_SENKE_LADEPRIO_PV + "], [" + SchemaKatalog.SPALTE_SENKE_LADEGRENZE + "]) " +
+                "SELECT a.ID, 2, a.WS_Ziel2, '" + DbWerte.WS_TYP_BEIDES + "', a.WS_ID_Puffer2, " +
+                "       IIf(a.WS_Ladeprio2 IS NULL, 0, a.WS_Ladeprio2), 0, " +
+                "       IIf(a.WS_Ladegrenze2 IS NULL, 0, a.WS_Ladegrenze2) " +
+                "FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] a " +
+                "WHERE a.WS_Ziel2 IS NOT NULL AND Trim(a.WS_Ziel2) <> '' " +
+                "  AND " + SENKE_ANLAGENFILTER);
+            if (rang2 < 0) return false;
+            DatenSenkenRang2 = rang2;
+
+            // --- 50d) Regel R-Prozess (F17) -------------------------------------------
+            if (!RProzess(l)) return false;
+
+            l.Zeile("Senkenliste (Schritt 50): " + DatenSenkenAnlagen + " Anlage(n) mit " +
+                    "Rang-1-Senke uebernommen, davon " + DatenSenkenRang2 +
+                    " zusaetzlich mit Rang-2-Senke; Regel R-Prozess hat " +
+                    DatenSenkenProzess + " Prozesswaerme-Zeile(n) ergaenzt.");
+            return true;
+        }
+
+        /// <summary>
+        /// 50d — <b>Regel R-Prozess</b> (Konzept § 4.4/§ 5.1, Entscheidung F17):
+        /// Führt das Projekt Prozesswärme, bekommt jede Anlage mit Direktsenke
+        /// <c>Heizkreis</c> und Bedarfsart <c>Beides</c> oder <c>Heizung</c> eine
+        /// zusätzliche Senkenzeile <c>Prozesswaerme</c> UNMITTELBAR NACH ihrer
+        /// Heizkreiszeile.
+        ///
+        /// <para><b>Warum zweistufig über eine ID-Liste.</b> Ein <c>?</c> in der
+        /// UNTERABFRAGE eines <c>UPDATE</c>/<c>INSERT</c> trifft bei ACE still 0 Zeilen,
+        /// und eine korrelierte <c>EXISTS</c>-Unterabfrage über zwei Tabellen ist genau
+        /// die Konstruktion, bei der das auffiele — als stille Nulländerung, nicht als
+        /// Fehler. Deshalb dasselbe Vorgehen wie in <c>GeraeteWaisen</c>: erst die IDs
+        /// lesen, dann mit einer Liste aus GANZZAHLEN arbeiten. Die Liste ist keine
+        /// Einschleusungslücke — sie besteht ausschließlich aus <see cref="int"/>-Werten
+        /// aus der Datenbank.</para>
+        ///
+        /// <para><b>„Unmittelbar nach" ist wörtlich zu nehmen.</b> Liegt hinter der
+        /// Heizkreiszeile noch ein Rang (die Zweitsenke aus 50c), werden alle Ränge ≥ 2
+        /// dieser Anlage um eins hochgeschoben, damit die Prozesszeile auf Rang 2 davor
+        /// passt. Die Alternative „Prozess ans Ende" kehrte die Rangfolge um: Der
+        /// Prozesskanal käme erst nach der Pufferladung zum Zug und bliebe in jeder
+        /// knappen Stunde ungedeckt — das Gegenteil dessen, was die Regel leisten
+        /// soll.</para>
+        /// </summary>
+        private static bool RProzess(Lauf l)
+        {
+            // Die betroffenen Anlagen: Rang-1-Zeile auf den Heizkreis, Bedarfsart Beides
+            // oder Heizung, und das Projekt der Anlage fuehrt Prozesswaerme.
+            DataTable dt = Abfrage(l,
+                "SELECT s.[" + SchemaKatalog.SPALTE_SENKE_ID_ANLAGE + "] " +
+                "FROM [" + SchemaKatalog.Z_ANLAGESENKE + "] s " +
+                "INNER JOIN [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] a " +
+                "        ON a.ID = s.[" + SchemaKatalog.SPALTE_SENKE_ID_ANLAGE + "] " +
+                "WHERE s.[" + SchemaKatalog.SPALTE_SENKE_RANG + "] = 1 " +
+                "  AND s.[" + SchemaKatalog.SPALTE_SENKE_ZIEL + "] = '" + DbWerte.WS_ZIEL_HEIZKREIS + "' " +
+                "  AND s.[" + SchemaKatalog.SPALTE_SENKE_BEDARFSART + "] IN ('" +
+                        DbWerte.WS_TYP_BEIDES + "', '" + DbWerte.WS_TYP_HEIZUNG + "') " +
+                "  AND EXISTS (SELECT 1 FROM Z_Projekt_Prozesswaerme p " +
+                "               WHERE p.ID_Projekt = a.ID_Projekt)");
+
+            if (dt == null)
+            {
+                l.Zeile("Senkenliste (Schritt 50): Die Anlagen fuer die Regel R-Prozess " +
+                        "liessen sich nicht ermitteln.");
+                return false;
+            }
+
+            var ids = new List<int>();
+            foreach (DataRow r in dt.Rows)
+                if (r[0] != DBNull.Value) ids.Add(Convert.ToInt32(r[0]));
+
+            if (ids.Count == 0)
+            {
+                DatenSenkenProzess = 0;
+                l.Notiz("Regel R-Prozess: kein Projekt mit Prozesswaerme betroffen.");
+                return true;
+            }
+
+            string liste = string.Join(",", ids);
+
+            // Platz schaffen: alle Raenge ab 2 dieser Anlagen um eins hoch. Trifft im
+            // Bestand nur Anlagen MIT Zweitsenke - die uebrigen haben nichts zu schieben.
+            int geschoben = NonQuery(l,
+                "UPDATE [" + SchemaKatalog.Z_ANLAGESENKE + "] " +
+                "SET [" + SchemaKatalog.SPALTE_SENKE_RANG + "] = [" + SchemaKatalog.SPALTE_SENKE_RANG + "] + 1 " +
+                "WHERE [" + SchemaKatalog.SPALTE_SENKE_RANG + "] >= 2 " +
+                "  AND [" + SchemaKatalog.SPALTE_SENKE_ID_ANLAGE + "] IN (" + liste + ")");
+            if (geschoben < 0) return false;
+
+            // Die Prozesszeile auf Rang 2 - unmittelbar hinter dem Heizkreis.
+            // Bedarfsart 'Beides' als neutrale Vorbelegung: Sie ist nur bei
+            // Ziel = Heizkreis wirksam. Keine Ladeparameter, kein Puffer - eine
+            // Direktsenke laedt nichts.
+            int neu = NonQuery(l,
+                "INSERT INTO [" + SchemaKatalog.Z_ANLAGESENKE + "] " +
+                "([" + SchemaKatalog.SPALTE_SENKE_ID_ANLAGE + "], [" + SchemaKatalog.SPALTE_SENKE_RANG + "], " +
+                " [" + SchemaKatalog.SPALTE_SENKE_ZIEL + "], [" + SchemaKatalog.SPALTE_SENKE_BEDARFSART + "], " +
+                " [" + SchemaKatalog.SPALTE_SENKE_LADEPRIO + "], [" + SchemaKatalog.SPALTE_SENKE_LADEPRIO_PV + "], " +
+                " [" + SchemaKatalog.SPALTE_SENKE_LADEGRENZE + "]) " +
+                "SELECT a.ID, 2, '" + DbWerte.WS_ZIEL_PROZESS + "', '" + DbWerte.WS_TYP_BEIDES + "', 0, 0, 0 " +
+                "FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] a " +
+                "WHERE a.ID IN (" + liste + ")");
+            if (neu < 0) return false;
+
+            DatenSenkenProzess = neu;
+            l.Notiz("Regel R-Prozess: " + neu + " Prozesswaerme-Zeile(n) angelegt, " +
+                    geschoben + " nachfolgende(r) Rang um eins hochgeschoben.");
             return true;
         }
 

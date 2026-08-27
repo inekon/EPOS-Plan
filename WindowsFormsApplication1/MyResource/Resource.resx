@@ -185,6 +185,24 @@ bei einem kleinen Speicher wird die Zahl groß, ohne dass er stärker altert.</v
   <data name="SIM_ANSICHT_SCHEMA" xml:space="preserve">
     <value>Schema</value>
   </data>
+  <data name="SIM_BTN_SENKE_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="SIM_BTN_SENKE_HINZU" xml:space="preserve">
+    <value>Hinzufügen</value>
+  </data>
+  <data name="SIM_BTN_SENKE_RAUF" xml:space="preserve">
+    <value>▲ nach oben</value>
+  </data>
+  <data name="SIM_BTN_SENKE_RUNTER" xml:space="preserve">
+    <value>▼ nach unten</value>
+  </data>
+  <data name="SIM_GRUPPE_SENKENLISTE" xml:space="preserve">
+    <value>Wärmesenken in Reihenfolge der Belieferung</value>
+  </data>
+  <data name="SIM_GRUPPE_SENKENZEILE" xml:space="preserve">
+    <value>Gewählte Senke</value>
+  </data>
   <data name="SIM_KARTEN_KOPF_ERZEUGER" xml:space="preserve">
     <value>Komponenten der Simulation</value>
   </data>
@@ -208,6 +226,9 @@ bei einem kleinen Speicher wird die Zahl groß, ohne dass er stärker altert.</v
   </data>
   <data name="SIM_KARTE_SENKE" xml:space="preserve">
     <value>Senke: {0}</value>
+  </data>
+  <data name="SIM_KARTE_SENKE_WEITER" xml:space="preserve">
+    <value>→ {0}</value>
   </data>
   <data name="SIM_KARTE_TEMPERATURPAAR" xml:space="preserve">
     <value>{0} / {1} °C</value>
@@ -266,6 +287,18 @@ physikalisch. Das ist ein Hinweis, keine Sperre.</value>
     <value>Wärme, die die Spitzenkessel in der Kaskade aus ihrem Quellpuffer bezogen haben.
 Sie ist bereits Teil der Wärmeproduktion; nur der verbleibende Anteil kostet Brennstoff.
 Ohne Quellpuffer steht hier 0,00.</value>
+  </data>
+  <data name="SIM_MSG_SENKE_DOPPELT" xml:space="preserve">
+    <value>Der Pufferspeicher „{0}“ steht mehr als einmal in der Senkenliste. Jeder Speicher darf nur einmal Ziel dieser Anlage sein.</value>
+  </data>
+  <data name="SIM_MSG_SENKE_LETZTE_ZEILE" xml:space="preserve">
+    <value>Jede Anlage braucht mindestens eine Wärmesenke. Die letzte Zeile lässt sich deshalb nicht entfernen.</value>
+  </data>
+  <data name="SIM_MSG_SENKE_PUFFER_FEHLT" xml:space="preserve">
+    <value>Rang {0}: Für das Ziel „{1}“ ist kein Pufferspeicher gewählt.</value>
+  </data>
+  <data name="SIM_ROLLE_RANG" xml:space="preserve">
+    <value>Senke auf Rang {0}</value>
   </data>
   <data name="SIM_SCHEMA_ABNEHMER_WARMWASSER" xml:space="preserve">
     <value>Warmwasser</value>
@@ -1432,6 +1465,9 @@ Bitte einen anderen Pufferspeicher wählen oder die Wärmesenke einer der beteil
   <data name="SIM_SPALTE_ANZAHL" xml:space="preserve">
     <value>Anzahl</value>
   </data>
+  <data name="SIM_SPALTE_BEDARFSART" xml:space="preserve">
+    <value>Bedarfsart</value>
+  </data>
   <data name="SIM_SPALTE_BETRIEBSSTUNDEN" xml:space="preserve">
     <value>Betriebsstunden [h/a]</value>
   </data>
@@ -1453,6 +1489,9 @@ Bitte einen anderen Pufferspeicher wählen oder die Wärmesenke einer der beteil
   <data name="SIM_SPALTE_JAHRESNUTZUNGSGRAD" xml:space="preserve">
     <value>Jahresnutzungsgrad [%]</value>
   </data>
+  <data name="SIM_SPALTE_LADEN" xml:space="preserve">
+    <value>Laden</value>
+  </data>
   <data name="SIM_SPALTE_LEISTUNG" xml:space="preserve">
     <value>Leistung [kW]</value>
   </data>
@@ -1471,11 +1510,17 @@ Bitte einen anderen Pufferspeicher wählen oder die Wärmesenke einer der beteil
   <data name="SIM_SPALTE_PRIO" xml:space="preserve">
     <value>Prio</value>
   </data>
+  <data name="SIM_SPALTE_RANG" xml:space="preserve">
+    <value>Rang</value>
+  </data>
   <data name="SIM_SPALTE_SENKE" xml:space="preserve">
     <value>Senke</value>
   </data>
   <data name="SIM_SPALTE_SOLARKOLLEKTOR" xml:space="preserve">
     <value>Solarkollektor</value>
+  </data>
+  <data name="SIM_SPALTE_SPEICHER" xml:space="preserve">
+    <value>Pufferspeicher</value>
   </data>
   <data name="SIM_SPALTE_STROMPRODUKTION" xml:space="preserve">
     <value>Stromprod. [MWh/a]</value>
@@ -1491,6 +1536,9 @@ Bitte einen anderen Pufferspeicher wählen oder die Wärmesenke einer der beteil
   </data>
   <data name="SIM_SPALTE_WPPRIO" xml:space="preserve">
     <value>WP-Prio</value>
+  </data>
+  <data name="SIM_SPALTE_ZIEL" xml:space="preserve">
+    <value>Ziel</value>
   </data>
   <data name="SIM_STATUS_EINSTELLUNG_FEHLER" xml:space="preserve">
     <value>Die Einstellung konnte nicht gespeichert werden.</value>
@@ -1620,6 +1668,9 @@ verbleibendes Ladepotenzial aufnimmt - nie Pflichtbedarf.
   </data>
   <data name="SIM_ZIEL_PUFFERSPEICHER_KOMBI" xml:space="preserve">
     <value>Pufferspeicher Kombi (Heizung + Warmwasser)</value>
+  </data>
+  <data name="SIM_ZIEL_PUFFERSPEICHER_PROZESS" xml:space="preserve">
+    <value>Pufferspeicher Prozesswärme</value>
   </data>
   <data name="SIM_ZWEITSENKE_GLEICH_HAUPTSENKE" xml:space="preserve">
     <value>Die Zweitsenke muss sich von der Hauptsenke unterscheiden.

@@ -185,6 +185,24 @@ with a small tank the figure becomes large without any additional ageing.</value
   <data name="SIM_ANSICHT_SCHEMA" xml:space="preserve">
     <value>Schematic</value>
   </data>
+  <data name="SIM_BTN_SENKE_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="SIM_BTN_SENKE_HINZU" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="SIM_BTN_SENKE_RAUF" xml:space="preserve">
+    <value>▲ Move up</value>
+  </data>
+  <data name="SIM_BTN_SENKE_RUNTER" xml:space="preserve">
+    <value>▼ Move down</value>
+  </data>
+  <data name="SIM_GRUPPE_SENKENLISTE" xml:space="preserve">
+    <value>Heat sinks in order of supply</value>
+  </data>
+  <data name="SIM_GRUPPE_SENKENZEILE" xml:space="preserve">
+    <value>Selected sink</value>
+  </data>
   <data name="SIM_KARTEN_KOPF_ERZEUGER" xml:space="preserve">
     <value>Simulation components</value>
   </data>
@@ -208,6 +226,9 @@ with a small tank the figure becomes large without any additional ageing.</value
   </data>
   <data name="SIM_KARTE_SENKE" xml:space="preserve">
     <value>Sink: {0}</value>
+  </data>
+  <data name="SIM_KARTE_SENKE_WEITER" xml:space="preserve">
+    <value>→ {0}</value>
   </data>
   <data name="SIM_KARTE_TEMPERATURPAAR" xml:space="preserve">
     <value>{0} / {1} °C</value>
@@ -266,6 +287,18 @@ This is a hint, not a block.</value>
     <value>Heat that the peak-load boilers have drawn from their source buffer in the cascade.
 It is already part of the heat production; only the remaining share consumes fuel.
 Without a source buffer this reads 0.00.</value>
+  </data>
+  <data name="SIM_MSG_SENKE_DOPPELT" xml:space="preserve">
+    <value>The buffer storage "{0}" appears more than once in the sink list. Each storage may be a target of this unit only once.</value>
+  </data>
+  <data name="SIM_MSG_SENKE_LETZTE_ZEILE" xml:space="preserve">
+    <value>Every unit needs at least one heat sink. The last row can therefore not be removed.</value>
+  </data>
+  <data name="SIM_MSG_SENKE_PUFFER_FEHLT" xml:space="preserve">
+    <value>Rank {0}: no buffer storage is selected for the target "{1}".</value>
+  </data>
+  <data name="SIM_ROLLE_RANG" xml:space="preserve">
+    <value>sink at rank {0}</value>
   </data>
   <data name="SIM_SCHEMA_ABNEHMER_WARMWASSER" xml:space="preserve">
     <value>Domestic hot water</value>
@@ -1417,6 +1450,9 @@ Please select a different buffer storage or change the heat sink of one of the u
   <data name="SIM_SPALTE_ANZAHL" xml:space="preserve">
     <value>Quantity</value>
   </data>
+  <data name="SIM_SPALTE_BEDARFSART" xml:space="preserve">
+    <value>Demand type</value>
+  </data>
   <data name="SIM_SPALTE_BETRIEBSSTUNDEN" xml:space="preserve">
     <value>Operating hours [h/a]</value>
   </data>
@@ -1438,6 +1474,9 @@ Please select a different buffer storage or change the heat sink of one of the u
   <data name="SIM_SPALTE_JAHRESNUTZUNGSGRAD" xml:space="preserve">
     <value>Annual utilisation ratio [%]</value>
   </data>
+  <data name="SIM_SPALTE_LADEN" xml:space="preserve">
+    <value>Charging</value>
+  </data>
   <data name="SIM_SPALTE_LEISTUNG" xml:space="preserve">
     <value>Power [kW]</value>
   </data>
@@ -1456,11 +1495,17 @@ Please select a different buffer storage or change the heat sink of one of the u
   <data name="SIM_SPALTE_PRIO" xml:space="preserve">
     <value>prio</value>
   </data>
+  <data name="SIM_SPALTE_RANG" xml:space="preserve">
+    <value>Rank</value>
+  </data>
   <data name="SIM_SPALTE_SENKE" xml:space="preserve">
     <value>Sink</value>
   </data>
   <data name="SIM_SPALTE_SOLARKOLLEKTOR" xml:space="preserve">
     <value>Solar collector</value>
+  </data>
+  <data name="SIM_SPALTE_SPEICHER" xml:space="preserve">
+    <value>Buffer storage</value>
   </data>
   <data name="SIM_SPALTE_STROMPRODUKTION" xml:space="preserve">
     <value>Electricity generation [MWh/a]</value>
@@ -1476,6 +1521,9 @@ Please select a different buffer storage or change the heat sink of one of the u
   </data>
   <data name="SIM_SPALTE_WPPRIO" xml:space="preserve">
     <value>HP prio</value>
+  </data>
+  <data name="SIM_SPALTE_ZIEL" xml:space="preserve">
+    <value>Target</value>
   </data>
   <data name="SIM_STATUS_EINSTELLUNG_FEHLER" xml:space="preserve">
     <value>The setting could not be saved.</value>
@@ -1605,6 +1653,9 @@ remaining charging potential - never mandatory demand.
   </data>
   <data name="SIM_ZIEL_PUFFERSPEICHER_KOMBI" xml:space="preserve">
     <value>Buffer storage combined (heating + DHW)</value>
+  </data>
+  <data name="SIM_ZIEL_PUFFERSPEICHER_PROZESS" xml:space="preserve">
+    <value>Buffer storage process heat</value>
   </data>
   <data name="SIM_ZWEITSENKE_GLEICH_HAUPTSENKE" xml:space="preserve">
     <value>The secondary sink must differ from the main sink.

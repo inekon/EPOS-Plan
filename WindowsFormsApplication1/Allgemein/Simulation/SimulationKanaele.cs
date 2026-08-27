@@ -346,6 +346,37 @@ namespace WindowsFormsApplication1
             szOk &= Senkenzuordnung.SenkeAusZiel(WaermesenkeClass.ZIEL_PUFFER_KOMBI) == Senke.PufferKombi;
             szOk &= Senkenzuordnung.ZielAusSenke(Senke.PufferKombi) == WaermesenkeClass.ZIEL_PUFFER_KOMBI;
             szOk &= WaermesenkeClass.IstPufferZiel(WaermesenkeClass.ZIEL_PUFFER_KOMBI);
+
+            // S1: die beiden neuen Ziele - Prozesswaerme ist DIREKTsenke, PufferProzess
+            // ist Puffer-Ziel. Genau diese Unterscheidung steuert Phase B gegen Ladephase.
+            szOk &= Senkenzuordnung.SenkeAusZiel(WaermesenkeClass.ZIEL_PROZESSWAERME) == Senke.Prozesswaerme;
+            szOk &= Senkenzuordnung.ZielAusSenke(Senke.Prozesswaerme) == WaermesenkeClass.ZIEL_PROZESSWAERME;
+            szOk &= Senkenzuordnung.SenkeAusZiel(WaermesenkeClass.ZIEL_PUFFER_PROZESS) == Senke.PufferProzess;
+            szOk &= Senkenzuordnung.ZielAusSenke(Senke.PufferProzess) == WaermesenkeClass.ZIEL_PUFFER_PROZESS;
+            szOk &= WaermesenkeClass.IstPufferZiel(WaermesenkeClass.ZIEL_PUFFER_PROZESS);
+            szOk &= !WaermesenkeClass.IstPufferZiel(WaermesenkeClass.ZIEL_PROZESSWAERME);
+            szOk &= Senkenzuordnung.IstPuffersenke(Senke.PufferProzess) &&
+                    !Senkenzuordnung.IstPuffersenke(Senke.Prozesswaerme) &&
+                    !Senkenzuordnung.IstPuffersenke(Senke.Heizkreis);
+
+            // RANG-1-INVARIANTE: die Vorbelegung ist genau EINE Direktsenke.
+            Senkenliste vorbelegt = Senkenliste.Vorbelegung(4711);
+            szOk &= vorbelegt.AnlagenID == 4711 && vorbelegt.Zeilen.Count == 1 &&
+                    vorbelegt.HatDirektsenke && !vorbelegt.HatPuffersenke &&
+                    vorbelegt.MaxRang == 1 && vorbelegt.ErstePuffersenke == null &&
+                    vorbelegt.Zeilen[0].Ziel == Senke.Heizkreis &&
+                    vorbelegt.Zeilen[0].Bedarfsart == WaermequelleClass.SENKE_BEIDES;
+
+            // Ordnen(): sortiert nach Rang und vergibt die Raenge lueckenlos.
+            Senkenliste lueckig = new Senkenliste { AnlagenID = 12 };
+            lueckig.Zeilen.Add(new Senkenzeile { Rang = 7, Ziel = Senke.PufferHeizung, IDPuffer = 3 });
+            lueckig.Zeilen.Add(new Senkenzeile { Rang = 2, Ziel = Senke.Heizkreis });
+            lueckig.Ordnen();
+            szOk &= lueckig.Zeilen.Count == 2 &&
+                    lueckig.Zeilen[0].Rang == 1 && lueckig.Zeilen[0].Ziel == Senke.Heizkreis &&
+                    lueckig.Zeilen[1].Rang == 2 && lueckig.Zeilen[1].Ziel == Senke.PufferHeizung &&
+                    lueckig.ErstePuffersenke != null && lueckig.ErstePuffersenke.IDPuffer == 3 &&
+                    lueckig.Rang(2) == lueckig.Zeilen[1];
             szOk &= WaermesenkeClass.VerwendungZuZiel(WaermesenkeClass.ZIEL_PUFFER_KOMBI) ==
                     WaermesenkeClass.VERWENDUNG_KOMBI;
 
@@ -554,9 +585,10 @@ namespace WindowsFormsApplication1
     /// SEIT PAKET K2 ist sie die Transportstruktur des GANZEN Rechenwegs: Die Kaskade
     /// holt ihre Kanäle über <c>SimulationWaermebedarf.KanaeleDrei()</c> und schreibt die
     /// Restbedarfe in dieselbe Struktur zurück. Die Übergangsabbildung
-    /// <c>SimulationWaermebedarf.Kanaele()</c> auf <see cref="Waermekanaele"/> hat damit
-    /// keinen Aufrufer mehr; <see cref="Waermekanaele"/> bleibt allein als die in
-    /// Konzept 6.1 spezifizierte Kanalarithmetik samt ihrem Selbsttest bestehen.
+    /// <c>SimulationWaermebedarf.Kanaele()</c> auf <see cref="Waermekanaele"/> hatte damit
+    /// keinen Aufrufer mehr und ist mit Paket S1 gelöscht (K2-O3);
+    /// <see cref="Waermekanaele"/> bleibt allein als die in Konzept 6.1 spezifizierte
+    /// Kanalarithmetik samt ihrem Selbsttest bestehen.
     ///
     /// Feldgrößen wie im gesamten Rechenkern fest verdrahtet: 8760 Stunden,
     /// <c>float</c>-Vektoren mit Zwischenrechnung in <c>double</c>.
@@ -962,7 +994,26 @@ namespace WindowsFormsApplication1
         /// Ladephasen C/D ist das kein Sonderfall — geladen wird kanalneutral; der
         /// Unterschied steckt allein in der Entladung (Kaskadenschleife, K-1).
         /// </summary>
-        PufferKombi
+        PufferKombi,
+
+        /// <summary>
+        /// DIREKTSENKE PROZESSWÄRME (Paket S1, Konzept 4.4/5.1 — Leitentscheidung L5).
+        ///
+        /// Sie deckt den Prozesskanal unmittelbar, so wie <see cref="Heizkreis"/> den
+        /// Heiz- und Brauchwasserkanal deckt. Bis Paket K2 gab es sie nicht: Prozesswärme
+        /// lief im Heizkanal mit, und die Interimsregel I1 hat sie den Heizungs-Direktsenken
+        /// beigemischt. Mit S1 ist diese Beimischung abgerissen — Bestandsanlagen bekommen
+        /// über die Migrationsregel R-Prozess eine eigene Zeile mit diesem Ziel.
+        /// </summary>
+        Prozesswaerme,
+
+        /// <summary>
+        /// Die Anlage lädt einen Puffer, der für PROZESSWÄRME vorgesehen ist (Paket S1,
+        /// Konzept 5.1). Wie bei allen Puffer-Zielen benennt der Wert den ZWECK der
+        /// Ladung; welche Kanäle der Speicher entlädt, entscheidet allein sein
+        /// Klassen-Set (<c>SimulationPufferspeicher.BedientKanal</c>).
+        /// </summary>
+        PufferProzess
     }
 
     /// <summary>
@@ -973,9 +1024,12 @@ namespace WindowsFormsApplication1
     /// in der Bedarfskaskade (Hauptsenke Heizkreis) oder in der Ladephase (Hauptsenke
     /// Puffer) — nur die Zweitsenke überlappt.
     ///
-    /// Gefüllt wird sie von <see cref="WaermesenkeClass.SenkenLaden"/>; ausgewertet wird
-    /// sie im zweikanaligen Weg (<c>Kaskadenkontext.SenkeJeModul</c>). Der einkanalige
-    /// Altpfad wertet sie nicht aus — dort entscheidet weiter <c>WS_Typ</c> allein.
+    /// Gefüllt wird sie von <see cref="WaermesenkeClass.SenkenLaden"/>.
+    ///
+    /// <b>SEIT PAKET S1 Übergangsbestand:</b> Der dreikanalige Weg rechnet mit
+    /// <see cref="Senkenliste"/> (<c>Kaskadenkontext.SenkenlisteJeModul</c>). Diese Klasse
+    /// bleibt für das BHKW-Modul bis zu seinem eigenen Umbau und für den einkanaligen
+    /// Altpfad — dort entscheidet ohnehin <c>WS_Typ</c> allein. Sie fällt mit Paket A1.
     /// </summary>
     public class Senkenzuordnung
     {
@@ -1021,6 +1075,10 @@ namespace WindowsFormsApplication1
                 return Senke.PufferBrauchwasser;
             if (string.Equals(ziel, WaermesenkeClass.ZIEL_PUFFER_KOMBI, StringComparison.Ordinal))
                 return Senke.PufferKombi;
+            if (string.Equals(ziel, WaermesenkeClass.ZIEL_PUFFER_PROZESS, StringComparison.Ordinal))
+                return Senke.PufferProzess;
+            if (string.Equals(ziel, WaermesenkeClass.ZIEL_PROZESSWAERME, StringComparison.Ordinal))
+                return Senke.Prozesswaerme;
             return Senke.Heizkreis;
         }
 
@@ -1032,8 +1090,22 @@ namespace WindowsFormsApplication1
                 case Senke.PufferHeizung: return WaermesenkeClass.ZIEL_PUFFER_HEIZUNG;
                 case Senke.PufferBrauchwasser: return WaermesenkeClass.ZIEL_PUFFER_BRAUCHWASSER;
                 case Senke.PufferKombi: return WaermesenkeClass.ZIEL_PUFFER_KOMBI;
+                case Senke.PufferProzess: return WaermesenkeClass.ZIEL_PUFFER_PROZESS;
+                case Senke.Prozesswaerme: return WaermesenkeClass.ZIEL_PROZESSWAERME;
                 default: return WaermesenkeClass.ZIEL_HEIZKREIS;
             }
+        }
+
+        /// <summary>
+        /// true, wenn dieses Ziel einen PUFFERSPEICHER lädt (Paket S1) — die eine
+        /// Unterscheidung, an der in der Stundenschleife alles hängt: Puffersenken laufen
+        /// über die Ladephase ihres Rangs, Direktsenken über <c>SenkeAbziehen</c>
+        /// (Konzept 5.2, „eine kWh, genau ein Ziel").
+        /// </summary>
+        public static bool IstPuffersenke(Senke senke)
+        {
+            return senke == Senke.PufferHeizung || senke == Senke.PufferBrauchwasser ||
+                   senke == Senke.PufferKombi || senke == Senke.PufferProzess;
         }
 
         public override string ToString()
@@ -1046,6 +1118,207 @@ namespace WindowsFormsApplication1
                 s += " + Zweitsenke " + Zweit.Value;
                 if (IDPufferZweit > 0) s += " (Puffer " + IDPufferZweit + ")";
             }
+            return s;
+        }
+    }
+
+    /// <summary>
+    /// EINE Senke einer Anlage — eine Zeile aus <c>Z_AnlageSenke</c> (Paket S1,
+    /// Konzept 5.1).
+    ///
+    /// Sie ist die Rechendarstellung genau einer Zeile: das <see cref="Ziel"/> als
+    /// <see cref="Senke"/>, der <see cref="Rang"/> als Position in der Senkenkette und
+    /// die Ladeparameter, die bis S1 in den Spaltenpaaren <c>WS_*</c> / <c>WS_*2</c>
+    /// standen. Mehr steckt nicht darin: Welche Kanäle sie deckt, entscheidet
+    /// <c>Kaskadenschleife.SenkenMaske</c>; welchen Speicher sie lädt, löst die
+    /// Speicher-Registry über <see cref="IDPuffer"/> auf.
+    /// </summary>
+    public class Senkenzeile
+    {
+        /// <summary>
+        /// Ziel dieser Senke (<c>Z_AnlageSenke.Ziel</c>). Unbekannte Textwerte sind schon
+        /// beim Lesen auf <see cref="Senke.Heizkreis"/> normalisiert
+        /// (<c>WaermesenkeClass.SenkenlistenLaden</c>).
+        /// </summary>
+        public Senke Ziel = Senke.Heizkreis;
+
+        /// <summary>
+        /// Rang 1…n — die Reihenfolge, in der die Anlage ihre Senken bedient
+        /// (Konzept 5.2). Rang 1 ist Pflicht; die Ladephasen laufen je Rang-Ebene
+        /// aufsteigend, die bisherigen Phasen C/D sind der Sonderfall Rang 1/2.
+        /// </summary>
+        public int Rang = 1;
+
+        /// <summary>
+        /// <c>Z_AnlageSenke.ID_Puffer</c> — 0 = keiner (in der Datenbank NULL, nie 0:
+        /// Fremdschlüssel). Nur bei Puffer-Zielen gesetzt; eine Puffersenke ohne Puffer
+        /// ist beim Lesen schon auf den Heizkreis zurückgefallen.
+        /// </summary>
+        public int IDPuffer;
+
+        /// <summary>
+        /// <c>Z_AnlageSenke.Bedarfsart</c> — nur bei <see cref="Senke.Heizkreis"/>
+        /// wirksam (Konzept 4.4). Werte: <see cref="WaermequelleClass.SENKE_BEIDES"/> |
+        /// <see cref="WaermequelleClass.SENKE_WARMWASSER"/> |
+        /// <see cref="WaermequelleClass.SENKE_HEIZUNG"/>.
+        /// </summary>
+        public string Bedarfsart = WaermequelleClass.SENKE_BEIDES;
+
+        /// <summary>Ladepriorität dieser Zeile; 0 = Vorgabe nach Erzeugertyp (Konzept 3.4).</summary>
+        public int Ladeprio;
+
+        /// <summary>Sonderpriorität bei PV-Überschuss; 0 = keine (Konzept 3.5).</summary>
+        public int LadeprioPV;
+
+        /// <summary>
+        /// Eigene Ladeobergrenze dieser Zeile in PROZENT; 0 = nicht gesetzt, dann gilt
+        /// die Puffer-Regel (<c>Schwelle_Aus</c> / <c>Schwelle_Aus_Nachrang</c>). Die
+        /// Einheit ist dieselbe wie in <c>WS_Ladegrenze</c> — umgerechnet wird erst beim
+        /// Bau des Ladeauftrags (Konzept 5.1).
+        /// </summary>
+        public double LadegrenzeProzent;
+
+        /// <summary>true, wenn diese Zeile einen Pufferspeicher LÄDT (Ladephase).</summary>
+        public bool IstPuffersenke
+        {
+            get { return Senkenzuordnung.IstPuffersenke(Ziel); }
+        }
+
+        /// <summary>true, wenn diese Zeile Bedarf DIREKT deckt (Phase B).</summary>
+        public bool IstDirektsenke
+        {
+            get { return !IstPuffersenke; }
+        }
+
+        public override string ToString()
+        {
+            string s = "Rang " + Rang + ": " + Senkenzuordnung.ZielAusSenke(Ziel);
+            if (IDPuffer > 0) s += " (Puffer " + IDPuffer + ")";
+            if (Ziel == Senke.Heizkreis) s += " [" + Bedarfsart + "]";
+            return s;
+        }
+    }
+
+    /// <summary>
+    /// Die GEORDNETE SENKENLISTE genau einer Anlage (<c>Tab_Energieanlagen.ID</c>) —
+    /// die dreikanalige Nachfolge von <see cref="Senkenzuordnung"/> (Paket S1,
+    /// Konzept 5.1/5.2).
+    ///
+    /// <para><b>Was sich gegenüber <see cref="Senkenzuordnung"/> ändert.</b> Dort gab es
+    /// GENAU EINE Hauptsenke und optional EINE Zweitsenke, und die Zweitsenke musste ein
+    /// Puffer sein. Daraus folgte die alte Freibeweis-Formel „eine Anlage steht entweder
+    /// in der Bedarfskaskade oder in der Ladephase". Sie gilt nicht mehr: Eine Anlage kann
+    /// n Senken in freier Reihenfolge haben, Direktsenken auch ab Rang 2. An ihre Stelle
+    /// tritt die Regel aus Konzept 5.2 — <b>die Produktion einer Stunde wird sequenziell
+    /// über die Senkenliste verteilt; jede kWh geht genau einmal entweder durch
+    /// <c>SenkeAbziehen</c> (Direktsenke) oder durch <c>Speicher.Laden</c>
+    /// (Puffersenke)</b>.</para>
+    ///
+    /// <para>Die Zeilen stehen nach <see cref="Senkenzeile.Rang"/> AUFSTEIGEND; dafür
+    /// sorgt der Leser (<c>WaermesenkeClass.SenkenlistenLaden</c>), nicht jeder
+    /// Auswerter. Rang 1 ist Pflicht — findet der Leser keine Zeile, legt er
+    /// <c>Heizkreis/Beides</c> an und protokolliert das (Rang-1-Invariante).</para>
+    ///
+    /// <para><see cref="Senkenzuordnung"/> bleibt daneben bestehen: Der einkanalige
+    /// ALTPFAD wertet sie aus (genauer: er wertet <c>WS_Typ</c> aus und bekommt die Liste
+    /// nur gereicht), und er fällt erst mit Paket A1.</para>
+    /// </summary>
+    public class Senkenliste
+    {
+        /// <summary>Tab_Energieanlagen.ID der Anlage.</summary>
+        public int AnlagenID;
+
+        /// <summary>Die Senken dieser Anlage, Rang AUFSTEIGEND. Nie <c>null</c>, nie leer.</summary>
+        public List<Senkenzeile> Zeilen = new List<Senkenzeile>();
+
+        /// <summary>Zeile eines Rangs; <c>null</c>, wenn es sie nicht gibt.</summary>
+        public Senkenzeile Rang(int rang)
+        {
+            for (int i = 0; i < Zeilen.Count; i++)
+                if (Zeilen[i] != null && Zeilen[i].Rang == rang) return Zeilen[i];
+            return null;
+        }
+
+        /// <summary>Höchster vorkommender Rang; 0 bei leerer Liste.</summary>
+        public int MaxRang
+        {
+            get
+            {
+                int max = 0;
+                for (int i = 0; i < Zeilen.Count; i++)
+                    if (Zeilen[i] != null && Zeilen[i].Rang > max) max = Zeilen[i].Rang;
+                return max;
+            }
+        }
+
+        /// <summary>
+        /// true, wenn die Anlage mindestens EINE Direktsenke führt — das Kriterium der
+        /// Phase B. Es tritt an die Stelle der alten Frage „Hauptsenke == Heizkreis":
+        /// Eine Anlage ohne Direktsenke lädt ausschließlich (Ladephasen).
+        /// </summary>
+        public bool HatDirektsenke
+        {
+            get
+            {
+                for (int i = 0; i < Zeilen.Count; i++)
+                    if (Zeilen[i] != null && Zeilen[i].IstDirektsenke) return true;
+                return false;
+            }
+        }
+
+        /// <summary>true, wenn mindestens eine Zeile einen Puffer lädt.</summary>
+        public bool HatPuffersenke
+        {
+            get
+            {
+                for (int i = 0; i < Zeilen.Count; i++)
+                    if (Zeilen[i] != null && Zeilen[i].IstPuffersenke) return true;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Die Puffersenke mit dem KLEINSTEN Rang; <c>null</c>, wenn die Anlage keine
+        /// hat. Sie ist die Nachfolgerin der alten „Hauptsenke Puffer" — die Zeile, deren
+        /// Bilanzraum die Bezugsgröße einer reinen Ladeanlage ist.
+        /// </summary>
+        public Senkenzeile ErstePuffersenke
+        {
+            get
+            {
+                for (int i = 0; i < Zeilen.Count; i++)
+                    if (Zeilen[i] != null && Zeilen[i].IstPuffersenke) return Zeilen[i];
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Legt die Rang-1-Invariante an: eine Direktsenke <c>Heizkreis/Beides</c>
+        /// (Konzept 5.1). Die eine Stelle, an der die Vorbelegung entsteht — Leser,
+        /// Rückfallebenen und Modulaufbau greifen alle hierauf zu.
+        /// </summary>
+        public static Senkenliste Vorbelegung(int idAnlage)
+        {
+            Senkenliste l = new Senkenliste();
+            l.AnlagenID = idAnlage;
+            l.Zeilen.Add(new Senkenzeile());
+            return l;
+        }
+
+        /// <summary>Zeilen nach Rang aufsteigend ordnen und die Ränge lückenlos vergeben.</summary>
+        public void Ordnen()
+        {
+            Zeilen.RemoveAll(delegate (Senkenzeile z) { return z == null; });
+            Zeilen.Sort(delegate (Senkenzeile a, Senkenzeile b) { return a.Rang.CompareTo(b.Rang); });
+
+            for (int i = 0; i < Zeilen.Count; i++) Zeilen[i].Rang = i + 1;
+        }
+
+        public override string ToString()
+        {
+            string s = "Anlage " + AnlagenID + ":";
+            for (int i = 0; i < Zeilen.Count; i++)
+                s += (i > 0 ? " ·" : "") + " " + Zeilen[i];
             return s;
         }
     }
@@ -1080,8 +1353,28 @@ namespace WindowsFormsApplication1
         /// <summary>Tab_Energieanlagen.ID der ladenden Anlage.</summary>
         public int AnlagenID;
 
-        /// <summary>true = der Speicher ist die ZWEITsenke dieser Anlage (Phase D).</summary>
-        public bool Zweitsenke;
+        /// <summary>
+        /// RANG der Senkenzeile, aus der dieser Auftrag entstanden ist (Paket S1,
+        /// Konzept 5.2) — 1 = die bisherige Hauptsenke, 2 = die bisherige Zweitsenke,
+        /// darüber die mit S1 neu möglichen weiteren Senken.
+        ///
+        /// Die Ladephasen laufen je Rang-Ebene aufsteigend: erst ALLE Aufträge mit
+        /// Rang 1 kaskadenübergreifend nach Ladeordnung, dann Rang 2, dann Rang 3 …
+        /// Die bisherigen Phasen C und D sind genau der Sonderfall Rang 1 / Rang 2.
+        /// </summary>
+        public int Rang = 1;
+
+        /// <summary>
+        /// true = der Speicher ist NICHT die erstrangige Senke dieser Anlage.
+        ///
+        /// ABGELEITET aus <see cref="Rang"/> (Paket S1) und nur noch für Anzeigen und
+        /// Protokolltexte da; die Engine fragt den Rang. Bis S1 war es das führende Feld —
+        /// mit zwei Senkenplätzen war „Zweitsenke" gleichbedeutend mit „Rang 2".
+        /// </summary>
+        public bool Zweitsenke
+        {
+            get { return Rang > 1; }
+        }
 
         /// <summary>Zielspeicher — dieselbe Instanz wie in der Registry.</summary>
         public SimulationPufferspeicher Speicher;
@@ -1131,7 +1424,7 @@ namespace WindowsFormsApplication1
 
         public override string ToString()
         {
-            return "Anlage " + AnlagenID + (Zweitsenke ? " [Zweitsenke]" : "") +
+            return "Anlage " + AnlagenID + " [Rang " + Rang + "]" +
                    " -> Puffer " + (Speicher != null ? Speicher.ID_Pufferspeicher : 0) +
                    " (Prio " + Ladeprio + ", Obergrenze " +
                    (Obergrenze * 100).ToString("0.#") + " %, mit PV " +
@@ -1244,11 +1537,36 @@ namespace WindowsFormsApplication1
         public List<Ladeauftrag> LadenMitPV = new List<Ladeauftrag>();
 
         /// <summary>
-        /// Senkenzuordnung je Erzeugermodul, indexgleich mit der Modulliste. Ein
-        /// <c>null</c>-Eintrag bedeutet „Vorbelegung": Hauptsenke Heizkreis, Bedarfsart
-        /// Beides.
+        /// GEORDNETE SENKENLISTE je Erzeugermodul, indexgleich mit der Modulliste
+        /// (Paket S1, Konzept 5.1). Ein <c>null</c>-Eintrag bedeutet „Vorbelegung":
+        /// eine einzige Direktsenke <c>Heizkreis/Beides</c>
+        /// (<see cref="Senkenliste.Vorbelegung"/>).
+        ///
+        /// Sie löst <c>SenkeJeModul</c> (<see cref="Senkenzuordnung"/>) ab: Statt
+        /// Hauptsenke + optionaler Zweitsenke trägt jedes Modul die vollständige Kette
+        /// seiner Senken in Rangfolge.
         /// </summary>
-        public List<Senkenzuordnung> SenkeJeModul = new List<Senkenzuordnung>();
+        public List<Senkenliste> SenkenlisteJeModul = new List<Senkenliste>();
+
+        /// <summary>
+        /// HÖCHSTER Rang, der in den Ladeaufträgen dieses Laufs vorkommt (Paket S1) —
+        /// die Zahl der Ladephasen je Rechenebene. 1 = nur erstrangige Puffersenken
+        /// (dann läuft genau eine Ladephase, wie vor der Zweitsenke); 2 = das
+        /// Bestandsbild Haupt-/Zweitsenke.
+        /// </summary>
+        public int MaxLaderang()
+        {
+            int max = 1;
+            if (LadenOhnePV != null)
+                foreach (Ladeauftrag a in LadenOhnePV)
+                    if (a != null && a.Rang > max) max = a.Rang;
+
+            if (LadenMitPV != null)
+                foreach (Ladeauftrag a in LadenMitPV)
+                    if (a != null && a.Rang > max) max = a.Rang;
+
+            return max;
+        }
 
         /// <summary>
         /// Protokollzeilen des Kontextaufbaus (Konzept 13.4: dialogfrei). Hier landen die

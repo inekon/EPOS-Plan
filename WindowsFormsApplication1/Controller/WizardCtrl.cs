@@ -55,6 +55,7 @@ namespace WindowsFormsApplication1
         public bool Del_Projekt_Waermeerzeuger(int projektID)
         {
             SpVariantenSichern(projektID, TYP_ALLE);
+            SenkenSichern(projektID);
 
             // ID_Type fest im SQL statt als Parameter - dieselbe Begruendung wie bei
             // SP_TYPEN: Programmkonstante, keine Anwendereingabe.
@@ -67,6 +68,12 @@ namespace WindowsFormsApplication1
         public bool Del_Projekt_Waermeerzeuger(int projektID, int nType)
         {
             SpVariantenSichern(projektID, nType);
+
+            // S1: Die Senkenlisten werden AUCH im typgefilterten Weg gesichert - die
+            // Loeschweitergabe FK_AnlageSenke_Anlage trifft jede geloeschte Anlage,
+            // gleich ob mit oder ohne Typfilter. Anlagen, die den Filter ueberleben,
+            // behalten ihre Senken und werden beim Wiederherstellen uebergangen.
+            SenkenSichern(projektID);
 
             return DataRepository.ExecuteSQL("DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
                 new OleDbParameter[] { new OleDbParameter("@pID", projektID), new OleDbParameter("@type", nType) });
@@ -799,6 +806,243 @@ namespace WindowsFormsApplication1
             return (r[spalte].ToString() ?? "").Trim();
         }
 
+        // =================================================================================
+        //  S1 - Rettung der SENKENLISTE ueber den Del+Add-Speicherweg
+        // =================================================================================
+        //
+        // DIESELBE FALLE WIE BEI DEN SPEICHERVARIANTEN (AP9b), EIN GEWERK WEITER. Seit
+        // Migrationsschritt 50 haengt an jeder Erzeuger-Anlage eine geordnete Senkenliste
+        // in Z_AnlageSenke, verbunden ueber ID_Anlage und mit Loeschweitergabe
+        // (FK_AnlageSenke_Anlage). Die Loeschweitergabe ist dort nicht wahlweise, sondern
+        // zwingend: Restriktiv scheiterte bereits das DELETE des Speicherwegs, und es
+        // liesse sich kein Projekt mehr speichern (gemessen 27.08.2026, Begruendung bei
+        // SchemaMigration.SQL_FK_SENKE_ANLAGE). Der Preis dafuer ist genau der, den AP9b
+        // fuer die Speichervarianten schon einmal bezahlt hat: Ohne Gegenmassnahme raeumte
+        // JEDES Speichern - ueber Karte, Kontextmenue oder Wizard - die komplette
+        // Senkenkonfiguration des Projekts ab. Die PUFFER-Anlagenzeilen selbst brauchen
+        // keine Rettung mehr: Der typlose Loeschweg verschont ID_Type 12 (FR-1, Kommentar
+        // an Del_Projekt_Waermeerzeuger), ihre Ids und damit ihre Senkenzeilen bleiben
+        // stehen.
+        //
+        // ZUORDNUNG UEBER (ID_Type, Bezeichner), wortgleich zur Variantenrettung: Die
+        // alte Anlagen-Id ist nach dem Loeschen wertlos (AutoWert), die Geraete-Id
+        // nicht eindeutig. Wer eine Anlage im Dialog UMBENENNT, verliert ihre Senken -
+        // dieselbe Grenze wie bei CopyFromStamm und bei den Speichervarianten.
+        //
+        // BEIDE LOESCHWEGE sichern. Der typgefilterte Weg loescht nur die Anlagen eines
+        // Gewerks; die Senken der uebrigen bleiben unangetastet und werden unten
+        // uebergangen, weil ihre Anlagenzeile noch Senken FUEHRT. Die Sicherung kostet
+        // dort also nichts und schuetzt den Fall, dass ein Aufrufer doch mehr loescht
+        // als erwartet.
+
+        /// <summary>Eine gesicherte Senkenliste samt ihrem Wiedererkennungsmerkmal.</summary>
+        private sealed class SenkenSicherung
+        {
+            public int ID_Type;
+            public string Bezeichner = "";
+            public List<Z_AnlageSenkeModel> Senken = new List<Z_AnlageSenkeModel>();
+        }
+
+        /// <summary>Die Sicherung des laufenden Speichervorgangs; <c>null</c> = nichts zu retten.</summary>
+        private List<SenkenSicherung> m_SenkenSicherung;
+
+        /// <summary>Das Projekt, zu dem <see cref="m_SenkenSicherung"/> gehoert (siehe <see cref="m_SpVariantenProjekt"/>).</summary>
+        private int m_SenkenProjekt;
+
+        /// <summary>
+        /// Sichert die Senkenlisten des Projekts - <b>nur im Arbeitsspeicher</b>. Fehlt
+        /// die Tabelle (Migrationsschritt 50 noch nicht gelaufen), gibt es nichts zu
+        /// sichern und nichts zu tun.
+        /// </summary>
+        private void SenkenSichern(int projektID)
+        {
+            m_SenkenSicherung = null;
+            m_SenkenProjekt = 0;
+
+            if (projektID <= 0 || !Z_AnlageSenkeCtrl.SpalteVorhanden()) return;
+
+            try
+            {
+                List<Z_AnlageSenkeModel> alle = new Z_AnlageSenkeCtrl().LesenJeProjekt(projektID);
+                if (alle.Count == 0) return;
+
+                // Die Merkmale der Anlagen EINMAL lesen - die Senkenzeilen fuehren nur
+                // die Anlagen-Id, wiedererkannt wird aber ueber (ID_Type, Bezeichner).
+                Dictionary<int, SenkenSicherung> jeAnlage = new Dictionary<int, SenkenSicherung>();
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID, ID_Type, Bezeichner FROM Tab_Energieanlagen WHERE ID_Projekt = ? ORDER BY ID",
+                    new OleDbParameter("@pID", projektID));
+
+                if (dt == null || dt.Rows.Count == 0) return;
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    int idAnlage = SpZahl(r, "ID");
+                    if (idAnlage <= 0) continue;
+
+                    jeAnlage[idAnlage] = new SenkenSicherung
+                    {
+                        ID_Type = SpZahl(r, "ID_Type"),
+                        Bezeichner = SpText(r, "Bezeichner")
+                    };
+                }
+
+                foreach (Z_AnlageSenkeModel z in alle)
+                {
+                    SenkenSicherung s;
+                    if (jeAnlage.TryGetValue(z.ID_Anlage, out s)) s.Senken.Add(z);
+                }
+
+                List<SenkenSicherung> sicherung = new List<SenkenSicherung>();
+                foreach (SenkenSicherung s in jeAnlage.Values)
+                {
+                    if (s.Senken.Count == 0) continue;
+
+                    // Doppelte Bezeichner sind im Schema moeglich - die erste Zeile
+                    // gewinnt, wie bei der Variantenrettung.
+                    if (SenkenTreffer(sicherung, s.ID_Type, s.Bezeichner) != null)
+                    {
+                        Console.WriteLine("Senken-Rettung: \"" + s.Bezeichner + "\" kommt im Projekt " +
+                                          projektID + " mehrfach vor - gesichert wird die erste Zeile, " +
+                                          "die Senken der weiteren gehen verloren.");
+                        continue;
+                    }
+
+                    sicherung.Add(s);
+                }
+
+                if (sicherung.Count > 0)
+                {
+                    m_SenkenSicherung = sicherung;
+                    m_SenkenProjekt = projektID;
+                }
+            }
+            catch (Exception ex)
+            {
+                m_SenkenSicherung = null;
+                m_SenkenProjekt = 0;
+                Console.WriteLine("Die Senkenlisten konnten vor dem Loeschen nicht gesichert " +
+                                  "werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Schreibt die gesicherten Senkenlisten auf die NEUEN Anlagenzeilen zurueck.
+        ///
+        /// <para>
+        /// Geschrieben wird ausschliesslich auf Anlagen, die JETZT keine Senkenzeile
+        /// fuehren. Damit ist die Methode idempotent, sie ueberschreibt nichts, was der
+        /// Dialog gerade gespeichert hat, und eine im Dialog neu hinzugekommene Anlage
+        /// bleibt ohne Senke - dort gilt wie bisher die Rueckfallregel
+        /// <c>Heizkreis</c>/<c>Beides</c>.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Vor dem Aufraeumlauf.</b> <c>Z_AnlageSenke.ID_Puffer</c> zaehlt fuer
+        /// <c>GeraeteWaisen</c> als Verweis auf den Speicher - ab der dritten Senke
+        /// sogar als EINZIGER. Stuende die Rettung dahinter, loeschte der Aufraeumlauf
+        /// genau die Puffer, deren Senkenzeile eine Zeile spaeter zurueckkaeme.
+        /// </para>
+        ///
+        /// <para><b>BEST EFFORT</b> - ein gelungenes Speichern scheitert nicht daran.</para>
+        /// </summary>
+        private void SenkenWiederherstellen(int projektID)
+        {
+            List<SenkenSicherung> sicherung = m_SenkenSicherung;
+            int projektDerSicherung = m_SenkenProjekt;
+
+            m_SenkenSicherung = null;                 // eine Sicherung, ein Wiederherstellen
+            m_SenkenProjekt = 0;
+
+            if (sicherung == null || sicherung.Count == 0 || projektID <= 0) return;
+
+            if (projektDerSicherung != projektID)
+            {
+                Console.WriteLine("Senken-Rettung nicht ausgefuehrt: Die Sicherung gehoert zu " +
+                                  "Projekt " + projektDerSicherung + ", geschrieben wird aber " +
+                                  "Projekt " + projektID + ".");
+                return;
+            }
+
+            try
+            {
+                Z_AnlageSenkeCtrl ctrl = new Z_AnlageSenkeCtrl();
+
+                // Wer fuehrt jetzt schon Senken? Ein Aufruf statt einer Abfrage je Anlage.
+                HashSet<int> hatSenken = new HashSet<int>();
+                foreach (Z_AnlageSenkeModel z in ctrl.LesenJeProjekt(projektID))
+                    hatSenken.Add(z.ID_Anlage);
+
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID, ID_Type, Bezeichner FROM Tab_Energieanlagen WHERE ID_Projekt = ? ORDER BY ID",
+                    new OleDbParameter("@pID", projektID));
+
+                if (dt == null || dt.Rows.Count == 0) return;
+
+                int wieder = 0;
+                foreach (DataRow r in dt.Rows)
+                {
+                    int idAnlage = SpZahl(r, "ID");
+                    if (idAnlage <= 0 || hatSenken.Contains(idAnlage)) continue;
+
+                    SenkenSicherung treffer = SenkenTreffer(sicherung, SpZahl(r, "ID_Type"),
+                                                            SpText(r, "Bezeichner"));
+                    if (treffer == null) continue;
+
+                    // Der Puffer einer geretteten Senke kann zwischenzeitlich fort sein
+                    // (im Dialog entfernt). Die Referenz faellt dann weg statt die ganze
+                    // Zeile - dieselbe Normalisierung, die WaermesenkeClass beim Lesen
+                    // vornimmt, und derselbe Schutz wie in PufferFkOderNull: Ein
+                    // gescheitertes Insert hier haette die Anlage ohne jede Senke
+                    // zurueckgelassen.
+                    Dictionary<int, bool> pufferCache = new Dictionary<int, bool>();
+                    List<Z_AnlageSenkeModel> zeilen = new List<Z_AnlageSenkeModel>();
+
+                    foreach (Z_AnlageSenkeModel alt in treffer.Senken)
+                    {
+                        if (alt.ID_Puffer > 0 && !PufferVorhanden(alt.ID_Puffer, pufferCache))
+                        {
+                            Console.WriteLine("Senken-Rettung: \"" + treffer.Bezeichner +
+                                              "\", Rang " + alt.Rang + " zeigte auf den Puffer " +
+                                              alt.ID_Puffer + ", den es nicht mehr gibt - die " +
+                                              "Referenz wird als leer gespeichert.");
+                            alt.ID_Puffer = 0;
+                        }
+
+                        alt.ID = 0;                   // frische Zeile, neuer AutoWert
+                        alt.ID_Anlage = idAnlage;
+                        zeilen.Add(alt);
+                    }
+
+                    if (ctrl.SchreibenJeAnlage(idAnlage, zeilen)) wieder += zeilen.Count;
+                }
+
+                if (wieder > 0)
+                    Console.WriteLine("Senken-Rettung: " + wieder + " Senkenzeile(n) des Projekts " +
+                                      projektID + " wiederhergestellt.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Senkenlisten konnten nicht wiederhergestellt werden: " +
+                                  ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Die Sicherung zu (<paramref name="idType"/>, <paramref name="bezeichner"/>),
+        /// oder <c>null</c>. Verglichen wird wie in <see cref="SpTreffer"/>.
+        /// </summary>
+        private static SenkenSicherung SenkenTreffer(List<SenkenSicherung> sicherung,
+                                                     int idType, string bezeichner)
+        {
+            foreach (SenkenSicherung s in sicherung)
+                if (s.ID_Type == idType &&
+                    string.Equals(s.Bezeichner, bezeichner, StringComparison.OrdinalIgnoreCase))
+                    return s;
+
+            return null;
+        }
+
         public bool Add_WP_Waermeerzeuger(int projektID, List<WErzeugerModel> list)
         {
             try
@@ -1046,6 +1290,11 @@ namespace WindowsFormsApplication1
                     KostenProjektPositionenCtrl.AnkerNachziehen(projektID);
                 }
                 catch { }
+
+                // S1: Die Senkenlisten auf die NEUEN Anlagenzeilen zurueck - VOR dem
+                // Aufraeumlauf, weil Z_AnlageSenke.ID_Puffer dort als Verweis zaehlt
+                // (Begruendung im Block ueber SenkenSichern).
+                SenkenWiederherstellen(projektID);
 
                 GeraeteWaisen.Aufraeumen(projektID);
 

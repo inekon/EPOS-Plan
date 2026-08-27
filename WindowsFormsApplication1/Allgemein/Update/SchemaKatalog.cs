@@ -102,6 +102,36 @@ namespace WindowsFormsApplication1
         public const string Z_ANLAGEPUFFERVERBUND = "Z_AnlagePufferVerbund";
 
         /// <summary>
+        /// PAKET S1 (Migrationsschritt 50, Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 5.1, Entscheidungen L4/L5 vom 27.08.2026): die GEORDNETE SENKENLISTE einer
+        /// Wärmeerzeuger-Anlage — je Zeile ein Ziel, sein Rang und alles, was zu diesem
+        /// einen Ziel gehört.
+        ///
+        /// <b>Warum eine Tabelle und keine weitere Spaltenreihe.</b> Der Bestand kennt
+        /// genau ZWEI Senkenplätze, als zwei Spaltensätze nebeneinander
+        /// (<c>WS_Ziel</c>/<c>WS_ID_Puffer</c>/… und <c>WS_Ziel2</c>/<c>WS_ID_Puffer2</c>/…).
+        /// Eine dritte Senke hieße ein dritter Spaltensatz, eine weitere Beziehung, ein
+        /// weiterer Zweig in jedem Leser — und <c>Tab_Energieanlagen</c> steht mit 57
+        /// Spalten ohnehin unter der Access-Feldgrenze von 255. Als Zeilen ist die Liste
+        /// unbegrenzt, umsortierbar (<c>Rang</c>) und mit EINER Leseregel abgedeckt.
+        ///
+        /// <b>Rang 1 ist Pflicht.</b> Der Dialog verweigert das Entfernen der letzten
+        /// Zeile; findet die Engine zu einer Anlage keine Zeile, rechnet sie
+        /// <c>Heizkreis/Beides</c> mit Protokollwarnung — die heutige
+        /// Normalisierungsregel aus <c>WaermesenkeClass</c>. Deshalb legt die Migration
+        /// auch Anlagen ohne jedes <c>WS_Ziel</c> eine Rang-1-Zeile an.
+        ///
+        /// <b>Die Altspalten bleiben stehen</b> — als stillgelegte Lese-Altlast, Muster
+        /// <c>WQ_Puffer</c> → <c>WQ_ID_Puffer</c>. Solange noch ein Leser die Slots
+        /// bedient, ist ein Löschen der Spalten die eine Änderung, die sich nicht
+        /// zurücknehmen lässt.
+        ///
+        /// Präfix <c>Z_</c> nach der Namenskonvention (Zuordnung), Muster
+        /// <see cref="Z_ANLAGEPUFFERVERBUND"/>.
+        /// </summary>
+        public const string Z_ANLAGESENKE = "Z_AnlageSenke";
+
+        /// <summary>
         /// Bestand: die Spalten, die die Rückfallebene schon vor ADR-001 angelegt hat
         /// (Wärmequelle/-senke, Betriebsmodus, Kaskadenpriorität, Speicherregelung der
         /// Alt-Zuordnung). Sie sind in allen gepflegten Datenbanken vorhanden und
@@ -1085,6 +1115,88 @@ namespace WindowsFormsApplication1
         /// im Sammelkommentar.</para>
         /// </summary>
         public const string SPALTE_KANAL_KNAPPHEITSREIHENFOLGE = "Kanal_Knappheitsreihenfolge";
+
+        // =====================================================================
+        // S1 - Spalten der Senkenliste Z_AnlageSenke (Migrationsschritt 50)
+        //   Konzept Brauchwasser/Heizung/Pufferspeicher § 5.1
+        //
+        //   Die Namen stehen hier, weil Migration, Controller, Projektkopie und
+        //   Löschwege sie alle brauchen - eine zweite Liste danebenzustellen hieße,
+        //   die nächste Spalte an einer von zwei Stellen zu vergessen.
+        // =====================================================================
+
+        /// <summary>FK auf <c>Tab_Energieanlagen.ID</c> — die Anlage, deren Senke das ist.</summary>
+        public const string SPALTE_SENKE_ID_ANLAGE = "ID_Anlage";
+
+        /// <summary>
+        /// Reihenfolge der Senken EINER Anlage, 1..n. Rang 1 ist Pflicht (§ 5.1); die
+        /// Ladephasen der Stunde laufen Rang für Rang (§ 5.2), das heutige C ist Rang 1,
+        /// das heutige D ist Rang 2.
+        /// </summary>
+        public const string SPALTE_SENKE_RANG = "Rang";
+
+        /// <summary>
+        /// Das Ziel dieser Senke — ausschließlich die sechs <c>DbWerte.WS_ZIEL_*</c>-Werte
+        /// (<c>Heizkreis</c>, <c>Prozesswaerme</c>, <c>PufferHeizung</c>,
+        /// <c>PufferBrauchwasser</c>, <c>PufferProzess</c>, <c>PufferKombi</c>).
+        /// TEXT(50) wie <c>Tab_Energieanlagen.WS_Ziel</c>, aus dem die Werte
+        /// UNVERÄNDERT übernommen werden (F5-Alternative: keine Wertablösung).
+        /// </summary>
+        public const string SPALTE_SENKE_ZIEL = "Ziel";
+
+        /// <summary>
+        /// Der abgedeckte Bedarfsanteil — nur bei <c>Ziel = Heizkreis</c> wirksam, Werte
+        /// <c>DbWerte.WS_TYP_BEIDES</c>/<c>_WARMWASSER</c>/<c>_HEIZUNG</c>. Der Ort der
+        /// Frage wandert damit aus <c>Tab_Energieanlagen.WS_Typ</c> in die Senkenzeile:
+        /// Eine Anlage mit zwei Direktsenken kann so je Senke einen anderen Anteil
+        /// decken. Ein vierter Wert für Prozesswärme ist NICHT nötig — dafür gibt es
+        /// <c>DbWerte.WS_ZIEL_PROZESS</c> (§ 4.4: eine Wahrheit je Frage).
+        /// </summary>
+        public const string SPALTE_SENKE_BEDARFSART = "Bedarfsart";
+
+        /// <summary>
+        /// FK auf <c>Tab_Pufferspeicher.ID</c> — nur bei den vier Puffer-Zielen belegt,
+        /// sonst NULL. KEIN Default: 0 verletzte die restriktive Beziehung, „nicht
+        /// gesetzt" ist NULL (dieselbe Hausregel wie bei <c>WS_ID_Puffer</c>).
+        /// </summary>
+        public const string SPALTE_SENKE_ID_PUFFER = "ID_Puffer";
+
+        /// <summary>Ladepriorität dieser Senke; 0 = Vorgabe nach Erzeugertyp (Ladeordnung).</summary>
+        public const string SPALTE_SENKE_LADEPRIO = "Ladeprio";
+
+        /// <summary>
+        /// Sonderpriorität bei PV-Überschuss; 0 = keine. Bei der Migration erbt nur
+        /// RANG 1 den Bestandswert <c>WS_Ladeprio_PV</c>, alle höheren Ränge bekommen 0 —
+        /// eine Spalte <c>WS_Ladeprio_PV2</c> existiert nicht, die PV-Sonderregel hing
+        /// konstruktiv an der Hauptsenke. Das ist exakt das Bestandsverhalten.
+        /// </summary>
+        public const string SPALTE_SENKE_LADEPRIO_PV = "Ladeprio_PV";
+
+        /// <summary>
+        /// Eigene Ladeobergrenze dieser Senke, in PROZENT — dieselbe Einheit wie
+        /// <c>WS_Ladegrenze</c>, <c>Schwelle_Aus</c> und <c>Schwelle_Aus_Nachrang</c>;
+        /// die Umrechnung /100 bleibt beim Bau des Ladeauftrags. 0 = nicht gesetzt,
+        /// dann gilt die Regel des Puffers.
+        /// </summary>
+        public const string SPALTE_SENKE_LADEGRENZE = "Ladegrenze";
+
+        /// <summary>
+        /// Einspeisehöhe 0..1 am Schichtspeicher (§ 7.4); NULL = Standard oben.
+        /// VORGRIFF auf Paket P1: Schritt 50 legt nur die SPALTE an, gelesen wird sie
+        /// erst mit dem Schichtmodell. Sie steht hier mit, weil das Nachrüsten einer
+        /// Spalte an einer Tabelle mit erzwungenen Beziehungen teurer ist als ein Feld,
+        /// das eine Weile NULL bleibt.
+        /// </summary>
+        public const string SPALTE_SENKE_ANSCHLUSSHOEHE = "Anschlusshoehe";
+
+        /// <summary>
+        /// S1: <c>Z_AnlagePufferVerbund.ID_Senke</c> (LONG, NULL zulässig) — FK auf
+        /// <see cref="Z_ANLAGESENKE"/>. Damit hängt ein Parallelverbund künftig an einer
+        /// bestimmten PUFFERSENKE statt pauschal an der Anlage; NULL bedeutet die
+        /// Altzuordnung „Verbund der Rang-1-Senke" und ist genau das Bestandsverhalten
+        /// (bis hierher konnte nur die erste Senke einen Verbund führen).
+        /// </summary>
+        public const string SPALTE_VERBUND_ID_SENKE = "ID_Senke";
 
         /// <summary>Eine Position einer Auslieferungsvorlage (Schritt 39).</summary>
         public sealed class VorlagenPositionSeed
@@ -2225,6 +2337,16 @@ namespace WindowsFormsApplication1
         /// der Ordinal-Lesekette ausschließlich zielgenau erweitert werden, und die
         /// SCHREIBenden Wege des Klassen-Sets bringen ihre eigene, einmalige
         /// Spaltenvorsorge mit (<c>PufferSpCtrl.StelleKlassenSetSpaltenSicher</c>).
+        ///
+        /// Die Spalten der Senkenliste (<see cref="Z_ANLAGESENKE"/>) und
+        /// <see cref="SPALTE_VERBUND_ID_SENKE"/> (Schritt 50) sind BEWUSST NICHT
+        /// aufgeführt — und zwar aus einem stärkeren Grund als oben:
+        /// <see cref="Alle"/> kennt ausschließlich additive SPALTEN an vorhandenen
+        /// Tabellen, hier muss aber erst die TABELLE entstehen (dieselbe Grenze wie bei
+        /// <see cref="Schritt25_Einheitenkonsistenz"/>). Die Rückfallebene übernimmt
+        /// <c>Z_AnlageSenkeCtrl.SpalteVorhanden</c>: Fehlt die Tabelle, meldet sie das
+        /// EINMAL, und jeder Leser fällt auf die Altspalten
+        /// <c>WS_Ziel</c>/<c>WS_Ziel2</c> zurück — also auf das Bestandsverhalten.
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {

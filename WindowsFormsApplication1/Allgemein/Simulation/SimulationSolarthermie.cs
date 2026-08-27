@@ -115,13 +115,13 @@ namespace WindowsFormsApplication1
         private readonly List<string> _feldName = new List<string>();
         private readonly List<double> _feldFlaeche = new List<double>();
         private readonly List<long> _feldAnzahl = new List<long>();
-        private readonly List<Senkenzuordnung> _feldSenke = new List<Senkenzuordnung>();
+        private readonly List<Senkenliste> _feldSenke = new List<Senkenliste>();
 
         /// <summary>Anzahl der Kollektorfelder des zweikanaligen Wegs.</summary>
         public int FelderAnzahl { get { return _feldName.Count; } }
 
-        /// <summary>Senkenzuordnung eines Kollektorfelds (nie null nach dem Aufbau).</summary>
-        public Senkenzuordnung FeldSenke(int index)
+        /// <summary>Senkenliste eines Kollektorfelds (nie null nach dem Aufbau, Paket S1).</summary>
+        public Senkenliste FeldSenke(int index)
         {
             if (index < 0 || index >= _feldSenke.Count) return null;
             return _feldSenke[index];
@@ -428,8 +428,8 @@ namespace WindowsFormsApplication1
         /// Gerechnet wird mit denselben Aufrufen und in derselben Reihenfolge wie in
         /// <see cref="Berechnung"/> — die Potenzialwerte sind damit dieselben Zahlen.
         /// </summary>
-        /// <param name="senken">Senkenzuordnungen des Projekts (Konzept 6.1).</param>
-        public bool Vorbereiten_Zweikanalig(int ID_Projekt, List<Senkenzuordnung> senken)
+        /// <param name="senken">Geordnete Senkenlisten des Projekts (Konzept 5.1).</param>
+        public bool Vorbereiten_Zweikanalig(int ID_Projekt, List<Senkenliste> senken)
         {
             m_ID_Projekt = ID_Projekt;
 
@@ -472,16 +472,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Senkenzuordnung einer Anlage; ohne Zeile gilt die Vorbelegung Heizkreis/Beides —
-        /// dieselbe Regel wie beim Kontextaufbau der Wärmepumpe (Konzept 4.6).
+        /// Senkenliste einer Anlage; ohne Zeile gilt die Rang-1-Invariante
+        /// Heizkreis/Beides — dieselbe Regel wie beim Kontextaufbau der Wärmepumpe
+        /// (Konzept 4.6/5.1).
         /// </summary>
-        private static Senkenzuordnung SenkeZuAnlage(List<Senkenzuordnung> senken, int idAnlage)
+        private static Senkenliste SenkeZuAnlage(List<Senkenliste> senken, int idAnlage)
         {
             if (senken != null)
-                foreach (Senkenzuordnung z in senken)
-                    if (z != null && z.AnlagenID == idAnlage) return z;
+                foreach (Senkenliste s in senken)
+                    if (s != null && s.AnlagenID == idAnlage) return s;
 
-            return new Senkenzuordnung { AnlagenID = idAnlage };
+            return Senkenliste.Vorbelegung(idAnlage);
         }
 
         /// <summary>
@@ -501,7 +502,7 @@ namespace WindowsFormsApplication1
             for (int f = 0; f < _restPotenzial.Length; f++)
                 _restPotenzial[f] = (stunde >= 0 && stunde < 8760) ? _potenzialFeld[f][stunde] : 0;
 
-            double eingang = Kanalabzug.Summe(rest);
+            double eingang = Kaskadenschleife.RestSumme(rest);
             if (eingang < 0) eingang = 0;
             if (stunde >= 0 && stunde < 8760) Waermebedarf[stunde] = eingang;
         }
@@ -529,11 +530,13 @@ namespace WindowsFormsApplication1
             {
                 if (_restPotenzial[f] <= 0) continue;
 
-                Senkenzuordnung z = _feldSenke[f];
-                if (z != null && z.Haupt != Senke.Heizkreis) continue;
+                // PAKET S1: Gefragt wird die DIREKTSENKEN-KETTE des Felds (Konzept 5.2).
+                // Ein Feld ganz ohne Direktsenke lädt ausschließlich und deckt hier
+                // nichts - das ist die Nachfolge der Prüfung „Hauptsenke != Heizkreis".
+                Senkenliste senken = _feldSenke[f];
+                if (senken != null && !senken.HatDirektsenke) continue;
 
-                string wsTyp = (z != null) ? z.WSTyp : WaermequelleClass.SENKE_BEIDES;
-                double verfuegbar = Kanalabzug.Offen(wsTyp, rest);
+                double verfuegbar = Kanalabzug.Offen(senken, rest);
 
                 if (verfuegbar <= 0) continue;
 
@@ -543,7 +546,7 @@ namespace WindowsFormsApplication1
                 // K2: Abzug über die eine Kanalregel, mit gemessener Aufschlüsselung je
                 // Kanal (Konzept 4.4). Die abgezogene Gesamtmenge ist konstruktiv genau
                 // "prod" - sie ist auf den offenen Kanalbedarf begrenzt.
-                Kanalabzug.Abziehen(wsTyp, prod, rest, Direktdeckung_Kanal);
+                Kanalabzug.Abziehen(senken, prod, rest, Direktdeckung_Kanal);
 
                 _restPotenzial[f] -= prod;
                 _prodFeld[f] += prod;
@@ -551,7 +554,7 @@ namespace WindowsFormsApplication1
                 if (stunde >= 0 && stunde < 8760) Waermeproduktion[stunde] += prod;
             }
 
-            if (stunde >= 0 && stunde < 8760) Restwaerme[stunde] = Kanalabzug.Summe(rest);
+            if (stunde >= 0 && stunde < 8760) Restwaerme[stunde] = Kaskadenschleife.RestSumme(rest);
         }
 
         /// <summary>
@@ -661,7 +664,7 @@ namespace WindowsFormsApplication1
         /// Anlage ihren Kanal nach <c>WS_Typ</c> (bei „Beides" mit Warmwasservorrang).
         /// </summary>
         public bool Berechnung_Zweikanalig(int ID_Projekt, Kanalsatz kanaele,
-                                           List<Senkenzuordnung> senken)
+                                           List<Senkenliste> senken)
         {
             if (kanaele == null) return false;
             if (!Vorbereiten_Zweikanalig(ID_Projekt, senken)) return false;

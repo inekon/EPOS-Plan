@@ -593,6 +593,39 @@ namespace WindowsFormsApplication1
                 if (!treffer.Contains(zeile)) treffer.Add(zeile);
             }
 
+            // PAKET S1 (Migrationsschritt 50): die Zeilen der SENKENLISTE.
+            //
+            // Eigene Abfrage aus demselben Grund wie beim Verbund - die Zuordnung steht
+            // in einer anderen Tabelle. Sie muss hier stehen: Ab Schritt 50 ist
+            // Z_AnlageSenke.ID_Puffer der Ort, an dem eine dritte, vierte, n-te
+            // Puffersenke ueberhaupt nur noch abgelegt werden KANN; die beiden
+            // WS_*-Slots oben sehen davon nichts. Ohne diesen Block meldete die
+            // Blockade "keine Referenzen", waehrend die restriktive Beziehung
+            // FK_AnlageSenke_Puffer das Loeschen anschliessend abweist - der Anwender
+            // bekaeme einen Datenbankfehler statt einer Erklaerung.
+            //
+            // Die Rolle nennt den RANG statt "Haupt-/Zweitsenke": In einer Liste
+            // beliebiger Laenge ist die Position die Aussage.
+            DataTable senken = StilleDb.Tabelle(
+                "SELECT a.Bezeichner, a.ID_Type, s.Rang " +
+                "FROM [" + Z_AnlageSenkeCtrl.TABLE + "] s " +
+                "INNER JOIN Tab_Energieanlagen a ON a.ID = s.ID_Anlage " +
+                "WHERE s.ID_Puffer = ? ORDER BY a.Bezeichner, s.Rang",
+                StilleDb.Par("@s", OleDbType.Integer, idPuffer));
+
+            if (senken != null)
+            {
+                foreach (DataRow r in senken.Rows)
+                {
+                    string bezeichner = StilleDb.Text(StilleDb.Feld(r, "Bezeichner"));
+                    string erzeuger = Ladeordnung.ErzeugerName(StilleDb.Zahl(StilleDb.Feld(r, "ID_Type")));
+                    int rang = StilleDb.Zahl(StilleDb.Feld(r, "Rang"));
+
+                    string zeile = bezeichner + " (" + erzeuger + ") - Senke Rang " + rang;
+                    if (!treffer.Contains(zeile)) treffer.Add(zeile);
+                }
+            }
+
             return treffer;
         }
 
@@ -1351,6 +1384,22 @@ namespace WindowsFormsApplication1
         /// Z_ProjektPufferSp in ProjektPufferEntfernen). Ohne diesen Schritt scheiterte das
         /// DELETE FROM Tab_Pufferspeicher an der restriktiven Beziehung FK_Verbund_Puffer,
         /// genau wie es ohne das Nullen von WS_ID_Puffer scheitern wuerde.
+        ///
+        /// PAKET S1 (Migrationsschritt 50): Die Zeilen der SENKENLISTE werden nach der
+        /// Regel behandelt, die WaermesenkeClass.Normalisieren beim Lesen ohnehin
+        /// anwendet - und deshalb GETRENNT nach Rang:
+        ///
+        ///   Rang 1  wird auf 'Heizkreis' NORMALISIERT (Ziel, Ladeprio, Ladegrenze und
+        ///           PV-Prioritaet zurueckgesetzt, ID_Puffer geleert). Das ist Regel N5:
+        ///           "Puffer-Ziel ohne Puffer -> Heizkreis". Geloescht werden darf die
+        ///           Zeile nicht - Rang 1 ist Pflicht (Konzept § 5.1), und ohne sie
+        ///           faende die Engine gar keine Senke mehr.
+        ///   Rang >= 2 wird GELOESCHT. Auch das ist Bestandsverhalten: Eine Zweitsenke
+        ///           ohne Puffer raeumt Normalisieren heute vollstaendig ab
+        ///           (Ziel2 = ""), sie ist danach keine Senke mehr.
+        ///
+        /// Beides ist wirkungsgleich mit dem, was der Lauf ohnehin gerechnet haette -
+        /// das Loesen aendert also nur die ABLAGE, nicht das Ergebnis.
         /// </summary>
         private static void ReferenzenLoesen(List<int> pufferIds)
         {
@@ -1359,6 +1408,26 @@ namespace WindowsFormsApplication1
             AnlagePufferVerbundCtrl.ReferenzenEntfernen(pufferIds);
 
             string liste = string.Join(",", pufferIds);
+
+            // S1: die Senkenliste. STILL wie die Spalten-Schleife unten - fehlt die
+            // Tabelle (Schritt 50 noch nicht gelaufen), gibt es dort auch nichts zu
+            // loesen, und das Loeschen des Puffers darf daran nicht scheitern.
+            try
+            {
+                StilleDb.NonQuery(
+                    "UPDATE [" + Z_AnlageSenkeCtrl.TABLE + "] " +
+                    "SET Ziel = '" + DbWerte.WS_ZIEL_HEIZKREIS + "', ID_Puffer = NULL, " +
+                    "    Ladeprio = 0, Ladeprio_PV = 0, Ladegrenze = 0 " +
+                    "WHERE Rang = 1 AND ID_Puffer IN (" + liste + ")");
+
+                StilleDb.NonQuery(
+                    "DELETE FROM [" + Z_AnlageSenkeCtrl.TABLE + "] " +
+                    "WHERE Rang > 1 AND ID_Puffer IN (" + liste + ")");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Senkenzeilen auf Pufferspeicher nicht geloest: " + ex.Message);
+            }
             try
             {
                 using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))

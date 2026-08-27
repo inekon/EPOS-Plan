@@ -104,7 +104,20 @@ namespace WindowsFormsApplication1
             // Migrationsschritt 45). Ohne Versatz zeigten die Positionen einer
             // Variante auf die Anlagen des QUELLprojekts und stünden dort als
             // „ohne Anlagenzuordnung“ da.
-            {"ID_Anlage","Tab_Energieanlagen"}
+            {"ID_Anlage","Tab_Energieanlagen"},
+            // S1 (Migrationsschritt 50): Der Parallelverbund haengt kuenftig an einer
+            // bestimmten Puffersenke. Ohne Versatz zeigte die Verbundzeile der Kopie
+            // auf die Senkenzeile des QUELLprojekts - und weil ID_Senke KEINE
+            // deklarierte Access-Beziehung hat (nur die Spalte, siehe Schritt 50b),
+            // faellt das nicht einmal beim Einfuegen auf.
+            //
+            // NICHT hier: Z_AnlageSenke.ID_Puffer. Diese Map vergleicht ohne
+            // Gross-/Kleinschreibung (StringComparer.OrdinalIgnoreCase) - "ID_Puffer"
+            // IST fuer sie derselbe Schluessel wie das bereits eingetragene
+            // "ID_PUFFER" und wird davon mit abgedeckt. Ein zweiter Eintrag waere
+            // nicht ueberfluessig, sondern eine ArgumentException beim Laden der
+            // Klasse. ID_Anlage steht ohnehin schon oben (Ä20).
+            {"ID_Senke","Z_AnlageSenke"}
         };
 
         // Mehrdeutige FK-Spalten (gleicher Name, verschiedene Zieltabellen) -> je Tabelle aufgeloest.
@@ -130,6 +143,25 @@ namespace WindowsFormsApplication1
             {"Tab_StromganglinieDaten","ID_Ganglinie IN (SELECT ID FROM Tab_Stromganglinie WHERE ID_Projekt = {0})"},
             {"Tab_SolarganglinieDaten","ID_Ganglinie IN (SELECT ID FROM Tab_Solarganglinie WHERE ID_Projekt = {0})"},
             {"Tab_Stromverbrauchertyp","ID_Stromverbraucher IN (SELECT ID FROM Tab_Stromverbraucher WHERE ID_Projekt = {0})"},
+
+            // S1 (Migrationsschritt 50): Die Senkenliste und der Parallelverbund
+            // haengen an der ANLAGE und fuehren bewusst kein eigenes ID_Projekt.
+            //
+            // WARUM AUSDRUECKLICH UND NICHT UEBER DIE AUTO-ERKENNUNG. Die Erkennung
+            // FK-gebundener Kindtabellen (:327-358) nimmt die ERSTE Spalte, zu der sie
+            // eine deklarierte Beziehung auf eine bereits geplante Tabelle findet -
+            // bei Z_AnlageSenke waeren das ID_Anlage ODER ID_Puffer, je nach
+            // Spaltenreihenfolge. Ueber ID_Puffer gefiltert fielen alle Senken OHNE
+            // Puffer (jede Direktsenke Heizkreis/Prozesswaerme, also die Mehrheit)
+            // aus der Kopie. Der feste Eintrag macht die Wahl eindeutig.
+            //
+            // Z_AnlagePufferVerbund stand hier bis heute NICHT (Befund Konzept § 5.1):
+            // Die Kopie hing allein an der Auto-Erkennung und damit an derselben
+            // Spaltenreihenfolge-Lotterie. „Projekt mit mehreren Senken duplizieren"
+            // ist Abnahmekriterium von S1 - dafuer muessen beide Tabellen sicher
+            // mitkommen.
+            {"Z_AnlageSenke",          "ID_Anlage IN (SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = {0})"},
+            {"Z_AnlagePufferVerbund",  "ID_Anlage IN (SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = {0})"},
         };
 
         // Echte, in Access deklarierte Fremdschluessel: Key "Tabelle||Spalte" -> referenzierte Tabelle.

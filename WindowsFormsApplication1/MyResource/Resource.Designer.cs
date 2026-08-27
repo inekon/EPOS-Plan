@@ -13099,7 +13099,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("PSP_FEHLER_EIN_KLEINER_AUS", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Mindestens eine Nutzung muss angehakt sein: Heizung, Brauchwasser oder Prozesswärme. Einen Speicher ohne Nutzung entlädt keine Anlage (Konzept 6.1). ähnelt.
         /// </summary>
@@ -13108,7 +13108,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("PSP_FEHLER_KLASSENSET_LEER", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Abschaltschwelle für nachrangige Erzeuger darf die Abschaltschwelle nicht überschreiten - sie ist die Reservezone für den Vorrang (Konzept 3.4). ähnelt.
         /// </summary>
@@ -13279,7 +13279,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("PSP_GRUPPE_LADEREIHENFOLGE", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Set ohne Alt-Entsprechung — führend sind die Häkchen. Die Verwendung darüber zeigt nur den nächstliegenden Altwert. ähnelt.
         /// </summary>
@@ -13288,7 +13288,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("PSP_HINWEIS_KLASSENSET_OHNE_ALTWERT", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasserspeicher ähnelt.
         /// </summary>
@@ -13567,7 +13567,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("PSP_LABEL_GESAMTVOLUMEN", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung (Klassen-Set): ähnelt.
         /// </summary>
@@ -13576,7 +13576,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("PSP_LABEL_KLASSENSET", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Mindestfüllstand/Notreserve [%]: ähnelt.
         /// </summary>
@@ -15173,6 +15173,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
+        /// </summary>
+        public static string SIM_BTN_SENKE_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("SIM_BTN_SENKE_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinzufügen ähnelt.
+        /// </summary>
+        public static string SIM_BTN_SENKE_HINZU {
+            get {
+                return ResourceManager.GetString("SIM_BTN_SENKE_HINZU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ▲ nach oben ähnelt.
+        /// </summary>
+        public static string SIM_BTN_SENKE_RAUF {
+            get {
+                return ResourceManager.GetString("SIM_BTN_SENKE_RAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ▼ nach unten ähnelt.
+        /// </summary>
+        public static string SIM_BTN_SENKE_RUNTER {
+            get {
+                return ResourceManager.GetString("SIM_BTN_SENKE_RUNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf Übersicht... ähnelt.
         /// </summary>
         public static string SIM_BTN_WAERMEBEDARF_UEBERSICHT {
@@ -15380,6 +15416,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmesenken in Reihenfolge der Belieferung ähnelt.
+        /// </summary>
+        public static string SIM_GRUPPE_SENKENLISTE {
+            get {
+                return ResourceManager.GetString("SIM_GRUPPE_SENKENLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählte Senke ähnelt.
+        /// </summary>
+        public static string SIM_GRUPPE_SENKENZEILE {
+            get {
+                return ResourceManager.GetString("SIM_GRUPPE_SENKENZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkreis ähnelt.
         /// </summary>
         public static string SIM_HEIZKREIS {
@@ -15547,6 +15601,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_KARTE_SENKE {
             get {
                 return ResourceManager.GetString("SIM_KARTE_SENKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die → {0} ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_SENKE_WEITER {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_SENKE_WEITER", resourceCulture);
             }
         }
         
@@ -16328,6 +16391,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Pufferspeicher „{0}“ steht mehr als einmal in der Senkenliste. Jeder Speicher darf nur einmal Ziel dieser Anlage sein. ähnelt.
+        /// </summary>
+        public static string SIM_MSG_SENKE_DOPPELT {
+            get {
+                return ResourceManager.GetString("SIM_MSG_SENKE_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jede Anlage braucht mindestens eine Wärmesenke. Die letzte Zeile lässt sich deshalb nicht entfernen. ähnelt.
+        /// </summary>
+        public static string SIM_MSG_SENKE_LETZTE_ZEILE {
+            get {
+                return ResourceManager.GetString("SIM_MSG_SENKE_LETZTE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang {0}: Für das Ziel „{1}“ ist kein Pufferspeicher gewählt. ähnelt.
+        /// </summary>
+        public static string SIM_MSG_SENKE_PUFFER_FEHLT {
+            get {
+                return ResourceManager.GetString("SIM_MSG_SENKE_PUFFER_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Fehlermeldungen des Laufs: ähnelt.
         /// </summary>
         public static string SIM_MSG_WEITERE_FEHLERMELDUNGEN {
@@ -16577,6 +16667,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Senke auf Rang {0} ähnelt.
+        /// </summary>
+        public static string SIM_ROLLE_RANG {
+            get {
+                return ResourceManager.GetString("SIM_ROLLE_RANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zweitsenke ähnelt.
         /// </summary>
         public static string SIM_ROLLE_ZWEITSENKE {
@@ -16775,6 +16874,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsart ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_BEDARFSART {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_BEDARFSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsstunden [h/a] ähnelt.
         /// </summary>
         public static string SIM_SPALTE_BETRIEBSSTUNDEN {
@@ -16838,6 +16946,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laden ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_LADEN {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_LADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Leistung [kW] ähnelt.
         /// </summary>
         public static string SIM_SPALTE_LEISTUNG {
@@ -16892,6 +17009,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_RANG {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_RANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Senke ähnelt.
         /// </summary>
         public static string SIM_SPALTE_SENKE {
@@ -16906,6 +17032,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_SPALTE_SOLARKOLLEKTOR {
             get {
                 return ResourceManager.GetString("SIM_SPALTE_SOLARKOLLEKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_SPEICHER {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_SPEICHER", resourceCulture);
             }
         }
         
@@ -16951,6 +17086,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_SPALTE_WPPRIO {
             get {
                 return ResourceManager.GetString("SIM_SPALTE_WPPRIO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ziel ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_ZIEL {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_ZIEL", resourceCulture);
             }
         }
         
@@ -17400,6 +17544,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher Prozesswärme ähnelt.
+        /// </summary>
+        public static string SIM_ZIEL_PUFFERSPEICHER_PROZESS {
+            get {
+                return ResourceManager.GetString("SIM_ZIEL_PUFFERSPEICHER_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zweitsenke muss sich von der Hauptsenke unterscheiden.
         ///Beide zeigen auf {0} „{1}&quot;. ähnelt.
         /// </summary>
@@ -17462,7 +17615,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIMENG_ENERGIEPROBE_KANAELE", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Simulationsergebnis konnte nicht gespeichert werden. ähnelt.
         /// </summary>
@@ -17471,7 +17624,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIMENG_ERGEBNIS_NICHT_GESPEICHERT", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kalender: In den Klimadaten ist in den ersten 14 Tagen kein Wochenende (Samstag und Sonntag) erkennbar. Die Bedarfsprofile werden deshalb wie bisher ab Sonntag als 1. Januar über das Jahr verteilt. ähnelt.
         /// </summary>
@@ -17480,7 +17633,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIMENG_KALENDER_WOCHENENDE_UNBESTIMMT", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Für Projekt {0} ist keine Klimaregion gesetzt. ähnelt.
         /// </summary>
@@ -17597,7 +17750,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIMENG_PRAEFIX_BRAUCHWASSER", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel:  ähnelt.
         /// </summary>
@@ -17606,7 +17759,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIMENG_PRAEFIX_HEIZKESSEL", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme:  ähnelt.
         /// </summary>
@@ -17615,7 +17768,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIMENG_PRAEFIX_PROZESSWAERME", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf:  ähnelt.
         /// </summary>
@@ -17624,7 +17777,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIMENG_PRAEFIX_STROMBEDARF", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe:  ähnelt.
         /// </summary>
@@ -17633,7 +17786,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIMENG_PRAEFIX_WAERMEPUMPE", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}Die zwölf Monatswerte des Eintrags &apos;{1}&apos; summieren sich zu 0. Der im Projekt hinterlegte Jahresverbrauch lässt sich darauf nicht verteilen; seine Rechnung entfällt und sein Anteil bleibt 0. ähnelt.
         /// </summary>
@@ -17642,7 +17795,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIMENG_PROFIL_MONATSSUMME_NULL", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}Das Wochenprofil des Typs &apos;{1}&apos; (Eintrag &apos;{2}&apos;) enthält nur Nullwerte. Die Verteilung über das Jahr wäre eine Division durch 0; seine Rechnung entfällt und sein Anteil bleibt 0. ähnelt.
         /// </summary>
@@ -17651,7 +17804,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIMENG_PROFIL_WOCHENPROFIL_NULL", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme: Zum Prozess &apos;{0}&apos; ist im Projekt kein Datensatz hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0. ähnelt.
         /// </summary>
@@ -17822,7 +17975,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIMENG_STROMPROFIL_KOPF_FEHLT", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf: Der Typ des Stromprofils &apos;{0}&apos; ist nicht definiert. Die Rechnung wurde abgebrochen; ihr Anteil bleibt 0. ähnelt.
         /// </summary>
@@ -17831,7 +17984,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIMENG_STROMPROFIL_TYP_UNDEFINIERT", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf: Zum Typ &apos;{0}&apos; des Stromprofils &apos;{1}&apos; ist kein Wochenprofil hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0. ähnelt.
         /// </summary>
@@ -17840,7 +17993,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIMENG_STROMPROFIL_TYPPROFIL_FEHLT", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die  (zuletzt bearbeitet: Stromprofil &apos;{0}&apos;) ähnelt.
         /// </summary>
