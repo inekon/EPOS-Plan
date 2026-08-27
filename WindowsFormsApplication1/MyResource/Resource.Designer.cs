@@ -1738,6 +1738,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten werden je Komponente gepflegt — die Summe steht an der ersten Anlage der Komponente. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_JE_KOMPONENTE {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_JE_KOMPONENTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kein Projekt gewählt. ähnelt.
         /// </summary>
         public static string BK_KOSTEN_KEIN_PROJEKT {
@@ -1747,7 +1756,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Investition je Komponente ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkomponenten ähnelt.
         /// </summary>
         public static string BK_KOSTEN_LBL_KOMPONENTEN {
             get {
@@ -1761,6 +1770,53 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_KOSTEN_LBL_TRAEGER {
             get {
                 return ResourceManager.GetString("BK_KOSTEN_LBL_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Position(en) der Komponente „{1}“ gelöscht. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_LOSE_GELOESCHT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_LOSE_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Kostenpositionen ohne Anlagenzuordnung der Komponente „{0}“ löschen?
+        ///
+        ///Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis dahin in der Wirtschaftlichkeit mit. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_LOSE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_LOSE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Positionen ohne Anlagenzuordnung ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_LOSE_TITEL {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_LOSE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — ohne Anlagenzuordnung ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_NICHT_VERBAUT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_NICHT_VERBAUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenpositionen ohne (gültige) Anlagenzuordnung — sie rechnen in der Wirtschaftlichkeit mit. Doppelklick löscht sie nach Rückfrage; bearbeiten: Kostenverwaltung, Eintrag „(ohne Anlagenzuordnung)“. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_NICHT_VERBAUT_HINT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_NICHT_VERBAUT_HINT", resourceCulture);
             }
         }
         
@@ -1797,6 +1853,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_KOSTEN_SP_ABRECHNUNG {
             get {
                 return ResourceManager.GetString("BK_KOSTEN_SP_ABRECHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage / Komponente ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_SP_ANLAGE {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_SP_ANLAGE", resourceCulture);
             }
         }
         
@@ -1896,6 +1961,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_KOSTEN_STATUS {
             get {
                 return ResourceManager.GetString("BK_KOSTEN_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenpositionen ohne verbaute Anlage: {0} ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_STATUS_NICHT_VERBAUT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_STATUS_NICHT_VERBAUT", resourceCulture);
             }
         }
         
@@ -5849,6 +5923,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (ohne Anlagenzuordnung) ähnelt.
+        /// </summary>
+        public static string KDLG_UEB_QUELLE_LOSE {
+            get {
+                return ResourceManager.GetString("KDLG_UEB_QUELLE_LOSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus Projekt/Anlage: ähnelt.
+        /// </summary>
+        public static string KDLG_UEB_QUELLE_PROJEKT {
+            get {
+                return ResourceManager.GetString("KDLG_UEB_QUELLE_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aus Vorlage/Variante: ähnelt.
         /// </summary>
         public static string KDLG_UEB_QUELLE_VORLAGE {
@@ -5858,7 +5950,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle enthält {0} Positionen. Das Zielprojekt führt für diese Komponente bereits {1} Positionen — vorhandene bleiben unberührt, nur fehlende werden angelegt. Die Herkunft wird je Position vermerkt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle enthält {0} Positionen. Das Ziel (diese Anlage) führt bereits {1} Positionen — vorhandene bleiben unberührt, nur fehlende werden angelegt. Die Herkunft wird je Position vermerkt. ähnelt.
         /// </summary>
         public static string KDLG_UEB_VORSCHAU {
             get {
@@ -14321,6 +14413,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeise-Tarif… ähnelt.
+        /// </summary>
+        public static string PVW_BTN_TARIF {
+            get {
+                return ResourceManager.GetString("PVW_BTN_TARIF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die DV-Entgelt [ct/kWh]: ähnelt.
         /// </summary>
         public static string PVW_DV {
@@ -21450,6 +21551,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Tarif… ähnelt.
+        /// </summary>
+        public static string WIRT_BTN_BHKW_TARIF {
+            get {
+                return ResourceManager.GetString("WIRT_BTN_BHKW_TARIF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombezug… ähnelt.
+        /// </summary>
+        public static string WIRT_BTN_STROM_TARIF {
+            get {
+                return ResourceManager.GetString("WIRT_BTN_STROM_TARIF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Preis: konstanter Projektwert {0} €/t (Override); der Pfad des Gesetzeskatalogs bleibt außen vor. ähnelt.
         /// </summary>
         public static string WIRT_CO2_KONSTANT {
@@ -22760,6 +22879,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ZUSCHUSS_UEBERHANG {
             get {
                 return ResourceManager.GetString("WIRT_ZUSCHUSS_UEBERHANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten bearbeiten… ähnelt.
+        /// </summary>
+        public static string WPI_BTN_KOSTEN {
+            get {
+                return ResourceManager.GetString("WPI_BTN_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Invest — · Betrieb — ähnelt.
+        /// </summary>
+        public static string WPI_KOSTEN_KEINE {
+            get {
+                return ResourceManager.GetString("WPI_KOSTEN_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Invest {0:N0} € · Betrieb {1:N0} €/a ähnelt.
+        /// </summary>
+        public static string WPI_KOSTEN_SUMMEN {
+            get {
+                return ResourceManager.GetString("WPI_KOSTEN_SUMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenverwaltung dieser Anlage öffnen (Projektmodus). ähnelt.
+        /// </summary>
+        public static string WPI_TIP_KOSTEN {
+            get {
+                return ResourceManager.GetString("WPI_TIP_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten werden je ANLAGE gepflegt — die Wärmepumpe zuerst mit OK anlegen und speichern; danach über „Ändern..“ die Kosten bearbeiten. ähnelt.
+        /// </summary>
+        public static string WPI_TIP_KOSTEN_NEU {
+            get {
+                return ResourceManager.GetString("WPI_TIP_KOSTEN_NEU", resourceCulture);
             }
         }
     }
