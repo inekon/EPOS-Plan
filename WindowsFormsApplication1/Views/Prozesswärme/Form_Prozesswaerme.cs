@@ -171,7 +171,9 @@ namespace WindowsFormsApplication1
         {
             RecordSet rs = new RecordSet();
 
-            if (dataGridView1.CurrentCell.RowIndex == -1) return;
+            // FR-8: Bei leerem Katalog gibt es keine aktuelle Zelle/Zeile -
+            // CurrentCell/CurrentRow sind dann null, der alte RowIndex-Vergleich warf.
+            if (dataGridView1.CurrentCell == null || dataGridView1.CurrentRow == null) return;
 
             string sql = "SELECT * from Tab_Prozesswaerme_STAMM where Bezeichner='" + (string)dataGridView1.CurrentRow.Cells[0].Value + "'";
             rs.Open(sql);
@@ -223,6 +225,9 @@ namespace WindowsFormsApplication1
                 }
                 if (list_pwmodel.Count == 0)
                 {
+                    // FR-8: Nur bei gefuelltem Katalog - Rows[0] warf bei leerem Grid.
+                    if (dataGridView1.Rows.Count == 0) return;
+
                     dataGridView1.Rows[0].Selected = true;
                     dataGridView1.Rows[0].Cells[0].Selected = true;
 

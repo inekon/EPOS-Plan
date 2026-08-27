@@ -1078,7 +1078,13 @@ namespace WindowsFormsApplication1
                     // abräumt — die Selbstheilung löste die Zuordnung dann
                     // „ehrlich“ und die Kosten der Anlage standen als „ohne
                     // Anlagenzuordnung“ da (Befund 27.08.2026, Projekt 1037).
-                    int anlageAlt = item.ID;
+                    // FR-5: Frisch im Dialog aufgenommene Zeilen tragen eine VORLAEUFIGE
+                    // Id ab 100000 (Hausmuster startindex, siehe
+                    // WizardItemClass.ID_UNGESPEICHERT_START) — sie ist KEINE Anlagen-Id.
+                    // Ohne die Normalisierung zöge der Kostenanker-Umzug unten die
+                    // Positionen einer ECHTEN Anlage um, sobald die AutoWerte diese
+                    // Marke erreichen.
+                    int anlageAlt = (item.ID >= WizardItemClass.ID_UNGESPEICHERT_START) ? 0 : item.ID;
                     int wpAlt = item.ID_WP, bhkwAlt = item.ID_BHKW, kesselAlt = item.ID_Kessel,
                         spAlt = item.ID_SP, pufferAlt = item.ID_PUFFER, pvAlt = item.ID_PV,
                         solarAlt = item.ID_Solar;
