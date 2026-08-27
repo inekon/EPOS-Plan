@@ -2226,6 +2226,41 @@ namespace WindowsFormsApplication1
             return RegistrySpeicher();
         }
 
+        /// <summary>
+        /// PAKET E1 (Konzept 6.3, Befund S-1): Nutzbare Kapazität ALLER Senkenspeicher
+        /// des Laufs [kWh] — die Ablösung des Alias <see cref="puffer_wp"/> in der
+        /// Ergebnisgröße <c>Tab_ErgebnisWaermepumpe.Kapazitaet_Pufferspeicher</c>.
+        ///
+        /// <para><b>Warum die Summe und nicht der erste Puffer.</b> <c>puffer_wp</c> ist
+        /// der ERSTE Heizungs-Puffer in Aufnahmereihenfolge. In einem Projekt mit zwei
+        /// Puffern je Kanal wies die Kennzahl damit die Kapazität EINES Behälters aus und
+        /// verschwieg den zweiten; in einem Projekt, dessen einziger Speicher ein
+        /// Brauchwasser- oder Kombispeicher ist, meldete sie 0, obwohl der Lauf einen
+        /// Speicher bewirtschaftet hat. Beides ist keine Rundungsfrage, sondern ein
+        /// falscher Wert — die Umstellung ist eine DOKUMENTIERTE Ergebnisänderung.</para>
+        ///
+        /// <para><b>Ohne die Quellspeicher.</b> Ein Quellpuffer ist Wärmequelle der
+        /// Anlage, kein Vorrat für den Bedarf; seine Kapazität gehört nicht in eine
+        /// Kennzahl, die die Pufferung der Wärmeversorgung beschreibt. Er steht mit
+        /// eigener Zeile in <c>Tab_ErgebnisPufferspeicher</c> (Rolle „Quelle").</para>
+        ///
+        /// <para>Ein Parallelverbund zählt genau einmal: Sein Leitspeicher trägt bereits
+        /// die aufsummierte Kapazität aller Mitglieder, und nur er steht in der
+        /// Registry.</para>
+        /// </summary>
+        public double SenkenspeicherKapazitaet()
+        {
+            double summe = 0;
+            foreach (SimulationPufferspeicher sp in AlleSpeicher())
+            {
+                if (sp == null) continue;
+                if (string.Equals(sp.Verwendung, SimulationPufferspeicher.VERWENDUNG_QUELLE,
+                                  StringComparison.Ordinal)) continue;
+                if (sp.Q_max > 0) summe += sp.Q_max;
+            }
+            return summe;
+        }
+
         // ===================================================================
         // Speicher-Registry (Konzept 6.2) - Aufbau und Zugriff
         // ===================================================================

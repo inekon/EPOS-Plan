@@ -473,6 +473,9 @@ namespace WindowsFormsApplication1
             SimulationPufferspeicher q = _quellSpeicher[i];
             if (q == null || _quellAnteil[i] <= 0) return 0;
 
+            // PAKET E1: OHNE Kanalangabe — eine Quellentnahme trägt keinen Bedarfskanal.
+            // Sie wird deshalb auf dem Heizkanal gebucht (Vorbelegung von Entladen,
+            // dieselbe Näherung wie Kaskadenschleife.Anteil_Entladen ohne Kanal).
             double geliefert = q.Entladen(menge * _quellAnteil[i], stunde);
             if (geliefert <= 0) return 0;
 

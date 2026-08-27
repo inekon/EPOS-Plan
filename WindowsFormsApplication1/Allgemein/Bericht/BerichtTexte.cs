@@ -159,6 +159,19 @@ namespace WindowsFormsApplication1
               "die Zahlen aller Kapitel stammen damit aus demselben Rechenlauf.",
               "Every project listed here was simulated anew for this report (hourly annual calculation) " +
               "and then evaluated economically; all chapters therefore share one calculation run." },
+
+            // PAKET E1 (Konzept 4.4) — die drei Bedarfskanäle im Bericht.
+            // Die Kanalnamen tragen bewusst den Zusatz „davon" bzw. stehen als
+            // Deckungsgrad-Zeilen: „Heizung" allein wäre als Wörterbuchschlüssel zu
+            // grob — der Bericht verwendet das Wort auch in Gewerks- und
+            // Komponentennamen, und T() ersetzt Text global.
+            { "davon Heizung", "of which space heating" },
+            { "davon Brauchwasser", "of which domestic hot water" },
+            { "davon Prozesswärme", "of which process heat" },
+            { "Deckungsgrade je Bedarfsart", "Coverage by demand type" },
+            { "Deckungsgrad Heizung", "Coverage space heating" },
+            { "Deckungsgrad Brauchwasser", "Coverage domestic hot water" },
+            { "Deckungsgrad Prozesswärme", "Coverage process heat" },
         };
     }
 }

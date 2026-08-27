@@ -89,9 +89,27 @@ namespace WindowsFormsApplication1
                 // Restwärme (Referenz des letzten Gewerks → Kopie zwingend).
                 z.Reihen[ZeitreihenSatz.WAERMEREST] = D(sim.Rest_Waermebedarf_stuendlich);
 
-                // Thermischer Pufferspeicher (nur wenn zugeordnet).
-                if (sim.puffer_wp != null && sim.puffer_wp.SOC_stuendlich != null)
-                    z.Reihen[ZeitreihenSatz.PUFFER_SOC] = D(sim.puffer_wp.SOC_stuendlich);
+                // Thermische Speicher — PAKET E1 (Konzept 6.3, Befund S-1): JE SPEICHER
+                // eine Reihe unter dem technischen Serienschlüssel PUFFER_<ID> bzw.
+                // QUELLE_<AnlagenID>, statt einer einzigen Reihe aus dem Alias
+                // sim.puffer_wp (dem ersten Heizungspuffer). Quelle ist dieselbe
+                // Speicherliste, aus der sich auch Ergebnis-Persistenz, Navigator und
+                // CSV-Export speisen (Konzept 6.6/13.3, eine Quelle der Wahrheit).
+                {
+                    var speicher = sim.AlleSpeicher();
+                    for (int i = 0; i < speicher.Count; i++)
+                    {
+                        SimulationPufferspeicher sp = speicher[i];
+                        if (sp == null || sp.SOC_stuendlich == null) continue;
+
+                        string schluessel = sp.Schluessel(i);
+                        if (z.Reihen.ContainsKey(schluessel)) continue;   // je Speicher genau eine Reihe
+
+                        z.Reihen[schluessel] = D(sp.SOC_stuendlich);
+                        z.Speicherreihen.Add(schluessel);
+                        z.Beschriftungen[schluessel] = sp.Anzeige();
+                    }
+                }
             }
             catch
             {

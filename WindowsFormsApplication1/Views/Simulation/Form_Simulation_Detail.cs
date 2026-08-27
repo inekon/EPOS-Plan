@@ -347,6 +347,9 @@ namespace WindowsFormsApplication1
             // (BHKW-Anzeige-Nachzug, Bedienmuster der Heizkessel-Seite).
             InitBhkwChart();
 
+            // Bedarfsseite: der Wärmebedarf je Bedarfsart (Paket E1, Konzept 4.4).
+            InitBedarfKanalzeilen();
+
             // HIER DIE KORREKTUR: ReihenfolgeTabPages() komplett weglassen
             // und stattdessen direkt unsere neue Update-Logik starten!
             UpdateTabPages();
@@ -1219,6 +1222,158 @@ namespace WindowsFormsApplication1
                               out label_BhkwSpeicherdeckungEinheit);
 
             InitBhkwVbhZeile();
+        }
+
+        // ====================================================================
+        //  PAKET E1 (Konzept 4.4) — Wärmebedarf je Bedarfsart auf der Bedarfsseite
+        // ====================================================================
+
+        /// <summary>Überschrift und die drei Wertfelder des Kanalblocks; null vor <see cref="InitBedarfKanalzeilen"/>.</summary>
+        private Label label_BedarfKanalKopf;
+        private Label[] label_BedarfKanal;
+        private TextBox[] tb_BedarfKanal;
+        private Label[] label_BedarfKanalEinheit;
+
+        /// <summary>
+        /// Legt unter „Gesamter Wärmebedarf" drei Kennzahlzeilen für die drei
+        /// Bedarfskanäle an — Heizung, Brauchwasser, Prozesswärme (Paket E1,
+        /// Konzept 4.4). Sie addieren sich zur Zeile darüber.
+        ///
+        /// <b>Warum zur Laufzeit und nicht im Designer.</b> Dieselbe Begründung wie bei
+        /// <see cref="InitBhkwSpeicherzeilen"/> und <see cref="InitKesselQuellwaerme"/>:
+        /// Designer und .resx der Form bleiben unangetastet, die Texte kommen aus
+        /// <c>MyResource.Resource</c> und sind damit in beiden Sprachen gepflegt
+        /// (Drei-Schichten-Regel). Die Beschriftungen sind die KANAL_*_ANZEIGE-Schlüssel
+        /// aus Paket K1 — es gibt genau einen Katalogeintrag je Kanal.
+        ///
+        /// <b>Warum hier NICHTS nachrücken muss.</b> Die linke Spalte der Bedarfsseite
+        /// endet mit „Gesamter Wärmebedarf" bei y≈548; die Seite ist 721 hoch, darunter
+        /// steht in dieser Spalte kein Steuerelement mehr. Der Block belegt y 566…650 und
+        /// bleibt damit innerhalb des Entwurfs — anders als auf der BHKW-Seite ist kein
+        /// Verschieben nötig.
+        ///
+        /// <b>Anker bewusst Standard (Top|Left).</b> Ein Vierseitenanker an einem im
+        /// Konstruktor eingehängten Steuerelement blähte sich beim ersten Layout gegen die
+        /// Entwurfsgröße der TabPage auf — dieselbe Falle wie in
+        /// <c>Form_PeakShaving.ChartAufbauen</c>.
+        /// </summary>
+        private void InitBedarfKanalzeilen()
+        {
+            if (tabPage_Bedarf == null || textBox_Gesamt_Waermebedarf == null) return;
+
+            TextBox muster = textBox_Gesamt_Waermebedarf;
+            Control beschriftung = NachbarZeile(muster, true);    // „Gesamter Wärmebedarf"
+            Control einheit = NachbarZeile(muster, false);        // „MWh"
+
+            int schritt = muster.Height + 6;
+            int oben = muster.Bottom + 14;
+
+            label_BedarfKanalKopf = new Label();
+            label_BedarfKanalKopf.Name = "label_BedarfKanalKopf";
+            label_BedarfKanalKopf.Text = MyResource.Resource.SIM_LABEL_BEDARF_JE_KANAL;
+            label_BedarfKanalKopf.AutoSize = true;
+            label_BedarfKanalKopf.Visible = false;
+            if (beschriftung != null)
+            {
+                label_BedarfKanalKopf.Font = beschriftung.Font;
+                label_BedarfKanalKopf.ForeColor = beschriftung.ForeColor;
+                label_BedarfKanalKopf.BackColor = beschriftung.BackColor;
+            }
+            label_BedarfKanalKopf.Location = new Point(muster.Left - 4, oben);
+            tabPage_Bedarf.Controls.Add(label_BedarfKanalKopf);
+
+            string[] namen =
+            {
+                MyResource.Resource.KANAL_HEIZUNG_ANZEIGE,
+                MyResource.Resource.KANAL_BRAUCHWASSER_ANZEIGE,
+                MyResource.Resource.KANAL_PROZESS_ANZEIGE
+            };
+
+            label_BedarfKanal = new Label[Kanal.ANZAHL];
+            tb_BedarfKanal = new TextBox[Kanal.ANZAHL];
+            label_BedarfKanalEinheit = new Label[Kanal.ANZAHL];
+
+            // Die Beschriftung steht LINKS neben dem Feld (nicht darüber wie bei der
+            // Summenzeile): drei Zeilen mit je einer Überschrift darüber wären eine
+            // Neugestaltung des Blocks, die hier nicht gewollt ist.
+            int breiteLabel = 0;
+            foreach (string n in namen)
+                breiteLabel = Math.Max(breiteLabel,
+                                       BreiteMessen(n, label_BedarfKanalKopf.Font, 90));
+
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+            {
+                int y = oben + 22 + k * schritt;
+
+                Label lbl = new Label();
+                lbl.Name = "label_BedarfKanal" + k;
+                lbl.Text = namen[k];
+                lbl.AutoSize = false;
+                lbl.TextAlign = ContentAlignment.MiddleLeft;
+                lbl.Visible = false;
+                if (beschriftung != null)
+                {
+                    lbl.Font = beschriftung.Font;
+                    lbl.ForeColor = beschriftung.ForeColor;
+                    lbl.BackColor = beschriftung.BackColor;
+                }
+                lbl.Bounds = new Rectangle(muster.Left, y, breiteLabel, muster.Height);
+                tabPage_Bedarf.Controls.Add(lbl);
+                label_BedarfKanal[k] = lbl;
+
+                TextBox feld = new TextBox();
+                feld.Name = "tb_BedarfKanal" + k;
+                feld.ReadOnly = true;
+                feld.BackColor = muster.BackColor;
+                feld.ForeColor = muster.ForeColor;
+                feld.BorderStyle = muster.BorderStyle;
+                feld.Font = muster.Font;
+                feld.TextAlign = muster.TextAlign;
+                feld.Bounds = new Rectangle(muster.Left + breiteLabel + 8, y,
+                                            muster.Width, muster.Height);
+                feld.Visible = false;
+                tabPage_Bedarf.Controls.Add(feld);
+                tb_BedarfKanal[k] = feld;
+
+                Label lblE = new Label();
+                lblE.Name = "label_BedarfKanalEinheit" + k;
+                // Einheit ÜBERNOMMEN, nicht neu getextet — so kann sie nicht von der
+                // Summenzeile abweichen (Muster BhkwKennzahlZeile).
+                lblE.Text = (einheit != null) ? einheit.Text : "MWh";
+                lblE.AutoSize = true;
+                lblE.Visible = false;
+                if (einheit != null)
+                {
+                    lblE.Font = einheit.Font;
+                    lblE.ForeColor = einheit.ForeColor;
+                    lblE.BackColor = einheit.BackColor;
+                }
+                lblE.Location = new Point(feld.Right + 8, y + 4);
+                tabPage_Bedarf.Controls.Add(lblE);
+                label_BedarfKanalEinheit[k] = lblE;
+            }
+        }
+
+        /// <summary>
+        /// Schreibt die drei Kanalwerte und blendet den Block ein (Paket E1).
+        /// Quelle ist <see cref="SimulationRunner.BedarfJeKanal"/> — dieselbe Methode,
+        /// aus der auch die Persistenz ihre Spalten füllt (Befund V0-7: Dialog und
+        /// <c>Tab_Ergebnis</c> zeigen dieselbe Zahl, nicht zwei nachgebaute).
+        /// </summary>
+        private void BedarfKanalzeilenFuellen()
+        {
+            if (tb_BedarfKanal == null) return;
+
+            double[] mwh = SimulationRunner.BedarfJeKanal(simulation_Waermebedarf);
+
+            if (label_BedarfKanalKopf != null) label_BedarfKanalKopf.Visible = true;
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+            {
+                tb_BedarfKanal[k].Text = mwh[k].ToString("F2");
+                tb_BedarfKanal[k].Visible = true;
+                label_BedarfKanal[k].Visible = true;
+                label_BedarfKanalEinheit[k].Visible = true;
+            }
         }
 
         /// <summary>
@@ -3006,9 +3161,12 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
-            // chart Wärmebedarf füllen   
+            // chart Wärmebedarf füllen
             textBox_MaxWaermelast.Text = simulation_Waermebedarf.Waermebedarf_Max.ToString("F2");
             textBox_Gesamt_Waermebedarf.Text = simulation_Waermebedarf.Waermebedarf_Gesamt.ToString("F2");
+
+            // PAKET E1 (Konzept 4.4): die drei Bedarfskanäle unter der Summe.
+            BedarfKanalzeilenFuellen();
 
             chart1.Annotations.Clear();
             chart1.Series[0].Points.Clear();
@@ -3464,10 +3622,15 @@ namespace WindowsFormsApplication1
                 // Restbedarf UND Deckungsgrad, wortgleich mit SimulationRunner:648-684.
                 // Vorher stand die ganze Produktion im Zähler - damit überschritt die
                 // Deckung 100 % und der Restbedarf wurde NEGATIV, sobald das Kollektorfeld
-                // zusätzlich einen Puffer lud. Nenner bleibt wie im Runner der
-                // STUFENEINGANG der Solarthermie (nicht der Projektbedarf). Im Altpfad sind
-                // beide Speichergrößen exakt 0, der Ausdruck ist dann bitgleich dem
-                // bisherigen.
+                // zusätzlich einen Puffer lud. Ohne Puffer-Senke sind beide
+                // Speichergrößen exakt 0, der Ausdruck ist dann bitgleich dem bisherigen.
+                //
+                // PAKET E1 — BEFUND V0-O1 MITGEZOGEN: Der NENNER des Deckungsgrades ist
+                // jetzt der PROJEKTbedarf, nicht mehr der Stufeneingang der Solarthermie
+                // — genau wie bei Wärmepumpe, Kessel und BHKW und genau wie im Runner
+                // (V0-7: der Dialog zeigt, was in Tab_Ergebnis steht). Der RESTBEDARF
+                // darunter bleibt auf dem Stufeneingang: Er beantwortet „was bleibt nach
+                // diesem Erzeuger offen" und ist damit eine Stufengröße.
                 double solarDirektKWh = sim.simulation_solarthermie.Waermeproduktion_gesamt -
                                         sim.simulation_solarthermie.Speicherladung_gesamt;
                 if (solarDirektKWh < 0) solarDirektKWh = 0;   // Rundungsschutz
@@ -3478,9 +3641,10 @@ namespace WindowsFormsApplication1
                     (sim.simulation_solarthermie.Waermebedarf_gesamt - solarEigenKWh) / 1000.0;
                 if (solarRestMWh < 0) solarRestMWh = 0;       // Rundungsschutz
 
-                if (sim.simulation_solarthermie.Waermebedarf_gesamt > 0)
+                if (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
                 {
-                    double solarDeckung = solarEigenKWh * 100.0 / sim.simulation_solarthermie.Waermebedarf_gesamt;
+                    double solarDeckung = solarEigenKWh / 1000.0 * 100.0
+                                          / simulation_Waermebedarf.Waermebedarf_Gesamt;
                     if (solarDeckung > 100) solarDeckung = 100;
                     if (solarDeckung < 0) solarDeckung = 0;
                     textBox_STWaermebedarfsdeckung.Text = solarDeckung.ToString("F2");

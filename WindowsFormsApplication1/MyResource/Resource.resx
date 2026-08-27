@@ -315,6 +315,9 @@ Ohne Quellpuffer steht hier 0,00.</value>
   <data name="SIM_SCHEMA_LEGENDE_LADUNG" xml:space="preserve">
     <value>Ladung (Kreis = wirksame Priorität)</value>
   </data>
+  <data name="SIM_SCHEMA_LEGENDE_PROZESS" xml:space="preserve">
+    <value>Prozessversorgung</value>
+  </data>
   <data name="SIM_SCHEMA_LEGENDE_QUELLE" xml:space="preserve">
     <value>Quellseite</value>
   </data>
@@ -1088,6 +1091,9 @@ Im Projekt muss ein Pufferspeicher mit der Verwendung „{2}" angelegt sein.</va
   <data name="SIM_KEINE_SENKENDATEN" xml:space="preserve">
     <value>Keine Senkendaten übergeben.</value>
   </data>
+  <data name="SIM_LABEL_BEDARF_JE_KANAL" xml:space="preserve">
+    <value>Wärmebedarf je Bedarfsart</value>
+  </data>
   <data name="SIM_LABEL_GASVERBRAUCH" xml:space="preserve">
     <value>Gasverbrauch (Hu):</value>
   </data>
@@ -1337,6 +1343,9 @@ Bitte einen anderen Pufferspeicher wählen oder die Wärmesenke einer der beteil
   </data>
   <data name="SIM_SPALTE_BRENNSTOFFE" xml:space="preserve">
     <value>Gas/Biogas/Rapsöl/Holz... [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_DECKUNG_KANAL" xml:space="preserve">
+    <value>Deckung {0} [MWh/a]</value>
   </data>
   <data name="SIM_SPALTE_ENERGIE_ERZEUGER" xml:space="preserve">
     <value>Energie-Erzeuger</value>

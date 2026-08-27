@@ -315,6 +315,9 @@ Without a source buffer this reads 0.00.</value>
   <data name="SIM_SCHEMA_LEGENDE_LADUNG" xml:space="preserve">
     <value>Charging (circle = effective priority)</value>
   </data>
+  <data name="SIM_SCHEMA_LEGENDE_PROZESS" xml:space="preserve">
+    <value>Process supply</value>
+  </data>
   <data name="SIM_SCHEMA_LEGENDE_QUELLE" xml:space="preserve">
     <value>Source side</value>
   </data>
@@ -1072,6 +1075,9 @@ The project must contain a buffer storage with the use "{2}".</value>
   <data name="SIM_KEINE_SENKENDATEN" xml:space="preserve">
     <value>No heat sink data supplied.</value>
   </data>
+  <data name="SIM_LABEL_BEDARF_JE_KANAL" xml:space="preserve">
+    <value>Heat demand by demand type</value>
+  </data>
   <data name="SIM_LABEL_GASVERBRAUCH" xml:space="preserve">
     <value>Gas consumption (NCV):</value>
   </data>
@@ -1321,6 +1327,9 @@ Please select a different buffer storage or change the heat sink of one of the u
   </data>
   <data name="SIM_SPALTE_BRENNSTOFFE" xml:space="preserve">
     <value>Gas/biogas/rapeseed oil/wood... [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_DECKUNG_KANAL" xml:space="preserve">
+    <value>Coverage {0} [MWh/a]</value>
   </data>
   <data name="SIM_SPALTE_ENERGIE_ERZEUGER" xml:space="preserve">
     <value>Energy generator</value>

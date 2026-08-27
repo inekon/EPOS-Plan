@@ -845,6 +845,10 @@ namespace WindowsFormsApplication1
                         // null = die Wärme deckt Bedarf).
                         if (entnahme > 0)
                         {
+                            // PAKET E1: OHNE Kanalangabe — eine Quellentnahme trägt
+                            // keinen Bedarfskanal und wird auf dem Heizkanal gebucht
+                            // (Vorbelegung von Entladen, dieselbe Näherung wie
+                            // Kaskadenschleife.Anteil_Entladen ohne Kanal).
                             double geliefert = quelle.Entladen(entnahme, stunde);
                             QuellentnahmeMelden(quelle, geliefert, null);
 
@@ -1249,6 +1253,7 @@ namespace WindowsFormsApplication1
                     double entnahme = ladung - strom;
                     // D5a: Ziel = der geladene Speicher — die Wärme hat nur den Speicher
                     // gewechselt, ihre Herkunft wandert mit (Anteil_Umbuchen).
+                    // PAKET E1: OHNE Kanalangabe (Heizkanal-Vorbelegung, siehe oben).
                     if (entnahme > 0) QuellentnahmeMelden(quelle, quelle.Entladen(entnahme, stunde), sp);
                 }
 

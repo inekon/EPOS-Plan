@@ -164,10 +164,55 @@ namespace WindowsFormsApplication1
         public const string PV_UEBERSCHUSS = "PV_Ueberschuss";
         public const string NETZBEZUG = "Netzbezug";
         public const string WAERMEREST = "Waermerest";
-        public const string PUFFER_SOC = "Puffer_SOC";
         public const string PV_SPEICHER_SOC = "PVSpeicher_SOC";
 
+        // ---------------------------------------------------------------------
+        // PAKET E1 (Konzept 6.3, Befund S-1): Der Wärmespeicher-Füllstand läuft JE
+        // SPEICHER, nicht mehr über den einen Schlüssel „Puffer_SOC".
+        //
+        // Bis hierher füllte der ZeitreihenExtraktor genau eine Reihe, und zwar aus
+        // sim.puffer_wp — dem ERSTEN Heizungspuffer des Laufs. Ein Projekt mit zwei
+        // Puffern zeigte im Bericht den einen und verschwieg den anderen; ein Projekt,
+        // dessen einziger Speicher ein Brauchwasser- oder Kombispeicher ist, zeigte
+        // GAR KEINEN Füllstand. Die Schlüssel sind jetzt die technischen
+        // Serienschlüssel, die Navigator, CSV-Export und Detailansicht seit Paket 7
+        // ohnehin verwenden (SimulationPufferspeicher.Schluessel, Konzept 13.3):
+        // PUFFER_<SpeicherID> bzw. QUELLE_<AnlagenID>.
+        //
+        // Sie sind SPRACHNEUTRAL und ASCII (Schicht 2 der Drei-Schichten-Regel); der
+        // Anzeigetext steht getrennt in Beschriftungen.
+        // ---------------------------------------------------------------------
+
+        /// <summary>Präfix der Senkenspeicher-Füllstandsreihen (<c>PUFFER_&lt;ID&gt;</c>).</summary>
+        public const string PUFFER_PRAEFIX = "PUFFER_";
+
+        /// <summary>Präfix der Quellspeicher-Füllstandsreihen (<c>QUELLE_&lt;AnlagenID&gt;</c>).</summary>
+        public const string QUELLE_PRAEFIX = "QUELLE_";
+
         public Dictionary<string, double[]> Reihen = new Dictionary<string, double[]>();
+
+        /// <summary>
+        /// Schlüssel der Wärmespeicher-Füllstandsreihen in STABILER Reihenfolge (die
+        /// Aufnahmereihenfolge des Laufs). Eine eigene Liste statt der
+        /// Dictionary-Reihenfolge: Die ist nicht zugesichert, und die Legende eines
+        /// Diagramms darf sich zwischen zwei Berichten nicht umsortieren.
+        /// </summary>
+        public List<string> Speicherreihen = new List<string>();
+
+        /// <summary>
+        /// Anzeigetext je Schlüssel (Schicht 3) — für die Speicherreihen der
+        /// Legendentext „Bezeichner (Rolle)". Fehlt ein Eintrag, ist der Schlüssel
+        /// selbst der Text.
+        /// </summary>
+        public Dictionary<string, string> Beschriftungen = new Dictionary<string, string>();
+
+        /// <summary>Anzeigetext eines Schlüssels; Rückfall auf den Schlüssel selbst.</summary>
+        public string Beschriftung(string schluessel)
+        {
+            string t;
+            return (Beschriftungen.TryGetValue(schluessel, out t) && !string.IsNullOrEmpty(t))
+                ? t : schluessel;
+        }
 
         public double[] Hole(string schluessel)
         { return Reihen.ContainsKey(schluessel) ? Reihen[schluessel] : null; }

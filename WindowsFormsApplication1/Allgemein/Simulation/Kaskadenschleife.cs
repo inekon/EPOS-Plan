@@ -1473,7 +1473,10 @@ namespace WindowsFormsApplication1
                 double bedarf = rest[kanal];
                 if (bedarf <= 0) continue;
 
-                double gedeckt = sp.Entladen(Math.Min(ueber, bedarf), stunde);
+                // PAKET E1: Der Kanal geht MIT in die Buchung — sp.Entladung_Kanal ist
+                // die Aufschlüsselung von sp.Entladung_gesamt (Ergebnisspalten
+                // Entladung_Heizung/…, Schritt 52).
+                double gedeckt = sp.Entladen(Math.Min(ueber, bedarf), stunde, kanal);
                 if (gedeckt <= 0) continue;
 
                 // KANAL DES DURCHLAUFS entscheidet — die Menge stammt aus der
@@ -1551,7 +1554,8 @@ namespace WindowsFormsApplication1
                     continue;
                 }
 
-                double gedeckt = sp.Entladen(bedarf, stunde);
+                // PAKET E1: Kanal mitgeben (siehe DurchsatzEntladen).
+                double gedeckt = sp.Entladen(bedarf, stunde, kanal);
                 if (gedeckt <= 0) continue;
 
                 // KANAL DES DURCHLAUFS entscheidet, nicht die Bedarfsart (Konzept 6.3):

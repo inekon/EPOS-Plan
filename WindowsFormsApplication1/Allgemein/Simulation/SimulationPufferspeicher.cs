@@ -237,6 +237,23 @@ namespace WindowsFormsApplication1
         public double Entladung_gesamt = 0;
         public double Verluste_gesamt = 0;
 
+        /// <summary>
+        /// PAKET E1 (Konzept 4.4): dieselbe Jahressumme wie
+        /// <see cref="Entladung_gesamt"/>, aber KANALINDIZIERT
+        /// (<see cref="Kanal.HEIZUNG"/>/<c>BRAUCHWASSER</c>/<c>PROZESS</c>) [kWh].
+        ///
+        /// <para>Gebucht in <see cref="Entladen(double,int,int)"/> — also an genau der
+        /// Stelle, an der auch der Skalar fortgeschrieben wird, aus derselben Größe
+        /// <c>umsatz</c>. Es gibt keine zweite Rechnung und keinen zweiten Rundungsweg;
+        /// die Summe der drei Werte ist der Skalar.</para>
+        ///
+        /// <para>Sie geht als <c>Entladung_Heizung/_Brauchwasser/_Prozess</c> in
+        /// <c>Tab_ErgebnisPufferspeicher</c> (Migrationsschritt 52). Die DURCHFLUSSmenge
+        /// zählt hier — wie im Skalar — NICHT mit; sie steht getrennt in
+        /// <see cref="Durchsatz_Entladung_gesamt"/>.</para>
+        /// </summary>
+        public readonly double[] Entladung_Kanal = new double[Kanal.ANZAHL];
+
         // ------------------------------------------------------------------
         // DURCHSATZ getrennt vom UMSATZ (Nacharbeit Paket 6, Befund N6)
         //
@@ -415,6 +432,9 @@ namespace WindowsFormsApplication1
             Durchsatz_Verluste_gesamt = 0;
             Array.Clear(Durchsatz_Ladung_stuendlich, 0, Durchsatz_Ladung_stuendlich.Length);
             Array.Clear(Durchsatz_Entladung_stuendlich, 0, Durchsatz_Entladung_stuendlich.Length);
+
+            // PAKET E1: die Kanalzeile der Entladung gehört ebenso zum Laufzustand.
+            Array.Clear(Entladung_Kanal, 0, Entladung_Kanal.Length);
         }
 
         /// <summary>
@@ -494,7 +514,21 @@ namespace WindowsFormsApplication1
         /// Entnimmt die angeforderte Energie [kWh] aus dem Speicher und liefert
         /// zurück, wie viel tatsächlich geliefert werden konnte (Rest: Speicher leer).
         /// </summary>
-        public double Entladen(double energieKWh, int stunde)
+        /// <param name="kanal">
+        /// PAKET E1: Bedarfskanal, in den diese Entnahme geht — die Entladeordnung läuft
+        /// je Kanal, der Aufrufer kennt ihn also. Er entscheidet ausschließlich über die
+        /// KANALZEILE <see cref="Entladung_Kanal"/>; an der Speicherphysik und an
+        /// <see cref="Entladung_gesamt"/> ändert er nichts.
+        ///
+        /// <para>VORBELEGUNG <see cref="Kanal.HEIZUNG"/>: Die Entnahme eines Moduls aus
+        /// seinem QUELLpuffer trägt keinen Bedarfskanal — sie wird auf dem Heizkanal
+        /// gebucht, genau wie in
+        /// <c>Kaskadenschleife.Anteil_Entladen(sp, gedeckt)</c> (altverhaltenserhaltende
+        /// Vorbelegung des Kanalmodells, Konzept 4.2/F18). Ohne diese eine Konvention
+        /// wäre die Summenzusage „Σ Entladung_Kanal = Entladung_gesamt" für
+        /// Quellspeicherzeilen nicht einlösbar.</para>
+        /// </param>
+        public double Entladen(double energieKWh, int stunde, int kanal = Kanal.HEIZUNG)
         {
             if (energieKWh <= 0 || Q_max <= 0) return 0;
 
@@ -512,6 +546,14 @@ namespace WindowsFormsApplication1
             SOC -= entnahme;
             Entladung_gesamt += umsatz;
             Durchsatz_Entladung_gesamt += durchfluss;
+
+            // PAKET E1: dieselbe Menge, nur kanalindiziert. Der Skalar darüber bleibt
+            // getrennt akkumuliert und wird ausdrücklich NICHT aus dieser Zeile
+            // aufsummiert — er ist der führende Wert der Ergebniszeile und soll sich
+            // durch die Aufteilung nicht um die Rundung einer Summe verschieben (dieselbe
+            // Regel wie bei Kaskadenschleife._entladungJeArt).
+            if (kanal >= 0 && kanal < Kanal.ANZAHL) Entladung_Kanal[kanal] += umsatz;
+
             if (stunde >= 0 && stunde < 8760)
             {
                 Entladung_stuendlich[stunde] += (float)umsatz;

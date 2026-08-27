@@ -91,6 +91,7 @@ namespace WindowsFormsApplication1
             StelleKesselSpaltenSicher();    // Quellwaerme der Kaskade (Etappe D4) ergänzen
             StellePufferTabelleSicher();    // Tab_ErgebnisPufferspeicher (Konzept 6.6) - Rückfallebene
             StelleStromspeicherTabelleSicher(); // Tab_ErgebnisStromspeicher (AP3, Fachkonzept 7.1)
+            StelleKanalSpaltenSicher();     // Ergebnisspalten je Kanal (Schritt 52, Paket E1)
 
             // Energieträger: Die carrier_id steht JE MODUL im Ergebnis — der Lauf setzt sie
             // aus Tab_Energieanlagen.ID_Carrier (Befund B1, SimulationRunner), und genau so
@@ -179,10 +180,16 @@ namespace WindowsFormsApplication1
                 if (m.Energiebedarf != null)
                 {
                     int eId = NextId(conn, trans, TAB_ENERGIE);
+                    // PAKET E1: die drei Kanalspalten stehen als LETZTE - ALTER TABLE
+                    // haengt sie in Access hinten an, und die Parameterreihenfolge folgt
+                    // der Spaltenliste (dasselbe Muster wie Quellwaerme in Etappe D4).
                     string sql = "INSERT INTO " + TAB_ENERGIE + " (" +
                         "ID, ID_Ergebnis, Waermebedarf_Gesamt, Waermelast_Max, Strombedarf_Gesamt, Strombedarf_Max, " +
-                        "Waermerestbedarf, Stromrestbedarf) " +
-                        "VALUES (?,?,?,?,?,?,?,?)";
+                        "Waermerestbedarf, Stromrestbedarf, " +
+                        SchemaKatalog.SPALTE_BEDARF_HEIZUNG + ", " +
+                        SchemaKatalog.SPALTE_BEDARF_BRAUCHWASSER + ", " +
+                        SchemaKatalog.SPALTE_BEDARF_PROZESS + ") " +
+                        "VALUES (?,?,?,?,?,?,?,?, ?,?,?)";
                     using (OleDbCommand c = new OleDbCommand(sql, conn, trans))
                     {
                         c.Parameters.Add("@id", OleDbType.Integer).Value = eId;
@@ -193,6 +200,7 @@ namespace WindowsFormsApplication1
                         c.Parameters.Add("@a4", OleDbType.Double).Value = R(m.Energiebedarf.Strombedarf_Max);
                         c.Parameters.Add("@a5", OleDbType.Double).Value = R(m.Energiebedarf.Waermerestbedarf);
                         c.Parameters.Add("@a6", OleDbType.Double).Value = R(m.Energiebedarf.Stromrestbedarf);
+                        KanalParameter(c, m.Energiebedarf.Waermebedarf_Kanal);
                         c.ExecuteNonQuery();
                     }
                 }
@@ -204,8 +212,11 @@ namespace WindowsFormsApplication1
                     string sql = "INSERT INTO " + TAB_WP + " (" +
                         "ID, ID_Ergebnis, Waermebedarf, Restwaermebedarf, Waermeproduktion_WP, Stromverbrauch_WP, " +
                         "Stromverbrauch_Heizstab, Kapazitaet_Pufferspeicher, Min_Spitzenkesselleistung, " +
-                        "Waermebedarfsdeckung, Vollbenutzungsstunden, Bivalenzpunkt) " +
-                        "VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?)";
+                        "Waermebedarfsdeckung, Vollbenutzungsstunden, Bivalenzpunkt, " +
+                        SchemaKatalog.SPALTE_DECKUNG_HEIZUNG + ", " +
+                        SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER + ", " +
+                        SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
+                        "VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?)";
                     using (OleDbCommand c = new OleDbCommand(sql, conn, trans))
                     {
                         c.Parameters.Add("@id", OleDbType.Integer).Value = wpId;
@@ -221,6 +232,7 @@ namespace WindowsFormsApplication1
                         c.Parameters.Add("@a9", OleDbType.Double).Value = R(m.Waermepumpe.Vollbenutzungsstunden);
                         c.Parameters.Add("@a10", OleDbType.Double).Value =
                             m.Waermepumpe.Bivalenzpunkt.HasValue ? (object)R(m.Waermepumpe.Bivalenzpunkt.Value) : DBNull.Value;
+                        KanalParameter(c, m.Waermepumpe.Deckung_Kanal);
                         c.ExecuteNonQuery();
                     }
 
@@ -258,8 +270,11 @@ namespace WindowsFormsApplication1
                         "Betriebsstunden_Durchschnitt, Waermebedarfsdeckung, Strombedarfsdeckung, " +
                         "Gasverbrauch, Oelverbrauch, Koks, Rapsoelverbrauch, Holzverbrauch, Kohle, " +
                         "Sonstigverbrauch, Pellets, TierischeFette, " +
-                        SchemaKatalog.SPALTE_BHKW_VBH_ELEKTRISCH + ") " +
-                        "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?,?,?,?, ?,?,?, ?)";
+                        SchemaKatalog.SPALTE_BHKW_VBH_ELEKTRISCH + ", " +
+                        SchemaKatalog.SPALTE_DECKUNG_HEIZUNG + ", " +
+                        SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER + ", " +
+                        SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
+                        "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?,?,?,?, ?,?,?, ?, ?,?,?)";
                     using (OleDbCommand c = new OleDbCommand(sql, conn, trans))
                     {
                         c.Parameters.Add("@id", OleDbType.Integer).Value = bId;
@@ -286,6 +301,7 @@ namespace WindowsFormsApplication1
                         c.Parameters.Add("@a20", OleDbType.Double).Value = R(m.BHKW.TierischeFette);
                         // ETAPPE E2: leistungsgewichtete elektrische Vollbenutzungsstunden.
                         c.Parameters.Add("@a21", OleDbType.Double).Value = R(m.BHKW.VbhElektrisch);
+                        KanalParameter(c, m.BHKW.Deckung_Kanal);
                         c.ExecuteNonQuery();
                     }
 
@@ -349,8 +365,11 @@ namespace WindowsFormsApplication1
                         "Reststrombedarf, Waermebedarfsdeckung, Stromverbrauch, Maximale_Kesselleistung, Gasspitze, " +
                         "Gasverbrauch, Oelverbrauch, Koks, Rapsoelverbrauch, Holzverbrauch, Kohle, " +
                         "Sonstigverbrauch, Pellets, TierischeFette, " +
-                        SchemaKatalog.SPALTE_KESSEL_QUELLWAERME + ") " +
-                        "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?, ?,?,?,?)";
+                        SchemaKatalog.SPALTE_KESSEL_QUELLWAERME + ", " +
+                        SchemaKatalog.SPALTE_DECKUNG_HEIZUNG + ", " +
+                        SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER + ", " +
+                        SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
+                        "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?, ?,?,?,?, ?,?,?)";
                     using (OleDbCommand c = new OleDbCommand(sql, conn, trans))
                     {
                         c.Parameters.Add("@id", OleDbType.Integer).Value = hId;
@@ -374,6 +393,7 @@ namespace WindowsFormsApplication1
                         c.Parameters.Add("@a17", OleDbType.Double).Value = R(m.Heizkessel.Pellets);
                         c.Parameters.Add("@a18", OleDbType.Double).Value = R(m.Heizkessel.TierischeFette);
                         c.Parameters.Add("@a19", OleDbType.Double).Value = R(m.Heizkessel.Quellwaerme);
+                        KanalParameter(c, m.Heizkessel.Deckung_Kanal);
                         c.ExecuteNonQuery();
                     }
 
@@ -412,8 +432,11 @@ namespace WindowsFormsApplication1
                 {
                     int sId = NextId(conn, trans, TAB_SOLAR);
                     string sql = "INSERT INTO " + TAB_SOLAR + " (" +
-                        "ID, ID_Ergebnis, Waermebedarf, Restwaermebedarf, Waermeproduktion, Waermebedarfsdeckung, Ueberschuss) " +
-                        "VALUES (?,?,?,?,?,?,?)";
+                        "ID, ID_Ergebnis, Waermebedarf, Restwaermebedarf, Waermeproduktion, Waermebedarfsdeckung, Ueberschuss, " +
+                        SchemaKatalog.SPALTE_DECKUNG_HEIZUNG + ", " +
+                        SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER + ", " +
+                        SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
+                        "VALUES (?,?,?,?,?,?,?, ?,?,?)";
                     using (OleDbCommand c = new OleDbCommand(sql, conn, trans))
                     {
                         c.Parameters.Add("@id", OleDbType.Integer).Value = sId;
@@ -423,6 +446,7 @@ namespace WindowsFormsApplication1
                         c.Parameters.Add("@a3", OleDbType.Double).Value = R(m.Solarthermie.Waermeproduktion);
                         c.Parameters.Add("@a4", OleDbType.Double).Value = R(m.Solarthermie.Waermebedarfsdeckung);
                         c.Parameters.Add("@a5", OleDbType.Double).Value = R(m.Solarthermie.Ueberschuss);
+                        KanalParameter(c, m.Solarthermie.Deckung_Kanal);
                         c.ExecuteNonQuery();
                     }
 
@@ -497,11 +521,24 @@ namespace WindowsFormsApplication1
                 if (m.Pufferspeicher != null && m.Pufferspeicher.Count > 0)
                 {
                     int pufId = NextId(conn, trans, TAB_PUFFER);
+                    // PAKET E1 (Schritt 52): acht neue Spalten am Ende - Kanalaufteilung
+                    // der Entladung, die beiden Durchsatzsummen, der Anlagenbezug der
+                    // Quellspeicherzeilen und die beiden P1-Vorgriffsspalten. Sie stehen
+                    // hinten, weil ALTER TABLE in Access hinten anhaengt und die
+                    // Parameterreihenfolge der Spaltenliste folgt.
                     string sqlP = "INSERT INTO " + TAB_PUFFER + " (" +
                         "ID, ID_Ergebnis, ID_Pufferspeicher, Bezeichner, Verwendung, Q_max, " +
                         "Ladung_gesamt, Entladung_gesamt, Verluste_gesamt, SOC_Ende, SOC_Mittel, " +
-                        "SOC_Max, Vollzyklen) " +
-                        "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?)";
+                        "SOC_Max, Vollzyklen, " +
+                        SchemaKatalog.SPALTE_PUFFER_ENTLADUNG_HEIZUNG + ", " +
+                        SchemaKatalog.SPALTE_PUFFER_ENTLADUNG_BRAUCHWASSER + ", " +
+                        SchemaKatalog.SPALTE_PUFFER_ENTLADUNG_PROZESS + ", " +
+                        SchemaKatalog.SPALTE_PUFFER_DURCHSATZ_GELADEN + ", " +
+                        SchemaKatalog.SPALTE_PUFFER_DURCHSATZ_ENTLADEN + ", " +
+                        SchemaKatalog.SPALTE_PUFFER_ID_ANLAGE + ", " +
+                        SchemaKatalog.SPALTE_PUFFER_T_OBEN_MITTEL + ", " +
+                        SchemaKatalog.SPALTE_PUFFER_T_OBEN_MIN + ") " +
+                        "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?, ?,?,?, ?,?, ?, ?,?)";
                     foreach (ErgebnisPufferspeicherModel sp in m.Pufferspeicher)
                     {
                         using (OleDbCommand c = new OleDbCommand(sqlP, conn, trans))
@@ -520,6 +557,20 @@ namespace WindowsFormsApplication1
                             c.Parameters.Add("@a6", OleDbType.Double).Value = R(sp.SOC_Mittel);
                             c.Parameters.Add("@a7", OleDbType.Double).Value = R(sp.SOC_Max);
                             c.Parameters.Add("@a8", OleDbType.Double).Value = R(sp.Vollzyklen);
+
+                            // PAKET E1
+                            KanalParameter(c, sp.Entladung_Kanal);
+                            c.Parameters.Add("@d1", OleDbType.Double).Value = R(sp.Durchsatz_Geladen);
+                            c.Parameters.Add("@d2", OleDbType.Double).Value = R(sp.Durchsatz_Entladen);
+                            c.Parameters.Add("@anl", OleDbType.Integer).Value =
+                                sp.ID_Anlage > 0 ? (object)sp.ID_Anlage : DBNull.Value;
+                            // P1-VORGRIFF: bis zum Schichtmodell immer NULL. NULL heisst
+                            // "nicht erhoben" - eine 0 behauptete 0 Grad C.
+                            c.Parameters.Add("@t1", OleDbType.Double).Value =
+                                sp.T_oben_Mittel.HasValue ? (object)R(sp.T_oben_Mittel.Value) : DBNull.Value;
+                            c.Parameters.Add("@t2", OleDbType.Double).Value =
+                                sp.T_oben_Min.HasValue ? (object)R(sp.T_oben_Min.Value) : DBNull.Value;
+
                             c.ExecuteNonQuery();
                         }
                     }
@@ -658,6 +709,12 @@ namespace WindowsFormsApplication1
                 m.Energiebedarf.Strombedarf_Max = D(re, "Strombedarf_Max");
                 m.Energiebedarf.Waermerestbedarf = D(re, "Waermerestbedarf");
                 m.Energiebedarf.Stromrestbedarf = D(re, "Stromrestbedarf");
+                // PAKET E1: fehlt die Spalte (Zeile vor Schritt 52) oder ist sie NULL,
+                // liefert D() 0 - genau die Behandlung, die Bestandszeilen brauchen.
+                KanalLesen(re, m.Energiebedarf.Waermebedarf_Kanal,
+                           SchemaKatalog.SPALTE_BEDARF_HEIZUNG,
+                           SchemaKatalog.SPALTE_BEDARF_BRAUCHWASSER,
+                           SchemaKatalog.SPALTE_BEDARF_PROZESS);
             }
 
             // Detail: Waermepumpe (+ Module).
@@ -679,6 +736,7 @@ namespace WindowsFormsApplication1
                 w.Vollbenutzungsstunden = D(rw, "Vollbenutzungsstunden");
                 if (rw.Table.Columns.Contains("Bivalenzpunkt") && rw["Bivalenzpunkt"] != DBNull.Value)
                     w.Bivalenzpunkt = Convert.ToDouble(rw["Bivalenzpunkt"]);
+                DeckungLesen(rw, w.Deckung_Kanal);   // PAKET E1
 
                 DataTable dmod = DataRepository.GetDataTable(
                     "SELECT * FROM " + TAB_WP_MODUL + " WHERE ID_ErgebnisWaermepumpe = ? ORDER BY ID",
@@ -731,6 +789,7 @@ namespace WindowsFormsApplication1
                 // die Wirtschaftlichkeit rechnet die Groesse dann selbst aus Stromproduktion
                 // und installierter Leistung.
                 b.VbhElektrisch = D(rb, SchemaKatalog.SPALTE_BHKW_VBH_ELEKTRISCH);
+                DeckungLesen(rb, b.Deckung_Kanal);   // PAKET E1
 
                 DataTable dmod = DataRepository.GetDataTable(
                     "SELECT * FROM " + TAB_BHKW_MODUL + " WHERE ID_ErgebnisBHKW = ? ORDER BY ID",
@@ -782,6 +841,7 @@ namespace WindowsFormsApplication1
                 // ETAPPE D4: D() liefert 0, wenn die Spalte fehlt oder NULL ist - genau
                 // die Behandlung, die Bestandszeilen ohne Quellwärme brauchen.
                 h.Quellwaerme = D(rh, SchemaKatalog.SPALTE_KESSEL_QUELLWAERME);
+                DeckungLesen(rh, h.Deckung_Kanal);   // PAKET E1
 
                 DataTable dmod = DataRepository.GetDataTable(
                     "SELECT * FROM " + TAB_KESSEL_MODUL + " WHERE ID_ErgebnisHeizkessel = ? ORDER BY ID",
@@ -817,6 +877,7 @@ namespace WindowsFormsApplication1
                 s.Waermeproduktion = D(rs2, "Waermeproduktion");
                 s.Waermebedarfsdeckung = D(rs2, "Waermebedarfsdeckung");
                 s.Ueberschuss = D(rs2, "Ueberschuss");
+                DeckungLesen(rs2, s.Deckung_Kanal);   // PAKET E1
 
                 DataTable dmod = DataRepository.GetDataTable(
                     "SELECT * FROM " + TAB_SOLAR_MODUL + " WHERE ID_ErgebnisSolarthermie = ? ORDER BY ID",
@@ -894,6 +955,19 @@ namespace WindowsFormsApplication1
                     sp.SOC_Mittel = D(rsp, "SOC_Mittel");
                     sp.SOC_Max = D(rsp, "SOC_Max");
                     sp.Vollzyklen = D(rsp, "Vollzyklen");
+
+                    // PAKET E1 (Schritt 52). Fehlende Spalten und NULL liefern 0 bzw.
+                    // null - die Behandlung der Zeilen aus Laeufen vor E1.
+                    sp.ID_Anlage = I(rsp, SchemaKatalog.SPALTE_PUFFER_ID_ANLAGE);
+                    KanalLesen(rsp, sp.Entladung_Kanal,
+                               SchemaKatalog.SPALTE_PUFFER_ENTLADUNG_HEIZUNG,
+                               SchemaKatalog.SPALTE_PUFFER_ENTLADUNG_BRAUCHWASSER,
+                               SchemaKatalog.SPALTE_PUFFER_ENTLADUNG_PROZESS);
+                    sp.Durchsatz_Geladen = D(rsp, SchemaKatalog.SPALTE_PUFFER_DURCHSATZ_GELADEN);
+                    sp.Durchsatz_Entladen = D(rsp, SchemaKatalog.SPALTE_PUFFER_DURCHSATZ_ENTLADEN);
+                    sp.T_oben_Mittel = DN(rsp, SchemaKatalog.SPALTE_PUFFER_T_OBEN_MITTEL);
+                    sp.T_oben_Min = DN(rsp, SchemaKatalog.SPALTE_PUFFER_T_OBEN_MIN);
+
                     m.Pufferspeicher.Add(sp);
                 }
 
@@ -1387,8 +1461,82 @@ namespace WindowsFormsApplication1
         private static double R(double v)
         { return Math.Round(v, 2, MidpointRounding.AwayFromZero); }
 
+        // ---------------------------------------------------------------------------
+        // PAKET E1 (Konzept 4.4) - die drei Kanalspalten, einmal geschrieben
+        //
+        //   Sie treten in sechs INSERT und sechs Lesestellen auf, immer in derselben
+        //   Reihenfolge Heizung, Brauchwasser, Prozess. Drei Zeilen je Fundstelle
+        //   waeren achtzehn Gelegenheiten, die Reihenfolge zu vertauschen - und ein
+        //   vertauschtes Paar faellt in keinem Test auf, solange beide Kanaele belegt
+        //   sind.
+        // ---------------------------------------------------------------------------
+
+        /// <summary>
+        /// Haengt die drei Kanalwerte in der Reihenfolge Heizung, Brauchwasser, Prozess
+        /// an die Parameterliste. Ein fehlendes oder zu kurzes Feld wird als 0
+        /// geschrieben - die Spalten werden IMMER belegt, damit "nicht erhoben" (NULL,
+        /// Zeile vor Schritt 52) und "erhoben und null" unterscheidbar bleiben; dieselbe
+        /// Begruendung wie bei Quellwaerme und den Vbh-Spalten.
+        /// </summary>
+        private static void KanalParameter(OleDbCommand c, double[] werte)
+        {
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+            {
+                double v = (werte != null && k < werte.Length) ? werte[k] : 0.0;
+                c.Parameters.Add("@k" + k, OleDbType.Double).Value = R(v);
+            }
+        }
+
+        /// <summary>Liest die drei Kanalspalten in ein vorhandenes Feld (Reihenfolge wie oben).</summary>
+        private static void KanalLesen(DataRow r, double[] ziel,
+                                       string spalteHeizung, string spalteBrauchwasser,
+                                       string spalteProzess)
+        {
+            if (ziel == null || ziel.Length < Kanal.ANZAHL) return;
+            ziel[Kanal.HEIZUNG] = D(r, spalteHeizung);
+            ziel[Kanal.BRAUCHWASSER] = D(r, spalteBrauchwasser);
+            ziel[Kanal.PROZESS] = D(r, spalteProzess);
+        }
+
+        /// <summary>
+        /// Liest die drei Deckungsspalten einer Erzeuger-Ergebniszeile. Sie heissen in
+        /// allen vier Tabellen gleich - deshalb eine Fassung ohne Spaltenparameter.
+        /// </summary>
+        private static void DeckungLesen(DataRow r, double[] ziel)
+        {
+            KanalLesen(r, ziel,
+                       SchemaKatalog.SPALTE_DECKUNG_HEIZUNG,
+                       SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER,
+                       SchemaKatalog.SPALTE_DECKUNG_PROZESS);
+        }
+
+        /// <summary>
+        /// PAKET E1 - Rueckfallebene zu Migrationsschritt 52, nach dem Muster von
+        /// <see cref="StelleKesselSpaltenSicher"/> und aus demselben Grund: Die INSERT
+        /// oben fuehren die neuen Spalten NAMENTLICH auf. Fehlen sie, scheitert nicht nur
+        /// die neue Groesse, sondern die ganze Ergebniszeile - und mit ihr der Lauf.
+        /// Die Namen kommen aus <see cref="SchemaKatalog.Schritt52_ErgebnisJeKanal"/>,
+        /// Migration und Rueckfallebene fuehren keine zweite Liste.
+        /// </summary>
+        private static void StelleKanalSpaltenSicher()
+        {
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    foreach (SchemaSpalte s in SchemaKatalog.Schritt52_ErgebnisJeKanal)
+                        ErgaenzeSpalte(conn, s.Tabelle, s.Name, s.TypDefinition);
+                }
+            }
+            catch { /* best effort - Spalten existieren dann ggf. schon */ }
+        }
+
         private static int I(DataRow r, string col)
         { return (r.Table.Columns.Contains(col) && r[col] != DBNull.Value) ? Convert.ToInt32(r[col]) : 0; }
+        /// <summary>Wie <see cref="D"/>, aber NULL bleibt NULL (P1-Vorgriff T_oben_*).</summary>
+        private static double? DN(DataRow r, string col)
+        { return (r.Table.Columns.Contains(col) && r[col] != DBNull.Value) ? (double?)Convert.ToDouble(r[col]) : null; }
         private static double D(DataRow r, string col)
         { return (r.Table.Columns.Contains(col) && r[col] != DBNull.Value) ? Convert.ToDouble(r[col]) : 0.0; }
         private static bool B(DataRow r, string col)
