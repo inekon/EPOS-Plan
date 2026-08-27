@@ -228,7 +228,17 @@ namespace WindowsFormsApplication1
                     fortschritt.Report(new Fortschritt { Aktuell = gesamt, Gesamt = gesamt, Tabelle = "" });
 
                 trans.Commit();
-                return (int)(srcId + offset["Tab_Projekt"]);
+
+                // Ä24: Geräteanker der kopierten Kostenpositionen auf die
+                // KOPIERTEN Geräte umstellen. Der generische Lauf versetzt
+                // ID_Anlage (FK_MAP); ID_AnlageGeraet kann er nicht versetzen —
+                // die Zieltabelle hängt an der Komponente. Ohne den Nachzug
+                // zeigten die Anker auf die Geräte des QUELLprojekts, und der
+                // erste Anlagen-Wizard-Lauf der Kopie löste die Zuordnungen
+                // (Befund 27.08.2026: WP-Positionen der Varianten 1038/1039).
+                int neuId = (int)(srcId + offset["Tab_Projekt"]);
+                try { KostenProjektPositionenCtrl.AnkerNachziehen(neuId); } catch { }
+                return neuId;
             }
             catch (Exception ex)
             {

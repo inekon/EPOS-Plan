@@ -518,12 +518,33 @@ namespace WindowsFormsApplication1
                     }
                 }
 
-                // Gelbe Zeilen: Positionen ohne (gültige) Anlagenzuordnung —
-                // Variantenreste, Erfassungsgruppen-Altdaten (Ä7), gelöschte Anlagen.
+                // Positionen ohne (gültigen) Anlagenbezug, in zwei Klassen:
+                // Ä24 — die Erfassungsgruppen der KD1-Saat (Wärmezentrale,
+                // Bauliche Anlagen, Stromeinspeisung; nicht anlagenfähig im Sinne
+                // von Ä7) KÖNNEN keiner Anlage zugeordnet sein — sie erscheinen
+                // als reguläre Komponentenzeile. GELB bleiben nur anlagenfähige
+                // Komponenten: Variantenreste, gelöschte/getauschte Anlagen.
                 var reste = new List<string>();
                 foreach (string k in investLose.Keys) reste.Add(k);
                 foreach (string k in betriebLose.Keys) if (!reste.Contains(k)) reste.Add(k);
+                var resteGelb = new List<string>();
                 foreach (string k in reste)
+                {
+                    double invest, bWert;
+                    bool hatI = investLose.TryGetValue(k, out invest);
+                    bool hatB = betriebLose.TryGetValue(k, out bWert);
+                    if (KostenVorlagenCtrl.IstWaehlbar(k)) { resteGelb.Add(k); continue; }
+                    if (hatI) summe += invest;
+                    if (hatB) summeBetrieb += bWert;
+                    int idxR = gridKomponenten.Rows.Add(
+                        k,
+                        hatI ? invest.ToString("N2", kultur) : "—",
+                        hatB ? bWert.ToString("N2", kultur) : "—");
+                    var gruppe = new ProjektEnergietraegerCtrl.AnlagenEintrag();
+                    gruppe.Komponente = k;   // AnlageId 0: Verwaltung öffnet die Komponente
+                    gridKomponenten.Rows[idxR].Tag = gruppe;
+                }
+                foreach (string k in resteGelb)
                 {
                     double invest, bWert;
                     bool hatI = investLose.TryGetValue(k, out invest);

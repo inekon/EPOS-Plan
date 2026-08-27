@@ -480,3 +480,53 @@ obwohl die Wärmepumpe mit 12 kW gepflegt ist.
 
 Nachweise: kd6 88/88 (neu X9: echte Wahl übernimmt die
 Stamm-Nennleistung ins Listenobjekt), Sweep 115/0/5.
+
+### Ä24 (27.08.2026) — „Wärmepumpe ohne Anlagenzuordnung" trotz verbauter WP
+
+Nutzerbefund: Die Kosten-Seite zeigt eine gelbe Zeile „Wärmepumpe — ohne
+Anlagenzuordnung", obwohl die Wärmepumpe im Projekt verbaut ist. Frage:
+Trifft das auch andere Komponenten?
+
+Wurzel (gemessen an Projekt 1037: 7 Positionen mit Eingabewerten hingen an
+Geräteanker 1672032, den es nicht mehr gab):
+
+- Der Del+Add-Speicherweg materialisiert Geräte über CopyFromStamm per
+  BEZEICHNER. Wechselt die Gerätekopie einer Anlage (Geräte-Neuwahl,
+  Umbenennung, Duplikat-Gerätekopie), blieben die Kostenanker auf der
+  alten Kopie; GeraeteWaisen.Aufraeumen räumte sie ab, die
+  Ä21-Selbstheilung löste die Zuordnung „ehrlich" → gelbe Zeile.
+- Der Projektduplizierer versetzte ID_Anlage (FK_MAP), den
+  komponentenabhängigen Anker ID_AnlageGeraet aber nicht — Variantenkopien
+  ankerten an den Geräten des QUELLprojekts und verloren die Zuordnung
+  beim ersten Anlagen-Wizard-Lauf der Variante (1038/1039).
+- Anzeige: Die Erfassungsgruppen ohne Anlagenbezug (Wärmezentrale,
+  Bauliche Anlagen, Stromeinspeisung) liefen seit Ä20 fälschlich in den
+  gelben „ohne Anlagenzuordnung"-Topf.
+
+Reparaturen:
+
+- WizardCtrl.KostenAnkerUmziehen im EINEN Schreibweg aller Erzeuger:
+  Anker der Positionen DIESER Anlagenzeile (item.ID) ziehen beim
+  Gerätetausch auf die neue Kopie um; die frische Anlagen-Id läuft
+  zurück ans Listenobjekt (Session-Liste bleibt an ihrer Zeile).
+- KostenProjektPositionenCtrl.AnkerNachziehen: leitet die Anker eines
+  Projekts aus der GÜLTIGEN ID_Anlage neu ab — läuft nach jedem
+  Duplizieren; Migrationsschritt 47 (ZIEL_VERSION 47) einmalig für den
+  Bestand (Produktivlauf: 118 Positionen).
+- Kosten-Seite: nicht anlagenfähige Erfassungsgruppen (Ä7-Prädikat
+  IstWaehlbar) wieder als reguläre weiße Komponentenzeile; ihr Zeilen-Tag
+  öffnet die Kostenverwaltung im Komponentenmodus.
+
+Bewusst NICHT repariert: Bestandsleichen mit totem Anker (z. B. die
+7 Invest-Positionen 14000/3000/4000 in Projekt 1037) — bei zwei
+WP-Anlagen ist die richtige Zuordnung nicht beweisbar; der
+Ä21-Doppelklick-Löschweg besteht, die Werte sind im Protokoll genannt.
+
+Antwort auf die Nutzerfrage: Die Tausch-Mechanik traf alle 7
+anlagenfähigen Komponenten (ein gemeinsamer Schreibweg), der
+Anzeige-Fehler die 3 Erfassungsgruppen.
+
+Nachweise: kd6 92/92 (X10 AnkerNachziehen, X11 Erfassungsgruppen-Zeile,
+X12/X12b Gerätetausch end-to-end über Del+Add samt Selbstheilung),
+kd2/kd4/pv6 grün, Sweep 115/0/5, Migration 41→47 auf frischer
+Produktivkopie OK, Fehlerjagd 1019 + 1037 je 0 Befunde.

@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 46;
+        public const int ZIEL_VERSION = 47;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -2361,6 +2361,19 @@ namespace WindowsFormsApplication1
                         "Der Geräteanker der Kostenpositionen konnte nicht angelegt " +
                         "werden - die Zuordnung ueberlebt den Anlagen-Wizard sonst nicht.",
                         Schritt_46_AnlagenGeraeteanker),
+
+            // Ä24: Der Duplizierer versetzte ID_Anlage, aber nicht den
+            // komponentenabhängigen Geräteanker — Variantenkopien ankerten an
+            // den Geräten des Quellprojekts und verloren die Zuordnung beim
+            // ersten Anlagen-Wizard-Lauf. Der Schritt leitet die Anker aller
+            // GÜLTIG zugeordneten Positionen aus ihrer Anlagenzeile neu ab.
+            new Schritt(47,
+                        "Anlagenkosten-Geräteanker aus den gültigen Zuordnungen " +
+                        "neu ableiten (Ä24: Variantenkopien ankerten am Quellprojekt)",
+                        "Die Geräteanker der Kostenpositionen konnten nicht neu " +
+                        "abgeleitet werden - Variantenkopien verlieren ihre " +
+                        "Zuordnung sonst beim ersten Anlagen-Wizard-Lauf.",
+                        Schritt_47_AnkerNachziehen),
         };
 
         // =================================================================================
@@ -5862,6 +5875,61 @@ namespace WindowsFormsApplication1
 
             l.Zeile("Geräteanker (Schritt 46): " + befuellt +
                     " Position(en) mit dem Gerät ihrer Anlage verankert.");
+            return true;
+        }
+
+        /// <summary>
+        /// Ä24 (27.08.2026): Anker-Konsistenz. Schritt 46 befüllte nur LEERE
+        /// Anker; Variantenkopien trugen aber den 1:1 mitkopierten Anker des
+        /// QUELLprojekts (der Duplizierer kann die komponentenabhängige
+        /// Zieltabelle nicht versetzen). Für alle Positionen mit gültiger
+        /// Anlagenzuordnung wird der Anker aus der Anlagenzeile neu abgeleitet
+        /// (Überschreiben mit der Wahrheit; idempotent). Laufende Pflege:
+        /// <c>KostenProjektPositionenCtrl.AnkerNachziehen</c> nach jedem
+        /// Duplizieren, Gerätetausch-Umzug im Wizard-Speicherweg.
+        /// </summary>
+        private static bool Schritt_47_AnkerNachziehen(Lauf l)
+        {
+            object probe = Scalar(l,
+                "SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ID_AnlageGeraet IS NULL");
+            if (probe == null)
+            {
+                l.Zeile("Geräteanker-Nachzug (Schritt 47): Spalte ID_AnlageGeraet fehlt.");
+                return false;
+            }
+
+            var verweise = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                { DbWerte.ERZEUGER_WAERMEPUMPE,             "ID_WP" },
+                { DbWerte.ERZEUGER_HEIZKESSEL,              "ID_Kessel" },
+                { DbWerte.ERZEUGER_BHKW,                    "ID_BHKW" },
+                { DbWerte.ERZEUGER_PHOTOVOLTAIK,            "ID_PV" },
+                { DbWerte.ERZEUGER_SOLARTHERMIE,            "ID_Solar" },
+                { DbWerte.ERZEUGER_STROMSPEICHER,           "ID_SP" },
+                { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, "ID_PUFFER" }
+            };
+
+            int nachgezogen = 0;
+            DataTable komp = Abfrage(l, "SELECT ID, Komponente FROM Tab_KostenKomponente");
+            if (komp != null)
+                foreach (DataRow k in komp.Rows)
+                {
+                    string name = Convert.ToString(k["Komponente"]);
+                    int kid = Convert.ToInt32(k["ID"]);
+                    string spalte;
+                    if (!verweise.TryGetValue(name, out spalte)) continue;
+
+                    // UPDATE mit JOIN, kid als Literal (ACE-Bindungsfalle); der
+                    // ID_Projekt-Vergleich schuetzt vor Fremdzuordnungen.
+                    nachgezogen += NonQuery(l,
+                        "UPDATE Tab_ProjektWerte AS w INNER JOIN Tab_Energieanlagen AS a " +
+                        "ON w.ID_Anlage = a.ID SET w.ID_AnlageGeraet = a.[" + spalte + "] " +
+                        "WHERE w.KomponentenID = " + kid +
+                        " AND a.ID_Projekt = w.ProjektID");
+                }
+
+            l.Zeile("Geräteanker-Nachzug (Schritt 47): " + nachgezogen +
+                    " Position(en) aus ihrer Anlagenzeile abgeleitet.");
             return true;
         }
 

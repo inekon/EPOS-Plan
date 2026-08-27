@@ -232,6 +232,54 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Ä24: Leitet den GERÄTEANKER aller GÜLTIG zugeordneten Positionen des
+        /// Projekts aus ihrer Anlagenzeile neu ab (Überschreiben mit der Wahrheit;
+        /// idempotent). Anlass: Der Projektduplizierer versetzt <c>ID_Anlage</c>
+        /// (FK_MAP), den komponentenabhängigen Anker kann er nicht kennen —
+        /// Kopien ankerten an den Geräten des QUELLprojekts und verloren die
+        /// Zuordnung beim ersten Anlagen-Wizard-Lauf der Variante.
+        /// Migrationsschritt 47 macht dasselbe einmalig für den Bestand.
+        /// </summary>
+        internal static void AnkerNachziehen(int projektId)
+        {
+            if (projektId <= 0) return;
+            bool spalteDa = false;
+            try { spalteDa = KostenPositionCtrl.StelleSpaltenSicher(); } catch { }
+            if (!spalteDa) return;
+
+            var namen = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                { DbWerte.ERZEUGER_WAERMEPUMPE,             "ID_WP" },
+                { DbWerte.ERZEUGER_HEIZKESSEL,              "ID_Kessel" },
+                { DbWerte.ERZEUGER_BHKW,                    "ID_BHKW" },
+                { DbWerte.ERZEUGER_PHOTOVOLTAIK,            "ID_PV" },
+                { DbWerte.ERZEUGER_SOLARTHERMIE,            "ID_Solar" },
+                { DbWerte.ERZEUGER_STROMSPEICHER,           "ID_SP" },
+                { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, "ID_PUFFER" }
+            };
+            try
+            {
+                DataTable komp = DataRepository.GetDataTable(
+                    "SELECT ID, Komponente FROM Tab_KostenKomponente");
+                if (komp == null) return;
+                foreach (DataRow r in komp.Rows)
+                {
+                    string sp;
+                    if (!namen.TryGetValue(Convert.ToString(r["Komponente"]), out sp)) continue;
+                    // Ids als LITERALE (ACE-Bindungsfalle, Ä21-Befund); der
+                    // ID_Projekt-Vergleich schützt vor Fremdzuordnungen.
+                    DataRepository.ExecuteSQL(
+                        "UPDATE Tab_ProjektWerte AS w INNER JOIN Tab_Energieanlagen AS a " +
+                        "ON w.ID_Anlage = a.ID SET w.ID_AnlageGeraet = a.[" + sp + "] " +
+                        "WHERE w.ProjektID = " + projektId +
+                        " AND a.ID_Projekt = " + projektId +
+                        " AND w.KomponentenID = " + Convert.ToInt32(r["ID"]));
+                }
+            }
+            catch { }
+        }
+
+        /// <summary>
         /// Ä21: SELBSTHEILUNG der Anlagenzuordnung. Der Anlagen-Wizard löscht
         /// Anlagenzeilen und legt sie mit NEUEN IDs an (dokumentiert in
         /// <c>AnlagenEindeutigkeit</c>) — Positionen zeigten danach ins Leere.
