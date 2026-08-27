@@ -401,8 +401,12 @@ namespace WindowsFormsApplication1
             string gruppe = kategorieId == Form_Kosten.KATEGORIE_BETRIEB
                 ? DbWerte.KOSTEN_GRUPPE_BETRIEB_VDI
                 : DbWerte.KOSTEN_GRUPPE_ALLGEMEIN;
+            // Ä25: MIT Anlagenbezug anlegen. Die anlagenblinde Bestandssignatur fand
+            // bei mehreren Anlagen derselben Komponente (Regelfall Pufferspeicher)
+            // die Position der ERSTEN Anlage, nullte ihren Betrag und hängte sie über
+            // AnlageZuordnen an die neue — die Kosten der ersten Anlage waren weg.
             int id = KostenPositionCtrl.SetzeBetrag(projektId, kategorieId,
-                komponentenId, stammId, 0.0, gruppe, true);
+                komponentenId, stammId, 0.0, gruppe, true, idAnlage);
             if (id <= 0) return 0;
 
             KostenPositionCtrl.SetzeBetragMitZusatz(id, 0.0, new KostenPositionCtrl.Zusatz

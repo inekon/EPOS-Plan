@@ -127,23 +127,36 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Stromverbraucherprofile.
         ///
-        /// ZWEI ABWEICHUNGEN, beide Bestand und in K1 bewusst NICHT verändert:
-        ///  * Es gibt keine <c>_STAMM</c>-Fassung — Katalog und Projektkopie liegen in
-        ///    derselben Tabelle <c>Tab_Stromverbraucher</c>. Der Modus ändert hier nichts.
-        ///  * <see cref="ProjektfilterAktiv"/> ist FALSE. V0-3 hat den Pflichtfilter
-        ///    <c>ID_Projekt</c> ausdrücklich nur an Brauchwasser und Prozesswärme
-        ///    nachgezogen. Ob der Stromzweig dieselbe Mehrdeutigkeit hat, ist eine
-        ///    Datenfrage (führt <c>Tab_Stromverbraucher</c> ein <c>ID_Projekt</c>?) und
-        ///    gehört als eigener Befund geklärt — nicht als stille Beifuhr in K1.
+        /// KATALOGQUELLE (Berichtigung K1, Befund 27.08.2026). K1 hielt hier fest, es
+        /// gebe „keine <c>_STAMM</c>-Fassung", und ließ die Katalogvorschau deshalb auf
+        /// den PROJEKTKOPIEN rechnen. Das ist falsch: <c>Tab_Stromverbraucher_STAMM</c>
+        /// und <c>Tab_Stromverbrauchertyp_STAMM</c> gibt es, und genau daraus füllen die
+        /// Zuordnungs- und Admin-Dialoge ihre Auswahlliste
+        /// (<see cref="StromverbraucherStammCtrl"/>). Die Vorschau suchte den
+        /// Katalognamen anschließend in <c>Tab_Stromverbraucher</c>, wo er meist gar
+        /// nicht steht — kein Kopfsatz, Anteil 0, und der Ergebnisdialog zeigte zwölf
+        /// Nullmonate. Der Modus schaltet die Quelle jetzt wie bei Brauchwasser und
+        /// Prozesswärme um.
+        ///
+        /// EINE ABWEICHUNG BLEIBT: Der Typschlüssel heißt auch im Katalog
+        /// <c>Typname</c> — <c>Tab_Stromverbrauchertyp_STAMM</c> führt keine Spalte
+        /// <c>Bezeichner</c>, anders als die beiden Wärme-Typkataloge.
+        ///
+        /// <see cref="ProjektfilterAktiv"/> ist FALSE. Im Katalog ist das zwingend (die
+        /// <c>_STAMM</c>-Tabellen tragen kein <c>ID_Projekt</c>). Für die
+        /// Projektrechnung bleibt es der offene Punkt K1-O1: V0-3 hat den Pflichtfilter
+        /// ausdrücklich nur an Brauchwasser und Prozesswärme nachgezogen; ob der
+        /// Stromzweig dieselbe Mehrdeutigkeit hat, gehört als eigener Befund geklärt.
         /// </summary>
         public static ProfilQuelle Strom(ProfilQuellmodus modus)
         {
+            bool stamm = modus == ProfilQuellmodus.Katalogvorschau;
             return new ProfilQuelle
             {
                 Modus = modus,
                 NamenAbfrage = "Abfrage_Monatsstrom",
-                KopfTabelle = "Tab_Stromverbraucher",
-                TypTabelle = "Tab_Stromverbrauchertyp",
+                KopfTabelle = stamm ? "Tab_Stromverbraucher_STAMM" : "Tab_Stromverbraucher",
+                TypTabelle = stamm ? "Tab_Stromverbrauchertyp_STAMM" : "Tab_Stromverbrauchertyp",
                 TypSchluesselSpalte = "Typname",
                 ProjektfilterAktiv = false,
                 ZuordnungTabelle = "Z_Projekt_Stromverbraucher",
