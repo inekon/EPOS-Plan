@@ -142,6 +142,16 @@ namespace WindowsFormsApplication1
             ProjektGebaeudeCtrl ctrl = new ProjektGebaeudeCtrl();
             ctrl.ReadAll(ID_Projekt);
 
+            // V0-1: Puffer für GENAU EIN Gebäude. BhkwPlan.StdWerte addiert auf den
+            // vorhandenen Inhalt seines Zielvektors; bis hierher lief die Schleife auf dem
+            // kumulierten Waermebedarf_Gebaeude und addierte diesen je Durchlauf erneut auf
+            // Waermebedarf — bei N Gebäuden ging Gebäude 1 N-fach ein. Jetzt rechnet jedes
+            // Gebäude in einen genullten Einzelpuffer, der danach genau einmal auf
+            // Waermebedarf UND einmal auf Waermebedarf_Gebaeude geht. Waermebedarf_Gebaeude
+            // bleibt damit wie bisher die Summe aller Gebäude. Bei einem Gebäude ist das
+            // Ergebnis bitgleich zum bisherigen Verhalten.
+            float[] Waermebedarf_EinGebaeude = new float[8760];
+
             for (int i = 0; i < ctrl.rows; i++)
             {
 
@@ -174,21 +184,29 @@ namespace WindowsFormsApplication1
                     return;
                 }
 
+                // V0-1: Einzelpuffer je Durchlauf nullen - StdWerte addiert auf.
+                WPPlan.Core.BhkwPlan.VectorInit(Waermebedarf_EinGebaeude);
+
                 // Stundenwerte Wärmebedarf je nach Gebäudetyp und Tagtyp aus Klimaregion
                 if (ctrl.items[i].Typ == "Wohngebaeude  VDI 2067")
                 {
                     //com.I_StdWerte(ref Waermebedarf_Gebaeude, TagTyp_W, TagesVerteilung, Heizlast);
-                    WPPlan.Core.BhkwPlan.StdWerte(Waermebedarf_Gebaeude, TagTyp_W, TagesVerteilung, Heizlast);
+                    WPPlan.Core.BhkwPlan.StdWerte(Waermebedarf_EinGebaeude, TagTyp_W, TagesVerteilung, Heizlast);
                 }
                 else
                     //com.I_StdWerte(ref Waermebedarf_Gebaeude, TagTyp_NW, TagesVerteilung, Heizlast);
-                    WPPlan.Core.BhkwPlan.StdWerte(Waermebedarf_Gebaeude, TagTyp_NW, TagesVerteilung, Heizlast);
+                    WPPlan.Core.BhkwPlan.StdWerte(Waermebedarf_EinGebaeude, TagTyp_NW, TagesVerteilung, Heizlast);
 
                 //com.CSharp_I_vectoren_addieren(Waermebedarf_Gebaeude, Waermebedarf);
-                WPPlan.Core.BhkwPlan.VectorenAddieren(Waermebedarf_Gebaeude, Waermebedarf);
+                WPPlan.Core.BhkwPlan.VectorenAddieren(Waermebedarf_EinGebaeude, Waermebedarf);
 
-                // Maximaler Wärmebedarf pro Gebäude
-                MaxP[i] = Maximaler_Waermebedarf(Waermebedarf);
+                // V0-1: Waermebedarf_Gebaeude bleibt die Summe ALLER Gebäude, wird aber
+                // nicht mehr selbst als Rechenpuffer benutzt.
+                WPPlan.Core.BhkwPlan.VectorenAddieren(Waermebedarf_EinGebaeude, Waermebedarf_Gebaeude);
+
+                // Maximaler Wärmebedarf pro Gebäude (V0-1: des EINZELNEN Gebäudes i,
+                // bisher versehentlich der kumulierte Vektor)
+                MaxP[i] = Maximaler_Waermebedarf(Waermebedarf_EinGebaeude);
 
             }
 
@@ -208,6 +226,15 @@ namespace WindowsFormsApplication1
 
             Waermebedarf_Extern_Gesamt = 0;
             rs = new RecordSet();
+
+            // V0-5: Je Ganglinie ein eigener, genullter Puffer. Bis hierher lief der
+            // Fülllauf direkt auf dem Klassenvektor Waermebedarf_Extern, der nur EINMAL vor
+            // der Schleife genullt wurde: Reststunden einer längeren Vorgänger-Ganglinie
+            // blieben stehen und gingen ein zweites Mal in die Summe ein. Der Rohpuffer ist
+            // auf das Viertelstundenraster ausgelegt, damit auch 35.040 Werte hineinpassen.
+            float[] ganglinie_roh = new float[8760 * 4];
+            float[] ganglinie = new float[8760];
+
             for (int n = 0; n < waectrl.rows; n++)
             {
                 rs.Open("select * from Abfrage_ProjektGebaeudeGanglinie where Tab_Waermebedarf.ID=" + waectrl.items[n].m_ID_Ganglinie + " order by Tab_WaermebedarfDaten.ID");
@@ -215,18 +242,53 @@ namespace WindowsFormsApplication1
                 int index = 0;
                 double wert = 0;
 
+                Array.Clear(ganglinie_roh, 0, ganglinie_roh.Length);
+
                 while (rs.Next())
                 {
                     wert = (double)rs.Read("Wert");
-                    Waermebedarf_Extern[index++] = (float)wert;
+                    // V0-5 (c): Indexschutz. Eine zu lange Reihe (z. B. Minutenwerte) lief
+                    // bisher ungefangen in eine IndexOutOfRangeException; gezählt wird
+                    // weiter, damit die Rasterprüfung unten die wahre Wertzahl meldet.
+                    if (index < ganglinie_roh.Length) ganglinie_roh[index] = (float)wert;
+                    index++;
                 }
                 rs.Close();
 
+                // V0-5 (b): Rasterprüfung nach dem Muster des Stromzweigs
+                // (SimulationStrombedarf.Berechnung). Anders als dort trägt
+                // Tab_Waermebedarf kein Feld "Zeitinterval" - das Raster ergibt sich
+                // allein aus der Wertzahl: 8.760 Stunden- oder 35.040 Viertelstundenwerte.
+                if (index != 8760 && index != 8760 * 4)
+                {
+                    SimulationProtokoll.Aktuell.Warnung(string.Format(
+                        MyResource.Resource.SIMENG_WAERMEGANGLINIE_RASTER_PASST_NICHT,
+                        waectrl.items[n].m_ID_Ganglinie, index));
+                    continue;
+                }
+
+                if (index == 8760)
+                {
+                    Array.Copy(ganglinie_roh, ganglinie, 8760);
+                }
+                else
+                {
+                    // Viertelstundenleistung [kW] -> Stundenmittel, wie
+                    // WirtschaftlichkeitCtrl.ViertelstundenZuStundenMittel. Der Rechenkern
+                    // kennt nur das Stundenraster.
+                    for (int h = 0; h < 8760; h++)
+                        ganglinie[h] = (float)((ganglinie_roh[h * 4] + ganglinie_roh[h * 4 + 1]
+                                              + ganglinie_roh[h * 4 + 2] + ganglinie_roh[h * 4 + 3]) / 4.0);
+                }
+
                 //com.CSharp_I_vectoren_addieren(Waermebedarf_Extern, Waermebedarf);
-                WPPlan.Core.BhkwPlan.VectorenAddieren(Waermebedarf_Extern, Waermebedarf);
+                WPPlan.Core.BhkwPlan.VectorenAddieren(ganglinie, Waermebedarf);
+
+                // V0-5 (a): Waermebedarf_Extern bleibt die Summe ALLER Ganglinien.
+                WPPlan.Core.BhkwPlan.VectorenAddieren(ganglinie, Waermebedarf_Extern);
 
                 //Waermebedarf_Extern_Gesamt += com.I_vector_summe(Waermebedarf_Extern);
-                Waermebedarf_Extern_Gesamt += Waermebedarf_Extern.Sum() / 1000;
+                Waermebedarf_Extern_Gesamt += ganglinie.Sum() / 1000;
             }
 
             // Wärmebedarf Gebäude Monat
@@ -263,7 +325,16 @@ namespace WindowsFormsApplication1
                 stundl_netzverluste = (Waermebedarf_Gesamt * 1000 * Netzverluste) / (float)876000;
                 Waermebedarf_Netzverluste = (Waermebedarf_Gesamt * Netzverluste) / 100;
             }
-            else stundl_netzverluste = (float)Netzverluste / (float)8760;
+            else
+            {
+                stundl_netzverluste = (float)Netzverluste / (float)8760;
+
+                // V0-8: Auch bei absoluter Einheit ("kWh/a") die tatsächlich
+                // aufgeschlagene Jahresmenge ausweisen - in MWh, derselben Einheit wie im
+                // Prozent-Zweig. Bisher blieb das Feld hier auf 0, obwohl NetzverlusteC die
+                // Energie auf alle 8760 Stunden addierte: der Bilanzausweis war falsch.
+                Waermebedarf_Netzverluste = (double)stundl_netzverluste * 8760 / 1000;
+            }
 
             //com.I_netzverlustec(Waermebedarf, stundl_netzverluste);
             WPPlan.Core.BhkwPlan.NetzverlusteC(Waermebedarf, stundl_netzverluste);
@@ -694,9 +765,24 @@ namespace WindowsFormsApplication1
                     pw_list = list;
                 }
 
+                // V0-4: Betriebsarten sauber trennen - wie im Brauchwasserzweig.
+                // Vorschau (list != null): Namen sind Katalog-Bezeichner -> Kopf UND Typprofil
+                // aus den STAMM-Tabellen (das Typprofil kam bisher fälschlich aus der
+                // Projektkopie). Echte Projektrechnung (list == null): beides aus den
+                // Projektkopien (der Kopf kam bisher fälschlich aus dem STAMM-Katalog, womit
+                // auch der Normierungsnenner jv unten aus dem Katalog stammte).
+                // V0-3: Im Projektmodus zusätzlich auf ID_Projekt filtern - Bezeichner und
+                // Typname sind über Projekte hinweg nicht eindeutig. Die _STAMM-Tabellen
+                // tragen kein ID_Projekt, dort bleibt der Filter weg.
+                bool bStamm = (list != null);
+                string headTable = bStamm ? "Tab_Prozesswaerme_STAMM" : "Tab_Prozesswaerme";
+                string typTable = bStamm ? "Tab_Prozesstyp_STAMM" : "Tab_Prozesstyp";
+                string typCol = bStamm ? "Bezeichner" : "Typname";
+                string projektFilter = bStamm ? "" : " AND ID_Projekt=" + m_ID_Projekt;
+
                 for (int k = 0; k < pw_list.Count; k++)
                 {
-                    rs.Open("select * from Tab_Prozesswaerme_STAMM where Bezeichner='" + pw_list[k] + "'");
+                    rs.Open("select * from " + headTable + " where Bezeichner='" + pw_list[k] + "'" + projektFilter);
                     if (rs.Next())
                     {
                         float pjv = 0;
@@ -735,10 +821,15 @@ namespace WindowsFormsApplication1
                             return;
                         }
 
-                        // Tagesverteilung für den Prozess ermitteln
-                        rs_pwtyp.Open("select * from Tab_Prozesstyp where Typname='" + (string)objTyp + "'");
+                        // V0-3: Wochenprofil vor JEDEM Ladevorgang nullen, sonst rechnet ein
+                        // Profil ohne Typsatz mit dem Profil des vorigen Durchlaufs weiter.
+                        Array.Clear(wochen_waerme, 0, wochen_waerme.Length);
 
-                        if (rs_pwtyp.Next())
+                        // Tagesverteilung für den Prozess ermitteln
+                        rs_pwtyp.Open("select * from " + typTable + " where " + typCol + "='" + (string)objTyp + "'" + projektFilter);
+
+                        bool typGefunden = rs_pwtyp.Next();
+                        if (typGefunden)
                         {
                             for (int i = 0; i < 168; i++)
                             {
@@ -748,12 +839,33 @@ namespace WindowsFormsApplication1
                         }
                         rs_pwtyp.Close();
 
+                        if (!typGefunden)
+                        {
+                            // V0-3: Kein stiller Fremdwert mehr. Der Anteil dieses Prozesses
+                            // bleibt 0 - mit dem genullten Wochenprofil zu rechnen wäre
+                            // schlechter als gar nicht: StromWocheToJahr normiert je Monat auf
+                            // die Profilsumme und lieferte aus lauter Nullen NaN.
+                            if (!bStamm)
+                                SimulationProtokoll.Aktuell.Warnung(string.Format(
+                                    MyResource.Resource.SIMENG_PROZESSWAERME_TYPPROFIL_FEHLT,
+                                    (string)objTyp, pw_list[k]));
+                            rs.Close();
+                            continue;
+                        }
+
                         // Wärmebedarf jährlich gemäß wöchentlicher Verteilung
                         //temp = com.I_strom_wochetojahr(wochen_waerme, monats_waerme, mo_anfang, mo_ende);
                         WPPlan.Core.BhkwPlan.StromWocheToJahr(wochen_waerme, monats_waerme, temp, mo_anfang, mo_ende);
 
                         //com.CSharp_I_vectoren_addieren(temp, prozesswerte);
                         WPPlan.Core.BhkwPlan.VectorenAddieren(temp, prozesswerte);
+                    }
+                    else if (!bStamm)
+                    {
+                        // V0-3/V0-4: Im Projektmodus liefert die Projektkopie keinen Satz zu
+                        // diesem Namen - Anteil 0 statt eines fremden Katalogwerts.
+                        SimulationProtokoll.Aktuell.Warnung(string.Format(
+                            MyResource.Resource.SIMENG_PROZESSWAERME_KOPF_FEHLT, pw_list[k]));
                     }
                     rs.Close();
 
@@ -807,10 +919,15 @@ namespace WindowsFormsApplication1
                 string headTable = bStamm ? "Tab_Brauchwasser_STAMM" : "Tab_Brauchwasser";
                 string typTable = bStamm ? "Tab_Brauchwassertyp_STAMM" : "Tab_Brauchwassertyp";
                 string typCol = bStamm ? "Bezeichner" : "Typname";
+                // V0-3: Im Projektmodus zusätzlich auf ID_Projekt filtern - Bezeichner und
+                // Typname sind über Projekte hinweg nicht eindeutig (produktiv steht z. B.
+                // "Haushalt-3" 45× mit zwei verschiedenen Monatssätzen in der Datenbank).
+                // Die _STAMM-Tabellen tragen kein ID_Projekt, dort bleibt der Filter weg.
+                string projektFilter = bStamm ? "" : " AND ID_Projekt=" + m_ID_Projekt;
 
                 for (int k = 0; k < pw_list.Count; k++)
                 {
-                    rs.Open("select * from " + headTable + " where Bezeichner='" + pw_list[k] + "'");
+                    rs.Open("select * from " + headTable + " where Bezeichner='" + pw_list[k] + "'" + projektFilter);
                     if (rs.Next())
                     {
                         float pjv = 0;
@@ -848,10 +965,16 @@ namespace WindowsFormsApplication1
                             return;
                         }
 
-                        // Tagesverteilung für den Prozess ermitteln
-                        rs_pwtyp.Open("select * from " + typTable + " where " + typCol + "='" + (string)objTyp + "'");
+                        // V0-3: Wochenprofil vor JEDEM Ladevorgang nullen, sonst rechnet ein
+                        // Profil ohne Typsatz mit dem Profil des vorigen Durchlaufs weiter -
+                        // auch mit dem des Prozesswärmezweigs, der dasselbe Feld benutzt.
+                        Array.Clear(wochen_waerme, 0, wochen_waerme.Length);
 
-                        if (rs_pwtyp.Next())
+                        // Tagesverteilung für den Prozess ermitteln
+                        rs_pwtyp.Open("select * from " + typTable + " where " + typCol + "='" + (string)objTyp + "'" + projektFilter);
+
+                        bool typGefunden = rs_pwtyp.Next();
+                        if (typGefunden)
                         {
                             for (int i = 0; i < 168; i++)
                             {
@@ -861,11 +984,30 @@ namespace WindowsFormsApplication1
                         }
                         rs_pwtyp.Close();
 
+                        if (!typGefunden)
+                        {
+                            // V0-3: siehe Prozesswärmezweig - Anteil 0 statt Fremdprofil,
+                            // und nicht mit dem genullten Profil weiterrechnen (NaN).
+                            if (!bStamm)
+                                SimulationProtokoll.Aktuell.Warnung(string.Format(
+                                    MyResource.Resource.SIMENG_BRAUCHWASSER_TYPPROFIL_FEHLT,
+                                    (string)objTyp, pw_list[k]));
+                            rs.Close();
+                            continue;
+                        }
+
                         // Wärmebedarf jährlich gemäß wöchentlicher Verteilung
                         //temp = com.I_strom_wochetojahr(wochen_waerme, monats_waerme, mo_anfang, mo_ende);
                         WPPlan.Core.BhkwPlan.StromWocheToJahr(wochen_waerme, monats_waerme, temp, mo_anfang, mo_ende);
                         //com.CSharp_I_vectoren_addieren(temp, brauchwasserwerte);
                         WPPlan.Core.BhkwPlan.VectorenAddieren(temp, brauchwasserwerte);
+                    }
+                    else if (!bStamm)
+                    {
+                        // V0-3: Im Projektmodus liefert die Projektkopie keinen Satz zu diesem
+                        // Namen - Anteil 0 statt eines fremden Wertes aus einem anderen Projekt.
+                        SimulationProtokoll.Aktuell.Warnung(string.Format(
+                            MyResource.Resource.SIMENG_BRAUCHWASSER_KOPF_FEHLT, pw_list[k]));
                     }
                     rs.Close();
 

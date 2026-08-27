@@ -3196,15 +3196,39 @@ namespace WindowsFormsApplication1
 
                 textBox_WB_Deckung.Text = "";
                 double a = (double)simulation_Waermebedarf.Waermebedarf_Gesamt;
-                double b = (double)sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000;
-                double c = (double)sim.simulation_wp.Heizstab_gesamt / 1000;
 
-                // Deckung über die echte Restwärme rechnen - mit Pufferspeicher verschiebt
-                // sich Energie zwischen den Stunden, "Produktion / Bedarf" wäre dann ungenau.
-                double restMWh = sim.simulation_wp.waermerestbedarf_gesamt / 1000.0;
-                double deckung = a > 0 ? (a - restMWh) / a * 100.0 : 0;
-                if (deckung > 100) deckung = 100;
-                if (deckung < 0) deckung = 0;
+                // EIGENANTEIL der Wärmepumpe an der Bedarfsdeckung: unmittelbar abgegebene
+                // Wärme, der ihr zugerechnete Anteil an der bedarfsdeckenden
+                // Speicherentladung und der Heizstab (er gehört zur WP). Er ist die
+                // Bezugsgröße von Restbedarf UND Deckungsgrad - beides zwei Seiten
+                // derselben Rechnung, wortgleich mit SimulationRunner:264-351. Vorher stand
+                // hier der Rest der GANZEN Speicherstufe: Ab zwei Erzeugern in der Stufe
+                // enthielt der auch die Lieferung von Kessel und BHKW, die ihre Deckung
+                // zusätzlich selbst melden.
+                double wpStufeneingangMWh = sim.simulation_wp.Waermebedarf_gesamt / 1000.0;
+                double wpEigenMWh = (sim.simulation_wp.Direktdeckung_gesamt +
+                                     sim.simulation_wp.Speicherentladung_Anteil +
+                                     sim.simulation_wp.Heizstab_gesamt) / 1000.0;
+
+                // Im ALTPFAD sind Direktdeckung_gesamt und Speicherentladung_Anteil exakt 0,
+                // der Eigenanteil wäre dort keine Bilanz - dort gilt weiter die Jahressumme
+                // der Restwärmeganglinie (dieselbe Fallunterscheidung wie im Runner).
+                double wpRestMWh = sim.simulation_wp.waermerestbedarf_gesamt / 1000.0;
+                if (sim.KaskadeZweikanalig)
+                {
+                    wpRestMWh = wpStufeneingangMWh - wpEigenMWh;
+                    if (wpRestMWh < 0) wpRestMWh = 0;   // Rundungsschutz
+                }
+
+                double deckung = 0;
+                if (a > 0)
+                {
+                    deckung = sim.KaskadeZweikanalig
+                        ? wpEigenMWh / a * 100.0                          // dieselbe Größe wie im Restbedarf
+                        : (wpStufeneingangMWh - wpRestMWh) / a * 100.0;
+                    if (deckung > 100) deckung = 100;
+                    if (deckung < 0) deckung = 0;
+                }
                 textBox_WB_Deckung.Text = deckung.ToString("F2");
 
 
@@ -3213,8 +3237,8 @@ namespace WindowsFormsApplication1
                 else
                     textBox_Bivalenzpunkt.Text = "-";
 
-                textBox_WPWaermebedarf.Text = (sim.simulation_wp.Waermebedarf_gesamt / 1000).ToString("F2");
-                textBox_WPRestwermebedarf.Text = (sim.simulation_wp.waermerestbedarf_gesamt / 1000).ToString("F2");
+                textBox_WPWaermebedarf.Text = wpStufeneingangMWh.ToString("F2");
+                textBox_WPRestwermebedarf.Text = wpRestMWh.ToString("F2");
                 textBox_WPStromverbrauch.Text = (sim.simulation_wp.WP_Strombedarf_gesamt / 1000).ToString("F2");
                 textBox_HeizstabStromverbrauch.Text = (sim.simulation_wp.Heizstab_gesamt / 1000).ToString("F2");
                 textBox_WPWaermeproduktion.Text = (sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000).ToString("F2");
@@ -3224,6 +3248,9 @@ namespace WindowsFormsApplication1
                 // Wärmepumpe, damit die Rubrik dann geleert wird.
                 textBox_WPVollbenutzungsstunden.Text = (sim.simulation_wp.WP_Laufzeit / sim.simulation_wp.wp_list.Count).ToString("F0");
 
+                // BEWUSST weiter aus der Ganglinie und damit NICHT aus wpRestMWh: Sie führt
+                // den PROJEKTrest der Stunde, und genau der ist die Bezugsgröße für die
+                // Auslegung eines Spitzenkessels (siehe SimulationRunner:295-307).
                 double Max_Spk = 0;
                 for (int i = 0; i < 8750; i++)
                 {
@@ -3339,12 +3366,37 @@ namespace WindowsFormsApplication1
             if (sim.bSimulationKessel)
             {
                 // Textfelder Spitzenkessel
+                //
+                // EIGENANTEIL des Kessels an der Bedarfsdeckung: S_Waerme_spk ist seine
+                // gesamte NUTZWÄRME, seit Paket 5 also Direktdeckung PLUS Speicherladung -
+                // als Produktion richtig, als Deckung nicht. Geladene Wärme deckt noch
+                // keinen Bedarf; entladene deckt Bedarf, ohne in der Produktionsstunde zu
+                // stehen. Abgezogen wird deshalb die Ladung, hinzu kommt der zugerechnete
+                // Anteil an der bedarfsdeckenden Entladung - Bezugsgröße von Restbedarf
+                // UND Deckungsgrad, wortgleich mit SimulationRunner:565-583. Der Restbedarf
+                // konnte vorher NEGATIV werden. Im Altpfad und ohne Puffer-Senke sind beide
+                // Speichergrößen exakt 0, der Ausdruck ist dann bitgleich dem bisherigen -
+                // eine Fallunterscheidung wie beim BHKW braucht der Kessel nicht.
+                double kesselDirektMWh = sim.simulation_spk.S_Waerme_spk -
+                                         sim.simulation_spk.Speicherladung_gesamt / 1000.0;
+                if (kesselDirektMWh < 0) kesselDirektMWh = 0;   // Rundungsschutz
+                double kesselEigenMWh = kesselDirektMWh +
+                                        sim.simulation_spk.Speicherentladung_Anteil / 1000.0;
+
+                double kesselRestMWh = sim.simulation_spk.Waermebedarf_gesamt - kesselEigenMWh;
+                if (kesselRestMWh < 0) kesselRestMWh = 0;       // Rundungsschutz
+
                 if (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
-                    textBox_SPKWaermebedarfsdeckung.Text = (sim.simulation_spk.S_Waerme_spk * 100 / simulation_Waermebedarf.Waermebedarf_Gesamt).ToString("F2");
+                {
+                    double kesselDeckung = kesselEigenMWh * 100.0 / simulation_Waermebedarf.Waermebedarf_Gesamt;
+                    if (kesselDeckung > 100) kesselDeckung = 100;
+                    if (kesselDeckung < 0) kesselDeckung = 0;
+                    textBox_SPKWaermebedarfsdeckung.Text = kesselDeckung.ToString("F2");
+                }
                 else
                     textBox_SPKWaermebedarfsdeckung.Text = "0";
                 textBox_Waermebedarf_Heizkessel.Text = sim.simulation_spk.Waermebedarf_gesamt.ToString("F2");
-                textBox_Restwermebedarf_Heizkessel.Text = (sim.simulation_spk.Waermebedarf_gesamt - sim.simulation_spk.S_Waerme_spk).ToString("F2");
+                textBox_Restwermebedarf_Heizkessel.Text = kesselRestMWh.ToString("F2");
                 tb_WaermeprSpk.Text = (sim.simulation_spk.S_Waerme_spk).ToString("F2");
                 textBox_Strombedarf_Heizkessel.Text = (sim.simulation_spk.Strombedarf_gesamt / 1000).ToString("F2");
                 textBox_Reststrombedarf_Heizkessel.Text = (sim.simulation_spk.Strombedarf_gesamt / 1000 + sim.simulation_spk.Stromverbrauch_Spk).ToString("F2");
@@ -3400,12 +3452,38 @@ namespace WindowsFormsApplication1
             if (sim.bSimulationSolarthermie)
             {
                 // Textfelder Solarthermie
+                //
+                // EIGENANTEIL der Solarthermie an der Bedarfsdeckung: Produktion abzüglich
+                // Speicherladung (das ist die Direktdeckung) plus der ihr zugerechnete
+                // Anteil an der bedarfsdeckenden Speicherentladung. Bezugsgröße von
+                // Restbedarf UND Deckungsgrad, wortgleich mit SimulationRunner:648-684.
+                // Vorher stand die ganze Produktion im Zähler - damit überschritt die
+                // Deckung 100 % und der Restbedarf wurde NEGATIV, sobald das Kollektorfeld
+                // zusätzlich einen Puffer lud. Nenner bleibt wie im Runner der
+                // STUFENEINGANG der Solarthermie (nicht der Projektbedarf). Im Altpfad sind
+                // beide Speichergrößen exakt 0, der Ausdruck ist dann bitgleich dem
+                // bisherigen.
+                double solarDirektKWh = sim.simulation_solarthermie.Waermeproduktion_gesamt -
+                                        sim.simulation_solarthermie.Speicherladung_gesamt;
+                if (solarDirektKWh < 0) solarDirektKWh = 0;   // Rundungsschutz
+                double solarEigenKWh = solarDirektKWh +
+                                       sim.simulation_solarthermie.Speicherentladung_Anteil;
+
+                double solarRestMWh =
+                    (sim.simulation_solarthermie.Waermebedarf_gesamt - solarEigenKWh) / 1000.0;
+                if (solarRestMWh < 0) solarRestMWh = 0;       // Rundungsschutz
+
                 if (sim.simulation_solarthermie.Waermebedarf_gesamt > 0)
-                    textBox_STWaermebedarfsdeckung.Text = (sim.simulation_solarthermie.Waermeproduktion_gesamt * 100 / sim.simulation_solarthermie.Waermebedarf_gesamt).ToString("F2");
+                {
+                    double solarDeckung = solarEigenKWh * 100.0 / sim.simulation_solarthermie.Waermebedarf_gesamt;
+                    if (solarDeckung > 100) solarDeckung = 100;
+                    if (solarDeckung < 0) solarDeckung = 0;
+                    textBox_STWaermebedarfsdeckung.Text = solarDeckung.ToString("F2");
+                }
                 else
                     textBox_STWaermebedarfsdeckung.Text = "";
                 textBox_STWaermebedarf.Text = (sim.simulation_solarthermie.Waermebedarf_gesamt / 1000).ToString("F2");
-                textBox_STRestwermebedarf.Text = ((sim.simulation_solarthermie.Waermebedarf_gesamt - sim.simulation_solarthermie.Waermeproduktion_gesamt) / 1000).ToString("F2");
+                textBox_STRestwermebedarf.Text = solarRestMWh.ToString("F2");
                 tb_WaermeprST.Text = (sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000).ToString("F2");
                 textBox_Ueberschuss.Text = (sim.simulation_solarthermie.Ueberschuss_summe / 1000).ToString("F2");
 

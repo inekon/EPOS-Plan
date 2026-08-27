@@ -1718,6 +1718,9 @@ Beide zeigen auf {0} „{1}".</value>
   <data name="SIMENG_WP_EXTRAPOLATION_VERBOTEN" xml:space="preserve">
     <value>Die Quelltemperatur unterschreitet die untere Stützstelle der Kennlinie der Wärmepumpe '{0}' ({1} °C). Die Projekteinstellung „Extrapolation der Kennlinie erlauben“ ist abgewählt, deshalb wurde die Simulation abgebrochen. Entweder die Kennlinie um tiefere Stützstellen ergänzen oder die Einstellung setzen.</value>
   </data>
+  <data name="SIMENG_WP_KAPPUNG_OBEN_HINWEIS" xml:space="preserve">
+    <value>Wärmepumpe '{0}': Die Quelltemperatur überschreitet in {1} Stunden die obere Stützstelle der Kennlinie ({2} °C). Für diese Stunden gilt der COP der obersten Stützstelle; es wird nicht extrapoliert. Liefert der Hersteller ein Hochtemperatur-Kennfeld, sollte die Kennlinie um höhere Stützstellen ergänzt werden.</value>
+  </data>
   <data name="SIMENG_WP_KEINE_KENNDATEN" xml:space="preserve">
     <value>Für die Wärmepumpe '{0}' sind keine Kenndaten (Kennlinie) für Vorlauf {1} °C vorhanden. Die Simulation wurde abgebrochen.</value>
   </data>
@@ -7902,5 +7905,20 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
   </data>
   <data name="WPI_KOSTEN_KEINE" xml:space="preserve">
     <value>Invest — · Betrieb —</value>
+  </data>
+  <data name="SIMENG_WAERMEGANGLINIE_RASTER_PASST_NICHT" xml:space="preserve">
+    <value>Wärmebedarf: Die externe Ganglinie {0} hat {1} Werte statt 8760 oder 35040. Die Ganglinie wurde nicht gerechnet - bitte neu einlesen.</value>
+  </data>
+  <data name="SIMENG_PROZESSWAERME_KOPF_FEHLT" xml:space="preserve">
+    <value>Prozesswärme: Zum Prozess '{0}' ist im Projekt kein Datensatz hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0.</value>
+  </data>
+  <data name="SIMENG_PROZESSWAERME_TYPPROFIL_FEHLT" xml:space="preserve">
+    <value>Prozesswärme: Zum Typ '{0}' des Prozesses '{1}' ist im Projekt kein Wochenprofil hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0.</value>
+  </data>
+  <data name="SIMENG_BRAUCHWASSER_KOPF_FEHLT" xml:space="preserve">
+    <value>Brauchwasser: Zum Eintrag '{0}' ist im Projekt kein Datensatz hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0.</value>
+  </data>
+  <data name="SIMENG_BRAUCHWASSER_TYPPROFIL_FEHLT" xml:space="preserve">
+    <value>Brauchwasser: Zum Typ '{0}' des Eintrags '{1}' ist im Projekt kein Wochenprofil hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0.</value>
   </data>
 </root>

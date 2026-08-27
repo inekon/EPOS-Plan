@@ -1703,6 +1703,9 @@ Both point to {0} "{1}".</value>
   <data name="SIMENG_WP_EXTRAPOLATION_VERBOTEN" xml:space="preserve">
     <value>The source temperature falls below the lowest data point of the performance curve of the heat pump '{0}' ({1} °C). The project setting "Allow extrapolation of the performance curve" is deselected, therefore the simulation was aborted. Either add lower data points to the performance curve or set the option.</value>
   </data>
+  <data name="SIMENG_WP_KAPPUNG_OBEN_HINWEIS" xml:space="preserve">
+    <value>Heat pump '{0}': in {1} hours the source temperature exceeds the upper data point of the performance curve ({2} °C). For these hours the COP of the highest data point applies; no extrapolation is performed. If the manufacturer supplies a high-temperature performance map, the curve should be extended with higher data points.</value>
+  </data>
   <data name="SIMENG_WP_KEINE_KENNDATEN" xml:space="preserve">
     <value>For the heat pump '{0}' there is no performance data (performance curve) for a flow temperature of {1} °C. The simulation was aborted.</value>
   </data>
@@ -7896,5 +7899,20 @@ They typically stem from a variant copy without this trade and keep entering the
   </data>
   <data name="WPI_KOSTEN_KEINE" xml:space="preserve">
     <value>Capex — · Opex —</value>
+  </data>
+  <data name="SIMENG_WAERMEGANGLINIE_RASTER_PASST_NICHT" xml:space="preserve">
+    <value>Heat demand: external load curve {0} has {1} values instead of 8760 or 35040. The load curve was not calculated - please import it again.</value>
+  </data>
+  <data name="SIMENG_PROZESSWAERME_KOPF_FEHLT" xml:space="preserve">
+    <value>Process heat: no record is stored in the project for the process '{0}'. Its calculation is skipped; its share remains 0.</value>
+  </data>
+  <data name="SIMENG_PROZESSWAERME_TYPPROFIL_FEHLT" xml:space="preserve">
+    <value>Process heat: no weekly profile is stored in the project for type '{0}' of process '{1}'. Its calculation is skipped; its share remains 0.</value>
+  </data>
+  <data name="SIMENG_BRAUCHWASSER_KOPF_FEHLT" xml:space="preserve">
+    <value>Domestic hot water: no record is stored in the project for the entry '{0}'. Its calculation is skipped; its share remains 0.</value>
+  </data>
+  <data name="SIMENG_BRAUCHWASSER_TYPPROFIL_FEHLT" xml:space="preserve">
+    <value>Domestic hot water: no weekly profile is stored in the project for type '{0}' of entry '{1}'. Its calculation is skipped; its share remains 0.</value>
   </data>
 </root>
