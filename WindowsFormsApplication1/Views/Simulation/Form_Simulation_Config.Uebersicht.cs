@@ -21,39 +21,35 @@ namespace WindowsFormsApplication1
     /// <see cref="AnlagenImProjekt"/> und den Anzeigetexten. Konzept Abschnitt 3:
     /// „Doppelklick/✎ öffnet überall die bestehenden Dialoge — unveränderte Editoren."
     ///
-    /// Was NICHT hier steht: die Alt-Zuordnung <c>listView1</c>/<c>_zuordnungen</c> und
-    /// ihr Speicherpfad. Sie bleibt in der Hauptdatei, weil sie mit Etappe B (Konzept 4.4)
-    /// im Ganzen entfällt.
+    /// Was NICHT hier steht: die Alt-Zuordnung <c>Z_ProjektPufferSp</c>. Sie ist mit
+    /// PAKET A1 (Migrationsschritt 51) im Ganzen abgerissen — samt Spiegel-Brücke,
+    /// Ladepfad und Speicherpfad.
     /// </summary>
     public partial class Form_Simulation_Config : BaseForm
     {
-        // --- Zuordnungs-Rubrik (Konzept 4.4) ------------------------------------------
+        // --- Zuordnungs-Rubrik (Konzept 4.4) — ABGERISSEN MIT PAKET A1 ----------------
         //
-        // Der Rückwegschalter RUBRIK_SICHTBAR ist mit ETAPPE D1 entfallen. Er hielt seit
-        // Paket 2 / Etappe A die Möglichkeit offen, die alte Bedienung wieder
-        // einzuschalten; die Rubrik selbst wird jetzt gar nicht mehr angelegt
-        // (Form_Simulation_Config.Karten.AltSteuerelementeStilllegen), damit hätte der
-        // Schalter nichts mehr zu schalten. Der Rückweg ist ab hier die
-        // Versionsverwaltung.
-        //
-        // UNVERÄNDERT bleibt der Datenpfad: _zuordnungen wird weiter aus
-        // Z_ProjektPufferSp geladen und beim Speichern zurückgeschrieben, und die
-        // Spiegel-Brücke WaermesenkeClass.WpSenkeSpiegeln arbeitet weiter
-        // (Konzeptvorgabe: bis zur Abnahme unangetastet).
+        // Die Rubrik selbst war seit Etappe D1 unsichtbar; der DATENPFAD lief weiter:
+        // _zuordnungen wurde aus Z_ProjektPufferSp geladen, beim Speichern in einem
+        // Delete/Insert-Zyklus zurückgeschrieben, und die Spiegel-Brücke
+        // WaermesenkeClass.WpSenkeSpiegeln hielt beide Modelle im Gleichstand. Mit
+        // Schritt 51 ist Z_ProjektPufferSp stillgelegt: Die Betriebstemperaturen sind
+        // einmalig per DML an Tab_Pufferspeicher übernommen (dort pflegt sie
+        // Form_PufferSp_Projekt weiter), die Senken stehen in Z_AnlageSenke. Damit ist
+        // alles entfallen - Feld, Laden, Schreiben, Brücke und die Nachführung der
+        // Betriebstemperaturen über PufferSpCtrl.SetTemperaturen.
 
         // --- Steuerelemente -----------------------------------------------------------
 
-        // Fußzeile, rechts: Feature-Flag der zweikanaligen Kaskade (Konzept Kapitel 9)
-        private CheckBox checkBox_KaskadeZweikanalig;
-        private bool _kaskadeUiUpdate = false;   // verhindert Schreiben beim Vorbelegen
-
-        // Bewusste Abwahl der zweikanaligen Kaskade TROTZ erfüllter Notwendigkeitsregel.
-        // Sie gilt für die Dauer dieses Dialogs und legt die Automatik still - ohne sie
-        // hätte die Abwahl keine Wirkung: Der nächste OK-Knopf im Senkendialog (oder das
-        // nächste Speichern) würde den Haken sofort wieder setzen.
-        private bool _kaskadeAutomatikZurueckgestellt = false;
-
-        // Fußzeile, rechts: Einstellung Extrapolation_erlaubt (Paket 8, Konzept 13.4)
+        // Fußzeile: Einstellung Extrapolation_erlaubt (Paket 8, Konzept 13.4)
+        //
+        // PAKET A1: Der zweite Schalter „Zweikanalige Kaskade" ist entfallen. Er war das
+        // Feature-Flag des einkanaligen Altpfads; Schritt 51 setzt
+        // Tab_Einstellungen.Kaskade_Zweikanalig in Bestandsdaten auf WAHR und nimmt es aus
+        // der Weiche - ein Schalter ohne Weiche wäre eine Zusage ohne Wirkung. Mit ihm
+        // sind seine Automatiken gegangen (Einschalten nach einer Senken-/Quellenänderung,
+        // Rückfrage beim Speichern): Sie hielten den Haken mit dem Rechenweg im
+        // Gleichstand, und es gibt nur noch einen Rechenweg.
         private CheckBox checkBox_Extrapolation;
         private bool _extrapolationUiUpdate = false;
 
@@ -90,7 +86,6 @@ namespace WindowsFormsApplication1
             public string WpTyp = "";   // Luft-Wasser / Sole-Wasser / Wasser-Wasser
             public string WQ_Typ = "";  // Wärmequelle (WaermequelleClass.TYP_*)
             public double WQ_Temp;
-            public string WS_Typ = "";  // Bedarfsart der Heizkreis-Senke (WaermequelleClass.SENKE_*)
             public string BM_Typ = "";  // Betriebsmodus (WaermequelleClass.MODUS_*)
 
             // D2: Auslegungstemperaturen der ANLAGE (Tab_Energieanlagen.Vorlauf /
@@ -101,8 +96,25 @@ namespace WindowsFormsApplication1
             public int Vorlauf;
             public int Ruecklauf;
 
-            /// <summary>Haupt- und Zweitsenke (Konzept 5.3), aus derselben Abfrage gelesen.</summary>
-            public WaermesenkeClass.SenkeDaten Senke = new WaermesenkeClass.SenkeDaten();
+            /// <summary>
+            /// Die SENKENLISTE der Anlage in Rangfolge (Konzept 5.1/5.3), aus EINER
+            /// Projektabfrage auf <c>Z_AnlageSenke</c> zugeteilt. Nie <c>null</c>, nie
+            /// leer — ohne eigene Zeile steht hier die Rang-1-Vorbelegung
+            /// <c>Heizkreis/Beides</c>, dieselbe, mit der die Engine rechnet.
+            ///
+            /// <para>PAKET A1: Bis dahin stand hier eine <c>WaermesenkeClass.SenkeDaten</c>
+            /// aus den Altspalten <c>WS_*</c> — zwei Plätze, ohne die Ränge ab 3 und mit
+            /// den Prozess-Zielen als „Heizung" verkleidet. Die Karten holten die echte
+            /// Kette anschließend je Karte noch einmal nach; jetzt ist es eine Abfrage
+            /// für das ganze Projekt.</para>
+            /// </summary>
+            public List<Z_AnlageSenkeModel> Senken = new List<Z_AnlageSenkeModel>();
+
+            /// <summary>Die Senkenzeile eines Rangs (0-basiert); <c>null</c>, wenn es sie nicht gibt.</summary>
+            public Z_AnlageSenkeModel SenkeAufRang(int index)
+            {
+                return index >= 0 && index < Senken.Count ? Senken[index] : null;
+            }
 
             public bool IstWaermepumpe
             {
@@ -111,219 +123,16 @@ namespace WindowsFormsApplication1
         }
 
         // --- Fußzeilenschalter --------------------------------------------------------
-
-        /// <summary>
-        /// Schalter „Zweikanalige Kaskade" in der Fußzeile
-        /// (Paket 4; Konzept Kapitel 9 „Feature-Flag empfohlen").
-        ///
-        /// Er schreibt die Projekteinstellung <c>Tab_Einstellungen.Kaskade_Zweikanalig</c>,
-        /// und die ist seit Etappe 4b <b>wirksam</b>: <c>SimulationControl</c> verzweigt
-        /// darauf in die zweikanalige Kaskade mit herausgelöster Ladephase
-        /// (Reihenfolge-Invariante 6.3). Das ändert Ergebnisse — bei Projekten mit
-        /// Puffer-Senke deutlich, sonst nur im Rahmen der float-Rundung. Genau das sagt
-        /// der Mouseover-Hinweis; der frühere Text („merkt die Entscheidung nur vor")
-        /// stammt aus Etappe 4a und wäre jetzt irreführend.
-        ///
-        /// Kein Designer, keine .resx: wie die übrige Fußzeile rein programmatisch
-        /// (Konzept 7, „Layout im Code-Behind"). Der Text ist deutsch — die
-        /// durchgängige Lokalisierung des Simulationsbereichs ist Paket 9.
-        /// </summary>
-        private void InitKaskadeSchalter()
-        {
-            checkBox_KaskadeZweikanalig = new CheckBox();
-            checkBox_KaskadeZweikanalig.Name = "checkBox_KaskadeZweikanalig";
-            checkBox_KaskadeZweikanalig.Text = MyResource.Resource.SIM_KASKADE_SCHALTER;
-            checkBox_KaskadeZweikanalig.AutoSize = true;
-            checkBox_KaskadeZweikanalig.Enabled = false;   // erst mit bekanntem Projekt
-
-            // D2/D3: PLATZIERT wird der Schalter nicht mehr hier, sondern zusammen mit
-            // der übrigen Fußzeile in FusszeilePlatzieren. Vorher rechnete er seine
-            // Position aus groupBox_Uebersicht und btn_PufferVerwalten — beide gibt es in
-            // dieser Form nicht mehr (die Übersicht ist eine Kartenspalte, der
-            // Verwalten-Knopf steht in der Speicherspalte).
-
-            // Zeilenumbrüche der Ressource auf die Plattformform bringen. Der
-            // Ressourcenleser liefert sie zur Laufzeit bereits als CRLF (nachgemessen
-            // an den kompilierten .resources beider Sprachen) — das frühere
-            // Replace("\n", Environment.NewLine) machte daraus CR+CRLF, also eine
-            // Leerzeile je Umbruch. Details in Zeilenumbruch.
-            _uebersichtTip.SetToolTip(checkBox_KaskadeZweikanalig,
-                Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_KASKADE_TOOLTIP));
-
-            checkBox_KaskadeZweikanalig.CheckedChanged += checkBox_KaskadeZweikanalig_CheckedChanged;
-            this.Controls.Add(checkBox_KaskadeZweikanalig);
-            checkBox_KaskadeZweikanalig.BringToFront();
-        }
-
-        /// <summary>
-        /// Belegt den Schalter aus der Datenbank vor. Wird aus <c>SetControls</c>
-        /// gerufen, sobald das Projekt bekannt ist.
-        /// </summary>
-        private void AktualisiereKaskadeSchalter()
-        {
-            if (checkBox_KaskadeZweikanalig == null) return;
-
-            _kaskadeUiUpdate = true;
-            try
-            {
-                checkBox_KaskadeZweikanalig.Enabled = m_ID_Projekt > 0;
-                checkBox_KaskadeZweikanalig.Checked =
-                    m_ID_Projekt > 0 && KonfigurationCtrl.KaskadeZweikanaligLesen(m_ID_Projekt);
-            }
-            finally { _kaskadeUiUpdate = false; }
-        }
-
-        private void checkBox_KaskadeZweikanalig_CheckedChanged(object sender, EventArgs e)
-        {
-            if (_kaskadeUiUpdate || m_ID_Projekt <= 0) return;
-
-            bool wert = checkBox_KaskadeZweikanalig.Checked;
-
-            // ABWAHL-GUARD: Der Haken geht heraus, obwohl die Konfiguration Warmwasser
-            // und Heizwärme getrennt führt. Das ist erlaubt - aber nicht stillschweigend,
-            // denn danach fallen Brauchwasser-/Kombi-Senken und Quellbezüge aus der
-            // Rechnung, ohne dass irgendwo etwas fehlt.
-            if (!wert && KonfigurationCtrl.KaskadeNotwendig(m_ID_Projekt))
-            {
-                // Ohne Replace auf Environment.NewLine: Der Ressourcenleser liefert die
-                // Umbrüche dieser .resx bereits als CRLF (gemessen). Die anderswo übliche
-                // Umsetzung machte daraus CR+CRLF und damit eine Leerzeile zu viel.
-                DialogResult wahl = MessageBox.Show(
-                    MyResource.Resource.SIM_MSG_KASKADE_ABWAHL,
-                    MyResource.Resource.SIM_TITEL_KASKADE,
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-
-                if (wahl != DialogResult.Yes)
-                {
-                    _kaskadeUiUpdate = true;
-                    try { checkBox_KaskadeZweikanalig.Checked = true; }
-                    finally { _kaskadeUiUpdate = false; }
-                    return;
-                }
-
-                // Bewusste Entscheidung - sie wird respektiert (siehe Feldkommentar).
-                _kaskadeAutomatikZurueckgestellt = true;
-            }
-
-            // Sofort schreiben, nicht erst beim „Speichern": Der Schalter gehört nicht zu
-            // dem Einstellungssatz, den btn_Speichern_Click über KonfigurationCtrl.Update
-            // wegschreibt (dessen Spaltenliste bleibt unangetastet, siehe
-            // KonfigurationCtrl.KaskadeZweikanaligSchreiben).
-            if (KonfigurationCtrl.KaskadeZweikanaligSchreiben(m_ID_Projekt, wert))
-            {
-                ShowStatus(wert
-                    ? MyResource.Resource.SIM_STATUS_KASKADE_EIN
-                    : MyResource.Resource.SIM_STATUS_KASKADE_AUS,
-                    Color.DarkGreen);
-                return;
-            }
-
-            // Kein Einstellungssatz oder Spalte fehlt (Datenbank nicht auf Schemastand 6):
-            // Der Schalter geht zurück, damit die Anzeige nicht mehr behauptet als die
-            // Datenbank hergibt.
-            _kaskadeUiUpdate = true;
-            try { checkBox_KaskadeZweikanalig.Checked = !wert; }
-            finally { _kaskadeUiUpdate = false; }
-
-            ShowStatus(MyResource.Resource.SIM_STATUS_EINSTELLUNG_FEHLER, Color.DarkRed);
-        }
-
-        // --- Automatik der zweikanaligen Kaskade ---------------------------------------
         //
-        // GRUNDSATZ: Geschrieben wird ausschließlich bei einer DIALOG-AKTION des Anwenders
-        // (OK im Senken- oder Quellendialog, „Konfiguration speichern"), nie still zur
-        // Laufzeit und nie beim bloßen Öffnen eines Fensters. Der Lesepfad der Engine
-        // bleibt unangetastet: Sie liest weiter nur Tab_Einstellungen.Kaskade_Zweikanalig
-        // und kennt die Regel nicht. Ein Referenzlauf mit ausgeschaltetem Flag rechnet
-        // deshalb unverändert.
+        // PAKET A1: InitKaskadeSchalter, AktualisiereKaskadeSchalter, der Handler
+        // checkBox_KaskadeZweikanalig_CheckedChanged samt Abwahl-Guard sowie die beiden
+        // Automatiken KaskadeAutomatikNachAenderung und KaskadeAutomatikBeimSpeichern sind
+        // ERSATZLOS ENTFALLEN (Begründung beim Feld checkBox_Extrapolation).
         //
-        // ZWEI AUSPRÄGUNGEN, mit Absicht verschieden:
-        //   * Nach einer SENKEN- oder QUELLEN-Änderung hat der Anwender die Notwendigkeit
-        //     gerade selbst hergestellt. Hier wird eingeschaltet und gemeldet - eine
-        //     Rückfrage wäre eine Frage nach etwas, das er soeben entschieden hat.
-        //   * Beim SPEICHERN der Konfiguration kann derselbe Stand beliebig oft
-        //     vorbeikommen (Altbestand, SQL-Pflege, wiederholtes Speichern). Dort wird
-        //     GEFRAGT statt gesetzt. Das ist die robustere der beiden im Auftrag
-        //     genannten Varianten: Sie braucht keinen gemerkten Vergleichsstand in der
-        //     Datenbank - und ein gemerkter Stand wäre genau die Stelle, an der eine
-        //     bewusste Abwahl später doch wieder verloren ginge.
-        //
-        // Eine bewusste Abwahl (_kaskadeAutomatikZurueckgestellt) legt BEIDE Ausprägungen
-        // still, solange dieser Dialog offen ist. Ohne das wäre der Abwahl-Guard eine
-        // Frage ohne Folgen.
-
-        /// <summary>
-        /// Schaltet die zweikanalige Kaskade nach einer Senken- oder Quellenänderung ein,
-        /// wenn die Konfiguration sie jetzt braucht — mit einmaliger Meldung.
-        ///
-        /// Aufzurufen NACH dem Schreiben der Senke bzw. des Quellbezugs: Die Regel liest
-        /// den gespeicherten Stand.
-        /// </summary>
-        private void KaskadeAutomatikNachAenderung()
-        {
-            if (m_ID_Projekt <= 0 || _kaskadeAutomatikZurueckgestellt) return;
-            if (KonfigurationCtrl.KaskadeZweikanaligLesen(m_ID_Projekt)) return;
-            if (!KonfigurationCtrl.KaskadeNotwendig(m_ID_Projekt)) return;
-
-            if (!KonfigurationCtrl.KaskadeZweikanaligSchreiben(m_ID_Projekt, true))
-            {
-                // Kein Einstellungssatz oder Spalte fehlt (Datenbank nicht auf
-                // Schemastand 6) - dieselbe Behandlung wie beim Schalter: melden und
-                // nichts behaupten.
-                ShowStatus(MyResource.Resource.SIM_STATUS_EINSTELLUNG_FEHLER, Color.DarkRed);
-                return;
-            }
-
-            AktualisiereKaskadeSchalter();
-
-            // Umbrüche unverändert (Begründung im Abwahl-Guard).
-            MessageBox.Show(
-                MyResource.Resource.SIM_MSG_KASKADE_AUTOMATISCH,
-                MyResource.Resource.SIM_TITEL_KASKADE,
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        /// <summary>
-        /// Fragt beim Speichern der Konfiguration nach, wenn die Regel erfüllt ist und der
-        /// Haken fehlt (Altbestand, SQL-Pflege). „Nein" wird wie eine bewusste Abwahl
-        /// behandelt und in diesem Dialog nicht noch einmal gefragt
-        /// (<c>_kaskadeAutomatikZurueckgestellt</c>).
-        ///
-        /// <b>ABNAHMEBEFUND 3 — gefragt wird NUR, wenn die Kaskade noch aus ist.</b> Die
-        /// Vorbedingung stand schon immer als Lesezugriff da; sie ging trotzdem ins Leere,
-        /// weil der Delete/Insert-Zyklus in <c>btn_Speichern_Click</c> das Flag unmittelbar
-        /// vorher weggeschrieben hatte (dort behoben). Der Haken der Fußzeile kommt als
-        /// ZWEITER Riegel dazu: Er ist die Aussage, die der Anwender vor sich sieht — läuft
-        /// sie dem gespeicherten Stand davon, ist eine Rückfrage nach etwas, das laut
-        /// Bildschirm längst eingeschaltet ist, in jedem Fall falsch.
-        /// </summary>
-        private void KaskadeAutomatikBeimSpeichern()
-        {
-            if (m_ID_Projekt <= 0 || _kaskadeAutomatikZurueckgestellt) return;
-            if (KonfigurationCtrl.KaskadeZweikanaligLesen(m_ID_Projekt)) return;
-            if (checkBox_KaskadeZweikanalig != null && checkBox_KaskadeZweikanalig.Checked) return;
-            if (!KonfigurationCtrl.KaskadeNotwendig(m_ID_Projekt)) return;
-
-            DialogResult wahl = MessageBox.Show(
-                MyResource.Resource.SIM_MSG_KASKADE_FRAGE,
-                MyResource.Resource.SIM_TITEL_KASKADE,
-                MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
-            if (wahl != DialogResult.Yes)
-            {
-                _kaskadeAutomatikZurueckgestellt = true;
-                return;
-            }
-
-            if (!KonfigurationCtrl.KaskadeZweikanaligSchreiben(m_ID_Projekt, true))
-            {
-                ShowStatus(MyResource.Resource.SIM_STATUS_EINSTELLUNG_FEHLER, Color.DarkRed);
-                return;
-            }
-
-            AktualisiereKaskadeSchalter();
-            ShowStatus(MyResource.Resource.SIM_STATUS_KASKADE_EIN, Color.DarkGreen);
-        }
+        // Was daran hing und mitgegangen ist: die Rückfrage vor der Abwahl, die Meldung
+        // nach dem automatischen Einschalten und die Statuszeilen „Kaskade ein/aus". Der
+        // Übergangshinweis des Senkendialogs (Form_Waermesenke) ist aus demselben Grund
+        // entfallen.
 
         /// <summary>
         /// Schalter „Extrapolation der WP-Kennlinie erlauben" in der Fußzeile
@@ -339,7 +148,7 @@ namespace WindowsFormsApplication1
         /// Extrapolation ausschließen will, nimmt den Haken heraus; die Simulation bricht
         /// dann mit einer sprechenden Meldung ab, statt still zu rechnen.
         ///
-        /// Aufbau exakt wie <see cref="InitKaskadeSchalter"/>: programmatisch, kein
+        /// Aufbau programmatisch, kein
         /// Designer, keine .resx, deutscher Text (die durchgängige Lokalisierung des
         /// Simulationsbereichs ist Paket 9).
         /// </summary>
@@ -360,15 +169,15 @@ namespace WindowsFormsApplication1
             checkBox_Extrapolation.BringToFront();
 
             // D2/D3: ExtrapolationSchalterPlatzieren ist ENTFALLEN. Die Methode setzte
-            // den Schalter eine Zeile unter den Kaskadenschalter und vergrößerte das
-            // Formular anschließend um die Pixel, die zur Knopfzeile fehlten (Befund
-            // N13a) — die letzte der vier Selbstkorrekturen des alten Layouts. Beide
-            // Schalter stehen jetzt nebeneinander in einer Fußzeile mit fester Höhe
-            // (FusszeilePlatzieren); eine Kollision mit der Knopfzeile kann dort nicht
-            // mehr entstehen, weil Schalter und Knöpfe getrennte Zeilen haben.
+            // den Schalter eine Zeile tiefer und vergrößerte das Formular anschließend um
+            // die Pixel, die zur Knopfzeile fehlten (Befund N13a) — die letzte der vier
+            // Selbstkorrekturen des alten Layouts. Der Schalter steht jetzt in einer
+            // Fußzeile mit fester Höhe (FusszeilePlatzieren); eine Kollision mit der
+            // Knopfzeile kann dort nicht mehr entstehen, weil Schalter und Knöpfe
+            // getrennte Zeilen haben.
         }
 
-        /// <summary>Belegt den Schalter aus der Datenbank vor (Gegenstück zu <see cref="AktualisiereKaskadeSchalter"/>).</summary>
+        /// <summary>Belegt den Schalter aus der Datenbank vor, sobald das Projekt bekannt ist.</summary>
         private void AktualisiereExtrapolationSchalter()
         {
             if (checkBox_Extrapolation == null) return;
@@ -391,9 +200,8 @@ namespace WindowsFormsApplication1
 
             bool wert = checkBox_Extrapolation.Checked;
 
-            // Sofort schreiben, aus demselben Grund wie beim Kaskadenschalter: Die
-            // Einstellung gehört nicht zu dem Satz, den btn_Speichern_Click über
-            // KonfigurationCtrl.Update wegschreibt.
+            // Sofort schreiben: Die Einstellung gehört nicht zu dem Satz, den
+            // btn_Speichern_Click über KonfigurationCtrl.Update wegschreibt.
             if (KonfigurationCtrl.ExtrapolationErlaubtSchreiben(m_ID_Projekt, wert))
             {
                 ShowStatus(wert
@@ -448,19 +256,15 @@ namespace WindowsFormsApplication1
 
             // Die Verwaltung schreibt sofort; deshalb unabhängig vom DialogResult neu
             // aufbauen. Ein entfernter Puffer kann außerdem Senken der Anlagen betreffen
-            // (ReferenzenLoesen), und die Alt-Zuordnung wird mit ihm gelöscht.
+            // (ReferenzenLoesen).
             //
-            // ZUERST die Übergangsbrücke, DANN neu laden — sonst schreibt „Speichern" die
-            // in der Verwaltung geänderten Betriebstemperaturen still wieder weg:
-            // btn_Speichern_Click überträgt die Temperaturen der führenden WP-Zuordnung
-            // über PufferSpCtrl.SetTemperaturen an den Puffer (Etappe 4, „führende
-            // Ablage"). Stünde in der unsichtbaren Alt-Zuordnung noch der alte Vorlauf,
-            // ginge die soeben eingegebene Änderung beim nächsten Speichern verloren.
-            // Der UPDATE-Zweig von WpSenkeSpiegeln führt Vorlauf/Rücklauf der Zuordnung
-            // dem Puffer nach; erst danach ist _zuordnungen wieder die Wahrheit.
-            ZuordnungBrueckeAnwenden();
-            ZuordnungenLaden();
-            RefreshZuordnungAnzeige();
+            // PAKET A1: Der Umweg über die Übergangsbrücke ist entfallen. Er sorgte
+            // dafür, dass „Speichern" die hier geänderten Betriebstemperaturen nicht
+            // wieder mit dem Stand der Alt-Zuordnung überschrieb — es gibt weder die
+            // Alt-Zuordnung noch die Temperatur-Nachführung beim Speichern.
+            // Tab_Pufferspeicher ist die einzige Ablage, und dieser Dialog hat gerade
+            // hineingeschrieben.
+            AktualisiereErzeugerUebersicht();
             AktualisiereSpeicherKarten();
         }
 
@@ -483,25 +287,26 @@ namespace WindowsFormsApplication1
             }
             if (typ == 0 || m_ID_Projekt == 0) return anlagen;
 
-            // Konzept 4.1: Die Abfrage führt die neuen WS_*-Spalten mit, damit die
-            // Übersicht Senke und Zweitsenke ohne zusätzliche Abfrage je Zeile anzeigt.
+            // PAKET A1: Die WS_*-Spalten sind aus der Abfrage heraus. Die Senken kommen
+            // aus Z_AnlageSenke - EINE Abfrage für das ganze Projekt, unten je Anlage
+            // zugeteilt (SenkenJeAnlage).
             //
-            // D2: dazu Vorlauf und Rücklauf der ANLAGE für den Temperaturchip und die
+            // D2: Vorlauf und Rücklauf der ANLAGE für den Temperaturchip und die
             // Warnregel aus Konzept Abschnitt 5. ACHTUNG: Die Rücklaufspalte heißt in
             // Tab_Energieanlagen MIT Umlaut (an der Datenbank verifiziert, Befund B0-4,
             // siehe ProjektPuffer.SQL_SYSTEM_RUECKLAUF) - anders als in
             // Tab_Pufferspeicher. Alias auf den umlautfreien Namen, damit der Lesecode
             // unten nicht von der Schreibweise abhängt.
             System.Data.DataTable dt = DataRepository.GetDataTable(
-                "SELECT a.ID, a.Bezeichner, a.Prioritaet, a.WQ_Typ, a.WQ_Temp, a.WS_Typ, a.BM_Typ, " +
-                "       a.WS_Ziel, a.WS_ID_Puffer, a.WS_Ladeprio, a.WS_Ladegrenze, a.WS_Ladeprio_PV, " +
-                "       a.WS_Ziel2, a.WS_ID_Puffer2, a.WS_Ladeprio2, a.WS_Ladegrenze2, " +
+                "SELECT a.ID, a.Bezeichner, a.Prioritaet, a.WQ_Typ, a.WQ_Temp, a.BM_Typ, " +
                 "       a.Vorlauf, a.[Rücklauf] AS Ruecklauf, " +
                 "       w.Typ AS WPTyp " +
                 "FROM Tab_Energieanlagen AS a LEFT JOIN Tab_WP AS w ON a.ID_WP = w.ID " +
                 "WHERE a.ID_Projekt=" + m_ID_Projekt + " AND a.ID_Type=" + typ +
                 " ORDER BY a.Prioritaet, a.ID");
             if (dt == null) return anlagen;
+
+            Dictionary<int, List<Z_AnlageSenkeModel>> senken = SenkenJeAnlage();
 
             foreach (System.Data.DataRow r in dt.Rows)
             {
@@ -515,13 +320,64 @@ namespace WindowsFormsApplication1
                 if (r["WPTyp"] != DBNull.Value) info.WpTyp = r["WPTyp"].ToString();
                 if (r["WQ_Typ"] != DBNull.Value) info.WQ_Typ = r["WQ_Typ"].ToString();
                 if (r["WQ_Temp"] != DBNull.Value) info.WQ_Temp = Convert.ToDouble(r["WQ_Temp"]);
-                if (r["WS_Typ"] != DBNull.Value) info.WS_Typ = r["WS_Typ"].ToString();
                 if (r["BM_Typ"] != DBNull.Value) info.BM_Typ = r["BM_Typ"].ToString();
-                info.Senke = WaermesenkeClass.AusDatenzeile(r);
+
+                List<Z_AnlageSenkeModel> kette;
+                info.Senken = senken.TryGetValue(info.ID, out kette) && kette.Count > 0
+                    ? kette : VorbelegungRang1(info.ID);
+
                 if (!string.IsNullOrEmpty(info.Bezeichner)) anlagen.Add(info);
             }
 
             return anlagen;
+        }
+
+        /// <summary>
+        /// Die Senkenzeilen ALLER Anlagen des Projekts, nach Anlagen-ID gebündelt und in
+        /// Rangfolge — EINE Abfrage auf <c>Z_AnlageSenke</c> (Paket A1). Nie <c>null</c>.
+        ///
+        /// Fehlt die Tabelle (Migration nicht durchgekommen), bleibt die Sammlung leer;
+        /// der Aufrufer setzt dann die Rang-1-Vorbelegung. Dass dieser Dialog auf einem
+        /// solchen Schema überhaupt aufgeht, verhindert bereits
+        /// <c>SchemaMigration.SimulationGesperrt</c> in <c>SetControls</c>.
+        /// </summary>
+        private Dictionary<int, List<Z_AnlageSenkeModel>> SenkenJeAnlage()
+        {
+            Dictionary<int, List<Z_AnlageSenkeModel>> map =
+                new Dictionary<int, List<Z_AnlageSenkeModel>>();
+            if (m_ID_Projekt <= 0 || !Z_AnlageSenkeCtrl.SpalteVorhanden()) return map;
+
+            foreach (Z_AnlageSenkeModel z in new Z_AnlageSenkeCtrl().LesenJeProjekt(m_ID_Projekt))
+            {
+                if (z == null || z.ID_Anlage <= 0) continue;
+
+                List<Z_AnlageSenkeModel> kette;
+                if (!map.TryGetValue(z.ID_Anlage, out kette))
+                {
+                    kette = new List<Z_AnlageSenkeModel>();
+                    map[z.ID_Anlage] = kette;
+                }
+                kette.Add(z);
+            }
+
+            return map;
+        }
+
+        /// <summary>
+        /// Die RANG-1-INVARIANTE als Liste (Konzept 5.1): <c>Heizkreis/Beides</c> — genau
+        /// das, was die Engine für eine Anlage ohne Senkenzeile rechnet.
+        /// </summary>
+        private static List<Z_AnlageSenkeModel> VorbelegungRang1(int idAnlage)
+        {
+            List<Z_AnlageSenkeModel> kette = new List<Z_AnlageSenkeModel>();
+            kette.Add(new Z_AnlageSenkeModel
+            {
+                ID_Anlage = idAnlage,
+                Rang = 1,
+                Ziel = DbWerte.WS_ZIEL_HEIZKREIS,
+                Bedarfsart = WaermequelleClass.SENKE_BEIDES
+            });
+            return kette;
         }
 
         /// <summary>
@@ -539,19 +395,21 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Kompakte Anzeige der Hauptsenke (Konzept 4.1): Heizkreis mit Bedarfsart oder
-        /// „Puffer Heizung: &lt;Name&gt;". Ersetzt inhaltlich die frühere, rein
-        /// WP-spezifische Senkenspalte, die nur die Bedarfsart zeigte.
+        /// Kompakte Anzeige der Senke auf Rang 1 (Konzept 4.1): Heizkreis mit Bedarfsart
+        /// oder „Puffer Heizung: &lt;Name&gt;".
+        ///
+        /// PAKET A1: gelesen aus der Senkenliste statt aus den Altspalten — nur so stehen
+        /// auch die beiden Prozess-Ziele richtig da.
         /// </summary>
         private string WaermesenkeAnzeige(AnlagenInfo a)
         {
-            return WaermesenkeClass.HauptsenkeAnzeige(a.Senke);
+            return Form_Waermesenke.SenkeAnzeige(a.SenkeAufRang(0));
         }
 
-        /// <summary>Kompakte Anzeige der Zweitsenke; „–" ohne Zweitsenke (Konzept 4.1).</summary>
+        /// <summary>Kompakte Anzeige der Senke auf Rang 2; „–" ohne zweite Senke (Konzept 4.1).</summary>
         private string ZweitsenkeAnzeige(AnlagenInfo a)
         {
-            return WaermesenkeClass.ZweitsenkeAnzeige(a.Senke);
+            return Form_Waermesenke.SenkeAnzeige(a.SenkeAufRang(1));
         }
 
         // --- Klimadaten für den Erdreichdialog ---------------------------------------
@@ -767,15 +625,19 @@ namespace WindowsFormsApplication1
         // --- Senkendialog (Konzept 4.2) -----------------------------------------------
 
         /// <summary>
-        /// Öffnet den Senkendialog <see cref="Form_Waermesenke"/> und schreibt das
-        /// Ergebnis über <see cref="WaermesenkeClass.Schreiben"/> an die Anlage.
+        /// Öffnet den Senkendialog <see cref="Form_Waermesenke"/>.
         ///
-        /// Anschließend läuft die ÜBERGANGSBRÜCKE (Konzept 4.4, Etappe A): Die Engine
-        /// liest den Wärmepumpen-Pufferspeicher bis Paket 4 aus <c>Z_ProjektPufferSp</c>.
-        /// <see cref="WaermesenkeClass.WpSenkeSpiegeln"/> hält diese Alt-Zuordnung mit
-        /// dem neuen Modell im Gleichstand; danach wird <c>_zuordnungen</c> neu geladen,
-        /// damit der Delete/Insert-Zyklus beim nächsten „Speichern" den gerade erzeugten
-        /// Stand nicht wieder wegschreibt. Mit Paket 4 entfallen beide Schritte.
+        /// <para><b>PAKET A1 — der Dialog speichert selbst.</b> Bis dahin nahm der
+        /// Aufrufer die auf zwei Plätze gespiegelte Fassung entgegen und schrieb sie über
+        /// <c>WaermesenkeClass.Schreiben</c> in die Altspalten <c>WS_*</c>; anschließend
+        /// hielt die Übergangsbrücke <c>WpSenkeSpiegeln</c> noch die Alt-Zuordnung
+        /// <c>Z_ProjektPufferSp</c> nach. Beides ist entfallen: Die Senkenliste und die
+        /// Verbundmitglieder gehen in <c>Form_Waermesenke.ListeSpeichern</c> heraus, und
+        /// zwar vollständig. Hier bleibt das Öffnen, die Statusmeldung und der
+        /// Neuaufbau der Anzeige.</para>
+        ///
+        /// Auch nach Abbruch wird neu aufgebaut: Der Dialog kann über „Pufferspeicher
+        /// anlegen…" einen neuen Projekt-Puffer erzeugt haben.
         /// </summary>
         private void WaermesenkeBearbeiten(AnlagenInfo info)
         {
@@ -785,56 +647,31 @@ namespace WindowsFormsApplication1
             frm.ID_Type = info.ID_Type;
             frm.AnlagenName = info.Bezeichner;
             frm.BM_Typ = info.BM_Typ;
-            frm.Daten = WaermesenkeClass.Lesen(info.ID);
-            // Der Dialog unterdrückt seinen Übergangshinweis nur, solange die Automatik
-            // die Kaskade wirklich einschalten wird - nach einer bewussten Abwahl bleibt
-            // der Hinweis richtig und muss stehen bleiben.
-            frm.KaskadeAutomatikAktiv = !_kaskadeAutomatikZurueckgestellt;
+            frm.VerbundMitglieder = WaermesenkeClass.VerbundLesen(info.ID);
             frm.SetControls();
 
             DialogResult ergebnis = frm.ShowDialog(this);
 
             if (ergebnis == DialogResult.OK)
             {
-                if (!WaermesenkeClass.Schreiben(info.ID, frm.Daten))
+                if (!frm.SpeichernOk)
+                {
                     ShowStatus(MyResource.Resource.SIM_STATUS_SENKE_FEHLER, Color.Firebrick);
+                }
                 else
+                {
+                    Z_AnlageSenkeModel rang1 =
+                        frm.Senkenliste.Count > 0 ? frm.Senkenliste[0] : null;
+
                     ShowStatus(string.Format(MyResource.Resource.SIM_STATUS_SENKE_GESPEICHERT,
-                                             WaermesenkeClass.HauptsenkeAnzeige(frm.Daten)),
+                                             Form_Waermesenke.SenkeAnzeige(rang1)),
                                Color.ForestGreen);
-
-                ZuordnungBrueckeAnwenden();
-
-                // Automatik NACH dem Schreiben: Erst jetzt steht die Senke, an der die
-                // Notwendigkeitsregel hängt.
-                KaskadeAutomatikNachAenderung();
+                }
             }
 
-            // Auch nach Abbruch neu aufbauen: der Dialog kann über
-            // "Pufferspeicher anlegen..." einen neuen Projekt-Puffer erzeugt haben.
-            ZuordnungenLaden();
-            RefreshZuordnungAnzeige();
+            AktualisiereErzeugerUebersicht();
         }
 
-        /// <summary>
-        /// ÜBERGANGSBRÜCKE auf das Altmodell (Konzept 4.4, Etappe A) — ENTFÄLLT MIT
-        /// PAKET 4.
-        ///
-        /// Solange <c>SimulationControl.Do_Simulation</c> den Wärmepumpen-Speicher aus
-        /// <c>Z_ProjektPufferSp</c> holt, muss eine im Senkendialog gesetzte Puffer-Senke
-        /// dort ankommen — sonst bliebe die Eingabe bis Paket 4 wirkungslos, und der
-        /// Anwender sähe eine Einstellung ohne Ergebnis.
-        ///
-        /// Die Regel steht in <see cref="WaermesenkeClass.WpSenkeSpiegeln"/>:
-        /// Hauptsenke <c>PufferHeizung</c> einer WP ⇒ genau eine Zuordnungszeile
-        /// <c>Erzeuger = 'Wärmepumpe'</c> auf diesen Puffer; Senke <c>Heizkreis</c> ⇒
-        /// Zuordnungszeile entfernen.
-        /// </summary>
-        private void ZuordnungBrueckeAnwenden()
-        {
-            if (m_ID_Projekt <= 0) return;
-            WaermesenkeClass.WpSenkeSpiegeln(m_ID_Projekt);
-        }
 
         // --- Wärmequellen-Auswahl (Bestand) -------------------------------------------
 
@@ -1010,11 +847,11 @@ namespace WindowsFormsApplication1
 
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_Typ", typNeu);
 
-                        // Ein AUFGELÖSTER Quellbezug (Fremdschlüssel, nicht der
-                        // Alt-Bezeichner) entsteht nur im zweikanaligen Weg - deshalb hier
-                        // dieselbe Automatik wie nach einer Senkenänderung. Ohne gesetzte
-                        // ID gibt es keinen Quellbezug und nichts zu entscheiden.
-                        if (frmQuelle.ID_Puffer > 0) KaskadeAutomatikNachAenderung();
+                        // PAKET A1: Hier stand die Kaskaden-Automatik. Sie schaltete den
+                        // zweikanaligen Weg ein, wenn ein aufgelöster Quellbezug entstand -
+                        // den gibt es nur dort. Mit dem Abriss des einkanaligen Wegs
+                        // (Schritt 51) rechnet jeder Lauf so; es gibt nichts mehr zu
+                        // entscheiden.
                         break;
                     }
 

@@ -211,7 +211,19 @@ namespace WindowsFormsApplication1
                 case TYP_PROFIL: return MyResource.Resource.SIMQ_QUELLE_QUELLPROFIL;
                 case TYP_CSV: return MyResource.Resource.SIMQ_QUELLE_CSVPROFIL;
                 case TYP_ERDREICH: return ErdreichAnzeige(idAnlage);
-                default: return MyResource.Resource.SIMQ_QUELLE_AUSSENLUFT;
+
+                default:
+                    // Sole-/Wasser-Wasser-WP ohne konfigurierte Quelle (WQ_Typ leer):
+                    // "Aussenluft" waere hier ein Kategorienfehler in der Anzeige — die
+                    // Bauart kann physisch keine Luftquelle haben; gerechnet wird bis
+                    // Paket B1 zwar ersatzweise mit der Aussenluft, aber der Chip sagt
+                    // jetzt ehrlich, dass die Wahl aussteht (Nutzerbefund 27.08.2026,
+                    // Warnkriterium QUELLE_FEHLT meldet dasselbe auf Karte und im
+                    // Laufprotokoll). Ein UNBEKANNTER Altwert bleibt dagegen bei der
+                    // bisherigen Aussenluft-Anzeige.
+                    if (string.IsNullOrEmpty(wqTyp))
+                        return MyResource.Resource.SIMQ_QUELLE_FEHLT;
+                    return MyResource.Resource.SIMQ_QUELLE_AUSSENLUFT;
             }
         }
 
@@ -342,8 +354,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Legt eine Spalte in einer beliebigen Tabelle an, falls sie fehlt
-        /// (still, ohne Fehlerdialoge). Wird u. a. für die Speicherregelung in
-        /// Z_ProjektPufferSp verwendet.
+        /// (still, ohne Fehlerdialoge).
         /// </summary>
         public static void SpalteSicherstellen(string tabelle, string spalte, string typDefinition)
         {
@@ -576,7 +587,11 @@ namespace WindowsFormsApplication1
         /// Wärmepumpe. Fallback ist immer die Außentemperatur (aussentemp).
         /// </summary>
         /// <param name="idEnergieanlage">Tab_Energieanlagen.ID der WP</param>
-        /// <param name="idProjekt">Projekt-ID (für Pufferspeicher-Zuordnung)</param>
+        /// <param name="idProjekt">
+        /// Projekt-ID. SEIT PAKET A1 UNGENUTZT: Sie diente den beiden entfallenen
+        /// Rückfallstufen über die Alt-Zuordnung <c>Z_ProjektPufferSp</c>. Der Parameter
+        /// bleibt, um die Signatur dieser öffentlichen Methode nicht zu ändern.
+        /// </param>
         /// <param name="wpTyp">WP-Typ aus Tab_WP ("Luft-Wasser", "Sole-Wasser", "Wasser-Wasser")</param>
         /// <param name="aussentemp">Außentemperatur der Klimaregion (8760 Werte)</param>
         public static float[] Quelltemperatur(int idEnergieanlage, int idProjekt, string wpTyp, float[] aussentemp)
@@ -606,42 +621,23 @@ namespace WindowsFormsApplication1
                             object v = WertLesenStill(idEnergieanlage, "WQ_Temp");
                             if (v != null) return KonstantesProfil(Convert.ToSingle(v));
 
-                            // Fallback: mittlere Temperatur (Vorlauf + Rücklauf) / 2.
-                            // Seit Etappe 4 in drei Stufen (Konzept 5.4 kündigt genau
-                            // diese Umstellung an) - führend ist immer der SPEICHER:
+                            // Fallback: mittlere Temperatur (Vorlauf + Rücklauf) / 2 des
+                            // als Quelle GEWÄHLTEN Puffers (WQ_ID_Puffer, von
+                            // Migrationsregel R3 aus dem Bezeichner aufgelöst).
                             //
-                            //   1. der als Quelle gewählte Puffer (WQ_ID_Puffer, von
-                            //      Migrationsregel R3 aus dem Bezeichner aufgelöst),
-                            //   2. der Puffer der Wärmepumpen-Zuordnung,
-                            //   3. Altdaten: die Zuordnungszeile selbst.
-                            //
-                            // Regressionsneutral: R1 hat die Werte der Zuordnung an
-                            // genau den Puffer aus Stufe 2 geschrieben - wo Stufe 1
-                            // leer ist, liefert Stufe 2 dieselben Zahlen wie Stufe 3.
+                            // PAKET A1: Darunter standen zwei weitere Stufen, die beide
+                            // die Alt-Zuordnung Z_ProjektPufferSp befragten (der Puffer
+                            // der Wärmepumpen-Zuordnung, danach das Temperaturpaar der
+                            // Zuordnungszeile selbst). Beide sind mit der Stilllegung der
+                            // Zuordnung ersatzlos entfallen; ohne gewählten Quellpuffer
+                            // gilt wie bisher die Außentemperatur.
                             int vorlauf, ruecklauf;
 
                             int idQuellPuffer = ZahlOderNull(WertLesenStill(idEnergieanlage, "WQ_ID_Puffer"));
                             if (PufferSpCtrl.TemperaturenLesen(idQuellPuffer, out vorlauf, out ruecklauf))
                                 return KonstantesProfil((vorlauf + ruecklauf) / 2f);
 
-                            int idZuordnungsPuffer = ZahlOderNull(SkalarStill(
-                                "SELECT TOP 1 ID_Pufferspeicher FROM Z_ProjektPufferSp " +
-                                "WHERE ID_Projekt=" + idProjekt +
-                                " AND Erzeuger='" + DbWerte.ERZEUGER_WAERMEPUMPE + "' ORDER BY Prioritaet"));
-                            if (PufferSpCtrl.TemperaturenLesen(idZuordnungsPuffer, out vorlauf, out ruecklauf))
-                                return KonstantesProfil((vorlauf + ruecklauf) / 2f);
-
-                            // Altdaten: mittlere Temperatur der Zuordnung (still, Paket 2)
-                            object vor = SkalarStill(
-                                "SELECT Vorlauf FROM Z_ProjektPufferSp WHERE ID_Projekt=" + idProjekt +
-                                " AND Erzeuger='" + DbWerte.ERZEUGER_WAERMEPUMPE + "' ORDER BY Prioritaet");
-                            object rue = SkalarStill(
-                                "SELECT Ruecklauf FROM Z_ProjektPufferSp WHERE ID_Projekt=" + idProjekt +
-                                " AND Erzeuger='" + DbWerte.ERZEUGER_WAERMEPUMPE + "' ORDER BY Prioritaet");
-                            if (vor == null || vor == DBNull.Value || rue == null || rue == DBNull.Value)
-                                return aussentemp;
-                            float mittel = (Convert.ToSingle(vor) + Convert.ToSingle(rue)) / 2f;
-                            return KonstantesProfil(mittel);
+                            return aussentemp;
                         }
 
                     case TYP_PROFIL:

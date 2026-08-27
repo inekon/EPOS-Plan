@@ -50,6 +50,27 @@ namespace WindowsFormsApplication1
         public const string TAB_KLIMAREGION = "Tab_Klimaregion";
         public const string TAB_EINSTELLUNGEN = "Tab_Einstellungen";
         public const string TAB_APPLIKATION = "Tab_Applikation";
+
+        /// <summary>
+        /// Die ALT-ZUORDNUNG Projekt ↔ Pufferspeicher — <b>STILLGELEGT ab Schritt 51
+        /// (Paket A1, Konzept Brauchwasser/Heizung/Pufferspeicher § 9, Leitentscheidung
+        /// L1)</b>.
+        ///
+        /// Sie war bis dahin der Senkenspeicher-Weg des einkanaligen Altpfads und
+        /// gleichzeitig die MITTLERE Stufe der Temperatur-Vorrangkette. Mit Paket A1
+        /// entfallen beide Rollen: Die Senken stehen in
+        /// <see cref="Z_ANLAGESENKE"/> (Schritt 50), und die Betriebstemperaturen hat
+        /// Schritt 51 einmalig an die führende Ablage
+        /// <c>Tab_Pufferspeicher.Vorlauf</c>/<c>Ruecklauf</c> übernommen
+        /// (<see cref="SchemaMigration.SCHRITT_51_ALTPFAD_STILLLEGUNG"/>).
+        ///
+        /// <b>Die Tabelle bleibt stehen</b> — stillgelegt heißt: kein Leser und kein
+        /// Schreiber im Code mehr, Muster <c>WQ_Puffer</c> und
+        /// <c>Tab_Pufferspeicher.Verwendung</c>. Ein Löschen wäre die eine Änderung, die
+        /// sich nicht zurücknehmen ließe, und bleibt dem Aufräumpaket vorbehalten. Die
+        /// Konstante wird weiterhin gebraucht: von der Migration selbst und von
+        /// <see cref="Bestand"/>.
+        /// </summary>
         public const string Z_PROJEKTPUFFERSP = "Z_ProjektPufferSp";
         public const string Z_PROJEKTWAERMEBEDARF = "Z_ProjektWaermebedarf";
         public const string TAB_ERGEBNISPUFFERSPEICHER = "Tab_ErgebnisPufferspeicher";
@@ -215,6 +236,19 @@ namespace WindowsFormsApplication1
         /// Name des Feature-Flags für die zweikanalige Kaskade (Konzept Kapitel 9,
         /// „Feature-Flag empfohlen"). EINE Wahrheit für Migration, Leseseite
         /// (<c>KonfigurationCtrl.ReadSingle</c>), Schreibseite und Oberfläche.
+        ///
+        /// <b>STILLGELEGT ab Schritt 51 (Paket A1, Konzept
+        /// Brauchwasser/Heizung/Pufferspeicher § 9, Leitentscheidung L1):</b> Der
+        /// einkanalige Altpfad entfällt ersatzlos, die mehrkanalige Stundenschleife ist
+        /// der einzige Rechenweg — das Flag wird nicht mehr GELESEN, und es gibt keine
+        /// Weiche mehr, die es auswerten könnte.
+        ///
+        /// <b>Die Spalte bleibt trotzdem stehen und wird auf WAHR gesetzt</b>
+        /// (<see cref="SchemaMigration.SCHRITT_51_ALTPFAD_STILLLEGUNG"/>, Teil 51b): Wer
+        /// eine migrierte Datenbank mit einer älteren Programmfassung öffnet, bekommt
+        /// damit den Weg, auf dem sie zuletzt gerechnet hat, statt einer stillen Rückkehr
+        /// in den Altpfad. Ein Entfernen der Spalte verböte sich ohnehin — sie steht am
+        /// Ende der ORDINAL gelesenen <c>Tab_Einstellungen</c> (siehe unten).
         /// </summary>
         public const string SPALTE_KASKADE_ZWEIKANALIG = "Kaskade_Zweikanalig";
 

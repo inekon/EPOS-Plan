@@ -159,9 +159,6 @@
   <data name="PSP_KARTE_TEMP_SYSTEM" xml:space="preserve">
     <value>project system default</value>
   </data>
-  <data name="PSP_KARTE_TEMP_ZUORDNUNG" xml:space="preserve">
-    <value>from the assignment row</value>
-  </data>
   <data name="PSP_KARTE_TIP_BEARBEITEN" xml:space="preserve">
     <value>Edit buffer storage (open management)</value>
   </data>
@@ -809,25 +806,8 @@ Really delete it from the master data?</value>
   <data name="PSP_MELDUNG_SPEICHERN_FEHLER" xml:space="preserve">
     <value>Error saving the record!</value>
   </data>
-  <data name="PSP_MELDUNG_VERWENDUNGSWECHSEL" xml:space="preserve">
-    <value>The use of the buffer storage "{0}" is being changed from "{1}" to "{2}".
-
-The storage is assigned to:
-  • {3}
-
-These assignments will then no longer match the use and must be set again in the heat sink dialogue.
-Change the use anyway?</value>
-  </data>
   <data name="PSP_MELDUNG_WIRKLICH_LOESCHEN" xml:space="preserve">
     <value>Really delete {0} ?</value>
-  </data>
-  <data name="PSP_MSG_SCHWELLEN_BEREICH" xml:space="preserve">
-    <value>The values must be between 0 and 100 % and
-the switch-on threshold must be smaller than the switch-off threshold!</value>
-  </data>
-  <data name="PSP_MSG_WP_OHNE_SPEICHER" xml:space="preserve">
-    <value>No buffer storage is assigned to the heat pump.
-The assignment is made in the 'Buffer storage assignment' table.</value>
   </data>
   <data name="PSP_MSG_ZAHLENWERTE" xml:space="preserve">
     <value>Please enter valid numeric values!</value>
@@ -883,40 +863,14 @@ The assignment is made in the 'Buffer storage assignment' table.</value>
   <data name="PSP_SPALTE_ROLLE" xml:space="preserve">
     <value>Role</value>
   </data>
-  <data name="PSP_SPALTE_RUECKLAUF" xml:space="preserve">
-    <value>Return [°C]</value>
-  </data>
   <data name="PSP_SPALTE_VERLUSTE" xml:space="preserve">
     <value>Losses [kWh/a]</value>
   </data>
   <data name="PSP_SPALTE_VOLLZYKLEN" xml:space="preserve">
     <value>Full cycles</value>
   </data>
-  <data name="PSP_SPALTE_VORLAUF" xml:space="preserve">
-    <value>Flow [°C]</value>
-  </data>
-  <data name="PSP_SPALTE_WAERMEERZEUGER" xml:space="preserve">
-    <value>Heat generator</value>
-  </data>
   <data name="PSP_SPALTE_ZUORDNUNG_ALT" xml:space="preserve">
     <value>Assignment (old)</value>
-  </data>
-  <data name="PSP_SPEICHERREGELUNG_ABSCHALT" xml:space="preserve">
-    <value>Switch-off threshold [% of capacity]:</value>
-  </data>
-  <data name="PSP_SPEICHERREGELUNG_EINSCHALT" xml:space="preserve">
-    <value>Switch-on threshold [% of capacity]:</value>
-  </data>
-  <data name="PSP_SPEICHERREGELUNG_FENSTERTITEL" xml:space="preserve">
-    <value>Storage control - {0}</value>
-  </data>
-  <data name="PSP_SPEICHERREGELUNG_HINWEIS" xml:space="preserve">
-    <value>If the storage charge level falls below the switch-on threshold, the heat pump starts up and charges through to the switch-off threshold. In between it stays off and the demand is covered from the storage.
-
-The switch-off threshold should be below 100 %, because the standby losses continuously lower the charge level.</value>
-  </data>
-  <data name="PSP_SPEICHERREGELUNG_KOPF" xml:space="preserve">
-    <value>Switch-on and switch-off threshold of the buffer storage</value>
   </data>
   <data name="PSP_STATUS_AENDERUNGEN_UEBERNOMMEN" xml:space="preserve">
     <value>Changes applied.</value>
@@ -927,46 +881,12 @@ The switch-off threshold should be below 100 %, because the standby losses conti
   <data name="PSP_STATUS_ENTFERNT" xml:space="preserve">
     <value>Buffer storage removed.</value>
   </data>
-  <data name="PSP_STATUS_SPEICHERREGELUNG_GESPEICHERT" xml:space="preserve">
-    <value>✔ Storage control saved ({0} % / {1} %)</value>
-  </data>
-  <data name="PSP_STATUS_ZUORDNUNG_FEHLGESCHLAGEN" xml:space="preserve">
-    <value>⚠ {0} buffer storage assignment(s) could not be saved</value>
-  </data>
   <data name="PSP_TIP_ZUORDNUNG_ALTMODELL" xml:space="preserve">
     <value>Assignment in the old model (double-click opens the storage control)
 This column shows the assignment from Z_ProjektPufferSp, which the
 simulation still evaluates until the engine is converted. It is
 updated automatically from the heat sink of the heat pump.
 Switch-on and switch-off threshold in % of the usable capacity.</value>
-  </data>
-  <data name="PSP_TIP_ZUORDNUNG_ERZEUGER" xml:space="preserve">
-    <value>Heat generator to which this buffer storage is assigned.
-Assignments are created via 'Add...' and removed via
-'Delete'.</value>
-  </data>
-  <data name="PSP_TIP_ZUORDNUNG_RUECKLAUF" xml:space="preserve">
-    <value>Return temperature [°C] (double-click to change)
-Lower temperature of the storage. The larger the temperature spread to
-the flow, the more energy the storage can take up.</value>
-  </data>
-  <data name="PSP_TIP_ZUORDNUNG_SPEICHER" xml:space="preserve">
-    <value>Buffer storage (double-click to change)
-Selection from the master data. Volume and standby losses
-come from the storage record and, together with
-flow and return, determine the usable capacity.</value>
-  </data>
-  <data name="PSP_TIP_ZUORDNUNG_STAMMDATEN" xml:space="preserve">
-    <value>Double-click opens the buffer storage master data (view only).</value>
-  </data>
-  <data name="PSP_TIP_ZUORDNUNG_STANDARD" xml:space="preserve">
-    <value>Buffer storage assignment: double-click on buffer storage,
-flow or return to edit.</value>
-  </data>
-  <data name="PSP_TIP_ZUORDNUNG_VORLAUF" xml:space="preserve">
-    <value>Flow temperature [°C] (double-click to change)
-Upper temperature of the storage. The usable capacity results
-from: volume × 1,16 Wh/(l·K) × (flow − return).</value>
   </data>
   <data name="PSP_TITEL_KATALOG_LOESCHUNG" xml:space="preserve">
     <value>Catalogue deletion</value>
@@ -976,15 +896,6 @@ from: volume × 1,16 Wh/(l·K) × (flow − return).</value>
   </data>
   <data name="PSP_TITEL_PUFFER_ENTFERNEN" xml:space="preserve">
     <value>Remove buffer storage</value>
-  </data>
-  <data name="PSP_TITEL_SPEICHERREGELUNG" xml:space="preserve">
-    <value>Storage control</value>
-  </data>
-  <data name="PSP_TITEL_TEMPERATUR_PRUEFEN" xml:space="preserve">
-    <value>Check temperature</value>
-  </data>
-  <data name="PSP_TITEL_VERWENDUNG_AENDERN" xml:space="preserve">
-    <value>Change use</value>
   </data>
   <data name="PSP_TITEL_ZUORDNUNG" xml:space="preserve">
     <value>Buffer storage assignment</value>
@@ -1149,23 +1060,6 @@ the curve then has to be supplemented with lower data points.</value>
   <data name="SIM_KACHEL_SIMULATIONSERGEBNISSE" xml:space="preserve">
     <value>Simulation results in detail</value>
   </data>
-  <data name="SIM_KASKADE_SCHALTER" xml:space="preserve">
-    <value>Two-channel cascade</value>
-  </data>
-  <data name="SIM_KASKADE_TOOLTIP" xml:space="preserve">
-    <value>Calculates space heating and domestic hot water demand as separate channels and
-separates the storage charging from the generator cascade.
-
-This CHANGES the results: units with a buffer storage as sink charge
-it instead of covering the demand directly; the demand is covered from the storage.
-What changes in detail is described in the implementation log for package 4
-(part 7, Documented result changes). Without the tick, the
-previous single-channel cascade continues to calculate unchanged.
-
-The tick is set automatically as soon as the configuration handles domestic
-hot water and space heating separately - the single-channel path would then
-be blind to DHW/combi storage sinks and source references.</value>
-  </data>
   <data name="SIM_KEIN_BRAUCHWASSERBEDARF" xml:space="preserve">
     <value>Note: no domestic hot water demand is assigned to the project.
 A DHW storage is then charged but never discharged.</value>
@@ -1250,34 +1144,11 @@ The project must contain a buffer storage with the use "{2}".</value>
   <data name="SIM_MODUS_PV" xml:space="preserve">
     <value>PV-optimised</value>
   </data>
-  <data name="SIM_MSG_BRAUCHWASSER_UEBERGANG" xml:space="preserve">
-    <value>Note: The DHW/combi sink only becomes effective once the two-channel cascade is enabled (switch in the configuration dialog).
-It is saved and displayed, but does not yet enter the simulation.</value>
-  </data>
-  <data name="SIM_MSG_BRAUCHWASSER_WP_ZUSATZ" xml:space="preserve">
-    <value>The previous buffer storage assignment of this heat pump is removed in the process; without the two-channel cascade the simulation then calculates without storage.</value>
-  </data>
   <data name="SIM_MSG_ERGEBNIS_GESPEICHERT" xml:space="preserve">
     <value>Simulation result saved.</value>
   </data>
   <data name="SIM_MSG_ERGEBNIS_NICHT_GESPEICHERT" xml:space="preserve">
     <value>The result could not be saved.</value>
-  </data>
-  <data name="SIM_MSG_KASKADE_ABWAHL" xml:space="preserve">
-    <value>The configuration handles domestic hot water and space heating separately. Without
-the two-channel cascade, DHW/combi storage sinks and source references are not
-included in the simulation.
-
-Deactivate anyway?</value>
-  </data>
-  <data name="SIM_MSG_KASKADE_AUTOMATISCH" xml:space="preserve">
-    <value>The two-channel cascade has been activated automatically for this project because
-domestic hot water and space heating are handled separately.</value>
-  </data>
-  <data name="SIM_MSG_KASKADE_FRAGE" xml:space="preserve">
-    <value>The configuration handles domestic hot water and space heating separately.
-
-Should the two-channel cascade be switched on for this project?</value>
   </data>
   <data name="SIM_MSG_KEIN_BRENNSTOFF" xml:space="preserve">
     <value>No fuel defined for this CHP unit.</value>
@@ -1390,17 +1261,15 @@ Please create a project buffer storage with the use "{1}".</value>
   <data name="SIM_PUFFER_KOMBI_KURZ" xml:space="preserve">
     <value>Buffer combined</value>
   </data>
+  <data name="SIM_PUFFER_PROZESS_KURZ" xml:space="preserve">
+    <value>Buffer process</value>
+  </data>
   <data name="SIM_PUFFER_MIT_VOLUMEN" xml:space="preserve">
     <value>{0} ({1} l)</value>
   </data>
   <data name="SIM_PUFFER_QUELLE_UND_SENKE" xml:space="preserve">
     <value>The buffer storage "{0}" is already the HEAT SOURCE of this unit.
 The same storage cannot be source and sink at the same time (short circuit); please select a different storage.</value>
-  </data>
-  <data name="SIM_PUFFER_VERWENDUNG_PASST_NICHT" xml:space="preserve">
-    <value>The buffer storage "{0}" has the use "{1}", but the {2} requires "{3}".
-
-Please select a suitable storage or change the use in the buffer storage management.</value>
   </data>
   <data name="SIM_QUELLE_BETEILIGT" xml:space="preserve">
     <value>{0} (source: {1})</value>
@@ -1425,9 +1294,6 @@ Please select a different buffer storage or change the heat sink of one of the u
   </data>
   <data name="SIM_RB_PUFFER_KOMBI" xml:space="preserve">
     <value>Buffer combined (heating + DHW)</value>
-  </data>
-  <data name="SIM_ROLLE_HAUPTSENKE" xml:space="preserve">
-    <value>main sink</value>
   </data>
   <data name="SIM_ROLLE_ZWEITSENKE" xml:space="preserve">
     <value>secondary sink</value>
@@ -1531,12 +1397,6 @@ Please select a different buffer storage or change the heat sink of one of the u
   <data name="SIM_STATUS_EXTRAPOLATION_EIN" xml:space="preserve">
     <value>Extrapolation of the heat pump characteristic curve allowed - the run records it as a note.</value>
   </data>
-  <data name="SIM_STATUS_KASKADE_AUS" xml:space="preserve">
-    <value>Two-channel cascade deselected - the single-channel cascade calculates again.</value>
-  </data>
-  <data name="SIM_STATUS_KASKADE_EIN" xml:space="preserve">
-    <value>Two-channel cascade switched on - the next run calculates with it and delivers different results.</value>
-  </data>
   <data name="SIM_STATUS_KONFIG_GESPEICHERT" xml:space="preserve">
     <value>✔ Configuration saved successfully</value>
   </data>
@@ -1604,9 +1464,6 @@ remaining charging potential - never mandatory demand.
   </data>
   <data name="SIM_TITEL_HINWEIS" xml:space="preserve">
     <value>Note</value>
-  </data>
-  <data name="SIM_TITEL_KASKADE" xml:space="preserve">
-    <value>Two-channel cascade</value>
   </data>
   <data name="SIM_TITEL_MELDUNGEN_LAUF" xml:space="preserve">
     <value>Messages from the simulation run</value>
@@ -2149,6 +2006,9 @@ If the storage is empty, the output of the heat pump is limited; the regeneratio
   </data>
   <data name="SIMQ_QUELLE_AUSSENLUFT" xml:space="preserve">
     <value>Outdoor air</value>
+  </data>
+  <data name="SIMQ_QUELLE_FEHLT" xml:space="preserve">
+    <value>Select source!</value>
   </data>
   <data name="SIMQ_QUELLE_CSVPROFIL" xml:space="preserve">
     <value>CSV profile</value>
@@ -8022,6 +7882,9 @@ They typically stem from a variant copy without this trade and keep entering the
   </data>
   <data name="SIMWARN_W5_QUELLE_OHNE_LADER" xml:space="preserve">
     <value>Unit "{0}": storage "{1}" is its heat source but is not charged by any unit of this project. After the initial fill the source would run empty.</value>
+  </data>
+  <data name="SIMWARN_QUELLE_FEHLT" xml:space="preserve">
+    <value>Unit "{0}": this {1} heat pump has no configured heat source — the run falls back to outdoor air, which does not match this design. Select the source via the "Source" chip on the generator card (ground, constant temperature, source profile or buffer storage).</value>
   </data>
   <data name="SIMWARN_HART_RING" xml:space="preserve">
     <value>The buffer-storage source references form a LOOP: {0}. There is no calculation order in which every generator runs after its buffer — please change the heat source of one of the units involved.</value>

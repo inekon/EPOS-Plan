@@ -44,6 +44,9 @@ namespace WindowsFormsApplication1
     /// <para>
     /// Vier Kopien einer Zuordnung, die über Persistenzwerte entscheidet, sind genau die
     /// Ausgangslage der Bestandsfehler B0-9 bis B0-11. Ab hier gilt sie einmal.
+    /// (Historie: <c>ZuordnungenLaden</c>, <c>btn_Speichern_Click</c> in ihrer alten Form
+    /// und <c>Form_KonfigPufferspeicher</c> sind mit Paket A1 entfallen — die Liste hier
+    /// blieb ihr einziger Nachfolger.)
     /// </para>
     ///
     /// <para>

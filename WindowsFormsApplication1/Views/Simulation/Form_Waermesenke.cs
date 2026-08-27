@@ -24,15 +24,14 @@ namespace WindowsFormsApplication1
     /// aus <see cref="DbWerte"/> und bleiben deutsch und eingefroren; sichtbar wird
     /// ausschließlich <c>MyResource.Resource.*</c> (Drei-Schichten-Regel).</para>
     ///
-    /// <para><b>Persistenz zweigleisig.</b> Führend ist <c>Z_AnlageSenke</c>
-    /// (<see cref="Z_AnlageSenkeCtrl"/>) mit der vollständigen Liste. ZUSÄTZLICH werden
-    /// die Ränge 1 und 2 auf die Altspalten <c>WS_*</c> gespiegelt — nicht aus Nostalgie,
-    /// sondern weil der einkanalige Altpfad der Engine und mehrere noch nicht umgestellte
-    /// Anzeigen weiterhin von dort lesen. Ohne die Spiegelung rechnete der Altpfad mit
-    /// veralteten Senken. Geschrieben wird sie NICHT hier, sondern über
-    /// <see cref="Daten"/>: Der Dialog legt dort die gespiegelte Fassung ab, und der
-    /// Aufrufer schiebt sie wie bisher durch <c>WaermesenkeClass.Schreiben</c> — dieselbe
-    /// Schreiblogik wie vorher, an derselben Stelle, nur mit anderem Inhalt.</para>
+    /// <para><b>Persistenz einspurig (PAKET A1).</b> Führend und ALLEIN maßgeblich ist
+    /// <c>Z_AnlageSenke</c> (<see cref="Z_AnlageSenkeCtrl"/>) mit der vollständigen Liste;
+    /// die Verbundmitglieder gehen im selben Zug nach <c>Z_AnlagePufferVerbund</c>.
+    /// Geschrieben wird beides hier, in <see cref="ListeSpeichern"/>. Bis A1 wurden die
+    /// Ränge 1 und 2 zusätzlich auf die Altspalten <c>WS_*</c> gespiegelt, weil der
+    /// einkanalige Altpfad der Engine von dort las (S1-O5). Der Altpfad ist abgerissen,
+    /// die Spiegelung mit ihm — zwei Ablagen für dieselbe Aussage wären ab hier nur noch
+    /// eine Fehlerquelle.</para>
     ///
     /// Aufbau wie beim Bestandsmuster <see cref="Form_QuellePufferspeicher"/>: komplett
     /// programmatisch, kein Designer, keine .resx; Datenübergabe über öffentliche Felder;
@@ -62,27 +61,33 @@ namespace WindowsFormsApplication1
         public string BM_Typ = "";
 
         /// <summary>
-        /// Die GESPIEGELTE Senkeneinstellung (Ränge 1 und 2 in den Altspalten-Feldern):
-        /// beim Öffnen die Vorbelegung aus <c>WS_*</c>, nach OK das Ergebnis, das der
-        /// Aufrufer über <c>WaermesenkeClass.Schreiben</c> zurückschreibt.
+        /// Die Mitglieder des PARALLELVERBUNDS am Rang-1-Speicher: beim Öffnen die
+        /// Vorbelegung aus <c>Z_AnlagePufferVerbund</c>, nach OK der gespeicherte Stand.
         ///
-        /// Die VOLLSTÄNDIGE Liste steht in <c>Z_AnlageSenke</c> und wird vom Dialog selbst
-        /// geschrieben (siehe Klassenkommentar). Was hier ankommt, ist der Ausschnitt, den
-        /// die Altspalten ausdrücken können.
+        /// Die Senkenliste selbst geht nicht über ein Übergabefeld — sie steht nach OK in
+        /// <c>Z_AnlageSenke</c>, und wer sie für eine Statusmeldung braucht, liest sie
+        /// über <see cref="Senkenliste"/> (PAKET A1).
         /// </summary>
-        public WaermesenkeClass.SenkeDaten Daten = new WaermesenkeClass.SenkeDaten();
+        public List<int> VerbundMitglieder = new List<int>();
 
         /// <summary>
-        /// true = der aufrufende Konfigurationsdialog schaltet die zweikanalige Kaskade
-        /// nach OK automatisch ein, wenn die neue Senke sie notwendig macht. Dann
-        /// entfällt der Übergangshinweis (siehe
-        /// <see cref="BrauchwasserUebergangsHinweis"/>).
-        ///
-        /// false setzt der Aufrufer nach einer BEWUSSTEN Abwahl des Schalters: Die
-        /// Kaskade bleibt dann aus, die Brauchwasser-/Kombi-Senke rechnet nicht mit — und
-        /// genau das sagt der Übergangshinweis, der deshalb wieder erscheinen muss.
+        /// Die Senkenliste in Rangfolge, so wie sie der Dialog zuletzt gezeigt bzw.
+        /// gespeichert hat — für die Statusmeldung des Aufrufers. Nie <c>null</c>.
         /// </summary>
-        public bool KaskadeAutomatikAktiv = true;
+        public List<Z_AnlageSenkeModel> Senkenliste
+        {
+            get { return _zeilen; }
+        }
+
+        /// <summary>
+        /// true = das Speichern nach <c>Z_AnlageSenke</c> und <c>Z_AnlagePufferVerbund</c>
+        /// ist durchgekommen. Nur bei <c>DialogResult.OK</c> aussagekräftig.
+        ///
+        /// Der Dialog schreibt seit PAKET A1 selbst; damit wandert auch die Frage „hat es
+        /// geklappt?" hierher. Vorher hing die Fehlermeldung des Aufrufers am
+        /// Rückgabewert von <c>WaermesenkeClass.Schreiben</c>.
+        /// </summary>
+        public bool SpeichernOk = true;
 
         // --- Senkenliste ---------------------------------------------------------------
 
@@ -279,31 +284,53 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Kompakte Anzeige EINER Senkenzeile für Karten und Übersichten: „Ziel: Speicher"
-        /// bzw. nur das Ziel bei einer Direktsenke.
+        /// Kompakte Anzeige EINER Senkenzeile für Karten, Übersichten und Schema:
+        /// „Ziel: Speicher" beim Ladeziel, beim HEIZKREIS das Ziel samt Bedarfsart
+        /// („Heizkreis (nur Warmwasser)"), <c>–</c> für „keine Zeile".
+        ///
+        /// <para><b>PAKET A1 — die EINE Stelle.</b> Bis dahin gab es zwei: diese für die
+        /// Kette ab Rang 3 und <c>WaermesenkeClass.HauptsenkeAnzeige</c>/
+        /// <c>ZweitsenkeAnzeige</c> für die gespiegelten Ränge 1 und 2. Mit der Spiegelung
+        /// sind die beiden anderen entfallen. Damit sich am BILD nichts ändert, sind
+        /// ihre beiden Eigenheiten hierher gewandert: die Kurzform des Ladeziels
+        /// (<c>WaermesenkeClass.KurzformZuZiel</c>) und die Bedarfsart-Feinsteuerung des
+        /// Heizkreises (Konzept 3.1).</para>
         /// </summary>
         public static string SenkeAnzeige(Z_AnlageSenkeModel z)
         {
             if (z == null) return LEER;
 
-            string ziel = ZielAnzeige(z.Ziel);
-            if (!IstPufferZiel(z.Ziel) || z.ID_Puffer <= 0) return ziel;
+            if (IstPufferZiel(z.Ziel))
+            {
+                // KURZFORM („Puffer Heizung"), nicht der lange Name der Auswahlliste:
+                // Karte, Übersicht und Schemaknoten haben die Senke schon immer so
+                // beschriftet, und daran ändert A1 nichts.
+                string ladeziel = WaermesenkeClass.KurzformZuZiel(z.Ziel);
+                if (z.ID_Puffer <= 0) return ladeziel;
 
-            string name = WaermesenkeClass.PufferName(z.ID_Puffer);
-            return name.Length > 0 ? ziel + ": " + name : ziel;
+                string name = WaermesenkeClass.PufferName(z.ID_Puffer);
+                return name.Length > 0 ? ladeziel + ": " + name : ladeziel;
+            }
+
+            // Prozesswärme ist einkanalig - dort gibt es keine Bedarfsart zu unterscheiden.
+            if (string.Equals(z.Ziel, DbWerte.WS_ZIEL_PROZESS, StringComparison.Ordinal))
+                return MyResource.Resource.KANAL_PROZESS_ANZEIGE;
+
+            switch (z.Bedarfsart)
+            {
+                case WaermequelleClass.SENKE_WARMWASSER:
+                    return MyResource.Resource.SIM_HEIZKREIS_NUR_WARMWASSER;
+                case WaermequelleClass.SENKE_HEIZUNG:
+                    return MyResource.Resource.SIM_HEIZKREIS_NUR_HEIZWAERME;
+                default:
+                    return MyResource.Resource.SIM_HEIZKREIS_BEIDES;
+            }
         }
 
-        /// <summary>
-        /// true = das Ziel ist eines der beiden mit Paket S1 hinzugekommenen
-        /// Prozesswärme-Ziele. Sie sind der einzige Fall, in dem die Altspalten
-        /// <c>WS_*</c> die Senke NICHT ausdrücken können (siehe
-        /// <see cref="SpiegelBauen"/>) — Anzeigen, die von dort lesen, müssen ihn kennen.
-        /// </summary>
-        public static bool IstProzessZiel(string ziel)
-        {
-            return string.Equals(ziel, DbWerte.WS_ZIEL_PROZESS, StringComparison.Ordinal) ||
-                   string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_PROZESS, StringComparison.Ordinal);
-        }
+        // PAKET A1: IstProzessZiel ist ENTFALLEN. Die Abfrage diente genau EINEM Zweck -
+        // eine Anzeige, die aus den Altspalten WS_* las, musste die beiden Prozess-Ziele
+        // erkennen, weil sie sich dort als „Heizung" spiegelten. Anzeigen lesen jetzt die
+        // Senkenliste, und die trägt das wahre Ziel; SenkeAnzeige genügt.
 
         private void BaueOberflaeche()
         {
@@ -721,11 +748,12 @@ namespace WindowsFormsApplication1
                 // alle übrigen Ziele aus, und die stehen erst jetzt fest. Der Aufbau der
                 // Liste und das Setzen der Haken sind zwei Schritte, weil die Liste eine
                 // vorherige Auswahl nachzieht (VerbundListeFuellen) - beim ERSTEN Öffnen
-                // gibt es die noch nicht, sie kommt aus Daten.VerbundMitglieder.
+                // gibt es die noch nicht, sie kommt aus VerbundMitglieder.
                 VerbundListeFuellen();
+                if (VerbundMitglieder == null) VerbundMitglieder = new List<int>();
                 for (int i = 0; i < _verbundKandidaten.Count; i++)
                     _clbVerbund.SetItemChecked(
-                        i, Daten.VerbundMitglieder.Contains(_verbundKandidaten[i].ID));
+                        i, VerbundMitglieder.Contains(_verbundKandidaten[i].ID));
             }
             finally
             {
@@ -736,19 +764,21 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Baut <see cref="_zeilen"/> auf: führend ist <c>Z_AnlageSenke</c>, Rückfallebene
-        /// sind die Altspalten aus <see cref="Daten"/>.
+        /// Baut <see cref="_zeilen"/> aus <c>Z_AnlageSenke</c> auf — der einzigen Ablage
+        /// der Senken (PAKET A1).
         ///
-        /// DIE RÜCKFALLEBENE IST KEIN LUXUS. Die Schemamigration ist eine eigene
-        /// Anwendung; zwischen einem Programmstand mit Senkenliste und einer Datenbank
-        /// ohne die Tabelle liegt regelmäßig ein Arbeitstag. Ohne diesen Weg zeigte der
-        /// Dialog dort eine leere Liste und schriebe beim Speichern die gepflegte Senke
-        /// weg. Dieselbe Regel greift für eine Anlage, die die Migration noch nicht
-        /// erreicht hat (keine Zeile in der Tabelle).
+        /// <para><b>Der Rückfall auf die Altspalten <c>WS_*</c> ist entfallen.</b> Er
+        /// überbrückte die Zeit zwischen einem Programmstand mit Senkenliste und einer
+        /// Datenbank ohne die Tabelle. Diesen Zustand gibt es hier nicht mehr: Die
+        /// Migration läuft bei jedem Programmstart, und kommt sie nicht durch, sperrt
+        /// <c>Form_Simulation_Config</c> den ganzen Simulationsbereich
+        /// (<c>SchemaMigration.SimulationGesperrt</c>) — dieser Dialog ist dann gar nicht
+        /// erreichbar. Ein Rückfall auf eine Ablage, aus der niemand mehr rechnet, hätte
+        /// nur eine Senke angezeigt, die kein Lauf mehr kennt.</para>
         ///
         /// Die Invariante „Rang 1 ist Pflicht" (Konzept 5.1) wird hier hergestellt: Ohne
-        /// jede Quelle entsteht eine Zeile <c>Heizkreis/Beides</c> — dieselbe
-        /// Normalisierungsregel, die die Engine anwendet, wenn sie keine Zeile findet.
+        /// jede Zeile entsteht <c>Heizkreis/Beides</c> — dieselbe Normalisierungsregel,
+        /// die die Engine anwendet, wenn sie keine Zeile findet.
         /// </summary>
         private void ZeilenLaden()
         {
@@ -763,37 +793,7 @@ namespace WindowsFormsApplication1
                         if (z != null) _zeilen.Add(z);
             }
 
-            if (_zeilen.Count == 0) AusAltspalten();
             if (_zeilen.Count == 0) _zeilen.Add(NeueZeile(DbWerte.WS_ZIEL_HEIZKREIS));
-        }
-
-        /// <summary>
-        /// Erzeugt die Ränge 1 und 2 aus den Altspalten <c>WS_*</c> — die
-        /// Migrationsregel aus Konzept 5.1, nur zur Laufzeit.
-        /// </summary>
-        private void AusAltspalten()
-        {
-            WaermesenkeClass.Normalisieren(Daten);
-
-            Z_AnlageSenkeModel rang1 = NeueZeile(Daten.Ziel);
-            rang1.ID_Puffer = Daten.ID_Puffer;
-            rang1.Bedarfsart = Daten.Bedarfsart;
-            rang1.Ladeprio = Daten.Ladeprio;
-            rang1.Ladeprio_PV = Daten.LadeprioPV;
-            rang1.Ladegrenze = Daten.Ladegrenze;
-            _zeilen.Add(rang1);
-
-            if (!Daten.HatZweitsenke) return;
-
-            Z_AnlageSenkeModel rang2 = NeueZeile(Daten.Ziel2);
-            rang2.ID_Puffer = Daten.ID_Puffer2;
-            rang2.Ladeprio = Daten.Ladeprio2;
-            rang2.Ladegrenze = Daten.Ladegrenze2;
-
-            // Konzept 5.1: Eine Spalte WS_Ladeprio_PV2 gibt es nicht — die PV-Sonderregel
-            // hängt konstruktiv an der Hauptsenke. Höhere Ränge erben deshalb 0.
-            rang2.Ladeprio_PV = 0;
-            _zeilen.Add(rang2);
         }
 
         private Z_AnlageSenkeModel NeueZeile(string ziel)
@@ -1695,13 +1695,14 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            // Die BESTANDSPRÜFUNG läuft unverändert auf der gespiegelten Fassung: Sie
-            // deckt Puffer-Verwendung, Doppelbelegung Haupt-/Zweitsenke, Kurzschluss
-            // Quelle=Senke, Verbundkonflikte und die Kanalwarnung ab (Konzept 4.6). Was
-            // sie über die Ränge 1 und 2 hinaus nicht sehen kann, prüft ListePruefen.
-            WaermesenkeClass.SenkeDaten neu = SpiegelBauen();
+            // Die BESTANDSPRÜFUNG deckt Projektzugehörigkeit des Speichers, Doppelbelegung,
+            // Kurzschluss Quelle=Senke, Verbundkonflikte und die Kanalwarnung ab
+            // (Konzept 4.6). PAKET A1: Sie läuft auf der SENKENLISTE und sieht damit alle
+            // Ränge — bis dahin bekam sie die auf zwei Plätze gespiegelte Fassung.
+            List<int> verbund = GewaehlteVerbundMitglieder();
 
-            WaermesenkeClass.PruefErgebnis erg = WaermesenkeClass.Pruefen(ID_Projekt, ID_Anlage, neu);
+            WaermesenkeClass.PruefErgebnis erg =
+                WaermesenkeClass.Pruefen(ID_Projekt, ID_Anlage, _zeilen, verbund);
             if (!erg.Ok)
             {
                 if (erg.AbsprungPufferVerwaltung)
@@ -1724,25 +1725,28 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            // ERST JETZT schreiben: Die vollständige Liste geht nach Z_AnlageSenke, die
-            // gespiegelten Ränge 1/2 nimmt der Aufrufer über Daten entgegen und schiebt
-            // sie durch WaermesenkeClass.Schreiben - dieselbe Schreiblogik wie bisher.
-            ListeSpeichern();
+            // ERST JETZT schreiben: die vollständige Liste nach Z_AnlageSenke und die
+            // Verbundmitglieder nach Z_AnlagePufferVerbund - beides in ListeSpeichern.
+            //
+            // Der Erfolg geht als SpeichernOk an den Aufrufer. Bis A1 hing seine
+            // Fehlermeldung am Rückgabewert von WaermesenkeClass.Schreiben; die
+            // Schreibstelle ist umgezogen, die Meldung darf deshalb nicht verloren gehen.
+            SpeichernOk = ListeSpeichern(verbund);
 
-            // Warnung ohne Blockerwirkung (Kanal ohne Bedarf) und der Übergangshinweis
-            // zur Brauchwasser-Senke - zusammen in EINER Meldung, damit nicht zwei
-            // Dialoge hintereinander bestätigt werden müssen.
+            // Warnung ohne Blockerwirkung (Kanal ohne Bedarf).
+            //
+            // PAKET A1: Der ÜBERGANGSHINWEIS zur Brauchwasser-Senke ist entfallen. Er
+            // sagte, dass eine Brauchwasser-/Kombi-Senke ohne die zweikanalige Kaskade
+            // gespeichert wird, aber nicht mitrechnet. Den einkanaligen Altpfad gibt es
+            // nicht mehr; jede Senke rechnet mit.
             List<string> hinweise = new List<string>();
             if (!string.IsNullOrEmpty(erg.Warnung)) hinweise.Add(erg.Warnung);
-
-            string uebergang = BrauchwasserUebergangsHinweis(neu);
-            if (uebergang != null) hinweise.Add(uebergang);
 
             // PAKET S2 (Konzept 6.2): die WEICHEN Warnkriterien. Sie blockieren nicht —
             // gespeichert ist zu diesem Zeitpunkt schon —, sie begründen nur, warum die
             // eben gespeicherte Zuordnung als unplausibel gilt. Sie gehen in DIESELBE
-            // MessageBox wie die beiden Hinweise darüber; nur das Symbol wird zum
-            // Warnzeichen, damit der Unterschied zu einer bloßen Auskunft sichtbar ist.
+            // MessageBox wie der Hinweis darüber; nur das Symbol wird zum Warnzeichen,
+            // damit der Unterschied zu einer bloßen Auskunft sichtbar ist.
             List<string> warnungen = WeicheBefunde();
             if (warnungen.Count > 0)
                 hinweise.Add(MyResource.Resource.SIMWARN_DIALOG_KOPF + Environment.NewLine +
@@ -1753,7 +1757,7 @@ namespace WindowsFormsApplication1
                                 MyResource.Resource.SIM_SENKE_TITEL, MessageBoxButtons.OK,
                                 warnungen.Count > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
 
-            Daten = neu;
+            VerbundMitglieder = verbund;
         }
 
         /// <summary>
@@ -1831,14 +1835,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Schreibt die Rangnummern fest und speichert die Liste nach
-        /// <c>Z_AnlageSenke</c>.
+        /// Schreibt die Rangnummern fest und speichert die Senkenliste nach
+        /// <c>Z_AnlageSenke</c> sowie die Verbundmitglieder nach
+        /// <c>Z_AnlagePufferVerbund</c>.
         ///
-        /// Ohne die Tabelle (Migration noch nicht gelaufen) bleibt es bei der Spiegelung
-        /// auf die Altspalten — der Dialog verhält sich dann exakt wie vorher, nur mit
-        /// einer Liste statt zweier Plätze in der Oberfläche.
+        /// <para><b>PAKET A1 — hier endet der Speicherweg.</b> Bis dahin schrieb der
+        /// Aufrufer zusätzlich die auf zwei Plätze gespiegelte Fassung über
+        /// <c>WaermesenkeClass.Schreiben</c>, und die nahm die Verbundmitglieder mit. Beide
+        /// Wege sind zusammengelegt: Leitspeicher und Mitglieder gehören zusammen, und es
+        /// gibt jetzt genau EINE Stelle, die die Senken einer Anlage schreibt.</para>
+        ///
+        /// Die Mitgliederliste geht IMMER heraus, auch leer — das ist der Weg, auf dem ein
+        /// Verbund im Dialog wieder aufgelöst wird (Delete/Insert in
+        /// <c>AnlagePufferVerbundCtrl.Schreiben</c>).
         /// </summary>
-        private void ListeSpeichern()
+        /// <returns>true, wenn beide Schreibvorgänge durchkamen.</returns>
+        private bool ListeSpeichern(List<int> verbundMitglieder)
         {
             for (int i = 0; i < _zeilen.Count; i++)
             {
@@ -1846,171 +1858,28 @@ namespace WindowsFormsApplication1
                 _zeilen[i].Rang = i + 1;
             }
 
-            if (ID_Anlage <= 0 || !Z_AnlageSenkeCtrl.SpalteVorhanden()) return;
-            new Z_AnlageSenkeCtrl().SchreibenJeAnlage(ID_Anlage, _zeilen);
+            if (ID_Anlage <= 0) return false;
+
+            bool ok = true;
+            if (Z_AnlageSenkeCtrl.SpalteVorhanden())
+                ok &= new Z_AnlageSenkeCtrl().SchreibenJeAnlage(ID_Anlage, _zeilen);
+
+            ok &= AnlagePufferVerbundCtrl.Schreiben(ID_Anlage, verbundMitglieder);
+            return ok;
         }
 
-        /// <summary>
-        /// Baut aus den Rängen 1 und 2 die Altspalten-Fassung (Konzept 5.1, Migration in
-        /// die Gegenrichtung).
-        ///
-        /// <b>Was die Altspalten nicht ausdrücken können, geht dabei verloren</b> — und
-        /// das ist beabsichtigt, nicht übersehen:
-        ///
-        ///   - Die S1-Ziele <c>Prozesswaerme</c> und <c>PufferProzess</c> haben dort kein
-        ///     Wort. Sie werden auf ihre Übergangsentsprechung abgebildet
-        ///     (Interimsregeln I1/I2 aus Paket K2: Heizungs-Direktsenken und
-        ///     Heizungs-Speicher bedienen den Prozesskanal übergangsweise mit) — der
-        ///     einkanalige Altpfad rechnet damit auf denselben Behälter wie vorher, statt
-        ///     die Senke ganz zu verlieren.
-        ///   - Eine DIREKTsenke ab Rang 2 (neu mit S1) hat in <c>WS_Ziel2</c> keine
-        ///     Entsprechung; <c>WaermesenkeClass.Normalisieren</c> löscht sie. Der
-        ///     Altpfad kennt sie dann nicht — führend bleibt <c>Z_AnlageSenke</c>.
-        ///   - Ränge ab 3 werden nicht gespiegelt.
-        /// </summary>
-        private WaermesenkeClass.SenkeDaten SpiegelBauen()
-        {
-            WaermesenkeClass.SenkeDaten d = new WaermesenkeClass.SenkeDaten();
-            d.VerbundMitglieder = GewaehlteVerbundMitglieder();
-
-            if (_zeilen.Count > 0)
-            {
-                Z_AnlageSenkeModel z = _zeilen[0];
-                d.Ziel = AltZiel(z.Ziel);
-                d.ID_Puffer = z.ID_Puffer;
-                d.Bedarfsart = AltBedarfsart(z);
-                d.Ladeprio = z.Ladeprio;
-                d.Ladegrenze = z.Ladegrenze > 0 ? z.Ladegrenze : 0;
-                d.LadeprioPV = z.Ladeprio_PV;
-            }
-
-            if (_zeilen.Count > 1)
-            {
-                Z_AnlageSenkeModel z = _zeilen[1];
-                string ziel2 = AltZiel(z.Ziel);
-
-                // Zweitsenken sind in den Altspalten ausschließlich Puffer-Ziele; eine
-                // Direktsenke auf Rang 2 bleibt dort leer (siehe Kopfkommentar).
-                if (WaermesenkeClass.IstPufferZiel(ziel2))
-                {
-                    d.Ziel2 = ziel2;
-                    d.ID_Puffer2 = z.ID_Puffer;
-                    d.Ladeprio2 = z.Ladeprio;
-                    d.Ladegrenze2 = z.Ladegrenze > 0 ? z.Ladegrenze : 0;
-                }
-            }
-
-            return d;
-        }
-
-        /// <summary>
-        /// Ziel in der Sprache der Altspalten (Interimsregeln I1/I2 aus Paket K2).
-        ///
-        /// Beide Prozesswärme-Ziele werden auf ihre HEIZUNGS-Entsprechung abgebildet — das
-        /// ist genau die Übergangsregel, mit der die Engine heute rechnet: I1 lässt
-        /// Heizungs-Direktsenken den Prozesskanal mitdecken, I2 lässt einen Speicher mit
-        /// Heizung im Klassen-Set auch für Prozess entladen. Der Altpfad rechnet damit auf
-        /// denselben Behälter wie vorher.
-        ///
-        /// Die Abbildung ist zugleich die Bedingung dafür, dass
-        /// <c>WaermesenkeClass.Pruefen</c> überhaupt urteilen kann: Seine
-        /// Verwendungsprüfung kennt für <c>PufferProzess</c> keine Verwendung
-        /// (<c>VerwendungZuZiel</c> liefert <c>null</c>) und würde jede solche Zeile
-        /// abweisen. Mit Paket S2 (Konzept 6.2, Warnkriterien statt Sperre) entfällt
-        /// beides — dann kann der wahre Wert in die Altspalte, und die Abbildung
-        /// beschränkt sich auf die Direktsenke.
-        /// </summary>
-        private static string AltZiel(string ziel)
-        {
-            if (string.Equals(ziel, DbWerte.WS_ZIEL_PROZESS, StringComparison.Ordinal))
-                return DbWerte.WS_ZIEL_HEIZKREIS;
-            if (string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_PROZESS, StringComparison.Ordinal))
-                return DbWerte.WS_ZIEL_PUFFER_HEIZUNG;
-            return ziel;
-        }
-
-        /// <summary>
-        /// Bedarfsart in der Sprache der Altspalten. Eine Prozesswärme-Direktsenke wird zu
-        /// „Heizung": Der Prozesskanal war bis Paket K1 Teil des Heizkanals, und die
-        /// Interimsregel I1 lässt Heizungs-Direktsenken den Prozesskanal mitdecken.
-        /// </summary>
-        private static string AltBedarfsart(Z_AnlageSenkeModel z)
-        {
-            if (string.Equals(z.Ziel, DbWerte.WS_ZIEL_PROZESS, StringComparison.Ordinal))
-                return WaermequelleClass.SENKE_HEIZUNG;
-            return string.IsNullOrEmpty(z.Bedarfsart) ? WaermequelleClass.SENKE_BEIDES : z.Bedarfsart;
-        }
-
-        /// <summary>
-        /// Hinweis auf die REICHWEITE der Brauchwasser-/Kombi-Senke; <c>null</c>, wenn
-        /// keine solche Senke im Spiel ist ODER die zweikanalige Kaskade für das Projekt
-        /// bereits eingeschaltet ist.
-        ///
-        /// Der Engine-Umbau ist abgeschlossen; maßgeblich ist heute allein die
-        /// Projekteinstellung <c>Tab_Einstellungen.Kaskade_Zweikanalig</c> — der Schalter
-        /// „Zweikanalige Kaskade" im Konfigurationsdialog. IST SIE GESETZT,
-        /// verzweigt <c>SimulationControl.Do_Simulation</c> in die zweikanalige Kaskade
-        /// und rechnet Heizung und Warmwasser getrennt: Die Senke wirkt, es gibt nichts
-        /// zu melden.
-        ///
-        /// IST SIE NICHT GESETZT, läuft weiter der einkanalige Rechenweg. Der holt den
-        /// Pufferspeicher aus <c>Z_ProjektPufferSp</c> und kennt dort ausschließlich den
-        /// HEIZUNGS-Speicher der Wärmepumpe. Eine Brauchwasser-/Kombi-Senke wird deshalb
-        /// gespeichert und angezeigt, rechnet aber noch nicht mit.
-        ///
-        /// Bei der WÄRMEPUMPE kommt dann hinzu: <c>WaermesenkeClass.WpSenkeSpiegeln</c>
-        /// findet keine Heizungs-Puffersenke mehr und nimmt die bisherige Zuordnung
-        /// zurück — die Simulation rechnet danach ganz ohne Speicher. Das darf nicht
-        /// still passieren. Für Kessel, BHKW und Solarthermie fasst die Brücke die
-        /// Zuordnung nicht an; dort entfällt dieser Satz.
-        ///
-        /// Der Flag-Stand kommt aus
-        /// <see cref="KonfigurationCtrl.KaskadeZweikanaligLesen"/> — genau dem Lesepfad,
-        /// über den auch der Konfigurationsdialog seinen Schalter vorbelegt. Keine
-        /// zweite SQL-Wahrheit.
-        ///
-        /// <para>PAKET S1: Gefragt wird die GESPIEGELTE Fassung, also die Ränge 1 und 2 —
-        /// dieselbe Menge, mit der der einkanalige Altpfad rechnet. Für eine
-        /// Brauchwasser-Senke ab Rang 3 gäbe es nichts zu melden, was der Altpfad
-        /// überhaupt sähe.</para>
-        /// </summary>
-        private string BrauchwasserUebergangsHinweis(WaermesenkeClass.SenkeDaten d)
-        {
-            if (d == null) return null;
-
-            // D5a: Der Kombispeicher bedient den Warmwasserkanal mit — für ihn gilt
-            // dieselbe Reichweitenaussage.
-            bool haupt = WaermesenkeClass.IstBrauchwasserseitig(d.Ziel);
-            bool zweit = d.HatZweitsenke && WaermesenkeClass.IstBrauchwasserseitig(d.Ziel2);
-            if (!haupt && !zweit) return null;
-
-            // Zweikanalige Kaskade eingeschaltet: Die Senke geht in die Simulation ein —
-            // der Hinweis wäre falsch.
-            if (KonfigurationCtrl.KaskadeZweikanaligLesen(ID_Projekt)) return null;
-
-            // AUTOMATIK: Macht die NEUE Senke die zweikanalige Kaskade notwendig, schaltet
-            // der Konfigurationsdialog sie unmittelbar nach OK ein (und meldet das). Der
-            // Übergangshinweis wäre dann schon falsch, bevor er gelesen ist — er bleibt
-            // nur, wenn der Anwender den Schalter zuvor bewusst abgewählt hat
-            // (KaskadeAutomatikAktiv = false).
-            //
-            // Gefragt wird mit den NEUEN Senkendaten, nicht mit dem gespeicherten Stand:
-            // Geschrieben wird erst nach diesem Dialog, und die Regel soll den Zustand
-            // NACH dem Speichern bewerten (dieselbe Bauart wie die Ersatzparameter in
-            // Hydraulikbild.Ebenen).
-            if (KaskadeAutomatikAktiv &&
-                KonfigurationCtrl.KaskadeNotwendig(ID_Projekt, ID_Anlage, d)) return null;
-
-            string text = Zeilenumbruch.Normalisieren(
-                MyResource.Resource.SIM_MSG_BRAUCHWASSER_UEBERGANG);
-
-            // Nur die Hauptsenke einer Wärmepumpe zieht die Alt-Zuordnung mit sich
-            // (die Brücke wertet ausschließlich WS_Ziel der Wärmepumpen aus).
-            if (haupt && ID_Type == ProjektPuffer.TYP_WP)
-                text += Environment.NewLine + Environment.NewLine +
-                        MyResource.Resource.SIM_MSG_BRAUCHWASSER_WP_ZUSATZ;
-
-            return text;
-        }
+        // PAKET A1: SpiegelBauen, AltZiel, AltBedarfsart und BrauchwasserUebergangsHinweis
+        // sind ENTFALLEN.
+        //
+        //   - SpiegelBauen/AltZiel/AltBedarfsart bauten aus den Rängen 1 und 2 die
+        //     Altspalten-Fassung WS_*/WS_*2 (S1-O5). Sie mussten dabei abbilden, was die
+        //     Altspalten nicht ausdrücken können: die beiden Prozess-Ziele wurden auf ihre
+        //     Heizungs-Entsprechung abgebildet, eine Direktsenke ab Rang 2 fiel weg, Ränge
+        //     ab 3 wurden gar nicht gespiegelt. Da niemand mehr aus den Altspalten rechnet,
+        //     wäre das nur noch eine zweite, ärmere Wahrheit.
+        //   - BrauchwasserUebergangsHinweis meldete, dass eine Brauchwasser-/Kombi-Senke
+        //     ohne die zweikanalige Kaskade zwar gespeichert wird, aber nicht mitrechnet.
+        //     Der einkanalige Rechenweg ist mit Schritt 51 abgerissen; die Aussage hat
+        //     keinen Gegenstand mehr.
     }
 }

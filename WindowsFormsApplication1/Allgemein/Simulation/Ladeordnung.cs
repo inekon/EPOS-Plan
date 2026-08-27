@@ -217,7 +217,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Alle Anlagen, die den Puffer laden (Haupt- ODER Zweitsenke), in der
+        /// Alle Anlagen, die den Puffer laden — über ALLE Senkenränge —, in der
         /// WIRKSAMEN Reihenfolge nach Konzept 3.4:
         ///
         ///   Ladepriorität → Kaskadenposition → Tab_Energieanlagen.Prioritaet → Anlagen-ID
@@ -225,99 +225,43 @@ namespace WindowsFormsApplication1
         /// Die Kette ist vollständig deterministisch und nie von der Datenbankreihenfolge
         /// abhängig. Die Obergrenze je Eintrag ist bereits aufgelöst:
         ///
-        ///   Obergrenze = WS_Ladegrenze          , wenn gesetzt (&gt; 0)
-        ///              = Schwelle_Aus           , wenn die Anlage die vorrangige ist
-        ///              = Schwelle_Aus_Nachrang  , sonst
+        ///   Obergrenze = eigene Ladegrenze der Senkenzeile, wenn gesetzt (&gt; 0)
+        ///              = Schwelle_Aus                      , wenn die Anlage die vorrangige ist
+        ///              = Schwelle_Aus_Nachrang             , sonst
+        ///
+        /// <para><b>PAKET A1 — die Anzeigefassung liest die SENKENLISTE.</b> Bis dahin
+        /// fragte sie die Altspalten <c>WS_ID_Puffer</c>/<c>WS_ID_Puffer2</c> und kannte
+        /// deshalb genau zwei Senkenplätze je Anlage: Für eine Senke ab Rang 3 lieferte
+        /// sie 0, und die Kreisziffer „lädt als n von m" fehlte an Karte und Schemakante
+        /// (S2-O6). Sie holt sich die Listen jetzt selbst — STILL, ohne Protokollzeilen
+        /// (<c>WaermesenkeClass.SenkenlistenLadenStill</c>), weil sie aus Dialogen heraus
+        /// läuft. Wer die Listen ohnehin schon hat (die Engine), reicht sie über die
+        /// Überladung herein und spart die Abfrage.</para>
         /// </summary>
         public static List<LadeEintrag> Ladereihenfolge(int idProjekt, int idPuffer)
         {
-            List<LadeEintrag> liste = new List<LadeEintrag>();
-            if (idProjekt <= 0 || idPuffer <= 0) return liste;
+            if (idProjekt <= 0 || idPuffer <= 0) return new List<LadeEintrag>();
 
-            DataTable dt = StilleDb.Tabelle(
-                "SELECT ID, Bezeichner, ID_Type, Prioritaet, " +
-                "       WS_Ziel, WS_ID_Puffer, WS_Ladeprio, WS_Ladegrenze, WS_Ladeprio_PV, " +
-                "       WS_Ziel2, WS_ID_Puffer2, WS_Ladeprio2, WS_Ladegrenze2 " +
-                "FROM Tab_Energieanlagen " +
-                "WHERE ID_Projekt = ? AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ") " +
-                "  AND (WS_ID_Puffer = ? OR WS_ID_Puffer2 = ?)",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt),
-                StilleDb.Par("@puf1", OleDbType.Integer, idPuffer),
-                StilleDb.Par("@puf2", OleDbType.Integer, idPuffer));
-
-            if (dt == null) return liste;
-
-            Dictionary<int, int> kaskade = Kaskadenpositionen(idProjekt);
-
-            foreach (DataRow r in dt.Rows)
-            {
-                int idAnlage = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
-                int idType = StilleDb.Zahl(StilleDb.Feld(r, "ID_Type"));
-                string bezeichner = StilleDb.Text(StilleDb.Feld(r, "Bezeichner"));
-                int anlagenprio = StilleDb.Zahl(StilleDb.Feld(r, "Prioritaet"));
-                if (anlagenprio <= 0) anlagenprio = ANLAGENPRIO_UNGEPFLEGT;
-
-                int kaskadenpos;
-                if (!kaskade.TryGetValue(idType, out kaskadenpos)) kaskadenpos = KASKADE_UNBEKANNT;
-
-                // ZIEL MIT PRÜFEN, nicht nur die ID: Altdaten können eine WS_ID_Puffer
-                // tragen und trotzdem auf den Heizkreis zeigen (die Senke wurde
-                // zurückgenommen, die ID blieb stehen; die Oberfläche schreibt seit
-                // Paket 2 NULL, ältere Stände taten das nicht). Solche Reste zählten
-                // sonst als ladende Anlage — die Anzeige „lädt als n. von m" und die
-                // Entladeprio-Automatik lägen daneben, und die Engine wird ab Paket 4
-                // ausschließlich über WS_Ziel entscheiden. Anzeige und Engine bleiben so
-                // deckungsgleich.
-                if (StilleDb.Zahl(StilleDb.Feld(r, "WS_ID_Puffer")) == idPuffer &&
-                    WaermesenkeClass.IstPufferZiel(StilleDb.Text(StilleDb.Feld(r, "WS_Ziel"))))
-                {
-                    liste.Add(Eintrag(idAnlage, bezeichner, idType, false,
-                                      StilleDb.Zahl(StilleDb.Feld(r, "WS_Ladeprio")),
-                                      StilleDb.Kommazahl(StilleDb.Feld(r, "WS_Ladegrenze")),
-                                      StilleDb.Zahl(StilleDb.Feld(r, "WS_Ladeprio_PV")),
-                                      kaskadenpos, anlagenprio));
-                }
-
-                if (StilleDb.Zahl(StilleDb.Feld(r, "WS_ID_Puffer2")) == idPuffer &&
-                    WaermesenkeClass.IstPufferZiel(StilleDb.Text(StilleDb.Feld(r, "WS_Ziel2"))))
-                {
-                    liste.Add(Eintrag(idAnlage, bezeichner, idType, true,
-                                      StilleDb.Zahl(StilleDb.Feld(r, "WS_Ladeprio2")),
-                                      StilleDb.Kommazahl(StilleDb.Feld(r, "WS_Ladegrenze2")),
-                                      0, // die PV-Sonderregel hängt an der Hauptsenke
-                                      kaskadenpos, anlagenprio));
-                }
-            }
-
-            Sortieren(liste);
-            ObergrenzenAufloesen(liste, idPuffer);
-            return liste;
+            return Ladereihenfolge(idProjekt, idPuffer,
+                                   WaermesenkeClass.SenkenlistenLadenStill(idProjekt));
         }
 
         /// <summary>
-        /// Dieselbe Ordnung, aber aus den GEORDNETEN SENKENLISTEN des Laufs statt aus den
-        /// Altspalten <c>WS_*</c> (Paket S1, Konzept 5.1).
-        ///
-        /// <para><b>Warum eine eigene Fassung.</b> Die Spaltenfassung darüber kennt genau
-        /// zwei Senkenplätze je Anlage; <c>Z_AnlageSenke</c> kennt n. Sie zu erweitern
-        /// hieße, zwei Datenquellen in einer Methode zu mischen — und der Rückfall auf die
-        /// Altspalten muss erhalten bleiben, solange es Datenbanken vor Schritt 50 gibt
-        /// (siehe <c>WaermesenkeClass.SenkenlistenLaden</c>). Deshalb zwei Wege in EINE
-        /// Sortierung und EINE Obergrenzen-Auflösung.</para>
+        /// Dieselbe Ordnung mit BEREITS GELESENEN Senkenlisten (Paket S1, Konzept 5.1) —
+        /// die Fassung, die die Engine ruft: Sie hält die Listen des Laufs ohnehin und
+        /// spart damit die Abfrage je Puffer.
         ///
         /// <para><b>Was gleich bleibt.</b> Sortierregel (Ladepriorität → Kaskadenposition
-        /// → Anlagenpriorität → Anlagen-ID → Rang) und Obergrenzen-Auflösung sind Zeile
-        /// für Zeile dieselben; die eigene Ladegrenze kommt aus
-        /// <see cref="Senkenzeile.LadegrenzeProzent"/> statt aus <c>WS_Ladegrenze</c>.
-        /// Auf migriertem Bestand liefert diese Fassung deshalb dieselbe Liste wie die
-        /// Spaltenfassung.</para>
+        /// → Anlagenpriorität → Anlagen-ID → Rang) und Obergrenzen-Auflösung sind
+        /// dieselben wie bei der parameterlosen Fassung; beide laufen durch DIESEN
+        /// Rumpf.</para>
         ///
-        /// <paramref name="senken"/> <c>null</c> = Rückfall auf die Spaltenfassung.
+        /// <paramref name="senken"/> <c>null</c> = die Listen werden still nachgeladen.
         /// </summary>
         public static List<LadeEintrag> Ladereihenfolge(int idProjekt, int idPuffer,
                                                         List<Senkenliste> senken)
         {
-            if (senken == null) return Ladereihenfolge(idProjekt, idPuffer);
+            if (senken == null) senken = WaermesenkeClass.SenkenlistenLadenStill(idProjekt);
 
             List<LadeEintrag> liste = new List<LadeEintrag>();
             if (idProjekt <= 0 || idPuffer <= 0) return liste;
@@ -659,13 +603,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static int EntladeprioAutomatik(int idProjekt, int idPuffer)
         {
-            return EntladeprioAutomatik(idProjekt, idPuffer, null);
+            return EntladeprioAutomatik(idProjekt, idPuffer,
+                                        WaermesenkeClass.SenkenlistenLadenStill(idProjekt));
         }
 
         /// <summary>
-        /// Dieselbe Automatik auf den GEORDNETEN SENKENLISTEN des Laufs (Paket S1) —
-        /// nötig, weil ein Puffer ab S1 auch die Senke einer Zeile mit Rang 3 sein kann,
-        /// von der die Altspalten <c>WS_*</c> nichts wissen. <c>null</c> = Spaltenfassung.
+        /// Dieselbe Automatik mit BEREITS GELESENEN Senkenlisten (Paket S1) — nötig, weil
+        /// ein Puffer ab S1 auch die Senke einer Zeile mit Rang 3 sein kann.
+        /// <c>null</c> = die Listen werden still nachgeladen.
         /// </summary>
         public static int EntladeprioAutomatik(int idProjekt, int idPuffer,
                                                List<Senkenliste> senken)
@@ -702,21 +647,29 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static List<EntladeEintrag> Entladereihenfolge(int idProjekt, string verwendung)
         {
-            return Entladereihenfolge(idProjekt, verwendung, null);
+            if (idProjekt <= 0) return new List<EntladeEintrag>();
+
+            // EINMAL laden und in die Schleife hineinreichen: Die Automatik je Puffer
+            // braucht die Senkenlisten des ganzen Projekts, und ein Nachladen je
+            // Listeneintrag wäre auf einem Projekt mit vielen Pufferkopien ein N+1.
+            return Entladereihenfolge(idProjekt, verwendung,
+                                      WaermesenkeClass.SenkenlistenLadenStill(idProjekt));
         }
 
         /// <summary>
-        /// Dieselbe Entladereihenfolge, aber mit den GEORDNETEN SENKENLISTEN des Laufs als
-        /// Grundlage der Entladeprio-Automatik (Paket S1). Die ENGINE reicht sie herein,
-        /// damit ein Puffer, den nur eine höherrangige Senkenzeile lädt, seine
-        /// Automatik-Priorität bekommt statt <see cref="PRIO_SONSTIGE"/>. Die Anzeigen
-        /// rufen weiter die Fassung ohne Listen. <c>null</c> = Spaltenfassung.
+        /// Dieselbe Entladereihenfolge mit BEREITS GELESENEN Senkenlisten als Grundlage
+        /// der Entladeprio-Automatik (Paket S1). Die ENGINE reicht die Listen des Laufs
+        /// herein, damit ein Puffer, den nur eine höherrangige Senkenzeile lädt, seine
+        /// Automatik-Priorität bekommt statt <see cref="PRIO_SONSTIGE"/>.
+        /// <c>null</c> = die Listen werden still nachgeladen.
         /// </summary>
         public static List<EntladeEintrag> Entladereihenfolge(int idProjekt, string verwendung,
                                                               List<Senkenliste> senken)
         {
             List<EntladeEintrag> liste = new List<EntladeEintrag>();
             if (idProjekt <= 0) return liste;
+
+            if (senken == null) senken = WaermesenkeClass.SenkenlistenLadenStill(idProjekt);
 
             string kanal = string.IsNullOrEmpty(verwendung)
                 ? WaermesenkeClass.VERWENDUNG_HEIZUNG : verwendung;

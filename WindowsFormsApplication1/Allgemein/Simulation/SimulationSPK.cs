@@ -102,71 +102,16 @@ namespace WindowsFormsApplication1
         int[] Brennstoff_Art = new int[MAX_SPK];
         double[] Kessel_Leistung_Spk = new double[MAX_SPK];
 
-        public bool Berechnung(int ID_Projekt)
-        {
-            int Anzahl = 0;
-            m_ID_Projekt = ID_Projekt;
-
-            Init();
-
-            // 1. Gesamten Wärmebedarf ermitteln (in MWh)
-            Waermebedarf_gesamt = 0;
-            Array.ForEach(Waermebedarf, value => Waermebedarf_gesamt += value);
-            Waermebedarf_gesamt /= 1000;
-            
-            Strombedarf_gesamt = Strombedarf_stuendlich.Sum();
-            HeizkesselCtrl heizkesselctrl = new HeizkesselCtrl();
-            Anzahl = spk_list.Count;
-            // B0-2: Kein Aliasing! "Restwaerme = Waermebedarf" band dasselbe Array-Objekt —
-            // Init() des nächsten Laufs (Array.Clear) löschte damit den Projekt-Wärmebedarf.
-            if (Anzahl == 0) { Restwaerme = (float[])Waermebedarf.Clone(); return true; }
-
-            // B0-12: Alle Kessel-Arrays sind fest auf MAX_SPK dimensioniert — mehr Einträge
-            // in spk_list liefen ungeprüft in die Einlese-Schleife und ab dem 11. Kessel
-            // in einen Überlauf sämtlicher Kessel-Arrays.
-            //
-            // PAKET 8 (Konzept 13.4): Die Meldung geht als WARNUNG in den Protokollkanal
-            // statt in eine MessageBox - der Lauf rechnet unverändert weiter, nur eben
-            // ohne den Rechner anzuhalten. Die Kappung selbst ist unberührt.
-            if (Anzahl > MAX_SPK)
-            {
-                SimulationProtokoll.Aktuell.Warnung(string.Format(
-                    MyResource.Resource.SIMENG_KESSEL_MAX_UEBERSCHRITTEN, Anzahl, MAX_SPK, MAX_SPK));
-                Anzahl = MAX_SPK;
-            }
-
-            // 2. Kesseldaten laden und Wirkungsgrade normieren
-            //
-            // Der Block steht seit der Paket-5-Nacharbeit (Befund N6) in einer eigenen
-            // Methode: Der zweikanalige Weg braucht ihn Zeile für Zeile gleich, und zwei
-            // Kopien wären die sichere Quelle künftiger Abweichungen — ein Fix am Altpfad
-            // wirkte im neuen Weg nicht, und die Regressionssuite (Flag aus) fände das nie.
-            // Die AUSGEFÜHRTEN Anweisungen und ihre Reihenfolge sind unverändert; der
-            // bereits erzeugte HeizkesselCtrl wird hineingereicht, damit auch seine
-            // Erzeugungsstelle bleibt, wo sie war.
-            if (!Kesseldaten_Einlesen(heizkesselctrl, Anzahl)) return false;
-
-            // 3. Die stündliche Simulation durchführen (Ermittelt Nutzwärme UND stündlichen Verbrauch)
-            Heizkessel_Simulation(Waermebedarf, ref Gasspitze_Spk, s_waerme_Gas_Spk, s_waerme_Oel_Spk,
-                Max_Waermebedarf, Anzahl, Kessel_Leistung_Spk, Kessel_Wirk_Gas_Spk, Kessel_Wirk_Oel_Spk,
-                Betriebsbereitschaft_Verluste, Brennstoff_Betrieb_Spk, Kessel_Verbrauch_MWh_Spk);
-
-            // 4./5. Verbrauch global bilanzieren, Emissionen und Jahresnutzungsgrad.
-            //
-            // Der Block steht seit Paket 5 in einer eigenen Methode: Der zweikanalige
-            // Weg braucht ihn Zeile für Zeile gleich, und zwei Kopien wären die sichere
-            // Quelle künftiger Abweichungen. Die AUSGEFÜHRTEN Anweisungen und ihre
-            // Reihenfolge sind unverändert.
-            Bilanz_und_Nutzungsgrad(Anzahl);
-
-            return true;
-        }
+        // PAKET A1: Hier stand "Berechnung(int ID_Projekt)" - der Einstieg des
+        // einkanaligen Altpfads (Jahressumme, Kesseldaten_Einlesen,
+        // Heizkessel_Simulation, Bilanz_und_Nutzungsgrad auf EINEM Bedarfsvektor). Er
+        // ist mit dem Altpfad ersatzlos entfallen; der Einstieg des Moduls ist
+        // Vorbereiten_Zweikanalig(), gerechnet wird in der Kaskadenschleife oder als
+        // Vektorstufe (Berechnung_Zweikanalig).
 
         /// <summary>
         /// Schritt 2 der Kesselbilanz: Kesseldaten, Emissionsfaktoren, Wirkungsgrade und
-        /// Bereitschaftsverluste je Kessel einlesen. EINE Fassung für beide Rechenwege
-        /// (Paket-5-Nacharbeit, Befund N6) — der zweikanalige Weg hatte den Block bis
-        /// dahin kopiert.
+        /// Bereitschaftsverluste je Kessel einlesen (Paket-5-Nacharbeit, Befund N6).
         /// </summary>
         /// <param name="heizkesselctrl">bereits erzeugter Controller des Aufrufers</param>
         /// <param name="Anzahl">Zahl der zu lesenden Kessel (bereits auf MAX_SPK begrenzt)</param>
@@ -175,7 +120,7 @@ namespace WindowsFormsApplication1
         /// PAKET 8 (Konzept 13.4): Der Parameter <c>mitDialog</c> ist entfallen. Er
         /// unterschied bis dahin den Altpfad (MessageBox) vom zweikanaligen Weg
         /// (<see cref="Fehlertext"/>, Nacharbeit N10) — Paket 8 verallgemeinert den
-        /// Fehlerkanal, also melden BEIDE Wege dialogfrei. Die Oberfläche zeigt den Text
+        /// Fehlerkanal, also wird dialogfrei gemeldet. Die Oberfläche zeigt den Text
         /// nach dem Lauf; dort ist ein Dialog richtig aufgehoben, mitten in der
         /// Kaskade war er es nie.
         /// </remarks>
@@ -324,94 +269,10 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void Heizkessel_Simulation(float[] Waermebedarf, ref double GasSpitze, double[] s_waerme_gas, double[] s_waerme_oel,
-                double Max_Waermebedarf, int Anzahl, double[] Leistung, double[] Wirk_Gas, double[] Wirk_Oel,
-                double[] BereitschaftsVerlustFaktor, int[] Brennstoff, double[] Kessel_Verbrauch_MWh_Spk)
-        {
-            double KesselLeistung;
-            double Gasleistung;
-            // B0-12: war double[5] — ab dem 6. Kessel IndexOutOfRangeException bei der
-            // Gasspitzenberechnung. Jetzt gleiche Größe wie alle übrigen Kessel-Arrays.
-            double[] Gasspitze_Kessel = new double[MAX_SPK];
-            double waerme;
-
-            Max_Waermebedarf = 0;
-            GasSpitze = 0;
-            for (int i = 0; i < MAX_SPK; i++) { Gasspitze_Kessel[i] = 0; }
-
-            // Stündliche Lastverteilung (Einheit: kW)
-            for (int Stunde = 0; Stunde < 8760; Stunde++)
-            {
-                waerme = Waermebedarf[Stunde];
-
-                if (Max_Waermebedarf < waerme) Max_Waermebedarf = waerme;
-
-                for (int Kessel = 0; Kessel < Anzahl; Kessel++)
-                {
-                    // 1. Nutzwärme-Zuweisung für diese Stunde
-                    if (waerme > Leistung[Kessel])
-                    {
-                        KesselLeistung = Leistung[Kessel];
-                        waerme -= Leistung[Kessel];
-                    }
-                    else
-                    {
-                        KesselLeistung = waerme;
-                        waerme = 0;
-                    }
-
-                    // Basis-Wirkungsgrad bestimmen
-                    double wirk = (Brennstoff[Kessel] >= 6 && Brennstoff[Kessel] <= 9 || Brennstoff[Kessel] >= 18 && Brennstoff[Kessel] <= 22)
-                        ? Wirk_Oel[Kessel]
-                        : Wirk_Gas[Kessel];
-                    if (wirk <= 0) wirk = 0.90; // Fallback
-
-                    double stündlicherBrennstoffverbrauchKW = 0;
-
-                    // 2. Stündliche energetische Bilanzierung (Ansatz A)
-                    if (KesselLeistung > 0)
-                    {
-                        // Kessel läuft -> Verbrauch über Wirkungsgrad (in dieser Stunde kein Stillstandsverlust)
-                        stündlicherBrennstoffverbrauchKW = KesselLeistung / wirk;
-
-                        // Nutzwärme-Zähler aufaddieren (wird am Ende in MWh umgerechnet)
-                        if (Brennstoff[Kessel] >= 6 && Brennstoff[Kessel] <= 9 || Brennstoff[Kessel] >= 18 && Brennstoff[Kessel] <= 22)
-                        {
-                            s_waerme_oel[Kessel] += KesselLeistung;
-                        }
-                        else
-                        {
-                            s_waerme_gas[Kessel] += KesselLeistung;
-
-                            // Gasspitzenberechnung
-                            Gasleistung = KesselLeistung / wirk;
-                            if (Gasspitze_Kessel[Kessel] < Gasleistung) Gasspitze_Kessel[Kessel] = Gasleistung;
-                        }
-                    }
-                    else
-                    {
-                        // Kessel steht in dieser Stunde still -> Er verliert Wärme durch Auskühlung (Bereitschaftsverlust)
-                        // Verlust = Faktor * Nennleistung (kW) * 1 Stunde
-                        stündlicherBrennstoffverbrauchKW = BereitschaftsVerlustFaktor[Kessel] * Leistung[Kessel];
-                    }
-
-                    // Stündlichen Verbrauch direkt auf den Jahreszähler des Kessels addieren (von kW in kWh)
-                    Kessel_Verbrauch_MWh_Spk[Kessel] += stündlicherBrennstoffverbrauchKW;
-
-                    Kesselleistung_stuendlich[Stunde] += (float)KesselLeistung;
-                    Restwaerme[Stunde] = (float)waerme;
-                }
-            }
-
-            // Umrechnung der Jahressummen von kWh in MWh (/ 1000)
-            for (int i = 0; i < Anzahl; i++)
-            {
-                s_waerme_gas[i] /= 1000;
-                s_waerme_oel[i] /= 1000;
-                Kessel_Verbrauch_MWh_Spk[i] /= 1000; // Verbrauch ebenfalls von kWh nach MWh wandeln
-                GasSpitze += Gasspitze_Kessel[i];
-            }
-        }
+        // PAKET A1: Hier stand "Heizkessel_Simulation" - die EINKANALIGE Jahresschleife
+        // der Kessel-Lastverteilung. Ihr einziger Aufrufer war Berechnung(int); beide
+        // sind mit dem Altpfad entfallen. Die zweikanalige Fassung der Lastverteilung
+        // steht in Stunde_Bedarf/Stunde_Abschluss.
 
         // ===================================================================
         // Zweikanaliger Weg (Paket 5 - Konzept 6.5, erster Punkt)
@@ -646,14 +507,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double[] Speicherladung_stuendlich = new double[8760];
 
-        /// <summary>Jahressumme der Speicherladung [kWh]; im Altpfad immer exakt 0.</summary>
+        /// <summary>Jahressumme der Speicherladung [kWh]; ohne Puffer-Senke exakt 0.</summary>
         public double Speicherladung_gesamt = 0;
 
         /// <summary>
         /// Der Anteil dieses Erzeugers an der SPEICHERENTLADUNG, die Bedarf gedeckt hat
         /// [kWh] (Nacharbeit N2, Interimsregel „Vermischung im Speicher").
         ///
-        /// Gefüllt von <see cref="Kaskadenschleife"/>; im Altpfad und ohne Puffer-Senke
+        /// Gefüllt von <see cref="Kaskadenschleife"/>; ohne Puffer-Senke
         /// exakt 0. Zusammen mit der Direktdeckung ergibt sich daraus der EIGENANTEIL des
         /// Kessels an der Bedarfsdeckung — die Größe, die
         /// <c>Tab_ErgebnisHeizkessel.Waermebedarfsdeckung</c> ausweist.
@@ -692,7 +553,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Fehlertext des zweikanaligen Wegs (Konzept 13.4: die Engine bleibt dialogfrei).
-        /// Der Altpfad zeigt an denselben Stellen eine MessageBox; im zweikanaligen Weg
+        /// Statt einer MessageBox mitten im Rechenlauf
         /// geht die Meldung über den Fehlerkanal Richtung
         /// <c>SimulationRunner.SimuliereUndSpeichere(… out fehler)</c> (Nacharbeit N10).
         /// </summary>
@@ -776,7 +637,7 @@ namespace WindowsFormsApplication1
         /// der STUFENEINGANG wird festgehalten.
         ///
         /// NACHARBEIT PAKET 6, BEFUND N1: Der Stufeneingang ist der Kanalstand VOR der
-        /// Vorabentladung (Phase A) — dieselbe Bezugsgröße, die der Altpfad an der
+        /// Vorabentladung (Phase A) — dieselbe Bezugsgröße, die die Stufe an ihrer
         /// Kaskadenposition sieht und die die Wärmepumpe seit Etappe 4b führt. Bis dahin
         /// stand er in <see cref="Stunde_Bedarf"/> und damit NACH Phase A; die Größe
         /// <c>Tab_ErgebnisHeizkessel.Waermebedarf</c> fiel dadurch still ab, sobald ein
@@ -804,7 +665,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Phase B der Reihenfolge-Invariante (Konzept 6.3) für die Heizkessel: die
-        /// ZWEIKANALIGE Fassung der Lastverteilung aus <see cref="Heizkessel_Simulation"/>.
+        /// KANALGERECHTE Fassung der Lastverteilung (bis Paket A1: Heizkessel_Simulation).
         ///
         /// Konzept 6.5 beschreibt sie als „zweiten Schleifendurchlauf mit erhaltenem
         /// Zwischenzustand". Umgesetzt ist genau das, nur ohne zweiten Durchlauf: Der
@@ -1030,7 +891,7 @@ namespace WindowsFormsApplication1
         ///
         /// Der Weg für Projekte, in denen kein Kessel eine Puffer-Senke trägt. Ohne
         /// Speicher haben die Phasen A, C, D und E für diese Stufe keinen Inhalt; Phase G
-        /// beschränkt sich auf die Brennstoffbilanz der Stunde. Gegenüber dem Altpfad
+        /// beschränkt sich auf die Brennstoffbilanz der Stunde. Gegenüber der bis Paket A1
         /// ändert sich allein die Kanalführung — die je Stunde und Kessel abgegebene
         /// Nutzwärme, der Brennstoffverbrauch und die Restwärme sind dieselben Zahlen.
         /// </summary>
@@ -1080,7 +941,7 @@ namespace WindowsFormsApplication1
             // Kessel, die es in diesem Lauf nicht gibt.
             _anzahlZweikanalig = 0;
 
-            // Zweikanaliger Weg (Paket 5 / Nacharbeit N1, N2): Im Altpfad bleiben diese
+            // Speichergrößen (Paket 5 / Nacharbeit N1, N2): Ohne Puffer-Senke bleiben diese
             // Größen auf 0, damit die Ergebnisbildung in SimulationRunner dort
             // nachweislich bitgleich der bisherigen ist.
             Array.Clear(Speicherladung_stuendlich, 0, Speicherladung_stuendlich.Length);

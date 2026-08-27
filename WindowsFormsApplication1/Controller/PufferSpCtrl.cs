@@ -1103,55 +1103,18 @@ namespace WindowsFormsApplication1
             return vorlauf > 0 && ruecklauf > 0;
         }
 
-        /// <summary>
-        /// Schreibt die Betriebstemperaturen an die Puffer-Zeile. Geschrieben wird nur
-        /// ein Paar, das als Betriebsvorgabe taugt - geprueft ueber
-        /// <see cref="ProjektPuffer.IstTemperaturpaar"/> (beide gesetzt, Ruecklauf &gt; 0,
-        /// Vorlauf &gt; Ruecklauf). Sonst bleibt der Bestand stehen und der Rueckfallweg
-        /// greift weiter.
-        ///
-        /// Das blosse "&gt; 0" reichte nicht: ein vertauschtes Paar wie 35/45 (Bestand,
-        /// Projekt 1008) haette den Test bestanden, am Speicher aber eine Spreizung
-        /// &lt;= 0 hinterlassen - der Speicher saehe gepflegt aus und faende doch nur den
-        /// stillen Rueckfall auf die Engine-Vorgabe.
-        ///
-        /// Bewusst OHNE fachliche UNTERgrenze: die Plausibilitaet der Eingabe gehoert an
-        /// die Oberflaeche (ProjektPuffer.TemperaturenPruefen). Hier darf deshalb auch
-        /// 35/28 landen.
-        /// </summary>
-        public static bool SetTemperaturen(int idPuffer, int vorlauf, int ruecklauf)
-        {
-            if (idPuffer <= 0) return false;
-            if (!ProjektPuffer.IstTemperaturpaar(vorlauf, ruecklauf)) return false;
-
-            return StillNonQuery(ProjektPuffer.SQL_PUFFER_TEMPERATUREN_UPDATE,
-                                 new OleDbParameter("@vor", vorlauf),
-                                 new OleDbParameter("@rueck", ruecklauf),
-                                 new OleDbParameter("@id", idPuffer)) >= 0;
-        }
-
-        /// <summary>
-        /// Setzt Vorlauf und Ruecklauf der Puffer-Zeile auf NULL - die RUECKNAHME einer
-        /// Vorgabe (Etappe 4 / Review-Nacharbeit).
-        ///
-        /// Leert der Anwender die Temperaturzellen, darf am Speicher kein alter Wert
-        /// stehen bleiben: die Puffer-Zeile ist seit Etappe 4 die FUEHRENDE Ablage, ein
-        /// zurueckgebliebenes Paar wuerde die Zuordnung dauerhaft verdecken. Mit NULL
-        /// faellt die Engine geordnet auf Stufe 2 (Zuordnung) und Stufe 3
-        /// (Engine-Vorgabe 10 K) zurueck.
-        ///
-        /// Bewusst getrennt von <see cref="SetTemperaturen"/>: dort ist "unbrauchbares
-        /// Paar" ein Grund, NICHTS zu tun; hier ist das Leeren die Absicht.
-        /// </summary>
-        public static bool TemperaturenLoeschen(int idPuffer)
-        {
-            if (idPuffer <= 0) return false;
-
-            return StillNonQuery(ProjektPuffer.SQL_PUFFER_TEMPERATUREN_UPDATE,
-                                 ProjektPuffer.Par("@vor", OleDbType.Integer, DBNull.Value),
-                                 ProjektPuffer.Par("@rueck", OleDbType.Integer, DBNull.Value),
-                                 new OleDbParameter("@id", idPuffer)) >= 0;
-        }
+        // PAKET A1: SetTemperaturen und TemperaturenLoeschen sind ENTFALLEN.
+        //
+        // Beide gehoerten zur Nachfuehrung der Betriebstemperaturen aus der Alt-Zuordnung
+        // Z_ProjektPufferSp an die Puffer-Zeile ("fuehrende Ablage", Etappe 4): Beim
+        // Speichern der Konfiguration uebertrug Form_Simulation_Config die Werte der
+        // fuehrenden Waermepumpen-Zuordnung an den Speicher, und das Leeren beider Zellen
+        // setzte sie dort wieder auf NULL. Ihr einziger Aufrufer ist mit dem Abriss der
+        // Alt-Zuordnung gegangen.
+        //
+        // Tab_Pufferspeicher ist jetzt die EINZIGE Ablage der Betriebstemperaturen;
+        // gepflegt werden sie in Form_PufferSp_Projekt, das seinen eigenen Schreibweg hat.
+        // Migrationsschritt 51 hat die Werte der Alt-Zuordnung einmalig uebernommen.
 
         // --- BHKW-Pendelspeicher (Etappe 3, 14.08.2026) ------------------------------
 

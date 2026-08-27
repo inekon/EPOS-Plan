@@ -7,8 +7,8 @@ namespace WindowsFormsApplication1
     /// Jahressimulation (Stundenschritte, 1 h => kW entspricht kWh).
     ///
     /// Stufe 1 der Pufferspeicher-Integration:
-    /// - Nutzbare Kapazität aus Volumen und Temperaturspreizung der Zuordnung
-    ///   (Z_ProjektPufferSp: Vorlauf/Rücklauf; Tab_Pufferspeicher: Gesamtvolumen):
+    /// - Nutzbare Kapazität aus Volumen und Temperaturspreizung der Projektkopie
+    ///   (Tab_Pufferspeicher: Gesamtvolumen, Vorlauf/Rücklauf):
     ///     Q_max [kWh] = Volumen [l] * 1,16 Wh/(l*K) * (Vorlauf - Rücklauf) / 1000
     /// - Bereitschaftsverluste [kWh/24h] wirken stündlich, anteilig zum Füllstand.
     /// - Keine Temperaturschichtung, keine Begrenzung der Be-/Entladeleistung
@@ -102,10 +102,9 @@ namespace WindowsFormsApplication1
         // Registry-Felder (Paket 4 - Konzept 6.2/3.4/3.6)
         //
         // Sie werden von SimulationControl.SpeicherRegistryAufbauen aus der
-        // Projektkopie Tab_Pufferspeicher gefüllt. Im EINKANALIGEN Altpfad sind sie
-        // nicht im Rechenpfad; ausgewertet werden sie im zweikanaligen Weg (Etappe 4b):
-        // die aus der Kaskade gelöste Ladephase (6.3 C/D) mit Prioritätsauflösung
-        // (3.4) und die Entladereihenfolge bei mehreren Puffern je Kanal (3.6).
+        // Projektkopie Tab_Pufferspeicher gefüllt. Ausgewertet werden sie von der aus
+        // der Kaskade geloesten Ladephase (6.3 C/D) mit Prioritaetsaufloesung (3.4) und
+        // von der Entladereihenfolge bei mehreren Puffern je Kanal (3.6).
         // ------------------------------------------------------------------
 
         /// <summary>
@@ -205,15 +204,13 @@ namespace WindowsFormsApplication1
         /// aus einem „kein Puffer" würde still ein „Puffer mit Q_max" — mit voller
         /// Wirkung auf Ergebnis und Anzeige.
         ///
-        /// IM ZWEIKANALIGEN WEG bleibt die Einschränkung bestehen, nur mit einem anderen
-        /// Kriterium: Dort tragen das Flag die Speicher mit einer SENKEN-Referenz
-        /// (<c>WS_ID_Puffer</c>, <c>WS_ID_Puffer2</c> einer Projektanlage) und die
-        /// Quellspeicher (<c>WQ_ID_Puffer</c>) — also genau die, die ein Erzeuger laden
-        /// oder entladen kann (<c>SimulationControl.RegistryFuerZweikanaligOeffnen</c>).
-        /// Ein Puffer, der nur über die Alt-Zuordnung <c>Z_ProjektPufferSp</c> im Projekt
-        /// hängt und keine Senkenreferenz trägt, rechnet auch dort nicht mit: Er würde
-        /// sonst mit lauter Nullen in der Ergebnispersistenz erscheinen und über
-        /// <c>puffer_wp</c> eine Speicherkapazität melden, die kein Erzeuger benutzt.
+        /// DAS FLAG TRAGEN die Speicher mit einer SENKEN-Referenz einer Projektanlage
+        /// (Senkenliste bzw. die gespiegelten Altspalten) und die Quellspeicher
+        /// (<c>WQ_ID_Puffer</c>) — also genau die, die ein Erzeuger laden oder entladen
+        /// kann (<c>SimulationControl.RegistryFuerZweikanaligOeffnen</c>). Ein Puffer ohne
+        /// Senkenreferenz rechnet nicht mit: Er wuerde sonst mit lauter Nullen in der
+        /// Ergebnispersistenz erscheinen und ueber <c>puffer_wp</c> eine Speicherkapazitaet
+        /// melden, die kein Erzeuger benutzt.
         /// </summary>
         public bool ImRechenpfad = false;
 
@@ -263,7 +260,7 @@ namespace WindowsFormsApplication1
         //                            − Durchsatz_Verluste_gesamt                 = B
         // und ihre Summe ist der bisherige Gesamtausdruck (= SOC).
         //
-        // OHNE Durchlass — jeder Aufruf des Altpfads — ist B durchgehend 0: Die
+        // OHNE Durchlass ist B durchgehend 0: Die
         // Durchsatzgrößen bleiben exakt 0,0 und die drei Altgrößen sind bitgleich die
         // bisherigen.
         //
@@ -363,8 +360,8 @@ namespace WindowsFormsApplication1
         /// Initialisiert den Speicher aus den Zuordnungs- und Stammdaten.
         /// </summary>
         /// <param name="volumenLiter">Gesamtvolumen [l] (Tab_Pufferspeicher)</param>
-        /// <param name="vorlauf">Vorlauftemperatur [°C] (Z_ProjektPufferSp)</param>
-        /// <param name="ruecklauf">Rücklauftemperatur [°C] (Z_ProjektPufferSp)</param>
+        /// <param name="vorlauf">Vorlauftemperatur [°C] (Tab_Pufferspeicher)</param>
+        /// <param name="ruecklauf">Rücklauftemperatur [°C] (Tab_Pufferspeicher)</param>
         /// <param name="bereitschaftsverlusteProTag">Bereitschaftsverluste [kWh/24h] (Tab_Pufferspeicher)</param>
         /// <param name="rueckfallDeltaT">
         /// ΔT [K], das gilt, wenn kein vollständiges Temperaturpaar vorliegt. Vorgabe
@@ -397,7 +394,7 @@ namespace WindowsFormsApplication1
         public void Reset()
         {
             // Hysterese wie beim abzulösenden _speicherLaden: Der Lauf beginnt mit
-            // leerem Speicher, also zuerst laden (im Altpfad bleibt das Feld ungelesen).
+            // leerem Speicher, also zuerst laden.
             LaedtGerade = true;
             SOC = 0;
             Ladung_gesamt = 0;
@@ -458,7 +455,7 @@ namespace WindowsFormsApplication1
         /// Nachentladung (Phase E) zieht ihn im selben Zeitschritt wieder herunter,
         /// bevor Phase G die Bereitschaftsverluste rechnet und den Wert in die
         /// Ganglinie schreibt. Ohne Durchlass (<c>0</c>) ist das Verhalten exakt das
-        /// bisherige — der Altpfad ruft ausschließlich diese Form auf.
+        /// bisherige.
         /// </summary>
         /// <param name="durchlass">
         /// Im selben Zeitschritt absehbare Entnahme [kWh], um die die Aufnahme über die
@@ -475,7 +472,8 @@ namespace WindowsFormsApplication1
 
             // N6: Aufnahme in SPEICHERUMSATZ und DURCHFLUSS zerlegen. Der Teil bis Q_max
             // ist Umsatz, alles darüber fließt in derselben Stunde weiter. Ohne Durchlass
-            // ist der zweite Summand konstruktiv 0 — der Altpfad rechnet bitgleich.
+            // ist der zweite Summand konstruktiv 0 - die Buchung ist dann bitgleich die
+            // bisherige.
             double raumBisQmax = Q_max - SOC;
             if (raumBisQmax < 0) raumBisQmax = 0;
             double umsatz = Math.Min(ladung, raumBisQmax);
@@ -537,7 +535,7 @@ namespace WindowsFormsApplication1
                 // liegen. Bis Phase G ist er normalerweise wieder darunter — bliebe
                 // doch etwas stehen, dürfte daraus kein überhöhter Bereitschaftsverlust
                 // werden. Ohne Durchlass gilt SOC <= Q_max, die Klemmung greift dann nie
-                // und der Altpfad rechnet bitgleich wie bisher.
+                // und die Rechnung bleibt bitgleich wie bisher.
                 double anteil = SOC / Q_max;
                 if (anteil > 1) anteil = 1;
 
@@ -610,7 +608,7 @@ namespace WindowsFormsApplication1
         /// <b>KEIN KANALTEST MEHR</b> (Paket K2): Die Frage „bedient dieser Speicher
         /// Kanal x?" beantwortet <see cref="BedientKanal(int)"/> aus dem Klassen-Set.
         /// Diese Eigenschaft liest allein die ANZEIGE-/Ergebnisrolle
-        /// <see cref="Verwendung"/> und bleibt für den einkanaligen Altpfad stehen.
+        /// <see cref="Verwendung"/>.
         /// </summary>
         public bool IstBrauchwasserkanal
         {
@@ -767,9 +765,8 @@ namespace WindowsFormsApplication1
         ///
         /// Der reservierte Betrag (Befund N3) ist bereits vergeben: Ein Erzeuger, der
         /// seine Produktion in Phase B gegen diesen Raum entschieden hat, muss ihn in
-        /// den Ladephasen noch vorfinden. Ohne Reservierung — jeder Aufruf des Altpfads
-        /// und jede Stunde ohne BHKW in Phase B — ist das Feld 0 und der Ausdruck
-        /// bitgleich der bisherige.
+        /// den Ladephasen noch vorfinden. Ohne Reservierung — jede Stunde ohne BHKW in
+        /// Phase B — ist das Feld 0 und der Ausdruck bitgleich der bisherige.
         /// </summary>
         /// <param name="obergrenzeAnteil">
         /// Obergrenze als ANTEIL der nutzbaren Kapazität (0…1), bereits aufgelöst
@@ -879,7 +876,7 @@ namespace WindowsFormsApplication1
         /// <see cref="LaedtGerade"/>) und liefert zurück, ob der Speicher in dieser
         /// Stunde ENTLADEN darf.
         ///
-        /// Dieselbe Regel wie im einkanaligen Altpfad, nur nicht mehr modulübergreifend,
+        /// Dieselbe Regel wie in der frueheren einkanaligen Fassung, nur nicht mehr modulübergreifend,
         /// sondern am Speicher: Unter der Einschaltschwelle beginnt die Nachladung, ab der
         /// Abschaltschwelle endet sie. Solange nachgeladen wird, deckt der Speicher keinen
         /// Bedarf vorab (Phase A) — die Nachentladung (Phase E) greift davon unabhängig,

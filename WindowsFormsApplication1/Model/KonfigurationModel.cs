@@ -36,20 +36,25 @@
         public double Pendelspeicher;
 
         /// <summary>
-        /// Feature-Flag der zweikanaligen Kaskade (Konzept Kapitel 9, „Feature-Flag
-        /// empfohlen"), Spalte <c>Tab_Einstellungen.Kaskade_Zweikanalig</c>.
-        /// <b>Vorbelegung aus</b> — Altprojekte rechnen weiter auf dem einkanaligen Pfad.
+        /// ALTLAST seit Paket A1 (Leitentscheidung L1) — Spalte
+        /// <c>Tab_Einstellungen.Kaskade_Zweikanalig</c>, ehemals das Feature-Flag der
+        /// zweikanaligen Kaskade (Konzept Kapitel 9).
+        ///
+        /// <b>DIE ENGINE LIEST DEN WERT NICHT MEHR.</b> Der einkanalige Altpfad ist
+        /// ersatzlos entfallen; jeder Lauf rechnet über die Speicherstufe mit
+        /// herausgelöster Ladephase. Migrationsschritt 51 setzt die Spalte im Bestand auf
+        /// WAHR, damit Anzeige und Persistenz nicht widersprüchlich dastehen.
+        ///
+        /// Feld und Zugriffsweg bleiben, solange die Spalte im Schema steht; der
+        /// Fußzeilenschalter des Konfigurationsdialogs, der sie zuletzt geschrieben hat,
+        /// ist mit Paket A1 entfallen. Begründung und Abrisspunkt stehen im Altlast-Block
+        /// über <see cref="KonfigurationCtrl.KaskadeZweikanaligLesen"/>.
         ///
         /// Gelesen wird NAMENSBASIERT (<c>KonfigurationCtrl.ReadSingle</c>), nicht über
         /// die Ordinalkette row[0..22]; geschrieben ausschließlich über
         /// <see cref="KonfigurationCtrl.KaskadeZweikanaligSchreiben"/>, damit die
         /// INSERT-/UPDATE-Spaltenlisten der Konfiguration unverändert bleiben und ein
         /// noch nicht migrierter Bestand das Speichern nicht scheitern lässt.
-        ///
-        /// WIRKSAM seit Etappe 4b: <c>SimulationControl.Do_Simulation</c> verzweigt auf
-        /// diesen Wert in die zweikanalige Kaskade mit herausgelöster Ladephase; ohne ihn
-        /// rechnet der unveränderte einkanalige Altpfad. Die dokumentierten
-        /// Ergebnisänderungen stehen im Umsetzungsprotokoll zu Paket 4, Teil 7.
         /// </summary>
         public bool Kaskade_Zweikanalig;
 

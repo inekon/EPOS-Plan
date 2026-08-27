@@ -240,13 +240,10 @@ namespace WindowsFormsApplication1
                 w.Waermeproduktion_WP = wp.WP_Waermeproduktion_gesamt / 1000.0;
                 w.Stromverbrauch_WP = wp.WP_Strombedarf_gesamt / 1000.0;
                 w.Stromverbrauch_Heizstab = wp.Heizstab_gesamt / 1000.0;
-                // B0-7a: Restbedarf aus der Stundenganglinie statt aus der Differenzformel —
-                // die alte Formel ignorierte Speichereffekte und zog zudem den Heizstab
-                // (Stromgröße) von einer Wärmemenge ab. Quelle ist dieselbe Größe,
-                // die auch die Detailansicht anzeigt (waermerestbedarf_gesamt).
-                // Seit Nutzerentscheidung 6-5 gilt das nur noch für den ALTPFAD — der
-                // zweikanalige Weg überschreibt den Wert weiter unten (Stufeneingang
-                // minus Eigenanteil).
+                // B0-7a: Vorbelegung aus der Stundenganglinie. Sie wird seit
+                // Nutzerentscheidung 6-5 weiter unten ausnahmslos überschrieben
+                // (Stufeneingang minus Eigenanteil) und steht hier nur noch als
+                // definierter Ausgangswert.
                 w.Restwaermebedarf = wp.waermerestbedarf_gesamt / 1000.0;
                 // Paket 7 / Konzept 6.6: Kapazität kommt aus dem zugeordneten Speicher
                 // (SimulationPufferspeicher.Q_max in kWh), nicht mehr aus dem Legacy-
@@ -267,9 +264,7 @@ namespace WindowsFormsApplication1
 
                 // EIGENANTEIL der Wärmepumpe [MWh] — Direktdeckung (Phase B) plus der ihr
                 // zugerechnete Anteil an der bedarfsdeckenden Speicherentladung plus
-                // Heizstab (er gehört zur WP, Tab_WP.Heizung je Modul). NUR im
-                // zweikanaligen Weg gefüllt; im Altpfad sind Direktdeckung_gesamt und
-                // Speicherentladung_Anteil exakt 0.
+                // Heizstab (er gehört zur WP, Tab_WP.Heizung je Modul).
                 double wpEigen = (wp.Direktdeckung_gesamt + wp.Speicherentladung_Anteil +
                                   wp.Heizstab_gesamt) / 1000.0;
 
@@ -292,10 +287,6 @@ namespace WindowsFormsApplication1
                 // zugerechnete Entladung und Heizstab alle aus demselben Stufeneingang
                 // stammen (die Klemmung ist Rundungsschutz).
                 //
-                // NUR IM NEUEN PFAD: Im Altpfad ist Heizstab_gesamt NICHT null, während
-                // die beiden anderen Summanden fehlen — der Ausdruck wäre dort keine
-                // Bilanz. Der Altpfad behält unverändert die Jahressumme der Ganglinie.
-                //
                 // BEWUSST UNVERÄNDERT bleibt die GANGLINIE waermerestbedarf_stuendlich
                 // (Export wp_restwaerme.csv) und mit ihr Min_Spitzenkesselleistung: Sie
                 // führt den PROJEKTrest der Stunde, und genau der ist die Bezugsgröße für
@@ -309,11 +300,8 @@ namespace WindowsFormsApplication1
                 // gehört in ein eigenes Paket. Anders als beim BHKW (Befund N4) ist das
                 // kein Widerspruch: Dort meldeten Skalar und Ganglinie DIESELBE Größe in
                 // zwei Fassungen, hier sind es zwei verschiedene Größen.
-                if (sim.KaskadeZweikanalig)
-                {
-                    w.Restwaermebedarf = w.Waermebedarf - wpEigen;
-                    if (w.Restwaermebedarf < 0) w.Restwaermebedarf = 0;   // Rundungsschutz
-                }
+                w.Restwaermebedarf = w.Waermebedarf - wpEigen;
+                if (w.Restwaermebedarf < 0) w.Restwaermebedarf = 0;   // Rundungsschutz
 
                 // B0-7b: Waermebedarfsdeckung (%) restbedarfsbasiert als EIGENANTEIL der
                 // WP-Stufe: (Stufeneingang - Rest) / Gesamtbedarf. Bericht und
@@ -332,8 +320,8 @@ namespace WindowsFormsApplication1
                 // einem präparierten 1023: Summe der ausgewiesenen Deckungen 85,71 % bei
                 // tatsächlich 67,06 %.
                 //
-                // Im zweikanaligen Weg wird der Eigenanteil deshalb aus den Größen
-                // gebildet, die die Kaskadenschleife je Erzeuger führt:
+                // Der Eigenanteil wird deshalb aus den Größen gebildet, die die
+                // Kaskadenschleife je Erzeuger führt:
                 //   Direktdeckung (Phase B) + zugerechnete Speicherentladung + Heizstab.
                 // Der Heizstab gehört zur Wärmepumpe (Tab_WP.Heizung je Modul); die
                 // Zurechnung der Entladung folgt der Interimsregel "Vermischung im
@@ -343,11 +331,8 @@ namespace WindowsFormsApplication1
                 double basis = simulation_Waermebedarf.Waermebedarf_Gesamt;
                 if (basis > 0)
                 {
-                    double deckung;
-                    if (sim.KaskadeZweikanalig)
-                        deckung = wpEigen / basis * 100.0;   // dieselbe Größe wie im Restbedarf (6-5)
-                    else
-                        deckung = (w.Waermebedarf - w.Restwaermebedarf) / basis * 100.0;
+                    // dieselbe Größe wie im Restbedarf (6-5)
+                    double deckung = wpEigen / basis * 100.0;
 
                     if (deckung > 100) deckung = 100;
                     if (deckung < 0) deckung = 0;
@@ -376,15 +361,12 @@ namespace WindowsFormsApplication1
                 SimulationBHKW bh = sim.simulation_bhkw;
                 ErgebnisBHKWModel b = new ErgebnisBHKWModel();
 
-                // NACHARBEIT PAKET 6, BEFUND N8: Der Stufeneingang kommt jetzt aus der
+                // NACHARBEIT PAKET 6, BEFUND N8: Der Stufeneingang kommt aus der
                 // double-Jahressumme des Moduls statt aus der Summe der float-Ganglinie.
                 // Das ist dieselbe Größe, nur ohne die Summationsfehler von 8760
                 // float-Additionen — und es bindet Waermebedarf_gesamt an, das bis dahin
-                // nur geschrieben wurde. Im Altpfad führt das Modul die Summe nicht; dort
-                // gilt weiter die Ganglinie.
-                double waermebedarfMWh = sim.KaskadeZweikanalig
-                    ? bh.Waermebedarf_gesamt / 1000.0
-                    : bh.waermebedarf.Sum() / 1000.0;
+                // nur geschrieben wurde.
+                double waermebedarfMWh = bh.Waermebedarf_gesamt / 1000.0;
                 double strombedarfMWh = bh.strombedarf.Sum() / 1000.0;
                 float[] restwaermeBhkw = sim.SubVectors(bh.waermebedarf, bh.waermeproduktion);
 
@@ -439,9 +421,9 @@ namespace WindowsFormsApplication1
                 //     Speicher", siehe Kaskadenschleife). Damit geht die Summe der
                 //     Erzeugerdeckungen auch mit dem BHKW als viertem Lader auf.
                 //
-                // IM ALTPFAD unverändert: Direktdeckung_gesamt und
-                // Speicherentladung_Anteil sind dort exakt 0, der Zweig wird nicht betreten.
-                if (sim.KaskadeZweikanalig)
+                // PAKET A1: Der Block stand hinter „if (sim.KaskadeZweikanalig)". Die
+                // Bedingung ist mit dem Altpfad entfallen; die Klammern bleiben und
+                // halten die drei Hilfsgrößen beisammen.
                 {
                     double bhkwDirekt = bh.Direktdeckung_gesamt / 1000.0;
                     double bhkwEigen = bhkwDirekt + bh.Speicherentladung_Anteil / 1000.0;
@@ -558,8 +540,8 @@ namespace WindowsFormsApplication1
                 //
                 // Bezugsgröße für Restbedarf und Deckung ist deshalb der EIGENANTEIL:
                 // Direktdeckung plus zugerechneter Anteil an der Speicherentladung
-                // (Befund N2). Im Altpfad und ohne Puffer-Senke sind beide Zusatzgrößen
-                // exakt 0 — der Ausdruck ist dann bitgleich der bisherige.
+                // (Befund N2). Ohne Puffer-Senke sind beide Zusatzgrößen exakt 0 — der
+                // Ausdruck ist dann bitgleich der bisherige.
                 //
                 // NACHARBEIT PAKET 6, BEFUND N1: Der Restbedarf zog bis dahin nur die
                 // DIREKTDECKUNG ab. Bei Puffer-Hauptsenke ist die konstruktiv 0, und der
@@ -646,15 +628,15 @@ namespace WindowsFormsApplication1
                 // Größe steht weiterhin vollständig in Waermeproduktion (und getrennt in
                 // Speicherladung_gesamt).
                 //
-                // IM ALTPFAD IST DIE KORREKTUR WIRKUNGSLOS: Dort lädt die Solarthermie
-                // keinen Puffer, Speicherladung_gesamt ist exakt 0,0 und der Ausdruck
-                // damit bitgleich der bisherige.
+                // OHNE PUFFER-SENKE IST DIE KORREKTUR WIRKUNGSLOS: Dann lädt die
+                // Solarthermie keinen Puffer, Speicherladung_gesamt ist exakt 0,0 und der
+                // Ausdruck damit bitgleich der bisherige.
                 double solarDirekt = st.Waermeproduktion_gesamt - st.Speicherladung_gesamt;
                 // Rundungsschutz: Beide Summen entstehen getrennt; geht die gesamte
                 // Produktion in den Speicher, kann die Differenz um wenige 1e-10 unter
-                // null liegen. Im Altpfad ist Speicherladung_gesamt exakt 0,0 und
+                // null liegen. Ohne Puffer-Senke ist Speicherladung_gesamt exakt 0,0 und
                 // Waermeproduktion_gesamt eine Summe nichtnegativer Werte — die Klemmung
-                // greift dort nachweislich nie.
+                // greift dann nachweislich nie.
                 if (solarDirekt < 0) solarDirekt = 0;
 
                 // BEFUND N2 (Nacharbeit): Der DECKUNGSGRAD ist der Eigenanteil dieses
@@ -670,8 +652,8 @@ namespace WindowsFormsApplication1
                 // während es zugleich Deckung auswies. Beide Größen bilden jetzt dieselbe
                 // Rechnung ab; "Restbedarf >= 0" bleibt erfüllt, weil Direktdeckung und
                 // zugerechnete Entladung zusammen aus demselben Stufeneingang stammen
-                // (Klemmung nur als Rundungsschutz). Im Altpfad sind beide Zusatzgrößen
-                // exakt 0, der Ausdruck also bitgleich der bisherige.
+                // (Klemmung nur als Rundungsschutz). Ohne Puffer-Senke sind beide
+                // Zusatzgrößen exakt 0, der Ausdruck also bitgleich der bisherige.
                 double solarEigen = solarDirekt + st.Speicherentladung_Anteil;
 
                 stm.Waermebedarf = st.Waermebedarf_gesamt / 1000.0;

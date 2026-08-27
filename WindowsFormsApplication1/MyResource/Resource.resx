@@ -159,9 +159,6 @@
   <data name="PSP_KARTE_TEMP_SYSTEM" xml:space="preserve">
     <value>Systemvorgabe des Projekts</value>
   </data>
-  <data name="PSP_KARTE_TEMP_ZUORDNUNG" xml:space="preserve">
-    <value>aus der Zuordnungszeile</value>
-  </data>
   <data name="PSP_KARTE_TIP_BEARBEITEN" xml:space="preserve">
     <value>Pufferspeicher bearbeiten (Verwaltung öffnen)</value>
   </data>
@@ -822,25 +819,8 @@ Wirklich aus den Stammdaten löschen?</value>
   <data name="PSP_MELDUNG_SPEICHERN_FEHLER" xml:space="preserve">
     <value>Fehler beim Speichern des Datensatzes!</value>
   </data>
-  <data name="PSP_MELDUNG_VERWENDUNGSWECHSEL" xml:space="preserve">
-    <value>Die Verwendung des Pufferspeichers „{0}" wird von „{1}" auf „{2}" umgestellt.
-
-Der Speicher ist zugeordnet:
-  • {3}
-
-Diese Zuordnungen passen danach nicht mehr zur Verwendung und müssen im Wärmesenken-Dialog neu gesetzt werden.
-Verwendung trotzdem ändern?</value>
-  </data>
   <data name="PSP_MELDUNG_WIRKLICH_LOESCHEN" xml:space="preserve">
     <value>Soll {0} wirklich gelöscht werden ?</value>
-  </data>
-  <data name="PSP_MSG_SCHWELLEN_BEREICH" xml:space="preserve">
-    <value>Die Werte müssen zwischen 0 und 100 % liegen und
-die Einschaltschwelle muss kleiner als die Abschaltschwelle sein!</value>
-  </data>
-  <data name="PSP_MSG_WP_OHNE_SPEICHER" xml:space="preserve">
-    <value>Der Wärmepumpe ist kein Pufferspeicher zugeordnet.
-Die Zuordnung erfolgt in der Tabelle 'Pufferspeicher Zuordnung'.</value>
   </data>
   <data name="PSP_MSG_ZAHLENWERTE" xml:space="preserve">
     <value>Bitte gültige Zahlenwerte eintragen!</value>
@@ -899,40 +879,14 @@ Die Zuordnung erfolgt in der Tabelle 'Pufferspeicher Zuordnung'.</value>
   <data name="PSP_SPALTE_ROLLE" xml:space="preserve">
     <value>Rolle</value>
   </data>
-  <data name="PSP_SPALTE_RUECKLAUF" xml:space="preserve">
-    <value>Rücklauf [°C]</value>
-  </data>
   <data name="PSP_SPALTE_VERLUSTE" xml:space="preserve">
     <value>Verluste [kWh/a]</value>
   </data>
   <data name="PSP_SPALTE_VOLLZYKLEN" xml:space="preserve">
     <value>Vollzyklen</value>
   </data>
-  <data name="PSP_SPALTE_VORLAUF" xml:space="preserve">
-    <value>Vorlauf [°C]</value>
-  </data>
-  <data name="PSP_SPALTE_WAERMEERZEUGER" xml:space="preserve">
-    <value>Wärmeerzeuger</value>
-  </data>
   <data name="PSP_SPALTE_ZUORDNUNG_ALT" xml:space="preserve">
     <value>Zuordnung (alt)</value>
-  </data>
-  <data name="PSP_SPEICHERREGELUNG_ABSCHALT" xml:space="preserve">
-    <value>Abschaltschwelle [% der Kapazität]:</value>
-  </data>
-  <data name="PSP_SPEICHERREGELUNG_EINSCHALT" xml:space="preserve">
-    <value>Einschaltschwelle [% der Kapazität]:</value>
-  </data>
-  <data name="PSP_SPEICHERREGELUNG_FENSTERTITEL" xml:space="preserve">
-    <value>Speicherregelung - {0}</value>
-  </data>
-  <data name="PSP_SPEICHERREGELUNG_HINWEIS" xml:space="preserve">
-    <value>Unterschreitet der Speicherfüllstand die Einschaltschwelle, läuft die Wärmepumpe an und lädt bis zur Abschaltschwelle durch. Dazwischen bleibt sie aus und der Bedarf wird aus dem Speicher gedeckt.
-
-Die Abschaltschwelle sollte unter 100 % liegen, da die Bereitschaftsverluste den Füllstand laufend absenken.</value>
-  </data>
-  <data name="PSP_SPEICHERREGELUNG_KOPF" xml:space="preserve">
-    <value>Ein- und Abschaltschwelle des Pufferspeichers</value>
   </data>
   <data name="PSP_STATUS_AENDERUNGEN_UEBERNOMMEN" xml:space="preserve">
     <value>Änderungen übernommen.</value>
@@ -943,46 +897,12 @@ Die Abschaltschwelle sollte unter 100 % liegen, da die Bereitschaftsverluste den
   <data name="PSP_STATUS_ENTFERNT" xml:space="preserve">
     <value>Pufferspeicher entfernt.</value>
   </data>
-  <data name="PSP_STATUS_SPEICHERREGELUNG_GESPEICHERT" xml:space="preserve">
-    <value>✔ Speicherregelung gespeichert ({0} % / {1} %)</value>
-  </data>
-  <data name="PSP_STATUS_ZUORDNUNG_FEHLGESCHLAGEN" xml:space="preserve">
-    <value>⚠ {0} Pufferspeicher-Zuordnung(en) konnten nicht gespeichert werden</value>
-  </data>
   <data name="PSP_TIP_ZUORDNUNG_ALTMODELL" xml:space="preserve">
     <value>Zuordnung im Altmodell (Doppelklick öffnet die Speicherregelung)
 Diese Spalte zeigt die Zuordnung aus Z_ProjektPufferSp, die die
 Simulation bis zur Umstellung der Engine noch auswertet. Sie wird
 aus der Wärmesenke der Wärmepumpe automatisch nachgeführt.
 Ein- und Abschaltschwelle in % der nutzbaren Kapazität.</value>
-  </data>
-  <data name="PSP_TIP_ZUORDNUNG_ERZEUGER" xml:space="preserve">
-    <value>Wärmeerzeuger, dem dieser Pufferspeicher zugeordnet ist.
-Zuordnungen werden über 'Hinzufügen...' angelegt und über
-'Löschen' entfernt.</value>
-  </data>
-  <data name="PSP_TIP_ZUORDNUNG_RUECKLAUF" xml:space="preserve">
-    <value>Rücklauftemperatur [°C] (Doppelklick zum Ändern)
-Untere Temperatur des Speichers. Je größer die Spreizung zum
-Vorlauf, desto mehr Energie kann der Speicher aufnehmen.</value>
-  </data>
-  <data name="PSP_TIP_ZUORDNUNG_SPEICHER" xml:space="preserve">
-    <value>Pufferspeicher (Doppelklick zum Ändern)
-Auswahl aus den Stammdaten. Volumen und Bereitschaftsverluste
-stammen aus dem Speicher-Datensatz und bestimmen zusammen mit
-Vor- und Rücklauf die nutzbare Kapazität.</value>
-  </data>
-  <data name="PSP_TIP_ZUORDNUNG_STAMMDATEN" xml:space="preserve">
-    <value>Doppelklick öffnet die Pufferspeicher-Stammdaten (nur Ansicht).</value>
-  </data>
-  <data name="PSP_TIP_ZUORDNUNG_STANDARD" xml:space="preserve">
-    <value>Pufferspeicher-Zuordnung: Doppelklick auf Pufferspeicher,
-Vorlauf oder Rücklauf zum Bearbeiten.</value>
-  </data>
-  <data name="PSP_TIP_ZUORDNUNG_VORLAUF" xml:space="preserve">
-    <value>Vorlauftemperatur [°C] (Doppelklick zum Ändern)
-Obere Temperatur des Speichers. Die nutzbare Kapazität ergibt
-sich aus: Volumen × 1,16 Wh/(l·K) × (Vorlauf − Rücklauf).</value>
   </data>
   <data name="PSP_TITEL_KATALOG_LOESCHUNG" xml:space="preserve">
     <value>Katalog-Löschung</value>
@@ -992,15 +912,6 @@ sich aus: Volumen × 1,16 Wh/(l·K) × (Vorlauf − Rücklauf).</value>
   </data>
   <data name="PSP_TITEL_PUFFER_ENTFERNEN" xml:space="preserve">
     <value>Pufferspeicher entfernen</value>
-  </data>
-  <data name="PSP_TITEL_SPEICHERREGELUNG" xml:space="preserve">
-    <value>Speicherregelung</value>
-  </data>
-  <data name="PSP_TITEL_TEMPERATUR_PRUEFEN" xml:space="preserve">
-    <value>Temperatur prüfen</value>
-  </data>
-  <data name="PSP_TITEL_VERWENDUNG_AENDERN" xml:space="preserve">
-    <value>Verwendung ändern</value>
   </data>
   <data name="PSP_TITEL_ZUORDNUNG" xml:space="preserve">
     <value>Pufferspeicher-Zuordnung</value>
@@ -1165,23 +1076,6 @@ sollen; die Kennlinie ist dann um tiefere Stützstellen zu ergänzen.</value>
   <data name="SIM_KACHEL_SIMULATIONSERGEBNISSE" xml:space="preserve">
     <value>Simulationsergebnisse im Detail</value>
   </data>
-  <data name="SIM_KASKADE_SCHALTER" xml:space="preserve">
-    <value>Zweikanalige Kaskade</value>
-  </data>
-  <data name="SIM_KASKADE_TOOLTIP" xml:space="preserve">
-    <value>Rechnet Heiz- und Warmwasserbedarf als getrennte Kanäle und löst die
-Speicherladung aus der Erzeugerkaskade heraus.
-
-Das ÄNDERT die Ergebnisse: Anlagen mit Pufferspeicher als Senke laden
-diesen, statt den Bedarf direkt zu decken; gedeckt wird aus dem Speicher.
-Was sich im Einzelnen ändert, steht im Umsetzungsprotokoll zu Paket 4
-(Teil 7, Dokumentierte Ergebnisaenderungen). Ohne Haken rechnet die
-bisherige, einkanalige Kaskade unverändert weiter.
-
-Der Haken wird automatisch gesetzt, sobald die Konfiguration Warmwasser
-und Heizwärme getrennt führt - dann wäre der einkanalige Weg blind für
-Brauchwasser-/Kombi-Senken und Quellbezüge.</value>
-  </data>
   <data name="SIM_KEIN_BRAUCHWASSERBEDARF" xml:space="preserve">
     <value>Hinweis: Dem Projekt ist kein Brauchwasserbedarf zugeordnet.
 Ein Brauchwasserspeicher wird dann zwar geladen, aber nie entladen.</value>
@@ -1266,33 +1160,11 @@ Im Projekt muss ein Pufferspeicher mit der Verwendung „{2}" angelegt sein.</va
   <data name="SIM_MODUS_PV" xml:space="preserve">
     <value>PV-optimiert</value>
   </data>
-  <data name="SIM_MSG_BRAUCHWASSER_UEBERGANG" xml:space="preserve">
-    <value>Hinweis: Die Brauchwasser-/Kombi-Senke wird erst mit aktivierter zweikanaliger Kaskade wirksam (Schalter im Konfigurationsdialog).
-Sie wird gespeichert und angezeigt, geht in die Simulation aber noch nicht ein.</value>
-  </data>
-  <data name="SIM_MSG_BRAUCHWASSER_WP_ZUSATZ" xml:space="preserve">
-    <value>Die bisherige Pufferspeicher-Zuordnung dieser Wärmepumpe wird dabei entfernt; ohne zweikanalige Kaskade rechnet die Simulation dann ohne Speicher.</value>
-  </data>
   <data name="SIM_MSG_ERGEBNIS_GESPEICHERT" xml:space="preserve">
     <value>Simulationsergebnis gespeichert.</value>
   </data>
   <data name="SIM_MSG_ERGEBNIS_NICHT_GESPEICHERT" xml:space="preserve">
     <value>Das Ergebnis konnte nicht gespeichert werden.</value>
-  </data>
-  <data name="SIM_MSG_KASKADE_ABWAHL" xml:space="preserve">
-    <value>Die Konfiguration führt Warmwasser und Heizwärme getrennt. Ohne zweikanalige
-Kaskade gehen Brauchwasser-/Kombi-Senken und Quellbezüge nicht in die Simulation ein.
-
-Trotzdem deaktivieren?</value>
-  </data>
-  <data name="SIM_MSG_KASKADE_AUTOMATISCH" xml:space="preserve">
-    <value>Die zweikanalige Kaskade wurde für dieses Projekt automatisch aktiviert, da
-Warmwasser und Heizwärme getrennt geführt werden.</value>
-  </data>
-  <data name="SIM_MSG_KASKADE_FRAGE" xml:space="preserve">
-    <value>Die Konfiguration führt Warmwasser und Heizwärme getrennt.
-
-Soll die zweikanalige Kaskade für dieses Projekt eingeschaltet werden?</value>
   </data>
   <data name="SIM_MSG_KEIN_BRENNSTOFF" xml:space="preserve">
     <value>Kein Brennstoff für dieses BHKW definiert.</value>
@@ -1405,17 +1277,15 @@ Bitte einen Projekt-Pufferspeicher mit der Verwendung „{1}" anlegen.</value>
   <data name="SIM_PUFFER_KOMBI_KURZ" xml:space="preserve">
     <value>Puffer Kombi</value>
   </data>
+  <data name="SIM_PUFFER_PROZESS_KURZ" xml:space="preserve">
+    <value>Puffer Prozessw.</value>
+  </data>
   <data name="SIM_PUFFER_MIT_VOLUMEN" xml:space="preserve">
     <value>{0} ({1} l)</value>
   </data>
   <data name="SIM_PUFFER_QUELLE_UND_SENKE" xml:space="preserve">
     <value>Der Pufferspeicher „{0}" ist bereits die WÄRMEQUELLE dieser Anlage.
 Derselbe Speicher kann nicht zugleich Quelle und Senke sein (Kurzschluss); bitte einen anderen Speicher wählen.</value>
-  </data>
-  <data name="SIM_PUFFER_VERWENDUNG_PASST_NICHT" xml:space="preserve">
-    <value>Der Pufferspeicher „{0}" hat die Verwendung „{1}", die {2} verlangt aber „{3}".
-
-Bitte einen passenden Speicher wählen oder die Verwendung in der Pufferspeicher-Verwaltung ändern.</value>
   </data>
   <data name="SIM_QUELLE_BETEILIGT" xml:space="preserve">
     <value>{0} (Quelle: {1})</value>
@@ -1440,9 +1310,6 @@ Bitte einen anderen Pufferspeicher wählen oder die Wärmesenke einer der beteil
   </data>
   <data name="SIM_RB_PUFFER_KOMBI" xml:space="preserve">
     <value>Puffer Kombi (Heizung + Warmwasser)</value>
-  </data>
-  <data name="SIM_ROLLE_HAUPTSENKE" xml:space="preserve">
-    <value>Hauptsenke</value>
   </data>
   <data name="SIM_ROLLE_ZWEITSENKE" xml:space="preserve">
     <value>Zweitsenke</value>
@@ -1546,12 +1413,6 @@ Bitte einen anderen Pufferspeicher wählen oder die Wärmesenke einer der beteil
   <data name="SIM_STATUS_EXTRAPOLATION_EIN" xml:space="preserve">
     <value>Extrapolation der WP-Kennlinie erlaubt - der Lauf vermerkt sie als Hinweis.</value>
   </data>
-  <data name="SIM_STATUS_KASKADE_AUS" xml:space="preserve">
-    <value>Zweikanalige Kaskade abgewählt - es rechnet wieder die einkanalige Kaskade.</value>
-  </data>
-  <data name="SIM_STATUS_KASKADE_EIN" xml:space="preserve">
-    <value>Zweikanalige Kaskade eingeschaltet - der nächste Lauf rechnet damit und liefert andere Ergebnisse.</value>
-  </data>
   <data name="SIM_STATUS_KONFIG_GESPEICHERT" xml:space="preserve">
     <value>✔ Konfiguration erfolgreich gespeichert</value>
   </data>
@@ -1619,9 +1480,6 @@ verbleibendes Ladepotenzial aufnimmt - nie Pflichtbedarf.
   </data>
   <data name="SIM_TITEL_HINWEIS" xml:space="preserve">
     <value>Hinweis</value>
-  </data>
-  <data name="SIM_TITEL_KASKADE" xml:space="preserve">
-    <value>Zweikanalige Kaskade</value>
   </data>
   <data name="SIM_TITEL_MELDUNGEN_LAUF" xml:space="preserve">
     <value>Meldungen des Simulationslaufs</value>
@@ -2164,6 +2022,9 @@ Ist der Speicher leer, wird die Leistung der Wärmepumpe begrenzt; die Regenerat
   </data>
   <data name="SIMQ_QUELLE_AUSSENLUFT" xml:space="preserve">
     <value>Außenluft</value>
+  </data>
+  <data name="SIMQ_QUELLE_FEHLT" xml:space="preserve">
+    <value>Quelle wählen!</value>
   </data>
   <data name="SIMQ_QUELLE_CSVPROFIL" xml:space="preserve">
     <value>CSV-Profil</value>
@@ -8028,6 +7889,9 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
   </data>
   <data name="SIMWARN_W5_QUELLE_OHNE_LADER" xml:space="preserve">
     <value>Anlage „{0}": Der Speicher „{1}" ist ihre Wärmequelle, wird aber von keiner Anlage dieses Projekts geladen. Nach der Startfüllung liefe die Quelle leer.</value>
+  </data>
+  <data name="SIMWARN_QUELLE_FEHLT" xml:space="preserve">
+    <value>Anlage „{0}": Die {1}-Wärmepumpe hat keine konfigurierte Wärmequelle — gerechnet wird ersatzweise mit der Außenluft, was für diese Bauart fachlich nicht passt. Die Quelle über den Chip „Quelle" der Erzeugerkarte wählen (Erdreich, konstante Temperatur, Quellprofil oder Pufferspeicher).</value>
   </data>
   <data name="SIMWARN_HART_RING" xml:space="preserve">
     <value>Die Quellbezüge der Pufferspeicher bilden einen RING: {0}. Es gibt keine Rechenreihenfolge, in der jeder Erzeuger nach seinem Puffer rechnet — bitte die Wärmequelle einer der beteiligten Anlagen ändern.</value>

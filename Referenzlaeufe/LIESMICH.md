@@ -12,10 +12,28 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
-**`2026-08-27_K1/`** — seit dem 27.08.2026, 10:58 Uhr die gültige Referenz,
-**neun Projekte** (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, **1030**), **216 CSV,
-2 366 177 Werte**. Jeder neue Vergleich läuft gegen diesen Ordner.
+**`2026-08-27_A1/`** — seit dem 27.08.2026 abends die gültige Referenz, **dreizehn
+Projekte** (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, 1030, **1039, 1040, 1041,
+1042**), **329 CSV**. Jeder neue Vergleich läuft gegen diesen Ordner.
 
+> **Anlass: Paket A1 (Altpfad-Rückbau, Migrationsschritt 51) — Meilenstein „ein Rechenweg"
+> (Ziel Z1).** Der einkanalige Altpfad ist entfallen; jeder Lauf rechnet über die dreikanalige
+> Speicherstufe. Gegenüber dem S2-Stand (A/B auf identischer Quellkopie): **neun Projekte
+> byte-gleich** (1017, 1018, 1021, 1024, 1030 und die vier neuen), 1007 nur Rundungen
+> (toleranz-PASS), **gewollt geändert 1008/1011/1023** (Puffer erstmals bewirtschaftet /
+> Prozess-Herauslösung real / Deckungsumverteilung) — vollständige Zuordnung, Invarianten
+> und Selbstvergleich im [Laufprotokoll der Basis](2026-08-27_A1/lauf_protokoll.md).
+> Erstmals enthalten: die **vier Referenzprojekte aus Konzept 11.1** (Mehrgebäude, zwei
+> Puffer je Kanal, Prozesswärme mit eigenem Puffer, Booster-Kette).
+>
+> **Die feste Projektliste umfasst ab dieser Basis dreizehn IDs:**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
+> ```
+
+> *(Fassung vor A1 — Begründung der früheren Basis `2026-08-27_K1`:)*
+>
 > **Anlass: Paket K1 (Dreikanal-Bedarf) — Entscheidungen F2 und F3.** Gegenüber V0 ändern sich
 > **sieben** Projekte gewollt: die Netzverluste werden je Stunde **anteilig** auf die Kanäle
 > Heizung/Brauchwasser/Prozess verteilt statt vollständig auf Heizung (F2), und alle
@@ -71,10 +89,11 @@ Paket B1, Kapitel 9.
 > Vorgängerstand gemessen. Ein grünes 216/216 sagt über die Ausbaustufe W4 deshalb nur, dass sie den
 > Rechenkern nicht berührt hat.
 
-> **Die Projektliste ist FEST VORGEGEBEN und muss bei jedem Folgelauf mitgegeben werden:**
+> **Die Projektliste ist FEST VORGEGEBEN und muss bei jedem Folgelauf mitgegeben werden**
+> (seit Basis A1 dreizehn IDs):
 >
 > ```powershell
-> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
 > ```
 >
 > Ohne `--projekte` wählt die Suite datengetrieben — und diese Wahl **wandert mit dem
@@ -149,7 +168,13 @@ reproduzierbar.
 
 ## Frühere Stände
 
-`2026-08-27_V0/` bleibt als **vorheriger Stand** liegen (Codestand `2409996`, Schemastand 47,
+`2026-08-27_K1/` bleibt als **vorheriger Stand** liegen (Codestand K1 auf `Pufferspeicher`,
+Schemastand 48, neun Projekte, 216 CSV, 2 366 177 Werte) — die Basis der Pakete K1 bis S2;
+K2, S1 und S2 waren gegen sie jeweils **216/216 byte-gleich**, sie blieb deshalb bis A1
+unverändert gültig. Warum K1 seinerzeit gesetzt wurde, steht im Abschnitt darunter
+(Fassung vor A1) bzw. im K1-Protokoll.
+
+`2026-08-27_V0/` bleibt als **älterer Stand** liegen (Codestand `2409996`, Schemastand 47,
 neun Projekte, 216 CSV, 2 366 177 Werte) — der Stand nach den V0-Bestandsfehler-Fixes und vor
 der Dreikanal-Umstellung. Warum V0 seinerzeit gesetzt wurde, steht im Abschnitt darüber
 (Fassung vor K1) bzw. im V0-Protokoll.
@@ -548,12 +573,15 @@ die Projektdaten, vergleicht man Äpfel mit Birnen. Die Quelle steht im Kopf von
 **Für jeden Vergleichslauf gilt die feste Liste. `--projekte` ist Pflicht:**
 
 ```powershell
-& $exe lauf --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030
+& $exe lauf --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
 ```
 
-Neun IDs, seit Basis B5 (19.08.2026): die acht Projekte von B4 plus das Kaskadenprojekt
-**1030**. Wer sie wegläßt, bekommt einen Ordner, der sich mit der Basis nicht vergleichen
-läßt — der Vergleich meldet dann fehlende und zusätzliche Projekte, nicht Rechenabweichungen.
+Dreizehn IDs, seit Basis A1 (27.08.2026): die neun Projekte der B5-Linie (acht von B4 plus
+Kaskadenprojekt **1030**) plus die **vier Referenzprojekte aus Konzept 11.1** — 1039
+(Mehrgebäude), 1040 (zwei Puffer je Kanal), 1041 (Prozesswärme mit eigenem Puffer), 1042
+(Booster-Kette mit Kombi-Speicher). Wer sie wegläßt, bekommt einen Ordner, der sich mit der
+Basis nicht vergleichen läßt — der Vergleich meldet dann fehlende und zusätzliche Projekte,
+nicht Rechenabweichungen.
 
 ### Warum nicht die Automatik
 

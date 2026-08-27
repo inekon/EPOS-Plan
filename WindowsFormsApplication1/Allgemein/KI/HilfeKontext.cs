@@ -170,7 +170,6 @@ namespace WindowsFormsApplication1
             { "Form_PufferSp_Bearbeiten",    B_PUFFERSPEICHER },
             { "Form_PufferSp_Projekt",       B_PUFFERSPEICHER },
             { "Form_PufferSp_einlesen",      B_PUFFERSPEICHER },
-            { "Form_KonfigPufferspeicher",   B_PUFFERSPEICHER },
 
             { "DashboardForm",               B_SIMULATION },
             { "ErzeugerKarte",               B_SIMULATION },
