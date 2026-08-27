@@ -32,6 +32,18 @@ namespace WindowsFormsApplication1
         public static readonly Color C_BEDARF = Color.FromArgb(0x33, 0x33, 0x33);
         public static readonly Color C_STAMM = Color.FromArgb(0x1F, 0x4E, 0x79);
 
+        /// <summary>
+        /// PAKET E1: Farbfolge der Wärmespeicher-Füllstandslinien (Konzept 6.3) — sie
+        /// wiederholt sich, wenn ein Projekt mehr Speicher führt als Farben da sind.
+        /// Dieselbe Reihenfolge wie <c>NavigatorWaerme.SPEICHER_FARBEN</c>, damit
+        /// Bildschirm und Bericht denselben Speicher gleich einfärben.
+        /// </summary>
+        public static readonly Color[] C_SPEICHER =
+        {
+            Color.MediumVioletRed, Color.DarkViolet, Color.Teal,
+            Color.SaddleBrown, Color.DarkSlateGray, Color.Crimson
+        };
+
         private static readonly CultureInfo DE = CultureInfo.GetCultureInfo("de-DE");
 
         public class Segment
@@ -199,8 +211,19 @@ namespace WindowsFormsApplication1
         public static byte[] Speicherverlauf(ZeitreihenSatz z)
         {
             var reihen = new List<Reihe>();
-            if (z.Hat(ZeitreihenSatz.PUFFER_SOC))
-                reihen.Add(new Reihe("Pufferspeicher", z.Hole(ZeitreihenSatz.PUFFER_SOC), C_WP));
+
+            // PAKET E1 (Konzept 6.3, Befund S-1): eine Linie JE WÄRMESPEICHER statt der
+            // einen Reihe „Puffer_SOC", die nur den ersten Heizungspuffer zeigte. Die
+            // Beschriftung kommt aus dem Zeitreihensatz („Bezeichner (Rolle)"), die
+            // Farbfolge wiederholt sich bei mehr als vier Speichern — dieselbe Bauform
+            // wie die Speicherserien des NavigatorWaerme.
+            for (int i = 0; i < z.Speicherreihen.Count; i++)
+            {
+                string s = z.Speicherreihen[i];
+                if (!z.Hat(s)) continue;
+                reihen.Add(new Reihe(z.Beschriftung(s), z.Hole(s), C_SPEICHER[i % C_SPEICHER.Length]));
+            }
+
             if (z.Hat(ZeitreihenSatz.PV_SPEICHER_SOC))
                 reihen.Add(new Reihe("Stromspeicher (PV)", z.Hole(ZeitreihenSatz.PV_SPEICHER_SOC), C_PV));
             if (reihen.Count == 0) return null;

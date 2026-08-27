@@ -74,7 +74,23 @@ namespace WindowsFormsApplication1
             Ladung,
 
             /// <summary>Grün: Versorgung / Entladung (Puffer bzw. Erzeuger → Abnehmer).</summary>
-            Versorgung
+            Versorgung,
+
+            /// <summary>
+            /// PAKET E1 (Befund S2-O7, Konzept § 10): Violett — Versorgung des
+            /// PROZESS-Abnehmers.
+            ///
+            /// <para>Bis hierher trug die Prozesskante dieselbe Farbe wie Heizkreis und
+            /// Warmwasser; der dritte Kanal war im Bild nicht von den beiden anderen zu
+            /// unterscheiden. Fachlich ist er es sehr wohl — er hat eigene
+            /// Temperaturanforderungen, eigene Senken und eigene Speicher.</para>
+            ///
+            /// <para><b>Eine eigene ART, keine eigene Kantenlogik:</b> Sie verhält sich in
+            /// jeder Hinsicht wie <see cref="Versorgung"/> (durchgezogen, Pfeil,
+            /// Prioritätskreis) und unterscheidet sich allein in der Farbe — genau die
+            /// Trennung, die Kapitel 10 „eigene Kantenfarbe" verlangt.</para>
+            /// </summary>
+            Prozess
         }
 
         /// <summary>Ein Kasten im Schema.</summary>
@@ -704,8 +720,9 @@ namespace WindowsFormsApplication1
                     Verbinden(k.Schluessel, ABNEHMER_HEIZKREIS, Kantenart.Versorgung, 0, "");
                 if (PufferBedient(k.ID, Kanal.BRAUCHWASSER))
                     Verbinden(k.Schluessel, ABNEHMER_WARMWASSER, Kantenart.Versorgung, 0, "");
+                // PAKET E1 (S2-O7): eigene Kantenart für den Prozessabnehmer.
                 if (PufferBedient(k.ID, Kanal.PROZESS))
-                    Verbinden(k.Schluessel, ABNEHMER_PROZESS, Kantenart.Versorgung, 0, "");
+                    Verbinden(k.Schluessel, ABNEHMER_PROZESS, Kantenart.Prozess, 0, "");
             }
         }
 
@@ -741,8 +758,9 @@ namespace WindowsFormsApplication1
             if (hatBrauchwasser && DirektsenkeBedient(z, Kanal.BRAUCHWASSER))
                 Verbinden(erzeuger, ABNEHMER_WARMWASSER, Kantenart.Versorgung, 0, "");
 
+            // PAKET E1 (S2-O7): eigene Kantenart für den Prozessabnehmer.
             if (hatProzess && DirektsenkeBedient(z, Kanal.PROZESS))
-                Verbinden(erzeuger, ABNEHMER_PROZESS, Kantenart.Versorgung, 0, "");
+                Verbinden(erzeuger, ABNEHMER_PROZESS, Kantenart.Prozess, 0, "");
         }
 
         /// <summary>
@@ -900,7 +918,8 @@ namespace WindowsFormsApplication1
                     Schluessel = ABNEHMER_PROZESS,
                     Text = MyResource.Resource.KANAL_PROZESS_ANZEIGE,
                     Art = Knotenart.Abnehmer,
-                    PfeilDavor = Kantenart.Versorgung
+                    // PAKET E1 (S2-O7): eigene Kantenart, auch im Kaskadenband.
+                    PfeilDavor = Kantenart.Prozess
                 });
 
             Ketten.Add(kette);

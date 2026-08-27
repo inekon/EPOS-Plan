@@ -12,21 +12,27 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
-**`2026-08-27_A1/`** — seit dem 27.08.2026 abends die gültige Referenz, **dreizehn
+**`2026-08-27_E1/`** — seit dem 27.08.2026, 22:07 Uhr die gültige Referenz, **dreizehn
 Projekte** (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, 1030, **1039, 1040, 1041,
 1042**), **329 CSV**. Jeder neue Vergleich läuft gegen diesen Ordner.
 
-> **Anlass: Paket A1 (Altpfad-Rückbau, Migrationsschritt 51) — Meilenstein „ein Rechenweg"
-> (Ziel Z1).** Der einkanalige Altpfad ist entfallen; jeder Lauf rechnet über die dreikanalige
-> Speicherstufe. Gegenüber dem S2-Stand (A/B auf identischer Quellkopie): **neun Projekte
-> byte-gleich** (1017, 1018, 1021, 1024, 1030 und die vier neuen), 1007 nur Rundungen
-> (toleranz-PASS), **gewollt geändert 1008/1011/1023** (Puffer erstmals bewirtschaftet /
-> Prozess-Herauslösung real / Deckungsumverteilung) — vollständige Zuordnung, Invarianten
-> und Selbstvergleich im [Laufprotokoll der Basis](2026-08-27_A1/lauf_protokoll.md).
-> Erstmals enthalten: die **vier Referenzprojekte aus Konzept 11.1** (Mehrgebäude, zwei
-> Puffer je Kanal, Prozesswärme mit eigenem Puffer, Booster-Kette).
+> **Anlass: Paket E1 (Ergebnis je Kanal, Migrationsschritt 52) — Meilenstein Z3: Bedarf →
+> Kaskade → Ergebnis → Bericht durchgängig dreikanalig.** Gegenüber A1 wachsen die
+> `aggregate.csv` um **39 neue Kanal-Schlüssel** (Bedarf/Deckung/Entladung je Kanal,
+> Durchsatzsummen, `ID_Anlage`, `T_oben_*`-Vorgriff); geänderte Bestandswerte sind allein
+> die vier `Kapazitaet_Pufferspeicher` der dokumentierten `puffer_wp`-Ablösung (S-1) —
+> alle Ganglinien der zwölf unveränderten Projekte byte-gleich, Kanal-Summenprobe 54/54
+> (Details im [E1-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/E1_ErgebnisJeKanal_Protokoll.md)).
+> Projekt **1042** trägt zusätzlich eine **Datenänderung des Anwenders** (WP-Module 3 → 2,
+> Kombi-Speicher 1054195 entfernt — die Basis friert den neuen Stand ein; das
+> Warnkriterium `QUELLE_FEHLT` der unkonfigurierten Booster-Quelle steht im Protokoll).
 >
-> **Die feste Projektliste umfasst ab dieser Basis dreizehn IDs:**
+> **Codestand:** Paket E1 auf `Pufferspeicher`. **Datenquelle:** produktive
+> `Kenndaten.accdb`, Zeitstempel **27.08.2026 20:45**, nur gelesen (keine `laccdb`, kein
+> App-Prozess); Arbeitskopie migriert auf Schemastand **52**. **Selbstvergleich:** zweiter
+> Lauf **329/329 byte-/MD5-gleich** — reproduzierbar. `pruefen`: 13/13 plausibel.
+>
+> **Die feste Projektliste umfasst dreizehn IDs:**
 >
 > ```powershell
 > & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
@@ -168,7 +174,13 @@ reproduzierbar.
 
 ## Frühere Stände
 
-`2026-08-27_K1/` bleibt als **vorheriger Stand** liegen (Codestand K1 auf `Pufferspeicher`,
+`2026-08-27_A1/` bleibt als **vorheriger Stand** liegen (Codestand A1, Schemastand 51,
+dreizehn Projekte, 329 CSV) — die erste Basis mit den vier Konzept-11.1-Projekten,
+Meilenstein „ein Rechenweg". A/B-Zuordnung des Altpfad-Abrisses im
+[Laufprotokoll](2026-08-27_A1/lauf_protokoll.md); 1042 dort noch mit drei WP-Modulen und
+Kombi-Speicher 1054195 (vor der Datenänderung des Anwenders).
+
+`2026-08-27_K1/` bleibt als **älterer Stand** liegen (Codestand K1 auf `Pufferspeicher`,
 Schemastand 48, neun Projekte, 216 CSV, 2 366 177 Werte) — die Basis der Pakete K1 bis S2;
 K2, S1 und S2 waren gegen sie jeweils **216/216 byte-gleich**, sie blieb deshalb bis A1
 unverändert gültig. Warum K1 seinerzeit gesetzt wurde, steht im Abschnitt darunter

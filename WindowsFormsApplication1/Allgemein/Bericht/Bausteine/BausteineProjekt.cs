@@ -56,15 +56,52 @@ namespace WindowsFormsApplication1
             if (e != null)
             {
                 k.Ueberschrift2("Energiebedarf (Simulationsergebnis Stamm)");
+                // PAKET E1 (Konzept 4.4): Der Wärmebedarf steht mit seinen drei Kanälen
+                // da — die drei „davon"-Zeilen addieren sich zur Zeile darüber. Sie
+                // stehen unmittelbar hinter der Summe und vor der Wärmelast, damit die
+                // Zerlegung als solche lesbar bleibt.
                 k.Eigenschaften(
                     "Wärmebedarf gesamt", k.F(e.Waermebedarf_Gesamt, 0) + " MWh/a",
+                    "davon Heizung", KanalWert(k, e, Kanal.HEIZUNG),
+                    "davon Brauchwasser", KanalWert(k, e, Kanal.BRAUCHWASSER),
+                    "davon Prozesswärme", KanalWert(k, e, Kanal.PROZESS),
                     "Wärmelast max.", k.F(e.Waermelast_Max, 0) + " kW",
                     "Strombedarf gesamt", k.F(e.Strombedarf_Gesamt, 0) + " MWh/a",
                     "Strombedarf max.", k.F(e.Strombedarf_Max, 0) + " kW");
+
+                // Deckungsgrade je Bedarfsart (Konzept 4.4). Sie beantworten, was der
+                // Gesamtdeckungsgrad verdeckt: ob die Auslegung Warmwasser und Prozess
+                // ebenso trägt wie die Heizung. Ein Kanal ohne Bedarf erscheint als „—" —
+                // ein Deckungsgrad ohne Bedarf ist keine 0, sondern undefiniert.
+                k.Ueberschrift2("Deckungsgrade je Bedarfsart");
+                k.Eigenschaften(
+                    "Deckungsgrad Heizung", DeckungWert(k, stamm, "energie.deckung_heizung"),
+                    "Deckungsgrad Brauchwasser", DeckungWert(k, stamm, "energie.deckung_brauchwasser"),
+                    "Deckungsgrad Prozesswärme", DeckungWert(k, stamm, "energie.deckung_prozess"));
             }
         }
 
         private static string Oder(string a, string b) { return string.IsNullOrWhiteSpace(a) ? b : a; }
+
+        /// <summary>PAKET E1: Bedarf eines Kanals [MWh/a]; „—", wenn die Zeile ihn nicht führt.</summary>
+        private static string KanalWert(WordKontext k, ErgebnisEnergiebedarfModel e, int kanal)
+        {
+            if (e.Waermebedarf_Kanal == null || kanal >= e.Waermebedarf_Kanal.Length) return "—";
+            return k.F(e.Waermebedarf_Kanal[kanal], 0) + " MWh/a";
+        }
+
+        /// <summary>
+        /// PAKET E1: Deckungsgrad eines Kanals [%] aus dem Kennzahlen-Dictionary der
+        /// Variante — die Umrechnung auf den Kanalbedarf steht EINMAL im
+        /// <see cref="KennzahlenKatalog"/> und wird hier nur abgeholt, nicht nachgebaut.
+        /// </summary>
+        private static string DeckungWert(WordKontext k, VariantenDaten v, string schluessel)
+        {
+            double? d;
+            if (v.Kennzahlen == null || !v.Kennzahlen.TryGetValue(schluessel, out d) || !d.HasValue)
+                return "—";
+            return k.F(d.Value, 1) + " %";
+        }
 
         private static string Zahl(WordKontext k, DataRow r, string spalte, string einheit, int dez)
         {

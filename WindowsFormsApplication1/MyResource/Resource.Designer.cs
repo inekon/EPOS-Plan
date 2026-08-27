@@ -15718,6 +15718,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf je Bedarfsart ähnelt.
+        /// </summary>
+        public static string SIM_LABEL_BEDARF_JE_KANAL {
+            get {
+                return ResourceManager.GetString("SIM_LABEL_BEDARF_JE_KANAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gasverbrauch (Hu): ähnelt.
         /// </summary>
         public static string SIM_LABEL_GASVERBRAUCH {
@@ -16455,6 +16464,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozessversorgung ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_LEGENDE_PROZESS {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_LEGENDE_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quellseite ähnelt.
         /// </summary>
         public static string SIM_SCHEMA_LEGENDE_QUELLE {
@@ -16613,6 +16631,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_SPALTE_BRENNSTOFFE {
             get {
                 return ResourceManager.GetString("SIM_SPALTE_BRENNSTOFFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung {0} [MWh/a] ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_DECKUNG_KANAL {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_DECKUNG_KANAL", resourceCulture);
             }
         }
         
@@ -18741,7 +18768,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIMQ_QUELLE_AUSSENLUFT", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Profil ähnelt.
         /// </summary>

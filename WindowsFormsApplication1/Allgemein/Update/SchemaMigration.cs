@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 51;
+        public const int ZIEL_VERSION = 52;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1666,6 +1666,46 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_51_ALTPFAD_STILLLEGUNG = 51;
 
+        /// <summary>
+        /// Schritt 52 - <b>Paket E1</b> (Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 4.4 und § 6.3): die ERGEBNISSPALTEN JE KANAL. Rein additives DDL, keine
+        /// einzige Datenzeile wird angefasst.
+        ///
+        /// <para><b>Was entsteht</b> (Spaltensatz und je Spalte die fachliche Begründung:
+        /// <see cref="SchemaKatalog.Schritt52_ErgebnisJeKanal"/>):
+        /// <c>Tab_ErgebnisEnergiebedarf</c> bekommt den Jahresbedarf je Kanal,
+        /// die vier Erzeuger-Ergebniszeilen (Wärmepumpe, Heizkessel, BHKW,
+        /// Solarthermie) je drei Deckungsspalten, und
+        /// <c>Tab_ErgebnisPufferspeicher</c> die Kanalaufteilung der Entladung, die
+        /// beiden Durchsatzsummen aus Befund N6, den Anlagenbezug der
+        /// Quellspeicherzeilen und die beiden Temperaturspalten der obersten
+        /// Schicht.</para>
+        ///
+        /// <para><b>Kein Backfill, kein DML.</b> Alle Spalten bleiben in Bestandszeilen
+        /// NULL. Das ist die Aussage, die zutrifft: Ein Lauf, der vor Paket E1 gerechnet
+        /// wurde, hat die Kanäle nicht getrennt ausgewiesen — eine 0 behauptete „erhoben
+        /// und null". Die Leseseite (<c>ErgebnisCtrl.Load</c> über <c>D(row, "…")</c>)
+        /// behandelt NULL wie 0, und ein Neulauf des Projekts füllt die Zeile
+        /// vollständig. Damit ist der Schritt auch VERHALTENSNEUTRAL: Er ändert keinen
+        /// gespeicherten Wert.</para>
+        ///
+        /// <para><b><c>T_oben_Mittel</c>/<c>T_oben_Min</c> sind ein VORGRIFF auf Paket
+        /// P1</b> — genau wie <c>Anschlusshoehe</c> in Schritt 50. Schritt 52 legt nur
+        /// die Spalten an; gefüllt werden sie erst mit dem Schichtmodell (§ 7). Das
+        /// heutige Ein-Zonen-Modell kennt keine oberste Schicht, ein Wert daraus wäre
+        /// erfunden. Der Runner schreibt sie deshalb bis P1 NICHT.</para>
+        ///
+        /// <para><b>Access-Feldgrenze (255 Spalten je Tabelle) geprüft:</b>
+        /// <c>Tab_ErgebnisPufferspeicher</c> ist die breiteste hier berührte Tabelle und
+        /// wächst von 13 auf 21 Spalten; keine Erzeugertabelle überschreitet 26. Der
+        /// Abstand zur Grenze ist an keiner Stelle knapp.</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker): <see cref="SpaltenAnlegen"/>
+        /// liest das Tabellenschema vorab und überspringt vorhandene Spalten — beim
+        /// Zweitlauf meldet der Schritt „0 Spalten angelegt".</para>
+        /// </summary>
+        public const int SCHRITT_52_ERGEBNIS_JE_KANAL = 52;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -2658,6 +2698,18 @@ namespace WindowsFormsApplication1
                         "uebernommen werden - ohne sie fielen Bestandsspeicher nach der " +
                         "Stilllegung still auf den Rueckfall von 10 K zurueck.",
                         Schritt_51_AltpfadStilllegung),
+
+            // E1 (§ 4.4/§ 6.3): Ergebnisspalten je Kanal - rein additives DDL ohne
+            // jedes DML. Begruendung und Idempotenzzusage bei der Schrittkonstanten.
+            new Schritt(SCHRITT_52_ERGEBNIS_JE_KANAL,
+                        "Ergebnis je Kanal: Waermebedarf_/Deckung_/Entladung_Heizung, " +
+                        "_Brauchwasser, _Prozess anlegen; Tab_ErgebnisPufferspeicher " +
+                        "zusaetzlich um die Durchsatzsummen, ID_Anlage und T_oben_* " +
+                        "erweitern (Paket E1)",
+                        "Die Ergebnisspalten je Kanal konnten nicht angelegt werden - " +
+                        "ohne sie speichert der Lauf Bedarf und Deckung weiter nur als " +
+                        "Summe ueber alle drei Kanaele.",
+                        Schritt_52_ErgebnisJeKanal),
         };
 
         // =================================================================================
@@ -3414,6 +3466,23 @@ namespace WindowsFormsApplication1
         private static bool Schritt_18_BhkwVollbenutzungsstunden(Lauf l)
         {
             return SpaltenAnlegen(l, SchemaKatalog.Schritt18_BhkwVollbenutzungsstunden);
+        }
+
+        /// <summary>
+        /// Schritt 52 (Paket E1, Konzept § 4.4/§ 6.3): die Ergebnisspalten JE KANAL.
+        ///
+        /// Derselbe additive Weg wie die Schritte 1, 2, 6, 8, 10, 15 und 18 und aus
+        /// demselben Katalog (<see cref="SchemaKatalog.Schritt52_ErgebnisJeKanal"/>);
+        /// Begründung für Typ, fehlenden Backfill, Ordinalposition, den P1-Vorgriff der
+        /// beiden <c>T_oben_*</c>-Spalten und die geprüfte 255-Spalten-Grenze steht dort
+        /// und bei <see cref="SCHRITT_52_ERGEBNIS_JE_KANAL"/>.
+        ///
+        /// <b>Reines DDL.</b> Kein UPDATE, kein INSERT — der Schritt fasst keine
+        /// Datenzeile an und kann deshalb keinen gespeicherten Wert verändern.
+        /// </summary>
+        private static bool Schritt_52_ErgebnisJeKanal(Lauf l)
+        {
+            return SpaltenAnlegen(l, SchemaKatalog.Schritt52_ErgebnisJeKanal);
         }
 
         /// <summary>

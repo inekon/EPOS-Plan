@@ -1232,6 +1232,232 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string SPALTE_VERBUND_ID_SENKE = "ID_Senke";
 
+        // =====================================================================
+        // E1 - Ergebnisspalten je Kanal (Migrationsschritt 52)
+        //   Konzept Brauchwasser/Heizung/Pufferspeicher § 4.4 und § 6.3
+        //
+        //   Die Namen stehen hier, weil Migration, Schreibseite (ErgebnisCtrl.Save)
+        //   und Leseseite (ErgebnisCtrl.Load) sie alle brauchen - dasselbe Muster
+        //   wie SPALTE_KESSEL_QUELLWAERME (Schritt 10) und die Vbh-Spalten
+        //   (Schritt 18). Eine zweite Liste danebenzustellen hiesse, die naechste
+        //   Spalte an einer von drei Stellen zu vergessen.
+        // =====================================================================
+
+        public const string TAB_ERGEBNISENERGIEBEDARF = "Tab_ErgebnisEnergiebedarf";
+        public const string TAB_ERGEBNISWAERMEPUMPE = "Tab_ErgebnisWaermepumpe";
+        public const string TAB_ERGEBNISSOLARTHERMIE = "Tab_ErgebnisSolarthermie";
+
+        /// <summary>
+        /// E1 (Schritt 52, § 4.4): <c>Tab_ErgebnisEnergiebedarf.Waermebedarf_Heizung</c>
+        /// [MWh/a] — der Jahresbedarf des HEIZKANALS.
+        ///
+        /// <para>Die drei Kanalspalten sind die AUFSCHLÜSSELUNG des Bestandsskalars
+        /// <c>Waermebedarf_Gesamt</c>: gleiche Einheit, gleiche Quelle
+        /// (<c>SimulationWaermebedarf.KanaeleDrei()</c>, seit Paket K1 die FÜHRENDE
+        /// Größe), keine Zweitrechnung. Ihre Summe ist der Gesamtbedarf — die
+        /// Kanal-Summenprobe des Referenzlaufs prüft genau das.</para>
+        ///
+        /// <para><b>DOUBLE, NULL-fähig, kein Backfill.</b> Ein Lauf vor dieser Fassung
+        /// hat die Kanäle nicht getrennt ausgewiesen; NULL sagt „nicht erhoben", eine 0
+        /// behauptete „erhoben und null". Die Leseseite (<c>D(row, "…")</c>) behandelt
+        /// beides gleich.</para>
+        /// </summary>
+        public const string SPALTE_BEDARF_HEIZUNG = "Waermebedarf_Heizung";
+
+        /// <summary><c>Tab_ErgebnisEnergiebedarf.Waermebedarf_Brauchwasser</c> [MWh/a];
+        /// siehe <see cref="SPALTE_BEDARF_HEIZUNG"/>.</summary>
+        public const string SPALTE_BEDARF_BRAUCHWASSER = "Waermebedarf_Brauchwasser";
+
+        /// <summary><c>Tab_ErgebnisEnergiebedarf.Waermebedarf_Prozess</c> [MWh/a];
+        /// siehe <see cref="SPALTE_BEDARF_HEIZUNG"/>.</summary>
+        public const string SPALTE_BEDARF_PROZESS = "Waermebedarf_Prozess";
+
+        /// <summary>
+        /// E1 (Schritt 52, § 4.4): <c>Deckung_Heizung</c> [%] in JEDER
+        /// Erzeuger-Ergebniszeile (Wärmepumpe, Heizkessel, BHKW, Solarthermie).
+        ///
+        /// <para><b>Was der Wert ist — und was nicht.</b> Er ist der KANALANTEIL am
+        /// Bestandsskalar <c>Waermebedarfsdeckung</c>, also derselbe Bruch mit demselben
+        /// Nenner (Wärmebedarf des PROJEKTS) und derselben Eigenanteils-Logik des
+        /// Runners; nur der Zähler ist kanalindiziert (Direktdeckung + zugerechnete
+        /// Speicherentladung + Heizstab, je Kanal — die seit Paket K2 geführte
+        /// Buchführung <c>Direktdeckung_Kanal</c>/<c>Speicherentladung_Kanal</c>/
+        /// <c>Heizstab_Kanal</c>). <b>Die Summe der drei Spalten IST der
+        /// Bestandsskalar</b> — genau darauf ist die Rechnung normiert
+        /// (<c>SimulationRunner.DeckungJeKanal</c>).</para>
+        ///
+        /// <para>Der DECKUNGSGRAD EINES KANALS („die WP deckt 80 % des
+        /// Brauchwasserbedarfs") ist eine ANDERE Größe und wird bewusst nicht
+        /// gespeichert: Sie ergibt sich aus dieser Spalte und
+        /// <see cref="SPALTE_BEDARF_HEIZUNG"/> &amp; Geschwistern
+        /// (<c>Deckung_Kanal · Waermebedarf_Gesamt / Waermebedarf_Kanal</c>) und wäre
+        /// als eigene Spalte eine zweite Wahrheit.</para>
+        ///
+        /// <para><b>DOUBLE, NULL-fähig, kein Backfill</b> — Begründung wie bei
+        /// <see cref="SPALTE_BEDARF_HEIZUNG"/>. Die MODULtabellen bekommen die Spalten
+        /// NICHT: Die Eigenanteils-Logik des Runners ist je ERZEUGERART gebildet
+        /// (<c>Kaskadenschleife._entladungJeArtKanal</c>), nicht je Modul — eine
+        /// Modulspalte müsste den Anteil erfinden.</para>
+        /// </summary>
+        public const string SPALTE_DECKUNG_HEIZUNG = "Deckung_Heizung";
+
+        /// <summary><c>Deckung_Brauchwasser</c> [%]; siehe <see cref="SPALTE_DECKUNG_HEIZUNG"/>.</summary>
+        public const string SPALTE_DECKUNG_BRAUCHWASSER = "Deckung_Brauchwasser";
+
+        /// <summary><c>Deckung_Prozess</c> [%]; siehe <see cref="SPALTE_DECKUNG_HEIZUNG"/>.</summary>
+        public const string SPALTE_DECKUNG_PROZESS = "Deckung_Prozess";
+
+        /// <summary>
+        /// E1 (Schritt 52, § 4.4): <c>Tab_ErgebnisPufferspeicher.Entladung_Heizung</c>
+        /// [kWh/a] — die Kanalaufteilung der BEDARFSDECKENDEN Entladung.
+        ///
+        /// <para>Gebucht wird an derselben Stelle, an der auch
+        /// <c>Entladung_gesamt</c> fortgeschrieben wird
+        /// (<c>SimulationPufferspeicher.Entladen</c>), mit dem Kanal des Durchlaufs aus
+        /// der Entladeordnung. Die Summe der drei Spalten ist deshalb
+        /// <c>Entladung_gesamt</c> — der Skalar selbst bleibt unverändert akkumuliert
+        /// (keine Summenbildung aus den Kanälen, keine Rundungsverschiebung).</para>
+        ///
+        /// <para><b>Quellspeicher:</b> Die Entnahme eines Moduls aus seinem Quellpuffer
+        /// trägt keinen Bedarfskanal — sie wird wie in
+        /// <c>Kaskadenschleife.Anteil_Entladen(sp, gedeckt)</c> auf dem HEIZKANAL
+        /// gebucht (altverhaltenserhaltende Vorbelegung des Kanalmodells, § 4.2/F18).
+        /// Ohne diese eine Konvention wäre die Summenzusage für Quellspeicherzeilen
+        /// nicht einlösbar.</para>
+        /// </summary>
+        public const string SPALTE_PUFFER_ENTLADUNG_HEIZUNG = "Entladung_Heizung";
+
+        /// <summary><c>Entladung_Brauchwasser</c> [kWh/a]; siehe
+        /// <see cref="SPALTE_PUFFER_ENTLADUNG_HEIZUNG"/>.</summary>
+        public const string SPALTE_PUFFER_ENTLADUNG_BRAUCHWASSER = "Entladung_Brauchwasser";
+
+        /// <summary><c>Entladung_Prozess</c> [kWh/a]; siehe
+        /// <see cref="SPALTE_PUFFER_ENTLADUNG_HEIZUNG"/>.</summary>
+        public const string SPALTE_PUFFER_ENTLADUNG_PROZESS = "Entladung_Prozess";
+
+        /// <summary>
+        /// E1 (Schritt 52, § 4.4): <c>Tab_ErgebnisPufferspeicher.Durchsatz_Geladen</c>
+        /// [kWh/a] — die DURCHGEFLOSSENE Aufnahme (Befund N6,
+        /// <c>SimulationPufferspeicher.Durchsatz_Ladung_gesamt</c>).
+        ///
+        /// <para>Der Speicher ist eine hydraulische Weiche: Was er in derselben Stunde
+        /// wieder abgibt, war nie Speicherinhalt. Seit Paket 6 führt die Engine diese
+        /// Menge GETRENNT von <c>Ladung_gesamt</c>/<c>Entladung_gesamt</c> — bis hierher
+        /// stand sie nur am Objekt und im Protokoll („NICHT PERSISTIERT … vorgemerkte
+        /// Erweiterung"). Ohne sie ist aus der Ergebniszeile nicht erkennbar, ob ein
+        /// Puffer bewirtschaftet wurde oder nur durchgeleitet hat.</para>
+        ///
+        /// <para><b>Ohne Durchlass exakt 0</b> — die Spalte ändert also an keinem
+        /// Bestandswert etwas und ist in Projekten ohne Puffer-Hauptsenke durchgehend
+        /// null. Der Verlustanteil des Durchflusses
+        /// (<c>Durchsatz_Verluste_gesamt</c>) bleibt bewusst unpersistiert: Er ist
+        /// praktisch 0 und in <c>Verluste_gesamt</c> nicht enthalten.</para>
+        /// </summary>
+        public const string SPALTE_PUFFER_DURCHSATZ_GELADEN = "Durchsatz_Geladen";
+
+        /// <summary><c>Durchsatz_Entladen</c> [kWh/a] — die wieder abgegebene
+        /// Durchflussmenge (<c>SimulationPufferspeicher.Durchsatz_Entladung_gesamt</c>);
+        /// siehe <see cref="SPALTE_PUFFER_DURCHSATZ_GELADEN"/>.</summary>
+        public const string SPALTE_PUFFER_DURCHSATZ_ENTLADEN = "Durchsatz_Entladen";
+
+        /// <summary>
+        /// E1 (Schritt 52, § 4.4): <c>Tab_ErgebnisPufferspeicher.ID_Anlage</c> (LONG,
+        /// NULL zulässig) — der ANLAGENBEZUG einer Quellspeicherzeile.
+        ///
+        /// <para>Ein Quellspeicher gehört einer Energieanlage
+        /// (<c>SimulationPufferspeicher.ID_Anlage</c>, Serienschlüssel
+        /// <c>QUELLE_&lt;AnlagenID&gt;</c>). Bis hierher trug die Ergebniszeile nur
+        /// <c>ID_Pufferspeicher</c>; zwei Module am selben Quellpuffer waren in der
+        /// Persistenz nicht unterscheidbar, und die Ganglinien-Dateinamen
+        /// (<c>quellspeicher_&lt;AnlagenID&gt;_*.csv</c>) ließen sich der Zeile nicht
+        /// zuordnen. NULL bei Senkenspeichern — sie gehören keiner einzelnen Anlage.</para>
+        ///
+        /// <para>KEINE erzwungene Beziehung auf <c>Tab_Energieanlagen</c>: Eine
+        /// Ergebniszeile ist ein Protokoll des Laufs und muss eine später gelöschte
+        /// Anlage überleben (dieselbe Linie wie
+        /// <c>Tab_ErgebnisStromspeicher.ID_Energieanlage</c>).</para>
+        /// </summary>
+        public const string SPALTE_PUFFER_ID_ANLAGE = "ID_Anlage";
+
+        /// <summary>
+        /// P1-VORGRIFF (Schritt 52 legt NUR die Spalte an, § 7):
+        /// <c>Tab_ErgebnisPufferspeicher.T_oben_Mittel</c> [°C] — die mittlere
+        /// Temperatur der OBERSTEN Schicht.
+        ///
+        /// <para>Dieselbe Bauform wie <see cref="SPALTE_SENKE_ANSCHLUSSHOEHE"/> in
+        /// Schritt 50: Gefüllt wird die Spalte erst mit dem Schichtmodell (Paket P1) —
+        /// das Ein-Zonen-Modell von heute kennt keine oberste Schicht, ein Wert daraus
+        /// wäre erfunden. Sie steht hier mit, weil das Nachrüsten einer Spalte an einer
+        /// Tabelle mit erzwungener Beziehung teurer ist als ein Feld, das eine Weile
+        /// NULL bleibt. <b>Bis Paket P1 schreibt der Runner sie nicht</b> — die Zeile
+        /// bleibt NULL, und die Leseseite behandelt NULL wie „nicht erhoben".</para>
+        /// </summary>
+        public const string SPALTE_PUFFER_T_OBEN_MITTEL = "T_oben_Mittel";
+
+        /// <summary>P1-VORGRIFF: <c>T_oben_Min</c> [°C] — das Jahresminimum der obersten
+        /// Schicht; siehe <see cref="SPALTE_PUFFER_T_OBEN_MITTEL"/>.</summary>
+        public const string SPALTE_PUFFER_T_OBEN_MIN = "T_oben_Min";
+
+        /// <summary>
+        /// Schritt 52 der Migration (Paket E1, Konzept § 4.4/§ 6.3) — die
+        /// ERGEBNISSPALTEN JE KANAL, rein additiv.
+        ///
+        /// <para><b>Vier Erzeuger-Ergebnistabellen, kein Modul.</b> Wärmepumpe,
+        /// Heizkessel, BHKW und Solarthermie bekommen je drei Deckungsspalten; die
+        /// Photovoltaik nicht (sie deckt Strom, nicht Wärme), die Modultabellen ebenfalls
+        /// nicht (Begründung bei <see cref="SPALTE_DECKUNG_HEIZUNG"/>).</para>
+        ///
+        /// <para><b>Access-Feldgrenze.</b> 255 Spalten je Tabelle. Die breiteste hier
+        /// berührte Tabelle ist <c>Tab_ErgebnisPufferspeicher</c> mit 13 Spalten; sie
+        /// wächst auf 21. Keine der vier Erzeugertabellen kommt über 26. Der Abstand zur
+        /// Grenze ist damit an keiner Stelle knapp.</para>
+        ///
+        /// <para><b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access
+        /// immer hinten an. Folgenlos: Alle <c>Tab_Ergebnis*</c>-Tabellen werden
+        /// ausschließlich NAMENSBASIERT gelesen (<c>ErgebnisCtrl.Load</c> über
+        /// <c>D(row, "…")</c>, Referenzlauf-Export über <c>SELECT *</c> mit
+        /// Spaltennamen); eine <c>row[0…n]</c>-Kette wie bei <c>Tab_Einstellungen</c>
+        /// gibt es hier nicht.</para>
+        ///
+        /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/> — dieselbe
+        /// Begründung wie bei <see cref="Schritt10_KesselQuellwaerme"/> und
+        /// <see cref="Schritt18_BhkwVollbenutzungsstunden"/>: Die Rückfallebene sichert
+        /// die Spalten der EINGABEseite. Für die Ergebnisspalten gibt es die eigene,
+        /// tolerante Vorsorge unmittelbar vor dem Schreiben
+        /// (<c>ErgebnisCtrl.StelleKanalSpaltenSicher</c>).</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt52_ErgebnisJeKanal =
+        {
+            new SchemaSpalte(TAB_ERGEBNISENERGIEBEDARF, SPALTE_BEDARF_HEIZUNG,      "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISENERGIEBEDARF, SPALTE_BEDARF_BRAUCHWASSER, "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISENERGIEBEDARF, SPALTE_BEDARF_PROZESS,      "DOUBLE"),
+
+            new SchemaSpalte(TAB_ERGEBNISWAERMEPUMPE,  SPALTE_DECKUNG_HEIZUNG,      "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISWAERMEPUMPE,  SPALTE_DECKUNG_BRAUCHWASSER, "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISWAERMEPUMPE,  SPALTE_DECKUNG_PROZESS,      "DOUBLE"),
+
+            new SchemaSpalte(TAB_ERGEBNISHEIZKESSEL,   SPALTE_DECKUNG_HEIZUNG,      "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISHEIZKESSEL,   SPALTE_DECKUNG_BRAUCHWASSER, "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISHEIZKESSEL,   SPALTE_DECKUNG_PROZESS,      "DOUBLE"),
+
+            new SchemaSpalte(TAB_ERGEBNISBHKW,         SPALTE_DECKUNG_HEIZUNG,      "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISBHKW,         SPALTE_DECKUNG_BRAUCHWASSER, "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISBHKW,         SPALTE_DECKUNG_PROZESS,      "DOUBLE"),
+
+            new SchemaSpalte(TAB_ERGEBNISSOLARTHERMIE, SPALTE_DECKUNG_HEIZUNG,      "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISSOLARTHERMIE, SPALTE_DECKUNG_BRAUCHWASSER, "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISSOLARTHERMIE, SPALTE_DECKUNG_PROZESS,      "DOUBLE"),
+
+            new SchemaSpalte(TAB_ERGEBNISPUFFERSPEICHER, SPALTE_PUFFER_ENTLADUNG_HEIZUNG,      "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISPUFFERSPEICHER, SPALTE_PUFFER_ENTLADUNG_BRAUCHWASSER, "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISPUFFERSPEICHER, SPALTE_PUFFER_ENTLADUNG_PROZESS,      "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISPUFFERSPEICHER, SPALTE_PUFFER_DURCHSATZ_GELADEN,      "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISPUFFERSPEICHER, SPALTE_PUFFER_DURCHSATZ_ENTLADEN,     "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISPUFFERSPEICHER, SPALTE_PUFFER_ID_ANLAGE,              "LONG"),
+            new SchemaSpalte(TAB_ERGEBNISPUFFERSPEICHER, SPALTE_PUFFER_T_OBEN_MITTEL,          "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISPUFFERSPEICHER, SPALTE_PUFFER_T_OBEN_MIN,             "DOUBLE"),
+        };
+
         /// <summary>Eine Position einer Auslieferungsvorlage (Schritt 39).</summary>
         public sealed class VorlagenPositionSeed
         {

@@ -1887,3 +1887,26 @@ Die unsichtbare Zuordnungstabelle des Konfigurationsdialogs mit ihrem Zelleditor
 |---|---|---|
 | Fehlerzeile beim Speichern | `SIM_STATUS_SENKE_FEHLER` | BLEIBT. Die Meldung hing am Rückgabewert von `WaermesenkeClass.Schreiben`; diese Schreibstelle ist entfallen, die AUSSAGE nicht. `Form_Waermesenke.ListeSpeichern` gibt den Erfolg jetzt über `SpeichernOk` an den Aufrufer weiter, der dieselbe Zeile zeigt. |
 | Senkenanzeige aller Ränge | `SIM_HEIZKREIS_BEIDES`, `SIM_HEIZKREIS_NUR_HEIZWAERME`, `SIM_HEIZKREIS_NUR_WARMWASSER`, `SIM_PUFFER_HEIZUNG_KURZ`, `SIM_PUFFER_BRAUCHWASSER_KURZ`, `SIM_PUFFER_KOMBI_KURZ` | `Form_Waermesenke.SenkeAnzeige` ist mit A1 die EINE Anzeigefunktion für eine Senkenzeile. Sie hat die Kurzform des Ladeziels UND die Bedarfsart-Feinsteuerung des Heizkreises von `WaermesenkeClass.HauptsenkeAnzeige` übernommen; beide Altfassungen (`HauptsenkeAnzeige`, `ZweitsenkeAnzeige`) sind entfallen. An Karte, Übersicht und Schemaknoten steht damit Wort für Wort derselbe Text wie vorher. |
+
+## Nachtrag Paket E1 — Ergebnis je Kanal (27.08.2026)
+
+Paket E1 macht Bedarf und Deckung je Bedarfsart sichtbar (Konzept 4.4) und gibt dem
+Prozess-Abnehmer im Schema eine eigene Kantenfarbe (Befund S2-O7). **Drei Schlüssel kommen
+hinzu, keiner fällt weg.** Bestand danach **2538 Schlüssel** in beiden `.resx` und in
+`Resource.Designer.cs` (DE und EN deckungsgleich, je Schlüssel eine Designer-Eigenschaft;
+Zählweise wie im A1-Nachtrag: `data`-Knoten der XML).
+
+| Schlüssel | DE | EN | Fundstelle |
+|---|---|---|---|
+| `SIM_SCHEMA_LEGENDE_PROZESS` | Prozessversorgung | Process supply | `SchemaAnsicht.LegendeZeichnen` — der fünfte Legendeneintrag zur neuen Kantenart `SchemaModell.Kantenart.Prozess` (violett #7E57A6). Bis E1 trug die Prozesskante die gemeinsame Versorgungsfarbe und war im Bild nicht von Heizkreis und Warmwasser zu unterscheiden. |
+| `SIM_LABEL_BEDARF_JE_KANAL` | Wärmebedarf je Bedarfsart | Heat demand by demand type | `Form_Simulation_Detail.InitBedarfKanalzeilen` — Überschrift des Blocks unter „Gesamter Wärmebedarf" auf der Bedarfsseite. Die drei Zeilenbeschriftungen darunter nutzen die vorhandenen `KANAL_*_ANZEIGE` aus Paket K1. |
+| `SIM_SPALTE_DECKUNG_KANAL` | Deckung {0} [MWh/a] | Coverage {0} [MWh/a] | `NavigatorUebersicht` (Konstruktor) — Kopf der drei neuen Spalten der Ergebnistabelle. Der Platzhalter nimmt den Kanalnamen aus `KANAL_*_ANZEIGE` auf; drei getrennte Schlüssel wären dreimal derselbe Satzbau. |
+
+**Bewusst KEIN neuer Schlüssel** für die Kanalnamen selbst: `KANAL_HEIZUNG_ANZEIGE`,
+`KANAL_BRAUCHWASSER_ANZEIGE` und `KANAL_PROZESS_ANZEIGE` (Paket K1) sind der eine Katalogeintrag
+je Kanal und werden von E1 an drei weiteren Stellen wiederverwendet.
+
+**Bericht:** Die sieben neuen Berichtstexte („davon Heizung", „Deckungsgrade je Bedarfsart" …)
+stehen NICHT in `MyResource`, sondern im Wörterbuch `BerichtTexte._en` bzw. als
+`LabelDe`/`LabelEn` im `KennzahlenKatalog` — das ist die Zweisprachigkeit des Berichtsmoduls
+(Konzept Eckpunkt 10), und E1 folgt ihr, statt eine zweite danebenzustellen.
