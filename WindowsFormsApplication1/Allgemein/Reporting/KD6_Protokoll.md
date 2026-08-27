@@ -530,3 +530,16 @@ Nachweise: kd6 92/92 (X10 AnkerNachziehen, X11 Erfassungsgruppen-Zeile,
 X12/X12b Gerätetausch end-to-end über Del+Add samt Selbstheilung),
 kd2/kd4/pv6 grün, Sweep 115/0/5, Migration 41→47 auf frischer
 Produktivkopie OK, Fehlerjagd 1019 + 1037 je 0 Befunde.
+
+**Nachtrag Ä24 — Bestandsbereinigung (27.08.2026, Nutzerentscheid):** Die im
+Ä24-Protokoll genannten Altlast-Leichen wurden nach Rückfrage auf der
+Produktiv-DB entfernt (App geschlossen, Sicherung
+`K:\backup_kenndaten_2026-08-27_vor_ae24_bereinigung.accdb`):
+Projekt 1037 „Wärmepumpe WG" 7 lose Invest-Positionen über 21.000 €
+gelöscht (Entscheid: löschen, NICHT der CS7800iLW zuordnen — sie behält
+ihre 14.000 €); Varianten 1038/1039 je 16 kopierte WP-Positionen
+gelöscht. Vorab-Verifikation traf exakt die gemessene Lage (7/21.000,
+16, 16); Nachmessung: 0 lose WP-Positionen in 1037–1039, Invest 1037 =
+19.000 (CS5800i) + 14.000 (CS7800iLW) = 33.000 €. Ältere lose Reste in
+1007 (Solarthermie 1, BHKW 1) und 1011 (BHKW 2) blieben unangetastet —
+löschbar jederzeit per Doppelklick auf die gelbe Zeile.
