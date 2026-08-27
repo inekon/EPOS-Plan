@@ -8,7 +8,7 @@ entschieden** — zuletzt F11 (BHKW: Fahrweisen-Umbau auf n Senken je Stufe) und
 | Fassung | Inhalt |
 |---|---|
 | 1 | Erstfassung nach Ist-Analyse (9 Prüfläufe) und 3 adversarialen Reviews; Entscheidungen F1 (Altpfad entfällt), F7 (Schichtmodell N = 1…10, Default 1), F17 (R-Prozess automatisch) und Merge-Strategie (`kostenformulare` landet zuerst in `main`) |
-| **2** | Entscheidungen F2–F6, F8–F10, F12, F14–F18 eingearbeitet: Netzverluste **anteilig** auf die Kanäle (F2), **Kalender vereinheitlicht** (F3), Senkentabelle mit unbegrenztem Rang (F4), **F5-Alternative** — sechs Senkenziele bleiben, Pufferklassen werden ein **Klassen-Set** aus drei Nutzungs-Flags (Kombi = {Heizung, Brauchwasser}), Warnkriterienkatalog statt pauschalem Hinweis (F6), Herkunftsrechnung je Speicher (F8), Booster als Anzeigeregel (F9), Knappheitsreihenfolge projektweit übersteuerbar über neue `Tab_Einstellungen`-Spalte (F10), Quellprofile in die DB (F12), F14–F16/F18 wie empfohlen. Nachgereicht: **F11 = Fahrweisen-Umbau** (n Senken je BHKW-Stufe, Wärmeraum als Summe, Reservierungsliste) und **F13 = Kappung + Protokoll**. **Neu:** Heizkessel-Quellpuffer ausdrücklich verankert (8.4). Migrationsblock jetzt **45–51** |
+| **2** | Entscheidungen F2–F6, F8–F10, F12, F14–F18 eingearbeitet: Netzverluste **anteilig** auf die Kanäle (F2), **Kalender vereinheitlicht** (F3), Senkentabelle mit unbegrenztem Rang (F4), **F5-Alternative** — sechs Senkenziele bleiben, Pufferklassen werden ein **Klassen-Set** aus drei Nutzungs-Flags (Kombi = {Heizung, Brauchwasser}), Warnkriterienkatalog statt pauschalem Hinweis (F6), Herkunftsrechnung je Speicher (F8), Booster als Anzeigeregel (F9), Knappheitsreihenfolge projektweit übersteuerbar über neue `Tab_Einstellungen`-Spalte (F10), Quellprofile in die DB (F12), F14–F16/F18 wie empfohlen. Nachgereicht: **F11 = Fahrweisen-Umbau** (n Senken je BHKW-Stufe, Wärmeraum als Summe, Reservierungsliste) und **F13 = Kappung + Protokoll**. **Neu:** Heizkessel-Quellpuffer ausdrücklich verankert (8.4). Migrationsblock **48–54** (ursprünglich 45–51; nach dem Merge belegt `kostenformulare` die Schritte 38–47) |
 
 **Bezug:** [`Konzept_Simulation_QuellenSenken.md`](Konzept_Simulation_QuellenSenken.md) (Fassung 12 —
 inzwischen **umgesetzt** in den Paketen B0, 1–9, D1–D5b, K3, BHKW-Regulär und Parallelverbund; die
@@ -285,7 +285,7 @@ Klassen-Set mehrere Kanäle umfasst (heutige Kombi-Regel K-1, verallgemeinert). 
 (L6/F5) ist auch die Prozess-Position ab Paket K2 real wirksam (z. B. Set {Heizung, Prozess}).
 **Projektweit übersteuerbar (F10 ✔ entschieden 27.08.2026):** neue Spalte
 `Tab_Einstellungen.Kanal_Knappheitsreihenfolge` (TEXT, sprachneutraler Steuerwert, Default
-`BRAUCHWASSER;PROZESS;HEIZUNG`, Schritt 46) — unter Beachtung der Ordinal-Lesekette von
+`BRAUCHWASSER;PROZESS;HEIZUNG`, Schritt 49) — unter Beachtung der Ordinal-Lesekette von
 `Tab_Einstellungen` nur mit zielgenauem UPDATE (Kapitel 9).
 
 ### 4.4 Bedarfsarten und Ergebnis je Kanal
@@ -340,7 +340,7 @@ Die sechs geforderten Senkentypen sind damit direkt die sechs `Ziel`-Werte (F5-A
 `Heizkreis` und `Prozesswaerme` als Direktsenken, die vier Puffer-Ziele als Ladeziele. Das
 Puffer-Ziel benennt den **Zweck der Ladung** (Auswahlfilter, Chip, Schema-Kante); welche Kanäle
 der Speicher **entlädt**, bestimmt allein sein Klassen-Set (6.1) — weicht das Set des gewählten
-Puffers vom Ziel ab, greift ein Warnkriterium (6.2). **Migration (Schritt 47):**
+Puffers vom Ziel ab, greift ein Warnkriterium (6.2). **Migration (Schritt 50):**
 
 - je Anlage wird `WS_Ziel`/… als Rang 1 und `WS_Ziel2`/… als Rang 2 übernommen — die
   `Ziel`-Textwerte bleiben unverändert (F5-Alternative: keine Wertablösung), `WS_ID_Puffer*`
@@ -415,7 +415,7 @@ Chips der Erzeugerkarte zeigen künftig die Senkenkette („→ Heizkreis · →
 ### 6.1 Drei Klassen als Klassen-Set (L6, F5-Alternative — entschieden 27.08.2026)
 
 `Tab_Pufferspeicher.Verwendung` wird durch **drei unabhängige Ja/Nein-Flags** abgelöst:
-`Nutzung_Heizung`, `Nutzung_Brauchwasser`, `Nutzung_Prozess` (Schritt 46, DML-Migration:
+`Nutzung_Heizung`, `Nutzung_Brauchwasser`, `Nutzung_Prozess` (Schritt 49, DML-Migration:
 `Heizung` → {H}, `Brauchwasser` → {B}, `Kombi` → {H, B}; die Spalte `Verwendung` bleibt
 Lese-Altlast). Damit sind **beliebige Kombinationen** möglich — auch {Heizung, Prozess} oder
 {H, B, P}; „Kombi" ist nur noch der Anzeigename des Sets {H, B}, kein eigener Persistenzwert mehr.
@@ -688,33 +688,32 @@ Schnittstelle) und Paket **S2** (Anzeige).
 `SimulationControl.cs`, `SimulationRunner.cs`, `SimulationPV.cs`, `SchemaMigration.cs`,
 `SchemaKatalog.cs`, `DbWerte.cs`, `Form_Simulation_Config.cs`, `ZeitreihenExtraktor.cs`,
 `KostenEmissionRechner.cs`, die Wirtschaftlichkeits-Klassen und beide `Resource`-Kataloge.
-Der Probe-Merge nach `Pufferspeicher` (Stand 27.08.2026, `git merge-tree`) ist **konfliktfrei**,
-weil `Pufferspeicher` noch auf dem `main`-Stand steht — jede Umsetzungswoche ohne Merge erhöht das
-Konfliktrisiko in genau diesen Dateien. **Entscheidend:** `kostenformulare` führt die
-`SchemaMigration` bereits bis **`ZIEL_VERSION = 44`** fort (u. a. `SCHRITT_38_KOSTENVORLAGEN` …
-`SCHRITT_41_PROJEKTPHOTOVOLTAIK`). Vorgehen: `kostenformulare` **zuerst** nach `Pufferspeicher`
-mergen bzw. dessen Landung in `main` abwarten, erst dann mit Paket V0 beginnen.
-**Entschieden 27.08.2026:** Es wird die **Landung von `kostenformulare` in `main` abgewartet**;
-danach wird `main` nach `Pufferspeicher` gemergt und die Umsetzung beginnt auf dem gemeinsamen
-Stand. Bis dahin keine Code-Pakete auf `Pufferspeicher`.
+**Erledigt am 27.08.2026:** `kostenformulare` wurde konfliktfrei nach `Pufferspeicher` gemergt
+(`f5be06b`); Paket V0 und die Referenzbasis `2026-08-27_V0` stehen auf dem gemergten Stand.
+Der Merge brachte die `SchemaMigration` bis **`ZIEL_VERSION = 47`** (zuletzt 45 Anlagenkosten,
+46 AnlagenGeraeteanker, 47 AnkerNachziehen — der Branch hatte nach der ersten Prüfung, Stand
+`ZIEL_VERSION = 44`, noch nachgelegt; genau die in Kapitel 14 benannte Kollisionsfalle, der
+Konzeptblock ist deshalb von 45–51 auf **48–54** gewandert). **Regel für alle Folgepakete:
+unmittelbar vor jedem Schema-Schritt `ZIEL_VERSION` prüfen** — bei erneuter Kollision durch
+weitere `kostenformulare`-Merges verschiebt sich der Block als Ganzes nach oben.
 
 Die Schritte der `SchemaMigration` tragen **ganzzahlige Nummern**, und jeder erfolgreiche Schritt
 hebt den Marker `Tab_Applikation.SchemaVersion` einzeln an (`SchemaMigration.cs:1825-1837, :2400`;
 ADR-001) — Buchstaben-Teilschritte gibt es nicht. Für dieses Konzept wird der **Nummernblock
-45–51** reserviert (38–44 sind durch `kostenformulare` vergeben, siehe oben); jeder Schritt gehört
+48–54** reserviert (38–47 sind durch `kostenformulare` vergeben, siehe oben); jeder Schritt gehört
 zu genau **einem** Auslieferungspaket und läuft unmittelbar mit ihm aus (Schema vor Code desselben
 Pakets, wie in den Paketen 1–9). Die Nummern folgen der Auslieferungsreihenfolge aus Kapitel 13.
 Verhaltensneutrale DML-Vorbelegungen wie bisher.
 
 | Schritt | Paket | Inhalt |
 |---|---|---|
-| 45 | K1 | `Z_ProjektWaermebedarf.Kanal` (Kanalzuordnung externer Wärmeganglinien, Vorbelegung `Heizung`, F18) |
-| 46 | K2 | `Tab_Pufferspeicher`: Klassen-Set-Flags `Nutzung_Heizung`, `Nutzung_Brauchwasser`, `Nutzung_Prozess` mit DML-Migration aus `Verwendung` (Heizung → {H}, Brauchwasser → {B}, Kombi → {H, B}; `Verwendung` wird Lese-Altlast) · `Tab_Einstellungen.Kanal_Knappheitsreihenfolge` (TEXT, Default `BRAUCHWASSER;PROZESS;HEIZUNG`, zielgenaues UPDATE wegen Ordinal-Lesekette) |
-| 47 | S1 | `Z_AnlageSenke` anlegen und migrieren (5.1: Slots → Ränge, Ziel-Werte unverändert + neu `PufferProzess`, `WS_Typ` → `Bedarfsart`, Rang-1-Pflicht, `Ladeprio_PV`-Regel, **R-Prozess**), FK-Beziehungen ohne Löschweitergabe, `Z_AnlagePufferVerbund.ID_Senke`, `KINDER`-/`FK_MAP`-Einträge (5.1), `ReferenzenAufPuffer`/`ReferenzenLoesen` nachziehen |
-| 48 | A1 | Altpfad-Stilllegung: **zuerst DML-Übernahme der Betriebstemperaturen** — für jeden Puffer ohne vollständiges Paar in `Tab_Pufferspeicher` Vorlauf/Rücklauf aus der zugehörigen `Z_ProjektPufferSp`-Zeile übernehmen (exakt die Vorrangkette aus `SimulationControl.cs:2494-2519`; betroffene Puffer im Migrationshinweis auflisten — sonst fielen sie nach der Stilllegung still auf ΔT = 10 K zurück); dann `Kaskade_Zweikanalig` in Bestandsdaten auf WAHR setzen und aus der Weiche nehmen; `Z_ProjektPufferSp` stilllegen (Brücke `WpSenkeSpiegeln` entfällt) |
-| 49 | E1 | Ergebnis-Spalten je Kanal (4.4): `Tab_ErgebnisEnergiebedarf`, Erzeuger-Ergebnistabellen, `Tab_ErgebnisPufferspeicher` (+ `ID_Anlage` für Quellspeicherzeilen, + Durchsatzsummen, + `T_oben_*`) |
-| 50 | P1 | `Tab_Pufferspeicher`: neue Spalten `Schichten_Anzahl` (Default 1), `Hoehe`, `Lambda_Eff`, `T_Nutz_BW` (Default NULL = RL_eff), `Entnahme_Heizung`, `Entnahme_BW`, `Entnahme_Prozess`, `Ladeleistung_Max`, `Entladeleistung_Max` (Defaults verhaltensneutral) |
-| 51 | Q1 | `Tab_Energieanlagen.WQ_Anschlusshoehe`; `Tab_Quellprofil`/`Tab_QuellprofilDaten` (8.1); Tagesprofil-Ablage |
+| 48 | K1 | `Z_ProjektWaermebedarf.Kanal` (Kanalzuordnung externer Wärmeganglinien, Vorbelegung `Heizung`, F18) |
+| 49 | K2 | `Tab_Pufferspeicher`: Klassen-Set-Flags `Nutzung_Heizung`, `Nutzung_Brauchwasser`, `Nutzung_Prozess` mit DML-Migration aus `Verwendung` (Heizung → {H}, Brauchwasser → {B}, Kombi → {H, B}; `Verwendung` wird Lese-Altlast) · `Tab_Einstellungen.Kanal_Knappheitsreihenfolge` (TEXT, Default `BRAUCHWASSER;PROZESS;HEIZUNG`, zielgenaues UPDATE wegen Ordinal-Lesekette) |
+| 50 | S1 | `Z_AnlageSenke` anlegen und migrieren (5.1: Slots → Ränge, Ziel-Werte unverändert + neu `PufferProzess`, `WS_Typ` → `Bedarfsart`, Rang-1-Pflicht, `Ladeprio_PV`-Regel, **R-Prozess**), FK-Beziehungen ohne Löschweitergabe, `Z_AnlagePufferVerbund.ID_Senke`, `KINDER`-/`FK_MAP`-Einträge (5.1), `ReferenzenAufPuffer`/`ReferenzenLoesen` nachziehen |
+| 51 | A1 | Altpfad-Stilllegung: **zuerst DML-Übernahme der Betriebstemperaturen** — für jeden Puffer ohne vollständiges Paar in `Tab_Pufferspeicher` Vorlauf/Rücklauf aus der zugehörigen `Z_ProjektPufferSp`-Zeile übernehmen (exakt die Vorrangkette aus `SimulationControl.cs:2494-2519`; betroffene Puffer im Migrationshinweis auflisten — sonst fielen sie nach der Stilllegung still auf ΔT = 10 K zurück); dann `Kaskade_Zweikanalig` in Bestandsdaten auf WAHR setzen und aus der Weiche nehmen; `Z_ProjektPufferSp` stilllegen (Brücke `WpSenkeSpiegeln` entfällt) |
+| 52 | E1 | Ergebnis-Spalten je Kanal (4.4): `Tab_ErgebnisEnergiebedarf`, Erzeuger-Ergebnistabellen, `Tab_ErgebnisPufferspeicher` (+ `ID_Anlage` für Quellspeicherzeilen, + Durchsatzsummen, + `T_oben_*`) |
+| 53 | P1 | `Tab_Pufferspeicher`: neue Spalten `Schichten_Anzahl` (Default 1), `Hoehe`, `Lambda_Eff`, `T_Nutz_BW` (Default NULL = RL_eff), `Entnahme_Heizung`, `Entnahme_BW`, `Entnahme_Prozess`, `Ladeleistung_Max`, `Entladeleistung_Max` (Defaults verhaltensneutral) |
+| 54 | Q1 | `Tab_Energieanlagen.WQ_Anschlusshoehe`; `Tab_Quellprofil`/`Tab_QuellprofilDaten` (8.1); Tagesprofil-Ablage |
 
 Regeln aus dem Bestand, die weitergelten: neue Steuerwerte deutsch und eingefroren in `DbWerte`
 (Drei-Schichten-Regel), neue Beziehungen über IDs (nie Textfelder), TEXT-Feldbreiten gegen die
@@ -734,7 +733,7 @@ statt Spaltenreihen. Die Ganglinien-Ablage in der DB ist gegen die 2-GB-Grenze z
 | `Form_Waermesenke` | Umbau auf geordnete Senkenliste (5.3); Pufferauswahl ungefiltert, nach Klassen-Set gruppiert, mit Warnkriterien W1–W5 (6.2) |
 | `Form_PufferSp_Projekt` | Klassen-Set-Flags (drei Häkchen) statt der Verwendungs-ComboBox; neue Gruppe „Schichtung" (Anzahl, Höhe, λ_eff, T_Nutz BW, Entnahmehöhen — nur sichtbar bei N > 1); Lade-/Entladeleistung |
 | `Form_Quellprofil` | Betriebsart Monat/Tag (8.1) |
-| `Form_KonfigPufferspeicher` | **entfällt** mit Schritt 48 / Paket A1 (Alt-Zuordnung stillgelegt) |
+| `Form_KonfigPufferspeicher` | **entfällt** mit Schritt 51 / Paket A1 (Alt-Zuordnung stillgelegt) |
 | Ergebnisanzeigen / `NavigatorWaerme` / Bericht | drei Bedarfs-/Deckungsgrößen; Puffer-Kennzahlen ohne `puffer_wp`-Alias (6.3); Detailansicht-Formeln = Runner-Formeln (V0-7) |
 
 Lokalisierung: alle neuen sichtbaren Texte über `MyResource.Resource.*` in beiden Sprachen,
@@ -808,7 +807,7 @@ dokumentierte Ergebnisänderung (11.2). Das neue 365-Tage-Quellprofil (8.1) ist 
 **F5 — Ziel-Vereinfachung und Kombi?** ✔ **Entschieden 27.08.2026: Alternative** — die sechs
 Zielwerte bleiben (+ neu `PufferProzess`), und die Pufferklassen werden ein **Klassen-Set** aus
 drei Nutzungs-Flags (`Kombi` = {Heizung, Brauchwasser}, beliebige Kombinationen wie
-{Heizung, Prozess} möglich). Eingearbeitet in L5/L6, 5.1, 6.1; Migration Schritt 46/47.
+{Heizung, Prozess} möglich). Eingearbeitet in L5/L6, 5.1, 6.1; Migration Schritt 49/50.
 
 **F6 — Freie Zuordnung: Reichweite des Hinweises?** ✔ **Entschieden 27.08.2026: Konstellationen
 nur, wenn sinnvoll — Ausschlusskriterien mit Warnung.** Umgesetzt als Warnkriterienkatalog W1–W6
@@ -829,7 +828,7 @@ Validierung (kein neuer Anlagentyp, kein neues Schema).
 
 **F10 — Kanal-Knappheitsregel?** ✔ **Entschieden 27.08.2026: projektweite Übersteuerung über
 eine neue `Tab_Einstellungen`-Spalte** `Kanal_Knappheitsreihenfolge` (Default
-`BRAUCHWASSER;PROZESS;HEIZUNG`, Schritt 46; Details 4.3). Mit dem Klassen-Set (F5) ist auch die
+`BRAUCHWASSER;PROZESS;HEIZUNG`, Schritt 49; Details 4.3). Mit dem Klassen-Set (F5) ist auch die
 Prozess-Position ab K2 wirksam.
 
 **F11 — BHKW-Senkenzahl?** ✔ **Entschieden 27.08.2026: Fahrweisen-Umbau jetzt** — auch das BHKW
@@ -867,12 +866,12 @@ Prozesskanal rein energetisch (wie Heizung/BW heute), Prozess-Puffer mit eigenem
 mit Wirkung auf WP-Kennfeld und Erzeuger-Eignung.
 
 **F17 — Migrationsregel R-Prozess bestätigt?** ✔ **Entschieden 27.08.2026: Ja, automatisch.**
-Bei der Migration (Schritt 47) erhält jede Anlage mit Direktsenke Heizkreis und Bedarfsart
+Bei der Migration (Schritt 50) erhält jede Anlage mit Direktsenke Heizkreis und Bedarfsart
 `Beides` oder `Heizung` eine zusätzliche Senkenzeile `Ziel='Prozesswaerme'` **nach** ihrer
 Heizkreiszeile (4.4); die Rangfolge „Heizung vor Prozess je Anlage" ist damit festgelegt.
 
 **F18 — Kanalzuordnung externer Wärmeganglinien?** ✔ **Entschieden 27.08.2026: Ja** — neue Spalte
-`Z_ProjektWaermebedarf.Kanal` (Schritt 45), Vorbelegung `Heizung` (altverhaltenserhaltend); der
+`Z_ProjektWaermebedarf.Kanal` (Schritt 48), Vorbelegung `Heizung` (altverhaltenserhaltend); der
 Anwender kann eine importierte Ganglinie damit als Brauchwasser- oder Prozesslast deklarieren.
 
 ---
@@ -884,12 +883,12 @@ Reihenfolge ist Abhängigkeitsreihenfolge; jedes Paket einzeln lieferbar und ver
 | Paket | Inhalt | Kapitel / Schritt | Aufwand (PT) |
 |---|---|---|---|
 | **V0** | Bestandsfehler + Referenzbasis: V0-1…V0-9, vier neue Referenzprojekte, Basis neu einfrieren | 2.3, 11.1 | 6–8 |
-| **K1** | Dreikanal-Bedarf: `Kanalsatz`, Kanalbildung ohne Residuum, **Netzverluste anteilig** (F2), **Kalender-Vereinheitlichung** (F3), gemeinsame Profilroutine (zwei Quellmodi), `DataRepository`-Umstellung der Bedarfsrechnung, Ganglinien-Kanalzuordnung, Energieprobe | 4 · Schritt 45 | 7–9 |
-| **K2** | Kaskade dreikanalig: `SenkeAbziehen` mit Maske, Entladeordnungen/Durchsatzbudget indiziert, **kanalindizierte Deckungs-/Zurechnungsbuchführung** (4.1/4.4), **Klassen-Set-Flags + Knappheitsreihenfolge-Spalte** (6.1, F10) | 4.3, 6.1 · Schritt 46 | 7–9 |
-| **S1** | Senkentabelle `Z_AnlageSenke` + Migration (inkl. R-Prozess) + Ladephasen je Rang + **BHKW-Fahrweisen-Umbau** (F11: Wärmeraum als Summe, Reservierungsliste) + Senkendialog-Umbau + Projektkopie (`KINDER`/`FK_MAP`) | 5 · Schritt 47 | 10–13 |
+| **K1** | Dreikanal-Bedarf: `Kanalsatz`, Kanalbildung ohne Residuum, **Netzverluste anteilig** (F2), **Kalender-Vereinheitlichung** (F3), gemeinsame Profilroutine (zwei Quellmodi), `DataRepository`-Umstellung der Bedarfsrechnung, Ganglinien-Kanalzuordnung, Energieprobe | 4 · Schritt 48 | 7–9 |
+| **K2** | Kaskade dreikanalig: `SenkeAbziehen` mit Maske, Entladeordnungen/Durchsatzbudget indiziert, **kanalindizierte Deckungs-/Zurechnungsbuchführung** (4.1/4.4), **Klassen-Set-Flags + Knappheitsreihenfolge-Spalte** (6.1, F10) | 4.3, 6.1 · Schritt 49 | 7–9 |
+| **S1** | Senkentabelle `Z_AnlageSenke` + Migration (inkl. R-Prozess) + Ladephasen je Rang + **BHKW-Fahrweisen-Umbau** (F11: Wärmeraum als Summe, Reservierungsliste) + Senkendialog-Umbau + Projektkopie (`KINDER`/`FK_MAP`) | 5 · Schritt 50 | 10–13 |
 | **S2** | Freie Zuordnung mit Warnkriterien W1–W5; Schema-/Kartenanpassungen (Prozessknoten, Senkenketten-Chips, Kessel-Quellkette) | 6.2, 10 | 4–5 |
-| **A1** | Altpfad-Rückbau: Weiche, Flag, WP-Altschleife, SPK/Solar-Altwege, Temperaturübernahme + `Z_ProjektPufferSp`-Stilllegung, `Form_KonfigPufferspeicher` entfällt, toter Code (8.3) | 3/L1 · Schritt 48 | 6–8 |
-| **E1** | Ergebnis/Bericht je Kanal (Persistenz + Anzeige; Engine-Buchführung kommt aus K2); `puffer_wp`-Ablösung; `Tab_ErgebnisPufferspeicher`-Erweiterung | 4.4, 6.3 · Schritt 49 | 4–5 |
+| **A1** | Altpfad-Rückbau: Weiche, Flag, WP-Altschleife, SPK/Solar-Altwege, Temperaturübernahme + `Z_ProjektPufferSp`-Stilllegung, `Form_KonfigPufferspeicher` entfällt, toter Code (8.3) | 3/L1 · Schritt 51 | 6–8 |
+| **E1** | Ergebnis/Bericht je Kanal (Persistenz + Anzeige; Engine-Buchführung kommt aus K2); `puffer_wp`-Ablösung; `Tab_ErgebnisPufferspeicher`-Erweiterung | 4.4, 6.3 · Schritt 52 | 4–5 |
 | **P1** | Schichtmodell-Kern: Schema (Schritt 50), N Schichten als zweite Zustandsebene, Ausgleich/Verluste/Inversion, N=1-Byte-Nachweis (inkl. Rückfall-ΔT-Projekt), Lade-/Entladeleistung, Verbund-Guard (W6) | 7 · Schritt 50 | 8–10 |
 | **P2** | Schicht-Konfiguration UI: `Form_PufferSp_Projekt`, SpeicherKarte, Ergebnis-Kennzahlen, Kombi-Zonen | 7.5, 10 | 3–4 |
 | **B1** | Booster: Temperaturkopplung WP **und Heizkessel** (Schnittstellenwechsel `Quelltemperatur` → Stundenabfrage, 8.2/8.4), Kennlinien-Protokoll, Badge/Schema, WP-Guards | 8.2–8.4 | 6–8 |
@@ -899,7 +898,7 @@ Reihenfolge ist Abhängigkeitsreihenfolge; jedes Paket einzeln lieferbar und ver
 
 Meilenstein-Schnitte: nach **A1** ist Z1 im Kern erreicht (ein Rechenweg); nach **E1** ist Z3
 durchgängig (Bedarf → Kaskade → Ergebnis → Bericht); nach **B1** ist Z4 erreicht. P1 (mit seinem
-eigenen Schema-Schritt 50) und P2 sind ab K2 unabhängig von S2/A1/E1 parallelisierbar; P2 setzt P1
+eigenen Schema-Schritt 53) und P2 sind ab K2 unabhängig von S2/A1/E1 parallelisierbar; P2 setzt P1
 voraus.
 
 ---
@@ -913,7 +912,7 @@ voraus.
 | **Byte-Regression entfällt als Kriterium**, sobald Kanäle und Schichtmodell rechnen | zweistufiges Kriterium (11.2): byte-gleich wo verhaltensneutral zugesagt, sonst dokumentierter Toleranzvergleich; Energieprobe als bleibende Wache |
 | **93/372 `.cs`-Dateien nicht UTF-8**; Kernedateien (SimulationControl, SimulationWaermepumpe, SimulationWaermebedarf, WaermequelleClass, WaermesenkeClass, SchemaMigration) betroffen | byte-sicherer Patchweg (CP1252-Rezept), Diff-Review je Datei |
 | **Grep-Fallen**: `..\WindowsFormsApplication1 - Kopie`, `..\mit_Puffer_KI_Lösungsversuch` und `.claude\worktrees\*` enthalten Vollkopien | Suchpfade strikt auf das Anwendungsprojekt begrenzen (bestehende Projektregel, gilt verschärft) |
-| **Migrations-Schrittnummern / Parallelbranch `kostenformulare`** | Block 38–44 ist auf `kostenformulare` bereits vergeben (`ZIEL_VERSION = 44`); dieses Konzept reserviert **45–51** (Kapitel 9). Entschieden: Landung von `kostenformulare` in `main` abwarten, dann `main` nach `Pufferspeicher` mergen — der Probe-Merge ist heute konfliktfrei, beide Arbeiten berühren aber dieselben Kerndateien (SimulationControl, SimulationRunner, SchemaMigration, DbWerte, Form_Simulation_Config, Resource) |
+| **Migrations-Schrittnummern / Parallelbranch `kostenformulare`** | Block 38–47 ist auf `kostenformulare` vergeben (`ZIEL_VERSION = 47`; nach dem ersten Prüfstand 44 noch gewachsen — die Falle hat real zugeschnappt, Block deshalb von 45–51 auf **48–54** verschoben, Kapitel 9). Der Merge nach `Pufferspeicher` ist am 27.08. konfliktfrei erfolgt (`f5be06b`); beide Arbeiten berühren aber dieselben Kerndateien (SimulationControl, SimulationRunner, SchemaMigration, DbWerte, Form_Simulation_Config, Resource) |
 | **Schichtmodell-Numerik** (Stabilität, Monotonie) | gekappter Austausch (7.4) ist unbedingt stabil; Invarianten-Selbsttest; N=1-Byte-Nachweis als Anker |
 | **Access-Grenzen** (255 Spalten, 2 GB, 32 Indizes) | Zuordnungs- und Kindtabellen statt Spaltenreihen; Ganglinien-Volumen bemessen (9) |
 | **Referenzbasis veraltet schon wieder** während der Umsetzung | Basis wird je Paket fortgeschrieben (Lauf-Protokolle unter `Referenzlaeufe\`), nicht erst am Ende |
@@ -925,7 +924,7 @@ voraus.
 **Neue Tabellen:** `Z_AnlageSenke` (5.1) · `Tab_Quellprofil` + `Tab_QuellprofilDaten` (8.1).
 
 **Neue Spalten:** `Tab_Pufferspeicher`: `Nutzung_Heizung`, `Nutzung_Brauchwasser`,
-`Nutzung_Prozess` (Klassen-Set, Schritt 46), `Schichten_Anzahl`, `Hoehe`, `Lambda_Eff`,
+`Nutzung_Prozess` (Klassen-Set, Schritt 49), `Schichten_Anzahl`, `Hoehe`, `Lambda_Eff`,
 `T_Nutz_BW`, `Entnahme_Heizung`, `Entnahme_BW`, `Entnahme_Prozess`, `Ladeleistung_Max`,
 `Entladeleistung_Max` · `Tab_Einstellungen`: `Kanal_Knappheitsreihenfolge` (F10) ·
 `Tab_Energieanlagen`: `WQ_Anschlusshoehe` · `Z_AnlagePufferVerbund`: `ID_Senke` ·
@@ -939,8 +938,8 @@ Temperatur-Kennzahlen.
 (`BRAUCHWASSER;PROZESS;HEIZUNG`).
 
 **Stillgelegt (Lese-Altlast nach Migration):** `Tab_Einstellungen.Kaskade_Zweikanalig`
-(nach Schritt 48) · `Z_ProjektPufferSp` (nach DML-Temperaturübernahme, Schritt 48) ·
-`Tab_Pufferspeicher.Verwendung` (nach Klassen-Set-Migration, Schritt 46) ·
+(nach Schritt 51) · `Z_ProjektPufferSp` (nach DML-Temperaturübernahme, Schritt 51) ·
+`Tab_Pufferspeicher.Verwendung` (nach Klassen-Set-Migration, Schritt 49) ·
 `Tab_Energieanlagen`: `WS_Ziel`, `WS_ID_Puffer`, `WS_Typ`, `WS_Ladeprio`, `WS_Ladegrenze`,
 `WS_Ladeprio_PV` sowie `WS_Ziel2`, `WS_ID_Puffer2`, `WS_Ladeprio2`, `WS_Ladegrenze2`
 (ein `WS_Ladeprio_PV2` existiert nicht — die PV-Sonderregel hing an der Hauptsenke) ·
