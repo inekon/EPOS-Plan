@@ -12,16 +12,39 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
-**`2026-08-19_B6/`** — seit dem 19.08.2026, 17:16 Uhr die gültige Referenz,
+**`2026-08-27_V0/`** — seit dem 27.08.2026, 10:08 Uhr die gültige Referenz,
 **neun Projekte** (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, **1030**), **216 CSV,
 2 366 177 Werte**. Jeder neue Vergleich läuft gegen diesen Ordner.
 
-> **B6 ist mit B5 byte-identisch** (9/9 PASS, 216/216 gleich). Der Basiswechsel erfolgt allein wegen
-> der **Zuordnung**: Gerechnet ist B6 mit dem Codestand nach Abschluss der Ausbaustufe W4
-> (`e94be10`, Etappen E3 bis E7 plus den zusammengeführten KI-Strang) und auf einer Quelle mit
-> **Schemastand 21** statt 17. Damit lässt sich eine spätere Abweichung zweifelsfrei einer
-> Folgeänderung zuschreiben. Einzelheiten und — wichtiger — die Liste **„Was diese Basis nicht
-> absichert"** stehen im [Laufprotokoll der Basis](2026-08-19_B6/lauf_protokoll.md).
+> **Anlass: Paket V0 (Bestandsfehler) des Konzepts Brauchwasser/Heizung/Pufferspeicher.**
+> Drei Projekte ändern sich durch die Fixes **gewollt** gegenüber B6 — **1008**
+> (Mehrgebäude-Doppelzählung V0-1: Wärmebedarf 98,26 → 54,88 MWh), **1007** und **1011**
+> (Stromprofile werden summiert statt überschrieben, V0-2: 12 → 24 bzw. 5 462 → 6 806 MWh) —
+> vollständig zugeordnet im
+> [V0-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/V0_Bestandsfehler_Protokoll.md)
+> über einen Vorher/Nachher-Lauf auf **gemeinsamer** Datenbankkopie (dort 6/9 byte-stabil).
+> Ein PASS/FAIL-Vergleich B6 → V0 wird bewusst **nicht** geführt: Zwischen beiden Ständen
+> liegen neben V0 auch der Merge des Branches `kostenformulare` (Migrationsschritte bis 44),
+> die x64-Umstellung und Datenpflege des Anwenders — Code und Daten haben sich gleichzeitig
+> geändert.
+>
+> **Codestand:** `2409996` (Branch `Pufferspeicher`), x64 Debug, 0 Fehler.
+> **Datenquelle:** produktive `Kenndaten.accdb`, Zeitstempel **26.08.2026 23:39**, nur
+> gelesen; vor dem Lauf wurde eine **verwaiste** `Kenndaten.laccdb` dreier fensterloser
+> Access-Prozesse bereinigt. Die Migration auf den Schema-Zielstand lief ausschließlich auf
+> der Arbeitskopie. **Selbstvergleich:** zweiter Lauf desselben Codes auf derselben Quelle
+> **9/9 PASS (2 366 177 Werte), 216/216 byte-/MD5-gleich** — die Basis ist reproduzierbar.
+> `pruefen`: alle neun Projekte plausibel, keine NaN/Inf.
+>
+> **Neu sichtbar im Protokoll:** der V0-9-Hinweis zur oberen Kennlinienkappung meldet in
+> Projekt 1024 real **957 Kappungsstunden** (WP „CS6800iAW MB + AW 10 OR-T", oberste
+> Stützstelle 20,0 °C) — der Booster-relevante Fall existiert bereits im Bestand.
+>
+> **Was diese Basis weiterhin nicht absichert:** unverändert die Lücken der B6-Liste (u. a.
+> kein Projekt mit zwei Puffern je Kanal, kein Kessel an Quellpuffer mit Wert ≠ 0, keine
+> Wirtschaftlichkeit). Die **vier neuen Referenzprojekte** aus Konzept 11.1 (Mehrgebäude;
+> zwei Puffer je Kanal; Prozesswärme mit eigenem Puffer; Booster-Kette mit Kombi-Speicher)
+> stehen noch aus — 1008 deckt Mehrgebäude seit V0 immerhin rechnerisch korrekt ab.
 
 > **Der Referenzlauf deckt den Rechenkern ab, nicht die Wirtschaftlichkeit.** Er ruft
 > `WirtschaftlichkeitCtrl` nicht auf. Kapitalwert, KWK-Zuschlag, Steuergutschriften, Tarife und
@@ -107,7 +130,12 @@ reproduzierbar.
 
 ## Frühere Stände
 
-`2026-08-19_B5/` bleibt als **vorheriger Stand** liegen (Codestand `ef8e537`, Quelle mit Schemastand
+`2026-08-19_B6/` bleibt als **vorheriger Stand** liegen (Codestand `e94be10`, Schemastand 21,
+neun Projekte, 216 CSV, 2 366 177 Werte) — die letzte Basis **vor** dem `kostenformulare`-Merge
+und Paket V0. Warum B6 seinerzeit gesetzt wurde, steht im Abschnitt „Warum die Basis auf B6
+gewechselt wurde" darüber.
+
+`2026-08-19_B5/` bleibt als **älterer Stand** liegen (Codestand `ef8e537`, Quelle mit Schemastand
 17, neun Projekte, 216 CSV, 2 366 177 Werte) — **für alle 216 Dateien byte-gleich mit B6** und damit
 der Beleg des Standes vor den Etappen E3 bis E7. Warum B5 seinerzeit gesetzt wurde, steht im
 Abschnitt „Warum die Basis auf B5 gewechselt wurde" darüber.
