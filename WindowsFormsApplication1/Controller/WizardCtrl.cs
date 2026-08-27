@@ -795,6 +795,19 @@ namespace WindowsFormsApplication1
 
                 foreach (var item in list)
                 {
+                    // Ä24: Gerätestand VOR der Materialisierung merken — tauscht
+                    // dieser Lauf die Gerätekopie der Anlage (CopyFromStamm nach
+                    // Neuwahl/Umbenennung, Duplikat-Gerätekopie), ziehen die
+                    // KOSTENANKER ihrer Positionen unten mit um. Ohne den Umzug
+                    // zeigten sie auf die alte Kopie, die GeraeteWaisen.Aufraeumen
+                    // abräumt — die Selbstheilung löste die Zuordnung dann
+                    // „ehrlich“ und die Kosten der Anlage standen als „ohne
+                    // Anlagenzuordnung“ da (Befund 27.08.2026, Projekt 1037).
+                    int anlageAlt = item.ID;
+                    int wpAlt = item.ID_WP, bhkwAlt = item.ID_BHKW, kesselAlt = item.ID_Kessel,
+                        spAlt = item.ID_SP, pufferAlt = item.ID_PUFFER, pvAlt = item.ID_PV,
+                        solarAlt = item.ID_Solar;
+
                     // Gesperrte Verweisspalte dieses Anlagentyps (null = keine Sperre).
                     string sperrSpalte = null;
                     // Stammdatensatz der jeweiligen Energieanlage bei Bedarf ins Projekt kopieren
@@ -903,6 +916,17 @@ namespace WindowsFormsApplication1
                         }
                     }
 
+                    // Ä24: Kostenanker der Anlage auf die neue Gerätekopie umziehen —
+                    // NUR die Positionen DIESER Anlagenzeile (item.ID); höchstens einer
+                    // der sieben Aufrufe sieht einen echten Wechsel.
+                    KostenAnkerUmziehen(projektID, anlageAlt, wpAlt, item.ID_WP);
+                    KostenAnkerUmziehen(projektID, anlageAlt, bhkwAlt, item.ID_BHKW);
+                    KostenAnkerUmziehen(projektID, anlageAlt, kesselAlt, item.ID_Kessel);
+                    KostenAnkerUmziehen(projektID, anlageAlt, spAlt, item.ID_SP);
+                    KostenAnkerUmziehen(projektID, anlageAlt, pufferAlt, item.ID_PUFFER);
+                    KostenAnkerUmziehen(projektID, anlageAlt, pvAlt, item.ID_PV);
+                    KostenAnkerUmziehen(projektID, anlageAlt, solarAlt, item.ID_Solar);
+
                     // Anweisung und Parameter stehen zentral (siehe SQL_ANLAGE_INSERT):
                     // dieselbe Wahrheit, die auch WErzeugerCtrl.Insert benutzt.
                     if (!DataRepository.ExecuteSQL(SQL_ANLAGE_INSERT,
@@ -911,6 +935,19 @@ namespace WindowsFormsApplication1
                         SpVariantenVerwerfen("das Neuanlegen der Anlagen ist gescheitert");
                         return false;
                     }
+
+                    // Ä24: Die frische Anlagen-Id (AutoWert) zurück ans
+                    // Listenobjekt — die Session-Liste bleibt so über
+                    // Folge-Speicherungen an ihrer Zeile (Kostenanker-Umzug oben,
+                    // Kosten-Knöpfe der Detailansicht).
+                    try
+                    {
+                        object neuAnlage = DataRepository.ExecuteScalar(
+                            "SELECT MAX(ID) FROM Tab_Energieanlagen WHERE ID_Projekt = " + projektID);
+                        if (neuAnlage != null && neuAnlage != DBNull.Value)
+                            item.ID = Convert.ToInt32(neuAnlage);
+                    }
+                    catch { }
 
                     geschrieben.Add(item);
                 }
@@ -954,6 +991,31 @@ namespace WindowsFormsApplication1
                 Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Ä24: Zieht die Geräteanker der Kostenpositionen EINER Anlagenzeile auf
+        /// die neue Gerätekopie um (Gerätetausch im Del+Add-Speicherweg). Die
+        /// ID_Anlage-Seite heilt anschließend
+        /// <c>KostenProjektPositionenCtrl.ZuordnungReparieren</c> über den Anker.
+        /// Best effort — ein Speichern scheitert daran nicht.
+        /// </summary>
+        private static void KostenAnkerUmziehen(int projektID, int anlageAlt, int geraetAlt, int geraetNeu)
+        {
+            if (projektID <= 0 || anlageAlt <= 0 || geraetAlt <= 0 || geraetNeu <= 0 ||
+                geraetAlt == geraetNeu) return;
+            try
+            {
+                if (!KostenPositionCtrl.StelleSpaltenSicher()) return;
+                DataRepository.ExecuteSQL(
+                    "UPDATE Tab_ProjektWerte SET ID_AnlageGeraet = ? " +
+                    "WHERE ProjektID = ? AND ID_Anlage = ? AND ID_AnlageGeraet = ?",
+                    new OleDbParameter("@neu", geraetNeu),
+                    new OleDbParameter("@p", projektID),
+                    new OleDbParameter("@a", anlageAlt),
+                    new OleDbParameter("@g", geraetAlt));
+            }
+            catch { }
         }
 
         // Kleine Hilfsfunktion für die Typprüfung (kommt mit in die Ctrl)
