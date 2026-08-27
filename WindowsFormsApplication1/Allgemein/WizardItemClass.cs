@@ -36,6 +36,17 @@ namespace WindowsFormsApplication1
         public const int BHKW_TYP = 11;
         public const int PUFFER_TYP = 12;
 
+        /// <summary>
+        /// Untergrenze der VORLAEUFIGEN Ids, die die Auswahl-Dialoge ungespeicherten
+        /// Listenzeilen geben (Hausmuster "startindex = 100000" in zwoelf Dialogen,
+        /// z. B. Form_PufferSp.cs, Form_Heizkessel.cs): Die Zeile braucht ein
+        /// Unterscheidungsmerkmal fuer gleichnamige Eintraege, hat aber noch keinen
+        /// AutoWert. Konsumenten echter Anlagen-Ids muessen solche Werte wie
+        /// "keine Id" behandeln (FR-5) - echte AutoWerte koennten diese Marke
+        /// sonst eines Tages erreichen und verwechselt werden.
+        /// </summary>
+        public const int ID_UNGESPEICHERT_START = 100000;
+
         public Form wizardform;
         public int formtype;
         public bool aktiv;
