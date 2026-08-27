@@ -250,7 +250,10 @@ namespace WindowsFormsApplication1
                 ListViewItem lvitem;
                 lvitem = listView_WP.Items[n];
                 lvitem.Text = frm.item.Bezeichner;
-                lvitem.SubItems[1].Text = frm.item.maxPTherm.ToString();
+                // Ä23: Die Spalte heißt „Leistung [kW]“ und zeigt die NENNLEISTUNG —
+                // maxPTherm ist am Listenobjekt nie gefüllt und schrieb hier eine 0
+                // über den korrekten Aufbauwert.
+                lvitem.SubItems[1].Text = frm.item.Nennleistung.ToString();
                 lvitem.SubItems[2].Text = frm.item.Vorlauf.ToString();
                 lvitem.SubItems[3].Text = frm.item.Ruecklauf.ToString();
                 lvitem.SubItems[4].Text = frm.item.Betriebsart;
@@ -267,6 +270,11 @@ namespace WindowsFormsApplication1
             frm.SetWPCombox(frmauswahl.SelectedWP.Bezeichnung);
             frm.ShowDialog();
             if (!frm.CloseWithOK) return;
+
+            // Ä23: Der frische Eintrag bekommt seine Stammdaten (Nennleistung,
+            // Regelung, …) ins Listenobjekt — zweistufig, denn ID_WP ist hier
+            // noch die Stamm-Id (Ä22).
+            GeraetedatenFuellen(frm.item, frm.item.ID_WP);
             frm.item.ID_Type = 1; 
 
             list_werzmodel.Add(frm.item);
@@ -275,7 +283,7 @@ namespace WindowsFormsApplication1
             ListViewItem lvitem = new ListViewItem();
       
             lvitem.Text = frm.item.Bezeichner;
-            lvitem.SubItems.Add(frm.item.maxPTherm.ToString());
+            lvitem.SubItems.Add(frm.item.Nennleistung.ToString());
             lvitem.SubItems.Add(frm.item.Vorlauf.ToString());
             lvitem.SubItems.Add(frm.item.Ruecklauf.ToString());
             lvitem.SubItems.Add(frm.item.Betriebsart);
@@ -293,7 +301,6 @@ namespace WindowsFormsApplication1
                 Wizard_WPItem frm_wpitem = new Wizard_WPItem(lvitem.Text);
                 WErzeugerCtrl ctrl = new WErzeugerCtrl();
                 List<WErzeugerModel> list = new List<WErzeugerModel>();
-                WPCtrl wpctrl = new WPCtrl();
 
                 ctrl.ReadAllFilter("Bezeichner='" + lvitem.Text + "'");
                 if (ctrl.rows == 0)
@@ -303,21 +310,16 @@ namespace WindowsFormsApplication1
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
-                wpctrl.ReadAll("ID=" + ctrl.items[0].ID_WP);
-                if (wpctrl.rows == 0)
+                // Ä22/Ä23: zweistufig (Projektgerät vor Stammkatalog) statt
+                // Einstufigkeit über Tab_WP allein — frisch angelegte Einträge
+                // tragen bis zum Verwaltungs-OK die Stamm-Id.
+                if (!GeraetedatenFuellen(ctrl.items[0], ctrl.items[0].ID_WP))
                 {
-                    MessageBox.Show("Der Wärmepumpen-Datensatz (ID " + ctrl.items[0].ID_WP +
-                        ") wurde in der Datenbank nicht gefunden!", "Wärmepumpe",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Die Wärmepumpe (ID " + ctrl.items[0].ID_WP +
+                        ") wurde weder bei den Projektgeräten noch im Stammkatalog gefunden!",
+                        "Wärmepumpe", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
-                ctrl.items[0].Regelung = wpctrl.items[0].Regelung;
-                ctrl.items[0].Nennleistung = wpctrl.items[0].Nennleistung;
-                ctrl.items[0].Modulkosten = wpctrl.items[0].Modulkosten;
-                ctrl.items[0].Baujahr = wpctrl.items[0].Baujahr;
-                ctrl.items[0].Beschreibung = wpctrl.items[0].Beschreibung;
-                ctrl.items[0].Firma = wpctrl.items[0].Firma;
-                ctrl.items[0].Typ = wpctrl.items[0].Typ;
 
                 list.Add(ctrl.items[0]);
                 frm_wpitem.m_werzitemlist = list;

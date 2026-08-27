@@ -304,6 +304,17 @@ namespace WindowsFormsApplication1
             {
                 m_nID_WP = wpctrl.ID;
                 item.ID_WP = wpctrl.ID;
+                // Ä23: Die Wahl gilt auch für das Listenobjekt — sonst trüge es
+                // nach einem WP-Wechsel weiter die Stammdaten (u. a. Nennleistung)
+                // der vorherigen Wahl und die Verwaltungsliste zeigte 0 kW.
+                item.Regelung = wpctrl.Regelung;
+                item.Nennleistung = wpctrl.Nennleistung;
+                item.Modulkosten = wpctrl.Modulkosten;
+                item.Baujahr = wpctrl.Baujahr;
+                item.Beschreibung = wpctrl.Beschreibung;
+                item.Firma = wpctrl.Firma;
+                item.Typ = wpctrl.Typ;
+                item.Heizung = wpctrl.Heizung;
             }
             // WP spezifische Daten im Dialog mit anzeigen
 

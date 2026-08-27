@@ -455,3 +455,28 @@ erneut beim Ändern.
   die Summenzeile zeigt „Invest — · Betrieb —" statt einer falschen 0.
 
 Nachweise: kd6 87/87, Sweep 115/0/5.
+
+### Ä23 (27.08.2026) — Leistungsspalte der WP-Verwaltung zeigte 0 kW
+
+Nutzerbefund: „Leistung [kW]" der Wärmepumpen-Verwaltung steht auf 0,
+obwohl die Wärmepumpe mit 12 kW gepflegt ist.
+
+- Die Liste speiste die Spalte aus drei inkonsistenten Quellen: Der
+  AUFBAU nutzt `item.Nennleistung` (seit Ä22 korrekt), die
+  ZEILEN-AKTUALISIERUNG nach „Neu"/„Ändern" schrieb aber
+  `item.maxPTherm` — das Feld ist am Listenobjekt nie gefüllt und
+  überschrieb den korrekten Wert mit 0. Beide Stellen schreiben jetzt
+  die Nennleistung.
+- Der NEU-Fluss übernahm die Stammdaten gar nicht erst ins Listenobjekt:
+  vor dem Einreihen läuft jetzt `GeraetedatenFuellen` (zweistufig —
+  ID_WP ist dort noch die Stamm-Id, siehe Ä22).
+- Die ECHTE WP-Wahl in der Detailansicht (listBox-Handler) wechselte nur
+  die Id; Nennleistung & Co. blieben am Listenobjekt auf dem alten
+  Stand. Der Wahlzweig übernimmt jetzt alle acht Stammfelder ins item —
+  die stille Ä21-Vorwahl (m_bStilleFuellung) bleibt unverändert außen
+  vor (kd6-X9).
+- Der DOPPELKLICK-Leser der Verwaltung (Alt-Logik mit eigener „nicht
+  gefunden"-Box) läuft ebenfalls zweistufig über `GeraetedatenFuellen`.
+
+Nachweise: kd6 88/88 (neu X9: echte Wahl übernimmt die
+Stamm-Nennleistung ins Listenobjekt), Sweep 115/0/5.
