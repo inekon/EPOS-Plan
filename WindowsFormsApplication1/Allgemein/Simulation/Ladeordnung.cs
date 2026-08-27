@@ -160,8 +160,22 @@ namespace WindowsFormsApplication1
             /// <summary>Anzeigename des Erzeugertyps.</summary>
             public string Erzeuger = "";
 
-            /// <summary>true = der Puffer ist die ZWEITsenke dieser Anlage.</summary>
-            public bool Zweitsenke;
+            /// <summary>
+            /// RANG der Senkenzeile (Paket S1, Konzept 5.1) — 1 = die bisherige
+            /// Hauptsenke, 2 = die bisherige Zweitsenke, darüber die mit S1 neu möglichen
+            /// weiteren Senken.
+            /// </summary>
+            public int Rang = 1;
+
+            /// <summary>
+            /// true = der Puffer ist NICHT die erstrangige Senke dieser Anlage.
+            /// ABGELEITET aus <see cref="Rang"/> (Paket S1); bleibt für Anzeigen und für
+            /// <see cref="Ladeordnung.Position(List{LadeEintrag}, int, bool)"/> erhalten.
+            /// </summary>
+            public bool Zweitsenke
+            {
+                get { return Rang > 1; }
+            }
 
             /// <summary>Wirksame Ladepriorität (manuell oder Vorgabe).</summary>
             public int Ladeprio;
@@ -280,8 +294,119 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        /// <summary>
+        /// Dieselbe Ordnung, aber aus den GEORDNETEN SENKENLISTEN des Laufs statt aus den
+        /// Altspalten <c>WS_*</c> (Paket S1, Konzept 5.1).
+        ///
+        /// <para><b>Warum eine eigene Fassung.</b> Die Spaltenfassung darüber kennt genau
+        /// zwei Senkenplätze je Anlage; <c>Z_AnlageSenke</c> kennt n. Sie zu erweitern
+        /// hieße, zwei Datenquellen in einer Methode zu mischen — und der Rückfall auf die
+        /// Altspalten muss erhalten bleiben, solange es Datenbanken vor Schritt 50 gibt
+        /// (siehe <c>WaermesenkeClass.SenkenlistenLaden</c>). Deshalb zwei Wege in EINE
+        /// Sortierung und EINE Obergrenzen-Auflösung.</para>
+        ///
+        /// <para><b>Was gleich bleibt.</b> Sortierregel (Ladepriorität → Kaskadenposition
+        /// → Anlagenpriorität → Anlagen-ID → Rang) und Obergrenzen-Auflösung sind Zeile
+        /// für Zeile dieselben; die eigene Ladegrenze kommt aus
+        /// <see cref="Senkenzeile.LadegrenzeProzent"/> statt aus <c>WS_Ladegrenze</c>.
+        /// Auf migriertem Bestand liefert diese Fassung deshalb dieselbe Liste wie die
+        /// Spaltenfassung.</para>
+        ///
+        /// <paramref name="senken"/> <c>null</c> = Rückfall auf die Spaltenfassung.
+        /// </summary>
+        public static List<LadeEintrag> Ladereihenfolge(int idProjekt, int idPuffer,
+                                                        List<Senkenliste> senken)
+        {
+            if (senken == null) return Ladereihenfolge(idProjekt, idPuffer);
+
+            List<LadeEintrag> liste = new List<LadeEintrag>();
+            if (idProjekt <= 0 || idPuffer <= 0) return liste;
+
+            Dictionary<int, int> kaskade = Kaskadenpositionen(idProjekt);
+            Dictionary<int, Anlagenkopf> koepfe = Anlagenkoepfe(idProjekt);
+
+            foreach (Senkenliste s in senken)
+            {
+                if (s == null) continue;
+
+                Anlagenkopf kopf;
+                if (!koepfe.TryGetValue(s.AnlagenID, out kopf)) continue;   // fremde/gelöschte Anlage
+
+                int kaskadenpos;
+                if (!kaskade.TryGetValue(kopf.ID_Type, out kaskadenpos)) kaskadenpos = KASKADE_UNBEKANNT;
+
+                foreach (Senkenzeile z in s.Zeilen)
+                {
+                    if (z == null || !z.IstPuffersenke) continue;
+                    if (z.IDPuffer != idPuffer) continue;
+
+                    liste.Add(Eintrag(s.AnlagenID, kopf.Bezeichner, kopf.ID_Type, z.Rang,
+                                      z.Ladeprio, z.LadegrenzeProzent, z.LadeprioPV,
+                                      kaskadenpos, kopf.Anlagenprioritaet));
+                }
+            }
+
+            Sortieren(liste);
+            ObergrenzenAufloesen(liste, idPuffer);
+            return liste;
+        }
+
+        /// <summary>Die Anlagenfelder, die eine Senkenzeile nicht trägt (Paket S1).</summary>
+        private sealed class Anlagenkopf
+        {
+            public int ID_Type;
+            public string Bezeichner = "";
+            public int Anlagenprioritaet = ANLAGENPRIO_UNGEPFLEGT;
+        }
+
+        /// <summary>
+        /// Bezeichner, Typ und Anlagenpriorität aller Wärmeerzeuger eines Projekts —
+        /// EINE Abfrage für die ganze Ladeordnung (Paket S1).
+        ///
+        /// <c>Z_AnlageSenke</c> trägt nur die Senke, nicht die Anlage; die drei Felder
+        /// stecken weiter in <c>Tab_Energieanlagen</c>. Ohne diese Sammelabfrage käme je
+        /// Senkenzeile ein Nachschlag dazu — ein N+1 mitten im Kontextaufbau.
+        /// </summary>
+        private static Dictionary<int, Anlagenkopf> Anlagenkoepfe(int idProjekt)
+        {
+            Dictionary<int, Anlagenkopf> map = new Dictionary<int, Anlagenkopf>();
+            if (idProjekt <= 0) return map;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID, Bezeichner, ID_Type, Prioritaet FROM Tab_Energieanlagen " +
+                "WHERE ID_Projekt = ? AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ")",
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+            if (dt == null) return map;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                int id = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                if (id <= 0) continue;
+
+                Anlagenkopf k = new Anlagenkopf();
+                k.ID_Type = StilleDb.Zahl(StilleDb.Feld(r, "ID_Type"));
+                k.Bezeichner = StilleDb.Text(StilleDb.Feld(r, "Bezeichner"));
+
+                int prio = StilleDb.Zahl(StilleDb.Feld(r, "Prioritaet"));
+                k.Anlagenprioritaet = prio > 0 ? prio : ANLAGENPRIO_UNGEPFLEGT;
+
+                map[id] = k;
+            }
+
+            return map;
+        }
+
         private static LadeEintrag Eintrag(int idAnlage, string bezeichner, int idType,
                                            bool zweitsenke, int ladeprioRoh, double ladegrenze,
+                                           int ladeprioPV, int kaskadenpos, int anlagenprio)
+        {
+            return Eintrag(idAnlage, bezeichner, idType, zweitsenke ? 2 : 1, ladeprioRoh,
+                           ladegrenze, ladeprioPV, kaskadenpos, anlagenprio);
+        }
+
+        /// <summary>Dieselbe Bildung mit ausdrücklichem RANG (Paket S1).</summary>
+        private static LadeEintrag Eintrag(int idAnlage, string bezeichner, int idType,
+                                           int rang, int ladeprioRoh, double ladegrenze,
                                            int ladeprioPV, int kaskadenpos, int anlagenprio)
         {
             LadeEintrag e = new LadeEintrag();
@@ -289,7 +414,7 @@ namespace WindowsFormsApplication1
             e.Bezeichner = bezeichner;
             e.ID_Type = idType;
             e.Erzeuger = ErzeugerName(idType);
-            e.Zweitsenke = zweitsenke;
+            e.Rang = rang > 0 ? rang : 1;
             e.PrioManuell = ladeprioRoh >= PRIO_MIN && ladeprioRoh <= PRIO_MAX;
             e.Ladeprio = WirksameLadeprio(idType, ladeprioRoh);
             e.LadeprioPV = (ladeprioPV >= PRIO_MIN && ladeprioPV <= PRIO_MAX) ? ladeprioPV : 0;
@@ -319,7 +444,12 @@ namespace WindowsFormsApplication1
         /// Engine:
         ///
         ///   Ladepriorität → Kaskadenposition → Tab_Energieanlagen.Prioritaet →
-        ///   Anlagen-ID → Hauptsenke vor Zweitsenke
+        ///   Anlagen-ID → RANG der Senkenzeile
+        ///
+        /// Das letzte Glied hieß bis Paket S1 „Hauptsenke vor Zweitsenke" und ist
+        /// wertgleich: Mit zwei Senkenplätzen war Rang 1 die Hauptsenke und Rang 2 die
+        /// Zweitsenke, und <c>false &lt; true</c> ist dieselbe Ordnung wie
+        /// <c>1 &lt; 2</c>. Mit n Senken ordnet der Rang jetzt auch Rang 3 und darüber.
         ///
         /// Die Priorität kommt aus <paramref name="prio"/> statt fest aus
         /// <see cref="LadeEintrag.Ladeprio"/>, weil sie ab Konzept 3.5 ZEITABHÄNGIG ist:
@@ -346,7 +476,7 @@ namespace WindowsFormsApplication1
                 if (c != 0) return c;
                 c = a.ID_Anlage.CompareTo(b.ID_Anlage);
                 if (c != 0) return c;
-                return a.Zweitsenke.CompareTo(b.Zweitsenke);
+                return a.Rang.CompareTo(b.Rang);
             });
         }
 
@@ -529,7 +659,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static int EntladeprioAutomatik(int idProjekt, int idPuffer)
         {
-            List<LadeEintrag> laden = Ladereihenfolge(idProjekt, idPuffer);
+            return EntladeprioAutomatik(idProjekt, idPuffer, null);
+        }
+
+        /// <summary>
+        /// Dieselbe Automatik auf den GEORDNETEN SENKENLISTEN des Laufs (Paket S1) —
+        /// nötig, weil ein Puffer ab S1 auch die Senke einer Zeile mit Rang 3 sein kann,
+        /// von der die Altspalten <c>WS_*</c> nichts wissen. <c>null</c> = Spaltenfassung.
+        /// </summary>
+        public static int EntladeprioAutomatik(int idProjekt, int idPuffer,
+                                               List<Senkenliste> senken)
+        {
+            List<LadeEintrag> laden = Ladereihenfolge(idProjekt, idPuffer, senken);
             if (laden.Count == 0) return PRIO_SONSTIGE;
             return laden[0].Ladeprio;
         }
@@ -561,6 +702,19 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static List<EntladeEintrag> Entladereihenfolge(int idProjekt, string verwendung)
         {
+            return Entladereihenfolge(idProjekt, verwendung, null);
+        }
+
+        /// <summary>
+        /// Dieselbe Entladereihenfolge, aber mit den GEORDNETEN SENKENLISTEN des Laufs als
+        /// Grundlage der Entladeprio-Automatik (Paket S1). Die ENGINE reicht sie herein,
+        /// damit ein Puffer, den nur eine höherrangige Senkenzeile lädt, seine
+        /// Automatik-Priorität bekommt statt <see cref="PRIO_SONSTIGE"/>. Die Anzeigen
+        /// rufen weiter die Fassung ohne Listen. <c>null</c> = Spaltenfassung.
+        /// </summary>
+        public static List<EntladeEintrag> Entladereihenfolge(int idProjekt, string verwendung,
+                                                              List<Senkenliste> senken)
+        {
             List<EntladeEintrag> liste = new List<EntladeEintrag>();
             if (idProjekt <= 0) return liste;
 
@@ -577,7 +731,7 @@ namespace WindowsFormsApplication1
 
                 int manuell = p.Entladeprio;
                 e.Manuell = manuell >= PRIO_MIN && manuell <= PRIO_MAX;
-                e.Prio = e.Manuell ? manuell : EntladeprioAutomatik(idProjekt, e.ID_Puffer);
+                e.Prio = e.Manuell ? manuell : EntladeprioAutomatik(idProjekt, e.ID_Puffer, senken);
 
                 liste.Add(e);
             }

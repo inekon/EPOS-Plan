@@ -628,8 +628,8 @@ namespace WindowsFormsApplication1
         /// <summary>Gasspitze je Kessel [kW] (zweikanaliger Weg).</summary>
         private readonly double[] _gasspitzeKessel = new double[MAX_SPK];
 
-        /// <summary>Senkenzuordnung je Kessel, indexgleich zu <see cref="spk_list"/>.</summary>
-        private readonly List<Senkenzuordnung> _kesselSenke = new List<Senkenzuordnung>();
+        /// <summary>Senkenliste je Kessel, indexgleich zu <see cref="spk_list"/> (Paket S1).</summary>
+        private readonly List<Senkenliste> _kesselSenke = new List<Senkenliste>();
 
         /// <summary>
         /// In Pufferspeicher geladene Kesselwärme je Stunde [kWh] (zweikanaliger Weg,
@@ -701,8 +701,8 @@ namespace WindowsFormsApplication1
         /// <summary>Anzahl der Kessel, die im zweikanaligen Weg rechnen.</summary>
         public int KesselAnzahl { get { return _anzahlZweikanalig; } }
 
-        /// <summary>Senkenzuordnung eines Kessels; <c>null</c> außerhalb des Indexbereichs.</summary>
-        public Senkenzuordnung KesselSenke(int index)
+        /// <summary>Senkenliste eines Kessels; <c>null</c> außerhalb des Indexbereichs (Paket S1).</summary>
+        public Senkenliste KesselSenke(int index)
         {
             if (index < 0 || index >= _kesselSenke.Count) return null;
             return _kesselSenke[index];
@@ -714,7 +714,7 @@ namespace WindowsFormsApplication1
         /// Absicherungen (B0-3, B0-12).
         /// </summary>
         /// <returns>false = Abbruch (Kessel nicht im Projekt hinterlegt).</returns>
-        public bool Vorbereiten_Zweikanalig(int ID_Projekt, List<Senkenzuordnung> senken)
+        public bool Vorbereiten_Zweikanalig(int ID_Projekt, List<Senkenliste> senken)
         {
             m_ID_Projekt = ID_Projekt;
 
@@ -746,7 +746,7 @@ namespace WindowsFormsApplication1
             // Schritt 2 aus Berechnung() — EINE Fassung für beide Wege (Nacharbeit N6).
             if (!Kesseldaten_Einlesen(heizkesselctrl, Anzahl)) return false;
 
-            // Senkenzuordnung je Kessel: keine Physik, sondern die Konfiguration des
+            // Senkenliste je Kessel: keine Physik, sondern die Konfiguration des
             // zweikanaligen Wegs — deshalb hier und nicht im gemeinsamen Einlesen.
             for (int i = 0; i < Anzahl; i++)
             {
@@ -759,16 +759,16 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Senkenzuordnung einer Anlage; ohne Zeile gilt die Vorbelegung Heizkreis/Beides
-        /// (Konzept 4.6, erste Zeile der Tabelle).
+        /// Senkenliste einer Anlage; ohne Zeile gilt die Rang-1-Invariante
+        /// Heizkreis/Beides (Konzept 4.6/5.1).
         /// </summary>
-        private static Senkenzuordnung SenkeZuAnlage(List<Senkenzuordnung> senken, int idAnlage)
+        private static Senkenliste SenkeZuAnlage(List<Senkenliste> senken, int idAnlage)
         {
             if (senken != null && idAnlage > 0)
-                foreach (Senkenzuordnung z in senken)
-                    if (z != null && z.AnlagenID == idAnlage) return z;
+                foreach (Senkenliste s in senken)
+                    if (s != null && s.AnlagenID == idAnlage) return s;
 
-            return new Senkenzuordnung { AnlagenID = idAnlage };
+            return Senkenliste.Vorbelegung(idAnlage);
         }
 
         /// <summary>
@@ -796,7 +796,7 @@ namespace WindowsFormsApplication1
                 _restLeistung[i] = Kessel_Leistung_Spk[i];
             }
 
-            double eingang = Kanalabzug.Summe(rest);
+            double eingang = Kaskadenschleife.RestSumme(rest);
             if (eingang < 0) eingang = 0;
             if (stunde >= 0 && stunde < 8760) Waermebedarf[stunde] = (float)eingang;
             if (Max_Waermebedarf < eingang) Max_Waermebedarf = eingang;
@@ -809,23 +809,24 @@ namespace WindowsFormsApplication1
         /// Konzept 6.5 beschreibt sie als „zweiten Schleifendurchlauf mit erhaltenem
         /// Zwischenzustand". Umgesetzt ist genau das, nur ohne zweiten Durchlauf: Der
         /// Kessel bedient in EINER Stunde erst den einen, dann den anderen Kanal — bei
-        /// <c>WS_Typ = Beides</c> mit Warmwasservorrang, wie überall in dieser Engine
+        /// Bedarfsart <c>Beides</c> mit Warmwasservorrang, wie überall in dieser Engine
         /// (<c>SenkeAbziehen</c>) —, und die abgegebene Nutzwärme sammelt sich in
         /// <see cref="_kesselStunde"/>. Der Zwischenzustand ist damit erhalten, und die
         /// BEREITSCHAFTSVERLUSTE fallen nur EINMAL je Stunde und Kessel an: Sie werden
         /// nicht hier, sondern in <see cref="Stunde_Abschluss"/> gebucht, und zwar an
         /// genau einer Stelle für beide Kanäle und die Speicherladung zusammen.
         ///
-        /// Ein Kessel mit Puffer-Hauptsenke deckt hier NICHTS — er lädt ausschließlich
-        /// (Phase C), und damit gilt derselbe Doppelzählungs-Freibeweis wie bei der
+        /// Ein Kessel OHNE Direktsenke deckt hier NICHTS — er lädt ausschließlich
+        /// (Ladephasen), und damit gilt derselbe Doppelzählungs-Freibeweis wie bei der
         /// Wärmepumpe.
         ///
         /// <para>PAKET K2: <paramref name="rest"/> ist der offene Bedarf je Kanal und
         /// tritt an die Stelle des Paares <c>ref rest_heiz, ref rest_ww</c>; es wird
         /// IN-PLACE fortgeschrieben. Die Bezugsgröße <c>verfuegbar</c> kommt nicht mehr
         /// aus einer eigenen Dreifach-Verzweigung über <c>WS_Typ</c>, sondern aus
-        /// <see cref="Kanalabzug.Offen"/> — derselben Quelle, gegen die gleich abgezogen
-        /// wird (Konzept 4.3).</para>
+        /// <c>Kanalabzug.Offen</c> — derselben Quelle, gegen die gleich abgezogen
+        /// wird (Konzept 4.3). PAKET S1: gefragt wird die ganze SENKENLISTE des Kessels
+        /// statt einer einzelnen Bedarfsart (Konzept 5.2).</para>
         /// </summary>
         public void Stunde_Bedarf(int stunde, double[] rest)
         {
@@ -840,11 +841,13 @@ namespace WindowsFormsApplication1
                 // immer wahr.
                 if (!EbeneAktiv(i)) continue;
 
-                Senkenzuordnung z = _kesselSenke[i];
-                if (z != null && z.Haupt != Senke.Heizkreis) continue;
+                // PAKET S1: Gefragt wird die DIREKTSENKEN-KETTE des Kessels
+                // (Konzept 5.2). Ein Kessel ganz ohne Direktsenke lädt ausschließlich und
+                // deckt hier nichts - die Nachfolge der Prüfung „Hauptsenke != Heizkreis".
+                Senkenliste senken = _kesselSenke[i];
+                if (senken != null && !senken.HatDirektsenke) continue;
 
-                string wsTyp = (z != null) ? z.WSTyp : WaermequelleClass.SENKE_BEIDES;
-                double verfuegbar = Kanalabzug.Offen(wsTyp, rest);
+                double verfuegbar = Kanalabzug.Offen(senken, rest);
 
                 if (verfuegbar <= 0) continue;
 
@@ -854,7 +857,7 @@ namespace WindowsFormsApplication1
                 // K2: Abzug über die eine Kanalregel, mit gemessener Aufschlüsselung je
                 // Kanal (Konzept 4.4). Die abgezogene Gesamtmenge ist konstruktiv genau
                 // "menge" - sie ist auf den offenen Kanalbedarf begrenzt.
-                Kanalabzug.Abziehen(wsTyp, menge, rest, Direktdeckung_Kanal);
+                Kanalabzug.Abziehen(senken, menge, rest, Direktdeckung_Kanal);
 
                 _kesselAbgabe[i] += menge;
 
@@ -872,7 +875,7 @@ namespace WindowsFormsApplication1
             }
 
             if (stunde >= 0 && stunde < 8760)
-                Restwaerme[stunde] = (float)Kanalabzug.Summe(rest);
+                Restwaerme[stunde] = (float)Kaskadenschleife.RestSumme(rest);
         }
 
         /// <summary>
@@ -1032,7 +1035,7 @@ namespace WindowsFormsApplication1
         /// Nutzwärme, der Brennstoffverbrauch und die Restwärme sind dieselben Zahlen.
         /// </summary>
         public bool Berechnung_Zweikanalig(int ID_Projekt, Kanalsatz kanaele,
-                                           List<Senkenzuordnung> senken)
+                                           List<Senkenliste> senken)
         {
             if (kanaele == null) return false;
             if (!Vorbereiten_Zweikanalig(ID_Projekt, senken)) return false;

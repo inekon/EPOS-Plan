@@ -1050,6 +1050,53 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string WS_ZIEL_PUFFER_KOMBI = "PufferKombi";
 
+        /// <summary>
+        /// S1 (Migrationsschritt 50, Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 5.1 und Kapitel 15): Direkte Deckung des PROZESSWÄRMEBEDARFS — die
+        /// zweite Direktsenke neben <see cref="WS_ZIEL_HEIZKREIS"/>.
+        ///
+        /// <para>Bis Paket K1 lief die Prozesswärme als Teil des Restkanals still
+        /// über den Heizkreis mit; mit der Dreikanalbilanz (L3, kein Residuum) ist
+        /// sie ein eigener Kanal und braucht ein eigenes Senkenziel. Die
+        /// Migrationsregel R-Prozess (F17) trägt es allen Bestandsanlagen nach, die
+        /// den Heizkreis mit Bedarfsart <see cref="WS_TYP_BEIDES"/> oder
+        /// <see cref="WS_TYP_HEIZUNG"/> bedienen — ohne sie bliebe der Prozesskanal
+        /// in jedem Bestandsprojekt ungedeckt.</para>
+        ///
+        /// <para>Wertgleich mit <see cref="KANAL_PROZESS"/>, aber bewusst eine
+        /// EIGENE Konstante: Das eine ist der Kanal eines BEDARFS
+        /// (<c>Z_ProjektWaermebedarf.Kanal</c>), das andere das Ziel einer SENKE
+        /// (<c>Z_AnlageSenke.Ziel</c>). Zwei Fragen, zwei Konstanten — sonst
+        /// koppelte eine spätere Änderung an einer Stelle die andere still mit.
+        /// Ebenfalls bewusst OHNE Umlaut, wie alle Zielwerte (SQL-Vergleich,
+        /// U+FFFD-Altlast).</para>
+        ///
+        /// Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string WS_ZIEL_PROZESS = "Prozesswaerme";
+
+        /// <summary>
+        /// S1 (Migrationsschritt 50, Konzept § 5.1 und Kapitel 15): Die Anlage lädt
+        /// einen Puffer mit dem Ladezweck PROZESSWÄRME — das sechste und letzte
+        /// Senkenziel (F5-Alternative: die sechs geforderten Senkentypen SIND die
+        /// sechs <c>Ziel</c>-Werte).
+        ///
+        /// <para>Das Puffer-Ziel benennt den ZWECK der Ladung — Auswahlfilter, Chip
+        /// und Schema-Kante hängen daran. Welche Kanäle der Speicher ENTLÄDT,
+        /// bestimmt allein sein Klassen-Set
+        /// (<c>Nutzung_Heizung</c>/<c>_Brauchwasser</c>/<c>_Prozess</c>,
+        /// Schritt 49); weicht das Set vom Ziel ab, greift Warnkriterium W1 —
+        /// gewarnt, nicht gesperrt (§ 6.2).</para>
+        ///
+        /// <para>Im Bestand kommt der Wert NICHT vor: Die Migration schreibt ihn
+        /// nirgends, weil Schritt 49 auch <c>Nutzung_Prozess</c> überall auf FALSCH
+        /// lässt — ein Prozessspeicher wäre erfunden. Gesetzt wird er erst durch den
+        /// Anwender im Senkendialog.</para>
+        ///
+        /// Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string WS_ZIEL_PUFFER_PROZESS = "PufferProzess";
+
         // =====================================================================
         // Wärmesenke — abgedeckter Bedarfsanteil
         //   Tab_Energieanlagen.WS_Typ

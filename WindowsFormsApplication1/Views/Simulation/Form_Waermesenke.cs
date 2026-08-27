@@ -6,13 +6,33 @@ using System.Windows.Forms;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Wärmesenke einer Wärmeerzeuger-Anlage (Konzept 4.2).
+    /// Wärmesenken einer Wärmeerzeuger-Anlage als GEORDNETE SENKENLISTE
+    /// (Konzept_Brauchwasser_Heizung_Pufferspeicher 5.1/5.3, Paket S1).
     ///
-    /// Jede Anlage hat genau EINE Hauptsenke — Heizkreis (direkte Deckung des
-    /// Momentanbedarfs), Pufferspeicher Heizung, Pufferspeicher Brauchwasser oder, seit
-    /// Etappe D5a, Pufferspeicher Kombi (ein Vorrat für Heizung und Warmwasser) — und
-    /// optional eine Zweitsenke, die ausschließlich Überschuss bzw. verbleibendes
-    /// Ladepotenzial verwertet.
+    /// <para><b>Was sich mit S1 geändert hat.</b> Bis dahin hatte jede Anlage genau EINE
+    /// Hauptsenke (vier Radiobuttons) und optional EINE Zweitsenke (eigene Gruppe) — zwei
+    /// feste Plätze, hart im Spaltenpaar <c>WS_*</c>/<c>WS_*2</c> abgebildet. Jetzt trägt
+    /// die Anlage eine Liste beliebig vieler Senken in Rangfolge: Rang für Rang wird
+    /// beliefert, jede kWh geht genau einmal entweder in eine Direktsenke oder in einen
+    /// Puffer (Konzept 5.2). Neu gegenüber dem Bestand sind damit drei Dinge — mehr als
+    /// zwei Senken, freie Reihenfolge und Direktsenken ab Rang 2 (bisher musste jede
+    /// Zweitsenke ein Puffer sein).</para>
+    ///
+    /// <para><b>Sechs Ziele</b> (Konzept 5.1): <c>Heizkreis</c> und <c>Prozesswaerme</c>
+    /// als Direktsenken, <c>PufferHeizung</c>, <c>PufferBrauchwasser</c>,
+    /// <c>PufferProzess</c> und <c>PufferKombi</c> als Ladeziele. Die Steuerwerte kommen
+    /// aus <see cref="DbWerte"/> und bleiben deutsch und eingefroren; sichtbar wird
+    /// ausschließlich <c>MyResource.Resource.*</c> (Drei-Schichten-Regel).</para>
+    ///
+    /// <para><b>Persistenz zweigleisig.</b> Führend ist <c>Z_AnlageSenke</c>
+    /// (<see cref="Z_AnlageSenkeCtrl"/>) mit der vollständigen Liste. ZUSÄTZLICH werden
+    /// die Ränge 1 und 2 auf die Altspalten <c>WS_*</c> gespiegelt — nicht aus Nostalgie,
+    /// sondern weil der einkanalige Altpfad der Engine und mehrere noch nicht umgestellte
+    /// Anzeigen weiterhin von dort lesen. Ohne die Spiegelung rechnete der Altpfad mit
+    /// veralteten Senken. Geschrieben wird sie NICHT hier, sondern über
+    /// <see cref="Daten"/>: Der Dialog legt dort die gespiegelte Fassung ab, und der
+    /// Aufrufer schiebt sie wie bisher durch <c>WaermesenkeClass.Schreiben</c> — dieselbe
+    /// Schreiblogik wie vorher, an derselben Stelle, nur mit anderem Inhalt.</para>
     ///
     /// Aufbau wie beim Bestandsmuster <see cref="Form_QuellePufferspeicher"/>: komplett
     /// programmatisch, kein Designer, keine .resx; Datenübergabe über öffentliche Felder;
@@ -21,12 +41,6 @@ namespace WindowsFormsApplication1
     /// Die Fachlogik (Lesen, Schreiben, Prüfen nach 4.6, Ladeordnung nach 3.4) steht in
     /// <see cref="WaermesenkeClass"/> und <see cref="Ladeordnung"/> — dieser Dialog ist
     /// reine Oberfläche darüber.
-    ///
-    /// Die sichtbaren Texte stehen seit Paket 9 / L7 (Konzept 13.6) im Ressourcenkatalog
-    /// (<c>MyResource.Resource.SIM_*</c>). Steuerwerte — Ziel, Bedarfsart, Verwendung —
-    /// bleiben davon unberührt: sie kommen aus <see cref="WaermesenkeClass"/> bzw.
-    /// <see cref="WaermequelleClass"/> und sind deutsche Persistenzwerte
-    /// (Drei-Schichten-Regel).
     /// </summary>
     public class Form_Waermesenke : Form
     {
@@ -47,7 +61,15 @@ namespace WindowsFormsApplication1
         /// <summary>Betriebsmodus der Anlage — die PV-Zeile erscheint nur bei „PV" (Konzept 3.5).</summary>
         public string BM_Typ = "";
 
-        /// <summary>Die Senkeneinstellung: beim Öffnen Vorbelegung, nach OK das Ergebnis.</summary>
+        /// <summary>
+        /// Die GESPIEGELTE Senkeneinstellung (Ränge 1 und 2 in den Altspalten-Feldern):
+        /// beim Öffnen die Vorbelegung aus <c>WS_*</c>, nach OK das Ergebnis, das der
+        /// Aufrufer über <c>WaermesenkeClass.Schreiben</c> zurückschreibt.
+        ///
+        /// Die VOLLSTÄNDIGE Liste steht in <c>Z_AnlageSenke</c> und wird vom Dialog selbst
+        /// geschrieben (siehe Klassenkommentar). Was hier ankommt, ist der Ausschnitt, den
+        /// die Altspalten ausdrücken können.
+        /// </summary>
         public WaermesenkeClass.SenkeDaten Daten = new WaermesenkeClass.SenkeDaten();
 
         /// <summary>
@@ -62,19 +84,30 @@ namespace WindowsFormsApplication1
         /// </summary>
         public bool KaskadeAutomatikAktiv = true;
 
-        // --- Oberfläche ---------------------------------------------------------------
+        // --- Senkenliste ---------------------------------------------------------------
 
-        private RadioButton _rbHeizkreis;
-        private RadioButton _rbPufferHeizung;
-        private RadioButton _rbPufferBrauchwasser;
+        /// <summary>
+        /// Die Senken der Anlage in RANGFOLGE — der Index ist der Rang minus eins. Die
+        /// Rangnummern werden erst beim Speichern festgeschrieben
+        /// (<see cref="ListeSpeichern"/>); solange der Dialog offen ist, ist allein die
+        /// Listenreihenfolge maßgeblich. Das erspart es, bei jedem Rauf/Runter n Zeilen
+        /// umzunummerieren, und es gibt keinen Zustand, in dem Reihenfolge und Rangfeld
+        /// auseinanderlaufen können.
+        /// </summary>
+        private readonly List<Z_AnlageSenkeModel> _zeilen = new List<Z_AnlageSenkeModel>();
 
-        /// <summary>Vierte Option der Hauptsenke: Kombispeicher (Etappe D5a).</summary>
-        private RadioButton _rbPufferKombi;
+        private ListView _lvSenken;
+        private Button _btnHinzu;
+        private Button _btnEntfernen;
+        private Button _btnRauf;
+        private Button _btnRunter;
 
+        // --- Oberfläche der gewählten Zeile -------------------------------------------
+
+        private GroupBox _gbZeile;
+        private ComboBox _cbZiel;
+        private ComboBox _cbPuffer;
         private ComboBox _cbBedarfsart;
-        private ComboBox _cbPufferHeizung;
-        private ComboBox _cbPufferBrauchwasser;
-        private ComboBox _cbPufferKombi;
 
         private GroupBox _gbLaden;
         private ComboBox _cbLadeprio;
@@ -85,39 +118,31 @@ namespace WindowsFormsApplication1
         private Label _lblPV;
         private ComboBox _cbLadeprioPV;
 
-        private CheckBox _chkZweitsenke;
-        private GroupBox _gbZweitsenke;
-        private ComboBox _cbZiel2;
-        private ComboBox _cbPuffer2;
-        private ComboBox _cbLadeprio2;
-        private CheckBox _chkLadegrenze2;
-        private TextBox _tbLadegrenze2;
-
         private Label _lblHinweis;
         private Button _btnPufferAnlegen;
 
         // --- Parallelverbund (Paket Parallelverbund, Entscheidung 17.08.2026) ----------
         //
-        // GEWÄHLTE VARIANTE: Der Leitspeicher bleibt das BESTEHENDE Dropdown je Ziel, die
+        // GEWÄHLTE VARIANTE: Der Leitspeicher bleibt das Speicher-Dropdown der Zeile, die
         // zusätzlichen Speicher kommen in EINER CheckedListBox darunter.
         //
         // Warum diese und nicht „erster Haken = Leitspeicher": Die drei Fugen des Dialogs
-        // (FuelleCombo, AktuelleId, AusOberflaeche) bleiben damit in ihrer Bedeutung
-        // unangetastet — das Dropdown ist weiterhin die Quelle von Daten.ID_Puffer, und
-        // die gesamte Bestandslogik daran (PufferWaehlen, AktuellerHauptPuffer,
-        // PositionsText, btnPufferAnlegen_Click, die Verwendungsfilterung in
-        // PufferListenLaden) rechnet unverändert weiter. Ein „erster Haken"-Modell hätte
-        // den Leitspeicher-Begriff in eine Liste ohne stabile Reihenfolge verlegt: Beim
-        // Abwählen des ersten Hakens wäre der Leitspeicher stillschweigend ein anderer
-        // geworden — und damit die ID, unter der Schwellen, Entladepriorität und die
-        // Ergebniszeile laufen. Hinzu kommt die Fachlage: Der Leitspeicher ist KEIN
-        // gleichrangiges Element, er trägt die Regelung des Verbunds. Zwei verschiedene
-        // Bedienelemente drücken diesen Unterschied aus, eine Hakenliste verwischt ihn.
+        // (FuelleCombo, AktuelleId, Zeile lesen/schreiben) bleiben damit in ihrer
+        // Bedeutung unangetastet — das Dropdown ist weiterhin die Quelle der Puffer-ID,
+        // und die gesamte Bestandslogik daran (PufferWaehlen, AktuellerHauptPuffer,
+        // PositionsText, btnPufferAnlegen_Click) rechnet unverändert weiter. Ein „erster
+        // Haken"-Modell hätte den Leitspeicher-Begriff in eine Liste ohne stabile
+        // Reihenfolge verlegt: Beim Abwählen des ersten Hakens wäre der Leitspeicher
+        // stillschweigend ein anderer geworden — und damit die ID, unter der Schwellen,
+        // Entladepriorität und die Ergebniszeile laufen. Hinzu kommt die Fachlage: Der
+        // Leitspeicher ist KEIN gleichrangiges Element, er trägt die Regelung des
+        // Verbunds.
         //
-        // EINE Liste für alle drei Ziele (Heizung/Brauchwasser/Kombi) statt drei: Es kann
-        // ohnehin nur EIN Ziel gewählt sein, drei Listen wären dreimal dieselbe Fläche mit
-        // einem sichtbaren Steuerelement. Die Liste wird beim Zielwechsel neu befüllt —
-        // dieselbe Mechanik, die _cbPuffer2 über Puffer2ListeFuellen schon nutzt.
+        // PAKET S1: Der Verbund hängt weiterhin an RANG 1. Konzept 5.1 sieht dafür die
+        // Spalte Z_AnlagePufferVerbund.ID_Senke vor, damit ein Verbund an jeder
+        // Puffersenke möglich wird; solange die Spalte fehlt, gibt es nur die eine
+        // Anlagen-Referenz, und ein Verbund an Rang 3 wäre von einem an Rang 1 nicht zu
+        // unterscheiden. Die Gruppe ist deshalb nur scharf, wenn Rang 1 gewählt ist.
         private GroupBox _gbVerbund;
         private CheckedListBox _clbVerbund;
         private Label _lblVerbundSumme;
@@ -159,10 +184,34 @@ namespace WindowsFormsApplication1
         private static string SIM_VERBUND_KEIN_VERBUND
         { get { return MyResource.Resource.SIM_VERBUND_KEIN_VERBUND; } }
 
+        /// <summary>Anzeige für ein leeres Feld der Senkenliste.</summary>
+        private const string LEER = "–";
+
+        /// <summary>
+        /// Ersatzwerte in <c>Ladegrenze</c> für eine Eingabe, die noch nicht zu einer Zahl
+        /// taugt: Sie erlauben es, den Fehler dort zu MELDEN, wo er hingehört (beim OK, mit
+        /// Nennung des Rangs), statt ihn beim Zeilenwechsel stillschweigend auf 0 zu
+        /// runden. Negative Werte können sonst nicht auftreten — die Ladegrenze ist ein
+        /// Prozentsatz, und <c>WaermesenkeClass.Normalisieren</c> klemmt Negatives ohnehin.
+        /// </summary>
+        private const double GRENZE_UNLESBAR = -1;
+        private const double GRENZE_BEREICH = -2;
+
         /// <summary>Eintrag der Ladeprioritäts-Dropdowns (0 = nach Vorgabe).</summary>
         private class PrioItem
         {
             public int Wert;
+            public string Text = "";
+            public override string ToString() { return Text; }
+        }
+
+        /// <summary>
+        /// Eintrag der Ziel-Auswahl: sprachneutraler Persistenzwert plus Anzeigetext
+        /// (Drei-Schichten-Regel — kein Anzeigetext darf Steuerwert sein).
+        /// </summary>
+        private class ZielItem
+        {
+            public string Wert = "";
             public string Text = "";
             public override string ToString() { return Text; }
         }
@@ -173,6 +222,73 @@ namespace WindowsFormsApplication1
             FensterEinpassung.Einhaengen(this);
         }
 
+        // --- Ziele (Konzept 5.1) ------------------------------------------------------
+
+        /// <summary>
+        /// true = das Ziel meint einen Pufferspeicher — die Frage des Dialogs an EINER
+        /// Stelle. Sie geht an <see cref="WaermesenkeClass.IstPufferZiel"/>, das seit
+        /// Paket S1 auch <c>PufferProzess</c> kennt. Die zweite Bedingung ist die
+        /// Rückversicherung: Dieselbe Methode ist zugleich die Normalisierungsregel der
+        /// ALTSPALTEN, und sollte sie dafür wieder auf die drei Altziele eingeschränkt
+        /// werden, denkt der Dialog trotzdem in seinen sechs.
+        /// </summary>
+        private static bool IstPufferZiel(string ziel)
+        {
+            return WaermesenkeClass.IstPufferZiel(ziel) ||
+                   string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_PROZESS, StringComparison.Ordinal);
+        }
+
+        /// <summary>true = Direktsenke Heizkreis (nur dort ist die Bedarfsart wirksam).</summary>
+        private static bool IstHeizkreis(string ziel)
+        {
+            return string.Equals(ziel, DbWerte.WS_ZIEL_HEIZKREIS, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Anzeigename eines Ziels — inklusive der beiden S1-Ziele.
+        ///
+        /// ÖFFENTLICH, weil auch die Erzeugerkarte die Senkenkette beschriftet
+        /// (<c>Form_Simulation_Config.Karten</c>). Der Ort ist ein Zwischenstand: Sobald
+        /// <see cref="WaermesenkeClass"/> die beiden neuen Ziele kennt, gehört die
+        /// Abbildung dorthin, neben <c>WaermesenkeClass.ZielAnzeige</c> — bis dahin steht
+        /// sie hier EINMAL statt zweimal in zwei Formularen.
+        /// </summary>
+        public static string ZielAnzeige(string ziel)
+        {
+            if (string.Equals(ziel, DbWerte.WS_ZIEL_PROZESS, StringComparison.Ordinal))
+                return MyResource.Resource.KANAL_PROZESS_ANZEIGE;
+            if (string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_PROZESS, StringComparison.Ordinal))
+                return MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_PROZESS;
+            return WaermesenkeClass.ZielAnzeige(ziel);
+        }
+
+        /// <summary>
+        /// Kompakte Anzeige EINER Senkenzeile für Karten und Übersichten: „Ziel: Speicher"
+        /// bzw. nur das Ziel bei einer Direktsenke.
+        /// </summary>
+        public static string SenkeAnzeige(Z_AnlageSenkeModel z)
+        {
+            if (z == null) return LEER;
+
+            string ziel = ZielAnzeige(z.Ziel);
+            if (!IstPufferZiel(z.Ziel) || z.ID_Puffer <= 0) return ziel;
+
+            string name = WaermesenkeClass.PufferName(z.ID_Puffer);
+            return name.Length > 0 ? ziel + ": " + name : ziel;
+        }
+
+        /// <summary>
+        /// true = das Ziel ist eines der beiden mit Paket S1 hinzugekommenen
+        /// Prozesswärme-Ziele. Sie sind der einzige Fall, in dem die Altspalten
+        /// <c>WS_*</c> die Senke NICHT ausdrücken können (siehe
+        /// <see cref="SpiegelBauen"/>) — Anzeigen, die von dort lesen, müssen ihn kennen.
+        /// </summary>
+        public static bool IstProzessZiel(string ziel)
+        {
+            return string.Equals(ziel, DbWerte.WS_ZIEL_PROZESS, StringComparison.Ordinal) ||
+                   string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_PROZESS, StringComparison.Ordinal);
+        }
+
         private void BaueOberflaeche()
         {
             this.Text = MyResource.Resource.SIM_SENKE_TITEL;
@@ -180,128 +296,157 @@ namespace WindowsFormsApplication1
             this.StartPosition = FormStartPosition.CenterParent;
             this.MinimizeBox = false;
             this.MaximizeBox = false;
-            // D5a: Die vierte Option der Hauptsenke braucht eine Zeile mehr - Gruppe und
-            // alles darunter rücken um genau diese Zeilenhöhe (26 px) nach unten.
             this.ClientSize = new Size(620, 618);
 
-            // --- Hauptsenke ----------------------------------------------------------
-            // Beschriftung, deshalb der gross geschriebene Schluessel: SIM_ROLLE_* liefert
-            // die klein geschriebene Satzform ("main sink") fuer den Einsatz in Meldungen.
-            GroupBox gbHaupt = new GroupBox
-            {
-                Text = MyResource.Resource.SIM_GRUPPE_HAUPTSENKE,
-                Location = new Point(12, 10),
-                Size = new Size(596, 158)
-            };
-            this.Controls.Add(gbHaupt);
+            // Die vier Gruppen liegen untereinander; jede Höhe steht als Konstante da,
+            // damit die nächste Oberkante eine RECHNUNG ist und keine abgeschriebene Zahl
+            // (dieselbe Denkweise wie der VERBUND_ZUWACHS des Bestands).
+            const int LISTE_OBEN = 10;
+            const int LISTE_HOEHE = 200;
+            const int ZEILE_OBEN = LISTE_OBEN + LISTE_HOEHE + 8;
+            const int ZEILE_HOEHE = 116;
+            const int VERBUND_OBEN = ZEILE_OBEN + ZEILE_HOEHE + 8;
+            const int VERBUND_HOEHE = 138;
+            const int LADEN_OBEN = VERBUND_OBEN + VERBUND_HOEHE + 8;
+            const int LADEN_HOEHE = 140;
 
-            _rbHeizkreis = new RadioButton
+            // --- Senkenliste ---------------------------------------------------------
+            GroupBox gbListe = new GroupBox
             {
-                Text = MyResource.Resource.SIM_RB_HEIZKREIS,
-                AutoSize = true,
-                Location = new Point(16, 24)
+                Text = MyResource.Resource.SIM_GRUPPE_SENKENLISTE,
+                Location = new Point(12, LISTE_OBEN),
+                Size = new Size(596, LISTE_HOEHE)
             };
-            _rbHeizkreis.CheckedChanged += Auswahl_Geaendert;
+            this.Controls.Add(gbListe);
+
+            _lvSenken = new ListView
+            {
+                Location = new Point(16, 22),
+                Size = new Size(564, 128),
+                View = View.Details,
+                FullRowSelect = true,
+                HideSelection = false,
+                MultiSelect = false,
+                HeaderStyle = ColumnHeaderStyle.Nonclickable
+            };
+            _lvSenken.Columns.Add(MyResource.Resource.SIM_SPALTE_RANG, 44);
+            _lvSenken.Columns.Add(MyResource.Resource.SIM_SPALTE_ZIEL, 150);
+            _lvSenken.Columns.Add(MyResource.Resource.SIM_SPALTE_SPEICHER, 186);
+            _lvSenken.Columns.Add(MyResource.Resource.SIM_SPALTE_BEDARFSART, 106);
+            _lvSenken.Columns.Add(MyResource.Resource.SIM_SPALTE_LADEN, 74);
+            _lvSenken.SelectedIndexChanged += Zeile_Gewechselt;
+            gbListe.Controls.Add(_lvSenken);
+
+            _btnHinzu = new Button
+            {
+                Text = MyResource.Resource.SIM_BTN_SENKE_HINZU,
+                Location = new Point(16, 158),
+                Size = new Size(110, 26)
+            };
+            _btnHinzu.Click += btnHinzu_Click;
+
+            _btnEntfernen = new Button
+            {
+                Text = MyResource.Resource.SIM_BTN_SENKE_ENTFERNEN,
+                Location = new Point(132, 158),
+                Size = new Size(110, 26)
+            };
+            _btnEntfernen.Click += btnEntfernen_Click;
+
+            _btnRauf = new Button
+            {
+                Text = MyResource.Resource.SIM_BTN_SENKE_RAUF,
+                Location = new Point(346, 158),
+                Size = new Size(114, 26)
+            };
+            _btnRauf.Click += btnRauf_Click;
+
+            _btnRunter = new Button
+            {
+                Text = MyResource.Resource.SIM_BTN_SENKE_RUNTER,
+                Location = new Point(466, 158),
+                Size = new Size(114, 26)
+            };
+            _btnRunter.Click += btnRunter_Click;
+
+            gbListe.Controls.Add(_btnHinzu);
+            gbListe.Controls.Add(_btnEntfernen);
+            gbListe.Controls.Add(_btnRauf);
+            gbListe.Controls.Add(_btnRunter);
+
+            // --- Die gewählte Zeile --------------------------------------------------
+            _gbZeile = new GroupBox
+            {
+                Text = MyResource.Resource.SIM_GRUPPE_SENKENZEILE,
+                Location = new Point(12, ZEILE_OBEN),
+                Size = new Size(596, ZEILE_HOEHE)
+            };
+            this.Controls.Add(_gbZeile);
+
+            Label lblZiel = new Label
+            {
+                Text = MyResource.Resource.SIM_LBL_ZIEL2,
+                AutoSize = true,
+                Location = new Point(16, 26)
+            };
+            _cbZiel = new ComboBox
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Location = new Point(150, 22),
+                Width = 300
+            };
+            ZielListeFuellen();
+            _cbZiel.SelectedIndexChanged += Auswahl_Geaendert;
+
+            Label lblPuffer = new Label
+            {
+                Text = MyResource.Resource.PSP_RUBRIK_LABEL,
+                AutoSize = true,
+                Location = new Point(16, 58)
+            };
+            _cbPuffer = new ComboBox
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Location = new Point(150, 54),
+                Width = 430
+            };
+            _cbPuffer.SelectedIndexChanged += Auswahl_Geaendert;
 
             Label lblBedarf = new Label
             {
                 Text = MyResource.Resource.SIM_LBL_BEDARFSART,
                 AutoSize = true,
-                Location = new Point(40, 50)
+                Location = new Point(16, 90)
             };
             _cbBedarfsart = new ComboBox
             {
                 DropDownStyle = ComboBoxStyle.DropDownList,
-                Location = new Point(150, 46),
+                Location = new Point(150, 86),
                 Width = 210
             };
             _cbBedarfsart.Items.AddRange(new object[]
             {
                 MyResource.Resource.SIM_BEDARF_BEIDES, MyResource.Resource.SIM_BEDARF_WARMWASSER, MyResource.Resource.SIM_BEDARF_HEIZWAERME
             });
+            _cbBedarfsart.SelectedIndexChanged += Auswahl_Geaendert;
 
             Label lblBedarfHinweis = new Label
             {
                 Text = MyResource.Resource.SIM_LBL_BEDARF_HINWEIS,
                 AutoSize = true,
                 ForeColor = SystemColors.GrayText,
-                Location = new Point(370, 50)
+                Location = new Point(370, 90)
             };
 
-            _rbPufferHeizung = new RadioButton
-            {
-                Text = MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_HEIZUNG,
-                AutoSize = true,
-                Location = new Point(16, 76)
-            };
-            _rbPufferHeizung.CheckedChanged += Auswahl_Geaendert;
-            _cbPufferHeizung = new ComboBox
-            {
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                Location = new Point(240, 73),
-                Width = 340
-            };
-            _cbPufferHeizung.SelectedIndexChanged += Auswahl_Geaendert;
+            _gbZeile.Controls.Add(lblZiel);
+            _gbZeile.Controls.Add(_cbZiel);
+            _gbZeile.Controls.Add(lblPuffer);
+            _gbZeile.Controls.Add(_cbPuffer);
+            _gbZeile.Controls.Add(lblBedarf);
+            _gbZeile.Controls.Add(_cbBedarfsart);
+            _gbZeile.Controls.Add(lblBedarfHinweis);
 
-            _rbPufferBrauchwasser = new RadioButton
-            {
-                Text = MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_BRAUCHWASSER,
-                AutoSize = true,
-                Location = new Point(16, 102)
-            };
-            _rbPufferBrauchwasser.CheckedChanged += Auswahl_Geaendert;
-            _cbPufferBrauchwasser = new ComboBox
-            {
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                Location = new Point(240, 99),
-                Width = 340
-            };
-            _cbPufferBrauchwasser.SelectedIndexChanged += Auswahl_Geaendert;
-
-            // D5a: vierte Option — Kombispeicher (Konzept_KonfigUI_Hydraulik,
-            // Anforderungen 4 und 7).
-            _rbPufferKombi = new RadioButton
-            {
-                Text = MyResource.Resource.SIM_RB_PUFFER_KOMBI,
-                AutoSize = true,
-                Location = new Point(16, 128)
-            };
-            _rbPufferKombi.CheckedChanged += Auswahl_Geaendert;
-            _cbPufferKombi = new ComboBox
-            {
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                Location = new Point(240, 125),
-                Width = 340
-            };
-            _cbPufferKombi.SelectedIndexChanged += Auswahl_Geaendert;
-
-            gbHaupt.Controls.Add(_rbHeizkreis);
-            gbHaupt.Controls.Add(lblBedarf);
-            gbHaupt.Controls.Add(_cbBedarfsart);
-            gbHaupt.Controls.Add(lblBedarfHinweis);
-            gbHaupt.Controls.Add(_rbPufferHeizung);
-            gbHaupt.Controls.Add(_cbPufferHeizung);
-            gbHaupt.Controls.Add(_rbPufferBrauchwasser);
-            gbHaupt.Controls.Add(_cbPufferBrauchwasser);
-            gbHaupt.Controls.Add(_rbPufferKombi);
-            gbHaupt.Controls.Add(_cbPufferKombi);
-
-            // --- Parallelverbund der Hauptsenke ---------------------------------------
-            //
-            // PAKET PARALLELVERBUND. Die Gruppe steht unmittelbar UNTER der Hauptsenke und
-            // ÜBER dem Ladeverhalten - das ist die Leserichtung der Fachfrage: erst welcher
-            // Speicher (Leitspeicher), dann welche zusätzlich (Verbund), dann wie geladen
-            // wird. Das Ladeverhalten gilt anschließend für den ganzen Verbund.
-            //
-            // ALLES DARUNTER RÜCKT um VERBUND_ZUWACHS. Die Bestandswerte bleiben als
-            // Summanden sichtbar (176, 326, 346, 488) - so ist an jeder Stelle ablesbar,
-            // was vorher dort stand, und ein späteres Entfernen der Gruppe wäre eine
-            // Rechnung ohne Rest. Dieselbe Denkweise wie der D5a-Kommentar zur ClientSize
-            // weiter oben.
-            const int VERBUND_OBEN = 176;
-            const int VERBUND_HOEHE = 138;
-            const int VERBUND_ZUWACHS = VERBUND_HOEHE + 8;
-
+            // --- Parallelverbund der Senke auf Rang 1 --------------------------------
             _gbVerbund = new GroupBox
             {
                 Text = SIM_GB_VERBUND,
@@ -317,10 +462,11 @@ namespace WindowsFormsApplication1
                 Location = new Point(16, 20)
             };
 
-            // CheckedListBox im Bestandsstil der Auswahlfelder: dieselbe Breite wie
-            // _cbPuffer2 (430 + Beschriftungsspalte), volle Gruppenbreite minus Rand.
-            // CheckOnClick, damit ein Klick genügt - ohne die Eigenschaft verlangt WinForms
-            // zwei Klicks (erst Auswahl, dann Haken), und das liest sich wie ein Defekt.
+            // CheckedListBox im Bestandsstil der Auswahlfelder: dieselbe Breite wie das
+            // Speicher-Dropdown (430 + Beschriftungsspalte), volle Gruppenbreite minus
+            // Rand. CheckOnClick, damit ein Klick genügt - ohne die Eigenschaft verlangt
+            // WinForms zwei Klicks (erst Auswahl, dann Haken), und das liest sich wie ein
+            // Defekt.
             _clbVerbund = new CheckedListBox
             {
                 Location = new Point(16, 40),
@@ -343,12 +489,12 @@ namespace WindowsFormsApplication1
             _gbVerbund.Controls.Add(_clbVerbund);
             _gbVerbund.Controls.Add(_lblVerbundSumme);
 
-            // --- Ladeverhalten der Hauptsenke ----------------------------------------
+            // --- Ladeverhalten der gewählten Zeile -----------------------------------
             _gbLaden = new GroupBox
             {
                 Text = MyResource.Resource.SIM_GB_LADEVERHALTEN,
-                Location = new Point(12, 176 + VERBUND_ZUWACHS),
-                Size = new Size(596, 140)
+                Location = new Point(12, LADEN_OBEN),
+                Size = new Size(596, LADEN_HOEHE)
             };
             this.Controls.Add(_gbLaden);
 
@@ -377,6 +523,7 @@ namespace WindowsFormsApplication1
             };
             _chkLadegrenze.CheckedChanged += Auswahl_Geaendert;
             _tbLadegrenze = new TextBox { Location = new Point(196, 63), Width = 60, Text = "70" };
+            _tbLadegrenze.TextChanged += Auswahl_Geaendert;
             _lblLadegrenzeEinheit = new Label
             {
                 Text = MyResource.Resource.SIM_LBL_LADEGRENZE_EINHEIT,
@@ -402,79 +549,6 @@ namespace WindowsFormsApplication1
             _gbLaden.Controls.Add(_lblPV);
             _gbLaden.Controls.Add(_cbLadeprioPV);
 
-            // --- Zweitsenke -----------------------------------------------------------
-            _chkZweitsenke = new CheckBox
-            {
-                Text = MyResource.Resource.SIM_CHK_ZWEITSENKE,
-                AutoSize = true,
-                Location = new Point(20, 326 + VERBUND_ZUWACHS)
-            };
-            _chkZweitsenke.CheckedChanged += Auswahl_Geaendert;
-            this.Controls.Add(_chkZweitsenke);
-
-            _gbZweitsenke = new GroupBox
-            {
-                Text = "",
-                Location = new Point(12, 346 + VERBUND_ZUWACHS),
-                Size = new Size(596, 132)
-            };
-            this.Controls.Add(_gbZweitsenke);
-
-            Label lblZiel2 = new Label { Text = MyResource.Resource.SIM_LBL_ZIEL2, AutoSize = true, Location = new Point(16, 28) };
-            _cbZiel2 = new ComboBox
-            {
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                Location = new Point(150, 24),
-                Width = 210
-            };
-            // D5a: dritter Eintrag — der Kombispeicher ist auch als ZWEITsenke zulässig
-            // (Konzept Anforderung 4: „Alle Wärmeerzeuger haben als Senke die Optionen …").
-            _cbZiel2.Items.AddRange(new object[] { MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_HEIZUNG,
-                                                   MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_BRAUCHWASSER,
-                                                   MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_KOMBI });
-            _cbZiel2.SelectedIndexChanged += Auswahl_Geaendert;
-
-            Label lblPuffer2 = new Label { Text = MyResource.Resource.PSP_RUBRIK_LABEL, AutoSize = true, Location = new Point(16, 60) };
-            _cbPuffer2 = new ComboBox
-            {
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                Location = new Point(150, 56),
-                Width = 430
-            };
-            _cbPuffer2.SelectedIndexChanged += Auswahl_Geaendert;
-
-            Label lblPrio2 = new Label { Text = MyResource.Resource.SIM_LBL_LADEPRIO, AutoSize = true, Location = new Point(16, 96) };
-            _cbLadeprio2 = new ComboBox
-            {
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                Location = new Point(150, 92),
-                Width = 210
-            };
-            // Wie alle übrigen Auswahlfelder an den gemeinsamen Handler: sonst bleibt
-            // eine Änderung der Zweitsenken-Ladepriorität das einzige Bedienelement des
-            // Dialogs, das die Anzeige nicht auffrischt.
-            _cbLadeprio2.SelectedIndexChanged += Auswahl_Geaendert;
-
-            _chkLadegrenze2 = new CheckBox
-            {
-                Text = MyResource.Resource.SIM_CHK_LADEGRENZE2,
-                AutoSize = true,
-                Location = new Point(378, 95)
-            };
-            _chkLadegrenze2.CheckedChanged += Auswahl_Geaendert;
-            _tbLadegrenze2 = new TextBox { Location = new Point(500, 92), Width = 50, Text = "70" };
-            Label lblProzent2 = new Label { Text = "%", AutoSize = true, Location = new Point(556, 95) };
-
-            _gbZweitsenke.Controls.Add(lblZiel2);
-            _gbZweitsenke.Controls.Add(_cbZiel2);
-            _gbZweitsenke.Controls.Add(lblPuffer2);
-            _gbZweitsenke.Controls.Add(_cbPuffer2);
-            _gbZweitsenke.Controls.Add(lblPrio2);
-            _gbZweitsenke.Controls.Add(_cbLadeprio2);
-            _gbZweitsenke.Controls.Add(_chkLadegrenze2);
-            _gbZweitsenke.Controls.Add(_tbLadegrenze2);
-            _gbZweitsenke.Controls.Add(lblProzent2);
-
             // --- Hinweis und Absprung -------------------------------------------------
             //
             // NACHARBEIT I-K1-1 — DIE HÖHE WIRD GERECHNET, NICHT GESCHÄTZT.
@@ -489,7 +563,7 @@ namespace WindowsFormsApplication1
             // Trenner, Knöpfe und ClientSize hängen an dem Ergebnis.
             const int HINWEIS_LINKS = 14;
             const int HINWEIS_BREITE = 390;
-            const int HINWEIS_OBEN = 488 + VERBUND_ZUWACHS;
+            const int HINWEIS_OBEN = LADEN_OBEN + LADEN_HOEHE + 8;
             const int HINWEIS_MIN = 56;     // nie kleiner als der Bestand
             const int HINWEIS_MAX = 160;    // Notbremse gegen eine entgleiste Übersetzung
 
@@ -566,9 +640,49 @@ namespace WindowsFormsApplication1
             this.ClientSize = new Size(this.ClientSize.Width, unten + 23);
         }
 
+        /// <summary>
+        /// Die sechs Ziele in der Reihenfolge des Konzepts (5.1): erst die beiden
+        /// Direktsenken, dann die vier Ladeziele.
+        /// </summary>
+        private void ZielListeFuellen()
+        {
+            _cbZiel.Items.Clear();
+            _cbZiel.Items.Add(new ZielItem
+            {
+                Wert = DbWerte.WS_ZIEL_HEIZKREIS,
+                Text = MyResource.Resource.SIM_RB_HEIZKREIS
+            });
+            _cbZiel.Items.Add(new ZielItem
+            {
+                Wert = DbWerte.WS_ZIEL_PROZESS,
+                Text = MyResource.Resource.KANAL_PROZESS_ANZEIGE
+            });
+            _cbZiel.Items.Add(new ZielItem
+            {
+                Wert = DbWerte.WS_ZIEL_PUFFER_HEIZUNG,
+                Text = MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_HEIZUNG
+            });
+            _cbZiel.Items.Add(new ZielItem
+            {
+                Wert = DbWerte.WS_ZIEL_PUFFER_BRAUCHWASSER,
+                Text = MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_BRAUCHWASSER
+            });
+            _cbZiel.Items.Add(new ZielItem
+            {
+                Wert = DbWerte.WS_ZIEL_PUFFER_PROZESS,
+                Text = MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_PROZESS
+            });
+            _cbZiel.Items.Add(new ZielItem
+            {
+                Wert = DbWerte.WS_ZIEL_PUFFER_KOMBI,
+                Text = MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_KOMBI
+            });
+            _cbZiel.SelectedIndex = 0;
+        }
+
         // --- Befüllen -----------------------------------------------------------------
 
-        /// <summary>Füllt den Dialog aus <see cref="Daten"/> und den Projekt-Puffern.</summary>
+        /// <summary>Füllt den Dialog aus der Senkenliste der Anlage und den Projekt-Puffern.</summary>
         public void SetControls()
         {
             if (!string.IsNullOrEmpty(AnlagenName))
@@ -579,57 +693,16 @@ namespace WindowsFormsApplication1
             {
                 PufferListenLaden();
                 PrioListeFuellen(_cbLadeprio, false);
-                PrioListeFuellen(_cbLadeprio2, false);
                 PrioListeFuellen(_cbLadeprioPV, true);
 
-                WaermesenkeClass.Normalisieren(Daten);
+                ZeilenLaden();
+                ListeAufbauen(0);
 
-                // Hauptsenke
-                if (string.Equals(Daten.Ziel, WaermesenkeClass.ZIEL_PUFFER_HEIZUNG, StringComparison.Ordinal))
-                    _rbPufferHeizung.Checked = true;
-                else if (string.Equals(Daten.Ziel, WaermesenkeClass.ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal))
-                    _rbPufferBrauchwasser.Checked = true;
-                else if (string.Equals(Daten.Ziel, WaermesenkeClass.ZIEL_PUFFER_KOMBI, StringComparison.Ordinal))
-                    _rbPufferKombi.Checked = true;                 // D5a
-                else
-                    _rbHeizkreis.Checked = true;
-
-                switch (Daten.Bedarfsart)
-                {
-                    case WaermequelleClass.SENKE_WARMWASSER: _cbBedarfsart.SelectedIndex = 1; break;
-                    case WaermequelleClass.SENKE_HEIZUNG: _cbBedarfsart.SelectedIndex = 2; break;
-                    default: _cbBedarfsart.SelectedIndex = 0; break;
-                }
-
-                PufferWaehlen(_cbPufferHeizung, _pufferHeizung, Daten.ID_Puffer);
-                PufferWaehlen(_cbPufferBrauchwasser, _pufferBrauchwasser, Daten.ID_Puffer);
-                PufferWaehlen(_cbPufferKombi, _pufferKombi, Daten.ID_Puffer);     // D5a
-
-                PrioWaehlen(_cbLadeprio, Daten.Ladeprio);
-                PrioWaehlen(_cbLadeprioPV, Daten.LadeprioPV);
-
-                _chkLadegrenze.Checked = Daten.Ladegrenze > 0;
-                if (Daten.Ladegrenze > 0) _tbLadegrenze.Text = Daten.Ladegrenze.ToString("0.#");
-
-                // Zweitsenke
-                _chkZweitsenke.Checked = Daten.HatZweitsenke;
-                if (string.Equals(Daten.Ziel2, WaermesenkeClass.ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal))
-                    _cbZiel2.SelectedIndex = 1;
-                else if (string.Equals(Daten.Ziel2, WaermesenkeClass.ZIEL_PUFFER_KOMBI, StringComparison.Ordinal))
-                    _cbZiel2.SelectedIndex = 2;                   // D5a
-                else
-                    _cbZiel2.SelectedIndex = 0;
-                Puffer2ListeFuellen();
-                PufferWaehlen(_cbPuffer2, Zweitsenkenliste(), Daten.ID_Puffer2);
-                PrioWaehlen(_cbLadeprio2, Daten.Ladeprio2);
-                _chkLadegrenze2.Checked = Daten.Ladegrenze2 > 0;
-                if (Daten.Ladegrenze2 > 0) _tbLadegrenze2.Text = Daten.Ladegrenze2.ToString("0.#");
-
-                // PAKET PARALLELVERBUND — ZULETZT: Die Liste schließt Leitspeicher und
-                // Zweitsenke aus, und beide stehen erst jetzt fest. Der Aufbau der Liste und
-                // das Setzen der Haken sind zwei Schritte, weil die Liste die vorherige
-                // Auswahl nachzieht (VerbundListeFuellen) - beim ERSTEN Öffnen gibt es die
-                // noch nicht, sie kommt aus Daten.VerbundMitglieder.
+                // PAKET PARALLELVERBUND — ZULETZT: Die Liste schließt den Leitspeicher und
+                // alle übrigen Ziele aus, und die stehen erst jetzt fest. Der Aufbau der
+                // Liste und das Setzen der Haken sind zwei Schritte, weil die Liste eine
+                // vorherige Auswahl nachzieht (VerbundListeFuellen) - beim ERSTEN Öffnen
+                // gibt es die noch nicht, sie kommt aus Daten.VerbundMitglieder.
                 VerbundListeFuellen();
                 for (int i = 0; i < _verbundKandidaten.Count; i++)
                     _clbVerbund.SetItemChecked(
@@ -643,12 +716,400 @@ namespace WindowsFormsApplication1
             AnzeigeAktualisieren();
         }
 
+        /// <summary>
+        /// Baut <see cref="_zeilen"/> auf: führend ist <c>Z_AnlageSenke</c>, Rückfallebene
+        /// sind die Altspalten aus <see cref="Daten"/>.
+        ///
+        /// DIE RÜCKFALLEBENE IST KEIN LUXUS. Die Schemamigration ist eine eigene
+        /// Anwendung; zwischen einem Programmstand mit Senkenliste und einer Datenbank
+        /// ohne die Tabelle liegt regelmäßig ein Arbeitstag. Ohne diesen Weg zeigte der
+        /// Dialog dort eine leere Liste und schriebe beim Speichern die gepflegte Senke
+        /// weg. Dieselbe Regel greift für eine Anlage, die die Migration noch nicht
+        /// erreicht hat (keine Zeile in der Tabelle).
+        ///
+        /// Die Invariante „Rang 1 ist Pflicht" (Konzept 5.1) wird hier hergestellt: Ohne
+        /// jede Quelle entsteht eine Zeile <c>Heizkreis/Beides</c> — dieselbe
+        /// Normalisierungsregel, die die Engine anwendet, wenn sie keine Zeile findet.
+        /// </summary>
+        private void ZeilenLaden()
+        {
+            _zeilen.Clear();
+
+            if (Z_AnlageSenkeCtrl.SpalteVorhanden() && ID_Anlage > 0)
+            {
+                List<Z_AnlageSenkeModel> gelesen =
+                    new Z_AnlageSenkeCtrl().LesenJeAnlage(ID_Anlage);
+                if (gelesen != null)
+                    foreach (Z_AnlageSenkeModel z in gelesen)
+                        if (z != null) _zeilen.Add(z);
+            }
+
+            if (_zeilen.Count == 0) AusAltspalten();
+            if (_zeilen.Count == 0) _zeilen.Add(NeueZeile(DbWerte.WS_ZIEL_HEIZKREIS));
+        }
+
+        /// <summary>
+        /// Erzeugt die Ränge 1 und 2 aus den Altspalten <c>WS_*</c> — die
+        /// Migrationsregel aus Konzept 5.1, nur zur Laufzeit.
+        /// </summary>
+        private void AusAltspalten()
+        {
+            WaermesenkeClass.Normalisieren(Daten);
+
+            Z_AnlageSenkeModel rang1 = NeueZeile(Daten.Ziel);
+            rang1.ID_Puffer = Daten.ID_Puffer;
+            rang1.Bedarfsart = Daten.Bedarfsart;
+            rang1.Ladeprio = Daten.Ladeprio;
+            rang1.Ladeprio_PV = Daten.LadeprioPV;
+            rang1.Ladegrenze = Daten.Ladegrenze;
+            _zeilen.Add(rang1);
+
+            if (!Daten.HatZweitsenke) return;
+
+            Z_AnlageSenkeModel rang2 = NeueZeile(Daten.Ziel2);
+            rang2.ID_Puffer = Daten.ID_Puffer2;
+            rang2.Ladeprio = Daten.Ladeprio2;
+            rang2.Ladegrenze = Daten.Ladegrenze2;
+
+            // Konzept 5.1: Eine Spalte WS_Ladeprio_PV2 gibt es nicht — die PV-Sonderregel
+            // hängt konstruktiv an der Hauptsenke. Höhere Ränge erben deshalb 0.
+            rang2.Ladeprio_PV = 0;
+            _zeilen.Add(rang2);
+        }
+
+        private Z_AnlageSenkeModel NeueZeile(string ziel)
+        {
+            return new Z_AnlageSenkeModel
+            {
+                ID_Anlage = ID_Anlage,
+                Ziel = string.IsNullOrEmpty(ziel) ? DbWerte.WS_ZIEL_HEIZKREIS : ziel,
+                Bedarfsart = WaermequelleClass.SENKE_BEIDES
+            };
+        }
+
+        // --- Die Liste als ListView ---------------------------------------------------
+
+        /// <summary>
+        /// Baut die ListView aus <see cref="_zeilen"/> neu auf und wählt
+        /// <paramref name="auswahl"/> aus. Aufgerufen bei jedem STRUKTUR-Wechsel
+        /// (hinzufügen, entfernen, verschieben); eine reine Wertänderung fasst nur die
+        /// betroffene Zeile an (<see cref="ZeileAnzeigen"/>).
+        /// </summary>
+        private void ListeAufbauen(int auswahl)
+        {
+            bool vorher = _aktualisiert;
+            _aktualisiert = true;
+            try
+            {
+                _lvSenken.Items.Clear();
+                for (int i = 0; i < _zeilen.Count; i++)
+                {
+                    ListViewItem it = new ListViewItem((i + 1).ToString());
+                    it.SubItems.Add("");
+                    it.SubItems.Add("");
+                    it.SubItems.Add("");
+                    it.SubItems.Add("");
+                    _lvSenken.Items.Add(it);
+                    ZeileAnzeigen(i);
+                }
+
+                if (_zeilen.Count == 0) return;
+
+                if (auswahl < 0) auswahl = 0;
+                if (auswahl >= _zeilen.Count) auswahl = _zeilen.Count - 1;
+                _lvSenken.Items[auswahl].Selected = true;
+                _lvSenken.Items[auswahl].Focused = true;
+            }
+            finally
+            {
+                _aktualisiert = vorher;
+            }
+
+            if (_zeilen.Count > 0) ZeileInOberflaeche(AktuellerIndex());
+        }
+
+        /// <summary>Schreibt EINE Modellzeile in ihre ListView-Zeile.</summary>
+        private void ZeileAnzeigen(int index)
+        {
+            if (index < 0 || index >= _zeilen.Count || index >= _lvSenken.Items.Count) return;
+
+            Z_AnlageSenkeModel z = _zeilen[index];
+            ListViewItem it = _lvSenken.Items[index];
+
+            it.SubItems[0].Text = (index + 1).ToString();
+            it.SubItems[1].Text = ZielAnzeige(z.Ziel);
+            it.SubItems[2].Text = IstPufferZiel(z.Ziel)
+                ? (z.ID_Puffer > 0 ? WaermesenkeClass.PufferName(z.ID_Puffer) : LEER)
+                : LEER;
+            it.SubItems[3].Text = IstHeizkreis(z.Ziel) ? BedarfsartAnzeige(z.Bedarfsart) : LEER;
+            it.SubItems[4].Text = LadespalteText(z);
+        }
+
+        /// <summary>Anzeigetext der Bedarfsart (Steuerwert bleibt der deutsche Persistenzwert).</summary>
+        private static string BedarfsartAnzeige(string bedarfsart)
+        {
+            if (string.Equals(bedarfsart, WaermequelleClass.SENKE_WARMWASSER, StringComparison.Ordinal))
+                return MyResource.Resource.SIM_BEDARF_WARMWASSER;
+            if (string.Equals(bedarfsart, WaermequelleClass.SENKE_HEIZUNG, StringComparison.Ordinal))
+                return MyResource.Resource.SIM_BEDARF_HEIZWAERME;
+            return MyResource.Resource.SIM_BEDARF_BEIDES;
+        }
+
+        /// <summary>
+        /// Spalte „Laden": Ladepriorität und Obergrenze in Kurzform. Ohne Puffer-Ziel und
+        /// ohne eigene Werte steht dort das Leerzeichen der Liste — „nach Vorgabe" ist die
+        /// Regel, nicht die Ausnahme, und eine Zahl dafür zu erfinden wäre irreführend.
+        /// </summary>
+        private static string LadespalteText(Z_AnlageSenkeModel z)
+        {
+            if (!IstPufferZiel(z.Ziel)) return LEER;
+
+            string s = z.Ladeprio > 0 ? z.Ladeprio.ToString() : LEER;
+            if (z.Ladegrenze > 0) s += " · " + z.Ladegrenze.ToString("0.#") + " %";
+            return s;
+        }
+
+        private int AktuellerIndex()
+        {
+            if (_lvSenken.SelectedIndices.Count == 0) return -1;
+            int i = _lvSenken.SelectedIndices[0];
+            return (i >= 0 && i < _zeilen.Count) ? i : -1;
+        }
+
+        private Z_AnlageSenkeModel AktuelleZeile()
+        {
+            int i = AktuellerIndex();
+            return i >= 0 ? _zeilen[i] : null;
+        }
+
+        // --- Zeilenwechsel und Bearbeiten ---------------------------------------------
+
+        private void Zeile_Gewechselt(object sender, EventArgs e)
+        {
+            if (_aktualisiert) return;
+
+            ZeileInOberflaeche(AktuellerIndex());
+            AnzeigeAktualisieren();
+        }
+
+        /// <summary>Überträgt eine Modellzeile in die Bedienelemente der Zeilengruppe.</summary>
+        private void ZeileInOberflaeche(int index)
+        {
+            if (index < 0 || index >= _zeilen.Count) return;
+
+            bool vorher = _aktualisiert;
+            _aktualisiert = true;
+            try
+            {
+                Z_AnlageSenkeModel z = _zeilen[index];
+
+                ZielWaehlen(z.Ziel);
+                PufferListeFuerZiel(z.Ziel);
+                PufferWaehlen(_cbPuffer, PufferlisteZuZiel(z.Ziel), z.ID_Puffer);
+
+                if (string.Equals(z.Bedarfsart, WaermequelleClass.SENKE_WARMWASSER, StringComparison.Ordinal))
+                    _cbBedarfsart.SelectedIndex = 1;
+                else if (string.Equals(z.Bedarfsart, WaermequelleClass.SENKE_HEIZUNG, StringComparison.Ordinal))
+                    _cbBedarfsart.SelectedIndex = 2;
+                else
+                    _cbBedarfsart.SelectedIndex = 0;
+
+                PrioWaehlen(_cbLadeprio, z.Ladeprio);
+                PrioWaehlen(_cbLadeprioPV, z.Ladeprio_PV);
+
+                _chkLadegrenze.Checked = z.Ladegrenze != 0;
+                if (z.Ladegrenze > 0) _tbLadegrenze.Text = z.Ladegrenze.ToString("0.#");
+            }
+            finally
+            {
+                _aktualisiert = vorher;
+            }
+        }
+
+        /// <summary>
+        /// Liest die Bedienelemente in die gewählte Modellzeile zurück.
+        ///
+        /// Felder, die zum gewählten Ziel nicht passen, werden GELÖSCHT statt stehen
+        /// gelassen: Eine Ladepriorität an einer Direktsenke ist kein harmloser Rest, sie
+        /// stünde in der Ladeordnung und würde beim nächsten Zielwechsel unbemerkt wieder
+        /// wirksam. Dieselbe Regel wie in <c>WaermesenkeClass.Normalisieren</c>.
+        /// </summary>
+        private void ZeileAusOberflaeche(int index)
+        {
+            if (index < 0 || index >= _zeilen.Count) return;
+
+            Z_AnlageSenkeModel z = _zeilen[index];
+            z.Ziel = GewaehltesZiel();
+
+            bool puffer = IstPufferZiel(z.Ziel);
+            z.ID_Puffer = puffer ? AktuelleId(_cbPuffer) : 0;
+            z.Ladeprio = puffer ? GewaehltePrio(_cbLadeprio) : 0;
+            z.Ladegrenze = puffer ? LadegrenzeLesen() : 0;
+
+            // Konzept 5.1: Die PV-Sonderpriorität gibt es nur auf Rang 1 — sie hängt heute
+            // konstruktiv an der Hauptsenke (Ladeordnung.cs:270-273), und eine zweite
+            // Spalte dafür existiert nicht.
+            z.Ladeprio_PV = (puffer && index == 0 && PvModus()) ? GewaehltePrio(_cbLadeprioPV) : 0;
+
+            // Die Bedarfsart ist allein beim Heizkreis die Feinsteuerung (Konzept 3.1);
+            // bei jedem anderen Ziel steht der Kanal fest.
+            z.Bedarfsart = IstHeizkreis(z.Ziel) ? GewaehlteBedarfsart() : WaermequelleClass.SENKE_BEIDES;
+        }
+
+        private bool PvModus()
+        {
+            return string.Equals(BM_Typ, WaermequelleClass.MODUS_PV, StringComparison.Ordinal);
+        }
+
+        private string GewaehltesZiel()
+        {
+            ZielItem it = _cbZiel.SelectedItem as ZielItem;
+            return it != null ? it.Wert : DbWerte.WS_ZIEL_HEIZKREIS;
+        }
+
+        private void ZielWaehlen(string ziel)
+        {
+            for (int i = 0; i < _cbZiel.Items.Count; i++)
+            {
+                ZielItem it = _cbZiel.Items[i] as ZielItem;
+                if (it != null && string.Equals(it.Wert, ziel, StringComparison.Ordinal))
+                {
+                    _cbZiel.SelectedIndex = i;
+                    return;
+                }
+            }
+            _cbZiel.SelectedIndex = 0;
+        }
+
+        private string GewaehlteBedarfsart()
+        {
+            switch (_cbBedarfsart.SelectedIndex)
+            {
+                case 1: return WaermequelleClass.SENKE_WARMWASSER;
+                case 2: return WaermequelleClass.SENKE_HEIZUNG;
+                default: return WaermequelleClass.SENKE_BEIDES;
+            }
+        }
+
+        /// <summary>
+        /// Ladeobergrenze der gewählten Zeile [%]; 0 = nicht gesetzt. Eine Eingabe, die
+        /// (noch) keine gültige Zahl ist, wird als Ersatzwert festgehalten und beim OK
+        /// gemeldet (siehe <see cref="GRENZE_UNLESBAR"/>).
+        /// </summary>
+        private double LadegrenzeLesen()
+        {
+            if (!_chkLadegrenze.Checked) return 0;
+
+            float zahl;
+            if (!WaermequelleClass.ZahlParsen(_tbLadegrenze.Text, out zahl)) return GRENZE_UNLESBAR;
+            if (zahl <= 0 || zahl > 100) return GRENZE_BEREICH;
+            return zahl;
+        }
+
+        // --- Knöpfe der Liste ---------------------------------------------------------
+
+        /// <summary>
+        /// Hängt eine Senke an. Vorbelegt wird der Regelfall „Rest in den Heizungspuffer"
+        /// — gibt es keinen Heizungspuffer im Projekt, bleibt es beim Heizkreis, damit
+        /// keine Zeile mit Puffer-Ziel und leerem Speicher entsteht.
+        /// </summary>
+        private void btnHinzu_Click(object sender, EventArgs e)
+        {
+            Z_AnlageSenkeModel neu;
+            if (_pufferHeizung.Count > 0)
+            {
+                neu = NeueZeile(DbWerte.WS_ZIEL_PUFFER_HEIZUNG);
+                neu.ID_Puffer = ErsterFreierPuffer(_pufferHeizung);
+                if (neu.ID_Puffer <= 0) neu = NeueZeile(DbWerte.WS_ZIEL_HEIZKREIS);
+            }
+            else
+            {
+                neu = NeueZeile(DbWerte.WS_ZIEL_HEIZKREIS);
+            }
+
+            _zeilen.Add(neu);
+            ListeAufbauen(_zeilen.Count - 1);
+            VerbundListeNeu();
+            AnzeigeAktualisieren();
+        }
+
+        /// <summary>
+        /// Erster Puffer der Liste, der noch nicht Ziel dieser Anlage ist; 0, wenn alle
+        /// belegt sind. Verhindert, dass „Hinzufügen" eine Zeile erzeugt, die die
+        /// Doppelbelegungsprüfung sofort wieder abweist.
+        /// </summary>
+        private int ErsterFreierPuffer(List<WaermesenkeClass.PufferInfo> liste)
+        {
+            foreach (WaermesenkeClass.PufferInfo p in liste)
+            {
+                bool belegt = false;
+                foreach (Z_AnlageSenkeModel z in _zeilen)
+                    if (z.ID_Puffer == p.ID) { belegt = true; break; }
+
+                if (!belegt) return p.ID;
+            }
+            return 0;
+        }
+
+        private void btnEntfernen_Click(object sender, EventArgs e)
+        {
+            int i = AktuellerIndex();
+            if (i < 0) return;
+
+            // INVARIANTE „Rang 1 ist Pflicht" (Konzept 5.1): Findet die Engine keine
+            // Zeile, rechnet sie Heizkreis/Beides mit Protokollwarnung - eine Anlage ohne
+            // jede Senke ist also keine gültige Einstellung, sondern eine, die stillschweigend
+            // ersetzt würde.
+            if (_zeilen.Count <= 1)
+            {
+                MessageBox.Show(MyResource.Resource.SIM_MSG_SENKE_LETZTE_ZEILE,
+                                MyResource.Resource.SIM_SENKE_TITEL,
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            _zeilen.RemoveAt(i);
+            ListeAufbauen(i);
+            VerbundListeNeu();
+            AnzeigeAktualisieren();
+        }
+
+        private void btnRauf_Click(object sender, EventArgs e)
+        {
+            Tauschen(AktuellerIndex(), -1);
+        }
+
+        private void btnRunter_Click(object sender, EventArgs e)
+        {
+            Tauschen(AktuellerIndex(), +1);
+        }
+
+        /// <summary>Verschiebt die gewählte Zeile um <paramref name="richtung"/> Ränge.</summary>
+        private void Tauschen(int index, int richtung)
+        {
+            int ziel = index + richtung;
+            if (index < 0 || ziel < 0 || ziel >= _zeilen.Count) return;
+
+            Z_AnlageSenkeModel merker = _zeilen[index];
+            _zeilen[index] = _zeilen[ziel];
+            _zeilen[ziel] = merker;
+
+            // Der Rangwechsel kann eine PV-Sonderpriorität von Rang 1 wegtragen - sie gibt
+            // es dort nicht mehr, und stehen zu lassen, was nicht mehr gilt, wäre der
+            // Anfang einer stillen Falschrechnung.
+            for (int i = 1; i < _zeilen.Count; i++) _zeilen[i].Ladeprio_PV = 0;
+
+            ListeAufbauen(ziel);
+            VerbundListeNeu();
+            AnzeigeAktualisieren();
+        }
+
         // --- Parallelverbund: Liste, Haken und Summenanzeige --------------------------
 
         /// <summary>
         /// Füllt die Verbundliste mit den Puffern, die ZUSÄTZLICH zum Leitspeicher in
-        /// Frage kommen: dieselbe Verwendungsfilterung wie das Leit-Dropdown, ohne den
-        /// Leitspeicher selbst und ohne die Zweitsenke.
+        /// Frage kommen: dieselbe Verwendungsfilterung wie das Speicher-Dropdown von
+        /// Rang 1, ohne den Leitspeicher selbst und ohne jedes andere Ziel dieser Anlage.
         ///
         /// <b>Dieselbe Filterung wie <see cref="PufferListenLaden"/></b> — die Liste greift
         /// auf genau die Listen zu, die dort geladen wurden (SENKENZIEL-Sicht, nicht
@@ -658,14 +1119,13 @@ namespace WindowsFormsApplication1
         /// Validierung dürfen nicht auseinanderlaufen.
         ///
         /// <b>Der LEITSPEICHER fehlt in der Liste</b>, denn er ist schon Teil des Verbunds
-        /// (er ist der Vorratsbehälter, an dem die Regelung hängt). Beim Umschalten des
-        /// Leit-Dropdowns wandert er deshalb aus der Liste heraus, und der zuvor gewählte
-        /// Leitspeicher wandert hinein.
+        /// (er ist der Vorratsbehälter, an dem die Regelung hängt).
         ///
-        /// <b>Die ZWEITSENKE fehlt ebenfalls</b>: Sie ist ein eigenes Ladeziel mit eigener
-        /// Priorität und Obergrenze und kann nicht gleichzeitig im Hauptvorrat stecken
-        /// (dieselbe Regel wie in <c>WaermesenkeClass.VerbundNormalisieren</c>). Sie aus der
-        /// Liste zu nehmen, ist freundlicher als eine Fehlermeldung beim Speichern.
+        /// <b>Die übrigen SENKEN fehlen ebenfalls</b>: Jede ist ein eigenes Ladeziel mit
+        /// eigener Priorität und Obergrenze und kann nicht gleichzeitig im Hauptvorrat
+        /// stecken (dieselbe Regel wie in <c>WaermesenkeClass.VerbundNormalisieren</c>).
+        /// Sie aus der Liste zu nehmen, ist freundlicher als eine Fehlermeldung beim
+        /// Speichern.
         ///
         /// GESETZTE HAKEN BLEIBEN, soweit der Puffer noch in der Liste steht — Muster
         /// <see cref="FuelleCombo"/>, das die alte Auswahl ebenso nachzieht.
@@ -674,13 +1134,12 @@ namespace WindowsFormsApplication1
         {
             List<int> vorher = GewaehlteVerbundMitglieder();
             int idLeit = AktuellerHauptPuffer();
-            int idZweit = _chkZweitsenke.Checked ? AktuelleId(_cbPuffer2) : 0;
 
             _verbundKandidaten = new List<WaermesenkeClass.PufferInfo>();
             foreach (WaermesenkeClass.PufferInfo p in Hauptsenkenliste())
             {
                 if (p.ID == idLeit) continue;
-                if (idZweit > 0 && p.ID == idZweit) continue;
+                if (AndereSenkeBelegt(p.ID)) continue;
                 _verbundKandidaten.Add(p);
             }
 
@@ -693,13 +1152,29 @@ namespace WindowsFormsApplication1
                     _clbVerbund.SetItemChecked(i, true);
         }
 
-        /// <summary>Die Puffer-Liste des aktuell gewählten HAUPTSENKEN-Ziels.</summary>
+        /// <summary>Verbundliste unter dem Rückkopplungsschutz neu aufbauen.</summary>
+        private void VerbundListeNeu()
+        {
+            bool vorher = _aktualisiert;
+            _aktualisiert = true;
+            try { VerbundListeFuellen(); }
+            finally { _aktualisiert = vorher; }
+        }
+
+        /// <summary>true, wenn der Puffer Ziel einer Senke ab Rang 2 ist.</summary>
+        private bool AndereSenkeBelegt(int idPuffer)
+        {
+            if (idPuffer <= 0) return false;
+            for (int i = 1; i < _zeilen.Count; i++)
+                if (_zeilen[i].ID_Puffer == idPuffer) return true;
+            return false;
+        }
+
+        /// <summary>Die Puffer-Liste des Ziels auf RANG 1 (Bezugsgröße des Verbunds).</summary>
         private List<WaermesenkeClass.PufferInfo> Hauptsenkenliste()
         {
-            if (_rbPufferBrauchwasser.Checked) return _pufferBrauchwasser;
-            if (_rbPufferKombi.Checked) return _pufferKombi;
-            if (_rbPufferHeizung.Checked) return _pufferHeizung;
-            return new List<WaermesenkeClass.PufferInfo>();
+            if (_zeilen.Count == 0) return new List<WaermesenkeClass.PufferInfo>();
+            return PufferlisteZuZiel(_zeilen[0].Ziel);
         }
 
         /// <summary>Die gehakten Verbundmitglieder als Puffer-IDs; nie <c>null</c>.</summary>
@@ -764,6 +1239,8 @@ namespace WindowsFormsApplication1
             VerbundSummeAnzeigen(GewaehlteVerbundMitglieder(e.Index, e.NewValue == CheckState.Checked));
         }
 
+        // --- Puffer-Auswahllisten -----------------------------------------------------
+
         private void PufferListenLaden()
         {
             // SENKENZIEL-Sicht, nicht Kanalsicht (WaermesenkeClass.ProjektPufferListe):
@@ -774,10 +1251,46 @@ namespace WindowsFormsApplication1
             _pufferHeizung = WaermesenkeClass.ProjektPufferListe(ID_Projekt, WaermesenkeClass.VERWENDUNG_HEIZUNG);
             _pufferBrauchwasser = WaermesenkeClass.ProjektPufferListe(ID_Projekt, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER);
             _pufferKombi = WaermesenkeClass.ProjektPufferListe(ID_Projekt, WaermesenkeClass.VERWENDUNG_KOMBI);
+        }
 
-            FuelleCombo(_cbPufferHeizung, _pufferHeizung);
-            FuelleCombo(_cbPufferBrauchwasser, _pufferBrauchwasser);
-            FuelleCombo(_cbPufferKombi, _pufferKombi);
+        /// <summary>
+        /// Die Auswahlliste, die zu einem Ziel gehört; leer bei Direktsenken.
+        ///
+        /// <para><b>Das S1-Ziel <c>PufferProzess</c> bekommt vorerst die HEIZUNGS-Liste.</b>
+        /// Zwei Gründe, beide vorübergehend:</para>
+        ///
+        /// <para>1. Fachlich ist das heute richtig. Die Interimsregel I2 aus Paket K2 —
+        /// „ein Speicher mit Heizung im Klassen-Set bedient übergangsweise auch den
+        /// Prozesskanal" — ist die EINZIGE Verbindung, die die Entladeordnung derzeit zum
+        /// Prozesskanal kennt. Ein Behälter, der nur Brauchwasser oder nur Prozess
+        /// führt, würde für Prozesswärme von niemandem entladen; ihn hier anzubieten,
+        /// hieße eine Ladung ohne Abnehmer zu erlauben.</para>
+        ///
+        /// <para>2. <c>WaermesenkeClass.PufferPasst</c> sperrt weiterhin nach
+        /// <c>Verwendung</c> und kennt für <c>PufferProzess</c> keine
+        /// (<c>VerwendungZuZiel</c> liefert <c>null</c>). Eine Auswahl anzubieten, die die
+        /// Prüfung beim Speichern zurückweist, wäre eine Sackgasse.</para>
+        ///
+        /// <para>Konzept 6.2 hebt die sperrende Filterung mit Paket S2 auf (alle
+        /// Projekt-Puffer, gruppiert nach Klassen-Set, Warnkriterien W1–W6 statt
+        /// Sperre) — dann steht hier <c>ProjektPufferListe(ID_Projekt, null)</c>.</para>
+        /// </summary>
+        private List<WaermesenkeClass.PufferInfo> PufferlisteZuZiel(string ziel)
+        {
+            if (string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_HEIZUNG, StringComparison.Ordinal) ||
+                string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_PROZESS, StringComparison.Ordinal))
+                return _pufferHeizung;
+            if (string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal))
+                return _pufferBrauchwasser;
+            if (string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_KOMBI, StringComparison.Ordinal))
+                return _pufferKombi;
+            return new List<WaermesenkeClass.PufferInfo>();
+        }
+
+        /// <summary>Setzt das Speicher-Dropdown auf die Liste des Ziels.</summary>
+        private void PufferListeFuerZiel(string ziel)
+        {
+            FuelleCombo(_cbPuffer, PufferlisteZuZiel(ziel));
         }
 
         private static void FuelleCombo(ComboBox cb, List<WaermesenkeClass.PufferInfo> liste)
@@ -841,55 +1354,33 @@ namespace WindowsFormsApplication1
             return it != null ? it.Wert : 0;
         }
 
-        private List<WaermesenkeClass.PufferInfo> Zweitsenkenliste()
-        {
-            if (_cbZiel2.SelectedIndex == 1) return _pufferBrauchwasser;
-            if (_cbZiel2.SelectedIndex == 2) return _pufferKombi;    // D5a
-            return _pufferHeizung;
-        }
-
-        /// <summary>Ziel-Persistenzwert der aktuell gewählten Zweitsenke (D5a).</summary>
-        private string ZielWertZweitsenke()
-        {
-            if (_cbZiel2.SelectedIndex == 1) return WaermesenkeClass.ZIEL_PUFFER_BRAUCHWASSER;
-            if (_cbZiel2.SelectedIndex == 2) return WaermesenkeClass.ZIEL_PUFFER_KOMBI;
-            return WaermesenkeClass.ZIEL_PUFFER_HEIZUNG;
-        }
-
-        private void Puffer2ListeFuellen()
-        {
-            FuelleCombo(_cbPuffer2, Zweitsenkenliste());
-        }
-
         // --- Ereignisse ---------------------------------------------------------------
 
         private void Auswahl_Geaendert(object sender, EventArgs e)
         {
             if (_aktualisiert) return;
 
-            if (sender == _cbZiel2)
+            int index = AktuellerIndex();
+            if (index < 0) return;
+
+            // Der ZIELWECHSEL stellt zuerst die Auswahlliste des Speichers um; erst danach
+            // steht fest, welchen Puffer die Zeile bekommt. Der Wächter verhindert, dass
+            // das Neubefüllen selbst wieder als Bedienhandlung ankommt.
+            if (sender == _cbZiel)
             {
                 _aktualisiert = true;
-                try { Puffer2ListeFuellen(); }
+                try { PufferListeFuerZiel(GewaehltesZiel()); }
                 finally { _aktualisiert = false; }
             }
 
-            // PAKET PARALLELVERBUND: Die Kandidatenliste hängt am gewählten ZIEL
-            // (Verwendungsfilter), am LEITSPEICHER und an der ZWEITSENKE - alle drei
+            ZeileAusOberflaeche(index);
+            ZeileAnzeigen(index);
+
+            // PAKET PARALLELVERBUND: Die Kandidatenliste hängt am Ziel von Rang 1
+            // (Verwendungsfilter), am Leitspeicher und an den übrigen Senken - alle drei
             // stellen diese Bedienelemente ein. Sie neu aufzubauen ist billig (die
             // Puffer-Listen sind schon geladen) und hält Auswahl und Fachregel beisammen.
-            // Der Wächter _aktualisiert verhindert, dass das Setzen der Haken das
-            // ItemCheck-Ereignis in eine Rückkopplung treibt.
-            if (sender == _rbHeizkreis || sender == _rbPufferHeizung ||
-                sender == _rbPufferBrauchwasser || sender == _rbPufferKombi ||
-                sender == _cbPufferHeizung || sender == _cbPufferBrauchwasser ||
-                sender == _cbPufferKombi || sender == _cbZiel2 ||
-                sender == _cbPuffer2 || sender == _chkZweitsenke)
-            {
-                _aktualisiert = true;
-                try { VerbundListeFuellen(); }
-                finally { _aktualisiert = false; }
-            }
+            if (sender == _cbZiel || sender == _cbPuffer) VerbundListeNeu();
 
             AnzeigeAktualisieren();
         }
@@ -897,55 +1388,68 @@ namespace WindowsFormsApplication1
         /// <summary>Blendet die Bereiche passend zur Auswahl ein und rechnet die Position neu.</summary>
         private void AnzeigeAktualisieren()
         {
-            bool pufferSenke = _rbPufferHeizung.Checked || _rbPufferBrauchwasser.Checked ||
-                               _rbPufferKombi.Checked;
+            int index = AktuellerIndex();
+            bool hatZeile = index >= 0;
+            bool rang1 = index == 0;
+
+            Z_AnlageSenkeModel z = hatZeile ? _zeilen[index] : null;
+            bool pufferSenke = z != null && IstPufferZiel(z.Ziel);
+
+            _gbZeile.Enabled = hatZeile;
+            _cbPuffer.Enabled = pufferSenke;
 
             // Bedarfsart ist nur beim Heizkreis die Feinsteuerung (Konzept 3.1)
-            _cbBedarfsart.Enabled = _rbHeizkreis.Checked;
-            _cbPufferHeizung.Enabled = _rbPufferHeizung.Checked;
-            _cbPufferBrauchwasser.Enabled = _rbPufferBrauchwasser.Checked;
-            _cbPufferKombi.Enabled = _rbPufferKombi.Checked;
+            _cbBedarfsart.Enabled = z != null && IstHeizkreis(z.Ziel);
 
             _gbLaden.Enabled = pufferSenke;
             _tbLadegrenze.Enabled = pufferSenke && _chkLadegrenze.Checked;
 
-            // Die PV-Sonderregel greift nur bei Betriebsmodus PV (Konzept 3.5)
-            bool pvModus = string.Equals(BM_Typ, WaermequelleClass.MODUS_PV, StringComparison.Ordinal);
+            // Die PV-Sonderregel greift nur bei Betriebsmodus PV (Konzept 3.5) und nur auf
+            // Rang 1 (Konzept 5.1: eine Spalte WS_Ladeprio_PV2 gibt es nicht).
+            bool pvModus = PvModus();
             _lblPV.Visible = pvModus;
             _cbLadeprioPV.Visible = pvModus;
+            _cbLadeprioPV.Enabled = pvModus && rang1 && pufferSenke;
 
-            _gbZweitsenke.Enabled = _chkZweitsenke.Checked;
-            _tbLadegrenze2.Enabled = _chkZweitsenke.Checked && _chkLadegrenze2.Checked;
+            // Nur eine PUFFER-Senke kann einen Verbund haben - bei einer Direktsenke gibt
+            // es keinen Vorratsbehälter, dem etwas hinzuzufügen wäre. Und nur Rang 1,
+            // solange Z_AnlagePufferVerbund keine Senkenreferenz trägt (siehe oben).
+            _gbVerbund.Enabled = rang1 && pufferSenke;
 
-            // PAKET PARALLELVERBUND: Nur eine PUFFER-Hauptsenke kann einen Verbund haben -
-            // beim Heizkreis gibt es keinen Vorratsbehälter, dem etwas hinzuzufügen wäre.
-            // Dieselbe Bedingung wie beim Ladeverhalten eine Zeile darüber.
-            _gbVerbund.Enabled = pufferSenke;
+            _btnEntfernen.Enabled = hatZeile && _zeilen.Count > 1;
+            _btnRauf.Enabled = hatZeile && index > 0;
+            _btnRunter.Enabled = hatZeile && index < _zeilen.Count - 1;
 
             _lblPosition.Text = PositionsText();
             VerbundSummeAnzeigen(GewaehlteVerbundMitglieder());
         }
 
         /// <summary>
-        /// „Lädt als n. von m" für die aktuell gewählte Priorität (Konzept 3.4/4.2).
+        /// „Lädt als n. von m" für die aktuell gewählte Zeile (Konzept 3.4/4.2).
         ///
-        /// PAKET PARALLELVERBUND: Bezugsgröße ist der LEITSPEICHER und damit der Verbund als
-        /// Ganzes — <see cref="AktuellerHauptPuffer"/> liefert genau ihn, und die
-        /// Ladeordnung kennt ohnehin nur diese eine ID (die Mitglieder stehen in keiner
-        /// <c>WS_ID_Puffer</c>-Referenz). Die Ladereihenfolge eines Verbunds ist deshalb
-        /// dieselbe Frage wie die eines Einzelspeichers, und hier war nichts zu ändern.
+        /// PAKET PARALLELVERBUND: Bezugsgröße ist bei Rang 1 der LEITSPEICHER und damit der
+        /// Verbund als Ganzes; die Ladeordnung kennt ohnehin nur diese eine ID (die
+        /// Mitglieder stehen in keiner <c>WS_ID_Puffer</c>-Referenz). Die Ladereihenfolge
+        /// eines Verbunds ist deshalb dieselbe Frage wie die eines Einzelspeichers.
+        ///
+        /// PAKET S1: Die Ladeordnung unterscheidet Haupt- und Zweitsenke als BOOLEAN
+        /// (<c>Ladeordnung.LadeEintrag.Zweitsenke</c>). Für die Vorschau gilt deshalb
+        /// „Rang 1 = Hauptsenke, alles darüber = Zweitsenke" — dieselbe Ableitung, die die
+        /// Engine für <c>Ladeauftrag.Zweitsenke</c> benutzt.
         /// </summary>
         private string PositionsText()
         {
-            int idPuffer = AktuellerHauptPuffer();
-            if (idPuffer <= 0) return "";
+            Z_AnlageSenkeModel z = AktuelleZeile();
+            if (z == null || !IstPufferZiel(z.Ziel) || z.ID_Puffer <= 0) return "";
+
+            bool zweitsenke = AktuellerIndex() > 0;
+            double grenze = z.Ladegrenze > 0 ? z.Ladegrenze : 0;
 
             List<Ladeordnung.LadeEintrag> vorschau = Ladeordnung.LadereihenfolgeVorschau(
-                ID_Projekt, idPuffer, ID_Anlage, ID_Type, false,
-                GewaehltePrio(_cbLadeprio), LadegrenzeWert(_chkLadegrenze, _tbLadegrenze),
-                GewaehltePrio(_cbLadeprioPV));
+                ID_Projekt, z.ID_Puffer, ID_Anlage, ID_Type, zweitsenke,
+                z.Ladeprio, grenze, z.Ladeprio_PV);
 
-            int pos = Ladeordnung.Position(vorschau, ID_Anlage, false);
+            int pos = Ladeordnung.Position(vorschau, ID_Anlage, zweitsenke);
             if (pos <= 0) return "";
 
             // Formatangabe „0.#" der Obergrenze aus dem Bestand übernommen; der Katalog
@@ -957,33 +1461,31 @@ namespace WindowsFormsApplication1
             return text;
         }
 
+        /// <summary>Leitspeicher des Verbunds — der Puffer auf Rang 1.</summary>
         private int AktuellerHauptPuffer()
         {
-            if (_rbPufferHeizung.Checked) return AktuelleId(_cbPufferHeizung);
-            if (_rbPufferBrauchwasser.Checked) return AktuelleId(_cbPufferBrauchwasser);
-            if (_rbPufferKombi.Checked) return AktuelleId(_cbPufferKombi);      // D5a
-            return 0;
-        }
-
-        private static double LadegrenzeWert(CheckBox chk, TextBox tb)
-        {
-            if (!chk.Checked) return 0;
-            float wert;
-            if (!WaermequelleClass.ZahlParsen(tb.Text, out wert)) return 0;
-            return wert;
+            if (_zeilen.Count == 0) return 0;
+            if (!IstPufferZiel(_zeilen[0].Ziel)) return 0;
+            return _zeilen[0].ID_Puffer;
         }
 
         private void btnPufferAnlegen_Click(object sender, EventArgs e)
         {
+            Z_AnlageSenkeModel z = AktuelleZeile();
+            string ziel = z != null ? z.Ziel : DbWerte.WS_ZIEL_PUFFER_HEIZUNG;
+
             Form_PufferSp_Projekt frm = new Form_PufferSp_Projekt();
             frm.ID_Projekt = ID_Projekt;
+
             // Vorbelegung der Verwendung passend zur gerade gewählten Senke.
             // D5a: Die Puffer-VERWALTUNG kennt „Kombi" seit der Nacharbeit I-K2-4 als
             // reguläre dritte Option — die Vorbelegung kommt dort also an und wird beim
-            // Übernehmen unverändert zurückgeschrieben.
-            if (_rbPufferKombi.Checked || _cbZiel2.SelectedIndex == 2)
+            // Übernehmen unverändert zurückgeschrieben. Für das S1-Ziel PufferProzess
+            // gibt es keinen Altwert; dort bleibt es bei der Heizungs-Vorbelegung, den
+            // Kanal stellt das Klassen-Set des Speichers ein (Konzept 6.1).
+            if (string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_KOMBI, StringComparison.Ordinal))
                 frm.Verwendung = WaermesenkeClass.VERWENDUNG_KOMBI;
-            else if (_rbPufferBrauchwasser.Checked || _cbZiel2.SelectedIndex == 1)
+            else if (string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal))
                 frm.Verwendung = WaermesenkeClass.VERWENDUNG_BRAUCHWASSER;
             else
                 frm.Verwendung = WaermesenkeClass.VERWENDUNG_HEIZUNG;
@@ -994,39 +1496,40 @@ namespace WindowsFormsApplication1
             // dort) - die Dropdowns werden deshalb UNABHÄNGIG vom DialogResult neu
             // aufgebaut, sonst bliebe ein über das Fensterkreuz verlassener Neuanlage-
             // Vorgang unsichtbar.
+            int index = AktuellerIndex();
             _aktualisiert = true;
             try
             {
                 PufferListenLaden();
-                Puffer2ListeFuellen();
+                if (index >= 0)
+                {
+                    PufferListeFuerZiel(_zeilen[index].Ziel);
+                    if (frm.ID_Puffer > 0)
+                        PufferWaehlen(_cbPuffer, PufferlisteZuZiel(_zeilen[index].Ziel), frm.ID_Puffer);
+                }
+
                 // PAKET PARALLELVERBUND: Ein gerade angelegter Puffer soll auch als
                 // Verbundmitglied wählbar sein, ohne den Dialog neu zu öffnen.
                 VerbundListeFuellen();
-
-                if (frm.ID_Puffer > 0)
-                {
-                    if (WaermesenkeClass.IstKombiVerwendung(frm.Verwendung))
-                        PufferWaehlen(_cbPufferKombi, _pufferKombi, frm.ID_Puffer);   // D5a
-                    else if (string.Equals(frm.Verwendung, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER,
-                                           StringComparison.OrdinalIgnoreCase))
-                        PufferWaehlen(_cbPufferBrauchwasser, _pufferBrauchwasser, frm.ID_Puffer);
-                    else
-                        PufferWaehlen(_cbPufferHeizung, _pufferHeizung, frm.ID_Puffer);
-                }
             }
             finally
             {
                 _aktualisiert = false;
             }
 
+            if (index >= 0)
+            {
+                ZeileAusOberflaeche(index);
+                ZeileAnzeigen(index);
+            }
             AnzeigeAktualisieren();
         }
 
-        // --- Übernahme und Validierung (Konzept 4.6) ----------------------------------
+        // --- Übernahme und Validierung (Konzept 4.6 / 5.1) ----------------------------
 
         private void btnOk_Click(object sender, EventArgs e)
         {
-            WaermesenkeClass.SenkeDaten neu = AusOberflaeche(out string eingabefehler);
+            string eingabefehler = ListePruefen();
             if (eingabefehler != null)
             {
                 MessageBox.Show(eingabefehler, MyResource.Resource.SIM_SENKE_TITEL,
@@ -1034,6 +1537,12 @@ namespace WindowsFormsApplication1
                 this.DialogResult = DialogResult.None;
                 return;
             }
+
+            // Die BESTANDSPRÜFUNG läuft unverändert auf der gespiegelten Fassung: Sie
+            // deckt Puffer-Verwendung, Doppelbelegung Haupt-/Zweitsenke, Kurzschluss
+            // Quelle=Senke, Verbundkonflikte und die Kanalwarnung ab (Konzept 4.6). Was
+            // sie über die Ränge 1 und 2 hinaus nicht sehen kann, prüft ListePruefen.
+            WaermesenkeClass.SenkeDaten neu = SpiegelBauen();
 
             WaermesenkeClass.PruefErgebnis erg = WaermesenkeClass.Pruefen(ID_Projekt, ID_Anlage, neu);
             if (!erg.Ok)
@@ -1058,6 +1567,11 @@ namespace WindowsFormsApplication1
                 return;
             }
 
+            // ERST JETZT schreiben: Die vollständige Liste geht nach Z_AnlageSenke, die
+            // gespiegelten Ränge 1/2 nimmt der Aufrufer über Daten entgegen und schiebt
+            // sie durch WaermesenkeClass.Schreiben - dieselbe Schreiblogik wie bisher.
+            ListeSpeichern();
+
             // Warnung ohne Blockerwirkung (Kanal ohne Bedarf) und der Übergangshinweis
             // zur Brauchwasser-Senke - zusammen in EINER Meldung, damit nicht zwei
             // Dialoge hintereinander bestätigt werden müssen.
@@ -1072,6 +1586,166 @@ namespace WindowsFormsApplication1
                                 MyResource.Resource.SIM_SENKE_TITEL, MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             Daten = neu;
+        }
+
+        /// <summary>
+        /// Prüft die GANZE Liste — die Fälle, die <c>WaermesenkeClass.Pruefen</c> mit
+        /// seinen zwei Plätzen nicht sehen kann. Rückgabe <c>null</c> = in Ordnung.
+        /// </summary>
+        private string ListePruefen()
+        {
+            // Invariante Rang 1 (Konzept 5.1). Kann über die Knöpfe nicht entstehen,
+            // steht aber hier, weil alles Folgende sie voraussetzt.
+            if (_zeilen.Count == 0) return MyResource.Resource.SIM_MSG_SENKE_LETZTE_ZEILE;
+
+            int idQuellPuffer = WaermesenkeClass.QuellPufferDerAnlage(ID_Projekt, ID_Anlage);
+            List<int> gesehen = new List<int>();
+
+            for (int i = 0; i < _zeilen.Count; i++)
+            {
+                Z_AnlageSenkeModel z = _zeilen[i];
+                string rolle = string.Format(MyResource.Resource.SIM_ROLLE_RANG, i + 1);
+
+                if (z.Ladegrenze == GRENZE_UNLESBAR)
+                    return string.Format(MyResource.Resource.SIM_MSG_LADEGRENZE_ZAHL, rolle);
+                if (z.Ladegrenze == GRENZE_BEREICH)
+                    return string.Format(MyResource.Resource.SIM_MSG_LADEGRENZE_BEREICH, rolle);
+
+                if (!IstPufferZiel(z.Ziel)) continue;
+
+                if (z.ID_Puffer <= 0)
+                    return string.Format(MyResource.Resource.SIM_MSG_SENKE_PUFFER_FEHLT,
+                                         i + 1, ZielAnzeige(z.Ziel));
+
+                // Ein Behälter kann nicht zweimal Ziel derselben Anlage sein - er hat EINEN
+                // Füllstand, und zwei Ladeaufträge darauf verplanten denselben Raum doppelt.
+                if (gesehen.Contains(z.ID_Puffer))
+                    return string.Format(
+                        MyResource.Resource.SIM_MSG_SENKE_DOPPELT,
+                        WaermesenkeClass.PufferName(z.ID_Puffer));
+                gesehen.Add(z.ID_Puffer);
+
+                // KURZSCHLUSS (Bestandsguard, jetzt über alle Ränge): Derselbe Puffer als
+                // Quelle UND Senke derselben Anlage. Pruefen prüft die Ränge 1 und 2 noch
+                // einmal - doppelt geprüft ist hier harmlos, ungeprüft wäre es ein Ring.
+                if (idQuellPuffer > 0 && idQuellPuffer == z.ID_Puffer)
+                    return string.Format(
+                        Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_PUFFER_QUELLE_UND_SENKE),
+                        WaermesenkeClass.PufferName(idQuellPuffer));
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Schreibt die Rangnummern fest und speichert die Liste nach
+        /// <c>Z_AnlageSenke</c>.
+        ///
+        /// Ohne die Tabelle (Migration noch nicht gelaufen) bleibt es bei der Spiegelung
+        /// auf die Altspalten — der Dialog verhält sich dann exakt wie vorher, nur mit
+        /// einer Liste statt zweier Plätze in der Oberfläche.
+        /// </summary>
+        private void ListeSpeichern()
+        {
+            for (int i = 0; i < _zeilen.Count; i++)
+            {
+                _zeilen[i].ID_Anlage = ID_Anlage;
+                _zeilen[i].Rang = i + 1;
+            }
+
+            if (ID_Anlage <= 0 || !Z_AnlageSenkeCtrl.SpalteVorhanden()) return;
+            new Z_AnlageSenkeCtrl().SchreibenJeAnlage(ID_Anlage, _zeilen);
+        }
+
+        /// <summary>
+        /// Baut aus den Rängen 1 und 2 die Altspalten-Fassung (Konzept 5.1, Migration in
+        /// die Gegenrichtung).
+        ///
+        /// <b>Was die Altspalten nicht ausdrücken können, geht dabei verloren</b> — und
+        /// das ist beabsichtigt, nicht übersehen:
+        ///
+        ///   - Die S1-Ziele <c>Prozesswaerme</c> und <c>PufferProzess</c> haben dort kein
+        ///     Wort. Sie werden auf ihre Übergangsentsprechung abgebildet
+        ///     (Interimsregeln I1/I2 aus Paket K2: Heizungs-Direktsenken und
+        ///     Heizungs-Speicher bedienen den Prozesskanal übergangsweise mit) — der
+        ///     einkanalige Altpfad rechnet damit auf denselben Behälter wie vorher, statt
+        ///     die Senke ganz zu verlieren.
+        ///   - Eine DIREKTsenke ab Rang 2 (neu mit S1) hat in <c>WS_Ziel2</c> keine
+        ///     Entsprechung; <c>WaermesenkeClass.Normalisieren</c> löscht sie. Der
+        ///     Altpfad kennt sie dann nicht — führend bleibt <c>Z_AnlageSenke</c>.
+        ///   - Ränge ab 3 werden nicht gespiegelt.
+        /// </summary>
+        private WaermesenkeClass.SenkeDaten SpiegelBauen()
+        {
+            WaermesenkeClass.SenkeDaten d = new WaermesenkeClass.SenkeDaten();
+            d.VerbundMitglieder = GewaehlteVerbundMitglieder();
+
+            if (_zeilen.Count > 0)
+            {
+                Z_AnlageSenkeModel z = _zeilen[0];
+                d.Ziel = AltZiel(z.Ziel);
+                d.ID_Puffer = z.ID_Puffer;
+                d.Bedarfsart = AltBedarfsart(z);
+                d.Ladeprio = z.Ladeprio;
+                d.Ladegrenze = z.Ladegrenze > 0 ? z.Ladegrenze : 0;
+                d.LadeprioPV = z.Ladeprio_PV;
+            }
+
+            if (_zeilen.Count > 1)
+            {
+                Z_AnlageSenkeModel z = _zeilen[1];
+                string ziel2 = AltZiel(z.Ziel);
+
+                // Zweitsenken sind in den Altspalten ausschließlich Puffer-Ziele; eine
+                // Direktsenke auf Rang 2 bleibt dort leer (siehe Kopfkommentar).
+                if (WaermesenkeClass.IstPufferZiel(ziel2))
+                {
+                    d.Ziel2 = ziel2;
+                    d.ID_Puffer2 = z.ID_Puffer;
+                    d.Ladeprio2 = z.Ladeprio;
+                    d.Ladegrenze2 = z.Ladegrenze > 0 ? z.Ladegrenze : 0;
+                }
+            }
+
+            return d;
+        }
+
+        /// <summary>
+        /// Ziel in der Sprache der Altspalten (Interimsregeln I1/I2 aus Paket K2).
+        ///
+        /// Beide Prozesswärme-Ziele werden auf ihre HEIZUNGS-Entsprechung abgebildet — das
+        /// ist genau die Übergangsregel, mit der die Engine heute rechnet: I1 lässt
+        /// Heizungs-Direktsenken den Prozesskanal mitdecken, I2 lässt einen Speicher mit
+        /// Heizung im Klassen-Set auch für Prozess entladen. Der Altpfad rechnet damit auf
+        /// denselben Behälter wie vorher.
+        ///
+        /// Die Abbildung ist zugleich die Bedingung dafür, dass
+        /// <c>WaermesenkeClass.Pruefen</c> überhaupt urteilen kann: Seine
+        /// Verwendungsprüfung kennt für <c>PufferProzess</c> keine Verwendung
+        /// (<c>VerwendungZuZiel</c> liefert <c>null</c>) und würde jede solche Zeile
+        /// abweisen. Mit Paket S2 (Konzept 6.2, Warnkriterien statt Sperre) entfällt
+        /// beides — dann kann der wahre Wert in die Altspalte, und die Abbildung
+        /// beschränkt sich auf die Direktsenke.
+        /// </summary>
+        private static string AltZiel(string ziel)
+        {
+            if (string.Equals(ziel, DbWerte.WS_ZIEL_PROZESS, StringComparison.Ordinal))
+                return DbWerte.WS_ZIEL_HEIZKREIS;
+            if (string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_PROZESS, StringComparison.Ordinal))
+                return DbWerte.WS_ZIEL_PUFFER_HEIZUNG;
+            return ziel;
+        }
+
+        /// <summary>
+        /// Bedarfsart in der Sprache der Altspalten. Eine Prozesswärme-Direktsenke wird zu
+        /// „Heizung": Der Prozesskanal war bis Paket K1 Teil des Heizkanals, und die
+        /// Interimsregel I1 lässt Heizungs-Direktsenken den Prozesskanal mitdecken.
+        /// </summary>
+        private static string AltBedarfsart(Z_AnlageSenkeModel z)
+        {
+            if (string.Equals(z.Ziel, DbWerte.WS_ZIEL_PROZESS, StringComparison.Ordinal))
+                return WaermequelleClass.SENKE_HEIZUNG;
+            return string.IsNullOrEmpty(z.Bedarfsart) ? WaermequelleClass.SENKE_BEIDES : z.Bedarfsart;
         }
 
         /// <summary>
@@ -1101,6 +1775,11 @@ namespace WindowsFormsApplication1
         /// <see cref="KonfigurationCtrl.KaskadeZweikanaligLesen"/> — genau dem Lesepfad,
         /// über den auch der Konfigurationsdialog seinen Schalter vorbelegt. Keine
         /// zweite SQL-Wahrheit.
+        ///
+        /// <para>PAKET S1: Gefragt wird die GESPIEGELTE Fassung, also die Ränge 1 und 2 —
+        /// dieselbe Menge, mit der der einkanalige Altpfad rechnet. Für eine
+        /// Brauchwasser-Senke ab Rang 3 gäbe es nichts zu melden, was der Altpfad
+        /// überhaupt sähe.</para>
         /// </summary>
         private string BrauchwasserUebergangsHinweis(WaermesenkeClass.SenkeDaten d)
         {
@@ -1139,93 +1818,6 @@ namespace WindowsFormsApplication1
                         MyResource.Resource.SIM_MSG_BRAUCHWASSER_WP_ZUSATZ;
 
             return text;
-        }
-
-        /// <summary>Liest die Oberfläche aus; <paramref name="fehler"/> nur bei Eingabefehlern.</summary>
-        private WaermesenkeClass.SenkeDaten AusOberflaeche(out string fehler)
-        {
-            fehler = null;
-            WaermesenkeClass.SenkeDaten d = new WaermesenkeClass.SenkeDaten();
-
-            // PAKET PARALLELVERBUND: Die Mitglieder gehören zur HAUPTsenke und werden
-            // deshalb hier - vor der Ziel-Auswertung - eingesammelt. Normalisieren in
-            // WaermesenkeClass leert die Liste selbst, wenn das Ziel am Ende kein Puffer
-            // ist (Heizkreis); der Dialog braucht dafür keinen eigenen Zweig, und es gibt
-            // nur EINE Auslegung dieser Regel.
-            d.VerbundMitglieder = GewaehlteVerbundMitglieder();
-
-            if (_rbPufferHeizung.Checked)
-            {
-                d.Ziel = WaermesenkeClass.ZIEL_PUFFER_HEIZUNG;
-                d.ID_Puffer = AktuelleId(_cbPufferHeizung);
-            }
-            else if (_rbPufferBrauchwasser.Checked)
-            {
-                d.Ziel = WaermesenkeClass.ZIEL_PUFFER_BRAUCHWASSER;
-                d.ID_Puffer = AktuelleId(_cbPufferBrauchwasser);
-            }
-            else if (_rbPufferKombi.Checked)
-            {
-                d.Ziel = WaermesenkeClass.ZIEL_PUFFER_KOMBI;        // D5a
-                d.ID_Puffer = AktuelleId(_cbPufferKombi);
-            }
-            else
-            {
-                d.Ziel = WaermesenkeClass.ZIEL_HEIZKREIS;
-            }
-
-            switch (_cbBedarfsart.SelectedIndex)
-            {
-                case 1: d.Bedarfsart = WaermequelleClass.SENKE_WARMWASSER; break;
-                case 2: d.Bedarfsart = WaermequelleClass.SENKE_HEIZUNG; break;
-                default: d.Bedarfsart = WaermequelleClass.SENKE_BEIDES; break;
-            }
-
-            d.Ladeprio = GewaehltePrio(_cbLadeprio);
-            d.LadeprioPV = string.Equals(BM_Typ, WaermequelleClass.MODUS_PV, StringComparison.Ordinal)
-                ? GewaehltePrio(_cbLadeprioPV) : 0;
-
-            if (!LadegrenzeLesen(_chkLadegrenze, _tbLadegrenze,
-                                 MyResource.Resource.SIM_ROLLE_HAUPTSENKE, out d.Ladegrenze, out fehler))
-                return d;
-
-            if (_chkZweitsenke.Checked)
-            {
-                d.Ziel2 = ZielWertZweitsenke();                     // D5a: inkl. Kombi
-                d.ID_Puffer2 = AktuelleId(_cbPuffer2);
-                d.Ladeprio2 = GewaehltePrio(_cbLadeprio2);
-
-                if (!LadegrenzeLesen(_chkLadegrenze2, _tbLadegrenze2,
-                                     MyResource.Resource.SIM_ROLLE_ZWEITSENKE, out d.Ladegrenze2, out fehler))
-                    return d;
-            }
-
-            return d;
-        }
-
-        /// <summary>Liest eine Ladeobergrenze [%]; 0, wenn die Checkbox nicht gesetzt ist.</summary>
-        private static bool LadegrenzeLesen(CheckBox chk, TextBox tb, string rolle,
-                                            out double wert, out string fehler)
-        {
-            wert = 0;
-            fehler = null;
-            if (!chk.Checked) return true;
-
-            float zahl;
-            if (!WaermequelleClass.ZahlParsen(tb.Text, out zahl))
-            {
-                fehler = string.Format(MyResource.Resource.SIM_MSG_LADEGRENZE_ZAHL, rolle);
-                return false;
-            }
-
-            if (zahl <= 0 || zahl > 100)
-            {
-                fehler = string.Format(MyResource.Resource.SIM_MSG_LADEGRENZE_BEREICH, rolle);
-                return false;
-            }
-
-            wert = zahl;
-            return true;
         }
     }
 }

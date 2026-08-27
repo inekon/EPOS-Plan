@@ -37,6 +37,19 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string ZIEL_PUFFER_KOMBI = DbWerte.WS_ZIEL_PUFFER_KOMBI;
 
+        /// <summary>
+        /// DIREKTSENKE PROZESSWÄRME (Paket S1, Konzept 4.4/5.1): Die Anlage deckt den
+        /// Prozesskanal unmittelbar. Sie kommt ausschließlich in <c>Z_AnlageSenke</c>
+        /// vor — die Altspalte <c>WS_Ziel</c> kennt sie nicht.
+        /// </summary>
+        public const string ZIEL_PROZESSWAERME = DbWerte.WS_ZIEL_PROZESS;
+
+        /// <summary>
+        /// Die Anlage lädt einen Puffer für PROZESSWÄRME (Paket S1, Konzept 5.1 — das
+        /// sechste Senkenziel der Leitentscheidung L5).
+        /// </summary>
+        public const string ZIEL_PUFFER_PROZESS = DbWerte.WS_ZIEL_PUFFER_PROZESS;
+
         // --- Verwendung eines Projekt-Puffers (Konzept 5.1) ---------------------------
 
         public const string VERWENDUNG_HEIZUNG = DbWerte.PSP_VERWENDUNG_HEIZUNG;
@@ -51,12 +64,19 @@ namespace WindowsFormsApplication1
         // Ladeordnung und ProjektPuffer bereits benutzen). Zwei Wahrheiten über
         // dieselbe Menge sind eine Fehlerquelle - die tote wurde entfernt.
 
-        /// <summary>true, wenn das Ziel einen Pufferspeicher meint.</summary>
+        /// <summary>
+        /// true, wenn das Ziel einen Pufferspeicher meint.
+        ///
+        /// PAKET S1: <see cref="ZIEL_PUFFER_PROZESS"/> kommt dazu. <see cref="ZIEL_PROZESSWAERME"/>
+        /// ausdrücklich NICHT — das ist eine DIREKTsenke und darf in der Altspaltenpflege
+        /// (<see cref="Normalisieren"/>) nicht als Puffer-Ziel durchgehen.
+        /// </summary>
         public static bool IstPufferZiel(string ziel)
         {
             return string.Equals(ziel, ZIEL_PUFFER_HEIZUNG, StringComparison.Ordinal) ||
                    string.Equals(ziel, ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal) ||
-                   string.Equals(ziel, ZIEL_PUFFER_KOMBI, StringComparison.Ordinal);
+                   string.Equals(ziel, ZIEL_PUFFER_KOMBI, StringComparison.Ordinal) ||
+                   string.Equals(ziel, ZIEL_PUFFER_PROZESS, StringComparison.Ordinal);
         }
 
         /// <summary>true, wenn die Verwendung einen KOMBISPEICHER meint (D5a).</summary>
@@ -640,9 +660,11 @@ namespace WindowsFormsApplication1
         /// Dialogfrei (Konzept 13.4). Fehlende Spalten liefern eine leere Liste statt
         /// einer MessageBox; nie <c>null</c>.
         ///
-        /// Aufgerufen wird sie von <c>SimulationControl</c> je Lauf; ausgewertet wird das
-        /// Ergebnis ausschließlich im ZWEIKANALIGEN Rechenweg
-        /// (<c>Kaskadenkontext.SenkeJeModul</c>). Der einkanalige Altpfad liest es nicht.
+        /// Aufgerufen wird sie von <c>SimulationControl</c> je Lauf.
+        ///
+        /// <b>SEIT PAKET S1 Übergangsbestand:</b> Der dreikanalige Weg rechnet mit
+        /// <see cref="SenkenlistenLaden"/>. Diese Fassung bleibt für das BHKW-Modul bis
+        /// zu seinem eigenen Umbau; sie fällt mit dem Altpfad (Paket A1).
         /// </summary>
         public static List<Senkenzuordnung> SenkenLaden(int idProjekt)
         {
@@ -705,6 +727,218 @@ namespace WindowsFormsApplication1
             }
 
             return liste;
+        }
+
+        // ==================================================================
+        // GEORDNETE SENKENLISTEN (Paket S1, Konzept 5.1) — die Nachfolge von
+        // SenkenLaden für den dreikanaligen Weg
+        // ==================================================================
+
+        /// <summary>
+        /// Die geordneten SENKENLISTEN aller Wärmeerzeuger eines Projekts, in
+        /// Kaskadenreihenfolge (Paket S1, Konzept 5.1/5.2) — die Form, in der die Engine
+        /// sie ab S1 braucht.
+        ///
+        /// <para><b>Quelle ist <c>Z_AnlageSenke</c></b>: n Zeilen je Anlage mit Rang,
+        /// Ziel, Bedarfsart, Puffer und den Ladeparametern. Damit fällt die Beschränkung
+        /// auf zwei Senkenplätze (<c>WS_*</c> / <c>WS_*2</c>), und Direktsenken sind auch
+        /// ab Rang 2 möglich („Puffer zuerst, Rest direkt" — bis S1 nicht abbildbar).</para>
+        ///
+        /// <para><b>Normalisierung</b> — dieselbe Denkweise wie in
+        /// <see cref="Normalisieren"/>: Was fachlich nicht sein kann, wird still
+        /// begradigt und protokolliert, statt den Lauf abzubrechen (Konzept 13.4,
+        /// dialogfrei).</para>
+        /// <list type="number">
+        /// <item>Unbekanntes <c>Ziel</c> → <see cref="ZIEL_HEIZKREIS"/>
+        ///       (<see cref="Senkenzuordnung.SenkeAusZiel"/>, Konzept 4.6).</item>
+        /// <item>Puffer-Ziel OHNE <c>ID_Puffer</c> → Heizkreis + Protokollwarnung. Das ist
+        ///       Befund N5 auf der neuen Tabelle: Ohne Puffer entsteht kein Ladeauftrag,
+        ///       und ohne Direktsenke deckte die Anlage auch nichts — sie produzierte das
+        ///       ganze Jahr nichts, ohne jeden Hinweis.</item>
+        /// <item>KEINE Zeile für eine Anlage → eine Zeile <c>Heizkreis/Beides</c>
+        ///       (RANG-1-INVARIANTE, Konzept 5.1) + Protokollwarnung.</item>
+        /// <item>Ränge werden nach dem Sortieren LÜCKENLOS neu vergeben
+        ///       (<see cref="Senkenliste.Ordnen"/>): Die Ladephasen laufen über
+        ///       Rang-Ebenen, eine Lücke wäre eine leere Phase.</item>
+        /// </list>
+        ///
+        /// <para><b>RÜCKFALL OHNE TABELLE</b> (<c>Z_AnlageSenkeCtrl.SpalteVorhanden() ==
+        /// false</c>, also eine Datenbank vor Migrationsschritt 50): gelesen werden die
+        /// bisherigen <c>WS_*</c>-Spalten, in Listenform mit Rang 1 (Hauptsenke) und
+        /// Rang 2 (Zweitsenke). Das ist Zeile für Zeile das Bestandsverhalten — und es ist
+        /// der Grund, warum dieser Zweig überhaupt existiert: Auf einem halb migrierten
+        /// Schema darf die Engine nicht raten, sondern muss mit den Daten rechnen, die
+        /// wirklich da sind. Der Rückfall kennt naturgemäß keine Prozesswärme-Senken
+        /// (die Altspalten haben dafür keinen Wert) und keine Ränge über 2.</para>
+        ///
+        /// Dialogfrei; nie <c>null</c>, nie ein <c>null</c>-Eintrag.
+        /// </summary>
+        public static List<Senkenliste> SenkenlistenLaden(int idProjekt)
+        {
+            List<Senkenliste> listen = new List<Senkenliste>();
+            if (idProjekt <= 0) return listen;
+
+            // Anlagen des Projekts in KASKADENREIHENFOLGE - dieselbe Abfrage und
+            // dieselbe Sortierung wie in SenkenLaden, damit die Reihenfolge der Listen
+            // zwischen beiden Wegen identisch bleibt.
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID, WS_Ziel, WS_ID_Puffer, WS_Typ, WS_Ladeprio, WS_Ladegrenze, WS_Ladeprio_PV, " +
+                "       WS_Ziel2, WS_ID_Puffer2, WS_Ladeprio2, WS_Ladegrenze2 " +
+                "FROM Tab_Energieanlagen " +
+                "WHERE ID_Projekt = ? AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ") " +
+                "ORDER BY Prioritaet, ID",
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+            if (dt == null) return listen;
+
+            bool tabelleDa = Z_AnlageSenkeCtrl.SpalteVorhanden();
+
+            if (!tabelleDa)
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                    "senkenliste-rueckfall-altspalten",
+                    "Wärmesenken: Die Zuordnungstabelle Z_AnlageSenke ist in dieser " +
+                    "Datenbank noch nicht angelegt (Migrationsschritt 50 nicht gelaufen). " +
+                    "Der Lauf rechnet deshalb mit den Altspalten WS_Ziel/WS_Ziel2 in " +
+                    "Listenform (Rang 1 und 2) - das ist das bisherige Verhalten. Senken " +
+                    "ab Rang 3 und Prozesswärme-Senken gibt es auf diesem Schema nicht.");
+
+            // Eine Abfrage für das GANZE Projekt statt einer je Anlage - dieselbe
+            // Abwägung wie bei SenkenLaden gegenüber Lesen().
+            List<Z_AnlageSenkeModel> zeilen =
+                tabelleDa ? new Z_AnlageSenkeCtrl().LesenJeProjekt(idProjekt) : null;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                int idAnlage = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+
+                Senkenliste liste = tabelleDa
+                    ? AusZuordnungstabelle(idAnlage, zeilen)
+                    : AusAltspalten(idAnlage, r);
+
+                listen.Add(liste);
+            }
+
+            return listen;
+        }
+
+        /// <summary>
+        /// Senkenliste einer Anlage aus den gelesenen <c>Z_AnlageSenke</c>-Zeilen; ohne
+        /// eigene Zeile die Rang-1-Vorbelegung mit Protokollwarnung (siehe
+        /// <see cref="SenkenlistenLaden"/>).
+        /// </summary>
+        private static Senkenliste AusZuordnungstabelle(int idAnlage,
+                                                        List<Z_AnlageSenkeModel> zeilen)
+        {
+            Senkenliste liste = new Senkenliste();
+            liste.AnlagenID = idAnlage;
+
+            if (zeilen != null)
+                foreach (Z_AnlageSenkeModel m in zeilen)
+                {
+                    if (m == null || m.ID_Anlage != idAnlage) continue;
+
+                    Senkenzeile z = new Senkenzeile();
+                    z.Rang = m.Rang > 0 ? m.Rang : liste.Zeilen.Count + 1;
+                    z.Ziel = Senkenzuordnung.SenkeAusZiel(m.Ziel);
+                    z.IDPuffer = m.ID_Puffer > 0 ? m.ID_Puffer : 0;
+                    z.Bedarfsart = string.IsNullOrEmpty(m.Bedarfsart)
+                        ? WaermequelleClass.SENKE_BEIDES : m.Bedarfsart;
+                    z.Ladeprio = m.Ladeprio;
+                    z.LadeprioPV = m.Ladeprio_PV;
+                    z.LadegrenzeProzent = m.Ladegrenze > 0 ? m.Ladegrenze : 0;
+
+                    // N5 auf der neuen Tabelle: Puffer-Ziel ohne Puffer ist kein Ziel.
+                    if (z.IstPuffersenke && z.IDPuffer <= 0)
+                    {
+                        SimulationProtokoll.Aktuell.WarnungEinmal(
+                            "senkenzeile-ohne-puffer-" + idAnlage + "-" + z.Rang,
+                            "Wärmesenke: Die Anlage " + idAnlage + " führt auf Rang " +
+                            z.Rang + " das Ziel " + Senkenzuordnung.ZielAusSenke(z.Ziel) +
+                            ", hat dort aber KEINEN Pufferspeicher zugeordnet " +
+                            "(Z_AnlageSenke.ID_Puffer leer). Die Zeile rechnet deshalb auf " +
+                            "den HEIZKREIS.");
+
+                        z.Ziel = Senke.Heizkreis;
+                        z.IDPuffer = 0;
+                        z.Ladeprio = 0;
+                        z.LadeprioPV = 0;
+                        z.LadegrenzeProzent = 0;
+                    }
+
+                    ZeileKlemmen(z);
+                    liste.Zeilen.Add(z);
+                }
+
+            if (liste.Zeilen.Count == 0)
+            {
+                // RANG-1-INVARIANTE (Konzept 5.1): Die Engine rechnet Heizkreis/Beides und
+                // sagt es. Ohne diese Zeile hätte die Anlage überhaupt kein Ziel.
+                SimulationProtokoll.Aktuell.WarnungEinmal(
+                    "senkenliste-leer-" + idAnlage,
+                    "Wärmesenke: Für die Anlage " + idAnlage + " steht in Z_AnlageSenke " +
+                    "keine einzige Zeile. Der Lauf rechnet die Vorbelegung " +
+                    ZIEL_HEIZKREIS + "/" + WaermequelleClass.SENKE_BEIDES + ".");
+
+                return Senkenliste.Vorbelegung(idAnlage);
+            }
+
+            liste.Ordnen();
+            return liste;
+        }
+
+        /// <summary>
+        /// RÜCKFALL OHNE <c>Z_AnlageSenke</c>: dieselbe Anlagenzeile, aber aus den
+        /// Altspalten <c>WS_*</c> / <c>WS_*2</c> in Listenform (Rang 1 / Rang 2).
+        ///
+        /// Normalisiert wird über <see cref="AusDatenzeile"/> — kein zweiter Regelsatz
+        /// für dieselben Felder. Eine Zweitsenke ist dort konstruktiv immer ein
+        /// Puffer-Ziel mit gültigem Puffer.
+        /// </summary>
+        private static Senkenliste AusAltspalten(int idAnlage, DataRow r)
+        {
+            SenkeDaten d = AusDatenzeile(r);           // enthält Normalisieren
+
+            Senkenliste liste = new Senkenliste();
+            liste.AnlagenID = idAnlage;
+
+            Senkenzeile eins = new Senkenzeile();
+            eins.Rang = 1;
+            eins.Ziel = Senkenzuordnung.SenkeAusZiel(d.Ziel);
+            eins.IDPuffer = d.ID_Puffer;
+            eins.Bedarfsart = d.Bedarfsart;
+            eins.Ladeprio = d.Ladeprio;
+            eins.LadeprioPV = d.LadeprioPV;
+            eins.LadegrenzeProzent = d.Ladegrenze;
+            ZeileKlemmen(eins);
+            liste.Zeilen.Add(eins);
+
+            if (d.HatZweitsenke)
+            {
+                Senkenzeile zwei = new Senkenzeile();
+                zwei.Rang = 2;
+                zwei.Ziel = Senkenzuordnung.SenkeAusZiel(d.Ziel2);
+                zwei.IDPuffer = d.ID_Puffer2;
+                zwei.Bedarfsart = WaermequelleClass.SENKE_BEIDES;
+                zwei.Ladeprio = d.Ladeprio2;
+                // WS_Ladeprio_PV2 gibt es nicht: Die PV-Sonderregel hängt im Bestand
+                // konstruktiv an der Hauptsenke (Ladeordnung 3.5). Genau das bildet die
+                // Migration mit "Rang 1 erbt, alle höheren Ränge 0" nach.
+                zwei.LadeprioPV = 0;
+                zwei.LadegrenzeProzent = d.Ladegrenze2;
+                ZeileKlemmen(zwei);
+                liste.Zeilen.Add(zwei);
+            }
+
+            return liste;
+        }
+
+        /// <summary>Negativwerte einer Senkenzeile klemmen (wie <see cref="Normalisieren"/>).</summary>
+        private static void ZeileKlemmen(Senkenzeile z)
+        {
+            if (z.IDPuffer < 0) z.IDPuffer = 0;
+            if (z.Ladeprio < 0) z.Ladeprio = 0;
+            if (z.LadeprioPV < 0) z.LadeprioPV = 0;
+            if (z.LadegrenzeProzent < 0) z.LadegrenzeProzent = 0;
+            if (string.IsNullOrEmpty(z.Bedarfsart)) z.Bedarfsart = WaermequelleClass.SENKE_BEIDES;
         }
 
         /// <summary>

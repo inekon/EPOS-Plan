@@ -103,8 +103,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die drei Bedarfskanäle des Laufs (Konzept 4.1/4.2). Sie sind seit Paket K1 die
         /// FÜHRENDE Größe: <see cref="Waermebedarf"/> ist ihre Summe, nicht umgekehrt.
-        /// Gelesen wird über <see cref="KanaeleDrei"/> (Kopie) bzw. bis Paket K2 über die
-        /// Übergangsabbildung <see cref="Kanaele"/>.
+        /// Gelesen wird über <see cref="KanaeleDrei"/> (Kopie) — die Übergangsabbildung
+        /// auf die zweikanalige Struktur ist mit Paket S1 gelöscht (K2-O3).
         /// </summary>
         private Kanalsatz _kanaele = new Kanalsatz();
 
@@ -540,47 +540,12 @@ namespace WindowsFormsApplication1
             return _kanaele.Clone();
         }
 
-        /// <summary>
-        /// ÜBERGANGSABBILDUNG auf die zweikanalige Kaskade — Zwischenstand bis Paket K2.
-        ///
-        /// <code>
-        /// Heiz = HEIZUNG + PROZESS      (elementweise)
-        /// WW   = BRAUCHWASSER
-        /// </code>
-        ///
-        /// Übergang bis K2: Die Kaskade rechnet noch zweikanalig; der Prozesskanal läuft
-        /// solange im Heizkanal mit. Genau so ist es heute — die Prozesswärme war nie
-        /// getrennt, und die Kaskade würde sie ohne diese Zusammenfassung schlicht
-        /// verlieren. Mit K2 entfällt die Methode ersatzlos; die Kaskade nimmt dann
-        /// <see cref="KanaeleDrei"/>.
-        ///
-        /// KEINE KAPPUNGSFÄLLE MEHR. Die beiden Klemmungen der früheren Residuum-Bildung
-        /// („negativer Brauchwasserwert", „Brauchwasser über Gesamtbedarf") sind mit der
-        /// Kanalbildung ohne Residuum konstruktiv unmöglich geworden: Jeder Kanal entsteht
-        /// aus seinen eigenen, nichtnegativen Quellen; es wird nichts mehr voneinander
-        /// abgezogen. Mit ihnen entfallen die Zähler und ihre Protokollmeldung
-        /// (Konzept 4.2).
-        ///
-        /// GENAUIGKEIT: <c>Heiz + WW</c> kann um bis zu ein ULP je Stunde neben
-        /// <see cref="Waermebedarf"/> liegen — beide sind float-Summen derselben drei
-        /// Kanäle, nur anders geklammert (Konzept 4.2, Toleranz „1-ULP-Klasse").
-        /// </summary>
-        public Waermekanaele Kanaele()
-        {
-            float[] heizung = _kanaele.Heizung;
-            float[] brauchwasser = _kanaele.Brauchwasser;
-            float[] prozess = _kanaele.Prozess;
-
-            Waermekanaele k = new Waermekanaele();
-            for (int h = 0; h < Waermekanaele.STUNDEN_JAHR; h++)
-            {
-                // Zwischenrechnung in double, Ergebnis in float - Konvention des Rechenkerns.
-                k.Heiz[h] = (float)((double)heizung[h] + prozess[h]);
-                k.WW[h] = brauchwasser[h];
-            }
-
-            return k;
-        }
+        // K2-O3: Die Übergangsabbildung Kanaele() (Heiz = HEIZUNG + PROZESS, WW =
+        // BRAUCHWASSER) auf Waermekanaele hat mit Paket K2 ihren letzten Aufrufer
+        // verloren — die Kaskade rechnet seither auf denselben drei Kanälen, mit denen
+        // der Bedarf gebildet wird (KanaeleDrei). Mit Paket S1 ist sie gelöscht:
+        // Prozesswärme ist ein eigener Kanal mit eigenen Senken, und eine Abbildung, die
+        // sie wieder in den Heizkanal faltet, wäre ab hier schlicht falsch.
 
         private void Bewohner_und_Flaeche_berechnen(ProjektGebaeudeModel item, int index)
         {

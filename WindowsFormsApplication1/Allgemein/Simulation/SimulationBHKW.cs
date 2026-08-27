@@ -854,11 +854,29 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string Fehlertext = "";
 
-        /// <summary>Ladeauftrag der HAUPTsenke; <c>null</c>, wenn die Hauptsenke der Heizkreis ist.</summary>
-        public Ladeauftrag Auftrag_Haupt = null;
-
-        /// <summary>Ladeauftrag der ZWEITsenke bzw. des Ersatz-Pendelspeichers; <c>null</c> = keiner.</summary>
-        public Ladeauftrag Auftrag_Zweit = null;
+        /// <summary>
+        /// PUFFERSENKEN-AUFTRÄGE der Stufe, nach <see cref="Ladeauftrag.Rang"/>
+        /// AUFSTEIGEND (Paket S1, Entscheidung F11 vom 27.08.2026).
+        ///
+        /// Sie ersetzen die beiden festen Plätze <c>Auftrag_Haupt</c>/<c>Auftrag_Zweit</c>:
+        /// Eine BHKW-Stufe kann jetzt beliebig viele Puffersenken tragen, so wie jede
+        /// andere Anlage auch (Konzept 5.2 „BHKW"). Gefüllt wird die Liste EINMAL je Lauf
+        /// von <c>Kaskadenschleife.BhkwAuftraegeZuordnen</c> — anders als Wärmepumpe,
+        /// Solarthermie und Kessel braucht das BHKW seine Aufträge bereits in Phase B: Der
+        /// Wärmeraum, gegen den die Fahrweise ihre Motoren zuschaltet, ist die Summe der
+        /// Ladefähigkeiten dieser Speicher (<see cref="PufferRaum"/>).
+        ///
+        /// <para>ERGEBNISNEUTRAL BEI EINS ODER ZWEI SENKEN (jedes Bestandsprojekt): Die
+        /// Summe über eine einelementige Liste ist derselbe Ausdruck, den bisher
+        /// <c>ZweitsenkenRaum</c> aus dem einen zweiten Auftrag gebildet hat; die
+        /// Reihenfolge der Summanden ist die Rangfolge und beginnt damit wie bisher bei
+        /// der Hauptsenke.</para>
+        ///
+        /// <para>Die Liste enthält ausschließlich PUFFER-Senken — Direktsenken (Heizkreis,
+        /// Prozesswärme) erzeugen keinen Ladeauftrag. Bei Hauptsenke HEIZKREIS trägt sie
+        /// deshalb nur Ränge ≥ 2, bei Puffer-Hauptsenke beginnt sie mit Rang 1.</para>
+        /// </summary>
+        public List<Ladeauftrag> Auftraege = new List<Ladeauftrag>();
 
         /// <summary>
         /// <c>true</c>, wenn das BHKW die LETZTE Stufe der Bedarfsreihenfolge (Phase B)
@@ -866,7 +884,7 @@ namespace WindowsFormsApplication1
         ///
         /// Die Kaskadenschleife setzt das Feld je Lauf; in der Vektorstufe gilt es
         /// ohnehin (dort gibt es keine weiteren Mitglieder). Siehe
-        /// <see cref="ZweitsenkenRaum"/>.
+        /// <see cref="RaumJeAuftrag"/>.
         /// </summary>
         public bool LetzteBedarfsstufe = true;
 
@@ -881,8 +899,42 @@ namespace WindowsFormsApplication1
         /// <summary>In dieser Stunde unmittelbar an den Bedarf abgegebene Wärme [kWh] (Phase B).</summary>
         private double _direktStunde = 0;
 
-        /// <summary>Speicher, an dem diese Stunde Ladefähigkeit reserviert wurde (Befund N3).</summary>
-        private SimulationPufferspeicher _reservierterSpeicher = null;
+        /// <summary>
+        /// EINE in Phase B festgehaltene Ladefähigkeit (Befund N3, verallgemeinert mit
+        /// F11): der Auftrag, für den reserviert wurde, sein Zielspeicher und die Menge.
+        ///
+        /// Die MENGE wird mitgeführt, weil ein Speicher in derselben Stunde mehrfach
+        /// belegt sein kann (zwei Aufträge auf denselben Behälter) — dann darf die
+        /// Freigabe des einen Auftrags nicht die Reservierung des anderen mit auflösen.
+        /// Deshalb wird betragsweise zurückgenommen und nicht <c>Reserviert</c> auf 0
+        /// gesetzt; bei genau einer Reservierung ist das dieselbe Rechnung wie bisher
+        /// (<c>Reserviert</c> beginnt jede Stunde bei 0, siehe
+        /// <c>Kaskadenschleife.Rechnen</c>).
+        /// </summary>
+        private class Reservierung
+        {
+            public Ladeauftrag Auftrag;
+            public SimulationPufferspeicher Speicher;
+            public double Menge;
+        }
+
+        /// <summary>
+        /// Die Reservierungen DIESER Stunde, in Auftragsreihenfolge (Befund N3, F11).
+        /// Vor F11 war das ein einzelnes Speicherfeld <c>_reservierterSpeicher</c>.
+        /// </summary>
+        private readonly List<Reservierung> _reservierungen = new List<Reservierung>();
+
+        /// <summary>
+        /// Wärmeraum je Auftrag der laufenden Stunde [kWh] — in <see cref="PufferRaum"/>
+        /// EINMAL gerechnet und von <see cref="ReservierungenSetzen"/> wiederverwendet.
+        ///
+        /// Bewusst zwischengespeichert und nicht zweimal gerechnet: Zwischen der
+        /// Zuschaltentscheidung und der Reservierung zieht Phase B die Direktdeckung von
+        /// <c>rest</c> ab. Ein zweiter Lauf über dieselbe Formel läse damit einen
+        /// KLEINEREN Durchsatzterm und reservierte weniger, als die Fahrweise gerade
+        /// verplant hat — genau die Menge, die Befund N3 sichern soll.
+        /// </summary>
+        private double[] _raumJeAuftrag = new double[0];
 
         /// <summary>Anzahl der BHKW-Module, die im zweikanaligen Weg rechnen.</summary>
         public int ModulAnzahl { get { return _anzahlZweikanalig; } }
@@ -914,9 +966,8 @@ namespace WindowsFormsApplication1
             _fuehrendeAnlage = 0;
             _ueberschussStunde = 0;
             _direktStunde = 0;
-            _reservierterSpeicher = null;
-            Auftrag_Haupt = null;
-            Auftrag_Zweit = null;
+            _reservierungen.Clear();
+            Auftraege.Clear();
             LetzteBedarfsstufe = true;      // Vektorstufe: es gibt keine weitere Stufe
             Fehlertext = "";
 
@@ -1081,7 +1132,7 @@ namespace WindowsFormsApplication1
             }
             _ueberschussStunde = 0;
             _direktStunde = 0;
-            _reservierterSpeicher = null;
+            _reservierungen.Clear();
 
             double eingang = Kanalabzug.Summe(rest);
             if (eingang < 0) eingang = 0;
@@ -1093,10 +1144,11 @@ namespace WindowsFormsApplication1
         /// Phase B der Reihenfolge-Invariante (Konzept 6.3) für das BHKW.
         ///
         /// Mit Hauptsenke HEIZKREIS läuft hier die Fahrweise: Sie bekommt als Wärmeraum
-        /// den offenen Kanalbedarf (nach <c>WS_Typ</c>) PLUS die Ladefähigkeit der
-        /// Zweitsenke — genau die Rolle, die im Altpfad der Pendelspeicher hatte. Was
-        /// die Maschine über den Bedarf hinaus erzeugt, bleibt bis zur Ladephase D in
-        /// <see cref="_ueberschussStunde"/> stehen.
+        /// den offenen Kanalbedarf (nach <c>WS_Typ</c>) PLUS die Ladefähigkeit ALLER
+        /// Puffersenken der Stufe (<see cref="PufferRaum"/>, F11) — genau die Rolle, die
+        /// im Altpfad der Pendelspeicher hatte, nur nicht mehr auf einen einzigen
+        /// zweiten Platz beschränkt. Was die Maschine über den Bedarf hinaus erzeugt,
+        /// bleibt bis zur Ladephase D in <see cref="_ueberschussStunde"/> stehen.
         ///
         /// Mit Puffer-Hauptsenke deckt das BHKW hier NICHTS (Konzept 6.3,
         /// Doppelzählungs-Freibeweis) — es läuft erst in Phase C.
@@ -1120,10 +1172,10 @@ namespace WindowsFormsApplication1
             double verfuegbar = Kanalabzug.Offen(wsTyp, rest);
             if (verfuegbar < 0) verfuegbar = 0;
 
-            // Wärmeraum der (Ersatz-)Zweitsenke = der Speicherraum der Stunde. OHNE
-            // Zweitsenke ist er 0, und die Fahrweise rechnet wie ein Pendelspeicher mit
-            // Volumen 0 - also genau wie im Altpfad ohne Pendelspeicher.
-            double raum = ZweitsenkenRaum(pvUeberschuss, wsTyp, rest);
+            // Wärmeraum der Puffersenken = der Speicherraum der Stunde. OHNE Puffersenke
+            // ist er 0, und die Fahrweise rechnet wie ein Pendelspeicher mit Volumen 0 -
+            // also genau wie im Altpfad ohne Pendelspeicher.
+            double raum = PufferRaum(pvUeberschuss, wsTyp, rest);
 
             double gedeckt, geladen;
             Fahrweise_Stunde(stunde, verfuegbar, raum, out gedeckt, out geladen);
@@ -1150,16 +1202,117 @@ namespace WindowsFormsApplication1
             // ganze Wärmeraum. Damit bleibt für die anderen Lader alles frei, was das
             // BHKW nicht beansprucht, und der Bilanzraum ist unberührt: Es wird nichts
             // zusätzlich geladen, nur die Reihenfolge der Vergabe festgehalten.
-            if (geladen > 0 && Auftrag_Zweit != null && Auftrag_Zweit.Speicher != null)
+            //
+            // F11: Der verplante Raum verteilt sich auf MEHRERE Zielspeicher - in
+            // Auftragsreihenfolge, jede kWh genau einmal.
+            if (geladen > 0) ReservierungenSetzen(geladen);
+        }
+
+        /// <summary>
+        /// Verteilt die in Phase B verplante Lademenge auf die Zielspeicher und hält sie
+        /// dort fest (Befund N3, verallgemeinert mit F11).
+        ///
+        /// VERTEILREGEL: in AUFTRAGSREIHENFOLGE — die Liste steht nach Rang und innerhalb
+        /// eines Rangs in der Ladeordnung. Jeder Auftrag bekommt, was von der Menge noch
+        /// übrig ist, höchstens aber seinen eigenen Wärmeraum aus
+        /// <see cref="PufferRaum"/>. Damit ist jede kWh genau einmal reserviert, und die
+        /// Summe der Reservierungen ist die verplante Menge (der Wärmeraum der
+        /// Zuschaltentscheidung ist konstruktiv die Summe derselben Einzelräume, also
+        /// reicht er dafür immer aus).
+        ///
+        /// BEI GENAU EINEM AUFTRAG — jedes Bestandsprojekt mit Heizkreis-Hauptsenke und
+        /// einer Puffer-Zweitsenke — ist <c>anteil</c> die ganze Menge und die Buchung
+        /// Anweisung für Anweisung die bisherige.
+        /// </summary>
+        private void ReservierungenSetzen(double menge)
+        {
+            double offen = menge;
+
+            for (int i = 0; i < Auftraege.Count && offen > 0; i++)
             {
-                _reservierterSpeicher = Auftrag_Zweit.Speicher;
-                _reservierterSpeicher.Reservieren(geladen);
+                Ladeauftrag a = Auftraege[i];
+                if (a == null || a.Speicher == null) continue;
+                if (i >= _raumJeAuftrag.Length) break;
+
+                double raum = _raumJeAuftrag[i];
+                if (raum <= 0) continue;
+
+                double anteil = offen < raum ? offen : raum;
+                a.Speicher.Reservieren(anteil);
+                _reservierungen.Add(new Reservierung
+                {
+                    Auftrag = a,
+                    Speicher = a.Speicher,
+                    Menge = anteil
+                });
+                offen -= anteil;
             }
         }
 
         /// <summary>
-        /// Wärmeraum der Zweitsenke in Phase B — Ladefähigkeit PLUS Durchsatz
+        /// Gibt die für <paramref name="a"/> festgehaltene Ladefähigkeit wieder frei
+        /// (N3-Regel JE AUFTRAG, F11) — aufgerufen unmittelbar vor dem EIGENEN
+        /// Ladevorgang dieses Auftrags. Ohne Reservierung ein No-op.
+        ///
+        /// BETRAGSWEISE statt <c>ReservierungFreigeben()</c>: Zwei Aufträge können
+        /// denselben Behälter treffen, und dann darf der erste Ladevorgang die
+        /// Reservierung des zweiten nicht mit auflösen. Bei genau einer Reservierung ist
+        /// das Ergebnis dasselbe — <c>Reserviert</c> beginnt jede Stunde bei 0, der
+        /// abgezogene Betrag ist derselbe, der addiert wurde, und die Differenz ist exakt
+        /// 0 (Gleitkomma: <c>x − x</c>).
+        /// </summary>
+        private void ReservierungFreigeben(Ladeauftrag a)
+        {
+            for (int i = _reservierungen.Count - 1; i >= 0; i--)
+            {
+                Reservierung r = _reservierungen[i];
+                if (!ReferenceEquals(r.Auftrag, a)) continue;
+
+                if (r.Speicher != null)
+                {
+                    r.Speicher.Reserviert -= r.Menge;
+                    if (r.Speicher.Reserviert < 0) r.Speicher.Reserviert = 0;
+                }
+                _reservierungen.RemoveAt(i);
+            }
+        }
+
+        /// <summary>
+        /// WÄRMERAUM DER ZUSCHALTENTSCHEIDUNG aus den Puffersenken (Phase B, F11): die
+        /// Summe der Einzelräume ALLER Aufträge der Stufe, jeder mit seiner bereits
+        /// aufgelösten Obergrenze der Stunde.
+        ///
+        /// Nebenbei füllt die Methode <see cref="_raumJeAuftrag"/> — die Einzelwerte
+        /// braucht gleich <see cref="ReservierungenSetzen"/>, und sie ein zweites Mal zu
+        /// rechnen wäre falsch (siehe dort).
+        ///
+        /// <para>SUMMENREIHENFOLGE = RANGFOLGE, also Hauptsenke zuerst. Bei genau einem
+        /// Auftrag ist der Rückgabewert bitgleich der Einzelwert — die Summe beginnt bei
+        /// 0, und <c>0 + x</c> ist <c>x</c>. Damit rechnet jedes Bestandsprojekt (eine
+        /// oder zwei Senken je Anlage) unverändert.</para>
+        /// </summary>
+        private double PufferRaum(bool pvUeberschuss, string wsTyp, double[] rest)
+        {
+            if (Auftraege.Count != _raumJeAuftrag.Length)
+                _raumJeAuftrag = new double[Auftraege.Count];
+
+            double summe = 0;
+            for (int i = 0; i < Auftraege.Count; i++)
+            {
+                double raum = RaumJeAuftrag(Auftraege[i], pvUeberschuss, wsTyp, rest);
+                _raumJeAuftrag[i] = raum;
+                summe += raum;
+            }
+            return summe;
+        }
+
+        /// <summary>
+        /// Wärmeraum EINER Puffersenke in Phase B — Ladefähigkeit PLUS Durchsatz
         /// (Bilanzraum, Nutzerentscheidung zu Befund 4b-1).
+        ///
+        /// <para>PAKET S1 / F11: Die Regel ist unverändert die des früheren
+        /// <c>ZweitsenkenRaum</c>; sie gilt jetzt nur nicht mehr allein für den zweiten
+        /// Auftrag, sondern für jeden Auftrag der Stufe.</para>
         ///
         /// NACHARBEIT PAKET 6, BEFUND N5: Bis dahin ging hier nur die Ladefähigkeit ein.
         /// Ein voller Puffer hielt das BHKW damit an, obwohl er als hydraulische Weiche
@@ -1200,17 +1353,26 @@ namespace WindowsFormsApplication1
         /// Phase D nicht vergibt). Ohne Prozesswärmeanteil ist das Wert für Wert der
         /// bisherige Ausdruck <c>spWW ? rest_ww : rest_heiz</c>.</para>
         /// </summary>
-        private double ZweitsenkenRaum(bool pvUeberschuss, string wsTyp, double[] rest)
+        private double RaumJeAuftrag(Ladeauftrag a, bool pvUeberschuss, string wsTyp, double[] rest)
         {
-            if (Auftrag_Zweit == null || Auftrag_Zweit.Speicher == null) return 0;
+            if (a == null || a.Speicher == null) return 0;
 
-            SimulationPufferspeicher sp = Auftrag_Zweit.Speicher;
-            double ladefaehig = sp.Ladefaehigkeit(Auftrag_Zweit.ObergrenzeStunde(pvUeberschuss));
+            SimulationPufferspeicher sp = a.Speicher;
+            double ladefaehig = sp.Ladefaehigkeit(a.ObergrenzeStunde(pvUeberschuss));
             if (!LetzteBedarfsstufe) return ladefaehig;
 
             // D5a: Ein KOMBISPEICHER bedient beide Kanäle - er ist damit immer „der
             // eigene Kanal", ganz gleich, welchen Bedarfsanteil das BHKW deckt.
-            bool spWW = sp.IstBrauchwasserkanal;
+            //
+            // PAKET S1 (Restpunkt K2-O2): Die Kanalfrage geht jetzt über das KLASSEN-SET
+            // (BedientKanal) statt über die Anzeigerolle Verwendung. Für jeden über die
+            // Registry aufgebauten Speicher ist das derselbe Wert - dort halten Rolle und
+            // Set einander synchron, und ohne gepflegtes Set leitet BedientKanal es Wort
+            // für Wort aus derselben Verwendung ab. An dieser Stelle steht ohnehin fest,
+            // dass der Speicher KEIN Kombispeicher ist (die Oder-Kette prüft das zuerst),
+            // und ein Nicht-Kombi mit Brauchwasser im Set ist genau der reine
+            // Warmwasserspeicher, den IstBrauchwasserkanal gemeint hat.
+            bool spWW = sp.BedientKanal(Kanal.BRAUCHWASSER);
             bool eigenerKanal = sp.IstKombi ||
                                 (wsTyp != WaermequelleClass.SENKE_WARMWASSER &&
                                  wsTyp != WaermequelleClass.SENKE_HEIZUNG) ||
@@ -1237,6 +1399,15 @@ namespace WindowsFormsApplication1
         ///
         /// KEIN <see cref="Kaskadenschleife.SenkeAbziehen"/> — das ist der
         /// Doppelzählungs-Freibeweis.
+        ///
+        /// <para>PAKET S1 / F11 — BEWUSST NICHT MITGEZOGEN: Der Wärmeraum der reinen
+        /// Ladeanlage (Fahrweise in Phase C) bleibt der Bilanzraum des Speichers DIESES
+        /// Auftrags. Die Summenbildung über alle Puffersenken betrifft nach F11 allein
+        /// die Bedarfsphase; sie hier zu übernehmen würde die Ladefähigkeit der
+        /// Zweitsenke in die Zuschaltentscheidung ziehen, die heute nicht darin steckt —
+        /// also Bestandsprojekte mit Puffer-Hauptsenke und Puffer-Zweitsenke verändern.
+        /// Eine Stufe mit Puffer-Hauptsenke und mehr als zwei Senken schaltet deshalb
+        /// vorerst nur gegen ihren ersten Speicher zu (Restpunkt).</para>
         /// </summary>
         /// <returns>tatsächlich geladene Wärmemenge [kWh]</returns>
         public double Zweikanalig_Laden(Ladeauftrag a, int stunde, bool pvUeberschuss, double[] absehbar)
@@ -1249,13 +1420,12 @@ namespace WindowsFormsApplication1
 
             SimulationPufferspeicher sp = a.Speicher;
 
-            // BEFUND N3: Die in Phase B für DIESES Modul festgehaltene Ladefähigkeit
-            // wieder freigeben - sie war nur gegen die Erzeuger vor ihm gesperrt.
-            if (ReferenceEquals(_reservierterSpeicher, sp))
-            {
-                sp.ReservierungFreigeben();
-                _reservierterSpeicher = null;
-            }
+            // BEFUND N3, F11: Die in Phase B für GENAU DIESEN AUFTRAG festgehaltene
+            // Ladefähigkeit wieder freigeben - sie war nur gegen die Erzeuger vor ihm
+            // gesperrt. Unmittelbar vor dem EIGENEN Ladevorgang, nicht früher: Die
+            // Reservierungen der übrigen Aufträge bleiben stehen, bis diese an der Reihe
+            // sind.
+            ReservierungFreigeben(a);
 
             // D5a: Beim KOMBISPEICHER ist das Durchsatzbudget die Summe beider Kanäle —
             // die gemeinsame Fassung steht in der Kaskadenschleife und liefert ohne

@@ -96,10 +96,44 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Senkenzuordnungen aller Wärmeerzeuger des Projekts (Konzept 6.1), je Lauf
-        /// neu geladen. Ausgewertet werden sie im zweikanaligen Weg
-        /// (<c>Kaskadenkontext.SenkeJeModul</c>); der einkanalige Altpfad liest sie nicht.
+        /// neu geladen — die Fassung mit Haupt- und optionaler Zweitsenke.
+        ///
+        /// <b>SEIT PAKET S1 nur noch Übergangsbestand:</b> Der dreikanalige Weg rechnet
+        /// mit den GEORDNETEN SENKENLISTEN (<see cref="Senkenlisten"/>). Diese Liste
+        /// bleibt für das BHKW-Modul, das seinen Umbau auf n Senken je Stufe im eigenen
+        /// Paket bekommt, und fällt mit dem Altpfad (Paket A1).
         /// </summary>
         public List<Senkenzuordnung> senkenzuordnungen = new List<Senkenzuordnung>();
+
+        /// <summary>
+        /// GEORDNETE SENKENLISTEN aller Wärmeerzeuger des Projekts (Paket S1,
+        /// Konzept 5.1) — siehe <see cref="Senkenlisten"/>. <c>null</c> = in diesem Lauf
+        /// noch nicht gelesen.
+        /// </summary>
+        private List<Senkenliste> _senkenlisten;
+
+        /// <summary>
+        /// Die geordneten Senkenlisten dieses Laufs, beim ERSTEN Zugriff gelesen und
+        /// danach gehalten (Paket S1).
+        ///
+        /// <para><b>Warum verzögert.</b> Sie werden an drei Stellen gebraucht, deren
+        /// früheste VOR dem bisherigen Ladepunkt liegt: Der Registry-Aufbau fragt schon
+        /// nach den Senkenpuffern der Anlagen (<see cref="SenkenPufferDerAnlagen"/>), und
+        /// ein Puffer, den erst eine Zeile mit Rang 3 lädt, käme sonst gar nicht erst in
+        /// den Rechenpfad. Eine feste Ladezeile ganz am Anfang wäre die Alternative — sie
+        /// verschöbe aber die Reihenfolge der Protokollmeldungen des Laufs.</para>
+        ///
+        /// <para>Zurückgesetzt wird das Feld zu Beginn jedes Laufs (dort, wo auch
+        /// <see cref="senkenzuordnungen"/> neu gelesen wird); nie <c>null</c> als
+        /// Rückgabe.</para>
+        /// </summary>
+        public List<Senkenliste> Senkenlisten()
+        {
+            if (_senkenlisten == null)
+                _senkenlisten = WaermesenkeClass.SenkenlistenLaden(m_ID_Projekt);
+
+            return _senkenlisten;
+        }
 
         /// <summary>
         /// EFFEKTIVER Rechenweg des Laufs: <c>true</c> = Speicherstufen-Mechanik
@@ -371,6 +405,11 @@ namespace WindowsFormsApplication1
 
             m_ID_Projekt = ID_Projekt;
 
+            // PAKET S1: Die Senkenlisten des VORIGEN Laufs verwerfen. Gelesen werden sie
+            // beim ersten Zugriff (siehe Senkenlisten()) - der liegt im Registry-Aufbau
+            // und damit vor dem Ladepunkt der Senkenzuordnungen.
+            _senkenlisten = null;
+
             Array.Clear(Rest_Waermebedarf_stuendlich, 0, Rest_Waermebedarf_stuendlich.Length);
             Array.Clear(Rest_Strombedarf_viertelstuendlich, 0, Rest_Strombedarf_viertelstuendlich.Length);
             
@@ -454,8 +493,12 @@ namespace WindowsFormsApplication1
             simulation_wp.Extrapolation_Erlaubt =
                 (ctrl_konfig == null || ctrl_konfig.model == null) || ctrl_konfig.model.Extrapolation_erlaubt;
 
-            // Senkenzuordnungen des Projekts (Konzept 6.1) - ausgewertet nur im
-            // zweikanaligen Weg.
+            // Senkenzuordnungen des Projekts (Konzept 6.1) - Haupt- und Zweitsenke.
+            //
+            // PAKET S1: Der dreikanalige Weg rechnet mit den GEORDNETEN SENKENLISTEN
+            // (Senkenlisten(), Konzept 5.1). Diese Fassung bleibt für das BHKW-Modul, das
+            // seinen Umbau auf n Senken je Stufe im eigenen Paket bekommt; sie fällt mit
+            // dem Altpfad (Paket A1).
             senkenzuordnungen = WaermesenkeClass.SenkenLaden(m_ID_Projekt);
 
             // Hinweis zum Rechenweg (die Auswertung selbst steht weiter oben, vor dem
@@ -1113,17 +1156,37 @@ namespace WindowsFormsApplication1
         /// trotzdem auf den Heizkreis zeigen; solche Reste dürfen keine Speicherstufe
         /// auslösen, denn es entstünde kein einziger Ladeauftrag daraus.
         ///
+        /// PAKET S1: Maßgeblich sind die GEORDNETEN SENKENLISTEN — sie tragen alle Ränge,
+        /// die beiden Altspalten nur die ersten zwei. Der Spaltenweg bleibt als zweite
+        /// Prüfung darunter stehen: Er ist die Menge, mit der der Bestand diese Weiche
+        /// heute stellt, und ein Projekt soll durch S1 nicht aus der Speicherstufe fallen.
+        ///
         /// Dialogfrei über <see cref="StilleDb"/> (Konzept 13.4).
         /// </summary>
         private bool ErzeugerMitPufferSenke(int idType)
         {
             DataTable dt = StilleDb.Tabelle(
-                "SELECT WS_Ziel, WS_ID_Puffer, WS_Ziel2, WS_ID_Puffer2 FROM Tab_Energieanlagen " +
+                "SELECT ID, WS_Ziel, WS_ID_Puffer, WS_Ziel2, WS_ID_Puffer2 FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND ID_Type = ?",
                 StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt),
                 StilleDb.Par("@typ", OleDbType.Integer, idType));
 
             if (dt == null) return false;
+
+            // S1: erst über die Senkenlisten der Anlagen dieser Art.
+            foreach (DataRow r in dt.Rows)
+            {
+                int idAnlage = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                if (idAnlage <= 0) continue;
+
+                foreach (Senkenliste s in Senkenlisten())
+                {
+                    if (s == null || s.AnlagenID != idAnlage) continue;
+
+                    foreach (Senkenzeile z in s.Zeilen)
+                        if (z != null && z.IstPuffersenke && z.IDPuffer > 0) return true;
+                }
+            }
 
             foreach (DataRow r in dt.Rows)
             {
@@ -1239,7 +1302,7 @@ namespace WindowsFormsApplication1
             if (_solarInSchleife)
             {
                 Solar_Liste_Laden();
-                if (!simulation_solarthermie.Vorbereiten_Zweikanalig(m_ID_Projekt, senkenzuordnungen))
+                if (!simulation_solarthermie.Vorbereiten_Zweikanalig(m_ID_Projekt, Senkenlisten()))
                 {
                     m_bError = true;
                     return;
@@ -1255,7 +1318,7 @@ namespace WindowsFormsApplication1
                 simulation_spk.Strombedarf_stuendlich = (float[])stromStufeneingang.Clone();
                 simulation_spk.Vorgabe_Betriebsbereitschaft = nBereitschaft;
 
-                if (!simulation_spk.Vorbereiten_Zweikanalig(m_ID_Projekt, senkenzuordnungen))
+                if (!simulation_spk.Vorbereiten_Zweikanalig(m_ID_Projekt, Senkenlisten()))
                 {
                     // N10: Der zweikanalige Weg meldet dialogfrei über den Fehlerkanal.
                     if (!string.IsNullOrEmpty(simulation_spk.Fehlertext))
@@ -1337,23 +1400,29 @@ namespace WindowsFormsApplication1
         /// SICHERHEITSNETZ gegen den stillen Totalausfall eines Erzeugers
         /// (Paket-5-Nacharbeit, Befund N5).
         ///
-        /// Eine Anlage mit Puffer-HAUPTsenke deckt in Phase B nichts — sie lädt
-        /// ausschließlich (Konzept 6.3, Doppelzählungs-Freibeweis). Entsteht aus ihrer
-        /// Senkenreferenz aber kein Ladeauftrag, lädt sie auch nicht: Sie produziert das
-        /// ganze Jahr nichts, und bis zur Nacharbeit ohne jeden Hinweis (gemessen an
-        /// einem präparierten 1018: Kesselproduktion 34,27 -> 0 MWh). Ursachen sind
-        /// Konfigurationsfehler, die die Oberfläche nicht verhindert: eine
-        /// <c>WS_ID_Puffer</c>, die auf den Puffer eines FREMDEN Projekts zeigt, oder ein
-        /// Puffer, den die Registry aus anderen Gründen nicht in den Rechenpfad nimmt.
-        /// (Der zweite Fall — Puffer-Ziel ganz OHNE <c>WS_ID_Puffer</c> — wird schon eine
-        /// Schicht früher abgefangen, in <c>WaermesenkeClass.Normalisieren</c>.)
+        /// Eine Anlage OHNE Direktsenke deckt in Phase B nichts — sie lädt ausschließlich
+        /// (Konzept 5.2). Entsteht aus ihrer erstrangigen Puffersenke aber kein
+        /// Ladeauftrag, lädt sie auch nicht: Sie produziert das ganze Jahr nichts, und bis
+        /// zur Nacharbeit ohne jeden Hinweis (gemessen an einem präparierten 1018:
+        /// Kesselproduktion 34,27 -> 0 MWh). Ursachen sind Konfigurationsfehler, die die
+        /// Oberfläche nicht verhindert: eine Puffer-ID, die auf den Puffer eines FREMDEN
+        /// Projekts zeigt, oder ein Puffer, den die Registry aus anderen Gründen nicht in
+        /// den Rechenpfad nimmt. (Der Fall „Puffer-Ziel ganz OHNE Puffer" wird schon eine
+        /// Schicht früher abgefangen, in <c>WaermesenkeClass.SenkenlistenLaden</c>.)
         ///
-        /// Die Rückfallebene ist der Heizkreis: Die Anlage deckt Bedarf wie eine Anlage
-        /// ohne Puffer-Senke. Das ist die konservative Richtung — es entsteht keine
-        /// Wärme, die niemand angefordert hat — und es wird protokolliert.
+        /// Die Rückfallebene ist der Heizkreis: Die Zeile wird zur Direktsenke, die Anlage
+        /// deckt Bedarf wie eine Anlage ohne Puffer-Senke. Das ist die konservative
+        /// Richtung — es entsteht keine Wärme, die niemand angefordert hat — und es wird
+        /// protokolliert.
         ///
-        /// Die Zuordnungsobjekte sind dieselben Instanzen, mit denen die Module rechnen
-        /// (<c>senkenzuordnungen</c> ist die eine Quelle): Die Korrektur wirkt deshalb
+        /// <para><b>NUR RANG 1 wird zurückgestuft.</b> Eine höherrangige Puffersenke ohne
+        /// Ladeauftrag ist wirkungslos (die Ladephase iteriert die AUFTRÄGE, nicht die
+        /// Zeilen) und wird deshalb nur gemeldet. Sie zur Direktsenke zu machen wäre eine
+        /// Verhaltensänderung: Die Anlage bekäme eine Bedarfsdeckung, die sie vorher nicht
+        /// hatte.</para>
+        ///
+        /// Die Listenobjekte sind dieselben Instanzen, mit denen die Module rechnen
+        /// (<see cref="Senkenlisten"/> ist die eine Quelle): Die Korrektur wirkt deshalb
         /// auch für Solarthermie und Heizkessel, deren Modulaufbau bereits gelaufen ist.
         /// </summary>
         private void PufferSenkenOhneAuftragZurueckfallen(Kaskadenkontext kontext)
@@ -1361,9 +1430,10 @@ namespace WindowsFormsApplication1
             if (kontext == null) return;
 
             if (_wpInSchleife)
-                for (int i = 0; i < simulation_wp.wp_list.Count && i < kontext.SenkeJeModul.Count; i++)
+                for (int i = 0; i < simulation_wp.wp_list.Count &&
+                                i < kontext.SenkenlisteJeModul.Count; i++)
                     SenkeAufHeizkreisZurueck(kontext, simulation_wp.wp_list[i],
-                                             kontext.SenkeJeModul[i], "Wärmepumpe");
+                                             kontext.SenkenlisteJeModul[i], "Wärmepumpe");
 
             if (_solarInSchleife)
                 for (int f = 0; f < simulation_solarthermie.solar_anlagen_ids.Count; f++)
@@ -1375,25 +1445,27 @@ namespace WindowsFormsApplication1
                     SenkeAufHeizkreisZurueck(kontext, simulation_spk.spk_anlagen_ids[i],
                                              simulation_spk.KesselSenke(i), "Heizkessel");
 
+            // BHKW: Der Umbau seiner Stufe auf n Senken je Fahrweise ist ein eigenes
+            // Paket (Konzept 5.2/F11). Bis dahin trägt es eine Senkenzuordnung statt
+            // einer Senkenliste - dafür steht die Überladung darunter, und der Rückfall
+            // wirkt unverändert.
             if (_bhkwInSchleife)
                 for (int i = 0; i < simulation_bhkw.bhkw_anlagen_ids.Count; i++)
                     SenkeAufHeizkreisZurueck(kontext, simulation_bhkw.bhkw_anlagen_ids[i],
                                              simulation_bhkw.BhkwSenke(i), "BHKW");
         }
 
-        /// <summary>Eine Anlage ohne Ladeauftrag auf die Hauptsenke Heizkreis zurücksetzen.</summary>
+        /// <summary>
+        /// ÜBERGANGSFASSUNG für Module, die noch eine <see cref="Senkenzuordnung"/> statt
+        /// einer <see cref="Senkenliste"/> führen (BHKW bis zu seinem eigenen Paket).
+        /// Wortgleich mit der Fassung vor Paket S1; sie entfällt mit dem BHKW-Umbau.
+        /// </summary>
         private static void SenkeAufHeizkreisZurueck(Kaskadenkontext kontext, int idAnlage,
                                                      Senkenzuordnung z, string art)
         {
             if (z == null || z.Haupt == Senke.Heizkreis) return;
+            if (AuftragVorhanden(kontext, idAnlage, 1)) return;
 
-            foreach (Ladeauftrag a in kontext.LadenOhnePV)
-                if (a != null && !a.Zweitsenke && a.AnlagenID == idAnlage) return;
-
-            // Protokollkanal-Nachzug: WARNUNG statt bloßer Konsolenzeile - der Rückfall
-            // ist eine Ersatzannahme mit Ergebniswirkung (gemessen an einem präparierten
-            // 1018: Kesselproduktion 34,27 -> 0 MWh ohne ihn). Der Schlüssel je Anlage
-            // hält die Meldung eindeutig, auch wenn Haupt- und Zweitsenke beide fallen.
             SimulationProtokoll.Aktuell.WarnungEinmal(
                 "senke-ohne-ladeauftrag-" + idAnlage,
                 "Wärmesenke: Die Anlage " + idAnlage + " (" + art + ") ist als " +
@@ -1405,6 +1477,61 @@ namespace WindowsFormsApplication1
                 "produzieren.");
 
             z.Haupt = Senke.Heizkreis;
+        }
+
+        /// <summary>
+        /// Die ERSTRANGIGE Puffersenke einer Anlage auf den Heizkreis zurückstufen, wenn
+        /// aus ihr kein Ladeauftrag entstanden ist (siehe
+        /// <see cref="PufferSenkenOhneAuftragZurueckfallen"/>).
+        /// </summary>
+        private static void SenkeAufHeizkreisZurueck(Kaskadenkontext kontext, int idAnlage,
+                                                     Senkenliste liste, string art)
+        {
+            if (liste == null) return;
+
+            foreach (Senkenzeile z in liste.Zeilen)
+            {
+                if (z == null || !z.IstPuffersenke) continue;
+                if (AuftragVorhanden(kontext, idAnlage, z.Rang)) continue;
+
+                // Protokollkanal-Nachzug: WARNUNG statt bloßer Konsolenzeile - der
+                // Rückfall ist eine Ersatzannahme mit Ergebniswirkung (gemessen an einem
+                // präparierten 1018: Kesselproduktion 34,27 -> 0 MWh ohne ihn). Der
+                // Schlüssel je Anlage UND Rang hält die Meldung eindeutig, auch wenn
+                // mehrere Senken derselben Anlage fallen.
+                SimulationProtokoll.Aktuell.WarnungEinmal(
+                    "senke-ohne-ladeauftrag-" + idAnlage + "-" + z.Rang,
+                    "Wärmesenke: Die Anlage " + idAnlage + " (" + art + ") führt auf " +
+                    "Rang " + z.Rang + " das Ziel " + Senkenzuordnung.ZielAusSenke(z.Ziel) +
+                    " (Puffer " + z.IDPuffer + "), bekommt in diesem Lauf aber KEINEN " +
+                    "Ladeauftrag - der Puffer gehört zu einem anderen Projekt oder " +
+                    "rechnet nicht mit." +
+                    (z.Rang == 1
+                        ? " Die Anlage deckt deshalb den HEIZKREIS; ohne diesen Rückfall " +
+                          "würde sie das ganze Jahr nichts produzieren."
+                        : " Diese Senke bleibt in diesem Lauf unberücksichtigt."));
+
+                // Nur die erstrangige Zeile wird zur Direktsenke (Begründung am
+                // Methodenkopf des Aufrufers).
+                if (z.Rang != 1) continue;
+
+                z.Ziel = Senke.Heizkreis;
+                z.IDPuffer = 0;
+                z.Ladeprio = 0;
+                z.LadeprioPV = 0;
+                z.LadegrenzeProzent = 0;
+            }
+        }
+
+        /// <summary>true, wenn zu Anlage und Rang ein Ladeauftrag in diesem Lauf steht.</summary>
+        private static bool AuftragVorhanden(Kaskadenkontext kontext, int idAnlage, int rang)
+        {
+            if (kontext == null || kontext.LadenOhnePV == null) return false;
+
+            foreach (Ladeauftrag a in kontext.LadenOhnePV)
+                if (a != null && a.AnlagenID == idAnlage && a.Rang == rang) return true;
+
+            return false;
         }
 
         /// <summary>
@@ -1708,20 +1835,22 @@ namespace WindowsFormsApplication1
             // gepflegter Entladeprio gehört an seine Stelle in der Ordnung des Kanals
             // (Konzept 3.6) — dieselbe Reihenfolge, die die Pufferverwaltung anzeigt.
             //
-            // NACHARBEIT I-K2-1, verallgemeinert in Paket K2: über EntladetKanal, nicht
+            // NACHARBEIT I-K2-1, verallgemeinert in Paket K2: über das KLASSEN-SET, nicht
             // über IstBrauchwasserkanal. Ein Speicher mit mehrelementigem Klassen-Set
             // gehört in JEDE seiner Kanallisten; über IstBrauchwasserkanal (für einen
             // Kombispeicher false) landete er nur im Heizkanal, und die andere Hälfte fiel
             // still aus.
             for (int kanal = 0; kanal < Kanal.ANZAHL; kanal++)
-                if (Kaskadenschleife.EntladetKanal(sp, kanal))
+                if (sp.BedientKanal(kanal))
                     EntladeordnungEinsortieren(k.Entladeordnung(kanal), sp, kanal);
 
             Ladeauftrag a = new Ladeauftrag();
             a.Modulindex = 0;
             a.Erzeugerart = ProjektPuffer.TYP_BHKW;
             a.AnlagenID = simulation_bhkw.FuehrendeAnlage;
-            a.Zweitsenke = true;
+            // PAKET S1: Rang 2 - der Ersatz-Pendelspeicher war und bleibt die
+            // NACHRANGIGE Senke der BHKW-Stufe (bis K2 „Zweitsenke = true").
+            a.Rang = 2;
             a.Speicher = sp;
             a.Ladeprio = Ladeordnung.PRIO_BHKW;
             a.BMTyp = "";
@@ -1807,12 +1936,12 @@ namespace WindowsFormsApplication1
             a.ObergrenzePV = sp.SchwelleAus;
 
             List<Ladeordnung.LadeEintrag> eintraege =
-                Ladeordnung.Ladereihenfolge(m_ID_Projekt, sp.ID_Pufferspeicher);
+                Ladeordnung.Ladereihenfolge(m_ID_Projekt, sp.ID_Pufferspeicher, Senkenlisten());
             if (eintraege == null || eintraege.Count == 0) return;
 
             Ladeordnung.LadeEintrag eigen = null;
             foreach (Ladeordnung.LadeEintrag e in eintraege)
-                if (e.ID_Anlage == a.AnlagenID && e.Zweitsenke == a.Zweitsenke) { eigen = e; break; }
+                if (e.ID_Anlage == a.AnlagenID && e.Rang == a.Rang) { eigen = e; break; }
             if (eigen == null) return;
 
             // Ladereihenfolge hat die Obergrenzen ohne PV bereits aufgelöst.
@@ -1853,7 +1982,7 @@ namespace WindowsFormsApplication1
             simulation_spk.Strombedarf_stuendlich = Strombedarf;
             simulation_spk.Vorgabe_Betriebsbereitschaft = nBereitschaft;
 
-            if (!simulation_spk.Berechnung_Zweikanalig(m_ID_Projekt, kanaele, senkenzuordnungen) &&
+            if (!simulation_spk.Berechnung_Zweikanalig(m_ID_Projekt, kanaele, Senkenlisten()) &&
                 !string.IsNullOrEmpty(simulation_spk.Fehlertext))
                 Fehlertext = simulation_spk.Fehlertext;   // N10: dialogfrei melden
         }
@@ -1866,7 +1995,7 @@ namespace WindowsFormsApplication1
         {
             Solar_Liste_Laden();
 
-            simulation_solarthermie.Berechnung_Zweikanalig(m_ID_Projekt, kanaele, senkenzuordnungen);
+            simulation_solarthermie.Berechnung_Zweikanalig(m_ID_Projekt, kanaele, Senkenlisten());
         }
 
         /// <summary>
@@ -1999,17 +2128,17 @@ namespace WindowsFormsApplication1
             for (int kanal = 0; kanal < Kanal.ANZAHL; kanal++)
                 k.Entladen[kanal] = EntladeordnungAufbauen(k, kanal);
 
-            // --- 3. Senkenzuordnung je WP-Modul (Konzept 3.1) ------------------------
+            // --- 3. Senkenliste je WP-Modul (Konzept 5.1, Paket S1) ------------------
             for (int index = 0; index < simulation_wp.wp_list.Count; index++)
             {
                 int idAnlage = simulation_wp.wp_list[index];
-                Senkenzuordnung gefunden = null;
-                foreach (Senkenzuordnung z in senkenzuordnungen)
-                    if (z != null && z.AnlagenID == idAnlage) { gefunden = z; break; }
+                Senkenliste gefunden = null;
+                foreach (Senkenliste s in Senkenlisten())
+                    if (s != null && s.AnlagenID == idAnlage) { gefunden = s; break; }
 
-                // Ohne Zuordnungszeile gilt die Vorbelegung: Heizkreis, Bedarfsart Beides.
-                if (gefunden == null) gefunden = new Senkenzuordnung { AnlagenID = idAnlage };
-                k.SenkeJeModul.Add(gefunden);
+                // Ohne Zeile gilt die Rang-1-Invariante: eine Direktsenke Heizkreis/Beides.
+                if (gefunden == null) gefunden = Senkenliste.Vorbelegung(idAnlage);
+                k.SenkenlisteJeModul.Add(gefunden);
             }
 
             // --- 4. Ladeaufträge (Konzept 3.4/3.5) -----------------------------------
@@ -2058,11 +2187,14 @@ namespace WindowsFormsApplication1
         /// Heizungspuffer — er würde sonst seinen Vorrat an den Heizkreis abgeben,
         /// obwohl er die Wärmequelle der Wärmepumpe ist.
         ///
-        /// <para><b>ZUGEHÖRIGKEIT über <c>Kaskadenschleife.EntladetKanal</c></b> (Paket
-        /// K2) — also samt der Interimsregel I2. Sie ist dieselbe Frage, die das
+        /// <para><b>ZUGEHÖRIGKEIT über das KLASSEN-SET</b>
+        /// (<c>SimulationPufferspeicher.BedientKanal</c>). Sie ist dieselbe Frage, die das
         /// Durchsatzbudget stellt; beide MÜSSEN dieselbe Antwort bekommen, sonst
         /// verspräche die hydraulische Weiche einen Bedarf, den die Entladung nicht
-        /// bedienen darf (oder umgekehrt).</para>
+        /// bedienen darf (oder umgekehrt). Bis Paket K2 lief sie über
+        /// <c>Kaskadenschleife.EntladetKanal</c> und damit über die Interimsregel I2
+        /// („Heizungspuffer bedient auch Prozess"); die ist mit S1 abgerissen — den
+        /// Prozesskanal bedient nur noch ein Puffer mit <c>Nutzung_Prozess</c>.</para>
         ///
         /// <para><b>ORDNUNGSQUELLE des Prozesskanals.</b> <see cref="Ladeordnung"/> kennt
         /// nur die beiden persistierten Kanäle — eine Spalte „Verwendung = Prozess" gibt
@@ -2086,7 +2218,7 @@ namespace WindowsFormsApplication1
                 if (!sp.ImRechenpfad || sp.IstQuelle) continue;
                 // Ein Speicher steht in der Entladeordnung JEDES Kanals seines
                 // Klassen-Sets, je Kanal an der Stelle seiner Entladepriorität.
-                if (!Kaskadenschleife.EntladetKanal(sp, kanal)) continue;
+                if (!sp.BedientKanal(kanal)) continue;
                 if (!liste.Contains(sp)) liste.Add(sp);
             }
 
@@ -2096,7 +2228,7 @@ namespace WindowsFormsApplication1
             foreach (SimulationPufferspeicher sp in k.AlleSpeicher)
             {
                 if (sp == null || sp.IstQuelle) continue;
-                if (!Kaskadenschleife.EntladetKanal(sp, kanal)) continue;
+                if (!sp.BedientKanal(kanal)) continue;
                 if (liste.Contains(sp)) continue;
 
                 Protokoll.HinweisEinmal("entladeordnung-nachtrag-" + kanalname + "-" +
@@ -2119,10 +2251,12 @@ namespace WindowsFormsApplication1
         {
             if (kanal == Kanal.BRAUCHWASSER)
                 return Ladeordnung.Entladereihenfolge(m_ID_Projekt,
-                                                      WaermesenkeClass.VERWENDUNG_BRAUCHWASSER);
+                                                      WaermesenkeClass.VERWENDUNG_BRAUCHWASSER,
+                                                      Senkenlisten());
 
             List<Ladeordnung.EntladeEintrag> liste =
-                Ladeordnung.Entladereihenfolge(m_ID_Projekt, WaermesenkeClass.VERWENDUNG_HEIZUNG);
+                Ladeordnung.Entladereihenfolge(m_ID_Projekt, WaermesenkeClass.VERWENDUNG_HEIZUNG,
+                                               Senkenlisten());
 
             if (kanal != Kanal.PROZESS) return liste;
 
@@ -2134,7 +2268,8 @@ namespace WindowsFormsApplication1
             bool ergaenzt = false;
             foreach (Ladeordnung.EntladeEintrag e in
                      Ladeordnung.Entladereihenfolge(m_ID_Projekt,
-                                                    WaermesenkeClass.VERWENDUNG_BRAUCHWASSER))
+                                                    WaermesenkeClass.VERWENDUNG_BRAUCHWASSER,
+                                                    Senkenlisten()))
             {
                 if (Ladeordnung.Position(liste, e.ID_Puffer) > 0) continue;
                 liste.Add(e);
@@ -2173,8 +2308,12 @@ namespace WindowsFormsApplication1
             {
                 if (sp == null || sp.IstQuelle || sp.ID_Pufferspeicher <= 0) continue;
 
+                // PAKET S1: aus den GEORDNETEN SENKENLISTEN. Ein Ladeauftrag entsteht je
+                // PUFFER-SENKENZEILE, nicht mehr je Spaltenpaar - damit sind mehr als
+                // zwei Senken je Anlage abbildbar. Sortierung und Obergrenzen-Auflösung
+                // sind dieselben wie zuvor (Ladeordnung 3.4).
                 List<Ladeordnung.LadeEintrag> proPuffer =
-                    Ladeordnung.Ladereihenfolge(m_ID_Projekt, sp.ID_Pufferspeicher);
+                    Ladeordnung.Ladereihenfolge(m_ID_Projekt, sp.ID_Pufferspeicher, Senkenlisten());
                 List<Ladeordnung.LadeEintrag> gerechnet = new List<Ladeordnung.LadeEintrag>();
 
                 foreach (Ladeordnung.LadeEintrag e in proPuffer)
@@ -2192,7 +2331,9 @@ namespace WindowsFormsApplication1
                     a.Modulindex = modulindex;
                     a.Erzeugerart = e.ID_Type;
                     a.AnlagenID = e.ID_Anlage;
-                    a.Zweitsenke = e.Zweitsenke;
+                    // PAKET S1: der RANG der Senkenzeile steuert die Ladephase; das
+                    // frühere Zweitsenken-Kennzeichen leitet sich daraus ab.
+                    a.Rang = e.Rang;
                     a.Speicher = sp;
                     // Ladeordnung führt die Obergrenze in PROZENT, der Speicher als Anteil.
                     // Sie ist nach ObergrenzenAufloesen immer > 0 (eigene Ladegrenze, sonst
@@ -3265,15 +3406,17 @@ namespace WindowsFormsApplication1
                 if (ProjektPuffer.IstTemperaturpaar(v, r)) { vorlauf = v; ruecklauf = r; return true; }
             }
 
-            // 2. Der SENKENpuffer des Kessels.
-            Senkenzuordnung z = simulation_spk.KesselSenke(index);
-            if (z != null)
+            // 2. Der SENKENpuffer des Kessels — seit Paket S1 über seine SENKENLISTE, in
+            //    RANGFOLGE. Mit zwei Senken (jedes migrierte Bestandsprojekt) ist das
+            //    Zeile für Zeile die bisherige Reihenfolge „Hauptsenke, dann Zweitsenke".
+            Senkenliste senken = simulation_spk.KesselSenke(index);
+            if (senken != null)
             {
-                foreach (int idPuffer in new[] { z.IDPufferHaupt, z.IDPufferZweit })
+                foreach (Senkenzeile z in senken.Zeilen)
                 {
-                    if (idPuffer <= 0) continue;
+                    if (z == null || !z.IstPuffersenke || z.IDPuffer <= 0) continue;
 
-                    WaermesenkeClass.PufferInfo p = WaermesenkeClass.PufferLesen(idPuffer);
+                    WaermesenkeClass.PufferInfo p = WaermesenkeClass.PufferLesen(z.IDPuffer);
                     if (p == null || !ProjektPuffer.IstTemperaturpaar(p.Vorlauf, p.Ruecklauf)) continue;
 
                     vorlauf = p.Vorlauf;
@@ -3408,6 +3551,25 @@ namespace WindowsFormsApplication1
                     ids.Add(StilleDb.Zahl(StilleDb.Feld(r, "WS_ID_Puffer")));
                     ids.Add(StilleDb.Zahl(StilleDb.Feld(r, "WS_ID_Puffer2")));
                 }
+            }
+
+            // PAKET S1: dazu die Puffer der GEORDNETEN SENKENLISTEN - ein Speicher, den
+            // erst eine Zeile mit Rang 3 lädt, steht in keiner der beiden Altspalten und
+            // käme sonst weder in die Registry noch in den Rechenpfad.
+            //
+            // AUSDRÜCKLICH ERGÄNZEND, nicht ersetzend: Die Altspalten bleiben die Quelle
+            // der bisherigen Menge, samt der Altdaten-Reste (eine WS_ID_Puffer, deren
+            // WS_Ziel längst wieder auf den Heizkreis zeigt). Diese Reste sind heute in
+            // der Registry und damit in Tab_ErgebnisPufferspeicher; sie hier
+            // herauszufiltern wäre eine Ergebnisänderung ohne Auftrag. Auf migriertem
+            // Bestand fügt die Schleife nichts hinzu, was nicht schon dastünde.
+            foreach (Senkenliste s in Senkenlisten())
+            {
+                if (s == null) continue;
+
+                foreach (Senkenzeile z in s.Zeilen)
+                    if (z != null && z.IstPuffersenke && z.IDPuffer > 0 && !ids.Contains(z.IDPuffer))
+                        ids.Add(z.IDPuffer);
             }
 
             return ids;
