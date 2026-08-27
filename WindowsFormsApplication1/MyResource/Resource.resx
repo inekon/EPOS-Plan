@@ -1625,8 +1625,14 @@ Beide zeigen auf {0} „{1}".</value>
   <data name="SIMENG_DB_ZUGRIFF_WAEHREND_LAUF" xml:space="preserve">
     <value>Datenbankzugriff während des Laufs: {0}</value>
   </data>
+  <data name="SIMENG_ENERGIEPROBE_KANAELE" xml:space="preserve">
+    <value>Energieprobe Kanalbildung: In {0} von 8760 Stunden weicht die Summe der drei Bedarfskanäle vom unabhängig gerechneten Gesamtbedarf ab (größte Abweichung {1} kWh). Die Kanalaufteilung des Wärmebedarfs ist zu prüfen.</value>
+  </data>
   <data name="SIMENG_ERGEBNIS_NICHT_GESPEICHERT" xml:space="preserve">
     <value>Das Simulationsergebnis konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="SIMENG_KALENDER_WOCHENENDE_UNBESTIMMT" xml:space="preserve">
+    <value>Kalender: In den Klimadaten ist in den ersten 14 Tagen kein Wochenende (Samstag und Sonntag) erkennbar. Die Bedarfsprofile werden deshalb wie bisher ab Sonntag als 1. Januar über das Jahr verteilt.</value>
   </data>
   <data name="SIMENG_KEINE_KLIMAREGION" xml:space="preserve">
     <value>Für Projekt {0} ist keine Klimaregion gesetzt.</value>
@@ -1664,14 +1670,26 @@ Beide zeigen auf {0} „{1}".</value>
   <data name="SIMENG_PENDELSPEICHER_ZEILE_FEHLT" xml:space="preserve">
     <value>BHKW-Pendelspeicher: Für Projekt {0} ist ein Volumen von {1} l bekannt, aber es gibt keine Puffer-Zeile „{2}". Der Lauf wurde abgebrochen, damit das BHKW nicht stillschweigend ohne Speicher rechnet.</value>
   </data>
+  <data name="SIMENG_PRAEFIX_BRAUCHWASSER" xml:space="preserve">
+    <value>Brauchwasser: </value>
+  </data>
   <data name="SIMENG_PRAEFIX_HEIZKESSEL" xml:space="preserve">
     <value>Heizkessel: </value>
+  </data>
+  <data name="SIMENG_PRAEFIX_PROZESSWAERME" xml:space="preserve">
+    <value>Prozesswärme: </value>
   </data>
   <data name="SIMENG_PRAEFIX_STROMBEDARF" xml:space="preserve">
     <value>Strombedarf: </value>
   </data>
   <data name="SIMENG_PRAEFIX_WAERMEPUMPE" xml:space="preserve">
     <value>Wärmepumpe: </value>
+  </data>
+  <data name="SIMENG_PROFIL_MONATSSUMME_NULL" xml:space="preserve">
+    <value>{0}Die zwölf Monatswerte des Eintrags '{1}' summieren sich zu 0. Der im Projekt hinterlegte Jahresverbrauch lässt sich darauf nicht verteilen; seine Rechnung entfällt und sein Anteil bleibt 0.</value>
+  </data>
+  <data name="SIMENG_PROFIL_WOCHENPROFIL_NULL" xml:space="preserve">
+    <value>{0}Das Wochenprofil des Typs '{1}' (Eintrag '{2}') enthält nur Nullwerte. Die Verteilung über das Jahr wäre eine Division durch 0; seine Rechnung entfällt und sein Anteil bleibt 0.</value>
   </data>
   <data name="SIMENG_PROZESSWAERME_TYP_UNDEFINIERT" xml:space="preserve">
     <value>Prozesswärme: Der Typ des Prozesses '{0}' ist nicht definiert. Die Prozesswärme-Rechnung wurde abgebrochen; ihr Anteil bleibt 0.</value>
@@ -1696,6 +1714,15 @@ Beide zeigen auf {0} „{1}".</value>
   </data>
   <data name="SIMENG_SPEICHERN_DES_ERGEBNISSES" xml:space="preserve">
     <value>Speichern des Ergebnisses: {0}</value>
+  </data>
+  <data name="SIMENG_STROMPROFIL_KOPF_FEHLT" xml:space="preserve">
+    <value>Strombedarf: Zum Stromprofil '{0}' ist kein Datensatz hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0.</value>
+  </data>
+  <data name="SIMENG_STROMPROFIL_TYP_UNDEFINIERT" xml:space="preserve">
+    <value>Strombedarf: Der Typ des Stromprofils '{0}' ist nicht definiert. Die Rechnung wurde abgebrochen; ihr Anteil bleibt 0.</value>
+  </data>
+  <data name="SIMENG_STROMPROFIL_TYPPROFIL_FEHLT" xml:space="preserve">
+    <value>Strombedarf: Zum Typ '{0}' des Stromprofils '{1}' ist kein Wochenprofil hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0.</value>
   </data>
   <data name="SIMENG_STROMPROFIL_ZULETZT_BEARBEITET" xml:space="preserve">
     <value> (zuletzt bearbeitet: Stromprofil '{0}')</value>
@@ -7920,5 +7947,17 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
   </data>
   <data name="SIMENG_BRAUCHWASSER_TYPPROFIL_FEHLT" xml:space="preserve">
     <value>Brauchwasser: Zum Typ '{0}' des Eintrags '{1}' ist im Projekt kein Wochenprofil hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0.</value>
+  </data>
+  <data name="KANAL_LABEL" xml:space="preserve">
+    <value>Kanal</value>
+  </data>
+  <data name="KANAL_HEIZUNG_ANZEIGE" xml:space="preserve">
+    <value>Heizung</value>
+  </data>
+  <data name="KANAL_BRAUCHWASSER_ANZEIGE" xml:space="preserve">
+    <value>Brauchwasser</value>
+  </data>
+  <data name="KANAL_PROZESS_ANZEIGE" xml:space="preserve">
+    <value>Prozesswärme</value>
   </data>
 </root>

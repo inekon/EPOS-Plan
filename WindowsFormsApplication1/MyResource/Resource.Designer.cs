@@ -4806,6 +4806,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser ähnelt.
+        /// </summary>
+        public static string KANAL_BRAUCHWASSER_ANZEIGE {
+            get {
+                return ResourceManager.GetString("KANAL_BRAUCHWASSER_ANZEIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizung ähnelt.
+        /// </summary>
+        public static string KANAL_HEIZUNG_ANZEIGE {
+            get {
+                return ResourceManager.GetString("KANAL_HEIZUNG_ANZEIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kanal ähnelt.
+        /// </summary>
+        public static string KANAL_LABEL {
+            get {
+                return ResourceManager.GetString("KANAL_LABEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme ähnelt.
+        /// </summary>
+        public static string KANAL_PROZESS_ANZEIGE {
+            get {
+                return ResourceManager.GetString("KANAL_PROZESS_ANZEIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aufschläge in der Wirtschaftlichkeit berücksichtigen ähnelt.
         /// </summary>
         public static string KDLG_AUFSCHLAG_ANWENDEN {
@@ -17392,6 +17428,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieprobe Kanalbildung: In {0} von 8760 Stunden weicht die Summe der drei Bedarfskanäle vom unabhängig gerechneten Gesamtbedarf ab (größte Abweichung {1} kWh). Die Kanalaufteilung des Wärmebedarfs ist zu prüfen. ähnelt.
+        /// </summary>
+        public static string SIMENG_ENERGIEPROBE_KANAELE {
+            get {
+                return ResourceManager.GetString("SIMENG_ENERGIEPROBE_KANAELE", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Simulationsergebnis konnte nicht gespeichert werden. ähnelt.
         /// </summary>
         public static string SIMENG_ERGEBNIS_NICHT_GESPEICHERT {
@@ -17399,7 +17444,16 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIMENG_ERGEBNIS_NICHT_GESPEICHERT", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender: In den Klimadaten ist in den ersten 14 Tagen kein Wochenende (Samstag und Sonntag) erkennbar. Die Bedarfsprofile werden deshalb wie bisher ab Sonntag als 1. Januar über das Jahr verteilt. ähnelt.
+        /// </summary>
+        public static string SIMENG_KALENDER_WOCHENENDE_UNBESTIMMT {
+            get {
+                return ResourceManager.GetString("SIMENG_KALENDER_WOCHENENDE_UNBESTIMMT", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Für Projekt {0} ist keine Klimaregion gesetzt. ähnelt.
         /// </summary>
@@ -17509,6 +17563,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser:  ähnelt.
+        /// </summary>
+        public static string SIMENG_PRAEFIX_BRAUCHWASSER {
+            get {
+                return ResourceManager.GetString("SIMENG_PRAEFIX_BRAUCHWASSER", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel:  ähnelt.
         /// </summary>
         public static string SIMENG_PRAEFIX_HEIZKESSEL {
@@ -17516,7 +17579,16 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIMENG_PRAEFIX_HEIZKESSEL", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme:  ähnelt.
+        /// </summary>
+        public static string SIMENG_PRAEFIX_PROZESSWAERME {
+            get {
+                return ResourceManager.GetString("SIMENG_PRAEFIX_PROZESSWAERME", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf:  ähnelt.
         /// </summary>
@@ -17525,7 +17597,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIMENG_PRAEFIX_STROMBEDARF", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe:  ähnelt.
         /// </summary>
@@ -17534,7 +17606,25 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIMENG_PRAEFIX_WAERMEPUMPE", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}Die zwölf Monatswerte des Eintrags &apos;{1}&apos; summieren sich zu 0. Der im Projekt hinterlegte Jahresverbrauch lässt sich darauf nicht verteilen; seine Rechnung entfällt und sein Anteil bleibt 0. ähnelt.
+        /// </summary>
+        public static string SIMENG_PROFIL_MONATSSUMME_NULL {
+            get {
+                return ResourceManager.GetString("SIMENG_PROFIL_MONATSSUMME_NULL", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}Das Wochenprofil des Typs &apos;{1}&apos; (Eintrag &apos;{2}&apos;) enthält nur Nullwerte. Die Verteilung über das Jahr wäre eine Division durch 0; seine Rechnung entfällt und sein Anteil bleibt 0. ähnelt.
+        /// </summary>
+        public static string SIMENG_PROFIL_WOCHENPROFIL_NULL {
+            get {
+                return ResourceManager.GetString("SIMENG_PROFIL_WOCHENPROFIL_NULL", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme: Zum Prozess &apos;{0}&apos; ist im Projekt kein Datensatz hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0. ähnelt.
         /// </summary>
@@ -17697,6 +17787,33 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf: Zum Stromprofil &apos;{0}&apos; ist kein Datensatz hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0. ähnelt.
+        /// </summary>
+        public static string SIMENG_STROMPROFIL_KOPF_FEHLT {
+            get {
+                return ResourceManager.GetString("SIMENG_STROMPROFIL_KOPF_FEHLT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf: Der Typ des Stromprofils &apos;{0}&apos; ist nicht definiert. Die Rechnung wurde abgebrochen; ihr Anteil bleibt 0. ähnelt.
+        /// </summary>
+        public static string SIMENG_STROMPROFIL_TYP_UNDEFINIERT {
+            get {
+                return ResourceManager.GetString("SIMENG_STROMPROFIL_TYP_UNDEFINIERT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf: Zum Typ &apos;{0}&apos; des Stromprofils &apos;{1}&apos; ist kein Wochenprofil hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0. ähnelt.
+        /// </summary>
+        public static string SIMENG_STROMPROFIL_TYPPROFIL_FEHLT {
+            get {
+                return ResourceManager.GetString("SIMENG_STROMPROFIL_TYPPROFIL_FEHLT", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die  (zuletzt bearbeitet: Stromprofil &apos;{0}&apos;) ähnelt.
         /// </summary>

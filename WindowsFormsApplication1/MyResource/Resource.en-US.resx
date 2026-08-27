@@ -1610,8 +1610,14 @@ Both point to {0} "{1}".</value>
   <data name="SIMENG_DB_ZUGRIFF_WAEHREND_LAUF" xml:space="preserve">
     <value>Database access during the run: {0}</value>
   </data>
+  <data name="SIMENG_ENERGIEPROBE_KANAELE" xml:space="preserve">
+    <value>Energy check of the channel split: in {0} of 8760 hours the sum of the three demand channels deviates from the independently calculated total demand (largest deviation {1} kWh). The channel split of the heat demand needs to be checked.</value>
+  </data>
   <data name="SIMENG_ERGEBNIS_NICHT_GESPEICHERT" xml:space="preserve">
     <value>The simulation result could not be saved.</value>
+  </data>
+  <data name="SIMENG_KALENDER_WOCHENENDE_UNBESTIMMT" xml:space="preserve">
+    <value>Calendar: no weekend (Saturday and Sunday) can be identified in the first 14 days of the climate data. The demand profiles are therefore distributed over the year as before, starting with Sunday as 1 January.</value>
   </data>
   <data name="SIMENG_KEINE_KLIMAREGION" xml:space="preserve">
     <value>No climate region is set for project {0}.</value>
@@ -1649,14 +1655,26 @@ Both point to {0} "{1}".</value>
   <data name="SIMENG_PENDELSPEICHER_ZEILE_FEHLT" xml:space="preserve">
     <value>CHP buffer storage: for project {0} a volume of {1} l is known, but there is no buffer storage record "{2}". The run was aborted so that the CHP unit does not silently calculate without storage.</value>
   </data>
+  <data name="SIMENG_PRAEFIX_BRAUCHWASSER" xml:space="preserve">
+    <value>Domestic hot water: </value>
+  </data>
   <data name="SIMENG_PRAEFIX_HEIZKESSEL" xml:space="preserve">
     <value>Boiler: </value>
+  </data>
+  <data name="SIMENG_PRAEFIX_PROZESSWAERME" xml:space="preserve">
+    <value>Process heat: </value>
   </data>
   <data name="SIMENG_PRAEFIX_STROMBEDARF" xml:space="preserve">
     <value>Electricity demand: </value>
   </data>
   <data name="SIMENG_PRAEFIX_WAERMEPUMPE" xml:space="preserve">
     <value>Heat pump: </value>
+  </data>
+  <data name="SIMENG_PROFIL_MONATSSUMME_NULL" xml:space="preserve">
+    <value>{0}the twelve monthly values of the entry '{1}' add up to 0. The annual consumption stored in the project cannot be distributed over them; its calculation is skipped and its share remains 0.</value>
+  </data>
+  <data name="SIMENG_PROFIL_WOCHENPROFIL_NULL" xml:space="preserve">
+    <value>{0}the weekly profile of type '{1}' (entry '{2}') contains only zero values. Distributing it over the year would be a division by 0; its calculation is skipped and its share remains 0.</value>
   </data>
   <data name="SIMENG_PROZESSWAERME_TYP_UNDEFINIERT" xml:space="preserve">
     <value>Process heat: the type of the process '{0}' is not defined. The process heat calculation was aborted; its share remains 0.</value>
@@ -1681,6 +1699,15 @@ Both point to {0} "{1}".</value>
   </data>
   <data name="SIMENG_SPEICHERN_DES_ERGEBNISSES" xml:space="preserve">
     <value>Saving the result: {0}</value>
+  </data>
+  <data name="SIMENG_STROMPROFIL_KOPF_FEHLT" xml:space="preserve">
+    <value>Electricity demand: no record is stored for the electricity profile '{0}'. Its calculation is skipped; its share remains 0.</value>
+  </data>
+  <data name="SIMENG_STROMPROFIL_TYP_UNDEFINIERT" xml:space="preserve">
+    <value>Electricity demand: the type of the electricity profile '{0}' is not defined. The calculation was aborted; its share remains 0.</value>
+  </data>
+  <data name="SIMENG_STROMPROFIL_TYPPROFIL_FEHLT" xml:space="preserve">
+    <value>Electricity demand: no weekly profile is stored for type '{0}' of the electricity profile '{1}'. Its calculation is skipped; its share remains 0.</value>
   </data>
   <data name="SIMENG_STROMPROFIL_ZULETZT_BEARBEITET" xml:space="preserve">
     <value> (last processed: electricity profile '{0}')</value>
@@ -7914,5 +7941,17 @@ They typically stem from a variant copy without this trade and keep entering the
   </data>
   <data name="SIMENG_BRAUCHWASSER_TYPPROFIL_FEHLT" xml:space="preserve">
     <value>Domestic hot water: no weekly profile is stored in the project for type '{0}' of entry '{1}'. Its calculation is skipped; its share remains 0.</value>
+  </data>
+  <data name="KANAL_LABEL" xml:space="preserve">
+    <value>Channel</value>
+  </data>
+  <data name="KANAL_HEIZUNG_ANZEIGE" xml:space="preserve">
+    <value>Heating</value>
+  </data>
+  <data name="KANAL_BRAUCHWASSER_ANZEIGE" xml:space="preserve">
+    <value>Domestic hot water</value>
+  </data>
+  <data name="KANAL_PROZESS_ANZEIGE" xml:space="preserve">
+    <value>Process heat</value>
   </data>
 </root>

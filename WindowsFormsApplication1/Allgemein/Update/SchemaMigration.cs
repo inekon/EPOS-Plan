@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 47;
+        public const int ZIEL_VERSION = 48;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1470,6 +1470,28 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_41_PROJEKTPHOTOVOLTAIK = 41;
 
+        /// <summary>
+        /// Schritt 48 - <b>Paket K1</b> (Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 4.2 und § 9, Entscheidung F18 vom 27.08.2026):
+        /// <c>Z_ProjektWaermebedarf.Kanal</c> — die KANALZUORDNUNG einer dem Projekt
+        /// zugeordneten externen Wärmeganglinie. Bis hierher lief jede importierte
+        /// Ganglinie ungefragt in den Heizbedarf; mit der Spalte kann der Anwender sie
+        /// als Brauchwasser- oder Prozesslast deklarieren
+        /// (<c>DbWerte.KANAL_HEIZUNG</c> / <c>_BRAUCHWASSER</c> / <c>_PROZESS</c>).
+        ///
+        /// <para>Zwei Teile wie in den Schritten 45 und 46: 48a die Spalte
+        /// (<see cref="SchemaKatalog.SPALTE_ZPW_KANAL"/>, TEXT 50), 48b die
+        /// verhaltensneutrale Vorbelegung aller Bestandszeilen auf
+        /// <c>DbWerte.KANAL_HEIZUNG</c> — der siebte DML-Schritt neben 5, 7, 9, 13, 15
+        /// und 17. Die Vorbelegung ist Bequemlichkeit, keine Bedingung: Jeder Leser
+        /// behandelt NULL und Leerwert ohnehin als Heizung.</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker): Das ALTER TABLE läuft in
+        /// try/catch, das UPDATE trifft beim Zweitlauf keine Zeile mehr
+        /// (<c>WHERE Kanal IS NULL</c>).</para>
+        /// </summary>
+        public const int SCHRITT_48_GANGLINIENKANAL = 48;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -2374,6 +2396,15 @@ namespace WindowsFormsApplication1
                         "abgeleitet werden - Variantenkopien verlieren ihre " +
                         "Zuordnung sonst beim ersten Anlagen-Wizard-Lauf.",
                         Schritt_47_AnkerNachziehen),
+
+            // K1 (F18): Externe Waermeganglinien bekommen eine Kanalzuordnung.
+            // Begruendung und Idempotenzzusage bei der Schrittkonstanten.
+            new Schritt(SCHRITT_48_GANGLINIENKANAL,
+                        "Ganglinienkanal: Z_ProjektWaermebedarf.Kanal anlegen und den " +
+                        "Bestand verhaltensneutral auf 'Heizung' vorbelegen (Paket K1, F18)",
+                        "Die Kanalzuordnung der externen Waermeganglinien konnte nicht " +
+                        "angelegt werden - der Dreikanal-Bedarf braucht die Spalte.",
+                        Schritt_48_Ganglinienkanal),
         };
 
         // =================================================================================
@@ -6001,6 +6032,52 @@ namespace WindowsFormsApplication1
                     " Position(en) der jeweils ersten verbauten Anlage zugeordnet; " +
                     ohneAnlage + " Projekt-Komponenten ohne verbaute Anlage bleiben " +
                     "ohne Zuordnung (Ausweis \"ohne Anlagenzuordnung\").");
+            return true;
+        }
+
+        /// <summary>
+        /// F18 (27.08.2026): Kanalzuordnung der externen Wärmeganglinien. Die Spalte
+        /// wird angelegt (idempotent), dann bekommt jede Bestandszeile ohne Wert den
+        /// Kanal „Heizung" — genau der Weg, den die Ganglinie bisher nahm.
+        /// Anlass und Idempotenzzusage: <see cref="SCHRITT_48_GANGLINIENKANAL"/>.
+        /// </summary>
+        private static bool Schritt_48_Ganglinienkanal(Lauf l)
+        {
+            // --- 48a) Spalte ---------------------------------------------------------
+            // TEXT(50) statt eines kürzeren Feldes: Access kürzt beim UPDATE STILL auf
+            // die Feldbreite, statt einen Fehler zu melden - der längste Steuerwert
+            // ("Brauchwasser", 12 Zeichen) hat damit reichlich Luft, auch wenn L2
+            // später weitere Kanäle bringt.
+            try
+            {
+                using (var cmd = new OleDbCommand(
+                    "ALTER TABLE " + SchemaKatalog.Z_PROJEKTWAERMEBEDARF +
+                    " ADD COLUMN " + SchemaKatalog.SPALTE_ZPW_KANAL + " TEXT(50)", l.Conn))
+                    cmd.ExecuteNonQuery();
+            }
+            catch { /* Spalte existiert bereits */ }
+
+            object probe = Scalar(l,
+                "SELECT COUNT(*) FROM " + SchemaKatalog.Z_PROJEKTWAERMEBEDARF +
+                " WHERE " + SchemaKatalog.SPALTE_ZPW_KANAL + " IS NULL");
+            if (probe == null)
+            {
+                l.Zeile("Ganglinienkanal (Schritt 48): Spalte Kanal nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            // --- 48b) verhaltensneutrale Vorbelegung ---------------------------------
+            // Der Steuerwert als Literal statt als Parameter: Access bindet einen
+            // Textparameter in einem UPDATE ohne WHERE-Parameter zuverlaessig, der
+            // Literal-Weg ist aber der im Bestand gewaehlte (Schritte 44/46/47) und
+            // spart die ACE-Bindungsfalle ganz.
+            int vorbelegt = NonQuery(l,
+                "UPDATE " + SchemaKatalog.Z_PROJEKTWAERMEBEDARF +
+                " SET " + SchemaKatalog.SPALTE_ZPW_KANAL + " = '" + DbWerte.KANAL_HEIZUNG + "'" +
+                " WHERE " + SchemaKatalog.SPALTE_ZPW_KANAL + " IS NULL");
+
+            l.Zeile("Ganglinienkanal (Schritt 48): " + vorbelegt +
+                    " Ganglinienzuordnung(en) auf den Kanal Heizung vorbelegt.");
             return true;
         }
 

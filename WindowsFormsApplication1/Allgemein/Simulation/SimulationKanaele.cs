@@ -375,6 +375,409 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
+    /// Die Bedarfskanäle des Dreikanalmodells als INDIZES (Konzept 4.1, Leitentscheidung
+    /// L2 — Paket K1).
+    ///
+    /// Kanäle sind bewusst indiziert und nicht boolesch: Jede Kanalstruktur des
+    /// Rechenkerns (Restbedarf, Entladeordnung, Durchsatzbudget, <c>SenkeAbziehen</c>)
+    /// läuft künftig über diesen Index. Damit ist der Rechenkern auf MEHRERE HEIZKREISE
+    /// vorbereitet — es wäre allein <see cref="ANZAHL"/> zu erhöhen; Persistenz und
+    /// Oberfläche kanalbezogener Parameter blieben ein eigener Ausbauschritt.
+    ///
+    /// Die Reihenfolge der Indizes ist KEINE Rangfolge. Die Knappheitsreihenfolge des
+    /// Abzugs (Konzept 4.3: Brauchwasser → Prozess → Heizung) ist eine eigene Größe und
+    /// gehört nach K2.
+    /// </summary>
+    public static class Kanal
+    {
+        /// <summary>Raumwärme: Gebäudewärme und externe Lastgänge ohne eigene Kanalangabe.</summary>
+        public const int HEIZUNG = 0;
+
+        /// <summary>Trinkwarmwasser: Brauchwasserprofile und als Brauchwasser gekennzeichnete Lastgänge.</summary>
+        public const int BRAUCHWASSER = 1;
+
+        /// <summary>Prozesswärme: Prozessprofile und als Prozesswärme gekennzeichnete Lastgänge.</summary>
+        public const int PROZESS = 2;
+
+        /// <summary>Zahl der Kanäle. Alle Kanalfelder werden über diese Konstante bemessen.</summary>
+        public const int ANZAHL = 3;
+
+        /// <summary>
+        /// Abbildung des PERSISTENZWERTES einer Kanalzuordnung auf den Kanalindex
+        /// (Drei-Schichten-Regel: in der Datenbank steht deutscher, eingefrorener Text —
+        /// <see cref="DbWerte.KANAL_HEIZUNG"/> &amp; Co., im Rechenkern der Index).
+        ///
+        /// LEER, <c>null</c> und JEDER UNBEKANNTE WERT ergeben den HEIZKANAL. Das ist die
+        /// altverhaltenserhaltende Vorbelegung aus Konzept 4.2/F18: Bestandsganglinien
+        /// tragen keine Kanalangabe und sind bis heute im Heizbedarf mitgelaufen.
+        ///
+        /// Der Vergleich ist bewusst toleranter als <see cref="Senkenzuordnung.SenkeAusZiel"/>
+        /// (dort ordinal): Der Wert kommt aus einer NEUEN Spalte über Bestandsdaten, in
+        /// der neben NULL auch Leerstrings und abweichende Groß-/Kleinschreibung
+        /// vorkommen können.
+        /// </summary>
+        public static int AusText(string kanal)
+        {
+            if (string.IsNullOrWhiteSpace(kanal)) return HEIZUNG;
+
+            string wert = kanal.Trim();
+            if (string.Equals(wert, DbWerte.KANAL_BRAUCHWASSER, StringComparison.OrdinalIgnoreCase))
+                return BRAUCHWASSER;
+            if (string.Equals(wert, DbWerte.KANAL_PROZESS, StringComparison.OrdinalIgnoreCase))
+                return PROZESS;
+            return HEIZUNG;
+        }
+
+        /// <summary>Sprechender Name eines Kanalindex — ausschließlich für Protokolltexte.</summary>
+        public static string Name(int kanal)
+        {
+            switch (kanal)
+            {
+                case BRAUCHWASSER: return DbWerte.KANAL_BRAUCHWASSER;
+                case PROZESS: return DbWerte.KANAL_PROZESS;
+                default: return DbWerte.KANAL_HEIZUNG;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Transportstruktur der DREIKANALIGEN Bedarfsrechnung (Konzept 4.1, Paket K1) —
+    /// die Verallgemeinerung von <see cref="Waermekanaele"/> auf <see cref="Kanal.ANZAHL"/>
+    /// indizierte Kanäle.
+    ///
+    /// Sie ersetzt <see cref="Waermekanaele"/> NICHT sofort: Die Kaskade rechnet bis
+    /// Paket K2 zweikanalig weiter und bekommt ihre Kanäle über die Übergangsabbildung
+    /// <c>SimulationWaermebedarf.Kanaele()</c>. Der Kanalsatz ist die Größe, an der K2
+    /// direkt andockt (<c>SimulationWaermebedarf.KanaeleDrei()</c>).
+    ///
+    /// Feldgrößen wie im gesamten Rechenkern fest verdrahtet: 8760 Stunden,
+    /// <c>float</c>-Vektoren mit Zwischenrechnung in <c>double</c>.
+    /// </summary>
+    public class Kanalsatz
+    {
+        /// <summary>Stundenzahl des Simulationsjahres — wie überall im Rechenkern fest.</summary>
+        public const int STUNDEN_JAHR = 8760;
+
+        /// <summary>
+        /// Bedarf bzw. Deckung je Kanal und Stunde [kWh]:
+        /// <c>Bedarf[<see cref="Kanal.HEIZUNG"/>][h]</c> usw. Die
+        /// <see cref="Kanal.ANZAHL"/> Vektoren werden im Konstruktor angelegt; das
+        /// äußere Feld ist <c>readonly</c>, damit niemand die Kanalstruktur austauscht —
+        /// die Vektoren selbst werden (Konvention des Rechenkerns) in-place beschrieben.
+        /// </summary>
+        public readonly float[][] Bedarf;
+
+        public Kanalsatz()
+        {
+            Bedarf = new float[Kanal.ANZAHL][];
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+                Bedarf[k] = new float[STUNDEN_JAHR];
+        }
+
+        /// <summary>Heizkanal — Kurzform für <c>Bedarf[Kanal.HEIZUNG]</c>.</summary>
+        public float[] Heizung { get { return Bedarf[Kanal.HEIZUNG]; } }
+
+        /// <summary>Brauchwasserkanal — Kurzform für <c>Bedarf[Kanal.BRAUCHWASSER]</c>.</summary>
+        public float[] Brauchwasser { get { return Bedarf[Kanal.BRAUCHWASSER]; } }
+
+        /// <summary>Prozesskanal — Kurzform für <c>Bedarf[Kanal.PROZESS]</c>.</summary>
+        public float[] Prozess { get { return Bedarf[Kanal.PROZESS]; } }
+
+        /// <summary>
+        /// Summe aller Kanäle je Stunde — die Sicht, mit der die (noch) einkanaligen
+        /// Rechenwege und alle Altleser des Gesamtbedarfs arbeiten (Dauerlinie, Maximum,
+        /// Monatswerte).
+        ///
+        /// Liefert bewusst einen NEUEN Vektor: Ein zurückgegebenes internes Array wäre in
+        /// diesem Rechenkern eine Aliasing-Falle — die Module überschreiben ihre
+        /// Eingangsvektoren in-place (Regel B0-2, Konzept 8), und ein solcher
+        /// Schreibzugriff würde sonst stillschweigend einen Kanal verändern.
+        ///
+        /// GERUNDET WIRD NACH JEDEM SCHRITT auf <c>float</c> — dieselbe Konvention wie in
+        /// <see cref="WPPlan.Core.BhkwPlan.VectorenAddieren"/>, mit der der Bestand seinen
+        /// Summenvektor aufgebaut hat. Die Addition läuft in Indexreihenfolge
+        /// (Heizung → Brauchwasser → Prozess); da float-Addition nicht assoziativ ist,
+        /// kann das Ergebnis um bis zu ein ULP neben einer anders geklammerten Summe
+        /// derselben Werte liegen (Konzept 4.2, Toleranz „1-ULP-Klasse").
+        /// </summary>
+        public float[] Summe()
+        {
+            float[] s = new float[STUNDEN_JAHR];
+            for (int h = 0; h < STUNDEN_JAHR; h++)
+            {
+                float w = Bedarf[0][h];
+                for (int k = 1; k < Kanal.ANZAHL; k++)
+                    w = (float)((double)w + Bedarf[k][h]);
+                s[h] = w;
+            }
+            return s;
+        }
+
+        /// <summary>
+        /// Verteilt einen KONSTANTEN Stundenbetrag (die Netzverluste, Konzept 4.2/F2)
+        /// je Stunde PROPORTIONAL zu den Kanalbedarfen dieser Stunde.
+        ///
+        /// Rechenregel je Stunde h und Kanal k &gt; 0:
+        /// <code>
+        ///   summe   = Σ Bedarf[i][h]
+        ///   anteil  = betrag · Bedarf[k][h] / summe
+        ///   Heizung = Heizung + (betrag − Σ anteil)      // Rest als DIFFERENZ
+        /// </code>
+        ///
+        /// RANDFÄLLE — bewusst festgelegt:
+        ///
+        /// 1. <b>Kanalanteil unbestimmt</b> (<c>summe ≤ 0</c>, also in dieser Stunde
+        ///    überhaupt kein Bedarf): Der Betrag geht VOLLSTÄNDIG auf den HEIZKANAL.
+        ///    Dieselbe Randfallregel wie in <see cref="Waermekanaele.Uebernehmen"/> und
+        ///    ausdrücklich so in Konzept 4.2 festgelegt.
+        /// 2. <b>Rundungsrest</b>: Der Heizanteil wird als DIFFERENZ gebildet, nicht als
+        ///    weiteres Produkt. Damit ist die aufgeschlagene Menge je Stunde exakt
+        ///    <c>betrag</c> — bis auf die float-Rundung der Rückaddition (dieselbe
+        ///    ULP-Zusage wie in <see cref="Waermekanaele.Uebernehmen"/>, Randfall 3).
+        ///
+        /// ERGEBNISWIRKUNG (F2, entschieden 27.08.2026): Das ersetzt die
+        /// Altverhaltens-Zuordnung „Netzverluste vollständig auf Heizung". Für jedes
+        /// Projekt MIT Brauchwasser- oder Prozessanteil ändert sich damit die
+        /// Kanalaufteilung — die Jahressumme bleibt unverändert.
+        /// </summary>
+        /// <param name="betragJeStunde">Netzverlust je Stunde [kWh], konstant über das Jahr.</param>
+        public void NetzverlusteVerteilen(float betragJeStunde)
+        {
+            float[] heiz = Bedarf[Kanal.HEIZUNG];
+
+            for (int h = 0; h < STUNDEN_JAHR; h++)
+            {
+                // Zwischenrechnung in double - Konvention des Rechenkerns.
+                double summe = 0;
+                for (int k = 0; k < Kanal.ANZAHL; k++)
+                    summe += Bedarf[k][h];
+
+                if (summe > 0)
+                {
+                    double vergeben = 0;
+                    for (int k = 0; k < Kanal.ANZAHL; k++)
+                    {
+                        if (k == Kanal.HEIZUNG) continue;
+                        float anteil = (float)(betragJeStunde * (Bedarf[k][h] / summe));
+                        Bedarf[k][h] = (float)((double)Bedarf[k][h] + anteil);
+                        vergeben += anteil;
+                    }
+                    heiz[h] = (float)((double)heiz[h] + ((double)betragJeStunde - vergeben));
+                }
+                else
+                {
+                    // Randfall 1: kein Kanalanteil bekannt -> alles auf den Heizkanal.
+                    heiz[h] = (float)((double)heiz[h] + betragJeStunde);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Tiefe Kopie: neue Vektoren mit denselben Werten. Nötig, weil die
+        /// Erzeugermodule ihre Eingangsvektoren in-place überschreiben — eine flache
+        /// Kopie würde den Zustand des Aufrufers mitverändern (Regel B0-2).
+        /// </summary>
+        public Kanalsatz Clone()
+        {
+            Kanalsatz k = new Kanalsatz();
+            for (int i = 0; i < Kanal.ANZAHL; i++)
+                Array.Copy(Bedarf[i], k.Bedarf[i], STUNDEN_JAHR);
+            return k;
+        }
+
+        /// <summary>
+        /// Toleranzmaßstab der Energieprobe (Konzept 4.2 und 11.3): „1-ULP-Klasse".
+        ///
+        /// EINE Stelle für Selbsttest UND Laufprobe — jede zweite Fassung wäre die
+        /// Stelle, an der beide auseinanderlaufen. Ab Betrag 1 gilt die relative Grenze
+        /// 1,2·10⁻⁷ (ein ulp im float-Raster, großzügig gefasst wie im bestehenden
+        /// <see cref="Waermekanaele.Selbsttest"/>), darunter die absolute Grenze 10⁻⁶ —
+        /// dort ist die relative Grenze kleiner als jede sinnvolle Wärmemenge.
+        ///
+        /// <paramref name="rundungsschritte"/> ist die ZAHL DER float-SPEICHERUNGEN, die
+        /// die beiden verglichenen Größen trennen. Vorbelegung 1 = die Grundregel oben,
+        /// unverändert. Sie zu kennen ist kein Feinschliff, sondern nötig: Wer eine
+        /// double-Referenz gegen eine Kette aus n float-Zwischenspeicherungen hält, misst
+        /// die Summe von n Rundungen. Der Grundwert 1,2·10⁻⁷ deckt rund zwei davon ab
+        /// (eine halbe ulp sind 6·10⁻⁸ relativ); bei fünf Rundungen — drei Kanalvektoren
+        /// plus zwei Additionen in <see cref="Summe"/> — schlägt eine feste
+        /// Ein-Schritt-Grenze in einem Teil der 8760 Stunden an, OHNE dass irgendetwas
+        /// falsch gerechnet wäre. Eine Probe, die in jedem Lauf grundlos meldet, ist
+        /// keine Probe mehr. Strukturfehler (ein verschluckter oder doppelt gebuchter
+        /// Anteil) liegen um Größenordnungen darüber und werden auch mit dem
+        /// aufgeweiteten Maßstab sicher gefunden.
+        /// </summary>
+        public static bool ErhaltungOk(double erwartet, double ist, int rundungsschritte = 1)
+        {
+            double abweichung = Math.Abs(ist - erwartet);
+            double betrag = Math.Abs(erwartet);
+            double grenze = betrag >= 1.0 ? betrag * 1.2e-7 : 1e-6;
+            if (rundungsschritte > 1) grenze *= rundungsschritte;
+            return abweichung <= grenze;
+        }
+
+        /// <summary>
+        /// Rundungsschritte zwischen einer double-Referenzsumme und
+        /// <see cref="Summe"/>: je Kanal eine Speicherung des Kanalwertes, dazu die
+        /// Additionen der Summenbildung. Der Maßstab der Energieprobe (11.3).
+        /// </summary>
+        public const int ERHALTUNG_SCHRITTE_SUMME = 2 * Kanal.ANZAHL - 1;
+
+#if DEBUG
+
+        /// <summary>
+        /// Selbsttest des Kanalsatzes — ausschließlich im Debug-Build, nach dem Muster
+        /// von <see cref="Waermekanaele.Selbsttest"/> (kein Testcode im Release-Assembly).
+        /// Wird nicht automatisch aufgerufen; das Ergebnis steht im Umsetzungsprotokoll
+        /// zu Paket K1.
+        ///
+        /// ZUGESICHERT wird (jede Verletzung setzt das Gesamtergebnis auf FEHLGESCHLAGEN):
+        ///   1. Konstruktion: <see cref="Kanal.ANZAHL"/> genullte Vektoren à 8760, alle
+        ///      voneinander getrennt
+        ///   2. <see cref="Summe"/> = schrittweise float-Summe der Kanäle und liefert
+        ///      einen EIGENEN Vektor (Aliasing-Probe)
+        ///   3. <see cref="Clone"/> kopiert alle Kanäle und trennt die Vektoren
+        ///   4. <see cref="NetzverlusteVerteilen"/>: Proportionalität (60/30/10 bei
+        ///      Betrag 10 → 6/3/1) und Randfall „kein Bedarf" (alles auf Heizung)
+        ///   5. ERHALTUNG über ein volles Jahr: nach der Verteilung gilt je Stunde
+        ///      Kanalsumme == vorherige Kanalsumme + Betrag, im Maßstab
+        ///      <see cref="ErhaltungOk"/> (1-ULP-Klasse) — dieselbe Zusage, die die
+        ///      Energieprobe des Laufs prüft (Konzept 11.3)
+        ///   6. <see cref="Kanal.AusText"/>: die drei Persistenzwerte, dazu leer, null
+        ///      und Unfug → Heizkanal
+        /// </summary>
+        public static string Selbsttest()
+        {
+            StringBuilder sb = new StringBuilder();
+            bool allesOk = true;
+
+            sb.AppendLine("Selbsttest Kanalsatz (Konzept 4.1/4.2, Paket K1)");
+            sb.AppendLine();
+
+            // --- 1. Konstruktion -------------------------------------------
+            Kanalsatz neu = new Kanalsatz();
+            bool bauOk = neu.Bedarf != null && neu.Bedarf.Length == Kanal.ANZAHL;
+            for (int k = 0; bauOk && k < Kanal.ANZAHL; k++)
+            {
+                if (neu.Bedarf[k] == null || neu.Bedarf[k].Length != STUNDEN_JAHR) { bauOk = false; break; }
+                for (int h = 0; h < STUNDEN_JAHR; h++)
+                    if (neu.Bedarf[k][h] != 0f) { bauOk = false; break; }
+            }
+            // Vektoren getrennt? (ein gemeinsames Array waere die schlimmste Falle)
+            neu.Bedarf[Kanal.BRAUCHWASSER][7] = 1f;
+            bauOk &= neu.Bedarf[Kanal.HEIZUNG][7] == 0f && neu.Bedarf[Kanal.PROZESS][7] == 0f;
+            sb.AppendLine("1. Konstruktion: " + Kanal.ANZAHL + " genullte, getrennte Vektoren = " +
+                          (bauOk ? "OK" : "FEHLER"));
+            if (!bauOk) allesOk = false;
+
+            // --- 2. Summe ---------------------------------------------------
+            Kanalsatz k2 = new Kanalsatz();
+            for (int h = 0; h < STUNDEN_JAHR; h++)
+            {
+                k2.Heizung[h] = h % 7;
+                k2.Brauchwasser[h] = (h % 3) * 0.5f;
+                k2.Prozess[h] = (h % 5) * 0.25f;
+            }
+            float[] summe = k2.Summe();
+            bool summeOk = true;
+            for (int h = 0; h < STUNDEN_JAHR; h++)
+            {
+                float w = k2.Heizung[h];
+                w = (float)((double)w + k2.Brauchwasser[h]);
+                w = (float)((double)w + k2.Prozess[h]);
+                if (summe[h] != w) { summeOk = false; break; }
+            }
+            summe[0] = 999f;                       // eigener Vektor? (Aliasing-Probe)
+            bool eigen = k2.Heizung[0] != 999f && k2.Brauchwasser[0] != 999f && k2.Prozess[0] != 999f;
+            sb.AppendLine("2. Summe(): elementweise = " + (summeOk ? "OK" : "FEHLER") +
+                          ", eigener Vektor = " + (eigen ? "OK" : "FEHLER"));
+            if (!summeOk || !eigen) allesOk = false;
+
+            // --- 3. Clone ---------------------------------------------------
+            Kanalsatz kopie = k2.Clone();
+            bool gleich = true;
+            for (int k = 0; k < Kanal.ANZAHL && gleich; k++)
+                for (int h = 0; h < STUNDEN_JAHR; h++)
+                    if (kopie.Bedarf[k][h] != k2.Bedarf[k][h]) { gleich = false; break; }
+            kopie.Prozess[500] = -77f;
+            bool getrennt = k2.Prozess[500] != -77f;
+            sb.AppendLine("3. Clone(): Werte gleich = " + (gleich ? "OK" : "FEHLER") +
+                          ", Vektoren getrennt = " + (getrennt ? "OK" : "FEHLER"));
+            if (!gleich || !getrennt) allesOk = false;
+
+            // --- 4. Netzverluste: Proportionalitaet und Randfall ------------
+            Kanalsatz nv = new Kanalsatz();
+            nv.Heizung[100] = 60f; nv.Brauchwasser[100] = 30f; nv.Prozess[100] = 10f;
+            nv.NetzverlusteVerteilen(10f);
+            bool proOk = Math.Abs(nv.Heizung[100] - 66f) < 1e-3 &&
+                         Math.Abs(nv.Brauchwasser[100] - 33f) < 1e-3 &&
+                         Math.Abs(nv.Prozess[100] - 11f) < 1e-3;
+            // Stunde 200 hat keinen Bedarf -> alles auf den Heizkanal
+            bool randOk = nv.Heizung[200] == 10f && nv.Brauchwasser[200] == 0f && nv.Prozess[200] == 0f;
+            sb.AppendLine("4. Netzverluste 10 auf 60/30/10 -> " + nv.Heizung[100] + "/" +
+                          nv.Brauchwasser[100] + "/" + nv.Prozess[100] + "   " +
+                          (proOk ? "OK" : "FEHLER") + "; Randfall ohne Bedarf -> Heizung " +
+                          nv.Heizung[200] + "   " + (randOk ? "OK" : "FEHLER"));
+            if (!proOk || !randOk) allesOk = false;
+
+            // --- 5. Erhaltung ueber ein volles Jahr -------------------------
+            // Gemischter Testfall: reine Heizstunden, reine Brauchwasserstunden,
+            // Prozessstunden, gemischte Stunden und Stunden ganz ohne Bedarf.
+            Kanalsatz jahr = new Kanalsatz();
+            double[] vorher = new double[STUNDEN_JAHR];
+            for (int h = 0; h < STUNDEN_JAHR; h++)
+            {
+                switch (h % 5)
+                {
+                    case 0: jahr.Heizung[h] = 12.34f; break;
+                    case 1: jahr.Brauchwasser[h] = 3.7f; break;
+                    case 2: jahr.Prozess[h] = 7.03f; break;
+                    case 3: jahr.Heizung[h] = 8.1f; jahr.Brauchwasser[h] = 2.9f; jahr.Prozess[h] = 1.7f; break;
+                    default: break;                                  // kein Bedarf
+                }
+                vorher[h] = (double)jahr.Heizung[h] + jahr.Brauchwasser[h] + jahr.Prozess[h];
+            }
+            const float betrag = 0.4713f;
+            jahr.NetzverlusteVerteilen(betrag);
+            float[] nachher = jahr.Summe();
+            int verletzt = 0;
+            double groesste = 0;
+            for (int h = 0; h < STUNDEN_JAHR; h++)
+            {
+                double erwartet = vorher[h] + betrag;
+                double abw = Math.Abs((double)nachher[h] - erwartet);
+                if (abw > groesste) groesste = abw;
+                if (!ErhaltungOk(erwartet, nachher[h], ERHALTUNG_SCHRITTE_SUMME)) verletzt++;
+            }
+            sb.AppendLine("5. Erhaltung Kanalsumme == vorher + Netzverlust (1-ULP-Klasse, " +
+                          ERHALTUNG_SCHRITTE_SUMME + " Rundungsschritte): " +
+                          (verletzt == 0 ? "OK" : "FEHLER in " + verletzt + " Stunden") +
+                          ", groesste Abweichung " + groesste.ToString("G4") + " kWh");
+            if (verletzt != 0) allesOk = false;
+
+            // --- 6. Kanal.AusText ------------------------------------------
+            bool textOk = Kanal.AusText(DbWerte.KANAL_HEIZUNG) == Kanal.HEIZUNG &&
+                          Kanal.AusText(DbWerte.KANAL_BRAUCHWASSER) == Kanal.BRAUCHWASSER &&
+                          Kanal.AusText(DbWerte.KANAL_PROZESS) == Kanal.PROZESS &&
+                          Kanal.AusText(null) == Kanal.HEIZUNG &&
+                          Kanal.AusText("") == Kanal.HEIZUNG &&
+                          Kanal.AusText("   ") == Kanal.HEIZUNG &&
+                          Kanal.AusText("Unfug") == Kanal.HEIZUNG &&
+                          Kanal.AusText(" " + DbWerte.KANAL_PROZESS.ToUpperInvariant() + " ") == Kanal.PROZESS;
+            sb.AppendLine("6. Kanal.AusText(): Persistenzwerte und Vorbelegung Heizung = " +
+                          (textOk ? "OK" : "FEHLER"));
+            if (!textOk) allesOk = false;
+
+            sb.AppendLine();
+            sb.AppendLine(allesOk ? "ERGEBNIS: alle Pruefungen bestanden."
+                                  : "ERGEBNIS: mindestens eine Pruefung FEHLGESCHLAGEN.");
+            return sb.ToString();
+        }
+
+#endif
+    }
+
+    /// <summary>
     /// Ziel einer Wärmemenge (Konzept 6.1). Die Werte entsprechen den Textwerten der
     /// Spalte <c>WS_Ziel</c> (<see cref="WaermesenkeClass"/>) — die Abbildung steht in
     /// <see cref="Senkenzuordnung.SenkeAusZiel"/> bzw.

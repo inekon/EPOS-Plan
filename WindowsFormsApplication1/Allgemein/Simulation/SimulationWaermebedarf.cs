@@ -67,11 +67,46 @@ namespace WindowsFormsApplication1
         // Monat-, Wochenwärme
         public int[] mo_anfang = new int[12];
         public int[] mo_ende = new int[12];
-        public float[] monats_waerme = new float[12];
-        public float[] wochen_waerme = new float[168];
+
+        /// <summary>
+        /// PROZESSKANAL je Stunde [kWh]. Bis Paket K1 der reine Profilanteil; seit K1
+        /// enthält der Vektor nach <see cref="Waermebedarf_berechnen"/> zusätzlich den
+        /// anteiligen NETZVERLUST des Prozesskanals (Konzept 4.2/F2). Die ausgewiesene
+        /// Energiemenge <see cref="Waermebedarf_Prozess"/> und die Monatswerte bleiben
+        /// dagegen der reine Profilanteil — sie sind die Bedarfsmeldung des Anwenders,
+        /// nicht die Kanalbilanz.
+        /// </summary>
         public float[] prozesswerte = new float[8760];
+
+        /// <summary>
+        /// BRAUCHWASSERKANAL je Stunde [kWh] — dieselbe K1-Änderung wie bei
+        /// <see cref="prozesswerte"/>: Der Vektor trägt nach
+        /// <see cref="Waermebedarf_berechnen"/> den anteiligen Netzverlust mit.
+        ///
+        /// Das ist die GEWOLLTE Wirkung von F2 an den Altlesern: Die Wärmepumpe und die
+        /// Detailansicht lesen hier den Warmwasseranteil des Bedarfs
+        /// (<c>SimulationControl.Simulation_WP_Ctrl</c>,
+        /// <c>Form_Simulation_Detail.WarmwasserAnteil</c>) — und der ist mit F2 eben nicht
+        /// mehr netzverlustfrei. Die WW-Deckungsgrade ändern sich dadurch in jedem Projekt
+        /// mit Brauchwasseranteil (dokumentierte Ergebnisänderung, Konzept 11.2).
+        /// </summary>
         public float[] brauchwasserwerte = new float[8760];
-        public float[] temp = new float[8760];
+
+        /// <summary>
+        /// Wochentag des 1. Januar aus den Klimadaten (Montag = 0 … Sonntag = 6,
+        /// Entscheidung F3). Wird in <see cref="Waermebedarf_berechnen"/> aus
+        /// <c>Tab_Klimadaten.WE</c> abgeleitet und an die Profilroutine gegeben; vor dem
+        /// ersten Lauf steht hier die Altkonvention (Sonntag).
+        /// </summary>
+        public int WochentagJan1 = ProfilBedarf.WOCHENTAG_ALTKONVENTION;
+
+        /// <summary>
+        /// Die drei Bedarfskanäle des Laufs (Konzept 4.1/4.2). Sie sind seit Paket K1 die
+        /// FÜHRENDE Größe: <see cref="Waermebedarf"/> ist ihre Summe, nicht umgekehrt.
+        /// Gelesen wird über <see cref="KanaeleDrei"/> (Kopie) bzw. bis Paket K2 über die
+        /// Übergangsabbildung <see cref="Kanaele"/>.
+        /// </summary>
+        private Kanalsatz _kanaele = new Kanalsatz();
 
         public SimulationWaermebedarf()
         {
@@ -118,7 +153,24 @@ namespace WindowsFormsApplication1
             WPPlan.Core.BhkwPlan.VectorInit(prozesswerte);
             WPPlan.Core.BhkwPlan.VectorInit(brauchwasserwerte);
 
+            // ---------------------------------------------------------------
+            // PAKET K1 (Konzept 4.2): Kanalbildung OHNE Residuum.
+            //
+            // Die drei Bedarfsarten werden ab hier GETRENNT bis zum Schluss geführt:
+            //   HEIZUNG      = Gebäudewärme + externe Lastgänge mit Kanal „Heizung"
+            //   BRAUCHWASSER = Brauchwasserprofile + Lastgänge mit Kanal „Brauchwasser"
+            //   PROZESS      = Prozessprofile     + Lastgänge mit Kanal „Prozesswaerme"
+            // Danach werden die Netzverluste anteilig verteilt (F2), und erst daraus
+            // entsteht der Summenvektor Waermebedarf.
+            // ---------------------------------------------------------------
+            _kanaele = new Kanalsatz();
+            float[] kanalHeizung = _kanaele.Heizung;
 
+            // ENERGIEPROBE (Konzept 11.3): eine UNABHÄNGIGE Summe aller Bedarfsanteile,
+            // in double und ohne Kanalzuordnung mitgeführt. Sie ist der Gegenwert, an dem
+            // am Ende die Kanalsumme gemessen wird - eine Kanalzuordnung, die einen
+            // Anteil verschluckt oder doppelt bucht, fällt genau hier auf.
+            double[] probe = new double[8760];
 
             //  if (!DBGelesen)
             {
@@ -138,6 +190,11 @@ namespace WindowsFormsApplication1
                 Stundentemperatur_aus_DB(ID_Klimaregion);
                 DBGelesen = true;
             }
+
+            // F3 (Konzept 4.2): Der Klimadaten-Kalender ist ab Paket K1 für ALLE
+            // Bedarfsarten führend. Die Profilkachelung startet damit mit dem
+            // tatsächlichen Wochentag des 1. Januar statt fest mit Sonntag.
+            WochentagJan1 = ProfilBedarf.WochentagJan1AusWE(WE);
 
             ProjektGebaeudeCtrl ctrl = new ProjektGebaeudeCtrl();
             ctrl.ReadAll(ID_Projekt);
@@ -198,7 +255,11 @@ namespace WindowsFormsApplication1
                     WPPlan.Core.BhkwPlan.StdWerte(Waermebedarf_EinGebaeude, TagTyp_NW, TagesVerteilung, Heizlast);
 
                 //com.CSharp_I_vectoren_addieren(Waermebedarf_Gebaeude, Waermebedarf);
-                WPPlan.Core.BhkwPlan.VectorenAddieren(Waermebedarf_EinGebaeude, Waermebedarf);
+                // K1: Gebäudewärme geht in den HEIZKANAL statt in den Summenvektor.
+                WPPlan.Core.BhkwPlan.VectorenAddieren(Waermebedarf_EinGebaeude, kanalHeizung);
+
+                // Energieprobe: derselbe Betrag, unabhängig in double (noch in Watt).
+                for (int h = 0; h < 8760; h++) probe[h] += Waermebedarf_EinGebaeude[h];
 
                 // V0-1: Waermebedarf_Gebaeude bleibt die Summe ALLER Gebäude, wird aber
                 // nicht mehr selbst als Rechenpuffer benutzt.
@@ -213,12 +274,16 @@ namespace WindowsFormsApplication1
             Anzahl_Gebaeude = ctrl.rows;
 
             //com.I_Watt_To_Kw(ref Waermebedarf);
-            WPPlan.Core.BhkwPlan.WattToKw(Waermebedarf);
+            // K1: Der Heizkanal trägt an dieser Stelle genau das, was bisher der
+            // Summenvektor trug (nur Gebäudewärme) - die Umrechnung W -> kW bleibt
+            // deshalb Anweisung für Anweisung dieselbe.
+            WPPlan.Core.BhkwPlan.WattToKw(kanalHeizung);
+            for (int h = 0; h < 8760; h++) probe[h] *= 0.001;
 
 
             // Wärmebedarf gesamt für alle Gebäude
             //Waermebedarf_Gebaeude_Gesamt = com.I_vector_summe(Waermebedarf);
-            Waermebedarf_Gebaeude_Gesamt = Waermebedarf.Sum() / 1000;
+            Waermebedarf_Gebaeude_Gesamt = kanalHeizung.Sum() / 1000;
 
             // Wärmebedarf extern 
             waectrl = new Z_ProjektGebGanglinieCtrl();
@@ -282,7 +347,15 @@ namespace WindowsFormsApplication1
                 }
 
                 //com.CSharp_I_vectoren_addieren(Waermebedarf_Extern, Waermebedarf);
-                WPPlan.Core.BhkwPlan.VectorenAddieren(ganglinie, Waermebedarf);
+                // K1/F18: Jede Ganglinie geht in den Kanal, der an ihrer Zuordnung steht
+                // (Z_ProjektWaermebedarf.Kanal). Leer, NULL und jeder unbekannte Wert
+                // ergeben den Heizkanal - die altverhaltenserhaltende Vorbelegung, mit der
+                // jede Bestandsganglinie unverändert im Heizbedarf mitläuft.
+                int kanal = Kanal.AusText(waectrl.items[n].Kanal);
+                WPPlan.Core.BhkwPlan.VectorenAddieren(ganglinie, _kanaele.Bedarf[kanal]);
+
+                // Energieprobe: kanalneutral - die Ganglinie zählt einmal, egal wohin.
+                for (int h = 0; h < 8760; h++) probe[h] += ganglinie[h];
 
                 // V0-5 (a): Waermebedarf_Extern bleibt die Summe ALLER Ganglinien.
                 WPPlan.Core.BhkwPlan.VectorenAddieren(ganglinie, Waermebedarf_Extern);
@@ -293,29 +366,36 @@ namespace WindowsFormsApplication1
 
             // Wärmebedarf Gebäude Monat
             //com.I_monats_summe(Waermebedarf, Waermebedarf_Gebaeude_Monat, mo_anfang, mo_ende);
-            WPPlan.Core.BhkwPlan.MonatsSumme(Waermebedarf, Waermebedarf_Gebaeude_Monat, mo_anfang, mo_ende);
+            // K1: Ausgewiesen wird der HEIZKANAL (Gebäudewärme + Heizungs-Lastgänge) -
+            // genau der Inhalt, den der Summenvektor an dieser Stelle bisher trug. Nur
+            // eine Ganglinie, die der Anwender ausdrücklich auf Brauchwasser oder Prozess
+            // stellt, zählt hier künftig nicht mehr mit; für jede Bestandsganglinie
+            // (ohne Kanalangabe) ist der Wert unverändert.
+            WPPlan.Core.BhkwPlan.MonatsSumme(kanalHeizung, Waermebedarf_Gebaeude_Monat, mo_anfang, mo_ende);
 
             // Prozesswärme
             Prozesswaerme_berechnen();
             //Waermebedarf_Prozess = com.I_vector_summe(prozesswerte);
+            // AUSGEWIESEN wird der reine Profilanteil - vor der Netzverlustverteilung.
             Waermebedarf_Prozess = prozesswerte.Sum() / 1000;
 
-            //com.I_monats_summe(prozesswerte, Waermebedarf_Prozess_Monat, mo_anfang, mo_ende);
-            WPPlan.Core.BhkwPlan.MonatsSumme(prozesswerte, Waermebedarf_Prozess_Monat, mo_anfang, mo_ende);
             //com.CSharp_I_vectoren_addieren(prozesswerte, Waermebedarf);
-            WPPlan.Core.BhkwPlan.VectorenAddieren(prozesswerte, Waermebedarf);
+            WPPlan.Core.BhkwPlan.VectorenAddieren(prozesswerte, _kanaele.Prozess);
+            for (int h = 0; h < 8760; h++) probe[h] += prozesswerte[h];
 
             // Brauchwasserwärme
             Brauchwasserwaerme_berechnen();
             //Waermebedarf_Brauchwasser = com.I_vector_summe(brauchwasserwerte);
             Waermebedarf_Brauchwasser = brauchwasserwerte.Sum() / 1000;
-            //com.I_monats_summe(brauchwasserwerte, Waermebedarf_Brauchwasser_Monat, mo_anfang, mo_ende);
-            WPPlan.Core.BhkwPlan.MonatsSumme(brauchwasserwerte, Waermebedarf_Brauchwasser_Monat, mo_anfang, mo_ende);
             //com.CSharp_I_vectoren_addieren(brauchwasserwerte, Waermebedarf);
-            WPPlan.Core.BhkwPlan.VectorenAddieren(brauchwasserwerte, Waermebedarf);
+            WPPlan.Core.BhkwPlan.VectorenAddieren(brauchwasserwerte, _kanaele.Brauchwasser);
+            for (int h = 0; h < 8760; h++) probe[h] += brauchwasserwerte[h];
 
-            // Netzverluste 
+            // Netzverluste
             //Waermebedarf_Gesamt = com.I_vector_summe(Waermebedarf);
+            // K1: Der Summenvektor ist ab hier eine ABGELEITETE Größe. Für den
+            // Netzverlust-Betrag wird er - wie bisher - VOR dem Aufschlag gebildet.
+            SummenvektorAusKanaelen();
             Waermebedarf_Gesamt = Waermebedarf.Sum() / 1000;
 
 
@@ -337,11 +417,27 @@ namespace WindowsFormsApplication1
             }
 
             //com.I_netzverlustec(Waermebedarf, stundl_netzverluste);
-            WPPlan.Core.BhkwPlan.NetzverlusteC(Waermebedarf, stundl_netzverluste);
+            // F2 (entschieden 27.08.2026): Der konstante Stundenbetrag ist derselbe wie
+            // bisher, er geht aber nicht mehr geschlossen in den (Heiz-)Summenvektor,
+            // sondern je Stunde ANTEILIG auf die drei Kanäle. Bei Kanalsumme 0 vollständig
+            // auf den Heizkanal - siehe Kanalsatz.NetzverlusteVerteilen.
+            _kanaele.NetzverlusteVerteilen(stundl_netzverluste);
+            for (int h = 0; h < 8760; h++) probe[h] += stundl_netzverluste;
+
+            // Die beiden öffentlichen Bedarfsvektoren sind ab jetzt die KANÄLE inklusive
+            // ihres Netzverlustanteils (gewollte F2-Wirkung, siehe Feldkommentare). Die
+            // Monatswerte und die Jahresmengen oben bleiben der reine Profilanteil.
+            Array.Copy(_kanaele.Brauchwasser, brauchwasserwerte, 8760);
+            Array.Copy(_kanaele.Prozess, prozesswerte, 8760);
 
             // gesamter Wärmebedarf
             //Waermebedarf_Gesamt = com.I_vector_summe(Waermebedarf);
+            SummenvektorAusKanaelen();
             Waermebedarf_Gesamt = Waermebedarf.Sum() / 1000;
+
+            // Energieprobe je Stunde (Konzept 11.3): Kanalsumme gegen die unabhängig in
+            // double geführte Summe aller Anteile.
+            Energieprobe(probe);
 
             //com.CSharp_I_vectoren_addieren(Waermebedarf, Waermebedarf_sortiert);
             WPPlan.Core.BhkwPlan.VectorenAddieren(Waermebedarf, Waermebedarf_sortiert);
@@ -368,79 +464,119 @@ namespace WindowsFormsApplication1
         }
 
         // ===================================================================
-        // Kanalmodell (Paket 4, Etappe 4b - Konzept 3.2)
+        // Kanalmodell (Paket K1 - Konzept 4.1/4.2)
         // ===================================================================
 
         /// <summary>
-        /// Stunden, in denen der Heizkanal auf 0 gekappt werden musste, weil der
-        /// Brauchwasserwert über dem Gesamtwärmebedarf lag (siehe <see cref="Kanaele"/>).
-        /// Erwartungswert 0; ein Wert &gt; 0 ist ein Befund, kein Betriebszustand.
+        /// Stunden, in denen die Energieprobe (Konzept 11.3) die Toleranz der
+        /// 1-ULP-Klasse überschritten hat. Erwartungswert 0; ein Wert &gt; 0 ist ein
+        /// Befund für die Verifikation, kein Betriebszustand.
         /// </summary>
-        public int Kanal_Kappungen = 0;
+        public int Energieprobe_Verletzungen = 0;
 
-        /// <summary>Summe der gekappten Wärmemenge [kWh] (siehe <see cref="Kanal_Kappungen"/>).</summary>
-        public double Kanal_Kappung_kWh = 0;
+        /// <summary>Größte Abweichung der Energieprobe [kWh] (siehe <see cref="Energieprobe_Verletzungen"/>).</summary>
+        public double Energieprobe_MaxAbweichung = 0;
 
         /// <summary>
-        /// Die beiden Bedarfskanäle des Projekts (Konzept 3.2, Entscheidung E6):
+        /// Schreibt die Kanalsumme in <see cref="Waermebedarf"/> — der Summenvektor ist
+        /// seit Paket K1 eine ABGELEITETE Größe (Konzept 4.2).
+        ///
+        /// Kopiert bewusst IN das vorhandene Array, statt das Feld neu zu belegen: Der
+        /// Vektor wird an mehreren Stellen als Referenz weitergereicht
+        /// (<c>SimulationControl</c>, <c>Form_Simulation_Detail</c>), und eine
+        /// Neubelegung würde dort auf einen veralteten Vektor zeigen lassen.
+        /// </summary>
+        private void SummenvektorAusKanaelen()
+        {
+            float[] summe = _kanaele.Summe();
+            Array.Copy(summe, Waermebedarf, Kanalsatz.STUNDEN_JAHR);
+        }
+
+        /// <summary>
+        /// Energieprobe je Stunde (Konzept 11.3): Die Kanalsumme muss der unabhängig in
+        /// <c>double</c> geführten Summe aller Bedarfsanteile entsprechen — Gebäudewärme,
+        /// externe Lastgänge, Prozess- und Brauchwasserprofile, Netzverluste.
+        ///
+        /// Der Maßstab ist die 1-ULP-Klasse (<see cref="Kanalsatz.ErhaltungOk"/>), gefasst
+        /// über die <see cref="Kanalsatz.ERHALTUNG_SCHRITTE_SUMME"/> float-Speicherungen,
+        /// die eine double-Referenzsumme von der Kanalsumme trennen; die verbleibende
+        /// Abweichung ist allein diese Rundung. Gemeldet wird EINMAL je Lauf mit der Zahl
+        /// der betroffenen Stunden — ein struktureller Fehler (ein verschluckter oder
+        /// doppelt gebuchter Anteil) trifft sofort tausende Stunden und liegt um
+        /// Größenordnungen über der Toleranz; er ist damit unverwechselbar.
+        /// </summary>
+        private void Energieprobe(double[] erwartet)
+        {
+            Energieprobe_Verletzungen = 0;
+            Energieprobe_MaxAbweichung = 0;
+
+            for (int h = 0; h < Kanalsatz.STUNDEN_JAHR; h++)
+            {
+                double abweichung = Math.Abs((double)Waermebedarf[h] - erwartet[h]);
+                if (abweichung > Energieprobe_MaxAbweichung) Energieprobe_MaxAbweichung = abweichung;
+                if (!Kanalsatz.ErhaltungOk(erwartet[h], Waermebedarf[h],
+                                           Kanalsatz.ERHALTUNG_SCHRITTE_SUMME))
+                    Energieprobe_Verletzungen++;
+            }
+
+            if (Energieprobe_Verletzungen > 0)
+                SimulationProtokoll.Aktuell.WarnungEinmal("ENERGIEPROBE_KANAELE", string.Format(
+                    MyResource.Resource.SIMENG_ENERGIEPROBE_KANAELE,
+                    Energieprobe_Verletzungen,
+                    Energieprobe_MaxAbweichung.ToString("G4")));
+        }
+
+        /// <summary>
+        /// Die drei Bedarfskanäle des Projekts (Konzept 4.1) als KOPIE.
+        ///
+        /// Kopiert wird aus demselben Grund, aus dem <see cref="Kanalsatz.Summe"/> einen
+        /// eigenen Vektor liefert: Die Erzeugermodule überschreiben ihre Eingangsvektoren
+        /// in-place (Regel B0-2), und ein herausgegebenes Innenleben wäre damit eine
+        /// Aliasing-Falle. Das ist die Schnittstelle, an der Paket K2 (dreikanalige
+        /// Kaskade) andockt.
+        /// </summary>
+        public Kanalsatz KanaeleDrei()
+        {
+            return _kanaele.Clone();
+        }
+
+        /// <summary>
+        /// ÜBERGANGSABBILDUNG auf die zweikanalige Kaskade — Zwischenstand bis Paket K2.
         ///
         /// <code>
-        /// Kanal BRAUCHWASSER [8760] = brauchwasserwerte
-        /// Kanal HEIZUNG      [8760] = Waermebedarf − brauchwasserwerte   (elementweise, ≥ 0)
+        /// Heiz = HEIZUNG + PROZESS      (elementweise)
+        /// WW   = BRAUCHWASSER
         /// </code>
         ///
-        /// Der Heizkanal wird bewusst als RESIDUUM gebildet und nicht aus seinen
-        /// Bestandteilen neu zusammengesetzt. Grund: <see cref="Waermebedarf"/> trägt
-        /// zusätzlich zu Gebäude-, Prozess- und Brauchwasserwärme die NETZVERLUSTE, die
-        /// weiter oben (<see cref="WPPlan.Core.BhkwPlan.NetzverlusteC"/>) als konstanter
-        /// Stundenbetrag auf ALLE 8760 Stunden aufgeschlagen werden — also erst NACH der
-        /// Addition der Brauchwasserwerte. Das Residuum trägt sie damit vollständig; genau
-        /// das ist die heutige implizite Zuordnung und laut Konzept 3.2 (vormals O2) die
-        /// einzige altverhaltenserhaltende Variante.
+        /// Übergang bis K2: Die Kaskade rechnet noch zweikanalig; der Prozesskanal läuft
+        /// solange im Heizkanal mit. Genau so ist es heute — die Prozesswärme war nie
+        /// getrennt, und die Kaskade würde sie ohne diese Zusammenfassung schlicht
+        /// verlieren. Mit K2 entfällt die Methode ersatzlos; die Kaskade nimmt dann
+        /// <see cref="KanaeleDrei"/>.
         ///
-        /// Summenfelder und alle bestehenden Vektoren bleiben unberührt — die Methode
-        /// rechnet ausschließlich lesend und liefert ein neues Objekt. Es gilt
-        /// <c>Heiz + WW == Waermebedarf</c>, solange nicht gekappt wurde.
+        /// KEINE KAPPUNGSFÄLLE MEHR. Die beiden Klemmungen der früheren Residuum-Bildung
+        /// („negativer Brauchwasserwert", „Brauchwasser über Gesamtbedarf") sind mit der
+        /// Kanalbildung ohne Residuum konstruktiv unmöglich geworden: Jeder Kanal entsteht
+        /// aus seinen eigenen, nichtnegativen Quellen; es wird nichts mehr voneinander
+        /// abgezogen. Mit ihnen entfallen die Zähler und ihre Protokollmeldung
+        /// (Konzept 4.2).
         ///
-        /// KAPPUNGSFÄLLE. Elementweise ≥ 0 verlangt zwei Klemmungen, die im Normalbetrieb
-        /// beide nicht auftreten:
-        ///
-        /// 1. <b>negativer Brauchwasserwert</b> — kann aus einer fehlerhaften Ganglinie
-        ///    stammen; er wird auf 0 gesetzt, damit der WW-Kanal keine „negative Deckung"
-        ///    an die Kaskade weitergibt.
-        /// 2. <b>Brauchwasser über Gesamtbedarf</b> — rechnerisch unmöglich, weil
-        ///    <c>Waermebedarf</c> die Brauchwasserwerte ENTHÄLT und alle weiteren
-        ///    Summanden nichtnegativ sind. Übrig bleibt der Rundungsfall in <c>float</c>
-        ///    (Vektorsumme gegen Einzelwert). Dann wird der Heizkanal auf 0 gesetzt und
-        ///    der WW-Kanal auf den Gesamtbedarf begrenzt: Die SUMME bleibt exakt der
-        ///    Gesamtbedarf — die Energieerhaltung geht dem Kanalanteil vor. Jeder solche
-        ///    Fall wird gezählt (<see cref="Kanal_Kappungen"/>) und ist ein Befund, der
-        ///    in die Verifikation gehört.
+        /// GENAUIGKEIT: <c>Heiz + WW</c> kann um bis zu ein ULP je Stunde neben
+        /// <see cref="Waermebedarf"/> liegen — beide sind float-Summen derselben drei
+        /// Kanäle, nur anders geklammert (Konzept 4.2, Toleranz „1-ULP-Klasse").
         /// </summary>
         public Waermekanaele Kanaele()
         {
-            Kanal_Kappungen = 0;
-            Kanal_Kappung_kWh = 0;
+            float[] heizung = _kanaele.Heizung;
+            float[] brauchwasser = _kanaele.Brauchwasser;
+            float[] prozess = _kanaele.Prozess;
 
             Waermekanaele k = new Waermekanaele();
             for (int h = 0; h < Waermekanaele.STUNDEN_JAHR; h++)
             {
-                float gesamt = (h < Waermebedarf.Length) ? Waermebedarf[h] : 0f;
-                float ww = (h < brauchwasserwerte.Length) ? brauchwasserwerte[h] : 0f;
-
-                if (ww < 0f) ww = 0f;                       // Kappungsfall 1
-
-                float heiz = gesamt - ww;
-                if (heiz < 0f)                              // Kappungsfall 2
-                {
-                    Kanal_Kappungen++;
-                    Kanal_Kappung_kWh += -heiz;
-                    heiz = 0f;
-                    ww = gesamt > 0f ? gesamt : 0f;
-                }
-
-                k.Heiz[h] = heiz;
-                k.WW[h] = ww;
+                // Zwischenrechnung in double, Ergebnis in float - Konvention des Rechenkerns.
+                k.Heiz[h] = (float)((double)heizung[h] + prozess[h]);
+                k.WW[h] = brauchwasser[h];
             }
 
             return k;
@@ -735,291 +871,70 @@ namespace WindowsFormsApplication1
             finally { rs.Close(); }
         }
 
+        /// <summary>
+        /// Prozesswärmeprofile des Projekts (bzw. des Katalogs) in
+        /// <see cref="prozesswerte"/> und <see cref="Waermebedarf_Prozess_Monat"/>.
+        ///
+        /// PAKET K1: Der Algorithmus steht jetzt einmal in <see cref="ProfilBedarf"/> —
+        /// zusammen mit dem Brauchwasser- und dem Stromzweig, die bis hierher je eine
+        /// eigene, auseinandergelaufene Kopie hatten (Konzept 4.2). Diese Methode ist nur
+        /// noch die Anbindung: Quellmodus setzen, Kalender wählen, Ergebnis melden.
+        ///
+        /// Der Quellmodus folgt weiterhin dem Parameter <paramref name="list"/> — die
+        /// Vorschaudialoge übergeben ihre Auswahl, der Rechenweg nicht. Innerhalb der
+        /// Profilroutine ist der Modus dagegen ein expliziter Parameter (V0-4).
+        /// </summary>
         public void Prozesswaerme_berechnen(List<string> list = null)
         {
-            RecordSet rs = new RecordSet();
-            RecordSet rs_pwtyp = new RecordSet();
-            List<string> pw_list = new List<string>();
-
             try
             {
                 //com.I_vector_init(ref prozesswerte);
                 WPPlan.Core.BhkwPlan.VectorInit(prozesswerte);
-                //com.I_vector_init(ref temp);
-                WPPlan.Core.BhkwPlan.VectorInit(temp);
 
-                if (list == null)
-                {
-                    // Abfrage über gespeicherte Prozesse im Projekt
-                    pw_list.Clear();
-                    rs.Open("select * from Abfrage_Monatswaerme_Prozesse where ID_Projekt=" + m_ID_Projekt);
-                    while (rs.Next())
-                    {
-                        pw_list.Add((string)rs.Read("Bezeichner").ToString());
-                    }
-                    rs.Close();
-                }
-                else
-                {
-                    // über Parameter Liste mit Prozessnamen
-                    pw_list = list;
-                }
+                ProfilQuellmodus modus = (list == null) ? ProfilQuellmodus.Projektrechnung
+                                                        : ProfilQuellmodus.Katalogvorschau;
 
-                // V0-4: Betriebsarten sauber trennen - wie im Brauchwasserzweig.
-                // Vorschau (list != null): Namen sind Katalog-Bezeichner -> Kopf UND Typprofil
-                // aus den STAMM-Tabellen (das Typprofil kam bisher fälschlich aus der
-                // Projektkopie). Echte Projektrechnung (list == null): beides aus den
-                // Projektkopien (der Kopf kam bisher fälschlich aus dem STAMM-Katalog, womit
-                // auch der Normierungsnenner jv unten aus dem Katalog stammte).
-                // V0-3: Im Projektmodus zusätzlich auf ID_Projekt filtern - Bezeichner und
-                // Typname sind über Projekte hinweg nicht eindeutig. Die _STAMM-Tabellen
-                // tragen kein ID_Projekt, dort bleibt der Filter weg.
-                bool bStamm = (list != null);
-                string headTable = bStamm ? "Tab_Prozesswaerme_STAMM" : "Tab_Prozesswaerme";
-                string typTable = bStamm ? "Tab_Prozesstyp_STAMM" : "Tab_Prozesstyp";
-                string typCol = bStamm ? "Bezeichner" : "Typname";
-                string projektFilter = bStamm ? "" : " AND ID_Projekt=" + m_ID_Projekt;
+                // F3: Die Projektrechnung folgt dem Klimadaten-Kalender, die Katalog-
+                // vorschau der Altkonvention - sie kennt kein Projekt und keine
+                // Klimaregion, und ihre Kurven sollen zwischen zwei Katalogeinträgen
+                // vergleichbar bleiben.
+                int wochentag = (modus == ProfilQuellmodus.Projektrechnung)
+                                ? WochentagJan1 : ProfilBedarf.WOCHENTAG_ALTKONVENTION;
 
-                for (int k = 0; k < pw_list.Count; k++)
-                {
-                    rs.Open("select * from " + headTable + " where Bezeichner='" + pw_list[k] + "'" + projektFilter);
-                    if (rs.Next())
-                    {
-                        float pjv = 0;
-                        float jv = 0;
-                        if (m_ID_Projekt != 0) // skalieren ggf. mit geändertem Projekt Jahresverbrauch
-                        {
-                            Z_ProjektProzesswaermeCtrl ctrl = new Z_ProjektProzesswaermeCtrl();
-                            ctrl.ReadAll("select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + m_ID_Projekt + " AND Bezeichner='" + (string)rs.Read("Bezeichner") + "'");
-                            if (ctrl.rows > 0)
-                                pjv = (float)ctrl.items[0].Summe;
-                        }
-                        for (int i = 0; i < 12; i++)
-                        {
-                            double d = (double)rs.Read("Monat_" + (i + 1).ToString());
-                            monats_waerme[i] = (float)d;
-                            jv += monats_waerme[i];
-                        }
-
-                        if (pjv > 0)
-                        {
-                            for (int i = 0; i < 12; i++)
-                            {
-                                monats_waerme[i] = monats_waerme[i] * pjv / jv;
-                            }
-                        }
-
-                        Object objTyp = rs.Read("Typ");
-                        if (DBNull.Value.Equals(objTyp))
-                        {
-                            // PAKET 8 (Konzept 13.4): Warnung im Protokollkanal statt MessageBox;
-                            // der Abbruch der Prozesswärme-Rechnung bleibt unverändert.
-                            // Der Tippfehler "DerTyp" des Bestands ist dabei mit behoben.
-                            SimulationProtokoll.Aktuell.Warnung(string.Format(
-                                MyResource.Resource.SIMENG_PROZESSWAERME_TYP_UNDEFINIERT, pw_list[k]));
-                            rs.Close();
-                            return;
-                        }
-
-                        // V0-3: Wochenprofil vor JEDEM Ladevorgang nullen, sonst rechnet ein
-                        // Profil ohne Typsatz mit dem Profil des vorigen Durchlaufs weiter.
-                        Array.Clear(wochen_waerme, 0, wochen_waerme.Length);
-
-                        // Tagesverteilung für den Prozess ermitteln
-                        rs_pwtyp.Open("select * from " + typTable + " where " + typCol + "='" + (string)objTyp + "'" + projektFilter);
-
-                        bool typGefunden = rs_pwtyp.Next();
-                        if (typGefunden)
-                        {
-                            for (int i = 0; i < 168; i++)
-                            {
-                                double dw = (double)rs_pwtyp.Read((i + 1).ToString());
-                                wochen_waerme[i] = (float)dw;
-                            }
-                        }
-                        rs_pwtyp.Close();
-
-                        if (!typGefunden)
-                        {
-                            // V0-3: Kein stiller Fremdwert mehr. Der Anteil dieses Prozesses
-                            // bleibt 0 - mit dem genullten Wochenprofil zu rechnen wäre
-                            // schlechter als gar nicht: StromWocheToJahr normiert je Monat auf
-                            // die Profilsumme und lieferte aus lauter Nullen NaN.
-                            if (!bStamm)
-                                SimulationProtokoll.Aktuell.Warnung(string.Format(
-                                    MyResource.Resource.SIMENG_PROZESSWAERME_TYPPROFIL_FEHLT,
-                                    (string)objTyp, pw_list[k]));
-                            rs.Close();
-                            continue;
-                        }
-
-                        // Wärmebedarf jährlich gemäß wöchentlicher Verteilung
-                        //temp = com.I_strom_wochetojahr(wochen_waerme, monats_waerme, mo_anfang, mo_ende);
-                        WPPlan.Core.BhkwPlan.StromWocheToJahr(wochen_waerme, monats_waerme, temp, mo_anfang, mo_ende);
-
-                        //com.CSharp_I_vectoren_addieren(temp, prozesswerte);
-                        WPPlan.Core.BhkwPlan.VectorenAddieren(temp, prozesswerte);
-                    }
-                    else if (!bStamm)
-                    {
-                        // V0-3/V0-4: Im Projektmodus liefert die Projektkopie keinen Satz zu
-                        // diesem Namen - Anteil 0 statt eines fremden Katalogwerts.
-                        SimulationProtokoll.Aktuell.Warnung(string.Format(
-                            MyResource.Resource.SIMENG_PROZESSWAERME_KOPF_FEHLT, pw_list[k]));
-                    }
-                    rs.Close();
-
-                }
+                ProfilBedarf.Rechnen(ProfilQuelle.Prozesswaerme(modus), m_ID_Projekt, list,
+                                     wochentag, mo_anfang, mo_ende,
+                                     prozesswerte, Waermebedarf_Prozess_Monat);
             }
             // Protokollkanal-Nachzug: WARNUNG statt bloßer Konsolenzeile - der Bedarf ist
-            // unvollständig und damit jedes Ergebnis darauf. Derselbe Kanal, den der
-            // Typ-Zweig oben schon benutzt.
+            // unvollständig und damit jedes Ergebnis darauf.
             catch (SystemException ex) { SimulationProtokoll.Aktuell.Warnung("Fehler bei der Prozesswärme-Berechnung (Ergebnis unvollständig): " + ex.Message); }
-            finally
-            {
-                try { rs.Close(); } catch { }
-                try { rs_pwtyp.Close(); } catch { }
-            }
         }
 
+        /// <summary>
+        /// Brauchwasserprofile des Projekts (bzw. des Katalogs) in
+        /// <see cref="brauchwasserwerte"/> und <see cref="Waermebedarf_Brauchwasser_Monat"/>.
+        /// Aufbau und Begründung wie bei <see cref="Prozesswaerme_berechnen"/> — beide
+        /// Zweige teilen sich seit Paket K1 dieselbe Routine (Konzept 4.2).
+        /// </summary>
         public void Brauchwasserwaerme_berechnen(List<string> list = null)
         {
-            RecordSet rs = new RecordSet();
-            RecordSet rs_pwtyp = new RecordSet();
-            List<string> pw_list = new List<string>();
-
             try
             {
-
                 //com.I_vector_init(ref brauchwasserwerte);
                 WPPlan.Core.BhkwPlan.VectorInit(brauchwasserwerte);
-                //com.I_vector_init(ref temp);
-                WPPlan.Core.BhkwPlan.VectorInit(temp);
 
-                if (list == null)
-                {
-                    // Abfrage über gespeicherte Prozesse im Projekt
-                    pw_list.Clear();
-                    rs.Open("select * from Abfrage_Monatswaerme_Brauchwasser where ID_Projekt=" + m_ID_Projekt);
-                    while (rs.Next())
-                    {
-                        pw_list.Add((string)rs.Read("Bezeichner").ToString());
-                    }
-                    rs.Close();
-                }
-                else
-                {
-                    // über Parameter Liste mit Brauchwasser Profil Namen
-                    pw_list = list;
-                }
+                ProfilQuellmodus modus = (list == null) ? ProfilQuellmodus.Projektrechnung
+                                                        : ProfilQuellmodus.Katalogvorschau;
 
-                // Vorschau (list != null): Namen sind Katalog-Bezeichner -> aus den STAMM-Tabellen lesen.
-                // Echte Projektrechnung (list == null): aus den Projektkopien lesen.
-                bool bStamm = (list != null);
-                string headTable = bStamm ? "Tab_Brauchwasser_STAMM" : "Tab_Brauchwasser";
-                string typTable = bStamm ? "Tab_Brauchwassertyp_STAMM" : "Tab_Brauchwassertyp";
-                string typCol = bStamm ? "Bezeichner" : "Typname";
-                // V0-3: Im Projektmodus zusätzlich auf ID_Projekt filtern - Bezeichner und
-                // Typname sind über Projekte hinweg nicht eindeutig (produktiv steht z. B.
-                // "Haushalt-3" 45× mit zwei verschiedenen Monatssätzen in der Datenbank).
-                // Die _STAMM-Tabellen tragen kein ID_Projekt, dort bleibt der Filter weg.
-                string projektFilter = bStamm ? "" : " AND ID_Projekt=" + m_ID_Projekt;
+                int wochentag = (modus == ProfilQuellmodus.Projektrechnung)
+                                ? WochentagJan1 : ProfilBedarf.WOCHENTAG_ALTKONVENTION;
 
-                for (int k = 0; k < pw_list.Count; k++)
-                {
-                    rs.Open("select * from " + headTable + " where Bezeichner='" + pw_list[k] + "'" + projektFilter);
-                    if (rs.Next())
-                    {
-                        float pjv = 0;
-                        float jv = 0;
-                        if (m_ID_Projekt != 0) // skalieren ggf. mit geändertem Projekt Jahresverbrauch
-                        {
-                            Z_ProjektBrauchwasserCtrl ctrl = new Z_ProjektBrauchwasserCtrl();
-                            ctrl.ReadAll("select * from Z_Projekt_Brauchwasser where ID_Projekt=" + m_ID_Projekt + " AND Bezeichner='" + (string)rs.Read("Bezeichner") + "'");
-                            if (ctrl.rows > 0)
-                                pjv = (float)ctrl.items[0].Summe;
-                        }
-                        for (int i = 0; i < 12; i++)
-                        {
-                            double d = (double)rs.Read("Monat_" + (i + 1).ToString());
-                            monats_waerme[i] = (float)d;
-                            jv += monats_waerme[i];
-                        }
-
-                        if (pjv > 0)
-                        {
-                            for (int i = 0; i < 12; i++)
-                            {
-                                monats_waerme[i] = monats_waerme[i] * pjv / jv;
-                            }
-                        }
-
-                        Object objTyp = rs.Read("Typ");
-                        if (DBNull.Value.Equals(objTyp))
-                        {
-                            // PAKET 8 (Konzept 13.4): siehe oben - dieselbe Stelle im
-                            // Brauchwasser-Zweig.
-                            SimulationProtokoll.Aktuell.Warnung(string.Format(
-                                MyResource.Resource.SIMENG_BRAUCHWASSER_TYP_UNDEFINIERT, pw_list[k]));
-                            rs.Close();
-                            return;
-                        }
-
-                        // V0-3: Wochenprofil vor JEDEM Ladevorgang nullen, sonst rechnet ein
-                        // Profil ohne Typsatz mit dem Profil des vorigen Durchlaufs weiter -
-                        // auch mit dem des Prozesswärmezweigs, der dasselbe Feld benutzt.
-                        Array.Clear(wochen_waerme, 0, wochen_waerme.Length);
-
-                        // Tagesverteilung für den Prozess ermitteln
-                        rs_pwtyp.Open("select * from " + typTable + " where " + typCol + "='" + (string)objTyp + "'" + projektFilter);
-
-                        bool typGefunden = rs_pwtyp.Next();
-                        if (typGefunden)
-                        {
-                            for (int i = 0; i < 168; i++)
-                            {
-                                double dw = (double)rs_pwtyp.Read((i + 1).ToString());
-                                wochen_waerme[i] = (float)dw;
-                            }
-                        }
-                        rs_pwtyp.Close();
-
-                        if (!typGefunden)
-                        {
-                            // V0-3: siehe Prozesswärmezweig - Anteil 0 statt Fremdprofil,
-                            // und nicht mit dem genullten Profil weiterrechnen (NaN).
-                            if (!bStamm)
-                                SimulationProtokoll.Aktuell.Warnung(string.Format(
-                                    MyResource.Resource.SIMENG_BRAUCHWASSER_TYPPROFIL_FEHLT,
-                                    (string)objTyp, pw_list[k]));
-                            rs.Close();
-                            continue;
-                        }
-
-                        // Wärmebedarf jährlich gemäß wöchentlicher Verteilung
-                        //temp = com.I_strom_wochetojahr(wochen_waerme, monats_waerme, mo_anfang, mo_ende);
-                        WPPlan.Core.BhkwPlan.StromWocheToJahr(wochen_waerme, monats_waerme, temp, mo_anfang, mo_ende);
-                        //com.CSharp_I_vectoren_addieren(temp, brauchwasserwerte);
-                        WPPlan.Core.BhkwPlan.VectorenAddieren(temp, brauchwasserwerte);
-                    }
-                    else if (!bStamm)
-                    {
-                        // V0-3: Im Projektmodus liefert die Projektkopie keinen Satz zu diesem
-                        // Namen - Anteil 0 statt eines fremden Wertes aus einem anderen Projekt.
-                        SimulationProtokoll.Aktuell.Warnung(string.Format(
-                            MyResource.Resource.SIMENG_BRAUCHWASSER_KOPF_FEHLT, pw_list[k]));
-                    }
-                    rs.Close();
-
-                }
+                ProfilBedarf.Rechnen(ProfilQuelle.Brauchwasser(modus), m_ID_Projekt, list,
+                                     wochentag, mo_anfang, mo_ende,
+                                     brauchwasserwerte, Waermebedarf_Brauchwasser_Monat);
             }
             // Protokollkanal-Nachzug: WARNUNG, siehe Prozesswärme-Zweig.
             catch (SystemException ex) { SimulationProtokoll.Aktuell.Warnung("Fehler bei der Brauchwasserwärme-Berechnung (Ergebnis unvollständig): " + ex.Message); }
-            finally
-            {
-                try { rs.Close(); } catch { }
-                try { rs_pwtyp.Close(); } catch { }
-            }
         }
     }
 }

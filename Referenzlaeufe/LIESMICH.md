@@ -12,9 +12,28 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
-**`2026-08-27_V0/`** — seit dem 27.08.2026, 10:08 Uhr die gültige Referenz,
+**`2026-08-27_K1/`** — seit dem 27.08.2026, 10:58 Uhr die gültige Referenz,
 **neun Projekte** (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, **1030**), **216 CSV,
 2 366 177 Werte**. Jeder neue Vergleich läuft gegen diesen Ordner.
+
+> **Anlass: Paket K1 (Dreikanal-Bedarf) — Entscheidungen F2 und F3.** Gegenüber V0 ändern sich
+> **sieben** Projekte gewollt: die Netzverluste werden je Stunde **anteilig** auf die Kanäle
+> Heizung/Brauchwasser/Prozess verteilt statt vollständig auf Heizung (F2), und alle
+> Profil-Bedarfe (Brauchwasser, Prozesswärme, Strom) kacheln ihr Wochenprofil am
+> **Klimadaten-Kalender** statt fest „1. Januar = Sonntag" (F3; produktiv ist der 1. Januar ein
+> Donnerstag — die Wochengänge verschieben sich um drei Tage). **Die Jahressummen sind in allen
+> neun Projekten exakt unverändert** (`Waermebedarf_Gesamt`, `Strombedarf_Gesamt` je Projekt
+> identisch — nur zeitliche Verteilung und Kanalzuordnung ändern sich). **PASS gegen V0: 1018
+> und 1030** — die einzigen Projekte ohne Profil-/Brauchwasser-/Prozessanteil. Die neue
+> **Energieprobe** (Kanalsumme gegen unabhängige Gesamtsumme, je Stunde, 8760 × 9 Projekte)
+> meldet **null Verletzungen**; das Laufprotokoll trägt 12 bekannte Bestandswarnungen
+> (Energieträger-Zuordnung, Rückfall-ΔT), 0 Fehler.
+>
+> **Codestand:** Paket K1 auf `Pufferspeicher` (Details
+> [K1-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/K1_Dreikanal_Protokoll.md)).
+> **Datenquelle:** produktive `Kenndaten.accdb`, Zeitstempel 26.08.2026 23:39, nur gelesen;
+> Arbeitskopie migriert auf Schemastand **48**. **Selbstvergleich:** zweiter Lauf
+> **216/216 byte-/MD5-gleich** — reproduzierbar.
 
 > **Anlass: Paket V0 (Bestandsfehler) des Konzepts Brauchwasser/Heizung/Pufferspeicher.**
 > Drei Projekte ändern sich durch die Fixes **gewollt** gegenüber B6 — **1008**
@@ -130,7 +149,12 @@ reproduzierbar.
 
 ## Frühere Stände
 
-`2026-08-19_B6/` bleibt als **vorheriger Stand** liegen (Codestand `e94be10`, Schemastand 21,
+`2026-08-27_V0/` bleibt als **vorheriger Stand** liegen (Codestand `2409996`, Schemastand 47,
+neun Projekte, 216 CSV, 2 366 177 Werte) — der Stand nach den V0-Bestandsfehler-Fixes und vor
+der Dreikanal-Umstellung. Warum V0 seinerzeit gesetzt wurde, steht im Abschnitt darüber
+(Fassung vor K1) bzw. im V0-Protokoll.
+
+`2026-08-19_B6/` bleibt als **älterer Stand** liegen (Codestand `e94be10`, Schemastand 21,
 neun Projekte, 216 CSV, 2 366 177 Werte) — die letzte Basis **vor** dem `kostenformulare`-Merge
 und Paket V0. Warum B6 seinerzeit gesetzt wurde, steht im Abschnitt „Warum die Basis auf B6
 gewechselt wurde" darüber.
