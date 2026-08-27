@@ -25,11 +25,42 @@ namespace WindowsFormsApplication1
             return (item.ID_Type == targetType) ? value : DBNull.Value;
         }
 
+        /// <summary>
+        /// Loescht die Anlagenzeilen eines Projekts fuer den Del+Add-Speicherweg -
+        /// alle Typen AUSSER den Pufferspeichern (<c>ID_Type</c> 12).
+        ///
+        /// <para>
+        /// WARUM DIE PUFFER STEHEN BLEIBEN (FR-1, Befund 27.08.2026). Einziger
+        /// Aufrufer dieser Ueberladung ist der Bearbeiten-Zweig des Wizards
+        /// (<c>WizardParent.btnSpeichern_Click</c>) - und der Wizard hat keine
+        /// Puffer-Seite. Loeschte der Rundumschlag die ID_Type-12-Zeilen mit, muesste
+        /// die Dialogliste sie zurueckschreiben: Jede Liste ohne die Puffer beraubte
+        /// das Projekt seiner Speicher, und <c>GeraeteWaisen.Aufraeumen</c> am Ende von
+        /// <see cref="Add_WP_Waermeerzeuger"/> raeumte anschliessend die nicht mehr
+        /// referenzierten Geraetezeilen in <c>Tab_Pufferspeicher</c> ab (Feldbeleg:
+        /// Projekte 1027/1009 mit <c>WS_Ziel = 'PufferHeizung'</c> und
+        /// <c>WS_ID_Puffer = NULL</c>). Gegenstueck im Wizard:
+        /// <c>entferne_nicht_aktive_elemente</c> nimmt die ID_Type-12-Modelle aus der
+        /// Liste, sonst legte <see cref="Add_WP_Waermeerzeuger"/> die stehen
+        /// gebliebenen Anlagenzeilen ein zweites Mal an.
+        /// </para>
+        ///
+        /// <para>
+        /// Pufferspeicher LOESCHEN koennen weiterhin: die typisierte Ueberladung
+        /// (Puffer-Karte und -Kontextmenue rufen sie mit ID_Type 12),
+        /// <see cref="Del_Projekt_ID_Waermeerzeuger"/> (Einzelzeile) und der
+        /// Projekt-Loeschweg <c>WErzeugerCtrl.Delete</c>.
+        /// </para>
+        /// </summary>
         public bool Del_Projekt_Waermeerzeuger(int projektID)
         {
             SpVariantenSichern(projektID, TYP_ALLE);
 
-            return DataRepository.ExecuteSQL("DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
+            // ID_Type fest im SQL statt als Parameter - dieselbe Begruendung wie bei
+            // SP_TYPEN: Programmkonstante, keine Anwendereingabe.
+            return DataRepository.ExecuteSQL(
+                "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type <> " +
+                WizardItemClass.PUFFER_TYP.ToString(CultureInfo.InvariantCulture),
                 new OleDbParameter[] { new OleDbParameter("@pID", projektID) });
         }
 
