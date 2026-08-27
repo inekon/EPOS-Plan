@@ -1795,3 +1795,95 @@ nur vermerkt und **nicht** entfernt: Die Alt-Verwendung selbst wird erst mit Pak
 | `SIM_PUFFER_VERWENDUNG_PASST_NICHT` | `WaermesenkeClass.PufferPasst` — die dritte Prüfung ist mit S2 entfallen (Konzept 6.2). |
 | `PSP_MELDUNG_VERWENDUNGSWECHSEL` | `Form_PufferSp_Projekt.VerwendungswechselBestaetigt` — abgelöst durch `PSP_MELDUNG_KLASSENSETWECHSEL` (K2-O8). |
 | `PSP_TITEL_VERWENDUNG_AENDERN` | wie oben, abgelöst durch `PSP_TITEL_KLASSENSET_AENDERN`. |
+
+---
+
+## Nachtrag Paket A1 — Abriss der WS_-Spiegelung und der Alt-Zuordnung (27.08.2026)
+
+Paket A1 (Dialogteil) reißt die `WS_*`-Spiegelung, die Alt-Zuordnung `Z_ProjektPufferSp` und den
+Schalter des einkanaligen Altpfads ab. Damit fallen **35 Schlüssel** ohne Ersatz weg, **einer kommt
+hinzu** (`SIM_PUFFER_PROZESS_KURZ`). Bestand danach **2533 Schlüssel** in beiden `.resx` und in
+`Resource.Designer.cs` (DE und EN deckungsgleich, je Schlüssel eine Designer-Eigenschaft).
+
+> Zählweise: gezählt sind die `data`-KNOTEN der `.resx` (XML), nicht die Zeilen mit `<data name=`.
+> Der Kopfkommentar jeder `.resx` enthält vier Beispielzeilen dieser Form; ein Zeilen-`grep` zählt
+> sie mit und liegt deshalb um vier zu hoch — daher die 2571 im S2-Nachtrag gegenüber den hier
+> ausgewiesenen 2567 vor A1. Der Wert stimmt in beiden Sprachen und mit `Resource.Designer.cs` überein.
+
+Jeder Schlüssel wurde vor dem Entfernen zweifach geprüft: repo-weit ohne Fundstelle im
+aktuellen Stand **und** — für die 32 Schlüssel unter „durch A1 verwaist" — mit genau einer
+Fundstelle im Stand vor A1 (`git grep … HEAD`), also nachweislich durch DIESEN Abriss verwaist.
+
+### Entfallen: die drei Alt-Schlüssel der Verwendungs-Sperre (S2-O4, 3)
+
+Sie standen seit S2 ohne Fundstelle da und wurden dort bewusst stehen gelassen, weil die
+Alt-Verwendung erst mit Schritt 51 stillgelegt wird. Das ist jetzt geschehen.
+
+| Schlüssel | Bis wann benutzt |
+|---|---|
+| `SIM_PUFFER_VERWENDUNG_PASST_NICHT` | `WaermesenkeClass.PufferPasst` — dritte Prüfung, entfallen mit S2 |
+| `PSP_MELDUNG_VERWENDUNGSWECHSEL` | `Form_PufferSp_Projekt` — abgelöst durch `PSP_MELDUNG_KLASSENSETWECHSEL` |
+| `PSP_TITEL_VERWENDUNG_AENDERN` | wie oben, abgelöst durch `PSP_TITEL_KLASSENSET_AENDERN` |
+
+### Entfallen: Schalter „Zweikanalige Kaskade" und seine Automatiken (8)
+
+Der Schalter war das Feature-Flag des einkanaligen Rechenwegs. Schritt 51 setzt
+`Tab_Einstellungen.Kaskade_Zweikanalig` in Bestandsdaten auf WAHR und nimmt es aus der Weiche —
+ein Schalter ohne Weiche wäre eine Zusage ohne Wirkung. Mit ihm gehen die Rückfrage vor der
+Abwahl, die Meldung nach dem automatischen Einschalten und die beiden Statuszeilen.
+
+| Schlüssel | Letzte Fundstelle |
+|---|---|
+| `SIM_KASKADE_SCHALTER` | `Form_Simulation_Config.Uebersicht.InitKaskadeSchalter` |
+| `SIM_KASKADE_TOOLTIP` | wie oben (Mouseover) |
+| `SIM_MSG_KASKADE_ABWAHL` | `checkBox_KaskadeZweikanalig_CheckedChanged` (Abwahl-Guard) |
+| `SIM_MSG_KASKADE_AUTOMATISCH` | `KaskadeAutomatikNachAenderung` |
+| `SIM_MSG_KASKADE_FRAGE` | `KaskadeAutomatikBeimSpeichern` |
+| `SIM_STATUS_KASKADE_EIN` | Statuszeile beider Automatiken |
+| `SIM_STATUS_KASKADE_AUS` | Statuszeile des Schalters |
+| `SIM_TITEL_KASKADE` | Fenstertitel aller drei Meldungen |
+
+### Entfallen: Übergangshinweis des Senkendialogs (2)
+
+Er sagte, dass eine Brauchwasser-/Kombi-Senke ohne die zweikanalige Kaskade zwar gespeichert
+wird, aber nicht mitrechnet. Der einkanalige Rechenweg ist abgerissen; die Aussage hat keinen
+Gegenstand mehr.
+
+| Schlüssel | Letzte Fundstelle |
+|---|---|
+| `SIM_MSG_BRAUCHWASSER_UEBERGANG` | `Form_Waermesenke.BrauchwasserUebergangsHinweis` |
+| `SIM_MSG_BRAUCHWASSER_WP_ZUSATZ` | wie oben (Zusatz nur an der Wärmepumpe) |
+
+### Entfallen: Alt-Zuordnung `Z_ProjektPufferSp` in der Oberfläche (21)
+
+Die unsichtbare Zuordnungstabelle des Konfigurationsdialogs mit ihrem Zelleditor, der Dialog
+`Form_KonfigPufferspeicher` (Konzept 10: entfällt), der Schwellendialog
+`SpeicherregelungBearbeiten` und die Temperaturstufe „aus der Zuordnung" der Speicherkarte.
+
+| Schlüssel | Letzte Fundstelle |
+|---|---|
+| `PSP_SPALTE_WAERMEERZEUGER`, `PSP_SPALTE_VORLAUF`, `PSP_SPALTE_RUECKLAUF` | Spaltenköpfe der Alt-Tabelle (`Form_Simulation_Config`-Konstruktor) |
+| `PSP_TIP_ZUORDNUNG_ERZEUGER`, `…_SPEICHER`, `…_VORLAUF`, `…_RUECKLAUF`, `…_STAMMDATEN`, `…_STANDARD` | `listView1_MouseMove` — Mouseover je Spalte |
+| `PSP_TITEL_TEMPERATUR_PRUEFEN` | Zelleditor der Alt-Tabelle (Paarprüfung B4-2) |
+| `PSP_STATUS_ZUORDNUNG_FEHLGESCHLAGEN` | `btn_Speichern_Click` — Delete/Insert-Zyklus auf `Z_ProjektPufferSp` |
+| `PSP_TITEL_SPEICHERREGELUNG`, `PSP_MSG_WP_OHNE_SPEICHER`, `PSP_MSG_SCHWELLEN_BEREICH`, `PSP_SPEICHERREGELUNG_FENSTERTITEL`, `…_KOPF`, `…_EINSCHALT`, `…_ABSCHALT`, `…_HINWEIS`, `PSP_STATUS_SPEICHERREGELUNG_GESPEICHERT` | `SpeicherregelungBearbeiten` — die Hysterese-Schwellen der Alt-Zuordnung; seit Etappe D1 ohne Aufrufer. Am Puffer selbst sind sie in `Form_PufferSp_Projekt` gepflegt |
+| `PSP_KARTE_TEMP_ZUORDNUNG` | `Form_Simulation_Config.Karten.TemperaturHerkunft` — die mittlere Stufe der Temperatur-Vorrangkette. Schritt 51 hat die Werte einmalig an `Tab_Pufferspeicher` übergeben |
+
+### Entfallen: Senkendialog auf EINEM Speicherweg (1)
+
+| Schlüssel | Letzte Fundstelle |
+|---|---|
+| `SIM_ROLLE_HAUPTSENKE` | `WaermesenkeClass.Pruefen`/`KurzschlussMeldung` — beide prüfen seit A1 über ALLE Ränge und benennen die Rolle deshalb als RANG (`SIM_ROLLE_RANG`). `SIM_ROLLE_ZWEITSENKE` bleibt: Die Schemakante trennt weiter „erste" von „weitere" Ladung |
+
+### Neu (1)
+
+| Schlüssel | DE | EN | Fundstelle |
+|---|---|---|---|
+| `SIM_PUFFER_PROZESS_KURZ` | Puffer Prozessw. | Buffer process | `WaermesenkeClass.KurzformZuZiel` — die vierte Kurzform. Bis A1 kannte die Kurzformfamilie nur Heizung, Brauchwasser und Kombi, weil die Altspalten das S1-Ziel `PufferProzess` gar nicht ausdrücken konnten. Jetzt beschriftet dieselbe Funktion jede Senkenzeile, und ohne diesen Schlüssel stünde an einer Prozess-Puffersenke der lange Name der Auswahlliste. |
+
+### Erweitert statt neu
+
+| Fall | Schlüssel | Grund |
+|---|---|---|
+| Fehlerzeile beim Speichern | `SIM_STATUS_SENKE_FEHLER` | BLEIBT. Die Meldung hing am Rückgabewert von `WaermesenkeClass.Schreiben`; diese Schreibstelle ist entfallen, die AUSSAGE nicht. `Form_Waermesenke.ListeSpeichern` gibt den Erfolg jetzt über `SpeichernOk` an den Aufrufer weiter, der dieselbe Zeile zeigt. |
+| Senkenanzeige aller Ränge | `SIM_HEIZKREIS_BEIDES`, `SIM_HEIZKREIS_NUR_HEIZWAERME`, `SIM_HEIZKREIS_NUR_WARMWASSER`, `SIM_PUFFER_HEIZUNG_KURZ`, `SIM_PUFFER_BRAUCHWASSER_KURZ`, `SIM_PUFFER_KOMBI_KURZ` | `Form_Waermesenke.SenkeAnzeige` ist mit A1 die EINE Anzeigefunktion für eine Senkenzeile. Sie hat die Kurzform des Ladeziels UND die Bedarfsart-Feinsteuerung des Heizkreises von `WaermesenkeClass.HauptsenkeAnzeige` übernommen; beide Altfassungen (`HauptsenkeAnzeige`, `ZweitsenkeAnzeige`) sind entfallen. An Karte, Übersicht und Schemaknoten steht damit Wort für Wort derselbe Text wie vorher. |

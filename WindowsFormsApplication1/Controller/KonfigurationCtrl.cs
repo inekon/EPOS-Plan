@@ -131,10 +131,33 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // =====================================================================
+        // ALTLAST Kaskade_Zweikanalig (Paket A1, Leitentscheidung L1)
+        //
+        // Die drei folgenden Bausteine - KaskadeZweikanaligLesen,
+        // KaskadeZweikanaligSchreiben und die Automatik KaskadeNotwendig - bedienen die
+        // Projekteinstellung Tab_Einstellungen.Kaskade_Zweikanalig. Sie war bis Paket A1
+        // die WEICHE zwischen zwei Rechenwegen.
+        //
+        // DIE ENGINE LIEST SIE NICHT MEHR. Der einkanalige Altpfad ist ersatzlos
+        // entfallen; jeder Lauf rechnet ueber die Speicherstufe. Migrationsschritt 51
+        // setzt die Spalte im Bestand auf WAHR.
+        //
+        // MIT DEM FUSSZEILENSCHALTER DES KONFIGURATIONSDIALOGS und dem
+        // Uebergangshinweis des Senkendialogs ist auch der letzte AUFRUFER der drei
+        // Methoden entfallen. Sie bleiben vorerst stehen - als eine Stelle, an der die
+        // Spalte noch lesbar und schreibbar ist, solange sie im Schema steht. NEUER
+        // CODE FRAGT SIE NICHT; der endgueltige Schnitt gehoert zu der Stilllegung, die
+        // die Spalte selbst aus Tab_Einstellungen nimmt.
+        //
+        // NICHT betroffen: die Zuweisung an model.Kaskade_Zweikanalig in ReadSingle -
+        // sie gehoert zur namensbasierten Lesekette des Einstellungssatzes.
+        // =====================================================================
+
         /// <summary>
         /// Liest das Feature-Flag <c>Kaskade_Zweikanalig</c> eines Projekts DIALOGFREI
         /// (Paket 4, Etappe 4a) - für die Oberfläche, die den Schalter anzeigt, ohne den
-        /// ganzen Einstellungssatz zu laden.
+        /// ganzen Einstellungssatz zu laden. <b>Altlast, siehe Block oben.</b>
         ///
         /// Fehlende Spalte, fehlende Zeile und NULL liefern gleichermaßen <c>false</c>;
         /// das ist die Vorbelegung des Flags.
@@ -185,6 +208,13 @@ namespace WindowsFormsApplication1
         /// führt und deshalb ohne die zweikanalige Kaskade Einstellungen enthielte, die
         /// die Simulation gar nicht auswertet.
         ///
+        /// <para><b>ALTLAST seit Paket A1</b> (siehe den Block über
+        /// <see cref="KaskadeZweikanaligLesen"/>): Die Engine kennt nur noch EINEN
+        /// Rechenweg, es gibt also nichts mehr, was „nicht ausgewertet" würde. Die
+        /// Methode hält allein den ANZEIGE-Schalter des Konfigurationsdialogs im
+        /// Gleichstand und fällt mit ihm. Die Begründungen unten beschreiben den
+        /// Zustand VOR A1.</para>
+        ///
         /// <b>Die Regel.</b> Notwendig ist die zweikanalige Kaskade, sobald mindestens
         /// EINE Anlage, deren Erzeugerart in der Kaskade des Projekts steht
         /// (<c>Tab_Einstellungen.Tool_1..Tool_4</c> — dieselben vier Positionen, die
@@ -200,9 +230,9 @@ namespace WindowsFormsApplication1
         ///     Pufferspeicher als ein gemeinsamer Wärmevorrat (Paket Parallelverbund).
         ///     Derselbe Sachverhalt wie bei Merkmal 1: Der einkanalige Weg kennt keine
         ///     Ladeaufträge, die aufsummierte Kapazität wäre gespeichert und angezeigt,
-        ///     aber nicht gerechnet. Die Engine erzwingt den Rechenweg deshalb ohnehin
-        ///     (<c>SimulationControl._verbundErzwingtSpeicherstufe</c>) — dieser Zweig hält
-        ///     den SCHALTER mit dem tatsächlichen Rechenweg im Gleichstand.</description></item>
+        ///     aber nicht gerechnet. Bis Paket A1 erzwang die Engine den Rechenweg
+        ///     deshalb ohnehin; dieser Zweig hielt den SCHALTER mit dem tatsächlichen
+        ///     Rechenweg im Gleichstand.</description></item>
         ///   <item><description>Hauptsenke HEIZKREIS mit einer Bedarfsart ungleich
         ///     „Beides" bei einer Erzeugerart, deren EINKANALIGER Rechenweg
         ///     <c>WS_Typ</c> nicht auswertet — siehe die Abgrenzung unten.</description></item>
@@ -214,18 +244,15 @@ namespace WindowsFormsApplication1
         /// </list>
         ///
         /// <b>Abgrenzung bei Merkmal 2 — die WÄRMEPUMPE zählt NICHT mit.</b> Die
-        /// Bedarfsart ist nicht durchgängig zweikanalig-exklusiv: Die einkanalige
-        /// Stundenschleife der Wärmepumpe liest <c>WS_Typ</c> sehr wohl aus
-        /// (<c>SimulationWaermepumpe.ModuleAufbauen</c> füllt <c>wp_senke</c>,
-        /// <c>Berechnung_Stundenschleife</c> wählt damit <c>rest_ww</c> bzw.
-        /// <c>rest_heiz</c>). Ein „nur Heizwärme"-Modul rechnet dort also bereits richtig,
-        /// und eine Automatik, die deshalb umschaltet, würde ohne Not ANDERE Ergebnisse
-        /// erzeugen. BHKW, Heizkessel und Solarthermie werten <c>WS_Typ</c> einkanalig
-        /// dagegen NICHT aus (der einkanalige Anker rechnete auf der Bedarfssumme; erst die
-        /// zweikanaligen Stufen folgen dem Kanal — vgl. den Kopfkommentar von
-        /// <c>SimulationControl.Simulation_BHKW_Ctrl_Zweikanalig</c>). Für sie ist die
-        /// Einstellung ohne die zweikanalige Kaskade wirkungslos, und genau das soll die
-        /// Automatik verhindern.
+        /// Bedarfsart war nicht durchgängig zweikanalig-exklusiv: Die (mit Paket A1
+        /// entfallene) einkanalige Stundenschleife der Wärmepumpe las <c>WS_Typ</c> sehr
+        /// wohl aus. Ein „nur Heizwärme"-Modul rechnete dort also bereits richtig, und
+        /// eine Automatik, die deshalb umschaltete, hätte ohne Not ANDERE Ergebnisse
+        /// erzeugt. BHKW, Heizkessel und Solarthermie werteten <c>WS_Typ</c> einkanalig
+        /// dagegen NICHT aus (der einkanalige Anker rechnete auf der Bedarfssumme; erst
+        /// die zweikanaligen Stufen folgen dem Kanal). Für sie war die Einstellung ohne
+        /// die zweikanalige Kaskade wirkungslos, und genau das sollte die Automatik
+        /// verhindern.
         ///
         /// <b>Keine zweite SQL-Wahrheit.</b> Gelesen wird über <see cref="Hydraulikbild"/>
         /// (Etappe D4) — dieselbe Abbildung, mit der Senken- und Quellendialog schon heute

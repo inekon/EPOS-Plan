@@ -25,8 +25,7 @@ namespace WindowsFormsApplication1
         /// SEIT PAKET 6 ausgewertet: Der zweikanalige Weg löst darüber die Senke,
         /// die Ladepriorität und den Ladeauftrag jeder BHKW-Anlage auf und ersetzt damit
         /// den skalaren <see cref="kapazitaetPendelspeicher"/> durch einen zugeordneten
-        /// <see cref="SimulationPufferspeicher"/> (Konzept 6.5, zweiter Punkt). Der
-        /// einkanalige Altpfad liest die Liste weiterhin nicht.
+        /// <see cref="SimulationPufferspeicher"/> (Konzept 6.5, zweiter Punkt).
         /// </summary>
         public List<int> bhkw_anlagen_ids = new List<int>();
 
@@ -776,10 +775,10 @@ namespace WindowsFormsApplication1
         /// <summary>Höchste Zahl von BHKW-Modulen, die die festen Felder tragen.</summary>
         public const int MAX_BHKW = 10;
 
-        /// <summary>In Pufferspeicher geladene BHKW-Wärme je Stunde [kWh]; im Altpfad 0.</summary>
+        /// <summary>In Pufferspeicher geladene BHKW-Wärme je Stunde [kWh]; ohne Speicher 0.</summary>
         public double[] Speicherladung_stuendlich = new double[8760];
 
-        /// <summary>Jahressumme der Speicherladung [kWh]; im Altpfad exakt 0.</summary>
+        /// <summary>Jahressumme der Speicherladung [kWh]; ohne Speicher exakt 0.</summary>
         public double Speicherladung_gesamt = 0;
 
         /// <summary>
@@ -803,7 +802,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Anteil des BHKW an der bedarfsdeckenden Speicherentladung [kWh], zugerechnet
         /// von der <see cref="Kaskadenschleife"/> nach der Interimsregel „Vermischung im
-        /// Speicher" (Paket-5-Nacharbeit, Befund N2). Im Altpfad 0.
+        /// Speicher" (Paket-5-Nacharbeit, Befund N2). Ohne Speicher 0.
         /// </summary>
         public double Speicherentladung_Anteil = 0;
 
@@ -953,10 +952,10 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Setzt den Modulzustand auf den Laufanfang. Aufgerufen NUR aus dem
-        /// zweikanaligen Weg — der Altpfad hat nie eine <c>Init()</c> gehabt und bleibt
-        /// deshalb unberührt (der Bestandsbefund „<c>s_waerme_MWh</c> wird in der
-        /// stromgeführten Fahrweise nicht genullt" ist im Protokoll vermerkt).
+        /// Setzt den Modulzustand auf den Laufanfang (mit Paket 6 eingeführt; der
+        /// entfallene einkanalige Weg hatte keine <c>Init()</c> — der Bestandsbefund
+        /// „<c>s_waerme_MWh</c> wird in der stromgeführten Fahrweise nicht genullt" ist
+        /// im Protokoll vermerkt).
         /// </summary>
         public void Init()
         {
@@ -1033,10 +1032,10 @@ namespace WindowsFormsApplication1
                 // SimulationRunner weiter, und der Lauf speichert kein Ergebnis.
                 //
                 // ABWEICHUNG VOM HEIZKESSEL, mit Absicht: Der Kessel kürzt und rechnet
-                // weiter, weil sein Altpfad genau das tut (MessageBox + erste MAX_SPK) -
-                // das VERHALTEN bleibt dort dasselbe. Das BHKW hat diese Vorlage nicht:
-                // Sein Altpfad läuft ab dem 11. Modul in eine IndexOutOfRangeException
-                // (Bestandsbefund B-3). Es gibt also kein Verhalten zu erhalten, und ein
+                // weiter - das war schon immer sein Verhalten (erste MAX_SPK). Das BHKW
+                // hat diese Vorlage nicht: Sein früherer einkanaliger Weg lief ab dem
+                // 11. Modul in eine IndexOutOfRangeException (Bestandsbefund B-3). Es
+                // gibt also kein Verhalten zu erhalten, und ein
                 // stillschweigend um Module gekürztes Ergebnis sähe plausibel aus, wäre
                 // aber falsch - sichtbar falsch ist besser als still falsch.
                 Fehlertext = string.Format(MyResource.Resource.SIMENG_BHKW_MAX_UEBERSCHRITTEN,

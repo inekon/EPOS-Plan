@@ -155,15 +155,16 @@ namespace WindowsFormsApplication1
         // Bis S1 las das Schema die Senke einer Anlage aus WaermesenkeClass.SenkeDaten,
         // also aus den beiden gespiegelten Altspalten. Zwei Dinge gehen darin verloren:
         // die Ränge ab 3 (sie haben keine Altspalte) und die beiden Prozess-Ziele (sie
-        // spiegeln sich als „Heizung"). Deshalb liest das Modell jetzt die geordneten
-        // Senkenlisten - mit demselben Rückfall auf die Altspalten, den auch die Engine
-        // fährt, solange Migrationsschritt 50 nicht gelaufen ist.
+        // spiegeln sich als „Heizung"). Deshalb liest das Modell die geordneten
+        // Senkenlisten; mit Paket A1 ist der Rückfall auf die Altspalten entfallen
+        // (Begründung in SenkenlistenLesen).
         //
-        // NICHT über WaermesenkeClass.SenkenlistenLaden: Diese Fassung schreibt
-        // Protokollzeilen in SimulationProtokoll.Aktuell (Rang-1-Invariante,
-        // Puffer-Ziel ohne Puffer). Aus einem Konfigurationsdialog heraus gerufen,
-        // landeten sie im Protokoll des NÄCHSTEN Laufs. Hier wird deshalb still
-        // gelesen - dieselbe Quelle, kein Nebeneffekt.
+        // STILL gelesen: Die laute Fassung WaermesenkeClass.SenkenlistenLaden schreibt
+        // Protokollzeilen in SimulationProtokoll.Aktuell (Rang-1-Invariante, Puffer-Ziel
+        // ohne Puffer). Aus einem Konfigurationsdialog heraus gerufen, landeten sie im
+        // Protokoll des NÄCHSTEN Laufs. Die Zeilen kommen deshalb direkt über
+        // Z_AnlageSenkeCtrl, die Ladeordnung über SenkenlistenLadenStill - dieselbe
+        // Quelle, kein Nebeneffekt.
 
         /// <summary>Senkenzeilen je Anlagen-ID, in Rangfolge.</summary>
         private readonly Dictionary<int, List<Z_AnlageSenkeModel>> _senken =
@@ -179,6 +180,13 @@ namespace WindowsFormsApplication1
             List<Z_AnlageSenkeModel> kette;
             return _senken.TryGetValue(idAnlage, out kette)
                 ? kette : new List<Z_AnlageSenkeModel>();
+        }
+
+        /// <summary>Die Senkenzeile eines Rangs (0-basiert); <c>null</c>, wenn es sie nicht gibt.</summary>
+        private Z_AnlageSenkeModel SenkeAufRang(int idAnlage, int index)
+        {
+            List<Z_AnlageSenkeModel> kette = Senken(idAnlage);
+            return index >= 0 && index < kette.Count ? kette[index] : null;
         }
 
         /// <summary>Bedient der Puffer diesen Kanal (Klassen-Set)? Unbekannte ID: nein.</summary>
@@ -339,10 +347,14 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Liest die geordneten Senkenlisten des Projekts; ohne <c>Z_AnlageSenke</c>
-        /// (Migrationsschritt 50 nicht gelaufen) oder für eine Anlage ohne Zeile darin
-        /// gelten die beiden Altslots aus <see cref="Hydraulikbild"/> — dieselbe
-        /// Rückfallkette wie in der Engine, nur still (siehe Feldkommentar).
+        /// Liest die geordneten Senkenlisten des Projekts aus <c>Z_AnlageSenke</c>.
+        ///
+        /// <para><b>PAKET A1:</b> Der Rückfall auf die beiden Altslots aus
+        /// <see cref="Hydraulikbild"/> ist entfallen — dieselbe Entscheidung wie in
+        /// <c>WaermesenkeClass.SenkenlistenLaden</c>. Eine Anlage ohne Zeile bekommt die
+        /// RANG-1-VORBELEGUNG <c>Heizkreis/Beides</c>, also genau das, was auch die Engine
+        /// für sie rechnet; das Schema zeigt damit keinen Speicher mehr an, den kein Lauf
+        /// mehr lädt.</para>
         /// </summary>
         private void SenkenlistenLesen(int idProjekt,
                                        List<Hydraulikbild.AnlagenEintrag> anlagen)
@@ -369,20 +381,9 @@ namespace WindowsFormsApplication1
                 {
                     ID_Anlage = a.ID,
                     Rang = 1,
-                    Ziel = a.Senke.Ziel,
-                    Bedarfsart = a.Senke.Bedarfsart,
-                    ID_Puffer = a.Senke.ID_Puffer
+                    Ziel = DbWerte.WS_ZIEL_HEIZKREIS,
+                    Bedarfsart = WaermequelleClass.SENKE_BEIDES
                 });
-
-                if (a.Senke.HatZweitsenke)
-                    kette.Add(new Z_AnlageSenkeModel
-                    {
-                        ID_Anlage = a.ID,
-                        Rang = 2,
-                        Ziel = a.Senke.Ziel2,
-                        Bedarfsart = a.Senke.Bedarfsart,
-                        ID_Puffer = a.Senke.ID_Puffer2
-                    });
 
                 _senken[a.ID] = kette;
             }
@@ -552,14 +553,18 @@ namespace WindowsFormsApplication1
                 if (a.Vorlauf > 0 && a.Ruecklauf > 0)
                     k.Zeilen.Add(string.Format(MyResource.Resource.SIM_KARTE_TEMPERATURPAAR,
                                                a.Vorlauf, a.Ruecklauf));
+                // PAKET A1: Ziel und Zielspeicher kommen aus der SENKENLISTE (Rang 1) und
+                // nicht mehr aus der gespiegelten Altspaltensicht — nur so stehen auch die
+                // beiden Prozess-Ziele richtig da (sie spiegelten sich als „Heizung").
+                Z_AnlageSenkeModel rang1 = SenkeAufRang(a.ID, 0);
                 k.Zeilen.Add(string.Format(MyResource.Resource.SIM_KARTE_SENKE,
-                                           WaermesenkeClass.HauptsenkeAnzeige(a.Senke)));
+                                           Form_Waermesenke.SenkeAnzeige(rang1)));
 
                 // Temperatur-Warnregel (Konzept Abschnitt 5), Wort für Wort die Regel der
                 // Erzeugerkarte: Erzeuger-Vorlauf < Puffer-Vorlauf der Hauptsenke.
                 WaermesenkeClass.PufferInfo senke = null;
-                if (WaermesenkeClass.IstPufferZiel(a.Senke.Ziel) && a.Senke.ID_Puffer > 0)
-                    pufferJeId.TryGetValue(a.Senke.ID_Puffer, out senke);
+                if (rang1 != null && WaermesenkeClass.IstPufferZiel(rang1.Ziel) && rang1.ID_Puffer > 0)
+                    pufferJeId.TryGetValue(rang1.ID_Puffer, out senke);
 
                 if (senke != null && senke.Vorlauf > 0 && a.Vorlauf > 0 && a.Vorlauf < senke.Vorlauf)
                 {
@@ -645,13 +650,20 @@ namespace WindowsFormsApplication1
             // Ladepositionen EINMAL je beteiligtem Puffer holen - Ladereihenfolge fragt je
             // Aufruf Anlagen und Kaskadenplätze neu ab (Begründung wie in
             // Form_Simulation_Config.SpeicherKarteDaten).
+            //
+            // PAKET A1: Die Ladeordnung liest die Senkenlisten (ab Rang 3 trägt die Kante
+            // erst dadurch ihre Kreisziffer, S2-O6). Sie werden hier EINMAL still geholt
+            // und in jeden Aufruf hineingereicht - sonst läse jeder Speicherknoten sie
+            // erneut.
+            List<Senkenliste> senken = WaermesenkeClass.SenkenlistenLadenStill(idProjekt);
+
             Dictionary<int, List<Ladeordnung.LadeEintrag>> ordnung =
                 new Dictionary<int, List<Ladeordnung.LadeEintrag>>();
 
             foreach (Knoten k in Knotenliste)
             {
                 if (k.Art != Knotenart.Speicher || ordnung.ContainsKey(k.ID)) continue;
-                ordnung[k.ID] = Ladeordnung.Ladereihenfolge(idProjekt, k.ID);
+                ordnung[k.ID] = Ladeordnung.Ladereihenfolge(idProjekt, k.ID, senken);
             }
 
             foreach (Hydraulikbild.AnlagenEintrag a in anlagen)

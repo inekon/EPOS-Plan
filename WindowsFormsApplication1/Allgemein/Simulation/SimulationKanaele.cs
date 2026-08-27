@@ -14,10 +14,13 @@ namespace WindowsFormsApplication1
     /// bereit, mit dem sie heute arbeiten, und <see cref="Uebernehmen"/> verteilt deren
     /// Ergebnis wieder auf die beiden Kanäle.
     ///
-    /// BENUTZT WIRD SIE NUR IM ZWEIKANALIGEN WEG (Etappe 4b), also wenn die
-    /// Projekteinstellung <c>Kaskade_Zweikanalig</c> gesetzt ist (Konzept Kapitel 9,
-    /// Feature-Flag). Der einkanalige Altpfad rührt sie nicht an — er bleibt die
-    /// Rückfallebene und rechnet weiter auf einem Summenvektor.
+    /// <b>OHNE PRODUKTIVEN AUFRUFER seit Paket 6</b> (Nacharbeit, Befund N10) und mit
+    /// Paket K1 durch <see cref="Kanalsatz"/> abgelöst; der Altpfad-Rückbau (Paket A1)
+    /// hat daran nichts geändert, weil auch er sie nie gerufen hat. Die Klasse bleibt
+    /// bewusst stehen — Begründung am Kopf von <see cref="Uebernehmen"/>; hinzu kommt,
+    /// dass ihr <see cref="Selbsttest"/> als EINZIGE Stelle die Invarianten von
+    /// <see cref="Senkenzuordnung"/>, <c>Senkenliste</c> und
+    /// <c>SimulationPufferspeicher.BedientKanal</c> prüft (Punkt 8).
     ///
     /// Feldgrößen sind wie im gesamten Rechenkern fest verdrahtet: 8760 Stunden,
     /// <c>float</c>-Vektoren mit Zwischenrechnung in <c>double</c>.
@@ -1028,8 +1031,8 @@ namespace WindowsFormsApplication1
     ///
     /// <b>SEIT PAKET S1 Übergangsbestand:</b> Der dreikanalige Weg rechnet mit
     /// <see cref="Senkenliste"/> (<c>Kaskadenkontext.SenkenlisteJeModul</c>). Diese Klasse
-    /// bleibt für das BHKW-Modul bis zu seinem eigenen Umbau und für den einkanaligen
-    /// Altpfad — dort entscheidet ohnehin <c>WS_Typ</c> allein. Sie fällt mit Paket A1.
+    /// bleibt allein für das BHKW-Modul bis zu seinem eigenen Umbau — der Altpfad, der
+    /// als zweiter Grund genannt war, ist mit Paket A1 entfallen.
     /// </summary>
     public class Senkenzuordnung
     {

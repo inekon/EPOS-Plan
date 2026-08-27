@@ -134,6 +134,16 @@ namespace WindowsFormsApplication1
         /// <summary>RESERVIERT fuer Paket P1: Schichtung am Leitspeicher eines Verbunds.</summary>
         public const string W6_SCHICHTUNG_AM_VERBUND = "W6";
 
+        /// <summary>
+        /// Sole-/Wasser-Wasser-Waermepumpe OHNE konfigurierte Waermequelle
+        /// (<c>WQ_Typ</c> leer): Der Lauf rechnet ersatzweise mit der Aussenluft —
+        /// fuer diese Bauart ein Kategorienfehler (die Kennlinie ist auf Sole-/
+        /// Wassertemperaturen bezogen). Nutzerbefund 27.08.2026 (Booster-Kette 1042);
+        /// die echte Quellkopplung kommt mit Paket B1 (Konzept 8.2), bis dahin macht
+        /// dieses Kriterium den Zustand sichtbar.
+        /// </summary>
+        public const string QUELLE_NICHT_KONFIGURIERT = "QUELLE_FEHLT";
+
         /// <summary>HART: derselbe Speicher ist Quelle UND Ladeziel derselben Anlage.</summary>
         public const string HART_KURZSCHLUSS = "HART_KURZSCHLUSS";
 
@@ -187,6 +197,7 @@ namespace WindowsFormsApplication1
             if (bild == null) return befunde;
 
             RingPruefen(bild, befunde);
+            SoleOhneQuellePruefen(idProjekt, befunde);
 
             foreach (int idAnlage in bild.AnlagenReihenfolge)
             {
@@ -445,6 +456,38 @@ namespace WindowsFormsApplication1
             befunde.Add(Befund(W2_BAUFORM_WIDERSPRUCH, false, 0, p.ID,
                 string.Format(MyResource.Resource.SIMWARN_W2_BAUFORM_WIDERSPRUCH,
                               p.Anzeigename, p.Speichertyp, KlassenSetAnzeige(p.Set))));
+        }
+
+        /// <summary>
+        /// QUELLE_FEHLT — Sole-/Wasser-Wasser-Waermepumpen ohne konfigurierte
+        /// Waermequelle (Nutzerbefund 27.08.2026, Booster-Kette). Eine solche Anlage
+        /// rechnet heute ersatzweise mit der Aussenluft — fuer diese Bauarten fachlich
+        /// falsch (die Kennlinie ist auf Sole-/Wassertemperaturen bezogen). Eigene
+        /// stille Abfrage statt einer Erweiterung des Projektbilds: Die Bauart
+        /// (<c>Tab_WP.Typ</c>) braucht sonst kein Kriterium.
+        /// </summary>
+        private static void SoleOhneQuellePruefen(int idProjekt, List<Warnbefund> befunde)
+        {
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT a.ID, a.Bezeichner, a.WQ_Typ, w.Typ AS Bauart " +
+                "FROM Tab_Energieanlagen AS a INNER JOIN Tab_WP AS w ON a.ID_WP = w.ID " +
+                "WHERE a.ID_Projekt = ? AND a.ID_Type = " + WizardItemClass.WP_TYP,
+                new OleDbParameter("@p", idProjekt));
+            if (dt == null) return;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                string bauart = StilleDb.Text(StilleDb.Feld(r, "Bauart")).Trim();
+                if (bauart != DbWerte.WP_BAUART_SOLE_WASSER &&
+                    bauart != DbWerte.WP_BAUART_WASSER_WASSER) continue;
+
+                if (StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")).Trim().Length > 0) continue;
+
+                int idAnlage = (int)StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                befunde.Add(Befund(QUELLE_NICHT_KONFIGURIERT, false, idAnlage, 0,
+                    string.Format(MyResource.Resource.SIMWARN_QUELLE_FEHLT,
+                                  StilleDb.Text(StilleDb.Feld(r, "Bezeichner")), bauart)));
+            }
         }
 
         /// <summary>W5 — Quellpuffer ohne einen einzigen Lader.</summary>
@@ -743,11 +786,12 @@ namespace WindowsFormsApplication1
             }
 
             /// <summary>
-            /// Die geordneten Senkenlisten des Projekts, mit RUECKFALL auf die
-            /// Altspalten: Ohne <c>Z_AnlageSenke</c> (Migrationsschritt 50 noch nicht
-            /// gelaufen) oder fuer eine Anlage ohne Zeile darin gelten die beiden
-            /// gespiegelten Slots aus <see cref="Hydraulikbild"/> — dieselbe
-            /// Rueckfallkette wie in <c>WaermesenkeClass.SenkenlistenLaden</c>.
+            /// Die geordneten Senkenlisten des Projekts. Fuer eine Anlage OHNE Zeile in
+            /// <c>Z_AnlageSenke</c> gelten die Slot-Daten aus <see cref="Hydraulikbild"/>
+            /// (Rang-1-Vorbelegung Heizkreis/Beides) — seit Paket A1 der einzige
+            /// Rueckfall: Die WS_-Spiegelung ist abgerissen, und die Migrationspflicht
+            /// (Schritt 50 laeuft vor jedem Programmstart) macht den Fall „Tabelle
+            /// fehlt" unerreichbar.
             ///
             /// <para>Dabei wird auch die Laderabbildung des Hydraulikbilds ERGAENZT: Sie
             /// entsteht dort aus den zwei Altspalten und kennt die Raenge ab 3 nicht.

@@ -30,10 +30,9 @@ namespace WindowsFormsApplication1
         /// <c>Tab_Pufferspeicher.ID</c> — je Speicher GENAU EIN Objekt (Konzept 6.2).
         ///
         /// Aufgebaut wird sie zu Beginn jedes Laufs aus
-        ///   - der Alt-Zuordnung <c>Z_ProjektPufferSp</c> (der Senkenspeicher der
-        ///     Wärmepumpe zuerst — er ist der Alias <see cref="puffer_wp"/>, Konzept 6.7),
-        ///   - den Senken-Fremdschlüsseln der Projektanlagen (<c>WS_ID_Puffer</c>,
-        ///     <c>WS_ID_Puffer2</c>),
+        ///   - den SENKEN der Projektanlagen — seit Paket S1 die geordneten Senkenlisten
+        ///     (<c>Z_AnlageSenke</c>) samt der noch gespiegelten Altspalten
+        ///     <c>WS_ID_Puffer</c>/<c>WS_ID_Puffer2</c>,
         ///   - und den QUELLspeichern der WP-Module, die
         ///     <see cref="WaermequelleClass.Quellspeicher"/> beim Modulaufbau hier
         ///     einträgt (<c>WQ_ID_Puffer</c>).
@@ -43,11 +42,11 @@ namespace WindowsFormsApplication1
         /// dort und hier sind dieselben, es gibt keine zweite Speicherverwaltung mit
         /// eigener Bilanz mehr.
         ///
-        /// IM EINKANALIGEN ALTPFAD wertet außer dem Alias <see cref="puffer_wp"/> kein
-        /// Rechenpfad die Registry aus. Im zweikanaligen Weg ist sie die Menge, über die
-        /// die aus der Kaskade gelöste Ladephase (6.3) und Phase G laufen — dann aber
-        /// eingeschränkt auf die Einträge mit
-        /// <see cref="SimulationPufferspeicher.ImRechenpfad"/>
+        /// PAKET A1: Der frühere BLOCK 1 des Aufbaus — der Senkenspeicher der Wärmepumpe
+        /// aus der Alt-Zuordnung <c>Z_ProjektPufferSp</c> — ist ersatzlos entfallen
+        /// (Leitentscheidung L1, Schritt 51). Die Registry ist die Menge, über die die
+        /// aus der Kaskade gelöste Ladephase (6.3) und Phase G laufen — eingeschränkt auf
+        /// die Einträge mit <see cref="SimulationPufferspeicher.ImRechenpfad"/>
         /// (siehe <see cref="RegistryFuerZweikanaligOeffnen"/>).
         /// </summary>
         public Dictionary<int, SimulationPufferspeicher> speicherRegistry =
@@ -55,18 +54,11 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Aufnahmereihenfolge der Registry — <c>Dictionary</c> sichert keine
-        /// Reihenfolge zu, <see cref="ErsterHeizpuffer"/> braucht aber genau die. Der
-        /// Senkenspeicher der Wärmepumpe steht deshalb immer an erster Stelle.
+        /// Reihenfolge zu, <see cref="ErsterHeizpuffer"/> braucht aber genau die. Sie
+        /// folgt der Kaskadenreihenfolge der ladenden Anlagen und danach dem Rang der
+        /// Senkenzeile.
         /// </summary>
         private readonly List<int> _speicherReihenfolge = new List<int>();
-
-        /// <summary>
-        /// Rückfallebene für den einen Fall, in dem der Registry-Schlüssel fehlt: eine
-        /// Zuordnung auf eine Speicherzeile ohne gültige ID. Dann steht der Speicher
-        /// nicht in der Registry, muss aber weiter der Alias sein — sonst rechnete das
-        /// Projekt still ohne Puffer.
-        /// </summary>
-        private SimulationPufferspeicher _pufferOhneRegistrySchluessel = null;
 
         /// <summary>
         /// Speicher, die im Lauf rechnen, aber keinen freien Registry-Schlüssel bekommen
@@ -83,25 +75,13 @@ namespace WindowsFormsApplication1
             new List<SimulationPufferspeicher>();
 
         /// <summary>
-        /// Die Zuordnungszeilen <c>Z_ProjektPufferSp</c> des Laufs, gelesen von
-        /// <see cref="SpeicherRegistryAufbauen"/> und dort aufbewahrt.
-        ///
-        /// NACHARBEIT PAKET 6, BEFUND N2: Der Ersatz-Pendelspeicher entsteht erst nach
-        /// dem Kontextaufbau und braucht dieselbe TEMPERATUR-VORRANGKETTE wie jeder
-        /// andere Registry-Speicher (Projektkopie → Zuordnungszeile → Rückfall). Ohne
-        /// diese Zwischenablage müsste er die Zeilen ein zweites Mal aus der Datenbank
-        /// lesen — dieselbe Abfrage, doppelt, im Engine-Pfad.
-        /// </summary>
-        private Z_ProjektPufferSpCtrl _pspZuordnungen = null;
-
-        /// <summary>
         /// Senkenzuordnungen aller Wärmeerzeuger des Projekts (Konzept 6.1), je Lauf
         /// neu geladen — die Fassung mit Haupt- und optionaler Zweitsenke.
         ///
         /// <b>SEIT PAKET S1 nur noch Übergangsbestand:</b> Der dreikanalige Weg rechnet
         /// mit den GEORDNETEN SENKENLISTEN (<see cref="Senkenlisten"/>). Diese Liste
-        /// bleibt für das BHKW-Modul, das seinen Umbau auf n Senken je Stufe im eigenen
-        /// Paket bekommt, und fällt mit dem Altpfad (Paket A1).
+        /// bleibt allein für das BHKW-Modul, das seinen Umbau auf n Senken je Stufe im
+        /// eigenen Paket bekommt.
         /// </summary>
         public List<Senkenzuordnung> senkenzuordnungen = new List<Senkenzuordnung>();
 
@@ -136,58 +116,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// EFFEKTIVER Rechenweg des Laufs: <c>true</c> = Speicherstufen-Mechanik
-        /// (<see cref="Kaskade_Zweikanalig"/>) auf den — seit Paket K2 DREI —
-        /// Bedarfskanälen mit herausgelöster Ladephase (Reihenfolge-Invariante 6.3),
-        /// <c>false</c> = der einkanalige Altpfad. Name und Persistenzwert des Flags
-        /// bleiben „Kaskade_Zweikanalig"; es ist der Schalter zwischen den beiden
-        /// Rechenwegen, nicht die Angabe einer Kanalzahl (die Spalte wird mit Paket A1
-        /// ohnehin stillgelegt).
+        /// ALTLAST, konstant <c>true</c> (Paket A1, Leitentscheidung L1).
         ///
-        /// ZWEI QUELLEN speisen das Feld (siehe die Zuweisung in <c>Do_Simulation</c>):
+        /// Bis Paket A1 war dies der EFFEKTIVE Rechenweg des Laufs: <c>true</c> =
+        /// Speicherstufen-Mechanik mit herausgelöster Ladephase, <c>false</c> = der
+        /// einkanalige Altpfad. Der Altpfad ist ERSATZLOS entfallen — jeder Lauf rechnet
+        /// über die Speicherstufe auf den drei Bedarfskanälen. Die Projekteinstellung
+        /// <c>Tab_Einstellungen.Kaskade_Zweikanalig</c> wird NICHT MEHR GELESEN (die
+        /// Migration setzt sie in Schritt 51 auf WAHR; die Spalte bleibt Lese-Altlast).
         ///
-        ///   1. das Feature-Flag <c>Tab_Einstellungen.Kaskade_Zweikanalig</c> des
-        ///      Projekts (Konzept Kapitel 9) — der Schalter für Projekte OHNE BHKW,
-        ///   2. seit PAKET BHKW-REGULÄR: die bloße ANWESENHEIT eines BHKW in
-        ///      <c>Tool_1..4</c>. BHKW-Projekte rechnen ohne Rücksicht auf das Flag über
-        ///      die Speicherstufe (Entscheidung des Anwenders 17.08.2026, revidiert 6-1).
-        ///
-        /// WARUM DAS FELD SELBST GESETZT WIRD und nicht nur die Weiche: Der Rechenweg ist
-        /// nicht allein die Verzweigung in <c>Do_Simulation</c>. <see cref="AlleSpeicher"/>,
-        /// der Registry-Aufbau und der <c>SimulationRunner</c> (Restbedarf und
-        /// Deckungsgrade von Wärmepumpe und BHKW) lesen dasselbe Feld und müssen dieselbe
-        /// Antwort bekommen — sonst rechnete ein BHKW-Projekt zweikanalig, während seine
-        /// Ergebnisbildung noch die Altpfad-Formeln nähme.
-        ///
-        /// Der Schalter ändert Ergebnisse — bei Projekten mit Puffer-Senke deutlich. Was
-        /// sich ändert und warum, steht im Umsetzungsprotokoll zu Paket 4, Teil 7.
+        /// WARUM DAS FELD STEHEN BLEIBT: Die Detailansicht
+        /// (<c>Views/Simulation/Form_Simulation_Detail.cs</c>) liest es noch. Es
+        /// verschwindet mit dem Aufräumschnitt der Oberfläche; bis dahin liefert es die
+        /// einzige noch mögliche Antwort. Nichts setzt es mehr — wer es zuweist,
+        /// beschreibt keinen Rechenweg mehr, sondern erzeugt einen Widerspruch.
         /// </summary>
-        public bool KaskadeZweikanalig = false;
-
-        /// <summary>
-        /// <c>true</c>, wenn NICHT das Feature-Flag, sondern das BHKW in der Kaskade den
-        /// Speicherstufen-Weg erzwungen hat (Paket BHKW-Regulär). Trägt allein den
-        /// Protokollhinweis: Der Anwender soll den Grund des Rechenwegs im Lauf-Protokoll
-        /// wiederfinden, auch wenn er den Schalter nie berührt hat.
-        /// </summary>
-        private bool _bhkwErzwingtSpeicherstufe = false;
-
-        /// <summary>
-        /// <c>true</c>, wenn ein PARALLELVERBUND im Projekt den Speicherstufen-Weg
-        /// erzwungen hat (Paket Parallelverbund, Entscheidung des Anwenders 17.08.2026) —
-        /// genau die Bauform von <see cref="_bhkwErzwingtSpeicherstufe"/> und aus demselben
-        /// Grund: Der Anwender soll den Grund des Rechenwegs im Lauf-Protokoll
-        /// wiederfinden, auch wenn er den Schalter nie berührt hat.
-        ///
-        /// WARUM DER VERBUND DEN WEG ERZWINGT. Der einkanalige Altpfad holt seinen einen
-        /// Speicher aus der Alt-Zuordnung <c>Z_ProjektPufferSp</c> und kennt weder
-        /// Ladeaufträge noch die Speicher-Registry als Rechenmenge. Ein Verbund ist aber
-        /// genau eine Aussage über den LADEWEG („diese Anlage lädt einen gemeinsamen
-        /// Vorrat aus mehreren Behältern"); ohne die Speicherstufe würde die aufsummierte
-        /// Kapazität gespeichert, angezeigt — und nicht gerechnet. Das ist derselbe stille
-        /// Wirkungsverlust, den Paket BHKW-Regulär für das BHKW beseitigt hat.
-        /// </summary>
-        private bool _verbundErzwingtSpeicherstufe = false;
+        public bool KaskadeZweikanalig = true;
 
         /// <summary>
         /// Die Verbünde des Projekts als <c>Leitspeicher-ID -&gt; zusätzliche Mitglieder</c>,
@@ -308,10 +252,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Fehlertext eines Erzeugermoduls des ZWEIKANALIGEN Wegs (leer, wenn alles
         /// gerechnet hat). Konzept 13.4 verlangt eine dialogfreie Engine; der
-        /// zweikanalige Weg meldet deshalb hierüber statt über eine MessageBox, und
+        /// Rechenweg meldet deshalb hierüber statt über eine MessageBox, und
         /// <c>SimulationRunner</c> reicht den Text an den Aufrufer weiter
-        /// (Paket-5-Nacharbeit, Befund N10). Seit Paket 8 meldet auch der einkanalige
-        /// Altpfad hierüber statt per MessageBox (Konzept 13.4).
+        /// (Paket-5-Nacharbeit, Befund N10; Konzept 13.4).
         /// </summary>
         public string Fehlertext = "";
 
@@ -399,9 +342,9 @@ namespace WindowsFormsApplication1
                 return;
             }
 
+            // PAKET A1: Die beiden Vektorvariablen „Eingang"/„Ausgang" der einkanaligen
+            // Modulschleife sind mit ihr entfallen.
             float[] temp = new float[8760 * 4];
-            float[] Eingang;
-            float[] Ausgang;
 
             m_ID_Projekt = ID_Projekt;
 
@@ -432,64 +375,26 @@ namespace WindowsFormsApplication1
                 Protokoll.Hinweis(string.Format(
                     MyResource.Resource.SIMENG_LADEPRIO_VORBELEGUNG_NACHGEZOGEN, nachgezogen));
 
-            // Feature-Flag der zweikanaligen Kaskade (Konzept Kapitel 9). Ab Etappe 4b
-            // verzweigt es den Rechenweg: gesetzt -> Kaskade_Zweikanalig() nach der
-            // Reihenfolge-Invariante 6.3, nicht gesetzt -> der unveränderte Altpfad.
-            //
-            // NACHARBEIT E-K1-2: Die Auswertung steht seit dieser Nacharbeit VOR dem
-            // Registry-Aufbau. Sie muss dort schon feststehen, weil der Registry-Aufbau
-            // die Verwendung des WP-Puffers festlegt und ein KOMBISPEICHER im Altpfad
-            // ausdrücklich als Heizungspuffer zu führen ist (siehe
-            // SpeicherRegistryAufbauen, Block 1). Der Protokollhinweis bleibt an seiner
-            // bisherigen Stelle, damit die Reihenfolge im Protokollkanal unverändert ist.
-            //
-            // PAKET BHKW-REGULÄR (Entscheidung des Anwenders 17.08.2026, revidiert 6-1):
-            // Steht ein BHKW in der Kaskade, gilt der Speicherstufen-Weg IMMER — auch
-            // ohne Flag. Begründung des Anwenders: „es soll analog anderen Wärmeerzeugern
-            // funktionieren, der Altpfad wird nicht benötigt." Der BHKW-Altpfad rechnete
-            // seinen Speicher am Bedarf vorbei (Vektordifferenz Bedarf − Produktion,
-            // Bilanzfehler aus Konzept 6.5) und ließ den Pufferspeicher unberücksichtigt;
-            // dieser Weg ist mit diesem Paket ersatzlos entfallen.
-            //
-            // Ohne BHKW bleibt die Weiche Zeile für Zeile das, was sie war: Projekte mit
-            // Wärmepumpe, Kessel und Solarthermie folgen weiterhin ausschließlich dem
-            // Flag. Der Speicherstufen-Weg braucht dafür KEINE Kaskade und kein weiteres
-            // Merkmal - ein BHKW allein in Tool_1 genügt.
-            //
-            // Die Anwesenheitsprüfung ist hier möglich, weil tool[] vor Do_Simulation
-            // gesetzt wird (SimulationRunner: sim.tool = tool VOR sim.Do_Simulation).
-            _bhkwErzwingtSpeicherstufe = KaskadeEnthaelt(DbWerte.ERZEUGER_BHKW);
-
-            // PAKET PARALLELVERBUND (Entscheidung des Anwenders 17.08.2026): dasselbe
-            // Oder-Glied, dieselbe Begründung. Führt mindestens eine Anlage des Projekts
-            // zusätzliche Verbundmitglieder, rechnet der Lauf über die Speicherstufe —
-            // sonst wäre die aufsummierte Kapazität gespeichert und angezeigt, aber nicht
-            // gerechnet (Feldkommentar zu _verbundErzwingtSpeicherstufe).
-            //
-            // EIN Zugriff auf die Zuordnungstabelle; auf jeder Datenbank ohne Verbund
-            // liefert er false, und die Weiche ist Zeile für Zeile die bisherige.
-            _verbundErzwingtSpeicherstufe = AnlagePufferVerbundCtrl.ProjektHatVerbund(ID_Projekt);
-
-            KaskadeZweikanalig = (ctrl_konfig != null && ctrl_konfig.model != null &&
-                                  ctrl_konfig.model.Kaskade_Zweikanalig) ||
-                                 _bhkwErzwingtSpeicherstufe ||
-                                 _verbundErzwingtSpeicherstufe;
+            // PAKET A1 (Leitentscheidung L1): Hier stand die WEICHE zwischen den beiden
+            // Rechenwegen — das Feature-Flag Tab_Einstellungen.Kaskade_Zweikanalig,
+            // oder-verknüpft mit „BHKW in der Kaskade" und „Parallelverbund im Projekt".
+            // Sie ist ersatzlos entfallen: Jeder Lauf rechnet über die Speicherstufe mit
+            // herausgelöster Ladephase (Reihenfolge-Invariante 6.3) auf den drei
+            // Bedarfskanälen. Damit entfallen auch die drei Protokollhinweise, die den
+            // gewählten Rechenweg begründet haben - es gibt keine Wahl mehr zu begründen.
 
             // ***********************************************************************
             // Speicher-Registry aufbauen (Paket 4 - Konzept 6.2) und den Senkenspeicher
-            // der Wärmepumpe daraus an das WP-Modul geben. Der zweikanalige Weg öffnet
-            // die Registry danach noch für seine Speichermenge
-            // (RegistryFuerZweikanaligOeffnen); der Altpfad rechnet mit genau diesem
-            // einen Senkenspeicher weiter.
+            // der Wärmepumpe daraus an das WP-Modul geben. Die Registry wird danach für
+            // die Speichermenge des Laufs geöffnet (RegistryFuerZweikanaligOeffnen).
             // ***********************************************************************
             SpeicherRegistryAufbauen();
             simulation_wp.Pufferspeicher = puffer_wp;
 
             // PAKET 8 (Konzept 13.4): Die Extrapolationsrückfrage der WP-Kennlinie ist
-            // zur Projekteinstellung geworden. Sie wird HIER an das Modul gegeben - vor
-            // jedem der beiden Rechenwege, damit beide dieselbe Vorgabe sehen. Ohne
-            // Konfigurationssatz gilt die Vorbelegung "erlaubt", also das bisherige
-            // Verhalten (die Rückfrage wurde in jedem dokumentierten Lauf bejaht).
+            // zur Projekteinstellung geworden. Ohne Konfigurationssatz gilt die
+            // Vorbelegung "erlaubt", also das bisherige Verhalten (die Rückfrage wurde in
+            // jedem dokumentierten Lauf bejaht).
             simulation_wp.Extrapolation_Erlaubt =
                 (ctrl_konfig == null || ctrl_konfig.model == null) || ctrl_konfig.model.Extrapolation_erlaubt;
 
@@ -497,37 +402,13 @@ namespace WindowsFormsApplication1
             //
             // PAKET S1: Der dreikanalige Weg rechnet mit den GEORDNETEN SENKENLISTEN
             // (Senkenlisten(), Konzept 5.1). Diese Fassung bleibt für das BHKW-Modul, das
-            // seinen Umbau auf n Senken je Stufe im eigenen Paket bekommt; sie fällt mit
-            // dem Altpfad (Paket A1).
+            // seinen Umbau auf n Senken je Stufe im eigenen Paket bekommt.
             senkenzuordnungen = WaermesenkeClass.SenkenLaden(m_ID_Projekt);
 
-            // Hinweis zum Rechenweg (die Auswertung selbst steht weiter oben, vor dem
-            // Registry-Aufbau — siehe die Begründung dort). Der Grund wird MITGETEILT:
-            // Bei einem BHKW-Projekt hat der Anwender den Schalter unter Umständen nie
-            // berührt, und ein Rechenweg, den niemand angefordert hat, muss im Protokoll
-            // erklärt sein (Paket BHKW-Regulär).
-            if (_bhkwErzwingtSpeicherstufe)
-                Protokoll.Hinweis("Das Projekt enthält ein BHKW - dieser Lauf rechnet " +
-                                  "deshalb IMMER über die Speicherstufe mit herausgelöster " +
-                                  "Ladephase (Konzept 6.3), unabhängig von der " +
-                                  "Projekteinstellung Kaskade_Zweikanalig. Der einkanalige " +
-                                  "BHKW-Altpfad ist entfallen (Paket BHKW-Regulär).");
-            // Der Verbundhinweis steht NACH dem BHKW-Hinweis und als eigener Zweig: Bei
-            // einem BHKW-Projekt mit Verbund ist der Rechenweg schon erklärt, und zwei
-            // Sätze über dieselbe Weiche wären Rauschen. Ohne BHKW ist der Verbund der
-            // Grund und muss genannt werden.
-            else if (_verbundErzwingtSpeicherstufe)
-                Protokoll.Hinweis("Mindestens ein Wärmeerzeuger des Projekts lädt einen " +
-                                  "PARALLELVERBUND aus mehreren Pufferspeichern - dieser Lauf " +
-                                  "rechnet deshalb IMMER über die Speicherstufe mit " +
-                                  "herausgelöster Ladephase (Konzept 6.3), unabhängig von der " +
-                                  "Projekteinstellung Kaskade_Zweikanalig. Der einkanalige " +
-                                  "Altpfad kennt keine Ladeaufträge und würde die " +
-                                  "aufsummierte Verbundkapazität nicht rechnen.");
-            else if (KaskadeZweikanalig)
-                Protokoll.Hinweis("Projekteinstellung Kaskade_Zweikanalig ist gesetzt - " +
-                                  "dieser Lauf rechnet ZWEIKANALIG mit herausgelöster " +
-                                  "Ladephase (Konzept 6.3).");
+            // PAKET A1: Hier standen die drei Hinweise zum gewählten Rechenweg (BHKW
+            // erzwingt / Parallelverbund erzwingt / Projekteinstellung gesetzt). Mit der
+            // Weiche sind sie ersatzlos entfallen - es gibt nur noch EINEN Rechenweg,
+            // und ein Hinweis, der keine Alternative mehr benennt, ist kein Hinweis.
 
             // PAKET S2 (Konzept 6.2, Entscheidung F6): Der Warnkriterienkatalog am
             // Laufstart.
@@ -552,21 +433,13 @@ namespace WindowsFormsApplication1
             Array.Clear(Speicherfuellstand_viertelstuendlich, 0, Speicherfuellstand_viertelstuendlich.Length);
             Array.Clear(Speicherfuellstand_stuendlich, 0, Speicherfuellstand_stuendlich.Length);
 
-            // Startpunkt der Simulation ist der Wärmebedarf
-            Eingang = simulation_Waermebedarf.Waermebedarf;
-
             // ***********************************************************************
-            // Etappe 4b: die zweikanalige Kaskade mit herausgelöster Ladephase
-            // (Konzept 6.3) als EIGENER Rechenweg hinter dem Feature-Flag.
-            //
-            // Die Verzweigung steht bewusst VOR der bestehenden Schleife und nicht in
-            // ihr: Der einkanalige Altpfad bleibt damit Zeile für Zeile unverändert und
-            // ist als Rückfallebene durch Lesen nachweisbar, nicht erst durch Messen.
-            //
-            // PAKET BHKW-REGULÄR: Der Altpfad ist Rückfallebene nur noch für Projekte
-            // OHNE BHKW. Sein BHKW-Zweig ist ersatzlos entfallen - er kann keines mehr
-            // rechnen, und er bekommt seit der Erweiterung der Flag-Auswertung auch
-            // keines mehr vorgesetzt.
+            // PAKET A1 (Leitentscheidung L1): Der EINZIGE Rechenweg ist die
+            // Speicherstufe mit herausgelöster Ladephase (Konzept 6.3) auf den drei
+            // Bedarfskanälen. Der einkanalige Altpfad — die Modulschleife über tool[0..3]
+            // auf EINEM Summenvektor mit ihren Aufrufern Simulation_WP_Ctrl,
+            // Simulation_SPK_Ctrl und Simulation_Solarthermie_Ctrl — ist ersatzlos
+            // entfallen, ebenso der Rechenweg-Hinweis AltpfadHinweiseD5a.
             // ***********************************************************************
 
             // carrier ID, notwendig für die Berichtserzeugung holen (Brennstoff, Kosten, Emissionsberechnung)
@@ -581,72 +454,7 @@ namespace WindowsFormsApplication1
             EnergietraegerZuordnungLesen(WizardItemClass.KESSEL_TYP, "Heizkessel", simulation_spk.spk_carrier);
 
 
-            if (KaskadeZweikanalig)
-            {
-                Kaskade_Zweikanalig();
-            }
-            else
-            {
-                // ETAPPE D5a: Kombispeicher und Kessel-Quellbezug sind zweikanalige
-                // Erweiterungen. Der Altpfad kennt weder zwei Kanäle noch eine
-                // Speicherstufe mit mehreren Erzeugern - er rechnet unverändert weiter
-                // und sagt, was das für diese Konfiguration bedeutet.
-                AltpfadHinweiseD5a();
-
-                for (int i = 0; i < 4; i++)
-                {
-                    if (tool[i] == DbWerte.ERZEUGER_WAERMEPUMPE)
-                    {
-                        Ausgang = Simulation_WP_Ctrl(Eingang, Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich), ctrl_konfig.model.m_WP_Heizstab);
-     
-                        if (m_bError) Ausgang = Eingang;
-                        Restwaerme = 0;
-                        for (int n = 0; n < 8760; n++) Restwaerme += Ausgang[n];
-                        Rest_Waermebedarf_stuendlich = Ausgang;
-                        Eingang = Ausgang;
-
-                        Reststrom += (float)simulation_wp.WP_Strombedarf_gesamt / 1000f; // in MWh
-                        Reststrom += (float)simulation_wp.Heizstab_gesamt / 1000f; // in MWh
-
-                        temp = Stundenwerte_zu_viertelstunden(simulation_wp.WP_Strombedarf_stuendlich);
-                        Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
-                        temp = Stundenwerte_zu_viertelstunden(simulation_wp.Heizstab_stuendlich);
-                        Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
-                        bSimulationWP = true;
-                    }
-                    else if (tool[i] == DbWerte.ERZEUGER_HEIZKESSEL)
-                    {
-                        Ausgang = Simulation_SPK_Ctrl(Eingang, Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich), ctrl_konfig.model.m_Kessel_Betriebsbereitschaft);
-                        Restwaerme = 0;
-                        for (int n = 0; n < 8760; n++) Restwaerme += Ausgang[n];
-                        Rest_Waermebedarf_stuendlich = Ausgang;
-                        Eingang = Ausgang;
-                   
-                        temp = Stundenwerte_zu_viertelstunden(simulation_spk.Stromverbrauch_stuendlich);
-                        Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
-                    
-                        bSimulationKessel = true;
-                    }
-                    else if (tool[i] == DbWerte.ERZEUGER_SOLARTHERMIE)
-                    {
-                        Ausgang = Simulation_Solarthermie_Ctrl(Eingang);
-
-                        Restwaerme = 0;
-                        for (int n = 0; n < 8760; n++) Restwaerme += Ausgang[n];
-                        Rest_Waermebedarf_stuendlich = Ausgang;
-                        Eingang = Ausgang;
-
-                        bSimulationSolarthermie = true;
-                    }
-                    // PAKET BHKW-REGULÄR: Hier stand der einkanalige BHKW-Zweig
-                    // (Simulation_BHKW_Ctrl mit skalarem Pendelspeicher). Er ist
-                    // entfallen - ein Projekt mit BHKW erreicht diese Schleife nicht
-                    // mehr, weil die Weiche es ausnahmslos in die Speicherstufe schickt
-                    // (Entscheidung des Anwenders 17.08.2026, revidiert 6-1). Ein
-                    // toter else-if-Zweig für ERZEUGER_BHKW bliebe eine Attrappe: Er
-                    // sähe wie eine Rückfallebene aus, wäre aber keine.
-                }
-            }
+            Kaskade_Zweikanalig();
 
             // Photovoltaik abziehen
             if (tool[4] == DbWerte.ERZEUGER_PHOTOVOLTAIK)
@@ -681,11 +489,10 @@ namespace WindowsFormsApplication1
             // aufgeschlagen werden (der Überschuss steht nach dem PV-Block ohnehin
             // nicht mehr im Vektor - SubVectors klemmt bei 0).
             //
-            // Die Stelle liegt hinter BEIDEN Rechenwegen (Altpfad und
-            // Kaskade_Zweikanalig): Beide bauen denselben Lastvektor aus denselben
-            // Reihen (WP-Strombedarf, Heizstab, Kesselstrom, BHKW-Erzeugung) und
-            // setzen dieselben Modulflags, die der Controller beim Beschaffen der
-            // Lastreihe auswertet.
+            // Die Stelle liegt hinter der Speicherstufe: Sie baut den Lastvektor aus den
+            // Reihen der Erzeuger (WP-Strombedarf, Heizstab, Kesselstrom,
+            // BHKW-Erzeugung) und setzt die Modulflags, die der Controller beim
+            // Beschaffen der Lastreihe auswertet.
             // ***********************************************************************
             if (tool[5] == DbWerte.ERZEUGER_STROMSPEICHER)
             {
@@ -762,13 +569,14 @@ namespace WindowsFormsApplication1
         }
 
         // ===================================================================
-        // Zweikanalige Kaskade (Paket 4, Etappe 4b - Konzept 6.3)
+        // Speicherstufe mit herausgelöster Ladephase (Konzept 6.3) — seit Paket A1
+        // der EINZIGE Rechenweg. Der Methodenname stammt aus Etappe 4b, als sie
+        // hinter dem Feature-Flag Kaskade_Zweikanalig stand.
         // ===================================================================
 
         /// <summary>
-        /// Die zweikanalige Kaskade: derselbe Erzeugerdurchlauf tool[0..3] wie im
-        /// Altpfad, aber auf den beiden Bedarfskanälen (Konzept 3.2) statt auf einem
-        /// Summenvektor.
+        /// Der Erzeugerdurchlauf tool[0..3] auf den DREI Bedarfskanälen (Konzept 4.1)
+        /// statt auf einem Summenvektor — seit Paket A1 der einzige Rechenweg.
         ///
         /// ARBEITSTEILUNG seit Paket 5:
         ///
@@ -855,9 +663,8 @@ namespace WindowsFormsApplication1
             // die Phasen A, C, D, E und G.
             //
             // PAKET BHKW-REGULÄR: Diese Bedingung ist UNVERÄNDERT geblieben, und das ist
-            // Absicht. Die Weiche entscheidet nur, dass ein BHKW-Projekt überhaupt
-            // hierher kommt; ob das BHKW dann in der Stundenschleife oder als Vektorstufe
-            // rechnet, bleibt eine Frage seines Speichers. Ein BHKW ohne jeden Puffer hat
+            // Absicht. Ob das BHKW in der Stundenschleife oder als Vektorstufe rechnet,
+            // ist allein eine Frage seines Speichers. Ein BHKW ohne jeden Puffer hat
             // in einer Speicherstufe nichts zu suchen - es würde dort nur die Bezugsgrößen
             // der übrigen Mitglieder verschieben, ohne selbst etwas zu gewinnen.
             _bhkwInSchleife = KaskadeEnthaelt(DbWerte.ERZEUGER_BHKW) &&
@@ -881,8 +688,7 @@ namespace WindowsFormsApplication1
                     schleifeGelaufen = true;
 
                     // Rückfallebene: Bricht die Kennlinienauswertung ab, bleiben die
-                    // Kanäle unverändert - dasselbe, was der Altpfad mit
-                    // "Ausgang = Eingang" tut.
+                    // Kanäle unverändert - die Stufe hat dann nichts gedeckt.
                     Kanalsatz vorher = kanaele.Clone();
 
                     Speicherstufe_Rechnen(kanaele,
@@ -909,12 +715,11 @@ namespace WindowsFormsApplication1
                     if (_kesselInSchleife)
                     {
                         // Paket-5-Nacharbeit, Befund N3 (zweiter Teil): BEZUGSPUNKT des
-                        // Kessel-Strombedarfs. Im Altpfad wird der Kessel NACH der
-                        // Wärmepumpe gerufen und sieht deshalb den Strombedarf nach
-                        // deren Verbrauch. In der gemeinsamen Stundenschleife gibt es
-                        // diese Reihenfolge nicht mehr — der Wert wird deshalb hier
-                        // nachgezogen, sobald der WP-Strom feststeht, und zwar über
-                        // exakt dieselbe Vektorkette wie im Altpfad. Steht der Kessel in
+                        // Kessel-Strombedarfs. In der Kaskadenreihenfolge steht der
+                        // Kessel hinter der Wärmepumpe und sieht deshalb den Strombedarf
+                        // nach deren Verbrauch. In der gemeinsamen Stundenschleife gibt
+                        // es diese Reihenfolge nicht mehr — der Wert wird deshalb hier
+                        // nachgezogen, sobald der WP-Strom feststeht. Steht der Kessel in
                         // der Kaskade VOR der Wärmepumpe, bleibt es beim Stufeneingang.
                         if (_wpInSchleife && KesselHinterWaermepumpe())
                         {
@@ -933,8 +738,8 @@ namespace WindowsFormsApplication1
 
                     if (_bhkwInSchleife)
                     {
-                        // Die Stromerzeugung des BHKW senkt den Strombedarf - dieselbe
-                        // Vektorkette wie im Altpfad, nur an der Position der Stufe.
+                        // Die Stromerzeugung des BHKW senkt den Strombedarf - an der
+                        // Position der Stufe.
                         float[] bhkwStromVs =
                             Stundenwerte_zu_viertelstunden(simulation_bhkw.stromproduktion);
                         Rest_Strombedarf_viertelstuendlich =
@@ -984,8 +789,7 @@ namespace WindowsFormsApplication1
             }
 
             // Ergebnis der Wärmeseite: die Summe der DREI Restkanäle (Paket K2). Ein
-            // EIGENER Vektor - im Altpfad zeigt Rest_Waermebedarf_stuendlich auf das
-            // Ausgangsarray des letzten Moduls (Aliasing, B0-2).
+            // EIGENER Vektor - kein Alias auf das Ausgangsarray eines Moduls (B0-2).
             Rest_Waermebedarf_stuendlich = kanaele.Summe();
 
             Restwaerme = 0;
@@ -1126,7 +930,7 @@ namespace WindowsFormsApplication1
         /// von <see cref="Kaskade_Zweikanalig"/> aus der Projekteinstellung
         /// <c>Tab_Einstellungen.Kanal_Knappheitsreihenfolge</c> und von dort in den
         /// <see cref="Kaskadenkontext"/> gereicht. Vorbelegung {Brauchwasser, Prozess,
-        /// Heizung}; der einkanalige Altpfad liest sie nicht.
+        /// Heizung}.
         /// </summary>
         private int[] _knappheit = Kanal.KnappheitVorgabe();
 
@@ -1299,7 +1103,7 @@ namespace WindowsFormsApplication1
                     return;
                 }
 
-                QuellspeicherUebernehmen(true);
+                QuellspeicherUebernehmen();
                 schleife.WP = simulation_wp;
             }
 
@@ -1567,9 +1371,7 @@ namespace WindowsFormsApplication1
         /// (<see cref="StilleDb"/>) statt über den Altbestand <c>RecordSet</c>. Der
         /// schluckt SQL-Fehler stillschweigend — die Ursache der Bestandsbefunde
         /// B1-F1/B1-F2 —, und eine leere Modulliste sähe hier aus wie „das Projekt hat
-        /// keine Anlagen dieser Art". Die Abfragen sind Wort für Wort dieselben; der
-        /// Altpfad bleibt unverändert bei <c>RecordSet</c>, damit er byte-identisch
-        /// rechnet.
+        /// keine Anlagen dieser Art". Die Abfragen sind Wort für Wort dieselben.
         /// </summary>
         private void WP_Liste_Laden()
         {
@@ -1774,29 +1576,12 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            // TEMPERATUR-VORRANGKETTE wie für jeden anderen Registry-Speicher
-            // (Nacharbeit Paket 6, Befund N2): Projektkopie zuerst, dann die
-            // Zuordnungszeile Z_ProjektPufferSp, erst danach der Rückfall. Bis dahin
-            // wertete dieser Weg NUR die Projektkopie aus — derselbe Puffer bekam über
-            // die Registry ein anderes Q_max als hier (gemessen an 1018: 70/55 °C über
-            // die Z-Zeile gegen den 10-K-Notnagel).
-            int vorlauf = p.Vorlauf;
-            int ruecklauf = p.Ruecklauf;
-            if (vorlauf - ruecklauf <= 0)
-            {
-                int vZuordnung, rZuordnung;
-                if (ZuordnungsTemperaturen(_pspZuordnungen, p.ID, p.Bezeichner,
-                                           out vZuordnung, out rZuordnung))
-                {
-                    vorlauf = vZuordnung;
-                    ruecklauf = rZuordnung;
-                    Protokoll.HinweisEinmal("pendelspeicher-temp-zuordnung-" + p.ID,
-                                      "BHKW-Pendelspeicher: Puffer " + p.ID + " (" + p.Bezeichner +
-                                      ") hat kein Temperaturpaar in der Projektkopie - es gilt " +
-                                      "die Zuordnungszeile (" + vorlauf + "/" + ruecklauf + " °C).");
-                }
-            }
-
+            // BETRIEBSTEMPERATUREN wie für jeden anderen Registry-Speicher: aus der
+            // Projektkopie, sonst der ΔT-Rückfall (hier 20 K, siehe unten).
+            //
+            // PAKET A1: Die mittlere Stufe der Vorrangkette (Zuordnungszeile
+            // Z_ProjektPufferSp, Nacharbeit Paket 6 / Befund N2) ist entfallen — die
+            // Migration übernimmt diese Werte einmalig in die Projektkopie (Schritt 51).
             SimulationPufferspeicher sp;
             if (!speicherRegistry.TryGetValue(idPuffer, out sp) || sp == null)
             {
@@ -1807,9 +1592,8 @@ namespace WindowsFormsApplication1
                 sp.ID_Projekt = p.ID_Projekt;
                 sp.Verwendung = WaermesenkeClass.WirksameVerwendung(p);
 
-                // PAKET K2: Klassen-Set aus der Projektkopie - wie in Block 2 des
-                // Registry-Aufbaus.
-                KlassenSetUebernehmen(sp, true);
+                // PAKET K2: Klassen-Set aus der Projektkopie - wie im Registry-Aufbau.
+                KlassenSetUebernehmen(sp);
 
                 // RÜCKFALL 20 K statt 10 K (Befund N2): Die Altformel
                 // „Liter · 20 / 860" hatte für den Pendelspeicher eine Spreizung von
@@ -1817,7 +1601,7 @@ namespace WindowsFormsApplication1
                 // wertgleiche Ersatz (1,16 gegen 1,16279 Wh/(l·K), −0,24 %); der
                 // generische 10-K-Notnagel würde die Kapazität ohne fachlichen Grund
                 // halbieren. Für alle anderen Puffer bleibt es bei 10 K.
-                sp.Init(p.Gesamtvolumen, vorlauf, ruecklauf, p.Bereitschaftsverluste, 20);
+                sp.Init(p.Gesamtvolumen, p.Vorlauf, p.Ruecklauf, p.Bereitschaftsverluste, 20);
                 RueckfallMelden(sp, p.ID, p.Bezeichner);
 
                 sp.SchwelleEin = p.SchwelleEin / 100.0;
@@ -1872,11 +1656,11 @@ namespace WindowsFormsApplication1
 
             Protokoll.Hinweis("BHKW-Pendelspeicher: Keine Puffer-Senke am BHKW - der Speicher „" +
                               sp.BezeichnerAnzeige() + "\" (" + p.Gesamtvolumen + " l, " +
-                              vorlauf + "/" + ruecklauf + " °C, Q_max " +
+                              p.Vorlauf + "/" + p.Ruecklauf + " °C, Q_max " +
                               sp.Q_max.ToString("0.###") + " kWh, Entladeprio " + sp.Entladeprio +
                               ", Obergrenze " + (a.Obergrenze * 100).ToString("0.#") + " % / mit PV " +
                               (a.ObergrenzePV * 100).ToString("0.#") + " %) rechnet als ZWEITSENKE " +
-                              "mit. Der skalare Pendelspeicher des Altpfads ist damit abgelöst.");
+                              "mit. Der frühere skalare Pendelspeicher ist damit abgelöst.");
         }
 
         /// <summary>
@@ -2003,37 +1787,27 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Öffnet den Rechenpfad für die Speicher, die im zweikanaligen Weg wirklich
-        /// arbeiten können, und zieht die Felder nach, die nur an der Projektkopie stehen.
+        /// Öffnet den Rechenpfad für die Speicher, die im Lauf wirklich arbeiten können,
+        /// und zieht die Felder nach, die nur an der Projektkopie stehen.
         ///
         /// KRITERIUM (nachgeschärft in der Paket-4-Review, Befund B2-b): Es rechnet, was
-        /// eine Anlage als SENKE führt (<c>WS_ID_Puffer</c>, <c>WS_ID_Puffer2</c> — die
-        /// Referenzen, aus denen auch <c>Ladeordnung.Ladereihenfolge</c> die Ladeaufträge
-        /// bildet) oder was QUELLE einer Wärmepumpe ist (<c>WQ_ID_Puffer</c>).
+        /// eine Anlage als SENKE führt (die Senkenlisten und die gespiegelten Altspalten
+        /// — dieselben Referenzen, aus denen auch <c>Ladeordnung.Ladereihenfolge</c> die
+        /// Ladeaufträge bildet) oder was QUELLE einer Wärmepumpe ist
+        /// (<c>WQ_ID_Puffer</c>).
         ///
         /// Die erste Fassung öffnete stattdessen ALLE Registry-Einträge — mit der
         /// Begründung aus Konzept 6.7 („ab Etappe 4b rechnen alle Registry-Speicher
-        /// mit"). Das ging zu weit: In die Registry kommt auch, was nur über die
-        /// Alt-Zuordnung <c>Z_ProjektPufferSp</c> am Projekt hängt (Projekt 1007 aus einer
-        /// Solarthermie-Zuordnung, 1011 aus „Gesamtsystem", 1018 aus einer
-        /// BHKW-Zuordnung). Solche Speicher kann in diesem Rechenweg niemand laden — es
-        /// gibt keinen Ladeauftrag für sie. Sie erschienen dann mit lauter Nullen in
+        /// mit"). Das ging zu weit: Ein Speicher ohne Senkenreferenz hat keinen
+        /// Ladeauftrag, erschiene aber mit lauter Nullen in
         /// <c>Tab_ErgebnisPufferspeicher</c>, und über <see cref="ErsterHeizpuffer"/>
         /// meldete <c>puffer_wp</c> eine Speicherkapazität
-        /// (<c>Kapazitaet_Pufferspeicher</c>), die kein Erzeuger benutzt. Mit dem engeren
-        /// Kriterium verschwindet diese Ergebnisänderung: 1007 meldet mit gesetztem Flag
-        /// wieder <c>PufferWP_vorhanden = False</c>, genau wie im Altpfad.
+        /// (<c>Kapazitaet_Pufferspeicher</c>), die kein Erzeuger benutzt.
+        /// <see cref="SimulationPufferspeicher.ImRechenpfad"/> bleibt damit eine echte
+        /// Unterscheidung.
         ///
-        /// <see cref="SimulationPufferspeicher.ImRechenpfad"/> bleibt damit auch im
-        /// zweikanaligen Weg eine echte Unterscheidung — und der Altpfad, der es aus
-        /// derselben Registry liest, bleibt unangetastet.
-        ///
-        /// Nachgezogen werden nur <c>Schwelle_Aus_Nachrang</c> und <c>Entladeprio</c>:
-        /// Die Alt-Zuordnung <c>Z_ProjektPufferSp</c> kennt diese Spalten nicht, und ihr
-        /// Speicher bekäme sonst die verhaltensneutrale Vorbelegung, obwohl am Puffer
-        /// eine Reservezone gepflegt ist. Ein-/Abschaltschwelle bleiben ausdrücklich, wie
-        /// die Registry sie aufgebaut hat — sie sind die Parameterquelle, mit der auch
-        /// der Altpfad rechnet.
+        /// Nachgezogen werden nur <c>Schwelle_Aus_Nachrang</c> und <c>Entladeprio</c>;
+        /// Ein-/Abschaltschwelle bleiben ausdrücklich, wie die Registry sie aufgebaut hat.
         /// </summary>
         private void RegistryFuerZweikanaligOeffnen()
         {
@@ -2047,8 +1821,8 @@ namespace WindowsFormsApplication1
             // und die Bilanz des Laufs wäre falsch, ohne dass es irgendwo auffiele.
             //
             // Im Regelfall ist das gar nicht möglich: Ein Mitglied steht in keiner
-            // WS_ID_Puffer-Referenz und kommt schon über ReferenzierteSenkenPuffer nicht in
-            // die Registry. Der Fall entsteht nur bei von HAND gepflegten Beständen (SQL
+            // Senkenreferenz und kommt schon über SenkenPufferDerAnlagen nicht in die
+            // Registry. Der Fall entsteht nur bei von HAND gepflegten Beständen (SQL
             // direkt in der Datenbank) - der Dialog verhindert ihn beim Speichern.
             // Als ANZEIGEOBJEKT (ImRechenpfad = false) bleibt der Speicher zulässig, genau
             // wie jeder andere referenzierte Puffer ohne Ladeauftrag.
@@ -2075,16 +1849,14 @@ namespace WindowsFormsApplication1
                     continue;
                 }
 
-                // Ausdrücklich ZUWEISEN, nicht nur setzen: Der Senkenspeicher aus der
-                // Alt-Zuordnung trägt das Flag schon aus dem Registry-Aufbau. Ohne
-                // Senkenreferenz gehört er im zweikanaligen Weg trotzdem nicht in den
-                // Rechenpfad — ihn lädt hier niemand.
+                // Ausdrücklich ZUWEISEN, nicht nur setzen: Ohne Senkenreferenz gehört ein
+                // Speicher nicht in den Rechenpfad — ihn lädt niemand.
                 bool referenziert = senken.Contains(id);
                 if (sp.ImRechenpfad && !referenziert)
                     Protokoll.WarnungEinmal("registry-ohne-senkenreferenz-" + id,
                                       "Speicher-Registry: Puffer " + id + " (" + sp.BezeichnerAnzeige() +
-                                      ") hat keine Senkenreferenz einer Anlage (WS_ID_Puffer/" +
-                                      "WS_ID_Puffer2) - er rechnet im zweikanaligen Weg nicht mit.");
+                                      ") wird von keiner Anlage dieses Projekts als Senke " +
+                                      "geführt - er rechnet nicht mit.");
                 sp.ImRechenpfad = referenziert;
 
                 if (!referenziert) continue;
@@ -2095,14 +1867,6 @@ namespace WindowsFormsApplication1
                 if (p.SchwelleAusNachrang > 0) sp.SchwelleAusNachrang = p.SchwelleAusNachrang / 100.0;
                 sp.Entladeprio = p.Entladeprio;
             }
-
-            // Speicherzeile ohne gültige ID (Rückfallebene des Registry-Aufbaus): Sie
-            // kann keine Senkenreferenz tragen - ein Fremdschlüssel zeigt nie auf 0 -,
-            // ist aber der Puffer, mit dem der Altpfad dieses Projekt rechnet. Er bleibt
-            // deshalb im Rechenpfad, damit der zweikanalige Weg dort nicht weniger
-            // abbildet als der einkanalige.
-            if (_pufferOhneRegistrySchluessel != null)
-                _pufferOhneRegistrySchluessel.ImRechenpfad = true;
         }
 
         /// <summary>
@@ -2167,10 +1931,10 @@ namespace WindowsFormsApplication1
                 if (!liste.Contains(sp)) liste.Add(sp);
             }
 
-            if (_pufferOhneRegistrySchluessel != null &&
-                _pufferOhneRegistrySchluessel.ImRechenpfad &&
-                !liste.Contains(_pufferOhneRegistrySchluessel))
-                liste.Add(_pufferOhneRegistrySchluessel);
+            // PAKET A1: Hier stand die Sonderbehandlung von
+            // _pufferOhneRegistrySchluessel — einer Speicherzeile ohne gültige ID, die
+            // nur über die Alt-Zuordnung Z_ProjektPufferSp in den Lauf kam. Sie ist mit
+            // Block 1 des Registry-Aufbaus entfallen.
 
             // Speicher ohne freien Registry-Schlüssel (Kurzschluss Quelle = Senke) —
             // sie rechnen mit und müssen deshalb auch in Phase G und in der Persistenz
@@ -2439,41 +2203,27 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Alle am Lauf beteiligten Speicher in stabiler Reihenfolge: erst der
-        /// Senkenspeicher der Wärmepumpe (Alias <see cref="puffer_wp"/>), danach die
-        /// Quellspeicher der WP-Module in Modulreihenfolge.
-        ///
-        /// Das ist die EINE Quelle der Wahrheit für Ergebnis-Persistenz
-        /// (Tab_ErgebnisPufferspeicher), Navigator-Serien, CSV-Export und die
-        /// Ergebnistabelle der Detailansicht (Konzept 6.6/13.3).
+        /// Alle am Lauf beteiligten Speicher in stabiler Reihenfolge — die EINE Quelle
+        /// der Wahrheit für Ergebnis-Persistenz (Tab_ErgebnisPufferspeicher),
+        /// Navigator-Serien, CSV-Export und die Ergebnistabelle der Detailansicht
+        /// (Konzept 6.6/13.3).
         ///
         /// ETAPPE 4b — ZUSAMMENFÜHRUNG MIT DER REGISTRY (offener Punkt 6 aus 4a):
-        /// Im zweikanaligen Weg IST die Registry diese eine Quelle. Sie liefert dieselben
-        /// Objekte, die auch gerechnet haben — Ergebnis-Persistenz, Navigator und
-        /// CSV-Export speisen sich damit aus derselben Menge, die die Stundenschleife
-        /// bewegt hat. Das Kriterium ist unverändert „hat gerechnet", nur ist es jetzt
-        /// über <see cref="SimulationPufferspeicher.ImRechenpfad"/> ausgedrückt: Ohne
-        /// gelaufene Wärmepumpen-Stufe wird die Registry gar nicht erst geöffnet, und die
-        /// Liste bleibt leer.
+        /// Die Registry IST diese eine Quelle. Sie liefert dieselben Objekte, die auch
+        /// gerechnet haben — Ergebnis-Persistenz, Navigator und CSV-Export speisen sich
+        /// damit aus derselben Menge, die die Stundenschleife bewegt hat. Das Kriterium
+        /// ist „hat gerechnet", ausgedrückt über
+        /// <see cref="SimulationPufferspeicher.ImRechenpfad"/>: Ohne gelaufene
+        /// Wärmepumpen-Stufe wird die Registry gar nicht erst geöffnet, und die Liste
+        /// bleibt leer.
         ///
-        /// IM ALTPFAD BLEIBT ALLES, WIE ES WAR: erst der Senkenspeicher der Wärmepumpe,
-        /// dann die Quellspeicher der Module. Sonst kämen dort Speicher in die
-        /// Ergebniszeilen, die in diesem Lauf nichts getan haben (der von Migrationsregel
-        /// R6 angelegte „BHKW-Pendelspeicher" etwa), und die Regressionsbasis wäre
-        /// hinfällig.
+        /// PAKET A1: Die zweite Fassung dieser Liste (Senkenspeicher der Wärmepumpe plus
+        /// Quellspeicher der Module) gehörte zum einkanaligen Altpfad und ist mit ihm
+        /// entfallen.
         /// </summary>
         public System.Collections.Generic.List<SimulationPufferspeicher> AlleSpeicher()
         {
-            if (KaskadeZweikanalig) return RegistrySpeicher();
-
-            var liste = new System.Collections.Generic.List<SimulationPufferspeicher>();
-            if (puffer_wp != null) liste.Add(puffer_wp);
-
-            if (simulation_wp != null && simulation_wp.Quellspeicher != null)
-                foreach (SimulationPufferspeicher q in simulation_wp.Quellspeicher)
-                    if (q != null && !liste.Contains(q)) liste.Add(q);
-
-            return liste;
+            return RegistrySpeicher();
         }
 
         // ===================================================================
@@ -2481,34 +2231,9 @@ namespace WindowsFormsApplication1
         // ===================================================================
 
         /// <summary>
-        /// Erster Heizungs-Puffer der Registry in Aufnahmereihenfolge, der im Lauf
-        /// tatsächlich rechnet — die Auflösung des Alias <see cref="puffer_wp"/>
-        /// (Konzept 6.7).
-        ///
-        /// Die Einschränkung auf <see cref="SimulationPufferspeicher.ImRechenpfad"/> ist
-        /// zwingend und dort ausführlich begründet: Die Registry enthält auch Puffer, die
-        /// in diesem Lauf niemand rechnet. Da der Senkenspeicher der Wärmepumpe als
-        /// ERSTER aufgenommen wird, liefert die Methode im Altpfad genau den Speicher,
-        /// den die bisherige Z-basierte Initialisierung geliefert hat.
-        ///
-        /// Im zweikanaligen Weg bleibt die Einschränkung bestehen, nur mit dem engeren
-        /// Kriterium aus <see cref="RegistryFuerZweikanaligOeffnen"/> (Senken- oder
-        /// Quellreferenz). OFFEN: die Reihenfolge auf die Entladepriorität umzustellen
-        /// (Konzept 3.6) — sie ist hier noch die Aufnahmereihenfolge, und bei mehreren
-        /// Heizungspuffern zeigt <c>puffer_wp</c> deshalb auf den zuerst aufgenommenen,
-        /// nicht auf den zuerst entladenen.
-        /// </summary>
-        /// <summary>
         /// Übernimmt das KLASSEN-SET eines Speichers aus der Projektkopie in das
         /// Rechenobjekt (Konzept 6.1, Schritt 49 — Paket K2) und zieht die Anzeige-/
         /// Ergebnisrolle <c>Verwendung</c> konsistent nach.
-        ///
-        /// <para><b>NUR IM ZWEIKANALIGEN WEG.</b> Der einkanalige Altpfad kennt keine
-        /// Kanäle; dort bleibt das Set leer, und <c>BedientKanal</c> antwortet weiter aus
-        /// <c>Verwendung</c> — Anweisung für Anweisung wie vor diesem Paket. Ohne diese
-        /// Schranke bekäme etwa die Detailansicht im Altpfad plötzlich eine
-        /// Kombi-Kennzeichnung an einem Speicher, den der Altpfad ausdrücklich wie einen
-        /// Heizungspuffer rechnet.</para>
         ///
         /// <para><b>Warum die Rolle nachgezogen wird.</b> <c>Verwendung</c> ist seit
         /// Schritt 49 Lese-Altlast — die Wahrheit über die Kanäle steht im Set. Die Rolle
@@ -2518,23 +2243,17 @@ namespace WindowsFormsApplication1
         /// (<c>PufferSpCtrl.VerwendungAusKlassenSet</c>). Auf einem migrierten Bestand
         /// stimmen beide ohnehin überein, und die Zuweisung ist wirkungslos.</para>
         ///
-        /// <para><b>AUSNAHME Block 1 des Registry-Aufbaus</b> (Senkenspeicher der
-        /// Wärmepumpe aus <c>Z_ProjektPufferSp</c>): Dort wird die Rolle bewusst gesetzt
-        /// und darf nicht überschrieben werden (Regressionszusage, siehe dort). Der
-        /// Aufrufer übergibt deshalb <paramref name="ausProjektkopie"/> = false, und das
-        /// Set wird aus genau dieser Rolle abgeleitet. Die Ausnahme fällt mit der
-        /// Stilllegung von <c>Z_ProjektPufferSp</c> (Paket A1, Schritt 51).</para>
+        /// <para><b>PAKET A1:</b> Die frühere Ausnahme für Block 1 des Registry-Aufbaus
+        /// (Set aus der gesetzten <c>Verwendung</c> ableiten statt aus den Flags, K2-O7)
+        /// ist mit Block 1 selbst entfallen. Es gibt nur noch EINE Herkunft des Sets: die
+        /// drei Flags der Projektkopie. Ebenso entfallen ist die Schranke „nur im
+        /// zweikanaligen Weg" — es gibt nur noch diesen einen.</para>
         /// </summary>
-        /// <param name="ausProjektkopie">
-        /// true = die drei Flags aus <c>Tab_Pufferspeicher</c> lesen; false = das Set aus
-        /// der bereits gesetzten <c>Verwendung</c> ableiten.
-        /// </param>
-        private void KlassenSetUebernehmen(SimulationPufferspeicher sp, bool ausProjektkopie)
+        private void KlassenSetUebernehmen(SimulationPufferspeicher sp)
         {
             if (sp == null || sp.IstQuelle) return;
-            if (!KaskadeZweikanalig) return;
 
-            PufferSpCtrl.KlassenSet set = (ausProjektkopie && sp.ID_Pufferspeicher > 0)
+            PufferSpCtrl.KlassenSet set = (sp.ID_Pufferspeicher > 0)
                 ? PufferSpCtrl.KlassenSetLesen(sp.ID_Pufferspeicher)
                 : PufferSpCtrl.KlassenSetAusVerwendung(sp.Verwendung);
 
@@ -2552,6 +2271,21 @@ namespace WindowsFormsApplication1
             sp.Verwendung = rolle;
         }
 
+        /// <summary>
+        /// Erster Heizungs-Puffer der Registry in Aufnahmereihenfolge, der im Lauf
+        /// tatsächlich rechnet — die Auflösung des Alias <see cref="puffer_wp"/>
+        /// (Konzept 6.7).
+        ///
+        /// Die Einschränkung auf <see cref="SimulationPufferspeicher.ImRechenpfad"/> ist
+        /// zwingend und dort ausführlich begründet: Die Registry enthält auch Puffer, die
+        /// in diesem Lauf niemand rechnet (Kriterium siehe
+        /// <see cref="RegistryFuerZweikanaligOeffnen"/>: Senken- oder Quellreferenz).
+        ///
+        /// OFFEN: die Reihenfolge auf die Entladepriorität umzustellen (Konzept 3.6) —
+        /// sie ist hier die Aufnahmereihenfolge, und bei mehreren Heizungspuffern zeigt
+        /// <c>puffer_wp</c> deshalb auf den zuerst aufgenommenen, nicht auf den zuerst
+        /// entladenen.
+        /// </summary>
         public SimulationPufferspeicher ErsterHeizpuffer()
         {
             foreach (int id in _speicherReihenfolge)
@@ -2564,15 +2298,17 @@ namespace WindowsFormsApplication1
                     return sp;
             }
 
-            return _pufferOhneRegistrySchluessel;
+            // PAKET A1: Hier stand die Rückfallebene _pufferOhneRegistrySchluessel — eine
+            // Speicherzeile ohne gültige ID, die nur über die Alt-Zuordnung
+            // Z_ProjektPufferSp in den Lauf kam. Mit Block 1 des Registry-Aufbaus ist sie
+            // entfallen; ein Puffer ohne ID kann keine Senkenreferenz tragen.
+            return null;
         }
 
         /// <summary>
         /// Nimmt einen Speicher unter seiner <c>Tab_Pufferspeicher.ID</c> in die Registry
         /// auf. Ein bereits vorhandener Schlüssel wird NICHT überschrieben — „je Speicher
-        /// genau ein Objekt" heißt auch: das zuerst aufgebaute Objekt gewinnt, und das
-        /// ist mit Absicht der Senkenspeicher der Wärmepumpe mit seinen Parametern aus
-        /// der Alt-Zuordnung.
+        /// genau ein Objekt" heißt auch: das zuerst aufgebaute Objekt gewinnt.
         /// </summary>
         /// <returns>true, wenn der Speicher neu aufgenommen wurde.</returns>
         private bool SpeicherAufnehmen(SimulationPufferspeicher sp, bool imRechenpfad)
@@ -2592,17 +2328,21 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Baut die Speicher-Registry des Laufs auf (Konzept 6.2).
         ///
-        /// Reihenfolge — sie ist Teil des Vertrags, nicht Geschmackssache:
+        /// Aufgenommen wird, was eine PROJEKTANLAGE ALS SENKE FÜHRT — die geordneten
+        /// Senkenlisten (<c>Z_AnlageSenke</c>, Paket S1) samt der noch gespiegelten
+        /// Altspalten <c>WS_ID_Puffer</c>/<c>WS_ID_Puffer2</c>, in Kaskadenreihenfolge
+        /// der Anlagen und danach nach Rang; jeweils mit den Betriebsparametern der
+        /// Projektkopie <c>Tab_Pufferspeicher</c>.
         ///
-        ///   1. Der Senkenspeicher der WÄRMEPUMPE aus der Alt-Zuordnung
-        ///      <c>Z_ProjektPufferSp</c>, mit unveränderter Parameterherkunft (Konzept
-        ///      6.7: „die heutige Initialisierung bleibt die Quelle der Parameter").
-        ///      Er steht an erster Stelle und ist beim Aufbau der einzige SENKEN-Eintrag
-        ///      mit <see cref="SimulationPufferspeicher.ImRechenpfad"/> — daraus folgt,
-        ///      dass <see cref="ErsterHeizpuffer"/> im Altpfad genau ihn liefert.
-        ///   2. Alle übrigen von den Projektanlagen als SENKE referenzierten Puffer
-        ///      (<c>WS_ID_Puffer</c>, <c>WS_ID_Puffer2</c>) und die Puffer der übrigen
-        ///      Zuordnungszeilen, jeweils mit den Betriebsparametern der Projektkopie.
+        /// <para><b>PAKET A1 (K2-O7):</b> Hier stand als BLOCK 1 der Senkenspeicher der
+        /// WÄRMEPUMPE aus der Alt-Zuordnung <c>Z_ProjektPufferSp</c> — mit eigener
+        /// Parameterherkunft, eigener Rollenfestlegung und einer Temperatur-Vorrangkette
+        /// „Projektkopie → Zuordnungszeile". Er ist ersatzlos entfallen (Leitentscheidung
+        /// L1, Schritt 51). Die Betriebstemperaturen der Zuordnungszeilen übernimmt die
+        /// Migration einmalig als DML in die Projektkopie; ein Puffer ohne vollständiges
+        /// Paar fällt wie jeder andere auf die ΔT-Regel in
+        /// <see cref="SimulationPufferspeicher.Init"/> zurück (Meldung siehe
+        /// <see cref="RueckfallMelden"/>).</para>
         ///
         /// Die QUELLspeicher (<c>WQ_ID_Puffer</c>) kommen NACH dem Modulaufbau dazu, über
         /// <see cref="QuellspeicherUebernehmen"/>. Grund: Ihre nutzbare Kapazität folgt
@@ -2620,14 +2360,13 @@ namespace WindowsFormsApplication1
             speicherRegistry.Clear();
             _speicherReihenfolge.Clear();
             _zusatzSpeicher.Clear();
-            _pufferOhneRegistrySchluessel = null;
 
             // --- 0. Die Verbünde des Projekts, EINMAL ---------------------------------
             //
-            // PAKET PARALLELVERBUND: Muss VOR beiden Blöcken stehen — die Aggregation
-            // greift in Block 1 (WP-Alt-Zuordnung) genauso wie in Block 2. Auf einer
-            // Datenbank ohne Verbund ist das Verzeichnis leer und alles Folgende ist Zeile
-            // für Zeile das bisherige Verhalten.
+            // PAKET PARALLELVERBUND: Muss VOR dem Aufbau stehen — die Aggregation greift
+            // an jedem aufgenommenen Leitspeicher. Auf einer Datenbank ohne Verbund ist
+            // das Verzeichnis leer und alles Folgende ist Zeile für Zeile das bisherige
+            // Verhalten.
             List<int> abweichendeZuschnitte;
             _verbuende = AnlagePufferVerbundCtrl.VerbuendeDesProjekts(m_ID_Projekt,
                                                                      out abweichendeZuschnitte);
@@ -2648,122 +2387,13 @@ namespace WindowsFormsApplication1
                                   "hydraulisch entweder Teil des Verbunds oder nicht. " +
                                   "Bitte die Wärmesenken der beteiligten Erzeuger vereinheitlichen.");
 
-            // --- 1. Senkenspeicher der Wärmepumpe aus Z_ProjektPufferSp --------------
+            // --- 1. Alle von einer Projektanlage als SENKE geführten Puffer ----------
             //
-            // Der Block ist gegenüber Paket 3 UNVERÄNDERT (nur das Ziel der Zuweisung
-            // ist jetzt eine lokale Variable): Quelle der Parameter bleibt die
-            // Zuordnungszeile mit dem Vorrang der Puffer-Betriebstemperaturen, damit
-            // Q_max und die Schwellen exakt dieselben Zahlen ergeben wie bisher.
-            Z_ProjektPufferSpCtrl pspZuordnung = new Z_ProjektPufferSpCtrl();
-            pspZuordnung.ReadAll("ID_Projekt=" + m_ID_Projekt);
-            _pspZuordnungen = pspZuordnung;          // N2: für den Ersatz-Pendelspeicher
-            for (int n = 0; n < pspZuordnung.rows; n++)
-            {
-                if (pspZuordnung.items[n].Erzeuger != DbWerte.ERZEUGER_WAERMEPUMPE) continue;
-
-                PufferSpCtrl psp = new PufferSpCtrl();
-                psp.ReadAll("ID=" + pspZuordnung.items[n].ID_Pufferspeicher);
-                if (psp.rows == 0 && !string.IsNullOrEmpty(pspZuordnung.items[n].PufferSp))
-                {
-                    // Fallback für Altdaten ohne ID: über Bezeichner im Projekt suchen
-                    psp.ReadAll("Bezeichner='" + pspZuordnung.items[n].PufferSp.Replace("'", "''") +
-                                "' AND ID_Projekt=" + m_ID_Projekt);
-                }
-
-                if (psp.rows > 0)
-                {
-                    // Etappe 4: Die PUFFER-Zeile ist die führende Ablage der
-                    // Betriebstemperaturen (Konzept 5.1) - ein Speicher hat genau einen
-                    // Betriebszustand, unabhängig davon, wie viele Anlagen ihn laden.
-                    // Nur wenn dort kein vollständiges Paar steht (Alt-Datenbank, nie
-                    // migriert, Werte gelöscht), gilt weiter die Zuordnungszeile.
-                    //
-                    // Regressionsneutral: Migration R1 hat genau die Werte DIESER
-                    // Zuordnungszeile an den Puffer geschrieben - der Vorrang liefert
-                    // auf migrierten Beständen dieselben Zahlen wie bisher.
-                    int vorlauf = pspZuordnung.items[n].Vorlauf;
-                    int ruecklauf = pspZuordnung.items[n].Ruecklauf;
-
-                    int vPuffer, rPuffer;
-                    if (PufferSpCtrl.TemperaturenLesen(psp.items[0].ID, out vPuffer, out rPuffer))
-                    {
-                        vorlauf = vPuffer;
-                        ruecklauf = rPuffer;
-                    }
-
-                    SimulationPufferspeicher pufferWp = new SimulationPufferspeicher();
-                    pufferWp.Bezeichner = psp.items[0].Name;
-                    pufferWp.Erzeuger = "Wärmepumpe";
-                    // Konzept 6.6: Rolle und Speicher-ID wandern in die Ergebniszeile
-                    // und bilden den technischen Serienschlüssel der Anzeigen (13.3).
-                    pufferWp.ID_Pufferspeicher = psp.items[0].ID;
-                    pufferWp.ID_Projekt = m_ID_Projekt;
-
-                    // ETAPPE D5a: Ein KOMBISPEICHER behält seine Verwendung — käme er über
-                    // die Alt-Zuordnung als „Heizung" in die Registry, verlöre er seine
-                    // zweite Kanalzugehörigkeit und der Warmwasserkanal bliebe ungedeckt.
-                    // Jede ANDERE Verwendung bleibt ausdrücklich bei HEIZUNG: Diese Zeile
-                    // ist die Rolle, mit der der Altpfad seinen Wärmepumpen-Puffer rechnet,
-                    // und daran ändert D5a nichts (Regressionszusage).
-                    //
-                    // NACHARBEIT E-K1-2 — NUR IM ZWEIKANALIGEN WEG. Der Altpfad kennt den
-                    // Kanalbegriff nicht; dort ist ein Kombispeicher ausdrücklich WIE EIN
-                    // HEIZUNGSPUFFER zu führen (AltpfadHinweiseD5a sagt das dem Anwender).
-                    // Stünde hier auch im Altpfad „Kombi", fände ErsterHeizpuffer() den
-                    // Speicher nicht mehr — der Alias puffer_wp wäre null, die Wärmepumpe
-                    // rechnete OHNE Speicher, und der Puffer fehlte in
-                    // Tab_ErgebnisPufferspeicher, in der Erdreich-Auswertung und in den
-                    // Zeitreihen des Berichts. Genau die Zusage „wie Heizung, mit Hinweis"
-                    // hält diese Bedingung ein, und zwar für ALLE Altpfad-Leser: In der
-                    // Registry steht dann durchgehend „Heizung".
-                    pufferWp.Verwendung =
-                        (KaskadeZweikanalig &&
-                         WaermesenkeClass.IstKombiVerwendung(
-                            WaermesenkeClass.WirksameVerwendung(
-                                WaermesenkeClass.PufferLesen(psp.items[0].ID))))
-                        ? SimulationPufferspeicher.VERWENDUNG_KOMBI
-                        : SimulationPufferspeicher.VERWENDUNG_HEIZUNG;
-
-                    // PAKET K2: Klassen-Set AUS DIESER ROLLE, nicht aus den Flags der
-                    // Projektkopie - die Rolle ist hier eine bewusste Entscheidung dieses
-                    // Blocks (siehe oben), und ein davon abweichendes Set nähme dem
-                    // Altweg genau die Regressionszusage. Begründung und Abrisspunkt
-                    // (Paket A1) stehen an KlassenSetUebernehmen.
-                    KlassenSetUebernehmen(pufferWp, false);
-
-                    pufferWp.Init(psp.items[0].Gesamtvolumen,
-                                  vorlauf,
-                                  ruecklauf,
-                                  psp.items[0].Betriebsbereitschaftverlust);
-                    RueckfallMelden(pufferWp, psp.items[0].ID, psp.items[0].Name);
-
-                    // PAKET PARALLELVERBUND — NACH RueckfallMelden: Die Rückfallmeldung
-                    // nennt die Kapazität, die aus dem ΔT-Notnagel des LEITSPEICHERS
-                    // folgt. Stünde die Aggregation davor, meldete sie eine
-                    // Verbundkapazität und wäre als Aussage über den einen Speicher ohne
-                    // Temperaturpaar falsch.
-                    VerbundAufaddieren(pufferWp);
-
-                    // Konfigurierbare Schwellen der Speicherregelung [%]
-                    object sEin = WaermequelleClass.WertLesenStill("Z_ProjektPufferSp", "Schwelle_Ein", pspZuordnung.items[n].ID);
-                    object sAus = WaermequelleClass.WertLesenStill("Z_ProjektPufferSp", "Schwelle_Aus", pspZuordnung.items[n].ID);
-                    if (sEin != null && Convert.ToDouble(sEin) > 0)
-                        pufferWp.SchwelleEin = Convert.ToDouble(sEin) / 100.0;
-                    if (sAus != null && Convert.ToDouble(sAus) > 0)
-                        pufferWp.SchwelleAus = Convert.ToDouble(sAus) / 100.0;
-                    // Zweite Stufe der Ladeobergrenze (Konzept 3.4): ohne eigenen Wert
-                    // gleich der Abschaltschwelle und damit wirkungslos.
-                    pufferWp.SchwelleAusNachrang = pufferWp.SchwelleAus;
-
-                    pufferWp.ImRechenpfad = true;
-                    if (!SpeicherAufnehmen(pufferWp, true))
-                        _pufferOhneRegistrySchluessel = pufferWp;   // Speicherzeile ohne ID
-                }
-                break; // ReadAll sortiert nach Priorität -> erster Treffer gewinnt
-            }
-
-            // --- 2. Alle übrigen referenzierten Projekt-Puffer ------------------------
-            foreach (int id in ReferenzierteSenkenPuffer(pspZuordnung))
+            // PAKET A1: Hier stand davor als Block 1 der Senkenspeicher der Wärmepumpe
+            // aus der Alt-Zuordnung Z_ProjektPufferSp (K2-O7). Er ist ersatzlos
+            // entfallen; die Senkenmenge kommt vollständig aus den Senkenlisten der
+            // Anlagen (Begründung im Methodenkopf).
+            foreach (int id in SenkenPufferDerAnlagen())
             {
                 if (id <= 0 || speicherRegistry.ContainsKey(id)) continue;
 
@@ -2793,37 +2423,20 @@ namespace WindowsFormsApplication1
                 // PAKET K2: Klassen-Set aus den drei Flags der Projektkopie (Schritt 49).
                 // Auf migriertem Bestand ist es die Ableitung aus genau der Verwendung,
                 // die eine Zeile höher zugewiesen wurde - dann ändert der Aufruf nichts.
-                KlassenSetUebernehmen(sp, true);
+                KlassenSetUebernehmen(sp);
 
-                // TEMPERATUR-VORRANGKETTE wie in Block 1 (Paket 1d, in der Paket-4-Review
-                // nachgezogen): Die Projektkopie ist die führende Ablage; steht dort kein
-                // vollständiges Paar, gilt die ZUORDNUNGSZEILE - und erst danach der
-                // 10-K-Notnagel aus SimulationPufferspeicher.Init. Ohne diese Stufe bekäme
-                // ein Puffer aus einer Alt-Datenbank ohne Temperaturen ein Q_max nach
-                // 10 K, obwohl in Z_ProjektPufferSp ein gepflegtes Paar steht - und damit
-                // eine andere nutzbare Kapazität als derselbe Puffer in Block 1.
-                int vorlauf = p.Vorlauf;
-                int ruecklauf = p.Ruecklauf;
-                if (vorlauf - ruecklauf <= 0)
-                {
-                    int vZuordnung, rZuordnung;
-                    if (ZuordnungsTemperaturen(pspZuordnung, p.ID, p.Bezeichner,
-                                               out vZuordnung, out rZuordnung))
-                    {
-                        vorlauf = vZuordnung;
-                        ruecklauf = rZuordnung;
-                        Protokoll.HinweisEinmal("registry-temp-zuordnung-" + p.ID,
-                                          "Speicher-Registry: Puffer " + p.ID + " (" + p.Bezeichner +
-                                          ") hat kein Temperaturpaar in der Projektkopie - es gilt " +
-                                          "die Zuordnungszeile (" + vorlauf + "/" + ruecklauf + " °C).");
-                    }
-                }
-
-                sp.Init(p.Gesamtvolumen, vorlauf, ruecklauf, p.Bereitschaftsverluste);
+                // BETRIEBSTEMPERATUREN: ausschließlich aus der Projektkopie
+                // Tab_Pufferspeicher. PAKET A1: Die mittlere Stufe der früheren
+                // Vorrangkette (Zuordnungszeile Z_ProjektPufferSp) ist entfallen - die
+                // Migration hat diese Werte einmalig in die Projektkopie übernommen
+                // (Schritt 51). Ein Puffer ohne vollständiges Paar fällt wie bisher auf
+                // die ΔT-Regel in SimulationPufferspeicher.Init zurück; RueckfallMelden
+                // schreibt das in das Lauf-Protokoll.
+                sp.Init(p.Gesamtvolumen, p.Vorlauf, p.Ruecklauf, p.Bereitschaftsverluste);
                 RueckfallMelden(sp, p.ID, p.Bezeichner);
 
-                // PAKET PARALLELVERBUND — dieselbe Stelle wie in Block 1, unmittelbar nach
-                // der Rückfallmeldung des LEITSPEICHERS (Begründung dort).
+                // PAKET PARALLELVERBUND — unmittelbar nach der Rückfallmeldung des
+                // LEITSPEICHERS (Begründung dort).
                 VerbundAufaddieren(sp);
 
                 // PufferInfo führt die Schwellen in PROZENT (Ladeordnung-Vorgaben),
@@ -2840,8 +2453,8 @@ namespace WindowsFormsApplication1
                 // getragener Parameter ohne Rechenwirkung.
                 sp.SchwelleReserve = p.SchwelleReserve / 100.0;
 
-                // Beim Aufbau nicht im Rechenpfad; der zweikanalige Weg öffnet ihn, wenn
-                // eine Anlage ihn als Senke führt (siehe ImRechenpfad).
+                // Beim Aufbau nicht im Rechenpfad; geöffnet wird er, wenn eine Anlage ihn
+                // als Senke führt (siehe ImRechenpfad).
                 SpeicherAufnehmen(sp, false);
             }
         }
@@ -2863,9 +2476,9 @@ namespace WindowsFormsApplication1
         /// müssen.
         ///
         /// <b>Q_max WIRD SUMMIERT, NICHT DAS VOLUMEN.</b> Jeder Behälter bringt sein
-        /// eigenes Temperaturpaar mit, und für jedes gilt die Vorrangkette bzw. der
-        /// ΔT-Rückfall dieses Speichers — genau wie bisher für einen Einzelpuffer (Block 2
-        /// oben, <c>WaermesenkeClass.PufferInfo.Q_max</c>). Zwei mal 1000 l bei 60/40 und
+        /// eigenes Temperaturpaar mit, und für jedes gilt der ΔT-Rückfall dieses
+        /// Speichers — genau wie für einen Einzelpuffer
+        /// (<c>WaermesenkeClass.PufferInfo.Q_max</c>). Zwei mal 1000 l bei 60/40 und
         /// 50/40 ergeben eben nicht 2000 l bei einer der beiden Spreizungen. Über die
         /// Einzelkapazitäten zu summieren ist die physikalisch richtige Rechnung und
         /// dieselbe Zahl, die der Dialog anzeigt
@@ -3002,9 +2615,7 @@ namespace WindowsFormsApplication1
         /// Nacharbeit stillschweigend. Projektgrundsatz: sichtbar falsch ist besser als
         /// still falsch.
         ///
-        /// Die Meldung läuft in BEIDEN Rechenwegen — der Registry-Aufbau gehört zu
-        /// keinem von beiden. Sie geht in kein Ergebnis und in keine CSV ein; der
-        /// Altpfad rechnet unverändert.
+        /// Die Meldung geht in kein Ergebnis und in keine CSV ein.
         ///
         /// PROTOKOLLKANAL-NACHZUG: seit dem Folgepaket zu Paket 9 über den
         /// WARNUNGS-Kanal statt nur auf die Konsole. Der Ersatzwert bestimmt die
@@ -3027,39 +2638,10 @@ namespace WindowsFormsApplication1
                               "Rücklaufpaar am Puffer ergäbe eine andere Kapazität.");
         }
 
-        /// <summary>
-        /// Vorlauf/Rücklauf einer Alt-Zuordnung <c>Z_ProjektPufferSp</c> zu einem Puffer —
-        /// die mittlere Stufe der Temperatur-Vorrangkette (Paket 1d).
-        ///
-        /// Gesucht wird zuerst über die Puffer-ID, danach über den Bezeichner: Genau diese
-        /// zwei Wege benutzt auch Block 1 des Registry-Aufbaus, und Altdaten ohne
-        /// <c>ID_Pufferspeicher</c> hängen ausschließlich am Namen.
-        /// </summary>
-        /// <returns>true, wenn ein VOLLSTÄNDIGES Paar (Vorlauf &gt; Rücklauf) gefunden wurde.</returns>
-        private bool ZuordnungsTemperaturen(Z_ProjektPufferSpCtrl zuordnungen, int idPuffer,
-                                            string bezeichner, out int vorlauf, out int ruecklauf)
-        {
-            vorlauf = 0;
-            ruecklauf = 0;
-            if (zuordnungen == null) return false;
-
-            for (int n = 0; n < zuordnungen.rows; n++)
-            {
-                bool trifft = (idPuffer > 0 && zuordnungen.items[n].ID_Pufferspeicher == idPuffer) ||
-                              (!string.IsNullOrEmpty(bezeichner) &&
-                               string.Equals(zuordnungen.items[n].PufferSp, bezeichner,
-                                             StringComparison.Ordinal));
-                if (!trifft) continue;
-
-                if (zuordnungen.items[n].Vorlauf - zuordnungen.items[n].Ruecklauf <= 0) continue;
-
-                vorlauf = zuordnungen.items[n].Vorlauf;
-                ruecklauf = zuordnungen.items[n].Ruecklauf;
-                return true;
-            }
-
-            return false;
-        }
+        // PAKET A1: Hier stand „ZuordnungsTemperaturen" — die mittlere Stufe der
+        // Temperatur-Vorrangkette (Vorlauf/Rücklauf aus der Alt-Zuordnung
+        // Z_ProjektPufferSp). Sie ist mit der Stilllegung der Zuordnung entfallen; die
+        // Werte übernimmt die Migration einmalig in die Projektkopie (Schritt 51).
 
         /// <summary>
         /// Übernimmt die Quellspeicher der WP-Module in die Registry (Konzept 6.2,
@@ -3070,12 +2652,10 @@ namespace WindowsFormsApplication1
         /// Übernommen werden die INSTANZEN selbst, keine Kopien: Was das Modul rechnet,
         /// ist danach dasselbe Objekt, das in der Registry steht.
         ///
-        /// MEHRERE MODULE AM SELBEN QUELLPUFFER: Im einkanaligen Altpfad behält jedes
-        /// Modul seine EIGENE Instanz, und nur die erste kommt in die Registry — ein
-        /// Zusammenlegen wäre dort keine Aufräumarbeit, sondern eine Ergebnisänderung.
-        /// Im zweikanaligen Weg hat <c>SimulationWaermepumpe.QuellspeicherZusammenfuehren</c>
-        /// die Instanzen bereits vereinigt, bevor diese Methode läuft; die Schleife sieht
-        /// dann je Puffer-ID nur noch ein Objekt.
+        /// MEHRERE MODULE AM SELBEN QUELLPUFFER:
+        /// <c>SimulationWaermepumpe.QuellspeicherZusammenfuehren</c> hat die Instanzen
+        /// bereits vereinigt, bevor diese Methode läuft; die Schleife sieht dann je
+        /// Puffer-ID nur noch ein Objekt.
         ///
         /// KURZSCHLUSS QUELLE = SENKE: Zeigt <c>WQ_ID_Puffer</c> auf einen Speicher, der
         /// im selben Projekt schon als SENKE in der Registry steht, ist der Schlüssel
@@ -3086,13 +2666,13 @@ namespace WindowsFormsApplication1
         /// <see cref="_zusatzSpeicher"/>) und ausdrücklich protokolliert. Fachlich ist die
         /// Konfiguration ein Fehler — Konzept 4.6 blockiert sie beim Speichern —, Altdaten
         /// können sie aber tragen. Sichtbar falsch ist besser als still falsch.
+        ///
+        /// <para><b>PAKET A1:</b> Der Schalter <c>zweikanalig</c> ist entfallen. Er hielt
+        /// die KASKADEN-Auflösung aus Etappe D5a (siehe unten) vom Altpfad fern, der
+        /// seine getrennten Quellinstanzen behielt; es gibt nur noch den einen
+        /// Rechenweg.</para>
         /// </summary>
-        /// <param name="zweikanalig">
-        /// true = Aufruf aus der gemeinsamen Speicherstufe. Nur dort greift die
-        /// KASKADEN-Auflösung aus Etappe D5a (siehe unten); der Altpfad behält seine
-        /// getrennten Instanzen und rechnet unverändert.
-        /// </param>
-        private void QuellspeicherUebernehmen(bool zweikanalig)
+        private void QuellspeicherUebernehmen()
         {
             if (simulation_wp == null || simulation_wp.Quellspeicher == null) return;
 
@@ -3128,7 +2708,7 @@ namespace WindowsFormsApplication1
                 // die Rechenreihenfolge (WP 2 nach Puffer 1) stellt die Kaskadenschleife
                 // über die Rechenebenen her.
                 // ---------------------------------------------------------------
-                if (zweikanalig && belegt != null && !belegt.IstQuelle &&
+                if (belegt != null && !belegt.IstQuelle &&
                     !IstEigenerSenkenPuffer(q.ID_Anlage, q.ID_Pufferspeicher))
                 {
                     int ersetzt = simulation_wp.QuellspeicherErsetzen(q, belegt);
@@ -3298,12 +2878,10 @@ namespace WindowsFormsApplication1
         /// nehmen. Der Katalog meldet deshalb VORAB und in derselben Sprache wie der
         /// Dialog — mehr nicht.</para>
         ///
-        /// <para>Die Stelle ist bewusst NACH dem Registry-Aufbau und VOR beiden
-        /// Rechenwegen gewaehlt: Der Katalog arbeitet auf der KONFIGURATION (Anlagen,
-        /// Senkenlisten, Speicherzeilen) und braucht die Registry nicht — aber die
-        /// Meldungen sollen im Protokoll hinter dem Rechenweg-Hinweis und vor allem
-        /// stehen, was die Module melden. Auch der einkanalige Altpfad wird damit
-        /// geprueft; die Konfiguration ist dieselbe, gleich welcher Weg sie rechnet.</para>
+        /// <para>Die Stelle ist bewusst NACH dem Registry-Aufbau und VOR dem Rechenweg
+        /// gewaehlt: Der Katalog arbeitet auf der KONFIGURATION (Anlagen, Senkenlisten,
+        /// Speicherzeilen) und braucht die Registry nicht — aber die Meldungen sollen im
+        /// Protokoll vor allem stehen, was die Module melden.</para>
         ///
         /// <para><see cref="SimulationProtokoll.WarnungEinmal"/> mit dem Kriterium und
         /// den beteiligten IDs als Schluessel: Ein Befund, der aus zwei Richtungen
@@ -3474,111 +3052,59 @@ namespace WindowsFormsApplication1
             return false;
         }
 
-        /// <summary>
-        /// Was Kombispeicher und Kessel-Quellbezug im EINKANALIGEN Altpfad bedeuten
-        /// (Etappe D5a) — beide sind zweikanalige Erweiterungen, und der Altpfad bleibt
-        /// als Rückfallebene unverändert.
-        ///
-        /// <para><b>Kombispeicher:</b> Der Altpfad kennt nur EINEN Bedarfsvektor und
-        /// damit keine zwei Kanäle, zwischen denen ein Vorrat aufzuteilen wäre. Ein
-        /// Puffer mit Verwendung „Kombi" rechnet dort wie ein HEIZUNGS-Puffer — dieselbe
-        /// Behandlung, die er über <c>IstBrauchwasserkanal = false</c> ohnehin schon
-        /// bekäme. Das ist eine dokumentierte Vereinfachung, kein Rechenfehler: Auf einer
-        /// Bedarfssumme ist „Heizung + Warmwasser aus einem Vorrat" genau das, was
-        /// passiert.</para>
-        ///
-        /// <para><b>Kessel-Quellbezug:</b> unwirksam. Die Eintrittstemperatur aus einem
-        /// Puffer verlangt eine gemeinsame Speicherstufe mit Rechenreihenfolge — beides
-        /// gibt es nur im zweikanaligen Weg. Der Kessel rechnet mit vollem
-        /// Brennstoffbedarf wie bisher.</para>
-        ///
-        /// <para><b>PAKET BHKW-REGULÄR — Geltungsbereich:</b> Diese Hinweise erreichen nur
-        /// noch Projekte OHNE BHKW. Sobald ein BHKW in <c>Tool_1..4</c> steht, schickt die
-        /// Weiche den Lauf ausnahmslos in die Speicherstufe, und der Altpfad wird gar
-        /// nicht betreten. Ein BHKW-Hinweis fehlt hier deshalb nicht — er wäre
-        /// unerreichbar.</para>
-        /// </summary>
-        private void AltpfadHinweiseD5a()
-        {
-            int kombi = StilleDb.Zahl(StilleDb.Scalar(
-                "SELECT COUNT(*) FROM Tab_Pufferspeicher WHERE ID_Projekt = ? AND Verwendung = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt),
-                StilleDb.Par("@verw", OleDbType.VarWChar, WaermesenkeClass.VERWENDUNG_KOMBI)));
-
-            if (kombi > 0)
-                Protokoll.HinweisEinmal("altpfad-kombispeicher",
-                    "Kombispeicher: Das Projekt führt " + kombi + " Speicher mit Verwendung „" +
-                    WaermesenkeClass.VERWENDUNG_KOMBI + "\". Dieser Lauf rechnet EINKANALIG " +
-                    "(Kaskade_Zweikanalig ist nicht gesetzt) und kennt keine getrennten " +
-                    "Kanäle - der Kombispeicher wird deshalb wie ein HEIZUNGSPUFFER " +
-                    "behandelt. Für die gemeinsame Deckung von Heizung und Warmwasser aus " +
-                    "einem Vorrat den zweikanaligen Rechenweg einschalten.");
-
-            int kesselQuelle = StilleDb.Zahl(StilleDb.Scalar(
-                "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? " +
-                "AND WQ_Typ = ? AND WQ_ID_Puffer IS NOT NULL",
-                StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt),
-                StilleDb.Par("@typ", OleDbType.Integer, ProjektPuffer.TYP_KESSEL),
-                StilleDb.Par("@wq", OleDbType.VarWChar, WaermequelleClass.TYP_PUFFER)));
-
-            if (kesselQuelle > 0)
-                Protokoll.HinweisEinmal("altpfad-kessel-quellpuffer",
-                    "Kessel-Kaskade: " + kesselQuelle + " Heizkessel dieses Projekts haben " +
-                    "einen Pufferspeicher als Wärmequelle. Dieser Lauf rechnet EINKANALIG " +
-                    "(Kaskade_Zweikanalig ist nicht gesetzt); der Quellbezug bleibt dort " +
-                    "WIRKUNGSLOS - die Kessel rechnen mit vollem Brennstoffbedarf. Für die " +
-                    "Kaskade den zweikanaligen Rechenweg einschalten.");
-        }
+        // PAKET A1: Hier stand „AltpfadHinweiseD5a" — die beiden Hinweise, was
+        // Kombispeicher und Kessel-Quellbezug im einkanaligen Altpfad bedeuten
+        // (Kombispeicher wie Heizungspuffer, Kessel-Quellbezug wirkungslos). Beide
+        // Einschränkungen gibt es nicht mehr: Der Lauf rechnet immer dreikanalig, der
+        // Kombispeicher bedient sein Klassen-Set, und der Kessel-Quellbezug wirkt.
 
         /// <summary>
         /// true, wenn <paramref name="idPuffer"/> die eigene Senke der Anlage ist — der
         /// KURZSCHLUSS aus Konzept 4.6 (Quelle = Senke derselben Anlage), den der Dialog
         /// blockiert, Altdaten aber tragen können. Er bleibt vom Kaskadenweg der
         /// Etappe D5a ausgenommen.
+        ///
+        /// <para><b>PAKET A1 — Befund S2-B1 geschlossen.</b> Bis dahin las die Prüfung
+        /// ausschließlich die beiden Altspalten <c>WS_ID_Puffer</c>/<c>WS_ID_Puffer2</c>
+        /// und übersah damit jeden Kurzschluss, der allein in der Senkentabelle steht:
+        /// alles ab Rang 3 und alles, was programmatisch ohne Altspalten-Spiegelung
+        /// geschrieben wurde (S2, Abschnitt 3; nachgewiesen in der Wirkprobe, Runde 2 —
+        /// der Warnkriterienkatalog meldete den Kurzschluss, dieser Engine-Guard
+        /// schwieg). Gefragt wird jetzt die GEORDNETE SENKENLISTE der Anlage, also
+        /// dieselbe Quelle, aus der auch die Ladeaufträge entstehen. Sie ist im Lauf
+        /// ohnehin geladen (<see cref="Senkenlisten"/>) — die Prüfung kostet keine
+        /// zusätzliche Abfrage mehr, und sie fällt (über
+        /// <c>WaermesenkeClass.SenkenlistenLaden</c>) auf einer noch nicht migrierten
+        /// Datenbank auf genau die beiden Altspalten zurück.</para>
         /// </summary>
         private bool IstEigenerSenkenPuffer(int idAnlage, int idPuffer)
         {
             if (idAnlage <= 0 || idPuffer <= 0) return false;
 
-            DataTable dt = StilleDb.Tabelle(
-                "SELECT WS_ID_Puffer, WS_ID_Puffer2 FROM Tab_Energieanlagen WHERE ID = ?",
-                StilleDb.Par("@id", OleDbType.Integer, idAnlage));
-            if (dt == null || dt.Rows.Count == 0) return false;
+            foreach (Senkenliste s in Senkenlisten())
+            {
+                if (s == null || s.AnlagenID != idAnlage) continue;
 
-            return StilleDb.Zahl(StilleDb.Feld(dt.Rows[0], "WS_ID_Puffer")) == idPuffer ||
-                   StilleDb.Zahl(StilleDb.Feld(dt.Rows[0], "WS_ID_Puffer2")) == idPuffer;
+                foreach (Senkenzeile z in s.Zeilen)
+                    if (z != null && z.IstPuffersenke && z.IDPuffer == idPuffer) return true;
+            }
+
+            return false;
         }
 
         /// <summary>
-        /// IDs aller Projekt-Puffer, die im Projekt als SENKE referenziert sind:
-        /// <c>WS_ID_Puffer</c> und <c>WS_ID_Puffer2</c> der Anlagen (in
-        /// Kaskadenreihenfolge) sowie <c>ID_Pufferspeicher</c> der Alt-Zuordnungen.
-        /// Doppelte Nennungen sind unschädlich — der Aufrufer überspringt bekannte IDs.
+        /// IDs der Puffer, die eine Projektanlage als SENKE führt — in
+        /// Kaskadenreihenfolge der Anlagen und danach nach Rang. Doppelte Nennungen sind
+        /// unschädlich; der Aufrufer überspringt bekannte IDs.
         ///
         /// Dialogfrei über <see cref="StilleDb"/> (Konzept 13.4): Eine fehlende Spalte
         /// auf einem alten Schema liefert hier <c>null</c> statt einer MessageBox mitten
         /// im Rechenlauf.
-        /// </summary>
-        private List<int> ReferenzierteSenkenPuffer(Z_ProjektPufferSpCtrl zuordnungen)
-        {
-            List<int> ids = SenkenPufferDerAnlagen();
-
-            if (zuordnungen != null)
-                for (int n = 0; n < zuordnungen.rows; n++)
-                    ids.Add(zuordnungen.items[n].ID_Pufferspeicher);
-
-            return ids;
-        }
-
-        /// <summary>
-        /// IDs der Puffer, die eine Projektanlage als SENKE führt — <c>WS_ID_Puffer</c>
-        /// und <c>WS_ID_Puffer2</c>, in Kaskadenreihenfolge.
         ///
-        /// Getrennt von <see cref="ReferenzierteSenkenPuffer"/>, weil die beiden Mengen
-        /// verschiedene Fragen beantworten: Für die REGISTRY zählt „gehört zum Projekt"
-        /// (dazu gehören auch die Alt-Zuordnungen aus <c>Z_ProjektPufferSp</c>), für den
-        /// RECHENPFAD dagegen „kann ihn ein Erzeuger laden" — und das entscheidet allein
-        /// die Senkenreferenz der Anlage (<see cref="RegistryFuerZweikanaligOeffnen"/>).
+        /// <para><b>PAKET A1:</b> Die frühere zweite Menge <c>ReferenzierteSenkenPuffer</c>
+        /// (diese hier PLUS die Puffer der Alt-Zuordnungen <c>Z_ProjektPufferSp</c>) ist
+        /// entfallen. Registry und Rechenpfad beantworten jetzt dieselbe Frage: „lädt ihn
+        /// eine Anlage dieses Projekts".</para>
         /// </summary>
         private List<int> SenkenPufferDerAnlagen()
         {
@@ -3609,6 +3135,11 @@ namespace WindowsFormsApplication1
             // der Registry und damit in Tab_ErgebnisPufferspeicher; sie hier
             // herauszufiltern wäre eine Ergebnisänderung ohne Auftrag. Auf migriertem
             // Bestand fügt die Schleife nichts hinzu, was nicht schon dastünde.
+            //
+            // PAKET A1: Der Altspalten-Zweig bleibt deshalb auch nach dem Altpfad-Abriss
+            // stehen. Er fällt mit der SPIEGELUNG selbst (S1-O5) - dieselbe Stelle, an
+            // der Senkendialog und WaermesenkeClass aufhören, Rang 1/2 nach WS_* zu
+            // schreiben.
             foreach (Senkenliste s in Senkenlisten())
             {
                 if (s == null) continue;
@@ -3621,52 +3152,10 @@ namespace WindowsFormsApplication1
             return ids;
         }
 
-        private float[] Simulation_WP_Ctrl(float[] Waermebedarf, float[] Strombedarf, bool bHeizstab)
-        {
-            RecordSet rs = new RecordSet();
-
-            // Neue Spalten (Prioritaet, WQ_*) bei Bedarf anlegen und die WPs in
-            // der eingestellten Prioritätsreihenfolge einsetzen (Kaskade).
-            WaermequelleClass.SchemaSicherstellen();
-
-            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.WP_TYP + " order by Prioritaet, ID");
-
-            simulation_wp.wp_list.Clear();
-            
-            while (rs.Next())
-            {
-                simulation_wp.wp_list.Add((int)rs.Read("ID"));
-            }
-            rs.Close();
-
-            simulation_wp.Temperatur = Stundentemperatur;
-            simulation_wp.Waermebedarf_stuendlich = Waermebedarf;
-            simulation_wp.PV_Ueberschuss_stuendlich = PV_Ueberschuss_Vorabberechnen();
-            // Warmwasseranteil für die Wärmesenken-Zuordnung der Module
-            simulation_wp.Warmwasserbedarf_stuendlich =
-                simulation_Waermebedarf != null ? simulation_Waermebedarf.brauchwasserwerte : null;
-            simulation_wp.WP_Strombedarf_stuendlich = Strombedarf;
-            simulation_wp.Mit_Heizstab = bHeizstab;
-            
-            // Simulation starten
-            m_bError = !simulation_wp.Berechnung();
-
-            // PAKET 8 (Konzept 13.4): Der Grund eines Abbruchs geht dialogfrei über den
-            // Fehlerkanal - fehlende Kennlinie zum gewählten Vorlauf oder verbotene
-            // Extrapolation. Bis dahin zeigte das Modul dafür eine MessageBox und der
-            // Aufrufer sah nur ein stilles m_bError.
-            // Nacharbeit N11: sammelnd statt überschreibend - im Altpfad läuft nach der
-            // Wärmepumpe noch der Kessel, und dessen Meldung hat die der WP verdrängt.
-            if (m_bError) FehlertextAufnehmen(simulation_wp.Fehlertext);
-
-            // Quellspeicher der Module in die Registry übernehmen (Konzept 6.2).
-            // Erst JETZT, weil sie beim Modulaufbau entstehen - und mit denselben
-            // Instanzen, nicht mit Kopien: Genau das ist die geforderte Ablösung der
-            // parallelen Liste wp_quellspeicher.
-            QuellspeicherUebernehmen(false);
-
-            return  m_bError ? Waermebedarf : simulation_wp.waermerestbedarf_stuendlich;
-        }
+        // PAKET A1: Hier stand „Simulation_WP_Ctrl" — der Aufrufer der einkanaligen
+        // Wärmepumpen-Stundenschleife (SimulationWaermepumpe.Berechnung). Er ist mit dem
+        // Altpfad entfallen; die Wärmepumpe rechnet ausschließlich in der Speicherstufe
+        // (Speicherstufe_Rechnen → Kaskadenschleife).
 
         /// <summary>
         /// Ermittelt den stündlichen PV-Überschuss [kW] für den Betriebsmodus
@@ -3747,67 +3236,13 @@ namespace WindowsFormsApplication1
         // der generische Speicherraum-Skalar der gemeinsamen Motorläufe, über den der
         // zweikanalige Weg seinen Stufenspeicher spiegelt (Fahrweise_Stunde).
 
-        private float[] Simulation_SPK_Ctrl(float[] Waermebedarf, float[] Strombedarf, int nBereitschaft)
-        {
-            RecordSet rs = new RecordSet();
-
-            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.KESSEL_TYP);
-   
-            simulation_spk.spk_list.Clear();
-            // Anlagen-IDs parallel zu spk_list (Konzept 6.2). spk_list bleibt die Liste
-            // der BEZEICHNER: Sie ist zugleich der Modulname der Ergebniszeile
-            // (SimulationRunner) und der Suchschlüssel der Kesseldaten - beides bleibt
-            // unangetastet. Die ID ist der Schlüssel, den Etappe 4b für Senke,
-            // Ladepriorität und Speicherzuordnung braucht.
-            simulation_spk.spk_anlagen_ids.Clear();
-            while (rs.Next())
-            {
-                simulation_spk.spk_list.Add((string)rs.Read("Bezeichner"));
-                simulation_spk.spk_anlagen_ids.Add((int)rs.Read("ID"));
-                //simulation_spk.spk_carrier.TryAdd((string)rs.Read("Bezeichner"), (int)rs.Read("ID_Carrier"));
-            }
-            rs.Close();
-
-            simulation_spk.Waermebedarf = Waermebedarf;
-            simulation_spk.Strombedarf_stuendlich = Strombedarf;
-            simulation_spk.Vorgabe_Betriebsbereitschaft = nBereitschaft;
-            
-            // Simulation starten
-            //
-            // PAKET 8 (Konzept 13.4): Bricht das Modul ab (Kessel im Projekt nicht
-            // hinterlegt, B0-3), meldete es das bisher als MessageBox - und der Altpfad
-            // rechnete danach mit der GENULLTEN Restwärme weiter, weil Init() sie
-            // geleert hat. Der Anwender sah einen vollständig aussehenden Lauf, in dem
-            // der Wärmebedarf verschwunden war. Jetzt wird der Grund weitergereicht;
-            // SimulationRunner speichert einen solchen Lauf nicht mehr, und die
-            // Detailansicht zeigt den Text.
-            // Nacharbeit N11: sammelnd statt überschreibend.
-            if (!simulation_spk.Berechnung(m_ID_Projekt))
-                FehlertextAufnehmen(simulation_spk.Fehlertext);
-
-            return simulation_spk.Restwaerme;
-        }
-
-        private float[] Simulation_Solarthermie_Ctrl(float[] Waermebedarf)
-        {
-            RecordSet rs = new RecordSet();
-
-            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SOLAR_TYP);
-
-            simulation_solarthermie.solarthermie_list.Clear();
-            while (rs.Next())
-            {
-                simulation_solarthermie.solarthermie_list.Add((int)rs.Read("ID_SOLAR"));
-            }
-            rs.Close();
-
-            simulation_solarthermie.Waermebedarf = Array.ConvertAll<float, double>(Waermebedarf, x => (double)x);
-
-            // Simulation starten
-            simulation_solarthermie.Berechnung(m_ID_Projekt);
-
-            return Array.ConvertAll<double, float>(simulation_solarthermie.Restwaerme, x => (float)x);
-        }
+        // PAKET A1: Hier standen „Simulation_SPK_Ctrl" und
+        // „Simulation_Solarthermie_Ctrl" — die Aufrufer der einkanaligen Jahresschleifen
+        // von Heizkessel (SimulationSPK.Berechnung) und Solarthermie
+        // (SimulationSolarthermie.Berechnung). Beide sind mit dem Altpfad entfallen; die
+        // Module rechnen als Mitglied der Speicherstufe oder als zweikanalige
+        // Vektorstufe (Simulation_SPK_Ctrl_Zweikanalig,
+        // Simulation_Solarthermie_Ctrl_Zweikanalig).
 
         public float[] AddVectors(float[] array1, float[] array2)
         {

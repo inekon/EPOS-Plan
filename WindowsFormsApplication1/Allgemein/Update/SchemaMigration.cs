@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 50;
+        public const int ZIEL_VERSION = 51;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1598,6 +1598,74 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_50_SENKENTABELLE = 50;
 
+        /// <summary>
+        /// Schritt 51 - <b>Paket A1</b> (Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 9 und Leitentscheidung L1 vom 27.08.2026): die DATENSEITE der
+        /// ALTPFAD-STILLLEGUNG. Der Schritt löscht NICHTS — er rettet, was der Altpfad
+        /// bisher allein getragen hat, und schreibt den Zustand fest, den die Engine ab
+        /// Paket A1 ohnehin annimmt.
+        ///
+        /// <para><b>51a — Temperaturübernahme.</b> Bis heute liest die Engine die
+        /// Betriebstemperaturen eines Speichers über eine DREISTUFIGE Vorrangkette:
+        /// zuerst das Paar an der Projektkopie (<c>Tab_Pufferspeicher.Vorlauf</c>/
+        /// <c>Ruecklauf</c>), dann — falls dort keine auswertbare Spreizung steht — das
+        /// Paar der zugehörigen Zeile in <c>Z_ProjektPufferSp</c>
+        /// (<c>SimulationControl.ZuordnungsTemperaturen</c>, mittlere Stufe), und erst
+        /// zuletzt den Notnagel ΔT = 10 K aus
+        /// <c>SimulationPufferspeicher.Init</c>. Mit der Stilllegung der Alt-Zuordnung
+        /// fällt die MITTLERE Stufe weg. Ohne diesen Schritt fiele jeder Speicher, der
+        /// sein Paar bisher nur aus der Zuordnungszeile bezog, STILL auf den 10-K-Rückfall
+        /// zurück — mit anderer nutzbarer Kapazität <c>Q_max</c> und damit anderem
+        /// Ergebnis. Der Schritt holt genau diese Paare an die Projektkopie, also an die
+        /// seit Etappe 4 führende Ablage (Konzept 5.1).</para>
+        ///
+        /// <para><b>Die Vorrangkette wird 1:1 nachgebildet</b>, nicht neu erfunden:
+        /// „Ohne Paar" ist die Bedingung aus <c>SimulationPufferspeicher.Init</c>
+        /// (<c>Vorlauf - Ruecklauf &lt;= 0</c>, fehlende Werte zählen als 0), „zugehörig"
+        /// ist die Trefferregel aus <c>ZuordnungsTemperaturen</c>: dieselbe
+        /// Projektzugehörigkeit, dann je Zeile in Prioritätsreihenfolge die ODER-Probe
+        /// „Puffer-ID gleich" oder „Bezeichner zeichengleich", und als Quelle taugt nur
+        /// eine Zeile mit echter Spreizung. Der erste Treffer gewinnt — auch dann, wenn
+        /// eine spätere Zeile die ID trägt und die frühere nur den Namen. Genau so
+        /// entscheidet die Engine heute, und nur diese Gleichheit macht den Schritt
+        /// ergebnisneutral.</para>
+        ///
+        /// <para><b>Gelesen wird mit SELECT, geschrieben zeilenweise.</b> Ein
+        /// <c>UPDATE</c> mit korrelierter Unterabfrage über zwei Tabellen ist bei ACE
+        /// genau die Konstruktion, die still 0 Zeilen trifft (Begründung bei
+        /// <see cref="RProzess"/>); die Trefferregel mit ihrem ODER und ihrer
+        /// Reihenfolge wäre in Access-SQL ohnehin nicht ohne Bedeutungsverlust
+        /// abbildbar. Jeder übernommene Speicher steht mit ID, Bezeichner, Paar und
+        /// Quellzeile im Migrationsprotokoll, jeder Speicher ohne brauchbare Quelle mit
+        /// dem Vermerk „bleibt auf Rückfall-ΔT" — er rechnet schon heute so und ändert
+        /// sich durch die Stilllegung nicht.</para>
+        ///
+        /// <para><b>51b — Flag-Vorbelegung.</b>
+        /// <see cref="SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG"/> bekommt in ALLEN
+        /// Bestandszeilen den Wert WAHR. Die Weiche im Code entfällt mit Paket A1, die
+        /// mehrkanalige Stundenschleife wird der einzige Rechenweg (L1); das Flag wird
+        /// damit nicht mehr GELESEN. Es bleibt trotzdem stehen und wird ausdrücklich auf
+        /// WAHR gesetzt, weil beides zusammen den Zustand dokumentiert: Wer eine
+        /// migrierte Datenbank mit einer älteren Programmfassung öffnet, bekommt den Weg,
+        /// auf dem die Datenbank zuletzt gerechnet hat, und keine stille Rückkehr in den
+        /// Altpfad. Zielgenaues UPDATE mit <c>WHERE … = FALSE</c> — <c>Tab_Einstellungen</c>
+        /// wird in <c>KonfigurationCtrl.ReadSingle</c> ORDINAL gelesen, und die Bedingung
+        /// macht den Zweitlauf zur Nulländerung.</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker): 51a fasst nur Speicher OHNE
+        /// Paar an — nach der Übernahme haben die betroffenen eines, beim Zweitlauf steht
+        /// keiner mehr in der Kandidatenliste. 51b trifft über <c>WHERE … = FALSE</c>
+        /// beim Zweitlauf keine Zeile mehr.</para>
+        ///
+        /// <para><b>Es wird nichts gelöscht.</b> Weder <c>Z_ProjektPufferSp</c> noch
+        /// <c>Kaskade_Zweikanalig</c> verschwinden — Stilllegung heißt hier
+        /// ausschließlich: kein Leser im Code mehr (Muster <c>WQ_Puffer</c> und
+        /// <c>Tab_Pufferspeicher.Verwendung</c>). Das Entfernen der Tabelle ist die eine
+        /// Änderung, die sich nicht zurücknehmen ließe; sie bleibt dem Aufräumpaket
+        /// vorbehalten.</para>
+        /// </summary>
+        public const int SCHRITT_51_ALTPFAD_STILLLEGUNG = 51;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -1875,6 +1943,31 @@ namespace WindowsFormsApplication1
         /// Prozesswärme, die Regel hat nichts geändert.
         /// </summary>
         public static int DatenSenkenProzess { get; private set; }
+
+        // --- Zählwerk der Altpfad-Stilllegung aus Schritt 51 (Paket A1) ----------------
+
+        /// <summary>
+        /// 51a: Pufferspeicher, die ihr Temperaturpaar aus der Alt-Zuordnung
+        /// <c>Z_ProjektPufferSp</c> an die Projektkopie übernommen haben. Genau diese
+        /// Speicher wären nach der Stilllegung sonst still auf den Rückfall ΔT = 10 K
+        /// gefallen.
+        /// </summary>
+        public static int DatenPufferTemperaturUebernommen { get; private set; }
+
+        /// <summary>
+        /// 51a: Pufferspeicher ohne Paar UND ohne brauchbare Zuordnungszeile. Sie
+        /// rechnen bereits heute mit dem Rückfall-ΔT und ändern sich durch die
+        /// Stilllegung nicht — der Wert ist die Gegenprobe zu
+        /// <see cref="DatenPufferTemperaturUebernommen"/>, kein Fehlerzähler.
+        /// </summary>
+        public static int DatenPufferTemperaturRueckfall { get; private set; }
+
+        /// <summary>
+        /// 51b: Einstellungssätze, die die Vorbelegung
+        /// <c>Kaskade_Zweikanalig = WAHR</c> erhalten haben (nur die zuvor auf FALSCH
+        /// stehenden - bereits umgestellte Projekte zählen nicht mit).
+        /// </summary>
+        public static int DatenKaskadeVorbelegt { get; private set; }
 
         // --- Zählwerk der Datenregel R7 aus Schritt 9 (Etappe E0) ---------------------
 
@@ -2553,6 +2646,18 @@ namespace WindowsFormsApplication1
                         "Die Senkenliste konnte nicht angelegt werden - mehr als zwei " +
                         "Senken je Anlage braucht die Tabelle.",
                         Schritt_50_Senkentabelle),
+
+            // A1 (L1): Die Datenseite der Altpfad-Stilllegung - erst die Temperaturen
+            // aus der Alt-Zuordnung retten, dann das Flag festschreiben. Begruendung,
+            // Teilgliederung und Idempotenzzusage bei der Schrittkonstanten.
+            new Schritt(SCHRITT_51_ALTPFAD_STILLLEGUNG,
+                        "Altpfad-Stilllegung: Betriebstemperaturen aus Z_ProjektPufferSp " +
+                        "an die Pufferzeilen uebernehmen und Kaskade_Zweikanalig im " +
+                        "Bestand auf WAHR setzen (Paket A1, L1)",
+                        "Die Betriebstemperaturen der Alt-Zuordnung konnten nicht " +
+                        "uebernommen werden - ohne sie fielen Bestandsspeicher nach der " +
+                        "Stilllegung still auf den Rueckfall von 10 K zurueck.",
+                        Schritt_51_AltpfadStilllegung),
         };
 
         // =================================================================================
@@ -2594,6 +2699,9 @@ namespace WindowsFormsApplication1
             DatenSenkenAnlagen = 0;
             DatenSenkenRang2 = 0;
             DatenSenkenProzess = 0;
+            DatenPufferTemperaturUebernommen = 0;
+            DatenPufferTemperaturRueckfall = 0;
+            DatenKaskadeVorbelegt = 0;
             DatenKesselWartungseinheitVorbelegt = 0;
             DatenBemessungVorbelegt = 0;
             DatenKostenartVorbelegt = 0;
@@ -6678,6 +6786,257 @@ namespace WindowsFormsApplication1
             l.Notiz("Regel R-Prozess: " + neu + " Prozesswaerme-Zeile(n) angelegt, " +
                     geschoben + " nachfolgende(r) Rang um eins hochgeschoben.");
             return true;
+        }
+
+        // =================================================================================
+        // Schritt 51 - Altpfad-Stilllegung, Datenseite (Paket A1, Konzept § 9 / L1)
+        // =================================================================================
+
+        /// <summary>
+        /// Obergrenze der Einzelnennungen im Protokoll. Die Liste der Speicher, die auf
+        /// dem Rückfall-ΔT bleiben, ist eine DIAGNOSE - auf einer großen Ablage wären
+        /// mehrere hundert Zeilen kein Gewinn mehr, sondern verdeckten den Rest des
+        /// Berichts. Die übernommenen Speicher werden dagegen IMMER vollständig genannt:
+        /// Sie sind die Zeilen, die der Schritt tatsächlich geändert hat.
+        /// </summary>
+        private const int RUECKFALL_NENNUNGEN_MAX = 25;
+
+        /// <summary>
+        /// L1 (27.08.2026): die Datenseite der ALTPFAD-STILLLEGUNG - 51a die Rettung der
+        /// Betriebstemperaturen aus der Alt-Zuordnung, 51b die Vorbelegung des
+        /// Kaskaden-Flags. Anlass, Teilgliederung und Idempotenzzusage:
+        /// <see cref="SCHRITT_51_ALTPFAD_STILLLEGUNG"/>.
+        ///
+        /// REIHENFOLGE IST TRAGEND: erst die Übernahme, dann das Flag. Beide Teile sind
+        /// zwar voneinander unabhängig, aber nur in dieser Folge steht im Protokoll
+        /// zuerst, was an Daten gerettet wurde, und danach, was festgeschrieben wird.
+        /// </summary>
+        private static bool Schritt_51_AltpfadStilllegung(Lauf l)
+        {
+            if (!TemperaturenAusZuordnungUebernehmen(l)) return false;   // 51a
+            if (!KaskadeFlagVorbelegen(l)) return false;                 // 51b
+            return true;
+        }
+
+        /// <summary>
+        /// 51a — <b>Temperaturübernahme</b>: Jeder Pufferspeicher OHNE auswertbares
+        /// Temperaturpaar bekommt das Paar seiner zugehörigen Zeile in
+        /// <c>Z_ProjektPufferSp</c>, sofern dort eines steht.
+        ///
+        /// <para>Die beiden Regeln sind wörtliche Portierungen aus der Engine:
+        /// „ohne Paar" ist <c>SimulationPufferspeicher.Init</c>
+        /// (<c>Vorlauf - Ruecklauf &lt;= 0</c>; ein fehlender Wert zählt wie 0, denn
+        /// genau so liest ihn <c>WaermesenkeClass.PufferLesen</c>), „zugehörig" ist
+        /// <c>SimulationControl.ZuordnungsTemperaturen</c>. Die Trefferregel dort ist
+        /// eine ODER-Probe JE ZEILE in Prioritätsreihenfolge - Puffer-ID gleich ODER
+        /// Bezeichner zeichengleich -, und Zeilen ohne echte Spreizung werden
+        /// übersprungen. Der erste Treffer gewinnt, auch wenn eine spätere Zeile die ID
+        /// trägt und die frühere nur den Namen; wer daraus „ID schlägt Name" machte,
+        /// änderte auf gemischten Beständen das Ergebnis.</para>
+        ///
+        /// <para>Der Namensweg ist kein Schönheitsfehler, sondern Bestand: Altdaten ohne
+        /// <c>ID_Pufferspeicher</c> hängen ausschließlich am Bezeichner. Verglichen wird
+        /// deshalb ZEICHENGENAU (Ordinal) wie in der Engine - „Vitocell 140-E 600 Ltr"
+        /// und „… 600 Liter" sind zwei verschiedene Speicher, und beide kommen im
+        /// Bestand nebeneinander vor.</para>
+        ///
+        /// <para><b>Weich bei fehlender Alt-Zuordnung.</b> Ist <c>Z_ProjektPufferSp</c>
+        /// nicht lesbar, gibt es nichts zu retten - und die Stilllegung ist für diese
+        /// Ablage folgenlos, weil dort auch die Engine nie ein Paar von dort bezogen hat.
+        /// Der Schritt meldet das und gilt als erfüllt; ein Abbruch hielte die Migration
+        /// an einer Tabelle auf, die gerade außer Dienst gestellt wird.</para>
+        /// </summary>
+        private static bool TemperaturenAusZuordnungUebernehmen(Lauf l)
+        {
+            // --- Kandidaten: die Speicher, die die Engine heute auf den Rueckfall schickt
+            //
+            // Die drei IS-NULL-Zweige sind noetig, nicht bequem: In Access ergibt
+            // "NULL - 5 <= 0" wieder NULL und damit KEINEN Treffer - eine Zeile ganz ohne
+            // Temperaturen fiele aus der Auswahl heraus, obwohl sie der Hauptfall ist.
+            DataTable puffer = Abfrage(l,
+                "SELECT ID, ID_Projekt, Bezeichner, Vorlauf, Ruecklauf " +
+                "FROM [" + SchemaKatalog.TAB_PUFFERSPEICHER + "] " +
+                "WHERE Vorlauf IS NULL OR Ruecklauf IS NULL OR Vorlauf - Ruecklauf <= 0 " +
+                "ORDER BY ID");
+            if (puffer == null)
+            {
+                l.Zeile("Temperaturuebernahme (Schritt 51): " + SchemaKatalog.TAB_PUFFERSPEICHER +
+                        " ist nicht lesbar - die Uebernahme kann nicht entscheiden, welche " +
+                        "Speicher betroffen sind.");
+                return false;
+            }
+
+            if (puffer.Rows.Count == 0)
+            {
+                l.Zeile("Temperaturuebernahme (Schritt 51): kein Pufferspeicher ohne " +
+                        "Temperaturpaar - nichts zu uebernehmen.");
+                return true;
+            }
+
+            // --- Quellen: die Zuordnungszeilen MIT echter Spreizung, in Engine-Reihenfolge
+            //
+            // IIf statt Nz: Nz ist eine VBA-Funktion der Access-Anwendung und ueber ACE
+            // nicht verfuegbar (Begruendung wie in Schritt 50). Die Umsetzung NULL -> 0
+            // bildet die Leseseite Z_ProjektPufferSpCtrl.ReadAll nach, die einen leeren
+            // Wert als 0 in das Modell traegt.
+            //
+            // ORDER BY: Die Engine liest ueber ReadAll(...) "ORDER BY Prioritaet". Bei
+            // gleicher Prioritaet ist die Reihenfolge damit der ACE ueberlassen; die ID
+            // als zweites Ordnungsmerkmal macht den Migrationslauf REPRODUZIERBAR, ohne
+            // die Auswahl zu veraendern - gleichrangige Zeilen desselben Speichers tragen
+            // im Bestand dieselben Werte (nachgemessen 27.08.2026: die Dubletten der
+            // Projekte 1007, 1008 und 1011 sind wertgleich).
+            DataTable zuordnung = Abfrage(l,
+                "SELECT ID, ID_Projekt, ID_Pufferspeicher, Pufferspeicher, Vorlauf, Ruecklauf " +
+                "FROM [" + SchemaKatalog.Z_PROJEKTPUFFERSP + "] " +
+                "WHERE IIf(Vorlauf IS NULL, 0, Vorlauf) - IIf(Ruecklauf IS NULL, 0, Ruecklauf) > 0 " +
+                "ORDER BY ID_Projekt, Prioritaet, ID");
+
+            if (zuordnung == null)
+            {
+                DatenPufferTemperaturRueckfall = puffer.Rows.Count;
+                l.Zeile("Temperaturuebernahme (Schritt 51): " + SchemaKatalog.Z_PROJEKTPUFFERSP +
+                        " ist nicht lesbar (" + (l.LetzterFehler ?? "ohne Meldung") + ") - " +
+                        puffer.Rows.Count + " Speicher ohne Temperaturpaar bleiben auf dem " +
+                        "Rueckfall-DeltaT. Aus einer nicht lesbaren Alt-Zuordnung hat auch " +
+                        "die Simulation nie ein Paar bezogen; die Stilllegung aendert hier " +
+                        "nichts.");
+                return true;
+            }
+
+            int uebernommen = 0;
+            int rueckfall = 0;
+            int genannt = 0;
+
+            foreach (DataRow p in puffer.Rows)
+            {
+                int idPuffer = Zahl(p["ID"]);
+                int idProjekt = Zahl(p["ID_Projekt"]);
+                string bezeichner = Txt(p["Bezeichner"]);
+
+                DataRow quelle = ZuordnungsZeileFinden(zuordnung, idProjekt, idPuffer, bezeichner);
+                if (quelle == null)
+                {
+                    rueckfall++;
+                    if (genannt < RUECKFALL_NENNUNGEN_MAX)
+                    {
+                        genannt++;
+                        l.Notiz("Puffer " + idPuffer + " (" + Beschriftung(bezeichner) +
+                                ", Projekt " + idProjekt + "): kein Temperaturpaar und keine " +
+                                "brauchbare Zuordnungszeile - bleibt auf Rueckfall-DeltaT " +
+                                "(rechnet schon heute so).");
+                    }
+                    continue;
+                }
+
+                int vorlauf = Zahl(quelle["Vorlauf"]);
+                int ruecklauf = Zahl(quelle["Ruecklauf"]);
+
+                // Zielgenau je Speicher - dieselbe Anweisung, die auch der Dialogweg
+                // benutzt (PufferSpCtrl.SetTemperaturen). EINE Wahrheit fuer das
+                // Schreiben der Betriebstemperaturen.
+                //
+                // BEWUSST OHNE ProjektPuffer.IstTemperaturpaar: Der Dialogweg verlangt
+                // zusaetzlich Ruecklauf > 0, die Engine dagegen nur die Spreizung. Ein
+                // Paar wie 50/0 wuerde die Simulation heute mit DeltaT = 50 rechnen -
+                // eine Zusatzpruefung hier verwuerfe genau diesen Wert und aenderte damit
+                // das Ergebnis, statt es zu erhalten. Uebernommen wird, was die Engine
+                // liest.
+                if (NonQuery(l, ProjektPuffer.SQL_PUFFER_TEMPERATUREN_UPDATE,
+                             new OleDbParameter("@v", vorlauf),
+                             new OleDbParameter("@r", ruecklauf),
+                             new OleDbParameter("@id", idPuffer)) < 0)
+                    return false;
+
+                uebernommen++;
+                l.Zeile("        Puffer " + idPuffer + " (" + Beschriftung(bezeichner) +
+                        ", Projekt " + idProjekt + "): Vorlauf/Ruecklauf " + vorlauf + "/" +
+                        ruecklauf + " aus Zuordnung " + Zahl(quelle["ID"]) + " uebernommen.");
+            }
+
+            if (genannt < rueckfall)
+                l.Notiz("... und " + (rueckfall - genannt) + " weitere(r) Speicher ohne " +
+                        "brauchbare Zuordnung - alle bleiben auf Rueckfall-DeltaT.");
+
+            DatenPufferTemperaturUebernommen = uebernommen;
+            DatenPufferTemperaturRueckfall = rueckfall;
+
+            l.Zeile("Temperaturuebernahme (Schritt 51): " + uebernommen + " von " +
+                    puffer.Rows.Count + " Speicher(n) ohne Temperaturpaar haben ihr Paar aus " +
+                    SchemaKatalog.Z_PROJEKTPUFFERSP + " uebernommen; " + rueckfall +
+                    " bleiben auf dem Rueckfall-DeltaT und rechnen damit unveraendert weiter.");
+            return true;
+        }
+
+        /// <summary>
+        /// Die zugehörige Zuordnungszeile eines Speichers — die Trefferregel aus
+        /// <c>SimulationControl.ZuordnungsTemperaturen</c>, Zeile für Zeile in der
+        /// Reihenfolge, in der die Engine sie sieht. Die übergebene Tabelle enthält
+        /// bereits nur Zeilen mit echter Spreizung (die dritte Bedingung der Vorlage).
+        /// </summary>
+        /// <returns>die erste passende Zeile oder <c>null</c>.</returns>
+        private static DataRow ZuordnungsZeileFinden(DataTable zuordnung, int idProjekt,
+                                                     int idPuffer, string bezeichner)
+        {
+            foreach (DataRow z in zuordnung.Rows)
+            {
+                // Projektgrenze: Die Engine laedt die Zuordnungen mit
+                // ReadAll("ID_Projekt=" + m_ID_Projekt) und prueft die Projektzugehoerigkeit
+                // des Speichers davor. Ein Namenstreffer ueber Projektgrenzen hinweg waere
+                // deshalb eine Zuordnung, die es in der Simulation nie gab.
+                if (Zahl(z["ID_Projekt"]) != idProjekt) continue;
+
+                bool trifft = (idPuffer > 0 && Zahl(z["ID_Pufferspeicher"]) == idPuffer) ||
+                              (!string.IsNullOrEmpty(bezeichner) &&
+                               string.Equals(Txt(z["Pufferspeicher"]), bezeichner,
+                                             StringComparison.Ordinal));
+                if (trifft) return z;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 51b — <b>Flag-Vorbelegung</b>: <c>Kaskade_Zweikanalig</c> wird im gesamten
+        /// Bestand auf WAHR gesetzt. Begründung und Idempotenzzusage:
+        /// <see cref="SCHRITT_51_ALTPFAD_STILLLEGUNG"/>.
+        ///
+        /// <c>SpaltenAnlegen</c> davor ist die idempotente Absicherung für Datenbanken
+        /// auf einem Zwischenstand - die Spalte selbst entsteht in Schritt 6. Dasselbe
+        /// Muster wie Schritt 7 mit <c>Extrapolation_erlaubt</c>.
+        /// </summary>
+        private static bool KaskadeFlagVorbelegen(Lauf l)
+        {
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt6_FeatureFlag)) return false;
+
+            // WHERE ... = FALSE statt eines UPDATE ohne Bedingung: Ein Ja/Nein-Feld kennt
+            // in Access kein NULL, die Bedingung trifft also genau die noch nicht
+            // umgestellten Zeilen. Das macht den Zaehler aussagekraeftig (wie viele
+            // Projekte rechneten zuletzt einkanalig?) und den Zweitlauf zur
+            // Nullaenderung.
+            int betroffen = NonQuery(l,
+                "UPDATE [" + SchemaKatalog.TAB_EINSTELLUNGEN + "] SET [" +
+                SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG + "] = TRUE WHERE [" +
+                SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG + "] = FALSE");
+
+            if (betroffen < 0)
+            {
+                l.Notiz("Vorbelegung Kaskade_Zweikanalig: UPDATE fehlgeschlagen");
+                return false;
+            }
+
+            DatenKaskadeVorbelegt = betroffen;
+            l.Zeile("Kaskadenflag (Schritt 51): " + betroffen + " Einstellungssatz/-saetze " +
+                    "auf WAHR vorbelegt. Das Flag wird ab Paket A1 nicht mehr gelesen - die " +
+                    "mehrkanalige Stundenschleife ist der einzige Rechenweg (L1); WAHR " +
+                    "dokumentiert diesen Zustand fuer Diagnose und Rueckwaertskompatibilitaet.");
+            return true;
+        }
+
+        /// <summary>Bezeichner fürs Protokoll - ein leerer Name bleibt lesbar.</summary>
+        private static string Beschriftung(string bezeichner)
+        {
+            return string.IsNullOrEmpty(bezeichner) ? "ohne Bezeichner" : bezeichner;
         }
 
         private static bool Schritt_44_StromLeistungspreis(Lauf l)

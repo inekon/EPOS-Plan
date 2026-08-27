@@ -5,6 +5,27 @@ using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
+    /// <summary>
+    /// Zugriff auf die Alt-Zuordnung <c>Z_ProjektPufferSp</c> (Projekt ↔ Pufferspeicher
+    /// je Erzeuger, mit Betriebstemperaturen, Priorität und Speicherschwellen).
+    ///
+    /// <b>STILLGELEGT ab Migrationsschritt 51 / Paket A1</b> (Konzept
+    /// <c>Konzept_Brauchwasser_Heizung_Pufferspeicher.md</c> § 9, Leitentscheidung L1):
+    /// Die Tabelle wird von der Anwendung nicht mehr gelesen und nicht mehr geschrieben.
+    /// Ihre beiden Aufgaben sind abgelöst — die Senkenzuordnung durch
+    /// <c>Z_AnlageSenke</c> (Schritt 50), die Betriebstemperaturen durch die
+    /// Projektkopie <c>Tab_Pufferspeicher.Vorlauf</c>/<c>Ruecklauf</c>, an die
+    /// Schritt 51 die noch fehlenden Paare einmalig übernommen hat
+    /// (<c>SchemaMigration.SCHRITT_51_ALTPFAD_STILLLEGUNG</c>). Mit dem Altpfad
+    /// entfallen auch der Dialog <c>Form_KonfigPufferspeicher</c> und die Brücke
+    /// <c>WpSenkeSpiegeln</c>.
+    ///
+    /// <b>Die Klasse bleibt bis zum Aufräumpaket L stehen</b> — unverändert, ohne
+    /// Aufrufer. Sie ist der Rückweg, solange die Tabelle selbst noch in der Datenbank
+    /// steht (auch die wird von Schritt 51 ausdrücklich NICHT gelöscht): Sollte sich in
+    /// einem Bestand zeigen, dass die Übernahme etwas übersehen hat, ist die Leseseite
+    /// dafür noch da. Neuer Code darf sie nicht mehr verwenden.
+    /// </summary>
     class Z_ProjektPufferSpCtrl : Z_ProjektPufferSpModel
     {
         private List<Z_ProjektPufferSpModel> _internalList = new List<Z_ProjektPufferSpModel>();

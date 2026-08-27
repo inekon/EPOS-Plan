@@ -1749,43 +1749,15 @@ namespace WindowsFormsApplication1
             return Kanalabzug.Abziehen(liste, menge, rest, jeKanal);
         }
 
-        /// <summary>
-        /// ZWEIKANALIGE FASSUNG — <b>ausschließlich für den einkanaligen ALTPFAD</b>
-        /// (<c>SimulationWaermepumpe.SenkeAbziehen</c>, Bedarfs- und Heizstabschleife des
-        /// Altwegs).
-        ///
-        /// Der Rumpf ist Zeile für Zeile der vor Paket K2 gültige und bleibt es: Der
-        /// Altpfad ist die Rückfallebene und darf sich durch den Dreikanal-Umbau um kein
-        /// Bit verschieben. Er kennt keinen Prozesskanal — sein Bedarfsvektor ist die
-        /// Summe, und „Heizung" heißt dort genau das, was es immer hieß.
-        ///
-        /// <b>KEIN neuer Aufrufer.</b> Wer dreikanalig rechnet, nimmt
-        /// <see cref="SenkeAbziehen(string, double, double[])"/>. Diese Fassung entfällt
-        /// mit dem Altpfad-Rückbau (Paket A1).
-        /// </summary>
-        public static void SenkeAbziehen(string senke, double menge,
-                                         ref double rest_ww, ref double rest_heiz)
-        {
-            if (menge <= 0) return;
-
-            if (senke == WaermequelleClass.SENKE_WARMWASSER)
-            {
-                rest_ww -= menge;
-            }
-            else if (senke == WaermequelleClass.SENKE_HEIZUNG)
-            {
-                rest_heiz -= menge;
-            }
-            else
-            {
-                double ww = Math.Min(menge, rest_ww);
-                rest_ww -= ww;
-                rest_heiz -= (menge - ww);
-            }
-
-            if (rest_ww < 0) rest_ww = 0;
-            if (rest_heiz < 0) rest_heiz = 0;
-        }
+        // PAKET A1: Hier stand die ZWEIKANALIGE ref-Fassung
+        // „SenkeAbziehen(string senke, double menge, ref double rest_ww,
+        // ref double rest_heiz)" — der Abzug auf den beiden Skalaren rest_ww/rest_heiz
+        // der einkanaligen WP-Stundenschleife. Ihr einziger Aufrufer war
+        // SimulationWaermepumpe.SenkeAbziehen(string, double, ref double, ref double),
+        // und der wurde ausschließlich aus Berechnung_Stundenschleife gerufen. Mit dem
+        // Altpfad sind beide entfallen; der Abzug läuft ausnahmslos über das indizierte
+        // Restbedarfsfeld (SenkeAbziehen(bool[], double, double[], int[]) und die
+        // Fassungen darüber).
     }
 
     /// <summary>

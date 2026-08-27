@@ -34,8 +34,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <c>Tab_Energieanlagen.ID</c> je Kollektorfeld, INDEXGLEICH zur Reihenfolge der
-        /// Felder im zweikanaligen Weg (Konzept 6.2). Nur dort gefüllt; der einkanalige
-        /// Altpfad braucht sie nicht.
+        /// Felder (Konzept 6.2).
         ///
         /// Über sie findet <c>SimulationControl.LadeordnungAufbauen</c> zu einer
         /// Senkenzuordnung das rechnende Modul — <c>solarthermie_list</c> trägt die
@@ -54,7 +53,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double[] Speicherladung_stuendlich = new double[8760];
 
-        /// <summary>Jahressumme der Speicherladung [kWh]; im Altpfad immer exakt 0.</summary>
+        /// <summary>Jahressumme der Speicherladung [kWh]; ohne Puffer-Senke exakt 0.</summary>
         public double Speicherladung_gesamt = 0;
 
         /// <summary>
@@ -67,7 +66,7 @@ namespace WindowsFormsApplication1
         /// Der Anteil dieses Erzeugers an der SPEICHERENTLADUNG, die Bedarf gedeckt hat
         /// [kWh] (Paket-5-Nacharbeit N2, Interimsregel „Vermischung im Speicher").
         ///
-        /// Gefüllt von <see cref="Kaskadenschleife"/>; im Altpfad und ohne Puffer-Senke
+        /// Gefüllt von <see cref="Kaskadenschleife"/>; ohne Puffer-Senke
         /// exakt 0. Direktdeckung PLUS dieser Anteil ist der EIGENANTEIL der Solarthermie
         /// an der Bedarfsdeckung — die Größe hinter
         /// <c>Tab_ErgebnisSolarthermie.Waermebedarfsdeckung</c>.
@@ -127,67 +126,12 @@ namespace WindowsFormsApplication1
             return _feldSenke[index];
         }
 
-        public bool Berechnung(int ID_Projekt)
-        {
-            m_ID_Projekt = ID_Projekt;
-
-            // 1./2. ID_Klimaregion und Geokoordinaten — EINE Fassung für beide Rechenwege
-            // (Paket-5-Nacharbeit, Befund N6/N9).
-            KlimaregionUndGeoLesen();
-
-            Init();
-
-            // 3. Wärmebedarf initialisieren
-            Waermebedarf_gesamt = Waermebedarf.Sum();
-            Max_Waermebedarf = Waermebedarf.Max();
-
-            // 4. Kollektorfelder samt STÜNDLICHEM POTENZIAL einlesen — Schritte 1 und 2
-            // des Kollektormodells, gemeinsam mit dem zweikanaligen Weg (N6).
-            List<SolarFeld> felder = Kollektorfelder_Lesen();
-
-            for (int i = 0; i < 8760; i++) Restwaerme[i] = Waermebedarf[i];
-
-            // 5. Bilanzierung je Feld — der KAPPUNGSPUNKT des Altpfads: Was über den
-            // Momentanbedarf hinausgeht, ist verworfen (im zweikanaligen Weg darf es
-            // stattdessen einen Puffer laden, Konzept 6.4).
-            for (int n = 0; n < felder.Count; n++)
-            {
-                SolarFeld f = felder[n];
-
-                // Jahressummen dieses Kollektor(felds) fuer die Auflistung.
-                double prodSummeKoll = 0;
-                double ueberSummeKoll = 0;
-
-                for (int i = 0; i < f.Stunden; i++)
-                {
-                    var (prod, rest, ueber) = Bilanzieren(Restwaerme[i], f.Potenzial[i]);
-
-                    // Ergebnisse aufsummieren (für mehrere Kollektorfelder)
-                    Waermeproduktion[i] += prod;
-                    Restwaerme[i] = rest; // Restwärme wird pro Zeitschritt überschrieben
-                    Ueberschuss[i] += ueber;
-
-                    prodSummeKoll += prod;
-                    ueberSummeKoll += ueber;
-                }
-
-                Kollektor_Ergebnisse.Add(new SolarKollektorErgebnis
-                {
-                    Name = f.Name,
-                    Flaeche = f.Flaeche,
-                    Anzahl = f.Anzahl,
-                    Waermeproduktion = prodSummeKoll,
-                    Ueberschuss = ueberSummeKoll
-                });
-            }
-
-            Waermeproduktion_gesamt = Waermeproduktion.Sum();
-            Waermeproduktion_max = Waermeproduktion.Max();
-            Ueberschuss_summe = Ueberschuss.Sum();
-            Restwaerme_summe = Restwaerme.Sum();
-
-            return true;
-        }
+        // PAKET A1: Hier stand "Berechnung(int ID_Projekt)" - der Einstieg des
+        // einkanaligen Altpfads (Klimaregion, Kollektorfelder_Lesen, Jahresschleife je
+        // Feld auf EINEM Bedarfsvektor mit Bilanzieren). Er ist mit dem Altpfad
+        // ersatzlos entfallen; der Einstieg des Moduls ist Vorbereiten_Zweikanalig(),
+        // gerechnet wird in der Kaskadenschleife oder als Vektorstufe
+        // (Berechnung_Zweikanalig).
 
         /// <summary>
         /// EIN Kollektorfeld des Projekts samt seinem stündlichen Bruttopotenzial.
@@ -251,14 +195,10 @@ namespace WindowsFormsApplication1
         /// Leistung, potenzielle Erzeugung), also alles, was NICHT vom Wärmebedarf und
         /// nicht vom Speicherfüllstand abhängt.
         ///
-        /// EINE Fassung für beide Rechenwege (Paket-5-Nacharbeit, Befund N6): Bis dahin
-        /// stand dieser Block zweimal im Modul — einmal in <see cref="Berechnung"/>,
-        /// einmal in <see cref="Vorbereiten_Zweikanalig"/>. Term für Term waren beide
-        /// gleich, aber ein Fix am Altpfad hätte im neuen Weg nicht gewirkt, und die
-        /// Regressionssuite (Flag aus) hätte das nie gemeldet. Zwei Abweichungen waren
-        /// bereits entstanden: die Stundenzahl (<c>rows</c> gegen
-        /// <c>Math.Min(rows, 8760)</c>) — hier auf die abgesicherte Fassung vereinheitlicht,
-        /// die zugleich einen möglichen Indexüberlauf des Altpfads schließt.
+        /// EINE Fassung (Paket-5-Nacharbeit, Befund N6): Bis dahin stand dieser Block
+        /// zweimal im Modul — je einmal für den einkanaligen und den zweikanaligen Weg.
+        /// Term für Term waren beide gleich; vereinheitlicht wurde auf die abgesicherte
+        /// Stundenzahl <c>Math.Min(rows, 8760)</c>.
         /// </summary>
         private List<SolarFeld> Kollektorfelder_Lesen()
         {
@@ -334,7 +274,7 @@ namespace WindowsFormsApplication1
             Ueberschuss_summe = 0;
             Kollektor_Ergebnisse.Clear();
 
-            // Zweikanaliger Weg (Paket 5) - im Altpfad bleiben alle Größen auf 0, damit
+            // Speichergrößen (Paket 5) - ohne Puffer-Senke bleiben sie auf 0, damit
             // die Mitkorrektur in SimulationRunner dort nachweislich wirkungslos ist.
             Array.Clear(Speicherladung_stuendlich, 0, Speicherladung_stuendlich.Length);
             Speicherladung_gesamt = 0;
@@ -434,7 +374,7 @@ namespace WindowsFormsApplication1
             m_ID_Projekt = ID_Projekt;
 
             // Klimaregion, Geokoordinaten und Kollektorfelder samt Potenzial kommen aus
-            // denselben Methoden wie im Altpfad (Paket-5-Nacharbeit, Befund N6) — damit
+            // denselben Methoden wie die Kollektorbilanz (Paket-5-Nacharbeit, N6) — damit
             // ist „dieselben Aufrufe, dieselbe Reihenfolge, dieselben Zahlen" nicht mehr
             // eine Zusage über zwei Kopien, sondern dieselbe Anweisungsfolge.
             KlimaregionUndGeoLesen();
@@ -490,7 +430,7 @@ namespace WindowsFormsApplication1
         /// und der STUFENEINGANG wird festgehalten.
         ///
         /// NACHARBEIT PAKET 6, BEFUND N1: Der Stufeneingang ist der Kanalstand VOR der
-        /// Vorabentladung (Phase A) — dieselbe Bezugsgröße wie im Altpfad und bei der
+        /// Vorabentladung (Phase A) — dieselbe Bezugsgröße wie bei der
         /// Wärmepumpe. Vorher stand er in <see cref="Stunde_Bedarf"/>, also nach Phase A.
         ///
         /// <para>PAKET K2: Der Stufeneingang ist die Summe ÜBER ALLE Kanäle des
@@ -657,11 +597,10 @@ namespace WindowsFormsApplication1
         ///
         /// Sie ist der Weg für Projekte, in denen kein Kollektorfeld eine Puffer-Senke
         /// trägt. Ohne Speicher gibt es nichts zu ordnen: Die Phasen A, C, D, E und G
-        /// haben für diese Stufe keinen Inhalt, und die Stufe bleibt — wie im Altpfad —
-        /// ein Vektormodul an ihrer Kaskadenposition. Der einzige Unterschied zum Altpfad
-        /// ist die Kanalführung: Statt auf der Kanalsumme zu rechnen und den Rest über
-        /// <c>Waermekanaele.Uebernehmen</c> proportional zurückzuverteilen, deckt die
-        /// Anlage ihren Kanal nach <c>WS_Typ</c> (bei „Beides" mit Warmwasservorrang).
+        /// haben für diese Stufe keinen Inhalt, und die Stufe bleibt ein Vektormodul an
+        /// ihrer Kaskadenposition. Sie rechnet KANALGERECHT — die Anlage deckt ihren
+        /// Kanal nach <c>WS_Typ</c> (bei „Beides" mit Warmwasservorrang), statt wie bis
+        /// Paket 5 auf der Kanalsumme.
         /// </summary>
         public bool Berechnung_Zweikanalig(int ID_Projekt, Kanalsatz kanaele,
                                            List<Senkenliste> senken)
