@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 48;
+        public const int ZIEL_VERSION = 49;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1492,6 +1492,49 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_48_GANGLINIENKANAL = 48;
 
+        /// <summary>
+        /// Schritt 49 - <b>Paket K2</b> (Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 6.1 und § 4.3, Entscheidungen F5-Alternative/L6 und F10 vom 27.08.2026):
+        /// das KLASSEN-SET am Pufferspeicher und die projektweite
+        /// KNAPPHEITSREIHENFOLGE.
+        ///
+        /// <para><b>49a</b> — drei YESNO-Spalten an <c>Tab_Pufferspeicher</c>
+        /// (<see cref="SchemaKatalog.SPALTE_PSP_NUTZUNG_HEIZUNG"/>,
+        /// <c>_BRAUCHWASSER</c>, <c>_PROZESS</c>). Sie lösen die einwertige Spalte
+        /// <c>Verwendung</c> ab: Bisher war ein Speicher entweder Heizungs- oder
+        /// Brauchwasserspeicher oder „Kombi"; jetzt trägt er ein SET aus bis zu drei
+        /// unabhängigen Klassen, womit auch {Heizung, Prozess} oder {H, B, P} möglich
+        /// werden. <c>Verwendung</c> bleibt als LESE-ALTLAST stehen und wird als
+        /// abgeleiteter Altwert mitgeschrieben.</para>
+        ///
+        /// <para><b>49b</b> — <see cref="SchemaKatalog.SPALTE_KANAL_KNAPPHEITSREIHENFOLGE"/>
+        /// (TEXT 100) an <c>Tab_Einstellungen</c>. TEXT(100) statt eines knapperen
+        /// Feldes aus demselben Grund wie in Schritt 48: Access kürzt beim UPDATE
+        /// STILL auf die Feldbreite. Der Vorgabewert misst 32 Zeichen, eine spätere
+        /// vierte Kanalkennung hat damit reichlich Luft.</para>
+        ///
+        /// <para><b>49c/49d</b> — zwei verhaltensneutrale DML-Vorbelegungen (der achte
+        /// und neunte DML-Teil neben 5, 7, 9, 13, 15, 17 und 48b): das Klassen-Set aus
+        /// <c>Verwendung</c> (<c>Heizung</c> → {H}, <c>Brauchwasser</c> → {B},
+        /// <c>Kombi</c> → {H, B}, alles andere einschließlich NULL und Leerwert → {H})
+        /// und die Knappheitsreihenfolge auf <see cref="DbWerte.KNAPPHEIT_DEFAULT"/>.
+        /// Beides bildet exakt das bisherige Verhalten ab: Eine leere Verwendung galt
+        /// überall als Heizung (<c>WaermesenkeClass.WirksameVerwendung</c>), und die
+        /// Kaskade kannte die Reihenfolge Brauchwasser vor Heizung fest verdrahtet.</para>
+        ///
+        /// <para><b>Case-insensitiv vergleichen.</b> Die Normalisierung
+        /// <c>WaermesenkeClass.NormalisierteVerwendung</c> kennt Schreibvarianten
+        /// (<c>"kombi"</c>, <c>"brauchwasser"</c>) und bringt sie auf den kanonischen
+        /// Wert. Die DML hier muss dieselbe Toleranz haben, sonst bekäme ein
+        /// Kombi-Speicher mit kleingeschriebenem Wert still das Set {H} — er verlöre
+        /// seinen Brauchwasserkanal. Access bietet dafür <c>UCase</c>.</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker): Die <c>ALTER TABLE</c>
+        /// laufen in try/catch; die beiden UPDATE treffen beim Zweitlauf keine Zeile
+        /// mehr, weil sie nur auf das leere Set bzw. auf <c>IS NULL</c> zielen.</para>
+        /// </summary>
+        public const int SCHRITT_49_KLASSENSET = 49;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -2405,6 +2448,18 @@ namespace WindowsFormsApplication1
                         "Die Kanalzuordnung der externen Waermeganglinien konnte nicht " +
                         "angelegt werden - der Dreikanal-Bedarf braucht die Spalte.",
                         Schritt_48_Ganglinienkanal),
+
+            // K2 (F5-Alternative/L6 und F10): Klassen-Set am Puffer und projektweite
+            // Knappheitsreihenfolge. Begruendung und Idempotenzzusage bei der
+            // Schrittkonstanten.
+            new Schritt(SCHRITT_49_KLASSENSET,
+                        "Klassen-Set: Tab_Pufferspeicher.Nutzung_Heizung/_Brauchwasser/" +
+                        "_Prozess anlegen und aus Verwendung befuellen; " +
+                        "Tab_Einstellungen.Kanal_Knappheitsreihenfolge anlegen und " +
+                        "vorbelegen (Paket K2, F5/F10)",
+                        "Das Klassen-Set der Pufferspeicher konnte nicht angelegt " +
+                        "werden - die dreikanalige Entladung braucht die Spalten.",
+                        Schritt_49_Klassenset),
         };
 
         // =================================================================================
@@ -6078,6 +6133,132 @@ namespace WindowsFormsApplication1
 
             l.Zeile("Ganglinienkanal (Schritt 48): " + vorbelegt +
                     " Ganglinienzuordnung(en) auf den Kanal Heizung vorbelegt.");
+            return true;
+        }
+
+        /// <summary>
+        /// F5-Alternative/L6 und F10 (27.08.2026): das KLASSEN-SET am Pufferspeicher und
+        /// die projektweite KNAPPHEITSREIHENFOLGE. Anlass, Teilgliederung und
+        /// Idempotenzzusage: <see cref="SCHRITT_49_KLASSENSET"/>.
+        /// </summary>
+        private static bool Schritt_49_Klassenset(Lauf l)
+        {
+            // Die Spaltennamen einmal auflösen - sie stehen in jeder Anweisung unten.
+            string sH = SchemaKatalog.SPALTE_PSP_NUTZUNG_HEIZUNG;
+            string sB = SchemaKatalog.SPALTE_PSP_NUTZUNG_BRAUCHWASSER;
+            string sP = SchemaKatalog.SPALTE_PSP_NUTZUNG_PROZESS;
+            string sK = SchemaKatalog.SPALTE_KANAL_KNAPPHEITSREIHENFOLGE;
+
+            // --- 49a) die drei Flags an Tab_Pufferspeicher ----------------------------
+            // YESNO wie die übrigen Ja/Nein-Spalten des Vorhabens (Schritte 6 und 7).
+            // Access belegt eine so angehängte Spalte in ALLEN Bestandszeilen mit
+            // FALSCH - ein NULL gibt es dort nicht. Genau darauf baut die
+            // Idempotenzbedingung der DML unten auf: „alle drei falsch" IST der noch
+            // nicht migrierte Zustand.
+            foreach (string spalte in new[] { sH, sB, sP })
+            {
+                try
+                {
+                    using (var cmd = new OleDbCommand(
+                        "ALTER TABLE " + SchemaKatalog.TAB_PUFFERSPEICHER +
+                        " ADD COLUMN [" + spalte + "] YESNO", l.Conn))
+                        cmd.ExecuteNonQuery();
+                }
+                catch { /* Spalte existiert bereits */ }
+            }
+
+            // Nachweis statt Annahme: Erst diese Leseprobe belegt, dass ALLE DREI
+            // Spalten da sind - das ALTER schluckt jeden Fehler, auch einen echten.
+            object probePuffer = Scalar(l,
+                "SELECT COUNT(*) FROM " + SchemaKatalog.TAB_PUFFERSPEICHER +
+                " WHERE [" + sH + "] = FALSE AND [" + sB + "] = FALSE AND [" + sP + "] = FALSE");
+            if (probePuffer == null)
+            {
+                l.Zeile("Klassen-Set (Schritt 49): die Nutzungs-Spalten an " +
+                        SchemaKatalog.TAB_PUFFERSPEICHER + " sind nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            // --- 49b) die Knappheitsreihenfolge an Tab_Einstellungen ------------------
+            // TEXT(100): Access kürzt beim UPDATE STILL auf die Feldbreite (dieselbe
+            // Falle wie in Schritt 48). Der Vorgabewert misst 32 Zeichen.
+            //
+            // ANGEHÄNGT und sonst nichts: Tab_Einstellungen wird in
+            // KonfigurationCtrl.ReadSingle ORDINAL über row[0]…row[22] gelesen. Die
+            // Spalte darf deshalb nur ans Ende und wird namensbasiert gelesen bzw.
+            // zielgenau geschrieben.
+            try
+            {
+                using (var cmd = new OleDbCommand(
+                    "ALTER TABLE " + SchemaKatalog.TAB_EINSTELLUNGEN +
+                    " ADD COLUMN [" + sK + "] TEXT(100)", l.Conn))
+                    cmd.ExecuteNonQuery();
+            }
+            catch { /* Spalte existiert bereits */ }
+
+            object probeEinst = Scalar(l,
+                "SELECT COUNT(*) FROM " + SchemaKatalog.TAB_EINSTELLUNGEN +
+                " WHERE [" + sK + "] IS NULL");
+            if (probeEinst == null)
+            {
+                l.Zeile("Klassen-Set (Schritt 49): die Spalte " + sK + " ist nicht " +
+                        "anlegbar/lesbar.");
+                return false;
+            }
+
+            // --- 49c) Klassen-Set aus Verwendung ableiten -----------------------------
+            //
+            // CASE-INSENSITIV über UCase: WaermesenkeClass.NormalisierteVerwendung
+            // kennt Schreibvarianten ("kombi", "brauchwasser") und bringt sie auf den
+            // kanonischen Wert. Ohne dieselbe Toleranz hier bekäme ein Kombi-Speicher
+            // mit kleingeschriebenem Wert still nur {Heizung} - er verlöre seinen
+            // Brauchwasserkanal. Trim() fängt zusätzlich von Hand eingetragene
+            // Leerzeichen ab.
+            //
+            // REIHENFOLGE DER BEIDEN ANWEISUNGEN IST TRAGEND. Die Bedingung „noch
+            // nicht migriert" lautet „alle drei Flags falsch"; sobald die erste
+            // Anweisung schreibt, gilt sie für die betroffenen Zeilen nicht mehr.
+            // Deshalb zuerst HEIZUNG (trifft Heizung, Kombi, NULL, Leerwert und jeden
+            // unbekannten Wert - alles, was nicht Brauchwasser ist), danach
+            // BRAUCHWASSER (trifft die reinen Brauchwasserzeilen, die noch unberührt
+            // sind, UND die Kombizeilen, die eben Heizung bekommen haben).
+            string bwGross = DbWerte.PSP_VERWENDUNG_BRAUCHWASSER.ToUpperInvariant();
+            string kombiGross = DbWerte.PSP_VERWENDUNG_KOMBI.ToUpperInvariant();
+
+            int mitHeizung = NonQuery(l,
+                "UPDATE " + SchemaKatalog.TAB_PUFFERSPEICHER +
+                " SET [" + sH + "] = TRUE" +
+                " WHERE [" + sH + "] = FALSE AND [" + sB + "] = FALSE AND [" + sP + "] = FALSE" +
+                "   AND (Verwendung IS NULL OR UCase(Trim(Verwendung)) <> '" + bwGross + "')");
+            if (mitHeizung < 0) return false;
+
+            int mitBrauchwasser = NonQuery(l,
+                "UPDATE " + SchemaKatalog.TAB_PUFFERSPEICHER +
+                " SET [" + sB + "] = TRUE" +
+                " WHERE [" + sB + "] = FALSE AND [" + sP + "] = FALSE" +
+                "   AND (UCase(Trim(Verwendung)) = '" + bwGross + "'" +
+                "     OR UCase(Trim(Verwendung)) = '" + kombiGross + "')");
+            if (mitBrauchwasser < 0) return false;
+
+            // Nutzung_Prozess bleibt überall FALSCH: Der Bestand kennt keinen
+            // Prozessspeicher, ein Wert dafür wäre erfunden. Das Flag setzt erst der
+            // Anwender im Dialog.
+
+            // --- 49d) Knappheitsreihenfolge vorbelegen --------------------------------
+            // Literal statt Parameter wie in Schritt 48: der im Bestand gewählte Weg
+            // (Schritte 44/46/47/48), der die ACE-Bindungsfalle ganz spart.
+            int reihenfolge = NonQuery(l,
+                "UPDATE " + SchemaKatalog.TAB_EINSTELLUNGEN +
+                " SET [" + sK + "] = '" + DbWerte.KNAPPHEIT_DEFAULT + "'" +
+                " WHERE [" + sK + "] IS NULL");
+            if (reihenfolge < 0) return false;
+
+            l.Zeile("Klassen-Set (Schritt 49): " + mitHeizung + " Pufferspeicher auf " +
+                    "Nutzung Heizung gesetzt, davon/zusaetzlich " + mitBrauchwasser +
+                    " auf Nutzung Brauchwasser (Kombi = beides); Nutzung Prozess bleibt " +
+                    "im Bestand ueberall aus. " + reihenfolge + " Projekteinstellung(en) " +
+                    "auf die Knappheitsreihenfolge '" + DbWerte.KNAPPHEIT_DEFAULT +
+                    "' vorbelegt.");
             return true;
         }
 

@@ -1030,6 +1030,62 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string SPALTE_ZPW_KANAL = "Kanal";
 
+        /// <summary>
+        /// K2 (Migrationsschritt 49, Konzept Brauchwasser/Heizung/Pufferspeicher § 6.1,
+        /// Entscheidung F5-Alternative/L6): <c>Tab_Pufferspeicher.Nutzung_Heizung</c>
+        /// (YESNO) — erstes der drei Flags des KLASSEN-SETS, das
+        /// <c>Tab_Pufferspeicher.Verwendung</c> ablöst.
+        ///
+        /// <para>Die drei Flags sind unabhängig voneinander; jede Kombination ist
+        /// zulässig, „Kombi" ist nur noch der Anzeigename des Sets {Heizung,
+        /// Brauchwasser}. <c>Verwendung</c> bleibt als LESE-ALTLAST stehen und wird beim
+        /// Speichern als abgeleiteter Altwert mitgeführt, bis die letzte Anzeige
+        /// umgestellt ist (Paket S2).</para>
+        ///
+        /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/>: Begründung dort
+        /// im Sammelkommentar.</para>
+        /// </summary>
+        public const string SPALTE_PSP_NUTZUNG_HEIZUNG = "Nutzung_Heizung";
+
+        /// <summary>
+        /// <c>Tab_Pufferspeicher.Nutzung_Brauchwasser</c> (YESNO) — zweites Flag des
+        /// Klassen-Sets; siehe <see cref="SPALTE_PSP_NUTZUNG_HEIZUNG"/>.
+        /// </summary>
+        public const string SPALTE_PSP_NUTZUNG_BRAUCHWASSER = "Nutzung_Brauchwasser";
+
+        /// <summary>
+        /// <c>Tab_Pufferspeicher.Nutzung_Prozess</c> (YESNO) — drittes Flag des
+        /// Klassen-Sets. Es hat im Bestand KEINE Entsprechung in <c>Verwendung</c>:
+        /// Die DML-Migration setzt es überall auf FALSCH, gesetzt wird es erst durch
+        /// den Anwender. Siehe <see cref="SPALTE_PSP_NUTZUNG_HEIZUNG"/>.
+        /// </summary>
+        public const string SPALTE_PSP_NUTZUNG_PROZESS = "Nutzung_Prozess";
+
+        /// <summary>
+        /// K2 (Migrationsschritt 49, Konzept § 4.3, Entscheidung F10):
+        /// <c>Tab_Einstellungen.Kanal_Knappheitsreihenfolge</c> (TEXT 100) — die
+        /// PROJEKTWEITE Übersteuerung der Rangfolge, in der eine mehrelementige
+        /// Kanalmaske bei Knappheit bedient wird.
+        ///
+        /// <para>Werte sind ausschließlich die sprachneutralen
+        /// <c>DbWerte.KNAPPHEIT_*</c>-Schlüssel, durch Semikolon getrennt; NULL oder
+        /// leer gilt überall als <see cref="DbWerte.KNAPPHEIT_DEFAULT"/>
+        /// (<c>BRAUCHWASSER;PROZESS;HEIZUNG</c>) — genau die Reihenfolge, die die
+        /// Kaskade bis hierher fest verdrahtet kannte.</para>
+        ///
+        /// <para><b>Nur zielgenau schreiben.</b> <c>Tab_Einstellungen</c> wird in
+        /// <c>KonfigurationCtrl.ReadSingle</c> ORDINAL über <c>row[0]…row[22]</c>
+        /// gelesen; die Spalte wird deshalb ANGEHÄNGT, NAMENSBASIERT gelesen und über
+        /// ein eigenes UPDATE geschrieben
+        /// (<c>KonfigurationCtrl.KnappheitsreihenfolgeSchreiben</c>) — dasselbe Muster
+        /// wie <see cref="SPALTE_KASKADE_ZWEIKANALIG"/> und
+        /// <see cref="SPALTE_EXTRAPOLATION_ERLAUBT"/>.</para>
+        ///
+        /// <para>Die Spalte steht BEWUSST NICHT in <see cref="Alle"/>: Begründung dort
+        /// im Sammelkommentar.</para>
+        /// </summary>
+        public const string SPALTE_KANAL_KNAPPHEITSREIHENFOLGE = "Kanal_Knappheitsreihenfolge";
+
         /// <summary>Eine Position einer Auslieferungsvorlage (Schritt 39).</summary>
         public sealed class VorlagenPositionSeed
         {
@@ -2151,6 +2207,24 @@ namespace WindowsFormsApplication1
         /// heißt laut <see cref="DbWerte.KANAL_HEIZUNG"/> genau das Bestandsverhalten.
         /// Damit gilt hier dieselbe Linie wie bei den Schritten 45 bis 47, deren Spalten
         /// ebenfalls nur die Migration anlegt.
+        ///
+        /// <see cref="SPALTE_PSP_NUTZUNG_HEIZUNG"/>,
+        /// <see cref="SPALTE_PSP_NUTZUNG_BRAUCHWASSER"/>,
+        /// <see cref="SPALTE_PSP_NUTZUNG_PROZESS"/> und
+        /// <see cref="SPALTE_KANAL_KNAPPHEITSREIHENFOLGE"/> (Schritt 49) sind BEWUSST
+        /// NICHT aufgeführt — dieselbe Begründung wie bei
+        /// <see cref="SPALTE_ZPW_KANAL"/>: Alle Leser sind TOLERANT. Das Klassen-Set
+        /// wird über <c>SELECT *</c> mit Spaltennamenprüfung gelesen
+        /// (<c>PufferSpCtrl.KlassenSetAusZeile</c>, <c>WaermesenkeClass.PufferLaden</c>),
+        /// und fehlt es, leitet die Rückfallregel das Set aus <c>Verwendung</c> ab —
+        /// also genau das Bestandsverhalten. Die Knappheitsreihenfolge liest
+        /// <c>KonfigurationCtrl.ReadSingle</c> namensbasiert; fehlt die Spalte, gilt
+        /// <c>DbWerte.KNAPPHEIT_DEFAULT</c>, und das ist die bis dahin fest verdrahtete
+        /// Reihenfolge. Beide Spalten hängen zudem an Tabellen, für die eine
+        /// Rückfallebene mehr schadete als nützte: <c>Tab_Einstellungen</c> darf wegen
+        /// der Ordinal-Lesekette ausschließlich zielgenau erweitert werden, und die
+        /// SCHREIBenden Wege des Klassen-Sets bringen ihre eigene, einmalige
+        /// Spaltenvorsorge mit (<c>PufferSpCtrl.StelleKlassenSetSpaltenSicher</c>).
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {

@@ -69,6 +69,13 @@ namespace WindowsFormsApplication1
                     if (r.Table.Columns.Contains("Gesamtvolumen") && r["Gesamtvolumen"] != DBNull.Value) item.Gesamtvolumen = Convert.ToInt32(r["Gesamtvolumen"]);
                     if (r.Table.Columns.Contains("Investitionskosten") && r["Investitionskosten"] != DBNull.Value) item.Investitionskosten = Convert.ToDouble(r["Investitionskosten"]);
 
+                    // KLASSEN-SET (Migrationsschritt 49, Konzept 6.1). Spaltentolerant
+                    // mit Rueckfall auf Verwendung - siehe KlassenSetAusZeile.
+                    KlassenSet ks = KlassenSetAusZeile(r);
+                    item.Nutzung_Heizung = ks.Heizung;
+                    item.Nutzung_Brauchwasser = ks.Brauchwasser;
+                    item.Nutzung_Prozess = ks.Prozess;
+
                     _internalList.Add(item);
                 }
             }
@@ -225,7 +232,25 @@ namespace WindowsFormsApplication1
                 };
 
                 bool ok = DataRepository.ExecuteSQL(sql, ps);
-                return ok ? neueId : -1;
+                if (!ok) return -1;
+
+                // KLASSEN-SET der neuen Projektzeile (Migrationsschritt 49, Konzept 6.1).
+                //
+                // Die STAMM-Tabelle bekommt KEINE Flags - ein Katalogeintrag beschreibt
+                // eine BAUFORM (Speichertyp), keine hydraulische Verwendung. Sie fuehrt
+                // heute nicht einmal eine Verwendungs-Spalte; ColOrNull liefert dann
+                // DBNull, und die Rueckfallregel macht daraus {Heizung}. Genau das war
+                // auch bisher das Verhalten dieser Zeilen: Die Spaltenliste des INSERT
+                // oben traegt Verwendung nicht, der Wert blieb NULL, und NULL galt
+                // ueberall als Heizung (WaermesenkeClass.WirksameVerwendung,
+                // Ladeordnung.Entladereihenfolge).
+                //
+                // Fuehrt eine Datenbank die Spalte doch (Anwender-Erweiterung), wird sie
+                // gelesen und uebertragen - dieselbe Ableitungsregel wie ueberall.
+                KlassenSetSchreiben(neueId,
+                                    KlassenSetAusVerwendung(Text(ColOrNull(s, "Verwendung"))));
+
+                return neueId;
             }
             catch (Exception ex)
             {
@@ -352,13 +377,25 @@ namespace WindowsFormsApplication1
         /// Migration unverändert bleiben und ein neu angelegter Puffer dieselbe Reserve
         /// bekommt wie ein migrierter.
         /// </param>
+        /// <param name="nutzungHeizung">
+        /// KLASSEN-SET (Migrationsschritt 49, Konzept 6.1) — <c>null</c> heißt „aus
+        /// <paramref name="verwendung"/> ableiten". Alle drei Flags sind VORBELEGT,
+        /// damit die Aufrufer aus dem Katalogweg (<see cref="CopyFromStammNeu"/>) und
+        /// aus der Migration unverändert bleiben; nur der Dialog gibt ein Set vor, das
+        /// über den Altwert hinausgeht (etwa {Heizung, Prozess}).
+        /// </param>
+        /// <param name="nutzungBrauchwasser">siehe <paramref name="nutzungHeizung"/>.</param>
+        /// <param name="nutzungProzess">siehe <paramref name="nutzungHeizung"/>.</param>
         public static int ProjektPufferAnlegen(int idProjekt, string bezeichner, string hersteller,
                                                string speichertyp, int volumenLiter, double verluste,
                                                double investitionskosten, string verwendung,
                                                int? vorlauf, int? ruecklauf,
                                                double schwelleEin, double schwelleAus,
                                                double schwelleAusNachrang, int entladeprio,
-                                               double schwelleReserve = ProjektPuffer.SCHWELLE_RESERVE_DEFAULT)
+                                               double schwelleReserve = ProjektPuffer.SCHWELLE_RESERVE_DEFAULT,
+                                               bool? nutzungHeizung = null,
+                                               bool? nutzungBrauchwasser = null,
+                                               bool? nutzungProzess = null)
         {
             if (idProjekt <= 0 || string.IsNullOrEmpty(bezeichner)) return -1;
 
@@ -377,6 +414,14 @@ namespace WindowsFormsApplication1
                                       schwelleReserve)) < 0)
                 return -1;
 
+            // KLASSEN-SET (Migrationsschritt 49). Eigenes, zielgenaues UPDATE statt einer
+            // Erweiterung von SQL_PUFFER_INSERT_VOLL: Auf einer Datenbank ohne
+            // Schemastand 49 liesse eine erweiterte Spaltenliste das Anlegen des GANZEN
+            // Speichers scheitern - wegen dreier Flags, deren Wert sich ohnehin aus der
+            // mitgeschriebenen Verwendung ableiten laesst.
+            KlassenSetSchreiben(neueId, KlassenSetBestimmen(verwendung, nutzungHeizung,
+                                                            nutzungBrauchwasser, nutzungProzess));
+
             // Anlagenzeile nachtragen - eine je Projekt + Bezeichner (Regel R4 der
             // Migration) UND eine je Projekt + Gerät (Teil A der Anlagenzeilen-
             // Eindeutigkeit). Die zweite Bedingung ist die belastbarere: Sie prüft den
@@ -390,14 +435,22 @@ namespace WindowsFormsApplication1
             return neueId;
         }
 
-        /// <summary>Ändert einen vorhandenen Projekt-Puffer (Konzept 4.3).</summary>
+        /// <summary>
+        /// Ändert einen vorhandenen Projekt-Puffer (Konzept 4.3).
+        /// Die drei Klassen-Set-Flags verhalten sich wie in
+        /// <see cref="ProjektPufferAnlegen"/>: <c>null</c> heißt „aus
+        /// <paramref name="verwendung"/> ableiten".
+        /// </summary>
         public static bool ProjektPufferAendern(int idPuffer, int idProjekt, string bezeichner,
                                                 string hersteller, string speichertyp, int volumenLiter,
                                                 double verluste, double investitionskosten,
                                                 string verwendung, int? vorlauf, int? ruecklauf,
                                                 double schwelleEin, double schwelleAus,
                                                 double schwelleAusNachrang, int entladeprio,
-                                                double schwelleReserve = ProjektPuffer.SCHWELLE_RESERVE_DEFAULT)
+                                                double schwelleReserve = ProjektPuffer.SCHWELLE_RESERVE_DEFAULT,
+                                                bool? nutzungHeizung = null,
+                                                bool? nutzungBrauchwasser = null,
+                                                bool? nutzungProzess = null)
         {
             if (idPuffer <= 0 || string.IsNullOrEmpty(bezeichner)) return false;
 
@@ -417,6 +470,11 @@ namespace WindowsFormsApplication1
                                       schwelleEin, schwelleAus, schwelleAusNachrang, entladeprio,
                                       schwelleReserve)) < 0)
                 return false;
+
+            // KLASSEN-SET (Migrationsschritt 49) - dieselbe Begründung für das eigene,
+            // zielgenaue UPDATE wie in ProjektPufferAnlegen.
+            KlassenSetSchreiben(idPuffer, KlassenSetBestimmen(verwendung, nutzungHeizung,
+                                                              nutzungBrauchwasser, nutzungProzess));
 
             // Die Anlagenzeile führt denselben Bezeichner - sonst greift
             // ProjektWaisenEntfernen zu (Abgleich läuft über den Namen).
@@ -575,6 +633,311 @@ namespace WindowsFormsApplication1
 
             // Waisen aufräumen (B0-6a) - Projektkopien ohne Anlagenzeile
             new PufferSpCtrl().ProjektWaisenEntfernen(idProjekt);
+            return ok;
+        }
+
+        // =================================================================================
+        //  KLASSEN-SET (Migrationsschritt 49, Paket K2)
+        //  Konzept Brauchwasser/Heizung/Pufferspeicher § 6.1, Entscheidung
+        //  F5-Alternative / L6 vom 27.08.2026
+        // =================================================================================
+        //
+        // Tab_Pufferspeicher.Verwendung war EINWERTIG: Heizung, Brauchwasser oder
+        // "Kombi" für beides. Ein Prozessspeicher liess sich gar nicht ausdruecken, und
+        // {Heizung, Prozess} erst recht nicht. An ihre Stelle treten drei unabhaengige
+        // Ja/Nein-Flags; "Kombi" ist nur noch der ANZEIGENAME des Sets
+        // {Heizung, Brauchwasser}.
+        //
+        // Verwendung bleibt als LESE-ALTLAST stehen und wird beim Speichern als
+        // ABGELEITETER Altwert mitgeschrieben - bis zum Paket S2 lesen Anzeigen,
+        // Auswahllisten und Meldungen sie noch (WaermesenkeClass.WirksameVerwendung,
+        // Ladeordnung.Entladereihenfolge, SpeicherKarte). Fuehrend sind die Flags.
+        //
+        // DIE EINE ABLEITUNGSREGEL steht in KlassenSetAusVerwendung und wird von JEDEM
+        // Schreiber benutzt, der Verwendung setzt. Wer sie umgeht, erzeugt eine zweite
+        // Wahrheit ueber dieselbe Frage.
+
+        /// <summary>
+        /// Das Klassen-Set eines Pufferspeichers — welche der drei Kanäle er bedient
+        /// (Migrationsschritt 49, Konzept 6.1). Unveränderlich; die Ableitungen
+        /// <see cref="Verwendung"/> und <see cref="HatAltEntsprechung"/> hängen daran.
+        /// </summary>
+        public sealed class KlassenSet
+        {
+            public readonly bool Heizung;
+            public readonly bool Brauchwasser;
+            public readonly bool Prozess;
+
+            public KlassenSet(bool heizung, bool brauchwasser, bool prozess)
+            {
+                Heizung = heizung;
+                Brauchwasser = brauchwasser;
+                Prozess = prozess;
+            }
+
+            /// <summary>
+            /// Das LEERE Set — ein Speicher, den niemand entlädt. Fachlich kein
+            /// gültiger Zustand (Konzept 6.1: „Mindestens ein Flag muss gesetzt
+            /// sein"); überall, wo er auftritt, heißt er „noch nicht gesetzt" und löst
+            /// die Rückfallregel aus.
+            /// </summary>
+            public bool Leer
+            {
+                get { return !Heizung && !Brauchwasser && !Prozess; }
+            }
+
+            /// <summary>
+            /// Der abgeleitete ALTWERT für <c>Tab_Pufferspeicher.Verwendung</c>.
+            ///
+            /// <para>Drei Sets haben eine genaue Entsprechung — {H} → „Heizung",
+            /// {B} → „Brauchwasser", {H, B} → „Kombi". Für die übrigen ({P}, {H, P},
+            /// {B, P}, {H, B, P}, {}) gibt es keinen Altwert; sie bekommen den
+            /// NÄCHSTLIEGENDEN: Enthält das Set beide Wasserkanäle, ist das „Kombi";
+            /// enthält es nur Brauchwasser, „Brauchwasser"; sonst „Heizung". Damit
+            /// bleibt der Altwert genau so gut, wie er sein kann — die Prozessklasse
+            /// kennt er nicht, und „Heizung" ist überall der Rückfall für Unbekanntes
+            /// (WaermesenkeClass.NormalisierteVerwendung).</para>
+            /// </summary>
+            public string Verwendung
+            {
+                get
+                {
+                    if (Heizung && Brauchwasser) return WaermesenkeClass.VERWENDUNG_KOMBI;
+                    if (Brauchwasser) return WaermesenkeClass.VERWENDUNG_BRAUCHWASSER;
+                    return WaermesenkeClass.VERWENDUNG_HEIZUNG;
+                }
+            }
+
+            /// <summary>
+            /// true, wenn <see cref="Verwendung"/> das Set VERLUSTFREI abbildet — also
+            /// genau für {H}, {B} und {H, B}. Sonst ist der Altwert nur der
+            /// nächstliegende, und die Oberfläche weist darauf hin.
+            /// </summary>
+            public bool HatAltEntsprechung
+            {
+                get { return !Prozess && !Leer; }
+            }
+        }
+
+        /// <summary>
+        /// DIE Ableitungsregel Verwendung → Klassen-Set (Konzept 6.1, DML-Migration
+        /// Schritt 49): <c>Heizung</c> → {H}, <c>Brauchwasser</c> → {B},
+        /// <c>Kombi</c> → {H, B}; <c>Quelle</c>, Leerwert, <c>null</c> und jeder
+        /// unbekannte Wert → {H}.
+        ///
+        /// <para>Die Schreibweise ist gleichgültig: Normalisiert wird über
+        /// <see cref="WaermesenkeClass.NormalisierteVerwendung"/> — dieselbe Stelle, die
+        /// auch der Rechenkern benutzt, und dieselbe Toleranz, die die DML des
+        /// Migrationsschritts über <c>UCase</c> hat.</para>
+        /// </summary>
+        public static KlassenSet KlassenSetAusVerwendung(string verwendung)
+        {
+            string wirksam = WaermesenkeClass.NormalisierteVerwendung(verwendung);
+
+            bool brauchwasser =
+                string.Equals(wirksam, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER,
+                              StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(wirksam, WaermesenkeClass.VERWENDUNG_KOMBI,
+                              StringComparison.OrdinalIgnoreCase);
+
+            bool heizung = !string.Equals(wirksam, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER,
+                                          StringComparison.OrdinalIgnoreCase);
+
+            return new KlassenSet(heizung, brauchwasser, false);
+        }
+
+        /// <summary>Kurzform für Aufrufer, die nur den Altwert brauchen.</summary>
+        public static string VerwendungAusKlassenSet(bool heizung, bool brauchwasser, bool prozess)
+        {
+            return new KlassenSet(heizung, brauchwasser, prozess).Verwendung;
+        }
+
+        /// <summary>
+        /// Das Klassen-Set einer GELESENEN Puffer-Zeile — spaltentolerant.
+        ///
+        /// <para><b>Zwei Lücken, eine Regel.</b> Fehlen die Spalten (Datenbank noch
+        /// nicht auf Schemastand 49), liest die Methode nichts und das Set bliebe leer.
+        /// Und selbst wenn sie da sind, kann es leer sein: Access belegt eine per
+        /// <c>ADD COLUMN … YESNO</c> angehängte Spalte mit FALSCH, nicht mit NULL —
+        /// eine Zeile, die ein Schreibweg ohne Flag-Vorsorge angelegt hat, trägt
+        /// deshalb drei Nullen statt einer Lücke. Beide Fälle bedeuten dasselbe: „noch
+        /// nicht gesetzt". Beide fallen auf <see cref="KlassenSetAusVerwendung"/>
+        /// zurück, und damit auf exakt das Verhalten vor Schritt 49.</para>
+        /// </summary>
+        public static KlassenSet KlassenSetAusZeile(DataRow r)
+        {
+            if (r == null) return new KlassenSet(true, false, false);
+
+            KlassenSet gelesen = new KlassenSet(
+                FlagLesen(r, SchemaKatalog.SPALTE_PSP_NUTZUNG_HEIZUNG),
+                FlagLesen(r, SchemaKatalog.SPALTE_PSP_NUTZUNG_BRAUCHWASSER),
+                FlagLesen(r, SchemaKatalog.SPALTE_PSP_NUTZUNG_PROZESS));
+
+            return gelesen.Leer
+                ? KlassenSetAusVerwendung(Text(ColOrNull(r, "Verwendung")))
+                : gelesen;
+        }
+
+        /// <summary>Ein Ja/Nein-Feld; fehlende Spalte, NULL und Unlesbares ergeben false.</summary>
+        private static bool FlagLesen(DataRow r, string spalte)
+        {
+            if (r == null || !r.Table.Columns.Contains(spalte)) return false;
+
+            object v = r[spalte];
+            if (v == null || v == DBNull.Value) return false;
+
+            try { return Convert.ToBoolean(v); }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// Das Klassen-Set EINES Puffers aus der Datenbank; nie <c>null</c>. Ein
+        /// unbekannter Puffer liefert die Vorbelegung {Heizung} — dieselbe Antwort wie
+        /// eine leere Verwendung.
+        ///
+        /// Still (nur <c>Console.WriteLine</c>): Die Methode hängt an denselben Wegen
+        /// wie <see cref="TemperaturenLesen"/> und muss dialogfrei bleiben.
+        /// </summary>
+        public static KlassenSet KlassenSetLesen(int idPuffer)
+        {
+            if (idPuffer <= 0) return new KlassenSet(true, false, false);
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT * FROM Tab_Pufferspeicher WHERE ID = ?",
+                StilleDb.Par("@id", OleDbType.Integer, idPuffer));
+
+            if (dt == null || dt.Rows.Count == 0) return new KlassenSet(true, false, false);
+
+            return KlassenSetAusZeile(dt.Rows[0]);
+        }
+
+        /// <summary>
+        /// Das zu schreibende Klassen-Set aus Altwert UND ausdrücklicher Vorgabe: Jedes
+        /// Flag, das der Aufrufer setzt, gewinnt; die übrigen kommen aus
+        /// <paramref name="verwendung"/>. Ein LEERES Ergebnis wird auf {Heizung}
+        /// gehoben — ein Speicher, den niemand entlädt, darf nicht entstehen
+        /// (Konzept 6.1). Der Dialog fängt das vorher mit einer Meldung ab; diese Zeile
+        /// ist das Netz für die programmatischen Wege.
+        /// </summary>
+        public static KlassenSet KlassenSetBestimmen(string verwendung, bool? nutzungHeizung,
+                                                     bool? nutzungBrauchwasser, bool? nutzungProzess)
+        {
+            KlassenSet ausAltwert = KlassenSetAusVerwendung(verwendung);
+
+            bool h = nutzungHeizung ?? ausAltwert.Heizung;
+            bool b = nutzungBrauchwasser ?? ausAltwert.Brauchwasser;
+            bool p = nutzungProzess ?? ausAltwert.Prozess;
+
+            if (!h && !b && !p) h = true;
+
+            return new KlassenSet(h, b, p);
+        }
+
+        /// <summary>
+        /// Schreibt das Klassen-Set an eine Puffer-Zeile — ein EIGENES, zielgenaues
+        /// UPDATE (Muster <c>KonfigurationCtrl.KaskadeZweikanaligSchreiben</c>).
+        ///
+        /// <para><b>Warum nicht in die Spaltenlisten von
+        /// <c>ProjektPuffer.SQL_PUFFER_INSERT_VOLL</c> und
+        /// <c>SQL_PUFFER_UPDATE_VOLL</c>.</b> Auf einer Datenbank ohne Schemastand 49
+        /// scheiterte damit das Anlegen bzw. Ändern des GANZEN Speichers — wegen
+        /// dreier Flags, deren Wert sich aus der mitgeschriebenen Verwendung ohnehin
+        /// ableiten lässt. Hier scheitert im schlimmsten Fall nur das Nachtragen, und
+        /// die Leseseite fällt geordnet auf die Ableitung zurück.</para>
+        ///
+        /// <para>Vorher läuft die einmalige Spaltenvorsorge
+        /// (<see cref="StelleKlassenSetSpaltenSicher"/>). Dialogfrei; Rückgabe false,
+        /// wenn die Spalten fehlen oder keine Zeile getroffen wurde.</para>
+        /// </summary>
+        public static bool KlassenSetSchreiben(int idPuffer, KlassenSet set)
+        {
+            if (idPuffer <= 0 || set == null) return false;
+            if (!StelleKlassenSetSpaltenSicher()) return false;
+
+            return StillNonQuery(
+                "UPDATE Tab_Pufferspeicher SET " +
+                "[" + SchemaKatalog.SPALTE_PSP_NUTZUNG_HEIZUNG + "] = ?, " +
+                "[" + SchemaKatalog.SPALTE_PSP_NUTZUNG_BRAUCHWASSER + "] = ?, " +
+                "[" + SchemaKatalog.SPALTE_PSP_NUTZUNG_PROZESS + "] = ? " +
+                "WHERE ID = ?",
+                StilleDb.Par("@h", OleDbType.Boolean, set.Heizung),
+                StilleDb.Par("@b", OleDbType.Boolean, set.Brauchwasser),
+                StilleDb.Par("@p", OleDbType.Boolean, set.Prozess),
+                StilleDb.Par("@id", OleDbType.Integer, idPuffer)) > 0;
+        }
+
+        /// <summary>Bequemlichkeitsfassung von <see cref="KlassenSetSchreiben(int,KlassenSet)"/>.</summary>
+        public static bool KlassenSetSchreiben(int idPuffer, bool heizung, bool brauchwasser,
+                                               bool prozess)
+        {
+            return KlassenSetSchreiben(idPuffer, new KlassenSet(heizung, brauchwasser, prozess));
+        }
+
+        /// <summary>Ergebnis der einmaligen Spaltenvorsorge (siehe <see cref="StelleKlassenSetSpaltenSicher"/>).</summary>
+        private static bool? _klassenSetSpaltenBereit;
+
+        /// <summary>
+        /// Tolerante Vorsorge für die drei Klassen-Set-Spalten (Migrationsschritt 49)
+        /// unmittelbar vor dem SCHREIBEN — dasselbe Muster wie
+        /// <c>Z_ProjektGebGanglinieCtrl.StelleKanalSpalteSicher</c> für Schritt 48.
+        ///
+        /// <para>Die Leseseite braucht sie nicht: <see cref="KlassenSetAusZeile"/> prüft
+        /// die Spaltennamen und fällt auf die Verwendung zurück. Der Schreibweg dagegen
+        /// nennt die Spalten ausgeschrieben.</para>
+        ///
+        /// <para>Eigene Verbindung statt <c>DataRepository</c>, weil eine Vorsorge kein
+        /// Bedienschritt ist und keine MessageBox zeigen darf. Einmal je Prozess. Die
+        /// Leseprobe am Ende ist Nachweis statt Annahme — das <c>ALTER</c> schluckt
+        /// jeden Fehler, auch einen echten.</para>
+        ///
+        /// <para>Kollidiert NICHT mit dem Migrationsschritt: Dessen DML setzt das Set
+        /// nur dort, wo alle drei Flags falsch sind. Eine Zeile, die diese Vorsorge
+        /// angelegt und der Dialog schon gefüllt hat, bleibt unangetastet.</para>
+        /// </summary>
+        public static bool StelleKlassenSetSpaltenSicher()
+        {
+            if (_klassenSetSpaltenBereit.HasValue) return _klassenSetSpaltenBereit.Value;
+
+            string sH = SchemaKatalog.SPALTE_PSP_NUTZUNG_HEIZUNG;
+            string sB = SchemaKatalog.SPALTE_PSP_NUTZUNG_BRAUCHWASSER;
+            string sP = SchemaKatalog.SPALTE_PSP_NUTZUNG_PROZESS;
+
+            bool ok = false;
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+
+                    foreach (string spalte in new[] { sH, sB, sP })
+                    {
+                        try
+                        {
+                            using (OleDbCommand cmd = new OleDbCommand(
+                                "ALTER TABLE [" + SchemaKatalog.TAB_PUFFERSPEICHER +
+                                "] ADD COLUMN [" + spalte + "] YESNO", conn))
+                                cmd.ExecuteNonQuery();
+                        }
+                        catch { /* Spalte existiert bereits - der Regelfall nach Schritt 49 */ }
+                    }
+
+                    using (OleDbCommand probe = new OleDbCommand(
+                        "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_PUFFERSPEICHER +
+                        "] WHERE [" + sH + "] = FALSE AND [" + sB + "] = FALSE " +
+                        "AND [" + sP + "] = FALSE", conn))
+                    {
+                        probe.ExecuteScalar();
+                        ok = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Klassen-Set-Spalten nicht verfuegbar: " + ex.Message);
+                ok = false;
+            }
+
+            _klassenSetSpaltenBereit = ok;
             return ok;
         }
 
@@ -809,6 +1172,11 @@ namespace WindowsFormsApplication1
                                                             SystemVorlauf(idProjekt),
                                                             SystemRuecklauf(idProjekt))) < 0)
                 return false;
+
+            // KLASSEN-SET (Migrationsschritt 49): SQL_PUFFER_INSERT schreibt
+            // ProjektPuffer.VERWENDUNG_HEIZUNG - das Set wird aus genau diesem Wert
+            // abgeleitet statt hier ein zweites Mal festgelegt. Eine Wahrheit je Frage.
+            KlassenSetSchreiben(neueId, KlassenSetAusVerwendung(ProjektPuffer.VERWENDUNG_HEIZUNG));
 
             // Anlagenzeile nachtragen, damit der Speicher im Projektbaum erscheint -
             // dieselbe Regel wie R4 der Migration (eine Zeile je Projekt+Bezeichner).

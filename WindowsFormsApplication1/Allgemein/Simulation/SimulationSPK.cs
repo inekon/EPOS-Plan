@@ -660,6 +660,36 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double Speicherentladung_Anteil = 0;
 
+        // ------------------------------------------------------------------
+        // KANALINDIZIERTE DECKUNGSBUCHFÜHRUNG (Paket K2, Konzept 4.4)
+        //
+        // ZUSÄTZLICHE Aufschlüsselung, kein Ersatz: Die Skalare des Moduls
+        // (S_Waerme_spk, Speicherladung_gesamt, Speicherentladung_Anteil,
+        // Kessel_Verbrauch_MWh_Spk …) werden unverändert gebildet und von
+        // SimulationRunner unverändert gelesen. Es gilt
+        //
+        //   Σ Direktdeckung_Kanal[k]     == die in Phase B abgegebene Nutzwärme
+        //                                   (= Kesselabgabe − Speicherladung)
+        //   Σ Speicherentladung_Kanal[k] == Speicherentladung_Anteil
+        //
+        // bis auf die Rundungsklasse der getrennten Kanalarithmetik.
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// In Phase B direkt an den Bedarf abgegebene Kesselwärme je Kanal [kWh]
+        /// (Konzept 4.4). Einen Skalar dieser Größe führt das Modul nicht — er steckt in
+        /// <c>S_Waerme_spk</c> zusammen mit der Speicherladung; die Summe über die Kanäle
+        /// ist genau der Direktanteil.
+        /// </summary>
+        public double[] Direktdeckung_Kanal = new double[Kanal.ANZAHL];
+
+        /// <summary>
+        /// Anteil dieses Kessels an der bedarfsdeckenden Speicherentladung je Kanal [kWh]
+        /// — die Aufschlüsselung von <see cref="Speicherentladung_Anteil"/>. Gefüllt von
+        /// der <see cref="Kaskadenschleife"/>, wie der Skalar selbst.
+        /// </summary>
+        public double[] Speicherentladung_Kanal = new double[Kanal.ANZAHL];
+
         /// <summary>
         /// Fehlertext des zweikanaligen Wegs (Konzept 13.4: die Engine bleibt dialogfrei).
         /// Der Altpfad zeigt an denselben Stellen eine MessageBox; im zweikanaligen Weg
@@ -752,8 +782,12 @@ namespace WindowsFormsApplication1
         /// <c>Tab_ErgebnisHeizkessel.Waermebedarf</c> fiel dadurch still ab, sobald ein
         /// Speicher vorab entlud. Ohne Speicher in der Stufe ändert sich nichts — dann
         /// gibt Phase A nichts ab.
+        ///
+        /// <para>PAKET K2: Der Stufeneingang ist die Summe ÜBER ALLE Kanäle des
+        /// Restbedarfsfeldes — ohne Prozesswärmeanteil Zeichen für Zeichen die bisherige
+        /// Größe <c>rest_heiz + rest_ww</c>.</para>
         /// </summary>
-        public void Stunde_Start(int stunde, double rest_heiz, double rest_ww)
+        public void Stunde_Start(int stunde, double[] rest)
         {
             for (int i = 0; i < _anzahlZweikanalig; i++)
             {
@@ -762,7 +796,7 @@ namespace WindowsFormsApplication1
                 _restLeistung[i] = Kessel_Leistung_Spk[i];
             }
 
-            double eingang = rest_heiz + rest_ww;
+            double eingang = Kanalabzug.Summe(rest);
             if (eingang < 0) eingang = 0;
             if (stunde >= 0 && stunde < 8760) Waermebedarf[stunde] = (float)eingang;
             if (Max_Waermebedarf < eingang) Max_Waermebedarf = eingang;
@@ -785,8 +819,15 @@ namespace WindowsFormsApplication1
         /// Ein Kessel mit Puffer-Hauptsenke deckt hier NICHTS — er lädt ausschließlich
         /// (Phase C), und damit gilt derselbe Doppelzählungs-Freibeweis wie bei der
         /// Wärmepumpe.
+        ///
+        /// <para>PAKET K2: <paramref name="rest"/> ist der offene Bedarf je Kanal und
+        /// tritt an die Stelle des Paares <c>ref rest_heiz, ref rest_ww</c>; es wird
+        /// IN-PLACE fortgeschrieben. Die Bezugsgröße <c>verfuegbar</c> kommt nicht mehr
+        /// aus einer eigenen Dreifach-Verzweigung über <c>WS_Typ</c>, sondern aus
+        /// <see cref="Kanalabzug.Offen"/> — derselben Quelle, gegen die gleich abgezogen
+        /// wird (Konzept 4.3).</para>
         /// </summary>
-        public void Stunde_Bedarf(int stunde, ref double rest_heiz, ref double rest_ww)
+        public void Stunde_Bedarf(int stunde, double[] rest)
         {
             // Der Stufeneingang steht seit der Nacharbeit N1 in Stunde_Start - VOR der
             // Vorabentladung (Phase A).
@@ -803,17 +844,17 @@ namespace WindowsFormsApplication1
                 if (z != null && z.Haupt != Senke.Heizkreis) continue;
 
                 string wsTyp = (z != null) ? z.WSTyp : WaermequelleClass.SENKE_BEIDES;
-                double verfuegbar;
-                if (wsTyp == WaermequelleClass.SENKE_WARMWASSER) verfuegbar = rest_ww;
-                else if (wsTyp == WaermequelleClass.SENKE_HEIZUNG) verfuegbar = rest_heiz;
-                else verfuegbar = rest_heiz + rest_ww;
+                double verfuegbar = Kanalabzug.Offen(wsTyp, rest);
 
                 if (verfuegbar <= 0) continue;
 
                 double menge = Math.Min(MaxAbgabe(i), verfuegbar);
                 if (menge <= 0) continue;
 
-                Kaskadenschleife.SenkeAbziehen(wsTyp, menge, ref rest_ww, ref rest_heiz);
+                // K2: Abzug über die eine Kanalregel, mit gemessener Aufschlüsselung je
+                // Kanal (Konzept 4.4). Die abgezogene Gesamtmenge ist konstruktiv genau
+                // "menge" - sie ist auf den offenen Kanalbedarf begrenzt.
+                Kanalabzug.Abziehen(wsTyp, menge, rest, Direktdeckung_Kanal);
 
                 _kesselAbgabe[i] += menge;
 
@@ -830,7 +871,8 @@ namespace WindowsFormsApplication1
                 if (_restLeistung[i] < 0) _restLeistung[i] = 0;
             }
 
-            if (stunde >= 0 && stunde < 8760) Restwaerme[stunde] = (float)(rest_heiz + rest_ww);
+            if (stunde >= 0 && stunde < 8760)
+                Restwaerme[stunde] = (float)Kanalabzug.Summe(rest);
         }
 
         /// <summary>
@@ -989,25 +1031,26 @@ namespace WindowsFormsApplication1
         /// ändert sich allein die Kanalführung — die je Stunde und Kessel abgegebene
         /// Nutzwärme, der Brennstoffverbrauch und die Restwärme sind dieselben Zahlen.
         /// </summary>
-        public bool Berechnung_Zweikanalig(int ID_Projekt, Waermekanaele kanaele,
+        public bool Berechnung_Zweikanalig(int ID_Projekt, Kanalsatz kanaele,
                                            List<Senkenzuordnung> senken)
         {
             if (kanaele == null) return false;
             if (!Vorbereiten_Zweikanalig(ID_Projekt, senken)) return false;
 
+            double[] rest = new double[Kanal.ANZAHL];
+
             for (int stunde = 0; stunde < 8760; stunde++)
             {
-                double rest_heiz = kanaele.Heiz[stunde];
-                double rest_ww = kanaele.WW[stunde];
+                for (int k = 0; k < Kanal.ANZAHL; k++) rest[k] = kanaele.Bedarf[k][stunde];
 
                 // Ohne Speicher gibt es keine Vorabentladung: Der Stufeneingang ist der
                 // Kanalstand an dieser Kaskadenposition.
-                Stunde_Start(stunde, rest_heiz, rest_ww);
-                Stunde_Bedarf(stunde, ref rest_heiz, ref rest_ww);
+                Stunde_Start(stunde, rest);
+                Stunde_Bedarf(stunde, rest);
                 Stunde_Abschluss(stunde);
 
-                kanaele.Heiz[stunde] = (float)rest_heiz;
-                kanaele.WW[stunde] = (float)rest_ww;
+                for (int k = 0; k < Kanal.ANZAHL; k++)
+                    kanaele.Bedarf[k][stunde] = (float)rest[k];
             }
 
             Abschluss_Zweikanalig();
@@ -1040,6 +1083,10 @@ namespace WindowsFormsApplication1
             Array.Clear(Speicherladung_stuendlich, 0, Speicherladung_stuendlich.Length);
             Speicherladung_gesamt = 0;
             Speicherentladung_Anteil = 0;
+
+            // K2: die Kanalaufschlüsselung derselben Größen (Konzept 4.4).
+            Array.Clear(Direktdeckung_Kanal, 0, Kanal.ANZAHL);
+            Array.Clear(Speicherentladung_Kanal, 0, Kanal.ANZAHL);
 
             // D5a: Der Quellbezug gehört zum Laufzustand. ModulEbenen/AktiveEbene setzt
             // die Kaskadenschleife je Lauf neu; die Quellpuffer setzt SimulationControl,

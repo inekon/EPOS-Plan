@@ -807,6 +807,33 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double Speicherentladung_Anteil = 0;
 
+        // ------------------------------------------------------------------
+        // KANALINDIZIERTE DECKUNGSBUCHFÜHRUNG (Paket K2, Konzept 4.4)
+        //
+        // ZUSÄTZLICHE Aufschlüsselung, kein Ersatz: Direktdeckung_gesamt,
+        // Speicherladung_gesamt, Waermeueberschuss und die Ganglinien werden
+        // unverändert gebildet; auch die Energieprobe des Moduls prüft weiter die
+        // Skalare. Es gilt
+        //
+        //   Σ Direktdeckung_Kanal[k]     == Direktdeckung_gesamt
+        //   Σ Speicherentladung_Kanal[k] == Speicherentladung_Anteil
+        //
+        // bis auf die Rundungsklasse der getrennten Kanalarithmetik.
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Direkt gedeckter Momentanbedarf je Kanal [kWh] (Phase B) — die Aufschlüsselung
+        /// von <see cref="Direktdeckung_gesamt"/>.
+        /// </summary>
+        public double[] Direktdeckung_Kanal = new double[Kanal.ANZAHL];
+
+        /// <summary>
+        /// Anteil des BHKW an der bedarfsdeckenden Speicherentladung je Kanal [kWh] — die
+        /// Aufschlüsselung von <see cref="Speicherentladung_Anteil"/>. Gefüllt von der
+        /// <see cref="Kaskadenschleife"/>, wie der Skalar selbst.
+        /// </summary>
+        public double[] Speicherentladung_Kanal = new double[Kanal.ANZAHL];
+
         /// <summary>
         /// Jahressumme des Stufeneingangs [kWh] (zweikanaliger Weg) — dieselbe Größe wie
         /// <c>waermebedarf</c>, nur in <c>double</c> summiert.
@@ -900,6 +927,10 @@ namespace WindowsFormsApplication1
             Speicherentladung_Anteil = 0;
             Waermebedarf_gesamt = 0;
             Waermeueberschuss = 0f;
+
+            // K2: die Kanalaufschlüsselung derselben Größen (Konzept 4.4).
+            Array.Clear(Direktdeckung_Kanal, 0, Kanal.ANZAHL);
+            Array.Clear(Speicherentladung_Kanal, 0, Kanal.ANZAHL);
 
             Array.Clear(waermeproduktion, 0, waermeproduktion.Length);
             Array.Clear(stromproduktion, 0, stromproduktion.Length);
@@ -1036,8 +1067,12 @@ namespace WindowsFormsApplication1
         ///
         /// In der VEKTORSTUFE (<see cref="Berechnung_Zweikanalig"/>) gibt es keine
         /// Phase A — dort liefert der Aufruf denselben Wert wie bisher.
+        ///
+        /// <para>PAKET K2: Der Stufeneingang ist die Summe ÜBER ALLE Kanäle des
+        /// Restbedarfsfeldes — ohne Prozesswärmeanteil Zeichen für Zeichen die bisherige
+        /// Größe <c>rest_heiz + rest_ww</c>.</para>
         /// </summary>
-        public void Stunde_Start(int stunde, double rest_heiz, double rest_ww)
+        public void Stunde_Start(int stunde, double[] rest)
         {
             if (stunde >= 0 && stunde < 8760)
             {
@@ -1048,7 +1083,7 @@ namespace WindowsFormsApplication1
             _direktStunde = 0;
             _reservierterSpeicher = null;
 
-            double eingang = rest_heiz + rest_ww;
+            double eingang = Kanalabzug.Summe(rest);
             if (eingang < 0) eingang = 0;
             if (stunde >= 0 && stunde < 8760) waermebedarf[stunde] = (float)eingang;
             Waermebedarf_gesamt += eingang;
@@ -1065,9 +1100,15 @@ namespace WindowsFormsApplication1
         ///
         /// Mit Puffer-Hauptsenke deckt das BHKW hier NICHTS (Konzept 6.3,
         /// Doppelzählungs-Freibeweis) — es läuft erst in Phase C.
+        ///
+        /// <para>PAKET K2: <paramref name="rest"/> ist der offene Bedarf je Kanal und
+        /// tritt an die Stelle des Paares <c>ref rest_heiz, ref rest_ww</c>; es wird
+        /// IN-PLACE fortgeschrieben. Der Wärmeraum der Fahrweise ist unverändert
+        /// „offener Kanalbedarf + Raum der Zweitsenke" — nur kommt der Kanalbedarf jetzt
+        /// aus <see cref="Kanalabzug.Offen"/> statt aus einer eigenen Verzweigung über
+        /// <c>WS_Typ</c>.</para>
         /// </summary>
-        public void Stunde_Bedarf(int stunde, bool pvUeberschuss,
-                                  ref double rest_heiz, ref double rest_ww)
+        public void Stunde_Bedarf(int stunde, bool pvUeberschuss, double[] rest)
         {
             if (_stufensenke.Haupt != Senke.Heizkreis)
             {
@@ -1076,23 +1117,23 @@ namespace WindowsFormsApplication1
             }
 
             string wsTyp = _stufensenke.WSTyp;
-            double verfuegbar;
-            if (wsTyp == WaermequelleClass.SENKE_WARMWASSER) verfuegbar = rest_ww;
-            else if (wsTyp == WaermequelleClass.SENKE_HEIZUNG) verfuegbar = rest_heiz;
-            else verfuegbar = rest_heiz + rest_ww;
+            double verfuegbar = Kanalabzug.Offen(wsTyp, rest);
             if (verfuegbar < 0) verfuegbar = 0;
 
             // Wärmeraum der (Ersatz-)Zweitsenke = der Speicherraum der Stunde. OHNE
             // Zweitsenke ist er 0, und die Fahrweise rechnet wie ein Pendelspeicher mit
             // Volumen 0 - also genau wie im Altpfad ohne Pendelspeicher.
-            double raum = ZweitsenkenRaum(pvUeberschuss, wsTyp, rest_heiz, rest_ww);
+            double raum = ZweitsenkenRaum(pvUeberschuss, wsTyp, rest);
 
             double gedeckt, geladen;
             Fahrweise_Stunde(stunde, verfuegbar, raum, out gedeckt, out geladen);
 
             if (gedeckt > 0)
             {
-                Kaskadenschleife.SenkeAbziehen(wsTyp, gedeckt, ref rest_ww, ref rest_heiz);
+                // K2: Abzug über die eine Kanalregel, mit gemessener Aufschlüsselung je
+                // Kanal (Konzept 4.4). "gedeckt" ist konstruktiv ≤ verfuegbar, wird also
+                // vollständig abgezogen.
+                Kanalabzug.Abziehen(wsTyp, gedeckt, rest, Direktdeckung_Kanal);
                 Direktdeckung_gesamt += gedeckt;
                 _direktStunde += gedeckt;
             }
@@ -1149,9 +1190,17 @@ namespace WindowsFormsApplication1
         /// OFFEN BLEIBT (Konzeptfrage 5-2): Ein Erzeuger mit besserer Ladepriorität kann
         /// dem BHKW in Phase C/D das DURCHSATZbudget desselben Kanals wegnehmen. Die
         /// Reservierung aus Befund N3 sichert nur die Ladefähigkeit des Speichers.
+        ///
+        /// <para>PAKET K2: Die Regel bleibt unangetastet (ihr Umbau auf Kanalmasken gehört
+        /// zu F11/Paket S1). Umgestellt ist allein der Zugriff auf den offenen Bedarf: Er
+        /// ist die Summe über die Kanäle, in die der Speicher WIRKLICH ENTLÄDT
+        /// (<see cref="Kaskadenschleife.EntladetKanal"/> — dieselbe Frage, die
+        /// <see cref="Kaskadenschleife.DurchlassBudget"/> in der Ladephase stellt; beide
+        /// müssen dieselbe Antwort bekommen, sonst schätzt Phase B einen Durchsatz, den
+        /// Phase D nicht vergibt). Ohne Prozesswärmeanteil ist das Wert für Wert der
+        /// bisherige Ausdruck <c>spWW ? rest_ww : rest_heiz</c>.</para>
         /// </summary>
-        private double ZweitsenkenRaum(bool pvUeberschuss, string wsTyp,
-                                       double rest_heiz, double rest_ww)
+        private double ZweitsenkenRaum(bool pvUeberschuss, string wsTyp, double[] rest)
         {
             if (Auftrag_Zweit == null || Auftrag_Zweit.Speicher == null) return 0;
 
@@ -1169,7 +1218,7 @@ namespace WindowsFormsApplication1
                                       : wsTyp == WaermequelleClass.SENKE_HEIZUNG);
             if (eigenerKanal) return ladefaehig;
 
-            double offen = spWW ? rest_ww : rest_heiz;
+            double offen = Kanalabzug.OffenFuerSpeicher(sp, rest);
             if (offen <= 0) return ladefaehig;
 
             return ladefaehig + Math.Min(offen, sp.Entnahmefaehigkeit());
@@ -1448,26 +1497,27 @@ namespace WindowsFormsApplication1
         /// über <c>Uebernehmen</c>), und der Restbedarf ist der TATSÄCHLICHE Rest statt
         /// der Vektordifferenz <c>Bedarf − Produktion</c> (Bilanzfehler aus Konzept 6.5).
         /// </summary>
-        public bool Berechnung_Zweikanalig(int ID_Projekt, Waermekanaele kanaele,
+        public bool Berechnung_Zweikanalig(int ID_Projekt, Kanalsatz kanaele,
                                            List<Senkenzuordnung> senken)
         {
             if (kanaele == null) return false;
             if (!Vorbereiten_Zweikanalig(ID_Projekt, senken)) return false;
 
+            double[] rest = new double[Kanal.ANZAHL];
+
             for (int stunde = 0; stunde < 8760; stunde++)
             {
-                double rest_heiz = kanaele.Heiz[stunde];
-                double rest_ww = kanaele.WW[stunde];
+                for (int k = 0; k < Kanal.ANZAHL; k++) rest[k] = kanaele.Bedarf[k][stunde];
 
                 // Ohne Speicher gibt es weder eine Vorabentladung noch eine zugerechnete
                 // Speicherentladung: Der Stufeneingang ist der Kanalstand an dieser
                 // Kaskadenposition, der Rest genau der nach der eigenen Deckung.
-                Stunde_Start(stunde, rest_heiz, rest_ww);
-                Stunde_Bedarf(stunde, false, ref rest_heiz, ref rest_ww);
+                Stunde_Start(stunde, rest);
+                Stunde_Bedarf(stunde, false, rest);
                 Stunde_Ende(stunde, 0);
 
-                kanaele.Heiz[stunde] = (float)rest_heiz;
-                kanaele.WW[stunde] = (float)rest_ww;
+                for (int k = 0; k < Kanal.ANZAHL; k++)
+                    kanaele.Bedarf[k][stunde] = (float)rest[k];
             }
 
             Abschluss_Zweikanalig();

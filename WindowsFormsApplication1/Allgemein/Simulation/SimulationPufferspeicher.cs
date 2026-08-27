@@ -606,43 +606,159 @@ namespace WindowsFormsApplication1
         /// <c>CopyFromStamm</c> — zählt als Heizungskanal. Das ist dieselbe Regel wie in
         /// <c>WaermesenkeClass.WirksameVerwendung</c>; einen namenlosen Kanal gibt es
         /// nicht.
+        ///
+        /// <b>KEIN KANALTEST MEHR</b> (Paket K2): Die Frage „bedient dieser Speicher
+        /// Kanal x?" beantwortet <see cref="BedientKanal(int)"/> aus dem Klassen-Set.
+        /// Diese Eigenschaft liest allein die ANZEIGE-/Ergebnisrolle
+        /// <see cref="Verwendung"/> und bleibt für den einkanaligen Altpfad stehen.
         /// </summary>
         public bool IstBrauchwasserkanal
         {
             get { return Verwendung == VERWENDUNG_BRAUCHWASSER; }
         }
 
+        // ------------------------------------------------------------------
+        // KLASSEN-SET (Konzept 6.1, Entscheidung L6/F5-Alternative — Paket K2)
+        //
+        // Die eine Verwendungs-Zeichenkette wird durch DREI unabhängige Ja/Nein-Flags
+        // abgelöst: Ein Speicher kann Heizung, Brauchwasser und Prozesswärme in
+        // beliebiger Kombination bedienen. „Kombi" ist damit nur noch der ANZEIGENAME
+        // des Sets {Heizung, Brauchwasser}, kein eigener Kanalbegriff mehr.
+        //
+        // Verwendung BLEIBT — als Anzeige- und Ergebnisrolle (RolleAnzeige, Schluessel,
+        // Vollzyklen, Tab_ErgebnisPufferspeicher.Verwendung) und als Rückfallebene,
+        // solange kein Set gesetzt ist (siehe BedientKanal).
+        // ------------------------------------------------------------------
+
         /// <summary>
-        /// true = KOMBISPEICHER (Etappe D5a): bedient Heizung UND Warmwasser aus einem
-        /// Vorrat. <see cref="IstBrauchwasserkanal"/> bleibt für ihn <c>false</c> — er ist
-        /// kein reiner Warmwasserspeicher; die Kanalfrage beantwortet
-        /// <see cref="BedientKanal"/>.
+        /// KLASSEN-SET des Speichers (Konzept 6.1): <c>NutztKanal[<see cref="Kanal.HEIZUNG"/>]</c>
+        /// usw. Gefüllt wird es beim Registry-Aufbau aus den Spalten
+        /// <c>Tab_Pufferspeicher.Nutzung_Heizung/_Brauchwasser/_Prozess</c> (Schritt 49).
         ///
-        /// <b>Warum der ORDINALE Vergleich hier richtig ist</b> (Etappe D5b, Befund
-        /// K3-2): <see cref="Verwendung"/> wird ausschließlich aus
-        /// <c>WaermesenkeClass.WirksameVerwendung</c> oder aus den Konstanten dieser
-        /// Klasse gefüllt, und <c>WirksameVerwendung</c> normalisiert seit D5b auf die
-        /// kanonische Schreibweise. Ein Datenbankwert <c>"kombi"</c> kommt hier deshalb
-        /// als <c>"Kombi"</c> an — vorher stand er in beiden Entladereihenfolgen
-        /// (die vergleichen <c>OrdinalIgnoreCase</c>), verhielt sich im Lauf aber wie ein
-        /// Heizungspuffer.
+        /// EIN LEERES SET IST KEINE AUSSAGE, sondern „nicht gesetzt" — dann gilt die
+        /// Ableitung aus <see cref="Verwendung"/> (siehe <see cref="BedientKanal(int)"/>).
+        /// Das ist bewusst so gebaut: Es gibt Speicherobjekte, die ohne Registry-Aufbau
+        /// entstehen (Quellspeicher in <c>WaermequelleClass</c>, Hilfsobjekte der
+        /// Verbund-Kapazität, Selbsttests). Ohne diesen Rückfall wären sie stumm
+        /// kanallos, und ein Speicher ohne Kanal wird von niemandem entladen.
         /// </summary>
-        public bool IstKombi
+        public bool[] NutztKanal = new bool[Kanal.ANZAHL];
+
+        /// <summary>true, wenn mindestens ein Flag des Klassen-Sets gesetzt ist.</summary>
+        public bool KlassenSetGesetzt
         {
-            get { return Verwendung == VERWENDUNG_KOMBI; }
+            get
+            {
+                if (NutztKanal == null) return false;
+                for (int k = 0; k < NutztKanal.Length; k++) if (NutztKanal[k]) return true;
+                return false;
+            }
         }
 
         /// <summary>
-        /// Bedient dieser Speicher den angefragten Kanal? Ein Kombispeicher beantwortet
-        /// BEIDE Fragen mit <c>true</c>, jeder andere Senkenspeicher genau seine eigene
-        /// (Etappe D5a). Quellspeicher bedienen keinen Kanal.
+        /// Setzt das Klassen-Set (Konzept 6.1). Ein Quellspeicher behält das LEERE Set —
+        /// seine Rolle ist Wärmequelle, er bedient keinen Bedarfskanal.
         /// </summary>
-        /// <param name="brauchwasser">true = Warmwasserkanal, false = Heizkanal</param>
-        public bool BedientKanal(bool brauchwasser)
+        public void KlassenSetSetzen(bool heizung, bool brauchwasser, bool prozess)
+        {
+            if (NutztKanal == null || NutztKanal.Length != Kanal.ANZAHL)
+                NutztKanal = new bool[Kanal.ANZAHL];
+
+            NutztKanal[Kanal.HEIZUNG] = heizung;
+            NutztKanal[Kanal.BRAUCHWASSER] = brauchwasser;
+            NutztKanal[Kanal.PROZESS] = prozess;
+        }
+
+        /// <summary>
+        /// Ableitung des Klassen-Sets aus <see cref="Verwendung"/> — die Rückfallebene
+        /// für jedes Speicherobjekt ohne gepflegte Flags (Migration nicht gelaufen,
+        /// Objekt außerhalb des Registry-Aufbaus gebaut).
+        ///
+        /// <code>
+        /// Kombi         -> {Heizung, Brauchwasser}
+        /// Brauchwasser  -> {Brauchwasser}
+        /// alles Übrige  -> {Heizung}          (auch eine LEERE Verwendung)
+        /// </code>
+        ///
+        /// Das ist Wort für Wort die bisherige Regel aus <see cref="IstBrauchwasserkanal"/>
+        /// und der alten <c>BedientKanal(bool)</c>-Fassung — deshalb rechnet jedes
+        /// Bestandsprojekt mit ihr unverändert.
+        /// </summary>
+        private bool VerwendungBedient(int kanal)
+        {
+            if (Verwendung == VERWENDUNG_KOMBI)
+                return kanal == Kanal.HEIZUNG || kanal == Kanal.BRAUCHWASSER;
+            if (Verwendung == VERWENDUNG_BRAUCHWASSER)
+                return kanal == Kanal.BRAUCHWASSER;
+            return kanal == Kanal.HEIZUNG;
+        }
+
+        /// <summary>
+        /// true = KOMBISPEICHER: bedient Heizung UND Brauchwasser aus einem Vorrat
+        /// (Etappe D5a; seit Paket K2 aus dem Klassen-Set abgeleitet statt aus dem
+        /// Persistenzwert „Kombi").
+        ///
+        /// <see cref="IstBrauchwasserkanal"/> bleibt für ihn <c>false</c> — er ist kein
+        /// reiner Warmwasserspeicher; die Kanalfrage beantwortet
+        /// <see cref="BedientKanal(int)"/>.
+        ///
+        /// Ein Set mit Prozesswärme ändert an dieser Frage nichts: {H, B, P} IST ein
+        /// Kombispeicher, {H, P} ist keiner. Gefragt ist genau die Konstellation, für die
+        /// die Oberfläche und die Ergebnisrolle den Namen „Kombi" führen.
+        /// </summary>
+        public bool IstKombi
+        {
+            get { return BedientKanal(Kanal.HEIZUNG) && BedientKanal(Kanal.BRAUCHWASSER); }
+        }
+
+        /// <summary>
+        /// Bedient dieser Speicher den angefragten KANAL (Konzept 6.1)? Quellspeicher
+        /// bedienen keinen.
+        ///
+        /// Gelesen wird das Klassen-Set <see cref="NutztKanal"/>; ist keines gesetzt,
+        /// gilt die Ableitung aus <see cref="Verwendung"/> (siehe
+        /// <see cref="VerwendungBedient"/>).
+        ///
+        /// <b>ACHTUNG — das ist das PERSISTIERTE Set, nicht die Entladeordnung.</b> Die
+        /// Interimsregel I2 (Paket K2: ein Speicher mit Heizung im Set bedient
+        /// übergangsweise auch den Prozesskanal) wirkt AUSSCHLIESSLICH beim Aufbau der
+        /// Entladelisten und im Durchsatzbudget — sie steht in
+        /// <c>Kaskadenschleife.EntladetKanal</c> und wird mit Paket S1 abgerissen. Am
+        /// Speicher selbst darf sie nicht stehen: Sonst wäre nicht mehr unterscheidbar,
+        /// welche Kanäle der Anwender eingestellt hat und welche eine Übergangsregel
+        /// hinzuerfindet.
+        /// </summary>
+        public bool BedientKanal(int kanal)
         {
             if (IstQuelle) return false;
-            if (IstKombi) return true;
-            return IstBrauchwasserkanal == brauchwasser;
+            if (kanal < 0 || kanal >= Kanal.ANZAHL) return false;
+
+            if (!KlassenSetGesetzt) return VerwendungBedient(kanal);
+            return NutztKanal[kanal];
+        }
+
+        /// <summary>
+        /// DÜNNE BRÜCKE der zweikanaligen Fassung (Paket K2) — für Aufrufer, die noch in
+        /// Heiz-/Warmwasser-Begriffen denken. Neuer Code benutzt
+        /// <see cref="BedientKanal(int)"/>; der Prozesskanal ist über diese Fassung
+        /// bewusst NICHT erreichbar.
+        /// </summary>
+        /// <param name="brauchwasser">true = Brauchwasserkanal, false = Heizkanal</param>
+        public bool BedientKanal(bool brauchwasser)
+        {
+            return BedientKanal(brauchwasser ? Kanal.BRAUCHWASSER : Kanal.HEIZUNG);
+        }
+
+        /// <summary>
+        /// Klassen-Set als Text für Protokoll- und Hinweiszeilen, z. B.
+        /// „Heizung + Prozesswaerme"; leeres Set → „—".
+        /// </summary>
+        public string KlassenSetText()
+        {
+            string s = "";
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+                if (BedientKanal(k)) s += (s.Length > 0 ? " + " : "") + Kanal.Name(k);
+            return s.Length > 0 ? s : "—";
         }
 
         /// <summary>
