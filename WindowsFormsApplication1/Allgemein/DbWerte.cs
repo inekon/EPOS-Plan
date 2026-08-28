@@ -1215,6 +1215,60 @@ namespace WindowsFormsApplication1
         public const string WQ_TYP_OHNE = "";
 
         // =====================================================================
+        // Quellprofil — Betriebsart
+        //   Tab_Quellprofil.Betriebsart  (Migrationsschritt 54, Paket Q1)
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        //
+        //   Die Betriebsart sagt, WIE VIELE Werte ein Profil führt und wie sie auf
+        //   die 8760 Jahresstunden gekachelt werden (Konzept 8.1 Punkt 2):
+        //
+        //     Monat  : 12 Werte  -> jeder gilt für alle Stunden seines Monats
+        //     Tag    : 365 Werte -> jeder gilt für die 24 Stunden SEINES Tages;
+        //                           kalenderunabhängig, Tag i -> Tag i, KEIN
+        //                           Wochentagsbezug (das ist der fachliche Kern der
+        //                           Tagesvariante)
+        //     Stunde : 8760 Werte -> unmittelbar das Jahresprofil
+        //
+        //   Umlautfrei und ohne Leerzeichen wie alle Steuerwerte dieser Datei; die
+        //   Anzeigetexte stehen in MyResource (SIMQ_QUELLPROFIL_BA_*).
+        // =====================================================================
+
+        /// <summary>12 Monatswerte; der Altweg <c>WQ_Monatswerte</c> trug dieselbe Aussage.</summary>
+        public const string WQ_PROFIL_BETRIEBSART_MONAT = "Monat";
+
+        /// <summary>
+        /// 365 Tageswerte, <b>kalenderunabhängig</b> gekachelt (Konzept 8.1 Punkt 2):
+        /// Wert <c>i</c> gilt für die Stunden <c>24·i … 24·i+23</c>. Es gibt hier
+        /// bewusst KEINEN Wochentagsbezug — der additive Wochengang der Monatsvariante
+        /// wird zur Tagesvariante gar nicht erst angeboten.
+        /// </summary>
+        public const string WQ_PROFIL_BETRIEBSART_TAG = "Tag";
+
+        /// <summary>
+        /// 8760 Stundenwerte. Sie sind der Weg, auf dem ein CSV-Stundenprofil in die
+        /// DATENBANK kommt (Konzept 8.1 Punkt 3) — anders als
+        /// <c>Tab_Energieanlagen.WQ_CSV</c>, das nur einen Dateipfad speichert und die
+        /// Quelle bei jeder Projektweitergabe verliert.
+        /// </summary>
+        public const string WQ_PROFIL_BETRIEBSART_STUNDE = "Stunde";
+
+        /// <summary>
+        /// Zahl der Werte einer Betriebsart; 0 für einen unbekannten Wert. EINE
+        /// Wahrheit für Migration, Engine und Dialog — die drei Zahlen 12/365/8760
+        /// stehen sonst nirgends im Quelltext.
+        /// </summary>
+        public static int QuellprofilWerteanzahl(string betriebsart)
+        {
+            switch (betriebsart)
+            {
+                case WQ_PROFIL_BETRIEBSART_MONAT: return 12;
+                case WQ_PROFIL_BETRIEBSART_TAG: return 365;
+                case WQ_PROFIL_BETRIEBSART_STUNDE: return 8760;
+                default: return 0;
+            }
+        }
+
+        // =====================================================================
         // Erdreich — Quellsystem
         //   Tab_Energieanlagen.WQ_Quellsystem  (VDI 4640)
         //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)

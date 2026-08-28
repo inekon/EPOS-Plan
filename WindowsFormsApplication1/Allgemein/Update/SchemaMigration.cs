@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 53;
+        public const int ZIEL_VERSION = 54;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1757,6 +1757,57 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_53_SCHICHTMODELL = 53;
 
+        /// <summary>
+        /// Schritt 54 - <b>Paket Q1</b> (Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 8.1): der QUELLEN-AUSBAU. Der letzte Schema-Schritt des Vorhabens.
+        ///
+        /// <para><b>Was entsteht.</b> Zwei Tabellen und zwei Spalten:
+        /// <see cref="SchemaKatalog.TAB_QUELLPROFIL"/> und
+        /// <see cref="SchemaKatalog.TAB_QUELLPROFILDATEN"/> als Kopf/Daten-Paar nach dem
+        /// Muster <c>Tab_Stromganglinie</c> (§ 8.1 Punkt 3), dazu an
+        /// <c>Tab_Energieanlagen</c> die Quell-Entnahmehöhe
+        /// <see cref="SchemaKatalog.SPALTE_ANLAGE_WQ_ANSCHLUSSHOEHE"/> (§ 8.2/§ 8.4,
+        /// Ticket B1-O1) und der Profilschlüssel
+        /// <see cref="SchemaKatalog.SPALTE_ANLAGE_WQ_ID_QUELLPROFIL"/> (§ 8.1 Punkt 4,
+        /// „Schlüssel- statt Indexkopplung"). Die fachliche Begründung je Spalte steht
+        /// beim jeweiligen Katalogeintrag.</para>
+        ///
+        /// <para><b>Drei Teile.</b>
+        ///   <b>54a</b> die beiden Tabellen samt Indizes und der Beziehung
+        ///   <c>FK_QuellprofilDaten_Kopf</c> MIT Löschweitergabe — eine Wertzeile ohne
+        ///   ihren Kopf bedeutet nichts (Muster <c>FK_AnlageSenke_Anlage</c>). HART:
+        ///   Ohne die Tabellen hat der Profilschlüssel kein Ziel.
+        ///   <b>54b</b> das additive DDL der beiden Anlagenspalten aus dem Katalog.
+        ///   <b>54c</b> die RESTRIKTIVE Beziehung <c>FK_Anlage_Quellprofil</c> — WEICH
+        ///   wie in den Schritten 14 und 50: Fehlt sie auf einer fremden Datenbank,
+        ///   bleibt die Ablage benutzbar.</para>
+        ///
+        /// <para><b>KEIN DML — und das ist die eigentliche Aussage.</b> Weder
+        /// <c>WQ_Monatswerte</c>/<c>WQ_Wochenwerte</c> noch <c>WQ_CSV</c> werden in die
+        /// neuen Tabellen übernommen (§ 15: beide bleiben Lese-Altlast). Eine
+        /// automatische Übernahme wäre eine stille Datenänderung an Bestandsprojekten,
+        /// und sie wäre bei <c>WQ_CSV</c> nicht einmal durchführbar: Dort steht ein
+        /// DATEIPFAD, dessen Datei zur Migrationszeit gar nicht vorliegen muss. Der
+        /// Schritt ist damit vollständig VERHALTENSNEUTRAL — er ändert keinen
+        /// gespeicherten Wert, und beide Spalten bleiben in allen Bestandszeilen NULL
+        /// (NULL heißt bei der Anschlusshöhe „oben", beim Profilschlüssel „keines").</para>
+        ///
+        /// <para><b>Bemessung gegen die 2-GB-Grenze</b> (§ 9, Schlussabsatz): siehe
+        /// <see cref="SchemaKatalog.TAB_QUELLPROFILDATEN"/> — zehn Stundenprofile
+        /// (87 600 Datenzeilen) ließen eine Kopie der produktiven Datenbank um 0 Bytes
+        /// wachsen. Die 8760er-Ablage in der Datenbank ist damit belegt tragfähig.</para>
+        ///
+        /// <para><b>Access-Feldgrenze (255 Spalten je Tabelle) geprüft:</b>
+        /// <c>Tab_Energieanlagen</c> trägt 65 Spalten und wächst auf 67.</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker): <see cref="Ddl"/> wertet
+        /// „existiert bereits" als Erfolg, <see cref="SpaltenAnlegen"/> liest das
+        /// Tabellenschema vorab und überspringt vorhandene Spalten. Beim Zweitlauf
+        /// meldet der Schritt „0 Spalten angelegt"; DML, das sich verdoppeln könnte,
+        /// gibt es nicht.</para>
+        /// </summary>
+        public const int SCHRITT_54_QUELLEN = 54;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -2774,6 +2825,18 @@ namespace WindowsFormsApplication1
                         "werden - ohne sie rechnet jeder Puffer weiter als ein einziger " +
                         "Wärmevorrat ohne Temperaturschichtung.",
                         Schritt_53_Schichtmodell),
+
+            // Q1 (§ 8.1): Quellprofile als Kopf/Daten-Paar, Quell-Entnahmehoehe und
+            // Profilschluessel. Rein additiv, kein DML. Begruendung, Teilgliederung und
+            // Idempotenzzusage bei der Schrittkonstanten.
+            new Schritt(SCHRITT_54_QUELLEN,
+                        "Quellen-Ausbau: Tab_Quellprofil/Tab_QuellprofilDaten anlegen und " +
+                        "Tab_Energieanlagen um WQ_Anschlusshoehe und WQ_ID_Quellprofil " +
+                        "erweitern (Paket Q1, Konzept 8.1)",
+                        "Die Quellprofil-Tabellen konnten nicht angelegt werden - ohne sie " +
+                        "bleibt das Quellprofil eine delimitierte Zeichenkette an der " +
+                        "Anlage, und ein Stundenprofil kaeme gar nicht in die Datenbank.",
+                        Schritt_54_Quellen),
         };
 
         // =================================================================================
@@ -6670,6 +6733,135 @@ namespace WindowsFormsApplication1
                     "(unbegrenzt) vorbelegt. Hoehe, Lambda_Eff, T_Nutz_BW und die drei " +
                     "Entnahmehoehen bleiben bewusst leer - NULL bedeutet dort " +
                     "Konzept-Vorgabe, nicht 0.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 54 - Quellen-Ausbau (Paket Q1, Konzept § 8.1)
+        // =================================================================================
+
+        /// <summary>
+        /// Der KOPF eines Quellprofils. <c>ID</c> ist ein AUTOINCREMENT - wie
+        /// <c>Z_AnlageSenke</c> aus Schritt 50 und wie die Bestands-Ganglinien
+        /// (<c>Tab_StromganglinieDaten</c>), nicht nach der <c>MAX(ID)+1</c>-Hausregel:
+        /// Der Dialog legt Profile einzeln an und braucht die vergebene ID unmittelbar
+        /// danach fuer die Wertzeilen (<c>SELECT @@IDENTITY</c>).
+        ///
+        /// KEINE Beziehung auf <c>Tab_Projekt</c> (Muster <c>Tab_Stromganglinie</c>) und
+        /// keine DEFAULT-Werte - „nicht gesetzt" ist NULL.
+        /// </summary>
+        public const string SQL_CREATE_QUELLPROFIL =
+            "CREATE TABLE Tab_Quellprofil (ID AUTOINCREMENT PRIMARY KEY, " +
+            "ID_Projekt LONG, Bezeichner TEXT(255), Betriebsart TEXT(50), " +
+            "Einheit TEXT(50), Beschreibung TEXT(255))";
+
+        /// <summary>Der Suchweg jedes Lesers: die Profile EINES Projekts.</summary>
+        public const string SQL_INDEX_QUELLPROFIL =
+            "CREATE INDEX idx_Quellprofil ON Tab_Quellprofil (ID_Projekt)";
+
+        /// <summary>
+        /// Die WERTE eines Quellprofils. <c>[Index]</c> ist in eckigen Klammern zu
+        /// schreiben - es ist ein reserviertes Wort in Access-SQL
+        /// (<see cref="SchemaKatalog.SPALTE_QPD_INDEX"/>).
+        /// </summary>
+        public const string SQL_CREATE_QUELLPROFILDATEN =
+            "CREATE TABLE Tab_QuellprofilDaten (ID AUTOINCREMENT PRIMARY KEY, " +
+            "ID_Quellprofil LONG NOT NULL, [Index] LONG NOT NULL, Wert DOUBLE)";
+
+        /// <summary>
+        /// Der Suchweg jedes Lesers: die Werte EINES Profils in Positionsreihenfolge
+        /// (<c>QuellprofilCtrl.WerteLesen</c>). KEIN eindeutiger Index ueber
+        /// (ID_Quellprofil, Index): Die Schreibseite raeumt ein Profil ohnehin komplett
+        /// und schreibt es neu, und waehrend eines abgebrochenen Schreibvorgangs waere
+        /// die Eindeutigkeit eine Sperre ohne Nutzen.
+        /// </summary>
+        public const string SQL_INDEX_QUELLPROFILDATEN =
+            "CREATE INDEX idx_QuellprofilDaten ON Tab_QuellprofilDaten (ID_Quellprofil, [Index])";
+
+        /// <summary>
+        /// Verweis auf den KOPF - MIT LÖSCHWEITERGABE, Muster
+        /// <c>FK_AnlageSenke_Anlage</c> aus Schritt 50: Eine Wertzeile ist ein
+        /// unselbstaendiger Anhang ihres Profils. Ohne Kaskade bliebe beim Loeschen
+        /// eines Profils dessen Wertesatz als Waisenmenge stehen - bei einem
+        /// Stundenprofil 8760 Zeilen.
+        /// </summary>
+        public const string SQL_FK_QUELLPROFILDATEN =
+            "ALTER TABLE Tab_QuellprofilDaten ADD CONSTRAINT FK_QuellprofilDaten_Kopf " +
+            "FOREIGN KEY (ID_Quellprofil) REFERENCES Tab_Quellprofil (ID) ON DELETE CASCADE";
+
+        /// <summary>
+        /// Verweis der ANLAGE auf ihr Quellprofil - RESTRIKTIV, Muster
+        /// <c>FK_AnlageSenke_Puffer</c>: Ein Profil, das noch eine Anlage versorgt, darf
+        /// nicht mit einem Loeschklick verschwinden. Die Gegenrichtung bleibt frei - eine
+        /// Anlage zu loeschen, die auf ein Profil ZEIGT, ist immer erlaubt, und damit
+        /// bleibt der destruktive Speicherweg des Wizards (DELETE + INSERT auf
+        /// Tab_Energieanlagen) gangbar.
+        /// </summary>
+        public const string SQL_FK_ANLAGE_QUELLPROFIL =
+            "ALTER TABLE Tab_Energieanlagen ADD CONSTRAINT FK_Anlage_Quellprofil " +
+            "FOREIGN KEY (WQ_ID_Quellprofil) REFERENCES Tab_Quellprofil (ID)";
+
+        /// <summary>
+        /// § 8.1 (28.08.2026): der QUELLEN-AUSBAU. Anlass, Teilgliederung (54a Tabellen,
+        /// 54b Anlagenspalten, 54c Beziehung) und Idempotenzzusage:
+        /// <see cref="SCHRITT_54_QUELLEN"/>.
+        /// </summary>
+        private static bool Schritt_54_Quellen(Lauf l)
+        {
+            // --- 54a) die beiden Tabellen ---------------------------------------------
+            // HART: Ohne sie hat der Profilschluessel kein Ziel.
+            if (!Ddl(l, SQL_CREATE_QUELLPROFIL, "Tabelle " + SchemaKatalog.TAB_QUELLPROFIL))
+                return false;
+
+            if (!Ddl(l, SQL_CREATE_QUELLPROFILDATEN, "Tabelle " + SchemaKatalog.TAB_QUELLPROFILDATEN))
+                return false;
+
+            if (!Ddl(l, SQL_INDEX_QUELLPROFIL, "Index idx_Quellprofil"))
+                l.Notiz("Index idx_Quellprofil fehlt - nur ein Tempoverlust beim Lesen " +
+                        "der Profile eines Projekts.");
+
+            if (!Ddl(l, SQL_INDEX_QUELLPROFILDATEN, "Index idx_QuellprofilDaten"))
+                l.Notiz("Index idx_QuellprofilDaten fehlt - nur ein Tempoverlust beim " +
+                        "Lesen der Werte eines Profils.");
+
+            // WEICH wie in den Schritten 14 und 50: Fehlt die Beziehung auf einer fremden
+            // Datenbank, bleibt die Ablage benutzbar.
+            if (!Ddl(l, SQL_FK_QUELLPROFILDATEN,
+                     "Beziehung FK_QuellprofilDaten_Kopf (mit Loeschweitergabe)"))
+                l.Notiz("Beziehung FK_QuellprofilDaten_Kopf fehlt - beim Loeschen eines " +
+                        "Profils bleiben seine Wertzeilen stehen; QuellprofilCtrl.Loeschen " +
+                        "raeumt sie trotzdem ausdruecklich weg.");
+
+            // Nachweis statt Annahme: Erst diese Leseprobe belegt, dass die Tabellen da
+            // UND lesbar sind - Ddl schluckt ein „existiert bereits".
+            object probe = Scalar(l, "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_QUELLPROFIL + "]");
+            if (probe == null)
+            {
+                l.Zeile("Quellen-Ausbau (Schritt 54): " + SchemaKatalog.TAB_QUELLPROFIL +
+                        " ist nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            // --- 54b) die beiden Anlagenspalten ---------------------------------------
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt54_Quellen)) return false;
+
+            // --- 54c) die restriktive Beziehung ---------------------------------------
+            if (!Ddl(l, SQL_FK_ANLAGE_QUELLPROFIL, "Beziehung FK_Anlage_Quellprofil (restriktiv)"))
+                l.Notiz("Beziehung FK_Anlage_Quellprofil fehlt - ein geloeschtes " +
+                        "Quellprofil koennte an einer Anlage verwaisen; die Engine faellt " +
+                        "in diesem Fall auf die Aussentemperatur zurueck und meldet es.");
+
+            // KEIN DML. WQ_Monatswerte/WQ_Wochenwerte und WQ_CSV bleiben Lese-Altlast
+            // (§ 15) - eine automatische Uebernahme waere eine stille Datenaenderung an
+            // Bestandsprojekten und bei WQ_CSV mangels vorliegender Datei ohnehin nicht
+            // durchfuehrbar.
+            l.Zeile("Quellen-Ausbau (Schritt 54): " + SchemaKatalog.TAB_QUELLPROFIL + " und " +
+                    SchemaKatalog.TAB_QUELLPROFILDATEN + " stehen bereit (" +
+                    Convert.ToInt32(probe) + " Profil(e) vorhanden); Tab_Energieanlagen " +
+                    "traegt WQ_Anschlusshoehe (NULL = Entnahme oben) und WQ_ID_Quellprofil " +
+                    "(NULL = kein Profil gewaehlt). KEINE Datenuebernahme: WQ_Monatswerte, " +
+                    "WQ_Wochenwerte und WQ_CSV bleiben unveraendert und werden weiter " +
+                    "gelesen, solange keine Profil-ID gesetzt ist.");
             return true;
         }
 

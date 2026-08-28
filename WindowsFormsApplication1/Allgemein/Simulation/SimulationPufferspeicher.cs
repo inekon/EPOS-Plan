@@ -1411,24 +1411,47 @@ namespace WindowsFormsApplication1
         public double T_oben { get { return SchichtTemperatur(0); } }
 
         /// <summary>
+        /// Anschlusshöhe „ganz oben" — der Wert, der für <c>WQ_Anschlusshoehe = NULL</c>
+        /// gilt (Konzept 8.2: „Default oben"), und zugleich die Vorbelegung der
+        /// Entnahmehöhen aus Schritt 53.
+        /// </summary>
+        public const double HOEHE_OBEN = 1.0;
+
+        /// <summary>
         /// QUELLTEMPERATUR an der Quell-Entnahmehöhe [°C] — die eine Größe, mit der ein
         /// Booster (Wärmepumpe oder Heizkessel) aus diesem Speicher bezieht
         /// (Paket B1, Konzept 8.2/8.4).
         ///
-        /// <para><b>Bis Paket Q1 fest OBEN.</b> Die Quell-Entnahmehöhe
-        /// (<c>WQ_Anschlusshoehe</c>) entsteht erst mit dem Schema-Schritt 54; bis dahin
-        /// gilt die Konzept-Vorgabe „Default oben", also <see cref="T_oben"/>. Diese
-        /// Eigenschaft ist die EINE Stelle, an der Q1 die Höhe einsetzt — die Aufrufer in
-        /// <c>SimulationWaermepumpe</c> und <c>SimulationSPK</c> bleiben dann
-        /// unverändert.</para>
+        /// <para><b>PAKET Q1 — die Höhe ist jetzt ein Parameter</b>
+        /// (<c>Tab_Energieanlagen.WQ_Anschlusshoehe</c>, Schema-Schritt 54; Ticket
+        /// B1-O1 damit erledigt). Bis dahin stand hier fest
+        /// <see cref="SchichtTemperatur"/>(0) = ganz oben.</para>
         ///
-        /// <para>Bei N = 1 liefert <see cref="SchichtTemperatur"/> die
-        /// Ein-Zonen-Ersatztemperatur <c>RL_eff + A/Q_max · (VL_eff − RL_eff)</c> aus
-        /// Konzept 8.2 — dieselbe Formel, ohne Sonderzweig.</para>
+        /// <para><b>Warum ein Parameter und nicht ein Feld am Speicher</b> — die
+        /// Erwartung aus B1-O1 („die Aufrufer bleiben unverändert") trägt nicht: Die
+        /// Anschlusshöhe steht an der ANLAGE, nicht am Behälter. Zwei Erzeuger dürfen
+        /// denselben geteilten Puffer als Quelle führen und ihn auf unterschiedlicher
+        /// Höhe anzapfen; ein Feld am Speicher könnte nur EINE der beiden Höhen halten
+        /// und die zweite still überschreiben. Die drei Aufrufstellen
+        /// (<c>SimulationWaermepumpe.Quelltemperatur_Stunde</c>,
+        /// <c>SimulationSPK.Quelltemperatur_Stunde</c> und
+        /// <c>SimulationSPK.QuellkopplungSetzen</c>) reichen die je Modul einmal
+        /// gelesene Höhe durch.</para>
+        ///
+        /// <para><b>0…1, 1 = ganz oben</b>, dieselbe Skala und dieselbe Auslegung wie
+        /// bei den Entnahmehöhen und der Einspeisehöhe aus Paket P1: Werte außerhalb
+        /// gelten als oben — genau wie NULL in der Datenbank.</para>
+        ///
+        /// <para>Bei N = 1 liefert <see cref="SchichtTemperatur"/> unabhängig von der
+        /// Höhe die Ein-Zonen-Ersatztemperatur
+        /// <c>RL_eff + A/Q_max · (VL_eff − RL_eff)</c> aus Konzept 8.2 — ein Vorrat hat
+        /// nur eine Zone, und deshalb ist Q1 auf jedem Bestandsprojekt konstruktiv
+        /// wirkungslos.</para>
         /// </summary>
-        public double QuellEntnahmeTemperatur
+        /// <param name="anschlusshoehe">0…1 (1 = ganz oben); NULL-Ersatz ist <see cref="HOEHE_OBEN"/></param>
+        public double QuellEntnahmeTemperatur(double anschlusshoehe)
         {
-            get { return SchichtTemperatur(0); }
+            return SchichtTemperatur(SchichtIndex(anschlusshoehe));
         }
 
         /// <summary>Temperatur der untersten Schicht [°C].</summary>

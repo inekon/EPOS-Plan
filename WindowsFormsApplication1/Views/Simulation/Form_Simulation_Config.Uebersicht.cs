@@ -711,7 +711,16 @@ namespace WindowsFormsApplication1
 
             _wqUpdating = true;
             _wqCombo.Items.Clear();
-            _wqCombo.Items.AddRange(WaermequelleClass.TypAnzeigeFuer(info.ID_Type));
+
+            // PAKET Q1 (Konzept 8.1 Punkt 4): SCHLÜSSEL- STATT INDEXKOPPLUNG. Jeder
+            // Eintrag trägt seinen Steuerwert selbst; die Auswertung im Ereignis liest
+            // ihn aus dem Eintrag statt über SelectedIndex in eine zweite Liste zu
+            // greifen. Die Falle „Liste umsortiert -> Bestandsprojekte zeigen auf die
+            // falsche Quelle" hat damit keinen Angriffspunkt mehr.
+            string[] anzeige = WaermequelleClass.TypAnzeigeFuer(info.ID_Type);
+            for (int i = 0; i < _wqTypen.Length; i++)
+                _wqCombo.Items.Add(new SchluesselEintrag(
+                    _wqTypen[i], i < anzeige.Length ? anzeige[i] : _wqTypen[i]));
 
             // Vorauswahl: der gespeicherte Typ. Beim Heizkessel ist die leere Angabe ein
             // REGULÄRER Eintrag („Systemrücklauf"), bei der Wärmepumpe steht sie wie
@@ -735,9 +744,15 @@ namespace WindowsFormsApplication1
         private void WqCombo_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_wqUpdating || _wqInfo == null || _wqCombo.SelectedIndex < 0) return;
-            if (_wqCombo.SelectedIndex >= _wqTypen.Length) return;
 
-            string typNeu = _wqTypen[_wqCombo.SelectedIndex];
+            // PAKET Q1: der STEUERWERT kommt aus dem Eintrag, nicht aus dem Index.
+            SchluesselEintrag eintrag =
+                _wqCombo.SelectedItem as SchluesselEintrag;
+            if (eintrag == null) return;
+
+            string typNeu = eintrag.Wert as string;
+            if (typNeu == null) return;
+
             AnlagenInfo info = _wqInfo;
             _wqCombo.Visible = false;
 
@@ -796,6 +811,10 @@ namespace WindowsFormsApplication1
                         if (oReg != null) frmQuelle.Regeneration = Convert.ToDouble(oReg);
                         object oUnb = WaermequelleClass.WertLesen(info.ID, "WQ_Unbegrenzt");
                         if (oUnb != null) frmQuelle.Unbegrenzt = Convert.ToBoolean(oUnb);
+                        // PAKET Q1: die Quell-Entnahmehöhe (Schema-Schritt 54); NULL
+                        // bleibt NULL und heißt „oben".
+                        object oHoehe = WaermequelleClass.WertLesen(info.ID, "WQ_Anschlusshoehe");
+                        if (oHoehe != null) frmQuelle.Anschlusshoehe = Convert.ToDouble(oHoehe);
 
                         frmQuelle.SetControls();
                         if (frmQuelle.ShowDialog(this) != DialogResult.OK) return;
@@ -845,6 +864,19 @@ namespace WindowsFormsApplication1
                             WaermequelleClass.WertSchreiben(info.ID, "WQ_Unbegrenzt", frmQuelle.Unbegrenzt);
                         }
 
+                        // PAKET Q1: die Quell-Entnahmehöhe gilt für Wärmepumpe UND
+                        // Heizkessel (Konzept 8.4) und steht deshalb außerhalb des
+                        // Verdampfer-Blocks. Über die Überladung mit ausdrücklichem
+                        // OleDbType, weil NULL hier der Regelfall ist („oben") und ACE aus
+                        // DBNull allein keinen Spaltentyp ableitet.
+                        // Erst in eine lokale Variable: Ein Formular ist eine
+                        // MarshalByRefObject-Klasse, und der Zugriff auf HasValue/Value
+                        // eines Nullable-FELDES darauf zieht CS1690 nach sich.
+                        double? hoehe = frmQuelle.Anschlusshoehe;
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Anschlusshoehe",
+                            System.Data.OleDb.OleDbType.Double,
+                            hoehe.HasValue ? (object)hoehe.Value : DBNull.Value);
+
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_Typ", typNeu);
 
                         // PAKET A1: Hier stand die Kaskaden-Automatik. Sie schaltete den
@@ -857,18 +889,37 @@ namespace WindowsFormsApplication1
 
                 case WaermequelleClass.TYP_PROFIL:
                     {
-                        // Quellprofil über Monats- und Wochenwerte
-                        // (analog "Brauchwassertypen Stundenverteilung")
+                        // PAKET Q1 (Konzept 8.1 Punkt 2/3): Das Quellprofil ist ein
+                        // eigener Gegenstand in Tab_Quellprofil/Tab_QuellprofilDaten mit
+                        // den Betriebsarten Monat (12), Tag (365) und Stunde (8760); die
+                        // Anlage verweist über WQ_ID_Quellprofil darauf.
                         Form_Quellprofil frmProfil = new Form_Quellprofil();
                         frmProfil.WPName = info.Bezeichner;
+                        frmProfil.ID_Projekt = m_ID_Projekt;
+
+                        object oIdProfil = WaermequelleClass.WertLesen(info.ID, "WQ_ID_Quellprofil");
+                        if (oIdProfil != null) frmProfil.ID_Quellprofil = Convert.ToInt32(oIdProfil);
+
+                        // ALTWEG als Vorbelegung: Solange die Anlage kein Profil führt,
+                        // startet der Dialog mit dem, was die Engine heute rechnet
+                        // (WQ_Monatswerte/WQ_Wochenwerte, Konzept 15 Lese-Altlast).
                         frmProfil.Monatswerte = WaermequelleClass.WertLesen(info.ID, "WQ_Monatswerte") as string;
                         frmProfil.Wochenwerte = WaermequelleClass.WertLesen(info.ID, "WQ_Wochenwerte") as string;
                         frmProfil.SetControls();
 
                         if (frmProfil.ShowDialog(this) != DialogResult.OK) return;
 
-                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Monatswerte", frmProfil.Monatswerte);
-                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Wochenwerte", frmProfil.Wochenwerte);
+                        // FÜHREND ist der Fremdschlüssel. Er geht über die Überladung mit
+                        // ausdrücklichem OleDbType weg - 0 ist keine gültige Profil-ID,
+                        // und die Beziehung FK_Anlage_Quellprofil aus Schritt 54 würde sie
+                        // abweisen (dieselbe Regel wie bei WQ_ID_Puffer).
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_ID_Quellprofil",
+                            System.Data.OleDb.OleDbType.Integer,
+                            frmProfil.ID_Quellprofil > 0 ? (object)frmProfil.ID_Quellprofil : DBNull.Value);
+
+                        // WQ_Monatswerte/WQ_Wochenwerte werden NICHT mehr geschrieben:
+                        // Sie sind Lese-Altlast (Konzept 15). Sie stehenzulassen ist der
+                        // Rückweg - wer das Profil wieder entfernt, rechnet wie zuvor.
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_Typ", typNeu);
                         break;
                     }
@@ -997,30 +1048,15 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Kleiner modaler Eingabedialog (Titel, Beschriftung, Vorgabewert).
         /// Liefert den eingegebenen Text oder null bei Abbruch.
+        ///
+        /// <para><b>PAKET Q1:</b> Der Rumpf steht jetzt in <see cref="Eingabefrage"/> —
+        /// der Quellprofil-Dialog braucht denselben Baustein, und zwei Fassungen liefen
+        /// unweigerlich auseinander. Diese Methode bleibt als Durchreiche stehen, damit
+        /// die sechs Aufrufstellen in diesem Formular unverändert sind.</para>
         /// </summary>
         private string EingabeDialog(string titel, string beschriftung, string vorgabe)
         {
-            using Form frm = new Form();
-            frm.Text = titel;
-            frm.FormBorderStyle = FormBorderStyle.FixedDialog;
-            frm.StartPosition = FormStartPosition.CenterParent;
-            frm.MinimizeBox = false;
-            frm.MaximizeBox = false;
-            frm.ClientSize = new Size(340, 140);
-
-            Label lbl = new Label { Text = beschriftung, AutoSize = true, Location = new Point(12, 12) };
-            TextBox txt = new TextBox { Location = new Point(12, 75), Width = 316, Text = vorgabe ?? "" };
-            Button ok = new Button { Text = MyResource.Resource.SIM_BTN_OK, DialogResult = DialogResult.OK, Location = new Point(172, 105), Width = 75 };
-            Button abbruch = new Button { Text = MyResource.Resource.SIM_BTN_ABBRECHEN, DialogResult = DialogResult.Cancel, Location = new Point(253, 105), Width = 75 };
-
-            frm.Controls.Add(lbl);
-            frm.Controls.Add(txt);
-            frm.Controls.Add(ok);
-            frm.Controls.Add(abbruch);
-            frm.AcceptButton = ok;
-            frm.CancelButton = abbruch;
-
-            return frm.ShowDialog(this) == DialogResult.OK ? txt.Text : null;
+            return Eingabefrage.Fragen(this, titel, beschriftung, vorgabe);
         }
     }
 }

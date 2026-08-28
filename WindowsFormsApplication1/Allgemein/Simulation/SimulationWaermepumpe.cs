@@ -163,11 +163,32 @@ namespace WindowsFormsApplication1
         /// </summary>
         private bool[] _quellKopplung;
 
+        /// <summary>
+        /// PAKET Q1: Quell-Entnahmehöhe je Modul, 0…1 (1 = ganz oben) aus
+        /// <c>Tab_Energieanlagen.WQ_Anschlusshoehe</c> (Schema-Schritt 54). NULL in der
+        /// Datenbank — und jede Datenbank vor Schritt 54 — ergibt
+        /// <see cref="SimulationPufferspeicher.HOEHE_OBEN"/> und damit exakt das
+        /// Verhalten von Paket B1.
+        /// </summary>
+        private double[] _quellHoehe;
+
         /// <summary>true = Modul <paramref name="index"/> ist temperaturgekoppelt (Paket B1).</summary>
         public bool QuelleGekoppelt(int index)
         {
             return _quellKopplung != null && index >= 0 && index < _quellKopplung.Length &&
                    _quellKopplung[index];
+        }
+
+        /// <summary>
+        /// PAKET Q1: die Quell-Entnahmehöhe des Moduls <paramref name="index"/>, 0…1;
+        /// <see cref="SimulationPufferspeicher.HOEHE_OBEN"/> ohne gepflegten Wert —
+        /// Lesezugriff für Protokoll und Wirkproben.
+        /// </summary>
+        public double QuellAnschlusshoehe(int index)
+        {
+            if (_quellHoehe == null || index < 0 || index >= _quellHoehe.Length)
+                return SimulationPufferspeicher.HOEHE_OBEN;
+            return _quellHoehe[index];
         }
 
         /// <summary>Zahl der temperaturgekoppelten Module (Paket B1); 0 = Bestandsverhalten.</summary>
@@ -198,6 +219,9 @@ namespace WindowsFormsApplication1
         public int BoosterKopplungVorbereiten()
         {
             _quellKopplung = new bool[wp_quellspeicher.Count];
+            _quellHoehe = new double[wp_quellspeicher.Count];
+            for (int i = 0; i < _quellHoehe.Length; i++)
+                _quellHoehe[i] = SimulationPufferspeicher.HOEHE_OBEN;
 
             for (int i = 0; i < wp_quellspeicher.Count; i++)
             {
@@ -219,10 +243,42 @@ namespace WindowsFormsApplication1
                     wp_quelltemp[i] = eigen;
                 }
 
+                // PAKET Q1: die Quell-Entnahmehöhe der ANLAGE (Schema-Schritt 54).
+                // EINMAL je Lauf gelesen - sie ist eine Konfigurationsgröße, keine
+                // Zustandsgröße. Ohne die Spalte (Datenbank vor Schritt 54) und bei
+                // NULL bleibt es bei „oben" und damit beim B1-Verhalten.
+                if (i < wp_list.Count)
+                    _quellHoehe[i] = AnschlusshoeheLesen(wp_list[i]);
+
                 _quellKopplung[i] = true;
             }
 
             return GekoppelteModule;
+        }
+
+        /// <summary>
+        /// PAKET Q1: <c>Tab_Energieanlagen.WQ_Anschlusshoehe</c> einer Anlage, auf 0…1
+        /// begrenzt; <see cref="SimulationPufferspeicher.HOEHE_OBEN"/> bei NULL,
+        /// fehlender Spalte oder unbrauchbarem Wert.
+        ///
+        /// <para>Ein Wert außerhalb 0…1 wird NICHT geklemmt, sondern verworfen: Er kann
+        /// nicht aus dem Dialog stammen (der prüft) und ist damit ein Datenfehler; „oben"
+        /// ist dafür die richtige, dokumentierte Vorgabe — dieselbe Auslegung, die auch
+        /// <c>SimulationPufferspeicher.SchichtIndex</c> anwendet.</para>
+        /// </summary>
+        internal static double AnschlusshoeheLesen(int idAnlage)
+        {
+            object v = WaermequelleClass.WertLesenStill(
+                idAnlage, SchemaKatalog.SPALTE_ANLAGE_WQ_ANSCHLUSSHOEHE);
+            if (v == null) return SimulationPufferspeicher.HOEHE_OBEN;
+
+            try
+            {
+                double h = Convert.ToDouble(v);
+                if (h < 0 || h > 1) return SimulationPufferspeicher.HOEHE_OBEN;
+                return h;
+            }
+            catch { return SimulationPufferspeicher.HOEHE_OBEN; }
         }
 
         /// <summary>
@@ -249,7 +305,8 @@ namespace WindowsFormsApplication1
                 SimulationPufferspeicher q = wp_quellspeicher[i];
                 if (q == null || i >= wp_quelltemp.Count || wp_quelltemp[i] == null) continue;
 
-                wp_quelltemp[i][stunde] = (float)q.QuellEntnahmeTemperatur;
+                // PAKET Q1: an der gepflegten Quell-Entnahmehöhe statt fest oben.
+                wp_quelltemp[i][stunde] = (float)q.QuellEntnahmeTemperatur(_quellHoehe[i]);
             }
         }
 

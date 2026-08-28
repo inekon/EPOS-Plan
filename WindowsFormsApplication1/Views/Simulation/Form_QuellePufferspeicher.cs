@@ -123,6 +123,32 @@ namespace WindowsFormsApplication1
         /// <summary>true = Quelle immer verfügbar (nur die Temperatur wirkt).</summary>
         public bool Unbegrenzt = false;
 
+        /// <summary>
+        /// PAKET Q1 (Konzept 8.2/8.4, Schema-Schritt 54): die QUELL-ENTNAHMEHÖHE
+        /// <c>Tab_Energieanlagen.WQ_Anschlusshoehe</c>, 0…1 (1 = ganz oben);
+        /// <c>null</c> = nicht gepflegt und damit „oben" — der Wert, mit dem Paket B1
+        /// fest gerechnet hat.
+        ///
+        /// <para>Sie gilt für BEIDE Erzeugerarten (8.4 Gleichbehandlung) und steht
+        /// deshalb außerhalb der Verdampfer-Rubrik, die beim Heizkessel ausgeblendet
+        /// ist.</para>
+        /// </summary>
+        public double? Anschlusshoehe = null;
+
+        // --- PAKET Q1: programmatisch angehängte Zeile „Quell-Entnahmehöhe" ----------
+        //
+        // NICHT im Designer: Die Designer-Dateien werden in diesem Projekt nicht von Hand
+        // bearbeitet (Hauskonvention), und der Dialog ist ein FixedDialog mit fest
+        // gerechneter Pixelgeometrie. Die Zeile entsteht deshalb im Konstruktor, und die
+        // Fußknöpfe samt ClientSize rücken um genau ihre Höhe nach unten - dasselbe
+        // Verfahren wie bei der Schichtungsgruppe aus Paket P1 (Form_PufferSp_Projekt).
+        private Label _lblAnschlusshoehe;
+        private TextBox _tbAnschlusshoehe;
+        private Label _lblAnschlusshoeheHinweis;
+
+        /// <summary>Höhe der neuen Zeile samt Abstand [px] — der Betrag, um den der Dialog wächst.</summary>
+        private const int ANSCHLUSSHOEHE_ZEILE = 56;
+
         public Form_QuellePufferspeicher()
         {
             // Der Designer setzt AutoScaleMode bewusst auf None und lässt
@@ -136,8 +162,62 @@ namespace WindowsFormsApplication1
             // Erst NACH TexteSetzen(): die drei Beschriftungen haben bis dahin nur
             // die Platzhalter des Designers und damit die falsche Breite.
             EingabespalteAusrichten();
+            AnschlusshoeheAnbauen();
             VorgabenSetzen();
             FensterEinpassung.Einhaengen(this);
+        }
+
+        /// <summary>
+        /// PAKET Q1: hängt die Zeile „Quell-Entnahmehöhe" unter die Rubrik und schiebt
+        /// die Fußknöpfe samt <c>ClientSize</c> um genau ihre Höhe nach unten.
+        ///
+        /// <para><b>Warum unterhalb der Rubrik und nicht darin.</b> Die Rubrik
+        /// <c>_gbParameter</c> trägt die VERDAMPFER-Parameter und ist beim Heizkessel
+        /// ausgeblendet (Etappe D5b). Die Quell-Entnahmehöhe gilt aber für beide
+        /// Erzeugerarten gleichermaßen (Konzept 8.4, „Gleichbehandlung in Dialog und
+        /// Schema") — in der Rubrik verschwände sie am Kessel, und genau dort ist sie
+        /// so wirksam wie an der Wärmepumpe.</para>
+        ///
+        /// <para>Läuft NACH <see cref="EingabespalteAusrichten"/>: Das Eingabefeld
+        /// übernimmt dessen gemessene Spaltenposition, damit es mit den drei Feldern
+        /// darüber fluchtet — auch auf Englisch, wo die Spalte um 17 px nach rechts
+        /// rückt.</para>
+        /// </summary>
+        private void AnschlusshoeheAnbauen()
+        {
+            int oben = _gbParameter.Bottom + 10;
+
+            _lblAnschlusshoehe = new Label
+            {
+                Text = MyResource.Resource.SIMQ_PUFFER_ANSCHLUSSHOEHE,
+                AutoSize = false,
+                Size = new Size(160, 20),
+                TextAlign = ContentAlignment.MiddleLeft,
+                Location = new Point(_gbParameter.Left + 16, oben + 3)
+            };
+
+            _tbAnschlusshoehe = new TextBox
+            {
+                Location = new Point(_gbParameter.Left + _tbTemperatur.Left, oben),
+                Width = _tbTemperatur.Width
+            };
+
+            _lblAnschlusshoeheHinweis = new Label
+            {
+                Text = MyResource.Resource.SIMQ_PUFFER_ANSCHLUSSHOEHE_HINWEIS,
+                AutoSize = false,
+                Size = new Size(590, 28),
+                Location = new Point(_gbParameter.Left, oben + 26)
+            };
+
+            this.Controls.Add(_lblAnschlusshoehe);
+            this.Controls.Add(_tbAnschlusshoehe);
+            this.Controls.Add(_lblAnschlusshoeheHinweis);
+
+            _btnOk.Top += ANSCHLUSSHOEHE_ZEILE;
+            _btnAbbruch.Top += ANSCHLUSSHOEHE_ZEILE;
+            this.ClientSize = new Size(this.ClientSize.Width,
+                                       this.ClientSize.Height + ANSCHLUSSHOEHE_ZEILE);
         }
 
         /// <summary>
@@ -333,6 +413,12 @@ namespace WindowsFormsApplication1
             _tbSpreizung.Text = Spreizung.ToString("F1");
             _tbRegeneration.Text = Regeneration.ToString("F1");
             _cbUnbegrenzt.Checked = Unbegrenzt;
+
+            // PAKET Q1: LEER heißt „oben" - genau die Aussage der Spalte
+            // (WQ_Anschlusshoehe NULL). Eine ausgeschriebene 1,0 behauptete eine
+            // Anwenderentscheidung, die es nicht gibt.
+            double? hoehe = Anschlusshoehe;   // lokal wegen CS1690 (MarshalByRefObject)
+            _tbAnschlusshoehe.Text = hoehe.HasValue ? hoehe.Value.ToString("0.##") : "";
 
             VorauswahlSetzen();
 
@@ -532,6 +618,14 @@ namespace WindowsFormsApplication1
                 return;
             }
 
+            // PAKET Q1: die Quell-Entnahmehöhe gilt für BEIDE Erzeugerarten (Konzept 8.4)
+            // und wird deshalb VOR der Kessel-Abkürzung geprüft.
+            if (!AnschlusshoeheUebernehmen())
+            {
+                this.DialogResult = DialogResult.None;
+                return;
+            }
+
             // D5b: Beim Heizkessel gibt es die Verdampfer-Parameter nicht (ArtAnwenden hat
             // die Rubrik ausgeblendet). Ihre Prüfung würde die Vorbelegungen der
             // unsichtbaren Felder bewerten und im schlimmsten Fall eine Meldung über ein
@@ -570,6 +664,38 @@ namespace WindowsFormsApplication1
             Spreizung = spreizung;
             Regeneration = regeneration;
             Unbegrenzt = _cbUnbegrenzt.Checked;
+        }
+
+        /// <summary>
+        /// PAKET Q1: liest das Feld „Quell-Entnahmehöhe" nach <see cref="Anschlusshoehe"/>.
+        ///
+        /// <para><b>LEER ist gültig</b> und bedeutet „oben" (<c>null</c> → die Spalte
+        /// bleibt NULL). Alles andere muss eine Zahl aus 0…1 sein; ein Wert außerhalb
+        /// wird ABGEWIESEN statt geklemmt, damit der Anwender merkt, dass er eine
+        /// Prozentangabe oder eine Höhe in Metern eingegeben hat.</para>
+        /// </summary>
+        /// <returns>false = Meldung gezeigt, der Dialog bleibt offen.</returns>
+        private bool AnschlusshoeheUebernehmen()
+        {
+            string text = (_tbAnschlusshoehe.Text ?? "").Trim();
+            if (text.Length == 0)
+            {
+                Anschlusshoehe = null;
+                return true;
+            }
+
+            float h;
+            if (!WaermequelleClass.ZahlParsen(text, out h) || h < 0 || h > 1)
+            {
+                MessageBox.Show(
+                    Zeilenumbruch.Normalisieren(MyResource.Resource.SIMQ_PUFFER_MSG_ANSCHLUSSHOEHE),
+                    MyResource.Resource.SIMQ_PUFFER_TITEL,
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            Anschlusshoehe = h;
+            return true;
         }
     }
 }

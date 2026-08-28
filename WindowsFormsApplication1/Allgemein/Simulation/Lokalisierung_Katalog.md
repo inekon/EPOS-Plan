@@ -1932,3 +1932,68 @@ Generator nicht abbildet.
 (`SimulationControl.BoosterKopplungVorbereiten`, `KesselQuellbezugSetzen`): Sie stehen inline
 deutsch wie der gesamte Protokollrahmen ihrer Nachbarschaft (Ticket P1-O7 / S2-O9, Sammelschnitt
 in Paket L).
+
+---
+
+## Nachtrag Paket Q1 — Quellen-Ausbau (28.08.2026)
+
+Paket Q1 macht das Quellprofil zu einem eigenen Gegenstand der Datenbank
+(`Tab_Quellprofil`/`Tab_QuellprofilDaten`, Migrationsschritt 54) mit den Betriebsarten
+Monat/Tag/Stunde, macht die Bauart-Bindung der Luft-Wasser-Wärmepumpe sichtbar und gibt der
+Quell-Entnahmehöhe ein Eingabefeld (Konzept 8.1/8.2/8.4).
+**28 Schlüssel kommen hinzu, 8 fallen weg, einer wird neu formuliert.** Bestand danach
+**2594 `data`-Knoten** in beiden `.resx` (DE und EN deckungsgleich) und **2590
+Designer-Eigenschaften** — die Differenz sind die vier nicht-textlichen Musterknoten
+`Bitmap1`, `Color1`, `Icon1`, `Name1`, die der Generator nicht abbildet.
+
+### Neu
+
+| Schlüssel | DE | EN | Fundstelle |
+|---|---|---|---|
+| `SIMQ_QUELLPROFIL_LBL_PROFIL` | Profil: | Profile: | `Form_Quellprofil` — Beschriftung der Profilauswahl. Die Auswahl trägt ihre Steuerwerte über `SchluesselEintrag` (Konzept 8.1 Punkt 4), nicht über den Index. |
+| `SIMQ_QUELLPROFIL_LBL_BETRIEBSART` | Betriebsart: | Operating mode: | dito, Umschalter Monat/Tag/Stunde. |
+| `SIMQ_QUELLPROFIL_LBL_BEZEICHNER` | Bezeichnung: | Name: | dito, `Tab_Quellprofil.Bezeichner`. |
+| `SIMQ_QUELLPROFIL_LBL_BESCHREIBUNG` | Beschreibung: | Description: | dito, `Tab_Quellprofil.Beschreibung` (Herkunft der Werte). |
+| `SIMQ_QUELLPROFIL_BA_MONAT` | Monatswerte (12) | Monthly values (12) | Anzeigetext zum Steuerwert `DbWerte.WQ_PROFIL_BETRIEBSART_MONAT`. Die Zahl steht im Text, weil sie die Betriebsart eindeutiger macht als ihr Name. |
+| `SIMQ_QUELLPROFIL_BA_TAG` | Tageswerte (365) | Daily values (365) | zu `WQ_PROFIL_BETRIEBSART_TAG`. |
+| `SIMQ_QUELLPROFIL_BA_STUNDE` | Stundenwerte (8760) | Hourly values (8760) | zu `WQ_PROFIL_BETRIEBSART_STUNDE`. |
+| `SIMQ_QUELLPROFIL_NEU` | (neues Profil) | (new profile) | erste Zeile der Profilauswahl; ihr Steuerwert ist die ID 0. Bewusst runde statt spitzer Klammern — spitze müssten in der `.resx` maskiert werden und lesen sich im Dialog wie ein Platzhalter. |
+| `SIMQ_QUELLPROFIL_TAB_TAGESWERTE` | Tageswerte | Daily values | Reiterbeschriftung der Werteseite in der Betriebsart Tag. |
+| `SIMQ_QUELLPROFIL_TAB_STUNDENWERTE` | Stundenwerte | Hourly values | dieselbe Seite in der Betriebsart Stunde — EIN Reiter, zwei Beschriftungen. |
+| `SIMQ_QUELLPROFIL_SPALTE_NR` | Nr. | No. | erste Rasterspalte (Position der Stützstelle, 1-basiert angezeigt). |
+| `SIMQ_QUELLPROFIL_SPALTE_WERT` | Quelltemperatur [°C] | Source temperature [°C] | zweite Rasterspalte. |
+| `SIMQ_QUELLPROFIL_BTN_CSV` | Werte aus CSV-Datei einlesen … | Import values from CSV file … | Importknopf der Werteseite. |
+| `SIMQ_QUELLPROFIL_BTN_ALLE_WERTE` | Alle Werte gleich setzen … | Set all values alike … | Knopf „konstantes Profil"; zugleich der Titel des Eingabedialogs dahinter. |
+| `SIMQ_QUELLPROFIL_ALLE_WERTE_TEXT` | Welche Quelltemperatur soll für alle Stützstellen gelten? [°C] | Which source temperature applies to every data point? [°C] | Frage dieses Eingabedialogs. |
+| `SIMQ_QUELLPROFIL_INFO_WERTE` | {0} Werte / von {1} bis {2} °C / Mittel {3} °C | {0} values / from {1} to {2} °C / mean {3} °C | Kennzahlenblock neben dem Raster, drei Zeilen und vier Platzhalter. Er ist die einzige Rückmeldung, dass ein Import wirklich angekommen ist. |
+| `SIMQ_QUELLPROFIL_HINWEIS_TAG` | 365 Tageswerte: Der erste Wert gilt für alle 24 Stunden des ersten Tages … kalenderunabhängig, ohne Wochentagsbezug. | 365 daily values: … independent of any calendar, with no weekday reference. | Kopftext der Werteseite in der Betriebsart Tag. Die Kalenderunabhängigkeit ist die fachliche Kernaussage der Tagesvariante (Konzept 8.1 Punkt 2) und gehört deshalb in die Oberfläche, nicht nur in den Quelltext. |
+| `SIMQ_QUELLPROFIL_HINWEIS_STUNDE` | 8760 Stundenwerte: je Jahresstunde ein Wert. Die Werte stehen in der Datenbank; das Profil bleibt bei einer Projektweitergabe erhalten. | 8760 hourly values: … the profile survives when the project is passed on. | derselbe Kopftext in der Betriebsart Stunde. Er nennt genau den Unterschied zu `WQ_CSV` (Dateipfad statt Werte, Konzept 8.1 Punkt 3). |
+| `SIMQ_QUELLPROFIL_HINWEIS_ALTWEG` | Altweg: Dieser Wochengang steht noch an der Anlage und wird gerechnet, solange kein Quellprofil gespeichert ist … | Legacy: this weekly pattern still sits on the plant … | Fußtext der nicht mehr bearbeitbaren Wochengang-Seite. Sie erscheint nur, wenn die Anlage einen Wochengang trägt. |
+| `SIMQ_QUELLPROFIL_CSV_HINWEIS` | Erwartet werden {0} Zahlenwerte, je Zeile einer … Die Datei wird ANSI-kodiert gelesen. | Expected are {0} numeric values, one per line … The file is read as ANSI. | Formathinweis vor dem Dateidialog. Der Platzhalter nimmt die Wertzahl der Betriebsart auf; die ANSI-Zusage steht dort, weil sie das Verhalten bei Umlauten in der Kopfzeile erklärt. |
+| `SIMQ_QUELLPROFIL_MSG_CSV_FEHLER` | Aus der Datei ließen sich keine {0} Werte lesen … | The file did not yield {0} values … | Fehlermeldung des Imports. |
+| `SIMQ_QUELLPROFIL_MSG_WERTE_FEHLEN` | Für diese Betriebsart werden {0} Werte gebraucht … | This operating mode needs {0} values … | Prüfung beim Speichern: ein halb gefülltes Profil kommt gar nicht erst in die Datenbank. |
+| `SIMQ_QUELLPROFIL_MSG_BEZEICHNER` | Bitte eine Bezeichnung für das Quellprofil eintragen! | Please enter a name for the source profile. | Pflichtfeldprüfung — ohne Namen wäre das Profil in keiner Auswahlliste wiederzufinden. |
+| `SIMQ_QUELLPROFIL_MSG_SPEICHERN` | Das Quellprofil konnte nicht gespeichert werden … | The source profile could not be saved … | Rückmeldung, wenn `QuellprofilCtrl.Speichern` 0 liefert (Transaktion zurückgerollt). |
+| `SIMQ_TIP_QUELLE_BAUART` | Bauart {0}: Die Wärmequelle ist die Außenluft und nicht wählbar … | Type {0}: the heat source is the outside air and cannot be chosen … | `Form_Simulation_Config.Karten.QuellenChip` — Mouseover des FESTEN Quellen-Chips bei Luft-Wasser (Konzept 8.1 Punkt 1). Der Platzhalter nimmt die Bauart auf, bei fehlender Bauart den vorhandenen Ersatztext `SIMQ_WPTYP_NICHT_GEPFLEGT`. |
+| `SIMQ_PUFFER_ANSCHLUSSHOEHE` | Quell-Entnahmehöhe (0…1): | Source draw-off height (0…1): | `Form_QuellePufferspeicher` — Beschriftung des neuen Feldes für `WQ_Anschlusshoehe` (Schritt 54). Die Skala steht in der Beschriftung, weil sie sonst nur im Fußtext stünde. |
+| `SIMQ_PUFFER_ANSCHLUSSHOEHE_HINWEIS` | Leer = oben. 1 = ganz oben, 0 = ganz unten. Wirkt nur bei einem geschichteten Speicher … | Empty = top. 1 = topmost, 0 = bottom. Effective only with a stratified store … | Fußtext desselben Feldes. Er sagt beides: was LEER bedeutet, und dass die Angabe bei N = 1 folgenlos ist. |
+| `SIMQ_PUFFER_MSG_ANSCHLUSSHOEHE` | Die Quell-Entnahmehöhe muss zwischen 0 und 1 liegen … Leer lassen heißt oben. | The source draw-off height must lie between 0 and 1 … | Prüfung beim Speichern. Ein Wert außerhalb wird abgewiesen statt geklemmt — sonst bliebe eine Prozent- oder Meterangabe unbemerkt. |
+
+### Neu formuliert
+
+`SIMQ_QUELLPROFIL_INFO` — der Kopftext des Dialogs. Er beschrieb die Formel des Altwegs
+(„Quelltemperatur = Monatswert + Wochenwert"); jetzt beschreibt er den Gegenstand
+(„12 Monatswerte, 365 Tageswerte oder 8760 Stundenwerte … liegt in der Datenbank und kann von
+mehreren Anlagen benutzt werden").
+
+### Entfallen
+
+Acht Schlüssel der Wochengang-Bedienung, die es nicht mehr gibt (die Seite ist Anzeige, kein
+Editor): `SIMQ_QUELLPROFIL_BTN_TAG_KOPIEREN`, `…_BTN_TAG_EINFUEGEN`, `…_BTN_ALLE_TAGE`,
+`…_BTN_UEBERNEHMEN`, `…_HINWEIS_ABWEICHUNG`, `…_MSG_ERST_KOPIEREN`, `…_MSG_ALLE_TAGE`,
+`…_MSG_STUNDE_UNGUELTIG`. Vor dem Entfernen geprüft: keiner hatte im Anwendungsprojekt noch
+eine Fundstelle.
+
+**Bewusst KEIN neuer Schlüssel** für die Protokollzeile der Quell-Entnahmehöhe
+(`SimulationControl.AnschlusshoeheText`): Sie ist ein Zusatz zu den Booster-Meldungen des
+Laufaufbaus, die inline deutsch stehen (Ticket P1-O7 / S2-O9 / B1-O9, Sammelschnitt in Paket L).

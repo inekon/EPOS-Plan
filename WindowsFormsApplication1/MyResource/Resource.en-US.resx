@@ -173,6 +173,101 @@
 Here the full cycles are the annual throughput relative to the capacity —
 with a small tank the figure becomes large without any additional ageing.</value>
   </data>
+  <data name="SIMQ_PUFFER_ANSCHLUSSHOEHE" xml:space="preserve">
+    <value>Source draw-off height (0…1):</value>
+  </data>
+  <data name="SIMQ_PUFFER_ANSCHLUSSHOEHE_HINWEIS" xml:space="preserve">
+    <value>Empty = top. 1 = topmost, 0 = bottom. Effective only with a stratified store (more than one layer).</value>
+  </data>
+  <data name="SIMQ_PUFFER_MSG_ANSCHLUSSHOEHE" xml:space="preserve">
+    <value>The source draw-off height must lie between 0 and 1 (1 = topmost, 0 = bottom).
+Leaving it empty means top.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_ALLE_WERTE_TEXT" xml:space="preserve">
+    <value>Which source temperature applies to every data point? [°C]</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BA_MONAT" xml:space="preserve">
+    <value>Monthly values (12)</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BA_STUNDE" xml:space="preserve">
+    <value>Hourly values (8760)</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BA_TAG" xml:space="preserve">
+    <value>Daily values (365)</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BTN_ALLE_WERTE" xml:space="preserve">
+    <value>Set all values alike …</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BTN_CSV" xml:space="preserve">
+    <value>Import values from CSV file …</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_CSV_HINWEIS" xml:space="preserve">
+    <value>Expected are {0} numeric values, one per line.
+A time stamp before the value is allowed (separator semicolon or tab); lines without a number are skipped.
+The file is read as ANSI.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_HINWEIS_ALTWEG" xml:space="preserve">
+    <value>Legacy: this weekly pattern still sits on the plant and is used as long as no source profile is stored. A stored source profile replaces it - the values remain but no longer take effect. Its successor is the daily-value mode, which needs no weekday reference.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_HINWEIS_STUNDE" xml:space="preserve">
+    <value>8760 hourly values: one value per hour of the year. The values are held in the database, so the profile survives when the project is passed on.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_HINWEIS_TAG" xml:space="preserve">
+    <value>365 daily values: the first value applies to all 24 hours of the first day, the second to the second day and so on - independent of any calendar, with no weekday reference.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_INFO" xml:space="preserve">
+    <value>The source profile describes the temperature of the heat source over the year - as 12 monthly, 365 daily or 8760 hourly values.
+It is held in the database and can be used by more than one plant.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_INFO_WERTE" xml:space="preserve">
+    <value>{0} values
+from {1} to {2} °C
+mean {3} °C</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Description:</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_LBL_BETRIEBSART" xml:space="preserve">
+    <value>Operating mode:</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_LBL_PROFIL" xml:space="preserve">
+    <value>Profile:</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_MSG_BEZEICHNER" xml:space="preserve">
+    <value>Please enter a name for the source profile.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_MSG_CSV_FEHLER" xml:space="preserve">
+    <value>The file did not yield {0} values.
+Please check the number of lines and the number format.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_MSG_SPEICHERN" xml:space="preserve">
+    <value>The source profile could not be saved. Please check whether the database is writable.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_MSG_WERTE_FEHLEN" xml:space="preserve">
+    <value>This operating mode needs {0} values.
+Please import a CSV file first or set all values alike.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_NEU" xml:space="preserve">
+    <value>(new profile)</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_SPALTE_NR" xml:space="preserve">
+    <value>No.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_SPALTE_WERT" xml:space="preserve">
+    <value>Source temperature [°C]</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_TAB_STUNDENWERTE" xml:space="preserve">
+    <value>Hourly values</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_TAB_TAGESWERTE" xml:space="preserve">
+    <value>Daily values</value>
+  </data>
+  <data name="SIMQ_TIP_QUELLE_BAUART" xml:space="preserve">
+    <value>Type {0}: the heat source is the outside air and cannot be chosen. Only brine-water and water-water heat pumps have a selectable source.</value>
+  </data>
   <data name="SIM_ANSICHT_LABEL" xml:space="preserve">
     <value>View:</value>
   </data>
@@ -2054,25 +2149,6 @@ If the storage is empty, the output of the heat pump is limited; the regeneratio
   <data name="SIMQ_QUELLPROFIL_BTN_ALLE_MONATE" xml:space="preserve">
     <value>Set all months to the January value</value>
   </data>
-  <data name="SIMQ_QUELLPROFIL_BTN_ALLE_TAGE" xml:space="preserve">
-    <value>Apply to all days</value>
-  </data>
-  <data name="SIMQ_QUELLPROFIL_BTN_TAG_EINFUEGEN" xml:space="preserve">
-    <value>Paste day</value>
-  </data>
-  <data name="SIMQ_QUELLPROFIL_BTN_TAG_KOPIEREN" xml:space="preserve">
-    <value>Copy day</value>
-  </data>
-  <data name="SIMQ_QUELLPROFIL_BTN_UEBERNEHMEN" xml:space="preserve">
-    <value>Apply changes</value>
-  </data>
-  <data name="SIMQ_QUELLPROFIL_HINWEIS_ABWEICHUNG" xml:space="preserve">
-    <value>Note: 0 = no deviation (source temperature equals the monthly value).</value>
-  </data>
-  <data name="SIMQ_QUELLPROFIL_INFO" xml:space="preserve">
-    <value>Source temperature = monthly value [°C] + weekly value [K].
-The monthly values define the annual variation, the weekly values the daily/weekly variation.</value>
-  </data>
   <data name="SIMQ_QUELLPROFIL_KOPF_MONAT" xml:space="preserve">
     <value>Monthly mean temperature of the heat source [°C]</value>
   </data>
@@ -2082,20 +2158,11 @@ The monthly values define the annual variation, the weekly values the daily/week
   <data name="SIMQ_QUELLPROFIL_LBL_WOCHENTAG" xml:space="preserve">
     <value>Weekday selection</value>
   </data>
-  <data name="SIMQ_QUELLPROFIL_MSG_ALLE_TAGE" xml:space="preserve">
-    <value>The daily variation has been applied to all weekdays.</value>
-  </data>
-  <data name="SIMQ_QUELLPROFIL_MSG_ERST_KOPIEREN" xml:space="preserve">
-    <value>Please copy a day first!</value>
-  </data>
   <data name="SIMQ_QUELLPROFIL_MSG_JANUAR" xml:space="preserve">
     <value>Please enter a valid number in the January field!</value>
   </data>
   <data name="SIMQ_QUELLPROFIL_MSG_MONAT_UNGUELTIG" xml:space="preserve">
     <value>{0}: '{1}' is not a valid number!</value>
-  </data>
-  <data name="SIMQ_QUELLPROFIL_MSG_STUNDE_UNGUELTIG" xml:space="preserve">
-    <value>Hour {0}: '{1}' is not a valid number!</value>
   </data>
   <data name="SIMQ_QUELLPROFIL_TAB_GRAFIK" xml:space="preserve">
     <value>Chart</value>
