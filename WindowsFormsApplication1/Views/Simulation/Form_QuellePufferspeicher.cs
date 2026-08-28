@@ -165,6 +165,10 @@ namespace WindowsFormsApplication1
             AnschlusshoeheAnbauen();
             VorgabenSetzen();
             FensterEinpassung.Einhaengen(this);
+
+            // D2 (28.08.2026): Der Dialog steht mit 110x30 bereits auf der Norm-Größe —
+            // OK stand aber LINKS von Abbrechen und die Reihe unverankert auf Top/Left.
+            FusszeilenNorm.Einhaengen(this, _btnOk, _btnAbbruch);
         }
 
         /// <summary>

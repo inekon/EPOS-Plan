@@ -62,6 +62,7 @@ namespace WindowsFormsApplication1
             ctrl.ReadAll();
             FillWPList();
             InitChart("WÄRME");
+            FusszeileNormen();
         }
 
         public Form_WP(string wpname)
@@ -84,6 +85,29 @@ namespace WindowsFormsApplication1
             btn_Neu.Enabled=false;
             btn_Loeschen.Enabled = false;
             InitChart("WÄRME");
+            FusszeileNormen();
+        }
+
+        /// <summary>
+        /// D2 (28.08.2026): Fußzeile auf die Norm. Die Zeile trägt VIER Knöpfe —
+        /// „Speichern" (410/600), „Neu" (533/600), „Löschen" (634/600) und den
+        /// Abschlussknopf <c>btn_Beenden</c> (748/600), beschriftet mit „OK". Sie standen
+        /// in drei Größen (117x30 bzw. 95x30, zur Laufzeit auf 136x35 bzw. 111x35
+        /// hochskaliert), unverankert und mit 39 px Abstand zum rechten Rand.
+        ///
+        /// Die Norm nimmt die ganze Reihe: Abschluss ganz rechts, davor die
+        /// Satzverwaltung in ihrer bisherigen Reihenfolge von links nach rechts. Nur den
+        /// Abschlussknopf zu normen ginge nicht — „Speichern" käme dann auf „Neu" und
+        /// „Löschen" zu liegen.
+        ///
+        /// Beide Konstruktoren rufen die Methode, damit Pflege- und Ansichtsbetrieb
+        /// dieselbe Zeile zeigen. Der Namenswiderspruch btn_Beenden/„OK" bleibt bestehen;
+        /// er ist im Katalog <c>KiDialoge.Waermepumpe()</c> vermerkt und wäre eine
+        /// Umbenennung im Designer.
+        /// </summary>
+        private void FusszeileNormen()
+        {
+            FusszeilenNorm.Einhaengen(this, btn_Beenden, btn_Loeschen, btn_Neu, btn_Speichern);
         }
 
         public void FillWPList()

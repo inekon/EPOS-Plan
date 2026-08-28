@@ -438,6 +438,26 @@ namespace WindowsFormsApplication1
             // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
             // Auf ausreichend grossen Schirmen wirkungslos.
             FensterEinpassung.Einhaengen(this);
+
+            // D2 (28.08.2026): Der Abschlussknopf stand 59 px vom rechten Rand und
+            // unverankert. Die Fußzeile dieses Dialogs ist gemischt — links die beiden
+            // Arbeitsknöpfe „Simulation starten" und „Konfiguration …", rechts der
+            // Abschluss. Genormt wird deshalb nur der Abschlussknopf; die beiden
+            // Arbeitsknöpfe behalten Lage und Größe (ihre Beschriftung braucht die
+            // 185 px) und bekommen lediglich den unteren Anker, damit die ganze Zeile
+            // beim Aufziehen des Fensters mitwandert.
+            FusszeilenNorm.Einhaengen(this, btn_Beenden);
+            FusszeilenNorm.ZeileMitziehen(btn_Simulation, btn_Konfiguration);
+
+            // D2-Beifang (28.08.2026): tabControl3 ist ein 8 x 8 px großes, LEERES
+            // Registerelement auf der Parameterseite - es liegt auf
+            // tabControl_Einstellungen_MapSplit und wurde vom D-Check als Überlappung
+            // gemeldet. Beweis, dass es unbenutzt ist: es trägt nur tabPage1 und
+            // tabPage2, beide mit Größe 0 x 0 und ohne ein einziges Kindelement
+            // (Form_Simulation_Detail.Designer.cs, Zeilen 1720-1738); außerhalb dieses
+            // Blocks nennt keine Zeile Anwendungscode die drei Namen. Entfernt wird es
+            // nicht - das wäre ein Designer-Eingriff -, es wird unsichtbar gestellt.
+            if (tabControl3 != null) tabControl3.Visible = false;
         }
 
         /// <summary>
@@ -3534,8 +3554,21 @@ namespace WindowsFormsApplication1
             int oben = btn_Simulation.Top + 8;
             const int BREITE_MELDUNG = 440;
             foreach (Control c in FusszeileNachbarn(oben, oben + 24))
+            {
+                // D2 (28.08.2026): Der Abschlussknopf hängt am RECHTEN Rand und steht der
+                // Meldungszeile nie im Weg — so war es schon 2026-08-28 gemeint
+                // („btn_Beenden am rechten Rand bleibt außen vor"), die Bedingung traf
+                // aber nicht zu: btn_ErgebnisSpeichern (692/777, 185 px breit) schiebt
+                // die Zeile vorher auf 893, und damit fiel btn_Beenden in das Fenster
+                // links + 440. Ergebnis war eine Meldungszeile bei x = 1441, also 400 px
+                // RECHTS außerhalb des Entwurfs (Client 1474), die über
+                // FensterEinpassung.InhaltsMass den Bildlaufbereich auf 1876 px
+                // aufblähte. Jetzt ausdrücklich ausgenommen, nicht über die Geometrie.
+                if (ReferenceEquals(c, btn_Beenden)) continue;
+                if ((c.Anchor & AnchorStyles.Right) == AnchorStyles.Right) continue;
                 if (c.Right + 16 > links && c.Left < links + BREITE_MELDUNG)
                     links = c.Right + 16;
+            }
 
             label_Laufmeldungen.Location = new Point(links, oben);
             label_Laufmeldungen.Size = new Size(BREITE_MELDUNG, 24);

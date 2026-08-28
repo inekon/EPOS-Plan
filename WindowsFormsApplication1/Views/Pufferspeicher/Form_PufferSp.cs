@@ -43,6 +43,11 @@ namespace WindowsFormsApplication1
             listBox_Pufferspeicher_DB.Items.Clear();
             _katalogIds.Clear();
             listBox_Pufferspeicher.Items.Clear();
+
+            // D2 (28.08.2026): Fußzeile auf die Norm — bisher Abbrechen links von OK in
+            // 106x34 und unverankert. Im Assistentenbetrieb sind beide Knöpfe unsichtbar
+            // (SetControls, bWizard); die Norm überspringt unsichtbare Knöpfe.
+            FusszeilenNorm.Einhaengen(this, btn_OK, btn_Abbrechen);
         }
 
         public void SetControls(int IDProjekt, bool bWizard = false)
