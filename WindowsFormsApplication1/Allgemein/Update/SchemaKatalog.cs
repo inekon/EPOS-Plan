@@ -347,6 +347,81 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_ANLAGE_WQ_ID_QUELLPROFIL, "LONG"),
         };
 
+        // =================================================================================
+        // Etappe E2 - Emissionsarten-Katalog und CO2-Aequivalent (Migrationsschritt 56)
+        //   Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md, Rev. 1.2, § 3.
+        // =================================================================================
+
+        /// <summary>Die Projekttabelle. Bis Schritt 56 trug sie keine einzige
+        /// migrierte Spalte — deshalb gab es den Namen hier noch nicht.</summary>
+        public const string TAB_PROJEKT = "Tab_Projekt";
+
+        /// <summary>
+        /// E2 (Schritt 56, Konzept § 3): der KATALOG DER EMISSIONSARTEN. CO₂, SO₂ und
+        /// NOx sind damit keine Spaltennamen mehr, sondern Zeilen einer Tabelle, die
+        /// sich erweitern lässt (CH₄, N₂O, Staub, CO, eigene Arten — Konzept F1).
+        ///
+        /// <para>Kleinschreibung wie <c>energy_carrier</c>/<c>energy_project_settings</c>
+        /// und nicht <c>Tab_…</c>: Die Tabelle gehört zum Energieträger-Bereich, dessen
+        /// Namensgebung dieser Zweig des Schemas seit jeher führt.</para>
+        /// </summary>
+        public const string TAB_EMISSIONSART = "emissionsart";
+
+        /// <summary>
+        /// E2 (Schritt 56, Konzept § 3): KATALOGVORLAGEN UND TRÄGERWERTE in EINER
+        /// Tabelle. Der Unterschied ist allein, ob <c>carrier_id</c> gefüllt ist —
+        /// NULL heißt „trägerunabhängige Vorlage" (z. B. der Strommix). Genau ein
+        /// Wert je Träger und Art trägt <c>ist_aktiv</c>; er ist der geltende.
+        /// </summary>
+        public const string TAB_EMISSIONSWERT = "emissionswert";
+
+        /// <summary>
+        /// E2 (Schritt 56, Konzept F7): <c>Emission_Berechnungsmodus</c> (TEXT 10) —
+        /// zweimal derselbe Spaltenname, an zwei Tabellen mit zwei verschiedenen
+        /// Rollen:
+        ///
+        /// <list type="bullet">
+        ///   <item><description><see cref="TAB_APPLIKATION"/> — die GLOBALE VORGABE.
+        ///     Sie gilt für neu angelegte Projekte und wird sonst von nichts
+        ///     gelesen.</description></item>
+        ///   <item><description><see cref="TAB_PROJEKT"/> — der Modus, in dem DIESES
+        ///     Projekt rechnet. Beim Anlegen aus der Vorgabe übernommen, danach
+        ///     eigenständig: Ein Projekt rechnet auch nach Jahren im Modus seiner
+        ///     Entstehung, gleichgültig wie die Vorgabe inzwischen steht.</description></item>
+        /// </list>
+        ///
+        /// <para>Werte sind ausschließlich <see cref="DbWerte.EMISSION_MODUS_CO2"/> und
+        /// <see cref="DbWerte.EMISSION_MODUS_CO2E"/>; NULL oder leer gilt überall als
+        /// <c>CO2</c> — das heutige Verhalten. Bestandszeilen belegt Schritt 56
+        /// trotzdem ausdrücklich mit <c>CO2</c>, damit der Modus eines Projekts eine
+        /// nachlesbare Angabe ist und keine Auslegungssache.</para>
+        /// </summary>
+        public const string SPALTE_EMISSION_BERECHNUNGSMODUS = "Emission_Berechnungsmodus";
+
+        /// <summary>
+        /// Schritt 56f der Migration (Etappe E2, Konzept F7) — die beiden
+        /// Modus-Spalten. Rein additives DDL; die Vorbelegung <c>CO2</c> setzt der
+        /// Migrationsschritt selbst.
+        ///
+        /// <para><b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access
+        /// immer hinten an. Folgenlos: Beide Tabellen werden namensbasiert gelesen —
+        /// <c>ApplikationCtrl</c> über <c>SELECT TOP 1 *</c> mit Spaltennamenprüfung,
+        /// <c>ProjektCtrl</c> mit ausgeschriebener Spaltenliste. Eine
+        /// <c>row[0…n]</c>-Kette wie bei <c>Tab_Einstellungen</c> gibt es an keiner der
+        /// beiden.</para>
+        ///
+        /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/>: Kein Rechner
+        /// liest sie vor Etappe E5, und die stille Rückfallebene
+        /// <c>WaermequelleClass.SchemaSicherstellen</c> hat mit dem Emissionsmodell
+        /// nichts zu tun. Fehlt die Spalte, gilt <c>CO2</c> — also das
+        /// Bestandsverhalten.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt56_Emissionsmodus =
+        {
+            new SchemaSpalte(TAB_APPLIKATION, SPALTE_EMISSION_BERECHNUNGSMODUS, "TEXT(10)"),
+            new SchemaSpalte(TAB_PROJEKT,     SPALTE_EMISSION_BERECHNUNGSMODUS, "TEXT(10)"),
+        };
+
         /// <summary>
         /// Bestand: die Spalten, die die Rückfallebene schon vor ADR-001 angelegt hat
         /// (Wärmequelle/-senke, Betriebsmodus, Kaskadenpriorität, Speicherregelung der

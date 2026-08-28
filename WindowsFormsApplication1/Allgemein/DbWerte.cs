@@ -2119,5 +2119,152 @@ namespace WindowsFormsApplication1
         // ------------------------------------------------ Schluessel Umsatzsteuer
 
         public const string GESETZ_UMSATZSTEUER_REGELSATZ = "UMSATZSTEUER_REGELSATZ";
+
+        // =====================================================================
+        // EMISSIONSARTEN-KATALOG UND CO2-AEQUIVALENT
+        //   Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md, Rev. 1.2.
+        //   Steuerwerte der beiden Tabellen emissionsart/emissionswert und des
+        //   Berechnungsmodus; angelegt und eingesaet mit Migrationsschritt 56
+        //   (Etappe E2). Sprachneutrale ASCII-Schluessel wie ueberall in dieser
+        //   Datei - der Anzeigename kommt aus MyResource, nie von hier.
+        // =====================================================================
+
+        /// <summary>
+        /// Berechnungsmodus <b>CO2</b> (Konzept F7): Die CO2-Kennzahlen entstehen
+        /// aus dem Faktor der Emissionsart CO2 allein - genau das Verhalten, das
+        /// die Anwendung seit jeher zeigt. Vorbelegung der globalen Vorgabe und
+        /// Wert, den <b>jedes Bestandsprojekt</b> bei der Migration erhaelt.
+        ///
+        /// <para>Gespeichert in <c>Tab_Applikation.Emission_Berechnungsmodus</c>
+        /// (globale Vorgabe fuer NEUE Projekte) und in
+        /// <c>Tab_Projekt.Emission_Berechnungsmodus</c> (der Modus, in dem das
+        /// Projekt rechnet). Zwei Orte, weil ein Projekt seine Rechenmethode
+        /// dauerhaft in sich tragen muss: Es rechnet auch nach Jahren im Modus
+        /// seiner Entstehung, gleichgueltig wie die Vorgabe inzwischen steht
+        /// (Hausregel Reproduzierbarkeit).</para>
+        /// </summary>
+        public const string EMISSION_MODUS_CO2 = "CO2";
+
+        /// <summary>
+        /// Berechnungsmodus <b>CO2-Aequivalent</b> (GWP100, Konzept F6/F7): Die
+        /// CO2-Kennzahlen entstehen aus der Summe der ausgewaehlten Emissionsarten,
+        /// jede mit ihrem Aequivalenzfaktor gewichtet. <b>Sonderfall F3:</b> Traegt
+        /// das CO2-Feld eines Traegers einen Wert mit <c>ist_co2e</c>, IST dieser
+        /// Wert bereits die Summe - dann wird nichts aufsummiert.
+        ///
+        /// <para>Der Modus wirkt erst mit Etappe E5. Bis dahin ist er ein reines
+        /// Speicherfeld: Kein Rechner liest ihn, und die Etappen E1/E2 aendern
+        /// deshalb kein Ergebnis (Konzept F9).</para>
+        /// </summary>
+        public const string EMISSION_MODUS_CO2E = "CO2E";
+
+        // ------------------------------------- Kuerzel der Auslieferungs-Arten
+        //   Die sieben Zeilen, die Migrationsschritt 56 in emissionsart einsaet.
+        //   Sie tragen ist_auslieferung = WAHR und sind damit nicht loeschbar,
+        //   nur abwaehlbar (Konzept F5); CO2 ist zusaetzlich Pflicht (F1).
+
+        /// <summary>Kohlendioxid - die PFLICHTART. Einheit g/kWh, Aequivalenzfaktor
+        /// fest 1, nicht abwaehlbar und nicht loeschbar (Konzept F1).</summary>
+        public const string EMISSIONSART_CO2 = "CO2";
+
+        /// <summary>Schwefeldioxid. Einheit mg/kWh, Aequivalenzfaktor 0 - kein
+        /// Treibhausgas, eigenstaendige Kennzahl (Konzept F2). Vorausgewaehlt.</summary>
+        public const string EMISSIONSART_SO2 = "SO2";
+
+        /// <summary>Stickoxide. Einheit mg/kWh, Aequivalenzfaktor 0 (Konzept F2).
+        /// Vorausgewaehlt.</summary>
+        public const string EMISSIONSART_NOX = "NOX";
+
+        /// <summary>Methan aus fossiler Quelle. GWP100 = 29,8 (IPCC AR6);
+        /// ausgeliefert, aber abgewaehlt - Werte je Traeger traegt ein, wer sie
+        /// belegen kann (Konzept § 5).</summary>
+        public const string EMISSIONSART_CH4_FOSSIL = "CH4_FOSSIL";
+
+        /// <summary>Methan aus biogener Quelle. GWP100 = 27,0 (IPCC AR6) - der
+        /// Unterschied zum fossilen Methan ist das CO2, das bei seinem Abbau
+        /// entsteht und beim biogenen Kohlenstoff nicht zaehlt. Abgewaehlt.</summary>
+        public const string EMISSIONSART_CH4_BIOGEN = "CH4_BIOGEN";
+
+        /// <summary>Distickstoffmonoxid (Lachgas). GWP100 = 273 (IPCC AR6).
+        /// Abgewaehlt.</summary>
+        public const string EMISSIONSART_N2O = "N2O";
+
+        /// <summary>Gesamtstaub. Einheit mg/kWh, Aequivalenzfaktor 0 (Konzept F2).
+        /// Abgewaehlt.</summary>
+        public const string EMISSIONSART_STAUB = "STAUB";
+
+        // --------------------------------------------- Einheiten der Arten (F4)
+        //   GEMESSEN, nicht angenommen: Der Rechner fuehrt CO2 in g/kWh, SO2/NOx
+        //   in mg/kWh (EmissionsBilanzRechner.cs:20 und die Bestandswerte -
+        //   Heizoel S traegt SO2 = 800, als g/kWh physikalisch unmoeglich).
+        //   Die Bestandszahlen bleiben unveraendert; berichtigt wird allein die
+        //   Beschriftung (Etappe E3).
+
+        /// <summary>Anzeigeeinheit der Emissionsart CO2 und der CO2e-Summe.</summary>
+        public const string EMISSION_EINHEIT_G_KWH = "g/kWh";
+
+        /// <summary>Anzeigeeinheit von SO2, NOx, Staub, CH4 und N2O.</summary>
+        public const string EMISSION_EINHEIT_MG_KWH = "mg/kWh";
+
+        // ------------------------------------ Herkunft eines Emissionswertes (F8)
+        //   Uebernehmen heisst kopieren: Der Zahlenwert wandert in den Traeger,
+        //   die Herkunft bleibt am Wert vermerkt. Eine spaetere Katalogaenderung
+        //   aendert deshalb KEINEN Traeger rueckwirkend.
+
+        /// <summary>BAFA-Infoblatt CO2-Faktoren EEW. <b>Diese Werte sind bereits
+        /// CO2-Aequivalente</b> einschliesslich Vorketten (CH4/N2O eingerechnet,
+        /// heizwertbezogen) - Zeilen dieser Quelle tragen <c>ist_co2e</c>
+        /// (Konzept F3).</summary>
+        public const string EMISSIONSWERT_QUELLE_BAFA_EEW = "BAFA_EEW";
+
+        /// <summary>Emissionsberichterstattungsverordnung 2030, Anlage 2 Teil 4 -
+        /// die rechtsverbindliche Grundlage der CO2-Bepreisung. <b>Reines CO2</b>
+        /// ohne Vorkette, also KEIN Aequivalent (<c>ist_co2e</c> = falsch).</summary>
+        public const string EMISSIONSWERT_QUELLE_EBEV_2030 = "EBEV_2030";
+
+        /// <summary>UBA-Strommix. Liegt in beiden Lesarten vor: <c>CO2_DIREKT</c>
+        /// ist reines CO2 (kein Aequivalent), <c>THG_OHNE/MIT_VORKETTE</c> sind
+        /// Treibhausgas-Aequivalente (<c>ist_co2e</c>).</summary>
+        public const string EMISSIONSWERT_QUELLE_UBA_STROMMIX = "UBA_STROMMIX";
+
+        /// <summary>Traegerfaktoren der GEG/GModG-Nachweislinie (Anlage 9). Sie
+        /// gehoeren in den Energieausweis, nicht in die reale Bilanz (L11) - hier
+        /// stehen sie als waehlbare Vorlage, nicht als Vorbelegung. Reines CO2.
+        ///
+        /// <para>Nicht in der Beispielliste des Konzepts (§ 3) genannt, aber
+        /// noetig: Ohne eigene Quellkennung waeren die Nachweisfaktoren von den
+        /// EBeV-Werten nicht mehr zu unterscheiden - und genau diese Vermischung
+        /// verbietet L11.</para></summary>
+        public const string EMISSIONSWERT_QUELLE_GEG_NACHWEIS = "GEG_NACHWEIS";
+
+        /// <summary>Altbestand aus <c>Tab_Brennstoff_Stamm</c> - Literaturwerte
+        /// ohne greifbare Fundstelle. Ausdruecklich als <b>unbelegt</b>
+        /// gekennzeichnet; belegte Luftschadstoff-Quellen kommen mit Etappe E6
+        /// (Konzept § 5).</summary>
+        public const string EMISSIONSWERT_QUELLE_STAMM_ALT = "STAMM_ALT";
+
+        /// <summary>Vom Anwender gepflegter Wert - oder ein Bestandswert, der
+        /// weder zur Saat noch zum Brennstoff-Stamm passt. <b>Auch die 0 ist ein
+        /// eigener Wert</b>: Ein Traeger mit CO2 = 0 wird nie als BAFA-Wert
+        /// ausgewiesen, sonst behauptete der Katalog eine Fundstelle fuer eine
+        /// Zahl, die niemand belegt hat.</summary>
+        public const string EMISSIONSWERT_QUELLE_EIGENER_WERT = "EIGENER_WERT";
+
+        /// <summary>Anzeigetext der Auslieferungswerte aus dem BAFA-Merkblatt
+        /// (Konzept_CO2-Faktoren Rev. 1, § 1).</summary>
+        public const string EMISSIONSWERT_TEXT_BAFA_EEW = "BAFA EEW 3.4, 2026";
+
+        /// <summary>Zusatz fuer die fuenf Traeger, deren Wert NICHT im
+        /// BAFA-Merkblatt steht, sondern aus dessen eigenen Werten hergeleitet ist
+        /// (Heizoel Bio 10/15, Koks, Stadtgas, Tierische Fette -
+        /// Konzept_CO2-Faktoren § 2.3). Die Kennzeichnung ist Pflicht: Es sind
+        /// keine belegten BAFA-Werte.</summary>
+        public const string EMISSIONSWERT_TEXT_ABGELEITET = "BAFA EEW 3.4, 2026 (abgeleitet)";
+
+        /// <summary>Anzeigetext der uebernommenen Brennstoff-Stammwerte.</summary>
+        public const string EMISSIONSWERT_TEXT_STAMM_ALT = "Altbestand Brennstoff-Stamm (unbelegt)";
+
+        /// <summary>Anzeigetext eines vom Anwender gepflegten Wertes (F8).</summary>
+        public const string EMISSIONSWERT_TEXT_EIGENER_WERT = "Eigener Wert";
     }
 }
