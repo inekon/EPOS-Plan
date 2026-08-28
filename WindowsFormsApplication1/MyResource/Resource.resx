@@ -8211,13 +8211,12 @@ Wirksam nur bei einem GESCHICHTETEN Zielspeicher (Schichten &gt; 1): Von der Ein
   <data name="CHART_TITEL_DECKUNG_JE_BEDARFSART" xml:space="preserve">
     <value>Deckung {0} — Jahresganglinie</value>
   </data>
-<<<<<<< HEAD
   <data name="BK_SP_KOMPONENTE" xml:space="preserve">
     <value>Komponente</value>
   </data>
   <data name="BK_SP_KOMPONENTE_N" xml:space="preserve">
     <value>Komponente {0}</value>
-=======
+  </data>
   <data name="SIMQ_PUFFER_TEMPERATURBEZUG" xml:space="preserve">
     <value>Temperaturbezug:</value>
   </data>
@@ -8257,6 +8256,5 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   </data>
   <data name="SIM_STATUS_LESEPUNKT_DANACH" xml:space="preserve">
     <value>Booster-Lesepunkt: nach der Ladephase der Vorebene.</value>
->>>>>>> 0787aeca05d25d469d6333930e34df7bac7c74fc
   </data>
 </root>
