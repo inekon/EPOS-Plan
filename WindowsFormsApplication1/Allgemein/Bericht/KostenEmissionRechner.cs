@@ -16,9 +16,16 @@ namespace WindowsFormsApplication1
     /// Regeln:
     ///  - Fehlt für einen Träger MIT Verbrauch der Preis bzw. der CO₂-Faktor,
     ///    bleibt die betroffene Kennzahl null („—") — keine stillen Teilsummen.
-    ///  - Emissionsfaktoren-Quelle (Vorgabe 11.08.2026): zuerst der PROJEKTWERT
-    ///    (energy_project_settings.co2), sonst der KATALOG **Tab_Brennstoff_Stamm.CO2**
-    ///    (über energy_carrier.id_brennstoff), zuletzt energy_carrier.co2.
+    ///  - Emissionsfaktoren-Quelle: seit Etappe E5 EINE Kette für beide Rechner in
+    ///    <see cref="EmissionsFaktorLader"/> — PROJEKTWERT (energy_project_settings.co2)
+    ///    → aktive emissionswert-Zeile des Trägers → Tab_Brennstoff_Stamm.CO2 (über
+    ///    energy_carrier.id_brennstoff) → energy_carrier.co2. Bis E4 fehlte die zweite
+    ///    Stufe; die Reihenfolge der übrigen ist die Vorgabe vom 11.08.2026.
+    ///  - BERECHNUNGSMODUS (Konzept F7): CO2Gesamt und CO2Spezifisch führen im Modus
+    ///    CO2E das CO₂-Äquivalent der ausgewählten Arten statt des reinen CO₂ — der
+    ///    Netzstrom-Anteil eingeschlossen. CO2Brennstoff (BEHG) bleibt in BEIDEN Modi
+    ///    reines CO₂: Abgabepflichtig ist nach EBeV 2030 das Kohlendioxid, nicht sein
+    ///    Äquivalent.
     ///  - Einheit VERIFIZIERT (Kenndaten.accdb, 11.08.2026): die Faktoren stehen in
     ///    g/kWh (= kg/MWh) — Tab_Brennstoff_Stamm z. B. Erdgas 240, Heizöl 310,
     ///    Strom 560. t/a = MWh/a × Faktor / 1000.
@@ -37,8 +44,20 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class KostenEmissionRechner
     {
-        /// <summary>CO₂-Faktor des Netzstroms [g/kWh] (deutscher Strommix, Vorgabewert).</summary>
-        public const double STROMMIX_CO2_G_JE_KWH = 380.0;
+        /// <summary>
+        /// CO₂-Faktor des Netzstroms [g/kWh] (deutscher Strommix, Vorgabewert). Er
+        /// greift NUR, wenn dem Projekt kein Stromträger zugeordnet ist — sonst gilt
+        /// der Faktor dieses Trägers.
+        ///
+        /// <para><b>435 statt bisher 380</b> (Nutzerentscheid 29.08.2026, Etappe E5):
+        /// BAFA, Informationsblatt CO₂-Faktoren EEW, Zeile „El. Strom
+        /// (Effizienzmaßnahme)" — 0,435 tCO₂/MWh. Der Wert ersetzt den alten
+        /// Strommix-Vorgabewert und folgt damit demselben Beschluss wie die Saat der
+        /// Stromträger aus Etappe E1 (<c>Konzept_CO2-Faktoren_Energietraeger_EPOS-Plan.md</c>
+        /// § 2.2/§ 3): Sonst rechnete dieselbe Anwendung je nach Datenlage mit 380
+        /// oder 435.</para>
+        /// </summary>
+        public const double STROMMIX_CO2_G_JE_KWH = 435.0;
 
         public static void Berechne(VariantenDaten v)
         {
@@ -50,12 +69,20 @@ namespace WindowsFormsApplication1
                 v.EnergieLeistungsanteil = null;
                 v.CO2Gesamt = null; v.CO2Spezifisch = null; v.CO2Brennstoff = null;
                 v.BiogenMengeMWh = 0; v.BiogenBehgMengeMWh = 0;
+                v.EmissionsModus = DbWerte.EMISSION_MODUS_CO2;
             }
         }
 
         private static void BerechneIntern(VariantenDaten v)
         {
             ErgebnisModel m = v.Ergebnis;
+
+            // BERECHNUNGSMODUS (F7) - EINMAL je Lauf gelesen und am Ergebnis vermerkt.
+            // Der Vermerk ist der Grund, weshalb ein Bericht die Zahl richtig
+            // beschriften kann: Er nennt den Modus, in dem sie ENTSTANDEN ist, und
+            // nicht den, der beim Drucken gerade eingestellt sein mag.
+            string modus = EmissionenCtrl.ModusFuerRechenlauf(v.IdProjekt);
+            v.EmissionsModus = modus;
 
             // ---------------- Verbrauch je Energieträger einsammeln (MWh/a) ----------------
             var verbrauchJeTraeger = new Dictionary<int, double>();   // carrier_id -> MWh
@@ -79,6 +106,13 @@ namespace WindowsFormsApplication1
             double biogenMWh = 0, biogenBehgMWh = 0;                  // L13
             bool kostenVollstaendig = verbrauchOhneTraeger <= 0;
             bool co2Vollstaendig = verbrauchOhneTraeger <= 0;
+
+            // F7: Die BEHG-Menge hat ihre EIGENE Vollständigkeit. Im Modus CO2 sind
+            // beide Fahnen deckungsgleich (wirksamer Faktor = reines CO₂); im Modus
+            // CO2E kann ein Träger ein Äquivalent führen, ohne dass sein reines CO₂
+            // gepflegt wäre - dann ist die Kennzahl bestimmbar und die Abgabemenge
+            // nicht. Eine gemeinsame Fahne machte aus dem einen Loch zwei.
+            bool behgVollstaendig = verbrauchOhneTraeger <= 0;
 
             // KD4/FK6: Leistungsanteil der Gasträger; der Stromträger bleibt außen
             // vor (sein Leistungspreis ist die Tarifstruktur, Schritt 21).
@@ -139,15 +173,21 @@ namespace WindowsFormsApplication1
                     }
                 }
 
-                // CO₂ (g/kWh, s. Klassenkommentar).
-                if (info.CO2.HasValue && info.CO2.Value > 0)
-                {
-                    double t = kv.Value * info.CO2.Value / 1000.0;
-                    brennstoffCO2t += t;
-                    if (info.BehgPflichtig) behgCO2t += t;   // BEHG-Basis (Phase 7/W2)
-                }
+                // CO₂ (g/kWh, s. Klassenkommentar). Die ausgewiesene Kennzahl folgt dem
+                // MODUS (F7), die BEHG-Basis bleibt reines CO₂.
+                double? wirksam = info.Faktoren.Wirksam(modus);
+                if (wirksam.HasValue && wirksam.Value > 0)
+                    brennstoffCO2t += kv.Value * wirksam.Value / 1000.0;
                 else
                     co2Vollstaendig = false;
+
+                if (info.CO2.HasValue && info.CO2.Value > 0)
+                {
+                    if (info.BehgPflichtig)
+                        behgCO2t += kv.Value * info.CO2.Value / 1000.0;   // BEHG-Basis (Phase 7/W2)
+                }
+                else
+                    behgVollstaendig = false;
             }
 
             // ---------------- Netzbezug Strom ----------------
@@ -163,9 +203,12 @@ namespace WindowsFormsApplication1
                     stromKosten = netzbezugMWh * 1000.0 * strom.PreisArbeit.Value;
                     if (strom.Grundpreis.HasValue) stromKosten += strom.Grundpreis.Value;
                 }
-                // Emissionsfaktor des Strom-Trägers (Projekt → Katalog Tab_Brennstoff_Stamm
-                // → energy_carrier); Vorgabe 11.08.2026: Faktoren aus Projekt und DB.
-                if (strom.CO2.HasValue && strom.CO2.Value > 0) stromCO2 = strom.CO2.Value;
+                // Emissionsfaktor des Strom-Trägers über dieselbe Kette wie die
+                // Brennstoffe (EmissionsFaktorLader) und im selben MODUS (F7) — der
+                // Netzstrom-Anteil gehört zu CO2Gesamt und darf keine andere Methode
+                // führen als der Rest der Kennzahl.
+                double? stromWirksam = strom.Faktoren.Wirksam(modus);
+                if (stromWirksam.HasValue && stromWirksam.Value > 0) stromCO2 = stromWirksam.Value;
             }
             double netzCO2t = netzbezugMWh * stromCO2 / 1000.0;
 
@@ -187,15 +230,10 @@ namespace WindowsFormsApplication1
                 v.CO2Gesamt = netzCO2t;                     // reine Strom-Systeme
                 v.CO2Brennstoff = 0.0;
             }
-            else if (co2Vollstaendig)
-            {
-                v.CO2Gesamt = brennstoffCO2t + netzCO2t;
-                v.CO2Brennstoff = behgCO2t;                 // nur abgabepflichtige Träger
-            }
             else
             {
-                v.CO2Gesamt = null;
-                v.CO2Brennstoff = null;
+                v.CO2Gesamt = co2Vollstaendig ? (double?)(brennstoffCO2t + netzCO2t) : null;
+                v.CO2Brennstoff = behgVollstaendig ? (double?)behgCO2t : null;   // nur abgabepflichtige Träger
             }
 
             double waermeMWh = m.Energiebedarf != null ? m.Energiebedarf.Waermebedarf_Gesamt : 0;
@@ -210,7 +248,16 @@ namespace WindowsFormsApplication1
         {
             public double? PreisArbeit;   // € je Abrechnungseinheit bzw. €/kWh (Direktabrechnung)
             public double? Grundpreis;    // €/a
-            public double? CO2;           // g/kWh (verifiziert, s. Klassenkommentar)
+
+            /// <summary>Der Faktorsatz des Trägers aus der EINEN Lesekette
+            /// (<see cref="EmissionsFaktorLader"/>, Etappe E5): reines CO₂,
+            /// CO₂-Äquivalent nach F6 und die Luftschadstoffe.</summary>
+            public EmissionsFaktorSatz Faktoren = new EmissionsFaktorSatz();
+
+            /// <summary>Reines CO₂ [g/kWh] — die Größe der BEHG-Abgabemenge; NIE
+            /// modusabhängig (Kurzzugriff auf <see cref="Faktoren"/>).</summary>
+            public double? CO2 { get { return Faktoren.Co2GKwh; } }
+
             public double? EffHi;         // kWh je Abrechnungseinheit (null/0 = Direktabrechnung)
             public bool BehgPflichtig = true;   // fossiler Brennstoff (Phase 7/W2)
 
@@ -311,11 +358,14 @@ namespace WindowsFormsApplication1
             }
             catch { }
 
-            double? sPreis = null, sGrund = null, sCO2 = null, sLeistung = null;
+            // Emissionsfaktoren: EINE Kette für beide Rechner (Etappe E5).
+            info.Faktoren = EmissionsFaktorLader.Lade(idProjekt, carrierId);
+
+            double? sPreis = null, sGrund = null, sLeistung = null;
             try
             {
                 DataTable s = DataRepository.GetDataTable(
-                    "SELECT custom_price_work, custom_price_base, custom_price_power, co2 " +
+                    "SELECT custom_price_work, custom_price_base, custom_price_power " +
                     "FROM energy_project_settings " +
                     "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
                     new OleDbParameter("@p", idProjekt), new OleDbParameter("@c", carrierId));
@@ -324,16 +374,15 @@ namespace WindowsFormsApplication1
                     sPreis = W(s.Rows[0], "custom_price_work");
                     sGrund = W(s.Rows[0], "custom_price_base");
                     sLeistung = W(s.Rows[0], "custom_price_power");
-                    sCO2 = W(s.Rows[0], "co2");
                 }
             }
             catch { }
 
-            double? kPreis = null, kGrund = null, kCO2 = null, kLeistung = null;
+            double? kPreis = null, kGrund = null, kLeistung = null;
             try
             {
                 DataTable k = DataRepository.GetDataTable(
-                    "SELECT price_work, price_base, price_power, price_power_modus, co2 " +
+                    "SELECT price_work, price_base, price_power, price_power_modus " +
                     "FROM energy_carrier WHERE id = ?",
                     new OleDbParameter("@c", carrierId));
                 if (k != null && k.Rows.Count > 0)
@@ -341,7 +390,6 @@ namespace WindowsFormsApplication1
                     kPreis = W(k.Rows[0], "price_work");
                     kGrund = W(k.Rows[0], "price_base");
                     kLeistung = W(k.Rows[0], "price_power");
-                    kCO2 = W(k.Rows[0], "co2");
 
                     object modus = k.Rows[0]["price_power_modus"];
                     if (modus != null && modus != DBNull.Value &&
@@ -377,20 +425,20 @@ namespace WindowsFormsApplication1
             }
             catch { }
 
-            // Emissionsfaktor + BEHG-Einstufung aus dem Brennstoff-Katalog
-            // (Tab_Brennstoff_Stamm über energy_carrier.id_brennstoff).
-            double? bsCO2 = null;
+            // BEHG-Einstufung und Biogen-Kennzeichen aus dem Brennstoff-Katalog
+            // (Tab_Brennstoff_Stamm über energy_carrier.id_brennstoff). Der
+            // EMISSIONSFAKTOR kommt seit Etappe E5 nicht mehr von hier, sondern aus
+            // der einen Lesekette (EmissionsFaktorLader) - diese Abfrage klärt nur
+            // noch die EINSTUFUNG des Trägers.
             try
             {
                 DataTable b = DataRepository.GetDataTable(
-                    "SELECT bs.CO2, bs.ID_Kategorie, bs.Bezeichner FROM energy_carrier AS ec " +
+                    "SELECT bs.ID_Kategorie, bs.Bezeichner FROM energy_carrier AS ec " +
                     "INNER JOIN Tab_Brennstoff_Stamm AS bs ON ec.id_brennstoff = bs.ID " +
                     "WHERE ec.id = ?",
                     new OleDbParameter("@c", carrierId));
                 if (b != null && b.Rows.Count > 0)
                 {
-                    bsCO2 = W(b.Rows[0], "CO2");
-
                     // BEHG-pflichtig: Kategorien 1 Gas / 2 Öl / 3 Koks / 4 Kohle /
                     // 11 Sonstige (Tab_BrennstoffKategorien); Biogas ausgenommen.
                     // Holz/Pellets/Rapsöl/Tier. Fette/Strom/Fernwärme/Wasserstoff frei.
@@ -437,15 +485,10 @@ namespace WindowsFormsApplication1
             // Der GRUNDPREIS bleibt bewusst unangetastet: 0 €/a ist dort ein üblicher und
             // gültiger Vertragswert.
             //
-            // Vorrangkette wie beim CO₂-Faktor unten: Projektwert → Katalogwert → null.
+            // Vorrangkette wie beim CO₂-Faktor: Projektwert → Katalogwert → null.
             info.PreisArbeit = (sPreis.HasValue && sPreis.Value > 0) ? sPreis
                              : ((kPreis.HasValue && kPreis.Value > 0) ? kPreis : null);
             info.Grundpreis = sGrund ?? kGrund;
-
-            // Vorrang: Projektwert → Katalog Tab_Brennstoff_Stamm → energy_carrier.
-            if (sCO2.HasValue && sCO2.Value > 0) info.CO2 = sCO2;
-            else if (bsCO2.HasValue && bsCO2.Value > 0) info.CO2 = bsCO2;
-            else info.CO2 = kCO2;
             return info;
         }
 

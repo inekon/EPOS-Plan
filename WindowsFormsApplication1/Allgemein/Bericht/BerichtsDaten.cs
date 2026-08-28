@@ -97,6 +97,28 @@ namespace WindowsFormsApplication1
         public double? CO2Spezifisch;      // g/kWh Wärme
         public double? CO2Brennstoff;      // t/a nur BEHG-pflichtige Brennstoffe (Phase 7/W2)
 
+        /// <summary>
+        /// DER MODUS, IN DEM <see cref="CO2Gesamt"/> UND <see cref="CO2Spezifisch"/>
+        /// ENTSTANDEN SIND (Etappe E5, Konzept F7): <c>CO2</c> oder <c>CO2E</c>.
+        /// Gesetzt von <see cref="KostenEmissionRechner"/> aus dem Projektfeld bzw. der
+        /// globalen Vorgabe; jede Beschriftung liest ihn über
+        /// <see cref="EmissionsAusweis"/>.
+        ///
+        /// <para><b>Warum hier und nicht in der Ergebnispersistenz.</b> Die
+        /// CO₂-Kennzahlen werden NICHT gespeichert — die Ergebnistabellen
+        /// <c>Tab_Ergebnis*</c> führen den Simulationslauf (Energiemengen), und die
+        /// Emissionsrechnung läuft jedes Mal frisch darüber. Eine Modus-Spalte an
+        /// einem Ergebniskopf beschriebe deshalb eine Zahl, die dort gar nicht liegt,
+        /// und ginge beim nächsten Bericht mit einem anderen Modus auseinander. Der
+        /// Vermerk gehört an die Zahl, und die Zahl entsteht hier. So beschriftet
+        /// jeder Bericht das, was er ausrechnet — auch dann, wenn zwischen Rechenlauf
+        /// und Druck jemand die Vorgabe umstellt.</para>
+        ///
+        /// <para><b>Nicht betroffen</b>: <see cref="CO2Brennstoff"/> (BEHG, immer
+        /// reines CO₂) und die SO₂-/NOx-Kennzahlen.</para>
+        /// </summary>
+        public string EmissionsModus = DbWerte.EMISSION_MODUS_CO2;
+
         // LEITENTSCHEIDUNG L13 — die beiden MENGEN, an denen die Bilanzierungskonvention
         // für Biomasse ansetzt. Bewusst Mengen und keine fertigen Emissionen: Der
         // Emissionsfaktor hängt an der gewählten Konvention und am Bilanzjahr, und beides

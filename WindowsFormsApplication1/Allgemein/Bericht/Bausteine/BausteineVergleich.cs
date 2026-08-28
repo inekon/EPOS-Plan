@@ -118,7 +118,12 @@ namespace WindowsFormsApplication1
             VariantenDaten stamm = daten.Varianten.FirstOrDefault(v => v.IstStamm);
             if (stamm == null) return;
             List<VariantenDaten> varianten = daten.Varianten.Where(v => !v.IstStamm).ToList();
-            List<Kennzahl> katalog = KennzahlenKatalog.Alle();
+
+            // E5/F7: Die CO₂-Zeilen tragen den Modus, in dem sie gerechnet wurden.
+            // Bei uneinheitlichen Varianten sagt die Beschriftung genau das — sonst
+            // stünde über einer Spalte eine Methode, in der ihre Zahl nicht entstand.
+            List<Kennzahl> katalog =
+                KennzahlenKatalog.Alle(EmissionsAusweis.ModusAusVarianten(daten.Varianten));
 
             k.Ueberschrift1("Variantenvergleich");
             if (varianten.Count == 0)

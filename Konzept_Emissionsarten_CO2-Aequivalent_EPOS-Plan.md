@@ -1,6 +1,6 @@
 # Konzept — Emissionsarten-Katalog und CO₂-Äquivalent (EPOS-Plan)
 
-**Stand:** 29.08.2026 · **Rev. 1.4 — E1 bis E4 umgesetzt** (Rev. 1.2 vom 28.08.2026:
+**Stand:** 29.08.2026 · **Rev. 1.5 — E1 bis E5 umgesetzt** (Rev. 1.2 vom 28.08.2026:
 alle Entscheidungsfragen beantwortet — F3 präzisiert, F4 bestätigt, Luftschadstoffe ohne
 Vorkette, Modus global + Projekt-Override, Artenauswahl global, E1 vor E2)
 
@@ -21,7 +21,28 @@ Vorkette, Modus global + Projekt-Override, Artenauswahl global, E1 vor E2)
 > **65/65**. **Kein Rechenergebnis ändert sich:** Die Rechner lesen weiter die
 > Altspalten, und der Schreibweg spiegelt die drei Kernarten dorthin (F9).
 >
-> Offen bleiben E5 und E6 sowie die Sichtabnahme.
+> **E5 (29.08.2026) — der Modus wird wirksam.** Beide Rechner lesen ihre Faktoren jetzt
+> aus EINER Kette (`EmissionsFaktorLader`, § 3 mit den zwei Umsetzungsklärungen), führen
+> im Modus `CO2E` das CO₂-Äquivalent nach F6/F3 und vermerken den wirksamen Modus am
+> Ergebnis; jede Ausweisstelle beschriftet danach (`EmissionsAusweis`).
+> `STROMMIX_CO2_G_JE_KWH` steht auf **435**.
+>
+> **Messung gegen eine Arbeitskopie der Produktiv-DB (26 Projekte, davon 18 mit
+> bestimmbarer CO₂-Kennzahl):** Im Modus `CO2` — dem Stand aller Bestandsprojekte —
+> ändert die neue Lesekette **an keinem einzigen Projekt eine Zahl**. Die einzige
+> Abweichung ist der angekündigte Strommix-Randfall (11 Projekte ohne gepflegten
+> Stromträger, `CO2Gesamt` um `Netzrestbedarf × 55/1000` höher). Referenzlauf
+> vorher/nachher **10/10 PASS** (2 567 843 Werte), `pruefen` plausibel.
+>
+> **Warum die Lesekette nichts verschob, obwohl E1 die Trägerwerte geändert hat:** In
+> allen Referenzprojekten trägt jeder Träger MIT Verbrauch eine Projektübersteuerung,
+> und die steht weiterhin ganz oben (Umsetzungsklärung 1). Der Unterschied wird erst
+> sichtbar, wo ein Projekt KEINE eigene Zahl führt — dort gilt künftig der belegte
+> Katalogwert (Erdgas E: 201 g/kWh BAFA) statt der unbelegten Altliteratur aus
+> `Tab_Brennstoff_Stamm` (240 g/kWh). Genau das war der Zweck von E1; die Wirkung tritt
+> mit E5 ein und ist am Beispiel in § 7 nachgerechnet.
+>
+> Offen bleiben E6 und die Sichtabnahme.
 
 Anforderung (28.08.2026): Der Energieträger-Dialog soll seine Emissionsfaktoren aus einem
 **pflegbaren Katalog** beziehen (bestehende Faktoren übernehmen, eigene hinzufügen/ändern/löschen),
@@ -167,6 +188,48 @@ Jeder Bericht, der die Kennzahl ausweist, nennt den Modus im Beschriftungstext
 Projekts nicht vergleichbar. Der Modus wird beim Rechenlauf in die Variantenergebnisse
 übernommen, damit ein gespeichertes Ergebnis seinen Entstehungsmodus kennt.
 
+#### Umsetzungsklärung zu F7 — Ausweisstellen und der Modusvermerk *(festgelegt 29.08.2026, E5)*
+
+**Wo der Modus steht.** `VariantenDaten.EmissionsModus` und `EmissionsBilanz.Modus`
+tragen ihn, gesetzt vom jeweiligen Rechner beim Lauf. **Eine Modus-Spalte in der
+Ergebnispersistenz wäre falsch am Platz:** Die CO₂-Kennzahlen werden gar nicht
+gespeichert — `Tab_Ergebnis*` führt den Simulationslauf (Energiemengen), und die
+Emissionsrechnung läuft bei jedem Bericht frisch darüber. Eine Spalte am Ergebniskopf
+beschriebe also eine Zahl, die dort nicht liegt, und liefe beim nächsten Bericht mit
+geänderter Vorgabe auseinander. Der Vermerk gehört an die Zahl — und die Zahl entsteht
+im Rechner. Damit beschriftet jeder Bericht genau das, was er ausrechnet, auch wenn
+zwischen Rechenlauf und Druck jemand die Vorgabe umstellt. Kein Migrationsschritt nötig.
+
+**Der wirksame Modus eines Rechenlaufs** (`EmissionenCtrl.ModusFuerRechenlauf`):
+Projektfeld → bei leer die globale Vorgabe → bei leer `CO2`. Die mittlere Stufe fehlt
+bewusst im Dialog (`ProjektModusLesen`): Dort heißt leer „noch nicht entschieden".
+
+**Die Ausweisstellen — alle über `EmissionsAusweis`, keine stumm:**
+
+| Stelle | Zeile |
+|---|---|
+| `KennzahlenKatalog.Alle(modus)` | `em.co2` „CO₂-Emissionen gesamt" ↔ „CO₂-Äquivalent gesamt (GWP₁₀₀)"; `em.co2_spez` entsprechend (deutsch **und** englisch) |
+| `BausteineVergleich` (Word-Variantenvergleich) | Katalog mit dem Modus des Variantensatzes |
+| `ExcelBerichtGenerator` Blatt „Vergleich" / Detailblatt je Variante | dito bzw. Modus der einen Variante |
+| `BausteineWirtschaftlichkeit` + `ExcelBerichtGenerator`, Emissionsbilanz | Zeilentitel „CO₂ [t/a]" ↔ „CO₂-Äquivalent (GWP₁₀₀) [t/a]" |
+| `UcWirtschaftlichkeit` (Bildschirm) | „CO₂-Vermeidung vs. getrennt [t/a]" ↔ „CO₂-Äquivalent-Vermeidung vs. getrennt (GWP₁₀₀) [t/a]" |
+| `ucFuelSettings` / `Form_Emissionskatalog` | Modus-Schalter samt CO₂e-Summe (bereits E3/E4) |
+
+Ein Vergleich über Projekte **verschiedener** Modi trägt den Sammeltitel „Modus je
+Variante verschieden" statt stillschweigend den Modus des ersten Projekts.
+
+**Nicht umgestellt, weil nicht modusabhängig:** „CO₂-Abgabe nach BEHG [€/a]" und die
+Mehrjahreszeile „CO₂-Abgabe" (`WirtschaftlichkeitZeilen`), sämtliche SO₂-/NOx-Zeilen,
+die Stromsteuer-Begründungen (`SteuerGutschriftRechner`, Klasse `EF_BILANZ_EBEV_*` aus
+dem Gesetzeskatalog) und die CO₂-Ersparnis des Simulations-Dashboards, die mit festen
+Pauschalfaktoren (0,42 / 0,20 kg je kWh) rechnet und den Trägerkatalog gar nicht anfasst.
+
+**Grenze im Modus CO2E:** Die getrennte Referenz der Emissionsbilanz (Referenzkessel aus
+`Tab_Brennstoff_Stamm`, Kraftwerkspark aus `Tab_Kraftwerkspark`) hat keine
+Emissionsarten und damit keinen belegten Äquivalenzwert; sie bleibt beim reinen CO₂. Die
+Vermeidungsspalte ist dann eine Obergrenze — der Bilanzhinweis sagt es an, statt die
+Lücke durch einen erfundenen Referenzwert unsichtbar zu machen.
+
 ### F8 — Übernehmen heißt kopieren, mit Herkunft
 
 Übernimmt der Anwender einen Katalogwert in einen Träger, wird der **Zahlenwert kopiert**
@@ -248,6 +311,42 @@ Die gesetzlichen Parameter selbst bleiben unangetastet und führend für alles G
 Altspalten-Kette wie bisher (Projektwert → Stamm → Carrier). Die Projektübersteuerung
 bleibt vorerst auf CO₂/SO₂/NOx beschränkt (Altspalten); eine generische
 Projektübersteuerung je Art kommt erst mit der Quellenwahl-Umsetzung (deren F4/E3).
+
+#### Umsetzungsklärung zu § 3 — die Reihenfolge der Lesekette *(festgelegt 29.08.2026, E5)*
+
+Umgesetzt in `Allgemein\Wirtschaftlichkeit\EmissionsFaktorLader.cs`; beide Rechner rufen
+ausschließlich dorthin.
+
+```
+1. Projektwert   energy_project_settings.co2/so2/nox   (nur Kernarten, nur im Projekt)
+2. Katalog       aktive emissionswert-Zeile des Trägers (JEDE Art, auch CH₄/N₂O)
+3. Stamm         Tab_Brennstoff_Stamm.CO2/SO2/NOx      (nur Kernarten)
+4. Carrier       energy_carrier.co2/so2/nox            (nur Kernarten, F9)
+```
+
+**(1) Der Projektwert steht VOR dem Katalog.** Der Satz oben — „aktive Zeile → sonst
+Altspalten-Kette" — liest sich wörtlich so, als käme der Katalog zuerst und die
+Projektspalte als Teil der Rückfallkette danach. Das wäre ein Regressionsfehler: Die
+Projektspalte ist seit jeher die oberste Ebene beider Rechner, und jedes Projekt mit
+eigenem Faktor verlöre ihn in dem Augenblick, in dem E5 greift. Der Katalog rückt
+deshalb an Stelle 2 ein — über die Altliteratur, unter die Anwendereingabe. Für Arten
+ohne Altspalte (CH₄, N₂O, Staub) ist Stufe 2 die einzige Ebene.
+
+**(2) Ein Projektwert gilt als reines CO₂** (`ist_co2e = falsch`). Zu einer Zahl in
+`energy_project_settings.co2` gibt es keine Herkunft — sie kann Handeingabe, Altkopie
+eines Katalogwertes oder ein übernommenes Äquivalent sein. Im Modus CO2E rechnen die
+übrigen ausgewählten Arten deshalb dazu. Das ist die konservative Deutung: Sie setzt ein
+Äquivalent im ungünstigen Fall geringfügig zu hoch an, während die Gegenannahme
+(„Projektwert ist schon ein Äquivalent") CH₄ und N₂O stillschweigend unterschlüge. Der
+F3-Sonderfall bleibt damit an die belegte Katalogzeile gebunden, wo er hingehört.
+
+**„Gepflegt" heißt größer als 0** — dieselbe Regel wie bisher in beiden Rechnern. Ohne
+sie blockierten die Nullzeilen, die Migrationsschritt 57 aus leeren Altspalten gesät hat,
+den Brennstoff-Stamm.
+
+**Wirkung.** Im Modus CO2 ändert sich an keinem der Referenzprojekte eine Zahl (Messung
+im Umsetzungsvermerk). Wo ein Projekt KEINE eigene Zahl führt, gilt künftig der belegte
+Katalogwert statt der unbelegten Altliteratur — die verzögerte Wirkung von E1.
 
 ---
 
@@ -464,7 +563,7 @@ BAFA-Saat aus E1 und ihre Stammwerte; mehr wäre erfunden.
 | **E2** | Tabellen `emissionsart` + `emissionswert` anlegen und säen (Arten-Auslieferung; Vorlagen aus `EF_BILANZ`/`EF_NACHWEIS` mit Mapping-Liste; Trägerwerte aus Bestandsspalten) | **UMGESETZT (Schritt 57, 29.08.2026)** — Modell steht, **kein Ergebnis ändert sich** (F9) |
 | **E3** | Emissions-Tab im Energieträger-Dialog (dynamische Felder, TextBox statt Spinner, Einheiten richtig, CO₂e-Summe, Herkunft, Warnung F3), Schreibweg beidseitig | **UMGESETZT (29.08.2026)** — Anwender pflegt im neuen Modell; Kontext-Regel als Umsetzungsklärung in § 4.1 |
 | **E4** | Katalog-Dialog (4.2): Artenverwaltung, Werteverwaltung, Übernehmen | **UMGESETZT (29.08.2026)** — `Form_Emissionskatalog` samt Schutzregeln; Katalogpflege vollständig |
-| **E5** | Modus-Schalter (F7): globale Vorgabe + Projektfeld, an beiden Orten; `KostenEmissionRechner` + `EmissionsBilanzRechner` modusfähig; Berichte weisen Modus aus; Modus in Variantenergebnisse; `STROMMIX_CO2_G_JE_KWH` 380→435 *(Nutzerentscheid 29.08.2026)* | CO₂/CO₂e wählbar und wirksam |
+| **E5** | Modus-Schalter (F7): globale Vorgabe + Projektfeld, an beiden Orten; `KostenEmissionRechner` + `EmissionsBilanzRechner` modusfähig; Berichte weisen Modus aus; Modus in Variantenergebnisse; `STROMMIX_CO2_G_JE_KWH` 380→435 *(Nutzerentscheid 29.08.2026)* | **UMGESETZT (29.08.2026)** — eine Lesekette für beide Rechner (`EmissionsFaktorLader`), Modus wirksam und am Ergebnis vermerkt, Ausweis über `EmissionsAusweis`; Modus CO2 zahlengleich außer dem Strommix-Randfall |
 | **E6** | Luftschadstoff-Quelle (GEMIS/UBA TEXTE) nach Vorlage der Fundstellen einsäen | Werte zitierfähig |
 
 Prüfstand je Etappe: Smoke der beiden Rechenwege; E2 zusätzlich Vorher/Nachher-Vergleich
@@ -487,8 +586,22 @@ Vergleich Modus CO₂ vs. CO₂e an einem Handbeispiel.
    BEHG-Abgabe und Nachweisrechnung unverändert, und jeder Bericht nennt den Modus.
    Ein Projekt behält seinen gespeicherten Modus, auch wenn die globale Vorgabe
    wechselt; ein neues Projekt übernimmt die Vorgabe.
+   **ERFÜLLT (29.08.2026, Handbeispiel Projekt 1030, Erdgas E, 4 423,19 MWh):**
+   | Fall | Faktor CO₂ | Faktor CO₂e | Brennstoff-CO₂ Modus CO2 | Modus CO2E | BEHG-Menge |
+   |---|---|---|---|---|---|
+   | Katalogzeile BAFA 201, `ist_co2e` | 201 | **201** (F3: Summe = Wert) | 889,061 t | 889,061 t | 889,061 t |
+   | EBeV-Zeile 200,9 aktiv + CH₄ fossil 100 mg/kWh gewählt | 200,9 | **203,88** = 200,9 + 0,1 × 29,8 | 888,619 t | 901,800 t | 888,619 t |
+   | Projektübersteuerung 240 (gilt als reines CO₂) | 240 | **242,98** = 240 + 2,98 | 1 061,566 t | 1 074,747 t | 1 061,566 t |
+
+   Jede Zahl ist die Handrechnung `MWh × Faktor / 1000`. **Die BEHG-Menge ist in
+   beiden Modi identisch** (rechte Spalte), ebenso SO₂ (1,327 kg/a), NOx (486,551 kg/a)
+   und die getrennte Referenz (2 436,677 t/a). Die Nachweisrechnungen der Klasse
+   `EF_NACHWEIS` sind vom Modus nicht einmal erreichbar: `SteuerGutschriftRechner` liest
+   seine Faktoren aus dem Gesetzeskatalog und ist unverändert.
 6. Nach E2 liefern alle Referenzläufe identische Emissionskennzahlen; Zweitlauf der
-   Migrationen ändert nichts.
+   Migrationen ändert nichts. **ERFÜLLT und für E5 wiederholt:** Referenzlauf
+   vorher/nachher 10/10 PASS; die Emissionskennzahlen aller 26 Projekte der
+   Arbeitskopie sind im Modus CO2 unverändert bis auf den Strommix-Randfall.
 
 ---
 
@@ -517,7 +630,11 @@ Vergleich Modus CO₂ vs. CO₂e an einem Handbeispiel.
 - `Controller\EmissionskatalogCtrl.cs` — Katalogpflege UI-frei: Arten, Werte, Übernehmen, Schutzregeln (E4)
 - `Views\Kosten\Form_Emissionskatalog.cs` — der Katalog-Dialog aus § 4.2 (E4)
 - `Views\Kosten\ucFuelSettings.cs` — Reiter „Preise & Umrechnung" / „Emissionen"; die Felder `numSO2/numCO2/numNOx` sind seit E3 unsichtbare Wertträger des Altschreibwegs
-- `Allgemein\Bericht\KostenEmissionRechner.cs` — CO₂-Kette, `STROMMIX_CO2_G_JE_KWH`
+- `Allgemein\Wirtschaftlichkeit\EmissionsFaktorLader.cs` — DIE Lesekette je Träger und
+  die CO₂e-Summe für beide Rechner (E5, § 3)
+- `Allgemein\Bericht\EmissionsAusweis.cs` — Beschriftung nach Modus, eine Quelle für
+  Bildschirm, Word und Excel (E5, F7)
+- `Allgemein\Bericht\KostenEmissionRechner.cs` — CO₂-Kette, `STROMMIX_CO2_G_JE_KWH` = 435
 - `Allgemein\Wirtschaftlichkeit\EmissionsBilanzRechner.cs:20` — Einheiten-Beleg mg/kWh
 - `Allgemein\Wirtschaftlichkeit\GesetzKatalog.cs` — Saat `EF_BILANZ`/`EF_NACHWEIS`
 - IPCC AR6 GWP₁₀₀ (CH₄ 29,8/27,0 · N₂O 273); BAFA EEW 3.4; EBeV 2030 Anlage 2; UBA CLIMATE CHANGE 16/2026; GEMIS (IINAS); UBA TEXTE 97/2025

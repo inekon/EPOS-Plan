@@ -132,7 +132,9 @@ namespace WindowsFormsApplication1
         private static void BlattVergleich(XLWorkbook wb, BerichtsDaten daten)
         {
             IXLWorksheet ws = wb.Worksheets.Add("Vergleich");
-            List<Kennzahl> katalog = KennzahlenKatalog.Alle();
+            // E5/F7: CO₂-Zeilen nach dem gerechneten Modus beschriften.
+            List<Kennzahl> katalog =
+                KennzahlenKatalog.Alle(EmissionsAusweis.ModusAusVarianten(daten.Varianten));
             VariantenDaten stamm = daten.Varianten.FirstOrDefault(x => x.IstStamm);
             List<VariantenDaten> varianten = daten.Varianten.Where(x => !x.IstStamm).ToList();
 
@@ -654,7 +656,7 @@ namespace WindowsFormsApplication1
                         { ws.Cell(r, 4).Value = getr.Value - gek.Value; ws.Cell(r, 4).Style.NumberFormat.Format = "#,##0.0"; }
                         r++;
                     };
-                    bz("CO₂ [t/a]", b.CO2GekoppeltT, b.CO2GetrenntT);
+                    bz(EmissionsAusweis.BilanzZeile(b.Modus), b.CO2GekoppeltT, b.CO2GetrenntT);
                     bz("SO₂ [kg/a]", b.SO2GekoppeltKg, b.SO2GetrenntKg);
                     bz("NOx [kg/a]", b.NOxGekoppeltKg, b.NOxGetrenntKg);
                     // Die beiden Teilbeträge aus einer WAHL: das biogene
@@ -1004,7 +1006,8 @@ namespace WindowsFormsApplication1
             ws.Cell(r, 4).Value = "Einheit";
             KopfZeile(ws, r, 4);
             r++;
-            foreach (Kennzahl kz in KennzahlenKatalog.Alle())
+            // E5/F7: Das Detailblatt zeigt EINE Variante - ihr eigener Modus beschriftet.
+            foreach (Kennzahl kz in KennzahlenKatalog.Alle(v.EmissionsModus))
             {
                 double? wert = Wert(v, kz.Schluessel);
                 if (!wert.HasValue) continue;

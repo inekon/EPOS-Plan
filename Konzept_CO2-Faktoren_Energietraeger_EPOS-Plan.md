@@ -17,9 +17,19 @@
 > weil sie biogen sind. Ebenso unangetastet: `energy_project_settings` (Projektwerte,
 > Regel 2) und `Test`.
 >
-> **Weiterhin offen:** die Konstante `KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH` steht
-> unverändert auf 380 (§ 3 und § 5.2) — sie folgt derselben Entscheidung wie der
-> Stromfaktor (§ 2.2), und die ist nicht getroffen.
+> **Nachentscheid (Nutzer, 29.08.2026) — UMGESETZT in E5:** die Konstante
+> `KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH` ist im Zuge von **E5** des
+> Emissionsarten-Konzepts von 380 auf **435** nachgezogen — § 3 und § 5.2 sind damit
+> erledigt. Die Grundsatzfrage 435 vs. 107 je Anwendungsfall (§ 2.2, Wärmepumpe als
+> Energieträgerwechsel) bleibt davon unberührt.
+>
+> **Gemessene Wirkung (Prüfstand E5, 29.08.2026).** Der Vorgabewert greift nur, wenn
+> dem Projekt kein Stromträger zugeordnet ist. Von den 18 Projekten der Arbeitskopie
+> mit bestimmbarer CO₂-Kennzahl (26 Projekte, davon 7 ohne Simulationsergebnis)
+> betrifft das **11**; ihre Kennzahl `CO2Gesamt` steigt um genau
+> `Netzrestbedarf [MWh] × 55/1000` (Beispiel 1007: 50,33 MWh → +2,768 t/a,
+> 19,125 → 21,894 t/a). Es ist die **einzige** Abweichung der ganzen Etappe — die
+> Umstellung der Lesekette selbst ändert an keinem Projekt eine Zahl.
 >
 > **Nicht Teil des Schritts** sind die beiden Betriebsregeln aus § 4: die datierte
 > Sicherung nach `DB-Backup\` und das Nichtschreiben bei vorhandener `Kenndaten.laccdb`.
