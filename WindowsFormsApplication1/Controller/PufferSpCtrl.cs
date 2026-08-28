@@ -162,8 +162,9 @@ namespace WindowsFormsApplication1
         ///
         /// Paket 2 / Konzept 5.2: Seit der Dedup-Aufhebung darf es MEHRERE Projektzeilen
         /// gleichen Bezeichners geben (Mehrfachanlage desselben Katalogtyps, E7). Die
-        /// bezeichnerbasierten Altpfade (<c>Z_ProjektPufferSpCtrl.Insert</c>,
-        /// <c>PufferSpCtrl.CopyFromStamm</c>, <c>WaermequelleClass.Quellspeicher</c>)
+        /// bezeichnerbasierten Altpfade (<c>PufferSpCtrl.CopyFromStamm</c>,
+        /// <c>WaermequelleClass.Quellspeicher</c>; bis Paket L auch
+        /// <c>Z_ProjektPufferSpCtrl.Insert</c>, mit dem Aufräumschnitt entfallen)
         /// brauchen trotzdem ein eindeutiges Ergebnis. <c>MIN(ID)</c> macht die Auswahl
         /// deterministisch und trifft dieselbe Zeile wie die übrigen Altpfade
         /// (<c>PufferSpCtrl.PendelspeicherId</c>: <c>TOP 1 … ORDER BY ID</c>, Migration R6).
@@ -203,8 +204,9 @@ namespace WindowsFormsApplication1
                 if (dt == null || dt.Rows.Count == 0)
                 {
                     // PAKET 8 (Konzept 13.4): Sicherheitsnetz. Heute wird CopyFromStamm
-                    // nur aus der Oberfläche gerufen (Projektbaum, Puffer-Verwaltung,
-                    // Z_ProjektPufferSpCtrl.Insert) - dort erscheint der Dialog
+                    // nur aus der Oberfläche gerufen (Projektbaum, Puffer-Verwaltung;
+                    // bis Paket L auch aus Z_ProjektPufferSpCtrl.Insert, das mit dem
+                    // Aufräumschnitt entfallen ist) - dort erscheint der Dialog
                     // unverändert. Sollte der Pfad je in den Rechenlauf geraten, meldet
                     // er still ins Protokoll statt den Lauf anzuhalten.
                     DataRepository.FehlerMelden(
@@ -324,12 +326,12 @@ namespace WindowsFormsApplication1
         /// (Konzept 4.3, Punkt 4 und 5.2 „Mehrfachanlage desselben Katalogtyps ist
         /// zulässig", E7).
         ///
-        /// Bewusst getrennt von <see cref="CopyFromStamm(int,int)"/>: der Altpfad wird
-        /// implizit aus <c>Z_ProjektPufferSpCtrl.Insert</c> heraus bei JEDEM Speichern der
-        /// Konfiguration gerufen. Würde dort die Dedup-Prüfung entfallen, entstünde bei
-        /// jedem Speichern ein weiterer Duplikat-Puffer (Befund aus Paket 1). Die
-        /// Aufhebung gilt deshalb nur hier — im Pfad, den der Anwender ausdrücklich
-        /// auslöst.
+        /// Bewusst getrennt von <see cref="CopyFromStamm(int,int)"/>: Der Altpfad wurde
+        /// bis Paket L implizit aus <c>Z_ProjektPufferSpCtrl.Insert</c> heraus bei JEDEM
+        /// Speichern der Konfiguration gerufen (die Klasse ist mit dem Aufräumschnitt
+        /// entfallen). Wäre dort die Dedup-Prüfung entfallen, hätte jedes Speichern einen
+        /// weiteren Duplikat-Puffer erzeugt (Befund aus Paket 1). Die Aufhebung gilt
+        /// deshalb nur hier — im Pfad, den der Anwender ausdrücklich auslöst.
         ///
         /// Bei Namensgleichheit hängt <see cref="EindeutigerBezeichner"/> ein Suffix an,
         /// damit die verbleibenden bezeichnerbasierten Altpfade eindeutig bleiben.
@@ -521,11 +523,17 @@ namespace WindowsFormsApplication1
                     StilleDb.Par("@alt", OleDbType.VarWChar, alterName));
 
                 // Und die Alt-Zuordnung: Z_ProjektPufferSp.Pufferspeicher ist eine
-                // TEXTreferenz. Bleibt dort der alte Name stehen, legt das nächste
-                // "Speichern" einen DUPLIKAT-PUFFER an - Z_ProjektPufferSpCtrl.Insert
-                // löst den Namen über GetProjektId auf, findet ihn nach dem Umbenennen
-                // nicht mehr und ruft CopyFromStamm, das eine zweite Projektkopie unter
-                // dem ALTEN Namen erzeugt. Reproduziert im Review zu Paket 2.
+                // TEXTreferenz. Sie wird HIER weiter nachgeführt, obwohl die Tabelle seit
+                // Migrationsschritt 51 stillgelegt ist (Konzept Kapitel 15) - die Zeilen
+                // bleiben in der Datenbank stehen, und ein Bezeichner, der dort auf einen
+                // umbenannten Speicher zeigt, wäre ein stiller Datenwiderspruch.
+                //
+                // Der ursprüngliche Grund ist mit Paket L entfallen: Bis dahin legte das
+                // nächste "Speichern" bei stehengebliebenem Altnamen einen DUPLIKAT-PUFFER
+                // an - Z_ProjektPufferSpCtrl.Insert löste den Namen über GetProjektId auf,
+                // fand ihn nach dem Umbenennen nicht mehr und rief CopyFromStamm, das eine
+                // zweite Projektkopie unter dem ALTEN Namen erzeugte (reproduziert im
+                // Review zu Paket 2). Diese Klasse gibt es nicht mehr.
                 //
                 // Schlüssel ist die ID_Pufferspeicher, nicht der Name: sie ist seit der
                 // Migration Pflichtspalte mit erzwungener Beziehung und trifft genau die
@@ -935,7 +943,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Schreibt das Klassen-Set an eine Puffer-Zeile — ein EIGENES, zielgenaues
-        /// UPDATE (Muster <c>KonfigurationCtrl.KaskadeZweikanaligSchreiben</c>).
+        /// UPDATE (Muster <c>KonfigurationCtrl.ExtrapolationErlaubtSchreiben</c>).
         ///
         /// <para><b>Warum nicht in die Spaltenlisten von
         /// <c>ProjektPuffer.SQL_PUFFER_INSERT_VOLL</c> und

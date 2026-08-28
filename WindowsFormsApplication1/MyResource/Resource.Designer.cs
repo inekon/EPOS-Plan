@@ -14244,6 +14244,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kombispeicher ähnelt.
+        /// </summary>
+        public static string PSP_SPEICHERTYP_ANZEIGE_KOMBI {
+            get {
+                return ResourceManager.GetString("PSP_SPEICHERTYP_ANZEIGE_KOMBI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher ähnelt.
+        /// </summary>
+        public static string PSP_SPEICHERTYP_ANZEIGE_PUFFER {
+            get {
+                return ResourceManager.GetString("PSP_SPEICHERTYP_ANZEIGE_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarspeicher ähnelt.
+        /// </summary>
+        public static string PSP_SPEICHERTYP_ANZEIGE_SOLAR {
+            get {
+                return ResourceManager.GetString("PSP_SPEICHERTYP_ANZEIGE_SOLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Änderungen übernommen. ähnelt.
         /// </summary>
         public static string PSP_STATUS_AENDERUNGEN_UEBERNOMMEN {
@@ -17629,6 +17656,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Booster: Die Anlage {0} bezieht ihre Quellwärme aus Puffer {1} ({2}), einem GETEILTEN Puffer. Die Quelltemperatur folgt dem Speicherzustand und wird je Stunde neu gebildet ({3} … {4} °C, {5} Schicht(en){6}) statt mit einem Jahresprofil zu rechnen. Unterschreitet sie die unterste Kennlinien-Stützstelle, gilt diese Stützstelle (Kappung, keine Extrapolation). ähnelt.
+        /// </summary>
+        public static string SIMENG_BOOSTER_KOPPLUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_BOOSTER_KOPPLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser: Zum Eintrag &apos;{0}&apos; ist im Projekt kein Datensatz hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0. ähnelt.
         /// </summary>
         public static string SIMENG_BRAUCHWASSER_KOPF_FEHLT {
@@ -17674,6 +17710,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher {0} ({1}) steht nicht in der Entladereihenfolge des Kanals {2} - er wird ans Ende gestellt. ähnelt.
+        /// </summary>
+        public static string SIMENG_ENTLADEORDNUNG_NACHTRAG {
+            get {
+                return ResourceManager.GetString("SIMENG_ENTLADEORDNUNG_NACHTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Simulationsergebnis konnte nicht gespeichert werden. ähnelt.
         /// </summary>
         public static string SIMENG_ERGEBNIS_NICHT_GESPEICHERT {
@@ -17710,6 +17755,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel-Kaskade (Booster): Anlage {0} bezieht ihre Eintrittstemperatur aus Puffer {1} ({2}), einem GETEILTEN Puffer. Die Quelltemperatur folgt dem Speicherzustand und wird je Stunde neu gebildet ({3} … {4} °C{5}). Hub des Kessels {6}/{7} °C; bei voller Beladung trägt der Puffer {8} % der Nutzwärme. Der Kessel rechnet NACH dem Erzeuger, der den Puffer lädt. ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_BOOSTER_KOPPLUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_BOOSTER_KOPPLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel: Im Projekt sind {0} Kessel hinterlegt, die Simulation unterstützt maximal {1}. Es werden nur die ersten {2} Kessel berücksichtigt. ähnelt.
         /// </summary>
         public static string SIMENG_KESSEL_MAX_UEBERSCHRITTEN {
@@ -17733,6 +17787,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_KESSEL_QUELLKOPPLUNG_HINWEIS {
             get {
                 return ResourceManager.GetString("SIMENG_KESSEL_QUELLKOPPLUNG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher {0} ({1}): Das Klassen-Set {2} passt nicht zur Alt-Verwendung „{3}&quot;. Gerechnet wird das Set; die Rolle in Anzeige und Ergebniszeile lautet „{4}&quot;. ähnelt.
+        /// </summary>
+        public static string SIMENG_KLASSENSET_ROLLE {
+            get {
+                return ResourceManager.GetString("SIMENG_KLASSENSET_ROLLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Knappheitsreihenfolge: Die Projekteinstellung „{0}&quot; ist unbrauchbar - erwartet werden die drei Schlüssel {1};{2};{3} in beliebiger Reihenfolge, jeder genau einmal. Gerechnet wird mit der Vorbelegung {4} -&gt; {5} -&gt; {6}. ähnelt.
+        /// </summary>
+        public static string SIMENG_KNAPPHEIT_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("SIMENG_KNAPPHEIT_UNGUELTIG", resourceCulture);
             }
         }
         
@@ -17787,6 +17859,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_NETZVERLUSTE_UEBER_100 {
             get {
                 return ResourceManager.GetString("SIMENG_NETZVERLUSTE_UEBER_100", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Pendelspeicher: Der Speicher {0} steht nicht in der Entladereihenfolge des Kanals {1} - er wird ans Ende gestellt. ähnelt.
+        /// </summary>
+        public static string SIMENG_PENDELSPEICHER_ENTLADEORDNUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_PENDELSPEICHER_ENTLADEORDNUNG", resourceCulture);
             }
         }
         
@@ -17895,6 +17976,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_PROZESSWAERME_TYPPROFIL_FEHLT {
             get {
                 return ResourceManager.GetString("SIMENG_PROZESSWAERME_TYPPROFIL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellprofil {0} der Anlage {1} ist nicht lesbar oder unvollständig (Zahl der Werte passt nicht zur Betriebsart) - es gilt der Altweg bzw. die Außentemperatur. ähnelt.
+        /// </summary>
+        public static string SIMENG_QUELLPROFIL_UNLESBAR {
+            get {
+                return ResourceManager.GetString("SIMENG_QUELLPROFIL_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichtmodell: Am Puffer {0} ({1}) wich die Summe der Schichtenergie in {2} Stunden vom Speicherinhalt ab (größte Abweichung {3} kWh). Die Schichtebene wurde jede Stunde nachgezogen, die Energiebilanz des Laufs ist davon unberührt - die Meldung weist auf einen Fehler im Schichtmodell hin und gehört an die Entwicklung. ähnelt.
+        /// </summary>
+        public static string SIMENG_SCHICHT_INVARIANTE {
+            get {
+                return ResourceManager.GetString("SIMENG_SCHICHT_INVARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  Diese Senke bleibt in diesem Lauf unberücksichtigt. ähnelt.
+        /// </summary>
+        public static string SIMENG_SENKE_OHNE_LADEAUFTRAG_NACHRANG {
+            get {
+                return ResourceManager.GetString("SIMENG_SENKE_OHNE_LADEAUFTRAG_NACHRANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmesenke: Die Anlage {0} ({1}) führt auf Rang {2} das Ziel {3} (Puffer {4}), bekommt in diesem Lauf aber KEINEN Ladeauftrag - der Puffer gehört zu einem anderen Projekt oder rechnet nicht mit.{5} ähnelt.
+        /// </summary>
+        public static string SIMENG_SENKE_OHNE_LADEAUFTRAG_RANG {
+            get {
+                return ResourceManager.GetString("SIMENG_SENKE_OHNE_LADEAUFTRAG_RANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  Die Anlage deckt deshalb den HEIZKREIS; ohne diesen Rückfall würde sie das ganze Jahr nichts produzieren. ähnelt.
+        /// </summary>
+        public static string SIMENG_SENKE_OHNE_LADEAUFTRAG_RANG1 {
+            get {
+                return ResourceManager.GetString("SIMENG_SENKE_OHNE_LADEAUFTRAG_RANG1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmesenke: Für die Anlage {0} steht in Z_AnlageSenke keine einzige Zeile. Der Lauf rechnet die Vorbelegung {1}/{2}. ähnelt.
+        /// </summary>
+        public static string SIMENG_SENKENLISTE_LEER {
+            get {
+                return ResourceManager.GetString("SIMENG_SENKENLISTE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmesenke: Die Anlage {0} führt auf Rang {1} das Ziel {2}, hat dort aber KEINEN Pufferspeicher zugeordnet (Z_AnlageSenke.ID_Puffer leer). Die Zeile rechnet deshalb auf den HEIZKREIS. ähnelt.
+        /// </summary>
+        public static string SIMENG_SENKENZEILE_OHNE_PUFFER {
+            get {
+                return ResourceManager.GetString("SIMENG_SENKENZEILE_OHNE_PUFFER", resourceCulture);
             }
         }
         
@@ -18093,6 +18237,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_TAGESVERTEILUNG_FEHLT {
             get {
                 return ResourceManager.GetString("SIMENG_TAGESVERTEILUNG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichtmodell: Am Puffer {0} ({1}) liegt die Mindest-Nutztemperatur Brauchwasser mit {2} °C ÜBER der wirksamen Vorlauftemperatur von {3} °C. Keine Schicht könnte sie je erreichen, der Brauchwasserkanal wäre dauerhaft gesperrt. Gerechnet wird mit {3} °C - bitte T_Nutz_BW oder das Temperaturpaar des Speichers berichtigen. ähnelt.
+        /// </summary>
+        public static string SIMENG_TNUTZ_UEBER_VORLAUF {
+            get {
+                return ResourceManager.GetString("SIMENG_TNUTZ_UEBER_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parallelverbund: Der Leitspeicher {0} ({1}) ist mit {2} Schichten gepflegt. Ein Verbund rechnet als EIN Wärmevorrat mit der aufsummierten Kapazität aller Behälter - eine aus dem Volumen des Leitspeichers abgeleitete Schichtung wäre falsch. Gerechnet wird ungeschichtet (1 Schicht); bitte entweder den Verbund auflösen oder die Schichtzahl auf 1 setzen. ähnelt.
+        /// </summary>
+        public static string SIMENG_VERBUND_SCHICHTUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_VERBUND_SCHICHTUNG", resourceCulture);
             }
         }
         
@@ -18849,7 +19011,10 @@ namespace WindowsFormsApplication1.MyResource {
         ///   Sucht eine lokalisierte Zeichenfolge, die Für Luft-Wasser-Wärmepumpen ist die Wärmequelle immer die Außenluft
         ///(Außentemperatur der gewählten Klimaregion).
         ///
-        ///WP-Typ: {0} ähnelt.
+        ///WP-Typ: {0}
+        ///
+        ///Soll dieses Gerät einen Pufferspeicher als Wärmequelle nutzen (Booster-Betrieb), muss es als Sole-Wasser- oder Wasser-Wasser-Wärmepumpe geführt sein:
+        ///Administration → Wärmepumpe → Wärmepumpentyp ändern, dann die WP im Projekt neu auswählen. ähnelt.
         /// </summary>
         public static string SIMQ_MSG_LUFT_WASSER {
             get {
@@ -19066,8 +19231,8 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quell-EntnahmehÃ¶he muss zwischen 0 und 1 liegen (1 = ganz oben, 0 = ganz unten).
-        ///Leer lassen heiÃŸt oben. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quell-Entnahmehöhe muss zwischen 0 und 1 liegen (1 = ganz oben, 0 = ganz unten).
+        ///Leer lassen heißt oben. ähnelt.
         /// </summary>
         public static string SIMQ_PUFFER_MSG_ANSCHLUSSHOEHE {
             get {
@@ -19442,7 +19607,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die FÃ¼r diese Betriebsart werden {0} Werte gebraucht.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diese Betriebsart werden {0} Werte gebraucht.
         ///Bitte zuerst eine CSV-Datei einlesen oder alle Werte gleich setzen. ähnelt.
         /// </summary>
         public static string SIMQ_QUELLPROFIL_MSG_WERTE_FEHLEN {

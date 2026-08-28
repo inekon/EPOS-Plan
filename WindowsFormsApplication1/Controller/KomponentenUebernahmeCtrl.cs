@@ -260,6 +260,19 @@ namespace WindowsFormsApplication1
                 if (a != null) quellAnlagen.Add(a);
             }
 
+            // A1-O2: Die SENKENLISTE (Z_AnlageSenke) jeder Quell-Anlage. Sie hängt an der
+            // Anlage, nicht am Gerät, und wird deshalb weder von der Gerätekopie noch von
+            // der Anlagenkopie miterfasst — bis Paket L startete jede übernommene
+            // Komponente mit der Rang-1-Vorbelegung (Heizkreis/Beides) statt mit der
+            // Senkenkette der Quelle. Gelesen VOR der Transaktion, geschrieben NACH dem
+            // Commit (die Anlagen-ID ist ein AutoWert, Muster VariantenNachziehen).
+            var quellSenken = new Dictionary<int, List<Z_AnlageSenkeModel>>();
+            {
+                var senkeCtrl = new Z_AnlageSenkeCtrl();
+                foreach (int id in quellAnlagenIds)
+                    quellSenken[id] = senkeCtrl.LesenJeAnlage(id);
+            }
+
             // Betriebsführung der Quell-Speichervarianten (nur Stromspeicher).
             var quellVarianten = new Dictionary<int, StromspeicherVarianteModel>();
             int aktiveQuellAnlage = 0;
@@ -293,6 +306,10 @@ namespace WindowsFormsApplication1
             OleDbTransaction trans = null;
             var neueGeraeteIds = new List<int>();     // Reihenfolge = quellGeraete
             var neuePufferNachName = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+            // A1-O2: Die Puffer-Abbildung „Quelle -> Ziel" entsteht in der Transaktion,
+            // gebraucht wird sie auch danach (Senkenlisten). Deshalb hier deklariert.
+            Dictionary<int, int> pufferAbbildungNachher = new Dictionary<int, int>();
 
             try
             {
@@ -358,6 +375,7 @@ namespace WindowsFormsApplication1
                 // --- 7) Anlagenzeilen anlegen — dieselbe Anweisung wie überall ---------
                 Dictionary<int, int> pufferAbbildung = PufferAbbildung(plan, idQuelle, idZiel,
                                                                        quellGeraete, neueGeraeteIds);
+                pufferAbbildungNachher = pufferAbbildung;
                 Dictionary<int, bool> pufferCache = PufferCache(idZiel, pufferAbbildung, plan, neueGeraeteIds);
 
                 for (int i = 0; i < quellAnlagen.Count; i++)
@@ -394,14 +412,21 @@ namespace WindowsFormsApplication1
                 if (conn != null) { try { conn.Close(); } catch { } try { conn.Dispose(); } catch { } }
             }
 
-            // --- 8) Betriebsführung des Stromspeichers (nach dem Commit) --------------
+            // --- 8) Senkenlisten der Quelle nachziehen (nach dem Commit) --------------
+            // A1-O2. NACH dem Commit aus demselben Grund wie die Betriebsführung unten:
+            // Die Anlagen-ID ist ein AutoWert und steht erst danach fest, und
+            // Z_AnlageSenkeCtrl.SchreibenJeAnlage führt seine eigene Transaktion.
+            SenkenNachziehen(idZiel, plan, quellAnlagen, quellAnlagenIds, quellSenken,
+                             pufferAbbildungNachher, warnungen);
+
+            // --- 9) Betriebsführung des Stromspeichers (nach dem Commit) --------------
             if (IstStromspeicher(plan))
                 VariantenNachziehen(idZiel, quellAnlagen, quellAnlagenIds, quellVarianten,
                                     aktiveQuellAnlage, warnungen);
 
             MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idZiel);
 
-            // --- 9) Kostenpositionen: absichtlich NICHT angefasst, aber gemeldet -------
+            // --- 10) Kostenpositionen: absichtlich NICHT angefasst, aber gemeldet ------
             // Der Bestandsaustausch tauscht die Gerätezeile; die Kostenposition des
             // Zielprojekts bleibt auf ihrem alten Betrag stehen. Das ist richtig so
             // (Nutzerentscheidung 4 vom 18.08.2026: niemals automatisch überschreiben) —
@@ -897,6 +922,113 @@ namespace WindowsFormsApplication1
                 case "ID_SP": a.ID_SP = neu; break;
                 case "ID_PUFFER": a.ID_PUFFER = neu; break;
             }
+        }
+
+        // ------------------------------------------------------------ Senkenlisten
+
+        /// <summary>
+        /// A1-O2: Legt zu den neuen Anlagenzeilen die SENKENLISTE der Quelle an
+        /// (<c>Z_AnlageSenke</c>, Muster <see cref="VariantenNachziehen"/> und
+        /// <c>ProjektDuplizierenCtrl</c>).
+        ///
+        /// <para><b>Warum es das braucht.</b> Die Senkenliste hängt an der ANLAGE, nicht
+        /// am Gerät. Der Bestandsaustausch löscht die Zielanlagen (die Löschweitergabe
+        /// von <c>FK_AnlageSenke_Anlage</c> nimmt ihre Senken mit) und legt sie aus der
+        /// Quelle neu an — ohne diesen Schritt startete jede übernommene Komponente mit
+        /// der Rang-1-Vorbelegung Heizkreis/Beides statt mit der Senkenkette, die sie in
+        /// der Quelle hatte.</para>
+        ///
+        /// <para><b>Die Anlagen-Abbildung ist POSITIONELL.</b> Schritt 4 hat ALLE
+        /// Anlagenzeilen der Gewerktypen im Ziel gelöscht, Schritt 7 hat genau
+        /// <paramref name="quellAnlagen"/> viele in dieser Reihenfolge neu angelegt; die
+        /// ID ist ein aufsteigender AutoWert. Aufsteigend sortiert stehen die neuen IDs
+        /// deshalb Zeile für Zeile in derselben Reihenfolge wie die Quelle. Stimmt die
+        /// Zahl wider Erwarten nicht, fällt die Zuordnung auf
+        /// <see cref="AnlageFinden"/> zurück — dieselbe (Typ, Bezeichner)-Auflösung wie
+        /// bei den Speichervarianten, mit deren dokumentierter Grenze (S1-O1).</para>
+        ///
+        /// <para><b>Puffer-Verweise:</b> über dieselbe Abbildung wie
+        /// <see cref="PufferverweiseUmschreiben"/>. Was sich nicht abbilden lässt, wird
+        /// GELEERT — nie eine Quell-ID übernehmen. Das Ziel der Zeile bleibt dabei
+        /// unangetastet, genau wie bei den <c>WS_</c>-Spalten: Die Engine normalisiert
+        /// ein Puffer-Ziel ohne Puffer beim Lesen und meldet es
+        /// (<c>WaermesenkeClass.AusZuordnungstabelle</c>).</para>
+        ///
+        /// <para>Fehlt die Tabelle (Datenbank vor Schritt 50), sind Lesen und Schreiben
+        /// still wirkungslos — <c>Z_AnlageSenkeCtrl.SpalteVorhanden</c> fängt beides ab.</para>
+        /// </summary>
+        private static void SenkenNachziehen(int idZiel, GewerkPlan plan,
+                                             List<WErzeugerCtrl> quellAnlagen,
+                                             List<int> quellAnlagenIds,
+                                             Dictionary<int, List<Z_AnlageSenkeModel>> quellSenken,
+                                             Dictionary<int, int> pufferAbbildung,
+                                             List<string> warnungen)
+        {
+            if (quellAnlagen == null || quellAnlagen.Count == 0) return;
+            if (!Z_AnlageSenkeCtrl.SpalteVorhanden()) return;
+
+            List<int> neueIds = NeueAnlagenIds(idZiel, plan);
+            bool positionell = (neueIds.Count == quellAnlagen.Count);
+
+            var ctrl = new Z_AnlageSenkeCtrl();
+            int verloren = 0;
+
+            for (int i = 0; i < quellAnlagen.Count; i++)
+            {
+                List<Z_AnlageSenkeModel> vorlage;
+                if (!quellSenken.TryGetValue(quellAnlagenIds[i], out vorlage) ||
+                    vorlage == null || vorlage.Count == 0) continue;
+
+                int neueAnlage = positionell
+                    ? neueIds[i]
+                    : AnlageFinden(idZiel, quellAnlagen[i].ID_Type, quellAnlagen[i].Bezeichner);
+                if (neueAnlage <= 0) continue;
+
+                var zeilen = new List<Z_AnlageSenkeModel>();
+                foreach (Z_AnlageSenkeModel q in vorlage)
+                {
+                    if (q == null) continue;
+                    zeilen.Add(new Z_AnlageSenkeModel
+                    {
+                        // ID und ID_Anlage vergibt der Schreibweg; Rang ebenfalls
+                        // (lueckenlos ab 1 in Listenreihenfolge - die Reihenfolge steht
+                        // schon, LesenJeAnlage sortiert nach Rang).
+                        Ziel = q.Ziel,
+                        Bedarfsart = q.Bedarfsart,
+                        ID_Puffer = Abbilden(q.ID_Puffer > 0 ? (int?)q.ID_Puffer : null,
+                                             pufferAbbildung, ref verloren) ?? 0,
+                        Ladeprio = q.Ladeprio,
+                        Ladeprio_PV = q.Ladeprio_PV,
+                        Ladegrenze = q.Ladegrenze,
+                        Anschlusshoehe = q.Anschlusshoehe
+                    });
+                }
+
+                ctrl.SchreibenJeAnlage(neueAnlage, zeilen);
+            }
+
+            if (verloren > 0)
+                warnungen.Add(string.Format(MyResource.Resource.BK_KOMP_HINW_PUFFERVERWEIS, verloren));
+        }
+
+        /// <summary>
+        /// Die Anlagen-IDs des Gewerks im Zielprojekt, AUFSTEIGEND — nach dem Commit
+        /// genau die soeben angelegten Zeilen in Anlegereihenfolge.
+        /// </summary>
+        private static List<int> NeueAnlagenIds(int idZiel, GewerkPlan plan)
+        {
+            var liste = new List<int>();
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID FROM [" + TAB_ANLAGEN + "] " +
+                    "WHERE ID_Projekt = ? AND " + TypFilter(plan) + " ORDER BY ID",
+                    new OleDbParameter("@p", idZiel));
+                if (dt != null)
+                    foreach (DataRow r in dt.Rows) liste.Add(Ganz(r, SPALTE_ID));
+            }
+            catch { }
+            return liste;
         }
 
         // ------------------------------------------------------- Speichervarianten

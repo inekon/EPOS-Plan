@@ -67,8 +67,15 @@ namespace WindowsFormsApplication1
         /// <b>Die Tabelle bleibt stehen</b> — stillgelegt heißt: kein Leser und kein
         /// Schreiber im Code mehr, Muster <c>WQ_Puffer</c> und
         /// <c>Tab_Pufferspeicher.Verwendung</c>. Ein Löschen wäre die eine Änderung, die
-        /// sich nicht zurücknehmen ließe, und bleibt dem Aufräumpaket vorbehalten. Die
-        /// Konstante wird weiterhin gebraucht: von der Migration selbst und von
+        /// sich nicht zurücknehmen ließe.
+        ///
+        /// <para><b>PAKET L hat entschieden: Sie bleibt.</b> Das Aufräumpaket hat die
+        /// aufruferfreie Zugriffsklasse <c>Z_ProjektPufferSpCtrl</c> entfernt, die
+        /// TABELLE aber ausdrücklich nicht angefasst — Konzept Kapitel 15 führt sie als
+        /// „stillgelegt (Lese-Altlast nach Migration)". Ein Schema-Schritt, der sie
+        /// wegnähme, ist kein Aufräumen mehr, sondern ein Datenverlust ohne Rückweg.</para>
+        ///
+        /// Die Konstante wird weiterhin gebraucht: von der Migration selbst und von
         /// <see cref="Bestand"/>.
         /// </summary>
         public const string Z_PROJEKTPUFFERSP = "Z_ProjektPufferSp";
@@ -1404,10 +1411,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Einspeisehöhe 0..1 am Schichtspeicher (§ 7.4); NULL = Standard oben.
-        /// VORGRIFF auf Paket P1: Schritt 50 legt nur die SPALTE an, gelesen wird sie
+        /// VORGRIFF auf Paket P1: Schritt 50 legt nur die SPALTE an, gelesen wurde sie
         /// erst mit dem Schichtmodell. Sie steht hier mit, weil das Nachrüsten einer
         /// Spalte an einer Tabelle mit erzwungenen Beziehungen teurer ist als ein Feld,
         /// das eine Weile NULL bleibt.
+        ///
+        /// <para><b>Der Vorgriff ist eingelöst:</b> Paket P1 liest die Höhe
+        /// (<c>Ladeauftrag.Einspeisehoehe</c> → <c>SimulationPufferspeicher</c>), Paket P2
+        /// pflegt sie je Senkenzeile im Senkendialog.</para>
         /// </summary>
         public const string SPALTE_SENKE_ANSCHLUSSHOEHE = "Anschlusshoehe";
 
@@ -1577,8 +1588,12 @@ namespace WindowsFormsApplication1
         /// das Ein-Zonen-Modell von heute kennt keine oberste Schicht, ein Wert daraus
         /// wäre erfunden. Sie steht hier mit, weil das Nachrüsten einer Spalte an einer
         /// Tabelle mit erzwungener Beziehung teurer ist als ein Feld, das eine Weile
-        /// NULL bleibt. <b>Bis Paket P1 schreibt der Runner sie nicht</b> — die Zeile
-        /// bleibt NULL, und die Leseseite behandelt NULL wie „nicht erhoben".</para>
+        /// NULL bleibt. <b>Bis Paket P1 schrieb der Runner sie nicht</b> — die Zeile
+        /// blieb NULL, und die Leseseite behandelt NULL wie „nicht erhoben".</para>
+        ///
+        /// <para><b>Der Vorgriff ist eingelöst:</b> Seit Paket P1 füllt
+        /// <c>SimulationRunner</c> beide Spalten aus der Stundenganglinie der obersten
+        /// Schicht; NULL bleibt nur, wo es keine Speichertemperatur gibt (Quellspeicher).</para>
         /// </summary>
         public const string SPALTE_PUFFER_T_OBEN_MITTEL = "T_oben_Mittel";
 

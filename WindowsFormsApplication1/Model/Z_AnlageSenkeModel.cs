@@ -18,7 +18,7 @@ namespace WindowsFormsApplication1
     ///
     /// <para>
     /// <b>Öffentliche Felder statt Eigenschaften</b> — Hausmuster aller
-    /// <c>*Model</c>-Klassen dieses Projekts (<c>Z_ProjektPufferSpModel</c>,
+    /// <c>*Model</c>-Klassen dieses Projekts (<c>PufferSpModel</c>,
     /// <c>WErzeugerModel</c>). Die Modelle sind reine Datenträger zwischen
     /// Controller und Oberfläche, ohne Logik und ohne Bindung.
     /// </para>
@@ -89,9 +89,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Einspeisehöhe 0..1 am Schichtspeicher; <b>-1 = nicht gesetzt</b> (in der
         /// Datenbank NULL), dann speist die Senke wie bisher oben ein.
-        /// VORGRIFF auf Paket P1: Schritt 50 legt nur die Spalte an, gelesen wird sie
-        /// erst mit dem Schichtmodell (§ 7.4). -1 statt 0 als Leerwert, weil 0 eine
-        /// GÜLTIGE Höhe ist (ganz unten).
+        /// Schritt 50 legte als Vorgriff auf Paket P1 nur die Spalte an; <b>seit P1 wird
+        /// sie gelesen</b> (§ 7.4) und seit P2 im Senkendialog gepflegt. -1 statt 0 als
+        /// Leerwert, weil 0 eine GÜLTIGE Höhe ist (ganz unten).
         /// </summary>
         public double Anschlusshoehe = -1;
     }

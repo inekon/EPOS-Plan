@@ -2023,7 +2023,10 @@ annual full-load hours from a simulation run.</value>
     <value>For air-to-water heat pumps the heat source is always the outdoor air
 (outdoor temperature of the selected climate region).
 
-HP type: {0}</value>
+HP type: {0}
+
+If this unit is to use a buffer storage as its heat source (booster operation), it must be listed as a brine-to-water or water-to-water heat pump:
+Administration → Heat pump → change the heat pump type, then select the heat pump again in the project.</value>
   </data>
   <data name="SIMQ_MSG_QUELLE_ART" xml:space="preserve">
     <value>Only the heat pump and the boiler can select a heat source.
@@ -8131,5 +8134,59 @@ Effective only with a STRATIFIED target storage (layers &gt; 1): from the inlet 
   </data>
   <data name="SIM_REIHE_T_UNTEN" xml:space="preserve">
     <value>T bottom [°C]</value>
+  </data>
+  <data name="SIMENG_SCHICHT_INVARIANTE" xml:space="preserve">
+    <value>Layer model: At buffer {0} ({1}) the sum of the layer energies deviated from the storage content in {2} hours (largest deviation {3} kWh). The layer level was corrected in every hour, the energy balance of the run is unaffected - the message indicates a fault in the layer model and belongs with development.</value>
+  </data>
+  <data name="SIMENG_SENKE_OHNE_LADEAUFTRAG_RANG" xml:space="preserve">
+    <value>Heat sink: Plant {0} ({1}) carries target {3} at rank {2} (buffer {4}), but receives NO charging order in this run - the buffer belongs to another project or is not part of the calculation.{5}</value>
+  </data>
+  <data name="SIMENG_SENKE_OHNE_LADEAUFTRAG_RANG1" xml:space="preserve">
+    <value> The plant therefore supplies the HEATING CIRCUIT; without this fallback it would produce nothing all year.</value>
+  </data>
+  <data name="SIMENG_SENKE_OHNE_LADEAUFTRAG_NACHRANG" xml:space="preserve">
+    <value> This sink is disregarded in this run.</value>
+  </data>
+  <data name="SIMENG_PENDELSPEICHER_ENTLADEORDNUNG" xml:space="preserve">
+    <value>CHP buffer tank: Storage {0} is not part of the discharge order of channel {1} - it is placed at the end.</value>
+  </data>
+  <data name="SIMENG_ENTLADEORDNUNG_NACHTRAG" xml:space="preserve">
+    <value>Storage {0} ({1}) is not part of the discharge order of channel {2} - it is placed at the end.</value>
+  </data>
+  <data name="SIMENG_KLASSENSET_ROLLE" xml:space="preserve">
+    <value>Storage {0} ({1}): The class set {2} does not match the legacy use "{3}". The set is used for the calculation; the role shown in the display and in the result row is "{4}".</value>
+  </data>
+  <data name="SIMENG_VERBUND_SCHICHTUNG" xml:space="preserve">
+    <value>Parallel group: The lead storage {0} ({1}) is configured with {2} layers. A group is calculated as ONE heat reservoir with the summed capacity of all vessels - a stratification derived from the volume of the lead storage alone would be wrong. The calculation runs unstratified (1 layer); please either dissolve the group or set the number of layers to 1.</value>
+  </data>
+  <data name="SIMENG_TNUTZ_UEBER_VORLAUF" xml:space="preserve">
+    <value>Layer model: At buffer {0} ({1}) the minimum usable domestic hot water temperature of {2} °C is ABOVE the effective flow temperature of {3} °C. No layer could ever reach it, the domestic hot water channel would be permanently blocked. The calculation uses {3} °C - please correct T_Nutz_BW or the temperature pair of the storage.</value>
+  </data>
+  <data name="SIMENG_BOOSTER_KOPPLUNG" xml:space="preserve">
+    <value>Booster: Plant {0} draws its source heat from buffer {1} ({2}), a SHARED buffer. The source temperature follows the storage state and is formed anew in every hour ({3} … {4} °C, {5} layer(s){6}) instead of being taken from an annual profile. If it falls below the lowest node of the characteristic curve, that node applies (capping, no extrapolation).</value>
+  </data>
+  <data name="SIMENG_KESSEL_BOOSTER_KOPPLUNG" xml:space="preserve">
+    <value>Boiler cascade (booster): Plant {0} draws its inlet temperature from buffer {1} ({2}), a SHARED buffer. The source temperature follows the storage state and is formed anew in every hour ({3} … {4} °C{5}). Boiler lift {6}/{7} °C; at full charge the buffer contributes {8} % of the useful heat. The boiler is calculated AFTER the generator that charges the buffer.</value>
+  </data>
+  <data name="SIMENG_KNAPPHEIT_UNGUELTIG" xml:space="preserve">
+    <value>Scarcity order: The project setting "{0}" is unusable - the three keys {1};{2};{3} are expected in any order, each exactly once. The calculation uses the default {4} -&gt; {5} -&gt; {6}.</value>
+  </data>
+  <data name="SIMENG_QUELLPROFIL_UNLESBAR" xml:space="preserve">
+    <value>Source profile {0} of plant {1} is unreadable or incomplete (the number of values does not match the operating mode) - the legacy path or the outdoor temperature applies.</value>
+  </data>
+  <data name="SIMENG_SENKENZEILE_OHNE_PUFFER" xml:space="preserve">
+    <value>Heat sink: Plant {0} carries target {2} at rank {1}, but has NO buffer storage assigned there (Z_AnlageSenke.ID_Puffer empty). The row therefore supplies the HEATING CIRCUIT.</value>
+  </data>
+  <data name="SIMENG_SENKENLISTE_LEER" xml:space="preserve">
+    <value>Heat sink: For plant {0} there is not a single row in Z_AnlageSenke. The run uses the default {1}/{2}.</value>
+  </data>
+  <data name="PSP_SPEICHERTYP_ANZEIGE_SOLAR" xml:space="preserve">
+    <value>Solar storage</value>
+  </data>
+  <data name="PSP_SPEICHERTYP_ANZEIGE_PUFFER" xml:space="preserve">
+    <value>Buffer storage</value>
+  </data>
+  <data name="PSP_SPEICHERTYP_ANZEIGE_KOMBI" xml:space="preserve">
+    <value>Combination storage</value>
   </data>
 </root>

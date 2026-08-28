@@ -148,27 +148,15 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        /// <summary>
-        /// Ein Zeiger fuer die Frage „hat dieses Projekt ueberhaupt einen Verbund?" - die
-        /// Weiche des Rechenwegs (<c>SimulationControl._verbundErzwingtSpeicherstufe</c>)
-        /// und der Kaskaden-Automatik (<c>KonfigurationCtrl.KaskadeNotwendig</c>).
-        ///
-        /// EINE Abfrage mit Verbund zu <c>Tab_Energieanlagen</c>; die Anlagen tragen den
-        /// Projektbezug, die Zuordnungszeile nicht (sie haengt an der Anlage, nicht am
-        /// Projekt - Invariante S-1).
-        /// </summary>
-        public static bool ProjektHatVerbund(int idProjekt)
-        {
-            if (idProjekt <= 0) return false;
-
-            object n = StilleDb.Scalar(
-                "SELECT COUNT(*) FROM [" + TABLE + "] v " +
-                "INNER JOIN Tab_Energieanlagen a ON v.ID_Anlage = a.ID " +
-                "WHERE a.ID_Projekt = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
-
-            return StilleDb.Zahl(n) > 0;
-        }
+        // ENTFALLEN MIT PAKET L (Aufraeumen, A1-O3): ProjektHatVerbund - die Frage „hat
+        // dieses Projekt ueberhaupt einen Verbund?". Sie hatte genau zwei Aufrufer, und
+        // beide sind mit Paket A1 gefallen: die Weiche des Rechenwegs
+        // (SimulationControl._verbundErzwingtSpeicherstufe) und die Kaskaden-Automatik
+        // (KonfigurationCtrl.KaskadeNotwendig). Seit A1 rechnet JEDER Lauf ueber die
+        // Speicherstufe - ein Verbund erzwingt nichts mehr, weil es nichts mehr zu
+        // erzwingen gibt. Wer die Frage je wieder braucht: eine COUNT(*)-Abfrage ueber
+        // TABLE mit INNER JOIN auf Tab_Energieanlagen (die Anlagen tragen den
+        // Projektbezug, die Zuordnungszeile nicht - Invariante S-1).
 
         /// <summary>
         /// Die Verbuende EINES PROJEKTS in der Form, die die Speicher-Registry braucht:

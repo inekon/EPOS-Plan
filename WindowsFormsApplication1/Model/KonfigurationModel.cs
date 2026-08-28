@@ -35,28 +35,17 @@
         /// </summary>
         public double Pendelspeicher;
 
-        /// <summary>
-        /// ALTLAST seit Paket A1 (Leitentscheidung L1) — Spalte
-        /// <c>Tab_Einstellungen.Kaskade_Zweikanalig</c>, ehemals das Feature-Flag der
-        /// zweikanaligen Kaskade (Konzept Kapitel 9).
-        ///
-        /// <b>DIE ENGINE LIEST DEN WERT NICHT MEHR.</b> Der einkanalige Altpfad ist
-        /// ersatzlos entfallen; jeder Lauf rechnet über die Speicherstufe mit
-        /// herausgelöster Ladephase. Migrationsschritt 51 setzt die Spalte im Bestand auf
-        /// WAHR, damit Anzeige und Persistenz nicht widersprüchlich dastehen.
-        ///
-        /// Feld und Zugriffsweg bleiben, solange die Spalte im Schema steht; der
-        /// Fußzeilenschalter des Konfigurationsdialogs, der sie zuletzt geschrieben hat,
-        /// ist mit Paket A1 entfallen. Begründung und Abrisspunkt stehen im Altlast-Block
-        /// über <see cref="KonfigurationCtrl.KaskadeZweikanaligLesen"/>.
-        ///
-        /// Gelesen wird NAMENSBASIERT (<c>KonfigurationCtrl.ReadSingle</c>), nicht über
-        /// die Ordinalkette row[0..22]; geschrieben ausschließlich über
-        /// <see cref="KonfigurationCtrl.KaskadeZweikanaligSchreiben"/>, damit die
-        /// INSERT-/UPDATE-Spaltenlisten der Konfiguration unverändert bleiben und ein
-        /// noch nicht migrierter Bestand das Speichern nicht scheitern lässt.
-        /// </summary>
-        public bool Kaskade_Zweikanalig;
+        // PAKET L (Aufräumen): Das Feld Kaskade_Zweikanalig ist ENTFALLEN. Es trug die
+        // Spalte Tab_Einstellungen.Kaskade_Zweikanalig, ehemals das Feature-Flag der
+        // zweikanaligen Kaskade (Konzept Kapitel 9). Mit Paket A1 hat die Engine sie
+        // nicht mehr gelesen, mit Paket L ist auch der letzte Lese-/Schreibweg der
+        // Anwendung entfallen (KonfigurationCtrl.KaskadeZweikanalig*).
+        //
+        // DIE SPALTE SELBST BLEIBT (Konzept Kapitel 15, "Stillgelegt: Lese-Altlast nach
+        // Migration"): Migrationsschritt 51 setzt sie im Bestand auf WAHR und loescht
+        // nichts. Das Feld hier war NAMENSBASIERT gelesen und haengt deshalb NICHT an der
+        // Ordinalkette row[0..22] von ReadSingle - sein Wegfall verschiebt keine Position
+        // und beruehrt weder die INSERT- noch die UPDATE-Spaltenliste.
 
         /// <summary>
         /// Projekteinstellung „Extrapolation der Wärmepumpen-Kennlinie erlaubt"
@@ -81,8 +70,9 @@
         ///
         /// Gelesen wird NAMENSBASIERT (<c>KonfigurationCtrl.ReadSingle</c>), nicht über
         /// die Ordinalkette row[0..22]; geschrieben ausschließlich über
-        /// <see cref="KonfigurationCtrl.ExtrapolationErlaubtSchreiben"/> — dieselbe
-        /// Begründung wie bei <see cref="Kaskade_Zweikanalig"/>.
+        /// <see cref="KonfigurationCtrl.ExtrapolationErlaubtSchreiben"/> — damit die
+        /// INSERT-/UPDATE-Spaltenlisten der Konfiguration unverändert bleiben und ein
+        /// noch nicht migrierter Bestand das Speichern nicht scheitern lässt.
         /// </summary>
         public bool Extrapolation_erlaubt;
 
@@ -108,8 +98,7 @@
         /// <para>Gelesen wird NAMENSBASIERT (<c>KonfigurationCtrl.ReadSingle</c>), nicht
         /// über die Ordinalkette row[0..22]; geschrieben ausschließlich über
         /// <see cref="KonfigurationCtrl.KnappheitsreihenfolgeSchreiben"/> — dieselbe
-        /// Begründung wie bei <see cref="Kaskade_Zweikanalig"/> und
-        /// <see cref="Extrapolation_erlaubt"/>.</para>
+        /// Begründung wie bei <see cref="Extrapolation_erlaubt"/>.</para>
         /// </summary>
         public string Kanal_Knappheitsreihenfolge = DbWerte.KNAPPHEIT_DEFAULT;
 
@@ -138,7 +127,6 @@
             Betriebsart = 0;
             Leistungsgrenze = 0;
             Pendelspeicher = 0;
-            Kaskade_Zweikanalig = false;
             Extrapolation_erlaubt = true;   // Vorbelegung: erlaubt (Konzept 13.4, Paket 8)
             // Vorbelegung BRAUCHWASSER;PROZESS;HEIZUNG (Paket K2, F10) - die bis dahin
             // fest verdrahtete Reihenfolge, um den Prozesskanal ergaenzt.

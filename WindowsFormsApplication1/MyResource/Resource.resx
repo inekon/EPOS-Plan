@@ -180,8 +180,8 @@ bei einem kleinen Speicher wird die Zahl groß, ohne dass er stärker altert.</v
     <value>Leer = oben. 1 = ganz oben, 0 = ganz unten. Wirkt nur bei einem geschichteten Speicher (mehr als eine Schicht).</value>
   </data>
   <data name="SIMQ_PUFFER_MSG_ANSCHLUSSHOEHE" xml:space="preserve">
-    <value>Die Quell-EntnahmehÃ¶he muss zwischen 0 und 1 liegen (1 = ganz oben, 0 = ganz unten).
-Leer lassen heiÃŸt oben.</value>
+    <value>Die Quell-Entnahmehöhe muss zwischen 0 und 1 liegen (1 = ganz oben, 0 = ganz unten).
+Leer lassen heißt oben.</value>
   </data>
   <data name="SIMQ_QUELLPROFIL_ALLE_WERTE_TEXT" xml:space="preserve">
     <value>Welche Quelltemperatur soll für alle Stützstellen gelten? [°C]</value>
@@ -247,7 +247,7 @@ Bitte Zeilenzahl und Zahlenformat prüfen.</value>
     <value>Das Quellprofil konnte nicht gespeichert werden. Bitte prüfen, ob die Datenbank beschreibbar ist.</value>
   </data>
   <data name="SIMQ_QUELLPROFIL_MSG_WERTE_FEHLEN" xml:space="preserve">
-    <value>FÃ¼r diese Betriebsart werden {0} Werte gebraucht.
+    <value>Für diese Betriebsart werden {0} Werte gebraucht.
 Bitte zuerst eine CSV-Datei einlesen oder alle Werte gleich setzen.</value>
   </data>
   <data name="SIMQ_QUELLPROFIL_NEU" xml:space="preserve">
@@ -2039,7 +2039,10 @@ Jahresvolllaststunden aus einem Simulationslauf.</value>
     <value>Für Luft-Wasser-Wärmepumpen ist die Wärmequelle immer die Außenluft
 (Außentemperatur der gewählten Klimaregion).
 
-WP-Typ: {0}</value>
+WP-Typ: {0}
+
+Soll dieses Gerät einen Pufferspeicher als Wärmequelle nutzen (Booster-Betrieb), muss es als Sole-Wasser- oder Wasser-Wasser-Wärmepumpe geführt sein:
+Administration → Wärmepumpe → Wärmepumpentyp ändern, dann die WP im Projekt neu auswählen.</value>
   </data>
   <data name="SIMQ_MSG_QUELLE_ART" xml:space="preserve">
     <value>Eine Wärmequelle wählen können nur die Wärmepumpe und der Heizkessel.
@@ -8138,5 +8141,59 @@ Wirksam nur bei einem GESCHICHTETEN Zielspeicher (Schichten &gt; 1): Von der Ein
   </data>
   <data name="SIM_REIHE_T_UNTEN" xml:space="preserve">
     <value>T unten [°C]</value>
+  </data>
+  <data name="SIMENG_SCHICHT_INVARIANTE" xml:space="preserve">
+    <value>Schichtmodell: Am Puffer {0} ({1}) wich die Summe der Schichtenergie in {2} Stunden vom Speicherinhalt ab (größte Abweichung {3} kWh). Die Schichtebene wurde jede Stunde nachgezogen, die Energiebilanz des Laufs ist davon unberührt - die Meldung weist auf einen Fehler im Schichtmodell hin und gehört an die Entwicklung.</value>
+  </data>
+  <data name="SIMENG_SENKE_OHNE_LADEAUFTRAG_RANG" xml:space="preserve">
+    <value>Wärmesenke: Die Anlage {0} ({1}) führt auf Rang {2} das Ziel {3} (Puffer {4}), bekommt in diesem Lauf aber KEINEN Ladeauftrag - der Puffer gehört zu einem anderen Projekt oder rechnet nicht mit.{5}</value>
+  </data>
+  <data name="SIMENG_SENKE_OHNE_LADEAUFTRAG_RANG1" xml:space="preserve">
+    <value> Die Anlage deckt deshalb den HEIZKREIS; ohne diesen Rückfall würde sie das ganze Jahr nichts produzieren.</value>
+  </data>
+  <data name="SIMENG_SENKE_OHNE_LADEAUFTRAG_NACHRANG" xml:space="preserve">
+    <value> Diese Senke bleibt in diesem Lauf unberücksichtigt.</value>
+  </data>
+  <data name="SIMENG_PENDELSPEICHER_ENTLADEORDNUNG" xml:space="preserve">
+    <value>BHKW-Pendelspeicher: Der Speicher {0} steht nicht in der Entladereihenfolge des Kanals {1} - er wird ans Ende gestellt.</value>
+  </data>
+  <data name="SIMENG_ENTLADEORDNUNG_NACHTRAG" xml:space="preserve">
+    <value>Speicher {0} ({1}) steht nicht in der Entladereihenfolge des Kanals {2} - er wird ans Ende gestellt.</value>
+  </data>
+  <data name="SIMENG_KLASSENSET_ROLLE" xml:space="preserve">
+    <value>Speicher {0} ({1}): Das Klassen-Set {2} passt nicht zur Alt-Verwendung „{3}". Gerechnet wird das Set; die Rolle in Anzeige und Ergebniszeile lautet „{4}".</value>
+  </data>
+  <data name="SIMENG_VERBUND_SCHICHTUNG" xml:space="preserve">
+    <value>Parallelverbund: Der Leitspeicher {0} ({1}) ist mit {2} Schichten gepflegt. Ein Verbund rechnet als EIN Wärmevorrat mit der aufsummierten Kapazität aller Behälter - eine aus dem Volumen des Leitspeichers abgeleitete Schichtung wäre falsch. Gerechnet wird ungeschichtet (1 Schicht); bitte entweder den Verbund auflösen oder die Schichtzahl auf 1 setzen.</value>
+  </data>
+  <data name="SIMENG_TNUTZ_UEBER_VORLAUF" xml:space="preserve">
+    <value>Schichtmodell: Am Puffer {0} ({1}) liegt die Mindest-Nutztemperatur Brauchwasser mit {2} °C ÜBER der wirksamen Vorlauftemperatur von {3} °C. Keine Schicht könnte sie je erreichen, der Brauchwasserkanal wäre dauerhaft gesperrt. Gerechnet wird mit {3} °C - bitte T_Nutz_BW oder das Temperaturpaar des Speichers berichtigen.</value>
+  </data>
+  <data name="SIMENG_BOOSTER_KOPPLUNG" xml:space="preserve">
+    <value>Booster: Die Anlage {0} bezieht ihre Quellwärme aus Puffer {1} ({2}), einem GETEILTEN Puffer. Die Quelltemperatur folgt dem Speicherzustand und wird je Stunde neu gebildet ({3} … {4} °C, {5} Schicht(en){6}) statt mit einem Jahresprofil zu rechnen. Unterschreitet sie die unterste Kennlinien-Stützstelle, gilt diese Stützstelle (Kappung, keine Extrapolation).</value>
+  </data>
+  <data name="SIMENG_KESSEL_BOOSTER_KOPPLUNG" xml:space="preserve">
+    <value>Kessel-Kaskade (Booster): Anlage {0} bezieht ihre Eintrittstemperatur aus Puffer {1} ({2}), einem GETEILTEN Puffer. Die Quelltemperatur folgt dem Speicherzustand und wird je Stunde neu gebildet ({3} … {4} °C{5}). Hub des Kessels {6}/{7} °C; bei voller Beladung trägt der Puffer {8} % der Nutzwärme. Der Kessel rechnet NACH dem Erzeuger, der den Puffer lädt.</value>
+  </data>
+  <data name="SIMENG_KNAPPHEIT_UNGUELTIG" xml:space="preserve">
+    <value>Knappheitsreihenfolge: Die Projekteinstellung „{0}" ist unbrauchbar - erwartet werden die drei Schlüssel {1};{2};{3} in beliebiger Reihenfolge, jeder genau einmal. Gerechnet wird mit der Vorbelegung {4} -&gt; {5} -&gt; {6}.</value>
+  </data>
+  <data name="SIMENG_QUELLPROFIL_UNLESBAR" xml:space="preserve">
+    <value>Quellprofil {0} der Anlage {1} ist nicht lesbar oder unvollständig (Zahl der Werte passt nicht zur Betriebsart) - es gilt der Altweg bzw. die Außentemperatur.</value>
+  </data>
+  <data name="SIMENG_SENKENZEILE_OHNE_PUFFER" xml:space="preserve">
+    <value>Wärmesenke: Die Anlage {0} führt auf Rang {1} das Ziel {2}, hat dort aber KEINEN Pufferspeicher zugeordnet (Z_AnlageSenke.ID_Puffer leer). Die Zeile rechnet deshalb auf den HEIZKREIS.</value>
+  </data>
+  <data name="SIMENG_SENKENLISTE_LEER" xml:space="preserve">
+    <value>Wärmesenke: Für die Anlage {0} steht in Z_AnlageSenke keine einzige Zeile. Der Lauf rechnet die Vorbelegung {1}/{2}.</value>
+  </data>
+  <data name="PSP_SPEICHERTYP_ANZEIGE_SOLAR" xml:space="preserve">
+    <value>Solarspeicher</value>
+  </data>
+  <data name="PSP_SPEICHERTYP_ANZEIGE_PUFFER" xml:space="preserve">
+    <value>Pufferspeicher</value>
+  </data>
+  <data name="PSP_SPEICHERTYP_ANZEIGE_KOMBI" xml:space="preserve">
+    <value>Kombispeicher</value>
   </data>
 </root>

@@ -75,18 +75,18 @@ namespace WindowsFormsApplication1
         /// <summary>Energiespeicher (Auswahlfeld 6).</summary>
         public static readonly string[] ENERGIESPEICHER = { DbWerte.ERZEUGER_STROMSPEICHER };
 
-        /// <summary>
-        /// Alles, was in <c>Z_ProjektPufferSp.Erzeuger</c> stehen kann: die vier
-        /// Wärmeerzeuger und die Sammelzuordnung „Gesamtsystem".
-        /// </summary>
-        public static readonly string[] ZUORDENBAR =
-        {
-            DbWerte.ERZEUGER_BHKW,
-            DbWerte.ERZEUGER_HEIZKESSEL,
-            DbWerte.ERZEUGER_SOLARTHERMIE,
-            DbWerte.ERZEUGER_WAERMEPUMPE,
-            DbWerte.ERZEUGER_GESAMTSYSTEM
-        };
+        // ENTFALLEN MIT PAKET L (Aufraeumen, A1-O3): das Feld ZUORDENBAR - die fuenf
+        // Werte, die in Z_ProjektPufferSp.Erzeuger stehen konnten (die vier
+        // Waermeerzeuger plus die Sammelzuordnung "Gesamtsystem"). Es speiste die
+        // Erzeugerspalte des Alt-Zuordnungsdialogs Form_KonfigPufferspeicher; der ist
+        // mit Paket A1 geloescht, das Feld war seitdem ohne Fundstelle (repo-weiter
+        // Grep-Beleg im L-Protokoll).
+        //
+        // DbWerte.ERZEUGER_GESAMTSYSTEM selbst BLEIBT: Es ist der Persistenzwert der
+        // stillgelegten Spalte Z_ProjektPufferSp.Erzeuger (Konzept Kapitel 15 - die
+        // Tabelle bleibt als Lese-Altlast stehen) und wird von Anzeige/DbWert unten
+        // weiterhin uebersetzt. Ohne die beiden Zweige liefe ein solcher Altwert
+        // unuebersetzt durch die Oberflaeche - eine Verhaltensaenderung ohne Gewinn.
 
         /// <summary>
         /// Anzeigename zu einem DB-Wert. Unbekannte Werte laufen unverändert durch —

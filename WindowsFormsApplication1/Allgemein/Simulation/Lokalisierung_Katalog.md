@@ -1997,3 +1997,128 @@ eine Fundstelle.
 **Bewusst KEIN neuer Schlüssel** für die Protokollzeile der Quell-Entnahmehöhe
 (`SimulationControl.AnschlusshoeheText`): Sie ist ein Zusatz zu den Booster-Meldungen des
 Laufaufbaus, die inline deutsch stehen (Ticket P1-O7 / S2-O9 / B1-O9, Sammelschnitt in Paket L).
+
+---
+
+## Nachtrag Paket P1 — Schichtspeichermodell (27.08.2026, nachgetragen mit Paket L)
+
+> **Warum erst jetzt.** Paket P1 hat seine 27 Schlüssel nur im eigenen Umsetzungsprotokoll
+> gezählt und keinen Katalog-Nachtrag angelegt (Ticket **B1-O7**). Er steht hier nach, damit
+> die Reihe der Nachträge lückenlos ist; Reihenfolge im Katalog ist die des NACHTRAGENS,
+> nicht die der Pakete.
+
+Paket P1 macht aus dem Pufferspeicher ein **Multi-Node-Modell** (N = 1…10 Schichten,
+Konzept Kapitel 7, Entscheidung F7, Migrationsschritt 53). **27 Schlüssel kommen hinzu, keiner
+fällt weg** — 23 für die Dialoggruppe „Schichtung und Leistungsgrenzen" und die Speicherkarte,
+4 für die scharfgeschalteten Warnkriterien.
+
+### Neu (27)
+
+| Schlüssel | DE | EN | Fundstelle |
+|---|---|---|---|
+| `PSP_GRUPPE_SCHICHTUNG` | Schichtung und Leistungsgrenzen | Stratification and power limits | `Form_PufferSp_Projekt` — Kopf der programmatischen Gruppe. Sie fasst zwei Dinge zusammen, die dieselbe Bedingung teilen: Beide sind Eigenschaften des BEHÄLTERS, nicht der Senke. |
+| `PSP_LABEL_SCHICHTEN` | Schichten: | Layers: | Zahl der Knoten N (`Tab_Pufferspeicher.Schichten_Anzahl`). |
+| `PSP_HINWEIS_SCHICHTEN` | 1 = ein Vorrat wie bisher; ab 2 rechnet der Speicher geschichtet. | 1 = one single store as before; from 2 on the tank is calculated stratified. | Fußtext dazu. Er nennt genau die Grenze, an der der N=1-Byte-Nachweis endet. |
+| `PSP_LABEL_HOEHE` | Höhe [m]: | Height [m]: | `Hoehe`; NULL = aus dem H/D-Verhältnis abgeleitet. |
+| `PSP_HINWEIS_HOEHE` | leer = automatisch aus dem Höhen-/Durchmesserverhältnis 2,5 | empty = derived from the height/diameter ratio of 2.5 | Fußtext; die Zahl steht im Text, weil sie sonst nur im Konzept stünde. |
+| `PSP_LABEL_LAMBDA_EFF` | λ effektiv [W/(m·K)]: | λ effective [W/(m·K)]: | `Lambda_Eff`, der vertikale Ausgleich. |
+| `PSP_HINWEIS_LAMBDA_EFF` | leer = 1,5 | empty = 1.5 | Fußtext; Vorgabe nach Konzept 7.2. |
+| `PSP_LABEL_T_NUTZ_BW` | Nutztemperatur Brauchwasser [°C]: | Usable temperature DHW [°C]: | `T_Nutz_BW` — die Schwelle, ab der eine Schicht den Brauchwasserkanal bedienen darf. |
+| `PSP_HINWEIS_T_NUTZ_BW` | leer = Rücklauftemperatur des Speichers | empty = return temperature of the tank | Fußtext; leer heißt „keine Schwelle", nicht „0 °C". |
+| `PSP_LABEL_ENTNAHMEHOEHEN` | Entnahmehöhe je Kanal (0 = unten, 1 = oben; leer = Standard): | Draw-off height per channel (0 = bottom, 1 = top; empty = default): | Kopf der Zeilengruppe `Entnahme_Heizung/_BW/_Prozess`; eingeblendet werden nur die Kanäle des Klassen-Sets. |
+| `PSP_LABEL_LADELEISTUNG_MAX` | Ladeleistung max. [kW]: | Max. charging power [kW]: | `Ladeleistung_Max`. |
+| `PSP_LABEL_ENTLADELEISTUNG_MAX` | Entladeleistung max. [kW]: | Max. discharging power [kW]: | `Entladeleistung_Max`. |
+| `PSP_NAME_LADELEISTUNG_MAX` | größte Ladeleistung | maximum charging power | Einsetztext für `PSP_FEHLER_LEISTUNG` — EIN Fehlertext für beide Felder statt zweier fast gleicher. |
+| `PSP_NAME_ENTLADELEISTUNG_MAX` | größte Entladeleistung | maximum discharging power | dito. |
+| `PSP_HINWEIS_LEISTUNG_UNBEGRENZT` | 0 = unbegrenzt | 0 = unlimited | Fußtext beider Leistungsfelder. 0 ist ein GÜLTIGER Wert mit eigener Bedeutung und darf nicht wie „leer" aussehen. |
+| `PSP_FEHLER_SCHICHTUNG_AM_VERBUND` | Der Speicher „{0}" ist Leitspeicher eines Parallelverbunds und kann deshalb keine Schichtung führen. | Tank "{0}" is the lead tank of a parallel bank and therefore cannot be stratified. | Die HARTE Abweisung im Dialog (W6, Entscheidung F8). |
+| `PSP_FEHLER_HOEHE` | Die Höhe muss eine Zahl größer 0 sein [m] - oder leer bleiben. | The height must be a number greater than 0 [m] - or be left empty. | Eingabeprüfung. |
+| `PSP_FEHLER_LAMBDA_EFF` | Die effektive Wärmeleitfähigkeit muss eine Zahl größer 0 sein [W/(m·K)] - oder leer bleiben. | The effective thermal conductivity must be a number greater than 0 [W/(m·K)] - or be left empty. | Eingabeprüfung. |
+| `PSP_FEHLER_T_NUTZ_BW` | Die Nutztemperatur Brauchwasser muss eine Zahl größer 0 sein [°C] - oder leer bleiben. | The usable DHW temperature must be a number greater than 0 [°C] - or be left empty. | Eingabeprüfung. |
+| `PSP_FEHLER_ENTNAHMEHOEHE` | Die Entnahmehöhe {0} muss eine Zahl zwischen 0 und 1 sein - oder leer bleiben. | The draw-off height {0} must be a number between 0 and 1 - or be left empty. | Eingabeprüfung; der Platzhalter nennt den KANAL, sonst wüsste der Anwender bei drei Feldern nicht, welches gemeint ist. |
+| `PSP_FEHLER_LEISTUNG` | Die {0} muss eine Zahl ≥ 0 sein [kW]; 0 bedeutet unbegrenzt. | The {0} must be a number ≥ 0 [kW]; 0 means unlimited. | Eingabeprüfung beider Leistungsfelder, mit `PSP_NAME_*` als Platzhalter. |
+| `PSP_KARTE_SCHICHTEN` | {0} Schichten | {0} layers | Badge der `SpeicherKarte` bei N > 1. |
+| `PSP_KARTE_T_OBEN` | Oberste Schicht: {0} °C im Jahresmittel | Top layer: {0} °C annual mean | Kennzahl derselben Karte, sobald das Ergebnis einen `T_oben_Mittel` trägt. |
+| `SIMWARN_W3_UNTER_TNUTZ` | Anlage „{0}": Der Erzeuger-Vorlauf {1} °C liegt unter der Nutztemperatur Brauchwasser {2} °C … | Unit "{0}": the generator flow temperature of {1} °C is below the usable DHW temperature … | Der T_Nutz-Anteil von W3, mit Schritt 53 scharfgeschaltet (S2-O1). |
+| `SIMWARN_W4_TNUTZ_UEBER_VLEFF` | Speicher „{0}": Die Nutztemperatur Brauchwasser {1} °C liegt über dem wirksamen Vorlauf {2} °C. Der Lauf klemmt sie auf {2} °C … | Storage "{0}": the usable DHW temperature … clamps it to {2} °C … | Warnkriterium W4, ebenfalls mit Schritt 53 scharf. |
+| `SIMWARN_W6_SCHICHTUNG_AM_VERBUND` | Speicher „{0}": Er führt {1} Schichten und ist zugleich Leitspeicher eines Parallelverbunds … | Storage "{0}": it holds {1} layers and is at the same time the lead tank of a parallel bank … | Warnkriterium W6 — die MELDUNG für einen Bestand, der auf anderem Weg entstanden ist; abgewiesen wird an den beiden Entstehungsstellen. |
+| `SIM_VERBUND_KONFLIKT_LEIT_GESCHICHTET` | Der Pufferspeicher „{0}" führt eine Schichtung und kann deshalb nicht Leitspeicher eines Verbunds sein … | Buffer tank "{0}" is stratified and therefore cannot serve as the lead tank of a bank … | Die GEGENRICHTUNG von W6: `AnlagePufferVerbundCtrl.KonfliktPruefen` Punkt 7, angezeigt über `WaermesenkeClass.VerbundKonfliktMeldung`. |
+
+---
+
+## Nachtrag Paket L — Aufräumen und Ressourcen-Nachzug (28.08.2026)
+
+Paket L holt die seit Paket K2 **inline deutsch** gebliebenen Engine-Protokolltexte in den
+Katalog (Tickets K2-O4, S1-O8, S2-O9, P1-O7, B1-O9, Q1-O9), ergänzt die Bauart-Anzeige der
+Speicherform (S2-O8) und den Bauart-Änderungsweg in der Luft-Wasser-Meldung (FR-3).
+**18 Schlüssel kommen hinzu, keiner fällt weg; zwei werden erweitert, zwei repariert.**
+Bestand danach **2618 `data`-Knoten** in beiden `.resx` (DE und EN deckungsgleich) und
+**2618 Designer-Eigenschaften**.
+
+> **Die deutschen Texte sind ZEICHENGENAU die der bisherigen Verkettung.** Das Laufprotokoll
+> ist Vergleichsgegenstand jedes Referenzlaufs — eine geglättete Formulierung hätte den
+> Protokollvergleich künftiger Läufe gebrochen. Nachgewiesen durch mechanischen Abgleich der
+> Vorlagen gegen den Quelltext vor dem Umbau (Beleg im
+> [L-Protokoll](L_Aufraeumen_Protokoll.md), Abschnitt 5).
+
+### Neu (18)
+
+| Schlüssel | DE (Kurzfassung) | EN (Kurzfassung) | Fundstelle |
+|---|---|---|---|
+| `SIMENG_SCHICHT_INVARIANTE` | Schichtmodell: Am Puffer {0} ({1}) wich die Summe der Schichtenergie in {2} Stunden … | Layer model: At buffer {0} ({1}) the sum of the layer energies deviated … | `SimulationControl.Do_Simulation_Intern` — die Debug-Invariante des Schichtmodells (P1). Vier Platzhalter. |
+| `SIMENG_SENKE_OHNE_LADEAUFTRAG_RANG` | Wärmesenke: Die Anlage {0} ({1}) führt auf Rang {2} das Ziel {3} (Puffer {4}), bekommt aber KEINEN Ladeauftrag …{5} | Heat sink: Plant {0} ({1}) carries target {3} at rank {2} (buffer {4}), but receives NO charging order …{5} | `SimulationControl.SenkeAufHeizkreisZurueck` (Senkenlisten-Fassung, S1). **{5} ist der Rangzusatz** — die beiden Fassungen darunter. |
+| `SIMENG_SENKE_OHNE_LADEAUFTRAG_RANG1` | ␣Die Anlage deckt deshalb den HEIZKREIS; ohne diesen Rückfall würde sie das ganze Jahr nichts produzieren. | ␣The plant therefore supplies the HEATING CIRCUIT; without this fallback it would produce nothing all year. | Zusatz bei Rang 1. **Führendes Leerzeichen ist Teil des Wertes** (`xml:space="preserve"`) — es trennt den Satz vom Rumpf. |
+| `SIMENG_SENKE_OHNE_LADEAUFTRAG_NACHRANG` | ␣Diese Senke bleibt in diesem Lauf unberücksichtigt. | ␣This sink is disregarded in this run. | Zusatz ab Rang 2, ebenfalls mit führendem Leerzeichen. |
+| `SIMENG_PENDELSPEICHER_ENTLADEORDNUNG` | BHKW-Pendelspeicher: Der Speicher {0} steht nicht in der Entladereihenfolge des Kanals {1} … | CHP buffer tank: Storage {0} is not part of the discharge order of channel {1} … | `SimulationControl.EntladeordnungEinsortieren` (K2). |
+| `SIMENG_ENTLADEORDNUNG_NACHTRAG` | Speicher {0} ({1}) steht nicht in der Entladereihenfolge des Kanals {2} … | Storage {0} ({1}) is not part of the discharge order of channel {2} … | `SimulationControl.EntladeordnungAufbauen` (K2). Bewusst ein EIGENER Schlüssel neben dem Pendelspeicher-Text: andere Stelle, anderer Rumpf. |
+| `SIMENG_KLASSENSET_ROLLE` | Speicher {0} ({1}): Das Klassen-Set {2} passt nicht zur Alt-Verwendung „{3}". … lautet „{4}". | Storage {0} ({1}): The class set {2} does not match the legacy use "{3}". … is "{4}". | `SimulationControl.KlassenSetUebernehmen` (K2). **Die Anführungszeichen sind asymmetrisch** („ … ") — so stand es im Quelltext, und so bleibt es. |
+| `SIMENG_VERBUND_SCHICHTUNG` | Parallelverbund: Der Leitspeicher {0} ({1}) ist mit {2} Schichten gepflegt … | Parallel group: The lead storage {0} ({1}) is configured with {2} layers … | `SimulationControl.VerbundAufaddieren` — der Laufzeit-Riegel zu W6 (P1). |
+| `SIMENG_TNUTZ_UEBER_VORLAUF` | Schichtmodell: Am Puffer {0} ({1}) liegt die Mindest-Nutztemperatur Brauchwasser mit {2} °C ÜBER … {3} °C … Gerechnet wird mit {3} °C … | Layer model: At buffer {0} ({1}) the minimum usable DHW temperature of {2} °C is ABOVE … | `SimulationControl.SchichtparameterUebernehmen` (P1). **{3} steht zweimal** — wirksamer Vorlauf und Ersatzwert sind derselbe Wert. |
+| `SIMENG_BOOSTER_KOPPLUNG` | Booster: Die Anlage {0} bezieht ihre Quellwärme aus Puffer {1} ({2}), einem GETEILTEN Puffer … {5} Schicht(en){6} … | Booster: Plant {0} draws its source heat from buffer {1} ({2}), a SHARED buffer … | `SimulationControl.BoosterKopplungVorbereiten` (B1). **{6}** nimmt den Anschlusshöhen-Zusatz aus Q1 auf (`AnschlusshoeheText`, weiter inline — siehe unten). |
+| `SIMENG_KESSEL_BOOSTER_KOPPLUNG` | Kessel-Kaskade (Booster): Anlage {0} bezieht ihre Eintrittstemperatur aus Puffer {1} ({2}) … Hub des Kessels {6}/{7} °C … {8} % … | Boiler cascade (booster): Plant {0} draws its inlet temperature from buffer {1} ({2}) … | `SimulationControl.KesselQuellbezugSetzen` (B1, Konzept 8.4). Neun Platzhalter. |
+| `SIMENG_KNAPPHEIT_UNGUELTIG` | Knappheitsreihenfolge: Die Projekteinstellung „{0}" ist unbrauchbar … Vorbelegung {4} -> {5} -> {6}. | Scarcity order: The project setting "{0}" is unusable … the default {4} -> {5} -> {6}. | `SimulationKanaele.KnappheitsReihenfolge` (K2, F10). **{1}…{3} sind STEUERWERTE** (`DbWerte.KNAPPHEIT_*`), **{4}…{6} Anzeigenamen** — die Meldung nennt beides, weil der Anwender den Steuerwert eintippt und den Anzeigenamen kennt. |
+| `SIMENG_QUELLPROFIL_UNLESBAR` | Quellprofil {0} der Anlage {1} ist nicht lesbar oder unvollständig … | Source profile {0} of plant {1} is unreadable or incomplete … | `WaermequelleClass.Quelltemperatur` (Q1). |
+| `SIMENG_SENKENZEILE_OHNE_PUFFER` | Wärmesenke: Die Anlage {0} führt auf Rang {1} das Ziel {2}, hat dort aber KEINEN Pufferspeicher zugeordnet … | Heat sink: Plant {0} carries target {2} at rank {1}, but has NO buffer storage assigned there … | `WaermesenkeClass.AusZuordnungstabelle` (A1, Regel N5 auf der neuen Tabelle). |
+| `SIMENG_SENKENLISTE_LEER` | Wärmesenke: Für die Anlage {0} steht in Z_AnlageSenke keine einzige Zeile. Der Lauf rechnet die Vorbelegung {1}/{2}. | Heat sink: For plant {0} there is not a single row in Z_AnlageSenke. The run uses the default {1}/{2}. | dieselbe Methode (A1, Rang-1-Invariante). **{1}/{2} sind Persistenzwerte** und stehen bewusst roh — sie benennen die Datenlage, nicht eine Anzeige. |
+| `PSP_SPEICHERTYP_ANZEIGE_SOLAR` | Solarspeicher | Solar storage | `Warnkriterien.BauformAnzeige` — Anzeigename zum Persistenzwert `DbWerte.PSP_SPEICHERTYP_SOLAR` (S2-O8). |
+| `PSP_SPEICHERTYP_ANZEIGE_PUFFER` | Pufferspeicher | Buffer storage | zu `PSP_SPEICHERTYP_PUFFER`. |
+| `PSP_SPEICHERTYP_ANZEIGE_KOMBI` | Kombispeicher | Combination storage | zu `PSP_SPEICHERTYP_KOMBI`. Die drei Texte sind wortgleich mit der Auswahlliste in `Form_PufferSp_Bearbeiten.resx`; **unbekannte Altwerte laufen roh durch** (Befund L0-1, Bestandsrest `blabla`). |
+
+### Erweitert
+
+`SIMQ_MSG_LUFT_WASSER` (DE + EN) — die Abbruchmeldung der Quellenwahl an einer
+Luft-Wasser-Wärmepumpe bekommt den **Weg zur Änderung** angehängt (Ticket **FR-3**,
+Fehlerrunde 27.08.: „Booster-WP: Quelle Pufferspeicher nicht wählbar"). Neu am Ende:
+
+> Soll dieses Gerät einen Pufferspeicher als Wärmequelle nutzen (Booster-Betrieb), muss es als
+> Sole-Wasser- oder Wasser-Wasser-Wärmepumpe geführt sein:
+> Administration → Wärmepumpe → Wärmepumpentyp ändern, dann die WP im Projekt neu auswählen.
+
+Hier ist die Textänderung **gewollt**: Es ist ein Dialogtext, kein Laufprotokoll.
+
+### Repariert (Mojibake aus Paket Q1)
+
+Zwei DE-Werte trugen doppelt UTF-8-kodierte Umlaute und standen so auch im Dialog
+(`EntnahmehÃ¶he`, `heiÃŸt`, `FÃ¼r`). Behoben, ohne den Wortlaut zu ändern:
+
+| Schlüssel | vorher | jetzt |
+|---|---|---|
+| `SIMQ_PUFFER_MSG_ANSCHLUSSHOEHE` | Die Quell-Entnahmeh**Ã¶**he … Leer lassen hei**ÃŸ**t oben. | Die Quell-Entnahmeh**ö**he … Leer lassen hei**ß**t oben. |
+| `SIMQ_QUELLPROFIL_MSG_WERTE_FEHLEN` | **FÃ¼**r diese Betriebsart … | **Fü**r diese Betriebsart … |
+
+Beide sind reine MessageBox-Texte (`Form_QuellePufferspeicher`, `Form_Quellprofil`) — kein
+Steuerwert hängt daran. Prüfung P5 der [Prüfrezeptur](Lokalisierung_Pruefung.md) ist damit
+wieder sauber.
+
+### Bewusst NICHT umgezogen (Restbestand)
+
+**45 inline-deutsche Protokolltexte bleiben stehen** — sie stammen sämtlich aus dem Bestand
+VOR Paket K2 (Erhebung mit `git blame` über alle Aufrufstellen in `Allgemein/Simulation/`;
+Zahlen und Fundstellenliste im [L-Protokoll](L_Aufraeumen_Protokoll.md), Abschnitt 5.4). Paket L
+zieht die **seit K2 neu entstandenen** nach; der Altbestand ist ein eigener Schnitt, weil er
+den Protokollvergleich über eine viel größere Textmenge riskiert und keinem der offenen
+Tickets zugeordnet ist.
+
+Ebenfalls inline geblieben: `SimulationControl.AnschlusshoeheText` (Q1-O9). Er ist ein
+Text**baustein**, kein Meldungsrumpf, und geht als Platzhalter {6} bzw. {5} in die beiden
+Booster-Meldungen ein.

@@ -159,9 +159,12 @@ namespace WindowsFormsApplication1
         /// Sole-/Wasser-Wasser-Waermepumpe OHNE konfigurierte Waermequelle
         /// (<c>WQ_Typ</c> leer): Der Lauf rechnet ersatzweise mit der Aussenluft —
         /// fuer diese Bauart ein Kategorienfehler (die Kennlinie ist auf Sole-/
-        /// Wassertemperaturen bezogen). Nutzerbefund 27.08.2026 (Booster-Kette 1042);
-        /// die echte Quellkopplung kommt mit Paket B1 (Konzept 8.2), bis dahin macht
-        /// dieses Kriterium den Zustand sichtbar.
+        /// Wassertemperaturen bezogen). Nutzerbefund 27.08.2026 (Booster-Kette 1042).
+        ///
+        /// <para>Die echte Quellkopplung ist mit Paket B1 geliefert (Konzept 8.2). Das
+        /// Kriterium bleibt: Es meldet nicht die fehlende KOPPLUNG, sondern die fehlende
+        /// QUELLE — eine Sole-/Wasser-Wasser-WP ohne <c>WQ_Typ</c> rechnet weiterhin
+        /// ersatzweise mit der Aussenluft, egal wie gut die Kopplung gebaut ist.</para>
         /// </summary>
         public const string QUELLE_NICHT_KONFIGURIERT = "QUELLE_FEHLT";
 
@@ -566,10 +569,15 @@ namespace WindowsFormsApplication1
             //
             // Eine LEERE Bauform ist kein Befund (Konzept 6.2: „nur pruefen, wenn
             // Speichertyp gepflegt ist").
+            //
+            // PAKET L (S2-O8): Die Bauform stand hier als ROHER Persistenzwert im
+            // Meldungstext. Sie geht jetzt durch BauformAnzeige - dieselbe Regel wie
+            // beim Klassen-Set eine Zeile weiter.
             if (p.BauformWarmwasserseitig && !p.Set.Brauchwasser)
                 befunde.Add(Befund(W2_BAUFORM_WIDERSPRUCH, false, 0, p.ID,
                     string.Format(MyResource.Resource.SIMWARN_W2_BAUFORM_WIDERSPRUCH,
-                                  p.Anzeigename, p.Speichertyp, KlassenSetAnzeige(p.Set))));
+                                  p.Anzeigename, BauformAnzeige(p.Speichertyp),
+                                  KlassenSetAnzeige(p.Set))));
 
             // --- W4: T_Nutz_BW ueber VL_eff (PAKET P1) --------------------------------
             //
@@ -694,6 +702,39 @@ namespace WindowsFormsApplication1
             if (set.Prozess) teile.Add(KanalAnzeige(Kanal.PROZESS));
 
             return Verbinden(teile);
+        }
+
+        /// <summary>
+        /// Anzeigename einer Speicher-BAUFORM (<c>Tab_Pufferspeicher.Speichertyp</c>) —
+        /// PAKET L, Ticket S2-O8.
+        ///
+        /// <para>Bis hierher stand im W2-Text der rohe Persistenzwert. Das ist derselbe
+        /// Schichtenbruch, den die Drei-Schichten-Regel verbietet: „Kombispeicher" ist ein
+        /// Steuerwert, kein Anzeigetext, und auf englischer Oberfläche stand er
+        /// unübersetzt in einer sonst übersetzten Meldung.</para>
+        ///
+        /// <para><b>Unbekannte Werte laufen ROH durch</b> — dieselbe tolerante Regel wie in
+        /// <c>ErzeugerKatalog.Anzeige</c>. Das ist hier keine Feinheit, sondern Pflicht:
+        /// Befund L0-1 (Paket 9) hat in Beständen englische Anzeigetexte
+        /// („Buffer storage") und in einem Fall den Altdatenrest „blabla" in die Spalte
+        /// geschrieben. Ein solcher Wert soll SICHTBAR bleiben, nicht auf eine der drei
+        /// bekannten Bauformen geraten werden.</para>
+        ///
+        /// <para>Die Auswahlliste des Speicherdialogs (<c>Form_PufferSp_Bearbeiten</c>)
+        /// führt dieselben drei Anzeigetexte in ihrer eigenen Formular-<c>.resx</c>; sie
+        /// bleibt unangetastet (Projektregel: Designer und Formular-Ressourcen nicht von
+        /// Hand pflegen).</para>
+        /// </summary>
+        internal static string BauformAnzeige(string speichertyp)
+        {
+            if (string.Equals(speichertyp, DbWerte.PSP_SPEICHERTYP_SOLAR, StringComparison.Ordinal))
+                return MyResource.Resource.PSP_SPEICHERTYP_ANZEIGE_SOLAR;
+            if (string.Equals(speichertyp, DbWerte.PSP_SPEICHERTYP_PUFFER, StringComparison.Ordinal))
+                return MyResource.Resource.PSP_SPEICHERTYP_ANZEIGE_PUFFER;
+            if (string.Equals(speichertyp, DbWerte.PSP_SPEICHERTYP_KOMBI, StringComparison.Ordinal))
+                return MyResource.Resource.PSP_SPEICHERTYP_ANZEIGE_KOMBI;
+
+            return speichertyp;
         }
 
         /// <summary>Anzeigename eines Kanals (Schicht „Anzeige", nie <c>Kanal.Name</c>).</summary>
