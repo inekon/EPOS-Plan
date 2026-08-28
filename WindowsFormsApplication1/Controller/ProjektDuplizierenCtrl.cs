@@ -117,7 +117,15 @@ namespace WindowsFormsApplication1
             // "ID_PUFFER" und wird davon mit abgedeckt. Ein zweiter Eintrag waere
             // nicht ueberfluessig, sondern eine ArgumentException beim Laden der
             // Klasse. ID_Anlage steht ohnehin schon oben (Ä20).
-            {"ID_Senke","Z_AnlageSenke"}
+            {"ID_Senke","Z_AnlageSenke"},
+            // Q1 (Migrationsschritt 54): Quellprofile. Zwei Spalten, beide eindeutig
+            // benannt - der Profilschluessel an der Anlage (WQ_ID_Quellprofil, echte
+            // Access-Beziehung FK_Anlage_Quellprofil, die _echteFks ohnehin erkennt) und
+            // der Elternverweis der Wertzeilen (ID_Quellprofil). Ohne Versatz zeigte die
+            // Kopie auf das Profil des QUELLprojekts; eine Aenderung dort schlueg dann
+            // stillschweigend in beiden Projekten durch.
+            {"WQ_ID_Quellprofil","Tab_Quellprofil"},
+            {"ID_Quellprofil","Tab_Quellprofil"}
         };
 
         // Mehrdeutige FK-Spalten (gleicher Name, verschiedene Zieltabellen) -> je Tabelle aufgeloest.
@@ -162,6 +170,15 @@ namespace WindowsFormsApplication1
             // mitkommen.
             {"Z_AnlageSenke",          "ID_Anlage IN (SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = {0})"},
             {"Z_AnlagePufferVerbund",  "ID_Anlage IN (SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = {0})"},
+
+            // Q1 (Migrationsschritt 54): Die Wertzeilen eines Quellprofils haengen am
+            // KOPF und fuehren bewusst kein eigenes ID_Projekt - dasselbe Muster wie
+            // Tab_StromganglinieDaten eine Zeile hoeher. Ausdruecklich statt ueber die
+            // Auto-Erkennung: Tab_QuellprofilDaten hat mit ID_Quellprofil zwar nur EINEN
+            // Elternschluessel, aber die Auto-Erkennung braucht dafuer eine deklarierte
+            // Beziehung, und Schritt 54 legt FK_QuellprofilDaten_Kopf bewusst WEICH an.
+            // Ohne den Eintrag faehrt eine Variantenkopie mit leerem Profil.
+            {"Tab_QuellprofilDaten",   "ID_Quellprofil IN (SELECT ID FROM Tab_Quellprofil WHERE ID_Projekt = {0})"},
         };
 
         // Echte, in Access deklarierte Fremdschluessel: Key "Tabelle||Spalte" -> referenzierte Tabelle.

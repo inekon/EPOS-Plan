@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Drawing;
 using System.Globalization;
 using System.Windows.Forms;
@@ -7,15 +9,34 @@ using System.Windows.Forms.DataVisualization.Charting;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Eingabe des Quellprofils einer Wärmepumpe (Wärmequelle) - aufgebaut
-    /// analog zu "Brauchwassertypen Stundenverteilung":
+    /// Eingabe des QUELLPROFILS einer Wärmequelle.
     ///
-    /// - Reiter "Monatswerte":  12 Monats-Mitteltemperaturen der Quelle [°C]
-    /// - Reiter "Wochenwerte":  Tagesgang je Wochentag als Abweichung [K]
-    ///                          (24 Stundenwerte je Tag, Tag kopieren/einfügen)
-    /// - Reiter "Grafik":       daraus konstruiertes Jahresprofil (8760 h)
+    /// <para><b>PAKET Q1 (Konzept 8.1 Punkt 2/3, Kapitel 10).</b> Der Dialog pflegt
+    /// nicht mehr zwei delimitierte Zeichenketten an der Anlage, sondern einen eigenen
+    /// Gegenstand: eine Zeile in <c>Tab_Quellprofil</c> mit ihrem Wertesatz in
+    /// <c>Tab_QuellprofilDaten</c> (Migrationsschritt 54). Die Anlage verweist über
+    /// <c>WQ_ID_Quellprofil</c> darauf — Schlüssel- statt Indexkopplung.</para>
     ///
-    /// Jahresprofil: Quelltemperatur(h) = Monatswert(Monat) + Wochenwert(Wochentag, Stunde)
+    /// <para><b>Drei Betriebsarten</b> (<c>DbWerte.WQ_PROFIL_BETRIEBSART_*</c>):
+    /// <list type="bullet">
+    ///   <item><b>Monat</b> — 12 Eingabefelder, wie bisher.</item>
+    ///   <item><b>Tag</b> — 365 Werte. Bewusst KEIN Formular mit 365 Feldern, sondern
+    ///   eine Tabelle mit CSV-Import: Ein Tageswertsatz kommt aus einer Messreihe, nicht
+    ///   aus 365 Tastatureingaben. <b>Kalenderunabhängig</b> — Tag <c>i</c> gilt für die
+    ///   24 Stunden des Tages <c>i</c>, ohne Wochentagsbezug.</item>
+    ///   <item><b>Stunde</b> — 8760 Werte, ebenfalls über den Import. Damit kommt das
+    ///   Stundenprofil in die DATENBANK statt als Dateipfad an der Anlage zu stehen
+    ///   (Konzept 8.1 Punkt 3); die Bemessung gegen die 2-GB-Grenze steht bei
+    ///   <c>SchemaKatalog.TAB_QUELLPROFILDATEN</c>.</item>
+    /// </list></para>
+    ///
+    /// <para><b>Der additive Wochengang (168 Werte) ist Altweg</b> und wird hier nur
+    /// noch ANGEZEIGT, wenn die Anlage einen trägt. Er lebt in
+    /// <c>WQ_Wochenwerte</c> weiter und wird von der Engine gerechnet, solange kein
+    /// Quellprofil gewählt ist (<c>WaermequelleClass.Quelltemperatur</c>, Stufe 2). Ein
+    /// gespeichertes Quellprofil setzt ihn außer Kraft — deshalb steht das auf der Seite
+    /// und deshalb ist sie nicht bearbeitbar: Eine Eingabe ohne Wirkung wäre schlimmer
+    /// als keine. Die Tagesvariante ist sein Nachfolger und braucht keinen Kalender.</para>
     ///
     /// Das Formular wird bewusst komplett programmatisch aufgebaut (kein Designer,
     /// keine .resx) - passend zum übrigen Umbau der Simulations-Konfiguration.
@@ -71,14 +92,23 @@ namespace WindowsFormsApplication1
         private const double VORGABE_MONATSWERT = 10.0;
         private const double VORGABE_WOCHENWERT = 0.0;
 
+        /// <summary>Steuerwert der ComboBox-Zeile „&lt;neues Profil&gt;" (Schicht 2, ASCII).</summary>
+        private const int PROFIL_NEU = 0;
+
         /// <summary>Monats-Mitteltemperaturen der Wärmequelle [°C]</summary>
         private double[] _monat = new double[12];
 
-        /// <summary>Tagesgang je Wochentag als Abweichung vom Monatswert [K]</summary>
+        /// <summary>Tagesgang je Wochentag als Abweichung vom Monatswert [K] — ALTWEG, nur Anzeige</summary>
         private double[,] _woche = new double[7, 24];
 
-        /// <summary>Zwischenablage für "Tag kopieren" / "Tag einfügen"</summary>
-        private double[] _tagKopie = null;
+        /// <summary>true = die Anlage trägt einen Wochengang aus dem Altweg (mindestens ein Wert ≠ 0).</summary>
+        private bool _wochengangVorhanden;
+
+        /// <summary>
+        /// Werte der Betriebsarten Tag (365) und Stunde (8760). Länge folgt der
+        /// Betriebsart; <c>null</c>, solange Monat gewählt ist.
+        /// </summary>
+        private double[] _werte;
 
         private TextBox[] _tbMonat = new TextBox[12];
         private TextBox[] _tbStunde = new TextBox[24];
@@ -87,8 +117,30 @@ namespace WindowsFormsApplication1
         private Label _lblInfo;
         private int _aktuellerTag = 0;
 
+        private TabControl _tabs;
+        private TabPage _seiteMonat, _seiteWoche, _seiteWerte, _seiteGrafik;
+        private ComboBox _cbProfil, _cbBetriebsart;
+        private TextBox _tbBezeichner, _tbBeschreibung;
+        private DataGridView _grid;
+        private DataTable _gridTabelle;
+        private Label _lblWerteInfo, _lblWerteHinweis;
+        private bool _aufbau;
+
+        /// <summary>Die Profile des Projekts, in der Reihenfolge der Auswahlliste.</summary>
+        private List<QuellprofilCtrl.Kopf> _profile = new List<QuellprofilCtrl.Kopf>();
+
         /// <summary>Name der Wärmepumpe (nur für den Fenstertitel).</summary>
         public string WPName = "";
+
+        /// <summary>Projekt, zu dem ein neu angelegtes Profil gehört (Q1).</summary>
+        public int ID_Projekt;
+
+        /// <summary>
+        /// EIN- UND AUSGABE (Q1): das gewählte Quellprofil
+        /// (<c>Tab_Energieanlagen.WQ_ID_Quellprofil</c>); 0 = keines. Nach
+        /// <c>DialogResult.OK</c> steht hier die ID des gespeicherten Profils.
+        /// </summary>
+        public int ID_Quellprofil;
 
         public Form_Quellprofil()
         {
@@ -108,11 +160,16 @@ namespace WindowsFormsApplication1
         }
 
         // ------------------------------------------------------------------
-        // Laden / Speichern der Werte als Zeichenkette (Datenbankspalten)
+        // Laden / Speichern der Werte als Zeichenkette (Altweg-Spalten)
         // ------------------------------------------------------------------
 
         /// <summary>
         /// Monatswerte als "t1;...;t12" (Punkt als Dezimaltrennzeichen).
+        ///
+        /// <para><b>Q1:</b> Nur noch EINGANG — die Vorbelegung aus dem Altweg
+        /// <c>WQ_Monatswerte</c>, wenn die Anlage noch kein Quellprofil hat. Der
+        /// Rückgabeweg bleibt für die Diagrammvorschau bestehen; geschrieben wird die
+        /// Spalte vom Aufrufer nicht mehr.</para>
         /// </summary>
         public string Monatswerte
         {
@@ -139,6 +196,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Wochenwerte als 168 Werte "w1;...;w168" (Montag 0 Uhr bis Sonntag 23 Uhr).
+        ///
+        /// <para><b>Q1: ALTWEG, nur Anzeige.</b> Der Wochengang ist nicht Teil des
+        /// Quellprofil-Modells; er bleibt in <c>WQ_Wochenwerte</c> stehen und wird von
+        /// der Engine gerechnet, solange die Anlage kein Quellprofil führt.</para>
         /// </summary>
         public string Wochenwerte
         {
@@ -153,14 +214,30 @@ namespace WindowsFormsApplication1
             set
             {
                 Array.Clear(_woche, 0, _woche.Length); // Vorgabe: keine Abweichung
+                _wochengangVorhanden = false;
                 if (string.IsNullOrEmpty(value)) return;
 
                 string[] teile = value.Split(';');
                 for (int i = 0; i < 168 && i < teile.Length; i++)
                 {
                     float w;
-                    if (WaermequelleClass.ZahlParsen(teile[i], out w)) _woche[i / 24, i % 24] = w;
+                    if (WaermequelleClass.ZahlParsen(teile[i], out w))
+                    {
+                        _woche[i / 24, i % 24] = w;
+                        if (w != 0) _wochengangVorhanden = true;
+                    }
                 }
+            }
+        }
+
+        /// <summary>Die gerade gewählte Betriebsart (Steuerwert aus <c>DbWerte</c>).</summary>
+        private string Betriebsart
+        {
+            get
+            {
+                object tag = (_cbBetriebsart != null && _cbBetriebsart.SelectedItem is SchluesselEintrag)
+                    ? ((SchluesselEintrag)_cbBetriebsart.SelectedItem).Wert : null;
+                return (tag as string) ?? DbWerte.WQ_PROFIL_BETRIEBSART_MONAT;
             }
         }
 
@@ -170,11 +247,23 @@ namespace WindowsFormsApplication1
             if (!string.IsNullOrEmpty(WPName))
                 this.Text = string.Format(MyResource.Resource.SIMQ_QUELLPROFIL_TITEL_MIT_WP, WPName);
 
-            for (int m = 0; m < 12; m++)
-                _tbMonat[m].Text = _monat[m].ToString("F1");
+            _aufbau = true;
+            try
+            {
+                ProfillisteLaden();
 
-            _lbTag.SelectedIndex = 0;
-            TagAnzeigen(0);
+                // Ein bereits gewähltes Profil überschreibt die Altweg-Vorbelegung.
+                if (ID_Quellprofil > 0) ProfilUebernehmen(ID_Quellprofil);
+                else BetriebsartSetzen(DbWerte.WQ_PROFIL_BETRIEBSART_MONAT);
+
+                for (int m = 0; m < 12; m++) _tbMonat[m].Text = _monat[m].ToString("F1");
+
+                _lbTag.SelectedIndex = 0;
+                TagAnzeigen(0);
+            }
+            finally { _aufbau = false; }
+
+            SeitenAnpassen();
             ChartAktualisieren();
         }
 
@@ -189,41 +278,84 @@ namespace WindowsFormsApplication1
             this.StartPosition = FormStartPosition.CenterParent;
             this.MinimizeBox = false;
             this.MaximizeBox = false;
-            this.ClientSize = new Size(700, 540);
+            this.ClientSize = new Size(700, 612);
 
             _lblInfo = new Label
             {
                 AutoSize = false,
                 Location = new Point(12, 10),
-                Size = new Size(676, 36),
+                Size = new Size(676, 32),
                 Text = MyResource.Resource.SIMQ_QUELLPROFIL_INFO
             };
             this.Controls.Add(_lblInfo);
 
-            TabControl tabs = new TabControl
+            // --- Kopfzeilen: Profilauswahl, Bezeichnung, Betriebsart, Beschreibung ----
+            // Feste Spaltenmaße: 108 px Beschriftung tragen beide Sprachen („Betriebsart:"
+            // 70 px, „Operating mode:" 95 px; „Beschreibung:" 85 px, „Description:" 70 px).
+            this.Controls.Add(Beschriftung(MyResource.Resource.SIMQ_QUELLPROFIL_LBL_PROFIL, 12, 50));
+            _cbProfil = new ComboBox
             {
-                Location = new Point(12, 52),
+                Location = new Point(124, 47),
+                Width = 220,
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+            _cbProfil.SelectedIndexChanged += cbProfil_SelectedIndexChanged;
+            this.Controls.Add(_cbProfil);
+
+            this.Controls.Add(Beschriftung(MyResource.Resource.SIMQ_QUELLPROFIL_LBL_BETRIEBSART, 356, 50));
+            _cbBetriebsart = new ComboBox
+            {
+                Location = new Point(468, 47),
+                Width = 220,
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+            _cbBetriebsart.Items.Add(new SchluesselEintrag(DbWerte.WQ_PROFIL_BETRIEBSART_MONAT,
+                                                           MyResource.Resource.SIMQ_QUELLPROFIL_BA_MONAT));
+            _cbBetriebsart.Items.Add(new SchluesselEintrag(DbWerte.WQ_PROFIL_BETRIEBSART_TAG,
+                                                           MyResource.Resource.SIMQ_QUELLPROFIL_BA_TAG));
+            _cbBetriebsart.Items.Add(new SchluesselEintrag(DbWerte.WQ_PROFIL_BETRIEBSART_STUNDE,
+                                                           MyResource.Resource.SIMQ_QUELLPROFIL_BA_STUNDE));
+            _cbBetriebsart.SelectedIndex = 0;
+            _cbBetriebsart.SelectedIndexChanged += cbBetriebsart_SelectedIndexChanged;
+            this.Controls.Add(_cbBetriebsart);
+
+            this.Controls.Add(Beschriftung(MyResource.Resource.SIMQ_QUELLPROFIL_LBL_BEZEICHNER, 12, 80));
+            _tbBezeichner = new TextBox { Location = new Point(124, 77), Width = 220 };
+            this.Controls.Add(_tbBezeichner);
+
+            this.Controls.Add(Beschriftung(MyResource.Resource.SIMQ_QUELLPROFIL_LBL_BESCHREIBUNG, 356, 80));
+            _tbBeschreibung = new TextBox { Location = new Point(468, 77), Width = 220 };
+            this.Controls.Add(_tbBeschreibung);
+
+            _tabs = new TabControl
+            {
+                Location = new Point(12, 112),
                 Size = new Size(676, 440)
             };
-            this.Controls.Add(tabs);
+            this.Controls.Add(_tabs);
 
-            tabs.TabPages.Add(BaueMonatsSeite());
-            tabs.TabPages.Add(BaueWochenSeite());
-            tabs.TabPages.Add(BaueGrafikSeite());
-            tabs.SelectedIndexChanged += (s, e) => { if (tabs.SelectedIndex == 2) ChartAktualisieren(); };
+            _seiteMonat = BaueMonatsSeite();
+            _seiteWoche = BaueWochenSeite();
+            _seiteWerte = BaueWerteSeite();
+            _seiteGrafik = BaueGrafikSeite();
+
+            _tabs.SelectedIndexChanged += delegate
+            {
+                if (_tabs.SelectedTab == _seiteGrafik) ChartAktualisieren();
+            };
 
             Button btnOk = new Button
             {
                 Text = MyResource.Resource.SIM_BTN_OK,
                 DialogResult = DialogResult.OK,
-                Location = new Point(this.ClientSize.Width - 190, 500),
+                Location = new Point(this.ClientSize.Width - 190, 572),
                 Width = 85
             };
             Button btnAbbruch = new Button
             {
                 Text = MyResource.Resource.SIM_BTN_ABBRECHEN,
                 DialogResult = DialogResult.Cancel,
-                Location = new Point(this.ClientSize.Width - 97, 500),
+                Location = new Point(this.ClientSize.Width - 97, 572),
                 Width = 85
             };
             btnOk.Click += btnOk_Click;
@@ -232,6 +364,19 @@ namespace WindowsFormsApplication1
             this.Controls.Add(btnAbbruch);
             this.AcceptButton = btnOk;
             this.CancelButton = btnAbbruch;
+        }
+
+        /// <summary>Beschriftung fester Breite — die englischen Texte sind länger als die deutschen.</summary>
+        private static Label Beschriftung(string text, int x, int y)
+        {
+            return new Label
+            {
+                Text = text,
+                AutoSize = false,
+                Size = new Size(108, 20),
+                TextAlign = ContentAlignment.MiddleLeft,
+                Location = new Point(x, y)
+            };
         }
 
         private TabPage BaueMonatsSeite()
@@ -288,7 +433,7 @@ namespace WindowsFormsApplication1
                 Location = new Point(30, 330),
                 Width = 250
             };
-            btnAlle.Click += (s, e) =>
+            btnAlle.Click += delegate
             {
                 float w;
                 if (!WaermequelleClass.ZahlParsen(_tbMonat[0].Text, out w))
@@ -305,6 +450,15 @@ namespace WindowsFormsApplication1
             return seite;
         }
 
+        /// <summary>
+        /// Die ALTWEG-Seite: der additive Wochengang aus <c>WQ_Wochenwerte</c>.
+        ///
+        /// <para>Sie erscheint nur, wenn die Anlage einen Wochengang trägt, und ist
+        /// NICHT bearbeitbar — mit einem gespeicherten Quellprofil rechnet die Engine
+        /// ihn nicht mehr (Konzept 8.1 Punkt 2: die Tagesvariante ist sein Nachfolger).
+        /// Eingabefelder, die niemand liest, wären eine Zusage ohne Wirkung; ihn ganz
+        /// wegzulassen hieße, gepflegte Daten stillschweigend verschwinden zu lassen.</para>
+        /// </summary>
         private TabPage BaueWochenSeite()
         {
             TabPage seite = new TabPage(MyResource.Resource.SIMQ_QUELLPROFIL_TAB_WOCHENWERTE);
@@ -336,7 +490,8 @@ namespace WindowsFormsApplication1
                 {
                     Location = new Point(48 + spalte * 150, 45 + zeile * 34),
                     Width = 90,
-                    Text = Vorgabe(VORGABE_WOCHENWERT)
+                    Text = Vorgabe(VORGABE_WOCHENWERT),
+                    ReadOnly = true
                 };
 
                 seite.Controls.Add(nr);
@@ -357,30 +512,102 @@ namespace WindowsFormsApplication1
             _lbTag.Items.AddRange(Wochentagsnamen);
             _lbTag.SelectedIndexChanged += lbTag_SelectedIndexChanged;
 
-            Button btnKopieren = new Button { Text = MyResource.Resource.SIMQ_QUELLPROFIL_BTN_TAG_KOPIEREN, Location = new Point(490, 190), Width = 150 };
-            Button btnEinfuegen = new Button { Text = MyResource.Resource.SIMQ_QUELLPROFIL_BTN_TAG_EINFUEGEN, Location = new Point(490, 222), Width = 150 };
-            Button btnAlleTage = new Button { Text = MyResource.Resource.SIMQ_QUELLPROFIL_BTN_ALLE_TAGE, Location = new Point(490, 254), Width = 150 };
-            Button btnUebernehmen = new Button { Text = MyResource.Resource.SIMQ_QUELLPROFIL_BTN_UEBERNEHMEN, Location = new Point(20, 330), Width = 430 };
-
-            btnKopieren.Click += btnKopieren_Click;
-            btnEinfuegen.Click += btnEinfuegen_Click;
-            btnAlleTage.Click += btnAlleTage_Click;
-            btnUebernehmen.Click += btnUebernehmen_Click;
-
             seite.Controls.Add(lblTag);
             seite.Controls.Add(_lbTag);
-            seite.Controls.Add(btnKopieren);
-            seite.Controls.Add(btnEinfuegen);
-            seite.Controls.Add(btnAlleTage);
-            seite.Controls.Add(btnUebernehmen);
 
             Label hinweis = new Label
             {
-                Text = MyResource.Resource.SIMQ_QUELLPROFIL_HINWEIS_ABWEICHUNG,
-                AutoSize = true,
-                Location = new Point(20, 368)
+                Text = MyResource.Resource.SIMQ_QUELLPROFIL_HINWEIS_ALTWEG,
+                AutoSize = false,
+                Size = new Size(620, 64),
+                Location = new Point(20, 320)
             };
             seite.Controls.Add(hinweis);
+
+            return seite;
+        }
+
+        /// <summary>
+        /// Die WERTE-Seite der Betriebsarten Tag (365) und Stunde (8760) —
+        /// Tabelle statt Formular.
+        ///
+        /// <para><b>Warum eine Tabelle mit Import und keine 365 Eingabefelder</b>
+        /// (Konzept 10, Auftrag Q1): Ein Tages- oder Stundenwertsatz stammt aus einer
+        /// Messreihe oder einer Norm-Auswertung, nicht aus Tastatureingaben. Der Import
+        /// liest ANSI-kodiert (<c>WaermequelleClass.WerteAusCsv</c>) — deutsche
+        /// Zählerexporte sind fast nie UTF-8.</para>
+        ///
+        /// <para>Das Raster hängt an einer <see cref="DataTable"/> statt an
+        /// <c>Rows.Add</c>: 8760 einzeln angelegte Zeilen brauchen mehrere Sekunden,
+        /// eine Bindung zeigt sie sofort.</para>
+        /// </summary>
+        private TabPage BaueWerteSeite()
+        {
+            TabPage seite = new TabPage(MyResource.Resource.SIMQ_QUELLPROFIL_TAB_TAGESWERTE);
+
+            _lblWerteHinweis = new Label
+            {
+                AutoSize = false,
+                Size = new Size(640, 48),
+                Location = new Point(14, 10),
+                Text = MyResource.Resource.SIMQ_QUELLPROFIL_HINWEIS_TAG
+            };
+            seite.Controls.Add(_lblWerteHinweis);
+
+            _gridTabelle = new DataTable();
+            _gridTabelle.Columns.Add("Nr", typeof(int));
+            _gridTabelle.Columns.Add("Wert", typeof(double));
+
+            _grid = new DataGridView
+            {
+                Location = new Point(14, 64),
+                Size = new Size(400, 300),
+                AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false,
+                AllowUserToResizeRows = false,
+                RowHeadersVisible = false,
+                SelectionMode = DataGridViewSelectionMode.CellSelect,
+                AutoGenerateColumns = true,
+                DataSource = _gridTabelle
+            };
+            _grid.DataBindingComplete += delegate
+            {
+                if (_grid.Columns.Count < 2) return;
+                _grid.Columns[0].HeaderText = MyResource.Resource.SIMQ_QUELLPROFIL_SPALTE_NR;
+                _grid.Columns[0].ReadOnly = true;
+                _grid.Columns[0].Width = 80;
+                _grid.Columns[1].HeaderText = MyResource.Resource.SIMQ_QUELLPROFIL_SPALTE_WERT;
+                _grid.Columns[1].Width = 260;
+                _grid.Columns[1].DefaultCellStyle.Format = "F1";
+            };
+            _grid.CellValueChanged += delegate { WerteInfoAktualisieren(); };
+            seite.Controls.Add(_grid);
+
+            Button btnCsv = new Button
+            {
+                Text = MyResource.Resource.SIMQ_QUELLPROFIL_BTN_CSV,
+                Location = new Point(430, 64),
+                Width = 210
+            };
+            btnCsv.Click += btnCsv_Click;
+            seite.Controls.Add(btnCsv);
+
+            Button btnAlle = new Button
+            {
+                Text = MyResource.Resource.SIMQ_QUELLPROFIL_BTN_ALLE_WERTE,
+                Location = new Point(430, 98),
+                Width = 210
+            };
+            btnAlle.Click += btnAlleWerte_Click;
+            seite.Controls.Add(btnAlle);
+
+            _lblWerteInfo = new Label
+            {
+                AutoSize = false,
+                Size = new Size(210, 90),
+                Location = new Point(430, 140)
+            };
+            seite.Controls.Add(_lblWerteInfo);
 
             return seite;
         }
@@ -426,6 +653,252 @@ namespace WindowsFormsApplication1
         }
 
         // ------------------------------------------------------------------
+        // Profilliste und Betriebsart
+        // ------------------------------------------------------------------
+
+        private void ProfillisteLaden()
+        {
+            _profile = QuellprofilCtrl.LesenJeProjekt(ID_Projekt);
+
+            _cbProfil.Items.Clear();
+            _cbProfil.Items.Add(new SchluesselEintrag(PROFIL_NEU,
+                                                      MyResource.Resource.SIMQ_QUELLPROFIL_NEU));
+            foreach (QuellprofilCtrl.Kopf k in _profile)
+                _cbProfil.Items.Add(new SchluesselEintrag(k.ID, k.ToString()));
+
+            _cbProfil.SelectedIndex = 0;
+            for (int i = 1; i < _cbProfil.Items.Count; i++)
+            {
+                if ((int)((SchluesselEintrag)_cbProfil.Items[i]).Wert != ID_Quellprofil) continue;
+                _cbProfil.SelectedIndex = i;
+                break;
+            }
+        }
+
+        private void cbProfil_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_aufbau || _cbProfil.SelectedItem == null) return;
+
+            int id = (int)((SchluesselEintrag)_cbProfil.SelectedItem).Wert;
+
+            _aufbau = true;
+            try
+            {
+                if (id == PROFIL_NEU)
+                {
+                    _tbBezeichner.Text = "";
+                    _tbBeschreibung.Text = "";
+                }
+                else ProfilUebernehmen(id);
+            }
+            finally { _aufbau = false; }
+
+            SeitenAnpassen();
+            ChartAktualisieren();
+        }
+
+        /// <summary>Lädt Kopf und Werte eines gespeicherten Profils in die Oberfläche.</summary>
+        private void ProfilUebernehmen(int idProfil)
+        {
+            QuellprofilCtrl.Kopf k = QuellprofilCtrl.Lesen(idProfil);
+            if (k == null) return;
+
+            _tbBezeichner.Text = k.Bezeichner;
+            _tbBeschreibung.Text = k.Beschreibung;
+            BetriebsartSetzen(k.Betriebsart);
+
+            double[] werte = QuellprofilCtrl.WerteLesen(idProfil);
+            int soll = DbWerte.QuellprofilWerteanzahl(k.Betriebsart);
+            if (werte == null || soll <= 0) return;
+
+            if (k.Betriebsart == DbWerte.WQ_PROFIL_BETRIEBSART_MONAT)
+            {
+                for (int m = 0; m < 12 && m < werte.Length; m++)
+                {
+                    _monat[m] = werte[m];
+                    _tbMonat[m].Text = _monat[m].ToString("F1");
+                }
+                return;
+            }
+
+            _werte = new double[soll];
+            Array.Copy(werte, _werte, Math.Min(soll, werte.Length));
+            GridFuellen();
+        }
+
+        private void BetriebsartSetzen(string betriebsart)
+        {
+            for (int i = 0; i < _cbBetriebsart.Items.Count; i++)
+            {
+                if ((string)((SchluesselEintrag)_cbBetriebsart.Items[i]).Wert != betriebsart) continue;
+                _cbBetriebsart.SelectedIndex = i;
+                return;
+            }
+            _cbBetriebsart.SelectedIndex = 0;   // unbekannter Altwert -> Monat
+        }
+
+        private void cbBetriebsart_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_aufbau) return;
+
+            int soll = DbWerte.QuellprofilWerteanzahl(Betriebsart);
+            if (soll > 0 && Betriebsart != DbWerte.WQ_PROFIL_BETRIEBSART_MONAT)
+            {
+                // Längenwechsel Tag <-> Stunde: Was passt, bleibt; der Rest bekommt die
+                // Vorgabe. Ein stilles Abschneiden wäre ein Datenverlust ohne Ansage,
+                // ein Verwerfen der ganzen Eingabe eine Überreaktion.
+                double[] neu = new double[soll];
+                for (int i = 0; i < soll; i++)
+                    neu[i] = (_werte != null && i < _werte.Length) ? _werte[i] : VORGABE_MONATSWERT;
+                _werte = neu;
+                GridFuellen();
+            }
+
+            SeitenAnpassen();
+            ChartAktualisieren();
+        }
+
+        /// <summary>
+        /// Blendet die Seiten je Betriebsart um: Monat zeigt die zwölf Felder, Tag und
+        /// Stunde die Werteseite. Die Altweg-Seite erscheint nur, wenn die Anlage einen
+        /// Wochengang trägt.
+        /// </summary>
+        private void SeitenAnpassen()
+        {
+            string ba = Betriebsart;
+            bool monat = ba == DbWerte.WQ_PROFIL_BETRIEBSART_MONAT;
+
+            _seiteWerte.Text = (ba == DbWerte.WQ_PROFIL_BETRIEBSART_STUNDE)
+                ? MyResource.Resource.SIMQ_QUELLPROFIL_TAB_STUNDENWERTE
+                : MyResource.Resource.SIMQ_QUELLPROFIL_TAB_TAGESWERTE;
+
+            _lblWerteHinweis.Text = (ba == DbWerte.WQ_PROFIL_BETRIEBSART_STUNDE)
+                ? MyResource.Resource.SIMQ_QUELLPROFIL_HINWEIS_STUNDE
+                : MyResource.Resource.SIMQ_QUELLPROFIL_HINWEIS_TAG;
+
+            _tabs.TabPages.Clear();
+            if (monat)
+            {
+                _tabs.TabPages.Add(_seiteMonat);
+                if (_wochengangVorhanden) _tabs.TabPages.Add(_seiteWoche);
+            }
+            else _tabs.TabPages.Add(_seiteWerte);
+
+            _tabs.TabPages.Add(_seiteGrafik);
+
+            WerteInfoAktualisieren();
+        }
+
+        // ------------------------------------------------------------------
+        // Werteraster
+        // ------------------------------------------------------------------
+
+        private void GridFuellen()
+        {
+            if (_gridTabelle == null) return;
+
+            _gridTabelle.BeginLoadData();
+            _gridTabelle.Rows.Clear();
+            if (_werte != null)
+                for (int i = 0; i < _werte.Length; i++) _gridTabelle.Rows.Add(i + 1, _werte[i]);
+            _gridTabelle.EndLoadData();
+
+            WerteInfoAktualisieren();
+        }
+
+        /// <summary>Liest das Raster zurück in <see cref="_werte"/>.</summary>
+        private void GridUebernehmen()
+        {
+            if (_gridTabelle == null || _werte == null) return;
+
+            for (int i = 0; i < _gridTabelle.Rows.Count && i < _werte.Length; i++)
+            {
+                object v = _gridTabelle.Rows[i]["Wert"];
+                if (v == null || v == DBNull.Value) continue;
+                try { _werte[i] = Convert.ToDouble(v); }
+                catch { /* die Zelle bleibt beim alten Wert */ }
+            }
+        }
+
+        private void WerteInfoAktualisieren()
+        {
+            if (_lblWerteInfo == null) return;
+
+            GridUebernehmen();
+
+            if (_werte == null || _werte.Length == 0)
+            {
+                _lblWerteInfo.Text = "";
+                return;
+            }
+
+            double min = _werte[0], max = _werte[0], summe = 0;
+            for (int i = 0; i < _werte.Length; i++)
+            {
+                if (_werte[i] < min) min = _werte[i];
+                if (_werte[i] > max) max = _werte[i];
+                summe += _werte[i];
+            }
+
+            _lblWerteInfo.Text = string.Format(MyResource.Resource.SIMQ_QUELLPROFIL_INFO_WERTE,
+                                               _werte.Length, min.ToString("F1"),
+                                               max.ToString("F1"),
+                                               (summe / _werte.Length).ToString("F1"));
+        }
+
+        private void btnCsv_Click(object sender, EventArgs e)
+        {
+            int soll = DbWerte.QuellprofilWerteanzahl(Betriebsart);
+            if (soll <= 0) return;
+
+            if (MessageBox.Show(
+                    Zeilenumbruch.Normalisieren(
+                        string.Format(MyResource.Resource.SIMQ_QUELLPROFIL_CSV_HINWEIS, soll)),
+                    MyResource.Resource.SIMQ_QUELLE_QUELLPROFIL,
+                    MessageBoxButtons.OKCancel, MessageBoxIcon.Information) != DialogResult.OK) return;
+
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Title = MyResource.Resource.SIMQ_CSV_DATEIDIALOG_TITEL;
+            dlg.Filter = MyResource.Resource.SIMQ_CSV_DATEIFILTER;
+            if (dlg.ShowDialog(this) != DialogResult.OK) return;
+
+            double[] gelesen = WaermequelleClass.WerteAusCsv(dlg.FileName, soll);
+            if (gelesen == null)
+            {
+                MessageBox.Show(
+                    Zeilenumbruch.Normalisieren(
+                        string.Format(MyResource.Resource.SIMQ_QUELLPROFIL_MSG_CSV_FEHLER, soll)),
+                    MyResource.Resource.SIMQ_CSV_FEHLER_TITEL,
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            _werte = gelesen;
+            GridFuellen();
+            ChartAktualisieren();
+        }
+
+        private void btnAlleWerte_Click(object sender, EventArgs e)
+        {
+            int soll = DbWerte.QuellprofilWerteanzahl(Betriebsart);
+            if (soll <= 0) return;
+
+            string eingabe = Eingabefrage.Fragen(
+                this,
+                MyResource.Resource.SIMQ_QUELLPROFIL_BTN_ALLE_WERTE,
+                MyResource.Resource.SIMQ_QUELLPROFIL_ALLE_WERTE_TEXT,
+                Vorgabe(VORGABE_MONATSWERT));
+
+            float w;
+            if (eingabe == null || !WaermequelleClass.ZahlParsen(eingabe, out w)) return;
+
+            _werte = new double[soll];
+            for (int i = 0; i < soll; i++) _werte[i] = w;
+            GridFuellen();
+            ChartAktualisieren();
+        }
+
+        // ------------------------------------------------------------------
         // Ereignisse
         // ------------------------------------------------------------------
 
@@ -433,8 +906,6 @@ namespace WindowsFormsApplication1
         {
             if (_lbTag.SelectedIndex < 0) return;
 
-            // Eingaben des bisherigen Tages sichern, dann neuen Tag anzeigen
-            TagUebernehmen(_aktuellerTag, false);
             _aktuellerTag = _lbTag.SelectedIndex;
             TagAnzeigen(_aktuellerTag);
         }
@@ -445,119 +916,129 @@ namespace WindowsFormsApplication1
                 _tbStunde[h].Text = _woche[tag, h].ToString("F1");
         }
 
-        /// <summary>
-        /// Liest die 24 Stundenfelder in den Datenbestand des Tages.
-        /// </summary>
-        private bool TagUebernehmen(int tag, bool meldung)
-        {
-            double[] werte = new double[24];
-            for (int h = 0; h < 24; h++)
-            {
-                float w;
-                if (!WaermequelleClass.ZahlParsen(_tbStunde[h].Text, out w))
-                {
-                    if (meldung)
-                        MessageBox.Show(
-                            string.Format(MyResource.Resource.SIMQ_QUELLPROFIL_MSG_STUNDE_UNGUELTIG,
-                                          h + 1, _tbStunde[h].Text),
-                            MyResource.Resource.SIMQ_QUELLE_QUELLPROFIL,
-                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return false;
-                }
-                werte[h] = w;
-            }
-
-            for (int h = 0; h < 24; h++) _woche[tag, h] = werte[h];
-            return true;
-        }
-
-        private void btnUebernehmen_Click(object sender, EventArgs e)
-        {
-            if (TagUebernehmen(_aktuellerTag, true)) ChartAktualisieren();
-        }
-
-        private void btnKopieren_Click(object sender, EventArgs e)
-        {
-            if (!TagUebernehmen(_aktuellerTag, true)) return;
-
-            _tagKopie = new double[24];
-            for (int h = 0; h < 24; h++) _tagKopie[h] = _woche[_aktuellerTag, h];
-        }
-
-        private void btnEinfuegen_Click(object sender, EventArgs e)
-        {
-            if (_tagKopie == null)
-            {
-                MessageBox.Show(MyResource.Resource.SIMQ_QUELLPROFIL_MSG_ERST_KOPIEREN,
-                    MyResource.Resource.SIMQ_QUELLE_QUELLPROFIL,
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            for (int h = 0; h < 24; h++) _woche[_aktuellerTag, h] = _tagKopie[h];
-            TagAnzeigen(_aktuellerTag);
-            ChartAktualisieren();
-        }
-
-        private void btnAlleTage_Click(object sender, EventArgs e)
-        {
-            if (!TagUebernehmen(_aktuellerTag, true)) return;
-
-            for (int t = 0; t < 7; t++)
-                for (int h = 0; h < 24; h++)
-                    _woche[t, h] = _woche[_aktuellerTag, h];
-
-            ChartAktualisieren();
-            MessageBox.Show(MyResource.Resource.SIMQ_QUELLPROFIL_MSG_ALLE_TAGE,
-                MyResource.Resource.SIMQ_QUELLE_QUELLPROFIL,
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
         private void btnOk_Click(object sender, EventArgs e)
         {
-            // Monatswerte prüfen und übernehmen
-            string[] monate = Monatsnamen;
-            for (int m = 0; m < 12; m++)
+            string betriebsart = Betriebsart;
+            int soll = DbWerte.QuellprofilWerteanzahl(betriebsart);
+            double[] werte;
+
+            if (betriebsart == DbWerte.WQ_PROFIL_BETRIEBSART_MONAT)
             {
-                float w;
-                if (!WaermequelleClass.ZahlParsen(_tbMonat[m].Text, out w))
+                // Monatswerte prüfen und übernehmen
+                string[] monate = Monatsnamen;
+                for (int m = 0; m < 12; m++)
+                {
+                    float w;
+                    if (!WaermequelleClass.ZahlParsen(_tbMonat[m].Text, out w))
+                    {
+                        MessageBox.Show(
+                            string.Format(MyResource.Resource.SIMQ_QUELLPROFIL_MSG_MONAT_UNGUELTIG,
+                                          monate[m], _tbMonat[m].Text),
+                            MyResource.Resource.SIMQ_QUELLE_QUELLPROFIL,
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        this.DialogResult = DialogResult.None;
+                        return;
+                    }
+                    _monat[m] = w;
+                }
+
+                werte = new double[12];
+                Array.Copy(_monat, werte, 12);
+            }
+            else
+            {
+                GridUebernehmen();
+                if (_werte == null || _werte.Length != soll)
                 {
                     MessageBox.Show(
-                        string.Format(MyResource.Resource.SIMQ_QUELLPROFIL_MSG_MONAT_UNGUELTIG,
-                                      monate[m], _tbMonat[m].Text),
+                        Zeilenumbruch.Normalisieren(
+                            string.Format(MyResource.Resource.SIMQ_QUELLPROFIL_MSG_WERTE_FEHLEN, soll)),
                         MyResource.Resource.SIMQ_QUELLE_QUELLPROFIL,
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     this.DialogResult = DialogResult.None;
                     return;
                 }
-                _monat[m] = w;
+                werte = _werte;
             }
 
-            // Sichtbaren Wochentag ebenfalls übernehmen
-            if (!TagUebernehmen(_aktuellerTag, true))
+            QuellprofilCtrl.Kopf kopf = new QuellprofilCtrl.Kopf
             {
+                ID = (_cbProfil.SelectedItem != null)
+                    ? (int)((SchluesselEintrag)_cbProfil.SelectedItem).Wert : PROFIL_NEU,
+                ID_Projekt = ID_Projekt,
+                Bezeichner = _tbBezeichner.Text.Trim(),
+                Betriebsart = betriebsart,
+                Einheit = QuellprofilCtrl.EINHEIT_GRAD_CELSIUS,
+                Beschreibung = _tbBeschreibung.Text.Trim()
+            };
+
+            if (kopf.Bezeichner.Length == 0)
+            {
+                MessageBox.Show(MyResource.Resource.SIMQ_QUELLPROFIL_MSG_BEZEICHNER,
+                    MyResource.Resource.SIMQ_QUELLE_QUELLPROFIL,
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 this.DialogResult = DialogResult.None;
                 return;
             }
+
+            int id = QuellprofilCtrl.Speichern(kopf, werte);
+            if (id <= 0)
+            {
+                MessageBox.Show(MyResource.Resource.SIMQ_QUELLPROFIL_MSG_SPEICHERN,
+                    MyResource.Resource.SIMQ_QUELLE_QUELLPROFIL,
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                this.DialogResult = DialogResult.None;
+                return;
+            }
+
+            ID_Quellprofil = id;
         }
 
         private void ChartAktualisieren()
         {
             if (_chart == null) return;
 
-            // Monatswerte aus den Feldern lesen (ohne Meldung - Grafik ist nur Vorschau)
-            for (int m = 0; m < 12; m++)
+            string betriebsart = Betriebsart;
+            double[] werte;
+
+            if (betriebsart == DbWerte.WQ_PROFIL_BETRIEBSART_MONAT)
             {
-                float w;
-                if (WaermequelleClass.ZahlParsen(_tbMonat[m].Text, out w)) _monat[m] = w;
+                // Monatswerte aus den Feldern lesen (ohne Meldung - Grafik ist nur Vorschau)
+                for (int m = 0; m < 12; m++)
+                {
+                    float w;
+                    if (WaermequelleClass.ZahlParsen(_tbMonat[m].Text, out w)) _monat[m] = w;
+                }
+
+                // ALTWEG-VORSCHAU: Trägt die Anlage noch einen Wochengang und ist noch
+                // kein Profil gespeichert, zeigt die Grafik das, was die Engine heute
+                // rechnet - Monatswert plus Wochengang.
+                if (_wochengangVorhanden)
+                {
+                    float[] altweg = WaermequelleClass.ProfilAusMonatsUndWochenwerten(
+                        Monatswerte, Wochenwerte);
+                    if (altweg != null) { ChartZeichnen(altweg); return; }
+                }
+
+                werte = new double[12];
+                Array.Copy(_monat, werte, 12);
+            }
+            else
+            {
+                GridUebernehmen();
+                werte = _werte;
             }
 
-            float[] profil = WaermequelleClass.ProfilAusMonatsUndWochenwerten(Monatswerte, Wochenwerte);
+            ChartZeichnen(QuellprofilCtrl.Jahresprofil(betriebsart, werte));
+        }
+
+        private void ChartZeichnen(float[] profil)
+        {
             _chart.Series[0].Points.Clear();
             if (profil == null) return;
 
             // Jede Stunde zeichnen, X-Achse in Monaten
-            for (int i = 0; i < 8760; i++)
+            for (int i = 0; i < profil.Length; i++)
             {
                 double x = (double)i * 12.0 / 8760.0;
                 _chart.Series[0].Points.AddXY(x, profil[i]);

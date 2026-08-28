@@ -18825,6 +18825,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quell-Entnahmehöhe (0…1): ähnelt.
+        /// </summary>
+        public static string SIMQ_PUFFER_ANSCHLUSSHOEHE {
+            get {
+                return ResourceManager.GetString("SIMQ_PUFFER_ANSCHLUSSHOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leer = oben. 1 = ganz oben, 0 = ganz unten. Wirkt nur bei einem geschichteten Speicher (mehr als eine Schicht). ähnelt.
+        /// </summary>
+        public static string SIMQ_PUFFER_ANSCHLUSSHOEHE_HINWEIS {
+            get {
+                return ResourceManager.GetString("SIMQ_PUFFER_ANSCHLUSSHOEHE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quelle unbegrenzt verfügbar (nur Temperatur maßgeblich) ähnelt.
         /// </summary>
         public static string SIMQ_PUFFER_CB_UNBEGRENZT {
@@ -18952,6 +18970,16 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_PUFFER_LISTE_OHNE_TEMP {
             get {
                 return ResourceManager.GetString("SIMQ_PUFFER_LISTE_OHNE_TEMP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quell-EntnahmehÃ¶he muss zwischen 0 und 1 liegen (1 = ganz oben, 0 = ganz unten).
+        ///Leer lassen heiÃŸt oben. ähnelt.
+        /// </summary>
+        public static string SIMQ_PUFFER_MSG_ANSCHLUSSHOEHE {
+            get {
+                return ResourceManager.GetString("SIMQ_PUFFER_MSG_ANSCHLUSSHOEHE", resourceCulture);
             }
         }
         
@@ -19091,6 +19119,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Quelltemperatur soll für alle Stützstellen gelten? [°C] ähnelt.
+        /// </summary>
+        public static string SIMQ_QUELLPROFIL_ALLE_WERTE_TEXT {
+            get {
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_ALLE_WERTE_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monatswerte (12) ähnelt.
+        /// </summary>
+        public static string SIMQ_QUELLPROFIL_BA_MONAT {
+            get {
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_BA_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenwerte (8760) ähnelt.
+        /// </summary>
+        public static string SIMQ_QUELLPROFIL_BA_STUNDE {
+            get {
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_BA_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tageswerte (365) ähnelt.
+        /// </summary>
+        public static string SIMQ_QUELLPROFIL_BA_TAG {
+            get {
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_BA_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Alle Monate auf Januarwert setzen ähnelt.
         /// </summary>
         public static string SIMQ_QUELLPROFIL_BTN_ALLE_MONATE {
@@ -19100,57 +19164,79 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die auf alle Tage übertragen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Werte gleich setzen … ähnelt.
         /// </summary>
-        public static string SIMQ_QUELLPROFIL_BTN_ALLE_TAGE {
+        public static string SIMQ_QUELLPROFIL_BTN_ALLE_WERTE {
             get {
-                return ResourceManager.GetString("SIMQ_QUELLPROFIL_BTN_ALLE_TAGE", resourceCulture);
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_BTN_ALLE_WERTE", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Tag einfügen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte aus CSV-Datei einlesen … ähnelt.
         /// </summary>
-        public static string SIMQ_QUELLPROFIL_BTN_TAG_EINFUEGEN {
+        public static string SIMQ_QUELLPROFIL_BTN_CSV {
             get {
-                return ResourceManager.GetString("SIMQ_QUELLPROFIL_BTN_TAG_EINFUEGEN", resourceCulture);
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_BTN_CSV", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Tag kopieren ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erwartet werden {0} Zahlenwerte, je Zeile einer.
+        ///Ein Zeitstempel vor dem Wert ist erlaubt (Trennzeichen Semikolon oder Tabulator); Zeilen ohne Zahl werden übersprungen.
+        ///Die Datei wird ANSI-kodiert gelesen. ähnelt.
         /// </summary>
-        public static string SIMQ_QUELLPROFIL_BTN_TAG_KOPIEREN {
+        public static string SIMQ_QUELLPROFIL_CSV_HINWEIS {
             get {
-                return ResourceManager.GetString("SIMQ_QUELLPROFIL_BTN_TAG_KOPIEREN", resourceCulture);
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_CSV_HINWEIS", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Änderungen Übernehmen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Altweg: Dieser Wochengang steht noch an der Anlage und wird gerechnet, solange kein Quellprofil gespeichert ist. Ein gespeichertes Quellprofil ersetzt ihn - die Werte bleiben erhalten, wirken aber nicht mehr. Sein Nachfolger ist die Betriebsart Tageswerte, die ohne Wochentagsbezug auskommt. ähnelt.
         /// </summary>
-        public static string SIMQ_QUELLPROFIL_BTN_UEBERNEHMEN {
+        public static string SIMQ_QUELLPROFIL_HINWEIS_ALTWEG {
             get {
-                return ResourceManager.GetString("SIMQ_QUELLPROFIL_BTN_UEBERNEHMEN", resourceCulture);
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_HINWEIS_ALTWEG", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis: 0 = keine Abweichung (Quelltemperatur entspricht dem Monatswert). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die 8760 Stundenwerte: je Jahresstunde ein Wert. Die Werte stehen in der Datenbank; das Profil bleibt bei einer Projektweitergabe erhalten. ähnelt.
         /// </summary>
-        public static string SIMQ_QUELLPROFIL_HINWEIS_ABWEICHUNG {
+        public static string SIMQ_QUELLPROFIL_HINWEIS_STUNDE {
             get {
-                return ResourceManager.GetString("SIMQ_QUELLPROFIL_HINWEIS_ABWEICHUNG", resourceCulture);
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_HINWEIS_STUNDE", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Quelltemperatur = Monatswert [°C] + Wochenwert [K].
-        ///Die Monatswerte geben den Jahresgang vor, die Wochenwerte den Tages-/Wochengang. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die 365 Tageswerte: Der erste Wert gilt für alle 24 Stunden des ersten Tages, der zweite für den zweiten Tag und so fort - kalenderunabhängig, ohne Wochentagsbezug. ähnelt.
+        /// </summary>
+        public static string SIMQ_QUELLPROFIL_HINWEIS_TAG {
+            get {
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_HINWEIS_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Quellprofil beschreibt die Temperatur der Wärmequelle über das Jahr - als 12 Monatswerte, 365 Tageswerte oder 8760 Stundenwerte.
+        ///Es liegt in der Datenbank und kann von mehreren Anlagen benutzt werden. ähnelt.
         /// </summary>
         public static string SIMQ_QUELLPROFIL_INFO {
             get {
                 return ResourceManager.GetString("SIMQ_QUELLPROFIL_INFO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Werte
+        ///von {1} bis {2} °C
+        ///Mittel {3} °C ähnelt.
+        /// </summary>
+        public static string SIMQ_QUELLPROFIL_INFO_WERTE {
+            get {
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_INFO_WERTE", resourceCulture);
             }
         }
         
@@ -19173,6 +19259,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung: ähnelt.
+        /// </summary>
+        public static string SIMQ_QUELLPROFIL_LBL_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_LBL_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart: ähnelt.
+        /// </summary>
+        public static string SIMQ_QUELLPROFIL_LBL_BETRIEBSART {
+            get {
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_LBL_BETRIEBSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung: ähnelt.
+        /// </summary>
+        public static string SIMQ_QUELLPROFIL_LBL_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_LBL_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil: ähnelt.
+        /// </summary>
+        public static string SIMQ_QUELLPROFIL_LBL_PROFIL {
+            get {
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_LBL_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Auswahl Wochentag ähnelt.
         /// </summary>
         public static string SIMQ_QUELLPROFIL_LBL_WOCHENTAG {
@@ -19182,20 +19304,21 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgang wurde auf alle Wochentage übertragen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte eine Bezeichnung für das Quellprofil eintragen! ähnelt.
         /// </summary>
-        public static string SIMQ_QUELLPROFIL_MSG_ALLE_TAGE {
+        public static string SIMQ_QUELLPROFIL_MSG_BEZEICHNER {
             get {
-                return ResourceManager.GetString("SIMQ_QUELLPROFIL_MSG_ALLE_TAGE", resourceCulture);
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_MSG_BEZEICHNER", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte zuerst einen Tag kopieren! ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus der Datei ließen sich keine {0} Werte lesen.
+        ///Bitte Zeilenzahl und Zahlenformat prüfen. ähnelt.
         /// </summary>
-        public static string SIMQ_QUELLPROFIL_MSG_ERST_KOPIEREN {
+        public static string SIMQ_QUELLPROFIL_MSG_CSV_FEHLER {
             get {
-                return ResourceManager.GetString("SIMQ_QUELLPROFIL_MSG_ERST_KOPIEREN", resourceCulture);
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_MSG_CSV_FEHLER", resourceCulture);
             }
         }
         
@@ -19218,11 +19341,48 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde {0}: &apos;{1}&apos; ist keine gültige Zahl! ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Quellprofil konnte nicht gespeichert werden. Bitte prüfen, ob die Datenbank beschreibbar ist. ähnelt.
         /// </summary>
-        public static string SIMQ_QUELLPROFIL_MSG_STUNDE_UNGUELTIG {
+        public static string SIMQ_QUELLPROFIL_MSG_SPEICHERN {
             get {
-                return ResourceManager.GetString("SIMQ_QUELLPROFIL_MSG_STUNDE_UNGUELTIG", resourceCulture);
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_MSG_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die FÃ¼r diese Betriebsart werden {0} Werte gebraucht.
+        ///Bitte zuerst eine CSV-Datei einlesen oder alle Werte gleich setzen. ähnelt.
+        /// </summary>
+        public static string SIMQ_QUELLPROFIL_MSG_WERTE_FEHLEN {
+            get {
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_MSG_WERTE_FEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (neues Profil) ähnelt.
+        /// </summary>
+        public static string SIMQ_QUELLPROFIL_NEU {
+            get {
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. ähnelt.
+        /// </summary>
+        public static string SIMQ_QUELLPROFIL_SPALTE_NR {
+            get {
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_SPALTE_NR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelltemperatur [°C] ähnelt.
+        /// </summary>
+        public static string SIMQ_QUELLPROFIL_SPALTE_WERT {
+            get {
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_SPALTE_WERT", resourceCulture);
             }
         }
         
@@ -19241,6 +19401,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_QUELLPROFIL_TAB_MONATSWERTE {
             get {
                 return ResourceManager.GetString("SIMQ_QUELLPROFIL_TAB_MONATSWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenwerte ähnelt.
+        /// </summary>
+        public static string SIMQ_QUELLPROFIL_TAB_STUNDENWERTE {
+            get {
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_TAB_STUNDENWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tageswerte ähnelt.
+        /// </summary>
+        public static string SIMQ_QUELLPROFIL_TAB_TAGESWERTE {
+            get {
+                return ResourceManager.GetString("SIMQ_QUELLPROFIL_TAB_TAGESWERTE", resourceCulture);
             }
         }
         
@@ -19298,6 +19476,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_TIP_QUELLE {
             get {
                 return ResourceManager.GetString("SIMQ_TIP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauart {0}: Die Wärmequelle ist die Außenluft und nicht wählbar. Nur Sole-Wasser- und Wasser-Wasser-Wärmepumpen haben eine wählbare Quelle. ähnelt.
+        /// </summary>
+        public static string SIMQ_TIP_QUELLE_BAUART {
+            get {
+                return ResourceManager.GetString("SIMQ_TIP_QUELLE_BAUART", resourceCulture);
             }
         }
         

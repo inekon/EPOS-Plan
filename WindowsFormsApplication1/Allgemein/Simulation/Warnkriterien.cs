@@ -625,7 +625,11 @@ namespace WindowsFormsApplication1
                 if (bauart != DbWerte.WP_BAUART_SOLE_WASSER &&
                     bauart != DbWerte.WP_BAUART_WASSER_WASSER) continue;
 
-                if (StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")).Trim().Length > 0) continue;
+                // PAKET Q1: EIN Leerwert-Test fuer Engine, Anzeige und Warnkatalog
+                // (WaermequelleClass.OhneQuelle ueber DbWerte.WQ_TYP_OHNE). Bis dahin
+                // stand hier Trim().Length > 0 - zeichengleich in der Wirkung, aber der
+                // Persistenzwert kam als Literal-Vergleich daher statt aus DbWerte.
+                if (!WaermequelleClass.OhneQuelle(StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")))) continue;
 
                 int idAnlage = (int)StilleDb.Zahl(StilleDb.Feld(r, "ID"));
                 befunde.Add(Befund(QUELLE_NICHT_KONFIGURIERT, false, idAnlage, 0,

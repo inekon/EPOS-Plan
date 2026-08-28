@@ -3190,10 +3190,31 @@ namespace WindowsFormsApplication1
                                   "Quelltemperatur folgt dem Speicherzustand und wird je " +
                                   "Stunde neu gebildet (" + q.RL_eff.ToString("0.#") + " … " +
                                   q.VL_eff.ToString("0.#") + " °C, " + q.SchichtenWirksam +
-                                  " Schicht(en)) statt mit einem Jahresprofil zu rechnen. " +
+                                  " Schicht(en)" +
+                                  AnschlusshoeheText(simulation_wp.QuellAnschlusshoehe(i), q) +
+                                  ") statt mit einem Jahresprofil zu rechnen. " +
                                   "Unterschreitet sie die unterste Kennlinien-Stützstelle, " +
                                   "gilt diese Stützstelle (Kappung, keine Extrapolation).");
             }
+        }
+
+        /// <summary>
+        /// PAKET Q1: Zusatz zur Booster-Protokollzeile, der die QUELL-ENTNAHMEHÖHE nennt
+        /// (<c>WQ_Anschlusshoehe</c>, Schema-Schritt 54).
+        ///
+        /// <para>Er erscheint NUR, wenn die Höhe etwas ändert — also bei einem
+        /// geschichteten Speicher (N &gt; 1) und einer gepflegten Höhe unterhalb von
+        /// „oben". Bei N = 1 hat ein Vorrat nur eine Zone, und bei „oben" steht die
+        /// Vorgabe; in beiden Fällen wäre die Angabe eine Zeile Lärm um nichts, und die
+        /// Meldungsmenge des Bestands bliebe nicht unverändert (Referenzlauf-Kriterium).</para>
+        /// </summary>
+        private static string AnschlusshoeheText(double hoehe, SimulationPufferspeicher q)
+        {
+            if (q == null || q.SchichtenWirksam <= 1) return "";
+            if (hoehe >= SimulationPufferspeicher.HOEHE_OBEN) return "";
+
+            return ", Entnahme auf Höhe " + hoehe.ToString("0.##") +
+                   " (0 = unten, 1 = oben)";
         }
 
         /// <summary>
@@ -3373,7 +3394,10 @@ namespace WindowsFormsApplication1
             {
                 // PAKET B1: Der Anteil wird je Stunde neu gebildet (Konzept 8.4);
                 // eingerichtet wird hier nur der HUB, gegen den er entsteht.
-                simulation_spk.QuellkopplungSetzen(index, quelle, vorlauf, ruecklauf);
+                // PAKET Q1: dazu die Quell-Entnahmehöhe der Anlage (Schritt 54,
+                // WQ_Anschlusshoehe; NULL = oben und damit B1-Verhalten).
+                double hoehe = SimulationWaermepumpe.AnschlusshoeheLesen(idAnlage);
+                simulation_spk.QuellkopplungSetzen(index, quelle, vorlauf, ruecklauf, hoehe);
 
                 Protokoll.Hinweis("Kessel-Kaskade (Booster): Anlage " + idAnlage +
                                   " bezieht ihre Eintrittstemperatur aus Puffer " +
@@ -3381,7 +3405,8 @@ namespace WindowsFormsApplication1
                                   "), einem GETEILTEN Puffer. Die Quelltemperatur folgt dem " +
                                   "Speicherzustand und wird je Stunde neu gebildet (" +
                                   quelle.RL_eff.ToString("0.#") + " … " +
-                                  quelle.VL_eff.ToString("0.#") + " °C). Hub des Kessels " +
+                                  quelle.VL_eff.ToString("0.#") + " °C" +
+                                  AnschlusshoeheText(hoehe, quelle) + "). Hub des Kessels " +
                                   ruecklauf + "/" + vorlauf + " °C; bei voller Beladung trägt " +
                                   "der Puffer " + (anteil * 100).ToString("0.#") + " % der " +
                                   "Nutzwärme. Der Kessel rechnet NACH dem Erzeuger, der den " +

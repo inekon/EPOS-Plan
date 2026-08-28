@@ -153,6 +153,194 @@ namespace WindowsFormsApplication1
         public const string Z_ANLAGESENKE = "Z_AnlageSenke";
 
         /// <summary>
+        /// PAKET Q1 (Migrationsschritt 54, Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 8.1 Punkt 2/3): der KOPF eines Quellprofils — ein benanntes
+        /// Temperaturprofil der Wärmequelle, das an einer oder mehreren Anlagen hängen
+        /// kann.
+        ///
+        /// <b>Warum eine Tabelle und nicht drei weitere Spalten.</b> Der Bestand legt
+        /// das Quellprofil als zwei DELIMITIERTE ZEICHENKETTEN an der Anlage ab
+        /// (<c>WQ_Monatswerte</c> „t1;…;t12", <c>WQ_Wochenwerte</c> „w1;…;w168") und das
+        /// Stundenprofil überhaupt nicht — dort steht nur ein DATEIPFAD
+        /// (<c>WQ_CSV</c>), der bei jeder Projektweitergabe ins Leere zeigt und still
+        /// auf die Außentemperatur zurückfällt (§ 8.1 Punkt 3). 365 oder 8760 Werte in
+        /// einer Zeichenkette wären die Fortschreibung genau dieses Fehlers: nicht
+        /// abfragbar, nicht teilbar, an der Access-Feldgrenze von 255 Zeichen bzw. an
+        /// der MEMO-Grenze entlang.
+        ///
+        /// <b>Kopf/Daten-Paar nach dem Muster <c>Tab_Stromganglinie</c>/
+        /// <c>Tab_StromganglinieDaten</c></b> — das im Bestand bereits 718 321
+        /// Datenzeilen trägt (23 Ganglinien, teils viertelstündlich). Die Bemessung
+        /// gegen die 2-GB-Grenze steht bei <see cref="TAB_QUELLPROFILDATEN"/>.
+        ///
+        /// <b>Kein <c>_STAMM</c>-Gegenstück.</b> Ein Quellprofil beschreibt die
+        /// örtliche Wärmequelle eines Projekts (Grundwasser, Abwärme, Erdsonden-Messung)
+        /// und ist keine Auslieferungsware. <c>ID_Projekt</c> hängt es an sein Projekt;
+        /// die Projektkopie nimmt es über die ID_Projekt-Regel von
+        /// <c>ProjektDuplizierenCtrl</c> mit.
+        /// </summary>
+        public const string TAB_QUELLPROFIL = "Tab_Quellprofil";
+
+        /// <summary>
+        /// PAKET Q1 (Migrationsschritt 54, § 8.1): die WERTE eines Quellprofils — eine
+        /// Zeile je Stützstelle, Muster <c>Tab_StromganglinieDaten</c>.
+        ///
+        /// <b>Mit ausdrücklicher Positionsspalte.</b> Das Vorbild
+        /// <c>Tab_StromganglinieDaten</c> hat keine — dort IST die Reihenfolge die
+        /// ID-Reihenfolge, und jeder Leser sortiert <c>ORDER BY ID</c>. Das trägt,
+        /// solange niemand eine einzelne Zeile nachträgt oder löscht; danach ist die
+        /// Zuordnung Wert → Stunde stillschweigend verschoben. <see cref="SPALTE_QPD_INDEX"/>
+        /// macht sie ausdrücklich und prüfbar (§ 9: „bei neuen Beziehungen IDs
+        /// verwenden" — dieselbe Linie).
+        ///
+        /// <b>Bemessung gegen die Access-Grenze von 2 GB</b> (§ 9, Schlussabsatz),
+        /// gemessen am 28.08.2026 auf einer Kopie der produktiven Datenbank
+        /// (151 949 312 Bytes, 7,4 % der Grenze): ZEHN Stundenprofile = 87 600
+        /// Datenzeilen ließen die Dateigröße um **0 Bytes** wachsen — sie passten
+        /// vollständig in den vorhandenen freien Seitenraum. Die reine Nutzlast eines
+        /// Stundenprofils beträgt 8 760 × 20 Bytes ≈ 175 KiB, mit den beiden Indizes
+        /// grob das Doppelte. Damit ist die Frage aus § 9 beantwortet: <b>Das
+        /// 8760er-Profil kommt in die Datenbank</b>; die Grenze liegt bei Tausenden von
+        /// Profilen, nicht bei Dutzenden.
+        /// </summary>
+        public const string TAB_QUELLPROFILDATEN = "Tab_QuellprofilDaten";
+
+        /// <summary>
+        /// Q1: <c>Tab_Quellprofil.ID_Projekt</c> (LONG) — das Projekt, zu dem das Profil
+        /// gehört. KEINE deklarierte Beziehung auf <c>Tab_Projekt</c>, Muster
+        /// <c>Tab_Stromganglinie</c>: Der Löschweg eines Projekts räumt seine Tabellen
+        /// selbst, und eine restriktive Beziehung legte ihn lahm.
+        /// </summary>
+        public const string SPALTE_QP_ID_PROJEKT = "ID_Projekt";
+
+        /// <summary>Q1: <c>Tab_Quellprofil.Bezeichner</c> (TEXT(255)) — der Name in der Auswahlliste.</summary>
+        public const string SPALTE_QP_BEZEICHNER = "Bezeichner";
+
+        /// <summary>
+        /// Q1: <c>Tab_Quellprofil.Betriebsart</c> (TEXT(50)) — Monat / Tag / Stunde.
+        /// Die drei Steuerwerte stehen in <c>DbWerte.WQ_PROFIL_BETRIEBSART_*</c>, die
+        /// Zahl der Werte je Betriebsart in <c>DbWerte.QuellprofilWerteanzahl</c>.
+        ///
+        /// <para>TEXT(50) wie jede andere Steuerwertspalte dieses Schemas — die
+        /// Access-Falle „stilles Abschneiden beim UPDATE" (§ 9) hat bei drei Werten von
+        /// höchstens sechs Zeichen keinen Angriffspunkt.</para>
+        /// </summary>
+        public const string SPALTE_QP_BETRIEBSART = "Betriebsart";
+
+        /// <summary>
+        /// Q1: <c>Tab_Quellprofil.Einheit</c> (TEXT(50)) — die Maßeinheit der Werte,
+        /// heute ausnahmslos <c>°C</c>. Sie steht ausdrücklich in der Tabelle, weil ein
+        /// Profil ohne Einheit nur im Kopf seines Erfassers eindeutig ist; ausgewertet
+        /// wird sie nicht (die Engine rechnet in °C).
+        /// </summary>
+        public const string SPALTE_QP_EINHEIT = "Einheit";
+
+        /// <summary>
+        /// Q1: <c>Tab_Quellprofil.Beschreibung</c> (TEXT(255)) — Herkunft der Werte
+        /// (Messstelle, Datei, Norm). Reines Anwenderfeld ohne Auswertung; es ist das
+        /// Gegenstück zu dem, was der Dateipfad in <c>WQ_CSV</c> nebenbei mitteilte und
+        /// was mit der Ablage in der Datenbank sonst verloren ginge.
+        /// </summary>
+        public const string SPALTE_QP_BESCHREIBUNG = "Beschreibung";
+
+        /// <summary>
+        /// Q1: <c>Tab_QuellprofilDaten.ID_Quellprofil</c> (LONG NOT NULL) — der Kopf,
+        /// zu dem die Zeile gehört. MIT LÖSCHWEITERGABE (§ 9 und Auftrag Q1): Eine
+        /// Wertzeile ist ein unselbständiger Anhang ihres Profils, ohne Kopf bedeutet
+        /// sie nichts. Dasselbe Muster trägt <c>FK_AnlageSenke_Anlage</c> aus
+        /// Schritt 50.
+        /// </summary>
+        public const string SPALTE_QPD_ID_QUELLPROFIL = "ID_Quellprofil";
+
+        /// <summary>
+        /// Q1: <c>Tab_QuellprofilDaten.Index</c> (LONG NOT NULL) — die Position der
+        /// Stützstelle, NULLBASIERT (0…11, 0…364, 0…8759).
+        ///
+        /// <para><b>ACHTUNG, reserviertes Wort.</b> <c>Index</c> ist in Access-SQL ein
+        /// Schlüsselwort (<c>CREATE INDEX</c>). Jede Nennung MUSS in eckigen Klammern
+        /// stehen — <c>[Index]</c>. Das ist im Programm durchgängig der Fall: Der
+        /// Migrationsschritt, <c>QuellprofilCtrl</c> und die Projektkopie
+        /// (<c>ProjektDuplizierenCtrl</c> klammert jeden Spaltennamen) tun es. Der Name
+        /// steht so im Konzept-Auftrag und wurde am 28.08.2026 auf einer Kopie der
+        /// produktiven Datenbank gegen ACE 12.0 geprüft (CREATE, INSERT, SELECT … ORDER
+        /// BY, DELETE mit Löschweitergabe — alles fehlerfrei).</para>
+        /// </summary>
+        public const string SPALTE_QPD_INDEX = "Index";
+
+        /// <summary>Q1: <c>Tab_QuellprofilDaten.Wert</c> (DOUBLE) — die Quelltemperatur [°C].</summary>
+        public const string SPALTE_QPD_WERT = "Wert";
+
+        /// <summary>
+        /// Q1 (Schritt 54, § 8.2/§ 8.4): <c>Tab_Energieanlagen.WQ_Anschlusshoehe</c>
+        /// (DOUBLE, 0…1) — die QUELL-ENTNAHMEHÖHE am geteilten Quellpuffer, 1 = ganz
+        /// oben, 0 = ganz unten.
+        ///
+        /// <para><b>NULL = oben</b> — genau die Vorgabe, mit der Paket B1 fest gerechnet
+        /// hat (<c>SimulationPufferspeicher.QuellEntnahmeTemperatur</c>, Ticket B1-O1).
+        /// Der Schritt legt deshalb NICHTS vor: Ein ausgeschriebenes 1,0 behauptete eine
+        /// Anwenderentscheidung, die es nicht gibt, und der Dialog könnte „nicht
+        /// gepflegt" nicht mehr von „genau so gewollt" unterscheiden — dieselbe
+        /// Begründung wie bei den Entnahmehöhen aus Schritt 53.</para>
+        ///
+        /// <para>Sie sitzt an der ANLAGE, nicht am Speicher: Zwei Erzeuger können
+        /// denselben Puffer als Quelle führen und ihn auf unterschiedlicher Höhe
+        /// anzapfen. Bei N = 1 ist die Höhe bedeutungslos — ein Vorrat hat nur eine
+        /// Zone.</para>
+        /// </summary>
+        public const string SPALTE_ANLAGE_WQ_ANSCHLUSSHOEHE = "WQ_Anschlusshoehe";
+
+        /// <summary>
+        /// Q1 (Schritt 54, § 8.1 Punkt 4): <c>Tab_Energieanlagen.WQ_ID_Quellprofil</c>
+        /// (LONG) — der SCHLÜSSEL des Quellprofils dieser Anlage; NULL = keines gewählt.
+        ///
+        /// <para><b>Schlüssel- statt Indexkopplung.</b> Bis Q1 lag das Profil als zwei
+        /// delimitierte Zeichenketten an der Anlage selbst; „dasselbe Profil an zwei
+        /// Anlagen" gab es nur als Kopie, und jede Änderung musste doppelt gepflegt
+        /// werden. Der Fremdschlüssel macht das Profil zu einem eigenen Gegenstand.</para>
+        ///
+        /// <para><b>RESTRIKTIVE Beziehung</b> (<c>FK_Anlage_Quellprofil</c>): Ein Profil,
+        /// das noch eine Anlage versorgt, darf nicht mit einem Löschklick verschwinden —
+        /// dieselbe Abwägung wie bei <c>FK_AnlageSenke_Puffer</c>. Die Gegenrichtung ist
+        /// unbedenklich: Eine Anlage zu löschen, die auf ein Profil ZEIGT, ist immer
+        /// erlaubt; der destruktive Speicherweg des Wizards (DELETE + INSERT auf
+        /// <c>Tab_Energieanlagen</c>) bleibt damit gangbar.</para>
+        ///
+        /// <para><b>Lese-Altlast:</b> <c>WQ_Monatswerte</c>/<c>WQ_Wochenwerte</c> bleiben
+        /// stehen und werden weiter gelesen, solange keine Profil-ID gesetzt ist
+        /// (Muster <c>WQ_Puffer</c> → <c>WQ_ID_Puffer</c>). Eine automatische Übernahme
+        /// findet NICHT statt (§ 15, Auftrag Q1) — sie wäre eine stille Datenänderung an
+        /// Bestandsprojekten.</para>
+        /// </summary>
+        public const string SPALTE_ANLAGE_WQ_ID_QUELLPROFIL = "WQ_ID_Quellprofil";
+
+        /// <summary>
+        /// Schritt 54 der Migration (Paket Q1, Konzept § 8.1) — die beiden neuen Spalten
+        /// an <c>Tab_Energieanlagen</c>.
+        ///
+        /// <para><b>Access-Feldgrenze.</b> 255 Spalten je Tabelle.
+        /// <c>Tab_Energieanlagen</c> trägt vor diesem Schritt 65 Spalten (gemessen) und
+        /// wächst auf 67.</para>
+        ///
+        /// <para><b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access
+        /// immer hinten an. Folgenlos: <c>Tab_Energieanlagen</c> wird ausschließlich
+        /// NAMENSBASIERT gelesen (<c>WErzeugerCtrl</c> mit ausformulierter Spaltenliste,
+        /// <c>WaermequelleClass.WertLesenStill</c> je Einzelspalte); eine
+        /// <c>row[0…n]</c>-Kette wie bei <c>Tab_Einstellungen</c> gibt es hier nicht.</para>
+        ///
+        /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/> — dieselbe
+        /// Begründung wie bei den Schritten 48/49/53: Die stille Rückfallebene
+        /// <c>WaermequelleClass.SchemaSicherstellen</c> legt an, was sie kennt, und
+        /// würde dabei die Tabellen und die Beziehung ÜBERSPRINGEN. Eine Spalte
+        /// <c>WQ_ID_Quellprofil</c> ohne <c>Tab_Quellprofil</c> wäre schlimmer als gar
+        /// keine.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt54_Quellen =
+        {
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_ANLAGE_WQ_ANSCHLUSSHOEHE, "DOUBLE"),
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_ANLAGE_WQ_ID_QUELLPROFIL, "LONG"),
+        };
+
+        /// <summary>
         /// Bestand: die Spalten, die die Rückfallebene schon vor ADR-001 angelegt hat
         /// (Wärmequelle/-senke, Betriebsmodus, Kaskadenpriorität, Speicherregelung der
         /// Alt-Zuordnung). Sie sind in allen gepflegten Datenbanken vorhanden und

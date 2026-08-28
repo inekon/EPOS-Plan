@@ -55,6 +55,32 @@ namespace WindowsFormsApplication1
         public const string TYP_OHNE = DbWerte.WQ_TYP_OHNE;
 
         /// <summary>
+        /// PAKET Q1: Trägt diese Anlage KEINE gesonderte Wärmequelle
+        /// (<see cref="TYP_OHNE"/> = <c>DbWerte.WQ_TYP_OHNE</c>)?
+        ///
+        /// <para><b>Warum eine Methode und nicht dreimal derselbe Vergleich.</b> Der
+        /// Leerwert wurde bis Q1 an drei Stellen unterschiedlich geprüft:
+        /// <see cref="Quelltemperatur"/> mit <c>string.IsNullOrEmpty</c>,
+        /// <see cref="QuelleAnzeige"/> ebenso, <c>Warnkriterien.SoleOhneQuellePruefen</c>
+        /// dagegen mit <c>Trim().Length &gt; 0</c>. Die Konstante
+        /// <c>DbWerte.WQ_TYP_OHNE</c> kam an keiner der drei Stellen vor, obwohl sie
+        /// genau dafür angelegt wurde (Drei-Schichten-Regel: kein Persistenzwert als
+        /// Literal im Code). Diese Methode ist jetzt die eine Wahrheit.</para>
+        ///
+        /// <para><b>Verhaltensneutral</b> gegenüber allen drei Fassungen: Sie fasst
+        /// NULL, Leerstring und reinen Weißraum zusammen. Für NULL und "" entscheiden
+        /// alle drei ohnehin gleich; ein Wert aus reinem Weißraum lief bisher in
+        /// <see cref="Quelltemperatur"/> durch den <c>switch</c> ohne Treffer und endete
+        /// ebenfalls bei der Außentemperatur — dasselbe Ergebnis, jetzt auf demselben
+        /// Weg. In der produktiven Datenbank kommt er nicht vor (gemessen 28.08.2026:
+        /// 125 × NULL, 5 × "", 1 × Erdreich, 1 × Pufferspeicher).</para>
+        /// </summary>
+        public static bool OhneQuelle(string wqTyp)
+        {
+            return (wqTyp ?? "").Trim() == TYP_OHNE;
+        }
+
+        /// <summary>
         /// Größte plausible Verlegetiefe eines Erdkollektors [m]. Reale Kollektoren
         /// liegen bei 1…2 m; der Erdreichdialog begrenzt die Eingabe auf 10 m.
         /// Steht in WQ_Tiefe mehr, kann es nur eine Sondenlänge sein - siehe den
@@ -221,7 +247,8 @@ namespace WindowsFormsApplication1
                     // Warnkriterium QUELLE_FEHLT meldet dasselbe auf Karte und im
                     // Laufprotokoll). Ein UNBEKANNTER Altwert bleibt dagegen bei der
                     // bisherigen Aussenluft-Anzeige.
-                    if (string.IsNullOrEmpty(wqTyp))
+                    // PAKET Q1: derselbe Leerwert-Test wie in Engine und Warnkatalog.
+                    if (OhneQuelle(wqTyp))
                         return MyResource.Resource.SIMQ_QUELLE_FEHLT;
                     return MyResource.Resource.SIMQ_QUELLE_AUSSENLUFT;
             }
@@ -602,7 +629,9 @@ namespace WindowsFormsApplication1
             // Paket 2 / Konzept 13.4: im Engine-Pfad wird STILL gelesen - ein Fehlerdialog
             // aus DataRepository heraus würde den Rechenlauf anhalten.
             string typ = WertLesenStill(idEnergieanlage, "WQ_Typ") as string;
-            if (string.IsNullOrEmpty(typ) || typ == TYP_AUSSENLUFT) return aussentemp;
+            // PAKET Q1: derselbe Leerwert-Test wie im Warnkatalog und in der Anzeige
+            // (siehe OhneQuelle) - verhaltensgleich zum bisherigen IsNullOrEmpty.
+            if (OhneQuelle(typ) || typ == TYP_AUSSENLUFT) return aussentemp;
 
             try
             {
@@ -642,6 +671,35 @@ namespace WindowsFormsApplication1
 
                     case TYP_PROFIL:
                         {
+                            // --- PAKET Q1, Stufe 1: das gewählte QUELLPROFIL ------------
+                            // Schlüsselkopplung über WQ_ID_Quellprofil (Schritt 54,
+                            // Konzept 8.1 Punkt 4). Sie trägt alle drei Betriebsarten -
+                            // 12 Monats-, 365 Tages- oder 8760 Stundenwerte - und kachelt
+                            // sie in QuellprofilCtrl.Jahresprofil, bei der Tagesvariante
+                            // ausdrücklich KALENDERUNABHÄNGIG.
+                            int idProfil = ZahlOderNull(WertLesenStill(idEnergieanlage, "WQ_ID_Quellprofil"));
+                            if (idProfil > 0)
+                            {
+                                float[] ausProfil = QuellprofilCtrl.Jahresprofil(idProfil);
+                                if (ausProfil != null) return ausProfil;
+
+                                // Protokollkanal: WARNUNG - die Anlage zeigt auf ein
+                                // Profil, das fehlt oder unvollständig ist; gerechnet
+                                // wird danach mit einer Ersatzannahme voller
+                                // Ergebniswirkung auf die JAZ.
+                                SimulationProtokoll.Aktuell.WarnungEinmal(
+                                    "quellprofil-unlesbar-" + idEnergieanlage,
+                                    "Quellprofil " + idProfil + " der Anlage " + idEnergieanlage +
+                                    " ist nicht lesbar oder unvollständig (Zahl der Werte passt " +
+                                    "nicht zur Betriebsart) - es gilt der Altweg bzw. die " +
+                                    "Außentemperatur.");
+                            }
+
+                            // --- Stufe 2: LESE-ALTLAST der delimitierten Zeichenketten ---
+                            // WQ_Monatswerte/WQ_Wochenwerte bleiben lesbar (Konzept 15,
+                            // Muster WQ_Puffer -> WQ_ID_Puffer). Schritt 54 übernimmt sie
+                            // NICHT automatisch; sie verschwinden erst, wenn der Anwender
+                            // im Dialog ein Quellprofil speichert.
                             string monat = WertLesenStill(idEnergieanlage, "WQ_Monatswerte") as string;
                             string woche = WertLesenStill(idEnergieanlage, "WQ_Wochenwerte") as string;
                             float[] profil = ProfilAusMonatsUndWochenwerten(monat, woche);
@@ -892,14 +950,52 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Wochentag des 1. Januar im Altweg-Wochengang, Montag = 0.
+        ///
+        /// <para><b>PAKET Q1 — Befund K1-O6 erledigt.</b> Hier stand bis Q1
+        /// <c>DateTime.Now.Year</c>: Der Wochentag wurde aus dem nächsten
+        /// Nicht-Schaltjahr AB DEM HEUTIGEN DATUM abgeleitet. Damit hing das
+        /// Rechenergebnis eines unveränderten Projekts davon ab, WANN man es rechnete —
+        /// derselbe Lauf hätte 2027 eine andere Quelltemperatur-Ganglinie ergeben als
+        /// 2026. Das ist keine Kalenderkonvention, sondern eine Zeitbombe, und es war
+        /// zugleich die DRITTE Kalenderkonvention des Programms neben „1. Januar =
+        /// Sonntag" des Bedarfspfads und <c>Tab_Klimadaten.WE</c> des Gebäudepfads
+        /// (Konzept 8.1 Punkt 2, Randnotiz; K1-Entscheidung F3).</para>
+        ///
+        /// <para><b>Warum 3 (Donnerstag) und nicht die Klimadaten-Konvention aus F3.</b>
+        /// Der Altweg ist ab Q1 <b>Lese-Altlast</b> (Konzept 15): Er trägt nur noch
+        /// Bestandsdaten in <c>WQ_Monatswerte</c>/<c>WQ_Wochenwerte</c>, und wer ein
+        /// neues Profil pflegt, bekommt die kalenderunabhängige Tagesvariante. Für eine
+        /// Altlast ist die richtige Änderung die KLEINSTMÖGLICHE: 3 ist genau der Wert,
+        /// den <c>DateTime.Now.Year</c> heute liefert (2026 ist kein Schaltjahr, der
+        /// 1. Januar 2026 ist ein Donnerstag). Der Wert ist damit für den aktuellen
+        /// Bestand ergebnisgleich und ab sofort unveränderlich. Ihn stattdessen auf den
+        /// Klimadaten-Kalender umzustellen wäre eine Ergebnisänderung an genau der
+        /// Stelle, die dieses Paket stilllegt.</para>
+        ///
+        /// <para><b>Ohne Wirkung auf den Bestand.</b> In der produktiven Datenbank hat
+        /// KEINE Anlage <c>WQ_Typ = 'Profil'</c>, und <c>WQ_Monatswerte</c> wie
+        /// <c>WQ_Wochenwerte</c> sind in allen 131 Zeilen leer (gemessen 28.08.2026).
+        /// Der Wochentag geht ohnehin nur in den ADDITIVEN Wochengang ein — ohne
+        /// gepflegte Wochenwerte ist <c>woche[…]</c> durchweg 0 und der Kalender
+        /// wirkungslos.</para>
+        /// </summary>
+        public const int WOCHENTAG_JAN1_ALTWEG = 3;
+
+        /// <summary>
         /// Baut das Jahresprofil (8760 Stundenwerte) der Quelltemperatur aus
         /// Monats- und Wochenwerten - analog zur Brauchwasser-Stundenverteilung:
         ///
         ///   Quelltemperatur(h) = Monatswert(Monat) + Wochenwert(Wochentag, Stunde)
         ///
-        /// Wochentag: das Simulationsjahr beginnt am 1. Januar eines
-        /// Nicht-Schaltjahres (8760 Stunden), der Wochentag wird daraus abgeleitet
-        /// (Index 0 = Montag ... 6 = Sonntag).
+        /// Wochentag: Index 0 = Montag ... 6 = Sonntag, Startwert
+        /// <see cref="WOCHENTAG_JAN1_ALTWEG"/>.
+        ///
+        /// <para><b>LESE-ALTLAST seit Paket Q1</b> (Konzept 15): Der Weg trägt nur noch
+        /// Bestandsdaten aus <c>WQ_Monatswerte</c>/<c>WQ_Wochenwerte</c>. Neue Profile
+        /// entstehen als <c>Tab_Quellprofil</c>-Zeilen und rechnen über
+        /// <c>QuellprofilCtrl.Jahresprofil</c> — die Tagesvariante dort ist
+        /// kalenderunabhängig und braucht diesen Wochengang gar nicht.</para>
         /// </summary>
         /// <param name="monatswerteString">"t1;...;t12" Monats-Mitteltemperaturen [°C]</param>
         /// <param name="wochenwerteString">"w1;...;w168" Abweichungen [K], darf leer sein</param>
@@ -927,11 +1023,9 @@ namespace WindowsFormsApplication1
 
             int[] tageProMonat = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
-            // Wochentag des 1. Januar aus dem nächsten Nicht-Schaltjahr ableiten
-            int jahr = DateTime.Now.Year;
-            while (DateTime.IsLeapYear(jahr)) jahr++;
-            // DayOfWeek: Sonntag = 0 ... Samstag = 6 -> umrechnen auf Montag = 0
-            int wochentag = ((int)new DateTime(jahr, 1, 1).DayOfWeek + 6) % 7;
+            // PAKET Q1 / Befund K1-O6: FESTER Wochentag statt DateTime.Now.Year -
+            // Begründung und Ergebnisgleichheit bei WOCHENTAG_JAN1_ALTWEG.
+            int wochentag = WOCHENTAG_JAN1_ALTWEG;
 
             float[] profil = new float[8760];
             int index = 0;
@@ -982,6 +1076,66 @@ namespace WindowsFormsApplication1
             }
 
             return index == 8760 ? profil : null;
+        }
+
+        /// <summary>
+        /// PAKET Q1: liest <paramref name="anzahl"/> Zahlenwerte aus einer CSV-Datei —
+        /// der Importweg der Quellprofile (12, 365 oder 8760 Werte).
+        ///
+        /// <para><b>Dieselben Trennzeichen- und Dezimalregeln wie
+        /// <see cref="ProfilAusCsv"/></b>: Erst Semikolon/Tabulator als Feldtrenner mit
+        /// Komma als Dezimalzeichen, sonst Komma als Feldtrenner mit Punkt als
+        /// Dezimalzeichen; gezählt wird der LETZTE parsebare Wert einer Zeile, damit
+        /// „Zeitstempel;Wert" ohne Vorbehandlung durchgeht. Zeilen ohne Zahl (Kopfzeilen)
+        /// werden übersprungen.</para>
+        ///
+        /// <para><b>ANSI statt UTF-8</b> (Projektregel <c>KONTEXT_Importkodierung_ANSI</c>):
+        /// Deutsche Zählerexporte und Messreihen sind fast nie UTF-8. Gelesen wird über
+        /// <see cref="AnsiEncoding"/> mit BOM-Erkennung — ein vorhandenes BOM schlägt die
+        /// Vorgabe, genau wie in <c>GanglinienDatei.LeserOeffnen</c>. Für reine
+        /// Zahlenzeilen ist das ohne Folge; es rettet die Kopfzeile mit Umlauten davor,
+        /// als Ersatzzeichenfolge in einer Fehlermeldung zu landen.</para>
+        ///
+        /// <para><b>Genau <paramref name="anzahl"/> Werte oder <c>null</c>.</b> Eine zu
+        /// kurze Datei stillschweigend mit Nullen aufzufüllen hieße, ein
+        /// Temperaturprofil zu erfinden.</para>
+        /// </summary>
+        public static double[] WerteAusCsv(string pfad, int anzahl)
+        {
+            if (string.IsNullOrEmpty(pfad) || anzahl <= 0 || !File.Exists(pfad)) return null;
+
+            double[] werte = new double[anzahl];
+            int index = 0;
+
+            try
+            {
+                using (StreamReader leser = new StreamReader(pfad, AnsiEncoding.Get(), true))
+                {
+                    string zeileRoh;
+                    while ((zeileRoh = leser.ReadLine()) != null)
+                    {
+                        if (index >= anzahl) break;
+
+                        string zeile = zeileRoh.Trim();
+                        if (zeile.Length == 0) continue;
+
+                        float wert = LetzteZahl(zeile.Split(';', '\t'), true);
+                        if (float.IsNaN(wert) && zeile.IndexOf(',') >= 0)
+                            wert = LetzteZahl(zeile.Split(','), false);
+
+                        if (float.IsNaN(wert)) continue;   // z. B. Kopfzeile
+
+                        werte[index++] = wert;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("WerteAusCsv fehlgeschlagen: " + ex.Message);
+                return null;
+            }
+
+            return index == anzahl ? werte : null;
         }
 
         /// <summary>

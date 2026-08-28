@@ -1469,12 +1469,36 @@ namespace WindowsFormsApplication1
 
             if (info.IstWaermepumpe)
             {
+                // PAKET Q1 (Konzept 8.1 Punkt 1): BAUART-BINDUNG SICHTBAR. Eine
+                // Luft-Wasser-Wärmepumpe hat keine Wahl - ihre Quelle IST die Außenluft,
+                // und die Engine erzwingt das seit jeher still
+                // (WaermequelleClass.Quelltemperatur gibt für diese Bauart immer den
+                // Außentemperaturvektor zurück, Quellspeicher immer null). Bis Q1 sah der
+                // Chip trotzdem wählbar aus und wies den Klick mit einer Meldung ab; das
+                // ist eine Einladung, der eine Absage folgt. Jetzt steht die Quelle als
+                // FESTER Eintrag da: Flächenstil statt Quellrahmen, kein Handzeiger
+                // (ChipZiel.Keines), und der Mouseover-Hinweis nennt den Grund. Die
+                // Abbruchmeldung in WaermequelleBearbeiten bleibt als zweite Sicherung -
+                // sie deckt den Weg über Schema und Tastatur ab.
+                //
+                // Die FEHLENDE Bauart (WpTyp leer) gehört dazu: Engine und Anzeige
+                // rechnen sie seit jeher wie Luft-Wasser.
+                bool bauartGebunden = string.IsNullOrEmpty(info.WpTyp) ||
+                                      info.WpTyp == DbWerte.WP_BAUART_LUFT_WASSER;
+
                 chips.Add(new ErzeugerKarte.ChipDaten
                 {
                     Text = string.Format(MyResource.Resource.SIM_KARTE_QUELLE, WaermequelleAnzeige(info)),
-                    Stil = ErzeugerKarte.ChipStil.Quelle,
-                    Hinweis = MyResource.Resource.SIMQ_TIP_QUELLE,
-                    Ziel = ErzeugerKarte.ChipZiel.Quelle
+                    Stil = bauartGebunden ? ErzeugerKarte.ChipStil.Flaeche
+                                          : ErzeugerKarte.ChipStil.Quelle,
+                    Hinweis = bauartGebunden
+                        ? string.Format(MyResource.Resource.SIMQ_TIP_QUELLE_BAUART,
+                                        string.IsNullOrEmpty(info.WpTyp)
+                                            ? MyResource.Resource.SIMQ_WPTYP_NICHT_GEPFLEGT
+                                            : info.WpTyp)
+                        : MyResource.Resource.SIMQ_TIP_QUELLE,
+                    Ziel = bauartGebunden ? ErzeugerKarte.ChipZiel.Keines
+                                          : ErzeugerKarte.ChipZiel.Quelle
                 });
                 return;
             }

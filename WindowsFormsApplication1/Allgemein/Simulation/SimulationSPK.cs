@@ -381,6 +381,15 @@ namespace WindowsFormsApplication1
         private readonly double[] _quellRuecklauf = new double[MAX_SPK];
 
         /// <summary>
+        /// PAKET Q1: Quell-Entnahmehöhe je Kessel, 0…1 (1 = ganz oben), aus
+        /// <c>Tab_Energieanlagen.WQ_Anschlusshoehe</c> (Schema-Schritt 54).
+        /// <c>QuellkopplungSetzen</c> belegt sie; ohne gepflegten Wert steht dort
+        /// <see cref="SimulationPufferspeicher.HOEHE_OBEN"/> und damit das
+        /// B1-Verhalten.
+        /// </summary>
+        private readonly double[] _quellHoehe = new double[MAX_SPK];
+
+        /// <summary>
         /// Quelltemperatur-Ganglinie je gekoppeltem Kessel [°C] — LAUFERGEBNIS
         /// (Konzept 8.4). <c>null</c> für jeden Kessel ohne Kopplung.
         /// </summary>
@@ -414,8 +423,14 @@ namespace WindowsFormsApplication1
         /// <param name="speicher">geteilter Quellpuffer</param>
         /// <param name="vorlauf">Vorlauf des Kessel-Hubs [°C]</param>
         /// <param name="ruecklauf">Rücklauf des Kessel-Hubs [°C]</param>
+        /// <param name="anschlusshoehe">
+        /// PAKET Q1: Quell-Entnahmehöhe 0…1 aus <c>WQ_Anschlusshoehe</c>
+        /// (Schema-Schritt 54); <see cref="SimulationPufferspeicher.HOEHE_OBEN"/> ohne
+        /// gepflegten Wert — das ist exakt das Verhalten von Paket B1.
+        /// </param>
         public void QuellkopplungSetzen(int index, SimulationPufferspeicher speicher,
-                                        double vorlauf, double ruecklauf)
+                                        double vorlauf, double ruecklauf,
+                                        double anschlusshoehe = SimulationPufferspeicher.HOEHE_OBEN)
         {
             if (index < 0 || index >= MAX_SPK) return;
             if (speicher == null || vorlauf <= ruecklauf) return;
@@ -423,13 +438,26 @@ namespace WindowsFormsApplication1
             _quellSpeicher[index] = speicher;
             _quellVorlauf[index] = vorlauf;
             _quellRuecklauf[index] = ruecklauf;
+            _quellHoehe[index] = anschlusshoehe;
             _quellKopplung[index] = true;
             _quellTemperatur[index] = new float[8760];
 
             // Startwert aus dem aktuellen Zustand; die Stundenabfrage übersteuert ihn vor
             // jeder Phase B. Ohne diese Zeile stünde bis zur ersten Abfrage ein Anteil
             // von 0 — dasselbe Ergebnis, aber der Zustand wäre nicht selbsterklärend.
-            _quellAnteil[index] = AnteilAus(speicher.QuellEntnahmeTemperatur, index);
+            _quellAnteil[index] = AnteilAus(speicher.QuellEntnahmeTemperatur(anschlusshoehe), index);
+        }
+
+        /// <summary>
+        /// PAKET Q1: die Quell-Entnahmehöhe des Kessels <paramref name="index"/>, 0…1;
+        /// <see cref="SimulationPufferspeicher.HOEHE_OBEN"/> ohne Kopplung —
+        /// Lesezugriff für Protokoll und Wirkproben.
+        /// </summary>
+        public double QuellAnschlusshoehe(int index)
+        {
+            if (index < 0 || index >= MAX_SPK || !_quellKopplung[index])
+                return SimulationPufferspeicher.HOEHE_OBEN;
+            return _quellHoehe[index];
         }
 
         /// <summary>Anteil (0…1) aus einer Quelltemperatur und dem Hub des Kessels.</summary>
@@ -461,7 +489,8 @@ namespace WindowsFormsApplication1
                 SimulationPufferspeicher q = _quellSpeicher[i];
                 if (q == null) continue;
 
-                double tQuelle = q.QuellEntnahmeTemperatur;
+                // PAKET Q1: an der gepflegten Quell-Entnahmehöhe statt fest oben.
+                double tQuelle = q.QuellEntnahmeTemperatur(_quellHoehe[i]);
                 if (_quellTemperatur[i] != null) _quellTemperatur[i][stunde] = (float)tQuelle;
 
                 double anteil = AnteilAus(tQuelle, i);
