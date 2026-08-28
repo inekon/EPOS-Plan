@@ -36,11 +36,13 @@ namespace WindowsFormsApplication1
     /// PUFFERSPEICHER SIND DER SONDERFALL. Auf <c>Tab_Pufferspeicher</c> zeigen nicht nur
     /// die eigenen Anlagenzeilen (<c>ID_PUFFER</c>), sondern über das Quellen-/Senken-Modell
     /// auch die FREMDER Gewerke (<c>WS_ID_Puffer</c>, <c>WS_ID_Puffer2</c>,
-    /// <c>WQ_ID_Puffer</c>) — als erzwungene Beziehung. Ein Löschen scheitert deshalb,
-    /// solange irgendeine Anlagenzeile den Speicher noch führt. Der Ablauf löst diese
-    /// Verweise deshalb ZUERST (gemerkt als Bezeichner), löscht dann, legt neu an und
-    /// stellt die Verweise über den Bezeichner wieder her; was sich nicht auflösen lässt,
-    /// bleibt leer und wird gemeldet — nie geraten.
+    /// <c>WQ_ID_Puffer</c>) — und seit Migrationsschritt 50 ebenso die SENKENLISTE
+    /// (<c>Z_AnlageSenke.ID_Puffer</c>, restriktive Beziehung
+    /// <c>FK_AnlageSenke_Puffer</c>; Befund L-B1). Alle diese Beziehungen sind erzwungen:
+    /// Ein Löschen scheitert, solange irgendeine Anlagen- oder Senkenzeile den Speicher
+    /// noch führt. Der Ablauf löst diese Verweise deshalb ZUERST (gemerkt als Bezeichner),
+    /// löscht dann, legt neu an und stellt die Verweise über den Bezeichner wieder her;
+    /// was sich nicht auflösen lässt, bleibt leer und wird gemeldet — nie geraten.
     /// </para>
     ///
     /// <para>
@@ -301,6 +303,10 @@ namespace WindowsFormsApplication1
             // müssen den Austausch überleben (siehe Klassenkopf).
             List<Pufferbezug> zielPufferbezuege = PufferbezuegeSichern(idZiel);
 
+            // L-B1: dazu die Puffer-Verweise der SENKENLISTE des Ziels — dieselbe
+            // erzwungene Beziehung, derselbe Grund.
+            List<Senkenbezug> zielSenkenbezuege = SenkenbezuegeSichern(idZiel);
+
             var warnungen = new List<string>();
             OleDbConnection conn = null;
             OleDbTransaction trans = null;
@@ -320,7 +326,10 @@ namespace WindowsFormsApplication1
                 // Nur nötig, wenn genau dieses Gewerk der Pufferspeicher ist: sonst
                 // bleibt der Speicherbestand des Ziels unangetastet.
                 if (IstPuffer(plan))
+                {
                     PufferverweiseLoesen(conn, trans, idZiel);
+                    SenkenverweiseLoesen(conn, trans, idZiel);        // L-B1
+                }
 
                 // --- 4) Alten Bestand entfernen (Anlagen vor Geräten vor Kindern) ------
                 Ausfuehren(conn, trans,
@@ -370,7 +379,10 @@ namespace WindowsFormsApplication1
 
                 // --- 6) Gelöste Pufferverweise wiederherstellen ------------------------
                 if (IstPuffer(plan))
+                {
                     PufferverweiseWiederherstellen(conn, trans, zielPufferbezuege, neuePufferNachName, warnungen);
+                    SenkenverweiseWiederherstellen(conn, trans, zielSenkenbezuege, neuePufferNachName, warnungen);   // L-B1
+                }
 
                 // --- 7) Anlagenzeilen anlegen — dieselbe Anweisung wie überall ---------
                 Dictionary<int, int> pufferAbbildung = PufferAbbildung(plan, idQuelle, idZiel,
@@ -798,6 +810,73 @@ namespace WindowsFormsApplication1
                 VersucheAusfuehren(conn, trans,
                     "UPDATE [" + TAB_ANLAGEN + "] SET [" + b.Spalte + "] = ? WHERE ID = ?",
                     new OleDbParameter("@neu", neu), new OleDbParameter("@id", b.IdAnlage));
+            }
+            if (verloren > 0)
+                warnungen.Add(string.Format(MyResource.Resource.BK_KOMP_HINW_PUFFERVERWEIS, verloren));
+        }
+
+        /// <summary>Ein gesicherter Puffer-Verweis einer Senkenzeile (als Bezeichner).</summary>
+        private class Senkenbezug
+        {
+            public int IdSenke;
+            public string Bezeichner;
+        }
+
+        // L-B1: Auch die SENKENLISTE zeigt auf Tab_Pufferspeicher - Z_AnlageSenke.ID_Puffer
+        // ist seit Schritt 50 eine RESTRIKTIVE Beziehung (FK_AnlageSenke_Puffer). Ohne
+        // Sichern/Loesen/Wiederherstellen scheiterte das Loeschen der Zielspeicher an jeder
+        // Senkenzeile, die einen von ihnen fuehrt - dieselbe Behandlung wie die vier
+        // Anlagenspalten (PufferbezuegeSichern), aus demselben Grund. Der Bezeichner
+        // ueberlebt den Austausch, die ID nicht. Die Senkenzeile selbst gehoert einer
+        // Anlage eines ANDEREN Gewerks und bleibt stehen; hinge sie doch an einer
+        // geloeschten Anlage des Tauschgewerks, naehme die Loeschweitergabe von
+        // FK_AnlageSenke_Anlage sie mit, und das Wiederherstellen traefe still 0 Zeilen.
+        private static List<Senkenbezug> SenkenbezuegeSichern(int idProjekt)
+        {
+            var liste = new List<Senkenbezug>();
+            if (!Z_AnlageSenkeCtrl.SpalteVorhanden()) return liste;   // vor Schritt 50: nichts zu sichern
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT s.ID, p.Bezeichner FROM [" + Z_AnlageSenkeCtrl.TABLE + "] s " +
+                    "INNER JOIN [" + TAB_PUFFER + "] p ON s.ID_Puffer = p.ID " +
+                    "WHERE p.ID_Projekt = ?",
+                    new OleDbParameter("@p", idProjekt));
+                if (dt == null) return liste;
+
+                foreach (DataRow r in dt.Rows)
+                    liste.Add(new Senkenbezug
+                    { IdSenke = Ganz(r, SPALTE_ID), Bezeichner = Text(r, SPALTE_BEZEICHNER) });
+            }
+            catch { }
+            return liste;
+        }
+
+        // Senken-Verweise auf die Projektspeicher leeren (Gegenstueck zu
+        // PufferverweiseLoesen). VersucheAusfuehren, weil die Tabelle auf einer
+        // Datenbank vor Schritt 50 fehlen kann.
+        private static void SenkenverweiseLoesen(OleDbConnection conn, OleDbTransaction trans, int idProjekt)
+        {
+            VersucheAusfuehren(conn, trans,
+                "UPDATE [" + Z_AnlageSenkeCtrl.TABLE + "] SET ID_Puffer = NULL " +
+                "WHERE ID_Puffer IN (SELECT ID FROM [" + TAB_PUFFER + "] WHERE ID_Projekt = ?)",
+                new OleDbParameter("@p", idProjekt));
+        }
+
+        private static void SenkenverweiseWiederherstellen(OleDbConnection conn, OleDbTransaction trans,
+                                                           List<Senkenbezug> bezuege,
+                                                           Dictionary<string, int> neueNachName,
+                                                           List<string> warnungen)
+        {
+            int verloren = 0;
+            foreach (Senkenbezug b in bezuege)
+            {
+                int neu;
+                if (!neueNachName.TryGetValue(b.Bezeichner ?? "", out neu)) { verloren++; continue; }
+
+                VersucheAusfuehren(conn, trans,
+                    "UPDATE [" + Z_AnlageSenkeCtrl.TABLE + "] SET ID_Puffer = ? WHERE ID = ?",
+                    new OleDbParameter("@neu", neu), new OleDbParameter("@id", b.IdSenke));
             }
             if (verloren > 0)
                 warnungen.Add(string.Format(MyResource.Resource.BK_KOMP_HINW_PUFFERVERWEIS, verloren));
