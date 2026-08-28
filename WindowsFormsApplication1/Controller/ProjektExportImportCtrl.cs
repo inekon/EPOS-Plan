@@ -291,6 +291,14 @@ namespace WindowsFormsApplication1
             try
             {
                 if (_fks == null || _fks.Count == 0) _fks = LiesFremdschluessel(conn);   // Fallback über Transaktionsverbindung
+
+                // B1 (Konzept Projekttransfer T1): Die Umschlüsselung fragt
+                // ErmittleZieltabelle des Duplizierers — dessen Beziehungswissen
+                // lud bisher nur der EXPORT (ErmittlePlan). Ein reiner Import
+                // ließ damit jede Beziehung außerhalb der FK_MAP unversetzt
+                // (Befund „Tab_Ergebnis[ID] FEHLT"). Jetzt wird es hier geladen.
+                try { _dup.BeziehungenLaden(conn, trans); } catch { }
+
                 _projektTabellen = new HashSet<string>(man.tables.Select(x => x.name), StringComparer.OrdinalIgnoreCase);
                 _fkKeys = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
                 int schritt = 0;
@@ -362,6 +370,12 @@ namespace WindowsFormsApplication1
                                 string sv = Convert.ToString(val);
                                 if (string.IsNullOrWhiteSpace(sv))
                                     val = null;   // leerer Verweis = kein Verweis -> NULL
+                                else if (_projektTabellen.Contains(fk.RefTab) && !offset.ContainsKey(fk.RefTab))
+                                    // B1-Randfall: Die Elterntabelle gehört zum Paket, kam aber
+                                    // OHNE Zeilen mit (Export überspringt leere Tabellen) — der
+                                    // Verweis kann nur auf Fremdes im Ziel zeigen. Ehrlich lösen
+                                    // statt still einen fremden Datensatz zu referenzieren.
+                                    val = null;
                                 else if (!_projektTabellen.Contains(fk.RefTab))
                                 {
                                     var set = LadeElternSchluessel(conn, trans, fk.RefTab, fk.RefCol);
@@ -519,6 +533,19 @@ namespace WindowsFormsApplication1
             string ziel = _dup.ErmittleZieltabelle(tab, col, pk);
             if (ziel != null && offset.ContainsKey(ziel))
             { long v = Convert.ToInt64(raw); return v > 0 ? v + offset[ziel] : (object)v; }
+
+            // B1-Gürtel zur Hosenträger-Beziehungsabfrage: Kommt das Schema-Rowset
+            // leer zurück (bekannte Lotterie) und kennt auch die FK_MAP die Spalte
+            // nicht, greift die Namenskonvention GEGEN DIE PAKET-TABELLEN:
+            // ID_<X> -> Tab_<X> wird nur versetzt, wenn Tab_<X> im Paket mitreist
+            // (offset vorhanden) — dieselbe Konvention, auf der die FK_MAP beruht,
+            // hier aber auf den transportierten Tabellensatz begrenzt.
+            if (ziel == null && col.StartsWith("ID_", StringComparison.OrdinalIgnoreCase))
+            {
+                string kandidat = "Tab_" + col.Substring(3);
+                if (offset.ContainsKey(kandidat))
+                { long v = Convert.ToInt64(raw); return v > 0 ? v + offset[kandidat] : (object)v; }
+            }
             return raw;
         }
 
