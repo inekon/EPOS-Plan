@@ -404,6 +404,25 @@ namespace WindowsFormsApplication1
             // 1,16 Wh/(l*K) -> kWh
             Q_max = volumenLiter * 1.16 * deltaT / 1000.0;
             VerlustProStunde = bereitschaftsverlusteProTag / 24.0;
+
+            // PAKET P1 (Konzept 7.2): Das WIRKSAME TEMPERATURPAAR wird festgehalten
+            // statt - wie bisher - sofort zu Q_max verrechnet und verworfen. Es ist die
+            // Bezugsachse der Schichtebene: T[i] liegt zwischen RL_eff und VL_eff, und
+            // die Schichtenergie ist der Anteil daran. Die Rückfallregel bleibt Wort für
+            // Wort dieselbe, die eine Zeile höher schon in Q_max eingegangen ist -
+            // RL_eff ist der gepflegte Rücklauf, VL_eff = RL_eff + ΔT.
+            VolumenLiter = volumenLiter;
+            RL_eff = ruecklauf;
+            VL_eff = ruecklauf + deltaT;
+
+            // MINDEST-NUTZTEMPERATUR: Vorbelegung RL_eff für JEDEN Kanal - die
+            // verhaltensneutrale Vorgabe aus Konzept 7.2. Unterhalb des Rücklaufs trägt
+            // keine Schicht Energie; die Bedingung „T ≥ T_Nutz" ist damit für jede
+            // Schicht mit Inhalt erfüllt, und die Entladefähigkeit ist der gesamte
+            // Vorrat. Der Registry-Aufbau übersteuert allein den Brauchwasserkanal, und
+            // nur, wenn T_Nutz_BW gepflegt ist (F7).
+            for (int k = 0; k < TNutz.Length; k++) TNutz[k] = RL_eff;
+
             Reset();
         }
 
@@ -435,6 +454,18 @@ namespace WindowsFormsApplication1
 
             // PAKET E1: die Kanalzeile der Entladung gehört ebenso zum Laufzustand.
             Array.Clear(Entladung_Kanal, 0, Entladung_Kanal.Length);
+
+            // PAKET P1: Schichtebene und Stundenbudget gehören zum Laufzustand.
+            // SchichtenAufbauen setzt alle Schichten auf RL_eff - der leere Speicher
+            // (Konzept 7.2, „T[i], Start = RL_eff").
+            T_oben_Mittel = null;
+            T_oben_Min = null;
+            Array.Clear(T_oben_stuendlich, 0, T_oben_stuendlich.Length);
+            Array.Clear(T_unten_stuendlich, 0, T_unten_stuendlich.Length);
+            SchichtInvarianteVerletzungen = 0;
+            SchichtInvarianteMaxAbweichung = 0;
+            BudgetZuruecksetzen();
+            SchichtenAufbauen();
         }
 
         /// <summary>
@@ -485,9 +516,16 @@ namespace WindowsFormsApplication1
         {
             if (energieKWh <= 0 || Q_max <= 0) return 0;
 
+            // PAKET P1 (Konzept 6.3, Befund K2-O6): LADELEISTUNGSGRENZE als BUDGET DER
+            // STUNDE. Ohne gepflegte Grenze (Vorbelegung 0) ist das Budget
+            // double.MaxValue, der Zweig wird gar nicht erst betreten und die Rechnung
+            // bleibt Anweisung für Anweisung die bisherige.
+            StundeBeginnen(stunde);
+
             if (durchlass < 0) durchlass = 0;
             double frei = Q_max - SOC + durchlass;
             double ladung = Math.Min(energieKWh, frei);
+            if (LadeleistungMax > 0 && ladung > _ladebudget) ladung = _ladebudget;
             if (ladung <= 0) return 0;
 
             // N6: Aufnahme in SPEICHERUMSATZ und DURCHFLUSS zerlegen. Der Teil bis Q_max
@@ -507,6 +545,15 @@ namespace WindowsFormsApplication1
                 Ladung_stuendlich[stunde] += (float)umsatz;
                 if (durchfluss > 0) Durchsatz_Ladung_stuendlich[stunde] += (float)durchfluss;
             }
+
+            if (LadeleistungMax > 0) _ladebudget -= ladung;
+
+            // PAKET P1 (Konzept 7.4 Punkt 1): Die SOC-Buchung steht - jetzt vollzieht die
+            // Schichtebene den UMSATZanteil nach. Der DURCHFLUSS bleibt bewusst draußen
+            // (Konzept 7.3): Er ist hydraulisch durchströmende Wärme und war nie
+            // Speicherinhalt; eine bei VL_eff gekappte Temperatursumme könnte ihn gar
+            // nicht darstellen.
+            Schicht_Beladen(umsatz);
             return ladung;
         }
 
@@ -532,7 +579,16 @@ namespace WindowsFormsApplication1
         {
             if (energieKWh <= 0 || Q_max <= 0) return 0;
 
+            // PAKET P1 (Konzept 6.3, Befund K2-O6): ENTLADELEISTUNGSGRENZE als BUDGET DER
+            // STUNDE - nicht je Aufruf. Ein Heizungspuffer wird in derselben Stunde für
+            // den Prozess- UND den Heizkanal durchlaufen (Zwei-Pass); je Aufruf gewährt
+            // hätte er die Stundengrenze zweimal bekommen. Ohne gepflegte Grenze
+            // (Vorbelegung 0) ist das Budget double.MaxValue und der Zweig wird nicht
+            // betreten - die Rechnung bleibt die bisherige.
+            StundeBeginnen(stunde);
+
             double entnahme = Math.Min(energieKWh, SOC);
+            if (EntladeleistungMax > 0 && entnahme > _entladebudget) entnahme = _entladebudget;
             if (entnahme <= 0) return 0;
 
             // N6: Gegenstück zur Zerlegung in Laden — der Durchfluss verlässt den
@@ -559,6 +615,13 @@ namespace WindowsFormsApplication1
                 Entladung_stuendlich[stunde] += (float)umsatz;
                 if (durchfluss > 0) Durchsatz_Entladung_stuendlich[stunde] += (float)durchfluss;
             }
+
+            if (EntladeleistungMax > 0) _entladebudget -= entnahme;
+
+            // PAKET P1 (Konzept 7.4 Punkt 2): IDEALE VERDRÄNGUNG am Anschluss. Die
+            // SOC-Buchung steht; die Schichtebene vollzieht den Umsatzanteil nach, der
+            // Durchfluss bleibt draußen (7.3).
+            Schicht_Entladen(umsatz, kanal);
             return entnahme;
         }
 
@@ -569,6 +632,13 @@ namespace WindowsFormsApplication1
         public void StundeAbschliessen(int stunde)
         {
             Abschluesse++;
+
+            // PAKET P1 (Konzept 7.4 Punkt 3): VERTIKALER AUSGLEICH vor den Verlusten -
+            // Wärmeleitung zwischen Nachbarschichten und anschließende
+            // Inversionsmischung. Beides ist ein reiner Austausch INNERHALB des
+            // Speichers und lässt die Summe der Schichtenergie unberührt; bei N = 1 gibt
+            // es kein Schichtpaar und die Methode tut nichts.
+            Schicht_Ausgleich();
 
             if (Q_max > 0 && SOC > 0)
             {
@@ -595,9 +665,33 @@ namespace WindowsFormsApplication1
                 SOC -= verlust;
                 Verluste_gesamt += verlust - verlustDurchfluss;
                 Durchsatz_Verluste_gesamt += verlustDurchfluss;
+
+                // PAKET P1 (Konzept 7.4 Punkt 4): Der SCHICHTANTEIL des Verlusts - alles
+                // außer dem Anteil, den der Durchfluss getragen hat - wird auf die
+                // Schichten verteilt: nach Wärmeabgabefläche und gewichtet mit
+                // (T[i] − RL_eff)/(VL_eff − RL_eff). Bei N = 1 ist das exakt die
+                // füllstandsanteilige Rechnung, die eine Zeile höher schon auf dem SOC
+                // gelaufen ist.
+                Schicht_Verluste(verlust - verlustDurchfluss);
+
+                // Auftrieb ein zweites Mal: Der Deckelanteil der obersten Schicht lässt
+                // sie etwas stärker abkühlen als ihre Nachbarin darunter - siehe
+                // Schicht_Inversion. Ohne diesen Durchgang stünde die winzige Inversion
+                // im Stundenergebnis.
+                Schicht_Inversion();
             }
 
             if (stunde >= 0 && stunde < 8760) SOC_stuendlich[stunde] = (float)SOC;
+
+            // PAKET P1: Die Schicht-Invariante Σ Schichtenergie == min(SOC, Q_max)
+            // (Konzept 7.3) am Ende JEDER Stunde nachziehen und - im Debug-Build -
+            // prüfen. Danach die Ganglinien der obersten und untersten Schicht.
+            Schicht_Nachfuehren();
+            Schicht_Ganglinie(stunde);
+
+#if DEBUG
+            SchichtprobeMelden(stunde);
+#endif
         }
 
         /// <summary>
@@ -627,6 +721,10 @@ namespace WindowsFormsApplication1
             // Rollenabhängige Bezugsgröße - siehe Kommentar an Vollzyklen.
             double umsatz = (Verwendung == VERWENDUNG_QUELLE) ? Entladung_gesamt : Ladung_gesamt;
             Vollzyklen = (Q_max > 0) ? umsatz / Q_max : 0;
+
+            // PAKET P1 (Befund E1-O5): die beiden Temperaturkennzahlen der OBERSTEN
+            // Schicht aus derselben Ganglinie - Jahresmittel und Jahresminimum.
+            Schicht_Kennzahlen();
         }
 
         // ------------------------------------------------------------------
@@ -825,21 +923,41 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Höchste Entnahme [kWh] in EINER Stunde.
+        /// Höchste Entnahme [kWh] in EINER Stunde, 0 = unbegrenzt — Spalte
+        /// <c>Tab_Pufferspeicher.Entladeleistung_Max</c> (Paket P1,
+        /// Migrationsschritt 53).
         ///
-        /// Vorgemerkter Parameter (Paket 4, Nutzerentscheidung zu 4b-1): Eine Lade- bzw.
-        /// Entladeleistung je Speicher [kW] ist fachlich sinnvoll — ein 800-l-Puffer mit
-        /// DN 25 kann keine 200 kW durchreichen —, existiert aber weder im Datenmodell
-        /// noch in der Oberfläche. Bis dahin gilt UNBEGRENZT; das ist zugleich die
-        /// bisherige Annahme des Modells („keine Begrenzung der Be-/Entladeleistung",
-        /// siehe Kopfkommentar).
+        /// <para>Fachlich seit Paket 4 vorgemerkt (Nutzerentscheidung zu 4b-1: ein
+        /// 800-l-Puffer mit DN 25 kann keine 200 kW durchreichen); bis P1 gab es weder
+        /// Datenmodell noch Oberfläche dafür. Die Vorbelegung 0 ist die bisherige
+        /// Annahme des Modells („keine Begrenzung der Be-/Entladeleistung", siehe
+        /// Kopfkommentar) — der Parameter ist damit verhaltensneutral.</para>
+        ///
+        /// <para><b>Sie wirkt als BUDGET DER STUNDE</b>, siehe
+        /// <see cref="StundeBeginnen"/> (Befund K2-O6).</para>
         /// </summary>
         public double EntladeleistungMax = 0;   // 0 = unbegrenzt
 
-        /// <summary>Entnahmefähigkeit einer Stunde [kWh]; unbegrenzt, solange kein Wert gepflegt ist.</summary>
+        /// <summary>
+        /// Höchste Aufnahme [kWh] in EINER Stunde, 0 = unbegrenzt — Spalte
+        /// <c>Tab_Pufferspeicher.Ladeleistung_Max</c>; das Gegenstück zu
+        /// <see cref="EntladeleistungMax"/> und mit derselben Budget-Mechanik.
+        /// </summary>
+        public double LadeleistungMax = 0;      // 0 = unbegrenzt
+
+        /// <summary>
+        /// Entnahmefähigkeit einer Stunde [kWh] — der noch VERFÜGBARE Rest des
+        /// Stundenbudgets, unbegrenzt solange kein Wert gepflegt ist.
+        ///
+        /// <para>Bis Paket P1 lieferte die Methode die Grenze selbst. Der Unterschied ist
+        /// der Zwei-Pass-Durchlauf (Befund K2-O6): Ein Speicher, der Heizung UND
+        /// Prozesswärme bedient, wird in derselben Stunde zweimal befragt — mit der
+        /// Grenze statt des Rests hätte er sie zweimal bekommen.</para>
+        /// </summary>
         public double Entnahmefaehigkeit()
         {
-            return EntladeleistungMax > 0 ? EntladeleistungMax : double.MaxValue;
+            if (EntladeleistungMax <= 0) return double.MaxValue;
+            return _entladebudget > 0 ? _entladebudget : 0;
         }
 
         /// <summary>
@@ -973,5 +1091,776 @@ namespace WindowsFormsApplication1
                 return "QUELLE_" + ((ID_Anlage > 0) ? ID_Anlage : index);
             return "PUFFER_" + ((ID_Pufferspeicher > 0) ? ID_Pufferspeicher : index);
         }
+
+        // ==================================================================
+        // SCHICHTSPEICHERMODELL (Paket P1, Konzept § 7)
+        //
+        // MEHRZONEN-MODELL mit idealer Einschichtung und vertikalem Ausgleich:
+        // N übereinanderliegende Schichten gleichen Volumens, oben Schicht 0.
+        //
+        // DIE ARCHITEKTURENTSCHEIDUNG, aus der die Byte-Zusage für N = 1 folgt
+        // (Konzept 7.3): SOC bleibt die FÜHRENDE Zustandsgröße. Die gesamte
+        // Energiearithmetik des Bestands - Laden mit Durchlass, Zerlegung
+        // Umsatz/Durchfluss, Reservierung, Bilanzraum, Hysterese, Schwellen,
+        // Bereitschaftsverluste, Vollzyklen - steht Wort für Wort unverändert. Die
+        // Schichtebene ist eine ZWEITE Zustandsebene, die ausschließlich den
+        // SPEICHERINHALT A = min(SOC, Q_max) auf N Temperaturen verteilt:
+        //
+        //     Σ_i E[i]  ==  min(SOC, Q_max)          [Schicht-Invariante]
+        //     E[i] ∈ [0, Q_max/N]   ⇔   T[i] ∈ [RL_eff, VL_eff]
+        //
+        // Der ÜBERHANG B = max(0, SOC − Q_max) - der Durchfluss derselben Stunde -
+        // wird bewusst NICHT in Schichten geführt (Konzept 7.3): Er ist hydraulisch
+        // durchströmende Wärme, folgt weiter der N6-Buchung und zählt für die
+        // Entnahmefähigkeit stets als nutzbar. Eine bei VL_eff gekappte
+        // Temperatursumme kann nie über Q_max liegen; ohne diese Trennung wäre der
+        // Durchlass-Mechanismus im Schichtmodell nicht darstellbar.
+        //
+        // WO N = 1 BYTE-GLEICH BLEIBT - konstruktiv, nicht über Sonderzweige:
+        //   * Laden/Entladen/Verluste buchen ZUERST den SOC; die Schichtaufrufe
+        //     stehen dahinter und rechnen nur auf E[].
+        //   * Bei N = 1 ist E[0] == A, jede Schichtoperation ist die identische
+        //     Buchung auf demselben Betrag, und T[0] ist die reine Umrechnung
+        //     T = RL_eff + A/Q_max · (VL_eff − RL_eff) (Konzept 8.2).
+        //   * Wärmeleitung und Inversionsmischung brauchen ein Schichtpaar - bei
+        //     N = 1 gibt es keines.
+        //   * Die ENTLADEFÄHIGKEIT (T_Nutz-Bedingung, Entnahmehöhe) liefert bei
+        //     N = 1 double.MaxValue und klemmt damit nichts. Das ist die eine
+        //     Stelle, an der die Schichtebene in den Energiepfad zurückwirken
+        //     könnte - sie ist an N gebunden, nicht an eine Toleranz.
+        //   * Die Leistungsgrenzen sind mit ihrer Vorbelegung 0 unbegrenzt und
+        //     betreten ihren Zweig nicht.
+        // ==================================================================
+
+        /// <summary>Höchste zulässige Schichtzahl (Konzept 7.2: N = 1…10).</summary>
+        public const int SCHICHTEN_MAX = 10;
+
+        /// <summary>
+        /// Effektive vertikale Wärmeleitfähigkeit ohne gepflegten Wert [W/(m·K)] —
+        /// Konzept 7.2. Sie enthält die Wandleitung und ist deshalb deutlich größer als
+        /// die des ruhenden Wassers (0,6).
+        /// </summary>
+        public const double LAMBDA_EFF_DEFAULT = 1.5;
+
+        /// <summary>
+        /// Höhen-Durchmesser-Verhältnis ohne gepflegte Höhe (Konzept 7.2) — der
+        /// Formfaktor eines stehenden Pufferspeichers.
+        /// </summary>
+        public const double HD_VERHAELTNIS_DEFAULT = 2.5;
+
+        /// <summary>
+        /// Kappung des vertikalen Ausgleichs je Schichtpaar und Stunde (Konzept 7.4
+        /// Punkt 3): höchstens 25 % der Temperaturdifferenz. Damit ist der Schritt
+        /// unbedingt stabil und monoton — die Reihenfolge zweier Schichten kann nicht
+        /// kippen —, und es braucht keine Unterschritte.
+        /// </summary>
+        public const double AUSGLEICH_KAPPUNG = 0.25;
+
+        /// <summary>
+        /// Gepflegte Schichtzahl aus <c>Tab_Pufferspeicher.Schichten_Anzahl</c>
+        /// (Migrationsschritt 53), Vorbelegung 1 = das Ein-Zonen-Modell des Bestands.
+        /// Wirksam wird sie über <see cref="SchichtenWirksam"/>.
+        /// </summary>
+        public int SchichtenAnzahl = 1;
+
+        /// <summary>
+        /// Behälterhöhe [m] aus <c>Tab_Pufferspeicher.Hoehe</c>; 0 = nicht gepflegt,
+        /// dann wird sie aus dem Volumen über <see cref="HD_VERHAELTNIS_DEFAULT"/>
+        /// abgeleitet (Konzept 7.2).
+        /// </summary>
+        public double Hoehe = 0;
+
+        /// <summary>
+        /// Effektive vertikale Wärmeleitfähigkeit [W/(m·K)] aus
+        /// <c>Tab_Pufferspeicher.Lambda_Eff</c>; Vorbelegung
+        /// <see cref="LAMBDA_EFF_DEFAULT"/>.
+        /// </summary>
+        public double LambdaEff = LAMBDA_EFF_DEFAULT;
+
+        /// <summary>Gesamtvolumen [l], das <see cref="Init"/> bekommen hat — Bezugsgröße der Geometrie.</summary>
+        public double VolumenLiter = 0;
+
+        /// <summary>
+        /// Wirksame Vorlauftemperatur [°C] (Konzept 7.2): das gepflegte Paar, sonst
+        /// <c>RL_eff + RueckfallDeltaT</c>. Es ist DASSELBE ΔT, das in
+        /// <see cref="Q_max"/> steht — die Rückfallregel wird nicht zweimal ausgelegt.
+        /// </summary>
+        public double VL_eff = 0;
+
+        /// <summary>Wirksame Rücklauftemperatur [°C] — die Nullmarke der Schichtenergie.</summary>
+        public double RL_eff = 0;
+
+        /// <summary>
+        /// Mindest-Nutztemperatur je Kanal [°C] (Konzept 7.2/7.4). Vorbelegung
+        /// <see cref="RL_eff"/> und damit verhaltensneutral: Unterhalb des Rücklaufs
+        /// trägt keine Schicht Energie, die Bedingung ist für jede Schicht mit Inhalt
+        /// erfüllt. Gepflegt wird heute nur der Brauchwasserkanal
+        /// (<c>T_Nutz_BW</c>, Entscheidung F7).
+        /// </summary>
+        public readonly double[] TNutz = new double[Kanal.ANZAHL];
+
+        /// <summary>
+        /// ENTNAHMEHÖHE je Kanal, 0…1 (1 = ganz oben). Sie entscheidet, welche Schichten
+        /// ein Kanal überhaupt erreicht (Konzept 7.4 Punkt 2) — und damit beim
+        /// Kombispeicher, dass die Heizung die Brauchwasser-Bereitschaftszone oben nicht
+        /// antastet (7.5). Vorbelegung oben; der Registry-Aufbau setzt die
+        /// Konzept-Vorgaben aus dem Klassen-Set.
+        /// </summary>
+        public readonly double[] Entnahmehoehe = new double[Kanal.ANZAHL]
+            { 1.0, 1.0, 1.0 };
+
+        /// <summary>
+        /// EINSPEISEHÖHE des gerade laufenden Ladevorgangs, 0…1 (Konzept 7.4 Punkt 1),
+        /// aus <c>Z_AnlageSenke.Anschlusshoehe</c> der ladenden Senke. Die
+        /// Kaskadenschleife setzt sie unmittelbar vor dem Ladeaufruf des Moduls und
+        /// nimmt sie danach zurück; ohne gepflegte Höhe (NULL/−1) gilt oben.
+        ///
+        /// <para><b>Warum am Speicher und nicht als Parameter von
+        /// <see cref="Laden(double,int,double)"/>:</b> Die vier Erzeugermodule buchen
+        /// ihre Ladung selbst und tief in ihrer eigenen Mengenrechnung. Ein zusätzlicher
+        /// Parameter hätte vier Modulsignaturen und ein Dutzend Aufrufstellen berührt,
+        /// ohne dass eines der Module die Höhe je auswertet — sie gehört zur HYDRAULIK
+        /// des Behälters, nicht zum Erzeuger.</para>
+        /// </summary>
+        public double EinspeisehoeheAktuell = 1.0;
+
+        /// <summary>Stundenganglinie der obersten Schicht [°C]; 0, wo keine Schichtrechnung läuft.</summary>
+        public float[] T_oben_stuendlich = new float[8760];
+
+        /// <summary>Stundenganglinie der untersten Schicht [°C]; siehe <see cref="T_oben_stuendlich"/>.</summary>
+        public float[] T_unten_stuendlich = new float[8760];
+
+        /// <summary>
+        /// Jahresmittel der obersten Schichttemperatur [°C]; <c>null</c> = nicht erhoben
+        /// (Quellspeicher, Speicher ohne Kapazität) — Spalte
+        /// <c>Tab_ErgebnisPufferspeicher.T_oben_Mittel</c> aus Schritt 52.
+        /// </summary>
+        public double? T_oben_Mittel;
+
+        /// <summary>Jahresminimum der obersten Schichttemperatur [°C]; siehe <see cref="T_oben_Mittel"/>.</summary>
+        public double? T_oben_Min;
+
+        /// <summary>
+        /// Zahl der Stunden, in denen die Schicht-Invariante <c>Σ E[i] == min(SOC,
+        /// Q_max)</c> über die Toleranz hinaus verletzt war (Konzept 11.3). Reine
+        /// Instrumentierung — sie geht in kein Ergebnis ein; nach einem gesunden Lauf
+        /// ist sie 0.
+        /// </summary>
+        public int SchichtInvarianteVerletzungen = 0;
+
+        /// <summary>Größte gemessene Abweichung der Schicht-Invariante [kWh].</summary>
+        public double SchichtInvarianteMaxAbweichung = 0;
+
+        // --- Laufzeitzustand der Schichtebene -----------------------------------------
+
+        /// <summary>Energie je Schicht [kWh], Index 0 = oben; <c>null</c> vor dem Aufbau.</summary>
+        private double[] _schicht;
+
+        /// <summary>Energie einer VOLLEN Schicht [kWh] = <c>Q_max / N</c>.</summary>
+        private double _schichtMax;
+
+        /// <summary>Wärmekapazität einer Schicht [kWh/K] — <c>_schichtMax / (VL_eff − RL_eff)</c>.</summary>
+        private double _schichtKapazitaet;
+
+        /// <summary>Wärmedurchgang je Schichtpaar und Stunde [kWh/K] (Konzept 7.4 Punkt 3).</summary>
+        private double _leitwert;
+
+        /// <summary>Wärmeabgabefläche je Schicht [m²] — Mantel, oben/unten zusätzlich der Deckel.</summary>
+        private double[] _schichtFlaeche;
+
+        /// <summary>Arbeitsfelder der Inversionsmischung — vorab angelegt, nicht je Stunde.</summary>
+        private double[] _blockWert;
+        private int[] _blockLaenge;
+
+        /// <summary>Stunde, für die das Leistungsbudget gilt; −1 = noch nicht gesetzt.</summary>
+        private int _budgetStunde = -1;
+
+        /// <summary>Verbleibende Aufnahme der Stunde [kWh]; <c>double.MaxValue</c> = unbegrenzt.</summary>
+        private double _ladebudget = double.MaxValue;
+
+        /// <summary>Verbleibende Abgabe der Stunde [kWh]; <c>double.MaxValue</c> = unbegrenzt.</summary>
+        private double _entladebudget = double.MaxValue;
+
+        /// <summary>
+        /// WIRKSAME Schichtzahl des Laufs — die Zahl, mit der wirklich gerechnet wird.
+        ///
+        /// <list type="bullet">
+        /// <item>QUELLSPEICHER bleiben Ein-Zonen-Modelle (Konzept 7.6): Ihre Kapazität
+        /// folgt der Anlagen-Spreizung <c>WQ_Spreizung</c>, ihr Temperaturpaar
+        /// (Spreizung/0) sind keine Speichertemperaturen — eine Schichtebene darauf wäre
+        /// Scheinphysik.</item>
+        /// <item>Ohne Kapazität oder ohne Spreizung gibt es keine Temperaturachse.</item>
+        /// <item>Gekappt auf <see cref="SCHICHTEN_MAX"/>.</item>
+        /// </list>
+        ///
+        /// Der VERBUND-Leitspeicher wird nicht hier, sondern beim Registry-Aufbau auf 1
+        /// gezwungen (Konzept 6.3): Dort steht die Information, dass sein
+        /// <see cref="Q_max"/> die Summe mehrerer Behälter ist — eine aus SEINEM Volumen
+        /// abgeleitete Schichtebene wäre falsch.
+        /// </summary>
+        public int SchichtenWirksam
+        {
+            get
+            {
+                if (IstQuelle) return 1;
+                if (Q_max <= 0 || VL_eff <= RL_eff) return 1;
+                if (SchichtenAnzahl < 1) return 1;
+                return SchichtenAnzahl > SCHICHTEN_MAX ? SCHICHTEN_MAX : SchichtenAnzahl;
+            }
+        }
+
+        /// <summary>true = der Speicher rechnet mit mehr als einer Schicht.</summary>
+        public bool Geschichtet
+        {
+            get { return SchichtenWirksam > 1; }
+        }
+
+        /// <summary>
+        /// Legt die Schichtebene aus den aktuellen Parametern neu an: N Schichten auf
+        /// <see cref="RL_eff"/> (der leere Speicher) und die daraus abgeleiteten
+        /// Geometrie- und Leitungsgrößen.
+        ///
+        /// <para>Aufgerufen von <see cref="Reset"/> (also auch aus <see cref="Init"/>)
+        /// und vom Registry-Aufbau, nachdem er Schichtzahl, Höhe, λ und die
+        /// Verbund-Kapazität gesetzt hat. Mehrfachaufruf ist unschädlich.</para>
+        /// </summary>
+        public void SchichtenAufbauen()
+        {
+            int n = SchichtenWirksam;
+
+            if (_schicht == null || _schicht.Length != n) _schicht = new double[n];
+            else Array.Clear(_schicht, 0, n);
+
+            if (_blockWert == null || _blockWert.Length != n)
+            {
+                _blockWert = new double[n];
+                _blockLaenge = new int[n];
+            }
+
+            _schichtMax = (Q_max > 0) ? Q_max / n : 0;
+
+            double spreizung = VL_eff - RL_eff;
+            _schichtKapazitaet = (spreizung > 0) ? _schichtMax / spreizung : 0;
+
+            // GEOMETRIE: Höhe entweder gepflegt oder aus dem Volumen über H/D = 2,5.
+            //   V = π/4 · D² · H  und  H = 2,5 · D   ⇒   D = (4V / (π · 2,5))^(1/3)
+            double vM3 = VolumenLiter / 1000.0;
+            double hoehe = Hoehe > 0 ? Hoehe : 0;
+            if (hoehe <= 0 && vM3 > 0)
+            {
+                double d = Math.Pow(4.0 * vM3 / (Math.PI * HD_VERHAELTNIS_DEFAULT), 1.0 / 3.0);
+                hoehe = HD_VERHAELTNIS_DEFAULT * d;
+            }
+
+            double quer = (hoehe > 0) ? vM3 / hoehe : 0;
+
+            // WÄRMEDURCHGANG je Schichtpaar: k = λ_eff · A_quer / (H/N) [W/K], mal 1 h
+            // und durch 1000 ⇒ kWh/K. Bei N = 1 gibt es kein Paar, der Wert bleibt 0.
+            double lambda = LambdaEff > 0 ? LambdaEff : LAMBDA_EFF_DEFAULT;
+            _leitwert = (n > 1 && hoehe > 0 && quer > 0)
+                ? lambda * quer * n / hoehe / 1000.0
+                : 0;
+
+            // WÄRMEABGABEFLÄCHE je Schicht: Mantelabschnitt π·D·(H/N); die oberste und
+            // die unterste Schicht tragen zusätzlich den jeweiligen Deckel. Ohne
+            // Geometrie (Volumen 0) sind alle Schichten gleich gewichtet - dann steht die
+            // Verteilung allein auf der Temperaturgewichtung.
+            if (_schichtFlaeche == null || _schichtFlaeche.Length != n)
+                _schichtFlaeche = new double[n];
+
+            if (quer > 0 && hoehe > 0)
+            {
+                double durchmesser = Math.Sqrt(4.0 * quer / Math.PI);
+                double mantel = Math.PI * durchmesser * (hoehe / n);
+                for (int i = 0; i < n; i++) _schichtFlaeche[i] = mantel;
+                _schichtFlaeche[0] += quer;
+                _schichtFlaeche[n - 1] += quer;
+            }
+            else
+            {
+                for (int i = 0; i < n; i++) _schichtFlaeche[i] = 1;
+            }
+        }
+
+        /// <summary>
+        /// Temperatur der Schicht <paramref name="i"/> [°C] (0 = oben):
+        /// <c>RL_eff + E[i]/E_max · (VL_eff − RL_eff)</c>.
+        ///
+        /// <para>Bei N = 1 ist das die Ein-Zonen-Ersatztemperatur aus Konzept 8.2 —
+        /// dieselbe Formel, mit der die Booster-Wärmepumpe später ihre Quelltemperatur
+        /// bildet.</para>
+        /// </summary>
+        public double SchichtTemperatur(int i)
+        {
+            if (_schicht == null || i < 0 || i >= _schicht.Length) return RL_eff;
+            if (_schichtMax <= 0) return RL_eff;
+
+            double f = _schicht[i] / _schichtMax;
+            if (f < 0) f = 0;
+            else if (f > 1) f = 1;
+            return RL_eff + f * (VL_eff - RL_eff);
+        }
+
+        /// <summary>Energie der Schicht <paramref name="i"/> [kWh] — für Anzeigen und Proben.</summary>
+        public double SchichtEnergie(int i)
+        {
+            return (_schicht != null && i >= 0 && i < _schicht.Length) ? _schicht[i] : 0;
+        }
+
+        /// <summary>Temperatur der obersten Schicht [°C].</summary>
+        public double T_oben { get { return SchichtTemperatur(0); } }
+
+        /// <summary>Temperatur der untersten Schicht [°C].</summary>
+        public double T_unten
+        {
+            get { return SchichtTemperatur(_schicht != null ? _schicht.Length - 1 : 0); }
+        }
+
+        /// <summary>
+        /// Setzt das LEISTUNGSBUDGET der Stunde zurück (Befund K2-O6) — idempotent je
+        /// Stunde, damit der Zwei-Pass-Durchlauf eines Puffers (Prozess- und Heizkanal
+        /// derselben Stunde) die Grenze nur EINMAL bekommt.
+        ///
+        /// <para>Aufgerufen wird sie von der Kaskadenschleife zu Beginn jeder Stunde -
+        /// an derselben Stelle, an der auch die Reservierungen der Vorstunde verfallen -
+        /// und vorsorglich von <see cref="Laden(double,int,double)"/> und
+        /// <see cref="Entladen"/> selbst, damit auch ein Speicher außerhalb der
+        /// Stundenschleife nie mit einem fremden Budget rechnet.</para>
+        /// </summary>
+        public void StundeBeginnen(int stunde)
+        {
+            if (_budgetStunde == stunde) return;
+
+            _budgetStunde = stunde;
+            _ladebudget = LadeleistungMax > 0 ? LadeleistungMax : double.MaxValue;
+            _entladebudget = EntladeleistungMax > 0 ? EntladeleistungMax : double.MaxValue;
+        }
+
+        /// <summary>Budget auf „unbegrenzt" und „keine Stunde gesetzt" (Laufanfang).</summary>
+        private void BudgetZuruecksetzen()
+        {
+            _budgetStunde = -1;
+            _ladebudget = double.MaxValue;
+            _entladebudget = double.MaxValue;
+        }
+
+        /// <summary>
+        /// ENTLADEFÄHIGKEIT dieses Speichers für einen Kanal [kWh] (Konzept 7.4
+        /// Punkt 2): <c>Durchfluss B + Σ Energie der zugänglichen Schichten mit
+        /// T[i] ≥ T_Nutz[kanal]</c>.
+        ///
+        /// <para><b>Bei N = 1 double.MaxValue</b> — und damit ohne jede Wirkung. Das ist
+        /// die eine Stelle, an der die Schichtebene in den Energiepfad zurückwirkt; sie
+        /// ist deshalb an die Schichtzahl gebunden, nicht an eine Zahlenprüfung. Ein
+        /// Bestandsprojekt (N = 1 nach Migrationsschritt 53) rechnet unverändert.</para>
+        ///
+        /// <para><b>Zugänglich</b> sind die Schichten von der Entnahmehöhe des Kanals
+        /// ABWÄRTS; oberhalb bleibt der Vorrat unangetastet (das ist die
+        /// Brauchwasser-Bereitschaftszone des Kombispeichers, 7.5). Der DURCHFLUSS zählt
+        /// stets voll mit: Er strömt in derselben Stunde hindurch und hat die
+        /// Vorlauftemperatur des Erzeugers.</para>
+        /// </summary>
+        public double EntladefaehigkeitKanal(int kanal)
+        {
+            if (!Geschichtet || _schicht == null) return double.MaxValue;
+            if (kanal < 0 || kanal >= Kanal.ANZAHL) return double.MaxValue;
+
+            double durchfluss = SOC - Q_max;
+            if (durchfluss < 0) durchfluss = 0;
+
+            double grenze = TNutz[kanal];
+            double summe = 0;
+            for (int i = SchichtIndex(Entnahmehoehe[kanal]); i < _schicht.Length; i++)
+            {
+                if (_schicht[i] <= 0) continue;
+                // 1e-9 als Zahlenrand, nicht als Fachtoleranz: Bei T_Nutz == RL_eff (die
+                // verhaltensneutrale Vorbelegung) darf die Bedingung nicht an der
+                // letzten Stelle einer Division scheitern.
+                if (SchichtTemperatur(i) >= grenze - 1e-9) summe += _schicht[i];
+            }
+
+            return durchfluss + summe;
+        }
+
+        /// <summary>
+        /// Schichtindex zu einer Anschlusshöhe 0…1 (1 = oben ⇒ Index 0, 0 = unten ⇒
+        /// Index N−1). Werte außerhalb gelten als oben — dieselbe Auslegung wie NULL in
+        /// der Datenbank.
+        /// </summary>
+        private int SchichtIndex(double hoehe)
+        {
+            int n = (_schicht != null) ? _schicht.Length : 1;
+            if (hoehe >= 1 || hoehe < 0) return 0;
+
+            int idx = (int)Math.Floor((1.0 - hoehe) * n);
+            if (idx < 0) idx = 0;
+            else if (idx > n - 1) idx = n - 1;
+            return idx;
+        }
+
+        /// <summary>
+        /// BELADUNG der Schichtebene (Konzept 7.4 Punkt 1): Von der Einspeisehöhe
+        /// ABWÄRTS werden die Schichten nacheinander auf <see cref="VL_eff"/> gehoben —
+        /// das Temperaturband wandert nach unten.
+        ///
+        /// <para><b>Der Aufstieg als zweiter Durchgang.</b> Ist von der Einspeisehöhe
+        /// abwärts alles voll, steigt die weitere Wärme nach OBEN (Auftrieb). Das ist
+        /// keine Zutat, sondern eine Notwendigkeit: Der SOC hat die Menge bereits
+        /// aufgenommen (er kennt nur die Gesamtkapazität), und ohne diesen Durchgang
+        /// bräche die Schicht-Invariante. Bei der Vorgabe „Einspeisung oben" — jedem
+        /// Bestandsdatensatz — beginnt die erste Schleife ohnehin bei Index 0 und der
+        /// zweite Durchgang läuft leer.</para>
+        /// </summary>
+        private void Schicht_Beladen(double umsatz)
+        {
+            if (umsatz <= 0 || _schicht == null || _schichtMax <= 0) return;
+
+            int start = SchichtIndex(EinspeisehoeheAktuell);
+            double rest = umsatz;
+
+            for (int i = start; i < _schicht.Length && rest > 0; i++)
+                rest -= Fuellen(i, rest);
+
+            for (int i = start - 1; i >= 0 && rest > 0; i--)
+                rest -= Fuellen(i, rest);
+        }
+
+        /// <summary>Füllt eine Schicht bis <see cref="_schichtMax"/> und meldet die aufgenommene Menge.</summary>
+        private double Fuellen(int i, double menge)
+        {
+            double frei = _schichtMax - _schicht[i];
+            if (frei <= 0) return 0;
+
+            double teil = (menge < frei) ? menge : frei;
+            _schicht[i] += teil;
+            return teil;
+        }
+
+        /// <summary>
+        /// ENTNAHME der Schichtebene (Konzept 7.4 Punkt 2): ideale Verdrängung am
+        /// Anschluss. Zugänglich sind die Schichten von der Entnahmehöhe ABWÄRTS; der
+        /// Rücklauf tritt UNTEN ein, deshalb fällt die unterste Schicht zuerst auf
+        /// <see cref="RL_eff"/> zurück und die darüber rücken nach.
+        ///
+        /// <para>Der zweite Durchgang oberhalb der Entnahmehöhe ist ein SICHERHEITSNETZ
+        /// für die Invariante, kein Rechenweg: Die Kaskadenschleife klemmt den
+        /// angeforderten Bedarf zuvor auf <see cref="EntladefaehigkeitKanal"/>, und die
+        /// zugängliche Energie ist nie kleiner als diese. Er greift also nur, wenn ein
+        /// Aufrufer diese Klemmung umgeht.</para>
+        /// </summary>
+        private void Schicht_Entladen(double umsatz, int kanal)
+        {
+            if (umsatz <= 0 || _schicht == null) return;
+
+            double hoehe = (kanal >= 0 && kanal < Kanal.ANZAHL) ? Entnahmehoehe[kanal] : 1.0;
+            int start = SchichtIndex(hoehe);
+            double rest = umsatz;
+
+            for (int i = _schicht.Length - 1; i >= start && rest > 0; i--)
+                rest -= Leeren(i, rest);
+
+            for (int i = start - 1; i >= 0 && rest > 0; i--)
+                rest -= Leeren(i, rest);
+        }
+
+        /// <summary>Entleert eine Schicht bis <see cref="RL_eff"/> und meldet die abgegebene Menge.</summary>
+        private double Leeren(int i, double menge)
+        {
+            double da = _schicht[i];
+            if (da <= 0) return 0;
+
+            double teil = (menge < da) ? menge : da;
+            _schicht[i] -= teil;
+            return teil;
+        }
+
+        /// <summary>
+        /// VERTIKALER AUSGLEICH (Konzept 7.4 Punkt 3): Wärmeleitung zwischen
+        /// Nachbarschichten <c>ΔQ = k · (T[i+1] − T[i])</c>, je Paar auf 25 % der
+        /// Temperaturdifferenz gekappt, anschließend Inversionsmischung.
+        ///
+        /// <para>Beides ist ein Austausch INNERHALB des Speichers und lässt die Summe
+        /// unberührt. Bei N = 1 gibt es kein Schichtpaar — die Methode kehrt sofort
+        /// zurück.</para>
+        /// </summary>
+        private void Schicht_Ausgleich()
+        {
+            if (_schicht == null || _schicht.Length < 2) return;
+
+            if (_leitwert > 0 && _schichtKapazitaet > 0)
+            {
+                for (int i = 0; i < _schicht.Length - 1; i++)
+                {
+                    // Positives dT heißt: die UNTERE Schicht ist wärmer, Wärme fließt
+                    // nach oben.
+                    double dT = SchichtTemperatur(i + 1) - SchichtTemperatur(i);
+                    if (dT == 0) continue;
+
+                    double q = _leitwert * dT;
+
+                    // Kappung auf 25 % der Temperaturdifferenz: Nach dem Austausch
+                    // beträgt die Differenz mindestens die Hälfte der vorigen - die
+                    // Reihenfolge zweier Schichten kann nicht kippen, und der Schritt ist
+                    // ohne Unterschritte stabil.
+                    double max = AUSGLEICH_KAPPUNG * Math.Abs(dT) * _schichtKapazitaet;
+                    if (q > max) q = max;
+                    else if (q < -max) q = -max;
+
+                    _schicht[i] += q;
+                    _schicht[i + 1] -= q;
+                }
+
+                Schicht_Klemmen();
+            }
+
+            Schicht_Inversion();
+        }
+
+        /// <summary>
+        /// INVERSIONSMISCHUNG (Auftrieb, Konzept 7.4 Punkt 3): Ist eine untere Schicht
+        /// wärmer als die darüber, werden beide volumengewichtet gemischt — bei gleichen
+        /// Schichtvolumina ist das das arithmetische Mittel. Wiederholt, bis die
+        /// Schichtung monoton ist; mehr Durchläufe als Schichten kann eine
+        /// Blasensortierung über N Elemente nicht brauchen.
+        ///
+        /// <para><b>Sie läuft ZWEIMAL je Stunde:</b> einmal im vertikalen Ausgleich (der
+        /// Konzeptreihenfolge folgend vor den Verlusten) und ein zweites Mal NACH der
+        /// Verlustverteilung. Der Grund ist der Deckel: Die oberste und die unterste
+        /// Schicht tragen zusätzlich zur Mantelfläche eine Stirnfläche und verlieren
+        /// deshalb etwas mehr als die Schichten dazwischen — bei durchgeladenem Speicher
+        /// entsteht daraus eine winzige Inversion an der Oberkante. Ohne den zweiten
+        /// Durchgang stünde sie in der Ganglinie und in <c>T_oben</c>, obwohl der Auftrieb
+        /// sie physikalisch sofort auflöst. Der Vorgang ist energieerhaltend und bei
+        /// N = 1 wirkungslos.</para>
+        /// </summary>
+        private void Schicht_Inversion()
+        {
+            if (_schicht == null || _schicht.Length < 2) return;
+
+            int n = _schicht.Length;
+            int bloecke = 0;
+
+            // BLOCKMITTELUNG statt paarweisem Tauschen. Zwei benachbarte Schichten
+            // paarweise zu mitteln, bis nichts mehr kippt, KONVERGIERT NUR IM GRENZWERT:
+            // Jede Mittelung stößt die nächste an, und nach einer festen Zahl Durchläufe
+            // bleibt ein Rest stehen, der als winzige Inversion in der Ganglinie landet
+            // (an Projekt 1024 gemessen: 1,3e-5 K in 6842 von 8760 Stunden). Dieses
+            // Verfahren stellt die stabile Schichtung dagegen in EINEM Durchlauf her: Ein
+            // Block wird mit dem darüber verschmolzen, solange er wärmer ist, und trägt
+            // danach das Mittel aller beteiligten Schichten. Bei gleichen
+            // Schichtvolumina ist das genau die volumengewichtete Mischung des Auftriebs,
+            // und die Summe bleibt erhalten.
+            for (int i = 0; i < n; i++)
+            {
+                _blockWert[bloecke] = _schicht[i];
+                _blockLaenge[bloecke] = 1;
+                bloecke++;
+
+                while (bloecke > 1 && _blockWert[bloecke - 2] < _blockWert[bloecke - 1])
+                {
+                    double s = _blockWert[bloecke - 2] * _blockLaenge[bloecke - 2] +
+                               _blockWert[bloecke - 1] * _blockLaenge[bloecke - 1];
+                    int l = _blockLaenge[bloecke - 2] + _blockLaenge[bloecke - 1];
+                    bloecke--;
+                    _blockWert[bloecke - 1] = s / l;
+                    _blockLaenge[bloecke - 1] = l;
+                }
+            }
+
+            int index = 0;
+            for (int b = 0; b < bloecke; b++)
+                for (int k = 0; k < _blockLaenge[b]; k++) _schicht[index++] = _blockWert[b];
+        }
+
+        /// <summary>
+        /// Verteilt den SCHICHTANTEIL der Bereitschaftsverluste (Konzept 7.4 Punkt 4) —
+        /// nach Wärmeabgabefläche und gewichtet mit
+        /// <c>(T[i] − RL_eff)/(VL_eff − RL_eff)</c>. Eine Schicht auf Rücklauftemperatur
+        /// verliert nichts mehr: Sie hat keine Übertemperatur gegen die Umgebung.
+        ///
+        /// <para>Bei N = 1 ist das Ergebnis exakt die füllstandsanteilige Rechnung des
+        /// Bestands — es gibt genau eine Schicht, und sie bekommt den ganzen Betrag, den
+        /// die SOC-Buchung eine Zeile zuvor abgezogen hat.</para>
+        /// </summary>
+        private void Schicht_Verluste(double verlust)
+        {
+            if (verlust <= 0 || _schicht == null) return;
+
+            if (_schicht.Length == 1)
+            {
+                _schicht[0] -= verlust;
+                if (_schicht[0] < 0) _schicht[0] = 0;
+                return;
+            }
+
+            double spreizung = VL_eff - RL_eff;
+            if (spreizung <= 0) return;
+
+            double summe = 0;
+            for (int i = 0; i < _schicht.Length; i++)
+            {
+                double g = _schichtFlaeche[i] * (SchichtTemperatur(i) - RL_eff) / spreizung;
+                if (g > 0) summe += g;
+            }
+            if (summe <= 0) return;
+
+            for (int i = 0; i < _schicht.Length; i++)
+            {
+                double g = _schichtFlaeche[i] * (SchichtTemperatur(i) - RL_eff) / spreizung;
+                if (g <= 0) continue;
+
+                _schicht[i] -= verlust * (g / summe);
+                if (_schicht[i] < 0) _schicht[i] = 0;
+            }
+        }
+
+        /// <summary>Hält jede Schicht im zulässigen Band [0, E_max] ⇔ [RL_eff, VL_eff].</summary>
+        private void Schicht_Klemmen()
+        {
+            if (_schicht == null) return;
+
+            for (int i = 0; i < _schicht.Length; i++)
+            {
+                if (_schicht[i] < 0) _schicht[i] = 0;
+                else if (_schicht[i] > _schichtMax) _schicht[i] = _schichtMax;
+            }
+        }
+
+        /// <summary>
+        /// Zieht die Schichtebene am Ende der Stunde auf die INVARIANTE
+        /// <c>Σ E[i] == min(SOC, Q_max)</c> nach (Konzept 7.3/11.3) und misst dabei die
+        /// Abweichung.
+        ///
+        /// <para><b>Warum das nötig ist und warum es nichts verdeckt.</b> Jede
+        /// Schichtoperation bucht denselben Betrag, den die SOC-Arithmetik gebucht hat;
+        /// zwischen beiden kann sich deshalb nur die Rundung einer Verteilung über N
+        /// Summanden schieben (Größenordnung 1e-16 je Stunde) — und die Klemmung an den
+        /// Bandgrenzen. Beides wird hier ausgeglichen, BEVOR es sich über 8760 Stunden
+        /// aufaddiert. Eine echte Abweichung wäre um Zehnerpotenzen größer und wird
+        /// gezählt (<see cref="SchichtInvarianteVerletzungen"/>); im Debug-Build meldet
+        /// sie zusätzlich <see cref="Schichtprobe"/>.</para>
+        ///
+        /// <para>Bei N = 1 ist der Faktor exakt 1,0 — <c>E[0]</c> und <c>A</c> entstehen
+        /// aus denselben Buchungen.</para>
+        /// </summary>
+        private void Schicht_Nachfuehren()
+        {
+            if (_schicht == null) return;
+
+            double ziel = (SOC < Q_max) ? SOC : Q_max;
+            if (ziel < 0) ziel = 0;
+
+            double summe = 0;
+            for (int i = 0; i < _schicht.Length; i++) summe += _schicht[i];
+
+            double abweichung = summe - ziel;
+            double toleranz = 1e-6 * (Q_max > 1 ? Q_max : 1);
+
+            // ERSTBEFÜLLUNG VON AUSSEN ist keine Verletzung: Ein QUELLSPEICHER startet
+            // VOLL — <c>WaermequelleClass.Quellspeicher</c> setzt <c>SOC = Q_max</c>
+            // direkt nach <see cref="Init"/>, ohne je <see cref="Laden"/> zu rufen. Die
+            // Schichtebene hat diesen Vorgang nie gesehen und steht auf null; sie wird
+            // gleich unten aufgefüllt. Gezählt wird deshalb nur, was AUS einer laufenden
+            // Buchung auseinandergelaufen ist (summe > 0).
+            if (summe > 0 && Math.Abs(abweichung) > toleranz)
+            {
+                SchichtInvarianteVerletzungen++;
+                if (Math.Abs(abweichung) > SchichtInvarianteMaxAbweichung)
+                    SchichtInvarianteMaxAbweichung = Math.Abs(abweichung);
+            }
+
+            if (Math.Abs(abweichung) <= 1e-12 * (Q_max > 1 ? Q_max : 1)) return;
+
+            if (summe > 0)
+            {
+                double faktor = ziel / summe;
+                for (int i = 0; i < _schicht.Length; i++) _schicht[i] *= faktor;
+            }
+            else if (ziel > 0)
+            {
+                // Kein Inhalt, aber Zielenergie: von oben auffüllen (der Fall tritt nur
+                // auf, wenn ein Speicher außerhalb der Schichtbuchung gefüllt wurde).
+                double rest = ziel;
+                for (int i = 0; i < _schicht.Length && rest > 0; i++)
+                    rest -= Fuellen(i, rest);
+            }
+
+            Schicht_Klemmen();
+        }
+
+        /// <summary>Schreibt die Temperaturganglinien der Stunde (nur bei echter Schichtrechnung).</summary>
+        private void Schicht_Ganglinie(int stunde)
+        {
+            if (stunde < 0 || stunde >= 8760) return;
+            if (IstQuelle || Q_max <= 0 || VL_eff <= RL_eff) return;
+
+            T_oben_stuendlich[stunde] = (float)T_oben;
+            T_unten_stuendlich[stunde] = (float)T_unten;
+        }
+
+        /// <summary>
+        /// Bildet <see cref="T_oben_Mittel"/> und <see cref="T_oben_Min"/> aus der
+        /// Ganglinie der obersten Schicht (Befund E1-O5).
+        ///
+        /// <para><b>QUELLSPEICHER bleiben NULL.</b> Ihr Temperaturpaar ist ein
+        /// Ersatzwertpaar aus der Anlagen-Spreizung (Spreizung/0), keine
+        /// Speichertemperatur; eine Zustandsformel darauf wäre Scheinphysik
+        /// (Konzept 8.2). NULL heißt in der Ergebniszeile „nicht erhoben" — genau das
+        /// trifft zu.</para>
+        /// </summary>
+        private void Schicht_Kennzahlen()
+        {
+            T_oben_Mittel = null;
+            T_oben_Min = null;
+
+            if (IstQuelle || Q_max <= 0 || VL_eff <= RL_eff) return;
+            if (T_oben_stuendlich == null || T_oben_stuendlich.Length == 0) return;
+
+            double summe = 0;
+            double min = double.MaxValue;
+            for (int i = 0; i < T_oben_stuendlich.Length; i++)
+            {
+                double v = T_oben_stuendlich[i];
+                summe += v;
+                if (v < min) min = v;
+            }
+
+            T_oben_Mittel = summe / T_oben_stuendlich.Length;
+            T_oben_Min = min;
+        }
+
+#if DEBUG
+
+        /// <summary>
+        /// PRÜFHAKEN der Schichtebene — ausschließlich im Debug-Build, nach dem Muster
+        /// von <c>Kaskadenschleife.Entladeprobe</c> (kein Prüfcode im Release-Assembly).
+        ///
+        /// Parameter: Puffer-ID, Stunde, <c>min(SOC, Q_max)</c>, Summe der
+        /// Schichtenergie, Temperaturen von oben nach unten. Damit lassen sich die drei
+        /// Invarianten aus Konzept 11.3 an einem echten Lauf messen: Summengleichheit,
+        /// Monotonie nach der Inversionsmischung und <c>RL_eff ≤ T[i] ≤ VL_eff</c>.
+        /// </summary>
+        public static Action<int, int, double, double, double[]> Schichtprobe;
+
+        /// <summary>Meldet den Schichtzustand an <see cref="Schichtprobe"/>, sofern gesetzt.</summary>
+        public void SchichtprobeMelden(int stunde)
+        {
+            if (Schichtprobe == null || _schicht == null) return;
+
+            double ziel = (SOC < Q_max) ? SOC : Q_max;
+            if (ziel < 0) ziel = 0;
+
+            double summe = 0;
+            double[] temperaturen = new double[_schicht.Length];
+            for (int i = 0; i < _schicht.Length; i++)
+            {
+                summe += _schicht[i];
+                temperaturen[i] = SchichtTemperatur(i);
+            }
+
+            Schichtprobe(ID_Pufferspeicher, stunde, ziel, summe, temperaturen);
+        }
+
+#endif
     }
 }

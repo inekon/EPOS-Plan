@@ -353,6 +353,13 @@ namespace WindowsFormsApplication1
             // und damit vor dem Ladepunkt der Senkenzuordnungen.
             _senkenlisten = null;
 
+            // PAKET P1: dasselbe für die beiden projektbezogenen Lesecaches des
+            // Schichtmodells - die Schichtparameter der Pufferzeilen und die
+            // Einspeisehöhen der Senkenzeilen. Sie hängen am Projekt und dürfen einen
+            // Laufwechsel nicht überleben.
+            _schichtzeilen = null;
+            _anschlusshoehen = null;
+
             Array.Clear(Rest_Waermebedarf_stuendlich, 0, Rest_Waermebedarf_stuendlich.Length);
             Array.Clear(Rest_Strombedarf_viertelstuendlich, 0, Rest_Strombedarf_viertelstuendlich.Length);
             
@@ -518,7 +525,27 @@ namespace WindowsFormsApplication1
             // Beides ist reine Auswertung - es verändert kein Simulationsergebnis.
             // ***********************************************************************
             foreach (SimulationPufferspeicher sp in AlleSpeicher())
+            {
                 sp.KennzahlenBerechnen();
+
+                // PAKET P1 (Konzept § 11.3): SELBSTPRÜFUNG DER SCHICHT-INVARIANTE als
+                // Protokollprobe am Laufende. Der Zähler steht bei einem gesunden Lauf
+                // auf 0 - dann gibt es keine Zeile. Er zählt Stunden, in denen die Summe
+                // der Schichtenergie von min(SOC, Q_max) über die Toleranz hinaus
+                // abgewichen ist; nachgezogen wird sie in jedem Fall, gemeldet wird sie
+                // hier, damit ein Auseinanderlaufen der beiden Zustandsebenen sichtbar
+                // wird statt still ausgeglichen zu werden.
+                if (sp.SchichtInvarianteVerletzungen > 0)
+                    Protokoll.WarnungEinmal("schicht-invariante-" + sp.ID_Pufferspeicher,
+                        "Schichtmodell: Am Puffer " + sp.ID_Pufferspeicher + " (" +
+                        sp.BezeichnerAnzeige() + ") wich die Summe der Schichtenergie in " +
+                        sp.SchichtInvarianteVerletzungen + " Stunden vom Speicherinhalt ab " +
+                        "(größte Abweichung " +
+                        sp.SchichtInvarianteMaxAbweichung.ToString("0.######") + " kWh). Die " +
+                        "Schichtebene wurde jede Stunde nachgezogen, die Energiebilanz des " +
+                        "Laufs ist davon unberührt - die Meldung weist auf einen Fehler im " +
+                        "Schichtmodell hin und gehört an die Entwicklung.");
+            }
 
             ErdreichAuswertung.AusLauf(this);
         }
@@ -1604,6 +1631,12 @@ namespace WindowsFormsApplication1
                 sp.Init(p.Gesamtvolumen, p.Vorlauf, p.Ruecklauf, p.Bereitschaftsverluste, 20);
                 RueckfallMelden(sp, p.ID, p.Bezeichner);
 
+                // PAKET P1: dieselben Schichtparameter wie im Registry-Aufbau - der
+                // Ersatz-Pendelspeicher ist eine Zeile derselben Projektkopie und darf
+                // keine zweite Auslegung bekommen.
+                SchichtparameterUebernehmen(sp);
+                sp.SchichtenAufbauen();
+
                 sp.SchwelleEin = p.SchwelleEin / 100.0;
                 sp.SchwelleAus = p.SchwelleAus / 100.0;
                 sp.SchwelleAusNachrang = p.SchwelleAusNachrang / 100.0;
@@ -2103,6 +2136,11 @@ namespace WindowsFormsApplication1
                     // frühere Zweitsenken-Kennzeichen leitet sich daraus ab.
                     a.Rang = e.Rang;
                     a.Speicher = sp;
+                    // PAKET P1 (Konzept § 7.4 Punkt 1): die EINSPEISEHÖHE dieser
+                    // Senkenzeile. −1 = nicht gepflegt und damit oben - der Zustand
+                    // JEDES heutigen Datensatzes (Schritt 50 hat die Spalte als
+                    // P1-Vorgriff angelegt und bewusst leer gelassen).
+                    a.Einspeisehoehe = Anschlusshoehe(e.ID_Anlage, e.Rang);
                     // Ladeordnung führt die Obergrenze in PROZENT, der Speicher als Anteil.
                     // Sie ist nach ObergrenzenAufloesen immer > 0 (eigene Ladegrenze, sonst
                     // Schwelle_Aus bzw. Schwelle_Aus_Nachrang, beide mit Vorgabe 95 %) —
@@ -2160,6 +2198,54 @@ namespace WindowsFormsApplication1
                                                       auftrag[e].BMTyp, true);
             });
             foreach (Ladeordnung.LadeEintrag e in eintraege) k.LadenMitPV.Add(auftrag[e]);
+        }
+
+        /// <summary>
+        /// EINSPEISEHÖHEN aller Senkenzeilen des Projekts, Schlüssel
+        /// „<c>Anlage:Rang</c>" — EINMAL gelesen (Paket P1).
+        /// </summary>
+        private Dictionary<string, double> _anschlusshoehen;
+
+        /// <summary>
+        /// Einspeisehöhe einer Senkenzeile (<c>Z_AnlageSenke.Anschlusshoehe</c>, Konzept
+        /// § 7.4 Punkt 1); <b>−1 = nicht gepflegt</b> und damit oben.
+        ///
+        /// <para>Gelesen wird hier und nicht in <c>WaermesenkeClass.SenkenlistenLaden</c>:
+        /// Die Höhe ist eine reine ENGINE-Größe des Schichtmodells — kein Dialog, keine
+        /// Projektkopie und keine der übrigen Auswertungen der Senkenliste fragt sie ab.
+        /// <c>SELECT *</c> mit <c>StilleDb.Feld</c>, damit eine Datenbank ohne die Spalte
+        /// (Schritt 50 nicht gelaufen) nicht die ganze Abfrage verliert.</para>
+        /// </summary>
+        private double Anschlusshoehe(int idAnlage, int rang)
+        {
+            if (_anschlusshoehen == null)
+            {
+                _anschlusshoehen = new Dictionary<string, double>();
+
+                DataTable dt = StilleDb.Tabelle(
+                    "SELECT s.ID_Anlage, s.Rang, s.Anschlusshoehe FROM " +
+                    SchemaKatalog.Z_ANLAGESENKE + " s INNER JOIN " +
+                    SchemaKatalog.TAB_ENERGIEANLAGEN + " a ON s.ID_Anlage = a.ID " +
+                    "WHERE a.ID_Projekt = ?",
+                    StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt));
+
+                if (dt != null)
+                    foreach (DataRow r in dt.Rows)
+                    {
+                        object o = StilleDb.Feld(r, SchemaKatalog.SPALTE_SENKE_ANSCHLUSSHOEHE);
+                        if (o == null) continue;
+
+                        double h = StilleDb.Kommazahl(o, -1);
+                        if (h < 0 || h > 1) continue;
+
+                        string schluessel = StilleDb.Zahl(StilleDb.Feld(r, SchemaKatalog.SPALTE_SENKE_ID_ANLAGE)) +
+                                            ":" + StilleDb.Zahl(StilleDb.Feld(r, SchemaKatalog.SPALTE_SENKE_RANG));
+                        _anschlusshoehen[schluessel] = h;
+                    }
+            }
+
+            double hoehe;
+            return _anschlusshoehen.TryGetValue(idAnlage + ":" + rang, out hoehe) ? hoehe : -1;
         }
 
         /// <summary>
@@ -2470,6 +2556,13 @@ namespace WindowsFormsApplication1
                 sp.Init(p.Gesamtvolumen, p.Vorlauf, p.Ruecklauf, p.Bereitschaftsverluste);
                 RueckfallMelden(sp, p.ID, p.Bezeichner);
 
+                // PAKET P1 (Konzept § 7.2): die Parameter der Schichtebene aus der
+                // Projektkopie (Migrationsschritt 53). MUSS nach Init stehen — dort
+                // entstehen Q_max, VL_eff/RL_eff und die Vorbelegung T_Nutz = RL_eff —
+                // und VOR VerbundAufaddieren: Der Verbund-Guard (§ 6.3) prüft die
+                // Schichtzahl und zwingt sie am Leitspeicher auf 1.
+                SchichtparameterUebernehmen(sp);
+
                 // PAKET PARALLELVERBUND — unmittelbar nach der Rückfallmeldung des
                 // LEITSPEICHERS (Begründung dort).
                 VerbundAufaddieren(sp);
@@ -2487,6 +2580,12 @@ namespace WindowsFormsApplication1
                 // BHKW-Ladeauftrags erkennt (BhkwReserveGilt) - bis dahin ist er ein
                 // getragener Parameter ohne Rechenwirkung.
                 sp.SchwelleReserve = p.SchwelleReserve / 100.0;
+
+                // PAKET P1: Schichtebene aus den fertigen Parametern aufbauen — erst
+                // JETZT steht Q_max endgültig fest (der Verbund hat es womöglich
+                // aufsummiert), und daran hängen Schichtenergie, Wärmekapazität und
+                // Leitwert. Der Laufanfang (Reset) baut sie noch einmal auf.
+                sp.SchichtenAufbauen();
 
                 // Beim Aufbau nicht im Rechenpfad; geöffnet wird er, wenn eine Anlage ihn
                 // als Senke führt (siehe ImRechenpfad).
@@ -2547,6 +2646,28 @@ namespace WindowsFormsApplication1
             List<int> mitglieder;
             if (!_verbuende.TryGetValue(leit.ID_Pufferspeicher, out mitglieder) ||
                 mitglieder == null || mitglieder.Count == 0) return;
+
+            // PAKET P1 (Konzept § 6.3, Entscheidung F8): VERBUND UND SCHICHTUNG SCHLIESSEN
+            // SICH JE RECHENSPEICHER AUS — der Leitspeicher rechnet STETS mit N = 1.
+            //
+            // Gleich darunter wird sein Q_max zur AUFSUMMIERTEN Kapazität aller
+            // Verbundmitglieder. Eine Schichtebene entsteht aber aus dem Volumen und der
+            // Geometrie DIESES EINEN Behälters; auf einer fremden, größeren Kapazität
+            // wären Schichtenergie, Wärmekapazität und Leitwert schlicht falsch. Die
+            // harte Abweisung im Dialog (Warnkriterium W6) verhindert den Fall beim
+            // Speichern; hier steht der Laufzeit-Riegel für von Hand gepflegte Bestände.
+            if (leit.SchichtenAnzahl > 1)
+            {
+                Protokoll.WarnungEinmal("verbund-schichtung-" + leit.ID_Pufferspeicher,
+                    "Parallelverbund: Der Leitspeicher " + leit.ID_Pufferspeicher + " (" +
+                    leit.BezeichnerAnzeige() + ") ist mit " + leit.SchichtenAnzahl +
+                    " Schichten gepflegt. Ein Verbund rechnet als EIN Wärmevorrat mit der " +
+                    "aufsummierten Kapazität aller Behälter - eine aus dem Volumen des " +
+                    "Leitspeichers abgeleitete Schichtung wäre falsch. Gerechnet wird " +
+                    "ungeschichtet (1 Schicht); bitte entweder den Verbund auflösen oder " +
+                    "die Schichtzahl auf 1 setzen.");
+                leit.SchichtenAnzahl = 1;
+            }
 
             double qLeit = leit.Q_max;
             double qSumme = qLeit;
@@ -2671,6 +2792,155 @@ namespace WindowsFormsApplication1
                               sp.RueckfallDeltaT.ToString("0.#") + " K, nutzbare Kapazität Q_max " +
                               sp.Q_max.ToString("0.###") + " kWh. Ein gepflegtes Vorlauf-/" +
                               "Rücklaufpaar am Puffer ergäbe eine andere Kapazität.");
+        }
+
+        // =====================================================================
+        // PAKET P1 — Parameter des Schichtspeichermodells (Konzept § 7.2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Zeilen von <c>Tab_Pufferspeicher</c> des laufenden Projekts, EINMAL
+        /// gelesen — Schlüssel ist die Puffer-ID.
+        ///
+        /// <para>Der Registry-Aufbau holt die Stammfelder über
+        /// <c>WaermesenkeClass.PufferLesen</c> (eine Abfrage je Puffer, gewachsene
+        /// Struktur). Die neun Schichtfelder aus Schritt 53 kommen NICHT dort dazu:
+        /// Diese Klasse ist der einzige Leser, der sie braucht, und mit einer
+        /// Sammelabfrage je Projekt statt einer zweiten je Puffer bleibt es bei einem
+        /// Zugriff.</para>
+        /// </summary>
+        private Dictionary<int, DataRow> _schichtzeilen;
+
+        /// <summary>
+        /// Liest die Schichtparameter des Projekts EINMAL und liefert die Zeile eines
+        /// Puffers; <c>null</c>, wenn es sie nicht gibt oder die Tabelle nicht lesbar
+        /// ist.
+        ///
+        /// <para><c>SELECT *</c> statt einer Spaltenliste — bewusst: Auf einer noch
+        /// nicht migrierten Datenbank fehlen die neun Spalten, und eine ausformulierte
+        /// Liste ließe die ganze Abfrage scheitern. So liefert
+        /// <c>StilleDb.Feld(zeile, spalte)</c> für eine fehlende Spalte schlicht
+        /// <c>null</c>, und jeder Parameter fällt auf seine Konzept-Vorgabe zurück
+        /// (= das Verhalten vor Paket P1).</para>
+        /// </summary>
+        private DataRow Schichtzeile(int idPuffer)
+        {
+            if (_schichtzeilen == null)
+            {
+                _schichtzeilen = new Dictionary<int, DataRow>();
+
+                DataTable dt = StilleDb.Tabelle(
+                    "SELECT * FROM " + SchemaKatalog.TAB_PUFFERSPEICHER + " WHERE ID_Projekt = ?",
+                    StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt));
+
+                if (dt != null)
+                    foreach (DataRow r in dt.Rows)
+                    {
+                        int id = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                        if (id > 0 && !_schichtzeilen.ContainsKey(id)) _schichtzeilen[id] = r;
+                    }
+            }
+
+            DataRow zeile;
+            return _schichtzeilen.TryGetValue(idPuffer, out zeile) ? zeile : null;
+        }
+
+        /// <summary>
+        /// Überträgt die Parameter des SCHICHTSPEICHERMODELLS aus der Projektkopie auf
+        /// das Rechenobjekt (Konzept § 7.2, Migrationsschritt 53).
+        ///
+        /// <para>Jeder Wert hat eine Vorgabe, die das Verhalten VOR Paket P1 ergibt:
+        /// N = 1 (Ein-Zonen-Modell), Höhe aus dem Volumen, λ = 1,5 W/(m·K),
+        /// T_Nutz = <c>RL_eff</c>, Entnahme oben (am Kombispeicher die Heizung in der
+        /// Mitte, § 7.5) und beide Leistungsgrenzen unbegrenzt. Eine Datenbank ohne die
+        /// Spalten rechnet damit exakt wie zuvor.</para>
+        /// </summary>
+        private void SchichtparameterUebernehmen(SimulationPufferspeicher sp)
+        {
+            if (sp == null) return;
+
+            DataRow r = Schichtzeile(sp.ID_Pufferspeicher);
+            if (r == null) return;
+
+            // SCHICHTZAHL. Werte außerhalb 1..10 werden geklemmt — ein Wert von Hand in
+            // der Datenbank darf keinen unmöglichen Zustand erzeugen.
+            int n = StilleDb.Zahl(StilleDb.Feld(r, SchemaKatalog.SPALTE_PSP_SCHICHTEN_ANZAHL), 1);
+            if (n < 1) n = 1;
+            if (n > SimulationPufferspeicher.SCHICHTEN_MAX) n = SimulationPufferspeicher.SCHICHTEN_MAX;
+            sp.SchichtenAnzahl = n;
+
+            // GEOMETRIE und WÄRMELEITUNG. 0 bzw. NULL heißt „nicht gepflegt": Die Höhe
+            // kommt dann aus dem Volumen über H/D = 2,5, λ_eff aus der Konzept-Vorgabe.
+            sp.Hoehe = StilleDb.Kommazahl(StilleDb.Feld(r, SchemaKatalog.SPALTE_PSP_HOEHE), 0);
+            if (sp.Hoehe < 0) sp.Hoehe = 0;
+
+            sp.LambdaEff = StilleDb.Kommazahl(StilleDb.Feld(r, SchemaKatalog.SPALTE_PSP_LAMBDA_EFF),
+                                              SimulationPufferspeicher.LAMBDA_EFF_DEFAULT);
+            if (sp.LambdaEff <= 0) sp.LambdaEff = SimulationPufferspeicher.LAMBDA_EFF_DEFAULT;
+
+            // MINDEST-NUTZTEMPERATUR des Brauchwasserkanals (F7: heute nur dieser Kanal).
+            // Init hat alle drei Kanäle mit RL_eff vorbelegt; hier wird allein der
+            // Brauchwasserkanal übersteuert, und nur bei gepflegtem Wert.
+            object tNutz = StilleDb.Feld(r, SchemaKatalog.SPALTE_PSP_T_NUTZ_BW);
+            if (tNutz != null)
+            {
+                double t = StilleDb.Kommazahl(tNutz, sp.RL_eff);
+
+                // KLEMMUNG auf VL_eff mit Protokollwarnung (§ 7.2): Eine
+                // Nutztemperatur über der Vorlauftemperatur könnte keine Schicht je
+                // erreichen — der Kanal wäre still und dauerhaft abgeschaltet. Sichtbar
+                // falsch ist besser als still falsch.
+                if (t > sp.VL_eff)
+                {
+                    Protokoll.WarnungEinmal("tnutz-ueber-vorlauf-" + sp.ID_Pufferspeicher,
+                        "Schichtmodell: Am Puffer " + sp.ID_Pufferspeicher + " (" +
+                        sp.BezeichnerAnzeige() + ") liegt die Mindest-Nutztemperatur " +
+                        "Brauchwasser mit " + t.ToString("0.#") + " °C ÜBER der wirksamen " +
+                        "Vorlauftemperatur von " + sp.VL_eff.ToString("0.#") + " °C. Keine " +
+                        "Schicht könnte sie je erreichen, der Brauchwasserkanal wäre " +
+                        "dauerhaft gesperrt. Gerechnet wird mit " +
+                        sp.VL_eff.ToString("0.#") + " °C - bitte T_Nutz_BW oder das " +
+                        "Temperaturpaar des Speichers berichtigen.");
+                    t = sp.VL_eff;
+                }
+
+                if (t < sp.RL_eff) t = sp.RL_eff;
+                sp.TNutz[Kanal.BRAUCHWASSER] = t;
+            }
+
+            // ENTNAHMEHÖHEN. Die Vorgabe hängt am Klassen-Set (§ 7.5): Führt der
+            // Speicher AUCH Brauchwasser, entnehmen Heizung und Prozesswärme in der
+            // Mitte und lassen die Bereitschaftszone oben unangetastet; sonst entnehmen
+            // alle Kanäle oben (§ 7.2, „Entnahme oben").
+            double vorgabeUnten = sp.BedientKanal(Kanal.BRAUCHWASSER) ? 0.5 : 1.0;
+            sp.Entnahmehoehe[Kanal.HEIZUNG] = Entnahmehoehe(r, SchemaKatalog.SPALTE_PSP_ENTNAHME_HEIZUNG,
+                                                            vorgabeUnten);
+            sp.Entnahmehoehe[Kanal.BRAUCHWASSER] = Entnahmehoehe(r, SchemaKatalog.SPALTE_PSP_ENTNAHME_BW,
+                                                                 1.0);
+            sp.Entnahmehoehe[Kanal.PROZESS] = Entnahmehoehe(r, SchemaKatalog.SPALTE_PSP_ENTNAHME_PROZESS,
+                                                            vorgabeUnten);
+
+            // LEISTUNGSGRENZEN [kW] — 0 = unbegrenzt (Befund K2-O6, § 6.3).
+            sp.LadeleistungMax =
+                StilleDb.Kommazahl(StilleDb.Feld(r, SchemaKatalog.SPALTE_PSP_LADELEISTUNG_MAX), 0);
+            if (sp.LadeleistungMax < 0) sp.LadeleistungMax = 0;
+
+            sp.EntladeleistungMax =
+                StilleDb.Kommazahl(StilleDb.Feld(r, SchemaKatalog.SPALTE_PSP_ENTLADELEISTUNG_MAX), 0);
+            if (sp.EntladeleistungMax < 0) sp.EntladeleistungMax = 0;
+        }
+
+        /// <summary>
+        /// Eine Entnahmehöhe aus der Projektkopie, auf 0…1 geklemmt; NULL oder ein Wert
+        /// außerhalb liefert <paramref name="vorgabe"/>.
+        /// </summary>
+        private static double Entnahmehoehe(DataRow r, string spalte, double vorgabe)
+        {
+            object o = StilleDb.Feld(r, spalte);
+            if (o == null) return vorgabe;
+
+            double h = StilleDb.Kommazahl(o, vorgabe);
+            return (h >= 0 && h <= 1) ? h : vorgabe;
         }
 
         // PAKET A1: Hier stand „ZuordnungsTemperaturen" — die mittlere Stufe der

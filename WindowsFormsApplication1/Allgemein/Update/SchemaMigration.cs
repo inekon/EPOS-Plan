@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 52;
+        public const int ZIEL_VERSION = 53;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1706,6 +1706,57 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_52_ERGEBNIS_JE_KANAL = 52;
 
+        /// <summary>
+        /// Schritt 53 - <b>Paket P1</b> (Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 7): die PARAMETER DES SCHICHTSPEICHERMODELLS an
+        /// <c>Tab_Pufferspeicher</c>.
+        ///
+        /// <para><b>Was entsteht</b> (Spaltensatz und je Spalte die fachliche
+        /// Begründung: <see cref="SchemaKatalog.Schritt53_Schichtmodell"/>): die
+        /// Schichtzahl <c>Schichten_Anzahl</c>, die Geometrie- und
+        /// Wärmeleitungsparameter <c>Hoehe</c> und <c>Lambda_Eff</c>, die
+        /// Mindest-Nutztemperatur <c>T_Nutz_BW</c>, die drei Entnahmehöhen
+        /// <c>Entnahme_Heizung</c>/<c>_BW</c>/<c>_Prozess</c> und die beiden
+        /// Leistungsgrenzen <c>Ladeleistung_Max</c>/<c>Entladeleistung_Max</c> —
+        /// neun Spalten, eine Tabelle.</para>
+        ///
+        /// <para><b>Zwei Teile.</b>
+        ///   <b>53a</b> das additive DDL aus dem Katalog. HART: Ohne die Spalten gibt es
+        ///   nichts vorzubelegen.
+        ///   <b>53b</b> die drei VERHALTENSNEUTRALEN Vorbelegungen — <c>Schichten_Anzahl
+        ///   = 1</c> (das Ein-Zonen-Modell des Bestands) sowie <c>Ladeleistung_Max = 0</c>
+        ///   und <c>Entladeleistung_Max = 0</c> (unbegrenzt, die bisherige Annahme des
+        ///   Modells). Der siebte DML-Schritt des Vorhabens neben 5, 7, 9, 13, 15 und
+        ///   17.</para>
+        ///
+        /// <para><b>Die sechs übrigen Spalten bleiben NULL</b> — und das ist die
+        /// Aussage, die zutrifft: <c>Hoehe</c> NULL heißt „aus dem Volumen über das
+        /// H/D-Verhältnis 2,5 ableiten", <c>Lambda_Eff</c> NULL heißt 1,5 W/(m·K),
+        /// <c>T_Nutz_BW</c> NULL heißt <c>RL_eff</c> (und damit „keine
+        /// Temperaturbedingung"), die drei Entnahmehöhen NULL heißen „Konzept-Vorgabe
+        /// nach Klassen-Set". Eine ausgeschriebene Zahl behauptete an jeder dieser
+        /// Stellen eine Anwenderentscheidung, die es nicht gibt — und der Dialog könnte
+        /// „nicht gepflegt" nicht mehr von „genau so gewollt" unterscheiden.</para>
+        ///
+        /// <para><b>Verhaltensneutral im Ganzen.</b> Nach diesem Schritt rechnet jeder
+        /// Bestandsspeicher mit N = 1, und damit laufen Laden, Entladen, Verluste und
+        /// Kennzahlen ausschließlich über die unveränderte SOC-Arithmetik (§ 7.3). Die
+        /// Schichtebene läuft als Buchführung mit und liefert allein die neuen
+        /// Ausgabegrößen <c>T_oben_Mittel</c>/<c>T_oben_Min</c> aus Schritt 52.</para>
+        ///
+        /// <para><b>Access-Feldgrenze (255 Spalten je Tabelle) geprüft:</b>
+        /// <c>Tab_Pufferspeicher</c> trägt 19 Spalten und wächst auf 28.</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker): <see cref="SpaltenAnlegen"/>
+        /// liest das Tabellenschema vorab und überspringt vorhandene Spalten; die drei
+        /// UPDATE-Anweisungen greifen nur auf noch nicht belegte Zeilen
+        /// (<c>IS NULL</c> bzw. bei der Schichtzahl zusätzlich <c>&lt; 1</c> — Access
+        /// belegt eine angehängte Zahlenspalte je nach Weg mit NULL ODER 0, und 0
+        /// Schichten wäre ein unmöglicher Zustand). Beim Zweitlauf meldet der Schritt
+        /// „0 Spalten angelegt" und 0 vorbelegte Zeilen.</para>
+        /// </summary>
+        public const int SCHRITT_53_SCHICHTMODELL = 53;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -2710,6 +2761,19 @@ namespace WindowsFormsApplication1
                         "ohne sie speichert der Lauf Bedarf und Deckung weiter nur als " +
                         "Summe ueber alle drei Kanaele.",
                         Schritt_52_ErgebnisJeKanal),
+
+            // P1 (§ 7): Die Parameter des Schichtspeichermodells. Additives DDL plus
+            // drei verhaltensneutrale Vorbelegungen. Begruendung, Teilgliederung und
+            // Idempotenzzusage bei der Schrittkonstanten.
+            new Schritt(SCHRITT_53_SCHICHTMODELL,
+                        "Schichtmodell: Tab_Pufferspeicher um Schichten_Anzahl, Hoehe, " +
+                        "Lambda_Eff, T_Nutz_BW, die drei Entnahmehoehen und die beiden " +
+                        "Leistungsgrenzen erweitern und verhaltensneutral vorbelegen " +
+                        "(Paket P1, L7)",
+                        "Die Parameter des Schichtspeichermodells konnten nicht angelegt " +
+                        "werden - ohne sie rechnet jeder Puffer weiter als ein einziger " +
+                        "Wärmevorrat ohne Temperaturschichtung.",
+                        Schritt_53_Schichtmodell),
         };
 
         // =================================================================================
@@ -6532,6 +6596,80 @@ namespace WindowsFormsApplication1
                     "im Bestand ueberall aus. " + reihenfolge + " Projekteinstellung(en) " +
                     "auf die Knappheitsreihenfolge '" + DbWerte.KNAPPHEIT_DEFAULT +
                     "' vorbelegt.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 53 - Schichtspeichermodell (Paket P1, Konzept § 7)
+        // =================================================================================
+
+        /// <summary>
+        /// L7 (27.08.2026): die PARAMETER DES SCHICHTSPEICHERMODELLS an
+        /// <c>Tab_Pufferspeicher</c>. Anlass, Teilgliederung (53a DDL, 53b
+        /// Vorbelegungen) und Idempotenzzusage: <see cref="SCHRITT_53_SCHICHTMODELL"/>.
+        /// </summary>
+        private static bool Schritt_53_Schichtmodell(Lauf l)
+        {
+            // --- 53a) die neun Spalten -----------------------------------------------
+            // HART: Ohne die Spalten gibt es nichts vorzubelegen.
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt53_Schichtmodell)) return false;
+
+            string sN = SchemaKatalog.SPALTE_PSP_SCHICHTEN_ANZAHL;
+            string sL = SchemaKatalog.SPALTE_PSP_LADELEISTUNG_MAX;
+            string sE = SchemaKatalog.SPALTE_PSP_ENTLADELEISTUNG_MAX;
+
+            // Nachweis statt Annahme: Erst diese Leseprobe belegt, dass die Spalten
+            // wirklich da sind (dieselbe Vorsichtsmassnahme wie in Schritt 49).
+            object probe = Scalar(l,
+                "SELECT COUNT(*) FROM " + SchemaKatalog.TAB_PUFFERSPEICHER +
+                " WHERE [" + sN + "] IS NULL OR [" + sN + "] < 1");
+            if (probe == null)
+            {
+                l.Zeile("Schichtmodell (Schritt 53): die Spalte " + sN +
+                        " ist nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            // --- 53b) die drei verhaltensneutralen Vorbelegungen ----------------------
+            //
+            // SCHICHTZAHL 1 = das Ein-Zonen-Modell des Bestands (§ 7.3). Die Bedingung
+            // faengt BEIDE Auslieferungszustaende einer angehaengten Zahlenspalte ab:
+            // NULL (der Regelfall bei ALTER TABLE) und 0 (moeglich, wenn die Spalte auf
+            // einem anderen Weg entstanden ist). 0 Schichten waere ein unmoeglicher
+            // Zustand - ein gepflegter Wert ist immer >= 1 und bleibt unberuehrt.
+            int schichten = NonQuery(l,
+                "UPDATE " + SchemaKatalog.TAB_PUFFERSPEICHER +
+                " SET [" + sN + "] = 1" +
+                " WHERE [" + sN + "] IS NULL OR [" + sN + "] < 1");
+            if (schichten < 0) return false;
+
+            // LEISTUNGSGRENZEN 0 = unbegrenzt - die bisherige Annahme des Modells
+            // („keine Begrenzung der Be-/Entladeleistung"). Hier NUR auf NULL geprueft:
+            // Eine ausdrueckliche 0 ist derselbe Wert, und jeder positive Wert stammt
+            // vom Anwender.
+            int ladeleistung = NonQuery(l,
+                "UPDATE " + SchemaKatalog.TAB_PUFFERSPEICHER +
+                " SET [" + sL + "] = 0 WHERE [" + sL + "] IS NULL");
+            if (ladeleistung < 0) return false;
+
+            int entladeleistung = NonQuery(l,
+                "UPDATE " + SchemaKatalog.TAB_PUFFERSPEICHER +
+                " SET [" + sE + "] = 0 WHERE [" + sE + "] IS NULL");
+            if (entladeleistung < 0) return false;
+
+            // Hoehe, Lambda_Eff, T_Nutz_BW und die drei Entnahmehoehen bleiben NULL -
+            // dort ist „nicht gepflegt" die zutreffende Aussage, und der Leser setzt
+            // die Konzept-Vorgaben ein (H/D = 2,5; 1,5 W/(m*K); RL_eff; Entnahmehoehe
+            // nach Klassen-Set). Eine ausgeschriebene Zahl waere eine erfundene
+            // Anwenderentscheidung.
+
+            l.Zeile("Schichtmodell (Schritt 53): " + schichten + " Pufferspeicher auf " +
+                    "Schichten_Anzahl = 1 gesetzt (Ein-Zonen-Modell des Bestands, " +
+                    "verhaltensneutral); " + ladeleistung + " auf Ladeleistung_Max = 0 " +
+                    "und " + entladeleistung + " auf Entladeleistung_Max = 0 " +
+                    "(unbegrenzt) vorbelegt. Hoehe, Lambda_Eff, T_Nutz_BW und die drei " +
+                    "Entnahmehoehen bleiben bewusst leer - NULL bedeutet dort " +
+                    "Konzept-Vorgabe, nicht 0.");
             return true;
         }
 

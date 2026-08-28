@@ -76,6 +76,11 @@ namespace WindowsFormsApplication1
                     item.Nutzung_Brauchwasser = ks.Brauchwasser;
                     item.Nutzung_Prozess = ks.Prozess;
 
+                    // SCHICHTUNG (Migrationsschritt 53, Konzept 7.2). Ebenso
+                    // spaltentolerant - fehlen die Spalten, bleibt es beim
+                    // verhaltensneutralen Ein-Zonen-Modell.
+                    SchichtdatenAusZeile(r).NachModell(item);
+
                     _internalList.Add(item);
                 }
             }
@@ -386,6 +391,12 @@ namespace WindowsFormsApplication1
         /// </param>
         /// <param name="nutzungBrauchwasser">siehe <paramref name="nutzungHeizung"/>.</param>
         /// <param name="nutzungProzess">siehe <paramref name="nutzungHeizung"/>.</param>
+        /// <param name="schicht">
+        /// SCHICHTUNG und Leistungsgrenzen (Migrationsschritt 53, Konzept 7.2) —
+        /// <c>null</c> heißt „Vorbelegung", also das verhaltensneutrale Ein-Zonen-Modell
+        /// ohne Leistungsgrenzen. EIN Parameter statt neun: Die Werte gehören fachlich
+        /// zusammen, und nur der Speicherdialog setzt sie überhaupt.
+        /// </param>
         public static int ProjektPufferAnlegen(int idProjekt, string bezeichner, string hersteller,
                                                string speichertyp, int volumenLiter, double verluste,
                                                double investitionskosten, string verwendung,
@@ -395,7 +406,8 @@ namespace WindowsFormsApplication1
                                                double schwelleReserve = ProjektPuffer.SCHWELLE_RESERVE_DEFAULT,
                                                bool? nutzungHeizung = null,
                                                bool? nutzungBrauchwasser = null,
-                                               bool? nutzungProzess = null)
+                                               bool? nutzungProzess = null,
+                                               Schichtdaten schicht = null)
         {
             if (idProjekt <= 0 || string.IsNullOrEmpty(bezeichner)) return -1;
 
@@ -422,6 +434,11 @@ namespace WindowsFormsApplication1
             KlassenSetSchreiben(neueId, KlassenSetBestimmen(verwendung, nutzungHeizung,
                                                             nutzungBrauchwasser, nutzungProzess));
 
+            // SCHICHTUNG (Migrationsschritt 53) - eigenes, zielgenaues UPDATE aus
+            // demselben Grund wie das Klassen-Set darüber. Ohne Angabe geschieht nichts:
+            // Die Vorbelegung ist genau das, was die Leseseite ohne Spalten liefert.
+            SchichtdatenSchreiben(neueId, schicht ?? new Schichtdaten());
+
             // Anlagenzeile nachtragen - eine je Projekt + Bezeichner (Regel R4 der
             // Migration) UND eine je Projekt + Gerät (Teil A der Anlagenzeilen-
             // Eindeutigkeit). Die zweite Bedingung ist die belastbarere: Sie prüft den
@@ -441,6 +458,11 @@ namespace WindowsFormsApplication1
         /// <see cref="ProjektPufferAnlegen"/>: <c>null</c> heißt „aus
         /// <paramref name="verwendung"/> ableiten".
         /// </summary>
+        /// <param name="schicht">
+        /// SCHICHTUNG und Leistungsgrenzen (Migrationsschritt 53) — <c>null</c> heißt
+        /// hier „unverändert lassen", NICHT „auf Vorbelegung setzen" (Begründung an der
+        /// Schreibstelle unten).
+        /// </param>
         public static bool ProjektPufferAendern(int idPuffer, int idProjekt, string bezeichner,
                                                 string hersteller, string speichertyp, int volumenLiter,
                                                 double verluste, double investitionskosten,
@@ -450,7 +472,8 @@ namespace WindowsFormsApplication1
                                                 double schwelleReserve = ProjektPuffer.SCHWELLE_RESERVE_DEFAULT,
                                                 bool? nutzungHeizung = null,
                                                 bool? nutzungBrauchwasser = null,
-                                                bool? nutzungProzess = null)
+                                                bool? nutzungProzess = null,
+                                                Schichtdaten schicht = null)
         {
             if (idPuffer <= 0 || string.IsNullOrEmpty(bezeichner)) return false;
 
@@ -475,6 +498,15 @@ namespace WindowsFormsApplication1
             // zielgenaue UPDATE wie in ProjektPufferAnlegen.
             KlassenSetSchreiben(idPuffer, KlassenSetBestimmen(verwendung, nutzungHeizung,
                                                               nutzungBrauchwasser, nutzungProzess));
+
+            // SCHICHTUNG (Migrationsschritt 53) - dieselbe Begründung für das eigene,
+            // zielgenaue UPDATE wie beim Klassen-Set.
+            //
+            // null heißt hier AUSDRÜCKLICH "nicht anfassen" und nicht "auf Vorbelegung
+            // setzen": Beim ANLEGEN ist die Vorbelegung der richtige Startwert, beim
+            // ÄNDERN wäre sie stiller Datenverlust - ein Aufrufer, der nur das Volumen
+            // ändert, löschte sonst die gepflegte Schichtung mit.
+            if (schicht != null) SchichtdatenSchreiben(idPuffer, schicht);
 
             // Die Anlagenzeile führt denselben Bezeichner - sonst greift
             // ProjektWaisenEntfernen zu (Abgleich läuft über den Namen).
@@ -1007,6 +1039,417 @@ namespace WindowsFormsApplication1
 
             _klassenSetSpaltenBereit = ok;
             return ok;
+        }
+
+        // =================================================================================
+        //  SCHICHTUNG UND LEISTUNGSGRENZEN (Migrationsschritt 53, Paket P1)
+        //  Konzept Brauchwasser/Heizung/Pufferspeicher § 7.2 und § 6.3
+        // =================================================================================
+        //
+        // Neun Spalten an Tab_Pufferspeicher, alle mit VERHALTENSNEUTRALER Vorbelegung:
+        //
+        //   Schichten_Anzahl    LONG    1     Ein-Zonen-Modell wie im Bestand
+        //   Hoehe               DOUBLE  NULL  Hoehe aus dem H/D-Verhaeltnis 2,5
+        //   Lambda_Eff          DOUBLE  NULL  1,5 W/(m*K)
+        //   T_Nutz_BW           DOUBLE  NULL  Ruecklauf (RL_eff)
+        //   Entnahme_Heizung    DOUBLE  NULL  Kanal-Default
+        //   Entnahme_BW         DOUBLE  NULL  Kanal-Default
+        //   Entnahme_Prozess    DOUBLE  NULL  Kanal-Default
+        //   Ladeleistung_Max    DOUBLE  0     unbegrenzt
+        //   Entladeleistung_Max DOUBLE  0     unbegrenzt
+        //
+        // DIE SPALTENNAMEN KOMMEN AUS SchemaKatalog - dieselbe Quelle, aus der Schritt 53
+        // sie anlegt (Muster KlassenSetSchreiben mit den Flags des Schrittes 49). Eine
+        // zweite Namensliste hier waere eine zweite Wahrheit ueber dasselbe Schema, und
+        // eine Abweichung faende niemand: Der Dialog schriebe in eine selbst angelegte
+        // Spalte, die Engine laese die der Migration.
+        //
+        // SPALTENTOLERANZ ist die tragende Eigenschaft dieses Blocks: Auf einer Datenbank
+        // ohne Schritt 53 liest SchichtdatenAusZeile schlicht nichts und liefert die
+        // Vorbelegung; der Dialog zeigt dann N = 1 und leere Felder, der
+        // Warnkriterienkatalog meldet weder W4 noch W6. Nichts scheitert, nichts aendert
+        // sich am gerechneten Ergebnis.
+
+        /// <summary>
+        /// Die Schicht- und Leistungsparameter EINER Puffer-Zeile (Schritt 53).
+        ///
+        /// <para>Veränderlich, anders als <see cref="KlassenSet"/>: Der Dialog baut das
+        /// Objekt Feld für Feld aus seinen Eingabefeldern auf, und ein
+        /// Neun-Parameter-Konstruktor wäre an der Aufrufstelle nicht mehr lesbar.</para>
+        /// </summary>
+        public sealed class Schichtdaten
+        {
+            /// <summary>Schichtenzahl 1…10; 1 = Ein-Zonen-Speicher.</summary>
+            public int Schichten = SCHICHTEN_DEFAULT;
+
+            /// <summary>Behälterhöhe [m]; <c>null</c> = aus H/D 2,5.</summary>
+            public double? Hoehe;
+
+            /// <summary>Effektive vertikale Wärmeleitfähigkeit [W/(m·K)]; <c>null</c> = 1,5.</summary>
+            public double? LambdaEff;
+
+            /// <summary>Mindest-Nutztemperatur Brauchwasser [°C]; <c>null</c> = RL_eff.</summary>
+            public double? TNutzBW;
+
+            /// <summary>Entnahmehöhe Heizung 0…1; <c>null</c> = Default.</summary>
+            public double? EntnahmeHeizung;
+
+            /// <summary>Entnahmehöhe Brauchwasser 0…1; <c>null</c> = Default.</summary>
+            public double? EntnahmeBW;
+
+            /// <summary>Entnahmehöhe Prozesswärme 0…1; <c>null</c> = Default.</summary>
+            public double? EntnahmeProzess;
+
+            /// <summary>Größte Ladeleistung [kW]; 0 = unbegrenzt.</summary>
+            public double LadeleistungMax;
+
+            /// <summary>Größte Entladeleistung [kW]; 0 = unbegrenzt.</summary>
+            public double EntladeleistungMax;
+
+            /// <summary>true, sobald der Speicher mehr als eine Schicht führt.</summary>
+            public bool Geschichtet
+            {
+                get { return Schichten > SCHICHTEN_DEFAULT; }
+            }
+
+            /// <summary>
+            /// true, wenn NICHTS gepflegt ist — das verhaltensneutrale Ein-Zonen-Modell
+            /// ohne Leistungsgrenzen. Nur in diesem Zustand darf
+            /// <see cref="SchichtdatenSchreiben"/> auf die Spaltenvorsorge verzichten:
+            /// Es gibt dann nichts abzulegen, was der Rückfall nicht ohnehin liefert.
+            /// </summary>
+            public bool IstVorbelegung
+            {
+                get
+                {
+                    return Schichten <= SCHICHTEN_DEFAULT &&
+                           !Hoehe.HasValue && !LambdaEff.HasValue && !TNutzBW.HasValue &&
+                           !EntnahmeHeizung.HasValue && !EntnahmeBW.HasValue &&
+                           !EntnahmeProzess.HasValue &&
+                           LadeleistungMax <= 0 && EntladeleistungMax <= 0;
+                }
+            }
+
+            /// <summary>Überträgt die Werte in ein <see cref="PufferSpModel"/>.</summary>
+            public void NachModell(PufferSpModel m)
+            {
+                if (m == null) return;
+
+                m.Schichten_Anzahl = Schichten;
+                m.Hoehe = Hoehe;
+                m.Lambda_Eff = LambdaEff;
+                m.T_Nutz_BW = TNutzBW;
+                m.Entnahme_Heizung = EntnahmeHeizung;
+                m.Entnahme_BW = EntnahmeBW;
+                m.Entnahme_Prozess = EntnahmeProzess;
+                m.Ladeleistung_Max = LadeleistungMax;
+                m.Entladeleistung_Max = EntladeleistungMax;
+            }
+        }
+
+        /// <summary>
+        /// Die Schichtdaten einer GELESENEN Puffer-Zeile — spaltentolerant; nie
+        /// <c>null</c>.
+        ///
+        /// <para>Fehlt eine Spalte (Schritt 53 noch nicht gelaufen) oder steht dort NULL,
+        /// bleibt es beim Vorbelegungswert. Eine <c>Schichten_Anzahl</c> unter 1 wird auf
+        /// 1 gehoben und eine über <see cref="PufferSpModel.SCHICHTEN_MAX"/> auf das
+        /// Maximum gekappt — Altdaten und programmatische Schreibwege sollen das
+        /// Rechenwerk nicht mit einer 0- oder 500-Schichten-Vorgabe erreichen.</para>
+        /// </summary>
+        public static Schichtdaten SchichtdatenAusZeile(DataRow r)
+        {
+            Schichtdaten d = new Schichtdaten();
+            if (r == null) return d;
+
+            int? n = ZahlOderNull(r, SchemaKatalog.SPALTE_PSP_SCHICHTEN_ANZAHL);
+            if (n.HasValue) d.Schichten = SchichtenKlemmen(n.Value);
+
+            d.Hoehe = KommazahlOderNull(r, SchemaKatalog.SPALTE_PSP_HOEHE);
+            d.LambdaEff = KommazahlOderNull(r, SchemaKatalog.SPALTE_PSP_LAMBDA_EFF);
+            d.TNutzBW = KommazahlOderNull(r, SchemaKatalog.SPALTE_PSP_T_NUTZ_BW);
+            d.EntnahmeHeizung = KommazahlOderNull(r, SchemaKatalog.SPALTE_PSP_ENTNAHME_HEIZUNG);
+            d.EntnahmeBW = KommazahlOderNull(r, SchemaKatalog.SPALTE_PSP_ENTNAHME_BW);
+            d.EntnahmeProzess = KommazahlOderNull(r, SchemaKatalog.SPALTE_PSP_ENTNAHME_PROZESS);
+            d.LadeleistungMax = KommazahlOderNull(r, SchemaKatalog.SPALTE_PSP_LADELEISTUNG_MAX) ?? 0;
+            d.EntladeleistungMax = KommazahlOderNull(r, SchemaKatalog.SPALTE_PSP_ENTLADELEISTUNG_MAX) ?? 0;
+
+            return d;
+        }
+
+        /// <summary>Hält die Schichtenzahl im zulässigen Band 1…10.</summary>
+        public static int SchichtenKlemmen(int n)
+        {
+            if (n < SCHICHTEN_DEFAULT) return SCHICHTEN_DEFAULT;
+            if (n > SCHICHTEN_MAX) return SCHICHTEN_MAX;
+            return n;
+        }
+
+        /// <summary>
+        /// Die Schichtdaten EINES Puffers aus der Datenbank; nie <c>null</c>. Ein
+        /// unbekannter Puffer liefert die Vorbelegung. Still wie
+        /// <see cref="KlassenSetLesen"/>.
+        /// </summary>
+        public static Schichtdaten SchichtdatenLesen(int idPuffer)
+        {
+            if (idPuffer <= 0) return new Schichtdaten();
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT * FROM Tab_Pufferspeicher WHERE ID = ?",
+                StilleDb.Par("@id", OleDbType.Integer, idPuffer));
+
+            if (dt == null || dt.Rows.Count == 0) return new Schichtdaten();
+
+            return SchichtdatenAusZeile(dt.Rows[0]);
+        }
+
+        /// <summary>
+        /// Die Schichtenzahl ALLER Puffer eines Projekts in EINER Abfrage; nie
+        /// <c>null</c>, Schlüssel ist die Puffer-ID.
+        ///
+        /// <para>Für Aufrufer, die ohnehin alle Speicher eines Projekts zeigen — die
+        /// Speicherkarten der Konfigurationsseite. Dieselbe Begründung wie bei
+        /// <see cref="KlassenSetsJeProjekt"/>: Bei Projekt 1023 der Referenzmenge wären
+        /// Einzelabfragen über 80 Rundreisen für einen Seitenaufbau.</para>
+        ///
+        /// <para>Aufgenommen werden nur Speicher mit <c>N &gt; 1</c> — allein danach
+        /// fragen die Aufrufer, und eine Abbildung mit 80 Einsern wäre nur Ballast.</para>
+        /// </summary>
+        public static Dictionary<int, int> SchichtenJeProjekt(int idProjekt)
+        {
+            Dictionary<int, int> schichten = new Dictionary<int, int>();
+            if (idProjekt <= 0) return schichten;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT * FROM Tab_Pufferspeicher WHERE ID_Projekt = ?",
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+            if (dt == null) return schichten;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                int id = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                if (id <= 0 || schichten.ContainsKey(id)) continue;
+
+                int n = SchichtdatenAusZeile(r).Schichten;
+                if (n > SCHICHTEN_DEFAULT) schichten[id] = n;
+            }
+
+            return schichten;
+        }
+
+        /// <summary>
+        /// Schreibt die Schichtdaten an eine Puffer-Zeile — ein EIGENES, zielgenaues
+        /// UPDATE, aus demselben Grund wie <see cref="KlassenSetSchreiben"/>: Auf einer
+        /// Datenbank ohne Schemastand 53 ließe eine erweiterte Spaltenliste in
+        /// <c>ProjektPuffer.SQL_PUFFER_UPDATE_VOLL</c> das Speichern des GANZEN Speichers
+        /// scheitern.
+        ///
+        /// <para><b>Ohne Anlass keine Spalte.</b> Trägt <paramref name="daten"/> nichts
+        /// als die Vorbelegung (<see cref="Schichtdaten.IstVorbelegung"/>) und fehlen die
+        /// Spalten noch, geschieht NICHTS — der Rückfall beim Lesen liefert ohnehin
+        /// dieselben Werte. Erst eine echte Angabe legt die Spalten an. Damit verändert
+        /// das bloße Öffnen und Speichern eines beliebigen Puffers das Schema einer noch
+        /// nicht migrierten Datenbank nicht.</para>
+        /// </summary>
+        public static bool SchichtdatenSchreiben(int idPuffer, Schichtdaten daten)
+        {
+            if (idPuffer <= 0 || daten == null) return false;
+
+            if (daten.IstVorbelegung && !SchichtSpaltenVorhanden()) return true;
+            if (!StelleSchichtSpaltenSicher()) return false;
+
+            return StillNonQuery(
+                "UPDATE Tab_Pufferspeicher SET " +
+                "[" + SchemaKatalog.SPALTE_PSP_SCHICHTEN_ANZAHL + "] = ?, " +
+                "[" + SchemaKatalog.SPALTE_PSP_HOEHE + "] = ?, " +
+                "[" + SchemaKatalog.SPALTE_PSP_LAMBDA_EFF + "] = ?, " +
+                "[" + SchemaKatalog.SPALTE_PSP_T_NUTZ_BW + "] = ?, " +
+                "[" + SchemaKatalog.SPALTE_PSP_ENTNAHME_HEIZUNG + "] = ?, " +
+                "[" + SchemaKatalog.SPALTE_PSP_ENTNAHME_BW + "] = ?, " +
+                "[" + SchemaKatalog.SPALTE_PSP_ENTNAHME_PROZESS + "] = ?, " +
+                "[" + SchemaKatalog.SPALTE_PSP_LADELEISTUNG_MAX + "] = ?, " +
+                "[" + SchemaKatalog.SPALTE_PSP_ENTLADELEISTUNG_MAX + "] = ? " +
+                "WHERE ID = ?",
+                StilleDb.Par("@n", OleDbType.Integer, SchichtenKlemmen(daten.Schichten)),
+                Zahlpar("@h", daten.Hoehe),
+                Zahlpar("@l", daten.LambdaEff),
+                Zahlpar("@t", daten.TNutzBW),
+                Zahlpar("@eh", daten.EntnahmeHeizung),
+                Zahlpar("@eb", daten.EntnahmeBW),
+                Zahlpar("@ep", daten.EntnahmeProzess),
+                StilleDb.Par("@lp", OleDbType.Double, daten.LadeleistungMax),
+                StilleDb.Par("@ep2", OleDbType.Double, daten.EntladeleistungMax),
+                StilleDb.Par("@id", OleDbType.Integer, idPuffer)) > 0;
+        }
+
+        /// <summary>Ein nullbarer Kommazahl-Parameter; <c>null</c> geht als DBNull.</summary>
+        private static OleDbParameter Zahlpar(string name, double? wert)
+        {
+            OleDbParameter p = new OleDbParameter(name, OleDbType.Double);
+            p.Value = wert.HasValue ? (object)wert.Value : DBNull.Value;
+            return p;
+        }
+
+        /// <summary>Ergebnis der reinen Leseprobe (siehe <see cref="SchichtSpaltenVorhanden"/>).</summary>
+        private static bool? _schichtSpaltenVorhanden;
+
+        /// <summary>Ergebnis der Vorsorge mit Anlegen (siehe <see cref="StelleSchichtSpaltenSicher"/>).</summary>
+        private static bool? _schichtSpaltenBereit;
+
+        /// <summary>
+        /// REINE LESEPROBE: Führt die Datenbank die Schichtspalten schon? Legt NICHTS an.
+        ///
+        /// <para>Der Unterschied zu <see cref="StelleSchichtSpaltenSicher"/> ist der
+        /// Zweck: Diese Probe beantwortet „darf ich schreiben, ohne das Schema
+        /// anzufassen?" und hält damit eine noch nicht migrierte Datenbank unverändert,
+        /// solange niemand eine Schichtangabe macht. Einmal je Prozess.</para>
+        /// </summary>
+        public static bool SchichtSpaltenVorhanden()
+        {
+            if (_schichtSpaltenVorhanden.HasValue) return _schichtSpaltenVorhanden.Value;
+
+            bool ok = false;
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    ok = SchichtSpaltenProbe(conn);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Schichtspalten nicht pruefbar: " + ex.Message);
+                ok = false;
+            }
+
+            _schichtSpaltenVorhanden = ok;
+            return ok;
+        }
+
+        /// <summary>
+        /// Tolerante Vorsorge für die neun Schichtspalten (Migrationsschritt 53)
+        /// unmittelbar vor dem SCHREIBEN — dasselbe Muster und dieselbe Begründung wie
+        /// <see cref="StelleKlassenSetSpaltenSicher"/> für Schritt 49.
+        ///
+        /// <para>Die Leseseite braucht sie nicht: <see cref="SchichtdatenAusZeile"/> prüft
+        /// die Spaltennamen und fällt auf die Vorbelegung zurück. Der Schreibweg dagegen
+        /// nennt die Spalten ausgeschrieben.</para>
+        ///
+        /// <para>Kollidiert NICHT mit dem Migrationsschritt: Dessen <c>ALTER TABLE</c>
+        /// schluckt eine bereits vorhandene Spalte (Muster
+        /// <c>SchemaMigration.Schritt_49_Klassenset</c>), und seine verhaltensneutrale
+        /// Vorbelegung trifft dieselben Werte, die hier ohnehin stehen.</para>
+        ///
+        /// <para>Eigene Verbindung statt <c>DataRepository</c>, weil eine Vorsorge kein
+        /// Bedienschritt ist und keine MessageBox zeigen darf. Einmal je Prozess. Die
+        /// Leseprobe am Ende ist Nachweis statt Annahme — das <c>ALTER</c> schluckt jeden
+        /// Fehler, auch einen echten.</para>
+        /// </summary>
+        public static bool StelleSchichtSpaltenSicher()
+        {
+            if (_schichtSpaltenBereit.HasValue) return _schichtSpaltenBereit.Value;
+
+            bool ok = false;
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+
+                    foreach (KeyValuePair<string, string> spalte in SchichtSpaltenTypen())
+                    {
+                        try
+                        {
+                            using (OleDbCommand cmd = new OleDbCommand(
+                                "ALTER TABLE [" + SchemaKatalog.TAB_PUFFERSPEICHER +
+                                "] ADD COLUMN [" +
+                                spalte.Key + "] " + spalte.Value, conn))
+                                cmd.ExecuteNonQuery();
+                        }
+                        catch { /* Spalte existiert bereits - der Regelfall nach Schritt 53 */ }
+                    }
+
+                    ok = SchichtSpaltenProbe(conn);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Schichtspalten nicht verfuegbar: " + ex.Message);
+                ok = false;
+            }
+
+            _schichtSpaltenBereit = ok;
+            if (ok) _schichtSpaltenVorhanden = true;   // die Leseprobe ist mit beantwortet
+            return ok;
+        }
+
+        /// <summary>Spaltenname → Access-Typ, in der Reihenfolge des Spaltenvertrags.</summary>
+        private static List<KeyValuePair<string, string>> SchichtSpaltenTypen()
+        {
+            List<KeyValuePair<string, string>> liste = new List<KeyValuePair<string, string>>();
+            liste.Add(new KeyValuePair<string, string>(SchemaKatalog.SPALTE_PSP_SCHICHTEN_ANZAHL, "LONG"));
+            liste.Add(new KeyValuePair<string, string>(SchemaKatalog.SPALTE_PSP_HOEHE, "DOUBLE"));
+            liste.Add(new KeyValuePair<string, string>(SchemaKatalog.SPALTE_PSP_LAMBDA_EFF, "DOUBLE"));
+            liste.Add(new KeyValuePair<string, string>(SchemaKatalog.SPALTE_PSP_T_NUTZ_BW, "DOUBLE"));
+            liste.Add(new KeyValuePair<string, string>(SchemaKatalog.SPALTE_PSP_ENTNAHME_HEIZUNG, "DOUBLE"));
+            liste.Add(new KeyValuePair<string, string>(SchemaKatalog.SPALTE_PSP_ENTNAHME_BW, "DOUBLE"));
+            liste.Add(new KeyValuePair<string, string>(SchemaKatalog.SPALTE_PSP_ENTNAHME_PROZESS, "DOUBLE"));
+            liste.Add(new KeyValuePair<string, string>(SchemaKatalog.SPALTE_PSP_LADELEISTUNG_MAX, "DOUBLE"));
+            liste.Add(new KeyValuePair<string, string>(SchemaKatalog.SPALTE_PSP_ENTLADELEISTUNG_MAX, "DOUBLE"));
+            return liste;
+        }
+
+        /// <summary>
+        /// Nachweis statt Annahme: EIN <c>SELECT</c> über alle neun Spalten. Schlägt er
+        /// fehl, fehlt mindestens eine — dann bleibt der Schreibweg aus, und die Leseseite
+        /// arbeitet mit der Vorbelegung weiter.
+        /// </summary>
+        private static bool SchichtSpaltenProbe(OleDbConnection conn)
+        {
+            List<string> namen = new List<string>();
+            foreach (KeyValuePair<string, string> s in SchichtSpaltenTypen())
+                namen.Add("[" + s.Key + "]");
+
+            try
+            {
+                using (OleDbCommand probe = new OleDbCommand(
+                    "SELECT TOP 1 " + string.Join(", ", namen.ToArray()) +
+                    " FROM [" + SchemaKatalog.TAB_PUFFERSPEICHER + "]", conn))
+                {
+                    probe.ExecuteScalar();
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Schichtspalten-Leseprobe fehlgeschlagen: " + ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>Ein ganzzahliges Feld; fehlende Spalte, NULL und Unlesbares ergeben <c>null</c>.</summary>
+        private static int? ZahlOderNull(DataRow r, string spalte)
+        {
+            if (r == null || !r.Table.Columns.Contains(spalte)) return null;
+
+            object v = r[spalte];
+            if (v == null || v == DBNull.Value) return null;
+
+            try { return Convert.ToInt32(v); }
+            catch { return null; }
+        }
+
+        /// <summary>Ein Kommazahl-Feld; fehlende Spalte, NULL und Unlesbares ergeben <c>null</c>.</summary>
+        private static double? KommazahlOderNull(DataRow r, string spalte)
+        {
+            if (r == null || !r.Table.Columns.Contains(spalte)) return null;
+
+            object v = r[spalte];
+            if (v == null || v == DBNull.Value) return null;
+
+            try { return Convert.ToDouble(v); }
+            catch { return null; }
         }
 
         private static string Text(object o)

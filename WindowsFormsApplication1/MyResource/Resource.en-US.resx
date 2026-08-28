@@ -7931,4 +7931,89 @@ Change the usage anyway?</value>
   <data name="PSP_TITEL_KLASSENSET_AENDERN" xml:space="preserve">
     <value>Change usage</value>
   </data>
+  <data name="PSP_GRUPPE_SCHICHTUNG" xml:space="preserve">
+    <value>Stratification and power limits</value>
+  </data>
+  <data name="PSP_LABEL_SCHICHTEN" xml:space="preserve">
+    <value>Layers:</value>
+  </data>
+  <data name="PSP_HINWEIS_SCHICHTEN" xml:space="preserve">
+    <value>1 = one single store as before; from 2 on the tank is calculated stratified.</value>
+  </data>
+  <data name="PSP_LABEL_HOEHE" xml:space="preserve">
+    <value>Height [m]:</value>
+  </data>
+  <data name="PSP_HINWEIS_HOEHE" xml:space="preserve">
+    <value>empty = derived from the height/diameter ratio of 2.5</value>
+  </data>
+  <data name="PSP_LABEL_LAMBDA_EFF" xml:space="preserve">
+    <value>λ effective [W/(m·K)]:</value>
+  </data>
+  <data name="PSP_HINWEIS_LAMBDA_EFF" xml:space="preserve">
+    <value>empty = 1.5</value>
+  </data>
+  <data name="PSP_LABEL_T_NUTZ_BW" xml:space="preserve">
+    <value>Usable temperature DHW [°C]:</value>
+  </data>
+  <data name="PSP_HINWEIS_T_NUTZ_BW" xml:space="preserve">
+    <value>empty = return temperature of the tank</value>
+  </data>
+  <data name="PSP_LABEL_ENTNAHMEHOEHEN" xml:space="preserve">
+    <value>Draw-off height per channel (0 = bottom, 1 = top; empty = default):</value>
+  </data>
+  <data name="PSP_LABEL_LADELEISTUNG_MAX" xml:space="preserve">
+    <value>Max. charging power [kW]:</value>
+  </data>
+  <data name="PSP_LABEL_ENTLADELEISTUNG_MAX" xml:space="preserve">
+    <value>Max. discharging power [kW]:</value>
+  </data>
+  <data name="PSP_HINWEIS_LEISTUNG_UNBEGRENZT" xml:space="preserve">
+    <value>0 = unlimited</value>
+  </data>
+  <data name="PSP_NAME_LADELEISTUNG_MAX" xml:space="preserve">
+    <value>maximum charging power</value>
+  </data>
+  <data name="PSP_NAME_ENTLADELEISTUNG_MAX" xml:space="preserve">
+    <value>maximum discharging power</value>
+  </data>
+  <data name="PSP_FEHLER_HOEHE" xml:space="preserve">
+    <value>The height must be a number greater than 0 [m] - or be left empty.</value>
+  </data>
+  <data name="PSP_FEHLER_LAMBDA_EFF" xml:space="preserve">
+    <value>The effective thermal conductivity must be a number greater than 0 [W/(m·K)] - or be left empty.</value>
+  </data>
+  <data name="PSP_FEHLER_T_NUTZ_BW" xml:space="preserve">
+    <value>The usable DHW temperature must be a number greater than 0 [°C] - or be left empty.</value>
+  </data>
+  <data name="PSP_FEHLER_ENTNAHMEHOEHE" xml:space="preserve">
+    <value>The draw-off height {0} must be a number between 0 and 1 - or be left empty.</value>
+  </data>
+  <data name="PSP_FEHLER_LEISTUNG" xml:space="preserve">
+    <value>The {0} must be a number ≥ 0 [kW]; 0 means unlimited.</value>
+  </data>
+  <data name="PSP_FEHLER_SCHICHTUNG_AM_VERBUND" xml:space="preserve">
+    <value>Tank "{0}" is the lead tank of a parallel bank and therefore cannot be stratified.
+
+A bank is calculated as ONE heat store holding the summed capacity of all its members; a layer model derived from the lead tank's volume would describe a vessel that does not exist (concept 6.3, criterion W6).
+
+Please either set the number of layers to 1 or dissolve the bank in the heat sink dialog.</value>
+  </data>
+  <data name="PSP_KARTE_SCHICHTEN" xml:space="preserve">
+    <value>{0} layers</value>
+  </data>
+  <data name="PSP_KARTE_T_OBEN" xml:space="preserve">
+    <value>Top layer: {0} °C annual mean</value>
+  </data>
+  <data name="SIMWARN_W3_UNTER_TNUTZ" xml:space="preserve">
+    <value>Unit "{0}": the generator flow temperature of {1} °C is below the usable DHW temperature of {2} °C of target storage "{3}". The DHW channel would stay switched off permanently at this generator.</value>
+  </data>
+  <data name="SIMWARN_W4_TNUTZ_UEBER_VLEFF" xml:space="preserve">
+    <value>Storage "{0}": the usable DHW temperature of {1} °C is above the effective flow temperature of {2} °C. The run clamps it to {2} °C - otherwise the DHW channel would be switched off permanently.</value>
+  </data>
+  <data name="SIMWARN_W6_SCHICHTUNG_AM_VERBUND" xml:space="preserve">
+    <value>Storage "{0}": it holds {1} layers and is at the same time the lead tank of a parallel bank. That combination is not permitted - a bank is calculated as ONE store holding the summed capacity of all its members. Please set the number of layers to 1 or dissolve the bank.</value>
+  </data>
+  <data name="SIM_VERBUND_KONFLIKT_LEIT_GESCHICHTET" xml:space="preserve">
+    <value>Buffer tank "{0}" is stratified and therefore cannot serve as the lead tank of a bank: a bank is calculated as ONE store holding the summed capacity of all its members, so a layer model derived from it would be wrong.</value>
+  </data>
 </root>

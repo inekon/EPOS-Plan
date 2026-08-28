@@ -1458,6 +1458,184 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_ERGEBNISPUFFERSPEICHER, SPALTE_PUFFER_T_OBEN_MIN,             "DOUBLE"),
         };
 
+        // =====================================================================
+        // P1 - Spalten des SCHICHTSPEICHERMODELLS (Migrationsschritt 53)
+        //   Konzept Brauchwasser/Heizung/Pufferspeicher § 7.2 (Zustand und
+        //   Parameter), § 7.4 (Stundenablauf), § 7.5 (Kombispeicher) und § 6.3
+        //   (Lade-/Entladeleistung je Speicher).
+        //
+        //   Alle neun Spalten haben eine VERHALTENSNEUTRALE Vorbelegung: Mit
+        //   Schichten_Anzahl = 1 rechnet der Speicher Anweisung für Anweisung wie
+        //   bisher (§ 7.3, Byte-Zusage), und Lade-/Entladeleistung 0 heißt
+        //   unbegrenzt - die bisherige Annahme des Modells.
+        //
+        //   Die Namen stehen hier, weil Migration, Registry-Aufbau (Engine) und der
+        //   Puffer-Dialog sie alle brauchen; eine zweite Liste danebenzustellen
+        //   hieße, die nächste Spalte an einer von zwei Stellen zu vergessen.
+        // =====================================================================
+
+        /// <summary>
+        /// P1 (Migrationsschritt 53, § 7.2): <c>Tab_Pufferspeicher.Schichten_Anzahl</c>
+        /// (LONG) — Zahl der Rechenschichten N, 1…10, <b>DML-Vorbelegung 1</b>.
+        ///
+        /// <para>N = 1 ist das Ein-Zonen-Modell des Bestands: Laden, Entladen, Verluste
+        /// und Kennzahlen laufen ausschließlich über die unveränderte SOC-Arithmetik,
+        /// die eine Schichttemperatur ist eine reine Umrechnung ohne Rückwirkung
+        /// (§ 7.3). Genau darauf beruht die Byte-Zusage des Pakets.</para>
+        ///
+        /// <para><b>LONG mit ausdrücklicher Vorbelegung statt NULL.</b> Anders als bei
+        /// den sieben DOUBLE-Spalten darunter gibt es hier keinen Rückfall im Leser,
+        /// den ein NULL treffen könnte: 0 Schichten wäre ein unmöglicher Zustand.
+        /// Der Wert wird deshalb in ALLEN Bestandszeilen auf 1 gesetzt — dieselbe
+        /// Bauform wie <see cref="SPALTE_ZPW_KANAL"/> in Schritt 48.</para>
+        ///
+        /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/>: Begründung
+        /// dort im Sammelkommentar.</para>
+        /// </summary>
+        public const string SPALTE_PSP_SCHICHTEN_ANZAHL = "Schichten_Anzahl";
+
+        /// <summary>
+        /// P1 (Schritt 53, § 7.2): <c>Tab_Pufferspeicher.Höhe</c> [m] (DOUBLE) — die
+        /// Behälterhöhe für Schichtflächen und Wärmeleitweg.
+        ///
+        /// <para><b>NULL = aus dem Volumen abgeleitet</b> über das H/D-Verhältnis 2,5
+        /// (§ 7.2). Ein Pflichtfeld wäre hier falsch: Die Höhe steht in keinem
+        /// Bestandsdatensatz, sie ist im Gerätekatalog nicht geführt, und die
+        /// Ableitung aus dem Volumen ist für stehende Pufferspeicher eine gute
+        /// Näherung. Bei N = 1 geht sie in keine Rechnung ein.</para>
+        /// </summary>
+        // Umlautfrei wie das Konzept (7.2) sie nennt — die Hauskonvention neuer Spalten
+        // (vgl. Tab_Pufferspeicher.Ruecklauf); der Umlaut in Tab_Energieanlagen.[Rücklauf]
+        // ist eine dokumentierte Altlast, kein Muster.
+        public const string SPALTE_PSP_HOEHE = "Hoehe";
+
+        /// <summary>
+        /// P1 (Schritt 53, § 7.2): <c>Tab_Pufferspeicher.Lambda_Eff</c> [W/(m·K)]
+        /// (DOUBLE) — effektive vertikale Wärmeleitfähigkeit einschließlich
+        /// Wandleitung, <b>NULL = 1,5</b> (Vorgabe des Konzepts, im Leser).
+        ///
+        /// <para>Sie steuert allein den vertikalen Ausgleich zwischen benachbarten
+        /// Schichten (§ 7.4 Punkt 3) und ist bei N = 1 wirkungslos — es gibt kein
+        /// Schichtpaar.</para>
+        /// </summary>
+        public const string SPALTE_PSP_LAMBDA_EFF = "Lambda_Eff";
+
+        /// <summary>
+        /// P1 (Schritt 53, § 7.2/§ 7.5): <c>Tab_Pufferspeicher.T_Nutz_BW</c> [°C]
+        /// (DOUBLE) — Mindest-Nutztemperatur des BRAUCHWASSERkanals.
+        ///
+        /// <para><b>NULL = <c>RL_eff</c> und damit verhaltensneutral</b>: Unterhalb der
+        /// Rücklauftemperatur trägt keine Schicht Energie, die Bedingung
+        /// „T ≥ T_Nutz" ist dann für jede Schicht mit Inhalt erfüllt und die
+        /// Entladefähigkeit ist der gesamte Vorrat (§ 7.4 Punkt 2). Der Dialog schlägt
+        /// 55 °C vor, sobald der Anwender N &gt; 1 wählt; der SPALTEN-Default bleibt
+        /// NULL — sonst änderte die bloße Migration das Ergebnis.</para>
+        ///
+        /// <para>Werte oberhalb <c>VL_eff</c> werden beim Laufstart auf <c>VL_eff</c>
+        /// geklemmt und protokolliert; sonst wäre der Kanal still komplett
+        /// abgeschaltet (§ 7.2).</para>
+        ///
+        /// <para>ZUNÄCHST NUR BRAUCHWASSER (Entscheidung F7): Heizung und Prozess haben
+        /// keine eigene Nutztemperatur — für sie gilt <c>RL_eff</c>. Eine Spalte je
+        /// Kanal wäre drei Felder für eine Frage, die heute nur der
+        /// Brauchwasserkanal stellt.</para>
+        /// </summary>
+        public const string SPALTE_PSP_T_NUTZ_BW = "T_Nutz_BW";
+
+        /// <summary>
+        /// P1 (Schritt 53, § 7.4/§ 7.5): <c>Tab_Pufferspeicher.Entnahme_Heizung</c>
+        /// (DOUBLE, 0…1) — die ENTNAHMEHOEHE des Heizkanals am Behälter, 1 = ganz oben,
+        /// 0 = ganz unten.
+        ///
+        /// <para><b>NULL = Konzept-Vorgabe</b>, und die hängt am Klassen-Set:
+        /// Ein Speicher, der AUCH Brauchwasser führt (Kombi), entnimmt die Heizung in
+        /// der Mitte (0,5) — genau das hält die Brauchwasser-Bereitschaftszone oben von
+        /// der Heizung frei (§ 7.5). Ein reiner Heizungspuffer entnimmt oben (1,0), die
+        /// allgemeine Vorgabe aus § 7.2 („Entnahme oben"). Bei N = 1 ist die Höhe
+        /// bedeutungslos: Ein Vorrat hat nur eine Zone.</para>
+        /// </summary>
+        public const string SPALTE_PSP_ENTNAHME_HEIZUNG = "Entnahme_Heizung";
+
+        /// <summary>
+        /// P1 (Schritt 53, § 7.5): <c>Tab_Pufferspeicher.Entnahme_BW</c> (DOUBLE, 0…1) —
+        /// Entnahmehöhe des Brauchwasserkanals; <b>NULL = 1,0 (oben)</b>. Siehe
+        /// <see cref="SPALTE_PSP_ENTNAHME_HEIZUNG"/>.
+        /// </summary>
+        public const string SPALTE_PSP_ENTNAHME_BW = "Entnahme_BW";
+
+        /// <summary>
+        /// P1 (Schritt 53, § 7.4): <c>Tab_Pufferspeicher.Entnahme_Prozess</c>
+        /// (DOUBLE, 0…1) — Entnahmehöhe des Prozesswärmekanals; <b>NULL wie beim
+        /// Heizkanal</b> (0,5 neben einer Brauchwasserzone, sonst 1,0). Siehe
+        /// <see cref="SPALTE_PSP_ENTNAHME_HEIZUNG"/>.
+        /// </summary>
+        public const string SPALTE_PSP_ENTNAHME_PROZESS = "Entnahme_Prozess";
+
+        /// <summary>
+        /// P1 (Schritt 53, § 6.3): <c>Tab_Pufferspeicher.Ladeleistung_Max</c> [kW]
+        /// (DOUBLE) — höchste Aufnahme in EINER Stunde, <b>DML-Vorbelegung 0 =
+        /// unbegrenzt</b>.
+        ///
+        /// <para>Fachlich längst vorgemerkt (Paket 4, Nutzerentscheidung zu 4b-1: „ein
+        /// 800-l-Puffer mit DN 25 kann keine 200 kW durchreichen"), bis hierher aber
+        /// weder im Datenmodell noch in der Oberfläche vorhanden. 0 ist zugleich die
+        /// bisherige Annahme des Modells — der Wert ist damit verhaltensneutral, und die
+        /// Vorbelegung ist die ausdrückliche Aussage „nicht begrenzt" statt eines
+        /// NULL, das jeder Leser anders auslegen könnte.</para>
+        /// </summary>
+        public const string SPALTE_PSP_LADELEISTUNG_MAX = "Ladeleistung_Max";
+
+        /// <summary>
+        /// P1 (Schritt 53, § 6.3): <c>Tab_Pufferspeicher.Entladeleistung_Max</c> [kW]
+        /// (DOUBLE) — höchste Abgabe in EINER Stunde, <b>DML-Vorbelegung 0 =
+        /// unbegrenzt</b>; siehe <see cref="SPALTE_PSP_LADELEISTUNG_MAX"/>.
+        ///
+        /// <para>Sie wird als BUDGET DER STUNDE geführt, nicht je Aufruf (Befund
+        /// K2-O6): Ein Heizungspuffer wird in derselben Stunde für den Prozess- UND
+        /// den Heizkanal durchlaufen; eine Grenze je Aufruf hätte er zweimal
+        /// bekommen.</para>
+        /// </summary>
+        public const string SPALTE_PSP_ENTLADELEISTUNG_MAX = "Entladeleistung_Max";
+
+        /// <summary>
+        /// Schritt 53 der Migration (Paket P1, Konzept § 7) — die Parameter des
+        /// SCHICHTSPEICHERMODELLS an <c>Tab_Pufferspeicher</c>.
+        ///
+        /// <para><b>Neun Spalten an EINER Tabelle.</b> Sie gehören zusammen: Schichtzahl,
+        /// Geometrie und Wärmeleitung beschreiben denselben Behälter, die drei
+        /// Entnahmehöhen und die Nutztemperatur dieselbe Entnahme, die beiden
+        /// Leistungsgrenzen dieselbe hydraulische Anbindung.</para>
+        ///
+        /// <para><b>Access-Feldgrenze.</b> 255 Spalten je Tabelle.
+        /// <c>Tab_Pufferspeicher</c> trägt vor diesem Schritt 19 Spalten und wächst auf
+        /// 28. Der Abstand zur Grenze bleibt an keiner Stelle knapp.</para>
+        ///
+        /// <para><b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access
+        /// immer hinten an. Folgenlos: <c>Tab_Pufferspeicher</c> wird ausschließlich
+        /// NAMENSBASIERT gelesen (<c>PufferSpCtrl</c>, <c>WaermesenkeClass.PufferLesen</c>
+        /// mit ausformulierter Spaltenliste, Registry-Aufbau über
+        /// <c>StilleDb.Feld</c>); eine <c>row[0…n]</c>-Kette wie bei
+        /// <c>Tab_Einstellungen</c> gibt es hier nicht.</para>
+        ///
+        /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/> — dieselbe
+        /// Begründung wie bei den Schritten 48/49: Die stille Rückfallebene
+        /// <c>WaermequelleClass.SchemaSicherstellen</c> legt an, was sie kennt, und
+        /// würde dabei die DML-Vorbelegung ÜBERSPRINGEN. Eine Spalte
+        /// <c>Schichten_Anzahl</c> mit lauter NULL wäre schlimmer als gar keine.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt53_Schichtmodell =
+        {
+            new SchemaSpalte(TAB_PUFFERSPEICHER, SPALTE_PSP_SCHICHTEN_ANZAHL,    "LONG"),
+            new SchemaSpalte(TAB_PUFFERSPEICHER, SPALTE_PSP_HOEHE,               "DOUBLE"),
+            new SchemaSpalte(TAB_PUFFERSPEICHER, SPALTE_PSP_LAMBDA_EFF,          "DOUBLE"),
+            new SchemaSpalte(TAB_PUFFERSPEICHER, SPALTE_PSP_T_NUTZ_BW,           "DOUBLE"),
+            new SchemaSpalte(TAB_PUFFERSPEICHER, SPALTE_PSP_ENTNAHME_HEIZUNG,    "DOUBLE"),
+            new SchemaSpalte(TAB_PUFFERSPEICHER, SPALTE_PSP_ENTNAHME_BW,         "DOUBLE"),
+            new SchemaSpalte(TAB_PUFFERSPEICHER, SPALTE_PSP_ENTNAHME_PROZESS,    "DOUBLE"),
+            new SchemaSpalte(TAB_PUFFERSPEICHER, SPALTE_PSP_LADELEISTUNG_MAX,    "DOUBLE"),
+            new SchemaSpalte(TAB_PUFFERSPEICHER, SPALTE_PSP_ENTLADELEISTUNG_MAX, "DOUBLE"),
+        };
+
         /// <summary>Eine Position einer Auslieferungsvorlage (Schritt 39).</summary>
         public sealed class VorlagenPositionSeed
         {

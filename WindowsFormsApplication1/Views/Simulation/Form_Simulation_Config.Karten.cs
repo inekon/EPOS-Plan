@@ -138,6 +138,21 @@ namespace WindowsFormsApplication1
         private int? _systemVorlauf;
         private int? _systemRuecklauf;
 
+        /// <summary>
+        /// PAKET P1 — Puffer-ID → Schichtenzahl, aber NUR für Speicher mit <c>N &gt; 1</c>
+        /// (<c>PufferSpCtrl.SchichtenJeProjekt</c>). Ein leeres Verzeichnis heißt „kein
+        /// geschichteter Speicher im Projekt" und ist zugleich der Zustand ohne
+        /// Migrationsschritt 53.
+        /// </summary>
+        private Dictionary<int, int> _schichtenJePuffer = new Dictionary<int, int>();
+
+        /// <summary>
+        /// PAKET P1 — Puffer-ID → <c>T_oben_Mittel</c> [°C] aus dem JÜNGSTEN Ergebnis des
+        /// Projekts (siehe <see cref="TObenSammeln"/>). Leer, solange kein Lauf gerechnet
+        /// wurde oder die Spalte keinen Wert trägt.
+        /// </summary>
+        private Dictionary<int, double> _tObenJePuffer = new Dictionary<int, double>();
+
         // --- Aufbau -------------------------------------------------------------------
 
         /// <summary>
@@ -1612,6 +1627,11 @@ namespace WindowsFormsApplication1
                 _systemVorlauf = PufferSpCtrl.SystemVorlauf(m_ID_Projekt);
                 _systemRuecklauf = PufferSpCtrl.SystemRuecklauf(m_ID_Projekt);
 
+                // PAKET P1: Schichtenzahl und Ergebnistemperatur - je EINE Abfrage für
+                // ALLE Karten, aus demselben Grund wie die vier Zeilen darüber.
+                _schichtenJePuffer = PufferSpCtrl.SchichtenJeProjekt(m_ID_Projekt);
+                _tObenJePuffer = TObenSammeln();
+
                 foreach (WaermesenkeClass.PufferInfo p in puffer)
                 {
                     SpeicherKarte karte = new SpeicherKarte();
@@ -1713,6 +1733,12 @@ namespace WindowsFormsApplication1
             string kanal = WaermesenkeClass.WirksameVerwendung(p);
             d.Verwendung = WaermesenkeClass.VerwendungAnzeige(kanal);
 
+            // PAKET P1: Schicht-Badge „N Schichten" (Konzept 10). Nur bei N > 1 - das
+            // Verzeichnis führt Ein-Zonen-Speicher gar nicht erst.
+            int schichten;
+            if (_schichtenJePuffer.TryGetValue(p.ID, out schichten))
+                d.Schichtung = string.Format(MyResource.Resource.PSP_KARTE_SCHICHTEN, schichten);
+
             if (p.Gesamtvolumen > 0)
                 d.Volumen = string.Format(MyResource.Resource.PSP_KARTE_VOLUMEN, p.Gesamtvolumen);
 
@@ -1810,6 +1836,18 @@ namespace WindowsFormsApplication1
             // --- Temperaturherkunft --------------------------------------------------
             d.Detailzeilen.Add(string.Format(MyResource.Resource.PSP_KARTE_TEMP_HERKUNFT, herkunft));
 
+            // --- PAKET P1: Ergebnistemperatur der obersten Schicht --------------------
+            //
+            // Die Zeile erscheint NUR, wenn das jüngste Ergebnis des Projekts für diesen
+            // Speicher einen Wert trägt (Konzept 10: „T_oben in der Detailansicht"). Ohne
+            // gerechneten Lauf, vor Migrationsschritt 52 und bei einem Ein-Zonen-Speicher
+            // aus einem Lauf vor P1 fehlt sie ersatzlos - eine Zeile mit „-" wäre eine
+            // Aussage über etwas, das niemand gemessen hat.
+            double tOben;
+            if (_tObenJePuffer.TryGetValue(p.ID, out tOben))
+                d.Detailzeilen.Add(string.Format(MyResource.Resource.PSP_KARTE_T_OBEN,
+                                                 tOben.ToString("0.#")));
+
             // --- Schwellenband -------------------------------------------------------
             d.SchwelleEin = p.SchwelleEin;
             d.SchwelleAusNachrang = p.SchwelleAusNachrang;
@@ -1905,6 +1943,52 @@ namespace WindowsFormsApplication1
             }
 
             return geladen;
+        }
+
+        /// <summary>
+        /// PAKET P1 — <c>T_oben_Mittel</c> je Speicher aus dem JÜNGSTEN Ergebnis des
+        /// Projekts; nie <c>null</c>.
+        ///
+        /// <para><b>Zwei Abfragen statt einer Unterabfrage.</b> Erst der Ergebniskopf
+        /// (<c>MAX(ID)</c> je Projekt), dann seine Speicherzeilen. Ein Parameter in der
+        /// Unterabfrage ist bei ACE eine bekannte Falle (dieselbe Vorsicht wie in
+        /// <c>SchemaMigration</c>, Schritt 25c), und die Kopfabfrage ist ohnehin billig.</para>
+        ///
+        /// <para><b>Spaltentolerant und still.</b> Gelesen wird über
+        /// <c>ErgebnisCtrl.PufferZeilenLesenStill</c> — dieselbe dialogfreie Bauart, die
+        /// auch der Referenzlauf benutzt; fehlt die Tabelle, kommt <c>null</c> zurück.
+        /// Fehlt die Spalte <c>T_oben_Mittel</c> (Lauf vor Schritt 52) oder steht dort
+        /// NULL, bleibt der Speicher aus dem Verzeichnis weg und seine Karte zeigt die
+        /// Zeile nicht.</para>
+        ///
+        /// <para>Einmal je Auffrischung, nicht je Karte — dieselbe Begründung wie bei
+        /// <see cref="QuellnutzerSammeln"/>.</para>
+        /// </summary>
+        private Dictionary<int, double> TObenSammeln()
+        {
+            Dictionary<int, double> werte = new Dictionary<int, double>();
+            if (m_ID_Projekt <= 0) return werte;
+
+            int idErgebnis = StilleDb.Zahl(StilleDb.Scalar(
+                "SELECT MAX(ID) FROM [" + ErgebnisCtrl.TAB_KOPF + "] WHERE ID_Projekt = ?",
+                StilleDb.Par("@proj", System.Data.OleDb.OleDbType.Integer, m_ID_Projekt)));
+            if (idErgebnis <= 0) return werte;
+
+            System.Data.DataTable dt = ErgebnisCtrl.PufferZeilenLesenStill(idErgebnis);
+            if (dt == null || !dt.Columns.Contains(SchemaKatalog.SPALTE_PUFFER_T_OBEN_MITTEL))
+                return werte;
+
+            foreach (System.Data.DataRow r in dt.Rows)
+            {
+                int id = StilleDb.Zahl(StilleDb.Feld(r, "ID_Pufferspeicher"));
+                object v = StilleDb.Feld(r, SchemaKatalog.SPALTE_PUFFER_T_OBEN_MITTEL);
+                if (id <= 0 || v == null || v == DBNull.Value || werte.ContainsKey(id)) continue;
+
+                try { werte[id] = Convert.ToDouble(v); }
+                catch { /* unlesbarer Wert - dann bleibt die Zeile weg */ }
+            }
+
+            return werte;
         }
 
         /// <summary>Die Anlagen, für die dieser Puffer die Quelle ist; nie <c>null</c>.</summary>

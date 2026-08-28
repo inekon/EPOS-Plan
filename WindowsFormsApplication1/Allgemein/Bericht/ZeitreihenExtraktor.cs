@@ -108,6 +108,29 @@ namespace WindowsFormsApplication1
                         z.Reihen[schluessel] = D(sp.SOC_stuendlich);
                         z.Speicherreihen.Add(schluessel);
                         z.Beschriftungen[schluessel] = sp.Anzeige();
+
+                        // PAKET P1 (Konzept 7.4): zusätzlich die beiden
+                        // SCHICHTTEMPERATUREN je Speicher, unter den abgeleiteten
+                        // Serienschlüsseln PUFFER_<ID>_TOBEN und _TUNTEN (sprachneutral
+                        // und ASCII, Schicht 2 der Drei-Schichten-Regel).
+                        //
+                        // Sie kommen BEWUSST NICHT in z.Speicherreihen: Diese Liste
+                        // führt das Füllstandsdiagramm (ChartRenderer.Speicherverlauf),
+                        // und eine Temperaturreihe in kWh-Achse wäre dort sinnlos. Als
+                        // Reihe im Satz stehen sie dem CSV-Export und einem künftigen
+                        // Temperaturdiagramm zur Verfügung.
+                        //
+                        // Quellspeicher tragen keine Schichttemperatur (Konzept 8.2) —
+                        // ihre Ganglinie bleibt 0 und wird deshalb nicht ausgewiesen.
+                        if (!sp.IstQuelle && sp.T_oben_Mittel.HasValue)
+                        {
+                            z.Reihen[schluessel + "_TOBEN"] = D(sp.T_oben_stuendlich);
+                            z.Reihen[schluessel + "_TUNTEN"] = D(sp.T_unten_stuendlich);
+                            z.Beschriftungen[schluessel + "_TOBEN"] =
+                                sp.BezeichnerAnzeige() + " T oben [°C]";
+                            z.Beschriftungen[schluessel + "_TUNTEN"] =
+                                sp.BezeichnerAnzeige() + " T unten [°C]";
+                        }
                     }
                 }
             }
