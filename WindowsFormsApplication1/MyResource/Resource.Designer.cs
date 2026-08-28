@@ -3369,6 +3369,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung {0} — Jahresganglinie ähnelt.
+        /// </summary>
+        public static string CHART_TITEL_DECKUNG_JE_BEDARFSART {
+            get {
+                return ResourceManager.GetString("CHART_TITEL_DECKUNG_JE_BEDARFSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Leistung über Außentemperatur ähnelt.
         /// </summary>
         public static string CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR {
@@ -15999,6 +16008,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_LABEL_BEDARF_JE_KANAL {
             get {
                 return ResourceManager.GetString("SIM_LABEL_BEDARF_JE_KANAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsart: ähnelt.
+        /// </summary>
+        public static string SIM_LABEL_BEDARFSART {
+            get {
+                return ResourceManager.GetString("SIM_LABEL_BEDARFSART", resourceCulture);
             }
         }
         

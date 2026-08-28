@@ -153,6 +153,9 @@ namespace WindowsFormsApplication1
                 // kWh-Füllstandsdiagramm (dieselbe Begründung wie bei den
                 // PUFFER_*_TOBEN-Reihen aus Paket P1).
                 Quelltemperaturreihen(sim, z);
+
+                // PAKET E2 (Nachtrag zu Konzept 4.4): Bedarf UND Deckung je Kanal.
+                Kanalreihen(sim, runner, z);
             }
             catch
             {
@@ -160,6 +163,61 @@ namespace WindowsFormsApplication1
             }
 
             return z.Reihen.Count > 0 ? z : null;
+        }
+
+        /// <summary>
+        /// PAKET E2 (Nachtrag zu Konzept 4.4) — die KANALREIHEN: je Bedarfskanal seine
+        /// Bedarfsganglinie und, je gerechnetem Erzeuger, die Ganglinie seiner Deckung
+        /// AUF DIESEM KANAL.
+        ///
+        /// <para><b>Aufgenommen wird nur, was es gibt.</b> Ein Kanal ohne Bedarf bekommt
+        /// keine Reihe — und damit auch keine Deckungsreihen. In einem Projekt ohne
+        /// Prozesswärme wächst der Satz deshalb um drei bis acht Reihen, nicht um
+        /// achtzehn. Dieselbe Präsenzregel, mit der die Oberfläche ihre Kanalauswahl
+        /// aufbaut.</para>
+        ///
+        /// <para><b>Kein Bilanzduplikat.</b> Die Werte sind die Auflösung der Größen, die
+        /// seit Paket E1 als Jahressummen in <c>Tab_Ergebnis*</c> stehen — dieselbe
+        /// Buchführung, nur nach Stunden. Der Bericht rechnet daraus nichts nach.</para>
+        /// </summary>
+        private static void Kanalreihen(SimulationControl sim, SimulationRunner runner, ZeitreihenSatz z)
+        {
+            if (sim == null || runner == null || runner.simulation_Waermebedarf == null) return;
+
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+            {
+                float[] bedarf = SimulationControl.BedarfKanalStuendlich(runner.simulation_Waermebedarf, k);
+
+                double summe = 0;
+                for (int h = 0; h < bedarf.Length; h++) summe += bedarf[h];
+                if (summe <= 0) continue;                 // Kanal ohne Bedarf: keine Reihe
+
+                z.Reihen[ZeitreihenSatz.BedarfSchluessel(k)] = D(bedarf);
+
+                if (sim.bSimulationWP && sim.simulation_wp != null)
+                {
+                    Kanalreihe(z, "WAERMEPUMPE", k, sim.DeckungKanalStuendlich(ProjektPuffer.TYP_WP, k));
+                    Kanalreihe(z, "HEIZSTAB", k, sim.HeizstabKanalStuendlich(k));
+                }
+                if (sim.bSimulationKessel && sim.simulation_spk != null)
+                    Kanalreihe(z, "HEIZKESSEL", k, sim.DeckungKanalStuendlich(ProjektPuffer.TYP_KESSEL, k));
+                if (sim.bSimulationSolarthermie && sim.simulation_solarthermie != null)
+                    Kanalreihe(z, "SOLARTHERMIE", k, sim.DeckungKanalStuendlich(ProjektPuffer.TYP_SOLARTHERMIE, k));
+                if (sim.bSimulationBHKW && sim.simulation_bhkw != null)
+                    Kanalreihe(z, "BHKW_WAERME", k, sim.DeckungKanalStuendlich(ProjektPuffer.TYP_BHKW, k));
+            }
+        }
+
+        /// <summary>Eine Deckungsreihe eintragen — nur, wenn sie überhaupt Werte trägt.</summary>
+        private static void Kanalreihe(ZeitreihenSatz z, string erzeuger, int kanal, float[] werte)
+        {
+            if (werte == null) return;
+
+            double summe = 0;
+            for (int h = 0; h < werte.Length; h++) summe += werte[h];
+            if (summe <= 0) return;
+
+            z.Reihen[ZeitreihenSatz.DeckungSchluessel(erzeuger, kanal)] = D(werte);
         }
 
         /// <summary>

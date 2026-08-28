@@ -777,6 +777,31 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double[] Heizstab_Kanal = new double[Kanal.ANZAHL];
 
+        // ------------------------------------------------------------------
+        // PAKET E2 (Nachtrag zu Konzept 4.4) — DIESELBEN DREI GRÖSSEN ALS GANGLINIE.
+        //
+        // Sie werden an genau denselben Stellen gebucht wie die Jahressummen darüber,
+        // aus derselben Variablen und im selben Schleifendurchlauf. Es gilt also je
+        // Kanal k
+        //
+        //   Σ_h Direktdeckung_KanalStuendlich[k][h]      == Direktdeckung_Kanal[k]
+        //   Σ_h Speicherentladung_KanalStuendlich[k][h]  == Speicherentladung_Kanal[k]
+        //   Σ_h Heizstab_KanalStuendlich[k][h]           == Heizstab_Kanal[k]
+        //
+        // bis auf die Assoziativität der double-Addition (die Jahressumme läuft in EINEN
+        // Akkumulator, die Ganglinie in 8760). Sie sind die Datengrundlage der
+        // Kanalauswahl im Ergebnis-Diagramm der Detailansicht.
+        // ------------------------------------------------------------------
+
+        /// <summary>Stundenfassung von <see cref="Direktdeckung_Kanal"/> [kWh] (Paket E2).</summary>
+        public readonly Kanalganglinie Direktdeckung_KanalStuendlich = new Kanalganglinie();
+
+        /// <summary>Stundenfassung von <see cref="Speicherentladung_Kanal"/> [kWh] (Paket E2).</summary>
+        public readonly Kanalganglinie Speicherentladung_KanalStuendlich = new Kanalganglinie();
+
+        /// <summary>Stundenfassung von <see cref="Heizstab_Kanal"/> [kWh] (Paket E2).</summary>
+        public readonly Kanalganglinie Heizstab_KanalStuendlich = new Kanalganglinie();
+
         private int _zkModule = 0;
         /// <summary>
         /// Ladeaufträge je Modul, RANG AUFSTEIGEND (Paket S1, Konzept 5.2) — an der
@@ -835,6 +860,11 @@ namespace WindowsFormsApplication1
             Array.Clear(Direktdeckung_Kanal, 0, Kanal.ANZAHL);
             Array.Clear(Speicherentladung_Kanal, 0, Kanal.ANZAHL);
             Array.Clear(Heizstab_Kanal, 0, Kanal.ANZAHL);
+
+            // E2: und ihre Ganglinienfassung, an derselben Stelle.
+            Direktdeckung_KanalStuendlich.Nullen();
+            Speicherentladung_KanalStuendlich.Nullen();
+            Heizstab_KanalStuendlich.Nullen();
 
             // Senkenspeicher auf den Laufanfang. QUELLspeicher NICHT: sie starten
             // gefüllt (WaermequelleClass.Quellspeicher setzt SOC = Q_max), ein Reset
@@ -1104,8 +1134,16 @@ namespace WindowsFormsApplication1
 
                     // K2: Kanalsplit dieser Moduliteration festschreiben — NACH der
                     // Korrektur E-K1-3, wie beim Skalar auch.
+                    //
+                    // PAKET E2: dieselbe Größe _deckungIteration[k], zusätzlich mit der
+                    // Stunde indiziert. Eine Zeile neben der Jahressumme, aus demselben
+                    // Wert — die Ganglinie kann von ihr nicht abweichen (Nachtrag zu
+                    // Konzept 4.4).
                     for (int k = 0; k < Kanal.ANZAHL; k++)
+                    {
                         Direktdeckung_Kanal[k] += _deckungIteration[k];
+                        Direktdeckung_KanalStuendlich.Buchen(k, stunde, _deckungIteration[k]);
+                    }
 
                     // Was vom Ladepotenzial nach der Bedarfsdeckung übrig ist, steht den
                     // Phasen C und D zur Verfügung.
@@ -1512,7 +1550,10 @@ namespace WindowsFormsApplication1
                 Heizstab_gesamt += menge;
                 Modul_Heizstab[index] += menge;
 
-                SenkeAbziehen(WaermequelleClass.SENKE_BEIDES, menge, rest, Heizstab_Kanal);
+                // PAKET E2: derselbe Abzug schreibt zusätzlich die Kanalganglinie des
+                // Heizstabs — gemessen an derselben rest-Differenz wie Heizstab_Kanal.
+                SenkeAbziehen(WaermequelleClass.SENKE_BEIDES, menge, rest, Heizstab_Kanal,
+                              Heizstab_KanalStuendlich, stunde);
             }
         }
 
@@ -1556,6 +1597,16 @@ namespace WindowsFormsApplication1
         private void SenkeAbziehen(string senke, double menge, double[] rest, double[] jeKanal)
         {
             Kanalabzug.Abziehen(senke, menge, rest, jeKanal);
+        }
+
+        /// <summary>
+        /// PAKET E2 — dieselbe Durchreichung, zusätzlich mit der Kanalganglinie der
+        /// Stunde (Nachtrag zu Konzept 4.4).
+        /// </summary>
+        private void SenkeAbziehen(string senke, double menge, double[] rest, double[] jeKanal,
+                                   Kanalganglinie ganglinie, int stunde)
+        {
+            Kanalabzug.Abziehen(senke, menge, rest, jeKanal, ganglinie, stunde);
         }
 
         /// <summary>
@@ -1906,6 +1957,11 @@ namespace WindowsFormsApplication1
             Array.Clear(Direktdeckung_Kanal, 0, Kanal.ANZAHL);
             Array.Clear(Speicherentladung_Kanal, 0, Kanal.ANZAHL);
             Array.Clear(Heizstab_Kanal, 0, Kanal.ANZAHL);
+
+            // E2: und ihre Ganglinienfassung (Nachtrag zu Konzept 4.4).
+            Direktdeckung_KanalStuendlich.Nullen();
+            Speicherentladung_KanalStuendlich.Nullen();
+            Heizstab_KanalStuendlich.Nullen();
         }
     }
 

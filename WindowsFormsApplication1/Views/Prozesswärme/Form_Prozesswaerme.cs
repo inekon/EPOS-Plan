@@ -63,6 +63,18 @@ namespace WindowsFormsApplication1
             dgv.RowsDefaultCellStyle.BackColor = Color.White;
             // Farbe für jede zweite Zeile (Zebra)
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(215, 230, 245);
+
+            // D2 (28.08.2026): Fusszeile auf die Norm - bisher Abbrechen links von OK,
+            // Groesse 105x31 und ohne Anker. btn_neuerWert ("Uebernehmen", 17/53 mitten
+            // in der Maske) bleibt unangetastet: die Norm bewegt nur uebergebene Knoepfe.
+            // Im Assistentenbetrieb sind beide Knoepfe unsichtbar (SetControls, bWizard).
+            FusszeilenNorm.Einhaengen(this, btn_OK, btn_Abbrechen);
+
+            // Auf derselben Zeile (y = 544) stehen links die beiden Arbeitsknoepfe
+            // "monatlicher Verlauf" und "Simulation". Sie behalten Lage und Groesse -
+            // ihre Beschriftung braucht die Breite - und bekommen nur den unteren Anker,
+            // damit die ganze Zeile beim Aufziehen des Fensters mitwandert.
+            FusszeilenNorm.ZeileMitziehen(btn_ErgebnisseVerbrauch, btn_Simulation);
         }
 
         private void SetDBList()

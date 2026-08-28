@@ -254,6 +254,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public readonly double[] Entladung_Kanal = new double[Kanal.ANZAHL];
 
+        /// <summary>
+        /// PAKET E2 (Nachtrag zu Konzept 4.4): dieselbe Größe wie
+        /// <see cref="Entladung_Kanal"/>, zusätzlich nach STUNDEN aufgelöst [kWh].
+        ///
+        /// <para>Gebucht in <see cref="Entladen(double,int,int)"/> in derselben Zeile aus
+        /// derselben Variablen <c>umsatz</c> — es gibt keinen zweiten Rechenweg. Die
+        /// DURCHFLUSSmenge zählt hier wie im Skalar NICHT mit.</para>
+        /// </summary>
+        public readonly Kanalganglinie Entladung_KanalStuendlich = new Kanalganglinie();
+
         // ------------------------------------------------------------------
         // DURCHSATZ getrennt vom UMSATZ (Nacharbeit Paket 6, Befund N6)
         //
@@ -455,6 +465,9 @@ namespace WindowsFormsApplication1
             // PAKET E1: die Kanalzeile der Entladung gehört ebenso zum Laufzustand.
             Array.Clear(Entladung_Kanal, 0, Entladung_Kanal.Length);
 
+            // PAKET E2: und ihre Ganglinienfassung, an derselben Stelle.
+            Entladung_KanalStuendlich.Nullen();
+
             // PAKET P1: Schichtebene und Stundenbudget gehören zum Laufzustand.
             // SchichtenAufbauen setzt alle Schichten auf RL_eff - der leere Speicher
             // (Konzept 7.2, „T[i], Start = RL_eff").
@@ -609,6 +622,10 @@ namespace WindowsFormsApplication1
             // durch die Aufteilung nicht um die Rundung einer Summe verschieben (dieselbe
             // Regel wie bei Kaskadenschleife._entladungJeArt).
             if (kanal >= 0 && kanal < Kanal.ANZAHL) Entladung_Kanal[kanal] += umsatz;
+
+            // PAKET E2: dieselbe Menge, dieselbe Zeile — nur zusätzlich mit der Stunde
+            // indiziert (Nachtrag zu Konzept 4.4).
+            Entladung_KanalStuendlich.Buchen(kanal, stunde, umsatz);
 
             if (stunde >= 0 && stunde < 8760)
             {

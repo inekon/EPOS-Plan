@@ -750,14 +750,14 @@ namespace WindowsFormsApplication1
                 Text = MyResource.Resource.SIM_BTN_OK,
                 DialogResult = DialogResult.OK,
                 Location = new Point(this.ClientSize.Width - 190, knopfOben),
-                Width = 85
+                Size = new Size(FusszeilenNorm.BREITE, FusszeilenNorm.HOEHE)
             };
             Button btnAbbruch = new Button
             {
                 Text = MyResource.Resource.SIM_BTN_ABBRECHEN,
                 DialogResult = DialogResult.Cancel,
                 Location = new Point(this.ClientSize.Width - 97, knopfOben),
-                Width = 85
+                Size = new Size(FusszeilenNorm.BREITE, FusszeilenNorm.HOEHE)
             };
             btnOk.Click += btnOk_Click;
 
@@ -771,7 +771,15 @@ namespace WindowsFormsApplication1
             int unten = Math.Max(knopfOben + btnOk.Height,
                                  Math.Max(HINWEIS_OBEN + hinweisHoehe,
                                           _btnPufferAnlegen.Bottom));
-            this.ClientSize = new Size(this.ClientSize.Width, unten + 23);
+            this.ClientSize = new Size(this.ClientSize.Width,
+                                       unten + FusszeilenNorm.RAND);
+
+            // D2 (28.08.2026): OK stand LINKS von Abbrechen und beide auf Top/Left. Die
+            // Norm dreht die Reihenfolge um, vereinheitlicht Größe und Rand und verankert
+            // die Reihe unten rechts — nötig, weil FensterEinpassung diesen Dialog auf
+            // einem Notebook auf eine veränderbare Berandung umstellt.
+            FusszeilenNorm.Einhaengen(this, btnOk, btnAbbruch);
+            FusszeilenNorm.Anwenden(this, btnOk, btnAbbruch);
         }
 
         /// <summary>
