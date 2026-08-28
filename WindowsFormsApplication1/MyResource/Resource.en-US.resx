@@ -8204,6 +8204,13 @@ Effective only with a STRATIFIED target storage (layers &gt; 1): from the inlet 
   <data name="CHART_TITEL_DECKUNG_JE_BEDARFSART" xml:space="preserve">
     <value>{0} coverage — annual load profile</value>
   </data>
+<<<<<<< HEAD
+  <data name="BK_SP_KOMPONENTE" xml:space="preserve">
+    <value>Component</value>
+  </data>
+  <data name="BK_SP_KOMPONENTE_N" xml:space="preserve">
+    <value>Component {0}</value>
+=======
   <data name="SIMQ_PUFFER_TEMPERATURBEZUG" xml:space="preserve">
     <value>Temperature reference:</value>
   </data>
@@ -8243,5 +8250,6 @@ The switch is only shown if the project contains such a generator.</value>
   </data>
   <data name="SIM_STATUS_LESEPUNKT_DANACH" xml:space="preserve">
     <value>Booster reading point: after the charging phase of the preceding level.</value>
+>>>>>>> 0787aeca05d25d469d6333930e34df7bac7c74fc
   </data>
 </root>

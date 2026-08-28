@@ -552,3 +552,111 @@ Solarthermie- und BHKW-Position (0 €), Projekt 1011 zwei BHKW-Positionen
 (30 € Invest + 30 € Betrieb). Vorab-Zählprüfung traf exakt 4; verwaiste,
 noch heilbare Positionen gab es keine. Nachmessung über ALLE Projekte:
 0 lose Positionen anlagenfähiger Komponenten — der Bestand ist bereinigt.
+
+### Projekttransfer T1+T2 (28.08.2026) — Importfehler Ergebnisfamilie behoben
+
+Nutzerbefund: Import der `Booster-Kette mit Kombi-Speicher.wpx` brach mit
+„INSERT Tab_ErgebnisEnergiebedarf … ID_Ergebnis=206 -> Tab_Ergebnis[ID]:
+FEHLT" ab.
+
+- WURZEL (B1): Die Import-Umschlüsselung fragt `ErmittleZieltabelle` des
+  Duplizierers; dessen Beziehungswissen (`_echteFks`) lud nur `ErmittlePlan`
+  (Duplizieren/Export). Der reine Import lief auf leerem Wissen — jede
+  Beziehung außerhalb der FK_MAP (`ID_Ergebnis → Tab_Ergebnis`) blieb
+  unversetzt. Deshalb traf es die App (nur Import), nie den Prüfstand
+  (Export davor füllte das Wissen am selben Objekt).
+- FIX: `BeziehungenLaden`-Extrakt im Duplizierer, Aufruf im Import;
+  Namenskonventions-Gürtel in `Umschluessele` (ID_<X> → Tab_<X>, nur wenn
+  die Tabelle im Paket reist); Randfall „Elterntabelle ohne Zeilen" löst den
+  Verweis ehrlich. Dazu B2 (Manifest trägt echten Schemastand, Import lehnt
+  fremde Stände klar ab) und B3 (`AnkerNachziehen` nach dem Commit — vorher
+  8 fremde WP-Kostenanker im Testimport).
+- NEBENBEFUND: Die Rechner waren auseinander (Paket Schemastand 54, hiesige
+  App 47) — der heutige Sync glich die App an; die Produktiv-DB migriert beim
+  nächsten Start auf 54.
+
+Nachweise: neuer Runner-Modus `transfer` (Export Kopie A → Import Kopie B)
+15/15 PASS — darunter der Import der ECHTEN Nutzerdatei mit korrekt
+verdrahteter Ergebnisfamilie und die Ablehnung eines Pakets mit
+verfälschtem Schemastand; kd6 92/92, Sweep 114/0/5.
+
+### Projekttransfer T3+T4+T5 (28.08.2026) — Varianten, Vorschau, Prüfstand
+
+- T3 VARIANTEN: Export-Dialog führt eine Häkchenliste der Varianten des
+  gewählten Projekts (vorbelegt alle an). Paketformat V2: Varianten als
+  eigene Projektbäume unter projects/<i>/data/, Verknüpfungen als
+  variantLinks im Manifest (Tab_Variante reist bewusst NICHT als
+  Tabellenzeile — ID_ProjektRef wäre über Paketgrenzen nicht versetzbar);
+  der Import schreibt die Verknüpfung neu, in EINER Transaktion über alle
+  Bäume (BaumEinfuegen je Projekt). V1-Pakete bleiben lesbar.
+- T4 DIALOG: Paketvorschau nennt die Varianten; Abschlussbericht in der
+  Erfolgsmeldung und als <paket>.importbericht.txt; Sicherungs-Haken
+  (vorbelegt an) kopiert die DB vor dem Import mit Zeitstempel.
+- T5 PRÜFSTAND: Runner-Modus `transfer` dauerhaft (Soll 17/17) — B1-Kern
+  (frischer Controller), Nutzerpaket-Realfall Booster-Kette, Roundtrip-
+  Zählungen, Kostenanker, Schemastand-Ablehnung, Variantenpaket.
+
+Nachweise: transfer 17/17 PASS; kd6 und Sweep nach dem Umbau grün
+(Nachtrag folgt der Zahl nach dem Lauf).
+
+### Projekttransfer T6 — Artefakt-Runde (28.08.2026, Nutzerbefunde)
+
+Zwei Befunde nach der Sichtprüfung des Nutzers:
+
+- B5 IMPORTIERTE ALTLASTEN: Die importierte Booster-Kette zeigte gelbe
+  Zeilen „Solarthermie/Pufferspeicher — ohne Anlagenzuordnung" (3.775 +
+  3.000,50 EUR). Paketanalyse: Die Positionen waren SCHON IN DER QUELLE
+  lose (ID_Anlage NULL, tote Anker) — kein Import-Riss. Fix: Der Export
+  lässt lose Positionen anlagenfähiger Komponenten zurück (Filter im
+  Baum-Schreiber mit Ä20/Ä21-Spalten-Guard; Erfassungsgruppen ohne
+  Anlagenbezug reisen unverändert). Beweis transfer-T6 am echten
+  Booster-Projekt (Quelle 11/2 lose, Paket 9/0 lose).
+- B6 ANLAGE-VERGLEICH MISCHT GEWERKE: Die Unterschiedsansicht der
+  Übersicht las für den Konfigurationsblock „Anlage" je Projekt die ERSTE
+  Tab_Energieanlagen-Zeile — WP-Stamm gegen BHKW-Variante ergab
+  Scheinunterschiede (35→85 Grad C, Heizstab Ja→Nein, ...), Referenzanlagen
+  zählten mit. Fix im AbweichungsErmittler (eine Wahrheit für Übersicht,
+  Unterschiedsliste, Übernahme, Bericht): ErsteEchteAnlage (Referenz-Typen
+  5–9 nie), AnlagenVergleichbar (Diff nur gewerkgleich),
+  AnlagenEinheitlich (Gegenüberstellung nur bei einheitlichem Gewerk).
+  Beweis transfer-T7 (WP↔BHKW liefert 0 Anlage-Zeilen; selbst↔selbst
+  bleibt vergleichbar).
+
+Nachweise: transfer 19/19 PASS; kd6/Sweep siehe Regressionslauf.
+
+### Übersicht-Gegenüberstellung: eine Zeile je Komponente (28.08.2026)
+
+Nutzerbefund: Bei zwei Wärmepumpen im Stamm zeigten die Merkmalszeilen
+(Hersteller, Typ, Bauart, …) nur die ERSTE Komponente — die zweite fehlte
+komplett. Nutzervorschlag umgesetzt: nur die Komponenten darstellen,
+Merkmale per Mouse-over und bei Auswahl.
+
+- ProjektDetails führt je Gewerk jetzt ALLE Komponentenzeilen
+  (KomponentenAlle, Anlagenreihenfolge); AbweichungsErmittler liefert
+  KomponenteZeile(gewerk, index), BezeichnerMerkmal und MerkmaleText
+  (deklarative Feldliste ohne das Bezeichner-Merkmal) — eine Wahrheit
+  für Tooltip und Auswahlanzeige.
+- Gegenüberstellung je zählbarem Gewerk: Anzahlzeile wie bisher, dann
+  EINE ZEILE JE KOMPONENTE („Komponente 1/2/…", bei einer schlicht
+  „Komponente") mit dem Bezeichner je Version; die früheren
+  Merkmalszeilen entfallen dort. Mouse-over einer Zelle zeigt die
+  Merkmale mehrzeilig; die Auswahl einer Zelle zeigt sie in der
+  Statuszeile („CS5800i (Stamm) — Hersteller: Bosch · Typ: … ").
+  Konfigurationsblöcke Anlage/Gebäude bleiben Merkmalszeilen (inkl.
+  B6-Gewerk-Guard).
+- Drei-Schichten-Regel: neue Keys BK_SP_KOMPONENTE(_N) de+en über
+  lokalen ResourceManager-Helfer (TUeb) mit deutschem Fallback.
+
+Nachweise: transfer-T8/T8b (2 WPs vollzählig, Merkmalstext ohne
+Bezeichner, mit Hersteller), Gesamtlauf + kd6 + Sweep siehe Zahlen des
+Regressionslaufs.
+
+**Nachtrag Booster-Bereinigung (29.08.2026, Nutzerfreigabe):** Die zwei mit
+dem Import eingeschleppten Quell-Altlasten der Booster-Kette (Projekt 1043:
+Solarthermie 3.775 EUR, Pufferspeicher 3.000,50 EUR, beide ohne
+Anlagenzuordnung) wurden auf ausdrückliche Freigabe von der Produktiv-DB
+gelöscht (Sicherung K:\backup_kenndaten_2026-08-29_vor_booster_bereinigung
+.accdb; Vorab-Verifikation 2/6.775,5 exakt getroffen). Nachmessung über
+alle Projekte: 0 lose Positionen anlagenfähiger Komponenten — der Bestand
+ist wieder vollständig sauber; der T6-Exportfilter verhindert künftige
+Einschleppungen.

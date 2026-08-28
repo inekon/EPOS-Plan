@@ -58,7 +58,8 @@ namespace WindowsFormsApplication1
     public class ProjektExportImportCtrl
     {
         private const string FORMAT = "wp-projekt";
-        private const int FORMAT_VER = 1;
+        // T3: Version 2 = Varianten-Baeume (projects/<i>/data/) + variantLinks.
+        private const int FORMAT_VER = 2;
 
         private readonly ProjektDuplizierenCtrl _dup = new ProjektDuplizierenCtrl();
 
@@ -75,6 +76,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>Verhalten, wenn der Zielname bereits existiert.</summary>
         public enum BeiVorhandenem { Abbrechen, Ueberschreiben, NeuerName }
+
+        /// <summary>T4: Zeilenbericht des letzten Imports (Projekte, Varianten,
+        /// Verknüpfungen, Hinweise) — der Dialog zeigt und sichert ihn.</summary>
+        public List<string> LetzterBericht { get; private set; } = new List<string>();
 
         // ---- PROJEKT-SPEZIFISCH ------------------------------------------------------------
         private static readonly Dictionary<string, string> KATALOG_SPALTE_ZU_TABELLE =
@@ -105,6 +110,18 @@ namespace WindowsFormsApplication1
         // ===================================================================================
         public bool Exportieren(string projektName, string zielPfad,
             IProgress<ProjektDuplizierenCtrl.Fortschritt> fortschritt = null)
+            => Exportieren(projektName, null, zielPfad, fortschritt);
+
+        /// <summary>
+        /// T3 (Konzept Projekttransfer): Export mit Varianten. Jede gewählte
+        /// Variante reist als eigener Projektbaum unter <c>projects/&lt;i&gt;/data/</c>;
+        /// die <c>Tab_Variante</c>-Verknüpfungen reisen NICHT als Tabellenzeilen
+        /// (ihr <c>ID_ProjektRef</c> wäre über Paketgrenzen nicht versetzbar),
+        /// sondern als <c>variantLinks</c> im Manifest und werden beim Import
+        /// neu geschrieben.
+        /// </summary>
+        public bool Exportieren(string projektName, List<string> variantenProjekte, string zielPfad,
+            IProgress<ProjektDuplizierenCtrl.Fortschritt> fortschritt = null)
         {
             int srcId = _dup.GetProjektId(projektName);
             if (srcId <= 0) { MessageBox.Show("Projekt '" + projektName + "' nicht gefunden."); return false; }
@@ -114,7 +131,7 @@ namespace WindowsFormsApplication1
             try
             {
                 var plan = _dup.ErmittlePlan(conn, trans);
-                var manifestTabellen = new List<TabMeta>();
+                List<TabMeta> manifestTabellen;
                 var katalogRefs = new Dictionary<string, HashSet<long>>(StringComparer.OrdinalIgnoreCase);
 
                 // Projekt-Tabellen (werden kopiert) und konfigurierte Natural-Key-Kataloge.
@@ -131,41 +148,101 @@ namespace WindowsFormsApplication1
                 using (var zipStream = new FileStream(zielPfad, FileMode.Create))
                 using (var zip = new ZipArchive(zipStream, ZipArchiveMode.Create))
                 {
-                    int i = 0;
-                    foreach (var s in plan)
+                    // T3: EIN Baum-Schreiber für Stamm und Varianten — gleicher Plan,
+                    // eigener Projektfilter, eigenes Zip-Präfix. Tab_Variante bleibt
+                    // draußen (Verknüpfung = variantLinks im Manifest; eine mitreisende
+                    // Zeile hätte ein nicht versetzbares ID_ProjektRef).
+                    List<TabMeta> BaumSchreiben(int projektId, string prefix)
                     {
-                        fortschritt?.Report(new ProjektDuplizierenCtrl.Fortschritt
-                        { Aktuell = i++, Gesamt = plan.Count, Tabelle = s.Tabelle });
+                        var tabellen = new List<TabMeta>();
+                        int i = 0;
+                        foreach (var s in plan)
+                        {
+                            fortschritt?.Report(new ProjektDuplizierenCtrl.Fortschritt
+                            { Aktuell = i++, Gesamt = plan.Count, Tabelle = s.Tabelle });
 
-                        DataTable dt = DataRepository.GetDataTable(
-                            "SELECT * FROM [" + s.Tabelle + "] WHERE " + string.Format(s.Filter, srcId));
-                        if (dt == null || dt.Rows.Count == 0) continue;
+                            if (s.Tabelle.Equals("Tab_Variante", StringComparison.OrdinalIgnoreCase)) continue;
 
-                        WriteEntry(zip, "data/" + s.Tabelle + ".json", RowsToJson(dt));
-                        manifestTabellen.Add(new TabMeta { name = s.Tabelle, pk = s.Pk });
+                            string filter = string.Format(s.Filter, projektId);
+                            // T6 (Nutzerbefund 28.08.2026): Kostenpositionen OHNE (gültige)
+                            // Anlagenzuordnung anlagenfähiger Komponenten sind Altlasten der
+                            // Quelle — am Ziel erschienen sie als „ohne Anlagenzuordnung",
+                            // obwohl dort nie eine solche Anlage angelegt war. Sie reisen
+                            // nicht mit; die Erfassungsgruppen ohne Anlagenbezug
+                            // (Wärmezentrale, Bauliche Anlagen, Stromeinspeisung) reisen
+                            // unverändert. Literale statt Parameter (ACE-Subquery-Falle).
+                            if (s.Tabelle.Equals("Tab_ProjektWerte", StringComparison.OrdinalIgnoreCase) &&
+                                SpaltenSicher())
+                                filter = "(" + filter + ") AND NOT (KomponentenID IN " +
+                                    "(SELECT ID FROM Tab_KostenKomponente WHERE Komponente IN (" +
+                                    AnlagenKomponentenListe() + ")) AND (ID_Anlage IS NULL OR ID_Anlage NOT IN " +
+                                    "(SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = " + projektId + ")))";
 
-                        foreach (DataColumn c in dt.Columns)
-                            if (KATALOG_SPALTE_ZU_TABELLE.TryGetValue(c.ColumnName, out string katTab))
-                            {
-                                if (!katalogRefs.TryGetValue(katTab, out var ids))
-                                    katalogRefs[katTab] = ids = new HashSet<long>();
-                                foreach (DataRow r in dt.Rows)
-                                    if (r[c] != DBNull.Value) { long v = Convert.ToInt64(r[c]); if (v > 0) ids.Add(v); }
-                            }
+                            DataTable dt = DataRepository.GetDataTable(
+                                "SELECT * FROM [" + s.Tabelle + "] WHERE " + filter);
+                            if (dt == null || dt.Rows.Count == 0) continue;
 
-                        // Generisch: jede echte FK-Spalte, deren Zieltabelle NICHT kopiert wird
-                        // und NICHT als Natural-Key-Katalog konfiguriert ist -> Original-ID auffüllen.
-                        if (fks.TryGetValue(s.Tabelle, out var tabFks))
-                            foreach (var fk in tabFks)
-                            {
-                                if (copySet.Contains(fk.RefTab) || konfigurierteKataloge.Contains(fk.RefTab)) continue;
-                                if (!dt.Columns.Contains(fk.Col)) continue;
-                                if (!fuellRefs.TryGetValue(fk.RefTab, out var eintrag))
-                                    fuellRefs[fk.RefTab] = eintrag = new KeyValuePair<string, HashSet<long>>(fk.RefCol, new HashSet<long>());
-                                foreach (DataRow r in dt.Rows)
-                                    if (r[fk.Col] != DBNull.Value)
-                                    { long v; if (long.TryParse(Convert.ToString(r[fk.Col]), out v) && v > 0) eintrag.Value.Add(v); }
-                            }
+                            WriteEntry(zip, prefix + s.Tabelle + ".json", RowsToJson(dt));
+                            tabellen.Add(new TabMeta { name = s.Tabelle, pk = s.Pk });
+
+                            foreach (DataColumn c in dt.Columns)
+                                if (KATALOG_SPALTE_ZU_TABELLE.TryGetValue(c.ColumnName, out string katTab))
+                                {
+                                    if (!katalogRefs.TryGetValue(katTab, out var ids))
+                                        katalogRefs[katTab] = ids = new HashSet<long>();
+                                    foreach (DataRow r in dt.Rows)
+                                        if (r[c] != DBNull.Value) { long v = Convert.ToInt64(r[c]); if (v > 0) ids.Add(v); }
+                                }
+
+                            // Generisch: jede echte FK-Spalte, deren Zieltabelle NICHT kopiert wird
+                            // und NICHT als Natural-Key-Katalog konfiguriert ist -> Original-ID auffüllen.
+                            if (fks.TryGetValue(s.Tabelle, out var tabFks))
+                                foreach (var fk in tabFks)
+                                {
+                                    if (copySet.Contains(fk.RefTab) || konfigurierteKataloge.Contains(fk.RefTab)) continue;
+                                    if (!dt.Columns.Contains(fk.Col)) continue;
+                                    if (!fuellRefs.TryGetValue(fk.RefTab, out var eintrag))
+                                        fuellRefs[fk.RefTab] = eintrag = new KeyValuePair<string, HashSet<long>>(fk.RefCol, new HashSet<long>());
+                                    foreach (DataRow r in dt.Rows)
+                                        if (r[fk.Col] != DBNull.Value)
+                                        { long v; if (long.TryParse(Convert.ToString(r[fk.Col]), out v) && v > 0) eintrag.Value.Add(v); }
+                                }
+                        }
+                        return tabellen;
+                    }
+
+                    manifestTabellen = BaumSchreiben(srcId, "data/");
+
+                    // T3: Varianten-Bäume + Verknüpfungen fürs Manifest.
+                    var varMetas = new List<VarMeta>();
+                    var links = new List<LinkMeta>();
+                    DataTable eigenerLink = DataRepository.GetDataTable(
+                        "SELECT v.Variantenname, p.Projektname FROM Tab_Variante AS v INNER JOIN Tab_Projekt AS p " +
+                        "ON v.ID_ProjektRef = p.ID WHERE v.ID_Projekt = " + srcId);
+                    if (eigenerLink != null && eigenerLink.Rows.Count > 0)
+                        links.Add(new LinkMeta
+                        {
+                            projekt = projektName,
+                            stamm = Convert.ToString(eigenerLink.Rows[0]["Projektname"]),
+                            variantenname = Convert.ToString(eigenerLink.Rows[0]["Variantenname"])
+                        });
+                    int lauf = 0;
+                    foreach (string vName in variantenProjekte ?? new List<string>())
+                    {
+                        int vid = _dup.GetProjektId(vName);
+                        if (vid <= 0 || vid == srcId) continue;
+                        var vTabellen = BaumSchreiben(vid, "projects/" + lauf + "/data/");
+                        varMetas.Add(new VarMeta { name = vName, tables = vTabellen });
+                        DataTable lnk = DataRepository.GetDataTable(
+                            "SELECT Variantenname FROM Tab_Variante WHERE ID_Projekt = " + vid);
+                        links.Add(new LinkMeta
+                        {
+                            projekt = vName,
+                            stamm = projektName,
+                            variantenname = (lnk != null && lnk.Rows.Count > 0)
+                                ? Convert.ToString(lnk.Rows[0]["Variantenname"]) : vName
+                        });
+                        lauf++;
                     }
 
                     var katalogMeta = new List<KatMeta>();
@@ -209,7 +286,9 @@ namespace WindowsFormsApplication1
                         sourceProject = projektName,
                         tables = manifestTabellen,
                         catalogs = katalogMeta,
-                        fill = fuellMeta
+                        fill = fuellMeta,
+                        variants = varMetas,
+                        variantLinks = links
                     };
                     WriteEntry(zip, "manifest.json",
                         JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }));
@@ -235,6 +314,7 @@ namespace WindowsFormsApplication1
             fehler = null;
             Manifest man;
             var tableRows = new Dictionary<string, List<Dictionary<string, JsonElement>>>();
+            var variantRows = new List<Dictionary<string, List<Dictionary<string, JsonElement>>>>();
             var catalogRows = new Dictionary<string, List<Dictionary<string, JsonElement>>>();
             var fillRows = new Dictionary<string, List<Dictionary<string, JsonElement>>>();
 
@@ -258,6 +338,14 @@ namespace WindowsFormsApplication1
                 }
                 foreach (var t in man.tables)
                     tableRows[t.name] = LiesZeilen(ReadEntry(zip, "data/" + t.name + ".json"));
+                // T3: Varianten-Baeume (Paketformat V2, projects/<i>/data/...).
+                for (int vi = 0; vi < (man.variants?.Count ?? 0); vi++)
+                {
+                    var vr = new Dictionary<string, List<Dictionary<string, JsonElement>>>();
+                    foreach (var t in man.variants[vi].tables)
+                        vr[t.name] = LiesZeilen(ReadEntry(zip, "projects/" + vi + "/data/" + t.name + ".json"));
+                    variantRows.Add(vr);
+                }
                 foreach (var k in man.catalogs ?? new List<KatMeta>())
                     catalogRows[k.name] = LiesZeilen(ReadEntry(zip, "catalogs/" + k.name + ".json"));
                 foreach (var k in man.fill ?? new List<KatMeta>())
@@ -291,10 +379,20 @@ namespace WindowsFormsApplication1
             try
             {
                 if (_fks == null || _fks.Count == 0) _fks = LiesFremdschluessel(conn);   // Fallback über Transaktionsverbindung
+
+                // B1 (Konzept Projekttransfer T1): Die Umschlüsselung fragt
+                // ErmittleZieltabelle des Duplizierers — dessen Beziehungswissen
+                // lud bisher nur der EXPORT (ErmittlePlan). Ein reiner Import
+                // ließ damit jede Beziehung außerhalb der FK_MAP unversetzt
+                // (Befund „Tab_Ergebnis[ID] FEHLT"). Jetzt wird es hier geladen.
+                try { _dup.BeziehungenLaden(conn, trans); } catch { }
+
                 _projektTabellen = new HashSet<string>(man.tables.Select(x => x.name), StringComparer.OrdinalIgnoreCase);
                 _fkKeys = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
                 int schritt = 0;
                 int gesamt = man.tables.Count + (man.catalogs?.Count > 0 ? 1 : 0) + (ueberschreibId > 0 ? 1 : 0);
+                for (int vi = 0; vi < (man.variants?.Count ?? 0); vi++)
+                    gesamt += man.variants[vi].tables.Count;
 
                 // 0) Vorhandenes Projekt löschen (Überschreiben).
                 if (ueberschreibId > 0)
@@ -324,72 +422,68 @@ namespace WindowsFormsApplication1
                             FuelleKatalog(conn, trans, k, fillRows[k.name]);
                 }
 
-                // 2) Offsets je Projekt-Tabelle (nur vorhandene Tabellen).
-                var offset = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
-                foreach (var t in man.tables)
-                    if (ZielSpalten(t.name) != null && tableRows[t.name].Count > 0)
-                        offset[t.name] = BerechneOffset(conn, trans, t.name, t.pk, tableRows[t.name]);
+                // 2)+3) Stamm-Projektbaum einfügen (Offsets + Umschlüsselung in
+                // BaumEinfuegen — T3: derselbe Weg trägt auch die Varianten).
+                var berichte = new List<string>();
+                var nameZuId = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+                int neueProjektId = BaumEinfuegen(conn, trans, man.tables, tableRows, ziel,
+                                                  katMap, fortschritt, ref schritt, gesamt);
+                if (neueProjektId > 0) nameZuId[man.sourceProject ?? ziel] = neueProjektId;
+                berichte.Add("Projekt \u201E" + ziel + "\u201C importiert (" + man.tables.Count + " Tabellen).");
 
-                // 3) Einfügen in FK-Reihenfolge, Spalten-Schnittmenge, alles umschlüsseln.
-                foreach (var t in man.tables)
+                // T3: Varianten-Bäume — der gewählte Konfliktmodus gilt für alle (TF2).
+                for (int vi = 0; vi < (man.variants?.Count ?? 0); vi++)
                 {
-                    fortschritt?.Report(new ProjektDuplizierenCtrl.Fortschritt { Aktuell = schritt++, Gesamt = gesamt, Tabelle = t.name });
-
-                    Dictionary<string, Type> zielTypen = ZielTypen(t.name);
-                    if (zielTypen == null) continue;                       // Tabelle in Ziel-DB nicht (mehr) vorhanden
-                    if (!offset.ContainsKey(t.name)) continue;
-
-                    // FK-Spalten dieser Tabelle je Spaltenname (für Verwaisten-Behandlung).
-                    var fkByCol = new Dictionary<string, Fk>(StringComparer.OrdinalIgnoreCase);
-                    if (_fks != null && _fks.TryGetValue(t.name, out var flist))
-                        foreach (var f in flist) fkByCol[f.Col] = f;
-
-                    foreach (var row in tableRows[t.name])
+                    string vQuelle = man.variants[vi].name;
+                    string vZiel = vQuelle;
+                    int vExist = _dup.GetProjektId(vZiel);
+                    if (vExist > 0)
                     {
-                        var colNames = new List<string>(); var cols = new List<string>(); var ph = new List<string>();
-                        var vals = new List<object>(); var typen = new List<Type>();
-                        int i = 0;
-                        foreach (var kv in row)
+                        if (modus == BeiVorhandenem.Abbrechen)
+                            throw new Exception("Ein Projekt '" + vZiel + "' existiert bereits (Variante des Pakets) - Import abgebrochen, nichts geändert.");
+                        if (modus == BeiVorhandenem.NeuerName) vZiel = EindeutigerName(vZiel);
+                        else
                         {
-                            if (!zielTypen.ContainsKey(kv.Key)) continue;  // Spalte gibt es im Ziel nicht -> überspringen
-                            object val = (t.name.Equals("Tab_Projekt", StringComparison.OrdinalIgnoreCase) &&
-                                          kv.Key.Equals("Projektname", StringComparison.OrdinalIgnoreCase))
-                                ? ziel
-                                : Umschluessele(t.name, kv.Key, t.pk, kv.Value, offset, katMap);
-                            // Vorab-Behandlung verwaister/leerer FK-Werte (siehe unten auch die Selbstheilung).
-                            if (fkByCol.TryGetValue(kv.Key, out var fk) && val != null && !(val is DBNull))
-                            {
-                                string sv = Convert.ToString(val);
-                                if (string.IsNullOrWhiteSpace(sv))
-                                    val = null;   // leerer Verweis = kein Verweis -> NULL
-                                else if (!_projektTabellen.Contains(fk.RefTab))
-                                {
-                                    var set = LadeElternSchluessel(conn, trans, fk.RefTab, fk.RefCol);
-                                    if (!set.Contains(sv))
-                                    {
-                                        if (val is string && StelleTextKatalogSicher(conn, trans, fk.RefTab, fk.RefCol, sv))
-                                            set.Add(sv);   // Namen anlernen, Wert bleibt
-                                        else
-                                            val = null;
-                                    }
-                                }
-                            }
-                            colNames.Add(kv.Key); cols.Add("[" + kv.Key + "]"); ph.Add("@p" + (i++));
-                            vals.Add(val); typen.Add(zielTypen[kv.Key]);
-                        }
-                        if (cols.Count == 0) continue;
-
-                        Exception err = FuehreInsertAus(t.name, cols, ph, vals, typen, conn, trans);
-                        if (err != null)
-                        {
-                            // SELBSTHEILUNG: tatsächlich verwaiste FK-Werte (in der Transaktion geprüft)
-                            // nullen und den INSERT genau einmal wiederholen. Unabhängig von der Vorab-Logik.
-                            int genullt = NulleVerwaisteFks(t.name, colNames, vals, conn, trans);
-                            if (genullt > 0) err = FuehreInsertAus(t.name, cols, ph, vals, typen, conn, trans);
-                            if (err != null)
-                                throw new Exception("\r\n" + VolleDiagnoseWerte(t.name, colNames, vals, typen, conn, trans) + ":: " + err.Message, err);
+                            fortschritt?.Report(new ProjektDuplizierenCtrl.Fortschritt { Aktuell = schritt, Gesamt = gesamt, Tabelle = "(alte Variante entfernen)" });
+                            LoescheProjekt(conn, trans, vExist);
                         }
                     }
+                    int vId = BaumEinfuegen(conn, trans, man.variants[vi].tables, variantRows[vi], vZiel,
+                                            katMap, fortschritt, ref schritt, gesamt);
+                    if (vId > 0) nameZuId[vQuelle] = vId;
+                    berichte.Add("Variante \u201E" + vZiel + "\u201C importiert (" + man.variants[vi].tables.Count + " Tabellen).");
+                }
+
+                // T3: Verknüpfungen wiederherstellen — Tab_Variante reist nicht als
+                // Tabellenzeile (ID_ProjektRef nicht versetzbar), sondern als Manifest-Link.
+                foreach (var link in man.variantLinks ?? new List<LinkMeta>())
+                {
+                    try
+                    {
+                        int pId = nameZuId.TryGetValue(link.projekt ?? "", out int p1) ? p1 : 0;
+                        int sId = nameZuId.TryGetValue(link.stamm ?? "", out int s1) ? s1 : ProjektIdInTrans(conn, trans, link.stamm);
+                        if (pId <= 0 || sId <= 0 || pId == sId)
+                        {
+                            berichte.Add("Hinweis: Verknüpfung \u201E" + link.projekt + "\u201C -> \u201E" + link.stamm +
+                                         "\u201C nicht herstellbar (Stamm nicht im Paket und nicht am Ziel) - das Projekt steht eigenständig.");
+                            continue;
+                        }
+                        int neuVid;
+                        using (var c = new OleDbCommand("SELECT MAX(ID) FROM Tab_Variante", conn, trans))
+                        { object m = c.ExecuteScalar(); neuVid = ((m == null || m == DBNull.Value) ? 0 : Convert.ToInt32(m)) + 1; }
+                        using (var c = new OleDbCommand(
+                            "INSERT INTO Tab_Variante (ID, ID_Projekt, ID_ProjektRef, Variantenname) VALUES (?, ?, ?, ?)", conn, trans))
+                        {
+                            c.Parameters.AddWithValue("@id", neuVid);
+                            c.Parameters.AddWithValue("@p", pId);
+                            c.Parameters.AddWithValue("@r", sId);
+                            c.Parameters.AddWithValue("@n", (object)(link.variantenname ?? "") ?? DBNull.Value);
+                            c.ExecuteNonQuery();
+                        }
+                        berichte.Add("Als Variante \u201E" + (string.IsNullOrEmpty(link.variantenname) ? link.projekt : link.variantenname) + "\u201C verknüpft.");
+                    }
+                    catch (Exception exLink)
+                    { berichte.Add("Hinweis: Verknüpfung \u201E" + link.projekt + "\u201C fehlgeschlagen: " + exLink.Message); }
                 }
 
                 trans.Commit();
@@ -399,11 +493,10 @@ namespace WindowsFormsApplication1
                 // Beim Einfügen expliziter (versetzter) IDs führt ACE den Zähler NICHT nach – die
                 // Anwendung bekäme sonst beim nächsten regulären Insert eine bereits vergebene ID
                 // (Fehler 3022 "doppelter Schlüssel"). Läuft nach dem Commit, ohne den Import zu gefährden.
-                try { ReseedAutoWerte(man); } catch { }
-
-                string projPk = man.tables.First(x => x.name.Equals("Tab_Projekt", StringComparison.OrdinalIgnoreCase)).pk;
-                long altProjId = tableRows["Tab_Projekt"][0][projPk].GetInt64();
-                int neueProjektId = offset.ContainsKey("Tab_Projekt") ? (int)(altProjId + offset["Tab_Projekt"]) : -1;
+                var alleTabellen = new List<TabMeta>(man.tables);
+                for (int vi = 0; vi < (man.variants?.Count ?? 0); vi++)
+                    alleTabellen.AddRange(man.variants[vi].tables);
+                try { ReseedAutoWerte(alleTabellen); } catch { }
 
                 // B3 (Konzept Projekttransfer T2): Die komponentenabhängigen Kostenanker
                 // (Tab_ProjektWerte.ID_AnlageGeraet -> Tab_WP/Tab_Heizkessel/... je
@@ -412,10 +505,11 @@ namespace WindowsFormsApplication1
                 // heilung löste die Zuordnungen beim ersten UI-Aufbau ehrlich auf
                 // („ohne Anlagenzuordnung", das Ä24-Befundbild). Aus den bereits
                 // umgeschlüsselten, gültigen Anlagenzuordnungen neu ableiten —
-                // derselbe Baustein wie im Duplizierer seit Ä24.
-                if (neueProjektId > 0)
-                    try { KostenProjektPositionenCtrl.AnkerNachziehen(neueProjektId); } catch { }
+                // derselbe Baustein wie im Duplizierer seit Ä24. T3: je Projektbaum.
+                foreach (var kvp in nameZuId)
+                    try { KostenProjektPositionenCtrl.AnkerNachziehen(kvp.Value); } catch { }
 
+                LetzterBericht = berichte;
                 return neueProjektId;
             }
             catch (Exception ex)
@@ -426,12 +520,136 @@ namespace WindowsFormsApplication1
             finally { try { trans.Dispose(); } catch { } try { conn.Dispose(); } catch { } }
         }
 
+        // ---- T3: EIN Projektbaum (Tabellenliste + Zeilen) unter zielName einfügen ----------
+        // Liefert die neue Projekt-Id (Tab_Projekt-PK + Offset) oder -1. Wirft bei
+        // Einfügefehlern (der Aufrufer rollt die gesamte Transaktion zurück).
+        private int BaumEinfuegen(OleDbConnection conn, OleDbTransaction trans,
+            List<TabMeta> tabellen, Dictionary<string, List<Dictionary<string, JsonElement>>> rows,
+            string zielName, Dictionary<string, long> katMap,
+            IProgress<ProjektDuplizierenCtrl.Fortschritt> fortschritt, ref int schritt, int gesamt)
+        {
+            // Je Baum: die FK-Vorablogik unterscheidet „reist mit" von „Zielbestand".
+            _projektTabellen = new HashSet<string>(tabellen.Select(x => x.name), StringComparer.OrdinalIgnoreCase);
+
+            // Offsets je Projekt-Tabelle (nur vorhandene Tabellen).
+            var offset = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+            foreach (var t in tabellen)
+                if (ZielSpalten(t.name) != null && rows[t.name].Count > 0)
+                    offset[t.name] = BerechneOffset(conn, trans, t.name, t.pk, rows[t.name]);
+
+            // Einfügen in FK-Reihenfolge, Spalten-Schnittmenge, alles umschlüsseln.
+            foreach (var t in tabellen)
+            {
+                fortschritt?.Report(new ProjektDuplizierenCtrl.Fortschritt { Aktuell = schritt++, Gesamt = gesamt, Tabelle = t.name });
+
+                Dictionary<string, Type> zielTypen = ZielTypen(t.name);
+                if (zielTypen == null) continue;                       // Tabelle in Ziel-DB nicht (mehr) vorhanden
+                if (!offset.ContainsKey(t.name)) continue;
+
+                // FK-Spalten dieser Tabelle je Spaltenname (für Verwaisten-Behandlung).
+                var fkByCol = new Dictionary<string, Fk>(StringComparer.OrdinalIgnoreCase);
+                if (_fks != null && _fks.TryGetValue(t.name, out var flist))
+                    foreach (var f in flist) fkByCol[f.Col] = f;
+
+                foreach (var row in rows[t.name])
+                {
+                    var colNames = new List<string>(); var cols = new List<string>(); var ph = new List<string>();
+                    var vals = new List<object>(); var typen = new List<Type>();
+                    int i = 0;
+                    foreach (var kv in row)
+                    {
+                        if (!zielTypen.ContainsKey(kv.Key)) continue;  // Spalte gibt es im Ziel nicht -> überspringen
+                        object val = (t.name.Equals("Tab_Projekt", StringComparison.OrdinalIgnoreCase) &&
+                                      kv.Key.Equals("Projektname", StringComparison.OrdinalIgnoreCase))
+                            ? zielName
+                            : Umschluessele(t.name, kv.Key, t.pk, kv.Value, offset, katMap);
+                        // Vorab-Behandlung verwaister/leerer FK-Werte (siehe unten auch die Selbstheilung).
+                        if (fkByCol.TryGetValue(kv.Key, out var fk) && val != null && !(val is DBNull))
+                        {
+                            string sv = Convert.ToString(val);
+                            if (string.IsNullOrWhiteSpace(sv))
+                                val = null;   // leerer Verweis = kein Verweis -> NULL
+                            else if (_projektTabellen.Contains(fk.RefTab) && !offset.ContainsKey(fk.RefTab))
+                                // B1-Randfall: Die Elterntabelle gehört zum Paket, kam aber
+                                // OHNE Zeilen mit (Export überspringt leere Tabellen) — der
+                                // Verweis kann nur auf Fremdes im Ziel zeigen. Ehrlich lösen
+                                // statt still einen fremden Datensatz zu referenzieren.
+                                val = null;
+                            else if (!_projektTabellen.Contains(fk.RefTab))
+                            {
+                                var set = LadeElternSchluessel(conn, trans, fk.RefTab, fk.RefCol);
+                                if (!set.Contains(sv))
+                                {
+                                    if (val is string && StelleTextKatalogSicher(conn, trans, fk.RefTab, fk.RefCol, sv))
+                                        set.Add(sv);   // Namen anlernen, Wert bleibt
+                                    else
+                                        val = null;
+                                }
+                            }
+                        }
+                        colNames.Add(kv.Key); cols.Add("[" + kv.Key + "]"); ph.Add("@p" + (i++));
+                        vals.Add(val); typen.Add(zielTypen[kv.Key]);
+                    }
+                    if (cols.Count == 0) continue;
+
+                    Exception err = FuehreInsertAus(t.name, cols, ph, vals, typen, conn, trans);
+                    if (err != null)
+                    {
+                        // SELBSTHEILUNG: tatsächlich verwaiste FK-Werte (in der Transaktion geprüft)
+                        // nullen und den INSERT genau einmal wiederholen. Unabhängig von der Vorab-Logik.
+                        int genullt = NulleVerwaisteFks(t.name, colNames, vals, conn, trans);
+                        if (genullt > 0) err = FuehreInsertAus(t.name, cols, ph, vals, typen, conn, trans);
+                        if (err != null)
+                            throw new Exception("\r\n" + VolleDiagnoseWerte(t.name, colNames, vals, typen, conn, trans) + ":: " + err.Message, err);
+                    }
+                }
+            }
+
+            string projPk = tabellen.First(x => x.name.Equals("Tab_Projekt", StringComparison.OrdinalIgnoreCase)).pk;
+            long altProjId = rows["Tab_Projekt"][0][projPk].GetInt64();
+            return offset.ContainsKey("Tab_Projekt") ? (int)(altProjId + offset["Tab_Projekt"]) : -1;
+        }
+
+        // T6: Die anlagenfähigen Kostenkomponenten als SQL-Literalliste (dieselben
+        // sieben wie Ä7/ZuordnungReparieren — KostenVorlagenCtrl ist die Wahrheit).
+        private static string AnlagenKomponentenListe()
+        {
+            var teile = new List<string>();
+            foreach (string k in KostenVorlagenCtrl.WaehlbareKomponenten)
+                teile.Add("'" + k.Replace("'", "''") + "'");
+            return string.Join(",", teile);
+        }
+
+        // T6: Der Lose-Filter braucht die Ä20/Ä21-Spalten — auf einer Alt-Datenbank
+        // ohne sie bliebe der SELECT sonst im Fehler hängen.
+        private static bool SpaltenSicher()
+        {
+            try { return KostenPositionCtrl.StelleSpaltenSicher(); } catch { return false; }
+        }
+
+        // T3: Projekt-Id INNERHALB der Import-Transaktion nachschlagen (der frisch
+        // eingefügte Stamm ist für DataRepository-Verbindungen noch unsichtbar).
+        private int ProjektIdInTrans(OleDbConnection conn, OleDbTransaction trans, string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return 0;
+            try
+            {
+                using (var c = new OleDbCommand("SELECT ID FROM Tab_Projekt WHERE Projektname = ?", conn, trans))
+                {
+                    c.Parameters.AddWithValue("@n", name);
+                    object o = c.ExecuteScalar();
+                    return (o == null || o == DBNull.Value) ? 0 : Convert.ToInt32(o);
+                }
+            }
+            catch { return 0; }
+        }
+
         // ---- AutoWert-Zähler nachziehen ----------------------------------------------------
         // Setzt für die kopierten Projekt-Tabellen den AutoWert-Zähler auf MAX(pk)+1.
         // Nur ECHTE AutoWert-Spalten werden angefasst (über ADOX erkannt) – sonst würde
         // ALTER ... COUNTER eine manuelle Long-Spalte fälschlich in einen AutoWert umwandeln.
         // Ohne ADOX (leere Erkennung) wird bewusst NICHTS geändert.
-        private void ReseedAutoWerte(Manifest man)
+        private void ReseedAutoWerte(List<TabMeta> tabellen)
         {
             HashSet<string> autoSpalten = LiesAutoWertSpalten();
             if (autoSpalten.Count == 0) return;   // keine sichere Erkennung -> nichts anfassen
@@ -440,7 +658,7 @@ namespace WindowsFormsApplication1
             using (var conn = new OleDbConnection(DataRepository.GetConnectionString()))
             {
                 try { conn.Open(); } catch { return; }
-                foreach (var t in man.tables)
+                foreach (var t in tabellen)
                 {
                     if (string.IsNullOrEmpty(t.pk)) continue;
                     if (!autoSpalten.Contains(t.name + "||" + t.pk)) continue;   // nur echte AutoWerte
@@ -519,6 +737,19 @@ namespace WindowsFormsApplication1
             string ziel = _dup.ErmittleZieltabelle(tab, col, pk);
             if (ziel != null && offset.ContainsKey(ziel))
             { long v = Convert.ToInt64(raw); return v > 0 ? v + offset[ziel] : (object)v; }
+
+            // B1-Gürtel zur Hosenträger-Beziehungsabfrage: Kommt das Schema-Rowset
+            // leer zurück (bekannte Lotterie) und kennt auch die FK_MAP die Spalte
+            // nicht, greift die Namenskonvention GEGEN DIE PAKET-TABELLEN:
+            // ID_<X> -> Tab_<X> wird nur versetzt, wenn Tab_<X> im Paket mitreist
+            // (offset vorhanden) — dieselbe Konvention, auf der die FK_MAP beruht,
+            // hier aber auf den transportierten Tabellensatz begrenzt.
+            if (ziel == null && col.StartsWith("ID_", StringComparison.OrdinalIgnoreCase))
+            {
+                string kandidat = "Tab_" + col.Substring(3);
+                if (offset.ContainsKey(kandidat))
+                { long v = Convert.ToInt64(raw); return v > 0 ? v + offset[kandidat] : (object)v; }
+            }
             return raw;
         }
 
@@ -982,6 +1213,8 @@ namespace WindowsFormsApplication1
             public List<TabMeta> tables { get; set; }
             public List<KatMeta> catalogs { get; set; }
             public List<KatMeta> fill { get; set; }   // per Original-ID aufzufüllende Katalogzeilen
+            public List<VarMeta> variants { get; set; }        // T3: Varianten-Bäume (projects/<i>/data/)
+            public List<LinkMeta> variantLinks { get; set; }   // T3: Stamm-Verknüpfungen (statt Tab_Variante-Zeilen)
         }
         private class Fk { public string Col; public string RefTab; public string RefCol; }
 
@@ -1008,6 +1241,8 @@ namespace WindowsFormsApplication1
         }
 
         private class TabMeta { public string name { get; set; } public string pk { get; set; } }
+        private class VarMeta { public string name { get; set; } public List<TabMeta> tables { get; set; } }
+        private class LinkMeta { public string projekt { get; set; } public string stamm { get; set; } public string variantenname { get; set; } }
         private class KatMeta { public string name { get; set; } public string pk { get; set; } public string[] naturalKey { get; set; } }
     }
 }
