@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 56;
+        public const int ZIEL_VERSION = 57;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1928,6 +1928,61 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_56_CO2_SAAT = 56;
 
+        /// <summary>
+        /// Schritt 57 - <b>Etappe E2</b> (<c>Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md</c>
+        /// Rev. 1.2, § 3 und § 6): EMISSIONSARTEN UND EMISSIONSWERTE.
+        ///
+        /// <para><b>Was entsteht.</b> Zwei Tabellen, zwei Spalten, vier Saaten:
+        /// <see cref="SchemaKatalog.TAB_EMISSIONSART"/> macht aus dem festen
+        /// Spaltensatz <c>co2/so2/nox</c> einen erweiterbaren Katalog (Konzept F1),
+        /// <see cref="SchemaKatalog.TAB_EMISSIONSWERT"/> hält Katalogvorlagen und
+        /// Trägerwerte in EINER Tabelle — der Unterschied ist allein, ob
+        /// <c>carrier_id</c> gefüllt ist.</para>
+        ///
+        /// <para><b>Sechs Teile.</b>
+        ///   <b>57a</b> Tabelle <c>emissionsart</c> samt eindeutigem Index auf das
+        ///   Kürzel. HART: ohne sie hat kein Wert eine Art.
+        ///   <b>57b</b> Tabelle <c>emissionswert</c> samt zwei Suchwegen und der
+        ///   restriktiven Beziehung auf die Art. HART.
+        ///   <b>57c</b> die sieben ausgelieferten Arten (CO₂ · SO₂ · NOx · CH₄ fossil ·
+        ///   CH₄ biogen · N₂O · Staub).
+        ///   <b>57d</b> die VORLAGEN: die BAFA-Saat aus Schritt 56 je Träger, die
+        ///   jüngste GESICHERTE Jahreszeile je Schlüssel aus <c>EF_BILANZ</c>/
+        ///   <c>EF_NACHWEIS</c> über die Mapping-Liste, und die Luftschadstoffwerte aus
+        ///   <c>Tab_Brennstoff_Stamm</c>.
+        ///   <b>57e</b> die AKTIVEN Trägerwerte aus den heutigen Spalten
+        ///   <c>energy_carrier.co2/so2/nox</c>, jeder mit seiner erkannten Herkunft.
+        ///   <b>57f</b> die beiden Modus-Spalten (Konzept F7) und ihre Vorbelegung
+        ///   <c>CO2</c>.</para>
+        ///
+        /// <para><b>Es ändert sich KEIN Ergebnis</b> (Konzept F9) — die Aussage, die
+        /// diese Etappe trägt. Die Altspalten bleiben unverändert stehen und bleiben die
+        /// gelesene Wahrheit; die neuen Tabellen hat in dieser Fassung <b>kein einziger
+        /// Leser</b> (nachprüfbar: nichts im Code nennt <c>emissionsart</c> oder
+        /// <c>emissionswert</c> außer diesem Schritt). Der Modus ist bis Etappe E5 ein
+        /// reines Speicherfeld, und sein Wert <c>CO2</c> ist ohnehin das heutige
+        /// Verhalten.</para>
+        ///
+        /// <para><b>Keine Beziehung auf <c>energy_carrier</c></b> — bewusst. Eine
+        /// restriktive Beziehung machte das Löschen eines Katalogträgers unmöglich,
+        /// eine kaskadierende risse dem Anwender seine gepflegten Werte unbemerkt weg.
+        /// Die Zuordnung bleibt deshalb lose; verwaiste Wertzeilen räumt die
+        /// Trägerpflege ab Etappe E3 ausdrücklich weg — dieselbe Abwägung wie bei
+        /// <c>Tab_ProjektWerte.ID_AnlageGeraet</c>.</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker) — und zwar JE ZEILE, nicht
+        /// über eine Zeilenprobe wie Schritt 50: Eine Art wird an ihrem Kürzel erkannt,
+        /// eine Vorlage an (Art, Träger, Quelle, Quellentext, Wert), ein aktiver Wert
+        /// daran, dass es für (Art, Träger) überhaupt schon einen gibt. Damit
+        /// verdoppelt auch ein Lauf nichts, der beim ersten Mal mittendrin gescheitert
+        /// ist — der Marker steht dann noch auf 56, und der Wiederholungslauf ergänzt
+        /// genau das Fehlende. Der Zweitlauf meldet durchgehend 0 neue Zeilen.</para>
+        ///
+        /// <para><b>Access-Feldgrenze (255 Spalten je Tabelle) geprüft:</b>
+        /// <c>Tab_Applikation</c> wächst von 8 auf 9 Spalten, <c>Tab_Projekt</c> von 8
+        /// auf 9. Die beiden neuen Tabellen tragen 10 bzw. 11 Spalten.</para>
+        /// </summary>
+        public const int SCHRITT_57_EMISSIONSARTEN = 57;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -2986,6 +3041,20 @@ namespace WindowsFormsApplication1
                         "ein Projekt mit einem dieser Traeger rechnet sonst weiter mit 0 g/kWh.",
                         Schritt_56_Co2Saat),
 
+            // E2 (Konzept Emissionsarten Rev. 1.2, Paragraf 3): der Artenkatalog
+            //       und die Emissionswerte. Sechs Teile in EINER Version - Bauform
+            //       wie die Schritte 4 und 11. WIRKUNGSNEUTRAL: kein Leser, keine
+            //       geaenderte Altspalte. Begruendung, Teilgliederung und
+            //       Idempotenzzusage bei der Schrittkonstanten.
+            new Schritt(SCHRITT_57_EMISSIONSARTEN,
+                        "Emissionsarten-Katalog: Tabellen emissionsart/emissionswert anlegen, " +
+                        "sieben Arten, Vorlagen aus BAFA-Saat, Gesetzesparametern und " +
+                        "Brennstoff-Stamm sowie die aktiven Traegerwerte saeen; " +
+                        "Berechnungsmodus in Tab_Applikation und Tab_Projekt (Etappe E2)",
+                        "Der Emissionsarten-Katalog konnte nicht angelegt werden - ohne ihn " +
+                        "bleiben CO2, SO2 und NOx feste Spalten und der Emissions-Tab (E3) " +
+                        "haette keine Datengrundlage.",
+                        Schritt_57_Emissionsarten),
         };
 
         // =================================================================================
@@ -7265,6 +7334,912 @@ namespace WindowsFormsApplication1
             return true;
         }
 
+        // =================================================================================
+        // Schritt 57 - Emissionsarten und Emissionswerte (Etappe E2, Konzept § 3)
+        // =================================================================================
+
+        /// <summary>
+        /// Der Artenkatalog. <c>ID</c> ist ein AUTOINCREMENT wie bei
+        /// <c>Z_AnlageSenke</c> (Schritt 50) und <c>Tab_Quellprofil</c> (Schritt 54):
+        /// Der Katalog-Dialog (E4) legt Arten einzeln an und braucht die vergebene ID
+        /// unmittelbar danach für ihre Werte. <c>[name]</c> in Klammern — Access liest
+        /// es sonst als Schlüsselwort.
+        /// </summary>
+        public const string SQL_CREATE_EMISSIONSART =
+            "CREATE TABLE emissionsart (id AUTOINCREMENT PRIMARY KEY, " +
+            "kuerzel TEXT(30), [name] TEXT(100), einheit TEXT(20), " +
+            "co2_aequivalent DOUBLE, aequivalent_quelle TEXT(120), " +
+            "ist_pflicht YESNO, ausgewaehlt YESNO, ist_auslieferung YESNO, " +
+            "sortierung LONG)";
+
+        /// <summary>Das Kürzel ist der fachliche Schlüssel der Art — zweimal <c>CO2</c>
+        /// wäre eine zweite Wahrheit über dieselbe Größe.</summary>
+        public const string SQL_INDEX_EMISSIONSART =
+            "CREATE UNIQUE INDEX idx_emissionsart_kuerzel ON emissionsart (kuerzel)";
+
+        /// <summary>
+        /// Katalogvorlagen UND Trägerwerte. <c>carrier_id</c> NULL heißt
+        /// „trägerunabhängige Vorlage"; deshalb steht dort <b>kein</b> NOT NULL und
+        /// kein DEFAULT — eine 0 wäre eine erfundene Trägerkennung.
+        /// </summary>
+        public const string SQL_CREATE_EMISSIONSWERT =
+            "CREATE TABLE emissionswert (id AUTOINCREMENT PRIMARY KEY, " +
+            "emissionsart_id LONG NOT NULL, carrier_id LONG, quelle TEXT(30), " +
+            "quelle_text TEXT(255), wert DOUBLE, ist_co2e YESNO, ist_aktiv YESNO, " +
+            "herkunft_id LONG, ist_auslieferung YESNO, gueltig_ab DATETIME)";
+
+        /// <summary>Suchweg des Katalog-Dialogs: die Werte EINER Art (E4).</summary>
+        public const string SQL_INDEX_EMISSIONSWERT =
+            "CREATE INDEX idx_emissionswert ON emissionswert (emissionsart_id, carrier_id)";
+
+        /// <summary>Suchweg des Emissions-Tabs: die AKTIVEN Werte EINES Trägers (E3).</summary>
+        public const string SQL_INDEX_EMISSIONSWERT_AKTIV =
+            "CREATE INDEX idx_emissionswert_aktiv ON emissionswert (carrier_id, ist_aktiv)";
+
+        /// <summary>
+        /// Verweis auf die ART — RESTRIKTIV. Er ist zugleich die Durchsetzung der
+        /// Konzeptregel aus § 4.2: Eine Art lässt sich nur löschen, wenn keine Werte
+        /// mehr an ihr hängen („abwählen statt löschen"). Eine Löschweitergabe risse
+        /// dem Anwender gepflegte Zahlen unbemerkt weg.
+        ///
+        /// <para>Eine Beziehung auf <c>energy_carrier</c> gibt es BEWUSST NICHT —
+        /// Begründung bei <see cref="SCHRITT_57_EMISSIONSARTEN"/>.</para>
+        /// </summary>
+        public const string SQL_FK_EMISSIONSWERT_ART =
+            "ALTER TABLE emissionswert ADD CONSTRAINT FK_emissionswert_art " +
+            "FOREIGN KEY (emissionsart_id) REFERENCES emissionsart (id)";
+
+        /// <summary>Eine Zeile der Auslieferung des Artenkatalogs (Konzept § 3).</summary>
+        private sealed class EmissionsartSaat
+        {
+            public readonly string Kuerzel, Name, Einheit, AequivalentQuelle;
+            public readonly double Aequivalent;
+            public readonly bool Pflicht, Ausgewaehlt;
+            public readonly int Sortierung;
+
+            public EmissionsartSaat(string kuerzel, string name, string einheit,
+                                    double aequivalent, string aequivalentQuelle,
+                                    bool pflicht, bool ausgewaehlt, int sortierung)
+            {
+                Kuerzel = kuerzel; Name = name; Einheit = einheit;
+                Aequivalent = aequivalent; AequivalentQuelle = aequivalentQuelle;
+                Pflicht = pflicht; Ausgewaehlt = ausgewaehlt; Sortierung = sortierung;
+            }
+        }
+
+        /// <summary>
+        /// Die sieben ausgelieferten Arten (Konzept § 3 und F2/F5). Die
+        /// Äquivalenzfaktoren sind GWP₁₀₀ nach IPCC AR6; SO₂, NOx und Staub sind
+        /// KEINE Treibhausgase und tragen deshalb 0 — sie bleiben eigenständige
+        /// Kennzahlen und gehen nicht in die CO₂e-Summe ein. Der Faktor bleibt je Art
+        /// editierbar (außer bei CO₂), damit eine andere Betrachtung möglich ist —
+        /// sichtbar und mit Quellenangabe, nicht still.
+        /// </summary>
+        private static readonly EmissionsartSaat[] EMISSIONSARTEN =
+        {
+            new EmissionsartSaat(DbWerte.EMISSIONSART_CO2, "Kohlendioxid",
+                                 DbWerte.EMISSION_EINHEIT_G_KWH, 1.0, "", true, true, 10),
+            new EmissionsartSaat(DbWerte.EMISSIONSART_SO2, "Schwefeldioxid",
+                                 DbWerte.EMISSION_EINHEIT_MG_KWH, 0.0, "", false, true, 20),
+            new EmissionsartSaat(DbWerte.EMISSIONSART_NOX, "Stickoxide",
+                                 DbWerte.EMISSION_EINHEIT_MG_KWH, 0.0, "", false, true, 30),
+            new EmissionsartSaat(DbWerte.EMISSIONSART_CH4_FOSSIL, "Methan (fossil)",
+                                 DbWerte.EMISSION_EINHEIT_MG_KWH, 29.8, "IPCC AR6, GWP100", false, false, 40),
+            new EmissionsartSaat(DbWerte.EMISSIONSART_CH4_BIOGEN, "Methan (biogen)",
+                                 DbWerte.EMISSION_EINHEIT_MG_KWH, 27.0, "IPCC AR6, GWP100", false, false, 50),
+            new EmissionsartSaat(DbWerte.EMISSIONSART_N2O, "Lachgas (Distickstoffmonoxid)",
+                                 DbWerte.EMISSION_EINHEIT_MG_KWH, 273.0, "IPCC AR6, GWP100", false, false, 60),
+            new EmissionsartSaat(DbWerte.EMISSIONSART_STAUB, "Staub (Gesamtstaub)",
+                                 DbWerte.EMISSION_EINHEIT_MG_KWH, 0.0, "", false, false, 70),
+        };
+
+        // --- Die Traegergruppen der Mapping-Liste ------------------------------------
+        // Sie stehen VOR GESETZ_MAPPING: statische Feldinitialisierer laufen in
+        // Textreihenfolge, und die Mapping-Liste greift auf sie zu.
+
+        private static readonly string[] TRAEGER_ERDGAS =
+            { "Erdgas E", "Erdgas LL", "Stadtgas" };
+
+        private static readonly string[] TRAEGER_HEIZOEL_LEICHT =
+            { "Heizöl EL", "Heizöl L", "Heizöl L Variante", "Heizöl L var" };
+
+        private static readonly string[] TRAEGER_HEIZOEL_ALLE =
+            { "Heizöl EL", "Heizöl L", "Heizöl L Variante", "Heizöl L var", "Heizöl S" };
+
+        private static readonly string[] TRAEGER_HEIZOEL_SCHWER = { "Heizöl S" };
+
+        private static readonly string[] TRAEGER_FLUESSIGGAS = { "Flüssiggas" };
+
+        private static readonly string[] TRAEGER_STROM =
+            { "Elektrische Energie", "Elektrische Energie 2", "Strom Variante" };
+
+        private static readonly string[] TRAEGER_BIOGAS =
+            { "Biogas", "Biogas 2", "Biogas Variante" };
+
+        private static readonly string[] TRAEGER_HOLZ =
+            { "Scheitholz", "Holzpellets", "Holzhackschnitzel" };
+
+        private static readonly string[] TRAEGER_HOLZ_STUECKIG =
+            { "Scheitholz", "Holzhackschnitzel" };
+
+        private static readonly string[] TRAEGER_PELLETS = { "Holzpellets" };
+        private static readonly string[] TRAEGER_FERNWAERME = { "Fernwärme" };
+        private static readonly string[] TRAEGER_TIERFETT = { "Tierische Fette" };
+        private static readonly string[] TRAEGER_STEINKOHLE = { "Steinkohle" };
+        private static readonly string[] TRAEGER_BRAUNKOHLE = { "Braunkohlebrikett" };
+
+        /// <summary>Ein Eintrag der MAPPING-LISTE: gesetzlicher Schlüssel → Träger.</summary>
+        private sealed class GesetzMapping
+        {
+            public readonly string Schluessel, Quelle, Betreff;
+            public readonly bool IstCo2e;
+            /// <summary>null = trägerunabhängige Vorlage (<c>carrier_id</c> bleibt NULL).</summary>
+            public readonly string[] Traeger;
+
+            public GesetzMapping(string schluessel, string quelle, bool istCo2e,
+                                 string[] traeger, string betreff)
+            {
+                Schluessel = schluessel; Quelle = quelle; IstCo2e = istCo2e;
+                Traeger = traeger; Betreff = betreff ?? "";
+            }
+        }
+
+        /// <summary>
+        /// Die MAPPING-LISTE (Konzept § 3 und offener Punkt 5): welcher gesetzliche
+        /// Schlüssel welchen Katalogträger als Vorlage beliefert. Gesät wird je
+        /// Schlüssel die <b>jüngste Jahreszeile mit Status GESICHERT</b> — VORLAEUFIGE
+        /// und PROGNOSE-Zeilen bleiben außen vor, sie gehören in die Pflegemaske, nicht
+        /// in eine Auslieferungsvorlage.
+        ///
+        /// <para><b>Das Flag <c>ist_co2e</c> ist die fachliche Kernaussage</b>
+        /// (Konzept F3): BAFA-Werte sind bereits CO₂-Äquivalente inklusive Vorketten,
+        /// EBeV-Werte sind reines CO₂ aus dem Brennstoffemissionshandel, und der
+        /// UBA-Strommix liegt in beiden Lesarten vor. Wer das vermischt, zählt CH₄ und
+        /// N₂O doppelt oder gar nicht.</para>
+        ///
+        /// <para><b>Bewusst NICHT gesät</b> — jede Auslassung mit ihrem Grund:
+        /// <list type="bullet">
+        ///   <item><description><c>EF_BILANZ_EBEV_UMRECHNUNG_HO</c> (3,2508 GJ/MWh) —
+        ///     eine Umrechnungsgröße zwischen Brenn- und Heizwert, kein
+        ///     Emissionsfaktor.</description></item>
+        ///   <item><description><c>EF_BILANZ_SUBSTITUTION_STROM</c> und
+        ///     <c>EF_BILANZ_BIOGEN_VERBRENNUNG</c> — Rechenregeln für eine methodische
+        ///     Wahl, keine Trägerfaktoren; beide zudem VORLAEUFIG.</description></item>
+        ///   <item><description>die sechs <c>EF_NACHWEIS_FW_*</c>-Schlüssel und die
+        ///     beiden Vorketten-Aufschläge — Regeln zur BILDUNG eines
+        ///     Fernwärmefaktors aus dem Erzeugungsmix, nicht der Faktor selbst.</description></item>
+        ///   <item><description><c>EF_NACHWEIS_VERDRAENGUNGSSTROMMIX</c> — eine
+        ///     Gutschriftregel für KWK-Strom, die zum 01.01.2027 ohnehin ersatzlos
+        ///     entfällt (L12).</description></item>
+        ///   <item><description>die Klassen <c>PEF_NACHWEIS</c>, <c>KWKG</c>,
+        ///     <c>ENERGIESTEUER</c> und alle übrigen — keine Emissionsfaktoren.</description></item>
+        /// </list></para>
+        ///
+        /// <para><b>Zuordnungen, die eine Entscheidung sind</b> und deshalb hier
+        /// benannt gehören: <c>EBEV_PFLANZENOEL</c> und <c>EF_NACHWEIS_BIOOEL</c> gehen
+        /// an „Tierische Fette" (die EBeV-Zeile nennt Tierfette ausdrücklich);
+        /// <c>EBEV_ERDGAS_HO</c> bleibt trägerunabhängig, weil er BRENNWERTbezogen ist
+        /// und damit nicht mit den heizwertbezogenen Trägerwerten in eine Spalte
+        /// gehört; <c>BAFA_BIODIESEL</c> bleibt trägerunabhängig, weil sein Wert (70)
+        /// bei „Tierische Fette" schon als abgeleitete BAFA-Saat steht;
+        /// <c>EF_NACHWEIS_STEINKOHLE</c> geht NICHT an Koks — dessen 335 sind bereits
+        /// eine Steinkohle-Analogie, eine zweite darüber wäre eine Analogie zur
+        /// Analogie. „Heizöl Bio 10/15" bekommen KEINE Nachweisvorlage: Die GEG-Linie
+        /// kennt Heizöl und Bioöl getrennt, eine Mischungsregel gibt sie nicht her.</para>
+        /// </summary>
+        private static readonly GesetzMapping[] GESETZ_MAPPING =
+        {
+            // --- EF_BILANZ, EBeV 2030 (reines CO2, KEIN Aequivalent) ------------------
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_EBEV_ERDGAS_HI,
+                              DbWerte.EMISSIONSWERT_QUELLE_EBEV_2030, false, TRAEGER_ERDGAS, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_EBEV_ERDGAS_HO,
+                              DbWerte.EMISSIONSWERT_QUELLE_EBEV_2030, false, null, "Erdgas brennwertbezogen"),
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_EBEV_HEIZOEL_EL,
+                              DbWerte.EMISSIONSWERT_QUELLE_EBEV_2030, false, TRAEGER_HEIZOEL_LEICHT, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_EBEV_HEIZOEL_S,
+                              DbWerte.EMISSIONSWERT_QUELLE_EBEV_2030, false, TRAEGER_HEIZOEL_SCHWER, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_EBEV_FLUESSIGGAS,
+                              DbWerte.EMISSIONSWERT_QUELLE_EBEV_2030, false, TRAEGER_FLUESSIGGAS, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_EBEV_PFLANZENOEL,
+                              DbWerte.EMISSIONSWERT_QUELLE_EBEV_2030, false, TRAEGER_TIERFETT, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_EBEV_BIODIESEL,
+                              DbWerte.EMISSIONSWERT_QUELLE_EBEV_2030, false, null, "Biodiesel"),
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_EBEV_BIOMASSE,
+                              DbWerte.EMISSIONSWERT_QUELLE_EBEV_2030, false, TRAEGER_HOLZ, ""),
+
+            // --- EF_BILANZ, BAFA EEW (bereits CO2-AEQUIVALENT, F3) --------------------
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_BAFA_BIOGAS,
+                              DbWerte.EMISSIONSWERT_QUELLE_BAFA_EEW, true, TRAEGER_BIOGAS, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_BAFA_PELLETS,
+                              DbWerte.EMISSIONSWERT_QUELLE_BAFA_EEW, true, TRAEGER_PELLETS, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_BAFA_HOLZ_TROCKEN,
+                              DbWerte.EMISSIONSWERT_QUELLE_BAFA_EEW, true, TRAEGER_HOLZ_STUECKIG, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_BAFA_FERNWAERME,
+                              DbWerte.EMISSIONSWERT_QUELLE_BAFA_EEW, true, TRAEGER_FERNWAERME, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_BAFA_STROM,
+                              DbWerte.EMISSIONSWERT_QUELLE_BAFA_EEW, true, TRAEGER_STROM, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_BAFA_KLAERGAS,
+                              DbWerte.EMISSIONSWERT_QUELLE_BAFA_EEW, true, null, "Klärgas"),
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_BAFA_DEPONIEGAS,
+                              DbWerte.EMISSIONSWERT_QUELLE_BAFA_EEW, true, null, "Deponiegas"),
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_BAFA_KLAERSCHLAMM,
+                              DbWerte.EMISSIONSWERT_QUELLE_BAFA_EEW, true, null, "Klärschlamm"),
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_BAFA_BIODIESEL,
+                              DbWerte.EMISSIONSWERT_QUELLE_BAFA_EEW, true, null, "Biodiesel"),
+
+            // --- EF_BILANZ, UBA-Strommix (beide Lesarten, F3) -------------------------
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_STROMMIX_CO2_DIREKT,
+                              DbWerte.EMISSIONSWERT_QUELLE_UBA_STROMMIX, false, TRAEGER_STROM, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_STROMMIX_THG_OHNE_VK,
+                              DbWerte.EMISSIONSWERT_QUELLE_UBA_STROMMIX, true, TRAEGER_STROM, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_BILANZ_STROMMIX_THG_MIT_VK,
+                              DbWerte.EMISSIONSWERT_QUELLE_UBA_STROMMIX, true, TRAEGER_STROM, ""),
+
+            // --- EF_NACHWEIS, GEG/GModG Anlage 9 (reines CO2; L11: NIE Vorbelegung) ---
+            new GesetzMapping(DbWerte.GESETZ_EF_NACHWEIS_HEIZOEL,
+                              DbWerte.EMISSIONSWERT_QUELLE_GEG_NACHWEIS, false, TRAEGER_HEIZOEL_ALLE, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_NACHWEIS_ERDGAS,
+                              DbWerte.EMISSIONSWERT_QUELLE_GEG_NACHWEIS, false, TRAEGER_ERDGAS, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_NACHWEIS_FLUESSIGGAS,
+                              DbWerte.EMISSIONSWERT_QUELLE_GEG_NACHWEIS, false, TRAEGER_FLUESSIGGAS, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_NACHWEIS_STEINKOHLE,
+                              DbWerte.EMISSIONSWERT_QUELLE_GEG_NACHWEIS, false, TRAEGER_STEINKOHLE, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_NACHWEIS_BRAUNKOHLE,
+                              DbWerte.EMISSIONSWERT_QUELLE_GEG_NACHWEIS, false, TRAEGER_BRAUNKOHLE, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_NACHWEIS_HOLZ,
+                              DbWerte.EMISSIONSWERT_QUELLE_GEG_NACHWEIS, false, TRAEGER_HOLZ, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_NACHWEIS_STROM_NETZ,
+                              DbWerte.EMISSIONSWERT_QUELLE_GEG_NACHWEIS, false, TRAEGER_STROM, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_NACHWEIS_BIOGAS,
+                              DbWerte.EMISSIONSWERT_QUELLE_GEG_NACHWEIS, false, TRAEGER_BIOGAS, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_NACHWEIS_BIOOEL,
+                              DbWerte.EMISSIONSWERT_QUELLE_GEG_NACHWEIS, false, TRAEGER_TIERFETT, ""),
+            new GesetzMapping(DbWerte.GESETZ_EF_NACHWEIS_BIOGAS_GEBAEUDENAH,
+                              DbWerte.EMISSIONSWERT_QUELLE_GEG_NACHWEIS, false, null, "Biogas gebäudenah"),
+            new GesetzMapping(DbWerte.GESETZ_EF_NACHWEIS_BIOMETHAN,
+                              DbWerte.EMISSIONSWERT_QUELLE_GEG_NACHWEIS, false, null, "Biomethan"),
+            new GesetzMapping(DbWerte.GESETZ_EF_NACHWEIS_BIOGENES_FLUESSIGGAS,
+                              DbWerte.EMISSIONSWERT_QUELLE_GEG_NACHWEIS, false, null, "biogenes Flüssiggas"),
+            new GesetzMapping(DbWerte.GESETZ_EF_NACHWEIS_ABWAERME,
+                              DbWerte.EMISSIONSWERT_QUELLE_GEG_NACHWEIS, false, null, "Abwärme"),
+        };
+
+        /// <summary>Eine zu säende Zeile in <c>emissionswert</c>.</summary>
+        private sealed class Wertzeile
+        {
+            public int ArtId;
+            public int? CarrierId;
+            public string Quelle = "";
+            public string QuelleText = "";
+            public double Wert;
+            public bool IstCo2e;
+            public bool IstAktiv;
+            public int? HerkunftId;
+            public bool IstAuslieferung;
+            public DateTime? GueltigAb;
+        }
+
+        /// <summary>
+        /// Etappe E2 (Konzept § 3 und § 6): Artenkatalog, Emissionswerte und
+        /// Berechnungsmodus. Anlass, Teilgliederung 57a bis 57f und Idempotenzzusage:
+        /// <see cref="SCHRITT_57_EMISSIONSARTEN"/>.
+        /// </summary>
+        private static bool Schritt_57_Emissionsarten(Lauf l)
+        {
+            // --- 57a) Artenkatalog ----------------------------------------------------
+            // HART: Ohne die Tabelle hat kein Wert eine Art.
+            if (!Ddl(l, SQL_CREATE_EMISSIONSART, "Tabelle " + SchemaKatalog.TAB_EMISSIONSART))
+                return false;
+
+            if (!Ddl(l, SQL_INDEX_EMISSIONSART, "Index idx_emissionsart_kuerzel"))
+                l.Notiz("Index idx_emissionsart_kuerzel fehlt - doppelte Kuerzel waeren " +
+                        "moeglich; die Saat prueft das Kuerzel ohnehin selbst.");
+
+            // Nachweis statt Annahme: Erst diese Leseprobe belegt, dass die Tabelle da
+            // UND lesbar ist - Ddl schluckt ein „existiert bereits".
+            if (Scalar(l, "SELECT COUNT(*) FROM " + SchemaKatalog.TAB_EMISSIONSART) == null)
+            {
+                l.Zeile("Emissionsarten (Schritt 57): " + SchemaKatalog.TAB_EMISSIONSART +
+                        " ist nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            // --- 57b) Wertetabelle ----------------------------------------------------
+            if (!Ddl(l, SQL_CREATE_EMISSIONSWERT, "Tabelle " + SchemaKatalog.TAB_EMISSIONSWERT))
+                return false;
+
+            if (!Ddl(l, SQL_INDEX_EMISSIONSWERT, "Index idx_emissionswert"))
+                l.Notiz("Index idx_emissionswert fehlt - nur ein Tempoverlust im Katalog-Dialog.");
+
+            if (!Ddl(l, SQL_INDEX_EMISSIONSWERT_AKTIV, "Index idx_emissionswert_aktiv"))
+                l.Notiz("Index idx_emissionswert_aktiv fehlt - nur ein Tempoverlust im Emissions-Tab.");
+
+            // WEICH wie in den Schritten 14, 50 und 54: Fehlt die Beziehung auf einer
+            // fremden Datenbank, bleibt die Ablage benutzbar.
+            if (!Ddl(l, SQL_FK_EMISSIONSWERT_ART, "Beziehung FK_emissionswert_art (restriktiv)"))
+                l.Notiz("Beziehung FK_emissionswert_art fehlt - eine geloeschte Art koennte " +
+                        "Wertzeilen verwaisen lassen; der Katalog-Dialog (E4) prueft das " +
+                        "trotzdem ausdruecklich vor dem Loeschen.");
+
+            if (Scalar(l, "SELECT COUNT(*) FROM " + SchemaKatalog.TAB_EMISSIONSWERT) == null)
+            {
+                l.Zeile("Emissionsarten (Schritt 57): " + SchemaKatalog.TAB_EMISSIONSWERT +
+                        " ist nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            // --- 57c) die sieben ausgelieferten Arten ---------------------------------
+            int artenNeu = 0, artenDa = 0;
+            foreach (EmissionsartSaat a in EMISSIONSARTEN)
+            {
+                object vorhanden = Scalar(l,
+                    "SELECT COUNT(*) FROM " + SchemaKatalog.TAB_EMISSIONSART + " WHERE kuerzel = ?",
+                    new OleDbParameter("@k", a.Kuerzel));
+                if (vorhanden != null && Convert.ToInt32(vorhanden) > 0) { artenDa++; continue; }
+
+                if (NonQuery(l,
+                        "INSERT INTO " + SchemaKatalog.TAB_EMISSIONSART +
+                        " (kuerzel, [name], einheit, co2_aequivalent, aequivalent_quelle, " +
+                        "  ist_pflicht, ausgewaehlt, ist_auslieferung, sortierung) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        EwText(a.Kuerzel, 30), EwText(a.Name, 100), EwText(a.Einheit, 20),
+                        EwKomma(a.Aequivalent), EwText(a.AequivalentQuelle, 120),
+                        EwJaNein(a.Pflicht), EwJaNein(a.Ausgewaehlt), EwJaNein(true),
+                        EwGanz(a.Sortierung)) < 0)
+                    return false;
+                artenNeu++;
+            }
+
+            Dictionary<string, int> arten = ArtenLesen(l);
+            if (arten == null || !arten.ContainsKey(DbWerte.EMISSIONSART_CO2))
+            {
+                l.Zeile("Emissionsarten (Schritt 57): der Artenkatalog ist nach der Saat " +
+                        "nicht lesbar oder ohne die Pflichtart CO2.");
+                return false;
+            }
+
+            // --- Bestandsaufnahme fuer die Idempotenz JE ZEILE ------------------------
+            DataTable traeger = Abfrage(l,
+                "SELECT id, [name], ID_Brennstoff, co2, so2, nox FROM energy_carrier ORDER BY id");
+            if (traeger == null) return false;
+
+            Dictionary<int, DataRow> stamm = StammLesen(l);
+
+            var zeilen = new List<Wertzeile>();
+
+            // --- 57d-a) die BAFA-Saat aus Schritt 56 je Traeger ----------------------
+            int vorlagenBafa = VorlagenBafa(arten, traeger, zeilen);
+
+            // --- 57d-b) die gesetzlichen Parameter ueber die Mapping-Liste -----------
+            int vorlagenGesetz = VorlagenGesetz(l, arten, traeger, zeilen);
+
+            // --- 57d-c) die Luftschadstoffe aus dem Brennstoff-Stamm -----------------
+            int vorlagenStamm = VorlagenStamm(arten, traeger, stamm, zeilen);
+
+            int vorlagenNeu = ZeilenSchreiben(l, zeilen, null);
+            if (vorlagenNeu < 0) return false;
+
+            // --- 57e) die AKTIVEN Traegerwerte aus den heutigen Spalten --------------
+            // Erst JETZT lesen: Die Herkunft eines aktiven Wertes zeigt auf die eben
+            // gesaete Vorlage, und deren ID vergibt die Datenbank (AUTOINCREMENT).
+            HashSet<string> aktiveVorhanden;
+            Dictionary<string, int> vorlagenIds = WerteLesen(l, out aktiveVorhanden);
+            if (vorlagenIds == null) return false;
+
+            var aktive = new List<Wertzeile>();
+            AktiveSammeln(arten, traeger, stamm, vorlagenIds, aktive);
+
+            int aktiveNeu = ZeilenSchreiben(l, aktive, aktiveVorhanden);
+            if (aktiveNeu < 0) return false;
+
+            // --- 57f) Berechnungsmodus (F7) ------------------------------------------
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt57_Emissionsmodus)) return false;
+
+            int modusApp = NonQuery(l,
+                "UPDATE [" + SchemaKatalog.TAB_APPLIKATION + "] SET [" +
+                SchemaKatalog.SPALTE_EMISSION_BERECHNUNGSMODUS + "] = '" + DbWerte.EMISSION_MODUS_CO2 +
+                "' WHERE [" + SchemaKatalog.SPALTE_EMISSION_BERECHNUNGSMODUS + "] IS NULL " +
+                "   OR Trim([" + SchemaKatalog.SPALTE_EMISSION_BERECHNUNGSMODUS + "]) = ''");
+            if (modusApp < 0) return false;
+
+            int modusProjekte = NonQuery(l,
+                "UPDATE [" + SchemaKatalog.TAB_PROJEKT + "] SET [" +
+                SchemaKatalog.SPALTE_EMISSION_BERECHNUNGSMODUS + "] = '" + DbWerte.EMISSION_MODUS_CO2 +
+                "' WHERE [" + SchemaKatalog.SPALTE_EMISSION_BERECHNUNGSMODUS + "] IS NULL " +
+                "   OR Trim([" + SchemaKatalog.SPALTE_EMISSION_BERECHNUNGSMODUS + "]) = ''");
+            if (modusProjekte < 0) return false;
+
+            l.Zeile("Emissionsarten (Schritt 57): " + artenNeu + " Arten gesaet, " + artenDa +
+                    " bereits vorhanden; Vorlagen " + vorlagenNeu + " neu von " + zeilen.Count +
+                    " geplanten (BAFA-Saat " + vorlagenBafa + ", Gesetzesparameter " +
+                    vorlagenGesetz + ", Brennstoff-Stamm " + vorlagenStamm + "); aktive " +
+                    "Traegerwerte " + aktiveNeu + " neu von " + aktive.Count + " geplanten; " +
+                    "Berechnungsmodus CO2 in " + modusApp + " Zeile(n) Tab_Applikation und " +
+                    modusProjekte + " Projekt(en) vorbelegt. KEIN Rechenergebnis aendert " +
+                    "sich: Die Altspalten bleiben unveraendert und fuehrend, die neuen " +
+                    "Tabellen hat in dieser Fassung kein Leser.");
+            return true;
+        }
+
+        // --- Hilfsmittel des Schritts 57 ---------------------------------------------
+
+        /// <summary>Parameter mit ausdrücklichem Typ — <c>DBNull</c> braucht ihn, weil
+        /// OleDb den Typ sonst aus dem Wert ableitet und bei NULL nichts ableiten kann.</summary>
+        private static OleDbParameter EwText(string wert, int laenge)
+        {
+            return new OleDbParameter("@t", OleDbType.VarWChar, laenge)
+            { Value = (object)wert ?? DBNull.Value };
+        }
+
+        /// <inheritdoc cref="EwText"/>
+        private static OleDbParameter EwGanz(int? wert)
+        {
+            return new OleDbParameter("@i", OleDbType.Integer)
+            { Value = wert.HasValue ? (object)wert.Value : DBNull.Value };
+        }
+
+        /// <inheritdoc cref="EwText"/>
+        private static OleDbParameter EwKomma(double wert)
+        {
+            return new OleDbParameter("@d", OleDbType.Double) { Value = wert };
+        }
+
+        /// <inheritdoc cref="EwText"/>
+        private static OleDbParameter EwJaNein(bool wert)
+        {
+            return new OleDbParameter("@b", OleDbType.Boolean) { Value = wert };
+        }
+
+        /// <inheritdoc cref="EwText"/>
+        private static OleDbParameter EwDatum(DateTime? wert)
+        {
+            return new OleDbParameter("@dt", OleDbType.Date)
+            { Value = wert.HasValue ? (object)wert.Value : DBNull.Value };
+        }
+
+        /// <summary>Kürzel → ID des Artenkatalogs; null, wenn nicht lesbar.</summary>
+        private static Dictionary<string, int> ArtenLesen(Lauf l)
+        {
+            DataTable dt = Abfrage(l, "SELECT id, kuerzel FROM " + SchemaKatalog.TAB_EMISSIONSART);
+            if (dt == null) return null;
+
+            var d = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            foreach (DataRow r in dt.Rows)
+            {
+                string k = Txt(r["kuerzel"]);
+                if (k.Length > 0 && !d.ContainsKey(k)) d.Add(k, Zahl(r["id"]));
+            }
+            return d;
+        }
+
+        /// <summary>
+        /// Brennstoff-Stamm-ID → Zeile. Fehlt die Tabelle, bleibt die Liste leer —
+        /// dann entfallen die <c>STAMM_ALT</c>-Vorlagen, und jeder Trägerwert gilt als
+        /// eigener Wert. Kein Fehler: Der Stamm ist eine Altablage, keine Voraussetzung.
+        /// </summary>
+        private static Dictionary<int, DataRow> StammLesen(Lauf l)
+        {
+            var d = new Dictionary<int, DataRow>();
+            if (TabellenSchema(l, "Tab_Brennstoff_Stamm") == null)
+            {
+                l.Notiz("Tab_Brennstoff_Stamm nicht lesbar - die STAMM_ALT-Vorlagen entfallen.");
+                return d;
+            }
+
+            DataTable dt = Abfrage(l, "SELECT ID, CO2, SO2, NOx, Staub FROM Tab_Brennstoff_Stamm");
+            if (dt == null) return d;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                int id = Zahl(r["ID"]);
+                if (id > 0 && !d.ContainsKey(id)) d.Add(id, r);
+            }
+            return d;
+        }
+
+        /// <summary>Spaltenwert als <c>double?</c> — NULL bleibt „nicht gepflegt" und
+        /// wird nicht still zur 0 (dieselbe Unterscheidung wie bei
+        /// <see cref="ZahlOderNull"/>).</summary>
+        private static double? KommaOderNull(DataRow r, string spalte)
+        {
+            if (r == null || !r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return null;
+            return Kommazahl(r[spalte]);
+        }
+
+        /// <summary>Der Schlüssel, an dem eine VORLAGE wiedererkannt wird (Idempotenz
+        /// je Zeile). Er ist der vollständige Inhalt ohne die vergebene ID: zwei
+        /// Zeilen mit gleicher Art, gleichem Träger, gleicher Quelle, gleichem
+        /// Quellentext und gleichem Wert sind dieselbe Aussage.</summary>
+        private static string WertSchluessel(int artId, int? carrierId, string quelle,
+                                             string quelleText, double wert)
+        {
+            return artId.ToString(CultureInfo.InvariantCulture) + "|" +
+                   (carrierId.HasValue ? carrierId.Value.ToString(CultureInfo.InvariantCulture) : "-") +
+                   "|" + (quelle ?? "") + "|" + (quelleText ?? "") + "|" +
+                   wert.ToString("0.#####", CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>Der Schlüssel eines AKTIVEN Wertes: je Träger und Art höchstens
+        /// einer (Konzept § 3) — der Wert selbst gehört deshalb nicht hinein.</summary>
+        private static string AktivSchluessel(int artId, int? carrierId)
+        {
+            return artId.ToString(CultureInfo.InvariantCulture) + "|" +
+                   (carrierId.HasValue ? carrierId.Value.ToString(CultureInfo.InvariantCulture) : "-");
+        }
+
+        /// <summary>
+        /// Liest den Bestand von <c>emissionswert</c>: Rückgabe sind die VORLAGEN
+        /// (Schlüssel → ID, für die Herkunft der aktiven Werte), über
+        /// <paramref name="aktive"/> die bereits belegten Paare (Art, Träger).
+        /// </summary>
+        private static Dictionary<string, int> WerteLesen(Lauf l, out HashSet<string> aktive)
+        {
+            aktive = new HashSet<string>(StringComparer.Ordinal);
+
+            DataTable dt = Abfrage(l,
+                "SELECT id, emissionsart_id, carrier_id, quelle, quelle_text, wert, ist_aktiv " +
+                "FROM " + SchemaKatalog.TAB_EMISSIONSWERT);
+            if (dt == null) return null;
+
+            var vorlagen = new Dictionary<string, int>(StringComparer.Ordinal);
+            foreach (DataRow r in dt.Rows)
+            {
+                int artId = Zahl(r["emissionsart_id"]);
+                int? carrier = ZahlOderNull(r["carrier_id"]);
+                bool istAktiv = r["ist_aktiv"] != DBNull.Value && Convert.ToBoolean(r["ist_aktiv"]);
+
+                if (istAktiv)
+                {
+                    aktive.Add(AktivSchluessel(artId, carrier));
+                    continue;
+                }
+
+                string s = WertSchluessel(artId, carrier, Txt(r["quelle"]), Txt(r["quelle_text"]),
+                                          r["wert"] == DBNull.Value ? 0.0 : Kommazahl(r["wert"]));
+                if (!vorlagen.ContainsKey(s)) vorlagen.Add(s, Zahl(r["id"]));
+            }
+            return vorlagen;
+        }
+
+        /// <summary>
+        /// Schreibt die geplanten Zeilen, überspringt jede bereits vorhandene.
+        /// <paramref name="aktivBestand"/> ist bei Vorlagen <c>null</c>; bei den aktiven
+        /// Werten hält es die schon belegten Paare (Art, Träger).
+        /// Rückgabe: Zahl der geschriebenen Zeilen, -1 bei Fehler.
+        /// </summary>
+        private static int ZeilenSchreiben(Lauf l, List<Wertzeile> zeilen, HashSet<string> aktivBestand)
+        {
+            HashSet<string> vorhanden;
+            if (aktivBestand != null)
+            {
+                vorhanden = aktivBestand;
+            }
+            else
+            {
+                HashSet<string> unbenutzt;
+                Dictionary<string, int> vorlagen = WerteLesen(l, out unbenutzt);
+                if (vorlagen == null) return -1;
+                vorhanden = new HashSet<string>(vorlagen.Keys, StringComparer.Ordinal);
+            }
+
+            int neu = 0;
+            foreach (Wertzeile w in zeilen)
+            {
+                string s = aktivBestand != null
+                    ? AktivSchluessel(w.ArtId, w.CarrierId)
+                    : WertSchluessel(w.ArtId, w.CarrierId, w.Quelle, w.QuelleText, w.Wert);
+
+                if (vorhanden.Contains(s)) continue;
+
+                if (NonQuery(l,
+                        "INSERT INTO " + SchemaKatalog.TAB_EMISSIONSWERT +
+                        " (emissionsart_id, carrier_id, quelle, quelle_text, wert, ist_co2e, " +
+                        "  ist_aktiv, herkunft_id, ist_auslieferung, gueltig_ab) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        EwGanz(w.ArtId), EwGanz(w.CarrierId), EwText(w.Quelle, 30),
+                        EwText(w.QuelleText, 255), EwKomma(w.Wert), EwJaNein(w.IstCo2e),
+                        EwJaNein(w.IstAktiv), EwGanz(w.HerkunftId), EwJaNein(w.IstAuslieferung),
+                        EwDatum(w.GueltigAb)) < 0)
+                    return -1;
+
+                vorhanden.Add(s);
+                neu++;
+            }
+            return neu;
+        }
+
+        /// <summary>Trägername → Zeile aus <c>energy_carrier</c>; mehrfach vergebene
+        /// Namen liefern die erste Zeile (der Eindeutigkeitsindex aus Schritt 31 hält
+        /// sie ohnehin auseinander).</summary>
+        private static DataRow TraegerZeile(DataTable traeger, string name)
+        {
+            foreach (DataRow r in traeger.Rows)
+                if (string.Equals(Txt(r["name"]), name, StringComparison.OrdinalIgnoreCase)) return r;
+            return null;
+        }
+
+        /// <summary>
+        /// 57d-a: Aus der Solltabelle des Schritts 56 wird je Träger eine VORLAGE.
+        /// Sie trägt <c>ist_co2e</c> — BAFA-Werte sind CO₂-Äquivalente einschließlich
+        /// Vorkette (Konzept F3) — und bei den fünf abgeleiteten Trägern den
+        /// Quellentext mit dem Zusatz „abgeleitet".
+        /// </summary>
+        private static int VorlagenBafa(Dictionary<string, int> arten, DataTable traeger,
+                                        List<Wertzeile> ziel)
+        {
+            int artCo2 = arten[DbWerte.EMISSIONSART_CO2];
+            int gezaehlt = 0;
+
+            foreach (object[] z in CO2_SOLLTABELLE)
+            {
+                DataRow r = TraegerZeile(traeger, (string)z[0]);
+                if (r == null) continue;
+
+                ziel.Add(new Wertzeile
+                {
+                    ArtId = artCo2,
+                    CarrierId = Zahl(r["id"]),
+                    Quelle = DbWerte.EMISSIONSWERT_QUELLE_BAFA_EEW,
+                    QuelleText = (bool)z[2]
+                        ? DbWerte.EMISSIONSWERT_TEXT_ABGELEITET
+                        : DbWerte.EMISSIONSWERT_TEXT_BAFA_EEW,
+                    Wert = (double)z[1],
+                    IstCo2e = true,
+                    IstAktiv = false,
+                    IstAuslieferung = true,
+                    GueltigAb = new DateTime(2026, 1, 1)
+                });
+                gezaehlt++;
+            }
+            return gezaehlt;
+        }
+
+        /// <summary>
+        /// 57d-b: Je Schlüssel der Mapping-Liste die JÜNGSTE Jahreszeile mit Status
+        /// GESICHERT und belegtem Wert. Fehlt <c>Tab_Gesetzesparameter</c>, entfallen
+        /// diese Vorlagen — kein Fehler, der Katalog bleibt nur ärmer.
+        /// </summary>
+        private static int VorlagenGesetz(Lauf l, Dictionary<string, int> arten,
+                                          DataTable traeger, List<Wertzeile> ziel)
+        {
+            if (TabellenSchema(l, GesetzKatalog.TAB_GESETZESPARAMETER) == null)
+            {
+                l.Notiz(GesetzKatalog.TAB_GESETZESPARAMETER + " nicht lesbar - die " +
+                        "gesetzlichen Vorlagen entfallen.");
+                return 0;
+            }
+
+            DataTable dt = Abfrage(l,
+                "SELECT Schluessel, JahrVon, Wert, Quelle FROM " + GesetzKatalog.TAB_GESETZESPARAMETER +
+                " WHERE Status = '" + DbWerte.GESETZ_STATUS_GESICHERT + "' AND Wert IS NOT NULL " +
+                " ORDER BY Schluessel, JahrVon");
+            if (dt == null) return 0;
+
+            int artCo2 = arten[DbWerte.EMISSIONSART_CO2];
+            int gezaehlt = 0;
+
+            foreach (GesetzMapping m in GESETZ_MAPPING)
+            {
+                DataRow juengste = null;
+                foreach (DataRow r in dt.Rows)
+                {
+                    if (!string.Equals(Txt(r["Schluessel"]), m.Schluessel, StringComparison.OrdinalIgnoreCase))
+                        continue;
+                    if (juengste == null || Zahl(r["JahrVon"]) >= Zahl(juengste["JahrVon"]))
+                        juengste = r;
+                }
+
+                if (juengste == null)
+                {
+                    l.Notiz("Gesetzesparameter " + m.Schluessel + ": keine GESICHERTE " +
+                            "Jahreszeile mit Wert - keine Vorlage gesaet.");
+                    continue;
+                }
+
+                int jahr = Zahl(juengste["JahrVon"]);
+                double wert = Kommazahl(juengste["Wert"]);
+
+                // BAFA-Zeilen bekommen den KURZEN, einheitlichen Text - nur so faellt
+                // die Vorlage aus der Mapping-Liste mit der BAFA-Saat aus 57d-a
+                // zusammen, statt dieselbe Zahl ein zweites Mal in den Katalog zu
+                // schreiben. Alle uebrigen tragen Quelle und Jahr der Parameterzeile.
+                string text = string.Equals(m.Quelle, DbWerte.EMISSIONSWERT_QUELLE_BAFA_EEW, StringComparison.Ordinal)
+                    ? DbWerte.EMISSIONSWERT_TEXT_BAFA_EEW
+                    : Txt(juengste["Quelle"]) + ", ab " + jahr.ToString(CultureInfo.InvariantCulture);
+                if (m.Betreff.Length > 0) text = text + " — " + m.Betreff;
+                if (text.Length > 255) text = text.Substring(0, 255);
+
+                if (m.Traeger == null || m.Traeger.Length == 0)
+                {
+                    ziel.Add(GesetzZeile(artCo2, null, m, text, wert, jahr));
+                    gezaehlt++;
+                    continue;
+                }
+
+                foreach (string name in m.Traeger)
+                {
+                    DataRow r = TraegerZeile(traeger, name);
+                    if (r == null)
+                    {
+                        l.Notiz("Mapping " + m.Schluessel + " -> " + name +
+                                ": Traeger im Katalog nicht vorhanden - uebersprungen.");
+                        continue;
+                    }
+                    ziel.Add(GesetzZeile(artCo2, Zahl(r["id"]), m, text, wert, jahr));
+                    gezaehlt++;
+                }
+            }
+            return gezaehlt;
+        }
+
+        private static Wertzeile GesetzZeile(int artCo2, int? carrierId, GesetzMapping m,
+                                             string text, double wert, int jahr)
+        {
+            return new Wertzeile
+            {
+                ArtId = artCo2,
+                CarrierId = carrierId,
+                Quelle = m.Quelle,
+                QuelleText = text,
+                Wert = wert,
+                IstCo2e = m.IstCo2e,
+                IstAktiv = false,
+                IstAuslieferung = true,
+                GueltigAb = jahr > 1900 ? (DateTime?)new DateTime(jahr, 1, 1) : null
+            };
+        }
+
+        /// <summary>
+        /// 57d-c: SO₂, NOx und Staub aus <c>Tab_Brennstoff_Stamm</c> — die
+        /// Altbestandswerte, über <c>ID_Brennstoff</c> am Träger. Sie sind
+        /// Feuerungswerte ohne Vorkette und ohne greifbare Fundstelle und werden
+        /// deshalb ausdrücklich als <b>unbelegt</b> gekennzeichnet (Konzept § 5);
+        /// belegte Quellen kommen mit Etappe E6.
+        ///
+        /// <para>Ein NULL im Stamm ergibt KEINE Zeile: „nicht gepflegt" ist etwas
+        /// anderes als „null Milligramm" (Fernwärme trägt im Stamm überhaupt keine
+        /// Schadstoffwerte).</para>
+        /// </summary>
+        private static int VorlagenStamm(Dictionary<string, int> arten, DataTable traeger,
+                                         Dictionary<int, DataRow> stamm, List<Wertzeile> ziel)
+        {
+            string[] arten3 = { DbWerte.EMISSIONSART_SO2, DbWerte.EMISSIONSART_NOX, DbWerte.EMISSIONSART_STAUB };
+            string[] spalten3 = { "SO2", "NOx", "Staub" };
+            int gezaehlt = 0;
+
+            foreach (DataRow t in traeger.Rows)
+            {
+                int idBrennstoff = Zahl(t["ID_Brennstoff"]);
+                if (idBrennstoff <= 0 || !stamm.ContainsKey(idBrennstoff)) continue;
+                DataRow s = stamm[idBrennstoff];
+
+                for (int i = 0; i < arten3.Length; i++)
+                {
+                    if (!arten.ContainsKey(arten3[i])) continue;
+                    double? v = KommaOderNull(s, spalten3[i]);
+                    if (!v.HasValue) continue;
+
+                    ziel.Add(new Wertzeile
+                    {
+                        ArtId = arten[arten3[i]],
+                        CarrierId = Zahl(t["id"]),
+                        Quelle = DbWerte.EMISSIONSWERT_QUELLE_STAMM_ALT,
+                        QuelleText = DbWerte.EMISSIONSWERT_TEXT_STAMM_ALT,
+                        Wert = v.Value,
+                        IstCo2e = false,
+                        IstAktiv = false,
+                        IstAuslieferung = true,
+                        GueltigAb = null
+                    });
+                    gezaehlt++;
+                }
+            }
+            return gezaehlt;
+        }
+
+        /// <summary>
+        /// 57e: Aus den heutigen Spalten <c>energy_carrier.co2/so2/nox</c> wird je
+        /// Träger und Art der AKTIVE Wert — die Zahl unverändert, dazu die erkannte
+        /// Herkunft (Konzept F8):
+        ///
+        /// <list type="bullet">
+        ///   <item><description>CO₂ trifft die Saat aus Schritt 56 → <c>BAFA_EEW</c>,
+        ///     <c>ist_co2e</c>, mit Verweis auf die Vorlage.</description></item>
+        ///   <item><description>der Wert trifft den Brennstoff-Stamm →
+        ///     <c>STAMM_ALT</c>.</description></item>
+        ///   <item><description>sonst → <c>EIGENER_WERT</c>.</description></item>
+        /// </list>
+        ///
+        /// <para><b>Eine 0 wird nie als BAFA-Wert ausgewiesen.</b> Sie ist entweder ein
+        /// Stammwert (dann steht das da) oder ein eigener — aber nie eine belegte
+        /// Fundstelle. Übernommen wird sie trotzdem: Sie ist der Bestand, und dieser
+        /// Schritt ändert keinen Wert.</para>
+        ///
+        /// <para><b><c>ist_auslieferung</c> ist bei aktiven Werten FALSCH</b>, anders
+        /// als bei den Vorlagen: Der geltende Trägerwert ist das, was der Anwender im
+        /// Emissions-Tab pflegt und überschreibt. Unveränderlich sind die Vorlagen, aus
+        /// denen er ihn übernimmt.</para>
+        /// </summary>
+        private static void AktiveSammeln(Dictionary<string, int> arten, DataTable traeger,
+                                          Dictionary<int, DataRow> stamm,
+                                          Dictionary<string, int> vorlagenIds,
+                                          List<Wertzeile> ziel)
+        {
+            var soll = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+            var abgeleitet = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+            foreach (object[] z in CO2_SOLLTABELLE)
+            {
+                soll[(string)z[0]] = (double)z[1];
+                abgeleitet[(string)z[0]] = (bool)z[2];
+            }
+
+            string[] artenKuerzel = { DbWerte.EMISSIONSART_CO2, DbWerte.EMISSIONSART_SO2, DbWerte.EMISSIONSART_NOX };
+            string[] traegerSpalten = { "co2", "so2", "nox" };
+            string[] stammSpalten = { "CO2", "SO2", "NOx" };
+
+            foreach (DataRow t in traeger.Rows)
+            {
+                int carrierId = Zahl(t["id"]);
+                string name = Txt(t["name"]);
+                int idBrennstoff = Zahl(t["ID_Brennstoff"]);
+                DataRow s = (idBrennstoff > 0 && stamm.ContainsKey(idBrennstoff)) ? stamm[idBrennstoff] : null;
+
+                for (int i = 0; i < artenKuerzel.Length; i++)
+                {
+                    if (!arten.ContainsKey(artenKuerzel[i])) continue;
+                    int artId = arten[artenKuerzel[i]];
+
+                    double wert = t[traegerSpalten[i]] == DBNull.Value ? 0.0 : Kommazahl(t[traegerSpalten[i]]);
+                    double? stammWert = KommaOderNull(s, stammSpalten[i]);
+
+                    string quelle = DbWerte.EMISSIONSWERT_QUELLE_EIGENER_WERT;
+                    string text = DbWerte.EMISSIONSWERT_TEXT_EIGENER_WERT;
+                    bool co2e = false;
+                    int? herkunft = null;
+
+                    bool istCo2 = i == 0;
+                    if (istCo2 && wert != 0.0 && soll.ContainsKey(name) &&
+                        Math.Abs(wert - soll[name]) < EMISSION_TOLERANZ)
+                    {
+                        quelle = DbWerte.EMISSIONSWERT_QUELLE_BAFA_EEW;
+                        text = abgeleitet[name]
+                            ? DbWerte.EMISSIONSWERT_TEXT_ABGELEITET
+                            : DbWerte.EMISSIONSWERT_TEXT_BAFA_EEW;
+                        co2e = true;
+                        herkunft = VorlageId(vorlagenIds, artId, carrierId, quelle, text, wert);
+                    }
+                    else if (stammWert.HasValue && Math.Abs(wert - stammWert.Value) < EMISSION_TOLERANZ)
+                    {
+                        quelle = DbWerte.EMISSIONSWERT_QUELLE_STAMM_ALT;
+                        text = DbWerte.EMISSIONSWERT_TEXT_STAMM_ALT;
+                        herkunft = VorlageId(vorlagenIds, artId, carrierId, quelle, text, wert);
+                    }
+
+                    ziel.Add(new Wertzeile
+                    {
+                        ArtId = artId,
+                        CarrierId = carrierId,
+                        Quelle = quelle,
+                        QuelleText = text,
+                        Wert = wert,
+                        IstCo2e = co2e,
+                        IstAktiv = true,
+                        HerkunftId = herkunft,
+                        IstAuslieferung = false,
+                        GueltigAb = null
+                    });
+                }
+            }
+        }
+
+        /// <summary>ID der Vorlage, aus der ein aktiver Wert stammt; <c>null</c>, wenn
+        /// es zu ihm keine gibt (dann bleibt die Herkunft leer — geraten wird nichts).</summary>
+        private static int? VorlageId(Dictionary<string, int> vorlagen, int artId, int carrierId,
+                                      string quelle, string text, double wert)
+        {
+            string s = WertSchluessel(artId, carrierId, quelle, text, wert);
+            return vorlagen.ContainsKey(s) ? (int?)vorlagen[s] : null;
+        }
         // =================================================================================
         // Schritt 50 - Senkenliste Z_AnlageSenke (Paket S1, Konzept § 5.1)
         // =================================================================================
