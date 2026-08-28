@@ -349,14 +349,14 @@ namespace WindowsFormsApplication1
                 Text = MyResource.Resource.SIM_BTN_OK,
                 DialogResult = DialogResult.OK,
                 Location = new Point(this.ClientSize.Width - 190, 572),
-                Width = 85
+                Size = new Size(FusszeilenNorm.BREITE, FusszeilenNorm.HOEHE)
             };
             Button btnAbbruch = new Button
             {
                 Text = MyResource.Resource.SIM_BTN_ABBRECHEN,
                 DialogResult = DialogResult.Cancel,
                 Location = new Point(this.ClientSize.Width - 97, 572),
-                Width = 85
+                Size = new Size(FusszeilenNorm.BREITE, FusszeilenNorm.HOEHE)
             };
             btnOk.Click += btnOk_Click;
 
@@ -365,7 +365,13 @@ namespace WindowsFormsApplication1
             this.AcceptButton = btnOk;
             this.CancelButton = btnAbbruch;
 
+            // HinweiszeileEinpassen() vergrößert das Fenster, wenn die Hinweiszeile mehr
+            // Zeilen braucht — die Fußzeile muss danach ausgerichtet werden.
             HinweiszeileEinpassen();
+
+            // D2 (28.08.2026): OK links neben Abbrechen, 85×23, Top/Left -> Norm.
+            FusszeilenNorm.Einhaengen(this, btnOk, btnAbbruch);
+            FusszeilenNorm.Anwenden(this, btnOk, btnAbbruch);
         }
 
         /// <summary>

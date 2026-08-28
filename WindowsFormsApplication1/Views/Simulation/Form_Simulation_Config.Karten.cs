@@ -362,13 +362,12 @@ namespace WindowsFormsApplication1
             checkBox_Extrapolation.Location = new Point(KARTEN_RAND, fussOben + 6);
             checkBox_Extrapolation.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
 
-            int knopfUnten = ClientSize.Height - 12;
-            btn_OK.Location = new Point(ClientSize.Width - KARTEN_RAND - btn_OK.Width,
-                                        knopfUnten - btn_OK.Height);
-            btn_Speichern.Location = new Point(btn_OK.Left - 10 - btn_Speichern.Width,
-                                               knopfUnten - btn_Speichern.Height);
-            btn_OK.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btn_Speichern.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            // D2 (28.08.2026): Die hier ausgerechnete Knopfzeile war die Vorlage für die
+            // Fußzeilen-Norm — Reihenfolge, Verankerung und der 10-px-Abstand stammen aus
+            // dieser Methode. Sie ruft die Norm jetzt selbst auf, damit es genau EINE
+            // Stelle gibt, an der Knopfgröße und Randabstand stehen; der Dialog wechselt
+            // damit von 103×30 / Rand 19 auf die Norm 110×30 / Rand 12.
+            FusszeilenNorm.Anwenden(this, btn_OK, btn_Speichern);
 
             lblStatus.Location = new Point(KARTEN_RAND, lblStatus.Top);
             lblStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;

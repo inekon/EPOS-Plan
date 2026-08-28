@@ -46,8 +46,142 @@ namespace WindowsFormsApplication1
             // Entwurfsposition merken, BEVOR PraesenzAnwenden sie verschieben kann.
             _stLinksOriginal = groupST.Left;
 
+            // D2 (28.08.2026): Entwurfsmaße einfrieren, solange sie noch unverfälscht
+            // sind — LayoutEinpassen() rechnet gegen sie und bleibt damit bei jedem
+            // erneuten Aufruf beim selben Ergebnis.
+            _entwurfClient = this.ClientSize;
+            _speicherInfoEntwurf = lblSpeicherInfo.Size;
+            _nutzungsgradEntwurf = lblNutzungsgradST.Size;
+
+            // D2-Beifang: lblCO2 war die einzige Arial-Beschriftung der ganzen Anwendung
+            // (D-Check, Klasse e). Fett bleibt fett, die Familie folgt dem Formular.
+            lblCO2.Font = new Font(this.Font, FontStyle.Bold);
+
             BeschriftungenSetzen();
             SetupChart(); // Ruft die neue Setup-Methode auf
+            LayoutEinpassen();
+        }
+
+        /// <summary>Client-Maß des Entwurfs (Bezug für die Breitenbegrenzung).</summary>
+        private Size _entwurfClient;
+
+        /// <summary>Entwurfsmaß der Speicher-Beschriftung (Untergrenze der Breite).</summary>
+        private Size _speicherInfoEntwurf;
+
+        /// <summary>Entwurfsmaß der Nutzungsgradzeile (Untergrenze der Breite).</summary>
+        private Size _nutzungsgradEntwurf;
+
+        /// <summary>
+        /// D-CHECK 28.08.2026, offener Befund Prio 1: die sechs Layoutfehler der
+        /// Autarkie-Analyse, programmatisch geheilt.
+        ///
+        /// <para><b>Drei abgeschnittene Beschriftungen (Klasse c).</b>
+        /// <c>lblSpeicherInfo</c> („Theoretischer Speicher (PV) (kWh):") brauchte 242 px
+        /// und hatte 165, <c>lblNutzungsgradST</c> 198 gegen 159, <c>lblSTDeckung</c>
+        /// („nicht benötigt") 102 gegen 100. Feste Breiten wären nur für EINE Sprache und
+        /// EINE Schriftgröße richtig — gemessen wird deshalb am Steuerelement selbst, mit
+        /// dessen aktueller Schrift, und zwar NACH dem Setzen der Texte (die Prozentwerte
+        /// entstehen erst in <see cref="UpdateSimulationData"/>).</para>
+        ///
+        /// <para><b>Drei Überlappungen (Klasse a).</b> <c>lblTest</c> lag 120 × 2 px auf
+        /// <c>numSpeicherKWh</c>, <c>pbPV</c> und <c>pbST</c> je 100 × 3 px auf ihrer
+        /// Wertbeschriftung. Alle drei stammen aus derselben Ursache: „eine Zeile unter X"
+        /// war im Entwurf mit festen Pixelwerten gemeint, und die Steuerelemente sind bei
+        /// Segoe UI 9 höher als bei der Entwurfsschrift. Die Zeilen hängen jetzt an der
+        /// Unterkante ihres Vorgängers statt an einer Zahl.</para>
+        ///
+        /// <para><b>Warum das an <see cref="Control.OnFontChanged"/> hängt.</b> Das
+        /// Formular wird von <c>TabNavigationManager</c> als Kind in ein fremdes Panel
+        /// gehängt; erbt es dort eine andere Schrift, verschieben sich alle gemessenen
+        /// Maße. Dasselbe Muster wie bei der Bedarfsseite der Detailansicht (D8).</para>
+        /// </summary>
+        private void LayoutEinpassen()
+        {
+            if (lblSpeicherInfo == null || numSpeicherKWh == null) return;
+
+            this.SuspendLayout();
+            try
+            {
+                // --- Kacheln: Wert über dem Balken, Wertbreite = Balkenbreite ---------
+                KachelOrdnen(lblPVAutarkie, pbPV);
+                KachelOrdnen(lblSTDeckung, pbST);
+
+                // --- Speicherblock rechts: Beschriftung, Eingabe, Nutzenzeile ---------
+                BreiteMessen(lblSpeicherInfo, _speicherInfoEntwurf.Width);
+                int hoehe = lblSpeicherInfo.GetPreferredSize(
+                                new Size(lblSpeicherInfo.Width, 0)).Height;
+                if (hoehe > lblSpeicherInfo.Height ||
+                    lblSpeicherInfo.Height != _speicherInfoEntwurf.Height)
+                    lblSpeicherInfo.Height = Math.Max(_speicherInfoEntwurf.Height, hoehe);
+
+                numSpeicherKWh.Left = lblSpeicherInfo.Left;
+                numSpeicherKWh.Top = lblSpeicherInfo.Bottom + 2;
+
+                lblTest.Left = lblSpeicherInfo.Left;
+                lblTest.Top = numSpeicherKWh.Bottom + 6;
+
+                // --- Nutzungsgradzeile ------------------------------------------------
+                BreiteMessen(lblNutzungsgradST, _nutzungsgradEntwurf.Width);
+
+                // Ohne Photovoltaik rückt die Solarthermie-Kachel in die linke Spalte
+                // (PraesenzAnwenden) - dort steht die CO2-Zeile. Die breitere
+                // Nutzungsgradzeile weicht dann nach unten aus.
+                if (lblCO2.Visible && lblNutzungsgradST.Visible &&
+                    lblNutzungsgradST.Bounds.IntersectsWith(lblCO2.Bounds))
+                    lblNutzungsgradST.Top = lblCO2.Bottom + 6;
+            }
+            finally
+            {
+                this.ResumeLayout(true);
+            }
+        }
+
+        /// <summary>
+        /// Ordnet eine Kachel: Die Wertbeschriftung bekommt die Höhe ihrer Schrift und
+        /// die Breite des Balkens, der Balken rückt darunter. Damit passt auch der
+        /// längste Wert („nicht benötigt") in die Zeile, und Balken und Beschriftung
+        /// überlagern sich nicht mehr.
+        /// </summary>
+        private static void KachelOrdnen(Label wert, ProgressBar balken)
+        {
+            if (wert == null || balken == null) return;
+
+            int hoehe = wert.Font.Height + 4;
+            if (wert.Height != hoehe) wert.Height = hoehe;
+            if (wert.Width != balken.Width) wert.Width = balken.Width;
+            if (balken.Top != wert.Bottom + 2) balken.Top = wert.Bottom + 2;
+        }
+
+        /// <summary>
+        /// Gibt einer Beschriftung die Breite, die ihr Text bei ihrer Schrift wirklich
+        /// braucht — mindestens das Entwurfsmaß, höchstens der Platz bis zum rechten
+        /// Rand. Die zwei Zusatzpixel sind der Rundungsabstand: ein Text, der exakt auf
+        /// die Breite passt, wird von GDI+ je nach Schrift trotzdem gekürzt.
+        /// </summary>
+        private void BreiteMessen(Label lbl, int mindestbreite)
+        {
+            if (lbl == null) return;
+
+            int noetig = lbl.GetPreferredSize(Size.Empty).Width + 2;
+            int breite = Math.Max(mindestbreite, noetig);
+
+            int platz = Math.Max(_entwurfClient.Width, this.ClientSize.Width) - lbl.Left - 12;
+            if (platz > 40 && breite > platz) breite = platz;
+
+            if (lbl.Width != breite) lbl.Width = breite;
+        }
+
+        protected override void OnFontChanged(EventArgs e)
+        {
+            base.OnFontChanged(e);
+            if (lblCO2 != null) lblCO2.Font = new Font(this.Font, FontStyle.Bold);
+            LayoutEinpassen();
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            LayoutEinpassen();
         }
 
         /// <summary>
@@ -241,6 +375,10 @@ namespace WindowsFormsApplication1
             // Speichernutzen
             lblTest.Text = string.Format(MyResource.Resource.SIM_ANZEIGE_SPEICHERNUTZEN,
                                          pvAusSpeicherSumme.ToString("N0"));
+
+            // D2 (28.08.2026): ZULETZT - erst jetzt stehen die Texte, deren Breite die
+            // Einpassung misst (Prozentwerte, „nicht benötigt", CO2-Menge).
+            LayoutEinpassen();
 
             isUpdatingUI = false; // Event SPERRE DEAKTIVIEREN
         }
