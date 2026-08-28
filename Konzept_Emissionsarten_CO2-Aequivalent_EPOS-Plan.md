@@ -1,6 +1,6 @@
 # Konzept — Emissionsarten-Katalog und CO₂-Äquivalent (EPOS-Plan)
 
-**Stand:** 29.08.2026 · **Rev. 1.3 — E1 und E2 umgesetzt** (Rev. 1.2 vom 28.08.2026:
+**Stand:** 29.08.2026 · **Rev. 1.4 — E1 bis E4 umgesetzt** (Rev. 1.2 vom 28.08.2026:
 alle Entscheidungsfragen beantwortet — F3 präzisiert, F4 bestätigt, Luftschadstoffe ohne
 Vorkette, Modus global + Projekt-Override, Artenauswahl global, E1 vor E2)
 
@@ -9,7 +9,19 @@ Vorkette, Modus global + Projekt-Override, Artenauswahl global, E1 vor E2)
 > Emissionsarten, 139 Vorlagen, 81 aktive Trägerwerte, Berechnungsmodus `CO2` in
 > `Tab_Applikation` und in allen 26 Bestandsprojekten. Zweitlauf beider Schritte:
 > 0 Änderungen. Die **Mapping-Liste** (§ 8 Punkt 5) steht in **§ 5.1** zur Durchsicht.
-> Offen bleiben E3 bis E6 sowie die Sichtabnahme.
+>
+> **E3** gliedert den Detailbereich des Energieträger-Dialogs in die Reiter
+> „Preise & Umrechnung" (Bestand, umgehängt statt neu gebaut) und „Emissionen"
+> (dynamische Feldliste aus den ausgewählten Arten, **Textfelder ohne Drehpfeile**,
+> Einheit je Art, Herkunft am Feld, CO₂e-Summe mit F3-Hinweis, Modus-Schalter).
+> **E4** bringt den Dialog `Form_Emissionskatalog` (Artenverwaltung links, Werte der
+> markierten Art rechts, Übernehmen/Neu/Bearbeiten/Löschen mit den Schutzregeln).
+> Die Regeln stehen UI-frei in `EmissionenCtrl` und `EmissionskatalogCtrl`
+> (Hausmuster Ä9); der Prüfstand gegen eine Arbeitskopie der Produktiv-DB meldet
+> **65/65**. **Kein Rechenergebnis ändert sich:** Die Rechner lesen weiter die
+> Altspalten, und der Schreibweg spiegelt die drei Kernarten dorthin (F9).
+>
+> Offen bleiben E5 und E6 sowie die Sichtabnahme.
 
 Anforderung (28.08.2026): Der Energieträger-Dialog soll seine Emissionsfaktoren aus einem
 **pflegbaren Katalog** beziehen (bestehende Faktoren übernehmen, eigene hinzufügen/ändern/löschen),
@@ -272,6 +284,44 @@ drei Faktorfelder ziehen dorthin um):
 - Speichern läuft über den vorhandenen Speichern-Knopf des Dialogs (Katalog- vs.
   Projektmodus wie bisher).
 
+#### Umsetzungsklärung zu 4.1 — die KONTEXT-REGEL *(festgelegt 29.08.2026, E3)*
+
+Das Konzept sagt „Katalog- vs. Projektmodus wie bisher". Was das je Art bedeutet,
+war offen; umgesetzt ist:
+
+| | **Katalogkontext** (Projekt 0) | **Projektkontext** |
+|---|---|---|
+| editierbar | **alle** ausgewählten Arten | **nur** CO₂, SO₂, NOx (die Arten mit Altspalte) |
+| weitere Arten | — | erscheinen **lesend** mit ihrem Katalogwert, Tooltip „Pflege im Katalogkontext" |
+| führender Schreibweg | aktive `emissionswert`-Zeile je Art (UPDATE bzw. INSERT) | `energy_project_settings.co2/so2/nox` wie bisher (NULL = Katalogwert gilt) |
+| Spiegel | zusätzlich `energy_carrier.co2/so2/nox` für die drei Kernarten | — (die Altspalte IST hier der Schreibweg) |
+| Herkunft (F8) | Übernahme → Katalogquelle mit `herkunft_id`; Handeingabe → `EIGENER_WERT`, `ist_co2e` fällt weg | dito, soweit die Art editierbar ist |
+
+**Warum der Spiegel:** Bis Etappe E5 lesen `KostenEmissionRechner` und
+`EmissionsBilanzRechner` ausschließlich die Altspalten (F9). Eine neue Struktur, die
+der Altleser nicht sieht, wäre eine zweite Wahrheit — deshalb schreibt der
+Katalogkontext beides, und die Zahl bleibt dieselbe. **E3/E4 ändern damit kein
+Rechenergebnis.**
+
+**Warum die Projektebene nur die drei Kernarten führt:** Eine generische
+Projektübersteuerung je Art gibt es erst mit der Quellenwahl-Umsetzung (§ 3, letzter
+Absatz). Bis dahin wäre eine vierte editierbare Art im Projekt eine Eingabe ohne
+Speicherort.
+
+**Deferred-Semantik (Ä12/Ä14) gilt unverändert:** Feldänderung, Katalog-Übernahme und
+Modus-Umschaltung leben bis zum ausdrücklichen „Speichern" nur im Objekt; Abbrechen
+und Trägerwechsel übernehmen nichts. Deshalb reicht der Katalog-Dialog seine
+Übernahme an den Reiter ZURÜCK, statt sie selbst zu schreiben — im Verwaltungsmodus
+(ohne aufrufenden Reiter) schreibt er sie sofort.
+
+**Bestandsfelder als Wertträger:** Die drei `NumericUpDown` des Designer-Rasters
+bleiben unsichtbar erhalten und werden bei jeder Änderung mitgeführt. Der vorhandene
+Schreibweg (`ucFuelSettings.SpeichereWerte`) liest sie unverändert weiter — das ist
+der Spiegel aus der Tabelle oben, ohne eine zweite Fassung derselben Regel. Fehlt der
+Artenkatalog (Migrationsschritt 57 nicht gelaufen), werden dieselben drei Felder
+wieder SICHTBAR im Emissionen-Reiter gezeigt; eine leere Maske wäre schlechter als die
+alte.
+
 ### 4.2 Neuer Dialog „Emissionsfaktor-Katalog"
 
 Ein Dialog, zwei Aufgaben — links die Arten, rechts die Werte der markierten Art:
@@ -412,9 +462,9 @@ BAFA-Saat aus E1 und ihre Stammwerte; mehr wäre erfunden.
 |---|---|---|
 | **E1** | CO₂-Saat nach `Konzept_CO2-Faktoren` Rev. 1 (eigener Migrationsschritt, Regeln von dort: Sicherung, laccdb-Sperre, ACE-Falle, Idempotenz) | **UMGESETZT (Schritt 56, 29.08.2026)** — Trägerwerte belegt statt 0 |
 | **E2** | Tabellen `emissionsart` + `emissionswert` anlegen und säen (Arten-Auslieferung; Vorlagen aus `EF_BILANZ`/`EF_NACHWEIS` mit Mapping-Liste; Trägerwerte aus Bestandsspalten) | **UMGESETZT (Schritt 57, 29.08.2026)** — Modell steht, **kein Ergebnis ändert sich** (F9) |
-| **E3** | Emissions-Tab im Energieträger-Dialog (dynamische Felder, TextBox statt Spinner, Einheiten richtig, CO₂e-Summe, Herkunft, Warnung F3), Schreibweg beidseitig | Anwender pflegt im neuen Modell |
-| **E4** | Katalog-Dialog (4.2): Artenverwaltung, Werteverwaltung, Übernehmen | Katalogpflege vollständig |
-| **E5** | Modus-Schalter (F7): globale Vorgabe + Projektfeld, an beiden Orten; `KostenEmissionRechner` + `EmissionsBilanzRechner` modusfähig; Berichte weisen Modus aus; Modus in Variantenergebnisse | CO₂/CO₂e wählbar und wirksam |
+| **E3** | Emissions-Tab im Energieträger-Dialog (dynamische Felder, TextBox statt Spinner, Einheiten richtig, CO₂e-Summe, Herkunft, Warnung F3), Schreibweg beidseitig | **UMGESETZT (29.08.2026)** — Anwender pflegt im neuen Modell; Kontext-Regel als Umsetzungsklärung in § 4.1 |
+| **E4** | Katalog-Dialog (4.2): Artenverwaltung, Werteverwaltung, Übernehmen | **UMGESETZT (29.08.2026)** — `Form_Emissionskatalog` samt Schutzregeln; Katalogpflege vollständig |
+| **E5** | Modus-Schalter (F7): globale Vorgabe + Projektfeld, an beiden Orten; `KostenEmissionRechner` + `EmissionsBilanzRechner` modusfähig; Berichte weisen Modus aus; Modus in Variantenergebnisse; `STROMMIX_CO2_G_JE_KWH` 380→435 *(Nutzerentscheid 29.08.2026)* | CO₂/CO₂e wählbar und wirksam |
 | **E6** | Luftschadstoff-Quelle (GEMIS/UBA TEXTE) nach Vorlage der Fundstellen einsäen | Werte zitierfähig |
 
 Prüfstand je Etappe: Smoke der beiden Rechenwege; E2 zusätzlich Vorher/Nachher-Vergleich
@@ -462,7 +512,11 @@ Vergleich Modus CO₂ vs. CO₂e an einem Handbeispiel.
 
 - [`Konzept_CO2-Faktoren_Energietraeger_EPOS-Plan.md`](Konzept_CO2-Faktoren_Energietraeger_EPOS-Plan.md) — CO₂-Saat (E1)
 - [`Konzept_Emissionsfaktoren_Quellenwahl_EPOS-Plan.md`](Konzept_Emissionsfaktoren_Quellenwahl_EPOS-Plan.md) — Herkunft/Projektwahl, wird Rev. 2
-- `Views\Kosten\ucFuelSettings.cs` — heutige Felder `numSO2/numCO2/numNOx`, Schreibwege Katalog/Projekt
+- `Model\EmissionsModelle.cs` — Art, Wert, Reiterzeile, Speicherschritt (E3/E4)
+- `Controller\EmissionenCtrl.cs` — Emissions-Reiter UI-frei: Laden, Summe F6/F3, Herkunft F8, Modus F7, Speicherplan (E3)
+- `Controller\EmissionskatalogCtrl.cs` — Katalogpflege UI-frei: Arten, Werte, Übernehmen, Schutzregeln (E4)
+- `Views\Kosten\Form_Emissionskatalog.cs` — der Katalog-Dialog aus § 4.2 (E4)
+- `Views\Kosten\ucFuelSettings.cs` — Reiter „Preise & Umrechnung" / „Emissionen"; die Felder `numSO2/numCO2/numNOx` sind seit E3 unsichtbare Wertträger des Altschreibwegs
 - `Allgemein\Bericht\KostenEmissionRechner.cs` — CO₂-Kette, `STROMMIX_CO2_G_JE_KWH`
 - `Allgemein\Wirtschaftlichkeit\EmissionsBilanzRechner.cs:20` — Einheiten-Beleg mg/kWh
 - `Allgemein\Wirtschaftlichkeit\GesetzKatalog.cs` — Saat `EF_BILANZ`/`EF_NACHWEIS`
