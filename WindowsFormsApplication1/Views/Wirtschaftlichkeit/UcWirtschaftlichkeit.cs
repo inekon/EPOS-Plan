@@ -697,8 +697,12 @@ namespace WindowsFormsApplication1
             // W3: CO₂-Vermeidung gegenüber getrennter Erzeugung (aus dem Cache;
             // nur für Projekte, deren Wirtschaftlichkeits-Ergebnis zum aktuellen
             // Simulationslauf passt — sonst „—", Review Phase 8).
+            // E5/F7: Der Zeilentitel nennt den Modus, in dem die Bilanz gerechnet wurde.
+            // Bei uneinheitlichen Projekten trägt die Zeile den Sammeltitel — die
+            // Spalten stünden sonst unter einer Methode, in der sie nicht entstanden.
             if (_bilanzen.Values.Any(x => x != null && x.CO2VermeidungT.HasValue))
-                Zeile("CO₂-Vermeidung vs. getrennt [t/a]", zeilen, x =>
+                Zeile(EmissionsAusweis.BilanzVermeidung(
+                          EmissionsAusweis.ModusAusBilanzen(_bilanzen.Values)), zeilen, x =>
                 {
                     EmissionsBilanz b = _bilanzen.ContainsKey(x.IdProjekt) ? _bilanzen[x.IdProjekt] : null;
                     return b == null ? "—" : W(b.CO2VermeidungT, "N1", kultur);

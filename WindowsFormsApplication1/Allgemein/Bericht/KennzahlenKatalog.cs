@@ -175,12 +175,28 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der komplette Katalog in Anzeige-Reihenfolge, mit den CO₂-Zeilen im Modus
+        /// <c>CO2</c> beschriftet. Für einen Ausweis nach dem tatsächlich gerechneten
+        /// Modus (Etappe E5, Konzept F7) die Überladung
+        /// <see cref="Alle(string)"/> verwenden.
+        /// </summary>
+        public static List<Kennzahl> Alle()
+        {
+            return Alle(DbWerte.EMISSION_MODUS_CO2);
+        }
+
+        /// <summary>
         /// Der komplette Katalog in Anzeige-Reihenfolge.
         /// Emissions- und Kostenkennzahlen liefern bis zur Umsetzung der Verrechnung
         /// (Emissionsfaktoren × Verbräuche bzw. Menge × Preis über carrier_id, Phase 5)
         /// bewusst null — sie erscheinen als „—", nie als 0 (Konzept Kap. 5).
         /// </summary>
-        public static List<Kennzahl> Alle()
+        /// <param name="modus">Berechnungsmodus der CO₂-Kennzahlen, wie ihn der
+        /// Rechenlauf an <see cref="VariantenDaten.EmissionsModus"/> vermerkt hat
+        /// (bei einem Vergleich über <see cref="EmissionsAusweis.ModusAusVarianten"/>
+        /// zu bilden). Er wirkt AUSSCHLIESSLICH auf die Beschriftung — welchen Wert
+        /// <c>em.co2</c> trägt, hat der Rechenlauf längst entschieden.</param>
+        public static List<Kennzahl> Alle(string modus)
         {
             var l = new List<Kennzahl>();
 
@@ -293,9 +309,18 @@ namespace WindowsFormsApplication1
                 }));
 
             // ---------------- Emissionen (KostenEmissionRechner; null = Faktoren fehlen) ----------------
-            l.Add(new Kennzahl("em.co2", "CO₂-Emissionen gesamt", "Total CO₂ emissions", "t/a", GR_EMISSION, "N1", true,
+            // Die Beschriftung NENNT DEN MODUS (Etappe E5, Konzept F7): „CO₂-Emissionen"
+            // und „CO₂-Äquivalent (GWP₁₀₀)" sind zwei Größen, und zwei Berichte
+            // desselben Projekts wären ohne die Angabe nicht vergleichbar.
+            l.Add(new Kennzahl("em.co2",
+                EmissionsAusweis.KennzahlGesamt(modus, false),
+                EmissionsAusweis.KennzahlGesamt(modus, true),
+                "t/a", GR_EMISSION, "N1", true,
                 v => v.CO2Gesamt));
-            l.Add(new Kennzahl("em.co2_spez", "CO₂ spezifisch (Wärme)", "Specific CO₂ (heat)", "g/kWh", GR_EMISSION, "N0", true,
+            l.Add(new Kennzahl("em.co2_spez",
+                EmissionsAusweis.KennzahlSpezifisch(modus, false),
+                EmissionsAusweis.KennzahlSpezifisch(modus, true),
+                "g/kWh", GR_EMISSION, "N0", true,
                 v => v.CO2Spezifisch));
 
             // ---------------- Kosten einfach (KostenEmissionRechner; null = Preise fehlen) ----------------

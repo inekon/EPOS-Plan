@@ -16,6 +16,17 @@ Paket B1, Kapitel 9.
 (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, 1030, 1039), **234 CSV**. Jeder neue
 Vergleich läuft gegen diesen Ordner.
 
+> **Etappe E5 (29.08.2026) — Basis bleibt, kein Wechsel.** Vorher-/Nachher-Lauf der
+> Emissionsetappe E5 (Modus CO₂/CO₂e, neue Faktor-Lesekette, `STROMMIX_CO2_G_JE_KWH`
+> 380 → 435): **10/10 PASS, 2 567 843 Werte**, und der Vorher-Lauf war zuvor gegen
+> diese Basis ebenfalls 10/10 PASS. Der Rechenkern ist unberührt — E5 sitzt
+> ausschließlich im Bericht-/Wirtschaftlichkeitsteil, den der Referenzumfang nicht
+> abdeckt. Die Emissionskennzahlen selbst wurden deshalb mit einem eigenen
+> Konsolentreiber gegen eine Arbeitskopie gemessen (26 Projekte): im Modus CO2
+> unverändert bis auf den angekündigten Strommix-Randfall bei 11 Projekten ohne
+> gepflegten Stromträger. Die beiden Beweisordner sind nach der Auswertung verworfen —
+> sie hätten nur die geltende Basis verdoppelt.
+
 > **Anlass: Etappen E1 (CO2-Saat der Katalogträger, Migrationsschritt 56) und E2
 > (Emissionsarten-Katalog, Migrationsschritt 57) + Datenänderung des Anwenders**
 > (`6694c7a`). Der Vergleich gegen B2 meldet **keine einzige CO2-bezogene Abweichung —

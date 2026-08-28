@@ -24,9 +24,10 @@ namespace WindowsFormsApplication1
     ///     ausgewählten Arten sind editierbar. Führend schreibt das Speichern die
     ///     aktive <c>emissionswert</c>-Zeile je Art (UPDATE bzw. INSERT, Herkunft
     ///     nach F8) und SPIEGELT die drei Kernarten CO₂/SO₂/NOx zusätzlich nach
-    ///     <c>energy_carrier.co2/so2/nox</c> — die Rechner lesen bis Etappe E5 die
-    ///     alten Spalten (F9), und eine Struktur, die der Altleser nicht sieht,
-    ///     wäre eine zweite Wahrheit.</description></item>
+    ///     <c>energy_carrier.co2/so2/nox</c>. Seit Etappe E5 lesen die Rechner die
+    ///     aktive Zeile zuerst; der Spiegel bleibt, weil die Altspalte die unterste
+    ///     Rückfallebene ist (F9) und eine Struktur, die der Altleser nicht sieht,
+    ///     eine zweite Wahrheit wäre.</description></item>
     ///   <item><description><b>Projektkontext</b> (<c>projektId &gt; 0</c>): nur
     ///     die drei Kernarten sind editierbar; ihr Schreibweg bleibt der heutige
     ///     (<c>energy_project_settings.co2/so2/nox</c>, NULL = Katalogwert gilt)
@@ -177,9 +178,10 @@ namespace WindowsFormsApplication1
                 }
                 else if (IstKernart(a.Kuerzel))
                 {
-                    // F9-Rückfallebene: die Altspalte des Trägers. Sie ist bis E5
-                    // die Zahl, mit der die Rechner arbeiten - sie zu verschweigen
-                    // hieße, ein leeres Feld über einen wirksamen Wert zu legen.
+                    // F9-Rückfallebene: die Altspalte des Trägers. Sie ist auch nach
+                    // E5 eine Zahl, mit der die Rechner arbeiten (unterste Ebene der
+                    // Lesekette) - sie zu verschweigen hieße, ein leeres Feld über
+                    // einen wirksamen Wert zu legen.
                     double? alt;
                     altspalten.TryGetValue(a.Kuerzel, out alt);
                     z.Wert = alt;
@@ -248,10 +250,7 @@ namespace WindowsFormsApplication1
         /// <summary>Die Zeile einer Art am Kürzel; <c>null</c>, wenn nicht ausgewählt.</summary>
         public EmissionsZeile Zeile(string kuerzel)
         {
-            foreach (EmissionsZeile z in _zeilen)
-                if (string.Equals(z.Kuerzel, kuerzel, StringComparison.OrdinalIgnoreCase))
-                    return z;
-            return null;
+            return ZeileAus(_zeilen, kuerzel);
         }
 
         /// <summary>true für CO₂, SO₂ und NOx — die Arten mit Altspalte (F9).</summary>
@@ -351,12 +350,24 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double SummeCo2eGKwh()
         {
-            EmissionsZeile co2 = Zeile(DbWerte.EMISSIONSART_CO2);
+            return SummeCo2eGKwh(_zeilen);
+        }
+
+        /// <summary>
+        /// Dieselbe Summe über einen BELIEBIGEN Zeilensatz — die Fassung, die seit
+        /// Etappe E5 auch die Rechner nutzen (<see cref="EmissionsFaktorLader"/>).
+        /// Der Reiter und der Rechenlauf bilden die Summe damit nachweislich gleich;
+        /// eine zweite Fassung derselben Regel gibt es nicht.
+        /// </summary>
+        public static double SummeCo2eGKwh(IEnumerable<EmissionsZeile> zeilen)
+        {
+            EmissionsZeile co2 = ZeileAus(zeilen, DbWerte.EMISSIONSART_CO2);
             if (co2 != null && co2.Wert.HasValue && co2.IstCo2e)
                 return co2.Art != null ? co2.Art.NormiertGKwh(co2.Wert.Value) : co2.Wert.Value;
 
             double summe = 0.0;
-            foreach (EmissionsZeile z in _zeilen) summe += z.BeitragGKwh;
+            if (zeilen != null)
+                foreach (EmissionsZeile z in zeilen) summe += z.BeitragGKwh;
             return summe;
         }
 
@@ -364,8 +375,23 @@ namespace WindowsFormsApplication1
         /// Hinweis „CO₂-Wert ist bereits Äquivalent" daneben.</summary>
         public bool SummeIstBereitsAequivalent()
         {
-            EmissionsZeile co2 = Zeile(DbWerte.EMISSIONSART_CO2);
+            return SummeIstBereitsAequivalent(_zeilen);
+        }
+
+        /// <inheritdoc cref="SummeIstBereitsAequivalent()"/>
+        public static bool SummeIstBereitsAequivalent(IEnumerable<EmissionsZeile> zeilen)
+        {
+            EmissionsZeile co2 = ZeileAus(zeilen, DbWerte.EMISSIONSART_CO2);
             return co2 != null && co2.Wert.HasValue && co2.IstCo2e;
+        }
+
+        private static EmissionsZeile ZeileAus(IEnumerable<EmissionsZeile> zeilen, string kuerzel)
+        {
+            if (zeilen == null) return null;
+            foreach (EmissionsZeile z in zeilen)
+                if (string.Equals(z.Kuerzel, kuerzel, StringComparison.OrdinalIgnoreCase))
+                    return z;
+            return null;
         }
 
         // =====================================================================
@@ -403,15 +429,48 @@ namespace WindowsFormsApplication1
         public static string ProjektModusLesen(int projektId)
         {
             if (projektId <= 0) return VorgabeLesen();
+            return Normiert(ProjektModusRoh(projektId));
+        }
+
+        /// <summary>
+        /// DER MODUS EINES RECHENLAUFS (F7, Etappe E5) — die Auflösung, an die sich
+        /// beide Rechner halten:
+        ///
+        /// <list type="number">
+        ///   <item><description>das Projektfeld <c>Tab_Projekt.Emission_Berechnungsmodus</c>,</description></item>
+        ///   <item><description>ist es leer oder fehlt es, die globale Vorgabe in
+        ///     <c>Tab_Applikation</c>,</description></item>
+        ///   <item><description>ist auch die leer, <c>CO2</c> — das heutige Verhalten.</description></item>
+        /// </list>
+        ///
+        /// <para>Der Unterschied zu <see cref="ProjektModusLesen"/> ist die MITTLERE
+        /// Stufe: Der Dialog zeigt, was am Projekt STEHT (leer heißt dort „noch nicht
+        /// entschieden" und wird als CO₂ angezeigt); der Rechenlauf braucht dagegen
+        /// den Wert, der tatsächlich GILT. Ein vor Migrationsschritt 57 angelegtes
+        /// Projekt ohne Eintrag rechnet damit im Modus der Vorgabe und nicht
+        /// stillschweigend anders als seine Nachbarn.</para>
+        /// </summary>
+        public static string ModusFuerRechenlauf(int projektId)
+        {
+            string roh = projektId > 0 ? ProjektModusRoh(projektId) : "";
+            if (!string.IsNullOrWhiteSpace(roh)) return Normiert(roh);
+            return VorgabeLesen();
+        }
+
+        /// <summary>Der ROHTEXT des Projektfeldes; leer, wenn NULL, leer oder die
+        /// Spalte fehlt. ACE-Falle: die Ganzzahl steht als Literal im SQL.</summary>
+        private static string ProjektModusRoh(int projektId)
+        {
+            if (projektId <= 0) return "";
             try
             {
                 object o = DataRepository.ExecuteScalar(
                     "SELECT [" + SchemaKatalog.SPALTE_EMISSION_BERECHNUNGSMODUS + "] FROM [" +
                     SchemaKatalog.TAB_PROJEKT + "] WHERE ID = " +
                     EmissionskatalogCtrl.Ganz(projektId));
-                return Normiert(o);
+                return o == null || o == DBNull.Value ? "" : Convert.ToString(o).Trim();
             }
-            catch { return DbWerte.EMISSION_MODUS_CO2; }
+            catch { return ""; }
         }
 
         /// <summary>Schreibt den Modus des Projekts (F7).</summary>
@@ -509,7 +568,7 @@ namespace WindowsFormsApplication1
                         Wert = z.Wert,
                         WertId = 0,
                         Klartext = "SPIEGEL energy_carrier." + spalte + " = " + wertText +
-                                   " (Träger " + _carrierId + ") - Altleser bis E5 (F9)"
+                                   " (Träger " + _carrierId + ") - unterste Rückfallebene (F9)"
                     });
                 }
             }

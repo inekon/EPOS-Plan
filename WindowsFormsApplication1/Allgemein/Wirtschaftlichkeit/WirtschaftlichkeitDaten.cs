@@ -461,6 +461,15 @@ namespace WindowsFormsApplication1
         public string ParkName = "";
         public string Hinweis;             // z. B. fehlende Faktoren
 
+        /// <summary>
+        /// Der Berechnungsmodus, in dem die CO₂-Zeilen dieser Bilanz entstanden sind
+        /// (Etappe E5, Konzept F7): <c>CO2</c> oder <c>CO2E</c>. Reiter, Word und Excel
+        /// beschriften die Zeile danach (<see cref="EmissionsAusweis.BilanzZeile"/>) —
+        /// nicht nach der Einstellung, die beim Drucken gerade gilt. SO₂ und NOx sind
+        /// vom Modus nicht berührt.
+        /// </summary>
+        public string Modus = DbWerte.EMISSION_MODUS_CO2;
+
         // ---- LEITENTSCHEIDUNGEN L12 und L13 ----
 
         /// <summary>

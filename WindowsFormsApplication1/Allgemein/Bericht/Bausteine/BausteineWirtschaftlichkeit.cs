@@ -745,7 +745,8 @@ namespace WindowsFormsApplication1
                         diff == "—" ? JustificationValues.Center : JustificationValues.Right));
                     t.Append(tr);
                 };
-                zeile("CO₂ [t/a]", b.CO2GekoppeltT, b.CO2GetrenntT);
+                // E5/F7: Der Zeilentitel nennt den Modus, in dem die Zahl entstand.
+                zeile(EmissionsAusweis.BilanzZeile(b.Modus), b.CO2GekoppeltT, b.CO2GetrenntT);
                 zeile("SO₂ [kg/a]", b.SO2GekoppeltKg, b.SO2GetrenntKg);
                 zeile("NOx [kg/a]", b.NOxGekoppeltKg, b.NOxGetrenntKg);
                 k.Fuege(t);

@@ -15,9 +15,20 @@ namespace WindowsFormsApplication1
     /// inkl. Netzverluste). Wärmepumpe/Solar/PV sind in beiden Welten identisch
     /// und kürzen sich heraus.
     ///
-    /// Faktoren je Träger über die bewährte Kette (Vorgabe 11.08.2026):
-    /// Projektwert (energy_project_settings) → Katalog Tab_Brennstoff_Stamm →
-    /// energy_carrier. Einheiten: CO₂ g/kWh, SO₂/NOx mg/kWh (Kenndaten-Katalog).
+    /// Faktoren je Träger über die EINE Kette beider Rechner
+    /// (<see cref="EmissionsFaktorLader"/>, Etappe E5): Projektwert
+    /// (energy_project_settings) → aktive emissionswert-Zeile → Katalog
+    /// Tab_Brennstoff_Stamm → energy_carrier. Einheiten: CO₂ g/kWh, SO₂/NOx mg/kWh
+    /// (Kenndaten-Katalog).
+    ///
+    /// <para><b>Berechnungsmodus (Konzept F7).</b> Im Modus <c>CO2E</c> führt die
+    /// GEKOPPELTE Seite das CO₂-Äquivalent der ausgewählten Arten statt des reinen
+    /// CO₂. Die getrennte Referenz bleibt beim reinen CO₂: Ihre Faktoren stammen aus
+    /// <c>Tab_Kraftwerkspark</c> und <c>Tab_Brennstoff_Stamm</c> — zwei Kataloge ohne
+    /// Emissionsarten und damit ohne belegtes Äquivalent. Ein aus dem Nichts
+    /// hochgerechneter Referenzwert machte die Vermeidungsspalte nicht richtiger,
+    /// sondern nur unauffälliger; der Bilanzhinweis sagt es stattdessen an.
+    /// SO₂ und NOx sind in keinem Modus betroffen.</para>
     ///
     /// Rechnet LIVE aus den persistierten Jahresergebnissen (Tab_Ergebnis*) —
     /// keine eigene Persistenz nötig; Reiter, Word und Excel rufen denselben
@@ -166,11 +177,18 @@ namespace WindowsFormsApplication1
             // können, statt sie zu erraten.
             BilanzKonvention k = konvention ?? BilanzKonvention.Bestimme(p, new GesetzKatalog());
 
+            // BERECHNUNGSMODUS (F7) - einmal je Lauf, und am Ergebnis vermerkt, damit
+            // Reiter, Word und Excel die Zeile nach der METHODE beschriften, in der die
+            // Zahl entstanden ist.
+            string modus = EmissionenCtrl.ModusFuerRechenlauf(idProjekt);
+            bool aequivalent = EmissionsAusweis.IstAequivalent(modus);
+
             var b = new EmissionsBilanz
             {
                 IdProjekt = idProjekt,
                 ParkName = park.Bezeichner,
-                Konvention = k
+                Konvention = k,
+                Modus = modus
             };
 
             // ---------------- gekoppelt: Brennstoff-Emissionen BHKW + Kessel ----------------
@@ -183,13 +201,14 @@ namespace WindowsFormsApplication1
                 if (verbrauchMWh <= 0) return;
                 if (carrierId <= 0) { co2Voll = so2Voll = noxVoll = false; return; }
                 if (IstBiogenerTraeger(carrierId)) biogenMWh += verbrauchMWh;   // L13
-                Faktoren f = LadeFaktoren(idProjekt, carrierId);
+                EmissionsFaktorSatz f = EmissionsFaktorLader.Lade(idProjekt, carrierId);
+                double? co2Faktor = f.Wirksam(modus);   // F7 - im Modus CO2E das Äquivalent
                 // Einheiten: MWh × 1000 kWh × Faktor ÷ 1e6 →
                 //   CO₂ [g/kWh]  → t/a  = MWh × Faktor / 1000
                 //   SO₂/NOx [mg/kWh] → kg/a = MWh × Faktor / 1000
-                if (f.CO2.HasValue) co2 += verbrauchMWh * f.CO2.Value / 1000.0; else co2Voll = false;
-                if (f.SO2.HasValue) so2 += verbrauchMWh * f.SO2.Value / 1000.0; else so2Voll = false;
-                if (f.NOx.HasValue) nox += verbrauchMWh * f.NOx.Value / 1000.0; else noxVoll = false;
+                if (co2Faktor.HasValue) co2 += verbrauchMWh * co2Faktor.Value / 1000.0; else co2Voll = false;
+                if (f.So2.HasValue) so2 += verbrauchMWh * f.So2.Value / 1000.0; else so2Voll = false;
+                if (f.Nox.HasValue) nox += verbrauchMWh * f.Nox.Value / 1000.0; else noxVoll = false;
             };
 
             if (m.BHKW != null)
@@ -293,6 +312,16 @@ namespace WindowsFormsApplication1
             if (nachtrag != null) b.Hinweis = Anhaengen(b.Hinweis, nachtrag);
             if (k.Hinweis != null) b.Hinweis = Anhaengen(b.Hinweis, k.Hinweis);
 
+            // F7: Im Äquivalent-Modus ist die Vermeidungsspalte eine Differenz aus zwei
+            // verschiedenen Größen - gekoppelt CO₂e, getrennt reines CO₂. Das darf nicht
+            // stillschweigend im Bericht stehen.
+            if (aequivalent && refNoetig)
+                b.Hinweis = Anhaengen(b.Hinweis,
+                    "Berechnungsmodus CO₂-Äquivalent (GWP₁₀₀): Die gekoppelte Seite führt " +
+                    "das Äquivalent der ausgewählten Emissionsarten; für Referenzkessel und " +
+                    "Kraftwerkspark gibt es keinen belegten Äquivalenzwert — sie stehen mit " +
+                    "reinem CO₂. Die Vermeidung ist deshalb eine Obergrenze.");
+
             return b;
         }
 
@@ -349,48 +378,11 @@ namespace WindowsFormsApplication1
             public double? NOx;   // mg/kWh
         }
 
-        /// <summary>Faktorkette je Projekt-Träger: Projektwert → Tab_Brennstoff_Stamm → energy_carrier.</summary>
-        private static Faktoren LadeFaktoren(int idProjekt, int carrierId)
-        {
-            var f = new Faktoren();
-            double? sCO2 = null, sSO2 = null, sNOx = null;
-            try
-            {
-                DataTable s = DataRepository.GetDataTable(
-                    "SELECT co2, so2, nox FROM energy_project_settings " +
-                    "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
-                    new OleDbParameter("@p", idProjekt), new OleDbParameter("@c", carrierId));
-                if (s != null && s.Rows.Count > 0)
-                { sCO2 = D(s.Rows[0], "co2"); sSO2 = D(s.Rows[0], "so2"); sNOx = D(s.Rows[0], "nox"); }
-            }
-            catch { }
-
-            double? bCO2 = null, bSO2 = null, bNOx = null;
-            double? kCO2 = null, kSO2 = null, kNOx = null;
-            try
-            {
-                DataTable b = DataRepository.GetDataTable(
-                    "SELECT bs.CO2 AS bsCO2, bs.SO2 AS bsSO2, bs.NOx AS bsNOx, " +
-                    "ec.co2 AS ecCO2, ec.so2 AS ecSO2, ec.nox AS ecNOx " +
-                    "FROM energy_carrier AS ec " +
-                    "LEFT JOIN Tab_Brennstoff_Stamm AS bs ON ec.id_brennstoff = bs.ID " +
-                    "WHERE ec.id = ?",
-                    new OleDbParameter("@c", carrierId));
-                if (b != null && b.Rows.Count > 0)
-                {
-                    bCO2 = D(b.Rows[0], "bsCO2"); bSO2 = D(b.Rows[0], "bsSO2"); bNOx = D(b.Rows[0], "bsNOx");
-                    kCO2 = D(b.Rows[0], "ecCO2"); kSO2 = D(b.Rows[0], "ecSO2"); kNOx = D(b.Rows[0], "ecNOx");
-                }
-            }
-            catch { }
-
-            f.CO2 = Erster(sCO2, bCO2, kCO2);
-            f.SO2 = Erster(sSO2, bSO2, kSO2);
-            f.NOx = Erster(sNOx, bNOx, kNOx);
-            return f;
-        }
-
-        /// <summary>Faktoren direkt aus dem Brennstoff-Katalog (Referenzkessel-Träger).</summary>
+        /// <summary>Faktoren direkt aus dem Brennstoff-Katalog (Referenzkessel-Träger).
+        /// Bewusst OHNE Emissionsarten-Katalog: Der Referenzkessel ist ein
+        /// methodisches Konstrukt über eine Brennstoff-ID, kein Projektträger — es
+        /// gibt für ihn keine <c>emissionswert</c>-Zeile und damit kein belegtes
+        /// Äquivalent (s. Klassenkommentar zum Modus).</summary>
         private static Faktoren LadeKatalogFaktoren(int idBrennstoff)
         {
             var f = new Faktoren();
@@ -408,14 +400,6 @@ namespace WindowsFormsApplication1
             }
             catch { }
             return f;
-        }
-
-        private static double? Erster(double? a, double? b, double? c)
-        {
-            if (a.HasValue && a.Value > 0) return a;
-            if (b.HasValue && b.Value > 0) return b;
-            if (c.HasValue && c.Value > 0) return c;
-            return null;
         }
 
         private static double? D(DataRow r, string spalte)
