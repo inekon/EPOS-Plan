@@ -38,7 +38,7 @@
         //    dem Gegenstand selbst. Auch hier keine Änderung.
         //  - Geändert wurden nur die Fußknöpfe: MinimumSize 110 × 28 → 110 × 30
         //    (einheitliche Knopfhöhe) und Margin links 6 → 10 px, damit
-        //    zwischen „Übernehmen" und „Abbrechen" mindestens 10 px liegen.
+        //    zwischen „OK" und „Abbrechen" mindestens 10 px liegen.
         //    Die rechte Kante bleibt durch den RightToLeft-Fluss konstant bei
         //    12 px Abstand zum Fensterrand — dieselbe Kante wie ComboBox und
         //    Klartextfeld. In Zeile 8 (40 px, davon 8 px Rand oben) bleiben
@@ -273,7 +273,7 @@
             btnOk.Name = "btnOk";
             btnOk.Size = new System.Drawing.Size(124, 35);
             btnOk.TabIndex = 1;
-            btnOk.Text = "Übernehmen";
+            btnOk.Text = "OK";
             // 
             // Form_BkUebernahme
             // 
