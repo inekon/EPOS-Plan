@@ -579,3 +579,22 @@ Nachweise: neuer Runner-Modus `transfer` (Export Kopie A → Import Kopie B)
 15/15 PASS — darunter der Import der ECHTEN Nutzerdatei mit korrekt
 verdrahteter Ergebnisfamilie und die Ablehnung eines Pakets mit
 verfälschtem Schemastand; kd6 92/92, Sweep 114/0/5.
+
+### Projekttransfer T3+T4+T5 (28.08.2026) — Varianten, Vorschau, Prüfstand
+
+- T3 VARIANTEN: Export-Dialog führt eine Häkchenliste der Varianten des
+  gewählten Projekts (vorbelegt alle an). Paketformat V2: Varianten als
+  eigene Projektbäume unter projects/<i>/data/, Verknüpfungen als
+  variantLinks im Manifest (Tab_Variante reist bewusst NICHT als
+  Tabellenzeile — ID_ProjektRef wäre über Paketgrenzen nicht versetzbar);
+  der Import schreibt die Verknüpfung neu, in EINER Transaktion über alle
+  Bäume (BaumEinfuegen je Projekt). V1-Pakete bleiben lesbar.
+- T4 DIALOG: Paketvorschau nennt die Varianten; Abschlussbericht in der
+  Erfolgsmeldung und als <paket>.importbericht.txt; Sicherungs-Haken
+  (vorbelegt an) kopiert die DB vor dem Import mit Zeitstempel.
+- T5 PRÜFSTAND: Runner-Modus `transfer` dauerhaft (Soll 17/17) — B1-Kern
+  (frischer Controller), Nutzerpaket-Realfall Booster-Kette, Roundtrip-
+  Zählungen, Kostenanker, Schemastand-Ablehnung, Variantenpaket.
+
+Nachweise: transfer 17/17 PASS; kd6 und Sweep nach dem Umbau grün
+(Nachtrag folgt der Zahl nach dem Lauf).
