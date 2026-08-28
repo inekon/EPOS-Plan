@@ -348,16 +348,16 @@ namespace WindowsFormsApplication1
         };
 
         // =================================================================================
-        // Etappe E2 - Emissionsarten-Katalog und CO2-Aequivalent (Migrationsschritt 56)
+        // Etappe E2 - Emissionsarten-Katalog und CO2-Aequivalent (Migrationsschritt 57)
         //   Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md, Rev. 1.2, § 3.
         // =================================================================================
 
-        /// <summary>Die Projekttabelle. Bis Schritt 56 trug sie keine einzige
+        /// <summary>Die Projekttabelle. Bis Schritt 57 trug sie keine einzige
         /// migrierte Spalte — deshalb gab es den Namen hier noch nicht.</summary>
         public const string TAB_PROJEKT = "Tab_Projekt";
 
         /// <summary>
-        /// E2 (Schritt 56, Konzept § 3): der KATALOG DER EMISSIONSARTEN. CO₂, SO₂ und
+        /// E2 (Schritt 57, Konzept § 3): der KATALOG DER EMISSIONSARTEN. CO₂, SO₂ und
         /// NOx sind damit keine Spaltennamen mehr, sondern Zeilen einer Tabelle, die
         /// sich erweitern lässt (CH₄, N₂O, Staub, CO, eigene Arten — Konzept F1).
         ///
@@ -368,7 +368,7 @@ namespace WindowsFormsApplication1
         public const string TAB_EMISSIONSART = "emissionsart";
 
         /// <summary>
-        /// E2 (Schritt 56, Konzept § 3): KATALOGVORLAGEN UND TRÄGERWERTE in EINER
+        /// E2 (Schritt 57, Konzept § 3): KATALOGVORLAGEN UND TRÄGERWERTE in EINER
         /// Tabelle. Der Unterschied ist allein, ob <c>carrier_id</c> gefüllt ist —
         /// NULL heißt „trägerunabhängige Vorlage" (z. B. der Strommix). Genau ein
         /// Wert je Träger und Art trägt <c>ist_aktiv</c>; er ist der geltende.
@@ -376,7 +376,7 @@ namespace WindowsFormsApplication1
         public const string TAB_EMISSIONSWERT = "emissionswert";
 
         /// <summary>
-        /// E2 (Schritt 56, Konzept F7): <c>Emission_Berechnungsmodus</c> (TEXT 10) —
+        /// E2 (Schritt 57, Konzept F7): <c>Emission_Berechnungsmodus</c> (TEXT 10) —
         /// zweimal derselbe Spaltenname, an zwei Tabellen mit zwei verschiedenen
         /// Rollen:
         ///
@@ -392,14 +392,14 @@ namespace WindowsFormsApplication1
         ///
         /// <para>Werte sind ausschließlich <see cref="DbWerte.EMISSION_MODUS_CO2"/> und
         /// <see cref="DbWerte.EMISSION_MODUS_CO2E"/>; NULL oder leer gilt überall als
-        /// <c>CO2</c> — das heutige Verhalten. Bestandszeilen belegt Schritt 56
+        /// <c>CO2</c> — das heutige Verhalten. Bestandszeilen belegt Schritt 57
         /// trotzdem ausdrücklich mit <c>CO2</c>, damit der Modus eines Projekts eine
         /// nachlesbare Angabe ist und keine Auslegungssache.</para>
         /// </summary>
         public const string SPALTE_EMISSION_BERECHNUNGSMODUS = "Emission_Berechnungsmodus";
 
         /// <summary>
-        /// Schritt 56f der Migration (Etappe E2, Konzept F7) — die beiden
+        /// Schritt 57f der Migration (Etappe E2, Konzept F7) — die beiden
         /// Modus-Spalten. Rein additives DDL; die Vorbelegung <c>CO2</c> setzt der
         /// Migrationsschritt selbst.
         ///
@@ -416,7 +416,7 @@ namespace WindowsFormsApplication1
         /// nichts zu tun. Fehlt die Spalte, gilt <c>CO2</c> — also das
         /// Bestandsverhalten.</para>
         /// </summary>
-        public static readonly SchemaSpalte[] Schritt56_Emissionsmodus =
+        public static readonly SchemaSpalte[] Schritt57_Emissionsmodus =
         {
             new SchemaSpalte(TAB_APPLIKATION, SPALTE_EMISSION_BERECHNUNGSMODUS, "TEXT(10)"),
             new SchemaSpalte(TAB_PROJEKT,     SPALTE_EMISSION_BERECHNUNGSMODUS, "TEXT(10)"),

@@ -1,9 +1,15 @@
 # Konzept — Emissionsarten-Katalog und CO₂-Äquivalent (EPOS-Plan)
 
-**Stand:** 28.08.2026 · **Rev. 1.2 — alle Entscheidungsfragen beantwortet**
-(Nutzerentscheide 28.08.2026: F3 präzisiert, F4 bestätigt, Luftschadstoffe ohne Vorkette,
-Modus global + Projekt-Override, Artenauswahl global, E1 vor E2 — verbleibend offen nur
-Umsetzungsbegleitung: Fundstellen für E6, Mapping-Durchsicht bei E2)
+**Stand:** 29.08.2026 · **Rev. 1.3 — E1 und E2 umgesetzt** (Rev. 1.2 vom 28.08.2026:
+alle Entscheidungsfragen beantwortet — F3 präzisiert, F4 bestätigt, Luftschadstoffe ohne
+Vorkette, Modus global + Projekt-Override, Artenauswahl global, E1 vor E2)
+
+> **Umsetzungsvermerk (29.08.2026).** **E1** läuft als Migrationsschritt 56
+> (20 Träger gesetzt), **E2** als Migrationsschritt 57 (`ZIEL_VERSION` 57): sieben
+> Emissionsarten, 139 Vorlagen, 81 aktive Trägerwerte, Berechnungsmodus `CO2` in
+> `Tab_Applikation` und in allen 26 Bestandsprojekten. Zweitlauf beider Schritte:
+> 0 Änderungen. Die **Mapping-Liste** (§ 8 Punkt 5) steht in **§ 5.1** zur Durchsicht.
+> Offen bleiben E3 bis E6 sowie die Sichtabnahme.
 
 Anforderung (28.08.2026): Der Energieträger-Dialog soll seine Emissionsfaktoren aus einem
 **pflegbaren Katalog** beziehen (bestehende Faktoren übernehmen, eigene hinzufügen/ändern/löschen),
@@ -328,14 +334,84 @@ dem Gedächtnis** (Hausregel aus dem Quellenwahl-Konzept, § 4).
 Fundstelle greifbar; zudem F3 — mit BAFA-CO₂e wären sie doppelt). Die Arten sind da,
 die Werte trägt ein, wer sie braucht und belegt.
 
+### 5.1 Mapping-Liste gesetzlicher Parameter → Katalogträger (E2, zur Durchsicht)
+
+*Umgesetzt am 29.08.2026 in `SchemaMigration.GESETZ_MAPPING` (Migrationsschritt 57).
+Gesät wird je Schlüssel die **jüngste Jahreszeile mit Status GESICHERT**; VORLAEUFIGE
+und PROGNOSE-Zeilen bleiben außen vor. Alle Zeilen entstehen als **Vorlagen**
+(`ist_aktiv = falsch`, `ist_auslieferung = wahr`) — sie ändern keinen Trägerwert.
+Dies ist die Liste, um deren Durchsicht § 8 Punkt 5 bittet.*
+
+| Schlüssel | Wert [g/kWh] | ab | `quelle` | `ist_co2e` | Katalogträger |
+|---|---|---|---|---|---|
+| `EF_BILANZ_EBEV_ERDGAS_HI` | 200,9 | 2023 | `EBEV_2030` | nein | Erdgas E · Erdgas LL · Stadtgas |
+| `EF_BILANZ_EBEV_ERDGAS_HO` | 181,4 | 2023 | `EBEV_2030` | nein | *ohne Träger* (brennwertbezogen) |
+| `EF_BILANZ_EBEV_HEIZOEL_EL` | 266,4 | 2023 | `EBEV_2030` | nein | Heizöl EL · Heizöl L · Heizöl L Variante · Heizöl L var |
+| `EF_BILANZ_EBEV_HEIZOEL_S` | 286,9 | 2023 | `EBEV_2030` | nein | Heizöl S |
+| `EF_BILANZ_EBEV_FLUESSIGGAS` | 235,8 | 2023 | `EBEV_2030` | nein | Flüssiggas |
+| `EF_BILANZ_EBEV_PFLANZENOEL` | 266,4 | 2023 | `EBEV_2030` | nein | Tierische Fette |
+| `EF_BILANZ_EBEV_BIODIESEL` | 266,4 | 2023 | `EBEV_2030` | nein | *ohne Träger* |
+| `EF_BILANZ_EBEV_BIOMASSE` | 0 | 2023 | `EBEV_2030` | nein | Scheitholz · Holzpellets · Holzhackschnitzel |
+| `EF_BILANZ_BAFA_BIOGAS` | 152 | 2026 | `BAFA_EEW` | **ja** | Biogas · Biogas 2 · Biogas Variante ¹ |
+| `EF_BILANZ_BAFA_PELLETS` | 36 | 2026 | `BAFA_EEW` | **ja** | Holzpellets |
+| `EF_BILANZ_BAFA_HOLZ_TROCKEN` | 27 | 2026 | `BAFA_EEW` | **ja** | Scheitholz · Holzhackschnitzel |
+| `EF_BILANZ_BAFA_FERNWAERME` | 280 | 2026 | `BAFA_EEW` | **ja** | Fernwärme ¹ |
+| `EF_BILANZ_BAFA_STROM` | 435 | 2026 | `BAFA_EEW` | **ja** | Elektrische Energie · Elektrische Energie 2 · Strom Variante ¹ |
+| `EF_BILANZ_BAFA_KLAERGAS` | 50 | 2026 | `BAFA_EEW` | **ja** | *ohne Träger* |
+| `EF_BILANZ_BAFA_DEPONIEGAS` | 50 | 2026 | `BAFA_EEW` | **ja** | *ohne Träger* |
+| `EF_BILANZ_BAFA_KLAERSCHLAMM` | 10 | 2026 | `BAFA_EEW` | **ja** | *ohne Träger* |
+| `EF_BILANZ_BAFA_BIODIESEL` | 70 | 2026 | `BAFA_EEW` | **ja** | *ohne Träger* ² |
+| `EF_BILANZ_STROMMIX_CO2_DIREKT` | 379 | 2023 | `UBA_STROMMIX` | nein | Elektrische Energie · Elektrische Energie 2 · Strom Variante |
+| `EF_BILANZ_STROMMIX_THG_OHNE_VORKETTE` | 387 | 2023 | `UBA_STROMMIX` | **ja** | dieselben drei Stromträger |
+| `EF_BILANZ_STROMMIX_THG_MIT_VORKETTE` | 442 | 2023 | `UBA_STROMMIX` | **ja** | dieselben drei Stromträger |
+| `EF_NACHWEIS_HEIZOEL` | 310 | 2020 | `GEG_NACHWEIS` | nein | Heizöl EL · L · L Variante · L var · S |
+| `EF_NACHWEIS_ERDGAS` | 240 | 2020 | `GEG_NACHWEIS` | nein | Erdgas E · Erdgas LL · Stadtgas |
+| `EF_NACHWEIS_FLUESSIGGAS` | 270 | 2020 | `GEG_NACHWEIS` | nein | Flüssiggas |
+| `EF_NACHWEIS_STEINKOHLE` | 400 | 2020 | `GEG_NACHWEIS` | nein | Steinkohle ³ |
+| `EF_NACHWEIS_BRAUNKOHLE` | 430 | 2020 | `GEG_NACHWEIS` | nein | Braunkohlebrikett |
+| `EF_NACHWEIS_HOLZ` | 20 | 2020 | `GEG_NACHWEIS` | nein | Scheitholz · Holzpellets · Holzhackschnitzel |
+| `EF_NACHWEIS_STROM_NETZ` | 100 | 2027 | `GEG_NACHWEIS` | nein | Elektrische Energie · Elektrische Energie 2 · Strom Variante |
+| `EF_NACHWEIS_BIOGAS` | 80 | 2027 | `GEG_NACHWEIS` | nein | Biogas · Biogas 2 · Biogas Variante |
+| `EF_NACHWEIS_BIOOEL` | 80 | 2027 | `GEG_NACHWEIS` | nein | Tierische Fette |
+| `EF_NACHWEIS_BIOGAS_GEBAEUDENAH` | 70 | 2027 | `GEG_NACHWEIS` | nein | *ohne Träger* |
+| `EF_NACHWEIS_BIOMETHAN` | 80 | 2027 | `GEG_NACHWEIS` | nein | *ohne Träger* |
+| `EF_NACHWEIS_BIOGENES_FLUESSIGGAS` | 80 | 2027 | `GEG_NACHWEIS` | nein | *ohne Träger* |
+| `EF_NACHWEIS_ABWAERME` | 10 | 2027 | `GEG_NACHWEIS` | nein | *ohne Träger* |
+
+¹ Deckungsgleich mit der BAFA-Saat aus Etappe E1 (gleiche Art, gleicher Träger, gleiche
+Quelle, gleicher Wert) — es entsteht **eine** Zeile, nicht zwei. Deshalb tragen alle
+BAFA-Vorlagen denselben kurzen Quellentext „BAFA EEW 3.4, 2026".
+
+² Der Wert 70 steht bei „Tierische Fette" bereits als abgeleitete BAFA-Saat (E1); eine
+zweite Zeile mit derselben Zahl an demselben Träger sagt nichts Zusätzliches.
+
+³ **Nicht** an Koks: dessen 335 g/kWh sind schon eine Steinkohle-Analogie
+(`Konzept_CO2-Faktoren` § 2.3) — eine zweite darüber wäre eine Analogie zur Analogie.
+
+**Bewusst NICHT gesät** — jede Auslassung mit ihrem Grund:
+
+| Schlüssel | Grund |
+|---|---|
+| `EF_BILANZ_EBEV_UMRECHNUNG_HO` | Umrechnungsgröße Brenn-/Heizwert (GJ/MWh), kein Emissionsfaktor |
+| `EF_BILANZ_SUBSTITUTION_STROM` · `EF_BILANZ_BIOGEN_VERBRENNUNG` | Rechenregeln einer methodischen Wahl, keine Trägerfaktoren; beide zudem VORLAEUFIG |
+| `EF_NACHWEIS_FW_KWK_*` · `EF_NACHWEIS_FW_HEIZWERK_*` · `EF_NACHWEIS_FW_VORKETTE_*` | Regeln zur **Bildung** eines Fernwärmefaktors aus dem Erzeugungsmix, nicht der Faktor selbst |
+| `EF_NACHWEIS_VERDRAENGUNGSSTROMMIX` | Gutschriftregel für KWK-Strom; entfällt zum 01.01.2027 ersatzlos (L12) |
+| Klassen `PEF_NACHWEIS`, `KWKG`, `ENERGIESTEUER`, `STROMSTEUER`, `CO2_PREIS`, `UMSATZSTEUER` | keine Emissionsfaktoren |
+| UBA-Strommix 2024/2025 | Status VORLAEUFIG bzw. geschätzt — die jüngste GESICHERTE Zeile ist 2023 |
+
+**Träger ohne gesetzliche Vorlage:** `Wasserstoff` (kein Schlüssel im Katalog),
+`Koks` (siehe ³), `Heizöl Bio 10`/`Heizöl Bio 15` — die GEG-Linie kennt Heizöl und
+Bioöl getrennt, eine Mischungsregel gibt sie nicht her. Alle drei tragen ihre
+BAFA-Saat aus E1 und ihre Stammwerte; mehr wäre erfunden.
+
 ---
 
 ## 6 Umsetzung in Etappen
 
 | Etappe | Inhalt | Ergebnis |
 |---|---|---|
-| **E1** | CO₂-Saat nach `Konzept_CO2-Faktoren` Rev. 1 (eigener Migrationsschritt, Regeln von dort: Sicherung, laccdb-Sperre, ACE-Falle, Idempotenz) | Trägerwerte belegt statt 0 |
-| **E2** | Tabellen `emissionsart` + `emissionswert` anlegen und säen (Arten-Auslieferung; Vorlagen aus `EF_BILANZ`/`EF_NACHWEIS` mit Mapping-Liste; Trägerwerte aus Bestandsspalten) | Modell steht, **kein Ergebnis ändert sich** (F9) |
+| **E1** | CO₂-Saat nach `Konzept_CO2-Faktoren` Rev. 1 (eigener Migrationsschritt, Regeln von dort: Sicherung, laccdb-Sperre, ACE-Falle, Idempotenz) | **UMGESETZT (Schritt 56, 29.08.2026)** — Trägerwerte belegt statt 0 |
+| **E2** | Tabellen `emissionsart` + `emissionswert` anlegen und säen (Arten-Auslieferung; Vorlagen aus `EF_BILANZ`/`EF_NACHWEIS` mit Mapping-Liste; Trägerwerte aus Bestandsspalten) | **UMGESETZT (Schritt 57, 29.08.2026)** — Modell steht, **kein Ergebnis ändert sich** (F9) |
 | **E3** | Emissions-Tab im Energieträger-Dialog (dynamische Felder, TextBox statt Spinner, Einheiten richtig, CO₂e-Summe, Herkunft, Warnung F3), Schreibweg beidseitig | Anwender pflegt im neuen Modell |
 | **E4** | Katalog-Dialog (4.2): Artenverwaltung, Werteverwaltung, Übernehmen | Katalogpflege vollständig |
 | **E5** | Modus-Schalter (F7): globale Vorgabe + Projektfeld, an beiden Orten; `KostenEmissionRechner` + `EmissionsBilanzRechner` modusfähig; Berichte weisen Modus aus; Modus in Variantenergebnisse | CO₂/CO₂e wählbar und wirksam |
@@ -373,8 +449,10 @@ Vergleich Modus CO₂ vs. CO₂e an einem Handbeispiel.
 2. ~~Luftschadstoffe mit oder ohne Vorkette~~ — **entschieden 28.08.2026: ohne** (§ 5).
 3. **Fundstellen** für GEMIS/UBA TEXTE 97/2025 zur E6-Saat.
 4. ~~Auswahl je Träger statt global~~ — **entschieden 28.08.2026: global** (F5).
-5. Mapping-Liste gesetzliche Parameter → Träger (E2) bei Umsetzung zur Durchsicht
-   vorlegen (insb. Fernwärme und Strom-Varianten).
+5. ~~Mapping-Liste gesetzliche Parameter → Träger (E2) bei Umsetzung zur Durchsicht
+   vorlegen~~ — **vorgelegt 29.08.2026 in § 5.1** (Fernwärme: nur `BAFA_FERNWAERME`,
+   die `EF_NACHWEIS_FW_*`-Regeln bleiben außen vor; Strom-Varianten: alle drei
+   Stromträger erhalten dieselben fünf Vorlagen). **Durchsicht steht aus.**
 6. Übernahme in `Konzept_Emissionsfaktoren_Quellenwahl` als dessen Rev. 2
    (generische Faktor-Zeilen statt fester Spalten), sobald jenes umgesetzt wird.
 

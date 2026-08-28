@@ -2249,7 +2249,7 @@ namespace WindowsFormsApplication1
         // EMISSIONSARTEN-KATALOG UND CO2-AEQUIVALENT
         //   Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md, Rev. 1.2.
         //   Steuerwerte der beiden Tabellen emissionsart/emissionswert und des
-        //   Berechnungsmodus; angelegt und eingesaet mit Migrationsschritt 56
+        //   Berechnungsmodus; angelegt und eingesaet mit Migrationsschritt 57
         //   (Etappe E2). Sprachneutrale ASCII-Schluessel wie ueberall in dieser
         //   Datei - der Anzeigename kommt aus MyResource, nie von hier.
         // =====================================================================
@@ -2284,7 +2284,7 @@ namespace WindowsFormsApplication1
         public const string EMISSION_MODUS_CO2E = "CO2E";
 
         // ------------------------------------- Kuerzel der Auslieferungs-Arten
-        //   Die sieben Zeilen, die Migrationsschritt 56 in emissionsart einsaet.
+        //   Die sieben Zeilen, die Migrationsschritt 57 in emissionsart einsaet.
         //   Sie tragen ist_auslieferung = WAHR und sind damit nicht loeschbar,
         //   nur abwaehlbar (Konzept F5); CO2 ist zusaetzlich Pflicht (F1).
 
