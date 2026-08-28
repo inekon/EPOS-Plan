@@ -1003,6 +1003,14 @@ namespace WindowsFormsApplication1
                 // „Anlage" und „Gebäude" sind Konfigurationsblöcke ohne Komponentenbestand;
                 // nur die echten Gewerke der GewerkTabellen führen eine Stückzahl.
                 bool zaehlbar = ProjektDetails.GewerkTabellen.Any(g => g.Key == gewerk);
+
+                // Artefakt-Guard (Nutzerbefund 28.08.2026): Der Anlage-Block erscheint
+                // nur, wenn alle Versionen mit echter Anlagenzeile DASSELBE Gewerk
+                // führen — sonst stünden Werte verschiedener Gewerke nebeneinander
+                // (WP-Stamm neben BHKW- und Kessel-Variante); Referenzanlagen zählen
+                // ohnehin nicht (AbweichungsErmittler.ErsteEchteAnlage).
+                if (!zaehlbar && felder[0].Tabelle == "Tab_Energieanlagen" &&
+                    !AbweichungsErmittler.AnlagenEinheitlich(versionen)) continue;
                 bool irgendwo = versionen.Any(d => AbweichungsErmittler.ZeileFuer(d, felder[0]) != null)
                              || (zaehlbar && versionen.Any(d => AbweichungsErmittler.Anzahl(d, gewerk) > 0));
                 if (!irgendwo) continue;

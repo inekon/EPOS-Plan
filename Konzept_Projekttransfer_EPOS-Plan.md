@@ -105,6 +105,31 @@ Zuordnungen neu ableiten statt raten. **UMGESETZT (28.08.2026):**
 `AnkerNachziehen` läuft nach dem Commit; Beweis T2f (vorher 8 fremde Anker,
 jetzt 0).
 
+**B5 — Lose Kostenpositionen reisen als Artefakte mit (Nutzerbefund
+28.08.2026, importierte Booster-Kette):** Positionen ohne (gültige)
+Anlagenzuordnung anlagenfähiger Komponenten — Altlasten der Quelle — kamen im
+Paket mit und standen am Ziel als gelbe Zeilen (Solarthermie 3.775 €,
+Pufferspeicher 3.000,50 €), obwohl dort nie eine solche Anlage angelegt war.
+Paketanalyse bewies: schon in der Quelle `ID_Anlage NULL` mit toten Ankern —
+kein Import-Riss. **UMGESETZT (T6):** Der Export lässt solche Positionen
+zurück (Filter im Baum-Schreiber; die Erfassungsgruppen ohne Anlagenbezug
+reisen unverändert); Beweis T6 (Booster-Export: Quelle 11 Positionen mit 2
+losen, Paket 9 mit 0 losen).
+
+**B6 — „Anlage"-Vergleich der Übersicht mischt Gewerke (Nutzerbefund
+28.08.2026, Variante BHKW):** Der Konfigurationsblock „Anlage" der
+Unterschieds-/Vergleichsansicht las je Projekt schlicht die ERSTE
+`Tab_Energieanlagen`-Zeile — beim WP-Stamm die Wärmepumpe, bei der
+BHKW-Variante das BHKW: Es erschienen „Anlage"-Unterschiede (35→85 °C,
+Heizstab Ja→Nein, …) einer Anlage, die es im Bereich Energieerzeuger des
+Partners gar nicht gibt; Referenzanlagen (ID_Type 5–9) zählten ebenfalls mit.
+**UMGESETZT (T6):** `AbweichungsErmittler.ErsteEchteAnlage` (Referenzanlagen
+nie), `AnlagenVergleichbar` (Diff nur bei gleichem Gewerk beider Seiten —
+sonst trägt die Bestandszeile der Stufe 1 den Systemunterschied) und
+`AnlagenEinheitlich` (Mehrspalten-Gegenüberstellung nur bei einheitlichem
+Gewerk aller Versionen) — eine Wahrheit für Übersicht, Unterschiedsliste,
+Übernahme und Bericht; Beweis T7.
+
 **B4 — Keine Varianten (die Kernanforderung):** Export nimmt genau ein
 Projekt. `Tab_Variante(ID, ID_Projekt, ID_ProjektRef, Variantenname)`-Zeilen
 gehören dem Variantenprojekt; beim Export einer einzelnen Variante entstünde
@@ -163,6 +188,7 @@ am Ziel eine Verknüpfungswaise. T3 baut die Varianten-Option (§ 4).
 | T2 ✔ | **Härtung UMGESETZT**: schemaVersion an `ZIEL_VERSION` + Importprüfung (B2); `AnkerNachziehen` nach Import (B3) | ERFÜLLT: T4a Ablehnung mit Schemastand-Meldung; T2e/T2f Anker sauber; kd6 92/92, Sweep 114/0/5 |
 | T3 ✔ | **Varianten-Option UMGESETZT**: Häkchenliste im Export (vorbelegt alle an, TF1), Paketformat V2 (`projects/<i>/data/`, `variants`+`variantLinks` im Manifest; `Tab_Variante` reist NICHT als Tabellenzeile — `ID_ProjektRef` wäre nicht versetzbar, die Verknüpfung wird beim Import neu geschrieben), Import orchestriert Stamm + Varianten in EINER Transaktion (`BaumEinfuegen` je Projektbaum), V1-Pakete bleiben lesbar | ERFÜLLT: T5a/T5b (Wärmepumpe WG + 2 Varianten: Export, Import, 2 wiederhergestellte Verknüpfungen), T3a (V1-Nutzerpaket importiert weiter) |
 | T4 ✔ | **Vorschau/Bericht/Sicherung UMGESETZT**: Paketvorschau zeigt Varianten; Abschlussbericht (Projekte, Varianten, Verknüpfungen, Hinweise) in der Erfolgsmeldung und als `<paket>.importbericht.txt` (TF5); Sicherungs-Haken vorbelegt an (`<DB>_vor_Import_<Zeitstempel>.accdb` neben der DB) | ERFÜLLT: Dialog erweitert; Sweep 114/0/5 |
+| T6 ✔ | **Artefakt-Runde (Nutzerbefunde 28.08.2026)**: Export lässt lose Kostenpositionen anlagenfähiger Komponenten zurück (B5); „Anlage"-Vergleich nur gewerkgleich und ohne Referenzanlagen (B6) | ERFÜLLT: transfer 19/19 (T6 Lose-Filter am echten Booster-Projekt, T7 Anlage-Diff-Guard WP↔BHKW) |
 | T5 ✔ | Prüfstand-Modus `transfer` dauerhaft (`kd1runner <ordnerA> transfer <ordnerB>`; Soll 17/17: B1-Kern mit frischem Controller, Nutzerpaket-Realfall, Roundtrip-Zählungen, Anker, Versions-Ablehnung, Variantenpaket) | ERFÜLLT: 17/17 PASS, kd6 92/92, Sweep 114/0/5; offen bleibt die Sichtabnahme durch den Nutzer |
 
 ## 8. Abgrenzung (bewusst NICHT in diesem Konzept)

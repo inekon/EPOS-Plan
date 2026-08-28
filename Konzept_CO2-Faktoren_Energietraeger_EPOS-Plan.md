@@ -66,11 +66,8 @@ Größenordnung wie der bisherige Datenbankwert (560) und der fest verdrahtete V
 `STROMMIX_CO2_G_JE_KWH = 380`.
 
 **Fachlicher Einwand, der eine Entscheidung braucht:** Eine Wärmepumpe ist genau der Fall
-„Energieträgerwechsel zu Strom", für den das BAFA **0,107** vorschreibt. Mit 435 statt 107
-erscheint jede Wärmepumpe rechnerisch rund viermal schlechter. Wer förderkonform nach EEW
-bilanzieren will, braucht 107 — oder eine anlagenabhängige Wahl (Wärmepumpe und Elektrokessel
-mit 107, sonstiger Strombezug mit 435). Letzteres ist fachlich am saubersten, verlagert den Faktor
-aber vom Energieträger auf die Anlage und ist deutlich mehr Arbeit.
+„Energieträgerwechsel zu Strom", für den das BAFA **0,107** vorschreibt - aber nur,
+wenn zuvor die Wärme mittels fossiler Energie erzeugt wurde (Energieträger Wechsel). 
 
 ### 2.3 Nicht im Merkblatt enthalten — abgeleitet, als solches gekennzeichnet
 

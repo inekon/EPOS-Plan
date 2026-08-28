@@ -598,3 +598,28 @@ verfälschtem Schemastand; kd6 92/92, Sweep 114/0/5.
 
 Nachweise: transfer 17/17 PASS; kd6 und Sweep nach dem Umbau grün
 (Nachtrag folgt der Zahl nach dem Lauf).
+
+### Projekttransfer T6 — Artefakt-Runde (28.08.2026, Nutzerbefunde)
+
+Zwei Befunde nach der Sichtprüfung des Nutzers:
+
+- B5 IMPORTIERTE ALTLASTEN: Die importierte Booster-Kette zeigte gelbe
+  Zeilen „Solarthermie/Pufferspeicher — ohne Anlagenzuordnung" (3.775 +
+  3.000,50 EUR). Paketanalyse: Die Positionen waren SCHON IN DER QUELLE
+  lose (ID_Anlage NULL, tote Anker) — kein Import-Riss. Fix: Der Export
+  lässt lose Positionen anlagenfähiger Komponenten zurück (Filter im
+  Baum-Schreiber mit Ä20/Ä21-Spalten-Guard; Erfassungsgruppen ohne
+  Anlagenbezug reisen unverändert). Beweis transfer-T6 am echten
+  Booster-Projekt (Quelle 11/2 lose, Paket 9/0 lose).
+- B6 ANLAGE-VERGLEICH MISCHT GEWERKE: Die Unterschiedsansicht der
+  Übersicht las für den Konfigurationsblock „Anlage" je Projekt die ERSTE
+  Tab_Energieanlagen-Zeile — WP-Stamm gegen BHKW-Variante ergab
+  Scheinunterschiede (35→85 Grad C, Heizstab Ja→Nein, ...), Referenzanlagen
+  zählten mit. Fix im AbweichungsErmittler (eine Wahrheit für Übersicht,
+  Unterschiedsliste, Übernahme, Bericht): ErsteEchteAnlage (Referenz-Typen
+  5–9 nie), AnlagenVergleichbar (Diff nur gewerkgleich),
+  AnlagenEinheitlich (Gegenüberstellung nur bei einheitlichem Gewerk).
+  Beweis transfer-T7 (WP↔BHKW liefert 0 Anlage-Zeilen; selbst↔selbst
+  bleibt vergleichbar).
+
+Nachweise: transfer 19/19 PASS; kd6/Sweep siehe Regressionslauf.
