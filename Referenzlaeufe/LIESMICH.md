@@ -12,10 +12,30 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
-**`2026-08-28_B2/`** — seit dem 28.08.2026 abends die gültige Referenz, **dreizehn
+**`2026-08-29_Booster/`** — seit dem 29.08.2026 die gültige Referenz, **dreizehn
 Projekte** (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, 1030, **1039, 1040, 1041,
 1042**), **332 CSV**. Jeder neue Vergleich läuft gegen diesen Ordner.
 
+> **Anlass: Booster-Temperaturkopplung erstmals scharf im Referenznetz** (Codestand
+> `0787aec` = B3, rechnerisch identisch B2). Datenänderung: `WQ_Unbegrenzt = False` an
+> Anlage 14818 (mit Anwender-Freigabe per UPDATE gesetzt; Sicherung in `DB-Backup\`) —
+> das Häkchen hatte die B1/B2-Kopplung still abgeschaltet (Warnkriterium und Dialogrot
+> dazu: Paket B3). Die Basis trägt erstmals die Zeilen „Booster … GETEILTER Puffer …"
+> und **„Booster-Lesepunkt: DAVOR"** (Default aus Paket B2). Gegen `2026-08-28_B2`:
+> **319/332 byte-gleich, alle 13 Abweichungen in 1042** (gewollt — Booster-JAZ
+> 4,60 → 3,05, die 45-°C-Fiktion ist weg; Zahlen im
+> [Laufprotokoll der Basis](2026-08-29_Booster/lauf_protokoll.md)).
+> **Selbstvergleich 332/332 byte-/MD5-gleich** (zwei `projekt`-Läufe auf EINER festen
+> Quellkopie, Datenstand 29.08.2026 00:29).
+>
+> **Die feste Projektliste (dreizehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
+> ```
+
+> *(Fassung vor Booster — Begründung der früheren Basis `2026-08-28_B2`:)*
+>
 > **Anlass: Paket B2 (Kessel-Temperaturmodus, wählbarer Booster-Lesepunkt, Schema 55) +
 > Datenänderung des Anwenders an 1042** (`4be1862`). E2 war durch die
 > 1042-Umverschaltung des Anwenders bereits überholt (Kontrolllauf des unveränderten
@@ -233,11 +253,17 @@ reproduzierbar.
 
 ## Frühere Stände
 
-`2026-08-28_E2/` bleibt als **vorheriger Stand** liegen (Codestand babab27, Schemastand
-54, dreizehn Projekte, 332 CSV) — die einzige Basis, in der die
-**Booster-Temperaturkopplung in 1042 scharf** war (geteilter Puffer 1054196, Lesepunkt
-implizit „Danach"); für die zwölf übrigen Projekte byte-gleich mit B2. Begründung im
-Abschnitt „(Fassung vor B2)" darüber.
+`2026-08-28_B2/` bleibt als **vorheriger Stand** liegen (Codestand 4be1862, Schemastand
+55, dreizehn Projekte, 332 CSV) — der Stand unmittelbar vor dem Unbegrenzt-Fix: 1042
+dort mit abgeschalteter Kopplung (konstant 45 °C); für die zwölf übrigen Projekte
+byte-gleich mit der Booster-Basis. Begründung im Abschnitt „(Fassung vor Booster)"
+darüber.
+
+`2026-08-28_E2/` bleibt als **älterer Stand** liegen (Codestand babab27, Schemastand
+54, dreizehn Projekte, 332 CSV) — die erste Basis, in der die
+**Booster-Temperaturkopplung in 1042 scharf** war (frühere Verschaltung: geteilter
+Puffer 1054196, Lesepunkt implizit „Danach"); für die zwölf übrigen Projekte
+byte-gleich mit B2. Begründung im Abschnitt „(Fassung vor B2)" darüber.
 
 `2026-08-28_P1/` bleibt als **älterer Stand** liegen (Codestand P1, Schemastand 53,
 dreizehn Projekte, 329 CSV) — die Basis der Pakete B1/Q1/P2/L/E2 (alle je byte-gleich
