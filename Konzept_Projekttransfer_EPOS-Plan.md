@@ -161,9 +161,9 @@ am Ziel eine Verknüpfungswaise. T3 baut die Varianten-Option (§ 4).
 |---|---|---|
 | T1 ✔ | **B1-Fix UMGESETZT** (Ursache: ungeladenes Beziehungswissen im Importpfad — § 3) | ERFÜLLT: `transfer` 15/15 PASS inkl. Import der echten Nutzerdatei (T3a/T3b) und App-Fluss mit frischem Controller (T1-Kern) |
 | T2 ✔ | **Härtung UMGESETZT**: schemaVersion an `ZIEL_VERSION` + Importprüfung (B2); `AnkerNachziehen` nach Import (B3) | ERFÜLLT: T4a Ablehnung mit Schemastand-Meldung; T2e/T2f Anker sauber; kd6 92/92, Sweep 114/0/5 |
-| T3 | **Varianten-Option**: Häkchenliste im Export, Paketformat V2, Import mit Verknüpfungs-Wiederherstellung, V1 bleibt lesbar | § 6 (4)+(5) grün; Sichtbeleg Dialog |
-| T4 | **Vorschau/Bericht/Sicherung** im Dialog | Sichtbelege; Sweep grün |
-| T5 | Prüfstand-Modus `transfer` dauerhaft, Doku (Konzept-Vermerke, Protokoll), Sichtabnahme | Runner-Modus im Soll; Abnahme durch Nutzer |
+| T3 ✔ | **Varianten-Option UMGESETZT**: Häkchenliste im Export (vorbelegt alle an, TF1), Paketformat V2 (`projects/<i>/data/`, `variants`+`variantLinks` im Manifest; `Tab_Variante` reist NICHT als Tabellenzeile — `ID_ProjektRef` wäre nicht versetzbar, die Verknüpfung wird beim Import neu geschrieben), Import orchestriert Stamm + Varianten in EINER Transaktion (`BaumEinfuegen` je Projektbaum), V1-Pakete bleiben lesbar | ERFÜLLT: T5a/T5b (Wärmepumpe WG + 2 Varianten: Export, Import, 2 wiederhergestellte Verknüpfungen), T3a (V1-Nutzerpaket importiert weiter) |
+| T4 ✔ | **Vorschau/Bericht/Sicherung UMGESETZT**: Paketvorschau zeigt Varianten; Abschlussbericht (Projekte, Varianten, Verknüpfungen, Hinweise) in der Erfolgsmeldung und als `<paket>.importbericht.txt` (TF5); Sicherungs-Haken vorbelegt an (`<DB>_vor_Import_<Zeitstempel>.accdb` neben der DB) | ERFÜLLT: Dialog erweitert; Sweep 114/0/5 |
+| T5 ✔ | Prüfstand-Modus `transfer` dauerhaft (`kd1runner <ordnerA> transfer <ordnerB>`; Soll 17/17: B1-Kern mit frischem Controller, Nutzerpaket-Realfall, Roundtrip-Zählungen, Anker, Versions-Ablehnung, Variantenpaket) | ERFÜLLT: 17/17 PASS, kd6 92/92, Sweep 114/0/5; offen bleibt die Sichtabnahme durch den Nutzer |
 
 ## 8. Abgrenzung (bewusst NICHT in diesem Konzept)
 
@@ -179,7 +179,10 @@ ist datenbankneutral — nach einem SQL-Umstieg wechselt nur die Provider-Seite
 des Controllers. Im DB-Migrationskonzept als D-Punkt nachzutragen, sobald
 dieses Konzept beschlossen ist.
 
-## 9. Offene Entscheidungspunkte (zur Abnahme)
+## 9. Entscheidungspunkte (mit der Umsetzung gemäß Vorschlag ausgeführt)
+
+Der Nutzer beauftragte am 28.08.2026 die Ausführung des Konzepts — die
+Vorschläge unten sind damit umgesetzt; Änderungen jederzeit auf Zuruf.
 
 | Nr. | Frage | Vorschlag |
 |---|---|---|
