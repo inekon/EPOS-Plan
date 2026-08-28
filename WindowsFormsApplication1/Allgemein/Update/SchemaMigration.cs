@@ -74,11 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-<<<<<<< HEAD
         public const int ZIEL_VERSION = 56;
-=======
-        public const int ZIEL_VERSION = 55;
->>>>>>> 0787aeca05d25d469d6333930e34df7bac7c74fc
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1818,119 +1814,6 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_54_QUELLEN = 54;
 
         /// <summary>
-<<<<<<< HEAD
-        /// Schritt 55 - <b>Etappe E1</b> (<c>Konzept_CO2-Faktoren_Energietraeger_EPOS-Plan.md</c>
-        /// Rev. 1, § 4): die CO₂-SAAT DER TRÄGERWERTE.
-        ///
-        /// <para><b>Anlass.</b> Zehn der 21 gepflegten Katalogträger trugen
-        /// <c>energy_carrier.co2 = 0,00</c> — darunter Erdgas LL, Heizöl EL, Koks und
-        /// Fernwärme. Ein Projekt, das einen davon verwendet und keine projektbezogene
-        /// Einstellung überschreibt, rechnete seine Emissionen still mit null. Das ist
-        /// kein Anzeigefehler, sondern ein falsches Ergebnis. Vier weitere Träger trugen
-        /// einen Wert, der von der belegten Quelle abweicht.</para>
-        ///
-        /// <para><b>Die Quelle.</b> BAFA, „Informationsblatt CO₂-Faktoren —
-        /// Bundesförderung für Energie- und Ressourceneffizienz in der Wirtschaft",
-        /// Version 3.4, Tabelle 2. Die Spalte führt <b>g CO₂ je kWh</b> (belegt in
-        /// <c>KostenEmissionRechner</c>: <c>MWh × Faktor / 1000 = t</c>), das Merkblatt
-        /// tCO₂/MWh — umgerechnet wird mit 1000. Fünf Werte stehen NICHT im Merkblatt,
-        /// sondern sind aus dessen eigenen Werten hergeleitet (Heizöl Bio 10/15, Koks,
-        /// Stadtgas, Tierische Fette); sie werden im Protokoll ausdrücklich als
-        /// <b>abgeleitet</b> ausgewiesen.</para>
-        ///
-        /// <para><b>Was der Schritt NICHT anfasst</b> — und das ist die eigentliche
-        /// Sorgfalt:
-        /// <list type="bullet">
-        ///   <item><description><c>Flüssiggas</c>, <c>Steinkohle</c>,
-        ///     <c>Braunkohlebrikett</c>, <c>Scheitholz</c>, <c>Holzpellets</c>,
-        ///     <c>Holzhackschnitzel</c> — die jüngere, bewusste Saat der Schritte 42/43.
-        ///     Die drei Holzträger tragen dort <c>co2 = 0</c>, weil sie biogen sind; ein
-        ///     BAFA-Wert darüber wäre eine stille Rücknahme jener Entscheidung.</description></item>
-        ///   <item><description><c>energy_project_settings.co2</c> — projektbezogene
-        ///     Übersteuerungen und teils echte Anwendereingaben. Berichtigt wird
-        ///     ausschließlich die Rückfallebene, also der Katalog (Konzept § 4 Regel 2).</description></item>
-        ///   <item><description><c>KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH</c> —
-        ///     bleibt bei 380. Der Vorgabewert folgt demselben Beschluss wie der
-        ///     Stromfaktor, und der ist offen (Konzept § 3 und § 5.1).</description></item>
-        ///   <item><description><c>Test</c> — Testeintrag, kein realer Energieträger
-        ///     (Konzept § 2.4).</description></item>
-        /// </list></para>
-        ///
-        /// <para><b>ACE-Falle.</b> Ein <c>?</c>-Parameter in der Unterabfrage eines
-        /// UPDATE trifft in ACE still 0 Zeilen (Befund 22.08.2026). Der Schritt liest
-        /// deshalb je Trägername ZUERST <c>id</c> und <c>co2</c> und schreibt dann je
-        /// gelesener ID — Parameter nur auf oberster Ebene, die ID als Literal.</para>
-        ///
-        /// <para><b>Idempotent</b> (unabhängig vom Marker): Geschrieben wird nur, wo der
-        /// Katalogwert NULL ist oder vom Sollwert abweicht. Ein Zweitlauf meldet
-        /// „0 geändert". Ein Träger, den es nicht gibt, ergibt eine Protokollzeile und
-        /// keinen Fehler — der Katalog darf träger-ärmer sein als die Solltabelle.</para>
-        ///
-        /// <para><b>Sicherung und Sperre.</b> Die Konzeptregeln „datierte Sicherung nach
-        /// <c>DB-Backup\</c>" und „nicht schreiben, solange <c>Kenndaten.laccdb</c>
-        /// existiert" sind BETRIEBSregeln vor dem Programmstart, keine Schritt-Logik:
-        /// Die Migration läuft aus <c>Program.Main</c>, also aus genau dem Prozess, der
-        /// die <c>laccdb</c> selbst hält — eine Sperre darauf legte jede Migration
-        /// still.</para>
-        /// </summary>
-        public const int SCHRITT_55_CO2_SAAT = 55;
-
-        /// <summary>
-        /// Schritt 56 - <b>Etappe E2</b> (<c>Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md</c>
-        /// Rev. 1.2, § 3 und § 6): EMISSIONSARTEN UND EMISSIONSWERTE.
-        ///
-        /// <para><b>Was entsteht.</b> Zwei Tabellen, zwei Spalten, vier Saaten:
-        /// <see cref="SchemaKatalog.TAB_EMISSIONSART"/> macht aus dem festen
-        /// Spaltensatz <c>co2/so2/nox</c> einen erweiterbaren Katalog (Konzept F1),
-        /// <see cref="SchemaKatalog.TAB_EMISSIONSWERT"/> hält Katalogvorlagen und
-        /// Trägerwerte in EINER Tabelle — der Unterschied ist allein, ob
-        /// <c>carrier_id</c> gefüllt ist.</para>
-        ///
-        /// <para><b>Sechs Teile.</b>
-        ///   <b>56a</b> Tabelle <c>emissionsart</c> samt eindeutigem Index auf das
-        ///   Kürzel. HART: ohne sie hat kein Wert eine Art.
-        ///   <b>56b</b> Tabelle <c>emissionswert</c> samt zwei Suchwegen und der
-        ///   restriktiven Beziehung auf die Art. HART.
-        ///   <b>56c</b> die sieben ausgelieferten Arten (CO₂ · SO₂ · NOx · CH₄ fossil ·
-        ///   CH₄ biogen · N₂O · Staub).
-        ///   <b>56d</b> die VORLAGEN: die BAFA-Saat aus Schritt 55 je Träger, die
-        ///   jüngste GESICHERTE Jahreszeile je Schlüssel aus <c>EF_BILANZ</c>/
-        ///   <c>EF_NACHWEIS</c> über die Mapping-Liste, und die Luftschadstoffwerte aus
-        ///   <c>Tab_Brennstoff_Stamm</c>.
-        ///   <b>56e</b> die AKTIVEN Trägerwerte aus den heutigen Spalten
-        ///   <c>energy_carrier.co2/so2/nox</c>, jeder mit seiner erkannten Herkunft.
-        ///   <b>56f</b> die beiden Modus-Spalten (Konzept F7) und ihre Vorbelegung
-        ///   <c>CO2</c>.</para>
-        ///
-        /// <para><b>Es ändert sich KEIN Ergebnis</b> (Konzept F9) — die Aussage, die
-        /// diese Etappe trägt. Die Altspalten bleiben unverändert stehen und bleiben die
-        /// gelesene Wahrheit; die neuen Tabellen hat in dieser Fassung <b>kein einziger
-        /// Leser</b> (nachprüfbar: nichts im Code nennt <c>emissionsart</c> oder
-        /// <c>emissionswert</c> außer diesem Schritt). Der Modus ist bis Etappe E5 ein
-        /// reines Speicherfeld, und sein Wert <c>CO2</c> ist ohnehin das heutige
-        /// Verhalten.</para>
-        ///
-        /// <para><b>Keine Beziehung auf <c>energy_carrier</c></b> — bewusst. Eine
-        /// restriktive Beziehung machte das Löschen eines Katalogträgers unmöglich,
-        /// eine kaskadierende risse dem Anwender seine gepflegten Werte unbemerkt weg.
-        /// Die Zuordnung bleibt deshalb lose; verwaiste Wertzeilen räumt die
-        /// Trägerpflege ab Etappe E3 ausdrücklich weg — dieselbe Abwägung wie bei
-        /// <c>Tab_ProjektWerte.ID_AnlageGeraet</c>.</para>
-        ///
-        /// <para><b>Idempotent</b> (unabhängig vom Marker) — und zwar JE ZEILE, nicht
-        /// über eine Zeilenprobe wie Schritt 50: Eine Art wird an ihrem Kürzel erkannt,
-        /// eine Vorlage an (Art, Träger, Quelle, Quellentext, Wert), ein aktiver Wert
-        /// daran, dass es für (Art, Träger) überhaupt schon einen gibt. Damit
-        /// verdoppelt auch ein Lauf nichts, der beim ersten Mal mittendrin gescheitert
-        /// ist — der Marker steht dann noch auf 55, und der Wiederholungslauf ergänzt
-        /// genau das Fehlende. Der Zweitlauf meldet durchgehend 0 neue Zeilen.</para>
-        ///
-        /// <para><b>Access-Feldgrenze (255 Spalten je Tabelle) geprüft:</b>
-        /// <c>Tab_Applikation</c> wächst von 8 auf 9 Spalten, <c>Tab_Projekt</c> von 8
-        /// auf 9. Die beiden neuen Tabellen tragen 10 bzw. 11 Spalten.</para>
-        /// </summary>
-        public const int SCHRITT_56_EMISSIONSARTEN = 56;
-=======
         /// Schritt 55 - <b>Paket B2</b> (zwei Nutzeraufträge vom 28.08.2026): der
         /// TEMPERATURBEZUG der Kessel-Kaskade und der LESEPUNKT des Boosters.
         ///
@@ -1987,7 +1870,64 @@ namespace WindowsFormsApplication1
         /// angelegt" und 0 vorbelegte Zeilen.</para>
         /// </summary>
         public const int SCHRITT_55_TEMPERATURBEZUG = 55;
->>>>>>> 0787aeca05d25d469d6333930e34df7bac7c74fc
+
+        /// <summary>
+        /// Schritt 56 - <b>Etappe E1</b> (<c>Konzept_CO2-Faktoren_Energietraeger_EPOS-Plan.md</c>
+        /// Rev. 1, § 4): die CO₂-SAAT DER TRÄGERWERTE.
+        ///
+        /// <para><b>Anlass.</b> Zehn der 21 gepflegten Katalogträger trugen
+        /// <c>energy_carrier.co2 = 0,00</c> — darunter Erdgas LL, Heizöl EL, Koks und
+        /// Fernwärme. Ein Projekt, das einen davon verwendet und keine projektbezogene
+        /// Einstellung überschreibt, rechnete seine Emissionen still mit null. Das ist
+        /// kein Anzeigefehler, sondern ein falsches Ergebnis. Vier weitere Träger trugen
+        /// einen Wert, der von der belegten Quelle abweicht.</para>
+        ///
+        /// <para><b>Die Quelle.</b> BAFA, „Informationsblatt CO₂-Faktoren —
+        /// Bundesförderung für Energie- und Ressourceneffizienz in der Wirtschaft",
+        /// Version 3.4, Tabelle 2. Die Spalte führt <b>g CO₂ je kWh</b> (belegt in
+        /// <c>KostenEmissionRechner</c>: <c>MWh × Faktor / 1000 = t</c>), das Merkblatt
+        /// tCO₂/MWh — umgerechnet wird mit 1000. Fünf Werte stehen NICHT im Merkblatt,
+        /// sondern sind aus dessen eigenen Werten hergeleitet (Heizöl Bio 10/15, Koks,
+        /// Stadtgas, Tierische Fette); sie werden im Protokoll ausdrücklich als
+        /// <b>abgeleitet</b> ausgewiesen.</para>
+        ///
+        /// <para><b>Was der Schritt NICHT anfasst</b> — und das ist die eigentliche
+        /// Sorgfalt:
+        /// <list type="bullet">
+        ///   <item><description><c>Flüssiggas</c>, <c>Steinkohle</c>,
+        ///     <c>Braunkohlebrikett</c>, <c>Scheitholz</c>, <c>Holzpellets</c>,
+        ///     <c>Holzhackschnitzel</c> — die jüngere, bewusste Saat der Schritte 42/43.
+        ///     Die drei Holzträger tragen dort <c>co2 = 0</c>, weil sie biogen sind; ein
+        ///     BAFA-Wert darüber wäre eine stille Rücknahme jener Entscheidung.</description></item>
+        ///   <item><description><c>energy_project_settings.co2</c> — projektbezogene
+        ///     Übersteuerungen und teils echte Anwendereingaben. Berichtigt wird
+        ///     ausschließlich die Rückfallebene, also der Katalog (Konzept § 4 Regel 2).</description></item>
+        ///   <item><description><c>KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH</c> —
+        ///     bleibt bei 380. Der Vorgabewert folgt demselben Beschluss wie der
+        ///     Stromfaktor, und der ist offen (Konzept § 3 und § 5.1).</description></item>
+        ///   <item><description><c>Test</c> — Testeintrag, kein realer Energieträger
+        ///     (Konzept § 2.4).</description></item>
+        /// </list></para>
+        ///
+        /// <para><b>ACE-Falle.</b> Ein <c>?</c>-Parameter in der Unterabfrage eines
+        /// UPDATE trifft in ACE still 0 Zeilen (Befund 22.08.2026). Der Schritt liest
+        /// deshalb je Trägername ZUERST <c>id</c> und <c>co2</c> und schreibt dann je
+        /// gelesener ID — Parameter nur auf oberster Ebene, die ID als Literal.</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker): Geschrieben wird nur, wo der
+        /// Katalogwert NULL ist oder vom Sollwert abweicht. Ein Zweitlauf meldet
+        /// „0 geändert". Ein Träger, den es nicht gibt, ergibt eine Protokollzeile und
+        /// keinen Fehler — der Katalog darf träger-ärmer sein als die Solltabelle.</para>
+        ///
+        /// <para><b>Sicherung und Sperre.</b> Die Konzeptregeln „datierte Sicherung nach
+        /// <c>DB-Backup\</c>" und „nicht schreiben, solange <c>Kenndaten.laccdb</c>
+        /// existiert" sind BETRIEBSregeln vor dem Programmstart, keine Schritt-Logik:
+        /// Die Migration läuft aus <c>Program.Main</c>, also aus genau dem Prozess, der
+        /// die <c>laccdb</c> selbst hält — eine Sperre darauf legte jede Migration
+        /// still.</para>
+        /// </summary>
+        public const int SCHRITT_56_CO2_SAAT = 56;
+
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -3019,35 +2959,6 @@ namespace WindowsFormsApplication1
                         "Anlage, und ein Stundenprofil kaeme gar nicht in die Datenbank.",
                         Schritt_54_Quellen),
 
-<<<<<<< HEAD
-            // E1 (Konzept_CO2-Faktoren Rev. 1, Paragraf 4): die CO2-Saat der
-            //       Traegerwerte. Zehn Traeger standen auf 0 und rechneten damit
-            //       still emissionsfrei. Begruendung, Ausnahmen (Schritt 42/43,
-            //       Projektwerte, STROMMIX-Konstante) und Idempotenzzusage bei
-            //       der Schrittkonstanten.
-            new Schritt(SCHRITT_55_CO2_SAAT,
-                        "CO2-Saat der Katalogtraeger: energy_carrier.co2 auf die belegten " +
-                        "BAFA-EEW-Werte setzen, wo der Katalog 0/NULL oder abweichend " +
-                        "gepflegt ist (Etappe E1)",
-                        "Die CO2-Faktoren der Katalogtraeger konnten nicht gesetzt werden - " +
-                        "ein Projekt mit einem dieser Traeger rechnet sonst weiter mit 0 g/kWh.",
-                        Schritt_55_Co2Saat),
-
-            // E2 (Konzept Emissionsarten Rev. 1.2, Paragraf 3): der Artenkatalog
-            //       und die Emissionswerte. Sechs Teile in EINER Version - Bauform
-            //       wie die Schritte 4 und 11. WIRKUNGSNEUTRAL: kein Leser, keine
-            //       geaenderte Altspalte. Begruendung, Teilgliederung und
-            //       Idempotenzzusage bei der Schrittkonstanten.
-            new Schritt(SCHRITT_56_EMISSIONSARTEN,
-                        "Emissionsarten-Katalog: Tabellen emissionsart/emissionswert anlegen, " +
-                        "sieben Arten, Vorlagen aus BAFA-Saat, Gesetzesparametern und " +
-                        "Brennstoff-Stamm sowie die aktiven Traegerwerte saeen; " +
-                        "Berechnungsmodus in Tab_Applikation und Tab_Projekt (Etappe E2)",
-                        "Der Emissionsarten-Katalog konnte nicht angelegt werden - ohne ihn " +
-                        "bleiben CO2, SO2 und NOx feste Spalten und der Emissions-Tab (E3) " +
-                        "haette keine Datengrundlage.",
-                        Schritt_56_Emissionsarten),
-=======
             // B2 (Nutzeraufträge 28.08.2026): Temperaturbezug der Kessel-Kaskade und
             // Lesepunkt des Boosters. DDL plus zwei Vorbelegungen. Begruendung,
             // Teilgliederung und Idempotenzzusage bei der Schrittkonstanten.
@@ -3061,7 +2972,20 @@ namespace WindowsFormsApplication1
                         "Hand gepflegtes Temperaturpaar, sonst bliebe seine Kaskade " +
                         "wirkungslos.",
                         Schritt_55_Temperaturbezug),
->>>>>>> 0787aeca05d25d469d6333930e34df7bac7c74fc
+
+            // E1 (Konzept_CO2-Faktoren Rev. 1, Paragraf 4): die CO2-Saat der
+            //       Traegerwerte. Zehn Traeger standen auf 0 und rechneten damit
+            //       still emissionsfrei. Begruendung, Ausnahmen (Schritt 42/43,
+            //       Projektwerte, STROMMIX-Konstante) und Idempotenzzusage bei
+            //       der Schrittkonstanten.
+            new Schritt(SCHRITT_56_CO2_SAAT,
+                        "CO2-Saat der Katalogtraeger: energy_carrier.co2 auf die belegten " +
+                        "BAFA-EEW-Werte setzen, wo der Katalog 0/NULL oder abweichend " +
+                        "gepflegt ist (Etappe E1)",
+                        "Die CO2-Faktoren der Katalogtraeger konnten nicht gesetzt werden - " +
+                        "ein Projekt mit einem dieser Traeger rechnet sonst weiter mit 0 g/kWh.",
+                        Schritt_56_Co2Saat),
+
         };
 
         // =================================================================================
@@ -7189,6 +7113,155 @@ namespace WindowsFormsApplication1
                     "Speicherzustand ab jetzt am Stundenanfang statt nach der Ladephase " +
                     "der Vorebene; das AENDERT die Ergebnisse jedes Projekts mit " +
                     "gekoppeltem Booster.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 56 - CO2-Saat der Traegerwerte (Etappe E1, Konzept_CO2-Faktoren Rev. 1)
+        // =================================================================================
+
+        /// <summary>
+        /// Die SOLLTABELLE aus <c>Konzept_CO2-Faktoren_Energietraeger_EPOS-Plan.md</c>
+        /// Rev. 1, § 2.1 bis § 2.3: Trägername → CO₂ in <b>g/kWh</b> → „abgeleitet?".
+        ///
+        /// <para>Die ersten fünfzehn Werte stehen unmittelbar im BAFA-Merkblatt
+        /// (Tabelle 2, tCO₂/MWh × 1000). Die fünf mit <c>true</c> gekennzeichneten
+        /// stehen dort NICHT: Heizöl Bio 10 = 90 % Heizöl leicht + 10 % Biodiesel,
+        /// Heizöl Bio 15 entsprechend, Koks in Analogie zu Steinkohle, Stadtgas in
+        /// Analogie zu Erdgas, Tierische Fette in Analogie zu Biodiesel. Sie werden
+        /// im Protokoll und im Katalog als abgeleitet ausgewiesen — es sind keine
+        /// belegten BAFA-Werte (Konzept § 2.3).</para>
+        ///
+        /// <para><b>Der Stromwert 435</b> ist die vorläufige Festlegung des Konzepts
+        /// (§ 2.2): der konservative Netzfaktor „El. Strom (Effizienzmaßnahme)". Das
+        /// Merkblatt kennt daneben 107 für den Energieträgerwechsel HIN zu Strom —
+        /// genau den Fall einer Wärmepumpe, die eine fossile Heizung ablöst. Diese
+        /// Entscheidung steht aus; sie ist der offene Punkt 1 des Konzepts und
+        /// betrifft jedes Ergebnis mit Wärmepumpe.</para>
+        ///
+        /// <para><b>Nicht enthalten</b> und damit unangetastet: <c>Test</c>
+        /// (Testeintrag), <c>Flüssiggas</c>, <c>Steinkohle</c>,
+        /// <c>Braunkohlebrikett</c>, <c>Scheitholz</c>, <c>Holzpellets</c>,
+        /// <c>Holzhackschnitzel</c> (die bewusste Saat der Schritte 42/43).</para>
+        /// </summary>
+        private static readonly object[][] CO2_SOLLTABELLE =
+        {
+            //             Traegername              g/kWh   abgeleitet
+            new object[] { "Biogas",                152.0,  false },
+            new object[] { "Biogas 2",              152.0,  false },
+            new object[] { "Biogas Variante",       152.0,  false },
+            new object[] { "Fernwärme",             280.0,  false },
+            new object[] { "Erdgas LL",             201.0,  false },
+            new object[] { "Erdgas E",              201.0,  false },
+            new object[] { "Heizöl EL",             266.0,  false },
+            new object[] { "Heizöl L",              266.0,  false },
+            new object[] { "Heizöl L Variante",     266.0,  false },
+            new object[] { "Heizöl L var",          266.0,  false },
+            new object[] { "Heizöl S",              288.0,  false },
+            new object[] { "Wasserstoff",           385.0,  false },
+            new object[] { "Elektrische Energie",   435.0,  false },
+            new object[] { "Elektrische Energie 2", 435.0,  false },
+            new object[] { "Strom Variante",        435.0,  false },
+            new object[] { "Heizöl Bio 10",         246.0,  true  },
+            new object[] { "Heizöl Bio 15",         237.0,  true  },
+            new object[] { "Koks",                  335.0,  true  },
+            new object[] { "Stadtgas",              201.0,  true  },
+            new object[] { "Tierische Fette",        70.0,  true  },
+        };
+
+        /// <summary>Toleranz beim Vergleich zweier Emissionsfaktoren. Die Katalogwerte
+        /// tragen höchstens eine Nachkommastelle (200,9 · 286,9 · 0,3); alles darunter
+        /// ist Fließkommarauschen, kein Unterschied.</summary>
+        private const double EMISSION_TOLERANZ = 0.0005;
+
+        /// <summary>
+        /// Etappe E1 (Konzept_CO2-Faktoren Rev. 1, § 4): die CO₂-Saat. Anlass,
+        /// Ausnahmen und Idempotenzzusage: <see cref="SCHRITT_56_CO2_SAAT"/>.
+        /// </summary>
+        private static bool Schritt_56_Co2Saat(Lauf l)
+        {
+            int geaendert = 0, unveraendert = 0, fehlend = 0, abgeleiteteWerte = 0;
+
+            foreach (object[] z in CO2_SOLLTABELLE)
+            {
+                string name = (string)z[0];
+                double neu = (double)z[1];
+                bool abgeleitet = (bool)z[2];
+
+                // ACE-FALLE (Befund 22.08.2026): Ein ?-Parameter in der Unterabfrage
+                // eines UPDATE trifft still 0 Zeilen - ohne Fehler, ohne Meldung.
+                // Deshalb ZUERST lesen, dann je gelesener ID schreiben: der Parameter
+                // steht auf oberster Ebene, die ID als ganzzahliges Literal.
+                DataTable dt = Abfrage(l,
+                    "SELECT id, co2 FROM energy_carrier WHERE [name] = ?",
+                    new OleDbParameter("@n", name));
+                if (dt == null) return false;
+
+                if (dt.Rows.Count == 0)
+                {
+                    // Kein Fehler: Der Katalog einer fremden Datenbank darf
+                    // traegeraermer sein als die Solltabelle (Konzept § 4).
+                    l.Notiz(name + ": im Katalog nicht vorhanden - uebersprungen.");
+                    fehlend++;
+                    continue;
+                }
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    int id = Zahl(r["id"]);
+                    bool leer = r["co2"] == DBNull.Value;
+                    double alt = leer ? 0.0 : Kommazahl(r["co2"]);
+
+                    if (!leer && Math.Abs(alt - neu) < EMISSION_TOLERANZ) { unveraendert++; continue; }
+
+                    if (NonQuery(l,
+                            "UPDATE energy_carrier SET co2 = ? WHERE id = " +
+                            id.ToString(CultureInfo.InvariantCulture),
+                            new OleDbParameter("@c", neu)) < 0)
+                        return false;
+
+                    l.Notiz(name + " (id " + id + "): co2 " +
+                            (leer ? "NULL" : Anzeige(alt)) + " -> " + Anzeige(neu) +
+                            (abgeleitet ? "   [ABGELEITET - kein belegter BAFA-Wert]" : ""));
+                    geaendert++;
+                    if (abgeleitet) abgeleiteteWerte++;
+                }
+            }
+
+            // --- Gegenprobe OHNE Schreiben --------------------------------------------
+            // Nachweis statt Annahme: Erst dieser zweite Lesevorgang belegt, dass die
+            // UPDATEs auch angekommen sind. Der Vergleich laeuft in C#, nicht in SQL -
+            // ein Zahlenliteral im Access-SQL waere eine unnoetige Kommastellen-Falle.
+            DataTable nachher = Abfrage(l, "SELECT id, [name], co2 FROM energy_carrier");
+            if (nachher == null) return false;
+
+            int abweichend = 0;
+            foreach (object[] z in CO2_SOLLTABELLE)
+            {
+                string name = (string)z[0];
+                double soll = (double)z[1];
+                foreach (DataRow r in nachher.Rows)
+                {
+                    if (!string.Equals(Txt(r["name"]), name, StringComparison.OrdinalIgnoreCase)) continue;
+                    if (r["co2"] == DBNull.Value || Math.Abs(Kommazahl(r["co2"]) - soll) >= EMISSION_TOLERANZ)
+                    {
+                        l.Notiz("GEGENPROBE: " + name + " traegt " +
+                                (r["co2"] == DBNull.Value ? "NULL" : Anzeige(Kommazahl(r["co2"]))) +
+                                " statt " + Anzeige(soll) + ".");
+                        abweichend++;
+                    }
+                }
+            }
+            if (abweichend > 0) return false;
+
+            l.Zeile("CO2-Saat (Schritt 56): " + geaendert + " Traeger gesetzt (davon " +
+                    abgeleiteteWerte + " mit abgeleitetem Wert), " + unveraendert +
+                    " bereits auf dem Sollwert, " + fehlend + " im Katalog nicht vorhanden; " +
+                    "Gegenprobe ohne Abweichung. UNANGETASTET: Fluessiggas, Steinkohle, " +
+                    "Braunkohlebrikett, Scheitholz, Holzpellets, Holzhackschnitzel " +
+                    "(Saat der Schritte 42/43), Test (kein realer Traeger), " +
+                    "energy_project_settings (Projektuebersteuerungen) und der " +
+                    "Vorgabewert STROMMIX_CO2_G_JE_KWH = 380 (offene Entscheidung).");
             return true;
         }
 

@@ -1,6 +1,31 @@
 # Konzept — CO₂-Faktoren der Energieträger (EPOS-Plan)
 
-**Stand:** 22.08.2026 · **Rev. 1 — zur Abnahme**
+**Stand:** 29.08.2026 · **Rev. 1.1 — UMGESETZT** (Rev. 1 vom 22.08.2026 zur Abnahme)
+
+> **Umsetzungsvermerk (29.08.2026).** Die Saat aus § 2 läuft als **Migrationsschritt 56**
+> (`SchemaMigration.Schritt_56_Co2Saat`, ZIEL_VERSION 57). Erstlauf auf einer Kopie der
+> Produktiv-Datenbank: **20 Träger gesetzt**, 0 unverändert, 0 fehlend, Gegenprobe ohne
+> Abweichung; **Zweitlauf 0 Änderungen**. Fünf Werte sind im Protokoll als
+> `[ABGELEITET - kein belegter BAFA-Wert]` ausgewiesen (§ 2.3).
+>
+> Die Schrittnummer ist 56 und nicht 55, weil eine parallele Sitzung am selben Tag
+> Schritt 55 (Paket B2, Temperaturbezug) belegt hat.
+>
+> **Bewusst ausgenommen** (über die Solltabelle hinaus): `Flüssiggas`, `Steinkohle`,
+> `Braunkohlebrikett`, `Scheitholz`, `Holzpellets`, `Holzhackschnitzel` — die jüngere,
+> bewusste Saat der Migrationsschritte 42/43; die drei Holzträger tragen dort `co2 = 0`,
+> weil sie biogen sind. Ebenso unangetastet: `energy_project_settings` (Projektwerte,
+> Regel 2) und `Test`.
+>
+> **Weiterhin offen:** die Konstante `KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH` steht
+> unverändert auf 380 (§ 3 und § 5.2) — sie folgt derselben Entscheidung wie der
+> Stromfaktor (§ 2.2), und die ist nicht getroffen.
+>
+> **Nicht Teil des Schritts** sind die beiden Betriebsregeln aus § 4: die datierte
+> Sicherung nach `DB-Backup\` und das Nichtschreiben bei vorhandener `Kenndaten.laccdb`.
+> Beide gehören vor den Programmstart — die Migration läuft aus `Program.Main`, also aus
+> genau dem Prozess, der die `laccdb` selbst hält; eine Sperre darauf legte jede
+> Migration still.
 
 Anlass: **Zehn von 21 aktiven Katalog-Energieträgern tragen `co2 = 0,00`** — darunter Erdgas LL,
 Heizöl EL, Koks und Fernwärme. Ein Projekt, das einen davon verwendet und keine projektbezogene
