@@ -298,6 +298,64 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
+        /// PAKET B1 (Konzept 8.2 Punkt 3, Entscheidung F9) — die BOOSTER-ANZEIGEREGEL als
+        /// EINE Wahrheit fuer Karte und Schema.
+        ///
+        /// <para><b>Booster ist keine Persistenz.</b> F9 hat ausdruecklich gegen einen
+        /// eigenen Anlagentyp und gegen ein neues Schemafeld entschieden: Ein Booster ist
+        /// eine KONSTELLATION, und sie laesst sich vollstaendig aus der vorhandenen
+        /// Konfiguration ablesen — eine Anlage mit Waermequelle Pufferspeicher, deren
+        /// Quellpuffer von mindestens einer ANDEREN Anlage desselben Projekts geladen
+        /// wird (der GETEILTE Puffer). Genau diese Konstellation koppelt die Engine seit
+        /// Paket B1 temperaturmaessig an den Speicherzustand; Anzeige und Rechnung sagen
+        /// damit dasselbe.</para>
+        ///
+        /// <para><b>Warum „geteilt" und nicht „Zielpuffer traegt Brauchwasser".</b>
+        /// Konzept 8.2 nennt in der Benennungsregel den Zielpuffer der Klasse
+        /// Brauchwasser/Kombi. Das ist der HAEUFIGSTE Booster, aber nicht der
+        /// vollstaendige: Eine Waermepumpe, die aus einem fremdgeladenen Puffer bezieht
+        /// und einen Heizungspuffer laedt, ist hydraulisch derselbe Fall und rechnet in
+        /// der Engine genauso. Die Marke folgt deshalb der WIRKSAMEN Kopplung.</para>
+        ///
+        /// <para><b>Der Lader darf nicht die Anlage selbst sein</b> — das waere der
+        /// Kurzschluss (<see cref="HART_KURZSCHLUSS"/>), und die Engine richtet dort gar
+        /// keinen Quellbezug ein (E-K2-1). Ein Kurzschluss bekommt deshalb kein
+        /// Booster-Kennzeichen, sondern seinen Warn-Chip.</para>
+        ///
+        /// <para>Gelesen wird das Projektbild EINMAL — dieselbe Bauart wie
+        /// <see cref="PruefeProjekt"/>. Die Kartenspalte holt die Zuordnung je
+        /// Auffrischung einmal statt je Karte.</para>
+        /// </summary>
+        /// <returns>
+        /// Zuordnung <c>Tab_Energieanlagen.ID</c> → <c>Tab_Pufferspeicher.ID</c> des
+        /// geteilten Quellpuffers; nie <c>null</c>, leer = kein Booster im Projekt.
+        /// </returns>
+        public static Dictionary<int, int> BoosterAnlagen(int idProjekt)
+        {
+            Dictionary<int, int> treffer = new Dictionary<int, int>();
+
+            Projektbild bild = Projektbild.Lesen(idProjekt);
+            if (bild == null) return treffer;
+
+            foreach (int idAnlage in bild.AnlagenReihenfolge)
+            {
+                // Die ENGINE-Auflösung (Fremdschlüssel, nur WP/Kessel) — dieselbe, gegen
+                // die auch W5 prüft. Was die Engine nicht als Quellbezug aufbaut, kann
+                // kein Booster sein.
+                int idQuelle = bild.Quellpuffer(idAnlage);
+                if (idQuelle <= 0) continue;
+
+                bool geteilt = false;
+                foreach (int idLader in bild.Lader(idQuelle))
+                    if (idLader != idAnlage) { geteilt = true; break; }
+
+                if (geteilt) treffer[idAnlage] = idQuelle;
+            }
+
+            return treffer;
+        }
+
+        /// <summary>
         /// Die KANAELE, die ein Senkenziel bedient sehen will — die Abbildung, gegen die
         /// W1 das Klassen-Set haelt. Leeres Feld = Direktsenke oder unbekanntes Ziel
         /// (dann gibt es nichts zu pruefen).
@@ -902,7 +960,57 @@ namespace WindowsFormsApplication1
             public int AnlagenVorlauf(int idAnlage)
             {
                 Hydraulikbild.AnlagenEintrag a;
-                return Bild.JeId.TryGetValue(idAnlage, out a) ? a.Vorlauf : 0;
+                if (!Bild.JeId.TryGetValue(idAnlage, out a)) return 0;
+                if (a.Vorlauf > 0) return a.Vorlauf;
+
+                // PAKET B1 (Konzept 8.4 Punkt 2 — Gleichbehandlung des Kessels): Beim
+                // HEIZKESSEL steht das Temperaturpaar nicht an der Anlagenzeile, sondern
+                // in Tab_Heizkessel; Tab_Energieanlagen.Vorlauf ist dort durchweg 0.
+                // Ohne diesen Rückgriff könnte W3 an einem Kessel nie anschlagen — die
+                // Warnung wäre eine reine Wärmepumpen-Warnung, obwohl das Kriterium den
+                // ERZEUGER meint. Dieselbe Vorrangkette benutzt die Engine für den
+                // Kessel-Quellanteil (SimulationControl.KesselTemperaturpaar, Stufe 1).
+                return (a.ID_Type == ProjektPuffer.TYP_KESSEL) ? KesselVorlauf(idAnlage) : 0;
+            }
+
+            /// <summary>
+            /// Vorlauftemperaturen der Projekt-Kessel [°C] über
+            /// <c>Tab_Energieanlagen.ID_Kessel</c>; <c>null</c> = noch nicht gelesen.
+            /// TRÄGE: Die Abfrage läuft erst, wenn ein Kessel wirklich geprüft wird —
+            /// ein Projekt ohne Kessel zahlt nichts dafür.
+            /// </summary>
+            private Dictionary<int, int> _kesselVorlauf;
+
+            private int KesselVorlauf(int idAnlage)
+            {
+                if (_kesselVorlauf == null)
+                {
+                    _kesselVorlauf = new Dictionary<int, int>();
+
+                    DataTable dt = StilleDb.Tabelle(
+                        "SELECT a.ID, k.Vorlauf, k.Ruecklauf " +
+                        "FROM Tab_Energieanlagen AS a INNER JOIN Tab_Heizkessel AS k " +
+                        "     ON a.ID_Kessel = k.ID " +
+                        "WHERE a.ID_Projekt = ?",
+                        StilleDb.Par("@proj", OleDbType.Integer, _idProjekt));
+
+                    if (dt != null)
+                        foreach (DataRow r in dt.Rows)
+                        {
+                            int id = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                            int v = StilleDb.Zahl(StilleDb.Feld(r, "Vorlauf"));
+                            int rl = StilleDb.Zahl(StilleDb.Feld(r, "Ruecklauf"));
+
+                            // Nur ein VOLLSTÄNDIGES Paar zählt — dieselbe Regel wie in der
+                            // Engine (ProjektPuffer.IstTemperaturpaar). Ein einzeln
+                            // gepflegter Vorlauf ohne Rücklauf ist keine Betriebsvorgabe.
+                            if (id > 0 && ProjektPuffer.IstTemperaturpaar(v, rl))
+                                _kesselVorlauf[id] = v;
+                        }
+                }
+
+                int vorlauf;
+                return _kesselVorlauf.TryGetValue(idAnlage, out vorlauf) ? vorlauf : 0;
             }
 
             // --- Innenleben --------------------------------------------------------

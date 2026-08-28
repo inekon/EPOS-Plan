@@ -803,6 +803,23 @@ namespace WindowsFormsApplication1
                     List<int> arten = BedarfsreihenfolgeDerEbene(ebene);
                     ModulEbeneSetzen(ebene);
 
+                    // PAKET B1 (Konzept 8.2/8.4, Leitentscheidung L8): QUELLTEMPERATUR
+                    // der temperaturgekoppelten Module dieser Ebene — hier und nur hier.
+                    //
+                    // Der Ort ist die Aussage: unmittelbar VOR Phase B der Rechenebene
+                    // der beziehenden Anlage, also NACH allem, was die vorigen Ebenen in
+                    // dieser Stunde in den Quellpuffer geladen haben, und VOR jeder
+                    // eigenen Entnahme. Der Wert gilt danach für die GANZE Stunde dieser
+                    // Ebene — Bedarfsphase und alle Ladephasen lesen denselben. Eine
+                    // zweite Abfrage innerhalb der Stunde wäre nicht reproduzierbar
+                    // spezifiziert: Der SOC des Puffers ändert sich zwischen den Phasen
+                    // mehrfach.
+                    //
+                    // Ohne gekoppeltes Modul kehren beide Aufrufe sofort zurück - der
+                    // Bestand sieht von dieser Zeile nichts.
+                    if (MitWP) WP.Quelltemperatur_Stunde(stunde);
+                    if (MitKessel) Kessel.Quelltemperatur_Stunde(stunde);
+
                     for (int s = 0; s < arten.Count; s++)
                     {
                         int art = arten[s];
@@ -918,6 +935,11 @@ namespace WindowsFormsApplication1
             if (MitSolar) Solar.Abschluss_Zweikanalig();
             if (MitKessel) Kessel.Abschluss_Zweikanalig();
             if (MitBHKW) BHKW.Abschluss_Zweikanalig();
+
+            // PAKET B1 (Konzept 8.4): Bilanz der Kessel-Temperaturkopplung — je
+            // gekoppeltem Kessel einmal, an derselben Stelle, an der die Wärmepumpe ihre
+            // Kappungsstunden meldet (Zweikanalig_Ende). Ohne Kopplung stumm.
+            if (MitKessel) Kessel.QuellkopplungMelden();
 
             // N2: Zugerechnete Speicherentladung an die Erzeugermodule geben. Sie ist der
             // zweite Summand ihres EIGENANTEILS an der Bedarfsdeckung; den ersten

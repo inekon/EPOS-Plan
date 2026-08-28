@@ -631,6 +631,9 @@ namespace WindowsFormsApplication1
                 // ein Aufruf je Karte wäre bei fünf Erzeugern fünfmal dieselbe Auskunft.
                 WarnbefundeSammeln();
 
+                // PAKET B1 (F9): dieselbe Bauart für die Booster-Anzeigeregel.
+                BoosterAnlagenSammeln();
+
                 WaermeerzeugerGruppe();
                 StromGruppe(label2.Text, comboBox5, checkBox5,
                             ErzeugerKatalog.STROMERZEUGER, WizardItemClass.PV_TYP);
@@ -1283,6 +1286,7 @@ namespace WindowsFormsApplication1
             List<ErzeugerKarte.ChipDaten> chips = new List<ErzeugerKarte.ChipDaten>();
 
             QuellenChip(info, chips);
+            BoosterChip(info, chips);
             SenkenChips(info, chips);
             TemperaturChip(info, chips);
             WarnChip(info, chips);
@@ -1318,6 +1322,55 @@ namespace WindowsFormsApplication1
         /// Speicher betreffen — künftig an der Speicherkarte (Paket P2).</para>
         /// </summary>
         private Dictionary<int, List<string>> _warnbefunde = new Dictionary<int, List<string>>();
+
+        /// <summary>
+        /// PAKET B1 (Entscheidung F9) — die Booster-Anlagen des Projekts, EINMAL je
+        /// Auffrischung geholt (Muster <see cref="_warnbefunde"/>): Anlage →
+        /// geteilter Quellpuffer.
+        /// </summary>
+        private Dictionary<int, int> _boosterAnlagen = new Dictionary<int, int>();
+
+        private void BoosterAnlagenSammeln()
+        {
+            _boosterAnlagen = (m_ID_Projekt > 0)
+                ? Warnkriterien.BoosterAnlagen(m_ID_Projekt)
+                : new Dictionary<int, int>();
+        }
+
+        /// <summary>
+        /// Das BOOSTER-BADGE einer Erzeugerkarte (Konzept 8.2 Punkt 3, Entscheidung F9).
+        ///
+        /// <para><b>Anzeigeregel, kein Datenfeld.</b> F9 hat gegen einen eigenen
+        /// Anlagentyp und gegen neue Persistenz entschieden; die Marke wird aus der
+        /// Konfiguration abgeleitet (<see cref="Warnkriterien.BoosterAnlagen"/>) —
+        /// Wärmequelle Pufferspeicher auf einen GETEILTEN Puffer, also einen, den ein
+        /// anderer Erzeuger dieses Projekts lädt.</para>
+        ///
+        /// <para>Sie gilt für Wärmepumpe UND Heizkessel (Konzept 8.4: Gleichbehandlung) —
+        /// es ist dieselbe Kopplung, und die Karte darf sie nicht bei einem der beiden
+        /// verschweigen.</para>
+        ///
+        /// <para>Der Tooltip nennt den Quellspeicher: Die Aussage „Booster" ist ohne ihn
+        /// nicht nachprüfbar. Stil <c>QuelleKaskade</c> — dasselbe Blau-gestrichelt wie
+        /// der Quellen-Chip daneben, denn das Badge erläutert genau diesen; als
+        /// Doppelklickziel deshalb ebenfalls die Quelle.</para>
+        /// </summary>
+        private void BoosterChip(AnlagenInfo info, List<ErzeugerKarte.ChipDaten> chips)
+        {
+            int idPuffer;
+            if (!_boosterAnlagen.TryGetValue(info.ID, out idPuffer) || idPuffer <= 0) return;
+
+            string name = WaermesenkeClass.PufferName(idPuffer);
+            if (name.Length == 0) name = MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER;
+
+            chips.Add(new ErzeugerKarte.ChipDaten
+            {
+                Text = MyResource.Resource.SIM_KARTE_BOOSTER,
+                Stil = ErzeugerKarte.ChipStil.QuelleKaskade,
+                Hinweis = string.Format(MyResource.Resource.SIM_KARTE_TIP_BOOSTER, name),
+                Ziel = ErzeugerKarte.ChipZiel.Quelle
+            });
+        }
 
         private void WarnbefundeSammeln()
         {

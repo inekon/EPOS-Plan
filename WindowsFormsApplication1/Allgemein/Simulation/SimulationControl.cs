@@ -1214,6 +1214,14 @@ namespace WindowsFormsApplication1
             // zusätzlich die Eintrittstemperatur.
             QuellbezuegeAufbauen(kontext);
 
+            // PAKET B1 (Konzept 8.2, L8): Temperaturkopplung der Wärmepumpen-Module.
+            // MUSS hier stehen - nach QuellspeicherUebernehmen (erst dort wird die
+            // eigene Quellinstanz durch die GETEILTE Registry-Instanz ersetzt, und genau
+            // daran hängt die Unterscheidung geteilt/eigenständig) und vor
+            // schleife.Rechnen. Der Kessel bekommt seine Kopplung eine Zeile darüber, in
+            // KesselQuellbezugSetzen.
+            BoosterKopplungVorbereiten();
+
             schleife.Kontext = kontext;
             schleife.Bedarfsreihenfolge = BedarfsreihenfolgeAufbauen();
 
@@ -3142,6 +3150,53 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// PAKET B1 (Konzept 8.2, Leitentscheidung L8) — richtet die
+        /// BOOSTER-TEMPERATURKOPPLUNG der Wärmepumpen-Module ein und protokolliert sie.
+        ///
+        /// <para>Gekoppelt wird ein Modul genau dann, wenn sein Quellpuffer ein
+        /// GETEILTER Puffer ist: eine Speicherinstanz, die zugleich Senke eines anderen
+        /// Erzeugers ist und deshalb von <see cref="QuellspeicherUebernehmen"/> aus der
+        /// Registry eingesetzt wurde (<c>IstQuelle == false</c>). Eigenständige
+        /// Quellspeicher — der Erdsonden-Ersatz mit <c>WQ_Spreizung</c>, Start voll —
+        /// behalten die statische Jahres-Quelltemperatur (Konzept 8.2, letzter
+        /// Absatz).</para>
+        ///
+        /// <para>Der Hinweis nennt Speicher und Temperaturband, weil die Kopplung eine
+        /// ERGEBNISÄNDERUNG gegenüber jedem früheren Lauf desselben Projekts ist: Vorher
+        /// rechnete dieselbe Anlage mit einer Konstante, jetzt mit einer Ganglinie.</para>
+        /// </summary>
+        private void BoosterKopplungVorbereiten()
+        {
+            if (simulation_wp == null || !_wpInSchleife) return;
+
+            if (simulation_wp.BoosterKopplungVorbereiten() <= 0) return;
+
+            IReadOnlyList<SimulationPufferspeicher> quellen = simulation_wp.Quellspeicher;
+            for (int i = 0; i < quellen.Count; i++)
+            {
+                if (!simulation_wp.QuelleGekoppelt(i)) continue;
+
+                SimulationPufferspeicher q = quellen[i];
+                if (q == null) continue;
+
+                // Die Anlagen-ID kommt aus der MODULLISTE, nicht aus dem Speicher: Die
+                // geteilte Instanz ist ein SENKENspeicher der Registry und trägt deshalb
+                // kein ID_Anlage (das führt nur eine eigene Quellinstanz).
+                int idAnlage = (i < simulation_wp.wp_list.Count) ? simulation_wp.wp_list[i] : 0;
+
+                Protokoll.Hinweis("Booster: Die Anlage " + idAnlage + " bezieht ihre " +
+                                  "Quellwärme aus Puffer " + q.ID_Pufferspeicher + " (" +
+                                  q.BezeichnerAnzeige() + "), einem GETEILTEN Puffer. Die " +
+                                  "Quelltemperatur folgt dem Speicherzustand und wird je " +
+                                  "Stunde neu gebildet (" + q.RL_eff.ToString("0.#") + " … " +
+                                  q.VL_eff.ToString("0.#") + " °C, " + q.SchichtenWirksam +
+                                  " Schicht(en)) statt mit einem Jahresprofil zu rechnen. " +
+                                  "Unterschreitet sie die unterste Kennlinien-Stützstelle, " +
+                                  "gilt diese Stützstelle (Kappung, keine Extrapolation).");
+            }
+        }
+
+        /// <summary>
         /// Meldet, wenn der Heizkessel ALLEIN wegen einer Puffer-Quelle in der
         /// Stundenschleife rechnet, aber kein einziger Quellbezug zustande gekommen ist
         /// (Nacharbeit E-K2-4).
@@ -3155,8 +3210,13 @@ namespace WindowsFormsApplication1
         {
             if (!_kesselNurWegenQuelle || simulation_spk == null) return;
 
+            // PAKET B1: Ein TEMPERATURGEKOPPELTER Kessel zählt als wirksam, auch wenn sein
+            // Anteil gerade 0 ist — er entsteht je Stunde neu, und beim Laufaufbau steht
+            // der Puffer noch leer (Konzept 8.4). Ohne diese Zeile meldete ausgerechnet
+            // der Booster „kein Quellbezug zustande gekommen".
             for (int i = 0; i < simulation_spk.KesselAnzahl; i++)
-                if (simulation_spk.QuellAnteil(i) > 0) return;      // mindestens einer wirkt
+                if (simulation_spk.QuellAnteil(i) > 0 ||
+                    simulation_spk.QuelleGekoppelt(i)) return;      // mindestens einer wirkt
 
             Protokoll.WarnungEinmal("kessel-quelle-ohne-wirkung",
                 "Kessel-Kaskade: Die Heizkessel dieses Projekts führen einen Pufferspeicher " +
@@ -3243,6 +3303,16 @@ namespace WindowsFormsApplication1
         /// <c>Q_max</c>, das aus derselben Spreizung gebildet ist; eine zweite Absenkung
         /// über die Mitteltemperatur wäre eine doppelte Vorsicht.
         ///
+        /// <para><b>PAKET B1 (Konzept 8.4) — zwei Fälle statt einem.</b> Ist der
+        /// Quellpuffer ein GETEILTER Puffer (zugleich Senke eines anderen Erzeugers,
+        /// erkennbar an <c>!IstQuelle</c>), wird der Anteil nicht mehr einmalig gebildet,
+        /// sondern folgt je Stunde dem Speicherzustand — dieselbe Regel und derselbe
+        /// Lesezeitpunkt wie bei der Wärmepumpe (8.2). Diese Methode richtet dann nur den
+        /// HUB ein (<c>SimulationSPK.QuellkopplungSetzen</c>); die Stundenabfrage macht
+        /// die Kaskadenschleife. Ein EIGENSTÄNDIGER Quellspeicher behält den bisherigen
+        /// statischen Weg über die Speicherzeile — sein Temperaturpaar sind keine
+        /// Speichertemperaturen (7.6).</para>
+        ///
         /// <b>T_Vorlauf/T_Rücklauf</b> — das Temperaturpaar, über das der Kessel anheben
         /// muss — in einer VORRANGKETTE nach demselben Muster wie bei den Puffern
         /// (Konzept 5.1):
@@ -3261,8 +3331,17 @@ namespace WindowsFormsApplication1
             int index = simulation_spk.spk_anlagen_ids.IndexOf(idAnlage);
             if (index < 0 || index >= simulation_spk.KesselAnzahl) return;
 
-            WaermesenkeClass.PufferInfo qp = WaermesenkeClass.PufferLesen(quelle.ID_Pufferspeicher);
-            double tQuelle = (qp != null) ? qp.Vorlauf : 0;
+            // PAKET B1 (Konzept 8.4): T_Quelle ist beim GETEILTEN Puffer nicht mehr die
+            // Vorlauftemperatur der Speicherzeile, sondern der Speicherzustand. Für die
+            // Einrichtung (Guard „zu kalt", Protokolltext) gilt dann das ERREICHBARE
+            // MAXIMUM VL_eff — die höchste Temperatur, die eine Schicht je tragen kann.
+            // Beim eigenständigen Quellspeicher bleibt es Zeichen für Zeichen beim
+            // Bestandsweg über die Speicherzeile.
+            bool gekoppelt = !quelle.IstQuelle && quelle.Q_max > 0 && quelle.VL_eff > quelle.RL_eff;
+
+            WaermesenkeClass.PufferInfo qp = gekoppelt
+                ? null : WaermesenkeClass.PufferLesen(quelle.ID_Pufferspeicher);
+            double tQuelle = gekoppelt ? quelle.VL_eff : ((qp != null) ? qp.Vorlauf : 0);
 
             int vorlauf, ruecklauf;
             if (tQuelle <= 0 || !KesselTemperaturpaar(idAnlage, index, out vorlauf, out ruecklauf))
@@ -3289,6 +3368,27 @@ namespace WindowsFormsApplication1
             }
 
             if (anteil > 1) anteil = 1;
+
+            if (gekoppelt)
+            {
+                // PAKET B1: Der Anteil wird je Stunde neu gebildet (Konzept 8.4);
+                // eingerichtet wird hier nur der HUB, gegen den er entsteht.
+                simulation_spk.QuellkopplungSetzen(index, quelle, vorlauf, ruecklauf);
+
+                Protokoll.Hinweis("Kessel-Kaskade (Booster): Anlage " + idAnlage +
+                                  " bezieht ihre Eintrittstemperatur aus Puffer " +
+                                  quelle.ID_Pufferspeicher + " (" + quelle.BezeichnerAnzeige() +
+                                  "), einem GETEILTEN Puffer. Die Quelltemperatur folgt dem " +
+                                  "Speicherzustand und wird je Stunde neu gebildet (" +
+                                  quelle.RL_eff.ToString("0.#") + " … " +
+                                  quelle.VL_eff.ToString("0.#") + " °C). Hub des Kessels " +
+                                  ruecklauf + "/" + vorlauf + " °C; bei voller Beladung trägt " +
+                                  "der Puffer " + (anteil * 100).ToString("0.#") + " % der " +
+                                  "Nutzwärme. Der Kessel rechnet NACH dem Erzeuger, der den " +
+                                  "Puffer lädt.");
+                return;
+            }
+
             simulation_spk.QuellbezugSetzen(index, quelle, anteil);
 
             Protokoll.Hinweis("Kessel-Kaskade: Anlage " + idAnlage + " bezieht ihre " +

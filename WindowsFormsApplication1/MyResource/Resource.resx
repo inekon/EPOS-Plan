@@ -206,6 +206,9 @@ bei einem kleinen Speicher wird die Zahl groß, ohne dass er stärker altert.</v
   <data name="SIM_KARTE_ANLAGE_HINZU" xml:space="preserve">
     <value>+ Anlage hinzufügen: Anlagen werden über die Projektseite angelegt.</value>
   </data>
+  <data name="SIM_KARTE_BOOSTER" xml:space="preserve">
+    <value>Booster</value>
+  </data>
   <data name="SIM_KARTE_AUFNEHMEN" xml:space="preserve">
     <value>+ aufnehmen</value>
   </data>
@@ -236,6 +239,11 @@ und bekommt den letzten Rang der Kaskade (mit ▲ nach vorn).</value>
   </data>
   <data name="SIM_KARTE_TIP_BEARBEITEN" xml:space="preserve">
     <value>Wärmesenke bearbeiten (auch per Doppelklick auf die Karte)</value>
+  </data>
+  <data name="SIM_KARTE_TIP_BOOSTER" xml:space="preserve">
+    <value>Booster: Der Quellspeicher „{0}“ wird von einem anderen Erzeuger dieses Projekts geladen.
+Die Quelltemperatur folgt deshalb dem Ladezustand des Speichers und wird je Stunde neu gebildet —
+je wärmer der Speicher, desto günstiger arbeitet dieser Erzeuger.</value>
   </data>
   <data name="SIM_KARTE_TIP_ENTFERNEN" xml:space="preserve">
     <value>Aus der Simulation nehmen — die Komponente bleibt im Projekt,
@@ -296,6 +304,9 @@ Ohne Quellpuffer steht hier 0,00.</value>
   </data>
   <data name="SIM_ROLLE_RANG" xml:space="preserve">
     <value>Senke auf Rang {0}</value>
+  </data>
+  <data name="SIM_REIHE_QUELLTEMPERATUR" xml:space="preserve">
+    <value>Quelltemperatur [°C]</value>
   </data>
   <data name="SIM_SCHEMA_ABNEHMER_WARMWASSER" xml:space="preserve">
     <value>Warmwasser</value>
@@ -1570,6 +1581,9 @@ Beide zeigen auf {0} „{1}".</value>
   <data name="SIMENG_KESSEL_NICHT_HINTERLEGT" xml:space="preserve">
     <value>Der Heizkessel '{0}' ist im Projekt nicht hinterlegt. Die Kessel-Simulation wurde abgebrochen.</value>
   </data>
+  <data name="SIMENG_KESSEL_QUELLKOPPLUNG_HINWEIS" xml:space="preserve">
+    <value>Heizkessel '{0}': Die Eintrittstemperatur folgte dem geteilten Quellpuffer — über das Jahr {1} bis {2} °C, im Mittel {3} °C, bezogen auf den Hub {4}/{5} °C des Kessels. In {6} Stunden lag der Puffer nicht über dem Rücklauf; dort hat der Kessel die volle Anhebung selbst geleistet.</value>
+  </data>
   <data name="SIMENG_LADEORDNUNG_ART_NICHT_IN_SPEICHERSTUFE" xml:space="preserve">
     <value>Ladeordnung: Anlage {0} ({1}) lädt laut Konfiguration den Speicher {2} ({3}). Diese Erzeugerart rechnet in diesem Lauf nicht in der Speicherstufe; die Anlage rechnet als Vektorstufe wie eine Heizkreis-Anlage.</value>
   </data>
@@ -1671,6 +1685,9 @@ Beide zeigen auf {0} „{1}".</value>
   </data>
   <data name="SIMENG_WP_KAPPUNG_OBEN_HINWEIS" xml:space="preserve">
     <value>Wärmepumpe '{0}': Die Quelltemperatur überschreitet in {1} Stunden die obere Stützstelle der Kennlinie ({2} °C). Für diese Stunden gilt der COP der obersten Stützstelle; es wird nicht extrapoliert. Liefert der Hersteller ein Hochtemperatur-Kennfeld, sollte die Kennlinie um höhere Stützstellen ergänzt werden.</value>
+  </data>
+  <data name="SIMENG_WP_KAPPUNG_UNTEN_HINWEIS" xml:space="preserve">
+    <value>Wärmepumpe '{0}': Die Quelltemperatur unterschreitet in {1} Stunden die untere Stützstelle der Kennlinie ({2} °C); gemessen wurden {3} bis {4} °C. Für diese Stunden gilt der COP der untersten Stützstelle. Die Quelle ist ein geteilter Pufferspeicher — dort wird bewusst gekappt statt extrapoliert, weil eine Unterschreitung nur bedeutet, dass der Speicher gerade auf Rücklaufniveau steht.</value>
   </data>
   <data name="SIMENG_WP_KEINE_KENNDATEN" xml:space="preserve">
     <value>Für die Wärmepumpe '{0}' sind keine Kenndaten (Kennlinie) für Vorlauf {1} °C vorhanden. Die Simulation wurde abgebrochen.</value>

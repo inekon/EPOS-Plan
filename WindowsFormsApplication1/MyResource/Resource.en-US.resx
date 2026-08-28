@@ -206,6 +206,9 @@ with a small tank the figure becomes large without any additional ageing.</value
   <data name="SIM_KARTE_ANLAGE_HINZU" xml:space="preserve">
     <value>+ Add unit: units are created on the project page.</value>
   </data>
+  <data name="SIM_KARTE_BOOSTER" xml:space="preserve">
+    <value>Booster</value>
+  </data>
   <data name="SIM_KARTE_AUFNEHMEN" xml:space="preserve">
     <value>+ include</value>
   </data>
@@ -236,6 +239,11 @@ and takes the last cascade rank (move it forward with ▲).</value>
   </data>
   <data name="SIM_KARTE_TIP_BEARBEITEN" xml:space="preserve">
     <value>Edit heat sink (double-click on the card works as well)</value>
+  </data>
+  <data name="SIM_KARTE_TIP_BOOSTER" xml:space="preserve">
+    <value>Booster: the source storage “{0}” is charged by another generator of this project.
+The source temperature therefore follows the state of charge of the storage and is formed anew each hour —
+the warmer the storage, the more efficiently this generator works.</value>
   </data>
   <data name="SIM_KARTE_TIP_ENTFERNEN" xml:space="preserve">
     <value>Remove from the simulation — the component stays in the project
@@ -296,6 +304,9 @@ Without a source buffer this reads 0.00.</value>
   </data>
   <data name="SIM_ROLLE_RANG" xml:space="preserve">
     <value>sink at rank {0}</value>
+  </data>
+  <data name="SIM_REIHE_QUELLTEMPERATUR" xml:space="preserve">
+    <value>Source temperature [°C]</value>
   </data>
   <data name="SIM_SCHEMA_ABNEHMER_WARMWASSER" xml:space="preserve">
     <value>Domestic hot water</value>
@@ -1554,6 +1565,9 @@ Both point to {0} "{1}".</value>
   <data name="SIMENG_KESSEL_NICHT_HINTERLEGT" xml:space="preserve">
     <value>The boiler '{0}' is not stored in the project. The boiler simulation was aborted.</value>
   </data>
+  <data name="SIMENG_KESSEL_QUELLKOPPLUNG_HINWEIS" xml:space="preserve">
+    <value>Boiler '{0}': the inlet temperature followed the shared source storage — {1} to {2} °C over the year, {3} °C on average, relative to the boiler's temperature lift of {4}/{5} °C. In {6} hours the storage was not above the return temperature; there the boiler provided the full lift itself.</value>
+  </data>
   <data name="SIMENG_LADEORDNUNG_ART_NICHT_IN_SPEICHERSTUFE" xml:space="preserve">
     <value>Charging order: unit {0} ({1}) is configured to charge the storage {2} ({3}). This generator type is not part of the storage stage in this run; the unit is calculated as a vector stage, like a heating-circuit unit.</value>
   </data>
@@ -1655,6 +1669,9 @@ Both point to {0} "{1}".</value>
   </data>
   <data name="SIMENG_WP_KAPPUNG_OBEN_HINWEIS" xml:space="preserve">
     <value>Heat pump '{0}': in {1} hours the source temperature exceeds the upper data point of the performance curve ({2} °C). For these hours the COP of the highest data point applies; no extrapolation is performed. If the manufacturer supplies a high-temperature performance map, the curve should be extended with higher data points.</value>
+  </data>
+  <data name="SIMENG_WP_KAPPUNG_UNTEN_HINWEIS" xml:space="preserve">
+    <value>Heat pump '{0}': in {1} hours the source temperature falls below the lowest data point of the performance curve ({2} °C); measured were {3} to {4} °C. For these hours the COP of the lowest data point applies. The source is a shared buffer storage — there the value is capped deliberately instead of extrapolated, because falling below only means that the storage currently sits at return temperature.</value>
   </data>
   <data name="SIMENG_WP_KEINE_KENNDATEN" xml:space="preserve">
     <value>For the heat pump '{0}' there is no performance data (performance curve) for a flow temperature of {1} °C. The simulation was aborted.</value>

@@ -228,6 +228,10 @@ namespace WindowsFormsApplication1
             // die Kartenspalte neu gebaut wurde (Umschalter).
             WarnbefundeSammeln();
 
+            // PAKET B1 (F9): Das Booster-Badge ist ebenso Teil der Kartenkurzinfo und
+            // erscheint deshalb auch in den Schema-Hinweisen — eine Quelle für beide.
+            BoosterAnlagenSammeln();
+
             // Erzeugerkarten: die Chips der Karte als Zeilen.
             Dictionary<int, string> chips = new Dictionary<int, string>();
             foreach (string dbWert in KaskadeBelegt())
