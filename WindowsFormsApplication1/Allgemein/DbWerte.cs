@@ -1215,6 +1215,131 @@ namespace WindowsFormsApplication1
         public const string WQ_TYP_OHNE = "";
 
         // =====================================================================
+        // Temperaturbezug des Quellbezugs
+        //   Tab_Energieanlagen.WQ_TemperaturModus  (Migrationsschritt 55, Paket B2)
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        //
+        //   Er beantwortet EINE Frage: Woher kommt das Temperaturpaar (Vorlauf /
+        //   Rücklauf), gegen das der Heizkessel den Anteil seiner Nutzwärme rechnet,
+        //   den ihm der Quellpuffer abnimmt?
+        //
+        //       Anteil(h) = (T_Quelle(h) − RL) / (VL − RL)
+        //
+        //   T_Quelle liefert der Speicher (Paket B1/Q1, Schichthöhe aus
+        //   WQ_Anschlusshoehe) — daran ändert der Modus NICHTS. Er steuert allein das
+        //   BEZUGSPAAR VL/RL.
+        //
+        //   Nutzerauftrag 28.08.2026: „Die Vorlauf- und die Rücklauftemperatur sollen
+        //   fest vorgegeben werden können […] oder entsprechend der berechneten
+        //   Speichertemperatur (unter Beachtung Schichtspeicher) Verwendung finden
+        //   können — im Falle berechnet ist die Vorgabe der Vor- und
+        //   Rücklauftemperatur nicht erforderlich (keinen Hinweis geben)."
+        // =====================================================================
+
+        /// <summary>
+        /// BERECHNET — das Bezugspaar kommt aus dem Lauf und nicht aus der Pflege:
+        /// primär die wirksamen Betriebstemperaturen <c>VL_eff</c>/<c>RL_eff</c> des
+        /// Rang-1-Senkenspeichers des Kessels, ersatzweise die gepflegte Kette
+        /// Anlage → <c>Tab_Heizkessel</c>, zuletzt die dokumentierte Konstante
+        /// 70/50 °C (<c>SimulationControl.KESSEL_VORLAUF_RUECKFALL</c>).
+        ///
+        /// <para><b>Vorbelegung des Bestands</b> (Migrationsschritt 55, DML): In der
+        /// produktiven Datenbank trägt kein einziger Heizkessel ein Temperaturpaar
+        /// (Ticket B1-O10, 0 von 23) — mit „Fest" als Vorbelegung bliebe die
+        /// Kessel-Kaskade weiterhin flächendeckend wirkungslos und der Anwender müsste
+        /// 23 Kessel von Hand pflegen. In diesem Modus gibt es weder Pflegepflicht noch
+        /// Warnung.</para>
+        /// </summary>
+        public const string WQ_TEMPMODUS_BERECHNET = "Berechnet";
+
+        /// <summary>
+        /// FEST — das Bezugspaar ist eine Anwendervorgabe und wird ausschließlich aus
+        /// der gepflegten Kette gelesen (Anlage <c>Tab_Energieanlagen.Vorlauf</c>/
+        /// <c>[Rücklauf]</c>, dann <c>Tab_Heizkessel</c>, dann der Senkenpuffer — die
+        /// W3-Kette aus Paket B1).
+        ///
+        /// <para>Fehlt das Paar, meldet der Warnkriterienkatalog
+        /// <see cref="Warnkriterien.KESSEL_TEMPERATURPAAR"/> und die Engine fällt
+        /// SICHTBAR auf den Berechnet-Weg zurück. Der frühere Zustand — Quellbezug
+        /// stumm wirkungslos — ist damit abgelöst.</para>
+        /// </summary>
+        public const string WQ_TEMPMODUS_FEST = "Fest";
+
+        /// <summary>
+        /// Der Modus einer gelesenen Spalte; <c>null</c>, <c>DBNull</c>, Leerwert und
+        /// jeder unbekannte Wert ergeben <see cref="WQ_TEMPMODUS_BERECHNET"/> — die
+        /// Vorbelegung des Migrationsschritts 55 und zugleich der Modus, der ohne jede
+        /// Datenpflege auskommt.
+        ///
+        /// <para>Bewusst TOLERANT gegenüber Groß-/Kleinschreibung (Befund L0-1: ältere
+        /// Stände haben lokalisierte ComboBox-Texte in Steuerwertspalten geschrieben).</para>
+        /// </summary>
+        public static string TemperaturModusOderDefault(object feld)
+        {
+            if (feld == null || feld == System.DBNull.Value) return WQ_TEMPMODUS_BERECHNET;
+
+            string wert = (feld.ToString() ?? "").Trim();
+            return string.Equals(wert, WQ_TEMPMODUS_FEST,
+                                 System.StringComparison.OrdinalIgnoreCase)
+                ? WQ_TEMPMODUS_FEST : WQ_TEMPMODUS_BERECHNET;
+        }
+
+        // =====================================================================
+        // Lesepunkt der Booster-Quelltemperatur
+        //   Tab_Einstellungen.Booster_Lesepunkt  (Migrationsschritt 55, Paket B2)
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        //
+        //   Paket B1 liest die Quelltemperatur eines gekoppelten Moduls je Stunde
+        //   GENAU EINMAL — bis B2 fest unmittelbar vor Phase B der Rechenebene des
+        //   beziehenden Moduls und damit NACH der Ladephase der Vorebene (Ticket
+        //   B1-O2). Der Booster sah den Speicher deshalb im am weitesten geladenen
+        //   Zustand der Stunde.
+        //
+        //   Nutzerauftrag 28.08.2026: „Zu welchem Zeitpunkt innerhalb der Stunde liest
+        //   der Booster die Quelltemperatur? Es soll eine Auswahl für den Nutzer
+        //   möglich sein. Stelle 'davor' als Default ein."
+        //
+        //   ES BLEIBT BEI GENAU EINEM LESEORT JE MODUS — der Modus entscheidet nur,
+        //   WELCHER es ist. Zwei Abfragen je Stunde wären nicht reproduzierbar
+        //   spezifiziert (der SOC ändert sich zwischen den Phasen mehrfach).
+        // =====================================================================
+
+        /// <summary>
+        /// DAVOR (Vorbelegung seit Paket B2) — alle gekoppelten Module lesen EINMAL am
+        /// Stundenanfang, vor Phase A und damit vor Phase B der ersten Rechenebene. Der
+        /// gelesene Zustand ist der des Vorstunden-Endes: Regeneration trifft nur
+        /// eigenständige Quellspeicher, ein geteilter Puffer ist zu diesem Zeitpunkt
+        /// unberührt.
+        ///
+        /// <para>Die KONSERVATIVE Aussage: Der Booster bekommt nicht gutgeschrieben,
+        /// was ein vorgelagerter Erzeuger erst in derselben Stunde nachlädt.</para>
+        /// </summary>
+        public const string BOOSTER_LESEPUNKT_DAVOR = "Davor";
+
+        /// <summary>
+        /// DANACH — der Lesepunkt von Paket B1: je Rechenebene unmittelbar vor deren
+        /// Phase B und damit nach den Ladephasen aller Vorebenen dieser Stunde.
+        /// </summary>
+        public const string BOOSTER_LESEPUNKT_DANACH = "Danach";
+
+        /// <summary>
+        /// Der Lesepunkt einer gelesenen Spalte; <c>null</c>, <c>DBNull</c>, Leerwert
+        /// und jeder unbekannte Wert ergeben <see cref="BOOSTER_LESEPUNKT_DAVOR"/> —
+        /// dieselbe tolerante Auslegung wie bei der Knappheitsreihenfolge
+        /// (<see cref="KNAPPHEIT_DEFAULT"/>): Ein unbrauchbarer Wert verwirft nicht den
+        /// Lauf, sondern fällt vollständig auf die Vorbelegung zurück.
+        /// </summary>
+        public static string BoosterLesepunktOderDefault(object feld)
+        {
+            if (feld == null || feld == System.DBNull.Value) return BOOSTER_LESEPUNKT_DAVOR;
+
+            string wert = (feld.ToString() ?? "").Trim();
+            return string.Equals(wert, BOOSTER_LESEPUNKT_DANACH,
+                                 System.StringComparison.OrdinalIgnoreCase)
+                ? BOOSTER_LESEPUNKT_DANACH : BOOSTER_LESEPUNKT_DAVOR;
+        }
+
+        // =====================================================================
         // Quellprofil — Betriebsart
         //   Tab_Quellprofil.Betriebsart  (Migrationsschritt 54, Paket Q1)
         //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)

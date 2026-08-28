@@ -312,6 +312,67 @@ namespace WindowsFormsApplication1
             return betroffen > 0;
         }
 
+        // --- Booster-Lesepunkt (Paket B2, Nutzerauftrag 28.08.2026) --------------------
+
+        /// <summary>
+        /// Liest den LESEPUNKT der Booster-Quelltemperatur eines Projekts DIALOGFREI —
+        /// für den Rechenkern und den Konfigurationsdialog.
+        ///
+        /// <para>Fehlende Spalte (Datenbank noch nicht auf Schemastand 55), fehlende
+        /// Zeile, NULL, Leerwert und jeder unbekannte Wert liefern gleichermaßen
+        /// <see cref="DbWerte.BOOSTER_LESEPUNKT_DAVOR"/> — die Vorbelegung des
+        /// Nutzerauftrags.</para>
+        ///
+        /// <para><b>Anders als bei <see cref="ExtrapolationErlaubtLesen"/> braucht es
+        /// hier KEINE Markerprüfung</b> (Befund N8): Die Spalte ist ein TEXTfeld, und
+        /// eine angehängte Textspalte steht in Access auf NULL — nicht auf einem Wert,
+        /// der wie eine Anwenderentscheidung aussieht. Die Datenlücke ist damit von
+        /// selbst als solche erkennbar.</para>
+        /// </summary>
+        public static string BoosterLesepunktLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return DbWerte.BOOSTER_LESEPUNKT_DAVOR;
+
+            object v = StilleDb.Scalar(
+                "SELECT [" + SchemaKatalog.SPALTE_BOOSTER_LESEPUNKT + "] " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+
+            return DbWerte.BoosterLesepunktOderDefault(v);
+        }
+
+        /// <summary>
+        /// Schreibt den Booster-Lesepunkt eines Projekts.
+        ///
+        /// Bewusst ein EIGENES, zielgenaues UPDATE statt einer Erweiterung von
+        /// <see cref="Update"/> — dieselbe Begründung wie bei
+        /// <see cref="KnappheitsreihenfolgeSchreiben"/>: Die Spaltenlisten von
+        /// <see cref="Insert"/>/<see cref="Update"/> hängen an der Ordinalkette in
+        /// <see cref="ReadSingle"/>, und auf einer Datenbank ohne die Spalte würde ein
+        /// erweitertes UPDATE das Speichern der GESAMTEN Konfiguration scheitern lassen.
+        ///
+        /// Ein unbekannter Wert wird als Vorbelegung geschrieben, nicht als NULL: Die
+        /// Spalte soll den geltenden Lesepunkt zeigen, auch wenn er die Vorgabe ist.
+        ///
+        /// Dialogfrei (Konzept 13.4). Rückgabe false, wenn keine Zeile getroffen wurde
+        /// oder die Spalte fehlt.
+        /// </summary>
+        public static bool BoosterLesepunktSchreiben(int idProjekt, string lesepunkt)
+        {
+            if (idProjekt <= 0) return false;
+
+            string wert = DbWerte.BoosterLesepunktOderDefault(lesepunkt);
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" +
+                SchemaKatalog.SPALTE_BOOSTER_LESEPUNKT + "] = ? " +
+                "WHERE ID_Projekt = ?",
+                StilleDb.Par("@wert", OleDbType.VarWChar, wert),
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+
+            return betroffen > 0;
+        }
+
         public bool Insert(int ID_Projekt)
         {
             try
@@ -376,6 +437,11 @@ namespace WindowsFormsApplication1
                 // migriertes: Die Spalte soll die geltende Reihenfolge nennen, nicht
                 // schweigen.
                 KnappheitsreihenfolgeSchreiben(ID_Projekt, DbWerte.KNAPPHEIT_DEFAULT);
+
+                // PAKET B2: dieselbe Nachreichung für den Booster-Lesepunkt. Ein neues
+                // Projekt soll dieselbe Zeile zeigen wie ein migriertes - die Spalte
+                // nennt den geltenden Lesepunkt, statt zu schweigen.
+                BoosterLesepunktSchreiben(ID_Projekt, DbWerte.BOOSTER_LESEPUNKT_DAVOR);
                 return true;
             }
             catch (Exception ex)

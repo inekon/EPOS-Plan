@@ -212,6 +212,10 @@ namespace WindowsFormsApplication1
             // selbst heraus. PAKET A1: Der zweite Schalter „Zweikanalige Kaskade" ist
             // entfallen (Begründung in Form_Simulation_Config.Uebersicht).
             InitExtrapolationSchalter();
+            // PAKET B2: der zweite Fußzeilenschalter - der Lesepunkt der
+            // Booster-Quelltemperatur. Er bleibt unsichtbar, bis das Projekt einen
+            // gekoppelten Booster führt (AktualisiereBoosterLesepunktSchalter).
+            InitBoosterLesepunktSchalter();
             FusszeilePlatzieren();
         }
 
@@ -383,6 +387,16 @@ namespace WindowsFormsApplication1
             // links, die Extrapolation daneben; jetzt rückt sie an den linken Rand.
             checkBox_Extrapolation.Location = new Point(KARTEN_RAND, fussOben + 6);
             checkBox_Extrapolation.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+
+            // PAKET B2: der Booster-Lesepunkt NEBEN der Extrapolation, in derselben
+            // Schalterzeile. Die x-Position wird gemessen statt geraten - die
+            // Extrapolations-Beschriftung ist auf Englisch länger als auf Deutsch, und
+            // eine feste Zahl wäre nur für eine Sprache richtig. AutoSize hat die Breite
+            // bereits ermittelt, weil beide Kästchen zu diesem Zeitpunkt Kinder des
+            // Formulars sind.
+            checkBox_BoosterLesepunkt.Location =
+                new Point(checkBox_Extrapolation.Right + 24, fussOben + 6);
+            checkBox_BoosterLesepunkt.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
 
             // D2 (28.08.2026): Die hier ausgerechnete Knopfzeile war die Vorlage für die
             // Fußzeilen-Norm — Reihenfolge, Verankerung und der 10-px-Abstand stammen aus

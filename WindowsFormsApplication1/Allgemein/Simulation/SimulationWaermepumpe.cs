@@ -293,14 +293,22 @@ namespace WindowsFormsApplication1
         /// ist der Regelfall und der Grund, warum der Bestand von Paket B1 keinen
         /// einzigen Takt sieht.</para>
         /// </summary>
-        public void Quelltemperatur_Stunde(int stunde)
+        /// <param name="alleEbenen">
+        /// PAKET B2: true = ALLE gekoppelten Module, unabhängig von der aktiven
+        /// Rechenebene — der Lesepunkt „Davor" (Vorbelegung), der am Stundenanfang läuft
+        /// und deshalb noch keine Ebene kennt. false = nur die Module der aktiven Ebene,
+        /// der Lesepunkt „Danach" von Paket B1. Beide Modi lesen je Stunde GENAU EINMAL
+        /// je Modul; welcher gilt, entscheidet die Kaskadenschleife einmal je Lauf.
+        /// </param>
+        public void Quelltemperatur_Stunde(int stunde, bool alleEbenen = false)
         {
             if (_quellKopplung == null) return;
             if (stunde < 0 || stunde >= 8760) return;
 
             for (int i = 0; i < _quellKopplung.Length; i++)
             {
-                if (!_quellKopplung[i] || !EbeneAktiv(i)) continue;
+                if (!_quellKopplung[i]) continue;
+                if (!alleEbenen && !EbeneAktiv(i)) continue;
 
                 SimulationPufferspeicher q = wp_quellspeicher[i];
                 if (q == null || i >= wp_quelltemp.Count || wp_quelltemp[i] == null) continue;

@@ -34,8 +34,9 @@ Das Feld `ReadOnly` in den `_STAMM`-Tabellen bedeutet faktisch „gehört zur Au
 Migrationsskript behält `ReadOnly = TRUE` aus der Vorlage und ersetzt alles Übrige durch die
 Anwenderdaten.
 
-**Stand der Wärme-Datenhaltung (Konzeptumsetzung 27./28.08.2026, Schema-Schritte 48–54,
-`Tab_Applikation.SchemaVersion` = 54; neue Schritte ab 55):** Die Senken einer Anlage stehen
+**Stand der Wärme-Datenhaltung (Konzeptumsetzung 27./28.08.2026, Schema-Schritte 48–54;
+Nachtrag B2 28.08.2026 = Schritt 55, `Tab_Applikation.SchemaVersion` = 55; neue Schritte ab 56):**
+Die Senken einer Anlage stehen
 in **`Z_AnlageSenke`** (je Zeile Rang 1..n, eines von sechs Zielen, Bedarfsart, `ID_Puffer`,
 Ladeparameter, Einspeisehöhe) — die `WS_*`-Spalten in `Tab_Energieanlagen` sind **Lese-Altlast**.
 Pufferklassen sind das Klassen-Set `Tab_Pufferspeicher.Nutzung_Heizung/_Brauchwasser/_Prozess`

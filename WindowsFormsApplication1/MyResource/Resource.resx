@@ -8205,4 +8205,44 @@ Wirksam nur bei einem GESCHICHTETEN Zielspeicher (Schichten &gt; 1): Von der Ein
   <data name="CHART_TITEL_DECKUNG_JE_BEDARFSART" xml:space="preserve">
     <value>Deckung {0} — Jahresganglinie</value>
   </data>
+  <data name="SIMQ_PUFFER_TEMPERATURBEZUG" xml:space="preserve">
+    <value>Temperaturbezug:</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_BERECHNET" xml:space="preserve">
+    <value>berechnet (aus der Anlage)</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_FEST" xml:space="preserve">
+    <value>fest vorgegeben</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_VORLAUF" xml:space="preserve">
+    <value>Vorlauf [°C]:</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauf [°C]:</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_HINWEIS" xml:space="preserve">
+    <value>Der Kessel hebt von seinem Rücklauf auf seinen Vorlauf an; der Puffer trägt den Teil, den seine Temperatur davon abdeckt. „Berechnet" nimmt dafür die Betriebstemperaturen des Speichers, den der Kessel lädt (Schichtung eingeschlossen) — dann ist hier nichts zu pflegen.</value>
+  </data>
+  <data name="SIMQ_PUFFER_MSG_TEMPERATURPAAR" xml:space="preserve">
+    <value>Bitte Vorlauf und Rücklauf als ganze Zahlen eintragen: Rücklauf über 0 °C und Vorlauf über Rücklauf. Wer keine Vorgabe machen möchte, wählt „berechnet (aus der Anlage)".</value>
+  </data>
+  <data name="SIMWARN_KESSEL_TEMPERATURPAAR" xml:space="preserve">
+    <value>Anlage „{0}": Der Temperaturbezug steht auf „fest vorgegeben", aber es ist kein vollständiges Vor-/Rücklaufpaar gepflegt. Der Anteil, den der Quellspeicher „{1}" beisteuert, lässt sich damit gegen keine Vorgabe rechnen. Der Lauf fällt auf „berechnet" zurück — bitte das Paar eintragen oder auf „berechnet" umstellen.</value>
+  </data>
+  <data name="SIM_BOOSTER_LESEPUNKT_SCHALTER" xml:space="preserve">
+    <value>Booster liest Speicherzustand vom Stundenanfang (konservativ)</value>
+  </data>
+  <data name="SIM_BOOSTER_LESEPUNKT_TOOLTIP" xml:space="preserve">
+    <value>Angehakt: Ein Erzeuger, der seine Wärme aus einem geteilten Pufferspeicher bezieht, liest dessen Temperatur einmal am Stundenanfang — also aus dem Zustand am Ende der Vorstunde. Was ein vorgelagerter Erzeuger in derselben Stunde erst nachlädt, wird ihm nicht gutgeschrieben.
+
+Nicht angehakt: gelesen wird nach der Ladephase des vorgelagerten Erzeugers; der Booster sieht den Speicher dann im am weitesten geladenen Zustand der Stunde.
+
+Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</value>
+  </data>
+  <data name="SIM_STATUS_LESEPUNKT_DAVOR" xml:space="preserve">
+    <value>Booster-Lesepunkt: Stundenanfang (konservativ).</value>
+  </data>
+  <data name="SIM_STATUS_LESEPUNKT_DANACH" xml:space="preserve">
+    <value>Booster-Lesepunkt: nach der Ladephase der Vorebene.</value>
+  </data>
 </root>

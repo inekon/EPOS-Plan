@@ -8198,4 +8198,44 @@ Effective only with a STRATIFIED target storage (layers &gt; 1): from the inlet 
   <data name="CHART_TITEL_DECKUNG_JE_BEDARFSART" xml:space="preserve">
     <value>{0} coverage — annual load profile</value>
   </data>
+  <data name="SIMQ_PUFFER_TEMPERATURBEZUG" xml:space="preserve">
+    <value>Temperature reference:</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_BERECHNET" xml:space="preserve">
+    <value>calculated (from the plant)</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_FEST" xml:space="preserve">
+    <value>fixed specification</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_VORLAUF" xml:space="preserve">
+    <value>Flow [°C]:</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_RUECKLAUF" xml:space="preserve">
+    <value>Return [°C]:</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_HINWEIS" xml:space="preserve">
+    <value>The boiler raises the temperature from its return to its flow; the buffer contributes the part covered by its own temperature. "Calculated" uses the operating temperatures of the storage the boiler charges (including stratification) — nothing needs to be maintained here.</value>
+  </data>
+  <data name="SIMQ_PUFFER_MSG_TEMPERATURPAAR" xml:space="preserve">
+    <value>Please enter flow and return as whole numbers: return above 0 °C and flow above return. If you do not want to specify a pair, select "calculated (from the plant)".</value>
+  </data>
+  <data name="SIMWARN_KESSEL_TEMPERATURPAAR" xml:space="preserve">
+    <value>Unit "{0}": the temperature reference is set to "fixed", but no complete flow/return pair is maintained. The share contributed by source storage "{1}" therefore cannot be calculated against a specification. The run falls back to "calculated" — please enter the pair or switch to "calculated".</value>
+  </data>
+  <data name="SIM_BOOSTER_LESEPUNKT_SCHALTER" xml:space="preserve">
+    <value>Booster reads storage state at the start of the hour (conservative)</value>
+  </data>
+  <data name="SIM_BOOSTER_LESEPUNKT_TOOLTIP" xml:space="preserve">
+    <value>Checked: a generator drawing its heat from a shared buffer storage reads its temperature once at the start of the hour — i.e. from the state at the end of the previous hour. Whatever an upstream generator recharges within the same hour is not credited to it.
+
+Unchecked: the reading is taken after the charging phase of the upstream generator; the booster then sees the storage in the most fully charged state of the hour.
+
+The switch is only shown if the project contains such a generator.</value>
+  </data>
+  <data name="SIM_STATUS_LESEPUNKT_DAVOR" xml:space="preserve">
+    <value>Booster reading point: start of the hour (conservative).</value>
+  </data>
+  <data name="SIM_STATUS_LESEPUNKT_DANACH" xml:space="preserve">
+    <value>Booster reading point: after the charging phase of the preceding level.</value>
+  </data>
 </root>
