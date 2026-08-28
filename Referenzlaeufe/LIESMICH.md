@@ -12,23 +12,49 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
-**`2026-08-28_B2/`** — seit dem 28.08.2026 abends die gültige Referenz, **dreizehn
-Projekte** (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, 1030, **1039, 1040, 1041,
-1042**), **332 CSV**. Jeder neue Vergleich läuft gegen diesen Ordner.
+**`2026-08-29_E1E2/`** — seit dem 29.08.2026 die gültige Referenz, **zehn Projekte**
+(1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, 1030, 1039), **234 CSV**. Jeder neue
+Vergleich läuft gegen diesen Ordner.
 
+> **Anlass: Etappen E1 (CO2-Saat der Katalogträger, Migrationsschritt 56) und E2
+> (Emissionsarten-Katalog, Migrationsschritt 57) + Datenänderung des Anwenders**
+> (`6694c7a`). Der Vergleich gegen B2 meldet **keine einzige CO2-bezogene Abweichung —
+> der Referenzumfang des Rechenkerns führt gar keine Emissionskennzahl** (kein
+> CSV-Schlüssel enthält CO2/Emission; die CO2-Rechnung liegt im
+> Bericht/Wirtschaftlichkeitsteil, den der Referenzlauf nicht abdeckt). E1+E2 sind für
+> den Rechenkern **empirisch wirkungsneutral belegt**: alle **216 CSV der neun
+> datenunveränderten Projekte byte-/MD5-gleich** zu B2. Die einzigen Abweichungen sind
+> **Datenänderungen des Anwenders** zwischen dem B2-Datenstand (28.08. 17:19) und dem
+> 29.08. 00:02: **1039 umgebaut** (Kessel und Puffer entfernt, „Simulation Mehrgebäude"
+> → „Wärmepumpe WG - BHKW", WP-Gewerk ohne Modul), **1040, 1041, 1042 gelöscht**.
+> Arbeitskopie migriert **54 → 57**; **Selbstvergleich 234/234 byte-/MD5-gleich**;
+> `pruefen` plausibel. Details im
+> [Laufprotokoll der Basis](2026-08-29_E1E2/lauf_protokoll.md).
+> **ACHTUNG: Mit der Löschung von 1040–1042 und dem 1039-Umbau verliert die
+> Referenzmenge die vier Konzept-11.1-Abdeckungen** (Mehrgebäude, zwei Puffer je
+> Kanal/Parallelverbund, Prozesswärme mit eigenem Puffer, Booster-Kette) — ihre
+> Ganglinien liegen letztmalig in `2026-08-28_B2/`; Ersatz nachzurücken ist ein
+> bewusster Basiswechsel.
+>
+> **Die feste Projektliste (zehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039
+> ```
+
+> *(Fassung vor E1E2 — Begründung der früheren Basis `2026-08-28_B2`:)*
+>
 > **Anlass: Paket B2 (Kessel-Temperaturmodus, wählbarer Booster-Lesepunkt, Schema 55) +
 > Datenänderung des Anwenders an 1042** (`4be1862`). E2 war durch die
 > 1042-Umverschaltung des Anwenders bereits überholt (Kontrolllauf des unveränderten
 > Codes: 321/332, alle 11 Abweichungen in 1042). B2 selbst ist per A/B auf gemeinsamer
-> Kopie **332/332 byte-gleich** belegt; gegen E2 ist die neue Basis für die zwölf
-> übrigen Projekte byte-gleich. Arbeitskopie auf Schemastand **55** (Vorbelegungen
+> Kopie **332/332 byte-gleich** belegt; gegen E2 ist die Basis für die zwölf übrigen
+> Projekte byte-gleich. Arbeitskopie auf Schemastand **55** (Vorbelegungen
 > „Berechnet"/„Davor" wirksam). **Selbstvergleich 332/332 byte-/MD5-gleich** (zwei
-> `projekt`-Läufe auf EINER festen Quellkopie, Datenstand 28.08.2026 17:19).
-> **ACHTUNG: Die Booster-Temperaturkopplung ist in dieser Basis NICHT scharf** — an
-> Anlage 14818 steht noch `WQ_Unbegrenzt = True` (konstant 45 °C statt
-> Speicherkopplung); Details und Folge im
-> [Laufprotokoll der Basis](2026-08-28_B2/lauf_protokoll.md). Wird das Häkchen
-> entfernt, ist die Basis für 1042 zu erneuern.
+> `projekt`-Läufe auf EINER festen Quellkopie, Datenstand 28.08.2026 17:19). Die
+> Booster-Temperaturkopplung war in dieser Basis **nicht scharf** (an Anlage 14818
+> stand noch `WQ_Unbegrenzt = True`, konstant 45 °C) — Details im
+> [Laufprotokoll der Basis](2026-08-28_B2/lauf_protokoll.md).
 >
 > **Die feste Projektliste (dreizehn IDs):**
 >
@@ -155,10 +181,11 @@ Projekte** (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, 1030, **1039, 1040, 
 > Rechenkern nicht berührt hat.
 
 > **Die Projektliste ist FEST VORGEGEBEN und muss bei jedem Folgelauf mitgegeben werden**
-> (seit Basis A1 dreizehn IDs):
+> (seit Basis E1E2 zehn IDs — 1040, 1041 und 1042 hat der Anwender am 28./29.08.2026
+> gelöscht, 1039 wurde umgebaut):
 >
 > ```powershell
-> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039
 > ```
 >
 > Ohne `--projekte` wählt die Suite datengetrieben — und diese Wahl **wandert mit dem
@@ -233,7 +260,13 @@ reproduzierbar.
 
 ## Frühere Stände
 
-`2026-08-28_E2/` bleibt als **vorheriger Stand** liegen (Codestand babab27, Schemastand
+`2026-08-28_B2/` bleibt als **vorheriger Stand** liegen (Codestand `4be1862`, Schemastand
+55, dreizehn Projekte, 332 CSV) — der letzte Stand **vor** der Anwender-Löschung von
+1040–1042 und dem 1039-Umbau und damit die einzige verbliebene Quelle der Ganglinien
+dieser Konstellationen (Mehrgebäude-1039, Parallelverbund-1040, Prozesswärme-1041,
+Booster-Kette-1042). Begründung im Abschnitt „(Fassung vor E1E2)" darüber.
+
+`2026-08-28_E2/` bleibt als **älterer Stand** liegen (Codestand babab27, Schemastand
 54, dreizehn Projekte, 332 CSV) — die einzige Basis, in der die
 **Booster-Temperaturkopplung in 1042 scharf** war (geteilter Puffer 1054196, Lesepunkt
 implizit „Danach"); für die zwölf übrigen Projekte byte-gleich mit B2. Begründung im
@@ -660,15 +693,18 @@ die Projektdaten, vergleicht man Äpfel mit Birnen. Die Quelle steht im Kopf von
 **Für jeden Vergleichslauf gilt die feste Liste. `--projekte` ist Pflicht:**
 
 ```powershell
-& $exe lauf --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
+& $exe lauf --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039
 ```
 
-Dreizehn IDs, seit Basis A1 (27.08.2026): die neun Projekte der B5-Linie (acht von B4 plus
-Kaskadenprojekt **1030**) plus die **vier Referenzprojekte aus Konzept 11.1** — 1039
-(Mehrgebäude), 1040 (zwei Puffer je Kanal), 1041 (Prozesswärme mit eigenem Puffer), 1042
-(Booster-Kette mit Kombi-Speicher). Wer sie wegläßt, bekommt einen Ordner, der sich mit der
-Basis nicht vergleichen läßt — der Vergleich meldet dann fehlende und zusätzliche Projekte,
-nicht Rechenabweichungen.
+Zehn IDs, seit Basis E1E2 (29.08.2026): die neun Projekte der B5-Linie (acht von B4 plus
+Kaskadenprojekt **1030**) plus **1039** — allerdings nicht mehr als Mehrgebäude-Projekt,
+sondern im umgebauten Anwenderzustand (Tools: Wärmepumpe, einzige Anlage ein BHKW,
+WP-Produktion 0). Die drei übrigen Konzept-11.1-Projekte **1040 (zwei Puffer je Kanal),
+1041 (Prozesswärme mit eigenem Puffer) und 1042 (Booster-Kette mit Kombi-Speicher) hat
+der Anwender am 28./29.08.2026 gelöscht** — ihre Kategorien sind unbesetzt, bis
+Ersatzprojekte nachrücken (ein bewusster Basiswechsel, kein Nebenbei-Schritt). Wer die
+Liste wegläßt, bekommt einen Ordner, der sich mit der Basis nicht vergleichen läßt — der
+Vergleich meldet dann fehlende und zusätzliche Projekte, nicht Rechenabweichungen.
 
 ### Warum nicht die Automatik
 
