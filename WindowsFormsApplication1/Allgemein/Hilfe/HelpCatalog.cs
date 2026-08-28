@@ -351,21 +351,23 @@ namespace WindowsFormsApplication1
             //    └-─────────┬──────────┘└───┬───┘  └─┬┘└─┬┘
             //        Website - URL  API Präfix  Version REST-Base(Custom Post Type)
             
-            var url = $"{_baseUrl}/wp-json/wp/v2/{Properties.Settings.Default.WordPressPrefix}?per_page=100&page={currentPage}&_fields=slug,link,title";
-            // per_page auf 100 erhöht für maximale Effizienz, page= dynamisch angehängt
+//            var url = $"{_baseUrl}/wp-json/wp/v2/{Properties.Settings.Default.WordPressPrefix}?per_page=100&page={currentPage}&_fields=slug,link,title";
+            var url = $"{_baseUrl}/rest.php/v1/{Properties.Settings.Default.WordPressPrefix}?per_page=100&page={currentPage}&_fields=slug,link,title";
 
-            // 1. wp-json (Das API - Präfix): Das sagt WordPress: „Achtung, jetzt kommt keine normale HTML-Webseite für den Browser,
-            //                                sondern eine Daten-Anfrage im JSON-Format.“
-            //
-            // 2. wp/v2 (Der Namensraum / Namespace): wp steht für die WordPress-Kernfunktionen, v2 für die Version 2 der API.
-            //
-            // 3. help (Die REST-Base / Der Post-Type): Das ist der entscheidende Teil.In WordPress gibt es standardmäßig zwei
-            //                                          eingebaute Inhaltstypen: posts (Beiträge) und pages (Seiten).
-            //                                          Wenn du also Standard-Seiten abfragst, heißt die URL.../wp/v2/pages.
-            //                                          Da aber ein eigenes Hilfesystem aufgebaut wird, einen Custom Post Type nutzen.
+                // per_page auf 100 erhöht für maximale Effizienz, page= dynamisch angehängt
 
-            try
-            {
+                // 1. wp-json (Das API - Präfix): Das sagt WordPress: „Achtung, jetzt kommt keine normale HTML-Webseite für den Browser,
+                //                                sondern eine Daten-Anfrage im JSON-Format.“
+                //
+                // 2. wp/v2 (Der Namensraum / Namespace): wp steht für die WordPress-Kernfunktionen, v2 für die Version 2 der API.
+                //
+                // 3. help (Die REST-Base / Der Post-Type): Das ist der entscheidende Teil.In WordPress gibt es standardmäßig zwei
+                //                                          eingebaute Inhaltstypen: posts (Beiträge) und pages (Seiten).
+                //                                          Wenn du also Standard-Seiten abfragst, heißt die URL.../wp/v2/pages.
+                //                                          Da aber ein eigenes Hilfesystem aufgebaut wird, einen Custom Post Type nutzen.
+
+                try
+                {
                 // Timeout schützt vor ewigem Hängen bei schlechter Verbindung
                 using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(10));
 
