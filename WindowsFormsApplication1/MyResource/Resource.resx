@@ -7915,6 +7915,9 @@ dauer [a]</value>
   <data name="BK_KOSTEN_STATUS_NICHT_VERBAUT" xml:space="preserve">
     <value>Kostenpositionen ohne verbaute Anlage: {0}</value>
   </data>
+  <data name="WP_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
   <data name="WPI_BTN_KOSTEN" xml:space="preserve">
     <value>Kosten bearbeiten…</value>
   </data>

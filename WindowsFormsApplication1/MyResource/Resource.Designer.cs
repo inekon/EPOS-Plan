@@ -23814,6 +23814,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string WP_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("WP_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kosten bearbeiten… ähnelt.
         /// </summary>
         public static string WPI_BTN_KOSTEN {

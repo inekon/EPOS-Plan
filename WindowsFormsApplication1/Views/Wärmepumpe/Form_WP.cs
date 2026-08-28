@@ -101,12 +101,31 @@ namespace WindowsFormsApplication1
         /// „Löschen" zu liegen.
         ///
         /// Beide Konstruktoren rufen die Methode, damit Pflege- und Ansichtsbetrieb
-        /// dieselbe Zeile zeigen. Der Namenswiderspruch btn_Beenden/„OK" bleibt bestehen;
-        /// er ist im Katalog <c>KiDialoge.Waermepumpe()</c> vermerkt und wäre eine
-        /// Umbenennung im Designer.
+        /// dieselbe Zeile zeigen.
+        ///
+        /// <para><b>D3 (28.08.2026) — die Knopfrolle.</b> <c>btn_Beenden</c> trug die
+        /// Aufschrift „OK" (deutsch wie englisch), sein <c>DialogResult</c> ist
+        /// <c>None</c>, und sein Behandler <see cref="butt_Beenden_Click"/> setzt lediglich
+        /// <c>CloseWithOK = true</c> und ruft <c>Close()</c>. Dieses Feld liest NIEMAND:
+        /// Die beiden Aufrufer (<c>MenueCtrl</c> und <c>Wizard_WPItem</c>) werten es nicht
+        /// aus, die Treffer in <c>Form_WPAuswahl</c> gehören zum gleichnamigen Feld von
+        /// <c>Wizard_WPItem</c>. Der Knopf SCHLIESST also nur — gespeichert wird
+        /// ausschließlich über „Speichern". Eine Aufschrift „OK" sagt dem Anwender das
+        /// Gegenteil (Eingaben werden übernommen). Text und Rolle stimmen jetzt überein:
+        /// „Beenden" / „Finish", dieselbe Beschriftung wie beim baugleichen Abschlussknopf
+        /// von <c>Form_Simulation_Config</c> und <c>Form_Simulation_Detail</c>, und
+        /// dieselbe wie der Name des Knopfes.</para>
+        ///
+        /// <para>Am VERHALTEN ändert sich nichts: kein <c>DialogResult</c>, kein
+        /// Behandler, kein Speicherweg. Der Text kommt aus dem zentralen Katalog
+        /// (<c>MyResource.Resource.WP_BTN_BEENDEN</c>, de + en) und nicht aus der
+        /// <c>.resx</c> des Formulars — die bleibt wie alle Designer-Dateien unangetastet.
+        /// Er wird VOR dem Einhängen gesetzt, damit die Norm die Mindestbreite am neuen
+        /// Text misst.</para>
         /// </summary>
         private void FusszeileNormen()
         {
+            if (btn_Beenden != null) btn_Beenden.Text = MyResource.Resource.WP_BTN_BEENDEN;
             FusszeilenNorm.Einhaengen(this, btn_Beenden, btn_Loeschen, btn_Neu, btn_Speichern);
         }
 

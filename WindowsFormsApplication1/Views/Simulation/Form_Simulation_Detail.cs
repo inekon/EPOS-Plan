@@ -458,6 +458,29 @@ namespace WindowsFormsApplication1
             // Blocks nennt keine Zeile Anwendungscode die drei Namen. Entfernt wird es
             // nicht - das wäre ein Designer-Eingriff -, es wird unsichtbar gestellt.
             if (tabControl3 != null) tabControl3.Visible = false;
+
+            // D3 (28.08.2026): Die drei 1-px-Berührungen der Bedarfsseite. Der Aufruf
+            // steht im Load (dort ist die Schriftskalierung fertig); hier wird nur die
+            // Nachführung angemeldet, weil die Seitenleiste die Steuerelemente in ein
+            // Panel mit anderer Schrift ausleiht — Muster D8.
+            if (label1 != null) label1.FontChanged += delegate { BedarfMaximalzeilenEntzerren(); };
+            if (label20 != null) label20.FontChanged += delegate { BedarfMaximalzeilenEntzerren(); };
+
+            // D3 (28.08.2026), D-Check Klasse e: EIN Ausreißer aus der Übersichtsseite.
+            // Die Wärmespalte trägt durchgehend die Schrift der Seite (Segoe UI 9,75:
+            // ueb_textBox_SPKWaermeproduktion, …_SWWaermeproduktion,
+            // …_BHKWWaermeproduktion); nur ueb_textBox_WPWaermeproduktion stand auf
+            // Segoe UI 8 und war damit die einzige kleinere Zeile der Spalte. Font = null
+            // gibt das Feld an die Schriftvererbung zurück. Es wächst dabei von 22 auf
+            // 25 px Höhe — dieselbe Höhe wie seine drei Nachbarn; bis zur nächsten Zeile
+            // (ueb_textBox_BHKWWaermeproduktion, y = 275) bleiben 4 px.
+            //
+            // Die ÜBRIGEN Fremdschriften dieses Formulars bleiben: Sie sind entweder
+            // Behälterschriften, von denen ganze Seiten erben, oder Kennzahlen-Anzeigen
+            // (label_SpKernTitel_* / label_SpKernWert_*) und Überschriften. Begründung je
+            // Gruppe im D3-Protokoll.
+            if (ueb_textBox_WPWaermeproduktion != null)
+                ueb_textBox_WPWaermeproduktion.Font = null;
         }
 
         /// <summary>
@@ -1569,6 +1592,75 @@ namespace WindowsFormsApplication1
                 if (label_BedarfKanalEinheit[k] != null && tb_BedarfKanal[k] != null)
                     label_BedarfKanalEinheit[k].Left = tb_BedarfKanal[k].Right + 8;
             }
+        }
+
+        // ====================================================================
+        //  PAKET D3 (28.08.2026) — die drei 1-px-Berührungen der Bedarfsseite
+        // ====================================================================
+
+        /// <summary>
+        /// Waagerechte Luft zwischen einer Beschriftung und der Zeile darunter [px].
+        /// </summary>
+        private const int D3_ZEILENLUFT = 2;
+
+        /// <summary>
+        /// Schiebt die beiden „Maximalwert"-Zeilen der Bedarfsseite so weit nach unten,
+        /// dass sie ihre Beschriftung nicht mehr berühren.
+        ///
+        /// <para><b>Befund (D-Check Prio 3).</b> Drei Paare überlappten sich um genau
+        /// 1 px: <c>label20</c>/<c>textBox_MaxStrombedarf</c> (85 × 1),
+        /// <c>label1</c>/<c>textBox_MaxWaermelast</c> (70 × 1) und
+        /// <c>label1</c>/<c>label14</c> (24 × 1). Ursache ist keine krumme
+        /// Entwurfskoordinate, sondern die Schriftskalierung: Im Designer sind die
+        /// Beschriftungen 13 px hoch (445 + 13 = 458 gegen Feldoberkante 463), auf dem
+        /// Bildschirm mit <c>AutoSize</c> 19 px (445 + 19 = 464 gegen 463). Ein fester
+        /// Zahlenwert im Designer könnte das nicht auffangen — gerechnet wird deshalb
+        /// gegen die TATSÄCHLICHE Unterkante der Beschriftung.</para>
+        ///
+        /// <para><b>Warum die ganze Zeile und nicht nur das gemeldete Steuerelement.</b>
+        /// Feld und Einheitenzeichen stehen nebeneinander und sind im Entwurf 1 px
+        /// gegeneinander versetzt (<c>textBox_MaxStrombedarf</c> 463, <c>label19</c> 464).
+        /// Verschoben wird deshalb die Gruppe um DENSELBEN Betrag; der Versatz bleibt
+        /// erhalten und die Zeile bleibt in der Flucht. <c>label19</c> berührte mit 0 px
+        /// Schnittfläche und war formal kein Befund — es gehört aber zur selben Zeile wie
+        /// <c>textBox_MaxStrombedarf</c> und muss mitwandern.</para>
+        ///
+        /// <para><b>Warum an <c>FontChanged</c>.</b> Die Seitenleiste LEIHT die
+        /// Steuerelemente dieser Seite in ein Panel mit anderer Schrift aus
+        /// (<c>listViewQuellen_SelectedIndexChanged</c>); dabei ändern sich die Höhen der
+        /// <c>AutoSize</c>-Beschriftungen erneut. Dasselbe Muster wie bei
+        /// <see cref="BedarfKanalBeschriftungEinpassen"/> (D-Check, Befund D8).</para>
+        ///
+        /// <para>Die Methode rechnet ABSOLUT und ist damit beliebig oft aufrufbar: Die
+        /// Zeile landet immer genau <see cref="D3_ZEILENLUFT"/> px unter der Beschriftung.
+        /// Der Platz nach unten reicht — bis zur nächsten Zeile (<c>label16</c> 504,
+        /// <c>label18</c> 503) bleiben danach 11 bis 12 px.</para>
+        /// </summary>
+        private void BedarfMaximalzeilenEntzerren()
+        {
+            ZeileUnterBeschriftung(label1, textBox_MaxWaermelast, label14);
+            ZeileUnterBeschriftung(label20, textBox_MaxStrombedarf, label19);
+        }
+
+        /// <summary>
+        /// Rückt eine Gruppe nebeneinanderstehender Steuerelemente als Ganzes so, dass
+        /// ihre oberste Kante <see cref="D3_ZEILENLUFT"/> px unter der Unterkante von
+        /// <paramref name="beschriftung"/> liegt.
+        /// </summary>
+        private static void ZeileUnterBeschriftung(Control beschriftung, params Control[] zeile)
+        {
+            if (beschriftung == null || zeile == null) return;
+
+            int oberste = int.MaxValue;
+            foreach (Control c in zeile)
+                if (c != null && !c.IsDisposed && c.Top < oberste) oberste = c.Top;
+            if (oberste == int.MaxValue) return;
+
+            int delta = (beschriftung.Bottom + D3_ZEILENLUFT) - oberste;
+            if (delta == 0) return;
+
+            foreach (Control c in zeile)
+                if (c != null && !c.IsDisposed) c.Top += delta;
         }
 
         /// <summary>Unterkante des E1-Kanalblocks; 0, solange er nicht angelegt ist.</summary>
@@ -3202,7 +3294,12 @@ namespace WindowsFormsApplication1
             if (this.Height > bildschirm.Height) this.Height = bildschirm.Height;
 
             // 4. Falls das Fenster maximiert gestartet werden soll (oft die sauberste Notebook-Lösung):
-            // this.WindowState = FormWindowState.Maximized; 
+            // this.WindowState = FormWindowState.Maximized;
+
+            // D3 (28.08.2026): Die drei 1-px-Berührungen der Bedarfsseite auflösen. Der
+            // Aufruf steht VOR jedem Rücksprung dieser Methode (SimulationBlockiert),
+            // damit die Zeile auch im blockierten Zustand sauber steht.
+            BedarfMaximalzeilenEntzerren();
 
             radioButton_Waermegefuehrt.Checked = true;
 

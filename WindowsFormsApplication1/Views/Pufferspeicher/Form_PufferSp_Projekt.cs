@@ -144,6 +144,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         private int _schichtSollHoehe;
 
+        /// <summary>
+        /// Client-BREITE der Maske ohne Bildlaufleiste — die Untergrenze beim Auf- und
+        /// Zuklappen.
+        ///
+        /// <para><b>D3 (28.08.2026), Beifang der Ratchet-Doppelprobe.</b> Das Umschalten
+        /// schrieb die Breite mit <c>this.ClientSize.Width</c> zurück. Rollt der Dialog auf
+        /// einem kleinen Schirm, ist dieser Wert um die Breite der senkrechten
+        /// Bildlaufleiste (17 px) kleiner als das Fenster — jedes Auf- oder Zuklappen
+        /// verlor also 17 px Fensterbreite. Fünf Umschaltvorgänge kosteten gemessen
+        /// 68 px (716 → 648). Das Sollmaß hält die Breite fest; ein vom Anwender
+        /// aufgezogenes Fenster bleibt trotzdem breit, weil das Maximum gebildet wird.</para>
+        /// </summary>
+        private int _schichtSollBreite;
+
         public Form_PufferSp_Projekt()
         {
             // Der Designer setzt AutoScaleMode bewusst auf None und lässt
@@ -665,6 +679,7 @@ namespace WindowsFormsApplication1
 
             this.ClientSize = new Size(this.ClientSize.Width, this.ClientSize.Height + platz);
             _schichtSollHoehe = this.ClientSize.Height;   // Sollmaß, noch ungeklemmt
+            _schichtSollBreite = this.ClientSize.Width;   // dito, siehe Feldkommentar
             this.Controls.Add(_gbSchichtung);
 
             // Tabreihenfolge: unmittelbar hinter die Eigenschaftengruppe. Alle
@@ -877,7 +892,11 @@ namespace WindowsFormsApplication1
                         c.Top += delta;
 
                 _schichtSollHoehe += delta;
-                this.ClientSize = new Size(this.ClientSize.Width, _schichtSollHoehe);
+                // D3: NICHT this.ClientSize.Width — der Wert ist bei sichtbarer
+                // Bildlaufleiste um deren Breite kleiner, und das Fenster schrumpfte
+                // bei jedem Umschalten um 17 px (siehe _schichtSollBreite).
+                this.ClientSize = new Size(Math.Max(this.ClientSize.Width, _schichtSollBreite),
+                                           _schichtSollHoehe);
             }
             finally
             {
@@ -893,6 +912,11 @@ namespace WindowsFormsApplication1
             // das Inhaltsmaß an der Lage, welche die Verschiebeschleife hergestellt hat.
             // Mit aktivem Anker maß sie eine Zwischenlage und blähte den Bildlaufbereich
             // dauerhaft auf.
+            //
+            // D3 (28.08.2026): _schichtSollHoehe geht der Einpassung jetzt AUSDRÜCKLICH
+            // mit — sie misst sonst die geklemmte Client-Fläche und käme beim Zuklappen
+            // nie wieder unter das größte je erreichte Maß (Bildlauf-Ratchet P1-O8).
+            FensterEinpassung.SollmassSetzen(this, new Size(0, _schichtSollHoehe));
             FensterEinpassung.Anwenden(this);
 
             // D2: Fußzeile zuletzt. _schichtSollHoehe ist die UNGEKLEMMTE Sollhöhe und

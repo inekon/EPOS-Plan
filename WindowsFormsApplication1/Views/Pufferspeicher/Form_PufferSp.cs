@@ -48,6 +48,51 @@ namespace WindowsFormsApplication1
             // 106x34 und unverankert. Im Assistentenbetrieb sind beide Knöpfe unsichtbar
             // (SetControls, bWizard); die Norm überspringt unsichtbare Knöpfe.
             FusszeilenNorm.Einhaengen(this, btn_OK, btn_Abbrechen);
+
+            SchriftAngleichen();   // D3
+        }
+
+        /// <summary>
+        /// Nimmt fünfzehn Steuerelementen ihre EIGENE Schrift, damit sie wieder die des
+        /// Formulars erben.
+        ///
+        /// <para><b>Befund (D-Check Klasse e, D3).</b> Der Dialog führte vier Schriften
+        /// nebeneinander: Segoe UI 9,75 (Formularschrift, 16 Steuerelemente), Segoe UI 10
+        /// (12), Segoe UI 8 (3) und Segoe UI 12 fett (1). Die 10er- und die 8er-Gruppe
+        /// tragen keine erkennbare Rolle — es sind gewöhnliche Beschriftungen, Textfelder,
+        /// Listen und die beiden Fußzeilenknöpfe; ihre Abweichung ist über die Jahre im
+        /// Designer entstanden. Sie folgen jetzt dem Formular.</para>
+        ///
+        /// <para><b>Was bleibt.</b> <c>label_Type</c> (Segoe UI 12 fett) ist das Kopfband
+        /// der Maske — eine Titelrolle und damit ABSICHT.</para>
+        ///
+        /// <para><b>Warum <c>Font = null</c> und nicht <c>Font = this.Font</c>.</b> Null
+        /// setzt die Eigenschaft auf „nicht gesetzt" zurück; das Steuerelement erbt danach
+        /// dauerhaft von seinem Elternteil. Ein zugewiesenes Font-Objekt wäre eine neue
+        /// feste Schrift, die einer späteren Änderung am Formular nicht mehr folgt.</para>
+        ///
+        /// <para>Die Namen stehen ausdrücklich da und werden nicht über die Schriftgröße
+        /// gesucht: Eine Heuristik „alles, was nicht 9,75 ist" würde <c>label_Type</c>
+        /// mitreißen.</para>
+        /// </summary>
+        private void SchriftAngleichen()
+        {
+            string[] namen =
+            {
+                // Segoe UI 10 statt 9,75
+                "listBox_Pufferspeicher", "listBox_Pufferspeicher_DB",
+                "textBox_Hersteller", "textBox_Name",
+                "label6", "label7", "label11", "label12", "label16", "label18",
+                "btn_PufferSp_Hinzu", "btn_PufferSp_Entfernen",
+                // Segoe UI 8 statt 9,75
+                "btn_OK", "btn_Abbrechen", "textBox_Investitionskosten"
+            };
+
+            foreach (string n in namen)
+            {
+                Control[] treffer = this.Controls.Find(n, true);
+                if (treffer.Length > 0) treffer[0].Font = null;
+            }
         }
 
         public void SetControls(int IDProjekt, bool bWizard = false)

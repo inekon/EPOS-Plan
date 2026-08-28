@@ -7908,6 +7908,9 @@ life [a]</value>
   <data name="BK_KOSTEN_STATUS_NICHT_VERBAUT" xml:space="preserve">
     <value>Cost items without an installed plant: {0}</value>
   </data>
+  <data name="WP_BTN_BEENDEN" xml:space="preserve">
+    <value>Finish</value>
+  </data>
   <data name="WPI_BTN_KOSTEN" xml:space="preserve">
     <value>Edit costs…</value>
   </data>
