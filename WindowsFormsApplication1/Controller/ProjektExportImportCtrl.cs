@@ -163,8 +163,23 @@ namespace WindowsFormsApplication1
 
                             if (s.Tabelle.Equals("Tab_Variante", StringComparison.OrdinalIgnoreCase)) continue;
 
+                            string filter = string.Format(s.Filter, projektId);
+                            // T6 (Nutzerbefund 28.08.2026): Kostenpositionen OHNE (gültige)
+                            // Anlagenzuordnung anlagenfähiger Komponenten sind Altlasten der
+                            // Quelle — am Ziel erschienen sie als „ohne Anlagenzuordnung",
+                            // obwohl dort nie eine solche Anlage angelegt war. Sie reisen
+                            // nicht mit; die Erfassungsgruppen ohne Anlagenbezug
+                            // (Wärmezentrale, Bauliche Anlagen, Stromeinspeisung) reisen
+                            // unverändert. Literale statt Parameter (ACE-Subquery-Falle).
+                            if (s.Tabelle.Equals("Tab_ProjektWerte", StringComparison.OrdinalIgnoreCase) &&
+                                SpaltenSicher())
+                                filter = "(" + filter + ") AND NOT (KomponentenID IN " +
+                                    "(SELECT ID FROM Tab_KostenKomponente WHERE Komponente IN (" +
+                                    AnlagenKomponentenListe() + ")) AND (ID_Anlage IS NULL OR ID_Anlage NOT IN " +
+                                    "(SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = " + projektId + ")))";
+
                             DataTable dt = DataRepository.GetDataTable(
-                                "SELECT * FROM [" + s.Tabelle + "] WHERE " + string.Format(s.Filter, projektId));
+                                "SELECT * FROM [" + s.Tabelle + "] WHERE " + filter);
                             if (dt == null || dt.Rows.Count == 0) continue;
 
                             WriteEntry(zip, prefix + s.Tabelle + ".json", RowsToJson(dt));
@@ -593,6 +608,23 @@ namespace WindowsFormsApplication1
             string projPk = tabellen.First(x => x.name.Equals("Tab_Projekt", StringComparison.OrdinalIgnoreCase)).pk;
             long altProjId = rows["Tab_Projekt"][0][projPk].GetInt64();
             return offset.ContainsKey("Tab_Projekt") ? (int)(altProjId + offset["Tab_Projekt"]) : -1;
+        }
+
+        // T6: Die anlagenfähigen Kostenkomponenten als SQL-Literalliste (dieselben
+        // sieben wie Ä7/ZuordnungReparieren — KostenVorlagenCtrl ist die Wahrheit).
+        private static string AnlagenKomponentenListe()
+        {
+            var teile = new List<string>();
+            foreach (string k in KostenVorlagenCtrl.WaehlbareKomponenten)
+                teile.Add("'" + k.Replace("'", "''") + "'");
+            return string.Join(",", teile);
+        }
+
+        // T6: Der Lose-Filter braucht die Ä20/Ä21-Spalten — auf einer Alt-Datenbank
+        // ohne sie bliebe der SELECT sonst im Fehler hängen.
+        private static bool SpaltenSicher()
+        {
+            try { return KostenPositionCtrl.StelleSpaltenSicher(); } catch { return false; }
         }
 
         // T3: Projekt-Id INNERHALB der Import-Transaktion nachschlagen (der frisch
