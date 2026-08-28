@@ -48,6 +48,21 @@ namespace WindowsFormsApplication1
         /// <summary>Seitenrand des Kartenbereichs [px] — wie label11 und groupBox_Tools.</summary>
         private const int KARTEN_RAND = 19;
 
+        /// <summary>
+        /// RECHTER Rand des Kartenbereichs und des Ansichtsumschalters [px].
+        ///
+        /// <para><b>D3 (28.08.2026), offener Punkt aus D2.</b> Links richtet sich alles an
+        /// den Entwurfselementen aus (<c>label11</c> 18, <c>groupBox_Tools</c> 19) — das
+        /// bleibt so, sonst stünde die Kartenspalte nicht mehr unter ihrer Überschrift.
+        /// RECHTS gab es dagegen zwei Maße nebeneinander: der Kartenbereich 19 px, die
+        /// Fußzeile seit der Norm 12 px. Der 19er stammt NICHT aus dem Platz für den
+        /// Rollbalken — den zieht <see cref="KartenBreiteAnpassen"/> innerhalb der Spalte
+        /// ab —, sondern war schlicht dieselbe Zahl wie links. Rechts gilt jetzt das
+        /// Randmaß der Norm, damit Umschalter, Kartenfläche und Knopfreihe EINE Flucht
+        /// bilden.</para>
+        /// </summary>
+        private const int KARTEN_RAND_RECHTS = FusszeilenNorm.RAND;
+
         /// <summary>Oberkante des Kartenbereichs [px] — unter der Überschrift label11.</summary>
         private const int KARTEN_OBEN = 44;
 
@@ -260,8 +275,9 @@ namespace WindowsFormsApplication1
             tableLayout_Karten.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
 
             tableLayout_Karten.Location = new Point(KARTEN_RAND, KARTEN_OBEN);
-            tableLayout_Karten.Size = new Size(ClientSize.Width - 2 * KARTEN_RAND,
-                                               ClientSize.Height - FUSS_HOEHE - KARTEN_OBEN);
+            tableLayout_Karten.Size = new Size(
+                ClientSize.Width - KARTEN_RAND - KARTEN_RAND_RECHTS,
+                ClientSize.Height - FUSS_HOEHE - KARTEN_OBEN);
             tableLayout_Karten.Anchor = AnchorStyles.Top | AnchorStyles.Left |
                                         AnchorStyles.Right | AnchorStyles.Bottom;
 
@@ -270,6 +286,12 @@ namespace WindowsFormsApplication1
 
             flow_Erzeuger = Kartenspalte("flow_Erzeuger");
             flow_Speicher = Kartenspalte("flow_Speicher");
+
+            // D3: Die 8 px rechts sind der ZWISCHENraum der beiden Spalten. In der
+            // rechten Spalte wären sie ein zusätzlicher Außenrand — die graue Fläche
+            // endete damit 8 px vor der Flucht, die KARTEN_RAND_RECHTS vorgibt.
+            label_KopfSpeicher.Margin = new Padding(0, 0, 0, 2);
+            flow_Speicher.Margin = new Padding(0, 0, 0, 0);
 
             tableLayout_Karten.Controls.Add(label_KopfErzeuger, 0, 0);
             tableLayout_Karten.Controls.Add(label_KopfSpeicher, 1, 0);

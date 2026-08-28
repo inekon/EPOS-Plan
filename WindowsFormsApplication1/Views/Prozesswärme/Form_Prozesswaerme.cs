@@ -75,6 +75,53 @@ namespace WindowsFormsApplication1
             // ihre Beschriftung braucht die Breite - und bekommen nur den unteren Anker,
             // damit die ganze Zeile beim Aufziehen des Fensters mitwandert.
             FusszeilenNorm.ZeileMitziehen(btn_ErgebnisseVerbrauch, btn_Simulation);
+
+            SchriftAngleichen();   // D3
+        }
+
+        /// <summary>
+        /// D3 (28.08.2026), D-Check Klasse e: Bringt die acht Steuerelemente mit
+        /// Fremdschrift auf die Schrift des Formulars (Segoe UI 10).
+        ///
+        /// <para>Der Dialog fuehrte vier Schriften: Segoe UI 10 (Formularschrift,
+        /// 26 Steuerelemente), Segoe UI 8 (6 Textfelder), Segoe UI 9,75 fett (die beiden
+        /// Uebernahmeknoepfe der Auswahlliste) und Segoe UI 12 fett (das Kopfband).</para>
+        ///
+        /// <para><b>Sechs Textfelder auf 8 pt.</b> Sie tragen dieselben Werte wie die
+        /// Beschriftungen daneben, nur zwei Punkt kleiner - keine erkennbare Absicht,
+        /// sondern Designer-Bestand. Sie erben jetzt wieder (Font = null). Ihre Hoehe
+        /// waechst dabei um 3 px; der engste Nachbarabstand danach ist 2 px
+        /// (textBox_Jahres_Verbrauch 474+25 gegen textBox_SummeProzesswaerme 501), alle
+        /// uebrigen liegen bei 5 px und mehr. textBox_Beschreibung ist mehrzeilig und
+        /// behaelt seine Hoehe ohnehin.</para>
+        ///
+        /// <para><b>btn_Hinzu / btn_Entfernen.</b> Die FETTUNG ist Absicht - sie hebt die
+        /// beiden Uebernahmepfeile hervor. Angeglichen wird nur die Groesse, indem die
+        /// Schrift des Formulars mit dem Fettschnitt uebernommen wird. Dasselbe Muster
+        /// wie bei lblCO2 im Paket D2.</para>
+        ///
+        /// <para><b>label_Type bleibt.</b> Segoe UI 12 fett ist das Kopfband der Maske,
+        /// also eine Titelrolle.</para>
+        /// </summary>
+        private void SchriftAngleichen()
+        {
+            string[] erben =
+            {
+                "textBox_Verbrauch", "textBox_Prozess_Name", "textBox_Jahres_Verbrauch",
+                "textBox_Beschreibung", "textBox_Prozess_Type", "textBox_SummeProzesswaerme"
+            };
+            foreach (string n in erben)
+            {
+                Control[] treffer = this.Controls.Find(n, true);
+                if (treffer.Length > 0) treffer[0].Font = null;
+            }
+
+            Font fett = new Font(this.Font, FontStyle.Bold);
+            foreach (string n in new[] { "btn_Hinzu", "btn_Entfernen" })
+            {
+                Control[] treffer = this.Controls.Find(n, true);
+                if (treffer.Length > 0) treffer[0].Font = fett;
+            }
         }
 
         private void SetDBList()

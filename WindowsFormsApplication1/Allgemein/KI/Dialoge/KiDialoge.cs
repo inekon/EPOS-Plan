@@ -322,7 +322,10 @@ namespace WindowsFormsApplication1
         /// <para>
         /// <b>Der Abbrechen-Knopf existiert nicht.</b> <c>btn_Abbrechen_Click</c>
         /// (<c>:269</c>) ist wie bei <c>Form_PV</c> ein Ereignisbehandler ohne Control;
-        /// <c>Form_WP.Designer.cs</c> verdrahtet <c>btn_Beenden</c> (Beschriftung „OK"),
+        /// <c>Form_WP.Designer.cs</c> verdrahtet <c>btn_Beenden</c> (Beschriftung seit
+        /// Paket D3 „Beenden" — der Knopf schliesst nur, gespeichert wird ueber
+        /// <c>btn_Speichern</c>; die Rolle im Katalog bleibt „ok", wie bei
+        /// <c>Form_Simulation_Config.btn_OK</c>, das ebenfalls „Beenden" zeigt),
         /// <c>btn_Neu</c>, <c>btn_Kenndaten</c>, <c>btn_Speichern</c>, <c>btn_Loeschen</c>
         /// und <c>btn_Katalog</c>. Deklariert sind deshalb nur <c>btn_Speichern</c> und
         /// <c>btn_Beenden</c>.

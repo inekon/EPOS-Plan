@@ -13,6 +13,15 @@ namespace WindowsFormsApplication1
             this.AutoScaleMode = AutoScaleMode.Font;
             this.AutoScroll = true;
             this.MaximumSize = new Size(0, 0); // Unbegrenztes Wachstum erlauben
+
+            // D3 (28.08.2026): Das Entwurfsmaß ab HIER beobachten. Der Konstruktor der
+            // Basisklasse läuft VOR InitializeComponent des Nachfahren — die Beobachtung
+            // nimmt damit erst die Entwurfsgröße und danach die Schriftskalierung mit und
+            // endet im Load, bevor Windows auf Bildschirmgröße klemmt. Ohne das maß
+            // FensterEinpassung den Ausschnitt statt den Entwurf und ließ bei Form_WP auf
+            // einer 1280x800-Arbeitsfläche die untersten 28 px unerreichbar
+            // (Begründung ausführlich in FensterEinpassung.EntwurfMerken).
+            FensterEinpassung.EntwurfMerken(this);
         }
 
         protected override void OnLoad(EventArgs e)

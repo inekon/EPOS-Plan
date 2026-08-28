@@ -121,7 +121,9 @@ namespace WindowsFormsApplication1
         private void UmschalterPlatzieren()
         {
             int oben = Math.Max(8, KARTEN_OBEN - 32);
-            int rechts = ClientSize.Width - KARTEN_RAND;
+            // D3 (28.08.2026): rechts das Randmaß der Fußzeilen-Norm, damit Umschalter,
+            // Kartenfläche und Knopfreihe in EINER Flucht enden (siehe KARTEN_RAND_RECHTS).
+            int rechts = ClientSize.Width - KARTEN_RAND_RECHTS;
 
             btn_AnsichtSchema.Location = new Point(rechts - btn_AnsichtSchema.Width, oben);
             btn_AnsichtListe.Location =
