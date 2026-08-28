@@ -331,11 +331,26 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// B1 (Konzept Projekttransfer T1): Laedt die deklarierten Beziehungen in
+        /// <see cref="_echteFks"/> — die Wissensbasis von
+        /// <see cref="ErmittleZieltabelle"/>. Bisher fuellte nur
+        /// <see cref="ErmittlePlan"/> sie (Duplizieren und EXPORT); der reine
+        /// IMPORT arbeitete auf einem leeren Stand, und jede Beziehung ausserhalb
+        /// der handgepflegten FK_MAP (z. B. Tab_ErgebnisEnergiebedarf.ID_Ergebnis
+        /// -> Tab_Ergebnis) blieb unversetzt — der Nutzerbefund
+        /// „Tab_Ergebnis[ID] FEHLT" beim Import eines fremden Pakets.
+        /// </summary>
+        internal void BeziehungenLaden(OleDbConnection conn, OleDbTransaction trans)
+        {
+            _echteFks = LiesEchteFks(conn, trans);
+        }
+
         // Ermittelt die zu kopierenden Tabellen generisch aus dem Schema.
         internal List<Spec> ErmittlePlan(OleDbConnection conn, OleDbTransaction trans)
         {
             // Zuerst die deklarierten Beziehungen einlesen (fuer Reihenfolge + Offset-Ziel).
-            _echteFks = LiesEchteFks(conn, trans);
+            BeziehungenLaden(conn, trans);
 
             var plan = new Dictionary<string, Spec>(StringComparer.OrdinalIgnoreCase);
             var uebrig = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase); // Tabellen ohne eigenen Projektbezug -> evtl. FK-gebundene Kinder

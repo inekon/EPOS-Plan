@@ -153,8 +153,14 @@ namespace WindowsFormsApplication1
             }
 
             // Stufe 2/3: Merkmalsvergleich über die deklarative Feldliste.
+            // Artefakt-Guard (Nutzerbefund 28.08.2026): Der Anlage-Block vergleicht
+            // die jeweils erste ECHTE Anlagenzeile — führen Stamm und Variante dort
+            // verschiedene Gewerke, entfallen seine Merkmalszeilen (siehe
+            // AnlagenVergleichbar); Referenzanlagen zählen nie (ErsteEchteAnlage).
+            bool anlagenVergleichbar = AnlagenVergleichbar(stamm, variante);
             foreach (Merkmal f in Felder)
             {
+                if (f.Tabelle == "Tab_Energieanlagen" && !anlagenVergleichbar) continue;
                 DataRow rS = ZeileFuer(stamm, f);
                 DataRow rV = ZeileFuer(variante, f);
                 if (rS == null && rV == null) continue;            // Gewerk in beiden nicht vorhanden
@@ -204,13 +210,108 @@ namespace WindowsFormsApplication1
         public static DataRow ZeileFuer(ProjektDetails d, Merkmal f)
         {
             if (f.Tabelle == "Tab_Energieanlagen")
-                return (d.Anlagen != null && d.Anlagen.Rows.Count > 0) ? d.Anlagen.Rows[0] : null;
+                return ErsteEchteAnlage(d);
             if (f.Tabelle == "Tab_Gebaeude")
                 return (d.Gebaeude != null && d.Gebaeude.Rows.Count > 0) ? d.Gebaeude.Rows[0] : null;
             foreach (KeyValuePair<string, string> g in ProjektDetails.GewerkTabellen)
                 if (g.Value == f.Tabelle)
                     return d.Komponenten.ContainsKey(g.Key) ? d.Komponenten[g.Key] : null;
             return null;
+        }
+
+        /// <summary>Die n-te Komponentenzeile eines Gewerks (null wenn nicht vorhanden) —
+        /// Grundlage der „eine Zeile je Komponente"-Gegenüberstellung (28.08.2026).</summary>
+        public static DataRow KomponenteZeile(ProjektDetails d, string gewerk, int index)
+        {
+            if (d == null || gewerk == null || index < 0) return null;
+            DataTable dt;
+            if (!d.KomponentenAlle.TryGetValue(gewerk, out dt) || dt == null) return null;
+            return index < dt.Rows.Count ? dt.Rows[index] : null;
+        }
+
+        /// <summary>Das Bezeichner-Merkmal eines Gewerks (Label „Komponente" der
+        /// deklarativen Feldliste) — liefert der Komponentenzeile ihren Namen.</summary>
+        public static Merkmal BezeichnerMerkmal(string gewerk)
+        {
+            foreach (Merkmal f in Felder)
+                if (f.Gewerk == gewerk && f.Spalte == "Bezeichner") return f;
+            return null;
+        }
+
+        /// <summary>
+        /// Merkmalstext einer Komponentenzeile über die deklarative Feldliste ihres
+        /// Gewerks — je belegtem Merkmal „Label: Wert"; das Bezeichner-Merkmal bleibt
+        /// außen vor (es steht bereits in der Zelle). Eine Wahrheit für Mouse-over
+        /// und Auswahlanzeige der Gegenüberstellung (Nutzerauftrag 28.08.2026).
+        /// </summary>
+        public static string MerkmaleText(DataRow r, string gewerk, string trenner)
+        {
+            if (r == null) return "";
+            var teile = new List<string>();
+            foreach (Merkmal f in Felder)
+            {
+                if (f.Gewerk != gewerk || f.Spalte == "Bezeichner") continue;
+                if (!r.Table.Columns.Contains(f.Spalte)) continue;
+                string w = Formatiere(r, f);
+                if (string.IsNullOrEmpty(w) || w == "—") continue;
+                teile.Add(f.Label + ": " + w);
+            }
+            return string.Join(trenner, teile);
+        }
+
+        /// <summary>
+        /// Die erste ECHTE Anlagenzeile eines Projekts — Referenzanlagen
+        /// (<c>WizardItemClass.REF_KESSEL_TYP</c>…<c>REF_PV_TYP</c>) bleiben außen
+        /// vor: Sie sind im Bereich Energieerzeuger nicht als Projektanlage
+        /// angelegt und lieferten dem Anlage-Block sonst Artefaktwerte
+        /// (Nutzerbefund 28.08.2026).
+        /// </summary>
+        public static DataRow ErsteEchteAnlage(ProjektDetails d)
+        {
+            if (d == null || d.Anlagen == null) return null;
+            foreach (DataRow r in d.Anlagen.Rows)
+            {
+                int typ = (int)(ProjektDetails.D(r, "ID_Type") ?? 0);
+                if (typ < WizardItemClass.REF_KESSEL_TYP || typ > WizardItemClass.REF_PV_TYP)
+                    return r;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// true, wenn die Anlage-Merkmale zweier Projekte vergleichbar sind: Beide
+        /// führen eine echte Anlagenzeile DESSELBEN Gewerks (ID_Type). Ein
+        /// WP-Stamm gegen eine BHKW-Variante verglich sonst Äpfel mit Birnen —
+        /// die Tabelle zeigte „Anlage"-Unterschiede einer Anlage, die es im
+        /// Bereich Energieerzeuger des Partners gar nicht gibt; der
+        /// Systemunterschied steht bereits in den Bestandszeilen der Stufe 1.
+        /// </summary>
+        public static bool AnlagenVergleichbar(ProjektDetails a, ProjektDetails b)
+        {
+            DataRow ra = ErsteEchteAnlage(a), rb = ErsteEchteAnlage(b);
+            if (ra == null || rb == null) return false;
+            return (int)(ProjektDetails.D(ra, "ID_Type") ?? 0) ==
+                   (int)(ProjektDetails.D(rb, "ID_Type") ?? 0);
+        }
+
+        /// <summary>
+        /// true, wenn ALLE Versionen mit echter Anlagenzeile dasselbe Gewerk
+        /// führen (für die Gegenüberstellung der Übersicht — sonst stünden Werte
+        /// verschiedener Gewerke nebeneinander in einer „Anlage"-Zeile).
+        /// </summary>
+        public static bool AnlagenEinheitlich(IEnumerable<ProjektDetails> versionen)
+        {
+            if (versionen == null) return false;
+            int typ = 0;
+            foreach (ProjektDetails d in versionen)
+            {
+                DataRow r = ErsteEchteAnlage(d);
+                if (r == null) continue;
+                int t = (int)(ProjektDetails.D(r, "ID_Type") ?? 0);
+                if (typ == 0) typ = t;
+                else if (typ != t) return false;
+            }
+            return typ != 0;
         }
 
         private static bool WerteGleich(DataRow a, DataRow b, Merkmal f)

@@ -397,6 +397,7 @@ namespace WindowsFormsApplication1
             gridKomp.Size = new Size(1020, 221);
             gridKomp.TabIndex = 1;
             gridKomp.CellContentClick += gridKomp_CellContentClick;
+            gridKomp.SelectionChanged += gridKomp_KomponentenAuswahl;
             // 
             // lblStatus
             // 
@@ -898,6 +899,24 @@ namespace WindowsFormsApplication1
         /// </summary>
         private const string OHNE_WERT = "—";
 
+        // Kontext der Gegenüberstellung für Tooltip und Auswahlanzeige
+        // (Nutzerauftrag 28.08.2026: eine Zeile je Komponente).
+        private List<ProjektDetails> _vergleichsVersionen;
+        private List<string> _vergleichsKoepfe;
+        private sealed class KomponentenZelle { public string Gewerk; public int Index; }
+
+        // Ressourcen-Helfer mit deutschem Fallback (Drei-Schichten-Regel; die
+        // generierten Resource-Eigenschaften entstehen erst im VS-Designer).
+        private static string TUeb(string key, string fallback)
+        {
+            try
+            {
+                string s = MyResource.Resource.ResourceManager.GetString(key);
+                return string.IsNullOrEmpty(s) ? fallback : s;
+            }
+            catch { return fallback; }
+        }
+
         // Gegenüberstellung Stamm ↔ Varianten: Gewerk · Merkmal · Stamm · je Variante eine
         // Spalte, in der Reihenfolge der oberen Liste. Sie ersetzt die frühere
         // Einzelansicht des Stammprojekts: Deren eigentlicher Zweck — der Vergleich der
@@ -919,6 +938,11 @@ namespace WindowsFormsApplication1
             // Die Versionen in Spaltenreihenfolge: Stamm zuerst, dann die Varianten.
             var versionen = new List<ProjektDetails> { ds };
             foreach (AuswahlZeile v in varianten) versionen.Add(Details(stamm.Id, v.IdProjekt));
+
+            // Kontext für Tooltip/Auswahlanzeige der Komponentenzeilen (28.08.2026).
+            _vergleichsVersionen = versionen;
+            _vergleichsKoepfe = new List<string> { MyResource.Resource.BK_SP_WERT_STAMM };
+            foreach (AuswahlZeile v in varianten) _vergleichsKoepfe.Add(SpaltenKopf(v));
 
             int zeilen = FuelleVergleich(versionen);
 
@@ -1003,6 +1027,14 @@ namespace WindowsFormsApplication1
                 // „Anlage" und „Gebäude" sind Konfigurationsblöcke ohne Komponentenbestand;
                 // nur die echten Gewerke der GewerkTabellen führen eine Stückzahl.
                 bool zaehlbar = ProjektDetails.GewerkTabellen.Any(g => g.Key == gewerk);
+
+                // Artefakt-Guard (Nutzerbefund 28.08.2026): Der Anlage-Block erscheint
+                // nur, wenn alle Versionen mit echter Anlagenzeile DASSELBE Gewerk
+                // führen — sonst stünden Werte verschiedener Gewerke nebeneinander
+                // (WP-Stamm neben BHKW- und Kessel-Variante); Referenzanlagen zählen
+                // ohnehin nicht (AbweichungsErmittler.ErsteEchteAnlage).
+                if (!zaehlbar && felder[0].Tabelle == "Tab_Energieanlagen" &&
+                    !AbweichungsErmittler.AnlagenEinheitlich(versionen)) continue;
                 bool irgendwo = versionen.Any(d => AbweichungsErmittler.ZeileFuer(d, felder[0]) != null)
                              || (zaehlbar && versionen.Any(d => AbweichungsErmittler.Anzahl(d, gewerk) > 0));
                 if (!irgendwo) continue;
@@ -1019,8 +1051,41 @@ namespace WindowsFormsApplication1
                     foreach (ProjektDetails d in versionen)
                         anzahlen.Add(AbweichungsErmittler.AnzahlText(AbweichungsErmittler.Anzahl(d, gewerk)));
                     SchreibeVergleichsZeile(gewerk, AbweichungsErmittler.MERKMAL_ANZAHL, anzahlen);
-                    ersteZeile = false;
                     zeilen++;
+
+                    // Nutzerauftrag 28.08.2026: eine Zeile JE KOMPONENTE mit ihrem
+                    // Bezeichner je Version — vorher zeigten die Merkmalszeilen nur
+                    // die ERSTE Komponente (bei zwei Wärmepumpen fehlte die zweite
+                    // komplett). Die Merkmale wandern in den Tooltip der Zelle
+                    // (Mouse-over) und in die Statuszeile bei Auswahl.
+                    AbweichungsErmittler.Merkmal bez = AbweichungsErmittler.BezeichnerMerkmal(gewerk);
+                    int maxKomp = 0;
+                    foreach (ProjektDetails d in versionen)
+                        maxKomp = Math.Max(maxKomp, AbweichungsErmittler.Anzahl(d, gewerk));
+                    for (int k = 0; k < maxKomp; k++)
+                    {
+                        var namen = new List<string>();
+                        foreach (ProjektDetails d in versionen)
+                        {
+                            DataRow rk = AbweichungsErmittler.KomponenteZeile(d, gewerk, k);
+                            namen.Add(rk == null || bez == null ? OHNE_WERT
+                                                                : AbweichungsErmittler.Formatiere(rk, bez));
+                        }
+                        string label = maxKomp == 1
+                            ? TUeb("BK_SP_KOMPONENTE", "Komponente")
+                            : string.Format(TUeb("BK_SP_KOMPONENTE_N", "Komponente {0}"), k + 1);
+                        DataGridViewRow zk = SchreibeVergleichsZeile("", label, namen);
+                        zk.Tag = new KomponentenZelle { Gewerk = gewerk, Index = k };
+                        for (int c = 0; c < versionen.Count; c++)
+                        {
+                            DataRow rk = AbweichungsErmittler.KomponenteZeile(versionen[c], gewerk, k);
+                            if (rk != null)
+                                zk.Cells[2 + c].ToolTipText =
+                                    AbweichungsErmittler.MerkmaleText(rk, gewerk, "\r\n");
+                        }
+                        zeilen++;
+                    }
+                    continue;   // Merkmalszeilen entfallen für zählbare Gewerke
                 }
 
                 foreach (AbweichungsErmittler.Merkmal f in felder)
@@ -1046,7 +1111,7 @@ namespace WindowsFormsApplication1
         // Trägt eine Zeile ein: das Gewerk nur in der ersten Zeile seines Blocks (fett),
         // Zellen ohne Bestand grau - der Strich allein wäre in einer Zahlenspalte leicht
         // als Zahl zu übersehen.
-        private void SchreibeVergleichsZeile(string gewerk, string merkmal, List<string> werte)
+        private DataGridViewRow SchreibeVergleichsZeile(string gewerk, string merkmal, List<string> werte)
         {
             var zellen = new List<object> { gewerk, merkmal };
             foreach (string w in werte) zellen.Add(w);
@@ -1058,6 +1123,32 @@ namespace WindowsFormsApplication1
             for (int c = 0; c < werte.Count; c++)
                 if (werte[c] == OHNE_WERT || werte[c] == AbweichungsErmittler.BESTAND_FEHLT)
                     zeile.Cells[2 + c].Style.ForeColor = SystemColors.GrayText;
+            return zeile;
+        }
+
+        /// <summary>
+        /// Nutzerauftrag 28.08.2026 — „Anzeige bei Auswahl": Die Merkmale der in der
+        /// Gegenüberstellung gewählten Komponente erscheinen in der Statuszeile
+        /// (Hersteller, Typ, Leistung, … der Zelle unter dem Cursor); das Mouse-over
+        /// der Zelle zeigt dieselben Merkmale mehrzeilig als Tooltip.
+        /// </summary>
+        private void gridKomp_KomponentenAuswahl(object sender, EventArgs e)
+        {
+            if (_vergleichsVersionen == null || gridKomp.CurrentCell == null) return;
+            var kz = gridKomp.CurrentCell.OwningRow?.Tag as KomponentenZelle;
+            if (kz == null) return;
+
+            int v = gridKomp.CurrentCell.ColumnIndex - 2;
+            if (v < 0 || v >= _vergleichsVersionen.Count) v = 0;
+            DataRow r = AbweichungsErmittler.KomponenteZeile(_vergleichsVersionen[v], kz.Gewerk, kz.Index);
+            if (r == null) return;
+
+            AbweichungsErmittler.Merkmal bez = AbweichungsErmittler.BezeichnerMerkmal(kz.Gewerk);
+            string name = bez != null ? AbweichungsErmittler.Formatiere(r, bez) : kz.Gewerk;
+            string kopf = (_vergleichsKoepfe != null && v < _vergleichsKoepfe.Count) ? _vergleichsKoepfe[v] : "";
+            string merkmale = AbweichungsErmittler.MerkmaleText(r, kz.Gewerk, "  ·  ");
+            Melde(name + (kopf.Length > 0 ? "  (" + kopf + ")" : "") +
+                  (merkmale.Length > 0 ? "  —  " + merkmale : ""));
         }
 
         // Unterschiede der Variante gegenüber dem Stamm (vorhandene Diff-Logik).
