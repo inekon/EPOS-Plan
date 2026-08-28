@@ -650,3 +650,13 @@ Merkmale per Mouse-over und bei Auswahl.
 Nachweise: transfer-T8/T8b (2 WPs vollzählig, Merkmalstext ohne
 Bezeichner, mit Hersteller), Gesamtlauf + kd6 + Sweep siehe Zahlen des
 Regressionslaufs.
+
+**Nachtrag Booster-Bereinigung (29.08.2026, Nutzerfreigabe):** Die zwei mit
+dem Import eingeschleppten Quell-Altlasten der Booster-Kette (Projekt 1043:
+Solarthermie 3.775 EUR, Pufferspeicher 3.000,50 EUR, beide ohne
+Anlagenzuordnung) wurden auf ausdrückliche Freigabe von der Produktiv-DB
+gelöscht (Sicherung K:\backup_kenndaten_2026-08-29_vor_booster_bereinigung
+.accdb; Vorab-Verifikation 2/6.775,5 exakt getroffen). Nachmessung über
+alle Projekte: 0 lose Positionen anlagenfähiger Komponenten — der Bestand
+ist wieder vollständig sauber; der T6-Exportfilter verhindert künftige
+Einschleppungen.
