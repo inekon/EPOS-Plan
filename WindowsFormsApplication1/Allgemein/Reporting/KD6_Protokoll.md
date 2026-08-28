@@ -552,3 +552,30 @@ Solarthermie- und BHKW-Position (0 €), Projekt 1011 zwei BHKW-Positionen
 (30 € Invest + 30 € Betrieb). Vorab-Zählprüfung traf exakt 4; verwaiste,
 noch heilbare Positionen gab es keine. Nachmessung über ALLE Projekte:
 0 lose Positionen anlagenfähiger Komponenten — der Bestand ist bereinigt.
+
+### Projekttransfer T1+T2 (28.08.2026) — Importfehler Ergebnisfamilie behoben
+
+Nutzerbefund: Import der `Booster-Kette mit Kombi-Speicher.wpx` brach mit
+„INSERT Tab_ErgebnisEnergiebedarf … ID_Ergebnis=206 -> Tab_Ergebnis[ID]:
+FEHLT" ab.
+
+- WURZEL (B1): Die Import-Umschlüsselung fragt `ErmittleZieltabelle` des
+  Duplizierers; dessen Beziehungswissen (`_echteFks`) lud nur `ErmittlePlan`
+  (Duplizieren/Export). Der reine Import lief auf leerem Wissen — jede
+  Beziehung außerhalb der FK_MAP (`ID_Ergebnis → Tab_Ergebnis`) blieb
+  unversetzt. Deshalb traf es die App (nur Import), nie den Prüfstand
+  (Export davor füllte das Wissen am selben Objekt).
+- FIX: `BeziehungenLaden`-Extrakt im Duplizierer, Aufruf im Import;
+  Namenskonventions-Gürtel in `Umschluessele` (ID_<X> → Tab_<X>, nur wenn
+  die Tabelle im Paket reist); Randfall „Elterntabelle ohne Zeilen" löst den
+  Verweis ehrlich. Dazu B2 (Manifest trägt echten Schemastand, Import lehnt
+  fremde Stände klar ab) und B3 (`AnkerNachziehen` nach dem Commit — vorher
+  8 fremde WP-Kostenanker im Testimport).
+- NEBENBEFUND: Die Rechner waren auseinander (Paket Schemastand 54, hiesige
+  App 47) — der heutige Sync glich die App an; die Produktiv-DB migriert beim
+  nächsten Start auf 54.
+
+Nachweise: neuer Runner-Modus `transfer` (Export Kopie A → Import Kopie B)
+15/15 PASS — darunter der Import der ECHTEN Nutzerdatei mit korrekt
+verdrahteter Ergebnisfamilie und die Ablehnung eines Pakets mit
+verfälschtem Schemastand; kd6 92/92, Sweep 114/0/5.
