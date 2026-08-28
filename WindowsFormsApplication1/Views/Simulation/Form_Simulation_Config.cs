@@ -337,6 +337,11 @@ namespace WindowsFormsApplication1
 
             // Einstellung Extrapolation_erlaubt vorbelegen (Paket 8 - Konzept 13.4)
             AktualisiereExtrapolationSchalter();
+
+            // PAKET B2: Booster-Lesepunkt vorbelegen und ein-/ausblenden. NACH
+            // AktualisiereErzeugerUebersicht, weil er nur erscheint, wenn das Projekt
+            // wirklich einen gekoppelten Booster führt.
+            AktualisiereBoosterLesepunktSchalter();
         }
 
         /// <summary>Ä15: verbaute Wärmeerzeuger in freie Auswahlplätze heben;

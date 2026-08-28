@@ -1659,6 +1659,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         public int[] Knappheit = Kanal.KnappheitVorgabe();
 
+        /// <summary>
+        /// LESEPUNKT der Booster-Quelltemperatur innerhalb der Stunde (Paket B2,
+        /// Nutzerauftrag 28.08.2026) — <c>DbWerte.BOOSTER_LESEPUNKT_DAVOR</c> oder
+        /// <c>…_DANACH</c>, projektweit aus
+        /// <c>Tab_Einstellungen.Booster_Lesepunkt</c>.
+        ///
+        /// <para><c>Davor</c> (Vorbelegung): ALLE gekoppelten Module lesen EINMAL am
+        /// Stundenanfang — vor Phase A und damit aus dem Speicherzustand, den die
+        /// Vorstunde hinterlassen hat. <c>Danach</c>: je Rechenebene unmittelbar vor
+        /// deren Phase B, also nach den Ladephasen der Vorebenen — der Lesepunkt von
+        /// Paket B1.</para>
+        ///
+        /// <para>Es bleibt bei GENAU EINEM Leseort je Modus; der Wert entscheidet nur,
+        /// welcher es ist (<see cref="Kaskadenschleife"/>, Stundenschleife).</para>
+        /// </summary>
+        public string BoosterLesepunkt = DbWerte.BOOSTER_LESEPUNKT_DAVOR;
+
         public Kaskadenkontext()
         {
             for (int k = 0; k < Kanal.ANZAHL; k++)

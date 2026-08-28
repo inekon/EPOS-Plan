@@ -2070,6 +2070,9 @@ Einsatzgrenzen stehen in den jeweiligen Eingabemasken.</value>
   <data name="SIMQ_PUFFER_CB_UNBEGRENZT" xml:space="preserve">
     <value>Quelle unbegrenzt verfügbar (nur Temperatur maßgeblich)</value>
   </data>
+  <data name="SIMQ_PUFFER_CB_UNBEGRENZT_KONFLIKT" xml:space="preserve">
+    <value>Quelle unbegrenzt verfügbar — Speicherkopplung AUS, konstant {0} °C!</value>
+  </data>
   <data name="SIMQ_PUFFER_DATEN" xml:space="preserve">
     <value>Speichertyp: {0}
 Gesamtvolumen: {1} l
@@ -7992,6 +7995,9 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
   <data name="SIMWARN_QUELLE_FEHLT" xml:space="preserve">
     <value>Anlage „{0}": Die {1}-Wärmepumpe hat keine konfigurierte Wärmequelle — gerechnet wird ersatzweise mit der Außenluft, was für diese Bauart fachlich nicht passt. Die Quelle über den Chip „Quelle" der Erzeugerkarte wählen (Erdreich, konstante Temperatur, Quellprofil oder Pufferspeicher).</value>
   </data>
+  <data name="SIMWARN_QUELLE_UNBEGRENZT" xml:space="preserve">
+    <value>Anlage „{0}": Der Pufferspeicher „{1}" ist als Wärmequelle gewählt, aber „Quelle unbegrenzt verfügbar" ist gesetzt — die Speicherkopplung ist damit abgeschaltet, gerechnet wird mit konstant {2} °C. Das Häkchen im Quellendialog entfernen, damit die Quelltemperatur dem Speicherzustand folgt.</value>
+  </data>
   <data name="SIMWARN_HART_RING" xml:space="preserve">
     <value>Die Quellbezüge der Pufferspeicher bilden einen RING: {0}. Es gibt keine Rechenreihenfolge, in der jeder Erzeuger nach seinem Puffer rechnet — bitte die Wärmequelle einer der beteiligten Anlagen ändern.</value>
   </data>
@@ -8205,10 +8211,52 @@ Wirksam nur bei einem GESCHICHTETEN Zielspeicher (Schichten &gt; 1): Von der Ein
   <data name="CHART_TITEL_DECKUNG_JE_BEDARFSART" xml:space="preserve">
     <value>Deckung {0} — Jahresganglinie</value>
   </data>
+<<<<<<< HEAD
   <data name="BK_SP_KOMPONENTE" xml:space="preserve">
     <value>Komponente</value>
   </data>
   <data name="BK_SP_KOMPONENTE_N" xml:space="preserve">
     <value>Komponente {0}</value>
+=======
+  <data name="SIMQ_PUFFER_TEMPERATURBEZUG" xml:space="preserve">
+    <value>Temperaturbezug:</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_BERECHNET" xml:space="preserve">
+    <value>berechnet (aus der Anlage)</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_FEST" xml:space="preserve">
+    <value>fest vorgegeben</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_VORLAUF" xml:space="preserve">
+    <value>Vorlauf [°C]:</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauf [°C]:</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_HINWEIS" xml:space="preserve">
+    <value>Der Kessel hebt von seinem Rücklauf auf seinen Vorlauf an; der Puffer trägt den Teil, den seine Temperatur davon abdeckt. „Berechnet" nimmt dafür die Betriebstemperaturen des Speichers, den der Kessel lädt (Schichtung eingeschlossen) — dann ist hier nichts zu pflegen.</value>
+  </data>
+  <data name="SIMQ_PUFFER_MSG_TEMPERATURPAAR" xml:space="preserve">
+    <value>Bitte Vorlauf und Rücklauf als ganze Zahlen eintragen: Rücklauf über 0 °C und Vorlauf über Rücklauf. Wer keine Vorgabe machen möchte, wählt „berechnet (aus der Anlage)".</value>
+  </data>
+  <data name="SIMWARN_KESSEL_TEMPERATURPAAR" xml:space="preserve">
+    <value>Anlage „{0}": Der Temperaturbezug steht auf „fest vorgegeben", aber es ist kein vollständiges Vor-/Rücklaufpaar gepflegt. Der Anteil, den der Quellspeicher „{1}" beisteuert, lässt sich damit gegen keine Vorgabe rechnen. Der Lauf fällt auf „berechnet" zurück — bitte das Paar eintragen oder auf „berechnet" umstellen.</value>
+  </data>
+  <data name="SIM_BOOSTER_LESEPUNKT_SCHALTER" xml:space="preserve">
+    <value>Booster liest Speicherzustand vom Stundenanfang (konservativ)</value>
+  </data>
+  <data name="SIM_BOOSTER_LESEPUNKT_TOOLTIP" xml:space="preserve">
+    <value>Angehakt: Ein Erzeuger, der seine Wärme aus einem geteilten Pufferspeicher bezieht, liest dessen Temperatur einmal am Stundenanfang — also aus dem Zustand am Ende der Vorstunde. Was ein vorgelagerter Erzeuger in derselben Stunde erst nachlädt, wird ihm nicht gutgeschrieben.
+
+Nicht angehakt: gelesen wird nach der Ladephase des vorgelagerten Erzeugers; der Booster sieht den Speicher dann im am weitesten geladenen Zustand der Stunde.
+
+Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</value>
+  </data>
+  <data name="SIM_STATUS_LESEPUNKT_DAVOR" xml:space="preserve">
+    <value>Booster-Lesepunkt: Stundenanfang (konservativ).</value>
+  </data>
+  <data name="SIM_STATUS_LESEPUNKT_DANACH" xml:space="preserve">
+    <value>Booster-Lesepunkt: nach der Ladephase der Vorebene.</value>
+>>>>>>> 0787aeca05d25d469d6333930e34df7bac7c74fc
   </data>
 </root>

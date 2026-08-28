@@ -480,13 +480,22 @@ namespace WindowsFormsApplication1
         ///
         /// <para>Ohne gekoppelten Kessel ist die Methode ein sofortiger Rücksprung.</para>
         /// </summary>
-        public void Quelltemperatur_Stunde(int stunde)
+        /// <param name="alleEbenen">
+        /// PAKET B2: true = ALLE gekoppelten Kessel, unabhängig von der aktiven
+        /// Rechenebene — der Lesepunkt „Davor" (Vorbelegung) läuft am Stundenanfang und
+        /// kennt deshalb noch keine Ebene. false = nur die Kessel der aktiven Ebene, der
+        /// Lesepunkt „Danach" von Paket B1. In BEIDEN Modi wird je Stunde genau einmal je
+        /// Kessel gelesen — und damit auch <see cref="_quellZuKalt"/> höchstens einmal je
+        /// Stunde erhöht.
+        /// </param>
+        public void Quelltemperatur_Stunde(int stunde, bool alleEbenen = false)
         {
             if (stunde < 0 || stunde >= 8760) return;
 
             for (int i = 0; i < _anzahlZweikanalig && i < MAX_SPK; i++)
             {
-                if (!_quellKopplung[i] || !EbeneAktiv(i)) continue;
+                if (!_quellKopplung[i]) continue;
+                if (!alleEbenen && !EbeneAktiv(i)) continue;
 
                 SimulationPufferspeicher q = _quellSpeicher[i];
                 if (q == null) continue;
