@@ -1,9 +1,14 @@
 # Konzept: Brauchwasser, Heizung und Pufferspeicher — Dreikanalbilanz, Schichtspeicher, Booster-Wärmepumpe
 
-**Fassung 2** · Stand 27.08.2026 · Branch `Pufferspeicher` · Status: **alle Rückfragen
-entschieden** — zuletzt F11 (BHKW: Fahrweisen-Umbau auf n Senken je Stufe) und F13
-(Kennlinienrand: Kappung + Protokoll). Umsetzungsstart nach Landung von `kostenformulare` in
-`main` (Kapitel 9).
+**Fassung 2** · Stand 27.08.2026 · Branch `Pufferspeicher` · Status: **VOLLSTÄNDIG
+UMGESETZT** (27./28.08.2026) — alle Pakete V0…L, alle vier Ziele Z1–Z4, Migrationsblock
+48–54 ausgeschöpft (neue Schema-Schritte ab **55**). Je Paket ein Umsetzungsprotokoll in
+diesem Ordner (`V0_…` bis `L_Aufraeumen_Protokoll.md`; die Abschlusstabelle aller offenen
+Punkte steht im L-Protokoll). Nachträge nach Konzeptabschluss: `E2_KanalGanglinien_…`
+(Kanal-Ganglinien in der Detailansicht), `DCheck_Dialoge_…`/`D2_…` (Dialogprüfung).
+Referenzbasis mit scharfer Booster-Kette: `Referenzlaeufe/2026-08-28_E2`. Dieses Dokument
+bleibt als Entwurfs- und Entscheidungsreferenz stehen; die Fassungshistorie unten ist
+unverändert.
 
 | Fassung | Inhalt |
 |---|---|
