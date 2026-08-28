@@ -2487,6 +2487,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponente ähnelt.
+        /// </summary>
+        public static string BK_SP_KOMPONENTE {
+            get {
+                return ResourceManager.GetString("BK_SP_KOMPONENTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponente {0} ähnelt.
+        /// </summary>
+        public static string BK_SP_KOMPONENTE_N {
+            get {
+                return ResourceManager.GetString("BK_SP_KOMPONENTE_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Merkmal ähnelt.
         /// </summary>
         public static string BK_SP_MERKMAL {
