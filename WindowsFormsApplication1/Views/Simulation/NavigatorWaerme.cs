@@ -40,6 +40,28 @@ namespace WindowsFormsApplication1
         // Umschalter Jahresganglinie <-> Jahresdauerlinie (programmatisch, kein Designer).
         private CheckBox checkBox_Sortiert;
 
+        // --- PAKET E2 (Nachtrag zu Konzept 4.4): Auswahl der BEDARFSART ---------------
+        //
+        // Bis E2 zeigte dieses Diagramm ausschließlich die PRODUKTION je Erzeuger — die
+        // Frage „welcher Erzeuger deckt welchen BEDARF" war daran nicht abzulesen. Die
+        // Auswahl schaltet die fünf Erzeugerserien (und die Bedarfslinie) auf die
+        // Deckung EINES Kanals um; die Vektoren dafür kommen aus der kanalindizierten
+        // Buchführung der Engine (Kanalganglinie, Paket E2).
+        //
+        // „Gesamt" ist die Vorbelegung und liefert Datenpunkt für Datenpunkt das
+        // bisherige Bild.
+        private Label label_Bedarfsart;
+        private ComboBox comboBox_Bedarfsart;
+
+        /// <summary>Sprachneutrale Steuerwerte der Auswahl (Schicht 2, ASCII).</summary>
+        private const string BEDARFSART_GESAMT = "GESAMT";
+
+        /// <summary>
+        /// Gewählte Bedarfsart: −1 = Gesamt (Produktion, Bestandsbild), sonst der
+        /// Kanalindex (<see cref="Kanal"/>) — dann zeigen die Serien die DECKUNG.
+        /// </summary>
+        private int _bedarfskanal = -1;
+
         /// <summary>
         /// Welche Erzeuger gehören zu diesem Ergebnis? Vorbelegt mit „alles sichtbar",
         /// damit vor dem ersten <see cref="SetControl"/> nichts fehlt.
@@ -106,6 +128,7 @@ namespace WindowsFormsApplication1
             BeschriftungenSetzen();
             InitPufferCheckBox();
             InitSortiertCheckBox();
+            InitBedarfsartAuswahl();
             SetControl(sim = simctrl);
             InitCsvExportButton();
         }
@@ -207,6 +230,47 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Legt Beschriftung und Auswahlliste „Bedarfsart" an (programmatisch, kein
+        /// Designer nötig) — die zweite Zeile ganz rechts, hinter der Speicherauswahl.
+        ///
+        /// <b>Drei-Schichten-Regel:</b> Die Einträge tragen ihren Steuerwert selbst
+        /// (<see cref="SchluesselEintrag"/>, Paket Q1): sprachneutral <c>"GESAMT"</c>
+        /// bzw. der Kanalindex als Zahl; angezeigt wird der lokalisierte Text. Kein
+        /// Anzeigetext wird je zum Steuerwert.
+        ///
+        /// <b>Präsenzregel</b> (Muster <see cref="ErgebnisPraesenz"/>): Ein Kanal ohne
+        /// Bedarf im Projekt bekommt keinen Eintrag — in einem Projekt ohne Prozesswärme
+        /// steht „Prozesswärme" gar nicht erst zur Wahl. Die Liste wird deshalb erst in
+        /// <see cref="AktualisiereBedarfsartAuswahl"/> gefüllt, wenn der Lauf vorliegt.
+        /// </summary>
+        private void InitBedarfsartAuswahl()
+        {
+            label_Bedarfsart = new Label();
+            label_Bedarfsart.Name = "label_Bedarfsart";
+            label_Bedarfsart.Text = MyResource.Resource.SIM_LABEL_BEDARFSART;
+            label_Bedarfsart.AutoSize = true;
+            label_Bedarfsart.BackColor = Color.Transparent;
+            label_Bedarfsart.ForeColor = Color.Black;
+            label_Bedarfsart.Font = checkBox_Waermebedarf.Font;
+            label_Bedarfsart.Location = new Point(checkBox_Waermebedarf.Right + CHK_ABSTAND,
+                                                  checkBox_Waermebedarf.Top + 2);
+            label_Bedarfsart.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            this.Controls.Add(label_Bedarfsart);
+            label_Bedarfsart.BringToFront();
+
+            comboBox_Bedarfsart = new ComboBox();
+            comboBox_Bedarfsart.Name = "comboBox_Bedarfsart";
+            comboBox_Bedarfsart.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBox_Bedarfsart.Width = 150;
+            comboBox_Bedarfsart.Location = new Point(label_Bedarfsart.Right + 6,
+                                                     checkBox_Waermebedarf.Top - 2);
+            comboBox_Bedarfsart.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            comboBox_Bedarfsart.SelectedIndexChanged += comboBox_Bedarfsart_SelectedIndexChanged;
+            this.Controls.Add(comboBox_Bedarfsart);
+            comboBox_Bedarfsart.BringToFront();
+        }
+
+        /// <summary>
         /// Legt den CSV-Export-Button rechts neben den Checkboxen an (programmatisch, kein Designer nötig).
         /// </summary>
         private void InitCsvExportButton()
@@ -243,13 +307,19 @@ namespace WindowsFormsApplication1
             }
 
             // nur die aktuell selektierten (angezeigten) Serien exportieren
+            //
+            // PAKET E2: Bei gewählter Bedarfsart tragen die Vektoren die DECKUNG dieses
+            // Kanals — der Spaltenkopf nennt sie deshalb mit. Ohne den Zusatz stünde in
+            // der Datei „Wärmepumpe" über einer Größe, die etwas anderes ist als die
+            // Wärmepumpenspalte eines Exports mit Bedarfsart „Gesamt".
+            string art = BedarfsartAnzeige();
             List<CsvSpalte> spalten = new List<CsvSpalte>();
-            if (checkBox_Gesamt.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_GESAMT, temp_ges));
-            if (checkBox_WP.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_WAERMEPUMPE, temp_wp));
-            if (checkBox_Heizstab.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_HEIZSTAB, temp_hs));
-            if (checkBox_SPK.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_HEIZKESSEL, temp_hk));
-            if (checkBox_ST.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_SOLARTHERMIE, temp_st));
-            if (checkBox_BHKW.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_BHKW, temp_bhkw));
+            if (checkBox_Gesamt.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_GESAMT + art, temp_ges));
+            if (checkBox_WP.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_WAERMEPUMPE + art, temp_wp));
+            if (checkBox_Heizstab.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_HEIZSTAB + art, temp_hs));
+            if (checkBox_SPK.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_HEIZKESSEL + art, temp_hk));
+            if (checkBox_ST.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_SOLARTHERMIE + art, temp_st));
+            if (checkBox_BHKW.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_BHKW + art, temp_bhkw));
 
             // Je angezeigtem Speicher eine eigene Spalte, Bezeichner im Kopf (13.3).
             if (checkBox_Puffer != null && checkBox_Puffer.Checked)
@@ -276,14 +346,9 @@ namespace WindowsFormsApplication1
         {
             if (sim == null || sim.simulation_Waermebedarf == null) return; // Sicherheitshalber prüfen
 
-            // Chart Strombedarf und Stromverbrauch Übersicht
-            temp_profil = sim.simulation_Waermebedarf.Waermebedarf;
-            temp_wp = sim.simulation_wp.WP_Waermeproduktion_stuendlich;
-            temp_hs = sim.simulation_wp.Heizstab_stuendlich;
-            temp_hk = sim.simulation_spk.Kesselleistung_stuendlich;
-            temp_st = Array.ConvertAll<double, float>(sim.simulation_solarthermie.Waermeproduktion, x => (float)x);
-            temp_bhkw = sim.simulation_bhkw.waermeproduktion;
-            temp_ges = new float[8760];
+            // PAKET E2: Welche Vektoren die Serien zeigen, entscheidet die Bedarfsart —
+            // „Gesamt" (Vorbelegung) liefert unverändert die Produktionsganglinien.
+            VektorenSetzen(sim);
 
             // Speicherfüllstände: eine Serie je vorhandenem Speicher (Senken-Puffer und
             // Quellspeicher), nicht mehr nur der eine puffer_wp (Konzept 13.3).
@@ -298,8 +363,6 @@ namespace WindowsFormsApplication1
                 while (speicherSchluessel.Contains(s)) s += "_" + i;
                 speicherSchluessel.Add(s);
             }
-
-            for (int i = 0; i < 8760; i++) temp_ges[i] = temp_wp[i] + temp_hs[i] + temp_hk[i] + temp_st[i] + temp_bhkw[i];
 
             // Welche Erzeuger gehören zu diesem Ergebnis? Alles Weitere - welche
             // Checkboxen erscheinen und welche Serien überhaupt entstehen - hängt daran.
@@ -319,6 +382,162 @@ namespace WindowsFormsApplication1
             WaermebedarfAchseAktualisieren();
 
             AktualisiereSpeicherAuswahl();
+            AktualisiereBedarfsartAuswahl();
+        }
+
+        // ====================================================================
+        //  PAKET E2 — Erzeugerdeckung je Bedarfsart (Nachtrag zu Konzept 4.4)
+        // ====================================================================
+        //
+        // WAS SICH BEI EINER KANALWAHL ÄNDERT:
+        //
+        //   Erzeugerserien  Produktion            ->  DECKUNG dieses Kanals, also
+        //                                             Direktdeckung + die dem Erzeuger
+        //                                             zugerechnete Speicherentladung
+        //                                             (SimulationControl.DeckungKanalStuendlich;
+        //                                             dieselbe Zusammensetzung, aus der
+        //                                             SimulationRunner.Summiere die
+        //                                             Jahresdeckung je Kanal bildet).
+        //   Heizstab        Heizstab_stuendlich   ->  Heizstab_KanalStuendlich
+        //   Gesamt          Summe der fünf        ->  Summe der fünf Deckungsserien
+        //   Wärmebedarf     Projektbedarf         ->  Kanalbedarf
+        //   Speicherfüllstand                     ->  UNVERÄNDERT: ein Füllstand ist der
+        //                                             Inhalt eines Behälters und keine
+        //                                             Kanalgröße. Die Entladung DIESES
+        //                                             Kanals steckt in den
+        //                                             Erzeugerserien, zugerechnet nach
+        //                                             Herkunftsart wie in der
+        //                                             Jahresbilanz.
+        //
+        // WARUM PRODUKTION UND DECKUNG NICHT DASSELBE SIND: Produktion enthält die
+        // Speicherladung und nicht die Entladung; Deckung ist umgekehrt. In einem
+        // Projekt mit Puffer laufen die beiden Bilder deshalb sichtbar auseinander —
+        // das ist kein Fehler, sondern die Frage, die die Auswahl beantwortet. Der
+        // Diagrammtitel benennt die gewählte Bedarfsart, damit das Bild nicht
+        // missdeutet werden kann.
+
+        /// <summary>
+        /// Belegt die Serienvektoren gemäß <see cref="_bedarfskanal"/>. Bei „Gesamt"
+        /// (−1) sind es Zeichen für Zeichen die Zuweisungen, die hier vor Paket E2
+        /// standen.
+        /// </summary>
+        private void VektorenSetzen(SimulationControl s)
+        {
+            if (s == null || s.simulation_Waermebedarf == null) return;
+
+            if (_bedarfskanal < 0)
+            {
+                temp_profil = s.simulation_Waermebedarf.Waermebedarf;
+                temp_wp = s.simulation_wp.WP_Waermeproduktion_stuendlich;
+                temp_hs = s.simulation_wp.Heizstab_stuendlich;
+                temp_hk = s.simulation_spk.Kesselleistung_stuendlich;
+                temp_st = Array.ConvertAll<double, float>(s.simulation_solarthermie.Waermeproduktion, x => (float)x);
+                temp_bhkw = s.simulation_bhkw.waermeproduktion;
+            }
+            else
+            {
+                int k = _bedarfskanal;
+                temp_profil = SimulationControl.BedarfKanalStuendlich(s.simulation_Waermebedarf, k);
+                temp_wp = s.DeckungKanalStuendlich(ProjektPuffer.TYP_WP, k);
+                temp_hs = s.HeizstabKanalStuendlich(k);
+                temp_hk = s.DeckungKanalStuendlich(ProjektPuffer.TYP_KESSEL, k);
+                temp_st = s.DeckungKanalStuendlich(ProjektPuffer.TYP_SOLARTHERMIE, k);
+                temp_bhkw = s.DeckungKanalStuendlich(ProjektPuffer.TYP_BHKW, k);
+            }
+
+            // „Gesamt" bleibt die Summe der fünf gezeigten Serien — dieselbe Zeile wie
+            // bisher, nur auf den jeweils gewählten Vektoren.
+            temp_ges = new float[8760];
+            for (int i = 0; i < 8760; i++)
+                temp_ges[i] = temp_wp[i] + temp_hs[i] + temp_hk[i] + temp_st[i] + temp_bhkw[i];
+        }
+
+        /// <summary>
+        /// Füllt die Auswahlliste der Bedarfsart. „Gesamt" steht immer an erster Stelle;
+        /// ein Kanal erscheint nur, wenn er im Projekt Bedarf trägt (Präsenzregel). Eine
+        /// getroffene Wahl überlebt den Neuaufbau, sofern ihr Kanal noch da ist.
+        /// </summary>
+        private void AktualisiereBedarfsartAuswahl()
+        {
+            if (comboBox_Bedarfsart == null || sim == null || sim.simulation_Waermebedarf == null) return;
+
+            comboBox_Bedarfsart.SelectedIndexChanged -= comboBox_Bedarfsart_SelectedIndexChanged;
+            comboBox_Bedarfsart.Items.Clear();
+            comboBox_Bedarfsart.Items.Add(new SchluesselEintrag(BEDARFSART_GESAMT,
+                                                                MyResource.Resource.CHART_LEGENDE_GESAMT));
+
+            string[] namen =
+            {
+                MyResource.Resource.KANAL_HEIZUNG_ANZEIGE,
+                MyResource.Resource.KANAL_BRAUCHWASSER_ANZEIGE,
+                MyResource.Resource.KANAL_PROZESS_ANZEIGE
+            };
+
+            int auswahl = 0;
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+            {
+                float[] bedarf = SimulationControl.BedarfKanalStuendlich(sim.simulation_Waermebedarf, k);
+                double summe = 0;
+                for (int h = 0; h < bedarf.Length; h++) summe += bedarf[h];
+                if (summe <= 0) continue;
+
+                comboBox_Bedarfsart.Items.Add(new SchluesselEintrag(k, namen[k]));
+                if (k == _bedarfskanal) auswahl = comboBox_Bedarfsart.Items.Count - 1;
+            }
+
+            comboBox_Bedarfsart.SelectedIndex = auswahl;
+            if (auswahl == 0) _bedarfskanal = -1;      // der Kanal von vorhin gibt es nicht mehr
+            comboBox_Bedarfsart.SelectedIndexChanged += comboBox_Bedarfsart_SelectedIndexChanged;
+        }
+
+        private void comboBox_Bedarfsart_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_imAufbau || _chartManager == null || sim == null) return;
+
+            SchluesselEintrag e2 = comboBox_Bedarfsart.SelectedItem as SchluesselEintrag;
+            int neu = (e2 != null && e2.Wert is int) ? (int)e2.Wert : -1;
+            if (neu == _bedarfskanal) return;
+
+            _bedarfskanal = neu;
+
+            VektorenSetzen(sim);
+            SerienAufbauen();
+            ApplyCheckboxStates();
+            WaermebedarfAchseAktualisieren();
+            _chartManager._chart.Invalidate();
+        }
+
+        /// <summary>
+        /// Diagrammtitel: bei „Gesamt" der Bestandstitel, sonst „Deckung &lt;Kanal&gt;".
+        /// Der Titel ist die einzige Stelle, an der das Bild sagt, WELCHE Größe es zeigt —
+        /// Produktion oder Deckung eines Kanals.
+        /// </summary>
+        private string Diagrammtitel()
+        {
+            if (_bedarfskanal < 0)
+                return MyResource.Resource.CHART_TITEL_WAERMEPRODUKTION_JAHRESGANGLINIE;
+
+            string[] namen =
+            {
+                MyResource.Resource.KANAL_HEIZUNG_ANZEIGE,
+                MyResource.Resource.KANAL_BRAUCHWASSER_ANZEIGE,
+                MyResource.Resource.KANAL_PROZESS_ANZEIGE
+            };
+            return string.Format(MyResource.Resource.CHART_TITEL_DECKUNG_JE_BEDARFSART,
+                                 namen[_bedarfskanal]);
+        }
+
+        /// <summary>Anzeigename der gewählten Bedarfsart für Spaltenköpfe des CSV-Exports.</summary>
+        private string BedarfsartAnzeige()
+        {
+            if (_bedarfskanal < 0) return "";
+            string[] namen =
+            {
+                MyResource.Resource.KANAL_HEIZUNG_ANZEIGE,
+                MyResource.Resource.KANAL_BRAUCHWASSER_ANZEIGE,
+                MyResource.Resource.KANAL_PROZESS_ANZEIGE
+            };
+            return " " + namen[_bedarfskanal];
         }
 
         /// <summary>
@@ -348,7 +567,7 @@ namespace WindowsFormsApplication1
                 : MyResource.Resource.CHART_ACHSE_MONATE;
             _chartManager.YAxisTitle = MyResource.Resource.CHART_ACHSE_LEISTUNG_SPEICHERINHALT;
             _chartManager.toolTipUnit = "kW";
-            _chartManager.ChartTitle = MyResource.Resource.CHART_TITEL_WAERMEPRODUKTION_JAHRESGANGLINIE;
+            _chartManager.ChartTitle = Diagrammtitel();   // PAKET E2: nennt die Bedarfsart
             _chartManager.MitLegende = true;
             _chartManager.MaxXVALUE = 8760;
             _chartManager.MitViertelStunde = false;
@@ -600,6 +819,22 @@ namespace WindowsFormsApplication1
             {
                 Control davor = (checkBox_Sortiert != null) ? (Control)checkBox_Sortiert : checkBox_Waermebedarf;
                 comboBox_Puffer.Location = new Point(davor.Right + CHK_ABSTAND, checkBox_Waermebedarf.Top - 2);
+            }
+
+            // PAKET E2: „Bedarfsart" schließt die zweite Zeile ab. Sie rückt hinter die
+            // Speicherauswahl, wenn es sie gibt — sonst hinter „sortiert" (dieselbe
+            // Präsenzfrage wie oben, und aus demselben Grund über AuswahlAktiv() statt
+            // über Control.Visible).
+            if (label_Bedarfsart != null && comboBox_Bedarfsart != null)
+            {
+                Control davor = (comboBox_Puffer != null && AuswahlAktiv())
+                                ? (Control)comboBox_Puffer
+                                : ((checkBox_Sortiert != null) ? (Control)checkBox_Sortiert : checkBox_Waermebedarf);
+
+                label_Bedarfsart.Location = new Point(davor.Right + CHK_ABSTAND,
+                                                      checkBox_Waermebedarf.Top + 2);
+                comboBox_Bedarfsart.Location = new Point(label_Bedarfsart.Right + 6,
+                                                         checkBox_Waermebedarf.Top - 2);
             }
 
             _imAufbau = false;

@@ -970,6 +970,136 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
+    /// PAKET E2 (Nachtrag zu Konzept 4.4) — eine KANALGANGLINIE: dieselbe Größe, die
+    /// die Engine seit Paket K2 als Jahressumme je Kanal führt
+    /// (<c>Direktdeckung_Kanal</c>, <c>Heizstab_Kanal</c>, <c>Speicherentladung_Kanal</c>,
+    /// <c>Entladung_Kanal</c>), zusätzlich AUFGELÖST NACH STUNDEN [kWh].
+    ///
+    /// <para><b>Kein zweiter Rechenweg.</b> Gebucht wird ausschließlich an den Stellen,
+    /// an denen die Jahressumme fortgeschrieben wird, aus derselben Variablen und im
+    /// selben Schleifendurchlauf. Damit gilt je Stunde und Erzeugerart konstruktiv
+    /// <c>Σ_k Stunde(k, h)</c> == die in dieser Stunde gebuchte Menge; über das Jahr
+    /// stimmt <c>Σ_h Stunde(k, h)</c> mit der Jahressumme des Kanals überein — bis auf
+    /// die Assoziativität der double-Addition (die Jahressumme läuft in EINEN
+    /// Akkumulator, die Ganglinie in 8760).</para>
+    ///
+    /// <para><b>Warum <c>double</c> und nicht <c>float</c>.</b> Die Größe, die hier
+    /// aufgelöst wird, ist eine <c>double</c>-Buchung (<c>Direktdeckung_Kanal</c> &amp;
+    /// Co. sind <c>double[]</c>). Eine float-Zwischenspeicherung je Stunde brächte einen
+    /// Rundungsschritt in eine Zusage hinein, die ohne ihn exakt ist. Für die ANZEIGE
+    /// wird über <see cref="AlsFloat"/> auf float gebracht — genau wie bei den
+    /// Bestandsganglinien <c>SimulationBHKW.Speicherladung_stuendlich</c> und
+    /// <c>SimulationSolarthermie.Waermeproduktion</c>, die ebenfalls <c>double[]</c>
+    /// sind.</para>
+    ///
+    /// <para>Feldgrößen wie im gesamten Rechenkern fest verdrahtet:
+    /// <see cref="Kanal.ANZAHL"/> × <see cref="Kanalsatz.STUNDEN_JAHR"/>.</para>
+    /// </summary>
+    public class Kanalganglinie
+    {
+        /// <summary>
+        /// Werte je Kanal und Stunde [kWh]. JAGGED und <c>readonly</c>: Eine Kanalzeile
+        /// muss als <c>double[]</c> herausgegeben werden können, und niemand soll die
+        /// Struktur austauschen (dieselbe Regel wie bei <see cref="Kanalsatz.Bedarf"/>).
+        /// </summary>
+        private readonly double[][] _werte;
+
+        public Kanalganglinie()
+        {
+            _werte = new double[Kanal.ANZAHL][];
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+                _werte[k] = new double[Kanalsatz.STUNDEN_JAHR];
+        }
+
+        /// <summary>Die Ganglinie EINES Kanals [kWh] — die interne Zeile, nicht kopiert.</summary>
+        public double[] Zeile(int kanal)
+        {
+            return (kanal >= 0 && kanal < Kanal.ANZAHL) ? _werte[kanal] : null;
+        }
+
+        /// <summary>
+        /// Buchung an der Stelle, an der auch die Jahressumme fortgeschrieben wird.
+        /// Ungültige Kanäle/Stunden werden still übergangen — dieselbe Konvention wie in
+        /// <c>SimulationPufferspeicher.Entladen</c>, das seine Ganglinien ebenso
+        /// bereichsgeprüft schreibt.
+        /// </summary>
+        public void Buchen(int kanal, int stunde, double menge)
+        {
+            if (menge == 0) return;
+            if (kanal < 0 || kanal >= Kanal.ANZAHL) return;
+            if (stunde < 0 || stunde >= Kanalsatz.STUNDEN_JAHR) return;
+            _werte[kanal][stunde] += menge;
+        }
+
+        /// <summary>Auf den Laufanfang — zusammen mit der Jahressumme derselben Größe.</summary>
+        public void Nullen()
+        {
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+                Array.Clear(_werte[k], 0, Kanalsatz.STUNDEN_JAHR);
+        }
+
+        /// <summary>Übernimmt die Werte einer anderen Ganglinie (KOPIE, Aliasing-Regel B0-2).</summary>
+        public void Uebernehmen(Kanalganglinie quelle)
+        {
+            if (quelle == null) return;
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+                Array.Copy(quelle._werte[k], _werte[k], Kanalsatz.STUNDEN_JAHR);
+        }
+
+        /// <summary>Jahressumme eines Kanals [kWh] — die Probe gegen die Bestandssumme.</summary>
+        public double Jahressumme(int kanal)
+        {
+            double[] z = Zeile(kanal);
+            if (z == null) return 0;
+            double s = 0;
+            for (int h = 0; h < z.Length; h++) s += z[h];
+            return s;
+        }
+
+        /// <summary>
+        /// Ein Kanal als <c>float[8760]</c> für die ANZEIGE (Chart, CSV) — die Umrechnung
+        /// steht an dieser einen Stelle, nicht in jedem Aufrufer.
+        /// </summary>
+        public float[] AlsFloat(int kanal)
+        {
+            float[] f = new float[Kanalsatz.STUNDEN_JAHR];
+            double[] z = Zeile(kanal);
+            if (z == null) return f;
+            for (int h = 0; h < Kanalsatz.STUNDEN_JAHR; h++) f[h] = (float)z[h];
+            return f;
+        }
+
+        /// <summary>
+        /// Elementweise Summe MEHRERER Kanalganglinien auf EINEM Kanal, als
+        /// <c>float[8760]</c> — die Stundenfassung von <c>SimulationRunner.Summiere</c>:
+        /// Der EIGENANTEIL eines Erzeugers an der Deckung eines Kanals ist
+        /// „Direktdeckung + zugerechnete Speicherentladung" (bei der Wärmepumpe steht der
+        /// Heizstab wie in der Jahresbilanz als eigene Größe daneben).
+        ///
+        /// <para>Summiert wird in <c>double</c>, erst das Ergebnis wird auf <c>float</c>
+        /// gebracht — Konvention des Rechenkerns.</para>
+        /// </summary>
+        public static float[] Deckung(int kanal, params Kanalganglinie[] teile)
+        {
+            float[] f = new float[Kanalsatz.STUNDEN_JAHR];
+            if (teile == null) return f;
+
+            for (int h = 0; h < Kanalsatz.STUNDEN_JAHR; h++)
+            {
+                double s = 0;
+                for (int i = 0; i < teile.Length; i++)
+                {
+                    if (teile[i] == null) continue;
+                    double[] z = teile[i].Zeile(kanal);
+                    if (z != null) s += z[h];
+                }
+                f[h] = (float)s;
+            }
+            return f;
+        }
+    }
+
+    /// <summary>
     /// Ziel einer Wärmemenge (Konzept 6.1). Die Werte entsprechen den Textwerten der
     /// Spalte <c>WS_Ziel</c> (<see cref="WaermesenkeClass"/>) — die Abbildung steht in
     /// <see cref="Senkenzuordnung.SenkeAusZiel"/> bzw.

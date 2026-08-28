@@ -747,6 +747,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double[] Speicherentladung_Kanal = new double[Kanal.ANZAHL];
 
+        // ------------------------------------------------------------------
+        // PAKET E2 (Nachtrag zu Konzept 4.4) — DIESELBEN GRÖSSEN ALS GANGLINIE,
+        // gebucht an genau derselben Stelle und aus derselben Variablen. Je Kanal k gilt
+        //   Σ_h Direktdeckung_KanalStuendlich[k][h]     == Direktdeckung_Kanal[k]
+        //   Σ_h Speicherentladung_KanalStuendlich[k][h] == Speicherentladung_Kanal[k]
+        // bis auf die Assoziativität der double-Addition.
+        // ------------------------------------------------------------------
+
+        /// <summary>Stundenfassung von <see cref="Direktdeckung_Kanal"/> [kWh] (Paket E2).</summary>
+        public readonly Kanalganglinie Direktdeckung_KanalStuendlich = new Kanalganglinie();
+
+        /// <summary>Stundenfassung von <see cref="Speicherentladung_Kanal"/> [kWh] (Paket E2).</summary>
+        public readonly Kanalganglinie Speicherentladung_KanalStuendlich = new Kanalganglinie();
+
         /// <summary>
         /// Fehlertext des zweikanaligen Wegs (Konzept 13.4: die Engine bleibt dialogfrei).
         /// Statt einer MessageBox mitten im Rechenlauf
@@ -925,7 +939,11 @@ namespace WindowsFormsApplication1
                 // K2: Abzug über die eine Kanalregel, mit gemessener Aufschlüsselung je
                 // Kanal (Konzept 4.4). Die abgezogene Gesamtmenge ist konstruktiv genau
                 // "menge" - sie ist auf den offenen Kanalbedarf begrenzt.
-                Kanalabzug.Abziehen(senken, menge, rest, Direktdeckung_Kanal);
+                //
+                // PAKET E2: derselbe Abzug schreibt zusätzlich die Kanalganglinie der
+                // Stunde - aus derselben gemessenen rest-Differenz.
+                Kanalabzug.Abziehen(senken, menge, rest, Direktdeckung_Kanal,
+                                    Direktdeckung_KanalStuendlich, stunde);
 
                 _kesselAbgabe[i] += menge;
 
@@ -1158,6 +1176,10 @@ namespace WindowsFormsApplication1
             // K2: die Kanalaufschlüsselung derselben Größen (Konzept 4.4).
             Array.Clear(Direktdeckung_Kanal, 0, Kanal.ANZAHL);
             Array.Clear(Speicherentladung_Kanal, 0, Kanal.ANZAHL);
+
+            // E2: und ihre Ganglinienfassung, an derselben Stelle.
+            Direktdeckung_KanalStuendlich.Nullen();
+            Speicherentladung_KanalStuendlich.Nullen();
 
             // D5a: Der Quellbezug gehört zum Laufzustand. ModulEbenen/AktiveEbene setzt
             // die Kaskadenschleife je Lauf neu; die Quellpuffer setzt SimulationControl,

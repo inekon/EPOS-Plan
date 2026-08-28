@@ -212,6 +212,55 @@ namespace WindowsFormsApplication1
         /// <summary>Präfix der Quelltemperatur-Reihen (<c>QUELLTEMP_&lt;AnlagenID&gt;</c>).</summary>
         public const string QUELLTEMP_PRAEFIX = "QUELLTEMP_";
 
+        // ---------------------------------------------------------------------
+        // PAKET E2 (Nachtrag zu Konzept 4.4) — DIE KANALREIHEN.
+        //
+        //   BEDARF_<KANAL>            der Wärmebedarf EINES Kanals [kWh/h]
+        //   DECKUNG_<ERZEUGER>_<KANAL> die Deckung dieses Kanals durch einen Erzeuger
+        //
+        // Sprachneutral und ASCII (Schicht 2 der Drei-Schichten-Regel), Muster
+        // PUFFER_<ID>. Sie stehen — wie die Temperaturreihen — BEWUSST NICHT in
+        // Speicherreihen: Diese Liste führt das Füllstandsdiagramm.
+        //
+        // Der Bericht ZEICHNET sie (noch) nicht: Sein Ganglinienteil hat fünf feste
+        // Bildtypen, ein sechster wäre ein Layoutumbau. Sie stehen im Satz und sind damit
+        // für einen Kanal-Ganglinienbaustein und für Auswertungen verfügbar (offener
+        // Punkt E2-O2).
+        // ---------------------------------------------------------------------
+
+        /// <summary>Präfix der Kanal-Bedarfsreihen (<c>BEDARF_&lt;KANAL&gt;</c>).</summary>
+        public const string BEDARF_PRAEFIX = "BEDARF_";
+
+        /// <summary>Präfix der Kanal-Deckungsreihen (<c>DECKUNG_&lt;ERZEUGER&gt;_&lt;KANAL&gt;</c>).</summary>
+        public const string DECKUNG_PRAEFIX = "DECKUNG_";
+
+        /// <summary>
+        /// Sprachneutrale Kanalnamen in der Reihenfolge von <c>Kanal.HEIZUNG</c>,
+        /// <c>BRAUCHWASSER</c>, <c>PROZESS</c> — die eine Stelle, an der aus dem
+        /// Kanalindex ein Schlüsselbestandteil wird.
+        /// </summary>
+        public static readonly string[] KANAL_SCHLUESSEL =
+        { "HEIZUNG", "BRAUCHWASSER", "PROZESS" };
+
+        /// <summary>Schlüssel der Bedarfsreihe eines Kanals; "" außerhalb des Bereichs.</summary>
+        public static string BedarfSchluessel(int kanal)
+        {
+            return (kanal >= 0 && kanal < KANAL_SCHLUESSEL.Length)
+                   ? BEDARF_PRAEFIX + KANAL_SCHLUESSEL[kanal] : "";
+        }
+
+        /// <summary>
+        /// Schlüssel der Deckungsreihe eines Erzeugers auf einem Kanal;
+        /// <paramref name="erzeuger"/> ist einer der Serienschlüssel des
+        /// Ergebnis-Diagramms (<c>WAERMEPUMPE</c>, <c>HEIZSTAB</c>, <c>HEIZKESSEL</c>,
+        /// <c>SOLARTHERMIE</c>, <c>BHKW_WAERME</c>).
+        /// </summary>
+        public static string DeckungSchluessel(string erzeuger, int kanal)
+        {
+            return (kanal >= 0 && kanal < KANAL_SCHLUESSEL.Length)
+                   ? DECKUNG_PRAEFIX + erzeuger + "_" + KANAL_SCHLUESSEL[kanal] : "";
+        }
+
         public Dictionary<string, double[]> Reihen = new Dictionary<string, double[]>();
 
         /// <summary>
