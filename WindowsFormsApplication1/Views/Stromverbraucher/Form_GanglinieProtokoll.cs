@@ -16,7 +16,7 @@ namespace WindowsFormsApplication1
     /// ohne eigene <c>.resx</c>: Alle sichtbaren Texte kommen aus <c>MyResource</c> und
     /// werden in <see cref="TexteSetzen"/> gesetzt; im Designer stehen nur Platzhalter.
     /// Was von den Konstruktorparametern abhaengt - Kopftext, Beschriftung des zweiten
-    /// Knopfes, Freigabe von "Uebernehmen" und die Wahl des <c>AcceptButton</c> - sowie
+    /// Knopfes, Freigabe von "OK" und die Wahl des <c>AcceptButton</c> - sowie
     /// das Fuellen der Liste stehen im Konstruktor. Die Uebersetzung der Engine-
     /// Schluessel liegt in <see cref="GanglinienProtokollText"/>.
     /// </remarks>
@@ -26,7 +26,7 @@ namespace WindowsFormsApplication1
         /// Baut den Dialog auf.
         /// </summary>
         /// <param name="meldungen">Anzuzeigende Meldungen.</param>
-        /// <param name="importMoeglich">Kein Fehler - die Schaltflaeche "Uebernehmen" ist aktiv.</param>
+        /// <param name="importMoeglich">Kein Fehler - die Schaltflaeche "OK" ist aktiv.</param>
         /// <param name="bestaetigungNoetig">An der Reihe wurde etwas veraendert; der Anwender muss bestaetigen.</param>
         public Form_GanglinieProtokoll(IList<PruefMeldung> meldungen, bool importMoeglich, bool bestaetigungNoetig)
         {
@@ -75,7 +75,7 @@ namespace WindowsFormsApplication1
             this.Text = MyResource.Resource.IMPORT_TITEL_PROTOKOLL;
             columnHeader_Stufe.Text = MyResource.Resource.IMPORT_SPALTE_STUFE;
             columnHeader_Meldung.Text = MyResource.Resource.IMPORT_SPALTE_MELDUNG;
-            btn_OK.Text = MyResource.Resource.IMPORT_BTN_UEBERNEHMEN;
+            btn_OK.Text = MyResource.Resource.SIM_BTN_OK;
         }
 
         /// <summary>
