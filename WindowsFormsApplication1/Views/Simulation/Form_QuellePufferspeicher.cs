@@ -214,10 +214,20 @@ namespace WindowsFormsApplication1
             this.Controls.Add(_tbAnschlusshoehe);
             this.Controls.Add(_lblAnschlusshoeheHinweis);
 
-            _btnOk.Top += ANSCHLUSSHOEHE_ZEILE;
-            _btnAbbruch.Top += ANSCHLUSSHOEHE_ZEILE;
+            // D-CHECK 28.08.2026: Die Hinweiszeile war auf EINE Textzeile ausgelegt; der
+            // deutsche Text braucht bei 590 px Breite zwei (30 px statt 28), die zweite
+            // wurde am Rahmen beschnitten. Erst NACH dem Einhängen messen - vorher trägt
+            // das Label noch nicht die Schrift der Maske. Feste 30 px wären nur für EINE
+            // Sprache richtig.
+            int noetig = _lblAnschlusshoeheHinweis.GetPreferredSize(
+                             new Size(_lblAnschlusshoeheHinweis.Width, 0)).Height;
+            int zusatz = Math.Max(0, noetig - _lblAnschlusshoeheHinweis.Height);
+            if (zusatz > 0) _lblAnschlusshoeheHinweis.Height = noetig;
+
+            _btnOk.Top += ANSCHLUSSHOEHE_ZEILE + zusatz;
+            _btnAbbruch.Top += ANSCHLUSSHOEHE_ZEILE + zusatz;
             this.ClientSize = new Size(this.ClientSize.Width,
-                                       this.ClientSize.Height + ANSCHLUSSHOEHE_ZEILE);
+                                       this.ClientSize.Height + ANSCHLUSSHOEHE_ZEILE + zusatz);
         }
 
         /// <summary>

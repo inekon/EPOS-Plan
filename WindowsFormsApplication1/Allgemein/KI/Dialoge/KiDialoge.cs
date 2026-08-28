@@ -328,11 +328,20 @@ namespace WindowsFormsApplication1
         /// <c>btn_Beenden</c>.
         /// </para>
         /// <para>
-        /// <b>Knopfposition wegen des Kopfbandes.</b> <c>label1</c> liegt bei 0/0 und ist
-        /// 877x28 gross; AbstandOben 36 setzt den Knopf mit 8 Punkten Luft darunter. Der
-        /// Streifen x 826..869 ist dort frei - die naechsten Nachbarn sind <c>label5</c>
-        /// („kW", x 820..852) erst bei y 89 und <c>textBox_Name</c> (endet bei x 814).
-        /// Masse aus <c>Form_WP.resx</c>, Client 877x642.
+        /// <b>Knopfposition wegen des Kopfbandes UND des Infobuttons.</b> <c>label1</c>
+        /// liegt bei 0/0 und ist 877x28 gross, darunter beginnt der freie Streifen.
+        /// <c>btn_Help</c> steht dort aber bereits: 833/31, 28x28
+        /// (<c>Form_WP.Designer.cs</c>). Die frueheren Werte (AbstandRechts 8,
+        /// AbstandOben 36) setzten den Aufrufknopf genau darauf - im D-Check vom
+        /// 28.08.2026 in BEIDEN Konstruktormodi mit 26 x 24 px Ueberdeckung gemessen.
+        /// AbstandRechts 60 setzt ihn LINKS daneben, AbstandOben 34 unter das Kopfband.
+        /// Beide Werte tragen AUCH den skalierten Fall: Die Maske skaliert nach Schrift
+        /// (gemessen 1006 statt 877 Client-Breite), die Designer-Steuerelemente wandern
+        /// dabei mit, der nachtraeglich eingehaengte Aufrufknopf nicht. Bei 1006 px liegt
+        /// er auf x 917..946, <c>btn_Help</c> auf 955 - 9 px Luft; unskaliert auf
+        /// x 788..817 mit 16 px Luft. Nach unten grenzt <c>textBox_Name</c> (387/58,
+        /// 427x25) unskaliert buendig an, skaliert mit Abstand.
+        /// Masse aus <c>Form_WP.resx</c> bzw. dem Designer, Client 877x642.
         /// </para>
         /// </remarks>
         private static KiDialog Waermepumpe()
@@ -352,7 +361,7 @@ namespace WindowsFormsApplication1
                     new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
                     new KiDialogKnopf("ok", "btn_Beenden", KiDialogTexte.KnopfOk)
                 },
-                knopfposition: new KiKnopfposition(abstandRechts: 8, abstandOben: 36));
+                knopfposition: new KiKnopfposition(abstandRechts: 60, abstandOben: 34));
         }
     }
 }
