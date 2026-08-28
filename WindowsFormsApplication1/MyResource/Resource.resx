@@ -8107,4 +8107,36 @@ Bitte entweder die Schichtenzahl auf 1 setzen oder den Verbund im Senkendialog a
   <data name="SIM_VERBUND_KONFLIKT_LEIT_GESCHICHTET" xml:space="preserve">
     <value>Der Pufferspeicher „{0}" führt eine Schichtung und kann deshalb nicht Leitspeicher eines Verbunds sein: Ein Verbund rechnet als EIN Vorrat mit der Summe aller Mitgliedskapazitäten, eine daraus abgeleitete Schichtebene wäre falsch.</value>
   </data>
+  <data name="SIM_SPALTE_EINSPEISEHOEHE" xml:space="preserve">
+    <value>Höhe</value>
+  </data>
+  <data name="SIM_CHK_EINSPEISEHOEHE" xml:space="preserve">
+    <value>eigene Einspeisehöhe:</value>
+  </data>
+  <data name="SIM_LBL_EINSPEISEHOEHE_EINHEIT" xml:space="preserve">
+    <value>0…1  (1 = oben, 0 = unten; ohne Angabe oben)</value>
+  </data>
+  <data name="SIM_TIP_EINSPEISEHOEHE" xml:space="preserve">
+    <value>Höhe, auf der diese Senke in den Zielspeicher einspeist: 1 = ganz oben (Vorgabe), 0 = ganz unten.
+
+Wirksam nur bei einem GESCHICHTETEN Zielspeicher (Schichten &gt; 1): Von der Einspeisehöhe abwärts werden die Schichten nacheinander auf die Vorlauftemperatur gehoben, Schichten darüber bleiben unberührt. Bei einem Ein-Zonen-Speicher (Schichten = 1) bleibt der Wert ohne Wirkung.</value>
+  </data>
+  <data name="SIM_MSG_EINSPEISEHOEHE_ZAHL" xml:space="preserve">
+    <value>Die Einspeisehöhe der {0} muss eine Zahl sein.</value>
+  </data>
+  <data name="SIM_MSG_EINSPEISEHOEHE_BEREICH" xml:space="preserve">
+    <value>Die Einspeisehöhe der {0} muss zwischen 0 und 1 liegen.</value>
+  </data>
+  <data name="SIM_TAB_SPEICHERTEMPERATUR" xml:space="preserve">
+    <value>Speichertemperaturen</value>
+  </data>
+  <data name="CHART_TITEL_SPEICHERTEMPERATUR" xml:space="preserve">
+    <value>Speichertemperaturen im Jahresverlauf</value>
+  </data>
+  <data name="SIM_REIHE_T_OBEN" xml:space="preserve">
+    <value>T oben [°C]</value>
+  </data>
+  <data name="SIM_REIHE_T_UNTEN" xml:space="preserve">
+    <value>T unten [°C]</value>
+  </data>
 </root>

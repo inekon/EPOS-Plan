@@ -261,6 +261,96 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Ganglinientyp 5 (PAKET P2, Konzept 7.4/7.5): SPEICHERTEMPERATUREN — oberste
+        /// und unterste Schicht je Senkenspeicher, dazu die Quelltemperatur der
+        /// temperaturgekoppelten Erzeuger (Paket B1). <c>null</c>, wenn der Lauf keine
+        /// Temperaturreihe trägt (kein Senkenspeicher, oder ein Ergebnis von vor P1).
+        ///
+        /// <para><b>Dasselbe Bild wie <see cref="Speicherverlauf"/></b> — dieselben drei
+        /// charakteristischen Wochen, dieselbe Panelaufteilung, dieselbe Farbfolge je
+        /// Speicher. Nur die Achse ist eine andere: °C statt kWh, und sie beginnt beim
+        /// kleinsten vorkommenden Wert statt bei 0. Eine bei 0 beginnende Achse drückte
+        /// das Temperaturband (Rücklauf … Vorlauf) in den oberen Rand des Bildes.</para>
+        ///
+        /// <para>Die UNTERE Schicht läuft in derselben Farbe wie ihre obere, nur
+        /// halbtransparent: Zwei Temperaturen desselben Behälters gehören zusammen, und
+        /// bei drei Speichern wären sechs eigene Farben nicht mehr zu unterscheiden.</para>
+        /// </summary>
+        public static byte[] Speichertemperaturen(ZeitreihenSatz z)
+        {
+            var reihen = new List<Reihe>();
+
+            // Je Speicher zwei Reihen — die Reihenfolge kommt aus z.Speicherreihen und ist
+            // damit dieselbe stabile Aufnahmereihenfolge wie beim Füllstandsdiagramm.
+            for (int i = 0; i < z.Speicherreihen.Count; i++)
+            {
+                string s = z.Speicherreihen[i];
+                Color farbe = C_SPEICHER[i % C_SPEICHER.Length];
+
+                string oben = s + ZeitreihenSatz.SUFFIX_T_OBEN;
+                string unten = s + ZeitreihenSatz.SUFFIX_T_UNTEN;
+
+                if (z.Hat(oben)) reihen.Add(new Reihe(z.Beschriftung(oben), z.Hole(oben), farbe));
+                if (z.Hat(unten))
+                    reihen.Add(new Reihe(z.Beschriftung(unten), z.Hole(unten),
+                                         Color.FromArgb(150, farbe)));
+            }
+
+            // Quelltemperaturen: eigene Schlüsselfamilie ohne Speicherbezug. SORTIERT,
+            // weil die Reihenfolge eines Dictionary nicht zugesichert ist — die Legende
+            // darf sich zwischen zwei Berichten nicht umsortieren (dieselbe Begründung
+            // wie bei ZeitreihenSatz.Speicherreihen).
+            var quellen = new List<string>();
+            foreach (KeyValuePair<string, double[]> p in z.Reihen)
+                if (p.Key.StartsWith(ZeitreihenSatz.QUELLTEMP_PRAEFIX, StringComparison.Ordinal) &&
+                    z.Hat(p.Key))
+                    quellen.Add(p.Key);
+            quellen.Sort(StringComparer.Ordinal);
+
+            foreach (string q in quellen)
+                reihen.Add(new Reihe(z.Beschriftung(q), z.Hole(q), C_NETZ));
+
+            if (reihen.Count == 0) return null;
+
+            double min = reihen.Min(r => r.Werte.Min());
+            double max = reihen.Max(r => r.Werte.Max());
+            if (max - min < 5) max = min + 5;      // flaches Band nicht auf eine Linie pressen
+
+            // Wochenfenster wie beim Füllstand: 15.01. (h 336), 15.04. (h 2496), 15.07. (h 4680).
+            var fenster = new[] { 336, 2496, 4680 };
+            var titelWoche = new[] { "Winterwoche (Jan)", "Übergangswoche (Apr)", "Sommerwoche (Jul)" };
+
+            int W = 1240, H = 560;
+            using (var bmp = new Bitmap(W, H))
+            using (var g = Start(bmp))
+            {
+                Titel(g, "Speichertemperaturen — oberste und unterste Schicht [°C]", W);
+
+                float panelB = (W - 120f) / 3f;
+                for (int p = 0; p < 3; p++)
+                {
+                    var rc = new RectangleF(70f + p * (panelB + 12f), 100f, panelB - 24f, 330f);
+                    PanelRahmen(g, rc, titelWoche[p]);
+                    foreach (Reihe r in reihen)
+                        ZeichneLinie(g, rc, Ausschnitt(r.Werte, fenster[p], 168), min, max, r.Farbe, 3f);
+
+                    if (p == 0)
+                        using (var f = new Font("Calibri", 15f))
+                        {
+                            g.DrawString(max.ToString("N0", DE), f, Brushes.DimGray, rc.X - 62f, rc.Y - 8f);
+                            g.DrawString(min.ToString("N0", DE), f, Brushes.DimGray, rc.X - 62f, rc.Bottom - 10f);
+                        }
+                }
+
+                // Umbruch bei vielen Serien: zwei Reihen je Speicher füllen die Zeile
+                // schneller als beim Füllstandsdiagramm.
+                Legende(g, reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
+                        70f, H - 96f, W - 70f);
+                return Png(bmp);
+            }
+        }
+
         // =================================================================== Kernzeichner
 
         private static byte[] StapelDiagramm(string titel, string einheit, List<Reihe> stapel,

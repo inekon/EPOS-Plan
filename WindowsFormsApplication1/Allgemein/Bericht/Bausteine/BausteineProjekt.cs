@@ -79,6 +79,73 @@ namespace WindowsFormsApplication1
                     "Deckungsgrad Brauchwasser", DeckungWert(k, stamm, "energie.deckung_brauchwasser"),
                     "Deckungsgrad Prozesswärme", DeckungWert(k, stamm, "energie.deckung_prozess"));
             }
+
+            // PAKET P2 (Konzept 7.4): die Speichertemperaturen des Schichtmodells.
+            SpeichertemperaturenSchreiben(k, stamm);
+        }
+
+        /// <summary>
+        /// PAKET P2 — Temperaturen der obersten Schicht je Speicher, dazu die Ganglinie
+        /// (Konzept 7.4, offener Punkt P1-O5).
+        ///
+        /// <para><b>Der Abschnitt entfällt vollständig, wenn kein Speicher einen Wert
+        /// trägt</b> — also bei jedem Projekt ohne Senkenspeicher und bei jedem
+        /// Ergebnis, das vor Paket P1 gerechnet wurde. Eine Tabelle voller „—" wäre
+        /// keine Aussage, sondern eine Frage.</para>
+        ///
+        /// <para>Die Kennzahl <c>T_oben_Mittel</c>/<c>_Min</c> steht in
+        /// <c>Tab_ErgebnisPufferspeicher</c> (Schritt 52, gefüllt seit P1); der
+        /// <see cref="KennzahlenKatalog"/> führt daneben die beiden Projektwerte
+        /// (Mittel über die Speicher, kleinstes Minimum) für den Variantenvergleich.
+        /// Hier steht die AUFSCHLÜSSELUNG je Speicher — dieselbe Arbeitsteilung wie bei
+        /// Bedarf und Deckungsgraden darüber.</para>
+        /// </summary>
+        private static void SpeichertemperaturenSchreiben(WordKontext k, VariantenDaten stamm)
+        {
+            if (stamm.Ergebnis == null || stamm.Ergebnis.Pufferspeicher == null) return;
+
+            List<ErgebnisPufferspeicherModel> mitWert = stamm.Ergebnis.Pufferspeicher
+                .Where(p => p != null && p.T_oben_Mittel.HasValue).ToList();
+            if (mitWert.Count == 0) return;
+
+            k.Ueberschrift2("Speichertemperaturen (Schichtmodell)");
+
+            int[] w = { 4155, 2600, 2600 };
+            Table t = k.NeueTabelle(w);
+
+            var kopf = new TableRow();
+            kopf.Append(k.Zelle("Speicher", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            kopf.Append(k.Zelle("T oben Mittel [°C]", w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+            kopf.Append(k.Zelle("T oben Minimum [°C]", w[2], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+            t.Append(kopf);
+
+            foreach (ErgebnisPufferspeicherModel p in mitWert)
+            {
+                var tr = new TableRow();
+                tr.Append(k.Zelle(string.IsNullOrWhiteSpace(p.Bezeichner) ? "—" : p.Bezeichner,
+                                  w[0], false, null, JustificationValues.Left));
+                tr.Append(k.Zelle(k.F(p.T_oben_Mittel.Value, 1), w[1], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(p.T_oben_Min.HasValue ? k.F(p.T_oben_Min.Value, 1) : "—",
+                                  w[2], false, null,
+                                  p.T_oben_Min.HasValue ? JustificationValues.Right : JustificationValues.Center));
+                t.Append(tr);
+            }
+            k.Fuege(t);
+
+            // Die Ganglinie entsteht wie die vier Bestandsdiagramme aus dem
+            // Zeitreihensatz des Laufs — sie gibt es also nur, wenn für diesen Bericht
+            // frisch simuliert wurde. Ein Diagrammfehler kippt den Bericht nicht.
+            if (stamm.Zeitreihen == null) return;
+
+            byte[] png;
+            try { png = ChartRenderer.Speichertemperaturen(stamm.Zeitreihen); }
+            catch { png = null; }
+
+            if (png != null)
+            {
+                k.Bild(png, 620, 280);
+                k.Beschriftung("Speichertemperaturen in charakteristischen Wochen (Winter/Übergang/Sommer)");
+            }
         }
 
         private static string Oder(string a, string b) { return string.IsNullOrWhiteSpace(a) ? b : a; }

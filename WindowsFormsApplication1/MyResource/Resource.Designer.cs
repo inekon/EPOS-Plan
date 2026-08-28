@@ -3378,6 +3378,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichertemperaturen im Jahresverlauf ähnelt.
+        /// </summary>
+        public static string CHART_TITEL_SPEICHERTEMPERATUR {
+            get {
+                return ResourceManager.GetString("CHART_TITEL_SPEICHERTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf Jahresganglinie ähnelt.
         /// </summary>
         public static string CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE {
@@ -15226,6 +15235,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigene Einspeisehöhe: ähnelt.
+        /// </summary>
+        public static string SIM_CHK_EINSPEISEHOEHE {
+            get {
+                return ResourceManager.GetString("SIM_CHK_EINSPEISEHOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die eigene Ladeobergrenze: ähnelt.
         /// </summary>
         public static string SIM_CHK_LADEGRENZE {
@@ -16084,6 +16102,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 0…1  (1 = oben, 0 = unten; ohne Angabe oben) ähnelt.
+        /// </summary>
+        public static string SIM_LBL_EINSPEISEHOEHE_EINHEIT {
+            get {
+                return ResourceManager.GetString("SIM_LBL_EINSPEISEHOEHE_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ein Kombispeicher deckt Heizung und Warmwasser aus einem gemeinsamen Wärmevorrat. Reicht er in einer Stunde nicht für beides, wird zuerst Warmwasser bedient. ähnelt.
         /// </summary>
         public static string SIM_LBL_HINWEIS_KOMBI {
@@ -16179,6 +16206,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_MODUS_PV {
             get {
                 return ResourceManager.GetString("SIM_MODUS_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einspeisehöhe der {0} muss zwischen 0 und 1 liegen. ähnelt.
+        /// </summary>
+        public static string SIM_MSG_EINSPEISEHOEHE_BEREICH {
+            get {
+                return ResourceManager.GetString("SIM_MSG_EINSPEISEHOEHE_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einspeisehöhe der {0} muss eine Zahl sein. ähnelt.
+        /// </summary>
+        public static string SIM_MSG_EINSPEISEHOEHE_ZAHL {
+            get {
+                return ResourceManager.GetString("SIM_MSG_EINSPEISEHOEHE_ZAHL", resourceCulture);
             }
         }
         
@@ -16632,6 +16677,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die T oben [°C] ähnelt.
+        /// </summary>
+        public static string SIM_REIHE_T_OBEN {
+            get {
+                return ResourceManager.GetString("SIM_REIHE_T_OBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die T unten [°C] ähnelt.
+        /// </summary>
+        public static string SIM_REIHE_T_UNTEN {
+            get {
+                return ResourceManager.GetString("SIM_REIHE_T_UNTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Senke auf Rang {0} ähnelt.
         /// </summary>
         public static string SIM_ROLLE_RANG {
@@ -16880,6 +16943,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_SPALTE_DECKUNG_KANAL {
             get {
                 return ResourceManager.GetString("SIM_SPALTE_DECKUNG_KANAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höhe ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_EINSPEISEHOEHE {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_EINSPEISEHOEHE", resourceCulture);
             }
         }
         
@@ -17154,6 +17226,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichertemperaturen ähnelt.
+        /// </summary>
+        public static string SIM_TAB_SPEICHERTEMPERATUR {
+            get {
+                return ResourceManager.GetString("SIM_TAB_SPEICHERTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die HeizKessel ähnelt.
         /// </summary>
         public static string SIM_TABELLE_HEIZKESSEL {
@@ -17181,6 +17262,17 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_TIP_BETRIEBSMODUS_NICHT_WP {
             get {
                 return ResourceManager.GetString("SIM_TIP_BETRIEBSMODUS_NICHT_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höhe, auf der diese Senke in den Zielspeicher einspeist: 1 = ganz oben (Vorgabe), 0 = ganz unten.
+        ///
+        ///Wirksam nur bei einem GESCHICHTETEN Zielspeicher (Schichten &gt; 1): Von der Einspeisehöhe abwärts werden die Schichten nacheinander auf die Vorlauftemperatur gehoben, Schichten darüber bleiben unberührt. Bei einem Ein-Zonen-Speicher (Schichten = 1) bleibt der Wert ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string SIM_TIP_EINSPEISEHOEHE {
+            get {
+                return ResourceManager.GetString("SIM_TIP_EINSPEISEHOEHE", resourceCulture);
             }
         }
         

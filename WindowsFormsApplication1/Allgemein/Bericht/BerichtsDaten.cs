@@ -189,6 +189,29 @@ namespace WindowsFormsApplication1
         /// <summary>Präfix der Quellspeicher-Füllstandsreihen (<c>QUELLE_&lt;AnlagenID&gt;</c>).</summary>
         public const string QUELLE_PRAEFIX = "QUELLE_";
 
+        // ---------------------------------------------------------------------
+        // PAKET P1/B1/P2 — die TEMPERATURREIHEN. Sie hängen als Nachsilbe am
+        // Füllstandsschlüssel eines Speichers (PUFFER_<ID>_TOBEN / _TUNTEN) bzw. tragen
+        // ein eigenes Präfix mit der ANLAGEN-ID (QUELLTEMP_<AnlagenID>).
+        //
+        // Sie stehen BEWUSST NICHT in Speicherreihen: Diese Liste führt das
+        // kWh-Füllstandsdiagramm, und eine Temperaturreihe auf einer kWh-Achse wäre dort
+        // sinnlos. Wer Temperaturen zeichnet, holt sie über diese Schlüssel (Bericht:
+        // ChartRenderer.Speichertemperaturen; Oberfläche: die Diagrammseite
+        // „Speichertemperaturen" der Detailansicht).
+        //
+        // Sprachneutral und ASCII — Schicht 2 der Drei-Schichten-Regel.
+        // ---------------------------------------------------------------------
+
+        /// <summary>Nachsilbe der Reihe „Temperatur der obersten Schicht" [°C].</summary>
+        public const string SUFFIX_T_OBEN = "_TOBEN";
+
+        /// <summary>Nachsilbe der Reihe „Temperatur der untersten Schicht" [°C].</summary>
+        public const string SUFFIX_T_UNTEN = "_TUNTEN";
+
+        /// <summary>Präfix der Quelltemperatur-Reihen (<c>QUELLTEMP_&lt;AnlagenID&gt;</c>).</summary>
+        public const string QUELLTEMP_PRAEFIX = "QUELLTEMP_";
+
         public Dictionary<string, double[]> Reihen = new Dictionary<string, double[]>();
 
         /// <summary>

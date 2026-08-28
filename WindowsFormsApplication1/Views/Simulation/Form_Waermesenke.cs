@@ -123,6 +123,28 @@ namespace WindowsFormsApplication1
         private Label _lblPV;
         private ComboBox _cbLadeprioPV;
 
+        // --- Einspeisehöhe der Senkenzeile (PAKET P2, Konzept 5.1/7.4) ----------------
+        //
+        // Der Pfad Z_AnlageSenke.Anschlusshoehe → Ladeauftrag.Einspeisehoehe →
+        // SimulationPufferspeicher.EinspeisehoeheAktuell steht seit Paket P1 vollständig;
+        // was fehlte, war die Pflege im Dialog (P1-O2 / S1-O3). Aufbau wie die
+        // Ladeobergrenze eine Zeile darüber: Haken + Zahlenfeld + Einheitentext, damit
+        // „nicht gesetzt" (= oben, die Vorgabe) und „0" (= ganz unten) unterscheidbar
+        // bleiben — 0 ist eine GÜLTIGE Höhe, ein leeres Feld darf deshalb nicht auf 0
+        // hinauslaufen.
+        private CheckBox _chkEinspeisehoehe;
+        private TextBox _tbEinspeisehoehe;
+        private Label _lblEinspeisehoeheEinheit;
+
+        /// <summary>
+        /// Erklärt die Wirkung der Einspeisehöhe an Haken und Eingabefeld. Ein eigener
+        /// ToolTip statt eines weiteren Hinweistextes: Die Höhe wirkt nur bei einem
+        /// geschichteten Zielspeicher, und diese Bedingung dauerhaft ins Bild zu setzen
+        /// hieße, die Gruppe um eine Textzeile zu verlängern, die in den meisten
+        /// Projekten nichts zu sagen hat.
+        /// </summary>
+        private readonly ToolTip _tips = new ToolTip();
+
         private Label _lblHinweis;
         private Button _btnPufferAnlegen;
 
@@ -217,6 +239,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         private const double GRENZE_UNLESBAR = -1;
         private const double GRENZE_BEREICH = -2;
+
+        /// <summary>
+        /// Dieselben Ersatzwerte für die EINSPEISEHÖHE (PAKET P2). Sie beginnen erst bei
+        /// −2, weil <c>Z_AnlageSenkeModel.Anschlusshoehe</c> die −1 bereits mit der
+        /// Bedeutung „nicht gesetzt" belegt (in der Datenbank NULL) — ein Ersatzwert −1
+        /// wäre von einer leeren Angabe nicht zu unterscheiden und würde die fehlerhafte
+        /// Eingabe stillschweigend als „speist oben ein" speichern.
+        /// </summary>
+        private const double HOEHE_UNLESBAR = -2;
+        private const double HOEHE_BEREICH = -3;
 
         /// <summary>Eintrag der Ladeprioritäts-Dropdowns (0 = nach Vorgabe).</summary>
         private class PrioItem
@@ -351,7 +383,11 @@ namespace WindowsFormsApplication1
             const int VERBUND_OBEN = ZEILE_OBEN + ZEILE_HOEHE + 8;
             const int VERBUND_HOEHE = 138;
             const int LADEN_OBEN = VERBUND_OBEN + VERBUND_HOEHE + 8;
-            const int LADEN_HOEHE = 140;
+            // PAKET P2: 140 → 176 — die Gruppe trägt jetzt eine vierte Zeile
+            // (Einspeisehöhe) unter der PV-Zeile. Alles darunter hängt an dieser
+            // Konstante und rückt mit; das Fenster wächst um dieselben 36 px und wird
+            // wie bisher von FensterEinpassung in die Arbeitsfläche eingepasst.
+            const int LADEN_HOEHE = 176;
 
             // --- Senkenliste ---------------------------------------------------------
             GroupBox gbListe = new GroupBox
@@ -372,11 +408,16 @@ namespace WindowsFormsApplication1
                 MultiSelect = false,
                 HeaderStyle = ColumnHeaderStyle.Nonclickable
             };
-            _lvSenken.Columns.Add(MyResource.Resource.SIM_SPALTE_RANG, 44);
-            _lvSenken.Columns.Add(MyResource.Resource.SIM_SPALTE_ZIEL, 150);
-            _lvSenken.Columns.Add(MyResource.Resource.SIM_SPALTE_SPEICHER, 186);
-            _lvSenken.Columns.Add(MyResource.Resource.SIM_SPALTE_BEDARFSART, 106);
-            _lvSenken.Columns.Add(MyResource.Resource.SIM_SPALTE_LADEN, 74);
+            // PAKET P2: sechste Spalte „Höhe" (Einspeisehöhe). Die Gesamtbreite der
+            // Spalten bleibt bei 560 px und damit innerhalb der Listenbreite von 564 —
+            // die vier bestehenden Spalten geben die 62 px dafür ab, statt eine
+            // Bildlaufleiste unter der Liste zu erzeugen.
+            _lvSenken.Columns.Add(MyResource.Resource.SIM_SPALTE_RANG, 40);
+            _lvSenken.Columns.Add(MyResource.Resource.SIM_SPALTE_ZIEL, 146);
+            _lvSenken.Columns.Add(MyResource.Resource.SIM_SPALTE_SPEICHER, 150);
+            _lvSenken.Columns.Add(MyResource.Resource.SIM_SPALTE_BEDARFSART, 96);
+            _lvSenken.Columns.Add(MyResource.Resource.SIM_SPALTE_LADEN, 66);
+            _lvSenken.Columns.Add(MyResource.Resource.SIM_SPALTE_EINSPEISEHOEHE, 62);
             _lvSenken.SelectedIndexChanged += Zeile_Gewechselt;
             gbListe.Controls.Add(_lvSenken);
 
@@ -586,6 +627,38 @@ namespace WindowsFormsApplication1
             };
             _cbLadeprioPV.SelectedIndexChanged += Auswahl_Geaendert;
 
+            // --- Einspeisehöhe (PAKET P2, Konzept 5.1/7.4 Punkt 1) -------------------
+            //
+            // Dieselbe Spaltenordnung wie die Ladeobergrenze darüber: Haken links,
+            // Zahlenfeld auf x = 196, Einheitentext daneben. Der Haken trägt die
+            // Unterscheidung „nicht gesetzt" ↔ „gesetzt" — ohne ihn wäre ein leeres Feld
+            // von der gültigen Höhe 0 (ganz unten) nicht zu trennen.
+            _chkEinspeisehoehe = new CheckBox
+            {
+                Text = MyResource.Resource.SIM_CHK_EINSPEISEHOEHE,
+                AutoSize = true,
+                Location = new Point(19, 138)
+            };
+            _chkEinspeisehoehe.CheckedChanged += Auswahl_Geaendert;
+
+            _tbEinspeisehoehe = new TextBox { Location = new Point(196, 135), Width = 60, Text = "1" };
+            _tbEinspeisehoehe.TextChanged += Auswahl_Geaendert;
+
+            _lblEinspeisehoeheEinheit = new Label
+            {
+                Text = MyResource.Resource.SIM_LBL_EINSPEISEHOEHE_EINHEIT,
+                AutoSize = true,
+                Location = new Point(262, 138)
+            };
+
+            // Die Wirkungsbedingung („nur bei geschichtetem Zielspeicher, N > 1") steht
+            // im ToolTip und nicht im Bild - sie ist eine Eigenschaft des SPEICHERS, die
+            // dieser Dialog nicht einstellt.
+            string tipHoehe = Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_TIP_EINSPEISEHOEHE);
+            _tips.SetToolTip(_chkEinspeisehoehe, tipHoehe);
+            _tips.SetToolTip(_tbEinspeisehoehe, tipHoehe);
+            _tips.SetToolTip(_lblEinspeisehoeheEinheit, tipHoehe);
+
             _gbLaden.Controls.Add(lblPrio);
             _gbLaden.Controls.Add(_cbLadeprio);
             _gbLaden.Controls.Add(_lblPosition);
@@ -594,6 +667,9 @@ namespace WindowsFormsApplication1
             _gbLaden.Controls.Add(_lblLadegrenzeEinheit);
             _gbLaden.Controls.Add(_lblPV);
             _gbLaden.Controls.Add(_cbLadeprioPV);
+            _gbLaden.Controls.Add(_chkEinspeisehoehe);
+            _gbLaden.Controls.Add(_tbEinspeisehoehe);
+            _gbLaden.Controls.Add(_lblEinspeisehoeheEinheit);
 
             // --- Hinweis und Absprung -------------------------------------------------
             //
@@ -828,6 +904,7 @@ namespace WindowsFormsApplication1
                     it.SubItems.Add("");
                     it.SubItems.Add("");
                     it.SubItems.Add("");
+                    it.SubItems.Add("");   // PAKET P2: Spalte „Höhe"
                     _lvSenken.Items.Add(it);
                     ZeileAnzeigen(i);
                 }
@@ -862,6 +939,18 @@ namespace WindowsFormsApplication1
                 : LEER;
             it.SubItems[3].Text = IstHeizkreis(z.Ziel) ? BedarfsartAnzeige(z.Bedarfsart) : LEER;
             it.SubItems[4].Text = LadespalteText(z);
+            it.SubItems[5].Text = HoehenspalteText(z);
+        }
+
+        /// <summary>
+        /// Spalte „Höhe": die Einspeisehöhe der Zeile, sonst das Leerzeichen der Liste
+        /// (PAKET P2). „Nicht gesetzt" ist der Regelfall und heißt „oben" — dort eine 1
+        /// hinzuschreiben behauptete eine Pflege, die es nicht gibt.
+        /// </summary>
+        private static string HoehenspalteText(Z_AnlageSenkeModel z)
+        {
+            if (!IstPufferZiel(z.Ziel) || z.Anschlusshoehe < 0 || z.Anschlusshoehe > 1) return LEER;
+            return z.Anschlusshoehe.ToString("0.##");
         }
 
         /// <summary>Anzeigetext der Bedarfsart (Steuerwert bleibt der deutsche Persistenzwert).</summary>
@@ -938,6 +1027,15 @@ namespace WindowsFormsApplication1
 
                 _chkLadegrenze.Checked = z.Ladegrenze != 0;
                 if (z.Ladegrenze > 0) _tbLadegrenze.Text = z.Ladegrenze.ToString("0.#");
+
+                // PAKET P2: Die Einspeisehöhe ist gesetzt, sobald sie im Bereich 0…1
+                // liegt - 0 gehört ausdrücklich dazu (ganz unten). Alles andere (−1 aus
+                // der Datenbank-NULL, die Ersatzwerte einer fehlerhaften Eingabe) heißt
+                // „nicht gesetzt"; das Feld behält dann seinen letzten Text als
+                // Vorschlag, der Haken ist aber aus.
+                bool hoeheGesetzt = z.Anschlusshoehe >= 0 && z.Anschlusshoehe <= 1;
+                _chkEinspeisehoehe.Checked = hoeheGesetzt;
+                if (hoeheGesetzt) _tbEinspeisehoehe.Text = z.Anschlusshoehe.ToString("0.##");
             }
             finally
             {
@@ -964,6 +1062,11 @@ namespace WindowsFormsApplication1
             z.ID_Puffer = puffer ? AktuelleId(_cbPuffer) : 0;
             z.Ladeprio = puffer ? GewaehltePrio(_cbLadeprio) : 0;
             z.Ladegrenze = puffer ? LadegrenzeLesen() : 0;
+
+            // PAKET P2: Die Einspeisehöhe gehört zum LADEVORGANG und hat an einer
+            // Direktsenke keinen Gegenstand - dort wird sie wie Ladepriorität und
+            // Obergrenze gelöscht, nicht stehen gelassen (§ 7.4 Punkt 1).
+            z.Anschlusshoehe = puffer ? EinspeisehoeheLesen() : -1;
 
             // Konzept 5.1: Die PV-Sonderpriorität gibt es nur auf Rang 1 — sie hängt heute
             // konstruktiv an der Hauptsenke (Ladeordnung.cs:270-273), und eine zweite
@@ -1022,6 +1125,26 @@ namespace WindowsFormsApplication1
             float zahl;
             if (!WaermequelleClass.ZahlParsen(_tbLadegrenze.Text, out zahl)) return GRENZE_UNLESBAR;
             if (zahl <= 0 || zahl > 100) return GRENZE_BEREICH;
+            return zahl;
+        }
+
+        /// <summary>
+        /// Einspeisehöhe der gewählten Zeile [0…1]; <b>−1 = nicht gesetzt</b> und damit
+        /// „speist oben ein" (PAKET P2, Konzept 5.1/7.4).
+        ///
+        /// <para>Anders als bei der Ladeobergrenze ist <b>0 ein gültiger Wert</b> (ganz
+        /// unten). Die Prüfung lässt deshalb <c>0 ≤ h ≤ 1</c> zu; eine noch unlesbare
+        /// oder unplausible Eingabe wird - wie dort - als Ersatzwert festgehalten und
+        /// beim OK mit Nennung des Rangs gemeldet, statt beim Zeilenwechsel
+        /// stillschweigend zu verschwinden.</para>
+        /// </summary>
+        private double EinspeisehoeheLesen()
+        {
+            if (!_chkEinspeisehoehe.Checked) return -1;
+
+            float zahl;
+            if (!WaermequelleClass.ZahlParsen(_tbEinspeisehoehe.Text, out zahl)) return HOEHE_UNLESBAR;
+            if (zahl < 0 || zahl > 1) return HOEHE_BEREICH;
             return zahl;
         }
 
@@ -1561,6 +1684,11 @@ namespace WindowsFormsApplication1
             _gbLaden.Enabled = pufferSenke;
             _tbLadegrenze.Enabled = pufferSenke && _chkLadegrenze.Checked;
 
+            // PAKET P2: Das Zahlenfeld der Einspeisehöhe folgt seinem Haken, genau wie
+            // das der Ladeobergrenze darüber. Sichtbar bleibt die Zeile auch an einer
+            // Direktsenke - die ganze Gruppe ist dort ohnehin gesperrt.
+            _tbEinspeisehoehe.Enabled = pufferSenke && _chkEinspeisehoehe.Checked;
+
             // Die PV-Sonderregel greift nur bei Betriebsmodus PV (Konzept 3.5) und nur auf
             // Rang 1 (Konzept 5.1: eine Spalte WS_Ladeprio_PV2 gibt es nicht).
             bool pvModus = PvModus();
@@ -1803,6 +1931,15 @@ namespace WindowsFormsApplication1
                     return string.Format(MyResource.Resource.SIM_MSG_LADEGRENZE_ZAHL, rolle);
                 if (z.Ladegrenze == GRENZE_BEREICH)
                     return string.Format(MyResource.Resource.SIM_MSG_LADEGRENZE_BEREICH, rolle);
+
+                // PAKET P2: dieselbe Prüfung für die Einspeisehöhe, an derselben Stelle
+                // wie die der Ladeobergrenze. Eine Zeile, die inzwischen auf eine
+                // Direktsenke steht, trägt hier ohnehin −1 (ZeileAusOberflaeche löscht
+                // den Wert mit) und läuft durch.
+                if (z.Anschlusshoehe == HOEHE_UNLESBAR)
+                    return string.Format(MyResource.Resource.SIM_MSG_EINSPEISEHOEHE_ZAHL, rolle);
+                if (z.Anschlusshoehe == HOEHE_BEREICH)
+                    return string.Format(MyResource.Resource.SIM_MSG_EINSPEISEHOEHE_BEREICH, rolle);
 
                 if (!IstPufferZiel(z.Ziel)) continue;
 

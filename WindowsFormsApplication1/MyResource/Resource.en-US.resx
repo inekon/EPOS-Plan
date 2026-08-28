@@ -8100,4 +8100,36 @@ Please either set the number of layers to 1 or dissolve the bank in the heat sin
   <data name="SIM_VERBUND_KONFLIKT_LEIT_GESCHICHTET" xml:space="preserve">
     <value>Buffer tank "{0}" is stratified and therefore cannot serve as the lead tank of a bank: a bank is calculated as ONE store holding the summed capacity of all its members, so a layer model derived from it would be wrong.</value>
   </data>
+  <data name="SIM_SPALTE_EINSPEISEHOEHE" xml:space="preserve">
+    <value>Height</value>
+  </data>
+  <data name="SIM_CHK_EINSPEISEHOEHE" xml:space="preserve">
+    <value>own inlet height:</value>
+  </data>
+  <data name="SIM_LBL_EINSPEISEHOEHE_EINHEIT" xml:space="preserve">
+    <value>0…1  (1 = top, 0 = bottom; empty = top)</value>
+  </data>
+  <data name="SIM_TIP_EINSPEISEHOEHE" xml:space="preserve">
+    <value>Height at which this sink feeds into the target storage: 1 = top (default), 0 = bottom.
+
+Effective only with a STRATIFIED target storage (layers &gt; 1): from the inlet height downwards the layers are raised to the flow temperature one after another, layers above remain untouched. With a single-zone storage (layers = 1) the value has no effect.</value>
+  </data>
+  <data name="SIM_MSG_EINSPEISEHOEHE_ZAHL" xml:space="preserve">
+    <value>The inlet height of the {0} must be a number.</value>
+  </data>
+  <data name="SIM_MSG_EINSPEISEHOEHE_BEREICH" xml:space="preserve">
+    <value>The inlet height of the {0} must be between 0 and 1.</value>
+  </data>
+  <data name="SIM_TAB_SPEICHERTEMPERATUR" xml:space="preserve">
+    <value>Storage temperatures</value>
+  </data>
+  <data name="CHART_TITEL_SPEICHERTEMPERATUR" xml:space="preserve">
+    <value>Storage temperatures over the year</value>
+  </data>
+  <data name="SIM_REIHE_T_OBEN" xml:space="preserve">
+    <value>T top [°C]</value>
+  </data>
+  <data name="SIM_REIHE_T_UNTEN" xml:space="preserve">
+    <value>T bottom [°C]</value>
+  </data>
 </root>

@@ -105,6 +105,61 @@ namespace WindowsFormsApplication1
             return (zeile != null && kanal < zeile.Length) ? zeile[kanal] : 0.0;
         }
 
+        // ------------------------------------------------------------------
+        // PAKET P2 (Konzept 7.4) — die Speichertemperaturen des Schichtmodells
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Mittlere Temperatur der obersten Schicht über ALLE Speicher des Laufs [°C];
+        /// null, wenn kein Speicher einen Wert trägt.
+        ///
+        /// <para><b>Ungewichtetes Mittel über die Speicher mit Wert</b> — bewusst die
+        /// einfachste nachvollziehbare Zusammenfassung. Im Regelfall (ein Senkenspeicher)
+        /// ist sie der Wert dieses Speichers; bei mehreren beantwortet die Kennzahl die
+        /// Vergleichsfrage „liegt diese Variante insgesamt wärmer?". Die
+        /// AUFSCHLÜSSELUNG je Speicher steht im Baustein Projektbeschreibung — eine
+        /// Katalogzeile trägt genau EINEN Wert je Variante, mehr gäbe die
+        /// Vergleichstabelle nicht her.</para>
+        ///
+        /// <para>Speicher ohne Wert werden übergangen, nicht als 0 gezählt: Quellspeicher
+        /// tragen keine Schichttemperatur (Konzept 8.2), und Ergebniszeilen aus Läufen
+        /// VOR Paket P1 haben die Spalte nie gefüllt. Eine 0 °C stünde in beiden Fällen
+        /// als Messwert da, den es nicht gibt.</para>
+        /// </summary>
+        private static double? TObenMittel(VariantenDaten v)
+        {
+            var liste = v?.Ergebnis?.Pufferspeicher;
+            if (liste == null) return null;
+
+            double summe = 0;
+            int n = 0;
+            foreach (ErgebnisPufferspeicherModel p in liste)
+                if (p != null && p.T_oben_Mittel.HasValue) { summe += p.T_oben_Mittel.Value; n++; }
+
+            return n > 0 ? (double?)(summe / n) : null;
+        }
+
+        /// <summary>
+        /// KLEINSTE Temperatur der obersten Schicht über alle Speicher [°C] — der
+        /// ungünstigste Punkt des Jahres im ungünstigsten Speicher; null ohne Wert.
+        ///
+        /// <para>Anders als beim Mittel ist das Minimum über mehrere Speicher wieder ein
+        /// Minimum und braucht keine Konvention.</para>
+        /// </summary>
+        private static double? TObenMin(VariantenDaten v)
+        {
+            var liste = v?.Ergebnis?.Pufferspeicher;
+            if (liste == null) return null;
+
+            double? kleinster = null;
+            foreach (ErgebnisPufferspeicherModel p in liste)
+                if (p != null && p.T_oben_Min.HasValue &&
+                    (!kleinster.HasValue || p.T_oben_Min.Value < kleinster.Value))
+                    kleinster = p.T_oben_Min.Value;
+
+            return kleinster;
+        }
+
         /// <summary>Summe der Brennstoffverbräuche eines Erzeugers (MWh/a).</summary>
         private static double Brennstoffsumme(ErgebnisBHKWModel b)
         {
@@ -217,6 +272,17 @@ namespace WindowsFormsApplication1
                     if (p == null || p.Stromproduktion <= 0) return null;
                     return (p.Stromproduktion - p.Ueberschuss) / p.Stromproduktion * 100.0;
                 }));
+            // PAKET P2 (Konzept 7.4): die Temperaturen der obersten Speicherschicht. Sie
+            // beantworten, was Energiemengen nicht zeigen — ob der Vorrat auf dem
+            // Temperaturniveau steht, das die Senken brauchen. „—", solange kein
+            // Speicher einen Wert trägt (kein Senkenspeicher, oder ein Ergebnis von vor
+            // Paket P1); die Aufschlüsselung je Speicher steht in der
+            // Projektbeschreibung.
+            l.Add(new Kennzahl("eff.t_oben_mittel", "Speichertemperatur oben (Mittel)",
+                "Storage top temperature (mean)", "°C", GR_EFFIZIENZ, "N1", false, TObenMittel));
+            l.Add(new Kennzahl("eff.t_oben_min", "Speichertemperatur oben (Minimum)",
+                "Storage top temperature (minimum)", "°C", GR_EFFIZIENZ, "N1", false, TObenMin));
+
             l.Add(new Kennzahl("eff.autarkie", "Autarkiegrad Strom", "Electric self-sufficiency", "%", GR_EFFIZIENZ, "N1", true,
                 v =>
                 {
