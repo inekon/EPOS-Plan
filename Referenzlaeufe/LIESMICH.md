@@ -12,10 +12,28 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
-**`2026-08-28_P1/`** — seit dem 28.08.2026 die gültige Referenz, **dreizehn Projekte**
-(1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, 1030, **1039, 1040, 1041, 1042**),
-**329 CSV**. Jeder neue Vergleich läuft gegen diesen Ordner.
+**`2026-08-28_E2/`** — seit dem 28.08.2026 vormittags die gültige Referenz, **dreizehn
+Projekte** (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, 1030, **1039, 1040, 1041,
+1042**), **332 CSV**. Jeder neue Vergleich läuft gegen diesen Ordner.
 
+> **Anlass: Booster-Kette produktiv scharf + Codestand E2/D-Check** (`babab27`). Der
+> Anwender hat in 1042 die Booster-Verschaltung konfiguriert (CS6800iAW + Kessel →
+> „Puffer 3000Ltr" → Booster-WP → Stora B) — die Basis trägt damit erstmals die
+> stundengekoppelte Booster-Rechnung samt `wp_quellentemperatur.csv` (drei neue Dateien,
+> alle 1042). Die Codepakete seit P1 (E2 Kanal-Ganglinien, D-Check-Layoutfixes) waren per
+> A/B byte-gleich belegt; alle CSV-Unterschiede zur P1-Basis sind die 1042-Datenänderung.
+> **Selbstvergleich 332/332 byte-gleich** (zwei `projekt`-Läufe auf EINER festen
+> Quellkopie, Datenstand 28.08.2026 09:05). Details:
+> [Laufprotokoll der Basis](2026-08-28_E2/lauf_protokoll.md).
+>
+> **Die feste Projektliste (dreizehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
+> ```
+
+> *(Fassung vor E2 — Begründung der früheren Basis `2026-08-28_P1`:)*
+>
 > **Anlass: Paket P1 (Schichtspeichermodell, Migrationsschritt 53).** Das Multi-Node-Modell
 > ist eingebaut; die gesamte Referenzmenge rechnet mit N = 1 und ist **konstruktiv
 > byte-gleich** zum E1-Stand: alle 316 Ganglinien byte-/MD5-identisch, die einzige Änderung
@@ -193,7 +211,12 @@ reproduzierbar.
 
 ## Frühere Stände
 
-`2026-08-27_E1/` bleibt als **vorheriger Stand** liegen (Codestand E1, Schemastand 52,
+`2026-08-28_P1/` bleibt als **vorheriger Stand** liegen (Codestand P1, Schemastand 53,
+dreizehn Projekte, 329 CSV) — die Basis der Pakete B1/Q1/P2/L/E2 (alle je byte-gleich
+dagegen); 1042 dort noch mit unkonfigurierter Booster-Quelle. Begründung im Abschnitt
+„(Fassung vor E2)" darüber.
+
+`2026-08-27_E1/` bleibt als **älterer Stand** liegen (Codestand E1, Schemastand 52,
 dreizehn Projekte, 329 CSV) — die Basis des Meilensteins Z3; P1 war gegen sie in allen
 316 Ganglinien byte-gleich (einzige Änderung: T_oben-Füllung). Begründung im Abschnitt
 „(Fassung vor P1)" darüber.
