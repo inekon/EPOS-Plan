@@ -1213,6 +1213,12 @@ namespace WindowsFormsApplication1
             // KesselQuellbezugSetzen.
             BoosterKopplungVorbereiten();
 
+            // PAKET B2 (Nutzerauftrag 28.08.2026): LESEPUNKT der Booster-Quelltemperatur.
+            // MUSS hier stehen - nach BoosterKopplungVorbereiten und KesselQuellbezugSetzen
+            // steht erst fest, OB ein Modul gekoppelt ist; nur dann hat der Lesepunkt eine
+            // Wirkung und nur dann wird er gemeldet.
+            kontext.BoosterLesepunkt = BoosterLesepunktDesLaufs();
+
             schleife.Kontext = kontext;
             schleife.Bedarfsreihenfolge = BedarfsreihenfolgeAufbauen();
 
@@ -3356,6 +3362,54 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// PAKET B2 (Nutzerauftrag 28.08.2026, Punkt 2) — der LESEPUNKT der
+        /// Booster-Quelltemperatur dieses Laufs; er geht in den
+        /// <see cref="Kaskadenkontext"/> und wird EINMAL protokolliert.
+        ///
+        /// <para><b>Gemeldet wird nur, wenn es etwas zu melden gibt</b> — also erst, wenn
+        /// mindestens ein Modul (Wärmepumpe oder Heizkessel) temperaturgekoppelt ist. Ein
+        /// Projekt ohne Booster liest nie eine Quelltemperatur aus einem Speicher; die
+        /// Zeile wäre dort eine Angabe über etwas, das nicht stattfindet, und sie stünde
+        /// in jedem der Referenzprotokolle.</para>
+        ///
+        /// <para><b>Ungültige Werte fallen VOLLSTÄNDIG auf „Davor" zurück</b> — dieselbe
+        /// tolerante Auslegung wie bei der Knappheitsreihenfolge
+        /// (<c>DbWerte.BoosterLesepunktOderDefault</c>): Ein unbrauchbarer Spaltenwert
+        /// verwirft nicht den Lauf, sondern die Einstellung. Da er dann von der
+        /// Vorbelegung nicht mehr zu unterscheiden ist, nennt die Protokollzeile ohnehin
+        /// den GELTENDEN Lesepunkt — sie ist der Hinweis.</para>
+        /// </summary>
+        private string BoosterLesepunktDesLaufs()
+        {
+            string lesepunkt = KonfigurationCtrl.BoosterLesepunktLesen(m_ID_Projekt);
+
+            bool gekoppelt = simulation_wp != null && _wpInSchleife &&
+                             simulation_wp.GekoppelteModule > 0;
+
+            if (!gekoppelt && simulation_spk != null && _kesselInSchleife)
+                for (int i = 0; i < simulation_spk.KesselAnzahl; i++)
+                    if (simulation_spk.QuelleGekoppelt(i)) { gekoppelt = true; break; }
+
+            // Inline deutsch wie die übrigen Zeilen des Laufaufbaus (Ticket B1-O9).
+            if (gekoppelt)
+                Protokoll.Hinweis(
+                    string.Equals(lesepunkt, DbWerte.BOOSTER_LESEPUNKT_DANACH,
+                                  StringComparison.Ordinal)
+                        ? "Booster-Lesepunkt: DANACH - die Quelltemperatur wird je " +
+                          "Rechenebene unmittelbar vor deren Bedarfsphase gelesen, also " +
+                          "NACH den Ladephasen der Vorebenen dieser Stunde. Der Booster " +
+                          "sieht den Speicher im am weitesten geladenen Zustand der " +
+                          "Stunde (Verhalten bis Paket B1)."
+                        : "Booster-Lesepunkt: DAVOR - die Quelltemperatur wird einmal am " +
+                          "Stundenanfang gelesen, aus dem Speicherzustand am Ende der " +
+                          "Vorstunde. Was ein vorgelagerter Erzeuger in dieser Stunde " +
+                          "erst nachlädt, wird dem Booster nicht gutgeschrieben " +
+                          "(konservativ; Vorbelegung seit Paket B2).");
+
+            return lesepunkt;
+        }
+
+        /// <summary>
         /// PAKET Q1: Zusatz zur Booster-Protokollzeile, der die QUELL-ENTNAHMEHÖHE nennt
         /// (<c>WQ_Anschlusshoehe</c>, Schema-Schritt 54).
         ///
@@ -3517,9 +3571,16 @@ namespace WindowsFormsApplication1
             // Bestandsweg über die Speicherzeile.
             bool gekoppelt = !quelle.IstQuelle && quelle.Q_max > 0 && quelle.VL_eff > quelle.RL_eff;
 
-            WaermesenkeClass.PufferInfo qp = gekoppelt
-                ? null : WaermesenkeClass.PufferLesen(quelle.ID_Pufferspeicher);
-            double tQuelle = gekoppelt ? quelle.VL_eff : ((qp != null) ? qp.Vorlauf : 0);
+            // PAKET B2 (Nutzerauftrag 28.08.2026): Der GEKOPPELTE Fall hat einen eigenen
+            // Weg. Er entscheidet über Tab_Energieanlagen.WQ_TemperaturModus, WOHER das
+            // Bezugspaar kommt, und braucht im Regelfall („Berechnet") gar kein
+            // gepflegtes Temperaturpaar mehr — genau das war Ticket B1-O10.
+            // Der EIGENSTÄNDIGE Quellspeicher unten bleibt Zeichen für Zeichen der
+            // Bestandsweg über die Speicherzeile.
+            if (gekoppelt) { KesselKopplungSetzen(idAnlage, index, quelle); return; }
+
+            WaermesenkeClass.PufferInfo qp = WaermesenkeClass.PufferLesen(quelle.ID_Pufferspeicher);
+            double tQuelle = (qp != null) ? qp.Vorlauf : 0;
 
             int vorlauf, ruecklauf;
             if (tQuelle <= 0 || !KesselTemperaturpaar(idAnlage, index, out vorlauf, out ruecklauf))
@@ -3547,24 +3608,6 @@ namespace WindowsFormsApplication1
 
             if (anteil > 1) anteil = 1;
 
-            if (gekoppelt)
-            {
-                // PAKET B1: Der Anteil wird je Stunde neu gebildet (Konzept 8.4);
-                // eingerichtet wird hier nur der HUB, gegen den er entsteht.
-                // PAKET Q1: dazu die Quell-Entnahmehöhe der Anlage (Schritt 54,
-                // WQ_Anschlusshoehe; NULL = oben und damit B1-Verhalten).
-                double hoehe = SimulationWaermepumpe.AnschlusshoeheLesen(idAnlage);
-                simulation_spk.QuellkopplungSetzen(index, quelle, vorlauf, ruecklauf, hoehe);
-
-                Protokoll.Hinweis(string.Format(
-                                  MyResource.Resource.SIMENG_KESSEL_BOOSTER_KOPPLUNG,
-                                  idAnlage, quelle.ID_Pufferspeicher, quelle.BezeichnerAnzeige(),
-                                  quelle.RL_eff.ToString("0.#"), quelle.VL_eff.ToString("0.#"),
-                                  AnschlusshoeheText(hoehe, quelle),
-                                  ruecklauf, vorlauf, (anteil * 100).ToString("0.#")));
-                return;
-            }
-
             simulation_spk.QuellbezugSetzen(index, quelle, anteil);
 
             Protokoll.Hinweis("Kessel-Kaskade: Anlage " + idAnlage + " bezieht ihre " +
@@ -3575,6 +3618,241 @@ namespace WindowsFormsApplication1
                               "Nutzwärme, um genau diesen Anteil sinkt der Brennstoffbedarf. " +
                               "Der Kessel rechnet NACH dem Erzeuger, der den Puffer lädt.");
         }
+
+        // =================================================================================
+        // PAKET B2 - Temperaturbezug der Kessel-Kaskade (Nutzerauftrag 28.08.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// RÜCKFALL-VORLAUF des Kessel-Hubs [°C], wenn weder der Rang-1-Senkenspeicher
+        /// noch die gepflegte Kette ein Temperaturpaar hergeben (Modus „Berechnet",
+        /// dritte Stufe).
+        ///
+        /// <para><b>70/50 °C</b> ist die Auslegung eines konventionellen
+        /// Heizkesselsystems und zugleich das Paar, mit dem der Dialog beim Umschalten
+        /// auf „Fest" vorschlägt — beide Stellen nennen dieselbe Zahl, und sie steht
+        /// genau einmal im Quelltext. Ein Wert wird hier bewusst GESETZT und nicht der
+        /// Quellbezug abgeschaltet: Die dritte Stufe greift nur, wenn der Anwender den
+        /// Modus „Berechnet" gewählt (oder geerbt) hat, und dort hat er ausdrücklich
+        /// gesagt, dass er keine Vorgabe machen will.</para>
+        /// </summary>
+        public const double KESSEL_VORLAUF_RUECKFALL = 70;
+
+        /// <summary>RÜCKFALL-RÜCKLAUF des Kessel-Hubs [°C]; siehe <see cref="KESSEL_VORLAUF_RUECKFALL"/>.</summary>
+        public const double KESSEL_RUECKLAUF_RUECKFALL = 50;
+
+        /// <summary>
+        /// PAKET B2 — richtet die TEMPERATURKOPPLUNG eines Kessels am GETEILTEN
+        /// Quellpuffer ein (Nutzerauftrag 28.08.2026, Punkt 1).
+        ///
+        /// <para><b>Was der Modus steuert — und was nicht.</b> Die Stundenabfrage der
+        /// Quelltemperatur bleibt Zeichen für Zeichen die von B1/Q1:
+        /// <c>T_Quelle(h)</c> ist die Schichttemperatur des Speichers an der
+        /// Quell-Entnahmehöhe. Der Modus entscheidet allein über das BEZUGSPAAR, gegen
+        /// das daraus der Anteil wird:</para>
+        ///
+        /// <code>
+        ///   Anteil(h) = (T_Quelle(h) − RL) / (VL − RL),  auf 0…1 geklemmt
+        /// </code>
+        ///
+        /// <para><b>Modus „Berechnet"</b> (Vorbelegung, Migrationsschritt 55) — die
+        /// Bezugskette:
+        /// <list type="number">
+        ///   <item><description><c>VL_eff</c>/<c>RL_eff</c> des <b>Rang-1-Senkenspeichers</b>
+        ///     des Kessels. Das ist die Temperatur, auf die der Kessel in diesem Lauf
+        ///     tatsächlich anheben muss — dieselben wirksamen Werte, mit denen der
+        ///     Speicher selbst rechnet (samt der Rückfall-ΔT-Regel bei ungepflegtem
+        ///     Paar). Bei einem GESCHICHTETEN Senkenspeicher ist <c>VL_eff</c> weiter
+        ///     die Obergrenze: Keine Schicht trägt je mehr, und die Schichtung ändert
+        ///     nur, WO die Wärme liegt, nicht wie heiß sie werden kann.</description></item>
+        ///   <item><description>sonst die GEPFLEGTE Kette Anlage →
+        ///     <c>Tab_Heizkessel</c> (<see cref="KesselTemperaturpaarGepflegt"/>, die
+        ///     W3-Kette aus Paket B1). Wer sie gepflegt hat, soll sie auch im
+        ///     Berechnet-Modus wirksam sehen.</description></item>
+        ///   <item><description>sonst <see cref="KESSEL_VORLAUF_RUECKFALL"/> /
+        ///     <see cref="KESSEL_RUECKLAUF_RUECKFALL"/> (70/50 °C).</description></item>
+        /// </list>
+        /// In diesem Modus gibt es WEDER eine Pflegepflicht NOCH eine Warnung — so
+        /// verlangt es der Nutzerauftrag ausdrücklich („keinen Hinweis geben").</para>
+        ///
+        /// <para><b>Modus „Fest"</b> — das Paar kommt ausschließlich aus der gepflegten
+        /// Kette. Fehlt es, meldet der Warnkriterienkatalog
+        /// <c>Warnkriterien.KESSEL_TEMPERATURPAAR</c> (weich, an Karte und Laufstart),
+        /// die Engine wiederholt den Befund im Protokoll und rechnet auf dem
+        /// Berechnet-Weg weiter. <b>Sichtbar zurückfallen statt still wirkungslos
+        /// bleiben</b> — der Bestandszustand aus B1-O10 (Quellbezug konfiguriert, Anteil
+        /// dauerhaft 0, nur eine Meldung „nicht bestimmbar") ist damit abgelöst.</para>
+        /// </summary>
+        private void KesselKopplungSetzen(int idAnlage, int index, SimulationPufferspeicher quelle)
+        {
+            string modus = DbWerte.TemperaturModusOderDefault(
+                WaermequelleClass.WertLesenStill(
+                    idAnlage, SchemaKatalog.SPALTE_ANLAGE_WQ_TEMPERATURMODUS));
+
+            double vorlauf, ruecklauf;
+            string herkunft;
+
+            bool fest = string.Equals(modus, DbWerte.WQ_TEMPMODUS_FEST, StringComparison.Ordinal);
+
+            // Die gepflegte Kette wird NUR im Modus „Fest" gefragt. Im Modus „Berechnet"
+            // ist sie erst die ZWEITE Stufe der Bezugskette, und dort holt sie
+            // BerechnetesBezugspaar - eine Abfrage hier wäre dieselbe Rundreise ein
+            // zweites Mal.
+            vorlauf = 0;
+            ruecklauf = 0;
+            bool ausPflege = fest && KesselTemperaturpaarGepflegt(idAnlage, out vorlauf, out ruecklauf);
+
+            if (fest && ausPflege)
+            {
+                herkunft = "feste Vorgabe (Anlage bzw. Heizkessel-Katalog)";
+            }
+            else
+            {
+                // GENAU EINMAL gemeldet: Die WARNUNG kommt aus dem Warnkriterienkatalog
+                // (Warnkriterien.KESSEL_TEMPERATURPAAR, gemeldet am Laufstart über
+                // WarnkriterienMelden und zugleich sichtbar auf der Erzeugerkarte). Sie
+                // hier zu wiederholen hieße, denselben Wortlaut zweimal ins Protokoll zu
+                // schreiben - genau der Doppelbefund, den S2 für Kurzschluss und Ring
+                // ausdrücklich vermeidet. Was der Lauf beisteuert, ist die FOLGE, und die
+                // steht in der Bezugspaar-Zeile unten („das Paar fehlt, es gilt der
+                // Berechnet-Weg").
+                herkunft = BerechnetesBezugspaar(idAnlage, index, out vorlauf, out ruecklauf);
+            }
+
+            // PAKET Q1: die Quell-Entnahmehöhe der Anlage (Schritt 54, WQ_Anschlusshoehe;
+            // NULL = oben und damit B1-Verhalten).
+            double hoehe = SimulationWaermepumpe.AnschlusshoeheLesen(idAnlage);
+            simulation_spk.QuellkopplungSetzen(index, quelle, vorlauf, ruecklauf, hoehe);
+
+            // Anteil bei VOLLER Beladung - nur für den Protokolltext. Gerechnet wird er
+            // je Stunde neu (SimulationSPK.Quelltemperatur_Stunde).
+            double anteil = (quelle.VL_eff - ruecklauf) / (vorlauf - ruecklauf);
+            if (anteil < 0) anteil = 0;
+            if (anteil > 1) anteil = 1;
+
+            Protokoll.Hinweis(string.Format(
+                              MyResource.Resource.SIMENG_KESSEL_BOOSTER_KOPPLUNG,
+                              idAnlage, quelle.ID_Pufferspeicher, quelle.BezeichnerAnzeige(),
+                              quelle.RL_eff.ToString("0.#"), quelle.VL_eff.ToString("0.#"),
+                              AnschlusshoeheText(hoehe, quelle),
+                              ruecklauf.ToString("0.#"), vorlauf.ToString("0.#"),
+                              (anteil * 100).ToString("0.#")));
+
+            // Die HERKUNFT des Bezugspaars gehört ins Protokoll, sonst wäre das Ergebnis
+            // nicht zuordenbar: Dieselbe Anlage rechnet je nach Modus und Datenlage gegen
+            // drei verschiedene Paare. Inline deutsch wie der Nachbarbestand dieser
+            // Methode (Ticket B1-O9).
+            Protokoll.Hinweis("Kessel-Kaskade: Der Temperaturbezug der Anlage " + idAnlage +
+                              " steht auf " +
+                              (fest ? "'fest vorgegeben'" : "'berechnet'") +
+                              (fest && !ausPflege ? " - das Paar fehlt, es gilt der " +
+                                                    "Berechnet-Weg" : "") +
+                              ". Bezugspaar " + ruecklauf.ToString("0.#") + "/" +
+                              vorlauf.ToString("0.#") + " °C aus: " + herkunft +
+                              ". Die Quelltemperatur selbst folgt unverändert dem " +
+                              "Speicherzustand.");
+        }
+
+        /// <summary>
+        /// PAKET B2 — das Bezugspaar des Modus „Berechnet" nach der dreistufigen Kette
+        /// aus <see cref="KesselKopplungSetzen"/>. Liefert nie <c>false</c>: Die dritte
+        /// Stufe (70/50 °C) trägt immer.
+        /// </summary>
+        /// <returns>Klartext der benutzten Stufe — geht in die Protokollzeile.</returns>
+        private string BerechnetesBezugspaar(int idAnlage, int index,
+                                             out double vorlauf, out double ruecklauf)
+        {
+            // --- 1. der RANG-1-SENKENSPEICHER des Kessels ----------------------------
+            // Über die Senkenliste in Rangfolge - dieselbe Quelle, aus der auch die
+            // Ladeaufträge entstehen. Gefragt wird die SPEICHERINSTANZ dieses Laufs
+            // (Registry), nicht die Datenbankzeile: VL_eff/RL_eff tragen die
+            // Rückfall-ΔT-Regel aus Konzept 7.2 bereits in sich, die Rohspalten nicht.
+            Senkenliste senken = simulation_spk.KesselSenke(index);
+            if (senken != null)
+            {
+                foreach (Senkenzeile z in senken.Zeilen)
+                {
+                    if (z == null || !z.IstPuffersenke || z.IDPuffer <= 0) continue;
+
+                    SimulationPufferspeicher ziel;
+                    if (!speicherRegistry.TryGetValue(z.IDPuffer, out ziel) || ziel == null) continue;
+                    if (ziel.VL_eff <= ziel.RL_eff) continue;
+
+                    vorlauf = ziel.VL_eff;
+                    ruecklauf = ziel.RL_eff;
+                    return "Rang-" + z.Rang + "-Senkenspeicher " + ziel.ID_Pufferspeicher +
+                           " (" + ziel.BezeichnerAnzeige() + ")";
+                }
+            }
+
+            // --- 2. die GEPFLEGTE Kette (Anlage -> Tab_Heizkessel) -------------------
+            if (KesselTemperaturpaarGepflegt(idAnlage, out vorlauf, out ruecklauf))
+                return "gepflegtes Paar an Anlage bzw. Heizkessel";
+
+            // --- 3. der dokumentierte Rückfall ---------------------------------------
+            vorlauf = KESSEL_VORLAUF_RUECKFALL;
+            ruecklauf = KESSEL_RUECKLAUF_RUECKFALL;
+            return "Rückfall " + KESSEL_VORLAUF_RUECKFALL.ToString("0.#") + "/" +
+                   KESSEL_RUECKLAUF_RUECKFALL.ToString("0.#") + " °C";
+        }
+
+        /// <summary>
+        /// PAKET B2 — das GEPFLEGTE Temperaturpaar eines Kessels: erst die ANLAGE
+        /// (<c>Tab_Energieanlagen.Vorlauf</c>/<c>[Rücklauf]</c> — die Spalte trägt dort
+        /// den Umlaut, siehe <c>ProjektPuffer.SQL_SYSTEM_RUECKLAUF</c>), dann der
+        /// Heizkessel-Katalog über <c>ID_Kessel</c>.
+        ///
+        /// <para>Das ist genau die W3-Kette aus Paket B1
+        /// (<c>Warnkriterien.Projektbild.AnlagenVorlauf</c>) und genau die Kette, in die
+        /// der Kessel-Quellendialog im Modus „Fest" schreibt. Der SENKENPUFFER gehört
+        /// bewusst NICHT dazu: Er ist keine Anwendervorgabe, sondern ein abgeleiteter
+        /// Wert — im Modus „Berechnet" ist er die erste Stufe, im Modus „Fest" wäre er
+        /// eine feste Vorgabe, die niemand gemacht hat.</para>
+        ///
+        /// <para>Still gelesen (Konzept 13.4): Auf einem alten Schema kann eine Spalte
+        /// fehlen — dann greift die nächste Stufe, statt dass ein Dialog den Lauf
+        /// anhält. Nur ein VOLLSTÄNDIGES Paar zählt
+        /// (<c>ProjektPuffer.IstTemperaturpaar</c>).</para>
+        /// </summary>
+        private static bool KesselTemperaturpaarGepflegt(int idAnlage,
+                                                         out double vorlauf, out double ruecklauf)
+        {
+            vorlauf = 0;
+            ruecklauf = 0;
+
+            // 1. Die ANLAGE selbst.
+            DataTable dtA = StilleDb.Tabelle(
+                "SELECT Vorlauf, [Rücklauf] AS Ruecklauf FROM Tab_Energieanlagen WHERE ID = ?",
+                StilleDb.Par("@id", OleDbType.Integer, idAnlage));
+
+            if (dtA != null && dtA.Rows.Count > 0)
+            {
+                int v = StilleDb.Zahl(StilleDb.Feld(dtA.Rows[0], "Vorlauf"));
+                int r = StilleDb.Zahl(StilleDb.Feld(dtA.Rows[0], "Ruecklauf"));
+                if (ProjektPuffer.IstTemperaturpaar(v, r)) { vorlauf = v; ruecklauf = r; return true; }
+            }
+
+            // 2. Der Heizkessel-Katalog über Tab_Energieanlagen.ID_Kessel (NACHARBEIT
+            //    I-K3: über die ID, nicht über den Bezeichner).
+            int idKessel = StilleDb.Zahl(StilleDb.Scalar(
+                "SELECT ID_Kessel FROM Tab_Energieanlagen WHERE ID = ?",
+                StilleDb.Par("@id", OleDbType.Integer, idAnlage)));
+
+            DataTable dtK = (idKessel > 0)
+                ? StilleDb.Tabelle("SELECT Vorlauf, Ruecklauf FROM Tab_Heizkessel WHERE ID = ?",
+                                   StilleDb.Par("@id", OleDbType.Integer, idKessel))
+                : null;
+
+            if (dtK != null && dtK.Rows.Count > 0)
+            {
+                int v = StilleDb.Zahl(StilleDb.Feld(dtK.Rows[0], "Vorlauf"));
+                int r = StilleDb.Zahl(StilleDb.Feld(dtK.Rows[0], "Ruecklauf"));
+                if (ProjektPuffer.IstTemperaturpaar(v, r)) { vorlauf = v; ruecklauf = r; return true; }
+            }
+
+            return false;
+        }
+
 
         /// <summary>
         /// Temperaturpaar eines Kessels nach der Vorrangkette aus
