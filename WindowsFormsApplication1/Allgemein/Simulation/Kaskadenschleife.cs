@@ -360,6 +360,35 @@ namespace WindowsFormsApplication1
         /// </summary>
         private readonly double[][] _entladungJeArtStunde = ZeilenBauen();
 
+        /// <summary>
+        /// PAKET E2 (Nachtrag zu Konzept 4.4) — dieselbe Zurechnung als GANGLINIE:
+        /// <c>_entladungKanalStuendlich[art]</c> trägt je Kanal 8760 Stundenwerte [kWh].
+        ///
+        /// <para>Sie entsteht an der EINEN Buchungsstelle in
+        /// <see cref="Anteil_Entladen(SimulationPufferspeicher, double, int)"/>, aus
+        /// derselben Größe <c>teil</c>, mit der auch <see cref="_entladungJeArtKanal"/>
+        /// fortgeschrieben wird. Damit ist die Ganglinie die Auflösung der Jahressumme
+        /// und keine zweite Rechnung.</para>
+        ///
+        /// <para>Sie geht am Laufende als <c>Modul.Speicherentladung_KanalStuendlich</c> an die
+        /// Erzeugermodule — wie die Jahreszeile über
+        /// <see cref="KanalzeileUebergeben"/>, und wie sie KOPIERT (Regel B0-2).</para>
+        /// </summary>
+        private readonly Kanalganglinie[] _entladungKanalStuendlich = GanglinienBauen();
+
+        /// <summary>
+        /// PAKET E2 — die Stunde, in der die Stundenschleife gerade steht; gesetzt am
+        /// Anfang jedes Durchlaufs von <see cref="Rechnen"/>.
+        ///
+        /// <para>Sie ist nötig, weil <see cref="Anteil_Entladen(SimulationPufferspeicher, double, int)"/>
+        /// über <c>QuellentnahmenVerbuchen</c> auch von Stellen erreicht wird, die die
+        /// Stunde nicht als Parameter führen. Alle diese Stellen liegen INNERHALB der
+        /// Stundenschleife — dieselbe Voraussetzung, unter der
+        /// <see cref="_entladungJeArtStunde"/> seit Befund N4 richtig rechnet (es wird zu
+        /// Beginn jeder Stunde genullt und am Stundenende gelesen).</para>
+        /// </summary>
+        private int _stundeAktuell = -1;
+
         private static double[][] ZeilenBauen()
         {
             double[][] z = new double[ART_ANZAHL][];
@@ -370,6 +399,14 @@ namespace WindowsFormsApplication1
         private static void ZeilenNullen(double[][] z)
         {
             for (int a = 0; a < ART_ANZAHL; a++) Array.Clear(z[a], 0, z[a].Length);
+        }
+
+        /// <summary>PAKET E2: eine <see cref="Kanalganglinie"/> je Erzeugerart.</summary>
+        private static Kanalganglinie[] GanglinienBauen()
+        {
+            Kanalganglinie[] g = new Kanalganglinie[ART_ANZAHL];
+            for (int a = 0; a < ART_ANZAHL; a++) g[a] = new Kanalganglinie();
+            return g;
         }
 
         /// <summary>Erzeugerart (<c>ProjektPuffer.TYP_*</c>) als Index; −1 = nicht geführt.</summary>
@@ -436,6 +473,11 @@ namespace WindowsFormsApplication1
                 _entladungJeArt[i] += teil;
                 _entladungJeArtKanal[i][kanal] += teil;
                 _entladungJeArtStunde[i][kanal] += teil;   // N4: Stundenwert für die Ganglinie
+
+                // PAKET E2: dieselbe Größe „teil", zusätzlich in die Kanalganglinie der
+                // Erzeugerart. Eine Zeile neben der Jahressumme, im selben Durchlauf —
+                // kein zweiter Rechenweg (Nachtrag zu Konzept 4.4).
+                _entladungKanalStuendlich[i].Buchen(kanal, _stundeAktuell, teil);
             }
         }
 
@@ -705,6 +747,10 @@ namespace WindowsFormsApplication1
             Array.Clear(_entladungJeArt, 0, _entladungJeArt.Length);
             ZeilenNullen(_entladungJeArtKanal);
 
+            // PAKET E2: die Ganglinienfassung derselben Größe mit auf den Laufanfang.
+            for (int a = 0; a < ART_ANZAHL; a++) _entladungKanalStuendlich[a].Nullen();
+            _stundeAktuell = -1;
+
             if (MitWP)
             {
                 if (!WP.Zweikanalig_Start(kanaele, Kontext)) return false;
@@ -756,6 +802,10 @@ namespace WindowsFormsApplication1
 
                 // N4: Zurechnung der Entladung auf den Anfang DIESER Stunde.
                 ZeilenNullen(_entladungJeArtStunde);
+
+                // PAKET E2: dieselbe Stunde für die Kanalganglinie der Zurechnung
+                // (siehe _stundeAktuell).
+                _stundeAktuell = stunde;
 
                 // N3: Reservierungen der Vorstunde verfallen. Sie gelten nur innerhalb
                 // einer Stunde - zwischen Phase B (Motorzuschaltung) und Phase C/D
@@ -949,25 +999,31 @@ namespace WindowsFormsApplication1
             // bleibt die führende Zahl für Runner und Ergebnispersistenz und wird
             // ausdrücklich NICHT aus der Zeile aufsummiert — er ist getrennt akkumuliert
             // und soll sich durch den Umbau nicht um die Rundung einer Summe verschieben.
+            //
+            // PAKET E2: dazu die GANGLINIE derselben Zeile (Nachtrag zu Konzept 4.4).
             if (MitWP)
             {
                 WP.Speicherentladung_Anteil = _entladungJeArt[ART_WP];
                 KanalzeileUebergeben(ART_WP, WP.Speicherentladung_Kanal);
+                WP.Speicherentladung_KanalStuendlich.Uebernehmen(_entladungKanalStuendlich[ART_WP]);
             }
             if (MitSolar)
             {
                 Solar.Speicherentladung_Anteil = _entladungJeArt[ART_SOLAR];
                 KanalzeileUebergeben(ART_SOLAR, Solar.Speicherentladung_Kanal);
+                Solar.Speicherentladung_KanalStuendlich.Uebernehmen(_entladungKanalStuendlich[ART_SOLAR]);
             }
             if (MitKessel)
             {
                 Kessel.Speicherentladung_Anteil = _entladungJeArt[ART_KESSEL];
                 KanalzeileUebergeben(ART_KESSEL, Kessel.Speicherentladung_Kanal);
+                Kessel.Speicherentladung_KanalStuendlich.Uebernehmen(_entladungKanalStuendlich[ART_KESSEL]);
             }
             if (MitBHKW)
             {
                 BHKW.Speicherentladung_Anteil = _entladungJeArt[ART_BHKW];
                 KanalzeileUebergeben(ART_BHKW, BHKW.Speicherentladung_Kanal);
+                BHKW.Speicherentladung_KanalStuendlich.Uebernehmen(_entladungKanalStuendlich[ART_BHKW]);
             }
 
             return true;
@@ -1993,11 +2049,23 @@ namespace WindowsFormsApplication1
         public static double Abziehen(string bedarfsart, double menge, double[] rest,
                                       double[] jeKanal)
         {
+            return Abziehen(bedarfsart, menge, rest, jeKanal, null, -1);
+        }
+
+        /// <summary>
+        /// PAKET E2 — dieselbe Buchung, zusätzlich in die KANALGANGLINIE der Stunde
+        /// (Nachtrag zu Konzept 4.4). <paramref name="ganglinie"/> = <c>null</c> bzw.
+        /// <paramref name="stunde"/> = −1 schaltet den Zusatz ab; die Rechnung ist dann
+        /// Anweisung für Anweisung die bisherige.
+        /// </summary>
+        public static double Abziehen(string bedarfsart, double menge, double[] rest,
+                                      double[] jeKanal, Kanalganglinie ganglinie, int stunde)
+        {
             if (rest == null || menge <= 0) return 0;
 
             double[] vorher = Zwischenablage(rest);
             Kaskadenschleife.SenkeAbziehen(bedarfsart, menge, rest);
-            return Aufschluesseln(vorher, rest, jeKanal);
+            return Aufschluesseln(vorher, rest, jeKanal, ganglinie, stunde);
         }
 
         /// <summary>
@@ -2013,8 +2081,19 @@ namespace WindowsFormsApplication1
         public static double Abziehen(Senkenliste liste, double menge, double[] rest,
                                       double[] jeKanal)
         {
+            return Abziehen(liste, menge, rest, jeKanal, null, -1);
+        }
+
+        /// <summary>
+        /// PAKET E2 — Senkenlisten-Fassung mit KANALGANGLINIE (siehe die Fassung mit
+        /// Bedarfsart darüber).
+        /// </summary>
+        public static double Abziehen(Senkenliste liste, double menge, double[] rest,
+                                      double[] jeKanal, Kanalganglinie ganglinie, int stunde)
+        {
             if (rest == null || menge <= 0) return 0;
-            if (liste == null) return Abziehen(WaermequelleClass.SENKE_BEIDES, menge, rest, jeKanal);
+            if (liste == null)
+                return Abziehen(WaermequelleClass.SENKE_BEIDES, menge, rest, jeKanal, ganglinie, stunde);
 
             double[] vorher = Zwischenablage(rest);
             double offen = menge;
@@ -2028,7 +2107,7 @@ namespace WindowsFormsApplication1
                                                         offen, rest, null);
             }
 
-            return Aufschluesseln(vorher, rest, jeKanal);
+            return Aufschluesseln(vorher, rest, jeKanal, ganglinie, stunde);
         }
 
         /// <summary>
@@ -2045,8 +2124,17 @@ namespace WindowsFormsApplication1
             return vorher;
         }
 
-        /// <summary>Aufschlüsselung je Kanal aus der Differenz vorher/nachher (Konzept 4.4).</summary>
-        private static double Aufschluesseln(double[] vorher, double[] rest, double[] jeKanal)
+        /// <summary>
+        /// Aufschlüsselung je Kanal aus der Differenz vorher/nachher (Konzept 4.4).
+        ///
+        /// <para>PAKET E2: <paramref name="ganglinie"/> bekommt DIESELBE Größe
+        /// <c>abgezogen</c> aus DEMSELBEN Schleifendurchlauf, nur zusätzlich mit der
+        /// Stunde indiziert. Es gibt damit keinen zweiten Rechenweg und keine zweite
+        /// Verteilregel — die Stundenauflösung kann von der Jahressumme nicht
+        /// abweichen.</para>
+        /// </summary>
+        private static double Aufschluesseln(double[] vorher, double[] rest, double[] jeKanal,
+                                             Kanalganglinie ganglinie, int stunde)
         {
             double summe = 0;
             for (int k = 0; k < Kanal.ANZAHL; k++)
@@ -2056,6 +2144,7 @@ namespace WindowsFormsApplication1
 
                 summe += abgezogen;
                 if (jeKanal != null) jeKanal[k] += abgezogen;
+                if (ganglinie != null) ganglinie.Buchen(k, stunde, abgezogen);
             }
             return summe;
         }

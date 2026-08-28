@@ -404,6 +404,9 @@ namespace WindowsFormsApplication1
             // Bedarfsseite: der Wärmebedarf je Bedarfsart (Paket E1, Konzept 4.4).
             InitBedarfKanalzeilen();
 
+            // Bedarfsseite: die GANGLINIEN derselben drei Kanäle (Paket E2).
+            InitBedarfKanalauswahl();
+
             // HIER DIE KORREKTUR: ReihenfolgeTabPages() komplett weglassen
             // und stattdessen direkt unsere neue Update-Logik starten!
             UpdateTabPages();
@@ -450,7 +453,14 @@ namespace WindowsFormsApplication1
             // Feste Position unterhalb des Wärmelast-Blocks - die Controls der TabPage
             // werden zur Laufzeit in ein schmaleres Panel verschoben, daher keine
             // Rechts-Verankerung verwenden (sonst liegt der Button außerhalb des Sichtbereichs).
-            btnExportBedarf.Location = new Point(22, 565);
+            //
+            // PAKET E2, Beifang: Der feste Punkt (22, 565) lag seit Paket E1 ÜBER dem
+            // Kanalblock „davon Heizung/Brauchwasser/Prozesswärme" (Überschrift ab
+            // y = 562, erste Zeile ab 584) und verdeckte ihn — der Button steht wegen
+            // BringToFront() obenauf. Er rückt jetzt unter den Block, solange es ihn
+            // gibt; ohne ihn bleibt es beim Entwurfspunkt.
+            int untenBlock = BedarfKanalblockUnterkante();
+            btnExportBedarf.Location = new Point(22, untenBlock > 0 ? untenBlock + 12 : 565);
             btnExportBedarf.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             btnExportBedarf.BackColor = SystemColors.Control;
             btnExportBedarf.ForeColor = Color.Black;
@@ -1430,6 +1440,245 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>Unterkante des E1-Kanalblocks; 0, solange er nicht angelegt ist.</summary>
+        private int BedarfKanalblockUnterkante()
+        {
+            if (label_BedarfKanalEinheit == null) return 0;
+            int unten = 0;
+            for (int k = 0; k < label_BedarfKanalEinheit.Length; k++)
+                if (tb_BedarfKanal[k] != null && tb_BedarfKanal[k].Bottom > unten)
+                    unten = tb_BedarfKanal[k].Bottom;
+            return unten;
+        }
+
+        // ====================================================================
+        //  PAKET E2 (Nachtrag zu Konzept 4.4) — Kanal-Ganglinien der Bedarfsseite
+        // ====================================================================
+        //
+        // Das Diagramm „Wärmelast Jahresganglinie" zeigte GENAU EINE Kurve: den
+        // normierten Gesamtbedarf (Dauerlinie in % der Höchstlast). Die drei
+        // Bedarfskanäle standen seit Paket E1 als Jahressummen darunter — ihre
+        // GANGLINIEN waren nicht sichtbar. E2 legt sie als drei zusätzliche Serien auf
+        // dasselbe Diagramm; die Serie „Gesamt" ist unverändert die alte Series[0], mit
+        // demselben Vektor, derselben Normierung und denselben X-Werten. Bei
+        // Vorauswahl „nur Gesamt" ist das Bild deshalb Datenpunkt für Datenpunkt das
+        // bisherige.
+        //
+        // NORMIERUNG: alle vier Serien auf DIESELBE Bezugsgröße
+        // (SimulationWaermebedarf.Waermebedarf_Max, die Höchstlast des GESAMTbedarfs).
+        // Nur so sind die Kurven im selben Bild vergleichbar — je Kanal auf sein
+        // eigenes Maximum normiert wären drei Kurven, die alle bei 100 % beginnen und
+        // nichts mehr über die Größenverhältnisse sagen. Die %-Achse (Maximum 100,2)
+        // bleibt damit unverändert gültig.
+        //
+        // SORTIERT: dieselbe Kette wie beim Gesamtbedarf (Normieren → Heapsort →
+        // Reverse, BhkwPlan) — jede Serie für sich absteigend. Eine Kanaldauerlinie ist
+        // damit KEINE Zerlegung der Gesamtdauerlinie: Die Stunde i der einen Kurve hat
+        // mit der Stunde i der anderen nichts zu tun. Dieselbe Regel und dieselbe
+        // Begründung wie im Ergebnis-Diagramm (NavigatorWaerme.SerienAufbauen).
+        //
+        // FARBEN: Heizung Rot und Brauchwasser Himmelblau sind die Farben, mit denen
+        // die Wärmepumpen-Seite denselben Bedarf seit jeher aufteilt
+        // (CHART_LEGENDE_HEIZWAERMEBEDARF / _WARMWASSERBEDARF, chart3). Prozesswärme
+        // bekommt das Violett #7E57A6 der Prozess-Kante aus der Schema-Ansicht
+        // (Paket E1, Befund S2-O7) — der Katalog kennt für den Prozesskanal genau
+        // diese eine Farbe.
+
+        /// <summary>Technische Serienschlüssel der drei Bedarfskanäle (sprachneutral, ASCII).</summary>
+        private static readonly string[] S_BEDARF_KANAL =
+        { "BEDARF_HEIZUNG", "BEDARF_BRAUCHWASSER", "BEDARF_PROZESS" };
+
+        /// <summary>Kanalfarben der Bedarfsseite (Begründung im Blockkommentar).</summary>
+        private static readonly Color[] FARBE_BEDARF_KANAL =
+        { Color.Red, Color.DeepSkyBlue, Color.FromArgb(126, 87, 166) };
+
+        /// <summary>Höhe der Auswahlzeile unter dem Diagramm.</summary>
+        private const int BEDARF_KANALZEILE_HOEHE = 26;
+
+        private CheckBox chk_BedarfGesamt;
+        private CheckBox[] chk_BedarfKanal;
+        private bool _bedarfKanalImAufbau;
+
+        /// <summary>
+        /// Trägt DER LAUF Bedarf auf diesem Kanal? Die Präsenz wird als Feld mitgeführt
+        /// und NICHT aus <c>Control.Visible</c> zurückgelesen — dessen Getter liefert
+        /// false, solange die Registerkarte nicht angezeigt wird. Genau das ist beim
+        /// Befüllen der Fall: Der automatische Lauf läuft aus <c>Form…_Load</c>, während
+        /// die Seite „Übersicht" vorne steht. Über <c>Visible</c> wären die Kanalserien
+        /// dann stumm abgeschaltet worden. (Dieselbe Falle und dieselbe Lösung wie in
+        /// <c>NavigatorWaerme.CheckboxenAnordnen</c>.)
+        /// </summary>
+        private readonly bool[] _bedarfKanalDa = new bool[Kanal.ANZAHL];
+
+        /// <summary>
+        /// Legt die Serienauswahl „Gesamt · Heizung · Brauchwasser · Prozesswärme" unter
+        /// dem Diagramm an und hängt die drei Kanalserien in <c>chart1</c> ein.
+        ///
+        /// <b>Warum das Diagramm 26 px kürzer wird.</b> Auf der Bedarfsseite ist der
+        /// Streifen unter <c>chart1</c> belegt (<c>btn_Details</c> und die
+        /// Kennzahlspalte beginnen bei y = 445, das Diagramm endet bei 440). Die
+        /// Alternative wäre gewesen, die ganze linke Spalte samt E1-Kanalblock
+        /// nachrücken zu lassen — bei 721 px Seitenhöhe und einem Block, der bis
+        /// y ≈ 662 reicht, ein Umbau mit Kollisionsrisiko. Das Diagramm gibt statt
+        /// dessen 26 px ab; alles andere bleibt, wo es der Entwurf hat.
+        ///
+        /// <b>Anker bewusst Standard (Top|Left)</b> — dieselbe Falle wie bei
+        /// <see cref="InitBedarfKanalzeilen"/> (TabPage-Vierseitenanker).
+        /// </summary>
+        private void InitBedarfKanalauswahl()
+        {
+            if (tabPage_Bedarf == null || chart1 == null || checkBox_Sortiert == null) return;
+
+            chart1.Height = Math.Max(120, chart1.Height - BEDARF_KANALZEILE_HOEHE);
+
+            _bedarfKanalImAufbau = true;
+
+            int oben = chart1.Bottom + 4;
+            int links = chart1.Left + 4;
+
+            chk_BedarfGesamt = BedarfKanalSchalter("chk_BedarfGesamt",
+                                                   MyResource.Resource.CHART_LEGENDE_GESAMT,
+                                                   Color.Black, links, oben);
+            chk_BedarfGesamt.Checked = true;
+            links = chk_BedarfGesamt.Right + 14;
+
+            string[] namen =
+            {
+                MyResource.Resource.KANAL_HEIZUNG_ANZEIGE,
+                MyResource.Resource.KANAL_BRAUCHWASSER_ANZEIGE,
+                MyResource.Resource.KANAL_PROZESS_ANZEIGE
+            };
+
+            chk_BedarfKanal = new CheckBox[Kanal.ANZAHL];
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+            {
+                chk_BedarfKanal[k] = BedarfKanalSchalter("chk_BedarfKanal" + k, namen[k],
+                                                         FARBE_BEDARF_KANAL[k], links, oben);
+                links = chk_BedarfKanal[k].Right + 14;
+
+                // Die Serie entsteht EINMAL und wird nur ein- und ausgeschaltet — anders
+                // als Series[0], deren Punkte die Achsenumschaltung neu setzt. Ihr
+                // technischer Name ist der Zugriffsschlüssel, der Anzeigetext steht am
+                // Schalter darunter (chart1 führt keine Legende).
+                Series s = new Series(S_BEDARF_KANAL[k]);
+                s.ChartArea = chart1.ChartAreas[0].Name;
+                s.ChartType = chart1.Series[0].ChartType;
+                s.Color = FARBE_BEDARF_KANAL[k];
+                s.BorderWidth = 2;
+                s.Enabled = false;
+                chart1.Series.Add(s);
+            }
+
+            _bedarfKanalImAufbau = false;
+        }
+
+        /// <summary>Ein Schalter der Auswahlzeile — Muster der Checkbox-Leiste des Ergebnis-Charts.</summary>
+        private CheckBox BedarfKanalSchalter(string name, string text, Color farbe, int x, int y)
+        {
+            CheckBox c = new CheckBox();
+            c.Name = name;
+            c.Text = text;
+            c.AutoSize = true;
+            c.BackColor = Color.Transparent;
+            c.ForeColor = farbe;
+            c.Font = checkBox_Sortiert.Font;
+            c.Location = new Point(x, y);
+            c.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            c.Visible = false;
+            c.CheckedChanged += BedarfKanalSchalter_CheckedChanged;
+            tabPage_Bedarf.Controls.Add(c);
+            c.BringToFront();
+            return c;
+        }
+
+        private void BedarfKanalSchalter_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_bedarfKanalImAufbau) return;
+            BedarfSerienSchalten();
+        }
+
+        /// <summary>
+        /// Füllt die drei Kanalserien in der aktuellen Darstellungsform und blendet die
+        /// Auswahlzeile ein. Wird nach jedem Lauf und bei jedem Umschalten „Sortiert"
+        /// gerufen — genau dort, wo auch <c>Series[0]</c> neu gesetzt wird.
+        ///
+        /// <b>Präsenzregel</b> (Muster <see cref="ErgebnisPraesenz"/>): Ein Kanal ohne
+        /// Bedarf bekommt keinen Schalter. In einem Projekt ohne Prozesswärme — dem
+        /// Normalfall — bleibt die Zeile damit bei „Gesamt · Heizung · Brauchwasser".
+        /// </summary>
+        private void BedarfKanalserienFuellen()
+        {
+            if (chart1 == null || chk_BedarfKanal == null || simulation_Waermebedarf == null) return;
+
+            bool sortiert = checkBox_Sortiert != null && checkBox_Sortiert.Checked;
+            float max = simulation_Waermebedarf.Waermebedarf_Max;
+
+            _bedarfKanalImAufbau = true;
+            if (chk_BedarfGesamt != null) chk_BedarfGesamt.Visible = true;
+
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+            {
+                // Die KANALVEKTOREN DES LAUFS (netzverlust-inklusive) — dieselbe Quelle,
+                // aus der SimulationRunner.BedarfJeKanal die Jahressummen dieser Seite
+                // bildet. Zahl und Kurve können damit nicht auseinanderlaufen.
+                float[] werte = SimulationControl.BedarfKanalStuendlich(simulation_Waermebedarf, k);
+
+                double summe = 0;
+                for (int h = 0; h < werte.Length; h++) summe += werte[h];
+
+                bool vorhanden = summe > 0;
+                _bedarfKanalDa[k] = vorhanden;
+                if (!vorhanden) chk_BedarfKanal[k].Checked = false;
+                chk_BedarfKanal[k].Visible = vorhanden;
+
+                Series s = chart1.Series.IndexOf(S_BEDARF_KANAL[k]) >= 0
+                           ? chart1.Series[S_BEDARF_KANAL[k]] : null;
+                if (s == null) continue;
+
+                s.Points.Clear();
+                if (!vorhanden || max <= 0) continue;
+
+                // Dieselbe Kette wie beim Gesamtbedarf (SimulationWaermebedarf:442-463):
+                // normieren auf die Höchstlast, für die Dauerlinie zusätzlich absteigend
+                // sortieren. Die Vektoren kommen aus KanaeleDrei() und sind bereits
+                // Kopien — in-place normieren ist deshalb erlaubt (B0-2).
+                WPPlan.Core.BhkwPlan.Normieren(werte, max);
+
+                if (sortiert)
+                {
+                    float[] dauer = new float[Kanalsatz.STUNDEN_JAHR];
+                    WPPlan.Core.BhkwPlan.Heapsort(werte, dauer);
+                    Array.Reverse(dauer);
+                    werte = dauer;
+                }
+
+                // X-Werte exakt wie bei Series[0]: 0…4 über die Jahresstundenachse
+                // (ConfigureXAxisWithHours) bzw. 0…12 über die Monatsachse.
+                double spanne = sortiert ? 4.0 : 12.0;
+                for (int j = 0; j < Kanalsatz.STUNDEN_JAHR; j++)
+                    s.Points.AddXY((double)j * spanne / Kanalsatz.STUNDEN_JAHR, werte[j]);
+            }
+
+            _bedarfKanalImAufbau = false;
+            BedarfSerienSchalten();
+        }
+
+        /// <summary>Schaltet die vier Serien gemäß der Auswahlzeile.</summary>
+        private void BedarfSerienSchalten()
+        {
+            if (chart1 == null || chk_BedarfKanal == null) return;
+
+            if (chk_BedarfGesamt != null && chart1.Series.Count > 0)
+                chart1.Series[0].Enabled = chk_BedarfGesamt.Checked;
+
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+            {
+                int i = chart1.Series.IndexOf(S_BEDARF_KANAL[k]);
+                if (i < 0) continue;
+                chart1.Series[i].Enabled = _bedarfKanalDa[k] && chk_BedarfKanal[k].Checked;
+            }
+        }
+
         /// <summary>
         /// ETAPPE E2 (Leitentscheidung L6) — legt die Kennzahlzeile
         /// „Vollbenutzungsstunden elektrisch" unmittelbar unter die beiden vorhandenen
@@ -2210,6 +2459,33 @@ namespace WindowsFormsApplication1
 
             List<CsvSpalte> spalten = new List<CsvSpalte>();
             spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_WAERMELAST, simulation_Waermebedarf.Waermebedarf));
+
+            // PAKET E2: je ANGEHAKTEM Kanal eine Spalte — dieselbe Auswahlregel, die der
+            // CSV-Export des Ergebnis-Diagramms anwendet („nur die angezeigten Serien",
+            // NavigatorWaerme.btn_CsvExport_Click).
+            //
+            // Ausgegeben wird der Kanalvektor in kWh, NICHT die normierte Prozentkurve
+            // des Diagramms: Die Bestandsspalte „Wärmelast" führt ebenfalls den
+            // kWh-Vektor und nicht die gezeichnete Dauerlinie. Eine Prozentspalte neben
+            // einer kWh-Spalte wäre in derselben Datei zwei Maßstäbe.
+            if (chk_BedarfKanal != null)
+            {
+                string[] kanalnamen =
+                {
+                    MyResource.Resource.KANAL_HEIZUNG_ANZEIGE,
+                    MyResource.Resource.KANAL_BRAUCHWASSER_ANZEIGE,
+                    MyResource.Resource.KANAL_PROZESS_ANZEIGE
+                };
+                for (int k = 0; k < Kanal.ANZAHL; k++)
+                {
+                    if (chk_BedarfKanal[k] == null) continue;
+                    if (!_bedarfKanalDa[k] || !chk_BedarfKanal[k].Checked) continue;
+                    spalten.Add(new CsvSpalte(
+                        MyResource.Resource.CHART_CSV_WAERMELAST + " " + kanalnamen[k],
+                        SimulationControl.BedarfKanalStuendlich(simulation_Waermebedarf, k)));
+                }
+            }
+
             // Strombedarf liegt viertelstündlich vor und wird als Stundenmittel exportiert
             spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_STROMBEDARF, simulation_Strombedarf.Strombedarf_viertelStundenwerte));
 
@@ -3449,6 +3725,9 @@ namespace WindowsFormsApplication1
 
             chart1.ChartAreas[0].AxisY.Maximum = 100.2;
 
+            // PAKET E2: die drei Kanalserien in derselben Darstellungsform nachziehen.
+            BedarfKanalserienFuellen();
+
             // chart Strombedarf füllen
             textBox_MaxStrombedarf.Text = simulation_Strombedarf.Strombedarf_Max.ToString("F2");
             textBox_Gesamt_Strombedarf.Text = simulation_Strombedarf.Strombedarf_gesamt.ToString("F2");
@@ -3493,6 +3772,11 @@ namespace WindowsFormsApplication1
                     chart1.Series[0].Points.AddXY(d, simulation_Waermebedarf.Dauerlinie_nicht_sortiert[j]);
                 }
             }
+
+            // PAKET E2: „Sortiert" wirkt JE SERIE — die Kanalserien werden in derselben
+            // Darstellungsform neu gefüllt (jede für sich absteigend, siehe
+            // BedarfKanalserienFuellen).
+            BedarfKanalserienFuellen();
         }
 
         private void checkBox_StromSortiert_CheckedChanged(object sender, EventArgs e)

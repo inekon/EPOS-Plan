@@ -2344,6 +2344,189 @@ namespace WindowsFormsApplication1
         }
 
         // ===================================================================
+        // PAKET E2 (Nachtrag zu Konzept 4.4) — KANALGANGLINIEN: Zugriffsweg und Probe
+        // ===================================================================
+
+        /// <summary>
+        /// DECKUNG eines Erzeugers je Bedarfskanal und Stunde [kWh] (Paket E2) — die
+        /// Stundenfassung des EIGENANTEILS, mit dem <c>SimulationRunner.Summiere</c> die
+        /// Jahresdeckung je Kanal bildet: Direktdeckung plus die zugerechnete
+        /// Speicherentladung.
+        ///
+        /// <para><b>Der Heizstab steht bewusst NICHT darin.</b> Er hat in der
+        /// Ergebnisanzeige wie in der Kanalbuchführung seine eigene Zeile
+        /// (<see cref="HeizstabKanalStuendlich"/>); nur der Runner rechnet ihn für die
+        /// Deckungszahl der Wärmepumpe hinzu.</para>
+        ///
+        /// <para>Ein Gewerk, das im Lauf nicht gerechnet hat, liefert einen Nullvektor —
+        /// nie <c>null</c> (dieselbe Zusage wie bei allen Ganglinien der Engine).</para>
+        /// </summary>
+        /// <param name="art">Erzeugerart, <c>ProjektPuffer.TYP_*</c>.</param>
+        /// <param name="kanal">Bedarfskanal, <see cref="Kanal"/>.</param>
+        public float[] DeckungKanalStuendlich(int art, int kanal)
+        {
+            if (art == ProjektPuffer.TYP_WP && simulation_wp != null)
+                return Kanalganglinie.Deckung(kanal,
+                    simulation_wp.Direktdeckung_KanalStuendlich,
+                    simulation_wp.Speicherentladung_KanalStuendlich);
+
+            if (art == ProjektPuffer.TYP_KESSEL && simulation_spk != null)
+                return Kanalganglinie.Deckung(kanal,
+                    simulation_spk.Direktdeckung_KanalStuendlich,
+                    simulation_spk.Speicherentladung_KanalStuendlich);
+
+            if (art == ProjektPuffer.TYP_SOLARTHERMIE && simulation_solarthermie != null)
+                return Kanalganglinie.Deckung(kanal,
+                    simulation_solarthermie.Direktdeckung_KanalStuendlich,
+                    simulation_solarthermie.Speicherentladung_KanalStuendlich);
+
+            if (art == ProjektPuffer.TYP_BHKW && simulation_bhkw != null)
+                return Kanalganglinie.Deckung(kanal,
+                    simulation_bhkw.Direktdeckung_KanalStuendlich,
+                    simulation_bhkw.Speicherentladung_KanalStuendlich);
+
+            return Kanalganglinie.Deckung(kanal);   // Nullvektor
+        }
+
+        /// <summary>
+        /// HEIZSTABWÄRME je Bedarfskanal und Stunde [kWh] (Paket E2) — eigene Serie, wie
+        /// in <c>NavigatorUebersicht</c> und im Ergebnis-Diagramm.
+        /// </summary>
+        public float[] HeizstabKanalStuendlich(int kanal)
+        {
+            return (simulation_wp != null)
+                ? Kanalganglinie.Deckung(kanal, simulation_wp.Heizstab_KanalStuendlich)
+                : Kanalganglinie.Deckung(kanal);
+        }
+
+        /// <summary>
+        /// BEDARF je Kanal und Stunde [kWh] (Paket E2) — die Kanalvektoren des Laufs,
+        /// netzverlust-inklusive; dieselben, aus deren Jahressummen
+        /// <c>SimulationRunner.BedarfJeKanal</c> die drei Kennzahlen der Bedarfsseite
+        /// bildet (Konsistenz Zahl ↔ Kurve).
+        ///
+        /// <para>Geliefert wird die KOPIE aus <c>KanaeleDrei()</c> — die Module
+        /// überschreiben ihre Eingangsvektoren in-place (Regel B0-2).</para>
+        /// </summary>
+        public static float[] BedarfKanalStuendlich(SimulationWaermebedarf bedarf, int kanal)
+        {
+            if (bedarf == null || kanal < 0 || kanal >= Kanal.ANZAHL)
+                return new float[Kanalsatz.STUNDEN_JAHR];
+            return bedarf.KanaeleDrei().Bedarf[kanal];
+        }
+
+#if DEBUG
+
+        /// <summary>
+        /// PROBE der Kanalganglinien (Paket E2) — ausschließlich im Debug-Build, nach dem
+        /// Muster von <c>Kanalsatz.Selbsttest</c> (kein Prüfcode im Release-Assembly).
+        ///
+        /// <para>Zugesichert wird für jede der neun Größen (vier Erzeuger × Direktdeckung
+        /// und Speicherentladung, dazu der Heizstab) und für jeden Speicher: die
+        /// JAHRESSUMME der Ganglinie je Kanal ist die Bestands-Jahressumme desselben
+        /// Kanals. Beide entstehen aus derselben Buchung; der Rest ist allein die
+        /// Assoziativität der double-Addition (8760 Akkumulatoren gegen einen). Maßstab
+        /// ist <see cref="Kanalsatz.ErhaltungOk"/>.</para>
+        ///
+        /// <para>Zusätzlich die Summenzusage über die Kanäle: <c>Σ_k Σ_h Ganglinie</c>
+        /// gegen den jeweiligen Bestandsskalar (<c>Direktdeckung_gesamt</c>,
+        /// <c>Speicherentladung_Anteil</c>, <c>Heizstab_gesamt</c>,
+        /// <c>Entladung_gesamt</c>).</para>
+        /// </summary>
+        public string KanalganglinienProbe()
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            int geprueft = 0, fehler = 0;
+            double groessterRest = 0;
+
+            Action<string, Kanalganglinie, double[], double> pruefen =
+                delegate (string name, Kanalganglinie g, double[] jahr, double skalar)
+                {
+                    if (g == null || jahr == null) return;
+
+                    double summeAllerKanaele = 0;
+                    for (int k = 0; k < Kanal.ANZAHL; k++)
+                    {
+                        double ist = g.Jahressumme(k);
+                        summeAllerKanaele += ist;
+                        geprueft++;
+
+                        double rest = Math.Abs(ist - jahr[k]);
+                        if (rest > groessterRest) groessterRest = rest;
+                        if (!Kanalsatz.ErhaltungOk(jahr[k], ist, Kanalsatz.ERHALTUNG_SCHRITTE_SUMME))
+                        {
+                            fehler++;
+                            sb.AppendLine(string.Format(
+                                "FEHLER {0} Kanal {1}: Ganglinie {2:G9} != Jahressumme {3:G9}",
+                                name, k, ist, jahr[k]));
+                        }
+                    }
+
+                    if (skalar > 0)
+                    {
+                        geprueft++;
+                        double rest = Math.Abs(summeAllerKanaele - skalar);
+                        if (rest > groessterRest) groessterRest = rest;
+                        if (!Kanalsatz.ErhaltungOk(skalar, summeAllerKanaele,
+                                                   Kanalsatz.ERHALTUNG_SCHRITTE_SUMME))
+                        {
+                            fehler++;
+                            sb.AppendLine(string.Format(
+                                "FEHLER {0}: Sigma Kanaele {1:G9} != Skalar {2:G9}",
+                                name, summeAllerKanaele, skalar));
+                        }
+                    }
+                };
+
+            if (simulation_wp != null)
+            {
+                pruefen("WP.Direktdeckung", simulation_wp.Direktdeckung_KanalStuendlich,
+                        simulation_wp.Direktdeckung_Kanal, simulation_wp.Direktdeckung_gesamt);
+                pruefen("WP.Speicherentladung", simulation_wp.Speicherentladung_KanalStuendlich,
+                        simulation_wp.Speicherentladung_Kanal, simulation_wp.Speicherentladung_Anteil);
+                pruefen("WP.Heizstab", simulation_wp.Heizstab_KanalStuendlich,
+                        simulation_wp.Heizstab_Kanal, simulation_wp.Heizstab_gesamt);
+            }
+            if (simulation_spk != null)
+            {
+                pruefen("Kessel.Direktdeckung", simulation_spk.Direktdeckung_KanalStuendlich,
+                        simulation_spk.Direktdeckung_Kanal, 0);
+                pruefen("Kessel.Speicherentladung", simulation_spk.Speicherentladung_KanalStuendlich,
+                        simulation_spk.Speicherentladung_Kanal, simulation_spk.Speicherentladung_Anteil);
+            }
+            if (simulation_solarthermie != null)
+            {
+                pruefen("Solar.Direktdeckung", simulation_solarthermie.Direktdeckung_KanalStuendlich,
+                        simulation_solarthermie.Direktdeckung_Kanal,
+                        simulation_solarthermie.Direktdeckung_gesamt);
+                pruefen("Solar.Speicherentladung", simulation_solarthermie.Speicherentladung_KanalStuendlich,
+                        simulation_solarthermie.Speicherentladung_Kanal,
+                        simulation_solarthermie.Speicherentladung_Anteil);
+            }
+            if (simulation_bhkw != null)
+            {
+                pruefen("BHKW.Direktdeckung", simulation_bhkw.Direktdeckung_KanalStuendlich,
+                        simulation_bhkw.Direktdeckung_Kanal, simulation_bhkw.Direktdeckung_gesamt);
+                pruefen("BHKW.Speicherentladung", simulation_bhkw.Speicherentladung_KanalStuendlich,
+                        simulation_bhkw.Speicherentladung_Kanal, simulation_bhkw.Speicherentladung_Anteil);
+            }
+
+            foreach (SimulationPufferspeicher sp in AlleSpeicher())
+            {
+                if (sp == null) continue;
+                pruefen("Puffer " + sp.ID_Pufferspeicher + ".Entladung",
+                        sp.Entladung_KanalStuendlich, sp.Entladung_Kanal, sp.Entladung_gesamt);
+            }
+
+            sb.AppendLine(string.Format(
+                "Kanalganglinien-Probe (Paket E2): {0} Zusagen geprueft, {1} FEHLER, groesster Rest {2:G4} kWh.",
+                geprueft, fehler, groessterRest));
+            return sb.ToString();
+        }
+
+#endif
+
+        // ===================================================================
         // Speicher-Registry (Konzept 6.2) - Aufbau und Zugriff
         // ===================================================================
 

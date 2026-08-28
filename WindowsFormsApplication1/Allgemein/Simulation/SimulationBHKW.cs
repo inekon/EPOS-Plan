@@ -833,6 +833,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double[] Speicherentladung_Kanal = new double[Kanal.ANZAHL];
 
+        // ------------------------------------------------------------------
+        // PAKET E2 (Nachtrag zu Konzept 4.4) — DIESELBEN GRÖSSEN ALS GANGLINIE,
+        // gebucht an genau derselben Stelle und aus derselben Variablen. Je Kanal k gilt
+        //   Σ_h Direktdeckung_KanalStuendlich[k][h]     == Direktdeckung_Kanal[k]
+        //   Σ_h Speicherentladung_KanalStuendlich[k][h] == Speicherentladung_Kanal[k]
+        // bis auf die Assoziativität der double-Addition.
+        // ------------------------------------------------------------------
+
+        /// <summary>Stundenfassung von <see cref="Direktdeckung_Kanal"/> [kWh] (Paket E2).</summary>
+        public readonly Kanalganglinie Direktdeckung_KanalStuendlich = new Kanalganglinie();
+
+        /// <summary>Stundenfassung von <see cref="Speicherentladung_Kanal"/> [kWh] (Paket E2).</summary>
+        public readonly Kanalganglinie Speicherentladung_KanalStuendlich = new Kanalganglinie();
+
         /// <summary>
         /// Jahressumme des Stufeneingangs [kWh] (zweikanaliger Weg) — dieselbe Größe wie
         /// <c>waermebedarf</c>, nur in <c>double</c> summiert.
@@ -981,6 +995,10 @@ namespace WindowsFormsApplication1
             // K2: die Kanalaufschlüsselung derselben Größen (Konzept 4.4).
             Array.Clear(Direktdeckung_Kanal, 0, Kanal.ANZAHL);
             Array.Clear(Speicherentladung_Kanal, 0, Kanal.ANZAHL);
+
+            // E2: und ihre Ganglinienfassung, an derselben Stelle.
+            Direktdeckung_KanalStuendlich.Nullen();
+            Speicherentladung_KanalStuendlich.Nullen();
 
             Array.Clear(waermeproduktion, 0, waermeproduktion.Length);
             Array.Clear(stromproduktion, 0, stromproduktion.Length);
@@ -1184,7 +1202,11 @@ namespace WindowsFormsApplication1
                 // K2: Abzug über die eine Kanalregel, mit gemessener Aufschlüsselung je
                 // Kanal (Konzept 4.4). "gedeckt" ist konstruktiv ≤ verfuegbar, wird also
                 // vollständig abgezogen.
-                Kanalabzug.Abziehen(wsTyp, gedeckt, rest, Direktdeckung_Kanal);
+                //
+                // PAKET E2: derselbe Abzug schreibt zusätzlich die Kanalganglinie der
+                // Stunde - aus derselben gemessenen rest-Differenz.
+                Kanalabzug.Abziehen(wsTyp, gedeckt, rest, Direktdeckung_Kanal,
+                                    Direktdeckung_KanalStuendlich, stunde);
                 Direktdeckung_gesamt += gedeckt;
                 _direktStunde += gedeckt;
             }

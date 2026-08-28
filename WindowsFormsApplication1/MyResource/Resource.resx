@@ -8196,4 +8196,10 @@ Wirksam nur bei einem GESCHICHTETEN Zielspeicher (Schichten &gt; 1): Von der Ein
   <data name="PSP_SPEICHERTYP_ANZEIGE_KOMBI" xml:space="preserve">
     <value>Kombispeicher</value>
   </data>
+  <data name="SIM_LABEL_BEDARFSART" xml:space="preserve">
+    <value>Bedarfsart:</value>
+  </data>
+  <data name="CHART_TITEL_DECKUNG_JE_BEDARFSART" xml:space="preserve">
+    <value>Deckung {0} — Jahresganglinie</value>
+  </data>
 </root>
