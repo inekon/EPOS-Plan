@@ -168,6 +168,28 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string QUELLE_NICHT_KONFIGURIERT = "QUELLE_FEHLT";
 
+        /// <summary>
+        /// Heizkessel MIT Quellpuffer, dessen Temperaturbezug auf
+        /// <c>DbWerte.WQ_TEMPMODUS_FEST</c> steht, aber KEIN gepflegtes Temperaturpaar
+        /// hat (Paket B2, Nutzerauftrag 28.08.2026 Punkt 1: „Falls die Vorlauf- und die
+        /// Rücklauftemperatur nicht gepflegt sind, gebe eine Warnung — aber nur wenn
+        /// erforderlich").
+        ///
+        /// <para><b>Alle drei Bedingungen zusammen — sonst schweigt der Katalog.</b> Ohne
+        /// Quellpuffer gibt es keinen Hub, gegen den zu rechnen wäre. Im Modus
+        /// <c>Berechnet</c> — der Vorbelegung des Migrationsschritts 55 und damit dem
+        /// Zustand JEDER Bestandsanlage — hat der Anwender ausdrücklich gesagt, dass er
+        /// keine Vorgabe machen will; dort ist der Hinweis untersagt („keinen Hinweis
+        /// geben"). Er erscheint also genau dann, wenn jemand „fest vorgegeben" gewählt
+        /// und die Vorgabe dann nicht gemacht hat.</para>
+        ///
+        /// <para><b>WEICH.</b> Der Lauf rechnet weiter — er fällt sichtbar auf den
+        /// Berechnet-Weg zurück (<c>SimulationControl.KesselKopplungSetzen</c>). Das
+        /// löst den Bestandszustand aus Ticket B1-O10 ab, in dem ein konfigurierter
+        /// Quellbezug stumm wirkungslos blieb.</para>
+        /// </summary>
+        public const string KESSEL_TEMPERATURPAAR = "KESSEL_TEMPERATURPAAR";
+
         /// <summary>HART: derselbe Speicher ist Quelle UND Ladeziel derselben Anlage.</summary>
         public const string HART_KURZSCHLUSS = "HART_KURZSCHLUSS";
 
@@ -236,6 +258,7 @@ namespace WindowsFormsApplication1
                 }
 
                 QuelleOhneLaderPruefen(bild, idAnlage, befunde);
+                KesselTemperaturpaarPruefen(bild, idAnlage, befunde);
             }
 
             foreach (int idPuffer in bild.BeteiligtePuffer)
@@ -663,6 +686,42 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// KESSEL_TEMPERATURPAAR — Heizkessel am Quellpuffer im Modus „Fest" ohne
+        /// gepflegtes Temperaturpaar (Paket B2). Die drei Bedingungen und die Begruendung,
+        /// warum der Modus „Berechnet" NIE etwas meldet, stehen bei
+        /// <see cref="KESSEL_TEMPERATURPAAR"/>.
+        ///
+        /// <para>Die Reihenfolge der Pruefungen ist die guenstigste: Erst der
+        /// Quellpuffer (steht im ohnehin gelesenen Projektbild), dann die Erzeugerart,
+        /// erst danach die traegen Abfragen fuer Modus und Temperaturpaar. Ein Projekt
+        /// ohne Kessel-Quellpuffer - die gesamte Referenzmenge - zahlt keine einzige
+        /// zusaetzliche Rundreise.</para>
+        /// </summary>
+        private static void KesselTemperaturpaarPruefen(Projektbild bild, int idAnlage,
+                                                        List<Warnbefund> befunde)
+        {
+            int idQuelle = bild.Quellpuffer(idAnlage);
+            if (idQuelle <= 0) return;
+
+            Hydraulikbild.AnlagenEintrag a;
+            if (!bild.Bild.JeId.TryGetValue(idAnlage, out a) ||
+                a.ID_Type != ProjektPuffer.TYP_KESSEL) return;
+
+            if (!string.Equals(bild.TemperaturModus(idAnlage), DbWerte.WQ_TEMPMODUS_FEST,
+                               StringComparison.Ordinal)) return;
+
+            int v, r;
+            if (bild.AnlagenTemperaturpaar(idAnlage, out v, out r)) return;
+
+            Pufferdaten p = bild.Puffer(idQuelle);
+            string name = p != null ? p.Anzeigename : WaermesenkeClass.PufferName(idQuelle);
+
+            befunde.Add(Befund(KESSEL_TEMPERATURPAAR, false, idAnlage, idQuelle,
+                string.Format(MyResource.Resource.SIMWARN_KESSEL_TEMPERATURPAAR,
+                              bild.Anlagenname(idAnlage), name)));
+        }
+
+        /// <summary>
         /// HART: Ring in der Kaskadenkette — ueber DIESELBE Ebenen-Relaxation, mit der
         /// die Engine abbricht und der Quellendialog vorbeugt
         /// (<see cref="Hydraulikbild.Ebenen"/>). Eine eigene Ringsuche daneben waere eine
@@ -1019,6 +1078,88 @@ namespace WindowsFormsApplication1
             }
 
             /// <summary>
+            /// PAKET B2 — das GEPFLEGTE Temperaturpaar einer Anlage nach derselben Kette
+            /// wie <see cref="AnlagenVorlauf"/>: erst die Anlagenzeile
+            /// (<c>Tab_Energieanlagen.Vorlauf</c>/<c>[Rücklauf]</c>), beim Heizkessel
+            /// danach <c>Tab_Heizkessel</c> ueber <c>ID_Kessel</c>. Es ist die Kette, in
+            /// die der Kessel-Quellendialog im Modus „Fest" schreibt, und die die Engine
+            /// dort liest (<c>SimulationControl.KesselTemperaturpaarGepflegt</c>).
+            ///
+            /// <para>Nur ein VOLLSTAENDIGES Paar zaehlt
+            /// (<c>ProjektPuffer.IstTemperaturpaar</c>) — ein einzeln gepflegter Vorlauf
+            /// ohne Ruecklauf ist keine Betriebsvorgabe.</para>
+            /// </summary>
+            public bool AnlagenTemperaturpaar(int idAnlage, out int vorlauf, out int ruecklauf)
+            {
+                vorlauf = 0;
+                ruecklauf = 0;
+
+                Hydraulikbild.AnlagenEintrag a;
+                if (!Bild.JeId.TryGetValue(idAnlage, out a)) return false;
+
+                if (ProjektPuffer.IstTemperaturpaar(a.Vorlauf, a.Ruecklauf))
+                {
+                    vorlauf = a.Vorlauf;
+                    ruecklauf = a.Ruecklauf;
+                    return true;
+                }
+
+                if (a.ID_Type != ProjektPuffer.TYP_KESSEL) return false;
+
+                KesselVorlauf(idAnlage);   // fuellt _kesselVorlauf/_kesselRuecklauf traege
+                int v, r;
+                if (!_kesselVorlauf.TryGetValue(idAnlage, out v) ||
+                    !_kesselRuecklauf.TryGetValue(idAnlage, out r)) return false;
+
+                vorlauf = v;
+                ruecklauf = r;
+                return true;
+            }
+
+            /// <summary>
+            /// TEMPERATURMODUS je Anlage (<c>Tab_Energieanlagen.WQ_TemperaturModus</c>,
+            /// Schema-Schritt 55); <c>null</c> = noch nicht gelesen.
+            ///
+            /// <para><b>TRAEGE</b> wie <see cref="_kesselVorlauf"/>: Die Abfrage laeuft
+            /// erst, wenn ueberhaupt eine Anlage mit Kessel-Quellpuffer geprueft wird.
+            /// Auf der Referenzmenge — kein Kessel mit Quellpuffer — kostet das Kriterium
+            /// damit keine einzige zusaetzliche Rundreise.</para>
+            /// </summary>
+            private Dictionary<int, string> _temperaturModus;
+
+            /// <summary>
+            /// Der Temperaturbezug einer Anlage (<c>DbWerte.WQ_TEMPMODUS_*</c>); fehlende
+            /// Spalte, fehlende Zeile, NULL und jeder unbekannte Wert ergeben
+            /// <c>Berechnet</c> — dieselbe Auslegung wie in der Engine
+            /// (<c>DbWerte.TemperaturModusOderDefault</c>).
+            /// </summary>
+            public string TemperaturModus(int idAnlage)
+            {
+                if (_temperaturModus == null)
+                {
+                    _temperaturModus = new Dictionary<int, string>();
+
+                    DataTable dt = StilleDb.Tabelle(
+                        "SELECT ID, [" + SchemaKatalog.SPALTE_ANLAGE_WQ_TEMPERATURMODUS +
+                        "] AS Modus FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
+                        StilleDb.Par("@proj", OleDbType.Integer, _idProjekt));
+
+                    if (dt != null)
+                        foreach (DataRow r in dt.Rows)
+                        {
+                            int id = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                            if (id > 0)
+                                _temperaturModus[id] =
+                                    DbWerte.TemperaturModusOderDefault(StilleDb.Feld(r, "Modus"));
+                        }
+                }
+
+                string modus;
+                return _temperaturModus.TryGetValue(idAnlage, out modus)
+                    ? modus : DbWerte.WQ_TEMPMODUS_BERECHNET;
+            }
+
+            /// <summary>
             /// Vorlauftemperaturen der Projekt-Kessel [°C] über
             /// <c>Tab_Energieanlagen.ID_Kessel</c>; <c>null</c> = noch nicht gelesen.
             /// TRÄGE: Die Abfrage läuft erst, wenn ein Kessel wirklich geprüft wird —
@@ -1026,11 +1167,20 @@ namespace WindowsFormsApplication1
             /// </summary>
             private Dictionary<int, int> _kesselVorlauf;
 
+            /// <summary>
+            /// PAKET B2: derselbe Satz für den RÜCKLAUF — <see cref="AnlagenTemperaturpaar"/>
+            /// braucht beide Werte, W3 nur den Vorlauf. Wird in derselben Abfrage und
+            /// unter derselben Bedingung („nur ein vollständiges Paar zählt") gefüllt;
+            /// die beiden Wörterbücher tragen deshalb immer dieselben Schlüssel.
+            /// </summary>
+            private Dictionary<int, int> _kesselRuecklauf;
+
             private int KesselVorlauf(int idAnlage)
             {
                 if (_kesselVorlauf == null)
                 {
                     _kesselVorlauf = new Dictionary<int, int>();
+                    _kesselRuecklauf = new Dictionary<int, int>();
 
                     DataTable dt = StilleDb.Tabelle(
                         "SELECT a.ID, k.Vorlauf, k.Ruecklauf " +
@@ -1050,7 +1200,10 @@ namespace WindowsFormsApplication1
                             // Engine (ProjektPuffer.IstTemperaturpaar). Ein einzeln
                             // gepflegter Vorlauf ohne Rücklauf ist keine Betriebsvorgabe.
                             if (id > 0 && ProjektPuffer.IstTemperaturpaar(v, rl))
+                            {
                                 _kesselVorlauf[id] = v;
+                                _kesselRuecklauf[id] = rl;
+                            }
                         }
                 }
 

@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 54;
+        public const int ZIEL_VERSION = 55;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1813,6 +1813,64 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_54_QUELLEN = 54;
 
+        /// <summary>
+        /// Schritt 55 - <b>Paket B2</b> (zwei Nutzeraufträge vom 28.08.2026): der
+        /// TEMPERATURBEZUG der Kessel-Kaskade und der LESEPUNKT des Boosters.
+        ///
+        /// <para><b>Was entsteht.</b> Zwei Spalten in zwei Tabellen:
+        /// <c>Tab_Energieanlagen.</c><see cref="SchemaKatalog.SPALTE_ANLAGE_WQ_TEMPERATURMODUS"/>
+        /// (TEXT 50) und
+        /// <c>Tab_Einstellungen.</c><see cref="SchemaKatalog.SPALTE_BOOSTER_LESEPUNKT"/>
+        /// (TEXT 50). Die fachliche Begründung je Spalte steht beim jeweiligen
+        /// Katalogeintrag, die Steuerwerte in <c>DbWerte.WQ_TEMPMODUS_*</c> bzw.
+        /// <c>DbWerte.BOOSTER_LESEPUNKT_*</c>.</para>
+        ///
+        /// <para><b>Vier Teile.</b>
+        ///   <b>55a</b> das additive DDL der Anlagenspalte aus dem Katalog. HART: Ohne
+        ///   sie gibt es nichts vorzubelegen.
+        ///   <b>55b</b> die Vorbelegung <c>WQ_TemperaturModus = 'Berechnet'</c> für
+        ///   ALLE Bestandszeilen.
+        ///   <b>55c</b> das ANGEHÄNGTE <c>ALTER TABLE</c> der Einstellungsspalte samt
+        ///   Leseprobe (Muster 49b: <c>Tab_Einstellungen</c> wird in
+        ///   <c>KonfigurationCtrl.ReadSingle</c> ORDINAL über <c>row[0]…row[22]</c>
+        ///   gelesen — die Spalte darf nur ans Ende).
+        ///   <b>55d</b> die Vorbelegung <c>Booster_Lesepunkt = 'Davor'</c> über ein
+        ///   zielgenaues <c>UPDATE … WHERE … IS NULL</c> (Muster 49d).</para>
+        ///
+        /// <para><b>55b ist NICHT verhaltensneutral — und genau deshalb steht es hier.</b>
+        /// Bis B2 rechnete der Quellanteil eines Kessels am geteilten Puffer gegen das
+        /// Paar aus <c>Tab_Heizkessel</c>. In der produktiven Datenbank trägt dort
+        /// <b>kein einziger</b> der 23 Kessel ein Paar (Ticket B1-O10) — der Quellbezug
+        /// blieb also flächendeckend stumm wirkungslos, und die Kessel-Kaskade war eine
+        /// Funktion, die niemand einschalten konnte, ohne vorher 23 Katalogzeilen zu
+        /// pflegen. Mit „Berechnet" holt sich der Lauf das Bezugspaar aus der
+        /// Konfiguration, die ohnehin dasteht (Rang-1-Senkenspeicher), und der
+        /// Nutzerauftrag ist erfüllt: „im Falle berechnet ist die Vorgabe der Vor- und
+        /// Rücklauftemperatur nicht erforderlich (keinen Hinweis geben)".
+        /// Die Vorbelegung greift AUCH an Anlagen mit Kessel-Quellpuffer — sie sind der
+        /// eigentliche Anlass.</para>
+        ///
+        /// <para><b>55d ändert das B1-Verhalten bewusst.</b> Paket B1 las die
+        /// Quelltemperatur unmittelbar vor Phase B der Rechenebene des beziehenden
+        /// Moduls, also NACH der Ladephase der Vorebene (Ticket B1-O2 hatte die
+        /// Rückfrage gestellt). Der Nutzerentscheid vom 28.08.2026 lautet „davor";
+        /// jedes Projekt mit gekoppeltem Booster rechnet danach anders. Wer den alten
+        /// Stand braucht, stellt im Konfigurationsdialog auf „Danach" — dann ist der
+        /// Lauf Zeichen für Zeichen der von B1.</para>
+        ///
+        /// <para><b>Access-Feldgrenze (255 Spalten je Tabelle) geprüft:</b>
+        /// <c>Tab_Energieanlagen</c> wächst von 67 auf 68, <c>Tab_Einstellungen</c> von
+        /// 25 auf 26.</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker): <see cref="SpaltenAnlegen"/>
+        /// liest das Tabellenschema vorab und überspringt vorhandene Spalten, das
+        /// <c>ALTER TABLE</c> in 55c schluckt „existiert bereits"; beide UPDATE-
+        /// Anweisungen greifen ausschließlich auf noch nicht belegte Zeilen
+        /// (<c>IS NULL OR = ''</c>). Beim Zweitlauf meldet der Schritt „0 Spalten
+        /// angelegt" und 0 vorbelegte Zeilen.</para>
+        /// </summary>
+        public const int SCHRITT_55_TEMPERATURBEZUG = 55;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -2842,6 +2900,20 @@ namespace WindowsFormsApplication1
                         "bleibt das Quellprofil eine delimitierte Zeichenkette an der " +
                         "Anlage, und ein Stundenprofil kaeme gar nicht in die Datenbank.",
                         Schritt_54_Quellen),
+
+            // B2 (Nutzeraufträge 28.08.2026): Temperaturbezug der Kessel-Kaskade und
+            // Lesepunkt des Boosters. DDL plus zwei Vorbelegungen. Begruendung,
+            // Teilgliederung und Idempotenzzusage bei der Schrittkonstanten.
+            new Schritt(SCHRITT_55_TEMPERATURBEZUG,
+                        "Temperaturbezug: Tab_Energieanlagen um WQ_TemperaturModus " +
+                        "erweitern und auf 'Berechnet' vorbelegen; Tab_Einstellungen um " +
+                        "Booster_Lesepunkt erweitern und auf 'Davor' vorbelegen " +
+                        "(Paket B2)",
+                        "Der Temperaturbezug der Kessel-Kaskade konnte nicht angelegt " +
+                        "werden - ohne ihn braeuchte jeder Kessel am Quellpuffer ein von " +
+                        "Hand gepflegtes Temperaturpaar, sonst bliebe seine Kaskade " +
+                        "wirkungslos.",
+                        Schritt_55_Temperaturbezug),
         };
 
         // =================================================================================
@@ -6867,6 +6939,108 @@ namespace WindowsFormsApplication1
                     "(NULL = kein Profil gewaehlt). KEINE Datenuebernahme: WQ_Monatswerte, " +
                     "WQ_Wochenwerte und WQ_CSV bleiben unveraendert und werden weiter " +
                     "gelesen, solange keine Profil-ID gesetzt ist.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 55 - Temperaturbezug und Booster-Lesepunkt (Paket B2)
+        // =================================================================================
+
+        /// <summary>
+        /// Nutzerauftraege 28.08.2026: der TEMPERATURBEZUG der Kessel-Kaskade
+        /// (<c>Tab_Energieanlagen.WQ_TemperaturModus</c>) und der LESEPUNKT der
+        /// Booster-Quelltemperatur (<c>Tab_Einstellungen.Booster_Lesepunkt</c>). Anlass,
+        /// Teilgliederung (55a…55d) und Idempotenzzusage:
+        /// <see cref="SCHRITT_55_TEMPERATURBEZUG"/>.
+        /// </summary>
+        private static bool Schritt_55_Temperaturbezug(Lauf l)
+        {
+            string sM = SchemaKatalog.SPALTE_ANLAGE_WQ_TEMPERATURMODUS;
+            string sL = SchemaKatalog.SPALTE_BOOSTER_LESEPUNKT;
+
+            // --- 55a) die Anlagenspalte ----------------------------------------------
+            // HART: Ohne sie gibt es nichts vorzubelegen.
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt55_Temperaturmodus)) return false;
+
+            // Nachweis statt Annahme: Erst diese Leseprobe belegt, dass die Spalte da UND
+            // lesbar ist (dieselbe Vorsichtsmassnahme wie in den Schritten 49 und 53).
+            object probeAnlage = Scalar(l,
+                "SELECT COUNT(*) FROM " + SchemaKatalog.TAB_ENERGIEANLAGEN +
+                " WHERE [" + sM + "] IS NULL OR Trim([" + sM + "]) = ''");
+            if (probeAnlage == null)
+            {
+                l.Zeile("Temperaturbezug (Schritt 55): die Spalte " + sM +
+                        " ist nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            // --- 55b) Vorbelegung 'Berechnet' ----------------------------------------
+            //
+            // ALLE Bestandszeilen, ausdruecklich EINSCHLIESSLICH der Anlagen mit
+            // Kessel-Quellpuffer: Genau sie sind der Anlass. In der produktiven
+            // Datenbank traegt kein einziger der 23 Kessel ein Temperaturpaar
+            // (Ticket B1-O10) - mit 'Fest' als Vorbelegung bliebe die Kessel-Kaskade
+            // weiterhin flaechendeckend wirkungslos.
+            //
+            // Der Steuerwert als LITERAL statt als Parameter: der im Bestand gewaehlte
+            // Weg (Schritte 44/46/47/48/49), der die ACE-Bindungsfalle ganz spart.
+            //
+            // Die Bedingung faengt BEIDE Auslieferungszustaende einer angehaengten
+            // Textspalte ab: NULL (der Regelfall bei ALTER TABLE) und den Leerwert
+            // (moeglich, wenn die Spalte auf einem anderen Weg entstanden ist). Ein
+            // gepflegter Wert bleibt unberuehrt - darauf ruht die Idempotenz.
+            int modus = NonQuery(l,
+                "UPDATE " + SchemaKatalog.TAB_ENERGIEANLAGEN +
+                " SET [" + sM + "] = '" + DbWerte.WQ_TEMPMODUS_BERECHNET + "'" +
+                " WHERE [" + sM + "] IS NULL OR Trim([" + sM + "]) = ''");
+            if (modus < 0) return false;
+
+            // --- 55c) die Einstellungsspalte -----------------------------------------
+            // ANGEHAENGT und sonst nichts (Muster 49b): Tab_Einstellungen wird in
+            // KonfigurationCtrl.ReadSingle ORDINAL ueber row[0]…row[22] gelesen. Die
+            // Spalte darf deshalb nur ans Ende und wird namensbasiert gelesen bzw.
+            // zielgenau geschrieben.
+            //
+            // TEXT(50): Access kuerzt beim UPDATE STILL auf die Feldbreite (dieselbe
+            // Falle wie in Schritt 48); der laengste Steuerwert misst 6 Zeichen.
+            try
+            {
+                using (var cmd = new OleDbCommand(
+                    "ALTER TABLE " + SchemaKatalog.TAB_EINSTELLUNGEN +
+                    " ADD COLUMN [" + sL + "] TEXT(50)", l.Conn))
+                    cmd.ExecuteNonQuery();
+            }
+            catch { /* Spalte existiert bereits */ }
+
+            object probeEinst = Scalar(l,
+                "SELECT COUNT(*) FROM " + SchemaKatalog.TAB_EINSTELLUNGEN +
+                " WHERE [" + sL + "] IS NULL OR Trim([" + sL + "]) = ''");
+            if (probeEinst == null)
+            {
+                l.Zeile("Temperaturbezug (Schritt 55): die Spalte " + sL +
+                        " ist nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            // --- 55d) Vorbelegung 'Davor' --------------------------------------------
+            // NUTZERENTSCHEID, kein altverhaltenserhaltender Wert: Paket B1 las fest
+            // 'Danach'. Wer den B1-Stand braucht, stellt im Konfigurationsdialog um.
+            int lesepunkt = NonQuery(l,
+                "UPDATE " + SchemaKatalog.TAB_EINSTELLUNGEN +
+                " SET [" + sL + "] = '" + DbWerte.BOOSTER_LESEPUNKT_DAVOR + "'" +
+                " WHERE [" + sL + "] IS NULL OR Trim([" + sL + "]) = ''");
+            if (lesepunkt < 0) return false;
+
+            l.Zeile("Temperaturbezug (Schritt 55): " + modus + " Anlagenzeile(n) auf " +
+                    "WQ_TemperaturModus = '" + DbWerte.WQ_TEMPMODUS_BERECHNET + "' " +
+                    "vorbelegt - das Bezugspaar des Quellanteils kommt damit aus dem Lauf " +
+                    "(Rang-1-Senkenspeicher, sonst die gepflegte Kette, zuletzt 70/50 Grad C) " +
+                    "und verlangt keine Datenpflege am Kessel. " + lesepunkt +
+                    " Projekteinstellung(en) auf Booster_Lesepunkt = '" +
+                    DbWerte.BOOSTER_LESEPUNKT_DAVOR + "' vorbelegt - der Booster liest den " +
+                    "Speicherzustand ab jetzt am Stundenanfang statt nach der Ladephase " +
+                    "der Vorebene; das AENDERT die Ergebnisse jedes Projekts mit " +
+                    "gekoppeltem Booster.");
             return true;
         }
 

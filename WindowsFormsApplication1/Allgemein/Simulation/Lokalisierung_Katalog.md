@@ -2122,3 +2122,41 @@ Tickets zugeordnet ist.
 Ebenfalls inline geblieben: `SimulationControl.AnschlusshoeheText` (Q1-O9). Er ist ein
 Text**baustein**, kein Meldungsrumpf, und geht als Platzhalter {6} bzw. {5} in die beiden
 Booster-Meldungen ein.
+
+---
+
+## Nachtrag Paket B2 — Kessel-Temperaturmodus und Booster-Lesepunkt (28.08.2026)
+
+Paket B2 setzt die beiden Nutzeraufträge vom 28.08.2026 um: den wählbaren **Temperaturbezug**
+der Kessel-Kaskade (`Tab_Energieanlagen.WQ_TemperaturModus`) und den wählbaren **Lesepunkt**
+der Booster-Quelltemperatur (`Tab_Einstellungen.Booster_Lesepunkt`), beide aus
+Migrationsschritt 55. **Zwölf Schlüssel kommen hinzu, keiner fällt weg.** Bestand danach
+**2633 `data`-Knoten** je `.resx` (DE und EN deckungsgleich) und **2633
+Designer-Eigenschaften**.
+
+| Schlüssel | DE | EN | Fundstelle |
+|---|---|---|---|
+| `SIMWARN_KESSEL_TEMPERATURPAAR` | Anlage „{0}": Der Temperaturbezug steht auf „fest vorgegeben", aber es ist kein vollständiges Vor-/Rücklaufpaar gepflegt … | Unit "{0}": the temperature reference is set to "fixed", but no complete flow/return pair is maintained … | `Warnkriterien.KesselTemperaturpaarPruefen` — das neue **weiche** Kriterium `KESSEL_TEMPERATURPAAR`. Es schlägt nur an, wenn alle drei Bedingungen zusammentreffen (Kessel mit Quellpuffer, Modus `Fest`, Paar fehlt); im Modus `Berechnet` schweigt der Katalog, so verlangt es der Nutzerauftrag. Zwei Platzhalter: Anlage, Quellspeicher. |
+| `SIMQ_PUFFER_TEMPERATURBEZUG` | Temperaturbezug: | Temperature reference: | Beschriftung des neuen Blocks im Kessel-Zweig von `Form_QuellePufferspeicher`. |
+| `SIMQ_PUFFER_TB_BERECHNET` | berechnet (aus der Anlage) | calculated (from the plant) | Erster Auswahlknopf. |
+| `SIMQ_PUFFER_TB_FEST` | fest vorgegeben | fixed specification | Zweiter Auswahlknopf; nur bei ihm sind die beiden Eingabefelder sichtbar. |
+| `SIMQ_PUFFER_TB_VORLAUF` | Vorlauf [°C]: | Flow [°C]: | Beschriftung des Vorlauffelds. |
+| `SIMQ_PUFFER_TB_RUECKLAUF` | Rücklauf [°C]: | Return [°C]: | Beschriftung des Rücklauffelds. |
+| `SIMQ_PUFFER_TB_HINWEIS` | Der Kessel hebt von seinem Rücklauf auf seinen Vorlauf an … | The boiler raises the temperature from its return to its flow … | Die Erklärzeile unter dem Block. Sie misst sich zur Laufzeit nach (`GetPreferredSize`) — der deutsche Text braucht bei 590 px mehr Zeilen als der englische. |
+| `SIMQ_PUFFER_MSG_TEMPERATURPAAR` | Bitte Vorlauf und Rücklauf als ganze Zahlen eintragen … | Please enter flow and return as whole numbers … | Abweisung im Modus `Fest` ohne brauchbares Paar; nennt ausdrücklich den Ausweg „berechnet". |
+| `SIM_BOOSTER_LESEPUNKT_SCHALTER` | Booster liest Speicherzustand vom Stundenanfang (konservativ) | Booster reads storage state at the start of the hour (conservative) | Der zweite Fußzeilenschalter des Konfigurationsdialogs, neben „Extrapolation der WP-Kennlinie erlauben". **Angehakt = `Davor`.** |
+| `SIM_BOOSTER_LESEPUNKT_TOOLTIP` | Angehakt: … Nicht angehakt: … | Checked: … Unchecked: … | Mouseover desselben Schalters; er erklärt den NICHT angehakten Zustand, den die Beschriftung nicht nennen kann. Enthält Leerzeilen — die Anzeige läuft deshalb über `Zeilenumbruch.Normalisieren`. |
+| `SIM_STATUS_LESEPUNKT_DAVOR` | Booster-Lesepunkt: Stundenanfang (konservativ). | Booster reading point: start of the hour (conservative). | Statuszeile nach dem Umschalten (Muster `SIM_STATUS_EXTRAPOLATION_EIN`). |
+| `SIM_STATUS_LESEPUNKT_DANACH` | Booster-Lesepunkt: nach der Ladephase der Vorebene. | Booster reading point: after the charging phase of the preceding level. | Gegenstück dazu. |
+
+**Bewusst KEIN neuer Schlüssel** für die beiden neuen Zeilen des Laufaufbaus
+(`SimulationControl.KesselKopplungSetzen` — „Der Temperaturbezug der Anlage … Bezugspaar …
+aus: …" — und `BoosterLesepunktDesLaufs` — „Booster-Lesepunkt: DAVOR/DANACH …"). Sie stehen
+inline deutsch wie ihre unmittelbare Nachbarschaft in derselben Datei (Ticket B1-O9 /
+P1-O7 / S2-O9, Sammelschnitt in Paket L). Der zweite Grund ist die Drei-Schichten-Regel: Die
+Zeile nennt den MODUS, und dessen Persistenzwert („Berechnet"/„Fest") dürfte in einem
+lokalisierten Text nicht als Platzhalter auftauchen.
+
+**Sprachgleichheitsprobe bestanden:** derselbe Lauf mit `EPOS_REFLAUF_UICULTURE=en-US` auf
+einem Projekt, das das neue Kriterium **und** den neuen Modus auslöst — **25 von 25 CSV
+byte-gleich**. Kein Anzeigetext dieses Pakets ist Steuerwert.

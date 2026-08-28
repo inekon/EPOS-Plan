@@ -348,6 +348,50 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
+        /// B2 (Migrationsschritt 55, Nutzerauftrag 28.08.2026):
+        /// <c>Tab_Energieanlagen.WQ_TemperaturModus</c> (TEXT 50) — die HERKUNFT des
+        /// Temperaturpaars, gegen das der Quellanteil eines Erzeugers am geteilten
+        /// Puffer gerechnet wird.
+        ///
+        /// <para><b>Warum TEXT(50) und nicht YESNO.</b> Access kürzt beim UPDATE STILL
+        /// auf die Feldbreite (dieselbe Falle wie in Schritt 48); der längste Steuerwert
+        /// misst 9 Zeichen. Ein Ja/Nein-Feld wäre kürzer, aber es könnte keinen dritten
+        /// Modus tragen und läse sich in der Datenbank als „ja was?" — die
+        /// Steuerwertliste <c>DbWerte.WQ_TEMPMODUS_*</c> sagt an der Zeile selbst, was
+        /// gemeint ist.</para>
+        ///
+        /// <para><b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access
+        /// hinten an; <c>Tab_Energieanlagen</c> wird ausschließlich NAMENSBASIERT
+        /// gelesen (Begründung bei <see cref="Schritt54_Quellen"/>) — folgenlos.</para>
+        ///
+        /// <para><b>Access-Feldgrenze.</b> 255 Spalten je Tabelle;
+        /// <c>Tab_Energieanlagen</c> trägt nach Schritt 54 67 Spalten und wächst auf
+        /// 68.</para>
+        ///
+        /// <para>Die Spalte steht BEWUSST NICHT in <see cref="Alle"/> — dieselbe
+        /// Begründung wie bei den Schritten 48/49/53/54: Die stille Rückfallebene
+        /// <c>WaermequelleClass.SchemaSicherstellen</c> legt an, was sie kennt, würde
+        /// dabei aber die DML-Vorbelegung überspringen. Eine Spalte
+        /// <c>WQ_TemperaturModus</c>, die in jeder Zeile NULL steht, ist harmlos (der
+        /// Leser macht daraus „Berechnet"), aber sie wäre eine Halbmigration ohne
+        /// Marker.</para>
+        /// </summary>
+        public const string SPALTE_ANLAGE_WQ_TEMPERATURMODUS = "WQ_TemperaturModus";
+
+        /// <summary>
+        /// Schritt 55 der Migration (Paket B2) — die eine neue Spalte an
+        /// <c>Tab_Energieanlagen</c>. Die Einstellungsspalte
+        /// <see cref="SPALTE_BOOSTER_LESEPUNKT"/> steht NICHT in dieser Liste: Sie geht
+        /// über ein eigenes <c>ALTER TABLE</c> mit anschließender Leseprobe, weil
+        /// <c>Tab_Einstellungen</c> ordinal gelesen wird und deshalb ausdrücklich nur
+        /// angehängt werden darf (Muster Schritt 49b).
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt55_Temperaturmodus =
+        {
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_ANLAGE_WQ_TEMPERATURMODUS, "TEXT(50)"),
+        };
+
+        /// <summary>
         /// Bestand: die Spalten, die die Rückfallebene schon vor ADR-001 angelegt hat
         /// (Wärmequelle/-senke, Betriebsmodus, Kaskadenpriorität, Speicherregelung der
         /// Alt-Zuordnung). Sie sind in allen gepflegten Datenbanken vorhanden und
@@ -1344,6 +1388,30 @@ namespace WindowsFormsApplication1
         /// im Sammelkommentar.</para>
         /// </summary>
         public const string SPALTE_KANAL_KNAPPHEITSREIHENFOLGE = "Kanal_Knappheitsreihenfolge";
+
+        /// <summary>
+        /// B2 (Migrationsschritt 55, Nutzerauftrag 28.08.2026):
+        /// <c>Tab_Einstellungen.Booster_Lesepunkt</c> (TEXT 50) — der Zeitpunkt
+        /// INNERHALB der Stunde, zu dem ein temperaturgekoppeltes Modul (Booster) die
+        /// Quelltemperatur seines geteilten Puffers liest.
+        ///
+        /// <para>Werte sind ausschließlich <c>DbWerte.BOOSTER_LESEPUNKT_DAVOR</c> und
+        /// <c>…_DANACH</c>; NULL, leer und jeder unbekannte Wert gelten als
+        /// <c>Davor</c> (<c>DbWerte.BoosterLesepunktOderDefault</c>) — die Vorbelegung
+        /// des Nutzerauftrags. Sie ÄNDERT das Verhalten von Paket B1 bewusst: dort war
+        /// „Danach" fest verdrahtet (Ticket B1-O2).</para>
+        ///
+        /// <para><b>Nur zielgenau schreiben.</b> Dasselbe Muster wie
+        /// <see cref="SPALTE_KANAL_KNAPPHEITSREIHENFOLGE"/>: ANGEHÄNGT, NAMENSBASIERT
+        /// gelesen, über ein eigenes UPDATE geschrieben
+        /// (<c>KonfigurationCtrl.BoosterLesepunktSchreiben</c>) — die Ordinalkette
+        /// <c>row[0]…row[22]</c> in <c>KonfigurationCtrl.ReadSingle</c> bleibt
+        /// unberührt.</para>
+        ///
+        /// <para>Die Spalte steht BEWUSST NICHT in <see cref="Alle"/>: Begründung dort
+        /// im Sammelkommentar.</para>
+        /// </summary>
+        public const string SPALTE_BOOSTER_LESEPUNKT = "Booster_Lesepunkt";
 
         // =====================================================================
         // S1 - Spalten der Senkenliste Z_AnlageSenke (Migrationsschritt 50)

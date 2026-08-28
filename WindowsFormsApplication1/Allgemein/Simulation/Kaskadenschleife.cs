@@ -154,6 +154,15 @@ namespace WindowsFormsApplication1
         private int[] _knappheit = Kanal.KnappheitVorgabe();
 
         /// <summary>
+        /// PAKET B2 — true = die Quelltemperatur der gekoppelten Module wird EINMAL am
+        /// STUNDENANFANG gelesen (Vorbelegung „Davor"), false = je Rechenebene vor deren
+        /// Phase B (der Lesepunkt von Paket B1, Steuerwert „Danach"). Aufgelöst zu Beginn
+        /// von <see cref="Rechnen"/> aus <c>Kaskadenkontext.BoosterLesepunkt</c>, damit
+        /// die Stundenschleife nicht 8760-mal eine Zeichenkette vergleicht.
+        /// </summary>
+        private bool _lesepunktDavor = true;
+
+        /// <summary>
         /// Hysterese-Entscheidung der laufenden Phase A je Speicher (Etappe D5a,
         /// verallgemeinert in Paket K2).
         ///
@@ -734,6 +743,12 @@ namespace WindowsFormsApplication1
                 ? Kontext.Knappheit : Kanal.KnappheitVorgabe();
             KnappheitFuerLauf(_knappheit);
 
+            // PAKET B2 (Nutzerauftrag 28.08.2026): LESEPUNKT der Booster-Quelltemperatur,
+            // EINMAL je Lauf aufgelöst statt 8760-mal verglichen.
+            _lesepunktDavor = !string.Equals(Kontext.BoosterLesepunkt,
+                                             DbWerte.BOOSTER_LESEPUNKT_DANACH,
+                                             StringComparison.Ordinal);
+
             // PAKET S1: Zahl der Ladephasen je Rechenebene - EINMAL aufgelöst statt
             // 8760-mal über die Auftragsliste gesucht. Ohne Senken jenseits von Rang 2
             // (jedes migrierte Bestandsprojekt) sind es genau die bisherigen zwei
@@ -841,6 +856,30 @@ namespace WindowsFormsApplication1
                     if (q != null && q.IstQuelle && q.RegenerationProStunde > 0)
                         q.Laden(q.RegenerationProStunde, stunde);
 
+                // PAKET B2 (Nutzerauftrag 28.08.2026, Vorbelegung): LESEPUNKT „DAVOR" —
+                // die Quelltemperatur ALLER gekoppelten Module, EINMAL am Stundenanfang.
+                //
+                // Der Ort ist die Aussage: VOR Phase A und damit vor jeder Bewegung an
+                // einem geteilten Puffer in dieser Stunde. Was oberhalb steht, rührt ihn
+                // nicht an - die Regeneration trifft ausschließlich EIGENSTÄNDIGE
+                // Quellspeicher (IstQuelle), und ein geteilter Puffer ist per Definition
+                // keiner. Gelesen wird also der Zustand am ENDE DER VORSTUNDE, nach deren
+                // Phase G. Das ist die konservative Lesart: Der Booster bekommt nicht
+                // gutgeschrieben, was ein vorgelagerter Erzeuger erst in dieser Stunde
+                // nachlädt (Ticket B1-O2).
+                //
+                // ALLE EBENEN auf einmal (der zweite Parameter): Ein gekoppeltes Modul
+                // rechnet zwangsläufig auf einer Ebene > 0 - sein Quellpuffer wird ja von
+                // einem anderen Erzeuger geladen. Ohne den Schalter bliebe es hier
+                // ungelesen, weil die Ebenenschleife noch gar nicht begonnen hat.
+                //
+                // Ohne gekoppeltes Modul kehren beide Aufrufe sofort zurück.
+                if (_lesepunktDavor)
+                {
+                    if (MitWP) WP.Quelltemperatur_Stunde(stunde, true);
+                    if (MitKessel) Kessel.Quelltemperatur_Stunde(stunde, true);
+                }
+
                 // --- A) Vorabentladung ------------------------------------------------
                 Entladephase(stunde, true, rest);
 
@@ -867,8 +906,17 @@ namespace WindowsFormsApplication1
                     //
                     // Ohne gekoppeltes Modul kehren beide Aufrufe sofort zurück - der
                     // Bestand sieht von dieser Zeile nichts.
-                    if (MitWP) WP.Quelltemperatur_Stunde(stunde);
-                    if (MitKessel) Kessel.Quelltemperatur_Stunde(stunde);
+                    //
+                    // PAKET B2: Dieser Lesepunkt gilt nur noch im Modus „Danach" - der
+                    // Vorbelegung von Paket B1, die der Nutzerentscheid vom 28.08.2026
+                    // abgelöst hat. Im Modus „Davor" hat die Stundenschleife oben schon
+                    // gelesen, und ein zweiter Aufruf hier machte aus dem EINEN
+                    // definierten Lesezeitpunkt zwei.
+                    if (!_lesepunktDavor)
+                    {
+                        if (MitWP) WP.Quelltemperatur_Stunde(stunde);
+                        if (MitKessel) Kessel.Quelltemperatur_Stunde(stunde);
+                    }
 
                     for (int s = 0; s < arten.Count; s++)
                     {

@@ -149,6 +149,65 @@ namespace WindowsFormsApplication1
         /// <summary>Höhe der neuen Zeile samt Abstand [px] — der Betrag, um den der Dialog wächst.</summary>
         private const int ANSCHLUSSHOEHE_ZEILE = 56;
 
+        // --- PAKET B2: Temperaturbezug der Kessel-Kaskade (Nutzerauftrag 28.08.2026) ---
+        //
+        // NUR beim HEIZKESSEL. Bei der Wärmepumpe gibt es keinen Temperaturhub, gegen den
+        // ein Quellanteil zu rechnen wäre — sie zieht Verdampferwärme, und das steuern die
+        // Felder der Rubrik darüber. Eine Auswahl ohne Wirkung wäre eine Zusage ohne
+        // Wirkung (dieselbe Regel wie bei den Verdampfer-Parametern, Etappe D5b).
+        //
+        // Wie in Paket Q1 programmatisch und nicht im Designer: Der Dialog ist ein
+        // FixedDialog mit fest gerechneter Pixelgeometrie, und die Designer-Dateien werden
+        // in diesem Projekt nicht von Hand bearbeitet (Hauskonvention).
+        private Label _lblTempBezug;
+        private RadioButton _rbBerechnet;
+        private RadioButton _rbFest;
+        private Label _lblTbVorlauf;
+        private TextBox _tbTbVorlauf;
+        private Label _lblTbRuecklauf;
+        private TextBox _tbTbRuecklauf;
+        private Label _lblTbHinweis;
+
+        /// <summary>true, sobald <see cref="TemperaturbezugEinpassen"/> den Dialog vergrößert hat.</summary>
+        private bool _tempBezugEingepasst = false;
+
+        /// <summary>
+        /// PAKET B2 — Vorschlag beim Umschalten auf „fest vorgegeben" mit leeren Feldern.
+        /// 70/50 °C ist die Auslegung eines konventionellen Heizkesselsystems und
+        /// dieselbe Zahl, die die Engine als letzten Rückfall des Berechnet-Wegs benutzt
+        /// (<c>SimulationControl.KESSEL_VORLAUF_RUECKFALL</c>).
+        ///
+        /// <para>Ein VORSCHLAG, keine stille Festschreibung: Er erscheint nur, wenn beide
+        /// Felder leer sind, und er steht danach sichtbar in der Maske — der Anwender
+        /// bestätigt ihn mit OK oder überschreibt ihn (Muster der 55-°C-Vorbelegung aus
+        /// Paket P1).</para>
+        /// </summary>
+        private const int VORSCHLAG_VORLAUF = 70;
+
+        /// <summary>Vorschlagswert des Rücklaufs [°C]; siehe <see cref="VORSCHLAG_VORLAUF"/>.</summary>
+        private const int VORSCHLAG_RUECKLAUF = 50;
+
+        /// <summary>
+        /// PAKET B2: <c>Tab_Energieanlagen.WQ_TemperaturModus</c> (Schema-Schritt 55) —
+        /// <c>DbWerte.WQ_TEMPMODUS_BERECHNET</c> oder <c>…_FEST</c>. Beim Öffnen
+        /// Vorbelegung, nach OK das Ergebnis.
+        /// </summary>
+        public string TemperaturModus = DbWerte.WQ_TEMPMODUS_BERECHNET;
+
+        /// <summary>
+        /// PAKET B2: die feste Vorgabe der ANLAGE, <c>Tab_Energieanlagen.Vorlauf</c> [°C];
+        /// 0 = nicht gepflegt. Sie ist die erste Stufe der W3-Kette aus Paket B1 und wird
+        /// nur im Modus <c>Fest</c> geschrieben.
+        /// </summary>
+        public int VorlaufAnlage;
+
+        /// <summary>
+        /// PAKET B2: <c>Tab_Energieanlagen.[Rücklauf]</c> [°C] — die Spalte trägt an der
+        /// Datenbank den UMLAUT (siehe <c>ProjektPuffer.SQL_SYSTEM_RUECKLAUF</c>); 0 =
+        /// nicht gepflegt.
+        /// </summary>
+        public int RuecklaufAnlage;
+
         public Form_QuellePufferspeicher()
         {
             // Der Designer setzt AutoScaleMode bewusst auf None und lässt
@@ -163,6 +222,9 @@ namespace WindowsFormsApplication1
             // die Platzhalter des Designers und damit die falsche Breite.
             EingabespalteAusrichten();
             AnschlusshoeheAnbauen();
+            // PAKET B2: Die Steuerelemente entstehen hier, EINGEPASST wird der Block erst
+            // in ArtAnwenden() — die Erzeugerart setzt der Aufrufer nach dem Konstruktor.
+            TemperaturbezugAnbauen();
             VorgabenSetzen();
             FensterEinpassung.Einhaengen(this);
 
@@ -232,6 +294,236 @@ namespace WindowsFormsApplication1
             _btnAbbruch.Top += ANSCHLUSSHOEHE_ZEILE + zusatz;
             this.ClientSize = new Size(this.ClientSize.Width,
                                        this.ClientSize.Height + ANSCHLUSSHOEHE_ZEILE + zusatz);
+        }
+
+        /// <summary>
+        /// PAKET B2 — legt die Steuerelemente des TEMPERATURBEZUGS an (unsichtbar). Ob
+        /// und wo sie erscheinen, entscheidet <see cref="TemperaturbezugEinpassen"/>,
+        /// gerufen aus <see cref="ArtAnwenden"/>: Die Erzeugerart steht erst fest, wenn
+        /// der Aufrufer <c>ID_Type</c> gesetzt hat, und das geschieht NACH dem
+        /// Konstruktor.
+        /// </summary>
+        private void TemperaturbezugAnbauen()
+        {
+            _lblTempBezug = new Label
+            {
+                Text = MyResource.Resource.SIMQ_PUFFER_TEMPERATURBEZUG,
+                AutoSize = false,
+                Size = new Size(160, 20),
+                TextAlign = ContentAlignment.MiddleLeft,
+                Visible = false
+            };
+
+            _rbBerechnet = new RadioButton
+            {
+                Text = MyResource.Resource.SIMQ_PUFFER_TB_BERECHNET,
+                AutoSize = true,
+                Checked = true,
+                Visible = false
+            };
+
+            _rbFest = new RadioButton
+            {
+                Text = MyResource.Resource.SIMQ_PUFFER_TB_FEST,
+                AutoSize = true,
+                Visible = false
+            };
+
+            _lblTbVorlauf = new Label
+            {
+                Text = MyResource.Resource.SIMQ_PUFFER_TB_VORLAUF,
+                AutoSize = false,
+                Size = new Size(110, 20),
+                TextAlign = ContentAlignment.MiddleLeft,
+                Visible = false
+            };
+            _tbTbVorlauf = new TextBox { Width = 60, Visible = false };
+
+            _lblTbRuecklauf = new Label
+            {
+                Text = MyResource.Resource.SIMQ_PUFFER_TB_RUECKLAUF,
+                AutoSize = false,
+                Size = new Size(110, 20),
+                TextAlign = ContentAlignment.MiddleLeft,
+                Visible = false
+            };
+            _tbTbRuecklauf = new TextBox { Width = 60, Visible = false };
+
+            _lblTbHinweis = new Label
+            {
+                Text = MyResource.Resource.SIMQ_PUFFER_TB_HINWEIS,
+                AutoSize = false,
+                Size = new Size(590, 30),
+                Visible = false
+            };
+
+            _rbFest.CheckedChanged += rbTemperaturbezug_CheckedChanged;
+
+            this.Controls.Add(_lblTempBezug);
+            this.Controls.Add(_rbBerechnet);
+            this.Controls.Add(_rbFest);
+            this.Controls.Add(_lblTbVorlauf);
+            this.Controls.Add(_tbTbVorlauf);
+            this.Controls.Add(_lblTbRuecklauf);
+            this.Controls.Add(_tbTbRuecklauf);
+            this.Controls.Add(_lblTbHinweis);
+        }
+
+        /// <summary>
+        /// PAKET B2 — belegt Auswahl und Eingabefelder aus den öffentlichen Feldern vor.
+        /// Die beiden Zahlen erscheinen LEER, solange kein vollständiges Paar gepflegt
+        /// ist: „0/0 °C" wäre eine Angabe, die es nicht gibt (dieselbe Regel wie in
+        /// <see cref="SpeicherItem"/> und bei der Anschlusshöhe).
+        /// </summary>
+        private void TemperaturbezugSetzen()
+        {
+            if (_rbFest == null) return;
+
+            bool paar = ProjektPuffer.IstTemperaturpaar(VorlaufAnlage, RuecklaufAnlage);
+            _tbTbVorlauf.Text = paar ? VorlaufAnlage.ToString(CultureInfo.CurrentCulture) : "";
+            _tbTbRuecklauf.Text = paar ? RuecklaufAnlage.ToString(CultureInfo.CurrentCulture) : "";
+
+            bool fest = string.Equals(TemperaturModus, DbWerte.WQ_TEMPMODUS_FEST,
+                                      StringComparison.Ordinal);
+            _rbBerechnet.Checked = !fest;
+            _rbFest.Checked = fest;
+        }
+
+        /// <summary>
+        /// PAKET B2 — setzt den Temperaturbezug-Block unter die Quell-Entnahmehöhe und
+        /// schiebt die Fußknöpfe samt <c>ClientSize</c> um genau seine Höhe nach unten.
+        /// Dasselbe Verfahren wie <see cref="AnschlusshoeheAnbauen"/>; nur läuft es
+        /// HÖCHSTENS EINMAL und nur beim Heizkessel.
+        ///
+        /// <para>Die Hinweiszeile misst sich nach (<c>GetPreferredSize</c>), statt eine
+        /// feste Höhe zu behaupten: Der deutsche Text braucht bei 590 px mehr Zeilen als
+        /// der englische, und feste Pixel wären nur für EINE Sprache richtig (D-Check
+        /// 28.08.2026, derselbe Befund wie bei der Anschlusshöhe).</para>
+        /// </summary>
+        private void TemperaturbezugEinpassen()
+        {
+            if (_tempBezugEingepasst || _lblTempBezug == null) return;
+            _tempBezugEingepasst = true;
+
+            int links = _gbParameter.Left;
+            int oben = _lblAnschlusshoeheHinweis.Bottom + 10;
+
+            _lblTempBezug.Location = new Point(links + 16, oben + 2);
+            _rbBerechnet.Location = new Point(links + 180, oben);
+            _rbFest.Location = new Point(links + 180 + 190, oben);
+
+            int zeile2 = oben + 26;
+            _lblTbVorlauf.Location = new Point(links + 16, zeile2 + 3);
+            _tbTbVorlauf.Location = new Point(links + 130, zeile2);
+            _lblTbRuecklauf.Location = new Point(links + 220, zeile2 + 3);
+            _tbTbRuecklauf.Location = new Point(links + 334, zeile2);
+
+            _lblTbHinweis.Location = new Point(links, zeile2 + 28);
+
+            foreach (Control c in new Control[] { _lblTempBezug, _rbBerechnet, _rbFest,
+                                                  _lblTbHinweis })
+                c.Visible = true;
+
+            // Erst NACH dem Sichtbarmachen messen - vorher trägt das Label noch nicht die
+            // Schrift der Maske.
+            int noetig = _lblTbHinweis.GetPreferredSize(new Size(_lblTbHinweis.Width, 0)).Height;
+            if (noetig > _lblTbHinweis.Height) _lblTbHinweis.Height = noetig;
+
+            // DAS WACHSTUM WIRD GEMESSEN, NICHT BEHAUPTET.
+            //
+            // BEFUND des D-Checks vom 28.08.2026: Eine ausgeschriebene Blockhöhe (erster
+            // Versuch: 68 px) war um 26 px zu klein - die Fußknöpfe rückten weniger weit
+            // nach unten, als der Block hoch ist, und schnitten die Hinweiszeile an
+            // (Überlappung 110x20 px, gemessen an _btnOk und _btnAbbruch). Genau dieselbe
+            // Falle wie die vier Selbstkorrekturen des alten Layouts (Befund N13a).
+            //
+            // Der Abstand zwischen dem UNTEREN RAND des Blocks und dem des Vorgängers ist
+            // die Strecke, um die alles darunter weichen muss - und er steht nach dem
+            // Platzieren fest, statt aus Zeilenhöhen hochgerechnet zu werden.
+            int wachstum = _lblTbHinweis.Bottom - _lblAnschlusshoeheHinweis.Bottom;
+            if (wachstum < 0) wachstum = 0;
+
+            _btnOk.Top += wachstum;
+            _btnAbbruch.Top += wachstum;
+            this.ClientSize = new Size(this.ClientSize.Width,
+                                       this.ClientSize.Height + wachstum);
+        }
+
+        /// <summary>
+        /// PAKET B2 — blendet die beiden Eingabefelder ein oder aus. Bei „berechnet" sind
+        /// sie AUSGEBLENDET und nicht nur gesperrt: Ein Feld, das niemand liest, ist keine
+        /// halbe Zusage, sondern gar keine (dieselbe Regel wie bei den
+        /// Verdampfer-Parametern am Kessel).
+        /// </summary>
+        private void TemperaturfelderAnzeigen()
+        {
+            bool fest = _rbFest != null && _rbFest.Checked && IstKessel;
+
+            foreach (Control c in new Control[] { _lblTbVorlauf, _tbTbVorlauf,
+                                                  _lblTbRuecklauf, _tbTbRuecklauf })
+                if (c != null) c.Visible = fest;
+        }
+
+        /// <summary>
+        /// Beim Umschalten auf „fest vorgegeben" mit LEEREN Feldern erscheint der
+        /// Vorschlag 70/50 °C (siehe <see cref="VORSCHLAG_VORLAUF"/>). Er wird
+        /// GESCHRIEBEN, sobald der Anwender mit OK bestätigt — bis dahin steht er sichtbar
+        /// in der Maske und lässt sich überschreiben.
+        /// </summary>
+        private void rbTemperaturbezug_CheckedChanged(object sender, EventArgs e)
+        {
+            TemperaturfelderAnzeigen();
+
+            if (_rbFest == null || !_rbFest.Checked) return;
+
+            if ((_tbTbVorlauf.Text ?? "").Trim().Length == 0 &&
+                (_tbTbRuecklauf.Text ?? "").Trim().Length == 0)
+            {
+                _tbTbVorlauf.Text = VORSCHLAG_VORLAUF.ToString(CultureInfo.CurrentCulture);
+                _tbTbRuecklauf.Text = VORSCHLAG_RUECKLAUF.ToString(CultureInfo.CurrentCulture);
+            }
+        }
+
+        /// <summary>
+        /// PAKET B2: liest den Temperaturbezug-Block nach <see cref="TemperaturModus"/>,
+        /// <see cref="VorlaufAnlage"/> und <see cref="RuecklaufAnlage"/>.
+        ///
+        /// <para>Bei „berechnet" bleiben die beiden Zahlen unangetastet — der Aufrufer
+        /// schreibt sie dann auch nicht. Das ist die Zusage des Nutzerauftrags: Wer
+        /// „berechnet" wählt, muss nichts pflegen, und was er einmal gepflegt hat,
+        /// verliert er nicht.</para>
+        ///
+        /// <para>Bei „fest" gilt dieselbe Regel wie überall im Schema: Nur ein
+        /// VOLLSTÄNDIGES Paar (Rücklauf &gt; 0 °C, Vorlauf &gt; Rücklauf) ist eine
+        /// Betriebsvorgabe.</para>
+        /// </summary>
+        /// <returns>false = Meldung gezeigt, der Dialog bleibt offen.</returns>
+        private bool TemperaturbezugUebernehmen()
+        {
+            if (!IstKessel || _rbFest == null) return true;
+
+            if (!_rbFest.Checked)
+            {
+                TemperaturModus = DbWerte.WQ_TEMPMODUS_BERECHNET;
+                return true;
+            }
+
+            float v, r;
+            if (!WaermequelleClass.ZahlParsen(_tbTbVorlauf.Text, out v) ||
+                !WaermequelleClass.ZahlParsen(_tbTbRuecklauf.Text, out r) ||
+                !ProjektPuffer.IstTemperaturpaar((int)Math.Round(v), (int)Math.Round(r)))
+            {
+                MessageBox.Show(
+                    Zeilenumbruch.Normalisieren(MyResource.Resource.SIMQ_PUFFER_MSG_TEMPERATURPAAR),
+                    MyResource.Resource.SIMQ_PUFFER_TITEL,
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            TemperaturModus = DbWerte.WQ_TEMPMODUS_FEST;
+            VorlaufAnlage = (int)Math.Round(v);
+            RuecklaufAnlage = (int)Math.Round(r);
+            return true;
         }
 
         /// <summary>
@@ -420,6 +712,13 @@ namespace WindowsFormsApplication1
             if (!string.IsNullOrEmpty(WPName))
                 this.Text = string.Format(MyResource.Resource.SIMQ_PUFFER_TITEL_MIT_WP, WPName);
 
+            // PAKET B2: VOR ArtAnwenden - dort wird der Block eingepasst und sichtbar
+            // gemacht, und die Auswahl soll dann schon stehen. Der CheckedChanged-Handler
+            // des Vorschlags (70/50) läuft dabei nur, wenn wirklich auf „fest"
+            // umgeschaltet wird UND die Felder leer sind; ein gepflegtes Paar steht
+            // vorher drin und bleibt.
+            TemperaturbezugSetzen();
+
             ArtAnwenden();
             PufferListeLaden();
 
@@ -463,6 +762,12 @@ namespace WindowsFormsApplication1
             _lblHinweisArt.Text = IstKessel
                 ? MyResource.Resource.SIMQ_PUFFER_HINWEIS_KASKADE_KURZ
                 : MyResource.Resource.SIMQ_PUFFER_HINWEIS_QUELLWAERME;
+
+            // PAKET B2: Der Temperaturbezug gilt NUR für den Heizkessel (Begründung beim
+            // Feld _lblTempBezug). Bei der Wärmepumpe bleibt der Dialog Pixel für Pixel
+            // der von Paket Q1.
+            if (IstKessel) TemperaturbezugEinpassen();
+            TemperaturfelderAnzeigen();
         }
 
         /// <summary>
@@ -646,6 +951,14 @@ namespace WindowsFormsApplication1
             // Feld zeigen, das der Anwender nicht sieht.
             if (IstKessel)
             {
+                // PAKET B2: Der Temperaturbezug ist die EINZIGE Eingabe, die der Kessel
+                // in diesem Dialog macht - sie wird deshalb hier geprüft.
+                if (!TemperaturbezugUebernehmen())
+                {
+                    this.DialogResult = DialogResult.None;
+                    return;
+                }
+
                 ID_Puffer = gewaehlt.ID;
                 Pufferspeicher = gewaehlt.Bezeichner;
                 return;

@@ -218,6 +218,101 @@ namespace WindowsFormsApplication1
             ShowStatus(MyResource.Resource.SIM_STATUS_EINSTELLUNG_FEHLER, Color.DarkRed);
         }
 
+        // --- Booster-Lesepunkt (Paket B2, Nutzerauftrag 28.08.2026) -------------------
+
+        /// <summary>
+        /// Schalter „Booster liest Speicherzustand vom Stundenanfang (konservativ)" in der
+        /// Fußzeile — die Projekteinstellung <c>Tab_Einstellungen.Booster_Lesepunkt</c>
+        /// (Schema-Schritt 55).
+        ///
+        /// <para><b>Eine Checkbox statt einer ComboBox.</b> Es gibt genau zwei Zustände,
+        /// und einer davon ist die Vorbelegung. Die Beschriftung nennt den ANGEHAKTEN
+        /// Zustand („Stundenanfang, konservativ"); den anderen erklärt der Mouseover-Text
+        /// — dieselbe Bauart wie beim Extrapolationsschalter daneben.</para>
+        ///
+        /// <para><b>Angehakt = „Davor".</b> Das ist die Vorbelegung des Nutzerauftrags,
+        /// und ein Haken, den niemand anfasst, führt damit zum vorbelegten Verhalten.</para>
+        ///
+        /// <para>Aufbau programmatisch wie beim Nachbarschalter, Texte aus
+        /// <c>MyResource</c> (deutsch und englisch).</para>
+        /// </summary>
+        private CheckBox checkBox_BoosterLesepunkt;
+        private bool _lesepunktUiUpdate = false;
+
+        private void InitBoosterLesepunktSchalter()
+        {
+            checkBox_BoosterLesepunkt = new CheckBox();
+            checkBox_BoosterLesepunkt.Name = "checkBox_BoosterLesepunkt";
+            checkBox_BoosterLesepunkt.Text = MyResource.Resource.SIM_BOOSTER_LESEPUNKT_SCHALTER;
+            checkBox_BoosterLesepunkt.AutoSize = true;
+            checkBox_BoosterLesepunkt.Checked = true;    // Vorbelegung wie im Datenmodell
+            // UNSICHTBAR bis erwiesen ist, dass das Projekt einen Booster führt: Ein
+            // Schalter für eine Konstellation, die es nicht gibt, wäre eine Zusage ohne
+            // Wirkung (dieselbe Regel wie bei den Verdampfer-Parametern am Kessel).
+            checkBox_BoosterLesepunkt.Visible = false;
+
+            _uebersichtTip.SetToolTip(checkBox_BoosterLesepunkt,
+                Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_BOOSTER_LESEPUNKT_TOOLTIP));
+
+            checkBox_BoosterLesepunkt.CheckedChanged += checkBox_BoosterLesepunkt_CheckedChanged;
+            this.Controls.Add(checkBox_BoosterLesepunkt);
+            checkBox_BoosterLesepunkt.BringToFront();
+        }
+
+        /// <summary>
+        /// Belegt den Schalter vor und blendet ihn ein, sobald das Projekt mindestens
+        /// einen gekoppelten Booster führt.
+        ///
+        /// <para>Die Booster-Frage beantwortet <see cref="Warnkriterien.BoosterAnlagen"/>
+        /// — dieselbe EINE Wahrheit, aus der auch das Booster-Badge der Erzeugerkarte und
+        /// die Schema-Hinweise kommen (Entscheidung F9). Eine zweite Auslegung daneben
+        /// wäre eine zweite Wahrheit über dieselbe Konstellation.</para>
+        /// </summary>
+        private void AktualisiereBoosterLesepunktSchalter()
+        {
+            if (checkBox_BoosterLesepunkt == null) return;
+
+            bool mitBooster = m_ID_Projekt > 0 &&
+                              Warnkriterien.BoosterAnlagen(m_ID_Projekt).Count > 0;
+
+            _lesepunktUiUpdate = true;
+            try
+            {
+                checkBox_BoosterLesepunkt.Visible = mitBooster;
+                checkBox_BoosterLesepunkt.Enabled = mitBooster;
+                checkBox_BoosterLesepunkt.Checked =
+                    !mitBooster ||
+                    !string.Equals(KonfigurationCtrl.BoosterLesepunktLesen(m_ID_Projekt),
+                                   DbWerte.BOOSTER_LESEPUNKT_DANACH, StringComparison.Ordinal);
+            }
+            finally { _lesepunktUiUpdate = false; }
+        }
+
+        private void checkBox_BoosterLesepunkt_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_lesepunktUiUpdate || m_ID_Projekt <= 0) return;
+
+            bool davor = checkBox_BoosterLesepunkt.Checked;
+            string wert = davor ? DbWerte.BOOSTER_LESEPUNKT_DAVOR : DbWerte.BOOSTER_LESEPUNKT_DANACH;
+
+            // Sofort schreiben wie beim Nachbarschalter: Die Einstellung gehört nicht zu
+            // dem Satz, den btn_Speichern_Click über KonfigurationCtrl.Update wegschreibt.
+            if (KonfigurationCtrl.BoosterLesepunktSchreiben(m_ID_Projekt, wert))
+            {
+                ShowStatus(davor
+                    ? MyResource.Resource.SIM_STATUS_LESEPUNKT_DAVOR
+                    : MyResource.Resource.SIM_STATUS_LESEPUNKT_DANACH,
+                    Color.DarkGreen);
+                return;
+            }
+
+            _lesepunktUiUpdate = true;
+            try { checkBox_BoosterLesepunkt.Checked = !davor; }
+            finally { _lesepunktUiUpdate = false; }
+
+            ShowStatus(MyResource.Resource.SIM_STATUS_EINSTELLUNG_FEHLER, Color.DarkRed);
+        }
+
         // D3: AktualisierePufferFusszeile ist ENTFALLEN. Die einzeilige Aufzählung
         // „Pufferspeicher im Projekt: Name (Heizung, 800 l) · …" (label_PufferListe) hat
         // die Speicherspalte abgelöst — dieselbe Auskunft steht jetzt je Speicher auf
@@ -816,6 +911,17 @@ namespace WindowsFormsApplication1
                         object oHoehe = WaermequelleClass.WertLesen(info.ID, "WQ_Anschlusshoehe");
                         if (oHoehe != null) frmQuelle.Anschlusshoehe = Convert.ToDouble(oHoehe);
 
+                        // PAKET B2 (Schema-Schritt 55): Temperaturbezug der Kessel-Kaskade
+                        // und - als seine feste Vorgabe - das Temperaturpaar der ANLAGE.
+                        // Der Dialog zeigt beides nur beim Heizkessel; gelesen wird es
+                        // trotzdem für beide Arten, damit eine Wärmepumpen-Bearbeitung die
+                        // Werte unverändert zurückschreibt statt sie zu leeren.
+                        frmQuelle.TemperaturModus = DbWerte.TemperaturModusOderDefault(
+                            WaermequelleClass.WertLesen(info.ID,
+                                SchemaKatalog.SPALTE_ANLAGE_WQ_TEMPERATURMODUS));
+                        frmQuelle.VorlaufAnlage = info.Vorlauf;
+                        frmQuelle.RuecklaufAnlage = info.Ruecklauf;
+
                         frmQuelle.SetControls();
                         if (frmQuelle.ShowDialog(this) != DialogResult.OK) return;
 
@@ -876,6 +982,35 @@ namespace WindowsFormsApplication1
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_Anschlusshoehe",
                             System.Data.OleDb.OleDbType.Double,
                             hoehe.HasValue ? (object)hoehe.Value : DBNull.Value);
+
+                        // PAKET B2 (Nutzerauftrag 28.08.2026): Der Temperaturbezug gilt nur
+                        // für den HEIZKESSEL - bei der Wärmepumpe hat der Dialog die
+                        // Auswahl gar nicht gezeigt, und dann darf er sie auch nicht
+                        // schreiben (dieselbe Regel wie beim Verdampfer-Block darüber).
+                        //
+                        // Das TEMPERATURPAAR geht nur im Modus „fest" weg. Bei „berechnet"
+                        // bleibt ein einmal gepflegtes Paar an der Anlage stehen: Es ist
+                        // dort auch für andere Auswertungen die Systemvorgabe (W3,
+                        // PufferSpCtrl.SystemVorlauf), und der Modus sagt nur, dass der
+                        // Quellanteil es nicht als Vorgabe benutzt.
+                        if (!info.IstWaermepumpe)
+                        {
+                            WaermequelleClass.WertSchreiben(info.ID,
+                                SchemaKatalog.SPALTE_ANLAGE_WQ_TEMPERATURMODUS,
+                                frmQuelle.TemperaturModus);
+
+                            if (string.Equals(frmQuelle.TemperaturModus,
+                                              DbWerte.WQ_TEMPMODUS_FEST, StringComparison.Ordinal))
+                            {
+                                WaermequelleClass.WertSchreiben(info.ID, "Vorlauf",
+                                                                frmQuelle.VorlaufAnlage);
+                                // Die Spalte trägt an der Datenbank den UMLAUT
+                                // (ProjektPuffer.SQL_SYSTEM_RUECKLAUF); WertSchreiben
+                                // klammert den Namen, der Zugriff trägt.
+                                WaermequelleClass.WertSchreiben(info.ID, "Rücklauf",
+                                                                frmQuelle.RuecklaufAnlage);
+                            }
+                        }
 
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_Typ", typNeu);
 

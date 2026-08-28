@@ -15199,6 +15199,28 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Booster liest Speicherzustand vom Stundenanfang (konservativ) ähnelt.
+        /// </summary>
+        public static string SIM_BOOSTER_LESEPUNKT_SCHALTER {
+            get {
+                return ResourceManager.GetString("SIM_BOOSTER_LESEPUNKT_SCHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angehakt: Ein Erzeuger, der seine Wärme aus einem geteilten Pufferspeicher bezieht, liest dessen Temperatur einmal am Stundenanfang — also aus dem Zustand am Ende der Vorstunde. Was ein vorgelagerter Erzeuger in derselben Stunde erst nachlädt, wird ihm nicht gutgeschrieben.
+        ///
+        ///Nicht angehakt: gelesen wird nach der Ladephase des vorgelagerten Erzeugers; der Booster sieht den Speicher dann im am weitesten geladenen Zustand der Stunde.
+        ///
+        ///Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt. ähnelt.
+        /// </summary>
+        public static string SIM_BOOSTER_LESEPUNKT_TOOLTIP {
+            get {
+                return ResourceManager.GetString("SIM_BOOSTER_LESEPUNKT_TOOLTIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string SIM_BTN_ABBRECHEN {
@@ -17240,6 +17262,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_STATUS_KONFIG_GESPEICHERT {
             get {
                 return ResourceManager.GetString("SIM_STATUS_KONFIG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Booster-Lesepunkt: nach der Ladephase der Vorebene. ähnelt.
+        /// </summary>
+        public static string SIM_STATUS_LESEPUNKT_DANACH {
+            get {
+                return ResourceManager.GetString("SIM_STATUS_LESEPUNKT_DANACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Booster-Lesepunkt: Stundenanfang (konservativ). ähnelt.
+        /// </summary>
+        public static string SIM_STATUS_LESEPUNKT_DAVOR {
+            get {
+                return ResourceManager.GetString("SIM_STATUS_LESEPUNKT_DAVOR", resourceCulture);
             }
         }
         
@@ -19286,6 +19326,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte Vorlauf und Rücklauf als ganze Zahlen eintragen: Rücklauf über 0 °C und Vorlauf über Rücklauf. Wer keine Vorgabe machen möchte, wählt „berechnet (aus der Anlage)&quot;. ähnelt.
+        /// </summary>
+        public static string SIMQ_PUFFER_MSG_TEMPERATURPAAR {
+            get {
+                return ResourceManager.GetString("SIMQ_PUFFER_MSG_TEMPERATURPAAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quelltemperatur [°C]: ähnelt.
         /// </summary>
         public static string SIMQ_PUFFER_QUELLTEMPERATUR {
@@ -19309,6 +19358,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_PUFFER_SPREIZUNG {
             get {
                 return ResourceManager.GetString("SIMQ_PUFFER_SPREIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die berechnet (aus der Anlage) ähnelt.
+        /// </summary>
+        public static string SIMQ_PUFFER_TB_BERECHNET {
+            get {
+                return ResourceManager.GetString("SIMQ_PUFFER_TB_BERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fest vorgegeben ähnelt.
+        /// </summary>
+        public static string SIMQ_PUFFER_TB_FEST {
+            get {
+                return ResourceManager.GetString("SIMQ_PUFFER_TB_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kessel hebt von seinem Rücklauf auf seinen Vorlauf an; der Puffer trägt den Teil, den seine Temperatur davon abdeckt. „Berechnet&quot; nimmt dafür die Betriebstemperaturen des Speichers, den der Kessel lädt (Schichtung eingeschlossen) — dann ist hier nichts zu pflegen. ähnelt.
+        /// </summary>
+        public static string SIMQ_PUFFER_TB_HINWEIS {
+            get {
+                return ResourceManager.GetString("SIMQ_PUFFER_TB_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf [°C]: ähnelt.
+        /// </summary>
+        public static string SIMQ_PUFFER_TB_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("SIMQ_PUFFER_TB_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf [°C]: ähnelt.
+        /// </summary>
+        public static string SIMQ_PUFFER_TB_VORLAUF {
+            get {
+                return ResourceManager.GetString("SIMQ_PUFFER_TB_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturbezug: ähnelt.
+        /// </summary>
+        public static string SIMQ_PUFFER_TEMPERATURBEZUG {
+            get {
+                return ResourceManager.GetString("SIMQ_PUFFER_TEMPERATURBEZUG", resourceCulture);
             }
         }
         
@@ -20025,6 +20128,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMWARN_KARTE_CHIP_TIP {
             get {
                 return ResourceManager.GetString("SIMWARN_KARTE_CHIP_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage „{0}&quot;: Der Temperaturbezug steht auf „fest vorgegeben&quot;, aber es ist kein vollständiges Vor-/Rücklaufpaar gepflegt. Der Anteil, den der Quellspeicher „{1}&quot; beisteuert, lässt sich damit gegen keine Vorgabe rechnen. Der Lauf fällt auf „berechnet&quot; zurück — bitte das Paar eintragen oder auf „berechnet&quot; umstellen. ähnelt.
+        /// </summary>
+        public static string SIMWARN_KESSEL_TEMPERATURPAAR {
+            get {
+                return ResourceManager.GetString("SIMWARN_KESSEL_TEMPERATURPAAR", resourceCulture);
             }
         }
         
