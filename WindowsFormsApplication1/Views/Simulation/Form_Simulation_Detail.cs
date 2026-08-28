@@ -639,7 +639,17 @@ namespace WindowsFormsApplication1
             Control beschriftung = NachbarZeile(tb_Gasspitze, true);
             Control einheit = NachbarZeile(tb_Gasspitze, false);
 
-            int y = tb_Gasspitze.Bottom + 9;
+            // D-CHECK 28.08.2026: „eine Zeile unter Gasspitze" ist nicht zwangsläufig
+            // frei — auf der umgeräumten Seite steht dort die Zeile „Wärmeproduktion
+            // Spitzenkessel". Die neue Zeile lag deckungsgleich darüber (Schnitt
+            // 97 x 23 px im Feld, 139 x 19 px in der Beschriftung). Der Startwert bleibt
+            // die Zeile unter Gasspitze, wird aber so lange nach unten geschoben, bis das
+            // Band frei ist. Gemessen statt über Namen aufgelöst — dieselbe Begründung
+            // wie bei NachbarZeile.
+            int links = beschriftung != null ? beschriftung.Left : tb_Gasspitze.Left - 250;
+            int rechts = einheit != null ? einheit.Right : tb_Gasspitze.Right + 60;
+            int y = FreieZeile(tabPage_Heizkessel, links, rechts,
+                               tb_Gasspitze.Bottom + 9, tb_Gasspitze.Height, 9);
 
             tb_KesselQuellwaerme = new TextBox();
             tb_KesselQuellwaerme.Name = "tb_KesselQuellwaerme";
@@ -665,8 +675,17 @@ namespace WindowsFormsApplication1
                 label_KesselQuellwaerme.ForeColor = beschriftung.ForeColor;
                 label_KesselQuellwaerme.BackColor = beschriftung.BackColor;
                 label_KesselQuellwaerme.TextAlign = ContentAlignment.MiddleRight;
+
+                // D-CHECK 28.08.2026: Die Breite der Nachbarzeile reicht für diesen Text
+                // nicht („Quellwärme aus Kaskade:" braucht 164 px, die Nachbarzeile ist
+                // 139 px breit) — der Text wurde links beschnitten. Die Zeile ist
+                // RECHTSBÜNDIG, also wächst sie nach links; die rechte Kante bleibt an
+                // der Nachbarzeile ausgerichtet.
+                int breite = Math.Max(beschriftung.Width,
+                                      LabelBreiteMessen(label_KesselQuellwaerme.Text,
+                                                        label_KesselQuellwaerme.Font));
                 label_KesselQuellwaerme.Bounds =
-                    new Rectangle(beschriftung.Left, y, beschriftung.Width, tb_Gasspitze.Height);
+                    new Rectangle(beschriftung.Right - breite, y, breite, tb_Gasspitze.Height);
             }
             else
             {
@@ -701,6 +720,44 @@ namespace WindowsFormsApplication1
         }
 
         private readonly ToolTip _tooltipQuellwaerme = new ToolTip();
+
+        /// <summary>
+        /// Die oberste freie Zeilenlage ab <paramref name="startY"/> im Streifen
+        /// <paramref name="links"/>…<paramref name="rechts"/>: Solange ein vorhandenes
+        /// Steuerelement das Band schneidet, rückt die Zeile unter dieses Element.
+        /// </summary>
+        /// <remarks>
+        /// Für programmatisch nachgetragene Ergebniszeilen. Der Aufrufer kennt die
+        /// Wunschlage, aber nicht, was der Seitenumbau (KesselSeiteAnordnen) und die
+        /// Designer-Änderungen dort inzwischen hingestellt haben.
+        /// </remarks>
+        private static int FreieZeile(Control seite, int links, int rechts,
+                                      int startY, int hoehe, int abstand)
+        {
+            if (seite == null) return startY;
+
+            int y = startY;
+            for (int runde = 0; runde < 20; runde++)
+            {
+                Rectangle band = Rectangle.FromLTRB(links, y, rechts, y + hoehe);
+                int naechstesY = y;
+
+                // BEWUSST OHNE Sichtbarkeitsprüfung: Aufgerufen wird im Konstruktor, und
+                // Kinder einer noch nicht gewählten TabPage melden dort Visible = false.
+                // Wer danach filtert, findet nichts und lässt die Zeile stehen, wo sie
+                // nicht hingehört (genau der Befund, den diese Methode behebt).
+                foreach (Control c in seite.Controls)
+                {
+                    Rectangle schnitt = Rectangle.Intersect(band, c.Bounds);
+                    if (schnitt.Width <= 0 || schnitt.Height <= 0) continue;
+                    if (c.Bottom + abstand > naechstesY) naechstesY = c.Bottom + abstand;
+                }
+
+                if (naechstesY == y) return y;
+                y = naechstesY;
+            }
+            return y;
+        }
 
         /// <summary>
         /// Das Steuerelement, das auf derselben Zeile LINKS (<paramref name="links"/>)
@@ -1360,30 +1417,48 @@ namespace WindowsFormsApplication1
             // Die Beschriftung steht LINKS neben dem Feld (nicht darüber wie bei der
             // Summenzeile): drei Zeilen mit je einer Überschrift darüber wären eine
             // Neugestaltung des Blocks, die hier nicht gewollt ist.
-            int breiteLabel = 0;
-            foreach (string n in namen)
+            //
+            // D-CHECK 28.08.2026: Die Breite wird an den FERTIG EINGEHÄNGTEN Labels
+            // gemessen, nicht vorab an einer Schrift. Auf dieser Seite liefert
+            // NachbarZeile kein Vorbild (die Summenzeile trägt ihre Beschriftung DARÜBER),
+            // die Labels erben ihre Schrift also von der TabPage. Der Konstruktor läuft
+            // aber VOR der Schriftskalierung des Formulars — die endgültige Breite kann
+            // hier nur ein Mindestmaß sein. Die Feinkorrektur macht
+            // BedarfKanalBeschriftungEinpassen, wenn der Block eingeblendet wird.
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+            {
+                Label vorbereitet = new Label();
+                vorbereitet.Name = "label_BedarfKanal" + k;
+                vorbereitet.Text = namen[k];
+                vorbereitet.AutoSize = false;
+                vorbereitet.TextAlign = ContentAlignment.MiddleLeft;
+                vorbereitet.Visible = false;
+                if (beschriftung != null)
+                {
+                    vorbereitet.Font = beschriftung.Font;
+                    vorbereitet.ForeColor = beschriftung.ForeColor;
+                    vorbereitet.BackColor = beschriftung.BackColor;
+                }
+                // Die Seitenleiste LEIHT die Steuerelemente der Seite in ein Panel mit
+                // anderer Schrift aus (listViewQuellen_SelectedIndexChanged). Dabei
+                // wechselt die geerbte Schrift und der Text braucht mehr Platz — die
+                // Breite muss also nachgeführt werden, sobald das geschieht.
+                vorbereitet.FontChanged += delegate { BedarfKanalBeschriftungEinpassen(); };
+                tabPage_Bedarf.Controls.Add(vorbereitet);
+                label_BedarfKanal[k] = vorbereitet;
+            }
+
+            int breiteLabel = 90;
+            foreach (Label lblMess in label_BedarfKanal)
                 breiteLabel = Math.Max(breiteLabel,
-                                       BreiteMessen(n, label_BedarfKanalKopf.Font, 90));
+                                       lblMess.GetPreferredSize(Size.Empty).Width);
 
             for (int k = 0; k < Kanal.ANZAHL; k++)
             {
                 int y = oben + 22 + k * schritt;
 
-                Label lbl = new Label();
-                lbl.Name = "label_BedarfKanal" + k;
-                lbl.Text = namen[k];
-                lbl.AutoSize = false;
-                lbl.TextAlign = ContentAlignment.MiddleLeft;
-                lbl.Visible = false;
-                if (beschriftung != null)
-                {
-                    lbl.Font = beschriftung.Font;
-                    lbl.ForeColor = beschriftung.ForeColor;
-                    lbl.BackColor = beschriftung.BackColor;
-                }
+                Label lbl = label_BedarfKanal[k];
                 lbl.Bounds = new Rectangle(muster.Left, y, breiteLabel, muster.Height);
-                tabPage_Bedarf.Controls.Add(lbl);
-                label_BedarfKanal[k] = lbl;
 
                 TextBox feld = new TextBox();
                 feld.Name = "tb_BedarfKanal" + k;
@@ -1430,6 +1505,8 @@ namespace WindowsFormsApplication1
 
             double[] mwh = SimulationRunner.BedarfJeKanal(simulation_Waermebedarf);
 
+            BedarfKanalBeschriftungEinpassen();
+
             if (label_BedarfKanalKopf != null) label_BedarfKanalKopf.Visible = true;
             for (int k = 0; k < Kanal.ANZAHL; k++)
             {
@@ -1437,6 +1514,40 @@ namespace WindowsFormsApplication1
                 tb_BedarfKanal[k].Visible = true;
                 label_BedarfKanal[k].Visible = true;
                 label_BedarfKanalEinheit[k].Visible = true;
+            }
+        }
+
+        /// <summary>
+        /// Gibt den drei Kanalbeschriftungen die Breite, die sie mit der ANGEZEIGTEN
+        /// Schrift brauchen, und rückt Wertfeld und Einheit um denselben Betrag nach.
+        /// </summary>
+        /// <remarks>
+        /// D-CHECK 28.08.2026: Im Konstruktor gemessen ergaben sich 92 px — dort trägt
+        /// die Seite noch die Entwurfsschrift. Auf dem Bildschirm braucht
+        /// „Brauchwasser" 106 px und „Prozesswärme" 111 px; beide Wörter waren
+        /// beschnitten. Die Korrektur läuft deshalb erst beim Einblenden des Blocks,
+        /// wenn die Schriftskalierung des Formulars abgeschlossen ist. Sie ist
+        /// mehrfach aufrufbar: Ist die Breite schon groß genug, tut sie nichts.
+        /// </remarks>
+        private void BedarfKanalBeschriftungEinpassen()
+        {
+            if (label_BedarfKanal == null || tb_BedarfKanal == null) return;
+            if (label_BedarfKanal.Length == 0 || label_BedarfKanal[0] == null) return;
+
+            int breite = 0;
+            foreach (Label l in label_BedarfKanal)
+                if (l != null) breite = Math.Max(breite, l.GetPreferredSize(Size.Empty).Width);
+
+            int delta = breite - label_BedarfKanal[0].Width;
+            if (delta <= 0) return;
+
+            for (int k = 0; k < label_BedarfKanal.Length; k++)
+            {
+                if (label_BedarfKanal[k] == null) continue;
+                label_BedarfKanal[k].Width = breite;
+                if (tb_BedarfKanal[k] != null) tb_BedarfKanal[k].Left += delta;
+                if (label_BedarfKanalEinheit[k] != null && tb_BedarfKanal[k] != null)
+                    label_BedarfKanalEinheit[k].Left = tb_BedarfKanal[k].Right + 8;
             }
         }
 
@@ -1868,16 +1979,46 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Breite, die ein <see cref="Label"/> für <paramref name="text"/> in
+        /// <paramref name="schrift"/> beansprucht — genau die Größe, die das Steuerelement
+        /// selbst meldet.
+        /// </summary>
+        /// <remarks>
+        /// D-CHECK 28.08.2026: <c>TextRenderer.MeasureText(text, schrift)</c> misst
+        /// KLEINER als das Label später zeichnet — das Label schlägt seinen Innenabstand
+        /// auf. Gemessen an der Bedarfsseite: „Prozesswärme" ergab 92 px, das Label
+        /// brauchte 111 px, und der Text war um 13 px beschnitten. Die Wegwerf-Instanz
+        /// beantwortet dieselbe Frage mit derselben Rechnung wie das echte Label.
+        /// </remarks>
+        private static int LabelBreiteMessen(string text, Font schrift)
+        {
+            try
+            {
+                using (Label mess = new Label())
+                {
+                    mess.AutoSize = true;
+                    if (schrift != null) mess.Font = schrift;
+                    mess.Text = text ?? "";
+                    return mess.PreferredWidth;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Labelbreite nicht messbar: " + ex.Message);
+                return TextRenderer.MeasureText(text ?? "", schrift).Width + 6;
+            }
+        }
+
+        /// <summary>
         /// Die Breite, die <paramref name="text"/> in <paramref name="schrift"/> braucht —
-        /// mindestens <paramref name="mindestens"/>. Gemessen mit demselben Renderer, mit
-        /// dem WinForms zeichnet (<c>TextRenderer</c>, GDI); ein Zuschlag von 6 px hält den
-        /// Text von der Kante frei.
+        /// mindestens <paramref name="mindestens"/>. Gemessen wie das Label selbst misst
+        /// (<see cref="LabelBreiteMessen"/>), damit die Beschriftung nicht beschnitten wird.
         /// </summary>
         private static int BreiteMessen(string text, Font schrift, int mindestens)
         {
             try
             {
-                int gemessen = TextRenderer.MeasureText(text ?? "", schrift).Width + 6;
+                int gemessen = LabelBreiteMessen(text, schrift);
                 return (gemessen > mindestens) ? gemessen : mindestens;
             }
             catch (Exception ex)
@@ -3384,12 +3525,43 @@ namespace WindowsFormsApplication1
             label_Laufmeldungen.TextAlign = ContentAlignment.MiddleLeft;
             label_Laufmeldungen.ForeColor = Color.FromArgb(0x8A, 0x53, 0x00);   // gedecktes Bernstein
             label_Laufmeldungen.Cursor = Cursors.Hand;
-            label_Laufmeldungen.Location = new Point(btn_Simulation.Right + 16, btn_Simulation.Top + 8);
-            label_Laufmeldungen.Size = new Size(440, 24);
+            // D-CHECK 28.08.2026: „rechts neben dem Startknopf" war zu kurz gedacht —
+            // dort steht btn_Konfiguration, und die Meldungszeile legte sich mit
+            // 177 x 24 px darüber. Der Platz wird deshalb GEMESSEN: hinter dem letzten
+            // Knopf derselben Fußzeile. Nur Knöpfe, die auf der Zeile tatsächlich im Weg
+            // stehen, schieben; btn_Beenden am rechten Rand bleibt außen vor.
+            int links = btn_Simulation.Right + 16;
+            int oben = btn_Simulation.Top + 8;
+            const int BREITE_MELDUNG = 440;
+            foreach (Control c in FusszeileNachbarn(oben, oben + 24))
+                if (c.Right + 16 > links && c.Left < links + BREITE_MELDUNG)
+                    links = c.Right + 16;
+
+            label_Laufmeldungen.Location = new Point(links, oben);
+            label_Laufmeldungen.Size = new Size(BREITE_MELDUNG, 24);
             label_Laufmeldungen.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             label_Laufmeldungen.Click += label_Laufmeldungen_Click;
             this.Controls.Add(label_Laufmeldungen);
             label_Laufmeldungen.BringToFront();
+        }
+
+        /// <summary>
+        /// Die Knöpfe des Formulars, die das Band zwischen <paramref name="oben"/> und
+        /// <paramref name="unten"/> schneiden — aufsteigend nach linker Kante, damit ein
+        /// Aufrufer sie der Reihe nach umgehen kann.
+        /// </summary>
+        private List<Control> FusszeileNachbarn(int oben, int unten)
+        {
+            List<Control> treffer = new List<Control>();
+            foreach (Control c in this.Controls)
+            {
+                if (!(c is Button)) continue;
+                if (!c.Visible) continue;
+                if (c.Bottom <= oben || c.Top >= unten) continue;
+                treffer.Add(c);
+            }
+            treffer.Sort(delegate (Control a, Control b) { return a.Left.CompareTo(b.Left); });
+            return treffer;
         }
 
         private void label_Laufmeldungen_Click(object sender, EventArgs e)
@@ -5568,11 +5740,14 @@ namespace WindowsFormsApplication1
                 SpPreisinfoAktualisieren();
             };
 
+            // D-CHECK 28.08.2026: Die Preiszeile ist zweizeilig (gemessen 39 px bei 700 px
+            // Breite) und wurde mit 34 px um die halbe zweite Zeile beschnitten; die
+            // Fußzeile darunter rückt um denselben Betrag nach.
             zeile += 26;
-            label_SpPreisinfo = SpHinweisAnlegen("", SP_SPALTE_A_LABEL, zeile, 700, 34);
+            label_SpPreisinfo = SpHinweisAnlegen("", SP_SPALTE_A_LABEL, zeile, 700, 42);
 
             // --- Fußzeile: welche Variante wird hier bearbeitet? ---------------
-            label_SpVariantenstatus = SpHinweisAnlegen("", SP_SPALTE_A_LABEL, zeile + 40, 700, 24);
+            label_SpVariantenstatus = SpHinweisAnlegen("", SP_SPALTE_A_LABEL, zeile + 46, 700, 24);
             label_SpVariantenstatus.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
 
             // --- Auslegungsoptimierung (AP8, Fachkonzept 6.3) ------------------
@@ -5582,10 +5757,14 @@ namespace WindowsFormsApplication1
             // dieser Seite außer dem Projekt und dem gerechneten Simulationsobjekt;
             // alles Weitere - Suchraum, Fortschritt, Heatmap, Übernahme - steht in
             // Form_SpeicherOptimierung.
+            //
+            // D-CHECK 28.08.2026: Der Knopf stand auf der Höhe der 700 px breiten
+            // Fußzeile und lag mit 220 x 24 px darüber. Er rückt deshalb UNTER die
+            // Fußzeile statt neben sie.
             Button knopfOptimierung = new Button();
             knopfOptimierung.Name = "button_SpOptimierung";
             knopfOptimierung.Text = MyResource.Resource.OPT_BTN_OEFFNEN;
-            knopfOptimierung.Location = new Point(SP_SPALTE_B_LABEL, zeile + 36);
+            knopfOptimierung.Location = new Point(SP_SPALTE_B_LABEL, zeile + 78);
             knopfOptimierung.Size = new Size(220, 30);
             knopfOptimierung.Click += SpOptimierung_Click;
             tooltip.SetToolTip(knopfOptimierung, MyResource.Resource.OPT_HINWEIS_ZIELFUNKTION);
@@ -6826,7 +7005,11 @@ namespace WindowsFormsApplication1
             if (tabelle_SpeicherSeite == null || panel_SpKernblock == null) return;
             if (flow_SpKernAnlage == null || flow_SpKernErgebnis == null) return;
 
-            int hoehe = panel_SpKernblock.Padding.Vertical
+            // D-CHECK 28.08.2026: Die Zeilenhöhe des Rasters trägt AUCH den Außenabstand
+            // des Blocks (Margin 0/4/0/8). Ohne ihn blieb der Block 12 px zu flach, und
+            // die untere Kachelreihe stand 8 px über seinen Rand hinaus.
+            int hoehe = panel_SpKernblock.Margin.Vertical
+                        + panel_SpKernblock.Padding.Vertical
                         + flow_SpKernAnlage.Height + flow_SpKernErgebnis.Height;
             if (hoehe < SP_ERG_KERN_HOEHE_START) hoehe = SP_ERG_KERN_HOEHE_START;
 
