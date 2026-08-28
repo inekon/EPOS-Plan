@@ -55,30 +55,37 @@ namespace WindowsFormsApplication1
     ///   <item><term>W2</term><description>Die BAUFORM (<c>Tab_Pufferspeicher.Speichertyp</c>)
     ///     widerspricht dem Klassen-Set.</description></item>
     ///   <item><term>W3</term><description>Der Erzeuger-Vorlauf liegt unter dem wirksamen
-    ///     Vorlauf <c>VL_eff</c> des Zielspeichers.</description></item>
+    ///     Vorlauf <c>VL_eff</c> des Zielspeichers ODER — seit Paket P1 — unter dessen
+    ///     Nutztemperatur <c>T_Nutz_BW</c>.</description></item>
+    ///   <item><term>W4</term><description>Die Nutztemperatur <c>T_Nutz_BW</c> liegt ueber
+    ///     dem wirksamen Vorlauf <c>VL_eff</c> — der Lauf klemmt sie, sonst waere der
+    ///     Brauchwasserkanal dauerhaft abgeschaltet (Paket P1).</description></item>
     ///   <item><term>W5</term><description>Ein als Waermequelle konfigurierter Puffer hat
     ///     keinen einzigen Lader.</description></item>
+    ///   <item><term>W6</term><description>HART: <c>Schichten_Anzahl</c> &gt; 1 am
+    ///     Leitspeicher eines Parallelverbunds (Paket P1).</description></item>
     ///   <item><term>HART_*</term><description>Kurzschluss (Quelle = eigenes Ladeziel),
     ///     Ring in der Kaskadenkette, leeres Klassen-Set.</description></item>
     /// </list></para>
     ///
-    /// <para><b>BEWUSST VERTAGT auf Paket P1 (Schichtmodell).</b> Drei Anteile des
-    /// Katalogs verlangen Groessen, die es im Datenmodell noch nicht gibt; ihre
-    /// Schluessel sind hier bereits reserviert, damit sie spaeter ohne Umbenennung
-    /// nachrutschen:
-    /// <list type="bullet">
-    ///   <item><description>der <c>T_Nutz</c>-Anteil von W3 („Erzeuger-Vorlauf &lt;
-    ///     <c>T_Nutz</c> des Zielkanals") — <c>T_Nutz_BW</c> entsteht erst mit
-    ///     Schema-Schritt 53;</description></item>
-    ///   <item><description><see cref="W4_TNUTZ_UEBER_VLEFF"/> (<c>T_Nutz_BW</c> &gt;
-    ///     <c>VL_eff</c>) — dieselbe Spalte;</description></item>
-    ///   <item><description><see cref="W6_SCHICHTUNG_AM_VERBUND"/>
-    ///     (<c>Schichten_Anzahl</c> &gt; 1 am Leitspeicher eines Parallelverbunds) —
-    ///     <c>Schichten_Anzahl</c> entsteht ebenfalls erst mit Schritt 53. W6 wird
-    ///     ausserdem ABGEWIESEN und nicht nur gewarnt (Konzept 6.3); der Guard gehoert
-    ///     deshalb in den Speicherdialog von P1, dieser Katalog fuehrt nur den
-    ///     Schluessel.</description></item>
-    /// </list></para>
+    /// <para><b>PAKET P1 — die drei bis dahin vertagten Anteile sind scharf.</b> W4, W6
+    /// und der <c>T_Nutz</c>-Anteil von W3 verlangten Spalten, die es bis
+    /// Schema-Schritt 53 nicht gab (Ticket S2-O1); ihre Schluessel standen deshalb
+    /// reserviert im Katalogkopf. Sie sind jetzt echte Pruefungen — und bleiben
+    /// SPALTENTOLERANT: Fehlen <c>Schichten_Anzahl</c> und <c>T_Nutz_BW</c> (Schritt 53
+    /// nicht gelaufen), liefert <c>PufferSpCtrl.SchichtdatenAusZeile</c> die
+    /// verhaltensneutrale Vorbelegung, und keines der drei Kriterien schlaegt an. Auf
+    /// einem Bestand ohne gepflegte Schichtdaten aendert P1 am Laufprotokoll also
+    /// nichts.</para>
+    ///
+    /// <para><b>W6 wird ABGEWIESEN, nicht nur gemeldet</b> (Konzept 6.3, Entscheidung
+    /// F8): Verbund und Schichtung schliessen sich je Rechenspeicher aus. Der Guard sitzt
+    /// im Speicherdialog (<c>Form_PufferSp_Projekt</c>, N &gt; 1 an einem bestehenden
+    /// Leitspeicher) und in der Verbundpruefung
+    /// (<c>AnlagePufferVerbundCtrl.KonfliktPruefen</c>, Verbund an einem geschichteten
+    /// Leitspeicher). Dieser Katalog MELDET den Zustand zusaetzlich — an der Karte und
+    /// beim Laufstart —, damit ein auf anderem Weg entstandener Bestand nicht stumm
+    /// bleibt.</para>
     ///
     /// <para><b>Verhaeltnis zu den Bestandsguards.</b> Kurzschluss und Ring werden heute
     /// schon abgefangen — im Senkendialog (<c>Form_Waermesenke.ListePruefen</c>), in der
@@ -122,16 +129,30 @@ namespace WindowsFormsApplication1
         /// <summary>Bauform (<c>Speichertyp</c>) widerspricht dem Klassen-Set.</summary>
         public const string W2_BAUFORM_WIDERSPRUCH = "W2";
 
-        /// <summary>Erzeuger-Vorlauf &lt; <c>VL_eff</c> des Zielspeichers.</summary>
+        /// <summary>
+        /// Erzeuger-Vorlauf &lt; <c>VL_eff</c> des Zielspeichers — oder (Paket P1)
+        /// &lt; dessen <c>T_Nutz_BW</c>. BEIDE Anteile tragen denselben Schluessel: Es
+        /// ist dasselbe Kriterium des Konzepts („Erzeuger-Vorlauf &lt; <c>VL_eff</c> des
+        /// Ziel-Puffers bzw. &lt; <c>T_Nutz</c> des Zielkanals", 6.2), nur mit zwei
+        /// Messlatten und zwei Texten.
+        /// </summary>
         public const string W3_VORLAUF_ZU_NIEDRIG = "W3";
 
-        /// <summary>RESERVIERT fuer Paket P1: <c>T_Nutz_BW</c> &gt; <c>VL_eff</c>.</summary>
+        /// <summary>
+        /// <c>T_Nutz_BW</c> &gt; <c>VL_eff</c> (Paket P1). Weich: Der Lauf klemmt die
+        /// Nutztemperatur auf <c>VL_eff</c> und rechnet weiter (Konzept 7.2) — ohne die
+        /// Klemmung waere der Brauchwasserkanal still komplett abgeschaltet.
+        /// </summary>
         public const string W4_TNUTZ_UEBER_VLEFF = "W4";
 
         /// <summary>Quellpuffer ohne einen einzigen Lader.</summary>
         public const string W5_QUELLE_OHNE_LADER = "W5";
 
-        /// <summary>RESERVIERT fuer Paket P1: Schichtung am Leitspeicher eines Verbunds.</summary>
+        /// <summary>
+        /// HART (Paket P1): <c>Schichten_Anzahl</c> &gt; 1 am Leitspeicher eines
+        /// Parallelverbunds. Abgewiesen wird die Konstellation im Dialog, dieser Katalog
+        /// meldet sie — Begruendung im Klassenkopf.
+        /// </summary>
         public const string W6_SCHICHTUNG_AM_VERBUND = "W6";
 
         /// <summary>
@@ -400,7 +421,7 @@ namespace WindowsFormsApplication1
             // --- W3: Erzeuger-Vorlauf unter VL_eff ------------------------------------
             //
             // Nur bei GEPFLEGTEM Erzeuger-Vorlauf: 0 heisst „nicht angegeben", nicht
-            // „0 °C". Der T_Nutz-Anteil dieses Kriteriums kommt mit Paket P1.
+            // „0 °C".
             int vorlaufAnlage = bild.AnlagenVorlauf(idAnlage);
             double vlEff = p.VL_eff;
 
@@ -409,6 +430,42 @@ namespace WindowsFormsApplication1
                     string.Format(MyResource.Resource.SIMWARN_W3_VORLAUF_ZU_NIEDRIG,
                                   bild.Anlagenname(idAnlage), Grad(vorlaufAnlage),
                                   Grad(vlEff), p.Anzeigename)));
+
+            // --- W3, T_Nutz-Anteil (PAKET P1) ----------------------------------------
+            //
+            // Die ZWEITE Messlatte desselben Kriteriums (Konzept 6.2: „bzw. < T_Nutz des
+            // Zielkanals"). Sie steht NEBEN der ersten und ersetzt sie nicht:
+            //
+            //   VL_eff-Befund    „der Erzeuger bringt den Speicher nicht auf
+            //                     Solltemperatur" - der Speicher laedt, nur eben nicht
+            //                     voll;
+            //   T_Nutz-Befund    „der Brauchwasserkanal bekommt gar nichts" - was unter
+            //                     T_Nutz eingeschichtet wird, gilt fuer diesen Kanal als
+            //                     unbrauchbar (7.4, Punkt 2).
+            //
+            // Der zweite ist die haertere Aussage und faellt in einem Fall AUCH ALLEIN an:
+            // Liegt T_Nutz_BW ueber VL_eff (Kriterium W4), kann ein Vorlauf zwischen
+            // beiden den Speicher voll laden und den Kanal trotzdem nie bedienen.
+            //
+            // Nur wenn T_Nutz_BW gepflegt ist (spaltentolerant: ohne Schritt 53 nie) und
+            // die Senkenzeile den BRAUCHWASSERkanal ueberhaupt beliefert - fuer eine
+            // reine Heizungs- oder Prozesszuordnung ist die Brauchwasser-Nutztemperatur
+            // keine Messlatte.
+            double tNutz = p.T_Nutz_BW ?? 0;
+            if (vorlaufAnlage > 0 && tNutz > 0 && vorlaufAnlage < tNutz &&
+                Enthaelt(kanaele, Kanal.BRAUCHWASSER))
+                befunde.Add(Befund(W3_VORLAUF_ZU_NIEDRIG, false, idAnlage, p.ID,
+                    string.Format(MyResource.Resource.SIMWARN_W3_UNTER_TNUTZ,
+                                  bild.Anlagenname(idAnlage), Grad(vorlaufAnlage),
+                                  Grad(tNutz), p.Anzeigename)));
+        }
+
+        /// <summary>Enthaelt das Kanalfeld diesen Kanal?</summary>
+        private static bool Enthaelt(int[] kanaele, int kanal)
+        {
+            if (kanaele == null) return false;
+            foreach (int k in kanaele) if (k == kanal) return true;
+            return false;
         }
 
         /// <summary>W2 und das leere Klassen-Set — was an EINEM Speicher haengt.</summary>
@@ -451,11 +508,40 @@ namespace WindowsFormsApplication1
             //
             // Eine LEERE Bauform ist kein Befund (Konzept 6.2: „nur pruefen, wenn
             // Speichertyp gepflegt ist").
-            if (!p.BauformWarmwasserseitig || p.Set.Brauchwasser) return;
+            if (p.BauformWarmwasserseitig && !p.Set.Brauchwasser)
+                befunde.Add(Befund(W2_BAUFORM_WIDERSPRUCH, false, 0, p.ID,
+                    string.Format(MyResource.Resource.SIMWARN_W2_BAUFORM_WIDERSPRUCH,
+                                  p.Anzeigename, p.Speichertyp, KlassenSetAnzeige(p.Set))));
 
-            befunde.Add(Befund(W2_BAUFORM_WIDERSPRUCH, false, 0, p.ID,
-                string.Format(MyResource.Resource.SIMWARN_W2_BAUFORM_WIDERSPRUCH,
-                              p.Anzeigename, p.Speichertyp, KlassenSetAnzeige(p.Set))));
+            // --- W4: T_Nutz_BW ueber VL_eff (PAKET P1) --------------------------------
+            //
+            // WEICH. Der Lauf klemmt die Nutztemperatur auf VL_eff und rechnet weiter
+            // (Konzept 7.2); ohne die Klemmung koennte keine Schicht sie je erreichen und
+            // der Brauchwasserkanal waere STILL komplett abgeschaltet - ein Speicher, der
+            // laedt und nie abgibt. Genau diese Stille soll der Befund beenden.
+            //
+            // Spaltentolerant: Ohne Migrationsschritt 53 ist T_Nutz_BW nie gepflegt.
+            double tNutz = p.T_Nutz_BW ?? 0;
+            if (tNutz > 0 && p.VL_eff > 0 && tNutz > p.VL_eff)
+                befunde.Add(Befund(W4_TNUTZ_UEBER_VLEFF, false, 0, p.ID,
+                    string.Format(MyResource.Resource.SIMWARN_W4_TNUTZ_UEBER_VLEFF,
+                                  p.Anzeigename, Grad(tNutz), Grad(p.VL_eff))));
+
+            // --- W6: Schichtung am Verbund-Leitspeicher (PAKET P1) --------------------
+            //
+            // HART. Verbund und Schichtung schliessen sich je Rechenspeicher aus
+            // (Konzept 6.3, Entscheidung F8) - Begruendung im Klassenkopf. Abgewiesen
+            // wird die Konstellation an ihren beiden Entstehungsstellen (Speicherdialog
+            // und Verbundpruefung); dieser Befund ist die MELDUNG fuer einen Bestand, der
+            // auf anderem Weg entstanden ist.
+            //
+            // Die Verbundabfrage laeuft erst, wenn ueberhaupt ein Speicher des Projekts
+            // geschichtet ist (bild.IstVerbundLeit ist trraege) - auf der Referenzmenge
+            // kostet das Kriterium damit keine einzige zusaetzliche Abfrage.
+            if (p.Schichten > PufferSpModel.SCHICHTEN_DEFAULT && bild.IstVerbundLeit(p.ID))
+                befunde.Add(Befund(W6_SCHICHTUNG_AM_VERBUND, true, 0, p.ID,
+                    string.Format(MyResource.Resource.SIMWARN_W6_SCHICHTUNG_AM_VERBUND,
+                                  p.Anzeigename, p.Schichten)));
         }
 
         /// <summary>
@@ -595,12 +681,14 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Puffer-Zeile in der Auflösung des Katalogs: Klassen-Set, Bauform und
-        /// Temperaturen. Aufgebaut aus EINER Projektabfrage
+        /// Die Puffer-Zeile in der Auflösung des Katalogs: Klassen-Set, Bauform,
+        /// Temperaturen und (Paket P1) die Schichtdaten. Aufgebaut aus EINER
+        /// Projektabfrage
         /// (<c>SELECT * FROM Tab_Pufferspeicher WHERE ID_Projekt = ?</c>) — der
         /// <c>*</c>-Zugriff ist hier der spaltentolerante Weg: Ob die Flags des
-        /// Schemastands 49 vorhanden sind, entscheidet
-        /// <c>PufferSpCtrl.KlassenSetAusZeile</c> an der DataRow, nicht die Abfrage.
+        /// Schemastands 49 und die Schichtspalten des Stands 53 vorhanden sind,
+        /// entscheiden <c>PufferSpCtrl.KlassenSetAusZeile</c> und
+        /// <c>…SchichtdatenAusZeile</c> an der DataRow, nicht die Abfrage.
         /// </summary>
         private sealed class Pufferdaten
         {
@@ -610,6 +698,27 @@ namespace WindowsFormsApplication1
             public int Vorlauf;
             public int Ruecklauf;
             public PufferSpCtrl.KlassenSet Set;
+
+            /// <summary>
+            /// PAKET P1: Schichtung und Nutztemperatur (Migrationsschritt 53) — aus
+            /// DERSELBEN <c>SELECT *</c>-Zeile wie das Klassen-Set und ebenso
+            /// spaltentolerant. Fehlen die Spalten, steht hier die verhaltensneutrale
+            /// Vorbelegung (N = 1, <c>T_Nutz_BW</c> nicht gepflegt), und W4, W6 sowie der
+            /// <c>T_Nutz</c>-Anteil von W3 schlagen nie an.
+            /// </summary>
+            public PufferSpCtrl.Schichtdaten Schicht = new PufferSpCtrl.Schichtdaten();
+
+            /// <summary>Schichtenzahl des Speichers (1 = Ein-Zonen).</summary>
+            public int Schichten
+            {
+                get { return Schicht != null ? Schicht.Schichten : PufferSpModel.SCHICHTEN_DEFAULT; }
+            }
+
+            /// <summary>Mindest-Nutztemperatur Brauchwasser [°C]; <c>null</c> = nicht gepflegt.</summary>
+            public double? T_Nutz_BW
+            {
+                get { return Schicht != null ? Schicht.TNutzBW : null; }
+            }
 
             /// <summary>Name fuer Meldungen; der Ersatztext, wenn kein Bezeichner gepflegt ist.</summary>
             public string Anzeigename
@@ -695,6 +804,7 @@ namespace WindowsFormsApplication1
 
                 Projektbild pb = new Projektbild();
                 pb.Bild = bild;
+                pb._idProjekt = idProjekt;
 
                 foreach (Hydraulikbild.AnlagenEintrag a in bild.Anlagen)
                     pb.AnlagenReihenfolge.Add(a.ID);
@@ -745,6 +855,45 @@ namespace WindowsFormsApplication1
                 return Bild.Lader(idPuffer);
             }
 
+            /// <summary>Projekt dieses Bildes — gebraucht fuer die traege Verbundabfrage.</summary>
+            private int _idProjekt;
+
+            /// <summary>Leitspeicher-IDs der Parallelverbuende; <c>null</c> = noch nicht geholt.</summary>
+            private Dictionary<int, List<int>> _verbuende;
+
+            /// <summary>
+            /// true, wenn dieser Puffer LEITSPEICHER eines Parallelverbunds ist — die
+            /// zweite Haelfte von W6.
+            ///
+            /// <para><b>TRAEGE.</b> Die Verbundabfrage laeuft erst beim ersten Aufruf,
+            /// und der kommt nur zustande, wenn ueberhaupt ein Speicher des Projekts
+            /// <c>Schichten_Anzahl &gt; 1</c> traegt (siehe <see cref="SpeicherPruefen"/>).
+            /// Auf einer Datenbank ohne Migrationsschritt 53 und auf jedem Bestand ohne
+            /// gepflegte Schichtung kostet W6 damit KEINE zusaetzliche Rundreise — die
+            /// Zusicherung „P1 aendert ohne Schichtdaten nichts" gilt auch fuer die
+            /// Laufzeit.</para>
+            ///
+            /// <para>Gefragt wird dieselbe Auflösung, mit der die Speicher-Registry den
+            /// Verbund aufbaut (<c>AnlagePufferVerbundCtrl.VerbuendeDesProjekts</c>) —
+            /// eine zweite Auslegung derselben Zuordnungstabelle waere eine zweite
+            /// Wahrheit.</para>
+            /// </summary>
+            public bool IstVerbundLeit(int idPuffer)
+            {
+                if (idPuffer <= 0) return false;
+
+                if (_verbuende == null)
+                {
+                    List<int> abweichend;
+                    _verbuende = AnlagePufferVerbundCtrl.VerbuendeDesProjekts(_idProjekt,
+                                                                              out abweichend);
+                }
+
+                List<int> mitglieder;
+                return _verbuende.TryGetValue(idPuffer, out mitglieder) &&
+                       mitglieder != null && mitglieder.Count > 0;
+            }
+
             public string Anlagenname(int idAnlage)
             {
                 return Bild.Name(idAnlage);
@@ -780,7 +929,8 @@ namespace WindowsFormsApplication1
                         Speichertyp = StilleDb.Text(StilleDb.Feld(r, "Speichertyp")).Trim(),
                         Vorlauf = StilleDb.Zahl(StilleDb.Feld(r, "Vorlauf")),
                         Ruecklauf = StilleDb.Zahl(StilleDb.Feld(r, "Ruecklauf")),
-                        Set = PufferSpCtrl.KlassenSetAusZeile(r)
+                        Set = PufferSpCtrl.KlassenSetAusZeile(r),
+                        Schicht = PufferSpCtrl.SchichtdatenAusZeile(r)
                     };
                 }
             }

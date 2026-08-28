@@ -761,8 +761,15 @@ namespace WindowsFormsApplication1
                 // einer Stunde - zwischen Phase B (Motorzuschaltung) und Phase C/D
                 // (Einlagerung). Eine nicht eingelöste Reservierung darf sich nicht in
                 // die nächste Stunde schleppen und dort Ladefähigkeit sperren.
+                //
+                // PAKET P1 (Befund K2-O6): An DERSELBEN Stelle beginnt das
+                // LEISTUNGSBUDGET der Stunde neu. Es muss hier stehen und nicht im
+                // Speicher selbst: Ein Puffer, der Heizung UND Prozesswärme bedient,
+                // wird in derselben Stunde zweimal entladen (Zwei-Pass) - bekäme er die
+                // Grenze je Aufruf, hätte er sie zweimal. Ohne gepflegte Grenze ist das
+                // Budget unbegrenzt und der Aufruf wirkungslos.
                 foreach (SimulationPufferspeicher sp in Kontext.AlleSpeicher)
-                    if (sp != null) sp.Reserviert = 0;
+                    if (sp != null) { sp.Reserviert = 0; sp.StundeBeginnen(stunde); }
 
                 // STUFENEINGANG je Erzeugerstufe (N1): der Kanalstand VOR Phase A.
                 if (MitWP) WP.Zweikanalig_StundeStart(stunde);
@@ -1093,6 +1100,18 @@ namespace WindowsFormsApplication1
                 if (a == null || a.Rang != rang) continue;
                 if (a.Ebene != ebene) continue;
 
+                // PAKET P1 (Konzept 7.4 Punkt 1): EINSPEISEHÖHE dieser Senkenzeile am
+                // Speicher anmelden. Sie gilt genau für den folgenden Ladeaufruf des
+                // Moduls und wird danach zurückgenommen — die Module buchen ihre Ladung
+                // selbst und tief in ihrer eigenen Mengenrechnung, ein zusätzlicher
+                // Parameter hätte vier Modulsignaturen berührt, ohne dass eines der
+                // Module die Höhe je auswertet. Ohne gepflegte Höhe (−1, jeder heutige
+                // Datensatz) bleibt es bei „oben"; bei N = 1 ist der Wert ohnehin
+                // bedeutungslos.
+                if (a.Speicher != null)
+                    a.Speicher.EinspeisehoeheAktuell = (a.Einspeisehoehe >= 0 && a.Einspeisehoehe <= 1)
+                        ? a.Einspeisehoehe : 1.0;
+
                 // Die geladene Menge geht zusätzlich in die Herkunftsrechnung des
                 // Speichers (N2) — sie entscheidet später, wem seine Entladung als
                 // Bedarfsdeckung gutgeschrieben wird.
@@ -1132,6 +1151,11 @@ namespace WindowsFormsApplication1
                         Anteil_Laden(a.Speicher, a.Erzeugerart,
                                      BHKW.Zweikanalig_Laden(a, stunde, pvUeberschuss, absehbar));
                 }
+
+                // Einspeisehöhe zurück auf die Vorgabe: Was danach noch lädt (die
+                // Regeneration eines Quellspeichers, ein Nachzug außerhalb der
+                // Ladeordnung), speist oben ein.
+                if (a.Speicher != null) a.Speicher.EinspeisehoeheAktuell = 1.0;
             }
         }
 
@@ -1540,14 +1564,33 @@ namespace WindowsFormsApplication1
                 double entnehmbar = sp.EntnahmeObergrenze();
                 if (bedarf > entnehmbar) bedarf = entnehmbar;
 
+                // PAKET P1 (Konzept 7.4 Punkt 2): ENTLADEFÄHIGKEIT DER SCHICHTEBENE.
+                // Sie ist die Summe der Energie in den Schichten, die dieser Kanal
+                // erreicht (von seiner Entnahmehöhe abwärts) UND die seine
+                // Mindest-Nutztemperatur halten, zuzüglich des Durchflusses. Damit sind
+                // Verfügbarkeitsbemessung und Zustandsupdate derselbe Vorgang: Was hier
+                // nicht durchkommt, wird auch nicht aus den Schichten genommen.
+                //
+                // VERHALTENSNEUTRAL BEI N = 1: EntladefaehigkeitKanal liefert dann
+                // double.MaxValue - dieselbe Bauform wie EntnahmeObergrenze eine Zeile
+                // höher. Jedes Bestandsprojekt (Schichten_Anzahl = 1 nach
+                // Migrationsschritt 53) rechnet Anweisung für Anweisung wie zuvor.
+                double schichtfaehig = sp.EntladefaehigkeitKanal(kanal);
+                if (bedarf > schichtfaehig) bedarf = schichtfaehig;
+
                 // Reservemarke erreicht: nichts mehr entnehmen. Der Speicher geht in den
                 // NACHLADEBETRIEB - der Bedarf bleibt offen und wird von der nächsten
                 // Kaskadenstufe bzw. vom Heizstab gedeckt, während das BHKW seinen Vorrat
                 // wieder aufbaut. Das ist dieselbe Markierung, die am Ende dieser Schleife
                 // ein nicht ausreichender Speicher bekommt.
                 //
-                // Dieser Zweig ist NUR bei aktiver Reserve erreichbar: Ohne sie liefert
-                // EntnahmeObergrenze double.MaxValue, und bedarf war oben schon > 0.
+                // Dieser Zweig ist NUR bei aktiver Reserve oder - seit Paket P1 - bei
+                // einer geschichteten Entladesperre erreichbar (der Kanal erreicht keine
+                // Schicht mehr, die seine Mindest-Nutztemperatur hält). Ohne beides
+                // liefern EntnahmeObergrenze und EntladefaehigkeitKanal double.MaxValue,
+                // und bedarf war oben schon > 0. Die Wirkung ist in beiden Fällen
+                // dieselbe und fachlich richtig: Der Speicher geht in den
+                // Nachladebetrieb, der Bedarf bleibt für die nächste Stufe offen.
                 if (bedarf <= 0)
                 {
                     if (vorab) sp.LaedtGerade = true;

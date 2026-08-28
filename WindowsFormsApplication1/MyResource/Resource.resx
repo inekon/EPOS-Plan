@@ -7938,4 +7938,89 @@ Nutzung trotzdem ändern?</value>
   <data name="PSP_TITEL_KLASSENSET_AENDERN" xml:space="preserve">
     <value>Nutzung ändern</value>
   </data>
+  <data name="PSP_GRUPPE_SCHICHTUNG" xml:space="preserve">
+    <value>Schichtung und Leistungsgrenzen</value>
+  </data>
+  <data name="PSP_LABEL_SCHICHTEN" xml:space="preserve">
+    <value>Schichten:</value>
+  </data>
+  <data name="PSP_HINWEIS_SCHICHTEN" xml:space="preserve">
+    <value>1 = ein Vorrat wie bisher; ab 2 rechnet der Speicher geschichtet.</value>
+  </data>
+  <data name="PSP_LABEL_HOEHE" xml:space="preserve">
+    <value>Höhe [m]:</value>
+  </data>
+  <data name="PSP_HINWEIS_HOEHE" xml:space="preserve">
+    <value>leer = automatisch aus dem Höhen-/Durchmesserverhältnis 2,5</value>
+  </data>
+  <data name="PSP_LABEL_LAMBDA_EFF" xml:space="preserve">
+    <value>λ effektiv [W/(m·K)]:</value>
+  </data>
+  <data name="PSP_HINWEIS_LAMBDA_EFF" xml:space="preserve">
+    <value>leer = 1,5</value>
+  </data>
+  <data name="PSP_LABEL_T_NUTZ_BW" xml:space="preserve">
+    <value>Nutztemperatur Brauchwasser [°C]:</value>
+  </data>
+  <data name="PSP_HINWEIS_T_NUTZ_BW" xml:space="preserve">
+    <value>leer = Rücklauftemperatur des Speichers</value>
+  </data>
+  <data name="PSP_LABEL_ENTNAHMEHOEHEN" xml:space="preserve">
+    <value>Entnahmehöhe je Kanal (0 = unten, 1 = oben; leer = Standard):</value>
+  </data>
+  <data name="PSP_LABEL_LADELEISTUNG_MAX" xml:space="preserve">
+    <value>Ladeleistung max. [kW]:</value>
+  </data>
+  <data name="PSP_LABEL_ENTLADELEISTUNG_MAX" xml:space="preserve">
+    <value>Entladeleistung max. [kW]:</value>
+  </data>
+  <data name="PSP_HINWEIS_LEISTUNG_UNBEGRENZT" xml:space="preserve">
+    <value>0 = unbegrenzt</value>
+  </data>
+  <data name="PSP_NAME_LADELEISTUNG_MAX" xml:space="preserve">
+    <value>größte Ladeleistung</value>
+  </data>
+  <data name="PSP_NAME_ENTLADELEISTUNG_MAX" xml:space="preserve">
+    <value>größte Entladeleistung</value>
+  </data>
+  <data name="PSP_FEHLER_HOEHE" xml:space="preserve">
+    <value>Die Höhe muss eine Zahl größer 0 sein [m] - oder leer bleiben.</value>
+  </data>
+  <data name="PSP_FEHLER_LAMBDA_EFF" xml:space="preserve">
+    <value>Die effektive Wärmeleitfähigkeit muss eine Zahl größer 0 sein [W/(m·K)] - oder leer bleiben.</value>
+  </data>
+  <data name="PSP_FEHLER_T_NUTZ_BW" xml:space="preserve">
+    <value>Die Nutztemperatur Brauchwasser muss eine Zahl größer 0 sein [°C] - oder leer bleiben.</value>
+  </data>
+  <data name="PSP_FEHLER_ENTNAHMEHOEHE" xml:space="preserve">
+    <value>Die Entnahmehöhe {0} muss eine Zahl zwischen 0 und 1 sein - oder leer bleiben.</value>
+  </data>
+  <data name="PSP_FEHLER_LEISTUNG" xml:space="preserve">
+    <value>Die {0} muss eine Zahl ≥ 0 sein [kW]; 0 bedeutet unbegrenzt.</value>
+  </data>
+  <data name="PSP_FEHLER_SCHICHTUNG_AM_VERBUND" xml:space="preserve">
+    <value>Der Speicher „{0}" ist Leitspeicher eines Parallelverbunds und kann deshalb keine Schichtung führen.
+
+Ein Verbund rechnet als EIN Wärmevorrat mit der Summe aller Mitgliedskapazitäten; eine aus dem Volumen des Leitspeichers abgeleitete Schichtebene beschriebe einen Behälter, den es so nicht gibt (Konzept 6.3, Kriterium W6).
+
+Bitte entweder die Schichtenzahl auf 1 setzen oder den Verbund im Senkendialog auflösen.</value>
+  </data>
+  <data name="PSP_KARTE_SCHICHTEN" xml:space="preserve">
+    <value>{0} Schichten</value>
+  </data>
+  <data name="PSP_KARTE_T_OBEN" xml:space="preserve">
+    <value>Oberste Schicht: {0} °C im Jahresmittel</value>
+  </data>
+  <data name="SIMWARN_W3_UNTER_TNUTZ" xml:space="preserve">
+    <value>Anlage „{0}": Der Erzeuger-Vorlauf {1} °C liegt unter der Nutztemperatur Brauchwasser {2} °C des Zielspeichers „{3}". Der Brauchwasserkanal bliebe an diesem Erzeuger dauerhaft abgeschaltet.</value>
+  </data>
+  <data name="SIMWARN_W4_TNUTZ_UEBER_VLEFF" xml:space="preserve">
+    <value>Speicher „{0}": Die Nutztemperatur Brauchwasser {1} °C liegt über dem wirksamen Vorlauf {2} °C. Der Lauf klemmt sie auf {2} °C - sonst wäre der Brauchwasserkanal dauerhaft abgeschaltet.</value>
+  </data>
+  <data name="SIMWARN_W6_SCHICHTUNG_AM_VERBUND" xml:space="preserve">
+    <value>Speicher „{0}": Er führt {1} Schichten und ist zugleich Leitspeicher eines Parallelverbunds. Beides zusammen ist unzulässig - ein Verbund rechnet als EIN Vorrat mit der Summe aller Mitgliedskapazitäten. Bitte die Schichtenzahl auf 1 setzen oder den Verbund auflösen.</value>
+  </data>
+  <data name="SIM_VERBUND_KONFLIKT_LEIT_GESCHICHTET" xml:space="preserve">
+    <value>Der Pufferspeicher „{0}" führt eine Schichtung und kann deshalb nicht Leitspeicher eines Verbunds sein: Ein Verbund rechnet als EIN Vorrat mit der Summe aller Mitgliedskapazitäten, eine daraus abgeleitete Schichtebene wäre falsch.</value>
+  </data>
 </root>

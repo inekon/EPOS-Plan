@@ -13101,11 +13101,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Entnahmehöhe {0} muss eine Zahl zwischen 0 und 1 sein - oder leer bleiben. ähnelt.
+        /// </summary>
+        public static string PSP_FEHLER_ENTNAHMEHOEHE {
+            get {
+                return ResourceManager.GetString("PSP_FEHLER_ENTNAHMEHOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Höhe muss eine Zahl größer 0 sein [m] - oder leer bleiben. ähnelt.
+        /// </summary>
+        public static string PSP_FEHLER_HOEHE {
+            get {
+                return ResourceManager.GetString("PSP_FEHLER_HOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Mindestens eine Nutzung muss angehakt sein: Heizung, Brauchwasser oder Prozesswärme. Einen Speicher ohne Nutzung entlädt keine Anlage (Konzept 6.1). ähnelt.
         /// </summary>
         public static string PSP_FEHLER_KLASSENSET_LEER {
             get {
                 return ResourceManager.GetString("PSP_FEHLER_KLASSENSET_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die effektive Wärmeleitfähigkeit muss eine Zahl größer 0 sein [W/(m·K)] - oder leer bleiben. ähnelt.
+        /// </summary>
+        public static string PSP_FEHLER_LAMBDA_EFF {
+            get {
+                return ResourceManager.GetString("PSP_FEHLER_LAMBDA_EFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die {0} muss eine Zahl ≥ 0 sein [kW]; 0 bedeutet unbegrenzt. ähnelt.
+        /// </summary>
+        public static string PSP_FEHLER_LEISTUNG {
+            get {
+                return ResourceManager.GetString("PSP_FEHLER_LEISTUNG", resourceCulture);
             }
         }
         
@@ -13137,6 +13173,19 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Speicher „{0}&quot; ist Leitspeicher eines Parallelverbunds und kann deshalb keine Schichtung führen.
+        ///
+        ///Ein Verbund rechnet als EIN Wärmevorrat mit der Summe aller Mitgliedskapazitäten; eine aus dem Volumen des Leitspeichers abgeleitete Schichtebene beschriebe einen Behälter, den es so nicht gibt (Konzept 6.3, Kriterium W6).
+        ///
+        ///Bitte entweder die Schichtenzahl auf 1 setzen oder den Verbund im Senkendialog auflösen. ähnelt.
+        /// </summary>
+        public static string PSP_FEHLER_SCHICHTUNG_AM_VERBUND {
+            get {
+                return ResourceManager.GetString("PSP_FEHLER_SCHICHTUNG_AM_VERBUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die {0} muss zwischen 0 und 100 % liegen. ähnelt.
         /// </summary>
         public static string PSP_FEHLER_SCHWELLE_BEREICH {
@@ -13151,6 +13200,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_FEHLER_SCHWELLE_ZAHL {
             get {
                 return ResourceManager.GetString("PSP_FEHLER_SCHWELLE_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutztemperatur Brauchwasser muss eine Zahl größer 0 sein [°C] - oder leer bleiben. ähnelt.
+        /// </summary>
+        public static string PSP_FEHLER_T_NUTZ_BW {
+            get {
+                return ResourceManager.GetString("PSP_FEHLER_T_NUTZ_BW", resourceCulture);
             }
         }
         
@@ -13272,11 +13330,65 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichtung und Leistungsgrenzen ähnelt.
+        /// </summary>
+        public static string PSP_GRUPPE_SCHICHTUNG {
+            get {
+                return ResourceManager.GetString("PSP_GRUPPE_SCHICHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leer = automatisch aus dem Höhen-/Durchmesserverhältnis 2,5 ähnelt.
+        /// </summary>
+        public static string PSP_HINWEIS_HOEHE {
+            get {
+                return ResourceManager.GetString("PSP_HINWEIS_HOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Set ohne Alt-Entsprechung — führend sind die Häkchen. Die Verwendung darüber zeigt nur den nächstliegenden Altwert. ähnelt.
         /// </summary>
         public static string PSP_HINWEIS_KLASSENSET_OHNE_ALTWERT {
             get {
                 return ResourceManager.GetString("PSP_HINWEIS_KLASSENSET_OHNE_ALTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leer = 1,5 ähnelt.
+        /// </summary>
+        public static string PSP_HINWEIS_LAMBDA_EFF {
+            get {
+                return ResourceManager.GetString("PSP_HINWEIS_LAMBDA_EFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 0 = unbegrenzt ähnelt.
+        /// </summary>
+        public static string PSP_HINWEIS_LEISTUNG_UNBEGRENZT {
+            get {
+                return ResourceManager.GetString("PSP_HINWEIS_LEISTUNG_UNBEGRENZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 = ein Vorrat wie bisher; ab 2 rechnet der Speicher geschichtet. ähnelt.
+        /// </summary>
+        public static string PSP_HINWEIS_SCHICHTEN {
+            get {
+                return ResourceManager.GetString("PSP_HINWEIS_SCHICHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leer = Rücklauftemperatur des Speichers ähnelt.
+        /// </summary>
+        public static string PSP_HINWEIS_T_NUTZ_BW {
+            get {
+                return ResourceManager.GetString("PSP_HINWEIS_T_NUTZ_BW", resourceCulture);
             }
         }
         
@@ -13398,11 +13510,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Schichten ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_SCHICHTEN {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_SCHICHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schwellen {0} / {1} / {2} % ähnelt.
         /// </summary>
         public static string PSP_KARTE_SCHWELLEN {
             get {
                 return ResourceManager.GetString("PSP_KARTE_SCHWELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Oberste Schicht: {0} °C im Jahresmittel ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_T_OBEN {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_T_OBEN", resourceCulture);
             }
         }
         
@@ -13542,11 +13672,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladeleistung max. [kW]: ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_ENTLADELEISTUNG_MAX {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_ENTLADELEISTUNG_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Entladepriorität: ähnelt.
         /// </summary>
         public static string PSP_LABEL_ENTLADEPRIORITAET {
             get {
                 return ResourceManager.GetString("PSP_LABEL_ENTLADEPRIORITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entnahmehöhe je Kanal (0 = unten, 1 = oben; leer = Standard): ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_ENTNAHMEHOEHEN {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_ENTNAHMEHOEHEN", resourceCulture);
             }
         }
         
@@ -13560,11 +13708,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höhe [m]: ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_HOEHE {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_HOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung (Klassen-Set): ähnelt.
         /// </summary>
         public static string PSP_LABEL_KLASSENSET {
             get {
                 return ResourceManager.GetString("PSP_LABEL_KLASSENSET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladeleistung max. [kW]: ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_LADELEISTUNG_MAX {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_LADELEISTUNG_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die λ effektiv [W/(m·K)]: ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_LAMBDA_EFF {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_LAMBDA_EFF", resourceCulture);
             }
         }
         
@@ -13587,11 +13762,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichten: ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_SCHICHTEN {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_SCHICHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die … nachrangig [%]: ähnelt.
         /// </summary>
         public static string PSP_LABEL_SCHWELLE_NACHRANGIG {
             get {
                 return ResourceManager.GetString("PSP_LABEL_SCHWELLE_NACHRANGIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutztemperatur Brauchwasser [°C]: ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_T_NUTZ_BW {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_T_NUTZ_BW", resourceCulture);
             }
         }
         
@@ -13858,6 +14051,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_NAME_EINSCHALTSCHWELLE {
             get {
                 return ResourceManager.GetString("PSP_NAME_EINSCHALTSCHWELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die größte Entladeleistung ähnelt.
+        /// </summary>
+        public static string PSP_NAME_ENTLADELEISTUNG_MAX {
+            get {
+                return ResourceManager.GetString("PSP_NAME_ENTLADELEISTUNG_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die größte Ladeleistung ähnelt.
+        /// </summary>
+        public static string PSP_NAME_LADELEISTUNG_MAX {
+            get {
+                return ResourceManager.GetString("PSP_NAME_LADELEISTUNG_MAX", resourceCulture);
             }
         }
         
@@ -17168,6 +17379,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Pufferspeicher „{0}&quot; führt eine Schichtung und kann deshalb nicht Leitspeicher eines Verbunds sein: Ein Verbund rechnet als EIN Vorrat mit der Summe aller Mitgliedskapazitäten, eine daraus abgeleitete Schichtebene wäre falsch. ähnelt.
+        /// </summary>
+        public static string SIM_VERBUND_KONFLIKT_LEIT_GESCHICHTET {
+            get {
+                return ResourceManager.GetString("SIM_VERBUND_KONFLIKT_LEIT_GESCHICHTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der gewählte Pufferspeicher „{0}&quot; ist selbst Mitglied im Verbund des Leitspeichers „{1}&quot; und kann deshalb nicht Leitspeicher eines weiteren Verbunds sein. ähnelt.
         /// </summary>
         public static string SIM_VERBUND_KONFLIKT_LEIT_IST_MITGLIED {
@@ -19336,6 +19556,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage „{0}&quot;: Der Erzeuger-Vorlauf {1} °C liegt unter der Nutztemperatur Brauchwasser {2} °C des Zielspeichers „{3}&quot;. Der Brauchwasserkanal bliebe an diesem Erzeuger dauerhaft abgeschaltet. ähnelt.
+        /// </summary>
+        public static string SIMWARN_W3_UNTER_TNUTZ {
+            get {
+                return ResourceManager.GetString("SIMWARN_W3_UNTER_TNUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anlage „{0}&quot;: Der Erzeuger-Vorlauf {1} °C liegt unter dem wirksamen Vorlauf {2} °C des Zielspeichers „{3}&quot;. Der Erzeuger kann den Speicher nie auf Solltemperatur laden. ähnelt.
         /// </summary>
         public static string SIMWARN_W3_VORLAUF_ZU_NIEDRIG {
@@ -19345,11 +19574,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher „{0}&quot;: Die Nutztemperatur Brauchwasser {1} °C liegt über dem wirksamen Vorlauf {2} °C. Der Lauf klemmt sie auf {2} °C - sonst wäre der Brauchwasserkanal dauerhaft abgeschaltet. ähnelt.
+        /// </summary>
+        public static string SIMWARN_W4_TNUTZ_UEBER_VLEFF {
+            get {
+                return ResourceManager.GetString("SIMWARN_W4_TNUTZ_UEBER_VLEFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anlage „{0}&quot;: Der Speicher „{1}&quot; ist ihre Wärmequelle, wird aber von keiner Anlage dieses Projekts geladen. Nach der Startfüllung liefe die Quelle leer. ähnelt.
         /// </summary>
         public static string SIMWARN_W5_QUELLE_OHNE_LADER {
             get {
                 return ResourceManager.GetString("SIMWARN_W5_QUELLE_OHNE_LADER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher „{0}&quot;: Er führt {1} Schichten und ist zugleich Leitspeicher eines Parallelverbunds. Beides zusammen ist unzulässig - ein Verbund rechnet als EIN Vorrat mit der Summe aller Mitgliedskapazitäten. Bitte die Schichtenzahl auf 1 setzen oder den Verbund auflösen. ähnelt.
+        /// </summary>
+        public static string SIMWARN_W6_SCHICHTUNG_AM_VERBUND {
+            get {
+                return ResourceManager.GetString("SIMWARN_W6_SCHICHTUNG_AM_VERBUND", resourceCulture);
             }
         }
         

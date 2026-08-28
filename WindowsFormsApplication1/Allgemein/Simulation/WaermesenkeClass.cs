@@ -1111,6 +1111,14 @@ namespace WindowsFormsApplication1
                     kopf = string.Format(MyResource.Resource.SIM_VERBUND_KONFLIKT_QUELLE, name);
                     break;
 
+                case AnlagePufferVerbundCtrl.GRUND_LEIT_GESCHICHTET:
+                    // Paket P1 (W6, Konzept 6.3): Verbund und Schichtung schliessen sich
+                    // je Rechenspeicher aus - ohne diesen Fall zeigte der default-Zweig
+                    // den irrefuehrenden Verwendungs-Text.
+                    kopf = string.Format(MyResource.Resource.SIM_VERBUND_KONFLIKT_LEIT_GESCHICHTET,
+                                         name);
+                    break;
+
                 default:
                     kopf = string.Format(MyResource.Resource.SIM_VERBUND_KONFLIKT_PASST_NICHT,
                                          name, VerwendungAnzeige(verwendungLeit));

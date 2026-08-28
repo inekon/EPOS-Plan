@@ -829,11 +829,24 @@ namespace WindowsFormsApplication1
                     // sie nur am Objekt („NICHT PERSISTIERT … vorgemerkte Erweiterung").
                     // Ohne Durchlass sind beide exakt 0.
                     Durchsatz_Geladen = sp.Durchsatz_Ladung_gesamt,
-                    Durchsatz_Entladen = sp.Durchsatz_Entladung_gesamt
+                    Durchsatz_Entladen = sp.Durchsatz_Entladung_gesamt,
 
-                    // T_oben_Mittel/T_oben_Min bleiben NULL: Der P1-VORGRIFF legt in
-                    // Schritt 52 nur die Spalten an. Das heutige Ein-Zonen-Modell kennt
-                    // keine oberste Schicht; ein Wert daraus wäre erfunden.
+                    // PAKET P1 (Befund E1-O5): Die beiden Temperaturspalten aus Schritt 52
+                    // werden jetzt GEFÜLLT — Jahresmittel und Jahresminimum der obersten
+                    // Schicht, gebildet aus derselben Stundenganglinie, die auch die
+                    // Berichtsreihe PUFFER_<ID>_TOBEN trägt.
+                    //
+                    // Sie sind auch bei N = 1 belegt: Dort ist die eine Schichttemperatur
+                    // die Ein-Zonen-Ersatztemperatur RL_eff + A/Q_max · (VL_eff − RL_eff)
+                    // (Konzept 8.2) — eine reine Umrechnung des Füllstands, ohne
+                    // Rückwirkung auf die Rechnung.
+                    //
+                    // QUELLSPEICHER bleiben NULL: Ihr Temperaturpaar ist ein Ersatzpaar
+                    // aus der Anlagen-Spreizung und keine Speichertemperatur; eine
+                    // Zustandsformel darauf wäre Scheinphysik (Konzept 8.2). NULL heißt in
+                    // der Ergebniszeile „nicht erhoben" — genau das trifft dort zu.
+                    T_oben_Mittel = sp.T_oben_Mittel,
+                    T_oben_Min = sp.T_oben_Min
                 };
 
                 // Kanalaufteilung der Entladung — dieselbe Buchung wie Entladung_gesamt,

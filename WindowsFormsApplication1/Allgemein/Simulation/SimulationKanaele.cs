@@ -1383,6 +1383,18 @@ namespace WindowsFormsApplication1
         public SimulationPufferspeicher Speicher;
 
         /// <summary>
+        /// EINSPEISEHÖHE dieser Senkenzeile am Schichtspeicher, 0…1 (1 = ganz oben) —
+        /// <c>Z_AnlageSenke.Anschlusshoehe</c> (Paket P1, Konzept 7.4 Punkt 1).
+        /// <b>−1 = nicht gepflegt</b> und damit oben, die Vorgabe des Konzepts.
+        ///
+        /// <para>Von der Einspeisehöhe abwärts hebt die Beladung die Schichten
+        /// nacheinander auf <c>VL_eff</c>; oberhalb bleibt der Vorrat unberührt. Bei
+        /// N = 1 ist der Wert bedeutungslos — ein Vorrat hat nur eine Zone —, und bis
+        /// die Oberfläche die Höhe pflegt, ist er in jedem Datensatz NULL.</para>
+        /// </summary>
+        public double Einspeisehoehe = -1;
+
+        /// <summary>
         /// Ladeobergrenze als ANTEIL der nutzbaren Kapazität (0…1) in Stunden OHNE
         /// PV-Überschuss, aufgelöst nach Konzept 3.4
         /// (<c>Ladeordnung.ObergrenzenAufloesen</c>): eigene Ladegrenze, sonst
