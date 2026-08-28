@@ -166,6 +166,11 @@ namespace WindowsFormsApplication1
             SchichtungAufbauen();
 
             FensterEinpassung.Einhaengen(this);
+
+            // D2 (28.08.2026): Fußzeile auf die Norm. „Übernehmen" ist die Primäraktion
+            // und steht deshalb ganz rechts, „Schließen" links daneben — bisher war es
+            // umgekehrt, und beide standen unverankert auf Top/Left.
+            FusszeilenNorm.Einhaengen(this, _btnUebernehmen, _btnSchliessen);
         }
 
         // ==================================================================
@@ -850,6 +855,13 @@ namespace WindowsFormsApplication1
             int neueHoehe = erweitert ? SCHICHT_HOEHE_ERWEITERT : SCHICHT_HOEHE_KOMPAKT;
             int delta = neueHoehe - _gbSchichtung.Height;
 
+            // D2 (28.08.2026): Die Schleife unten verschiebt ALLE Elemente unterhalb der
+            // Rubrik selbst — die Fußzeilenknöpfe also auch. Bliebe ihr unterer Anker
+            // aktiv, verschöbe er sie ein zweites Mal, und diese Zwischenlage ginge in
+            // das Inhaltsmaß von FensterEinpassung ein. Der Anker kommt mit dem
+            // FusszeilenNorm.Anwenden weiter unten zurück.
+            FusszeilenNorm.AnkerLoesen(_btnUebernehmen, _btnSchliessen);
+
             this.SuspendLayout();
             try
             {
@@ -875,7 +887,20 @@ namespace WindowsFormsApplication1
             // Die Maske ist gerade gewachsen oder geschrumpft. Auf einem großen Schirm
             // tut dieser Aufruf nichts (FensterEinpassung prüft jede Stufe einzeln); auf
             // einem kleinen sorgt er dafür, dass die Fußknöpfe erreichbar bleiben.
+            //
+            // D2 (28.08.2026): Der Aufruf kommt VOR der Fußzeilennorm, und die Knopfreihe
+            // ist bis hierher ohne Anker (AnkerLoesen oben). Nur so misst die Einpassung
+            // das Inhaltsmaß an der Lage, welche die Verschiebeschleife hergestellt hat.
+            // Mit aktivem Anker maß sie eine Zwischenlage und blähte den Bildlaufbereich
+            // dauerhaft auf.
             FensterEinpassung.Anwenden(this);
+
+            // D2: Fußzeile zuletzt. _schichtSollHoehe ist die UNGEKLEMMTE Sollhöhe und
+            // damit der einzige verlässliche Bezug — die Client-Fläche ist auf einem
+            // kleinen Schirm gerade geklemmt worden. Der Aufruf setzt auch den Anker
+            // wieder, den AnkerLoesen oben abgenommen hat.
+            FusszeilenNorm.BezugSetzen(this, new Size(0, _schichtSollHoehe));
+            FusszeilenNorm.Anwenden(this, _btnUebernehmen, _btnSchliessen);
         }
 
         /// <summary>Zeigt die Schicht- und Leistungsdaten eines Speichers in der Maske.</summary>

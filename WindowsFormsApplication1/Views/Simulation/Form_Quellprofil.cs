@@ -349,14 +349,14 @@ namespace WindowsFormsApplication1
                 Text = MyResource.Resource.SIM_BTN_OK,
                 DialogResult = DialogResult.OK,
                 Location = new Point(this.ClientSize.Width - 190, 572),
-                Width = 85
+                Size = new Size(FusszeilenNorm.BREITE, FusszeilenNorm.HOEHE)
             };
             Button btnAbbruch = new Button
             {
                 Text = MyResource.Resource.SIM_BTN_ABBRECHEN,
                 DialogResult = DialogResult.Cancel,
                 Location = new Point(this.ClientSize.Width - 97, 572),
-                Width = 85
+                Size = new Size(FusszeilenNorm.BREITE, FusszeilenNorm.HOEHE)
             };
             btnOk.Click += btnOk_Click;
 
@@ -364,6 +364,41 @@ namespace WindowsFormsApplication1
             this.Controls.Add(btnAbbruch);
             this.AcceptButton = btnOk;
             this.CancelButton = btnAbbruch;
+
+            // HinweiszeileEinpassen() vergrößert das Fenster, wenn die Hinweiszeile mehr
+            // Zeilen braucht — die Fußzeile muss danach ausgerichtet werden.
+            HinweiszeileEinpassen();
+
+            // D2 (28.08.2026): OK links neben Abbrechen, 85×23, Top/Left -> Norm.
+            FusszeilenNorm.Einhaengen(this, btnOk, btnAbbruch);
+            FusszeilenNorm.Anwenden(this, btnOk, btnAbbruch);
+        }
+
+        /// <summary>
+        /// Gibt der Hinweiszeile die Höhe, die ihr Text bei der vorhandenen Breite
+        /// wirklich braucht, und lässt alles darunter nachrücken.
+        /// </summary>
+        /// <remarks>
+        /// D-CHECK 28.08.2026: Die Zeile war mit 32 px auf zwei Textzeilen ausgelegt; der
+        /// deutsche Text braucht bei 676 px Breite drei (45 px), die dritte war
+        /// abgeschnitten. Fest verdrahtete 45 px wären nur für EINE Sprache richtig —
+        /// die englische Fassung ist anders lang. Deshalb gemessen, und die Maske wächst
+        /// um denselben Betrag (dasselbe „Platz schaffen" wie in
+        /// <c>Form_PufferSp_Projekt.KlassenSetAufbauen</c>).
+        /// </remarks>
+        private void HinweiszeileEinpassen()
+        {
+            if (_lblInfo == null) return;
+
+            int noetig = _lblInfo.GetPreferredSize(new Size(_lblInfo.Width, 0)).Height;
+            int delta = noetig - _lblInfo.Height;
+            if (delta <= 0) return;
+
+            foreach (Control c in this.Controls)
+                if (!ReferenceEquals(c, _lblInfo) && c.Top > _lblInfo.Top) c.Top += delta;
+
+            _lblInfo.Height = noetig;
+            this.ClientSize = new Size(this.ClientSize.Width, this.ClientSize.Height + delta);
         }
 
         /// <summary>Beschriftung fester Breite — die englischen Texte sind länger als die deutschen.</summary>

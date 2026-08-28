@@ -62,6 +62,10 @@ namespace WindowsFormsApplication1
             {
                 listBox_Extern.Items.Add(ctrl.items[i].m_szBezeichner);
             }
+
+            // D2 (28.08.2026): Fusszeile auf die Norm - bisher Abbrechen links von OK,
+            // Groesse 98x33 und ohne Anker.
+            FusszeilenNorm.Einhaengen(this, btn_OK, btn_Abbrechen);
         }
 
         /// <summary>Legt Beschriftung und Kanal-Dropdown an und haengt sie ein.</summary>

@@ -8189,4 +8189,10 @@ Effective only with a STRATIFIED target storage (layers &gt; 1): from the inlet 
   <data name="PSP_SPEICHERTYP_ANZEIGE_KOMBI" xml:space="preserve">
     <value>Combination storage</value>
   </data>
+  <data name="SIM_LABEL_BEDARFSART" xml:space="preserve">
+    <value>Demand type:</value>
+  </data>
+  <data name="CHART_TITEL_DECKUNG_JE_BEDARFSART" xml:space="preserve">
+    <value>{0} coverage — annual load profile</value>
+  </data>
 </root>

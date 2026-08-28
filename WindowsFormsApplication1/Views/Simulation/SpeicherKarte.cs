@@ -467,7 +467,18 @@ namespace WindowsFormsApplication1
             _lblName.Bounds = new Rectangle(links, y, nameBreite, _lblPfeil.Height);
 
             _kopfChips.Location = new Point(_lblName.Right + 6, y - 2);
-            _kopfChips.Width = Math.Max(40, rechts - _lblName.Right - 6);
+
+            // D-CHECK 28.08.2026: Die gesetzte Breite allein hält den Chipstreifen NICHT
+            // in seiner Spur. Ein FlowLayoutPanel mit AutoSize und GrowAndShrink misst
+            // seine Wunschgröße OHNE Breitenvorgabe, legt alle Chips in eine Zeile und
+            // überschreibt die Breite in der nächsten Layoutrunde wieder — gemessen:
+            // 142 px statt der zugewiesenen 76, der Streifen lief unter das Bilanzfeld
+            // (Schnitt 58 x 17 px). Erst MaximumSize begrenzt die Messung, dann greift
+            // WrapContents. Dasselbe Mittel wie in ErzeugerKarte.Innenbreite.
+            int chipBreite = Math.Max(40, rechts - _lblName.Right - 6);
+            if (_kopfChips.MaximumSize.Width != chipBreite)
+                _kopfChips.MaximumSize = new Size(chipBreite, 0);
+            _kopfChips.Width = chipBreite;
 
             int kopfUnten = Math.Max(_kopfChips.Bottom, _lblName.Bottom);
 
