@@ -190,6 +190,28 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string KESSEL_TEMPERATURPAAR = "KESSEL_TEMPERATURPAAR";
 
+        /// <summary>
+        /// Waermepumpe mit Pufferspeicher als Waermequelle, an der ZUGLEICH „Quelle
+        /// unbegrenzt verfuegbar" gesetzt ist (Paket B3, Nutzerbefund 28.08.2026,
+        /// Booster-Kette 1042).
+        ///
+        /// <para>Das Haekchen gewinnt seit jeher:
+        /// <c>WaermequelleClass.Quellspeicher</c> liefert dann KEINEN Speicher („nur die
+        /// Temperatur wirkt, keine Bilanz") — die Anlage rechnet mit konstant
+        /// <c>WQ_Temp</c>, und die gesamte Speicherkopplung aus Paket B1/B2 samt
+        /// Lesepunkt bleibt still abgeschaltet, obwohl ein Puffer gewaehlt ist. Beim
+        /// Anwender stand die Booster-WP so auf konstant 45 °C, waehrend Quellpuffer,
+        /// Lader und Senken fertig verschaltet waren.</para>
+        ///
+        /// <para><b>WEICH und nur fuer die WAERMEPUMPE:</b> Der Lauf rechnet den
+        /// dokumentierten Bestandsweg weiter (keine Ergebnisaenderung ohne
+        /// Anwenderaktion). Der HEIZKESSEL liest das Flag gar nicht
+        /// (<c>SimulationControl.QuellbezuegeAufbauen</c> fragt nur <c>WQ_Typ</c> und
+        /// <c>WQ_ID_Puffer</c>) — dort waere der Befund eine Warnung vor etwas
+        /// Wirkungslosem.</para>
+        /// </summary>
+        public const string QUELLE_UNBEGRENZT = "QUELLE_UNBEGRENZT";
+
         /// <summary>HART: derselbe Speicher ist Quelle UND Ladeziel derselben Anlage.</summary>
         public const string HART_KURZSCHLUSS = "HART_KURZSCHLUSS";
 
@@ -244,6 +266,7 @@ namespace WindowsFormsApplication1
 
             RingPruefen(bild, befunde);
             SoleOhneQuellePruefen(idProjekt, befunde);
+            QuelleUnbegrenztTrotzPufferPruefen(idProjekt, befunde);
 
             foreach (int idAnlage in bild.AnlagenReihenfolge)
             {
@@ -666,6 +689,56 @@ namespace WindowsFormsApplication1
                 befunde.Add(Befund(QUELLE_NICHT_KONFIGURIERT, false, idAnlage, 0,
                     string.Format(MyResource.Resource.SIMWARN_QUELLE_FEHLT,
                                   StilleDb.Text(StilleDb.Feld(r, "Bezeichner")), bauart)));
+            }
+        }
+
+        /// <summary>
+        /// QUELLE_UNBEGRENZT — Waermepumpe mit Pufferquelle, deren Haekchen „unbegrenzt
+        /// verfuegbar" die Speicherkopplung abschaltet (Paket B3). Begruendung und
+        /// Abgrenzung (nur Waermepumpe) bei <see cref="QUELLE_UNBEGRENZT"/>.
+        ///
+        /// <para>Eigene stille Abfrage nach dem Muster von
+        /// <see cref="SoleOhneQuellePruefen"/>: Das Flag <c>WQ_Unbegrenzt</c> braucht
+        /// sonst kein Kriterium und gehoert deshalb nicht ins Projektbild. Der
+        /// Typvergleich laeuft im Code gegen <c>WaermequelleClass.TYP_PUFFER</c> —
+        /// Persistenzwerte stehen nicht als Literal im SQL (Drei-Schichten-Regel).</para>
+        /// </summary>
+        private static void QuelleUnbegrenztTrotzPufferPruefen(int idProjekt,
+                                                               List<Warnbefund> befunde)
+        {
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID, Bezeichner, WQ_Typ, WQ_ID_Puffer, WQ_Puffer, WQ_Temp " +
+                "FROM Tab_Energieanlagen " +
+                "WHERE ID_Projekt = ? AND ID_Type = " + WizardItemClass.WP_TYP + " " +
+                "AND WQ_Unbegrenzt = TRUE",
+                new OleDbParameter("@p", idProjekt));
+            if (dt == null) return;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                if (!string.Equals(StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")),
+                                   WaermequelleClass.TYP_PUFFER, StringComparison.Ordinal))
+                    continue;
+
+                // Nur wenn wirklich ein Puffer benannt ist — dieselbe Rueckfallkette
+                // wie WaermequelleClass.Quellspeicher (Fremdschluessel, sonst
+                // Bezeichner). Ohne beides gibt es nichts, was das Haekchen
+                // uebersteuern koennte.
+                int idPuffer = (int)StilleDb.Zahl(StilleDb.Feld(r, "WQ_ID_Puffer"));
+                string bezeichner = StilleDb.Text(StilleDb.Feld(r, "WQ_Puffer")).Trim();
+                if (idPuffer <= 0 && bezeichner.Length == 0) continue;
+
+                string puffername = idPuffer > 0
+                    ? WaermesenkeClass.PufferName(idPuffer)
+                    : bezeichner;
+
+                double temp = StilleDb.Zahl(StilleDb.Feld(r, "WQ_Temp"));
+
+                int idAnlage = (int)StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                befunde.Add(Befund(QUELLE_UNBEGRENZT, false, idAnlage, idPuffer,
+                    string.Format(MyResource.Resource.SIMWARN_QUELLE_UNBEGRENZT,
+                                  StilleDb.Text(StilleDb.Feld(r, "Bezeichner")),
+                                  puffername, temp.ToString("0.#"))));
             }
         }
 
