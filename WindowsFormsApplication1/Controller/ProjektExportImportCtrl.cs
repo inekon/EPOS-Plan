@@ -59,7 +59,6 @@ namespace WindowsFormsApplication1
     {
         private const string FORMAT = "wp-projekt";
         private const int FORMAT_VER = 1;
-        private const int SCHEMA_VER = 0;
 
         private readonly ProjektDuplizierenCtrl _dup = new ProjektDuplizierenCtrl();
 
@@ -203,7 +202,9 @@ namespace WindowsFormsApplication1
                     {
                         format = FORMAT,
                         formatVersion = FORMAT_VER,
-                        schemaVersion = SCHEMA_VER,
+                        // B2 (Konzept Projekttransfer T2): der echte Migrationsstand —
+                        // der Import lehnt Pakete mit anderem Stand ab.
+                        schemaVersion = SchemaMigration.ZIEL_VERSION,
                         exportedUtc = DateTime.UtcNow.ToString("o"),
                         sourceProject = projektName,
                         tables = manifestTabellen,
@@ -241,6 +242,20 @@ namespace WindowsFormsApplication1
             {
                 man = JsonSerializer.Deserialize<Manifest>(ReadEntry(zip, "manifest.json"));
                 if (man == null || man.format != FORMAT) { fehler = "Kein gültiges Projektpaket."; return -1; }
+
+                // B2 (Konzept Projekttransfer T2): Schemastände müssen übereinstimmen —
+                // die Datenmigrationen laufen datenbankweit genau einmal, ein Paket mit
+                // anderem Stand schleuste still Altdaten ein. schemaVersion 0 = Altpaket
+                // (vor T2 exportiert) und bleibt zugelassen.
+                if (man.schemaVersion != 0 && man.schemaVersion != SchemaMigration.ZIEL_VERSION)
+                {
+                    fehler = "Das Paket wurde mit Schemastand " + man.schemaVersion +
+                             " exportiert, dieser Rechner arbeitet mit Stand " +
+                             SchemaMigration.ZIEL_VERSION +
+                             ". Bitte beide Rechner auf denselben Programmstand bringen " +
+                             "und das Projekt neu exportieren.";
+                    return -1;
+                }
                 foreach (var t in man.tables)
                     tableRows[t.name] = LiesZeilen(ReadEntry(zip, "data/" + t.name + ".json"));
                 foreach (var k in man.catalogs ?? new List<KatMeta>())
@@ -388,7 +403,20 @@ namespace WindowsFormsApplication1
 
                 string projPk = man.tables.First(x => x.name.Equals("Tab_Projekt", StringComparison.OrdinalIgnoreCase)).pk;
                 long altProjId = tableRows["Tab_Projekt"][0][projPk].GetInt64();
-                return offset.ContainsKey("Tab_Projekt") ? (int)(altProjId + offset["Tab_Projekt"]) : -1;
+                int neueProjektId = offset.ContainsKey("Tab_Projekt") ? (int)(altProjId + offset["Tab_Projekt"]) : -1;
+
+                // B3 (Konzept Projekttransfer T2): Die komponentenabhängigen Kostenanker
+                // (Tab_ProjektWerte.ID_AnlageGeraet -> Tab_WP/Tab_Heizkessel/... je
+                // Komponente) kann die generische FK-Umschlüsselung nicht kennen — sie
+                // kämen mit den Geräte-IDs des QUELLrechners an, und die Ä21-Selbst-
+                // heilung löste die Zuordnungen beim ersten UI-Aufbau ehrlich auf
+                // („ohne Anlagenzuordnung", das Ä24-Befundbild). Aus den bereits
+                // umgeschlüsselten, gültigen Anlagenzuordnungen neu ableiten —
+                // derselbe Baustein wie im Duplizierer seit Ä24.
+                if (neueProjektId > 0)
+                    try { KostenProjektPositionenCtrl.AnkerNachziehen(neueProjektId); } catch { }
+
+                return neueProjektId;
             }
             catch (Exception ex)
             {
