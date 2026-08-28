@@ -73,12 +73,20 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class SchemaMigration
     {
-        /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-<<<<<<< HEAD
-        public const int ZIEL_VERSION = 56;
-=======
+        /// <summary>
+        /// Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.
+        ///
+        /// KOLLISIONSAUFLÖSUNG 29.08.2026: Zwei parallele Stränge hatten die 55 vergeben —
+        /// Paket B2 (Temperaturbezug) und Etappe E1 (CO2-Saat, samt 56 für die
+        /// Emissionsarten). Die produktive Datenbank war zum Merge-Zeitpunkt bereits mit
+        /// dem B2-Schritt auf 55 migriert (nachweisbar an Tab_Energieanlagen.
+        /// WQ_TemperaturModus); die 55 gehört damit unverrückbar dem Temperaturbezug.
+        /// CO2-Saat und Emissionsarten sind auf die Nummern 56 und 57 gerückt — ihre
+        /// SCHRITTMETHODEN sind mit dem Merge aber nicht angekommen (nur Katalog und
+        /// Konstanten); die beiden Einträge sind deshalb in <see cref="SCHRITTE"/>
+        /// GEPARKT und das Ziel bleibt 55, bis der E1/E2-Vollstand eintrifft.
+        /// </summary>
         public const int ZIEL_VERSION = 55;
->>>>>>> 0787aeca05d25d469d6333930e34df7bac7c74fc
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1818,8 +1826,9 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_54_QUELLEN = 54;
 
         /// <summary>
-<<<<<<< HEAD
-        /// Schritt 55 - <b>Etappe E1</b> (<c>Konzept_CO2-Faktoren_Energietraeger_EPOS-Plan.md</c>
+        /// Schritt 56 (KOLLISIONSAUFLÖSUNG 29.08.2026: von 55 gerückt, siehe
+        /// <see cref="ZIEL_VERSION"/>) - <b>Etappe E1</b>
+        /// (<c>Konzept_CO2-Faktoren_Energietraeger_EPOS-Plan.md</c>
         /// Rev. 1, § 4): die CO₂-SAAT DER TRÄGERWERTE.
         ///
         /// <para><b>Anlass.</b> Zehn der 21 gepflegten Katalogträger trugen
@@ -1873,10 +1882,12 @@ namespace WindowsFormsApplication1
         /// die <c>laccdb</c> selbst hält — eine Sperre darauf legte jede Migration
         /// still.</para>
         /// </summary>
-        public const int SCHRITT_55_CO2_SAAT = 55;
+        public const int SCHRITT_56_CO2_SAAT = 56;
 
         /// <summary>
-        /// Schritt 56 - <b>Etappe E2</b> (<c>Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md</c>
+        /// Schritt 57 (KOLLISIONSAUFLÖSUNG 29.08.2026: von 56 gerückt, siehe
+        /// <see cref="ZIEL_VERSION"/>) - <b>Etappe E2</b>
+        /// (<c>Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md</c>
         /// Rev. 1.2, § 3 und § 6): EMISSIONSARTEN UND EMISSIONSWERTE.
         ///
         /// <para><b>Was entsteht.</b> Zwei Tabellen, zwei Spalten, vier Saaten:
@@ -1929,8 +1940,9 @@ namespace WindowsFormsApplication1
         /// <c>Tab_Applikation</c> wächst von 8 auf 9 Spalten, <c>Tab_Projekt</c> von 8
         /// auf 9. Die beiden neuen Tabellen tragen 10 bzw. 11 Spalten.</para>
         /// </summary>
-        public const int SCHRITT_56_EMISSIONSARTEN = 56;
-=======
+        public const int SCHRITT_57_EMISSIONSARTEN = 57;
+
+        /// <summary>
         /// Schritt 55 - <b>Paket B2</b> (zwei Nutzeraufträge vom 28.08.2026): der
         /// TEMPERATURBEZUG der Kessel-Kaskade und der LESEPUNKT des Boosters.
         ///
@@ -1987,7 +1999,6 @@ namespace WindowsFormsApplication1
         /// angelegt" und 0 vorbelegte Zeilen.</para>
         /// </summary>
         public const int SCHRITT_55_TEMPERATURBEZUG = 55;
->>>>>>> 0787aeca05d25d469d6333930e34df7bac7c74fc
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -3019,35 +3030,6 @@ namespace WindowsFormsApplication1
                         "Anlage, und ein Stundenprofil kaeme gar nicht in die Datenbank.",
                         Schritt_54_Quellen),
 
-<<<<<<< HEAD
-            // E1 (Konzept_CO2-Faktoren Rev. 1, Paragraf 4): die CO2-Saat der
-            //       Traegerwerte. Zehn Traeger standen auf 0 und rechneten damit
-            //       still emissionsfrei. Begruendung, Ausnahmen (Schritt 42/43,
-            //       Projektwerte, STROMMIX-Konstante) und Idempotenzzusage bei
-            //       der Schrittkonstanten.
-            new Schritt(SCHRITT_55_CO2_SAAT,
-                        "CO2-Saat der Katalogtraeger: energy_carrier.co2 auf die belegten " +
-                        "BAFA-EEW-Werte setzen, wo der Katalog 0/NULL oder abweichend " +
-                        "gepflegt ist (Etappe E1)",
-                        "Die CO2-Faktoren der Katalogtraeger konnten nicht gesetzt werden - " +
-                        "ein Projekt mit einem dieser Traeger rechnet sonst weiter mit 0 g/kWh.",
-                        Schritt_55_Co2Saat),
-
-            // E2 (Konzept Emissionsarten Rev. 1.2, Paragraf 3): der Artenkatalog
-            //       und die Emissionswerte. Sechs Teile in EINER Version - Bauform
-            //       wie die Schritte 4 und 11. WIRKUNGSNEUTRAL: kein Leser, keine
-            //       geaenderte Altspalte. Begruendung, Teilgliederung und
-            //       Idempotenzzusage bei der Schrittkonstanten.
-            new Schritt(SCHRITT_56_EMISSIONSARTEN,
-                        "Emissionsarten-Katalog: Tabellen emissionsart/emissionswert anlegen, " +
-                        "sieben Arten, Vorlagen aus BAFA-Saat, Gesetzesparametern und " +
-                        "Brennstoff-Stamm sowie die aktiven Traegerwerte saeen; " +
-                        "Berechnungsmodus in Tab_Applikation und Tab_Projekt (Etappe E2)",
-                        "Der Emissionsarten-Katalog konnte nicht angelegt werden - ohne ihn " +
-                        "bleiben CO2, SO2 und NOx feste Spalten und der Emissions-Tab (E3) " +
-                        "haette keine Datengrundlage.",
-                        Schritt_56_Emissionsarten),
-=======
             // B2 (Nutzeraufträge 28.08.2026): Temperaturbezug der Kessel-Kaskade und
             // Lesepunkt des Boosters. DDL plus zwei Vorbelegungen. Begruendung,
             // Teilgliederung und Idempotenzzusage bei der Schrittkonstanten.
@@ -3061,7 +3043,32 @@ namespace WindowsFormsApplication1
                         "Hand gepflegtes Temperaturpaar, sonst bliebe seine Kaskade " +
                         "wirkungslos.",
                         Schritt_55_Temperaturbezug),
->>>>>>> 0787aeca05d25d469d6333930e34df7bac7c74fc
+
+            // GEPARKT (KOLLISIONSAUFLÖSUNG 29.08.2026, siehe ZIEL_VERSION): Die
+            // Etappen E1 (CO2-Saat, jetzt SCHRITT_56_CO2_SAAT) und E2
+            // (Emissionsarten, jetzt SCHRITT_57_EMISSIONSARTEN) sind mit dem
+            // Sync-Merge nur zur Haelfte angekommen - Katalog und Konstanten ja,
+            // die Schrittmethoden Schritt_56_Co2Saat/Schritt_57_Emissionsarten
+            // nein. Die beiden Eintraege werden hier reaktiviert, sobald der
+            // Vollstand der Etappen eintrifft; dann ZIEL_VERSION auf 57 heben.
+            //
+            // new Schritt(SCHRITT_56_CO2_SAAT,
+            //             "CO2-Saat der Katalogtraeger: energy_carrier.co2 auf die belegten " +
+            //             "BAFA-EEW-Werte setzen, wo der Katalog 0/NULL oder abweichend " +
+            //             "gepflegt ist (Etappe E1)",
+            //             "Die CO2-Faktoren der Katalogtraeger konnten nicht gesetzt werden - " +
+            //             "ein Projekt mit einem dieser Traeger rechnet sonst weiter mit 0 g/kWh.",
+            //             Schritt_56_Co2Saat),
+            //
+            // new Schritt(SCHRITT_57_EMISSIONSARTEN,
+            //             "Emissionsarten-Katalog: Tabellen emissionsart/emissionswert anlegen, " +
+            //             "sieben Arten, Vorlagen aus BAFA-Saat, Gesetzesparametern und " +
+            //             "Brennstoff-Stamm sowie die aktiven Traegerwerte saeen; " +
+            //             "Berechnungsmodus in Tab_Applikation und Tab_Projekt (Etappe E2)",
+            //             "Der Emissionsarten-Katalog konnte nicht angelegt werden - ohne ihn " +
+            //             "bleiben CO2, SO2 und NOx feste Spalten und der Emissions-Tab (E3) " +
+            //             "haette keine Datengrundlage.",
+            //             Schritt_57_Emissionsarten),
         };
 
         // =================================================================================
