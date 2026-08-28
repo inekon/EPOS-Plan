@@ -8198,4 +8198,10 @@ Effective only with a STRATIFIED target storage (layers &gt; 1): from the inlet 
   <data name="CHART_TITEL_DECKUNG_JE_BEDARFSART" xml:space="preserve">
     <value>{0} coverage — annual load profile</value>
   </data>
+  <data name="BK_SP_KOMPONENTE" xml:space="preserve">
+    <value>Component</value>
+  </data>
+  <data name="BK_SP_KOMPONENTE_N" xml:space="preserve">
+    <value>Component {0}</value>
+  </data>
 </root>

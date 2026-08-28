@@ -46,6 +46,11 @@ namespace WindowsFormsApplication1
         /// <summary>Gewerk → erste Komponentenzeile des Projekts (fehlt das Gewerk: kein Eintrag).</summary>
         public Dictionary<string, DataRow> Komponenten = new Dictionary<string, DataRow>();
 
+        /// <summary>Gewerk → ALLE Komponentenzeilen des Projekts in Anlagenreihenfolge
+        /// (Nutzerauftrag 28.08.2026: die Gegenüberstellung zeigt eine Zeile je
+        /// Komponente, nicht mehr nur die Merkmale der ersten).</summary>
+        public Dictionary<string, DataTable> KomponentenAlle = new Dictionary<string, DataTable>();
+
         /// <summary>Gewerk → Anzahl der Komponenten-Einträge des Projekts.</summary>
         public Dictionary<string, int> KomponentenAnzahl = new Dictionary<string, int>();
 
@@ -73,7 +78,7 @@ namespace WindowsFormsApplication1
                 DataTable dt = LadeGewerk(g.Key, g.Value, idProjekt);
                 int anzahl = dt != null ? dt.Rows.Count : 0;
                 d.KomponentenAnzahl[g.Key] = anzahl;
-                if (anzahl > 0) d.Komponenten[g.Key] = dt.Rows[0];
+                if (anzahl > 0) { d.Komponenten[g.Key] = dt.Rows[0]; d.KomponentenAlle[g.Key] = dt; }
             }
             return d;
         }
