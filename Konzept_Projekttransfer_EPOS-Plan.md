@@ -62,10 +62,23 @@ die T1 hart reproduziert und schließt:
    Zweitverbindung.
 2. **Kopf ohne Zeilen, Detail mit Zeilen** im Paket (Export überspringt leere
    Tabellen; ohne Offset für `Tab_Ergebnis` bleibt `ID_Ergebnis` unversetzt).
-T1 baut einen Reproduktionstest (Projekt mit gespeicherten Ergebnissen
-exportieren → in frische Kopie importieren), macht die Einfügereihenfolge
-**deterministisch topologisch** (Eltern vor Kindern, unabhängig vom
-FK-Rowset-Glück) und sichert die Kopf/Detail-Kopplung.
+**UMGESETZT (28.08.2026) — die echte Ursache lag tiefer:** Die Analyse der
+Nutzerdatei (`Booster-Kette mit Kombi-Speicher.wpx`) zeigte Reihenfolge und
+Paketinhalt in Ordnung; der Detail-PK wurde versetzt, der Verweis
+`ID_Ergebnis` aber nicht. Wurzel: Die Umschlüsselung fragt
+`ErmittleZieltabelle` des Duplizierers, dessen Beziehungswissen
+(`_echteFks`) nur `ErmittlePlan` lädt — also nur beim Duplizieren und beim
+EXPORT. Ein reiner Import arbeitete auf leerem Wissen, und jede Beziehung
+außerhalb der handgepflegten `FK_MAP` (wie `ID_Ergebnis → Tab_Ergebnis`)
+blieb unversetzt → erzwungene Beziehung bricht. Fix dreiteilig:
+(1) `ProjektDuplizierenCtrl.BeziehungenLaden` (Extrakt aus `ErmittlePlan`)
+wird im Import geladen; (2) Namenskonventions-Gürtel in `Umschluessele`:
+`ID_<X> → Tab_<X>` wird versetzt, wenn `Tab_<X>` im Paket mitreist —
+unabhängig von der FK-Rowset-Lotterie; (3) Randfall „Elterntabelle im
+Manifest, aber ohne Zeilen": Verweis wird ehrlich gelöst statt fremd zu
+zeigen. Beweis: Prüfstand-Modus `transfer` 15/15 PASS, darunter der Import
+der ECHTEN Nutzerdatei mit korrekt verdrahteter Ergebnisfamilie (T3a/T3b)
+und der App-Fluss mit frischem Controller (T1-Kern).
 
 **B2 — Schemaversion wirkungslos:** Das Manifest führt `schemaVersion`,
 aber als Konstante `SCHEMA_VER = 0`. Import zwischen Rechnern mit
@@ -74,7 +87,9 @@ an `SchemaMigration.ZIEL_VERSION` (derzeit 47) und prüft beim Import: ungleich
 → klare Meldung („Exportstand 47, dieser Rechner 46 — beide Rechner auf
 denselben Stand bringen"), kein Import. Begründung: datenbankweite
 Datenmigrationen laufen genau einmal; projektweises Nachziehen älterer Pakete
-wäre eine eigene Etappe (TF4).
+wäre eine eigene Etappe (TF4). **UMGESETZT (28.08.2026):** Manifest trägt
+`SchemaMigration.ZIEL_VERSION`; Import lehnt fremde Stände mit klarer Meldung
+ab (Altpakete mit Stand 0 bleiben zugelassen); Beweis T4a.
 
 **B3 — Kostenanker reisen unversetzt:** `Tab_ProjektWerte.ID_AnlageGeraet`
 zeigt komponentenabhängig auf `Tab_WP`/`Tab_Kessel`/… — eine generische
@@ -86,7 +101,9 @@ dann stünden Positionen „ohne Anlagenzuordnung" (dasselbe Bild wie der
 `KostenProjektPositionenCtrl.AnkerNachziehen(neueProjektId)` — derselbe
 Baustein, der das im Duplizierer seit Ä24 löst. Gleiches Muster für künftige
 komponentenabhängige Verweise: nach dem Import einmal aus den gültigen
-Zuordnungen neu ableiten statt raten.
+Zuordnungen neu ableiten statt raten. **UMGESETZT (28.08.2026):**
+`AnkerNachziehen` läuft nach dem Commit; Beweis T2f (vorher 8 fremde Anker,
+jetzt 0).
 
 **B4 — Keine Varianten (die Kernanforderung):** Export nimmt genau ein
 Projekt. `Tab_Variante(ID, ID_Projekt, ID_ProjektRef, Variantenname)`-Zeilen
@@ -142,8 +159,8 @@ am Ziel eine Verknüpfungswaise. T3 baut die Varianten-Option (§ 4).
 
 | Etappe | Inhalt | Abnahmekriterium |
 |---|---|---|
-| T1 | **B1-Fix**: Reproduktionstest Ergebnisfamilie; Einfügereihenfolge deterministisch topologisch (Eltern vor Kindern, unabhängig vom FK-Rowset); Kopf/Detail-Kopplung gesichert | Prüfstand § 6 (1) grün; Import des Nutzer-Fehlerfalls läuft durch |
-| T2 | **Härtung**: schemaVersion an `ZIEL_VERSION` gekoppelt + Importprüfung (B2); `AnkerNachziehen` nach Import (B3) | § 6 (2)+(3) grün; Versionskonflikt bringt die klare Meldung |
+| T1 ✔ | **B1-Fix UMGESETZT** (Ursache: ungeladenes Beziehungswissen im Importpfad — § 3) | ERFÜLLT: `transfer` 15/15 PASS inkl. Import der echten Nutzerdatei (T3a/T3b) und App-Fluss mit frischem Controller (T1-Kern) |
+| T2 ✔ | **Härtung UMGESETZT**: schemaVersion an `ZIEL_VERSION` + Importprüfung (B2); `AnkerNachziehen` nach Import (B3) | ERFÜLLT: T4a Ablehnung mit Schemastand-Meldung; T2e/T2f Anker sauber; kd6 92/92, Sweep 114/0/5 |
 | T3 | **Varianten-Option**: Häkchenliste im Export, Paketformat V2, Import mit Verknüpfungs-Wiederherstellung, V1 bleibt lesbar | § 6 (4)+(5) grün; Sichtbeleg Dialog |
 | T4 | **Vorschau/Bericht/Sicherung** im Dialog | Sichtbelege; Sweep grün |
 | T5 | Prüfstand-Modus `transfer` dauerhaft, Doku (Konzept-Vermerke, Protokoll), Sichtabnahme | Runner-Modus im Soll; Abnahme durch Nutzer |
