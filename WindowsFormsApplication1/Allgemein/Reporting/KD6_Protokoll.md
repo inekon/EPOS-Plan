@@ -623,3 +623,30 @@ Zwei Befunde nach der Sichtprüfung des Nutzers:
   bleibt vergleichbar).
 
 Nachweise: transfer 19/19 PASS; kd6/Sweep siehe Regressionslauf.
+
+### Übersicht-Gegenüberstellung: eine Zeile je Komponente (28.08.2026)
+
+Nutzerbefund: Bei zwei Wärmepumpen im Stamm zeigten die Merkmalszeilen
+(Hersteller, Typ, Bauart, …) nur die ERSTE Komponente — die zweite fehlte
+komplett. Nutzervorschlag umgesetzt: nur die Komponenten darstellen,
+Merkmale per Mouse-over und bei Auswahl.
+
+- ProjektDetails führt je Gewerk jetzt ALLE Komponentenzeilen
+  (KomponentenAlle, Anlagenreihenfolge); AbweichungsErmittler liefert
+  KomponenteZeile(gewerk, index), BezeichnerMerkmal und MerkmaleText
+  (deklarative Feldliste ohne das Bezeichner-Merkmal) — eine Wahrheit
+  für Tooltip und Auswahlanzeige.
+- Gegenüberstellung je zählbarem Gewerk: Anzahlzeile wie bisher, dann
+  EINE ZEILE JE KOMPONENTE („Komponente 1/2/…", bei einer schlicht
+  „Komponente") mit dem Bezeichner je Version; die früheren
+  Merkmalszeilen entfallen dort. Mouse-over einer Zelle zeigt die
+  Merkmale mehrzeilig; die Auswahl einer Zelle zeigt sie in der
+  Statuszeile („CS5800i (Stamm) — Hersteller: Bosch · Typ: … ").
+  Konfigurationsblöcke Anlage/Gebäude bleiben Merkmalszeilen (inkl.
+  B6-Gewerk-Guard).
+- Drei-Schichten-Regel: neue Keys BK_SP_KOMPONENTE(_N) de+en über
+  lokalen ResourceManager-Helfer (TUeb) mit deutschem Fallback.
+
+Nachweise: transfer-T8/T8b (2 WPs vollzählig, Merkmalstext ohne
+Bezeichner, mit Hersteller), Gesamtlauf + kd6 + Sweep siehe Zahlen des
+Regressionslaufs.

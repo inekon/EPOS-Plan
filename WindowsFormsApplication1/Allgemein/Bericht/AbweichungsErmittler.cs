@@ -219,6 +219,46 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        /// <summary>Die n-te Komponentenzeile eines Gewerks (null wenn nicht vorhanden) —
+        /// Grundlage der „eine Zeile je Komponente"-Gegenüberstellung (28.08.2026).</summary>
+        public static DataRow KomponenteZeile(ProjektDetails d, string gewerk, int index)
+        {
+            if (d == null || gewerk == null || index < 0) return null;
+            DataTable dt;
+            if (!d.KomponentenAlle.TryGetValue(gewerk, out dt) || dt == null) return null;
+            return index < dt.Rows.Count ? dt.Rows[index] : null;
+        }
+
+        /// <summary>Das Bezeichner-Merkmal eines Gewerks (Label „Komponente" der
+        /// deklarativen Feldliste) — liefert der Komponentenzeile ihren Namen.</summary>
+        public static Merkmal BezeichnerMerkmal(string gewerk)
+        {
+            foreach (Merkmal f in Felder)
+                if (f.Gewerk == gewerk && f.Spalte == "Bezeichner") return f;
+            return null;
+        }
+
+        /// <summary>
+        /// Merkmalstext einer Komponentenzeile über die deklarative Feldliste ihres
+        /// Gewerks — je belegtem Merkmal „Label: Wert"; das Bezeichner-Merkmal bleibt
+        /// außen vor (es steht bereits in der Zelle). Eine Wahrheit für Mouse-over
+        /// und Auswahlanzeige der Gegenüberstellung (Nutzerauftrag 28.08.2026).
+        /// </summary>
+        public static string MerkmaleText(DataRow r, string gewerk, string trenner)
+        {
+            if (r == null) return "";
+            var teile = new List<string>();
+            foreach (Merkmal f in Felder)
+            {
+                if (f.Gewerk != gewerk || f.Spalte == "Bezeichner") continue;
+                if (!r.Table.Columns.Contains(f.Spalte)) continue;
+                string w = Formatiere(r, f);
+                if (string.IsNullOrEmpty(w) || w == "—") continue;
+                teile.Add(f.Label + ": " + w);
+            }
+            return string.Join(trenner, teile);
+        }
+
         /// <summary>
         /// Die erste ECHTE Anlagenzeile eines Projekts — Referenzanlagen
         /// (<c>WizardItemClass.REF_KESSEL_TYP</c>…<c>REF_PV_TYP</c>) bleiben außen
