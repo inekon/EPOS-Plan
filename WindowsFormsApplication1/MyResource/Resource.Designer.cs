@@ -15212,7 +15212,7 @@ namespace WindowsFormsApplication1.MyResource {
         ///
         ///Nicht angehakt: gelesen wird nach der Ladephase des vorgelagerten Erzeugers; der Booster sieht den Speicher dann im am weitesten geladenen Zustand der Stunde.
         ///
-        ///Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt. ähnelt.
+        ///Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führ [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
         public static string SIM_BOOSTER_LESEPUNKT_TOOLTIP {
             get {
@@ -19167,6 +19167,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle unbegrenzt verfügbar — Speicherkopplung AUS, konstant {0} °C! ähnelt.
+        /// </summary>
+        public static string SIMQ_PUFFER_CB_UNBEGRENZT_KONFLIKT {
+            get {
+                return ResourceManager.GetString("SIMQ_PUFFER_CB_UNBEGRENZT_KONFLIKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichertyp: {0}
         ///Gesamtvolumen: {1} l
         ///Bereitschaftsverluste: {2} kWh/24h ähnelt.
@@ -20146,6 +20155,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMWARN_QUELLE_FEHLT {
             get {
                 return ResourceManager.GetString("SIMWARN_QUELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage „{0}&quot;: Der Pufferspeicher „{1}&quot; ist als Wärmequelle gewählt, aber „Quelle unbegrenzt verfügbar&quot; ist gesetzt — die Speicherkopplung ist damit abgeschaltet, gerechnet wird mit konstant {2} °C. Das Häkchen im Quellendialog entfernen, damit die Quelltemperatur dem Speicherzustand folgt. ähnelt.
+        /// </summary>
+        public static string SIMWARN_QUELLE_UNBEGRENZT {
+            get {
+                return ResourceManager.GetString("SIMWARN_QUELLE_UNBEGRENZT", resourceCulture);
             }
         }
         

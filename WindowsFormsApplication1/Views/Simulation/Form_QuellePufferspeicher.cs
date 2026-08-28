@@ -225,6 +225,11 @@ namespace WindowsFormsApplication1
             // PAKET B2: Die Steuerelemente entstehen hier, EINGEPASST wird der Block erst
             // in ArtAnwenden() — die Erzeugerart setzt der Aufrufer nach dem Konstruktor.
             TemperaturbezugAnbauen();
+            // PAKET B3 (Nutzerauftrag 28.08.2026): Das Häkchen „unbegrenzt verfügbar"
+            // schaltet bei gewähltem Puffer die Speicherkopplung ab
+            // (WaermequelleClass.Quellspeicher) — dieser Konflikt soll IM Dialog sichtbar
+            // sein, nicht erst im Laufprotokoll.
+            _cbUnbegrenzt.CheckedChanged += cbUnbegrenzt_CheckedChanged;
             VorgabenSetzen();
             FensterEinpassung.Einhaengen(this);
 
@@ -737,6 +742,10 @@ namespace WindowsFormsApplication1
 
             ZeigeSpeicherDaten();
             BerechneKapazitaet();
+            // PAKET B3: ausdrücklich, nicht nur über die Ereigniskette — bei leerer
+            // Pufferliste feuert kein SelectedIndexChanged, und der Checked-Setter oben
+            // schweigt, wenn der gespeicherte Wert der Vorgabe (false) entspricht.
+            UnbegrenztKonfliktAnzeigen();
         }
 
         /// <summary>
@@ -884,11 +893,63 @@ namespace WindowsFormsApplication1
         {
             ZeigeSpeicherDaten();
             BerechneKapazitaet();
+            UnbegrenztKonfliktAnzeigen();
         }
 
         private void tbTemperatur_TextChanged(object sender, EventArgs e)
         {
             BerechneKapazitaet();
+            // PAKET B3: Der Konflikttext nennt die Temperatur, die dann gälte.
+            UnbegrenztKonfliktAnzeigen();
+        }
+
+        // PAKET B3 (Nutzerauftrag 28.08.2026)
+        private void cbUnbegrenzt_CheckedChanged(object sender, EventArgs e)
+        {
+            UnbegrenztKonfliktAnzeigen();
+        }
+
+        /// <summary>
+        /// PAKET B3 (Nutzerauftrag 28.08.2026) — macht den KONFLIKT des Häkchens
+        /// „unbegrenzt verfügbar" mit einem gewählten Pufferspeicher sichtbar.
+        ///
+        /// <para><b>Der Befund dahinter:</b> <c>WaermequelleClass.Quellspeicher</c>
+        /// liefert bei <c>WQ_Unbegrenzt</c> KEINEN Speicher („nur die Temperatur wirkt,
+        /// keine Bilanz") — die gesamte Speicherkopplung aus Paket B1/B2 ist damit
+        /// abgeschaltet, obwohl in diesem Dialog ein Puffer gewählt ist. Genau so stand
+        /// die Booster-Kette des Anwenderprojekts 1042 still auf konstant 45 °C. Der
+        /// Dialog nahm die Kombination bis B3 kommentarlos an.</para>
+        ///
+        /// <para><b>Bewusst KEINE stille Korrektur:</b> Das Häkchen ist eine gespeicherte
+        /// Anwenderangabe, und es gibt den legitimen Altfall „Puffer benannt, aber
+        /// bewusst als unerschöpfliche Quelle gerechnet". Der Dialog verwirft nichts —
+        /// er färbt die Beschriftung warnrot und nennt die Folge samt der Temperatur,
+        /// die dann gälte. Dieselbe Aussage steht als Warnkriterium
+        /// (<c>Warnkriterien.QUELLE_UNBEGRENZT</c>) an Karte und Laufstart.</para>
+        ///
+        /// <para>Beim HEIZKESSEL ist die Rubrik ausgeblendet (D5b) und der Kessel-Pfad
+        /// liest das Flag gar nicht (<c>QuellbezuegeAufbauen</c>) — die Methode läuft
+        /// dort ins Leere, ohne Schaden.</para>
+        /// </summary>
+        private void UnbegrenztKonfliktAnzeigen()
+        {
+            bool konflikt = _cbUnbegrenzt.Checked && AktuellerPuffer() != null;
+
+            if (!konflikt)
+            {
+                _cbUnbegrenzt.ForeColor = SystemColors.ControlText;
+                _cbUnbegrenzt.Text = MyResource.Resource.SIMQ_PUFFER_CB_UNBEGRENZT;
+                return;
+            }
+
+            float temp;
+            string tempText = WaermequelleClass.ZahlParsen(_tbTemperatur.Text, out temp)
+                ? temp.ToString("0.#")
+                : _tbTemperatur.Text.Trim();
+
+            _cbUnbegrenzt.ForeColor = Color.Firebrick;
+            _cbUnbegrenzt.Text = string.Format(
+                MyResource.Resource.SIMQ_PUFFER_CB_UNBEGRENZT_KONFLIKT, tempText);
         }
 
         private void tbSpreizung_TextChanged(object sender, EventArgs e)

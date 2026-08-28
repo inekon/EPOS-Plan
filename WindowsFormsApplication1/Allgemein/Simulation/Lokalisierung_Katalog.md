@@ -2160,3 +2160,14 @@ lokalisierten Text nicht als Platzhalter auftauchen.
 **Sprachgleichheitsprobe bestanden:** derselbe Lauf mit `EPOS_REFLAUF_UICULTURE=en-US` auf
 einem Projekt, das das neue Kriterium **und** den neuen Modus auslöst — **25 von 25 CSV
 byte-gleich**. Kein Anzeigetext dieses Pakets ist Steuerwert.
+
+## Nachtrag Paket B3 (28.08.2026) — Warnkriterium „Quelle unbegrenzt trotz Pufferwahl"
+
+Nutzerauftrag 28.08.2026 Punkt 2 (Befund an der Booster-Kette 1042). **Zwei Schlüssel
+kommen hinzu, keiner fällt weg.** Bestand danach **2635 `data`-Knoten** je `.resx`
+(DE und EN deckungsgleich) und **2635 Designer-Eigenschaften**.
+
+| Schlüssel | DE | EN | Fundstelle |
+|---|---|---|---|
+| `SIMWARN_QUELLE_UNBEGRENZT` | Anlage „{0}": Der Pufferspeicher „{1}" ist als Wärmequelle gewählt, aber „Quelle unbegrenzt verfügbar" ist gesetzt … | Unit "{0}": buffer storage "{1}" is selected as heat source, but "available without limit" is set … | `Warnkriterien.QuelleUnbegrenztTrotzPufferPruefen` — das neue **weiche** Kriterium `QUELLE_UNBEGRENZT`, nur für Wärmepumpen (der Kessel-Pfad liest das Flag nicht). Drei Platzhalter: Anlage, Puffer, konstante Temperatur. |
+| `SIMQ_PUFFER_CB_UNBEGRENZT_KONFLIKT` | Quelle unbegrenzt verfügbar — Speicherkopplung AUS, konstant {0} °C! | Source available without limit — storage coupling OFF, constant {0} °C! | Konfliktfassung der Checkbox-Beschriftung in `Form_QuellePufferspeicher.UnbegrenztKonfliktAnzeigen` (dazu Warnfarbe Firebrick). AutoSize-Kästchen in eigener Zeile ab x = 16; TextRenderer-gemessen (96 DPI) endet der breiteste Fall (deutsch, Segoe UI 9 pt) bei x = 419 und bleibt damit 171 px vor der Rubrikkante 590. |

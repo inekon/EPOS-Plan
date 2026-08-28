@@ -2070,6 +2070,9 @@ Einsatzgrenzen stehen in den jeweiligen Eingabemasken.</value>
   <data name="SIMQ_PUFFER_CB_UNBEGRENZT" xml:space="preserve">
     <value>Quelle unbegrenzt verfügbar (nur Temperatur maßgeblich)</value>
   </data>
+  <data name="SIMQ_PUFFER_CB_UNBEGRENZT_KONFLIKT" xml:space="preserve">
+    <value>Quelle unbegrenzt verfügbar — Speicherkopplung AUS, konstant {0} °C!</value>
+  </data>
   <data name="SIMQ_PUFFER_DATEN" xml:space="preserve">
     <value>Speichertyp: {0}
 Gesamtvolumen: {1} l
@@ -7991,6 +7994,9 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
   </data>
   <data name="SIMWARN_QUELLE_FEHLT" xml:space="preserve">
     <value>Anlage „{0}": Die {1}-Wärmepumpe hat keine konfigurierte Wärmequelle — gerechnet wird ersatzweise mit der Außenluft, was für diese Bauart fachlich nicht passt. Die Quelle über den Chip „Quelle" der Erzeugerkarte wählen (Erdreich, konstante Temperatur, Quellprofil oder Pufferspeicher).</value>
+  </data>
+  <data name="SIMWARN_QUELLE_UNBEGRENZT" xml:space="preserve">
+    <value>Anlage „{0}": Der Pufferspeicher „{1}" ist als Wärmequelle gewählt, aber „Quelle unbegrenzt verfügbar" ist gesetzt — die Speicherkopplung ist damit abgeschaltet, gerechnet wird mit konstant {2} °C. Das Häkchen im Quellendialog entfernen, damit die Quelltemperatur dem Speicherzustand folgt.</value>
   </data>
   <data name="SIMWARN_HART_RING" xml:space="preserve">
     <value>Die Quellbezüge der Pufferspeicher bilden einen RING: {0}. Es gibt keine Rechenreihenfolge, in der jeder Erzeuger nach seinem Puffer rechnet — bitte die Wärmequelle einer der beteiligten Anlagen ändern.</value>

@@ -2054,6 +2054,9 @@ operating limits are in the respective input forms.</value>
   <data name="SIMQ_PUFFER_CB_UNBEGRENZT" xml:space="preserve">
     <value>Source available without limit (only temperature relevant)</value>
   </data>
+  <data name="SIMQ_PUFFER_CB_UNBEGRENZT_KONFLIKT" xml:space="preserve">
+    <value>Source available without limit — storage coupling OFF, constant {0} °C!</value>
+  </data>
   <data name="SIMQ_PUFFER_DATEN" xml:space="preserve">
     <value>Storage type: {0}
 Total volume: {1} l
@@ -7984,6 +7987,9 @@ They typically stem from a variant copy without this trade and keep entering the
   </data>
   <data name="SIMWARN_QUELLE_FEHLT" xml:space="preserve">
     <value>Unit "{0}": this {1} heat pump has no configured heat source — the run falls back to outdoor air, which does not match this design. Select the source via the "Source" chip on the generator card (ground, constant temperature, source profile or buffer storage).</value>
+  </data>
+  <data name="SIMWARN_QUELLE_UNBEGRENZT" xml:space="preserve">
+    <value>Unit "{0}": buffer storage "{1}" is selected as heat source, but "available without limit" is set — storage coupling is therefore disabled and a constant {2} °C applies. Uncheck the box in the source dialog so the source temperature follows the storage state.</value>
   </data>
   <data name="SIMWARN_HART_RING" xml:space="preserve">
     <value>The buffer-storage source references form a LOOP: {0}. There is no calculation order in which every generator runs after its buffer — please change the heat source of one of the units involved.</value>
