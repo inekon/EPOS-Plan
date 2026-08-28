@@ -91,6 +91,56 @@ namespace WindowsFormsApplication1
         private TextBox tb_BhkwSpeicherdeckung;
         private Label label_BhkwSpeicherdeckungEinheit;
 
+        // ------------------------------------------------------------------------------
+        //  PAKET P2: Speichertemperaturen als dritte Diagrammseite (Konzept 7.4, P1-O5)
+        // ------------------------------------------------------------------------------
+        //
+        // Das Schichtmodell aus Paket P1 führt je Senkenspeicher die Ganglinien der
+        // obersten und der untersten Schicht, Paket B1 dazu die Quelltemperatur jedes
+        // temperaturgekoppelten Erzeugers. Bis P2 gab es sie nur als Datenreihen
+        // (ZeitreihenSatz, CSV) - im Programm war keine davon zu sehen.
+        //
+        // WO: als dritte Seite von tabControl2 auf der Wärmepumpen-Registerkarte, neben
+        // „Wärmproduktion" und „Stromverbrauch". Das ist das etablierte Muster dieser
+        // Ansicht für eine weitere Ganglinie, und die Speicher-Ergebnistabelle
+        // (listView_SimPuffer) steht auf derselben Registerkarte - Zahlen und Kurve
+        // bleiben beieinander.
+        //
+        // Diagramm und Seite entstehen PROGRAMMATISCH; Designer und .resx bleiben
+        // unangetastet (Muster InitKesselChart). Die Seite hängt sich nur ein, wenn der
+        // Lauf mindestens eine Temperaturreihe hat - eine leere Registerkarte wäre eine
+        // Zusage ohne Inhalt.
+        private System.Windows.Forms.TabPage tabPage_Speichertemperatur;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chart_Speichertemperatur;
+        private ChartManager _chartTemperaturManager;
+
+        /// <summary>
+        /// Farbfolge der Speicher im Temperaturdiagramm; sie wiederholt sich ab dem
+        /// fünften Speicher - dieselbe Bauform wie die Speicherserien des Berichts
+        /// (<c>ChartRenderer.C_SPEICHER</c>).
+        /// </summary>
+        private static readonly Color[] TEMP_FARBEN =
+        {
+            Color.FromArgb(0xC0, 0x39, 0x2B),   // Rot
+            Color.FromArgb(0x28, 0x80, 0xB9),   // Blau
+            Color.FromArgb(0x1D, 0x9E, 0x75),   // Grün
+            Color.FromArgb(0x8E, 0x44, 0xAD)    // Violett
+        };
+
+        /// <summary>Farbe der Quelltemperatur-Reihen (Koralle) - sie gehören keinem Speicher.</summary>
+        private static readonly Color TEMP_FARBE_QUELLE = Color.FromArgb(0xD8, 0x5A, 0x30);
+
+        /// <summary>Eine Reihe des Temperaturdiagramms: Schlüssel (Schicht 2), Anzeigetext
+        /// (Schicht 3), Werte und Darstellung.</summary>
+        private sealed class Temperaturreihe
+        {
+            public string Schluessel = "";
+            public string Legende = "";
+            public float[] Werte;
+            public Color Farbe;
+            public bool Gestrichelt;
+        }
+
         // ETAPPE E2 (L6): Kennzahlzeile „Vollbenutzungsstunden elektrisch"
         // (SimulationBHKW.VbhElektrischGesamt) — die Größe, an der der KWK-Zuschlag hängt.
         // Programmatisch wie die zwei Speicherzeilen darüber; Designer und .resx der Form
@@ -339,6 +389,10 @@ namespace WindowsFormsApplication1
             // Pufferspeicher-Ergebnistabelle und Erdreich-Hinweis im Wärmepumpen-Tab
             // (programmatisch, Muster listView_SimSolar/listView_SimPV).
             InitPufferspeicherRubrik();
+
+            // Diagrammseite „Speichertemperaturen" (Paket P2, Konzept 7.4) - sie hängt
+            // sich erst nach einem Lauf mit Temperaturreihen in tabControl2 ein.
+            InitSpeichertemperaturChart();
 
             // Wärmelast-Jahresganglinie im Heizkessel-Tab (programmatisch, Muster wie oben).
             InitKesselChart();
@@ -1889,6 +1943,214 @@ namespace WindowsFormsApplication1
                 textBox_Pufferspeicher.Text = (sim.simulation_wp != null)
                     ? (sim.simulation_wp.Volumen_Pufferspeicher * 1.16).ToString()
                     : "";
+        }
+
+        // ==================================================================
+        // PAKET P2 — Diagrammseite „Speichertemperaturen" (Konzept 7.4, P1-O5)
+        // ==================================================================
+
+        /// <summary>
+        /// Legt Seite und Diagramm der Speichertemperaturen an. Die Seite wird noch
+        /// NICHT in <c>tabControl2</c> eingehängt — das entscheidet erst
+        /// <see cref="SpeichertemperaturAnzeigen"/> anhand des Laufergebnisses.
+        ///
+        /// <para><b>Dock statt fester Maße</b> (Fixmuster der TabPage-Vierseitenanker-
+        /// Falle): Eine Tabseite steht im Konstruktor noch auf der Vorgabegröße 200×100;
+        /// ein Diagramm mit festen Bounds und Vierseitenanker verankerte seine Ränder
+        /// gegen diese Vorgabe und wüchse beim ersten echten Layout um die Differenz aus
+        /// der Seite heraus. <c>Padding</c> an der Seite plus <c>Dock.Fill</c> am
+        /// Diagramm ist unabhängig von der Reihenfolge.</para>
+        /// </summary>
+        private void InitSpeichertemperaturChart()
+        {
+            if (tabControl2 == null) return;
+
+            chart_Speichertemperatur = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            chart_Speichertemperatur.Name = "chart_Speichertemperatur";
+            chart_Speichertemperatur.Dock = DockStyle.Fill;
+
+            // Ein programmatisch erzeugtes Chart hat KEINE ChartArea - ChartManager.Init
+            // steigt ohne sie wortlos aus (dieselbe Falle wie bei chart_Kessel).
+            chart_Speichertemperatur.ChartAreas.Add(new ChartArea("ChartArea_Speichertemperatur"));
+
+            tabPage_Speichertemperatur = new TabPage(MyResource.Resource.SIM_TAB_SPEICHERTEMPERATUR);
+            tabPage_Speichertemperatur.Name = "tabPage_Speichertemperatur";
+            tabPage_Speichertemperatur.UseVisualStyleBackColor = true;
+            tabPage_Speichertemperatur.Padding = new Padding(3);
+            tabPage_Speichertemperatur.Controls.Add(chart_Speichertemperatur);
+        }
+
+        /// <summary>
+        /// Sammelt die Temperaturreihen des Laufs — je Senkenspeicher die oberste und die
+        /// unterste Schicht (Paket P1), dazu die Quelltemperatur jedes
+        /// temperaturgekoppelten Erzeugers (Paket B1). Nie <c>null</c>.
+        ///
+        /// <para><b>Dieselben Quellen und dieselben Schlüssel wie der
+        /// <c>ZeitreihenExtraktor</c></b>: die Speicherliste <c>sim.AlleSpeicher()</c>,
+        /// <c>SimulationPufferspeicher.Schluessel</c> mit den Nachsilben aus
+        /// <see cref="ZeitreihenSatz"/> und dieselben Ausschlussregeln (Quellspeicher
+        /// tragen keine Schichttemperatur, ungekoppelte Erzeuger keine
+        /// Quelltemperatur-Ganglinie). Der Extraktor selbst ist hier nicht aufrufbar — er
+        /// baut den Satz aus einem <c>SimulationRunner</c>, den diese Ansicht nicht
+        /// führt; sie rechnet über <c>SimulationControl</c>. Gemeinsam ist beiden Wegen
+        /// die EINE Datenquelle: die Vektoren der Speicher- und Erzeugerobjekte.</para>
+        /// </summary>
+        private List<Temperaturreihe> Temperaturreihen()
+        {
+            var liste = new List<Temperaturreihe>();
+            if (sim == null) return liste;
+
+            List<SimulationPufferspeicher> speicher = sim.AlleSpeicher();
+            int nummer = 0;
+
+            for (int i = 0; i < speicher.Count; i++)
+            {
+                SimulationPufferspeicher sp = speicher[i];
+                if (sp == null || sp.IstQuelle || !sp.T_oben_Mittel.HasValue) continue;
+                if (sp.T_oben_stuendlich == null || sp.T_unten_stuendlich == null) continue;
+
+                string schluessel = sp.Schluessel(i);
+                Color farbe = TEMP_FARBEN[nummer % TEMP_FARBEN.Length];
+                nummer++;
+
+                liste.Add(new Temperaturreihe
+                {
+                    Schluessel = schluessel + ZeitreihenSatz.SUFFIX_T_OBEN,
+                    Legende = sp.BezeichnerAnzeige() + " " + MyResource.Resource.SIM_REIHE_T_OBEN,
+                    Werte = sp.T_oben_stuendlich,
+                    Farbe = farbe
+                });
+                liste.Add(new Temperaturreihe
+                {
+                    Schluessel = schluessel + ZeitreihenSatz.SUFFIX_T_UNTEN,
+                    Legende = sp.BezeichnerAnzeige() + " " + MyResource.Resource.SIM_REIHE_T_UNTEN,
+                    Werte = sp.T_unten_stuendlich,
+                    Farbe = farbe,
+                    Gestrichelt = true
+                });
+            }
+
+            if (sim.bSimulationWP && sim.simulation_wp != null)
+            {
+                var profile = sim.simulation_wp.Quelltemperaturen;
+                var anlagen = sim.simulation_wp.wp_list;
+
+                for (int i = 0; i < profile.Count && i < anlagen.Count; i++)
+                {
+                    if (!sim.simulation_wp.QuelleGekoppelt(i) || profile[i] == null) continue;
+                    QuellreiheAnhaengen(liste, anlagen[i], profile[i], sim.simulation_wp.WP_Modul[i]);
+                }
+            }
+
+            if (sim.bSimulationKessel && sim.simulation_spk != null)
+            {
+                var anlagen = sim.simulation_spk.spk_anlagen_ids;
+
+                for (int i = 0; i < anlagen.Count; i++)
+                {
+                    float[] reihe = sim.simulation_spk.Quelltemperaturen(i);
+                    if (reihe == null) continue;
+                    QuellreiheAnhaengen(liste, anlagen[i], reihe, sim.simulation_spk.KesselName(i));
+                }
+            }
+
+            return liste;
+        }
+
+        /// <summary>Hängt eine Quelltemperatur-Reihe an; doppelte Anlagen-IDs übergeht sie.</summary>
+        private static void QuellreiheAnhaengen(List<Temperaturreihe> liste, int idAnlage,
+                                                float[] werte, string bezeichner)
+        {
+            if (idAnlage <= 0 || werte == null) return;
+
+            string schluessel = ZeitreihenSatz.QUELLTEMP_PRAEFIX + idAnlage;
+            foreach (Temperaturreihe r in liste)
+                if (string.Equals(r.Schluessel, schluessel, StringComparison.Ordinal)) return;
+
+            liste.Add(new Temperaturreihe
+            {
+                Schluessel = schluessel,
+                Legende = (string.IsNullOrEmpty(bezeichner) ? schluessel : bezeichner) +
+                          " " + MyResource.Resource.SIM_REIHE_QUELLTEMPERATUR,
+                Werte = werte,
+                Farbe = TEMP_FARBE_QUELLE
+            });
+        }
+
+        /// <summary>
+        /// Baut die Diagrammseite „Speichertemperaturen" aus dem aktuellen Lauf — oder
+        /// nimmt sie aus <c>tabControl2</c> heraus, wenn er keine Temperaturreihe trägt
+        /// (Projekt ohne Senkenspeicher, oder ein Folgelauf, in dem der Speicher
+        /// abgewählt wurde). Dieselbe Regel wie beim Kessel-Diagramm: lieber nichts
+        /// zeigen als die Zahlen des Vorlaufs.
+        /// </summary>
+        private void SpeichertemperaturAnzeigen()
+        {
+            if (tabControl2 == null || tabPage_Speichertemperatur == null ||
+                chart_Speichertemperatur == null) return;
+
+            List<Temperaturreihe> reihen = Temperaturreihen();
+
+            if (reihen.Count == 0)
+            {
+                if (tabControl2.TabPages.Contains(tabPage_Speichertemperatur))
+                    tabControl2.TabPages.Remove(tabPage_Speichertemperatur);
+                return;
+            }
+
+            if (!tabControl2.TabPages.Contains(tabPage_Speichertemperatur))
+                tabControl2.TabPages.Add(tabPage_Speichertemperatur);
+
+            // EIGENE °C-ACHSE: Sie beginnt NICHT bei 0 - die Temperaturen eines
+            // Pufferspeichers liegen zwischen Rücklauf und Vorlauf, und eine bei 0
+            // startende Achse drückte das ganze Band in den oberen Rand. ChartManager
+            // rundet Minimum und Maximum auf ein glattes Intervall (siehe dort).
+            double min = double.MaxValue, max = double.MinValue;
+            foreach (Temperaturreihe r in reihen)
+                for (int h = 0; h < r.Werte.Length && h < 8760; h++)
+                {
+                    if (r.Werte[h] < min) min = r.Werte[h];
+                    if (r.Werte[h] > max) max = r.Werte[h];
+                }
+
+            if (min > max) { min = 0; max = 100; }        // sollte nicht vorkommen
+            if (max - min < 5) max = min + 5;             // flache Kurve nicht auf eine Linie pressen
+
+            if (_chartTemperaturManager == null)
+                _chartTemperaturManager = new ChartManager(chart_Speichertemperatur);
+
+            ChartManager cm = _chartTemperaturManager;
+            cm.YMinValue = min;
+            cm.YMaxValue = max;
+            cm.XAxisAsNumber = false;
+            cm.XAxisTitle = MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN;
+            cm.YAxisTitle = MyResource.Resource.CHART_ACHSE_TEMPERATUR;
+            // Der Achsentitel trägt die Einheit bereits; toolTipUnit bleibt deshalb leer,
+            // sonst stünde „Temperatur [°C] [°C]" an der Achse (ChartManager.Init).
+            cm.toolTipUnit = "";
+            cm.ChartTitle = MyResource.Resource.CHART_TITEL_SPEICHERTEMPERATUR;
+            cm.MitLegende = true;
+            cm.MitChartBorder = true;
+            cm.AreaLine = false;
+            cm.MaxXVALUE = 8760;
+            cm.MitViertelStunde = false;
+
+            cm.HardReset();
+            cm.Init();
+
+            foreach (Temperaturreihe r in reihen)
+            {
+                SerieAnlegen(cm, r.Schluessel, r.Legende, r.Farbe, r.Werte,
+                             SeriesChartType.FastLine);
+
+                // Die untere Schicht läuft GESTRICHELT in derselben Farbe wie ihre obere:
+                // Zwei Temperaturen desselben Behälters gehören zusammen, und bei vier
+                // Speichern wären acht verschiedene Farben nicht mehr auseinanderzuhalten.
+                if (r.Gestrichelt)
+                    cm._chart.Series[r.Schluessel].BorderDashStyle = ChartDashStyle.Dash;
+            }
+
+            cm._chart.Invalidate();
         }
 
         /// <summary>
@@ -3522,6 +3784,11 @@ namespace WindowsFormsApplication1
             // Wärmepumpe und blenden dann alles aus.
             PufferspeicherErgebnisAnzeigen();
             ErdreichHinweisAnzeigen();
+
+            // Speichertemperaturen (Paket P2): aus demselben Grund ausserhalb von
+            // "if (sim.bSimulationWP)" - die Seite muss auch wieder verschwinden, wenn
+            // ein Folgelauf keine Temperaturreihe mehr trägt.
+            SpeichertemperaturAnzeigen();
 
             // ********************************************************************************************/
             // Heizkessel

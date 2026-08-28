@@ -172,6 +172,17 @@ namespace WindowsFormsApplication1
             { "Deckungsgrad Heizung", "Coverage space heating" },
             { "Deckungsgrad Brauchwasser", "Coverage domestic hot water" },
             { "Deckungsgrad Prozesswärme", "Coverage process heat" },
+
+            // PAKET P2 (Konzept 7.4) — die Speichertemperaturen des Schichtmodells.
+            // „Speicher" allein ist als Wörterbuchschlüssel grob genug, dass es nur als
+            // Tabellenkopf auftritt; die beiden Temperaturzeilen tragen ihre Einheit mit,
+            // damit sie sich nicht mit Zahlenwerten anderer Tabellen kreuzen.
+            { "Speichertemperaturen (Schichtmodell)", "Storage temperatures (stratified model)" },
+            { "Speicher", "Storage" },
+            { "T oben Mittel [°C]", "T top mean [°C]" },
+            { "T oben Minimum [°C]", "T top minimum [°C]" },
+            { "Speichertemperaturen in charakteristischen Wochen (Winter/Übergang/Sommer)",
+              "Storage temperatures in characteristic weeks (winter/transition/summer)" },
         };
     }
 }
