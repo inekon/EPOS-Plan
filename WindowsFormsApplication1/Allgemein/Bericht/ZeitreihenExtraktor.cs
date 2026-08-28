@@ -133,6 +133,19 @@ namespace WindowsFormsApplication1
                         }
                     }
                 }
+
+                // PAKET B1 (Konzept 8.2/8.4): Die QUELLTEMPERATUR eines
+                // temperaturgekoppelten Erzeugers ist ein LAUFERGEBNIS, kein
+                // Eingangswert mehr — je gekoppeltem Modul eine Reihe unter dem
+                // sprachneutralen Serienschlüssel QUELLTEMP_<AnlagenID> (Schicht 2 der
+                // Drei-Schichten-Regel). Ungekoppelte Module bekommen KEINE Reihe: Ihre
+                // Quelltemperatur steht unverändert in der Konfiguration und wäre hier
+                // eine zweite Wahrheit.
+                //
+                // Bewusst NICHT in z.Speicherreihen — diese Liste führt das
+                // kWh-Füllstandsdiagramm (dieselbe Begründung wie bei den
+                // PUFFER_*_TOBEN-Reihen aus Paket P1).
+                Quelltemperaturreihen(sim, z);
             }
             catch
             {
@@ -140,6 +153,57 @@ namespace WindowsFormsApplication1
             }
 
             return z.Reihen.Count > 0 ? z : null;
+        }
+
+        /// <summary>
+        /// PAKET B1 — die Quelltemperatur-Ganglinien der temperaturgekoppelten Erzeuger
+        /// (Wärmepumpe UND Heizkessel, Konzept 8.2/8.4).
+        ///
+        /// <para>Der Schlüssel trägt die ANLAGEN-ID, nicht die Modulnummer: Sie ist über
+        /// den Lauf hinweg stabil und dieselbe, die <c>QUELLE_&lt;AnlagenID&gt;</c> für
+        /// den Quellspeicher benutzt.</para>
+        /// </summary>
+        private static void Quelltemperaturreihen(SimulationControl sim, ZeitreihenSatz z)
+        {
+            if (sim.bSimulationWP && sim.simulation_wp != null)
+            {
+                var profile = sim.simulation_wp.Quelltemperaturen;
+                var anlagen = sim.simulation_wp.wp_list;
+
+                for (int i = 0; i < profile.Count && i < anlagen.Count; i++)
+                {
+                    if (!sim.simulation_wp.QuelleGekoppelt(i) || profile[i] == null) continue;
+                    ReiheQuelltemperatur(z, anlagen[i], profile[i],
+                                         sim.simulation_wp.WP_Modul[i]);
+                }
+            }
+
+            if (sim.bSimulationKessel && sim.simulation_spk != null)
+            {
+                var anlagen = sim.simulation_spk.spk_anlagen_ids;
+
+                for (int i = 0; i < anlagen.Count; i++)
+                {
+                    float[] reihe = sim.simulation_spk.Quelltemperaturen(i);
+                    if (reihe == null) continue;
+                    ReiheQuelltemperatur(z, anlagen[i], reihe,
+                                         sim.simulation_spk.KesselName(i));
+                }
+            }
+        }
+
+        private static void ReiheQuelltemperatur(ZeitreihenSatz z, int idAnlage,
+                                                 float[] werte, string bezeichner)
+        {
+            if (idAnlage <= 0 || werte == null) return;
+
+            string schluessel = "QUELLTEMP_" + idAnlage;
+            if (z.Reihen.ContainsKey(schluessel)) return;
+
+            z.Reihen[schluessel] = D(werte);
+            z.Beschriftungen[schluessel] =
+                (string.IsNullOrEmpty(bezeichner) ? schluessel : bezeichner) +
+                " " + MyResource.Resource.SIM_REIHE_QUELLTEMPERATUR;
         }
 
         // float[] → double[] (Kopie; Aliasing-sicher).

@@ -15523,6 +15523,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Booster ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_BOOSTER {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_BOOSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kein Wärmeerzeuger ausgewählt. ähnelt.
         /// </summary>
         public static string SIM_KARTE_KEINE_ERZEUGER {
@@ -15745,6 +15754,17 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_KARTE_TIP_BEARBEITEN {
             get {
                 return ResourceManager.GetString("SIM_KARTE_TIP_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Booster: Der Quellspeicher „{0}“ wird von einem anderen Erzeuger dieses Projekts geladen.
+        ///Die Quelltemperatur folgt deshalb dem Ladezustand des Speichers und wird je Stunde neu gebildet —
+        ///je wärmer der Speicher, desto günstiger arbeitet dieser Erzeuger. ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_TIP_BOOSTER {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_TIP_BOOSTER", resourceCulture);
             }
         }
         
@@ -16599,6 +16619,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_RB_PUFFER_KOMBI {
             get {
                 return ResourceManager.GetString("SIM_RB_PUFFER_KOMBI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelltemperatur [°C] ähnelt.
+        /// </summary>
+        public static string SIM_REIHE_QUELLTEMPERATUR {
+            get {
+                return ResourceManager.GetString("SIM_REIHE_QUELLTEMPERATUR", resourceCulture);
             }
         }
         
@@ -17607,6 +17636,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel &apos;{0}&apos;: Die Eintrittstemperatur folgte dem geteilten Quellpuffer — über das Jahr {1} bis {2} °C, im Mittel {3} °C, bezogen auf den Hub {4}/{5} °C des Kessels. In {6} Stunden lag der Puffer nicht über dem Rücklauf; dort hat der Kessel die volle Anhebung selbst geleistet. ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_QUELLKOPPLUNG_HINWEIS {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_QUELLKOPPLUNG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ladeordnung: Anlage {0} ({1}) lädt laut Konfiguration den Speicher {2} ({3}). Diese Erzeugerart rechnet in diesem Lauf nicht in der Speicherstufe; die Anlage rechnet als Vektorstufe wie eine Heizkreis-Anlage. ähnelt.
         /// </summary>
         public static string SIMENG_LADEORDNUNG_ART_NICHT_IN_SPEICHERSTUFE {
@@ -18008,6 +18046,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_WP_KAPPUNG_OBEN_HINWEIS {
             get {
                 return ResourceManager.GetString("SIMENG_WP_KAPPUNG_OBEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe &apos;{0}&apos;: Die Quelltemperatur unterschreitet in {1} Stunden die untere Stützstelle der Kennlinie ({2} °C); gemessen wurden {3} bis {4} °C. Für diese Stunden gilt der COP der untersten Stützstelle. Die Quelle ist ein geteilter Pufferspeicher — dort wird bewusst gekappt statt extrapoliert, weil eine Unterschreitung nur bedeutet, dass der Speicher gerade auf Rücklaufniveau steht. ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_KAPPUNG_UNTEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_KAPPUNG_UNTEN_HINWEIS", resourceCulture);
             }
         }
         

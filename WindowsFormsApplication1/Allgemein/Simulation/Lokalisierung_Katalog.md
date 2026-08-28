@@ -1910,3 +1910,25 @@ je Kanal und werden von E1 an drei weiteren Stellen wiederverwendet.
 stehen NICHT in `MyResource`, sondern im Wörterbuch `BerichtTexte._en` bzw. als
 `LabelDe`/`LabelEn` im `KennzahlenKatalog` — das ist die Zweisprachigkeit des Berichtsmoduls
 (Konzept Eckpunkt 10), und E1 folgt ihr, statt eine zweite danebenzustellen.
+
+## Nachtrag Paket B1 — Booster-Temperaturkopplung (28.08.2026)
+
+Paket B1 koppelt die Quelltemperatur von Wärmepumpe **und** Heizkessel an den Zustand eines
+geteilten Quellpuffers (Konzept 8.2/8.4, Leitentscheidung L8, Entscheidungen F9/F13).
+**Fünf Schlüssel kommen hinzu, keiner fällt weg.** Bestand danach **2574 `data`-Knoten** in
+beiden `.resx` (DE und EN deckungsgleich) und **2570 Designer-Eigenschaften** — die Differenz
+sind die vier nicht-textlichen Musterknoten `Bitmap1`, `Color1`, `Icon1`, `Name1`, die der
+Generator nicht abbildet.
+
+| Schlüssel | DE | EN | Fundstelle |
+|---|---|---|---|
+| `SIM_KARTE_BOOSTER` | Booster | Booster | `Form_Simulation_Config.Karten.BoosterChip` — das Badge der Erzeugerkarte (F9: Anzeigeregel, kein Anlagentyp und kein Schemafeld). Es steht an Wärmepumpe **und** Heizkessel; der Begriff ist in beiden Sprachen derselbe und bleibt deshalb unübersetzt. |
+| `SIM_KARTE_TIP_BOOSTER` | Booster: Der Quellspeicher „{0}" … | Booster: the source storage “{0}” … | Mouseover desselben Chips. Der Platzhalter nimmt den Namen des geteilten Quellspeichers auf — ohne ihn wäre die Marke „Booster" nicht nachprüfbar. |
+| `SIM_REIHE_QUELLTEMPERATUR` | Quelltemperatur [°C] | Source temperature [°C] | `ZeitreihenExtraktor.ReiheQuelltemperatur` — Beschriftung der Reihe `QUELLTEMP_<AnlagenID>`. Der SCHLÜSSEL der Reihe bleibt sprachneutral (Schicht 2); nur die Beschriftung ist Anzeige. |
+| `SIMENG_WP_KAPPUNG_UNTEN_HINWEIS` | Wärmepumpe '{0}': … unterschreitet in {1} Stunden die untere Stützstelle ({2} °C); gemessen wurden {3} bis {4} °C … | Heat pump '{0}': … falls below the lowest data point … | `SimulationWaermepumpe.KappungUntenMelden` — das Protokoll der F13-Kappung nach unten, gebaut wie das vorhandene `SIMENG_WP_KAPPUNG_OBEN_HINWEIS` (V0-9). Fünf Platzhalter: Anlage, Stundenzahl, Stützstelle, Temperaturbereich. |
+| `SIMENG_KESSEL_QUELLKOPPLUNG_HINWEIS` | Heizkessel '{0}': Die Eintrittstemperatur folgte dem geteilten Quellpuffer … | Boiler '{0}': the inlet temperature followed the shared source storage … | `SimulationSPK.QuellkopplungMelden` — die Jahresbilanz der Kessel-Temperaturkopplung (Gleichbehandlung nach Konzept 8.4). Sieben Platzhalter: Kessel, min/max/Mittel der Quelltemperatur, Rücklauf/Vorlauf des Hubs, Stunden ohne Beitrag. |
+
+**Bewusst KEIN neuer Schlüssel** für die Booster-Meldungen des Laufaufbaus
+(`SimulationControl.BoosterKopplungVorbereiten`, `KesselQuellbezugSetzen`): Sie stehen inline
+deutsch wie der gesamte Protokollrahmen ihrer Nachbarschaft (Ticket P1-O7 / S2-O9, Sammelschnitt
+in Paket L).

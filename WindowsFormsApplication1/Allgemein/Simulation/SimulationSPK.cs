@@ -348,6 +348,168 @@ namespace WindowsFormsApplication1
         /// <summary>Anteil der Nutzwärme, den der Quellpuffer beisteuert (0…1); 0 = kein Bezug.</summary>
         private readonly double[] _quellAnteil = new double[MAX_SPK];
 
+        // ------------------------------------------------------------------
+        // PAKET B1 — TEMPERATURKOPPLUNG DES KESSEL-QUELLBEZUGS (Konzept 8.4)
+        //
+        // GLEICHBEHANDLUNG mit der Wärmepumpe (Konzept 8.4, Punkt 1): Bis P1 war
+        // T_Quelle die VORLAUFTEMPERATUR der Speicherzeile — eine Jahreskonstante, und
+        // damit auch _quellAnteil. Für einen GETEILTEN Quellpuffer (zugleich Senke eines
+        // anderen Erzeugers) liefert jetzt der Speicherzustand die Temperatur:
+        //
+        //     T_Quelle(h) = SchichtTemperatur an der Quell-Entnahmehöhe (bis Q1: oben)
+        //     Anteil(h)   = (T_Quelle(h) − T_Rücklauf) / (T_Vorlauf − T_Rücklauf), 0…1
+        //
+        // KEINE NEUE PHYSIK: Die Formel, die Mengenrechnung, die beiden Schranken in
+        // MaxAbgabe und die Buchung in QuellwaermeHolen bleiben Zeichen für Zeichen die
+        // von D5a. Getauscht ist allein die HERKUNFT von T_Quelle — aus der
+        // Speicherzeile wird der Speicherzustand.
+        //
+        // DERSELBE LESEZEITPUNKT wie bei der WP: je Stunde GENAU EINMAL, vor Phase B der
+        // Rechenebene (Quelltemperatur_Stunde, gerufen aus der Kaskadenschleife). Der
+        // Wert gilt für Bedarfs- UND Ladephase derselben Stunde.
+        //
+        // EIGENSTÄNDIGE Quellspeicher bleiben statisch — dieselbe Grenze wie in 8.2.
+        // ------------------------------------------------------------------
+
+        /// <summary>Je Kessel: true = <see cref="_quellAnteil"/> folgt stündlich dem Speicherzustand.</summary>
+        private readonly bool[] _quellKopplung = new bool[MAX_SPK];
+
+        /// <summary>Vorlauftemperatur des Hubs je Kessel [°C] (nur bei Kopplung belegt).</summary>
+        private readonly double[] _quellVorlauf = new double[MAX_SPK];
+
+        /// <summary>Rücklauftemperatur des Hubs je Kessel [°C] (nur bei Kopplung belegt).</summary>
+        private readonly double[] _quellRuecklauf = new double[MAX_SPK];
+
+        /// <summary>
+        /// Quelltemperatur-Ganglinie je gekoppeltem Kessel [°C] — LAUFERGEBNIS
+        /// (Konzept 8.4). <c>null</c> für jeden Kessel ohne Kopplung.
+        /// </summary>
+        private readonly float[][] _quellTemperatur = new float[MAX_SPK][];
+
+        /// <summary>Stunden je Kessel, in denen der gekoppelte Puffer nicht über den Rücklauf kam.</summary>
+        private readonly int[] _quellZuKalt = new int[MAX_SPK];
+
+        /// <summary>true = der Quellbezug des Kessels folgt stündlich dem Speicher (Paket B1).</summary>
+        public bool QuelleGekoppelt(int index)
+        {
+            return index >= 0 && index < MAX_SPK && _quellKopplung[index];
+        }
+
+        /// <summary>
+        /// Quelltemperatur-Ganglinie eines gekoppelten Kessels [°C]; <c>null</c> ohne
+        /// Kopplung (Paket B1) — Lesezugriff für Anzeige und Zeitreihen-Export.
+        /// </summary>
+        public float[] Quelltemperaturen(int index)
+        {
+            return (index >= 0 && index < MAX_SPK) ? _quellTemperatur[index] : null;
+        }
+
+        /// <summary>
+        /// Richtet die TEMPERATURKOPPLUNG eines Kessel-Quellbezugs ein (Paket B1,
+        /// Konzept 8.4). Aufgerufen von <c>SimulationControl.KesselQuellbezugSetzen</c>
+        /// anstelle von <see cref="QuellbezugSetzen"/>, sobald der Quellpuffer ein
+        /// GETEILTER Puffer ist.
+        /// </summary>
+        /// <param name="index">Kesselindex, wie in <see cref="spk_list"/></param>
+        /// <param name="speicher">geteilter Quellpuffer</param>
+        /// <param name="vorlauf">Vorlauf des Kessel-Hubs [°C]</param>
+        /// <param name="ruecklauf">Rücklauf des Kessel-Hubs [°C]</param>
+        public void QuellkopplungSetzen(int index, SimulationPufferspeicher speicher,
+                                        double vorlauf, double ruecklauf)
+        {
+            if (index < 0 || index >= MAX_SPK) return;
+            if (speicher == null || vorlauf <= ruecklauf) return;
+
+            _quellSpeicher[index] = speicher;
+            _quellVorlauf[index] = vorlauf;
+            _quellRuecklauf[index] = ruecklauf;
+            _quellKopplung[index] = true;
+            _quellTemperatur[index] = new float[8760];
+
+            // Startwert aus dem aktuellen Zustand; die Stundenabfrage übersteuert ihn vor
+            // jeder Phase B. Ohne diese Zeile stünde bis zur ersten Abfrage ein Anteil
+            // von 0 — dasselbe Ergebnis, aber der Zustand wäre nicht selbsterklärend.
+            _quellAnteil[index] = AnteilAus(speicher.QuellEntnahmeTemperatur, index);
+        }
+
+        /// <summary>Anteil (0…1) aus einer Quelltemperatur und dem Hub des Kessels.</summary>
+        private double AnteilAus(double tQuelle, int index)
+        {
+            double spanne = _quellVorlauf[index] - _quellRuecklauf[index];
+            if (spanne <= 0) return 0;
+
+            double anteil = (tQuelle - _quellRuecklauf[index]) / spanne;
+            if (anteil < 0) return 0;
+            return anteil > 1 ? 1 : anteil;
+        }
+
+        /// <summary>
+        /// Bildet den Quellanteil der Stunde für alle gekoppelten Kessel der AKTIVEN
+        /// Rechenebene (Paket B1, Konzept 8.4) — GENAU EINMAL je Stunde und Ebene, vor
+        /// Phase B, gerufen aus der Kaskadenschleife.
+        ///
+        /// <para>Ohne gekoppelten Kessel ist die Methode ein sofortiger Rücksprung.</para>
+        /// </summary>
+        public void Quelltemperatur_Stunde(int stunde)
+        {
+            if (stunde < 0 || stunde >= 8760) return;
+
+            for (int i = 0; i < _anzahlZweikanalig && i < MAX_SPK; i++)
+            {
+                if (!_quellKopplung[i] || !EbeneAktiv(i)) continue;
+
+                SimulationPufferspeicher q = _quellSpeicher[i];
+                if (q == null) continue;
+
+                double tQuelle = q.QuellEntnahmeTemperatur;
+                if (_quellTemperatur[i] != null) _quellTemperatur[i][stunde] = (float)tQuelle;
+
+                double anteil = AnteilAus(tQuelle, i);
+                _quellAnteil[i] = anteil;
+
+                // Der Puffer steht auf Rücklaufniveau: In dieser Stunde trägt er nichts
+                // bei, der Kessel hebt wie ohne Kaskade von seinem Systemrücklauf aus an.
+                // Gezählt und am Laufende EINMAL gemeldet (Gegenstück zur F13-Kappung der
+                // Wärmepumpe) - stumm bliebe sonst ein Booster, der nie boostet.
+                if (anteil <= 0) _quellZuKalt[i]++;
+            }
+        }
+
+        /// <summary>
+        /// PAKET B1: meldet je gekoppeltem Kessel EINMAL, in wie vielen Stunden der
+        /// Quellpuffer nicht über den Systemrücklauf kam, und den Temperaturbereich der
+        /// Quelle über das Jahr. Gerufen am Ende des Jahresdurchlaufs.
+        /// </summary>
+        public void QuellkopplungMelden()
+        {
+            for (int i = 0; i < _anzahlZweikanalig && i < MAX_SPK; i++)
+            {
+                if (!_quellKopplung[i] || _quellTemperatur[i] == null) continue;
+
+                float min = float.MaxValue, max = float.MinValue;
+                double summe = 0;
+                for (int h = 0; h < 8760; h++)
+                {
+                    float v = _quellTemperatur[i][h];
+                    if (v < min) min = v;
+                    if (v > max) max = v;
+                    summe += v;
+                }
+
+                string name = (i < Kessel_Name.Length && Kessel_Name[i] != null) ? Kessel_Name[i] : "";
+
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                    "Kessel_Quellkopplung_" + i + "_" + name,
+                    string.Format(MyResource.Resource.SIMENG_KESSEL_QUELLKOPPLUNG_HINWEIS,
+                                  name,
+                                  min.ToString("F1"), max.ToString("F1"),
+                                  (summe / 8760.0).ToString("F1"),
+                                  _quellRuecklauf[i].ToString("F1"),
+                                  _quellVorlauf[i].ToString("F1"),
+                                  _quellZuKalt[i]));
+            }
+        }
+
         /// <summary>
         /// Meldungen über Quellentnahmen der laufenden Phase — die Kaskadenschleife führt
         /// daraus die Herkunftsrechnung fort und leert die Liste (siehe
@@ -564,6 +726,17 @@ namespace WindowsFormsApplication1
 
         /// <summary>Anzahl der Kessel, die im zweikanaligen Weg rechnen.</summary>
         public int KesselAnzahl { get { return _anzahlZweikanalig; } }
+
+        /// <summary>
+        /// Bezeichnung eines Kessels (<c>Tab_Heizkessel.Name</c>), indexgleich zu
+        /// <see cref="spk_list"/>; "" außerhalb des Bereichs. Lesezugriff für Anzeigen
+        /// und Zeitreihen-Beschriftungen (Paket B1).
+        /// </summary>
+        public string KesselName(int index)
+        {
+            if (index < 0 || index >= MAX_SPK || Kessel_Name[index] == null) return "";
+            return Kessel_Name[index];
+        }
 
         /// <summary>Senkenliste eines Kessels; <c>null</c> außerhalb des Indexbereichs (Paket S1).</summary>
         public Senkenliste KesselSenke(int index)
@@ -964,6 +1137,14 @@ namespace WindowsFormsApplication1
             Array.Clear(_quellSpeicher, 0, _quellSpeicher.Length);
             Array.Clear(_quellAnteil, 0, _quellAnteil.Length);
             Array.Clear(_kesselAbgabe, 0, _kesselAbgabe.Length);
+
+            // PAKET B1: Die Temperaturkopplung gehört aus demselben Grund zum
+            // Laufzustand - sie wird beim Aufbau der Quellbezüge neu gesetzt.
+            Array.Clear(_quellKopplung, 0, _quellKopplung.Length);
+            Array.Clear(_quellVorlauf, 0, _quellVorlauf.Length);
+            Array.Clear(_quellRuecklauf, 0, _quellRuecklauf.Length);
+            Array.Clear(_quellTemperatur, 0, _quellTemperatur.Length);
+            Array.Clear(_quellZuKalt, 0, _quellZuKalt.Length);
             ModulEbenen = null;
             AktiveEbene = 0;
 

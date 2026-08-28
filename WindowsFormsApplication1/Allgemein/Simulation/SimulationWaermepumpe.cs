@@ -123,8 +123,135 @@ namespace WindowsFormsApplication1
         /// Quelltemperatur-Jahresprofil je WP-Modul in Modulreihenfolge.
         /// Lesezugriff für die zweite Warnbedingung der Erdreich-Prüfung
         /// (Quelltemperatur minus Spreizung dauerhaft &lt; 0 °C, Konzept 13.1).
+        ///
+        /// <para><b>PAKET B1:</b> Für ein temperaturgekoppeltes Modul
+        /// (<see cref="QuelleGekoppelt"/>) ist diese Reihe kein Eingangswert mehr,
+        /// sondern ein LAUFERGEBNIS — sie entsteht Stunde für Stunde aus dem Zustand des
+        /// geteilten Quellpuffers (Konzept 8.2).</para>
         /// </summary>
         public IReadOnlyList<float[]> Quelltemperaturen { get { return wp_quelltemp; } }
+
+        // ==================================================================
+        // PAKET B1 — BOOSTER-TEMPERATURKOPPLUNG (Konzept 8.2, Leitentscheidung L8)
+        //
+        // SCHNITTSTELLENWECHSEL, kein Wertetausch: Bis P1 lieferte
+        // WaermequelleClass.Quelltemperatur EINMAL beim Modulaufbau ein komplettes
+        // Jahresprofil float[8760], das die Stundenschleife danach nur noch ablas. Für
+        // einen GETEILTEN Quellpuffer — ein Speicher, der zugleich Senke eines anderen
+        // Erzeugers ist — ist das falsch: Seine Temperatur folgt dem Ladezustand, und
+        // genau diese Aufwertung ist die Physik des Boosters.
+        //
+        // NEU für diesen Fall: Die Quelltemperatur wird JE STUNDE GENAU EINMAL gebildet,
+        // unmittelbar vor Phase B der Rechenebene des beziehenden Moduls
+        // (Kaskadenschleife, Aufruf von Quelltemperatur_Stunde), und gilt für die ganze
+        // Stunde — Bedarfs- UND Ladephase derselben Ebene. Eine zweite Abfrage innerhalb
+        // der Stunde wäre nicht reproduzierbar spezifiziert: Der SOC des Puffers ändert
+        // sich zwischen den Phasen mehrfach.
+        //
+        // GELTUNGSBEREICH (Konzept 8.2, letzter Absatz): NUR der geteilte Puffer.
+        // Eigenständige Quellspeicher (Erdsonden-Ersatz mit WQ_Spreizung, Start voll)
+        // behalten die statische Quelltemperatur — ihr Temperaturpaar (Spreizung/0) sind
+        // keine Speichertemperaturen, eine Zustandsformel darauf wäre Scheinphysik. Das
+        // Unterscheidungsmerkmal ist die ROLLE der Speicherinstanz: Ein geteilter Puffer
+        // ist ein SENKENspeicher der Registry (IstQuelle == false); die eigene
+        // Quellinstanz eines eigenständigen Speichers trägt IstQuelle == true.
+        // ==================================================================
+
+        /// <summary>
+        /// Je Modul: true = die Quelltemperatur folgt stündlich dem geteilten Quellpuffer
+        /// (Paket B1). <c>null</c> vor <see cref="BoosterKopplungVorbereiten"/>.
+        /// </summary>
+        private bool[] _quellKopplung;
+
+        /// <summary>true = Modul <paramref name="index"/> ist temperaturgekoppelt (Paket B1).</summary>
+        public bool QuelleGekoppelt(int index)
+        {
+            return _quellKopplung != null && index >= 0 && index < _quellKopplung.Length &&
+                   _quellKopplung[index];
+        }
+
+        /// <summary>Zahl der temperaturgekoppelten Module (Paket B1); 0 = Bestandsverhalten.</summary>
+        public int GekoppelteModule
+        {
+            get
+            {
+                if (_quellKopplung == null) return 0;
+                int n = 0;
+                for (int i = 0; i < _quellKopplung.Length; i++) if (_quellKopplung[i]) n++;
+                return n;
+            }
+        }
+
+        /// <summary>
+        /// Richtet die Temperaturkopplung ein (Paket B1) — EINMAL je Lauf, nachdem
+        /// <c>SimulationControl.QuellspeicherUebernehmen</c> die geteilten Instanzen
+        /// eingesetzt hat. Vorher steht nicht fest, welcher Quellpuffer geteilt ist.
+        ///
+        /// <para><b>Eigener Vektor für gekoppelte Module.</b>
+        /// <c>WaermequelleClass.Quelltemperatur</c> gibt in mehreren Fällen den
+        /// ÜBERGEBENEN Außentemperaturvektor unverändert zurück (Luft-Wasser, unbekannte
+        /// Quelle, Fehlerrückfall) — mehrere Module teilen sich dann DASSELBE Array, und
+        /// es ist zugleich <see cref="Temperatur"/>. Ein gekoppeltes Modul bekommt
+        /// deshalb eine eigene Kopie, bevor die erste Stunde hineinschreibt.</para>
+        /// </summary>
+        /// <returns>Zahl der gekoppelten Module.</returns>
+        public int BoosterKopplungVorbereiten()
+        {
+            _quellKopplung = new bool[wp_quellspeicher.Count];
+
+            for (int i = 0; i < wp_quellspeicher.Count; i++)
+            {
+                SimulationPufferspeicher q = wp_quellspeicher[i];
+
+                // Nur der GETEILTE Puffer (Senkenspeicher der Registry). Ein
+                // eigenständiger Quellspeicher bleibt statisch (Konzept 8.2/7.6).
+                if (q == null || q.IstQuelle) continue;
+
+                // Ohne Temperaturachse gibt es nichts zu koppeln - dann bliebe
+                // SchichtTemperatur konstant auf RL_eff und die Kopplung wäre eine
+                // schlechtere Konstante als der Bestandswert.
+                if (q.Q_max <= 0 || q.VL_eff <= q.RL_eff) continue;
+
+                if (i < wp_quelltemp.Count && wp_quelltemp[i] != null)
+                {
+                    float[] eigen = new float[wp_quelltemp[i].Length];
+                    Array.Copy(wp_quelltemp[i], eigen, eigen.Length);
+                    wp_quelltemp[i] = eigen;
+                }
+
+                _quellKopplung[i] = true;
+            }
+
+            return GekoppelteModule;
+        }
+
+        /// <summary>
+        /// Bildet die Quelltemperatur der Stunde für alle gekoppelten Module der AKTIVEN
+        /// Rechenebene (Paket B1, Konzept 8.2).
+        ///
+        /// <para>Gerufen von der Kaskadenschleife GENAU EINMAL je Stunde und Ebene, vor
+        /// Phase B. Der Wert steht danach für die ganze Stunde in
+        /// <see cref="Quelltemperaturen"/> und wird von Bedarfs- und Ladephase gelesen.</para>
+        ///
+        /// <para>Ohne gekoppeltes Modul ist die Methode ein sofortiger Rücksprung — das
+        /// ist der Regelfall und der Grund, warum der Bestand von Paket B1 keinen
+        /// einzigen Takt sieht.</para>
+        /// </summary>
+        public void Quelltemperatur_Stunde(int stunde)
+        {
+            if (_quellKopplung == null) return;
+            if (stunde < 0 || stunde >= 8760) return;
+
+            for (int i = 0; i < _quellKopplung.Length; i++)
+            {
+                if (!_quellKopplung[i] || !EbeneAktiv(i)) continue;
+
+                SimulationPufferspeicher q = wp_quellspeicher[i];
+                if (q == null || i >= wp_quelltemp.Count || wp_quelltemp[i] == null) continue;
+
+                wp_quelltemp[i][stunde] = (float)q.QuellEntnahmeTemperatur;
+            }
+        }
 
         // Bauart der Wärmepumpe je Modul (Tab_WP.Typ): "Luft-Wasser",
         // "Sole-Wasser", "Wasser-Wasser". Wird beim Aufbau der Kaskade gelesen.
@@ -214,6 +341,30 @@ namespace WindowsFormsApplication1
         private int[] Modul_Kappung_Oben = new int[MAX_WP];
 
         /// <summary>
+        /// PAKET B1 (Entscheidung F13): Stunden je Modul, in denen die Quelltemperatur
+        /// eines TEMPERATURGEKOPPELTEN Moduls UNTER der untersten Kennlinien-Stützstelle
+        /// lag und deshalb auf sie gekappt wurde.
+        ///
+        /// <para>Die Kappung nach unten gilt AUSSCHLIESSLICH für die Pufferquelle
+        /// (Konzept 8.2/F13: „Kappung, keine Extrapolation"). Für die Außenluft-,
+        /// Erdreich- und Profilpfade bleibt es bei der Projekteinstellung
+        /// <see cref="Extrapolation_Erlaubt"/> und der linearen Verlängerung — dort ist
+        /// die Unterschreitung ein echter Betriebszustand des Geräts, während sie am
+        /// Booster nur heißt, dass der Quellpuffer gerade leer steht.</para>
+        ///
+        /// <para>Gemeldet wird EINMAL je Modul am Laufende
+        /// (<see cref="KappungUntenMelden"/>) — dieselbe Bauart wie
+        /// <see cref="KappungObenMelden"/>.</para>
+        /// </summary>
+        private int[] Modul_Kappung_Unten = new int[MAX_WP];
+
+        /// <summary>Tiefste gekappte Quelltemperatur je Modul [°C] (F13-Protokoll).</summary>
+        private double[] Modul_Kappung_Unten_Min = new double[MAX_WP];
+
+        /// <summary>Höchste gekappte Quelltemperatur je Modul [°C] (F13-Protokoll).</summary>
+        private double[] Modul_Kappung_Unten_Max = new double[MAX_WP];
+
+        /// <summary>
         /// Fehlertext eines dialogfrei abgebrochenen Laufs (Paket 8, Konzept 13.4). Leer,
         /// wenn nichts anlag. <c>SimulationControl</c> holt ihn ab und reicht ihn über
         /// <see cref="SimulationControl.Fehlertext"/> an den Aufrufer weiter —
@@ -291,6 +442,14 @@ namespace WindowsFormsApplication1
             // dieselbe Instanz rechnet im MDI-Fenster beliebig viele Läufe, und die
             // Stundenzahl der Meldung wäre sonst die Summe aller bisherigen Läufe.
             Array.Clear(Modul_Kappung_Oben, 0, Modul_Kappung_Oben.Length);
+
+            // PAKET B1 (F13): derselbe Grund für den Zähler der UNTEREN Kappung.
+            Array.Clear(Modul_Kappung_Unten, 0, Modul_Kappung_Unten.Length);
+            for (int k = 0; k < MAX_WP; k++)
+            {
+                Modul_Kappung_Unten_Min[k] = double.MaxValue;
+                Modul_Kappung_Unten_Max[k] = double.MinValue;
+            }
 
             Init();
 
@@ -921,6 +1080,9 @@ namespace WindowsFormsApplication1
             // V0-9: Ende des Jahresdurchlaufs im zweikanaligen Weg - Kappungsstunden melden.
             KappungObenMelden();
 
+            // PAKET B1 (F13): dieselbe Stelle für die Kappung nach unten am Booster.
+            KappungUntenMelden();
+
             if (biv != null && biv.Count > 0)
                 Bivalenzpunkt = biv.Max();
         }
@@ -1398,6 +1560,41 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// PAKET B1 (F13): meldet die Kennlinienkappung nach UNTEN — je Modul einmal je
+        /// Lauf, mit Anlagenbezeichnung, Zahl der gekappten Stunden, der untersten
+        /// Stützstelle und dem TEMPERATURBEREICH der Unterschreitung.
+        ///
+        /// <para>Der Bereich steht dabei bewusst im Text: „400 Stunden unter −5 °C" ist
+        /// eine ganz andere Aussage, je nachdem, ob die Quelle dabei bei −5,2 °C oder bei
+        /// −18 °C lag. Er sagt dem Anwender, wie weit die Kappung trägt und ob ein
+        /// Kennfeld mit tieferen Stützstellen etwas ändern würde.</para>
+        ///
+        /// <para>Gerufen an derselben Stelle wie <see cref="KappungObenMelden"/>
+        /// (<see cref="Zweikanalig_Ende"/>). Ohne gekoppeltes Modul steht der Zähler auf
+        /// 0 und die Methode meldet nichts.</para>
+        /// </summary>
+        private void KappungUntenMelden()
+        {
+            for (int i = 0; i < wp_model.Count && i < MAX_WP; i++)
+            {
+                if (Modul_Kappung_Unten[i] <= 0) continue;
+                if (i >= wp_kenndaten.Count || wp_kenndaten[i] == null || wp_kenndaten[i].anz < 1) continue;
+
+                string bezeichner = (wp_model[i] != null && wp_model[i].Bezeichner != null)
+                                    ? wp_model[i].Bezeichner : "";
+                string untergrenze =
+                    wp_kenndaten[i].dat[wp_kenndaten[i].anz - 1].Temperatur.ToString("F1");
+
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                    "WP_Kappung_Unten_" + i + "_" + bezeichner,
+                    string.Format(MyResource.Resource.SIMENG_WP_KAPPUNG_UNTEN_HINWEIS,
+                                  bezeichner, Modul_Kappung_Unten[i], untergrenze,
+                                  Modul_Kappung_Unten_Min[i].ToString("F1"),
+                                  Modul_Kappung_Unten_Max[i].ToString("F1")));
+            }
+        }
+
         // V0-9: Der Parameter "index" ist der Modulindex innerhalb der Kaskade. Er wird
         // ausschließlich für den Kappungszähler Modul_Kappung_Oben gebraucht und geht in
         // die Rechnung nicht ein; Zweikanalig_Bedarfsphase führt ihn ohnehin als
@@ -1444,6 +1641,46 @@ namespace WindowsFormsApplication1
             {
                 if (temperatur < kenndaten.dat[kenndaten.anz - 1].Temperatur)
                 {
+                    // ---------------------------------------------------------------
+                    // PAKET B1 (Entscheidung F13) — KAPPUNG NACH UNTEN für die
+                    // TEMPERATURGEKOPPELTE Pufferquelle, symmetrisch zur bestehenden
+                    // Kappung nach oben (V0-9).
+                    //
+                    // Am Booster heißt eine Unterschreitung der untersten Stützstelle
+                    // nicht „das Gerät läuft bei Extremkälte", sondern „der Quellpuffer
+                    // steht gerade auf Rücklaufniveau". Eine lineare Verlängerung der
+                    // Herstellerkennlinie in diesen Bereich wäre eine erfundene
+                    // Betriebskennzahl; das Konzept entscheidet deshalb ausdrücklich auf
+                    // Kappung — konservativ, mit Protokoll (Konzept 8.2, F13).
+                    //
+                    // Für ALLE ÜBRIGEN Quellen (Außenluft, Erdreich, Profil, CSV,
+                    // konstante Temperatur, eigenständiger Quellspeicher) bleibt der
+                    // Bestandsweg darunter unverändert — dort ist die
+                    // Projekteinstellung Extrapolation_erlaubt maßgeblich.
+                    // ---------------------------------------------------------------
+                    if (QuelleGekoppelt(index))
+                    {
+                        if (index >= 0 && index < MAX_WP)
+                        {
+                            Modul_Kappung_Unten[index]++;
+                            if (temperatur < Modul_Kappung_Unten_Min[index])
+                                Modul_Kappung_Unten_Min[index] = temperatur;
+                            if (temperatur > Modul_Kappung_Unten_Max[index])
+                                Modul_Kappung_Unten_Max[index] = temperatur;
+                        }
+
+                        cop = kenndaten.dat[kenndaten.anz - 1].COP;
+                        ptherm = kenndaten.dat[kenndaten.anz - 1].Leistung;
+                        pel = (cop != 0) ? ptherm / cop : 0;
+                        wptherm = ptherm;
+
+                        result[0] = 1;
+                        result[1] = cop;
+                        result[2] = ptherm;
+                        result[3] = pel;
+                        return result;
+                    }
+
                     // PAKET 8 (Konzept 13.4) — die EINZIGE echte Interaktion der Engine
                     // ist zur Vorab-Einstellung geworden.
                     //
@@ -1557,6 +1794,11 @@ namespace WindowsFormsApplication1
             wp_quelltemp.Clear();
             wp_quellspeicher.Clear();
             wp_typ.Clear();
+
+            // PAKET B1: Die Kopplungsmaske gehört aus demselben Grund hierher - sie
+            // entsteht erst NACH dem Modulaufbau (BoosterKopplungVorbereiten) und dürfte
+            // aus einem Vorlauf nie in einen Lauf mit anderer Modulliste hineinreichen.
+            _quellKopplung = null;
 
             // D5a: Rechenebenen und Quellentnahme-Meldungen gehören zum Laufzustand. Die
             // Kaskadenschleife setzt die Ebenen je Lauf neu; ohne Rücksetzen liefen sie
