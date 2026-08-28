@@ -144,6 +144,7 @@ namespace WindowsFormsApplication1
             BaueUmrechnungsblock();   // ETAPPE K3 - vor dem Aufschlagsblock, der an this.Height andockt
             BaueAufschlagsblock();
             BaueLeistungspreisZusatz();   // ETAPPE KD4 (FK6/FK6a) - nach LoadData, das die Einheit setzt
+            BaueEmissionsReiter();        // ETAPPE E3 - ZULETZT: haengt den fertigen Bestand um
 
             // Ä9 (26.08.2026): Der Katalogkontext (Projekt 0) SCHREIBT jetzt —
             // „Speichern“ aktualisiert die Katalogzeile selbst (energy_carrier),
@@ -763,6 +764,557 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // =====================================================================
+        // ETAPPE E3 - Emissions-Reiter
+        //   Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md § 4.1.
+        //   Der Detailbereich bekommt zwei Reiter: „Preise & Umrechnung" traegt
+        //   den vollstaendigen Bestand (UMGEHAENGT, nicht neu gebaut), „Emissionen"
+        //   die dynamische Feldliste der ausgewaehlten Arten, die CO2e-Summe und
+        //   den Modus-Schalter. Die Regeln stehen in EmissionenCtrl; hier steht
+        //   nur die Darstellung.
+        // =====================================================================
+
+        private TabControl tabDetails;
+        private TabPage tabPreise;
+        private TabPage tabEmissionen;
+
+        /// <summary>Der UI-freie Bearbeitungsstand der Emissionswerte dieses Trägers.</summary>
+        private EmissionenCtrl _emissionen;
+
+        private readonly List<EmissionsFeld> _emissionsFelder = new List<EmissionsFeld>();
+        private Panel _pnlEmissionsZeilen;
+        private Label _lblEmissionsSumme;
+        private Label _lblEmissionsHinweis;
+        private Button _btnEmissionVerwalten;
+        private RadioButton _rbModusCo2;
+        private RadioButton _rbModusCo2e;
+        private int _emissionsZeilenOben;
+
+        /// <summary>Sperre gegen Rückkopplung, während der Emissionsblock gefüllt wird.</summary>
+        private bool _emissionsblockWirdGefuellt;
+
+        /// <summary>Spaltenraster des Emissions-Tabs (§ 4.1: Art · Wert · Einheit ·
+        /// Herkunft · Katalog-Knopf).</summary>
+        private const int EM_X_NAME = 10, EM_X_WERT = 150, EM_X_EINHEIT = 246,
+                          EM_X_HERKUNFT = 306, EM_X_KATALOG = 450;
+
+        private const int EM_ZEILENHOEHE = 28;
+
+        /// <summary>Die Steuerelemente EINER Emissionszeile samt ihrem
+        /// Bearbeitungsstand. Die Zahl steht im <see cref="EmissionsZeile"/>, nicht
+        /// im Feld — geschrieben wird das Objekt, nicht der Text.</summary>
+        private sealed class EmissionsFeld
+        {
+            public EmissionsZeile Zeile;
+            public TextBox Wert;
+            public Label Herkunft;
+            public Button Katalog;
+
+            /// <summary>Trägt den VOLLSTÄNDIGEN Herkunftstext, den die Spalte
+            /// nur gekürzt zeigt.</summary>
+            public ToolTip Tip;
+
+            /// <summary>true, solange im Feld etwas steht, das keine Zahl ist —
+            /// dann wurde NICHTS übernommen und der Verlassen-Handler setzt zurück.</summary>
+            public bool Ungueltig;
+        }
+
+        /// <summary>
+        /// Gliedert den Detailbereich in die beiden Reiter und baut den
+        /// Emissions-Tab (§ 4.1).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Zuletzt aufgerufen und rein umhängend</b>: Der Bestand entsteht
+        /// wie bisher (Designer-Raster, Umrechnungsblock, Aufschlagsblock,
+        /// Leistungspreis-Zusatz) und wird erst danach in die Seite „Preise &amp;
+        /// Umrechnung" verschoben. So bleibt jede vorhandene Positionsrechnung
+        /// gültig — sie läuft auf denselben Koordinaten wie zuvor, nur um die
+        /// Höhe der beiden Kopfzeilen versetzt.</para>
+        ///
+        /// <para><b>Die drei Bestandsfelder bleiben als WERTTRÄGER</b>:
+        /// <c>numCO2</c>/<c>numSO2</c>/<c>numNOx</c> wandern unsichtbar in den
+        /// Emissions-Tab. Sichtbar sind stattdessen Textfelder ohne Drehpfeile
+        /// (Anforderung 7). Der Schreibweg des Dialogs
+        /// (<see cref="SpeichereWerte"/>) liest die drei Felder unverändert weiter
+        /// — genau das ist der Spiegel in die Altspalten, den Konzept F9 verlangt;
+        /// jede Änderung im Textfeld wird deshalb sofort dorthin gespiegelt.</para>
+        ///
+        /// <para><b>Ohne Artenkatalog</b> (Migrationsschritt 57 nicht gelaufen)
+        /// bleiben die drei Bestandsfelder SICHTBAR im Emissions-Tab stehen. Eine
+        /// leere Emissionsmaske wäre schlechter als die alte.</para>
+        /// </remarks>
+        private void BaueEmissionsReiter()
+        {
+            try
+            {
+                _emissionen = new EmissionenCtrl(_projectId, _carrier.ID);
+                _emissionen.Laden();
+
+                // Beide Kopfzeilen sind Dock.Top und bleiben ueber den Reitern stehen.
+                int oben = lblCarrierName.Height + lblGruppe.Height;
+
+                Control[] altfelder = { label12, label11, numSO2, label3, numCO2,
+                                        label10, numNOx };
+                int altOben = int.MaxValue;
+                foreach (Control c in altfelder) if (c.Top < altOben) altOben = c.Top;
+
+                // Die Emissionszeile des Designer-Rasters verlaesst die Preisseite -
+                // ihre Luecke wuerde sonst als Loch vor der Speichern-Zeile stehen
+                // bleiben. Der Betrag wird gemessen, nicht gesetzt.
+                if (_emissionen.Verfuegbar)
+                {
+                    int frei = btn_Save.Top - altOben;
+                    foreach (Control c in new Control[] { btn_Save, dtpValidFrom, label9, dgvHistory })
+                        c.Top -= frei;
+                    this.Height -= frei;
+                }
+
+                tabPreise = new TabPage(TKd4("KDLG_ET_TAB_PREISE", "Preise && Umrechnung"))
+                { AutoScroll = true };
+                tabEmissionen = new TabPage(TKd4("KDLG_ET_TAB_EMISSIONEN", "Emissionen"))
+                { AutoScroll = true };
+
+                var bestand = new List<Control>();
+                foreach (Control c in this.Controls)
+                    if (c != lblCarrierName && c != lblGruppe) bestand.Add(c);
+
+                int unterkante = 0;
+                foreach (Control c in bestand)
+                {
+                    this.Controls.Remove(c);
+                    bool alt = Array.IndexOf(altfelder, c) >= 0;
+
+                    if (alt)
+                    {
+                        c.Top = c.Top - altOben + 12;
+                        c.Visible = !_emissionen.Verfuegbar;
+                        tabEmissionen.Controls.Add(c);
+                        continue;
+                    }
+
+                    c.Top -= oben;
+                    tabPreise.Controls.Add(c);
+                    if (c.Visible && c.Bottom > unterkante) unterkante = c.Bottom;
+                }
+
+                int unterkanteEmission = BaueEmissionsInhalt();
+
+                tabDetails = new TabControl
+                {
+                    Location = new Point(0, oben),
+                    Size = new Size(this.ClientSize.Width,
+                                    Math.Max(unterkante, unterkanteEmission) + 40),
+                    Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
+                };
+                tabDetails.TabPages.Add(tabPreise);
+                tabDetails.TabPages.Add(tabEmissionen);
+                this.Controls.Add(tabDetails);
+                this.Height = oben + tabDetails.Height;
+            }
+            catch (Exception ex)
+            {
+                // Ein misslungener Reiter darf die Preispflege nicht blockieren -
+                // dieselbe Zusage wie beim Umrechnungs- und Aufschlagsblock.
+                Console.WriteLine("Der Emissions-Reiter konnte nicht aufgebaut werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>Baut den Inhalt des Emissions-Tabs; Rückgabe ist seine
+        /// Unterkante (für die Höhe des Reiters).</summary>
+        private int BaueEmissionsInhalt()
+        {
+            if (!_emissionen.Verfuegbar)
+            {
+                var fehlt = new Label
+                {
+                    AutoSize = false,
+                    Location = new Point(EM_X_NAME, 112),
+                    Size = new Size(520, 34),
+                    ForeColor = Color.Firebrick,
+                    Text = TKd4("KDLG_EM_KEIN_KATALOG",
+                        "Der Emissionsarten-Katalog ist auf dieser Datenbank nicht verfügbar " +
+                        "(Migrationsschritt 57 fehlt). Es gelten die drei Bestandsfelder.")
+                };
+                tabEmissionen.Controls.Add(fehlt);
+                return fehlt.Bottom;
+            }
+
+            // --- Modus-Schalter (F7) --------------------------------------------
+            // Im PROJEKTkontext trifft er das Projektfeld, im Katalogkontext die
+            // globale Vorgabe - beides schreibt erst „Speichern" (Ä12/Ä14).
+            var pnlModus = new Panel
+            {
+                Location = new Point(EM_X_NAME, 8),
+                Size = new Size(540, 26)
+            };
+            pnlModus.Controls.Add(new Label
+            {
+                AutoSize = true,
+                Location = new Point(0, 5),
+                Text = TKd4("KDLG_EM_MODUS", "CO₂-Berechnung:")
+            });
+            _rbModusCo2 = new RadioButton
+            {
+                AutoSize = true,
+                Location = new Point(118, 3),
+                Text = TKd4("KDLG_EM_MODUS_CO2", "CO₂")
+            };
+            _rbModusCo2e = new RadioButton
+            {
+                AutoSize = true,
+                Location = new Point(178, 3),
+                Text = TKd4("KDLG_EM_MODUS_CO2E", "CO₂-Äquivalent (GWP₁₀₀)")
+            };
+            pnlModus.Controls.Add(_rbModusCo2);
+            pnlModus.Controls.Add(_rbModusCo2e);
+            pnlModus.Controls.Add(new Label
+            {
+                AutoSize = true,
+                Location = new Point(370, 5),
+                ForeColor = Color.FromArgb(90, 90, 90),
+                Text = _projectId > 0
+                    ? TKd4("KDLG_EM_MODUS_ORT_PROJEKT", "[Projekt]")
+                    : TKd4("KDLG_EM_MODUS_ORT_VORGABE", "[globale Vorgabe]")
+            });
+
+            _emissionsblockWirdGefuellt = true;
+            try
+            {
+                _rbModusCo2e.Checked = string.Equals(_emissionen.Modus,
+                    DbWerte.EMISSION_MODUS_CO2E, StringComparison.Ordinal);
+                _rbModusCo2.Checked = !_rbModusCo2e.Checked;
+            }
+            finally { _emissionsblockWirdGefuellt = false; }
+
+            _rbModusCo2.CheckedChanged += (s, e) =>
+            {
+                if (!_emissionsblockWirdGefuellt && _rbModusCo2.Checked)
+                    _emissionen.Modus = DbWerte.EMISSION_MODUS_CO2;
+            };
+            _rbModusCo2e.CheckedChanged += (s, e) =>
+            {
+                if (!_emissionsblockWirdGefuellt && _rbModusCo2e.Checked)
+                    _emissionen.Modus = DbWerte.EMISSION_MODUS_CO2E;
+            };
+            tabEmissionen.Controls.Add(pnlModus);
+
+            // --- Spaltenkopf -----------------------------------------------------
+            tabEmissionen.Controls.Add(Spaltenkopf(TKd4("KDLG_EM_SP_ART", "Art"), EM_X_NAME, 44, 134));
+            tabEmissionen.Controls.Add(Spaltenkopf(TKd4("KDLG_EM_SP_WERT", "Wert"), EM_X_WERT, 44, 88));
+            tabEmissionen.Controls.Add(Spaltenkopf(TKd4("KDLG_EM_SP_EINHEIT", "Einheit"), EM_X_EINHEIT, 44, 56));
+            tabEmissionen.Controls.Add(Spaltenkopf(TKd4("KDLG_EM_SP_HERKUNFT", "Herkunft"), EM_X_HERKUNFT, 44, 140));
+
+            _emissionsZeilenOben = 66;
+            _pnlEmissionsZeilen = new Panel
+            {
+                Location = new Point(0, _emissionsZeilenOben),
+                Size = new Size(550, EM_ZEILENHOEHE)
+            };
+            tabEmissionen.Controls.Add(_pnlEmissionsZeilen);
+
+            _lblEmissionsSumme = new Label
+            {
+                AutoSize = false,
+                Location = new Point(EM_X_NAME, 0),
+                Size = new Size(520, 20),
+                Font = new Font(this.Font, FontStyle.Bold),
+                ForeColor = Color.FromArgb(26, 50, 97)
+            };
+            tabEmissionen.Controls.Add(_lblEmissionsSumme);
+
+            _lblEmissionsHinweis = new Label
+            {
+                AutoSize = false,
+                Location = new Point(EM_X_NAME, 0),
+                Size = new Size(526, 34),
+                ForeColor = Color.FromArgb(150, 90, 0)
+            };
+            tabEmissionen.Controls.Add(_lblEmissionsHinweis);
+
+            _btnEmissionVerwalten = new Button
+            {
+                Location = new Point(EM_X_NAME, 0),
+                Size = new Size(250, 27),
+                Text = TKd4("KDLG_EM_VERWALTEN", "Emissionsarten && Katalog verwalten…")
+            };
+            _btnEmissionVerwalten.Click += (s, e) => KatalogVerwalten();
+            tabEmissionen.Controls.Add(_btnEmissionVerwalten);
+
+            ZeigeEmissionszeilen();
+            return _btnEmissionVerwalten.Bottom + 8;
+        }
+
+        private static Label Spaltenkopf(string text, int x, int y, int breite)
+        {
+            var l = new Label
+            {
+                AutoSize = false,
+                Location = new Point(x, y),
+                Size = new Size(breite, 19),
+                Text = text
+            };
+            l.Font = new Font(l.Font, FontStyle.Bold);
+            return l;
+        }
+
+        /// <summary>
+        /// Baut die Feldzeilen aus den ausgewählten Arten neu (F5) und richtet
+        /// Summenzeile, Hinweis und Verwalten-Knopf darunter aus.
+        /// </summary>
+        private void ZeigeEmissionszeilen()
+        {
+            if (_pnlEmissionsZeilen == null || _emissionen == null) return;
+
+            _emissionsblockWirdGefuellt = true;
+            try
+            {
+                _pnlEmissionsZeilen.Controls.Clear();
+                _emissionsFelder.Clear();
+
+                int y = 0;
+                foreach (EmissionsZeile z in _emissionen.Zeilen)
+                {
+                    var feld = new EmissionsFeld { Zeile = z };
+
+                    _pnlEmissionsZeilen.Controls.Add(new Label
+                    {
+                        AutoSize = false,
+                        Location = new Point(EM_X_NAME, y + 5),
+                        Size = new Size(134, 19),
+                        Text = z.Art.Name
+                    });
+
+                    feld.Wert = new TextBox
+                    {
+                        Location = new Point(EM_X_WERT, y + 1),
+                        Size = new Size(88, 25),
+                        TextAlign = HorizontalAlignment.Right,
+                        Text = EmissionsZahlText(z.Wert)
+                    };
+
+                    _pnlEmissionsZeilen.Controls.Add(new Label
+                    {
+                        AutoSize = false,
+                        Location = new Point(EM_X_EINHEIT, y + 5),
+                        Size = new Size(56, 19),
+                        Text = z.Art.Einheit
+                    });
+
+                    // Der Herkunftstext ist oft länger als die Spalte („EBeV 2030,
+                    // Anlage 2 Teil 4 …"). Er wird deshalb mit Auslassungspunkten
+                    // gekürzt und steht vollständig im Tooltip - abschneiden ohne
+                    // Hinweis wäre eine halbe Quellenangabe.
+                    feld.Herkunft = new Label
+                    {
+                        AutoSize = false,
+                        AutoEllipsis = true,
+                        Location = new Point(EM_X_HERKUNFT, y + 5),
+                        Size = new Size(140, 19),
+                        ForeColor = Color.FromArgb(90, 90, 90),
+                        Text = z.QuelleText
+                    };
+                    feld.Tip = new ToolTip();
+                    feld.Tip.SetToolTip(feld.Herkunft, z.QuelleText);
+
+                    feld.Katalog = new Button
+                    {
+                        Location = new Point(EM_X_KATALOG, y),
+                        Size = new Size(86, 26),
+                        Text = TKd4("KDLG_EM_KATALOG", "Katalog…")
+                    };
+
+                    if (z.NurLesend)
+                    {
+                        // Projektkontext: nur die drei Kernarten sind editierbar
+                        // (Kontext-Regel zu § 4.1). Die uebrigen stehen mit ihrem
+                        // KATALOGWERT da - lesbar, aber nicht hier pflegbar.
+                        feld.Wert.ReadOnly = true;
+                        feld.Wert.BackColor = SystemColors.Control;
+                        feld.Katalog.Enabled = false;
+                        var tip = new ToolTip();
+                        tip.SetToolTip(feld.Wert, TKd4("KDLG_EM_NUR_KATALOG",
+                            "Pflege im Katalogkontext"));
+                        tip.SetToolTip(feld.Katalog, TKd4("KDLG_EM_NUR_KATALOG",
+                            "Pflege im Katalogkontext"));
+                    }
+                    else
+                    {
+                        EmissionsFeld f = feld;   // Schleifenvariable festhalten
+                        feld.Wert.TextChanged += (s, e) =>
+                        { if (!_emissionsblockWirdGefuellt) EmissionsWertGetippt(f); };
+                        feld.Wert.Leave += (s, e) =>
+                        { if (!_emissionsblockWirdGefuellt) EmissionsWertVerlassen(f); };
+                        feld.Katalog.Click += (s, e) => KatalogFuerZeile(f);
+                    }
+
+                    _pnlEmissionsZeilen.Controls.Add(feld.Wert);
+                    _pnlEmissionsZeilen.Controls.Add(feld.Herkunft);
+                    _pnlEmissionsZeilen.Controls.Add(feld.Katalog);
+                    _emissionsFelder.Add(feld);
+
+                    y += EM_ZEILENHOEHE;
+                }
+
+                _pnlEmissionsZeilen.Height = Math.Max(y, EM_ZEILENHOEHE);
+            }
+            finally { _emissionsblockWirdGefuellt = false; }
+
+            _lblEmissionsSumme.Top = _pnlEmissionsZeilen.Bottom + 10;
+            _lblEmissionsHinweis.Top = _lblEmissionsSumme.Bottom + 2;
+            _btnEmissionVerwalten.Top = _lblEmissionsHinweis.Bottom + 6;
+
+            AktualisiereEmissionsSumme();
+        }
+
+        /// <summary>Live-Prüfung der Handeingabe (F8): Was keine Zahl ist, wird
+        /// NICHT übernommen und rot hinterlegt; was eine ist, setzt die Herkunft
+        /// auf „Eigener Wert", spiegelt in das Bestandsfeld und rechnet die Summe
+        /// neu.</summary>
+        private void EmissionsWertGetippt(EmissionsFeld feld)
+        {
+            if (!_emissionen.WertEingeben(feld.Zeile, feld.Wert.Text))
+            {
+                feld.Ungueltig = true;
+                feld.Wert.BackColor = Color.MistyRose;
+                return;
+            }
+            feld.Ungueltig = false;
+            feld.Wert.BackColor = SystemColors.Window;
+            feld.Herkunft.Text = feld.Zeile.QuelleText;
+            if (feld.Tip != null) feld.Tip.SetToolTip(feld.Herkunft, feld.Zeile.QuelleText);
+            SpiegelKernwert(feld.Zeile);
+            AktualisiereEmissionsSumme();
+        }
+
+        private void EmissionsWertVerlassen(EmissionsFeld feld)
+        {
+            if (!feld.Ungueltig) return;
+
+            _emissionsblockWirdGefuellt = true;
+            try
+            {
+                feld.Wert.Text = EmissionsZahlText(feld.Zeile.Wert);
+                feld.Wert.BackColor = SystemColors.Window;
+                feld.Ungueltig = false;
+            }
+            finally { _emissionsblockWirdGefuellt = false; }
+        }
+
+        /// <summary>Summenzeile nach F6 und der F3-Hinweis daneben.</summary>
+        private void AktualisiereEmissionsSumme()
+        {
+            if (_lblEmissionsSumme == null || _emissionen == null) return;
+
+            _lblEmissionsSumme.Text = string.Format(CultureInfo.CurrentCulture,
+                TKd4("KDLG_EM_SUMME", "CO₂-Äquivalent gesamt (ausgewählte Arten): {0} g/kWh"),
+                _emissionen.SummeCo2eGKwh().ToString("N2", CultureInfo.CurrentCulture));
+
+            _lblEmissionsHinweis.Text = _emissionen.SummeIstBereitsAequivalent()
+                ? TKd4("KDLG_EM_SUMME_F3",
+                    "CO₂-Wert ist bereits Äquivalent — Summe = Wert, weitere Arten werden " +
+                    "nicht aufsummiert.")
+                : "";
+        }
+
+        /// <summary>
+        /// Spiegelt eine Kernart in ihr Bestandsfeld. Das ist die Stelle, an der
+        /// der Altschreibweg (<see cref="SpeichereWerte"/>) seinen Wert bekommt —
+        /// Konzept F9: Die Rechner lesen bis Etappe E5 die alten Spalten.
+        /// </summary>
+        private void SpiegelKernwert(EmissionsZeile z)
+        {
+            NumericUpDown feld = KernartFeld(z);
+            if (feld == null) return;
+
+            decimal wert = (decimal)(z.Wert ?? 0.0);
+            if (wert < feld.Minimum) wert = feld.Minimum;
+            if (wert > feld.Maximum) wert = feld.Maximum;
+
+            bool vorher = _isUpdatingUi;
+            _isUpdatingUi = true;
+            try { feld.Value = wert; }
+            finally { _isUpdatingUi = vorher; }
+        }
+
+        private void SpiegelKernwerte()
+        {
+            if (_emissionen == null) return;
+            foreach (EmissionsZeile z in _emissionen.Zeilen) SpiegelKernwert(z);
+        }
+
+        private NumericUpDown KernartFeld(EmissionsZeile z)
+        {
+            if (z == null) return null;
+            if (string.Equals(z.Kuerzel, DbWerte.EMISSIONSART_CO2, StringComparison.OrdinalIgnoreCase))
+                return numCO2;
+            if (string.Equals(z.Kuerzel, DbWerte.EMISSIONSART_SO2, StringComparison.OrdinalIgnoreCase))
+                return numSO2;
+            if (string.Equals(z.Kuerzel, DbWerte.EMISSIONSART_NOX, StringComparison.OrdinalIgnoreCase))
+                return numNOx;
+            return null;
+        }
+
+        /// <summary>„Katalog…" einer Zeile: der E4-Dialog, vorgefiltert auf Art und
+        /// Träger. Die Übernahme wird ZURÜCKGEREICHT und lebt bis zum Speichern nur
+        /// im Objekt (Ä12/Ä14).</summary>
+        private void KatalogFuerZeile(EmissionsFeld feld)
+        {
+            using (var dlg = new Form_Emissionskatalog())
+            {
+                dlg.SetControls(_carrier.ID, _carrier.Name, feld.Zeile.Kuerzel, true);
+                dlg.ShowDialog(FindForm());
+
+                if (dlg.Uebernommen != null)
+                    _emissionen.KatalogwertUebernehmen(feld.Zeile, dlg.Uebernommen);
+                if (dlg.ArtenGeaendert || dlg.WerteGeaendert)
+                    _emissionen.NeuLadenMitBearbeitungsstand();
+
+                ZeigeEmissionszeilen();
+                SpiegelKernwerte();
+            }
+        }
+
+        /// <summary>„Emissionsarten &amp; Katalog verwalten…": derselbe Dialog im
+        /// Verwaltungsmodus. Danach wird die Feldliste neu gelesen (die Auswahl kann
+        /// sich geändert haben, F5) — der Bearbeitungsstand bleibt erhalten.</summary>
+        private void KatalogVerwalten()
+        {
+            using (var dlg = new Form_Emissionskatalog())
+            {
+                dlg.SetControls(_carrier.ID, _carrier.Name, null, false);
+                dlg.ShowDialog(FindForm());
+            }
+            _emissionen.NeuLadenMitBearbeitungsstand();
+            ZeigeEmissionszeilen();
+            SpiegelKernwerte();
+        }
+
+        /// <summary>
+        /// Schreibt den Emissionsstand (Etappe E3). Im Katalogkontext sind das die
+        /// aktiven <c>emissionswert</c>-Zeilen samt Spiegel in die Altspalten; im
+        /// Projektkontext bleibt der Zahlenweg beim Bestand
+        /// (<see cref="SpeichereWerte"/>) und hier läuft nur der Modus mit.
+        /// </summary>
+        private void EmissionenSpeichern()
+        {
+            if (_emissionen == null || !_emissionen.Verfuegbar) return;
+            try { _emissionen.Speichern(); }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Emissionswerte konnten nicht gespeichert werden: " +
+                                  ex.Message);
+            }
+        }
+
+        /// <summary>Zahlanzeige der Emissionsfelder — deutsche Dezimaltrennung wie
+        /// bei den übrigen Zahlfeldern des Dialogs; leer heißt „nicht gepflegt".</summary>
+        private static string EmissionsZahlText(double? wert)
+        {
+            return wert.HasValue
+                ? wert.Value.ToString("0.####", CultureInfo.CurrentCulture)
+                : "";
+        }
+
         private void LoadData()
         {
             lblCarrierName.Text = $"{_carrier.Name}  (VDI 3805 {_carrier.Code})";
@@ -1000,6 +1552,7 @@ namespace WindowsFormsApplication1
 
             SpeichereRegeln();
             SpeichereWerte();
+            EmissionenSpeichern();   // ETAPPE E3 - NACH dem Bestandsweg (siehe dort)
             return true;
         }
 
