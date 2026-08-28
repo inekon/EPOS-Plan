@@ -121,8 +121,7 @@ namespace WindowsFormsApplication1
         /// (Engine-Modus). EINE Entscheidungsstelle für alle sechs Fehlerpfade dieser
         /// Klasse UND für die datenbanknahen Meldungen der Controller, die aus dem
         /// Rechenpfad heraus erreichbar sind (<c>ErgebnisCtrl.Save</c> beim Speichern des
-        /// Laufergebnisses, <c>PufferSpCtrl.CopyFromStamm</c>,
-        /// <c>Z_ProjektPufferSpCtrl.Insert</c>).
+        /// Laufergebnisses, <c>PufferSpCtrl.CopyFromStamm</c>).
         ///
         /// Öffentlich, damit es bei EINER Entscheidung bleibt: Jede zweite Fassung des
         /// „Dialog oder Protokoll"-Musters wäre die Stelle, an der der nächste

@@ -564,8 +564,10 @@ namespace WindowsFormsApplication1
                             c.Parameters.Add("@d2", OleDbType.Double).Value = R(sp.Durchsatz_Entladen);
                             c.Parameters.Add("@anl", OleDbType.Integer).Value =
                                 sp.ID_Anlage > 0 ? (object)sp.ID_Anlage : DBNull.Value;
-                            // P1-VORGRIFF: bis zum Schichtmodell immer NULL. NULL heisst
-                            // "nicht erhoben" - eine 0 behauptete 0 Grad C.
+                            // Seit Paket P1 GEFUELLT (bis dahin P1-Vorgriff und immer
+                            // NULL). NULL heisst weiterhin "nicht erhoben" - eine 0
+                            // behauptete 0 Grad C; so bleibt eine Quellspeicherzeile
+                            // ohne Speichertemperatur ehrlich leer.
                             c.Parameters.Add("@t1", OleDbType.Double).Value =
                                 sp.T_oben_Mittel.HasValue ? (object)R(sp.T_oben_Mittel.Value) : DBNull.Value;
                             c.Parameters.Add("@t2", OleDbType.Double).Value =

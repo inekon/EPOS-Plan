@@ -689,10 +689,9 @@ namespace WindowsFormsApplication1
                                 // Ergebniswirkung auf die JAZ.
                                 SimulationProtokoll.Aktuell.WarnungEinmal(
                                     "quellprofil-unlesbar-" + idEnergieanlage,
-                                    "Quellprofil " + idProfil + " der Anlage " + idEnergieanlage +
-                                    " ist nicht lesbar oder unvollständig (Zahl der Werte passt " +
-                                    "nicht zur Betriebsart) - es gilt der Altweg bzw. die " +
-                                    "Außentemperatur.");
+                                    string.Format(
+                                        MyResource.Resource.SIMENG_QUELLPROFIL_UNLESBAR,
+                                        idProfil, idEnergieanlage));
                             }
 
                             // --- Stufe 2: LESE-ALTLAST der delimitierten Zeichenketten ---

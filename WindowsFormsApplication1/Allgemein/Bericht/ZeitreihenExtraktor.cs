@@ -122,14 +122,21 @@ namespace WindowsFormsApplication1
                         //
                         // Quellspeicher tragen keine Schichttemperatur (Konzept 8.2) —
                         // ihre Ganglinie bleibt 0 und wird deshalb nicht ausgewiesen.
+                        //
+                        // PAKET L (P2-O1): Nachsilben und Legendentexte kommen aus den
+                        // Konstanten bzw. dem Ressourcenkatalog statt als Zeichenketten
+                        // im Code — dieselben Werte, nur an EINER Stelle definiert.
                         if (!sp.IstQuelle && sp.T_oben_Mittel.HasValue)
                         {
-                            z.Reihen[schluessel + "_TOBEN"] = D(sp.T_oben_stuendlich);
-                            z.Reihen[schluessel + "_TUNTEN"] = D(sp.T_unten_stuendlich);
-                            z.Beschriftungen[schluessel + "_TOBEN"] =
-                                sp.BezeichnerAnzeige() + " T oben [°C]";
-                            z.Beschriftungen[schluessel + "_TUNTEN"] =
-                                sp.BezeichnerAnzeige() + " T unten [°C]";
+                            string oben = schluessel + ZeitreihenSatz.SUFFIX_T_OBEN;
+                            string unten = schluessel + ZeitreihenSatz.SUFFIX_T_UNTEN;
+
+                            z.Reihen[oben] = D(sp.T_oben_stuendlich);
+                            z.Reihen[unten] = D(sp.T_unten_stuendlich);
+                            z.Beschriftungen[oben] =
+                                sp.BezeichnerAnzeige() + " " + MyResource.Resource.SIM_REIHE_T_OBEN;
+                            z.Beschriftungen[unten] =
+                                sp.BezeichnerAnzeige() + " " + MyResource.Resource.SIM_REIHE_T_UNTEN;
                         }
                     }
                 }
@@ -197,7 +204,7 @@ namespace WindowsFormsApplication1
         {
             if (idAnlage <= 0 || werte == null) return;
 
-            string schluessel = "QUELLTEMP_" + idAnlage;
+            string schluessel = ZeitreihenSatz.QUELLTEMP_PRAEFIX + idAnlage;
             if (z.Reihen.ContainsKey(schluessel)) return;
 
             z.Reihen[schluessel] = D(werte);

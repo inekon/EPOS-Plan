@@ -638,10 +638,15 @@ namespace WindowsFormsApplication1
         /// Bereitet den Lauf vor: Modulaufbau (<see cref="ModuleAufbauen"/>), danach die
         /// Zusammenführung mehrfach benutzter Quellspeicher.
         ///
-        /// Getrennt von <see cref="Berechnung_Zweikanalig"/>, weil
-        /// <c>SimulationControl</c> dazwischen die Speicher-Registry vervollständigen
-        /// muss: Die Quellspeicher entstehen erst beim Modulaufbau, und die Registry ist
-        /// die Menge, über die Phase G läuft.
+        /// Getrennt vom Rechenteil (<see cref="Zweikanalig_Start"/> und der
+        /// Stundenkette der <c>Kaskadenschleife</c>), weil <c>SimulationControl</c>
+        /// dazwischen die Speicher-Registry vervollständigen muss: Die Quellspeicher
+        /// entstehen erst beim Modulaufbau, und die Registry ist die Menge, über die
+        /// Phase G läuft.
+        ///
+        /// <para>K2-O9: Hier stand ein Verweis auf <c>Berechnung_Zweikanalig</c> — eine
+        /// Methode, die das WP-Modul nie hatte (die drei anderen Erzeuger haben sie als
+        /// Vektorstufe). Der Einstieg der Wärmepumpe ist die Stundenkette.</para>
         /// </summary>
         public bool Vorbereiten_Zweikanalig()
         {

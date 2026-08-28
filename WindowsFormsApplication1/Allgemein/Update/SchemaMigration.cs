@@ -1661,8 +1661,13 @@ namespace WindowsFormsApplication1
         /// <c>Kaskade_Zweikanalig</c> verschwinden — Stilllegung heißt hier
         /// ausschließlich: kein Leser im Code mehr (Muster <c>WQ_Puffer</c> und
         /// <c>Tab_Pufferspeicher.Verwendung</c>). Das Entfernen der Tabelle ist die eine
-        /// Änderung, die sich nicht zurücknehmen ließe; sie bleibt dem Aufräumpaket
-        /// vorbehalten.</para>
+        /// Änderung, die sich nicht zurücknehmen ließe.
+        ///
+        /// <b>PAKET L hat entschieden: Beide bleiben.</b> Das Aufräumpaket hat die
+        /// aufruferfreien ZUGRIFFSWEGE geschnitten (<c>Z_ProjektPufferSpCtrl</c>,
+        /// <c>KonfigurationCtrl.KaskadeZweikanalig*</c>), Tabelle und Spalte aber nicht
+        /// angefasst — Konzept Kapitel 15 führt beide als „stillgelegt (Lese-Altlast nach
+        /// Migration)".</para>
         /// </summary>
         public const int SCHRITT_51_ALTPFAD_STILLLEGUNG = 51;
 

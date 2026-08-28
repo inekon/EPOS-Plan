@@ -115,23 +115,18 @@ namespace WindowsFormsApplication1
             return _senkenlisten;
         }
 
-        /// <summary>
-        /// ALTLAST, konstant <c>true</c> (Paket A1, Leitentscheidung L1).
-        ///
-        /// Bis Paket A1 war dies der EFFEKTIVE Rechenweg des Laufs: <c>true</c> =
-        /// Speicherstufen-Mechanik mit herausgelöster Ladephase, <c>false</c> = der
-        /// einkanalige Altpfad. Der Altpfad ist ERSATZLOS entfallen — jeder Lauf rechnet
-        /// über die Speicherstufe auf den drei Bedarfskanälen. Die Projekteinstellung
-        /// <c>Tab_Einstellungen.Kaskade_Zweikanalig</c> wird NICHT MEHR GELESEN (die
-        /// Migration setzt sie in Schritt 51 auf WAHR; die Spalte bleibt Lese-Altlast).
-        ///
-        /// WARUM DAS FELD STEHEN BLEIBT: Die Detailansicht
-        /// (<c>Views/Simulation/Form_Simulation_Detail.cs</c>) liest es noch. Es
-        /// verschwindet mit dem Aufräumschnitt der Oberfläche; bis dahin liefert es die
-        /// einzige noch mögliche Antwort. Nichts setzt es mehr — wer es zuweist,
-        /// beschreibt keinen Rechenweg mehr, sondern erzeugt einen Widerspruch.
-        /// </summary>
-        public bool KaskadeZweikanalig = true;
+        // ENTFALLEN MIT PAKET L (Aufraeumen, A1-O3): das Feld KaskadeZweikanalig.
+        //
+        // Bis Paket A1 war es der EFFEKTIVE Rechenweg des Laufs: true =
+        // Speicherstufen-Mechanik mit herausgeloester Ladephase, false = der einkanalige
+        // Altpfad. Der Altpfad ist mit A1 ersatzlos entfallen, das Feld stand seither
+        // konstant auf true und hatte nur noch einen Leser - die Detailansicht. Mit
+        // diesem Paket ist auch dort die Fallunterscheidung aufgeloest: Es gibt EINEN
+        // Rechenweg ueber die Speicherstufe auf den drei Bedarfskanaelen.
+        //
+        // Die Projekteinstellung Tab_Einstellungen.Kaskade_Zweikanalig bleibt als
+        // stillgelegte Spalte in der Datenbank stehen (Konzept Kapitel 15);
+        // Migrationsschritt 51 hat sie im Bestand auf WAHR gesetzt.
 
         /// <summary>
         /// Die Verbünde des Projekts als <c>Leitspeicher-ID -&gt; zusätzliche Mitglieder</c>,
@@ -537,14 +532,10 @@ namespace WindowsFormsApplication1
                 // wird statt still ausgeglichen zu werden.
                 if (sp.SchichtInvarianteVerletzungen > 0)
                     Protokoll.WarnungEinmal("schicht-invariante-" + sp.ID_Pufferspeicher,
-                        "Schichtmodell: Am Puffer " + sp.ID_Pufferspeicher + " (" +
-                        sp.BezeichnerAnzeige() + ") wich die Summe der Schichtenergie in " +
-                        sp.SchichtInvarianteVerletzungen + " Stunden vom Speicherinhalt ab " +
-                        "(größte Abweichung " +
-                        sp.SchichtInvarianteMaxAbweichung.ToString("0.######") + " kWh). Die " +
-                        "Schichtebene wurde jede Stunde nachgezogen, die Energiebilanz des " +
-                        "Laufs ist davon unberührt - die Meldung weist auf einen Fehler im " +
-                        "Schichtmodell hin und gehört an die Entwicklung.");
+                        string.Format(MyResource.Resource.SIMENG_SCHICHT_INVARIANTE,
+                                      sp.ID_Pufferspeicher, sp.BezeichnerAnzeige(),
+                                      sp.SchichtInvarianteVerletzungen,
+                                      sp.SchichtInvarianteMaxAbweichung.ToString("0.######")));
             }
 
             ErdreichAuswertung.AusLauf(this);
@@ -1344,15 +1335,12 @@ namespace WindowsFormsApplication1
                 // mehrere Senken derselben Anlage fallen.
                 SimulationProtokoll.Aktuell.WarnungEinmal(
                     "senke-ohne-ladeauftrag-" + idAnlage + "-" + z.Rang,
-                    "Wärmesenke: Die Anlage " + idAnlage + " (" + art + ") führt auf " +
-                    "Rang " + z.Rang + " das Ziel " + Senkenzuordnung.ZielAusSenke(z.Ziel) +
-                    " (Puffer " + z.IDPuffer + "), bekommt in diesem Lauf aber KEINEN " +
-                    "Ladeauftrag - der Puffer gehört zu einem anderen Projekt oder " +
-                    "rechnet nicht mit." +
-                    (z.Rang == 1
-                        ? " Die Anlage deckt deshalb den HEIZKREIS; ohne diesen Rückfall " +
-                          "würde sie das ganze Jahr nichts produzieren."
-                        : " Diese Senke bleibt in diesem Lauf unberücksichtigt."));
+                    string.Format(MyResource.Resource.SIMENG_SENKE_OHNE_LADEAUFTRAG_RANG,
+                                  idAnlage, art, z.Rang,
+                                  Senkenzuordnung.ZielAusSenke(z.Ziel), z.IDPuffer,
+                                  z.Rang == 1
+                                      ? MyResource.Resource.SIMENG_SENKE_OHNE_LADEAUFTRAG_RANG1
+                                      : MyResource.Resource.SIMENG_SENKE_OHNE_LADEAUFTRAG_NACHRANG));
 
                 // Nur die erstrangige Zeile wird zur Direktsenke (Begründung am
                 // Methodenkopf des Aufrufers).
@@ -1732,9 +1720,9 @@ namespace WindowsFormsApplication1
             {
                 Protokoll.HinweisEinmal("pendelspeicher-entladeordnung-" + kanalname + "-" +
                                   sp.ID_Pufferspeicher,
-                                  "BHKW-Pendelspeicher: Der Speicher " + sp.ID_Pufferspeicher +
-                                  " steht nicht in der Entladereihenfolge des Kanals " + kanalname +
-                                  " - er wird ans Ende gestellt.");
+                                  string.Format(
+                                      MyResource.Resource.SIMENG_PENDELSPEICHER_ENTLADEORDNUNG,
+                                      sp.ID_Pufferspeicher, kanalname));
                 ordnung.Add(sp);
                 return;
             }
@@ -2042,9 +2030,9 @@ namespace WindowsFormsApplication1
 
                 Protokoll.HinweisEinmal("entladeordnung-nachtrag-" + kanalname + "-" +
                                   sp.ID_Pufferspeicher,
-                                  "Speicher " + sp.ID_Pufferspeicher + " (" + sp.BezeichnerAnzeige() +
-                                  ") steht nicht in der Entladereihenfolge des Kanals " + kanalname +
-                                  " - er wird ans Ende gestellt.");
+                                  string.Format(
+                                      MyResource.Resource.SIMENG_ENTLADEORDNUNG_NACHTRAG,
+                                      sp.ID_Pufferspeicher, sp.BezeichnerAnzeige(), kanalname));
                 liste.Add(sp);
             }
 
@@ -2393,10 +2381,9 @@ namespace WindowsFormsApplication1
             if (string.Equals(rolle, sp.Verwendung, StringComparison.Ordinal)) return;
 
             Protokoll.HinweisEinmal("klassenset-rolle-" + sp.ID_Pufferspeicher,
-                              "Speicher " + sp.ID_Pufferspeicher + " (" + sp.BezeichnerAnzeige() +
-                              "): Das Klassen-Set " + sp.KlassenSetText() + " passt nicht zur " +
-                              "Alt-Verwendung „" + sp.Verwendung + "\". Gerechnet wird das Set; " +
-                              "die Rolle in Anzeige und Ergebniszeile lautet „" + rolle + "\".");
+                              string.Format(MyResource.Resource.SIMENG_KLASSENSET_ROLLE,
+                                            sp.ID_Pufferspeicher, sp.BezeichnerAnzeige(),
+                                            sp.KlassenSetText(), sp.Verwendung, rolle));
             sp.Verwendung = rolle;
         }
 
@@ -2667,13 +2654,9 @@ namespace WindowsFormsApplication1
             if (leit.SchichtenAnzahl > 1)
             {
                 Protokoll.WarnungEinmal("verbund-schichtung-" + leit.ID_Pufferspeicher,
-                    "Parallelverbund: Der Leitspeicher " + leit.ID_Pufferspeicher + " (" +
-                    leit.BezeichnerAnzeige() + ") ist mit " + leit.SchichtenAnzahl +
-                    " Schichten gepflegt. Ein Verbund rechnet als EIN Wärmevorrat mit der " +
-                    "aufsummierten Kapazität aller Behälter - eine aus dem Volumen des " +
-                    "Leitspeichers abgeleitete Schichtung wäre falsch. Gerechnet wird " +
-                    "ungeschichtet (1 Schicht); bitte entweder den Verbund auflösen oder " +
-                    "die Schichtzahl auf 1 setzen.");
+                    string.Format(MyResource.Resource.SIMENG_VERBUND_SCHICHTUNG,
+                                  leit.ID_Pufferspeicher, leit.BezeichnerAnzeige(),
+                                  leit.SchichtenAnzahl));
                 leit.SchichtenAnzahl = 1;
             }
 
@@ -2900,15 +2883,12 @@ namespace WindowsFormsApplication1
                 // falsch ist besser als still falsch.
                 if (t > sp.VL_eff)
                 {
+                    // {3} steht ZWEIMAL im Text (wirksamer Vorlauf und Ersatzwert) - beide
+                    // Male derselbe Wert und dieselbe Formatierung wie bisher.
                     Protokoll.WarnungEinmal("tnutz-ueber-vorlauf-" + sp.ID_Pufferspeicher,
-                        "Schichtmodell: Am Puffer " + sp.ID_Pufferspeicher + " (" +
-                        sp.BezeichnerAnzeige() + ") liegt die Mindest-Nutztemperatur " +
-                        "Brauchwasser mit " + t.ToString("0.#") + " °C ÜBER der wirksamen " +
-                        "Vorlauftemperatur von " + sp.VL_eff.ToString("0.#") + " °C. Keine " +
-                        "Schicht könnte sie je erreichen, der Brauchwasserkanal wäre " +
-                        "dauerhaft gesperrt. Gerechnet wird mit " +
-                        sp.VL_eff.ToString("0.#") + " °C - bitte T_Nutz_BW oder das " +
-                        "Temperaturpaar des Speichers berichtigen.");
+                        string.Format(MyResource.Resource.SIMENG_TNUTZ_UEBER_VORLAUF,
+                                      sp.ID_Pufferspeicher, sp.BezeichnerAnzeige(),
+                                      t.ToString("0.#"), sp.VL_eff.ToString("0.#")));
                     t = sp.VL_eff;
                 }
 
@@ -3184,17 +3164,11 @@ namespace WindowsFormsApplication1
                 // kein ID_Anlage (das führt nur eine eigene Quellinstanz).
                 int idAnlage = (i < simulation_wp.wp_list.Count) ? simulation_wp.wp_list[i] : 0;
 
-                Protokoll.Hinweis("Booster: Die Anlage " + idAnlage + " bezieht ihre " +
-                                  "Quellwärme aus Puffer " + q.ID_Pufferspeicher + " (" +
-                                  q.BezeichnerAnzeige() + "), einem GETEILTEN Puffer. Die " +
-                                  "Quelltemperatur folgt dem Speicherzustand und wird je " +
-                                  "Stunde neu gebildet (" + q.RL_eff.ToString("0.#") + " … " +
-                                  q.VL_eff.ToString("0.#") + " °C, " + q.SchichtenWirksam +
-                                  " Schicht(en)" +
-                                  AnschlusshoeheText(simulation_wp.QuellAnschlusshoehe(i), q) +
-                                  ") statt mit einem Jahresprofil zu rechnen. " +
-                                  "Unterschreitet sie die unterste Kennlinien-Stützstelle, " +
-                                  "gilt diese Stützstelle (Kappung, keine Extrapolation).");
+                Protokoll.Hinweis(string.Format(MyResource.Resource.SIMENG_BOOSTER_KOPPLUNG,
+                                  idAnlage, q.ID_Pufferspeicher, q.BezeichnerAnzeige(),
+                                  q.RL_eff.ToString("0.#"), q.VL_eff.ToString("0.#"),
+                                  q.SchichtenWirksam,
+                                  AnschlusshoeheText(simulation_wp.QuellAnschlusshoehe(i), q)));
             }
         }
 
@@ -3399,18 +3373,12 @@ namespace WindowsFormsApplication1
                 double hoehe = SimulationWaermepumpe.AnschlusshoeheLesen(idAnlage);
                 simulation_spk.QuellkopplungSetzen(index, quelle, vorlauf, ruecklauf, hoehe);
 
-                Protokoll.Hinweis("Kessel-Kaskade (Booster): Anlage " + idAnlage +
-                                  " bezieht ihre Eintrittstemperatur aus Puffer " +
-                                  quelle.ID_Pufferspeicher + " (" + quelle.BezeichnerAnzeige() +
-                                  "), einem GETEILTEN Puffer. Die Quelltemperatur folgt dem " +
-                                  "Speicherzustand und wird je Stunde neu gebildet (" +
-                                  quelle.RL_eff.ToString("0.#") + " … " +
-                                  quelle.VL_eff.ToString("0.#") + " °C" +
-                                  AnschlusshoeheText(hoehe, quelle) + "). Hub des Kessels " +
-                                  ruecklauf + "/" + vorlauf + " °C; bei voller Beladung trägt " +
-                                  "der Puffer " + (anteil * 100).ToString("0.#") + " % der " +
-                                  "Nutzwärme. Der Kessel rechnet NACH dem Erzeuger, der den " +
-                                  "Puffer lädt.");
+                Protokoll.Hinweis(string.Format(
+                                  MyResource.Resource.SIMENG_KESSEL_BOOSTER_KOPPLUNG,
+                                  idAnlage, quelle.ID_Pufferspeicher, quelle.BezeichnerAnzeige(),
+                                  quelle.RL_eff.ToString("0.#"), quelle.VL_eff.ToString("0.#"),
+                                  AnschlusshoeheText(hoehe, quelle),
+                                  ruecklauf, vorlauf, (anteil * 100).ToString("0.#")));
                 return;
             }
 
@@ -3567,9 +3535,27 @@ namespace WindowsFormsApplication1
             // Bestand fügt die Schleife nichts hinzu, was nicht schon dastünde.
             //
             // PAKET A1: Der Altspalten-Zweig bleibt deshalb auch nach dem Altpfad-Abriss
-            // stehen. Er fällt mit der SPIEGELUNG selbst (S1-O5) - dieselbe Stelle, an
-            // der Senkendialog und WaermesenkeClass aufhören, Rang 1/2 nach WS_* zu
-            // schreiben.
+            // stehen.
+            //
+            // PAKET L (A1-O4) — GEPRÜFT UND BEWUSST STEHEN GELASSEN, mit Begründung:
+            //
+            //   1. Er ist NICHT wirkungslos. Die WS_-Spiegelung ist mit A1 gefallen, die
+            //      SPALTEN sind es nicht (Konzept Kapitel 15: „stillgelegt, Lese-Altlast
+            //      nach Migration"). Was vor der Migration dort stand, steht dort weiter -
+            //      einschliesslich der Altdaten-Reste, die keine Senkenzeile mehr hat.
+            //      Auf der Referenzmenge sind das die zwei Puffer aus Befund V0-O6
+            //      („PufferHeizung ohne WS_ID_Puffer", Gegenrichtung derselben Datenlage).
+            //
+            //   2. Sein Wegfall wäre ERGEBNISÄNDERND. Ein Puffer, der nur noch über die
+            //      Altspalte in die Registry kommt, verschwände aus dem Rechenpfad und aus
+            //      Tab_ErgebnisPufferspeicher - das ist keine Aufräumarbeit, sondern eine
+            //      stille Verhaltensänderung an Bestandsprojekten.
+            //
+            //   3. Er ist HARMLOS, wo er nichts findet: Auf migriertem Bestand fügt die
+            //      Schleife nichts hinzu, was die Senkenliste nicht ohnehin nennt.
+            //
+            // Er fällt erst mit den Spalten selbst - also mit einem Schema-Schritt, der
+            // WS_Ziel/WS_ID_Puffer entfernt. Den gibt es bewusst nicht.
             foreach (Senkenliste s in Senkenlisten())
             {
                 if (s == null) continue;

@@ -545,12 +545,11 @@ namespace WindowsFormsApplication1
             {
                 SimulationProtokoll.Aktuell.WarnungEinmal(
                     "knappheitsreihenfolge-ungueltig",
-                    "Knappheitsreihenfolge: Die Projekteinstellung „" + spec.Trim() +
-                    "\" ist unbrauchbar - erwartet werden die drei Schlüssel " +
-                    DbWerte.KNAPPHEIT_BRAUCHWASSER + ";" + DbWerte.KNAPPHEIT_PROZESS + ";" +
-                    DbWerte.KNAPPHEIT_HEIZUNG + " in beliebiger Reihenfolge, jeder genau " +
-                    "einmal. Gerechnet wird mit der Vorbelegung " +
-                    Name(BRAUCHWASSER) + " -> " + Name(PROZESS) + " -> " + Name(HEIZUNG) + ".");
+                    string.Format(MyResource.Resource.SIMENG_KNAPPHEIT_UNGUELTIG,
+                                  spec.Trim(),
+                                  DbWerte.KNAPPHEIT_BRAUCHWASSER, DbWerte.KNAPPHEIT_PROZESS,
+                                  DbWerte.KNAPPHEIT_HEIZUNG,
+                                  Name(BRAUCHWASSER), Name(PROZESS), Name(HEIZUNG)));
                 return KnappheitVorgabe();
             }
 

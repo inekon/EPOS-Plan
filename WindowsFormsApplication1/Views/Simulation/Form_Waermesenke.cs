@@ -615,7 +615,19 @@ namespace WindowsFormsApplication1
             {
                 Text = MyResource.Resource.SIM_LBL_LADEGRENZE_EINHEIT,
                 AutoSize = true,
-                Location = new Point(262, 66)
+                Location = new Point(262, 66),
+
+                // PAKET L (P2-O6, Bestandsbefund): Der Einheitentext ist der laengste der
+                // Gruppe und ragte auf der ENGLISCHEN Oberflaeche ueber den Gruppenrahmen
+                // hinaus - "% of the storage (otherwise the switch-off threshold …)" misst
+                // rund 356 px, verfuegbar sind ab x = 262 nur 318.
+                //
+                // MaximumSize deckelt die Breite, AutoSize bleibt an: Der Text BRICHT UM
+                // und waechst nach unten, statt am Rahmen abgeschnitten zu werden (die
+                // Zeile darunter beginnt erst bei y = 98, zwei Zeilen enden bei y ~ 92).
+                // Der deutsche Text bleibt mit ~310 px einzeilig und steht Pixel fuer
+                // Pixel wie bisher - die Aenderung ist auf deutscher Oberflaeche unsichtbar.
+                MaximumSize = new Size(_gbLaden.Width - 262 - 16, 0)
             };
 
             _lblPV = new Label { Text = MyResource.Resource.SIM_LBL_PV_UEBERSCHUSS, AutoSize = true, Location = new Point(16, 102) };

@@ -337,8 +337,10 @@ namespace WindowsFormsApplication1
         // ganze Abgabe" ist an Szenario (d) gemessen und verworfen; die Begründung steht
         // in D5a_KombiKaskade_Protokoll.md, Abschnitt „Nacharbeit nach Reviews".
         // Eine Begrenzung nach Massenstrom und Wärmeübertrager kennt das Modell an keiner
-        // Stelle — auch der Speicher hat keine Lade-/Entladeleistung (vorgemerkter
-        // Parameter, Konzept 3.4).
+        // Stelle. Der SPEICHER hat seit Paket P1 eine Lade-/Entladeleistungsgrenze
+        // (Tab_Pufferspeicher.Ladeleistung_Max/Entladeleistung_Max, 0 = unbegrenzt); sie
+        // greift über Entnahmefaehigkeit() auch hier. Eine eigene Grenze des
+        // ÜBERTRAGERS zwischen Puffer und Kessel gibt es weiterhin nicht.
         // ------------------------------------------------------------------
 
         /// <summary>Quellpuffer je Kessel; <c>null</c> = keiner (Regelfall).</summary>
@@ -639,8 +641,8 @@ namespace WindowsFormsApplication1
             if (q == null || _quellAnteil[i] <= 0) return eigen;
 
             // Was der Quellpuffer in DIESER Stunde höchstens beisteuern kann. Entladen()
-            // klemmt am Füllstand; die Entnahmefähigkeit ist der vorgemerkte Parameter
-            // aus Konzept 3.4 (heute unbegrenzt).
+            // klemmt am Füllstand; die Entnahmefähigkeit liefert seit Paket P1 den Rest
+            // des Stundenbudgets aus Entladeleistung_Max (0 = unbegrenzt, der Regelfall).
             double ausQuelle = Math.Min(q.SOC > 0 ? q.SOC : 0, q.Entnahmefaehigkeit());
 
             double nachQuelle = eigen + ausQuelle;

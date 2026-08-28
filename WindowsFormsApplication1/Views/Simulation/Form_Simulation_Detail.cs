@@ -3635,22 +3635,20 @@ namespace WindowsFormsApplication1
                                      sim.simulation_wp.Speicherentladung_Anteil +
                                      sim.simulation_wp.Heizstab_gesamt) / 1000.0;
 
-                // Im ALTPFAD sind Direktdeckung_gesamt und Speicherentladung_Anteil exakt 0,
-                // der Eigenanteil wäre dort keine Bilanz - dort gilt weiter die Jahressumme
-                // der Restwärmeganglinie (dieselbe Fallunterscheidung wie im Runner).
-                double wpRestMWh = sim.simulation_wp.waermerestbedarf_gesamt / 1000.0;
-                if (sim.KaskadeZweikanalig)
-                {
-                    wpRestMWh = wpStufeneingangMWh - wpEigenMWh;
-                    if (wpRestMWh < 0) wpRestMWh = 0;   // Rundungsschutz
-                }
+                // PAKET L: Hier stand die Fallunterscheidung „Speicherstufe oder Altpfad"
+                // (sim.KaskadeZweikanalig). Der Altpfad ist mit Paket A1 ersatzlos
+                // entfallen, das Feld war seither konstant true - es bleibt der EINE
+                // Rechenweg: Rest = Stufeneingang − Eigenanteil, Deckung aus demselben
+                // Eigenanteil. Der Altpfad-Zweig hätte die Jahressumme der
+                // Restwärmeganglinie (waermerestbedarf_gesamt) genommen; sie ist im
+                // heutigen Rechenweg keine Bilanz mehr.
+                double wpRestMWh = wpStufeneingangMWh - wpEigenMWh;
+                if (wpRestMWh < 0) wpRestMWh = 0;   // Rundungsschutz
 
                 double deckung = 0;
                 if (a > 0)
                 {
-                    deckung = sim.KaskadeZweikanalig
-                        ? wpEigenMWh / a * 100.0                          // dieselbe Größe wie im Restbedarf
-                        : (wpStufeneingangMWh - wpRestMWh) / a * 100.0;
+                    deckung = wpEigenMWh / a * 100.0;   // dieselbe Größe wie im Restbedarf
                     if (deckung > 100) deckung = 100;
                     if (deckung < 0) deckung = 0;
                 }
@@ -4045,12 +4043,12 @@ namespace WindowsFormsApplication1
 
             // STUFENEINGANG: dieselbe Größe wie bisher, aber aus der double-Jahressumme des
             // Moduls statt aus 8760 float-Additionen - wortgleich mit dem Ausdruck, aus dem
-            // Tab_ErgebnisBHKW.Waermebedarf entsteht (SimulationRunner:381-383). Im
-            // Altpfad-Fall (kein zweikanaliger Weg) gilt weiter die Ganglinie: Dort führt
-            // das Modul die Summe nicht.
-            double bhkwWaermebedarfMWh = sim.KaskadeZweikanalig
-                ? sim.simulation_bhkw.Waermebedarf_gesamt / 1000.0
-                : sim.simulation_bhkw.waermebedarf.Sum() / 1000.0;
+            // Tab_ErgebnisBHKW.Waermebedarf entsteht (SimulationRunner:381-383).
+            //
+            // PAKET L: Der Altpfad-Zweig (Ganglinien-Summe waermebedarf.Sum(), weil das
+            // Modul dort keine Jahressumme führte) ist entfallen - mit Paket A1 gibt es
+            // nur EINEN Rechenweg, und der füllt Waermebedarf_gesamt.
+            double bhkwWaermebedarfMWh = sim.simulation_bhkw.Waermebedarf_gesamt / 1000.0;
 
             textBox_Waermebedarf_BHKW.Text = bhkwWaermebedarfMWh.ToString("F2");
             textBox_Strombedarf_BHKW.Text = (sim.simulation_bhkw.strombedarf.Sum() / 1000).ToString("F2");
@@ -4069,21 +4067,14 @@ namespace WindowsFormsApplication1
             // RESTWÄRME: Vorher die Vektordifferenz „Bedarf − Produktion" - der
             // Bilanzfehler aus Konzept 6.5. Sobald das BHKW einen Speicher lädt, gilt sie
             // nicht mehr: Geladene Wärme deckt noch keinen Bedarf, entladene deckt Bedarf
-            // ohne in der Produktionsstunde zu stehen. Im Altpfad-Fall bleibt es bei der
-            // Vektordifferenz - dort sind Direktdeckung und Entladungsanteil exakt 0, und
-            // der Eigenanteil wäre 0.
-            double bhkwRestwaermeMWh;
-            if (sim.KaskadeZweikanalig)
-            {
-                bhkwRestwaermeMWh = bhkwWaermebedarfMWh - bhkwEigenMWh;
-                if (bhkwRestwaermeMWh < 0) bhkwRestwaermeMWh = 0;   // Rundungsschutz
-            }
-            else
-            {
-                bhkwRestwaermeMWh =
-                    sim.SubVectors(sim.simulation_bhkw.waermebedarf,
-                                   sim.simulation_bhkw.waermeproduktion).Sum() / 1000f;
-            }
+            // ohne in der Produktionsstunde zu stehen.
+            //
+            // PAKET L: Der Altpfad-Zweig (Vektordifferenz über SubVectors, weil dort
+            // Direktdeckung und Entladungsanteil exakt 0 waren) ist mit dem Feld
+            // sim.KaskadeZweikanalig entfallen - seit Paket A1 gibt es nur EINEN
+            // Rechenweg, und der führt beide Größen.
+            double bhkwRestwaermeMWh = bhkwWaermebedarfMWh - bhkwEigenMWh;
+            if (bhkwRestwaermeMWh < 0) bhkwRestwaermeMWh = 0;   // Rundungsschutz
             textBox_Restwaermebedarf_BHKW.Text = bhkwRestwaermeMWh.ToString("F2");
 
             textBox_Reststrombedarf_BHKW.Text = ((sim.simulation_bhkw.strombedarf.Sum() / 1000) - sim.simulation_bhkw.Stromproduktion_BHKW_MWh).ToString("F2");
@@ -4102,9 +4093,8 @@ namespace WindowsFormsApplication1
             // geklemmt wie im Runner. Bezugsgröße bleibt der PROJEKTwärmebedarf.
             if (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
             {
-                double bhkwDeckung = sim.KaskadeZweikanalig
-                    ? bhkwEigenMWh * 100.0 / simulation_Waermebedarf.Waermebedarf_Gesamt
-                    : sim.simulation_bhkw.Waermeproduktion_BHKW_MWh * 100.0 / simulation_Waermebedarf.Waermebedarf_Gesamt;
+                double bhkwDeckung =
+                    bhkwEigenMWh * 100.0 / simulation_Waermebedarf.Waermebedarf_Gesamt;
                 if (bhkwDeckung > 100) bhkwDeckung = 100;
                 if (bhkwDeckung < 0) bhkwDeckung = 0;
                 textBox_Waermedeckung.Text = bhkwDeckung.ToString("F2");

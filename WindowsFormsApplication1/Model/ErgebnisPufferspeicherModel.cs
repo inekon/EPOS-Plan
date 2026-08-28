@@ -74,15 +74,16 @@
         public double Durchsatz_Entladen;
 
         /// <summary>
-        /// P1-VORGRIFF (Migrationsschritt 52 legt nur die Spalte an): mittlere Temperatur
-        /// der obersten Schicht [Grad C]. Das heutige Ein-Zonen-Modell kennt keine
-        /// oberste Schicht; gefuellt wird erst mit dem Schichtmodell (Paket P1). Bis
-        /// dahin schreibt der Runner NULL - null waere eine Behauptung.
+        /// Mittlere Temperatur der obersten Schicht [Grad C] (Migrationsschritt 52 legte
+        /// als P1-Vorgriff nur die Spalte an; SEIT PAKET P1 wird sie GEFUELLT).
+        /// <para>NULL heisst weiterhin "nicht erhoben" und bleibt der Regelfall dort, wo
+        /// es keine Speichertemperatur gibt - bei einem Quellspeicher ist das
+        /// Temperaturpaar ein Ersatzwertpaar (Spreizung/0), keine Schichttemperatur.
+        /// Eine 0 waere dort eine Behauptung.</para>
         /// </summary>
         public double? T_oben_Mittel;
 
-        /// <summary>P1-VORGRIFF: Jahresminimum der obersten Schicht [Grad C];
-        /// siehe T_oben_Mittel.</summary>
+        /// <summary>Jahresminimum der obersten Schicht [Grad C]; siehe T_oben_Mittel.</summary>
         public double? T_oben_Min;
     }
 }

@@ -181,9 +181,16 @@ namespace WindowsFormsApplication1
                 SenkeDaten k = (SenkeDaten)MemberwiseClone();
 
                 // MemberwiseClone kopiert die LISTENREFERENZ. Ohne diese Zeile teilten
-                // Original und Kopie dieselbe Mitgliederliste, und der Ersatzdatensatz der
-                // Kaskaden-Automatik (KonfigurationCtrl.KaskadeNotwendig normalisiert eine
-                // Kopie) könnte den Dialogstand verändern, aus dem er gebildet wurde.
+                // Original und Kopie dieselbe Mitgliederliste, und ein normalisierter
+                // Ersatzdatensatz könnte den Dialogstand verändern, aus dem er gebildet
+                // wurde.
+                //
+                // PAKET L: Der einzige Aufrufer von Kopie() war die Kaskaden-Automatik
+                // KonfigurationCtrl.KaskadeNotwendig, die mit dem Aufräumschnitt entfallen
+                // ist. Die Methode bleibt als Bestandteil der SenkeDaten-Schnittstelle
+                // stehen - sie ist eine Zeile, korrekt, und der nächste Dialog, der eine
+                // „was gälte, wenn ich jetzt speichere"-Prüfung braucht, hätte sie sonst
+                // ein zweites Mal zu schreiben.
                 k.VerbundMitglieder = VerbundMitglieder == null
                     ? new List<int>()
                     : new List<int>(VerbundMitglieder);
@@ -413,8 +420,13 @@ namespace WindowsFormsApplication1
         // schreibt sie über Z_AnlageSenkeCtrl.SchreibenJeAnlage und die Verbundmitglieder
         // über AnlagePufferVerbundCtrl.Schreiben. Wer die Altspalten weiter FÜLLT, sind
         // nur noch die Anlagen-INSERTs (WizardCtrl.SQL_ANLAGE_INSERT, mit den Altwerten
-        // der gelesenen Zeile) - gelesen werden sie von den Schutznetzen
-        // (GeraeteWaisen, WizardCtrl.SenkenSichern) und fallen mit Paket L.
+        // der gelesenen Zeile) - gelesen werden sie von den Schutznetzen (GeraeteWaisen,
+        // WizardCtrl.SenkenSichern) und von SimulationControl.SenkenPufferDerAnlagen.
+        //
+        // PAKET L: Die Spalten BLEIBEN. Konzept Kapitel 15 führt WS_Ziel, WS_ID_Puffer
+        // und die übrigen acht als „stillgelegt (Lese-Altlast nach Migration)"; das
+        // Aufräumpaket hat sie ausdrücklich nicht angetastet. Die Begründung im Detail
+        // steht an der Mitlesestelle SimulationControl.SenkenPufferDerAnlagen (A1-O4).
 
         /// <summary>
         /// Zieht die Vorbelegung der Ladeprioritäten für ein Projekt nach: <c>NULL</c> wird
@@ -788,11 +800,9 @@ namespace WindowsFormsApplication1
                         if (!still)
                             SimulationProtokoll.Aktuell.WarnungEinmal(
                                 "senkenzeile-ohne-puffer-" + idAnlage + "-" + z.Rang,
-                                "Wärmesenke: Die Anlage " + idAnlage + " führt auf Rang " +
-                                z.Rang + " das Ziel " + Senkenzuordnung.ZielAusSenke(z.Ziel) +
-                                ", hat dort aber KEINEN Pufferspeicher zugeordnet " +
-                                "(Z_AnlageSenke.ID_Puffer leer). Die Zeile rechnet deshalb auf " +
-                                "den HEIZKREIS.");
+                                string.Format(
+                                    MyResource.Resource.SIMENG_SENKENZEILE_OHNE_PUFFER,
+                                    idAnlage, z.Rang, Senkenzuordnung.ZielAusSenke(z.Ziel)));
 
                         z.Ziel = Senke.Heizkreis;
                         z.IDPuffer = 0;
@@ -812,9 +822,9 @@ namespace WindowsFormsApplication1
                 if (!still)
                     SimulationProtokoll.Aktuell.WarnungEinmal(
                         "senkenliste-leer-" + idAnlage,
-                        "Wärmesenke: Für die Anlage " + idAnlage + " steht in Z_AnlageSenke " +
-                        "keine einzige Zeile. Der Lauf rechnet die Vorbelegung " +
-                        ZIEL_HEIZKREIS + "/" + WaermequelleClass.SENKE_BEIDES + ".");
+                        string.Format(MyResource.Resource.SIMENG_SENKENLISTE_LEER,
+                                      idAnlage, ZIEL_HEIZKREIS,
+                                      WaermequelleClass.SENKE_BEIDES));
 
                 return Senkenliste.Vorbelegung(idAnlage);
             }
