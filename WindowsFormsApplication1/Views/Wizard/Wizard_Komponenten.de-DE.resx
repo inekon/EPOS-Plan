@@ -118,13 +118,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="label3.Text" xml:space="preserve">
-    <value>Wärmeerzeuger bzw. Energieerzeuger  Komponenten auswählen:</value>
+    <value>Wärmeerzeuger bzw. Energieerzeuger Komponenten auswählen:</value>
   </data>
   <data name="checkBox_StdStromprofil.Text" xml:space="preserve">
     <value>Standard-Stromlastprofil</value>
   </data>
   <data name="label1.Text" xml:space="preserve">
-    <value>Projekt-Erstellungkonfiguration</value>
+    <value>Projekt-Erstellungskonfiguration</value>
   </data>
   <data name="checkBox_BHKW.Text" xml:space="preserve">
     <value>BHKW</value>

@@ -78,109 +78,115 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Öffnet ein Projekt im Detailformular <see cref="FormMain"/>.
+        ///
+        /// <para>
+        /// <b>P3 (Projektdialoge vereinheitlichen): „Öffnen" öffnet jetzt wirklich.</b>
+        /// Bis dahin zeigte dieser Menüweg <see cref="Form_ProjektSpeichernUnter"/>,
+        /// verlangte einen NEUEN Projektnamen und DUPLIZIERTE das Projekt; erst danach
+        /// wurde das Ausgangsprojekt geöffnet. Duplizieren heißt jetzt ausschließlich
+        /// „Speichern unter…"; hier steht die neue <see cref="Form_ProjektAuswahl"/>
+        /// (Liste, Suche, Sortierung).
+        /// </para>
+        /// <para>
+        /// <b>Ein Ladeweg statt zwei.</b> Die rund 40 Zeilen Set*/Add_*-Aufrufe standen
+        /// zweimal wortgleich hier (Zweig „gewähltes Projekt" und Zweig „zuletzt
+        /// geöffnet"). Sie liegen jetzt in <see cref="ProjektInFormMainLaden"/> — damit
+        /// entfällt auch der Befund „MenueCtrl:158": dort las der Zweig „zuletzt
+        /// geöffnet" <c>frm.m_szProjekt</c> vom NIE ANGEZEIGTEN Speichern-unter-Dialog
+        /// und übergab an <c>SetWaermebedarfExternControl</c> garantiert einen leeren
+        /// Namen; die Liste „Wärmebedarf einlesen" blieb im Detailformular leer.
+        /// </para>
+        /// </summary>
+        /// <param name="zuletzt">true = ohne Dialog das zuletzt geöffnete Projekt laden.</param>
         public void ProjektOeffnen(bool zuletzt = false)
         {
-            Form_ProjektSpeichernUnter frm = new Form_ProjektSpeichernUnter();
-            ApplikationCtrl ctrl = new ApplikationCtrl();
-            ProjektCtrl ctrlproj = new ProjektCtrl();
-
-            ctrl.ReadSingle();
-
             if (!zuletzt)
             {
-                DialogResult ret = frm.ShowDialog();
-                if (ret == DialogResult.OK)
+                using (Form_ProjektAuswahl frm = new Form_ProjektAuswahl())
                 {
-                    Program.mainfrm = new FormMain();
-                    FormMain frmmain = (FormMain)Program.mainfrm;
-
-                    ctrlproj.ReadSingle(frm.m_szProjekt);
-                    frmmain.SetProjekt(frm.m_szProjekt);
-                    frmmain.SetIDProjekt(frm.m_ID_Projekt);
-                    frmmain.SetKlima(frm.m_szKlimaregion);
-                    Program.startfrm.SetKlima(frm.m_szKlimaregion);
-                    frmmain.SetBearbeiter(ctrlproj.m_szBearbeiter);
-                    frmmain.SetAenderungsdatum(ctrlproj.m_Aenderungsdatum);
-                    frmmain.SetBeschreibung(ctrlproj.m_szBeschreibung);
-                    frmmain.SetKunde(ctrlproj.m_szKunde);
-                    frmmain.SetWPControl(frm.m_szProjekt);
-                    frmmain.SetBHKWControl(frm.m_szProjekt);
-                    frmmain.SetSPControl(frm.m_szProjekt);
-                    frmmain.SetHeizkesselControl(frm.m_szProjekt);
-                    frmmain.SetGebaeudeControl(frm.m_szProjekt);
-                    frmmain.SetWaermebedarfExternControl(frm.m_szProjekt);
-                    frmmain.SetProzesswaermeControl(frm.m_ID_Projekt);
-                    frmmain.SetStrombedarfControl(frm.m_ID_Projekt);
-                    frmmain.SetStromganglinieControl(frm.m_szProjekt);
-                    frmmain.SetPVControl(frm.m_szProjekt);
-                    frmmain.SetPufferSpControl(frm.m_szProjekt);
-                    frmmain.SetSolarControl(frm.m_szProjekt);
-                    frmmain.Add_WPKontext();
-                    frmmain.Add_BHKWKontext();
-                    frmmain.Add_GebäudeKontext();
-                    frmmain.Add_HeizkesselKontext();
-                    frmmain.Add_WaermebedarfExternKontext();
-                    frmmain.Add_ProzesswaermeKontext();
-                    frmmain.Add_StrombedarfKontext();
-                    frmmain.Add_StromganglinieKontext();
-                    frmmain.Add_SpKontext();
-                    frmmain.Add_PVKontext();
-                    frmmain.Add_SolarKontext();
-
-                    frmmain.ShowDialog();
-
-                    Program.startfrm.m_szProjektname = frm.m_szProjekt;
-                    Program.startfrm.m_ID_Projekt = frm.m_ID_Projekt;
-                    Program.startfrm.SetTextProjekt(frm.m_szProjekt);
+                    if (frm.ShowDialog() != DialogResult.OK) return;
+                    if (frm.m_ID_Projekt <= 0 || frm.m_szProjekt == "") return;
+                    ProjektInFormMainLaden(frm.m_szProjekt, frm.m_ID_Projekt);
                 }
+                return;
             }
-            else
-            {
-                if (ctrl.m_szProjektname != "")
-                {
-                    Program.mainfrm = new FormMain();
-                    FormMain frmmain = (FormMain)Program.mainfrm;
 
-                    ctrlproj.ReadSingle(ctrl.m_szProjektname);
-                    frmmain.SetProjekt(ctrl.m_szProjektname);
-                    frmmain.SetIDProjekt(ctrl.m_ID_Projekt);
-                    frmmain.SetKlima(frmmain.GetKlimaregion(ctrlproj.m_ID_Klimaregion));
-                    Program.startfrm.SetKlima(frmmain.GetKlimaregion(ctrlproj.m_ID_Klimaregion));
-                    frmmain.SetBearbeiter(ctrlproj.m_szBearbeiter);
-                    frmmain.SetKunde(ctrlproj.m_szKunde);
-                    frmmain.SetAenderungsdatum(ctrlproj.m_Aenderungsdatum);
-                    frmmain.SetBeschreibung(ctrlproj.m_szBeschreibung);
-                    frmmain.SetWPControl(ctrl.m_szProjektname);
-                    frmmain.SetBHKWControl(ctrl.m_szProjektname);
-                    frmmain.SetSPControl(ctrl.m_szProjektname);
-                    frmmain.SetHeizkesselControl(ctrl.m_szProjektname);
-                    frmmain.SetGebaeudeControl(ctrl.m_szProjektname);
-                    frmmain.SetWaermebedarfExternControl(frm.m_szProjekt);
-                    frmmain.SetProzesswaermeControl(ctrl.m_ID_Projekt);
-                    frmmain.SetStrombedarfControl(ctrl.m_ID_Projekt);
-                    frmmain.SetStromganglinieControl(ctrl.m_szProjektname);
-                    frmmain.SetPVControl(ctrl.m_szProjektname);
-                    frmmain.SetPufferSpControl(ctrl.m_szProjektname);
-                    frmmain.SetSolarControl(ctrl.m_szProjektname);
-                    frmmain.Add_WPKontext();
-                    frmmain.Add_BHKWKontext();
-                    frmmain.Add_GebäudeKontext();
-                    frmmain.Add_HeizkesselKontext();
-                    frmmain.Add_WaermebedarfExternKontext();
-                    frmmain.Add_ProzesswaermeKontext();
-                    frmmain.Add_StrombedarfKontext();
-                    frmmain.Add_StromganglinieKontext();
-                    frmmain.Add_SpKontext();
-                    frmmain.Add_PVKontext();
-                    frmmain.Add_SolarKontext();
+            ApplikationCtrl ctrl = new ApplikationCtrl();
+            ctrl.ReadSingle();
+            if (ctrl.m_szProjektname == "") return;
+            ProjektInFormMainLaden(ctrl.m_szProjektname, ctrl.m_ID_Projekt);
+        }
 
-                    frmmain.ShowDialog();
+        /// <summary>
+        /// Der EINE Ladeweg ins Detailformular: Stammdaten, alle Listen, alle
+        /// Kontextmenüs, Anzeige als Dialog, danach den Projektkontext der Startseite
+        /// nachziehen. Inhaltlich unverändert gegenüber den beiden bisherigen Zweigen
+        /// von <see cref="ProjektOeffnen"/>; die Klimaregion wird — wie im Zweig
+        /// „zuletzt geöffnet" — aus dem Projekt gelesen (der frühere Weg über
+        /// <c>Form_ProjektSpeichernUnter.m_szKlimaregion</c> lieferte immer "").
+        /// </summary>
+        private void ProjektInFormMainLaden(string szProjekt, int idProjekt)
+        {
+            ProjektCtrl ctrlproj = new ProjektCtrl();
+            ctrlproj.ReadSingle(szProjekt);
 
-                    Program.startfrm.m_szProjektname = ctrl.m_szProjektname;
-                    Program.startfrm.m_ID_Projekt = ctrl.m_ID_Projekt;
-                    Program.startfrm.SetTextProjekt(ctrl.m_szProjektname);
-                }
-            }
+            Program.mainfrm = new FormMain();
+            FormMain frmmain = (FormMain)Program.mainfrm;
+
+            string szKlima = frmmain.GetKlimaregion(ctrlproj.m_ID_Klimaregion);
+
+            frmmain.SetProjekt(szProjekt);
+            frmmain.SetIDProjekt(idProjekt);
+            frmmain.SetKlima(szKlima);
+            Program.startfrm.SetKlima(szKlima);
+            frmmain.SetBearbeiter(ctrlproj.m_szBearbeiter);
+            frmmain.SetKunde(ctrlproj.m_szKunde);
+            frmmain.SetAenderungsdatum(ctrlproj.m_Aenderungsdatum);
+            frmmain.SetBeschreibung(ctrlproj.m_szBeschreibung);
+            frmmain.SetWPControl(szProjekt);
+            frmmain.SetBHKWControl(szProjekt);
+            frmmain.SetSPControl(szProjekt);
+            frmmain.SetHeizkesselControl(szProjekt);
+            frmmain.SetGebaeudeControl(szProjekt);
+            frmmain.SetWaermebedarfExternControl(szProjekt);
+            frmmain.SetProzesswaermeControl(idProjekt);
+            frmmain.SetStrombedarfControl(idProjekt);
+            frmmain.SetStromganglinieControl(szProjekt);
+            frmmain.SetPVControl(szProjekt);
+            frmmain.SetPufferSpControl(szProjekt);
+            frmmain.SetSolarControl(szProjekt);
+            frmmain.Add_WPKontext();
+            frmmain.Add_BHKWKontext();
+            frmmain.Add_GebäudeKontext();
+            frmmain.Add_HeizkesselKontext();
+            frmmain.Add_WaermebedarfExternKontext();
+            frmmain.Add_ProzesswaermeKontext();
+            frmmain.Add_StrombedarfKontext();
+            frmmain.Add_StromganglinieKontext();
+            frmmain.Add_SpKontext();
+            frmmain.Add_PVKontext();
+            frmmain.Add_SolarKontext();
+
+            frmmain.ShowDialog();
+
+            Program.startfrm.m_szProjektname = szProjekt;
+            Program.startfrm.m_ID_Projekt = idProjekt;
+            Program.startfrm.SetTextProjekt(szProjekt);
+        }
+
+        /// <summary>
+        /// Dupliziert ein Projekt („Speichern unter…") — der Weg, der bis P3
+        /// fälschlich hinter dem Menüpunkt „Öffnen…" steckte. Aufrufer ist heute die
+        /// Startmasken-Kachel „Speichern unter"; die Methode steht hier, damit der
+        /// Duplizierweg einen ehrlichen Namen und eine Menü-Anlaufstelle hat.
+        /// </summary>
+        /// <returns>true, wenn dupliziert wurde.</returns>
+        public bool ProjektSpeichernUnter()
+        {
+            using (Form_ProjektSpeichernUnter frm = new Form_ProjektSpeichernUnter())
+                return frm.ShowDialog() == DialogResult.OK;
         }
 
         public string ProjektDelete(bool zuletzt = false)
