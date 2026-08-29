@@ -23,55 +23,38 @@ namespace WindowsFormsApplication1
             frm.SetProjekt(ctrl.m_szProjektname);
         }
 
+        /// <summary>
+        /// Öffnet den Projektassistenten für ein NEUES Projekt.
+        ///
+        /// <para>
+        /// <b>P4 (Projektdialoge vereinheitlichen): eine Seitenliste statt zwei.</b>
+        /// Die dreizehn Zeilen Seitenaufbau standen hier und in
+        /// <see cref="ProjektBearbeiten"/> wortgleich doppelt; sie liegen jetzt in
+        /// <see cref="AssistentSeiten"/>. Reihenfolge und Inhalt sind unverändert —
+        /// die beiden Einstiege unterscheiden sich nur noch im <c>SetWizardMode</c>.
+        /// </para>
+        /// </summary>
         public void ProjektNeu()
         {
-            List<WizardItemClass> frm = new List<WizardItemClass>();
-            frm.Add(new WizardItemClass(new Wizard_Komponenten(), WizardItemClass.KOMPONENTEN_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Projekt(), WizardItemClass.PROJEKT_ITEM));
-            frm.Add(new WizardItemClass(new Form_Gebaeude(), WizardItemClass.GEBAEUDE_ITEM));
-            frm.Add(new WizardItemClass(new Form_Waermebedarf(), WizardItemClass.WAERMEBEDARF_ITEM));
-            frm.Add(new WizardItemClass(new Form_Prozesswaerme(), WizardItemClass.PROZESS_ITEM));
-            frm.Add(new WizardItemClass(new Form_Stromverbraucher(), WizardItemClass.STROMSTD_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Stromlastgang(), WizardItemClass.STROMLASTGANG_ITEM));
-            frm.Add(new WizardItemClass(new Form_WPAuswahl(), WizardItemClass.WP_ITEM));
-            frm.Add(new WizardItemClass(new Form_SolarKollektoren(), WizardItemClass.SOLAR_ITEM));
-            frm.Add(new WizardItemClass(new Form_PV(), WizardItemClass.PV_ITEM));
-            frm.Add(new WizardItemClass(new Form_Stromspeicher(), WizardItemClass.SP_ITEM));
-            frm.Add(new WizardItemClass(new Form_Heizkessel(), WizardItemClass.KESSEL_ITEM));
-            frm.Add(new WizardItemClass(new Form_BHKWEing(), WizardItemClass.BHKW_ITEM));
-
-            wizparent = new WizardParent(frm);
-            Program.wizardctrl.parentform = wizparent;
-            wizparent.SetWizardMode(WizardParent.WIZARD_MODE_NEU);
-            wizparent.ShowDialog();
-
-            if (wizparent.gespeichert)
-            {
-                MessageBox.Show("Daten gespeichert");
-            }
+            AssistentZeigen(WizardParent.WIZARD_MODE_NEU);
         }
 
+        /// <summary>
+        /// Öffnet den Projektassistenten für ein BESTEHENDES Projekt (linke Spalte =
+        /// <see cref="ProjektAuswahl"/>). Seitenliste wie in <see cref="ProjektNeu"/>.
+        /// </summary>
         public void ProjektBearbeiten()
         {
-            List<WizardItemClass> frm = new List<WizardItemClass>();
-            frm.Add(new WizardItemClass(new Wizard_Komponenten(), WizardItemClass.KOMPONENTEN_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Projekt(), WizardItemClass.PROJEKT_ITEM));
-            frm.Add(new WizardItemClass(new Form_Gebaeude(), WizardItemClass.GEBAEUDE_ITEM));
-            frm.Add(new WizardItemClass(new Form_Waermebedarf(), WizardItemClass.WAERMEBEDARF_ITEM));
-            frm.Add(new WizardItemClass(new Form_Prozesswaerme(), WizardItemClass.PROZESS_ITEM));
-            frm.Add(new WizardItemClass(new Form_Stromverbraucher(), WizardItemClass.STROMSTD_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Stromlastgang(), WizardItemClass.STROMLASTGANG_ITEM));
-            frm.Add(new WizardItemClass(new Form_WPAuswahl(), WizardItemClass.WP_ITEM));
-            frm.Add(new WizardItemClass(new Form_SolarKollektoren(), WizardItemClass.SOLAR_ITEM));
-            frm.Add(new WizardItemClass(new Form_PV(), WizardItemClass.PV_ITEM));
-            frm.Add(new WizardItemClass(new Form_Stromspeicher(), WizardItemClass.SP_ITEM));
-            frm.Add(new WizardItemClass(new Form_Heizkessel(), WizardItemClass.KESSEL_ITEM));
-            frm.Add(new WizardItemClass(new Form_BHKWEing(), WizardItemClass.BHKW_ITEM));
+            AssistentZeigen(WizardParent.WIZARD_MODE_BEARBEITEN);
+        }
 
-            wizparent = new WizardParent(frm);
+        private void AssistentZeigen(int betriebsart)
+        {
+            wizparent = new WizardParent(AssistentSeiten.Erzeugen());
             Program.wizardctrl.parentform = wizparent;
-            wizparent.SetWizardMode(WizardParent.WIZARD_MODE_BEARBEITEN);
+            wizparent.SetWizardMode(betriebsart);
             wizparent.ShowDialog();
+
             if (wizparent.gespeichert)
             {
                 MessageBox.Show("Daten gespeichert");

@@ -1,4 +1,4 @@
-﻿namespace WindowsFormsApplication1
+namespace WindowsFormsApplication1
 {
     partial class Wizard_Komponenten
     {
@@ -29,151 +29,241 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Wizard_Komponenten));
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.checkBox_WP = new System.Windows.Forms.CheckBox();
-            this.checkBox_Solar = new System.Windows.Forms.CheckBox();
-            this.checkBox_PV = new System.Windows.Forms.CheckBox();
-            this.checkBox_StromSp = new System.Windows.Forms.CheckBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.checkBox_Prozess = new System.Windows.Forms.CheckBox();
-            this.checkBox_Stromlastgang = new System.Windows.Forms.CheckBox();
-            this.checkBox_Kessel = new System.Windows.Forms.CheckBox();
-            this.checkBox_Gebaeude = new System.Windows.Forms.CheckBox();
-            this.checkBox_WBedarfDaten = new System.Windows.Forms.CheckBox();
-            this.checkBox_StdStromprofil = new System.Windows.Forms.CheckBox();
-            this.checkBox_BHKW = new System.Windows.Forms.CheckBox();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            this.SuspendLayout();
-            // 
+            label1 = new System.Windows.Forms.Label();
+            label2 = new System.Windows.Forms.Label();
+            label3 = new System.Windows.Forms.Label();
+            pictureBox1 = new System.Windows.Forms.PictureBox();
+            karte_Gebaeude = new AktionsKarte();
+            karte_WBedarfDaten = new AktionsKarte();
+            karte_Prozess = new AktionsKarte();
+            karte_Brauchwasser = new AktionsKarte();
+            karte_StdStromprofil = new AktionsKarte();
+            karte_Stromlastgang = new AktionsKarte();
+            karte_WP = new AktionsKarte();
+            karte_BHKW = new AktionsKarte();
+            karte_Kessel = new AktionsKarte();
+            karte_Solar = new AktionsKarte();
+            karte_PV = new AktionsKarte();
+            karte_StromSp = new AktionsKarte();
+            karte_Puffer = new AktionsKarte();
+            panel_Textvorlagen = new System.Windows.Forms.Panel();
+            label_TextEnthalten = new System.Windows.Forms.Label();
+            label_TextOhne = new System.Windows.Forms.Label();
+            label_TextNurAnzeige = new System.Windows.Forms.Label();
+            label_TextFrage = new System.Windows.Forms.Label();
+            label_TextFrageTitel = new System.Windows.Forms.Label();
+            label_TextNeuFrage = new System.Windows.Forms.Label();
+            label_TextNeuTitel = new System.Windows.Forms.Label();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            panel_Textvorlagen.SuspendLayout();
+            SuspendLayout();
+            //
             // label1
-            // 
-            resources.ApplyResources(this.label1, "label1");
-            this.label1.Name = "label1";
-            // 
+            //
+            resources.ApplyResources(label1, "label1");
+            label1.Name = "label1";
+            //
             // label2
-            // 
-            resources.ApplyResources(this.label2, "label2");
-            this.label2.Name = "label2";
-            // 
-            // checkBox_WP
-            // 
-            resources.ApplyResources(this.checkBox_WP, "checkBox_WP");
-            this.checkBox_WP.Name = "checkBox_WP";
-            this.checkBox_WP.UseVisualStyleBackColor = true;
-            this.checkBox_WP.CheckedChanged += new System.EventHandler(this.checkBox_WP_CheckedChanged);
-            // 
-            // checkBox_Solar
-            // 
-            resources.ApplyResources(this.checkBox_Solar, "checkBox_Solar");
-            this.checkBox_Solar.Name = "checkBox_Solar";
-            this.checkBox_Solar.UseVisualStyleBackColor = true;
-            this.checkBox_Solar.CheckedChanged += new System.EventHandler(this.checkBox_Solar_CheckedChanged);
-            // 
-            // checkBox_PV
-            // 
-            resources.ApplyResources(this.checkBox_PV, "checkBox_PV");
-            this.checkBox_PV.Name = "checkBox_PV";
-            this.checkBox_PV.UseVisualStyleBackColor = true;
-            this.checkBox_PV.CheckedChanged += new System.EventHandler(this.checkBox_PV_CheckedChanged);
-            // 
-            // checkBox_StromSp
-            // 
-            resources.ApplyResources(this.checkBox_StromSp, "checkBox_StromSp");
-            this.checkBox_StromSp.Name = "checkBox_StromSp";
-            this.checkBox_StromSp.UseVisualStyleBackColor = true;
-            this.checkBox_StromSp.CheckedChanged += new System.EventHandler(this.checkBox_StromSp_CheckedChanged);
-            // 
+            //
+            resources.ApplyResources(label2, "label2");
+            label2.Name = "label2";
+            //
             // label3
-            // 
-            resources.ApplyResources(this.label3, "label3");
-            this.label3.BackColor = System.Drawing.Color.DimGray;
-            this.label3.ForeColor = System.Drawing.Color.White;
-            this.label3.Name = "label3";
-            // 
+            //
+            resources.ApplyResources(label3, "label3");
+            label3.BackColor = System.Drawing.Color.DimGray;
+            label3.ForeColor = System.Drawing.Color.White;
+            label3.Name = "label3";
+            //
             // pictureBox1
-            // 
-            resources.ApplyResources(this.pictureBox1, "pictureBox1");
-            this.pictureBox1.Image = global::WindowsFormsApplication1.Properties.Resources.Logo125_125;
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.TabStop = false;
-            // 
-            // checkBox_Prozess
-            // 
-            resources.ApplyResources(this.checkBox_Prozess, "checkBox_Prozess");
-            this.checkBox_Prozess.Name = "checkBox_Prozess";
-            this.checkBox_Prozess.UseVisualStyleBackColor = true;
-            this.checkBox_Prozess.CheckedChanged += new System.EventHandler(this.checkBox_Prozess_CheckedChanged);
-            // 
-            // checkBox_Stromlastgang
-            // 
-            resources.ApplyResources(this.checkBox_Stromlastgang, "checkBox_Stromlastgang");
-            this.checkBox_Stromlastgang.Name = "checkBox_Stromlastgang";
-            this.checkBox_Stromlastgang.UseVisualStyleBackColor = true;
-            this.checkBox_Stromlastgang.CheckedChanged += new System.EventHandler(this.checkBox_Stromlastgang_CheckedChanged);
-            // 
-            // checkBox_Kessel
-            // 
-            resources.ApplyResources(this.checkBox_Kessel, "checkBox_Kessel");
-            this.checkBox_Kessel.Name = "checkBox_Kessel";
-            this.checkBox_Kessel.UseVisualStyleBackColor = true;
-            this.checkBox_Kessel.CheckedChanged += new System.EventHandler(this.checkBox_Kessel_CheckedChanged);
-            // 
-            // checkBox_Gebaeude
-            // 
-            resources.ApplyResources(this.checkBox_Gebaeude, "checkBox_Gebaeude");
-            this.checkBox_Gebaeude.Name = "checkBox_Gebaeude";
-            this.checkBox_Gebaeude.UseVisualStyleBackColor = true;
-            this.checkBox_Gebaeude.CheckedChanged += new System.EventHandler(this.checkBox_Gebaeude_CheckedChanged);
-            // 
-            // checkBox_WBedarfDaten
-            // 
-            resources.ApplyResources(this.checkBox_WBedarfDaten, "checkBox_WBedarfDaten");
-            this.checkBox_WBedarfDaten.Name = "checkBox_WBedarfDaten";
-            this.checkBox_WBedarfDaten.UseVisualStyleBackColor = true;
-            this.checkBox_WBedarfDaten.CheckedChanged += new System.EventHandler(this.checkBox_WBedarfDaten_CheckedChanged);
-            // 
-            // checkBox_StdStromprofil
-            // 
-            resources.ApplyResources(this.checkBox_StdStromprofil, "checkBox_StdStromprofil");
-            this.checkBox_StdStromprofil.Name = "checkBox_StdStromprofil";
-            this.checkBox_StdStromprofil.UseVisualStyleBackColor = true;
-            this.checkBox_StdStromprofil.CheckedChanged += new System.EventHandler(this.checkBox_StdStromprofil_CheckedChanged);
-            // 
-            // checkBox_BHKW
-            // 
-            resources.ApplyResources(this.checkBox_BHKW, "checkBox_BHKW");
-            this.checkBox_BHKW.Name = "checkBox_BHKW";
-            this.checkBox_BHKW.UseVisualStyleBackColor = true;
-            this.checkBox_BHKW.CheckedChanged += new System.EventHandler(this.checkBox_BHKW_CheckedChanged);
-            // 
+            //
+            resources.ApplyResources(pictureBox1, "pictureBox1");
+            pictureBox1.Image = Properties.Resources.Logo125_125;
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.TabStop = false;
+            //
+            // karte_Gebaeude
+            //
+            resources.ApplyResources(karte_Gebaeude, "karte_Gebaeude");
+            karte_Gebaeude.Name = "karte_Gebaeude";
+            karte_Gebaeude.StatusSichtbar = true;
+            karte_Gebaeude.TitelSchrift = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
+            karte_Gebaeude.Geklickt += karte_Geklickt;
+            //
+            // karte_WBedarfDaten
+            //
+            resources.ApplyResources(karte_WBedarfDaten, "karte_WBedarfDaten");
+            karte_WBedarfDaten.Name = "karte_WBedarfDaten";
+            karte_WBedarfDaten.StatusSichtbar = true;
+            karte_WBedarfDaten.TitelSchrift = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
+            karte_WBedarfDaten.Geklickt += karte_Geklickt;
+            //
+            // karte_Prozess
+            //
+            resources.ApplyResources(karte_Prozess, "karte_Prozess");
+            karte_Prozess.Name = "karte_Prozess";
+            karte_Prozess.StatusSichtbar = true;
+            karte_Prozess.TitelSchrift = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
+            karte_Prozess.Geklickt += karte_Geklickt;
+            //
+            // karte_Brauchwasser
+            //
+            resources.ApplyResources(karte_Brauchwasser, "karte_Brauchwasser");
+            karte_Brauchwasser.Name = "karte_Brauchwasser";
+            karte_Brauchwasser.StatusSichtbar = true;
+            karte_Brauchwasser.TitelSchrift = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
+            karte_Brauchwasser.Geklickt += karte_Geklickt;
+            //
+            // karte_StdStromprofil
+            //
+            resources.ApplyResources(karte_StdStromprofil, "karte_StdStromprofil");
+            karte_StdStromprofil.Name = "karte_StdStromprofil";
+            karte_StdStromprofil.StatusSichtbar = true;
+            karte_StdStromprofil.TitelSchrift = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
+            karte_StdStromprofil.Geklickt += karte_Geklickt;
+            //
+            // karte_Stromlastgang
+            //
+            resources.ApplyResources(karte_Stromlastgang, "karte_Stromlastgang");
+            karte_Stromlastgang.Name = "karte_Stromlastgang";
+            karte_Stromlastgang.StatusSichtbar = true;
+            karte_Stromlastgang.TitelSchrift = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
+            karte_Stromlastgang.Geklickt += karte_Geklickt;
+            //
+            // karte_WP
+            //
+            resources.ApplyResources(karte_WP, "karte_WP");
+            karte_WP.Name = "karte_WP";
+            karte_WP.StatusSichtbar = true;
+            karte_WP.TitelSchrift = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
+            karte_WP.Geklickt += karte_Geklickt;
+            //
+            // karte_BHKW
+            //
+            resources.ApplyResources(karte_BHKW, "karte_BHKW");
+            karte_BHKW.Name = "karte_BHKW";
+            karte_BHKW.StatusSichtbar = true;
+            karte_BHKW.TitelSchrift = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
+            karte_BHKW.Geklickt += karte_Geklickt;
+            //
+            // karte_Kessel
+            //
+            resources.ApplyResources(karte_Kessel, "karte_Kessel");
+            karte_Kessel.Name = "karte_Kessel";
+            karte_Kessel.StatusSichtbar = true;
+            karte_Kessel.TitelSchrift = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
+            karte_Kessel.Geklickt += karte_Geklickt;
+            //
+            // karte_Solar
+            //
+            resources.ApplyResources(karte_Solar, "karte_Solar");
+            karte_Solar.Name = "karte_Solar";
+            karte_Solar.StatusSichtbar = true;
+            karte_Solar.TitelSchrift = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
+            karte_Solar.Geklickt += karte_Geklickt;
+            //
+            // karte_PV
+            //
+            resources.ApplyResources(karte_PV, "karte_PV");
+            karte_PV.Name = "karte_PV";
+            karte_PV.StatusSichtbar = true;
+            karte_PV.TitelSchrift = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
+            karte_PV.Geklickt += karte_Geklickt;
+            //
+            // karte_StromSp
+            //
+            resources.ApplyResources(karte_StromSp, "karte_StromSp");
+            karte_StromSp.Name = "karte_StromSp";
+            karte_StromSp.StatusSichtbar = true;
+            karte_StromSp.TitelSchrift = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
+            karte_StromSp.Geklickt += karte_Geklickt;
+            //
+            // karte_Puffer
+            //
+            resources.ApplyResources(karte_Puffer, "karte_Puffer");
+            karte_Puffer.Name = "karte_Puffer";
+            karte_Puffer.StatusSichtbar = true;
+            karte_Puffer.TitelSchrift = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
+            karte_Puffer.Geklickt += karte_Geklickt;
+            //
+            // panel_Textvorlagen
+            //
+            resources.ApplyResources(panel_Textvorlagen, "panel_Textvorlagen");
+            panel_Textvorlagen.Controls.Add(label_TextEnthalten);
+            panel_Textvorlagen.Controls.Add(label_TextOhne);
+            panel_Textvorlagen.Controls.Add(label_TextNurAnzeige);
+            panel_Textvorlagen.Controls.Add(label_TextFrage);
+            panel_Textvorlagen.Controls.Add(label_TextFrageTitel);
+            panel_Textvorlagen.Controls.Add(label_TextNeuFrage);
+            panel_Textvorlagen.Controls.Add(label_TextNeuTitel);
+            panel_Textvorlagen.Name = "panel_Textvorlagen";
+            panel_Textvorlagen.Visible = false;
+            //
+            // label_TextEnthalten
+            //
+            resources.ApplyResources(label_TextEnthalten, "label_TextEnthalten");
+            label_TextEnthalten.Name = "label_TextEnthalten";
+            //
+            // label_TextOhne
+            //
+            resources.ApplyResources(label_TextOhne, "label_TextOhne");
+            label_TextOhne.Name = "label_TextOhne";
+            //
+            // label_TextNurAnzeige
+            //
+            resources.ApplyResources(label_TextNurAnzeige, "label_TextNurAnzeige");
+            label_TextNurAnzeige.Name = "label_TextNurAnzeige";
+            //
+            // label_TextFrage
+            //
+            resources.ApplyResources(label_TextFrage, "label_TextFrage");
+            label_TextFrage.Name = "label_TextFrage";
+            //
+            // label_TextFrageTitel
+            //
+            resources.ApplyResources(label_TextFrageTitel, "label_TextFrageTitel");
+            label_TextFrageTitel.Name = "label_TextFrageTitel";
+            //
+            // label_TextNeuFrage
+            //
+            resources.ApplyResources(label_TextNeuFrage, "label_TextNeuFrage");
+            label_TextNeuFrage.Name = "label_TextNeuFrage";
+            //
+            // label_TextNeuTitel
+            //
+            resources.ApplyResources(label_TextNeuTitel, "label_TextNeuTitel");
+            label_TextNeuTitel.Name = "label_TextNeuTitel";
+            //
             // Wizard_Komponenten
-            // 
+            //
             resources.ApplyResources(this, "$this");
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.White;
-            this.Controls.Add(this.checkBox_BHKW);
-            this.Controls.Add(this.checkBox_StdStromprofil);
-            this.Controls.Add(this.checkBox_WBedarfDaten);
-            this.Controls.Add(this.checkBox_Gebaeude);
-            this.Controls.Add(this.checkBox_Kessel);
-            this.Controls.Add(this.checkBox_Stromlastgang);
-            this.Controls.Add(this.checkBox_Prozess);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.checkBox_StromSp);
-            this.Controls.Add(this.checkBox_PV);
-            this.Controls.Add(this.checkBox_Solar);
-            this.Controls.Add(this.checkBox_WP);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.pictureBox1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Name = "Wizard_Komponenten";
-            this.Shown += new System.EventHandler(this.Wizard_Komponenten_Shown);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            BackColor = System.Drawing.Color.White;
+            Controls.Add(panel_Textvorlagen);
+            Controls.Add(karte_Puffer);
+            Controls.Add(karte_StromSp);
+            Controls.Add(karte_PV);
+            Controls.Add(karte_Solar);
+            Controls.Add(karte_Kessel);
+            Controls.Add(karte_BHKW);
+            Controls.Add(karte_WP);
+            Controls.Add(karte_Stromlastgang);
+            Controls.Add(karte_StdStromprofil);
+            Controls.Add(karte_Brauchwasser);
+            Controls.Add(karte_Prozess);
+            Controls.Add(karte_WBedarfDaten);
+            Controls.Add(karte_Gebaeude);
+            Controls.Add(label3);
+            Controls.Add(label2);
+            Controls.Add(label1);
+            Controls.Add(pictureBox1);
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            Name = "Wizard_Komponenten";
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            panel_Textvorlagen.ResumeLayout(false);
+            panel_Textvorlagen.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
 
         }
 
@@ -181,18 +271,28 @@
 
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.CheckBox checkBox_WP;
-        private System.Windows.Forms.CheckBox checkBox_Solar;
-        private System.Windows.Forms.CheckBox checkBox_PV;
-        private System.Windows.Forms.CheckBox checkBox_StromSp;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.CheckBox checkBox_Prozess;
-        private System.Windows.Forms.CheckBox checkBox_Stromlastgang;
-        private System.Windows.Forms.CheckBox checkBox_Kessel;
-        private System.Windows.Forms.CheckBox checkBox_Gebaeude;
-        private System.Windows.Forms.CheckBox checkBox_WBedarfDaten;
-        private System.Windows.Forms.CheckBox checkBox_StdStromprofil;
-        private System.Windows.Forms.CheckBox checkBox_BHKW;
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private AktionsKarte karte_Gebaeude;
+        private AktionsKarte karte_WBedarfDaten;
+        private AktionsKarte karte_Prozess;
+        private AktionsKarte karte_Brauchwasser;
+        private AktionsKarte karte_StdStromprofil;
+        private AktionsKarte karte_Stromlastgang;
+        private AktionsKarte karte_WP;
+        private AktionsKarte karte_BHKW;
+        private AktionsKarte karte_Kessel;
+        private AktionsKarte karte_Solar;
+        private AktionsKarte karte_PV;
+        private AktionsKarte karte_StromSp;
+        private AktionsKarte karte_Puffer;
+        private System.Windows.Forms.Panel panel_Textvorlagen;
+        private System.Windows.Forms.Label label_TextEnthalten;
+        private System.Windows.Forms.Label label_TextOhne;
+        private System.Windows.Forms.Label label_TextNurAnzeige;
+        private System.Windows.Forms.Label label_TextFrage;
+        private System.Windows.Forms.Label label_TextFrageTitel;
+        private System.Windows.Forms.Label label_TextNeuFrage;
+        private System.Windows.Forms.Label label_TextNeuTitel;
     }
 }

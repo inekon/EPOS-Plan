@@ -1,17 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -117,49 +117,87 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="checkBox_StdStromprofil.Text" xml:space="preserve">
-    <value>Standard current load profile</value>
-  </data>
-  <data name="label1.Text" xml:space="preserve">
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />  <data name="label1.Text" xml:space="preserve">
     <value>Project creation configuration</value>
   </data>
-  <data name="checkBox_BHKW.Text" xml:space="preserve">
-    <value>CHP</value>
-  </data>
-  <data name="checkBox_Solar.Text" xml:space="preserve">
-    <value>Solar</value>
+  <data name="label2.Text" xml:space="preserve">
+    <value>The project assistant guides you through all the necessary steps. This means that all entries required for a project are made completely. Navigate with Next and Back to make the next entries or to adjust entries later.</value>
   </data>
   <data name="label3.Text" xml:space="preserve">
     <value>Select heat generator or energy generator components:</value>
   </data>
-  <data name="checkBox_WBedarfDaten.Text" xml:space="preserve">
-    <value>Heat demand data</value>
-  </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>from 1</value>
-  </data>
-  <data name="checkBox_Prozess.Text" xml:space="preserve">
-    <value>Process heat</value>
-  </data>
-  <data name="checkBox_Kessel.Text" xml:space="preserve">
-    <value>Top boiler</value>
-  </data>
-  <data name="checkBox_StromSp.Text" xml:space="preserve">
-    <value>Electricity storage</value>
-  </data>
-  <data name="checkBox_PV.Text" xml:space="preserve">
-    <value>Photovoltaics</value>
-  </data>
-  <data name="label2.Text" xml:space="preserve">
-    <value>The Project Wizard will guide you through all the necessary steps. This means that all entries required for a project are carried out completely. Navigate with Next and Back accordingly to make the next entries or to adjust entries later.</value>
-  </data>
-  <data name="checkBox_WP.Text" xml:space="preserve">
-    <value>Heat pump</value>
-  </data>
-  <data name="checkBox_Gebaeude.Text" xml:space="preserve">
+  <data name="karte_Gebaeude.Titel" xml:space="preserve">
     <value>Building</value>
   </data>
-  <data name="checkBox_Stromlastgang.Text" xml:space="preserve">
-    <value>Current load profile</value>
+  <data name="karte_WBedarfDaten.Titel" xml:space="preserve">
+    <value>Heat demand data</value>
+  </data>
+  <data name="karte_Prozess.Titel" xml:space="preserve">
+    <value>Process heat</value>
+  </data>
+  <data name="karte_Brauchwasser.Titel" xml:space="preserve">
+    <value>Domestic hot water</value>
+  </data>
+  <data name="karte_StdStromprofil.Titel" xml:space="preserve">
+    <value>Standard load profile</value>
+  </data>
+  <data name="karte_Stromlastgang.Titel" xml:space="preserve">
+    <value>Electrical load curve</value>
+  </data>
+  <data name="karte_WP.Titel" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="karte_BHKW.Titel" xml:space="preserve">
+    <value>CHP unit</value>
+  </data>
+  <data name="karte_Kessel.Titel" xml:space="preserve">
+    <value>Boiler</value>
+  </data>
+  <data name="karte_Solar.Titel" xml:space="preserve">
+    <value>Solar thermal</value>
+  </data>
+  <data name="karte_PV.Titel" xml:space="preserve">
+    <value>Photovoltaics</value>
+  </data>
+  <data name="karte_StromSp.Titel" xml:space="preserve">
+    <value>Electricity storage</value>
+  </data>
+  <data name="karte_Puffer.Titel" xml:space="preserve">
+    <value>Buffer storage</value>
+  </data>
+  <data name="label_TextEnthalten.Text" xml:space="preserve">
+    <value>{0} in project</value>
+  </data>
+  <data name="label_TextOhne.Text" xml:space="preserve">
+    <value>not in project</value>
+  </data>
+  <data name="label_TextNurAnzeige.Text" xml:space="preserve">
+    <value>display only</value>
+  </data>
+  <data name="label_TextFrage.Text" xml:space="preserve">
+    <value>"{0}" will be removed from the project.
+
+Saving will delete {1} entries:
+{2}
+
+Really remove?</value>
+  </data>
+  <data name="label_TextFrageTitel.Text" xml:space="preserve">
+    <value>Remove component</value>
+  </data>
+  <data name="label_TextNeuFrage.Text" xml:space="preserve">
+    <value>The assistant switches to a new project.
+
+The entries of this run will be discarded.
+
+Continue?</value>
+  </data>
+  <data name="label_TextNeuTitel.Text" xml:space="preserve">
+    <value>Start new project</value>
+  </data>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Select components</value>
   </data>
 </root>
