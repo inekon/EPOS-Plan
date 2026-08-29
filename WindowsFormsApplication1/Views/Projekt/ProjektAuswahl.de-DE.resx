@@ -117,60 +117,24 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="button_Open.Location" type="System.Drawing.Point, System.Drawing">
-    <value>438, 314</value>
-  </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="button_Open.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />  <data name="label_Suche.Text" xml:space="preserve">
+    <value>Suchen:</value>
   </data>
-  <data name="button_Open.Size" type="System.Drawing.Size, System.Drawing">
-    <value>88, 38</value>
+  <data name="columnHeader_Name.Text" xml:space="preserve">
+    <value>Projektname</value>
   </data>
-  <data name="button_Abbrechen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>279, 314</value>
+  <data name="columnHeader_Kunde.Text" xml:space="preserve">
+    <value>Kunde</value>
   </data>
-  <data name="button_Abbrechen.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+  <data name="columnHeader_Geaendert.Text" xml:space="preserve">
+    <value>Geändert</value>
   </data>
-  <data name="button_Abbrechen.Size" type="System.Drawing.Size, System.Drawing">
-    <value>125, 38</value>
+  <data name="label_Anzahl.Text" xml:space="preserve">
+    <value>{0} von {1} Projekten</value>
   </data>
-  <data name="button_Abbrechen.Text" xml:space="preserve">
-    <value>Cancel ❌</value>
-  </data>
-  <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>14, 23</value>
-  </data>
-  <data name="label1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>111, 19</value>
-  </data>
-  <data name="label1.Text" xml:space="preserve">
-    <value>Project selection:</value>
-  </data>
-  <data name="listView_Projekt.Location" type="System.Drawing.Point, System.Drawing">
-    <value>14, 51</value>
-  </data>
-  <data name="listView_Projekt.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="listView_Projekt.Size" type="System.Drawing.Size, System.Drawing">
-    <value>510, 243</value>
-  </data>
-  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
-    <value>7, 15</value>
-  </data>
-  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>544, 366</value>
-  </data>
-  <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>Save project as</value>
-  </data>
+  <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
 </root>

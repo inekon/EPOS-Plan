@@ -35,7 +35,10 @@ namespace WindowsFormsApplication1
             Close();
         }
 
-        private void Form_ProjektOpen_Load(object sender, EventArgs e)
+        // P3: hiess bis zur Vereinheitlichung der Projektdialoge Form_ProjektOpen_Load -
+        // ein Relikt aus der Zeit, als dieser Dialog als "Oeffnen" missbraucht wurde.
+        // Oeffnen macht jetzt Form_ProjektAuswahl; dieser Dialog dupliziert nur noch.
+        private void Form_ProjektSpeichernUnter_Load(object sender, EventArgs e)
         {
             ProjektCtrl ctrl = new ProjektCtrl();
             ctrl.ReadAll();

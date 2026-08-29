@@ -6,90 +6,13 @@ using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    /// <summary>
-    /// Farben, Maße und Zeichenhilfen der Karten aus Etappe D2/D3
-    /// (Konzept_KonfigUI_Hydraulik, Abschnitt 3 und 3a).
-    ///
-    /// Die Werte stammen 1:1 aus dem Mockup
-    /// <c>Entwurf_Hydraulikuebersicht_Konfiguration.html</c> — dort stehen sie als
-    /// Hexzahlen im Stilattribut. Sie liegen hier an EINER Stelle, damit
-    /// <see cref="ErzeugerKarte"/> und <see cref="SpeicherKarte"/> nicht zwei
-    /// auseinanderlaufende Farbtabellen führen.
-    ///
-    /// Bewusst keine <c>SystemColors</c>: Die Karten sind eine gezeichnete Fläche mit
-    /// festem Farbklang (blau = Quelle, koralle = Senke/Speicher, amber = Warnung), und
-    /// genau diese Zuordnung trägt die Aussage. Ein Systemthema würde sie einebnen.
-    /// </summary>
-    internal static class KartenStil
-    {
-        /// <summary>Rahmen einer Erzeugerkarte (#b4b2a9).</summary>
-        public static readonly Color RAHMEN = Color.FromArgb(180, 178, 169);
-
-        /// <summary>Rahmen einer Speicherkarte (#D85A30) — koralle wie im Schema.</summary>
-        public static readonly Color RAHMEN_SPEICHER = Color.FromArgb(216, 90, 48);
-
-        /// <summary>Rahmen einer Karte ohne Inhalt (gestrichelt, Platzhalterzeile).</summary>
-        public static readonly Color RAHMEN_LEISE = Color.FromArgb(217, 215, 207);
-
-        public static readonly Color TEXT = Color.FromArgb(44, 44, 42);          // #2c2c2a
-        public static readonly Color TEXT_LEISE = Color.FromArgb(95, 94, 90);    // #5f5e5a
-        public static readonly Color TEXT_SEHR_LEISE = Color.FromArgb(136, 135, 128); // #888780
-
-        public static readonly Color CHIP_RAHMEN = Color.FromArgb(217, 215, 207);
-        public static readonly Color FLAECHE = Color.FromArgb(245, 244, 239);    // #f5f4ef
-
-        public static readonly Color QUELLE_RAHMEN = Color.FromArgb(55, 138, 221);   // #378ADD
-        public static readonly Color QUELLE_TEXT = Color.FromArgb(24, 95, 165);      // #185FA5
-
-        public static readonly Color SENKE_RAHMEN = Color.FromArgb(216, 90, 48);     // #D85A30
-        public static readonly Color SENKE_TEXT = Color.FromArgb(153, 60, 29);       // #993C1D
-
-        public static readonly Color BADGE_FLAECHE = Color.FromArgb(250, 236, 231);  // #FAECE7
-        public static readonly Color BADGE_TEXT = Color.FromArgb(113, 43, 19);       // #712B13
-
-        public static readonly Color WARN_RAHMEN = Color.FromArgb(200, 138, 0);
-        public static readonly Color WARN_FLAECHE = Color.FromArgb(255, 246, 224);
-        public static readonly Color WARN_TEXT = Color.FromArgb(138, 91, 0);
-
-        /// <summary>Innenabstand einer Karte [px].</summary>
-        public const int RAND = 10;
-
-        /// <summary>Eckenradius der Karten und Chips [px].</summary>
-        public const int ECKE = 6;
-
-        /// <summary>Kreisziffern ①…⑨ für die wirksame Ladepriorität (Konzept 3, „①②").</summary>
-        public static string Kreisziffer(int n)
-        {
-            if (n < 1) return "";
-            if (n > 9) return "(" + n + ")";
-            return ((char)('①' + (n - 1))).ToString();
-        }
-
-        /// <summary>Rechteck mit abgerundeten Ecken — für Kartenrahmen und Chips.</summary>
-        public static GraphicsPath Rundeck(Rectangle r, int radius)
-        {
-            GraphicsPath p = new GraphicsPath();
-            if (radius <= 0 || r.Width <= 2 * radius || r.Height <= 2 * radius)
-            {
-                p.AddRectangle(r);
-                return p;
-            }
-
-            int d = radius * 2;
-            p.AddArc(r.X, r.Y, d, d, 180, 90);
-            p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
-            p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
-            p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
-            p.CloseFigure();
-            return p;
-        }
-
-        /// <summary>Ein Label, dessen Schriftschnitt geändert wird, ohne die Familie zu verlieren.</summary>
-        public static void Schnitt(Control c, FontStyle stil)
-        {
-            c.Font = new Font(c.Font, stil);
-        }
-    }
+    // Die Token-Sammlung KartenStil stand bis zum Paket P1 („Projektdialoge
+    // vereinheitlichen") hier in dieser Datei. Sie ist unveraendert nach
+    // Allgemein\GrafikTools\KartenStil.cs umgezogen — dort ist sie die EINE
+    // Stelle fuer Farben, RAND, ECKE und die Rundeck-Geometrie, auf die jetzt
+    // auch die AktionsKarte der Startmaske zugreift. An den Verwendungen in
+    // ErzeugerKarte/SpeicherKarte aendert der Umzug nichts (gleicher Name,
+    // gleicher Namensraum, gleiche Werte).
 
     /// <summary>
     /// Ein Chip: kurzer Text in einer abgerundeten Umrandung (Mockup Abschnitt 4).

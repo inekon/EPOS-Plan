@@ -123,4 +123,40 @@
   <data name="btn_Zurueck.Text" xml:space="preserve">
     <value>◀ Zurück</value>
   </data>
+  <data name="karte_ProjektNeu.Titel" xml:space="preserve">
+    <value>Neues Projekt</value>
+  </data>
+  <data name="karte_ProjektNeu.Beschreibung" xml:space="preserve">
+    <value>Starten Sie ein komplett neues Energieprojekt</value>
+  </data>
+  <data name="karte_ProjektOeffnen.Titel" xml:space="preserve">
+    <value>Projekt öffnen/bearbeiten</value>
+  </data>
+  <data name="karte_ProjektOeffnen.Beschreibung" xml:space="preserve">
+    <value>Laden Sie ein gespeichertes Projekt bzw. bearbeiten Sie ein bestehendes Projekt</value>
+  </data>
+  <data name="karte_ProjektZuletzt.Titel" xml:space="preserve">
+    <value>Zuletzt geöffnet</value>
+  </data>
+  <data name="karte_ProjektZuletzt.Beschreibung" xml:space="preserve">
+    <value>Greifen Sie auf kürzlich bearbeitete Projekte zu</value>
+  </data>
+  <data name="karte_SpeichernUnter.Titel" xml:space="preserve">
+    <value>Speichern unter</value>
+  </data>
+  <data name="karte_SpeichernUnter.Beschreibung" xml:space="preserve">
+    <value>Speichern Sie ein Projekt unter anderem Namen</value>
+  </data>
+  <data name="karte_Delete.Titel" xml:space="preserve">
+    <value>Projekt löschen</value>
+  </data>
+  <data name="karte_Delete.Beschreibung" xml:space="preserve">
+    <value>Löschen Sie ein bestehendes Projekt</value>
+  </data>
+  <data name="karte_ProjektDetails.Titel" xml:space="preserve">
+    <value>Projekt Details</value>
+  </data>
+  <data name="karte_ProjektDetails.Beschreibung" xml:space="preserve">
+    <value>Zeigen Sie umfassende Projektinformationen und Details an</value>
+  </data>
 </root>

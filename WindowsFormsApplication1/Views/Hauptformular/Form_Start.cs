@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Rectangle = System.Drawing.Rectangle;
 
@@ -63,10 +62,13 @@ namespace WindowsFormsApplication1
             // Umsetzen der Funktion nur wieder eingeschaltet werden muss.
             OptimierungskachelVerbergen();
 
-            // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
-            // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
-            // Auf ausreichend grossen Schirmen wirkungslos.
-            FensterEinpassung.Einhaengen(this);
+            // P1/P2 (Projektdialoge): Der Aufruf FensterEinpassung.Einhaengen(this) stand
+            // hier als "Notebook-Schutz" - er war jedoch WIRKUNGSLOS und ist deshalb
+            // entfernt. FensterEinpassung.Zustaendig schliesst Formulare mit
+            // TopLevel == false ausdruecklich aus (Allgemein\FensterEinpassung.cs), und
+            // MDIMainForm bettet Form_Start genau so ein (TopLevel=false, Dock=Fill).
+            // Den Bildlauf, den die Einpassung sonst sichern wuerde, setzt
+            // Form_Start_Load ohnehin selbst (this.AutoScroll = true je Reiter).
         }
 
         private void Form_Start_Load(object sender, EventArgs e)
@@ -140,7 +142,7 @@ namespace WindowsFormsApplication1
         public void SetTextProjekt(string szProjekt)
         {
             textBox_ProjektOpen.Text = szProjekt;
-            pBox_ProjektDetails.Enabled = true;
+            karte_ProjektDetails.Enabled = true;
 
             // Den Namen auch im Auswahlfeld des Projektkopfs zeigen: es steht an der
             // Stelle, an der bis dahin das blaue Textfeld stand. Diese Methode ist die
@@ -458,10 +460,12 @@ namespace WindowsFormsApplication1
 
         private void pBox_SpeichernUnter_Click(object sender, EventArgs e)
         {
-            Form_ProjektSpeichernUnter frm = new Form_ProjektSpeichernUnter();
-
-            // Die Duplizierung (inkl. Fortschrittsanzeige) laeuft jetzt im Dialog selbst.
-            frm.ShowDialog();
+            // Die Duplizierung (inkl. Fortschrittsanzeige) laeuft im Dialog selbst.
+            // Seit P3 fuehrt der Weg ueber MenueCtrl.ProjektSpeichernUnter(): Das
+            // Duplizieren hat damit EINEN benannten Einstieg - und liegt nicht mehr
+            // (auch) hinter dem Menuepunkt "Oeffnen...".
+            MenueCtrl menu = new MenueCtrl();
+            menu.ProjektSpeichernUnter();
         }
 
         private void pBox_StdLastProfil_Click(object sender, EventArgs e)
@@ -824,50 +828,55 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Kachel „Zuletzt geöffnet".
+        ///
+        /// <para>
+        /// <b>P3:</b> Die Kachel zeigt jetzt <see cref="Form_ProjektAuswahl"/> — dieselbe
+        /// Liste wie Menü „Projekt → Öffnen…" —, vorsortiert nach „Geändert"
+        /// absteigend und mit dem zuletzt geöffneten Projekt vorausgewählt. Bis dahin
+        /// wechselte sie ohne jeden Dialog stumm auf den Eintrag aus
+        /// <c>Tab_Applikation</c>: ein Klick, aber ohne Sicht auf die Alternativen und
+        /// ohne Ausweg, wenn das gemerkte Projekt nicht das gesuchte war. Der
+        /// Ein-Klick-Charakter bleibt weitgehend erhalten, weil die Vorauswahl schon
+        /// steht — Eingabetaste genügt.
+        /// </para>
+        /// <para>
+        /// Der 200-ms-Grünblitz auf der Kachel entfällt: Er zeichnete über
+        /// <c>CreateGraphics()</c> an der Kachel vorbei und blockierte dafür mit
+        /// <c>Task.Wait()</c> den UI-Faden. Die Rückmeldung übernimmt der
+        /// <see cref="Form_Hinweis"/> darunter, der ohnehin schon da war.
+        /// </para>
+        /// </summary>
         private void pBox_ProjektZuletzt_Click(object sender, EventArgs e)
         {
             ApplikationCtrl ctrl = new ApplikationCtrl();
-
             ctrl.ReadSingle();
-            // falls zuletzt geöffnetes Projekt nicht gelöscht wurde
-            // Befund 3: Der Block setzte den Kontext bis auf die Einweg-Sperre
-            // bUpdateWizardSymbole bereits vollstaendig; die ID stammte allerdings aus
-            // Tab_Applikation statt aus Tab_Projekt. ProjektKontextUebernehmen liest die ID
-            // zum Namen und meldet zugleich, wenn das gemerkte Projekt geloescht wurde.
-            if (ctrl.m_szProjektname == "" || !ProjektKontextUebernehmen(ctrl.m_szProjektname))
+
+            string gewaehlt;
+            using (Form_ProjektAuswahl dlg = new Form_ProjektAuswahl())
+            {
+                dlg.ZuletztGeaendertZuerst(ctrl.m_szProjektname);
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                gewaehlt = dlg.m_szProjekt;
+            }
+
+            // ProjektKontextUebernehmen liest die ID zum Namen und meldet zugleich,
+            // wenn das Projekt zwischenzeitlich geloescht wurde.
+            if (gewaehlt == "" || !ProjektKontextUebernehmen(gewaehlt))
             {
                 MessageBox.Show(MyResource.Resource.Text_Form_Start_ProjektGeloescht); return;
             }
 
-            using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
-            {
-                Graphics g = pBox_ProjektZuletzt.CreateGraphics();
-                Rectangle rt = pBox_ProjektZuletzt.ClientRectangle;
-                rt.Width = rt.Width - 20;
-                rt.Height = rt.Height - 20;
-                rt.Y = rt.Y + 10;
-                rt.X = rt.X + 10;
-                Program.FillRoundedRectangle(g, brush, rt, 10);
-
-                Color bg = pBox_ProjektZuletzt.BackColor;
-                label_pBox_ProjektZuletzt.BackColor = Color.FromArgb(90, 0, 255, 0);
-                label2_pBox_ProjektZuletzt.BackColor = label_pBox_ProjektZuletzt.BackColor;
-                label_pBox_ProjektZuletzt.Refresh();
-                label2_pBox_ProjektZuletzt.Refresh();
-
-                var t = Task.Run(async delegate
-                {
-                    await Task.Delay(200);
-                    return 0;
-                });
-                t.Wait();
-                pBox_ProjektZuletzt.Invalidate();
-                label_pBox_ProjektZuletzt.BackColor = bg;
-                label2_pBox_ProjektZuletzt.BackColor = label_pBox_ProjektZuletzt.BackColor;
-            }
+            // Zuletzt geoeffnetes Projekt merken - dieselbe Schreiblogik wie bei den
+            // Kacheln "Neues Projekt" und "Projekt oeffnen/bearbeiten".
+            ApplikationCtrl ctrl_app = new ApplikationCtrl();
+            ctrl_app.m_ID_Projekt = m_ID_Projekt;
+            ctrl_app.m_szProjektname = m_szProjektname;
+            ctrl_app.Update();
 
             Form_Hinweis frm = new Form_Hinweis(MyResource.Resource.Text_Hinweis, MyResource.Resource.Text_Projekt + " " + m_szProjektname + " " + MyResource.Resource.Text_Geoeffnet + "!");
-            frm.Location = this.PointToScreen(tabControl_Wizard.PointToScreen(pBox_ProjektZuletzt.Location));
+            frm.Location = this.PointToScreen(tabControl_Wizard.PointToScreen(karte_ProjektZuletzt.Location));
             frm.ShowDialog();
         }
 
@@ -1533,7 +1542,7 @@ namespace WindowsFormsApplication1
             if (textBox_ProjektOpen.Text == MyResource.Resource.Text_Select)
             {
                 Form_Hinweis frm = new Form_Hinweis(MyResource.Resource.Text_Hinweis, "\r\n" + MyResource.Resource.Text_Form_Start_MessageBox1 + "\r\n" + MyResource.Resource.Text_Form_Start_MessageBox2);
-                System.Drawing.Point p1 = pBox_ProjektDetails.Location;
+                System.Drawing.Point p1 = karte_ProjektDetails.Location;
                 p1 = this.PointToScreen(p1);
                 frm.Location = p1;
                 frm.ShowDialog();
@@ -2002,30 +2011,14 @@ namespace WindowsFormsApplication1
 
         private void InitEventDictionary()
         {
+            // Die sechs Kacheln des Reiters "Projekt" stehen NICHT mehr in diesem
+            // Verteiler: sie sind seit P2 AktionsKarte-Instanzen und haengen im
+            // Designer direkt mit ihrem Ereignis Geklickt an denselben sechs
+            // Handlern (karte_ProjektNeu.Geklickt += pBox_ProjektNeu_Click usw.).
+            // Der Verteiler bleibt fuer die Bildkacheln der Reiter 2/3/4 bestehen,
+            // die je drei Steuerelemente auf einen Handler buendeln.
             _clickEvents = new Dictionary<string, Action<object, EventArgs>>
             {
-                { "pBox_ProjektNeu", pBox_ProjektNeu_Click },
-                { "label_pBox_ProjektNeu", pBox_ProjektNeu_Click },
-                { "label2_pBox_ProjektNeu", pBox_ProjektNeu_Click },
-
-                { "pBox_ProjektOeffnen", pBox_ProjektOeffnen_Click },
-                { "label_pBox_ProjektOeffnen", pBox_ProjektOeffnen_Click },
-                { "label2_pBox_ProjektOeffnen", pBox_ProjektOeffnen_Click },
-
-                { "pBox_ProjektZuletzt", pBox_ProjektZuletzt_Click },
-                { "label_pBox_ProjektZuletzt", pBox_ProjektZuletzt_Click },
-                { "label2_pBox_ProjektZuletzt", pBox_ProjektZuletzt_Click },
-
-                { "pBox_SpeichernUnter", pBox_SpeichernUnter_Click },
-                { "label_pBox_SpeichernUnter", pBox_SpeichernUnter_Click },
-                { "label2_pBox_SpeichernUnter", pBox_SpeichernUnter_Click },
-
-                { "pBox_Delete", pBox_Delete_Click },
-                { "label_pBox_Delete", pBox_Delete_Click },
-                { "label2_pBox_Delete", pBox_Delete_Click },
-                { "pBox_ProjektDetails", pBox_ProjektDetails_Click },
-                { "label_pBox_ProjektDetails", pBox_ProjektDetails_Click },
-                { "label2_pBox_ProjektDetails", pBox_ProjektDetails_Click },
                 { "pBox_Gebaude", pBox_Gebaude_Click },
                 { "label_pBox_Gebaude", pBox_Gebaude_Click },
                 { "label2_pBox_Gebaude", pBox_Gebaude_Click },

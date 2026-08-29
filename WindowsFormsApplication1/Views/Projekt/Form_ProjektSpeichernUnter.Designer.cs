@@ -133,7 +133,7 @@
             Controls.Add(button_Open);
             Controls.Add(panel_Fortschritt);
             Name = "Form_ProjektSpeichernUnter";
-            Load += Form_ProjektOpen_Load;
+            Load += Form_ProjektSpeichernUnter_Load;
             panel_Fortschritt.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();

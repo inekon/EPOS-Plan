@@ -32,26 +32,14 @@
             tabControl_Wizard = new System.Windows.Forms.TabControl();
             tabPage1 = new System.Windows.Forms.TabPage();
             btn_Help_Kurzanleitung = new System.Windows.Forms.Button();
-            label2_pBox_ProjektDetails = new System.Windows.Forms.Label();
-            label_pBox_ProjektDetails = new System.Windows.Forms.Label();
-            label2_pBox_Delete = new System.Windows.Forms.Label();
-            label_pBox_Delete = new System.Windows.Forms.Label();
-            label2_pBox_SpeichernUnter = new System.Windows.Forms.Label();
-            label_pBox_SpeichernUnter = new System.Windows.Forms.Label();
-            label2_pBox_ProjektZuletzt = new System.Windows.Forms.Label();
-            label_pBox_ProjektZuletzt = new System.Windows.Forms.Label();
             label1 = new System.Windows.Forms.Label();
             label3 = new System.Windows.Forms.Label();
-            label2_pBox_ProjektOeffnen = new System.Windows.Forms.Label();
-            label_pBox_ProjektOeffnen = new System.Windows.Forms.Label();
-            label2_pBox_ProjektNeu = new System.Windows.Forms.Label();
-            label_pBox_ProjektNeu = new System.Windows.Forms.Label();
-            pBox_ProjektDetails = new System.Windows.Forms.PictureBox();
-            pBox_Delete = new System.Windows.Forms.PictureBox();
-            pBox_SpeichernUnter = new System.Windows.Forms.PictureBox();
-            pBox_ProjektZuletzt = new System.Windows.Forms.PictureBox();
-            pBox_ProjektOeffnen = new System.Windows.Forms.PictureBox();
-            pBox_ProjektNeu = new System.Windows.Forms.PictureBox();
+            karte_ProjektDetails = new AktionsKarte();
+            karte_Delete = new AktionsKarte();
+            karte_SpeichernUnter = new AktionsKarte();
+            karte_ProjektZuletzt = new AktionsKarte();
+            karte_ProjektOeffnen = new AktionsKarte();
+            karte_ProjektNeu = new AktionsKarte();
             tabPage2 = new System.Windows.Forms.TabPage();
             btn_Help_Waermebedarf = new System.Windows.Forms.Button();
             label2_pBox_Brauchwasser = new System.Windows.Forms.Label();
@@ -165,12 +153,6 @@
             panelVariante = new System.Windows.Forms.Panel();
             tabControl_Wizard.SuspendLayout();
             tabPage1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pBox_ProjektDetails).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pBox_Delete).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pBox_SpeichernUnter).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pBox_ProjektZuletzt).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pBox_ProjektOeffnen).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pBox_ProjektNeu).BeginInit();
             tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pBox_Brauchwasser).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pBox_WBHinweis).BeginInit();
@@ -219,26 +201,14 @@
             // tabPage1
             // 
             tabPage1.Controls.Add(btn_Help_Kurzanleitung);
-            tabPage1.Controls.Add(label2_pBox_ProjektDetails);
-            tabPage1.Controls.Add(label_pBox_ProjektDetails);
-            tabPage1.Controls.Add(label2_pBox_Delete);
-            tabPage1.Controls.Add(label_pBox_Delete);
-            tabPage1.Controls.Add(label2_pBox_SpeichernUnter);
-            tabPage1.Controls.Add(label_pBox_SpeichernUnter);
-            tabPage1.Controls.Add(label2_pBox_ProjektZuletzt);
-            tabPage1.Controls.Add(label_pBox_ProjektZuletzt);
             tabPage1.Controls.Add(label1);
             tabPage1.Controls.Add(label3);
-            tabPage1.Controls.Add(label2_pBox_ProjektOeffnen);
-            tabPage1.Controls.Add(label_pBox_ProjektOeffnen);
-            tabPage1.Controls.Add(label2_pBox_ProjektNeu);
-            tabPage1.Controls.Add(label_pBox_ProjektNeu);
-            tabPage1.Controls.Add(pBox_ProjektDetails);
-            tabPage1.Controls.Add(pBox_Delete);
-            tabPage1.Controls.Add(pBox_SpeichernUnter);
-            tabPage1.Controls.Add(pBox_ProjektZuletzt);
-            tabPage1.Controls.Add(pBox_ProjektOeffnen);
-            tabPage1.Controls.Add(pBox_ProjektNeu);
+            tabPage1.Controls.Add(karte_ProjektDetails);
+            tabPage1.Controls.Add(karte_Delete);
+            tabPage1.Controls.Add(karte_SpeichernUnter);
+            tabPage1.Controls.Add(karte_ProjektZuletzt);
+            tabPage1.Controls.Add(karte_ProjektOeffnen);
+            tabPage1.Controls.Add(karte_ProjektNeu);
             resources.ApplyResources(tabPage1, "tabPage1");
             tabPage1.Name = "tabPage1";
             tabPage1.UseVisualStyleBackColor = true;
@@ -252,77 +222,9 @@
             btn_Help_Kurzanleitung.FlatAppearance.BorderSize = 0;
             btn_Help_Kurzanleitung.Name = "btn_Help_Kurzanleitung";
             btn_Help_Kurzanleitung.UseVisualStyleBackColor = false;
-            // 
-            // label2_pBox_ProjektDetails
-            // 
-            label2_pBox_ProjektDetails.BackColor = System.Drawing.Color.White;
-            label2_pBox_ProjektDetails.Cursor = System.Windows.Forms.Cursors.Hand;
-            resources.ApplyResources(label2_pBox_ProjektDetails, "label2_pBox_ProjektDetails");
-            label2_pBox_ProjektDetails.ForeColor = System.Drawing.Color.DimGray;
-            label2_pBox_ProjektDetails.Name = "label2_pBox_ProjektDetails";
-            label2_pBox_ProjektDetails.Click += CentralControl_Click;
-            // 
-            // label_pBox_ProjektDetails
-            // 
-            resources.ApplyResources(label_pBox_ProjektDetails, "label_pBox_ProjektDetails");
-            label_pBox_ProjektDetails.BackColor = System.Drawing.Color.White;
-            label_pBox_ProjektDetails.Cursor = System.Windows.Forms.Cursors.Hand;
-            label_pBox_ProjektDetails.Name = "label_pBox_ProjektDetails";
-            label_pBox_ProjektDetails.Click += CentralControl_Click;
-            // 
-            // label2_pBox_Delete
-            // 
-            resources.ApplyResources(label2_pBox_Delete, "label2_pBox_Delete");
-            label2_pBox_Delete.BackColor = System.Drawing.Color.White;
-            label2_pBox_Delete.Cursor = System.Windows.Forms.Cursors.Hand;
-            label2_pBox_Delete.ForeColor = System.Drawing.Color.DimGray;
-            label2_pBox_Delete.Name = "label2_pBox_Delete";
-            label2_pBox_Delete.Click += CentralControl_Click;
-            // 
-            // label_pBox_Delete
-            // 
-            resources.ApplyResources(label_pBox_Delete, "label_pBox_Delete");
-            label_pBox_Delete.BackColor = System.Drawing.Color.White;
-            label_pBox_Delete.Cursor = System.Windows.Forms.Cursors.Hand;
-            label_pBox_Delete.Name = "label_pBox_Delete";
-            label_pBox_Delete.Click += CentralControl_Click;
-            // 
-            // label2_pBox_SpeichernUnter
-            // 
-            resources.ApplyResources(label2_pBox_SpeichernUnter, "label2_pBox_SpeichernUnter");
-            label2_pBox_SpeichernUnter.BackColor = System.Drawing.Color.White;
-            label2_pBox_SpeichernUnter.Cursor = System.Windows.Forms.Cursors.Hand;
-            label2_pBox_SpeichernUnter.ForeColor = System.Drawing.Color.DimGray;
-            label2_pBox_SpeichernUnter.Name = "label2_pBox_SpeichernUnter";
-            label2_pBox_SpeichernUnter.Click += CentralControl_Click;
-            // 
-            // label_pBox_SpeichernUnter
-            // 
-            resources.ApplyResources(label_pBox_SpeichernUnter, "label_pBox_SpeichernUnter");
-            label_pBox_SpeichernUnter.BackColor = System.Drawing.Color.White;
-            label_pBox_SpeichernUnter.Cursor = System.Windows.Forms.Cursors.Hand;
-            label_pBox_SpeichernUnter.Name = "label_pBox_SpeichernUnter";
-            label_pBox_SpeichernUnter.Click += CentralControl_Click;
-            // 
-            // label2_pBox_ProjektZuletzt
-            // 
-            resources.ApplyResources(label2_pBox_ProjektZuletzt, "label2_pBox_ProjektZuletzt");
-            label2_pBox_ProjektZuletzt.BackColor = System.Drawing.Color.White;
-            label2_pBox_ProjektZuletzt.Cursor = System.Windows.Forms.Cursors.Hand;
-            label2_pBox_ProjektZuletzt.ForeColor = System.Drawing.Color.DimGray;
-            label2_pBox_ProjektZuletzt.Name = "label2_pBox_ProjektZuletzt";
-            label2_pBox_ProjektZuletzt.Click += CentralControl_Click;
-            // 
-            // label_pBox_ProjektZuletzt
-            // 
-            resources.ApplyResources(label_pBox_ProjektZuletzt, "label_pBox_ProjektZuletzt");
-            label_pBox_ProjektZuletzt.BackColor = System.Drawing.Color.White;
-            label_pBox_ProjektZuletzt.Cursor = System.Windows.Forms.Cursors.Hand;
-            label_pBox_ProjektZuletzt.Name = "label_pBox_ProjektZuletzt";
-            label_pBox_ProjektZuletzt.Click += CentralControl_Click;
-            // 
+            //
             // label1
-            // 
+            //
             resources.ApplyResources(label1, "label1");
             label1.ForeColor = System.Drawing.Color.DimGray;
             label1.Name = "label1";
@@ -331,98 +233,45 @@
             // 
             resources.ApplyResources(label3, "label3");
             label3.Name = "label3";
-            // 
-            // label2_pBox_ProjektOeffnen
-            // 
-            label2_pBox_ProjektOeffnen.BackColor = System.Drawing.Color.White;
-            label2_pBox_ProjektOeffnen.Cursor = System.Windows.Forms.Cursors.Hand;
-            resources.ApplyResources(label2_pBox_ProjektOeffnen, "label2_pBox_ProjektOeffnen");
-            label2_pBox_ProjektOeffnen.ForeColor = System.Drawing.Color.DimGray;
-            label2_pBox_ProjektOeffnen.Name = "label2_pBox_ProjektOeffnen";
-            label2_pBox_ProjektOeffnen.Click += CentralControl_Click;
-            // 
-            // label_pBox_ProjektOeffnen
-            // 
-            resources.ApplyResources(label_pBox_ProjektOeffnen, "label_pBox_ProjektOeffnen");
-            label_pBox_ProjektOeffnen.BackColor = System.Drawing.Color.White;
-            label_pBox_ProjektOeffnen.Cursor = System.Windows.Forms.Cursors.Hand;
-            label_pBox_ProjektOeffnen.Name = "label_pBox_ProjektOeffnen";
-            label_pBox_ProjektOeffnen.Click += CentralControl_Click;
-            // 
-            // label2_pBox_ProjektNeu
-            // 
-            resources.ApplyResources(label2_pBox_ProjektNeu, "label2_pBox_ProjektNeu");
-            label2_pBox_ProjektNeu.BackColor = System.Drawing.Color.White;
-            label2_pBox_ProjektNeu.Cursor = System.Windows.Forms.Cursors.Hand;
-            label2_pBox_ProjektNeu.ForeColor = System.Drawing.Color.DimGray;
-            label2_pBox_ProjektNeu.Name = "label2_pBox_ProjektNeu";
-            label2_pBox_ProjektNeu.Click += CentralControl_Click;
-            // 
-            // label_pBox_ProjektNeu
-            // 
-            resources.ApplyResources(label_pBox_ProjektNeu, "label_pBox_ProjektNeu");
-            label_pBox_ProjektNeu.BackColor = System.Drawing.Color.White;
-            label_pBox_ProjektNeu.Cursor = System.Windows.Forms.Cursors.Hand;
-            label_pBox_ProjektNeu.Name = "label_pBox_ProjektNeu";
-            label_pBox_ProjektNeu.Click += CentralControl_Click;
-            // 
-            // pBox_ProjektDetails
-            // 
-            pBox_ProjektDetails.BackgroundImage = Properties.Resources.PProjektDetails;
-            resources.ApplyResources(pBox_ProjektDetails, "pBox_ProjektDetails");
-            pBox_ProjektDetails.Cursor = System.Windows.Forms.Cursors.Hand;
-            pBox_ProjektDetails.Name = "pBox_ProjektDetails";
-            pBox_ProjektDetails.TabStop = false;
-            pBox_ProjektDetails.Click += CentralControl_Click;
-            // 
-            // pBox_Delete
-            // 
-            pBox_Delete.BackgroundImage = Properties.Resources.PDelete;
-            resources.ApplyResources(pBox_Delete, "pBox_Delete");
-            pBox_Delete.Cursor = System.Windows.Forms.Cursors.Hand;
-            pBox_Delete.Name = "pBox_Delete";
-            pBox_Delete.TabStop = false;
-            pBox_Delete.Click += CentralControl_Click;
-            // 
-            // pBox_SpeichernUnter
-            // 
-            pBox_SpeichernUnter.BackgroundImage = Properties.Resources.PProjektBearbeiten;
-            resources.ApplyResources(pBox_SpeichernUnter, "pBox_SpeichernUnter");
-            pBox_SpeichernUnter.Cursor = System.Windows.Forms.Cursors.Hand;
-            pBox_SpeichernUnter.Name = "pBox_SpeichernUnter";
-            pBox_SpeichernUnter.TabStop = false;
-            pBox_SpeichernUnter.Click += CentralControl_Click;
-            // 
-            // pBox_ProjektZuletzt
-            // 
-            pBox_ProjektZuletzt.BackgroundImage = Properties.Resources.PProjektZuletzt;
-            resources.ApplyResources(pBox_ProjektZuletzt, "pBox_ProjektZuletzt");
-            pBox_ProjektZuletzt.Cursor = System.Windows.Forms.Cursors.Hand;
-            pBox_ProjektZuletzt.Name = "pBox_ProjektZuletzt";
-            pBox_ProjektZuletzt.TabStop = false;
-            pBox_ProjektZuletzt.Click += CentralControl_Click;
-            // 
-            // pBox_ProjektOeffnen
-            // 
-            pBox_ProjektOeffnen.BackgroundImage = Properties.Resources.PProjektOeffnen;
-            resources.ApplyResources(pBox_ProjektOeffnen, "pBox_ProjektOeffnen");
-            pBox_ProjektOeffnen.Cursor = System.Windows.Forms.Cursors.Hand;
-            pBox_ProjektOeffnen.Name = "pBox_ProjektOeffnen";
-            pBox_ProjektOeffnen.TabStop = false;
-            pBox_ProjektOeffnen.Click += CentralControl_Click;
-            // 
-            // pBox_ProjektNeu
-            // 
-            pBox_ProjektNeu.BackgroundImage = Properties.Resources.PProjektNeu;
-            resources.ApplyResources(pBox_ProjektNeu, "pBox_ProjektNeu");
-            pBox_ProjektNeu.Cursor = System.Windows.Forms.Cursors.Hand;
-            pBox_ProjektNeu.Name = "pBox_ProjektNeu";
-            pBox_ProjektNeu.TabStop = false;
-            pBox_ProjektNeu.Tag = "";
-            pBox_ProjektNeu.Click += CentralControl_Click;
-            // 
+            //
+            // karte_ProjektDetails
+            //
+            resources.ApplyResources(karte_ProjektDetails, "karte_ProjektDetails");
+            karte_ProjektDetails.Name = "karte_ProjektDetails";
+            karte_ProjektDetails.Geklickt += pBox_ProjektDetails_Click;
+            //
+            // karte_Delete
+            //
+            resources.ApplyResources(karte_Delete, "karte_Delete");
+            karte_Delete.Name = "karte_Delete";
+            karte_Delete.Geklickt += pBox_Delete_Click;
+            //
+            // karte_SpeichernUnter
+            //
+            resources.ApplyResources(karte_SpeichernUnter, "karte_SpeichernUnter");
+            karte_SpeichernUnter.Name = "karte_SpeichernUnter";
+            karte_SpeichernUnter.Geklickt += pBox_SpeichernUnter_Click;
+            //
+            // karte_ProjektZuletzt
+            //
+            resources.ApplyResources(karte_ProjektZuletzt, "karte_ProjektZuletzt");
+            karte_ProjektZuletzt.Name = "karte_ProjektZuletzt";
+            karte_ProjektZuletzt.Geklickt += pBox_ProjektZuletzt_Click;
+            //
+            // karte_ProjektOeffnen
+            //
+            resources.ApplyResources(karte_ProjektOeffnen, "karte_ProjektOeffnen");
+            karte_ProjektOeffnen.Name = "karte_ProjektOeffnen";
+            karte_ProjektOeffnen.Geklickt += pBox_ProjektOeffnen_Click;
+            //
+            // karte_ProjektNeu
+            //
+            resources.ApplyResources(karte_ProjektNeu, "karte_ProjektNeu");
+            karte_ProjektNeu.Name = "karte_ProjektNeu";
+            karte_ProjektNeu.Geklickt += pBox_ProjektNeu_Click;
+            //
             // tabPage2
-            // 
+            //
             tabPage2.Controls.Add(btn_Help_Waermebedarf);
             tabPage2.Controls.Add(label2_pBox_Brauchwasser);
             tabPage2.Controls.Add(label_pBox_Brauchwasser);
@@ -1379,12 +1228,6 @@
             tabControl_Wizard.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
             tabPage1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)pBox_ProjektDetails).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pBox_Delete).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pBox_SpeichernUnter).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pBox_ProjektZuletzt).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pBox_ProjektOeffnen).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pBox_ProjektNeu).EndInit();
             tabPage2.ResumeLayout(false);
             tabPage2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pBox_Brauchwasser).EndInit();
@@ -1434,9 +1277,6 @@
         private System.Windows.Forms.PictureBox pBox_WBedarfDaten;
         private System.Windows.Forms.Label Label2;
         private System.Windows.Forms.PictureBox pBox_WBHinweis;
-        private System.Windows.Forms.PictureBox pBox_ProjektNeu;
-        private System.Windows.Forms.PictureBox pBox_SpeichernUnter;
-        private System.Windows.Forms.PictureBox pBox_ProjektZuletzt;
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.TextBox textBox_ProjektOpen;
         private System.Windows.Forms.TabPage tabPage3;
@@ -1464,28 +1304,20 @@
         private System.Windows.Forms.Label label_Komponenten;
         private System.Windows.Forms.PictureBox pBox_DetailSim;
         private System.Windows.Forms.PictureBox pBox_Optimierung;
-        private System.Windows.Forms.PictureBox pBox_Delete;
         private System.Windows.Forms.Button btn_SimKonfig;
         private System.Windows.Forms.PictureBox pBox_Solarthermie;
         private System.Windows.Forms.PictureBox pBox_PV;
         private System.Windows.Forms.RadioButton radioButton_Ganglinie;
         private System.Windows.Forms.RadioButton radioButton_KollektorProfil;
-        private System.Windows.Forms.PictureBox pBox_ProjektDetails;
-        private System.Windows.Forms.Label label_pBox_ProjektNeu;
-        private System.Windows.Forms.Label label2_pBox_ProjektNeu;
-        private System.Windows.Forms.Label label2_pBox_ProjektOeffnen;
-        private System.Windows.Forms.Label label_pBox_ProjektOeffnen;
+        private AktionsKarte karte_ProjektNeu;
+        private AktionsKarte karte_ProjektOeffnen;
+        private AktionsKarte karte_ProjektZuletzt;
+        private AktionsKarte karte_SpeichernUnter;
+        private AktionsKarte karte_Delete;
+        private AktionsKarte karte_ProjektDetails;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label2_pBox_ProjektZuletzt;
-        private System.Windows.Forms.Label label_pBox_ProjektZuletzt;
-        private System.Windows.Forms.Label label2_pBox_SpeichernUnter;
-        private System.Windows.Forms.Label label_pBox_SpeichernUnter;
-        private System.Windows.Forms.Label label2_pBox_Delete;
-        private System.Windows.Forms.Label label_pBox_Delete;
-        private System.Windows.Forms.Label label2_pBox_ProjektDetails;
-        private System.Windows.Forms.Label label_pBox_ProjektDetails;
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.Label label24;
         private System.Windows.Forms.Label label25;
@@ -1543,7 +1375,6 @@
         private System.Windows.Forms.Label label_Haus;
         private System.Windows.Forms.Label label_ProjektStatus;
         private System.Windows.Forms.Label label22;
-        private System.Windows.Forms.PictureBox pBox_ProjektOeffnen;
         private System.Windows.Forms.Button btn_Kosten;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label label21;

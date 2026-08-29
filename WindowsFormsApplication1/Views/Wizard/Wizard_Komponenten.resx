@@ -270,7 +270,7 @@
     <value>15</value>
   </data>
   <data name="label3.Text" xml:space="preserve">
-    <value>Wärmeerzeuger bzw. Energieerzeuger  Komponenten auswählen:</value>
+    <value>Wärmeerzeuger bzw. Energieerzeuger Komponenten auswählen:</value>
   </data>
   <data name="checkBox_WBedarfDaten.Text" xml:space="preserve">
     <value>Wärmebedarfsdaten</value>

@@ -343,16 +343,6 @@ namespace WindowsFormsApplication1.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap PDelete {
-            get {
-                object obj = ResourceManager.GetObject("PDelete", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
         public static System.Drawing.Bitmap PDetailansicht {
             get {
                 object obj = ResourceManager.GetObject("PDetailansicht", resourceCulture);
@@ -423,49 +413,9 @@ namespace WindowsFormsApplication1.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap PProjektBearbeiten {
-            get {
-                object obj = ResourceManager.GetObject("PProjektBearbeiten", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PProjektDetails {
-            get {
-                object obj = ResourceManager.GetObject("PProjektDetails", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
         public static System.Drawing.Bitmap PProjektname {
             get {
                 object obj = ResourceManager.GetObject("PProjektname", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PProjektNeu {
-            get {
-                object obj = ResourceManager.GetObject("PProjektNeu", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PProjektOeffnen {
-            get {
-                object obj = ResourceManager.GetObject("PProjektOeffnen", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -486,16 +436,6 @@ namespace WindowsFormsApplication1.Properties {
         public static System.Drawing.Bitmap PProjektSolarthermie {
             get {
                 object obj = ResourceManager.GetObject("PProjektSolarthermie", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PProjektZuletzt {
-            get {
-                object obj = ResourceManager.GetObject("PProjektZuletzt", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
