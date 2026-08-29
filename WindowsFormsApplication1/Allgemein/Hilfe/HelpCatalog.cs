@@ -17,20 +17,32 @@ namespace WindowsFormsApplication1
         public string Url { get; set; } = "";
 
         /// <summary>
-        /// Der Slug der Seite, wie WordPress ihn meldet.
+        /// Die Kurzform der Seite - seit H1 der Kurzname der Wiki-Unterseite
+        /// (der Titelteil hinter "Programm Dokumentation/").
         /// </summary>
         /// <remarks>
         /// Seit F7 ist der Link-Pfad der Schluessel. Der Slug ist nur noch die
         /// bequeme Kurzform - und liesse sich fast immer aus dem letzten
-        /// Pfadabschnitt ableiten. Fast: Die Startseite traegt den Slug
-        /// "epos-plan" bei Pfad "/". Wer den Slug mitfuehrt, statt ihn zu raten,
-        /// verliert diesen Fall nicht. Aeltere Sicherungen ohne dieses Feld
-        /// fallen auf den letzten Pfadabschnitt zurueck.
+        /// Pfadabschnitt ableiten. Fast: Die alte WordPress-Startseite trug den
+        /// Slug "epos-plan" bei Pfad "/". Wer den Slug mitfuehrt, statt ihn zu
+        /// raten, verliert diesen Fall nicht. Aeltere Sicherungen ohne dieses
+        /// Feld fallen auf den letzten Pfadabschnitt zurueck.
         /// </remarks>
         public string Slug { get; set; } = "";
     }
 
-    public class WordPressHelpCatalog
+    /// <summary>
+    /// Der Hilfekatalog. Quelle ist seit H1 das Wiki unter
+    /// <c>wiki.epos-plan.de</c> - genauer die Rubrik "Programm Dokumentation"
+    /// und ihre Unterseiten (A1 des Konzepts Hilfesystem/Wikidokumentation).
+    /// </summary>
+    /// <remarks>
+    /// Hiess bis H1 <c>WordPressHelpCatalog</c>. Die Umbenennung ist rein
+    /// namentlich - Aufloesung, Rangfolge der Bezugsquellen und Sicherung sind
+    /// unveraendert; nur der Ladeweg ist von der WordPress-REST-Form auf die
+    /// MediaWiki-Action-API gewechselt.
+    /// </remarks>
+    public class WikiHelpCatalog
     {
         private readonly HttpClient _http = new();
 
@@ -68,9 +80,16 @@ namespace WindowsFormsApplication1
         /// <summary>Dateiname der lokalen Sicherung UND des mitgelieferten Startbestandes (F6).</summary>
         private const string StartbestandDateiName = "help_cache.json";
 
+        /// <summary>
+        /// A1 - Geltungsbereich des Katalogs: die Rubrik "Programm Dokumentation"
+        /// und ausschliesslich ihre Unterseiten. Die Rubrikseite selbst traegt
+        /// keinen Schraegstrich und bleibt damit automatisch aussen vor.
+        /// </summary>
+        private const string RubrikPraefix = "Programm Dokumentation/";
+
         private string _baseUrl;
 
-        public WordPressHelpCatalog(string baseUrl) => _baseUrl = baseUrl;
+        public WikiHelpCatalog(string baseUrl) => _baseUrl = (baseUrl ?? "").TrimEnd('/');
 
         /// <summary>Anzahl der bekannten Hilfeseiten.</summary>
         public int SeitenAnzahl => _nachPfad.Count;
@@ -124,6 +143,14 @@ namespace WindowsFormsApplication1
             if (string.IsNullOrWhiteSpace(adresse)) return null;
 
             string schluessel = adresse.Trim();
+
+            // A3 - Anker gehoeren NICHT in die Aufloesung. Der Pfadweg schneidet
+            // sie in PfadNormalisieren ohnehin ab; der Slug-Weg braucht denselben
+            // Schnitt, sonst suchte "Pufferspeicher#ladung" als ganzer Slug.
+            int raute = schluessel.IndexOf('#');
+            if (raute >= 0) schluessel = schluessel.Substring(0, raute).Trim();
+            if (schluessel.Length == 0) return null;
+
             return schluessel.IndexOf('/') >= 0 ? UeberPfad(schluessel) : UeberSlug(schluessel);
         }
 
@@ -156,8 +183,15 @@ namespace WindowsFormsApplication1
             return null;
         }
 
-        private HelpEntry UeberSlug(string slug)
+        private HelpEntry UeberSlug(string angabe)
         {
+            // H1 - EIN Normalisierungsweg fuer beide Seiten: der Katalog legt den
+            // Kurznamen so ab (EintragAufnehmen), das Mapping-Ziel wird hier
+            // genauso behandelt. Nur so trifft "Wärmebedarf" aus help_mapping.txt
+            // den Kurznamen der Wiki-Unterseite.
+            string slug = SlugNormalisieren(angabe);
+            if (slug.Length == 0) return null;
+
             // F7, Punkt 3: Mehrdeutigkeit faellt auf, statt still falsch zu sein.
             if (_slugMehrdeutig.TryGetValue(slug, out List<string> kandidaten) && kandidaten.Count > 1)
             {
@@ -205,6 +239,23 @@ namespace WindowsFormsApplication1
             if (!pfad.EndsWith("/")) pfad += "/";
 
             return pfad.ToLowerInvariant();
+        }
+
+        /// <summary>
+        /// Einheitliche Schreibform einer Kurzform (Slug bzw. Kurzname der
+        /// Wiki-Unterseite). Katalogseite UND Mapping-Ziel laufen beide
+        /// hierdurch - das ist die Zusage aus H1/H2: gleiche Normalisierung auf
+        /// beiden Seiten des Abgleichs.
+        /// </summary>
+        /// <remarks>
+        /// Bewusst dieselbe Kleinschreibung wie in <see cref="PfadNormalisieren"/>
+        /// (<c>ToLowerInvariant</c>). Umlaute bleiben Umlaute: der Kurzname
+        /// "Wärmebedarf" wird zu "wärmebedarf", nicht zu "waermebedarf" - die
+        /// Zuordnungsdatei traegt ihn genauso.
+        /// </remarks>
+        public static string SlugNormalisieren(string slug)
+        {
+            return string.IsNullOrWhiteSpace(slug) ? "" : slug.Trim().ToLowerInvariant();
         }
 
         private static string SlugAusPfad(string pfad)
@@ -261,8 +312,8 @@ namespace WindowsFormsApplication1
             // Der mitgefuehrte Slug hat Vorrang; nur eine aeltere Sicherung ohne
             // dieses Feld laesst ihn aus dem letzten Pfadabschnitt ableiten.
             string slug = string.IsNullOrWhiteSpace(eintrag.Slug)
-                ? SlugAusPfad(pfad)
-                : eintrag.Slug.Trim();
+                ? SlugNormalisieren(SlugAusPfad(pfad))
+                : SlugNormalisieren(eintrag.Slug);
             if (slug.Length == 0) return;
 
             if (_slugAufPfad.TryGetValue(slug, out string bisher))
@@ -334,106 +385,121 @@ namespace WindowsFormsApplication1
         string localBackupPath = SicherungsPfad();
         string appDataFolder = Path.GetDirectoryName(localBackupPath);
 
-        int currentPage = 1;
-        bool hasMorePages = true;
         bool onlineLoadSuccessful = false;
-        int previousCacheCount = 0; // SICHERHEITS-CHECK FÜR LOKALEN SERVER
+        string apcontinue = null;
 
         // Temporärer Cache, um bei Fehlern den alten Cache nicht unvollständig zu überschreiben
         var tempCache = new System.Collections.Generic.Dictionary<string, HelpEntry>();
 
-        while (hasMorePages)
+        // -------------------------------------------------------------------
+        // A1 (H1) - MediaWiki-Action-API statt WordPress-REST
+        //
+        //   {_baseUrl}/api.php?action=query&list=allpages
+        //             &apprefix=Programm%20Dokumentation%2F&aplimit=500&format=json
+        //
+        //   └────┬────┘└──┬───┘└─────┬────┘└──────┬──────┘
+        //   Wiki-Basis  Action-API  Seitenliste  Geltungsbereich = die Rubrik
+        //
+        // Der frueher benutzte WordPress-Weg (/rest.php/v1/{Prefix}?per_page=…)
+        // beantwortet MediaWiki mit HTTP 404 - der Katalog fiel dadurch still auf
+        // den eingebetteten Startbestand zurueck. Die Einstellung
+        // "WordPressPrefix" wird seit H1 nirgends mehr gelesen (Entscheid 7.3).
+        //
+        // Antwortform: { "query": { "allpages": [ { "title": "…" }, … ] },
+        //                "continue": { "apcontinue": "…" } }
+        // Fortsetzung, solange ein apcontinue gemeldet wird.
+        // -------------------------------------------------------------------
+        while (true)
         {
+            string url = $"{_baseUrl}/api.php?action=query&list=allpages" +
+                         $"&apprefix={Uri.EscapeDataString(RubrikPraefix)}" +
+                         "&aplimit=500&format=json";
 
-            // Plaintext, Wordpress Link Aufbau
-            //
-            //    http://deine-domain.de/wp-json/wp/v2/help
-            //    └-─────────┬──────────┘└───┬───┘  └─┬┘└─┬┘
-            //        Website - URL  API Präfix  Version REST-Base(Custom Post Type)
-            
-//            var url = $"{_baseUrl}/wp-json/wp/v2/{Properties.Settings.Default.WordPressPrefix}?per_page=100&page={currentPage}&_fields=slug,link,title";
-            var url = $"{_baseUrl}/rest.php/v1/{Properties.Settings.Default.WordPressPrefix}?per_page=100&page={currentPage}&_fields=slug,link,title";
+            if (!string.IsNullOrEmpty(apcontinue))
+                url += "&apcontinue=" + Uri.EscapeDataString(apcontinue);
 
-                // per_page auf 100 erhöht für maximale Effizienz, page= dynamisch angehängt
-
-                // 1. wp-json (Das API - Präfix): Das sagt WordPress: „Achtung, jetzt kommt keine normale HTML-Webseite für den Browser,
-                //                                sondern eine Daten-Anfrage im JSON-Format.“
-                //
-                // 2. wp/v2 (Der Namensraum / Namespace): wp steht für die WordPress-Kernfunktionen, v2 für die Version 2 der API.
-                //
-                // 3. help (Die REST-Base / Der Post-Type): Das ist der entscheidende Teil.In WordPress gibt es standardmäßig zwei
-                //                                          eingebaute Inhaltstypen: posts (Beiträge) und pages (Seiten).
-                //                                          Wenn du also Standard-Seiten abfragst, heißt die URL.../wp/v2/pages.
-                //                                          Da aber ein eigenes Hilfesystem aufgebaut wird, einen Custom Post Type nutzen.
-
-                try
-                {
+            try
+            {
                 // Timeout schützt vor ewigem Hängen bei schlechter Verbindung
                 using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(10));
 
                 var response = await _http.GetAsync(url, cts.Token);
                 if (!response.IsSuccessStatusCode)
                 {
-                    hasMorePages = false;
+                    onlineLoadSuccessful = false;
                     break;
                 }
 
                 var json = await response.Content.ReadAsStringAsync();
                 using var doc = JsonDocument.Parse(json);
 
-                var array = doc.RootElement;
-                if (array.ValueKind != JsonValueKind.Array || array.GetArrayLength() == 0)
+                if (doc.RootElement.ValueKind != JsonValueKind.Object ||
+                    !doc.RootElement.TryGetProperty("query", out JsonElement abfrage) ||
+                    !abfrage.TryGetProperty("allpages", out JsonElement seiten) ||
+                    seiten.ValueKind != JsonValueKind.Array)
                 {
-                    hasMorePages = false;
-                    if (currentPage > 1) onlineLoadSuccessful = true; //  auf vorherigen Seiten Daten erhalten
+                    // Keine verwertbare Antwort - Rueckfall auf Sicherung/Beilage.
+                    onlineLoadSuccessful = false;
+                    break;
                 }
-                else
+
+                foreach (var seite in seiten.EnumerateArray())
                 {
-                    foreach (var page in array.EnumerateArray())
-                    {
-                        // F7: Geschluesselt wird ueber den Link-Pfad. Der frueher
-                        // benutzte Slug liess acht der 116 Seiten unter den Tisch
-                        // fallen, weil sieben Slugs doppelt vergeben sind.
-                        var slug = page.GetProperty("slug").GetString() ?? "";
-                        var link = page.GetProperty("link").GetString() ?? "";
+                    if (seite.ValueKind != JsonValueKind.Object) continue;
+                    if (!seite.TryGetProperty("title", out JsonElement titelFeld)) continue;
 
-                        string schluessel = PfadNormalisieren(link);
-                        if (schluessel.Length == 0) schluessel = slug;      // Seite ohne Link
-                        if (string.IsNullOrEmpty(schluessel)) continue;
-                        if (tempCache.ContainsKey(schluessel)) continue;    // echte Dublette
+                    HelpEntry eintrag = EintragAusTitel(titelFeld.GetString() ?? "");
+                    if (eintrag == null) continue;
 
-                        tempCache[schluessel] = new HelpEntry
-                        {
-                            Tooltip = StripHtml(page.GetProperty("title").GetProperty("rendered").GetString() ?? ""),
-                            Url = link,
-                            Slug = slug
-                        };
-                    }
-                    // SICHERHEIT 2: Wenn nach dem Durchlauf keine NEUEN Elemente hinzugekommen sind,
-                    // liefert der Testserver vermutlich nur Duplikate. -> Abbrechen!
-                    if (tempCache.Count == previousCacheCount)
-                    {
-                        hasMorePages = false;
-                        onlineLoadSuccessful = true;
-                        break;
-                    }
+                    // F7: Geschluesselt wird ueber den Link-Pfad, nicht ueber den
+                    // Kurznamen - der Pfad ist je Seite eindeutig.
+                    string schluessel = PfadNormalisieren(eintrag.Url);
+                    if (schluessel.Length == 0) continue;
+                    if (tempCache.ContainsKey(schluessel)) continue;    // echte Dublette
 
-                    previousCacheCount = tempCache.Count; // Zähler aktualisieren
-                    onlineLoadSuccessful = true;
-                    currentPage++;
+                    tempCache[schluessel] = eintrag;
                 }
+
+                onlineLoadSuccessful = true;
+
+                string weiter = null;
+                if (doc.RootElement.TryGetProperty("continue", out JsonElement fortsetzung) &&
+                    fortsetzung.ValueKind == JsonValueKind.Object &&
+                    fortsetzung.TryGetProperty("apcontinue", out JsonElement apc))
+                {
+                    weiter = apc.GetString();
+                }
+
+                if (string.IsNullOrEmpty(weiter)) break;
+
+                // Sicherheitsnetz gegen einen Server, der sich im Kreis dreht.
+                if (string.Equals(weiter, apcontinue, StringComparison.Ordinal)) break;
+
+                apcontinue = weiter;
             }
             catch (Exception)
             {
                 // Netzwerkfehler oder Server-Timeout -> Schleife abbrechen und Fallback nutzen
-                hasMorePages = false;
                 onlineLoadSuccessful = false;
+                break;
             }
         }
 
         // ---------------------------------------------------------------
         // Rangfolge (F6): Online > lokale Sicherung > mitgelieferter Startbestand
         // ---------------------------------------------------------------
+
+        if (onlineLoadSuccessful && tempCache.Count == 0)
+        {
+            // Reihenfolge-Zwang aus dem Konzept (Abschnitt 8/11): Die Rubrik ist
+            // erreichbar, aber noch leer - die Hilfeseiten (H3) sind noch nicht
+            // angelegt. Der Abruf gilt als gescheitert, damit Sicherung bzw.
+            // Startbestand greifen; ohne diese Zeile bliebe das unsichtbar.
+            System.Diagnostics.Debug.WriteLine(
+                $"[Help] WARNUNG: Die Wiki-Rubrik '{RubrikPraefix}' antwortet, fuehrt aber KEINE " +
+                "Unterseiten. Die Hilfeseiten sind im Wiki noch nicht angelegt (Paket H3). " +
+                "Es greift die lokale Sicherung bzw. der mitgelieferte Startbestand.");
+        }
 
         // FALL 1: Online-Abruf war erfolgreich -> Register aufbauen und lokal sichern
         if (onlineLoadSuccessful && tempCache.Count > 0)
@@ -464,6 +530,55 @@ namespace WindowsFormsApplication1
 
         // FALL 3: Auch die fehlt -> mitgelieferter Startbestand (F6).
         MitgelieferterStartbestandLaden();
+    }
+
+    /// <summary>
+    /// A1 - Katalogeintrag zu einem Wiki-Seitentitel der Rubrik. Liefert
+    /// <c>null</c>, wenn der Titel nicht zur Rubrik gehoert oder keinen
+    /// Kurznamen traegt (die Rubrikseite selbst).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <c>Tooltip</c> und <c>Slug</c> sind der Kurzname - der Titelteil hinter
+    /// "Programm Dokumentation/". Das Popup zeigt ihn als Kapitelnamen, die
+    /// Zuordnungsdatei spricht ihn als Ziel an.
+    /// </para>
+    /// <para>
+    /// <b>Beide Wege strikt getrennt halten</b> (Fallstrick "Titel-Kodierung"):
+    /// Geoeffnet wird die URL-kodierte Originaladresse, abgeglichen wird ueber
+    /// die dekodierte Kleinschreibform (<see cref="PfadNormalisieren"/> bzw.
+    /// <see cref="SlugNormalisieren"/>).
+    /// </para>
+    /// </remarks>
+    private HelpEntry EintragAusTitel(string titel)
+    {
+        if (string.IsNullOrWhiteSpace(titel)) return null;
+        if (!titel.StartsWith(RubrikPraefix, StringComparison.OrdinalIgnoreCase)) return null;
+
+        string kurzname = titel.Substring(RubrikPraefix.Length).Trim();
+        if (kurzname.Length == 0) return null;
+
+        return new HelpEntry
+        {
+            Tooltip = kurzname,
+            Url = SeitenUrl(titel),
+            Slug = kurzname
+        };
+    }
+
+    /// <summary>
+    /// Artikeladresse zu einem Wiki-Seitentitel. Leerzeichen werden VOR der
+    /// Kodierung zu Unterstrichen, die Schraegstriche der Unterseiten bleiben
+    /// stehen:
+    /// <c>"Programm Dokumentation/Wärmebedarf"</c> ->
+    /// <c>".../wiki/Programm_Dokumentation/W%C3%A4rmebedarf"</c>.
+    /// </summary>
+    private string SeitenUrl(string titel)
+    {
+        string[] teile = (titel ?? "").Replace(' ', '_').Split('/');
+        for (int i = 0; i < teile.Length; i++) teile[i] = Uri.EscapeDataString(teile[i]);
+
+        return $"{_baseUrl}/wiki/{string.Join("/", teile)}";
     }
 
     /// <summary>
@@ -533,7 +648,7 @@ namespace WindowsFormsApplication1
     {
         try
         {
-            using (Stream stream = typeof(WordPressHelpCatalog).Assembly
+            using (Stream stream = typeof(WikiHelpCatalog).Assembly
                        .GetManifestResourceStream(StartbestandDateiName))
             {
                 if (stream == null)
@@ -615,11 +730,11 @@ namespace WindowsFormsApplication1
         // Fachlogik gesperrt hat, bleibt gesperrt.
         private readonly Dictionary<Control, Cursor> _abgeschaltet = new();
 
-        private readonly WordPressHelpCatalog _catalog;
+        private readonly WikiHelpCatalog _catalog;
 
         private Form_HelpPopup _popup;
 
-        public HelpExtender(WordPressHelpCatalog catalog) => _catalog = catalog;
+        public HelpExtender(WikiHelpCatalog catalog) => _catalog = catalog;
 
         // Pflichtmethode für IExtenderProvider: Wer darf diese Eigenschaft nutzen?
         public bool CanExtend(object o) => o is Control;
@@ -1024,34 +1139,111 @@ namespace WindowsFormsApplication1
         /// auf. Fehlt das Ziel der aktiven Sprache im Katalog, greift das andere.
         /// Liefert "", wenn der geladene Katalog keines davon kennt.
         /// </summary>
+        private string ZielAufloesen(string schluessel) => ZielAufloesen(schluessel, out _);
+
+        /// <summary>
+        /// Wie <see cref="ZielAufloesen(string)"/>, meldet zusaetzlich den
+        /// Sprungmarken-Anteil des gewaehlten Ziels (A3).
+        /// </summary>
         /// <remarks>
-        /// Jede Haelfte darf ein Slug ("klimadaten") ODER ein Link-Pfad
-        /// ("/epos-plan/epos-plan-grundlagen/klimadaten/") sein (F7). Der
+        /// <para>
+        /// Jede Haelfte darf eine Kurzform ("Pufferspeicher") ODER ein Link-Pfad
+        /// ("/wiki/Programm_Dokumentation/Pufferspeicher") sein (F7). Der
         /// Trennstrich '|' kommt in keinem Pfad vor, die Zerlegung bleibt also
-        /// unveraendert.
+        /// unveraendert. Seit H2 traegt die Zuordnungsdatei je Zeile nur noch
+        /// EIN Ziel; die Zerlegung bleibt trotzdem stehen, damit aeltere
+        /// Zuordnungsdateien neben der EXE weiterhin verstanden werden.
+        /// </para>
+        /// <para>
+        /// <b>A3 - Anker-Durchlass.</b> Ein Ziel darf "Ziel#anker" lauten. Der
+        /// Anker wird VOR der Katalogaufloesung abgetrennt (sonst suchte der
+        /// Katalog nach einer Seite namens "Pufferspeicher#ladung") und beim
+        /// Oeffnen wieder an die aufgeloeste Adresse gehaengt
+        /// (<see cref="MitAnker"/>).
+        /// </para>
         /// </remarks>
-        private string ZielAufloesen(string schluessel)
+        private string ZielAufloesen(string schluessel, out string anker)
         {
+            anker = "";
             if (string.IsNullOrWhiteSpace(schluessel)) return "";
 
             string[] teile = schluessel.Split('|');
-            string zielDe = teile[0].Trim();
-            string zielEn = teile.Length > 1 ? teile[1].Trim() : "";
+
+            string zielDe = AnkerAbtrennen(teile[0], out string ankerDe);
+            string zielEn = "";
+            string ankerEn = "";
+            if (teile.Length > 1) zielEn = AnkerAbtrennen(teile[1], out ankerEn);
 
             bool englisch = Program.nLanguage != 0;
             string bevorzugt = englisch ? zielEn : zielDe;
+            string bevorzugtAnker = englisch ? ankerEn : ankerDe;
             string ersatz = englisch ? zielDe : zielEn;
+            string ersatzAnker = englisch ? ankerDe : ankerEn;
 
             // Ein einzeln angegebenes Ziel gilt fuer beide Sprachen.
-            if (string.IsNullOrEmpty(bevorzugt)) bevorzugt = ersatz;
+            if (string.IsNullOrEmpty(bevorzugt))
+            {
+                bevorzugt = ersatz;
+                bevorzugtAnker = ersatzAnker;
+            }
 
             // Solange der Katalog laedt, wird nichts verworfen.
-            if (_catalog == null || !_catalog.IsLoaded) return bevorzugt;
+            if (_catalog == null || !_catalog.IsLoaded)
+            {
+                anker = bevorzugtAnker;
+                return bevorzugt;
+            }
 
-            if (!string.IsNullOrEmpty(bevorzugt) && _catalog.Contains(bevorzugt)) return bevorzugt;
-            if (!string.IsNullOrEmpty(ersatz) && _catalog.Contains(ersatz)) return ersatz;
+            if (!string.IsNullOrEmpty(bevorzugt) && _catalog.Contains(bevorzugt))
+            {
+                anker = bevorzugtAnker;
+                return bevorzugt;
+            }
+
+            if (!string.IsNullOrEmpty(ersatz) && _catalog.Contains(ersatz))
+            {
+                anker = ersatzAnker;
+                return ersatz;
+            }
 
             return "";
+        }
+
+        /// <summary>
+        /// Zerlegt "Ziel#anker". Ohne '#' bleibt der Anker leer; das Ziel ist
+        /// dann unveraendert die getrimmte Angabe.
+        /// </summary>
+        private static string AnkerAbtrennen(string ziel, out string anker)
+        {
+            anker = "";
+            if (ziel == null) return "";
+
+            string wert = ziel.Trim();
+
+            int raute = wert.IndexOf('#');
+            if (raute < 0) return wert;
+
+            anker = wert.Substring(raute + 1).Trim();
+            return wert.Substring(0, raute).Trim();
+        }
+
+        /// <summary>
+        /// Haengt den Anker aus der Zuordnungszeile an die aufgeloeste Adresse.
+        /// Der Katalogeintrag selbst bleibt unberuehrt - er wird kopiert, damit
+        /// der gemeinsam genutzte Katalog nicht je Formular verschmutzt wird.
+        /// </summary>
+        private static HelpEntry MitAnker(HelpEntry eintrag, string anker)
+        {
+            if (eintrag == null || string.IsNullOrEmpty(anker)) return eintrag;
+            if (string.IsNullOrEmpty(eintrag.Url)) return eintrag;
+            if (eintrag.Url.IndexOf('#') >= 0) return eintrag;   // die URL traegt schon einen
+
+            return new HelpEntry
+            {
+                Tooltip = eintrag.Tooltip,
+                Url = eintrag.Url + "#" + anker,
+                Slug = eintrag.Slug
+            };
         }
 
         private Control FindControlRecursive(Control container, string remainingPath)
@@ -1118,11 +1310,11 @@ namespace WindowsFormsApplication1
         {
             if (_catalog == null) return null;
 
-            string ziel = ZielAufloesen(schluessel);
+            string ziel = ZielAufloesen(schluessel, out string anker);
             if (!string.IsNullOrEmpty(ziel))
             {
                 HelpEntry entry = _catalog.Get(ziel);
-                if (!string.IsNullOrEmpty(entry.Tooltip)) return entry;
+                if (!string.IsNullOrEmpty(entry.Tooltip)) return MitAnker(entry, anker);
             }
 
             if (_catalog.IsLoaded)

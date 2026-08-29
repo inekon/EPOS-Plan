@@ -192,8 +192,14 @@ namespace WindowsFormsApplication1
                 ReadOnly = true,
                 BackColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
-                Font = new Font("Segoe UI", 9.5f)
+                Font = new Font("Segoe UI", 9.5f),
+
+                // Quellenangaben (H4/B3): Die Adressen der Wiki-Seiten stehen im
+                // Klartext im Verlauf; die RichTextBox erkennt sie und meldet den
+                // Klick. Ohne den Behandler waere der Verweis blau, aber tot.
+                DetectUrls = true
             };
+            _verlaufAnzeige.LinkClicked += Verlauf_LinkClicked;
 
             // Unterer Bereich: konsequent über Docking aufgebaut, damit alle
             // Schaltflächen unabhängig von Fenstergröße und Schriftskalierung
@@ -493,13 +499,30 @@ namespace WindowsFormsApplication1
             _btnSuchen.Text = mitKi ? TEXT_SUCHEN_REGEL
                                     : MyResource.Resource.KI_HILFEBETRIEB_SUCHEN_BTN;
 
-            // Aktionsbetrieb und Werkzeugliste (Aufgabensteuerung) sowie der
-            // Übertragungshinweis samt „Was wird gesendet?“ und Aktionsprotokoll: Sie
-            // beschreiben allesamt den Verkehr mit dem Dienst, den es hier nicht gibt.
+            // Aktionsbetrieb und Werkzeugliste (Aufgabensteuerung) sowie „Was wird
+            // gesendet?“ und Aktionsprotokoll: Sie beschreiben allesamt den Verkehr
+            // mit dem Dienst, den es hier nicht gibt.
             _schalterZeile.Visible = mitKi;
-            _hinweisZeile.Visible = mitKi;
             _linkVorschau.Visible = mitKi;
             _linkProtokoll.Visible = mitKi;
+
+            // Die Hinweiszeile bleibt seit H4/H5 in BEIDEN Betriebsarten stehen.
+            // Grund: Nach Entscheid 7.4 sucht auch der Betrieb ohne KI online in der
+            // Dokumentation - es gibt hier also sehr wohl einen Datenfluss, und der
+            // gehört benannt (Entscheid 7.5). Im Regelbetrieb steht weiter der Satz
+            // zum Modellanbieter samt Verweis auf den vollständigen Rechtshinweis
+            // (der den Wiki-Satz seit H5 enthält); ohne KI steht dort genau dieser
+            // Wiki-Satz, ohne Verweis - der Rechtshinweis beschreibt einen Dienst,
+            // den diese Installation nicht nutzt.
+            _hinweisZeile.Visible = true;
+
+            string hinweisVorn = MyResource.Resource.KI_HINWEIS_ZEILE ?? "";
+            string hinweisLink = MyResource.Resource.KI_HINWEIS_ZEILE_LINK ?? "";
+
+            _linkHinweis.Text = mitKi ? hinweisVorn + hinweisLink
+                                      : MyResource.Resource.KI_WIKI_HINWEIS_ZEILE;
+            _linkHinweis.LinkArea = mitKi ? new LinkArea(hinweisVorn.Length, hinweisLink.Length)
+                                          : new LinkArea(0, 0);
 
             // „Einstellungen...“ führt einzig zum API-Schlüssel und zum Modell.
             _btnEinstellungen.Visible = mitKi;
@@ -878,9 +901,27 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Beantwortet die Frage. mitKi=false führt nur die lokale Suche aus
-        /// (immer kostenlos), mitKi=true formuliert zusätzlich eine Antwort.
+        /// Beantwortet die Frage. mitKi=false sucht nur (Online-Dokumentation und
+        /// eingebautes Wissen, ohne jeden Modellaufruf), mitKi=true formuliert
+        /// zusätzlich eine Antwort.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Suche ohne KI (Entscheid 7.4).</b> Der Weg ohne Modell führt seit H4
+        /// durch dieselbe Kette wie der Prompt: Stichwörter → Wiki-Suche → Auszüge →
+        /// Quellen-Links, dazu das eingebaute Wissen. „Abgeschaltet" heißt damit
+        /// präzise „keine Google-Aufrufe" — <see cref="KiChatService"/> und der
+        /// Einwilligungsriegel werden auf diesem Weg nicht einmal berührt. Ohne Netz
+        /// liefert <see cref="WikiWissen"/> still nichts und es bleibt beim
+        /// bisherigen Verhalten.
+        /// </para>
+        /// <para>
+        /// <b>Nur EIN Wiki-Abruf je Frage.</b> Mit Modell beschafft der Dienst die
+        /// Abschnitte selbst und gibt sie in <see cref="KiAntwort.Abschnitte"/>
+        /// zurück; die Anzeige stützt sich auf genau diese Treffer, statt ein
+        /// zweites Mal zu suchen (Konzept B3).
+        /// </para>
+        /// </remarks>
         private async System.Threading.Tasks.Task FrageStellen(bool mitKi)
         {
             string frage = _eingabe.Text.Trim();
@@ -890,27 +931,9 @@ namespace WindowsFormsApplication1
             _eingabe.Clear();
             _verlauf.Add("Benutzer: " + frage);
 
-            // Immer zuerst die lokale Suche zeigen - sie kostet nichts
-            List<WissensAbschnitt> treffer = HilfeWissen.Suchen(frage, _kontext, 4);
-
             if (!mitKi)
             {
-                if (treffer.Count == 0)
-                {
-                    SchreibeZeile("Hilfe: Keine passenden Abschnitte gefunden. " +
-                        "Versuchen Sie es mit anderen Stichworten oder stellen Sie die Frage " +
-                        "über die Schaltfläche 'Fragen'.", Color.DimGray, false);
-                }
-                else
-                {
-                    SchreibeZeile("Gefundene Hilfeabschnitte:", Color.FromArgb(0, 90, 160), true);
-                    foreach (WissensAbschnitt a in treffer)
-                    {
-                        SchreibeZeile("• " + a.Titel + " (" + a.Bereich + ")", Color.Black, false);
-                        SchreibeZeile("   " + Kuerzen(a.Inhalt, 220), Color.DimGray, false);
-                    }
-                }
-                SchreibeZeile("", Color.Black, false);
+                await DokuSucheZeigen(frage);
                 return;
             }
 
@@ -939,6 +962,10 @@ namespace WindowsFormsApplication1
                     if (antwort.Quellen.Count > 0)
                         SchreibeZeile("Quellen: " + string.Join(", ", antwort.Quellen), Color.DimGray, false);
 
+                    // Die Seiten der Online-Dokumentation zusätzlich als Verweise
+                    // (H4/B3) - dieselben Abschnitte, die auch gesendet wurden.
+                    QuellenZeigen(antwort.Abschnitte);
+
                     if (antwort.AusCache)
                         SchreibeZeile("(aus dem lokalen Zwischenspeicher - ohne erneute Anfrage)",
                             Color.DimGray, false);
@@ -952,12 +979,20 @@ namespace WindowsFormsApplication1
                 {
                     SchreibeZeile("Hinweis: " + antwort.Fehler, Color.FromArgb(170, 0, 0), false);
 
-                    // Ersatzweise die lokalen Treffer anbieten
+                    // Ersatzweise die gefundenen Abschnitte anbieten. Kam der Dienst
+                    // gar nicht erst zum Zug (Riegel, Tageslimit), hat er auch nichts
+                    // beschafft - dann wird hier lokal gesucht, ohne Netz.
+                    List<WissensAbschnitt> treffer = antwort.Abschnitte != null && antwort.Abschnitte.Count > 0
+                        ? antwort.Abschnitte
+                        : HilfeWissen.Suchen(frage, _kontext, 4);
+
                     if (treffer.Count > 0)
                     {
                         SchreibeZeile("Passende Hilfeabschnitte:", Color.FromArgb(0, 90, 160), true);
                         foreach (WissensAbschnitt a in treffer)
                             SchreibeZeile("• " + a.Titel + ": " + Kuerzen(a.Inhalt, 200), Color.DimGray, false);
+
+                        QuellenZeigen(treffer);
                     }
                     _lblStatus.Text = "";
                 }
@@ -970,6 +1005,59 @@ namespace WindowsFormsApplication1
                 Cursor.Current = Cursors.Default;
                 _eingabe.Focus();
             }
+        }
+
+        /// <summary>
+        /// Die Online-Doku-Suche ohne KI (Entscheid 7.4): Trefferliste, Auszüge und
+        /// Quellen-Links statt einer generierten Antwort.
+        /// </summary>
+        /// <remarks>
+        /// <b>Kein Google-Aufruf auf diesem Weg.</b> Beschafft wird ausschließlich
+        /// über <c>KiChatService.AbschnitteBeschaffenAsync</c> — das ist die
+        /// Wiki-Kette plus das lokale Einbauwissen; der Modellanbieter kommt darin
+        /// nicht vor. Die Sperre der Bedienelemente ist trotzdem nötig: Der Abruf
+        /// darf bis zu ein paar Sekunden brauchen.
+        /// </remarks>
+        private async System.Threading.Tasks.Task DokuSucheZeigen(string frage)
+        {
+            _beschaeftigt = true;
+            _btnSenden.Enabled = false;
+            _btnSuchen.Enabled = false;
+            _lblStatus.Text = MyResource.Resource.KI_WIKI_SUCHE_LAEUFT;
+
+            List<WissensAbschnitt> treffer;
+            try
+            {
+                treffer = await KiChatService.AbschnitteBeschaffenAsync(
+                              frage, _kontext, System.Threading.CancellationToken.None);
+            }
+            finally
+            {
+                _beschaeftigt = false;
+                _lblStatus.Text = "";
+                SperreAktualisieren();
+            }
+
+            if (treffer.Count == 0)
+            {
+                SchreibeZeile("Hilfe: Keine passenden Abschnitte gefunden. " +
+                    "Versuchen Sie es mit anderen Stichworten oder stellen Sie die Frage " +
+                    "über die Schaltfläche 'Fragen'.", Color.DimGray, false);
+            }
+            else
+            {
+                SchreibeZeile("Gefundene Hilfeabschnitte:", Color.FromArgb(0, 90, 160), true);
+                foreach (WissensAbschnitt a in treffer)
+                {
+                    SchreibeZeile("• " + a.Titel + " (" + a.Bereich + ")", Color.Black, false);
+                    SchreibeZeile("   " + Kuerzen(a.Inhalt, 220), Color.DimGray, false);
+                }
+
+                QuellenZeigen(treffer);
+            }
+
+            SchreibeZeile("", Color.Black, false);
+            _eingabe.Focus();
         }
 
         // ------------------------------------------------------------------
@@ -1340,20 +1428,24 @@ namespace WindowsFormsApplication1
         /// Selbstprüfung (A5): zeigt genau den Text, den die nächste Frage an den
         /// Anbieter senden würde. Es wird dabei nichts gesendet und nichts gezählt.
         /// </summary>
-        private void VorschauZeigen()
+        private async void VorschauZeigen()
         {
             string text;
             try
             {
                 // Mit eingeschaltetem Aktionsbetrieb geht der WERKZEUGKATALOG mit -
                 // die Selbstpruefung muss ihn deshalb ebenfalls zeigen.
-                text = KiChatService.SendeVorschau(_eingabe.Text, _kontext, _verlauf,
-                                                   _chkAktionen.Checked);
+                // Seit H4 asynchron: Die Vorschau beschafft dieselben Wiki-Abschnitte
+                // wie der Ernstfall, sonst zeigte sie weniger, als gesendet wird.
+                text = await KiChatService.SendeVorschau(_eingabe.Text, _kontext, _verlauf,
+                                                         _chkAktionen.Checked);
             }
             catch (Exception ex)
             {
                 text = ex.Message;
             }
+
+            if (IsDisposed) return;
 
             string kopf = string.Format(MyResource.Resource.KI_VORSCHAU_HINWEIS,
                                         KiChatService.MODELL, KiChatService.Endpunkt());
@@ -1371,6 +1463,58 @@ namespace WindowsFormsApplication1
         // ------------------------------------------------------------------
         // Hilfsfunktionen
         // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Öffnet eine im Verlauf angeklickte Adresse - bei englischer Oberfläche
+        /// durch den Übersetzungs-Proxy (H1/A6, Entscheid 7.1a), genau wie der
+        /// Info-Button es tut.
+        /// </summary>
+        /// <remarks>
+        /// Geöffnet wird ausschließlich http/https. Die erkannten Adressen stammen
+        /// zwar durchweg aus dem eigenen Wiki, aber ein Antworttext des Modells
+        /// landet in derselben Anzeige - und der ist Fremdtext.
+        /// </remarks>
+        private void Verlauf_LinkClicked(object sender, LinkClickedEventArgs e)
+        {
+            string ziel = (e.LinkText ?? "").Trim();
+            if (!ziel.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+                !ziel.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) return;
+
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(
+                    DokuUebersetzung.FuerAnzeige(ziel)) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("[KI] Quelle nicht zu öffnen: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Die Quellenangabe unter einer Antwort: je Wiki-Abschnitt eine Zeile mit
+        /// Titel und anklickbarer Adresse (Konzept B3).
+        /// </summary>
+        /// <remarks>
+        /// Angezeigt wird die DEUTSCHE Originaladresse; die Umleitung auf den
+        /// Übersetzungs-Proxy geschieht erst beim Klick
+        /// (<see cref="Verlauf_LinkClicked"/>) - so steht im Verlauf die Adresse,
+        /// die auch im Wiki gilt.
+        /// </remarks>
+        private void QuellenZeigen(List<WissensAbschnitt> abschnitte)
+        {
+            if (abschnitte == null) return;
+
+            List<WissensAbschnitt> mitQuelle = new List<WissensAbschnitt>();
+            foreach (WissensAbschnitt a in abschnitte)
+                if (a != null && !string.IsNullOrWhiteSpace(a.QuellUrl)) mitQuelle.Add(a);
+
+            if (mitQuelle.Count == 0) return;
+
+            SchreibeZeile(MyResource.Resource.KI_WIKI_QUELLEN, Color.FromArgb(0, 90, 160), false);
+            foreach (WissensAbschnitt a in mitQuelle)
+                SchreibeZeile("• " + a.Titel + " — " + a.QuellUrl, Color.DimGray, false);
+        }
 
         private void SchreibeZeile(string text, Color farbe, bool fett)
         {

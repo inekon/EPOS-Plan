@@ -6013,7 +6013,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Wer die Daten erhält</value>
   </data>
   <data name="KI_HINWEIS_EMPFAENGER" xml:space="preserve">
-    <value>Empfänger ist Google als Betreiber der Gemini-Schnittstelle. Für Art und Umfang der dortigen Verarbeitung gelten die jeweils gültigen Bedingungen des Anbieters; nach diesen Bedingungen werden Inhalte im kostenlosen Kontingent zur Produktverbesserung verwendet. Für den produktiven Einsatz ist ein kostenpflichtiger Zugang vorgesehen.</value>
+    <value>Empfänger ist Google als Betreiber der Gemini-Schnittstelle. Für Art und Umfang der dortigen Verarbeitung gelten die jeweils gültigen Bedingungen des Anbieters; nach diesen Bedingungen werden Inhalte im kostenlosen Kontingent zur Produktverbesserung verwendet. Für den produktiven Einsatz ist ein kostenpflichtiger Zugang vorgesehen. Zur Suche in der Online-Dokumentation werden Stichwörter Ihrer Frage an wiki.epos-plan.de übertragen.</value>
   </data>
   <data name="KI_HINWEIS_UEB_BEACHTEN" xml:space="preserve">
     <value>Was Sie beachten müssen</value>
@@ -8256,5 +8256,23 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   </data>
   <data name="SIM_STATUS_LESEPUNKT_DANACH" xml:space="preserve">
     <value>Booster-Lesepunkt: nach der Ladephase der Vorebene.</value>
+  </data>
+  <data name="HILFE_POPUP_ESC" xml:space="preserve">
+    <value>(Esc oder Klick daneben schließt)</value>
+  </data>
+  <data name="HILFE_POPUP_KAPITEL" xml:space="preserve">
+    <value>Kapitel: {0}</value>
+  </data>
+  <data name="HILFE_POPUP_LINK" xml:space="preserve">
+    <value>Online-Dokumentation öffnen</value>
+  </data>
+  <data name="KI_WIKI_HINWEIS_ZEILE" xml:space="preserve">
+    <value>Zur Suche in der Online-Dokumentation werden Stichwörter Ihrer Frage an wiki.epos-plan.de übertragen.</value>
+  </data>
+  <data name="KI_WIKI_QUELLEN" xml:space="preserve">
+    <value>Quellen in der Online-Dokumentation:</value>
+  </data>
+  <data name="KI_WIKI_SUCHE_LAEUFT" xml:space="preserve">
+    <value>Die Online-Dokumentation wird durchsucht...</value>
   </data>
 </root>

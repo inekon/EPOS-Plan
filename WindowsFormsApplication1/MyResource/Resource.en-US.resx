@@ -5997,7 +5997,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Who receives the data</value>
   </data>
   <data name="KI_HINWEIS_EMPFAENGER" xml:space="preserve">
-    <value>The recipient is Google as the operator of the Gemini interface. The provider’s terms in force at the time govern the nature and extent of the processing carried out there; under those terms, content submitted within the free tier is used for product improvement. A paid plan is intended for productive use.</value>
+    <value>The recipient is Google as the operator of the Gemini interface. The provider’s terms in force at the time govern the nature and extent of the processing carried out there; under those terms, content submitted within the free tier is used for product improvement. A paid plan is intended for productive use. Keywords from your question are sent to wiki.epos-plan.de to search the online documentation.</value>
   </data>
   <data name="KI_HINWEIS_UEB_BEACHTEN" xml:space="preserve">
     <value>What you need to bear in mind</value>
@@ -8249,5 +8249,23 @@ The switch is only shown if the project contains such a generator.</value>
   </data>
   <data name="SIM_STATUS_LESEPUNKT_DANACH" xml:space="preserve">
     <value>Booster reading point: after the charging phase of the preceding level.</value>
+  </data>
+  <data name="HILFE_POPUP_ESC" xml:space="preserve">
+    <value>(Esc or a click elsewhere closes this)</value>
+  </data>
+  <data name="HILFE_POPUP_KAPITEL" xml:space="preserve">
+    <value>Chapter: {0}</value>
+  </data>
+  <data name="HILFE_POPUP_LINK" xml:space="preserve">
+    <value>Open online documentation</value>
+  </data>
+  <data name="KI_WIKI_HINWEIS_ZEILE" xml:space="preserve">
+    <value>Keywords from your question are sent to wiki.epos-plan.de to search the online documentation.</value>
+  </data>
+  <data name="KI_WIKI_QUELLEN" xml:space="preserve">
+    <value>Sources in the online documentation:</value>
+  </data>
+  <data name="KI_WIKI_SUCHE_LAEUFT" xml:space="preserve">
+    <value>Searching the online documentation...</value>
   </data>
 </root>

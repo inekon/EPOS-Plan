@@ -51,7 +51,7 @@ namespace WindowsFormsApplication1
         /// <summary>Der EINE Extender der Anwendung.</summary>
         private static HelpExtender _extender;
 
-        private static WordPressHelpCatalog _katalog;
+        private static WikiHelpCatalog _katalog;
 
         /// <summary>Bereits erfasste Registrierungswurzeln (Verweisgleichheit).</summary>
         private static readonly HashSet<Control> _wurzeln = new HashSet<Control>();
@@ -78,7 +78,7 @@ namespace WindowsFormsApplication1
         /// Startet die anwendungsweite Registrierung und liefert den einen
         /// Extender. Ein zweiter Aufruf ist wirkungslos.
         /// </summary>
-        internal static HelpExtender Starten(WordPressHelpCatalog katalog)
+        internal static HelpExtender Starten(WikiHelpCatalog katalog)
         {
             if (_laeuft) return _extender;
 

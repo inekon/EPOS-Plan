@@ -21,8 +21,15 @@ namespace WindowsFormsApplication1
         public static string ApplicationPath_User = "";
         public static int nLanguage = 0; // 0=de, 1=en  
 
+        /// <summary>
+        /// Not-Rückfall für die Basis-URL der Wiki-Dokumentation, falls der
+        /// Einstellwert <c>WordPressUrl</c> leer ist (A2). Derselbe Wert steht
+        /// als Werksvorgabe in der <c>app.config</c>.
+        /// </summary>
+        public const string WIKI_STANDARD = "https://wiki.epos-plan.de";
+
         // Der globale Katalog, auf den alle Formulare zugreifen können
-        public static WordPressHelpCatalog HelpCatalog { get; private set; }
+        public static WikiHelpCatalog HelpCatalog { get; private set; }
 
         /// <summary>
         /// Der anwendungsweite Infobutton-Extender (Konzept Hilfesystem, F5).
@@ -139,13 +146,18 @@ namespace WindowsFormsApplication1
             ApplicationPath_User = Path.Combine(ApplicationPath_User, "WP-Plan");
 
             // Katalog-Objekt einmalig erstellen
-            // HelpCatalog = new WordPressHelpCatalog("https://wordpress.org/news");
-            // Visuelle Hilfe lokal testen:
-            // Der Hilfe Server kann lokal simuliert werden durch einen einfachen HTTP-Server,
-            // 
-            // dotnet tool install --global dotnet-serve
-            // starten mit : dotnet serve --directory "C:\Pfad\zu\deinem\Hilfeordner" --port 8080
-            HelpCatalog = new WordPressHelpCatalog("https://wiki.epos-plan.de");// (Properties.Settings.Default.WordPressUrl); // Lokaler Testserver mit Testartik
+            //
+            // A2 (H1): Die Basis-URL kommt wieder aus den Einstellungen. Damit
+            // steuert EIN Wert (Admin-Dialog, Feld "Online-Dokumentation")
+            // sowohl den Hilfekatalog als auch den Menüpunkt Dokumentation.
+            // Der Settings-Schlüssel heißt aus Kompatibilitätsgründen weiterhin
+            // "WordPressUrl" — eine Umbenennung würde gespeicherte Anwenderwerte
+            // in der user.config verwerfen (Entscheid 7.3 des Konzepts).
+            // WIKI_STANDARD greift nur, wenn der Einstellwert leer ist.
+            string dokuBasis = Properties.Settings.Default.WordPressUrl;
+            if (string.IsNullOrWhiteSpace(dokuBasis)) dokuBasis = WIKI_STANDARD;
+
+            HelpCatalog = new WikiHelpCatalog(dokuBasis);
 
             // F6 / Startwettlauf: Der Katalog wird SOFORT belegt — aus der lokalen
             // Sicherung, sonst aus dem mitgelieferten Startbestand. MDIMainForm_Load

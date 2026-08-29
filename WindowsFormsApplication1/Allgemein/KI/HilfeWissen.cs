@@ -14,13 +14,21 @@ namespace WindowsFormsApplication1
         public string Bereich = "";     // grobe Zuordnung, z. B. "Simulation Konfiguration"
         public string Inhalt = "";
 
+        /// <summary>
+        /// Quelle im Netz, falls der Abschnitt aus der Online-Dokumentation stammt
+        /// (H4, <see cref="WikiWissen"/>) - leer beim eingebauten Wissen. Nur die
+        /// ANZEIGE nutzt ihn; in den Prompt geht die Adresse nicht.
+        /// </summary>
+        public string QuellUrl = "";
+
         public WissensAbschnitt() { }
 
-        public WissensAbschnitt(string titel, string bereich, string inhalt)
+        public WissensAbschnitt(string titel, string bereich, string inhalt, string quellUrl = "")
         {
             Titel = titel;
             Bereich = bereich;
             Inhalt = inhalt;
+            QuellUrl = quellUrl ?? "";
         }
     }
 
@@ -169,9 +177,11 @@ namespace WindowsFormsApplication1
             return new List<WissensAbschnitt>
             {
                 new WissensAbschnitt("Dokumentation und Lizenz", "Hilfe",
-                    "Die ausführliche Online-Dokumentation steht unter " +
-                    "https://epos-plan.de/epos-plan/epos-plan-dokumetation/ bereit und ist im Menü " +
-                    "unter 'Hilfe > Dokumentation' verlinkt. Die Lizenzvereinbarung und die " +
+                    "Die ausführliche Online-Dokumentation steht als Wiki unter " +
+                    "https://wiki.epos-plan.de bereit und ist im Menü " +
+                    "unter 'Hilfe > Dokumentation' verlinkt. Die Hilfeseiten zu den einzelnen " +
+                    "Dialogen liegen dort in der Rubrik 'Programm Dokumentation'; die Info-Schaltflächen " +
+                    "an den Eingabefeldern öffnen genau diese Seiten. Die Lizenzvereinbarung und die " +
                     "Allgemeinen Geschäftsbedingungen zeigt der Menüpunkt 'Hilfe > Lizenz'. " +
                     "Lizenzgeber ist Dr. Dirk Engelmann, INEKON, Breitwiesenstr. 13, 70565 Stuttgart. " +
                     "Die Software wird als Einzelplatzlizenz überlassen; die Ergebnisse sind vom " +

@@ -24,6 +24,18 @@ namespace WindowsFormsApplication1
         public bool AusCache;
         public int TokenGeschaetzt;
 
+        /// <summary>
+        /// Die Hilfeabschnitte, die TATSÄCHLICH in den Prompt gegangen sind — Wiki-
+        /// und Einbauwissen in genau dieser Reihenfolge (H4/B3).
+        /// </summary>
+        /// <remarks>
+        /// Damit stützt das Chatfenster seine Quellenangabe auf dieselben Treffer,
+        /// die auch gesendet wurden. Eine zweite Suche in der Oberfläche könnte
+        /// abweichen (das Wiki antwortet nicht bei jedem Aufruf gleich schnell) —
+        /// und dann stünde unter der Antwort eine Quelle, die das Modell nie sah.
+        /// </remarks>
+        public List<WissensAbschnitt> Abschnitte = new List<WissensAbschnitt>();
+
         /// <summary>Die Aktionen dieser Äußerung, in der Reihenfolge der Runden (Etappe 2).</summary>
         public List<KiSchritt> Schritte = new List<KiSchritt>();
 
@@ -120,6 +132,14 @@ namespace WindowsFormsApplication1
     /// Datenschutz: Übertragen werden ausschließlich Hilfetexte, die Frage des
     /// Benutzers und eine grobe Kontextangabe (Maske/Registerkarte).
     /// Es werden keine Projekt-, Kunden- oder Simulationsdaten gesendet.
+    /// Seit H4 gibt es einen ZWEITEN, davon getrennten Datenfluss: Zur Suche in
+    /// der Online-Dokumentation gehen STICHWÖRTER der Frage (Wörter ab vier
+    /// Zeichen, siehe WikiWissen.Stichwoerter) an den eigenen Server
+    /// wiki.epos-plan.de - nie die Rohfrage, keine Kontextangabe. Nach
+    /// Entscheid 7.4 geschieht das auch im Betrieb ohne KI; der Rechtshinweis
+    /// benennt es (Entscheid 7.5, KiEinwilligung.FASSUNG bleibt unverändert).
+    /// Die dort geholten Auszüge sind Hilfetexte im Sinne der Zusage oben und
+    /// gehen als "Hilfeabschnitte" mit an den Modellanbieter.
     ///
     /// Sicherheit:
     ///  - der API-Schlüssel liegt DPAPI-verschlüsselt in %APPDATA%\wp-plan
@@ -322,11 +342,83 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        // ------------------------------------------------------------------
+        // Hilfeabschnitte beschaffen (H4, Konzept B1/B2)
+        // ------------------------------------------------------------------
+
+        /// <summary>Obergrenze der Hilfeabschnitte im Prompt - unverändert seit dem Prototyp.</summary>
+        private const int MAX_ABSCHNITTE = 4;
+
+        /// <summary>Höchstens so viele davon dürfen aus dem Wiki kommen (Konzept B1, Mischregel).</summary>
+        private const int MAX_WIKI_ABSCHNITTE = 3;
+
+        /// <summary>
+        /// Die Hilfeabschnitte für eine Frage: erst die Online-Dokumentation
+        /// (höchstens <see cref="MAX_WIKI_ABSCHNITTE"/>), dann mit dem eingebauten
+        /// Wissen auf <see cref="MAX_ABSCHNITTE"/> aufgefüllt.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die EINE Beschaffungsstelle.</b> Hilfefall, Aktionsbetrieb,
+        /// Sendevorschau und die Anzeige im Chatfenster rufen alle hierher — sonst
+        /// liefen Vorschau und Wirklichkeit auseinander (Konzept B2).
+        /// </para>
+        /// <para>
+        /// <b>Das Einbauwissen bleibt.</b> Es ist die Offline-Rückfallebene und
+        /// deckt Simulations-Detailthemen ab, die im Wiki (noch) fehlen. Fällt das
+        /// Wiki aus, liefert <see cref="WikiWissen"/> still eine leere Liste und
+        /// der Prompt sieht genau so aus wie vor H4.
+        /// </para>
+        /// </remarks>
+        internal static async Task<List<WissensAbschnitt>> AbschnitteBeschaffenAsync(
+            string frage, string kontext, CancellationToken abbruch)
+        {
+            List<WissensAbschnitt> wiki =
+                await WikiWissen.SucheAsync(frage, kontext, abbruch).ConfigureAwait(true);
+
+            return Mischen(wiki, HilfeWissen.Suchen(frage, kontext, MAX_ABSCHNITTE));
+        }
+
+        /// <summary>
+        /// Wiki zuerst, danach das eingebaute Wissen - ohne Titeldoppel und
+        /// begrenzt auf <see cref="MAX_ABSCHNITTE"/>.
+        /// </summary>
+        internal static List<WissensAbschnitt> Mischen(List<WissensAbschnitt> wiki,
+                                                       List<WissensAbschnitt> lokal)
+        {
+            List<WissensAbschnitt> gemischt = new List<WissensAbschnitt>();
+            HashSet<string> titel = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            if (wiki != null)
+            {
+                foreach (WissensAbschnitt a in wiki)
+                {
+                    if (gemischt.Count >= MAX_WIKI_ABSCHNITTE) break;
+                    if (a == null || !titel.Add(a.Titel ?? "")) continue;
+                    gemischt.Add(a);
+                }
+            }
+
+            if (lokal != null)
+            {
+                foreach (WissensAbschnitt a in lokal)
+                {
+                    if (gemischt.Count >= MAX_ABSCHNITTE) break;
+                    if (a == null || !titel.Add(a.Titel ?? "")) continue;
+                    gemischt.Add(a);
+                }
+            }
+
+            return gemischt;
+        }
+
         /// <summary>
         /// Stellt eine Frage an den Assistenten. Der Kontext beschreibt die
         /// aktuelle Maske, der Verlauf die letzten Wortwechsel (bewusst kurz).
         /// </summary>
-        public static async Task<KiAntwort> FrageAsync(string frage, string kontext, List<string> verlauf = null)
+        public static async Task<KiAntwort> FrageAsync(string frage, string kontext,
+                                                       List<string> verlauf = null,
+                                                       CancellationToken abbruch = default)
         {
             KiAntwort antwort = new KiAntwort();
 
@@ -360,6 +452,10 @@ namespace WindowsFormsApplication1
                     Erfolg = treffer.Erfolg,
                     Text = treffer.Text,
                     Quellen = treffer.Quellen,
+                    // Die Quellenangabe im Chat gehört zur gemerkten Antwort: der
+                    // Treffer stammt aus DIESEN Abschnitten. Ein Cache-Treffer löst
+                    // damit auch keinen Wiki-Abruf aus.
+                    Abschnitte = treffer.Abschnitte,
                     AusCache = true
                 };
             }
@@ -372,20 +468,19 @@ namespace WindowsFormsApplication1
                 return antwort;
             }
 
-            // 3) Passende Hilfeabschnitte suchen (lokal, kostenlos)
-            List<WissensAbschnitt> treffer2 = HilfeWissen.Suchen(frage, kontext, 4);
-            if (treffer2.Count == 0)
-            {
-                // Ohne Treffer trotzdem antworten lassen - mit klarer Ansage im Prompt
-                treffer2 = new List<WissensAbschnitt>();
-            }
+            // 3) Passende Hilfeabschnitte suchen: Online-Dokumentation zuerst
+            //    (H4), aufgefüllt mit dem eingebauten Wissen (lokal, kostenlos).
+            //    Ohne Treffer wird trotzdem geantwortet - mit klarer Ansage im Prompt.
+            List<WissensAbschnitt> treffer2 =
+                await AbschnitteBeschaffenAsync(frage, kontext, abbruch);
+            antwort.Abschnitte = treffer2;
 
             string prompt = PromptBauen(frage, kontext, treffer2, verlauf, false, null);
             antwort.TokenGeschaetzt = prompt.Length / 4;   // grobe Schätzung
 
             try
             {
-                string text = await AufrufenAsync(prompt);
+                string text = await AufrufenAsync(prompt, abbruch);
                 antwort.Erfolg = true;
                 antwort.Text = text;
                 foreach (WissensAbschnitt a in treffer2) antwort.Quellen.Add(a.Titel);
@@ -408,11 +503,20 @@ namespace WindowsFormsApplication1
         /// auseinanderlaufen können. Es wird nichts gesendet, nichts gezählt und
         /// nichts zwischengespeichert.
         /// </summary>
-        public static string SendeVorschau(string frage, string kontext, List<string> verlauf = null,
-                                           bool mitAktionen = false, KiRegister register = null)
+        /// <remarks>
+        /// Seit H4 asynchron: Die Abschnitte kommen aus derselben Beschaffung wie
+        /// im Ernstfall (<see cref="AbschnitteBeschaffenAsync"/>) — eine eigene,
+        /// rein lokale Vorschau würde die Wiki-Abschnitte unterschlagen und damit
+        /// genau das zeigen, was NICHT gesendet wird.
+        /// </remarks>
+        public static async Task<string> SendeVorschau(string frage, string kontext,
+                                                       List<string> verlauf = null,
+                                                       bool mitAktionen = false,
+                                                       KiRegister register = null,
+                                                       CancellationToken abbruch = default)
         {
             string f = string.IsNullOrWhiteSpace(frage) ? "(noch keine Frage eingegeben)" : frage.Trim();
-            List<WissensAbschnitt> treffer = HilfeWissen.Suchen(f, kontext, 4);
+            List<WissensAbschnitt> treffer = await AbschnitteBeschaffenAsync(f, kontext, abbruch);
 
             if (!mitAktionen) return PromptBauen(f, kontext, treffer, verlauf, false, null);
 
@@ -451,7 +555,22 @@ namespace WindowsFormsApplication1
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine("Du bist der Hilfe-Assistent der Energieplanungs-Software WP-Plan.");
-            sb.AppendLine("Beantworte die Frage kurz, sachlich und auf Deutsch - höchstens 6 Sätze.");
+
+            // Sprachregel (H4, Konzept A6): Die Hilfeabschnitte sind und bleiben
+            // deutsch - auch die Wiki-Auszüge, denn englische Wiki-Seiten werden
+            // bewusst nicht gepflegt (Entscheid 7.1a). Übersetzt wird deshalb beim
+            // ANTWORTEN. Der deutsche Zweig ist unverändert; im englischen entfällt
+            // das "auf Deutsch", sonst stünden zwei sich widersprechende Regeln da.
+            if (Program.nLanguage != 0)
+            {
+                sb.AppendLine("Beantworte die Frage kurz und sachlich - höchstens 6 Sätze.");
+                sb.AppendLine("Answer in English.");
+            }
+            else
+            {
+                sb.AppendLine("Beantworte die Frage kurz, sachlich und auf Deutsch - höchstens 6 Sätze.");
+            }
+
             if (mitAktionen)
             {
                 // Die strenge Bindung an die Hilfeabschnitte gilt im Aktionsbetrieb NICHT
@@ -533,23 +652,23 @@ namespace WindowsFormsApplication1
         /// Modell nicht (mehr) verfügbar ist, wird automatisch ein passendes
         /// verfügbares Modell ermittelt, gemerkt und die Anfrage wiederholt.
         /// </summary>
-        private static async Task<string> AufrufenAsync(string prompt)
+        private static async Task<string> AufrufenAsync(string prompt, CancellationToken abbruch = default)
         {
             try
             {
-                return await AufrufenMitModellAsync(prompt, MODELL);
+                return await AufrufenMitModellAsync(prompt, MODELL, abbruch);
             }
             catch (Exception ex)
             {
                 if (!IstModellFehler(ex.Message)) throw;
 
-                string neuesModell = await ModellErmittelnAsync();
+                string neuesModell = await ModellErmittelnAsync(false, abbruch);
                 if (string.IsNullOrEmpty(neuesModell))
                     throw new Exception("Das Modell '" + MODELL + "' ist nicht verfügbar und es konnte " +
                                         "kein Ersatzmodell ermittelt werden.\r\n\r\nUrsprüngliche Meldung: " + ex.Message);
 
                 MODELL = neuesModell;   // für die nächsten Aufrufe merken
-                return await AufrufenMitModellAsync(prompt, neuesModell);
+                return await AufrufenMitModellAsync(prompt, neuesModell, abbruch);
             }
         }
 
@@ -567,13 +686,14 @@ namespace WindowsFormsApplication1
         /// Modell: bevorzugt die eigenen Kandidaten, sonst das erste verfügbare
         /// Modell mit "flash-lite" bzw. "flash" im Namen.
         /// </summary>
-        private static async Task<string> ModellErmittelnAsync(bool nurWerkzeugfaehig = false)
+        private static async Task<string> ModellErmittelnAsync(bool nurWerkzeugfaehig = false,
+                                                               CancellationToken abbruch = default)
         {
             try
             {
                 // Schlüssel bewusst NICHT als Query-Parameter (A4)
                 using (HttpRequestMessage nachricht = new HttpRequestMessage(HttpMethod.Get, BASIS_URL + "models"))
-                using (HttpResponseMessage antwort = await SendenAsync(nachricht))
+                using (HttpResponseMessage antwort = await SendenAsync(nachricht, abbruch))
                 {
                     string body = await antwort.Content.ReadAsStringAsync();
                     if (!antwort.IsSuccessStatusCode) return null;
@@ -632,7 +752,8 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Führt den eigentlichen Aufruf mit einem konkreten Modell aus.</summary>
-        private static async Task<string> AufrufenMitModellAsync(string prompt, string modell)
+        private static async Task<string> AufrufenMitModellAsync(string prompt, string modell,
+                                                                 CancellationToken abbruch = default)
         {
             string url = BASIS_URL + "models/" + modell + ":generateContent";
 
@@ -656,7 +777,7 @@ namespace WindowsFormsApplication1
             {
                 nachricht.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                using (HttpResponseMessage antwort = await SendenAsync(nachricht))
+                using (HttpResponseMessage antwort = await SendenAsync(nachricht, abbruch))
                 {
                     string body = await antwort.Content.ReadAsStringAsync();
 
@@ -673,10 +794,11 @@ namespace WindowsFormsApplication1
         /// <c>x-goog-api-key</c>. Er darf nicht in der Adresse stehen: Query-Parameter
         /// werden von Proxys, Gateways und Serverprotokollen mitgeschrieben.
         /// </summary>
-        private static Task<HttpResponseMessage> SendenAsync(HttpRequestMessage nachricht)
+        private static Task<HttpResponseMessage> SendenAsync(HttpRequestMessage nachricht,
+                                                             CancellationToken abbruch = default)
         {
             nachricht.Headers.TryAddWithoutValidation(HEADER_APIKEY, ApiKey);
-            return _http.SendAsync(nachricht);
+            return _http.SendAsync(nachricht, abbruch);
         }
 
         /// <summary>Adresse, an die die Anfrage geht - ohne Schlüssel.</summary>
@@ -908,8 +1030,11 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            // ---- Hilfeabschnitte wie im reinen Hilfefall (lokal, kostenlos).
-            List<WissensAbschnitt> abschnitte = HilfeWissen.Suchen(frage, kontext, 4);
+            // ---- Hilfeabschnitte wie im reinen Hilfefall: Online-Dokumentation
+            //      zuerst (H4), aufgefüllt mit dem eingebauten Wissen.
+            List<WissensAbschnitt> abschnitte =
+                await AbschnitteBeschaffenAsync(frage, kontext, abbruch).ConfigureAwait(true);
+            antwort.Abschnitte = abschnitte;
             foreach (WissensAbschnitt a in abschnitte) antwort.Quellen.Add(a.Titel);
 
             List<JsonObject> gespraech = new List<JsonObject>();
