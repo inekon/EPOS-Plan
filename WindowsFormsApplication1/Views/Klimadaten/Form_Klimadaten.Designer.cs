@@ -79,7 +79,7 @@
             listBoxKlimreg.Dock = System.Windows.Forms.DockStyle.Fill;
             listBoxKlimreg.Font = new System.Drawing.Font("Segoe UI", 10F);
             listBoxKlimreg.FormattingEnabled = true;
-            listBoxKlimreg.ItemHeight = 17;
+            listBoxKlimreg.ItemHeight = 28;
             listBoxKlimreg.Location = new System.Drawing.Point(10, 30);
             listBoxKlimreg.Margin = new System.Windows.Forms.Padding(4, 8, 4, 4);
             listBoxKlimreg.Name = "listBoxKlimreg";
@@ -121,7 +121,7 @@
             label3.Location = new System.Drawing.Point(504, 525);
             label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label3.Name = "label3";
-            label3.Size = new System.Drawing.Size(0, 19);
+            label3.Size = new System.Drawing.Size(0, 28);
             label3.TabIndex = 11;
             // 
             // label1
@@ -142,7 +142,7 @@
             label2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             label2.Location = new System.Drawing.Point(7, 8);
             label2.Name = "label2";
-            label2.Size = new System.Drawing.Size(204, 21);
+            label2.Size = new System.Drawing.Size(289, 30);
             label2.TabIndex = 15;
             label2.Text = "Liste der importierten Regionen";
             // 
@@ -190,7 +190,7 @@
             comboBox_Ort.FormattingEnabled = true;
             comboBox_Ort.Location = new System.Drawing.Point(16, 53);
             comboBox_Ort.Name = "comboBox_Ort";
-            comboBox_Ort.Size = new System.Drawing.Size(280, 25);
+            comboBox_Ort.Size = new System.Drawing.Size(280, 36);
             comboBox_Ort.TabIndex = 1;
             // 
             // label4
@@ -198,7 +198,7 @@
             label4.AutoSize = true;
             label4.Location = new System.Drawing.Point(12, 31);
             label4.Name = "label4";
-            label4.Size = new System.Drawing.Size(284, 19);
+            label4.Size = new System.Drawing.Size(403, 28);
             label4.TabIndex = 21;
             label4.Text = "Region auswählen oder eingeben (z.B. Berlin):";
             // 
@@ -207,7 +207,7 @@
             label5.AutoSize = true;
             label5.Location = new System.Drawing.Point(246, 213);
             label5.Name = "label5";
-            label5.Size = new System.Drawing.Size(122, 19);
+            label5.Size = new System.Drawing.Size(173, 28);
             label5.TabIndex = 23;
             label5.Text = "Details zur Region:";
             // 
@@ -216,7 +216,7 @@
             textBox_Longitude.BackColor = System.Drawing.SystemColors.Window;
             textBox_Longitude.Location = new System.Drawing.Point(93, 118);
             textBox_Longitude.Name = "textBox_Longitude";
-            textBox_Longitude.Size = new System.Drawing.Size(88, 25);
+            textBox_Longitude.Size = new System.Drawing.Size(88, 34);
             textBox_Longitude.TabIndex = 24;
             textBox_Longitude.TabStop = false;
             textBox_Longitude.TextChanged += textBox_Longitude_TextChanged;
@@ -226,7 +226,7 @@
             textBox_Latitude.BackColor = System.Drawing.SystemColors.Window;
             textBox_Latitude.Location = new System.Drawing.Point(249, 118);
             textBox_Latitude.Name = "textBox_Latitude";
-            textBox_Latitude.Size = new System.Drawing.Size(88, 25);
+            textBox_Latitude.Size = new System.Drawing.Size(88, 34);
             textBox_Latitude.TabIndex = 26;
             textBox_Latitude.TabStop = false;
             textBox_Latitude.TextChanged += textBox_Latitude_TextChanged;
@@ -236,7 +236,7 @@
             label6.AutoSize = true;
             label6.Location = new System.Drawing.Point(19, 119);
             label6.Name = "label6";
-            label6.Size = new System.Drawing.Size(74, 19);
+            label6.Size = new System.Drawing.Size(105, 28);
             label6.TabIndex = 27;
             label6.Text = "Longitude:";
             // 
@@ -245,7 +245,7 @@
             label7.AutoSize = true;
             label7.Location = new System.Drawing.Point(185, 120);
             label7.Name = "label7";
-            label7.Size = new System.Drawing.Size(62, 19);
+            label7.Size = new System.Drawing.Size(87, 28);
             label7.TabIndex = 28;
             label7.Text = "Latitude:";
             // 
@@ -255,7 +255,7 @@
             label9.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 0);
             label9.Location = new System.Drawing.Point(23, 88);
             label9.Name = "label9";
-            label9.Size = new System.Drawing.Size(36, 17);
+            label9.Size = new System.Drawing.Size(54, 28);
             label9.TabIndex = 31;
             label9.Text = "oder";
             // 
@@ -264,7 +264,7 @@
             label8.AutoSize = true;
             label8.Location = new System.Drawing.Point(350, 121);
             label8.Name = "label8";
-            label8.Size = new System.Drawing.Size(89, 19);
+            label8.Size = new System.Drawing.Size(126, 28);
             label8.TabIndex = 30;
             label8.Text = "Bezeichnung:";
             // 
@@ -273,7 +273,7 @@
             textBox_Bezeichnung.BackColor = System.Drawing.SystemColors.Window;
             textBox_Bezeichnung.Location = new System.Drawing.Point(445, 120);
             textBox_Bezeichnung.Name = "textBox_Bezeichnung";
-            textBox_Bezeichnung.Size = new System.Drawing.Size(188, 25);
+            textBox_Bezeichnung.Size = new System.Drawing.Size(188, 34);
             textBox_Bezeichnung.TabIndex = 29;
             textBox_Bezeichnung.TabStop = false;
             // 
@@ -311,10 +311,10 @@
             // tabPage1
             // 
             tabPage1.Controls.Add(chart1);
-            tabPage1.Location = new System.Drawing.Point(4, 26);
+            tabPage1.Location = new System.Drawing.Point(4, 37);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            tabPage1.Size = new System.Drawing.Size(485, 278);
+            tabPage1.Size = new System.Drawing.Size(485, 267);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Temperatur";
             tabPage1.UseVisualStyleBackColor = true;
@@ -350,10 +350,10 @@
             // tabPage2
             // 
             tabPage2.Controls.Add(chart2);
-            tabPage2.Location = new System.Drawing.Point(4, 24);
+            tabPage2.Location = new System.Drawing.Point(4, 34);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            tabPage2.Size = new System.Drawing.Size(485, 280);
+            tabPage2.Size = new System.Drawing.Size(485, 270);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Sonnenwinkel";
             tabPage2.UseVisualStyleBackColor = true;
@@ -427,13 +427,13 @@
             label10.Dock = System.Windows.Forms.DockStyle.Top;
             label10.Location = new System.Drawing.Point(0, 0);
             label10.Name = "label10";
-            label10.Size = new System.Drawing.Size(338, 19);
+            label10.Size = new System.Drawing.Size(477, 28);
             label10.TabIndex = 32;
             label10.Text = "Ort auswählen oder Longitude und Latitude eingeben";
             // 
             // Form_Klimadaten
             // 
-            AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
+            AutoScaleDimensions = new System.Drawing.SizeF(11F, 28F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(757, 641);
             Controls.Add(panel2);
