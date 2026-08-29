@@ -37,18 +37,6 @@ namespace WindowsFormsApplication1.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("https://epos-plan.de")]
-        public string WordPressUrl {
-            get {
-                return ((string)(this["WordPressUrl"]));
-            }
-            set {
-                this["WordPressUrl"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string DBExportPath {
             get {
@@ -140,6 +128,18 @@ namespace WindowsFormsApplication1.Properties {
             }
             set {
                 this["DBName"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://wiki.epos-plan.de")]
+        public string WordPressUrl {
+            get {
+                return ((string)(this["WordPressUrl"]));
+            }
+            set {
+                this["WordPressUrl"] = value;
             }
         }
     }

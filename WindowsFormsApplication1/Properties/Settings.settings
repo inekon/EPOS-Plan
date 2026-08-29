@@ -5,9 +5,6 @@
     <Setting Name="VDI3805Path" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="WordPressUrl" Type="System.String" Scope="User">
-      <Value Profile="(Default)">https://epos-plan.de</Value>
-    </Setting>
     <Setting Name="DBExportPath" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
@@ -31,6 +28,9 @@
     </Setting>
     <Setting Name="DBName" Type="System.String" Scope="User">
       <Value Profile="(Default)">Kenndaten.accdb</Value>
+    </Setting>
+    <Setting Name="WordPressUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">https://wiki.epos-plan.de</Value>
     </Setting>
   </Settings>
 </SettingsFile>

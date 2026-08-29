@@ -283,12 +283,17 @@ Fachlogik nicht anfassen.
   SpotpreisImport (»Übernehmen« = Schreibvorgang), GanglinieProtokoll und
   BkUebernahme (Bestätigungsdialoge), Verwaltungsmasken
   PufferSp_Projekt/Gesetzesparameter/LizenzVerwaltung (Sofortwirkung, bewusst
-  ohne Abbrechen). **Offene Anwenderentscheidungen:** »Übernehmen«→»OK« bei
-  GesetzparameterZeile/BkUebernahme/GanglinieProtokoll (je Einzeiler);
-  Erdreich `_lblAenderung` braucht deutsch drei Zeilen (Vorschlag: 14 px aus dem
-  Chart holen); englisches Raster der Erdreich-Quellsystemgruppe vorbestehend
-  defekt; `UcBericht.MinimumSize 600×360` zu klein (bräuchte
-  Form_Bericht-Mitzug). Dazu Migrations-Schritt 32 (SchemaMigration): stellt die
+  ohne Abbrechen). **Anwenderentscheidungen — beantwortet und abgearbeitet
+  29.08.2026:** »Übernehmen«→»OK« bei GesetzparameterZeile/BkUebernahme/
+  GanglinieProtokoll ist umgesetzt (Laufzeittext über den generischen
+  `SIM_BTN_OK`, Designer-Echttexte »OK«, Begleitkommentare nachgezogen; die
+  Schlüssel `GESETZ_BTN_UEBERNEHMEN`, `IMPORT_BTN_UEBERNEHMEN` und
+  `BK_UEB_BTN_OK` bleiben nach dem Hausmuster von `IMPORT_BTN_OK` unverwendet im
+  Katalog). Die übrigen drei Punkte waren bereits mit der Nacharbeit vom
+  21.08.2026 im Code: Erdreich-Dreizeiler (`_lblAenderung` 500×48, 14 px aus der
+  Vorschau geholt), sprachrobustes Quellsystem-Raster
+  (`QuellsystemRasterAusrichten()`), `UcBericht.MinimumSize` 730×436 samt
+  Form_Bericht-Mitzug — am 29.08.2026 im Designer-/Laufzeitcode verifiziert. Dazu Migrations-Schritt 32 (SchemaMigration): stellt die
   von Schritt 29 zurückgelassene `Abfrage_Kostenfaktoren` neu her
   (IIf-Kategoriename, read-only gegen die Kunden-DB getestet) und entfernt drei
   tote Abfragen — behebt den Kosteneditor-Fehler »cannot find 'Tab_KostenKategorie'«.

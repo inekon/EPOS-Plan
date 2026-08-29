@@ -138,7 +138,7 @@ namespace WindowsFormsApplication1
             lblWertQuelleTitel.Text = MyResource.Resource.BK_UEB_LBL_WERT_QUELLE;
             lblZielTitel.Text = MyResource.Resource.BK_UEB_LBL_ZIEL;
             lblWertZielTitel.Text = MyResource.Resource.BK_UEB_LBL_WERT_ZIEL;
-            btnOk.Text = MyResource.Resource.BK_UEB_BTN_OK;
+            btnOk.Text = MyResource.Resource.SIM_BTN_OK;
             btnAbbrechen.Text = MyResource.Resource.BK_UEB_BTN_ABBRUCH;
         }
 
@@ -174,7 +174,7 @@ namespace WindowsFormsApplication1
         /// <summary>Meldung, warum die Übernahme gesperrt ist (leer = möglich; Prüfhilfe).</summary>
         public string GrundText { get { return lblGrund.Text; } }
 
-        /// <summary>Ist der Übernehmen-Knopf freigegeben? (Prüfhilfe)</summary>
+        /// <summary>Ist der OK-Knopf freigegeben? (Prüfhilfe)</summary>
         public bool UebernahmeMoeglich { get { return btnOk.Enabled; } }
     }
 }
