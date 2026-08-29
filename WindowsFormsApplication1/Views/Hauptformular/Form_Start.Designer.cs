@@ -237,36 +237,42 @@
             // karte_ProjektDetails
             //
             resources.ApplyResources(karte_ProjektDetails, "karte_ProjektDetails");
+            karte_ProjektDetails.KartenBild = Properties.Resources.PProjektDetails_Symbol;
             karte_ProjektDetails.Name = "karte_ProjektDetails";
             karte_ProjektDetails.Geklickt += pBox_ProjektDetails_Click;
             //
             // karte_Delete
             //
             resources.ApplyResources(karte_Delete, "karte_Delete");
+            karte_Delete.KartenBild = Properties.Resources.PDelete_Symbol;
             karte_Delete.Name = "karte_Delete";
             karte_Delete.Geklickt += pBox_Delete_Click;
             //
             // karte_SpeichernUnter
             //
             resources.ApplyResources(karte_SpeichernUnter, "karte_SpeichernUnter");
+            karte_SpeichernUnter.KartenBild = Properties.Resources.PProjektBearbeiten_Symbol;
             karte_SpeichernUnter.Name = "karte_SpeichernUnter";
             karte_SpeichernUnter.Geklickt += pBox_SpeichernUnter_Click;
             //
             // karte_ProjektZuletzt
             //
             resources.ApplyResources(karte_ProjektZuletzt, "karte_ProjektZuletzt");
+            karte_ProjektZuletzt.KartenBild = Properties.Resources.PProjektZuletzt_Symbol;
             karte_ProjektZuletzt.Name = "karte_ProjektZuletzt";
             karte_ProjektZuletzt.Geklickt += pBox_ProjektZuletzt_Click;
             //
             // karte_ProjektOeffnen
             //
             resources.ApplyResources(karte_ProjektOeffnen, "karte_ProjektOeffnen");
+            karte_ProjektOeffnen.KartenBild = Properties.Resources.PProjektOeffnen_Symbol;
             karte_ProjektOeffnen.Name = "karte_ProjektOeffnen";
             karte_ProjektOeffnen.Geklickt += pBox_ProjektOeffnen_Click;
             //
             // karte_ProjektNeu
             //
             resources.ApplyResources(karte_ProjektNeu, "karte_ProjektNeu");
+            karte_ProjektNeu.KartenBild = Properties.Resources.PProjektNeu_Symbol;
             karte_ProjektNeu.Name = "karte_ProjektNeu";
             karte_ProjektNeu.Geklickt += pBox_ProjektNeu_Click;
             //

@@ -343,6 +343,16 @@ namespace WindowsFormsApplication1.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap PDelete_Symbol {
+            get {
+                object obj = ResourceManager.GetObject("PDelete_Symbol", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap PDetailansicht {
             get {
                 object obj = ResourceManager.GetObject("PDetailansicht", resourceCulture);
@@ -413,9 +423,49 @@ namespace WindowsFormsApplication1.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap PProjektBearbeiten_Symbol {
+            get {
+                object obj = ResourceManager.GetObject("PProjektBearbeiten_Symbol", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap PProjektDetails_Symbol {
+            get {
+                object obj = ResourceManager.GetObject("PProjektDetails_Symbol", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap PProjektname {
             get {
                 object obj = ResourceManager.GetObject("PProjektname", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap PProjektNeu_Symbol {
+            get {
+                object obj = ResourceManager.GetObject("PProjektNeu_Symbol", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap PProjektOeffnen_Symbol {
+            get {
+                object obj = ResourceManager.GetObject("PProjektOeffnen_Symbol", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -436,6 +486,16 @@ namespace WindowsFormsApplication1.Properties {
         public static System.Drawing.Bitmap PProjektSolarthermie {
             get {
                 object obj = ResourceManager.GetObject("PProjektSolarthermie", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap PProjektZuletzt_Symbol {
+            get {
+                object obj = ResourceManager.GetObject("PProjektZuletzt_Symbol", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
