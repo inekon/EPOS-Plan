@@ -119,9 +119,18 @@
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="button_Abbrechen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>320, 319</value>
+    <value>320, 575</value>
   </data>
   <data name="button_Abbrechen.Size" type="System.Drawing.Size, System.Drawing">
     <value>110, 33</value>
+  </data>
+  <data name="label_Beschreibung.Text" xml:space="preserve">
+    <value>Beschreibung:</value>
+  </data>
+  <data name="label_Kunde.Text" xml:space="preserve">
+    <value>Kunde:</value>
+  </data>
+  <data name="label_Bearbeiter.Text" xml:space="preserve">
+    <value>Bearbeiter:</value>
   </data>
 </root>

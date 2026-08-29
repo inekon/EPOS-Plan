@@ -35,6 +35,12 @@
             listView_Projekt = new System.Windows.Forms.ListView();
             label2 = new System.Windows.Forms.Label();
             textBox_NeuerProjektName = new System.Windows.Forms.TextBox();
+            label_Beschreibung = new System.Windows.Forms.Label();
+            textBox_Beschreibung = new System.Windows.Forms.TextBox();
+            label_Kunde = new System.Windows.Forms.Label();
+            textBox_Kunde = new System.Windows.Forms.TextBox();
+            label_Bearbeiter = new System.Windows.Forms.Label();
+            textBox_Bearbeiter = new System.Windows.Forms.TextBox();
             panel_Fortschritt = new System.Windows.Forms.Panel();
             lbl_Fortschritt = new System.Windows.Forms.Label();
             progressBar_Duplizieren = new System.Windows.Forms.ProgressBar();
@@ -81,6 +87,38 @@
             resources.ApplyResources(textBox_NeuerProjektName, "textBox_NeuerProjektName");
             textBox_NeuerProjektName.Name = "textBox_NeuerProjektName";
             // 
+            // label_Beschreibung
+            // 
+            resources.ApplyResources(label_Beschreibung, "label_Beschreibung");
+            label_Beschreibung.Name = "label_Beschreibung";
+            // 
+            // textBox_Beschreibung
+            // 
+            resources.ApplyResources(textBox_Beschreibung, "textBox_Beschreibung");
+            textBox_Beschreibung.Multiline = true;
+            textBox_Beschreibung.Name = "textBox_Beschreibung";
+            textBox_Beschreibung.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            // 
+            // label_Kunde
+            // 
+            resources.ApplyResources(label_Kunde, "label_Kunde");
+            label_Kunde.Name = "label_Kunde";
+            // 
+            // textBox_Kunde
+            // 
+            resources.ApplyResources(textBox_Kunde, "textBox_Kunde");
+            textBox_Kunde.Name = "textBox_Kunde";
+            // 
+            // label_Bearbeiter
+            // 
+            resources.ApplyResources(label_Bearbeiter, "label_Bearbeiter");
+            label_Bearbeiter.Name = "label_Bearbeiter";
+            // 
+            // textBox_Bearbeiter
+            // 
+            resources.ApplyResources(textBox_Bearbeiter, "textBox_Bearbeiter");
+            textBox_Bearbeiter.Name = "textBox_Bearbeiter";
+            // 
             // panel_Fortschritt
             // 
             panel_Fortschritt.Controls.Add(progressBar_Duplizieren);
@@ -125,6 +163,12 @@
             resources.ApplyResources(this, "$this");
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             Controls.Add(btn_Help);
+            Controls.Add(textBox_Bearbeiter);
+            Controls.Add(label_Bearbeiter);
+            Controls.Add(textBox_Kunde);
+            Controls.Add(label_Kunde);
+            Controls.Add(textBox_Beschreibung);
+            Controls.Add(label_Beschreibung);
             Controls.Add(textBox_NeuerProjektName);
             Controls.Add(label2);
             Controls.Add(listView_Projekt);
@@ -149,6 +193,12 @@
         private System.Windows.Forms.ListView listView_Projekt;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox textBox_NeuerProjektName;
+        private System.Windows.Forms.Label label_Beschreibung;
+        private System.Windows.Forms.TextBox textBox_Beschreibung;
+        private System.Windows.Forms.Label label_Kunde;
+        private System.Windows.Forms.TextBox textBox_Kunde;
+        private System.Windows.Forms.Label label_Bearbeiter;
+        private System.Windows.Forms.TextBox textBox_Bearbeiter;
         private System.Windows.Forms.Panel panel_Fortschritt;
         private System.Windows.Forms.Label lbl_Fortschritt;
         private System.Windows.Forms.ProgressBar progressBar_Duplizieren;

@@ -8,12 +8,24 @@ namespace WindowsFormsApplication1
     {
         public string m_szProjekt;
         public string m_szNeuerProjektName;
+
+        // ALTLAST. Die vier Felder m_ID_Klimaregion, m_ID_Projekt, m_szKlimaregion und
+        // m_Datum stammen aus der Zeit, als dieser Dialog auch zum OEFFNEN benutzt wurde
+        // (siehe Form_ProjektSpeichernUnter_Load). Ein Aufrufer liest sie heute nicht mehr:
+        // MenueCtrl.ProjektSpeichernUnter wertet nur das DialogResult aus. Sie bleiben
+        // deshalb BEWUSST auf ihrem Anfangswert aus dem Konstruktor - ein echter Wert darin
+        // waere eine Behauptung, auf die sich niemand verlassen koennte. Beim Aufraeumen
+        // der Projektdialoge ersatzlos weg.
         public int m_ID_Klimaregion;
         public int m_ID_Projekt;
         public string m_szKlimaregion;
+        public DateTime m_Datum;
+
+        // Ebenfalls Altlast, aber ab jetzt mit ehrlichem Inhalt: Nach erfolgreichem
+        // Duplizieren stehen hier die Werte, die auf der KOPIE gelandet sind. Auch sie
+        // liest zurzeit kein Aufrufer.
         public string m_szKunde;
         public string m_szBearbeiter;
-        public DateTime m_Datum;
 
         public Form_ProjektSpeichernUnter()
         {
@@ -95,6 +107,10 @@ namespace WindowsFormsApplication1
             }
             if (neueId > 0)
             {
+                // Beschreibung, Kunde und Bearbeiter auf die KOPIE schreiben - vor dem
+                // Schliessen, damit ein Fehler dabei noch gemeldet werden kann.
+                VerwaltungsfelderAufKopieSchreiben();
+
                 // Auch bei sehr schnellem Kopieren den fertigen Balken kurz sichtbar lassen.
                 progressBar_Duplizieren.Value = progressBar_Duplizieren.Maximum;
                 lbl_Fortschritt.Text = "Fertig";
@@ -108,6 +124,67 @@ namespace WindowsFormsApplication1
             {
                 // Fehler: Duplizieren hat bereits gemeldet -> Dialog offen lassen.
                 SetBusy(false);
+            }
+        }
+
+        /// <summary>
+        /// Schreibt Beschreibung, Kunde und Bearbeiter aus den drei Eingabefeldern auf die
+        /// FERTIG DUPLIZIERTE Kopie.
+        ///
+        /// <para>
+        /// Reihenfolge ist hier keine Geschmacksfrage: <see cref="ProjektCtrl.Update"/>
+        /// schreibt mit EINEM UPDATE auch ID_Klimaregion und Erstelldatum
+        /// (WHERE Projektname=?). Wuerde man einen frisch angelegten ProjektCtrl nur mit
+        /// den drei Textfeldern fuellen, traegt die Kopie hinterher Klimaregion 0 und ein
+        /// Erstelldatum von heute. Deshalb wird die Kopie zuerst GELESEN und danach werden
+        /// nur die drei Textfelder plus Aenderungsdatum ueberschrieben - alles Uebrige
+        /// laeuft unveraendert durch.
+        /// </para>
+        /// <para>
+        /// Fehler werden gemeldet, aber NICHT zurueckgerollt: Die Kopie ist an dieser
+        /// Stelle vollstaendig angelegt; sie wieder wegzuwerfen, weil ein Beschreibungstext
+        /// nicht geschrieben werden konnte, waere der groessere Schaden. Der Anwender kann
+        /// die drei Felder im Hauptformular jederzeit nachtragen.
+        /// </para>
+        /// </summary>
+        private void VerwaltungsfelderAufKopieSchreiben()
+        {
+            try
+            {
+                ProjektCtrl ctrl = new ProjektCtrl();
+                ctrl.ReadSingle(m_szNeuerProjektName);
+
+                if (ctrl.rows == 0)
+                {
+                    MessageBox.Show("Die Kopie '" + m_szNeuerProjektName + "' wurde nicht gefunden. "
+                        + "Beschreibung, Kunde und Bearbeiter wurden nicht uebernommen.",
+                        "Hinweis", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                ctrl.m_szBeschreibung = textBox_Beschreibung.Text;
+                ctrl.m_szKunde = textBox_Kunde.Text;
+                ctrl.m_szBearbeiter = textBox_Bearbeiter.Text;
+                ctrl.m_Aenderungsdatum = DateTime.Now;
+
+                // Ergebnisfelder des Dialogs mitfuehren (siehe Kommentar an der Deklaration).
+                m_szKunde = ctrl.m_szKunde;
+                m_szBearbeiter = ctrl.m_szBearbeiter;
+
+                if (!ctrl.Update())
+                {
+                    // ExecuteSQL hat den Datenbankfehler bereits gemeldet - hier fehlt nur
+                    // noch die Folge fuer den Anwender.
+                    MessageBox.Show("Beschreibung, Kunde und Bearbeiter konnten nicht gespeichert werden. "
+                        + "Die Projektkopie selbst ist angelegt.",
+                        "Hinweis", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Beschreibung, Kunde und Bearbeiter konnten nicht gespeichert werden: "
+                    + ex.Message + Environment.NewLine + "Die Projektkopie selbst ist angelegt.",
+                    "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -135,6 +212,9 @@ namespace WindowsFormsApplication1
             button_Abbrechen.Enabled = !busy;
             listView_Projekt.Enabled = !busy;
             textBox_NeuerProjektName.Enabled = !busy;
+            textBox_Beschreibung.Enabled = !busy;
+            textBox_Kunde.Enabled = !busy;
+            textBox_Bearbeiter.Enabled = !busy;
             this.UseWaitCursor = busy;
         }
 
@@ -145,7 +225,32 @@ namespace WindowsFormsApplication1
             {
                 ListViewItem lvitem = listView_Projekt.Items[indexes[0]];
                 m_szProjekt = lvitem.Text;
+                QuellProjektFelderLaden();
             }
+        }
+
+        /// <summary>
+        /// Belegt Beschreibung, Kunde und Bearbeiter mit den Werten des links gewaehlten
+        /// QUELLPROJEKTS vor.
+        ///
+        /// <para>
+        /// Ein Auswahlwechsel ueberschreibt dabei BEWUSST bereits eingetippte Aenderungen:
+        /// Die drei Felder gehoeren sichtbar zum gewaehlten Projekt. Ein stehengebliebener
+        /// Text des vorher markierten Projekts waere die groessere Ueberraschung - er
+        /// landete unbemerkt auf der Kopie eines ganz anderen Projekts.
+        /// </para>
+        /// </summary>
+        private void QuellProjektFelderLaden()
+        {
+            if (string.IsNullOrEmpty(m_szProjekt)) return;
+
+            ProjektCtrl ctrl = new ProjektCtrl();
+            ctrl.ReadSingle(m_szProjekt);
+            if (ctrl.rows == 0) return;
+
+            textBox_Beschreibung.Text = ctrl.m_szBeschreibung ?? "";
+            textBox_Kunde.Text = ctrl.m_szKunde ?? "";
+            textBox_Bearbeiter.Text = ctrl.m_szBearbeiter ?? "";
         }
 
         private void listView_Projekt_DoubleClick(object sender, EventArgs e)
