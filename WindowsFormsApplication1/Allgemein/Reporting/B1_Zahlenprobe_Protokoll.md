@@ -40,6 +40,10 @@ Bestandsverhalten" kostet nichts, die schärfere Vorgabe aber auch nicht.
 **Entscheidung liegt beim Anwender** (BF1); die Umsetzung gehört zu B6/M-3, nicht
 hierher.
 
+> **Nachtrag 30.08.2026 — BF1 entschieden: Vorgabe „Ausweis"** (Anwenderentscheid).
+> BW3 wird in B6/M-3 mit Vorgabe `AUSWEIS` umgesetzt; der Projekt-Umschalter
+> (`Stromst_Befreiung_Modus`) bleibt für Preise ohne Steueranteil.
+
 ---
 
 ## 2 Teil B — Zahlenprobe gegen die Altanwendung (Befund A8): BLOCKIERT
