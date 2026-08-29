@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using KiKern;
 using Xunit;
@@ -109,6 +110,28 @@ namespace KiKern.Tests
             Assert.Equal(12.5, zeilen[0]!["leistung_kw"]!.GetValue<double>());
             Assert.Equal("Name 1", zeilen[0]!["name"]!.GetValue<string>());
             Assert.Equal("Name 2", zeilen[1]!["name"]!.GetValue<string>());
+        }
+
+        [Fact]
+        public void EinDatumGehtAlsDatumHinausNichtAlsPlatzhalter()
+        {
+            // Datumsfelder sind keine Bezeichner: Die Aktionen legen sie als DateTime in
+            // die Zeile, und WertKnoten formatiert invariant, statt platzzuhalten. Als
+            // Zeichenkette angeliefert wuerde dasselbe Datum zu "Name n".
+            var p = new KiPlatzhalter();
+            KiErgebnis e = KiErgebnis.Ok("1 Projekt gefunden.", new[]
+            {
+                Zeile("name", "Musterstraße 7",
+                      "geaendert", new DateTime(2026, 8, 29, 14, 30, 0))
+            });
+
+            JsonNode k = JsonNode.Parse(
+                KiRueckmeldung.Erzeuge(Aufruf("projekte_auflisten", "{}"), e, p))!;
+
+            JsonNode zeile = ((JsonArray)k["zeilen"]!)[0]!;
+            Assert.Equal("2026-08-29", zeile["geaendert"]!.GetValue<string>());
+            Assert.Equal("Name 1", zeile["name"]!.GetValue<string>());
+            Assert.Equal(1, p.Anzahl);
         }
 
         [Fact]
