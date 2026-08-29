@@ -155,8 +155,9 @@ namespace WindowsFormsApplication1
     /// Es werden keine Projekt-, Kunden- oder Simulationsdaten gesendet.
     /// Seit H4 gibt es einen ZWEITEN, davon getrennten Datenfluss: Zur Suche in
     /// der Online-Dokumentation gehen STICHWÖRTER der Frage (Wörter ab vier
-    /// Zeichen, siehe WikiWissen.Stichwoerter) an den eigenen Server
-    /// wiki.epos-plan.de - nie die Rohfrage, keine Kontextangabe. Nach
+    /// Zeichen, seit H9 ohne Füllwörter und bei Trefferarmut in bis zu drei
+    /// verkürzten Stufen, siehe WikiWissen.Stichwoerter/Suchstufen) an den
+    /// eigenen Server wiki.epos-plan.de - nie die Rohfrage, keine Kontextangabe. Nach
     /// Entscheid 7.4 geschieht das auch im Betrieb ohne KI; der Rechtshinweis
     /// benennt es (Entscheid 7.5, KiEinwilligung.FASSUNG bleibt unverändert).
     /// Die dort geholten Auszüge sind Hilfetexte im Sinne der Zusage oben und
