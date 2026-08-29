@@ -220,6 +220,9 @@ namespace WindowsFormsApplication1
                 }
                 if (list_pwmodel.Count == 0)
                 {
+                    // Nur bei gefuelltem Katalog - Rows[0] warf bei leerem Grid.
+                    if (dataGridView1.Rows.Count == 0) return;
+
                     dataGridView1.Rows[0].Selected = true;
                     dataGridView1.Rows[0].Cells[0].Selected = true;
 

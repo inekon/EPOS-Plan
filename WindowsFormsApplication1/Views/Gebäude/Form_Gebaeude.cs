@@ -303,6 +303,9 @@ namespace WindowsFormsApplication1
             dataGridView1.ClearSelection();
             if (list_gebmodel.Count == 0)
             {
+                // Nur bei gefuelltem Katalog - Rows[0] warf bei leerem Grid.
+                if (dataGridView1.Rows.Count == 0) return;
+
                 dataGridView1.Rows[0].Selected = true;
                 dataGridView1.Rows[0].Cells[0].Selected = true;
 
