@@ -440,3 +440,126 @@ Auf Weisung außerhalb des Umfangs und nachweislich unberührt: `Allgemein\Updat
 `Allgemein\DbWerte.cs`, sämtlicher Emissions-/CO₂-Bezug, beide `CLAUDE.md`, das Konzeptdokument
 selbst. Erscheinen diese Dateien im `git status` als geändert, stammen die Änderungen aus der
 parallel laufenden Sitzung. Es wurde **kein** Git-Schreibkommando ausgeführt.
+
+---
+
+## 14. Nachtrag 29.08.2026 — Fix „graue Buttons"
+
+**Befund aus dem Programmlauf:** Nach dem Start der neuen EXE (14:42) waren praktisch
+**alle** Info-Schaltflächen (`btn_Help*`) ausgegraut — obwohl der neue MediaWiki-Lader
+nachweislich funktionierte (`%APPDATA%\EPOS-Plan\help_cache.json`, 14:49, 23 Wiki-Einträge)
+und die h1probe „26/26 Mapping-Ziele lösen auf" meldete.
+
+### 14.1 Ursache
+
+**Nicht** im Code von H1/H2, sondern in einer **Restdatei im Ausgabeordner**:
+
+```
+WindowsFormsApplication1\bin\x64\Debug\net8.0-windows\help_mapping.txt   464 Byte, 28.08.2026 17:16
+WindowsFormsApplication1\bin\x64\Release\net8.0-windows\help_mapping.txt 464 Byte, 28.08.2026 17:16   (identischer SHA-256)
+```
+
+Diese Datei stammt aus der Zeit, als die Zuordnung noch mitkopiert wurde. Seit sie
+`EmbeddedResource` ist (`WindowsFormsApplication1.csproj:164–176`, Kommentar: „deshalb wird sie
+bewusst NICHT in den Ausgabeordner kopiert"), **überschreibt kein Build sie mehr** — sie blieb
+als Leiche liegen und gewann zur Laufzeit gegen die eingebettete Fassung.
+
+Sie enthält 9 Zeilen aus einem sehr frühen Stand mit **WordPress-Slugs**:
+
+```
+Form_Kosten.btn_Help=kostenrechnung
+Form_Start.btn_Help=Programmfunktionen
+Form_Klimadaten.btn_Help=klimadaten
+Form_Start.btn_Help_Waermebedarf=waermebedarfsrechnung
+Form_Start.btn_Help_Kurzanleitung=epos-plan-kurzanleitung
+Form_Start.btn_Help_Strombedarf=strombedarf
+```
+
+Die Wirkung war zweistufig und deckt den Befund vollständig:
+
+1. `HelpExtender.ZuordnungLaden` (vorher `HelpCatalog.cs:945–997`) las die Datei neben der EXE und
+   gab sie **als Ersatz** zurück — die eingebettete 26-Zeilen-Fassung wurde gar nicht erst
+   geöffnet. Für 20 der 26 Programmstellen existierte damit **keine Zeile**, und
+   `InfobuttonsOhneZuordnungAbschalten` (vorher `:1007`, jetzt `:1061`) schaltete sie sofort ab
+   („hat keine Zeile in help_mapping.txt").
+2. Von den 6 verbliebenen Zeilen trafen im neuen Wiki-Katalog nur `klimadaten` und `strombedarf`
+   (die Kleinschreibform der Kurznamen „Klimadaten"/„Strombedarf"). `kostenrechnung`,
+   `Programmfunktionen`, `waermebedarfsrechnung` und `epos-plan-kurzanleitung` lösten nicht auf →
+   `ZuordnungenPruefen` (vorher `:1063`, jetzt `:1117`) schaltete auch diese ab.
+
+**Ergebnis: 24 von 26 Info-Buttons grau.** Aktiv blieben allein `Form_Klimadaten.btn_Help` und
+`Form_Start.btn_Help_Strombedarf` — zwei Zufallstreffer.
+
+Die im Auftrag genannten Verdächtigen sind entlastet: `ZielAufloesen` mit Anker-`out`-Parameter,
+`Aufloesen`, die `HelpEntry`-Kopie in `EintragHolen`, der Registrierungsweg über
+`WikiHelpCatalog`/`HilfeAutomatik` und der BOM in `help_mapping.txt` verhalten sich alle korrekt
+(Phase B/B2/C des Beweises unten).
+
+### 14.2 Fix
+
+**Datei `Allgemein\Hilfe\HelpCatalog.cs`, `HelpExtender.ZuordnungLaden`** — aus *Ersatz* wird
+*Auflage*:
+
+| | vorher (`:945–997`, eine Methode) | nachher (`:971` `ZuordnungLaden`, `:995` `ZuordnungNebenExeLaden`, `:1019` `ZuordnungEingebettetLaden`) |
+|---|---|---|
+| Ablauf | Datei neben der EXE gefunden → **return**; die eingebettete Fassung wurde nie gelesen | `ZuordnungEingebettetLaden()` **immer**, danach `ZuordnungNebenExeLaden()`; beide Listen werden aneinandergehängt, die Datei-Zeilen **hinten** |
+| Vorrang | Datei ersetzt alles | Datei übersteuert je Zeile — `ZuordnungenAnwenden` wendet jede passende Zeile an, `SetHelpKey` überschreibt den Schlüssel, also gewinnt die zuletzt gelesene Zeile |
+| Fehlende Zeilen | verschwinden ersatzlos → Button grau | bleiben in Kraft |
+| Protokoll | eine Zeile je Quelle | zusätzlich eine Zeile „N eingebettete Zeilen, darüber M Zeilen aus der Datei neben der EXE" |
+
+Der Zweck von F2 („Zuordnungen ohne Neubau korrigieren") bleibt unverändert erhalten; verloren
+geht nur die Möglichkeit, eine Zuordnung durch **Weglassen** einer Zeile zu entfernen — siehe
+§ 14.5.
+
+**Umgebung:** Beide Restdateien wurden entfernt (vorher gesichert). Ohne diesen Schritt blieben
+auf dem Entwicklerrechner die vier Buttons grau, die die Restdatei ausdrücklich falsch zuordnet
+(`Form_Start.btn_Help`, `…_Kurzanleitung`, `…_Waermebedarf`, `Form_Kosten.btn_Help`).
+
+### 14.3 Beweis — `..\dev\h2probe_buttons\` (gitignored)
+
+Wegwerf-Harnesse gegen die gebaute Assembly (`..\dev\build_fix\`), das die **echte Verkabelung**
+fährt statt der Katalogebene: 23 reale `Form`-Objekte mit den 26 realen `btn_Help*`-Schaltflächen,
+registriert über `HelpExtender.RegisterBaum(form, form.Name)` — genau der eine Aufruf, den
+`HilfeAutomatik.WurzelErfassen` im Programm macht —, anschließend die Frage `button.Enabled`.
+Der Katalog wird offline aus dem eingebetteten Startbestand belegt (23 Seiten, inhaltsgleich mit
+der AppData-Sicherung vom 29.08. 14:49) und über das Feld `_geladen` auf `IsLoaded = true`
+gesetzt. Zwei Phasen im selben Prozess, dazwischen wird `HelpExtender._mappingZeilen` geleert.
+
+| Phase | Lage | vor dem Fix | nach dem Fix |
+|---|---|---|---|
+| **A** | die 464-Byte-Restdatei liegt neben der EXE | **2 von 26 aktiv** (24 grau) — der Befund, deterministisch nachgestellt | **22 von 26 aktiv**; grau bleiben genau die 4, die die Restdatei selbst falsch zuordnet |
+| **B** | keine Datei neben der EXE → eingebettete Fassung | 26/26 aktiv | 26/26 aktiv |
+| **B2** | wie B, `Program.nLanguage = 1` (EN-Rückfall auf das eine Ziel) | 26/26 aktiv | 26/26 aktiv |
+| **C** | Klickziel über `EintragHolen` | grün | grün |
+
+Phase C im Einzelnen: ohne Anker
+`…/Programm_Dokumentation/Pufferspeicher`; mit Anker
+`…/Programm_Dokumentation/Pufferspeicher#ladung`; der Katalogeintrag bleibt ankerfrei (Kopie);
+EN-Proxy
+`https://wiki-epos--plan-de.translate.goog/wiki/Programm_Dokumentation/Pufferspeicher?_x_tr_sl=de&_x_tr_tl=en&_x_tr_hl=en#ladung`
+(Anker hinter der Query); DE unverändert.
+
+Vor dem Fix: `1 FEHLER`, ExitCode 1 (Phase A). Nach dem Fix: `ALLES GRUEN`, ExitCode 0.
+Die bestehende `..\dev\h1probe\` läuft gegen dieselbe Assembly weiterhin mit **33 Prüfungen grün**,
+darunter „alle Ziele im Katalog → 26/26".
+
+### 14.4 Warum die ursprüngliche Prüfung das nicht sah
+
+`h1probe` misst die **Katalogebene**: `katalog.Contains(ziel)` für die 26 Ziele, als
+Zeichenketten-Feld im Prüfprogramm. Sie liest `help_mapping.txt` nie, ruft `ZuordnungLaden` nie
+auf und kennt keinen `Control`. Genau die zwei Glieder der Kette, an denen es hing — **welche
+Zuordnungsdatei gewinnt** und **welcher Button daraufhin `Enabled` ist** —, lagen außerhalb ihres
+Messbereichs. Deshalb konnte sie „26/26" melden, während im Programm 24 von 26 Schaltflächen grau
+waren. `h2probe_buttons` schließt diese Lücke.
+
+### 14.5 Offene Konzeptfrage
+
+Die Datei neben der EXE kann einen Info-Button jetzt nicht mehr durch **Weglassen** seiner Zeile
+abschalten — nur noch durch Umschreiben auf ein Ziel, das der Katalog nicht kennt. Falls das
+gezielte Abschalten je gebraucht wird, wäre eine ausdrückliche Marke nötig (etwa
+`Form_X.btn_Help = -`). Bewusst nicht umgesetzt: Der Fall ist bisher nirgends verlangt, und die
+stillschweigende Löschwirkung war genau der Fehler.
+
+Ebenfalls offen (Betrieb, kein Code): Ein Installer, der `help_mapping.txt` je neben die EXE legt,
+löst dasselbe Verhalten aus — die Datei muss dort dauerhaft **fehlen**, sonst friert sie die
+Zuordnungen ein, die sie nennt.
