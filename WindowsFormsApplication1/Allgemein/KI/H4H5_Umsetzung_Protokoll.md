@@ -429,3 +429,135 @@ sämtlicher Emissions-/CO₂-Bezug, beide `CLAUDE.md`, das Konzeptdokument selbs
 (Fassung bleibt 2). Erscheinen diese Dateien im `git status` als geändert, stammen die Änderungen
 aus der parallel laufenden Sitzung. Es wurde **kein** Git-Schreibkommando ausgeführt und
 `GitHub_Sync.bat` nicht aufgerufen.
+
+---
+
+# H9 — Suchgüte der Wiki-Suche (Nachtrag, 29.08.2026)
+
+Kleiner gezielter Eingriff, **nur** `Allgemein\KI\WikiWissen.cs` (UTF-8 ohne BOM, CRLF — vor der
+Änderung geprüft, danach nachgemessen: unverändert). Harnisch unter `..\dev\h9probe\` und
+`..\dev\h9probe_h4regress\` (beide gitignored). Kein Git-Schreibkommando.
+
+## H9.1 Befund
+
+Die Volltextsuche `rest.php/v1/search/page` verknüpft ihre Terme mit **UND** — jeder Term muss auf
+derselben Seite stehen. Die Stichwortableitung nahm bis dahin *jedes* Wort ab vier Zeichen mit, also
+auch Füllwörter. Live nachgemessen am 29.08.2026 gegen `wiki.epos-plan.de`:
+
+| gesendete Kette | Treffer |
+|---|---|
+| `kann Warmwasserbedarf angelegt werden` (Stand **vor** H9) | **0** |
+| `warmwasserbedarf angelegt` (H9, Stufe 1) | 1 |
+| `warmwasserbedarf` (H9, letzte Stufe) | **5** |
+
+Ein einziges Füllwort in der Kette machte die Trefferliste leer. Für die Nutzerfrage „wie kann der
+Warmwasserbedarf angelegt werden" landeten deshalb **keine** Wiki-Abschnitte im Prompt — nur die
+Kontextseite und das Einbauwissen.
+
+## H9.2 Regel 1 — Stoppwortliste
+
+`WikiWissen.STOPPWOERTER` (`internal static readonly HashSet<string>`, `OrdinalIgnoreCase`), gefiltert
+in `Stichwoerter()` **nach** der Längenregel. Aufgenommen sind ausschließlich Modal-/Hilfsverben und
+Funktionswörter (`kann`, `können`, `werden`, `soll`, `muss`, `möchte`, `gibt`, `haben`, `sind`,
+`eine`/`einen`/`einem`/`einer`/`eines`, `welche(r/s)`, `diese(r/s)`, `auch`, `oder`, `aber`, `nicht`,
+`sich`, `beim`, `über`, `unter`, `für`, `ohne`, `nach`, `wenn`, `dass`, `damit`, `bitte`, `viele`,
+`mehr`, `wofür`, `wozu`, `wieso`, `warum`, `weshalb` …). Umlaute stehen in **beiden** Schreibweisen
+(`müssen`/`muessen`, `über`/`ueber`), weil `ToLowerInvariant()` nicht umschreibt.
+
+**Fachverben bleiben ausdrücklich drin** — `anlegen`/`angelegt`, `importieren`, `simulieren`,
+`berechnen` treffen oft genau die richtige Seite; Rest-Füllwörter fängt die Kaskade ab.
+
+**Notbremse:** Besteht eine Frage *ausschließlich* aus Füllwörtern („was kann das denn werden"), gilt
+weiter die ungefilterte Liste — sonst ginge gar nichts mehr hinaus.
+
+Datenschutz: Es geht dadurch **weniger** hinaus als vorher, kein neuer Datenfluss. Der Rechtshinweis
+(H5, Einwilligungsfassung 2) bleibt unverändert.
+
+## H9.3 Regel 2 — Rückfall-Kaskade
+
+`Suchstufen(frage)` baut die Stufenliste, `SuchtrefferAsync` fährt sie ab; ein Aufruf je Stufe über
+das neue `EineSucheAsync`, Zeitgrenzen und Fehlerstille unverändert (4 s je Aufruf, jeder Fehler
+endet still mit leerem Ergebnis).
+
+- **(a)** alle verbliebenen Stichwörter — liefert sie **< 2** Treffer, weiter zu
+- **(b)** die **zwei längsten** Stichwörter — liefert sie **< 1** Treffer, weiter zu
+- **(c)** nur das **längste** Stichwort.
+
+Länge bei Gleichstand: die frühere Stelle in der Frage gewinnt (`OrderByDescending` ist stabil,
+`Stichwoerter()` liefert in Fragereihenfolge). **Treffer der Stufen werden nie gemischt** — es gilt
+immer das Ergebnis *einer* Stufe. Zwei Feinheiten, die im Auftrag nicht standen und hier offen
+ausgewiesen sind:
+
+1. **Deckungsgleiche Stufen entfallen.** Hat die Frage nur zwei Stichwörter, ist (b) dieselbe
+   Wortmenge wie (a) — der Aufruf wäre verschenkt. Verglichen wird die *Menge*, nicht die
+   Zeichenkette, weil (a) nach Fragereihenfolge und (b) nach Länge reiht. Höchstens drei Aufrufe
+   bleibt damit erst recht eingehalten; eine Frage mit einem Stichwort kostet genau einen.
+2. **Kein Rückschritt.** Eine spätere Stufe überholt eine frühere nur, wenn sie **mehr** findet.
+   Ohne diese Klammer verlöre eine Frage, deren Stufe (a) einen Treffer hat und deren letzte Stufe
+   leer ausgeht, den vorhandenen Treffer.
+
+Neu zur Diagnose (rein lesend, keine Programmlogik hängt daran): `LetzteSuchAdressen`
+(alle Adressen des letzten Laufs) und `LetzteSuchStufe` (Stelle der liefernden Stufe; 1 = volle
+Stichwortliste, alles darüber = Rückfall). `LetzteSuchAdresse` bleibt und trägt die zuletzt
+gesendete Adresse. `SuchAdresse(basis, frage)` verhält sich unverändert (Stufe 1) und delegiert an
+das neue `SuchAdresseFuer(basis, stichwortliste)`.
+
+## H9.4 Harnisch `..\dev\h9probe\` — Zahlen des Laufs
+
+**59 Prüfungen, 0 Fehler, Rückgabewert 0** („ALLES GRUEN"). Live gegen `wiki.epos-plan.de`, ohne
+Google-Aufruf und ohne Produktiv-Datenbank (Abschnitt 8 des Harnischs weist beides nach: alle vier
+gesendeten Adressen liegen auf der Wiki-Basis, keine OleDb-Assembly im Prozess).
+
+| Prüfblock | Ergebnis |
+|---|---|
+| 1 Stoppwortliste | „wie kann der Warmwasserbedarf angelegt werden" → `warmwasserbedarf \| angelegt`; `importieren`/`simuliert`/`berechnen` bleiben; Groß-/Kleinschreibung und beide Umlautformen geprüft |
+| 2 Kaskadenaufbau | vage Frage = **2** Stufen (b entfällt); drei Stichwörter = 3 Stufen; ein Stichwort = 1 Stufe; Gleichstand `klimadaten` vor `heizkessel` |
+| 3 Befund live | 0 / 1 / 5 Treffer (Tabelle H9.1) |
+| 4 **Nutzerfrage live** | **3 Abschnitte**: `Wärmebedarf erfassen` (3908 Z.), `Grundlagen/Wärmebedarfsrechnung` (4472 Z.), `Grundlagen/Pufferspeicher` (4181 Z.) — alle HTTP 200. **2** gesendete Adressen, Ergebnis aus **Stufe 2** ⇒ nachgesucht |
+| 5 Gegenprobe „Pufferspeicher Hysterese" | **1** Aufruf, **Stufe 1**, 3 Abschnitte — verhält sich wie vor H9 |
+| 6 Regression H4-Frage | Kontextseite `Programm Dokumentation/Simulation` weiterhin vorn, 3 Abschnitte, Rohfrage nicht in der Adresse |
+| 7 Stoppwort-Assert | `kann` und `werden` in **0 von 4** Such-Adressen; keine Adresse trägt die Rohfrage |
+| 8 Empfänger | 4 Adressen, alle auf `https://wiki.epos-plan.de`; kein Modellanbieter; keine DB |
+
+Ohne Kontext gesucht, damit das Ergebnis der Nutzerfrage allein an der Suche hängt. Die beiden
+gesendeten Adressen des Beweislaufs:
+
+```
+https://wiki.epos-plan.de/rest.php/v1/search/page?q=warmwasserbedarf%20angelegt&limit=5
+https://wiki.epos-plan.de/rest.php/v1/search/page?q=warmwasserbedarf&limit=5
+```
+
+## H9.5 Zweiter Harnisch — der H4-Prüflauf gegen den H9-Stand
+
+`..\dev\h9probe_h4regress\` ist die Kopie von `..\dev\h4probe\` mit Pfaden auf `..\dev\build_h9\`.
+Damit läuft der **komplette H4-Prüfkatalog** (Stichwörter, Zuordnungstabelle, Kappung, Live-Suche,
+Tagescache, Offline-Rückfall, Prompt-Aufbau ohne Google, Sprachregel, Ressourcen) gegen den geänderten
+Code: **76 Prüfungen, 0 Fehler, Rückgabewert 0** („ALLES GRUEN"). Der Prompt führt weiterhin drei
+Wiki-Abschnitte vor dem lokalen Abschnitt.
+
+Zwei Prüfungen des H4-Katalogs mussten dafür nachgezogen werden — beide **überholt durch H7**, nicht
+durch H9, und nur in der Kopie geändert (`..\dev\h4probe\` bleibt unangetastet):
+
+- `Bericht → keine Seite` → `Bericht → Berichte und Kosten`; H7 hat den Rubrikeintrag ergänzt.
+- `Rubrik hat 23 Unterseiten` → `32`; H7 hat neun Unterseiten angelegt (23 + 9).
+
+## H9.6 Build
+
+```
+MSBuild ..\WP-Plan.sln -p:Configuration=Debug -p:Platform=x64 -p:OutDir=C:\Waermeplan\WP_Plan\dev\build_h9\
+```
+
+**0 Fehler, 5 Warnungen** — genau die bekannten fünf (`KlimaregionStammCtrl` CS0109 ×2,
+`WErzeugerModel` CS0108, `StromverbraucherStammCtrl` CS0108, `MDIMainForm` CS1998). Keine neue
+Warnung.
+
+## H9.7 Nicht angefasst / offen
+
+Berührt wurde **ausschließlich** `Allgemein\KI\WikiWissen.cs`; `git status` weist im Arbeitsbaum
+genau diese eine geänderte Datei aus. `Allgemein\KI\Aktionen\`, `..\KiKern\` und `KiChatService.cs`
+blieben unberührt (parallele Sitzungen), ebenso beide `CLAUDE.md`.
+
+Offen, bewusst liegen gelassen, weil die Datei einer parallelen Sitzung gehört: der Kommentar in
+`KiChatService.cs` (Zeile ~158) beschreibt die gesendete Kette noch als „Wörter ab vier Zeichen,
+siehe `WikiWissen.Stichwoerter`" — sachlich nicht falsch, aber seit H9 unvollständig (die Stoppwörter
+fehlen). Nachzuziehen, sobald die Datei frei ist.

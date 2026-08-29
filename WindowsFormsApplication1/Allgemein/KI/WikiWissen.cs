@@ -21,13 +21,27 @@ namespace WindowsFormsApplication1
     /// <remarks>
     /// <para>
     /// <b>Was hinausgeht.</b> An das Wiki geht eine kurze STICHWORTLISTE, nie die
-    /// Rohfrage (<see cref="Stichwortliste"/>). Die Ableitung ist dieselbe wie in
-    /// <see cref="HilfeWissen"/>: Woerter ab vier Zeichen, kleingeschrieben,
-    /// ohne Wiederholung. Empfaenger ist der eigene Server
+    /// Rohfrage (<see cref="Stichwortliste"/>). Grundlage ist die Ableitung aus
+    /// <see cref="HilfeWissen"/> - Woerter ab vier Zeichen, kleingeschrieben,
+    /// ohne Wiederholung -, seit H9 zusaetzlich ohne deutsche Fuellwoerter
+    /// (<see cref="STOPPWOERTER"/>). Empfaenger ist der eigene Server
     /// <c>wiki.epos-plan.de</c> ueber TLS und ohne Anmeldung - ein ZWEITER
     /// Datenfluss neben dem Modellanbieter, der nach Entscheid 7.4 auch im
     /// Betrieb ohne KI stattfindet und deshalb im Rechtshinweis benannt ist
-    /// (Entscheid 7.5, Fassung der Einwilligung bleibt unveraendert).
+    /// (Entscheid 7.5, Fassung der Einwilligung bleibt unveraendert). Die
+    /// Filterung sendet damit WENIGER als vorher - datenschutzrechtlich eine
+    /// Verbesserung, kein neuer Datenfluss.
+    /// </para>
+    /// <para>
+    /// <b>Warum weniger mehr findet (H9, 29.08.2026).</b> Die Volltextsuche
+    /// <c>rest.php/v1/search/page</c> verlangt ALLE Terme auf derselben Seite.
+    /// Ein einziges Fuellwort in der Kette macht die Trefferliste leer:
+    /// gemessen an "wie kann der Warmwasserbedarf angelegt werden" -&gt;
+    /// "kann Warmwasserbedarf angelegt werden" -&gt; 0 Treffer, waehrend
+    /// "Warmwasserbedarf" allein sofort die richtigen Seiten liefert. Deshalb
+    /// erst die Stoppwortliste und dann die Rueckfall-Kaskade
+    /// (<see cref="Suchstufen"/>): alle Stichwoerter, sonst die zwei laengsten,
+    /// sonst das laengste.
     /// </para>
     /// <para>
     /// <b>Reihenfolge je Seite:</b> frischer Cache -> Online -> abgelaufener
@@ -87,6 +101,32 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static string LetzteSuchAdresse { get; private set; } = "";
 
+        /// <summary>Alle Adressen der letzten Kaskade, in der Reihenfolge des Versands.</summary>
+        private static List<string> _letzteSuchAdressen = new List<string>();
+
+        /// <summary>
+        /// Saemtliche Such-Adressen des letzten Laufs (eine je Stufe, hoechstens
+        /// drei) - Nachweis, dass die Kaskade greift und dass in KEINER Stufe ein
+        /// Fuellwort mitgeht. Reine Diagnose, wie
+        /// <see cref="LetzteSuchAdresse"/>; beide sind prozessweit und beim
+        /// gleichzeitigen Suchen aus zwei Fenstern entsprechend unzuverlaessig -
+        /// auf ihnen haengt keine Programmlogik.
+        /// </summary>
+        public static IReadOnlyList<string> LetzteSuchAdressen
+        {
+            get { return _letzteSuchAdressen; }
+        }
+
+        /// <summary>
+        /// Nummer der Kaskadenstufe, aus der die zuletzt gelieferte Trefferliste
+        /// stammt - gezaehlt wird die Stelle in <see cref="Suchstufen"/>, also
+        /// 1 fuer die erste TATSAECHLICH gesendete Anfrage. Weil deckungsgleiche
+        /// Stufen entfallen, ist 2 nicht zwingend "die zwei laengsten"; sicher
+        /// ist nur: 1 = die volle Stichwortliste, alles darueber = ein Rueckfall.
+        /// 0 heisst, es wurde nichts gesendet.
+        /// </summary>
+        public static int LetzteSuchStufe { get; private set; }
+
         // ==================================================================
         //  Basis-URL
         // ==================================================================
@@ -114,20 +154,133 @@ namespace WindowsFormsApplication1
             { ' ', '\t', '\r', '\n', ',', ';', '.', '?', '!', ':', '(', ')', '"', '\'', '/', '-' };
 
         /// <summary>
-        /// Die Stichwoerter einer Frage: Woerter ab vier Zeichen, kleingeschrieben,
-        /// ohne Wiederholung - dieselbe Regel, nach der <see cref="HilfeWissen"/>
-        /// lokal bewertet (dort <c>if (w.Length &lt; 4) continue;</c>).
+        /// Deutsche Fuellwoerter, die aus der Stichwortliste fallen (H9).
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Bewusst konservativ.</b> Aufgenommen sind nur Modal- und
+        /// Hilfsverben sowie Funktionswoerter - also Woerter, die auf JEDER
+        /// Seite stehen koennen und deshalb nichts eingrenzen, aber die
+        /// UND-Suche des Wikis leerlaufen lassen. FACHVERBEN
+        /// ("anlegen", "importieren", "simulieren", "berechnen") bleiben
+        /// ausdruecklich drin: sie treffen oft genau die richtige Seite. Was
+        /// dennoch zuviel ist, faengt die Kaskade in <see cref="Suchstufen"/> ab.
+        /// </para>
+        /// <para>
+        /// Woerter unter vier Zeichen ("wie", "der", "das", "ist") entfernt schon
+        /// die Laengenregel; sie stehen hier nur, wo eine Umlautform ueber die
+        /// Grenze kommt. Umlaute werden in beiden Schreibweisen gefuehrt (ue/ü),
+        /// weil Anwender beides tippen und <see cref="string.ToLowerInvariant"/>
+        /// nicht umschreibt.
+        /// </para>
+        /// </remarks>
+        internal static readonly HashSet<string> STOPPWOERTER =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            // Modal- und Hilfsverben
+            "kann", "kannst", "koennen", "können", "koennte", "könnte",
+            "werden", "wird", "wurde", "wurden", "wuerde", "würde",
+            "soll", "sollen", "sollte", "muss", "muessen", "müssen",
+            "moechte", "möchte", "machen", "macht", "gibt", "geben",
+            "haben", "habe", "sein", "sind",
+            // Artikel, Pronomen, Bestimmwoerter ab vier Zeichen
+            "eine", "einen", "einem", "einer", "eines",
+            "welche", "welcher", "welches",
+            "dieser", "diese", "dieses", "sich",
+            // Praepositionen, Konjunktionen, Partikeln
+            "auch", "oder", "aber", "nicht", "beim", "ueber", "über",
+            "unter", "fuer", "für", "ohne", "nach", "wenn", "dass",
+            "damit", "denn", "dann", "bitte", "viele", "mehr",
+            // Fragewoerter ab vier Zeichen
+            "wofuer", "wofür", "wozu", "wieso", "warum", "weshalb"
+        };
+
+        /// <summary>
+        /// Die Stichwoerter einer Frage: Woerter ab vier Zeichen, kleingeschrieben,
+        /// ohne Wiederholung - die Regel, nach der auch <see cref="HilfeWissen"/>
+        /// lokal bewertet (dort <c>if (w.Length &lt; 4) continue;</c>) - und seit
+        /// H9 zusaetzlich ohne die Fuellwoerter aus <see cref="STOPPWOERTER"/>.
+        /// </summary>
+        /// <remarks>
+        /// Bestuende eine Frage AUSSCHLIESSLICH aus Fuellwoertern ("was kann das
+        /// denn"), ginge sonst gar nichts mehr hinaus - dann gilt weiter die
+        /// ungefilterte Liste. Der Unterschied zu <see cref="HilfeWissen"/> ist
+        /// gewollt: dort bewertet jedes Wort nur mit, hier entscheidet es ueber
+        /// Treffer oder Leere.
+        /// </remarks>
         public static string[] Stichwoerter(string frage)
         {
             if (string.IsNullOrWhiteSpace(frage)) return new string[0];
 
-            return frage.ToLowerInvariant()
-                        .Split(TRENNER, StringSplitOptions.RemoveEmptyEntries)
-                        .Where(w => w.Length >= 4)
-                        .Distinct()
-                        .Take(MAX_STICHWOERTER)
-                        .ToArray();
+            string[] roh = frage.ToLowerInvariant()
+                                .Split(TRENNER, StringSplitOptions.RemoveEmptyEntries)
+                                .Where(w => w.Length >= 4)
+                                .Distinct()
+                                .ToArray();
+
+            string[] ohneFuellwoerter = roh.Where(w => !STOPPWOERTER.Contains(w)).ToArray();
+
+            return (ohneFuellwoerter.Length > 0 ? ohneFuellwoerter : roh)
+                   .Take(MAX_STICHWOERTER)
+                   .ToArray();
+        }
+
+        /// <summary>
+        /// Die Stufen der Rueckfall-Kaskade zu einer Frage (H9), in der
+        /// Reihenfolge, in der sie versucht werden: (a) alle Stichwoerter,
+        /// (b) die zwei laengsten, (c) das laengste - jede Stufe als fertige
+        /// Stichwortliste.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Die Laenge ist der Ersatz fuer eine Gewichtung, die es hier nicht
+        /// gibt: das laengste Wort einer Frage ist im Deutschen fast immer das
+        /// Fachwort ("Warmwasserbedarf" gegen "angelegt"). Bei GLEICHER Laenge
+        /// gewinnt die fruehere Stelle in der Frage -
+        /// <see cref="Enumerable.OrderByDescending{TSource,TKey}(IEnumerable{TSource},Func{TSource,TKey})"/>
+        /// ist stabil und <see cref="Stichwoerter"/> liefert in Fragereihenfolge.
+        /// </para>
+        /// <para>
+        /// Stufen, die dieselbe Wortmenge ergaeben wie eine vorige, entfallen -
+        /// eine Frage mit einem einzigen Stichwort hat deshalb genau eine Stufe
+        /// und kostet genau einen Aufruf. Mehr als drei Stufen kann es nicht
+        /// geben.
+        /// </para>
+        /// </remarks>
+        internal static List<string> Suchstufen(string frage)
+        {
+            List<string> stufen = new List<string>();
+
+            string[] worte = Stichwoerter(frage);
+            if (worte.Length == 0) return stufen;
+
+            string[] nachLaenge = worte.OrderByDescending(w => w.Length).ToArray();
+
+            List<string[]> mengen = new List<string[]>();
+            StufeAnfuegen(mengen, worte);                 // (a) alles
+            StufeAnfuegen(mengen, nachLaenge.Take(2));    // (b) die zwei laengsten
+            StufeAnfuegen(mengen, nachLaenge.Take(1));    // (c) nur das laengste
+
+            foreach (string[] menge in mengen) stufen.Add(string.Join(" ", menge));
+            return stufen;
+        }
+
+        /// <summary>
+        /// Haengt eine Stufe an, sofern ihre Wortmenge nicht schon vorkommt.
+        /// Verglichen wird die MENGE, nicht die Zeichenkette - Stufe (b) reiht
+        /// nach Laenge, Stufe (a) nach Fragestellung, bei zwei Woertern waere das
+        /// sonst zweimal dieselbe Anfrage in anderer Reihenfolge.
+        /// </summary>
+        private static void StufeAnfuegen(List<string[]> mengen, IEnumerable<string> worte)
+        {
+            string[] neu = worte.ToArray();
+            if (neu.Length == 0) return;
+
+            foreach (string[] alt in mengen)
+                if (alt.Length == neu.Length && !neu.Except(alt, StringComparer.Ordinal).Any())
+                    return;
+
+            mengen.Add(neu);
         }
 
         /// <summary>Die Stichwoerter als eine Zeichenkette - genau das, was gesendet wird.</summary>
@@ -140,11 +293,25 @@ namespace WindowsFormsApplication1
         //  Adressen
         // ==================================================================
 
-        /// <summary>Adresse der Volltextsuche (REST, mit Abschnitts-Ankern).</summary>
+        /// <summary>
+        /// Adresse der Volltextsuche (REST, mit Abschnitts-Ankern) zur ERSTEN
+        /// Stufe einer Frage. Welche Stufen tatsaechlich abgefragt werden, sagt
+        /// <see cref="Suchstufen"/>.
+        /// </summary>
         public static string SuchAdresse(string basis, string frage)
         {
+            return SuchAdresseFuer(basis, Stichwortliste(frage));
+        }
+
+        /// <summary>
+        /// Dieselbe Adresse zu einer fertigen Stichwortliste - der Weg der
+        /// Kaskade, deren spaetere Stufen nicht mehr aus der ganzen Frage
+        /// entstehen.
+        /// </summary>
+        public static string SuchAdresseFuer(string basis, string stichwortliste)
+        {
             return basis + "/rest.php/v1/search/page?q=" +
-                   Uri.EscapeDataString(Stichwortliste(frage)) + "&limit=" + SUCH_TREFFER;
+                   Uri.EscapeDataString(stichwortliste ?? "") + "&limit=" + SUCH_TREFFER;
         }
 
         /// <summary>Adresse der Klartext-Auszuege; die Titel werden mit %7C verbunden.</summary>
@@ -427,16 +594,68 @@ namespace WindowsFormsApplication1
             public string Beschreibung = "";
         }
 
+        /// <summary>
+        /// Die Trefferliste zu einer Frage, ueber die Rueckfall-Kaskade (H9).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Die Suche des Wikis verknuepft ihre Terme mit UND. Bleibt die erste
+        /// Stufe unter ZWEI Treffern, war die Kette zu lang - dann wird mit den
+        /// zwei laengsten Stichwoertern nachgesucht, und bringt auch das nichts,
+        /// mit dem laengsten allein. Es gilt IMMER das Ergebnis EINER Stufe;
+        /// Treffer verschiedener Stufen werden nie zusammengeschuettet, weil
+        /// deren Rangfolge sonst nichts mehr bedeutet.
+        /// </para>
+        /// <para>
+        /// Eine spaetere Stufe darf eine fruehere nur ueberholen, wenn sie MEHR
+        /// findet - sonst waere die Kaskade ein Rueckschritt, sobald der letzte
+        /// Versuch leer ausgeht.
+        /// </para>
+        /// </remarks>
         private static async Task<List<Suchtreffer>> SuchtrefferAsync(string basis, string frage,
                                                                       CancellationToken abbruch)
         {
+            _letzteSuchAdressen = new List<string>();
+            LetzteSuchStufe = 0;
+
+            List<string> stufen = Suchstufen(frage);
+            if (stufen.Count == 0) return new List<Suchtreffer>();   // nichts Brauchbares zu senden
+
+            List<Suchtreffer> beste = new List<Suchtreffer>();
+            int besteStufe = 0;
+
+            for (int i = 0; i < stufen.Count; i++)
+            {
+                List<Suchtreffer> gefunden =
+                    await EineSucheAsync(basis, stufen[i], abbruch).ConfigureAwait(false);
+
+                if (gefunden.Count > beste.Count) { beste = gefunden; besteStufe = i + 1; }
+
+                // Stufe 1 muss zwei Seiten finden, jede weitere reicht mit einer.
+                if (gefunden.Count >= (i == 0 ? 2 : 1))
+                {
+                    LetzteSuchStufe = i + 1;
+                    return gefunden;
+                }
+
+                Debug.WriteLine("[Wiki] Stufe " + (i + 1) + " ('" + stufen[i] + "') = " +
+                                gefunden.Count + " Treffer - Rueckfall.");
+            }
+
+            LetzteSuchStufe = besteStufe;
+            return beste;
+        }
+
+        /// <summary>Ein einzelner Suchaufruf zu einer fertigen Stichwortliste.</summary>
+        private static async Task<List<Suchtreffer>> EineSucheAsync(string basis, string stichwoerter,
+                                                                    CancellationToken abbruch)
+        {
             List<Suchtreffer> liste = new List<Suchtreffer>();
+            if (string.IsNullOrWhiteSpace(stichwoerter)) return liste;
 
-            string stichwoerter = Stichwortliste(frage);
-            if (stichwoerter.Length == 0) return liste;      // nichts Brauchbares zu senden
-
-            string adresse = SuchAdresse(basis, frage);
+            string adresse = SuchAdresseFuer(basis, stichwoerter);
             LetzteSuchAdresse = adresse;
+            _letzteSuchAdressen.Add(adresse);
 
             string rumpf = await HolenAsync(adresse, abbruch).ConfigureAwait(false);
             if (rumpf == null) return liste;
