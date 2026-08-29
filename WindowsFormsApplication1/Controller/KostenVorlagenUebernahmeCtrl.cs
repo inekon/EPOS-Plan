@@ -99,6 +99,15 @@ namespace WindowsFormsApplication1
         public static UebernahmeErgebnis AusVorlage(int projektId, KostenVorlageKopf vorlage,
                                                     int idAnlage)
         {
+            return AusVorlage(projektId, vorlage, idAnlage, false);
+        }
+
+        /// <summary>ETAPPE H3 (H1-3): <paramref name="nurPflicht"/> übernimmt
+        /// ausschließlich die Pflichtpositionen der Vorlage — der Weg der
+        /// Auto-Anlage (<see cref="PflichtpositionenSicherstellen"/>).</summary>
+        public static UebernahmeErgebnis AusVorlage(int projektId, KostenVorlageKopf vorlage,
+                                                    int idAnlage, bool nurPflicht)
+        {
             var e = new UebernahmeErgebnis();
             if (vorlage == null || projektId <= 0)
             {
@@ -113,6 +122,8 @@ namespace WindowsFormsApplication1
 
             foreach (KostenVorlagenPosition p in KostenVorlagenCtrl.Positionen(vorlage.Id))
             {
+                if (nurPflicht && !p.IstPflicht) continue;   // H3: Auto-Anlage legt nur Pflicht an
+
                 int stammId = StammIdSicher(p.Bezeichnung);
                 if (stammId <= 0)
                 {
@@ -169,12 +180,95 @@ namespace WindowsFormsApplication1
 
                 HerkunftUndNutzungsdauer(id, vorlage.Id, p.Nutzungsdauer);
                 if (idAnlage > 0) KostenProjektPositionenCtrl.AnlageZuordnen(id, idAnlage);
+                // ETAPPE H3: Das Pflichtmerkmal wandert bei JEDER Übernahme mit —
+                // die H1-Saat markierte nur den Bestand; ohne die Durchreichung
+                // liefe die Löschsperre (H1-2) an neuen Zeilen ins Leere.
+                if (p.IstPflicht) KostenProjektPositionenCtrl.PflichtSetzen(id, true);
                 e.Angelegt++;
             }
 
             e.Meldungen.Add(e.Angelegt + " Positionen aus \"" + vorlage.Name +
                             "\" angelegt, " + e.Uebersprungen + " bereits vorhanden.");
             return e;
+        }
+
+        /// <summary>
+        /// ETAPPE H3 (H1-3): stellt an JEDER Anlagenzeile des Projekts die
+        /// Pflichtpositionen der Standard-Betriebskostenvorlage ihrer Komponente
+        /// sicher (Muster <c>Nebenmodus.NurAnlegen</c> — vorhandene Zeilen bleiben
+        /// unberührt, der Dublettencheck läuft seit Ä20 je Anlage).
+        ///
+        /// <para>Aufgerufen aus <c>WizardCtrl.Add_WP_Waermeerzeuger</c> NACH
+        /// <c>ZuordnungReparieren</c>/<c>AnkerNachziehen</c>: Erst dann hängen die
+        /// Bestandspositionen wieder an den neuen Anlagen-Ids des
+        /// Del+Add-Speicherwegs, und der Check erkennt sie. ERGEBNISNEUTRAL:
+        /// Vorlagen tragen keine Sätze (KL-Regel „Struktur, nicht Preise") — jede
+        /// neue Zeile steht auf 0 €/a, bis der Anwender pflegt.</para>
+        ///
+        /// <para>Referenzanlagen (ID_Type 5–9) bekommen bewusst KEINE Positionen —
+        /// die Kostenvorlagen gehören zu den sieben Projekt-Komponenten (Ä7).</para>
+        /// </summary>
+        /// <returns>Zahl der neu angelegten Positionen.</returns>
+        public static int PflichtpositionenSicherstellen(int projektId)
+        {
+            if (projektId <= 0) return 0;
+
+            int angelegt = 0;
+            var vorlageJeKomponente = new Dictionary<int, KostenVorlageKopf>();
+
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID, ID_Type FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
+                new OleDbParameter("@p", projektId));
+            if (dt == null) return 0;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                if (r["ID"] == DBNull.Value || r["ID_Type"] == DBNull.Value) continue;
+                int idAnlage = Convert.ToInt32(r["ID"]);
+                int komponentenId = KomponenteZuTyp(Convert.ToInt32(r["ID_Type"]));
+                if (komponentenId <= 0) continue;
+
+                KostenVorlageKopf vorlage;
+                if (!vorlageJeKomponente.TryGetValue(komponentenId, out vorlage))
+                {
+                    vorlage = StandardVorlage(komponentenId, Form_Kosten.KATEGORIE_BETRIEB);
+                    vorlageJeKomponente[komponentenId] = vorlage;   // auch „keine" merken
+                }
+                if (vorlage == null) continue;
+
+                try { angelegt += AusVorlage(projektId, vorlage, idAnlage, true).Angelegt; }
+                catch { }
+            }
+            return angelegt;
+        }
+
+        /// <summary>Standard-Vorlage einer Komponente und Kategorie; null = keine.</summary>
+        private static KostenVorlageKopf StandardVorlage(int komponentenId, int kategorieId)
+        {
+            foreach (KostenVorlageKopf k in KostenVorlagenCtrl.Vorlagen(komponentenId, kategorieId))
+                if (k.IstStandard) return k;
+            return null;
+        }
+
+        /// <summary>
+        /// <c>Tab_Energieanlagen.ID_Type</c> (<see cref="WizardItemClass"/>) →
+        /// <c>Tab_KostenKomponente.ID</c> — die festen Nummern 1…7, Begründung bei
+        /// <c>Form_Kosten.GetKomponentenID</c>. 0 = keine Kostenkomponente
+        /// (Referenztypen 5–9, unbekannte Typen).
+        /// </summary>
+        private static int KomponenteZuTyp(int idType)
+        {
+            switch (idType)
+            {
+                case WizardItemClass.WP_TYP: return 1;       // Wärmepumpe
+                case WizardItemClass.SOLAR_TYP: return 4;    // Solarthermie
+                case WizardItemClass.PV_TYP: return 3;       // Photovoltaik
+                case WizardItemClass.SP_TYP: return 5;       // Stromspeicher
+                case WizardItemClass.KESSEL_TYP: return 2;   // Heizkessel
+                case WizardItemClass.BHKW_TYP: return 7;     // BHKW
+                case WizardItemClass.PUFFER_TYP: return 6;   // Pufferspeicher
+                default: return 0;
+            }
         }
 
         // ------------------------------------------------- Projekt -> Projekt ---

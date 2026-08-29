@@ -2809,6 +2809,24 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BM_P_BRENNSTOFF", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die % des Endenergiebedarfs ähnelt.
+        /// </summary>
+        public static string BM_P_ENDENERGIEBEDARF {
+            get {
+                return ResourceManager.GetString("BM_P_ENDENERGIEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die % der Endenergiekosten ähnelt.
+        /// </summary>
+        public static string BM_P_ENDENERGIEKOSTEN {
+            get {
+                return ResourceManager.GetString("BM_P_ENDENERGIEKOSTEN", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die % der Erzeugerkosten ähnelt.
@@ -5801,6 +5819,16 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_MSG_NEU_TITEL {
             get {
                 return ResourceManager.GetString("KDLG_MSG_NEU_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist eine Pflichtposition dieser Komponente und kann nicht gelöscht werden.
+        ///Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen. ähnelt.
+        /// </summary>
+        public static string KDLG_MSG_PFLICHT_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KDLG_MSG_PFLICHT_LOESCHEN", resourceCulture);
             }
         }
         

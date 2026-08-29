@@ -498,6 +498,20 @@ namespace WindowsFormsApplication1
 
         private void Zeile_LoeschenAngefordert(object sender, KostenVorlagenPosition p)
         {
+            // ETAPPE H3 (H1-2): Pflichtpositionen (Schritt 59) sind nicht löschbar —
+            // der Ausweg ist der Satz bzw. Betrag 0 (Entscheidung P1). Die zweite
+            // Schicht sitzt in KostenProjektPositionenCtrl.Loeschen, dasselbe Doppel
+            // wie beim ReadOnly-Schutz der Kataloge.
+            if (ProjektModus && KostenProjektPositionenCtrl.IstPflicht(p.Id))
+            {
+                MessageBox.Show(
+                    string.Format(Text_("KDLG_MSG_PFLICHT_LOESCHEN",
+                        "„{0}\" ist eine Pflichtposition dieser Komponente und kann nicht gelöscht werden.\r\nZum Deaktivieren den Satz bzw. Betrag auf 0 setzen."),
+                        p.Bezeichnung),
+                    Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             if (MessageBox.Show(
                     string.Format(Text_("KDLG_MSG_POS_LOESCHEN", "Position „{0}\" löschen?"), p.Bezeichnung),
                     Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
