@@ -266,3 +266,174 @@ Form_LizenzVerwaltung.btn_Help = Lizenz
 Form_Gesetzesparameter.btn_Help = Gesetzesparameter
 Form_KatalogDubletten.btn_Help = Katalogpflege
 Form_Emissionskatalog.btn_Help = Emissionen
+
+# ===========================================================================
+# Feldgenaue Hilfe (H12)
+# ===========================================================================
+# Ab hier stehen KEINE Infobuttons mehr, sondern EINGABEBEREICHE der grossen
+# Dialoge: GroupBoxen, Panels und Feldbeschriftungen. Ueberfahren zeigt
+# dasselbe Popup wie beim Infobutton, der Verweis oeffnet die Rubrikseite des
+# Dialogs an der passenden Sprungmarke (Abschnitt "Eingaben").
+#
+# Vier Regeln, nach denen diese Zeilen entstanden sind:
+#
+# 1. ZIELSEITE ist IMMER die Rubrikseite des Dialogs - dieselbe, die sein
+#    btn_Help oeffnet. Eine Feldzeile verschiebt nie das Kapitel, sie
+#    verfeinert nur die Stelle darin.
+#
+# 2. NUR NICHT BEDIENBARE Steuerelemente: GroupBox, Panel/FlowLayoutPanel/
+#    TableLayoutPanel und Beschriftungen. Der Extender haengt sich auf Click,
+#    und ein angeheftetes Popup auf einem Knopf, einem Kontrollkaestchen oder
+#    einem Eingabefeld stuende der eigentlichen Bedienung im Weg. Ein Feld
+#    wird deshalb ueber SEINE BESCHRIFTUNG angesprochen, nicht ueber das
+#    Eingabefeld selbst.
+#
+# 3. NUR SICHTBARE Steuerelemente. Stillgelegtes bleibt aussen vor -
+#    Form_Simulation_Config.groupBox_Tools/groupBox_PufferSp/label12/label21
+#    (AltSteuerelementeStilllegen), Form_Kosten.tabEnergie samt Inhalt und die
+#    drei entsorgten Kopfleisten, Wizard_WPItem.groupBox1 und die entfernten
+#    Modulkostenfelder.
+#
+# 4. EIN Anker darf mehrfach vorkommen. Drei Schwellenbeschriftungen zeigen
+#    bewusst auf denselben Stichpunkt; zwei Ferien-Gruppen ebenso.
+#
+# Ein Feld, dessen Ziel der Katalog (noch) nicht kennt, bleibt STILL: kein
+# Popup - aber es wird niemals abgeschaltet oder optisch veraendert. Diese
+# Grenze zieht HelpExtender.SteuerelementAbschalten ueber IstInfobutton (H12);
+# ohne sie nimmt ein GroupBox.Enabled = false jedem Feld darin die Bedienung.
+#
+# Die Sprungmarken selbst werden im Wiki in einem Sammelimport gesetzt
+# ({{Anker|...}}). Bis dahin loest jede Zeile auf SEITENEBENE auf - der Sprung
+# landet oben auf der Seite, der Verweis funktioniert.
+# ---------------------------------------------------------------------------
+
+# --- Simulation: Form_Simulation_Config -----------------------------------
+# label11 ist die einzige sichtbare Ueberschrift der Maske; die beiden
+# Kartenspalten flow_Erzeuger/flow_Speicher sind die eigentliche Bedienflaeche
+# (D2-Umbau). Quellprofil, Waermequelle und Betriebsmodus sitzen auf den
+# ErzeugerKarten - die sind UserControls OHNE Namen und damit heute nicht
+# ansprechbar (Befund, siehe H12-Protokoll).
+Form_Simulation_Config.label11        = Simulation#erzeuger-und-speicher
+Form_Simulation_Config.flow_Erzeuger  = Simulation#erzeugerliste
+Form_Simulation_Config.flow_Speicher  = Simulation#puffer-zuordnung
+Form_Simulation_Config.label_Ansicht  = Simulation#ansicht
+# panel_Schema (SchemaAnsicht) BEWUSST NICHT: die Zeichenflaeche ist bedienbar -
+# Klick waehlt einen Knoten, Ueberfahren zeigt einen eigenen Knotenhinweis und
+# wechselt den Zeiger (SchemaAnsicht.OnMouseDown/OnMouseMove). Ein angeheftetes
+# Hilfepopup laege der Bedienung im Weg. Regel 2 dieses Blocks.
+
+# --- Simulation: Form_Waermesenke -----------------------------------------
+# Die Maske baut ihre Oberflaeche im Code auf und vergab bisher keine Namen;
+# die vier Gruppen haben mit H12 einen bekommen (Form_Waermesenke.cs).
+Form_Waermesenke._gbListe             = Simulation#senkenliste
+Form_Waermesenke._gbZeile             = Simulation#senkenzeile
+Form_Waermesenke._gbVerbund           = Simulation#parallelverbund
+Form_Waermesenke._gbLaden             = Simulation#ladeverhalten
+
+# --- Waermepumpe: Wizard_WPItem -------------------------------------------
+Wizard_WPItem.label_WP                 = Wärmepumpe#modellauswahl
+Wizard_WPItem.label31                  = Wärmepumpe#nutzungsdauer
+Wizard_WPItem.groupBox2                = Wärmepumpe#kenndaten
+Wizard_WPItem.groupBox3                = Wärmepumpe#auslegung-verteilung
+Wizard_WPItem.label_Betriebsart        = Wärmepumpe#betriebsart
+Wizard_WPItem.label_Abschalttemperatur = Wärmepumpe#bivalenztemperatur
+Wizard_WPItem.label7                   = Wärmepumpe#spitzenlast
+Wizard_WPItem.label24                  = Wärmepumpe#kennlinien
+
+# --- Klimadaten -----------------------------------------------------------
+# panel2 ist der Standortblock als Ganzes; die Beschriftungen darin fuehren zu
+# den einzelnen Stichpunkten. label1 ist die Kopfzeile ueber dem TMY-Import.
+Form_Klimadaten.panel2           = Klimadaten#standort
+Form_Klimadaten.label4           = Klimadaten#region
+Form_Klimadaten.label6           = Klimadaten#koordinaten
+Form_Klimadaten.label7           = Klimadaten#koordinaten
+Form_Klimadaten.label8           = Klimadaten#bezeichnung
+Form_Klimadaten.label1           = Klimadaten#daten-einlesen
+Form_Klimadaten.panel1           = Klimadaten#regionsliste
+Form_Klimadaten.panel_KlimaGraph = Klimadaten#diagramme
+
+# --- Kosten ---------------------------------------------------------------
+# Der Dialog fuehrt seit KD4 nur noch Investition und Betrieb; Energietraeger
+# und Preise stehen in Form_Energietraeger (eigene Zeile weiter oben).
+Form_Kosten.panel3                      = Kosten#komponentenliste
+Form_Kosten.flpContainer                = Kosten#investitionspositionen
+Form_Kosten.panel4                      = Kosten#komponentenliste
+Form_Kosten.flpContainer_Betriebskosten = Kosten#betriebspositionen
+Form_Kosten.pnlFooter                   = Kosten#summen
+
+# --- Pufferspeicher: Form_PufferSp_Projekt --------------------------------
+# Fuehrend fuer die Nutzung ist das Klassen-Set (_lblKlassenSet), nicht das
+# Alt-Feld "Verwendung".
+Form_PufferSp_Projekt._gbListe               = Pufferspeicher#speicherliste
+Form_PufferSp_Projekt._gbDaten               = Pufferspeicher#eigenschaften
+Form_PufferSp_Projekt._lblKlassenSet         = Pufferspeicher#nutzung
+Form_PufferSp_Projekt._lblVorlauf            = Pufferspeicher#temperaturen
+Form_PufferSp_Projekt._lblRuecklauf          = Pufferspeicher#temperaturen
+Form_PufferSp_Projekt._lblEinschaltschwelle  = Pufferspeicher#schwellen
+Form_PufferSp_Projekt._lblAbschaltschwelle   = Pufferspeicher#schwellen
+Form_PufferSp_Projekt._lblSchwelleNachrangig = Pufferspeicher#schwellen
+Form_PufferSp_Projekt._lblMindestfuellstand  = Pufferspeicher#mindestfuellstand
+Form_PufferSp_Projekt._gbSchichtung          = Pufferspeicher#schichtung
+Form_PufferSp_Projekt._lblEntnahmeKopf       = Pufferspeicher#entnahmehoehe
+Form_PufferSp_Projekt._gbLaden               = Pufferspeicher#ladeordnung
+Form_PufferSp_Projekt._lblEntladeprio        = Pufferspeicher#entladeprioritaet
+
+# --- Waermequelle Erdreich: Form_QuelleErdreich ---------------------------
+# Die Bodenkennwerte liegen ohne gemeinsamen Rahmen direkt auf der Maske -
+# angesprochen wird deshalb je Wert seine Beschriftung.
+Form_QuelleErdreich._gbSystem     = Wärmequelle Erdreich#quellsystem
+Form_QuelleErdreich._lblBodentyp  = Wärmequelle Erdreich#bodentyp
+Form_QuelleErdreich._lblKlimazone = Wärmequelle Erdreich#klimazone
+Form_QuelleErdreich._lblSpreizung = Wärmequelle Erdreich#spreizung
+Form_QuelleErdreich._lblKennwerte = Wärmequelle Erdreich#kennwerte
+Form_QuelleErdreich._gbVorschau   = Wärmequelle Erdreich#vorschau
+Form_QuelleErdreich._gbPruefung   = Wärmequelle Erdreich#auslegungspruefung
+
+# --- Gebaeude: die drei Masken teilen sich eine Seite ----------------------
+Form_Gebaeude.groupBox1                 = Gebäude#katalogfilter
+Form_Gebaeude.groupBox2                 = Gebäude#verbrauch
+Form_Gebaeude.label_ListProjektGebaeude = Gebäude#projektgebaeude
+Form_Gebaeude.label_ListGebaeudeDB      = Gebäude#gebaeudekatalog
+Form_Gebaeude1.groupBox1                = Gebäude#kenngroessen
+Form_Gebaeude1.groupBox2                = Gebäude#flaechen
+Form_Gebaeude1.groupBox3                = Gebäude#u-werte
+Form_Gebaeude2.groupBox1                = Gebäude#raumtemperaturen
+Form_Gebaeude2.groupBox2                = Gebäude#waermebruecken
+Form_Gebaeude2.groupBox3                = Gebäude#anschlussmasse
+Form_Gebaeude2.groupBox5                = Gebäude#ferienzeiten
+Form_Gebaeude2.groupBox6                = Gebäude#ferienzeiten
+Form_Gebaeude2.groupBox7                = Gebäude#luftwechsel
+
+# --- Brauchwasser ---------------------------------------------------------
+Form_Brauchwasser.Label24   = Brauchwasser#profilkatalog
+Form_Brauchwasser.Label1    = Brauchwasser#projektprofile
+Form_Brauchwasser.Label12   = Brauchwasser#jahresbedarf
+Form_Brauchwasser.Label19   = Brauchwasser#summe
+Form_Brauchwasser.groupBox1 = Brauchwasser#verbrauch-aendern
+
+# --- Stromverbraucher -----------------------------------------------------
+Form_Stromverbraucher.Label24   = Stromverbraucher#verbraucherkatalog
+Form_Stromverbraucher.Label1    = Stromverbraucher#projektverbraucher
+Form_Stromverbraucher.Label12   = Stromverbraucher#jahresbedarf
+Form_Stromverbraucher.Label19   = Stromverbraucher#summe
+Form_Stromverbraucher.groupBox1 = Stromverbraucher#verbrauch-aendern
+
+# --- Bericht: UcBericht ---------------------------------------------------
+# Das UserControl haengt im Reiter "Berichte & Kosten" UND in der Dialoghuelle
+# Form_Bericht - die Zeilen gelten ueber sein eigenes Praefix an beiden Orten.
+# Es fuehrt keine GroupBox; die Bereiche werden ueber ihre Leitbeschriftung
+# angesprochen.
+UcBericht.lblVarianten = Bericht#varianten
+UcBericht.lblBausteine = Bericht#bausteine
+UcBericht.lblAusgabe   = Bericht#ausgabeformat
+UcBericht.lblZiel      = Bericht#zielordner
+
+# --- Nicht aufgenommen (Befunde, siehe H12-Protokoll) ---------------------
+# UcBkKosten            baut seine Oberflaeche im Code auf und setzt an KEINEM
+#                       Kind einen Namen - ohne Control.Name gibt es keine
+#                       Anschrift. Waere mit einem Namensnachtrag nachzuholen.
+# ErzeugerKarte /       UserControls ohne Namen. Sie sind zugleich die Grenze
+# SpeicherKarte         der Tiefensuche - erst ein (ID-abhaengiger) Name macht
+#                       Quellprofil, Waermequelle und Betriebsmodus feldgenau
+#                       ansprechbar.
+# ucKostenZeile         dito, die Kostenpositionszeile in Form_Kosten.

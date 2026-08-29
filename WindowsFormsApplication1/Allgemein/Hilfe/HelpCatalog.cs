@@ -1346,13 +1346,38 @@ namespace WindowsFormsApplication1
         {
             if (container == null) return;
 
-            if (!string.IsNullOrEmpty(container.Name) &&
-                container.Name.StartsWith(InfobuttonPraefix, StringComparison.OrdinalIgnoreCase))
-            {
-                treffer.Add(container);
-            }
+            if (IstInfobutton(container)) treffer.Add(container);
 
             foreach (Control kind in container.Controls) InfobuttonsSammeln(kind, treffer);
+        }
+
+        /// <summary>
+        /// Traegt das Steuerelement die Infobutton-Namenskonvention
+        /// (<see cref="InfobuttonPraefix"/>)?
+        /// </summary>
+        /// <remarks>
+        /// <b>H12 - die Trennlinie der Abschaltlogik.</b> Seit der feldgenauen
+        /// Hilfe traegt <c>help_mapping.txt</c> auch Zeilen fuer EINGABEBEREICHE
+        /// (GroupBox, Panel, Beschriftung). Diese Steuerelemente gehoeren der
+        /// Fachlogik - das Hilfesystem darf sie unter keinen Umstaenden
+        /// abschalten oder optisch veraendern. Nur der Infobutton ist ein
+        /// Steuerelement DES HILFESYSTEMS; nur er wird grau, wenn er nichts
+        /// anzuzeigen hat.
+        /// </remarks>
+        private static bool IstInfobutton(Control ctrl)
+        {
+            return ctrl != null
+                && !string.IsNullOrEmpty(ctrl.Name)
+                && ctrl.Name.StartsWith(InfobuttonPraefix, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Was ein nicht aufloesbares Ziel fuer dieses Steuerelement bedeutet -
+        /// nur zur Protokollzeile.
+        /// </summary>
+        private static string Wirkung(Control ctrl)
+        {
+            return IstInfobutton(ctrl) ? "abgeschaltet" : "Feldhilfe bleibt still (H12)";
         }
 
         /// <summary>
@@ -1394,7 +1419,7 @@ namespace WindowsFormsApplication1
                 {
                     SteuerelementAbschalten(ctrl);
                     System.Diagnostics.Debug.WriteLine(
-                        $"[Help] WARNUNG: Zur Zuordnung '{schluessel}' von '{ctrl.Name}' liefert der Katalog nichts - abgeschaltet.");
+                        $"[Help] WARNUNG: Zur Zuordnung '{schluessel}' von '{ctrl.Name}' liefert der Katalog nichts - {Wirkung(ctrl)}.");
                 }
                 else
                 {
@@ -1405,9 +1430,32 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Schaltet einen Infobutton ab, der nichts anzuzeigen hat (F3).
+        /// </summary>
+        /// <remarks>
+        /// <b>H12 - die Sperre gilt AUSSCHLIESSLICH fuer Infobuttons.</b> Mit der
+        /// feldgenauen Hilfe stehen in <c>help_mapping.txt</c> auch Zeilen fuer
+        /// Eingabebereiche. Ohne diese Weiche traefe die Abschaltlogik ueber
+        /// <see cref="ZuordnungenPruefen"/> und <see cref="EintragHolen"/> auch
+        /// sie - und ein <c>GroupBox.Enabled = false</c> nimmt in WinForms JEDEM
+        /// Steuerelement darin die Bedienbarkeit mit. Eine umbenannte oder noch
+        /// fehlende Wiki-Seite legte so den halben Dialog lahm. Ein Feld, dessen
+        /// Ziel der Katalog nicht kennt, bleibt deshalb einfach still: kein
+        /// Popup, aber auch kein Eingriff in Bedienbarkeit oder Aussehen.
+        /// </remarks>
         private void SteuerelementAbschalten(Control ctrl)
         {
             if (ctrl == null || ctrl.IsDisposed) return;
+
+            if (!IstInfobutton(ctrl))
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"[Help] '{ctrl.Name}' ist kein Infobutton, sondern ein zugeordneter " +
+                    "Eingabebereich (H12) - er bleibt unveraendert bedienbar, die Feldhilfe bleibt still.");
+                return;
+            }
+
             if (_abgeschaltet.ContainsKey(ctrl)) return;   // schon von uns abgeschaltet
 
             _abgeschaltet[ctrl] = ctrl.Cursor;
@@ -1686,7 +1734,7 @@ namespace WindowsFormsApplication1
             {
                 SteuerelementAbschalten(ctrl);
                 System.Diagnostics.Debug.WriteLine(
-                    $"[Help] WARNUNG: Zur Zuordnung '{schluessel}' von '{ctrl.Name}' liefert der Katalog nichts - abgeschaltet.");
+                    $"[Help] WARNUNG: Zur Zuordnung '{schluessel}' von '{ctrl.Name}' liefert der Katalog nichts - {Wirkung(ctrl)}.");
             }
 
             return null;
