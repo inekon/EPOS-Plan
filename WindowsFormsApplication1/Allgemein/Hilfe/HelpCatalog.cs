@@ -1776,6 +1776,17 @@ namespace WindowsFormsApplication1
             HelpEntry entry = EintragHolen(ctrl, schluessel);
             if (entry == null) return;
 
+            // Nutzerregel 29.08.2026: Das fluechtige Hover-Popup erscheint nur,
+            // wenn es zum Ziel einen EIGENEN Text gibt. Die Bereichshilfe (H12)
+            // zielt auf Anker INNERHALB einer Seite; einen ankerspezifischen
+            // Text kennt der Katalog nicht - ihr Popup truege fuer jede Flaeche
+            // denselben Seitentext und stuende beim Ueberfahren des Dialogs
+            // staendig im Weg. Sie oeffnet weiterhin per Klick (Control_Click).
+            // Infobuttons behalten das Hover-Popup, solange die Kurzbeschreibung
+            // ihrer Zielseite vorliegt (H11) - ohne Text kein Popup.
+            if (!IstInfobutton(ctrl) && schluessel.IndexOf('#') >= 0) return;
+            if (string.IsNullOrWhiteSpace(entry.Beschreibung)) return;
+
             PopupBereitstellen();
             _popup.ShowHelp(entry.Tooltip, entry.Beschreibung, entry.Url, Cursor.Position);
         }

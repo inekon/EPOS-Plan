@@ -345,3 +345,33 @@ WindowsFormsApplication1/Views/Simulation/Form_Waermesenke.cs  4 Namen fuer die 
 `HilfeAutomatik.cs`, `DokuUebersetzung.cs`, `Form_HelpPopup.cs`.
 Die untrackten `Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan.md` und
 `KONTEXT_Kosten_Energie_Wirtschaftlichkeit.md` stammen aus parallel laufenden Sitzungen.
+
+---
+
+## Nachtrag 29.08.2026 (abends) — Hover nur noch mit eigenem Text
+
+Anwenderbefund (Screenshot `Form_Gebaeude` im Projektassistenten): Die Bereichshilfe
+zeigte beim Überfahren der gemappten Flächen (GroupBoxen, Beschriftungen) das Popup
+mit dem **Seitentext** des Kapitels — für jede Fläche denselben, da es zu den Ankern
+keine eigenen Texte gibt. Ergebnis: Das Popup stand beim Bewegen über den Dialog
+„ständig" im Weg. Anwenderregel: *Das Mouseover soll nur erscheinen, wenn dazu auch
+ein eigener Text steht.*
+
+Umsetzung in `HelpExtender.Control_MouseEnter` (HelpCatalog.cs), zwei Wächter vor
+dem Anzeigen:
+
+1. **Bereichshilfe wird hover-still:** Ist das Steuerelement kein Infobutton und
+   zielt der Schlüssel auf einen Anker (`…#…`), erscheint kein flüchtiges Popup —
+   einen ankerspezifischen Text kennt der Katalog nicht. Der **Klick** auf die
+   Fläche öffnet die Hilfe weiterhin (angeheftetes Popup, `Control_Click`
+   unverändert).
+2. **Ohne Kurzbeschreibung kein Hover-Popup:** Auch Infobuttons zeigen das
+   flüchtige Popup nur, wenn die H11-Kurzbeschreibung der Zielseite vorliegt
+   (nicht leer). Vor dem Eintreffen des Nachladelaufs bzw. für Seiten ohne
+   Beschreibung bleibt der Hover still; der Klick funktioniert immer.
+
+Wiederbelebung der Bereichs-Hover ist vorgezeichnet: Sobald der Katalog einmal
+ankerspezifische Texte führt (Abschnittsauszüge je `{{Anker}}`), kann Wächter 1
+auf „Ankertext vorhanden?" umgestellt werden.
+
+Kompilierbeweis: Projektbau nach `dev\build_hover\`, 0 Fehler (29.08.2026).
