@@ -35,6 +35,21 @@ Protokoll-Nachtrag in `H4H5_Umsetzung_Protokoll.md`.
 Frage-Einbettung vollständig offline, Hybrid mit der Stichwortsuche, 6 ms je Frage,
 stiller Rückfall auf H9. Protokoll:
 [`WindowsFormsApplication1/Allgemein/KI/H10_SemantikIndex_Protokoll.md`](WindowsFormsApplication1/Allgemein/KI/H10_SemantikIndex_Protokoll.md).
+**H11 umgesetzt am 29.08.2026 (Sammelpaket)**: Popup-Kurzbeschreibungen (7.6, 32/32
+Seiten), Wurzelfix der toten Berichte-&-Kosten-Knöpfe (grenzenlose Tiefensuche band
+den Unterseiten-Knopf), WPPrefix restlos entfernt, Kleinbefunde (Attrappe, Gebäude2-
+Titel, Löschungen, Cache-Verfall), dazu
+[`BETRIEB_Installer_Hinweise.md`](BETRIEB_Installer_Hinweise.md). Protokoll:
+[`…/Allgemein/Hilfe/H11_Sammelpaket_Protokoll.md`](WindowsFormsApplication1/Allgemein/Hilfe/H11_Sammelpaket_Protokoll.md).
+**H12 umgesetzt am 29.08.2026 (feldgenaue Hilfe)**: 76 Eingabebereiche auf 13 Dialogen
+mit Hover-Hilfe und Ankerzielen (Zuordnung 99 → 175 Zeilen); Schutzfix: die
+Abschaltlogik deaktiviert keine Container mehr. Protokoll:
+[`…/Allgemein/Hilfe/H12_FeldHilfe_Protokoll.md`](WindowsFormsApplication1/Allgemein/Hilfe/H12_FeldHilfe_Protokoll.md).
+**W3 umgesetzt am 29.08.2026 (Wiki-Redaktion)**: 70 `{{Anker}}` an den
+Eingaben-Stichpunkten (32 neue Stichpunkte, Zwischenüberschriften je Dialog),
+`[[Kategorie:Programm Dokumentation]]` auf allen 32 Unterseiten samt Kategorieseite
+(live verifiziert); `{{Navigation}}` bewusst weggelassen — die Bestandsvorlagen sind
+fest an fremde Rubriken gebunden, eine eigene Vorlage wäre ein Folgeschritt.
 Betrachtet wurde der Bestand unter `WindowsFormsApplication1` (ohne Altkopien und
 Worktrees) sowie — per API und Seitenabruf empirisch verifiziert — das Wiki unter
 `https://wiki.epos-plan.de`.
