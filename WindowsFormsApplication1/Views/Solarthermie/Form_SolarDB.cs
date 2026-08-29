@@ -15,6 +15,7 @@ namespace WindowsFormsApplication1
         public Form_SolarDB()
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
         }
         public void SetControls(string szName)
         {

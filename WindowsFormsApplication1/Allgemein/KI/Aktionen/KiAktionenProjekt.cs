@@ -48,6 +48,178 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
+        // projekt_aktiv
+        // =====================================================================
+
+        /// <summary>
+        /// GENAU das gerade geoeffnete Projekt. Andockpunkt <c>Program.startfrm</c>,
+        /// ersatzweise <c>ApplikationCtrl.ReadSingle()</c>; die Kopfdaten liest
+        /// <c>ProjektCtrl.ReadSingle(int)</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum es diese Aktion gibt.</b> „Wie heisst das aktuelle Projekt?" liess
+        /// sich bisher nicht beantworten: Der Kontext, den der Assistent mitbekommt,
+        /// nennt nur den BEREICH (<see cref="HilfeKontext.Beschreibung"/>) und streicht
+        /// den Projektnamen sogar ausdruecklich heraus. Und aus
+        /// <c>projekte_auflisten</c> kann das Modell nicht ablesen, welches der
+        /// zwanzig Platzhalterprojekte offen ist. Hier fragt das PROGRAMM die
+        /// Oberflaeche - das Modell bekommt eine einzige Zeile.
+        /// </para>
+        /// <para>
+        /// <b>Dieselbe Quelle wie die Kontextsaeuberung.</b> Gelesen wird
+        /// <c>Program.startfrm</c> - genau das Feld, das
+        /// <c>HilfeKontext.OhneKlarnamen</c> ausschneidet. Damit kann die Aktion nie
+        /// ein anderes Projekt melden als das, dessen Name aus dem Kontext entfernt
+        /// wird. Erst wenn es kein Startfenster gibt (Pruefharnisch, Konsole), gilt
+        /// ersatzweise das zuletzt geoeffnete Projekt aus <c>Tab_Applikation</c>.
+        /// </para>
+        /// <para>
+        /// <b>Am Datenschutz aendert sich nichts.</b> Die Zeile laeuft durch dieselbe
+        /// Schicht wie jedes Aktionsergebnis: <c>KiRueckmeldung.Erzeuge</c> ersetzt
+        /// Projektname, Kunde und Bearbeiter durch Platzhalter, bevor irgendetwas das
+        /// Programm verlaesst (Fachkonzept 4.2). An das Modell geht „Name 1", der
+        /// Anwender sieht im Chatfenster den Klarnamen.
+        /// </para>
+        /// <para>
+        /// <b>Kein offenes Projekt ist ein ORDENTLICHES Ergebnis</b>, kein Fehler -
+        /// beim Programmstart ist das der Regelfall. Der Ergebnissatz sagt es
+        /// ausdruecklich, damit das Modell nicht anfaengt zu raten.
+        /// </para>
+        /// </remarks>
+        internal static KiAktion ProjektAktiv()
+        {
+            return new KiAktion(
+                name: "projekt_aktiv",
+                zweck: KiAktionsTexte.ZweckProjektAktiv,
+                stufe: Schutzstufe.Lesen,
+                andockpunkt: "Program.startfrm / ApplikationCtrl.ReadSingle + ProjektCtrl.ReadSingle(int)",
+                ausfuehren: delegate { return AktivesProjektErgebnis(); });
+        }
+
+        /// <summary>
+        /// Das Ergebnis der Aktion <c>projekt_aktiv</c>.
+        /// </summary>
+        /// <remarks>
+        /// Eigene Methode und nicht bloss ein Lambda im Register: So erreicht der
+        /// Pruefharnisch beide Zweige (Projekt offen / keines offen), ohne die
+        /// MDI-Oberflaeche hochzufahren.
+        /// </remarks>
+        internal static KiErgebnis AktivesProjektErgebnis()
+        {
+            int id;
+            string name;
+            if (!AktivesProjektErmitteln(out id, out name))
+                return KiErgebnis.Ok(KiAktionsTexte.ProjektAktivKeines);
+
+            // Kopfdaten aus der Datenbank; sie koennen fehlen, wenn das gemerkte
+            // Projekt inzwischen geloescht wurde. Dann bleibt der Name der
+            // Oberflaeche stehen - er ist das, was der Anwender vor sich sieht.
+            var ctrl = new ProjektCtrl();
+            if (id > 0) ctrl.ReadSingle(id);
+
+            bool gelesen = id > 0 && ctrl.rows > 0;
+            string projektname = gelesen ? (ctrl.m_szProjektname ?? "") : name;
+            var meldungen = new List<string>();
+            if (!gelesen)
+                meldungen.Add(string.Format(CultureInfo.CurrentCulture,
+                                            KiAktionsTexte.ProjektAktivNichtGelesen, id));
+
+            var zeilen = KiHilfe.Liste();
+            zeilen.Add(KiHilfe.Zeile(
+                "id", gelesen ? ctrl.m_ID : id,
+                "projektname", KiHilfe.Text(projektname),
+                "kunde", KiHilfe.Text(gelesen ? ctrl.m_szKunde : ""),
+                "bearbeiter", KiHilfe.Text(gelesen ? ctrl.m_szBearbeiter : ""),
+                "geaendert", gelesen ? KiHilfe.Datum(ctrl.m_Aenderungsdatum) : KiHilfe.Text("")));
+
+            // Der Projektname steht ABSICHTLICH auch im Ergebnissatz: KiRueckmeldung
+            // baut zuerst die Zeilen (dabei entsteht der Platzhalter) und saeubert den
+            // Satz danach - der Klarname wird also auch hier ersetzt. Beide Stellen
+            // fuehren denselben Zeichenkettenwert, sonst griffe die Ersetzung nicht.
+            KiErgebnis e = KiErgebnis.Ok(string.Format(CultureInfo.CurrentCulture,
+                                                       KiAktionsTexte.ProjektAktivGelesen,
+                                                       projektname, gelesen ? ctrl.m_ID : id),
+                                         zeilen);
+            return meldungen.Count > 0 ? e.MitMeldungen(meldungen) : e;
+        }
+
+        /// <summary>
+        /// Ermittelt das gerade geoeffnete Projekt. Rueckgabe <c>false</c>, wenn keines
+        /// offen ist - dann sind <paramref name="id"/> 0 und <paramref name="name"/> leer.
+        /// </summary>
+        /// <remarks>
+        /// Reihenfolge: erst die laufende Oberflaeche (<c>Program.startfrm</c>), dann
+        /// das zuletzt geoeffnete Projekt aus <c>Tab_Applikation</c>. Fehlt die ID,
+        /// wird sie ueber den Namen nachgeschlagen; fehlt der Name, ueber die ID. Jeder
+        /// Datenbankzugriff ist eingefangen: Die Aktion darf an einer nicht erreichbaren
+        /// Datenbank nicht scheitern, sondern meldet dann „kein Projekt geoeffnet".
+        /// </remarks>
+        internal static bool AktivesProjektErmitteln(out int id, out string name)
+        {
+            id = 0;
+            name = "";
+            bool oberflaecheLaeuft = false;
+
+            try
+            {
+                if (Program.startfrm != null)
+                {
+                    oberflaecheLaeuft = true;
+                    id = Program.startfrm.m_ID_Projekt;
+                    name = Program.startfrm.m_szProjektname ?? "";
+                }
+            }
+            catch { oberflaecheLaeuft = false; id = 0; name = ""; }
+
+            if (!oberflaecheLaeuft)
+            {
+                // NUR ohne Startfenster (Pruefharnisch, Konsole): das zuletzt
+                // geoeffnete Projekt aus Tab_Applikation - dieselbe Quelle, aus der
+                // Form_Start.pBox_ProjektZuletzt_Click schoepft.
+                //
+                // Laeuft die Oberflaeche und hat sie kein Projekt geladen, ist „keines
+                // offen" die RICHTIGE Antwort. „Zuletzt geoeffnet" waere eine andere
+                // Frage - und der Assistent wuerde ein Projekt als aktiv ausgeben, das
+                // der Anwender gar nicht vor sich hat.
+                try
+                {
+                    var app = new ApplikationCtrl();
+                    app.ReadSingle();
+                    if (app.rows > 0)
+                    {
+                        id = app.m_ID_Projekt;
+                        name = app.m_szProjektname ?? "";
+                    }
+                }
+                catch { }
+            }
+
+            name = (name ?? "").Trim();
+            if (id <= 0 && name.Length == 0) return false;
+
+            // Die fehlende Haelfte nachschlagen. Tab_Applikation fuehrte die ID
+            // historisch nicht immer mit (Befund 3 in Form_Start.cs) - der Name ist
+            // dort der verlaessliche Teil.
+            try
+            {
+                if (id <= 0 && name.Length > 0)
+                {
+                    var ctrl = new ProjektCtrl();
+                    ctrl.ReadSingle(name);
+                    if (ctrl.rows > 0) id = ctrl.m_ID;
+                }
+                else if (id > 0 && name.Length == 0)
+                {
+                    name = KiHilfe.ProjektName(id);
+                }
+            }
+            catch { }
+
+            return id > 0 || name.Length > 0;
+        }
+
+        // =====================================================================
         // projekt_suchen
         // =====================================================================
 

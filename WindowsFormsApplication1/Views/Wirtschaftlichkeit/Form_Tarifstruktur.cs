@@ -92,6 +92,7 @@ namespace WindowsFormsApplication1
             _tarif = _ctrl.LadeTarif(idStamm);
             _sicht = sicht;
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
         }
 
         private readonly TarifSicht _sicht;

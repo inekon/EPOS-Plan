@@ -58,6 +58,7 @@ namespace WindowsFormsApplication1
         public Form_KatalogDubletten()
         {
             BaueOberflaeche();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
             TexteSetzen();
             KatalogeFuellen();
             FensterEinpassung.Einhaengen(this);

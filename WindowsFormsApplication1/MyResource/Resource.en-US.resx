@@ -8268,4 +8268,16 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="KI_WIKI_SUCHE_LAEUFT" xml:space="preserve">
     <value>Searching the online documentation...</value>
   </data>
+  <data name="KI_REG_ZWECK_PROJEKT_AKTIV" xml:space="preserve">
+    <value>Names the project that is currently open - the one the user is working on right now. Use this action for questions such as "What is the current project called?", "Which project is open?" or "What am I working on?". Returns exactly one row with ID, project name, customer, editor and date of change.</value>
+  </data>
+  <data name="KI_REG_PROJEKT_AKTIV_GELESEN" xml:space="preserve">
+    <value>The project currently open is {0} (ID {1}).</value>
+  </data>
+  <data name="KI_REG_PROJEKT_AKTIV_KEINES" xml:space="preserve">
+    <value>No project is open at the moment.</value>
+  </data>
+  <data name="KI_REG_PROJEKT_AKTIV_NICHT_GELESEN" xml:space="preserve">
+    <value>The header data for ID {0} could not be read; the values shown by the user interface apply.</value>
+  </data>
 </root>

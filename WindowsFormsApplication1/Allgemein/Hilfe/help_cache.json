@@ -21,5 +21,14 @@
   "/wiki/programm_dokumentation/varianten/": { "Tooltip": "Varianten", "Url": "https://wiki.epos-plan.de/wiki/Programm_Dokumentation/Varianten", "Slug": "Varianten" },
   "/wiki/programm_dokumentation/projektverwaltung/": { "Tooltip": "Projektverwaltung", "Url": "https://wiki.epos-plan.de/wiki/Programm_Dokumentation/Projektverwaltung", "Slug": "Projektverwaltung" },
   "/wiki/programm_dokumentation/einstellungen/": { "Tooltip": "Einstellungen", "Url": "https://wiki.epos-plan.de/wiki/Programm_Dokumentation/Einstellungen", "Slug": "Einstellungen" },
-  "/wiki/programm_dokumentation/hilfe-assistent/": { "Tooltip": "Hilfe-Assistent", "Url": "https://wiki.epos-plan.de/wiki/Programm_Dokumentation/Hilfe-Assistent", "Slug": "Hilfe-Assistent" }
+  "/wiki/programm_dokumentation/hilfe-assistent/": { "Tooltip": "Hilfe-Assistent", "Url": "https://wiki.epos-plan.de/wiki/Programm_Dokumentation/Hilfe-Assistent", "Slug": "Hilfe-Assistent" },
+  "/wiki/programm_dokumentation/energieerzeuger/": { "Tooltip": "Energieerzeuger", "Url": "https://wiki.epos-plan.de/wiki/Programm_Dokumentation/Energieerzeuger", "Slug": "Energieerzeuger" },
+  "/wiki/programm_dokumentation/berichte_und_kosten/": { "Tooltip": "Berichte und Kosten", "Url": "https://wiki.epos-plan.de/wiki/Programm_Dokumentation/Berichte_und_Kosten", "Slug": "Berichte und Kosten" },
+  "/wiki/programm_dokumentation/bericht/": { "Tooltip": "Bericht", "Url": "https://wiki.epos-plan.de/wiki/Programm_Dokumentation/Bericht", "Slug": "Bericht" },
+  "/wiki/programm_dokumentation/simulationsergebnisse/": { "Tooltip": "Simulationsergebnisse", "Url": "https://wiki.epos-plan.de/wiki/Programm_Dokumentation/Simulationsergebnisse", "Slug": "Simulationsergebnisse" },
+  "/wiki/programm_dokumentation/w\u00e4rmequelle_erdreich/": { "Tooltip": "W\u00e4rmequelle Erdreich", "Url": "https://wiki.epos-plan.de/wiki/Programm_Dokumentation/W%C3%A4rmequelle_Erdreich", "Slug": "W\u00e4rmequelle Erdreich" },
+  "/wiki/programm_dokumentation/lizenz/": { "Tooltip": "Lizenz", "Url": "https://wiki.epos-plan.de/wiki/Programm_Dokumentation/Lizenz", "Slug": "Lizenz" },
+  "/wiki/programm_dokumentation/gesetzesparameter/": { "Tooltip": "Gesetzesparameter", "Url": "https://wiki.epos-plan.de/wiki/Programm_Dokumentation/Gesetzesparameter", "Slug": "Gesetzesparameter" },
+  "/wiki/programm_dokumentation/katalogpflege/": { "Tooltip": "Katalogpflege", "Url": "https://wiki.epos-plan.de/wiki/Programm_Dokumentation/Katalogpflege", "Slug": "Katalogpflege" },
+  "/wiki/programm_dokumentation/emissionen/": { "Tooltip": "Emissionen", "Url": "https://wiki.epos-plan.de/wiki/Programm_Dokumentation/Emissionen", "Slug": "Emissionen" }
 }

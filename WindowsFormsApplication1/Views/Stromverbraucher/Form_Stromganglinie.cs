@@ -22,6 +22,7 @@ namespace WindowsFormsApplication1
         public Form_Stromganglinie()
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
 
             StromganglinieStammCtrl ctrl = new StromganglinieStammCtrl();
             ctrl.ReadAll(); 

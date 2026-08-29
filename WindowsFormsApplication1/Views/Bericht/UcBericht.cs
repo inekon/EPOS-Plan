@@ -86,6 +86,7 @@ namespace WindowsFormsApplication1
             // verhindert, dass ein späteres Designer-Speichern die Skalierung über
             // nachgetragene AutoScaleDimensions erstmals scharf schaltet.
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
             TexteSetzen();
         }
 

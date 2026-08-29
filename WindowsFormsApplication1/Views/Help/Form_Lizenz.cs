@@ -70,6 +70,7 @@ namespace WindowsFormsApplication1
         {
             _zustimmungAbfragen = zustimmungAbfragen;
             BaueOberflaeche();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
             LizenzLaden();
             RechtlicheHinweiseFuellen();
             KomponentenFuellen();

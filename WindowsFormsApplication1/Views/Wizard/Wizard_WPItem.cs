@@ -43,6 +43,7 @@ namespace WindowsFormsApplication1
         {
             item = new WErzeugerModel();
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
             FillWPList();
 
             comboBox_Ruecklauf.Items.AddRange(RUECKLAUF_VORSCHLAEGE);
@@ -71,6 +72,7 @@ namespace WindowsFormsApplication1
             WPName = wpname;
             item = new WErzeugerModel();
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
             FillWPList();
             FillVorlaufCombo(WPName);
 

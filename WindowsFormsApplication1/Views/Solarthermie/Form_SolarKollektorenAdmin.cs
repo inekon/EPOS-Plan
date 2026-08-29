@@ -20,6 +20,7 @@ namespace WindowsFormsApplication1
         public Form_SolarKollektorenAdmin ()
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
             DataGridView dgv = dataGridView1;
             dgv.AutoGenerateColumns = false;
             dgv.RowHeadersVisible = false;
