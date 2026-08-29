@@ -396,7 +396,6 @@ namespace WindowsFormsApplication1
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "Administration",           "Einstellungen" },
-            { "Assistent (Wizard)",       "Kurzanleitung" },
             { "Bericht",                  "Berichte und Kosten" },
             { "BHKW",                     "BHKW" },
             { "Brauchwasser",             "Brauchwasser" },
@@ -410,6 +409,7 @@ namespace WindowsFormsApplication1
             { "Kosten und Preise",        "Kosten" },
             { "Lizenz",                   "Lizenz" },
             { "Photovoltaik",             "Photovoltaik" },
+            { "Projektassistent",         "Kurzanleitung" },
             { "Projektverwaltung",        "Projektverwaltung" },
             { "Prozesswärme",             "Prozesswärme" },
             { "Pufferspeicher",           "Pufferspeicher" },

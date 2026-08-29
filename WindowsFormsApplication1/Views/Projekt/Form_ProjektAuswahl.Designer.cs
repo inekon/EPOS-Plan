@@ -32,6 +32,7 @@ namespace WindowsFormsApplication1
             ucAuswahl = new ProjektAuswahl();
             btn_OK = new System.Windows.Forms.Button();
             btn_Abbrechen = new System.Windows.Forms.Button();
+            btn_Help = new System.Windows.Forms.Button();
             SuspendLayout();
             //
             // ucAuswahl
@@ -54,10 +55,22 @@ namespace WindowsFormsApplication1
             btn_Abbrechen.UseVisualStyleBackColor = true;
             btn_Abbrechen.Click += btn_Abbrechen_Click;
             //
+            // btn_Help
+            //
+            btn_Help.BackColor = System.Drawing.Color.Transparent;
+            btn_Help.BackgroundImage = Properties.Resources.help_icon;
+            resources.ApplyResources(btn_Help, "btn_Help");
+            btn_Help.Cursor = System.Windows.Forms.Cursors.Hand;
+            btn_Help.FlatAppearance.BorderSize = 0;
+            btn_Help.Name = "btn_Help";
+            btn_Help.TabStop = false;
+            btn_Help.UseVisualStyleBackColor = false;
+            //
             // Form_ProjektAuswahl
             //
             resources.ApplyResources(this, "$this");
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            Controls.Add(btn_Help);
             Controls.Add(btn_Abbrechen);
             Controls.Add(btn_OK);
             Controls.Add(ucAuswahl);
@@ -72,6 +85,7 @@ namespace WindowsFormsApplication1
 
         #endregion
 
+        private System.Windows.Forms.Button btn_Help;
         private ProjektAuswahl ucAuswahl;
         private System.Windows.Forms.Button btn_OK;
         private System.Windows.Forms.Button btn_Abbrechen;
