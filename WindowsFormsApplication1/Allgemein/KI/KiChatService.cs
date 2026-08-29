@@ -1152,9 +1152,11 @@ namespace WindowsFormsApplication1
                     if (!befund.Gueltig)
                     {
                         // Unbekannte Aktion oder fehlerhafte Parameter: das Modell bekommt
-                        // den Klartextgrund zurück und darf EINMAL nachbessern.
+                        // den Klartextgrund zurück und darf EINMAL nachbessern. Bekannte
+                        // Bezeichner werden dabei ersetzt (Fachkonzept 4.2).
                         schritt.Grund = befund.FehlerText();
-                        rueckmeldung = KiRueckmeldung.Abgelehnt(befund.Werkzeugname, schritt.Grund);
+                        rueckmeldung = KiRueckmeldung.Abgelehnt(befund.Werkzeugname, schritt.Grund,
+                                                                platzhalter);
                     }
                     else
                     {
@@ -1173,7 +1175,7 @@ namespace WindowsFormsApplication1
                         if (riegel != null)
                         {
                             schritt.Grund = riegel;
-                            rueckmeldung = KiRueckmeldung.Abgelehnt(aufruf.Name, riegel);
+                            rueckmeldung = KiRueckmeldung.Abgelehnt(aufruf.Name, riegel, platzhalter);
                         }
                         else
                         {
@@ -1185,6 +1187,20 @@ namespace WindowsFormsApplication1
                             schritt.Ausgefuehrt = ergebnis.Erfolg;
                             if (!ergebnis.Erfolg) schritt.Grund = ergebnis.Text;
                             schritt.Protokollzeile = KiAusfuehrer.LetzteProtokollzeile;
+
+                            // Der Grund eines gescheiterten Laufs ist ein SATZ und kann
+                            // Klarnamen führen, die noch in keiner Ergebniszeile standen -
+                            // etwa die Kandidatenliste der Namensauflösung, bis zu zwölf
+                            // Projekte samt Kunde (H8-Protokoll, Befund 4). Sie werden VOR
+                            // dem Verdichten angemeldet, damit die Ersetzung sie kennt;
+                            // der Anwender sieht unter dem Schritt weiterhin den
+                            // Klartext (schritt.Grund).
+                            if (!ergebnis.Erfolg && platzhalter != null)
+                            {
+                                var klartexte = new List<string> { ergebnis.Text };
+                                klartexte.AddRange(ergebnis.Meldungen);
+                                KiHilfe.KlarnamenAnmelden(platzhalter, klartexte.ToArray());
+                            }
 
                             rueckmeldung = KiRueckmeldung.Erzeuge(aufruf, ergebnis, platzhalter);
                         }
