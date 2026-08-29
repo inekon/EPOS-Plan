@@ -942,28 +942,82 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Baut die Zuordnungszeilen: eingebettete Fassung als Grundlage, die
+        /// Datei neben der EXE als Auflage darueber (F2).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Auflage statt Ersatz</b> (Befund 29.08.2026). Bis dahin ERSETZTE eine
+        /// Datei neben der EXE die eingebettete Fassung vollstaendig. Eine
+        /// unvollstaendige oder veraltete Datei loeschte damit stillschweigend alle
+        /// Zuordnungen, die sie selbst nicht nennt - und
+        /// <see cref="InfobuttonsOhneZuordnungAbschalten"/> faerbte die zugehoerigen
+        /// Infobuttons grau. Genau das ist passiert: eine 464 Byte grosse Restdatei
+        /// im Ausgabeordner (aus der Zeit, als die Zuordnung noch mitkopiert wurde)
+        /// nannte 6 der 26 Zeilen; 24 von 26 Infobuttons waren daraufhin
+        /// abgeschaltet.
+        /// </para>
+        /// <para>
+        /// Die Absicht von F2 - "Zuordnungen ohne Neubau korrigieren" - bleibt
+        /// vollstaendig erhalten: Die Zeilen der Datei stehen HINTER den
+        /// eingebetteten, und <see cref="ZuordnungenAnwenden"/> wendet jede
+        /// passende Zeile an. Da <see cref="SetHelpKey"/> den Schluessel
+        /// ueberschreibt statt ihn zu ergaenzen, gewinnt die zuletzt gelesene
+        /// Zeile - also die aus der Datei neben der EXE. Was die Datei NICHT
+        /// nennt, bleibt jetzt aber in Kraft, statt zu verschwinden.
+        /// </para>
+        /// </remarks>
         private static string[] ZuordnungLaden()
         {
-            // 1. Fassung neben der EXE hat Vorrang - so lassen sich Zuordnungen
-            //    ohne Neubau korrigieren.
+            string[] eingebettet = ZuordnungEingebettetLaden();
+            string[] daneben = ZuordnungNebenExeLaden();
+
+            if (daneben.Length == 0) return eingebettet;
+            if (eingebettet.Length == 0) return daneben;
+
+            var zusammen = new List<string>(eingebettet.Length + daneben.Length);
+            zusammen.AddRange(eingebettet);
+            zusammen.AddRange(daneben);   // spaeter gelesen = hat Vorrang
+
+            System.Diagnostics.Debug.WriteLine(
+                $"[Help] Zuordnung: {eingebettet.Length} eingebettete Zeilen, darueber " +
+                $"{daneben.Length} Zeilen aus der Datei neben der EXE. Die Datei uebersteuert " +
+                "die Zeilen, die sie nennt; alle uebrigen bleiben in Kraft.");
+
+            return zusammen.ToArray();
+        }
+
+        /// <summary>
+        /// Fassung neben der EXE - so lassen sich Zuordnungen ohne Neubau
+        /// korrigieren. Fehlt sie (Regelfall), ist das kein Fehler.
+        /// </summary>
+        private static string[] ZuordnungNebenExeLaden()
+        {
             try
             {
                 string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, MappingDateiName);
-                if (File.Exists(filePath))
-                {
-                    // Encoding ausdruecklich: sonst entschiede die Systemcodepage
-                    // ueber die Umlaute in den Kommentaren.
-                    string[] zeilen = File.ReadAllLines(filePath, Encoding.UTF8);
-                    System.Diagnostics.Debug.WriteLine($"[Help] Zuordnung aus Datei neben der EXE: {filePath} ({zeilen.Length} Zeilen).");
-                    return zeilen;
-                }
+                if (!File.Exists(filePath)) return Array.Empty<string>();
+
+                // Encoding ausdruecklich: sonst entschiede die Systemcodepage
+                // ueber die Umlaute in den Kommentaren.
+                string[] zeilen = File.ReadAllLines(filePath, Encoding.UTF8);
+                System.Diagnostics.Debug.WriteLine($"[Help] Zuordnung aus Datei neben der EXE: {filePath} ({zeilen.Length} Zeilen).");
+                return zeilen;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("[Help] WARNUNG: Zuordnungsdatei neben der EXE nicht lesbar, weiche auf die eingebettete Fassung aus: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine("[Help] WARNUNG: Zuordnungsdatei neben der EXE nicht lesbar, es gilt allein die eingebettete Fassung: " + ex.Message);
+                return Array.Empty<string>();
             }
+        }
 
-            // 2. Eingebettete Fassung - sie wird immer mitgeliefert.
+        /// <summary>
+        /// Eingebettete Fassung - sie wird immer mitgeliefert und ist seit dem
+        /// Befund vom 29.08.2026 die Grundlage, die nie ganz wegfallen kann.
+        /// </summary>
+        private static string[] ZuordnungEingebettetLaden()
+        {
             try
             {
                 var assembly = typeof(HelpExtender).Assembly;

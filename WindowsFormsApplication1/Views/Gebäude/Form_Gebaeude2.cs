@@ -13,6 +13,7 @@ namespace WindowsFormsApplication1
         public Form_Gebaeude2()
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
         }
 
         public void SetControls()

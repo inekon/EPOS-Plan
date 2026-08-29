@@ -70,6 +70,13 @@
 # bleibender Weiterleitung: ein ausgeliefertes Programm traegt diese Datei
 # eingebettet bei sich und altert bis zum naechsten Release.
 #
+# Mit H7 (29.08.2026) kommen 73 Zeilen hinzu - die drei Reiter der Startmaske
+# ohne eigenen Knopf und die 70 Hauptdialoge aus Inventar.md, Tabellen B.1/B.2.
+# Damit zeigen 99 Infobuttons auf 32 Unterseiten, davon 9 neue (Energieerzeuger,
+# Berichte und Kosten, Bericht, Simulationsergebnisse, Waermequelle Erdreich,
+# Lizenz, Gesetzesparameter, Katalogpflege, Emissionen). Die H7-Zeilen stehen am
+# Dateiende; der Zielvorrat-Block darueber beschreibt den Stand vor H7.
+#
 # ---------------------------------------------------------------------------
 # Zuordnungen
 # ---------------------------------------------------------------------------
@@ -186,3 +193,76 @@ Form_KiChat.btn_Help                = Hilfe-Assistent
 #   Stromspeicher       Gebäude             Brauchwasser        Prozesswärme
 #   Stromverbraucher    Simulation          Wirtschaftlichkeit  Varianten
 #   Projektverwaltung   Einstellungen       Hilfe-Assistent
+Form_Start.btn_Help_Energieerzeuger = Energieerzeuger
+Form_Start.btn_Help_Simulation = Simulation
+UcBerichteKosten.btn_Help = Berichte und Kosten
+Form_BHKWAdmin.btn_Help = BHKW
+Form_DBBHKW.btn_Help = BHKW
+Form_Brauchwasser_Admin.btn_Help = Brauchwasser
+Form_EingBrauchwasserTyp.btn_Help = Brauchwasser
+Form_ErgBrauchwasserwaerme.btn_Help = Brauchwasser
+Form_EingGebTyp.btn_Help = Gebäude
+Form_Gebaeude1.btn_Help = Gebäude
+Form_Gebaeude2.btn_Help = Gebäude
+Form_Heizkessel_Admin.btn_Help = Heizkessel
+Form_Heizkessel_Bearbeiten.btn_Help = Heizkessel
+Form_Heizkessel_einlesen.btn_Help = Heizkessel
+Form_KiEinstellungen.btn_Help = Hilfe-Assistent
+Form_Betriebskosten.btn_Help = Kosten
+Form_CaseEingabe.btn_Help = Kosten
+Form_Energietraeger.btn_Help = Kosten
+Form_KostenAdmin.btn_Help = Kosten
+Form_KostenKomponente.btn_Help = Kosten
+Form_Kostenprofil.btn_Help = Kosten
+Form_LeistungspreisReihe.btn_Help = Kosten
+Form_SpotpreisImport.btn_Help = Kosten
+Form_VorlagenUebernahme.btn_Help = Kosten
+Form_PhotovoltaikVerguetung.btn_Help = Kosten
+Form_Tarifstruktur.btn_Help = Kosten
+Form_AdminPV.btn_Help = Photovoltaik
+Main_PV_Test.btn_Help = Photovoltaik
+Form_ProjektExportImport.btn_Help = Projektverwaltung
+FormMain.btn_Help = Projektverwaltung
+Form_EingProzTyp.btn_Help = Prozesswärme
+Form_Prozesswaerme_Admin.btn_Help = Prozesswärme
+Form_PufferSp_Admin.btn_Help = Pufferspeicher
+Form_PufferSp_Projekt.btn_Help = Pufferspeicher
+Form_PufferSp_einlesen.btn_Help = Pufferspeicher
+Form_Quellprofil.btn_Help = Simulation
+Form_Waermesenke.btn_Help = Simulation
+Form_SolarDB.btn_Help = Solarthermie
+Form_SolarKollektorenAdmin.btn_Help = Solarthermie
+Form_SolarKollektoren_einlesen.btn_Help = Solarthermie
+Form_Solarganglinie.btn_Help = Solarthermie
+Form_Solarganglinie_Admin.btn_Help = Solarthermie
+Form_GanglinieImportOptionen.btn_Help = Strombedarf
+Form_Stromganglinie.btn_Help = Strombedarf
+Form_Stromganglinie_Admin.btn_Help = Strombedarf
+Form_AdminStromspeicher.btn_Help = Stromspeicher
+Form_PeakShaving.btn_Help = Stromspeicher
+Form_SpeicherOptimierung.btn_Help = Stromspeicher
+Form_SpeicherVariantenVergleich.btn_Help = Stromspeicher
+Form_EingDBStromverbraucher.btn_Help = Stromverbraucher
+Form_EingStromTyp.btn_Help = Stromverbraucher
+Form_ErgStromverbraucher.btn_Help = Stromverbraucher
+Form_Stromverbraucher_Admin.btn_Help = Stromverbraucher
+UcBkUebersicht.btn_Help = Varianten
+UcBkKosten.btn_Help = Kosten
+Form_AdminWaermeeinlesen.btn_Help = Wärmebedarf
+Form_ErgProzesswaerme.btn_Help = Wärmebedarf
+Wizard_WPItem.btn_Help = Wärmepumpe
+Form_WPAuswahl.btn_Help = Wärmepumpe
+Form_WpFilterAuswahl.btn_Help = Wärmepumpe
+Form_WP_einlesen.btn_Help = Wärmepumpe
+Kenndaten.btn_Help = Wärmepumpe
+Form_KwkgModule.btn_Help = Wirtschaftlichkeit
+Form_WirtschaftlichkeitParameter.btn_Help = Wirtschaftlichkeit
+Form_WirtschaftlichkeitVerlauf.btn_Help = Wirtschaftlichkeit
+UcBericht.btn_Help = Bericht
+Form_Simulation_Detail.btn_Help = Simulationsergebnisse
+Form_QuelleErdreich.btn_Help = Wärmequelle Erdreich
+Form_Lizenz.btn_Help = Lizenz
+Form_LizenzVerwaltung.btn_Help = Lizenz
+Form_Gesetzesparameter.btn_Help = Gesetzesparameter
+Form_KatalogDubletten.btn_Help = Katalogpflege
+Form_Emissionskatalog.btn_Help = Emissionen

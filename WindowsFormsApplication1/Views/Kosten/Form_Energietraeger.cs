@@ -38,6 +38,10 @@ namespace WindowsFormsApplication1
         public Form_Energietraeger()
         {
             InitializeComponent();
+            // H7: Infoknopf in das Kopfband (pnlKopf, Dock Top, 48 hoch), aber LINKS
+            // von lblKontext - das steht rechts verankert bei x 902..1072 (Panelbreite
+            // 1084). 200 setzt den Knopf auf x 856..884, mit Luft zu beiden Seiten.
+            InfoKnopf.Anbringen(this, abstandRechts: 200, ziel: pnlKopf);
 
             Text = T("KDLG_ET_TITEL", "Energieträgerverwaltung");
             lblKopfTitel.Text = Text;

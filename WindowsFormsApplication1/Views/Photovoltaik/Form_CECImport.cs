@@ -26,6 +26,9 @@ namespace WindowsFormsApplication1
         public Main_PV_Test()
         {
             InitializeComponent();
+            // H7: Infoknopf in das Kopfband (_headerPanel, Dock Top, 60 hoch) - das
+            // Panel traegt nur seinen eigenen Text, rechts ist es frei.
+            InfoKnopf.Anbringen(this, ziel: _headerPanel);
 
             // Erst nach Initialisierung die Distance setzen (vermeidet Exception)
             this.Load += (s, e) =>

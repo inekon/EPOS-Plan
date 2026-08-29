@@ -272,6 +272,7 @@ namespace WindowsFormsApplication1
         public Form_Simulation_Detail(int iD_Projekt)
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
             m_ID_Projekt = iD_Projekt;
 
             btn_ErgebnisSpeichern.Click += btn_ErgebnisSpeichern_Click;

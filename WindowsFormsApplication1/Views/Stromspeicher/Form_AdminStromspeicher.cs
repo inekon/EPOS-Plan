@@ -18,6 +18,7 @@ namespace WindowsFormsApplication1
         public Form_AdminStromspeicher()
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
             EinheitenBeschriftungKorrigieren();
             InitGeraetefelder();
         }

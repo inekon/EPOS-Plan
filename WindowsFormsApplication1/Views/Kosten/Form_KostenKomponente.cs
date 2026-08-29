@@ -43,6 +43,9 @@ namespace WindowsFormsApplication1
         public Form_KostenKomponente()
         {
             InitializeComponent();
+            // H7: Infoknopf in das Kopfband (pnlKopf, Dock Top) - dessen rechtes Ende
+            // ist frei, die Beschriftungen stehen links.
+            InfoKnopf.Anbringen(this, ziel: pnlKopf);
 
             // Ä19: OK/Speichern/Abbrechen auch im ADMIN-Kontext (Katalogpflege) —
             // dieselbe Fußleiste wie im Projektmodus; der Designer hält sie

@@ -957,7 +957,11 @@ namespace WindowsFormsApplication1
                 if (antwort.Erfolg)
                 {
                     SchreibeZeile("Assistent:", Color.FromArgb(0, 90, 160), true);
-                    SchreibeZeile(antwort.Text, Color.Black, false);
+
+                    // Hier - und NUR hier - werden aus „Name 3" wieder Klarnamen (H8).
+                    // Der Text selbst bleibt platzgehalten, siehe unten beim Verlauf.
+                    SchreibeZeile(KlarnamenFuerAnzeige(antwort.Text, antwort.Platzhalter ?? _platzhalter),
+                                  Color.Black, false);
 
                     if (antwort.Quellen.Count > 0)
                         SchreibeZeile("Quellen: " + string.Join(", ", antwort.Quellen), Color.DimGray, false);
@@ -970,6 +974,11 @@ namespace WindowsFormsApplication1
                         SchreibeZeile("(aus dem lokalen Zwischenspeicher - ohne erneute Anfrage)",
                             Color.DimGray, false);
 
+                    // ABSICHTLICH die platzgehaltene Fassung: Dieser Verlauf geht bei der
+                    // nächsten Frage wieder in den Prompt (KiChatService.PromptBauen,
+                    // Block „Bisheriger Verlauf"). Stünde hier der Klarname, wäre er ab
+                    // der zweiten Frage beim Modellanbieter - genau das, was die
+                    // Platzhalterung verhindern soll (H8).
                     _verlauf.Add("Assistent: " + Kuerzen(antwort.Text, 400));
 
                     _lblStatus.Text = "Heute genutzt: " + KiChatService.AnfragenHeute +
@@ -1536,6 +1545,58 @@ namespace WindowsFormsApplication1
         {
             if (string.IsNullOrEmpty(text) || text.Length <= laenge) return text ?? "";
             return text.Substring(0, laenge) + "...";
+        }
+
+        /// <summary>
+        /// Der Rückweg für die BILDSCHIRMAUSGABE (H8): aus „Name 3" wird wieder der
+        /// Klarname. Unbekannte Platzhalter und jeder andere Text bleiben unangetastet.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Nur die Anzeige.</b> Der Antworttext selbst
+        /// (<see cref="KiAntwort.Text"/>) bleibt platzgehalten — er geht über den
+        /// Gesprächsverlauf in die nächste Anfrage. Ersetzt wird ausschließlich das,
+        /// was in diesem Augenblick in die Verlaufsanzeige geschrieben wird.
+        /// Sendevorschau, Protokollzeilen und „Was wird gesendet?" zeigen weiterhin
+        /// den Platzhalter: Sie dokumentieren, was tatsächlich übertragen wurde, und
+        /// dürfen deshalb nicht geschönt werden.
+        /// </para>
+        /// <para>
+        /// <b>Zwei Regeln.</b> Ersetzt wird von der höchsten Nummer abwärts, sonst
+        /// träfe „Name 1" den Anfang von „Name 12". Und nur ganze Vorkommen: Die
+        /// Wortgrenze hinter der Ziffer verhindert, dass ein dem Programm unbekanntes
+        /// „Name 15" als „Name 1" mit angehängter Fünf missdeutet wird — der
+        /// Kollisionsfall, den ein schlichtes Ersetzen nicht abfängt.
+        /// </para>
+        /// <para>
+        /// Die Tabelle liegt seit H8 in <see cref="KiAntwort.Platzhalter"/>; sie wird
+        /// nur gelesen. <c>KiPlatzhalter</c> selbst (Projekt <c>KiKern</c>) bleibt
+        /// unangetastet — aufgezählt wird wie in <c>KiRueckmeldung</c> über
+        /// <see cref="KiPlatzhalter.Anzahl"/> und <see cref="KiPlatzhalter.Klarname"/>.
+        /// </para>
+        /// </remarks>
+        private static string KlarnamenFuerAnzeige(string text, KiPlatzhalter tabelle)
+        {
+            if (string.IsNullOrEmpty(text) || tabelle == null || tabelle.Anzahl == 0)
+                return text ?? "";
+
+            string ergebnis = text;
+            for (int i = tabelle.Anzahl; i >= 1; i--)
+            {
+                string marke = KiPlatzhalter.Stamm + " " +
+                               i.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                string klarname = tabelle.Klarname(marke);
+                if (string.IsNullOrEmpty(klarname)) continue;
+
+                // MatchEvaluator statt Ersatzzeichenkette: In einem Klarnamen darf ein
+                // "$" stehen, ohne als Rückverweis gelesen zu werden.
+                string treffer = klarname;
+                ergebnis = System.Text.RegularExpressions.Regex.Replace(
+                    ergebnis,
+                    @"(?<!\w)" + System.Text.RegularExpressions.Regex.Escape(marke) + @"\b",
+                    m => treffer);
+            }
+            return ergebnis;
         }
 
         /// <summary>

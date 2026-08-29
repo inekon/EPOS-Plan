@@ -58,6 +58,7 @@ namespace WindowsFormsApplication1
             // fest und verhindert, dass ein Designer-Speichern die Skalierung erstmals
             // scharf schaltet.
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
             TexteSetzen();
             AuswahlListenFuellen();
             ListeFuellen();

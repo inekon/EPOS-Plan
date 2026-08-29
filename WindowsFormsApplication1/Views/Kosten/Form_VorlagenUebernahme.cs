@@ -34,6 +34,8 @@ namespace WindowsFormsApplication1
         public Form_VorlagenUebernahme()
         {
             InitializeComponent();
+            // H7: Infoknopf in das Kopfband (pnlKopf, Dock Top, 40 hoch).
+            InfoKnopf.Anbringen(this, ziel: pnlKopf);
         }
 
         /// <summary>Kontext vor <c>ShowDialog</c> übergeben. Die Quelle „Vorlage“

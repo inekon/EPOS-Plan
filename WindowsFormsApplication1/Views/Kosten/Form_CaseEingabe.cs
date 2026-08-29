@@ -17,6 +17,7 @@ namespace WindowsFormsApplication1
         public Form_CaseEingabe()
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
         }
 
         // ---------------------------------------------------------------------
@@ -38,6 +39,7 @@ namespace WindowsFormsApplication1
         public Form_CaseEingabe(KostenPosition daten)
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
             _daten = daten;
 
             // Werte beim Laden anzeigen

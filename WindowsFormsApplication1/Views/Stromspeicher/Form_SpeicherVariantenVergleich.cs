@@ -158,6 +158,7 @@ namespace WindowsFormsApplication1
             // dieses Verhalten fest; Font mit einer vom Designer beim naechsten Speichern
             // ergaenzten Baseline wuerde die Skalierung nachtraeglich scharfschalten.
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
             TexteSetzen();
 
             // Erst nach InitializeComponent: die Fettschrift leitet sich aus der dort

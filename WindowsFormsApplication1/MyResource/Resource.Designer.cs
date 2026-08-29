@@ -8914,6 +8914,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktuell geöffnet ist das Projekt {0} (ID {1}). ähnelt.
+        /// </summary>
+        public static string KI_REG_PROJEKT_AKTIV_GELESEN {
+            get {
+                return ResourceManager.GetString("KI_REG_PROJEKT_AKTIV_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zurzeit ist kein Projekt geöffnet. ähnelt.
+        /// </summary>
+        public static string KI_REG_PROJEKT_AKTIV_KEINES {
+            get {
+                return ResourceManager.GetString("KI_REG_PROJEKT_AKTIV_KEINES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kopfdaten zu ID {0} konnten nicht gelesen werden; es gelten die Angaben der Oberfläche. ähnelt.
+        /// </summary>
+        public static string KI_REG_PROJEKT_AKTIV_NICHT_GELESEN {
+            get {
+                return ResourceManager.GetString("KI_REG_PROJEKT_AKTIV_NICHT_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Projekt {0}: {1}. ähnelt.
         /// </summary>
         public static string KI_REG_PROJEKT_GELESEN {
@@ -9453,6 +9480,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_REG_ZWECK_PARAMETER_LESEN {
             get {
                 return ResourceManager.GetString("KI_REG_ZWECK_PARAMETER_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennt das gerade geöffnete Projekt - also das, an dem der Benutzer aktuell arbeitet. Nimm diese Aktion bei Fragen wie &quot;Wie heißt das aktuelle Projekt?&quot;, &quot;Welches Projekt ist offen?&quot; oder &quot;Woran arbeite ich gerade?&quot;. Liefert genau eine Zeile mit ID, Projektname, Kunde, Bearbeiter und Änderungsdatum. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_PROJEKT_AKTIV {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_PROJEKT_AKTIV", resourceCulture);
             }
         }
         

@@ -61,6 +61,7 @@
         // ================================================================ Zwecke
 
         internal static string ZweckProjekteAuflisten => MyResource.Resource.KI_REG_ZWECK_PROJEKTE_AUFLISTEN;
+        internal static string ZweckProjektAktiv => MyResource.Resource.KI_REG_ZWECK_PROJEKT_AKTIV;
         internal static string ZweckProjektSuchen => MyResource.Resource.KI_REG_ZWECK_PROJEKT_SUCHEN;
         internal static string ZweckProjektLesen => MyResource.Resource.KI_REG_ZWECK_PROJEKT_LESEN;
         internal static string ZweckVariantenAuflisten => MyResource.Resource.KI_REG_ZWECK_VARIANTEN_AUFLISTEN;
@@ -118,6 +119,9 @@
         // ================================================================ Meldungen
 
         internal static string ProjektUnbekannt => MyResource.Resource.KI_REG_PROJEKT_UNBEKANNT;
+        internal static string ProjektAktivGelesen => MyResource.Resource.KI_REG_PROJEKT_AKTIV_GELESEN;
+        internal static string ProjektAktivKeines => MyResource.Resource.KI_REG_PROJEKT_AKTIV_KEINES;
+        internal static string ProjektAktivNichtGelesen => MyResource.Resource.KI_REG_PROJEKT_AKTIV_NICHT_GELESEN;
         internal static string ProjekteKeine => MyResource.Resource.KI_REG_PROJEKTE_KEINE;
         internal static string ProjekteGefunden => MyResource.Resource.KI_REG_PROJEKTE_GEFUNDEN;
         internal static string ProjektSucheGefunden => MyResource.Resource.KI_REG_PROJEKT_SUCHE_GEFUNDEN;

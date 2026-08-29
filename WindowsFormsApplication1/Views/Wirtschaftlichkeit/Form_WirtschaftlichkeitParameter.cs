@@ -61,6 +61,7 @@ namespace WindowsFormsApplication1
             _parameter = _ctrl.LadeParameter(idStamm);
             _erzeuger = _ctrl.ErzeugerDerGruppe(idStamm);
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
         }
 
         private void InitializeComponent()

@@ -31,6 +31,11 @@ namespace WindowsFormsApplication1
         public Form_Heizkessel_Bearbeiten(int mode)
         {
             InitializeComponent();
+            // H7: Die Maske fuehrt oben rechts eine SENKRECHTE Knopfleiste
+            // (x 616..721 von y 19 bis 168), der KI-Aufrufknopf sitzt deshalb
+            // darunter (KiDialoge.cs: AbstandRechts 8, AbstandOben 176). Nach der
+            // Kollisionsregel gehoert der Infoknopf LINKS daneben, auf dieselbe Hoehe.
+            InfoKnopf.Anbringen(this, abstandRechts: 60, abstandOben: 176);
 
             // Dezenter Einstieg in den Assistenten, oben rechts im Client-Bereich
             // (Fachkonzept 11.8). Programmatisch, damit Designer und .resx
