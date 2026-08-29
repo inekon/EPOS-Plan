@@ -83,18 +83,18 @@ namespace WindowsFormsApplication1
         /// migriert, nachweisbar an Tab_Energieanlagen.WQ_TemperaturModus); CO2-Saat und
         /// Emissionsarten sind auf die Nummern 56 und 57 gerückt. Mit dem Merge vom
         /// 29.08.2026 ist der E1/E2-Vollstand (Schrittmethoden) eingetroffen: beide
-        /// Einträge in <see cref="SCHRITTE"/> sind aktiv, das Ziel steht auf 57.
+        /// Einträge in <see cref="SCHRITTE"/> sind aktiv, das Ziel stand danach auf 57.
         ///
-        /// 29.08.2026, Etappe E6 (Quellen-Saat UBA/GEMIS) VERSCHOBEN: Ihr Vorgriff —
-        /// Ziel auf 58 gehoben, ohne dass ein Schritt 58 registriert war — ließ jeden
-        /// Programmstart mit der Warnung „Zielstand 58" enden und sperrte den
-        /// Simulationsbereich (Vorfall 29.08.2026, 09:25). Die Nummer 58 bleibt für E6
-        /// reserviert; das Ziel geht erst mit dem fertig registrierten Schritt wieder
-        /// hoch. Vorarbeiten liegen bereit: die Quellwerte-Konstanten in
-        /// <c>DbWerte</c> und die UBA-/GEMIS-Arbeitsmappen neben dem
-        /// Emissionsarten-Konzept.
+        /// 29.08.2026, Etappe E6 (Quellen-Saat UBA/GEMIS) REGISTRIERT als Schritt 58:
+        /// Ihr erster Anlauf war ein Vorgriff — das Ziel stand auf 58, ohne dass ein
+        /// Schritt 58 registriert war —, und der ließ jeden Programmstart mit der
+        /// Warnung „Zielstand 58" enden und sperrte den Simulationsbereich (Vorfall
+        /// 29.08.2026, 09:25). Seither gilt die Reihenfolge: erst Schrittkonstante,
+        /// Methode und <see cref="SCHRITTE"/>-Eintrag, DANN das Ziel. Beides ist jetzt
+        /// da — <see cref="SCHRITT_58_QUELLEN_SAAT"/> ist eingetragen, das Ziel steht
+        /// auf 58. Neue Schritte ab 59.
         /// </summary>
-        public const int ZIEL_VERSION = 57;
+        public const int ZIEL_VERSION = 58;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1923,8 +1923,10 @@ namespace WindowsFormsApplication1
         ///     Übersteuerungen und teils echte Anwendereingaben. Berichtigt wird
         ///     ausschließlich die Rückfallebene, also der Katalog (Konzept § 4 Regel 2).</description></item>
         ///   <item><description><c>KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH</c> —
-        ///     bleibt bei 380. Der Vorgabewert folgt demselben Beschluss wie der
-        ///     Stromfaktor, und der ist offen (Konzept § 3 und § 5.1).</description></item>
+        ///     der Vorgabewert ist keine Katalogzeile und wird hier nicht angefasst. Er
+        ///     folgt demselben Beschluss wie der Stromfaktor, und der ist seit Etappe E5
+        ///     gefallen: <b>435</b> (Nutzerentscheid 29.08.2026) — keine offene Frage
+        ///     mehr.</description></item>
         ///   <item><description><c>Test</c> — Testeintrag, kein realer Energieträger
         ///     (Konzept § 2.4).</description></item>
         /// </list></para>
@@ -2003,6 +2005,77 @@ namespace WindowsFormsApplication1
         /// auf 9. Die beiden neuen Tabellen tragen 10 bzw. 11 Spalten.</para>
         /// </summary>
         public const int SCHRITT_57_EMISSIONSARTEN = 57;
+
+        /// <summary>
+        /// Schritt 58 - <b>Etappe E6</b> (<c>Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md</c>
+        /// § 5.2 „Saatvorlage E6"): die BELEGTEN QUELLWERTE als Vorlagen.
+        ///
+        /// <para><b>Anlass.</b> Nach Schritt 57 stehen die Luftschadstoffe des Katalogs
+        /// als <c>STAMM_ALT</c> da — „unbelegt", ohne greifbare Fundstelle —, und für
+        /// CH₄, N₂O und Staub gibt es überhaupt keine Vorlage. Etappe E6 legt die
+        /// beiden am 29.08.2026 gelieferten Quellen daneben: die UBA-Liste
+        /// „Emissionsfaktoren zur THG-Bilanzierung" v2.1 (2024) für CO₂/CH₄/N₂O und
+        /// die GEMIS-5.2-Ergebnistabelle (IINAS) für SO₂/NOx/Staub.</para>
+        ///
+        /// <para><b>Zwei Teile.</b>
+        ///   <b>58a</b> die UBA-Vorlagen aus <see cref="UBA_SAAT"/> (Konzept § 5.2
+        ///   Tabelle A): Blatt <c>01_Stationäre_Verbrennung</c>, Feuerung OHNE
+        ///   Vorkette, heizwertbezogen (Hi). Übernommen werden ausschließlich die
+        ///   EINZELGAS-Spalten — nie die CO₂e-Spalte der Liste, denn die trägt fremde
+        ///   GWP-Gewichte („meist AR5"), während der Katalog selbst nach AR6 summiert
+        ///   (Konzept F2/F6). Alle Zeilen tragen deshalb <c>ist_co2e = falsch</c>.
+        ///   <b>58b</b> die GEMIS-Vorlagen aus <see cref="GEMIS_SAAT"/> (Tabelle B):
+        ///   SO₂, NOx und Staub je kWh Endenergie.</para>
+        ///
+        /// <para><b>Es ändert sich KEIN aktiver Wert.</b> Jede Zeile dieses Schrittes
+        /// ist eine VORLAGE (<c>ist_aktiv = falsch</c>, <c>ist_auslieferung = wahr</c>,
+        /// <c>herkunft_id</c> leer) — Konzept § 5.2 Regel 1. Weder eine Altspalte noch
+        /// ein Trägerwert noch ein Rechenergebnis wird berührt; die Emissionskennzahlen
+        /// aller Bestandsprojekte sind vorher und nachher zeichengleich.</para>
+        ///
+        /// <para><b>Die Systemgrenze steht im Anzeigetext, nicht in der Kennung.</b>
+        /// GEMIS rechnet ausnahmslos den Lebenszyklus EINSCHLIESSLICH Vorkette und
+        /// Anlagenherstellung; reine Feuerungswerte gibt die Datei nicht her. Der
+        /// Nutzerentscheid vom 29.08.2026 nimmt diese Zahlen trotzdem in den Katalog —
+        /// aber nur als Angebot, mit „inkl. Vorkette (LCA)" im Text
+        /// (<c>DbWerte.EMISSIONSWERT_TEXT_GEMIS_52_WAERME</c> bzw. <c>_STROM</c>). Die
+        /// AKTIVEN Luftschadstoffwerte bleiben bei der Feuerungssicht des Entscheids
+        /// vom 28.08.2026 (Konzept § 8 Punkt 2).</para>
+        ///
+        /// <para><b>CH₄ fossil oder biogen</b> (Konzept § 5.2 Regel 4): Keine der
+        /// beiden Quellen trennt das — die Zuordnung folgt dem TRÄGER. Erdgas, Heizöl,
+        /// Stein- und Braunkohle liefern <c>CH4_FOSSIL</c>, Scheitholz, Pellets, Biogas,
+        /// Biomethan, Deponie- und Klärgas <c>CH4_BIOGEN</c>.</para>
+        ///
+        /// <para><b>Biogene Träger tragen kein Verbrennungs-CO₂</b> — die UBA-Liste
+        /// führt es für sie „außerhalb der Scopes". Für Scheitholz, Pellets und Biogas
+        /// entstehen deshalb nur CH₄- und N₂O-Vorlagen, passend zur Katalogkonvention
+        /// <c>co2 = 0</c> der Holzträger (Schritte 42/43).</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker) — je Zeile, am Schlüssel
+        /// (Quelle, Art, Träger, Quellentext) der VORLAGEN. Den WERT nimmt er bewusst
+        /// nicht auf: Zu einer Quelle gehört je Art und Träger genau eine Vorlage; eine
+        /// zweite mit anderer Zahl wäre eine zweite Wahrheit über dieselbe Größe. Den
+        /// Quellentext dagegen schon — er ist bei den <b>trägerlosen</b> UBA-Zeilen die
+        /// einzige Unterscheidung: Biomethan, Deponiegas und Klärgas tragen alle
+        /// <c>carrier_id = NULL</c> und stünden ohne ihn übereinander. Damit verdoppelt
+        /// auch ein Lauf nichts, der beim ersten Mal mittendrin gescheitert ist, und der
+        /// Zweitlauf meldet 0 neue Zeilen.</para>
+        ///
+        /// <para><b>Die erwartete Wirkung</b> (Konzept § 5.2, Zählung berichtigt
+        /// 29.08.2026): <b>85 neue Vorlagenzeilen</b> — UBA 40 (8 × CO₂ sowie je 16 ×
+        /// CH₄ und N₂O: fossil acht = Erdgas E/LL, vier Heizöl-Träger, Steinkohle,
+        /// Braunkohlebrikett; biogen acht = Scheitholz, Holzpellets, die drei
+        /// Biogas-Träger und die drei trägerlosen Gase) und GEMIS 45 (15
+        /// Trägerzuordnungen × SO₂/NOx/Staub).</para>
+        ///
+        /// <para><b>Kein DDL.</b> Tabellen, Indizes und Beziehung stehen seit Schritt 57;
+        /// dieser Schritt schreibt ausschließlich Zeilen. Fehlt <c>emissionswert</c>
+        /// oder der Artenkatalog, bricht er ab — ohne sie hätte keine Zahl eine Art.
+        /// Ein Träger, den der Katalog nicht führt, ergibt eine Protokollzeile und
+        /// keinen Fehler (Muster Schritt 56).</para>
+        /// </summary>
+        public const int SCHRITT_58_QUELLEN_SAAT = 58;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -3075,6 +3148,20 @@ namespace WindowsFormsApplication1
                         "bleiben CO2, SO2 und NOx feste Spalten und der Emissions-Tab (E3) " +
                         "haette keine Datengrundlage.",
                         Schritt_57_Emissionsarten),
+
+            // E6 (Konzept Emissionsarten, Paragraf 5.2): die belegten Quellwerte
+            //       aus der UBA-Liste v2.1 und GEMIS 5.2 als VORLAGEN. Reines
+            //       Zeilenschreiben, kein DDL. WIRKUNGSNEUTRAL: kein aktiver Wert,
+            //       keine Altspalte, kein Rechenergebnis aendert sich. Regeln,
+            //       Systemgrenzen und Idempotenzzusage bei der Schrittkonstanten.
+            new Schritt(SCHRITT_58_QUELLEN_SAAT,
+                        "Quellen-Saat: belegte Vorlagen aus der UBA-Liste v2.1 (CO2, CH4, " +
+                        "N2O; Feuerung ohne Vorkette) und aus GEMIS 5.2 (SO2, NOx, Staub; " +
+                        "inkl. Vorkette) in emissionswert saeen (Etappe E6)",
+                        "Die belegten Quellwerte konnten nicht gesaet werden - die " +
+                        "Luftschadstoffe bleiben dann ohne zitierfaehige Fundstelle, und " +
+                        "fuer CH4, N2O und Staub gibt es weiter keine Vorlage.",
+                        Schritt_58_QuellenSaat),
         };
 
         // =================================================================================
@@ -7350,7 +7437,8 @@ namespace WindowsFormsApplication1
                     "Braunkohlebrikett, Scheitholz, Holzpellets, Holzhackschnitzel " +
                     "(Saat der Schritte 42/43), Test (kein realer Traeger), " +
                     "energy_project_settings (Projektuebersteuerungen) und der " +
-                    "Vorgabewert STROMMIX_CO2_G_JE_KWH = 380 (offene Entscheidung).");
+                    "Vorgabewert STROMMIX_CO2_G_JE_KWH = 435 (mit E5 am 29.08.2026 " +
+                    "entschieden - Nutzerentscheid, keine offene Frage mehr).");
             return true;
         }
 
@@ -8260,6 +8348,515 @@ namespace WindowsFormsApplication1
             string s = WertSchluessel(artId, carrierId, quelle, text, wert);
             return vorlagen.ContainsKey(s) ? (int?)vorlagen[s] : null;
         }
+
+        // =================================================================================
+        // Schritt 58 - Quellen-Saat UBA/GEMIS (Etappe E6, Konzept § 5.2)
+        // =================================================================================
+
+        // --- Traegergruppen der Saatvorlage ------------------------------------------
+        // Sie stehen VOR den Saattabellen: statische Feldinitialisierer laufen in
+        // Textreihenfolge, und die Tabellen greifen auf sie zu.
+
+        /// <summary>Erdgas OHNE Stadtgas — anders als <see cref="TRAEGER_ERDGAS"/> der
+        /// gesetzlichen Mapping-Liste. Beide Quellen der Etappe E6 führen Stadtgas
+        /// nicht; eine Erdgas-Analogie darüber wäre erfunden (Konzept § 5.2,
+        /// Auslassungsliste).</summary>
+        private static readonly string[] TRAEGER_ERDGAS_OHNE_STADTGAS =
+            { "Erdgas E", "Erdgas LL" };
+
+        /// <summary>Nur Scheitholz: Die UBA-Liste führt Hackschnitzel nicht, und
+        /// „Altholz/Holzreste" ist ein anderer Brennstoff (Konzept § 5.2).</summary>
+        private static readonly string[] TRAEGER_SCHEITHOLZ = { "Scheitholz" };
+
+        /// <summary>Koks — bei GEMIS als eigene Zeile geführt (<c>StK-Koks-Hzg 100%</c>)
+        /// und deshalb, anders als beim CO₂ der Etappe E2, keine Analogie.</summary>
+        private static readonly string[] TRAEGER_KOKS = { "Koks" };
+
+        /// <summary>Zeitbezug der UBA-Liste: Bezugsjahr 2024 (Konzept § 5.2 Regel 6).</summary>
+        private static readonly DateTime E6_STAND_UBA = new DateTime(2024, 1, 1);
+
+        /// <summary>Zeitbezug des GEMIS-Wärmeblatts <c>Wärme-end 2020</c>.</summary>
+        private static readonly DateTime E6_STAND_GEMIS_WAERME = new DateTime(2020, 1, 1);
+
+        /// <summary>Zeitbezug der GEMIS-Stromzeile (jüngste Zeile 2024).</summary>
+        private static readonly DateTime E6_STAND_GEMIS_STROM = new DateTime(2024, 1, 1);
+
+        /// <summary>Eine Quellzeile der UBA-Liste (Konzept § 5.2 Tabelle A).</summary>
+        private sealed class UbaSaat
+        {
+            public readonly string Betreff;
+            /// <summary>null = trägerunabhängige Vorlage (<c>carrier_id</c> bleibt NULL).</summary>
+            public readonly string[] Traeger;
+            /// <summary>null = biogener Träger: Die Liste führt für ihn kein
+            /// Verbrennungs-CO₂, es steht „außerhalb der Scopes".</summary>
+            public readonly double? Co2;
+            public readonly double Ch4, N2o;
+            /// <summary>Steuert allein die CH₄-Art (Konzept § 5.2 Regel 4).</summary>
+            public readonly bool Biogen;
+
+            public UbaSaat(string betreff, string[] traeger, double? co2, double ch4,
+                           double n2o, bool biogen)
+            {
+                Betreff = betreff; Traeger = traeger; Co2 = co2;
+                Ch4 = ch4; N2o = n2o; Biogen = biogen;
+            }
+        }
+
+        /// <summary>
+        /// TABELLE A des Konzepts § 5.2: die UBA-Vorlagen, Blatt
+        /// <c>01_Stationäre_Verbrennung</c> der Liste v2.1 (Bezugsjahr 2024).
+        /// CO₂ in g/kWh, CH₄ und N₂O in mg/kWh — die Einheiten des Artenkatalogs (F4);
+        /// die Umrechnung aus den kg/kWh der Liste und die kaufmännische Rundung auf
+        /// drei Nachkommastellen sind im Konzept vollzogen, hier stehen die
+        /// <b>gerundeten Saatwerte</b> unverändert.
+        ///
+        /// <para>Die Kommentare tragen Zeile und Kennung der Quellzeile — der
+        /// Prüfweg zurück in die Arbeitsmappe.</para>
+        /// </summary>
+        private static readonly UbaSaat[] UBA_SAAT =
+        {
+            // Z. 39, 01_10_02_004_01
+            new UbaSaat("Erdgas (Heizwert)", TRAEGER_ERDGAS_OHNE_STADTGAS,
+                        202.396, 10.8, 0.905, false),
+            // Z. 33, 01_10_02_002_01
+            new UbaSaat("Heizöl leicht", TRAEGER_HEIZOEL_LEICHT,
+                        266.472, 0.165, 1.967, false),
+            // Z. 42, 01_10_02_006_01
+            new UbaSaat("Steinkohle/Kohle", TRAEGER_STEINKOHLE,
+                        351.420, 482.17, 41.393, false),
+            // Z. 31, 01_10_02_001_01
+            new UbaSaat("Braunkohle/Briketts", TRAEGER_BRAUNKOHLE,
+                        353.124, 853.632, 18.726, false),
+            // Z. 22, 01_10_01_007_01 - die KESSEL-Zeile; die Einzelraumfeuerung
+            // (01_10_01_006_01) bleibt bewusst draussen, EPOS-Plan plant Heizzentralen.
+            new UbaSaat("Wald-Scheitholz (Kessel)", TRAEGER_SCHEITHOLZ,
+                        null, 20.444, 1.008, true),
+            // Z. 28, 01_10_01_009_01
+            new UbaSaat("Pellets", TRAEGER_PELLETS,
+                        null, 1.79, 1.202, true),
+            // Z. 10, 01_10_01_002_01 - an alle drei Biogas-Traeger, Faecherungsmuster
+            // wie die gesetzliche Mapping-Liste.
+            new UbaSaat("Biogas", TRAEGER_BIOGAS,
+                        null, 1770.3, 5.544, true),
+            // Z. 12, 01_10_01_003_01 - ohne Traeger im Katalog.
+            new UbaSaat("Biomethan", null,
+                        null, 978.066, 3.42, true),
+            // Z. 15, 01_10_01_004_01 - ohne Traeger; vom Biomethan allein durch den
+            // Betreff im Anzeigetext zu unterscheiden (siehe SCHRITT_58_QUELLEN_SAAT).
+            new UbaSaat("Deponiegas", null,
+                        null, 1124.208, 5.544, true),
+            // Z. 17, 01_10_01_005_01 - ohne Traeger, wie vor.
+            new UbaSaat("Klärgas", null,
+                        null, 1124.208, 5.544, true),
+        };
+
+        /// <summary>Eine Quellzeile der GEMIS-Ergebnistabelle (Konzept § 5.2 Tabelle B).</summary>
+        private sealed class GemisSaat
+        {
+            /// <summary>Spalte A der Quelldatei, wörtlich — die Zuordnung läuft
+            /// ausschließlich über sie, die Kommentarspalte B ist nachweislich
+            /// verrutscht (Konzept § 5.2 Regel 3).</summary>
+            public readonly string Betreff;
+            public readonly string[] Traeger;
+            public readonly double So2, Nox, Staub;
+            /// <summary>true = Blatt <c>Strom-lokal DE 2000-2024</c>: anderer Bezug
+            /// (je kWh Strom), anderer Anzeigetext, anderer Zeitbezug.</summary>
+            public readonly bool Strom;
+
+            public GemisSaat(string betreff, string[] traeger, double so2, double nox,
+                             double staub, bool strom)
+            {
+                Betreff = betreff; Traeger = traeger;
+                So2 = so2; Nox = nox; Staub = staub; Strom = strom;
+            }
+        }
+
+        /// <summary>
+        /// TABELLE B des Konzepts § 5.2: die GEMIS-Vorlagen der Luftschadstoffe,
+        /// alle in mg/kWh Endenergie. Übernommen sind allein SO₂ (Spalte C der
+        /// Quelldatei — <b>nicht</b> das SO₂-Äquivalent in Spalte B, das ein
+        /// Versauerungs-Aggregat ist), NOx (D) und Staub (E); die THG-Spalten bleiben
+        /// außen vor.
+        /// </summary>
+        private static readonly GemisSaat[] GEMIS_SAAT =
+        {
+            // Z. 33
+            new GemisSaat("Erdgas-Hzg 100%", TRAEGER_ERDGAS_OHNE_STADTGAS,
+                          6.007, 137.744, 5.419, false),
+            // Z. 32
+            new GemisSaat("Heizöl-Hzg 100%", TRAEGER_HEIZOEL_LEICHT,
+                          172.411, 190.137, 19.919, false),
+            // Z. 51
+            new GemisSaat("Öl-schwer-Kessel-Industrie-100%", TRAEGER_HEIZOEL_SCHWER,
+                          1858.195, 597.393, 97.049, false),
+            // Z. 34
+            new GemisSaat("Flüssiggas-Hzg 100%", TRAEGER_FLUESSIGGAS,
+                          3.168, 63.618, 2.589, false),
+            // Z. 37
+            new GemisSaat("StK-Brik-Hzg 100%", TRAEGER_STEINKOHLE,
+                          1976.023, 276.047, 819.994, false),
+            // Z. 38
+            new GemisSaat("StK-Koks-Hzg 100%", TRAEGER_KOKS,
+                          1973.674, 514.369, 71.803, false),
+            // Z. 36 - RHEINISCHE Briketts (groesstes Revier, Marktstandard); die
+            // Lausitzer Zeile bleibt draussen, eine Zeile je Traeger.
+            new GemisSaat("BrK-Brik-rhei-Hzg 100%", TRAEGER_BRAUNKOHLE,
+                          307.107, 335.136, 406.521, false),
+            // Z. 40
+            new GemisSaat("Fernwärme-mix (KWK: energiealloziert)", TRAEGER_FERNWAERME,
+                          106.592, 336.757, 14.803, false),
+            // Z. 48/71, Blatt Strom-lokal DE 2000-2024, juengste Zeile 2024.
+            new GemisSaat("Stromnetz-lokal 2024", TRAEGER_STROM,
+                          138.640, 331.119, 25.712, true),
+        };
+
+        /// <summary>
+        /// Etappe E6 (Konzept § 5.2): die belegten Quellwerte aus der UBA-Liste v2.1
+        /// und GEMIS 5.2 als Vorlagen. Anlass, Teilgliederung 58a/58b, Systemgrenzen
+        /// und Idempotenzzusage: <see cref="SCHRITT_58_QUELLEN_SAAT"/>.
+        /// </summary>
+        private static bool Schritt_58_QuellenSaat(Lauf l)
+        {
+            // Voraussetzung aus Schritt 57. Ohne Wertetabelle und Artenkatalog haette
+            // keine Zahl eine Art - harter Abbruch, kein stilles Ueberspringen.
+            if (Scalar(l, "SELECT COUNT(*) FROM " + SchemaKatalog.TAB_EMISSIONSWERT) == null)
+            {
+                l.Zeile("Quellen-Saat (Schritt 58): " + SchemaKatalog.TAB_EMISSIONSWERT +
+                        " ist nicht lesbar - ohne die Wertetabelle aus Schritt 57 gibt es " +
+                        "nichts zu saeen.");
+                return false;
+            }
+
+            Dictionary<string, int> arten = ArtenLesen(l);
+            if (arten == null || !arten.ContainsKey(DbWerte.EMISSIONSART_CO2))
+            {
+                l.Zeile("Quellen-Saat (Schritt 58): der Artenkatalog ist nicht lesbar oder " +
+                        "ohne die Pflichtart CO2.");
+                return false;
+            }
+
+            // Fehlende Arten einmal melden statt bei jeder Quellzeile erneut.
+            string[] gebraucht =
+            {
+                DbWerte.EMISSIONSART_CO2, DbWerte.EMISSIONSART_CH4_FOSSIL,
+                DbWerte.EMISSIONSART_CH4_BIOGEN, DbWerte.EMISSIONSART_N2O,
+                DbWerte.EMISSIONSART_SO2, DbWerte.EMISSIONSART_NOX,
+                DbWerte.EMISSIONSART_STAUB
+            };
+            foreach (string k in gebraucht)
+                if (!arten.ContainsKey(k))
+                    l.Notiz("Emissionsart " + k + " fehlt im Katalog - ihre Vorlagen entfallen.");
+
+            DataTable traeger = Abfrage(l, "SELECT id, [name] FROM energy_carrier ORDER BY id");
+            if (traeger == null) return false;
+
+            // --- Bestandsaufnahme fuer die Idempotenz JE ZEILE ------------------------
+            int aktiveVorher;
+            HashSet<string> vorhanden = VorlagenSchluesselLesen(l, out aktiveVorher);
+            if (vorhanden == null) return false;
+
+            var zeilen = new List<Wertzeile>();
+            int fehlendeTraeger = 0;
+
+            // --- 58a) die UBA-Vorlagen (CO2, CH4, N2O) --------------------------------
+            int geplantUba = UbaSammeln(l, arten, traeger, zeilen, ref fehlendeTraeger);
+
+            // --- 58b) die GEMIS-Vorlagen (SO2, NOx, Staub) ----------------------------
+            int geplantGemis = GemisSammeln(l, arten, traeger, zeilen, ref fehlendeTraeger);
+
+            int uebersprungen;
+            int neu = QuellenZeilenSchreiben(l, zeilen, vorhanden, out uebersprungen);
+            if (neu < 0) return false;
+
+            // --- Gegenprobe OHNE Schreiben --------------------------------------------
+            // Nachweis statt Annahme: Erst dieser zweite Lesevorgang belegt, dass die
+            // INSERTs angekommen sind - und dass die Saat keine AKTIVE Zeile erzeugt
+            // hat (Konzept Paragraf 5.2 Regel 1). Gezaehlt werden nur AKTIVE Zeilen
+            // dieser Quellen OHNE herkunft_id: Eine vom Anwender uebernommene Zeile
+            // traegt dieselbe Quellkennung, aber die ID ihrer Vorlage - sie ist der
+            // bestimmungsgemaesse Gebrauch der Etappe und kein Befund.
+            int aktiveNachher;
+            HashSet<string> nachher = VorlagenSchluesselLesen(l, out aktiveNachher);
+            if (nachher == null) return false;
+
+            int fehlt = 0;
+            foreach (Wertzeile w in zeilen)
+            {
+                if (nachher.Contains(QuellSchluessel(w.Quelle, w.ArtId, w.CarrierId, w.QuelleText)))
+                    continue;
+                l.Notiz("GEGENPROBE: Vorlage " + w.Quelle + " / Art " + w.ArtId + " / Traeger " +
+                        (w.CarrierId.HasValue ? w.CarrierId.Value.ToString(CultureInfo.InvariantCulture) : "-") +
+                        " fehlt nach dem Schreiben.");
+                fehlt++;
+            }
+            if (fehlt > 0) return false;
+
+            if (aktiveNachher != 0)
+            {
+                l.Zeile("Quellen-Saat (Schritt 58): " + aktiveNachher + " AKTIVE Zeile(n) der " +
+                        "Quellen UBA_2024/GEMIS_52 ohne Herkunft gefunden - die Etappe saet " +
+                        "ausschliesslich Vorlagen (Konzept Paragraf 5.2 Regel 1).");
+                return false;
+            }
+
+            l.Zeile("Quellen-Saat (Schritt 58): " + neu + " Vorlagen neu von " + zeilen.Count +
+                    " geplanten (UBA-Liste v2.1 " + geplantUba + ", GEMIS 5.2 " + geplantGemis +
+                    "), " + uebersprungen + " bereits vorhanden, " + fehlendeTraeger +
+                    " Traegerzuordnung(en) im Katalog nicht vorhanden; Gegenprobe ohne " +
+                    "Abweichung, 0 aktive Zeilen dieser Quellen ohne Herkunft. KEIN " +
+                    "Rechenergebnis aendert " +
+                    "sich: Es entstehen nur Vorlagen (ist_aktiv falsch, ist_auslieferung wahr, " +
+                    "ohne Herkunft), kein aktiver Traegerwert und keine Altspalte werden " +
+                    "beruehrt.");
+            return true;
+        }
+
+        // --- Hilfsmittel des Schritts 58 ---------------------------------------------
+
+        /// <summary>
+        /// Der Schlüssel, an dem eine VORLAGE dieser Etappe wiedererkannt wird:
+        /// Quelle, Art, Träger und Quellentext. Der WERT bleibt bewusst draußen, der
+        /// Quellentext ist dagegen tragend — Begründung bei
+        /// <see cref="SCHRITT_58_QUELLEN_SAAT"/>.
+        /// </summary>
+        private static string QuellSchluessel(string quelle, int artId, int? carrierId,
+                                              string quelleText)
+        {
+            return (quelle ?? "") + "|" + artId.ToString(CultureInfo.InvariantCulture) + "|" +
+                   (carrierId.HasValue ? carrierId.Value.ToString(CultureInfo.InvariantCulture) : "-") +
+                   "|" + (quelleText ?? "");
+        }
+
+        /// <summary>
+        /// Liest den VORLAGEN-Bestand von <c>emissionswert</c> als Schlüsselmenge
+        /// (Quelle, Art, Träger, Quellentext). Aktive Zeilen bleiben draußen: Sie sind
+        /// der geltende Trägerwert, keine Vorlage.
+        ///
+        /// <para><paramref name="aktiveDerQuellen"/> zählt allein die aktiven Zeilen der
+        /// beiden E6-Quellen <b>ohne <c>herkunft_id</c></b> — sie muss 0 bleiben. Die
+        /// Einschränkung auf die herkunftslosen ist der Unterschied zwischen „diese Saat
+        /// hat etwas Aktives geschrieben" und „der Anwender hat eine Vorlage
+        /// übernommen": Was dieser Schritt anlegt, trägt nie eine Herkunft
+        /// (<see cref="UbaZeile"/>/<see cref="GemisZeile"/> setzen sie auf null), während
+        /// das Übernehmen im Katalog-Dialog die Quellkennung MITSAMT der Vorlagen-ID
+        /// kopiert (<c>EmissionskatalogCtrl.Uebernehmen</c>, Konzept F8). Ohne die
+        /// Einschränkung risse ein Wiederholungslauf mit zurückgesetztem Marker
+        /// (Support-Szenario) genau denjenigen Datenbanken die Migration ab, in denen
+        /// der Anwender die Etappe bestimmungsgemäß benutzt hat.</para>
+        /// </summary>
+        private static HashSet<string> VorlagenSchluesselLesen(Lauf l, out int aktiveDerQuellen)
+        {
+            aktiveDerQuellen = 0;
+
+            DataTable dt = Abfrage(l,
+                "SELECT emissionsart_id, carrier_id, quelle, quelle_text, ist_aktiv, " +
+                "herkunft_id FROM " + SchemaKatalog.TAB_EMISSIONSWERT);
+            if (dt == null) return null;
+
+            var menge = new HashSet<string>(StringComparer.Ordinal);
+            foreach (DataRow r in dt.Rows)
+            {
+                string quelle = Txt(r["quelle"]);
+                bool istAktiv = r["ist_aktiv"] != DBNull.Value && Convert.ToBoolean(r["ist_aktiv"]);
+
+                bool e6Quelle =
+                    string.Equals(quelle, DbWerte.EMISSIONSWERT_QUELLE_UBA_2024, StringComparison.Ordinal) ||
+                    string.Equals(quelle, DbWerte.EMISSIONSWERT_QUELLE_GEMIS_52, StringComparison.Ordinal);
+
+                if (istAktiv)
+                {
+                    // Nur die HERKUNFTSLOSEN zaehlen: Eine uebernommene Anwenderzeile
+                    // traegt die ID ihrer Vorlage und ist kein Befund dieses Schrittes.
+                    if (e6Quelle && !ZahlOderNull(r["herkunft_id"]).HasValue) aktiveDerQuellen++;
+                    continue;
+                }
+
+                menge.Add(QuellSchluessel(quelle, Zahl(r["emissionsart_id"]),
+                                          ZahlOderNull(r["carrier_id"]), Txt(r["quelle_text"])));
+            }
+            return menge;
+        }
+
+        /// <summary>
+        /// 58a: Aus jeder Quellzeile der Tabelle A werden bis zu drei Vorlagen je
+        /// Träger — CO₂ (nur bei fossilen Trägern), CH₄ in der Art des Trägers und
+        /// N₂O. Ein Träger, den der Katalog nicht führt, ergibt eine Protokollzeile
+        /// und keinen Fehler (Muster Schritt 56).
+        /// </summary>
+        private static int UbaSammeln(Lauf l, Dictionary<string, int> arten, DataTable traeger,
+                                      List<Wertzeile> ziel, ref int fehlendeTraeger)
+        {
+            int gezaehlt = 0;
+
+            foreach (UbaSaat s in UBA_SAAT)
+            {
+                var kuerzel = new List<string>();
+                var werte = new List<double>();
+
+                if (s.Co2.HasValue)
+                {
+                    kuerzel.Add(DbWerte.EMISSIONSART_CO2);
+                    werte.Add(s.Co2.Value);
+                }
+                kuerzel.Add(s.Biogen ? DbWerte.EMISSIONSART_CH4_BIOGEN : DbWerte.EMISSIONSART_CH4_FOSSIL);
+                werte.Add(s.Ch4);
+                kuerzel.Add(DbWerte.EMISSIONSART_N2O);
+                werte.Add(s.N2o);
+
+                if (s.Traeger == null || s.Traeger.Length == 0)
+                {
+                    // Traegerlose Vorlage: Der Betreff steht im Anzeigetext, sonst
+                    // waere im Katalog-Dialog nicht zu sehen, wovon die Zeile spricht -
+                    // dasselbe Muster wie bei den gesetzlichen Vorlagen (Schritt 57).
+                    // Er ist zugleich das EINZIGE, was Biomethan, Deponiegas und
+                    // Klaergas im Idempotenzschluessel auseinanderhaelt: Alle drei
+                    // tragen carrier_id NULL.
+                    for (int i = 0; i < kuerzel.Count; i++)
+                    {
+                        if (!arten.ContainsKey(kuerzel[i])) continue;
+                        ziel.Add(UbaZeile(arten[kuerzel[i]], null, werte[i], s.Betreff));
+                        gezaehlt++;
+                    }
+                    continue;
+                }
+
+                foreach (string name in s.Traeger)
+                {
+                    DataRow r = TraegerZeile(traeger, name);
+                    if (r == null)
+                    {
+                        l.Notiz("UBA-Saat " + s.Betreff + " -> " + name +
+                                ": Traeger im Katalog nicht vorhanden - uebersprungen.");
+                        fehlendeTraeger++;
+                        continue;
+                    }
+
+                    for (int i = 0; i < kuerzel.Count; i++)
+                    {
+                        if (!arten.ContainsKey(kuerzel[i])) continue;
+                        ziel.Add(UbaZeile(arten[kuerzel[i]], Zahl(r["id"]), werte[i], null));
+                        gezaehlt++;
+                    }
+                }
+            }
+            return gezaehlt;
+        }
+
+        /// <summary>58b: Aus jeder Quellzeile der Tabelle B werden drei Vorlagen je
+        /// Träger — SO₂, NOx und Staub.</summary>
+        private static int GemisSammeln(Lauf l, Dictionary<string, int> arten, DataTable traeger,
+                                        List<Wertzeile> ziel, ref int fehlendeTraeger)
+        {
+            string[] kuerzel =
+                { DbWerte.EMISSIONSART_SO2, DbWerte.EMISSIONSART_NOX, DbWerte.EMISSIONSART_STAUB };
+            int gezaehlt = 0;
+
+            foreach (GemisSaat s in GEMIS_SAAT)
+            {
+                double[] werte = { s.So2, s.Nox, s.Staub };
+
+                foreach (string name in s.Traeger)
+                {
+                    DataRow r = TraegerZeile(traeger, name);
+                    if (r == null)
+                    {
+                        l.Notiz("GEMIS-Saat " + s.Betreff + " -> " + name +
+                                ": Traeger im Katalog nicht vorhanden - uebersprungen.");
+                        fehlendeTraeger++;
+                        continue;
+                    }
+
+                    for (int i = 0; i < kuerzel.Length; i++)
+                    {
+                        if (!arten.ContainsKey(kuerzel[i])) continue;
+                        ziel.Add(GemisZeile(arten[kuerzel[i]], Zahl(r["id"]), werte[i], s.Strom));
+                        gezaehlt++;
+                    }
+                }
+            }
+            return gezaehlt;
+        }
+
+        /// <summary>Eine UBA-Vorlage. <c>ist_co2e</c> ist FALSCH — gesät sind
+        /// Einzelgase, nie die CO₂e-Spalte der Liste (Konzept § 5.2 Regel 2).</summary>
+        private static Wertzeile UbaZeile(int artId, int? carrierId, double wert, string betreff)
+        {
+            string text = DbWerte.EMISSIONSWERT_TEXT_UBA_2024;
+            if (!string.IsNullOrEmpty(betreff)) text = text + " — " + betreff;
+            if (text.Length > 255) text = text.Substring(0, 255);
+
+            return new Wertzeile
+            {
+                ArtId = artId,
+                CarrierId = carrierId,
+                Quelle = DbWerte.EMISSIONSWERT_QUELLE_UBA_2024,
+                QuelleText = text,
+                Wert = wert,
+                IstCo2e = false,
+                IstAktiv = false,
+                HerkunftId = null,
+                IstAuslieferung = true,
+                GueltigAb = E6_STAND_UBA
+            };
+        }
+
+        /// <summary>Eine GEMIS-Vorlage. Luftschadstoffe sind keine Treibhausgase —
+        /// <c>ist_co2e</c> ist ohne Bedeutung und deshalb falsch.</summary>
+        private static Wertzeile GemisZeile(int artId, int? carrierId, double wert, bool strom)
+        {
+            return new Wertzeile
+            {
+                ArtId = artId,
+                CarrierId = carrierId,
+                Quelle = DbWerte.EMISSIONSWERT_QUELLE_GEMIS_52,
+                QuelleText = strom
+                    ? DbWerte.EMISSIONSWERT_TEXT_GEMIS_52_STROM
+                    : DbWerte.EMISSIONSWERT_TEXT_GEMIS_52_WAERME,
+                Wert = wert,
+                IstCo2e = false,
+                IstAktiv = false,
+                HerkunftId = null,
+                IstAuslieferung = true,
+                GueltigAb = strom ? E6_STAND_GEMIS_STROM : E6_STAND_GEMIS_WAERME
+            };
+        }
+
+        /// <summary>
+        /// Schreibt die geplanten Vorlagen, überspringt jede am Schlüssel
+        /// (Quelle, Art, Träger, Quellentext) bereits vorhandene. Eigener Schreibweg
+        /// statt <see cref="ZeilenSchreiben"/>: Jener erkennt eine Vorlage am
+        /// vollständigen Inhalt EINSCHLIESSLICH des Wertes — hier bleibt der Wert
+        /// draußen, und der Bestand des Schritts 57 bleibt davon unberührt.
+        /// Rückgabe: Zahl der geschriebenen Zeilen, -1 bei Fehler.
+        /// </summary>
+        private static int QuellenZeilenSchreiben(Lauf l, List<Wertzeile> zeilen,
+                                                  HashSet<string> vorhanden, out int uebersprungen)
+        {
+            uebersprungen = 0;
+            int neu = 0;
+
+            foreach (Wertzeile w in zeilen)
+            {
+                string s = QuellSchluessel(w.Quelle, w.ArtId, w.CarrierId, w.QuelleText);
+                if (vorhanden.Contains(s)) { uebersprungen++; continue; }
+
+                if (NonQuery(l,
+                        "INSERT INTO " + SchemaKatalog.TAB_EMISSIONSWERT +
+                        " (emissionsart_id, carrier_id, quelle, quelle_text, wert, ist_co2e, " +
+                        "  ist_aktiv, herkunft_id, ist_auslieferung, gueltig_ab) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        EwGanz(w.ArtId), EwGanz(w.CarrierId), EwText(w.Quelle, 30),
+                        EwText(w.QuelleText, 255), EwKomma(w.Wert), EwJaNein(w.IstCo2e),
+                        EwJaNein(w.IstAktiv), EwGanz(w.HerkunftId), EwJaNein(w.IstAuslieferung),
+                        EwDatum(w.GueltigAb)) < 0)
+                    return -1;
+
+                vorhanden.Add(s);
+                neu++;
+            }
+            return neu;
+        }
+
         // =================================================================================
         // Schritt 50 - Senkenliste Z_AnlageSenke (Paket S1, Konzept § 5.1)
         // =================================================================================

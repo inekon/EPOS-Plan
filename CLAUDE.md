@@ -35,9 +35,10 @@ Migrationsskript behält `ReadOnly = TRUE` aus der Vorlage und ersetzt alles Üb
 Anwenderdaten.
 
 **Stand der Wärme-Datenhaltung (Konzeptumsetzung 27./28.08.2026, Schema-Schritte 48–54;
-Nachtrag B2 28.08.2026 = Schritt 55, `Tab_Applikation.SchemaVersion` = 55; die Nummern 56/57
-sind für die geparkten CO2-/Emissionsarten-Etappen reserviert — Kollisionsauflösung 29.08.2026
-in `SchemaMigration.ZIEL_VERSION` —, **neue Schritte ab 58**):**
+Nachtrag B2 28.08.2026 = Schritt 55; CO₂-Saat = 56 und Emissionsarten = 57 (umgesetzt und
+produktiv gelaufen 29.08.2026); E6-Quellensaat = 58 (`SchemaMigration.ZIEL_VERSION` = 58,
+implementiert 29.08.2026 — läuft auf der Produktiv-DB beim nächsten Programmstart, deren
+`Tab_Applikation.SchemaVersion` steht bis dahin auf 57); **neue Schritte ab 59**):**
 Die Senken einer Anlage stehen
 in **`Z_AnlageSenke`** (je Zeile Rang 1..n, eines von sechs Zielen, Bedarfsart, `ID_Puffer`,
 Ladeparameter, Einspeisehöhe) — die `WS_*`-Spalten in `Tab_Energieanlagen` sind **Lese-Altlast**.

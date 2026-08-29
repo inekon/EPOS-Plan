@@ -1,6 +1,7 @@
 # Konzept — Emissionsarten-Katalog und CO₂-Äquivalent (EPOS-Plan)
 
-**Stand:** 29.08.2026 · **Rev. 1.5 — E1 bis E5 umgesetzt** (Rev. 1.2 vom 28.08.2026:
+**Stand:** 29.08.2026 · **Rev. 1.7 — E1 bis E6 umgesetzt; § 5.2 = Saatvorlage E6**
+(Nutzerentscheid 29.08.2026 mittags: Luftschadstoffe als gekennzeichnete GEMIS-LCA-Vorlagen) (Rev. 1.2 vom 28.08.2026:
 alle Entscheidungsfragen beantwortet — F3 präzisiert, F4 bestätigt, Luftschadstoffe ohne
 Vorkette, Modus global + Projekt-Override, Artenauswahl global, E1 vor E2)
 
@@ -42,7 +43,18 @@ Vorkette, Modus global + Projekt-Override, Artenauswahl global, E1 vor E2)
 > `Tab_Brennstoff_Stamm` (240 g/kWh). Genau das war der Zweck von E1; die Wirkung tritt
 > mit E5 ein und ist am Beispiel in § 7 nachgerechnet.
 >
-> Offen bleiben E6 und die Sichtabnahme.
+> **E6 (29.08.2026) — die Quellen-Saat.** Migrationsschritt 58 (`ZIEL_VERSION` 58, Reihenfolge
+> eingehalten: erst Schritt, dann Zielzahl) sät die **85 Vorlagen nach § 5.2** — UBA v2.1
+> Blatt 01 als 8 × CO₂ und je 16 × CH₄/N₂O, GEMIS 5.2 als je 15 × SO₂/NOx/Staub, alle
+> `ist_aktiv = falsch`. Prüfstand auf einer Arbeitskopie der Produktiv-DB: Erstlauf
+> **85/85** angelegt, 0 fehlende Träger, Zweitlauf **0**; die SHA-256-Dumps aller aktiven
+> Werte und aller Altspalten sind vorher/nachher identisch, 13 Stichproben wertgenau, die
+> Emissionskennzahlen unverändert — **kein aktiver Wert wird berührt**. Der
+> Idempotenzschlüssel führt `quelle_text` mit, sonst kollidierten die drei trägerlosen
+> UBA-Zeilen. Einzelheiten und Belege:
+> [`Allgemein\Update\E6_QuellenSaat_Protokoll.md`](WindowsFormsApplication1/Allgemein/Update/E6_QuellenSaat_Protokoll.md).
+>
+> Offen bleiben die Sichtabnahme E3–E6 und die Durchsicht der Mapping-Liste § 5.1.
 
 Anforderung (28.08.2026): Der Energieträger-Dialog soll seine Emissionsfaktoren aus einem
 **pflegbaren Katalog** beziehen (bestehende Faktoren übernehmen, eigene hinzufügen/ändern/löschen),
@@ -562,6 +574,130 @@ zweite Zeile mit derselben Zahl an demselben Träger sagt nichts Zusätzliches.
 Bioöl getrennt, eine Mischungsregel gibt sie nicht her. Alle drei tragen ihre
 BAFA-Saat aus E1 und ihre Stammwerte; mehr wäre erfunden.
 
+### 5.2 Saatvorlage E6 — belegte Quellwerte als Vorlagen (UBA v2.1, GEMIS 5.2)
+
+*Geschrieben 29.08.2026 nach Sichtung beider Arbeitsmappen (`Quellen\Emissionsfaktoren\`,
+jede Zahl per Zellkoordinate belegt, Doppel-Lesung mit zwei unabhängigen Parsern ohne
+Abweichung; Rohextraktion mit allen Koordinaten:
+`E6_Sollwerte_Rohextraktion.md` der Analyse-Session). E6 läuft als
+**Migrationsschritt 58** — Reihenfolge nach dem Vorfall vom 29.08. 09:25 zwingend:
+erst Schrittkonstante + Methode + `SCHRITTE`-Eintrag, **dann** `ZIEL_VERSION` auf 58.*
+
+**Regeln der Etappe:**
+
+1. **E6 sät ausschließlich Vorlagen** (`ist_aktiv = falsch`, `ist_auslieferung = wahr`,
+   `herkunft_id` leer): kein aktiver Trägerwert, keine Altspalte, kein Rechenergebnis
+   ändert sich. Abnahme: Erst- und Zweitlauf ändern keinen aktiven Wert; die
+   Emissionskennzahlen aller Bestandsprojekte sind vorher/nachher identisch; Zweitlauf
+   legt 0 Zeilen an.
+2. **UBA-Quelle (`UBA_2024`)** = Blatt `01_Stationäre_Verbrennung` der UBA-Liste v2.1
+   (Bezugsjahr 2024, veröffentlicht 02/2026, Lizenz CC0 1.0 laut Impressum der Datei):
+   Feuerung **ohne Vorkette**, unterer Heizwert (Hu; Beleg Blatt 01, Zelle A4).
+   Übernommen werden **nur die Einzelgas-Spalten** `kg CO2`/`kg CH4`/`kg N2O` — nie die
+   CO₂e-Spalte, denn die trägt fremde GWP-Gewichte („meist AR5",
+   `Allgemeine_Hinweise!A16`), während der Katalog selbst nach AR6 summiert (F2/F6).
+   Alle Zeilen `ist_co2e = falsch`. Biogene Träger führen dort kein Verbrennungs-CO₂
+   (leere Zelle; biogener Anteil separat „Außerhalb der Scopes") — für sie entstehen
+   nur CH₄- und N₂O-Vorlagen, passend zur Konvention `co2 = 0` der Holzträger.
+3. **GEMIS-Quelle (`GEMIS_52`)** = IINAS-Ergebnistabelle GEMIS 5.2 (12/2025, aktuellste
+   Fassung), Blatt `Wärme-end 2020` (je kWh Endenergie, „inputbezogen", Zelle B1) bzw.
+   `Strom-lokal DE 2000-2024` (Niederspannung inkl. Netzverluste, jüngste Zeile 2024).
+   Systemgrenze dort ausnahmslos **Lebenszyklus inkl. Vorkette und Anlagenherstellung**
+   (Zelle B5) — reine Feuerungswerte gibt die Datei nicht her. **Nutzerentscheid
+   29.08.2026:** Diese Werte kommen trotzdem in den Katalog, aber ausschließlich als
+   Vorlagen mit Systemgrenze im Anzeigetext (`DbWerte.EMISSIONSWERT_TEXT_GEMIS_52_*`
+   nennt „inkl. Vorkette (LCA)"); die aktiven Luftschadstoff-Werte bleiben bei der
+   Feuerungssicht aus § 8 Punkt 2. Übernommen werden nur **SO₂ (Spalte C — nicht das
+   SO₂-Äquivalent in Spalte B!), NOx (D), Staub (E)**; die GEMIS-THG-Spalten bleiben
+   außen vor (CO₂/CO₂e ist BAFA-/EBeV-Territorium, CH₄/N₂O kämen mit fremder
+   Systemgrenze). **Zuordnung ausschließlich über Spalte A** — die Kommentarspalte B
+   der Datei ist nachweislich verrutscht.
+4. **CH₄-Zuordnung:** keine Quelle trennt fossil/biogen — die Zuordnung folgt dem
+   Träger: fossile Träger → `CH4_FOSSIL`, biogene → `CH4_BIOGEN`.
+5. **Einheiten und Rundung:** UBA liefert kg/kWh (CO₂ ×1000 → g/kWh; CH₄/N₂O ×10⁶ →
+   mg/kWh), GEMIS g/kWh (×1000 → mg/kWh). Gesät wird kaufmännisch auf 3 Nachkommastellen
+   der Zieleinheit; § 5.2 nennt die gerundeten Saatwerte, die Rohwerte stehen in der
+   Rohextraktion.
+6. **`gueltig_ab`** = Zeitbezug der Quelle: UBA 01.01.2024; GEMIS Wärme 01.01.2020,
+   GEMIS Strom 01.01.2024. Anzeigetexte: die drei `DbWerte`-Konstanten
+   `EMISSIONSWERT_TEXT_UBA_2024` / `_GEMIS_52_WAERME` / `_GEMIS_52_STROM`.
+   Die drei **trägerlosen** UBA-Zeilen bekommen ihren Betreff an den Anzeigetext
+   angehängt („… — Biomethan" / „… — Deponiegas" / „… — Klärgas") — dasselbe Muster,
+   mit dem Schritt 57 seine trägerlosen Gesetzesvorlagen kenntlich macht. Dieser Zusatz
+   ist zugleich **Teil des Idempotenzschlüssels** (Quelle, Art, Träger, Quellentext) und
+   die einzige Unterscheidung wertgleicher trägerloser Zeilen: Deponiegas und Klärgas
+   führen dieselben Zahlen und tragen beide `carrier_id = NULL`; ohne den Zusatz fielen
+   sie zusammen, und die Saat ergäbe 81 statt 85 Zeilen.
+
+**Tabelle A — UBA-Vorlagen** (Blatt `01_Stationäre_Verbrennung`, kWh-Zeilen; Werte
+gerundet, Zeile/ID zur Kontrolle):
+
+| Quellzeile (ID) | Katalogträger | CO₂ [g/kWh] | CH₄ [mg/kWh] | N₂O [mg/kWh] |
+|---|---|---|---|---|
+| Erdgas (Heizwert), Z. 39 (`01_10_02_004_01`) | Erdgas E · Erdgas LL | 202,396 | 10,8 (fossil) | 0,905 |
+| Heizöl leicht, Z. 33 (`01_10_02_002_01`) | Heizöl EL · L · L Variante · L var | 266,472 | 0,165 (fossil) | 1,967 |
+| Steinkohle/Kohle, Z. 42 (`01_10_02_006_01`) | Steinkohle | 351,420 | 482,17 (fossil) | 41,393 |
+| Braunkohle/Briketts, Z. 31 (`01_10_02_001_01`) | Braunkohlebrikett | 353,124 | 853,632 (fossil) | 18,726 |
+| Wald-Scheitholz **Kessel**, Z. 22 (`01_10_01_007_01`) ¹ | Scheitholz | — (biogen) | 20,444 (biogen) | 1,008 |
+| Pellets, Z. 28 (`01_10_01_009_01`) | Holzpellets | — (biogen) | 1,79 (biogen) | 1,202 |
+| Biogas, Z. 10 (`01_10_01_002_01`) | Biogas · Biogas 2 · Biogas Variante ² | — (biogen) | 1770,3 (biogen) | 5,544 |
+| Biomethan, Z. 12 (`01_10_01_003_01`) | *ohne Träger* | — | 978,066 (biogen) | 3,42 |
+| Deponiegas, Z. 15 (`01_10_01_004_01`) | *ohne Träger* | — | 1124,208 (biogen) | 5,544 |
+| Klärgas, Z. 17 (`01_10_01_005_01`) | *ohne Träger* | — | 1124,208 (biogen) | 5,544 |
+
+¹ Die Liste führt Scheitholz doppelt (Einzelraumfeuerung `01_10_01_006_01` / Kessel,
+CO₂e-Differenz ≈ Faktor 18). EPOS-Plan plant Heizzentralen — gesät wird die
+**Kessel-Zeile**; die Einzelraumfeuerung bleibt bewusst draußen.
+² Biogas-Zeile an alle drei Biogas-Träger — dasselbe Fächerungsmuster wie § 5.1.
+
+**Tabelle B — GEMIS-Vorlagen** (Luftschadstoffe, mg/kWh Endenergie; Blatt
+`Wärme-end 2020`, Strom aus `Strom-lokal DE 2000-2024` Zeile 2024):
+
+| Quellzeile (Spalte A wörtlich) | Katalogträger | SO₂ | NOx | Staub |
+|---|---|---|---|---|
+| `Erdgas-Hzg 100%` (Z. 33) | Erdgas E · Erdgas LL | 6,007 | 137,744 | 5,419 |
+| `Heizöl-Hzg 100%` (Z. 32) | Heizöl EL · L · L Variante · L var | 172,411 | 190,137 | 19,919 |
+| `Öl-schwer-Kessel-Industrie-100%` (Z. 51) | Heizöl S | 1858,195 | 597,393 | 97,049 |
+| `Flüssiggas-Hzg 100%` (Z. 34) | Flüssiggas | 3,168 | 63,618 | 2,589 |
+| `StK-Brik-Hzg 100%` (Z. 37) | Steinkohle | 1976,023 | 276,047 | 819,994 |
+| `StK-Koks-Hzg 100%` (Z. 38) | Koks | 1973,674 | 514,369 | 71,803 |
+| `BrK-Brik-rhei-Hzg 100%` (Z. 36) ³ | Braunkohlebrikett | 307,107 | 335,136 | 406,521 |
+| `Fernwärme-mix (KWK: energiealloziert)` (Z. 40) | Fernwärme | 106,592 | 336,757 | 14,803 |
+| `Stromnetz-lokal 2024` (Z. 48/71) | Elektrische Energie · Elektrische Energie 2 · Strom Variante | 138,640 | 331,119 | 25,712 |
+
+³ GEMIS führt rheinische und Lausitzer Briketts getrennt; gesät wird **rheinisch**
+(größtes Revier, Marktstandard). Lausitz zur Einordnung: SO₂ 1047,768 / NOx 321,759 /
+Staub 321,528 — wer Lausitzer Ware einsetzt, pflegt den Wert von Hand nach.
+
+**Erwartete Wirkung:** 85 neue Vorlagenzeilen — UBA 40 (8 × CO₂; je 16 × CH₄ und N₂O:
+fossil 8 = Erdgas E + LL, vier Heizöl-Träger, Steinkohle, Braunkohlebrikett, biogen 8 =
+Scheitholz, Holzpellets, drei Biogas-Träger, Biomethan/Deponiegas/Klärgas trägerlos)
++ GEMIS 45 (15 Träger × SO₂/NOx/Staub); 0 geänderte aktive Werte, Zweitlauf 0.
+*(Zählung berichtigt 29.08.2026 — die zuvor genannte 81 unterschlug die
+Biogas-Fächerung aus Fußnote ².)*
+
+**Bewusst NICHT gesät** — jede Auslassung mit Grund:
+
+| Auslassung | Grund |
+|---|---|
+| UBA-Spalte `kg CO2e` | fremde GWP-Basis („meist AR5") — der Katalog summiert selbst nach AR6 (Regel 2) |
+| UBA `Erdgas (Brennwert)` (Z. 41) | Katalog ist Hu-basiert; Ho-Zeile nur Doku (Umrechnung 0,903, Blatt 01 B5) |
+| UBA Blatt `07` (Vorketten/Gesamt) | zweite Systemgrenze ohne Auftrag — Blatt 01 ist die beschlossene Feuerungssicht |
+| UBA `Altholz/Holzreste` für Holzhackschnitzel | anderer Brennstoff; Hackschnitzel fehlt in der Liste — Analogie wäre erfunden |
+| Biogenes CO₂ (Blatt „Außerhalb der Scopes") | Katalogkonvention: biogene Träger tragen CO₂ = 0; Pellets/Biomethan dort ohnehin nur „Platzhalter" |
+| GEMIS CO₂/CO₂e/CH₄/N₂O | THG kommen aus BAFA/EBeV/UBA; GEMIS-THG brächten die LCA-Grenze in Arten, die ohne sie belegt sind |
+| GEMIS `SO2-Äquivalent` (Spalte B) | Versauerungs-Aggregat (inkl. NOx/NH₃), keine SO₂-Masse |
+| GEMIS Holz-Luftschadstoffe (`Holz-Scheit`/`-Pellets`/`-Hackschnitzel`) | stehen nur im Blatt `Heizen (en) 2020` — **je kWh Nutzwärme**, anderer Nenner; ohne belegten Nutzungsgrad keine saubere Umrechnung |
+| GEMIS `BrK-Brik-Lau-Hzg 100%` | eine Zeile je Träger; rheinisch gesetzt (³) |
+| Wasserstoff · Stadtgas · Tierische Fette | in beiden Quellen nicht vorhanden (Stadtgas-Analogie zu Erdgas wäre die dritte Analogiestufe) |
+| Biogas-Luftschadstoffe | GEMIS führt Biogas nur als BHKW-Strom, nicht als Wärmeoption |
+
+**Lizenzlage:** UBA CC0 1.0 (im Impressum der Datei, mit Quellenvermerk-Auflage —
+erfüllt durch `quelle_text`). GEMIS: IINAS stellt die Ergebnisse „zur freien Verwendung
+unter Quellenangabe" bereit, ohne konkrete CC-Variante; für die Auslieferung als
+Vorlagen ausreichend, eine formlose Bestätigung bei IINAS bleibt empfohlen (offener
+Punkt 7).
+
 ---
 
 ## 6 Umsetzung in Etappen
@@ -573,7 +709,7 @@ BAFA-Saat aus E1 und ihre Stammwerte; mehr wäre erfunden.
 | **E3** | Emissions-Tab im Energieträger-Dialog (dynamische Felder, TextBox statt Spinner, Einheiten richtig, CO₂e-Summe, Herkunft, Warnung F3), Schreibweg beidseitig | **UMGESETZT (29.08.2026)** — Anwender pflegt im neuen Modell; Kontext-Regel als Umsetzungsklärung in § 4.1 |
 | **E4** | Katalog-Dialog (4.2): Artenverwaltung, Werteverwaltung, Übernehmen | **UMGESETZT (29.08.2026)** — `Form_Emissionskatalog` samt Schutzregeln; Katalogpflege vollständig |
 | **E5** | Modus-Schalter (F7): globale Vorgabe + Projektfeld, an beiden Orten; `KostenEmissionRechner` + `EmissionsBilanzRechner` modusfähig; Berichte weisen Modus aus; Modus in Variantenergebnisse; `STROMMIX_CO2_G_JE_KWH` 380→435 *(Nutzerentscheid 29.08.2026)* | **UMGESETZT (29.08.2026)** — eine Lesekette für beide Rechner (`EmissionsFaktorLader`), Modus wirksam und am Ergebnis vermerkt, Ausweis über `EmissionsAusweis`; Modus CO2 zahlengleich außer dem Strommix-Randfall |
-| **E6** | Luftschadstoff-Quelle (GEMIS/UBA TEXTE) nach Vorlage der Fundstellen einsäen | Werte zitierfähig |
+| **E6** | Quellen-Saat als Vorlagen nach § 5.2: UBA-Liste v2.1 Blatt 01 ohne Vorkette, GEMIS 5.2 als LCA-Vorlagen | **UMGESETZT (Schritt 58, 29.08.2026)** — 85 Vorlagen, kein aktiver Wert berührt; Nachweis `E6_QuellenSaat_Protokoll.md` |
 
 Prüfstand je Etappe: Smoke der beiden Rechenwege; E2 zusätzlich Vorher/Nachher-Vergleich
 aller Emissionskennzahlen über die Referenzläufe (muss identisch sein); E5 gezielter
@@ -630,6 +766,12 @@ Vergleich Modus CO₂ vs. CO₂e an einem Handbeispiel.
    Stromträger erhalten dieselben fünf Vorlagen). **Durchsicht steht aus.**
 6. Übernahme in `Konzept_Emissionsfaktoren_Quellenwahl` als dessen Rev. 2
    (generische Faktor-Zeilen statt fester Spalten), sobald jenes umgesetzt wird.
+7. **IINAS-Nutzungsbestätigung für die GEMIS-Vorlagen einholen** (`info@iinas.org`).
+   IINAS stellt die GEMIS-5.2-Ergebnisse „zur freien Verwendung unter Quellenangabe"
+   bereit, nennt aber keine konkrete CC-Variante. Für die Auslieferung der 45
+   GEMIS-Vorlagen aus § 5.2 reicht das; eine formlose Bestätigung schließt die Lücke.
+   (Die UBA-Seite ist unkritisch: CC0 1.0 laut Impressum der Datei, Quellenvermerk
+   erfüllt durch `quelle_text`.)
 
 ---
 
@@ -637,6 +779,7 @@ Vergleich Modus CO₂ vs. CO₂e an einem Handbeispiel.
 
 - [`Konzept_CO2-Faktoren_Energietraeger_EPOS-Plan.md`](Konzept_CO2-Faktoren_Energietraeger_EPOS-Plan.md) — CO₂-Saat (E1)
 - [`Konzept_Emissionsfaktoren_Quellenwahl_EPOS-Plan.md`](Konzept_Emissionsfaktoren_Quellenwahl_EPOS-Plan.md) — Herkunft/Projektwahl, wird Rev. 2
+- `Allgemein\Update\E6_QuellenSaat_Protokoll.md` — Umsetzung und Prüfstand E6 (Schritt 58)
 - `Model\EmissionsModelle.cs` — Art, Wert, Reiterzeile, Speicherschritt (E3/E4)
 - `Controller\EmissionenCtrl.cs` — Emissions-Reiter UI-frei: Laden, Summe F6/F3, Herkunft F8, Modus F7, Speicherplan (E3)
 - `Controller\EmissionskatalogCtrl.cs` — Katalogpflege UI-frei: Arten, Werte, Übernehmen, Schutzregeln (E4)
