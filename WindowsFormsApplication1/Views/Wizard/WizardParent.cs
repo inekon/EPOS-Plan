@@ -150,47 +150,10 @@ namespace WindowsFormsApplication1
 
             pagecount = listPages.Count();
 
-            ApplikationCtrl ctrl = new ApplikationCtrl();
-            try
-            {
-                ctrl.ReadSingle();
-                SetImageFromFile(ctrl.m_icon);
-            }
-            catch (Exception ex)
-            {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
-            }
-
             // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
             // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
             // Auf ausreichend grossen Schirmen wirkungslos.
             FensterEinpassung.Einhaengen(this);
-        }
-
-        private void SetImageFromFile(string imagePath)
-        {
-            try
-            {
-                // Bild aus Datei laden
-                if (!File.Exists(imagePath))
-                {
-                    // Wenn die Datei nicht existiert, ein Standardbild verwenden
-                    imagePath = Path.Combine(Application.StartupPath, "LogoInekon.jpg");
-                    if (File.Exists(imagePath))
-                    {
-                        Image image = Image.FromFile(imagePath);
-                        pictureBox_App.Image = image;
-                    }
-                }
-                else
-                    pictureBox_App.Image = Image.FromFile(imagePath); ;
-            }
-            catch (Exception ex)
-            {
-                // Fehlerbehandlung, z.B. Fehlermeldung anzeigen
-                MessageBox.Show("Fehler beim Laden oder Anzeigen des Bildes: " + ex.Message);
-            }
         }
 
         private void WizardParent_Load(object sender, EventArgs e)
@@ -202,7 +165,7 @@ namespace WindowsFormsApplication1
             // im Bearbeiten-Modus auf der Komponentenseite (siehe Next/Back).
             ucProjektAuswahl.Laden();
             ucProjektAuswahl.Visible = false;
-            button_NeuProjekt.Visible = false;
+            button_ProjektOeffnen.Visible = false;
             top = -1;
             Next();
             btnBack.Enabled = false;
@@ -266,13 +229,12 @@ namespace WindowsFormsApplication1
                 {
                     ucProjektAuswahl.Visible = true;
                     label_Projekt.Visible = true;
-                    button_NeuProjekt.Visible = true;
+                    button_ProjektOeffnen.Visible = true;
                 }
             }
 
             btnBack.Enabled = true;
             btnCancel.Enabled = true;
-            btnSpeichern.Enabled = false;
             btnNext.Enabled = true;
 
             if (top <= WizardItemClass.KOMPONENTEN_ITEM)
@@ -280,16 +242,12 @@ namespace WindowsFormsApplication1
                 btnBack.Enabled = false;
             }
 
-            if (top > WizardItemClass.PROJEKT_ITEM)
-            {
-                btnSpeichern.Enabled = true;
-            }
-
             if (top >= pagecount)
             {
                 btnCancel.Enabled = false;
-                btnSpeichern.Enabled = true;
             }
+
+            KnopfTexteAnwenden();
         }
 
         private void Next()
@@ -333,15 +291,10 @@ namespace WindowsFormsApplication1
 
             // nachdem die nächste Seite geladen wurde...
 
-            if (top > WizardItemClass.PROJEKT_ITEM)
-            {
-                btnSpeichern.Enabled = true;
-            }
-
             page = listPages.ElementAt(top).wizardform;
             ucProjektAuswahl.Visible = false;
             label_Projekt.Visible = false;
-            button_NeuProjekt.Visible = false;
+            button_ProjektOeffnen.Visible = false;
 
             if (wizardmode == WIZARD_MODE_BEARBEITEN)
             {
@@ -350,7 +303,7 @@ namespace WindowsFormsApplication1
                 {
                     ucProjektAuswahl.Visible = true;
                     label_Projekt.Visible = true;
-                    button_NeuProjekt.Visible = true;
+                    button_ProjektOeffnen.Visible = true;
                 }
                 else if (top == WizardItemClass.PROJEKT_ITEM)
                 {
@@ -430,12 +383,10 @@ namespace WindowsFormsApplication1
             btnBack.Enabled = true;
             btnCancel.Enabled = true;
 
-            // letzte Seite erreicht ?
-            if (lastIndex())
-            {
-                btnNext.Enabled = false;
-                if (top >= WizardItemClass.PROJEKT_ITEM) btnSpeichern.Enabled = true;
-            }
+            // Auf der letzten aktiven Seite wird der Weiter-Knopf zum
+            // Speichern-Knopf (Fusion, Nutzerwunsch 30.08.2026); sein
+            // Enabled-Zustand kommt von der Bearbeiten-Sperre oben.
+            KnopfTexteAnwenden();
 
             // bei 1. Seite kein zurück möglich
             if (top <= WizardItemClass.KOMPONENTEN_ITEM)
@@ -456,9 +407,30 @@ namespace WindowsFormsApplication1
             return true;
         }
 
+        /// <summary>
+        /// Der fruehere Speichern-Knopf ist entfallen (Nutzerwunsch 30.08.2026):
+        /// Auf der letzten aktiven Seite traegt dieser Knopf den Speichern-Text
+        /// und schliesst den Durchlauf ab.
+        /// </summary>
         private void btnNext_Click(object sender, EventArgs e)
         {
+            if (lastIndex()) { SpeichernAusfuehren(); return; }
             Next();
+        }
+
+        /// <summary>
+        /// Setzt die Beschriftung des Weiter-Knopfs: auf der letzten aktiven
+        /// Seite "Speichern" (MyResource WIZ_BTN_SPEICHERN), sonst der
+        /// Weiter-Text aus der Formular-resx (beim ersten Aufruf gemerkt).
+        /// </summary>
+        private string _textWeiter;
+        private void KnopfTexteAnwenden()
+        {
+            if (_textWeiter == null) _textWeiter = btnNext.Text;
+
+            btnNext.Text = lastIndex()
+                ? (MyResource.Resource.ResourceManager.GetString("WIZ_BTN_SPEICHERN", MyResource.Resource.Culture) ?? "Speichern")
+                : _textWeiter;
         }
 
         private void btnBack_Click(object sender, EventArgs e)
@@ -524,7 +496,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Liest die Energieanlagen eines bestehenden Projekts in <see cref="list_werzmodel"/>
-        /// - die Liste, die der Bearbeiten-Zweig in <c>btnSpeichern_Click</c> nach
+        /// - die Liste, die der Bearbeiten-Zweig in <c>SpeichernAusfuehren</c> nach
         /// <c>Del_Projekt_Waermeerzeuger</c> an <c>Add_WP_Waermeerzeuger</c> uebergibt.
         ///
         /// <para>
@@ -595,7 +567,7 @@ namespace WindowsFormsApplication1
             wizardmode = mode;
         }
 
-        private void btnSpeichern_Click(object sender, EventArgs e)
+        private void SpeichernAusfuehren()
         {
             Form pageproj = listPages.ElementAt(WizardItemClass.PROJEKT_ITEM).wizardform;
             Program.wizardctrl.Klimazone = ((Wizard_Projekt)pageproj).GetKlimaname();
@@ -787,9 +759,9 @@ namespace WindowsFormsApplication1
         // Logo im linken Band oeffnete einen Dateidialog und schrieb das gewaehlte Bild
         // DAUERHAFT als Anwendungs-Icon nach Tab_Applikation - ohne jeden Hinweis in der
         // Oberflaeche und ohne Rueckfrage. Handler und Verdrahtung sind ersatzlos
-        // entfernt; das Logo ist wieder ein reines Bild. Der LESEweg bleibt: der
-        // Konstruktor holt das Icon weiterhin ueber ApplikationCtrl.ReadSingle() und
-        // SetImageFromFile.
+        // entfernt. Auf Nutzerwunsch vom 30.08.2026 ist auch das Logo selbst aus dem
+        // linken Band entfernt - damit entfiel zugleich der letzte Leseweg des
+        // Anwendungs-Icons (ApplikationCtrl.m_icon -> SetImageFromFile).
 
         public void LoadZGeb(string projekt)
         {
@@ -939,67 +911,28 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// „Neues Projekt…" — schaltet den laufenden Bearbeiten-Assistenten mitten im
-        /// Betrieb auf den Neu-Modus um.
+        /// „Projekt öffnen" (Nutzerwunsch 30.08.2026): öffnet das in der Liste
+        /// markierte Projekt regulär — derselbe Ladeweg wie Menü
+        /// „Projekt → Öffnen…" — und schließt den Assistenten danach.
         ///
         /// <para>
-        /// <b>P4: mit Rückfrage.</b> Bisher geschah der Wechsel still; alles, was der
-        /// Anwender in diesem Durchlauf schon eingegeben oder aus dem Bestand geladen
-        /// hatte, war ohne Warnung fort. Erkennbar ist das an einem gewählten Projekt
-        /// (<c>projektID</c>), an bereits nachgeladenen Bestandsdaten
-        /// (<c>bBereitsGeladen</c>) oder an einer gefüllten Modellliste — genau danach
-        /// fragt <see cref="HatVerwerfbareEingaben"/>. Gibt es nichts zu verlieren,
-        /// wird auch nicht gefragt.
+        /// Ersetzt den früheren Knopf „Neues Projekt…" (Umschalten in den
+        /// Neu-Modus samt Rückfrage <c>HatVerwerfbareEingaben</c>): Das Anlegen
+        /// hat mit der Startmasken-Kachel „Neues Projekt" einen eigenen,
+        /// eindeutigen Einstieg — ein zweiter Weg mitten im Bearbeiten-Lauf
+        /// stiftete nur Verwechslungsgefahr.
         /// </para>
         /// </summary>
-        private void button_NeuProjekt_Click(object sender, EventArgs e)
+        private void button_ProjektOeffnen_Click(object sender, EventArgs e)
         {
-            if (HatVerwerfbareEingaben())
-            {
-                Form seite = listPages.ElementAt(WizardItemClass.KOMPONENTEN_ITEM).wizardform;
-                string frage = ((Wizard_Komponenten)seite).TextNeuesProjektFrage;
-                string titel = ((Wizard_Komponenten)seite).TextNeuesProjektTitel;
+            int id = ucProjektAuswahl.GewaehlteID;
+            string name = ucProjektAuswahl.GewaehlterName;
+            if (id <= 0 || string.IsNullOrWhiteSpace(name)) return;
 
-                DialogResult antwort = MessageBox.Show(frage, titel, MessageBoxButtons.YesNo,
-                                                       MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
-                if (antwort != DialogResult.Yes) return;
-            }
-
-            projektID = 0;
-            pagecount = listPages.Count();
-
-            ucProjektAuswahl.Visible = false;
-            label_Projekt.Visible = false;
-            wizardmode = WIZARD_MODE_NEU;
-            button_NeuProjekt.Visible = false;
-
-            list_werzmodel.Clear();
-            list_gebmodel.Clear();
-            list_prozmodel.Clear();
-            list_stromlastmodel.Clear();
-            list_stromverbrauchermodel.Clear();
-            list_wbmodel.Clear();
-            bBereitsGeladen = false;
-
-            top = -1;
-            Next();
-
-            // Leerer Bestand = alle Kacheln aus, alle Seiten (ausser Komponenten und
-            // Projekt) abgewaehlt - fruehere elf Set*CheckBox(false)-Aufrufe.
-            Form page = listPages.ElementAt(top).wizardform;
-            ((Wizard_Komponenten)page).BestandAnzeigen(KomponentenBestand.Lesen(0));
-        }
-
-        /// <summary>
-        /// true, wenn beim Umschalten auf „neues Projekt" etwas verloren ginge.
-        /// </summary>
-        private bool HatVerwerfbareEingaben()
-        {
-            if (projektID > 0) return true;
-            if (bBereitsGeladen) return true;
-            return list_werzmodel.Count > 0 || list_gebmodel.Count > 0 || list_prozmodel.Count > 0
-                || list_stromlastmodel.Count > 0 || list_stromverbrauchermodel.Count > 0
-                || list_wbmodel.Count > 0;
+            // Erst regulär laden (Detailformular als Dialog), danach den
+            // Assistenten schließen - der Anwender wollte öffnen, nicht bearbeiten.
+            Program.menuectrl.ProjektInFormMainLaden(name, id);
+            Close();
         }
     }
 }

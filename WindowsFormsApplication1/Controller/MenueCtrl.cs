@@ -110,7 +110,7 @@ namespace WindowsFormsApplication1
         /// „zuletzt geöffnet" — aus dem Projekt gelesen (der frühere Weg über
         /// <c>Form_ProjektSpeichernUnter.m_szKlimaregion</c> lieferte immer "").
         /// </summary>
-        private void ProjektInFormMainLaden(string szProjekt, int idProjekt)
+        public void ProjektInFormMainLaden(string szProjekt, int idProjekt)
         {
             ProjektCtrl ctrlproj = new ProjektCtrl();
             ctrlproj.ReadSingle(szProjekt);
