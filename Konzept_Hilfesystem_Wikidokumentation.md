@@ -24,6 +24,17 @@ das Modell jetzt als echtes Datum statt als Platzhalter (`KiHilfe.Datum` liefert
 `DateTime`, den Rest tat der Kern schon immer richtig); Klarnamen weiterhin nur als
 Platzhalter. Protokoll:
 [`WindowsFormsApplication1/Allgemein/KI/H8_Datumsfelder_Protokoll.md`](WindowsFormsApplication1/Allgemein/KI/H8_Datumsfelder_Protokoll.md).
+**H9 umgesetzt am 29.08.2026 (Suchgüte)**: deutsche Stoppwortliste + dreistufige
+Rückfall-Kaskade in der Wiki-Suche (Fragen in natürlicher Sprache erzeugten
+0-Treffer-Ketten), dazu **37 Synonym-Weiterleitungen** im Wiki (Warmwasser/TWW,
+Akku, Erdsonde, KWK, JAZ …) — äquivalente Begriffe treffen jetzt in jedem Suchweg.
+Protokoll-Nachtrag in `H4H5_Umsetzung_Protokoll.md`.
+**H10 umgesetzt am 29.08.2026 (Semantik)**: lokaler Embedding-Index
+(`SemantikIndex`/`SemantikModell`, quantisiertes multilinguales MiniLM per ONNX,
+117 MiB, einmaliger SHA-256-geprüfter Download nach `%APPDATA%\wp-plan\semantik\`) —
+Frage-Einbettung vollständig offline, Hybrid mit der Stichwortsuche, 6 ms je Frage,
+stiller Rückfall auf H9. Protokoll:
+[`WindowsFormsApplication1/Allgemein/KI/H10_SemantikIndex_Protokoll.md`](WindowsFormsApplication1/Allgemein/KI/H10_SemantikIndex_Protokoll.md).
 Betrachtet wurde der Bestand unter `WindowsFormsApplication1` (ohne Altkopien und
 Worktrees) sowie — per API und Seitenabruf empirisch verifiziert — das Wiki unter
 `https://wiki.epos-plan.de`.
