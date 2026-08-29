@@ -27,8 +27,6 @@
             txt_PVGISUrl = new System.Windows.Forms.TextBox();
             lbl_OnlineDoku = new System.Windows.Forms.Label();
             txt_OnlineDokuUrl = new System.Windows.Forms.TextBox();
-            lbl_WPPrefix = new System.Windows.Forms.Label();
-            txt_WPPrefix = new System.Windows.Forms.TextBox();
             panel_Allgemein = new System.Windows.Forms.Panel();
             lbl_Allgemein = new System.Windows.Forms.Label();
             txt_AllgemeinPath = new System.Windows.Forms.TextBox();
@@ -116,8 +114,6 @@
             panel_Internet.Controls.Add(txt_PVGISUrl);
             panel_Internet.Controls.Add(lbl_OnlineDoku);
             panel_Internet.Controls.Add(txt_OnlineDokuUrl);
-            panel_Internet.Controls.Add(lbl_WPPrefix);
-            panel_Internet.Controls.Add(txt_WPPrefix);
             panel_Internet.Dock = System.Windows.Forms.DockStyle.Fill;
             panel_Internet.Location = new System.Drawing.Point(0, 0);
             panel_Internet.Name = "panel_Internet";
@@ -175,24 +171,7 @@
             txt_OnlineDokuUrl.Size = new System.Drawing.Size(460, 23);
             txt_OnlineDokuUrl.TabIndex = 3;
             txt_OnlineDokuUrl.Text = "http://localhost:8080";
-            // 
-            // lbl_WPPrefix
-            // 
-            lbl_WPPrefix.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            lbl_WPPrefix.Location = new System.Drawing.Point(15, 239);
-            lbl_WPPrefix.Name = "lbl_WPPrefix";
-            lbl_WPPrefix.Size = new System.Drawing.Size(400, 20);
-            lbl_WPPrefix.TabIndex = 4;
-            lbl_WPPrefix.Text = "WordPress API-Präfix / REST-Base (z.B. help, pages, posts):";
-            // 
-            // txt_WPPrefix
-            // 
-            txt_WPPrefix.Location = new System.Drawing.Point(18, 264);
-            txt_WPPrefix.Name = "txt_WPPrefix";
-            txt_WPPrefix.Size = new System.Drawing.Size(150, 23);
-            txt_WPPrefix.TabIndex = 5;
-            txt_WPPrefix.Text = "help";
-            // 
+            //
             // panel_Allgemein
             // 
             panel_Allgemein.Controls.Add(lbl_Allgemein);
@@ -490,8 +469,6 @@
         private System.Windows.Forms.TextBox txt_PVGISUrl;
         private System.Windows.Forms.Label lbl_OnlineDoku;
         private System.Windows.Forms.TextBox txt_OnlineDokuUrl;
-        private System.Windows.Forms.Label lbl_WPPrefix;
-        private System.Windows.Forms.TextBox txt_WPPrefix;
 
         private System.Windows.Forms.Label lbl_Allgemein;
         private System.Windows.Forms.TextBox txt_AllgemeinPath;

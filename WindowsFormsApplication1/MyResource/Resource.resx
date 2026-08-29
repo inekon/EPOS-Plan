@@ -4778,6 +4778,9 @@ Mehrere Felder desselben Modultyps sind zulässig — bitte prüfen, ob das so g
   <data name="ANL_SP_NAME_ANGEPASST" xml:space="preserve">
     <value>Der Name „{0}" ist im Projekt bereits vergeben. Die Speichervariante wurde in „{1}" umbenannt.</value>
   </data>
+  <data name="GEB2_TITEL" xml:space="preserve">
+    <value>Gebäudedaten – Raumtemperaturen, Wärmebrücken und Ferienzeiten</value>
+  </data>
   <data name="GESETZ_MENUE" xml:space="preserve">
     <value>Gesetzliche Parameter…</value>
   </data>

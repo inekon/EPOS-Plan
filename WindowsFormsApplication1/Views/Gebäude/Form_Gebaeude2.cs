@@ -14,6 +14,18 @@ namespace WindowsFormsApplication1
         {
             InitializeComponent();
             InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
+
+            // H11: Fenstertitel. Der Dialog lief bisher OHNE Titel - weder der
+            // Designer noch eine der drei .resx setzt "$this.Text". Gesetzt wird
+            // hier und nicht im Designer, weil der Titel damit in beiden Sprachen
+            // aus MyResource kommt (Drei-Schichten-Regel, Anzeigeschicht) statt in
+            // jeder Satellitendatei einzeln gepflegt werden zu muessen.
+            //
+            // Der Wortlaut folgt dem Inhalt von SetControls(): Raumsolltemperaturen
+            // (Tag, Nachtabsenkung, Wochenende, Ferien, Maximum),
+            // Waermebrueckenverlustkoeffizienten samt Anschlussmassen und die vier
+            // Ferienzeitraeume Winter/Ostern/Sommer/Herbst.
+            this.Text = MyResource.Resource.GEB2_TITEL;
         }
 
         public void SetControls()

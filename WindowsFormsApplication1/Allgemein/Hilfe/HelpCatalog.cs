@@ -29,6 +29,22 @@ namespace WindowsFormsApplication1
         /// Feld fallen auf den letzten Pfadabschnitt zurueck.
         /// </remarks>
         public string Slug { get; set; } = "";
+
+        /// <summary>
+        /// H11 (Entscheid 7.6) - der Einleitungssatz der Wiki-Seite, hoechstens
+        /// zwei Saetze, als Klartext ohne Auszeichnung. Das Popup zeigt ihn
+        /// unter der Kapitelzeile.
+        /// </summary>
+        /// <remarks>
+        /// <b>Leer ist zulaessig</b> und der Regelfall bei jeder Bezugsquelle
+        /// ausser dem Onlineabruf: Der mitgelieferte Startbestand fuehrt das
+        /// Feld nicht, aeltere Sicherungen kennen es nicht. Ein fehlendes Feld
+        /// deserialisiert zur leeren Zeichenkette - das Popup verhaelt sich dann
+        /// exakt wie vor H11. Beschafft wird die Beschreibung nachtraeglich und
+        /// nur bei erfolgreichem Onlineabruf
+        /// (<see cref="WikiHelpCatalog.BeschreibungenGeladen"/>).
+        /// </remarks>
+        public string Beschreibung { get; set; } = "";
     }
 
     /// <summary>
@@ -110,6 +126,41 @@ namespace WindowsFormsApplication1
         /// Wird abgeschlossen, sobald <see cref="LoadAllAsync"/> durch ist.
         /// </summary>
         public Task Loaded => _geladen.Task;
+
+        // -------------------------------------------------------------------
+        // H11 (7.6) - Popup-Kurzbeschreibungen
+        // -------------------------------------------------------------------
+
+        /// <summary>
+        /// Meldet, wann der NACHGELAGERTE Lauf fuer die Kurzbeschreibungen durch
+        /// ist. Getrennt von <see cref="Loaded"/>, weil der Katalog schon vorher
+        /// vollstaendig benutzbar ist - siehe <see cref="LoadAllCoreAsync"/>.
+        /// </summary>
+        private readonly TaskCompletionSource<bool> _beschreibungen =
+            new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        /// <summary>Wurde der Nachladelauf ueberhaupt angestossen?</summary>
+        private bool _beschreibungenGestartet;
+
+        /// <summary>
+        /// Wird abgeschlossen, sobald die Kurzbeschreibungen beschafft sind -
+        /// auch dann, wenn es keine gibt (offline, Serverfehler, kein
+        /// Onlineabruf). Wer darauf wartet, wartet also nie vergeblich.
+        /// </summary>
+        public Task BeschreibungenGeladen => _beschreibungen.Task;
+
+        /// <summary>Wie viele Seiten des Katalogs eine Kurzbeschreibung tragen.</summary>
+        public int BeschreibungenAnzahl
+        {
+            get
+            {
+                int anzahl = 0;
+                foreach (HelpEntry eintrag in _nachPfad.Values)
+                    if (!string.IsNullOrWhiteSpace(eintrag.Beschreibung)) anzahl++;
+
+                return anzahl;
+            }
+        }
 
         // -------------------------------------------------------------------
         // Zugriff (F7): Slug ODER Pfad
@@ -376,6 +427,12 @@ namespace WindowsFormsApplication1
         finally
         {
             _geladen.TrySetResult(true);
+
+            // H11: Lief der Nachladelauf der Kurzbeschreibungen gar nicht erst an
+            // (offline, Serverfehler, leere Rubrik), meldet er sich auch nie
+            // fertig. Dann wird hier abgemeldet - sonst wartet der Aufrufer von
+            // BeschreibungenGeladen bis in alle Ewigkeit.
+            if (!_beschreibungenGestartet) _beschreibungen.TrySetResult(true);
         }
     }
 
@@ -504,6 +561,19 @@ namespace WindowsFormsApplication1
         // FALL 1: Online-Abruf war erfolgreich -> Register aufbauen und lokal sichern
         if (onlineLoadSuccessful && tempCache.Count > 0)
         {
+            // H11 (7.6): Die Beschreibungen des bisherigen Bestandes retten. Der
+            // frische tempCache kennt nur Titel und Adresse; ohne diese Zeilen
+            // waeren die Popup-Kurzbeschreibungen zwischen Katalogaufbau und
+            // Ende des Nachladelaufs kurzzeitig wieder weg.
+            foreach (var paar in tempCache)
+            {
+                if (_nachPfad.TryGetValue(paar.Key, out HelpEntry alt) &&
+                    !string.IsNullOrEmpty(alt.Beschreibung))
+                {
+                    paar.Value.Beschreibung = alt.Beschreibung;
+                }
+            }
+
             IndizesAufbauen(tempCache);
 
             // Als lokale Sicherung für den nächsten Offline-Start wegschreiben.
@@ -522,6 +592,17 @@ namespace WindowsFormsApplication1
                 System.Diagnostics.Debug.WriteLine($"[Help] Fehler beim Schreiben der Sicherung: {ex.Message}");
             }
 
+            // H11 (7.6) - Kurzbeschreibungen NACHTRAEGLICH und ohne await.
+            //
+            // Der Katalog ist an dieser Stelle vollstaendig und benutzbar; die
+            // Beschreibungen sind Zierrat. Wuerde hier gewartet, verzoegerten
+            // zwei weitere HTTP-Abrufe den Zeitpunkt, ab dem "IsLoaded" gilt -
+            // und damit den Moment, in dem die Infobuttons ihr Ziel kennen (F3).
+            // Wer auf die Beschreibungen warten muss (Pruefstand), nimmt
+            // "BeschreibungenGeladen".
+            _beschreibungenGestartet = true;
+            _ = BeschreibungenNachladenAsync(tempCache, localBackupPath);
+
             return;
         }
 
@@ -530,6 +611,194 @@ namespace WindowsFormsApplication1
 
         // FALL 3: Auch die fehlt -> mitgelieferter Startbestand (F6).
         MitgelieferterStartbestandLaden();
+    }
+
+    // =======================================================================
+    //  H11 (Entscheid 7.6) - Kurzbeschreibungen fuer das Popup
+    // =======================================================================
+
+    /// <summary>
+    /// Wie viele Seitentitel hoechstens in EINE Auszugsanfrage gehen.
+    /// </summary>
+    /// <remarks>
+    /// <b>Empirisch bestimmt am 29.08.2026 gegen wiki.epos-plan.de.</b> Der
+    /// Auszugs-Dienst deckelt die Zahl der gelieferten Auszuege je Anfrage; der
+    /// Deckel haengt an der Betriebsart:
+    /// <list type="bullet">
+    /// <item>Volltext (ohne <c>exintro</c>): 1 Auszug je Anfrage - der Grund,
+    ///       warum <see cref="WikiWissen"/> seine Seiten einzeln holt.</item>
+    /// <item>Einleitung (<c>exintro=1</c>): 20 Auszuege je Anfrage. Gemessen mit
+    ///       29 Titeln: die Antwort trug 20 Auszuege und meldete
+    ///       <c>"continue":{"excontinue":20}</c>.</item>
+    /// </list>
+    /// Deshalb wird gestueckelt statt fortgesetzt: Bei 32 Rubrikseiten sind das
+    /// zwei Anfragen, und keine Antwort kann stillschweigend beschnitten sein.
+    /// </remarks>
+    private const int ExtraktStapel = 20;
+
+    /// <summary>
+    /// Holt je Rubrikseite den Einleitungssatz nach und schreibt ihn in die
+    /// bereits im Katalog haengenden Eintraege. Bester Wille, kein Muss: Jeder
+    /// Fehler laesst die Beschreibungen leer, und das Popup verhaelt sich dann
+    /// exakt wie vor H11.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Abrufform (MediaWiki-Action-API):
+    /// <c>api.php?action=query&amp;prop=extracts&amp;exintro=1&amp;explaintext=1
+    /// &amp;exsentences=2&amp;titles=A|B|…&amp;format=json&amp;redirects=1</c>
+    /// </para>
+    /// <para>
+    /// <b>Warum die Eintraege genuegen und kein neuer Index noetig ist:</b>
+    /// <see cref="IndizesAufbauen"/> legt die uebergebenen
+    /// <see cref="HelpEntry"/>-Objekte selbst ab, nicht Kopien davon. Wer hier
+    /// <c>Beschreibung</c> setzt, aendert damit denselben Eintrag, den
+    /// <see cref="Get"/> spaeter herausgibt.
+    /// </para>
+    /// <para>
+    /// Den Wiki-Titel traegt der Eintrag nicht mit - er ist aber eindeutig
+    /// rekonstruierbar: <see cref="RubrikPraefix"/> plus Kurzname, und der
+    /// Kurzname steht im <c>Slug</c> (siehe <see cref="EintragAusTitel"/>).
+    /// </para>
+    /// </remarks>
+    private async Task BeschreibungenNachladenAsync(
+        Dictionary<string, HelpEntry> eintraege, string sicherungsPfad)
+    {
+        int getroffen = 0;
+
+        try
+        {
+            // Titel je Eintrag bilden; Zuordnung ueber die Kleinschreibform,
+            // weil das Wiki den Titel normalisiert zurueckgibt.
+            var nachTitel = new Dictionary<string, HelpEntry>(StringComparer.OrdinalIgnoreCase);
+            var titel = new List<string>();
+
+            foreach (HelpEntry eintrag in eintraege.Values)
+            {
+                if (eintrag == null) continue;
+
+                string kurzname = (eintrag.Slug ?? "").Trim();
+                if (kurzname.Length == 0) continue;
+
+                string voll = RubrikPraefix + kurzname;
+                if (nachTitel.ContainsKey(voll)) continue;
+
+                nachTitel[voll] = eintrag;
+                titel.Add(voll);
+            }
+
+            if (titel.Count == 0) return;
+
+            for (int start = 0; start < titel.Count; start += ExtraktStapel)
+            {
+                var stapel = titel.GetRange(start, Math.Min(ExtraktStapel, titel.Count - start));
+                getroffen += await StapelBeschreibungenAsync(stapel, nachTitel);
+            }
+
+            if (getroffen == 0) return;
+
+            // Die Sicherung wurde bereits ohne Beschreibungen geschrieben - jetzt
+            // noch einmal, damit der naechste Start OHNE Netz die Saetze kennt.
+            // Der Aufbau bleibt derselbe; ein alter Bestand ohne dieses Feld
+            // liest sich unveraendert (fehlend = leer).
+            try
+            {
+                File.WriteAllText(sicherungsPfad, JsonSerializer.Serialize(eintraege));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    "[Help] Beschreibungen nicht gesichert: " + ex.Message);
+            }
+
+            System.Diagnostics.Debug.WriteLine(
+                $"[Help] Kurzbeschreibungen: {getroffen} von {titel.Count} Seiten (7.6).");
+        }
+        catch (Exception ex)
+        {
+            // Ohne await gestartet - eine entkommene Ausnahme waere unbeobachtet.
+            System.Diagnostics.Debug.WriteLine(
+                "[Help] WARNUNG: Kurzbeschreibungen nicht ladbar: " + ex.Message);
+        }
+        finally
+        {
+            _beschreibungen.TrySetResult(true);
+        }
+    }
+
+    /// <summary>
+    /// Ein Stapel Titel in einer Anfrage. Liefert, wie viele Beschreibungen
+    /// gesetzt wurden.
+    /// </summary>
+    private async Task<int> StapelBeschreibungenAsync(
+        List<string> stapel, Dictionary<string, HelpEntry> nachTitel)
+    {
+        string url = $"{_baseUrl}/api.php?action=query&prop=extracts" +
+                     "&exintro=1&explaintext=1&exsentences=2" +
+                     $"&titles={Uri.EscapeDataString(string.Join("|", stapel))}" +
+                     "&format=json&redirects=1";
+
+        try
+        {
+            using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(15));
+
+            var response = await _http.GetAsync(url, cts.Token);
+            if (!response.IsSuccessStatusCode) return 0;
+
+            var json = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(json);
+
+            if (doc.RootElement.ValueKind != JsonValueKind.Object ||
+                !doc.RootElement.TryGetProperty("query", out JsonElement abfrage) ||
+                !abfrage.TryGetProperty("pages", out JsonElement seiten) ||
+                seiten.ValueKind != JsonValueKind.Object)
+            {
+                return 0;
+            }
+
+            int gesetzt = 0;
+
+            // Die Seiten stehen als Objekt, geschluesselt ueber die Seitennummer;
+            // unbekannte Titel tragen eine negative Nummer und ein "missing".
+            foreach (JsonProperty seite in seiten.EnumerateObject())
+            {
+                if (seite.Value.ValueKind != JsonValueKind.Object) continue;
+                if (!seite.Value.TryGetProperty("title", out JsonElement titelFeld)) continue;
+                if (!seite.Value.TryGetProperty("extract", out JsonElement auszug)) continue;
+
+                string satz = TextSaeubern(auszug.GetString());
+                if (satz.Length == 0) continue;
+
+                if (!nachTitel.TryGetValue(titelFeld.GetString() ?? "", out HelpEntry eintrag)) continue;
+
+                eintrag.Beschreibung = satz;
+                gesetzt++;
+            }
+
+            return gesetzt;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(
+                $"[Help] Auszugsabruf gescheitert ({stapel.Count} Titel): {ex.Message}");
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// Macht aus dem Auszug eine einzeilige Kurzbeschreibung: Zeilenumbrueche
+    /// und Mehrfachleerzeichen werden zu einem Leerzeichen.
+    /// </summary>
+    /// <remarks>
+    /// <c>explaintext=1</c> liefert bereits Klartext ohne Auszeichnung; was
+    /// bleibt, sind Absatzumbrueche. Das Popup bricht selbst um (auf ~70
+    /// Zeichen) - ein mitgelieferter Umbruch wuerde diese Rechnung stoeren.
+    /// </remarks>
+    private static string TextSaeubern(string roh)
+    {
+        if (string.IsNullOrWhiteSpace(roh)) return "";
+
+        return Regex.Replace(roh, @"\s+", " ").Trim();
     }
 
     /// <summary>
@@ -1296,7 +1565,8 @@ namespace WindowsFormsApplication1
             {
                 Tooltip = eintrag.Tooltip,
                 Url = eintrag.Url + "#" + anker,
-                Slug = eintrag.Slug
+                Slug = eintrag.Slug,
+                Beschreibung = eintrag.Beschreibung   // H11: die Kopie darf sie nicht verlieren
             };
         }
 
@@ -1327,21 +1597,62 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Eine echte, unfehlbare Tiefensuche über alle Control-Ebenen hinweg.
+        /// Tiefensuche über alle Ebenen - aber nur im EIGENEN Zuständigkeitsbereich
+        /// der Maske. An einem eingebetteten <see cref="Form"/> oder
+        /// <see cref="UserControl"/> endet sie.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>H11 - warum die Grenze nachgetragen wurde.</b> Ohne sie lief die Suche
+        /// in eingebettete Masken hinein und lieferte deren Infoknopf. Beobachtet auf
+        /// dem Reiter „Berichte &amp; Kosten": <c>UcBerichteKosten</c> hängt seine
+        /// Inhaltsfläche <c>pnlInhalt</c> als ERSTES Kind ein (Index 0), die Kopfzeile
+        /// <c>lblKopf</c> mit dem eigenen Infoknopf erst als zweites. Die Zeile
+        /// <c>UcBerichteKosten.btn_Help</c> traf deshalb den Knopf der gerade
+        /// eingeblendeten Unterseite (<c>UcBericht</c> &amp;c.) - der eigene Knopf blieb
+        /// ohne Schlüssel und wurde von
+        /// <see cref="InfobuttonsOhneZuordnungAbschalten"/> abgeschaltet. Für den
+        /// Anwender: zwei Infoknöpfe fast übereinander, der obere ohne Wirkung.
+        /// </para>
+        /// <para>
+        /// Nachgetragen wird damit genau die Grenze, die <c>InfoKnopf.Vorhandenen</c>
+        /// schon immer zieht und die
+        /// <see cref="UnterPraefixeAnwenden"/> beim Präfix zieht: <b>Der Infoknopf
+        /// einer eingebetteten Maske gehört IHR</b> und wird über IHRE Zeile
+        /// angesprochen, nicht über die des Behälters.
+        /// </para>
+        /// <para>
+        /// Ein eingebettetes Control kann weiterhin als ZWISCHENSTUFE eines
+        /// Punktpfades angesprochen werden (<c>Behaelter.UcSeite.btn_Help</c>): Die
+        /// Grenze verhindert nur das Hineinsteigen, nicht den Treffer auf das
+        /// eingebettete Control selbst - und <see cref="FindControlRecursive"/> setzt
+        /// die Suche dann in ihm als neuer Wurzel fort.
+        /// </para>
+        /// </remarks>
         private Control FindControlByNameDeep(Control root, string name)
         {
             if (root == null) return null;
 
-            // Stimmt der Name direkt?
+            // Stimmt der Name direkt? (Auch die Wurzel selbst zaehlt - nur so kann ein
+            // Punktpfad ueber ein eingebettetes UserControl weitergefuehrt werden.)
             if (string.Equals(root.Name, name, StringComparison.OrdinalIgnoreCase))
             {
                 return root;
             }
 
-            // Durchsuchen: alle Kinder und Kindeskinder rekursiv
             foreach (Control child in root.Controls)
             {
+                if (child == null) continue;
+
+                if (child is Form || child is UserControl)
+                {
+                    // Getroffen werden darf es, betreten nicht.
+                    if (string.Equals(child.Name, name, StringComparison.OrdinalIgnoreCase))
+                        return child;
+
+                    continue;
+                }
+
                 Control found = FindControlByNameDeep(child, name);
                 if (found != null)
                 {
@@ -1401,7 +1712,7 @@ namespace WindowsFormsApplication1
             if (entry == null) return;
 
             PopupBereitstellen();
-            _popup.ShowHelpAngeheftet(entry.Tooltip, entry.Url, Cursor.Position);
+            _popup.ShowHelpAngeheftet(entry.Tooltip, entry.Beschreibung, entry.Url, Cursor.Position);
         }
 
         private void Control_MouseEnter(object sender, EventArgs e)
@@ -1418,7 +1729,7 @@ namespace WindowsFormsApplication1
             if (entry == null) return;
 
             PopupBereitstellen();
-            _popup.ShowHelp(entry.Tooltip, entry.Url, Cursor.Position);
+            _popup.ShowHelp(entry.Tooltip, entry.Beschreibung, entry.Url, Cursor.Position);
         }
 
         private void Control_MouseLeave(object sender, EventArgs e)

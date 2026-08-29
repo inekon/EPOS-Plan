@@ -193,9 +193,11 @@ namespace WindowsFormsApplication1
     ///    ausschließlich über KiAusfuehrer, und erst, nachdem KiRiegel die
     ///    Schutzstufe freigegeben hat. Würde das SDK selbst rufen, wäre die
     ///    Bestätigungsschicht der Etappe 3 von vornherein umgangen.
-    ///  - WERKZEUGFÜHRENDE ANFRAGEN GEHEN NIE ÜBER DEN ANTWORT-CACHE. Der Cache
-    ///    kennt kein Verfallsdatum; eine gemerkte Antwort würde bei der nächsten
-    ///    gleichlautenden Frage den Datenstand von vorhin zeigen.
+    ///  - WERKZEUGFÜHRENDE ANFRAGEN GEHEN NIE ÜBER DEN ANTWORT-CACHE. Eine
+    ///    gemerkte Antwort würde bei der nächsten gleichlautenden Frage den
+    ///    Datenstand von vorhin zeigen. Das Verfallsdatum von H11
+    ///    (CACHE_GUELTIG, 30 Minuten) begrenzt das, hebt es aber nicht auf —
+    ///    Projektdaten ändern sich in Sekunden, nicht in Minuten.
     ///  - Weg B (Aktionsvorschlag als JSON im Antworttext) ist der Rückfall, wenn
     ///    kein werkzeugfähiges Modell zur Verfügung steht - oder von Hand erzwungen.
     /// </summary>
@@ -285,8 +287,52 @@ namespace WindowsFormsApplication1
 
         private static readonly HttpClient _http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
 
-        // Lokaler Antwort-Cache (Frage + Kontext -> Antwort), spart Kosten
-        private static readonly Dictionary<string, KiAntwort> _cache = new Dictionary<string, KiAntwort>();
+        /// <summary>
+        /// H11 - Wie lange ein gemerkter Antwortsatz gilt.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum ueberhaupt ein Verfallsdatum.</b> Der Cache war prozessweit UND
+        /// unbegrenzt: Eine einmal gegebene Antwort blieb bis zum Programmende
+        /// stehen. Das ist bei einem Programm, das tagelang offen bleibt, ein
+        /// Fehler - der Anwender aendert zwischendurch Projektdaten, pflegt
+        /// Katalogwerte, das Wiki bekommt neue Seiten, und die Antwort von heute
+        /// frueh wird wortgleich wieder gezeigt. Genau deshalb umgehen die
+        /// werkzeugfuehrenden Anfragen den Cache bisher vollstaendig
+        /// ("Der Cache kennt kein Verfallsdatum").
+        /// </para>
+        /// <para>
+        /// <b>Warum 30 Minuten.</b> Der Zweck des Caches ist, die WIEDERHOLTE Frage
+        /// innerhalb einer Arbeitssitzung nicht noch einmal zu bezahlen - jemand
+        /// blaettert zurueck, fragt dasselbe anders herum, oeffnet den Chat neu.
+        /// Dieses Fenster ist Minuten, nicht Stunden. Eine halbe Stunde deckt es
+        /// bequem ab und ist kurz genug, dass ein zwischenzeitlicher Datenwechsel
+        /// den Anwender nicht mit einer veralteten Antwort sitzen laesst.
+        /// </para>
+        /// </remarks>
+        private static readonly TimeSpan CACHE_GUELTIG = TimeSpan.FromMinutes(30);
+
+        /// <summary>
+        /// Ein Eintrag des Antwort-Caches: die Antwort und der Zeitpunkt, zu dem sie
+        /// eingelegt wurde.
+        /// </summary>
+        /// <remarks>
+        /// Bewusst eine eigene kleine Klasse und KEIN Feld in <see cref="KiAntwort"/>:
+        /// Der Cache-Treffer wird beim Herausgeben in eine FRISCHE
+        /// <see cref="KiAntwort"/> kopiert (siehe unten, <c>AusCache = true</c>).
+        /// Ein Zeitstempel in <see cref="KiAntwort"/> wuerde dabei auf "jetzt"
+        /// zuruecksetzen und der Eintrag nie ablaufen.
+        /// </remarks>
+        private sealed class CacheEintrag
+        {
+            public DateTime Angelegt;
+            public KiAntwort Antwort;
+        }
+
+        // Lokaler Antwort-Cache (Frage + Kontext -> Antwort), spart Kosten.
+        // Seit H11 mit Verfallsdatum, siehe CACHE_GUELTIG.
+        private static readonly Dictionary<string, CacheEintrag> _cache =
+            new Dictionary<string, CacheEintrag>();
 
         // ------------------------------------------------------------------
         // Konfiguration
@@ -469,20 +515,29 @@ namespace WindowsFormsApplication1
 
             // 1) Cache prüfen - gleiche Frage im gleichen Bereich kostet nichts
             string cacheKey = (kontext ?? "") + "||" + frage.Trim().ToLowerInvariant();
-            if (_cache.ContainsKey(cacheKey))
+            if (_cache.TryGetValue(cacheKey, out CacheEintrag eintrag))
             {
-                KiAntwort treffer = _cache[cacheKey];
-                return new KiAntwort
+                // H11: Abgelaufenes wird nicht nur uebergangen, sondern entfernt -
+                // sonst waechst das Verzeichnis bis zum Programmende weiter.
+                if (DateTime.UtcNow - eintrag.Angelegt > CACHE_GUELTIG)
                 {
-                    Erfolg = treffer.Erfolg,
-                    Text = treffer.Text,
-                    Quellen = treffer.Quellen,
-                    // Die Quellenangabe im Chat gehört zur gemerkten Antwort: der
-                    // Treffer stammt aus DIESEN Abschnitten. Ein Cache-Treffer löst
-                    // damit auch keinen Wiki-Abruf aus.
-                    Abschnitte = treffer.Abschnitte,
-                    AusCache = true
-                };
+                    _cache.Remove(cacheKey);
+                }
+                else
+                {
+                    KiAntwort treffer = eintrag.Antwort;
+                    return new KiAntwort
+                    {
+                        Erfolg = treffer.Erfolg,
+                        Text = treffer.Text,
+                        Quellen = treffer.Quellen,
+                        // Die Quellenangabe im Chat gehört zur gemerkten Antwort: der
+                        // Treffer stammt aus DIESEN Abschnitten. Ein Cache-Treffer löst
+                        // damit auch keinen Wiki-Abruf aus.
+                        Abschnitte = treffer.Abschnitte,
+                        AusCache = true
+                    };
+                }
             }
 
             // 2) Tageslimit prüfen
@@ -511,7 +566,7 @@ namespace WindowsFormsApplication1
                 foreach (WissensAbschnitt a in treffer2) antwort.Quellen.Add(a.Titel);
 
                 ZaehlerErhoehen();
-                _cache[cacheKey] = antwort;
+                _cache[cacheKey] = new CacheEintrag { Angelegt = DateTime.UtcNow, Antwort = antwort };
             }
             catch (Exception ex)
             {
@@ -990,8 +1045,9 @@ namespace WindowsFormsApplication1
         /// </para>
         /// <para>
         /// Diese Anfrage geht NIE über den Antwort-Cache — weder lesend noch schreibend.
-        /// Der Cache kennt kein Verfallsdatum und würde bei wiederholter Frage den
-        /// Datenstand von vorhin zeigen.
+        /// Er würde bei wiederholter Frage den Datenstand von vorhin zeigen; das
+        /// Verfallsdatum von H11 (<c>CACHE_GUELTIG</c>, 30 Minuten) begrenzt das nur,
+        /// es genügt für Projektdaten nicht.
         /// </para>
         /// <para>
         /// Seit Etappe 3 fragt der Riegel <c>KiRiegel.PruefeStufe</c> — also die EINE
