@@ -143,7 +143,7 @@ der Gewinn ist klein, die Risiken (AutoScroll-Muster, Closures, Kulturlabels) re
 | `Views\BerichteKosten\UcBkUebersicht.cs` | `UcBkUebersicht` | M | Grid + Zellentausch bleibt Code; Prozentraster im TLP-Editor fragil; Prüfhilfen hängen am Feldnamen `gridKomp` |
 | `Views\Help\Form_KiChat.cs` | `Form_KiChat` | M | Rahmen rein Dock/Flow (designerfähig), aber ~30 harte Literale zuerst nach `MyResource`; Z-Order „Fill zuerst" kritisch |
 | `Views\Help\Form_KiHinweis.cs` | `Form_KiHinweis` | S | technisch problemlos, aber bereits sauber + voll lokalisiert — **Nutzen gering** |
-| `Views\Help\Form_Lizenz.cs` | `Form_Lizenz` | L | ~60 Texte + ~15 Absätze Rechtsprosa hart im Code (Z. 359–463) — **erst Textauslagerung**, dann ist der Rest Kategorie A. Nebenbefund: `ZustimmungSicherstellen()` wird nirgends aufgerufen (toter Erststart-Pfad) |
+| `Views\Help\Form_Lizenz.cs` | `Form_Lizenz` | L | ~60 Texte + ~15 Absätze Rechtsprosa hart im Code (Z. 359–463) — **erst Textauslagerung**, dann ist der Rest Kategorie A. Nebenbefund: `ZustimmungSicherstellen()` war bis 29.08.2026 nirgends aufgerufen (toter Erststart-Pfad); seitdem in `Program.Main` verdrahtet, siehe `KONTEXT_Lizenz_Erststartzustimmung.md` |
 
 ## 5. Kategorie C — nicht migrieren (7)
 
@@ -312,7 +312,8 @@ Fachlogik nicht anfassen.
    `WPKontextMenuCtrl` an `listView_WP`; `MenueCtrl.cs:168/174` rufen zweimal
    `Add_SpKontext()` → dasselbe für `listView_SP`.
 3. **Toter Code:** `Form3Src`, `Form_ChartZoom`, `Form_AlsVariante.Zeige` (nie verdrahtet),
-   `Form_Lizenz.ZustimmungSicherstellen()` (Erststart-Pfad tot).
+   `Form_Lizenz.ZustimmungSicherstellen()` (Erststart-Pfad tot — erledigt 29.08.2026,
+   seitdem in `Program.Main` verdrahtet, siehe `KONTEXT_Lizenz_Erststartzustimmung.md`).
 4. **Ressourcen-Leichen als EmbeddedResource:** 4 leere Controller-resx, leere
    `Form_Quellprofil.resx` (kam am 11.08.2026 über `GitHub_Sync.bat` herein), verwaiste
    `Form_ChartZoom.resx`.
