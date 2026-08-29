@@ -4050,7 +4050,7 @@
     <value>Zuletzt geöffnet</value>
   </data>
   <data name="karte_ProjektZuletzt.Beschreibung" xml:space="preserve">
-    <value>Greifen Sie auf kürzlich bearbeitete Projekte zu</value>
+    <value>Wechselt direkt zum zuletzt geöffneten Projekt</value>
   </data>
   <data name="&gt;&gt;karte_ProjektZuletzt.Name" xml:space="preserve">
     <value>karte_ProjektZuletzt</value>
