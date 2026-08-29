@@ -30,19 +30,16 @@ namespace WindowsFormsApplication1
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WizardParent));
             pnlLeft = new System.Windows.Forms.Panel();
-            button_NeuProjekt = new System.Windows.Forms.Button();
+            button_ProjektOeffnen = new System.Windows.Forms.Button();
             label_Projekt = new System.Windows.Forms.Label();
             ucProjektAuswahl = new ProjektAuswahl();
-            pictureBox_App = new System.Windows.Forms.PictureBox();
             pnlBottom = new System.Windows.Forms.Panel();
             btnNext = new System.Windows.Forms.Button();
             btnBack = new System.Windows.Forms.Button();
             btnCancel = new System.Windows.Forms.Button();
-            btnSpeichern = new System.Windows.Forms.Button();
             pnlContent = new System.Windows.Forms.Panel();
             btn_Help = new System.Windows.Forms.Button();
             pnlLeft.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox_App).BeginInit();
             pnlBottom.SuspendLayout();
             SuspendLayout();
             //
@@ -51,20 +48,19 @@ namespace WindowsFormsApplication1
             pnlLeft.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
             resources.ApplyResources(pnlLeft, "pnlLeft");
             pnlLeft.Controls.Add(btn_Help);
-            pnlLeft.Controls.Add(button_NeuProjekt);
+            pnlLeft.Controls.Add(button_ProjektOeffnen);
             pnlLeft.Controls.Add(label_Projekt);
             pnlLeft.Controls.Add(ucProjektAuswahl);
-            pnlLeft.Controls.Add(pictureBox_App);
             pnlLeft.Name = "pnlLeft";
             //
-            // button_NeuProjekt
+            // button_ProjektOeffnen
             //
-            button_NeuProjekt.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
-            resources.ApplyResources(button_NeuProjekt, "button_NeuProjekt");
-            button_NeuProjekt.ForeColor = System.Drawing.Color.FromArgb(0, 0, 192);
-            button_NeuProjekt.Name = "button_NeuProjekt";
-            button_NeuProjekt.UseVisualStyleBackColor = false;
-            button_NeuProjekt.Click += button_NeuProjekt_Click;
+            button_ProjektOeffnen.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            resources.ApplyResources(button_ProjektOeffnen, "button_ProjektOeffnen");
+            button_ProjektOeffnen.ForeColor = System.Drawing.Color.FromArgb(0, 0, 192);
+            button_ProjektOeffnen.Name = "button_ProjektOeffnen";
+            button_ProjektOeffnen.UseVisualStyleBackColor = false;
+            button_ProjektOeffnen.Click += button_ProjektOeffnen_Click;
             //
             // label_Projekt
             //
@@ -82,20 +78,12 @@ namespace WindowsFormsApplication1
             ucProjektAuswahl.NurNamensspalte = true;
             ucProjektAuswahl.MarkierungGeaendert += ucProjektAuswahl_MarkierungGeaendert;
             //
-            // pictureBox_App
-            //
-            pictureBox_App.Image = Properties.Resources.LogoInekon;
-            resources.ApplyResources(pictureBox_App, "pictureBox_App");
-            pictureBox_App.Name = "pictureBox_App";
-            pictureBox_App.TabStop = false;
-            //
             // pnlBottom
             //
             pnlBottom.BackColor = System.Drawing.Color.White;
             pnlBottom.Controls.Add(btnNext);
             pnlBottom.Controls.Add(btnBack);
             pnlBottom.Controls.Add(btnCancel);
-            pnlBottom.Controls.Add(btnSpeichern);
             resources.ApplyResources(pnlBottom, "pnlBottom");
             pnlBottom.Name = "pnlBottom";
             //
@@ -120,14 +108,6 @@ namespace WindowsFormsApplication1
             btnCancel.UseVisualStyleBackColor = true;
             btnCancel.Click += btnCancel_Click;
             //
-            // btnSpeichern
-            //
-            resources.ApplyResources(btnSpeichern, "btnSpeichern");
-            btnSpeichern.Image = Properties.Resources.save_icon_36513;
-            btnSpeichern.Name = "btnSpeichern";
-            btnSpeichern.UseVisualStyleBackColor = true;
-            btnSpeichern.Click += btnSpeichern_Click;
-            //
             // pnlContent
             //
             resources.ApplyResources(pnlContent, "pnlContent");
@@ -142,7 +122,7 @@ namespace WindowsFormsApplication1
             btn_Help.Cursor = System.Windows.Forms.Cursors.Hand;
             btn_Help.FlatAppearance.BorderSize = 0;
             btn_Help.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            btn_Help.Location = new System.Drawing.Point(14, 162);
+            btn_Help.Location = new System.Drawing.Point(14, 14);
             btn_Help.Name = "btn_Help";
             btn_Help.Size = new System.Drawing.Size(28, 28);
             btn_Help.TabStop = false;
@@ -159,7 +139,6 @@ namespace WindowsFormsApplication1
             Name = "WizardParent";
             Load += WizardParent_Load;
             pnlLeft.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)pictureBox_App).EndInit();
             pnlBottom.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
@@ -172,13 +151,11 @@ namespace WindowsFormsApplication1
         private System.Windows.Forms.Panel pnlLeft;
         private System.Windows.Forms.Panel pnlBottom;
         private System.Windows.Forms.Panel pnlContent;
-        private System.Windows.Forms.PictureBox pictureBox_App;
         private ProjektAuswahl ucProjektAuswahl;
         private System.Windows.Forms.Label label_Projekt;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Button btnNext;
         private System.Windows.Forms.Button btnBack;
-        private System.Windows.Forms.Button btnSpeichern;
-        private System.Windows.Forms.Button button_NeuProjekt;
+        private System.Windows.Forms.Button button_ProjektOeffnen;
     }
 }

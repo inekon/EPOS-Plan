@@ -8320,4 +8320,7 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="KI_SEMANTIK_VORBEREITUNG" xml:space="preserve">
     <value>Preparing semantic search ...</value>
   </data>
+  <data name="WIZ_BTN_SPEICHERN" xml:space="preserve">
+    <value>Save</value>
+  </data>
 </root>

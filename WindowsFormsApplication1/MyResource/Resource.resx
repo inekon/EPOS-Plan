@@ -8327,4 +8327,7 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="KI_SEMANTIK_VORBEREITUNG" xml:space="preserve">
     <value>Semantische Suche wird vorbereitet ...</value>
   </data>
+  <data name="WIZ_BTN_SPEICHERN" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
 </root>
