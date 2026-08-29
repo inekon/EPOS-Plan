@@ -272,7 +272,8 @@ CS1998 `MDIMainForm`). **Keine neue Warnung.**
    statt als einzige Aktion auszuscheren. Wirkung: Das Modell kann das Änderungsdatum nicht
    nennen. Behebbar wäre es nur einheitlich — `KiHilfe.Datum` gäbe ein `DateTime` zurück, das
    `WertKnoten` bereits ungeschützt und invariant formatiert. **Offener Punkt, nicht in H8
-   entschieden.**
+   entschieden.** *Nachtrag 29.08.2026: genau so behoben, Beweise in
+   [`H8_Datumsfelder_Protokoll.md`](H8_Datumsfelder_Protokoll.md).*
 4. **Befund außerhalb des Umfangs: abgelehnte Aufrufe können Klarnamen hinaustragen.**
    `KiRueckmeldung.Abgelehnt(name, grund)` säubert den Grund **nicht**
    (`KiRueckmeldung.cs:300`), und `KiRueckmeldung.Erzeuge` kann nur Namen ersetzen, die schon in

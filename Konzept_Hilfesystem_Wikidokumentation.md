@@ -19,6 +19,11 @@ ausschließlich in der Chat-Anzeige — dabei ein Platzhalter-Leck geschlossen (
 Namen wären über den Gesprächsverlauf ab der zweiten Frage doch übertragen worden).
 Protokoll:
 [`WindowsFormsApplication1/Allgemein/KI/H8_ProjektAktiv_Protokoll.md`](WindowsFormsApplication1/Allgemein/KI/H8_ProjektAktiv_Protokoll.md).
+**H8-Nachtrag Datumsfelder umgesetzt am 29.08.2026**: `geaendert`/`erstellt` erreichen
+das Modell jetzt als echtes Datum statt als Platzhalter (`KiHilfe.Datum` liefert
+`DateTime`, den Rest tat der Kern schon immer richtig); Klarnamen weiterhin nur als
+Platzhalter. Protokoll:
+[`WindowsFormsApplication1/Allgemein/KI/H8_Datumsfelder_Protokoll.md`](WindowsFormsApplication1/Allgemein/KI/H8_Datumsfelder_Protokoll.md).
 Betrachtet wurde der Bestand unter `WindowsFormsApplication1` (ohne Altkopien und
 Worktrees) sowie — per API und Seitenabruf empirisch verifiziert — das Wiki unter
 `https://wiki.epos-plan.de`.
