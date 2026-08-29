@@ -169,7 +169,7 @@ Form_ProjektAuswahl.btn_Help        = Projektverwaltung
 #
 # Der Konfliktdialog gehoert zum Uebernehmen fremder Projekte, also zur
 # Projektverwaltung.
-Form_ImportKonflikte.btn_Help       = Projektverwaltung
+Form_ImportKonflikte.btn_Help       = Projektverwaltung#konfliktliste
 
 # --- Wizard ---------------------------------------------------------------
 #
@@ -227,7 +227,9 @@ Form_PhotovoltaikVerguetung.btn_Help = Kosten
 Form_Tarifstruktur.btn_Help = Kosten
 Form_AdminPV.btn_Help = Photovoltaik
 Main_PV_Test.btn_Help = Photovoltaik
-Form_ProjektExportImport.btn_Help = Projektverwaltung
+# Export/Import hat seit 30.08.2026 einen eigenen Abschnitt samt Anker auf der
+# Rubrikseite; der Konfliktdialog springt auf seinen eigenen Anker.
+Form_ProjektExportImport.btn_Help = Projektverwaltung#export-import
 FormMain.btn_Help = Projektverwaltung
 Form_EingProzTyp.btn_Help = Prozesswärme
 Form_Prozesswaerme_Admin.btn_Help = Prozesswärme
