@@ -187,28 +187,27 @@ innen — sie profitieren nur mittelbar (Karten-Baustein, Begriffe).
 
 ---
 
-## 4. Zu entscheiden, bevor programmiert wird
+## 4. Entscheidungen (Nutzerentscheid 29.08.2026)
 
-1. **Komponentenschritt des Assistenten (E1):**
-   **(a)** Häkchen behalten, aber ehrlich verdrahten (kleinster Eingriff, dritte
-   Optik bleibt); **(b) [Empfehlung]** Kachelauswahl im Stil des
+1. **E1 Komponentenschritt — ENTSCHIEDEN: (b)** Kachelauswahl im Stil des
    Energieerzeuger-Reiters, gespeist aus dem Anlagenbestand — eine Optik, eine
-   Wahrheit; **(c)** Schritt entfällt, der Assistent führt direkt durch die
-   Fachseiten mit „Überspringen". 
-2. **Ziel der Kachel „Projekt öffnen/bearbeiten" (E2):** **[Empfehlung]** neue
-   `ProjektAuswahl` (öffnen; „Bearbeiten im Assistenten" als Sekundäraktion dort)
-   — oder beim Wizard-Bearbeitenmodus bleiben (dann bleibt der Doku-Widerspruch D5).
-3. **Löschverhalten beim Abwählen (E3):** **[Empfehlung]** Rückfrage mit Klartext
-   („entfernt N Anlagen: …"), Vorbelegung Nein — oder Abwählen deaktiviert nur
-   (Anlagen bleiben, Simulation ignoriert sie)? Letzteres wäre neue Semantik und
-   braucht Engine-Blick → nur nach eigener Prüfung.
-4. **Logo-Klick/Icon-Wechsel (E4):** **[Empfehlung]** ersatzlos entfernen
-   (Icon-Pflege gehört, falls je gebraucht, in die Administration).
-5. **Begriff (E5):** Fenstertitel/Doku-Begriff „Projektassistent" statt
-   „Projekt Wizard" app-weit **[Empfehlung: ja]**.
-6. **Alt-JPG-Kacheln (E6):** nach Umstellung der sechs Projekt-Kacheln die
-   JPG-Ressourcen entfernen oder für die übrigen Reiter vorerst behalten
-   **[Empfehlung: behalten, Ablösung je Reiter später]**.
+   Wahrheit.
+2. **E2 Kachel „Projekt öffnen/bearbeiten" — ENTSCHIEDEN: Assistent-Bearbeitenmodus
+   bleibt** das Kachelziel. Die neue `ProjektAuswahl` vereinheitlicht trotzdem alle
+   übrigen Wege (Menü „Öffnen…", „Zuletzt geöffnet", linke Spalte des Assistenten im
+   Bearbeiten-Modus) — der Doku-Anspruch „Öffnen zeigt eine Projektliste" (D5) wird
+   damit über Menü und Assistenten-Spalte erfüllt.
+3. **E3 Löschverhalten — ENTSCHIEDEN:** Rückfrage mit Klartext („entfernt N
+   Anlagen: …"), Vorbelegung **Nein**; die Kessel-Lücke der Löschroutine wird
+   geschlossen.
+4. **E4 Logo-Klick/Icon-Wechsel — OFFEN** (Erläuterung angefordert). Optionen:
+   **(a)** ersatzlos entfernen [Empfehlung]; **(b)** als bewusste Funktion
+   „Anwendungs-Logo ändern" mit Rückfrage in die Administration verlagern (falls
+   das Umbranden je Kunde eine gewollte Funktion ist); **(c)** belassen. Betrifft
+   nur P4 — die Pakete P1–P3 sind davon unabhängig.
+5. **E5 Begriff — ENTSCHIEDEN:** app-weit „Projektassistent" statt „Projekt Wizard".
+6. **E6 Alt-JPG-Kacheln — ENTSCHIEDEN:** für die übrigen Reiter vorerst behalten,
+   Ablösung je Reiter später.
 
 ---
 
@@ -224,14 +223,19 @@ Eigenschaften im Eigenschaftenfenster.
 
 ### P2 — Startmaske Reiter „Projekt"
 
-Sechs `AktionsKarte`-Instanzen im Designer statt PictureBox+JPG; Klick-Ziele gemäß
-E2; Texte/Tippfehler/`.resx` beider Sprachen; toter `FensterEinpassung`-Aufruf weg.
+Sechs `AktionsKarte`-Instanzen im Designer statt PictureBox+JPG; Klick-Ziele bleiben
+unverändert (E2: „öffnen/bearbeiten" → Assistent-Bearbeitenmodus); Texte/Tippfehler
+(inkl. Doppel-Leerzeichen in `Form_Start.resx` und
+„Projekt-Erstellungkonfiguration" in `Wizard_Komponenten.de-DE.resx`)/`.resx` beider
+Sprachen; toter `FensterEinpassung`-Aufruf weg.
 
 ### P3 — Menü- und Begriffsehrlichkeit
 
 Neues UserControl `ProjektAuswahl` + schlanke Designer-Hüllform; Menü
 „Projekt → Öffnen…" öffnet wirklich (Duplizieren sauber als „Speichern unter…");
-`MenueCtrl.cs:83/91/158` bereinigt; „Zuletzt geöffnet" auf dieselbe Komponente.
+`MenueCtrl.cs:83/91/158` bereinigt; „Zuletzt geöffnet" auf dieselbe Komponente
+(sortiert nach „geändert"). Die Kachel „öffnen/bearbeiten" bleibt beim Assistenten
+(E2).
 
 ### P4 — Projektassistent (Rahmen)
 
