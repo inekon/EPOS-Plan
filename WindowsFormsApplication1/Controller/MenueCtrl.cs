@@ -160,6 +160,62 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Macht ein Projekt zum AKTIVEN Projekt der Startmaske — <b>ohne</b> das
+        /// Detailformular <see cref="FormMain"/>.
+        ///
+        /// <para>
+        /// <b>Abgrenzung zu <see cref="ProjektInFormMainLaden"/>.</b> Dort ist das
+        /// Detailformular „Konfiguration Projekt" der Zweck: Es wird gebaut, mit allen
+        /// Listen und Kontextmenüs bestückt und modal gezeigt; der Projektkontext der
+        /// Startmaske wird erst nachgezogen, wenn der Anwender es schließt. Diesen Weg
+        /// gehen weiterhin das Menü „Projekt → Öffnen…", „Zuletzt geöffnet" und die
+        /// Kachel „Projekt Details". Hier dagegen wird das Projekt einfach das aktive:
+        /// Startmaske zeigt es, „zuletzt geöffnet" merkt es sich, kein Fenster geht auf
+        /// (Nutzerwunsch 30.08.2026 zum Knopf „Projekt öffnen" im Assistenten).
+        /// </para>
+        /// <para>
+        /// <b>Eine Wahrheit.</b> Alles, was die Startmaske nachziehen muss — Name/ID,
+        /// Kopfband, Klimaregion, Statuszeichen, Freischaltung der Reiter, Kachelstatus
+        /// (Bitmaske) und Variantenanzeige —, steht bereits in
+        /// <see cref="Form_Start.ProjektKontextUebernehmen"/>; das Merken in
+        /// <c>Tab_Applikation</c> in <see cref="Form_Start.ZuletztGeoeffnetMerken"/>.
+        /// Beides wird hier nur AUFGERUFEN, nichts davon nachgebaut. Die Klimaregion
+        /// braucht deshalb auch keinen eigenen Leseweg über eine
+        /// <see cref="FormMain"/>-Instanz (<c>GetKlimaregion</c>):
+        /// <c>ProjektKontextUebernehmen</c> füllt dasselbe Feld, das
+        /// <c>Form_Start.SetKlima</c> beschreibt, und liest dafür über
+        /// <c>GetProjektKlimaregion</c> die PROJEKTKOPIE der Klimaregion
+        /// (<c>Tab_Klimaregion</c>) statt des Stammsatzes.
+        /// </para>
+        /// </summary>
+        /// <param name="szProjekt">Projektname — der führende Schlüssel.</param>
+        /// <param name="idProjekt">
+        /// Projekt-ID; wird nur als Rückfall benutzt, wenn der Aufrufer keinen Namen hat.
+        /// </param>
+        /// <returns>
+        /// false, wenn es die Startmaske nicht gibt oder zu Name/ID kein Projekt
+        /// existiert (z. B. zwischenzeitlich gelöscht). Der Aufrufer erkennt daran, dass
+        /// er keine Erfolgsmeldung zeigen darf; der bisherige Kontext bleibt stehen.
+        /// </returns>
+        public bool ProjektAktivSetzen(string szProjekt, int idProjekt)
+        {
+            Form_Start start = Program.startfrm;
+            if (start == null) return false;
+
+            if (string.IsNullOrWhiteSpace(szProjekt) && idProjekt > 0)
+            {
+                ProjektCtrl ctrlproj = new ProjektCtrl();
+                ctrlproj.ReadSingle(idProjekt);
+                szProjekt = ctrlproj.rows > 0 ? ctrlproj.m_szProjektname : "";
+            }
+
+            if (!start.ProjektKontextUebernehmen(szProjekt)) return false;
+
+            start.ZuletztGeoeffnetMerken();
+            return true;
+        }
+
+        /// <summary>
         /// Dupliziert ein Projekt („Speichern unter…") — der Weg, der bis P3
         /// fälschlich hinter dem Menüpunkt „Öffnen…" steckte. Aufrufer ist heute die
         /// Startmasken-Kachel „Speichern unter"; die Methode steht hier, damit der

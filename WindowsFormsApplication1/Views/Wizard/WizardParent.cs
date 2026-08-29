@@ -911,9 +911,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// „Projekt öffnen" (Nutzerwunsch 30.08.2026): öffnet das in der Liste
-        /// markierte Projekt regulär — derselbe Ladeweg wie Menü
-        /// „Projekt → Öffnen…" — und schließt den Assistenten danach.
+        /// „Projekt öffnen" (Nutzerwunsch 30.08.2026): macht das in der Liste
+        /// markierte Projekt zum aktiven Projekt und schließt den Assistenten
+        /// danach — <b>ohne</b> das Detailformular „Konfiguration Projekt".
         ///
         /// <para>
         /// Ersetzt den früheren Knopf „Neues Projekt…" (Umschalten in den
@@ -938,14 +938,41 @@ namespace WindowsFormsApplication1
             ProjektOeffnenUndSchliessen(id, name);
         }
 
+        /// <summary>
+        /// Setzt das gewählte Projekt aktiv, schließt den Assistenten und meldet den
+        /// Wechsel kurz an der Startmaske.
+        ///
+        /// <para>
+        /// <b>Kein Detailformular mehr (Nutzerwunsch 30.08.2026).</b> Bis hierher rief
+        /// dieser Weg <c>MenueCtrl.ProjektInFormMainLaden</c> und zeigte damit
+        /// „Konfiguration Projekt" als Dialog — der Anwender wollte an dieser Stelle
+        /// aber nur wechseln, nicht bearbeiten. Jetzt läuft er über
+        /// <c>MenueCtrl.ProjektAktivSetzen</c>: Startmaske und „zuletzt geöffnet"
+        /// ziehen nach, es geht kein Fenster auf. Das Detailformular bleibt hinter
+        /// Menü „Projekt → Öffnen…" und der Kachel „Projekt Details" unverändert
+        /// erreichbar.
+        /// </para>
+        /// </summary>
         private void ProjektOeffnenUndSchliessen(int id, string name)
         {
             if (id <= 0 || string.IsNullOrWhiteSpace(name)) return;
 
-            // Erst regulär laden (Detailformular als Dialog), danach den
-            // Assistenten schließen - der Anwender wollte öffnen, nicht bearbeiten.
-            Program.menuectrl.ProjektInFormMainLaden(name, id);
+            if (!Program.menuectrl.ProjektAktivSetzen(name, id)) return;
+
+            // Der Assistent wird von zwei Stellen aus gestartet, die nach seinem
+            // Schliessen den Projektkontext aus Program.wizardctrl.Projektname
+            // nachziehen (Form_Start.pBox_ProjektOeffnen_Click,
+            // MDIMainForm.MenuItem_ProjektBearbeiten_Click). Das Feld haelt den
+            // zuletzt GESPEICHERTEN Namen und wird beim Start des Assistenten nicht
+            // geleert - ohne diese Zeile holte der Nachzug ein frueher gespeichertes
+            // Projekt zurueck und machte das gerade geoeffnete wieder unwirksam.
+            if (Program.wizardctrl != null) Program.wizardctrl.Projektname = name;
+
+            // Close() blendet den modalen Rahmen nur aus; ShowDialog kehrt erst nach
+            // diesem Handler zurueck. Der Hinweis liegt deshalb ueber der Startmaske
+            // und nicht unter dem Assistenten.
             Close();
+            if (Program.startfrm != null) Program.startfrm.HinweisProjektGeoeffnet();
         }
     }
 }
