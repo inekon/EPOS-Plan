@@ -18,6 +18,7 @@ namespace WindowsFormsApplication1
         public Form_WPAuswahl()
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
  
             listView_WP.View = View.Details;
             listView_WP.Columns.Add("Name", -2, HorizontalAlignment.Left);

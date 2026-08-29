@@ -75,6 +75,11 @@ namespace WindowsFormsApplication1
         public UcBerichteKosten()
         {
             InitializeComponent();
+            // H7: Infoknopf IN die Kopfzeile (lblKopf, Dock Top, 30 hoch) - das
+            // UserControl fuellt Reiter 6 der Startmaske vollstaendig aus, ein Knopf auf
+            // tabPage6 laege darunter. lblKopf ist zugleich das Elternelement: nur so
+            // zeigt der durchsichtige Knopfhintergrund die Farbe der Kopfzeile.
+            InfoKnopf.Anbringen(this, breite: 24, hoehe: 24, ziel: lblKopf);
         }
 
         // ------------------------------------------------------------- Aufbau

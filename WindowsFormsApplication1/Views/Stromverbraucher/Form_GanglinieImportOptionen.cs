@@ -86,6 +86,7 @@ namespace WindowsFormsApplication1
             // blieb damit immer 1:1, es fand also faktisch keine Skalierung statt.
             // None haelt genau dieses Verhalten fest.
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
             TexteSetzen();
 
             // Das Tabellenblatt gibt es nur bei Excel-Quellen; die Sichtbarkeit haengt

@@ -22,6 +22,7 @@ namespace WindowsFormsApplication1
         public Form_Solarganglinie()
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
 
             SolarganglinieStammCtrl ctrl = new SolarganglinieStammCtrl();
             ctrl.ReadAll(); 

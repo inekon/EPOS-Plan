@@ -34,6 +34,9 @@ namespace WindowsFormsApplication1
         public Form_LeistungspreisReihe()
         {
             InitializeComponent();
+            // H7: Infoknopf in das Kopfband (pnlKopf, Dock Top, 40 hoch) - der Knopf
+            // sitzt darin senkrecht mittig.
+            InfoKnopf.Anbringen(this, ziel: pnlKopf);
 
             Text = T("KDLG_LPR_TITEL", "Saisonale Leistungspreis-Sätze");
             lblKopfTitel.Text = Text;

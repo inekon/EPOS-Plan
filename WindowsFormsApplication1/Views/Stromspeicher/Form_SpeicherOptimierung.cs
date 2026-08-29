@@ -154,6 +154,7 @@ namespace WindowsFormsApplication1
             m_ID_Projekt = idProjekt;
 
             AufbauSteuerelemente();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
             VorbelegungSetzen();
             m_bAufbau = false;
 

@@ -189,23 +189,32 @@ namespace WindowsFormsApplication1
         /// geraten; Bereiche ohne sinnvolle Seite fehlen bewusst.
         /// </summary>
         /// <remarks>
-        /// Ohne Eintrag bleiben: <c>Unbekannter Bereich</c>, <c>Bericht</c> und
-        /// <c>Lizenz</c> - fuer sie gibt es in der Rubrik keine Unterseite
-        /// (Inventar A3). <c>Wärmequelle Erdreich (...)</c> zeigt auf
-        /// <c>Wärmepumpe</c>: der Dialog legt das Quellsystem EINER Waermepumpe
-        /// fest, und eine eigene Rubrikseite dafuer gibt es nicht.
+        /// <para>
+        /// Ohne Eintrag bleibt nur noch <c>Unbekannter Bereich</c>.
         /// <c>Ergebnis</c> steht nicht in der Positivliste, ist aber die
         /// Bereichsangabe mehrerer eingebauter Abschnitte - der Eintrag schadet
         /// nicht und trifft, falls der Bereich einmal gesetzt wird.
+        /// </para>
+        /// <para>
+        /// <b>Nachgezogen mit H7</b> (29.08.2026), weil die Rubrik neun Unterseiten
+        /// dazubekommt: <c>Bericht</c> und <c>Lizenz</c> hatten bis dahin keine Seite
+        /// und fehlten deshalb; <c>Bericht</c> zeigt auf <c>Berichte und Kosten</c>,
+        /// weil der Bereich den ganzen Reiter umfasst (Uebersicht, Kosten,
+        /// Wirtschaftlichkeit, Bericht) und nicht nur dessen letzte Seite.
+        /// <c>Wärmequelle Erdreich (...)</c> zeigte behelfsweise auf
+        /// <c>Wärmepumpe</c> und <c>Detaillierte Simulation</c> auf
+        /// <c>Simulation</c> - beide haben jetzt eine eigene Seite.
+        /// </para>
         /// </remarks>
         private static readonly Dictionary<string, string> SEITE_JE_BEREICH =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "Administration",           "Einstellungen" },
             { "Assistent (Wizard)",       "Kurzanleitung" },
+            { "Bericht",                  "Berichte und Kosten" },
             { "BHKW",                     "BHKW" },
             { "Brauchwasser",             "Brauchwasser" },
-            { "Detaillierte Simulation",  "Simulation" },
+            { "Detaillierte Simulation",  "Simulationsergebnisse" },
             { "Ergebnis",                 "Simulation" },
             { "Gebäude",                  "Gebäude" },
             { "Hauptfenster",             "Programmablauf" },
@@ -213,6 +222,7 @@ namespace WindowsFormsApplication1
             { "Hilfe",                    "Hilfe-Assistent" },
             { "Klimadaten",               "Klimadaten" },
             { "Kosten und Preise",        "Kosten" },
+            { "Lizenz",                   "Lizenz" },
             { "Photovoltaik",             "Photovoltaik" },
             { "Projektverwaltung",        "Projektverwaltung" },
             { "Prozesswärme",             "Prozesswärme" },
@@ -226,7 +236,7 @@ namespace WindowsFormsApplication1
             { "Varianten",                "Varianten" },
             { "Wärmebedarf",              "Wärmebedarf" },
             { "Wärmepumpe",               "Wärmepumpe" },
-            { "Wärmequelle Erdreich (Quellsystem, Bodentyp, Auslegungsprüfung VDI 4640)", "Wärmepumpe" },
+            { "Wärmequelle Erdreich (Quellsystem, Bodentyp, Auslegungsprüfung VDI 4640)", "Wärmequelle Erdreich" },
             { "Wirtschaftlichkeit",       "Wirtschaftlichkeit" }
         };
 

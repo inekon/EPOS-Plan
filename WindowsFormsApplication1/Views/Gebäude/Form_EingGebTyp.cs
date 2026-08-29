@@ -25,6 +25,7 @@ namespace WindowsFormsApplication1
         public Form_EingGebTyp()
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
             tt.Draw += new DrawToolTipEventHandler(this.tt_Draw);
             FensterEinpassung.Einhaengen(this);
         }

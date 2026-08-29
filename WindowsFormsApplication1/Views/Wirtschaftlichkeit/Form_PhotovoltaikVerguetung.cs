@@ -50,6 +50,10 @@ namespace WindowsFormsApplication1
         public Form_PhotovoltaikVerguetung()
         {
             InitializeComponent();
+            // H7: Infoknopf in das Kopfband (pnlKopf, Dock Top, 48 hoch), aber LINKS
+            // von chkAktiv - das steht rechts verankert bei x 756..901 (Panelbreite
+            // 914). 175 setzt den Knopf auf x 711..739, hinter lblKopfTitel (bis 193).
+            InfoKnopf.Anbringen(this, abstandRechts: 175, ziel: pnlKopf);
             TexteSetzen();
             cmbPar51.Items.AddRange(new object[]
                 { T("PVW_AUTO", "Automatisch"), T("PVW_JA", "Ja"), T("PVW_NEIN", "Nein") });

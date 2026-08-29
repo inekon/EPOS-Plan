@@ -167,6 +167,7 @@ namespace WindowsFormsApplication1
             // wurde AutoScaleMode überhaupt nicht gesetzt, es fand also ebenfalls
             // keine Skalierung statt — None hält genau dieses Verhalten fest.
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
             TexteSetzen();
             VerwendungslisteFuellen();
 
