@@ -121,14 +121,10 @@ namespace WindowsFormsApplication1
 
         private Form getWizardPage()
         {
-            foreach (Form form in Application.OpenForms)
-            {
-                if (form.Name == "WizardParent")
-                {
-                    return form;
-                }
-            }
-            return null;
+            // P4: typisierte Erkennung ueber WizardParent.Aktiver. Die frueheren elf
+            // Kopien suchten den Rahmen als Zeichenkette "WizardParent" in
+            // Application.OpenForms; der Rahmen meldet sich jetzt selbst an.
+            return WizardParent.Aktiver as Form;
         }
 
         private void listView_WP_SelectedIndexChanged(object sender, EventArgs e)

@@ -117,27 +117,25 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="pnlLeft.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />  <data name="pnlLeft.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>None</value>
   </data>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="button_NeuProjekt.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI Semibold, 8.25pt, style=Bold</value>
   </data>
   <data name="button_NeuProjekt.Location" type="System.Drawing.Point, System.Drawing">
     <value>14, 601</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="button_NeuProjekt.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
   </data>
   <data name="button_NeuProjekt.Size" type="System.Drawing.Size, System.Drawing">
-    <value>175, 33</value>
+    <value>272, 33</value>
   </data>
-  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="button_NeuProjekt.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
+    <value>2</value>
   </data>
   <data name="button_NeuProjekt.Text" xml:space="preserve">
     <value>Neues Projekt...</value>
@@ -158,16 +156,16 @@
     <value>Segoe UI Semibold, 11.25pt, style=Bold</value>
   </data>
   <data name="label_Projekt.Location" type="System.Drawing.Point, System.Drawing">
-    <value>14, 208</value>
+    <value>14, 204</value>
   </data>
   <data name="label_Projekt.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
   </data>
   <data name="label_Projekt.Size" type="System.Drawing.Size, System.Drawing">
-    <value>169, 51</value>
+    <value>272, 26</value>
   </data>
   <data name="label_Projekt.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>1</value>
   </data>
   <data name="label_Projekt.Text" xml:space="preserve">
     <value>Bestehendes Projekt auswählen</value>
@@ -184,37 +182,31 @@
   <data name="&gt;&gt;label_Projekt.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="listBox_Projekte.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 11pt</value>
+  <data name="ucProjektAuswahl.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
   </data>
-  <data name="listBox_Projekte.HorizontalScrollbar" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="ucProjektAuswahl.Location" type="System.Drawing.Point, System.Drawing">
+    <value>14, 234</value>
   </data>
-  <data name="listBox_Projekte.ItemHeight" type="System.Int32, mscorlib">
-    <value>20</value>
-  </data>
-  <data name="listBox_Projekte.Location" type="System.Drawing.Point, System.Drawing">
-    <value>14, 260</value>
-  </data>
-  <data name="listBox_Projekte.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="ucProjektAuswahl.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
   </data>
-  <data name="listBox_Projekte.Size" type="System.Drawing.Size, System.Drawing">
-    <value>198, 304</value>
+  <data name="ucProjektAuswahl.Size" type="System.Drawing.Size, System.Drawing">
+    <value>272, 356</value>
   </data>
-  <data name="listBox_Projekte.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
+  <data name="ucProjektAuswahl.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
   </data>
-  <data name="&gt;&gt;listBox_Projekte.Name" xml:space="preserve">
-    <value>listBox_Projekte</value>
+  <data name="&gt;&gt;ucProjektAuswahl.Name" xml:space="preserve">
+    <value>ucProjektAuswahl</value>
   </data>
-  <data name="&gt;&gt;listBox_Projekte.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;ucProjektAuswahl.Type" xml:space="preserve">
+    <value>WindowsFormsApplication1.ProjektAuswahl, WindowsFormsApplication1, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
-  <data name="&gt;&gt;listBox_Projekte.Parent" xml:space="preserve">
+  <data name="&gt;&gt;ucProjektAuswahl.Parent" xml:space="preserve">
     <value>pnlLeft</value>
   </data>
-  <data name="&gt;&gt;listBox_Projekte.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;ucProjektAuswahl.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
   <data name="pictureBox_App.Location" type="System.Drawing.Point, System.Drawing">
@@ -254,7 +246,7 @@
     <value>4, 3, 4, 3</value>
   </data>
   <data name="pnlLeft.Size" type="System.Drawing.Size, System.Drawing">
-    <value>219, 735</value>
+    <value>300, 735</value>
   </data>
   <data name="pnlLeft.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -287,7 +279,7 @@
     <value>1</value>
   </data>
   <data name="btnNext.Text" xml:space="preserve">
-    <value>Next ▶</value>
+    <value>Weiter ▶</value>
   </data>
   <data name="&gt;&gt;btnNext.Name" xml:space="preserve">
     <value>btnNext</value>
@@ -317,7 +309,7 @@
     <value>0</value>
   </data>
   <data name="btnBack.Text" xml:space="preserve">
-    <value>◀ Back</value>
+    <value>◀ Zurück</value>
   </data>
   <data name="&gt;&gt;btnBack.Name" xml:space="preserve">
     <value>btnBack</value>
@@ -330,36 +322,6 @@
   </data>
   <data name="&gt;&gt;btnBack.ZOrder" xml:space="preserve">
     <value>1</value>
-  </data>
-  <data name="btnOeffnen.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>None</value>
-  </data>
-  <data name="btnOeffnen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1094, 7</value>
-  </data>
-  <data name="btnOeffnen.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="btnOeffnen.Size" type="System.Drawing.Size, System.Drawing">
-    <value>123, 41</value>
-  </data>
-  <data name="btnOeffnen.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="btnOeffnen.Text" xml:space="preserve">
-    <value>📂 Öffnen</value>
-  </data>
-  <data name="&gt;&gt;btnOeffnen.Name" xml:space="preserve">
-    <value>btnOeffnen</value>
-  </data>
-  <data name="&gt;&gt;btnOeffnen.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;btnOeffnen.Parent" xml:space="preserve">
-    <value>pnlBottom</value>
-  </data>
-  <data name="&gt;&gt;btnOeffnen.ZOrder" xml:space="preserve">
-    <value>2</value>
   </data>
   <data name="btnCancel.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>None</value>
@@ -374,10 +336,10 @@
     <value>123, 41</value>
   </data>
   <data name="btnCancel.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="btnCancel.Text" xml:space="preserve">
-    <value>Abbrechen ❌</value>
+    <value>Abbrechen</value>
   </data>
   <data name="&gt;&gt;btnCancel.Name" xml:space="preserve">
     <value>btnCancel</value>
@@ -389,7 +351,7 @@
     <value>pnlBottom</value>
   </data>
   <data name="&gt;&gt;btnCancel.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>2</value>
   </data>
   <data name="btnSpeichern.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>None</value>
@@ -425,7 +387,7 @@
     <value>pnlBottom</value>
   </data>
   <data name="&gt;&gt;btnSpeichern.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>3</value>
   </data>
   <data name="pnlBottom.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Bottom</value>
@@ -467,7 +429,7 @@
     <value>Fill</value>
   </data>
   <data name="pnlContent.Location" type="System.Drawing.Point, System.Drawing">
-    <value>219, 0</value>
+    <value>300, 0</value>
   </data>
   <data name="pnlContent.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -476,7 +438,7 @@
     <value>12, 12, 12, 12</value>
   </data>
   <data name="pnlContent.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1027, 735</value>
+    <value>946, 735</value>
   </data>
   <data name="pnlContent.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -493,9 +455,6 @@
   <data name="&gt;&gt;pnlContent.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
   <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
     <value>7, 15</value>
   </data>
@@ -515,7 +474,7 @@
     <value>702, 460</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>Projekt Wizard</value>
+    <value>Projektassistent</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>WizardParent</value>
@@ -523,4 +482,7 @@
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
     <value>System.Windows.Forms.Form, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
 </root>

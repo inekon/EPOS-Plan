@@ -69,11 +69,78 @@ namespace WindowsFormsApplication1
         [Description("Die Auswahl wurde abgebrochen.")]
         public event EventHandler Abgebrochen;
 
+        /// <summary>
+        /// Die Markierung in der Liste hat gewechselt (einfacher Klick, Vorauswahl,
+        /// Tastatur). Anders als <see cref="ProjektGewaehlt"/> ist das noch <b>keine</b>
+        /// endgültige Auswahl — der Projektassistent hängt daran das Nachladen seiner
+        /// Komponentenkacheln (P4).
+        /// </summary>
+        [Category("Aktion")]
+        [Description("Die Markierung in der Liste hat gewechselt.")]
+        public event ProjektGewaehltHandler MarkierungGeaendert;
+
         public ProjektAuswahl()
         {
             InitializeComponent();
             _anzahlFormat = string.IsNullOrEmpty(label_Anzahl.Text) ? "{0} / {1}" : label_Anzahl.Text;
             label_Anzahl.Text = "";
+        }
+
+        // ------------------------------------------------------------------
+        //  Darstellung (im Eigenschaftenfenster des Designers pflegbar)
+        // ------------------------------------------------------------------
+
+        private bool _nurNamensspalte;
+        private bool _automatischeVorauswahl = true;
+
+        /// <summary>
+        /// Schmale Sicht: nur die Spalte „Projektname", auf die volle Breite gezogen.
+        /// Für die linke Spalte des Projektassistenten, die dort nur rund 270 Pixel
+        /// breit ist — drei Spalten (220 + 150 + 120) passten nicht hinein.
+        /// </summary>
+        [Category("Darstellung")]
+        [Description("Schmale Sicht: nur die Spalte Projektname, auf die volle Breite gezogen.")]
+        [DefaultValue(false)]
+        public bool NurNamensspalte
+        {
+            get { return _nurNamensspalte; }
+            set
+            {
+                if (_nurNamensspalte == value) return;
+                _nurNamensspalte = value;
+                SpaltenAnpassen();
+            }
+        }
+
+        /// <summary>
+        /// true (Vorgabe): Beim Aufbau der Liste wird die erste Zeile markiert, damit
+        /// der OK-Knopf eines Dialogs sofort etwas zu tun hat. Der Assistent setzt das
+        /// auf false — dort darf „Weiter" erst wirken, wenn der Anwender ein Projekt
+        /// ausdrücklich gewählt hat.
+        /// </summary>
+        [Category("Verhalten")]
+        [Description("Markiert nach dem Aufbau der Liste automatisch die erste Zeile.")]
+        [DefaultValue(true)]
+        public bool AutomatischeVorauswahl
+        {
+            get { return _automatischeVorauswahl; }
+            set { _automatischeVorauswahl = value; }
+        }
+
+        private void SpaltenAnpassen()
+        {
+            if (!_nurNamensspalte) return;
+            int breite = listView_Projekte.ClientSize.Width - 4;
+            if (breite < 40) return;
+            columnHeader_Kunde.Width = 0;
+            columnHeader_Geaendert.Width = 0;
+            columnHeader_Name.Width = breite;
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            SpaltenAnpassen();
         }
 
         // ------------------------------------------------------------------
@@ -193,6 +260,7 @@ namespace WindowsFormsApplication1
             sicht.Sort(Vergleiche);
 
             string vorher = GewaehlterName;
+            int vorherID = GewaehlteID;
             _markiert = null;
 
             listView_Projekte.BeginUpdate();
@@ -211,12 +279,21 @@ namespace WindowsFormsApplication1
 
             GewaehlteID = 0;
             GewaehlterName = "";
+            SpaltenAnpassen();
             if (!string.IsNullOrEmpty(vorher)) Vorauswaehlen(vorher);
-            if (GewaehlteID == 0 && listView_Projekte.Items.Count > 0)
+            if (_automatischeVorauswahl && GewaehlteID == 0 && listView_Projekte.Items.Count > 0)
             {
                 listView_Projekte.Items[0].Selected = true;
                 _markiert = listView_Projekte.Items[0];
                 MarkierungUebernehmen();
+            }
+
+            // Fiel das bisher markierte Projekt durch den Suchfilter heraus, muss der
+            // Abnehmer das erfahren - MarkierungUebernehmen kommt hier nicht mehr vorbei.
+            if (GewaehlteID == 0 && vorherID != 0)
+            {
+                ProjektGewaehltHandler leer = MarkierungGeaendert;
+                if (leer != null) leer(0, "");
             }
         }
 
@@ -299,19 +376,28 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void MarkierungUebernehmen()
         {
+            int vorherID = GewaehlteID;
+
             GewaehlteID = 0;
             GewaehlterName = "";
 
             ListViewItem it = null;
             if (listView_Projekte.SelectedItems.Count > 0) it = listView_Projekte.SelectedItems[0];
             else if (_markiert != null && listView_Projekte.Items.Contains(_markiert)) it = _markiert;
-            if (it == null) return;
+            if (it != null)
+            {
+                _markiert = it;
+                ProjektModel p = it.Tag as ProjektModel;
+                if (p != null)
+                {
+                    GewaehlteID = p.m_ID;
+                    GewaehlterName = p.m_szProjektname ?? "";
+                }
+            }
 
-            _markiert = it;
-            ProjektModel p = it.Tag as ProjektModel;
-            if (p == null) return;
-            GewaehlteID = p.m_ID;
-            GewaehlterName = p.m_szProjektname ?? "";
+            if (GewaehlteID == vorherID) return;
+            ProjektGewaehltHandler h = MarkierungGeaendert;
+            if (h != null) h(GewaehlteID, GewaehlterName);
         }
 
         private void listView_Projekte_DoubleClick(object sender, EventArgs e)
