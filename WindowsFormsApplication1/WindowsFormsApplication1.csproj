@@ -8,7 +8,16 @@
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
 
     <RootNamespace>WindowsFormsApplication1</RootNamespace>
-    <AssemblyName>WindowsFormsApplication1</AssemblyName>
+    <!-- Umbenennung Stufe 0 (Anwenderauftrag 29.08.2026): Die Anwendung heisst
+         nach aussen EPOS_Plan - EXE, DLL und Prozessname. Der RootNamespace
+         bleibt BEWUSST WindowsFormsApplication1: Ihn umzustellen hiesse ~370
+         Dateien (93 davon CP1252), XAML-Klassenpfade, Ressourcen-Manifestnamen
+         und den Settings-Sektionsnamen anzufassen - das ist Stufe 1 und braucht
+         ein eigenes Konzept. Die user.config-Ablage wandert mit dem Namen; im
+         Bestand war nie eine gespeichert (LocalAppData am 29.08.2026 geprueft),
+         eine Uebernahme entfaellt deshalb. Referenzlauf-Werkzeug haengt per
+         ProjectReference und zieht automatisch mit. -->
+    <AssemblyName>EPOS_Plan</AssemblyName>
 
     <!-- DPI-Awareness wird ausschließlich über app.manifest gesetzt
          (dpiAwareness=PerMonitorV2). Nicht zusätzlich ApplicationHighDpiMode,
