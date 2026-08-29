@@ -85,10 +85,16 @@ namespace WindowsFormsApplication1
         /// 29.08.2026 ist der E1/E2-Vollstand (Schrittmethoden) eingetroffen: beide
         /// Einträge in <see cref="SCHRITTE"/> sind aktiv, das Ziel steht auf 57.
         ///
-        /// 29.08.2026, Etappe E6: die Quellen-Saat UBA/GEMIS kommt als Schritt 58 dazu,
-        /// das Ziel steht auf 58.
+        /// 29.08.2026, Etappe E6 (Quellen-Saat UBA/GEMIS) VERSCHOBEN: Ihr Vorgriff —
+        /// Ziel auf 58 gehoben, ohne dass ein Schritt 58 registriert war — ließ jeden
+        /// Programmstart mit der Warnung „Zielstand 58" enden und sperrte den
+        /// Simulationsbereich (Vorfall 29.08.2026, 09:25). Die Nummer 58 bleibt für E6
+        /// reserviert; das Ziel geht erst mit dem fertig registrierten Schritt wieder
+        /// hoch. Vorarbeiten liegen bereit: die Quellwerte-Konstanten in
+        /// <c>DbWerte</c> und die UBA-/GEMIS-Arbeitsmappen neben dem
+        /// Emissionsarten-Konzept.
         /// </summary>
-        public const int ZIEL_VERSION = 58;
+        public const int ZIEL_VERSION = 57;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
