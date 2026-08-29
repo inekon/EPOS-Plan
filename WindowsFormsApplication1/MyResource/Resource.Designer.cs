@@ -19191,6 +19191,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählte Zone: {0} ähnelt.
+        /// </summary>
+        public static string SIMQ_KARTE_GEWAEHLT {
+            get {
+                return ResourceManager.GetString("SIMQ_KARTE_GEWAEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Zone gewählt — eine Zonenfläche auf der Karte anklicken. ähnelt.
+        /// </summary>
+        public static string SIMQ_KARTE_KEINE {
+            get {
+                return ResourceManager.GetString("SIMQ_KARTE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimazonenkarte anzeigen und Zone auf der Karte wählen ähnelt.
+        /// </summary>
+        public static string SIMQ_KARTE_KNOPF_TIP {
+            get {
+                return ResourceManager.GetString("SIMQ_KARTE_KNOPF_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimazonenkarte konnte nicht geladen werden — die Auswahl bleibt über die Liste möglich. ähnelt.
+        /// </summary>
+        public static string SIMQ_KARTE_LADEFEHLER {
+            get {
+                return ResourceManager.GetString("SIMQ_KARTE_LADEFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimazonen nach DIN 4710 ähnelt.
+        /// </summary>
+        public static string SIMQ_KARTE_TITEL {
+            get {
+                return ResourceManager.GetString("SIMQ_KARTE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone {0} — {1} h/a ähnelt.
+        /// </summary>
+        public static string SIMQ_KARTE_ZONE_TIP {
+            get {
+                return ResourceManager.GetString("SIMQ_KARTE_ZONE_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quelltemperatur der Wärmepumpe
         ///&apos;{0}&apos; [°C]: ähnelt.
         /// </summary>

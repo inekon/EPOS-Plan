@@ -46,6 +46,7 @@
             this._lblKlimazone = new System.Windows.Forms.Label();
             this._cbZone = new System.Windows.Forms.ComboBox();
             this._lblKlimazoneHinweis = new System.Windows.Forms.Label();
+            this._btnKarte = new System.Windows.Forms.Button();
             this._lblSpreizung = new System.Windows.Forms.Label();
             this._tbSpreizung = new System.Windows.Forms.TextBox();
             this._lblSpreizungHinweis = new System.Windows.Forms.Label();
@@ -194,8 +195,16 @@
             this._cbZone.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this._cbZone.Location = new System.Drawing.Point(170, 209);
             this._cbZone.Name = "_cbZone";
-            this._cbZone.Width = 230;
+            this._cbZone.Width = 200;
             this._cbZone.SelectedIndexChanged += new System.EventHandler(this.auswahl_SelectedIndexChanged);
+            //
+            // _btnKarte
+            //
+            this._btnKarte.Location = new System.Drawing.Point(374, 208);
+            this._btnKarte.Name = "_btnKarte";
+            this._btnKarte.Size = new System.Drawing.Size(26, 23);
+            this._btnKarte.Text = "…";
+            this._btnKarte.Click += new System.EventHandler(this.btnKarte_Click);
             //
             // _lblKlimazoneHinweis
             //
@@ -309,6 +318,7 @@
             this.Controls.Add(this._lblKlimazone);
             this.Controls.Add(this._cbZone);
             this.Controls.Add(this._lblKlimazoneHinweis);
+            this.Controls.Add(this._btnKarte);
             this.Controls.Add(this._lblSpreizung);
             this.Controls.Add(this._tbSpreizung);
             this.Controls.Add(this._lblSpreizungHinweis);
@@ -351,6 +361,7 @@
         private System.Windows.Forms.Label _lblKlimazone;
         private System.Windows.Forms.ComboBox _cbZone;
         private System.Windows.Forms.Label _lblKlimazoneHinweis;
+        private System.Windows.Forms.Button _btnKarte;
         private System.Windows.Forms.Label _lblSpreizung;
         private System.Windows.Forms.TextBox _tbSpreizung;
         private System.Windows.Forms.Label _lblSpreizungHinweis;

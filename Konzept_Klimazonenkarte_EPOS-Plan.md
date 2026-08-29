@@ -147,3 +147,39 @@ Punkte (Lat/Lon aus `KlimaregionModel`), Zonenflächen als Orientierung darunter
    Zonen-Zuordnung vor?
 4. Soll die Karte perspektivisch auch im **Wizard** (Klimaregion-Wahl) erscheinen —
    dann würde das Control von Anfang an dafür geschnitten?
+
+---
+
+## 7. UMGESETZT (29.08.2026, noch am Tag des Konzepts)
+
+Die Materialfrage hat der Anwender selbst beantwortet: Er lieferte eine **eigene
+Kartengrafik** (`Klimazonen DIN4710\` in der Repo-Wurzel — SVG/PNG/PDF, auch als
+farbige Variante) mit sauber benannten SVG-Gruppen (`zonenflaechen` mit genau 15
+M/L/Z-Polygonpfaden samt `fill-rule="evenodd"`, `zonennummern`, `staedte`, `legende`,
+`fluesse`, `gradnetz`). Damit entfielen K1/K4 vollständig; umgesetzt wurden die
+Stufen 1+2 in einem:
+
+- **`Allgemein\GrafikTools\KlimazonenKarte.cs`** — Control: zeichnet das PNG
+  (3390 × 3510 = 2,6-fache Wiedergabe der SVG-viewBox 1303,65 × 1349,50) skaliert
+  und zentriert; die 15 Zonenpolygone kommen zur Laufzeit per Mini-Parser aus der
+  SVG (nur M/L/Z, `GraphicsPath` mit `FillMode.Alternate`), die Zuordnung
+  Pfad → Zonennummer entsteht per Punkt-in-Fläche-Test über die `zonennummern`
+  (überlebt eine überarbeitete Grafik ohne Codeänderung). Hover-Hervorhebung mit
+  Tooltip (`Zone n — h/a` aus `VDI4640Pruefung.VolllaststundenZone`), Klick wählt,
+  Doppelklick übernimmt. Lädt die Karte nicht, bleibt der Dialog bedienbar
+  (Hinweistext, `AuswahlMoeglich = false`).
+- **`Views\Simulation\Form_Klimazonenkarte`** — designer-konformer, größenver-
+  änderlicher Dialog (700 × 760, MinimumSize 560 × 620, Fußknopfnorm 110 × 30,
+  `FensterEinpassung`, Echttexte + `TexteSetzen`); Statuszeile „Gewählte
+  Zone: …"; OK/Abbrechen.
+- **Einbau `Form_QuelleErdreich`:** Kartenknopf `_btnKarte` („…", 374/208,
+  26 × 23) mit Tooltip; dafür wurde nur `_cbZone` von 230 auf 200 px gekürzt —
+  der Klammerhinweis bleibt bei x = 412. OK des Kartendialogs setzt
+  `_cbZone.SelectedIndex`, wodurch Vorschau und Auslegungsprüfung den normalen
+  Weg nehmen.
+- **Ressourcen:** PNG+SVG als `EmbeddedResource` mit festem `LogicalName`
+  (`.csproj`, Muster `help_cache.json`); sechs neue zweisprachige Texte
+  `SIMQ_KARTE_*` in `MyResource`.
+
+Entscheidungspunkt 4 (Wizard/Klimaregion) bleibt offen — das Control ist dafür
+bereits geeignet (eigenständig, ohne Erdreich-Bezug).
