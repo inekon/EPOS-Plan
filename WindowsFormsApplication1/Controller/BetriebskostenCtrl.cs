@@ -454,6 +454,14 @@ namespace WindowsFormsApplication1
         /// </remarks>
         private static double? InvestSumme(int projektID, int komponentenID)
         {
+            return InvestSumme(projektID, komponentenID, 0);
+        }
+
+        /// <summary>ETAPPE H4a: dieselbe Abfrage mit optionalem Anlagenfilter
+        /// (Schritt 45) — der Kern beider Überladungen; K5-Zuschussausschluss und
+        /// Kostenart-Toleranz unverändert.</summary>
+        private static double? InvestSumme(int projektID, int komponentenID, int idAnlage)
+        {
             bool mitKostenart = false;
             try { mitKostenart = KostenPositionCtrl.StelleSpaltenSicher(); }
             catch { }
@@ -472,6 +480,11 @@ namespace WindowsFormsApplication1
                     sql += " AND KomponentenID = ?";
                     ps.Add(new OleDbParameter("@c", komponentenID));
                 }
+                if (idAnlage > 0 && AnlagenSpalteVorhanden())
+                {
+                    sql += " AND [" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "] = ?";
+                    ps.Add(new OleDbParameter("@a", idAnlage));
+                }
                 if (mitKostenart)
                 {
                     // NULL und Leerstring bleiben drin: Das sind die Bestandszeilen (bzw.
@@ -486,6 +499,40 @@ namespace WindowsFormsApplication1
                 return Convert.ToDouble(o);
             }
             catch { return null; }
+        }
+
+        /// <summary>ETAPPE H4a: Cache der Spaltenprobe <c>Tab_ProjektWerte.ID_Anlage</c>
+        /// (Muster <see cref="WirtschaftlichkeitCtrl.SpalteVorhanden"/>).</summary>
+        private static bool? _anlagenSpalte;
+
+        private static bool AnlagenSpalteVorhanden()
+        {
+            if (_anlagenSpalte.HasValue) return _anlagenSpalte.Value;
+            _anlagenSpalte = WirtschaftlichkeitCtrl.SpalteVorhanden(
+                SchemaKatalog.TAB_PROJEKTWERTE, SchemaKatalog.SPALTE_PW_ID_ANLAGE);
+            return _anlagenSpalte.Value;
+        }
+
+        /// <summary>
+        /// ETAPPE H4a: Bezugsgröße „% der Investition" (Konzept Kostendialoge § 5.3:
+        /// Summe der Investitionskosten der Komponente VOR Zuschussabzug) — stufig:
+        /// Trägt die Position eine Anlage und existieren Investitionszeilen an genau
+        /// dieser Anlage, zählt deren Summe; sonst die Komponentensumme (die
+        /// dokumentierte Regel), notfalls das ganze Projekt. null = nichts erfasst.
+        /// </summary>
+        internal static double? InvestSummeFuer(int projektID, int komponentenID, int idAnlage)
+        {
+            if (idAnlage > 0)
+            {
+                double? anlage = InvestSumme(projektID, komponentenID, idAnlage);
+                if (anlage.HasValue && anlage.Value != 0) return anlage;
+            }
+            if (komponentenID > 0)
+            {
+                double? komponente = InvestSumme(projektID, komponentenID);
+                if (komponente.HasValue && komponente.Value != 0) return komponente;
+            }
+            return InvestSumme(projektID, 0);
         }
 
         /// <summary>ID und Zeitstempel des jüngsten Simulationslaufs, 0 = keiner.</summary>
