@@ -2368,6 +2368,41 @@ namespace WindowsFormsApplication1
         /// (Konzept § 5).</summary>
         public const string EMISSIONSWERT_QUELLE_STAMM_ALT = "STAMM_ALT";
 
+        /// <summary>UBA-Liste "Emissionsfaktoren zur Treibhausgasbilanzierung"
+        /// v2.1 (2024), Blatt 01 Stationaere Verbrennung. <b>Scope 1 OHNE
+        /// Vorkette</b>, bezogen auf den unteren Heizwert (Hi) - damit die
+        /// Feuerungssicht, die der Nutzerentscheid vom 28.08.2026 fuer die
+        /// Luftschadstoffe festhaelt (Konzept Paragraf 5).
+        ///
+        /// <para>Gesaet werden ausschliesslich <b>Einzelgase</b> (CO2, CH4, N2O),
+        /// nicht die CO2e-Spalte der Liste: Ein fremdes Aequivalent brachte seine
+        /// eigenen GWP-Faktoren mit und widerspraeche dem Katalog, der die Summe
+        /// selbst rechnet (Konzept F2/F6). Alle Zeilen tragen deshalb
+        /// <c>ist_co2e</c> = falsch.</para>
+        ///
+        /// <para>Biogene Traeger fuehrt die Liste <b>ohne Verbrennungs-CO2</b>
+        /// (das steht im Blatt "Ausserhalb der Scopes") - fuer Biogas, Scheitholz
+        /// und Pellets entsteht deshalb keine CO2-Vorlage, nur CH4 und N2O.</para>
+        ///
+        /// <para>Lizenz CC0 1.0. Quelldatei:
+        /// <c>Quellen\Emissionsfaktoren\UBA_Liste_EF_THG_Bilanzierung_v2.1_2024.xlsx</c>.</para></summary>
+        public const string EMISSIONSWERT_QUELLE_UBA_2024 = "UBA_2024";
+
+        /// <summary>GEMIS 5.2 (IINAS, Ergebnistabelle 2025) - die belegte Quelle
+        /// der <b>Luftschadstoffe</b> SO2, NOx und Staub.
+        ///
+        /// <para><b>Achtung, Systemgrenze:</b> GEMIS rechnet den gesamten
+        /// Lebenszyklus <b>einschliesslich Vorkette</b> (LCA). Die Zeilen dieser
+        /// Quelle sind deshalb ausdruecklich ein <b>Angebot als Vorlage</b>, keine
+        /// Vorbelegung: Der Nutzerentscheid vom 28.08.2026 haelt die AKTIVEN
+        /// Luftschadstoff-Werte bei der Feuerungssicht ohne Vorkette (Konzept
+        /// Paragraf 5). Die Saat aendert keinen aktiven Wert - wer die
+        /// LCA-Sicht will, uebernimmt sie sichtbar von Hand.</para>
+        ///
+        /// <para>Quelldatei:
+        /// <c>Quellen\Emissionsfaktoren\IINAS-2025-GEMIS-5.2-Ergebnisse.xlsx</c>.</para></summary>
+        public const string EMISSIONSWERT_QUELLE_GEMIS_52 = "GEMIS_52";
+
         /// <summary>Vom Anwender gepflegter Wert - oder ein Bestandswert, der
         /// weder zur Saat noch zum Brennstoff-Stamm passt. <b>Auch die 0 ist ein
         /// eigener Wert</b>: Ein Traeger mit CO2 = 0 wird nie als BAFA-Wert
@@ -2391,5 +2426,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Anzeigetext eines vom Anwender gepflegten Wertes (F8).</summary>
         public const string EMISSIONSWERT_TEXT_EIGENER_WERT = "Eigener Wert";
+
+        /// <summary>Anzeigetext der UBA-Vorlagen (Etappe E6). Die Systemgrenze
+        /// steht im Text, weil sie am Wert haengt und nicht an der Kennung.</summary>
+        public const string EMISSIONSWERT_TEXT_UBA_2024 =
+            "UBA-Liste EF THG-Bilanzierung v2.1 (2024), Scope 1 ohne Vorkette, Hi";
+
+        /// <summary>Anzeigetext der GEMIS-Vorlagen aus dem Waermeblatt (Etappe E6).
+        /// "inkl. Vorkette" gehoert sichtbar in den Text: Diese Zahlen liegen um
+        /// Groessenordnungen ueber den Feuerungswerten des Altbestands.</summary>
+        public const string EMISSIONSWERT_TEXT_GEMIS_52_WAERME =
+            "GEMIS 5.2 (IINAS), Wärme-end 2020, je kWh Brennstoff, inkl. Vorkette (LCA)";
+
+        /// <summary>Anzeigetext der GEMIS-Stromvorlage (Etappe E6) - anderes Blatt,
+        /// anderer Bezug (je kWh Strom statt je kWh Brennstoff).</summary>
+        public const string EMISSIONSWERT_TEXT_GEMIS_52_STROM =
+            "GEMIS 5.2 (IINAS), Strom-mix 2024 (Stromnetz-lokal), je kWh Strom, inkl. Vorkette (LCA)";
     }
 }
