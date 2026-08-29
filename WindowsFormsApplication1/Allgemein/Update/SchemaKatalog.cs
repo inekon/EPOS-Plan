@@ -916,6 +916,93 @@ namespace WindowsFormsApplication1
         /// <summary>Flag „Aufschlag anwenden" der Variante (Fachkonzept 4.2).</summary>
         public const string SPALTE_VARIANTE_AUFSCHLAG_ANWENDEN = "Aufschlag_Anwenden";
 
+        // =====================================================================
+        // Schritt 60 - Preisbestandteile für Brennstoffe
+        //   (Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan § 5.1, Etappe B2 Paket A)
+        // =====================================================================
+
+        /// <summary>
+        /// Namen der Bestandteilsspalten des BRENNSTOFF-Preises in
+        /// <c>energy_project_settings</c> — EINE Wahrheit für Migrationsschritt 60,
+        /// Leseseite (<c>BrennstoffBestandteilCtrl</c>) und Oberfläche
+        /// (<c>ucBrennstoffBestandteile</c>), genau wie
+        /// <see cref="SPALTE_AUFSCHLAG_NETZENTGELT"/> es für die Stromseite ist.
+        ///
+        /// <b>Warum ein zweiter Satz Spalten neben dem Aufschlagsblock.</b> Der
+        /// Aufschlagsblock aus Schritt 12 ist die Zerlegung des STROMpreises; seine
+        /// Komponenten (Umlagen, Stromsteuer, Konzession) gibt es beim Brennstoff nicht,
+        /// und Energiesteuer und BEHG-CO₂-Anteil gibt es dort nicht. Die Spalten
+        /// wiederzuverwenden hieße, zwei fachlich verschiedene Zerlegungen in dieselben
+        /// Felder zu schreiben — beim ersten Träger, der beides trägt, wäre eine von
+        /// beiden weg. Getrennte Namen mit dem Präfix <c>Anteil_</c> halten sie
+        /// auseinander; die Aktiv-Schalter teilen sich den Namenszusatz
+        /// <see cref="SPALTE_AUFSCHLAG_AKTIV_SUFFIX"/>, weil das eine reine
+        /// Namenskonvention ist und keine Aussage über die Bedeutung.
+        /// </summary>
+        public const string SPALTE_BB_ENERGIESTEUER = "Anteil_Energiesteuer";
+        public const string SPALTE_BB_CO2 = "Anteil_CO2";
+        public const string SPALTE_BB_NETZENTGELT = "Anteil_Netzentgelt";
+        public const string SPALTE_BB_VERTRIEB = "Anteil_Vertrieb";
+
+        /// <summary>
+        /// Modus der Preiszerlegung (Werte aus <c>DbWerte.SP_AUFSCHLAG_MODUS_*</c> —
+        /// dieselben zwei Persistenzwerte wie beim Strom, kein zweites Vokabular für
+        /// dieselbe Unterscheidung).
+        /// </summary>
+        public const string SPALTE_BB_MODUS = "Anteil_Modus";
+
+        /// <summary>
+        /// Schritt 60 der Migration — die vier Preisbestandteile eines Brennstoffs und
+        /// ihr Modus an <c>energy_project_settings</c> (Konzept § 5.1, Schritt M-1).
+        ///
+        /// <b>Alle Träger, kein Filter.</b> Wie in <see cref="Schritt12_Preismodell"/>:
+        /// Access kennt keine bedingte Spalte. Wirksam werden die Felder erst über den
+        /// Brennstoff-Block der Oberfläche (<c>pricing_model</c> GAS/FUEL).
+        ///
+        /// <b>KEINE Wertsaat — NULL heißt „kein Anteil".</b> Das ist der einzige, aber
+        /// entscheidende Unterschied zu Schritt 12. Dessen DML-Teil belegt die
+        /// Stromkomponenten mit den Vorschlagswerten des Fachkonzepts vor, und seine
+        /// Leseseite setzt bei NULL denselben Vorschlag — bei Projekt 1030 gemessene
+        /// 11,746 ct/kWh trotz fünf abgeschalteter Flags (E5-Falle, Konzept § 5.1).
+        /// Für die Brennstoffseite wäre das eine Behauptung über eine Lieferantenrechnung,
+        /// die niemand erfasst hat: Ob im Gaspreis die Energiesteuer steckt, weiß nur der
+        /// Anwender. Der Schritt legt deshalb ausschließlich die Spalten an und setzt
+        /// allein den <see cref="SPALTE_BB_MODUS"/> vor — den Wert, der nichts auslöst.
+        ///
+        /// <b>YESNO ohne DML.</b> <c>ADD COLUMN … YESNO</c> belegt bestehende Zeilen in
+        /// Access mit <c>False</c>; anders als bei Schritt 12 ist das hier genau die
+        /// gewünschte Vorbelegung („Anteil nicht ausgewiesen") und braucht kein
+        /// nachgelagertes UPDATE (Muster Schritt 59, <c>SpalteYesNo</c>).
+        ///
+        /// <b>TEXT(20)</b> für den Modus — der längere der beiden Persistenzwerte hat
+        /// 16 Zeichen (<c>Aufgeschluesselt</c>).
+        ///
+        /// <b>Namensbasiert, nie ordinal.</b> Dieselbe Zusage wie bei
+        /// <see cref="Schritt12_Preismodell"/>: <c>energy_project_settings</c> wird im
+        /// Bestand ausschließlich über <c>SELECT *</c> mit Spaltennamen-Zugriff gelesen,
+        /// das Anhängen ist deshalb gefahrlos.
+        ///
+        /// Nicht in <see cref="Alle"/> aufgeführt — dieselbe Begründung wie bei
+        /// <see cref="Schritt12_Preismodell"/>: Die Tabelle gehört dem Kostenmodul, der
+        /// Rechenkern liest sie nicht. Die tolerante Vorsorge steht unmittelbar vor dem
+        /// Zugriff in <c>BrennstoffBestandteilCtrl.StelleSpaltenSicher</c>.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt60_BrennstoffBestandteile =
+        {
+            // --- Bestandteile: Wert [ct/kWh] + Aktiv-Schalter -----------------------
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_BB_ENERGIESTEUER, "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_BB_ENERGIESTEUER + SPALTE_AUFSCHLAG_AKTIV_SUFFIX, "YESNO"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_BB_CO2, "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_BB_CO2 + SPALTE_AUFSCHLAG_AKTIV_SUFFIX, "YESNO"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_BB_NETZENTGELT, "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_BB_NETZENTGELT + SPALTE_AUFSCHLAG_AKTIV_SUFFIX, "YESNO"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_BB_VERTRIEB, "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_BB_VERTRIEB + SPALTE_AUFSCHLAG_AKTIV_SUFFIX, "YESNO"),
+
+            // --- Modus der Zerlegung -----------------------------------------------
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_BB_MODUS, "TEXT(20)"),
+        };
+
         /// <summary>
         /// Name der Bezugsgröße der Kessel-Wartungskosten (Entscheidung des Anwenders
         /// 18.08.2026, Punkt 1). EINE Wahrheit für Migration, Katalog-Editor

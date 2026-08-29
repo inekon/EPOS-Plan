@@ -59,6 +59,17 @@ namespace WindowsFormsApplication1
         /// Einheit des Satzes umrechnen lässt.</summary>
         public string Abrechnungseinheit = "";
 
+        /// <summary>
+        /// ETAPPE B2 — <c>energy_carrier.id</c> des tatsächlich gerechneten Trägers
+        /// (0 = nicht bestimmbar). <b>Nur Ausweis:</b> Die Steuerrechnung liest das Feld
+        /// nicht; es verbindet die Anlage mit der Zeile in
+        /// <c>energy_project_settings</c>, deren Preiszerlegung die Kohärenzprüfung
+        /// (<see cref="KohaerenzPruefung"/>) braucht. Ohne dieses Feld müsste die
+        /// Prüfung die Zuordnung Anlage → Träger ein zweites Mal auflösen — eine zweite
+        /// Wahrheit über dieselbe Frage.
+        /// </summary>
+        public int CarrierId;
+
         /// <summary>true, wenn der Brennstoff fossil ist — nur dann gilt der
         /// CO₂-Grenzwert des § 2 StromStG.</summary>
         public bool Fossil;

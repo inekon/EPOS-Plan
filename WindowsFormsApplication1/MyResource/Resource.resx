@@ -8330,4 +8330,142 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="WIZ_BTN_SPEICHERN" xml:space="preserve">
     <value>Speichern</value>
   </data>
+  <data name="BB_GRUPPE_BESTANDTEILE" xml:space="preserve">
+    <value>Preisbestandteile des Brennstoffs</value>
+  </data>
+  <data name="BB_MODUS_AUFGESCHLUESSELT" xml:space="preserve">
+    <value>aufgeschlüsselt (Summe ist der Preis)</value>
+  </data>
+  <data name="BB_MODUS_GESAMTWERT" xml:space="preserve">
+    <value>Gesamtwert (Arbeitspreis gilt)</value>
+  </data>
+  <data name="BB_KOMP_ENERGIESTEUER" xml:space="preserve">
+    <value>Energiesteuer</value>
+  </data>
+  <data name="BB_KOMP_CO2" xml:space="preserve">
+    <value>CO₂-Anteil (BEHG)</value>
+  </data>
+  <data name="BB_KOMP_NETZENTGELT" xml:space="preserve">
+    <value>Netz-/Messentgelt</value>
+  </data>
+  <data name="BB_KOMP_VERTRIEB" xml:space="preserve">
+    <value>Vertrieb</value>
+  </data>
+  <data name="BB_SCHNELLWAHL" xml:space="preserve">
+    <value>Schnellwahl (Katalog):</value>
+  </data>
+  <data name="BB_LABEL_ARBEITSPREIS" xml:space="preserve">
+    <value>Arbeitspreis (Trägerdialog)</value>
+  </data>
+  <data name="BB_BTN_IN_ARBEITSPREIS" xml:space="preserve">
+    <value>In Arbeitspreis übernehmen</value>
+  </data>
+  <data name="BB_BTN_SATZ_REGEL" xml:space="preserve">
+    <value>§ 2: {0}</value>
+  </data>
+  <data name="BB_BTN_SATZ_53A" xml:space="preserve">
+    <value>§ 53a: {0}</value>
+  </data>
+  <data name="BB_BTN_SATZ_54" xml:space="preserve">
+    <value>§ 54: {0}</value>
+  </data>
+  <data name="BB_BTN_CO2" xml:space="preserve">
+    <value>BEHG: {0}</value>
+  </data>
+  <data name="BB_BTN_KEIN_SATZ" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="BB_PREIS_AUS_BESTANDTEILEN" xml:space="preserve">
+    <value>Preis aus den Bestandteilen: {0} ct/kWh</value>
+  </data>
+  <data name="BB_SUMME_AKTIV" xml:space="preserve">
+    <value>Summe der aktiven Bestandteile: {0} ct/kWh</value>
+  </data>
+  <data name="BB_REST" xml:space="preserve">
+    <value>Nicht aufgeschlüsselter Rest: {0} ct/kWh</value>
+  </data>
+  <data name="BB_REST_HINWEIS_MODUS" xml:space="preserve">
+    <value>Im Modus „aufgeschlüsselt“ ist die Summe der Bestandteile der Preis. Der Arbeitspreis ändert sich erst, wenn Sie ihn übernehmen.</value>
+  </data>
+  <data name="BB_QUELLE" xml:space="preserve">
+    <value>{0} {1} (ab {2}, {3})</value>
+  </data>
+  <data name="BB_QUELLE_CO2" xml:space="preserve">
+    <value>{0} × {1} g/kWh</value>
+  </data>
+  <data name="BB_QUELLE_CO2_PROJEKT" xml:space="preserve">
+    <value>{0} €/t (Projektwert)</value>
+  </data>
+  <data name="BB_QUELLE_CO2_KATALOG" xml:space="preserve">
+    <value>{0} €/t (ab {1}, {2})</value>
+  </data>
+  <data name="BB_GRUND_KEIN_SCHLUESSEL" xml:space="preserve">
+    <value>Diesem Energieträger ist im Katalog kein Energiesteuersatz zugeordnet.</value>
+  </data>
+  <data name="BB_GRUND_KEIN_JAHR" xml:space="preserve">
+    <value>Der Katalog führt für {0} keinen Satz im Jahr {1}.</value>
+  </data>
+  <data name="BB_GRUND_KEIN_CO2_PREIS" xml:space="preserve">
+    <value>Der Katalog führt für das Jahr {0} keinen CO₂-Preis.</value>
+  </data>
+  <data name="BB_GRUND_KEIN_EF" xml:space="preserve">
+    <value>Für diesen Energieträger ist kein CO₂-Faktor größer null gepflegt.</value>
+  </data>
+  <data name="BB_GRUND_EINHEIT" xml:space="preserve">
+    <value>Der Satz gilt je 1.000 {0}; dieser Träger rechnet je {1}. Ohne gepflegte Dichte ist die Umrechnung nicht belegbar.</value>
+  </data>
+  <data name="BB_GRUND_EINHEIT_UNBEKANNT" xml:space="preserve">
+    <value>Die Katalogeinheit „{0}“ lässt sich nicht in ct/kWh umrechnen.</value>
+  </data>
+  <data name="BB_GRUND_HEIZWERT" xml:space="preserve">
+    <value>Ohne Heizwert lässt sich der Satz nicht in ct/kWh umrechnen.</value>
+  </data>
+  <data name="KOH_ZEILE_TITEL" xml:space="preserve">
+    <value>Kohärenzprüfung</value>
+  </data>
+  <data name="KOH_FALL2_ENERGIESTEUER" xml:space="preserve">
+    <value>Die Energiesteuer-Gutschrift von {0} €/a setzt voraus, dass der erfasste Brennstoffpreis die Energiesteuer enthält. Im Preis ist sie nicht ausgewiesen: {1}.</value>
+  </data>
+  <data name="KOH_FALL3_ENERGIESTEUER" xml:space="preserve">
+    <value>Der erfasste Brennstoffpreis weist eine Energiesteuer aus, es ist aber keine Entlastung gewählt (§ 53 / § 53a Abs. 5 / § 54): {0}.</value>
+  </data>
+  <data name="KOH_FALL4_ENERGIESTEUER" xml:space="preserve">
+    <value>{0}: Der erfasste Energiesteueranteil {1} ct/kWh weicht vom Katalogsatz {2} {3} des Jahres {4} ab — das sind {5} ct/kWh.</value>
+  </data>
+  <data name="KOH_FALL2_STROMST_9B" xml:space="preserve">
+    <value>Die Stromsteuer-Entlastung nach § 9b StromStG von {0} €/a setzt voraus, dass der erfasste Strompreis die Stromsteuer enthält. Im Preis ist sie nicht ausgewiesen ({1}).</value>
+  </data>
+  <data name="KOH_FALL2_STROMST_9_1_3" xml:space="preserve">
+    <value>Die Stromsteuer-Befreiung nach § 9 Abs. 1 Nr. 3 StromStG von {0} €/a wird als Erlös gebucht, obwohl der erfasste Strompreis die Stromsteuer nicht ausweist ({1}).</value>
+  </data>
+  <data name="KOH_FALL3_STROMSTEUER" xml:space="preserve">
+    <value>Der erfasste Strompreis weist eine Stromsteuer von {0} ct/kWh aus, eine Entlastung nach § 9b StromStG wird nicht gebucht.</value>
+  </data>
+  <data name="KOH_FALL4_STROMSTEUER" xml:space="preserve">
+    <value>Der erfasste Stromsteueranteil {0} ct/kWh weicht vom Katalogsatz {1} {2} des Jahres {3} ab — das sind {4} ct/kWh.</value>
+  </data>
+  <data name="KOH_GRUND_AUFSCHLAG_AUS" xml:space="preserve">
+    <value>der Schalter „Aufschläge in der Wirtschaftlichkeit berücksichtigen" ist aus</value>
+  </data>
+  <data name="KOH_GRUND_KEIN_STROMTRAEGER" xml:space="preserve">
+    <value>dem Projekt ist kein Strom-Energieträger zugeordnet</value>
+  </data>
+  <data name="KOH_GRUND_STROM_GESAMTWERT" xml:space="preserve">
+    <value>der Aufschlag ist als Gesamtwert erfasst und nicht aufgeschlüsselt</value>
+  </data>
+  <data name="KOH_GRUND_STROM_INAKTIV" xml:space="preserve">
+    <value>die Komponente Stromsteuer ist abgeschaltet</value>
+  </data>
+  <data name="KOH_GRUND_STROM_NULL" xml:space="preserve">
+    <value>die Komponente Stromsteuer steht auf 0 ct/kWh</value>
+  </data>
+  <data name="KOH_GRUND_BB_FEHLT" xml:space="preserve">
+    <value>kein Anteil erfasst</value>
+  </data>
+  <data name="KOH_GRUND_BB_INAKTIV" xml:space="preserve">
+    <value>Anteil abgeschaltet</value>
+  </data>
+  <data name="KOH_GRUND_BB_NULL" xml:space="preserve">
+    <value>Anteil 0 ct/kWh</value>
+  </data>
 </root>

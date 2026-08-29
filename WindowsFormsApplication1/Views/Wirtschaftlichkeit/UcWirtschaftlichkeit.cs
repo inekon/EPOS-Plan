@@ -714,7 +714,48 @@ namespace WindowsFormsApplication1
             if (zeilen.Any(x => x.Fehlgrund != null))
                 Zeile("Hinweis", zeilen, x => x.Fehlgrund != null ? "⚠ " + x.Fehlgrund : "");
 
+            KohaerenzZeilen(zeilen);
+
             grid.ClearSelection();
+        }
+
+        /// <summary>
+        /// ETAPPE B2 (Konzept BHKW-Wirtschaftlichkeit § 4.1, BW2/BF2) — die Zeilen der
+        /// Kohärenzprüfung als eigene Gridzeilen.
+        ///
+        /// <para><b>Je Hinweis eine Zeile</b>, nicht alle in einer verketteten Zelle: Die
+        /// Sätze tragen Beträge, und ein Einzeiler mit drei Beträgen ist nicht lesbar —
+        /// derselbe Grund, aus dem E7 die KWKG-Modulaufzählung aus dem Hinweisfeld
+        /// geholt hat. Die Zeilenzahl richtet sich nach dem Projekt mit den meisten
+        /// Hinweisen; kürzere Spalten bleiben leer.</para>
+        ///
+        /// <para><b>Nur nach „Berechnen".</b> Die Liste ist nicht persistiert (wie
+        /// <c>KwkgModule</c> und <c>Betriebskosten</c>); ein aus der Datenbank geladener
+        /// Stand zeigt deshalb keine Kohärenzzeilen. Das ist gewollt — sie gehören zum
+        /// Lauf, nicht zum gespeicherten Ergebnis.</para>
+        /// </summary>
+        private void KohaerenzZeilen(List<WirtschaftlichkeitErgebnis> zeilen)
+        {
+            int hoechste = 0;
+            foreach (WirtschaftlichkeitErgebnis x in zeilen)
+                if (x.KohaerenzHinweise != null && x.KohaerenzHinweise.Count > hoechste)
+                    hoechste = x.KohaerenzHinweise.Count;
+            if (hoechste == 0) return;
+
+            string titel = T("KOH_ZEILE_TITEL", "Kohärenzprüfung");
+            for (int i = 0; i < hoechste; i++)
+            {
+                int index = i;               // Kopie für den Abschluss
+                Zeile(titel, zeilen, x =>
+                {
+                    List<KohaerenzHinweis> l = x.KohaerenzHinweise;
+                    if (l == null || index >= l.Count) return "";
+                    KohaerenzHinweis h = l[index];
+                    string marke = string.Equals(h.Schwere, KohaerenzSchwere.WARNUNG,
+                                                 StringComparison.Ordinal) ? "⚠ " : "· ";
+                    return marke + h.Text;
+                });
+            }
         }
 
         /// <summary>Emissionsbilanz-Cache neu füllen (nur aktuelle Ergebnisse, W3).</summary>
