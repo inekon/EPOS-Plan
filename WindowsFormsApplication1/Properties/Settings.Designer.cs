@@ -49,18 +49,6 @@ namespace WindowsFormsApplication1.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("pages")]
-        public string WordPressPrefix {
-            get {
-                return ((string)(this["WordPressPrefix"]));
-            }
-            set {
-                this["WordPressPrefix"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("https://re.jrc.ec.europa.eu/api/tmy")]
         public string PVGISUrl {
             get {

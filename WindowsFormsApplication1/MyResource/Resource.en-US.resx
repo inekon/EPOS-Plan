@@ -4762,6 +4762,9 @@ Several arrays of the same module type are allowed — please check whether this
   <data name="ANL_SP_NAME_ANGEPASST" xml:space="preserve">
     <value>The name “{0}” is already used in this project. The storage variant was renamed to “{1}”.</value>
   </data>
+  <data name="GEB2_TITEL" xml:space="preserve">
+    <value>Building data – room temperatures, thermal bridges and holiday periods</value>
+  </data>
   <data name="GESETZ_MENUE" xml:space="preserve">
     <value>Statutory parameters…</value>
   </data>

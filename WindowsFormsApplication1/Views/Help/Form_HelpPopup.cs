@@ -56,21 +56,26 @@ namespace WindowsFormsApplication1
         /// Flüchtige Kurzinfo beim Überfahren: verschwindet wieder, sobald die
         /// Maus Steuerelement und Popup verlassen hat.
         /// </summary>
-        public void ShowHelp(string titel, string url, Point position)
+        /// <param name="beschreibung">
+        /// H11 (7.6) - der Einleitungssatz der Hilfeseite. Leer ist der Regelfall
+        /// (offline, alte Sicherung, Nachladelauf noch nicht durch) und ergibt
+        /// exakt das Erscheinungsbild vor H11.
+        /// </param>
+        public void ShowHelp(string titel, string beschreibung, string url, Point position)
         {
-            Anzeigen(titel, url, position, angeheftet: false);
+            Anzeigen(titel, beschreibung, url, position, angeheftet: false);
         }
 
         /// <summary>
         /// F1 - der Klick führt: Das Popup wird angeheftet und bleibt stehen, bis
         /// der Anwender es schließt (Esc) oder woanders hin klickt.
         /// </summary>
-        public void ShowHelpAngeheftet(string titel, string url, Point position)
+        public void ShowHelpAngeheftet(string titel, string beschreibung, string url, Point position)
         {
-            Anzeigen(titel, url, position, angeheftet: true);
+            Anzeigen(titel, beschreibung, url, position, angeheftet: true);
         }
 
-        private void Anzeigen(string titel, string url, Point position, bool angeheftet)
+        private void Anzeigen(string titel, string beschreibung, string url, Point position, bool angeheftet)
         {
             // Verhindert, dass ein laufender Schließ-Timer das Fenster sofort wieder killt
             StopCloseCheck();
@@ -87,9 +92,28 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.HILFE_POPUP_KAPITEL, titel);
             string verweis = "➔ " + MyResource.Resource.HILFE_POPUP_LINK;
 
+            // H11 (7.6): Der Einleitungssatz der Wiki-Seite steht zwischen
+            // Kapitelzeile und Verweis. Ist keiner da, bleibt alles wie bisher.
+            string kurzbeschreibung = BeschreibungUmbrechen(beschreibung);
+
+            string kopf = kurzbeschreibung.Length > 0
+                ? kapitel + "\r\n" + kurzbeschreibung + "\r\n"
+                : kapitel + "\r\n";
+
             linkLabel_Doku.Text = angeheftet
-                ? kapitel + "\r\n" + verweis + "\r\n" + MyResource.Resource.HILFE_POPUP_ESC
-                : kapitel + "\r\n" + verweis;
+                ? kopf + verweis + "\r\n" + MyResource.Resource.HILFE_POPUP_ESC
+                : kopf + verweis;
+
+            // Nur der Verweis darf wie ein Link aussehen - sonst waere die
+            // Kurzbeschreibung unterstrichen und blau.
+            //
+            // Ohne Beschreibung wird der Linkbereich ausdruecklich auf den GANZEN
+            // Text zurueckgestellt: Das ist das Verhalten vor H11 (der Standard
+            // eines LinkLabel ohne gesetzten LinkArea), und einmal gesetzt wandert
+            // der Bereich beim naechsten Textwechsel nicht von selbst mit.
+            linkLabel_Doku.LinkArea = kurzbeschreibung.Length > 0
+                ? new LinkArea(kopf.Length, verweis.Length)
+                : new LinkArea(0, linkLabel_Doku.Text.Length);
 
             // Y-Versatz minimal auf +25 erhöhen, um der Maus mehr "Luft" zu geben,
             // damit sie beim Erscheinen nicht direkt AUF dem Fenster landet.
@@ -121,6 +145,87 @@ namespace WindowsFormsApplication1
 
             if (angeheftet) FilterEinschalten();
             else FilterAusschalten();
+        }
+
+        // --------------------------------------------------------------------
+        // H11 (7.6) - Umbruch der Kurzbeschreibung
+        // --------------------------------------------------------------------
+
+        /// <summary>Ziellänge einer Zeile der Kurzbeschreibung, in Zeichen.</summary>
+        internal const int BESCHREIBUNG_ZEICHEN = 70;
+
+        /// <summary>Mehr als so viele Zeilen zeigt das Popup nicht.</summary>
+        internal const int BESCHREIBUNG_ZEILEN = 2;
+
+        /// <summary>
+        /// Bricht die Kurzbeschreibung an Wortgrenzen auf höchstens
+        /// <see cref="BESCHREIBUNG_ZEILEN"/> Zeilen zu je rund
+        /// <see cref="BESCHREIBUNG_ZEICHEN"/> Zeichen um. Was nicht mehr
+        /// hineinpasst, endet mit einem Auslassungszeichen.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Umgebrochen wird über die Zeichenzahl, nicht über die gemessene
+        /// Textbreite. Das ist bewusst grob: Das Popup ist AutoSize, die
+        /// Randklemmung in <c>Anzeigen</c> holt jede Breite wieder auf den
+        /// Bildschirm, und eine Messung über <c>TextRenderer</c> bräuchte einen
+        /// Grafikkontext an einer Stelle, die sonst ohne auskommt.
+        /// </para>
+        /// <para>
+        /// Ein einzelnes überlanges Wort wird NICHT getrennt - es bekommt seine
+        /// Zeile und darf länger sein. Getrennte Fachwörter wären schlimmer als
+        /// eine zu lange Zeile.
+        /// </para>
+        /// <para>
+        /// <c>internal</c> statt <c>private</c>, damit der Prüfstand die Kappung
+        /// ohne Bildschirm nachrechnen kann.
+        /// </para>
+        /// </remarks>
+        internal static string BeschreibungUmbrechen(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return "";
+
+            // Der Katalog liefert bereits einzeilig; ein Umbruch aus einer alten
+            // Sicherung würde die Zeilenrechnung sonst durcheinanderbringen.
+            string flach = System.Text.RegularExpressions.Regex.Replace(text, @"\s+", " ").Trim();
+            if (flach.Length == 0) return "";
+
+            string[] woerter = flach.Split(' ');
+            var zeilen = new System.Collections.Generic.List<string>();
+            var aktuell = new System.Text.StringBuilder();
+
+            int i = 0;
+            for (; i < woerter.Length; i++)
+            {
+                string wort = woerter[i];
+
+                if (aktuell.Length == 0)
+                {
+                    aktuell.Append(wort);
+                }
+                else if (aktuell.Length + 1 + wort.Length <= BESCHREIBUNG_ZEICHEN)
+                {
+                    aktuell.Append(' ').Append(wort);
+                }
+                else if (zeilen.Count + 1 >= BESCHREIBUNG_ZEILEN)
+                {
+                    // Die angefangene Zeile ist die letzte erlaubte - hier ist Schluss.
+                    break;
+                }
+                else
+                {
+                    zeilen.Add(aktuell.ToString());
+                    aktuell.Clear();
+                    aktuell.Append(wort);
+                }
+            }
+
+            // Rest übrig? Dann wurde gekappt und das muss man sehen.
+            if (i < woerter.Length) aktuell.Append('…');
+
+            zeilen.Add(aktuell.ToString());
+
+            return string.Join("\r\n", zeilen);
         }
 
         /// <summary>

@@ -8,9 +8,6 @@
     <Setting Name="DBExportPath" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="WordPressPrefix" Type="System.String" Scope="User">
-      <Value Profile="(Default)">pages</Value>
-    </Setting>
     <Setting Name="PVGISUrl" Type="System.String" Scope="User">
       <Value Profile="(Default)">https://re.jrc.ec.europa.eu/api/tmy</Value>
     </Setting>

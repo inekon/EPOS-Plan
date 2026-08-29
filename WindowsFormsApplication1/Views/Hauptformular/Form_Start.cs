@@ -55,6 +55,14 @@ namespace WindowsFormsApplication1
             InitEventDictionary();
             _helpExtender = Program.HelpExtender;
 
+            // H11: Kachel "Optimierung" auf dem Reiter Simulation ausblenden -
+            // FUNKTION NICHT UMGESETZT. Ihr Handler pBox_Optimierung_Click ist
+            // leer, die drei Steuerelemente tragen aber Cursors.Hand und sehen
+            // damit anklickbar aus. Ausgeblendet wird per Code; die
+            // Designer-Datei bleibt unberuehrt, damit die Kachel beim spaeteren
+            // Umsetzen der Funktion nur wieder eingeschaltet werden muss.
+            OptimierungskachelVerbergen();
+
             // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
             // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
             // Auf ausreichend grossen Schirmen wirkungslos.
@@ -1571,9 +1579,55 @@ namespace WindowsFormsApplication1
             pBox_Optimierung_Click(sender, e);
         }
 
+        /// <summary>
+        /// H11 - Funktion nicht umgesetzt: Die Kachel "Optimierung" und ihre beiden
+        /// Beschriftungen werden ausgeblendet.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum ueberhaupt.</b> <see cref="pBox_Optimierung_Click"/> ist leer -
+        /// ein Klick auf die Kachel tut nichts. Alle drei Steuerelemente tragen
+        /// jedoch <c>Cursors.Hand</c> und stehen gleichrangig neben der Kachel
+        /// "Simulation", die einen echten Dialog oeffnet. Ein Bedienelement, das
+        /// bedienbar aussieht und nichts tut, ist schlechter als keines.
+        /// </para>
+        /// <para>
+        /// <b>Warum per Code und nicht im Designer.</b> Die Startmaske fuehrt die
+        /// Koordinaten ihrer Kacheln je Sprache in eigenen <c>.resx</c>-Dateien; ein
+        /// Entfernen im Designer muesste in allen davon nachgezogen werden. Ein
+        /// Ausblenden hier ist umkehrbar - wird die Optimierung umgesetzt, faellt
+        /// nur dieser eine Aufruf wieder weg.
+        /// </para>
+        /// <para>
+        /// <b>Achtung Schreibweise:</b> Die Untertitelzeile heisst im Designer
+        /// <c>label2_pBox_Optinierung</c> - mit "n" statt "m". Der Tippfehler steht
+        /// so auch in den <c>.resx</c>-Dateien und wird hier bewusst NICHT
+        /// berichtigt (er zoege eine Designer- und drei Ressourcenaenderungen nach
+        /// sich); er ist der Grund, warum die drei Namen einzeln stehen statt ueber
+        /// ein Namensmuster gesucht zu werden.
+        /// </para>
+        /// </remarks>
+        private void OptimierungskachelVerbergen()
+        {
+            Control[] kachel = { pBox_Optimierung, label_pBox_Optimierung, label2_pBox_Optinierung };
+
+            foreach (Control c in kachel)
+            {
+                if (c == null) continue;
+
+                c.Visible = false;
+                // Der Handzeiger versprach eine Reaktion - auch unsichtbar bleibt
+                // er ein falsches Versprechen, sobald jemand die Kachel wieder
+                // einschaltet, ohne die Funktion umzusetzen.
+                c.Cursor = Cursors.Default;
+            }
+        }
+
         private void pBox_Optimierung_Click(object sender, EventArgs e)
         {
-
+            // H11: Funktion nicht umgesetzt - die Kachel ist ausgeblendet
+            // (OptimierungskachelVerbergen). Handler bleibt stehen, weil der
+            // Designer ihn und die beiden Beschriftungen darauf verdrahtet.
         }
 
         private void label62_Click(object sender, EventArgs e)

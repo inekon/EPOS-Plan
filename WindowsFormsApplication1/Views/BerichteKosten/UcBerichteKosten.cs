@@ -141,6 +141,19 @@ namespace WindowsFormsApplication1
             this.pnlInhalt.Dock = DockStyle.Fill;
             this.pnlInhalt.AutoScroll = true;    // Rückfallebene auf sehr kleinen Flächen
 
+            // H11: Ändert sich die Größe des Reiters, verschiebt sich die Belegung
+            // der eingebetteten Seite — der abgerückte Infoknopf wird deshalb neu
+            // eingemessen.
+            //
+            // Das Layout-Ereignis und nicht SizeChanged: Wenn es feuert, hat die
+            // Layout-Maschine die gedockte Seite BEREITS auf ihre neue Größe
+            // gebracht (Control.OnLayout ruft erst die LayoutEngine, dann die
+            // Ereignisliste). Bei SizeChanged stünde die Seite noch auf der alten.
+            // Eine Schleife entsteht nicht: das Versetzen des Knopfes löst ein
+            // Layout der SEITE aus, nicht der Inhaltsfläche — und ein bereits
+            // richtig sitzender Knopf wird gar nicht erst angefasst.
+            this.pnlInhalt.Layout += (s, e) => SeitenknoepfeEinmessen();
+
             this.Controls.Add(this.pnlInhalt);
             this.Controls.Add(this.lblKopf);
             this.Controls.Add(this.lvNav);
@@ -313,12 +326,240 @@ namespace WindowsFormsApplication1
             }
             finally { pnlInhalt.ResumeLayout(true); }
 
+            // H11: Der Infoknopf der Seite rückt von der Kopfzeile ab.
+            SeitenknopfAbruecken(neu);
+
             // Erstbefüllung der eingebetteten Bestandsseiten anstoßen (in der
             // Anwendung erledigt das sonst OnCreateControl; hier deterministisch).
             UcWirtschaftlichkeit uw = neu as UcWirtschaftlichkeit;
             if (uw != null) uw.LadeDaten();
             UcBericht ub = neu as UcBericht;
             if (ub != null) ub.LadeDatenEinmalig();
+        }
+
+        // ------------------------------------------------- H11: Infoknopf-Doppelung
+
+        /// <summary>
+        /// Kleinster Abstand des Seiten-Infoknopfes zur Oberkante seiner Seite.
+        /// </summary>
+        /// <remarks>
+        /// Die Kopfzeile ist 30 Bildpunkte hoch und trägt den Knopf des Behälters
+        /// bei y 3…27. Ein Seitenknopf ab y 60 (in Seitenkoordinaten, also ab y 90
+        /// im Reiter) liegt damit mindestens 63 Bildpunkte darunter — und die
+        /// Kante der Kopfzeile liegt dazwischen. Das ist der „deutliche Abstand".
+        /// </remarks>
+        private const int SEITENKNOPF_OBEN = 60;
+
+        /// <summary>Wie weit nach unten nach einem freien Platz gesucht wird.</summary>
+        private const int SEITENKNOPF_SUCHTIEFE = 400;
+
+        /// <summary>
+        /// Rückt den Infoknopf der eingebetteten Seite von der Kopfzeile ab.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Das Problem.</b> Der Behälter trägt seinen eigenen Infoknopf in der
+        /// Kopfzeile („Berichte und Kosten" — die Hilfe zum Reiter), jede der vier
+        /// Seiten ihren eigenen (die Hilfe zur Seite). Beide sitzen rechts oben.
+        /// Gemessen am 29.08.2026: gleiche Spalte auf 4 Bildpunkte genau, senkrecht
+        /// 7 bis 15 Bildpunkte Luft — für den Anwender ein Knopfpaar, von dem er
+        /// nicht wissen kann, welcher wofür steht.
+        /// </para>
+        /// <para>
+        /// <b>Warum der BEHÄLTER das erledigt und nicht die Seiten.</b> Zwei der
+        /// vier Seiten (<see cref="UcWirtschaftlichkeit"/>, <see cref="UcBericht"/>)
+        /// laufen auch außerhalb dieses Reiters in einer eigenen Dialoghülle. Dort
+        /// gibt es keine Kopfzeile und keine Doppelung — dort ist der Regelplatz
+        /// rechts oben genau richtig. Die Enge entsteht erst durch die Einbettung,
+        /// also behebt sie der Einbettende.
+        /// </para>
+        /// <para>
+        /// <b>Warum gesucht und nicht fest gesetzt.</b> Ein fester Abstand von oben
+        /// träfe auf jeder Seite etwas anderes. Gemessen im Streifen des Knopfes
+        /// (Seitenbreite 1057) waren frei: <c>UcBkKosten</c> y 30…152,
+        /// <c>UcBkUebersicht</c> y 197…269 (davor Kontrollkästchen, Eingabefeld und
+        /// drei Schaltflächen), <c>UcBericht</c> ab y 195 (davor die Bausteinliste).
+        /// Eine gemeinsame freie Zeile gibt es NICHT. Deshalb dieselbe Regel wie in
+        /// <c>InfoKnopf.FreiesOben</c>, nur auf der ECHTEN Größe der eingebetteten
+        /// Seite statt auf der Entwurfsgröße: der erste freie Platz ab
+        /// <see cref="SEITENKNOPF_OBEN"/>.
+        /// </para>
+        /// <para>
+        /// <b>Hindernis</b> ist jedes Blatt des Seitenbaums — Beschriftungen
+        /// eingeschlossen. Der Knopfhintergrund ist durchsichtig; was er überdeckt,
+        /// scheint durch ihn hindurch. Behälter selbst zählen nicht, sonst wäre auf
+        /// den beiden Tabellenseiten kein einziger Platz frei.
+        /// </para>
+        /// </remarks>
+        /// <summary>
+        /// Misst den Infoknopf jeder eingehängten Seite neu ein. Bewusst über den
+        /// Inhalt von <c>pnlInhalt</c> und nicht über <c>_aktiveSeite</c>: Was in
+        /// der Inhaltsfläche hängt, IST die Seite - eine zweite Buchführung könnte
+        /// davon abweichen.
+        /// </summary>
+        private void SeitenknoepfeEinmessen()
+        {
+            foreach (Control kind in pnlInhalt.Controls) SeitenknopfAbruecken(kind);
+        }
+
+        private void SeitenknopfAbruecken(Control seite)
+        {
+            if (seite == null || seite.IsDisposed || seite.Parent == null) return;
+
+            Button knopf = Seitenknopf(seite);
+            if (knopf == null) return;
+
+            // Der Knopf muss unmittelbar auf der Seite sitzen - nur dann sind seine
+            // Koordinaten die der Seite. Alle vier Seiten machen das so; ein
+            // abweichender Aufbau wird lieber in Ruhe gelassen als falsch verschoben.
+            if (!ReferenceEquals(knopf.Parent, seite)) return;
+
+            // Vor dem ersten Layout steht die Seite noch auf ihrer Entwurfsgröße -
+            // dann ergäbe die Messung Unsinn. Der SizeChanged-Haken holt es nach.
+            if (seite.ClientSize.Width < 200 || seite.ClientSize.Height < 200) return;
+
+            int ziel = FreierPlatz(seite, knopf);
+            if (knopf.Top == ziel) return;      // schützt vor einer Layout-Schleife
+
+            knopf.Top = ziel;
+            knopf.BringToFront();
+        }
+
+        /// <summary>Der eigene Infoknopf einer Seite - ohne in Fremdmasken zu steigen.</summary>
+        private static Button SeitenknopfSuchen(Control behaelter)
+        {
+            foreach (Control kind in behaelter.Controls)
+            {
+                if (kind == null || kind.IsDisposed) continue;
+
+                if (kind.Name != null &&
+                    kind.Name.StartsWith(InfoKnopf.KNOPF_NAME, StringComparison.OrdinalIgnoreCase))
+                {
+                    return kind as Button;
+                }
+
+                if (kind is Form || kind is UserControl) continue;   // fremder Bereich
+
+                Button tiefer = SeitenknopfSuchen(kind);
+                if (tiefer != null) return tiefer;
+            }
+
+            return null;
+        }
+
+        private static Button Seitenknopf(Control seite)
+        {
+            return SeitenknopfSuchen(seite);
+        }
+
+        /// <summary>
+        /// Erster freier Platz im senkrechten Streifen des Knopfes, ab
+        /// <see cref="SEITENKNOPF_OBEN"/> abwärts.
+        /// </summary>
+        private static int FreierPlatz(Control seite, Button knopf)
+        {
+            var streng = new List<Rectangle>();
+            var nachgiebig = new List<Rectangle>();
+            HindernisseSammeln(seite, seite, knopf, streng, nachgiebig);
+
+            int platz = Suchen(streng, seite, knopf);
+            if (platz >= 0) return platz;
+
+            platz = Suchen(nachgiebig, seite, knopf);
+            if (platz >= 0) return platz;
+
+            // Nichts gefunden: lieber der zugesagte Mindestabstand als zurück in die
+            // Kopfzeile. BringToFront hält den Knopf dort bedienbar.
+            return SEITENKNOPF_OBEN;
+        }
+
+        private static int Suchen(List<Rectangle> hindernisse, Control seite, Button knopf)
+        {
+            int links = knopf.Left;
+            int breite = knopf.Width;
+            int hoehe = knopf.Height;
+            int unten = seite.ClientSize.Height;
+
+            for (int oben = SEITENKNOPF_OBEN; oben <= SEITENKNOPF_OBEN + SEITENKNOPF_SUCHTIEFE; oben++)
+            {
+                if (oben + hoehe > unten) break;
+
+                var platz = new Rectangle(links, oben, breite, hoehe);
+
+                bool frei = true;
+                foreach (Rectangle r in hindernisse)
+                {
+                    if (r.IntersectsWith(platz)) { frei = false; break; }
+                }
+
+                if (frei) return oben;
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Sammelt die Hindernisse der Seite in Seitenkoordinaten - in denselben
+        /// zwei Härtegraden wie <c>InfoKnopf.FreiesOben</c>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Streng</b> ist jedes Blatt des Baumes und zusätzlich jedes bedienbare
+        /// Steuerelement, auch wenn es Kinder führt (eine Liste trägt ihre
+        /// Bildlaufleiste als Kind - deren obere rechte Ecke ist gerade NICHT frei).
+        /// Reine Behälter zählen nicht, sonst wäre auf den beiden Tabellenseiten
+        /// nirgends Platz. <b>Nachgiebig</b> sind nur die bedienbaren: Beschriftungen
+        /// und Rahmen dürfen im Notfall überlagert werden.
+        /// </remarks>
+        private static void HindernisseSammeln(Control knoten, Control seite, Button knopf,
+                                               List<Rectangle> streng, List<Rectangle> nachgiebig)
+        {
+            foreach (Control kind in knoten.Controls)
+            {
+                if (kind == null || kind.IsDisposed || ReferenceEquals(kind, knopf)) continue;
+
+                bool bedienbar = Bedienbar(kind);
+
+                if (kind.Controls.Count == 0 || bedienbar)
+                {
+                    Rectangle r = AufSeite(kind, seite);
+                    if (r.Width > 0 && r.Height > 0)
+                    {
+                        streng.Add(r);
+                        if (bedienbar) nachgiebig.Add(r);
+                    }
+                }
+
+                // In ein Bedienelement hineinzusteigen bringt nichts - sein Inneres
+                // gehört ihm ganz.
+                if (!bedienbar) HindernisseSammeln(kind, seite, knopf, streng, nachgiebig);
+            }
+        }
+
+        /// <summary>
+        /// Ein Steuerelement, das der Anwender anfasst - Wortlaut wie
+        /// <c>InfoKnopf.Bedienbar</c>.
+        /// </summary>
+        private static bool Bedienbar(Control c)
+        {
+            return c is ButtonBase || c is TextBoxBase || c is ListControl
+                || c is ListView || c is DataGridView || c is TreeView
+                || c is UpDownBase || c is TrackBar || c is DateTimePicker
+                || c is MonthCalendar || c is ScrollBar;
+        }
+
+        /// <summary>Rechteck eines Steuerelements in den Koordinaten der Seite.</summary>
+        private static Rectangle AufSeite(Control c, Control seite)
+        {
+            Point p = c.Location;
+            Control lauf = c.Parent;
+
+            while (lauf != null && !ReferenceEquals(lauf, seite))
+            {
+                p.Offset(lauf.Location);
+                lauf = lauf.Parent;
+            }
+
+            return new Rectangle(p, c.Size);
         }
 
         private void ZeigeHinweis(string text)
