@@ -9592,6 +9592,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Semantische Suche aktiv ähnelt.
+        /// </summary>
+        public static string KI_SEMANTIK_AKTIV {
+            get {
+                return ResourceManager.GetString("KI_SEMANTIK_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die semantische Suche arbeitet ausschließlich auf diesem Rechner. Modell: {0} ({1}), einmalig bezogen von {2}. ähnelt.
+        /// </summary>
+        public static string KI_SEMANTIK_HERKUNFT {
+            get {
+                return ResourceManager.GetString("KI_SEMANTIK_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Semantische Suche wird vorbereitet ... ähnelt.
+        /// </summary>
+        public static string KI_SEMANTIK_VORBEREITUNG {
+            get {
+                return ResourceManager.GetString("KI_SEMANTIK_VORBEREITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vor der ersten Änderung muss eine Sicherungskopie der Datenbank entstehen. Das ist nicht gelungen ({0}) — Schreibaktionen bleiben deshalb gesperrt. ähnelt.
         /// </summary>
         public static string KI_SICH_FEHLGESCHLAGEN {

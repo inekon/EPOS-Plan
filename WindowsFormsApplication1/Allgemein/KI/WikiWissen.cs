@@ -44,6 +44,18 @@ namespace WindowsFormsApplication1
     /// sonst das laengste.
     /// </para>
     /// <para>
+    /// <b>Zweite Stufe seit H10 (30.08.2026): Bedeutung statt Buchstaben.</b>
+    /// Die Stichwortsuche bleibt fuehrend; was sie nicht findet, ergaenzt der
+    /// oertliche Einbettungs-Index (<see cref="SemantikIndex"/>) - er kennt
+    /// „Akku" als „Stromspeicher", ohne dass eine Weiterleitung dafuer angelegt
+    /// waere. <b>Datenschutzlich aendert sich dadurch nichts</b>: Frage und
+    /// Wiki-Text werden AUSSCHLIESSLICH auf diesem Rechner eingebettet, es
+    /// entsteht kein neuer Empfaenger und keine neue Uebertragung; hinaus geht
+    /// weiterhin nur die Stichwortliste an <c>wiki.epos-plan.de</c>. Steht kein
+    /// Index (Modell fehlt, Aufbau laeuft noch, Netz weg), verhaelt sich die
+    /// Suche Zeile fuer Zeile wie unter H9.
+    /// </para>
+    /// <para>
     /// <b>Reihenfolge je Seite:</b> frischer Cache -> Online -> abgelaufener
     /// Cache -> nichts. Der Cache liegt als eine Datei je Seite unter
     /// <c>%APPDATA%\wp-plan\wiki-wissen\</c> und gilt 24 Stunden; die
@@ -126,6 +138,13 @@ namespace WindowsFormsApplication1
         /// 0 heisst, es wurde nichts gesendet.
         /// </summary>
         public static int LetzteSuchStufe { get; private set; }
+
+        /// <summary>
+        /// Wie viele Seiten der letzten Trefferliste NUR ueber die semantische
+        /// Stufe hereinkamen - reine Diagnose wie <see cref="LetzteSuchStufe"/>,
+        /// keine Programmlogik haengt daran.
+        /// </summary>
+        public static int LetzteSemantikTreffer { get; private set; }
 
         // ==================================================================
         //  Basis-URL
@@ -482,12 +501,33 @@ namespace WindowsFormsApplication1
         /// Dieselbe Suche gegen eine ausdruecklich angegebene Basis-URL - der Weg
         /// des Pruefharnischs (auch fuer die Offline-Probe mit falscher Adresse).
         /// </summary>
+        internal static Task<List<WissensAbschnitt>> SucheAsync(string basis, string frage,
+                                                                string kontext,
+                                                                CancellationToken abbruch)
+        {
+            return SucheAsync(basis, frage, kontext, true, abbruch);
+        }
+
+        /// <summary>
+        /// Dieselbe Suche mit abschaltbarer Stichwortstufe. <c>false</c> laesst die
+        /// H9-Kaskade AUS und misst damit, was die semantische Stufe fuer sich
+        /// allein traegt - der Weg des Pruefharnischs (H10-Beweis 3). Im Programm
+        /// wird ausschliesslich mit <c>true</c> aufgerufen; es gibt keinen
+        /// Schalter dafuer und keinen Einstellwert.
+        /// </summary>
         internal static async Task<List<WissensAbschnitt>> SucheAsync(string basis, string frage,
                                                                       string kontext,
+                                                                      bool stichwortsuche,
                                                                       CancellationToken abbruch)
         {
             List<WissensAbschnitt> ergebnis = new List<WissensAbschnitt>();
             if (string.IsNullOrWhiteSpace(basis) || string.IsNullOrWhiteSpace(frage)) return ergebnis;
+
+            // Modell und Index anstossen - kehrt sofort zurueck und haelt diese
+            // Suche NICHT auf. Beim ersten Mal ist deshalb nichts fertig; die
+            // Semantik wirkt ab dem naechsten Aufruf.
+            try { SemantikIndex.Anstossen(basis); }
+            catch (Exception ex) { Debug.WriteLine("[Wiki] Semantik-Anstoss: " + ex.Message); }
 
             try
             {
@@ -498,14 +538,22 @@ namespace WindowsFormsApplication1
                 if (kontextTitel.Length > 0)
                     treffer.Add(new Suchtreffer { Titel = kontextTitel });
 
-                foreach (Suchtreffer t in await SuchtrefferAsync(basis, frage, abbruch).ConfigureAwait(false))
+                if (stichwortsuche)
                 {
-                    if (treffer.Any(v => string.Equals(v.Titel, t.Titel, StringComparison.OrdinalIgnoreCase)))
-                        continue;
-                    treffer.Add(t);
+                    foreach (Suchtreffer t in await SuchtrefferAsync(basis, frage, abbruch)
+                                                        .ConfigureAwait(false))
+                    {
+                        if (treffer.Any(v => string.Equals(v.Titel, t.Titel,
+                                                           StringComparison.OrdinalIgnoreCase)))
+                            continue;
+                        treffer.Add(t);
+                    }
                 }
-
-                if (treffer.Count == 0) return ergebnis;
+                else
+                {
+                    _letzteSuchAdressen = new List<string>();
+                    LetzteSuchStufe = 0;
+                }
 
                 // Rubrik-Treffer nach vorn (OrderBy ist stabil, die Kontextseite
                 // bleibt damit an erster Stelle).
@@ -513,6 +561,11 @@ namespace WindowsFormsApplication1
                     .OrderBy(t => t.Titel.StartsWith(RUBRIK, StringComparison.OrdinalIgnoreCase) ? 0 : 1)
                     .Take(MAX_SEITEN)
                     .ToList();
+
+                // ---- 1b) Semantische Stufe: fuellt auf, ueberholt nie.
+                SemantikAnfuegen(frage, gereiht);
+
+                if (gereiht.Count == 0) return ergebnis;
 
                 // ---- 2) Auszuege: frischer Cache, sonst online, sonst alter Cache.
                 Dictionary<string, string> texte =
@@ -573,6 +626,62 @@ namespace WindowsFormsApplication1
             }
 
             return ergebnis;
+        }
+
+        // ==================================================================
+        //  Semantische Stufe (H10) - sie ergaenzt, sie ersetzt nicht
+        // ==================================================================
+
+        /// <summary>
+        /// Fuellt die Trefferliste mit semantischen Kandidaten auf, bis
+        /// <see cref="MAX_SEITEN"/> erreicht ist.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Drei Zusagen.</b> (1) Was die Stichwortsuche gefunden hat, bleibt
+        /// stehen und bleibt vorn - angehaengt wird nur, was noch Platz hat.
+        /// (2) Die Kontextseite bleibt der erste Abschnitt; sie steht schon in der
+        /// Liste, bevor diese Methode laeuft. (3) Steht kein Index, geschieht
+        /// nichts - kein Warten, kein Fehler, kein Unterschied zu H9.
+        /// </para>
+        /// <para>
+        /// Vereinigt wird auf SEITENebene: der beste Abschnitt einer Seite bringt
+        /// die Seite herein, in den Prompt geht danach - wie bei jedem anderen
+        /// Treffer auch - der ganze Seitenauszug. Die Ueberschrift des besten
+        /// Abschnitts wird als Anker mitgegeben, damit der Quellen-Link im Chat
+        /// an die richtige Stelle springt.
+        /// </para>
+        /// </remarks>
+        private static void SemantikAnfuegen(string frage, List<Suchtreffer> gereiht)
+        {
+            LetzteSemantikTreffer = 0;
+
+            try
+            {
+                int frei = MAX_SEITEN - gereiht.Count;
+                if (frei <= 0) return;
+
+                foreach (SemantikIndex.Fund f in SemantikIndex.Suche(frage, MAX_SEITEN))
+                {
+                    if (gereiht.Any(v => string.Equals(v.Titel, f.Titel,
+                                                       StringComparison.OrdinalIgnoreCase)))
+                        continue;
+
+                    gereiht.Add(new Suchtreffer
+                    {
+                        Titel = f.Titel,
+                        Anker = f.Ueberschrift.Replace(' ', '_'),
+                        Beschreibung = ""
+                    });
+
+                    LetzteSemantikTreffer++;
+                    if (gereiht.Count >= MAX_SEITEN) break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("[Wiki] Semantische Stufe uebersprungen: " + ex.Message);
+            }
         }
 
         /// <summary>Kappt einen Auszug auf <see cref="MAX_ZEICHEN"/> - Marke eingerechnet.</summary>
@@ -723,6 +832,95 @@ namespace WindowsFormsApplication1
             // Bei einer Weiterleitung traegt die Antwort den ZIELtitel; bei genau
             // einer angefragten Seite ist der einzige Auszug zwangslaeufig ihrer.
             return eine.Count == 1 ? eine.Values.First() : "";
+        }
+
+        /// <summary>
+        /// Der Klartext EINER Seite auf demselben Weg wie in der Suche: frischer
+        /// Cache, sonst online (und dann in den Cache), sonst abgelaufener Cache,
+        /// sonst leer. Der Weg des Indexaufbaus (H10) - er bekommt damit genau
+        /// dieselben Auszuege wie der Prompt und kostet nichts extra, sobald der
+        /// Tagescache steht.
+        /// </summary>
+        internal static async Task<string> SeitentextAsync(string basis, string titel,
+                                                            CancellationToken abbruch)
+        {
+            if (string.IsNullOrWhiteSpace(basis) || string.IsNullOrWhiteSpace(titel)) return "";
+
+            string frisch = CacheLesen(basis, titel, Gueltigkeit);
+            if (frisch != null) return frisch;
+
+            string geholt = await AuszugEinzelnAsync(basis, titel, abbruch).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(geholt))
+            {
+                CacheSchreiben(basis, titel, geholt);
+                return geholt;
+            }
+
+            return CacheLesen(basis, titel, TimeSpan.MaxValue) ?? "";
+        }
+
+        /// <summary>
+        /// Alle ECHTEN Seiten des Wikis (Namensraum 0, ohne Weiterleitungen) -
+        /// die Grundmenge des Einbettungs-Index. Bei jedem Fehler eine leere
+        /// Liste; dann wird eben kein Index gebaut.
+        /// </summary>
+        /// <remarks>
+        /// Weiterleitungen bleiben ausdruecklich draussen
+        /// (<c>apfilterredir=nonredirects</c>): die 37 Synonymseiten aus H9
+        /// tragen keinen eigenen Text und wuerden dieselbe Seite ein zweites Mal
+        /// in den Index bringen. <c>apcontinue</c> wird abgearbeitet, damit es
+        /// auch ueber 500 Seiten hinaus vollstaendig bleibt.
+        /// </remarks>
+        internal static async Task<List<string>> SeitenlisteAsync(string basis,
+                                                                   CancellationToken abbruch)
+        {
+            List<string> titel = new List<string>();
+            if (string.IsNullOrWhiteSpace(basis)) return titel;
+
+            string weiter = null;
+
+            for (int runde = 0; runde < 10; runde++)
+            {
+                string adresse = basis + "/api.php?action=query&list=allpages&apnamespace=0" +
+                                 "&apfilterredir=nonredirects&aplimit=500&format=json";
+                if (weiter != null) adresse += "&apcontinue=" + Uri.EscapeDataString(weiter);
+
+                string rumpf = await HolenAsync(adresse, abbruch).ConfigureAwait(false);
+                if (rumpf == null) break;
+
+                try
+                {
+                    using (JsonDocument doc = JsonDocument.Parse(rumpf))
+                    {
+                        JsonElement abfrage, seiten;
+                        if (!doc.RootElement.TryGetProperty("query", out abfrage)) break;
+                        if (!abfrage.TryGetProperty("allpages", out seiten) ||
+                            seiten.ValueKind != JsonValueKind.Array) break;
+
+                        foreach (JsonElement s in seiten.EnumerateArray())
+                        {
+                            string t = Zeichenkette(s, "title");
+                            if (t.Length > 0) titel.Add(t);
+                        }
+
+                        JsonElement fortsetzung, wert;
+                        weiter = null;
+                        if (doc.RootElement.TryGetProperty("continue", out fortsetzung) &&
+                            fortsetzung.TryGetProperty("apcontinue", out wert) &&
+                            wert.ValueKind == JsonValueKind.String)
+                            weiter = wert.GetString();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine("[Wiki] Seitenliste nicht lesbar: " + ex.Message);
+                    break;
+                }
+
+                if (weiter == null) break;
+            }
+
+            return titel;
         }
 
         /// <summary>Liest <c>query.pages[*].extract</c> in die Tabelle, Schluessel ist der Seitentitel.</summary>

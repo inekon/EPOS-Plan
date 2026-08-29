@@ -460,6 +460,18 @@ namespace WindowsFormsApplication1
                 "Nutzungsbedingungen des jeweiligen Anbieters. Ohne Schlüssel arbeitet die Hilfe ausschließlich " +
                 "lokal und ohne Datenübertragung.");
 
+            SchreibeUeberschrift(_komponenten, "Semantische Suche in der Dokumentation");
+            SchreibeAbsatz(_komponenten,
+                "ONNX Runtime (MIT-Lizenz, Microsoft Corporation) und Microsoft.ML.Tokenizers (MIT-Lizenz, " +
+                "Microsoft Corporation) - Ausführung des Einbettungsmodells auf diesem Rechner; " +
+                "Google Protocol Buffers (BSD-3-Clause, Google LLC) als deren Bestandteil." +
+                Environment.NewLine +
+                "Einbettungsmodell " + SemantikModell.NAME + " (" + SemantikModell.LIZENZ + ", " +
+                "Ubiquitous Knowledge Processing Lab / sentence-transformers): ordnet Fragen und Hilfetexte " +
+                "nach Bedeutung zu. Das Modell gehört nicht zum Lieferumfang; es wird bei Bedarf einmalig " +
+                "von huggingface.co bezogen und liegt danach im Benutzerprofil. Die Zuordnung selbst findet " +
+                "ausschließlich auf diesem Rechner statt - es werden dabei keinerlei Daten übertragen.");
+
             _komponenten.SelectionStart = 0;
             _komponenten.ScrollToCaret();
         }

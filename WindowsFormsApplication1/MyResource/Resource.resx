@@ -8287,4 +8287,13 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="KI_REG_PROJEKT_AKTIV_NICHT_GELESEN" xml:space="preserve">
     <value>Die Kopfdaten zu ID {0} konnten nicht gelesen werden; es gelten die Angaben der Oberfläche.</value>
   </data>
+  <data name="KI_SEMANTIK_AKTIV" xml:space="preserve">
+    <value>Semantische Suche aktiv</value>
+  </data>
+  <data name="KI_SEMANTIK_HERKUNFT" xml:space="preserve">
+    <value>Die semantische Suche arbeitet ausschließlich auf diesem Rechner. Modell: {0} ({1}), einmalig bezogen von {2}.</value>
+  </data>
+  <data name="KI_SEMANTIK_VORBEREITUNG" xml:space="preserve">
+    <value>Semantische Suche wird vorbereitet ...</value>
+  </data>
 </root>

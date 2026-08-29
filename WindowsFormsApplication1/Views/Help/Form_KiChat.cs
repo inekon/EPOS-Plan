@@ -44,6 +44,13 @@ namespace WindowsFormsApplication1
 
         private System.Windows.Forms.Timer _sperrUhr;
 
+        // --- Statuszeile der semantischen Suche (H10) ---
+        // Der Tooltip nennt Modell, Lizenz und Herkunft; der Merker verhindert,
+        // dass die 400-ms-Uhr denselben Text 150-mal in der Minute neu setzt
+        // (jedes Setzen zeichnet das Label neu und laesst es flackern).
+        private ToolTip _semantikTipp;
+        private SemantikModell.Lage _semantikGezeigt = (SemantikModell.Lage)(-1);
+
         // --- Bestätigungsschicht (Etappe 3, Fachkonzept 3.5) ---
         private Panel _bestaetigungBereich;
         private RichTextBox _bestaetigungText;
@@ -441,6 +448,15 @@ namespace WindowsFormsApplication1
             FeldsicherungAnwenden();
 
             Begruessung();
+
+            // Semantische Doku-Suche (H10): Modell und Index anstossen, sobald der
+            // Assistent GEBRAUCHT wird - nicht beim Programmstart. Der Aufruf kehrt
+            // sofort zurueck; alles Weitere laeuft im Hintergrund und darf scheitern.
+            try { SemantikIndex.Anstossen(WikiWissen.Basis()); }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("[Semantik] Anstoss beim Oeffnen: " + ex.Message);
+            }
         }
 
         // ------------------------------------------------------------------
@@ -840,11 +856,60 @@ namespace WindowsFormsApplication1
             {
                 _lblStatus.Text = MyResource.Resource.KI_AKT_LAEUFT;
                 _sperreGezeigt = true;
+                return;
             }
-            else if (_sperreGezeigt)
+
+            if (_sperreGezeigt)
             {
                 _sperreGezeigt = false;
                 _lblStatus.Text = "";
+            }
+
+            if (!belegt) SemantikStatusZeigen();
+        }
+
+        /// <summary>
+        /// Schreibt den Zustand der semantischen Suche (H10) in die vorhandene
+        /// Statuszeile - dezent, in derselben Zeile wie jeder andere Status.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Gezeigt werden nur zwei der vier Zustaende: „wird vorbereitet" waehrend
+        /// des einmaligen Bezugs und „aktiv", sobald gerechnet werden kann. Ein
+        /// FEHLGESCHLAGENER Bezug bleibt stumm - er ist kein Ereignis, ueber das
+        /// der Anwender etwas erfahren muesste: die Hilfe sucht dann genau wie
+        /// vorher, nur ohne die zweite Stufe. Wer es doch wissen will, findet
+        /// Modell, Lizenz und Herkunft im Tooltip der Zeile.
+        /// </para>
+        /// <para>
+        /// Die Zeile wird nur bei ZUSTANDSWECHSEL geschrieben. Die Sperruhr
+        /// schlaegt alle 400 ms; jedes Setzen von <c>Text</c> zeichnet das Label
+        /// neu, und das saehe man.
+        /// </para>
+        /// </remarks>
+        private void SemantikStatusZeigen()
+        {
+            try
+            {
+                SemantikModell.Lage lage = SemantikModell.Zustand;
+                if (lage == _semantikGezeigt) return;
+                _semantikGezeigt = lage;
+
+                if (lage == SemantikModell.Lage.Laedt)
+                    _lblStatus.Text = MyResource.Resource.KI_SEMANTIK_VORBEREITUNG;
+                else if (lage == SemantikModell.Lage.Bereit)
+                    _lblStatus.Text = MyResource.Resource.KI_SEMANTIK_AKTIV;
+                else if (_lblStatus.Text == MyResource.Resource.KI_SEMANTIK_VORBEREITUNG)
+                    _lblStatus.Text = "";
+
+                if (_semantikTipp == null) _semantikTipp = new ToolTip();
+                _semantikTipp.SetToolTip(_lblStatus, string.Format(
+                    MyResource.Resource.KI_SEMANTIK_HERKUNFT,
+                    SemantikModell.NAME, SemantikModell.LIZENZ, SemantikModell.QUELLE));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("[Semantik] Statuszeile: " + ex.Message);
             }
         }
 

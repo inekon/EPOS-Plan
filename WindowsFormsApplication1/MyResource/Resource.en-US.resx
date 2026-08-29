@@ -8280,4 +8280,13 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="KI_REG_PROJEKT_AKTIV_NICHT_GELESEN" xml:space="preserve">
     <value>The header data for ID {0} could not be read; the values shown by the user interface apply.</value>
   </data>
+  <data name="KI_SEMANTIK_AKTIV" xml:space="preserve">
+    <value>Semantic search active</value>
+  </data>
+  <data name="KI_SEMANTIK_HERKUNFT" xml:space="preserve">
+    <value>Semantic search runs entirely on this computer. Model: {0} ({1}), downloaded once from {2}.</value>
+  </data>
+  <data name="KI_SEMANTIK_VORBEREITUNG" xml:space="preserve">
+    <value>Preparing semantic search ...</value>
+  </data>
 </root>
