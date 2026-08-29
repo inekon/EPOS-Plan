@@ -18,6 +18,7 @@ namespace WindowsFormsApplication1
         public Form_Solarganglinie_Admin ()
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
  
             string szPath = Path.Combine(Program.ApplicationPath_User, "Solarthermie");
             textBox_Ordner.Text = szPath;

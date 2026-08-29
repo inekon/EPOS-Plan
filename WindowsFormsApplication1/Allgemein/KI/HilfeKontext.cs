@@ -156,6 +156,12 @@ namespace WindowsFormsApplication1
             { "Form_PV",                     B_PHOTOVOLTAIK },
             { "Form_CECImport",              B_PHOTOVOLTAIK },
 
+            // Nachgetragen mit H7: Die Datei heisst Form_CECImport.cs, die KLASSE
+            // aber Main_PV_Test - nachgeschlagen wird der Typname, der Eintrag
+            // darueber griff also nie. Er bleibt stehen, falls die Klasse einmal
+            // wie ihre Datei heisst.
+            { "Main_PV_Test",                B_PHOTOVOLTAIK },
+
             { "Form_ProjektDelete",          B_PROJEKT },
             { "Form_ProjektSpeichernUnter",  B_PROJEKT },
 
@@ -200,6 +206,10 @@ namespace WindowsFormsApplication1
             { "Form_SpeicherVariantenVergleich", B_STROMSPEICHER },
             { "Form_Stromspeicher",          B_STROMSPEICHER },
 
+            // Nachgetragen mit H7: Entwicklermaske hinter dem unbeschrifteten Knopf
+            // "SP" auf FormMain - sie ordnet dem Projekt einen Stromspeicher zu.
+            { "Form_StromTest",              B_STROMSPEICHER },
+
             { "Form_EingDBStromverbraucher", B_STROMVERBRAUCHER },
             { "Form_EingStromTyp",           B_STROMVERBRAUCHER },
             { "Form_ErgStromverbraucher",    B_STROMVERBRAUCHER },
@@ -210,15 +220,22 @@ namespace WindowsFormsApplication1
             { "Form_Stromverbraucher",       B_STROMVERBRAUCHER },
             { "Form_Stromverbraucher_Admin", B_STROMVERBRAUCHER },
 
+            { "Form_AlsVariante",            B_VARIANTEN },   // H7 nachgetragen
             { "Form_Variantentest",          B_VARIANTEN },
 
+            { "Form_AdminWaermeeinlesen",    B_WAERMEBEDARF },   // H7 nachgetragen
             { "Form_Waermebedarf",           B_WAERMEBEDARF },
 
+            // Kenndaten ist das Kennfeld EINER Waermepumpe (Stuetzstellen
+            // Vorlauftemperatur / Ptherm / COP), aufgerufen aus Form_WP - der
+            // Klassenname sagt das nicht, deshalb der Eintrag (H7).
+            { "Kenndaten",                   B_WAERMEPUMPE },
             { "Form_WP",                     B_WAERMEPUMPE },
             { "Form_WPAuswahl",              B_WAERMEPUMPE },
             { "Form_WpFilterAuswahl",        B_WAERMEPUMPE },
             { "Form_WP_einlesen",            B_WAERMEPUMPE },
 
+            { "Form_KwkgModule",                   B_WIRTSCHAFT },   // H7 nachgetragen
             { "Form_Wirtschaftlichkeit",           B_WIRTSCHAFT },
             { "Form_WirtschaftlichkeitParameter",  B_WIRTSCHAFT },
             { "Form_WirtschaftlichkeitVerlauf",    B_WIRTSCHAFT },

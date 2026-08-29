@@ -78,6 +78,7 @@ namespace WindowsFormsApplication1
 
             Aufbauen();
             ZeilenAufbauen();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
             AllesNachziehen();
         }
 

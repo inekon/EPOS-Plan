@@ -25,6 +25,7 @@ namespace WindowsFormsApplication1
         public Form_Stromganglinie_Admin ()
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
 
             szAppDataPath = Path.Combine(Program.ApplicationPath_User, "Strom");
         }

@@ -27,6 +27,7 @@ namespace WindowsFormsApplication1
         public Form_Heizkessel_einlesen()
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
         }
 
         // Filter-Felder num_LeistungVon/-Bis sind im Designer angelegt (NumericUpDown).

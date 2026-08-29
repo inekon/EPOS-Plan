@@ -20,6 +20,7 @@ namespace WindowsFormsApplication1
         public Form_PufferSp_einlesen ()
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
         }
 
         private void btn_Beenden_Click(object sender, EventArgs e)

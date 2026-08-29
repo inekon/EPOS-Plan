@@ -19,6 +19,7 @@ namespace WindowsFormsApplication1
         public Kenndaten(ref DataSet ds)
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
               
             dataGridView1.DataSource = ds.Tables[0];
             dt = ds.Tables[0];

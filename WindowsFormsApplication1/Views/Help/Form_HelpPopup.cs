@@ -93,7 +93,26 @@ namespace WindowsFormsApplication1
 
             // Y-Versatz minimal auf +25 erhöhen, um der Maus mehr "Luft" zu geben,
             // damit sie beim Erscheinen nicht direkt AUF dem Fenster landet.
-            this.Location = new Point(position.X + 15, position.Y + 25);
+            //
+            // Die endgültige Größe steht erst nach dem Textwechsel fest (AutoSize) —
+            // vor der Randprüfung Layout erzwingen, sonst rechnet sie mit der alten Breite.
+            this.PerformLayout();
+            Size groesse = this.Size;
+            Size bevorzugt = this.PreferredSize;
+            if (bevorzugt.Width > groesse.Width) groesse.Width = bevorzugt.Width;
+            if (bevorzugt.Height > groesse.Height) groesse.Height = bevorzugt.Height;
+
+            // Knöpfe am rechten oder unteren Fensterrand: das Popup darf den
+            // Arbeitsbereich des Monitors nicht verlassen, sonst ist der Link
+            // unerreichbar — dann links neben bzw. oberhalb des Knopfs öffnen.
+            Rectangle bereich = Screen.FromPoint(position).WorkingArea;
+            int x = position.X + 15;
+            int y = position.Y + 25;
+            if (x + groesse.Width > bereich.Right) x = position.X - 15 - groesse.Width;
+            if (y + groesse.Height > bereich.Bottom) y = position.Y - 25 - groesse.Height;
+            if (x < bereich.Left) x = bereich.Left;
+            if (y < bereich.Top) y = bereich.Top;
+            this.Location = new Point(x, y);
 
             if (!this.Visible)
             {

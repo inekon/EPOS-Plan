@@ -20,6 +20,7 @@ namespace WindowsFormsApplication1
         public Form_Stromverbraucher_Admin()
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
         }
 
         public void SetControls(string szProjekt)

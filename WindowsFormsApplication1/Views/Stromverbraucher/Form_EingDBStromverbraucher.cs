@@ -22,6 +22,7 @@ namespace WindowsFormsApplication1
         public Form_EingDBStromverbraucher()
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
 
             RecordSet rs = new RecordSet();
             rs.Open("select * from Tab_Stromverbrauchertyp_STAMM order by Typname");

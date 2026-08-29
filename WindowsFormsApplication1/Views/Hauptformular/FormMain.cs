@@ -72,6 +72,7 @@ namespace WindowsFormsApplication1
         public FormMain()
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
             FillKlimaList();
 
             tt.Draw += new DrawToolTipEventHandler(this.tt_Draw);

@@ -55,6 +55,8 @@ namespace WindowsFormsApplication1
         public Form_Emissionskatalog()
         {
             InitializeComponent();
+            // H7: Infoknopf in das Kopfband (pnlKopf, Dock Top, 58 hoch).
+            InfoKnopf.Anbringen(this, ziel: pnlKopf);
 
             Text = T("EMK_TITEL", "Emissionsfaktor-Katalog");
             lblKopfTitel.Text = Text;

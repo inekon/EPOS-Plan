@@ -19,6 +19,7 @@ namespace WindowsFormsApplication1
         public Form_PufferSp_Admin ()
         {
             InitializeComponent();
+            InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
             listBox_PufferSp_DB.Items.Clear();
         }
 

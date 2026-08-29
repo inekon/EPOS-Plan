@@ -41,6 +41,12 @@ namespace WindowsFormsApplication1
         public Form_Start()
         {
             InitializeComponent();
+            // H7: Infoknoepfe der Reiter "Energieerzeuger" und "Simulation". Platz und
+            // Groesse deckungsgleich zu btn_Help_Strombedarf auf Reiter 3 (51x39, 18 px
+            // vom rechten Rand); programmatisch, weil die Startmaske ihre Koordinaten je
+            // Sprache in eigenen .resx-Dateien fuehrt.
+            InfoKnopf.Anbringen(tabPage4, "btn_Help_Energieerzeuger", 18, 20, breite: 51, hoehe: 39);
+            InfoKnopf.Anbringen(tabPage5, "btn_Help_Simulation", 18, 20, breite: 51, hoehe: 39);
             textBox_ProjektOpen.Text = MyResource.Resource.Text_Select;
             // Der Projektkopf zeigt den Namen jetzt im Auswahlfeld (siehe
             // ProjektkopfAufbauen): solange kein Projekt offen ist, steht dort
