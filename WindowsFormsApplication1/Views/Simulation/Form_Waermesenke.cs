@@ -391,8 +391,13 @@ namespace WindowsFormsApplication1
             const int LADEN_HOEHE = 176;
 
             // --- Senkenliste ---------------------------------------------------------
+            // H12: Der Name ist die einzige Anschrift der feldgenauen Hilfe
+            // (help_mapping.txt). Diese Maske baut ihre Oberflaeche im Code auf
+            // und vergab bisher keine Namen - genau wie InfoKnopf.NamenSicherstellen
+            // es fuer die Maske selbst tut, wird er hier fuer die Bereiche gesetzt.
             GroupBox gbListe = new GroupBox
             {
+                Name = "_gbListe",
                 Text = MyResource.Resource.SIM_GRUPPE_SENKENLISTE,
                 Location = new Point(12, LISTE_OBEN),
                 Size = new Size(596, LISTE_HOEHE)
@@ -462,6 +467,7 @@ namespace WindowsFormsApplication1
             // --- Die gewählte Zeile --------------------------------------------------
             _gbZeile = new GroupBox
             {
+                Name = "_gbZeile",                      // H12: Anschrift der Feldhilfe
                 Text = MyResource.Resource.SIM_GRUPPE_SENKENZEILE,
                 Location = new Point(12, ZEILE_OBEN),
                 Size = new Size(596, ZEILE_HOEHE)
@@ -537,6 +543,7 @@ namespace WindowsFormsApplication1
             // --- Parallelverbund der Senke auf Rang 1 --------------------------------
             _gbVerbund = new GroupBox
             {
+                Name = "_gbVerbund",                    // H12: Anschrift der Feldhilfe
                 Text = SIM_GB_VERBUND,
                 Location = new Point(12, VERBUND_OBEN),
                 Size = new Size(596, VERBUND_HOEHE)
@@ -580,6 +587,7 @@ namespace WindowsFormsApplication1
             // --- Ladeverhalten der gewählten Zeile -----------------------------------
             _gbLaden = new GroupBox
             {
+                Name = "_gbLaden",                      // H12: Anschrift der Feldhilfe
                 Text = MyResource.Resource.SIM_GB_LADEVERHALTEN,
                 Location = new Point(12, LADEN_OBEN),
                 Size = new Size(596, LADEN_HOEHE)
