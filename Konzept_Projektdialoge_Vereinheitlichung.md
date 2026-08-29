@@ -200,11 +200,9 @@ innen — sie profitieren nur mittelbar (Karten-Baustein, Begriffe).
 3. **E3 Löschverhalten — ENTSCHIEDEN:** Rückfrage mit Klartext („entfernt N
    Anlagen: …"), Vorbelegung **Nein**; die Kessel-Lücke der Löschroutine wird
    geschlossen.
-4. **E4 Logo-Klick/Icon-Wechsel — OFFEN** (Erläuterung angefordert). Optionen:
-   **(a)** ersatzlos entfernen [Empfehlung]; **(b)** als bewusste Funktion
-   „Anwendungs-Logo ändern" mit Rückfrage in die Administration verlagern (falls
-   das Umbranden je Kunde eine gewollte Funktion ist); **(c)** belassen. Betrifft
-   nur P4 — die Pakete P1–P3 sind davon unabhängig.
+4. **E4 Logo-Klick/Icon-Wechsel — ENTSCHIEDEN: (a) ersatzlos entfernen.** Der
+   versteckte Handler (Dateidialog + dauerhafter Icon-Wechsel in der DB) entfällt
+   mitsamt tot werdender Hilfswege; das Logo bleibt reines Bild. Umsetzung in P4.
 5. **E5 Begriff — ENTSCHIEDEN:** app-weit „Projektassistent" statt „Projekt Wizard".
 6. **E6 Alt-JPG-Kacheln — ENTSCHIEDEN:** für die übrigen Reiter vorerst behalten,
    Ablösung je Reiter später.
