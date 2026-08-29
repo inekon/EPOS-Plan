@@ -94,7 +94,7 @@ namespace WindowsFormsApplication1
         /// da — <see cref="SCHRITT_58_QUELLEN_SAAT"/> ist eingetragen, das Ziel steht
         /// auf 58. Neue Schritte ab 59.
         /// </summary>
-        public const int ZIEL_VERSION = 58;
+        public const int ZIEL_VERSION = 59;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -2077,6 +2077,39 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_58_QUELLEN_SAAT = 58;
 
+        /// <summary>
+        /// ETAPPE H1 (Festlegung 29.08.2026): <b>Pflichtpositionen und Hilfsenergie an der
+        /// Endenergie.</b> Der Schritt legt die Spalte <c>IstPflicht</c> an
+        /// <c>Tab_KostenVorlagePosition</c> und <c>Tab_ProjektWerte</c> an, bringt die
+        /// <b>Auslieferungsvorlagen</b> auf den Stand des Seed-Katalogs
+        /// (<c>SchemaKatalog.Schritt39_Vorlagen</c>) und markiert die vorhandenen
+        /// Projektpositionen.
+        ///
+        /// <para><b>Was er an den Vorlagen ändert</b> — und warum: Der Abgleich der Seeds
+        /// gegen die Dialoge der Altanwendung („Eingabe Betriebskosten pro Jahr“ für BHKW
+        /// und für die getrennte Erzeugung) hat drei Abweichungen ergeben.
+        /// <c>Instandhaltung Heizkessel</c> stand als fester Jahresbetrag ohne
+        /// Empfehlungsbereich, beide Altdialoge nennen <c>% der Investition, 1,5–2,5 %</c>;
+        /// die Position <c>Instandhaltung Wärmezentrale</c> (1,8–2,2 %) fehlte in der
+        /// Heizkessel-Vorlage ganz. Dazu kommt die neue Hilfsenergie-Bemessung.</para>
+        ///
+        /// <para><b>Nur die Standardvariante wird angefasst</b> (<c>Name = "Standard"</c>):
+        /// Benutzervarianten sind Anwenderdaten und bleiben unberührt.</para>
+        ///
+        /// <para><b>ERGEBNISNEUTRAL.</b> An <c>Tab_ProjektWerte</c> wird ausschließlich
+        /// <c>IstPflicht</c> gesetzt — ein Merkmal, das nur die Löschsperre steuert. Die
+        /// <b>Bemessung vorhandener Projektzeilen bleibt unangetastet</b>: Eine Zeile mit
+        /// <c>PROZENT_BRENNSTOFFKOSTEN</c> rechnet weiter wie bisher. Der neue Weg greift
+        /// erst, wenn der Anwender die Bemessung selbst umstellt. Vorlagenänderungen wirken
+        /// ohnehin nie ins Projekt (KL3: die Übernahme materialisiert, sie koppelt nicht),
+        /// und Vorlagen tragen keine Sätze.</para>
+        ///
+        /// <para><b>Idempotenz:</b> Spalten per <c>ALTER TABLE</c> im try/catch (Muster
+        /// Schritt 45); alle Wertänderungen sind <c>UPDATE</c>s auf den Sollwert, ein
+        /// fehlender Positionssatz wird ergänzt. Der Zweitlauf meldet 0 Änderungen.</para>
+        /// </summary>
+        public const int SCHRITT_59_PFLICHTPOSITIONEN = 59;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -3162,6 +3195,22 @@ namespace WindowsFormsApplication1
                         "Luftschadstoffe bleiben dann ohne zitierfaehige Fundstelle, und " +
                         "fuer CH4, N2O und Staub gibt es weiter keine Vorlage.",
                         Schritt_58_QuellenSaat),
+
+            // ETAPPE H1 - Pflichtpositionen nach VDI 2067 und Hilfsenergie an der
+            //             Endenergie der Anlage. Ergebnisneutral: an den Projektzeilen
+            //             wird nur IstPflicht gesetzt, keine Bemessung geaendert.
+            //             Regeln und Idempotenzzusage bei der Schrittkonstanten.
+            new Schritt(SCHRITT_59_PFLICHTPOSITIONEN,
+                        "Pflichtpositionen (Wartung, Instandhaltung der eigenen Komponente, " +
+                        "Hilfsenergie) kennzeichnen; Auslieferungsvorlagen auf den " +
+                        "Seed-Katalog bringen (Hilfsenergie an der Endenergie, " +
+                        "Instandhaltung Heizkessel als % der Investition 1,5-2,5, " +
+                        "Instandhaltung Waermezentrale beim Kessel ergaenzen)",
+                        "Die Pflichtkennzeichnung fehlt dann - Wartung und Hilfsenergie " +
+                        "lassen sich im Projekt weiterhin loeschen, und die " +
+                        "Auslieferungsvorlagen weichen von den Empfehlungsbereichen der " +
+                        "Altanwendung ab.",
+                        Schritt_59_Pflichtpositionen),
         };
 
         // =================================================================================
@@ -8609,6 +8658,312 @@ namespace WindowsFormsApplication1
                     "ohne Herkunft), kein aktiver Traegerwert und keine Altspalte werden " +
                     "beruehrt.");
             return true;
+        }
+
+        /// <summary>
+        /// Schritt 59. Anlass, Systemgrenzen, Ergebnisneutralität und Idempotenzzusage
+        /// stehen bei <see cref="SCHRITT_59_PFLICHTPOSITIONEN"/>.
+        /// </summary>
+        private static bool Schritt_59_Pflichtpositionen(Lauf l)
+        {
+            // --- a) Spalten anlegen (Muster Schritt 45: ALTER TABLE im try/catch) ------
+            SpalteYesNo(l, SchemaKatalog.TAB_KOSTENVORLAGEPOSITION,
+                        SchemaKatalog.SPALTE_KVP_IST_PFLICHT);
+            SpalteYesNo(l, SchemaKatalog.TAB_PROJEKTWERTE,
+                        SchemaKatalog.SPALTE_PW_IST_PFLICHT);
+
+            if (Scalar(l, "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION +
+                          "] WHERE [" + SchemaKatalog.SPALTE_KVP_IST_PFLICHT + "] = FALSE") == null ||
+                Scalar(l, "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_PROJEKTWERTE +
+                          "] WHERE [" + SchemaKatalog.SPALTE_PW_IST_PFLICHT + "] = FALSE") == null)
+            {
+                l.Notiz("59: Spalte " + SchemaKatalog.SPALTE_KVP_IST_PFLICHT +
+                        " ist nicht anlegbar/lesbar - Schritt 38 ist nicht gelaufen.");
+                return false;
+            }
+
+            bool ok = true;
+            int gepflichtet = 0, bemessung = 0, empfehlung = 0, ergaenzt = 0, projektzeilen = 0;
+
+            // --- b) Namenskollision aufloesen, VOR der Seed-Schleife -------------------
+            // Die Vorlage hiess "Vollwartung / Wartung BHKW", der Altkatalog
+            // DbWerte.VDI_POS_WARTUNG_BHKW - zwei StammID fuer dieselbe VDI-Position.
+            // Entschieden ist der Altkatalogname. Die Umbenennung MUSS vor der Schleife
+            // laufen: Danach sucht die Schleife nach dem neuen Namen und wuerde die
+            // Position sonst als fehlend ansehen und ein zweites Mal anlegen.
+            WartungBhkwVereinheitlichen(l);
+
+            foreach (SchemaKatalog.KostenVorlagenSeed v in SchemaKatalog.Schritt39_Vorlagen)
+            {
+                object kidObj = Scalar(l,
+                    "SELECT MAX([ID]) FROM [" + SchemaKatalog.TAB_KOSTENKOMPONENTE + "] " +
+                    "WHERE [" + SchemaKatalog.SPALTE_KK_KOMPONENTE + "] = ?",
+                    new OleDbParameter("@k", v.Komponente));
+                if (kidObj == null || kidObj == DBNull.Value) continue;   // Komponente fehlt
+                int komponentenId = Zahl(kidObj);
+
+                // Nur die AUSLIEFERUNGSvariante; Benutzervarianten sind Anwenderdaten.
+                object vidObj = Scalar(l,
+                    "SELECT MAX([ID]) FROM [" + SchemaKatalog.TAB_KOSTENVORLAGE + "] WHERE [" +
+                    SchemaKatalog.SPALTE_KV_KOMPONENTENID + "] = ? AND [" +
+                    SchemaKatalog.SPALTE_KV_KATEGORIEID + "] = ? AND [" +
+                    SchemaKatalog.SPALTE_KV_NAME + "] = ?",
+                    new OleDbParameter("@kid", komponentenId),
+                    new OleDbParameter("@kat", v.KategorieId),
+                    new OleDbParameter("@n", SchemaKatalog.VORLAGE_NAME_STANDARD));
+                if (vidObj == null || vidObj == DBNull.Value) continue;   // Vorlage fehlt
+                int vorlageId = Zahl(vidObj);
+
+                int sort = 0;
+                foreach (SchemaKatalog.VorlagenPositionSeed p in v.Positionen)
+                {
+                    sort += 10;
+
+                    object daObj = Scalar(l,
+                        "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION +
+                        "] WHERE [" + SchemaKatalog.SPALTE_KVP_VORLAGEID + "] = ? AND [" +
+                        SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ?",
+                        new OleDbParameter("@vid", vorlageId),
+                        new OleDbParameter("@b", p.Bezeichnung));
+                    if (daObj == null) { ok = false; continue; }
+
+                    if (Zahl(daObj) == 0)
+                    {
+                        // Position fehlt (Instandhaltung Waermezentrale beim Kessel,
+                        // Hilfsenergie bei Photovoltaik und Stromspeicher) - ergaenzen.
+                        if (VorlagenpositionErgaenzen(l, vorlageId, p, sort)) ergaenzt++;
+                        else ok = false;
+                        continue;
+                    }
+
+                    // Pflichtmerkmal - der Seed-Katalog ist die eine Wahrheit.
+                    gepflichtet += NonQuery(l,
+                        "UPDATE [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] SET [" +
+                        SchemaKatalog.SPALTE_KVP_IST_PFLICHT + "] = ? WHERE [" +
+                        SchemaKatalog.SPALTE_KVP_VORLAGEID + "] = ? AND [" +
+                        SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ? AND [" +
+                        SchemaKatalog.SPALTE_KVP_IST_PFLICHT + "] <> ?",
+                        new OleDbParameter("@f", p.IstPflicht),
+                        new OleDbParameter("@vid", vorlageId),
+                        new OleDbParameter("@b", p.Bezeichnung),
+                        new OleDbParameter("@f2", p.IstPflicht));
+
+                    // Bemessung auf den Sollwert (Hilfsenergie an der Endenergie;
+                    // Instandhaltung Heizkessel als Prozentsatz der Investition).
+                    bemessung += NonQuery(l,
+                        "UPDATE [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] SET [" +
+                        SchemaKatalog.SPALTE_KVP_BEMESSUNG + "] = ? WHERE [" +
+                        SchemaKatalog.SPALTE_KVP_VORLAGEID + "] = ? AND [" +
+                        SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ? AND [" +
+                        SchemaKatalog.SPALTE_KVP_BEMESSUNG + "] <> ?",
+                        new OleDbParameter("@bm", p.Bemessung),
+                        new OleDbParameter("@vid", vorlageId),
+                        new OleDbParameter("@b", p.Bezeichnung),
+                        new OleDbParameter("@bm2", p.Bemessung));
+
+                    // Empfehlungsbereich nur NACHTRAGEN, wo keiner steht - ein vom
+                    // Anwender gepflegter Bereich der Standardvariante bleibt.
+                    if (p.EmpfehlungVon.HasValue && p.EmpfehlungBis.HasValue)
+                        empfehlung += NonQuery(l,
+                            "UPDATE [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] SET [" +
+                            SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_VON + "] = ?, [" +
+                            SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_BIS + "] = ? WHERE [" +
+                            SchemaKatalog.SPALTE_KVP_VORLAGEID + "] = ? AND [" +
+                            SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ? AND [" +
+                            SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_VON + "] IS NULL",
+                            new OleDbParameter("@ev", p.EmpfehlungVon.Value),
+                            new OleDbParameter("@eb", p.EmpfehlungBis.Value),
+                            new OleDbParameter("@vid", vorlageId),
+                            new OleDbParameter("@b", p.Bezeichnung));
+
+                    // Projektzeilen derselben Komponente und Kategorie kennzeichnen.
+                    // NUR IstPflicht - die Bemessung der Projektzeile bleibt, wie sie ist
+                    // (Ergebnisneutralitaet, Begruendung bei der Schrittkonstanten).
+                    //
+                    // ACE-FALLE, am 29.08.2026 gemessen: Ein UPDATE mit "StammID IN
+                    // (SELECT ...)" laeuft in Access OHNE Fehler durch und aendert
+                    // NULL Zeilen - auch wenn die Bedingung erfuellt ist. Dieselbe
+                    // Anweisung mit direkter StammID trifft die Zeile. Die StammID wird
+                    // deshalb VORHER einzeln aufgeloest; die Unterabfrage im UPDATE ist
+                    // hier kein Stilfehler, sondern ein stiller Nulltreffer.
+                    if (p.IstPflicht)
+                    {
+                        object sidObj = Scalar(l,
+                            "SELECT MAX([" + SchemaKatalog.SPALTE_KF_STAMMID + "]) FROM [" +
+                            SchemaKatalog.TAB_KOSTENFAKTOR + "] WHERE [" +
+                            SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ?",
+                            new OleDbParameter("@b", p.Bezeichnung));
+                        if (sidObj != null && sidObj != DBNull.Value)
+                            projektzeilen += NonQuery(l,
+                                "UPDATE [" + SchemaKatalog.TAB_PROJEKTWERTE + "] SET [" +
+                                SchemaKatalog.SPALTE_PW_IST_PFLICHT + "] = TRUE " +
+                                "WHERE [KomponentenID] = ? AND [KategorieID] = ? AND [" +
+                                SchemaKatalog.SPALTE_PW_IST_PFLICHT + "] = FALSE AND [StammID] = ?",
+                                new OleDbParameter("@kid", komponentenId),
+                                new OleDbParameter("@kat", v.KategorieId),
+                                new OleDbParameter("@sid", Zahl(sidObj)));
+                    }
+                }
+            }
+
+            l.Notiz("59a: " + gepflichtet + " Vorlagenposition(en) als Pflicht gekennzeichnet, " +
+                    ergaenzt + " ergaenzt.");
+            l.Notiz("59b: " + bemessung + " Bemessung(en) und " + empfehlung +
+                    " Empfehlungsbereich(e) der Auslieferungsvorlagen auf den Seed-Katalog " +
+                    "gebracht - Benutzervarianten bleiben unberuehrt.");
+            l.Notiz("59c: " + projektzeilen + " Projektposition(en) als Pflicht gekennzeichnet; " +
+                    "ihre Bemessung ist NICHT geaendert worden (ergebnisneutral).");
+            return ok;
+        }
+
+        // --- Hilfsmittel des Schritts 59 ---------------------------------------------
+
+        /// <summary>Der abgelöste Wortlaut der Vorlagenposition (bis 29.08.2026).</summary>
+        private const string WARTUNG_BHKW_ALT = "Vollwartung / Wartung BHKW";
+
+        /// <summary>
+        /// Führt die beiden Wortlaute derselben VDI-Position zusammen:
+        /// „Vollwartung / Wartung BHKW" (Vorlage, Etappe KD1) und
+        /// <see cref="DbWerte.VDI_POS_WARTUNG_BHKW"/> (Altkatalog, Etappe E3). Entschieden
+        /// am 29.08.2026 ist der <b>Altkatalogname</b>.
+        ///
+        /// <para><b>Zwei Fälle.</b> Existiert der Zielname noch nicht — der Regelfall, weil
+        /// der Altkatalogeintrag erst bei Benutzung des abgelösten Dialogs
+        /// <c>Form_Betriebskosten</c> entsteht —, wird der vorhandene Eintrag schlicht
+        /// <b>umbenannt</b>. Alle Verweise über <c>StammID</c> bleiben damit gültig, im
+        /// Projekt ändert sich nichts als der angezeigte Wortlaut. Existieren beide, wird
+        /// nichts zusammengelegt: Der Vorgang hängt Vorlagen- und Projektzeilen auf die
+        /// Ziel-<c>StammID</c> um und meldet den verwaisten Alteintrag, statt ihn zu
+        /// löschen — ein Katalogeintrag kann anderswo referenziert sein.</para>
+        /// </summary>
+        private static void WartungBhkwVereinheitlichen(Lauf l)
+        {
+            object altObj = Scalar(l,
+                "SELECT MAX([" + SchemaKatalog.SPALTE_KF_STAMMID + "]) FROM [" +
+                SchemaKatalog.TAB_KOSTENFAKTOR + "] WHERE [" +
+                SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ?",
+                new OleDbParameter("@b", WARTUNG_BHKW_ALT));
+            if (altObj == null || altObj == DBNull.Value)
+            {
+                // Kein Alteintrag - nichts zu tun (frische Datenbank oder schon gelaufen).
+                return;
+            }
+            int altId = Zahl(altObj);
+
+            object zielObj = Scalar(l,
+                "SELECT MAX([" + SchemaKatalog.SPALTE_KF_STAMMID + "]) FROM [" +
+                SchemaKatalog.TAB_KOSTENFAKTOR + "] WHERE [" +
+                SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ?",
+                new OleDbParameter("@b", DbWerte.VDI_POS_WARTUNG_BHKW));
+
+            if (zielObj == null || zielObj == DBNull.Value)
+            {
+                // Regelfall: umbenennen. StammID bleibt, alle Verweise bleiben gueltig.
+                int n = NonQuery(l,
+                    "UPDATE [" + SchemaKatalog.TAB_KOSTENFAKTOR + "] SET [" +
+                    SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ? WHERE [" +
+                    SchemaKatalog.SPALTE_KF_STAMMID + "] = ?",
+                    new OleDbParameter("@neu", DbWerte.VDI_POS_WARTUNG_BHKW),
+                    new OleDbParameter("@sid", altId));
+                int v = NonQuery(l,
+                    "UPDATE [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] SET [" +
+                    SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ? WHERE [" +
+                    SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ?",
+                    new OleDbParameter("@neu", DbWerte.VDI_POS_WARTUNG_BHKW),
+                    new OleDbParameter("@alt", WARTUNG_BHKW_ALT));
+                l.Notiz("59d: Katalogeintrag \"" + WARTUNG_BHKW_ALT + "\" in \"" +
+                        DbWerte.VDI_POS_WARTUNG_BHKW + "\" umbenannt (" + n +
+                        " Katalogzeile, " + v + " Vorlagenposition[en]); StammID " + altId +
+                        " bleibt, Projektzeilen sind ueber sie weiterhin verknuepft.");
+                return;
+            }
+
+            int zielId = Zahl(zielObj);
+            if (zielId == altId) return;   // schon zusammengefuehrt
+
+            int pw = NonQuery(l,
+                "UPDATE [" + SchemaKatalog.TAB_PROJEKTWERTE + "] SET [StammID] = ? " +
+                "WHERE [StammID] = ?",
+                new OleDbParameter("@z", zielId),
+                new OleDbParameter("@a", altId));
+            int vp = NonQuery(l,
+                "UPDATE [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] SET [" +
+                SchemaKatalog.SPALTE_KVP_STAMMID + "] = ?, [" +
+                SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ? WHERE [" +
+                SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ?",
+                new OleDbParameter("@z", zielId),
+                new OleDbParameter("@neu", DbWerte.VDI_POS_WARTUNG_BHKW),
+                new OleDbParameter("@alt", WARTUNG_BHKW_ALT));
+            l.Notiz("59d: Beide Wortlaute vorhanden - " + pw + " Projekt- und " + vp +
+                    " Vorlagenposition(en) von StammID " + altId + " auf " + zielId +
+                    " umgehaengt. Der Katalogeintrag \"" + WARTUNG_BHKW_ALT +
+                    "\" (StammID " + altId + ") bleibt stehen und ist jetzt verwaist.");
+        }
+
+        /// <summary>
+        /// Legt eine YESNO-Spalte an, falls sie fehlt. Access belegt sie dabei durchgängig
+        /// mit <c>False</c> — das ist hier genau die gewünschte Vorbelegung („keine
+        /// Pflichtposition"), es braucht kein nachgelagertes UPDATE.
+        /// </summary>
+        private static void SpalteYesNo(Lauf l, string tabelle, string spalte)
+        {
+            try
+            {
+                using (var cmd = new OleDbCommand(
+                    "ALTER TABLE [" + tabelle + "] ADD COLUMN [" + spalte + "] YESNO", l.Conn))
+                    cmd.ExecuteNonQuery();
+            }
+            catch { /* Spalte existiert bereits - Idempotenz */ }
+        }
+
+        /// <summary>
+        /// Ergänzt eine im Seed-Katalog geführte, in der Auslieferungsvorlage aber fehlende
+        /// Position. Feldbelegung wie beim Ur-Seed des Schritts 39 — Satz, Betrag und
+        /// Nutzungsdauer bleiben leer („Struktur ohne erfundene Preise").
+        /// </summary>
+        private static bool VorlagenpositionErgaenzen(Lauf l, int vorlageId,
+                                                      SchemaKatalog.VorlagenPositionSeed p, int sort)
+        {
+            object sid = Scalar(l,
+                "SELECT MAX([" + SchemaKatalog.SPALTE_KF_STAMMID + "]) FROM [" +
+                SchemaKatalog.TAB_KOSTENFAKTOR + "] WHERE [" +
+                SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ?",
+                new OleDbParameter("@b", p.Bezeichnung));
+
+            int posId = Zahl(Scalar(l, "SELECT MAX([ID]) FROM [" +
+                                       SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "]")) + 1;
+
+            int n = NonQuery(l,
+                "INSERT INTO [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] ([ID], [" +
+                SchemaKatalog.SPALTE_KVP_VORLAGEID + "], [" +
+                SchemaKatalog.SPALTE_KVP_STAMMID + "], [" +
+                SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "], [" +
+                SchemaKatalog.SPALTE_KVP_KOSTENART + "], [" +
+                SchemaKatalog.SPALTE_KVP_BEMESSUNG + "], [" +
+                SchemaKatalog.SPALTE_KVP_IST_ERLOES + "], [" +
+                SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_VON + "], [" +
+                SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_BIS + "], [" +
+                SchemaKatalog.SPALTE_KVP_SORTIERUNG + "], [" +
+                SchemaKatalog.SPALTE_KVP_IST_PFLICHT + "]) " +
+                "VALUES (?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?, ?)",
+                new OleDbParameter("@id", posId),
+                new OleDbParameter("@vid", vorlageId),
+                ParamOderNull("@sid", OleDbType.Integer,
+                              sid == null || sid == DBNull.Value ? null : (object)Zahl(sid)),
+                new OleDbParameter("@b", p.Bezeichnung),
+                new OleDbParameter("@ka", p.Kostenart),
+                new OleDbParameter("@bm", p.Bemessung),
+                ParamOderNull("@ev", OleDbType.Double,
+                              p.EmpfehlungVon.HasValue ? (object)p.EmpfehlungVon.Value : null),
+                ParamOderNull("@eb", OleDbType.Double,
+                              p.EmpfehlungBis.HasValue ? (object)p.EmpfehlungBis.Value : null),
+                new OleDbParameter("@so", sort),
+                new OleDbParameter("@pf", p.IstPflicht));
+
+            if (n > 0) return true;
+            l.Notiz("59: Position \"" + p.Bezeichnung + "\" konnte in Vorlage " + vorlageId +
+                    " nicht ergaenzt werden.");
+            return false;
         }
 
         // --- Hilfsmittel des Schritts 58 ---------------------------------------------

@@ -1272,6 +1272,20 @@ namespace WindowsFormsApplication1
         /// Raster, Seeds in Zehnerschritten.</summary>
         public const string SPALTE_KVP_SORTIERUNG = "Sortierung";
 
+        /// <summary>
+        /// ETAPPE H1 (Migrationsschritt 59): Pflichtposition nach VDI 2067 — Wartung,
+        /// Instandhaltung der eigenen Komponente und Hilfsenergie. Solche Positionen
+        /// fallen bei jeder Anlage an; sie werden mit der Komponente angelegt und sind
+        /// im Projekt <b>nicht löschbar</b>. Wer keine Kosten ansetzen will, setzt den
+        /// Satz auf 0 — die Zeile bleibt dann mit 0,00 €/a stehen und ist im Bericht als
+        /// bewusst angesetzte Null erkennbar (Muster
+        /// <c>BetriebskostenCtrl.Speichere</c>: eine ungepflegte Zeile verschwindet nicht,
+        /// sie wird 0).
+        /// <para>NULL bzw. False = gewöhnliche Position. Access legt YESNO durchgängig
+        /// mit False an; die Vorbelegung ist damit der Wert, der nichts auslöst.</para>
+        /// </summary>
+        public const string SPALTE_KVP_IST_PFLICHT = "IstPflicht";
+
         /// <summary>Name der Auslieferungsvariante (Persistenzwert, deutsch, eingefroren;
         /// Anzeigename folgt in KD2 über MyResource).</summary>
         public const string VORLAGE_NAME_STANDARD = "Standard";
@@ -1283,6 +1297,14 @@ namespace WindowsFormsApplication1
         /// <summary>Startjahr der Investition je Position (LONG, nullable; NULL = t0) —
         /// Entscheidung FK10, Rechenwirkung in Etappe KD6 (§ 11).</summary>
         public const string SPALTE_PW_STARTJAHR = "StartJahr";
+
+        /// <summary>ETAPPE H1 (Migrationsschritt 59): Pflichtposition — Bedeutung und
+        /// Begründung wie <see cref="SPALTE_KVP_IST_PFLICHT"/>. Das Merkmal steht an der
+        /// Projektzeile <b>und</b> an der Vorlagenposition, damit die Löschsperre ohne
+        /// Rückgriff auf die Vorlage greift: Eine Projektposition darf ihre Herkunft
+        /// verlieren (<c>VorlageID</c> ist nur Anzeige), ihre Pflichteigenschaft
+        /// nicht.</summary>
+        public const string SPALTE_PW_IST_PFLICHT = "IstPflicht";
 
         /// <summary>Ä20 (Migrationsschritt 45): <c>Tab_ProjektWerte.ID_Anlage</c>
         /// (LONG, nullable) — die ANLAGENZEILE (<c>Tab_Energieanlagen.ID</c>), zu der
@@ -1988,13 +2010,15 @@ namespace WindowsFormsApplication1
         public sealed class VorlagenPositionSeed
         {
             public VorlagenPositionSeed(string bezeichnung, string kostenart, string bemessung,
-                                        double? empfehlungVon = null, double? empfehlungBis = null)
+                                        double? empfehlungVon = null, double? empfehlungBis = null,
+                                        bool istPflicht = false)
             {
                 Bezeichnung = bezeichnung;
                 Kostenart = kostenart;
                 Bemessung = bemessung;
                 EmpfehlungVon = empfehlungVon;
                 EmpfehlungBis = empfehlungBis;
+                IstPflicht = istPflicht;
             }
 
             /// <summary><c>Tab_KostenVorlagePosition.Bezeichnung</c> — Wortlaut der
@@ -2012,6 +2036,12 @@ namespace WindowsFormsApplication1
 
             /// <inheritdoc cref="EmpfehlungVon"/>
             public readonly double? EmpfehlungBis;
+
+            /// <summary>ETAPPE H1: Pflichtposition nach VDI 2067 —
+            /// <see cref="SPALTE_KVP_IST_PFLICHT"/>. Dieser Katalog ist die EINE Wahrheit
+            /// darüber, welche Position Pflicht ist: Migrationsschritt 59 überträgt das
+            /// Merkmal in die vorhandenen Vorlagen, statt eine zweite Liste zu führen.</summary>
+            public readonly bool IstPflicht;
         }
 
         /// <summary>Eine Auslieferungsvorlage: Komponente, Kategorie, Positionsliste.</summary>
@@ -2049,6 +2079,14 @@ namespace WindowsFormsApplication1
         private const string BM_PSTROM  = DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN;
         private const string BM_KWH_TH  = DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH;
         private const string BM_KWH_EL  = DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH;
+        // ETAPPE H1 — Hilfsenergie an der Endenergie der Anlage (DbWerte, Festlegung
+        // 29.08.2026). BM_PBRENN und BM_PSTROM bleiben als Konstanten bestehen (Altdaten),
+        // kommen in den Seeds unten aber nicht mehr vor.
+        private const string BM_PENDKOST = DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN;
+        private const bool   PFLICHT     = true;
+        // BEMESSUNG_PROZENT_ENDENERGIEBEDARF steht im Auswahlkatalog als Alternative
+        // (Anteil in kWh, Kosten daraus ueber den Strompreis), wird aber von KEINER
+        // Auslieferungsvorlage gesaet: Vorgabe ist die Kostenbasis.
 
         /// <summary>
         /// Die 20 Auslieferungsvorlagen (10 Komponenten × Investition/Betrieb) des
@@ -2152,24 +2190,33 @@ namespace WindowsFormsApplication1
             // ------------------------- Betrieb (Folien 19-24) ---------------------------
             new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_BHKW, Form_Kosten.KATEGORIE_BETRIEB, new[]
             {
-                new VorlagenPositionSeed("Vollwartung / Wartung BHKW", ART_BETR, BM_KWH_EL),
-                new VorlagenPositionSeed("Instandhaltung BHKW", ART_BETR, BM_PINV, 3.0, 9.0),
-                new VorlagenPositionSeed("Instandhaltung Heizkessel", ART_BETR, BM_JAHR),
+                // ETAPPE H1: hiess bis 29.08.2026 "Vollwartung / Wartung BHKW" und stand
+                // damit neben dem Altkatalogeintrag DbWerte.VDI_POS_WARTUNG_BHKW - zwei
+                // StammID fuer dieselbe VDI-Position, je nach Entstehungsweg. Entschieden
+                // ist der Altkatalogname; Migrationsschritt 59 zieht den Bestand nach.
+                new VorlagenPositionSeed(DbWerte.VDI_POS_WARTUNG_BHKW, ART_BETR, BM_KWH_EL,
+                                         null, null, PFLICHT),
+                new VorlagenPositionSeed("Instandhaltung BHKW", ART_BETR, BM_PINV, 3.0, 9.0, PFLICHT),
+                new VorlagenPositionSeed("Instandhaltung Heizkessel", ART_BETR, BM_PINV, 1.5, 2.5),
                 new VorlagenPositionSeed("Instandhaltung Wärmezentrale", ART_BETR, BM_PINV, 1.8, 2.2),
                 new VorlagenPositionSeed("Instandhaltung bauliche Anlagen", ART_BETR, BM_PINV, 1.0, 1.5),
                 new VorlagenPositionSeed("Instandhaltung Stromeinspeisung", ART_BETR, BM_PINV, 1.8, 2.2),
                 new VorlagenPositionSeed("Personalkosten", ART_BETR, BM_PINV, 1.0, 4.0),
                 new VorlagenPositionSeed("Steuern, Versicherung, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
-                new VorlagenPositionSeed("Hilfsenergiekosten", ART_BEDARF, BM_PBRENN),
+                new VorlagenPositionSeed("Hilfsenergiekosten", ART_BEDARF, BM_PENDKOST,
+                                         2.0, 4.0, PFLICHT),
                 new VorlagenPositionSeed("Reserveleistungskosten", ART_BETR, BM_JAHR),
                 new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
             }),
             new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_HEIZKESSEL, Form_Kosten.KATEGORIE_BETRIEB, new[]
             {
-                new VorlagenPositionSeed("Vollwartung / Wartung Kessel", ART_BETR, BM_KWH_TH),
-                new VorlagenPositionSeed("Instandhaltung Heizkessel", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Vollwartung / Wartung Kessel", ART_BETR, BM_KWH_TH,
+                                         null, null, PFLICHT),
+                new VorlagenPositionSeed("Instandhaltung Heizkessel", ART_BETR, BM_PINV, 1.5, 2.5, PFLICHT),
+                new VorlagenPositionSeed("Instandhaltung Wärmezentrale", ART_BETR, BM_PINV, 1.8, 2.2),
                 new VorlagenPositionSeed("Instandhaltung bauliche Anlagen", ART_BETR, BM_PINV, 1.0, 1.5),
-                new VorlagenPositionSeed("Hilfsenergiekosten (Strom)", ART_BEDARF, BM_PBRENN),
+                new VorlagenPositionSeed("Hilfsenergiekosten (Strom)", ART_BEDARF, BM_PENDKOST,
+                                         4.0, 8.0, PFLICHT),
                 new VorlagenPositionSeed("Schornsteinfeger / Messung", ART_BETR, BM_JAHR),
                 new VorlagenPositionSeed("Personalkosten / Bedienung", ART_BETR, BM_PINV, 1.0, 4.0),
                 new VorlagenPositionSeed("Steuern, Versicherung, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
@@ -2177,11 +2224,13 @@ namespace WindowsFormsApplication1
             }),
             new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEPUMPE, Form_Kosten.KATEGORIE_BETRIEB, new[]
             {
-                new VorlagenPositionSeed("Wartung Wärmepumpe", ART_BETR, BM_JAHR),
-                new VorlagenPositionSeed("Instandhaltung Wärmepumpe", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Wartung Wärmepumpe", ART_BETR, BM_JAHR, null, null, PFLICHT),
+                new VorlagenPositionSeed("Instandhaltung Wärmepumpe", ART_BETR, BM_PINV,
+                                         null, null, PFLICHT),
                 new VorlagenPositionSeed("Instandhaltung Umweltwärmequelle", ART_BETR, BM_PINV),
                 new VorlagenPositionSeed("Instandhaltung bauliche Anlagen", ART_BETR, BM_PINV, 1.0, 1.5),
-                new VorlagenPositionSeed("Hilfsenergiekosten (Pumpen)", ART_BEDARF, BM_PSTROM),
+                new VorlagenPositionSeed("Hilfsenergiekosten (Pumpen)", ART_BEDARF, BM_PENDKOST,
+                                         null, null, PFLICHT),
                 new VorlagenPositionSeed("Dichtheitsprüfung (Kältemittel)", ART_BETR, BM_JAHR),
                 new VorlagenPositionSeed("Personalkosten / Bedienung", ART_BETR, BM_PINV, 1.0, 4.0),
                 new VorlagenPositionSeed("Steuern, Versicherung, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
@@ -2189,11 +2238,18 @@ namespace WindowsFormsApplication1
             }),
             new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_SOLARTHERMIE, Form_Kosten.KATEGORIE_BETRIEB, new[]
             {
-                new VorlagenPositionSeed("Wartung Solarthermie-Anlage", ART_BETR, BM_JAHR),
-                new VorlagenPositionSeed("Instandhaltung Sonnenkollektoren", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Wartung Solarthermie-Anlage", ART_BETR, BM_JAHR,
+                                         null, null, PFLICHT),
+                new VorlagenPositionSeed("Instandhaltung Sonnenkollektoren", ART_BETR, BM_PINV,
+                                         null, null, PFLICHT),
                 new VorlagenPositionSeed("Instandhaltung Solarspeicher / Zubehör", ART_BETR, BM_PINV),
                 new VorlagenPositionSeed("Instandhaltung bauliche Anlagen", ART_BETR, BM_PINV, 1.0, 1.5),
-                new VorlagenPositionSeed("Hilfsenergiekosten (Solarpumpe)", ART_BEDARF, BM_KWH_EL),
+                // Solarthermie hat KEINE Endenergiekosten - die Sonne kostet nichts. Ein
+                // Prozentsatz haette hier keine Basis; deshalb NUR der absolute
+                // Jahresbetrag (Festlegung 29.08.2026), wie bei Puffer-, Stromspeicher
+                // und Photovoltaik.
+                new VorlagenPositionSeed("Hilfsenergiekosten (Solarpumpe)", ART_BEDARF, BM_JAHR,
+                                         null, null, PFLICHT),
                 new VorlagenPositionSeed("Prüfung / Tausch Wärmeträgermedium", ART_BETR, BM_JAHR),
                 new VorlagenPositionSeed("Personalkosten / Bedienung", ART_BETR, BM_PINV, 1.0, 4.0),
                 new VorlagenPositionSeed("Steuern, Versicherung, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
@@ -2201,11 +2257,16 @@ namespace WindowsFormsApplication1
             }),
             new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, Form_Kosten.KATEGORIE_BETRIEB, new[]
             {
-                new VorlagenPositionSeed("Wartung / Sichtprüfung Speicher", ART_BETR, BM_JAHR),
-                new VorlagenPositionSeed("Instandhaltung Pufferspeicher", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Wartung / Sichtprüfung Speicher", ART_BETR, BM_JAHR,
+                                         null, null, PFLICHT),
+                new VorlagenPositionSeed("Instandhaltung Pufferspeicher", ART_BETR, BM_PINV,
+                                         null, null, PFLICHT),
                 new VorlagenPositionSeed("Instandhaltung Dämmung / Isolierung", ART_BETR, BM_PINV),
                 new VorlagenPositionSeed("Instandhaltung Armaturen / Pumpen", ART_BETR, BM_PINV),
-                new VorlagenPositionSeed("Hilfsenergiekosten (Speicherladepumpe)", ART_BEDARF, BM_KWH_EL),
+                // NUR fester Jahresbetrag: Die Umwandlungsverluste stecken bereits im
+                // Wirkungsgrad der Speicherrechnung, und der Hilfsbedarf ist zeitabhaengig.
+                new VorlagenPositionSeed("Hilfsenergiekosten (Speicherladepumpe)", ART_BEDARF, BM_JAHR,
+                                         null, null, PFLICHT),
                 new VorlagenPositionSeed("Wasserbehandlung / Nachspeisung", ART_BETR, BM_JAHR),
                 new VorlagenPositionSeed("Personalkosten / Bedienung", ART_BETR, BM_PINV, 1.0, 4.0),
                 new VorlagenPositionSeed("Versicherung, Steuern, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
@@ -2213,9 +2274,14 @@ namespace WindowsFormsApplication1
             }),
             new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PHOTOVOLTAIK, Form_Kosten.KATEGORIE_BETRIEB, new[]
             {
-                new VorlagenPositionSeed("Wartung / Inspektion PV-Anlage", ART_BETR, BM_JAHR),
-                new VorlagenPositionSeed("Instandhaltung PV-Module / Gestell", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Wartung / Inspektion PV-Anlage", ART_BETR, BM_JAHR,
+                                         null, null, PFLICHT),
+                new VorlagenPositionSeed("Instandhaltung PV-Module / Gestell", ART_BETR, BM_PINV,
+                                         null, null, PFLICHT),
                 new VorlagenPositionSeed("Instandhaltung Wechselrichter / Speicher", ART_BETR, BM_PINV),
+                // Bei der Photovoltaik fachlich nicht einschlaegig, das Feld bleibt aber
+                // vorhanden (Festlegung 29.08.2026) - ausschliesslich als Absolutgroesse.
+                new VorlagenPositionSeed("Hilfsenergiekosten", ART_BEDARF, BM_JAHR),
                 new VorlagenPositionSeed("Reinigung der PV-Module", ART_BETR, BM_JAHR),
                 new VorlagenPositionSeed("Zählermiete / Messstellenbetrieb", ART_BETR, BM_JAHR),
                 new VorlagenPositionSeed("Telekommunikation / Monitoring", ART_BETR, BM_JAHR),
@@ -2225,8 +2291,14 @@ namespace WindowsFormsApplication1
             }),
             new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_STROMSPEICHER, Form_Kosten.KATEGORIE_BETRIEB, new[]
             {
-                new VorlagenPositionSeed("Wartung / Sichtprüfung Speicher", ART_BETR, BM_JAHR),
-                new VorlagenPositionSeed("Instandhaltung Stromspeicher", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Wartung / Sichtprüfung Speicher", ART_BETR, BM_JAHR,
+                                         null, null, PFLICHT),
+                new VorlagenPositionSeed("Instandhaltung Stromspeicher", ART_BETR, BM_PINV,
+                                         null, null, PFLICHT),
+                // Wie beim Pufferspeicher nur als Absolutgroesse - Klimatisierung,
+                // Batteriemanagement und Standby haengen an der Zeit, nicht am Durchsatz.
+                new VorlagenPositionSeed("Hilfsenergiekosten", ART_BEDARF, BM_JAHR,
+                                         null, null, PFLICHT),
                 new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
             }),
             new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE, Form_Kosten.KATEGORIE_BETRIEB, new[]
