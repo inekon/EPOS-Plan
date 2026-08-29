@@ -4142,6 +4142,19 @@ namespace WindowsFormsApplication1
             return _startjahrSpalte.Value;
         }
 
+        /// <summary>ETAPPE H2: Cache der Spaltenprobe
+        /// <c>Tab_ProjektWerte.ID_Anlage</c> (Schritt 45) — gleiches Muster wie
+        /// <see cref="StartjahrSpalteVorhanden"/>.</summary>
+        private static bool? _anlagenSpalte;
+
+        private static bool AnlagenSpalteVorhanden()
+        {
+            if (_anlagenSpalte.HasValue) return _anlagenSpalte.Value;
+            _anlagenSpalte = SpalteVorhanden("Tab_ProjektWerte",
+                                             SchemaKatalog.SPALTE_PW_ID_ANLAGE);
+            return _anlagenSpalte.Value;
+        }
+
         /// <summary>
         /// Stille Spaltenprobe: <c>DataRepository</c> meldet Abfragefehler selbst
         /// (MessageBox) und WIRFT NICHT - eine Probe per try/catch griffe also nie
@@ -4259,10 +4272,17 @@ namespace WindowsFormsApplication1
             {
                 string felder = "EingegebenerWert, BestCase, WorstCase";
                 if (mitBemessung)
+                {
                     felder += ", [" + SchemaKatalog.SPALTE_PW_BEMESSUNG + "]" +
                               ", [" + SchemaKatalog.SPALTE_PW_IST_ERLOES + "]" +
                               ", [" + SchemaKatalog.SPALTE_PW_MENGE + "]" +
                               ", [" + SchemaKatalog.SPALTE_PW_EINHEITPREIS + "]";
+                    // ETAPPE H2: Komponente und Anlage identifizieren die Basis der
+                    // Endenergie-Bemessungen; ID_Anlage nur, wo Schritt 45 gelaufen ist.
+                    felder += ", KomponentenID";
+                    if (AnlagenSpalteVorhanden())
+                        felder += ", [" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "]";
+                }
                 if (StartjahrSpalteVorhanden())
                     felder += ", [" + SchemaKatalog.SPALTE_PW_STARTJAHR + "]";
 
@@ -4271,6 +4291,11 @@ namespace WindowsFormsApplication1
                     " FROM Tab_ProjektWerte WHERE ProjektID = ? AND KategorieID = 2",
                     new OleDbParameter("@p", idProjekt));
                 if (dt == null) return 0;
+
+                // ETAPPE H2: der Endenergie-Auflöser wird je Aufruf höchstens einmal
+                // gebaut — und nur, wenn eine Position ihn wirklich braucht.
+                EndenergieAufloeser endenergie = null;
+                bool endenergieVersucht = false;
 
                 foreach (DataRow r in dt.Rows)
                 {
@@ -4297,10 +4322,19 @@ namespace WindowsFormsApplication1
                             double erwartet = D(r, "EingegebenerWert") ?? 0;
                             bool szenarioGepflegt = Math.Abs(wert - erwartet) > 1e-9;
 
+                            // ETAPPE H2: Die Endenergie-Bemessungen holen ihre Menge
+                            // bei JEDEM Lesen frisch aus dem jüngsten Simulationslauf
+                            // (Konzept § 4.5) — die DB-Menge ist nur Ausweis. Alle
+                            // übrigen Arten lesen unverändert die persistierte
+                            // Herleitung.
+                            double? menge = IstEndenergieArt(bem)
+                                ? EndenergieMenge(idProjekt, r, bem,
+                                                  ref endenergie, ref endenergieVersucht)
+                                : D(r, SchemaKatalog.SPALTE_PW_MENGE);
+
                             beitrag = szenarioGepflegt
                                 ? (erloes && wert > 0 ? -wert : wert)
-                                : BetriebskostenCtrl.Betrag(bem, erwartet,
-                                                            D(r, SchemaKatalog.SPALTE_PW_MENGE),
+                                : BetriebskostenCtrl.Betrag(bem, erwartet, menge,
                                                             D(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS),
                                                             erloes);
                         }
@@ -4354,12 +4388,20 @@ namespace WindowsFormsApplication1
                     "w.[" + SchemaKatalog.SPALTE_PW_BEMESSUNG + "], " +
                     "w.[" + SchemaKatalog.SPALTE_PW_IST_ERLOES + "], " +
                     "w.[" + SchemaKatalog.SPALTE_PW_MENGE + "], " +
-                    "w.[" + SchemaKatalog.SPALTE_PW_EINHEITPREIS + "] " +
+                    "w.[" + SchemaKatalog.SPALTE_PW_EINHEITPREIS + "], w.KomponentenID" +
+                    (AnlagenSpalteVorhanden()
+                        ? ", w.[" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "] "
+                        : " ") +
                     "FROM Tab_ProjektWerte AS w LEFT JOIN Tab_Kostenfaktor AS f " +
                     "ON w.StammID = f.StammID " +
                     "WHERE w.ProjektID = ? AND w.KategorieID = 2",
                     new OleDbParameter("@p", idProjekt));
                 if (dt == null) return liste;
+
+                // ETAPPE H2: gleiche Frisch-Regel wie in der Summenschleife — die
+                // Nachweisliste muss deren Summe treffen (E7-Probe).
+                EndenergieAufloeser endenergie = null;
+                bool endenergieVersucht = false;
 
                 foreach (DataRow r in dt.Rows)
                 {
@@ -4376,7 +4418,10 @@ namespace WindowsFormsApplication1
                         Gruppe = Text(r, "Gruppe"),
                         Kostenart = Text(r, SchemaKatalog.SPALTE_PW_KOSTENART),
                         Bemessung = bem,
-                        Menge = D(r, SchemaKatalog.SPALTE_PW_MENGE),
+                        Menge = IstEndenergieArt(bem)
+                            ? EndenergieMenge(idProjekt, r, bem,
+                                              ref endenergie, ref endenergieVersucht)
+                            : D(r, SchemaKatalog.SPALTE_PW_MENGE),
                         Einheitpreis = D(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS),
                         IstErloes = erloes,
                         SzenarioGepflegt = szenarioGepflegt
@@ -4403,6 +4448,58 @@ namespace WindowsFormsApplication1
             if (spalte == null) return erwartet;
             double wert = D(r, spalte) ?? 0;
             return wert != 0 ? wert : erwartet;   // 0/leer = kein Szenariowert gepflegt
+        }
+
+        /// <summary>ETAPPE H2: die beiden Endenergie-Bemessungen (Konzept § 4.5).</summary>
+        private static bool IstEndenergieArt(string bem)
+        {
+            return string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN, StringComparison.Ordinal) ||
+                   string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// ETAPPE H2: frische Bezugsmenge einer Endenergie-Position aus dem jüngsten
+        /// Lauf. Weg A liefert die Arbeitskosten [€/a]; Weg B den BEWERTETEN Bedarf
+        /// (kWh × Strombezugspreis) — <c>Menge × Satz / 100</c> ergibt so ohne zweite
+        /// Formel den Betrag (Begründung bei <see cref="BetriebskostenCtrl.Betrag"/>).
+        /// null = keine Bezugsgröße (kein Lauf, Anlage nicht im Lauf, Preis fehlt) —
+        /// dann gilt die dokumentierte 0.
+        /// </summary>
+        private static double? EndenergieMenge(int idProjekt, DataRow r, string bem,
+                                               ref EndenergieAufloeser aufloeser, ref bool versucht)
+        {
+            if (!versucht)
+            {
+                versucht = true;
+                aufloeser = EndenergieAufloeser.FuerProjekt(idProjekt);
+            }
+            if (aufloeser == null) return null;
+
+            int komponente = 0;
+            try
+            {
+                if (r.Table.Columns.Contains("KomponentenID") && r["KomponentenID"] != DBNull.Value)
+                    komponente = Convert.ToInt32(r["KomponentenID"]);
+            }
+            catch { }
+
+            int idAnlage = 0;
+            try
+            {
+                if (r.Table.Columns.Contains(SchemaKatalog.SPALTE_PW_ID_ANLAGE) &&
+                    r[SchemaKatalog.SPALTE_PW_ID_ANLAGE] != DBNull.Value)
+                    idAnlage = Convert.ToInt32(r[SchemaKatalog.SPALTE_PW_ID_ANLAGE]);
+            }
+            catch { }
+
+            EndenergieAufloeser.Groesse g = aufloeser.FuerPosition(komponente, idAnlage);
+            if (g == null) return null;
+
+            if (string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN, StringComparison.Ordinal))
+                return g.KostenEuro;
+
+            double? strompreis = aufloeser.StrompreisJeKwh;
+            return strompreis.HasValue ? g.BedarfKwh * strompreis.Value : (double?)null;
         }
 
         /// <summary>ID des jüngsten Simulationslaufs (Tab_Ergebnis) des Projekts, 0 = keiner.</summary>

@@ -508,6 +508,40 @@ namespace WindowsFormsApplication1
             return 0;
         }
 
+        // ================================================================= ETAPPE H2
+        // Zwei schmale Zugänge für den Endenergie-Auflöser der Betriebskosten
+        // (EndenergieAufloeser, Konzept_BHKW_Wirtschaftlichkeit § 4.5). Sie nutzen
+        // DIESELBEN Bausteine wie die Kostenschleife oben (LadeTraeger,
+        // FindeStromTraeger) — der Arbeitspreis bleibt damit EINE Wahrheit. Die in E3
+        // gegen die Referenz gestellte Schleife selbst bleibt unangetastet
+        // (Rechenweg-Disziplin); ihre Kostenformel „Verbrauch × 1000 / eff_hi ×
+        // Preis" ist mit „Verbrauch × 1000 × ArbeitspreisJeKwh" algebraisch gleich.
+
+        /// <summary>
+        /// Arbeitspreis eines Trägers in €/kWh — bei Direktabrechnung der gepflegte
+        /// Satz, sonst über den effektiven Heizwert (kWh je Abrechnungseinheit)
+        /// umgerechnet; null = kein Preis gepflegt. Grund- und Leistungspreis gehören
+        /// ausdrücklich NICHT dazu: Die anlagenscharfe Endenergie bemisst sich am
+        /// Arbeitsanteil („Verbrauch des Moduls × Trägerpreis", Konzept § 4.5) —
+        /// trägerweite Fixbeträge lassen sich keiner Anlage zurechnen.
+        /// </summary>
+        internal static double? ArbeitspreisJeKwh(int idProjekt, int carrierId)
+        {
+            if (carrierId <= 0) return null;
+            TraegerInfo info = LadeTraeger(idProjekt, carrierId);
+            if (!info.PreisArbeit.HasValue) return null;
+            return (info.EffHi.HasValue && info.EffHi.Value > 0)
+                ? info.PreisArbeit.Value / info.EffHi.Value
+                : info.PreisArbeit.Value;
+        }
+
+        /// <summary><c>energy_carrier.id</c> des Stromträgers des Projekts
+        /// (<c>pricing_model = 'ELECTRICITY'</c>); 0 = keiner gepflegt.</summary>
+        internal static int StromTraegerId(int idProjekt)
+        {
+            return FindeStromTraeger(idProjekt);
+        }
+
         private static double? W(DataRow r, string col)
         {
             if (!r.Table.Columns.Contains(col) || r[col] == DBNull.Value) return null;
