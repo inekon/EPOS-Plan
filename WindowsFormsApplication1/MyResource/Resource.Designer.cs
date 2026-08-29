@@ -3816,6 +3816,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Esc oder Klick daneben schließt) ähnelt.
+        /// </summary>
+        public static string HILFE_POPUP_ESC {
+            get {
+                return ResourceManager.GetString("HILFE_POPUP_ESC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitel: {0} ähnelt.
+        /// </summary>
+        public static string HILFE_POPUP_KAPITEL {
+            get {
+                return ResourceManager.GetString("HILFE_POPUP_KAPITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Online-Dokumentation öffnen ähnelt.
+        /// </summary>
+        public static string HILFE_POPUP_LINK {
+            get {
+                return ResourceManager.GetString("HILFE_POPUP_LINK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string IMP_KONFLIKT_ABBRECHEN {
@@ -7499,7 +7526,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Empfänger ist Google als Betreiber der Gemini-Schnittstelle. Für Art und Umfang der dortigen Verarbeitung gelten die jeweils gültigen Bedingungen des Anbieters; nach diesen Bedingungen werden Inhalte im kostenlosen Kontingent zur Produktverbesserung verwendet. Für den produktiven Einsatz ist ein kostenpflichtiger Zugang vorgesehen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Empfänger ist Google als Betreiber der Gemini-Schnittstelle. Für Art und Umfang der dortigen Verarbeitung gelten die jeweils gültigen Bedingungen des Anbieters; nach diesen Bedingungen werden Inhalte im kostenlosen Kontingent zur Produktverbesserung verwendet. Für den produktiven Einsatz ist ein kostenpflichtiger Zugang vorgesehen. Zur Suche in der Online-Dokumentation werden Stichwörter Ihrer Frage an wiki.epos-plan.de übertragen. ähnelt.
         /// </summary>
         public static string KI_HINWEIS_EMPFAENGER {
             get {
@@ -9588,6 +9615,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_VORSCHAU_TITEL {
             get {
                 return ResourceManager.GetString("KI_VORSCHAU_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zur Suche in der Online-Dokumentation werden Stichwörter Ihrer Frage an wiki.epos-plan.de übertragen. ähnelt.
+        /// </summary>
+        public static string KI_WIKI_HINWEIS_ZEILE {
+            get {
+                return ResourceManager.GetString("KI_WIKI_HINWEIS_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellen in der Online-Dokumentation: ähnelt.
+        /// </summary>
+        public static string KI_WIKI_QUELLEN {
+            get {
+                return ResourceManager.GetString("KI_WIKI_QUELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Online-Dokumentation wird durchsucht... ähnelt.
+        /// </summary>
+        public static string KI_WIKI_SUCHE_LAEUFT {
+            get {
+                return ResourceManager.GetString("KI_WIKI_SUCHE_LAEUFT", resourceCulture);
             }
         }
         

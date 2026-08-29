@@ -139,7 +139,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Erklaert ein Feld: Anzeigename, Art, Einheit, Leer-Regel, Erlaeuterung - und,
         /// wo ein Hilfe-Slug deklariert ist, den Hilfetext aus
-        /// <c>WordPressHelpCatalog.Get</c> (<c>Allgemein\Hilfe\HelpCatalog.cs:194</c>).
+        /// <c>WikiHelpCatalog.Get</c> (<c>Allgemein\Hilfe\HelpCatalog.cs:194</c>).
         /// </summary>
         /// <remarks>
         /// <para>
@@ -164,7 +164,7 @@ namespace WindowsFormsApplication1
                 name: "dialog_parameter_erklaeren",
                 zweck: KiAktionsTexte.ZweckDialogErklaeren,
                 stufe: Schutzstufe.Lesen,
-                andockpunkt: "KiDialogKatalog / WordPressHelpCatalog.Get",
+                andockpunkt: "KiDialogKatalog / WikiHelpCatalog.Get",
                 parameter: new[] { MaskeParameter(), FeldParameter() },
                 vorbedingung: a =>
                 {
@@ -701,7 +701,7 @@ namespace WindowsFormsApplication1
             if (!feld.HatHilfe) return null;
             try
             {
-                WordPressHelpCatalog katalog = Program.HelpCatalog;
+                WikiHelpCatalog katalog = Program.HelpCatalog;
                 return katalog != null ? katalog.Get(feld.HilfeSlug) : null;
             }
             catch

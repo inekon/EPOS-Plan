@@ -144,7 +144,8 @@ namespace WindowsFormsApplication1
             Properties.Settings.Default.DBPath = txt_DBPath.Text;
             Properties.Settings.Default.DBName = txt_DBName.Text;
             Properties.Settings.Default.WordPressUrl = txt_OnlineDokuUrl.Text;
-            Properties.Settings.Default.WordPressPrefix = txt_WPPrefix.Text;
+            // 7.3: WordPressPrefix ist stillgelegt - der Wiki-Lader kennt keinen
+            // REST-Prefix mehr. Das Feld wird weder gelesen noch geschrieben.
             Properties.Settings.Default.PVGISUrl = txt_PVGISUrl.Text;
             Properties.Settings.Default.GeoKodierung = txt_GEOCodUrl.Text;
             Properties.Settings.Default.AllgemeinPath = txt_AllgemeinPath.Text;
@@ -212,9 +213,16 @@ namespace WindowsFormsApplication1
 
             // Restliche Felder ganz normal laden
             txt_OnlineDokuUrl.Text = Properties.Settings.Default.WordPressUrl;
-            txt_WPPrefix.Text = Properties.Settings.Default.WordPressPrefix;
             txt_PVGISUrl.Text = Properties.Settings.Default.PVGISUrl;
             txt_GEOCodUrl.Text = Properties.Settings.Default.GeoKodierung;
+
+            // 7.3 - Kein WordPress mehr im Hilfesystem: Der REST-Prefix ist
+            // gegenstandslos, seit der Katalog die MediaWiki-Action-API abruft.
+            // Feld und Beschriftung werden per Code ausgeblendet; die
+            // Designer-Datei bleibt unberuehrt (das Entfernen der Steuerelemente
+            // ist eine spaetere Aufgabe im WinForms-Designer).
+            if (lbl_WPPrefix != null) lbl_WPPrefix.Visible = false;
+            if (txt_WPPrefix != null) txt_WPPrefix.Visible = false;
 
             // Abschalter des KI-Assistenten frisch aus der Registry
             if (chk_KiAus != null) chk_KiAus.Checked = KiEinwilligung.Abgeschaltet;
@@ -233,8 +241,7 @@ namespace WindowsFormsApplication1
                 // Setzt alle Einstellungen im RAM zurück (Alle Pfade werden wieder leer "")
                 Properties.Settings.Default.Reset();
 
-                // Web-Felder neu befüllen
-                txt_WPPrefix.Text = Properties.Settings.Default.WordPressPrefix;
+                // Web-Felder neu befüllen (ohne WordPressPrefix - stillgelegt, 7.3)
                 txt_PVGISUrl.Text = Properties.Settings.Default.PVGISUrl;
                 txt_GEOCodUrl.Text = Properties.Settings.Default.GeoKodierung;
                 txt_OnlineDokuUrl.Text = Properties.Settings.Default.WordPressUrl;

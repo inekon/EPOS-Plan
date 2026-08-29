@@ -78,10 +78,18 @@ namespace WindowsFormsApplication1
             _targetUrl = url;
             IstAngeheftet = angeheftet;
 
-            // Text im LinkLabel formatieren
+            // Text im LinkLabel formatieren.
+            //
+            // Drei-Schichten-Regel (A4): Anzeigetexte ausschließlich über
+            // MyResource.Resource.* — bis H1 standen sie hier fest auf Deutsch.
+            string kapitel = string.Format(
+                System.Globalization.CultureInfo.CurrentCulture,
+                MyResource.Resource.HILFE_POPUP_KAPITEL, titel);
+            string verweis = "➔ " + MyResource.Resource.HILFE_POPUP_LINK;
+
             linkLabel_Doku.Text = angeheftet
-                ? $"Kapitel: {titel}\r\n➔ Hier klicken für Online-Doku\r\n(Esc oder Klick daneben schließt)"
-                : $"Kapitel: {titel}\r\n➔ Hier klicken für Online-Doku";
+                ? kapitel + "\r\n" + verweis + "\r\n" + MyResource.Resource.HILFE_POPUP_ESC
+                : kapitel + "\r\n" + verweis;
 
             // Y-Versatz minimal auf +25 erhöhen, um der Maus mehr "Luft" zu geben,
             // damit sie beim Erscheinen nicht direkt AUF dem Fenster landet.
@@ -199,7 +207,12 @@ namespace WindowsFormsApplication1
             {
                 try
                 {
-                    Process.Start(new ProcessStartInfo { FileName = _targetUrl, UseShellExecute = true });
+                    // A6 / Entscheid 7.1a: Bei englischer Oberfläche wird die
+                    // deutsche Wiki-Seite durch den Übersetzungs-Proxy geleitet;
+                    // sonst (und bei jedem Fehler) bleibt es die Original-URL.
+                    string _anzeigeUrl = DokuUebersetzung.FuerAnzeige(_targetUrl);
+
+                    Process.Start(new ProcessStartInfo { FileName = _anzeigeUrl, UseShellExecute = true });
                     Schliessen();
                 }
                 catch (Exception ex)

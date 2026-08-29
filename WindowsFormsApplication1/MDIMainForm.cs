@@ -804,22 +804,30 @@ namespace WindowsFormsApplication1
             frm.ShowDialog();
         }
 
-        /// <summary>Online-Dokumentation von epos-plan.de.</summary>
-        public const string DOKU_URL = "https://epos-plan.de/epos-plan/epos-plan-dokumetation/";
+        /// <summary>
+        /// Online-Dokumentation im Wiki (A4). Reiner Not-Fallback — führend ist
+        /// der Einstellwert, den auch der Hilfekatalog verwendet (A2).
+        /// </summary>
+        public const string DOKU_URL = Program.WIKI_STANDARD;
 
         private void MenuItem_Dokumentation_Click(object sender, EventArgs e)
         {
             try
             {
-                // Standard ist die Online-Dokumentation; ist in den Einstellungen
-                // eine abweichende (z. B. lokale) WordPress-Adresse hinterlegt,
-                // hat diese Vorrang.
+                // Standard ist die Online-Dokumentation im Wiki; ist in den
+                // Einstellungen eine abweichende (z. B. lokale) Adresse
+                // hinterlegt, hat diese Vorrang.
                 string _targetUrl = Properties.Settings.Default.WordPressUrl;
                 if (string.IsNullOrWhiteSpace(_targetUrl) ||
                     _targetUrl.Contains("localhost"))
                 {
                     _targetUrl = DOKU_URL;
                 }
+
+                // A6 / Entscheid 7.1a: englische Oberfläche über den
+                // Übersetzungs-Proxy; deutsche Oberfläche und fremde Hosts
+                // unverändert.
+                _targetUrl = DokuUebersetzung.FuerAnzeige(_targetUrl);
 
                 Process.Start(new ProcessStartInfo { FileName = _targetUrl, UseShellExecute = true });
             }
