@@ -284,6 +284,10 @@ CS1998 `MDIMainForm`). **Keine neue Warnung.**
    Vorbedingung und kann den Fall nicht auslösen). Ein Fix gehört in ein eigenes Paket:
    entweder Sauberkeit in `KiAusfuehrer`/`KiChatService` vor dem Absenden, oder eine
    Aufzählung ohne Klarnamen.
+   **Inzwischen behoben (29.08.2026):** `KiRueckmeldung.Abgelehnt` säubert den Grund über die
+   Platzhaltertabelle, und `KiHilfe.KlarnamenAnmelden` meldet vor dem Verdichten jeden Projekt-
+   und Kundennamen an, der im Grund eines gescheiterten Laufs vorkommt — Umsetzung und Beweis in
+   [`Klarnamenschutz_Ablehnungen_Protokoll.md`](Klarnamenschutz_Ablehnungen_Protokoll.md).
 5. **`Tab_Applikation` gilt nur ohne Startfenster** (§ 2.1). Der Auftrag nennt beide Quellen
    nebeneinander; die Ersatzquelle führt aber das *zuletzt geöffnete* und nicht das *aktive*
    Projekt. Mit laufender Oberfläche ohne geladenes Projekt lautet die Antwort deshalb „kein
