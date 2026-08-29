@@ -157,7 +157,10 @@ namespace WindowsFormsApplication1
     /// der Online-Dokumentation gehen STICHWÖRTER der Frage (Wörter ab vier
     /// Zeichen, seit H9 ohne Füllwörter und bei Trefferarmut in bis zu drei
     /// verkürzten Stufen, siehe WikiWissen.Stichwoerter/Suchstufen) an den
-    /// eigenen Server wiki.epos-plan.de - nie die Rohfrage, keine Kontextangabe. Nach
+    /// eigenen Server wiki.epos-plan.de - nie die Rohfrage, keine Kontextangabe.
+    /// Die semantische Zuordnung (H10, SemantikIndex/SemantikModell) rechnet
+    /// dagegen VOLLSTÄNDIG lokal - Frage-Einbettung und Index verlassen den
+    /// Rechner nicht; nur der einmalige Modell-Download ist ein Netzzugriff. Nach
     /// Entscheid 7.4 geschieht das auch im Betrieb ohne KI; der Rechtshinweis
     /// benennt es (Entscheid 7.5, KiEinwilligung.FASSUNG bleibt unverändert).
     /// Die dort geholten Auszüge sind Hilfetexte im Sinne der Zusage oben und
