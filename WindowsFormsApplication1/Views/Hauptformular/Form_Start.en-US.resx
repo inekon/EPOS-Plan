@@ -627,7 +627,7 @@
     <value>Last opened</value>
   </data>
   <data name="karte_ProjektZuletzt.Beschreibung" xml:space="preserve">
-    <value>Access recently edited projects</value>
+    <value>Switches directly to the last opened project</value>
   </data>
   <data name="karte_SpeichernUnter.Titel" xml:space="preserve">
     <value>Save as</value>

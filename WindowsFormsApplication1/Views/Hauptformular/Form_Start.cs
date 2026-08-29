@@ -832,14 +832,16 @@ namespace WindowsFormsApplication1
         /// Kachel „Zuletzt geöffnet".
         ///
         /// <para>
-        /// <b>P3:</b> Die Kachel zeigt jetzt <see cref="Form_ProjektAuswahl"/> — dieselbe
-        /// Liste wie Menü „Projekt → Öffnen…" —, vorsortiert nach „Geändert"
-        /// absteigend und mit dem zuletzt geöffneten Projekt vorausgewählt. Bis dahin
-        /// wechselte sie ohne jeden Dialog stumm auf den Eintrag aus
-        /// <c>Tab_Applikation</c>: ein Klick, aber ohne Sicht auf die Alternativen und
-        /// ohne Ausweg, wenn das gemerkte Projekt nicht das gesuchte war. Der
-        /// Ein-Klick-Charakter bleibt weitgehend erhalten, weil die Vorauswahl schon
-        /// steht — Eingabetaste genügt.
+        /// <b>Nutzerkorrektur 29.08.2026 zu P3:</b> Die Kachel wechselt wieder
+        /// DIREKT zum zuletzt geöffneten Projekt (Eintrag aus
+        /// <c>Tab_Applikation</c>) — der P3-Zwischenstand zeigte hier die
+        /// Projektliste und verfehlte damit den Ein-Klick-Zweck der Kachel
+        /// („es wird der Dialog Öffnen gezeigt und nicht das zuletzt geöffnete
+        /// Projekt"). Die Liste <see cref="Form_ProjektAuswahl"/> bleibt nur
+        /// als Rückfall, wenn noch kein Projekt gemerkt ist oder das gemerkte
+        /// inzwischen gelöscht wurde — vorsortiert nach „Geändert". Wer die
+        /// Liste bewusst will, nimmt die Kachel „Projekt öffnen/bearbeiten"
+        /// oder das Menü „Projekt → Öffnen…".
         /// </para>
         /// <para>
         /// Der 200-ms-Grünblitz auf der Kachel entfällt: Er zeichnete über
@@ -853,19 +855,25 @@ namespace WindowsFormsApplication1
             ApplikationCtrl ctrl = new ApplikationCtrl();
             ctrl.ReadSingle();
 
-            string gewaehlt;
-            using (Form_ProjektAuswahl dlg = new Form_ProjektAuswahl())
-            {
-                dlg.ZuletztGeaendertZuerst(ctrl.m_szProjektname);
-                if (dlg.ShowDialog(this) != DialogResult.OK) return;
-                gewaehlt = dlg.m_szProjekt;
-            }
+            string gewaehlt = ctrl.m_szProjektname == null ? "" : ctrl.m_szProjektname;
 
             // ProjektKontextUebernehmen liest die ID zum Namen und meldet zugleich,
             // wenn das Projekt zwischenzeitlich geloescht wurde.
-            if (gewaehlt == "" || !ProjektKontextUebernehmen(gewaehlt))
+            if (gewaehlt.Trim() == "" || !ProjektKontextUebernehmen(gewaehlt))
             {
-                MessageBox.Show(MyResource.Resource.Text_Form_Start_ProjektGeloescht); return;
+                // Rückfall: nichts gemerkt oder das gemerkte Projekt existiert
+                // nicht mehr - dann (und nur dann) die Projektliste zeigen.
+                using (Form_ProjektAuswahl dlg = new Form_ProjektAuswahl())
+                {
+                    dlg.ZuletztGeaendertZuerst(gewaehlt);
+                    if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                    gewaehlt = dlg.m_szProjekt;
+                }
+
+                if (gewaehlt == "" || !ProjektKontextUebernehmen(gewaehlt))
+                {
+                    MessageBox.Show(MyResource.Resource.Text_Form_Start_ProjektGeloescht); return;
+                }
             }
 
             // Zuletzt geoeffnetes Projekt merken - dieselbe Schreiblogik wie bei den
