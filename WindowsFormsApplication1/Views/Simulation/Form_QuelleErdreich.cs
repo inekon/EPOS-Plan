@@ -384,6 +384,11 @@ namespace WindowsFormsApplication1
         //   Hinweis 8 px INNERHALB der Liste. Bei 412 bleiben 12 px Abstand, und der
         //   längere der beiden Hinweise endet bei 664 - innerhalb der 688, die bis zum
         //   rechten Rand frei sind.
+        // * Klimazonenkarte (Anwenderwunsch 29.08.2026): _btnKarte („…", 374/208,
+        //   26 × 23) öffnet Form_Klimazonenkarte. Damit der Klammerhinweis bei
+        //   x = 412 unverändert stehen bleibt, ist NUR _cbZone von 230 auf 200 px
+        //   verkürzt (längster Eintrag „15 — 2.400 h/a" braucht rund 90 px) - der
+        //   Knopf endet bündig an der alten Listenkante 400.
         // * _lblSpreizungHinweis: 232 -> 252, MaximumSize 456 -> 436. Das Eingabefeld
         //   endet jetzt bei 240; 252 hält die 12 px Abstand, und 436 ist genau der Rest
         //   bis zur rechten Kante (688). NACHGEMESSEN, weil der Hinweis vom Umbruch lebt:
@@ -491,6 +496,7 @@ namespace WindowsFormsApplication1
             _gbVorschau.Text = MyResource.Resource.SIMQ_ERDREICH_GB_VORSCHAU;
             _gbPruefung.Text = MyResource.Resource.SIMQ_ERDREICH_GB_PRUEFUNG;
             _btnSimulation.Text = MyResource.Resource.SIMQ_ERDREICH_BTN_SIMULATION;
+            _tipKarte.SetToolTip(_btnKarte, MyResource.Resource.SIMQ_KARTE_KNOPF_TIP);
 
             _btnOk.Text = MyResource.Resource.SIM_BTN_OK;
             _btnAbbruch.Text = MyResource.Resource.SIM_BTN_ABBRECHEN;
@@ -1060,6 +1066,24 @@ namespace WindowsFormsApplication1
             ErgebnisUebernehmen(erg);
             _laufAusDialog = true;
             Aktualisieren();
+        }
+
+        /// <summary>ToolTip des Kartenknopfs; Text kommt aus <see cref="TexteSetzen"/>.</summary>
+        private readonly ToolTip _tipKarte = new ToolTip();
+
+        /// <summary>
+        /// Öffnet die Klimazonenkarte (<see cref="Form_Klimazonenkarte"/>). „OK" oder
+        /// Doppelklick auf eine Zonenfläche übernimmt die Zone in die Auswahlliste —
+        /// deren SelectedIndexChanged zieht Vorschau und Prüfung nach.
+        /// </summary>
+        private void btnKarte_Click(object sender, EventArgs e)
+        {
+            using (Form_Klimazonenkarte dlg = new Form_Klimazonenkarte(_cbZone.SelectedIndex))
+            {
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                if (dlg.GewaehlteZone >= 1 && dlg.GewaehlteZone <= VDI4640Pruefung.KLIMAZONEN)
+                    _cbZone.SelectedIndex = dlg.GewaehlteZone;
+            }
         }
 
         /// <summary>

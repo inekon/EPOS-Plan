@@ -1905,6 +1905,24 @@ Select file now?</value>
   <data name="SIMQ_ERDREICH_KLIMAZONE_HINWEIS" xml:space="preserve">
     <value>(DIN 4710, default from the climate region)</value>
   </data>
+  <data name="SIMQ_KARTE_GEWAEHLT" xml:space="preserve">
+    <value>Selected zone: {0}</value>
+  </data>
+  <data name="SIMQ_KARTE_KEINE" xml:space="preserve">
+    <value>No zone selected yet — click a zone area on the map.</value>
+  </data>
+  <data name="SIMQ_KARTE_KNOPF_TIP" xml:space="preserve">
+    <value>Show the climate-zone map and pick the zone on the map</value>
+  </data>
+  <data name="SIMQ_KARTE_LADEFEHLER" xml:space="preserve">
+    <value>The climate-zone map could not be loaded — selection remains available via the list.</value>
+  </data>
+  <data name="SIMQ_KARTE_TITEL" xml:space="preserve">
+    <value>Climate zones according to DIN 4710</value>
+  </data>
+  <data name="SIMQ_KARTE_ZONE_TIP" xml:space="preserve">
+    <value>Zone {0} — {1} h/a</value>
+  </data>
   <data name="SIMQ_ERDREICH_KURZTEXT_KOPF" xml:space="preserve">
     <value>Ground {0}: </value>
   </data>

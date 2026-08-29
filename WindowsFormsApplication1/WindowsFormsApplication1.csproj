@@ -199,6 +199,24 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <!-- Klimazonenkarte DIN 4710 (Anwenderwunsch 29.08.2026): das vom Anwender
+       erstellte Kartenbild (PNG) als Anzeige plus seine SVG-Quelle, aus der
+       KlimazonenKarte zur Laufzeit die 15 Zonenpolygone fuer Hit-Test und
+       Hervorhebung liest (Gruppen "zonenflaechen"/"zonennummern", reine
+       M/L/Z-Pfade). Quelle im Repo: "Klimazonen DIN4710\" in der Wurzel.
+       LogicalName festgeschrieben, damit der Ressourcenname nicht am
+       Ordnerpfad haengt (Muster help_cache.json). -->
+  <ItemGroup>
+    <None Remove="Ressourcen\Zonenkarte_Klimazonen.png" />
+    <None Remove="Ressourcen\Zonenkarte_Klimazonen.svg" />
+    <EmbeddedResource Include="Ressourcen\Zonenkarte_Klimazonen.png">
+      <LogicalName>Zonenkarte_Klimazonen.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Ressourcen\Zonenkarte_Klimazonen.svg">
+      <LogicalName>Zonenkarte_Klimazonen.svg</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
   <!-- Resources-Generator-Verknüpfungen -->
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">

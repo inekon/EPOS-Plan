@@ -1921,6 +1921,24 @@ Jetzt Datei auswählen?</value>
   <data name="SIMQ_ERDREICH_KLIMAZONE_HINWEIS" xml:space="preserve">
     <value>(DIN 4710, Vorbelegung aus der Klimaregion)</value>
   </data>
+  <data name="SIMQ_KARTE_GEWAEHLT" xml:space="preserve">
+    <value>Gewählte Zone: {0}</value>
+  </data>
+  <data name="SIMQ_KARTE_KEINE" xml:space="preserve">
+    <value>Noch keine Zone gewählt — eine Zonenfläche auf der Karte anklicken.</value>
+  </data>
+  <data name="SIMQ_KARTE_KNOPF_TIP" xml:space="preserve">
+    <value>Klimazonenkarte anzeigen und Zone auf der Karte wählen</value>
+  </data>
+  <data name="SIMQ_KARTE_LADEFEHLER" xml:space="preserve">
+    <value>Die Klimazonenkarte konnte nicht geladen werden — die Auswahl bleibt über die Liste möglich.</value>
+  </data>
+  <data name="SIMQ_KARTE_TITEL" xml:space="preserve">
+    <value>Klimazonen nach DIN 4710</value>
+  </data>
+  <data name="SIMQ_KARTE_ZONE_TIP" xml:space="preserve">
+    <value>Zone {0} — {1} h/a</value>
+  </data>
   <data name="SIMQ_ERDREICH_KURZTEXT_KOPF" xml:space="preserve">
     <value>Erdreich {0}: </value>
   </data>
