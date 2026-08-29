@@ -36,6 +36,27 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public List<WissensAbschnitt> Abschnitte = new List<WissensAbschnitt>();
 
+        /// <summary>
+        /// Die Bezeichnertabelle dieses Laufs — der Schlüssel, mit dem die ANZEIGE aus
+        /// „Name 3" wieder den Klarnamen macht (H8). <c>null</c> im reinen Hilfefall,
+        /// wo nichts platzgehalten wurde.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b><see cref="Text"/> bleibt platzgehalten.</b> Bis H8 löste der Dienst die
+        /// Platzhalter selbst auf; der Klartext wanderte damit über den Gesprächsverlauf
+        /// des Chatfensters in die NÄCHSTE Anfrage — und so ein Klarname doch noch zum
+        /// Modellanbieter. Jetzt geht der Klarname keinen Schritt weiter als bis zur
+        /// Bildschirmausgabe: Was gesendet, gemerkt und protokolliert wird, führt
+        /// durchweg den Platzhalter.
+        /// </para>
+        /// <para>
+        /// Die Tabelle ist dieselbe Instanz, die der Aufrufer übergeben hat — sie wird
+        /// nur durchgereicht, nicht kopiert, und lebt wie bisher allein in der Sitzung.
+        /// </para>
+        /// </remarks>
+        public KiPlatzhalter Platzhalter;
+
         /// <summary>Die Aktionen dieser Äußerung, in der Reihenfolge der Runden (Etappe 2).</summary>
         public List<KiSchritt> Schritte = new List<KiSchritt>();
 
@@ -582,6 +603,10 @@ namespace WindowsFormsApplication1
                 sb.AppendLine("Jede Zahl, die du nennst, stammt aus einem Aktionsergebnis oder aus einem " +
                               "Hilfeabschnitt. Erfinde weder Zahlen noch Bezeichner.");
                 sb.AppendLine("Bezeichner erscheinen als Platzhalter („Name 1“); übernimm sie unverändert.");
+                // H8: Ohne diesen Satz weicht das Modell dem Platzhalter aus („das
+                // geöffnete Projekt") - der Anwender bekäme dann auch keinen Klarnamen
+                // zu sehen, weil das Programm nur ersetzen kann, was dasteht.
+                sb.AppendLine("Nenne den Platzhalter ruhig in deiner Antwort - das Programm zeigt dem Anwender an seiner Stelle den Klarnamen.");
                 // Der Fehlerfall vom 23.08.2026: Das Modell listete die Projekte,
                 // fand den Namen aus der Frage in den Platzhalterzeilen nicht wieder
                 // und erklaerte das Projekt fuer nicht vorhanden. Es muss deshalb
@@ -986,6 +1011,11 @@ namespace WindowsFormsApplication1
         {
             KiAntwort antwort = new KiAntwort();
 
+            // Die Bezeichnertabelle geht auf JEDEM Rückweg mit - auch auf den frühen
+            // Abbrüchen. Die Anzeige braucht sie, um Platzhalter in Klarnamen
+            // zurückzuverwandeln (H8, siehe KiAntwort.Platzhalter).
+            antwort.Platzhalter = platzhalter;
+
             if (string.IsNullOrWhiteSpace(frage))
             {
                 antwort.Fehler = MyResource.Resource.KI_AKT_KEINE_FRAGE;
@@ -1183,10 +1213,14 @@ namespace WindowsFormsApplication1
             antwort.WegB = wegB;
             antwort.Erfolg = true;
 
-            // Erst hier zurück in Klarnamen: an das Modell ging die platzgehaltene
-            // Fassung, im Chat steht der Klartext (Fachkonzept 4.2).
-            string text = platzhalter != null ? platzhalter.Aufloesen(schlusstext) : schlusstext;
-            antwort.Text = text.Trim().Length > 0 ? text.Trim() : KiTexte.AntwortLeer;
+            // Der Antworttext bleibt PLATZGEHALTEN (H8). Zurück in Klarnamen geht es
+            // erst in der Anzeige (Form_KiChat.KlarnamenFuerAnzeige) - im Chat steht
+            // damit weiterhin der Klartext (Fachkonzept 4.2), aber alles, was diesen
+            // Text weiterreicht, führt den Platzhalter: der Gesprächsverlauf, der in
+            // die nächste Anfrage geht, ebenso wie Protokoll und Sendevorschau.
+            // Vorher löste diese Zeile auf - und der Klarname stand ab der zweiten
+            // Frage im Prompt.
+            antwort.Text = schlusstext.Trim().Length > 0 ? schlusstext.Trim() : KiTexte.AntwortLeer;
             return antwort;
         }
 
