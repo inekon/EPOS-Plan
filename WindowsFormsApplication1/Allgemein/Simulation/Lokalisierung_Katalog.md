@@ -1738,3 +1738,436 @@ dadurch **byteweise identisch** mit der bisherigen.
 | `KiChatService.MODELL` (z. B. `gemini-2.5-flash-lite`) | **Anbieterbezeichnung**, kein Übersetzungsgut; geht als `{0}` in die Modellzeile. |
 | `KI_AKT_WEGB_EINSTELLUNG` | **Bestand** — die Checkbox war schon vor dieser Etappe lokalisiert und behält ihren Schlüssel. |
 | Registrierungs- und Ablagenamen in `KiChatService` | **Persistenz**, keine Anzeige. |
+---
+
+## Nachtrag Paket S2 — Warnkriterienkatalog (27.08.2026)
+
+Paket S2 setzt den **Warnkriterienkatalog W1–W5** aus Konzept 6.2 (Entscheidung F6) um. Neu sind
+**14 Schlüssel**, **einer entfällt** (K2-O5); Bestand danach **2571 Schlüssel** in beiden `.resx`
+und in `Resource.Designer.cs`.
+
+Neues Präfix `SIMWARN_*` — die Texte des Katalogs. Sie erscheinen an **drei** Stellen mit
+demselben Wortlaut: im Senkendialog beim Speichern, als Mouseover des Warn-Chips auf der
+Erzeugerkarte und als Zeile im Laufprotokoll. Genau deshalb liegen sie im Katalog und nicht an
+einer der drei Stellen.
+
+### Neu (14)
+
+| Schlüssel | DE | EN | Fundstellen |
+|---|---|---|---|
+| `SIMWARN_W1_ZIEL_AUSSERHALB_SET` | Anlage „{0}" (Rang {1}): Der Speicher „{2}" wird als {3} geladen, sein Klassen-Set lautet aber {4}. Der Kanal {5} fehlt — … | Unit "{0}" (rank {1}): … | `Warnkriterien.ZeilePruefen` |
+| `SIMWARN_W2_BAUFORM_WIDERSPRUCH` | Speicher „{0}": Die Bauform „{1}" ist auf Warmwasser ausgelegt, das Klassen-Set lautet aber {2}. … | Storage "{0}": design type "{1}" … | `Warnkriterien.SpeicherPruefen` |
+| `SIMWARN_W3_VORLAUF_ZU_NIEDRIG` | Anlage „{0}": Der Erzeuger-Vorlauf {1} °C liegt unter dem wirksamen Vorlauf {2} °C des Zielspeichers „{3}". … | Unit "{0}": the generator flow temperature … | `Warnkriterien.ZeilePruefen` |
+| `SIMWARN_W5_QUELLE_OHNE_LADER` | Anlage „{0}": Der Speicher „{1}" ist ihre Wärmequelle, wird aber von keiner Anlage dieses Projekts geladen. … | Unit "{0}": storage "{1}" is its heat source … | `Warnkriterien.QuelleOhneLaderPruefen` |
+| `SIMWARN_HART_RING` | Die Quellbezüge der Pufferspeicher bilden einen RING: {0}. … | The buffer-storage source references form a LOOP: {0}. … | `Warnkriterien.RingPruefen` |
+| `SIMWARN_HART_LEERES_SET` | Speicher „{0}": Das Klassen-Set ist leer — kein Kanal entlädt ihn. … | Storage "{0}": the class set is empty … | `Warnkriterien.SpeicherPruefen` |
+| `SIMWARN_TRENNER` | `␠+␠` | `␠+␠` | `Warnkriterien.Verbinden` — der Verbinder zwischen zwei Kanalnamen („Heizung + Brauchwasser"). Eigener Schlüssel, weil er zwischen **übersetzten** Wörtern steht. |
+| `SIMWARN_DIALOG_KOPF` | Die Zuordnung ist zulässig und wird gespeichert, gilt aber als unplausibel: | The assignment is permitted and will be saved, but it is considered implausible: | `Form_Waermesenke.btnOk_Click` |
+| `SIMWARN_KARTE_CHIP` | Konfiguration prüfen | check configuration | `Form_Simulation_Config.Karten.WarnChip` |
+| `SIMWARN_KARTE_CHIP_TIP` | Der Warnkriterienkatalog (Konzept 6.2) meldet zu dieser Anlage: | The warning-criteria catalogue (concept 6.2) reports for this unit: | wie oben |
+| `PSP_KLASSENSET_LEER` | ohne Nutzung | no usage | `Warnkriterien.KlassenSetAnzeige` — die Anzeige des LEEREN Sets. |
+| `SIM_PUFFERGRUPPE_KOPF` | `— {0} —` | `— {0} —` | `Form_Waermesenke.FuelleCombo` — Gruppenkopf der nach Klassen-Set gruppierten Speicherauswahl. |
+| `PSP_MELDUNG_KLASSENSETWECHSEL` | Die Nutzung des Pufferspeichers „{0}" wird von {1} auf {2} umgestellt. … | The usage of buffer storage "{0}" is being changed … | `Form_PufferSp_Projekt.KlassenSetWechselBestaetigt` |
+| `PSP_TITEL_KLASSENSET_AENDERN` | Nutzung ändern | Change usage | wie oben |
+
+### Entfallen (1)
+
+| Schlüssel | Grund |
+|---|---|
+| `PSP_FEHLER_VERWENDUNG_PFLICHT` | **Ticket K2-O5.** „Die Verwendung ist ein Pflichtfeld: Heizung oder Brauchwasser (Konzept 5.1)." Repo-weit ohne Fundstelle — der Dialog `Form_PufferSp_Projekt` prüft seit Paket K2 das **Klassen-Set** (mindestens ein Häkchen) und nicht mehr die Verwendungs-ComboBox, und der Text nennt nur zwei der drei Klassen. Aus `Resource.resx`, `Resource.en-US.resx` und `Resource.Designer.cs` entfernt. |
+
+### Wiederverwendet statt neu
+
+| Fall | Schlüssel | Grund |
+|---|---|---|
+| Kriterium `HART_KURZSCHLUSS` | `SIM_PUFFER_QUELLE_UND_SENKE` | Der Katalog übernimmt den Guard aus `Form_Waermesenke.ListePruefen`. Ein eigener Text hätte denselben Sachverhalt zweimal formuliert — und die Dialogmeldung hätte sich für den Anwender ohne Grund geändert. |
+| Dritter Abnehmerknoten im Schema | `KANAL_PROZESS_ANZEIGE` | „Prozesswärme" steht bereits als Kanalname im Katalog; ein zweiter Schlüssel für dasselbe Wort wäre eine Gabelung beim Übersetzen. |
+| Prozess-Badge der Speicherknoten | `KANAL_PROZESS_ANZEIGE` | wie oben. |
+
+### Ohne Fundstelle seit S2 (nicht entfernt)
+
+Drei Schlüssel der abgelösten **Verwendungs-Sperre** stehen ohne Fundstelle da. Sie werden hier
+nur vermerkt und **nicht** entfernt: Die Alt-Verwendung selbst wird erst mit Paket A1
+(Schritt 51) stillgelegt, und der Aufräumschnitt gehört in dasselbe Paket.
+
+| Schlüssel | Bis wann benutzt |
+|---|---|
+| `SIM_PUFFER_VERWENDUNG_PASST_NICHT` | `WaermesenkeClass.PufferPasst` — die dritte Prüfung ist mit S2 entfallen (Konzept 6.2). |
+| `PSP_MELDUNG_VERWENDUNGSWECHSEL` | `Form_PufferSp_Projekt.VerwendungswechselBestaetigt` — abgelöst durch `PSP_MELDUNG_KLASSENSETWECHSEL` (K2-O8). |
+| `PSP_TITEL_VERWENDUNG_AENDERN` | wie oben, abgelöst durch `PSP_TITEL_KLASSENSET_AENDERN`. |
+
+---
+
+## Nachtrag Paket A1 — Abriss der WS_-Spiegelung und der Alt-Zuordnung (27.08.2026)
+
+Paket A1 (Dialogteil) reißt die `WS_*`-Spiegelung, die Alt-Zuordnung `Z_ProjektPufferSp` und den
+Schalter des einkanaligen Altpfads ab. Damit fallen **35 Schlüssel** ohne Ersatz weg, **einer kommt
+hinzu** (`SIM_PUFFER_PROZESS_KURZ`). Bestand danach **2533 Schlüssel** in beiden `.resx` und in
+`Resource.Designer.cs` (DE und EN deckungsgleich, je Schlüssel eine Designer-Eigenschaft).
+
+> Zählweise: gezählt sind die `data`-KNOTEN der `.resx` (XML), nicht die Zeilen mit `<data name=`.
+> Der Kopfkommentar jeder `.resx` enthält vier Beispielzeilen dieser Form; ein Zeilen-`grep` zählt
+> sie mit und liegt deshalb um vier zu hoch — daher die 2571 im S2-Nachtrag gegenüber den hier
+> ausgewiesenen 2567 vor A1. Der Wert stimmt in beiden Sprachen und mit `Resource.Designer.cs` überein.
+
+Jeder Schlüssel wurde vor dem Entfernen zweifach geprüft: repo-weit ohne Fundstelle im
+aktuellen Stand **und** — für die 32 Schlüssel unter „durch A1 verwaist" — mit genau einer
+Fundstelle im Stand vor A1 (`git grep … HEAD`), also nachweislich durch DIESEN Abriss verwaist.
+
+### Entfallen: die drei Alt-Schlüssel der Verwendungs-Sperre (S2-O4, 3)
+
+Sie standen seit S2 ohne Fundstelle da und wurden dort bewusst stehen gelassen, weil die
+Alt-Verwendung erst mit Schritt 51 stillgelegt wird. Das ist jetzt geschehen.
+
+| Schlüssel | Bis wann benutzt |
+|---|---|
+| `SIM_PUFFER_VERWENDUNG_PASST_NICHT` | `WaermesenkeClass.PufferPasst` — dritte Prüfung, entfallen mit S2 |
+| `PSP_MELDUNG_VERWENDUNGSWECHSEL` | `Form_PufferSp_Projekt` — abgelöst durch `PSP_MELDUNG_KLASSENSETWECHSEL` |
+| `PSP_TITEL_VERWENDUNG_AENDERN` | wie oben, abgelöst durch `PSP_TITEL_KLASSENSET_AENDERN` |
+
+### Entfallen: Schalter „Zweikanalige Kaskade" und seine Automatiken (8)
+
+Der Schalter war das Feature-Flag des einkanaligen Rechenwegs. Schritt 51 setzt
+`Tab_Einstellungen.Kaskade_Zweikanalig` in Bestandsdaten auf WAHR und nimmt es aus der Weiche —
+ein Schalter ohne Weiche wäre eine Zusage ohne Wirkung. Mit ihm gehen die Rückfrage vor der
+Abwahl, die Meldung nach dem automatischen Einschalten und die beiden Statuszeilen.
+
+| Schlüssel | Letzte Fundstelle |
+|---|---|
+| `SIM_KASKADE_SCHALTER` | `Form_Simulation_Config.Uebersicht.InitKaskadeSchalter` |
+| `SIM_KASKADE_TOOLTIP` | wie oben (Mouseover) |
+| `SIM_MSG_KASKADE_ABWAHL` | `checkBox_KaskadeZweikanalig_CheckedChanged` (Abwahl-Guard) |
+| `SIM_MSG_KASKADE_AUTOMATISCH` | `KaskadeAutomatikNachAenderung` |
+| `SIM_MSG_KASKADE_FRAGE` | `KaskadeAutomatikBeimSpeichern` |
+| `SIM_STATUS_KASKADE_EIN` | Statuszeile beider Automatiken |
+| `SIM_STATUS_KASKADE_AUS` | Statuszeile des Schalters |
+| `SIM_TITEL_KASKADE` | Fenstertitel aller drei Meldungen |
+
+### Entfallen: Übergangshinweis des Senkendialogs (2)
+
+Er sagte, dass eine Brauchwasser-/Kombi-Senke ohne die zweikanalige Kaskade zwar gespeichert
+wird, aber nicht mitrechnet. Der einkanalige Rechenweg ist abgerissen; die Aussage hat keinen
+Gegenstand mehr.
+
+| Schlüssel | Letzte Fundstelle |
+|---|---|
+| `SIM_MSG_BRAUCHWASSER_UEBERGANG` | `Form_Waermesenke.BrauchwasserUebergangsHinweis` |
+| `SIM_MSG_BRAUCHWASSER_WP_ZUSATZ` | wie oben (Zusatz nur an der Wärmepumpe) |
+
+### Entfallen: Alt-Zuordnung `Z_ProjektPufferSp` in der Oberfläche (21)
+
+Die unsichtbare Zuordnungstabelle des Konfigurationsdialogs mit ihrem Zelleditor, der Dialog
+`Form_KonfigPufferspeicher` (Konzept 10: entfällt), der Schwellendialog
+`SpeicherregelungBearbeiten` und die Temperaturstufe „aus der Zuordnung" der Speicherkarte.
+
+| Schlüssel | Letzte Fundstelle |
+|---|---|
+| `PSP_SPALTE_WAERMEERZEUGER`, `PSP_SPALTE_VORLAUF`, `PSP_SPALTE_RUECKLAUF` | Spaltenköpfe der Alt-Tabelle (`Form_Simulation_Config`-Konstruktor) |
+| `PSP_TIP_ZUORDNUNG_ERZEUGER`, `…_SPEICHER`, `…_VORLAUF`, `…_RUECKLAUF`, `…_STAMMDATEN`, `…_STANDARD` | `listView1_MouseMove` — Mouseover je Spalte |
+| `PSP_TITEL_TEMPERATUR_PRUEFEN` | Zelleditor der Alt-Tabelle (Paarprüfung B4-2) |
+| `PSP_STATUS_ZUORDNUNG_FEHLGESCHLAGEN` | `btn_Speichern_Click` — Delete/Insert-Zyklus auf `Z_ProjektPufferSp` |
+| `PSP_TITEL_SPEICHERREGELUNG`, `PSP_MSG_WP_OHNE_SPEICHER`, `PSP_MSG_SCHWELLEN_BEREICH`, `PSP_SPEICHERREGELUNG_FENSTERTITEL`, `…_KOPF`, `…_EINSCHALT`, `…_ABSCHALT`, `…_HINWEIS`, `PSP_STATUS_SPEICHERREGELUNG_GESPEICHERT` | `SpeicherregelungBearbeiten` — die Hysterese-Schwellen der Alt-Zuordnung; seit Etappe D1 ohne Aufrufer. Am Puffer selbst sind sie in `Form_PufferSp_Projekt` gepflegt |
+| `PSP_KARTE_TEMP_ZUORDNUNG` | `Form_Simulation_Config.Karten.TemperaturHerkunft` — die mittlere Stufe der Temperatur-Vorrangkette. Schritt 51 hat die Werte einmalig an `Tab_Pufferspeicher` übergeben |
+
+### Entfallen: Senkendialog auf EINEM Speicherweg (1)
+
+| Schlüssel | Letzte Fundstelle |
+|---|---|
+| `SIM_ROLLE_HAUPTSENKE` | `WaermesenkeClass.Pruefen`/`KurzschlussMeldung` — beide prüfen seit A1 über ALLE Ränge und benennen die Rolle deshalb als RANG (`SIM_ROLLE_RANG`). `SIM_ROLLE_ZWEITSENKE` bleibt: Die Schemakante trennt weiter „erste" von „weitere" Ladung |
+
+### Neu (1)
+
+| Schlüssel | DE | EN | Fundstelle |
+|---|---|---|---|
+| `SIM_PUFFER_PROZESS_KURZ` | Puffer Prozessw. | Buffer process | `WaermesenkeClass.KurzformZuZiel` — die vierte Kurzform. Bis A1 kannte die Kurzformfamilie nur Heizung, Brauchwasser und Kombi, weil die Altspalten das S1-Ziel `PufferProzess` gar nicht ausdrücken konnten. Jetzt beschriftet dieselbe Funktion jede Senkenzeile, und ohne diesen Schlüssel stünde an einer Prozess-Puffersenke der lange Name der Auswahlliste. |
+
+### Erweitert statt neu
+
+| Fall | Schlüssel | Grund |
+|---|---|---|
+| Fehlerzeile beim Speichern | `SIM_STATUS_SENKE_FEHLER` | BLEIBT. Die Meldung hing am Rückgabewert von `WaermesenkeClass.Schreiben`; diese Schreibstelle ist entfallen, die AUSSAGE nicht. `Form_Waermesenke.ListeSpeichern` gibt den Erfolg jetzt über `SpeichernOk` an den Aufrufer weiter, der dieselbe Zeile zeigt. |
+| Senkenanzeige aller Ränge | `SIM_HEIZKREIS_BEIDES`, `SIM_HEIZKREIS_NUR_HEIZWAERME`, `SIM_HEIZKREIS_NUR_WARMWASSER`, `SIM_PUFFER_HEIZUNG_KURZ`, `SIM_PUFFER_BRAUCHWASSER_KURZ`, `SIM_PUFFER_KOMBI_KURZ` | `Form_Waermesenke.SenkeAnzeige` ist mit A1 die EINE Anzeigefunktion für eine Senkenzeile. Sie hat die Kurzform des Ladeziels UND die Bedarfsart-Feinsteuerung des Heizkreises von `WaermesenkeClass.HauptsenkeAnzeige` übernommen; beide Altfassungen (`HauptsenkeAnzeige`, `ZweitsenkeAnzeige`) sind entfallen. An Karte, Übersicht und Schemaknoten steht damit Wort für Wort derselbe Text wie vorher. |
+
+## Nachtrag Paket E1 — Ergebnis je Kanal (27.08.2026)
+
+Paket E1 macht Bedarf und Deckung je Bedarfsart sichtbar (Konzept 4.4) und gibt dem
+Prozess-Abnehmer im Schema eine eigene Kantenfarbe (Befund S2-O7). **Drei Schlüssel kommen
+hinzu, keiner fällt weg.** Bestand danach **2538 Schlüssel** in beiden `.resx` und in
+`Resource.Designer.cs` (DE und EN deckungsgleich, je Schlüssel eine Designer-Eigenschaft;
+Zählweise wie im A1-Nachtrag: `data`-Knoten der XML).
+
+| Schlüssel | DE | EN | Fundstelle |
+|---|---|---|---|
+| `SIM_SCHEMA_LEGENDE_PROZESS` | Prozessversorgung | Process supply | `SchemaAnsicht.LegendeZeichnen` — der fünfte Legendeneintrag zur neuen Kantenart `SchemaModell.Kantenart.Prozess` (violett #7E57A6). Bis E1 trug die Prozesskante die gemeinsame Versorgungsfarbe und war im Bild nicht von Heizkreis und Warmwasser zu unterscheiden. |
+| `SIM_LABEL_BEDARF_JE_KANAL` | Wärmebedarf je Bedarfsart | Heat demand by demand type | `Form_Simulation_Detail.InitBedarfKanalzeilen` — Überschrift des Blocks unter „Gesamter Wärmebedarf" auf der Bedarfsseite. Die drei Zeilenbeschriftungen darunter nutzen die vorhandenen `KANAL_*_ANZEIGE` aus Paket K1. |
+| `SIM_SPALTE_DECKUNG_KANAL` | Deckung {0} [MWh/a] | Coverage {0} [MWh/a] | `NavigatorUebersicht` (Konstruktor) — Kopf der drei neuen Spalten der Ergebnistabelle. Der Platzhalter nimmt den Kanalnamen aus `KANAL_*_ANZEIGE` auf; drei getrennte Schlüssel wären dreimal derselbe Satzbau. |
+
+**Bewusst KEIN neuer Schlüssel** für die Kanalnamen selbst: `KANAL_HEIZUNG_ANZEIGE`,
+`KANAL_BRAUCHWASSER_ANZEIGE` und `KANAL_PROZESS_ANZEIGE` (Paket K1) sind der eine Katalogeintrag
+je Kanal und werden von E1 an drei weiteren Stellen wiederverwendet.
+
+**Bericht:** Die sieben neuen Berichtstexte („davon Heizung", „Deckungsgrade je Bedarfsart" …)
+stehen NICHT in `MyResource`, sondern im Wörterbuch `BerichtTexte._en` bzw. als
+`LabelDe`/`LabelEn` im `KennzahlenKatalog` — das ist die Zweisprachigkeit des Berichtsmoduls
+(Konzept Eckpunkt 10), und E1 folgt ihr, statt eine zweite danebenzustellen.
+
+## Nachtrag Paket B1 — Booster-Temperaturkopplung (28.08.2026)
+
+Paket B1 koppelt die Quelltemperatur von Wärmepumpe **und** Heizkessel an den Zustand eines
+geteilten Quellpuffers (Konzept 8.2/8.4, Leitentscheidung L8, Entscheidungen F9/F13).
+**Fünf Schlüssel kommen hinzu, keiner fällt weg.** Bestand danach **2574 `data`-Knoten** in
+beiden `.resx` (DE und EN deckungsgleich) und **2570 Designer-Eigenschaften** — die Differenz
+sind die vier nicht-textlichen Musterknoten `Bitmap1`, `Color1`, `Icon1`, `Name1`, die der
+Generator nicht abbildet.
+
+| Schlüssel | DE | EN | Fundstelle |
+|---|---|---|---|
+| `SIM_KARTE_BOOSTER` | Booster | Booster | `Form_Simulation_Config.Karten.BoosterChip` — das Badge der Erzeugerkarte (F9: Anzeigeregel, kein Anlagentyp und kein Schemafeld). Es steht an Wärmepumpe **und** Heizkessel; der Begriff ist in beiden Sprachen derselbe und bleibt deshalb unübersetzt. |
+| `SIM_KARTE_TIP_BOOSTER` | Booster: Der Quellspeicher „{0}" … | Booster: the source storage “{0}” … | Mouseover desselben Chips. Der Platzhalter nimmt den Namen des geteilten Quellspeichers auf — ohne ihn wäre die Marke „Booster" nicht nachprüfbar. |
+| `SIM_REIHE_QUELLTEMPERATUR` | Quelltemperatur [°C] | Source temperature [°C] | `ZeitreihenExtraktor.ReiheQuelltemperatur` — Beschriftung der Reihe `QUELLTEMP_<AnlagenID>`. Der SCHLÜSSEL der Reihe bleibt sprachneutral (Schicht 2); nur die Beschriftung ist Anzeige. |
+| `SIMENG_WP_KAPPUNG_UNTEN_HINWEIS` | Wärmepumpe '{0}': … unterschreitet in {1} Stunden die untere Stützstelle ({2} °C); gemessen wurden {3} bis {4} °C … | Heat pump '{0}': … falls below the lowest data point … | `SimulationWaermepumpe.KappungUntenMelden` — das Protokoll der F13-Kappung nach unten, gebaut wie das vorhandene `SIMENG_WP_KAPPUNG_OBEN_HINWEIS` (V0-9). Fünf Platzhalter: Anlage, Stundenzahl, Stützstelle, Temperaturbereich. |
+| `SIMENG_KESSEL_QUELLKOPPLUNG_HINWEIS` | Heizkessel '{0}': Die Eintrittstemperatur folgte dem geteilten Quellpuffer … | Boiler '{0}': the inlet temperature followed the shared source storage … | `SimulationSPK.QuellkopplungMelden` — die Jahresbilanz der Kessel-Temperaturkopplung (Gleichbehandlung nach Konzept 8.4). Sieben Platzhalter: Kessel, min/max/Mittel der Quelltemperatur, Rücklauf/Vorlauf des Hubs, Stunden ohne Beitrag. |
+
+**Bewusst KEIN neuer Schlüssel** für die Booster-Meldungen des Laufaufbaus
+(`SimulationControl.BoosterKopplungVorbereiten`, `KesselQuellbezugSetzen`): Sie stehen inline
+deutsch wie der gesamte Protokollrahmen ihrer Nachbarschaft (Ticket P1-O7 / S2-O9, Sammelschnitt
+in Paket L).
+
+---
+
+## Nachtrag Paket Q1 — Quellen-Ausbau (28.08.2026)
+
+Paket Q1 macht das Quellprofil zu einem eigenen Gegenstand der Datenbank
+(`Tab_Quellprofil`/`Tab_QuellprofilDaten`, Migrationsschritt 54) mit den Betriebsarten
+Monat/Tag/Stunde, macht die Bauart-Bindung der Luft-Wasser-Wärmepumpe sichtbar und gibt der
+Quell-Entnahmehöhe ein Eingabefeld (Konzept 8.1/8.2/8.4).
+**28 Schlüssel kommen hinzu, 8 fallen weg, einer wird neu formuliert.** Bestand danach
+**2594 `data`-Knoten** in beiden `.resx` (DE und EN deckungsgleich) und **2590
+Designer-Eigenschaften** — die Differenz sind die vier nicht-textlichen Musterknoten
+`Bitmap1`, `Color1`, `Icon1`, `Name1`, die der Generator nicht abbildet.
+
+### Neu
+
+| Schlüssel | DE | EN | Fundstelle |
+|---|---|---|---|
+| `SIMQ_QUELLPROFIL_LBL_PROFIL` | Profil: | Profile: | `Form_Quellprofil` — Beschriftung der Profilauswahl. Die Auswahl trägt ihre Steuerwerte über `SchluesselEintrag` (Konzept 8.1 Punkt 4), nicht über den Index. |
+| `SIMQ_QUELLPROFIL_LBL_BETRIEBSART` | Betriebsart: | Operating mode: | dito, Umschalter Monat/Tag/Stunde. |
+| `SIMQ_QUELLPROFIL_LBL_BEZEICHNER` | Bezeichnung: | Name: | dito, `Tab_Quellprofil.Bezeichner`. |
+| `SIMQ_QUELLPROFIL_LBL_BESCHREIBUNG` | Beschreibung: | Description: | dito, `Tab_Quellprofil.Beschreibung` (Herkunft der Werte). |
+| `SIMQ_QUELLPROFIL_BA_MONAT` | Monatswerte (12) | Monthly values (12) | Anzeigetext zum Steuerwert `DbWerte.WQ_PROFIL_BETRIEBSART_MONAT`. Die Zahl steht im Text, weil sie die Betriebsart eindeutiger macht als ihr Name. |
+| `SIMQ_QUELLPROFIL_BA_TAG` | Tageswerte (365) | Daily values (365) | zu `WQ_PROFIL_BETRIEBSART_TAG`. |
+| `SIMQ_QUELLPROFIL_BA_STUNDE` | Stundenwerte (8760) | Hourly values (8760) | zu `WQ_PROFIL_BETRIEBSART_STUNDE`. |
+| `SIMQ_QUELLPROFIL_NEU` | (neues Profil) | (new profile) | erste Zeile der Profilauswahl; ihr Steuerwert ist die ID 0. Bewusst runde statt spitzer Klammern — spitze müssten in der `.resx` maskiert werden und lesen sich im Dialog wie ein Platzhalter. |
+| `SIMQ_QUELLPROFIL_TAB_TAGESWERTE` | Tageswerte | Daily values | Reiterbeschriftung der Werteseite in der Betriebsart Tag. |
+| `SIMQ_QUELLPROFIL_TAB_STUNDENWERTE` | Stundenwerte | Hourly values | dieselbe Seite in der Betriebsart Stunde — EIN Reiter, zwei Beschriftungen. |
+| `SIMQ_QUELLPROFIL_SPALTE_NR` | Nr. | No. | erste Rasterspalte (Position der Stützstelle, 1-basiert angezeigt). |
+| `SIMQ_QUELLPROFIL_SPALTE_WERT` | Quelltemperatur [°C] | Source temperature [°C] | zweite Rasterspalte. |
+| `SIMQ_QUELLPROFIL_BTN_CSV` | Werte aus CSV-Datei einlesen … | Import values from CSV file … | Importknopf der Werteseite. |
+| `SIMQ_QUELLPROFIL_BTN_ALLE_WERTE` | Alle Werte gleich setzen … | Set all values alike … | Knopf „konstantes Profil"; zugleich der Titel des Eingabedialogs dahinter. |
+| `SIMQ_QUELLPROFIL_ALLE_WERTE_TEXT` | Welche Quelltemperatur soll für alle Stützstellen gelten? [°C] | Which source temperature applies to every data point? [°C] | Frage dieses Eingabedialogs. |
+| `SIMQ_QUELLPROFIL_INFO_WERTE` | {0} Werte / von {1} bis {2} °C / Mittel {3} °C | {0} values / from {1} to {2} °C / mean {3} °C | Kennzahlenblock neben dem Raster, drei Zeilen und vier Platzhalter. Er ist die einzige Rückmeldung, dass ein Import wirklich angekommen ist. |
+| `SIMQ_QUELLPROFIL_HINWEIS_TAG` | 365 Tageswerte: Der erste Wert gilt für alle 24 Stunden des ersten Tages … kalenderunabhängig, ohne Wochentagsbezug. | 365 daily values: … independent of any calendar, with no weekday reference. | Kopftext der Werteseite in der Betriebsart Tag. Die Kalenderunabhängigkeit ist die fachliche Kernaussage der Tagesvariante (Konzept 8.1 Punkt 2) und gehört deshalb in die Oberfläche, nicht nur in den Quelltext. |
+| `SIMQ_QUELLPROFIL_HINWEIS_STUNDE` | 8760 Stundenwerte: je Jahresstunde ein Wert. Die Werte stehen in der Datenbank; das Profil bleibt bei einer Projektweitergabe erhalten. | 8760 hourly values: … the profile survives when the project is passed on. | derselbe Kopftext in der Betriebsart Stunde. Er nennt genau den Unterschied zu `WQ_CSV` (Dateipfad statt Werte, Konzept 8.1 Punkt 3). |
+| `SIMQ_QUELLPROFIL_HINWEIS_ALTWEG` | Altweg: Dieser Wochengang steht noch an der Anlage und wird gerechnet, solange kein Quellprofil gespeichert ist … | Legacy: this weekly pattern still sits on the plant … | Fußtext der nicht mehr bearbeitbaren Wochengang-Seite. Sie erscheint nur, wenn die Anlage einen Wochengang trägt. |
+| `SIMQ_QUELLPROFIL_CSV_HINWEIS` | Erwartet werden {0} Zahlenwerte, je Zeile einer … Die Datei wird ANSI-kodiert gelesen. | Expected are {0} numeric values, one per line … The file is read as ANSI. | Formathinweis vor dem Dateidialog. Der Platzhalter nimmt die Wertzahl der Betriebsart auf; die ANSI-Zusage steht dort, weil sie das Verhalten bei Umlauten in der Kopfzeile erklärt. |
+| `SIMQ_QUELLPROFIL_MSG_CSV_FEHLER` | Aus der Datei ließen sich keine {0} Werte lesen … | The file did not yield {0} values … | Fehlermeldung des Imports. |
+| `SIMQ_QUELLPROFIL_MSG_WERTE_FEHLEN` | Für diese Betriebsart werden {0} Werte gebraucht … | This operating mode needs {0} values … | Prüfung beim Speichern: ein halb gefülltes Profil kommt gar nicht erst in die Datenbank. |
+| `SIMQ_QUELLPROFIL_MSG_BEZEICHNER` | Bitte eine Bezeichnung für das Quellprofil eintragen! | Please enter a name for the source profile. | Pflichtfeldprüfung — ohne Namen wäre das Profil in keiner Auswahlliste wiederzufinden. |
+| `SIMQ_QUELLPROFIL_MSG_SPEICHERN` | Das Quellprofil konnte nicht gespeichert werden … | The source profile could not be saved … | Rückmeldung, wenn `QuellprofilCtrl.Speichern` 0 liefert (Transaktion zurückgerollt). |
+| `SIMQ_TIP_QUELLE_BAUART` | Bauart {0}: Die Wärmequelle ist die Außenluft und nicht wählbar … | Type {0}: the heat source is the outside air and cannot be chosen … | `Form_Simulation_Config.Karten.QuellenChip` — Mouseover des FESTEN Quellen-Chips bei Luft-Wasser (Konzept 8.1 Punkt 1). Der Platzhalter nimmt die Bauart auf, bei fehlender Bauart den vorhandenen Ersatztext `SIMQ_WPTYP_NICHT_GEPFLEGT`. |
+| `SIMQ_PUFFER_ANSCHLUSSHOEHE` | Quell-Entnahmehöhe (0…1): | Source draw-off height (0…1): | `Form_QuellePufferspeicher` — Beschriftung des neuen Feldes für `WQ_Anschlusshoehe` (Schritt 54). Die Skala steht in der Beschriftung, weil sie sonst nur im Fußtext stünde. |
+| `SIMQ_PUFFER_ANSCHLUSSHOEHE_HINWEIS` | Leer = oben. 1 = ganz oben, 0 = ganz unten. Wirkt nur bei einem geschichteten Speicher … | Empty = top. 1 = topmost, 0 = bottom. Effective only with a stratified store … | Fußtext desselben Feldes. Er sagt beides: was LEER bedeutet, und dass die Angabe bei N = 1 folgenlos ist. |
+| `SIMQ_PUFFER_MSG_ANSCHLUSSHOEHE` | Die Quell-Entnahmehöhe muss zwischen 0 und 1 liegen … Leer lassen heißt oben. | The source draw-off height must lie between 0 and 1 … | Prüfung beim Speichern. Ein Wert außerhalb wird abgewiesen statt geklemmt — sonst bliebe eine Prozent- oder Meterangabe unbemerkt. |
+
+### Neu formuliert
+
+`SIMQ_QUELLPROFIL_INFO` — der Kopftext des Dialogs. Er beschrieb die Formel des Altwegs
+(„Quelltemperatur = Monatswert + Wochenwert"); jetzt beschreibt er den Gegenstand
+(„12 Monatswerte, 365 Tageswerte oder 8760 Stundenwerte … liegt in der Datenbank und kann von
+mehreren Anlagen benutzt werden").
+
+### Entfallen
+
+Acht Schlüssel der Wochengang-Bedienung, die es nicht mehr gibt (die Seite ist Anzeige, kein
+Editor): `SIMQ_QUELLPROFIL_BTN_TAG_KOPIEREN`, `…_BTN_TAG_EINFUEGEN`, `…_BTN_ALLE_TAGE`,
+`…_BTN_UEBERNEHMEN`, `…_HINWEIS_ABWEICHUNG`, `…_MSG_ERST_KOPIEREN`, `…_MSG_ALLE_TAGE`,
+`…_MSG_STUNDE_UNGUELTIG`. Vor dem Entfernen geprüft: keiner hatte im Anwendungsprojekt noch
+eine Fundstelle.
+
+**Bewusst KEIN neuer Schlüssel** für die Protokollzeile der Quell-Entnahmehöhe
+(`SimulationControl.AnschlusshoeheText`): Sie ist ein Zusatz zu den Booster-Meldungen des
+Laufaufbaus, die inline deutsch stehen (Ticket P1-O7 / S2-O9 / B1-O9, Sammelschnitt in Paket L).
+
+---
+
+## Nachtrag Paket P1 — Schichtspeichermodell (27.08.2026, nachgetragen mit Paket L)
+
+> **Warum erst jetzt.** Paket P1 hat seine 27 Schlüssel nur im eigenen Umsetzungsprotokoll
+> gezählt und keinen Katalog-Nachtrag angelegt (Ticket **B1-O7**). Er steht hier nach, damit
+> die Reihe der Nachträge lückenlos ist; Reihenfolge im Katalog ist die des NACHTRAGENS,
+> nicht die der Pakete.
+
+Paket P1 macht aus dem Pufferspeicher ein **Multi-Node-Modell** (N = 1…10 Schichten,
+Konzept Kapitel 7, Entscheidung F7, Migrationsschritt 53). **27 Schlüssel kommen hinzu, keiner
+fällt weg** — 23 für die Dialoggruppe „Schichtung und Leistungsgrenzen" und die Speicherkarte,
+4 für die scharfgeschalteten Warnkriterien.
+
+### Neu (27)
+
+| Schlüssel | DE | EN | Fundstelle |
+|---|---|---|---|
+| `PSP_GRUPPE_SCHICHTUNG` | Schichtung und Leistungsgrenzen | Stratification and power limits | `Form_PufferSp_Projekt` — Kopf der programmatischen Gruppe. Sie fasst zwei Dinge zusammen, die dieselbe Bedingung teilen: Beide sind Eigenschaften des BEHÄLTERS, nicht der Senke. |
+| `PSP_LABEL_SCHICHTEN` | Schichten: | Layers: | Zahl der Knoten N (`Tab_Pufferspeicher.Schichten_Anzahl`). |
+| `PSP_HINWEIS_SCHICHTEN` | 1 = ein Vorrat wie bisher; ab 2 rechnet der Speicher geschichtet. | 1 = one single store as before; from 2 on the tank is calculated stratified. | Fußtext dazu. Er nennt genau die Grenze, an der der N=1-Byte-Nachweis endet. |
+| `PSP_LABEL_HOEHE` | Höhe [m]: | Height [m]: | `Hoehe`; NULL = aus dem H/D-Verhältnis abgeleitet. |
+| `PSP_HINWEIS_HOEHE` | leer = automatisch aus dem Höhen-/Durchmesserverhältnis 2,5 | empty = derived from the height/diameter ratio of 2.5 | Fußtext; die Zahl steht im Text, weil sie sonst nur im Konzept stünde. |
+| `PSP_LABEL_LAMBDA_EFF` | λ effektiv [W/(m·K)]: | λ effective [W/(m·K)]: | `Lambda_Eff`, der vertikale Ausgleich. |
+| `PSP_HINWEIS_LAMBDA_EFF` | leer = 1,5 | empty = 1.5 | Fußtext; Vorgabe nach Konzept 7.2. |
+| `PSP_LABEL_T_NUTZ_BW` | Nutztemperatur Brauchwasser [°C]: | Usable temperature DHW [°C]: | `T_Nutz_BW` — die Schwelle, ab der eine Schicht den Brauchwasserkanal bedienen darf. |
+| `PSP_HINWEIS_T_NUTZ_BW` | leer = Rücklauftemperatur des Speichers | empty = return temperature of the tank | Fußtext; leer heißt „keine Schwelle", nicht „0 °C". |
+| `PSP_LABEL_ENTNAHMEHOEHEN` | Entnahmehöhe je Kanal (0 = unten, 1 = oben; leer = Standard): | Draw-off height per channel (0 = bottom, 1 = top; empty = default): | Kopf der Zeilengruppe `Entnahme_Heizung/_BW/_Prozess`; eingeblendet werden nur die Kanäle des Klassen-Sets. |
+| `PSP_LABEL_LADELEISTUNG_MAX` | Ladeleistung max. [kW]: | Max. charging power [kW]: | `Ladeleistung_Max`. |
+| `PSP_LABEL_ENTLADELEISTUNG_MAX` | Entladeleistung max. [kW]: | Max. discharging power [kW]: | `Entladeleistung_Max`. |
+| `PSP_NAME_LADELEISTUNG_MAX` | größte Ladeleistung | maximum charging power | Einsetztext für `PSP_FEHLER_LEISTUNG` — EIN Fehlertext für beide Felder statt zweier fast gleicher. |
+| `PSP_NAME_ENTLADELEISTUNG_MAX` | größte Entladeleistung | maximum discharging power | dito. |
+| `PSP_HINWEIS_LEISTUNG_UNBEGRENZT` | 0 = unbegrenzt | 0 = unlimited | Fußtext beider Leistungsfelder. 0 ist ein GÜLTIGER Wert mit eigener Bedeutung und darf nicht wie „leer" aussehen. |
+| `PSP_FEHLER_SCHICHTUNG_AM_VERBUND` | Der Speicher „{0}" ist Leitspeicher eines Parallelverbunds und kann deshalb keine Schichtung führen. | Tank "{0}" is the lead tank of a parallel bank and therefore cannot be stratified. | Die HARTE Abweisung im Dialog (W6, Entscheidung F8). |
+| `PSP_FEHLER_HOEHE` | Die Höhe muss eine Zahl größer 0 sein [m] - oder leer bleiben. | The height must be a number greater than 0 [m] - or be left empty. | Eingabeprüfung. |
+| `PSP_FEHLER_LAMBDA_EFF` | Die effektive Wärmeleitfähigkeit muss eine Zahl größer 0 sein [W/(m·K)] - oder leer bleiben. | The effective thermal conductivity must be a number greater than 0 [W/(m·K)] - or be left empty. | Eingabeprüfung. |
+| `PSP_FEHLER_T_NUTZ_BW` | Die Nutztemperatur Brauchwasser muss eine Zahl größer 0 sein [°C] - oder leer bleiben. | The usable DHW temperature must be a number greater than 0 [°C] - or be left empty. | Eingabeprüfung. |
+| `PSP_FEHLER_ENTNAHMEHOEHE` | Die Entnahmehöhe {0} muss eine Zahl zwischen 0 und 1 sein - oder leer bleiben. | The draw-off height {0} must be a number between 0 and 1 - or be left empty. | Eingabeprüfung; der Platzhalter nennt den KANAL, sonst wüsste der Anwender bei drei Feldern nicht, welches gemeint ist. |
+| `PSP_FEHLER_LEISTUNG` | Die {0} muss eine Zahl ≥ 0 sein [kW]; 0 bedeutet unbegrenzt. | The {0} must be a number ≥ 0 [kW]; 0 means unlimited. | Eingabeprüfung beider Leistungsfelder, mit `PSP_NAME_*` als Platzhalter. |
+| `PSP_KARTE_SCHICHTEN` | {0} Schichten | {0} layers | Badge der `SpeicherKarte` bei N > 1. |
+| `PSP_KARTE_T_OBEN` | Oberste Schicht: {0} °C im Jahresmittel | Top layer: {0} °C annual mean | Kennzahl derselben Karte, sobald das Ergebnis einen `T_oben_Mittel` trägt. |
+| `SIMWARN_W3_UNTER_TNUTZ` | Anlage „{0}": Der Erzeuger-Vorlauf {1} °C liegt unter der Nutztemperatur Brauchwasser {2} °C … | Unit "{0}": the generator flow temperature of {1} °C is below the usable DHW temperature … | Der T_Nutz-Anteil von W3, mit Schritt 53 scharfgeschaltet (S2-O1). |
+| `SIMWARN_W4_TNUTZ_UEBER_VLEFF` | Speicher „{0}": Die Nutztemperatur Brauchwasser {1} °C liegt über dem wirksamen Vorlauf {2} °C. Der Lauf klemmt sie auf {2} °C … | Storage "{0}": the usable DHW temperature … clamps it to {2} °C … | Warnkriterium W4, ebenfalls mit Schritt 53 scharf. |
+| `SIMWARN_W6_SCHICHTUNG_AM_VERBUND` | Speicher „{0}": Er führt {1} Schichten und ist zugleich Leitspeicher eines Parallelverbunds … | Storage "{0}": it holds {1} layers and is at the same time the lead tank of a parallel bank … | Warnkriterium W6 — die MELDUNG für einen Bestand, der auf anderem Weg entstanden ist; abgewiesen wird an den beiden Entstehungsstellen. |
+| `SIM_VERBUND_KONFLIKT_LEIT_GESCHICHTET` | Der Pufferspeicher „{0}" führt eine Schichtung und kann deshalb nicht Leitspeicher eines Verbunds sein … | Buffer tank "{0}" is stratified and therefore cannot serve as the lead tank of a bank … | Die GEGENRICHTUNG von W6: `AnlagePufferVerbundCtrl.KonfliktPruefen` Punkt 7, angezeigt über `WaermesenkeClass.VerbundKonfliktMeldung`. |
+
+---
+
+## Nachtrag Paket L — Aufräumen und Ressourcen-Nachzug (28.08.2026)
+
+Paket L holt die seit Paket K2 **inline deutsch** gebliebenen Engine-Protokolltexte in den
+Katalog (Tickets K2-O4, S1-O8, S2-O9, P1-O7, B1-O9, Q1-O9), ergänzt die Bauart-Anzeige der
+Speicherform (S2-O8) und den Bauart-Änderungsweg in der Luft-Wasser-Meldung (FR-3).
+**18 Schlüssel kommen hinzu, keiner fällt weg; zwei werden erweitert, zwei repariert.**
+Bestand danach **2618 `data`-Knoten** in beiden `.resx` (DE und EN deckungsgleich) und
+**2618 Designer-Eigenschaften**.
+
+> **Die deutschen Texte sind ZEICHENGENAU die der bisherigen Verkettung.** Das Laufprotokoll
+> ist Vergleichsgegenstand jedes Referenzlaufs — eine geglättete Formulierung hätte den
+> Protokollvergleich künftiger Läufe gebrochen. Nachgewiesen durch mechanischen Abgleich der
+> Vorlagen gegen den Quelltext vor dem Umbau (Beleg im
+> [L-Protokoll](L_Aufraeumen_Protokoll.md), Abschnitt 5).
+
+### Neu (18)
+
+| Schlüssel | DE (Kurzfassung) | EN (Kurzfassung) | Fundstelle |
+|---|---|---|---|
+| `SIMENG_SCHICHT_INVARIANTE` | Schichtmodell: Am Puffer {0} ({1}) wich die Summe der Schichtenergie in {2} Stunden … | Layer model: At buffer {0} ({1}) the sum of the layer energies deviated … | `SimulationControl.Do_Simulation_Intern` — die Debug-Invariante des Schichtmodells (P1). Vier Platzhalter. |
+| `SIMENG_SENKE_OHNE_LADEAUFTRAG_RANG` | Wärmesenke: Die Anlage {0} ({1}) führt auf Rang {2} das Ziel {3} (Puffer {4}), bekommt aber KEINEN Ladeauftrag …{5} | Heat sink: Plant {0} ({1}) carries target {3} at rank {2} (buffer {4}), but receives NO charging order …{5} | `SimulationControl.SenkeAufHeizkreisZurueck` (Senkenlisten-Fassung, S1). **{5} ist der Rangzusatz** — die beiden Fassungen darunter. |
+| `SIMENG_SENKE_OHNE_LADEAUFTRAG_RANG1` | ␣Die Anlage deckt deshalb den HEIZKREIS; ohne diesen Rückfall würde sie das ganze Jahr nichts produzieren. | ␣The plant therefore supplies the HEATING CIRCUIT; without this fallback it would produce nothing all year. | Zusatz bei Rang 1. **Führendes Leerzeichen ist Teil des Wertes** (`xml:space="preserve"`) — es trennt den Satz vom Rumpf. |
+| `SIMENG_SENKE_OHNE_LADEAUFTRAG_NACHRANG` | ␣Diese Senke bleibt in diesem Lauf unberücksichtigt. | ␣This sink is disregarded in this run. | Zusatz ab Rang 2, ebenfalls mit führendem Leerzeichen. |
+| `SIMENG_PENDELSPEICHER_ENTLADEORDNUNG` | BHKW-Pendelspeicher: Der Speicher {0} steht nicht in der Entladereihenfolge des Kanals {1} … | CHP buffer tank: Storage {0} is not part of the discharge order of channel {1} … | `SimulationControl.EntladeordnungEinsortieren` (K2). |
+| `SIMENG_ENTLADEORDNUNG_NACHTRAG` | Speicher {0} ({1}) steht nicht in der Entladereihenfolge des Kanals {2} … | Storage {0} ({1}) is not part of the discharge order of channel {2} … | `SimulationControl.EntladeordnungAufbauen` (K2). Bewusst ein EIGENER Schlüssel neben dem Pendelspeicher-Text: andere Stelle, anderer Rumpf. |
+| `SIMENG_KLASSENSET_ROLLE` | Speicher {0} ({1}): Das Klassen-Set {2} passt nicht zur Alt-Verwendung „{3}". … lautet „{4}". | Storage {0} ({1}): The class set {2} does not match the legacy use "{3}". … is "{4}". | `SimulationControl.KlassenSetUebernehmen` (K2). **Die Anführungszeichen sind asymmetrisch** („ … ") — so stand es im Quelltext, und so bleibt es. |
+| `SIMENG_VERBUND_SCHICHTUNG` | Parallelverbund: Der Leitspeicher {0} ({1}) ist mit {2} Schichten gepflegt … | Parallel group: The lead storage {0} ({1}) is configured with {2} layers … | `SimulationControl.VerbundAufaddieren` — der Laufzeit-Riegel zu W6 (P1). |
+| `SIMENG_TNUTZ_UEBER_VORLAUF` | Schichtmodell: Am Puffer {0} ({1}) liegt die Mindest-Nutztemperatur Brauchwasser mit {2} °C ÜBER … {3} °C … Gerechnet wird mit {3} °C … | Layer model: At buffer {0} ({1}) the minimum usable DHW temperature of {2} °C is ABOVE … | `SimulationControl.SchichtparameterUebernehmen` (P1). **{3} steht zweimal** — wirksamer Vorlauf und Ersatzwert sind derselbe Wert. |
+| `SIMENG_BOOSTER_KOPPLUNG` | Booster: Die Anlage {0} bezieht ihre Quellwärme aus Puffer {1} ({2}), einem GETEILTEN Puffer … {5} Schicht(en){6} … | Booster: Plant {0} draws its source heat from buffer {1} ({2}), a SHARED buffer … | `SimulationControl.BoosterKopplungVorbereiten` (B1). **{6}** nimmt den Anschlusshöhen-Zusatz aus Q1 auf (`AnschlusshoeheText`, weiter inline — siehe unten). |
+| `SIMENG_KESSEL_BOOSTER_KOPPLUNG` | Kessel-Kaskade (Booster): Anlage {0} bezieht ihre Eintrittstemperatur aus Puffer {1} ({2}) … Hub des Kessels {6}/{7} °C … {8} % … | Boiler cascade (booster): Plant {0} draws its inlet temperature from buffer {1} ({2}) … | `SimulationControl.KesselQuellbezugSetzen` (B1, Konzept 8.4). Neun Platzhalter. |
+| `SIMENG_KNAPPHEIT_UNGUELTIG` | Knappheitsreihenfolge: Die Projekteinstellung „{0}" ist unbrauchbar … Vorbelegung {4} -> {5} -> {6}. | Scarcity order: The project setting "{0}" is unusable … the default {4} -> {5} -> {6}. | `SimulationKanaele.KnappheitsReihenfolge` (K2, F10). **{1}…{3} sind STEUERWERTE** (`DbWerte.KNAPPHEIT_*`), **{4}…{6} Anzeigenamen** — die Meldung nennt beides, weil der Anwender den Steuerwert eintippt und den Anzeigenamen kennt. |
+| `SIMENG_QUELLPROFIL_UNLESBAR` | Quellprofil {0} der Anlage {1} ist nicht lesbar oder unvollständig … | Source profile {0} of plant {1} is unreadable or incomplete … | `WaermequelleClass.Quelltemperatur` (Q1). |
+| `SIMENG_SENKENZEILE_OHNE_PUFFER` | Wärmesenke: Die Anlage {0} führt auf Rang {1} das Ziel {2}, hat dort aber KEINEN Pufferspeicher zugeordnet … | Heat sink: Plant {0} carries target {2} at rank {1}, but has NO buffer storage assigned there … | `WaermesenkeClass.AusZuordnungstabelle` (A1, Regel N5 auf der neuen Tabelle). |
+| `SIMENG_SENKENLISTE_LEER` | Wärmesenke: Für die Anlage {0} steht in Z_AnlageSenke keine einzige Zeile. Der Lauf rechnet die Vorbelegung {1}/{2}. | Heat sink: For plant {0} there is not a single row in Z_AnlageSenke. The run uses the default {1}/{2}. | dieselbe Methode (A1, Rang-1-Invariante). **{1}/{2} sind Persistenzwerte** und stehen bewusst roh — sie benennen die Datenlage, nicht eine Anzeige. |
+| `PSP_SPEICHERTYP_ANZEIGE_SOLAR` | Solarspeicher | Solar storage | `Warnkriterien.BauformAnzeige` — Anzeigename zum Persistenzwert `DbWerte.PSP_SPEICHERTYP_SOLAR` (S2-O8). |
+| `PSP_SPEICHERTYP_ANZEIGE_PUFFER` | Pufferspeicher | Buffer storage | zu `PSP_SPEICHERTYP_PUFFER`. |
+| `PSP_SPEICHERTYP_ANZEIGE_KOMBI` | Kombispeicher | Combination storage | zu `PSP_SPEICHERTYP_KOMBI`. Die drei Texte sind wortgleich mit der Auswahlliste in `Form_PufferSp_Bearbeiten.resx`; **unbekannte Altwerte laufen roh durch** (Befund L0-1, Bestandsrest `blabla`). |
+
+### Erweitert
+
+`SIMQ_MSG_LUFT_WASSER` (DE + EN) — die Abbruchmeldung der Quellenwahl an einer
+Luft-Wasser-Wärmepumpe bekommt den **Weg zur Änderung** angehängt (Ticket **FR-3**,
+Fehlerrunde 27.08.: „Booster-WP: Quelle Pufferspeicher nicht wählbar"). Neu am Ende:
+
+> Soll dieses Gerät einen Pufferspeicher als Wärmequelle nutzen (Booster-Betrieb), muss es als
+> Sole-Wasser- oder Wasser-Wasser-Wärmepumpe geführt sein:
+> Administration → Wärmepumpe → Wärmepumpentyp ändern, dann die WP im Projekt neu auswählen.
+
+Hier ist die Textänderung **gewollt**: Es ist ein Dialogtext, kein Laufprotokoll.
+
+### Repariert (Mojibake aus Paket Q1)
+
+Zwei DE-Werte trugen doppelt UTF-8-kodierte Umlaute und standen so auch im Dialog
+(`EntnahmehÃ¶he`, `heiÃŸt`, `FÃ¼r`). Behoben, ohne den Wortlaut zu ändern:
+
+| Schlüssel | vorher | jetzt |
+|---|---|---|
+| `SIMQ_PUFFER_MSG_ANSCHLUSSHOEHE` | Die Quell-Entnahmeh**Ã¶**he … Leer lassen hei**ÃŸ**t oben. | Die Quell-Entnahmeh**ö**he … Leer lassen hei**ß**t oben. |
+| `SIMQ_QUELLPROFIL_MSG_WERTE_FEHLEN` | **FÃ¼**r diese Betriebsart … | **Fü**r diese Betriebsart … |
+
+Beide sind reine MessageBox-Texte (`Form_QuellePufferspeicher`, `Form_Quellprofil`) — kein
+Steuerwert hängt daran. Prüfung P5 der [Prüfrezeptur](Lokalisierung_Pruefung.md) ist damit
+wieder sauber.
+
+### Bewusst NICHT umgezogen (Restbestand)
+
+**45 inline-deutsche Protokolltexte bleiben stehen** — sie stammen sämtlich aus dem Bestand
+VOR Paket K2 (Erhebung mit `git blame` über alle Aufrufstellen in `Allgemein/Simulation/`;
+Zahlen und Fundstellenliste im [L-Protokoll](L_Aufraeumen_Protokoll.md), Abschnitt 5.4). Paket L
+zieht die **seit K2 neu entstandenen** nach; der Altbestand ist ein eigener Schnitt, weil er
+den Protokollvergleich über eine viel größere Textmenge riskiert und keinem der offenen
+Tickets zugeordnet ist.
+
+Ebenfalls inline geblieben: `SimulationControl.AnschlusshoeheText` (Q1-O9). Er ist ein
+Text**baustein**, kein Meldungsrumpf, und geht als Platzhalter {6} bzw. {5} in die beiden
+Booster-Meldungen ein.
+
+---
+
+## Nachtrag Paket B2 — Kessel-Temperaturmodus und Booster-Lesepunkt (28.08.2026)
+
+Paket B2 setzt die beiden Nutzeraufträge vom 28.08.2026 um: den wählbaren **Temperaturbezug**
+der Kessel-Kaskade (`Tab_Energieanlagen.WQ_TemperaturModus`) und den wählbaren **Lesepunkt**
+der Booster-Quelltemperatur (`Tab_Einstellungen.Booster_Lesepunkt`), beide aus
+Migrationsschritt 55. **Zwölf Schlüssel kommen hinzu, keiner fällt weg.** Bestand danach
+**2633 `data`-Knoten** je `.resx` (DE und EN deckungsgleich) und **2633
+Designer-Eigenschaften**.
+
+| Schlüssel | DE | EN | Fundstelle |
+|---|---|---|---|
+| `SIMWARN_KESSEL_TEMPERATURPAAR` | Anlage „{0}": Der Temperaturbezug steht auf „fest vorgegeben", aber es ist kein vollständiges Vor-/Rücklaufpaar gepflegt … | Unit "{0}": the temperature reference is set to "fixed", but no complete flow/return pair is maintained … | `Warnkriterien.KesselTemperaturpaarPruefen` — das neue **weiche** Kriterium `KESSEL_TEMPERATURPAAR`. Es schlägt nur an, wenn alle drei Bedingungen zusammentreffen (Kessel mit Quellpuffer, Modus `Fest`, Paar fehlt); im Modus `Berechnet` schweigt der Katalog, so verlangt es der Nutzerauftrag. Zwei Platzhalter: Anlage, Quellspeicher. |
+| `SIMQ_PUFFER_TEMPERATURBEZUG` | Temperaturbezug: | Temperature reference: | Beschriftung des neuen Blocks im Kessel-Zweig von `Form_QuellePufferspeicher`. |
+| `SIMQ_PUFFER_TB_BERECHNET` | berechnet (aus der Anlage) | calculated (from the plant) | Erster Auswahlknopf. |
+| `SIMQ_PUFFER_TB_FEST` | fest vorgegeben | fixed specification | Zweiter Auswahlknopf; nur bei ihm sind die beiden Eingabefelder sichtbar. |
+| `SIMQ_PUFFER_TB_VORLAUF` | Vorlauf [°C]: | Flow [°C]: | Beschriftung des Vorlauffelds. |
+| `SIMQ_PUFFER_TB_RUECKLAUF` | Rücklauf [°C]: | Return [°C]: | Beschriftung des Rücklauffelds. |
+| `SIMQ_PUFFER_TB_HINWEIS` | Der Kessel hebt von seinem Rücklauf auf seinen Vorlauf an … | The boiler raises the temperature from its return to its flow … | Die Erklärzeile unter dem Block. Sie misst sich zur Laufzeit nach (`GetPreferredSize`) — der deutsche Text braucht bei 590 px mehr Zeilen als der englische. |
+| `SIMQ_PUFFER_MSG_TEMPERATURPAAR` | Bitte Vorlauf und Rücklauf als ganze Zahlen eintragen … | Please enter flow and return as whole numbers … | Abweisung im Modus `Fest` ohne brauchbares Paar; nennt ausdrücklich den Ausweg „berechnet". |
+| `SIM_BOOSTER_LESEPUNKT_SCHALTER` | Booster liest Speicherzustand vom Stundenanfang (konservativ) | Booster reads storage state at the start of the hour (conservative) | Der zweite Fußzeilenschalter des Konfigurationsdialogs, neben „Extrapolation der WP-Kennlinie erlauben". **Angehakt = `Davor`.** |
+| `SIM_BOOSTER_LESEPUNKT_TOOLTIP` | Angehakt: … Nicht angehakt: … | Checked: … Unchecked: … | Mouseover desselben Schalters; er erklärt den NICHT angehakten Zustand, den die Beschriftung nicht nennen kann. Enthält Leerzeilen — die Anzeige läuft deshalb über `Zeilenumbruch.Normalisieren`. |
+| `SIM_STATUS_LESEPUNKT_DAVOR` | Booster-Lesepunkt: Stundenanfang (konservativ). | Booster reading point: start of the hour (conservative). | Statuszeile nach dem Umschalten (Muster `SIM_STATUS_EXTRAPOLATION_EIN`). |
+| `SIM_STATUS_LESEPUNKT_DANACH` | Booster-Lesepunkt: nach der Ladephase der Vorebene. | Booster reading point: after the charging phase of the preceding level. | Gegenstück dazu. |
+
+**Bewusst KEIN neuer Schlüssel** für die beiden neuen Zeilen des Laufaufbaus
+(`SimulationControl.KesselKopplungSetzen` — „Der Temperaturbezug der Anlage … Bezugspaar …
+aus: …" — und `BoosterLesepunktDesLaufs` — „Booster-Lesepunkt: DAVOR/DANACH …"). Sie stehen
+inline deutsch wie ihre unmittelbare Nachbarschaft in derselben Datei (Ticket B1-O9 /
+P1-O7 / S2-O9, Sammelschnitt in Paket L). Der zweite Grund ist die Drei-Schichten-Regel: Die
+Zeile nennt den MODUS, und dessen Persistenzwert („Berechnet"/„Fest") dürfte in einem
+lokalisierten Text nicht als Platzhalter auftauchen.
+
+**Sprachgleichheitsprobe bestanden:** derselbe Lauf mit `EPOS_REFLAUF_UICULTURE=en-US` auf
+einem Projekt, das das neue Kriterium **und** den neuen Modus auslöst — **25 von 25 CSV
+byte-gleich**. Kein Anzeigetext dieses Pakets ist Steuerwert.
+
+## Nachtrag Paket B3 (28.08.2026) — Warnkriterium „Quelle unbegrenzt trotz Pufferwahl"
+
+Nutzerauftrag 28.08.2026 Punkt 2 (Befund an der Booster-Kette 1042). **Zwei Schlüssel
+kommen hinzu, keiner fällt weg.** Bestand danach **2635 `data`-Knoten** je `.resx`
+(DE und EN deckungsgleich) und **2635 Designer-Eigenschaften**.
+
+| Schlüssel | DE | EN | Fundstelle |
+|---|---|---|---|
+| `SIMWARN_QUELLE_UNBEGRENZT` | Anlage „{0}": Der Pufferspeicher „{1}" ist als Wärmequelle gewählt, aber „Quelle unbegrenzt verfügbar" ist gesetzt … | Unit "{0}": buffer storage "{1}" is selected as heat source, but "available without limit" is set … | `Warnkriterien.QuelleUnbegrenztTrotzPufferPruefen` — das neue **weiche** Kriterium `QUELLE_UNBEGRENZT`, nur für Wärmepumpen (der Kessel-Pfad liest das Flag nicht). Drei Platzhalter: Anlage, Puffer, konstante Temperatur. |
+| `SIMQ_PUFFER_CB_UNBEGRENZT_KONFLIKT` | Quelle unbegrenzt verfügbar — Speicherkopplung AUS, konstant {0} °C! | Source available without limit — storage coupling OFF, constant {0} °C! | Konfliktfassung der Checkbox-Beschriftung in `Form_QuellePufferspeicher.UnbegrenztKonfliktAnzeigen` (dazu Warnfarbe Firebrick). AutoSize-Kästchen in eigener Zeile ab x = 16; TextRenderer-gemessen (96 DPI) endet der breiteste Fall (deutsch, Segoe UI 9 pt) bei x = 419 und bleibt damit 171 px vor der Rubrikkante 590. |

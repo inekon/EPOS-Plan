@@ -38,7 +38,7 @@
         //    dem Gegenstand selbst. Auch hier keine Änderung.
         //  - Geändert wurden nur die Fußknöpfe: MinimumSize 110 × 28 → 110 × 30
         //    (einheitliche Knopfhöhe) und Margin links 6 → 10 px, damit
-        //    zwischen „Übernehmen" und „Abbrechen" mindestens 10 px liegen.
+        //    zwischen „OK" und „Abbrechen" mindestens 10 px liegen.
         //    Die rechte Kante bleibt durch den RightToLeft-Fluss konstant bei
         //    12 px Abstand zum Fensterrand — dieselbe Kante wie ComboBox und
         //    Klartextfeld. In Zeile 8 (40 px, davon 8 px Rand oben) bleiben
@@ -53,199 +53,247 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.tl = new System.Windows.Forms.TableLayoutPanel();
-            this.lblGegenstand = new System.Windows.Forms.Label();
-            this.lblQuelle = new System.Windows.Forms.Label();
-            this.cbQuelle = new System.Windows.Forms.ComboBox();
-            this.lblWertQuelleTitel = new System.Windows.Forms.Label();
-            this.lblQuelleWert = new System.Windows.Forms.Label();
-            this.lblZielTitel = new System.Windows.Forms.Label();
-            this.lblZiel = new System.Windows.Forms.Label();
-            this.lblWertZielTitel = new System.Windows.Forms.Label();
-            this.lblZielWert = new System.Windows.Forms.Label();
-            this.lblKomponenten = new System.Windows.Forms.Label();
-            this.txtKlartext = new System.Windows.Forms.TextBox();
-            this.lblGrund = new System.Windows.Forms.Label();
-            this.pnlKnoepfe = new System.Windows.Forms.FlowLayoutPanel();
-            this.btnOk = new System.Windows.Forms.Button();
-            this.btnAbbrechen = new System.Windows.Forms.Button();
-            this.tl.SuspendLayout();
-            this.pnlKnoepfe.SuspendLayout();
-            this.SuspendLayout();
-            // 
-            // lblGegenstand
-            // 
-            this.lblGegenstand.AutoSize = false;
-            this.lblGegenstand.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblGegenstand.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
-            this.lblGegenstand.ForeColor = System.Drawing.Color.FromArgb(0x1F, 0x4E, 0x79);
-            this.lblGegenstand.Margin = new System.Windows.Forms.Padding(0, 0, 0, 8);
-            this.lblGegenstand.Name = "lblGegenstand";
-            // 
-            // lblQuelle
-            // 
-            this.lblQuelle.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblQuelle.Name = "lblQuelle";
-            this.lblQuelle.Text = "Quelle:";
-            this.lblQuelle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // cbQuelle
-            // 
-            this.cbQuelle.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.cbQuelle.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbQuelle.Margin = new System.Windows.Forms.Padding(0, 2, 0, 6);
-            this.cbQuelle.Name = "cbQuelle";
-            this.cbQuelle.SelectedIndexChanged += new System.EventHandler(this.cbQuelle_SelectedIndexChanged);
-            // 
-            // lblWertQuelleTitel
-            // 
-            this.lblWertQuelleTitel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblWertQuelleTitel.Name = "lblWertQuelleTitel";
-            this.lblWertQuelleTitel.Text = "Wert der Quelle:";
-            this.lblWertQuelleTitel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblQuelleWert
-            // 
-            this.lblQuelleWert.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblQuelleWert.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.lblQuelleWert.Name = "lblQuelleWert";
-            this.lblQuelleWert.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblZielTitel
-            // 
-            this.lblZielTitel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblZielTitel.Name = "lblZielTitel";
-            this.lblZielTitel.Text = "Ziel:";
-            this.lblZielTitel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblZiel
-            // 
-            this.lblZiel.AutoEllipsis = true;
-            this.lblZiel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblZiel.Name = "lblZiel";
-            this.lblZiel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblWertZielTitel
-            // 
-            this.lblWertZielTitel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblWertZielTitel.Name = "lblWertZielTitel";
-            this.lblWertZielTitel.Text = "Wert des Ziels:";
-            this.lblWertZielTitel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblZielWert
-            // 
-            this.lblZielWert.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblZielWert.Name = "lblZielWert";
-            this.lblZielWert.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblKomponenten
-            // 
-            this.lblKomponenten.AutoEllipsis = true;
-            this.lblKomponenten.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblKomponenten.ForeColor = System.Drawing.Color.DimGray;
-            this.lblKomponenten.Name = "lblKomponenten";
-            this.lblKomponenten.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // txtKlartext
-            // 
-            this.txtKlartext.BackColor = System.Drawing.SystemColors.Window;
-            this.txtKlartext.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtKlartext.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.txtKlartext.Multiline = true;
-            this.txtKlartext.Name = "txtKlartext";
-            this.txtKlartext.ReadOnly = true;
-            this.txtKlartext.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            // 
-            // lblGrund
-            // 
-            this.lblGrund.AutoEllipsis = true;
-            this.lblGrund.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblGrund.ForeColor = System.Drawing.Color.Firebrick;
-            this.lblGrund.Name = "lblGrund";
-            this.lblGrund.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // btnOk
-            // 
-            this.btnOk.AutoSize = true;
-            this.btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOk.Margin = new System.Windows.Forms.Padding(10, 0, 0, 0);
-            this.btnOk.MinimumSize = new System.Drawing.Size(110, 30);
-            this.btnOk.Name = "btnOk";
-            this.btnOk.Text = "Übernehmen";
-            // 
-            // btnAbbrechen
-            // 
-            this.btnAbbrechen.AutoSize = true;
-            this.btnAbbrechen.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnAbbrechen.Margin = new System.Windows.Forms.Padding(10, 0, 0, 0);
-            this.btnAbbrechen.MinimumSize = new System.Drawing.Size(110, 30);
-            this.btnAbbrechen.Name = "btnAbbrechen";
-            this.btnAbbrechen.Text = "Abbrechen";
-            // 
-            // pnlKnoepfe
-            // 
-            this.pnlKnoepfe.Controls.Add(this.btnAbbrechen);
-            this.pnlKnoepfe.Controls.Add(this.btnOk);
-            this.pnlKnoepfe.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnlKnoepfe.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
-            this.pnlKnoepfe.Margin = new System.Windows.Forms.Padding(0, 8, 0, 0);
-            this.pnlKnoepfe.Name = "pnlKnoepfe";
+            tl = new System.Windows.Forms.TableLayoutPanel();
+            lblGegenstand = new System.Windows.Forms.Label();
+            lblQuelle = new System.Windows.Forms.Label();
+            cbQuelle = new System.Windows.Forms.ComboBox();
+            lblWertQuelleTitel = new System.Windows.Forms.Label();
+            lblQuelleWert = new System.Windows.Forms.Label();
+            lblZielTitel = new System.Windows.Forms.Label();
+            lblZiel = new System.Windows.Forms.Label();
+            lblWertZielTitel = new System.Windows.Forms.Label();
+            lblZielWert = new System.Windows.Forms.Label();
+            lblKomponenten = new System.Windows.Forms.Label();
+            txtKlartext = new System.Windows.Forms.TextBox();
+            lblGrund = new System.Windows.Forms.Label();
+            pnlKnoepfe = new System.Windows.Forms.FlowLayoutPanel();
+            btnAbbrechen = new System.Windows.Forms.Button();
+            btnOk = new System.Windows.Forms.Button();
+            tl.SuspendLayout();
+            pnlKnoepfe.SuspendLayout();
+            SuspendLayout();
             // 
             // tl
             // 
-            // Raster: Beschriftung links, Wert rechts.
-            this.tl.ColumnCount = 2;
-            this.tl.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 132F));
-            this.tl.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tl.Controls.Add(this.lblGegenstand, 0, 0);
-            this.tl.SetColumnSpan(this.lblGegenstand, 2);
-            this.tl.Controls.Add(this.lblQuelle, 0, 1);
-            this.tl.Controls.Add(this.cbQuelle, 1, 1);
-            this.tl.Controls.Add(this.lblWertQuelleTitel, 0, 2);
-            this.tl.Controls.Add(this.lblQuelleWert, 1, 2);
-            this.tl.Controls.Add(this.lblZielTitel, 0, 3);
-            this.tl.Controls.Add(this.lblZiel, 1, 3);
-            this.tl.Controls.Add(this.lblWertZielTitel, 0, 4);
-            this.tl.Controls.Add(this.lblZielWert, 1, 4);
-            this.tl.Controls.Add(this.lblKomponenten, 0, 5);
-            this.tl.SetColumnSpan(this.lblKomponenten, 2);
-            this.tl.Controls.Add(this.txtKlartext, 0, 6);
-            this.tl.SetColumnSpan(this.txtKlartext, 2);
-            this.tl.Controls.Add(this.lblGrund, 0, 7);
-            this.tl.SetColumnSpan(this.lblGrund, 2);
-            this.tl.Controls.Add(this.pnlKnoepfe, 0, 8);
-            this.tl.SetColumnSpan(this.pnlKnoepfe, 2);
-            this.tl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tl.Name = "tl";
-            this.tl.Padding = new System.Windows.Forms.Padding(12, 10, 12, 10);
-            this.tl.RowCount = 9;
-            this.tl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));                 // 0 Gegenstand
-            this.tl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));            // 1 Quelle
-            this.tl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 24F));            // 2 Quellwert
-            this.tl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 24F));            // 3 Ziel
-            this.tl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 24F));            // 4 Zielwert
-            this.tl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 22F));            // 5 Komponenten
-            this.tl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));            // 6 Klartext
-            this.tl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 24F));            // 7 Grund
-            this.tl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));            // 8 Knöpfe
+            tl.ColumnCount = 2;
+            tl.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 132F));
+            tl.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            tl.Controls.Add(lblGegenstand, 0, 0);
+            tl.Controls.Add(lblQuelle, 0, 1);
+            tl.Controls.Add(cbQuelle, 1, 1);
+            tl.Controls.Add(lblWertQuelleTitel, 0, 2);
+            tl.Controls.Add(lblQuelleWert, 1, 2);
+            tl.Controls.Add(lblZielTitel, 0, 3);
+            tl.Controls.Add(lblZiel, 1, 3);
+            tl.Controls.Add(lblWertZielTitel, 0, 4);
+            tl.Controls.Add(lblZielWert, 1, 4);
+            tl.Controls.Add(lblKomponenten, 0, 5);
+            tl.Controls.Add(txtKlartext, 0, 6);
+            tl.Controls.Add(lblGrund, 0, 7);
+            tl.Controls.Add(pnlKnoepfe, 0, 8);
+            tl.Dock = System.Windows.Forms.DockStyle.Fill;
+            tl.Location = new System.Drawing.Point(0, 0);
+            tl.Name = "tl";
+            tl.Padding = new System.Windows.Forms.Padding(12, 10, 12, 10);
+            tl.RowCount = 9;
+            tl.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            tl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            tl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 24F));
+            tl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 24F));
+            tl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 24F));
+            tl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 22F));
+            tl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            tl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 24F));
+            tl.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            tl.Size = new System.Drawing.Size(520, 380);
+            tl.TabIndex = 0;
+            // 
+            // lblGegenstand
+            // 
+            tl.SetColumnSpan(lblGegenstand, 2);
+            lblGegenstand.Dock = System.Windows.Forms.DockStyle.Fill;
+            lblGegenstand.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
+            lblGegenstand.ForeColor = System.Drawing.Color.FromArgb(31, 78, 121);
+            lblGegenstand.Location = new System.Drawing.Point(12, 10);
+            lblGegenstand.Margin = new System.Windows.Forms.Padding(0, 0, 0, 8);
+            lblGegenstand.Name = "lblGegenstand";
+            lblGegenstand.Size = new System.Drawing.Size(496, 23);
+            lblGegenstand.TabIndex = 0;
+            // 
+            // lblQuelle
+            // 
+            lblQuelle.Dock = System.Windows.Forms.DockStyle.Fill;
+            lblQuelle.Location = new System.Drawing.Point(15, 41);
+            lblQuelle.Name = "lblQuelle";
+            lblQuelle.Size = new System.Drawing.Size(126, 30);
+            lblQuelle.TabIndex = 1;
+            lblQuelle.Text = "Quelle:";
+            lblQuelle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // cbQuelle
+            // 
+            cbQuelle.Dock = System.Windows.Forms.DockStyle.Fill;
+            cbQuelle.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            cbQuelle.Location = new System.Drawing.Point(144, 43);
+            cbQuelle.Margin = new System.Windows.Forms.Padding(0, 2, 0, 6);
+            cbQuelle.Name = "cbQuelle";
+            cbQuelle.Size = new System.Drawing.Size(364, 33);
+            cbQuelle.TabIndex = 2;
+            cbQuelle.SelectedIndexChanged += cbQuelle_SelectedIndexChanged;
+            // 
+            // lblWertQuelleTitel
+            // 
+            lblWertQuelleTitel.Dock = System.Windows.Forms.DockStyle.Fill;
+            lblWertQuelleTitel.Location = new System.Drawing.Point(15, 71);
+            lblWertQuelleTitel.Name = "lblWertQuelleTitel";
+            lblWertQuelleTitel.Size = new System.Drawing.Size(126, 24);
+            lblWertQuelleTitel.TabIndex = 3;
+            lblWertQuelleTitel.Text = "Wert der Quelle:";
+            lblWertQuelleTitel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // lblQuelleWert
+            // 
+            lblQuelleWert.Dock = System.Windows.Forms.DockStyle.Fill;
+            lblQuelleWert.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            lblQuelleWert.Location = new System.Drawing.Point(147, 71);
+            lblQuelleWert.Name = "lblQuelleWert";
+            lblQuelleWert.Size = new System.Drawing.Size(358, 24);
+            lblQuelleWert.TabIndex = 4;
+            lblQuelleWert.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // lblZielTitel
+            // 
+            lblZielTitel.Dock = System.Windows.Forms.DockStyle.Fill;
+            lblZielTitel.Location = new System.Drawing.Point(15, 95);
+            lblZielTitel.Name = "lblZielTitel";
+            lblZielTitel.Size = new System.Drawing.Size(126, 24);
+            lblZielTitel.TabIndex = 5;
+            lblZielTitel.Text = "Ziel:";
+            lblZielTitel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // lblZiel
+            // 
+            lblZiel.AutoEllipsis = true;
+            lblZiel.Dock = System.Windows.Forms.DockStyle.Fill;
+            lblZiel.Location = new System.Drawing.Point(147, 95);
+            lblZiel.Name = "lblZiel";
+            lblZiel.Size = new System.Drawing.Size(358, 24);
+            lblZiel.TabIndex = 6;
+            lblZiel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // lblWertZielTitel
+            // 
+            lblWertZielTitel.Dock = System.Windows.Forms.DockStyle.Fill;
+            lblWertZielTitel.Location = new System.Drawing.Point(15, 119);
+            lblWertZielTitel.Name = "lblWertZielTitel";
+            lblWertZielTitel.Size = new System.Drawing.Size(126, 24);
+            lblWertZielTitel.TabIndex = 7;
+            lblWertZielTitel.Text = "Wert des Ziels:";
+            lblWertZielTitel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // lblZielWert
+            // 
+            lblZielWert.Dock = System.Windows.Forms.DockStyle.Fill;
+            lblZielWert.Location = new System.Drawing.Point(147, 119);
+            lblZielWert.Name = "lblZielWert";
+            lblZielWert.Size = new System.Drawing.Size(358, 24);
+            lblZielWert.TabIndex = 8;
+            lblZielWert.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // lblKomponenten
+            // 
+            lblKomponenten.AutoEllipsis = true;
+            tl.SetColumnSpan(lblKomponenten, 2);
+            lblKomponenten.Dock = System.Windows.Forms.DockStyle.Fill;
+            lblKomponenten.ForeColor = System.Drawing.Color.DimGray;
+            lblKomponenten.Location = new System.Drawing.Point(15, 143);
+            lblKomponenten.Name = "lblKomponenten";
+            lblKomponenten.Size = new System.Drawing.Size(490, 22);
+            lblKomponenten.TabIndex = 9;
+            lblKomponenten.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // txtKlartext
+            // 
+            txtKlartext.BackColor = System.Drawing.SystemColors.Window;
+            tl.SetColumnSpan(txtKlartext, 2);
+            txtKlartext.Dock = System.Windows.Forms.DockStyle.Fill;
+            txtKlartext.Font = new System.Drawing.Font("Segoe UI", 9F);
+            txtKlartext.Location = new System.Drawing.Point(15, 168);
+            txtKlartext.Multiline = true;
+            txtKlartext.Name = "txtKlartext";
+            txtKlartext.ReadOnly = true;
+            txtKlartext.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            txtKlartext.Size = new System.Drawing.Size(490, 135);
+            txtKlartext.TabIndex = 10;
+            // 
+            // lblGrund
+            // 
+            lblGrund.AutoEllipsis = true;
+            tl.SetColumnSpan(lblGrund, 2);
+            lblGrund.Dock = System.Windows.Forms.DockStyle.Fill;
+            lblGrund.ForeColor = System.Drawing.Color.Firebrick;
+            lblGrund.Location = new System.Drawing.Point(15, 306);
+            lblGrund.Name = "lblGrund";
+            lblGrund.Size = new System.Drawing.Size(490, 24);
+            lblGrund.TabIndex = 11;
+            lblGrund.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // pnlKnoepfe
+            // 
+            tl.SetColumnSpan(pnlKnoepfe, 2);
+            pnlKnoepfe.Controls.Add(btnAbbrechen);
+            pnlKnoepfe.Controls.Add(btnOk);
+            pnlKnoepfe.Dock = System.Windows.Forms.DockStyle.Fill;
+            pnlKnoepfe.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
+            pnlKnoepfe.Location = new System.Drawing.Point(12, 338);
+            pnlKnoepfe.Margin = new System.Windows.Forms.Padding(0, 8, 0, 0);
+            pnlKnoepfe.Name = "pnlKnoepfe";
+            pnlKnoepfe.Size = new System.Drawing.Size(496, 32);
+            pnlKnoepfe.TabIndex = 12;
+            // 
+            // btnAbbrechen
+            // 
+            btnAbbrechen.AutoSize = true;
+            btnAbbrechen.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            btnAbbrechen.Location = new System.Drawing.Point(386, 0);
+            btnAbbrechen.Margin = new System.Windows.Forms.Padding(10, 0, 0, 0);
+            btnAbbrechen.MinimumSize = new System.Drawing.Size(110, 30);
+            btnAbbrechen.Name = "btnAbbrechen";
+            btnAbbrechen.Size = new System.Drawing.Size(110, 35);
+            btnAbbrechen.TabIndex = 0;
+            btnAbbrechen.Text = "Abbrechen";
+            // 
+            // btnOk
+            // 
+            btnOk.AutoSize = true;
+            btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
+            btnOk.Location = new System.Drawing.Point(252, 0);
+            btnOk.Margin = new System.Windows.Forms.Padding(10, 0, 0, 0);
+            btnOk.MinimumSize = new System.Drawing.Size(110, 30);
+            btnOk.Name = "btnOk";
+            btnOk.Size = new System.Drawing.Size(124, 35);
+            btnOk.TabIndex = 1;
+            btnOk.Text = "OK";
             // 
             // Form_BkUebernahme
             // 
-            this.AcceptButton = this.btnOk;
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.CancelButton = this.btnAbbrechen;
-            this.ClientSize = new System.Drawing.Size(520, 380);
-            this.Controls.Add(this.tl);
-            this.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.Name = "Form_BkUebernahme";
-            this.ShowInTaskbar = false;
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.tl.ResumeLayout(false);
-            this.pnlKnoepfe.ResumeLayout(false);
-            this.ResumeLayout(false);
+            AcceptButton = btnOk;
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
+            CancelButton = btnAbbrechen;
+            ClientSize = new System.Drawing.Size(520, 380);
+            Controls.Add(tl);
+            Font = new System.Drawing.Font("Segoe UI", 9F);
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            MaximizeBox = false;
+            MinimizeBox = false;
+            Name = "Form_BkUebernahme";
+            ShowInTaskbar = false;
+            StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            tl.ResumeLayout(false);
+            tl.PerformLayout();
+            pnlKnoepfe.ResumeLayout(false);
+            pnlKnoepfe.PerformLayout();
+            ResumeLayout(false);
 
         }
 

@@ -48,6 +48,21 @@ namespace WindowsFormsApplication1
         /// <summary>Seitenrand des Kartenbereichs [px] — wie label11 und groupBox_Tools.</summary>
         private const int KARTEN_RAND = 19;
 
+        /// <summary>
+        /// RECHTER Rand des Kartenbereichs und des Ansichtsumschalters [px].
+        ///
+        /// <para><b>D3 (28.08.2026), offener Punkt aus D2.</b> Links richtet sich alles an
+        /// den Entwurfselementen aus (<c>label11</c> 18, <c>groupBox_Tools</c> 19) — das
+        /// bleibt so, sonst stünde die Kartenspalte nicht mehr unter ihrer Überschrift.
+        /// RECHTS gab es dagegen zwei Maße nebeneinander: der Kartenbereich 19 px, die
+        /// Fußzeile seit der Norm 12 px. Der 19er stammt NICHT aus dem Platz für den
+        /// Rollbalken — den zieht <see cref="KartenBreiteAnpassen"/> innerhalb der Spalte
+        /// ab —, sondern war schlicht dieselbe Zahl wie links. Rechts gilt jetzt das
+        /// Randmaß der Norm, damit Umschalter, Kartenfläche und Knopfreihe EINE Flucht
+        /// bilden.</para>
+        /// </summary>
+        private const int KARTEN_RAND_RECHTS = FusszeilenNorm.RAND;
+
         /// <summary>Oberkante des Kartenbereichs [px] — unter der Überschrift label11.</summary>
         private const int KARTEN_OBEN = 44;
 
@@ -138,6 +153,21 @@ namespace WindowsFormsApplication1
         private int? _systemVorlauf;
         private int? _systemRuecklauf;
 
+        /// <summary>
+        /// PAKET P1 — Puffer-ID → Schichtenzahl, aber NUR für Speicher mit <c>N &gt; 1</c>
+        /// (<c>PufferSpCtrl.SchichtenJeProjekt</c>). Ein leeres Verzeichnis heißt „kein
+        /// geschichteter Speicher im Projekt" und ist zugleich der Zustand ohne
+        /// Migrationsschritt 53.
+        /// </summary>
+        private Dictionary<int, int> _schichtenJePuffer = new Dictionary<int, int>();
+
+        /// <summary>
+        /// PAKET P1 — Puffer-ID → <c>T_oben_Mittel</c> [°C] aus dem JÜNGSTEN Ergebnis des
+        /// Projekts (siehe <see cref="TObenSammeln"/>). Leer, solange kein Lauf gerechnet
+        /// wurde oder die Spalte keinen Wert trägt.
+        /// </summary>
+        private Dictionary<int, double> _tObenJePuffer = new Dictionary<int, double>();
+
         // --- Aufbau -------------------------------------------------------------------
 
         /// <summary>
@@ -177,11 +207,15 @@ namespace WindowsFormsApplication1
             // die Schemafläche übernimmt dessen Rechteck und Verankerung.
             SchemaAufbauen();
 
-            // Die beiden Schalter der Fußzeile entstehen wie bisher programmatisch
-            // (Paket 4 und 8); platziert werden sie jetzt zusammen mit der übrigen
-            // Fußzeile und nicht mehr aus sich selbst heraus.
-            InitKaskadeSchalter();
+            // Der Schalter der Fußzeile entsteht wie bisher programmatisch (Paket 8);
+            // platziert wird er zusammen mit der übrigen Fußzeile und nicht mehr aus sich
+            // selbst heraus. PAKET A1: Der zweite Schalter „Zweikanalige Kaskade" ist
+            // entfallen (Begründung in Form_Simulation_Config.Uebersicht).
             InitExtrapolationSchalter();
+            // PAKET B2: der zweite Fußzeilenschalter - der Lesepunkt der
+            // Booster-Quelltemperatur. Er bleibt unsichtbar, bis das Projekt einen
+            // gekoppelten Booster führt (AktualisiereBoosterLesepunktSchalter).
+            InitBoosterLesepunktSchalter();
             FusszeilePlatzieren();
         }
 
@@ -245,8 +279,9 @@ namespace WindowsFormsApplication1
             tableLayout_Karten.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
 
             tableLayout_Karten.Location = new Point(KARTEN_RAND, KARTEN_OBEN);
-            tableLayout_Karten.Size = new Size(ClientSize.Width - 2 * KARTEN_RAND,
-                                               ClientSize.Height - FUSS_HOEHE - KARTEN_OBEN);
+            tableLayout_Karten.Size = new Size(
+                ClientSize.Width - KARTEN_RAND - KARTEN_RAND_RECHTS,
+                ClientSize.Height - FUSS_HOEHE - KARTEN_OBEN);
             tableLayout_Karten.Anchor = AnchorStyles.Top | AnchorStyles.Left |
                                         AnchorStyles.Right | AnchorStyles.Bottom;
 
@@ -255,6 +290,12 @@ namespace WindowsFormsApplication1
 
             flow_Erzeuger = Kartenspalte("flow_Erzeuger");
             flow_Speicher = Kartenspalte("flow_Speicher");
+
+            // D3: Die 8 px rechts sind der ZWISCHENraum der beiden Spalten. In der
+            // rechten Spalte wären sie ein zusätzlicher Außenrand — die graue Fläche
+            // endete damit 8 px vor der Flucht, die KARTEN_RAND_RECHTS vorgibt.
+            label_KopfSpeicher.Margin = new Padding(0, 0, 0, 2);
+            flow_Speicher.Margin = new Padding(0, 0, 0, 0);
 
             tableLayout_Karten.Controls.Add(label_KopfErzeuger, 0, 0);
             tableLayout_Karten.Controls.Add(label_KopfSpeicher, 1, 0);
@@ -341,20 +382,28 @@ namespace WindowsFormsApplication1
         {
             int fussOben = ClientSize.Height - FUSS_HOEHE;
 
-            checkBox_KaskadeZweikanalig.Location = new Point(KARTEN_RAND, fussOben + 6);
-            checkBox_KaskadeZweikanalig.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-
-            checkBox_Extrapolation.Location =
-                new Point(checkBox_KaskadeZweikanalig.Right + 28, fussOben + 6);
+            // PAKET A1: Die Schalterzeile trägt nur noch die Extrapolation - der Schalter
+            // „Zweikanalige Kaskade" ist mit dem einkanaligen Altpfad entfallen. Er stand
+            // links, die Extrapolation daneben; jetzt rückt sie an den linken Rand.
+            checkBox_Extrapolation.Location = new Point(KARTEN_RAND, fussOben + 6);
             checkBox_Extrapolation.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
 
-            int knopfUnten = ClientSize.Height - 12;
-            btn_OK.Location = new Point(ClientSize.Width - KARTEN_RAND - btn_OK.Width,
-                                        knopfUnten - btn_OK.Height);
-            btn_Speichern.Location = new Point(btn_OK.Left - 10 - btn_Speichern.Width,
-                                               knopfUnten - btn_Speichern.Height);
-            btn_OK.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btn_Speichern.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            // PAKET B2: der Booster-Lesepunkt NEBEN der Extrapolation, in derselben
+            // Schalterzeile. Die x-Position wird gemessen statt geraten - die
+            // Extrapolations-Beschriftung ist auf Englisch länger als auf Deutsch, und
+            // eine feste Zahl wäre nur für eine Sprache richtig. AutoSize hat die Breite
+            // bereits ermittelt, weil beide Kästchen zu diesem Zeitpunkt Kinder des
+            // Formulars sind.
+            checkBox_BoosterLesepunkt.Location =
+                new Point(checkBox_Extrapolation.Right + 24, fussOben + 6);
+            checkBox_BoosterLesepunkt.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+
+            // D2 (28.08.2026): Die hier ausgerechnete Knopfzeile war die Vorlage für die
+            // Fußzeilen-Norm — Reihenfolge, Verankerung und der 10-px-Abstand stammen aus
+            // dieser Methode. Sie ruft die Norm jetzt selbst auf, damit es genau EINE
+            // Stelle gibt, an der Knopfgröße und Randabstand stehen; der Dialog wechselt
+            // damit von 103×30 / Rand 19 auf die Norm 110×30 / Rand 12.
+            FusszeilenNorm.Anwenden(this, btn_OK, btn_Speichern);
 
             lblStatus.Location = new Point(KARTEN_RAND, lblStatus.Top);
             lblStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
@@ -611,6 +660,14 @@ namespace WindowsFormsApplication1
             {
                 SpalteLeeren(flow_Erzeuger, null);
                 _verfuegbarVersteckt = 0;
+
+                // PAKET S2: die Warnbefunde des Projekts EINMAL je Auffrischung — nicht
+                // je Karte. Der Katalog liest Anlagen, Senkenlisten und Speicherzeilen;
+                // ein Aufruf je Karte wäre bei fünf Erzeugern fünfmal dieselbe Auskunft.
+                WarnbefundeSammeln();
+
+                // PAKET B1 (F9): dieselbe Bauart für die Booster-Anzeigeregel.
+                BoosterAnlagenSammeln();
 
                 WaermeerzeugerGruppe();
                 StromGruppe(label2.Text, comboBox5, checkBox5,
@@ -1264,8 +1321,10 @@ namespace WindowsFormsApplication1
             List<ErzeugerKarte.ChipDaten> chips = new List<ErzeugerKarte.ChipDaten>();
 
             QuellenChip(info, chips);
+            BoosterChip(info, chips);
             SenkenChips(info, chips);
             TemperaturChip(info, chips);
+            WarnChip(info, chips);
 
             if (info.IstWaermepumpe)
             {
@@ -1286,6 +1345,116 @@ namespace WindowsFormsApplication1
             }
 
             return chips;
+        }
+
+        /// <summary>
+        /// PAKET S2 — die Befunde des Warnkriterienkatalogs (Konzept 6.2) je Anlage,
+        /// EINMAL je Auffrischung der Kartenspalte gesammelt.
+        ///
+        /// <para>Aufgenommen werden nur Befunde MIT Anlagenbezug. Die rein
+        /// speicherbezogenen (W2, leeres Klassen-Set) und der projektweite Ring gehören
+        /// nicht an eine Erzeugerkarte; sie stehen im Laufprotokoll und — soweit sie den
+        /// Speicher betreffen — künftig an der Speicherkarte (Paket P2).</para>
+        /// </summary>
+        private Dictionary<int, List<string>> _warnbefunde = new Dictionary<int, List<string>>();
+
+        /// <summary>
+        /// PAKET B1 (Entscheidung F9) — die Booster-Anlagen des Projekts, EINMAL je
+        /// Auffrischung geholt (Muster <see cref="_warnbefunde"/>): Anlage →
+        /// geteilter Quellpuffer.
+        /// </summary>
+        private Dictionary<int, int> _boosterAnlagen = new Dictionary<int, int>();
+
+        private void BoosterAnlagenSammeln()
+        {
+            _boosterAnlagen = (m_ID_Projekt > 0)
+                ? Warnkriterien.BoosterAnlagen(m_ID_Projekt)
+                : new Dictionary<int, int>();
+        }
+
+        /// <summary>
+        /// Das BOOSTER-BADGE einer Erzeugerkarte (Konzept 8.2 Punkt 3, Entscheidung F9).
+        ///
+        /// <para><b>Anzeigeregel, kein Datenfeld.</b> F9 hat gegen einen eigenen
+        /// Anlagentyp und gegen neue Persistenz entschieden; die Marke wird aus der
+        /// Konfiguration abgeleitet (<see cref="Warnkriterien.BoosterAnlagen"/>) —
+        /// Wärmequelle Pufferspeicher auf einen GETEILTEN Puffer, also einen, den ein
+        /// anderer Erzeuger dieses Projekts lädt.</para>
+        ///
+        /// <para>Sie gilt für Wärmepumpe UND Heizkessel (Konzept 8.4: Gleichbehandlung) —
+        /// es ist dieselbe Kopplung, und die Karte darf sie nicht bei einem der beiden
+        /// verschweigen.</para>
+        ///
+        /// <para>Der Tooltip nennt den Quellspeicher: Die Aussage „Booster" ist ohne ihn
+        /// nicht nachprüfbar. Stil <c>QuelleKaskade</c> — dasselbe Blau-gestrichelt wie
+        /// der Quellen-Chip daneben, denn das Badge erläutert genau diesen; als
+        /// Doppelklickziel deshalb ebenfalls die Quelle.</para>
+        /// </summary>
+        private void BoosterChip(AnlagenInfo info, List<ErzeugerKarte.ChipDaten> chips)
+        {
+            int idPuffer;
+            if (!_boosterAnlagen.TryGetValue(info.ID, out idPuffer) || idPuffer <= 0) return;
+
+            string name = WaermesenkeClass.PufferName(idPuffer);
+            if (name.Length == 0) name = MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER;
+
+            chips.Add(new ErzeugerKarte.ChipDaten
+            {
+                Text = MyResource.Resource.SIM_KARTE_BOOSTER,
+                Stil = ErzeugerKarte.ChipStil.QuelleKaskade,
+                Hinweis = string.Format(MyResource.Resource.SIM_KARTE_TIP_BOOSTER, name),
+                Ziel = ErzeugerKarte.ChipZiel.Quelle
+            });
+        }
+
+        private void WarnbefundeSammeln()
+        {
+            _warnbefunde = new Dictionary<int, List<string>>();
+            if (m_ID_Projekt <= 0) return;
+
+            foreach (Warnbefund b in Warnkriterien.PruefeProjekt(m_ID_Projekt))
+            {
+                if (b == null || b.ID_Anlage <= 0 || string.IsNullOrEmpty(b.Text)) continue;
+
+                List<string> texte;
+                if (!_warnbefunde.TryGetValue(b.ID_Anlage, out texte))
+                {
+                    texte = new List<string>();
+                    _warnbefunde[b.ID_Anlage] = texte;
+                }
+
+                string zeile = Zeilenumbruch.Einzeilig(b.Text);
+                if (!texte.Contains(zeile)) texte.Add(zeile);
+            }
+        }
+
+        /// <summary>
+        /// Der WARN-Chip einer Erzeugerkarte (Konzept 6.2): ein dezentes Amber-Chip mit
+        /// den Befunden im Mouseover, sonst gar nichts.
+        ///
+        /// <para><b>Kein Modaldialog beim Öffnen.</b> Der Katalog meldet
+        /// Konfigurationen, die zulässig sind — sie zu blockieren oder mit einer
+        /// MessageBox zu quittieren, wäre genau die Bevormundung, die Entscheidung F6
+        /// abgeschafft hat. Die ausführliche Meldung bekommt der Anwender dort, wo er
+        /// die Zuordnung einstellt (Senkendialog) und im Laufprotokoll.</para>
+        ///
+        /// <para>Der Chip führt in den SENKENDIALOG (<c>ChipZiel.Senke</c>): Alle
+        /// anlagenbezogenen Kriterien — W1, W3 und der Kurzschluss — hängen an einer
+        /// Senkenzeile, und dort wird sie geändert.</para>
+        /// </summary>
+        private void WarnChip(AnlagenInfo info, List<ErzeugerKarte.ChipDaten> chips)
+        {
+            List<string> texte;
+            if (!_warnbefunde.TryGetValue(info.ID, out texte) || texte.Count == 0) return;
+
+            chips.Add(new ErzeugerKarte.ChipDaten
+            {
+                Text = MyResource.Resource.SIMWARN_KARTE_CHIP,
+                Stil = ErzeugerKarte.ChipStil.Warnung,
+                Hinweis = MyResource.Resource.SIMWARN_KARTE_CHIP_TIP + Environment.NewLine +
+                          "• " + string.Join(Environment.NewLine + "• ", texte.ToArray()),
+                Ziel = ErzeugerKarte.ChipZiel.Senke
+            });
         }
 
         /// <summary>
@@ -1335,12 +1504,36 @@ namespace WindowsFormsApplication1
 
             if (info.IstWaermepumpe)
             {
+                // PAKET Q1 (Konzept 8.1 Punkt 1): BAUART-BINDUNG SICHTBAR. Eine
+                // Luft-Wasser-Wärmepumpe hat keine Wahl - ihre Quelle IST die Außenluft,
+                // und die Engine erzwingt das seit jeher still
+                // (WaermequelleClass.Quelltemperatur gibt für diese Bauart immer den
+                // Außentemperaturvektor zurück, Quellspeicher immer null). Bis Q1 sah der
+                // Chip trotzdem wählbar aus und wies den Klick mit einer Meldung ab; das
+                // ist eine Einladung, der eine Absage folgt. Jetzt steht die Quelle als
+                // FESTER Eintrag da: Flächenstil statt Quellrahmen, kein Handzeiger
+                // (ChipZiel.Keines), und der Mouseover-Hinweis nennt den Grund. Die
+                // Abbruchmeldung in WaermequelleBearbeiten bleibt als zweite Sicherung -
+                // sie deckt den Weg über Schema und Tastatur ab.
+                //
+                // Die FEHLENDE Bauart (WpTyp leer) gehört dazu: Engine und Anzeige
+                // rechnen sie seit jeher wie Luft-Wasser.
+                bool bauartGebunden = string.IsNullOrEmpty(info.WpTyp) ||
+                                      info.WpTyp == DbWerte.WP_BAUART_LUFT_WASSER;
+
                 chips.Add(new ErzeugerKarte.ChipDaten
                 {
                     Text = string.Format(MyResource.Resource.SIM_KARTE_QUELLE, WaermequelleAnzeige(info)),
-                    Stil = ErzeugerKarte.ChipStil.Quelle,
-                    Hinweis = MyResource.Resource.SIMQ_TIP_QUELLE,
-                    Ziel = ErzeugerKarte.ChipZiel.Quelle
+                    Stil = bauartGebunden ? ErzeugerKarte.ChipStil.Flaeche
+                                          : ErzeugerKarte.ChipStil.Quelle,
+                    Hinweis = bauartGebunden
+                        ? string.Format(MyResource.Resource.SIMQ_TIP_QUELLE_BAUART,
+                                        string.IsNullOrEmpty(info.WpTyp)
+                                            ? MyResource.Resource.SIMQ_WPTYP_NICHT_GEPFLEGT
+                                            : info.WpTyp)
+                        : MyResource.Resource.SIMQ_TIP_QUELLE,
+                    Ziel = bauartGebunden ? ErzeugerKarte.ChipZiel.Keines
+                                          : ErzeugerKarte.ChipZiel.Quelle
                 });
                 return;
             }
@@ -1358,10 +1551,26 @@ namespace WindowsFormsApplication1
             });
         }
 
+        /// <summary>
+        /// Die SENKENKETTE einer Erzeugerkarte (Konzept 5.3).
+        ///
+        /// <b>PAKET S1.</b> Eine Anlage hat nicht mehr zwei Senkenplätze, sondern eine
+        /// geordnete Liste (<c>Z_AnlageSenke</c>). Die Karte zeigt sie als Kette:
+        /// „Senke: Heizkreis · Zweitsenke: Puffer P1 · → Puffer P2".
+        ///
+        /// <b>PAKET A1:</b> Alle Chips lesen jetzt DIESELBE Quelle — die Senkenliste aus
+        /// <c>info.Senken</c>, zugeteilt aus EINER Projektabfrage. Bis dahin kamen die
+        /// ersten beiden aus der auf die Altspalten gespiegelten Sicht und der Rest aus
+        /// einem Nachschlag je Karte; die Sonderbehandlung der Prozess-Ziele (die sich in
+        /// den Altspalten als „Heizung" spiegelten) ist damit gegenstandslos.
+        /// </summary>
         private void SenkenChips(AnlagenInfo info, List<ErzeugerKarte.ChipDaten> chips)
         {
-            bool pufferSenke = WaermesenkeClass.IstPufferZiel(info.Senke.Ziel) &&
-                               info.Senke.ID_Puffer > 0;
+            List<Z_AnlageSenkeModel> kette = info.Senken;
+
+            Z_AnlageSenkeModel rang1 = info.SenkeAufRang(0);
+            bool pufferSenke = rang1 != null &&
+                               WaermesenkeClass.IstPufferZiel(rang1.Ziel) && rang1.ID_Puffer > 0;
 
             string text = WaermesenkeAnzeige(info);
             string hinweis = MyResource.Resource.SIM_TIP_SENKE;
@@ -1374,10 +1583,9 @@ namespace WindowsFormsApplication1
                 // Summe rechnet. Der Zusatz steht VOR der Kreisziffer, damit die
                 // Ladeposition wie bisher am Ende des Chips sitzt.
                 //
-                // Punktueller Griff auf die Zuordnung, nur bei Puffer-Senke: Die Karten
-                // bauen ihre Daten aus EINER Projektabfrage (AnlagenInfo.Senke über
-                // WaermesenkeClass.AusDatenzeile, ohne Verbund-Nachschlag je Zeile), und
-                // eine Anlage ohne Puffer-Senke kann keinen Verbund haben.
+                // Punktueller Griff auf die Verbundzuordnung, nur bei Puffer-Senke: Die
+                // Karten bauen ihre Daten aus EINER Projektabfrage (AnlagenInfo.Senken),
+                // und eine Anlage ohne Puffer-Senke kann keinen Verbund haben.
                 int zusatz = WaermesenkeClass.VerbundLesen(info.ID).Count;
                 if (zusatz > 0)
                 {
@@ -1387,7 +1595,7 @@ namespace WindowsFormsApplication1
                 }
 
                 List<Ladeordnung.LadeEintrag> ordnung =
-                    Ladeordnung.Ladereihenfolge(m_ID_Projekt, info.Senke.ID_Puffer);
+                    Ladeordnung.Ladereihenfolge(m_ID_Projekt, rang1.ID_Puffer);
                 int position = Ladeordnung.Position(ordnung, info.ID, false);
                 if (position > 0)
                 {
@@ -1406,15 +1614,15 @@ namespace WindowsFormsApplication1
                 Ziel = ErzeugerKarte.ChipZiel.Senke
             });
 
+            Z_AnlageSenkeModel rang2 = info.SenkeAufRang(1);
             string zweit = ZweitsenkeAnzeige(info);
-            bool zweitPuffer = info.Senke.HatZweitsenke &&
-                               WaermesenkeClass.IstPufferZiel(info.Senke.Ziel2) &&
-                               info.Senke.ID_Puffer2 > 0;
+            bool zweitPuffer = rang2 != null &&
+                               WaermesenkeClass.IstPufferZiel(rang2.Ziel) && rang2.ID_Puffer > 0;
 
             if (zweitPuffer)
             {
                 List<Ladeordnung.LadeEintrag> ordnung2 =
-                    Ladeordnung.Ladereihenfolge(m_ID_Projekt, info.Senke.ID_Puffer2);
+                    Ladeordnung.Ladereihenfolge(m_ID_Projekt, rang2.ID_Puffer);
                 int position2 = Ladeordnung.Position(ordnung2, info.ID, true);
                 if (position2 > 0) zweit += " " + KartenStil.Kreisziffer(position2);
             }
@@ -1426,7 +1634,47 @@ namespace WindowsFormsApplication1
                 Hinweis = MyResource.Resource.SIM_TIP_ZWEITSENKE,
                 Ziel = ErzeugerKarte.ChipZiel.Zweitsenke
             });
+
+            // --- Ränge ab 3 (Paket S1) ------------------------------------------------
+            //
+            // Sie tragen dasselbe Chipziel wie die Zweitsenke: Der Doppelklick führt in
+            // denselben Dialog, weil die Senken einer Anlage fachlich EINE Einstellung
+            // sind. Die Ladeposition steht wie bei den beiden ersten Chips dahinter — die
+            // Ladeordnung kennt „Zweitsenke" als Boolean, und jeder Rang über 1 ist dort
+            // eine Zweitsenke (dieselbe Ableitung wie in der Engine).
+            for (int i = 2; i < kette.Count; i++)
+            {
+                Z_AnlageSenkeModel z = kette[i];
+                if (z == null) continue;
+
+                string weiter = Form_Waermesenke.SenkeAnzeige(z);
+                bool weiterPuffer = WaermesenkeClass.IstPufferZiel(z.Ziel) && z.ID_Puffer > 0;
+
+                if (weiterPuffer)
+                {
+                    List<Ladeordnung.LadeEintrag> ordnungN =
+                        Ladeordnung.Ladereihenfolge(m_ID_Projekt, z.ID_Puffer);
+                    int positionN = Ladeordnung.Position(ordnungN, info.ID, true);
+                    if (positionN > 0) weiter += " " + KartenStil.Kreisziffer(positionN);
+                }
+
+                chips.Add(new ErzeugerKarte.ChipDaten
+                {
+                    Text = string.Format(MyResource.Resource.SIM_KARTE_SENKE_WEITER, weiter),
+                    Stil = weiterPuffer ? ErzeugerKarte.ChipStil.Senke : ErzeugerKarte.ChipStil.Neutral,
+                    Hinweis = MyResource.Resource.SIM_TIP_ZWEITSENKE,
+                    Ziel = ErzeugerKarte.ChipZiel.Zweitsenke
+                });
+            }
         }
+
+        // PAKET A1: Senkenkette(int) und KettenText sind ENTFALLEN. Die erste holte die
+        // Senkenliste je Karte einzeln nach, weil die Kartendaten selbst noch aus den
+        // Altspalten kamen; die zweite entschied Chip für Chip, ob der Bestandstext oder
+        // die Kette gilt (nötig nur für die beiden Prozess-Ziele, die sich in den
+        // Altspalten als „Heizung" spiegelten). Die Kette steht jetzt in
+        // AnlagenInfo.Senken - eine Abfrage für das ganze Projekt, eine Wahrheit.
+
 
         /// <summary>
         /// Temperaturchip mit der WARNREGEL aus Konzept Abschnitt 5:
@@ -1440,8 +1688,9 @@ namespace WindowsFormsApplication1
         private void TemperaturChip(AnlagenInfo info, List<ErzeugerKarte.ChipDaten> chips)
         {
             WaermesenkeClass.PufferInfo puffer = null;
-            if (WaermesenkeClass.IstPufferZiel(info.Senke.Ziel) && info.Senke.ID_Puffer > 0)
-                puffer = WaermesenkeClass.PufferLesen(info.Senke.ID_Puffer);
+            Z_AnlageSenkeModel rang1 = info.SenkeAufRang(0);
+            if (rang1 != null && WaermesenkeClass.IstPufferZiel(rang1.Ziel) && rang1.ID_Puffer > 0)
+                puffer = WaermesenkeClass.PufferLesen(rang1.ID_Puffer);
 
             bool pufferPaar = puffer != null && puffer.Vorlauf > 0 && puffer.Ruecklauf > 0;
 
@@ -1489,6 +1738,11 @@ namespace WindowsFormsApplication1
                 _geladenePuffer = GeladenePufferSammeln();
                 _systemVorlauf = PufferSpCtrl.SystemVorlauf(m_ID_Projekt);
                 _systemRuecklauf = PufferSpCtrl.SystemRuecklauf(m_ID_Projekt);
+
+                // PAKET P1: Schichtenzahl und Ergebnistemperatur - je EINE Abfrage für
+                // ALLE Karten, aus demselben Grund wie die vier Zeilen darüber.
+                _schichtenJePuffer = PufferSpCtrl.SchichtenJeProjekt(m_ID_Projekt);
+                _tObenJePuffer = TObenSammeln();
 
                 foreach (WaermesenkeClass.PufferInfo p in puffer)
                 {
@@ -1591,6 +1845,12 @@ namespace WindowsFormsApplication1
             string kanal = WaermesenkeClass.WirksameVerwendung(p);
             d.Verwendung = WaermesenkeClass.VerwendungAnzeige(kanal);
 
+            // PAKET P1: Schicht-Badge „N Schichten" (Konzept 10). Nur bei N > 1 - das
+            // Verzeichnis führt Ein-Zonen-Speicher gar nicht erst.
+            int schichten;
+            if (_schichtenJePuffer.TryGetValue(p.ID, out schichten))
+                d.Schichtung = string.Format(MyResource.Resource.PSP_KARTE_SCHICHTEN, schichten);
+
             if (p.Gesamtvolumen > 0)
                 d.Volumen = string.Format(MyResource.Resource.PSP_KARTE_VOLUMEN, p.Gesamtvolumen);
 
@@ -1688,6 +1948,18 @@ namespace WindowsFormsApplication1
             // --- Temperaturherkunft --------------------------------------------------
             d.Detailzeilen.Add(string.Format(MyResource.Resource.PSP_KARTE_TEMP_HERKUNFT, herkunft));
 
+            // --- PAKET P1: Ergebnistemperatur der obersten Schicht --------------------
+            //
+            // Die Zeile erscheint NUR, wenn das jüngste Ergebnis des Projekts für diesen
+            // Speicher einen Wert trägt (Konzept 10: „T_oben in der Detailansicht"). Ohne
+            // gerechneten Lauf, vor Migrationsschritt 52 und bei einem Ein-Zonen-Speicher
+            // aus einem Lauf vor P1 fehlt sie ersatzlos - eine Zeile mit „-" wäre eine
+            // Aussage über etwas, das niemand gemessen hat.
+            double tOben;
+            if (_tObenJePuffer.TryGetValue(p.ID, out tOben))
+                d.Detailzeilen.Add(string.Format(MyResource.Resource.PSP_KARTE_T_OBEN,
+                                                 tOben.ToString("0.#")));
+
             // --- Schwellenband -------------------------------------------------------
             d.SchwelleEin = p.SchwelleEin;
             d.SchwelleAusNachrang = p.SchwelleAusNachrang;
@@ -1756,11 +2028,14 @@ namespace WindowsFormsApplication1
         /// Alle Puffer des Projekts, die überhaupt von einer Anlage GELADEN werden.
         ///
         /// Dieselbe Bedingung wie in <see cref="Ladeordnung.Ladereihenfolge"/>: Die
-        /// Puffer-ID muss auf einem der beiden Senkenfelder stehen UND das zugehörige
-        /// Ziel muss ein Puffer-Ziel sein. Altdaten tragen eine <c>WS_ID_Puffer</c> auch
-        /// dann noch, wenn die Senke längst wieder auf den Heizkreis zeigt (die
-        /// Oberfläche schreibt erst seit Paket 2 NULL) — würde die ID allein zählen,
-        /// bekäme so ein Speicher hier fälschlich eine Ladereihenfolge-Abfrage.
+        /// Senkenzeile muss ein Puffer-Ziel tragen UND einen Speicher benennen. Eine
+        /// halbe Konfiguration („Ziel ohne Puffer" oder umgekehrt) zählt nicht — sonst
+        /// bekäme ein Speicher hier eine Ladereihenfolge-Abfrage, die leer zurückkommt.
+        ///
+        /// <para><b>PAKET A1:</b> Gelesen wird die SENKENLISTE, nicht mehr das
+        /// Spaltenpaar <c>WS_ID_Puffer</c>/<c>WS_ID_Puffer2</c>. Ein Speicher, den erst
+        /// eine Senke ab Rang 3 lädt, fehlte in dieser Menge — seine Karte behauptete
+        /// dann „wird von keiner Anlage geladen".</para>
         ///
         /// Einmal je Auffrischung; Zweck ist der Vorfilter in
         /// <see cref="SpeicherKarteDaten"/> (Begründung dort).
@@ -1770,24 +2045,62 @@ namespace WindowsFormsApplication1
             HashSet<int> geladen = new HashSet<int>();
             if (m_ID_Projekt <= 0) return geladen;
 
-            System.Data.DataTable dt = DataRepository.GetDataTable(
-                "SELECT WS_Ziel, WS_ID_Puffer, WS_Ziel2, WS_ID_Puffer2 FROM Tab_Energieanlagen " +
-                "WHERE ID_Projekt=" + m_ID_Projekt +
-                " AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ")");
-            if (dt == null) return geladen;
-
-            foreach (System.Data.DataRow r in dt.Rows)
+            foreach (Senkenliste liste in WaermesenkeClass.SenkenlistenLadenStill(m_ID_Projekt))
             {
-                if (r["WS_ID_Puffer"] != DBNull.Value &&
-                    WaermesenkeClass.IstPufferZiel(r["WS_Ziel"] as string))
-                    geladen.Add(Convert.ToInt32(r["WS_ID_Puffer"]));
+                if (liste == null) continue;
 
-                if (r["WS_ID_Puffer2"] != DBNull.Value &&
-                    WaermesenkeClass.IstPufferZiel(r["WS_Ziel2"] as string))
-                    geladen.Add(Convert.ToInt32(r["WS_ID_Puffer2"]));
+                foreach (Senkenzeile z in liste.Zeilen)
+                    if (z != null && z.IstPuffersenke && z.IDPuffer > 0)
+                        geladen.Add(z.IDPuffer);
             }
 
             return geladen;
+        }
+
+        /// <summary>
+        /// PAKET P1 — <c>T_oben_Mittel</c> je Speicher aus dem JÜNGSTEN Ergebnis des
+        /// Projekts; nie <c>null</c>.
+        ///
+        /// <para><b>Zwei Abfragen statt einer Unterabfrage.</b> Erst der Ergebniskopf
+        /// (<c>MAX(ID)</c> je Projekt), dann seine Speicherzeilen. Ein Parameter in der
+        /// Unterabfrage ist bei ACE eine bekannte Falle (dieselbe Vorsicht wie in
+        /// <c>SchemaMigration</c>, Schritt 25c), und die Kopfabfrage ist ohnehin billig.</para>
+        ///
+        /// <para><b>Spaltentolerant und still.</b> Gelesen wird über
+        /// <c>ErgebnisCtrl.PufferZeilenLesenStill</c> — dieselbe dialogfreie Bauart, die
+        /// auch der Referenzlauf benutzt; fehlt die Tabelle, kommt <c>null</c> zurück.
+        /// Fehlt die Spalte <c>T_oben_Mittel</c> (Lauf vor Schritt 52) oder steht dort
+        /// NULL, bleibt der Speicher aus dem Verzeichnis weg und seine Karte zeigt die
+        /// Zeile nicht.</para>
+        ///
+        /// <para>Einmal je Auffrischung, nicht je Karte — dieselbe Begründung wie bei
+        /// <see cref="QuellnutzerSammeln"/>.</para>
+        /// </summary>
+        private Dictionary<int, double> TObenSammeln()
+        {
+            Dictionary<int, double> werte = new Dictionary<int, double>();
+            if (m_ID_Projekt <= 0) return werte;
+
+            int idErgebnis = StilleDb.Zahl(StilleDb.Scalar(
+                "SELECT MAX(ID) FROM [" + ErgebnisCtrl.TAB_KOPF + "] WHERE ID_Projekt = ?",
+                StilleDb.Par("@proj", System.Data.OleDb.OleDbType.Integer, m_ID_Projekt)));
+            if (idErgebnis <= 0) return werte;
+
+            System.Data.DataTable dt = ErgebnisCtrl.PufferZeilenLesenStill(idErgebnis);
+            if (dt == null || !dt.Columns.Contains(SchemaKatalog.SPALTE_PUFFER_T_OBEN_MITTEL))
+                return werte;
+
+            foreach (System.Data.DataRow r in dt.Rows)
+            {
+                int id = StilleDb.Zahl(StilleDb.Feld(r, "ID_Pufferspeicher"));
+                object v = StilleDb.Feld(r, SchemaKatalog.SPALTE_PUFFER_T_OBEN_MITTEL);
+                if (id <= 0 || v == null || v == DBNull.Value || werte.ContainsKey(id)) continue;
+
+                try { werte[id] = Convert.ToDouble(v); }
+                catch { /* unlesbarer Wert - dann bleibt die Zeile weg */ }
+            }
+
+            return werte;
         }
 
         /// <summary>Die Anlagen, für die dieser Puffer die Quelle ist; nie <c>null</c>.</summary>
@@ -1806,13 +2119,17 @@ namespace WindowsFormsApplication1
         ///
         /// <list type="number">
         ///   <item><description>eigene Werte an <c>Tab_Pufferspeicher</c> — seit Etappe 4
-        ///     die FÜHRENDE Ablage;</description></item>
-        ///   <item><description>die Zuordnungszeile <c>Z_ProjektPufferSp</c> (hier aus
-        ///     <c>_zuordnungen</c>, also ohne zusätzliche Abfrage);</description></item>
+        ///     die führende und seit PAKET A1 die EINZIGE Ablage;</description></item>
         ///   <item><description>die Systemvorgabe des Projekts
         ///     (<c>PufferSpCtrl.SystemVorlauf/-Ruecklauf</c>: kleinster Vorlauf, größter
         ///     Rücklauf über die Wärmeerzeuger).</description></item>
         /// </list>
+        ///
+        /// <para><b>PAKET A1:</b> Die mittlere Stufe — die Zuordnungszeile
+        /// <c>Z_ProjektPufferSp</c> — ist entfallen. Migrationsschritt 51 hat ihre
+        /// Temperaturen einmalig an <c>Tab_Pufferspeicher</c> übergeben; wo dort ein Paar
+        /// steht, greift Stufe 1, und wo keines steht, stand auch in der Zuordnung
+        /// keines.</para>
         ///
         /// Greift nichts davon, bleibt es bei „nicht gepflegt" — die Engine fällt dann
         /// auf ihre Vorgabespreizung zurück, und genau das soll die Karte sagen statt
@@ -1830,19 +2147,6 @@ namespace WindowsFormsApplication1
                 vorlauf = p.Vorlauf;
                 ruecklauf = p.Ruecklauf;
                 return MyResource.Resource.PSP_KARTE_TEMP_EIGEN;
-            }
-
-            foreach (string[] z in _zuordnungen)
-            {
-                if (!string.Equals(z[1], p.Bezeichner, StringComparison.OrdinalIgnoreCase)) continue;
-
-                int v, r;
-                if (!Int32.TryParse(z[2], out v) || !Int32.TryParse(z[3], out r)) continue;
-                if (!ProjektPuffer.IstTemperaturpaar(v, r)) continue;
-
-                vorlauf = v;
-                ruecklauf = r;
-                return MyResource.Resource.PSP_KARTE_TEMP_ZUORDNUNG;
             }
 
             if (ProjektPuffer.IstTemperaturpaar(_systemVorlauf, _systemRuecklauf))

@@ -355,7 +355,7 @@
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(15, 17);
             this.label7.TabIndex = 32;
-            this.label7.Text = "€";
+            this.label7.Text = "€/a";
             // 
             // lbl_Unit_Leistungspreis
             // 

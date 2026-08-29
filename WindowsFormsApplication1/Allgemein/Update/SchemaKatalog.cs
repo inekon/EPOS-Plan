@@ -50,7 +50,36 @@ namespace WindowsFormsApplication1
         public const string TAB_KLIMAREGION = "Tab_Klimaregion";
         public const string TAB_EINSTELLUNGEN = "Tab_Einstellungen";
         public const string TAB_APPLIKATION = "Tab_Applikation";
+
+        /// <summary>
+        /// Die ALT-ZUORDNUNG Projekt ↔ Pufferspeicher — <b>STILLGELEGT ab Schritt 51
+        /// (Paket A1, Konzept Brauchwasser/Heizung/Pufferspeicher § 9, Leitentscheidung
+        /// L1)</b>.
+        ///
+        /// Sie war bis dahin der Senkenspeicher-Weg des einkanaligen Altpfads und
+        /// gleichzeitig die MITTLERE Stufe der Temperatur-Vorrangkette. Mit Paket A1
+        /// entfallen beide Rollen: Die Senken stehen in
+        /// <see cref="Z_ANLAGESENKE"/> (Schritt 50), und die Betriebstemperaturen hat
+        /// Schritt 51 einmalig an die führende Ablage
+        /// <c>Tab_Pufferspeicher.Vorlauf</c>/<c>Ruecklauf</c> übernommen
+        /// (<see cref="SchemaMigration.SCHRITT_51_ALTPFAD_STILLLEGUNG"/>).
+        ///
+        /// <b>Die Tabelle bleibt stehen</b> — stillgelegt heißt: kein Leser und kein
+        /// Schreiber im Code mehr, Muster <c>WQ_Puffer</c> und
+        /// <c>Tab_Pufferspeicher.Verwendung</c>. Ein Löschen wäre die eine Änderung, die
+        /// sich nicht zurücknehmen ließe.
+        ///
+        /// <para><b>PAKET L hat entschieden: Sie bleibt.</b> Das Aufräumpaket hat die
+        /// aufruferfreie Zugriffsklasse <c>Z_ProjektPufferSpCtrl</c> entfernt, die
+        /// TABELLE aber ausdrücklich nicht angefasst — Konzept Kapitel 15 führt sie als
+        /// „stillgelegt (Lese-Altlast nach Migration)". Ein Schema-Schritt, der sie
+        /// wegnähme, ist kein Aufräumen mehr, sondern ein Datenverlust ohne Rückweg.</para>
+        ///
+        /// Die Konstante wird weiterhin gebraucht: von der Migration selbst und von
+        /// <see cref="Bestand"/>.
+        /// </summary>
         public const string Z_PROJEKTPUFFERSP = "Z_ProjektPufferSp";
+        public const string Z_PROJEKTWAERMEBEDARF = "Z_ProjektWaermebedarf";
         public const string TAB_ERGEBNISPUFFERSPEICHER = "Tab_ErgebnisPufferspeicher";
         public const string TAB_ERGEBNISHEIZKESSEL = "Tab_ErgebnisHeizkessel";
         public const string TAB_STROMSPEICHER = "Tab_Stromspeicher";
@@ -99,6 +128,346 @@ namespace WindowsFormsApplication1
         /// <see cref="Z_PROJEKTPUFFERSP"/>.
         /// </summary>
         public const string Z_ANLAGEPUFFERVERBUND = "Z_AnlagePufferVerbund";
+
+        /// <summary>
+        /// PAKET S1 (Migrationsschritt 50, Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 5.1, Entscheidungen L4/L5 vom 27.08.2026): die GEORDNETE SENKENLISTE einer
+        /// Wärmeerzeuger-Anlage — je Zeile ein Ziel, sein Rang und alles, was zu diesem
+        /// einen Ziel gehört.
+        ///
+        /// <b>Warum eine Tabelle und keine weitere Spaltenreihe.</b> Der Bestand kennt
+        /// genau ZWEI Senkenplätze, als zwei Spaltensätze nebeneinander
+        /// (<c>WS_Ziel</c>/<c>WS_ID_Puffer</c>/… und <c>WS_Ziel2</c>/<c>WS_ID_Puffer2</c>/…).
+        /// Eine dritte Senke hieße ein dritter Spaltensatz, eine weitere Beziehung, ein
+        /// weiterer Zweig in jedem Leser — und <c>Tab_Energieanlagen</c> steht mit 57
+        /// Spalten ohnehin unter der Access-Feldgrenze von 255. Als Zeilen ist die Liste
+        /// unbegrenzt, umsortierbar (<c>Rang</c>) und mit EINER Leseregel abgedeckt.
+        ///
+        /// <b>Rang 1 ist Pflicht.</b> Der Dialog verweigert das Entfernen der letzten
+        /// Zeile; findet die Engine zu einer Anlage keine Zeile, rechnet sie
+        /// <c>Heizkreis/Beides</c> mit Protokollwarnung — die heutige
+        /// Normalisierungsregel aus <c>WaermesenkeClass</c>. Deshalb legt die Migration
+        /// auch Anlagen ohne jedes <c>WS_Ziel</c> eine Rang-1-Zeile an.
+        ///
+        /// <b>Die Altspalten bleiben stehen</b> — als stillgelegte Lese-Altlast, Muster
+        /// <c>WQ_Puffer</c> → <c>WQ_ID_Puffer</c>. Solange noch ein Leser die Slots
+        /// bedient, ist ein Löschen der Spalten die eine Änderung, die sich nicht
+        /// zurücknehmen lässt.
+        ///
+        /// Präfix <c>Z_</c> nach der Namenskonvention (Zuordnung), Muster
+        /// <see cref="Z_ANLAGEPUFFERVERBUND"/>.
+        /// </summary>
+        public const string Z_ANLAGESENKE = "Z_AnlageSenke";
+
+        /// <summary>
+        /// PAKET Q1 (Migrationsschritt 54, Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 8.1 Punkt 2/3): der KOPF eines Quellprofils — ein benanntes
+        /// Temperaturprofil der Wärmequelle, das an einer oder mehreren Anlagen hängen
+        /// kann.
+        ///
+        /// <b>Warum eine Tabelle und nicht drei weitere Spalten.</b> Der Bestand legt
+        /// das Quellprofil als zwei DELIMITIERTE ZEICHENKETTEN an der Anlage ab
+        /// (<c>WQ_Monatswerte</c> „t1;…;t12", <c>WQ_Wochenwerte</c> „w1;…;w168") und das
+        /// Stundenprofil überhaupt nicht — dort steht nur ein DATEIPFAD
+        /// (<c>WQ_CSV</c>), der bei jeder Projektweitergabe ins Leere zeigt und still
+        /// auf die Außentemperatur zurückfällt (§ 8.1 Punkt 3). 365 oder 8760 Werte in
+        /// einer Zeichenkette wären die Fortschreibung genau dieses Fehlers: nicht
+        /// abfragbar, nicht teilbar, an der Access-Feldgrenze von 255 Zeichen bzw. an
+        /// der MEMO-Grenze entlang.
+        ///
+        /// <b>Kopf/Daten-Paar nach dem Muster <c>Tab_Stromganglinie</c>/
+        /// <c>Tab_StromganglinieDaten</c></b> — das im Bestand bereits 718 321
+        /// Datenzeilen trägt (23 Ganglinien, teils viertelstündlich). Die Bemessung
+        /// gegen die 2-GB-Grenze steht bei <see cref="TAB_QUELLPROFILDATEN"/>.
+        ///
+        /// <b>Kein <c>_STAMM</c>-Gegenstück.</b> Ein Quellprofil beschreibt die
+        /// örtliche Wärmequelle eines Projekts (Grundwasser, Abwärme, Erdsonden-Messung)
+        /// und ist keine Auslieferungsware. <c>ID_Projekt</c> hängt es an sein Projekt;
+        /// die Projektkopie nimmt es über die ID_Projekt-Regel von
+        /// <c>ProjektDuplizierenCtrl</c> mit.
+        /// </summary>
+        public const string TAB_QUELLPROFIL = "Tab_Quellprofil";
+
+        /// <summary>
+        /// PAKET Q1 (Migrationsschritt 54, § 8.1): die WERTE eines Quellprofils — eine
+        /// Zeile je Stützstelle, Muster <c>Tab_StromganglinieDaten</c>.
+        ///
+        /// <b>Mit ausdrücklicher Positionsspalte.</b> Das Vorbild
+        /// <c>Tab_StromganglinieDaten</c> hat keine — dort IST die Reihenfolge die
+        /// ID-Reihenfolge, und jeder Leser sortiert <c>ORDER BY ID</c>. Das trägt,
+        /// solange niemand eine einzelne Zeile nachträgt oder löscht; danach ist die
+        /// Zuordnung Wert → Stunde stillschweigend verschoben. <see cref="SPALTE_QPD_INDEX"/>
+        /// macht sie ausdrücklich und prüfbar (§ 9: „bei neuen Beziehungen IDs
+        /// verwenden" — dieselbe Linie).
+        ///
+        /// <b>Bemessung gegen die Access-Grenze von 2 GB</b> (§ 9, Schlussabsatz),
+        /// gemessen am 28.08.2026 auf einer Kopie der produktiven Datenbank
+        /// (151 949 312 Bytes, 7,4 % der Grenze): ZEHN Stundenprofile = 87 600
+        /// Datenzeilen ließen die Dateigröße um **0 Bytes** wachsen — sie passten
+        /// vollständig in den vorhandenen freien Seitenraum. Die reine Nutzlast eines
+        /// Stundenprofils beträgt 8 760 × 20 Bytes ≈ 175 KiB, mit den beiden Indizes
+        /// grob das Doppelte. Damit ist die Frage aus § 9 beantwortet: <b>Das
+        /// 8760er-Profil kommt in die Datenbank</b>; die Grenze liegt bei Tausenden von
+        /// Profilen, nicht bei Dutzenden.
+        /// </summary>
+        public const string TAB_QUELLPROFILDATEN = "Tab_QuellprofilDaten";
+
+        /// <summary>
+        /// Q1: <c>Tab_Quellprofil.ID_Projekt</c> (LONG) — das Projekt, zu dem das Profil
+        /// gehört. KEINE deklarierte Beziehung auf <c>Tab_Projekt</c>, Muster
+        /// <c>Tab_Stromganglinie</c>: Der Löschweg eines Projekts räumt seine Tabellen
+        /// selbst, und eine restriktive Beziehung legte ihn lahm.
+        /// </summary>
+        public const string SPALTE_QP_ID_PROJEKT = "ID_Projekt";
+
+        /// <summary>Q1: <c>Tab_Quellprofil.Bezeichner</c> (TEXT(255)) — der Name in der Auswahlliste.</summary>
+        public const string SPALTE_QP_BEZEICHNER = "Bezeichner";
+
+        /// <summary>
+        /// Q1: <c>Tab_Quellprofil.Betriebsart</c> (TEXT(50)) — Monat / Tag / Stunde.
+        /// Die drei Steuerwerte stehen in <c>DbWerte.WQ_PROFIL_BETRIEBSART_*</c>, die
+        /// Zahl der Werte je Betriebsart in <c>DbWerte.QuellprofilWerteanzahl</c>.
+        ///
+        /// <para>TEXT(50) wie jede andere Steuerwertspalte dieses Schemas — die
+        /// Access-Falle „stilles Abschneiden beim UPDATE" (§ 9) hat bei drei Werten von
+        /// höchstens sechs Zeichen keinen Angriffspunkt.</para>
+        /// </summary>
+        public const string SPALTE_QP_BETRIEBSART = "Betriebsart";
+
+        /// <summary>
+        /// Q1: <c>Tab_Quellprofil.Einheit</c> (TEXT(50)) — die Maßeinheit der Werte,
+        /// heute ausnahmslos <c>°C</c>. Sie steht ausdrücklich in der Tabelle, weil ein
+        /// Profil ohne Einheit nur im Kopf seines Erfassers eindeutig ist; ausgewertet
+        /// wird sie nicht (die Engine rechnet in °C).
+        /// </summary>
+        public const string SPALTE_QP_EINHEIT = "Einheit";
+
+        /// <summary>
+        /// Q1: <c>Tab_Quellprofil.Beschreibung</c> (TEXT(255)) — Herkunft der Werte
+        /// (Messstelle, Datei, Norm). Reines Anwenderfeld ohne Auswertung; es ist das
+        /// Gegenstück zu dem, was der Dateipfad in <c>WQ_CSV</c> nebenbei mitteilte und
+        /// was mit der Ablage in der Datenbank sonst verloren ginge.
+        /// </summary>
+        public const string SPALTE_QP_BESCHREIBUNG = "Beschreibung";
+
+        /// <summary>
+        /// Q1: <c>Tab_QuellprofilDaten.ID_Quellprofil</c> (LONG NOT NULL) — der Kopf,
+        /// zu dem die Zeile gehört. MIT LÖSCHWEITERGABE (§ 9 und Auftrag Q1): Eine
+        /// Wertzeile ist ein unselbständiger Anhang ihres Profils, ohne Kopf bedeutet
+        /// sie nichts. Dasselbe Muster trägt <c>FK_AnlageSenke_Anlage</c> aus
+        /// Schritt 50.
+        /// </summary>
+        public const string SPALTE_QPD_ID_QUELLPROFIL = "ID_Quellprofil";
+
+        /// <summary>
+        /// Q1: <c>Tab_QuellprofilDaten.Index</c> (LONG NOT NULL) — die Position der
+        /// Stützstelle, NULLBASIERT (0…11, 0…364, 0…8759).
+        ///
+        /// <para><b>ACHTUNG, reserviertes Wort.</b> <c>Index</c> ist in Access-SQL ein
+        /// Schlüsselwort (<c>CREATE INDEX</c>). Jede Nennung MUSS in eckigen Klammern
+        /// stehen — <c>[Index]</c>. Das ist im Programm durchgängig der Fall: Der
+        /// Migrationsschritt, <c>QuellprofilCtrl</c> und die Projektkopie
+        /// (<c>ProjektDuplizierenCtrl</c> klammert jeden Spaltennamen) tun es. Der Name
+        /// steht so im Konzept-Auftrag und wurde am 28.08.2026 auf einer Kopie der
+        /// produktiven Datenbank gegen ACE 12.0 geprüft (CREATE, INSERT, SELECT … ORDER
+        /// BY, DELETE mit Löschweitergabe — alles fehlerfrei).</para>
+        /// </summary>
+        public const string SPALTE_QPD_INDEX = "Index";
+
+        /// <summary>Q1: <c>Tab_QuellprofilDaten.Wert</c> (DOUBLE) — die Quelltemperatur [°C].</summary>
+        public const string SPALTE_QPD_WERT = "Wert";
+
+        /// <summary>
+        /// Q1 (Schritt 54, § 8.2/§ 8.4): <c>Tab_Energieanlagen.WQ_Anschlusshoehe</c>
+        /// (DOUBLE, 0…1) — die QUELL-ENTNAHMEHÖHE am geteilten Quellpuffer, 1 = ganz
+        /// oben, 0 = ganz unten.
+        ///
+        /// <para><b>NULL = oben</b> — genau die Vorgabe, mit der Paket B1 fest gerechnet
+        /// hat (<c>SimulationPufferspeicher.QuellEntnahmeTemperatur</c>, Ticket B1-O1).
+        /// Der Schritt legt deshalb NICHTS vor: Ein ausgeschriebenes 1,0 behauptete eine
+        /// Anwenderentscheidung, die es nicht gibt, und der Dialog könnte „nicht
+        /// gepflegt" nicht mehr von „genau so gewollt" unterscheiden — dieselbe
+        /// Begründung wie bei den Entnahmehöhen aus Schritt 53.</para>
+        ///
+        /// <para>Sie sitzt an der ANLAGE, nicht am Speicher: Zwei Erzeuger können
+        /// denselben Puffer als Quelle führen und ihn auf unterschiedlicher Höhe
+        /// anzapfen. Bei N = 1 ist die Höhe bedeutungslos — ein Vorrat hat nur eine
+        /// Zone.</para>
+        /// </summary>
+        public const string SPALTE_ANLAGE_WQ_ANSCHLUSSHOEHE = "WQ_Anschlusshoehe";
+
+        /// <summary>
+        /// Q1 (Schritt 54, § 8.1 Punkt 4): <c>Tab_Energieanlagen.WQ_ID_Quellprofil</c>
+        /// (LONG) — der SCHLÜSSEL des Quellprofils dieser Anlage; NULL = keines gewählt.
+        ///
+        /// <para><b>Schlüssel- statt Indexkopplung.</b> Bis Q1 lag das Profil als zwei
+        /// delimitierte Zeichenketten an der Anlage selbst; „dasselbe Profil an zwei
+        /// Anlagen" gab es nur als Kopie, und jede Änderung musste doppelt gepflegt
+        /// werden. Der Fremdschlüssel macht das Profil zu einem eigenen Gegenstand.</para>
+        ///
+        /// <para><b>RESTRIKTIVE Beziehung</b> (<c>FK_Anlage_Quellprofil</c>): Ein Profil,
+        /// das noch eine Anlage versorgt, darf nicht mit einem Löschklick verschwinden —
+        /// dieselbe Abwägung wie bei <c>FK_AnlageSenke_Puffer</c>. Die Gegenrichtung ist
+        /// unbedenklich: Eine Anlage zu löschen, die auf ein Profil ZEIGT, ist immer
+        /// erlaubt; der destruktive Speicherweg des Wizards (DELETE + INSERT auf
+        /// <c>Tab_Energieanlagen</c>) bleibt damit gangbar.</para>
+        ///
+        /// <para><b>Lese-Altlast:</b> <c>WQ_Monatswerte</c>/<c>WQ_Wochenwerte</c> bleiben
+        /// stehen und werden weiter gelesen, solange keine Profil-ID gesetzt ist
+        /// (Muster <c>WQ_Puffer</c> → <c>WQ_ID_Puffer</c>). Eine automatische Übernahme
+        /// findet NICHT statt (§ 15, Auftrag Q1) — sie wäre eine stille Datenänderung an
+        /// Bestandsprojekten.</para>
+        /// </summary>
+        public const string SPALTE_ANLAGE_WQ_ID_QUELLPROFIL = "WQ_ID_Quellprofil";
+
+        /// <summary>
+        /// Schritt 54 der Migration (Paket Q1, Konzept § 8.1) — die beiden neuen Spalten
+        /// an <c>Tab_Energieanlagen</c>.
+        ///
+        /// <para><b>Access-Feldgrenze.</b> 255 Spalten je Tabelle.
+        /// <c>Tab_Energieanlagen</c> trägt vor diesem Schritt 65 Spalten (gemessen) und
+        /// wächst auf 67.</para>
+        ///
+        /// <para><b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access
+        /// immer hinten an. Folgenlos: <c>Tab_Energieanlagen</c> wird ausschließlich
+        /// NAMENSBASIERT gelesen (<c>WErzeugerCtrl</c> mit ausformulierter Spaltenliste,
+        /// <c>WaermequelleClass.WertLesenStill</c> je Einzelspalte); eine
+        /// <c>row[0…n]</c>-Kette wie bei <c>Tab_Einstellungen</c> gibt es hier nicht.</para>
+        ///
+        /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/> — dieselbe
+        /// Begründung wie bei den Schritten 48/49/53: Die stille Rückfallebene
+        /// <c>WaermequelleClass.SchemaSicherstellen</c> legt an, was sie kennt, und
+        /// würde dabei die Tabellen und die Beziehung ÜBERSPRINGEN. Eine Spalte
+        /// <c>WQ_ID_Quellprofil</c> ohne <c>Tab_Quellprofil</c> wäre schlimmer als gar
+        /// keine.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt54_Quellen =
+        {
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_ANLAGE_WQ_ANSCHLUSSHOEHE, "DOUBLE"),
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_ANLAGE_WQ_ID_QUELLPROFIL, "LONG"),
+        };
+
+        // =================================================================================
+        // Etappe E2 - Emissionsarten-Katalog und CO2-Aequivalent (Migrationsschritt 57;
+        //   KOLLISIONSAUFLÖSUNG 29.08.2026: von 56 gerückt, siehe
+        //   SchemaMigration.ZIEL_VERSION - der Schritt ist dort GEPARKT, bis die
+        //   Schrittmethoden der Etappe eintreffen)
+        //   Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md, Rev. 1.2, § 3.
+        // =================================================================================
+
+        /// <summary>Die Projekttabelle. Bis Schritt 56 trug sie keine einzige
+        /// migrierte Spalte — deshalb gab es den Namen hier noch nicht.</summary>
+        public const string TAB_PROJEKT = "Tab_Projekt";
+
+        /// <summary>
+        /// E2 (Schritt 56, Konzept § 3): der KATALOG DER EMISSIONSARTEN. CO₂, SO₂ und
+        /// NOx sind damit keine Spaltennamen mehr, sondern Zeilen einer Tabelle, die
+        /// sich erweitern lässt (CH₄, N₂O, Staub, CO, eigene Arten — Konzept F1).
+        ///
+        /// <para>Kleinschreibung wie <c>energy_carrier</c>/<c>energy_project_settings</c>
+        /// und nicht <c>Tab_…</c>: Die Tabelle gehört zum Energieträger-Bereich, dessen
+        /// Namensgebung dieser Zweig des Schemas seit jeher führt.</para>
+        /// </summary>
+        public const string TAB_EMISSIONSART = "emissionsart";
+
+        /// <summary>
+        /// E2 (Schritt 56, Konzept § 3): KATALOGVORLAGEN UND TRÄGERWERTE in EINER
+        /// Tabelle. Der Unterschied ist allein, ob <c>carrier_id</c> gefüllt ist —
+        /// NULL heißt „trägerunabhängige Vorlage" (z. B. der Strommix). Genau ein
+        /// Wert je Träger und Art trägt <c>ist_aktiv</c>; er ist der geltende.
+        /// </summary>
+        public const string TAB_EMISSIONSWERT = "emissionswert";
+
+        /// <summary>
+        /// E2 (Schritt 56, Konzept F7): <c>Emission_Berechnungsmodus</c> (TEXT 10) —
+        /// zweimal derselbe Spaltenname, an zwei Tabellen mit zwei verschiedenen
+        /// Rollen:
+        ///
+        /// <list type="bullet">
+        ///   <item><description><see cref="TAB_APPLIKATION"/> — die GLOBALE VORGABE.
+        ///     Sie gilt für neu angelegte Projekte und wird sonst von nichts
+        ///     gelesen.</description></item>
+        ///   <item><description><see cref="TAB_PROJEKT"/> — der Modus, in dem DIESES
+        ///     Projekt rechnet. Beim Anlegen aus der Vorgabe übernommen, danach
+        ///     eigenständig: Ein Projekt rechnet auch nach Jahren im Modus seiner
+        ///     Entstehung, gleichgültig wie die Vorgabe inzwischen steht.</description></item>
+        /// </list>
+        ///
+        /// <para>Werte sind ausschließlich <see cref="DbWerte.EMISSION_MODUS_CO2"/> und
+        /// <see cref="DbWerte.EMISSION_MODUS_CO2E"/>; NULL oder leer gilt überall als
+        /// <c>CO2</c> — das heutige Verhalten. Bestandszeilen belegt Schritt 56
+        /// trotzdem ausdrücklich mit <c>CO2</c>, damit der Modus eines Projekts eine
+        /// nachlesbare Angabe ist und keine Auslegungssache.</para>
+        /// </summary>
+        public const string SPALTE_EMISSION_BERECHNUNGSMODUS = "Emission_Berechnungsmodus";
+
+        /// <summary>
+        /// Schritt 56f der Migration (Etappe E2, Konzept F7) — die beiden
+        /// Modus-Spalten. Rein additives DDL; die Vorbelegung <c>CO2</c> setzt der
+        /// Migrationsschritt selbst.
+        ///
+        /// <para><b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access
+        /// immer hinten an. Folgenlos: Beide Tabellen werden namensbasiert gelesen —
+        /// <c>ApplikationCtrl</c> über <c>SELECT TOP 1 *</c> mit Spaltennamenprüfung,
+        /// <c>ProjektCtrl</c> mit ausgeschriebener Spaltenliste. Eine
+        /// <c>row[0…n]</c>-Kette wie bei <c>Tab_Einstellungen</c> gibt es an keiner der
+        /// beiden.</para>
+        ///
+        /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/>: Kein Rechner
+        /// liest sie vor Etappe E5, und die stille Rückfallebene
+        /// <c>WaermequelleClass.SchemaSicherstellen</c> hat mit dem Emissionsmodell
+        /// nichts zu tun. Fehlt die Spalte, gilt <c>CO2</c> — also das
+        /// Bestandsverhalten.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt56_Emissionsmodus =
+        {
+            new SchemaSpalte(TAB_APPLIKATION, SPALTE_EMISSION_BERECHNUNGSMODUS, "TEXT(10)"),
+            new SchemaSpalte(TAB_PROJEKT,     SPALTE_EMISSION_BERECHNUNGSMODUS, "TEXT(10)"),
+        };
+
+        /// <summary>
+        /// B2 (Migrationsschritt 55, Nutzerauftrag 28.08.2026):
+        /// <c>Tab_Energieanlagen.WQ_TemperaturModus</c> (TEXT 50) — die HERKUNFT des
+        /// Temperaturpaars, gegen das der Quellanteil eines Erzeugers am geteilten
+        /// Puffer gerechnet wird.
+        ///
+        /// <para><b>Warum TEXT(50) und nicht YESNO.</b> Access kürzt beim UPDATE STILL
+        /// auf die Feldbreite (dieselbe Falle wie in Schritt 48); der längste Steuerwert
+        /// misst 9 Zeichen. Ein Ja/Nein-Feld wäre kürzer, aber es könnte keinen dritten
+        /// Modus tragen und läse sich in der Datenbank als „ja was?" — die
+        /// Steuerwertliste <c>DbWerte.WQ_TEMPMODUS_*</c> sagt an der Zeile selbst, was
+        /// gemeint ist.</para>
+        ///
+        /// <para><b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access
+        /// hinten an; <c>Tab_Energieanlagen</c> wird ausschließlich NAMENSBASIERT
+        /// gelesen (Begründung bei <see cref="Schritt54_Quellen"/>) — folgenlos.</para>
+        ///
+        /// <para><b>Access-Feldgrenze.</b> 255 Spalten je Tabelle;
+        /// <c>Tab_Energieanlagen</c> trägt nach Schritt 54 67 Spalten und wächst auf
+        /// 68.</para>
+        ///
+        /// <para>Die Spalte steht BEWUSST NICHT in <see cref="Alle"/> — dieselbe
+        /// Begründung wie bei den Schritten 48/49/53/54: Die stille Rückfallebene
+        /// <c>WaermequelleClass.SchemaSicherstellen</c> legt an, was sie kennt, würde
+        /// dabei aber die DML-Vorbelegung überspringen. Eine Spalte
+        /// <c>WQ_TemperaturModus</c>, die in jeder Zeile NULL steht, ist harmlos (der
+        /// Leser macht daraus „Berechnet"), aber sie wäre eine Halbmigration ohne
+        /// Marker.</para>
+        /// </summary>
+        public const string SPALTE_ANLAGE_WQ_TEMPERATURMODUS = "WQ_TemperaturModus";
+
+        /// <summary>
+        /// Schritt 55 der Migration (Paket B2) — die eine neue Spalte an
+        /// <c>Tab_Energieanlagen</c>. Die Einstellungsspalte
+        /// <see cref="SPALTE_BOOSTER_LESEPUNKT"/> steht NICHT in dieser Liste: Sie geht
+        /// über ein eigenes <c>ALTER TABLE</c> mit anschließender Leseprobe, weil
+        /// <c>Tab_Einstellungen</c> ordinal gelesen wird und deshalb ausdrücklich nur
+        /// angehängt werden darf (Muster Schritt 49b).
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt55_Temperaturmodus =
+        {
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_ANLAGE_WQ_TEMPERATURMODUS, "TEXT(50)"),
+        };
 
         /// <summary>
         /// Bestand: die Spalten, die die Rückfallebene schon vor ADR-001 angelegt hat
@@ -184,6 +553,19 @@ namespace WindowsFormsApplication1
         /// Name des Feature-Flags für die zweikanalige Kaskade (Konzept Kapitel 9,
         /// „Feature-Flag empfohlen"). EINE Wahrheit für Migration, Leseseite
         /// (<c>KonfigurationCtrl.ReadSingle</c>), Schreibseite und Oberfläche.
+        ///
+        /// <b>STILLGELEGT ab Schritt 51 (Paket A1, Konzept
+        /// Brauchwasser/Heizung/Pufferspeicher § 9, Leitentscheidung L1):</b> Der
+        /// einkanalige Altpfad entfällt ersatzlos, die mehrkanalige Stundenschleife ist
+        /// der einzige Rechenweg — das Flag wird nicht mehr GELESEN, und es gibt keine
+        /// Weiche mehr, die es auswerten könnte.
+        ///
+        /// <b>Die Spalte bleibt trotzdem stehen und wird auf WAHR gesetzt</b>
+        /// (<see cref="SchemaMigration.SCHRITT_51_ALTPFAD_STILLLEGUNG"/>, Teil 51b): Wer
+        /// eine migrierte Datenbank mit einer älteren Programmfassung öffnet, bekommt
+        /// damit den Weg, auf dem sie zuletzt gerechnet hat, statt einer stillen Rückkehr
+        /// in den Altpfad. Ein Entfernen der Spalte verböte sich ohnehin — sie steht am
+        /// Ende der ORDINAL gelesenen <c>Tab_Einstellungen</c> (siehe unten).
         /// </summary>
         public const string SPALTE_KASKADE_ZWEIKANALIG = "Kaskade_Zweikanalig";
 
@@ -796,6 +1178,1073 @@ namespace WindowsFormsApplication1
                 DbWerte.KOSTENPOSTEN_STROMEINSPEISUNG,
                 DbWerte.KOSTENPOSTEN_SONSTIGES
             })
+        };
+
+        // =================================================================================
+        // ETAPPE KD1 (Konzept Kostendialoge Rev. 1.2, § 4) — bewertete Stammvorlagen
+        //   mit Varianten je Komponente (Migrationsschritte 38/39).
+        //
+        //   Der flache Katalog Tab_Kostenfaktor bleibt Positionslexikon (KL2); die
+        //   Vorlagen tragen zusätzlich Bemessung, Satz und Empfehlungsbereich. NULL
+        //   heißt durchgängig "nicht gepflegt", nie 0 — die Auslieferungs-Seeds lassen
+        //   deshalb alle Sätze und Nutzungsdauern leer (Struktur ohne erfundene Preise,
+        //   § 4.3).
+        // =================================================================================
+
+        /// <summary>
+        /// Kopftabelle der Kostenvorlagen — eine Zeile je Komponente, Kategorie und
+        /// Variante. <c>IstStandard</c>: genau eine Standardvariante je
+        /// Komponente+Kategorie (Prüfregel der Pflege, kein DB-Constraint);
+        /// <c>ReadOnly</c>: Auslieferungs-Seeds nach dem Muster von
+        /// <c>Tab_Brennstoff_Stamm.ReadOnly</c> — nur über "Speichern unter" kopierbar.
+        /// </summary>
+        public const string TAB_KOSTENVORLAGE = "Tab_KostenVorlage";
+
+        /// <summary>Positionen einer Vorlage; Löschweitergabe über
+        /// <c>FK_KostenVorlagePos</c> (Muster <c>FK_PreisreiheDaten</c>).</summary>
+        public const string TAB_KOSTENVORLAGEPOSITION = "Tab_KostenVorlagePosition";
+
+        /// <summary>Spalte <c>Tab_KostenVorlage.KomponentenID</c> → <see cref="TAB_KOSTENKOMPONENTE"/>.ID.</summary>
+        public const string SPALTE_KV_KOMPONENTENID = "KomponentenID";
+
+        /// <summary>Spalte <c>Tab_KostenVorlage.KategorieID</c> (1 = Investition, 2 = Betrieb;
+        /// <see cref="Form_Kosten.KATEGORIE_INVESTITION"/>).</summary>
+        public const string SPALTE_KV_KATEGORIEID = "KategorieID";
+
+        /// <summary>Spalte <c>Tab_KostenVorlage.Name</c> — Variantenname; die
+        /// Auslieferungsvorlage heißt <see cref="VORLAGE_NAME_STANDARD"/>.</summary>
+        public const string SPALTE_KV_NAME = "Name";
+
+        /// <summary>Spalte <c>Tab_KostenVorlage.IstStandard</c> (YESNO).</summary>
+        public const string SPALTE_KV_IST_STANDARD = "IstStandard";
+
+        /// <summary>Spalte <c>Tab_KostenVorlage.ReadOnly</c> (YESNO).</summary>
+        public const string SPALTE_KV_READONLY = "ReadOnly";
+
+        /// <summary>Spalte <c>Tab_KostenVorlage.Bemerkung</c> (MEMO).</summary>
+        public const string SPALTE_KV_BEMERKUNG = "Bemerkung";
+
+        /// <summary>Spalte <c>Tab_KostenVorlage.GeaendertAm</c> (DATETIME).</summary>
+        public const string SPALTE_KV_GEAENDERT_AM = "GeaendertAm";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.VorlageID</c> → <see cref="TAB_KOSTENVORLAGE"/>.ID.</summary>
+        public const string SPALTE_KVP_VORLAGEID = "VorlageID";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.StammID</c> → <see cref="TAB_KOSTENFAKTOR"/>
+        /// (nullable — NULL bei freier Position ohne Lexikoneintrag).</summary>
+        public const string SPALTE_KVP_STAMMID = "StammID";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.Bezeichnung</c> (TEXT 255).</summary>
+        public const string SPALTE_KVP_BEZEICHNUNG = "Bezeichnung";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.Kostenart</c> —
+        /// <see cref="DbWerte.KOSTENART_KAPITALGEBUNDEN"/> u. a.</summary>
+        public const string SPALTE_KVP_KOSTENART = "Kostenart";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.Bemessung</c> —
+        /// <see cref="DbWerte.BEMESSUNG_BETRAG"/> u. a. (Katalog § 5.3).</summary>
+        public const string SPALTE_KVP_BEMESSUNG = "Bemessung";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.Satz</c> (DOUBLE, nullable) — Satz in
+        /// der Einheit der Bemessung; NULL = nicht gepflegt.</summary>
+        public const string SPALTE_KVP_SATZ = "Satz";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.BetragNetto</c> (DOUBLE, nullable) —
+        /// nur bei absoluten Bemessungen; sonst Ableitung erst im Projekt (§ 5.4).</summary>
+        public const string SPALTE_KVP_BETRAG_NETTO = "BetragNetto";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.IstErloes</c> (YESNO) — wie
+        /// <see cref="SPALTE_PW_IST_ERLOES"/>.</summary>
+        public const string SPALTE_KVP_IST_ERLOES = "IstErloes";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.Nutzungsdauer</c> (DOUBLE, nullable) —
+        /// VDI-2067-Nutzungsdauer [a] als Vorbelegung (Folie 7 / § 4.1); die Seeds lassen
+        /// sie leer, Normwerte werden nicht erfunden.</summary>
+        public const string SPALTE_KVP_NUTZUNGSDAUER = "Nutzungsdauer";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.Empfehlung_von</c> (DOUBLE, nullable) —
+        /// Hinweisbereich, Rolle wie <see cref="SPALTE_KF_BEZEICHNUNG"/>-Katalogempfehlungen.</summary>
+        public const string SPALTE_KVP_EMPFEHLUNG_VON = "Empfehlung_von";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.Empfehlung_bis</c> (DOUBLE, nullable).</summary>
+        public const string SPALTE_KVP_EMPFEHLUNG_BIS = "Empfehlung_bis";
+
+        /// <summary>Spalte <c>Tab_KostenVorlagePosition.Sortierung</c> (LONG) — Reihenfolge im
+        /// Raster, Seeds in Zehnerschritten.</summary>
+        public const string SPALTE_KVP_SORTIERUNG = "Sortierung";
+
+        /// <summary>Name der Auslieferungsvariante (Persistenzwert, deutsch, eingefroren;
+        /// Anzeigename folgt in KD2 über MyResource).</summary>
+        public const string VORLAGE_NAME_STANDARD = "Standard";
+
+        /// <summary>Herkunftsvermerk der Vorlagen-Übernahme in <c>Tab_ProjektWerte</c>
+        /// (nullable; NIE stille Kopplung — reine Anzeige/Abgleich, § 4.2).</summary>
+        public const string SPALTE_PW_VORLAGEID = "VorlageID";
+
+        /// <summary>Startjahr der Investition je Position (LONG, nullable; NULL = t0) —
+        /// Entscheidung FK10, Rechenwirkung in Etappe KD6 (§ 11).</summary>
+        public const string SPALTE_PW_STARTJAHR = "StartJahr";
+
+        /// <summary>Ä20 (Migrationsschritt 45): <c>Tab_ProjektWerte.ID_Anlage</c>
+        /// (LONG, nullable) — die ANLAGENZEILE (<c>Tab_Energieanlagen.ID</c>), zu der
+        /// eine Kostenposition gehört. NULL = keine (gültige) Zuordnung: Altbestände
+        /// nicht verbauter Komponenten, Erfassungsgruppen-Altdaten (Ä7) und
+        /// Übernahmen in Komponenten ohne Anlage. Die Rechenkerne aggregieren je
+        /// Projekt und lesen die Spalte nicht; sie steuert Pflege und Ausweis.</summary>
+        public const string SPALTE_PW_ID_ANLAGE = "ID_Anlage";
+
+        /// <summary>Ä21 (Migrationsschritt 46): das GERÄT der zugeordneten Anlage
+        /// (Wert der Verweisspalte, z. B. <c>Tab_WP.ID</c>). Der Anker, der den
+        /// destruktiven Wizard-Neuaufbau überlebt: Anlagenzeilen werden dort
+        /// gelöscht und mit NEUEN IDs angelegt (dokumentiert in
+        /// <c>AnlagenEindeutigkeit</c>/<c>GeraeteWaisen</c>), die Gerätezeilen
+        /// bleiben. <c>KostenProjektPositionenCtrl.ZuordnungReparieren</c> findet
+        /// über Komponente + Gerät die neue Anlagenzeile.</summary>
+        public const string SPALTE_PW_ID_ANLAGE_GERAET = "ID_AnlageGeraet";
+
+        /// <summary>Spalte <c>energy_carrier.price_power</c> (DOUBLE, nullable) —
+        /// Leistungspreis des Katalogträgers; Einheit je <see cref="SPALTE_EC_PRICE_POWER_MODUS"/>.
+        /// Projektseitig existiert <c>energy_project_settings.custom_price_power</c> bereits;
+        /// Rechenwirkung in Etappe KD4 (FK6).</summary>
+        public const string SPALTE_EC_PRICE_POWER = "price_power";
+
+        /// <summary>Spalte <c>energy_carrier.price_power_modus</c> (TEXT 10) —
+        /// <see cref="DbWerte.LEISTUNGSPREIS_MODUS_JAHR"/> / <see cref="DbWerte.LEISTUNGSPREIS_MODUS_MONAT"/>;
+        /// NULL = nicht gepflegt (kein Leistungspreis).</summary>
+        public const string SPALTE_EC_PRICE_POWER_MODUS = "price_power_modus";
+
+        /// <summary>
+        /// Kopftabelle der Vorlagen. <b>ID explizit LONG, kein AutoWert</b> — Hausmuster
+        /// seit ADR-001 (MAX+1, wie <c>Tab_Preisreihe</c>); <c>[Name]</c>/<c>[ReadOnly]</c>
+        /// in Klammern, weil ACE beide sonst als Schlüsselwort liest.
+        /// </summary>
+        public const string SQL_CREATE_KOSTENVORLAGE =
+            "CREATE TABLE Tab_KostenVorlage (ID LONG NOT NULL PRIMARY KEY, " +
+            "KomponentenID LONG, KategorieID LONG, [Name] TEXT(100), " +
+            "IstStandard YESNO, [ReadOnly] YESNO, Bemerkung MEMO, GeaendertAm DATETIME)";
+
+        /// <summary>Suchweg der Variantenlisten (Komponente + Kategorie).</summary>
+        public const string SQL_INDEX_KOSTENVORLAGE =
+            "CREATE INDEX idx_KostenVorlage ON Tab_KostenVorlage (KomponentenID, KategorieID)";
+
+        /// <summary>Positionen; alle Fachwerte nullable (NULL = nicht gepflegt).</summary>
+        public const string SQL_CREATE_KOSTENVORLAGEPOSITION =
+            "CREATE TABLE Tab_KostenVorlagePosition (ID LONG NOT NULL PRIMARY KEY, " +
+            "VorlageID LONG, StammID LONG, Bezeichnung TEXT(255), Kostenart TEXT(20), " +
+            "Bemessung TEXT(30), Satz DOUBLE, BetragNetto DOUBLE, IstErloes YESNO, " +
+            "Nutzungsdauer DOUBLE, Empfehlung_von DOUBLE, Empfehlung_bis DOUBLE, " +
+            "Sortierung LONG)";
+
+        /// <summary>Der einzige Suchweg auf die Positionen.</summary>
+        public const string SQL_INDEX_KOSTENVORLAGEPOSITION =
+            "CREATE INDEX idx_KostenVorlagePosition ON Tab_KostenVorlagePosition (VorlageID)";
+
+        /// <summary>Löschweitergabe Kopf → Positionen (Begründung wie
+        /// <c>SQL_FK_PREISREIHEDATEN</c>: MAX+1-Vergabe macht Waisen später fremd).</summary>
+        public const string SQL_FK_KOSTENVORLAGEPOSITION =
+            "ALTER TABLE Tab_KostenVorlagePosition ADD CONSTRAINT FK_KostenVorlagePos " +
+            "FOREIGN KEY (VorlageID) REFERENCES Tab_KostenVorlage (ID) ON DELETE CASCADE";
+
+        /// <summary>
+        /// Die vier Spalten-Nachrüstungen des Schritts 38 (Muster
+        /// <see cref="Schritt19_Kostenarten"/>): Herkunft und Startjahr an
+        /// <c>Tab_ProjektWerte</c>, Leistungspreis und Modus an <c>energy_carrier</c>.
+        /// Alle nullable — reine Strukturerweiterung, ergebnisneutral.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt38_Spalten =
+        {
+            new SchemaSpalte(TAB_PROJEKTWERTE, SPALTE_PW_VORLAGEID,        "LONG"),
+            new SchemaSpalte(TAB_PROJEKTWERTE, SPALTE_PW_STARTJAHR,        "LONG"),
+            new SchemaSpalte(ENERGY_CARRIER,   SPALTE_EC_PRICE_POWER,      "DOUBLE"),
+            new SchemaSpalte(ENERGY_CARRIER,   SPALTE_EC_PRICE_POWER_MODUS, "TEXT(10)"),
+        };
+
+        /// <summary>Spalte <c>Tab_Preisreihe.ID_Energietraeger</c> (LONG, nullable) —
+        /// Etappe KD4 (Konzept Kostendialoge § 7.1, FK6a): NULL = Spot-Preisreihe
+        /// (Bestand); gesetzt = saisonale Leistungspreis-Reihe dieses Trägers
+        /// (Auflösung Monat, Einheit EUR/kW/Monat, 12 Werte). Zusammen mit
+        /// <c>ID_Projekt</c>: NULL = Stammreihe des Katalogs, gesetzt = Projektreihe
+        /// (gilt vor der Stammreihe).</summary>
+        public const string SPALTE_PR_ID_ENERGIETRAEGER = "ID_Energietraeger";
+
+        /// <summary>Die Spalten-Nachrüstung des Schritts 40 (Etappe KD4, FK6a) —
+        /// nullable, reine Strukturerweiterung; Bestandsreihen bleiben Spotreihen.</summary>
+        public static readonly SchemaSpalte[] Schritt40_Spalten =
+        {
+            new SchemaSpalte(TAB_PREISREIHE, SPALTE_PR_ID_ENERGIETRAEGER, "LONG"),
+        };
+
+        /// <summary>PV-Vergütungsangaben je Stammprojekt (PV-Konzept § 6.1, Etappe P3;
+        /// Muster Tab_ProjektTarif: Aktiv-Schalter, eine Zeile je Projekt).</summary>
+        public const string TAB_PROJEKTPHOTOVOLTAIK = "Tab_ProjektPhotovoltaik";
+
+        /// <summary>
+        /// CREATE der PV-Vergütungstabelle (Schritt 41). Alle Fachspalten nullable —
+        /// NULL heißt durchgängig „nicht gepflegt / Rückfall", nie 0; Vorbelegungen
+        /// (DvEntgelt 0,40 — N5; Ausfallanteil 20 % — F5) setzt der Controller beim
+        /// Anlegen, bewusst KEIN DDL-DEFAULT (Hausregel).
+        /// </summary>
+        public const string SQL_CREATE_PROJEKTPHOTOVOLTAIK =
+            "CREATE TABLE Tab_ProjektPhotovoltaik (ID LONG NOT NULL PRIMARY KEY, " +
+            "ID_Projekt LONG, Aktiv YESNO, Vermarktungsform TEXT(30), " +
+            "Einspeiseart TEXT(20), Inbetriebnahme DATETIME, KwpOverride DOUBLE, " +
+            "AwOverride DOUBLE, DvEntgelt DOUBLE, PpaPreis DOUBLE, " +
+            "PpaSpotAufschlag DOUBLE, Par51_Anwenden TEXT(20), IMSys_Einbaujahr LONG, " +
+            "AusfallanteilProzent DOUBLE, Par51a_Kompensieren YESNO, " +
+            "Kappung60_Anwenden TEXT(20), MarktwertJahresmittel DOUBLE, " +
+            "MarktwertEntwicklung DOUBLE, BezugAusPreisreihe YESNO, GeaendertAm DATETIME)";
+
+        /// <summary>Eine Zeile je Stammprojekt — der eindeutige Suchweg.</summary>
+        public const string SQL_INDEX_PROJEKTPHOTOVOLTAIK =
+            "CREATE UNIQUE INDEX idx_ProjektPhotovoltaik ON Tab_ProjektPhotovoltaik (ID_Projekt)";
+
+        /// <summary>
+        /// K1 (Migrationsschritt 48, Konzept Brauchwasser/Heizung/Pufferspeicher § 4.2,
+        /// Entscheidung F18): <c>Z_ProjektWaermebedarf.Kanal</c> (TEXT 50) — der
+        /// BEDARFSKANAL einer dem Projekt zugeordneten externen Wärmeganglinie.
+        /// Werte sind ausschließlich die <c>DbWerte.KANAL_*</c>-Steuerwerte; NULL oder
+        /// leer gilt überall als <see cref="DbWerte.KANAL_HEIZUNG"/> — genau das
+        /// Bestandsverhalten, in dem jede importierte Ganglinie in den Heizbedarf lief.
+        ///
+        /// <para>Die Spalte steht BEWUSST NICHT in <see cref="Alle"/>: Begründung dort
+        /// im Sammelkommentar.</para>
+        /// </summary>
+        public const string SPALTE_ZPW_KANAL = "Kanal";
+
+        /// <summary>
+        /// K2 (Migrationsschritt 49, Konzept Brauchwasser/Heizung/Pufferspeicher § 6.1,
+        /// Entscheidung F5-Alternative/L6): <c>Tab_Pufferspeicher.Nutzung_Heizung</c>
+        /// (YESNO) — erstes der drei Flags des KLASSEN-SETS, das
+        /// <c>Tab_Pufferspeicher.Verwendung</c> ablöst.
+        ///
+        /// <para>Die drei Flags sind unabhängig voneinander; jede Kombination ist
+        /// zulässig, „Kombi" ist nur noch der Anzeigename des Sets {Heizung,
+        /// Brauchwasser}. <c>Verwendung</c> bleibt als LESE-ALTLAST stehen und wird beim
+        /// Speichern als abgeleiteter Altwert mitgeführt, bis die letzte Anzeige
+        /// umgestellt ist (Paket S2).</para>
+        ///
+        /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/>: Begründung dort
+        /// im Sammelkommentar.</para>
+        /// </summary>
+        public const string SPALTE_PSP_NUTZUNG_HEIZUNG = "Nutzung_Heizung";
+
+        /// <summary>
+        /// <c>Tab_Pufferspeicher.Nutzung_Brauchwasser</c> (YESNO) — zweites Flag des
+        /// Klassen-Sets; siehe <see cref="SPALTE_PSP_NUTZUNG_HEIZUNG"/>.
+        /// </summary>
+        public const string SPALTE_PSP_NUTZUNG_BRAUCHWASSER = "Nutzung_Brauchwasser";
+
+        /// <summary>
+        /// <c>Tab_Pufferspeicher.Nutzung_Prozess</c> (YESNO) — drittes Flag des
+        /// Klassen-Sets. Es hat im Bestand KEINE Entsprechung in <c>Verwendung</c>:
+        /// Die DML-Migration setzt es überall auf FALSCH, gesetzt wird es erst durch
+        /// den Anwender. Siehe <see cref="SPALTE_PSP_NUTZUNG_HEIZUNG"/>.
+        /// </summary>
+        public const string SPALTE_PSP_NUTZUNG_PROZESS = "Nutzung_Prozess";
+
+        /// <summary>
+        /// K2 (Migrationsschritt 49, Konzept § 4.3, Entscheidung F10):
+        /// <c>Tab_Einstellungen.Kanal_Knappheitsreihenfolge</c> (TEXT 100) — die
+        /// PROJEKTWEITE Übersteuerung der Rangfolge, in der eine mehrelementige
+        /// Kanalmaske bei Knappheit bedient wird.
+        ///
+        /// <para>Werte sind ausschließlich die sprachneutralen
+        /// <c>DbWerte.KNAPPHEIT_*</c>-Schlüssel, durch Semikolon getrennt; NULL oder
+        /// leer gilt überall als <see cref="DbWerte.KNAPPHEIT_DEFAULT"/>
+        /// (<c>BRAUCHWASSER;PROZESS;HEIZUNG</c>) — genau die Reihenfolge, die die
+        /// Kaskade bis hierher fest verdrahtet kannte.</para>
+        ///
+        /// <para><b>Nur zielgenau schreiben.</b> <c>Tab_Einstellungen</c> wird in
+        /// <c>KonfigurationCtrl.ReadSingle</c> ORDINAL über <c>row[0]…row[22]</c>
+        /// gelesen; die Spalte wird deshalb ANGEHÄNGT, NAMENSBASIERT gelesen und über
+        /// ein eigenes UPDATE geschrieben
+        /// (<c>KonfigurationCtrl.KnappheitsreihenfolgeSchreiben</c>) — dasselbe Muster
+        /// wie <see cref="SPALTE_KASKADE_ZWEIKANALIG"/> und
+        /// <see cref="SPALTE_EXTRAPOLATION_ERLAUBT"/>.</para>
+        ///
+        /// <para>Die Spalte steht BEWUSST NICHT in <see cref="Alle"/>: Begründung dort
+        /// im Sammelkommentar.</para>
+        /// </summary>
+        public const string SPALTE_KANAL_KNAPPHEITSREIHENFOLGE = "Kanal_Knappheitsreihenfolge";
+
+        /// <summary>
+        /// B2 (Migrationsschritt 55, Nutzerauftrag 28.08.2026):
+        /// <c>Tab_Einstellungen.Booster_Lesepunkt</c> (TEXT 50) — der Zeitpunkt
+        /// INNERHALB der Stunde, zu dem ein temperaturgekoppeltes Modul (Booster) die
+        /// Quelltemperatur seines geteilten Puffers liest.
+        ///
+        /// <para>Werte sind ausschließlich <c>DbWerte.BOOSTER_LESEPUNKT_DAVOR</c> und
+        /// <c>…_DANACH</c>; NULL, leer und jeder unbekannte Wert gelten als
+        /// <c>Davor</c> (<c>DbWerte.BoosterLesepunktOderDefault</c>) — die Vorbelegung
+        /// des Nutzerauftrags. Sie ÄNDERT das Verhalten von Paket B1 bewusst: dort war
+        /// „Danach" fest verdrahtet (Ticket B1-O2).</para>
+        ///
+        /// <para><b>Nur zielgenau schreiben.</b> Dasselbe Muster wie
+        /// <see cref="SPALTE_KANAL_KNAPPHEITSREIHENFOLGE"/>: ANGEHÄNGT, NAMENSBASIERT
+        /// gelesen, über ein eigenes UPDATE geschrieben
+        /// (<c>KonfigurationCtrl.BoosterLesepunktSchreiben</c>) — die Ordinalkette
+        /// <c>row[0]…row[22]</c> in <c>KonfigurationCtrl.ReadSingle</c> bleibt
+        /// unberührt.</para>
+        ///
+        /// <para>Die Spalte steht BEWUSST NICHT in <see cref="Alle"/>: Begründung dort
+        /// im Sammelkommentar.</para>
+        /// </summary>
+        public const string SPALTE_BOOSTER_LESEPUNKT = "Booster_Lesepunkt";
+
+        // =====================================================================
+        // S1 - Spalten der Senkenliste Z_AnlageSenke (Migrationsschritt 50)
+        //   Konzept Brauchwasser/Heizung/Pufferspeicher § 5.1
+        //
+        //   Die Namen stehen hier, weil Migration, Controller, Projektkopie und
+        //   Löschwege sie alle brauchen - eine zweite Liste danebenzustellen hieße,
+        //   die nächste Spalte an einer von zwei Stellen zu vergessen.
+        // =====================================================================
+
+        /// <summary>FK auf <c>Tab_Energieanlagen.ID</c> — die Anlage, deren Senke das ist.</summary>
+        public const string SPALTE_SENKE_ID_ANLAGE = "ID_Anlage";
+
+        /// <summary>
+        /// Reihenfolge der Senken EINER Anlage, 1..n. Rang 1 ist Pflicht (§ 5.1); die
+        /// Ladephasen der Stunde laufen Rang für Rang (§ 5.2), das heutige C ist Rang 1,
+        /// das heutige D ist Rang 2.
+        /// </summary>
+        public const string SPALTE_SENKE_RANG = "Rang";
+
+        /// <summary>
+        /// Das Ziel dieser Senke — ausschließlich die sechs <c>DbWerte.WS_ZIEL_*</c>-Werte
+        /// (<c>Heizkreis</c>, <c>Prozesswaerme</c>, <c>PufferHeizung</c>,
+        /// <c>PufferBrauchwasser</c>, <c>PufferProzess</c>, <c>PufferKombi</c>).
+        /// TEXT(50) wie <c>Tab_Energieanlagen.WS_Ziel</c>, aus dem die Werte
+        /// UNVERÄNDERT übernommen werden (F5-Alternative: keine Wertablösung).
+        /// </summary>
+        public const string SPALTE_SENKE_ZIEL = "Ziel";
+
+        /// <summary>
+        /// Der abgedeckte Bedarfsanteil — nur bei <c>Ziel = Heizkreis</c> wirksam, Werte
+        /// <c>DbWerte.WS_TYP_BEIDES</c>/<c>_WARMWASSER</c>/<c>_HEIZUNG</c>. Der Ort der
+        /// Frage wandert damit aus <c>Tab_Energieanlagen.WS_Typ</c> in die Senkenzeile:
+        /// Eine Anlage mit zwei Direktsenken kann so je Senke einen anderen Anteil
+        /// decken. Ein vierter Wert für Prozesswärme ist NICHT nötig — dafür gibt es
+        /// <c>DbWerte.WS_ZIEL_PROZESS</c> (§ 4.4: eine Wahrheit je Frage).
+        /// </summary>
+        public const string SPALTE_SENKE_BEDARFSART = "Bedarfsart";
+
+        /// <summary>
+        /// FK auf <c>Tab_Pufferspeicher.ID</c> — nur bei den vier Puffer-Zielen belegt,
+        /// sonst NULL. KEIN Default: 0 verletzte die restriktive Beziehung, „nicht
+        /// gesetzt" ist NULL (dieselbe Hausregel wie bei <c>WS_ID_Puffer</c>).
+        /// </summary>
+        public const string SPALTE_SENKE_ID_PUFFER = "ID_Puffer";
+
+        /// <summary>Ladepriorität dieser Senke; 0 = Vorgabe nach Erzeugertyp (Ladeordnung).</summary>
+        public const string SPALTE_SENKE_LADEPRIO = "Ladeprio";
+
+        /// <summary>
+        /// Sonderpriorität bei PV-Überschuss; 0 = keine. Bei der Migration erbt nur
+        /// RANG 1 den Bestandswert <c>WS_Ladeprio_PV</c>, alle höheren Ränge bekommen 0 —
+        /// eine Spalte <c>WS_Ladeprio_PV2</c> existiert nicht, die PV-Sonderregel hing
+        /// konstruktiv an der Hauptsenke. Das ist exakt das Bestandsverhalten.
+        /// </summary>
+        public const string SPALTE_SENKE_LADEPRIO_PV = "Ladeprio_PV";
+
+        /// <summary>
+        /// Eigene Ladeobergrenze dieser Senke, in PROZENT — dieselbe Einheit wie
+        /// <c>WS_Ladegrenze</c>, <c>Schwelle_Aus</c> und <c>Schwelle_Aus_Nachrang</c>;
+        /// die Umrechnung /100 bleibt beim Bau des Ladeauftrags. 0 = nicht gesetzt,
+        /// dann gilt die Regel des Puffers.
+        /// </summary>
+        public const string SPALTE_SENKE_LADEGRENZE = "Ladegrenze";
+
+        /// <summary>
+        /// Einspeisehöhe 0..1 am Schichtspeicher (§ 7.4); NULL = Standard oben.
+        /// VORGRIFF auf Paket P1: Schritt 50 legt nur die SPALTE an, gelesen wurde sie
+        /// erst mit dem Schichtmodell. Sie steht hier mit, weil das Nachrüsten einer
+        /// Spalte an einer Tabelle mit erzwungenen Beziehungen teurer ist als ein Feld,
+        /// das eine Weile NULL bleibt.
+        ///
+        /// <para><b>Der Vorgriff ist eingelöst:</b> Paket P1 liest die Höhe
+        /// (<c>Ladeauftrag.Einspeisehoehe</c> → <c>SimulationPufferspeicher</c>), Paket P2
+        /// pflegt sie je Senkenzeile im Senkendialog.</para>
+        /// </summary>
+        public const string SPALTE_SENKE_ANSCHLUSSHOEHE = "Anschlusshoehe";
+
+        /// <summary>
+        /// S1: <c>Z_AnlagePufferVerbund.ID_Senke</c> (LONG, NULL zulässig) — FK auf
+        /// <see cref="Z_ANLAGESENKE"/>. Damit hängt ein Parallelverbund künftig an einer
+        /// bestimmten PUFFERSENKE statt pauschal an der Anlage; NULL bedeutet die
+        /// Altzuordnung „Verbund der Rang-1-Senke" und ist genau das Bestandsverhalten
+        /// (bis hierher konnte nur die erste Senke einen Verbund führen).
+        /// </summary>
+        public const string SPALTE_VERBUND_ID_SENKE = "ID_Senke";
+
+        // =====================================================================
+        // E1 - Ergebnisspalten je Kanal (Migrationsschritt 52)
+        //   Konzept Brauchwasser/Heizung/Pufferspeicher § 4.4 und § 6.3
+        //
+        //   Die Namen stehen hier, weil Migration, Schreibseite (ErgebnisCtrl.Save)
+        //   und Leseseite (ErgebnisCtrl.Load) sie alle brauchen - dasselbe Muster
+        //   wie SPALTE_KESSEL_QUELLWAERME (Schritt 10) und die Vbh-Spalten
+        //   (Schritt 18). Eine zweite Liste danebenzustellen hiesse, die naechste
+        //   Spalte an einer von drei Stellen zu vergessen.
+        // =====================================================================
+
+        public const string TAB_ERGEBNISENERGIEBEDARF = "Tab_ErgebnisEnergiebedarf";
+        public const string TAB_ERGEBNISWAERMEPUMPE = "Tab_ErgebnisWaermepumpe";
+        public const string TAB_ERGEBNISSOLARTHERMIE = "Tab_ErgebnisSolarthermie";
+
+        /// <summary>
+        /// E1 (Schritt 52, § 4.4): <c>Tab_ErgebnisEnergiebedarf.Waermebedarf_Heizung</c>
+        /// [MWh/a] — der Jahresbedarf des HEIZKANALS.
+        ///
+        /// <para>Die drei Kanalspalten sind die AUFSCHLÜSSELUNG des Bestandsskalars
+        /// <c>Waermebedarf_Gesamt</c>: gleiche Einheit, gleiche Quelle
+        /// (<c>SimulationWaermebedarf.KanaeleDrei()</c>, seit Paket K1 die FÜHRENDE
+        /// Größe), keine Zweitrechnung. Ihre Summe ist der Gesamtbedarf — die
+        /// Kanal-Summenprobe des Referenzlaufs prüft genau das.</para>
+        ///
+        /// <para><b>DOUBLE, NULL-fähig, kein Backfill.</b> Ein Lauf vor dieser Fassung
+        /// hat die Kanäle nicht getrennt ausgewiesen; NULL sagt „nicht erhoben", eine 0
+        /// behauptete „erhoben und null". Die Leseseite (<c>D(row, "…")</c>) behandelt
+        /// beides gleich.</para>
+        /// </summary>
+        public const string SPALTE_BEDARF_HEIZUNG = "Waermebedarf_Heizung";
+
+        /// <summary><c>Tab_ErgebnisEnergiebedarf.Waermebedarf_Brauchwasser</c> [MWh/a];
+        /// siehe <see cref="SPALTE_BEDARF_HEIZUNG"/>.</summary>
+        public const string SPALTE_BEDARF_BRAUCHWASSER = "Waermebedarf_Brauchwasser";
+
+        /// <summary><c>Tab_ErgebnisEnergiebedarf.Waermebedarf_Prozess</c> [MWh/a];
+        /// siehe <see cref="SPALTE_BEDARF_HEIZUNG"/>.</summary>
+        public const string SPALTE_BEDARF_PROZESS = "Waermebedarf_Prozess";
+
+        /// <summary>
+        /// E1 (Schritt 52, § 4.4): <c>Deckung_Heizung</c> [%] in JEDER
+        /// Erzeuger-Ergebniszeile (Wärmepumpe, Heizkessel, BHKW, Solarthermie).
+        ///
+        /// <para><b>Was der Wert ist — und was nicht.</b> Er ist der KANALANTEIL am
+        /// Bestandsskalar <c>Waermebedarfsdeckung</c>, also derselbe Bruch mit demselben
+        /// Nenner (Wärmebedarf des PROJEKTS) und derselben Eigenanteils-Logik des
+        /// Runners; nur der Zähler ist kanalindiziert (Direktdeckung + zugerechnete
+        /// Speicherentladung + Heizstab, je Kanal — die seit Paket K2 geführte
+        /// Buchführung <c>Direktdeckung_Kanal</c>/<c>Speicherentladung_Kanal</c>/
+        /// <c>Heizstab_Kanal</c>). <b>Die Summe der drei Spalten IST der
+        /// Bestandsskalar</b> — genau darauf ist die Rechnung normiert
+        /// (<c>SimulationRunner.DeckungJeKanal</c>).</para>
+        ///
+        /// <para>Der DECKUNGSGRAD EINES KANALS („die WP deckt 80 % des
+        /// Brauchwasserbedarfs") ist eine ANDERE Größe und wird bewusst nicht
+        /// gespeichert: Sie ergibt sich aus dieser Spalte und
+        /// <see cref="SPALTE_BEDARF_HEIZUNG"/> &amp; Geschwistern
+        /// (<c>Deckung_Kanal · Waermebedarf_Gesamt / Waermebedarf_Kanal</c>) und wäre
+        /// als eigene Spalte eine zweite Wahrheit.</para>
+        ///
+        /// <para><b>DOUBLE, NULL-fähig, kein Backfill</b> — Begründung wie bei
+        /// <see cref="SPALTE_BEDARF_HEIZUNG"/>. Die MODULtabellen bekommen die Spalten
+        /// NICHT: Die Eigenanteils-Logik des Runners ist je ERZEUGERART gebildet
+        /// (<c>Kaskadenschleife._entladungJeArtKanal</c>), nicht je Modul — eine
+        /// Modulspalte müsste den Anteil erfinden.</para>
+        /// </summary>
+        public const string SPALTE_DECKUNG_HEIZUNG = "Deckung_Heizung";
+
+        /// <summary><c>Deckung_Brauchwasser</c> [%]; siehe <see cref="SPALTE_DECKUNG_HEIZUNG"/>.</summary>
+        public const string SPALTE_DECKUNG_BRAUCHWASSER = "Deckung_Brauchwasser";
+
+        /// <summary><c>Deckung_Prozess</c> [%]; siehe <see cref="SPALTE_DECKUNG_HEIZUNG"/>.</summary>
+        public const string SPALTE_DECKUNG_PROZESS = "Deckung_Prozess";
+
+        /// <summary>
+        /// E1 (Schritt 52, § 4.4): <c>Tab_ErgebnisPufferspeicher.Entladung_Heizung</c>
+        /// [kWh/a] — die Kanalaufteilung der BEDARFSDECKENDEN Entladung.
+        ///
+        /// <para>Gebucht wird an derselben Stelle, an der auch
+        /// <c>Entladung_gesamt</c> fortgeschrieben wird
+        /// (<c>SimulationPufferspeicher.Entladen</c>), mit dem Kanal des Durchlaufs aus
+        /// der Entladeordnung. Die Summe der drei Spalten ist deshalb
+        /// <c>Entladung_gesamt</c> — der Skalar selbst bleibt unverändert akkumuliert
+        /// (keine Summenbildung aus den Kanälen, keine Rundungsverschiebung).</para>
+        ///
+        /// <para><b>Quellspeicher:</b> Die Entnahme eines Moduls aus seinem Quellpuffer
+        /// trägt keinen Bedarfskanal — sie wird wie in
+        /// <c>Kaskadenschleife.Anteil_Entladen(sp, gedeckt)</c> auf dem HEIZKANAL
+        /// gebucht (altverhaltenserhaltende Vorbelegung des Kanalmodells, § 4.2/F18).
+        /// Ohne diese eine Konvention wäre die Summenzusage für Quellspeicherzeilen
+        /// nicht einlösbar.</para>
+        /// </summary>
+        public const string SPALTE_PUFFER_ENTLADUNG_HEIZUNG = "Entladung_Heizung";
+
+        /// <summary><c>Entladung_Brauchwasser</c> [kWh/a]; siehe
+        /// <see cref="SPALTE_PUFFER_ENTLADUNG_HEIZUNG"/>.</summary>
+        public const string SPALTE_PUFFER_ENTLADUNG_BRAUCHWASSER = "Entladung_Brauchwasser";
+
+        /// <summary><c>Entladung_Prozess</c> [kWh/a]; siehe
+        /// <see cref="SPALTE_PUFFER_ENTLADUNG_HEIZUNG"/>.</summary>
+        public const string SPALTE_PUFFER_ENTLADUNG_PROZESS = "Entladung_Prozess";
+
+        /// <summary>
+        /// E1 (Schritt 52, § 4.4): <c>Tab_ErgebnisPufferspeicher.Durchsatz_Geladen</c>
+        /// [kWh/a] — die DURCHGEFLOSSENE Aufnahme (Befund N6,
+        /// <c>SimulationPufferspeicher.Durchsatz_Ladung_gesamt</c>).
+        ///
+        /// <para>Der Speicher ist eine hydraulische Weiche: Was er in derselben Stunde
+        /// wieder abgibt, war nie Speicherinhalt. Seit Paket 6 führt die Engine diese
+        /// Menge GETRENNT von <c>Ladung_gesamt</c>/<c>Entladung_gesamt</c> — bis hierher
+        /// stand sie nur am Objekt und im Protokoll („NICHT PERSISTIERT … vorgemerkte
+        /// Erweiterung"). Ohne sie ist aus der Ergebniszeile nicht erkennbar, ob ein
+        /// Puffer bewirtschaftet wurde oder nur durchgeleitet hat.</para>
+        ///
+        /// <para><b>Ohne Durchlass exakt 0</b> — die Spalte ändert also an keinem
+        /// Bestandswert etwas und ist in Projekten ohne Puffer-Hauptsenke durchgehend
+        /// null. Der Verlustanteil des Durchflusses
+        /// (<c>Durchsatz_Verluste_gesamt</c>) bleibt bewusst unpersistiert: Er ist
+        /// praktisch 0 und in <c>Verluste_gesamt</c> nicht enthalten.</para>
+        /// </summary>
+        public const string SPALTE_PUFFER_DURCHSATZ_GELADEN = "Durchsatz_Geladen";
+
+        /// <summary><c>Durchsatz_Entladen</c> [kWh/a] — die wieder abgegebene
+        /// Durchflussmenge (<c>SimulationPufferspeicher.Durchsatz_Entladung_gesamt</c>);
+        /// siehe <see cref="SPALTE_PUFFER_DURCHSATZ_GELADEN"/>.</summary>
+        public const string SPALTE_PUFFER_DURCHSATZ_ENTLADEN = "Durchsatz_Entladen";
+
+        /// <summary>
+        /// E1 (Schritt 52, § 4.4): <c>Tab_ErgebnisPufferspeicher.ID_Anlage</c> (LONG,
+        /// NULL zulässig) — der ANLAGENBEZUG einer Quellspeicherzeile.
+        ///
+        /// <para>Ein Quellspeicher gehört einer Energieanlage
+        /// (<c>SimulationPufferspeicher.ID_Anlage</c>, Serienschlüssel
+        /// <c>QUELLE_&lt;AnlagenID&gt;</c>). Bis hierher trug die Ergebniszeile nur
+        /// <c>ID_Pufferspeicher</c>; zwei Module am selben Quellpuffer waren in der
+        /// Persistenz nicht unterscheidbar, und die Ganglinien-Dateinamen
+        /// (<c>quellspeicher_&lt;AnlagenID&gt;_*.csv</c>) ließen sich der Zeile nicht
+        /// zuordnen. NULL bei Senkenspeichern — sie gehören keiner einzelnen Anlage.</para>
+        ///
+        /// <para>KEINE erzwungene Beziehung auf <c>Tab_Energieanlagen</c>: Eine
+        /// Ergebniszeile ist ein Protokoll des Laufs und muss eine später gelöschte
+        /// Anlage überleben (dieselbe Linie wie
+        /// <c>Tab_ErgebnisStromspeicher.ID_Energieanlage</c>).</para>
+        /// </summary>
+        public const string SPALTE_PUFFER_ID_ANLAGE = "ID_Anlage";
+
+        /// <summary>
+        /// P1-VORGRIFF (Schritt 52 legt NUR die Spalte an, § 7):
+        /// <c>Tab_ErgebnisPufferspeicher.T_oben_Mittel</c> [°C] — die mittlere
+        /// Temperatur der OBERSTEN Schicht.
+        ///
+        /// <para>Dieselbe Bauform wie <see cref="SPALTE_SENKE_ANSCHLUSSHOEHE"/> in
+        /// Schritt 50: Gefüllt wird die Spalte erst mit dem Schichtmodell (Paket P1) —
+        /// das Ein-Zonen-Modell von heute kennt keine oberste Schicht, ein Wert daraus
+        /// wäre erfunden. Sie steht hier mit, weil das Nachrüsten einer Spalte an einer
+        /// Tabelle mit erzwungener Beziehung teurer ist als ein Feld, das eine Weile
+        /// NULL bleibt. <b>Bis Paket P1 schrieb der Runner sie nicht</b> — die Zeile
+        /// blieb NULL, und die Leseseite behandelt NULL wie „nicht erhoben".</para>
+        ///
+        /// <para><b>Der Vorgriff ist eingelöst:</b> Seit Paket P1 füllt
+        /// <c>SimulationRunner</c> beide Spalten aus der Stundenganglinie der obersten
+        /// Schicht; NULL bleibt nur, wo es keine Speichertemperatur gibt (Quellspeicher).</para>
+        /// </summary>
+        public const string SPALTE_PUFFER_T_OBEN_MITTEL = "T_oben_Mittel";
+
+        /// <summary>P1-VORGRIFF: <c>T_oben_Min</c> [°C] — das Jahresminimum der obersten
+        /// Schicht; siehe <see cref="SPALTE_PUFFER_T_OBEN_MITTEL"/>.</summary>
+        public const string SPALTE_PUFFER_T_OBEN_MIN = "T_oben_Min";
+
+        /// <summary>
+        /// Schritt 52 der Migration (Paket E1, Konzept § 4.4/§ 6.3) — die
+        /// ERGEBNISSPALTEN JE KANAL, rein additiv.
+        ///
+        /// <para><b>Vier Erzeuger-Ergebnistabellen, kein Modul.</b> Wärmepumpe,
+        /// Heizkessel, BHKW und Solarthermie bekommen je drei Deckungsspalten; die
+        /// Photovoltaik nicht (sie deckt Strom, nicht Wärme), die Modultabellen ebenfalls
+        /// nicht (Begründung bei <see cref="SPALTE_DECKUNG_HEIZUNG"/>).</para>
+        ///
+        /// <para><b>Access-Feldgrenze.</b> 255 Spalten je Tabelle. Die breiteste hier
+        /// berührte Tabelle ist <c>Tab_ErgebnisPufferspeicher</c> mit 13 Spalten; sie
+        /// wächst auf 21. Keine der vier Erzeugertabellen kommt über 26. Der Abstand zur
+        /// Grenze ist damit an keiner Stelle knapp.</para>
+        ///
+        /// <para><b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access
+        /// immer hinten an. Folgenlos: Alle <c>Tab_Ergebnis*</c>-Tabellen werden
+        /// ausschließlich NAMENSBASIERT gelesen (<c>ErgebnisCtrl.Load</c> über
+        /// <c>D(row, "…")</c>, Referenzlauf-Export über <c>SELECT *</c> mit
+        /// Spaltennamen); eine <c>row[0…n]</c>-Kette wie bei <c>Tab_Einstellungen</c>
+        /// gibt es hier nicht.</para>
+        ///
+        /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/> — dieselbe
+        /// Begründung wie bei <see cref="Schritt10_KesselQuellwaerme"/> und
+        /// <see cref="Schritt18_BhkwVollbenutzungsstunden"/>: Die Rückfallebene sichert
+        /// die Spalten der EINGABEseite. Für die Ergebnisspalten gibt es die eigene,
+        /// tolerante Vorsorge unmittelbar vor dem Schreiben
+        /// (<c>ErgebnisCtrl.StelleKanalSpaltenSicher</c>).</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt52_ErgebnisJeKanal =
+        {
+            new SchemaSpalte(TAB_ERGEBNISENERGIEBEDARF, SPALTE_BEDARF_HEIZUNG,      "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISENERGIEBEDARF, SPALTE_BEDARF_BRAUCHWASSER, "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISENERGIEBEDARF, SPALTE_BEDARF_PROZESS,      "DOUBLE"),
+
+            new SchemaSpalte(TAB_ERGEBNISWAERMEPUMPE,  SPALTE_DECKUNG_HEIZUNG,      "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISWAERMEPUMPE,  SPALTE_DECKUNG_BRAUCHWASSER, "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISWAERMEPUMPE,  SPALTE_DECKUNG_PROZESS,      "DOUBLE"),
+
+            new SchemaSpalte(TAB_ERGEBNISHEIZKESSEL,   SPALTE_DECKUNG_HEIZUNG,      "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISHEIZKESSEL,   SPALTE_DECKUNG_BRAUCHWASSER, "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISHEIZKESSEL,   SPALTE_DECKUNG_PROZESS,      "DOUBLE"),
+
+            new SchemaSpalte(TAB_ERGEBNISBHKW,         SPALTE_DECKUNG_HEIZUNG,      "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISBHKW,         SPALTE_DECKUNG_BRAUCHWASSER, "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISBHKW,         SPALTE_DECKUNG_PROZESS,      "DOUBLE"),
+
+            new SchemaSpalte(TAB_ERGEBNISSOLARTHERMIE, SPALTE_DECKUNG_HEIZUNG,      "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISSOLARTHERMIE, SPALTE_DECKUNG_BRAUCHWASSER, "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISSOLARTHERMIE, SPALTE_DECKUNG_PROZESS,      "DOUBLE"),
+
+            new SchemaSpalte(TAB_ERGEBNISPUFFERSPEICHER, SPALTE_PUFFER_ENTLADUNG_HEIZUNG,      "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISPUFFERSPEICHER, SPALTE_PUFFER_ENTLADUNG_BRAUCHWASSER, "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISPUFFERSPEICHER, SPALTE_PUFFER_ENTLADUNG_PROZESS,      "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISPUFFERSPEICHER, SPALTE_PUFFER_DURCHSATZ_GELADEN,      "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISPUFFERSPEICHER, SPALTE_PUFFER_DURCHSATZ_ENTLADEN,     "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISPUFFERSPEICHER, SPALTE_PUFFER_ID_ANLAGE,              "LONG"),
+            new SchemaSpalte(TAB_ERGEBNISPUFFERSPEICHER, SPALTE_PUFFER_T_OBEN_MITTEL,          "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISPUFFERSPEICHER, SPALTE_PUFFER_T_OBEN_MIN,             "DOUBLE"),
+        };
+
+        // =====================================================================
+        // P1 - Spalten des SCHICHTSPEICHERMODELLS (Migrationsschritt 53)
+        //   Konzept Brauchwasser/Heizung/Pufferspeicher § 7.2 (Zustand und
+        //   Parameter), § 7.4 (Stundenablauf), § 7.5 (Kombispeicher) und § 6.3
+        //   (Lade-/Entladeleistung je Speicher).
+        //
+        //   Alle neun Spalten haben eine VERHALTENSNEUTRALE Vorbelegung: Mit
+        //   Schichten_Anzahl = 1 rechnet der Speicher Anweisung für Anweisung wie
+        //   bisher (§ 7.3, Byte-Zusage), und Lade-/Entladeleistung 0 heißt
+        //   unbegrenzt - die bisherige Annahme des Modells.
+        //
+        //   Die Namen stehen hier, weil Migration, Registry-Aufbau (Engine) und der
+        //   Puffer-Dialog sie alle brauchen; eine zweite Liste danebenzustellen
+        //   hieße, die nächste Spalte an einer von zwei Stellen zu vergessen.
+        // =====================================================================
+
+        /// <summary>
+        /// P1 (Migrationsschritt 53, § 7.2): <c>Tab_Pufferspeicher.Schichten_Anzahl</c>
+        /// (LONG) — Zahl der Rechenschichten N, 1…10, <b>DML-Vorbelegung 1</b>.
+        ///
+        /// <para>N = 1 ist das Ein-Zonen-Modell des Bestands: Laden, Entladen, Verluste
+        /// und Kennzahlen laufen ausschließlich über die unveränderte SOC-Arithmetik,
+        /// die eine Schichttemperatur ist eine reine Umrechnung ohne Rückwirkung
+        /// (§ 7.3). Genau darauf beruht die Byte-Zusage des Pakets.</para>
+        ///
+        /// <para><b>LONG mit ausdrücklicher Vorbelegung statt NULL.</b> Anders als bei
+        /// den sieben DOUBLE-Spalten darunter gibt es hier keinen Rückfall im Leser,
+        /// den ein NULL treffen könnte: 0 Schichten wäre ein unmöglicher Zustand.
+        /// Der Wert wird deshalb in ALLEN Bestandszeilen auf 1 gesetzt — dieselbe
+        /// Bauform wie <see cref="SPALTE_ZPW_KANAL"/> in Schritt 48.</para>
+        ///
+        /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/>: Begründung
+        /// dort im Sammelkommentar.</para>
+        /// </summary>
+        public const string SPALTE_PSP_SCHICHTEN_ANZAHL = "Schichten_Anzahl";
+
+        /// <summary>
+        /// P1 (Schritt 53, § 7.2): <c>Tab_Pufferspeicher.Höhe</c> [m] (DOUBLE) — die
+        /// Behälterhöhe für Schichtflächen und Wärmeleitweg.
+        ///
+        /// <para><b>NULL = aus dem Volumen abgeleitet</b> über das H/D-Verhältnis 2,5
+        /// (§ 7.2). Ein Pflichtfeld wäre hier falsch: Die Höhe steht in keinem
+        /// Bestandsdatensatz, sie ist im Gerätekatalog nicht geführt, und die
+        /// Ableitung aus dem Volumen ist für stehende Pufferspeicher eine gute
+        /// Näherung. Bei N = 1 geht sie in keine Rechnung ein.</para>
+        /// </summary>
+        // Umlautfrei wie das Konzept (7.2) sie nennt — die Hauskonvention neuer Spalten
+        // (vgl. Tab_Pufferspeicher.Ruecklauf); der Umlaut in Tab_Energieanlagen.[Rücklauf]
+        // ist eine dokumentierte Altlast, kein Muster.
+        public const string SPALTE_PSP_HOEHE = "Hoehe";
+
+        /// <summary>
+        /// P1 (Schritt 53, § 7.2): <c>Tab_Pufferspeicher.Lambda_Eff</c> [W/(m·K)]
+        /// (DOUBLE) — effektive vertikale Wärmeleitfähigkeit einschließlich
+        /// Wandleitung, <b>NULL = 1,5</b> (Vorgabe des Konzepts, im Leser).
+        ///
+        /// <para>Sie steuert allein den vertikalen Ausgleich zwischen benachbarten
+        /// Schichten (§ 7.4 Punkt 3) und ist bei N = 1 wirkungslos — es gibt kein
+        /// Schichtpaar.</para>
+        /// </summary>
+        public const string SPALTE_PSP_LAMBDA_EFF = "Lambda_Eff";
+
+        /// <summary>
+        /// P1 (Schritt 53, § 7.2/§ 7.5): <c>Tab_Pufferspeicher.T_Nutz_BW</c> [°C]
+        /// (DOUBLE) — Mindest-Nutztemperatur des BRAUCHWASSERkanals.
+        ///
+        /// <para><b>NULL = <c>RL_eff</c> und damit verhaltensneutral</b>: Unterhalb der
+        /// Rücklauftemperatur trägt keine Schicht Energie, die Bedingung
+        /// „T ≥ T_Nutz" ist dann für jede Schicht mit Inhalt erfüllt und die
+        /// Entladefähigkeit ist der gesamte Vorrat (§ 7.4 Punkt 2). Der Dialog schlägt
+        /// 55 °C vor, sobald der Anwender N &gt; 1 wählt; der SPALTEN-Default bleibt
+        /// NULL — sonst änderte die bloße Migration das Ergebnis.</para>
+        ///
+        /// <para>Werte oberhalb <c>VL_eff</c> werden beim Laufstart auf <c>VL_eff</c>
+        /// geklemmt und protokolliert; sonst wäre der Kanal still komplett
+        /// abgeschaltet (§ 7.2).</para>
+        ///
+        /// <para>ZUNÄCHST NUR BRAUCHWASSER (Entscheidung F7): Heizung und Prozess haben
+        /// keine eigene Nutztemperatur — für sie gilt <c>RL_eff</c>. Eine Spalte je
+        /// Kanal wäre drei Felder für eine Frage, die heute nur der
+        /// Brauchwasserkanal stellt.</para>
+        /// </summary>
+        public const string SPALTE_PSP_T_NUTZ_BW = "T_Nutz_BW";
+
+        /// <summary>
+        /// P1 (Schritt 53, § 7.4/§ 7.5): <c>Tab_Pufferspeicher.Entnahme_Heizung</c>
+        /// (DOUBLE, 0…1) — die ENTNAHMEHOEHE des Heizkanals am Behälter, 1 = ganz oben,
+        /// 0 = ganz unten.
+        ///
+        /// <para><b>NULL = Konzept-Vorgabe</b>, und die hängt am Klassen-Set:
+        /// Ein Speicher, der AUCH Brauchwasser führt (Kombi), entnimmt die Heizung in
+        /// der Mitte (0,5) — genau das hält die Brauchwasser-Bereitschaftszone oben von
+        /// der Heizung frei (§ 7.5). Ein reiner Heizungspuffer entnimmt oben (1,0), die
+        /// allgemeine Vorgabe aus § 7.2 („Entnahme oben"). Bei N = 1 ist die Höhe
+        /// bedeutungslos: Ein Vorrat hat nur eine Zone.</para>
+        /// </summary>
+        public const string SPALTE_PSP_ENTNAHME_HEIZUNG = "Entnahme_Heizung";
+
+        /// <summary>
+        /// P1 (Schritt 53, § 7.5): <c>Tab_Pufferspeicher.Entnahme_BW</c> (DOUBLE, 0…1) —
+        /// Entnahmehöhe des Brauchwasserkanals; <b>NULL = 1,0 (oben)</b>. Siehe
+        /// <see cref="SPALTE_PSP_ENTNAHME_HEIZUNG"/>.
+        /// </summary>
+        public const string SPALTE_PSP_ENTNAHME_BW = "Entnahme_BW";
+
+        /// <summary>
+        /// P1 (Schritt 53, § 7.4): <c>Tab_Pufferspeicher.Entnahme_Prozess</c>
+        /// (DOUBLE, 0…1) — Entnahmehöhe des Prozesswärmekanals; <b>NULL wie beim
+        /// Heizkanal</b> (0,5 neben einer Brauchwasserzone, sonst 1,0). Siehe
+        /// <see cref="SPALTE_PSP_ENTNAHME_HEIZUNG"/>.
+        /// </summary>
+        public const string SPALTE_PSP_ENTNAHME_PROZESS = "Entnahme_Prozess";
+
+        /// <summary>
+        /// P1 (Schritt 53, § 6.3): <c>Tab_Pufferspeicher.Ladeleistung_Max</c> [kW]
+        /// (DOUBLE) — höchste Aufnahme in EINER Stunde, <b>DML-Vorbelegung 0 =
+        /// unbegrenzt</b>.
+        ///
+        /// <para>Fachlich längst vorgemerkt (Paket 4, Nutzerentscheidung zu 4b-1: „ein
+        /// 800-l-Puffer mit DN 25 kann keine 200 kW durchreichen"), bis hierher aber
+        /// weder im Datenmodell noch in der Oberfläche vorhanden. 0 ist zugleich die
+        /// bisherige Annahme des Modells — der Wert ist damit verhaltensneutral, und die
+        /// Vorbelegung ist die ausdrückliche Aussage „nicht begrenzt" statt eines
+        /// NULL, das jeder Leser anders auslegen könnte.</para>
+        /// </summary>
+        public const string SPALTE_PSP_LADELEISTUNG_MAX = "Ladeleistung_Max";
+
+        /// <summary>
+        /// P1 (Schritt 53, § 6.3): <c>Tab_Pufferspeicher.Entladeleistung_Max</c> [kW]
+        /// (DOUBLE) — höchste Abgabe in EINER Stunde, <b>DML-Vorbelegung 0 =
+        /// unbegrenzt</b>; siehe <see cref="SPALTE_PSP_LADELEISTUNG_MAX"/>.
+        ///
+        /// <para>Sie wird als BUDGET DER STUNDE geführt, nicht je Aufruf (Befund
+        /// K2-O6): Ein Heizungspuffer wird in derselben Stunde für den Prozess- UND
+        /// den Heizkanal durchlaufen; eine Grenze je Aufruf hätte er zweimal
+        /// bekommen.</para>
+        /// </summary>
+        public const string SPALTE_PSP_ENTLADELEISTUNG_MAX = "Entladeleistung_Max";
+
+        /// <summary>
+        /// Schritt 53 der Migration (Paket P1, Konzept § 7) — die Parameter des
+        /// SCHICHTSPEICHERMODELLS an <c>Tab_Pufferspeicher</c>.
+        ///
+        /// <para><b>Neun Spalten an EINER Tabelle.</b> Sie gehören zusammen: Schichtzahl,
+        /// Geometrie und Wärmeleitung beschreiben denselben Behälter, die drei
+        /// Entnahmehöhen und die Nutztemperatur dieselbe Entnahme, die beiden
+        /// Leistungsgrenzen dieselbe hydraulische Anbindung.</para>
+        ///
+        /// <para><b>Access-Feldgrenze.</b> 255 Spalten je Tabelle.
+        /// <c>Tab_Pufferspeicher</c> trägt vor diesem Schritt 19 Spalten und wächst auf
+        /// 28. Der Abstand zur Grenze bleibt an keiner Stelle knapp.</para>
+        ///
+        /// <para><b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access
+        /// immer hinten an. Folgenlos: <c>Tab_Pufferspeicher</c> wird ausschließlich
+        /// NAMENSBASIERT gelesen (<c>PufferSpCtrl</c>, <c>WaermesenkeClass.PufferLesen</c>
+        /// mit ausformulierter Spaltenliste, Registry-Aufbau über
+        /// <c>StilleDb.Feld</c>); eine <c>row[0…n]</c>-Kette wie bei
+        /// <c>Tab_Einstellungen</c> gibt es hier nicht.</para>
+        ///
+        /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/> — dieselbe
+        /// Begründung wie bei den Schritten 48/49: Die stille Rückfallebene
+        /// <c>WaermequelleClass.SchemaSicherstellen</c> legt an, was sie kennt, und
+        /// würde dabei die DML-Vorbelegung ÜBERSPRINGEN. Eine Spalte
+        /// <c>Schichten_Anzahl</c> mit lauter NULL wäre schlimmer als gar keine.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt53_Schichtmodell =
+        {
+            new SchemaSpalte(TAB_PUFFERSPEICHER, SPALTE_PSP_SCHICHTEN_ANZAHL,    "LONG"),
+            new SchemaSpalte(TAB_PUFFERSPEICHER, SPALTE_PSP_HOEHE,               "DOUBLE"),
+            new SchemaSpalte(TAB_PUFFERSPEICHER, SPALTE_PSP_LAMBDA_EFF,          "DOUBLE"),
+            new SchemaSpalte(TAB_PUFFERSPEICHER, SPALTE_PSP_T_NUTZ_BW,           "DOUBLE"),
+            new SchemaSpalte(TAB_PUFFERSPEICHER, SPALTE_PSP_ENTNAHME_HEIZUNG,    "DOUBLE"),
+            new SchemaSpalte(TAB_PUFFERSPEICHER, SPALTE_PSP_ENTNAHME_BW,         "DOUBLE"),
+            new SchemaSpalte(TAB_PUFFERSPEICHER, SPALTE_PSP_ENTNAHME_PROZESS,    "DOUBLE"),
+            new SchemaSpalte(TAB_PUFFERSPEICHER, SPALTE_PSP_LADELEISTUNG_MAX,    "DOUBLE"),
+            new SchemaSpalte(TAB_PUFFERSPEICHER, SPALTE_PSP_ENTLADELEISTUNG_MAX, "DOUBLE"),
+        };
+
+        /// <summary>Eine Position einer Auslieferungsvorlage (Schritt 39).</summary>
+        public sealed class VorlagenPositionSeed
+        {
+            public VorlagenPositionSeed(string bezeichnung, string kostenart, string bemessung,
+                                        double? empfehlungVon = null, double? empfehlungBis = null)
+            {
+                Bezeichnung = bezeichnung;
+                Kostenart = kostenart;
+                Bemessung = bemessung;
+                EmpfehlungVon = empfehlungVon;
+                EmpfehlungBis = empfehlungBis;
+            }
+
+            /// <summary><c>Tab_KostenVorlagePosition.Bezeichnung</c> — Wortlaut der
+            /// Vorlagen-Folien 8–24 bzw. der K5-Kataloge.</summary>
+            public readonly string Bezeichnung;
+
+            /// <summary>VDI-2067-Kostenart (<c>DbWerte.KOSTENART_*</c>).</summary>
+            public readonly string Kostenart;
+
+            /// <summary>Bemessungsart (<c>DbWerte.BEMESSUNG_*</c>, Katalog § 5.3).</summary>
+            public readonly string Bemessung;
+
+            /// <summary>Empfehlungsbereich [%] aus den K5-Katalogdaten; NULL = keiner.</summary>
+            public readonly double? EmpfehlungVon;
+
+            /// <inheritdoc cref="EmpfehlungVon"/>
+            public readonly double? EmpfehlungBis;
+        }
+
+        /// <summary>Eine Auslieferungsvorlage: Komponente, Kategorie, Positionsliste.</summary>
+        public sealed class KostenVorlagenSeed
+        {
+            public KostenVorlagenSeed(string komponente, int kategorieId,
+                                      VorlagenPositionSeed[] positionen)
+            {
+                Komponente = komponente;
+                KategorieId = kategorieId;
+                Positionen = positionen;
+            }
+
+            /// <summary><c>Tab_KostenKomponente.Komponente</c> (an der Produktiv-DB
+            /// nachgemessene Bestandsnamen, <c>DbWerte.KOSTEN_KOMPONENTE_*</c>).</summary>
+            public readonly string Komponente;
+
+            /// <summary>1 = Investition, 2 = Betrieb (<see cref="Form_Kosten.KATEGORIE_INVESTITION"/>).</summary>
+            public readonly int KategorieId;
+
+            /// <summary>Positionen in Anzeige-Reihenfolge (Sortierung = Index × 10).</summary>
+            public readonly VorlagenPositionSeed[] Positionen;
+        }
+
+        // Kurzformen NUR für die Lesbarkeit der Seed-Tabelle darunter.
+        private const string ART_KAP    = DbWerte.KOSTENART_KAPITALGEBUNDEN;
+        private const string ART_BETR   = DbWerte.KOSTENART_BETRIEBSGEBUNDEN;
+        private const string ART_BEDARF = DbWerte.KOSTENART_BEDARFSGEBUNDEN;
+        private const string ART_SONST  = DbWerte.KOSTENART_SONSTIGE;
+        private const string BM_BETRAG  = DbWerte.BEMESSUNG_BETRAG;
+        private const string BM_JAHR    = DbWerte.BEMESSUNG_JAHRESBETRAG;
+        private const string BM_PINV    = DbWerte.BEMESSUNG_PROZENT_INVESTITION;
+        private const string BM_PERZ    = DbWerte.BEMESSUNG_PROZENT_ERZEUGERKOSTEN;
+        private const string BM_PBRENN  = DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN;
+        private const string BM_PSTROM  = DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN;
+        private const string BM_KWH_TH  = DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH;
+        private const string BM_KWH_EL  = DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH;
+
+        /// <summary>
+        /// Die 20 Auslieferungsvorlagen (10 Komponenten × Investition/Betrieb) des
+        /// Schritts 39 — Positionslisten wörtlich aus den Vorlagen-Folien 8/9/14/15/16
+        /// (Investition) und 19–24 (Betrieb), Minimal-Vorlagen aus den K5-Katalogen
+        /// (Konzept § 5.6/§ 5.7).
+        ///
+        /// <b>Bewusste Abweichung von den Folien 20/21 (Entscheidung FK3):</b>
+        /// „Brennstoffkosten" und „Stromkosten (Verdichter)" fehlen — Energiekosten
+        /// erscheinen ausschließlich in der Energieträgerwelt (KL7); die
+        /// %-Bemessungen <c>PROZENT_BRENNSTOFFKOSTEN</c>/<c>PROZENT_STROMKOSTEN</c>
+        /// holen ihre Basis direkt von dort.
+        /// </summary>
+        public static readonly KostenVorlagenSeed[] Schritt39_Vorlagen =
+        {
+            // ------------------------- Investition (Folien 8/9/14/15/16) ----------------
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_HEIZKESSEL, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed("Wärmeerzeuger (Kessel)", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG),
+                new VorlagenPositionSeed("Zubehör", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("MSR-Technik / Automation", ART_KAP, BM_PERZ),
+                new VorlagenPositionSeed("Abgasanlage / Schornstein", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Montage und Installation", ART_KAP, BM_PINV),
+                new VorlagenPositionSeed("Bauliche Anlagen", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Planung / Baunebenkosten", ART_KAP, BM_PINV),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_BHKW, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed("BHKW-Modul (Kompaktaggregat)", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH),
+                new VorlagenPositionSeed("Spitzenlastkessel / Zubehör", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Wärmespeicher (Puffer)", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("MSR-Technik / Schaltanlage", ART_KAP, BM_PERZ),
+                new VorlagenPositionSeed("Abgasanlage / Schalldämpfer", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Montage und Einbringung", ART_KAP, BM_PINV),
+                new VorlagenPositionSeed("Bauliche Anlagen (Schallschutz)", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Planung / Baunebenkosten", ART_KAP, BM_PINV),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEPUMPE, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed("Wärmepumpe (Aggregat)", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG),
+                new VorlagenPositionSeed("Erschließung (Sonden/Kollektor/Luft)", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Zubehör", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("MSR-Technik / Automation", ART_KAP, BM_PERZ),
+                new VorlagenPositionSeed("Montage, Installation & Kältetechnik", ART_KAP, BM_PINV),
+                new VorlagenPositionSeed("Bauliche Anlagen (Fundament/Bohrung)", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Planung / Baunebenkosten", ART_KAP, BM_PINV),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_SOLARTHERMIE, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed("Sonnenkollektoren", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_M2_KOLLEKTOR),
+                new VorlagenPositionSeed("Zubehör (Montagesystem/Solarstation)", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Wärmespeicher (Solarspeicher)", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("MSR-Technik / Solarregler", ART_KAP, BM_PERZ),
+                new VorlagenPositionSeed("Montage und Verrohrung", ART_KAP, BM_PINV),
+                new VorlagenPositionSeed("Bauliche Anlagen (Gerüst etc.)", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Planung / Baunebenkosten", ART_KAP, BM_PINV),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PHOTOVOLTAIK, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed("PV-Module", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KWP),
+                new VorlagenPositionSeed("Wechselrichter", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Montagesystem / Unterkonstruktion", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Batteriespeicher", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET),
+                new VorlagenPositionSeed("Elektrotechnik / Netzanschluss", ART_KAP, BM_PERZ),
+                new VorlagenPositionSeed("Montage und Installation", ART_KAP, BM_PINV),
+                new VorlagenPositionSeed("Bauliche Anlagen (Gerüst etc.)", ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed("Planung / Baunebenkosten", ART_KAP, BM_PINV),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed("Speicher", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_SONSTIGES, ART_KAP, BM_BETRAG),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_STROMSPEICHER, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed("Speicher", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_SONSTIGES, ART_KAP, BM_BETRAG),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_BHKW_EINBINDUNG, ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_HEIZUNGSTECHNIK, ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_ABGASANLAGE, ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_SONSTIGES, ART_KAP, BM_BETRAG),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_BAULICHE_ANLAGEN, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_HEIZRAUM, ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_SCHORNSTEIN, ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_BAULICHE_MASSNAHMEN, ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_HEIZOELLAGERUNG, ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_ERDGASANSCHLUSS, ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_SONSTIGES, ART_KAP, BM_BETRAG),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_STROMEINSPEISUNG, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            {
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_STROMEINSPEISUNG, ART_KAP, BM_BETRAG),
+                new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_SONSTIGES, ART_KAP, BM_BETRAG),
+            }),
+
+            // ------------------------- Betrieb (Folien 19-24) ---------------------------
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_BHKW, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Vollwartung / Wartung BHKW", ART_BETR, BM_KWH_EL),
+                new VorlagenPositionSeed("Instandhaltung BHKW", ART_BETR, BM_PINV, 3.0, 9.0),
+                new VorlagenPositionSeed("Instandhaltung Heizkessel", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Instandhaltung Wärmezentrale", ART_BETR, BM_PINV, 1.8, 2.2),
+                new VorlagenPositionSeed("Instandhaltung bauliche Anlagen", ART_BETR, BM_PINV, 1.0, 1.5),
+                new VorlagenPositionSeed("Instandhaltung Stromeinspeisung", ART_BETR, BM_PINV, 1.8, 2.2),
+                new VorlagenPositionSeed("Personalkosten", ART_BETR, BM_PINV, 1.0, 4.0),
+                new VorlagenPositionSeed("Steuern, Versicherung, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
+                new VorlagenPositionSeed("Hilfsenergiekosten", ART_BEDARF, BM_PBRENN),
+                new VorlagenPositionSeed("Reserveleistungskosten", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_HEIZKESSEL, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Vollwartung / Wartung Kessel", ART_BETR, BM_KWH_TH),
+                new VorlagenPositionSeed("Instandhaltung Heizkessel", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Instandhaltung bauliche Anlagen", ART_BETR, BM_PINV, 1.0, 1.5),
+                new VorlagenPositionSeed("Hilfsenergiekosten (Strom)", ART_BEDARF, BM_PBRENN),
+                new VorlagenPositionSeed("Schornsteinfeger / Messung", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Personalkosten / Bedienung", ART_BETR, BM_PINV, 1.0, 4.0),
+                new VorlagenPositionSeed("Steuern, Versicherung, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEPUMPE, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Wartung Wärmepumpe", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Instandhaltung Wärmepumpe", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Instandhaltung Umweltwärmequelle", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Instandhaltung bauliche Anlagen", ART_BETR, BM_PINV, 1.0, 1.5),
+                new VorlagenPositionSeed("Hilfsenergiekosten (Pumpen)", ART_BEDARF, BM_PSTROM),
+                new VorlagenPositionSeed("Dichtheitsprüfung (Kältemittel)", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Personalkosten / Bedienung", ART_BETR, BM_PINV, 1.0, 4.0),
+                new VorlagenPositionSeed("Steuern, Versicherung, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_SOLARTHERMIE, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Wartung Solarthermie-Anlage", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Instandhaltung Sonnenkollektoren", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Instandhaltung Solarspeicher / Zubehör", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Instandhaltung bauliche Anlagen", ART_BETR, BM_PINV, 1.0, 1.5),
+                new VorlagenPositionSeed("Hilfsenergiekosten (Solarpumpe)", ART_BEDARF, BM_KWH_EL),
+                new VorlagenPositionSeed("Prüfung / Tausch Wärmeträgermedium", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Personalkosten / Bedienung", ART_BETR, BM_PINV, 1.0, 4.0),
+                new VorlagenPositionSeed("Steuern, Versicherung, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Wartung / Sichtprüfung Speicher", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Instandhaltung Pufferspeicher", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Instandhaltung Dämmung / Isolierung", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Instandhaltung Armaturen / Pumpen", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Hilfsenergiekosten (Speicherladepumpe)", ART_BEDARF, BM_KWH_EL),
+                new VorlagenPositionSeed("Wasserbehandlung / Nachspeisung", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Personalkosten / Bedienung", ART_BETR, BM_PINV, 1.0, 4.0),
+                new VorlagenPositionSeed("Versicherung, Steuern, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PHOTOVOLTAIK, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Wartung / Inspektion PV-Anlage", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Instandhaltung PV-Module / Gestell", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Instandhaltung Wechselrichter / Speicher", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Reinigung der PV-Module", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Zählermiete / Messstellenbetrieb", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Telekommunikation / Monitoring", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Personalkosten / Bedienung", ART_BETR, BM_PINV, 1.0, 4.0),
+                new VorlagenPositionSeed("Versicherung, Steuern, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_STROMSPEICHER, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Wartung / Sichtprüfung Speicher", ART_BETR, BM_JAHR),
+                new VorlagenPositionSeed("Instandhaltung Stromspeicher", ART_BETR, BM_PINV),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Instandhaltung Wärmezentrale", ART_BETR, BM_PINV, 1.8, 2.2),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_BAULICHE_ANLAGEN, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Instandhaltung bauliche Anlagen", ART_BETR, BM_PINV, 1.0, 1.5),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_STROMEINSPEISUNG, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            {
+                new VorlagenPositionSeed("Instandhaltung Stromeinspeisung", ART_BETR, BM_PINV, 1.8, 2.2),
+                new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
+            }),
         };
 
         /// <summary>
@@ -1647,6 +3096,44 @@ namespace WindowsFormsApplication1
         /// entstehen — das kann die Rückfallebene gar nicht leisten. Die tolerante
         /// Vorsorge übernimmt <c>EnergieEinheitenPruefung</c>, indem sie eine fehlende
         /// Tabelle oder Spalte als Befund „Migration ausstehend" meldet statt zu werfen.
+        ///
+        /// <see cref="SPALTE_ZPW_KANAL"/> (Schritt 48) ist BEWUSST NICHT aufgeführt,
+        /// obwohl es eine EINGABEspalte ist, die der Rechenkern liest — anders als bei
+        /// <see cref="Schritt13_Mindestfuellstand"/> hängt hier kein Lauf an ihr: Jeder
+        /// Leser der Zuordnung arbeitet mit <c>SELECT *</c> und prüft den Spaltennamen
+        /// (<c>Z_ProjektGebGanglinieCtrl.ReadAll</c>), in keiner ausgeschriebenen
+        /// SELECT-Liste steht sie. Fehlt die Spalte, bleibt <c>Kanal</c> leer, und leer
+        /// heißt laut <see cref="DbWerte.KANAL_HEIZUNG"/> genau das Bestandsverhalten.
+        /// Damit gilt hier dieselbe Linie wie bei den Schritten 45 bis 47, deren Spalten
+        /// ebenfalls nur die Migration anlegt.
+        ///
+        /// <see cref="SPALTE_PSP_NUTZUNG_HEIZUNG"/>,
+        /// <see cref="SPALTE_PSP_NUTZUNG_BRAUCHWASSER"/>,
+        /// <see cref="SPALTE_PSP_NUTZUNG_PROZESS"/> und
+        /// <see cref="SPALTE_KANAL_KNAPPHEITSREIHENFOLGE"/> (Schritt 49) sind BEWUSST
+        /// NICHT aufgeführt — dieselbe Begründung wie bei
+        /// <see cref="SPALTE_ZPW_KANAL"/>: Alle Leser sind TOLERANT. Das Klassen-Set
+        /// wird über <c>SELECT *</c> mit Spaltennamenprüfung gelesen
+        /// (<c>PufferSpCtrl.KlassenSetAusZeile</c>, <c>WaermesenkeClass.PufferLaden</c>),
+        /// und fehlt es, leitet die Rückfallregel das Set aus <c>Verwendung</c> ab —
+        /// also genau das Bestandsverhalten. Die Knappheitsreihenfolge liest
+        /// <c>KonfigurationCtrl.ReadSingle</c> namensbasiert; fehlt die Spalte, gilt
+        /// <c>DbWerte.KNAPPHEIT_DEFAULT</c>, und das ist die bis dahin fest verdrahtete
+        /// Reihenfolge. Beide Spalten hängen zudem an Tabellen, für die eine
+        /// Rückfallebene mehr schadete als nützte: <c>Tab_Einstellungen</c> darf wegen
+        /// der Ordinal-Lesekette ausschließlich zielgenau erweitert werden, und die
+        /// SCHREIBenden Wege des Klassen-Sets bringen ihre eigene, einmalige
+        /// Spaltenvorsorge mit (<c>PufferSpCtrl.StelleKlassenSetSpaltenSicher</c>).
+        ///
+        /// Die Spalten der Senkenliste (<see cref="Z_ANLAGESENKE"/>) und
+        /// <see cref="SPALTE_VERBUND_ID_SENKE"/> (Schritt 50) sind BEWUSST NICHT
+        /// aufgeführt — und zwar aus einem stärkeren Grund als oben:
+        /// <see cref="Alle"/> kennt ausschließlich additive SPALTEN an vorhandenen
+        /// Tabellen, hier muss aber erst die TABELLE entstehen (dieselbe Grenze wie bei
+        /// <see cref="Schritt25_Einheitenkonsistenz"/>). Die Rückfallebene übernimmt
+        /// <c>Z_AnlageSenkeCtrl.SpalteVorhanden</c>: Fehlt die Tabelle, meldet sie das
+        /// EINMAL, und jeder Leser fällt auf die Altspalten
+        /// <c>WS_Ziel</c>/<c>WS_Ziel2</c> zurück — also auf das Bestandsverhalten.
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {

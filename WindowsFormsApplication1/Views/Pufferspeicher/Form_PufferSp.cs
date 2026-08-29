@@ -23,6 +23,14 @@ namespace WindowsFormsApplication1
         // zugehoerige Modell und damit dessen ID_PUFFER.
         private List<WErzeugerModel> _linkeListe = new List<WErzeugerModel>();
 
+        // V0-9: Parallelliste zur RECHTEN ListBox (Katalogauswahl) - dieselbe Bauart wie
+        // _linkeListe, aber nur die STAMM-ID je Zeile. Der Katalog kann gleichnamige
+        // Einträge enthalten (VDI-3805-Import), und die Liste wird aus drei Quellen mit
+        // unterschiedlicher Sortierung gefüllt (Load, SetFilter, btn_Bearbeiten) - der
+        // ListBox-Index passt deshalb auf keine Modelliste, und der Bezeichner allein ist
+        // nicht eindeutig. Die Löschung adressiert über diese ID.
+        private List<int> _katalogIds = new List<int>();
+
         public int m_nType = WizardItemClass.PUFFER_TYP;
         public int m_ID_Projekt = 0;
         int startindex = 100000;
@@ -33,7 +41,58 @@ namespace WindowsFormsApplication1
         {
             InitializeComponent();
             listBox_Pufferspeicher_DB.Items.Clear();
+            _katalogIds.Clear();
             listBox_Pufferspeicher.Items.Clear();
+
+            // D2 (28.08.2026): Fußzeile auf die Norm — bisher Abbrechen links von OK in
+            // 106x34 und unverankert. Im Assistentenbetrieb sind beide Knöpfe unsichtbar
+            // (SetControls, bWizard); die Norm überspringt unsichtbare Knöpfe.
+            FusszeilenNorm.Einhaengen(this, btn_OK, btn_Abbrechen);
+
+            SchriftAngleichen();   // D3
+        }
+
+        /// <summary>
+        /// Nimmt fünfzehn Steuerelementen ihre EIGENE Schrift, damit sie wieder die des
+        /// Formulars erben.
+        ///
+        /// <para><b>Befund (D-Check Klasse e, D3).</b> Der Dialog führte vier Schriften
+        /// nebeneinander: Segoe UI 9,75 (Formularschrift, 16 Steuerelemente), Segoe UI 10
+        /// (12), Segoe UI 8 (3) und Segoe UI 12 fett (1). Die 10er- und die 8er-Gruppe
+        /// tragen keine erkennbare Rolle — es sind gewöhnliche Beschriftungen, Textfelder,
+        /// Listen und die beiden Fußzeilenknöpfe; ihre Abweichung ist über die Jahre im
+        /// Designer entstanden. Sie folgen jetzt dem Formular.</para>
+        ///
+        /// <para><b>Was bleibt.</b> <c>label_Type</c> (Segoe UI 12 fett) ist das Kopfband
+        /// der Maske — eine Titelrolle und damit ABSICHT.</para>
+        ///
+        /// <para><b>Warum <c>Font = null</c> und nicht <c>Font = this.Font</c>.</b> Null
+        /// setzt die Eigenschaft auf „nicht gesetzt" zurück; das Steuerelement erbt danach
+        /// dauerhaft von seinem Elternteil. Ein zugewiesenes Font-Objekt wäre eine neue
+        /// feste Schrift, die einer späteren Änderung am Formular nicht mehr folgt.</para>
+        ///
+        /// <para>Die Namen stehen ausdrücklich da und werden nicht über die Schriftgröße
+        /// gesucht: Eine Heuristik „alles, was nicht 9,75 ist" würde <c>label_Type</c>
+        /// mitreißen.</para>
+        /// </summary>
+        private void SchriftAngleichen()
+        {
+            string[] namen =
+            {
+                // Segoe UI 10 statt 9,75
+                "listBox_Pufferspeicher", "listBox_Pufferspeicher_DB",
+                "textBox_Hersteller", "textBox_Name",
+                "label6", "label7", "label11", "label12", "label16", "label18",
+                "btn_PufferSp_Hinzu", "btn_PufferSp_Entfernen",
+                // Segoe UI 8 statt 9,75
+                "btn_OK", "btn_Abbrechen", "textBox_Investitionskosten"
+            };
+
+            foreach (string n in namen)
+            {
+                Control[] treffer = this.Controls.Find(n, true);
+                if (treffer.Length > 0) treffer[0].Font = null;
+            }
         }
 
         public void SetControls(int IDProjekt, bool bWizard = false)
@@ -68,6 +127,7 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < pufferspctrl.rows; i++)
             {
                 listBox_Pufferspeicher_DB.Items.Add(pufferspctrl.items[i].Name);
+                _katalogIds.Add(pufferspctrl.items[i].ID);
             }
 
             pufferspctrl.ReadAll();
@@ -255,6 +315,7 @@ namespace WindowsFormsApplication1
             string szFilter = PufferSpFilter.HerstellerSql(comboBox_Hersteller);
 
             listBox_Pufferspeicher_DB.Items.Clear();
+            _katalogIds.Clear();
             if (szFilter == "")
                 sql = "select * from Tab_Pufferspeicher_STAMM where " + szFilterVolumen + " order by Bezeichner";
             else
@@ -265,6 +326,7 @@ namespace WindowsFormsApplication1
             while (rs.Next())
             {
                 listBox_Pufferspeicher_DB.Items.Add((string)rs.Read("Bezeichner"));
+                _katalogIds.Add(Convert.ToInt32(rs.Read("ID")));
             }
             rs.Close();
         }
@@ -278,16 +340,19 @@ namespace WindowsFormsApplication1
             listBox_Pufferspeicher_DB.SelectedItems.Clear();
             ctrl.PufferSp();
             listBox_Pufferspeicher_DB.Items.Clear();
+            _katalogIds.Clear();
             pufferspctrl.ReadAll();
             for (int i = 0; i < pufferspctrl.rows; i++)
             {
                 listBox_Pufferspeicher_DB.Items.Add(pufferspctrl.items[i].Name);
+                _katalogIds.Add(pufferspctrl.items[i].ID);
             }
         }
 
         private void btn_Löschen_Click(object sender, EventArgs e)
         {
-            if (listBox_Pufferspeicher_DB.SelectedIndex == -1)
+            int index = listBox_Pufferspeicher_DB.SelectedIndex;
+            if (index == -1 || index >= _katalogIds.Count)
             {
                 MessageBox.Show(MyResource.Resource.PSP_MELDUNG_MODUL_WAEHLEN);
                 return;
@@ -303,9 +368,13 @@ namespace WindowsFormsApplication1
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Warning) != DialogResult.Yes) return;
 
-            if (!pufferspctrl.Delete(listBox_Pufferspeicher_DB.Text)) return;
+            // V0-9: Gelöscht wird über die STAMM-ID der gewählten Zeile. Der frühere
+            // Weg über den Bezeichner traf bei gleichnamigen Katalogeinträgen alle
+            // Namensvettern auf einmal.
+            if (!pufferspctrl.Delete(_katalogIds[index])) return;
 
-            listBox_Pufferspeicher_DB.Items.RemoveAt(listBox_Pufferspeicher_DB.SelectedIndex);
+            listBox_Pufferspeicher_DB.Items.RemoveAt(index);
+            _katalogIds.RemoveAt(index);
         }
 
  

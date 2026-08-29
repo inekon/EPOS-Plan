@@ -723,6 +723,13 @@ namespace WindowsFormsApplication1
 
         private bool entferne_nicht_aktive_elemente(WErzeugerModel item)
         {
+            // FR-1: Der Wizard fuehrt keine Puffer-Seite; ID_Type-12-Modelle kommen nur
+            // ueber LoadWEFromDB (typloser ReadAllFilter) in die Liste. Der Bearbeiten-
+            // Zweig loescht die Pufferzeilen nicht mehr (Del_Projekt_Waermeerzeuger
+            // verschont ID_Type 12) - blieben die Modelle in der Liste, legte
+            // Add_WP_Waermeerzeuger die stehen gebliebenen Anlagenzeilen doppelt an.
+            if (item.ID_Type == WizardItemClass.PUFFER_TYP) return true;
+
             if (!listPages[WizardItemClass.SOLAR_ITEM].aktiv && item.ID_Type == WizardItemClass.SOLAR_TYP) return true;
             if (!listPages[WizardItemClass.SP_ITEM].aktiv && item.ID_Type == WizardItemClass.SP_TYP) return true;
             if (!listPages[WizardItemClass.PV_ITEM].aktiv && item.ID_Type == WizardItemClass.PV_TYP) return true;

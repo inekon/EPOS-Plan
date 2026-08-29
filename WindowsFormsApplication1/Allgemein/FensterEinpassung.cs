@@ -59,7 +59,22 @@ namespace WindowsFormsApplication1
             public bool EntwurfGemessen;
             public Size EntwurfClientSize;
 
+            /// <summary>
+            /// D3: true, solange das Entwurfsmaß bis zum <c>Load</c> nachgezogen wird.
+            /// </summary>
+            public bool Beobachtet;
+            public EventHandler Nachzieher;
+            public LayoutEventHandler NachzieherLayout;
+
+            /// <summary>
+            /// D3: <c>AutoScrollMinSize</c>, wie das Formular es SELBST mitgebracht hat —
+            /// die Untergrenze, unter die der Bildlaufbereich nie fallen darf.
+            /// </summary>
+            public bool BildlaufGemerkt;
+            public Size BildlaufVorher;
+
             /// <summary>Berandung vor dem Umstellen auf „veränderbar" (für den Nachweis).</summary>
+            public bool BerandungGemerkt;
             public FormBorderStyle BerandungVorher;
             public bool BerandungGeaendert;
         }
@@ -88,7 +103,109 @@ namespace WindowsFormsApplication1
             if (z.Eingehaengt) return;
             z.Eingehaengt = true;
 
+            // D3: Das Entwurfsmaß AB HIER merken statt erst im Load — siehe
+            // EntwurfMerken. Der Aufruf muss vor dem Load-Behandler stehen, damit die
+            // Beobachtung beendet ist, bevor die Einpassung rechnet.
+            EntwurfMerken(f);
+
             f.Load += (s, e) => Anwenden(f);
+        }
+
+        /// <summary>
+        /// Merkt das Entwurfsmaß eines Formulars und zieht es bis zum <c>Load</c> nach.
+        ///
+        /// <para><b>Warum das nötig ist (D3, 28.08.2026).</b> Bis dahin hat
+        /// <see cref="Einpassen"/> das Entwurfsmaß erst im <c>Load</c> gemessen — da hatte
+        /// Windows das Fenster aber längst auf Bildschirmgröße geklemmt. Gemessen wurde
+        /// damit der AUSSCHNITT, nicht der Entwurf, und der Bildlaufbereich blieb genau um
+        /// den geklemmten Betrag zu klein. Bei <c>Form_WP</c> (Entwurf 1023 × 741, auf
+        /// einer 1280×800-Arbeitsfläche geklemmt auf 1023 × 713) fiel deshalb GAR KEIN
+        /// Bildlauf an: 713 ≤ 713 — die untersten 28 px mit der ganzen Fußzeile waren auf
+        /// einem solchen Schirm nicht erreichbar.</para>
+        ///
+        /// <para><b>Warum nicht einfach der Wert vom Konstruktorende.</b> Er ist nicht
+        /// immer der richtige: Bei <c>Form_WP</c> läuft die Schriftskalierung erst NACH
+        /// dem Konstruktor und macht aus 877 × 642 die tatsächlichen 1023 × 741. Deshalb
+        /// wird bis zum <c>Load</c> jede Vergrößerung nachgezogen und die Beobachtung dann
+        /// beendet: ab <c>Load</c> kommen nur noch Klemmung und Bildlauf, die den Entwurf
+        /// verkleinern würden. Dieselbe Mechanik trägt seit Paket D2 die
+        /// <see cref="FusszeilenNorm"/>.</para>
+        ///
+        /// <para>Mehrfachaufrufe sind unschädlich; wer die Beobachtung schon gestartet hat,
+        /// behält sie. Aufzurufen am Anfang der Fensterlebensdauer — <see cref="Einhaengen"/>
+        /// tut es selbst, <see cref="BaseForm"/> für alle seine Nachfahren im Konstruktor.</para>
+        /// </summary>
+        public static void EntwurfMerken(Form f)
+        {
+            if (f == null) return;
+
+            Zustand z = ZustandVon(f);
+            if (z.Beobachtet || z.EntwurfGemessen) return;
+
+            z.Beobachtet = true;
+            z.EntwurfGemessen = true;
+            z.EntwurfClientSize = f.ClientSize;
+
+            z.Nachzieher = delegate { Nachziehen(f); };
+            z.NachzieherLayout = delegate { Nachziehen(f); };
+            f.ClientSizeChanged += z.Nachzieher;
+            f.Layout += z.NachzieherLayout;
+            f.Load += BeobachtungBeenden;
+        }
+
+        /// <summary>
+        /// Setzt das Sollmaß ausdrücklich — auch VERKLEINERND.
+        ///
+        /// <para>Für Dialoge, die ihre Maske zur Laufzeit wachsen und schrumpfen lassen und
+        /// dabei selbst wissen, wie groß sie UNGEKLEMMT wären
+        /// (<c>Form_PufferSp_Projekt._schichtSollHoehe</c>). Ohne diesen Weg bliebe der
+        /// Bildlaufbereich beim Zuklappen auf dem größten je erreichten Maß stehen — der
+        /// „Ratchet" aus Befund P1-O8. Nicht positive Werte lassen die jeweilige Achse
+        /// unverändert.</para>
+        /// </summary>
+        public static void SollmassSetzen(Form f, Size mass)
+        {
+            if (f == null) return;
+
+            Zustand z = ZustandVon(f);
+            Size alt = z.EntwurfGemessen ? z.EntwurfClientSize : f.ClientSize;
+            z.EntwurfGemessen = true;
+            z.EntwurfClientSize = new Size(mass.Width > 0 ? mass.Width : alt.Width,
+                                           mass.Height > 0 ? mass.Height : alt.Height);
+        }
+
+        /// <summary>Zieht das gemerkte Entwurfsmaß nach oben nach (nur vergrößernd).</summary>
+        private static void Nachziehen(Form f)
+        {
+            Zustand z;
+            if (f == null || !_zustaende.TryGetValue(f, out z)) return;
+            if (!z.Beobachtet) return;
+
+            Size ist = f.ClientSize;
+            if (ist.Width > z.EntwurfClientSize.Width)
+                z.EntwurfClientSize = new Size(ist.Width, z.EntwurfClientSize.Height);
+            if (ist.Height > z.EntwurfClientSize.Height)
+                z.EntwurfClientSize = new Size(z.EntwurfClientSize.Width, ist.Height);
+        }
+
+        /// <summary>
+        /// Beendet das Nachziehen beim <c>Load</c>. Ab hier kommen nur noch Klemmung und
+        /// Bildlauf, die das Maß verfälschen würden.
+        /// </summary>
+        private static void BeobachtungBeenden(object sender, EventArgs e)
+        {
+            Form f = sender as Form;
+            if (f == null) return;
+
+            f.Load -= BeobachtungBeenden;
+
+            Zustand z;
+            if (!_zustaende.TryGetValue(f, out z) || !z.Beobachtet) return;
+            z.Beobachtet = false;
+            if (z.Nachzieher != null) f.ClientSizeChanged -= z.Nachzieher;
+            if (z.NachzieherLayout != null) f.Layout -= z.NachzieherLayout;
+            z.Nachzieher = null;
+            z.NachzieherLayout = null;
         }
 
         /// <summary>
@@ -165,18 +282,31 @@ namespace WindowsFormsApplication1
 
             // Entwurfsmaß EINMAL merken — vor jeder Verkleinerung. Es ist die Grundlage
             // für den Bildlaufbereich; nach dem Klemmen ließe es sich nicht mehr ermitteln.
+            // Der Normalfall ist, dass EntwurfMerken es längst getan und bis hierher
+            // nachgezogen hat; dieser Zweig fängt nur den Direktaufruf von Anwenden ab.
             if (!z.EntwurfGemessen)
             {
                 z.EntwurfGemessen = true;
                 z.EntwurfClientSize = f.ClientSize;
+            }
+            if (!z.BerandungGemerkt)
+            {
+                z.BerandungGemerkt = true;
                 z.BerandungVorher = f.FormBorderStyle;
+            }
+            // D3: Der Bildlaufbereich, den das Formular SELBST mitgebracht hat — die
+            // Untergrenze für alles Weitere. Muss vor dem ersten eigenen Schreiben stehen.
+            if (!z.BildlaufGemerkt)
+            {
+                z.BildlaufGemerkt = true;
+                z.BildlaufVorher = f.AutoScrollMinSize;
             }
 
             Size inhalt = InhaltsMass(f, z);
 
             BerandungFreigeben(f, z, flaeche);
             GroesseKlemmen(f, flaeche);
-            BildlaufSichern(f, inhalt, flaeche);
+            BildlaufSichern(f, z, inhalt, flaeche);
             LageKorrigieren(f, flaeche);
         }
 
@@ -253,6 +383,16 @@ namespace WindowsFormsApplication1
         /// Auf einem großen Schirm bleiben <c>AutoScroll</c> und <c>AutoScrollMinSize</c>
         /// unberührt — dort ist die Bedingung nie erfüllt.
         ///
+        /// <b>D3 — kein Ratchet mehr.</b> Bis dahin wuchs <c>AutoScrollMinSize</c> nur:
+        /// <c>soll = max(bisher, inhalt)</c>. Wurde die Maske wieder kleiner (die
+        /// Schichtgruppe von <c>Form_PufferSp_Projekt</c> zugeklappt, 976 → 826), blieb der
+        /// Bildlaufbereich auf dem größten je erreichten Wert stehen und der Rollbalken
+        /// länger als nötig (Befund P1-O8). Der Bereich folgt jetzt dem AKTUELLEN Sollmaß
+        /// in beide Richtungen; Untergrenze ist ausschließlich das, was das Formular selbst
+        /// mitgebracht hat (<see cref="Zustand.BildlaufVorher"/>) — geschrumpft wird also
+        /// nur, was diese Klasse selbst aufgesetzt hat. Passt der Inhalt wieder vollständig,
+        /// fällt der Bereich auf genau diesen Ausgangswert zurück.
+        ///
         /// Gesetzt wird am FORMULAR, nicht an einem inneren Container: Ein auf
         /// <c>Dock = Fill</c> gesetztes Kind wird von WinForms auf das
         /// <c>DisplayRectangle</c> gespannt, das durch <c>AutoScrollMinSize</c>
@@ -261,7 +401,7 @@ namespace WindowsFormsApplication1
         /// ausgefüllt wird — und zwar ohne dass die Einpassung wissen muss, welcher
         /// Container gerade der richtige ist.
         /// </summary>
-        private static void BildlaufSichern(Form f, Size inhalt, Rectangle flaeche)
+        private static void BildlaufSichern(Form f, Zustand z, Size inhalt, Rectangle flaeche)
         {
             // Rahmen und Titelzeile gehen von der Arbeitsfläche ab.
             Size rahmen = new Size(Math.Max(0, f.Width - f.ClientSize.Width),
@@ -270,13 +410,25 @@ namespace WindowsFormsApplication1
             Size erreichbar = new Size(Math.Max(0, flaeche.Width - rahmen.Width),
                                        Math.Max(0, flaeche.Height - rahmen.Height));
 
-            if (inhalt.Width <= erreichbar.Width && inhalt.Height <= erreichbar.Height) return;
+            // Untergrenze: was das Formular selbst mitgebracht hat. Alles darüber ist
+            // Zutat dieser Klasse und darf deshalb auch wieder zurückgenommen werden.
+            Size untergrenze = z.BildlaufGemerkt ? z.BildlaufVorher : Size.Empty;
+
+            if (inhalt.Width <= erreichbar.Width && inhalt.Height <= erreichbar.Height)
+            {
+                // Der Inhalt passt (wieder). Auf einem großen Schirm ist das der
+                // Normalfall, und der Vergleich schlägt nie an: untergrenze IST dort der
+                // vorhandene Wert. Nach einem Verkleinern der Maske nimmt er den eigenen
+                // Aufschlag zurück.
+                if (f.AutoScrollMinSize != untergrenze) f.AutoScrollMinSize = untergrenze;
+                return;
+            }
 
             if (!f.AutoScroll) f.AutoScroll = true;
 
-            Size soll = f.AutoScrollMinSize;
-            if (inhalt.Width > soll.Width) soll.Width = inhalt.Width;
-            if (inhalt.Height > soll.Height) soll.Height = inhalt.Height;
+            Size soll = inhalt;
+            if (untergrenze.Width > soll.Width) soll.Width = untergrenze.Width;
+            if (untergrenze.Height > soll.Height) soll.Height = untergrenze.Height;
             if (soll != f.AutoScrollMinSize) f.AutoScrollMinSize = soll;
         }
 

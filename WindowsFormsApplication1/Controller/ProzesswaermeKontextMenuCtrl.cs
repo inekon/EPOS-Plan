@@ -57,16 +57,20 @@ namespace WindowsFormsApplication1
             {
                 // Überprüfen, ob ein Element unter dem Mauszeiger angeklickt wurde
                 ListViewItem item = listView_Prozesswaerme.GetItemAt(e.X, e.Y);
-                if (item != null)
-                {
-                    if (listView_Prozesswaerme.SelectedItems.Count > 0)
-                    {
-                        // Element auswählen
-                        item.Selected = true;
-                        // Kontextmenü anzeigen
-                        contextMenuStrip1.Show(listView_Prozesswaerme, e.Location);
-                    }
-                }
+                if (item != null) item.Selected = true;
+
+                // DAS MENÜ ÖFFNET AUCH ÜBER DER LEEREN LISTE (Befund 27.08.2026, Lücke F).
+                // Vorher stand hier "if (item != null) if (SelectedItems.Count > 0)": In einem
+                // NEUEN Projekt ist die Liste leer, es gibt also kein Element unter dem
+                // Mauszeiger - und damit war "Hinzufügen/Bearbeiten" der einzige Einstieg,
+                // über den sich Prozesswärme überhaupt zuordnen lässt, genau dann
+                // unerreichbar, wenn man ihn braucht. Der Eintrag "Hinzufügen" ist
+                // zusätzlich seit jeher auskommentiert (Init).
+                //
+                // Dasselbe Muster wie GebäudeKontextMenuCtrl.listView_WP_MouseDown. Die
+                // Ausgrauung der Einträge bleibt Sache von contextMenuStrip1_Opening: Ohne
+                // Auswahl ist "Hinzufügen/Bearbeiten" aktiv und "Löschen" gesperrt.
+                contextMenuStrip1.Show(listView_Prozesswaerme, e.Location);
             }
         }
 

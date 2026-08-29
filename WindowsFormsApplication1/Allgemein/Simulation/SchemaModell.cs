@@ -36,6 +36,15 @@ namespace WindowsFormsApplication1
         public const string ABNEHMER_HEIZKREIS = "ABNEHMER_HEIZKREIS";
         public const string ABNEHMER_WARMWASSER = "ABNEHMER_WARMWASSER";
 
+        /// <summary>
+        /// PAKET S2 — der dritte Abnehmerknoten (Konzept 10). Prozesswärme ist seit
+        /// Paket K1/K2 ein eigener Kanal und seit S1 ein eigenes Senkenziel
+        /// (<c>Prozesswaerme</c>, <c>PufferProzess</c>); bis S2 fehlte sie in der
+        /// Abnehmerspalte, weil das Schema die Senke aus den beiden Altspalten las und
+        /// die Prozess-Ziele dort gar nicht ausdrückbar sind.
+        /// </summary>
+        public const string ABNEHMER_PROZESS = "ABNEHMER_PROZESS";
+
         /// <summary>Spalte des Schemas — die vier Rubriken des Mockups.</summary>
         public enum Knotenart
         {
@@ -65,7 +74,23 @@ namespace WindowsFormsApplication1
             Ladung,
 
             /// <summary>Grün: Versorgung / Entladung (Puffer bzw. Erzeuger → Abnehmer).</summary>
-            Versorgung
+            Versorgung,
+
+            /// <summary>
+            /// PAKET E1 (Befund S2-O7, Konzept § 10): Violett — Versorgung des
+            /// PROZESS-Abnehmers.
+            ///
+            /// <para>Bis hierher trug die Prozesskante dieselbe Farbe wie Heizkreis und
+            /// Warmwasser; der dritte Kanal war im Bild nicht von den beiden anderen zu
+            /// unterscheiden. Fachlich ist er es sehr wohl — er hat eigene
+            /// Temperaturanforderungen, eigene Senken und eigene Speicher.</para>
+            ///
+            /// <para><b>Eine eigene ART, keine eigene Kantenlogik:</b> Sie verhält sich in
+            /// jeder Hinsicht wie <see cref="Versorgung"/> (durchgezogen, Pfeil,
+            /// Prioritätskreis) und unterscheidet sich allein in der Farbe — genau die
+            /// Trennung, die Kapitel 10 „eigene Kantenfarbe" verlangt.</para>
+            /// </summary>
+            Prozess
         }
 
         /// <summary>Ein Kasten im Schema.</summary>
@@ -141,6 +166,83 @@ namespace WindowsFormsApplication1
         /// <summary>Projekt, aus dem das Modell stammt.</summary>
         public int ID_Projekt { get; private set; }
 
+        // --- PAKET S2: die Senkenlisten und die Klassen-Sets --------------------------
+        //
+        // Bis S1 las das Schema die Senke einer Anlage aus WaermesenkeClass.SenkeDaten,
+        // also aus den beiden gespiegelten Altspalten. Zwei Dinge gehen darin verloren:
+        // die Ränge ab 3 (sie haben keine Altspalte) und die beiden Prozess-Ziele (sie
+        // spiegeln sich als „Heizung"). Deshalb liest das Modell die geordneten
+        // Senkenlisten; mit Paket A1 ist der Rückfall auf die Altspalten entfallen
+        // (Begründung in SenkenlistenLesen).
+        //
+        // STILL gelesen: Die laute Fassung WaermesenkeClass.SenkenlistenLaden schreibt
+        // Protokollzeilen in SimulationProtokoll.Aktuell (Rang-1-Invariante, Puffer-Ziel
+        // ohne Puffer). Aus einem Konfigurationsdialog heraus gerufen, landeten sie im
+        // Protokoll des NÄCHSTEN Laufs. Die Zeilen kommen deshalb direkt über
+        // Z_AnlageSenkeCtrl, die Ladeordnung über SenkenlistenLadenStill - dieselbe
+        // Quelle, kein Nebeneffekt.
+
+        /// <summary>Senkenzeilen je Anlagen-ID, in Rangfolge.</summary>
+        private readonly Dictionary<int, List<Z_AnlageSenkeModel>> _senken =
+            new Dictionary<int, List<Z_AnlageSenkeModel>>();
+
+        /// <summary>Klassen-Set je Puffer-ID (Konzept 6.1).</summary>
+        private readonly Dictionary<int, PufferSpCtrl.KlassenSet> _sets =
+            new Dictionary<int, PufferSpCtrl.KlassenSet>();
+
+        /// <summary>Die Senkenzeilen einer Anlage in Rangfolge; nie <c>null</c>.</summary>
+        private List<Z_AnlageSenkeModel> Senken(int idAnlage)
+        {
+            List<Z_AnlageSenkeModel> kette;
+            return _senken.TryGetValue(idAnlage, out kette)
+                ? kette : new List<Z_AnlageSenkeModel>();
+        }
+
+        /// <summary>Die Senkenzeile eines Rangs (0-basiert); <c>null</c>, wenn es sie nicht gibt.</summary>
+        private Z_AnlageSenkeModel SenkeAufRang(int idAnlage, int index)
+        {
+            List<Z_AnlageSenkeModel> kette = Senken(idAnlage);
+            return index >= 0 && index < kette.Count ? kette[index] : null;
+        }
+
+        /// <summary>Bedient der Puffer diesen Kanal (Klassen-Set)? Unbekannte ID: nein.</summary>
+        private bool PufferBedient(int idPuffer, int kanal)
+        {
+            PufferSpCtrl.KlassenSet set;
+            if (idPuffer <= 0 || !_sets.TryGetValue(idPuffer, out set) || set == null) return false;
+
+            switch (kanal)
+            {
+                case Kanal.BRAUCHWASSER: return set.Brauchwasser;
+                case Kanal.PROZESS: return set.Prozess;
+                default: return set.Heizung;
+            }
+        }
+
+        /// <summary>
+        /// Die Kanäle, die eine DIREKTSENKE bedient — das Anzeige-Gegenstück zu
+        /// <c>Kaskadenschleife.SenkenMaske</c>:
+        /// <c>Prozesswaerme</c> → {P}; <c>Heizkreis</c> je Bedarfsart
+        /// <c>Beides</c> → {H, B}, <c>Warmwasser</c> → {B}, <c>Heizung</c> → {H};
+        /// Puffer-Ziele haben keinen direkten Abnehmer.
+        /// </summary>
+        private static bool DirektsenkeBedient(Z_AnlageSenkeModel z, int kanal)
+        {
+            if (z == null || WaermesenkeClass.IstPufferZiel(z.Ziel)) return false;
+
+            if (string.Equals(z.Ziel, DbWerte.WS_ZIEL_PROZESS, StringComparison.Ordinal))
+                return kanal == Kanal.PROZESS;
+
+            if (kanal == Kanal.PROZESS) return false;
+
+            if (string.Equals(z.Bedarfsart, WaermequelleClass.SENKE_WARMWASSER, StringComparison.Ordinal))
+                return kanal == Kanal.BRAUCHWASSER;
+            if (string.Equals(z.Bedarfsart, WaermequelleClass.SENKE_HEIZUNG, StringComparison.Ordinal))
+                return kanal == Kanal.HEIZUNG;
+
+            return true;                                  // Beides
+        }
+
         /// <summary>true, wenn kein einziger Erzeuger- oder Speicherknoten entstanden ist.</summary>
         public bool IstLeer
         {
@@ -208,6 +310,7 @@ namespace WindowsFormsApplication1
                 }
 
             bool hatBrauchwasser = WaermesenkeClass.ProjektHatBrauchwasser(idProjekt);
+            bool hatProzess = ProjektHatProzesswaerme(idProjekt);
 
             // Anlagen, die gezeichnet werden: die aufgenommenen Arten (oder alle).
             List<Hydraulikbild.AnlagenEintrag> anlagen = new List<Hydraulikbild.AnlagenEintrag>();
@@ -217,7 +320,17 @@ namespace WindowsFormsApplication1
                 anlagen.Add(a);
             }
 
+            // PAKET S2: Senkenlisten (alle Ränge, beide Prozess-Ziele) und Klassen-Sets.
+            m.SenkenlistenLesen(idProjekt, anlagen);
+            m.KlassenSetsLesen(idProjekt);
+
             // Quellpuffer je Anlage in der ANZEIGE-Auflösung (Karte und Schema gleich).
+            //
+            // OHNE Einschränkung auf die Wärmepumpe: Der HEIZKESSEL kann seit Etappe D5a
+            // ebenso einen Pufferspeicher als Wärmequelle führen (Konzept 8.4), und die
+            // Kette „… → Puffer → Kessel → …" wird hier deshalb genauso gezeichnet wie
+            // bei der Wärmepumpe. Die Auswahl trifft Hydraulikbild.QuellpufferAnzeige
+            // über WQ_Typ — sie kennt keinen Anlagentyp.
             Dictionary<int, int> quellpuffer = new Dictionary<int, int>();
             foreach (Hydraulikbild.AnlagenEintrag a in anlagen)
             {
@@ -225,12 +338,79 @@ namespace WindowsFormsApplication1
                 if (q > 0 && pufferJeId.ContainsKey(q)) quellpuffer[a.ID] = q;
             }
 
-            m.SpeicherKnotenAnlegen(anlagen, puffer, pufferJeId, quellpuffer, hatBrauchwasser);
+            m.SpeicherKnotenAnlegen(anlagen, puffer, quellpuffer, hatBrauchwasser, hatProzess);
             m.ErzeugerKnotenAnlegen(bild, anlagen, pufferJeId, quellpuffer, rangJeTyp);
-            m.KantenAnlegen(idProjekt, anlagen, pufferJeId, quellpuffer, hatBrauchwasser);
+            m.KantenAnlegen(idProjekt, anlagen, quellpuffer, hatBrauchwasser, hatProzess);
             m.KettenAbleiten(anlagen, pufferJeId, quellpuffer, hatBrauchwasser);
 
             return m;
+        }
+
+        /// <summary>
+        /// true, wenn dem Projekt mindestens ein Prozesswärme-Anteil zugeordnet ist —
+        /// das Gegenstück zu <c>WaermesenkeClass.ProjektHatBrauchwasser</c> und dieselbe
+        /// Vorsichtsregel: Ist die Abfrage nicht auswertbar (fehlende Tabelle), gilt
+        /// „vorhanden", damit kein Knoten aus Unkenntnis verschwindet.
+        /// </summary>
+        private static bool ProjektHatProzesswaerme(int idProjekt)
+        {
+            object v = StilleDb.Scalar(
+                "SELECT COUNT(*) FROM Z_Projekt_Prozesswaerme WHERE ID_Projekt = ?",
+                StilleDb.Par("@proj", System.Data.OleDb.OleDbType.Integer, idProjekt));
+
+            if (v == null) return true;
+            return StilleDb.Zahl(v) > 0;
+        }
+
+        /// <summary>
+        /// Liest die geordneten Senkenlisten des Projekts aus <c>Z_AnlageSenke</c>.
+        ///
+        /// <para><b>PAKET A1:</b> Der Rückfall auf die beiden Altslots aus
+        /// <see cref="Hydraulikbild"/> ist entfallen — dieselbe Entscheidung wie in
+        /// <c>WaermesenkeClass.SenkenlistenLaden</c>. Eine Anlage ohne Zeile bekommt die
+        /// RANG-1-VORBELEGUNG <c>Heizkreis/Beides</c>, also genau das, was auch die Engine
+        /// für sie rechnet; das Schema zeigt damit keinen Speicher mehr an, den kein Lauf
+        /// mehr lädt.</para>
+        /// </summary>
+        private void SenkenlistenLesen(int idProjekt,
+                                       List<Hydraulikbild.AnlagenEintrag> anlagen)
+        {
+            foreach (Z_AnlageSenkeModel z in new Z_AnlageSenkeCtrl().LesenJeProjekt(idProjekt))
+            {
+                if (z == null || z.ID_Anlage <= 0) continue;
+
+                List<Z_AnlageSenkeModel> kette;
+                if (!_senken.TryGetValue(z.ID_Anlage, out kette))
+                {
+                    kette = new List<Z_AnlageSenkeModel>();
+                    _senken[z.ID_Anlage] = kette;
+                }
+                kette.Add(z);
+            }
+
+            foreach (Hydraulikbild.AnlagenEintrag a in anlagen)
+            {
+                if (_senken.ContainsKey(a.ID)) continue;
+
+                List<Z_AnlageSenkeModel> kette = new List<Z_AnlageSenkeModel>();
+                kette.Add(new Z_AnlageSenkeModel
+                {
+                    ID_Anlage = a.ID,
+                    Rang = 1,
+                    Ziel = DbWerte.WS_ZIEL_HEIZKREIS,
+                    Bedarfsart = WaermequelleClass.SENKE_BEIDES
+                });
+
+                _senken[a.ID] = kette;
+            }
+        }
+
+        /// <summary>Klassen-Set je Projekt-Puffer (Konzept 6.1) — EINE Abfrage.</summary>
+        private void KlassenSetsLesen(int idProjekt)
+        {
+            foreach (KeyValuePair<int, PufferSpCtrl.KlassenSet> e in
+                     PufferSpCtrl.KlassenSetsJeProjekt(idProjekt))
+                _sets[e.Key] = e.Value;
         }
 
         /// <summary><c>Tab_Energieanlagen.ID_Type</c> zu einem Erzeuger-DB-Wert; 0 = unbekannt.</summary>
@@ -259,25 +439,22 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void SpeicherKnotenAnlegen(List<Hydraulikbild.AnlagenEintrag> anlagen,
                                            List<WaermesenkeClass.PufferInfo> puffer,
-                                           Dictionary<int, WaermesenkeClass.PufferInfo> pufferJeId,
                                            Dictionary<int, int> quellpuffer,
-                                           bool hatBrauchwasser)
+                                           bool hatBrauchwasser, bool hatProzess)
         {
+            // PAKET S2: über ALLE Senkenzeilen, nicht mehr über die zwei Altslots — ein
+            // Speicher, den erst Rang 3 lädt, fehlte bis hierher im Schema.
             HashSet<int> beteiligt = new HashSet<int>();
             foreach (Hydraulikbild.AnlagenEintrag a in anlagen)
-            {
-                if (WaermesenkeClass.IstPufferZiel(a.Senke.Ziel) && a.Senke.ID_Puffer > 0)
-                    beteiligt.Add(a.Senke.ID_Puffer);
-                if (a.Senke.HatZweitsenke && a.Senke.ID_Puffer2 > 0)
-                    beteiligt.Add(a.Senke.ID_Puffer2);
-            }
+                foreach (Z_AnlageSenkeModel z in Senken(a.ID))
+                    if (z != null && z.ID_Puffer > 0 && WaermesenkeClass.IstPufferZiel(z.Ziel))
+                        beteiligt.Add(z.ID_Puffer);
+
             foreach (KeyValuePair<int, int> q in quellpuffer) beteiligt.Add(q.Value);
 
             foreach (WaermesenkeClass.PufferInfo p in puffer)
             {
                 if (p == null || !beteiligt.Contains(p.ID)) continue;
-
-                string verwendung = WaermesenkeClass.WirksameVerwendung(p);
 
                 Knoten k = new Knoten();
                 k.Schluessel = PRAEFIX_SPEICHER + p.ID;
@@ -292,24 +469,26 @@ namespace WindowsFormsApplication1
                     k.Zeilen.Add(string.Format(MyResource.Resource.SIM_KARTE_TEMPERATURPAAR,
                                                p.Vorlauf, p.Ruecklauf));
 
-                // Kombispeicher trägt BEIDE Badges (Mockup „Puffer Kombi"), sonst genau eins.
-                if (WaermesenkeClass.IstKombiVerwendung(verwendung))
-                {
+                // PAKET S2: EIN BADGE JE KANAL DES KLASSEN-SETS (Konzept 10) statt eines
+                // Badges je Verwendung. Ein Kombispeicher trägt damit weiterhin beide
+                // Badges (Mockup „Puffer Kombi"), ein {H, P}-Speicher jetzt aber auch
+                // seine Prozess-Kennzeichnung - die Verwendung kennt sie nicht.
+                if (PufferBedient(p.ID, Kanal.HEIZUNG))
                     k.Badges.Add(MyResource.Resource.PSP_VERWENDUNG_HEIZUNG_ANZEIGE);
+                if (PufferBedient(p.ID, Kanal.BRAUCHWASSER))
                     k.Badges.Add(MyResource.Resource.SIM_SCHEMA_ABNEHMER_WARMWASSER);
-                }
-                else
-                {
-                    k.Badges.Add(WaermesenkeClass.VerwendungAnzeige(verwendung));
-                }
+                if (PufferBedient(p.ID, Kanal.PROZESS))
+                    k.Badges.Add(MyResource.Resource.KANAL_PROZESS_ANZEIGE);
 
+                PufferSpCtrl.KlassenSet set;
+                _sets.TryGetValue(p.ID, out set);
                 k.Hinweis = string.Format(MyResource.Resource.PSP_KARTE_VERSORGT,
-                                          WaermesenkeClass.VerwendungAnzeige(verwendung));
+                                          Warnkriterien.KlassenSetAnzeige(set));
                 Knotenliste.Add(k);
             }
 
             // Abnehmerknoten: nur die, die auch bedient werden (siehe KantenAnlegen).
-            if (BedientHeizkreis(anlagen, pufferJeId))
+            if (BedientKanal(anlagen, Kanal.HEIZUNG))
                 Knotenliste.Add(new Knoten
                 {
                     Schluessel = ABNEHMER_HEIZKREIS,
@@ -318,7 +497,7 @@ namespace WindowsFormsApplication1
                     Hinweis = MyResource.Resource.SIM_SCHEMA_TIP_ABNEHMER
                 });
 
-            if (hatBrauchwasser && BedientWarmwasser(anlagen, pufferJeId))
+            if (hatBrauchwasser && BedientKanal(anlagen, Kanal.BRAUCHWASSER))
                 Knotenliste.Add(new Knoten
                 {
                     Schluessel = ABNEHMER_WARMWASSER,
@@ -326,60 +505,41 @@ namespace WindowsFormsApplication1
                     Titel = MyResource.Resource.SIM_SCHEMA_ABNEHMER_WARMWASSER,
                     Hinweis = MyResource.Resource.SIM_SCHEMA_TIP_ABNEHMER
                 });
+
+            if (hatProzess && BedientKanal(anlagen, Kanal.PROZESS))
+                Knotenliste.Add(new Knoten
+                {
+                    Schluessel = ABNEHMER_PROZESS,
+                    Art = Knotenart.Abnehmer,
+                    Titel = MyResource.Resource.KANAL_PROZESS_ANZEIGE,
+                    Hinweis = MyResource.Resource.SIM_SCHEMA_TIP_ABNEHMER
+                });
         }
 
-        private static bool BedientHeizkreis(List<Hydraulikbild.AnlagenEintrag> anlagen,
-                                             Dictionary<int, WaermesenkeClass.PufferInfo> pufferJeId)
+        /// <summary>
+        /// Wird dieser KANAL im Projekt überhaupt bedient — unmittelbar durch eine
+        /// Direktsenke oder mittelbar über einen Speicher, dessen Klassen-Set ihn führt?
+        ///
+        /// <para>PAKET S2: Eine Regel für alle drei Kanäle statt zweier Sonderfassungen
+        /// für Heizkreis und Warmwasser. Die Aussage ist für Heizung und Warmwasser
+        /// dieselbe wie zuvor — nur dass sie jetzt über ALLE Senkenränge läuft und den
+        /// Speicher über sein Klassen-Set statt über die Alt-Verwendung fragt.</para>
+        /// </summary>
+        private bool BedientKanal(List<Hydraulikbild.AnlagenEintrag> anlagen, int kanal)
         {
             foreach (Hydraulikbild.AnlagenEintrag a in anlagen)
-            {
-                if (!WaermesenkeClass.IstPufferZiel(a.Senke.Ziel) &&
-                    !string.Equals(a.Senke.Bedarfsart, WaermequelleClass.SENKE_WARMWASSER,
-                                   StringComparison.Ordinal))
-                    return true;
+                foreach (Z_AnlageSenkeModel z in Senken(a.ID))
+                {
+                    if (z == null) continue;
 
-                if (PufferBedientHeizung(a.Senke.ID_Puffer, pufferJeId)) return true;
-                if (PufferBedientHeizung(a.Senke.ID_Puffer2, pufferJeId)) return true;
-            }
+                    if (WaermesenkeClass.IstPufferZiel(z.Ziel))
+                    {
+                        if (PufferBedient(z.ID_Puffer, kanal)) return true;
+                    }
+                    else if (DirektsenkeBedient(z, kanal)) return true;
+                }
+
             return false;
-        }
-
-        private static bool BedientWarmwasser(List<Hydraulikbild.AnlagenEintrag> anlagen,
-                                              Dictionary<int, WaermesenkeClass.PufferInfo> pufferJeId)
-        {
-            foreach (Hydraulikbild.AnlagenEintrag a in anlagen)
-            {
-                if (!WaermesenkeClass.IstPufferZiel(a.Senke.Ziel) &&
-                    !string.Equals(a.Senke.Bedarfsart, WaermequelleClass.SENKE_HEIZUNG,
-                                   StringComparison.Ordinal))
-                    return true;
-
-                if (PufferBedientWarmwasser(a.Senke.ID_Puffer, pufferJeId)) return true;
-                if (PufferBedientWarmwasser(a.Senke.ID_Puffer2, pufferJeId)) return true;
-            }
-            return false;
-        }
-
-        private static bool PufferBedientHeizung(int idPuffer,
-                                                 Dictionary<int, WaermesenkeClass.PufferInfo> pufferJeId)
-        {
-            WaermesenkeClass.PufferInfo p;
-            if (idPuffer <= 0 || !pufferJeId.TryGetValue(idPuffer, out p)) return false;
-
-            string v = WaermesenkeClass.WirksameVerwendung(p);
-            return WaermesenkeClass.IstKombiVerwendung(v) ||
-                   string.Equals(v, WaermesenkeClass.VERWENDUNG_HEIZUNG, StringComparison.Ordinal);
-        }
-
-        private static bool PufferBedientWarmwasser(int idPuffer,
-                                                    Dictionary<int, WaermesenkeClass.PufferInfo> pufferJeId)
-        {
-            WaermesenkeClass.PufferInfo p;
-            if (idPuffer <= 0 || !pufferJeId.TryGetValue(idPuffer, out p)) return false;
-
-            string v = WaermesenkeClass.WirksameVerwendung(p);
-            return WaermesenkeClass.IstKombiVerwendung(v) ||
-                   string.Equals(v, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER, StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -409,14 +569,18 @@ namespace WindowsFormsApplication1
                 if (a.Vorlauf > 0 && a.Ruecklauf > 0)
                     k.Zeilen.Add(string.Format(MyResource.Resource.SIM_KARTE_TEMPERATURPAAR,
                                                a.Vorlauf, a.Ruecklauf));
+                // PAKET A1: Ziel und Zielspeicher kommen aus der SENKENLISTE (Rang 1) und
+                // nicht mehr aus der gespiegelten Altspaltensicht — nur so stehen auch die
+                // beiden Prozess-Ziele richtig da (sie spiegelten sich als „Heizung").
+                Z_AnlageSenkeModel rang1 = SenkeAufRang(a.ID, 0);
                 k.Zeilen.Add(string.Format(MyResource.Resource.SIM_KARTE_SENKE,
-                                           WaermesenkeClass.HauptsenkeAnzeige(a.Senke)));
+                                           Form_Waermesenke.SenkeAnzeige(rang1)));
 
                 // Temperatur-Warnregel (Konzept Abschnitt 5), Wort für Wort die Regel der
                 // Erzeugerkarte: Erzeuger-Vorlauf < Puffer-Vorlauf der Hauptsenke.
                 WaermesenkeClass.PufferInfo senke = null;
-                if (WaermesenkeClass.IstPufferZiel(a.Senke.Ziel) && a.Senke.ID_Puffer > 0)
-                    pufferJeId.TryGetValue(a.Senke.ID_Puffer, out senke);
+                if (rang1 != null && WaermesenkeClass.IstPufferZiel(rang1.Ziel) && rang1.ID_Puffer > 0)
+                    pufferJeId.TryGetValue(rang1.ID_Puffer, out senke);
 
                 if (senke != null && senke.Vorlauf > 0 && a.Vorlauf > 0 && a.Vorlauf < senke.Vorlauf)
                 {
@@ -496,20 +660,26 @@ namespace WindowsFormsApplication1
 
         private void KantenAnlegen(int idProjekt,
                                    List<Hydraulikbild.AnlagenEintrag> anlagen,
-                                   Dictionary<int, WaermesenkeClass.PufferInfo> pufferJeId,
                                    Dictionary<int, int> quellpuffer,
-                                   bool hatBrauchwasser)
+                                   bool hatBrauchwasser, bool hatProzess)
         {
             // Ladepositionen EINMAL je beteiligtem Puffer holen - Ladereihenfolge fragt je
             // Aufruf Anlagen und Kaskadenplätze neu ab (Begründung wie in
             // Form_Simulation_Config.SpeicherKarteDaten).
+            //
+            // PAKET A1: Die Ladeordnung liest die Senkenlisten (ab Rang 3 trägt die Kante
+            // erst dadurch ihre Kreisziffer, S2-O6). Sie werden hier EINMAL still geholt
+            // und in jeden Aufruf hineingereicht - sonst läse jeder Speicherknoten sie
+            // erneut.
+            List<Senkenliste> senken = WaermesenkeClass.SenkenlistenLadenStill(idProjekt);
+
             Dictionary<int, List<Ladeordnung.LadeEintrag>> ordnung =
                 new Dictionary<int, List<Ladeordnung.LadeEintrag>>();
 
             foreach (Knoten k in Knotenliste)
             {
                 if (k.Art != Knotenart.Speicher || ordnung.ContainsKey(k.ID)) continue;
-                ordnung[k.ID] = Ladeordnung.Ladereihenfolge(idProjekt, k.ID);
+                ordnung[k.ID] = Ladeordnung.Ladereihenfolge(idProjekt, k.ID, senken);
             }
 
             foreach (Hydraulikbild.AnlagenEintrag a in anlagen)
@@ -524,33 +694,35 @@ namespace WindowsFormsApplication1
                 else
                     Verbinden(PRAEFIX_QUELLE + a.ID, erzeuger, Kantenart.Quelle, 0, "");
 
-                // Hauptsenke
-                if (WaermesenkeClass.IstPufferZiel(a.Senke.Ziel) && a.Senke.ID_Puffer > 0)
-                    LadekanteAnlegen(erzeuger, a.Senke.ID_Puffer, a.ID, false, ordnung);
-                else
-                    DirektkanteAnlegen(erzeuger, a.Senke.Bedarfsart, hatBrauchwasser);
+                // PAKET S2: die SENKENKETTE statt Haupt-/Zweitsenke — jede Zeile bekommt
+                // ihre Kante. Rang 1 zeichnet wie bisher die Hauptsenke, alles darüber
+                // gilt als Zweitsenke im Sinn der Ladeordnung (dort trennt ein einzelnes
+                // Kennzeichen nur „erste" von „weitere").
+                List<Z_AnlageSenkeModel> kette = Senken(a.ID);
+                for (int i = 0; i < kette.Count; i++)
+                {
+                    Z_AnlageSenkeModel z = kette[i];
+                    if (z == null) continue;
 
-                // Zweitsenke
-                if (a.Senke.HatZweitsenke && a.Senke.ID_Puffer2 > 0)
-                    LadekanteAnlegen(erzeuger, a.Senke.ID_Puffer2, a.ID, true, ordnung);
+                    if (WaermesenkeClass.IstPufferZiel(z.Ziel) && z.ID_Puffer > 0)
+                        LadekanteAnlegen(erzeuger, z.ID_Puffer, a.ID, i > 0, ordnung);
+                    else
+                        DirektkanteAnlegen(erzeuger, z, hatBrauchwasser, hatProzess);
+                }
             }
 
-            // Versorgung: jeder Speicher bedient seinen Kanal (Kombi beide).
+            // Versorgung: jeder Speicher bedient die Kanäle seines KLASSEN-SETS.
             foreach (Knoten k in Knotenliste)
             {
                 if (k.Art != Knotenart.Speicher) continue;
 
-                WaermesenkeClass.PufferInfo p;
-                if (!pufferJeId.TryGetValue(k.ID, out p)) continue;
-
-                string v = WaermesenkeClass.WirksameVerwendung(p);
-                bool kombi = WaermesenkeClass.IstKombiVerwendung(v);
-
-                if (kombi || string.Equals(v, WaermesenkeClass.VERWENDUNG_HEIZUNG, StringComparison.Ordinal))
+                if (PufferBedient(k.ID, Kanal.HEIZUNG))
                     Verbinden(k.Schluessel, ABNEHMER_HEIZKREIS, Kantenart.Versorgung, 0, "");
-
-                if (kombi || string.Equals(v, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER, StringComparison.Ordinal))
+                if (PufferBedient(k.ID, Kanal.BRAUCHWASSER))
                     Verbinden(k.Schluessel, ABNEHMER_WARMWASSER, Kantenart.Versorgung, 0, "");
+                // PAKET E1 (S2-O7): eigene Kantenart für den Prozessabnehmer.
+                if (PufferBedient(k.ID, Kanal.PROZESS))
+                    Verbinden(k.Schluessel, ABNEHMER_PROZESS, Kantenart.Prozess, 0, "");
             }
         }
 
@@ -573,17 +745,22 @@ namespace WindowsFormsApplication1
             Verbinden(erzeuger, PRAEFIX_SPEICHER + idPuffer, Kantenart.Ladung, position, hinweis);
         }
 
-        /// <summary>Direkte Deckung: Erzeuger → Abnehmer, je nach Bedarfsart.</summary>
-        private void DirektkanteAnlegen(string erzeuger, string bedarfsart, bool hatBrauchwasser)
+        /// <summary>
+        /// Direkte Deckung: Erzeuger → Abnehmer, je nach Ziel und Bedarfsart der
+        /// Senkenzeile (PAKET S2 — das dritte Ziel <c>Prozesswaerme</c> ist dazugekommen).
+        /// </summary>
+        private void DirektkanteAnlegen(string erzeuger, Z_AnlageSenkeModel z,
+                                        bool hatBrauchwasser, bool hatProzess)
         {
-            bool heizung = !string.Equals(bedarfsart, WaermequelleClass.SENKE_WARMWASSER,
-                                          StringComparison.Ordinal);
-            bool warmwasser = hatBrauchwasser &&
-                              !string.Equals(bedarfsart, WaermequelleClass.SENKE_HEIZUNG,
-                                             StringComparison.Ordinal);
+            if (DirektsenkeBedient(z, Kanal.HEIZUNG))
+                Verbinden(erzeuger, ABNEHMER_HEIZKREIS, Kantenart.Versorgung, 0, "");
 
-            if (heizung) Verbinden(erzeuger, ABNEHMER_HEIZKREIS, Kantenart.Versorgung, 0, "");
-            if (warmwasser) Verbinden(erzeuger, ABNEHMER_WARMWASSER, Kantenart.Versorgung, 0, "");
+            if (hatBrauchwasser && DirektsenkeBedient(z, Kanal.BRAUCHWASSER))
+                Verbinden(erzeuger, ABNEHMER_WARMWASSER, Kantenart.Versorgung, 0, "");
+
+            // PAKET E1 (S2-O7): eigene Kantenart für den Prozessabnehmer.
+            if (hatProzess && DirektsenkeBedient(z, Kanal.PROZESS))
+                Verbinden(erzeuger, ABNEHMER_PROZESS, Kantenart.Prozess, 0, "");
         }
 
         /// <summary>
@@ -716,7 +893,10 @@ namespace WindowsFormsApplication1
                                        Dictionary<int, WaermesenkeClass.PufferInfo> pufferJeId,
                                        bool hatBrauchwasser)
         {
-            if (PufferBedientHeizung(idPuffer, pufferJeId))
+            // PAKET S2: über das KLASSEN-SET statt über die Alt-Verwendung; die Kette
+            // endet am ERSTEN Kanal, den der Speicher bedient (das Band zeigt einen Weg,
+            // keine Verzweigung).
+            if (PufferBedient(idPuffer, Kanal.HEIZUNG))
                 kette.Add(new Kettenglied
                 {
                     Schluessel = ABNEHMER_HEIZKREIS,
@@ -724,13 +904,22 @@ namespace WindowsFormsApplication1
                     Art = Knotenart.Abnehmer,
                     PfeilDavor = Kantenart.Versorgung
                 });
-            else if (hatBrauchwasser && PufferBedientWarmwasser(idPuffer, pufferJeId))
+            else if (hatBrauchwasser && PufferBedient(idPuffer, Kanal.BRAUCHWASSER))
                 kette.Add(new Kettenglied
                 {
                     Schluessel = ABNEHMER_WARMWASSER,
                     Text = MyResource.Resource.SIM_SCHEMA_ABNEHMER_WARMWASSER,
                     Art = Knotenart.Abnehmer,
                     PfeilDavor = Kantenart.Versorgung
+                });
+            else if (PufferBedient(idPuffer, Kanal.PROZESS))
+                kette.Add(new Kettenglied
+                {
+                    Schluessel = ABNEHMER_PROZESS,
+                    Text = MyResource.Resource.KANAL_PROZESS_ANZEIGE,
+                    Art = Knotenart.Abnehmer,
+                    // PAKET E1 (S2-O7): eigene Kantenart, auch im Kaskadenband.
+                    PfeilDavor = Kantenart.Prozess
                 });
 
             Ketten.Add(kette);
@@ -767,9 +956,18 @@ namespace WindowsFormsApplication1
             };
         }
 
-        private static int HauptsenkePuffer(Hydraulikbild.AnlagenEintrag a)
+        /// <summary>
+        /// Der Speicher, den die Anlage auf RANG 1 lädt; 0, wenn Rang 1 eine Direktsenke
+        /// ist. PAKET S2: aus der Senkenliste statt aus der Altspalte — sonst hinge die
+        /// Kaskadenkette an einer Spiegelung, die die Prozess-Ziele nicht abbilden kann.
+        /// </summary>
+        private int HauptsenkePuffer(Hydraulikbild.AnlagenEintrag a)
         {
-            return WaermesenkeClass.IstPufferZiel(a.Senke.Ziel) ? a.Senke.ID_Puffer : 0;
+            List<Z_AnlageSenkeModel> kette = Senken(a.ID);
+            if (kette.Count == 0) return 0;
+
+            Z_AnlageSenkeModel z = kette[0];
+            return WaermesenkeClass.IstPufferZiel(z.Ziel) ? z.ID_Puffer : 0;
         }
 
         // --- Selbstprüfung ------------------------------------------------------------

@@ -11,10 +11,27 @@ namespace WindowsFormsApplication1
 
         public int[] mo_anfang = new int[12];
         public int[] mo_ende = new int[12];
-        public float[] monats_werte = new float[12];
-        public float[] wochen_werte = new float[168];
         public float[] prozesswerte = new float[8760 *4 ];
-        public float[] temp = new float[8760 * 4];
+
+        /// <summary>
+        /// Wochentag des 1. Januar für die Profilkachelung (Montag = 0 … Sonntag = 6,
+        /// Entscheidung F3). <b>−1 = automatisch</b>: Dann wird er über die Klimaregion
+        /// des Projekts aus <c>Tab_Klimadaten.WE</c> abgeleitet.
+        ///
+        /// Warum überhaupt eine Selbstermittlung: Diese Klasse bekommt nur die
+        /// Projekt-ID, keine Klimaregion — anders als
+        /// <see cref="SimulationWaermebedarf"/>, dem der Aufrufer beides übergibt. F3 gilt
+        /// aber für ALLE drei Bedarfsarten; ohne eigenen Kalenderzugriff bliebe der
+        /// Stromzweig als einziger bei der Altkonvention. Wer den Wert kennt, kann ihn
+        /// setzen und spart die zusätzliche Lesung.
+        /// </summary>
+        public int WochentagJan1 = -1;
+
+        /// <summary>Projekt, für das <see cref="_kalenderWert"/> gilt (−1 = noch keines).</summary>
+        private int _kalenderProjekt = -1;
+
+        /// <summary>Zwischengespeicherter Kalender des Projekts <see cref="_kalenderProjekt"/>.</summary>
+        private int _kalenderWert = ProfilBedarf.WOCHENTAG_ALTKONVENTION;
 
         public float[] Strombedarf_viertelStundenwerte = new float[8760 * 4];
         private float[] Strombedarf_sortiert = new float[8760 * 4];
@@ -65,7 +82,6 @@ namespace WindowsFormsApplication1
             Array.Clear(Strombedarf_viertelStundenwerte, 0, Strombedarf_viertelStundenwerte.Length);
             Array.Clear(Strombedarf_sortiert, 0, Strombedarf_sortiert.Length);
             Array.Clear(prozesswerte, 0, prozesswerte.Length);
-            Array.Clear(temp, 0, temp.Length);
             Array.Clear(Stromganglinie, 0, Stromganglinie.Length);
             Array.Clear(Dauerlinie, 0, Dauerlinie.Length);
             Array.Clear(Dauerlinie_nicht_sortiert, 0, Dauerlinie_nicht_sortiert.Length);
@@ -158,108 +174,90 @@ namespace WindowsFormsApplication1
             Array.Reverse(Dauerlinie);
         }
 
+        /// <summary>
+        /// Der Wochentag, mit dem die Profilkachelung dieses Laufs startet (F3).
+        /// Reihenfolge: ausdrücklich gesetzter Wert, sonst der Kalender der Klimaregion
+        /// des Projekts, sonst die Altkonvention (Sonntag).
+        ///
+        /// Das Ergebnis wird JE PROJEKT zwischengespeichert: Die Vorschaudialoge rufen die
+        /// Profilrechnung mehrfach hintereinander, und der Kalender ändert sich zwischen
+        /// zwei Aufrufen nicht.
+        /// </summary>
+        private int WochentagJan1Aufloesen()
+        {
+            if (WochentagJan1 >= 0) return WochentagJan1;
+            if (_kalenderProjekt == m_ID_Projekt) return _kalenderWert;
+
+            int wochentag = ProfilBedarf.WOCHENTAG_ALTKONVENTION;
+            if (m_ID_Projekt > 0)
+            {
+                ProjektCtrl projektCtrl = new ProjektCtrl();
+                projektCtrl.ReadSingle(m_ID_Projekt);
+                wochentag = ProfilBedarf.WochentagJan1AusKlimaregion(projektCtrl.m_ID_Klimaregion);
+            }
+
+            _kalenderProjekt = m_ID_Projekt;
+            _kalenderWert = wochentag;
+            return wochentag;
+        }
+
+        /// <summary>
+        /// Stromverbraucherprofile als Stundenganglinie [8760].
+        ///
+        /// PAKET K1: Der Algorithmus („12 Monatswerte × 168-h-Wochenprofil → 8760")
+        /// steht jetzt einmal in <see cref="ProfilBedarf"/> — gemeinsam mit dem
+        /// Brauchwasser- und dem Prozesswärmezweig (Konzept 4.2). Damit gelten hier
+        /// dieselben Fehlerpfade wie dort; das ist gegenüber dem Bestand eine
+        /// ÄNDERUNG: Ein fehlender Kopfsatz und ein fehlendes Wochenprofil liefen im
+        /// Stromzweig bisher still durch — letzteres sogar mit dem Profil des vorigen
+        /// Durchlaufs weiter (derselbe Befund, den V0-3 für die beiden Wärmezweige
+        /// behoben hat). Beides wird jetzt gemeldet und mit Anteil 0 übersprungen.
+        ///
+        /// V0-2 UNVERÄNDERT: Der Ergebnisvektor summiert ALLE Profile — die
+        /// Profilroutine addiert auf, statt zu überschreiben. Bei genau einem Profil ist
+        /// das Ergebnis dasselbe wie vor V0.
+        ///
+        /// Rückgabe <c>null</c> = Abbruch (wie bisher): Der Aufrufer macht daraus den
+        /// Fehlertext des Laufs, damit kein Ergebnis mit leerem Stromprofil entsteht.
+        /// </summary>
         public float[] Stromprofil_Strombedarf_berechnen(List<string> list = null)
         {
-            RecordSet rs = new RecordSet();
-            RecordSet rs_pwtyp = new RecordSet();
-            List<string> stromprofil_list = new List<string>();
-            float[] temp = new float[8760];
+            float[] summe = new float[8760];
 
             // NACHARBEIT PAKET 8, BEFUND N6: Das gerade bearbeitete Stromprofil, damit der
             // Sammel-catch unten sagen kann, WORAN es lag. Die häufigste Ursache ist eine
-            // InvalidCastException aus "(double)rs.Read(...)" - ein leeres Monats- oder
-            // Wochenfeld liefert DBNull, und der Cast fliegt. Ohne den Profilnamen muss
-            // der Anwender alle Stromprofile des Projekts durchsehen.
-            string aktuellesProfil = "";
+            // InvalidCastException aus dem Lesen eines leeren Monats- oder Wochenfelds
+            // (DBNull). Ohne den Profilnamen muss der Anwender alle Stromprofile des
+            // Projekts durchsehen. Die Profilroutine schreibt ihn laufend mit.
+            ProfilLaufInfo info = new ProfilLaufInfo();
 
             try
             {
-                if (list == null)
-                {
-                    // Abfrage über Projekt Stromprofile
-                    stromprofil_list.Clear();
-                    rs.Open("select * from Abfrage_Monatsstrom where ID_Projekt=" + m_ID_Projekt);
-                    while (rs.Next())
-                    {
-                        stromprofil_list.Add((string)rs.Read("Bezeichner").ToString());
-                    }
-                    rs.Close();
-                }
-                else
-                {
-                    // Parameter Liste mit Stromprofilnamen
-                    stromprofil_list = list;
-                }
+                ProfilQuellmodus modus = (list == null) ? ProfilQuellmodus.Projektrechnung
+                                                        : ProfilQuellmodus.Katalogvorschau;
 
-                for (int k = 0; k < stromprofil_list.Count; k++)
-                {
-                    aktuellesProfil = stromprofil_list[k];
-                    rs.Open("select * from Tab_Stromverbraucher where Bezeichner='" + stromprofil_list[k] + "'");
-                    if (rs.Next())
-                    {
-                        float pjv = 0;
-                        float jv = 0;
-                        if (m_ID_Projekt != 0) // skalieren ggf. mit geändertem Projekt Jahresverbrauch
-                        {
-                            Z_ProjektStromverbraucherCtrl ctrl = new Z_ProjektStromverbraucherCtrl();
-                            ctrl.ReadAll("select * from Z_Projekt_Stromverbraucher where ID_Projekt=" + m_ID_Projekt + " AND Bezeichner='" + (string)rs.Read("Bezeichner") + "'");
-                            if (ctrl.rows > 0)
-                                pjv = (float)ctrl.items[0].m_Summe;
-                        }
+                bool vollstaendig = ProfilBedarf.Rechnen(
+                    ProfilQuelle.Strom(modus), m_ID_Projekt, list,
+                    WochentagJan1Aufloesen(), mo_anfang, mo_ende, summe, null, info);
 
-                        for (int i = 0; i < 12; i++)
-                        {
-                            double d = (double)rs.Read("Monat_" + (i + 1).ToString());
-                            monats_werte[i] = (float)d;
-                            jv += monats_werte[i];
-                        }
+                // Typbezug leer: Bis hierher lief der Lauf in eine InvalidCastException und
+                // brach über den catch ab. Jetzt meldet die Profilroutine den Grund und der
+                // Abbruch bleibt - dieselbe Wirkung, mit Diagnose.
+                if (!vollstaendig) return null;
 
-                        if (pjv > 0)
-                        {
-                            for (int i = 0; i < 12; i++)
-                            {
-                                monats_werte[i] = monats_werte[i] * pjv / jv;
-                            }
-                        }
-
-                        // Tagesverteilung für den Prozess ermitteln
-                        rs_pwtyp.Open("select * from Tab_Stromverbrauchertyp where Typname='" + (string)rs.Read("Typ") + "'");
-
-                        if (rs_pwtyp.Next())
-                        {
-                            for (int i = 0; i < 168; i++)
-                            {
-                                double dw = (double)rs_pwtyp.Read((i + 1).ToString());
-                                wochen_werte[i] = (float)dw;
-                            }
-                        }
-                        rs_pwtyp.Close();
-
-                        // Wärmebedarf jährlich gemäß wöchentlicher Verteilung
-                        //temp = com.I_strom_wochetojahr(wochen_werte, monats_werte, mo_anfang, mo_ende);
-                        WPPlan.Core.BhkwPlan.StromWocheToJahr(wochen_werte, monats_werte, temp, mo_anfang, mo_ende);
-                        //com.CSharp_I_vectoren_addieren(temp, prozesswerte);
-                    }
-                    rs.Close();
-                }
-                return temp;
+                return summe;
             }
             catch (SystemException ex)
             {
-                rs.Close();
                 // PAKET 8 (Konzept 13.4): Der Sammel-catch meldet dialogfrei. Die
                 // Rückgabe null ist unverändert - der Aufrufer oben macht daraus den
                 // Fehlertext des Laufs.
-                //
-                // NACHARBEIT BEFUND N6: mit dem betroffenen Stromprofil. Der Text ist die
-                // einzige Diagnose, die der Anwender bekommt - die Rückgabe null wird
-                // oben zu einem allgemeinen Abbruchtext, und der nennt kein Profil.
                 SimulationProtokoll.Aktuell.Fehlermeldung(string.Format(
                     MyResource.Resource.SIMENG_STROMPROFILE_DIAGNOSE,
-                    string.IsNullOrEmpty(aktuellesProfil)
+                    string.IsNullOrEmpty(info.AktuellerName)
                         ? ""
                         : string.Format(MyResource.Resource.SIMENG_STROMPROFIL_ZULETZT_BEARBEITET,
-                                        aktuellesProfil),
+                                        info.AktuellerName),
                     ex.Message));
                 return null;
             }

@@ -78,7 +78,7 @@
             this.btn_OK.Location = new System.Drawing.Point(516, 378);
             this.btn_OK.Name = "btn_OK";
             this.btn_OK.Size = new System.Drawing.Size(110, 30);
-            this.btn_OK.Text = "Übernehmen";
+            this.btn_OK.Text = "OK";
             // 
             // btn_Abbrechen
             // 

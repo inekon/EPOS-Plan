@@ -63,6 +63,65 @@ namespace WindowsFormsApplication1
             dgv.RowsDefaultCellStyle.BackColor = Color.White;
             // Farbe für jede zweite Zeile (Zebra)
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(215, 230, 245);
+
+            // D2 (28.08.2026): Fusszeile auf die Norm - bisher Abbrechen links von OK,
+            // Groesse 105x31 und ohne Anker. btn_neuerWert ("Uebernehmen", 17/53 mitten
+            // in der Maske) bleibt unangetastet: die Norm bewegt nur uebergebene Knoepfe.
+            // Im Assistentenbetrieb sind beide Knoepfe unsichtbar (SetControls, bWizard).
+            FusszeilenNorm.Einhaengen(this, btn_OK, btn_Abbrechen);
+
+            // Auf derselben Zeile (y = 544) stehen links die beiden Arbeitsknoepfe
+            // "monatlicher Verlauf" und "Simulation". Sie behalten Lage und Groesse -
+            // ihre Beschriftung braucht die Breite - und bekommen nur den unteren Anker,
+            // damit die ganze Zeile beim Aufziehen des Fensters mitwandert.
+            FusszeilenNorm.ZeileMitziehen(btn_ErgebnisseVerbrauch, btn_Simulation);
+
+            SchriftAngleichen();   // D3
+        }
+
+        /// <summary>
+        /// D3 (28.08.2026), D-Check Klasse e: Bringt die acht Steuerelemente mit
+        /// Fremdschrift auf die Schrift des Formulars (Segoe UI 10).
+        ///
+        /// <para>Der Dialog fuehrte vier Schriften: Segoe UI 10 (Formularschrift,
+        /// 26 Steuerelemente), Segoe UI 8 (6 Textfelder), Segoe UI 9,75 fett (die beiden
+        /// Uebernahmeknoepfe der Auswahlliste) und Segoe UI 12 fett (das Kopfband).</para>
+        ///
+        /// <para><b>Sechs Textfelder auf 8 pt.</b> Sie tragen dieselben Werte wie die
+        /// Beschriftungen daneben, nur zwei Punkt kleiner - keine erkennbare Absicht,
+        /// sondern Designer-Bestand. Sie erben jetzt wieder (Font = null). Ihre Hoehe
+        /// waechst dabei um 3 px; der engste Nachbarabstand danach ist 2 px
+        /// (textBox_Jahres_Verbrauch 474+25 gegen textBox_SummeProzesswaerme 501), alle
+        /// uebrigen liegen bei 5 px und mehr. textBox_Beschreibung ist mehrzeilig und
+        /// behaelt seine Hoehe ohnehin.</para>
+        ///
+        /// <para><b>btn_Hinzu / btn_Entfernen.</b> Die FETTUNG ist Absicht - sie hebt die
+        /// beiden Uebernahmepfeile hervor. Angeglichen wird nur die Groesse, indem die
+        /// Schrift des Formulars mit dem Fettschnitt uebernommen wird. Dasselbe Muster
+        /// wie bei lblCO2 im Paket D2.</para>
+        ///
+        /// <para><b>label_Type bleibt.</b> Segoe UI 12 fett ist das Kopfband der Maske,
+        /// also eine Titelrolle.</para>
+        /// </summary>
+        private void SchriftAngleichen()
+        {
+            string[] erben =
+            {
+                "textBox_Verbrauch", "textBox_Prozess_Name", "textBox_Jahres_Verbrauch",
+                "textBox_Beschreibung", "textBox_Prozess_Type", "textBox_SummeProzesswaerme"
+            };
+            foreach (string n in erben)
+            {
+                Control[] treffer = this.Controls.Find(n, true);
+                if (treffer.Length > 0) treffer[0].Font = null;
+            }
+
+            Font fett = new Font(this.Font, FontStyle.Bold);
+            foreach (string n in new[] { "btn_Hinzu", "btn_Entfernen" })
+            {
+                Control[] treffer = this.Controls.Find(n, true);
+                if (treffer.Length > 0) treffer[0].Font = fett;
+            }
         }
 
         private void SetDBList()
@@ -171,7 +230,9 @@ namespace WindowsFormsApplication1
         {
             RecordSet rs = new RecordSet();
 
-            if (dataGridView1.CurrentCell.RowIndex == -1) return;
+            // FR-8: Bei leerem Katalog gibt es keine aktuelle Zelle/Zeile -
+            // CurrentCell/CurrentRow sind dann null, der alte RowIndex-Vergleich warf.
+            if (dataGridView1.CurrentCell == null || dataGridView1.CurrentRow == null) return;
 
             string sql = "SELECT * from Tab_Prozesswaerme_STAMM where Bezeichner='" + (string)dataGridView1.CurrentRow.Cells[0].Value + "'";
             rs.Open(sql);
@@ -223,6 +284,9 @@ namespace WindowsFormsApplication1
                 }
                 if (list_pwmodel.Count == 0)
                 {
+                    // FR-8: Nur bei gefuelltem Katalog - Rows[0] warf bei leerem Grid.
+                    if (dataGridView1.Rows.Count == 0) return;
+
                     dataGridView1.Rows[0].Selected = true;
                     dataGridView1.Rows[0].Cells[0].Selected = true;
 

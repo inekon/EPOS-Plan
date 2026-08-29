@@ -64,6 +64,9 @@ namespace WindowsFormsApplication1
         /// eine Datenbankabfrage je Wechsel wäre Verschwendung.
         /// </summary>
         private TarifParameter _tarifCache;
+
+        // ---- KD6a: Kennzahl-Kacheln (gleiche Karte wie die Kosten-Seite) --------
+        private UcBkKosten.Kachel _kKapitalwert, _kAnnuitaet, _kAmortisation, _kIrr;
         private readonly Dictionary<int, EmissionsBilanz> _bilanzen = new Dictionary<int, EmissionsBilanz>();
 
         /// <summary>Stammprojekt-ID der angezeigten Vergleichsgruppe.</summary>
@@ -108,8 +111,126 @@ namespace WindowsFormsApplication1
             // fest und verhindert, dass ein Designer-Speichern die Skalierung erstmals
             // scharf schaltet — Muster: ucFuelSettings, Form_SpotpreisImport.
             InitializeComponent();
+            KachelnBauen();
             TexteSetzen();
             SzenarienFuellen();
+            BauePhotovoltaikKnopf();
+        }
+
+        // ================================================================= P5
+
+        /// <summary>Andockpunkt des PV-Vergütungsdialogs (PV-Konzept § 7).</summary>
+        private Button btnPhotovoltaik;
+
+        /// <summary>Ä18: BHKW-Sicht der Tarifstruktur (Rollenmodell samt Referenz
+        /// und Einspeisung) — sichtbar, wenn die Gruppe ein BHKW führt.</summary>
+        private Button btnBhkwTarif;
+
+        /// <summary>Ä18: Einkaufsseite der Tarifstruktur (Zonen-Bezugspreise,
+        /// Staffel, Bezugsrolle) — sichtbar bei Wärmepumpe in der Gruppe oder
+        /// aktiver Tarifstruktur (sonst gäbe es keinen Weg, sie abzuschalten).</summary>
+        private Button btnStromTarif;
+
+        /// <summary>
+        /// ETAPPE P5: Knopf „Photovoltaik…" links neben „Tarifstruktur…" —
+        /// PROGRAMMATISCH, damit die Designer-Datei unberührt bleibt (dasselbe
+        /// Muster wie die übrigen Bestands-Zusätze). Sichtbar nur, wenn die
+        /// Vergleichsgruppe PV-Anlagen führt (<c>ErzeugerDerGruppe</c>).
+        /// </summary>
+        private void BauePhotovoltaikKnopf()
+        {
+            btnPhotovoltaik = new Button
+            {
+                Size = btnTarif.Size,
+                Anchor = btnTarif.Anchor,
+                // Ä16: nimmt den Platz des entfallenen Tarif-Knopfs ein.
+                Location = btnTarif.Location,
+                UseVisualStyleBackColor = true,
+                Text = "Photovoltaik…"
+            };
+            try
+            {
+                string t = MyResource.Resource.ResourceManager.GetString("PVW_KNOPF");
+                if (!string.IsNullOrEmpty(t)) btnPhotovoltaik.Text = t;
+            }
+            catch { }
+            WirtschaftlichkeitCtrl.ErzeugerFlags flags = null;
+            try { flags = new WirtschaftlichkeitCtrl().ErzeugerDerGruppe(_idStamm); }
+            catch { }
+            btnPhotovoltaik.Visible = flags != null && flags.Photovoltaik;
+            btnPhotovoltaik.Click += btnPhotovoltaik_Click;
+            Controls.Add(btnPhotovoltaik);
+
+            // Ä18 (Nutzerauftrag 26.08.2026): Die Tarifstruktur wird KOMPONENTEN-
+            // BEZOGEN gepflegt — der Sammel-Einstieg btnTarif bleibt unsichtbar
+            // (Ä16). „BHKW-Tarif…“ öffnet die BHKW-Sicht (Differenzmethode),
+            // „Strombezug…“ die Einkaufsseite (Wärmepumpe & Verbraucher); der
+            // PV-Anteil liegt im PV-Vergütungsdialog (Knopf „Einspeise-Tarif…“).
+            btnBhkwTarif = new Button
+            {
+                Size = btnTarif.Size,
+                Anchor = btnTarif.Anchor,
+                Location = new Point(btnTarif.Left - btnTarif.Width - 6, btnTarif.Top),
+                UseVisualStyleBackColor = true,
+                Text = "BHKW-Tarif…"
+            };
+            try
+            {
+                string t = MyResource.Resource.ResourceManager.GetString("WIRT_BTN_BHKW_TARIF");
+                if (!string.IsNullOrEmpty(t)) btnBhkwTarif.Text = t;
+            }
+            catch { }
+            btnBhkwTarif.Visible = flags != null && flags.Bhkw;
+            btnBhkwTarif.Click += delegate { TarifSichtOeffnen(TarifSicht.Bhkw); };
+            Controls.Add(btnBhkwTarif);
+
+            bool tarifAktiv = false;
+            try { tarifAktiv = _ctrl.LadeTarif(_idStamm).Aktiv; }
+            catch { }
+            btnStromTarif = new Button
+            {
+                Size = btnTarif.Size,
+                Anchor = btnTarif.Anchor,
+                Location = new Point(btnTarif.Left - 2 * (btnTarif.Width + 6), btnTarif.Top),
+                UseVisualStyleBackColor = true,
+                Text = "Strombezug…"
+            };
+            try
+            {
+                string t = MyResource.Resource.ResourceManager.GetString("WIRT_BTN_STROM_TARIF");
+                if (!string.IsNullOrEmpty(t)) btnStromTarif.Text = t;
+            }
+            catch { }
+            btnStromTarif.Visible = (flags != null && flags.Waermepumpe) || tarifAktiv;
+            btnStromTarif.Click += delegate { TarifSichtOeffnen(TarifSicht.Strombezug); };
+            Controls.Add(btnStromTarif);
+        }
+
+        /// <summary>Ä18: öffnet die Tarifstruktur in einer Komponentensicht —
+        /// derselbe Nachlauf wie beim früheren Sammel-Einstieg (btnTarif_Click).</summary>
+        private void TarifSichtOeffnen(TarifSicht sicht)
+        {
+            using (var dlg = new Form_Tarifstruktur(_idStamm, sicht))
+            {
+                dlg.ShowDialog(Besitzer);
+                if (dlg.Gespeichert)
+                {
+                    _tarifCache = null;   // E7: Beschriftung der Stromkostenzeile neu holen
+                    ZeigeParameterzeile();
+                    Melde("Tarifstruktur gespeichert — bitte neu berechnen.");
+                }
+            }
+        }
+
+        private void btnPhotovoltaik_Click(object sender, EventArgs e)
+        {
+            using (var dlg = new Form_PhotovoltaikVerguetung())
+            {
+                dlg.SetControls(_idStamm);
+                dlg.ShowDialog(Besitzer);
+                if (dlg.Gespeichert)
+                    Melde("PV-Vergütung gespeichert — bitte neu berechnen.");
+            }
         }
 
         /// <summary>Titelzeile für den Dialog-Wrapper bzw. die Seitenüberschrift.</summary>
@@ -135,7 +256,11 @@ namespace WindowsFormsApplication1
             colName.Text = "Projektname";
             colSim.Text = "Simulation";
             lblSzenario.Text = "Szenario:";
-            btnTarif.Text = "Tarifstruktur…";
+            // Ä16: Tarifstruktur (und Strom-Leistungspreis) werden im
+            // Energieträgerdialog gepflegt — der Einstieg hier entfällt.
+            // (Der PV-Knopf entsteht erst NACH TexteSetzen und nimmt den Platz
+            // bei seiner Erzeugung ein — hier wäre er noch null.)
+            btnTarif.Visible = false;
             btnParameter.Text = "Parameter…";
             btnVerlauf.Text = "Verlauf…";
             btnBerechnen.Text = "Berechnen";
@@ -438,6 +563,89 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------- Anzeige
 
+        /// <summary>
+        /// KD6a (Nutzerabnahme 26.08.2026): Die Wirtschaftlichkeitsübersicht bekommt
+        /// die Kartensprache der Kosten-Seite — vier Kennzahl-Kacheln über der
+        /// Vergleichstabelle. Reine ANZEIGE der bereits berechneten Ergebniswerte
+        /// (beste Variante gegenüber Stamm im gewählten Szenario).
+        /// </summary>
+        private void KachelnBauen()
+        {
+            var pnl = new TableLayoutPanel
+            {
+                Location = new System.Drawing.Point(12, 194),
+                Size = new System.Drawing.Size(876, 58),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
+                ColumnCount = 4,
+                RowCount = 1
+            };
+            for (int i = 0; i < 4; i++)
+                pnl.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25f));
+            pnl.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
+
+            _kKapitalwert = new UcBkKosten.Kachel();
+            _kAnnuitaet = new UcBkKosten.Kachel();
+            _kAmortisation = new UcBkKosten.Kachel();
+            _kIrr = new UcBkKosten.Kachel();
+            _kKapitalwert.Setze(T("WIRT_KACHEL_KW", "Kapitalwert ggue. Stamm"), "");
+            _kAnnuitaet.Setze(T("WIRT_KACHEL_ANNUITAET", "Annuität"), "");
+            _kAmortisation.Setze(T("WIRT_KACHEL_AMORTISATION", "Amortisation"), "");
+            _kIrr.Setze(T("WIRT_KACHEL_IRR", "Interner Zinsfuß"), "");
+            pnl.Controls.Add(_kKapitalwert, 0, 0);
+            pnl.Controls.Add(_kAnnuitaet, 1, 0);
+            pnl.Controls.Add(_kAmortisation, 2, 0);
+            pnl.Controls.Add(_kIrr, 3, 0);
+            Controls.Add(pnl);
+        }
+
+        private void KachelnAktualisieren(List<WirtschaftlichkeitErgebnis> zeilen)
+        {
+            var kultur = BerichtTexte.Kultur;
+            WirtschaftlichkeitErgebnis beste = null;
+            foreach (WirtschaftlichkeitErgebnis x in zeilen)
+                if (!x.IstStamm && x.KapitalwertDiff.HasValue &&
+                    (beste == null || x.KapitalwertDiff.Value > beste.KapitalwertDiff.Value))
+                    beste = x;
+
+            if (beste != null)
+            {
+                string name = _namen.ContainsKey(beste.IdProjekt)
+                    ? _namen[beste.IdProjekt] : beste.Anzeige;
+                string quelle = string.Format(T("WIRT_KACHEL_BESTE", "beste Variante: {0}"), name);
+                _kKapitalwert.Wert = beste.KapitalwertDiff.Value.ToString("N0", kultur) + " €";
+                _kKapitalwert.Quelle = quelle;
+                _kAnnuitaet.Wert = beste.AnnuitaetKW.HasValue
+                    ? beste.AnnuitaetKW.Value.ToString("N0", kultur) + " €/a" : "—";
+                _kAnnuitaet.Quelle = quelle;
+                _kAmortisation.Wert = beste.AmortisationJahre.HasValue
+                    ? beste.AmortisationJahre.Value.ToString("N1", kultur) + " a"
+                    : T("WIRT_KACHEL_KEINE", "keine");
+                _kAmortisation.Quelle = quelle;
+                _kIrr.Wert = beste.IRR.HasValue
+                    ? beste.IRR.Value.ToString("N1", kultur) + " %" : "—";
+                _kIrr.Quelle = quelle;
+                return;
+            }
+
+            WirtschaftlichkeitErgebnis stamm = zeilen.Find(x => x.IstStamm);
+            string q = T("WIRT_KACHEL_NUR_STAMM", "nur Stammprojekt gerechnet");
+            _kKapitalwert.Wert = stamm != null && stamm.Kapitalwert.HasValue
+                ? stamm.Kapitalwert.Value.ToString("N0", kultur) + " €" : "—";
+            _kKapitalwert.Quelle = stamm != null
+                ? T("WIRT_KACHEL_STAMM_KW", "Nettobarwert des Stammprojekts") : "";
+            _kAnnuitaet.Wert = "—"; _kAnnuitaet.Quelle = q;
+            _kAmortisation.Wert = "—"; _kAmortisation.Quelle = q;
+            _kIrr.Wert = "—"; _kIrr.Quelle = q;
+        }
+
+        private static string T(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
+
         private void ZeigeErgebnisse()
         {
             string szenario = cbSzenario.SelectedItem as string ?? WirtschaftlichkeitSzenario.ERWARTET;
@@ -450,6 +658,7 @@ namespace WindowsFormsApplication1
                 .Where(x => x.Szenario == szenario)
                 .OrderByDescending(x => x.IstStamm)
                 .ToList();
+            KachelnAktualisieren(zeilen);
             if (zeilen.Count == 0) return;
 
             grid.Columns.Add("kennzahl", "Kennzahl");
@@ -539,6 +748,9 @@ namespace WindowsFormsApplication1
             lvVarianten.Enabled = !busy;
             cbSzenario.Enabled = !busy;
             btnTarif.Enabled = !busy;
+            if (btnPhotovoltaik != null) btnPhotovoltaik.Enabled = !busy;
+            if (btnBhkwTarif != null) btnBhkwTarif.Enabled = !busy;
+            if (btnStromTarif != null) btnStromTarif.Enabled = !busy;
             btnParameter.Enabled = !busy;
             btnVerlauf.Enabled = !busy;
             btnBerechnen.Enabled = !busy;

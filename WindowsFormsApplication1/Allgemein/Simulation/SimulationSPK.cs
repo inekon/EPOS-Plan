@@ -102,71 +102,16 @@ namespace WindowsFormsApplication1
         int[] Brennstoff_Art = new int[MAX_SPK];
         double[] Kessel_Leistung_Spk = new double[MAX_SPK];
 
-        public bool Berechnung(int ID_Projekt)
-        {
-            int Anzahl = 0;
-            m_ID_Projekt = ID_Projekt;
-
-            Init();
-
-            // 1. Gesamten Wärmebedarf ermitteln (in MWh)
-            Waermebedarf_gesamt = 0;
-            Array.ForEach(Waermebedarf, value => Waermebedarf_gesamt += value);
-            Waermebedarf_gesamt /= 1000;
-            
-            Strombedarf_gesamt = Strombedarf_stuendlich.Sum();
-            HeizkesselCtrl heizkesselctrl = new HeizkesselCtrl();
-            Anzahl = spk_list.Count;
-            // B0-2: Kein Aliasing! "Restwaerme = Waermebedarf" band dasselbe Array-Objekt —
-            // Init() des nächsten Laufs (Array.Clear) löschte damit den Projekt-Wärmebedarf.
-            if (Anzahl == 0) { Restwaerme = (float[])Waermebedarf.Clone(); return true; }
-
-            // B0-12: Alle Kessel-Arrays sind fest auf MAX_SPK dimensioniert — mehr Einträge
-            // in spk_list liefen ungeprüft in die Einlese-Schleife und ab dem 11. Kessel
-            // in einen Überlauf sämtlicher Kessel-Arrays.
-            //
-            // PAKET 8 (Konzept 13.4): Die Meldung geht als WARNUNG in den Protokollkanal
-            // statt in eine MessageBox - der Lauf rechnet unverändert weiter, nur eben
-            // ohne den Rechner anzuhalten. Die Kappung selbst ist unberührt.
-            if (Anzahl > MAX_SPK)
-            {
-                SimulationProtokoll.Aktuell.Warnung(string.Format(
-                    MyResource.Resource.SIMENG_KESSEL_MAX_UEBERSCHRITTEN, Anzahl, MAX_SPK, MAX_SPK));
-                Anzahl = MAX_SPK;
-            }
-
-            // 2. Kesseldaten laden und Wirkungsgrade normieren
-            //
-            // Der Block steht seit der Paket-5-Nacharbeit (Befund N6) in einer eigenen
-            // Methode: Der zweikanalige Weg braucht ihn Zeile für Zeile gleich, und zwei
-            // Kopien wären die sichere Quelle künftiger Abweichungen — ein Fix am Altpfad
-            // wirkte im neuen Weg nicht, und die Regressionssuite (Flag aus) fände das nie.
-            // Die AUSGEFÜHRTEN Anweisungen und ihre Reihenfolge sind unverändert; der
-            // bereits erzeugte HeizkesselCtrl wird hineingereicht, damit auch seine
-            // Erzeugungsstelle bleibt, wo sie war.
-            if (!Kesseldaten_Einlesen(heizkesselctrl, Anzahl)) return false;
-
-            // 3. Die stündliche Simulation durchführen (Ermittelt Nutzwärme UND stündlichen Verbrauch)
-            Heizkessel_Simulation(Waermebedarf, ref Gasspitze_Spk, s_waerme_Gas_Spk, s_waerme_Oel_Spk,
-                Max_Waermebedarf, Anzahl, Kessel_Leistung_Spk, Kessel_Wirk_Gas_Spk, Kessel_Wirk_Oel_Spk,
-                Betriebsbereitschaft_Verluste, Brennstoff_Betrieb_Spk, Kessel_Verbrauch_MWh_Spk);
-
-            // 4./5. Verbrauch global bilanzieren, Emissionen und Jahresnutzungsgrad.
-            //
-            // Der Block steht seit Paket 5 in einer eigenen Methode: Der zweikanalige
-            // Weg braucht ihn Zeile für Zeile gleich, und zwei Kopien wären die sichere
-            // Quelle künftiger Abweichungen. Die AUSGEFÜHRTEN Anweisungen und ihre
-            // Reihenfolge sind unverändert.
-            Bilanz_und_Nutzungsgrad(Anzahl);
-
-            return true;
-        }
+        // PAKET A1: Hier stand "Berechnung(int ID_Projekt)" - der Einstieg des
+        // einkanaligen Altpfads (Jahressumme, Kesseldaten_Einlesen,
+        // Heizkessel_Simulation, Bilanz_und_Nutzungsgrad auf EINEM Bedarfsvektor). Er
+        // ist mit dem Altpfad ersatzlos entfallen; der Einstieg des Moduls ist
+        // Vorbereiten_Zweikanalig(), gerechnet wird in der Kaskadenschleife oder als
+        // Vektorstufe (Berechnung_Zweikanalig).
 
         /// <summary>
         /// Schritt 2 der Kesselbilanz: Kesseldaten, Emissionsfaktoren, Wirkungsgrade und
-        /// Bereitschaftsverluste je Kessel einlesen. EINE Fassung für beide Rechenwege
-        /// (Paket-5-Nacharbeit, Befund N6) — der zweikanalige Weg hatte den Block bis
-        /// dahin kopiert.
+        /// Bereitschaftsverluste je Kessel einlesen (Paket-5-Nacharbeit, Befund N6).
         /// </summary>
         /// <param name="heizkesselctrl">bereits erzeugter Controller des Aufrufers</param>
         /// <param name="Anzahl">Zahl der zu lesenden Kessel (bereits auf MAX_SPK begrenzt)</param>
@@ -175,7 +120,7 @@ namespace WindowsFormsApplication1
         /// PAKET 8 (Konzept 13.4): Der Parameter <c>mitDialog</c> ist entfallen. Er
         /// unterschied bis dahin den Altpfad (MessageBox) vom zweikanaligen Weg
         /// (<see cref="Fehlertext"/>, Nacharbeit N10) — Paket 8 verallgemeinert den
-        /// Fehlerkanal, also melden BEIDE Wege dialogfrei. Die Oberfläche zeigt den Text
+        /// Fehlerkanal, also wird dialogfrei gemeldet. Die Oberfläche zeigt den Text
         /// nach dem Lauf; dort ist ein Dialog richtig aufgehoben, mitten in der
         /// Kaskade war er es nie.
         /// </remarks>
@@ -324,94 +269,10 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void Heizkessel_Simulation(float[] Waermebedarf, ref double GasSpitze, double[] s_waerme_gas, double[] s_waerme_oel,
-                double Max_Waermebedarf, int Anzahl, double[] Leistung, double[] Wirk_Gas, double[] Wirk_Oel,
-                double[] BereitschaftsVerlustFaktor, int[] Brennstoff, double[] Kessel_Verbrauch_MWh_Spk)
-        {
-            double KesselLeistung;
-            double Gasleistung;
-            // B0-12: war double[5] — ab dem 6. Kessel IndexOutOfRangeException bei der
-            // Gasspitzenberechnung. Jetzt gleiche Größe wie alle übrigen Kessel-Arrays.
-            double[] Gasspitze_Kessel = new double[MAX_SPK];
-            double waerme;
-
-            Max_Waermebedarf = 0;
-            GasSpitze = 0;
-            for (int i = 0; i < MAX_SPK; i++) { Gasspitze_Kessel[i] = 0; }
-
-            // Stündliche Lastverteilung (Einheit: kW)
-            for (int Stunde = 0; Stunde < 8760; Stunde++)
-            {
-                waerme = Waermebedarf[Stunde];
-
-                if (Max_Waermebedarf < waerme) Max_Waermebedarf = waerme;
-
-                for (int Kessel = 0; Kessel < Anzahl; Kessel++)
-                {
-                    // 1. Nutzwärme-Zuweisung für diese Stunde
-                    if (waerme > Leistung[Kessel])
-                    {
-                        KesselLeistung = Leistung[Kessel];
-                        waerme -= Leistung[Kessel];
-                    }
-                    else
-                    {
-                        KesselLeistung = waerme;
-                        waerme = 0;
-                    }
-
-                    // Basis-Wirkungsgrad bestimmen
-                    double wirk = (Brennstoff[Kessel] >= 6 && Brennstoff[Kessel] <= 9 || Brennstoff[Kessel] >= 18 && Brennstoff[Kessel] <= 22)
-                        ? Wirk_Oel[Kessel]
-                        : Wirk_Gas[Kessel];
-                    if (wirk <= 0) wirk = 0.90; // Fallback
-
-                    double stündlicherBrennstoffverbrauchKW = 0;
-
-                    // 2. Stündliche energetische Bilanzierung (Ansatz A)
-                    if (KesselLeistung > 0)
-                    {
-                        // Kessel läuft -> Verbrauch über Wirkungsgrad (in dieser Stunde kein Stillstandsverlust)
-                        stündlicherBrennstoffverbrauchKW = KesselLeistung / wirk;
-
-                        // Nutzwärme-Zähler aufaddieren (wird am Ende in MWh umgerechnet)
-                        if (Brennstoff[Kessel] >= 6 && Brennstoff[Kessel] <= 9 || Brennstoff[Kessel] >= 18 && Brennstoff[Kessel] <= 22)
-                        {
-                            s_waerme_oel[Kessel] += KesselLeistung;
-                        }
-                        else
-                        {
-                            s_waerme_gas[Kessel] += KesselLeistung;
-
-                            // Gasspitzenberechnung
-                            Gasleistung = KesselLeistung / wirk;
-                            if (Gasspitze_Kessel[Kessel] < Gasleistung) Gasspitze_Kessel[Kessel] = Gasleistung;
-                        }
-                    }
-                    else
-                    {
-                        // Kessel steht in dieser Stunde still -> Er verliert Wärme durch Auskühlung (Bereitschaftsverlust)
-                        // Verlust = Faktor * Nennleistung (kW) * 1 Stunde
-                        stündlicherBrennstoffverbrauchKW = BereitschaftsVerlustFaktor[Kessel] * Leistung[Kessel];
-                    }
-
-                    // Stündlichen Verbrauch direkt auf den Jahreszähler des Kessels addieren (von kW in kWh)
-                    Kessel_Verbrauch_MWh_Spk[Kessel] += stündlicherBrennstoffverbrauchKW;
-
-                    Kesselleistung_stuendlich[Stunde] += (float)KesselLeistung;
-                    Restwaerme[Stunde] = (float)waerme;
-                }
-            }
-
-            // Umrechnung der Jahressummen von kWh in MWh (/ 1000)
-            for (int i = 0; i < Anzahl; i++)
-            {
-                s_waerme_gas[i] /= 1000;
-                s_waerme_oel[i] /= 1000;
-                Kessel_Verbrauch_MWh_Spk[i] /= 1000; // Verbrauch ebenfalls von kWh nach MWh wandeln
-                GasSpitze += Gasspitze_Kessel[i];
-            }
-        }
+        // PAKET A1: Hier stand "Heizkessel_Simulation" - die EINKANALIGE Jahresschleife
+        // der Kessel-Lastverteilung. Ihr einziger Aufrufer war Berechnung(int); beide
+        // sind mit dem Altpfad entfallen. Die zweikanalige Fassung der Lastverteilung
+        // steht in Stunde_Bedarf/Stunde_Abschluss.
 
         // ===================================================================
         // Zweikanaliger Weg (Paket 5 - Konzept 6.5, erster Punkt)
@@ -476,8 +337,10 @@ namespace WindowsFormsApplication1
         // ganze Abgabe" ist an Szenario (d) gemessen und verworfen; die Begründung steht
         // in D5a_KombiKaskade_Protokoll.md, Abschnitt „Nacharbeit nach Reviews".
         // Eine Begrenzung nach Massenstrom und Wärmeübertrager kennt das Modell an keiner
-        // Stelle — auch der Speicher hat keine Lade-/Entladeleistung (vorgemerkter
-        // Parameter, Konzept 3.4).
+        // Stelle. Der SPEICHER hat seit Paket P1 eine Lade-/Entladeleistungsgrenze
+        // (Tab_Pufferspeicher.Ladeleistung_Max/Entladeleistung_Max, 0 = unbegrenzt); sie
+        // greift über Entnahmefaehigkeit() auch hier. Eine eigene Grenze des
+        // ÜBERTRAGERS zwischen Puffer und Kessel gibt es weiterhin nicht.
         // ------------------------------------------------------------------
 
         /// <summary>Quellpuffer je Kessel; <c>null</c> = keiner (Regelfall).</summary>
@@ -486,6 +349,206 @@ namespace WindowsFormsApplication1
 
         /// <summary>Anteil der Nutzwärme, den der Quellpuffer beisteuert (0…1); 0 = kein Bezug.</summary>
         private readonly double[] _quellAnteil = new double[MAX_SPK];
+
+        // ------------------------------------------------------------------
+        // PAKET B1 — TEMPERATURKOPPLUNG DES KESSEL-QUELLBEZUGS (Konzept 8.4)
+        //
+        // GLEICHBEHANDLUNG mit der Wärmepumpe (Konzept 8.4, Punkt 1): Bis P1 war
+        // T_Quelle die VORLAUFTEMPERATUR der Speicherzeile — eine Jahreskonstante, und
+        // damit auch _quellAnteil. Für einen GETEILTEN Quellpuffer (zugleich Senke eines
+        // anderen Erzeugers) liefert jetzt der Speicherzustand die Temperatur:
+        //
+        //     T_Quelle(h) = SchichtTemperatur an der Quell-Entnahmehöhe (bis Q1: oben)
+        //     Anteil(h)   = (T_Quelle(h) − T_Rücklauf) / (T_Vorlauf − T_Rücklauf), 0…1
+        //
+        // KEINE NEUE PHYSIK: Die Formel, die Mengenrechnung, die beiden Schranken in
+        // MaxAbgabe und die Buchung in QuellwaermeHolen bleiben Zeichen für Zeichen die
+        // von D5a. Getauscht ist allein die HERKUNFT von T_Quelle — aus der
+        // Speicherzeile wird der Speicherzustand.
+        //
+        // DERSELBE LESEZEITPUNKT wie bei der WP: je Stunde GENAU EINMAL, vor Phase B der
+        // Rechenebene (Quelltemperatur_Stunde, gerufen aus der Kaskadenschleife). Der
+        // Wert gilt für Bedarfs- UND Ladephase derselben Stunde.
+        //
+        // EIGENSTÄNDIGE Quellspeicher bleiben statisch — dieselbe Grenze wie in 8.2.
+        // ------------------------------------------------------------------
+
+        /// <summary>Je Kessel: true = <see cref="_quellAnteil"/> folgt stündlich dem Speicherzustand.</summary>
+        private readonly bool[] _quellKopplung = new bool[MAX_SPK];
+
+        /// <summary>Vorlauftemperatur des Hubs je Kessel [°C] (nur bei Kopplung belegt).</summary>
+        private readonly double[] _quellVorlauf = new double[MAX_SPK];
+
+        /// <summary>Rücklauftemperatur des Hubs je Kessel [°C] (nur bei Kopplung belegt).</summary>
+        private readonly double[] _quellRuecklauf = new double[MAX_SPK];
+
+        /// <summary>
+        /// PAKET Q1: Quell-Entnahmehöhe je Kessel, 0…1 (1 = ganz oben), aus
+        /// <c>Tab_Energieanlagen.WQ_Anschlusshoehe</c> (Schema-Schritt 54).
+        /// <c>QuellkopplungSetzen</c> belegt sie; ohne gepflegten Wert steht dort
+        /// <see cref="SimulationPufferspeicher.HOEHE_OBEN"/> und damit das
+        /// B1-Verhalten.
+        /// </summary>
+        private readonly double[] _quellHoehe = new double[MAX_SPK];
+
+        /// <summary>
+        /// Quelltemperatur-Ganglinie je gekoppeltem Kessel [°C] — LAUFERGEBNIS
+        /// (Konzept 8.4). <c>null</c> für jeden Kessel ohne Kopplung.
+        /// </summary>
+        private readonly float[][] _quellTemperatur = new float[MAX_SPK][];
+
+        /// <summary>Stunden je Kessel, in denen der gekoppelte Puffer nicht über den Rücklauf kam.</summary>
+        private readonly int[] _quellZuKalt = new int[MAX_SPK];
+
+        /// <summary>true = der Quellbezug des Kessels folgt stündlich dem Speicher (Paket B1).</summary>
+        public bool QuelleGekoppelt(int index)
+        {
+            return index >= 0 && index < MAX_SPK && _quellKopplung[index];
+        }
+
+        /// <summary>
+        /// Quelltemperatur-Ganglinie eines gekoppelten Kessels [°C]; <c>null</c> ohne
+        /// Kopplung (Paket B1) — Lesezugriff für Anzeige und Zeitreihen-Export.
+        /// </summary>
+        public float[] Quelltemperaturen(int index)
+        {
+            return (index >= 0 && index < MAX_SPK) ? _quellTemperatur[index] : null;
+        }
+
+        /// <summary>
+        /// Richtet die TEMPERATURKOPPLUNG eines Kessel-Quellbezugs ein (Paket B1,
+        /// Konzept 8.4). Aufgerufen von <c>SimulationControl.KesselQuellbezugSetzen</c>
+        /// anstelle von <see cref="QuellbezugSetzen"/>, sobald der Quellpuffer ein
+        /// GETEILTER Puffer ist.
+        /// </summary>
+        /// <param name="index">Kesselindex, wie in <see cref="spk_list"/></param>
+        /// <param name="speicher">geteilter Quellpuffer</param>
+        /// <param name="vorlauf">Vorlauf des Kessel-Hubs [°C]</param>
+        /// <param name="ruecklauf">Rücklauf des Kessel-Hubs [°C]</param>
+        /// <param name="anschlusshoehe">
+        /// PAKET Q1: Quell-Entnahmehöhe 0…1 aus <c>WQ_Anschlusshoehe</c>
+        /// (Schema-Schritt 54); <see cref="SimulationPufferspeicher.HOEHE_OBEN"/> ohne
+        /// gepflegten Wert — das ist exakt das Verhalten von Paket B1.
+        /// </param>
+        public void QuellkopplungSetzen(int index, SimulationPufferspeicher speicher,
+                                        double vorlauf, double ruecklauf,
+                                        double anschlusshoehe = SimulationPufferspeicher.HOEHE_OBEN)
+        {
+            if (index < 0 || index >= MAX_SPK) return;
+            if (speicher == null || vorlauf <= ruecklauf) return;
+
+            _quellSpeicher[index] = speicher;
+            _quellVorlauf[index] = vorlauf;
+            _quellRuecklauf[index] = ruecklauf;
+            _quellHoehe[index] = anschlusshoehe;
+            _quellKopplung[index] = true;
+            _quellTemperatur[index] = new float[8760];
+
+            // Startwert aus dem aktuellen Zustand; die Stundenabfrage übersteuert ihn vor
+            // jeder Phase B. Ohne diese Zeile stünde bis zur ersten Abfrage ein Anteil
+            // von 0 — dasselbe Ergebnis, aber der Zustand wäre nicht selbsterklärend.
+            _quellAnteil[index] = AnteilAus(speicher.QuellEntnahmeTemperatur(anschlusshoehe), index);
+        }
+
+        /// <summary>
+        /// PAKET Q1: die Quell-Entnahmehöhe des Kessels <paramref name="index"/>, 0…1;
+        /// <see cref="SimulationPufferspeicher.HOEHE_OBEN"/> ohne Kopplung —
+        /// Lesezugriff für Protokoll und Wirkproben.
+        /// </summary>
+        public double QuellAnschlusshoehe(int index)
+        {
+            if (index < 0 || index >= MAX_SPK || !_quellKopplung[index])
+                return SimulationPufferspeicher.HOEHE_OBEN;
+            return _quellHoehe[index];
+        }
+
+        /// <summary>Anteil (0…1) aus einer Quelltemperatur und dem Hub des Kessels.</summary>
+        private double AnteilAus(double tQuelle, int index)
+        {
+            double spanne = _quellVorlauf[index] - _quellRuecklauf[index];
+            if (spanne <= 0) return 0;
+
+            double anteil = (tQuelle - _quellRuecklauf[index]) / spanne;
+            if (anteil < 0) return 0;
+            return anteil > 1 ? 1 : anteil;
+        }
+
+        /// <summary>
+        /// Bildet den Quellanteil der Stunde für alle gekoppelten Kessel der AKTIVEN
+        /// Rechenebene (Paket B1, Konzept 8.4) — GENAU EINMAL je Stunde und Ebene, vor
+        /// Phase B, gerufen aus der Kaskadenschleife.
+        ///
+        /// <para>Ohne gekoppelten Kessel ist die Methode ein sofortiger Rücksprung.</para>
+        /// </summary>
+        /// <param name="alleEbenen">
+        /// PAKET B2: true = ALLE gekoppelten Kessel, unabhängig von der aktiven
+        /// Rechenebene — der Lesepunkt „Davor" (Vorbelegung) läuft am Stundenanfang und
+        /// kennt deshalb noch keine Ebene. false = nur die Kessel der aktiven Ebene, der
+        /// Lesepunkt „Danach" von Paket B1. In BEIDEN Modi wird je Stunde genau einmal je
+        /// Kessel gelesen — und damit auch <see cref="_quellZuKalt"/> höchstens einmal je
+        /// Stunde erhöht.
+        /// </param>
+        public void Quelltemperatur_Stunde(int stunde, bool alleEbenen = false)
+        {
+            if (stunde < 0 || stunde >= 8760) return;
+
+            for (int i = 0; i < _anzahlZweikanalig && i < MAX_SPK; i++)
+            {
+                if (!_quellKopplung[i]) continue;
+                if (!alleEbenen && !EbeneAktiv(i)) continue;
+
+                SimulationPufferspeicher q = _quellSpeicher[i];
+                if (q == null) continue;
+
+                // PAKET Q1: an der gepflegten Quell-Entnahmehöhe statt fest oben.
+                double tQuelle = q.QuellEntnahmeTemperatur(_quellHoehe[i]);
+                if (_quellTemperatur[i] != null) _quellTemperatur[i][stunde] = (float)tQuelle;
+
+                double anteil = AnteilAus(tQuelle, i);
+                _quellAnteil[i] = anteil;
+
+                // Der Puffer steht auf Rücklaufniveau: In dieser Stunde trägt er nichts
+                // bei, der Kessel hebt wie ohne Kaskade von seinem Systemrücklauf aus an.
+                // Gezählt und am Laufende EINMAL gemeldet (Gegenstück zur F13-Kappung der
+                // Wärmepumpe) - stumm bliebe sonst ein Booster, der nie boostet.
+                if (anteil <= 0) _quellZuKalt[i]++;
+            }
+        }
+
+        /// <summary>
+        /// PAKET B1: meldet je gekoppeltem Kessel EINMAL, in wie vielen Stunden der
+        /// Quellpuffer nicht über den Systemrücklauf kam, und den Temperaturbereich der
+        /// Quelle über das Jahr. Gerufen am Ende des Jahresdurchlaufs.
+        /// </summary>
+        public void QuellkopplungMelden()
+        {
+            for (int i = 0; i < _anzahlZweikanalig && i < MAX_SPK; i++)
+            {
+                if (!_quellKopplung[i] || _quellTemperatur[i] == null) continue;
+
+                float min = float.MaxValue, max = float.MinValue;
+                double summe = 0;
+                for (int h = 0; h < 8760; h++)
+                {
+                    float v = _quellTemperatur[i][h];
+                    if (v < min) min = v;
+                    if (v > max) max = v;
+                    summe += v;
+                }
+
+                string name = (i < Kessel_Name.Length && Kessel_Name[i] != null) ? Kessel_Name[i] : "";
+
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                    "Kessel_Quellkopplung_" + i + "_" + name,
+                    string.Format(MyResource.Resource.SIMENG_KESSEL_QUELLKOPPLUNG_HINWEIS,
+                                  name,
+                                  min.ToString("F1"), max.ToString("F1"),
+                                  (summe / 8760.0).ToString("F1"),
+                                  _quellRuecklauf[i].ToString("F1"),
+                                  _quellVorlauf[i].ToString("F1"),
+                                  _quellZuKalt[i]));
+            }
+        }
 
         /// <summary>
         /// Meldungen über Quellentnahmen der laufenden Phase — die Kaskadenschleife führt
@@ -587,8 +650,8 @@ namespace WindowsFormsApplication1
             if (q == null || _quellAnteil[i] <= 0) return eigen;
 
             // Was der Quellpuffer in DIESER Stunde höchstens beisteuern kann. Entladen()
-            // klemmt am Füllstand; die Entnahmefähigkeit ist der vorgemerkte Parameter
-            // aus Konzept 3.4 (heute unbegrenzt).
+            // klemmt am Füllstand; die Entnahmefähigkeit liefert seit Paket P1 den Rest
+            // des Stundenbudgets aus Entladeleistung_Max (0 = unbegrenzt, der Regelfall).
             double ausQuelle = Math.Min(q.SOC > 0 ? q.SOC : 0, q.Entnahmefaehigkeit());
 
             double nachQuelle = eigen + ausQuelle;
@@ -612,6 +675,9 @@ namespace WindowsFormsApplication1
             SimulationPufferspeicher q = _quellSpeicher[i];
             if (q == null || _quellAnteil[i] <= 0) return 0;
 
+            // PAKET E1: OHNE Kanalangabe — eine Quellentnahme trägt keinen Bedarfskanal.
+            // Sie wird deshalb auf dem Heizkanal gebucht (Vorbelegung von Entladen,
+            // dieselbe Näherung wie Kaskadenschleife.Anteil_Entladen ohne Kanal).
             double geliefert = q.Entladen(menge * _quellAnteil[i], stunde);
             if (geliefert <= 0) return 0;
 
@@ -628,8 +694,8 @@ namespace WindowsFormsApplication1
         /// <summary>Gasspitze je Kessel [kW] (zweikanaliger Weg).</summary>
         private readonly double[] _gasspitzeKessel = new double[MAX_SPK];
 
-        /// <summary>Senkenzuordnung je Kessel, indexgleich zu <see cref="spk_list"/>.</summary>
-        private readonly List<Senkenzuordnung> _kesselSenke = new List<Senkenzuordnung>();
+        /// <summary>Senkenliste je Kessel, indexgleich zu <see cref="spk_list"/> (Paket S1).</summary>
+        private readonly List<Senkenliste> _kesselSenke = new List<Senkenliste>();
 
         /// <summary>
         /// In Pufferspeicher geladene Kesselwärme je Stunde [kWh] (zweikanaliger Weg,
@@ -646,23 +712,67 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double[] Speicherladung_stuendlich = new double[8760];
 
-        /// <summary>Jahressumme der Speicherladung [kWh]; im Altpfad immer exakt 0.</summary>
+        /// <summary>Jahressumme der Speicherladung [kWh]; ohne Puffer-Senke exakt 0.</summary>
         public double Speicherladung_gesamt = 0;
 
         /// <summary>
         /// Der Anteil dieses Erzeugers an der SPEICHERENTLADUNG, die Bedarf gedeckt hat
         /// [kWh] (Nacharbeit N2, Interimsregel „Vermischung im Speicher").
         ///
-        /// Gefüllt von <see cref="Kaskadenschleife"/>; im Altpfad und ohne Puffer-Senke
+        /// Gefüllt von <see cref="Kaskadenschleife"/>; ohne Puffer-Senke
         /// exakt 0. Zusammen mit der Direktdeckung ergibt sich daraus der EIGENANTEIL des
         /// Kessels an der Bedarfsdeckung — die Größe, die
         /// <c>Tab_ErgebnisHeizkessel.Waermebedarfsdeckung</c> ausweist.
         /// </summary>
         public double Speicherentladung_Anteil = 0;
 
+        // ------------------------------------------------------------------
+        // KANALINDIZIERTE DECKUNGSBUCHFÜHRUNG (Paket K2, Konzept 4.4)
+        //
+        // ZUSÄTZLICHE Aufschlüsselung, kein Ersatz: Die Skalare des Moduls
+        // (S_Waerme_spk, Speicherladung_gesamt, Speicherentladung_Anteil,
+        // Kessel_Verbrauch_MWh_Spk …) werden unverändert gebildet und von
+        // SimulationRunner unverändert gelesen. Es gilt
+        //
+        //   Σ Direktdeckung_Kanal[k]     == die in Phase B abgegebene Nutzwärme
+        //                                   (= Kesselabgabe − Speicherladung)
+        //   Σ Speicherentladung_Kanal[k] == Speicherentladung_Anteil
+        //
+        // bis auf die Rundungsklasse der getrennten Kanalarithmetik.
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// In Phase B direkt an den Bedarf abgegebene Kesselwärme je Kanal [kWh]
+        /// (Konzept 4.4). Einen Skalar dieser Größe führt das Modul nicht — er steckt in
+        /// <c>S_Waerme_spk</c> zusammen mit der Speicherladung; die Summe über die Kanäle
+        /// ist genau der Direktanteil.
+        /// </summary>
+        public double[] Direktdeckung_Kanal = new double[Kanal.ANZAHL];
+
+        /// <summary>
+        /// Anteil dieses Kessels an der bedarfsdeckenden Speicherentladung je Kanal [kWh]
+        /// — die Aufschlüsselung von <see cref="Speicherentladung_Anteil"/>. Gefüllt von
+        /// der <see cref="Kaskadenschleife"/>, wie der Skalar selbst.
+        /// </summary>
+        public double[] Speicherentladung_Kanal = new double[Kanal.ANZAHL];
+
+        // ------------------------------------------------------------------
+        // PAKET E2 (Nachtrag zu Konzept 4.4) — DIESELBEN GRÖSSEN ALS GANGLINIE,
+        // gebucht an genau derselben Stelle und aus derselben Variablen. Je Kanal k gilt
+        //   Σ_h Direktdeckung_KanalStuendlich[k][h]     == Direktdeckung_Kanal[k]
+        //   Σ_h Speicherentladung_KanalStuendlich[k][h] == Speicherentladung_Kanal[k]
+        // bis auf die Assoziativität der double-Addition.
+        // ------------------------------------------------------------------
+
+        /// <summary>Stundenfassung von <see cref="Direktdeckung_Kanal"/> [kWh] (Paket E2).</summary>
+        public readonly Kanalganglinie Direktdeckung_KanalStuendlich = new Kanalganglinie();
+
+        /// <summary>Stundenfassung von <see cref="Speicherentladung_Kanal"/> [kWh] (Paket E2).</summary>
+        public readonly Kanalganglinie Speicherentladung_KanalStuendlich = new Kanalganglinie();
+
         /// <summary>
         /// Fehlertext des zweikanaligen Wegs (Konzept 13.4: die Engine bleibt dialogfrei).
-        /// Der Altpfad zeigt an denselben Stellen eine MessageBox; im zweikanaligen Weg
+        /// Statt einer MessageBox mitten im Rechenlauf
         /// geht die Meldung über den Fehlerkanal Richtung
         /// <c>SimulationRunner.SimuliereUndSpeichere(… out fehler)</c> (Nacharbeit N10).
         /// </summary>
@@ -671,8 +781,19 @@ namespace WindowsFormsApplication1
         /// <summary>Anzahl der Kessel, die im zweikanaligen Weg rechnen.</summary>
         public int KesselAnzahl { get { return _anzahlZweikanalig; } }
 
-        /// <summary>Senkenzuordnung eines Kessels; <c>null</c> außerhalb des Indexbereichs.</summary>
-        public Senkenzuordnung KesselSenke(int index)
+        /// <summary>
+        /// Bezeichnung eines Kessels (<c>Tab_Heizkessel.Name</c>), indexgleich zu
+        /// <see cref="spk_list"/>; "" außerhalb des Bereichs. Lesezugriff für Anzeigen
+        /// und Zeitreihen-Beschriftungen (Paket B1).
+        /// </summary>
+        public string KesselName(int index)
+        {
+            if (index < 0 || index >= MAX_SPK || Kessel_Name[index] == null) return "";
+            return Kessel_Name[index];
+        }
+
+        /// <summary>Senkenliste eines Kessels; <c>null</c> außerhalb des Indexbereichs (Paket S1).</summary>
+        public Senkenliste KesselSenke(int index)
         {
             if (index < 0 || index >= _kesselSenke.Count) return null;
             return _kesselSenke[index];
@@ -684,7 +805,7 @@ namespace WindowsFormsApplication1
         /// Absicherungen (B0-3, B0-12).
         /// </summary>
         /// <returns>false = Abbruch (Kessel nicht im Projekt hinterlegt).</returns>
-        public bool Vorbereiten_Zweikanalig(int ID_Projekt, List<Senkenzuordnung> senken)
+        public bool Vorbereiten_Zweikanalig(int ID_Projekt, List<Senkenliste> senken)
         {
             m_ID_Projekt = ID_Projekt;
 
@@ -716,7 +837,7 @@ namespace WindowsFormsApplication1
             // Schritt 2 aus Berechnung() — EINE Fassung für beide Wege (Nacharbeit N6).
             if (!Kesseldaten_Einlesen(heizkesselctrl, Anzahl)) return false;
 
-            // Senkenzuordnung je Kessel: keine Physik, sondern die Konfiguration des
+            // Senkenliste je Kessel: keine Physik, sondern die Konfiguration des
             // zweikanaligen Wegs — deshalb hier und nicht im gemeinsamen Einlesen.
             for (int i = 0; i < Anzahl; i++)
             {
@@ -729,16 +850,16 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Senkenzuordnung einer Anlage; ohne Zeile gilt die Vorbelegung Heizkreis/Beides
-        /// (Konzept 4.6, erste Zeile der Tabelle).
+        /// Senkenliste einer Anlage; ohne Zeile gilt die Rang-1-Invariante
+        /// Heizkreis/Beides (Konzept 4.6/5.1).
         /// </summary>
-        private static Senkenzuordnung SenkeZuAnlage(List<Senkenzuordnung> senken, int idAnlage)
+        private static Senkenliste SenkeZuAnlage(List<Senkenliste> senken, int idAnlage)
         {
             if (senken != null && idAnlage > 0)
-                foreach (Senkenzuordnung z in senken)
-                    if (z != null && z.AnlagenID == idAnlage) return z;
+                foreach (Senkenliste s in senken)
+                    if (s != null && s.AnlagenID == idAnlage) return s;
 
-            return new Senkenzuordnung { AnlagenID = idAnlage };
+            return Senkenliste.Vorbelegung(idAnlage);
         }
 
         /// <summary>
@@ -746,14 +867,18 @@ namespace WindowsFormsApplication1
         /// der STUFENEINGANG wird festgehalten.
         ///
         /// NACHARBEIT PAKET 6, BEFUND N1: Der Stufeneingang ist der Kanalstand VOR der
-        /// Vorabentladung (Phase A) — dieselbe Bezugsgröße, die der Altpfad an der
+        /// Vorabentladung (Phase A) — dieselbe Bezugsgröße, die die Stufe an ihrer
         /// Kaskadenposition sieht und die die Wärmepumpe seit Etappe 4b führt. Bis dahin
         /// stand er in <see cref="Stunde_Bedarf"/> und damit NACH Phase A; die Größe
         /// <c>Tab_ErgebnisHeizkessel.Waermebedarf</c> fiel dadurch still ab, sobald ein
         /// Speicher vorab entlud. Ohne Speicher in der Stufe ändert sich nichts — dann
         /// gibt Phase A nichts ab.
+        ///
+        /// <para>PAKET K2: Der Stufeneingang ist die Summe ÜBER ALLE Kanäle des
+        /// Restbedarfsfeldes — ohne Prozesswärmeanteil Zeichen für Zeichen die bisherige
+        /// Größe <c>rest_heiz + rest_ww</c>.</para>
         /// </summary>
-        public void Stunde_Start(int stunde, double rest_heiz, double rest_ww)
+        public void Stunde_Start(int stunde, double[] rest)
         {
             for (int i = 0; i < _anzahlZweikanalig; i++)
             {
@@ -762,7 +887,7 @@ namespace WindowsFormsApplication1
                 _restLeistung[i] = Kessel_Leistung_Spk[i];
             }
 
-            double eingang = rest_heiz + rest_ww;
+            double eingang = Kaskadenschleife.RestSumme(rest);
             if (eingang < 0) eingang = 0;
             if (stunde >= 0 && stunde < 8760) Waermebedarf[stunde] = (float)eingang;
             if (Max_Waermebedarf < eingang) Max_Waermebedarf = eingang;
@@ -770,23 +895,31 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Phase B der Reihenfolge-Invariante (Konzept 6.3) für die Heizkessel: die
-        /// ZWEIKANALIGE Fassung der Lastverteilung aus <see cref="Heizkessel_Simulation"/>.
+        /// KANALGERECHTE Fassung der Lastverteilung (bis Paket A1: Heizkessel_Simulation).
         ///
         /// Konzept 6.5 beschreibt sie als „zweiten Schleifendurchlauf mit erhaltenem
         /// Zwischenzustand". Umgesetzt ist genau das, nur ohne zweiten Durchlauf: Der
         /// Kessel bedient in EINER Stunde erst den einen, dann den anderen Kanal — bei
-        /// <c>WS_Typ = Beides</c> mit Warmwasservorrang, wie überall in dieser Engine
+        /// Bedarfsart <c>Beides</c> mit Warmwasservorrang, wie überall in dieser Engine
         /// (<c>SenkeAbziehen</c>) —, und die abgegebene Nutzwärme sammelt sich in
         /// <see cref="_kesselStunde"/>. Der Zwischenzustand ist damit erhalten, und die
         /// BEREITSCHAFTSVERLUSTE fallen nur EINMAL je Stunde und Kessel an: Sie werden
         /// nicht hier, sondern in <see cref="Stunde_Abschluss"/> gebucht, und zwar an
         /// genau einer Stelle für beide Kanäle und die Speicherladung zusammen.
         ///
-        /// Ein Kessel mit Puffer-Hauptsenke deckt hier NICHTS — er lädt ausschließlich
-        /// (Phase C), und damit gilt derselbe Doppelzählungs-Freibeweis wie bei der
+        /// Ein Kessel OHNE Direktsenke deckt hier NICHTS — er lädt ausschließlich
+        /// (Ladephasen), und damit gilt derselbe Doppelzählungs-Freibeweis wie bei der
         /// Wärmepumpe.
+        ///
+        /// <para>PAKET K2: <paramref name="rest"/> ist der offene Bedarf je Kanal und
+        /// tritt an die Stelle des Paares <c>ref rest_heiz, ref rest_ww</c>; es wird
+        /// IN-PLACE fortgeschrieben. Die Bezugsgröße <c>verfuegbar</c> kommt nicht mehr
+        /// aus einer eigenen Dreifach-Verzweigung über <c>WS_Typ</c>, sondern aus
+        /// <c>Kanalabzug.Offen</c> — derselben Quelle, gegen die gleich abgezogen
+        /// wird (Konzept 4.3). PAKET S1: gefragt wird die ganze SENKENLISTE des Kessels
+        /// statt einer einzelnen Bedarfsart (Konzept 5.2).</para>
         /// </summary>
-        public void Stunde_Bedarf(int stunde, ref double rest_heiz, ref double rest_ww)
+        public void Stunde_Bedarf(int stunde, double[] rest)
         {
             // Der Stufeneingang steht seit der Nacharbeit N1 in Stunde_Start - VOR der
             // Vorabentladung (Phase A).
@@ -799,21 +932,27 @@ namespace WindowsFormsApplication1
                 // immer wahr.
                 if (!EbeneAktiv(i)) continue;
 
-                Senkenzuordnung z = _kesselSenke[i];
-                if (z != null && z.Haupt != Senke.Heizkreis) continue;
+                // PAKET S1: Gefragt wird die DIREKTSENKEN-KETTE des Kessels
+                // (Konzept 5.2). Ein Kessel ganz ohne Direktsenke lädt ausschließlich und
+                // deckt hier nichts - die Nachfolge der Prüfung „Hauptsenke != Heizkreis".
+                Senkenliste senken = _kesselSenke[i];
+                if (senken != null && !senken.HatDirektsenke) continue;
 
-                string wsTyp = (z != null) ? z.WSTyp : WaermequelleClass.SENKE_BEIDES;
-                double verfuegbar;
-                if (wsTyp == WaermequelleClass.SENKE_WARMWASSER) verfuegbar = rest_ww;
-                else if (wsTyp == WaermequelleClass.SENKE_HEIZUNG) verfuegbar = rest_heiz;
-                else verfuegbar = rest_heiz + rest_ww;
+                double verfuegbar = Kanalabzug.Offen(senken, rest);
 
                 if (verfuegbar <= 0) continue;
 
                 double menge = Math.Min(MaxAbgabe(i), verfuegbar);
                 if (menge <= 0) continue;
 
-                Kaskadenschleife.SenkeAbziehen(wsTyp, menge, ref rest_ww, ref rest_heiz);
+                // K2: Abzug über die eine Kanalregel, mit gemessener Aufschlüsselung je
+                // Kanal (Konzept 4.4). Die abgezogene Gesamtmenge ist konstruktiv genau
+                // "menge" - sie ist auf den offenen Kanalbedarf begrenzt.
+                //
+                // PAKET E2: derselbe Abzug schreibt zusätzlich die Kanalganglinie der
+                // Stunde - aus derselben gemessenen rest-Differenz.
+                Kanalabzug.Abziehen(senken, menge, rest, Direktdeckung_Kanal,
+                                    Direktdeckung_KanalStuendlich, stunde);
 
                 _kesselAbgabe[i] += menge;
 
@@ -830,7 +969,8 @@ namespace WindowsFormsApplication1
                 if (_restLeistung[i] < 0) _restLeistung[i] = 0;
             }
 
-            if (stunde >= 0 && stunde < 8760) Restwaerme[stunde] = (float)(rest_heiz + rest_ww);
+            if (stunde >= 0 && stunde < 8760)
+                Restwaerme[stunde] = (float)Kaskadenschleife.RestSumme(rest);
         }
 
         /// <summary>
@@ -985,29 +1125,30 @@ namespace WindowsFormsApplication1
         ///
         /// Der Weg für Projekte, in denen kein Kessel eine Puffer-Senke trägt. Ohne
         /// Speicher haben die Phasen A, C, D und E für diese Stufe keinen Inhalt; Phase G
-        /// beschränkt sich auf die Brennstoffbilanz der Stunde. Gegenüber dem Altpfad
+        /// beschränkt sich auf die Brennstoffbilanz der Stunde. Gegenüber der bis Paket A1
         /// ändert sich allein die Kanalführung — die je Stunde und Kessel abgegebene
         /// Nutzwärme, der Brennstoffverbrauch und die Restwärme sind dieselben Zahlen.
         /// </summary>
-        public bool Berechnung_Zweikanalig(int ID_Projekt, Waermekanaele kanaele,
-                                           List<Senkenzuordnung> senken)
+        public bool Berechnung_Zweikanalig(int ID_Projekt, Kanalsatz kanaele,
+                                           List<Senkenliste> senken)
         {
             if (kanaele == null) return false;
             if (!Vorbereiten_Zweikanalig(ID_Projekt, senken)) return false;
 
+            double[] rest = new double[Kanal.ANZAHL];
+
             for (int stunde = 0; stunde < 8760; stunde++)
             {
-                double rest_heiz = kanaele.Heiz[stunde];
-                double rest_ww = kanaele.WW[stunde];
+                for (int k = 0; k < Kanal.ANZAHL; k++) rest[k] = kanaele.Bedarf[k][stunde];
 
                 // Ohne Speicher gibt es keine Vorabentladung: Der Stufeneingang ist der
                 // Kanalstand an dieser Kaskadenposition.
-                Stunde_Start(stunde, rest_heiz, rest_ww);
-                Stunde_Bedarf(stunde, ref rest_heiz, ref rest_ww);
+                Stunde_Start(stunde, rest);
+                Stunde_Bedarf(stunde, rest);
                 Stunde_Abschluss(stunde);
 
-                kanaele.Heiz[stunde] = (float)rest_heiz;
-                kanaele.WW[stunde] = (float)rest_ww;
+                for (int k = 0; k < Kanal.ANZAHL; k++)
+                    kanaele.Bedarf[k][stunde] = (float)rest[k];
             }
 
             Abschluss_Zweikanalig();
@@ -1034,12 +1175,20 @@ namespace WindowsFormsApplication1
             // Kessel, die es in diesem Lauf nicht gibt.
             _anzahlZweikanalig = 0;
 
-            // Zweikanaliger Weg (Paket 5 / Nacharbeit N1, N2): Im Altpfad bleiben diese
+            // Speichergrößen (Paket 5 / Nacharbeit N1, N2): Ohne Puffer-Senke bleiben diese
             // Größen auf 0, damit die Ergebnisbildung in SimulationRunner dort
             // nachweislich bitgleich der bisherigen ist.
             Array.Clear(Speicherladung_stuendlich, 0, Speicherladung_stuendlich.Length);
             Speicherladung_gesamt = 0;
             Speicherentladung_Anteil = 0;
+
+            // K2: die Kanalaufschlüsselung derselben Größen (Konzept 4.4).
+            Array.Clear(Direktdeckung_Kanal, 0, Kanal.ANZAHL);
+            Array.Clear(Speicherentladung_Kanal, 0, Kanal.ANZAHL);
+
+            // E2: und ihre Ganglinienfassung, an derselben Stelle.
+            Direktdeckung_KanalStuendlich.Nullen();
+            Speicherentladung_KanalStuendlich.Nullen();
 
             // D5a: Der Quellbezug gehört zum Laufzustand. ModulEbenen/AktiveEbene setzt
             // die Kaskadenschleife je Lauf neu; die Quellpuffer setzt SimulationControl,
@@ -1050,6 +1199,14 @@ namespace WindowsFormsApplication1
             Array.Clear(_quellSpeicher, 0, _quellSpeicher.Length);
             Array.Clear(_quellAnteil, 0, _quellAnteil.Length);
             Array.Clear(_kesselAbgabe, 0, _kesselAbgabe.Length);
+
+            // PAKET B1: Die Temperaturkopplung gehört aus demselben Grund zum
+            // Laufzustand - sie wird beim Aufbau der Quellbezüge neu gesetzt.
+            Array.Clear(_quellKopplung, 0, _quellKopplung.Length);
+            Array.Clear(_quellVorlauf, 0, _quellVorlauf.Length);
+            Array.Clear(_quellRuecklauf, 0, _quellRuecklauf.Length);
+            Array.Clear(_quellTemperatur, 0, _quellTemperatur.Length);
+            Array.Clear(_quellZuKalt, 0, _quellZuKalt.Length);
             ModulEbenen = null;
             AktiveEbene = 0;
 

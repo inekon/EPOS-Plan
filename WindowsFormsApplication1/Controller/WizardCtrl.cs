@@ -25,11 +25,43 @@ namespace WindowsFormsApplication1
             return (item.ID_Type == targetType) ? value : DBNull.Value;
         }
 
+        /// <summary>
+        /// Loescht die Anlagenzeilen eines Projekts fuer den Del+Add-Speicherweg -
+        /// alle Typen AUSSER den Pufferspeichern (<c>ID_Type</c> 12).
+        ///
+        /// <para>
+        /// WARUM DIE PUFFER STEHEN BLEIBEN (FR-1, Befund 27.08.2026). Einziger
+        /// Aufrufer dieser Ueberladung ist der Bearbeiten-Zweig des Wizards
+        /// (<c>WizardParent.btnSpeichern_Click</c>) - und der Wizard hat keine
+        /// Puffer-Seite. Loeschte der Rundumschlag die ID_Type-12-Zeilen mit, muesste
+        /// die Dialogliste sie zurueckschreiben: Jede Liste ohne die Puffer beraubte
+        /// das Projekt seiner Speicher, und <c>GeraeteWaisen.Aufraeumen</c> am Ende von
+        /// <see cref="Add_WP_Waermeerzeuger"/> raeumte anschliessend die nicht mehr
+        /// referenzierten Geraetezeilen in <c>Tab_Pufferspeicher</c> ab (Feldbeleg:
+        /// Projekte 1027/1009 mit <c>WS_Ziel = 'PufferHeizung'</c> und
+        /// <c>WS_ID_Puffer = NULL</c>). Gegenstueck im Wizard:
+        /// <c>entferne_nicht_aktive_elemente</c> nimmt die ID_Type-12-Modelle aus der
+        /// Liste, sonst legte <see cref="Add_WP_Waermeerzeuger"/> die stehen
+        /// gebliebenen Anlagenzeilen ein zweites Mal an.
+        /// </para>
+        ///
+        /// <para>
+        /// Pufferspeicher LOESCHEN koennen weiterhin: die typisierte Ueberladung
+        /// (Puffer-Karte und -Kontextmenue rufen sie mit ID_Type 12),
+        /// <see cref="Del_Projekt_ID_Waermeerzeuger"/> (Einzelzeile) und der
+        /// Projekt-Loeschweg <c>WErzeugerCtrl.Delete</c>.
+        /// </para>
+        /// </summary>
         public bool Del_Projekt_Waermeerzeuger(int projektID)
         {
             SpVariantenSichern(projektID, TYP_ALLE);
+            SenkenSichern(projektID);
 
-            return DataRepository.ExecuteSQL("DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
+            // ID_Type fest im SQL statt als Parameter - dieselbe Begruendung wie bei
+            // SP_TYPEN: Programmkonstante, keine Anwendereingabe.
+            return DataRepository.ExecuteSQL(
+                "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type <> " +
+                WizardItemClass.PUFFER_TYP.ToString(CultureInfo.InvariantCulture),
                 new OleDbParameter[] { new OleDbParameter("@pID", projektID) });
         }
 
@@ -37,12 +69,33 @@ namespace WindowsFormsApplication1
         {
             SpVariantenSichern(projektID, nType);
 
+            // S1: Die Senkenlisten werden AUCH im typgefilterten Weg gesichert - die
+            // Loeschweitergabe FK_AnlageSenke_Anlage trifft jede geloeschte Anlage,
+            // gleich ob mit oder ohne Typfilter. Anlagen, die den Filter ueberleben,
+            // behalten ihre Senken und werden beim Wiederherstellen uebergangen.
+            SenkenSichern(projektID);
+
             return DataRepository.ExecuteSQL("DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
                 new OleDbParameter[] { new OleDbParameter("@pID", projektID), new OleDbParameter("@type", nType) });
         }
 
         public bool Del_Projekt_ID_Waermeerzeuger(int projektID, int ID_Waermeerzeuger)
         {
+            // Ä21: Das gezielte Entfernen EINER Anlage nimmt ihre Kostenpositionen
+            // mit (Nutzerauftrag 27.08.2026: eine nicht angelegte Anlage darf keine
+            // Kosten hinterlassen). NUR hier — die Typ-/Alle-Löschwege sind auch
+            // der destruktive Wizard-Neuaufbau; dort heilt die Zuordnung über den
+            // Geräteanker (KostenProjektPositionenCtrl.ZuordnungReparieren).
+            try
+            {
+                if (KostenPositionCtrl.StelleSpaltenSicher())
+                    DataRepository.ExecuteSQL(
+                        "DELETE FROM Tab_ProjektWerte WHERE ProjektID = ? AND ID_Anlage = ?",
+                        new OleDbParameter("@p", projektID),
+                        new OleDbParameter("@a", ID_Waermeerzeuger));
+            }
+            catch { }
+
             return DataRepository.ExecuteSQL("DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID = ?",
                 new OleDbParameter[] { new OleDbParameter("@pID", projektID), new OleDbParameter("@id", ID_Waermeerzeuger) });
         }
@@ -753,6 +806,243 @@ namespace WindowsFormsApplication1
             return (r[spalte].ToString() ?? "").Trim();
         }
 
+        // =================================================================================
+        //  S1 - Rettung der SENKENLISTE ueber den Del+Add-Speicherweg
+        // =================================================================================
+        //
+        // DIESELBE FALLE WIE BEI DEN SPEICHERVARIANTEN (AP9b), EIN GEWERK WEITER. Seit
+        // Migrationsschritt 50 haengt an jeder Erzeuger-Anlage eine geordnete Senkenliste
+        // in Z_AnlageSenke, verbunden ueber ID_Anlage und mit Loeschweitergabe
+        // (FK_AnlageSenke_Anlage). Die Loeschweitergabe ist dort nicht wahlweise, sondern
+        // zwingend: Restriktiv scheiterte bereits das DELETE des Speicherwegs, und es
+        // liesse sich kein Projekt mehr speichern (gemessen 27.08.2026, Begruendung bei
+        // SchemaMigration.SQL_FK_SENKE_ANLAGE). Der Preis dafuer ist genau der, den AP9b
+        // fuer die Speichervarianten schon einmal bezahlt hat: Ohne Gegenmassnahme raeumte
+        // JEDES Speichern - ueber Karte, Kontextmenue oder Wizard - die komplette
+        // Senkenkonfiguration des Projekts ab. Die PUFFER-Anlagenzeilen selbst brauchen
+        // keine Rettung mehr: Der typlose Loeschweg verschont ID_Type 12 (FR-1, Kommentar
+        // an Del_Projekt_Waermeerzeuger), ihre Ids und damit ihre Senkenzeilen bleiben
+        // stehen.
+        //
+        // ZUORDNUNG UEBER (ID_Type, Bezeichner), wortgleich zur Variantenrettung: Die
+        // alte Anlagen-Id ist nach dem Loeschen wertlos (AutoWert), die Geraete-Id
+        // nicht eindeutig. Wer eine Anlage im Dialog UMBENENNT, verliert ihre Senken -
+        // dieselbe Grenze wie bei CopyFromStamm und bei den Speichervarianten.
+        //
+        // BEIDE LOESCHWEGE sichern. Der typgefilterte Weg loescht nur die Anlagen eines
+        // Gewerks; die Senken der uebrigen bleiben unangetastet und werden unten
+        // uebergangen, weil ihre Anlagenzeile noch Senken FUEHRT. Die Sicherung kostet
+        // dort also nichts und schuetzt den Fall, dass ein Aufrufer doch mehr loescht
+        // als erwartet.
+
+        /// <summary>Eine gesicherte Senkenliste samt ihrem Wiedererkennungsmerkmal.</summary>
+        private sealed class SenkenSicherung
+        {
+            public int ID_Type;
+            public string Bezeichner = "";
+            public List<Z_AnlageSenkeModel> Senken = new List<Z_AnlageSenkeModel>();
+        }
+
+        /// <summary>Die Sicherung des laufenden Speichervorgangs; <c>null</c> = nichts zu retten.</summary>
+        private List<SenkenSicherung> m_SenkenSicherung;
+
+        /// <summary>Das Projekt, zu dem <see cref="m_SenkenSicherung"/> gehoert (siehe <see cref="m_SpVariantenProjekt"/>).</summary>
+        private int m_SenkenProjekt;
+
+        /// <summary>
+        /// Sichert die Senkenlisten des Projekts - <b>nur im Arbeitsspeicher</b>. Fehlt
+        /// die Tabelle (Migrationsschritt 50 noch nicht gelaufen), gibt es nichts zu
+        /// sichern und nichts zu tun.
+        /// </summary>
+        private void SenkenSichern(int projektID)
+        {
+            m_SenkenSicherung = null;
+            m_SenkenProjekt = 0;
+
+            if (projektID <= 0 || !Z_AnlageSenkeCtrl.SpalteVorhanden()) return;
+
+            try
+            {
+                List<Z_AnlageSenkeModel> alle = new Z_AnlageSenkeCtrl().LesenJeProjekt(projektID);
+                if (alle.Count == 0) return;
+
+                // Die Merkmale der Anlagen EINMAL lesen - die Senkenzeilen fuehren nur
+                // die Anlagen-Id, wiedererkannt wird aber ueber (ID_Type, Bezeichner).
+                Dictionary<int, SenkenSicherung> jeAnlage = new Dictionary<int, SenkenSicherung>();
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID, ID_Type, Bezeichner FROM Tab_Energieanlagen WHERE ID_Projekt = ? ORDER BY ID",
+                    new OleDbParameter("@pID", projektID));
+
+                if (dt == null || dt.Rows.Count == 0) return;
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    int idAnlage = SpZahl(r, "ID");
+                    if (idAnlage <= 0) continue;
+
+                    jeAnlage[idAnlage] = new SenkenSicherung
+                    {
+                        ID_Type = SpZahl(r, "ID_Type"),
+                        Bezeichner = SpText(r, "Bezeichner")
+                    };
+                }
+
+                foreach (Z_AnlageSenkeModel z in alle)
+                {
+                    SenkenSicherung s;
+                    if (jeAnlage.TryGetValue(z.ID_Anlage, out s)) s.Senken.Add(z);
+                }
+
+                List<SenkenSicherung> sicherung = new List<SenkenSicherung>();
+                foreach (SenkenSicherung s in jeAnlage.Values)
+                {
+                    if (s.Senken.Count == 0) continue;
+
+                    // Doppelte Bezeichner sind im Schema moeglich - die erste Zeile
+                    // gewinnt, wie bei der Variantenrettung.
+                    if (SenkenTreffer(sicherung, s.ID_Type, s.Bezeichner) != null)
+                    {
+                        Console.WriteLine("Senken-Rettung: \"" + s.Bezeichner + "\" kommt im Projekt " +
+                                          projektID + " mehrfach vor - gesichert wird die erste Zeile, " +
+                                          "die Senken der weiteren gehen verloren.");
+                        continue;
+                    }
+
+                    sicherung.Add(s);
+                }
+
+                if (sicherung.Count > 0)
+                {
+                    m_SenkenSicherung = sicherung;
+                    m_SenkenProjekt = projektID;
+                }
+            }
+            catch (Exception ex)
+            {
+                m_SenkenSicherung = null;
+                m_SenkenProjekt = 0;
+                Console.WriteLine("Die Senkenlisten konnten vor dem Loeschen nicht gesichert " +
+                                  "werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Schreibt die gesicherten Senkenlisten auf die NEUEN Anlagenzeilen zurueck.
+        ///
+        /// <para>
+        /// Geschrieben wird ausschliesslich auf Anlagen, die JETZT keine Senkenzeile
+        /// fuehren. Damit ist die Methode idempotent, sie ueberschreibt nichts, was der
+        /// Dialog gerade gespeichert hat, und eine im Dialog neu hinzugekommene Anlage
+        /// bleibt ohne Senke - dort gilt wie bisher die Rueckfallregel
+        /// <c>Heizkreis</c>/<c>Beides</c>.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Vor dem Aufraeumlauf.</b> <c>Z_AnlageSenke.ID_Puffer</c> zaehlt fuer
+        /// <c>GeraeteWaisen</c> als Verweis auf den Speicher - ab der dritten Senke
+        /// sogar als EINZIGER. Stuende die Rettung dahinter, loeschte der Aufraeumlauf
+        /// genau die Puffer, deren Senkenzeile eine Zeile spaeter zurueckkaeme.
+        /// </para>
+        ///
+        /// <para><b>BEST EFFORT</b> - ein gelungenes Speichern scheitert nicht daran.</para>
+        /// </summary>
+        private void SenkenWiederherstellen(int projektID)
+        {
+            List<SenkenSicherung> sicherung = m_SenkenSicherung;
+            int projektDerSicherung = m_SenkenProjekt;
+
+            m_SenkenSicherung = null;                 // eine Sicherung, ein Wiederherstellen
+            m_SenkenProjekt = 0;
+
+            if (sicherung == null || sicherung.Count == 0 || projektID <= 0) return;
+
+            if (projektDerSicherung != projektID)
+            {
+                Console.WriteLine("Senken-Rettung nicht ausgefuehrt: Die Sicherung gehoert zu " +
+                                  "Projekt " + projektDerSicherung + ", geschrieben wird aber " +
+                                  "Projekt " + projektID + ".");
+                return;
+            }
+
+            try
+            {
+                Z_AnlageSenkeCtrl ctrl = new Z_AnlageSenkeCtrl();
+
+                // Wer fuehrt jetzt schon Senken? Ein Aufruf statt einer Abfrage je Anlage.
+                HashSet<int> hatSenken = new HashSet<int>();
+                foreach (Z_AnlageSenkeModel z in ctrl.LesenJeProjekt(projektID))
+                    hatSenken.Add(z.ID_Anlage);
+
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID, ID_Type, Bezeichner FROM Tab_Energieanlagen WHERE ID_Projekt = ? ORDER BY ID",
+                    new OleDbParameter("@pID", projektID));
+
+                if (dt == null || dt.Rows.Count == 0) return;
+
+                int wieder = 0;
+                foreach (DataRow r in dt.Rows)
+                {
+                    int idAnlage = SpZahl(r, "ID");
+                    if (idAnlage <= 0 || hatSenken.Contains(idAnlage)) continue;
+
+                    SenkenSicherung treffer = SenkenTreffer(sicherung, SpZahl(r, "ID_Type"),
+                                                            SpText(r, "Bezeichner"));
+                    if (treffer == null) continue;
+
+                    // Der Puffer einer geretteten Senke kann zwischenzeitlich fort sein
+                    // (im Dialog entfernt). Die Referenz faellt dann weg statt die ganze
+                    // Zeile - dieselbe Normalisierung, die WaermesenkeClass beim Lesen
+                    // vornimmt, und derselbe Schutz wie in PufferFkOderNull: Ein
+                    // gescheitertes Insert hier haette die Anlage ohne jede Senke
+                    // zurueckgelassen.
+                    Dictionary<int, bool> pufferCache = new Dictionary<int, bool>();
+                    List<Z_AnlageSenkeModel> zeilen = new List<Z_AnlageSenkeModel>();
+
+                    foreach (Z_AnlageSenkeModel alt in treffer.Senken)
+                    {
+                        if (alt.ID_Puffer > 0 && !PufferVorhanden(alt.ID_Puffer, pufferCache))
+                        {
+                            Console.WriteLine("Senken-Rettung: \"" + treffer.Bezeichner +
+                                              "\", Rang " + alt.Rang + " zeigte auf den Puffer " +
+                                              alt.ID_Puffer + ", den es nicht mehr gibt - die " +
+                                              "Referenz wird als leer gespeichert.");
+                            alt.ID_Puffer = 0;
+                        }
+
+                        alt.ID = 0;                   // frische Zeile, neuer AutoWert
+                        alt.ID_Anlage = idAnlage;
+                        zeilen.Add(alt);
+                    }
+
+                    if (ctrl.SchreibenJeAnlage(idAnlage, zeilen)) wieder += zeilen.Count;
+                }
+
+                if (wieder > 0)
+                    Console.WriteLine("Senken-Rettung: " + wieder + " Senkenzeile(n) des Projekts " +
+                                      projektID + " wiederhergestellt.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Senkenlisten konnten nicht wiederhergestellt werden: " +
+                                  ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Die Sicherung zu (<paramref name="idType"/>, <paramref name="bezeichner"/>),
+        /// oder <c>null</c>. Verglichen wird wie in <see cref="SpTreffer"/>.
+        /// </summary>
+        private static SenkenSicherung SenkenTreffer(List<SenkenSicherung> sicherung,
+                                                     int idType, string bezeichner)
+        {
+            foreach (SenkenSicherung s in sicherung)
+                if (s.ID_Type == idType &&
+                    string.Equals(s.Bezeichner, bezeichner, StringComparison.OrdinalIgnoreCase))
+                    return s;
+
+            return null;
+        }
+
         public bool Add_WP_Waermeerzeuger(int projektID, List<WErzeugerModel> list)
         {
             try
@@ -780,6 +1070,25 @@ namespace WindowsFormsApplication1
 
                 foreach (var item in list)
                 {
+                    // Ä24: Gerätestand VOR der Materialisierung merken — tauscht
+                    // dieser Lauf die Gerätekopie der Anlage (CopyFromStamm nach
+                    // Neuwahl/Umbenennung, Duplikat-Gerätekopie), ziehen die
+                    // KOSTENANKER ihrer Positionen unten mit um. Ohne den Umzug
+                    // zeigten sie auf die alte Kopie, die GeraeteWaisen.Aufraeumen
+                    // abräumt — die Selbstheilung löste die Zuordnung dann
+                    // „ehrlich“ und die Kosten der Anlage standen als „ohne
+                    // Anlagenzuordnung“ da (Befund 27.08.2026, Projekt 1037).
+                    // FR-5: Frisch im Dialog aufgenommene Zeilen tragen eine VORLAEUFIGE
+                    // Id ab 100000 (Hausmuster startindex, siehe
+                    // WizardItemClass.ID_UNGESPEICHERT_START) — sie ist KEINE Anlagen-Id.
+                    // Ohne die Normalisierung zöge der Kostenanker-Umzug unten die
+                    // Positionen einer ECHTEN Anlage um, sobald die AutoWerte diese
+                    // Marke erreichen.
+                    int anlageAlt = (item.ID >= WizardItemClass.ID_UNGESPEICHERT_START) ? 0 : item.ID;
+                    int wpAlt = item.ID_WP, bhkwAlt = item.ID_BHKW, kesselAlt = item.ID_Kessel,
+                        spAlt = item.ID_SP, pufferAlt = item.ID_PUFFER, pvAlt = item.ID_PV,
+                        solarAlt = item.ID_Solar;
+
                     // Gesperrte Verweisspalte dieses Anlagentyps (null = keine Sperre).
                     string sperrSpalte = null;
                     // Stammdatensatz der jeweiligen Energieanlage bei Bedarf ins Projekt kopieren
@@ -888,6 +1197,17 @@ namespace WindowsFormsApplication1
                         }
                     }
 
+                    // Ä24: Kostenanker der Anlage auf die neue Gerätekopie umziehen —
+                    // NUR die Positionen DIESER Anlagenzeile (item.ID); höchstens einer
+                    // der sieben Aufrufe sieht einen echten Wechsel.
+                    KostenAnkerUmziehen(projektID, anlageAlt, wpAlt, item.ID_WP);
+                    KostenAnkerUmziehen(projektID, anlageAlt, bhkwAlt, item.ID_BHKW);
+                    KostenAnkerUmziehen(projektID, anlageAlt, kesselAlt, item.ID_Kessel);
+                    KostenAnkerUmziehen(projektID, anlageAlt, spAlt, item.ID_SP);
+                    KostenAnkerUmziehen(projektID, anlageAlt, pufferAlt, item.ID_PUFFER);
+                    KostenAnkerUmziehen(projektID, anlageAlt, pvAlt, item.ID_PV);
+                    KostenAnkerUmziehen(projektID, anlageAlt, solarAlt, item.ID_Solar);
+
                     // Anweisung und Parameter stehen zentral (siehe SQL_ANLAGE_INSERT):
                     // dieselbe Wahrheit, die auch WErzeugerCtrl.Insert benutzt.
                     if (!DataRepository.ExecuteSQL(SQL_ANLAGE_INSERT,
@@ -896,6 +1216,19 @@ namespace WindowsFormsApplication1
                         SpVariantenVerwerfen("das Neuanlegen der Anlagen ist gescheitert");
                         return false;
                     }
+
+                    // Ä24: Die frische Anlagen-Id (AutoWert) zurück ans
+                    // Listenobjekt — die Session-Liste bleibt so über
+                    // Folge-Speicherungen an ihrer Zeile (Kostenanker-Umzug oben,
+                    // Kosten-Knöpfe der Detailansicht).
+                    try
+                    {
+                        object neuAnlage = DataRepository.ExecuteScalar(
+                            "SELECT MAX(ID) FROM Tab_Energieanlagen WHERE ID_Projekt = " + projektID);
+                        if (neuAnlage != null && neuAnlage != DBNull.Value)
+                            item.ID = Convert.ToInt32(neuAnlage);
+                    }
+                    catch { }
 
                     geschrieben.Add(item);
                 }
@@ -928,6 +1261,47 @@ namespace WindowsFormsApplication1
                 //
                 // BEST EFFORT: Der Aufraeumlauf kann ein gelungenes Speichern nicht mehr
                 // scheitern lassen. Was er stehen laesst, holt der Migrationsschritt.
+
+                // Ä25 (Nutzerbefund 27.08.2026, „Pufferkosten verschwinden“):
+                // ZUORDNUNG UND ANKER NACHZIEHEN - und zwar VOR dem Aufraeumlauf.
+                //
+                // Loeschen + Neuanlegen hat allen Kostenpositionen des Projekts die
+                // Anlagen-Id unter den Fuessen weggezogen (neue AutoWerte). Geheilt
+                // wurde das bisher erst beim naechsten UI-Aufbau ueber
+                // KostenProjektPositionenCtrl.ZuordnungReparieren (Kosten-Seite,
+                // Kostenverwaltung) - die Heilung laeuft ueber den GERAETEANKER.
+                // Genau dieses Zeitfenster ist die Gefahr: GeraeteWaisen.Aufraeumen
+                // direkt darunter loescht Geraetekopien, auf die keine Anlagenzeile
+                // mehr zeigt, und mit der Geraetezeile stirbt der Anker. Danach ist
+                // die Zuordnung nicht mehr herleitbar und die Position steht als
+                // „ohne Anlagenzuordnung" da - beim Pufferspeicher der haeufigste
+                // Fall, weil ein Projekt dort mehrere Anlagen fuehrt und der
+                // Speichersatz oft komplett neu gesetzt wird.
+                //
+                // An DIESER Stelle stehen die alten Geraetezeilen noch:
+                // ZuordnungReparieren findet ueber den Anker die neue Anlagenzeile,
+                // AnkerNachziehen schreibt den Anker danach aus ihr neu - dieselbe
+                // Ableitung, die Migrationsschritt 47 einmalig fuer den Bestand
+                // macht. Ein LAUFZEIT-Nachzug statt eines neuen Migrationsschritts,
+                // weil der Nummernblock ab 48 bereits von den Puffer-Paketen belegt
+                // ist.
+                //
+                // GRENZE (bewusst): Entfernt der Anwender eine Anlage ganz aus der
+                // Verwaltung, gibt es keine Zeile mehr, auf die zu heilen waere -
+                // die Zuordnung wird dann wie bisher ehrlich geloest (gelbe Zeile).
+                // BEST EFFORT - ein gelungenes Speichern scheitert daran nicht.
+                try
+                {
+                    KostenProjektPositionenCtrl.ZuordnungReparieren(projektID);
+                    KostenProjektPositionenCtrl.AnkerNachziehen(projektID);
+                }
+                catch { }
+
+                // S1: Die Senkenlisten auf die NEUEN Anlagenzeilen zurueck - VOR dem
+                // Aufraeumlauf, weil Z_AnlageSenke.ID_Puffer dort als Verweis zaehlt
+                // (Begruendung im Block ueber SenkenSichern).
+                SenkenWiederherstellen(projektID);
+
                 GeraeteWaisen.Aufraeumen(projektID);
 
                 Console.WriteLine("Daten erfolgreich aktualisiert.");
@@ -939,6 +1313,31 @@ namespace WindowsFormsApplication1
                 Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Ä24: Zieht die Geräteanker der Kostenpositionen EINER Anlagenzeile auf
+        /// die neue Gerätekopie um (Gerätetausch im Del+Add-Speicherweg). Die
+        /// ID_Anlage-Seite heilt anschließend
+        /// <c>KostenProjektPositionenCtrl.ZuordnungReparieren</c> über den Anker.
+        /// Best effort — ein Speichern scheitert daran nicht.
+        /// </summary>
+        private static void KostenAnkerUmziehen(int projektID, int anlageAlt, int geraetAlt, int geraetNeu)
+        {
+            if (projektID <= 0 || anlageAlt <= 0 || geraetAlt <= 0 || geraetNeu <= 0 ||
+                geraetAlt == geraetNeu) return;
+            try
+            {
+                if (!KostenPositionCtrl.StelleSpaltenSicher()) return;
+                DataRepository.ExecuteSQL(
+                    "UPDATE Tab_ProjektWerte SET ID_AnlageGeraet = ? " +
+                    "WHERE ProjektID = ? AND ID_Anlage = ? AND ID_AnlageGeraet = ?",
+                    new OleDbParameter("@neu", geraetNeu),
+                    new OleDbParameter("@p", projektID),
+                    new OleDbParameter("@a", anlageAlt),
+                    new OleDbParameter("@g", geraetAlt));
+            }
+            catch { }
         }
 
         // Kleine Hilfsfunktion für die Typprüfung (kommt mit in die Ctrl)
@@ -1201,22 +1600,34 @@ namespace WindowsFormsApplication1
         {
             int nextID = DataRepository.GetMaxID("Z_ProjektWaermebedarf", "ID_Z") + 1;
 
+            // Migrationsschritt 48 (F18): Der Speicherweg der Zuordnung ist LOESCHEN +
+            // NEU ANLEGEN. Die Kanalspalte muss deshalb in JEDER Schreibstelle stehen -
+            // sonst faellt der Kanal beim naechsten Speichern still auf Heizung zurueck.
+            // Die Vorsorge legt sie auf einer noch nicht migrierten Datenbank an.
+            bool kanalSpalte = Z_ProjektGebGanglinieCtrl.StelleKanalSpalteSicher();
+
             foreach (var item in list)
             {
                 // Stamm-Ganglinie (+ Daten) bei Bedarf ins Projekt kopieren und die Projekt-Ganglinie-ID verwenden.
                 int projGanglinieId = WaermebedarfStammCtrl.ApplyGanglinieToProjekt(item.m_szBezeichner, projektID);
                 if (projGanglinieId <= 0) projGanglinieId = item.m_ID_Ganglinie;
 
-                string sql = "INSERT INTO Z_ProjektWaermebedarf (ID_Z, ID_Projekt, ID_Ganglinie, Bezeichner) VALUES (?, ?, ?, ?)";
+                string sql = kanalSpalte
+                    ? "INSERT INTO Z_ProjektWaermebedarf (ID_Z, ID_Projekt, ID_Ganglinie, Bezeichner, Kanal) VALUES (?, ?, ?, ?, ?)"
+                    : "INSERT INTO Z_ProjektWaermebedarf (ID_Z, ID_Projekt, ID_Ganglinie, Bezeichner) VALUES (?, ?, ?, ?)";
 
-                OleDbParameter[] ps = {
+                var ps = new List<OleDbParameter>
+                {
                     new OleDbParameter("@id", nextID++),
                     new OleDbParameter("@pID", projektID),
                     new OleDbParameter("@gID", projGanglinieId),
                     new OleDbParameter("@bez", item.m_szBezeichner ?? "")
                 };
+                if (kanalSpalte)
+                    ps.Add(new OleDbParameter("@kanal",
+                        Z_ProjektGebGanglinieCtrl.KanalOderHeizung(item.Kanal)));
 
-                if (!DataRepository.ExecuteSQL(sql, ps)) return false;
+                if (!DataRepository.ExecuteSQL(sql, ps.ToArray())) return false;
             }
             return true;
         }

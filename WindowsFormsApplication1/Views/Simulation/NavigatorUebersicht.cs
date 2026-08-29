@@ -64,7 +64,34 @@ namespace WindowsFormsApplication1
                 FillWeight = 100
             };
 
+            // PAKET E1 (Konzept 4.4): drei Spalten für die Deckung JE BEDARFSART.
+            //
+            // Sie zeigen den EIGENANTEIL des Erzeugers je Kanal [MWh/a] — Direktdeckung
+            // plus die ihm zugerechnete Speicherentladung, also genau die Größe, aus der
+            // der Runner den gespeicherten Deckungsgrad bildet. Die Spalte „Ergebnis"
+            // daneben führt weiterhin die PRODUKTION; sie ist die größere Zahl, sobald
+            // ein Erzeuger einen Puffer lädt oder Überschuss verwirft.
+            //
+            // Die Namen sind sprachneutral (Schicht 2), der HeaderText kommt aus dem
+            // Katalog und trägt den Kanalnamen als Platzhalter (Schicht 3).
+            var kanalSpalten = new DataGridViewColumn[Kanal.ANZAHL];
+            string[] kanalNamen =
+            {
+                MyResource.Resource.KANAL_HEIZUNG_ANZEIGE,
+                MyResource.Resource.KANAL_BRAUCHWASSER_ANZEIGE,
+                MyResource.Resource.KANAL_PROZESS_ANZEIGE
+            };
+            string[] kanalSchluessel = { "DECKUNG_HEIZUNG", "DECKUNG_BRAUCHWASSER", "DECKUNG_PROZESS" };
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+                kanalSpalten[k] = new DataGridViewTextBoxColumn
+                {
+                    HeaderText = string.Format(MyResource.Resource.SIM_SPALTE_DECKUNG_KANAL, kanalNamen[k]),
+                    Name = kanalSchluessel[k],
+                    FillWeight = 100
+                };
+
             dataGridView1.Columns.AddRange(new DataGridViewColumn[] { colErzeuger, colErgebnis });
+            dataGridView1.Columns.AddRange(kanalSpalten);
 
             // --- DANN das Styling aufrufen (weil Spalten jetzt existieren) ---
             SetupDataGridViewLook(dataGridView1);
@@ -95,16 +122,49 @@ namespace WindowsFormsApplication1
         private void FillTableWithData(DataGridView dgvErgebnisse)
         {
             dgvErgebnisse.Rows.Clear();
+            if (sim == null) return;
+
             if (_praesenz.Waermepumpe)
-                dgvErgebnisse.Rows.Add(MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE, waerme_wp.ToString("F2"));
+                Zeile(dgvErgebnisse, MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE, waerme_wp,
+                      SimulationRunner.Summiere(sim.simulation_wp.Direktdeckung_Kanal,
+                                                sim.simulation_wp.Speicherentladung_Kanal));
             if (_praesenz.Heizstab)
-                dgvErgebnisse.Rows.Add(MyResource.Resource.CHART_SEGMENT_HEIZSTAB, waerme_heizstab.ToString("F2"));
+                // Der Heizstab hat eine eigene Zeile — deshalb bekommt er auch seine
+                // eigene Kanalzeile und steckt NICHT im Eigenanteil der Wärmepumpe
+                // darüber. In der Ergebnispersistenz gehört er dagegen zur WP
+                // (Tab_WP.Heizung je Modul); die Summe der beiden Zeilen hier ist der
+                // gespeicherte WP-Eigenanteil.
+                Zeile(dgvErgebnisse, MyResource.Resource.CHART_SEGMENT_HEIZSTAB, waerme_heizstab,
+                      SimulationRunner.Summiere(sim.simulation_wp.Heizstab_Kanal));
             if (_praesenz.Solarthermie)
-                dgvErgebnisse.Rows.Add(MyResource.Resource.SIM_SOLARTHERMIE_ANLAGE, waerme_solar.ToString("F2"));
+                Zeile(dgvErgebnisse, MyResource.Resource.SIM_SOLARTHERMIE_ANLAGE, waerme_solar,
+                      SimulationRunner.Summiere(sim.simulation_solarthermie.Direktdeckung_Kanal,
+                                                sim.simulation_solarthermie.Speicherentladung_Kanal));
             if (_praesenz.Heizkessel)
-                dgvErgebnisse.Rows.Add(MyResource.Resource.SIM_TABELLE_HEIZKESSEL, waerme_spk.ToString("F2"));
+                Zeile(dgvErgebnisse, MyResource.Resource.SIM_TABELLE_HEIZKESSEL, waerme_spk,
+                      SimulationRunner.Summiere(sim.simulation_spk.Direktdeckung_Kanal,
+                                                sim.simulation_spk.Speicherentladung_Kanal));
             if (_praesenz.BHKW)
-                dgvErgebnisse.Rows.Add(MyResource.Resource.SIM_ERZEUGERNAME_BHKW, waerme_bhkw.ToString("F2"));
+                Zeile(dgvErgebnisse, MyResource.Resource.SIM_ERZEUGERNAME_BHKW, waerme_bhkw,
+                      SimulationRunner.Summiere(sim.simulation_bhkw.Direktdeckung_Kanal,
+                                                sim.simulation_bhkw.Speicherentladung_Kanal));
+        }
+
+        /// <summary>
+        /// Eine Ergebniszeile: Erzeuger, Produktion [MWh/a] und der Eigenanteil je Kanal
+        /// (Paket E1). Der Kanalvektor kommt in kWh aus der Engine-Buchführung und wird
+        /// hier auf MWh gebracht — dieselbe Umrechnung wie in
+        /// <see cref="SimulationRunner.DeckungJeKanal"/>.
+        /// </summary>
+        private static void Zeile(DataGridView dgv, string name, double produktionMWh,
+                                  double[] eigenanteilKanalKWh)
+        {
+            var werte = new object[2 + Kanal.ANZAHL];
+            werte[0] = name;
+            werte[1] = produktionMWh.ToString("F2");
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+                werte[2 + k] = (eigenanteilKanalKWh[k] / 1000.0).ToString("F2");
+            dgv.Rows.Add(werte);
         }
 
         private void bt_WaermebedarfUebersicht_Click(object sender, EventArgs e)

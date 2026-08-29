@@ -73,8 +73,20 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class SchemaMigration
     {
-        /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 37;
+        /// <summary>
+        /// Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.
+        ///
+        /// KOLLISIONSAUFLÖSUNG 29.08.2026: Zwei parallele Stränge hatten die 55 vergeben —
+        /// Paket B2 (Temperaturbezug) und Etappe E1 (CO2-Saat, samt 56 für die
+        /// Emissionsarten). Die produktive Datenbank war zum Merge-Zeitpunkt bereits mit
+        /// dem B2-Schritt auf 55 migriert (nachweisbar an Tab_Energieanlagen.
+        /// WQ_TemperaturModus); die 55 gehört damit unverrückbar dem Temperaturbezug.
+        /// CO2-Saat und Emissionsarten sind auf die Nummern 56 und 57 gerückt — ihre
+        /// SCHRITTMETHODEN sind mit dem Merge aber nicht angekommen (nur Katalog und
+        /// Konstanten); die beiden Einträge sind deshalb in <see cref="SCHRITTE"/>
+        /// GEPARKT und das Ziel bleibt 55, bis der E1/E2-Vollstand eintrifft.
+        /// </summary>
+        public const int ZIEL_VERSION = 55;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -1379,6 +1391,615 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_37_BHKW_POSTEN = 37;
 
+        /// <summary>
+        /// Schritt 38 - <b>Etappe KD1</b> (Konzept Kostendialoge Rev. 1.2, § 4/§ 14):
+        /// die Strukturen der bewerteten Kostenvorlagen.
+        ///
+        /// <para>
+        /// <b>Was passiert.</b> Zwei neue Stammtabellen
+        /// <c>Tab_KostenVorlage</c>/<c>Tab_KostenVorlagePosition</c> (Kopf/Positionen,
+        /// Löschweitergabe, MAX+1-Vergabe wie <c>Tab_Preisreihe</c>) und vier
+        /// Spalten-Nachrüstungen: <c>Tab_ProjektWerte.VorlageID</c> (Übernahme-Herkunft,
+        /// § 4.2) und <c>.StartJahr</c> (Entscheidung FK10, Rechenwirkung erst KD6)
+        /// sowie <c>energy_carrier.price_power</c>/<c>.price_power_modus</c>
+        /// (Entscheidung FK6, Rechenwirkung erst KD4). Alles nullable, KEIN DDL-DEFAULT
+        /// auf Fachwerten (Hausregel).
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Ergebnisneutral:</b> reine Strukturerweiterung - vor KD2/KD4/KD6 wertet
+        /// kein Leser die neuen Spalten aus; Referenzläufe müssen byte-identisch
+        /// bleiben (Abnahmekriterium KD1).
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Idempotent</b> (unabhängig vom Marker): CREATE/INDEX/CONSTRAINT laufen
+        /// über <see cref="Ddl"/> („bereits vorhanden" ist Erfolg), die Spalten über
+        /// <see cref="SpaltenAnlegen"/> (vorhandene werden übersprungen).
+        /// </para>
+        /// </summary>
+        public const int SCHRITT_38_KOSTENVORLAGEN = 38;
+
+        /// <summary>
+        /// Schritt 39 - <b>Etappe KD1</b>: die 20 Auslieferungsvorlagen
+        /// (<see cref="SchemaKatalog.Schritt39_Vorlagen"/> - 10 Komponenten ×
+        /// Investition/Betrieb, Positionslisten wörtlich aus den Vorlagen-Folien 8-24
+        /// bzw. den K5-Katalogen).
+        ///
+        /// <para>
+        /// <b>Seeds ohne erfundene Werte:</b> <c>IstStandard = ReadOnly = TRUE</c>;
+        /// Sätze, Beträge und Nutzungsdauern bleiben NULL („nicht gepflegt", nie 0);
+        /// Empfehlungsbereiche nur, wo die K5-Katalogdaten sie belegen. Entscheidung
+        /// FK3: die Folien-Zeilen „Brennstoffkosten"/„Stromkosten (Verdichter)" werden
+        /// bewusst NICHT gesät - Energiekosten erscheinen nie im Betriebskosten-Raster.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Idempotent:</b> Existiert die Standardvariante einer Komponente+Kategorie
+        /// bereits (gleicher Name), bleibt sie samt Positionen unangetastet - der
+        /// Anwender könnte sie in Access bewusst geändert haben; der Zweitlauf meldet
+        /// 0 Änderungen. Fehlt eine Komponente (ältere Datenbank), legt
+        /// <see cref="KomponenteSichern"/> sie an (Muster Schritt 27).
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Rücknahme je Vorlage:</b> Scheitert das Säen einer Vorlage mittendrin,
+        /// wird ihr Kopf gelöscht (die Löschweitergabe räumt die Teilpositionen ab)
+        /// und der Schritt gilt als gescheitert - halb gesäte Vorlagen soll es nicht
+        /// geben; der nächste Lauf ergänzt nur die fehlenden.
+        /// </para>
+        /// </summary>
+        public const int SCHRITT_39_KOSTENVORLAGEN_SEED = 39;
+
+        /// <summary>
+        /// Schritt 40 - <b>Etappe KD4</b> (Konzept Kostendialoge § 7.1, Entscheidung
+        /// FK6a): <c>Tab_Preisreihe.ID_Energietraeger</c> — saisonale
+        /// Leistungspreis-Reihen je Energieträger nach dem Preisreihen-Muster
+        /// (12 Monatswerte, Einheit EUR/kW/Monat), bewusst NICHT als weitere
+        /// Katalogspalten. NULL = die Reihe ist eine gewöhnliche Spot-Preisreihe;
+        /// die Spot-Auswahllisten (<c>PreisreiheCtrl.ReadVerfuegbare</c>) filtern
+        /// Trägerreihen aus, damit die Stichtagsregel der Simulation keine
+        /// Monatsreihe kürt.
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker): reine Spalten-Nachrüstung
+        /// über <see cref="SpaltenAnlegen"/> (vorhandene Spalte wird übersprungen);
+        /// bei NEU angelegten Datenbanken bringt <see cref="SQL_CREATE_PREISREIHE"/>
+        /// die Spalte bereits mit.</para>
+        /// </summary>
+        public const int SCHRITT_40_LEISTUNGSPREISREIHE = 40;
+
+        /// <summary>
+        /// Schritt 41 - <b>Etappe P3</b> (PV-Konzept § 6.1/§ 6.3):
+        /// <c>Tab_ProjektPhotovoltaik</c> (PV-Vergütungsangaben je Stammprojekt,
+        /// Muster Tab_ProjektTarif; <c>Aktiv = false</c> heißt exakt Bestandsverhalten
+        /// — Abnahmekriterium) und die Marktwert-Solar-Stammreihen 2024/2025/2026
+        /// (Tab_Preisreihe, Auflösung Monat, ct/kWh, Bezeichner „Marktwert Solar";
+        /// 2026 mit den 7 veröffentlichten Monaten Jan–Jul).
+        ///
+        /// <para><b>Idempotent:</b> CREATE/INDEX über <see cref="Ddl"/>; die Reihen
+        /// werden nur gesät, wenn zum Bezeichner und Jahr noch keine Stammreihe
+        /// existiert — ein Zweitlauf meldet 0 neue Reihen.</para>
+        /// </summary>
+        public const int SCHRITT_41_PROJEKTPHOTOVOLTAIK = 41;
+
+        /// <summary>
+        /// Schritt 48 - <b>Paket K1</b> (Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 4.2 und § 9, Entscheidung F18 vom 27.08.2026):
+        /// <c>Z_ProjektWaermebedarf.Kanal</c> — die KANALZUORDNUNG einer dem Projekt
+        /// zugeordneten externen Wärmeganglinie. Bis hierher lief jede importierte
+        /// Ganglinie ungefragt in den Heizbedarf; mit der Spalte kann der Anwender sie
+        /// als Brauchwasser- oder Prozesslast deklarieren
+        /// (<c>DbWerte.KANAL_HEIZUNG</c> / <c>_BRAUCHWASSER</c> / <c>_PROZESS</c>).
+        ///
+        /// <para>Zwei Teile wie in den Schritten 45 und 46: 48a die Spalte
+        /// (<see cref="SchemaKatalog.SPALTE_ZPW_KANAL"/>, TEXT 50), 48b die
+        /// verhaltensneutrale Vorbelegung aller Bestandszeilen auf
+        /// <c>DbWerte.KANAL_HEIZUNG</c> — der siebte DML-Schritt neben 5, 7, 9, 13, 15
+        /// und 17. Die Vorbelegung ist Bequemlichkeit, keine Bedingung: Jeder Leser
+        /// behandelt NULL und Leerwert ohnehin als Heizung.</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker): Das ALTER TABLE läuft in
+        /// try/catch, das UPDATE trifft beim Zweitlauf keine Zeile mehr
+        /// (<c>WHERE Kanal IS NULL</c>).</para>
+        /// </summary>
+        public const int SCHRITT_48_GANGLINIENKANAL = 48;
+
+        /// <summary>
+        /// Schritt 49 - <b>Paket K2</b> (Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 6.1 und § 4.3, Entscheidungen F5-Alternative/L6 und F10 vom 27.08.2026):
+        /// das KLASSEN-SET am Pufferspeicher und die projektweite
+        /// KNAPPHEITSREIHENFOLGE.
+        ///
+        /// <para><b>49a</b> — drei YESNO-Spalten an <c>Tab_Pufferspeicher</c>
+        /// (<see cref="SchemaKatalog.SPALTE_PSP_NUTZUNG_HEIZUNG"/>,
+        /// <c>_BRAUCHWASSER</c>, <c>_PROZESS</c>). Sie lösen die einwertige Spalte
+        /// <c>Verwendung</c> ab: Bisher war ein Speicher entweder Heizungs- oder
+        /// Brauchwasserspeicher oder „Kombi"; jetzt trägt er ein SET aus bis zu drei
+        /// unabhängigen Klassen, womit auch {Heizung, Prozess} oder {H, B, P} möglich
+        /// werden. <c>Verwendung</c> bleibt als LESE-ALTLAST stehen und wird als
+        /// abgeleiteter Altwert mitgeschrieben.</para>
+        ///
+        /// <para><b>49b</b> — <see cref="SchemaKatalog.SPALTE_KANAL_KNAPPHEITSREIHENFOLGE"/>
+        /// (TEXT 100) an <c>Tab_Einstellungen</c>. TEXT(100) statt eines knapperen
+        /// Feldes aus demselben Grund wie in Schritt 48: Access kürzt beim UPDATE
+        /// STILL auf die Feldbreite. Der Vorgabewert misst 32 Zeichen, eine spätere
+        /// vierte Kanalkennung hat damit reichlich Luft.</para>
+        ///
+        /// <para><b>49c/49d</b> — zwei verhaltensneutrale DML-Vorbelegungen (der achte
+        /// und neunte DML-Teil neben 5, 7, 9, 13, 15, 17 und 48b): das Klassen-Set aus
+        /// <c>Verwendung</c> (<c>Heizung</c> → {H}, <c>Brauchwasser</c> → {B},
+        /// <c>Kombi</c> → {H, B}, alles andere einschließlich NULL und Leerwert → {H})
+        /// und die Knappheitsreihenfolge auf <see cref="DbWerte.KNAPPHEIT_DEFAULT"/>.
+        /// Beides bildet exakt das bisherige Verhalten ab: Eine leere Verwendung galt
+        /// überall als Heizung (<c>WaermesenkeClass.WirksameVerwendung</c>), und die
+        /// Kaskade kannte die Reihenfolge Brauchwasser vor Heizung fest verdrahtet.</para>
+        ///
+        /// <para><b>Case-insensitiv vergleichen.</b> Die Normalisierung
+        /// <c>WaermesenkeClass.NormalisierteVerwendung</c> kennt Schreibvarianten
+        /// (<c>"kombi"</c>, <c>"brauchwasser"</c>) und bringt sie auf den kanonischen
+        /// Wert. Die DML hier muss dieselbe Toleranz haben, sonst bekäme ein
+        /// Kombi-Speicher mit kleingeschriebenem Wert still das Set {H} — er verlöre
+        /// seinen Brauchwasserkanal. Access bietet dafür <c>UCase</c>.</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker): Die <c>ALTER TABLE</c>
+        /// laufen in try/catch; die beiden UPDATE treffen beim Zweitlauf keine Zeile
+        /// mehr, weil sie nur auf das leere Set bzw. auf <c>IS NULL</c> zielen.</para>
+        /// </summary>
+        public const int SCHRITT_49_KLASSENSET = 49;
+
+        /// <summary>
+        /// Schritt 50 - <b>Paket S1</b> (Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 5.1, Entscheidungen L4/L5 und F17 vom 27.08.2026): die SENKENLISTE
+        /// <see cref="SchemaKatalog.Z_ANLAGESENKE"/> - zwei feste Senkenplätze werden
+        /// eine geordnete Liste beliebiger Länge.
+        ///
+        /// <para><b>50a</b> - die Tabelle samt Index über
+        /// (<c>ID_Anlage</c>, <c>Rang</c>). HART: Ohne sie gibt es nichts zu migrieren,
+        /// der Schritt bricht sofort ab. <c>ID</c> ist ein AUTOINCREMENT und damit die
+        /// EINE Ausnahme von der <c>MAX(ID)+1</c>-Hausregel dieses Schemas - sie ist
+        /// hier zwingend: <c>Z_AnlagePufferVerbund.ID_Senke</c> (50b) verweist auf diese
+        /// IDs, und die DML unten schreibt bis zu drei Zeilen je Anlage in einem Zug.
+        /// Eine selbst gezählte ID müsste dabei nach JEDEM Insert neu ermittelt werden -
+        /// genau die Lücke, durch die zwei gleichzeitige Schreiber dieselbe Nummer
+        /// bekämen.</para>
+        ///
+        /// <para><b>50b</b> - die beiden Beziehungen und
+        /// <see cref="SchemaKatalog.SPALTE_VERBUND_ID_SENKE"/>. Die beiden Seiten sind
+        /// BEWUSST VERSCHIEDEN, und die Wahl ist gemessen, nicht geraten:
+        /// <see cref="SQL_FK_SENKE_PUFFER"/> ist RESTRIKTIV (ein Speicher darf nicht
+        /// stillschweigend verschwinden, Konzept § 5.1),
+        /// <see cref="SQL_FK_SENKE_ANLAGE"/> läuft dagegen MIT Löschweitergabe — sonst
+        /// ließe sich nach der Migration kein Projekt mehr speichern. Die Begründung
+        /// samt Messung steht bei den beiden Konstanten.</para>
+        ///
+        /// <para><b>50c</b> - die DML-Übernahme, der zehnte DML-Teil neben 5, 7, 9, 13,
+        /// 15, 17, 48b, 49c und 49d. Je Anlage entsteht Rang 1 aus
+        /// <c>WS_Ziel</c>/<c>WS_Typ</c>/<c>WS_ID_Puffer</c>/… und - falls
+        /// <c>WS_Ziel2</c> belegt ist - Rang 2 aus den <c>*2</c>-Spalten. Die
+        /// Ziel-Textwerte werden UNVERÄNDERT übernommen (F5-Alternative: keine
+        /// Wertablösung). Anlagen ohne jedes <c>WS_Ziel</c> bekommen
+        /// <c>Heizkreis</c>/<c>Beides</c> - die Rang-1-Pflicht aus § 5.1 und exakt die
+        /// Normalisierung, die <c>WaermesenkeClass</c> beim Lesen ohnehin vornimmt.
+        /// <c>Ladeprio_PV</c> erbt nur Rang 1 (es gibt kein <c>WS_Ladeprio_PV2</c>).</para>
+        ///
+        /// <para><b>50d - Regel R-Prozess</b> (§ 4.4/§ 5.1, Entscheidung F17): Führt das
+        /// Projekt Prozesswärme, bekommt jede Anlage mit Direktsenke <c>Heizkreis</c>
+        /// und Bedarfsart <c>Beides</c> oder <c>Heizung</c> eine zusätzliche Zeile
+        /// <c>Ziel = Prozesswaerme</c> UNMITTELBAR NACH ihrer Heizkreiszeile. Ohne diese
+        /// Regel verlöre jedes Bestandsprojekt mit Prozesswärme seine bisherige
+        /// (implizite) Prozessdeckung - eine Ergebnisänderung weit über die beabsichtigte
+        /// hinaus. „Unmittelbar nach" ist wörtlich zu nehmen: Liegt hinter der
+        /// Heizkreiszeile noch ein Rang, werden die höheren Ränge um eins hochgeschoben,
+        /// damit Prozess davor einsortiert wird (die Rangfolge „Heizung vor Prozess je
+        /// Anlage" ist damit festgelegt).</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker) über eine ZWEISTUFIGE Probe:
+        /// Das <c>CREATE TABLE</c> läuft über <see cref="Ddl"/> (bereits vorhanden gilt
+        /// als Erfolg), und die DML läuft nur, wenn die Tabelle danach LEER ist. Eine
+        /// zeilenweise Bedingung wie in Schritt 48/49 wäre hier falsch: Der Schritt legt
+        /// Zeilen AN, und beim zweiten Lauf gäbe es kein Merkmal, das eine migrierte von
+        /// einer vom Anwender ergänzten Zeile unterscheidet - er verdoppelte die
+        /// Senkenliste jedes Projekts.</para>
+        ///
+        /// <para><b>Die Altspalten bleiben.</b> <c>WS_Ziel</c>, <c>WS_Typ</c>,
+        /// <c>WS_ID_Puffer</c>, <c>WS_Ladeprio</c>, <c>WS_Ladegrenze</c>,
+        /// <c>WS_Ladeprio_PV</c> und der komplette <c>*2</c>-Satz werden LESE-ALTLAST,
+        /// nicht gelöscht (Muster <c>WQ_Puffer</c> → <c>WQ_ID_Puffer</c>). Solange ein
+        /// Leser die Slots noch bedient, ist das Entfernen der Spalten die eine
+        /// Änderung, die sich nicht zurücknehmen lässt.</para>
+        /// </summary>
+        public const int SCHRITT_50_SENKENTABELLE = 50;
+
+        /// <summary>
+        /// Schritt 51 - <b>Paket A1</b> (Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 9 und Leitentscheidung L1 vom 27.08.2026): die DATENSEITE der
+        /// ALTPFAD-STILLLEGUNG. Der Schritt löscht NICHTS — er rettet, was der Altpfad
+        /// bisher allein getragen hat, und schreibt den Zustand fest, den die Engine ab
+        /// Paket A1 ohnehin annimmt.
+        ///
+        /// <para><b>51a — Temperaturübernahme.</b> Bis heute liest die Engine die
+        /// Betriebstemperaturen eines Speichers über eine DREISTUFIGE Vorrangkette:
+        /// zuerst das Paar an der Projektkopie (<c>Tab_Pufferspeicher.Vorlauf</c>/
+        /// <c>Ruecklauf</c>), dann — falls dort keine auswertbare Spreizung steht — das
+        /// Paar der zugehörigen Zeile in <c>Z_ProjektPufferSp</c>
+        /// (<c>SimulationControl.ZuordnungsTemperaturen</c>, mittlere Stufe), und erst
+        /// zuletzt den Notnagel ΔT = 10 K aus
+        /// <c>SimulationPufferspeicher.Init</c>. Mit der Stilllegung der Alt-Zuordnung
+        /// fällt die MITTLERE Stufe weg. Ohne diesen Schritt fiele jeder Speicher, der
+        /// sein Paar bisher nur aus der Zuordnungszeile bezog, STILL auf den 10-K-Rückfall
+        /// zurück — mit anderer nutzbarer Kapazität <c>Q_max</c> und damit anderem
+        /// Ergebnis. Der Schritt holt genau diese Paare an die Projektkopie, also an die
+        /// seit Etappe 4 führende Ablage (Konzept 5.1).</para>
+        ///
+        /// <para><b>Die Vorrangkette wird 1:1 nachgebildet</b>, nicht neu erfunden:
+        /// „Ohne Paar" ist die Bedingung aus <c>SimulationPufferspeicher.Init</c>
+        /// (<c>Vorlauf - Ruecklauf &lt;= 0</c>, fehlende Werte zählen als 0), „zugehörig"
+        /// ist die Trefferregel aus <c>ZuordnungsTemperaturen</c>: dieselbe
+        /// Projektzugehörigkeit, dann je Zeile in Prioritätsreihenfolge die ODER-Probe
+        /// „Puffer-ID gleich" oder „Bezeichner zeichengleich", und als Quelle taugt nur
+        /// eine Zeile mit echter Spreizung. Der erste Treffer gewinnt — auch dann, wenn
+        /// eine spätere Zeile die ID trägt und die frühere nur den Namen. Genau so
+        /// entscheidet die Engine heute, und nur diese Gleichheit macht den Schritt
+        /// ergebnisneutral.</para>
+        ///
+        /// <para><b>Gelesen wird mit SELECT, geschrieben zeilenweise.</b> Ein
+        /// <c>UPDATE</c> mit korrelierter Unterabfrage über zwei Tabellen ist bei ACE
+        /// genau die Konstruktion, die still 0 Zeilen trifft (Begründung bei
+        /// <see cref="RProzess"/>); die Trefferregel mit ihrem ODER und ihrer
+        /// Reihenfolge wäre in Access-SQL ohnehin nicht ohne Bedeutungsverlust
+        /// abbildbar. Jeder übernommene Speicher steht mit ID, Bezeichner, Paar und
+        /// Quellzeile im Migrationsprotokoll, jeder Speicher ohne brauchbare Quelle mit
+        /// dem Vermerk „bleibt auf Rückfall-ΔT" — er rechnet schon heute so und ändert
+        /// sich durch die Stilllegung nicht.</para>
+        ///
+        /// <para><b>51b — Flag-Vorbelegung.</b>
+        /// <see cref="SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG"/> bekommt in ALLEN
+        /// Bestandszeilen den Wert WAHR. Die Weiche im Code entfällt mit Paket A1, die
+        /// mehrkanalige Stundenschleife wird der einzige Rechenweg (L1); das Flag wird
+        /// damit nicht mehr GELESEN. Es bleibt trotzdem stehen und wird ausdrücklich auf
+        /// WAHR gesetzt, weil beides zusammen den Zustand dokumentiert: Wer eine
+        /// migrierte Datenbank mit einer älteren Programmfassung öffnet, bekommt den Weg,
+        /// auf dem die Datenbank zuletzt gerechnet hat, und keine stille Rückkehr in den
+        /// Altpfad. Zielgenaues UPDATE mit <c>WHERE … = FALSE</c> — <c>Tab_Einstellungen</c>
+        /// wird in <c>KonfigurationCtrl.ReadSingle</c> ORDINAL gelesen, und die Bedingung
+        /// macht den Zweitlauf zur Nulländerung.</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker): 51a fasst nur Speicher OHNE
+        /// Paar an — nach der Übernahme haben die betroffenen eines, beim Zweitlauf steht
+        /// keiner mehr in der Kandidatenliste. 51b trifft über <c>WHERE … = FALSE</c>
+        /// beim Zweitlauf keine Zeile mehr.</para>
+        ///
+        /// <para><b>Es wird nichts gelöscht.</b> Weder <c>Z_ProjektPufferSp</c> noch
+        /// <c>Kaskade_Zweikanalig</c> verschwinden — Stilllegung heißt hier
+        /// ausschließlich: kein Leser im Code mehr (Muster <c>WQ_Puffer</c> und
+        /// <c>Tab_Pufferspeicher.Verwendung</c>). Das Entfernen der Tabelle ist die eine
+        /// Änderung, die sich nicht zurücknehmen ließe.
+        ///
+        /// <b>PAKET L hat entschieden: Beide bleiben.</b> Das Aufräumpaket hat die
+        /// aufruferfreien ZUGRIFFSWEGE geschnitten (<c>Z_ProjektPufferSpCtrl</c>,
+        /// <c>KonfigurationCtrl.KaskadeZweikanalig*</c>), Tabelle und Spalte aber nicht
+        /// angefasst — Konzept Kapitel 15 führt beide als „stillgelegt (Lese-Altlast nach
+        /// Migration)".</para>
+        /// </summary>
+        public const int SCHRITT_51_ALTPFAD_STILLLEGUNG = 51;
+
+        /// <summary>
+        /// Schritt 52 - <b>Paket E1</b> (Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 4.4 und § 6.3): die ERGEBNISSPALTEN JE KANAL. Rein additives DDL, keine
+        /// einzige Datenzeile wird angefasst.
+        ///
+        /// <para><b>Was entsteht</b> (Spaltensatz und je Spalte die fachliche Begründung:
+        /// <see cref="SchemaKatalog.Schritt52_ErgebnisJeKanal"/>):
+        /// <c>Tab_ErgebnisEnergiebedarf</c> bekommt den Jahresbedarf je Kanal,
+        /// die vier Erzeuger-Ergebniszeilen (Wärmepumpe, Heizkessel, BHKW,
+        /// Solarthermie) je drei Deckungsspalten, und
+        /// <c>Tab_ErgebnisPufferspeicher</c> die Kanalaufteilung der Entladung, die
+        /// beiden Durchsatzsummen aus Befund N6, den Anlagenbezug der
+        /// Quellspeicherzeilen und die beiden Temperaturspalten der obersten
+        /// Schicht.</para>
+        ///
+        /// <para><b>Kein Backfill, kein DML.</b> Alle Spalten bleiben in Bestandszeilen
+        /// NULL. Das ist die Aussage, die zutrifft: Ein Lauf, der vor Paket E1 gerechnet
+        /// wurde, hat die Kanäle nicht getrennt ausgewiesen — eine 0 behauptete „erhoben
+        /// und null". Die Leseseite (<c>ErgebnisCtrl.Load</c> über <c>D(row, "…")</c>)
+        /// behandelt NULL wie 0, und ein Neulauf des Projekts füllt die Zeile
+        /// vollständig. Damit ist der Schritt auch VERHALTENSNEUTRAL: Er ändert keinen
+        /// gespeicherten Wert.</para>
+        ///
+        /// <para><b><c>T_oben_Mittel</c>/<c>T_oben_Min</c> sind ein VORGRIFF auf Paket
+        /// P1</b> — genau wie <c>Anschlusshoehe</c> in Schritt 50. Schritt 52 legt nur
+        /// die Spalten an; gefüllt werden sie erst mit dem Schichtmodell (§ 7). Das
+        /// heutige Ein-Zonen-Modell kennt keine oberste Schicht, ein Wert daraus wäre
+        /// erfunden. Der Runner schreibt sie deshalb bis P1 NICHT.</para>
+        ///
+        /// <para><b>Access-Feldgrenze (255 Spalten je Tabelle) geprüft:</b>
+        /// <c>Tab_ErgebnisPufferspeicher</c> ist die breiteste hier berührte Tabelle und
+        /// wächst von 13 auf 21 Spalten; keine Erzeugertabelle überschreitet 26. Der
+        /// Abstand zur Grenze ist an keiner Stelle knapp.</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker): <see cref="SpaltenAnlegen"/>
+        /// liest das Tabellenschema vorab und überspringt vorhandene Spalten — beim
+        /// Zweitlauf meldet der Schritt „0 Spalten angelegt".</para>
+        /// </summary>
+        public const int SCHRITT_52_ERGEBNIS_JE_KANAL = 52;
+
+        /// <summary>
+        /// Schritt 53 - <b>Paket P1</b> (Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 7): die PARAMETER DES SCHICHTSPEICHERMODELLS an
+        /// <c>Tab_Pufferspeicher</c>.
+        ///
+        /// <para><b>Was entsteht</b> (Spaltensatz und je Spalte die fachliche
+        /// Begründung: <see cref="SchemaKatalog.Schritt53_Schichtmodell"/>): die
+        /// Schichtzahl <c>Schichten_Anzahl</c>, die Geometrie- und
+        /// Wärmeleitungsparameter <c>Hoehe</c> und <c>Lambda_Eff</c>, die
+        /// Mindest-Nutztemperatur <c>T_Nutz_BW</c>, die drei Entnahmehöhen
+        /// <c>Entnahme_Heizung</c>/<c>_BW</c>/<c>_Prozess</c> und die beiden
+        /// Leistungsgrenzen <c>Ladeleistung_Max</c>/<c>Entladeleistung_Max</c> —
+        /// neun Spalten, eine Tabelle.</para>
+        ///
+        /// <para><b>Zwei Teile.</b>
+        ///   <b>53a</b> das additive DDL aus dem Katalog. HART: Ohne die Spalten gibt es
+        ///   nichts vorzubelegen.
+        ///   <b>53b</b> die drei VERHALTENSNEUTRALEN Vorbelegungen — <c>Schichten_Anzahl
+        ///   = 1</c> (das Ein-Zonen-Modell des Bestands) sowie <c>Ladeleistung_Max = 0</c>
+        ///   und <c>Entladeleistung_Max = 0</c> (unbegrenzt, die bisherige Annahme des
+        ///   Modells). Der siebte DML-Schritt des Vorhabens neben 5, 7, 9, 13, 15 und
+        ///   17.</para>
+        ///
+        /// <para><b>Die sechs übrigen Spalten bleiben NULL</b> — und das ist die
+        /// Aussage, die zutrifft: <c>Hoehe</c> NULL heißt „aus dem Volumen über das
+        /// H/D-Verhältnis 2,5 ableiten", <c>Lambda_Eff</c> NULL heißt 1,5 W/(m·K),
+        /// <c>T_Nutz_BW</c> NULL heißt <c>RL_eff</c> (und damit „keine
+        /// Temperaturbedingung"), die drei Entnahmehöhen NULL heißen „Konzept-Vorgabe
+        /// nach Klassen-Set". Eine ausgeschriebene Zahl behauptete an jeder dieser
+        /// Stellen eine Anwenderentscheidung, die es nicht gibt — und der Dialog könnte
+        /// „nicht gepflegt" nicht mehr von „genau so gewollt" unterscheiden.</para>
+        ///
+        /// <para><b>Verhaltensneutral im Ganzen.</b> Nach diesem Schritt rechnet jeder
+        /// Bestandsspeicher mit N = 1, und damit laufen Laden, Entladen, Verluste und
+        /// Kennzahlen ausschließlich über die unveränderte SOC-Arithmetik (§ 7.3). Die
+        /// Schichtebene läuft als Buchführung mit und liefert allein die neuen
+        /// Ausgabegrößen <c>T_oben_Mittel</c>/<c>T_oben_Min</c> aus Schritt 52.</para>
+        ///
+        /// <para><b>Access-Feldgrenze (255 Spalten je Tabelle) geprüft:</b>
+        /// <c>Tab_Pufferspeicher</c> trägt 19 Spalten und wächst auf 28.</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker): <see cref="SpaltenAnlegen"/>
+        /// liest das Tabellenschema vorab und überspringt vorhandene Spalten; die drei
+        /// UPDATE-Anweisungen greifen nur auf noch nicht belegte Zeilen
+        /// (<c>IS NULL</c> bzw. bei der Schichtzahl zusätzlich <c>&lt; 1</c> — Access
+        /// belegt eine angehängte Zahlenspalte je nach Weg mit NULL ODER 0, und 0
+        /// Schichten wäre ein unmöglicher Zustand). Beim Zweitlauf meldet der Schritt
+        /// „0 Spalten angelegt" und 0 vorbelegte Zeilen.</para>
+        /// </summary>
+        public const int SCHRITT_53_SCHICHTMODELL = 53;
+
+        /// <summary>
+        /// Schritt 54 - <b>Paket Q1</b> (Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 8.1): der QUELLEN-AUSBAU. Der letzte Schema-Schritt des Vorhabens.
+        ///
+        /// <para><b>Was entsteht.</b> Zwei Tabellen und zwei Spalten:
+        /// <see cref="SchemaKatalog.TAB_QUELLPROFIL"/> und
+        /// <see cref="SchemaKatalog.TAB_QUELLPROFILDATEN"/> als Kopf/Daten-Paar nach dem
+        /// Muster <c>Tab_Stromganglinie</c> (§ 8.1 Punkt 3), dazu an
+        /// <c>Tab_Energieanlagen</c> die Quell-Entnahmehöhe
+        /// <see cref="SchemaKatalog.SPALTE_ANLAGE_WQ_ANSCHLUSSHOEHE"/> (§ 8.2/§ 8.4,
+        /// Ticket B1-O1) und der Profilschlüssel
+        /// <see cref="SchemaKatalog.SPALTE_ANLAGE_WQ_ID_QUELLPROFIL"/> (§ 8.1 Punkt 4,
+        /// „Schlüssel- statt Indexkopplung"). Die fachliche Begründung je Spalte steht
+        /// beim jeweiligen Katalogeintrag.</para>
+        ///
+        /// <para><b>Drei Teile.</b>
+        ///   <b>54a</b> die beiden Tabellen samt Indizes und der Beziehung
+        ///   <c>FK_QuellprofilDaten_Kopf</c> MIT Löschweitergabe — eine Wertzeile ohne
+        ///   ihren Kopf bedeutet nichts (Muster <c>FK_AnlageSenke_Anlage</c>). HART:
+        ///   Ohne die Tabellen hat der Profilschlüssel kein Ziel.
+        ///   <b>54b</b> das additive DDL der beiden Anlagenspalten aus dem Katalog.
+        ///   <b>54c</b> die RESTRIKTIVE Beziehung <c>FK_Anlage_Quellprofil</c> — WEICH
+        ///   wie in den Schritten 14 und 50: Fehlt sie auf einer fremden Datenbank,
+        ///   bleibt die Ablage benutzbar.</para>
+        ///
+        /// <para><b>KEIN DML — und das ist die eigentliche Aussage.</b> Weder
+        /// <c>WQ_Monatswerte</c>/<c>WQ_Wochenwerte</c> noch <c>WQ_CSV</c> werden in die
+        /// neuen Tabellen übernommen (§ 15: beide bleiben Lese-Altlast). Eine
+        /// automatische Übernahme wäre eine stille Datenänderung an Bestandsprojekten,
+        /// und sie wäre bei <c>WQ_CSV</c> nicht einmal durchführbar: Dort steht ein
+        /// DATEIPFAD, dessen Datei zur Migrationszeit gar nicht vorliegen muss. Der
+        /// Schritt ist damit vollständig VERHALTENSNEUTRAL — er ändert keinen
+        /// gespeicherten Wert, und beide Spalten bleiben in allen Bestandszeilen NULL
+        /// (NULL heißt bei der Anschlusshöhe „oben", beim Profilschlüssel „keines").</para>
+        ///
+        /// <para><b>Bemessung gegen die 2-GB-Grenze</b> (§ 9, Schlussabsatz): siehe
+        /// <see cref="SchemaKatalog.TAB_QUELLPROFILDATEN"/> — zehn Stundenprofile
+        /// (87 600 Datenzeilen) ließen eine Kopie der produktiven Datenbank um 0 Bytes
+        /// wachsen. Die 8760er-Ablage in der Datenbank ist damit belegt tragfähig.</para>
+        ///
+        /// <para><b>Access-Feldgrenze (255 Spalten je Tabelle) geprüft:</b>
+        /// <c>Tab_Energieanlagen</c> trägt 65 Spalten und wächst auf 67.</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker): <see cref="Ddl"/> wertet
+        /// „existiert bereits" als Erfolg, <see cref="SpaltenAnlegen"/> liest das
+        /// Tabellenschema vorab und überspringt vorhandene Spalten. Beim Zweitlauf
+        /// meldet der Schritt „0 Spalten angelegt"; DML, das sich verdoppeln könnte,
+        /// gibt es nicht.</para>
+        /// </summary>
+        public const int SCHRITT_54_QUELLEN = 54;
+
+        /// <summary>
+        /// Schritt 56 (KOLLISIONSAUFLÖSUNG 29.08.2026: von 55 gerückt, siehe
+        /// <see cref="ZIEL_VERSION"/>) - <b>Etappe E1</b>
+        /// (<c>Konzept_CO2-Faktoren_Energietraeger_EPOS-Plan.md</c>
+        /// Rev. 1, § 4): die CO₂-SAAT DER TRÄGERWERTE.
+        ///
+        /// <para><b>Anlass.</b> Zehn der 21 gepflegten Katalogträger trugen
+        /// <c>energy_carrier.co2 = 0,00</c> — darunter Erdgas LL, Heizöl EL, Koks und
+        /// Fernwärme. Ein Projekt, das einen davon verwendet und keine projektbezogene
+        /// Einstellung überschreibt, rechnete seine Emissionen still mit null. Das ist
+        /// kein Anzeigefehler, sondern ein falsches Ergebnis. Vier weitere Träger trugen
+        /// einen Wert, der von der belegten Quelle abweicht.</para>
+        ///
+        /// <para><b>Die Quelle.</b> BAFA, „Informationsblatt CO₂-Faktoren —
+        /// Bundesförderung für Energie- und Ressourceneffizienz in der Wirtschaft",
+        /// Version 3.4, Tabelle 2. Die Spalte führt <b>g CO₂ je kWh</b> (belegt in
+        /// <c>KostenEmissionRechner</c>: <c>MWh × Faktor / 1000 = t</c>), das Merkblatt
+        /// tCO₂/MWh — umgerechnet wird mit 1000. Fünf Werte stehen NICHT im Merkblatt,
+        /// sondern sind aus dessen eigenen Werten hergeleitet (Heizöl Bio 10/15, Koks,
+        /// Stadtgas, Tierische Fette); sie werden im Protokoll ausdrücklich als
+        /// <b>abgeleitet</b> ausgewiesen.</para>
+        ///
+        /// <para><b>Was der Schritt NICHT anfasst</b> — und das ist die eigentliche
+        /// Sorgfalt:
+        /// <list type="bullet">
+        ///   <item><description><c>Flüssiggas</c>, <c>Steinkohle</c>,
+        ///     <c>Braunkohlebrikett</c>, <c>Scheitholz</c>, <c>Holzpellets</c>,
+        ///     <c>Holzhackschnitzel</c> — die jüngere, bewusste Saat der Schritte 42/43.
+        ///     Die drei Holzträger tragen dort <c>co2 = 0</c>, weil sie biogen sind; ein
+        ///     BAFA-Wert darüber wäre eine stille Rücknahme jener Entscheidung.</description></item>
+        ///   <item><description><c>energy_project_settings.co2</c> — projektbezogene
+        ///     Übersteuerungen und teils echte Anwendereingaben. Berichtigt wird
+        ///     ausschließlich die Rückfallebene, also der Katalog (Konzept § 4 Regel 2).</description></item>
+        ///   <item><description><c>KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH</c> —
+        ///     bleibt bei 380. Der Vorgabewert folgt demselben Beschluss wie der
+        ///     Stromfaktor, und der ist offen (Konzept § 3 und § 5.1).</description></item>
+        ///   <item><description><c>Test</c> — Testeintrag, kein realer Energieträger
+        ///     (Konzept § 2.4).</description></item>
+        /// </list></para>
+        ///
+        /// <para><b>ACE-Falle.</b> Ein <c>?</c>-Parameter in der Unterabfrage eines
+        /// UPDATE trifft in ACE still 0 Zeilen (Befund 22.08.2026). Der Schritt liest
+        /// deshalb je Trägername ZUERST <c>id</c> und <c>co2</c> und schreibt dann je
+        /// gelesener ID — Parameter nur auf oberster Ebene, die ID als Literal.</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker): Geschrieben wird nur, wo der
+        /// Katalogwert NULL ist oder vom Sollwert abweicht. Ein Zweitlauf meldet
+        /// „0 geändert". Ein Träger, den es nicht gibt, ergibt eine Protokollzeile und
+        /// keinen Fehler — der Katalog darf träger-ärmer sein als die Solltabelle.</para>
+        ///
+        /// <para><b>Sicherung und Sperre.</b> Die Konzeptregeln „datierte Sicherung nach
+        /// <c>DB-Backup\</c>" und „nicht schreiben, solange <c>Kenndaten.laccdb</c>
+        /// existiert" sind BETRIEBSregeln vor dem Programmstart, keine Schritt-Logik:
+        /// Die Migration läuft aus <c>Program.Main</c>, also aus genau dem Prozess, der
+        /// die <c>laccdb</c> selbst hält — eine Sperre darauf legte jede Migration
+        /// still.</para>
+        /// </summary>
+        public const int SCHRITT_56_CO2_SAAT = 56;
+
+        /// <summary>
+        /// Schritt 57 (KOLLISIONSAUFLÖSUNG 29.08.2026: von 56 gerückt, siehe
+        /// <see cref="ZIEL_VERSION"/>) - <b>Etappe E2</b>
+        /// (<c>Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md</c>
+        /// Rev. 1.2, § 3 und § 6): EMISSIONSARTEN UND EMISSIONSWERTE.
+        ///
+        /// <para><b>Was entsteht.</b> Zwei Tabellen, zwei Spalten, vier Saaten:
+        /// <see cref="SchemaKatalog.TAB_EMISSIONSART"/> macht aus dem festen
+        /// Spaltensatz <c>co2/so2/nox</c> einen erweiterbaren Katalog (Konzept F1),
+        /// <see cref="SchemaKatalog.TAB_EMISSIONSWERT"/> hält Katalogvorlagen und
+        /// Trägerwerte in EINER Tabelle — der Unterschied ist allein, ob
+        /// <c>carrier_id</c> gefüllt ist.</para>
+        ///
+        /// <para><b>Sechs Teile.</b>
+        ///   <b>56a</b> Tabelle <c>emissionsart</c> samt eindeutigem Index auf das
+        ///   Kürzel. HART: ohne sie hat kein Wert eine Art.
+        ///   <b>56b</b> Tabelle <c>emissionswert</c> samt zwei Suchwegen und der
+        ///   restriktiven Beziehung auf die Art. HART.
+        ///   <b>56c</b> die sieben ausgelieferten Arten (CO₂ · SO₂ · NOx · CH₄ fossil ·
+        ///   CH₄ biogen · N₂O · Staub).
+        ///   <b>56d</b> die VORLAGEN: die BAFA-Saat aus Schritt 55 je Träger, die
+        ///   jüngste GESICHERTE Jahreszeile je Schlüssel aus <c>EF_BILANZ</c>/
+        ///   <c>EF_NACHWEIS</c> über die Mapping-Liste, und die Luftschadstoffwerte aus
+        ///   <c>Tab_Brennstoff_Stamm</c>.
+        ///   <b>56e</b> die AKTIVEN Trägerwerte aus den heutigen Spalten
+        ///   <c>energy_carrier.co2/so2/nox</c>, jeder mit seiner erkannten Herkunft.
+        ///   <b>56f</b> die beiden Modus-Spalten (Konzept F7) und ihre Vorbelegung
+        ///   <c>CO2</c>.</para>
+        ///
+        /// <para><b>Es ändert sich KEIN Ergebnis</b> (Konzept F9) — die Aussage, die
+        /// diese Etappe trägt. Die Altspalten bleiben unverändert stehen und bleiben die
+        /// gelesene Wahrheit; die neuen Tabellen hat in dieser Fassung <b>kein einziger
+        /// Leser</b> (nachprüfbar: nichts im Code nennt <c>emissionsart</c> oder
+        /// <c>emissionswert</c> außer diesem Schritt). Der Modus ist bis Etappe E5 ein
+        /// reines Speicherfeld, und sein Wert <c>CO2</c> ist ohnehin das heutige
+        /// Verhalten.</para>
+        ///
+        /// <para><b>Keine Beziehung auf <c>energy_carrier</c></b> — bewusst. Eine
+        /// restriktive Beziehung machte das Löschen eines Katalogträgers unmöglich,
+        /// eine kaskadierende risse dem Anwender seine gepflegten Werte unbemerkt weg.
+        /// Die Zuordnung bleibt deshalb lose; verwaiste Wertzeilen räumt die
+        /// Trägerpflege ab Etappe E3 ausdrücklich weg — dieselbe Abwägung wie bei
+        /// <c>Tab_ProjektWerte.ID_AnlageGeraet</c>.</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker) — und zwar JE ZEILE, nicht
+        /// über eine Zeilenprobe wie Schritt 50: Eine Art wird an ihrem Kürzel erkannt,
+        /// eine Vorlage an (Art, Träger, Quelle, Quellentext, Wert), ein aktiver Wert
+        /// daran, dass es für (Art, Träger) überhaupt schon einen gibt. Damit
+        /// verdoppelt auch ein Lauf nichts, der beim ersten Mal mittendrin gescheitert
+        /// ist — der Marker steht dann noch auf 55, und der Wiederholungslauf ergänzt
+        /// genau das Fehlende. Der Zweitlauf meldet durchgehend 0 neue Zeilen.</para>
+        ///
+        /// <para><b>Access-Feldgrenze (255 Spalten je Tabelle) geprüft:</b>
+        /// <c>Tab_Applikation</c> wächst von 8 auf 9 Spalten, <c>Tab_Projekt</c> von 8
+        /// auf 9. Die beiden neuen Tabellen tragen 10 bzw. 11 Spalten.</para>
+        /// </summary>
+        public const int SCHRITT_57_EMISSIONSARTEN = 57;
+
+        /// <summary>
+        /// Schritt 55 - <b>Paket B2</b> (zwei Nutzeraufträge vom 28.08.2026): der
+        /// TEMPERATURBEZUG der Kessel-Kaskade und der LESEPUNKT des Boosters.
+        ///
+        /// <para><b>Was entsteht.</b> Zwei Spalten in zwei Tabellen:
+        /// <c>Tab_Energieanlagen.</c><see cref="SchemaKatalog.SPALTE_ANLAGE_WQ_TEMPERATURMODUS"/>
+        /// (TEXT 50) und
+        /// <c>Tab_Einstellungen.</c><see cref="SchemaKatalog.SPALTE_BOOSTER_LESEPUNKT"/>
+        /// (TEXT 50). Die fachliche Begründung je Spalte steht beim jeweiligen
+        /// Katalogeintrag, die Steuerwerte in <c>DbWerte.WQ_TEMPMODUS_*</c> bzw.
+        /// <c>DbWerte.BOOSTER_LESEPUNKT_*</c>.</para>
+        ///
+        /// <para><b>Vier Teile.</b>
+        ///   <b>55a</b> das additive DDL der Anlagenspalte aus dem Katalog. HART: Ohne
+        ///   sie gibt es nichts vorzubelegen.
+        ///   <b>55b</b> die Vorbelegung <c>WQ_TemperaturModus = 'Berechnet'</c> für
+        ///   ALLE Bestandszeilen.
+        ///   <b>55c</b> das ANGEHÄNGTE <c>ALTER TABLE</c> der Einstellungsspalte samt
+        ///   Leseprobe (Muster 49b: <c>Tab_Einstellungen</c> wird in
+        ///   <c>KonfigurationCtrl.ReadSingle</c> ORDINAL über <c>row[0]…row[22]</c>
+        ///   gelesen — die Spalte darf nur ans Ende).
+        ///   <b>55d</b> die Vorbelegung <c>Booster_Lesepunkt = 'Davor'</c> über ein
+        ///   zielgenaues <c>UPDATE … WHERE … IS NULL</c> (Muster 49d).</para>
+        ///
+        /// <para><b>55b ist NICHT verhaltensneutral — und genau deshalb steht es hier.</b>
+        /// Bis B2 rechnete der Quellanteil eines Kessels am geteilten Puffer gegen das
+        /// Paar aus <c>Tab_Heizkessel</c>. In der produktiven Datenbank trägt dort
+        /// <b>kein einziger</b> der 23 Kessel ein Paar (Ticket B1-O10) — der Quellbezug
+        /// blieb also flächendeckend stumm wirkungslos, und die Kessel-Kaskade war eine
+        /// Funktion, die niemand einschalten konnte, ohne vorher 23 Katalogzeilen zu
+        /// pflegen. Mit „Berechnet" holt sich der Lauf das Bezugspaar aus der
+        /// Konfiguration, die ohnehin dasteht (Rang-1-Senkenspeicher), und der
+        /// Nutzerauftrag ist erfüllt: „im Falle berechnet ist die Vorgabe der Vor- und
+        /// Rücklauftemperatur nicht erforderlich (keinen Hinweis geben)".
+        /// Die Vorbelegung greift AUCH an Anlagen mit Kessel-Quellpuffer — sie sind der
+        /// eigentliche Anlass.</para>
+        ///
+        /// <para><b>55d ändert das B1-Verhalten bewusst.</b> Paket B1 las die
+        /// Quelltemperatur unmittelbar vor Phase B der Rechenebene des beziehenden
+        /// Moduls, also NACH der Ladephase der Vorebene (Ticket B1-O2 hatte die
+        /// Rückfrage gestellt). Der Nutzerentscheid vom 28.08.2026 lautet „davor";
+        /// jedes Projekt mit gekoppeltem Booster rechnet danach anders. Wer den alten
+        /// Stand braucht, stellt im Konfigurationsdialog auf „Danach" — dann ist der
+        /// Lauf Zeichen für Zeichen der von B1.</para>
+        ///
+        /// <para><b>Access-Feldgrenze (255 Spalten je Tabelle) geprüft:</b>
+        /// <c>Tab_Energieanlagen</c> wächst von 67 auf 68, <c>Tab_Einstellungen</c> von
+        /// 25 auf 26.</para>
+        ///
+        /// <para><b>Idempotent</b> (unabhängig vom Marker): <see cref="SpaltenAnlegen"/>
+        /// liest das Tabellenschema vorab und überspringt vorhandene Spalten, das
+        /// <c>ALTER TABLE</c> in 55c schluckt „existiert bereits"; beide UPDATE-
+        /// Anweisungen greifen ausschließlich auf noch nicht belegte Zeilen
+        /// (<c>IS NULL OR = ''</c>). Beim Zweitlauf meldet der Schritt „0 Spalten
+        /// angelegt" und 0 vorbelegte Zeilen.</para>
+        /// </summary>
+        public const int SCHRITT_55_TEMPERATURBEZUG = 55;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -1637,6 +2258,50 @@ namespace WindowsFormsApplication1
         /// Mitgliedschaften der Lauf danach aggregiert.
         /// </summary>
         public static int DatenVerbundZeilen { get; private set; }
+
+        // --- Zählwerk der Senkenübernahme aus Schritt 50 (Paket S1) --------------------
+
+        /// <summary>50c: Anlagen, für die eine Rang-1-Senkenzeile entstanden ist.</summary>
+        public static int DatenSenkenAnlagen { get; private set; }
+
+        /// <summary>
+        /// 50c: Anlagen mit belegtem <c>WS_Ziel2</c>, die eine zweite Senkenzeile
+        /// bekommen haben. Der Wert belegt, wie viele Projekte die Zweitsenke überhaupt
+        /// nutzen — die Zahl, an der sich der Nutzen der Liste zuerst zeigt.
+        /// </summary>
+        public static int DatenSenkenRang2 { get; private set; }
+
+        /// <summary>
+        /// 50d: nach Regel R-Prozess (F17) zusätzlich angelegte
+        /// <c>Prozesswaerme</c>-Zeilen. 0 heißt: kein Bestandsprojekt führt
+        /// Prozesswärme, die Regel hat nichts geändert.
+        /// </summary>
+        public static int DatenSenkenProzess { get; private set; }
+
+        // --- Zählwerk der Altpfad-Stilllegung aus Schritt 51 (Paket A1) ----------------
+
+        /// <summary>
+        /// 51a: Pufferspeicher, die ihr Temperaturpaar aus der Alt-Zuordnung
+        /// <c>Z_ProjektPufferSp</c> an die Projektkopie übernommen haben. Genau diese
+        /// Speicher wären nach der Stilllegung sonst still auf den Rückfall ΔT = 10 K
+        /// gefallen.
+        /// </summary>
+        public static int DatenPufferTemperaturUebernommen { get; private set; }
+
+        /// <summary>
+        /// 51a: Pufferspeicher ohne Paar UND ohne brauchbare Zuordnungszeile. Sie
+        /// rechnen bereits heute mit dem Rückfall-ΔT und ändern sich durch die
+        /// Stilllegung nicht — der Wert ist die Gegenprobe zu
+        /// <see cref="DatenPufferTemperaturUebernommen"/>, kein Fehlerzähler.
+        /// </summary>
+        public static int DatenPufferTemperaturRueckfall { get; private set; }
+
+        /// <summary>
+        /// 51b: Einstellungssätze, die die Vorbelegung
+        /// <c>Kaskade_Zweikanalig = WAHR</c> erhalten haben (nur die zuvor auf FALSCH
+        /// stehenden - bereits umgestellte Projekte zählen nicht mit).
+        /// </summary>
+        public static int DatenKaskadeVorbelegt { get; private set; }
 
         // --- Zählwerk der Datenregel R7 aus Schritt 9 (Etappe E0) ---------------------
 
@@ -2193,6 +2858,217 @@ namespace WindowsFormsApplication1
                         "nur Investition_kwel fuehren, gehen sonst mit 0,00 EUR in die " +
                         "Kostenrechnung ein.",
                         Schritt_37_BhkwPosten),
+
+            // KD1 (Konzept Kostendialoge Rev. 1.2): Strukturen und Auslieferungs-Seeds
+            // der bewerteten Stammvorlagen. Begruendung und Idempotenzzusage bei den
+            // Schrittkonstanten.
+            new Schritt(SCHRITT_38_KOSTENVORLAGEN,
+                        "Kostenvorlagen-Strukturen: Tab_KostenVorlage/-Position anlegen, " +
+                        "Tab_ProjektWerte um VorlageID/StartJahr und energy_carrier um " +
+                        "price_power/price_power_modus ergaenzen (Etappe KD1)",
+                        "Die Vorlagen-Strukturen konnten nicht angelegt werden - ohne sie " +
+                        "gibt es keine Stammvorlagen je Komponente (Konzept Kostendialoge).",
+                        Schritt_38_Kostenvorlagen),
+
+            new Schritt(SCHRITT_39_KOSTENVORLAGEN_SEED,
+                        "Auslieferungsvorlagen saeen: 20 Standardvorlagen (10 Komponenten x " +
+                        "Investition/Betrieb) mit den Positionslisten der Vorlagen-Folien, " +
+                        "Saetze bewusst leer (Etappe KD1)",
+                        "Die Auslieferungsvorlagen konnten nicht gesaet werden - der " +
+                        "Komponenten-Kostendialog (KD2) haette keine Standardvariante.",
+                        Schritt_39_KostenvorlagenSeed),
+
+            // KD4 (Konzept Kostendialoge Paragraf 7.1, FK6a): Traegerbezug der
+            // Preisreihen fuer saisonale Leistungspreis-Saetze.
+            new Schritt(SCHRITT_40_LEISTUNGSPREISREIHE,
+                        "Leistungspreis-Reihen: Tab_Preisreihe um ID_Energietraeger " +
+                        "ergaenzen (Etappe KD4, FK6a)",
+                        "Der Traegerbezug der Preisreihen konnte nicht angelegt werden - " +
+                        "ohne ihn gibt es keine saisonalen Leistungspreis-Saetze (FK6a).",
+                        Schritt_40_Leistungspreisreihe),
+
+            // P3 (PV-Konzept Paragraf 6.1/6.3): PV-Verguetungstabelle und
+            // Marktwert-Solar-Stammreihen.
+            new Schritt(SCHRITT_41_PROJEKTPHOTOVOLTAIK,
+                        "PV-Verguetung: Tab_ProjektPhotovoltaik anlegen und " +
+                        "Marktwert-Solar-Monatsreihen 2024/2025/2026 saeen (Etappe P3)",
+                        "Die PV-Verguetungstabelle konnte nicht angelegt werden - ohne " +
+                        "sie gibt es keinen PV-Verguetungsdialog (PV-Konzept).",
+                        Schritt_41_ProjektPhotovoltaik),
+
+            new Schritt(42,
+                        "Katalogtraeger Fluessiggas saeen (Nachtrag Ä9)",
+                        "Der Katalogtraeger Fluessiggas konnte nicht angelegt werden.",
+                        Schritt_42_Fluessiggas),
+
+            new Schritt(43,
+                        "Fehlende VDI-3805-Katalogtraeger nachsaeen (Nachtrag Ä9)",
+                        "Die VDI-3805-Katalogtraeger konnten nicht angelegt werden.",
+                        Schritt_43_VdiTraeger),
+
+            // Ä18 (Nutzerauftrag 26.08.2026): Der Strom-Leistungspreis wird wie bei
+            // den uebrigen Traegern im Energietraegerdialog gepflegt (Jahres- oder
+            // Monatssatz); das Preismodell ELECTRICITY braucht dafuer das
+            // Leistungspreis-Merkmal.
+            new Schritt(44,
+                        "Strom-Leistungspreis freischalten: pricing_model ELECTRICITY " +
+                        "erhaelt has_powerprice (Nachtrag Ä18)",
+                        "Der Strom-Leistungspreis konnte nicht freigeschaltet werden - " +
+                        "das Leistungspreisfeld des Stromtraegers bliebe verborgen.",
+                        Schritt_44_StromLeistungspreis),
+
+            // Ä20 (Nutzerauftrag 26.08.2026): Kostenpositionen werden je ANLAGE
+            // gepflegt — Tab_ProjektWerte traegt die Anlagenzeile, der Bestand wird
+            // der jeweils ersten verbauten Anlage seiner Komponente zugeordnet.
+            new Schritt(45,
+                        "Anlagenkosten: Tab_ProjektWerte.ID_Anlage anlegen und den " +
+                        "Bestand der jeweils ersten verbauten Anlage zuordnen (Ä20)",
+                        "Der Anlagenbezug der Kostenpositionen konnte nicht angelegt " +
+                        "werden - die Kostenverwaltung je Anlage braucht die Spalte.",
+                        Schritt_45_Anlagenkosten),
+
+            // Ä21: Der Wizard baut Anlagenzeilen destruktiv neu (neue IDs) — der
+            // Geräteanker macht die Kostenzuordnung dagegen reparierbar.
+            new Schritt(46,
+                        "Anlagenkosten-Geräteanker: Tab_ProjektWerte.ID_AnlageGeraet " +
+                        "anlegen und aus den bestehenden Zuordnungen befuellen (Ä21)",
+                        "Der Geräteanker der Kostenpositionen konnte nicht angelegt " +
+                        "werden - die Zuordnung ueberlebt den Anlagen-Wizard sonst nicht.",
+                        Schritt_46_AnlagenGeraeteanker),
+
+            // Ä24: Der Duplizierer versetzte ID_Anlage, aber nicht den
+            // komponentenabhängigen Geräteanker — Variantenkopien ankerten an
+            // den Geräten des Quellprojekts und verloren die Zuordnung beim
+            // ersten Anlagen-Wizard-Lauf. Der Schritt leitet die Anker aller
+            // GÜLTIG zugeordneten Positionen aus ihrer Anlagenzeile neu ab.
+            new Schritt(47,
+                        "Anlagenkosten-Geräteanker aus den gültigen Zuordnungen " +
+                        "neu ableiten (Ä24: Variantenkopien ankerten am Quellprojekt)",
+                        "Die Geräteanker der Kostenpositionen konnten nicht neu " +
+                        "abgeleitet werden - Variantenkopien verlieren ihre " +
+                        "Zuordnung sonst beim ersten Anlagen-Wizard-Lauf.",
+                        Schritt_47_AnkerNachziehen),
+
+            // K1 (F18): Externe Waermeganglinien bekommen eine Kanalzuordnung.
+            // Begruendung und Idempotenzzusage bei der Schrittkonstanten.
+            new Schritt(SCHRITT_48_GANGLINIENKANAL,
+                        "Ganglinienkanal: Z_ProjektWaermebedarf.Kanal anlegen und den " +
+                        "Bestand verhaltensneutral auf 'Heizung' vorbelegen (Paket K1, F18)",
+                        "Die Kanalzuordnung der externen Waermeganglinien konnte nicht " +
+                        "angelegt werden - der Dreikanal-Bedarf braucht die Spalte.",
+                        Schritt_48_Ganglinienkanal),
+
+            // K2 (F5-Alternative/L6 und F10): Klassen-Set am Puffer und projektweite
+            // Knappheitsreihenfolge. Begruendung und Idempotenzzusage bei der
+            // Schrittkonstanten.
+            new Schritt(SCHRITT_49_KLASSENSET,
+                        "Klassen-Set: Tab_Pufferspeicher.Nutzung_Heizung/_Brauchwasser/" +
+                        "_Prozess anlegen und aus Verwendung befuellen; " +
+                        "Tab_Einstellungen.Kanal_Knappheitsreihenfolge anlegen und " +
+                        "vorbelegen (Paket K2, F5/F10)",
+                        "Das Klassen-Set der Pufferspeicher konnte nicht angelegt " +
+                        "werden - die dreikanalige Entladung braucht die Spalten.",
+                        Schritt_49_Klassenset),
+
+            // S1 (L4/L5 und F17): Die zwei festen Senkenplaetze werden eine geordnete
+            // Liste. Begruendung, Teilgliederung und Idempotenzzusage bei der
+            // Schrittkonstanten.
+            new Schritt(SCHRITT_50_SENKENTABELLE,
+                        "Senkenliste: Z_AnlageSenke anlegen, die Senken-Slots als Raenge " +
+                        "uebernehmen (inkl. Regel R-Prozess) und Z_AnlagePufferVerbund " +
+                        "um ID_Senke erweitern (Paket S1, L4/L5/F17)",
+                        "Die Senkenliste konnte nicht angelegt werden - mehr als zwei " +
+                        "Senken je Anlage braucht die Tabelle.",
+                        Schritt_50_Senkentabelle),
+
+            // A1 (L1): Die Datenseite der Altpfad-Stilllegung - erst die Temperaturen
+            // aus der Alt-Zuordnung retten, dann das Flag festschreiben. Begruendung,
+            // Teilgliederung und Idempotenzzusage bei der Schrittkonstanten.
+            new Schritt(SCHRITT_51_ALTPFAD_STILLLEGUNG,
+                        "Altpfad-Stilllegung: Betriebstemperaturen aus Z_ProjektPufferSp " +
+                        "an die Pufferzeilen uebernehmen und Kaskade_Zweikanalig im " +
+                        "Bestand auf WAHR setzen (Paket A1, L1)",
+                        "Die Betriebstemperaturen der Alt-Zuordnung konnten nicht " +
+                        "uebernommen werden - ohne sie fielen Bestandsspeicher nach der " +
+                        "Stilllegung still auf den Rueckfall von 10 K zurueck.",
+                        Schritt_51_AltpfadStilllegung),
+
+            // E1 (§ 4.4/§ 6.3): Ergebnisspalten je Kanal - rein additives DDL ohne
+            // jedes DML. Begruendung und Idempotenzzusage bei der Schrittkonstanten.
+            new Schritt(SCHRITT_52_ERGEBNIS_JE_KANAL,
+                        "Ergebnis je Kanal: Waermebedarf_/Deckung_/Entladung_Heizung, " +
+                        "_Brauchwasser, _Prozess anlegen; Tab_ErgebnisPufferspeicher " +
+                        "zusaetzlich um die Durchsatzsummen, ID_Anlage und T_oben_* " +
+                        "erweitern (Paket E1)",
+                        "Die Ergebnisspalten je Kanal konnten nicht angelegt werden - " +
+                        "ohne sie speichert der Lauf Bedarf und Deckung weiter nur als " +
+                        "Summe ueber alle drei Kanaele.",
+                        Schritt_52_ErgebnisJeKanal),
+
+            // P1 (§ 7): Die Parameter des Schichtspeichermodells. Additives DDL plus
+            // drei verhaltensneutrale Vorbelegungen. Begruendung, Teilgliederung und
+            // Idempotenzzusage bei der Schrittkonstanten.
+            new Schritt(SCHRITT_53_SCHICHTMODELL,
+                        "Schichtmodell: Tab_Pufferspeicher um Schichten_Anzahl, Hoehe, " +
+                        "Lambda_Eff, T_Nutz_BW, die drei Entnahmehoehen und die beiden " +
+                        "Leistungsgrenzen erweitern und verhaltensneutral vorbelegen " +
+                        "(Paket P1, L7)",
+                        "Die Parameter des Schichtspeichermodells konnten nicht angelegt " +
+                        "werden - ohne sie rechnet jeder Puffer weiter als ein einziger " +
+                        "Wärmevorrat ohne Temperaturschichtung.",
+                        Schritt_53_Schichtmodell),
+
+            // Q1 (§ 8.1): Quellprofile als Kopf/Daten-Paar, Quell-Entnahmehoehe und
+            // Profilschluessel. Rein additiv, kein DML. Begruendung, Teilgliederung und
+            // Idempotenzzusage bei der Schrittkonstanten.
+            new Schritt(SCHRITT_54_QUELLEN,
+                        "Quellen-Ausbau: Tab_Quellprofil/Tab_QuellprofilDaten anlegen und " +
+                        "Tab_Energieanlagen um WQ_Anschlusshoehe und WQ_ID_Quellprofil " +
+                        "erweitern (Paket Q1, Konzept 8.1)",
+                        "Die Quellprofil-Tabellen konnten nicht angelegt werden - ohne sie " +
+                        "bleibt das Quellprofil eine delimitierte Zeichenkette an der " +
+                        "Anlage, und ein Stundenprofil kaeme gar nicht in die Datenbank.",
+                        Schritt_54_Quellen),
+
+            // B2 (Nutzeraufträge 28.08.2026): Temperaturbezug der Kessel-Kaskade und
+            // Lesepunkt des Boosters. DDL plus zwei Vorbelegungen. Begruendung,
+            // Teilgliederung und Idempotenzzusage bei der Schrittkonstanten.
+            new Schritt(SCHRITT_55_TEMPERATURBEZUG,
+                        "Temperaturbezug: Tab_Energieanlagen um WQ_TemperaturModus " +
+                        "erweitern und auf 'Berechnet' vorbelegen; Tab_Einstellungen um " +
+                        "Booster_Lesepunkt erweitern und auf 'Davor' vorbelegen " +
+                        "(Paket B2)",
+                        "Der Temperaturbezug der Kessel-Kaskade konnte nicht angelegt " +
+                        "werden - ohne ihn braeuchte jeder Kessel am Quellpuffer ein von " +
+                        "Hand gepflegtes Temperaturpaar, sonst bliebe seine Kaskade " +
+                        "wirkungslos.",
+                        Schritt_55_Temperaturbezug),
+
+            // GEPARKT (KOLLISIONSAUFLÖSUNG 29.08.2026, siehe ZIEL_VERSION): Die
+            // Etappen E1 (CO2-Saat, jetzt SCHRITT_56_CO2_SAAT) und E2
+            // (Emissionsarten, jetzt SCHRITT_57_EMISSIONSARTEN) sind mit dem
+            // Sync-Merge nur zur Haelfte angekommen - Katalog und Konstanten ja,
+            // die Schrittmethoden Schritt_56_Co2Saat/Schritt_57_Emissionsarten
+            // nein. Die beiden Eintraege werden hier reaktiviert, sobald der
+            // Vollstand der Etappen eintrifft; dann ZIEL_VERSION auf 57 heben.
+            //
+            // new Schritt(SCHRITT_56_CO2_SAAT,
+            //             "CO2-Saat der Katalogtraeger: energy_carrier.co2 auf die belegten " +
+            //             "BAFA-EEW-Werte setzen, wo der Katalog 0/NULL oder abweichend " +
+            //             "gepflegt ist (Etappe E1)",
+            //             "Die CO2-Faktoren der Katalogtraeger konnten nicht gesetzt werden - " +
+            //             "ein Projekt mit einem dieser Traeger rechnet sonst weiter mit 0 g/kWh.",
+            //             Schritt_56_Co2Saat),
+            //
+            // new Schritt(SCHRITT_57_EMISSIONSARTEN,
+            //             "Emissionsarten-Katalog: Tabellen emissionsart/emissionswert anlegen, " +
+            //             "sieben Arten, Vorlagen aus BAFA-Saat, Gesetzesparametern und " +
+            //             "Brennstoff-Stamm sowie die aktiven Traegerwerte saeen; " +
+            //             "Berechnungsmodus in Tab_Applikation und Tab_Projekt (Etappe E2)",
+            //             "Der Emissionsarten-Katalog konnte nicht angelegt werden - ohne ihn " +
+            //             "bleiben CO2, SO2 und NOx feste Spalten und der Emissions-Tab (E3) " +
+            //             "haette keine Datengrundlage.",
+            //             Schritt_57_Emissionsarten),
         };
 
         // =================================================================================
@@ -2231,6 +3107,12 @@ namespace WindowsFormsApplication1
             DatenReserveVorbelegt = 0;
             DatenLeistungsgrenzeAngehoben = 0;
             DatenVerbundZeilen = 0;
+            DatenSenkenAnlagen = 0;
+            DatenSenkenRang2 = 0;
+            DatenSenkenProzess = 0;
+            DatenPufferTemperaturUebernommen = 0;
+            DatenPufferTemperaturRueckfall = 0;
+            DatenKaskadeVorbelegt = 0;
             DatenKesselWartungseinheitVorbelegt = 0;
             DatenBemessungVorbelegt = 0;
             DatenKostenartVorbelegt = 0;
@@ -2943,6 +3825,23 @@ namespace WindowsFormsApplication1
         private static bool Schritt_18_BhkwVollbenutzungsstunden(Lauf l)
         {
             return SpaltenAnlegen(l, SchemaKatalog.Schritt18_BhkwVollbenutzungsstunden);
+        }
+
+        /// <summary>
+        /// Schritt 52 (Paket E1, Konzept § 4.4/§ 6.3): die Ergebnisspalten JE KANAL.
+        ///
+        /// Derselbe additive Weg wie die Schritte 1, 2, 6, 8, 10, 15 und 18 und aus
+        /// demselben Katalog (<see cref="SchemaKatalog.Schritt52_ErgebnisJeKanal"/>);
+        /// Begründung für Typ, fehlenden Backfill, Ordinalposition, den P1-Vorgriff der
+        /// beiden <c>T_oben_*</c>-Spalten und die geprüfte 255-Spalten-Grenze steht dort
+        /// und bei <see cref="SCHRITT_52_ERGEBNIS_JE_KANAL"/>.
+        ///
+        /// <b>Reines DDL.</b> Kein UPDATE, kein INSERT — der Schritt fasst keine
+        /// Datenzeile an und kann deshalb keinen gespeicherten Wert verändern.
+        /// </summary>
+        private static bool Schritt_52_ErgebnisJeKanal(Lauf l)
+        {
+            return SpaltenAnlegen(l, SchemaKatalog.Schritt52_ErgebnisJeKanal);
         }
 
         /// <summary>
@@ -5579,6 +6478,1664 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
+        // Schritt 38/39 - Etappe KD1 (Konzept Kostendialoge Rev. 1.2): Kostenvorlagen
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 38. Anlass, Umfang und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_38_KOSTENVORLAGEN"/>.
+        /// </summary>
+        private static bool Schritt_38_Kostenvorlagen(Lauf l)
+        {
+            // --- 38a) Kopf- und Positionstabelle -------------------------------------
+            if (!Ddl(l, SchemaKatalog.SQL_CREATE_KOSTENVORLAGE,
+                     "Tabelle " + SchemaKatalog.TAB_KOSTENVORLAGE)) return false;
+            if (!Ddl(l, SchemaKatalog.SQL_INDEX_KOSTENVORLAGE,
+                     "Index idx_KostenVorlage")) return false;
+
+            if (!Ddl(l, SchemaKatalog.SQL_CREATE_KOSTENVORLAGEPOSITION,
+                     "Tabelle " + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION)) return false;
+            if (!Ddl(l, SchemaKatalog.SQL_INDEX_KOSTENVORLAGEPOSITION,
+                     "Index idx_KostenVorlagePosition")) return false;
+            if (!Ddl(l, SchemaKatalog.SQL_FK_KOSTENVORLAGEPOSITION,
+                     "Loeschweitergabe FK_KostenVorlagePos")) return false;
+
+            // --- 38b) Spalten-Nachruestungen -----------------------------------------
+            // Tab_ProjektWerte.VorlageID/StartJahr, energy_carrier.price_power(_modus);
+            // alle nullable, Vorbelegung gibt es bewusst NICHT (NULL = nicht gepflegt).
+            return SpaltenAnlegen(l, SchemaKatalog.Schritt38_Spalten);
+        }
+
+        /// <summary>Schritt 40. Anlass und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_40_LEISTUNGSPREISREIHE"/>.</summary>
+        private static bool Schritt_40_Leistungspreisreihe(Lauf l)
+        {
+            return SpaltenAnlegen(l, SchemaKatalog.Schritt40_Spalten);
+        }
+
+        /// <summary>
+        /// Schritt 42 — Nachtrag Ä9 (Nutzerabnahme 26.08.2026): Der Katalog
+        /// führte kein Flüssiggas. Saat mit Standardwerten (Propan):
+        /// Hi 12,87 / Hs 14,00 kWh/kg (DIN 51622-Größenordnung), CO2 239 g/kWh
+        /// (BEHG-Faktor 0,0663 t CO2/GJ × 3,6 GJ/MWh), Preise 0 = nicht
+        /// gepflegt. Idempotent über den Namen; ID per MAX+1 (ADR-001). Der
+        /// Brennstoff-Stammverweis wird per Namenssuche verknüpft, wenn der
+        /// Stamm einen Flüssiggas-Eintrag führt — sonst 0 mit Protokollhinweis.
+        /// </summary>
+        /// <summary>
+        /// Ä18 (26.08.2026): Das Preismodell ELECTRICITY erhaelt das
+        /// Leistungspreis-Merkmal - damit zeigt der Energietraegerdialog beim Strom
+        /// dasselbe Leistungspreisfeld (Jahr/Monat, FK6) wie bei Gas und Fernwaerme.
+        /// Die Tarifstruktur bleibt das Detailmodell der Wirtschaftlichkeitsseite
+        /// (komponentenbezogene Sichten); der Flat-Leistungspreis ist ihr einfaches
+        /// Gegenstueck in der Kostenmaske. Idempotent: Ein bereits gesetztes Merkmal
+        /// wird nicht veraendert.
+        /// </summary>
+        /// <summary>
+        /// Ä20 (26.08.2026): Kostenpositionen je ANLAGE. Die Spalte wird angelegt
+        /// (idempotent), dann bekommt jede Bestandsposition ohne Zuordnung die
+        /// jeweils ERSTE verbaute Anlage ihrer Komponente (MIN(Tab_Energieanlagen.ID)
+        /// mit gesetzter Verweisspalte). Positionen ohne verbaute Anlage —
+        /// Erfassungsgruppen-Altdaten (Ä7) und Variantenreste — bleiben NULL und
+        /// erscheinen in der Oberfläche als „ohne Anlagenzuordnung“.
+        /// </summary>
+        /// <summary>
+        /// Ä21 (27.08.2026): Geräteanker der Anlagenkosten. Die Spalte wird
+        /// angelegt (idempotent) und für alle zugeordneten Positionen aus der
+        /// aktuellen Anlagenzeile befüllt (ein UPDATE-JOIN je Komponente).
+        /// </summary>
+        private static bool Schritt_46_AnlagenGeraeteanker(Lauf l)
+        {
+            try
+            {
+                using (var cmd = new OleDbCommand(
+                    "ALTER TABLE Tab_ProjektWerte ADD COLUMN ID_AnlageGeraet LONG", l.Conn))
+                    cmd.ExecuteNonQuery();
+            }
+            catch { /* Spalte existiert bereits */ }
+
+            object probe = Scalar(l,
+                "SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ID_AnlageGeraet IS NULL");
+            if (probe == null)
+            {
+                l.Zeile("Geräteanker (Schritt 46): Spalte ID_AnlageGeraet nicht anlegbar.");
+                return false;
+            }
+
+            var verweise = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                { DbWerte.ERZEUGER_WAERMEPUMPE,             "ID_WP" },
+                { DbWerte.ERZEUGER_HEIZKESSEL,              "ID_Kessel" },
+                { DbWerte.ERZEUGER_BHKW,                    "ID_BHKW" },
+                { DbWerte.ERZEUGER_PHOTOVOLTAIK,            "ID_PV" },
+                { DbWerte.ERZEUGER_SOLARTHERMIE,            "ID_Solar" },
+                { DbWerte.ERZEUGER_STROMSPEICHER,           "ID_SP" },
+                { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, "ID_PUFFER" }
+            };
+
+            int befuellt = 0;
+            DataTable komp = Abfrage(l, "SELECT ID, Komponente FROM Tab_KostenKomponente");
+            if (komp != null)
+                foreach (DataRow k in komp.Rows)
+                {
+                    string name = Convert.ToString(k["Komponente"]);
+                    int kid = Convert.ToInt32(k["ID"]);
+                    string spalte;
+                    if (!verweise.TryGetValue(name, out spalte)) continue;
+
+                    // Access-UPDATE mit JOIN — ohne Parameter (kid ist int),
+                    // damit die ACE-Unterabfragen-Falle nicht greift.
+                    befuellt += NonQuery(l,
+                        "UPDATE Tab_ProjektWerte AS w INNER JOIN Tab_Energieanlagen AS a " +
+                        "ON w.ID_Anlage = a.ID SET w.ID_AnlageGeraet = a.[" + spalte + "] " +
+                        "WHERE w.KomponentenID = " + kid + " AND w.ID_AnlageGeraet IS NULL");
+                }
+
+            l.Zeile("Geräteanker (Schritt 46): " + befuellt +
+                    " Position(en) mit dem Gerät ihrer Anlage verankert.");
+            return true;
+        }
+
+        /// <summary>
+        /// Ä24 (27.08.2026): Anker-Konsistenz. Schritt 46 befüllte nur LEERE
+        /// Anker; Variantenkopien trugen aber den 1:1 mitkopierten Anker des
+        /// QUELLprojekts (der Duplizierer kann die komponentenabhängige
+        /// Zieltabelle nicht versetzen). Für alle Positionen mit gültiger
+        /// Anlagenzuordnung wird der Anker aus der Anlagenzeile neu abgeleitet
+        /// (Überschreiben mit der Wahrheit; idempotent). Laufende Pflege:
+        /// <c>KostenProjektPositionenCtrl.AnkerNachziehen</c> nach jedem
+        /// Duplizieren, Gerätetausch-Umzug im Wizard-Speicherweg.
+        /// </summary>
+        private static bool Schritt_47_AnkerNachziehen(Lauf l)
+        {
+            object probe = Scalar(l,
+                "SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ID_AnlageGeraet IS NULL");
+            if (probe == null)
+            {
+                l.Zeile("Geräteanker-Nachzug (Schritt 47): Spalte ID_AnlageGeraet fehlt.");
+                return false;
+            }
+
+            var verweise = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                { DbWerte.ERZEUGER_WAERMEPUMPE,             "ID_WP" },
+                { DbWerte.ERZEUGER_HEIZKESSEL,              "ID_Kessel" },
+                { DbWerte.ERZEUGER_BHKW,                    "ID_BHKW" },
+                { DbWerte.ERZEUGER_PHOTOVOLTAIK,            "ID_PV" },
+                { DbWerte.ERZEUGER_SOLARTHERMIE,            "ID_Solar" },
+                { DbWerte.ERZEUGER_STROMSPEICHER,           "ID_SP" },
+                { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, "ID_PUFFER" }
+            };
+
+            int nachgezogen = 0;
+            DataTable komp = Abfrage(l, "SELECT ID, Komponente FROM Tab_KostenKomponente");
+            if (komp != null)
+                foreach (DataRow k in komp.Rows)
+                {
+                    string name = Convert.ToString(k["Komponente"]);
+                    int kid = Convert.ToInt32(k["ID"]);
+                    string spalte;
+                    if (!verweise.TryGetValue(name, out spalte)) continue;
+
+                    // UPDATE mit JOIN, kid als Literal (ACE-Bindungsfalle); der
+                    // ID_Projekt-Vergleich schuetzt vor Fremdzuordnungen.
+                    nachgezogen += NonQuery(l,
+                        "UPDATE Tab_ProjektWerte AS w INNER JOIN Tab_Energieanlagen AS a " +
+                        "ON w.ID_Anlage = a.ID SET w.ID_AnlageGeraet = a.[" + spalte + "] " +
+                        "WHERE w.KomponentenID = " + kid +
+                        " AND a.ID_Projekt = w.ProjektID");
+                }
+
+            l.Zeile("Geräteanker-Nachzug (Schritt 47): " + nachgezogen +
+                    " Position(en) aus ihrer Anlagenzeile abgeleitet.");
+            return true;
+        }
+
+        private static bool Schritt_45_Anlagenkosten(Lauf l)
+        {
+            try
+            {
+                using (var cmd = new OleDbCommand(
+                    "ALTER TABLE Tab_ProjektWerte ADD COLUMN ID_Anlage LONG", l.Conn))
+                    cmd.ExecuteNonQuery();
+            }
+            catch { /* Spalte existiert bereits */ }
+
+            object probe = Scalar(l, "SELECT COUNT(*) FROM Tab_ProjektWerte");
+            object probeSpalte = Scalar(l,
+                "SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ID_Anlage IS NULL");
+            if (probe == null || probeSpalte == null)
+            {
+                l.Zeile("Anlagenkosten (Schritt 45): Spalte ID_Anlage nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            var verweise = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                { DbWerte.ERZEUGER_WAERMEPUMPE,             "ID_WP" },
+                { DbWerte.ERZEUGER_HEIZKESSEL,              "ID_Kessel" },
+                { DbWerte.ERZEUGER_BHKW,                    "ID_BHKW" },
+                { DbWerte.ERZEUGER_PHOTOVOLTAIK,            "ID_PV" },
+                { DbWerte.ERZEUGER_SOLARTHERMIE,            "ID_Solar" },
+                { DbWerte.ERZEUGER_STROMSPEICHER,           "ID_SP" },
+                { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, "ID_PUFFER" }
+            };
+
+            int zugeordnet = 0, ohneAnlage = 0;
+            DataTable komp = Abfrage(l, "SELECT ID, Komponente FROM Tab_KostenKomponente");
+            if (komp != null)
+                foreach (DataRow k in komp.Rows)
+                {
+                    string name = Convert.ToString(k["Komponente"]);
+                    int kid = Convert.ToInt32(k["ID"]);
+                    string spalte;
+                    if (!verweise.TryGetValue(name, out spalte)) continue;
+
+                    DataTable projekte = Abfrage(l,
+                        "SELECT DISTINCT ProjektID FROM Tab_ProjektWerte " +
+                        "WHERE KomponentenID = ? AND ID_Anlage IS NULL",
+                        new OleDbParameter("@k", kid));
+                    if (projekte == null) continue;
+
+                    foreach (DataRow pr in projekte.Rows)
+                    {
+                        if (pr["ProjektID"] == DBNull.Value) continue;
+                        int pid = Convert.ToInt32(pr["ProjektID"]);
+                        object a = Scalar(l,
+                            "SELECT MIN(ID) FROM Tab_Energieanlagen " +
+                            "WHERE ID_Projekt = ? AND [" + spalte + "] IS NOT NULL",
+                            new OleDbParameter("@p", pid));
+                        if (a == null || a == DBNull.Value) { ohneAnlage++; continue; }
+                        zugeordnet += NonQuery(l,
+                            "UPDATE Tab_ProjektWerte SET ID_Anlage = ? " +
+                            "WHERE ProjektID = ? AND KomponentenID = ? AND ID_Anlage IS NULL",
+                            new OleDbParameter("@a", Convert.ToInt32(a)),
+                            new OleDbParameter("@p", pid),
+                            new OleDbParameter("@k", kid));
+                    }
+                }
+
+            l.Zeile("Anlagenkosten (Schritt 45): " + zugeordnet +
+                    " Position(en) der jeweils ersten verbauten Anlage zugeordnet; " +
+                    ohneAnlage + " Projekt-Komponenten ohne verbaute Anlage bleiben " +
+                    "ohne Zuordnung (Ausweis \"ohne Anlagenzuordnung\").");
+            return true;
+        }
+
+        /// <summary>
+        /// F18 (27.08.2026): Kanalzuordnung der externen Wärmeganglinien. Die Spalte
+        /// wird angelegt (idempotent), dann bekommt jede Bestandszeile ohne Wert den
+        /// Kanal „Heizung" — genau der Weg, den die Ganglinie bisher nahm.
+        /// Anlass und Idempotenzzusage: <see cref="SCHRITT_48_GANGLINIENKANAL"/>.
+        /// </summary>
+        private static bool Schritt_48_Ganglinienkanal(Lauf l)
+        {
+            // --- 48a) Spalte ---------------------------------------------------------
+            // TEXT(50) statt eines kürzeren Feldes: Access kürzt beim UPDATE STILL auf
+            // die Feldbreite, statt einen Fehler zu melden - der längste Steuerwert
+            // ("Brauchwasser", 12 Zeichen) hat damit reichlich Luft, auch wenn L2
+            // später weitere Kanäle bringt.
+            try
+            {
+                using (var cmd = new OleDbCommand(
+                    "ALTER TABLE " + SchemaKatalog.Z_PROJEKTWAERMEBEDARF +
+                    " ADD COLUMN " + SchemaKatalog.SPALTE_ZPW_KANAL + " TEXT(50)", l.Conn))
+                    cmd.ExecuteNonQuery();
+            }
+            catch { /* Spalte existiert bereits */ }
+
+            object probe = Scalar(l,
+                "SELECT COUNT(*) FROM " + SchemaKatalog.Z_PROJEKTWAERMEBEDARF +
+                " WHERE " + SchemaKatalog.SPALTE_ZPW_KANAL + " IS NULL");
+            if (probe == null)
+            {
+                l.Zeile("Ganglinienkanal (Schritt 48): Spalte Kanal nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            // --- 48b) verhaltensneutrale Vorbelegung ---------------------------------
+            // Der Steuerwert als Literal statt als Parameter: Access bindet einen
+            // Textparameter in einem UPDATE ohne WHERE-Parameter zuverlaessig, der
+            // Literal-Weg ist aber der im Bestand gewaehlte (Schritte 44/46/47) und
+            // spart die ACE-Bindungsfalle ganz.
+            int vorbelegt = NonQuery(l,
+                "UPDATE " + SchemaKatalog.Z_PROJEKTWAERMEBEDARF +
+                " SET " + SchemaKatalog.SPALTE_ZPW_KANAL + " = '" + DbWerte.KANAL_HEIZUNG + "'" +
+                " WHERE " + SchemaKatalog.SPALTE_ZPW_KANAL + " IS NULL");
+
+            l.Zeile("Ganglinienkanal (Schritt 48): " + vorbelegt +
+                    " Ganglinienzuordnung(en) auf den Kanal Heizung vorbelegt.");
+            return true;
+        }
+
+        /// <summary>
+        /// F5-Alternative/L6 und F10 (27.08.2026): das KLASSEN-SET am Pufferspeicher und
+        /// die projektweite KNAPPHEITSREIHENFOLGE. Anlass, Teilgliederung und
+        /// Idempotenzzusage: <see cref="SCHRITT_49_KLASSENSET"/>.
+        /// </summary>
+        private static bool Schritt_49_Klassenset(Lauf l)
+        {
+            // Die Spaltennamen einmal auflösen - sie stehen in jeder Anweisung unten.
+            string sH = SchemaKatalog.SPALTE_PSP_NUTZUNG_HEIZUNG;
+            string sB = SchemaKatalog.SPALTE_PSP_NUTZUNG_BRAUCHWASSER;
+            string sP = SchemaKatalog.SPALTE_PSP_NUTZUNG_PROZESS;
+            string sK = SchemaKatalog.SPALTE_KANAL_KNAPPHEITSREIHENFOLGE;
+
+            // --- 49a) die drei Flags an Tab_Pufferspeicher ----------------------------
+            // YESNO wie die übrigen Ja/Nein-Spalten des Vorhabens (Schritte 6 und 7).
+            // Access belegt eine so angehängte Spalte in ALLEN Bestandszeilen mit
+            // FALSCH - ein NULL gibt es dort nicht. Genau darauf baut die
+            // Idempotenzbedingung der DML unten auf: „alle drei falsch" IST der noch
+            // nicht migrierte Zustand.
+            foreach (string spalte in new[] { sH, sB, sP })
+            {
+                try
+                {
+                    using (var cmd = new OleDbCommand(
+                        "ALTER TABLE " + SchemaKatalog.TAB_PUFFERSPEICHER +
+                        " ADD COLUMN [" + spalte + "] YESNO", l.Conn))
+                        cmd.ExecuteNonQuery();
+                }
+                catch { /* Spalte existiert bereits */ }
+            }
+
+            // Nachweis statt Annahme: Erst diese Leseprobe belegt, dass ALLE DREI
+            // Spalten da sind - das ALTER schluckt jeden Fehler, auch einen echten.
+            object probePuffer = Scalar(l,
+                "SELECT COUNT(*) FROM " + SchemaKatalog.TAB_PUFFERSPEICHER +
+                " WHERE [" + sH + "] = FALSE AND [" + sB + "] = FALSE AND [" + sP + "] = FALSE");
+            if (probePuffer == null)
+            {
+                l.Zeile("Klassen-Set (Schritt 49): die Nutzungs-Spalten an " +
+                        SchemaKatalog.TAB_PUFFERSPEICHER + " sind nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            // --- 49b) die Knappheitsreihenfolge an Tab_Einstellungen ------------------
+            // TEXT(100): Access kürzt beim UPDATE STILL auf die Feldbreite (dieselbe
+            // Falle wie in Schritt 48). Der Vorgabewert misst 32 Zeichen.
+            //
+            // ANGEHÄNGT und sonst nichts: Tab_Einstellungen wird in
+            // KonfigurationCtrl.ReadSingle ORDINAL über row[0]…row[22] gelesen. Die
+            // Spalte darf deshalb nur ans Ende und wird namensbasiert gelesen bzw.
+            // zielgenau geschrieben.
+            try
+            {
+                using (var cmd = new OleDbCommand(
+                    "ALTER TABLE " + SchemaKatalog.TAB_EINSTELLUNGEN +
+                    " ADD COLUMN [" + sK + "] TEXT(100)", l.Conn))
+                    cmd.ExecuteNonQuery();
+            }
+            catch { /* Spalte existiert bereits */ }
+
+            object probeEinst = Scalar(l,
+                "SELECT COUNT(*) FROM " + SchemaKatalog.TAB_EINSTELLUNGEN +
+                " WHERE [" + sK + "] IS NULL");
+            if (probeEinst == null)
+            {
+                l.Zeile("Klassen-Set (Schritt 49): die Spalte " + sK + " ist nicht " +
+                        "anlegbar/lesbar.");
+                return false;
+            }
+
+            // --- 49c) Klassen-Set aus Verwendung ableiten -----------------------------
+            //
+            // CASE-INSENSITIV über UCase: WaermesenkeClass.NormalisierteVerwendung
+            // kennt Schreibvarianten ("kombi", "brauchwasser") und bringt sie auf den
+            // kanonischen Wert. Ohne dieselbe Toleranz hier bekäme ein Kombi-Speicher
+            // mit kleingeschriebenem Wert still nur {Heizung} - er verlöre seinen
+            // Brauchwasserkanal. Trim() fängt zusätzlich von Hand eingetragene
+            // Leerzeichen ab.
+            //
+            // REIHENFOLGE DER BEIDEN ANWEISUNGEN IST TRAGEND. Die Bedingung „noch
+            // nicht migriert" lautet „alle drei Flags falsch"; sobald die erste
+            // Anweisung schreibt, gilt sie für die betroffenen Zeilen nicht mehr.
+            // Deshalb zuerst HEIZUNG (trifft Heizung, Kombi, NULL, Leerwert und jeden
+            // unbekannten Wert - alles, was nicht Brauchwasser ist), danach
+            // BRAUCHWASSER (trifft die reinen Brauchwasserzeilen, die noch unberührt
+            // sind, UND die Kombizeilen, die eben Heizung bekommen haben).
+            string bwGross = DbWerte.PSP_VERWENDUNG_BRAUCHWASSER.ToUpperInvariant();
+            string kombiGross = DbWerte.PSP_VERWENDUNG_KOMBI.ToUpperInvariant();
+
+            int mitHeizung = NonQuery(l,
+                "UPDATE " + SchemaKatalog.TAB_PUFFERSPEICHER +
+                " SET [" + sH + "] = TRUE" +
+                " WHERE [" + sH + "] = FALSE AND [" + sB + "] = FALSE AND [" + sP + "] = FALSE" +
+                "   AND (Verwendung IS NULL OR UCase(Trim(Verwendung)) <> '" + bwGross + "')");
+            if (mitHeizung < 0) return false;
+
+            int mitBrauchwasser = NonQuery(l,
+                "UPDATE " + SchemaKatalog.TAB_PUFFERSPEICHER +
+                " SET [" + sB + "] = TRUE" +
+                " WHERE [" + sB + "] = FALSE AND [" + sP + "] = FALSE" +
+                "   AND (UCase(Trim(Verwendung)) = '" + bwGross + "'" +
+                "     OR UCase(Trim(Verwendung)) = '" + kombiGross + "')");
+            if (mitBrauchwasser < 0) return false;
+
+            // Nutzung_Prozess bleibt überall FALSCH: Der Bestand kennt keinen
+            // Prozessspeicher, ein Wert dafür wäre erfunden. Das Flag setzt erst der
+            // Anwender im Dialog.
+
+            // --- 49d) Knappheitsreihenfolge vorbelegen --------------------------------
+            // Literal statt Parameter wie in Schritt 48: der im Bestand gewählte Weg
+            // (Schritte 44/46/47/48), der die ACE-Bindungsfalle ganz spart.
+            int reihenfolge = NonQuery(l,
+                "UPDATE " + SchemaKatalog.TAB_EINSTELLUNGEN +
+                " SET [" + sK + "] = '" + DbWerte.KNAPPHEIT_DEFAULT + "'" +
+                " WHERE [" + sK + "] IS NULL");
+            if (reihenfolge < 0) return false;
+
+            l.Zeile("Klassen-Set (Schritt 49): " + mitHeizung + " Pufferspeicher auf " +
+                    "Nutzung Heizung gesetzt, davon/zusaetzlich " + mitBrauchwasser +
+                    " auf Nutzung Brauchwasser (Kombi = beides); Nutzung Prozess bleibt " +
+                    "im Bestand ueberall aus. " + reihenfolge + " Projekteinstellung(en) " +
+                    "auf die Knappheitsreihenfolge '" + DbWerte.KNAPPHEIT_DEFAULT +
+                    "' vorbelegt.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 53 - Schichtspeichermodell (Paket P1, Konzept § 7)
+        // =================================================================================
+
+        /// <summary>
+        /// L7 (27.08.2026): die PARAMETER DES SCHICHTSPEICHERMODELLS an
+        /// <c>Tab_Pufferspeicher</c>. Anlass, Teilgliederung (53a DDL, 53b
+        /// Vorbelegungen) und Idempotenzzusage: <see cref="SCHRITT_53_SCHICHTMODELL"/>.
+        /// </summary>
+        private static bool Schritt_53_Schichtmodell(Lauf l)
+        {
+            // --- 53a) die neun Spalten -----------------------------------------------
+            // HART: Ohne die Spalten gibt es nichts vorzubelegen.
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt53_Schichtmodell)) return false;
+
+            string sN = SchemaKatalog.SPALTE_PSP_SCHICHTEN_ANZAHL;
+            string sL = SchemaKatalog.SPALTE_PSP_LADELEISTUNG_MAX;
+            string sE = SchemaKatalog.SPALTE_PSP_ENTLADELEISTUNG_MAX;
+
+            // Nachweis statt Annahme: Erst diese Leseprobe belegt, dass die Spalten
+            // wirklich da sind (dieselbe Vorsichtsmassnahme wie in Schritt 49).
+            object probe = Scalar(l,
+                "SELECT COUNT(*) FROM " + SchemaKatalog.TAB_PUFFERSPEICHER +
+                " WHERE [" + sN + "] IS NULL OR [" + sN + "] < 1");
+            if (probe == null)
+            {
+                l.Zeile("Schichtmodell (Schritt 53): die Spalte " + sN +
+                        " ist nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            // --- 53b) die drei verhaltensneutralen Vorbelegungen ----------------------
+            //
+            // SCHICHTZAHL 1 = das Ein-Zonen-Modell des Bestands (§ 7.3). Die Bedingung
+            // faengt BEIDE Auslieferungszustaende einer angehaengten Zahlenspalte ab:
+            // NULL (der Regelfall bei ALTER TABLE) und 0 (moeglich, wenn die Spalte auf
+            // einem anderen Weg entstanden ist). 0 Schichten waere ein unmoeglicher
+            // Zustand - ein gepflegter Wert ist immer >= 1 und bleibt unberuehrt.
+            int schichten = NonQuery(l,
+                "UPDATE " + SchemaKatalog.TAB_PUFFERSPEICHER +
+                " SET [" + sN + "] = 1" +
+                " WHERE [" + sN + "] IS NULL OR [" + sN + "] < 1");
+            if (schichten < 0) return false;
+
+            // LEISTUNGSGRENZEN 0 = unbegrenzt - die bisherige Annahme des Modells
+            // („keine Begrenzung der Be-/Entladeleistung"). Hier NUR auf NULL geprueft:
+            // Eine ausdrueckliche 0 ist derselbe Wert, und jeder positive Wert stammt
+            // vom Anwender.
+            int ladeleistung = NonQuery(l,
+                "UPDATE " + SchemaKatalog.TAB_PUFFERSPEICHER +
+                " SET [" + sL + "] = 0 WHERE [" + sL + "] IS NULL");
+            if (ladeleistung < 0) return false;
+
+            int entladeleistung = NonQuery(l,
+                "UPDATE " + SchemaKatalog.TAB_PUFFERSPEICHER +
+                " SET [" + sE + "] = 0 WHERE [" + sE + "] IS NULL");
+            if (entladeleistung < 0) return false;
+
+            // Hoehe, Lambda_Eff, T_Nutz_BW und die drei Entnahmehoehen bleiben NULL -
+            // dort ist „nicht gepflegt" die zutreffende Aussage, und der Leser setzt
+            // die Konzept-Vorgaben ein (H/D = 2,5; 1,5 W/(m*K); RL_eff; Entnahmehoehe
+            // nach Klassen-Set). Eine ausgeschriebene Zahl waere eine erfundene
+            // Anwenderentscheidung.
+
+            l.Zeile("Schichtmodell (Schritt 53): " + schichten + " Pufferspeicher auf " +
+                    "Schichten_Anzahl = 1 gesetzt (Ein-Zonen-Modell des Bestands, " +
+                    "verhaltensneutral); " + ladeleistung + " auf Ladeleistung_Max = 0 " +
+                    "und " + entladeleistung + " auf Entladeleistung_Max = 0 " +
+                    "(unbegrenzt) vorbelegt. Hoehe, Lambda_Eff, T_Nutz_BW und die drei " +
+                    "Entnahmehoehen bleiben bewusst leer - NULL bedeutet dort " +
+                    "Konzept-Vorgabe, nicht 0.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 54 - Quellen-Ausbau (Paket Q1, Konzept § 8.1)
+        // =================================================================================
+
+        /// <summary>
+        /// Der KOPF eines Quellprofils. <c>ID</c> ist ein AUTOINCREMENT - wie
+        /// <c>Z_AnlageSenke</c> aus Schritt 50 und wie die Bestands-Ganglinien
+        /// (<c>Tab_StromganglinieDaten</c>), nicht nach der <c>MAX(ID)+1</c>-Hausregel:
+        /// Der Dialog legt Profile einzeln an und braucht die vergebene ID unmittelbar
+        /// danach fuer die Wertzeilen (<c>SELECT @@IDENTITY</c>).
+        ///
+        /// KEINE Beziehung auf <c>Tab_Projekt</c> (Muster <c>Tab_Stromganglinie</c>) und
+        /// keine DEFAULT-Werte - „nicht gesetzt" ist NULL.
+        /// </summary>
+        public const string SQL_CREATE_QUELLPROFIL =
+            "CREATE TABLE Tab_Quellprofil (ID AUTOINCREMENT PRIMARY KEY, " +
+            "ID_Projekt LONG, Bezeichner TEXT(255), Betriebsart TEXT(50), " +
+            "Einheit TEXT(50), Beschreibung TEXT(255))";
+
+        /// <summary>Der Suchweg jedes Lesers: die Profile EINES Projekts.</summary>
+        public const string SQL_INDEX_QUELLPROFIL =
+            "CREATE INDEX idx_Quellprofil ON Tab_Quellprofil (ID_Projekt)";
+
+        /// <summary>
+        /// Die WERTE eines Quellprofils. <c>[Index]</c> ist in eckigen Klammern zu
+        /// schreiben - es ist ein reserviertes Wort in Access-SQL
+        /// (<see cref="SchemaKatalog.SPALTE_QPD_INDEX"/>).
+        /// </summary>
+        public const string SQL_CREATE_QUELLPROFILDATEN =
+            "CREATE TABLE Tab_QuellprofilDaten (ID AUTOINCREMENT PRIMARY KEY, " +
+            "ID_Quellprofil LONG NOT NULL, [Index] LONG NOT NULL, Wert DOUBLE)";
+
+        /// <summary>
+        /// Der Suchweg jedes Lesers: die Werte EINES Profils in Positionsreihenfolge
+        /// (<c>QuellprofilCtrl.WerteLesen</c>). KEIN eindeutiger Index ueber
+        /// (ID_Quellprofil, Index): Die Schreibseite raeumt ein Profil ohnehin komplett
+        /// und schreibt es neu, und waehrend eines abgebrochenen Schreibvorgangs waere
+        /// die Eindeutigkeit eine Sperre ohne Nutzen.
+        /// </summary>
+        public const string SQL_INDEX_QUELLPROFILDATEN =
+            "CREATE INDEX idx_QuellprofilDaten ON Tab_QuellprofilDaten (ID_Quellprofil, [Index])";
+
+        /// <summary>
+        /// Verweis auf den KOPF - MIT LÖSCHWEITERGABE, Muster
+        /// <c>FK_AnlageSenke_Anlage</c> aus Schritt 50: Eine Wertzeile ist ein
+        /// unselbstaendiger Anhang ihres Profils. Ohne Kaskade bliebe beim Loeschen
+        /// eines Profils dessen Wertesatz als Waisenmenge stehen - bei einem
+        /// Stundenprofil 8760 Zeilen.
+        /// </summary>
+        public const string SQL_FK_QUELLPROFILDATEN =
+            "ALTER TABLE Tab_QuellprofilDaten ADD CONSTRAINT FK_QuellprofilDaten_Kopf " +
+            "FOREIGN KEY (ID_Quellprofil) REFERENCES Tab_Quellprofil (ID) ON DELETE CASCADE";
+
+        /// <summary>
+        /// Verweis der ANLAGE auf ihr Quellprofil - RESTRIKTIV, Muster
+        /// <c>FK_AnlageSenke_Puffer</c>: Ein Profil, das noch eine Anlage versorgt, darf
+        /// nicht mit einem Loeschklick verschwinden. Die Gegenrichtung bleibt frei - eine
+        /// Anlage zu loeschen, die auf ein Profil ZEIGT, ist immer erlaubt, und damit
+        /// bleibt der destruktive Speicherweg des Wizards (DELETE + INSERT auf
+        /// Tab_Energieanlagen) gangbar.
+        /// </summary>
+        public const string SQL_FK_ANLAGE_QUELLPROFIL =
+            "ALTER TABLE Tab_Energieanlagen ADD CONSTRAINT FK_Anlage_Quellprofil " +
+            "FOREIGN KEY (WQ_ID_Quellprofil) REFERENCES Tab_Quellprofil (ID)";
+
+        /// <summary>
+        /// § 8.1 (28.08.2026): der QUELLEN-AUSBAU. Anlass, Teilgliederung (54a Tabellen,
+        /// 54b Anlagenspalten, 54c Beziehung) und Idempotenzzusage:
+        /// <see cref="SCHRITT_54_QUELLEN"/>.
+        /// </summary>
+        private static bool Schritt_54_Quellen(Lauf l)
+        {
+            // --- 54a) die beiden Tabellen ---------------------------------------------
+            // HART: Ohne sie hat der Profilschluessel kein Ziel.
+            if (!Ddl(l, SQL_CREATE_QUELLPROFIL, "Tabelle " + SchemaKatalog.TAB_QUELLPROFIL))
+                return false;
+
+            if (!Ddl(l, SQL_CREATE_QUELLPROFILDATEN, "Tabelle " + SchemaKatalog.TAB_QUELLPROFILDATEN))
+                return false;
+
+            if (!Ddl(l, SQL_INDEX_QUELLPROFIL, "Index idx_Quellprofil"))
+                l.Notiz("Index idx_Quellprofil fehlt - nur ein Tempoverlust beim Lesen " +
+                        "der Profile eines Projekts.");
+
+            if (!Ddl(l, SQL_INDEX_QUELLPROFILDATEN, "Index idx_QuellprofilDaten"))
+                l.Notiz("Index idx_QuellprofilDaten fehlt - nur ein Tempoverlust beim " +
+                        "Lesen der Werte eines Profils.");
+
+            // WEICH wie in den Schritten 14 und 50: Fehlt die Beziehung auf einer fremden
+            // Datenbank, bleibt die Ablage benutzbar.
+            if (!Ddl(l, SQL_FK_QUELLPROFILDATEN,
+                     "Beziehung FK_QuellprofilDaten_Kopf (mit Loeschweitergabe)"))
+                l.Notiz("Beziehung FK_QuellprofilDaten_Kopf fehlt - beim Loeschen eines " +
+                        "Profils bleiben seine Wertzeilen stehen; QuellprofilCtrl.Loeschen " +
+                        "raeumt sie trotzdem ausdruecklich weg.");
+
+            // Nachweis statt Annahme: Erst diese Leseprobe belegt, dass die Tabellen da
+            // UND lesbar sind - Ddl schluckt ein „existiert bereits".
+            object probe = Scalar(l, "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_QUELLPROFIL + "]");
+            if (probe == null)
+            {
+                l.Zeile("Quellen-Ausbau (Schritt 54): " + SchemaKatalog.TAB_QUELLPROFIL +
+                        " ist nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            // --- 54b) die beiden Anlagenspalten ---------------------------------------
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt54_Quellen)) return false;
+
+            // --- 54c) die restriktive Beziehung ---------------------------------------
+            if (!Ddl(l, SQL_FK_ANLAGE_QUELLPROFIL, "Beziehung FK_Anlage_Quellprofil (restriktiv)"))
+                l.Notiz("Beziehung FK_Anlage_Quellprofil fehlt - ein geloeschtes " +
+                        "Quellprofil koennte an einer Anlage verwaisen; die Engine faellt " +
+                        "in diesem Fall auf die Aussentemperatur zurueck und meldet es.");
+
+            // KEIN DML. WQ_Monatswerte/WQ_Wochenwerte und WQ_CSV bleiben Lese-Altlast
+            // (§ 15) - eine automatische Uebernahme waere eine stille Datenaenderung an
+            // Bestandsprojekten und bei WQ_CSV mangels vorliegender Datei ohnehin nicht
+            // durchfuehrbar.
+            l.Zeile("Quellen-Ausbau (Schritt 54): " + SchemaKatalog.TAB_QUELLPROFIL + " und " +
+                    SchemaKatalog.TAB_QUELLPROFILDATEN + " stehen bereit (" +
+                    Convert.ToInt32(probe) + " Profil(e) vorhanden); Tab_Energieanlagen " +
+                    "traegt WQ_Anschlusshoehe (NULL = Entnahme oben) und WQ_ID_Quellprofil " +
+                    "(NULL = kein Profil gewaehlt). KEINE Datenuebernahme: WQ_Monatswerte, " +
+                    "WQ_Wochenwerte und WQ_CSV bleiben unveraendert und werden weiter " +
+                    "gelesen, solange keine Profil-ID gesetzt ist.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 55 - Temperaturbezug und Booster-Lesepunkt (Paket B2)
+        // =================================================================================
+
+        /// <summary>
+        /// Nutzerauftraege 28.08.2026: der TEMPERATURBEZUG der Kessel-Kaskade
+        /// (<c>Tab_Energieanlagen.WQ_TemperaturModus</c>) und der LESEPUNKT der
+        /// Booster-Quelltemperatur (<c>Tab_Einstellungen.Booster_Lesepunkt</c>). Anlass,
+        /// Teilgliederung (55a…55d) und Idempotenzzusage:
+        /// <see cref="SCHRITT_55_TEMPERATURBEZUG"/>.
+        /// </summary>
+        private static bool Schritt_55_Temperaturbezug(Lauf l)
+        {
+            string sM = SchemaKatalog.SPALTE_ANLAGE_WQ_TEMPERATURMODUS;
+            string sL = SchemaKatalog.SPALTE_BOOSTER_LESEPUNKT;
+
+            // --- 55a) die Anlagenspalte ----------------------------------------------
+            // HART: Ohne sie gibt es nichts vorzubelegen.
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt55_Temperaturmodus)) return false;
+
+            // Nachweis statt Annahme: Erst diese Leseprobe belegt, dass die Spalte da UND
+            // lesbar ist (dieselbe Vorsichtsmassnahme wie in den Schritten 49 und 53).
+            object probeAnlage = Scalar(l,
+                "SELECT COUNT(*) FROM " + SchemaKatalog.TAB_ENERGIEANLAGEN +
+                " WHERE [" + sM + "] IS NULL OR Trim([" + sM + "]) = ''");
+            if (probeAnlage == null)
+            {
+                l.Zeile("Temperaturbezug (Schritt 55): die Spalte " + sM +
+                        " ist nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            // --- 55b) Vorbelegung 'Berechnet' ----------------------------------------
+            //
+            // ALLE Bestandszeilen, ausdruecklich EINSCHLIESSLICH der Anlagen mit
+            // Kessel-Quellpuffer: Genau sie sind der Anlass. In der produktiven
+            // Datenbank traegt kein einziger der 23 Kessel ein Temperaturpaar
+            // (Ticket B1-O10) - mit 'Fest' als Vorbelegung bliebe die Kessel-Kaskade
+            // weiterhin flaechendeckend wirkungslos.
+            //
+            // Der Steuerwert als LITERAL statt als Parameter: der im Bestand gewaehlte
+            // Weg (Schritte 44/46/47/48/49), der die ACE-Bindungsfalle ganz spart.
+            //
+            // Die Bedingung faengt BEIDE Auslieferungszustaende einer angehaengten
+            // Textspalte ab: NULL (der Regelfall bei ALTER TABLE) und den Leerwert
+            // (moeglich, wenn die Spalte auf einem anderen Weg entstanden ist). Ein
+            // gepflegter Wert bleibt unberuehrt - darauf ruht die Idempotenz.
+            int modus = NonQuery(l,
+                "UPDATE " + SchemaKatalog.TAB_ENERGIEANLAGEN +
+                " SET [" + sM + "] = '" + DbWerte.WQ_TEMPMODUS_BERECHNET + "'" +
+                " WHERE [" + sM + "] IS NULL OR Trim([" + sM + "]) = ''");
+            if (modus < 0) return false;
+
+            // --- 55c) die Einstellungsspalte -----------------------------------------
+            // ANGEHAENGT und sonst nichts (Muster 49b): Tab_Einstellungen wird in
+            // KonfigurationCtrl.ReadSingle ORDINAL ueber row[0]…row[22] gelesen. Die
+            // Spalte darf deshalb nur ans Ende und wird namensbasiert gelesen bzw.
+            // zielgenau geschrieben.
+            //
+            // TEXT(50): Access kuerzt beim UPDATE STILL auf die Feldbreite (dieselbe
+            // Falle wie in Schritt 48); der laengste Steuerwert misst 6 Zeichen.
+            try
+            {
+                using (var cmd = new OleDbCommand(
+                    "ALTER TABLE " + SchemaKatalog.TAB_EINSTELLUNGEN +
+                    " ADD COLUMN [" + sL + "] TEXT(50)", l.Conn))
+                    cmd.ExecuteNonQuery();
+            }
+            catch { /* Spalte existiert bereits */ }
+
+            object probeEinst = Scalar(l,
+                "SELECT COUNT(*) FROM " + SchemaKatalog.TAB_EINSTELLUNGEN +
+                " WHERE [" + sL + "] IS NULL OR Trim([" + sL + "]) = ''");
+            if (probeEinst == null)
+            {
+                l.Zeile("Temperaturbezug (Schritt 55): die Spalte " + sL +
+                        " ist nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            // --- 55d) Vorbelegung 'Davor' --------------------------------------------
+            // NUTZERENTSCHEID, kein altverhaltenserhaltender Wert: Paket B1 las fest
+            // 'Danach'. Wer den B1-Stand braucht, stellt im Konfigurationsdialog um.
+            int lesepunkt = NonQuery(l,
+                "UPDATE " + SchemaKatalog.TAB_EINSTELLUNGEN +
+                " SET [" + sL + "] = '" + DbWerte.BOOSTER_LESEPUNKT_DAVOR + "'" +
+                " WHERE [" + sL + "] IS NULL OR Trim([" + sL + "]) = ''");
+            if (lesepunkt < 0) return false;
+
+            l.Zeile("Temperaturbezug (Schritt 55): " + modus + " Anlagenzeile(n) auf " +
+                    "WQ_TemperaturModus = '" + DbWerte.WQ_TEMPMODUS_BERECHNET + "' " +
+                    "vorbelegt - das Bezugspaar des Quellanteils kommt damit aus dem Lauf " +
+                    "(Rang-1-Senkenspeicher, sonst die gepflegte Kette, zuletzt 70/50 Grad C) " +
+                    "und verlangt keine Datenpflege am Kessel. " + lesepunkt +
+                    " Projekteinstellung(en) auf Booster_Lesepunkt = '" +
+                    DbWerte.BOOSTER_LESEPUNKT_DAVOR + "' vorbelegt - der Booster liest den " +
+                    "Speicherzustand ab jetzt am Stundenanfang statt nach der Ladephase " +
+                    "der Vorebene; das AENDERT die Ergebnisse jedes Projekts mit " +
+                    "gekoppeltem Booster.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 50 - Senkenliste Z_AnlageSenke (Paket S1, Konzept § 5.1)
+        // =================================================================================
+
+        /// <summary>
+        /// Die Senkenliste. <c>ID</c> ist ein AUTOINCREMENT — die EINE Ausnahme von der
+        /// <c>MAX(ID)+1</c>-Hausregel dieses Schemas, begründet bei
+        /// <see cref="SCHRITT_50_SENKENTABELLE"/>.
+        ///
+        /// <b>Keine DEFAULT-Werte auf den FK-Spalten</b> wie überall in diesem Schema:
+        /// Eine 0 verletzte die restriktive Beziehung, „nicht gesetzt" ist NULL.
+        /// <c>Anschlusshoehe</c> bleibt bewusst leer (Vorgriff Paket P1).
+        /// </summary>
+        public const string SQL_CREATE_ANLAGESENKE =
+            "CREATE TABLE Z_AnlageSenke (ID AUTOINCREMENT PRIMARY KEY, " +
+            "ID_Anlage LONG NOT NULL, Rang LONG NOT NULL, Ziel TEXT(50), " +
+            "Bedarfsart TEXT(50), ID_Puffer LONG, Ladeprio LONG, Ladeprio_PV LONG, " +
+            "Ladegrenze DOUBLE, Anschlusshoehe DOUBLE)";
+
+        /// <summary>
+        /// Der Suchweg jedes Lesers: die Senken EINER Anlage in Rangfolge
+        /// (<c>Z_AnlageSenkeCtrl.LesenJeAnlage</c>, die Ladephasen je Rang aus § 5.2).
+        /// KEIN eindeutiger Index über (ID_Anlage, Rang): Während des Umsortierens im
+        /// Dialog ist ein Rang zwangsläufig doppelt belegt, und die Schreibseite räumt
+        /// die Anlage ohnehin komplett und schreibt sie neu.
+        /// </summary>
+        public const string SQL_INDEX_ANLAGESENKE =
+            "CREATE INDEX idx_AnlageSenke ON Z_AnlageSenke (ID_Anlage, Rang)";
+
+        /// <summary>
+        /// Verweis auf die ANLAGE — MIT LÖSCHWEITERGABE, Muster <c>FK_Verbund_Anlage</c>
+        /// und <c>FK_SpVariante_Anlage</c>.
+        ///
+        /// <b>Warum hier CASCADE — und warum das die einzige Möglichkeit ist.</b>
+        /// Konzept § 5.1 nennt für Schritt 50 „FK-Beziehungen ohne Löschweitergabe" und
+        /// verweist auf Schritt 4. Dort geht es aber um die PUFFER-Seite: Restriktiv
+        /// verhindert, dass mit einem Speicher stillschweigend eine Wärmepumpe
+        /// mitgelöscht wird. Auf der ANLAGEN-Seite ist die Wirkung eine ganz andere, und
+        /// sie wurde am 27.08.2026 auf einer Arbeitskopie gemessen: Der Speicherweg
+        /// aller Erzeuger ist Löschen + Neuanlegen
+        /// (<c>WizardCtrl.Del_Projekt_Waermeerzeuger</c> +
+        /// <c>Add_WP_Waermeerzeuger</c>), und mit restriktiver Beziehung scheitert
+        /// bereits das <c>DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ?</c>
+        /// („Der Datensatz kann nicht gelöscht oder geändert werden, da die Tabelle
+        /// 'Z_AnlageSenke' in Beziehung stehende Datensätze enthält") — es ließe sich
+        /// nach der Migration kein einziges Projekt mehr speichern. Dieselbe Begründung
+        /// trägt schon <c>FK_Verbund_Anlage</c>: Eine Senkenzeile ist ein
+        /// UNSELBSTÄNDIGER Anhang der Anlage; sie sagt nur, wohin diese eine Anlage
+        /// liefert.
+        ///
+        /// <b>Was CASCADE kostet und wer es trägt.</b> Ohne Gegenmaßnahme räumte jedes
+        /// Speichern die Senkenliste des Projekts ab — die neuen Anlagenzeilen bekommen
+        /// AutoWert-IDs, die alten Senkenzeilen fallen weg. Deshalb rettet
+        /// <c>WizardCtrl</c> sie über den Del+Add-Weg hinweg, nach demselben Muster wie
+        /// die Betriebsparameter der Speichervarianten (AP9b) und die
+        /// Puffer-Anlagenzeilen (FR-1). Die Alternative — restriktiv und ein
+        /// ausdrückliches Vorab-DELETE an jeder der zehn Aufrufstellen — wäre zehnmal
+        /// dieselbe Wahrheit, und die elfte Aufrufstelle legte das Programm lahm.
+        /// </summary>
+        public const string SQL_FK_SENKE_ANLAGE =
+            "ALTER TABLE Z_AnlageSenke ADD CONSTRAINT FK_AnlageSenke_Anlage " +
+            "FOREIGN KEY (ID_Anlage) REFERENCES Tab_Energieanlagen (ID) ON DELETE CASCADE";
+
+        /// <summary>
+        /// Verweis auf den PUFFER — RESTRIKTIV, Muster <see cref="FkRestriktiv"/> und
+        /// <c>FK_Verbund_Puffer</c>: Ein Speicher ist ein echter Behälter mit Kapazität
+        /// und Investition, er darf nicht mit einem Löschklick stillschweigend
+        /// verschwinden. <c>PufferSpCtrl.ReferenzenAufPuffer</c> meldet die Senkenzeile,
+        /// <c>ReferenzenLoesen</c> räumt sie nach Bestätigung weg.
+        /// </summary>
+        public const string SQL_FK_SENKE_PUFFER =
+            "ALTER TABLE Z_AnlageSenke ADD CONSTRAINT FK_AnlageSenke_Puffer " +
+            "FOREIGN KEY (ID_Puffer) REFERENCES Tab_Pufferspeicher (ID)";
+
+        /// <summary>
+        /// Die Anlagentypen, die eine Wärmesenke führen: Wärmepumpe (1), Solarthermie
+        /// (2), Heizkessel (10), BHKW (11) und ihre Referenz-Zwillinge (5, 7, 8).
+        /// NICHT dabei: Photovoltaik (3, 9), Stromspeicher (4, 6) — sie erzeugen keine
+        /// Wärme — und vor allem der PUFFERSPEICHER (12): Seine Anlagenzeile ist der
+        /// Behälter selbst, nicht sein Belader. Bekäme sie eine Senke, stünde in der
+        /// Liste ein Speicher, der sich selbst lädt.
+        ///
+        /// Fest im SQL statt als Parameter: OleDb bindet nach POSITION, und eine
+        /// IN-Liste aus Parametern wäre genau die Reihenfolgefalle. Die Werte sind
+        /// Konstanten des Programms, keine Anwendereingabe.
+        /// </summary>
+        private static readonly string SENKE_ERZEUGERTYPEN =
+            WizardItemClass.WP_TYP + ", " + WizardItemClass.SOLAR_TYP + ", " +
+            WizardItemClass.REF_KESSEL_TYP + ", " + WizardItemClass.REF_WP_TYP + ", " +
+            WizardItemClass.REF_SOLAR_TYP + ", " + WizardItemClass.KESSEL_TYP + ", " +
+            WizardItemClass.BHKW_TYP;
+
+        /// <summary>
+        /// Die Auswahl der Anlagen, die eine Senkenzeile bekommen: ein
+        /// Wärmeerzeuger-Typ ODER — sicherheitshalber — eine Zeile, die trotz fremden
+        /// Typs ein <c>WS_Ziel</c> trägt. Eine solche Zeile hat der Bestand zwar nicht
+        /// (gemessen: <c>WS_Ziel</c> steht ausschließlich an den Typen 1, 2, 10, 11),
+        /// aber sie zu übergehen hieße, ihre Konfiguration beim Umstieg zu verlieren.
+        /// </summary>
+        private static readonly string SENKE_ANLAGENFILTER =
+            "(a.ID_Type IN (" + SENKE_ERZEUGERTYPEN + ")" +
+            " OR (a.WS_Ziel IS NOT NULL AND Trim(a.WS_Ziel) <> ''))";
+
+        /// <summary>
+        /// L4/L5 und F17 (27.08.2026): die SENKENLISTE. Anlass, Teilgliederung und
+        /// Idempotenzzusage: <see cref="SCHRITT_50_SENKENTABELLE"/>.
+        /// </summary>
+        private static bool Schritt_50_Senkentabelle(Lauf l)
+        {
+            // --- 50a) Tabelle und Index ----------------------------------------------
+            // HART: Ohne die Tabelle gibt es nichts zu migrieren.
+            if (!Ddl(l, SQL_CREATE_ANLAGESENKE, "Tabelle " + SchemaKatalog.Z_ANLAGESENKE))
+                return false;
+
+            if (!Ddl(l, SQL_INDEX_ANLAGESENKE, "Index idx_AnlageSenke"))
+                l.Notiz("Index idx_AnlageSenke fehlt - nur ein Tempoverlust beim Lesen " +
+                        "der Senken einer Anlage.");
+
+            // Nachweis statt Annahme: Erst diese Leseprobe belegt, dass die Tabelle da
+            // UND lesbar ist - Ddl schluckt ein "existiert bereits", und genau dieser
+            // Zaehler entscheidet unten ueber die Idempotenz.
+            object probe = Scalar(l, "SELECT COUNT(*) FROM [" + SchemaKatalog.Z_ANLAGESENKE + "]");
+            if (probe == null)
+            {
+                l.Zeile("Senkenliste (Schritt 50): " + SchemaKatalog.Z_ANLAGESENKE +
+                        " ist nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            // --- 50b) Beziehungen und Z_AnlagePufferVerbund.ID_Senke -------------------
+            // WEICH wie in Schritt 14: Fehlt eine Beziehung auf einer fremden Datenbank,
+            // bleibt die Ablage benutzbar; das Aufraeumen leisten die Anwendungswege, die
+            // es ohnehin ausdruecklich tun.
+            if (!Ddl(l, SQL_FK_SENKE_ANLAGE, "Beziehung FK_AnlageSenke_Anlage (mit Loeschweitergabe)"))
+                l.Notiz("Beziehung FK_AnlageSenke_Anlage fehlt - Senkenzeilen geloeschter " +
+                        "Anlagen bleiben stehen; Z_AnlageSenkeCtrl.SchreibenJeAnlage raeumt " +
+                        "sie beim naechsten Speichern der Senke weg.");
+
+            if (!Ddl(l, SQL_FK_SENKE_PUFFER, "Beziehung FK_AnlageSenke_Puffer (restriktiv)"))
+                l.Notiz("Beziehung FK_AnlageSenke_Puffer fehlt - ein geloeschter Puffer " +
+                        "koennte als Senkenziel verwaisen; PufferSpCtrl.ReferenzenLoesen " +
+                        "raeumt die Referenz trotzdem ausdruecklich weg.");
+
+            try
+            {
+                using (var cmd = new OleDbCommand(
+                    "ALTER TABLE " + SchemaKatalog.Z_ANLAGEPUFFERVERBUND +
+                    " ADD COLUMN [" + SchemaKatalog.SPALTE_VERBUND_ID_SENKE + "] LONG", l.Conn))
+                    cmd.ExecuteNonQuery();
+                l.Notiz("Spalte " + SchemaKatalog.Z_ANLAGEPUFFERVERBUND + "." +
+                        SchemaKatalog.SPALTE_VERBUND_ID_SENKE + ": angelegt");
+            }
+            catch { /* Spalte (oder die Verbundtabelle) existiert bereits */ }
+
+            // --- Idempotenz-Weiche ----------------------------------------------------
+            // ZEILENPROBE statt zeilenweiser WHERE-Bedingung: Der Schritt LEGT Zeilen AN,
+            // und beim Zweitlauf gaebe es kein Merkmal, das eine migrierte von einer vom
+            // Anwender ergaenzten Zeile unterscheidet - er verdoppelte die Senkenliste
+            // jedes Projekts. Steht schon irgendetwas drin, ist die Uebernahme gelaufen.
+            if (Convert.ToInt32(probe) > 0)
+            {
+                l.Zeile("Senkenliste (Schritt 50): " + SchemaKatalog.Z_ANLAGESENKE +
+                        " enthaelt bereits " + Convert.ToInt32(probe) + " Zeile(n) - die " +
+                        "Datenuebernahme wurde uebersprungen (idempotent).");
+                return true;
+            }
+
+            // --- 50c) Rang 1 aus den Hauptsenken-Spalten -------------------------------
+            //
+            // ZIEL-TEXTWERTE UNVERAENDERT (F5-Alternative: keine Wertabloesung). Nur der
+            // LEERE Fall wird gefuellt: 'Heizkreis'/'Beides' ist die Rang-1-Pflicht aus
+            // § 5.1 und exakt die Normalisierung, die WaermesenkeClass.Normalisieren beim
+            // Lesen ohnehin vornimmt - der Wert ist damit verhaltensneutral.
+            //
+            // IIf statt Nz: Nz ist eine VBA-Funktion der Access-Anwendung und ueber ACE
+            // nicht verfuegbar; IIf ist es.
+            string zielRang1 =
+                "IIf(a.WS_Ziel IS NULL OR Trim(a.WS_Ziel) = '', '" +
+                DbWerte.WS_ZIEL_HEIZKREIS + "', a.WS_Ziel)";
+            string bedarfsartRang1 =
+                "IIf(a.WS_Typ IS NULL OR Trim(a.WS_Typ) = '', '" +
+                DbWerte.WS_TYP_BEIDES + "', a.WS_Typ)";
+
+            int rang1 = NonQuery(l,
+                "INSERT INTO [" + SchemaKatalog.Z_ANLAGESENKE + "] " +
+                "([" + SchemaKatalog.SPALTE_SENKE_ID_ANLAGE + "], [" + SchemaKatalog.SPALTE_SENKE_RANG + "], " +
+                " [" + SchemaKatalog.SPALTE_SENKE_ZIEL + "], [" + SchemaKatalog.SPALTE_SENKE_BEDARFSART + "], " +
+                " [" + SchemaKatalog.SPALTE_SENKE_ID_PUFFER + "], [" + SchemaKatalog.SPALTE_SENKE_LADEPRIO + "], " +
+                " [" + SchemaKatalog.SPALTE_SENKE_LADEPRIO_PV + "], [" + SchemaKatalog.SPALTE_SENKE_LADEGRENZE + "]) " +
+                "SELECT a.ID, 1, " + zielRang1 + ", " + bedarfsartRang1 + ", a.WS_ID_Puffer, " +
+                "       IIf(a.WS_Ladeprio IS NULL, 0, a.WS_Ladeprio), " +
+                "       IIf(a.WS_Ladeprio_PV IS NULL, 0, a.WS_Ladeprio_PV), " +
+                "       IIf(a.WS_Ladegrenze IS NULL, 0, a.WS_Ladegrenze) " +
+                "FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] a " +
+                "WHERE " + SENKE_ANLAGENFILTER);
+            if (rang1 < 0) return false;
+            DatenSenkenAnlagen = rang1;
+
+            // --- 50c) Rang 2 aus den Zweitsenken-Spalten -------------------------------
+            //
+            // NUR bei belegtem WS_Ziel2 - eine leere Zweitsenke ist keine Senke.
+            // Ladeprio_PV = 0: Eine Spalte WS_Ladeprio_PV2 gibt es nicht, die
+            // PV-Sonderregel hing konstruktiv an der Hauptsenke (Ladeordnung). Das ist
+            // exakt das Bestandsverhalten, kein Verlust.
+            // Bedarfsart 'Beides': Sie ist nur bei Ziel = Heizkreis wirksam, und eine
+            // Zweitsenke IST im Bestand immer ein Puffer-Ziel - der Wert ist damit die
+            // neutrale Vorbelegung des Modells, nicht eine erfundene Aussage.
+            int rang2 = NonQuery(l,
+                "INSERT INTO [" + SchemaKatalog.Z_ANLAGESENKE + "] " +
+                "([" + SchemaKatalog.SPALTE_SENKE_ID_ANLAGE + "], [" + SchemaKatalog.SPALTE_SENKE_RANG + "], " +
+                " [" + SchemaKatalog.SPALTE_SENKE_ZIEL + "], [" + SchemaKatalog.SPALTE_SENKE_BEDARFSART + "], " +
+                " [" + SchemaKatalog.SPALTE_SENKE_ID_PUFFER + "], [" + SchemaKatalog.SPALTE_SENKE_LADEPRIO + "], " +
+                " [" + SchemaKatalog.SPALTE_SENKE_LADEPRIO_PV + "], [" + SchemaKatalog.SPALTE_SENKE_LADEGRENZE + "]) " +
+                "SELECT a.ID, 2, a.WS_Ziel2, '" + DbWerte.WS_TYP_BEIDES + "', a.WS_ID_Puffer2, " +
+                "       IIf(a.WS_Ladeprio2 IS NULL, 0, a.WS_Ladeprio2), 0, " +
+                "       IIf(a.WS_Ladegrenze2 IS NULL, 0, a.WS_Ladegrenze2) " +
+                "FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] a " +
+                "WHERE a.WS_Ziel2 IS NOT NULL AND Trim(a.WS_Ziel2) <> '' " +
+                "  AND " + SENKE_ANLAGENFILTER);
+            if (rang2 < 0) return false;
+            DatenSenkenRang2 = rang2;
+
+            // --- 50d) Regel R-Prozess (F17) -------------------------------------------
+            if (!RProzess(l)) return false;
+
+            l.Zeile("Senkenliste (Schritt 50): " + DatenSenkenAnlagen + " Anlage(n) mit " +
+                    "Rang-1-Senke uebernommen, davon " + DatenSenkenRang2 +
+                    " zusaetzlich mit Rang-2-Senke; Regel R-Prozess hat " +
+                    DatenSenkenProzess + " Prozesswaerme-Zeile(n) ergaenzt.");
+            return true;
+        }
+
+        /// <summary>
+        /// 50d — <b>Regel R-Prozess</b> (Konzept § 4.4/§ 5.1, Entscheidung F17):
+        /// Führt das Projekt Prozesswärme, bekommt jede Anlage mit Direktsenke
+        /// <c>Heizkreis</c> und Bedarfsart <c>Beides</c> oder <c>Heizung</c> eine
+        /// zusätzliche Senkenzeile <c>Prozesswaerme</c> UNMITTELBAR NACH ihrer
+        /// Heizkreiszeile.
+        ///
+        /// <para><b>Warum zweistufig über eine ID-Liste.</b> Ein <c>?</c> in der
+        /// UNTERABFRAGE eines <c>UPDATE</c>/<c>INSERT</c> trifft bei ACE still 0 Zeilen,
+        /// und eine korrelierte <c>EXISTS</c>-Unterabfrage über zwei Tabellen ist genau
+        /// die Konstruktion, bei der das auffiele — als stille Nulländerung, nicht als
+        /// Fehler. Deshalb dasselbe Vorgehen wie in <c>GeraeteWaisen</c>: erst die IDs
+        /// lesen, dann mit einer Liste aus GANZZAHLEN arbeiten. Die Liste ist keine
+        /// Einschleusungslücke — sie besteht ausschließlich aus <see cref="int"/>-Werten
+        /// aus der Datenbank.</para>
+        ///
+        /// <para><b>„Unmittelbar nach" ist wörtlich zu nehmen.</b> Liegt hinter der
+        /// Heizkreiszeile noch ein Rang (die Zweitsenke aus 50c), werden alle Ränge ≥ 2
+        /// dieser Anlage um eins hochgeschoben, damit die Prozesszeile auf Rang 2 davor
+        /// passt. Die Alternative „Prozess ans Ende" kehrte die Rangfolge um: Der
+        /// Prozesskanal käme erst nach der Pufferladung zum Zug und bliebe in jeder
+        /// knappen Stunde ungedeckt — das Gegenteil dessen, was die Regel leisten
+        /// soll.</para>
+        /// </summary>
+        private static bool RProzess(Lauf l)
+        {
+            // Die betroffenen Anlagen: Rang-1-Zeile auf den Heizkreis, Bedarfsart Beides
+            // oder Heizung, und das Projekt der Anlage fuehrt Prozesswaerme.
+            DataTable dt = Abfrage(l,
+                "SELECT s.[" + SchemaKatalog.SPALTE_SENKE_ID_ANLAGE + "] " +
+                "FROM [" + SchemaKatalog.Z_ANLAGESENKE + "] s " +
+                "INNER JOIN [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] a " +
+                "        ON a.ID = s.[" + SchemaKatalog.SPALTE_SENKE_ID_ANLAGE + "] " +
+                "WHERE s.[" + SchemaKatalog.SPALTE_SENKE_RANG + "] = 1 " +
+                "  AND s.[" + SchemaKatalog.SPALTE_SENKE_ZIEL + "] = '" + DbWerte.WS_ZIEL_HEIZKREIS + "' " +
+                "  AND s.[" + SchemaKatalog.SPALTE_SENKE_BEDARFSART + "] IN ('" +
+                        DbWerte.WS_TYP_BEIDES + "', '" + DbWerte.WS_TYP_HEIZUNG + "') " +
+                "  AND EXISTS (SELECT 1 FROM Z_Projekt_Prozesswaerme p " +
+                "               WHERE p.ID_Projekt = a.ID_Projekt)");
+
+            if (dt == null)
+            {
+                l.Zeile("Senkenliste (Schritt 50): Die Anlagen fuer die Regel R-Prozess " +
+                        "liessen sich nicht ermitteln.");
+                return false;
+            }
+
+            var ids = new List<int>();
+            foreach (DataRow r in dt.Rows)
+                if (r[0] != DBNull.Value) ids.Add(Convert.ToInt32(r[0]));
+
+            if (ids.Count == 0)
+            {
+                DatenSenkenProzess = 0;
+                l.Notiz("Regel R-Prozess: kein Projekt mit Prozesswaerme betroffen.");
+                return true;
+            }
+
+            string liste = string.Join(",", ids);
+
+            // Platz schaffen: alle Raenge ab 2 dieser Anlagen um eins hoch. Trifft im
+            // Bestand nur Anlagen MIT Zweitsenke - die uebrigen haben nichts zu schieben.
+            int geschoben = NonQuery(l,
+                "UPDATE [" + SchemaKatalog.Z_ANLAGESENKE + "] " +
+                "SET [" + SchemaKatalog.SPALTE_SENKE_RANG + "] = [" + SchemaKatalog.SPALTE_SENKE_RANG + "] + 1 " +
+                "WHERE [" + SchemaKatalog.SPALTE_SENKE_RANG + "] >= 2 " +
+                "  AND [" + SchemaKatalog.SPALTE_SENKE_ID_ANLAGE + "] IN (" + liste + ")");
+            if (geschoben < 0) return false;
+
+            // Die Prozesszeile auf Rang 2 - unmittelbar hinter dem Heizkreis.
+            // Bedarfsart 'Beides' als neutrale Vorbelegung: Sie ist nur bei
+            // Ziel = Heizkreis wirksam. Keine Ladeparameter, kein Puffer - eine
+            // Direktsenke laedt nichts.
+            int neu = NonQuery(l,
+                "INSERT INTO [" + SchemaKatalog.Z_ANLAGESENKE + "] " +
+                "([" + SchemaKatalog.SPALTE_SENKE_ID_ANLAGE + "], [" + SchemaKatalog.SPALTE_SENKE_RANG + "], " +
+                " [" + SchemaKatalog.SPALTE_SENKE_ZIEL + "], [" + SchemaKatalog.SPALTE_SENKE_BEDARFSART + "], " +
+                " [" + SchemaKatalog.SPALTE_SENKE_LADEPRIO + "], [" + SchemaKatalog.SPALTE_SENKE_LADEPRIO_PV + "], " +
+                " [" + SchemaKatalog.SPALTE_SENKE_LADEGRENZE + "]) " +
+                "SELECT a.ID, 2, '" + DbWerte.WS_ZIEL_PROZESS + "', '" + DbWerte.WS_TYP_BEIDES + "', 0, 0, 0 " +
+                "FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] a " +
+                "WHERE a.ID IN (" + liste + ")");
+            if (neu < 0) return false;
+
+            DatenSenkenProzess = neu;
+            l.Notiz("Regel R-Prozess: " + neu + " Prozesswaerme-Zeile(n) angelegt, " +
+                    geschoben + " nachfolgende(r) Rang um eins hochgeschoben.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 51 - Altpfad-Stilllegung, Datenseite (Paket A1, Konzept § 9 / L1)
+        // =================================================================================
+
+        /// <summary>
+        /// Obergrenze der Einzelnennungen im Protokoll. Die Liste der Speicher, die auf
+        /// dem Rückfall-ΔT bleiben, ist eine DIAGNOSE - auf einer großen Ablage wären
+        /// mehrere hundert Zeilen kein Gewinn mehr, sondern verdeckten den Rest des
+        /// Berichts. Die übernommenen Speicher werden dagegen IMMER vollständig genannt:
+        /// Sie sind die Zeilen, die der Schritt tatsächlich geändert hat.
+        /// </summary>
+        private const int RUECKFALL_NENNUNGEN_MAX = 25;
+
+        /// <summary>
+        /// L1 (27.08.2026): die Datenseite der ALTPFAD-STILLLEGUNG - 51a die Rettung der
+        /// Betriebstemperaturen aus der Alt-Zuordnung, 51b die Vorbelegung des
+        /// Kaskaden-Flags. Anlass, Teilgliederung und Idempotenzzusage:
+        /// <see cref="SCHRITT_51_ALTPFAD_STILLLEGUNG"/>.
+        ///
+        /// REIHENFOLGE IST TRAGEND: erst die Übernahme, dann das Flag. Beide Teile sind
+        /// zwar voneinander unabhängig, aber nur in dieser Folge steht im Protokoll
+        /// zuerst, was an Daten gerettet wurde, und danach, was festgeschrieben wird.
+        /// </summary>
+        private static bool Schritt_51_AltpfadStilllegung(Lauf l)
+        {
+            if (!TemperaturenAusZuordnungUebernehmen(l)) return false;   // 51a
+            if (!KaskadeFlagVorbelegen(l)) return false;                 // 51b
+            return true;
+        }
+
+        /// <summary>
+        /// 51a — <b>Temperaturübernahme</b>: Jeder Pufferspeicher OHNE auswertbares
+        /// Temperaturpaar bekommt das Paar seiner zugehörigen Zeile in
+        /// <c>Z_ProjektPufferSp</c>, sofern dort eines steht.
+        ///
+        /// <para>Die beiden Regeln sind wörtliche Portierungen aus der Engine:
+        /// „ohne Paar" ist <c>SimulationPufferspeicher.Init</c>
+        /// (<c>Vorlauf - Ruecklauf &lt;= 0</c>; ein fehlender Wert zählt wie 0, denn
+        /// genau so liest ihn <c>WaermesenkeClass.PufferLesen</c>), „zugehörig" ist
+        /// <c>SimulationControl.ZuordnungsTemperaturen</c>. Die Trefferregel dort ist
+        /// eine ODER-Probe JE ZEILE in Prioritätsreihenfolge - Puffer-ID gleich ODER
+        /// Bezeichner zeichengleich -, und Zeilen ohne echte Spreizung werden
+        /// übersprungen. Der erste Treffer gewinnt, auch wenn eine spätere Zeile die ID
+        /// trägt und die frühere nur den Namen; wer daraus „ID schlägt Name" machte,
+        /// änderte auf gemischten Beständen das Ergebnis.</para>
+        ///
+        /// <para>Der Namensweg ist kein Schönheitsfehler, sondern Bestand: Altdaten ohne
+        /// <c>ID_Pufferspeicher</c> hängen ausschließlich am Bezeichner. Verglichen wird
+        /// deshalb ZEICHENGENAU (Ordinal) wie in der Engine - „Vitocell 140-E 600 Ltr"
+        /// und „… 600 Liter" sind zwei verschiedene Speicher, und beide kommen im
+        /// Bestand nebeneinander vor.</para>
+        ///
+        /// <para><b>Weich bei fehlender Alt-Zuordnung.</b> Ist <c>Z_ProjektPufferSp</c>
+        /// nicht lesbar, gibt es nichts zu retten - und die Stilllegung ist für diese
+        /// Ablage folgenlos, weil dort auch die Engine nie ein Paar von dort bezogen hat.
+        /// Der Schritt meldet das und gilt als erfüllt; ein Abbruch hielte die Migration
+        /// an einer Tabelle auf, die gerade außer Dienst gestellt wird.</para>
+        /// </summary>
+        private static bool TemperaturenAusZuordnungUebernehmen(Lauf l)
+        {
+            // --- Kandidaten: die Speicher, die die Engine heute auf den Rueckfall schickt
+            //
+            // Die drei IS-NULL-Zweige sind noetig, nicht bequem: In Access ergibt
+            // "NULL - 5 <= 0" wieder NULL und damit KEINEN Treffer - eine Zeile ganz ohne
+            // Temperaturen fiele aus der Auswahl heraus, obwohl sie der Hauptfall ist.
+            DataTable puffer = Abfrage(l,
+                "SELECT ID, ID_Projekt, Bezeichner, Vorlauf, Ruecklauf " +
+                "FROM [" + SchemaKatalog.TAB_PUFFERSPEICHER + "] " +
+                "WHERE Vorlauf IS NULL OR Ruecklauf IS NULL OR Vorlauf - Ruecklauf <= 0 " +
+                "ORDER BY ID");
+            if (puffer == null)
+            {
+                l.Zeile("Temperaturuebernahme (Schritt 51): " + SchemaKatalog.TAB_PUFFERSPEICHER +
+                        " ist nicht lesbar - die Uebernahme kann nicht entscheiden, welche " +
+                        "Speicher betroffen sind.");
+                return false;
+            }
+
+            if (puffer.Rows.Count == 0)
+            {
+                l.Zeile("Temperaturuebernahme (Schritt 51): kein Pufferspeicher ohne " +
+                        "Temperaturpaar - nichts zu uebernehmen.");
+                return true;
+            }
+
+            // --- Quellen: die Zuordnungszeilen MIT echter Spreizung, in Engine-Reihenfolge
+            //
+            // IIf statt Nz: Nz ist eine VBA-Funktion der Access-Anwendung und ueber ACE
+            // nicht verfuegbar (Begruendung wie in Schritt 50). Die Umsetzung NULL -> 0
+            // bildet die Leseseite Z_ProjektPufferSpCtrl.ReadAll nach, die einen leeren
+            // Wert als 0 in das Modell traegt.
+            //
+            // ORDER BY: Die Engine liest ueber ReadAll(...) "ORDER BY Prioritaet". Bei
+            // gleicher Prioritaet ist die Reihenfolge damit der ACE ueberlassen; die ID
+            // als zweites Ordnungsmerkmal macht den Migrationslauf REPRODUZIERBAR, ohne
+            // die Auswahl zu veraendern - gleichrangige Zeilen desselben Speichers tragen
+            // im Bestand dieselben Werte (nachgemessen 27.08.2026: die Dubletten der
+            // Projekte 1007, 1008 und 1011 sind wertgleich).
+            DataTable zuordnung = Abfrage(l,
+                "SELECT ID, ID_Projekt, ID_Pufferspeicher, Pufferspeicher, Vorlauf, Ruecklauf " +
+                "FROM [" + SchemaKatalog.Z_PROJEKTPUFFERSP + "] " +
+                "WHERE IIf(Vorlauf IS NULL, 0, Vorlauf) - IIf(Ruecklauf IS NULL, 0, Ruecklauf) > 0 " +
+                "ORDER BY ID_Projekt, Prioritaet, ID");
+
+            if (zuordnung == null)
+            {
+                DatenPufferTemperaturRueckfall = puffer.Rows.Count;
+                l.Zeile("Temperaturuebernahme (Schritt 51): " + SchemaKatalog.Z_PROJEKTPUFFERSP +
+                        " ist nicht lesbar (" + (l.LetzterFehler ?? "ohne Meldung") + ") - " +
+                        puffer.Rows.Count + " Speicher ohne Temperaturpaar bleiben auf dem " +
+                        "Rueckfall-DeltaT. Aus einer nicht lesbaren Alt-Zuordnung hat auch " +
+                        "die Simulation nie ein Paar bezogen; die Stilllegung aendert hier " +
+                        "nichts.");
+                return true;
+            }
+
+            int uebernommen = 0;
+            int rueckfall = 0;
+            int genannt = 0;
+
+            foreach (DataRow p in puffer.Rows)
+            {
+                int idPuffer = Zahl(p["ID"]);
+                int idProjekt = Zahl(p["ID_Projekt"]);
+                string bezeichner = Txt(p["Bezeichner"]);
+
+                DataRow quelle = ZuordnungsZeileFinden(zuordnung, idProjekt, idPuffer, bezeichner);
+                if (quelle == null)
+                {
+                    rueckfall++;
+                    if (genannt < RUECKFALL_NENNUNGEN_MAX)
+                    {
+                        genannt++;
+                        l.Notiz("Puffer " + idPuffer + " (" + Beschriftung(bezeichner) +
+                                ", Projekt " + idProjekt + "): kein Temperaturpaar und keine " +
+                                "brauchbare Zuordnungszeile - bleibt auf Rueckfall-DeltaT " +
+                                "(rechnet schon heute so).");
+                    }
+                    continue;
+                }
+
+                int vorlauf = Zahl(quelle["Vorlauf"]);
+                int ruecklauf = Zahl(quelle["Ruecklauf"]);
+
+                // Zielgenau je Speicher - dieselbe Anweisung, die auch der Dialogweg
+                // benutzt (PufferSpCtrl.SetTemperaturen). EINE Wahrheit fuer das
+                // Schreiben der Betriebstemperaturen.
+                //
+                // BEWUSST OHNE ProjektPuffer.IstTemperaturpaar: Der Dialogweg verlangt
+                // zusaetzlich Ruecklauf > 0, die Engine dagegen nur die Spreizung. Ein
+                // Paar wie 50/0 wuerde die Simulation heute mit DeltaT = 50 rechnen -
+                // eine Zusatzpruefung hier verwuerfe genau diesen Wert und aenderte damit
+                // das Ergebnis, statt es zu erhalten. Uebernommen wird, was die Engine
+                // liest.
+                if (NonQuery(l, ProjektPuffer.SQL_PUFFER_TEMPERATUREN_UPDATE,
+                             new OleDbParameter("@v", vorlauf),
+                             new OleDbParameter("@r", ruecklauf),
+                             new OleDbParameter("@id", idPuffer)) < 0)
+                    return false;
+
+                uebernommen++;
+                l.Zeile("        Puffer " + idPuffer + " (" + Beschriftung(bezeichner) +
+                        ", Projekt " + idProjekt + "): Vorlauf/Ruecklauf " + vorlauf + "/" +
+                        ruecklauf + " aus Zuordnung " + Zahl(quelle["ID"]) + " uebernommen.");
+            }
+
+            if (genannt < rueckfall)
+                l.Notiz("... und " + (rueckfall - genannt) + " weitere(r) Speicher ohne " +
+                        "brauchbare Zuordnung - alle bleiben auf Rueckfall-DeltaT.");
+
+            DatenPufferTemperaturUebernommen = uebernommen;
+            DatenPufferTemperaturRueckfall = rueckfall;
+
+            l.Zeile("Temperaturuebernahme (Schritt 51): " + uebernommen + " von " +
+                    puffer.Rows.Count + " Speicher(n) ohne Temperaturpaar haben ihr Paar aus " +
+                    SchemaKatalog.Z_PROJEKTPUFFERSP + " uebernommen; " + rueckfall +
+                    " bleiben auf dem Rueckfall-DeltaT und rechnen damit unveraendert weiter.");
+            return true;
+        }
+
+        /// <summary>
+        /// Die zugehörige Zuordnungszeile eines Speichers — die Trefferregel aus
+        /// <c>SimulationControl.ZuordnungsTemperaturen</c>, Zeile für Zeile in der
+        /// Reihenfolge, in der die Engine sie sieht. Die übergebene Tabelle enthält
+        /// bereits nur Zeilen mit echter Spreizung (die dritte Bedingung der Vorlage).
+        /// </summary>
+        /// <returns>die erste passende Zeile oder <c>null</c>.</returns>
+        private static DataRow ZuordnungsZeileFinden(DataTable zuordnung, int idProjekt,
+                                                     int idPuffer, string bezeichner)
+        {
+            foreach (DataRow z in zuordnung.Rows)
+            {
+                // Projektgrenze: Die Engine laedt die Zuordnungen mit
+                // ReadAll("ID_Projekt=" + m_ID_Projekt) und prueft die Projektzugehoerigkeit
+                // des Speichers davor. Ein Namenstreffer ueber Projektgrenzen hinweg waere
+                // deshalb eine Zuordnung, die es in der Simulation nie gab.
+                if (Zahl(z["ID_Projekt"]) != idProjekt) continue;
+
+                bool trifft = (idPuffer > 0 && Zahl(z["ID_Pufferspeicher"]) == idPuffer) ||
+                              (!string.IsNullOrEmpty(bezeichner) &&
+                               string.Equals(Txt(z["Pufferspeicher"]), bezeichner,
+                                             StringComparison.Ordinal));
+                if (trifft) return z;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 51b — <b>Flag-Vorbelegung</b>: <c>Kaskade_Zweikanalig</c> wird im gesamten
+        /// Bestand auf WAHR gesetzt. Begründung und Idempotenzzusage:
+        /// <see cref="SCHRITT_51_ALTPFAD_STILLLEGUNG"/>.
+        ///
+        /// <c>SpaltenAnlegen</c> davor ist die idempotente Absicherung für Datenbanken
+        /// auf einem Zwischenstand - die Spalte selbst entsteht in Schritt 6. Dasselbe
+        /// Muster wie Schritt 7 mit <c>Extrapolation_erlaubt</c>.
+        /// </summary>
+        private static bool KaskadeFlagVorbelegen(Lauf l)
+        {
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt6_FeatureFlag)) return false;
+
+            // WHERE ... = FALSE statt eines UPDATE ohne Bedingung: Ein Ja/Nein-Feld kennt
+            // in Access kein NULL, die Bedingung trifft also genau die noch nicht
+            // umgestellten Zeilen. Das macht den Zaehler aussagekraeftig (wie viele
+            // Projekte rechneten zuletzt einkanalig?) und den Zweitlauf zur
+            // Nullaenderung.
+            int betroffen = NonQuery(l,
+                "UPDATE [" + SchemaKatalog.TAB_EINSTELLUNGEN + "] SET [" +
+                SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG + "] = TRUE WHERE [" +
+                SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG + "] = FALSE");
+
+            if (betroffen < 0)
+            {
+                l.Notiz("Vorbelegung Kaskade_Zweikanalig: UPDATE fehlgeschlagen");
+                return false;
+            }
+
+            DatenKaskadeVorbelegt = betroffen;
+            l.Zeile("Kaskadenflag (Schritt 51): " + betroffen + " Einstellungssatz/-saetze " +
+                    "auf WAHR vorbelegt. Das Flag wird ab Paket A1 nicht mehr gelesen - die " +
+                    "mehrkanalige Stundenschleife ist der einzige Rechenweg (L1); WAHR " +
+                    "dokumentiert diesen Zustand fuer Diagnose und Rueckwaertskompatibilitaet.");
+            return true;
+        }
+
+        /// <summary>Bezeichner fürs Protokoll - ein leerer Name bleibt lesbar.</summary>
+        private static string Beschriftung(string bezeichner)
+        {
+            return string.IsNullOrEmpty(bezeichner) ? "ohne Bezeichner" : bezeichner;
+        }
+
+        private static bool Schritt_44_StromLeistungspreis(Lauf l)
+        {
+            NonQuery(l,
+                "UPDATE pricing_model SET has_powerprice = true WHERE code = 'ELECTRICITY'");
+            object o = Scalar(l,
+                "SELECT has_powerprice FROM pricing_model WHERE code = 'ELECTRICITY'");
+            return o != null && o != DBNull.Value && Convert.ToBoolean(o);
+        }
+
+        private static bool Schritt_42_Fluessiggas(Lauf l)
+        {
+            object da = Scalar(l,
+                "SELECT COUNT(*) FROM energy_carrier WHERE [name] = ?",
+                new OleDbParameter("@n", "Flüssiggas"));
+            if (da != null && Convert.ToInt32(da) > 0)
+            {
+                l.Zeile("Fluessiggas (Schritt 42): bereits vorhanden - nichts zu tun.");
+                return true;
+            }
+
+            int idBrennstoff = BrennstoffStammId("Flüssiggas");
+
+            object max = Scalar(l, "SELECT MAX(id) FROM energy_carrier");
+            int id = ((max == null || max == DBNull.Value) ? 0 : Convert.ToInt32(max)) + 1;
+            if (NonQuery(l,
+                    "INSERT INTO energy_carrier " +
+                    "(id, ID_Brennstoff, [name], code, group_code, pricing_model, billing_unit, " +
+                    " hi_kwh_per_unit, hs_kwh_per_unit, price_work, price_base, price_power, " +
+                    " co2, so2, nox, is_active) " +
+                    "VALUES (?, ?, 'Flüssiggas', 'Fluessiggas', 'Gas', 'GASEOUS_FUEL', 'kg', " +
+                    " 12.87, 14.0, 0, 0, 0, 239, 0, 0, TRUE)",
+                    new OleDbParameter("@id", id),
+                    new OleDbParameter("@b", idBrennstoff)) < 0)
+                return false;
+
+            l.Zeile("Fluessiggas (Schritt 42): als Katalogtraeger " + id + " gesaet" +
+                    (idBrennstoff > 0
+                        ? " (Brennstoff-Stamm " + idBrennstoff + ")."
+                        : " (ohne Brennstoff-Stammverweis - im Stamm fehlt Fluessiggas)."));
+            return true;
+        }
+
+        /// <summary>
+        /// Brennstoff-Stammverweis per Namenssuche — STILL: <c>ExecuteScalar</c>
+        /// meldet Abfragefehler selbst als MessageBox (Befund 26.08.2026: der
+        /// frühere Spaltenname-Ratelauf öffnete beim App-Start drei Boxen und
+        /// ließ die Migration wie gescheitert wirken). Die Stammspalte heißt
+        /// <c>Bezeichner</c>; die Probe läuft trotzdem im EngineModus, damit ein
+        /// abweichender Altbestand nie wieder eine Box auslöst.
+        /// </summary>
+        private static int BrennstoffStammId(string namensanfang)
+        {
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                object b = DataRepository.ExecuteScalar(
+                    "SELECT MAX(ID) FROM Tab_Brennstoff_Stamm WHERE [Bezeichner] LIKE ?",
+                    new OleDbParameter("@n", namensanfang + "%"));
+                DataRepository.StilleFehlerAbholen();
+                return (b == null || b == DBNull.Value) ? 0 : Convert.ToInt32(b);
+            }
+        }
+
+        /// <summary>
+        /// Schritt 43 — Nachtrag Ä9, zweiter Teil (Nutzerauftrag 26.08.2026:
+        /// „Flüssiggas fehlt → prüfe auch andere Gruppen aus der VDI 3805“):
+        /// Der Katalog folgt der VDI-3805-Energieträgersystematik (die
+        /// <c>code</c>-Werte des Bestands tragen die VDI-Bezeichner). Gegen die
+        /// klassische Trägerliste fehlten die festen Brennstoffe — nachgesät
+        /// werden Steinkohle, Braunkohlebrikett (Gruppe „Kohle“) sowie
+        /// Scheitholz, Holzpellets, Holzhackschnitzel (Gruppe „Holz“; biogen,
+        /// CO2 = 0 wie der Bestands-Biogas-Eintrag). Heiz-/Brennwerte in kWh/kg
+        /// (Literatur-Standardwerte), Preise 0 = nicht gepflegt. Je Träger
+        /// idempotent über den Namen; ID per MAX+1; Preismodell wie der
+        /// Bestands-Feststoff Koks (Rückfall GASEOUS_FUEL).
+        /// </summary>
+        private static bool Schritt_43_VdiTraeger(Lauf l)
+        {
+            string modell = "GASEOUS_FUEL";
+            try
+            {
+                object m = DataRepository.ExecuteScalar(
+                    "SELECT pricing_model FROM energy_carrier WHERE [name] = 'Koks'");
+                if (m != null && m != DBNull.Value && Convert.ToString(m).Length > 0)
+                    modell = Convert.ToString(m);
+            }
+            catch { }
+
+            object[][] traeger =
+            {
+                //            Name                     Gruppe   Hi     Hs     CO2 [g/kWh]
+                new object[] { "Steinkohle",           "Kohle", 8.14,  8.41,  340.0 },
+                new object[] { "Braunkohlebrikett",    "Kohle", 5.35,  5.70,  400.0 },
+                new object[] { "Scheitholz",           "Holz",  4.10,  4.50,  0.0 },
+                new object[] { "Holzpellets",          "Holz",  4.80,  5.20,  0.0 },
+                new object[] { "Holzhackschnitzel",    "Holz",  3.90,  4.30,  0.0 },
+            };
+
+            int neu = 0, vorhanden = 0;
+            foreach (object[] t in traeger)
+            {
+                string name = (string)t[0];
+                object da = Scalar(l,
+                    "SELECT COUNT(*) FROM energy_carrier WHERE [name] = ?",
+                    new OleDbParameter("@n", name));
+                if (da != null && Convert.ToInt32(da) > 0) { vorhanden++; continue; }
+
+                object max = Scalar(l, "SELECT MAX(id) FROM energy_carrier");
+                int id = ((max == null || max == DBNull.Value) ? 0 : Convert.ToInt32(max)) + 1;
+                if (NonQuery(l,
+                        "INSERT INTO energy_carrier " +
+                        "(id, ID_Brennstoff, [name], code, group_code, pricing_model, billing_unit, " +
+                        " hi_kwh_per_unit, hs_kwh_per_unit, price_work, price_base, price_power, " +
+                        " co2, so2, nox, is_active) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, 'kg', ?, ?, 0, 0, 0, ?, 0, 0, TRUE)",
+                        new OleDbParameter("@id", id),
+                        new OleDbParameter("@b", BrennstoffStammId(name)),
+                        new OleDbParameter("@n", name),
+                        new OleDbParameter("@c", name),
+                        new OleDbParameter("@g", (string)t[1]),
+                        new OleDbParameter("@m", modell),
+                        new OleDbParameter("@hi", (double)t[2]),
+                        new OleDbParameter("@hs", (double)t[3]),
+                        new OleDbParameter("@co2", (double)t[4])) < 0)
+                    return false;
+                neu++;
+            }
+
+            // Nachzug: ein bereits (durch Schritt 42 mit dem alten Ratelauf)
+            // gesätes Flüssiggas ohne Brennstoffverweis wird nachverknüpft.
+            int flgStamm = BrennstoffStammId("Flüssiggas");
+            if (flgStamm > 0)
+                NonQuery(l,
+                    "UPDATE energy_carrier SET ID_Brennstoff = ? " +
+                    "WHERE [name] = 'Flüssiggas' AND ID_Brennstoff = 0",
+                    new OleDbParameter("@b", flgStamm));
+
+            l.Zeile("VDI-3805-Traeger (Schritt 43): " + neu + " gesät, " + vorhanden +
+                    " bereits vorhanden (Steinkohle, Braunkohlebrikett, Scheitholz, " +
+                    "Holzpellets, Holzhackschnitzel).");
+            return true;
+        }
+
+        /// <summary>Schritt 41. Anlass und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_41_PROJEKTPHOTOVOLTAIK"/>.</summary>
+        private static bool Schritt_41_ProjektPhotovoltaik(Lauf l)
+        {
+            // --- 41a) Tabelle + eindeutiger Projektindex -----------------------------
+            if (!Ddl(l, SchemaKatalog.SQL_CREATE_PROJEKTPHOTOVOLTAIK,
+                     "Tabelle " + SchemaKatalog.TAB_PROJEKTPHOTOVOLTAIK)) return false;
+            if (!Ddl(l, SchemaKatalog.SQL_INDEX_PROJEKTPHOTOVOLTAIK,
+                     "Index idx_ProjektPhotovoltaik")) return false;
+
+            // --- 41b) Marktwert-Solar-Stammreihen (Anhang A; 2026 Jan-Jul) -----------
+            // Werte ct/kWh, netztransparenz.de (Paragraf 23a EEG). Vor Freigabe gegen
+            // den CSV-Download verifizieren (Pruefschritt P3, Konzept 6.3).
+            double[][] jahre =
+            {
+                new[] { 7.535, 5.875, 4.965, 3.795, 3.161, 4.635, 3.554, 4.263, 4.512, 6.752, 10.076, 11.171 },
+                new[] { 11.511, 11.099, 5.027, 3.041, 1.997, 1.843, 5.923, 3.832, 4.307, 6.980, 9.102, 9.373 },
+                new[] { 11.019, 7.717, 5.455, 1.317, 3.163, 6.190, 5.226 },
+            };
+            int[] jahrVon = { 2024, 2025, 2026 };
+
+            int neu = 0, vorhanden = 0;
+            for (int j = 0; j < jahre.Length; j++)
+            {
+                object da = Scalar(l,
+                    "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_PREISREIHE + "] " +
+                    "WHERE Bezeichner = ? AND Jahr = ? AND ID_Projekt IS NULL",
+                    new OleDbParameter("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
+                    new OleDbParameter("@j", jahrVon[j]));
+                if (da != null && Convert.ToInt32(da) > 0) { vorhanden++; continue; }
+
+                object maxKopf = Scalar(l, "SELECT MAX(ID) FROM [" + SchemaKatalog.TAB_PREISREIHE + "]");
+                int kopfId = (maxKopf == null || maxKopf == DBNull.Value ? 0 : Convert.ToInt32(maxKopf)) + 1;
+                if (NonQuery(l,
+                        "INSERT INTO [" + SchemaKatalog.TAB_PREISREIHE + "] " +
+                        "(ID, ID_Projekt, Bezeichner, Jahr, Aufloesung, Einheit, ID_Energietraeger) " +
+                        "VALUES (?, NULL, ?, ?, ?, ?, NULL)",
+                        new OleDbParameter("@id", kopfId),
+                        new OleDbParameter("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
+                        new OleDbParameter("@j", jahrVon[j]),
+                        new OleDbParameter("@a", DbWerte.PREISREIHE_AUFLOESUNG_MONAT),
+                        new OleDbParameter("@e", DbWerte.PREISREIHE_EINHEIT_CT_KWH)) < 0)
+                    return false;
+
+                object maxDaten = Scalar(l, "SELECT MAX(ID) FROM [Tab_PreisreiheDaten]");
+                int datenId = maxDaten == null || maxDaten == DBNull.Value ? 0 : Convert.ToInt32(maxDaten);
+                foreach (double wert in jahre[j])
+                {
+                    datenId++;
+                    if (NonQuery(l,
+                            "INSERT INTO [Tab_PreisreiheDaten] (ID, ID_Preisreihe, Wert) VALUES (?, ?, ?)",
+                            new OleDbParameter("@id", datenId),
+                            new OleDbParameter("@k", kopfId),
+                            new OleDbParameter("@w", wert)) < 0)
+                        return false;
+                }
+                neu++;
+            }
+
+            l.Zeile("Marktwert Solar (Schritt 41): " + neu + " Stammreihe(n) gesaet, " +
+                    vorhanden + " bereits vorhanden - die Monatsmarktwerte 2024/2025 und " +
+                    "Jan-Jul 2026 stehen fuer die Marktpraemien- und Paragraf-51-Rechnung bereit.");
+            return true;
+        }
+
+        /// <summary>Nullbarer Parameter mit ausdruecklichem OleDb-Typ - ein DBNull ohne
+        /// Typ kann der Provider nicht binden.</summary>
+        private static OleDbParameter ParamOderNull(string name, OleDbType typ, object wert)
+        {
+            var p = new OleDbParameter(name, typ);
+            p.Value = wert ?? DBNull.Value;
+            return p;
+        }
+
+        /// <summary>
+        /// Schritt 39. Anlass, Seed-Regeln und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_39_KOSTENVORLAGEN_SEED"/>.
+        /// </summary>
+        private static bool Schritt_39_KostenvorlagenSeed(Lauf l)
+        {
+            if (TabellenSchema(l, SchemaKatalog.TAB_KOSTENVORLAGE) == null ||
+                TabellenSchema(l, SchemaKatalog.TAB_KOSTENVORLAGEPOSITION) == null)
+            {
+                l.Notiz("39: Vorlagentabellen sind nicht lesbar - Schritt 38 ist nicht gelaufen.");
+                return false;
+            }
+
+            bool ok = true;
+            int vorlagen = 0, positionen = 0, komponentenNeu = 0, vorhanden = 0;
+
+            foreach (SchemaKatalog.KostenVorlagenSeed v in SchemaKatalog.Schritt39_Vorlagen)
+            {
+                // Komponente aufloesen; fehlt sie (aeltere Datenbank), legt das
+                // idempotente Muster aus Schritt 27 sie an.
+                int neu;
+                if (!KomponenteSichern(l, v.Komponente, out neu)) { ok = false; continue; }
+                komponentenNeu += neu;
+
+                object idObj = Scalar(l,
+                    "SELECT MAX([ID]) FROM [" + SchemaKatalog.TAB_KOSTENKOMPONENTE + "] " +
+                    "WHERE [" + SchemaKatalog.SPALTE_KK_KOMPONENTE + "] = ?",
+                    new OleDbParameter("@k", v.Komponente));
+                if (idObj == null || idObj == DBNull.Value)
+                {
+                    l.Notiz("39: Komponente \"" + v.Komponente + "\" ist nicht aufloesbar.");
+                    ok = false;
+                    continue;
+                }
+                int komponentenId = Zahl(idObj);
+
+                // Standardvariante schon da? Dann samt Positionen unangetastet lassen -
+                // Idempotenz: der Zweitlauf meldet 0 Aenderungen.
+                object da = Scalar(l,
+                    "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_KOSTENVORLAGE + "] " +
+                    "WHERE [" + SchemaKatalog.SPALTE_KV_KOMPONENTENID + "] = ? AND [" +
+                    SchemaKatalog.SPALTE_KV_KATEGORIEID + "] = ? AND [" +
+                    SchemaKatalog.SPALTE_KV_NAME + "] = ?",
+                    new OleDbParameter("@kid", komponentenId),
+                    new OleDbParameter("@kat", v.KategorieId),
+                    new OleDbParameter("@n", SchemaKatalog.VORLAGE_NAME_STANDARD));
+                if (da == null) { ok = false; continue; }
+                if (Zahl(da) > 0) { vorhanden++; continue; }
+
+                // ID ist KEIN AutoWert (Hausmuster ADR-001): MAX+1 selbst vergeben.
+                int vorlageId = Zahl(Scalar(l, "SELECT MAX([ID]) FROM [" +
+                                               SchemaKatalog.TAB_KOSTENVORLAGE + "]")) + 1;
+
+                int kopf = NonQuery(l,
+                    "INSERT INTO [" + SchemaKatalog.TAB_KOSTENVORLAGE + "] ([ID], [" +
+                    SchemaKatalog.SPALTE_KV_KOMPONENTENID + "], [" +
+                    SchemaKatalog.SPALTE_KV_KATEGORIEID + "], [" +
+                    SchemaKatalog.SPALTE_KV_NAME + "], [" +
+                    SchemaKatalog.SPALTE_KV_IST_STANDARD + "], [" +
+                    SchemaKatalog.SPALTE_KV_READONLY + "], [" +
+                    SchemaKatalog.SPALTE_KV_GEAENDERT_AM + "]) " +
+                    "VALUES (?, ?, ?, ?, TRUE, TRUE, ?)",
+                    new OleDbParameter("@id", vorlageId),
+                    new OleDbParameter("@kid", komponentenId),
+                    new OleDbParameter("@kat", v.KategorieId),
+                    new OleDbParameter("@n", SchemaKatalog.VORLAGE_NAME_STANDARD),
+                    ParamOderNull("@am", OleDbType.Date, DateTime.Now));
+                if (kopf <= 0)
+                {
+                    l.Notiz("39: INSERT der Vorlage \"" + v.Komponente + "\" (Kategorie " +
+                            v.KategorieId + ") fehlgeschlagen.");
+                    ok = false;
+                    continue;
+                }
+
+                bool posOk = true;
+                int sort = 0;
+                foreach (SchemaKatalog.VorlagenPositionSeed p in v.Positionen)
+                {
+                    sort += 10;
+
+                    // StammID aus dem Positionslexikon, falls der Wortlaut dort steht;
+                    // NULL bei freier Vorlagenposition (KL2). MAX statt Einzelwert, weil
+                    // eine Bezeichnung je Rolle doppelt vorkommen darf (Schritt 27).
+                    object sid = Scalar(l,
+                        "SELECT MAX([" + SchemaKatalog.SPALTE_KF_STAMMID + "]) FROM [" +
+                        SchemaKatalog.TAB_KOSTENFAKTOR + "] WHERE [" +
+                        SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ?",
+                        new OleDbParameter("@b", p.Bezeichnung));
+
+                    int posId = Zahl(Scalar(l, "SELECT MAX([ID]) FROM [" +
+                                               SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "]")) + 1;
+
+                    int pn = NonQuery(l,
+                        "INSERT INTO [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] ([ID], [" +
+                        SchemaKatalog.SPALTE_KVP_VORLAGEID + "], [" +
+                        SchemaKatalog.SPALTE_KVP_STAMMID + "], [" +
+                        SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "], [" +
+                        SchemaKatalog.SPALTE_KVP_KOSTENART + "], [" +
+                        SchemaKatalog.SPALTE_KVP_BEMESSUNG + "], [" +
+                        SchemaKatalog.SPALTE_KVP_IST_ERLOES + "], [" +
+                        SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_VON + "], [" +
+                        SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_BIS + "], [" +
+                        SchemaKatalog.SPALTE_KVP_SORTIERUNG + "]) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)",
+                        new OleDbParameter("@id", posId),
+                        new OleDbParameter("@vid", vorlageId),
+                        ParamOderNull("@sid", OleDbType.Integer,
+                                      sid == null || sid == DBNull.Value ? null : (object)Zahl(sid)),
+                        new OleDbParameter("@b", p.Bezeichnung),
+                        new OleDbParameter("@ka", p.Kostenart),
+                        new OleDbParameter("@bm", p.Bemessung),
+                        ParamOderNull("@ev", OleDbType.Double,
+                                      p.EmpfehlungVon.HasValue ? (object)p.EmpfehlungVon.Value : null),
+                        ParamOderNull("@eb", OleDbType.Double,
+                                      p.EmpfehlungBis.HasValue ? (object)p.EmpfehlungBis.Value : null),
+                        new OleDbParameter("@so", sort));
+                    if (pn <= 0) { posOk = false; break; }
+                    positionen++;
+                }
+
+                if (!posOk)
+                {
+                    // Halb gesaete Vorlage zuruecknehmen - die Loeschweitergabe raeumt
+                    // die Teilpositionen ab. ID als ganzzahliges Literal (ACE-Falle:
+                    // kein Parameter noetig, kein Parameter riskiert).
+                    l.Notiz("39: Positionen der Vorlage \"" + v.Komponente + "\" (Kategorie " +
+                            v.KategorieId + ") unvollstaendig - Vorlage wird zurueckgenommen.");
+                    NonQuery(l, "DELETE FROM [" + SchemaKatalog.TAB_KOSTENVORLAGE +
+                                "] WHERE [ID] = " + vorlageId);
+                    ok = false;
+                    continue;
+                }
+
+                vorlagen++;
+            }
+
+            l.Notiz("39a: " + vorlagen + " Standardvorlagen angelegt, " + vorhanden +
+                    " bereits vorhanden" +
+                    (komponentenNeu > 0 ? ", " + komponentenNeu + " Komponenten ergaenzt" : "") + ".");
+            l.Notiz("39b: " + positionen + " Vorlagenpositionen gesaet - Saetze, Betraege und " +
+                    "Nutzungsdauern bewusst leer (Struktur ohne erfundene Preise, Konzept " +
+                    "Kostendialoge § 4.3); FK3: keine Energiekosten-Zeilen im Betriebskatalog.");
+            return ok;
+        }
+
+        // =================================================================================
         // Schritt 9 - Datenregel R7 (Etappe E0): Quellpuffer-Bezeichner -> Fremdschlüssel
         // =================================================================================
 
@@ -6144,7 +8701,10 @@ namespace WindowsFormsApplication1
         public const string SQL_CREATE_PREISREIHE =
             "CREATE TABLE Tab_Preisreihe (ID LONG NOT NULL PRIMARY KEY, " +
             "ID_Projekt LONG, Bezeichner TEXT(255), Jahr LONG, " +
-            "Aufloesung TEXT(50), Einheit TEXT(50))";
+            "Aufloesung TEXT(50), Einheit TEXT(50), ID_Energietraeger LONG)";
+        // ID_Energietraeger: seit Schritt 40 (Etappe KD4, FK6a) Teil des CREATE, damit
+        // auch die tolerante Rueckfallebene (PreisreiheCtrl.StelleTabellenSicher) die
+        // Spalte mitbringt; Bestandstabellen ruestet Schritt 40 nach.
 
         /// <summary>Index über den Projektbezug - der Suchweg der Auswahllisten.</summary>
         public const string SQL_INDEX_PREISREIHE =

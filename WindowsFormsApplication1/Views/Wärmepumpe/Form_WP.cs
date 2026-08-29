@@ -20,9 +20,35 @@ namespace WindowsFormsApplication1
         /// </summary>
         private bool m_bGeladen = false;
 
+        /// <summary>Ä19: Geräte-Modulkosten werden nicht mehr hier gepflegt — die
+        /// Kosten laufen über die Kostenverwaltung (Komponente Wärmepumpe). Die Zeile
+        /// wird verborgen; das Feld bleibt befüllt, damit der bestehende Speicherweg
+        /// (Pflichtprüfung + Update) den Altwert unverändert mitschreibt.</summary>
+        private void ModulkostenVerbergen()
+        {
+            Control eltern = textBox_Modulkosten.Parent;
+            if (eltern == null) return;
+            // ENTFERNEN statt Verbergen: Der Offscreen-Weg (DrawToBitmap) dieser
+            // Alt-Dialoge zeichnet per Visible=false versteckte Controls weiter
+            // (Befund Ä19). Das Textfeld wird nur ausgehängt — sein Text bleibt
+            // für Pflichtprüfung und Update-Speicherweg lesbar.
+            eltern.Controls.Remove(textBox_Modulkosten);
+            foreach (string name in new[] { "label32", "label33" })
+            {
+                Control[] c = this.Controls.Find(name, true);
+                if (c.Length > 0 &&
+                    ((c[0].Text ?? "").StartsWith("Modulkosten") || c[0].Text == "€"))
+                {
+                    c[0].Parent.Controls.Remove(c[0]);
+                    c[0].Dispose();
+                }
+            }
+        }
+
         public Form_WP()
         {
             InitializeComponent();
+            ModulkostenVerbergen();   // Ä19
 
             // Dezenter Einstieg in den Assistenten, oben rechts im Client-Bereich
             // (Fachkonzept 11.8). Programmatisch, damit Designer und .resx
@@ -36,11 +62,13 @@ namespace WindowsFormsApplication1
             ctrl.ReadAll();
             FillWPList();
             InitChart("WÄRME");
+            FusszeileNormen();
         }
 
         public Form_WP(string wpname)
         {
             InitializeComponent();
+            ModulkostenVerbergen();   // Ä19
 
             // Dezenter Einstieg in den Assistenten, oben rechts im Client-Bereich
             // (Fachkonzept 11.8). Programmatisch, damit Designer und .resx
@@ -57,6 +85,48 @@ namespace WindowsFormsApplication1
             btn_Neu.Enabled=false;
             btn_Loeschen.Enabled = false;
             InitChart("WÄRME");
+            FusszeileNormen();
+        }
+
+        /// <summary>
+        /// D2 (28.08.2026): Fußzeile auf die Norm. Die Zeile trägt VIER Knöpfe —
+        /// „Speichern" (410/600), „Neu" (533/600), „Löschen" (634/600) und den
+        /// Abschlussknopf <c>btn_Beenden</c> (748/600), beschriftet mit „OK". Sie standen
+        /// in drei Größen (117x30 bzw. 95x30, zur Laufzeit auf 136x35 bzw. 111x35
+        /// hochskaliert), unverankert und mit 39 px Abstand zum rechten Rand.
+        ///
+        /// Die Norm nimmt die ganze Reihe: Abschluss ganz rechts, davor die
+        /// Satzverwaltung in ihrer bisherigen Reihenfolge von links nach rechts. Nur den
+        /// Abschlussknopf zu normen ginge nicht — „Speichern" käme dann auf „Neu" und
+        /// „Löschen" zu liegen.
+        ///
+        /// Beide Konstruktoren rufen die Methode, damit Pflege- und Ansichtsbetrieb
+        /// dieselbe Zeile zeigen.
+        ///
+        /// <para><b>D3 (28.08.2026) — die Knopfrolle.</b> <c>btn_Beenden</c> trug die
+        /// Aufschrift „OK" (deutsch wie englisch), sein <c>DialogResult</c> ist
+        /// <c>None</c>, und sein Behandler <see cref="butt_Beenden_Click"/> setzt lediglich
+        /// <c>CloseWithOK = true</c> und ruft <c>Close()</c>. Dieses Feld liest NIEMAND:
+        /// Die beiden Aufrufer (<c>MenueCtrl</c> und <c>Wizard_WPItem</c>) werten es nicht
+        /// aus, die Treffer in <c>Form_WPAuswahl</c> gehören zum gleichnamigen Feld von
+        /// <c>Wizard_WPItem</c>. Der Knopf SCHLIESST also nur — gespeichert wird
+        /// ausschließlich über „Speichern". Eine Aufschrift „OK" sagt dem Anwender das
+        /// Gegenteil (Eingaben werden übernommen). Text und Rolle stimmen jetzt überein:
+        /// „Beenden" / „Finish", dieselbe Beschriftung wie beim baugleichen Abschlussknopf
+        /// von <c>Form_Simulation_Config</c> und <c>Form_Simulation_Detail</c>, und
+        /// dieselbe wie der Name des Knopfes.</para>
+        ///
+        /// <para>Am VERHALTEN ändert sich nichts: kein <c>DialogResult</c>, kein
+        /// Behandler, kein Speicherweg. Der Text kommt aus dem zentralen Katalog
+        /// (<c>MyResource.Resource.WP_BTN_BEENDEN</c>, de + en) und nicht aus der
+        /// <c>.resx</c> des Formulars — die bleibt wie alle Designer-Dateien unangetastet.
+        /// Er wird VOR dem Einhängen gesetzt, damit die Norm die Mindestbreite am neuen
+        /// Text misst.</para>
+        /// </summary>
+        private void FusszeileNormen()
+        {
+            if (btn_Beenden != null) btn_Beenden.Text = MyResource.Resource.WP_BTN_BEENDEN;
+            FusszeilenNorm.Einhaengen(this, btn_Beenden, btn_Loeschen, btn_Neu, btn_Speichern);
         }
 
         public void FillWPList()

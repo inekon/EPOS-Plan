@@ -8,8 +8,7 @@ using SpeicherEngine;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Kostenprofil-Editor (Fachkonzept Stromspeicher 4.1 b, Arbeitspaket AP4) —
-    /// aufgebaut nach dem Muster <c>Views\Simulation\Form_Quellprofil.cs</c>:
+    /// Kostenprofil-Editor (Fachkonzept Stromspeicher 4.1 b, Arbeitspaket AP4):
     ///
     /// - Reiter „Monatswerte":  12 Monats-Preisniveaus [ct/kWh]
     /// - Reiter „Wochenwerte":  Tagesgang je Wochentag als Abweichung [ct/kWh]
@@ -20,31 +19,23 @@ namespace WindowsFormsApplication1
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <b>Was gegenüber der Vorlage anders ist — und warum.</b> Drei Punkte:
-    /// (1) Die Einheit ist ct/kWh statt °C/K; ein HT/NT-Profil ist damit der
-    /// Sonderfall „alle sieben Tage gleich".
-    /// (2) Die Vorschau rechnet über <c>SpeicherEngine.PreisModell</c> statt über
-    /// <c>WaermequelleClass.ProfilAusMonatsUndWochenwerten</c> — der Anwender sieht
-    /// GENAU die Reihe, mit der die Simulation später rechnet, samt der festen
-    /// Kalenderausrichtung des Rechenkerns. Die Vorlage leitet den Wochentag aus dem
-    /// Systemdatum ab und liefert je nach Tag ein anderes Profil; bei einem Preis wäre
-    /// das ein nicht reproduzierbares Ergebnis.
-    /// (3) Die Persistenz ist eine eigene Tabelle (<c>Tab_Kostenprofil</c>) statt zweier
-    /// Spalten an der Anlage — ein Kostenprofil gehört zum Projekt, nicht zu einem
-    /// Wärmeerzeuger.
+    /// <b>Ä17 (26.08.2026): Designer-fähig umgestellt</b> (FK1/Ä6-Regel der
+    /// Kostendialoge). Das statische Gerüst — Kopf, Reiter, Knöpfe, Diagramm —
+    /// steht in <c>Form_Kostenprofil.Designer.cs</c> mit deutschen
+    /// Vorgabetexten; der Konstruktor überschreibt aus <c>MyResource</c>.
+    /// Nur die beiden WERTERASTER (12 Monats- und 24 Stundenfelder) entstehen
+    /// wie beim Positionsraster der Kostenverwaltung zur Laufzeit — sie sind
+    /// Schleifenware, keine Layoutarbeit.
     /// </para>
     /// <para>
-    /// Ablageformat unverändert von der Vorlage: zwei <c>";"</c>-getrennte
-    /// Zeichenketten mit <see cref="CultureInfo.InvariantCulture"/>. Die EINGABE folgt
-    /// dagegen der Kultur des Anwenders (<c>Program.ZahlParsen</c> nimmt Komma und
-    /// Punkt).
-    /// </para>
-    /// <para>
-    /// Vollständig programmatisch, ohne Designer und ohne eigene <c>.resx</c> — wie die
-    /// Vorlage.
+    /// Die Vorschau rechnet über <c>SpeicherEngine.PreisModell</c> — der
+    /// Anwender sieht GENAU die Reihe, mit der die Simulation später rechnet.
+    /// Ablageformat: zwei <c>";"</c>-getrennte Zeichenketten mit
+    /// <see cref="CultureInfo.InvariantCulture"/>; die EINGABE folgt der Kultur
+    /// des Anwenders (<c>Program.ZahlParsen</c> nimmt Komma und Punkt).
     /// </para>
     /// </remarks>
-    public class Form_Kostenprofil : Form
+    public partial class Form_Kostenprofil : Form
     {
         /// <summary>Vorbelegung eines Monatswerts [ct/kWh] — der Regelfall-Aufschlag plus 20 ct Energie.</summary>
         private const double VORGABE_MONATSWERT = 25.0;
@@ -80,9 +71,6 @@ namespace WindowsFormsApplication1
 
         private readonly TextBox[] _tbMonat = new TextBox[12];
         private readonly TextBox[] _tbStunde = new TextBox[24];
-        private TextBox _tbBezeichner;
-        private ListBox _lbTag;
-        private Chart _chart;
         private int _aktuellerTag;
 
         private readonly KostenprofilModel _modell;
@@ -106,7 +94,12 @@ namespace WindowsFormsApplication1
                 _modell.Bezeichner = MyResource.Resource.PREIS_PROFIL_NEU;
             }
 
-            BaueOberflaeche();
+            InitializeComponent();
+            TexteAnwenden();
+            MonatsRasterBauen();
+            StundenRasterBauen();
+            ChartKonfigurieren();
+            lbTag.Items.AddRange(Wochentagsnamen);
 
             Monatswerte = _modell.Monatswerte;
             Wochenwerte = _modell.Wochenwerte;
@@ -175,103 +168,52 @@ namespace WindowsFormsApplication1
 
         private void SetControls()
         {
-            _tbBezeichner.Text = _modell.Bezeichner;
+            tbBezeichner.Text = _modell.Bezeichner;
             for (int m = 0; m < 12; m++) _tbMonat[m].Text = Anzeige(_monat[m]);
 
-            _lbTag.SelectedIndex = 0;
+            lbTag.SelectedIndex = 0;
             TagAnzeigen(0);
             ChartAktualisieren();
         }
 
         // ------------------------------------------------------------------
-        // Oberfläche
+        // Oberfläche: Texte, dynamische Raster, Diagramm
         // ------------------------------------------------------------------
 
-        private void BaueOberflaeche()
+        /// <summary>Designer-Vorgaben (deutsch) durch MyResource-Texte ersetzen
+        /// (Ä6-Regel 2 — Designer-Vorschau und Lokalisierung bleiben intakt).</summary>
+        private void TexteAnwenden()
         {
-            this.Text = MyResource.Resource.PREIS_PROFIL_TITEL;
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.MinimizeBox = false;
-            this.MaximizeBox = false;
-            this.ClientSize = new Size(700, 580);
-
-            Label lblInfo = new Label
-            {
-                AutoSize = false,
-                Location = new Point(12, 10),
-                Size = new Size(676, 34),
-                Text = MyResource.Resource.PREIS_PROFIL_INFO
-            };
-            this.Controls.Add(lblInfo);
-
-            Label lblName = new Label
-            {
-                Text = MyResource.Resource.PREIS_PROFIL_LABEL_BEZEICHNER,
-                Location = new Point(12, 50),
-                AutoSize = true
-            };
-            _tbBezeichner = new TextBox
-            {
-                Location = new Point(120, 47),
-                Width = 400
-            };
-            this.Controls.Add(lblName);
-            this.Controls.Add(_tbBezeichner);
-
-            TabControl tabs = new TabControl
-            {
-                Location = new Point(12, 80),
-                Size = new Size(676, 450)
-            };
-            this.Controls.Add(tabs);
-
-            tabs.TabPages.Add(BaueMonatsSeite());
-            tabs.TabPages.Add(BaueWochenSeite());
-            tabs.TabPages.Add(BaueGrafikSeite());
-            tabs.SelectedIndexChanged += (s, e) => { if (tabs.SelectedIndex == 2) ChartAktualisieren(); };
-
-            Button btnOk = new Button
-            {
-                Text = MyResource.Resource.SIM_BTN_OK,
-                DialogResult = DialogResult.OK,
-                Location = new Point(this.ClientSize.Width - 190, 540),
-                Width = 85
-            };
-            Button btnAbbruch = new Button
-            {
-                Text = MyResource.Resource.SIM_BTN_ABBRECHEN,
-                DialogResult = DialogResult.Cancel,
-                Location = new Point(this.ClientSize.Width - 97, 540),
-                Width = 85
-            };
-            btnOk.Click += btnOk_Click;
-
-            this.Controls.Add(btnOk);
-            this.Controls.Add(btnAbbruch);
-            this.AcceptButton = btnOk;
-            this.CancelButton = btnAbbruch;
+            Text = MyResource.Resource.PREIS_PROFIL_TITEL;
+            lblInfo.Text = MyResource.Resource.PREIS_PROFIL_INFO;
+            lblName.Text = MyResource.Resource.PREIS_PROFIL_LABEL_BEZEICHNER;
+            tpMonat.Text = MyResource.Resource.PREIS_PROFIL_TAB_MONATSWERTE;
+            tpWoche.Text = MyResource.Resource.PREIS_PROFIL_TAB_WOCHENWERTE;
+            tpGrafik.Text = MyResource.Resource.PREIS_PROFIL_TAB_GRAFIK;
+            lblKopfMonat.Text = MyResource.Resource.PREIS_PROFIL_KOPF_MONAT;
+            lblKopfWoche.Text = MyResource.Resource.PREIS_PROFIL_KOPF_WOCHE;
+            lblWochentag.Text = MyResource.Resource.PREIS_PROFIL_LBL_WOCHENTAG;
+            lblHinweisAbweichung.Text = MyResource.Resource.PREIS_PROFIL_HINWEIS_ABWEICHUNG;
+            btnAlleMonate.Text = MyResource.Resource.PREIS_PROFIL_BTN_ALLE_MONATE;
+            btnTagKopieren.Text = MyResource.Resource.PREIS_PROFIL_BTN_TAG_KOPIEREN;
+            btnTagEinfuegen.Text = MyResource.Resource.PREIS_PROFIL_BTN_TAG_EINFUEGEN;
+            btnAlleTage.Text = MyResource.Resource.PREIS_PROFIL_BTN_ALLE_TAGE;
+            btnTagUebernehmen.Text = MyResource.Resource.PREIS_PROFIL_BTN_UEBERNEHMEN;
+            btnOk.Text = MyResource.Resource.SIM_BTN_OK;
+            btnAbbruch.Text = MyResource.Resource.SIM_BTN_ABBRECHEN;
         }
 
-        private TabPage BaueMonatsSeite()
+        /// <summary>Die 12 Monatszeilen (Label · Feld · Einheit) — Schleifenware
+        /// zur Laufzeit, wie das Positionsraster der Kostenverwaltung (Ä6).</summary>
+        private void MonatsRasterBauen()
         {
-            TabPage seite = new TabPage(MyResource.Resource.PREIS_PROFIL_TAB_MONATSWERTE);
-
-            seite.Controls.Add(new Label
-            {
-                Text = MyResource.Resource.PREIS_PROFIL_KOPF_MONAT,
-                AutoSize = true,
-                Location = new Point(20, 18),
-                Font = new Font(this.Font, FontStyle.Bold)
-            });
-
             string[] monate = Monatsnamen;
             for (int m = 0; m < 12; m++)
             {
                 int spalte = m / 6;
                 int zeile = m % 6;
 
-                seite.Controls.Add(new Label
+                tpMonat.Controls.Add(new Label
                 {
                     Text = monate[m],
                     AutoSize = false,
@@ -288,57 +230,26 @@ namespace WindowsFormsApplication1
                     Text = Anzeige(VORGABE_MONATSWERT)
                 };
                 _tbMonat[m].TextChanged += (s, e) => Program.ZahlFaerben(s);
-                seite.Controls.Add(_tbMonat[m]);
+                tpMonat.Controls.Add(_tbMonat[m]);
 
-                seite.Controls.Add(new Label
+                tpMonat.Controls.Add(new Label
                 {
                     Text = DbWerte.PREISREIHE_EINHEIT_CT_KWH,
                     AutoSize = true,
                     Location = new Point(228 + spalte * 320, 56 + zeile * 42)
                 });
             }
-
-            Button btnAlle = new Button
-            {
-                Text = MyResource.Resource.PREIS_PROFIL_BTN_ALLE_MONATE,
-                Location = new Point(30, 340),
-                Width = 250
-            };
-            btnAlle.Click += (s, e) =>
-            {
-                double w;
-                if (!Program.ZahlParsen(_tbMonat[0].Text, out w))
-                {
-                    MessageBox.Show(MyResource.Resource.PREIS_PROFIL_MSG_JANUAR,
-                        MyResource.Resource.PREIS_PROFIL_TITEL,
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-                for (int m = 0; m < 12; m++) _tbMonat[m].Text = Anzeige(w);
-            };
-            seite.Controls.Add(btnAlle);
-
-            return seite;
         }
 
-        private TabPage BaueWochenSeite()
+        /// <summary>Die 24 Stundenzeilen des gewählten Wochentags — Schleifenware.</summary>
+        private void StundenRasterBauen()
         {
-            TabPage seite = new TabPage(MyResource.Resource.PREIS_PROFIL_TAB_WOCHENWERTE);
-
-            seite.Controls.Add(new Label
-            {
-                Text = MyResource.Resource.PREIS_PROFIL_KOPF_WOCHE,
-                AutoSize = true,
-                Location = new Point(20, 15),
-                Font = new Font(this.Font, FontStyle.Bold)
-            });
-
             for (int h = 0; h < 24; h++)
             {
                 int spalte = h / 8;
                 int zeile = h % 8;
 
-                seite.Controls.Add(new Label
+                tpWoche.Controls.Add(new Label
                 {
                     Text = (h + 1).ToString(CultureInfo.CurrentCulture),
                     AutoSize = false,
@@ -355,91 +266,14 @@ namespace WindowsFormsApplication1
                     Text = Anzeige(VORGABE_WOCHENWERT)
                 };
                 _tbStunde[h].TextChanged += (s, e) => Program.ZahlFaerben(s);
-                seite.Controls.Add(_tbStunde[h]);
+                tpWoche.Controls.Add(_tbStunde[h]);
             }
-
-            seite.Controls.Add(new Label
-            {
-                Text = MyResource.Resource.PREIS_PROFIL_LBL_WOCHENTAG,
-                AutoSize = true,
-                Location = new Point(490, 25)
-            });
-
-            _lbTag = new ListBox
-            {
-                Location = new Point(490, 48),
-                Size = new Size(150, 130)
-            };
-            _lbTag.Items.AddRange(Wochentagsnamen);
-            _lbTag.SelectedIndexChanged += lbTag_SelectedIndexChanged;
-            seite.Controls.Add(_lbTag);
-
-            Button btnKopieren = new Button { Text = MyResource.Resource.PREIS_PROFIL_BTN_TAG_KOPIEREN, Location = new Point(490, 190), Width = 150 };
-            Button btnEinfuegen = new Button { Text = MyResource.Resource.PREIS_PROFIL_BTN_TAG_EINFUEGEN, Location = new Point(490, 222), Width = 150 };
-            Button btnAlleTage = new Button { Text = MyResource.Resource.PREIS_PROFIL_BTN_ALLE_TAGE, Location = new Point(490, 254), Width = 150 };
-            Button btnUebernehmen = new Button { Text = MyResource.Resource.PREIS_PROFIL_BTN_UEBERNEHMEN, Location = new Point(20, 340), Width = 430 };
-
-            btnKopieren.Click += (s, e) =>
-            {
-                if (!TagUebernehmen(_aktuellerTag, true)) return;
-                _tagKopie = new double[24];
-                for (int h = 0; h < 24; h++) _tagKopie[h] = _woche[_aktuellerTag, h];
-            };
-
-            btnEinfuegen.Click += (s, e) =>
-            {
-                if (_tagKopie == null)
-                {
-                    MessageBox.Show(MyResource.Resource.PREIS_PROFIL_MSG_ERST_KOPIEREN,
-                        MyResource.Resource.PREIS_PROFIL_TITEL,
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-                for (int h = 0; h < 24; h++) _woche[_aktuellerTag, h] = _tagKopie[h];
-                TagAnzeigen(_aktuellerTag);
-                ChartAktualisieren();
-            };
-
-            btnAlleTage.Click += (s, e) =>
-            {
-                if (!TagUebernehmen(_aktuellerTag, true)) return;
-                for (int t = 0; t < 7; t++)
-                    for (int h = 0; h < 24; h++)
-                        _woche[t, h] = _woche[_aktuellerTag, h];
-                ChartAktualisieren();
-                MessageBox.Show(MyResource.Resource.PREIS_PROFIL_MSG_ALLE_TAGE,
-                    MyResource.Resource.PREIS_PROFIL_TITEL,
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-            };
-
-            btnUebernehmen.Click += (s, e) => { if (TagUebernehmen(_aktuellerTag, true)) ChartAktualisieren(); };
-
-            seite.Controls.Add(btnKopieren);
-            seite.Controls.Add(btnEinfuegen);
-            seite.Controls.Add(btnAlleTage);
-            seite.Controls.Add(btnUebernehmen);
-
-            seite.Controls.Add(new Label
-            {
-                Text = MyResource.Resource.PREIS_PROFIL_HINWEIS_ABWEICHUNG,
-                AutoSize = false,
-                Size = new Size(430, 34),
-                Location = new Point(20, 378)
-            });
-
-            return seite;
         }
 
-        private TabPage BaueGrafikSeite()
+        /// <summary>Diagrammbereich und Serie — die Chart-Feinkonfiguration bleibt
+        /// im Code (die Designer-Serialisierung des Chart ist fehleranfällig).</summary>
+        private void ChartKonfigurieren()
         {
-            TabPage seite = new TabPage(MyResource.Resource.PREIS_PROFIL_TAB_GRAFIK);
-
-            _chart = new Chart
-            {
-                Location = new Point(10, 10),
-                Size = new Size(648, 390)
-            };
-
             // "Jahr" ist der technische Name des Diagrammbereichs (Zugriffsschlüssel,
             // Schicht 2 der Drei-Schichten-Regel) - nur die Achsentitel sind Anzeige.
             ChartArea ca = new ChartArea("Jahr");
@@ -453,7 +287,7 @@ namespace WindowsFormsApplication1
             ca.CursorX.IsUserEnabled = true;
             ca.CursorX.IsUserSelectionEnabled = true;
             ca.AxisX.ScaleView.Zoomable = true;
-            _chart.ChartAreas.Add(ca);
+            chart.ChartAreas.Add(ca);
 
             Series s = new Series("KOSTENPROFIL")
             {
@@ -463,22 +297,75 @@ namespace WindowsFormsApplication1
                 XValueType = ChartValueType.Double,
                 LegendText = MyResource.Resource.PREIS_CHART_SERIE_KOSTENPROFIL
             };
-            _chart.Series.Add(s);
-
-            seite.Controls.Add(_chart);
-            return seite;
+            chart.Series.Add(s);
         }
 
         // ------------------------------------------------------------------
         // Ereignisse
         // ------------------------------------------------------------------
 
+        private void tabs_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (tabs.SelectedIndex == 2) ChartAktualisieren();
+        }
+
+        private void btnAlleMonate_Click(object sender, EventArgs e)
+        {
+            double w;
+            if (!Program.ZahlParsen(_tbMonat[0].Text, out w))
+            {
+                MessageBox.Show(MyResource.Resource.PREIS_PROFIL_MSG_JANUAR,
+                    MyResource.Resource.PREIS_PROFIL_TITEL,
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            for (int m = 0; m < 12; m++) _tbMonat[m].Text = Anzeige(w);
+        }
+
+        private void btnTagKopieren_Click(object sender, EventArgs e)
+        {
+            if (!TagUebernehmen(_aktuellerTag, true)) return;
+            _tagKopie = new double[24];
+            for (int h = 0; h < 24; h++) _tagKopie[h] = _woche[_aktuellerTag, h];
+        }
+
+        private void btnTagEinfuegen_Click(object sender, EventArgs e)
+        {
+            if (_tagKopie == null)
+            {
+                MessageBox.Show(MyResource.Resource.PREIS_PROFIL_MSG_ERST_KOPIEREN,
+                    MyResource.Resource.PREIS_PROFIL_TITEL,
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            for (int h = 0; h < 24; h++) _woche[_aktuellerTag, h] = _tagKopie[h];
+            TagAnzeigen(_aktuellerTag);
+            ChartAktualisieren();
+        }
+
+        private void btnAlleTage_Click(object sender, EventArgs e)
+        {
+            if (!TagUebernehmen(_aktuellerTag, true)) return;
+            for (int t = 0; t < 7; t++)
+                for (int h = 0; h < 24; h++)
+                    _woche[t, h] = _woche[_aktuellerTag, h];
+            ChartAktualisieren();
+            MessageBox.Show(MyResource.Resource.PREIS_PROFIL_MSG_ALLE_TAGE,
+                MyResource.Resource.PREIS_PROFIL_TITEL,
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void btnTagUebernehmen_Click(object sender, EventArgs e)
+        {
+            if (TagUebernehmen(_aktuellerTag, true)) ChartAktualisieren();
+        }
+
         private void lbTag_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (_lbTag.SelectedIndex < 0) return;
+            if (lbTag.SelectedIndex < 0) return;
 
             TagUebernehmen(_aktuellerTag, false);
-            _aktuellerTag = _lbTag.SelectedIndex;
+            _aktuellerTag = lbTag.SelectedIndex;
             TagAnzeigen(_aktuellerTag);
         }
 
@@ -540,8 +427,8 @@ namespace WindowsFormsApplication1
             }
 
             _modell.ID_Projekt = _idProjekt;
-            _modell.Bezeichner = _tbBezeichner.Text.Trim().Length > 0
-                ? _tbBezeichner.Text.Trim()
+            _modell.Bezeichner = tbBezeichner.Text.Trim().Length > 0
+                ? tbBezeichner.Text.Trim()
                 : MyResource.Resource.PREIS_PROFIL_NEU;
             _modell.Monatswerte = Monatswerte;
             _modell.Wochenwerte = Wochenwerte;
@@ -564,7 +451,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void ChartAktualisieren()
         {
-            if (_chart == null) return;
+            if (chart == null || chart.Series.Count == 0) return;
 
             for (int m = 0; m < 12; m++)
             {
@@ -579,11 +466,11 @@ namespace WindowsFormsApplication1
 
             double[] profil = PreisModell.AusMonatsUndWochenwerten(_monat, woche);
 
-            _chart.Series[0].Points.Clear();
+            chart.Series[0].Points.Clear();
             for (int i = 0; i < RasterAdapter.StundenJahr; i++)
             {
                 double x = i * 12.0 / RasterAdapter.StundenJahr;
-                _chart.Series[0].Points.AddXY(x, profil[i]);
+                chart.Series[0].Points.AddXY(x, profil[i]);
             }
         }
 

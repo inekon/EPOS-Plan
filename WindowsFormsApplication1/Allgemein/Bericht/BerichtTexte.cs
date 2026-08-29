@@ -159,6 +159,30 @@ namespace WindowsFormsApplication1
               "die Zahlen aller Kapitel stammen damit aus demselben Rechenlauf.",
               "Every project listed here was simulated anew for this report (hourly annual calculation) " +
               "and then evaluated economically; all chapters therefore share one calculation run." },
+
+            // PAKET E1 (Konzept 4.4) — die drei Bedarfskanäle im Bericht.
+            // Die Kanalnamen tragen bewusst den Zusatz „davon" bzw. stehen als
+            // Deckungsgrad-Zeilen: „Heizung" allein wäre als Wörterbuchschlüssel zu
+            // grob — der Bericht verwendet das Wort auch in Gewerks- und
+            // Komponentennamen, und T() ersetzt Text global.
+            { "davon Heizung", "of which space heating" },
+            { "davon Brauchwasser", "of which domestic hot water" },
+            { "davon Prozesswärme", "of which process heat" },
+            { "Deckungsgrade je Bedarfsart", "Coverage by demand type" },
+            { "Deckungsgrad Heizung", "Coverage space heating" },
+            { "Deckungsgrad Brauchwasser", "Coverage domestic hot water" },
+            { "Deckungsgrad Prozesswärme", "Coverage process heat" },
+
+            // PAKET P2 (Konzept 7.4) — die Speichertemperaturen des Schichtmodells.
+            // „Speicher" allein ist als Wörterbuchschlüssel grob genug, dass es nur als
+            // Tabellenkopf auftritt; die beiden Temperaturzeilen tragen ihre Einheit mit,
+            // damit sie sich nicht mit Zahlenwerten anderer Tabellen kreuzen.
+            { "Speichertemperaturen (Schichtmodell)", "Storage temperatures (stratified model)" },
+            { "Speicher", "Storage" },
+            { "T oben Mittel [°C]", "T top mean [°C]" },
+            { "T oben Minimum [°C]", "T top minimum [°C]" },
+            { "Speichertemperaturen in charakteristischen Wochen (Winter/Übergang/Sommer)",
+              "Storage temperatures in characteristic weeks (winter/transition/summer)" },
         };
     }
 }

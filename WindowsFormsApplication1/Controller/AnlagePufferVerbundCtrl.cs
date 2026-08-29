@@ -55,6 +55,23 @@ namespace WindowsFormsApplication1
         public const string GRUND_PASST_NICHT = "PasstNicht";
 
         /// <summary>
+        /// Grundcode „der gewaehlte Leitspeicher fuehrt eine SCHICHTUNG (N &gt; 1)" —
+        /// Kriterium W6 des Warnkriterienkatalogs, HART (Konzept 6.2/6.3, Paket P1).
+        ///
+        /// Verbund und Schichtung schliessen sich je Rechenspeicher aus (Entscheidung
+        /// F8): Ein Verbund ist EIN Vorrat aus mehreren Behaeltern, sein <c>Q_max</c> ist
+        /// die AUFSUMMIERTE Kapazitaet aller Mitglieder. Eine Schichtebene, die aus dem
+        /// Volumen des Leitspeichers abgeleitet waere, beschriebe damit einen Behaelter,
+        /// den es so nicht gibt - die Schicht-Invariante aus Konzept 7.3 waere verletzt.
+        /// Ein Verbund-Leitspeicher rechnet deshalb stets mit N = 1.
+        ///
+        /// Dies ist die GEGENRICHTUNG des Guards: Der Speicherdialog weist N &gt; 1 an
+        /// einem bereits bestehenden Leitspeicher ab, diese Pruefung weist einen Verbund
+        /// ab, dessen Leitspeicher schon geschichtet ist.
+        /// </summary>
+        public const string GRUND_LEIT_GESCHICHTET = "LeitGeschichtet";
+
+        /// <summary>
         /// Ein einzelner Konflikt aus <see cref="KonfliktPruefen"/>.
         ///
         /// Traegt ausschliesslich DATEN (IDs und einen Grundcode). Den Anzeigetext baut
@@ -131,27 +148,15 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        /// <summary>
-        /// Ein Zeiger fuer die Frage „hat dieses Projekt ueberhaupt einen Verbund?" - die
-        /// Weiche des Rechenwegs (<c>SimulationControl._verbundErzwingtSpeicherstufe</c>)
-        /// und der Kaskaden-Automatik (<c>KonfigurationCtrl.KaskadeNotwendig</c>).
-        ///
-        /// EINE Abfrage mit Verbund zu <c>Tab_Energieanlagen</c>; die Anlagen tragen den
-        /// Projektbezug, die Zuordnungszeile nicht (sie haengt an der Anlage, nicht am
-        /// Projekt - Invariante S-1).
-        /// </summary>
-        public static bool ProjektHatVerbund(int idProjekt)
-        {
-            if (idProjekt <= 0) return false;
-
-            object n = StilleDb.Scalar(
-                "SELECT COUNT(*) FROM [" + TABLE + "] v " +
-                "INNER JOIN Tab_Energieanlagen a ON v.ID_Anlage = a.ID " +
-                "WHERE a.ID_Projekt = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
-
-            return StilleDb.Zahl(n) > 0;
-        }
+        // ENTFALLEN MIT PAKET L (Aufraeumen, A1-O3): ProjektHatVerbund - die Frage „hat
+        // dieses Projekt ueberhaupt einen Verbund?". Sie hatte genau zwei Aufrufer, und
+        // beide sind mit Paket A1 gefallen: die Weiche des Rechenwegs
+        // (SimulationControl._verbundErzwingtSpeicherstufe) und die Kaskaden-Automatik
+        // (KonfigurationCtrl.KaskadeNotwendig). Seit A1 rechnet JEDER Lauf ueber die
+        // Speicherstufe - ein Verbund erzwingt nichts mehr, weil es nichts mehr zu
+        // erzwingen gibt. Wer die Frage je wieder braucht: eine COUNT(*)-Abfrage ueber
+        // TABLE mit INNER JOIN auf Tab_Energieanlagen (die Anlagen tragen den
+        // Projektbezug, die Zuordnungszeile nicht - Invariante S-1).
 
         /// <summary>
         /// Die Verbuende EINES PROJEKTS in der Form, die die Speicher-Registry braucht:
@@ -322,6 +327,33 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// true, wenn dieser Puffer der LEITSPEICHER eines Parallelverbunds ist — also
+        /// mindestens eine Anlage ihn als Hauptsenke fuehrt UND fuer diese Anlage
+        /// zusaetzliche Verbundmitglieder eingetragen sind (PAKET P1, Kriterium W6).
+        ///
+        /// <para>Das Gegenstueck zu <see cref="LeitspeicherFuerMitglied"/>: Dort ist der
+        /// Puffer das MITGLIED und gesucht wird sein Leitspeicher, hier ist er selbst der
+        /// Leitspeicher. Der Guard des Speicherdialogs braucht genau diese Richtung.</para>
+        ///
+        /// <para>Die Bedingung <c>v.ID_Puffer &lt;&gt; a.WS_ID_Puffer</c> haelt dieselbe
+        /// Regel wie <see cref="VerbuendeDesProjekts"/> ein: Ein Speicher ist nicht sein
+        /// eigenes Mitglied, und eine solche Altzeile macht aus ihm keinen Verbund.</para>
+        ///
+        /// <para>Still ueber <see cref="StilleDb"/>; eine fehlende Tabelle bedeutet
+        /// „kein Verbund" und damit <c>false</c>.</para>
+        /// </summary>
+        public static bool IstLeitspeicher(int idPuffer)
+        {
+            if (idPuffer <= 0) return false;
+
+            return StilleDb.Zahl(StilleDb.Scalar(
+                "SELECT COUNT(*) FROM [" + TABLE + "] v " +
+                "INNER JOIN Tab_Energieanlagen a ON v.ID_Anlage = a.ID " +
+                "WHERE a.WS_ID_Puffer = ? AND v.ID_Puffer <> a.WS_ID_Puffer",
+                StilleDb.Par("@id", OleDbType.Integer, idPuffer))) > 0;
+        }
+
+        /// <summary>
         /// Anlagen, die diesen Puffer als Verbundmitglied fuehren - je Treffer
         /// <c>Anlagen-ID</c> und <c>Bezeichner</c>. Grundlage des Loeschschutzes in
         /// <c>PufferSpCtrl.ReferenzenAufPuffer</c>.
@@ -461,6 +493,10 @@ namespace WindowsFormsApplication1
         ///     (Begruendung bei <see cref="QuellPufferDesProjekts"/>).</description></item>
         ///   <item><description>Mitglied gehoert nicht zum Projekt oder traegt eine andere
         ///     Verwendung als der Leitspeicher.</description></item>
+        ///   <item><description><b>PAKET P1:</b> Der Leitspeicher fuehrt eine SCHICHTUNG
+        ///     (<c>Schichten_Anzahl &gt; 1</c>). Kriterium W6, HART - Verbund und
+        ///     Schichtung schliessen sich je Rechenspeicher aus (Konzept 6.3,
+        ///     Entscheidung F8).</description></item>
         /// </list>
         ///
         /// <b>Ausdrueckliche AUSNAHME zu 3.</b> Derselbe Verbund darf von MEHREREN
@@ -487,6 +523,25 @@ namespace WindowsFormsApplication1
         {
             List<Konfliktbefund> befunde = new List<Konfliktbefund>();
             if (mitglieder == null || mitglieder.Count == 0) return befunde;
+
+            // --- 7. W6, GEGENRICHTUNG (PAKET P1): Der Leitspeicher darf keine
+            //        SCHICHTUNG fuehren. Verbund und Schichtung schliessen sich je
+            //        Rechenspeicher aus (Konzept 6.3, Entscheidung F8) - Begruendung
+            //        bei GRUND_LEIT_GESCHICHTET. Der Speicherdialog haelt dieselbe
+            //        Regel von der anderen Seite: Dort wird N > 1 an einem bereits
+            //        bestehenden Leitspeicher abgewiesen.
+            //
+            //        Spaltentolerant: Ohne Migrationsschritt 53 liefert
+            //        SchichtdatenLesen die Vorbelegung N = 1, und der Guard schweigt.
+            //        Zuerst geprueft, weil er die GANZE Zuordnung betrifft und nicht
+            //        ein einzelnes Mitglied - der Dialog nennt ohnehin nur den ersten
+            //        Befund.
+            if (idLeit > 0 && PufferSpCtrl.SchichtdatenLesen(idLeit).Geschichtet)
+                befunde.Add(new Konfliktbefund
+                {
+                    ID_Puffer = idLeit,
+                    Grund = GRUND_LEIT_GESCHICHTET
+                });
 
             // --- 4. Der Leitspeicher selbst darf nicht Mitglied eines fremden Verbunds
             //        sein. Er ist der Vorratsbehaelter DIESES Verbunds; gehoerte er

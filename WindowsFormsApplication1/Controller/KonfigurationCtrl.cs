@@ -66,27 +66,25 @@ namespace WindowsFormsApplication1
                 if (row[21] != DBNull.Value) model.Leistungsgrenze = Convert.ToInt32(row[21]);
                 if (row[22] != DBNull.Value) model.Pendelspeicher = Convert.ToDouble(row[22]);
 
-                // --- Feature-Flag der zweikanaligen Kaskade (Paket 4, Etappe 4a) -------
+                // PAKET L (Aufräumen): Hier stand die namensbasierte Lesung des
+                // Feature-Flags Kaskade_Zweikanalig. Sie ist mit dem Feld
+                // KonfigurationModel.Kaskade_Zweikanalig entfallen - seit Paket A1 gibt
+                // es nur EINEN Rechenweg, und mit diesem Paket auch keinen Leser mehr.
+                // Die Ordinalkette row[0..22] ist davon unberührt: Die Lesung war
+                // namensbasiert und hing an keiner Position.
+
+                // --- Einstellung Extrapolation_erlaubt (Paket 8, Konzept 13.4) --------
                 //
-                // NAMENSBASIERT, bewusst NICHT als row[24] an die Ordinalkette angehängt:
+                // NAMENSBASIERT, bewusst NICHT als row[23] an die Ordinalkette angehängt:
                 // Die Kette oben ist an die physische Spaltenreihenfolge von
                 // Tab_Einstellungen gebunden und damit die brüchigste Stelle des
                 // Datenzugriffs - jede weitere Position macht sie nur länger. Über den
                 // Spaltennamen ist der Zugriff unabhängig davon, an welcher Position die
                 // Migration die Spalte angehängt hat.
                 //
-                // Fehlt die Spalte (Datenbank noch nicht auf Schemastand 6), bleibt es
-                // bei "aus" - dem Vorgabeverhalten des Flags. Deshalb wird der Wert in
-                // BEIDEN Zweigen gesetzt und nicht nur bei Treffer: ein wiederverwendetes
-                // Model dürfte sonst den Stand des zuvor gelesenen Projekts behalten.
-                model.Kaskade_Zweikanalig =
-                    dt.Columns.Contains(SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG) &&
-                    row[SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG] != DBNull.Value &&
-                    Convert.ToBoolean(row[SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG]);
-
-                // --- Einstellung Extrapolation_erlaubt (Paket 8, Konzept 13.4) --------
-                //
-                // Dasselbe namensbasierte Muster wie beim Feature-Flag darüber, aber mit
+                // Der Wert wird in BEIDEN Zweigen gesetzt und nicht nur bei Treffer: ein
+                // wiederverwendetes Model dürfte sonst den Stand des zuvor gelesenen
+                // Projekts behalten. Anders als beim entfallenen Flag mit
                 // UMGEKEHRTER Vorbelegung: Fehlt die Spalte (Datenbank noch nicht auf
                 // Schemastand 7) oder steht dort NULL, gilt ERLAUBT. Das ist genau das
                 // bisherige Verhalten - die Engine fragte nach, und die Antwort war in
@@ -111,240 +109,48 @@ namespace WindowsFormsApplication1
                     Convert.ToBoolean(row[SchemaKatalog.SPALTE_EXTRAPOLATION_ERLAUBT]) ||
                     ExtrapolationVorbelegungFehlt();
 
+                // --- Kanal-Knappheitsreihenfolge (Paket K2, Konzept 4.3, F10) ---------
+                //
+                // Zweites Feld nach demselben namensbasierten Muster: Die Ordinalkette
+                // oben endet bei row[22], und sie soll dort enden. Fehlt die Spalte
+                // (Datenbank noch nicht auf Schemastand 49) oder steht dort NULL bzw.
+                // ein Leerwert, gilt DbWerte.KNAPPHEIT_DEFAULT - also genau die
+                // Reihenfolge, die die Kaskade vor diesem Paket fest verdrahtet kannte.
+                //
+                // Wie beim Feld darueber wird der Wert in BEIDEN Zweigen
+                // gesetzt und nicht nur bei Treffer: ein wiederverwendetes Model
+                // duerfte sonst die Reihenfolge des zuvor gelesenen Projekts behalten.
+                model.Kanal_Knappheitsreihenfolge = KnappheitsreihenfolgeOderDefault(
+                    dt.Columns.Contains(SchemaKatalog.SPALTE_KANAL_KNAPPHEITSREIHENFOLGE)
+                        ? row[SchemaKatalog.SPALTE_KANAL_KNAPPHEITSREIHENFOLGE]
+                        : null);
+
                 rows = 1;
             }
         }
 
-        /// <summary>
-        /// Liest das Feature-Flag <c>Kaskade_Zweikanalig</c> eines Projekts DIALOGFREI
-        /// (Paket 4, Etappe 4a) - für die Oberfläche, die den Schalter anzeigt, ohne den
-        /// ganzen Einstellungssatz zu laden.
-        ///
-        /// Fehlende Spalte, fehlende Zeile und NULL liefern gleichermaßen <c>false</c>;
-        /// das ist die Vorbelegung des Flags.
-        /// </summary>
-        public static bool KaskadeZweikanaligLesen(int idProjekt)
-        {
-            if (idProjekt <= 0) return false;
-
-            object v = StilleDb.Scalar(
-                "SELECT [" + SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG + "] " +
-                "FROM Tab_Einstellungen WHERE ID_Projekt = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
-
-            if (v == null) return false;
-            try { return Convert.ToBoolean(v); }
-            catch { return false; }
-        }
-
-        /// <summary>
-        /// Schreibt das Feature-Flag <c>Kaskade_Zweikanalig</c> eines Projekts.
-        ///
-        /// Bewusst ein EIGENES, zielgenaues UPDATE statt einer Erweiterung von
-        /// <see cref="Update"/>: Dessen Spaltenliste und die von <see cref="Insert"/>
-        /// sind an die Ordinalkette in <see cref="ReadSingle"/> gekoppelt, und auf einer
-        /// Datenbank ohne Schemastand 6 würde ein erweitertes UPDATE das Speichern der
-        /// GESAMTEN Konfiguration scheitern lassen - wegen eines Vorschauschalters.
-        ///
-        /// Dialogfrei (Konzept 13.4). Rückgabe false, wenn keine Zeile getroffen wurde
-        /// (Projekt ohne Einstellungssatz) oder die Spalte fehlt.
-        /// </summary>
-        public static bool KaskadeZweikanaligSchreiben(int idProjekt, bool wert)
-        {
-            if (idProjekt <= 0) return false;
-
-            int betroffen = StilleDb.NonQuery(
-                "UPDATE Tab_Einstellungen SET [" + SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG + "] = ? " +
-                "WHERE ID_Projekt = ?",
-                StilleDb.Par("@wert", OleDbType.Boolean, wert),
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
-
-            return betroffen > 0;
-        }
-
-        // --- Automatik: wann ist die zweikanalige Kaskade NOTWENDIG? -------------------
-
-        /// <summary>
-        /// true, wenn die Konfiguration des Projekts Warmwasser und Heizwärme GETRENNT
-        /// führt und deshalb ohne die zweikanalige Kaskade Einstellungen enthielte, die
-        /// die Simulation gar nicht auswertet.
-        ///
-        /// <b>Die Regel.</b> Notwendig ist die zweikanalige Kaskade, sobald mindestens
-        /// EINE Anlage, deren Erzeugerart in der Kaskade des Projekts steht
-        /// (<c>Tab_Einstellungen.Tool_1..Tool_4</c> — dieselben vier Positionen, die
-        /// <c>SimulationControl.tool[0..3]</c> abläuft), eines dieser Merkmale trägt:
-        /// <list type="number">
-        ///   <item><description>Haupt- oder Zweitsenke ist ein Puffer BRAUCHWASSER oder
-        ///     KOMBI. Der einkanalige Weg holt den Speicher aus der Alt-Zuordnung
-        ///     <c>Z_ProjektPufferSp</c> und kennt dort ausschließlich den HEIZUNGS-Speicher
-        ///     der Wärmepumpe; eine Brauchwasser-/Kombi-Senke wird gespeichert und
-        ///     angezeigt, rechnet aber nicht mit (derselbe Sachverhalt, den bis heute
-        ///     <c>Form_Waermesenke.BrauchwasserUebergangsHinweis</c> meldet).</description></item>
-        ///   <item><description>Die Hauptsenke ist ein PARALLELVERBUND — mehrere
-        ///     Pufferspeicher als ein gemeinsamer Wärmevorrat (Paket Parallelverbund).
-        ///     Derselbe Sachverhalt wie bei Merkmal 1: Der einkanalige Weg kennt keine
-        ///     Ladeaufträge, die aufsummierte Kapazität wäre gespeichert und angezeigt,
-        ///     aber nicht gerechnet. Die Engine erzwingt den Rechenweg deshalb ohnehin
-        ///     (<c>SimulationControl._verbundErzwingtSpeicherstufe</c>) — dieser Zweig hält
-        ///     den SCHALTER mit dem tatsächlichen Rechenweg im Gleichstand.</description></item>
-        ///   <item><description>Hauptsenke HEIZKREIS mit einer Bedarfsart ungleich
-        ///     „Beides" bei einer Erzeugerart, deren EINKANALIGER Rechenweg
-        ///     <c>WS_Typ</c> nicht auswertet — siehe die Abgrenzung unten.</description></item>
-        ///   <item><description>Ein aufgelöster Quellpuffer (<c>WQ_Typ = Pufferspeicher</c>
-        ///     mit <c>WQ_ID_Puffer &gt; 0</c>, also die Kaskade). Quellbezüge entstehen
-        ///     ausschließlich in <c>SimulationControl.QuellbezuegeAufbauen</c>, aufgerufen
-        ///     aus <c>Speicherstufe_Rechnen</c> — und die läuft nur im zweikanaligen
-        ///     Weg.</description></item>
-        /// </list>
-        ///
-        /// <b>Abgrenzung bei Merkmal 2 — die WÄRMEPUMPE zählt NICHT mit.</b> Die
-        /// Bedarfsart ist nicht durchgängig zweikanalig-exklusiv: Die einkanalige
-        /// Stundenschleife der Wärmepumpe liest <c>WS_Typ</c> sehr wohl aus
-        /// (<c>SimulationWaermepumpe.ModuleAufbauen</c> füllt <c>wp_senke</c>,
-        /// <c>Berechnung_Stundenschleife</c> wählt damit <c>rest_ww</c> bzw.
-        /// <c>rest_heiz</c>). Ein „nur Heizwärme"-Modul rechnet dort also bereits richtig,
-        /// und eine Automatik, die deshalb umschaltet, würde ohne Not ANDERE Ergebnisse
-        /// erzeugen. BHKW, Heizkessel und Solarthermie werten <c>WS_Typ</c> einkanalig
-        /// dagegen NICHT aus (der einkanalige Anker rechnete auf der Bedarfssumme; erst die
-        /// zweikanaligen Stufen folgen dem Kanal — vgl. den Kopfkommentar von
-        /// <c>SimulationControl.Simulation_BHKW_Ctrl_Zweikanalig</c>). Für sie ist die
-        /// Einstellung ohne die zweikanalige Kaskade wirkungslos, und genau das soll die
-        /// Automatik verhindern.
-        ///
-        /// <b>Keine zweite SQL-Wahrheit.</b> Gelesen wird über <see cref="Hydraulikbild"/>
-        /// (Etappe D4) — dieselbe Abbildung, mit der Senken- und Quellendialog schon heute
-        /// prüfen. Merkmal 3 fragt <c>Hydraulikbild.QuelleJeAnlage</c> und damit die
-        /// ENGINE-Wahrheit (Fremdschlüssel, nicht der Alt-Bezeichner).
-        ///
-        /// Dialogfrei (Konzept 13.4).
-        /// </summary>
-        public static bool KaskadeNotwendig(int idProjekt)
-        {
-            return KaskadeNotwendig(idProjekt, 0, null);
-        }
-
-        /// <summary>
-        /// Wie <see cref="KaskadeNotwendig(int)"/>, prüft aber den Zustand NACH dem
-        /// Speichern: <paramref name="senkeErsatz"/> tritt für die Anlage
-        /// <paramref name="idAnlageErsatz"/> an die Stelle der gespeicherten Senkenfelder.
-        ///
-        /// Dieselbe Bauart wie <c>Hydraulikbild.Ebenen(idAnlageErsatz, …)</c>: Der Dialog
-        /// soll fragen können, was gälte, WENN er jetzt speichert — sonst müsste er die
-        /// Regel ein zweites Mal auslegen. Beide Parameter leer (0/<c>null</c>) = der
-        /// gespeicherte Bestand.
-        /// </summary>
-        public static bool KaskadeNotwendig(int idProjekt, int idAnlageErsatz,
-                                            WaermesenkeClass.SenkeDaten senkeErsatz)
-        {
-            if (idProjekt <= 0) return false;
-
-            Hydraulikbild bild = Hydraulikbild.Lesen(idProjekt);
-            if (bild == null) return false;
-
-            // Der Ersatz wird normalisiert wie jeder gelesene Satz (Puffer-Ziel ohne
-            // Puffer ist kein Puffer-Ziel) - sonst bewertete die Regel eine halbe
-            // Dialogeingabe anders als denselben Stand nach dem Speichern.
-            WaermesenkeClass.SenkeDaten ersatz = null;
-            if (idAnlageErsatz > 0 && senkeErsatz != null)
-            {
-                ersatz = senkeErsatz.Kopie();
-                WaermesenkeClass.Normalisieren(ersatz);
-            }
-
-            List<string> kaskade = KaskadeErzeuger(idProjekt);
-
-            foreach (Hydraulikbild.AnlagenEintrag a in bild.Anlagen)
-            {
-                if (a == null) continue;
-
-                // Anlagen einer Erzeugerart, die in diesem Projekt gar nicht rechnet,
-                // begründen keine Notwendigkeit - ihre Senken und Quellen bleiben in
-                // JEDEM Rechenweg unbeachtet.
-                string erzeuger = ErzeugerZuTyp(a.ID_Type);
-                if (erzeuger == null || !kaskade.Contains(erzeuger)) continue;
-
-                WaermesenkeClass.SenkeDaten senke =
-                    (ersatz != null && a.ID == idAnlageErsatz) ? ersatz : a.Senke;
-
-                // (1) Brauchwasser- oder Kombi-Senke
-                if (WaermesenkeClass.IstBrauchwasserseitig(senke.Ziel)) return true;
-                if (senke.HatZweitsenke &&
-                    WaermesenkeClass.IstBrauchwasserseitig(senke.Ziel2)) return true;
-
-                // (1b) PARALLELVERBUND (Paket Parallelverbund, Entscheidung 17.08.2026):
-                // Lädt die Anlage einen gemeinsamen Vorrat aus mehreren Pufferspeichern,
-                // ist die Speicherstufe zwingend - der einkanalige Altpfad kennt keine
-                // Ladeaufträge und würde die aufsummierte Kapazität nicht rechnen (siehe
-                // SimulationControl._verbundErzwingtSpeicherstufe). Ohne diesen Zweig
-                // erzwänge die Engine den Rechenweg, während der Schalter im
-                // Konfigurationsdialog weiter "aus" zeigte - zwei Aussagen über dasselbe.
-                //
-                // Der ERSATZ zählt hier wie bei den übrigen Merkmalen: Der Dialog fragt,
-                // was gälte, WENN er jetzt speichert. Für alle anderen Anlagen gilt der
-                // gespeicherte Stand. Hydraulikbild trägt die Mitglieder nicht (es liest
-                // über AusDatenzeile, ohne Verbund-Nachschlag je Zeile) - deshalb der
-                // punktuelle Griff, und zwar nur für Anlagen, die in diesem Projekt
-                // überhaupt rechnen.
-                bool verbund = (ersatz != null && a.ID == idAnlageErsatz)
-                    ? ersatz.HatVerbund
-                    : WaermesenkeClass.VerbundLesen(a.ID).Count > 0;
-                if (verbund) return true;
-
-                // (2) getrennter Kanal am Heizkreis - ohne die Wärmepumpe (Abgrenzung oben)
-                if (a.ID_Type != ProjektPuffer.TYP_WP &&
-                    string.Equals(senke.Ziel, WaermesenkeClass.ZIEL_HEIZKREIS, StringComparison.Ordinal) &&
-                    !string.Equals(senke.Bedarfsart, WaermequelleClass.SENKE_BEIDES, StringComparison.Ordinal))
-                    return true;
-
-                // (3) aufgelöster Quellpuffer (Kaskade)
-                if (bild.QuelleJeAnlage.ContainsKey(a.ID)) return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Die Erzeugerarten der Kaskade eines Projekts als DB-Werte
-        /// (<c>Tab_Einstellungen.Tool_1..Tool_4</c>); nie <c>null</c>.
-        ///
-        /// Tool_5/Tool_6 tragen Photovoltaik und Stromspeicher und stehen deshalb nicht
-        /// zur Debatte - die Wärmekaskade endet bei Position 4
-        /// (<c>SimulationControl.KaskadeEnthaelt</c>).
-        /// </summary>
-        private static List<string> KaskadeErzeuger(int idProjekt)
-        {
-            List<string> liste = new List<string>();
-
-            DataTable dt = StilleDb.Tabelle(
-                "SELECT Tool_1, Tool_2, Tool_3, Tool_4 FROM Tab_Einstellungen WHERE ID_Projekt = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
-            if (dt == null || dt.Rows.Count == 0) return liste;
-
-            DataRow r = dt.Rows[0];
-            for (int i = 1; i <= 4; i++)
-            {
-                string wert = StilleDb.Text(StilleDb.Feld(r, "Tool_" + i));
-                if (wert.Length > 0 && !liste.Contains(wert)) liste.Add(wert);
-            }
-
-            return liste;
-        }
-
-        /// <summary>
-        /// <c>Tab_Energieanlagen.ID_Type</c> → DB-Wert der Erzeugerart; <c>null</c> für
-        /// alles, was kein Wärmeerzeuger ist (etwa der Pufferspeicher, Typ 12).
-        /// </summary>
-        private static string ErzeugerZuTyp(int idType)
-        {
-            switch (idType)
-            {
-                case ProjektPuffer.TYP_WP: return DbWerte.ERZEUGER_WAERMEPUMPE;
-                case ProjektPuffer.TYP_SOLARTHERMIE: return DbWerte.ERZEUGER_SOLARTHERMIE;
-                case ProjektPuffer.TYP_KESSEL: return DbWerte.ERZEUGER_HEIZKESSEL;
-                case ProjektPuffer.TYP_BHKW: return DbWerte.ERZEUGER_BHKW;
-                default: return null;
-            }
-        }
+        // =====================================================================
+        // ENTFALLEN MIT PAKET L (Aufraeumen) - Altlast Kaskade_Zweikanalig
+        //
+        // Hier standen KaskadeZweikanaligLesen, KaskadeZweikanaligSchreiben und die
+        // Automatik KaskadeNotwendig (zwei Ueberladungen) samt ihrer beiden privaten
+        // Helfer KaskadeErzeuger und ErzeugerZuTyp. Sie bedienten die
+        // Projekteinstellung Tab_Einstellungen.Kaskade_Zweikanalig - bis Paket A1 die
+        // WEICHE zwischen zwei Rechenwegen.
+        //
+        // Mit Paket A1 (Leitentscheidung L1) ist der einkanalige Altpfad ersatzlos
+        // entfallen; mit dem Fusszeilenschalter des Konfigurationsdialogs und dem
+        // Uebergangshinweis des Senkendialogs verschwand ihr letzter Aufrufer. Paket L
+        // schneidet die aufruferfreien Bausteine heraus (A1-O3): Es gibt nur EINEN
+        // Rechenweg, es gibt also nichts mehr umzuschalten und nichts zu begruenden.
+        //
+        // DIE SPALTE BLEIBT. Konzept Kapitel 15 fuehrt
+        // Tab_Einstellungen.Kaskade_Zweikanalig als "stillgelegt (Lese-Altlast nach
+        // Migration)"; Migrationsschritt 51 setzt sie im Bestand auf WAHR und loescht
+        // nichts. Wer sie je wieder braucht, liest sie ueber StilleDb - der Weg dorthin
+        // ist eine Zeile, die Namenskonstante steht in
+        // SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG.
+        // =====================================================================
 
         /// <summary>
         /// Liest die Einstellung <c>Extrapolation_erlaubt</c> eines Projekts DIALOGFREI
@@ -412,8 +218,7 @@ namespace WindowsFormsApplication1
         /// Schreibt die Einstellung <c>Extrapolation_erlaubt</c> eines Projekts.
         ///
         /// Bewusst ein EIGENES, zielgenaues UPDATE statt einer Erweiterung von
-        /// <see cref="Update"/> — dieselbe Begründung wie bei
-        /// <see cref="KaskadeZweikanaligSchreiben"/>: Die Spaltenlisten von
+        /// <see cref="Update"/>: Die Spaltenlisten von
         /// <see cref="Insert"/>/<see cref="Update"/> hängen an der Ordinalkette in
         /// <see cref="ReadSingle"/>, und auf einer Datenbank ohne die Spalte würde ein
         /// erweitertes UPDATE das Speichern der GESAMTEN Konfiguration scheitern lassen.
@@ -429,6 +234,140 @@ namespace WindowsFormsApplication1
                 "UPDATE Tab_Einstellungen SET [" + SchemaKatalog.SPALTE_EXTRAPOLATION_ERLAUBT + "] = ? " +
                 "WHERE ID_Projekt = ?",
                 StilleDb.Par("@wert", OleDbType.Boolean, wert),
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+
+            return betroffen > 0;
+        }
+
+        // --- Kanal-Knappheitsreihenfolge (Paket K2, Konzept 4.3, Entscheidung F10) -----
+
+        /// <summary>
+        /// Der Wert eines gelesenen Feldes; <c>null</c>, <c>DBNull</c> und Leerwert
+        /// ergeben <see cref="DbWerte.KNAPPHEIT_DEFAULT"/> — die Vorbelegung nach F10
+        /// und zugleich die bis Paket K2 fest verdrahtete Reihenfolge.
+        ///
+        /// <para>Bewusst OHNE inhaltliche Prüfung: Ein unbekanntes Glied oder ein
+        /// fehlender Kanal ist kein Grund, den Anwenderwillen zu verwerfen. Die
+        /// Auswertung im Rechenkern ist tolerant — sie übergeht, was sie nicht kennt,
+        /// und ergänzt fehlende Kanäle hinten in der Reihenfolge des Vorgabewerts.</para>
+        /// </summary>
+        public static string KnappheitsreihenfolgeOderDefault(object feld)
+        {
+            if (feld == null || feld == DBNull.Value) return DbWerte.KNAPPHEIT_DEFAULT;
+
+            string wert = (feld.ToString() ?? "").Trim();
+            return wert.Length == 0 ? DbWerte.KNAPPHEIT_DEFAULT : wert;
+        }
+
+        /// <summary>
+        /// Liest die Knappheitsreihenfolge eines Projekts DIALOGFREI — für Aufrufer, die
+        /// nicht den ganzen Einstellungssatz laden (Rechenkern, Oberfläche).
+        ///
+        /// Fehlende Spalte, fehlende Zeile, NULL und Leerwert liefern gleichermaßen
+        /// <see cref="DbWerte.KNAPPHEIT_DEFAULT"/>.
+        /// </summary>
+        public static string KnappheitsreihenfolgeLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return DbWerte.KNAPPHEIT_DEFAULT;
+
+            object v = StilleDb.Scalar(
+                "SELECT [" + SchemaKatalog.SPALTE_KANAL_KNAPPHEITSREIHENFOLGE + "] " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+
+            return KnappheitsreihenfolgeOderDefault(v);
+        }
+
+        /// <summary>
+        /// Schreibt die Knappheitsreihenfolge eines Projekts.
+        ///
+        /// Bewusst ein EIGENES, zielgenaues UPDATE statt einer Erweiterung von
+        /// <see cref="Update"/> — dieselbe Begründung wie bei
+        /// <see cref="ExtrapolationErlaubtSchreiben"/>: Die Spaltenlisten von
+        /// <see cref="Insert"/>/<see cref="Update"/> hängen an der Ordinalkette in
+        /// <see cref="ReadSingle"/>, und auf einer Datenbank ohne die Spalte würde ein
+        /// erweitertes UPDATE das Speichern der GESAMTEN Konfiguration scheitern lassen.
+        ///
+        /// Ein leerer Wert wird als <see cref="DbWerte.KNAPPHEIT_DEFAULT"/> geschrieben,
+        /// nicht als NULL: Die Spalte soll die geltende Reihenfolge zeigen, auch wenn
+        /// sie die Vorgabe ist.
+        ///
+        /// Dialogfrei (Konzept 13.4). Rückgabe false, wenn keine Zeile getroffen wurde
+        /// oder die Spalte fehlt.
+        /// </summary>
+        public static bool KnappheitsreihenfolgeSchreiben(int idProjekt, string reihenfolge)
+        {
+            if (idProjekt <= 0) return false;
+
+            string wert = (reihenfolge ?? "").Trim();
+            if (wert.Length == 0) wert = DbWerte.KNAPPHEIT_DEFAULT;
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" +
+                SchemaKatalog.SPALTE_KANAL_KNAPPHEITSREIHENFOLGE + "] = ? " +
+                "WHERE ID_Projekt = ?",
+                StilleDb.Par("@wert", OleDbType.VarWChar, wert),
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+
+            return betroffen > 0;
+        }
+
+        // --- Booster-Lesepunkt (Paket B2, Nutzerauftrag 28.08.2026) --------------------
+
+        /// <summary>
+        /// Liest den LESEPUNKT der Booster-Quelltemperatur eines Projekts DIALOGFREI —
+        /// für den Rechenkern und den Konfigurationsdialog.
+        ///
+        /// <para>Fehlende Spalte (Datenbank noch nicht auf Schemastand 55), fehlende
+        /// Zeile, NULL, Leerwert und jeder unbekannte Wert liefern gleichermaßen
+        /// <see cref="DbWerte.BOOSTER_LESEPUNKT_DAVOR"/> — die Vorbelegung des
+        /// Nutzerauftrags.</para>
+        ///
+        /// <para><b>Anders als bei <see cref="ExtrapolationErlaubtLesen"/> braucht es
+        /// hier KEINE Markerprüfung</b> (Befund N8): Die Spalte ist ein TEXTfeld, und
+        /// eine angehängte Textspalte steht in Access auf NULL — nicht auf einem Wert,
+        /// der wie eine Anwenderentscheidung aussieht. Die Datenlücke ist damit von
+        /// selbst als solche erkennbar.</para>
+        /// </summary>
+        public static string BoosterLesepunktLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return DbWerte.BOOSTER_LESEPUNKT_DAVOR;
+
+            object v = StilleDb.Scalar(
+                "SELECT [" + SchemaKatalog.SPALTE_BOOSTER_LESEPUNKT + "] " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+
+            return DbWerte.BoosterLesepunktOderDefault(v);
+        }
+
+        /// <summary>
+        /// Schreibt den Booster-Lesepunkt eines Projekts.
+        ///
+        /// Bewusst ein EIGENES, zielgenaues UPDATE statt einer Erweiterung von
+        /// <see cref="Update"/> — dieselbe Begründung wie bei
+        /// <see cref="KnappheitsreihenfolgeSchreiben"/>: Die Spaltenlisten von
+        /// <see cref="Insert"/>/<see cref="Update"/> hängen an der Ordinalkette in
+        /// <see cref="ReadSingle"/>, und auf einer Datenbank ohne die Spalte würde ein
+        /// erweitertes UPDATE das Speichern der GESAMTEN Konfiguration scheitern lassen.
+        ///
+        /// Ein unbekannter Wert wird als Vorbelegung geschrieben, nicht als NULL: Die
+        /// Spalte soll den geltenden Lesepunkt zeigen, auch wenn er die Vorgabe ist.
+        ///
+        /// Dialogfrei (Konzept 13.4). Rückgabe false, wenn keine Zeile getroffen wurde
+        /// oder die Spalte fehlt.
+        /// </summary>
+        public static bool BoosterLesepunktSchreiben(int idProjekt, string lesepunkt)
+        {
+            if (idProjekt <= 0) return false;
+
+            string wert = DbWerte.BoosterLesepunktOderDefault(lesepunkt);
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" +
+                SchemaKatalog.SPALTE_BOOSTER_LESEPUNKT + "] = ? " +
+                "WHERE ID_Projekt = ?",
+                StilleDb.Par("@wert", OleDbType.VarWChar, wert),
                 StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
 
             return betroffen > 0;
@@ -490,6 +429,19 @@ namespace WindowsFormsApplication1
                 // Zeile stünde jedes NEUE Projekt auf "Extrapolation verboten" und
                 // damit auf anderem Verhalten als der migrierte Bestand.
                 ExtrapolationErlaubtSchreiben(ID_Projekt, true);
+
+                // PAKET K2 (F10): dieselbe Nachreichung für die Knappheitsreihenfolge.
+                // Anders als beim Ja/Nein-Feld darüber wäre NULL hier kein Fehler - die
+                // Leseseite macht daraus ohnehin den Vorgabewert. Geschrieben wird sie
+                // trotzdem, damit ein neues Projekt dieselbe Zeile zeigt wie ein
+                // migriertes: Die Spalte soll die geltende Reihenfolge nennen, nicht
+                // schweigen.
+                KnappheitsreihenfolgeSchreiben(ID_Projekt, DbWerte.KNAPPHEIT_DEFAULT);
+
+                // PAKET B2: dieselbe Nachreichung für den Booster-Lesepunkt. Ein neues
+                // Projekt soll dieselbe Zeile zeigen wie ein migriertes - die Spalte
+                // nennt den geltenden Lesepunkt, statt zu schweigen.
+                BoosterLesepunktSchreiben(ID_Projekt, DbWerte.BOOSTER_LESEPUNKT_DAVOR);
                 return true;
             }
             catch (Exception ex)

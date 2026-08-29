@@ -150,6 +150,10 @@ namespace WindowsFormsApplication1
             simulation_Waermebedarf.Waermebedarf_berechnen(idProjekt, nKlimaregion);
 
             simulation_Strombedarf.m_ID_Projekt = idProjekt;
+            // K1 (F3): denselben Klimadaten-Kalender wie die Wärmerechnung verwenden -
+            // erspart der Stromrechnung die eigene Klimadaten-Lesung und schließt aus,
+            // dass beide Bedarfsarten je einen anderen Wochentag ermitteln.
+            simulation_Strombedarf.WochentagJan1 = simulation_Waermebedarf.WochentagJan1;
             simulation_Strombedarf.Berechnung(idProjekt);
 
             // PAKET 8 (Konzept 13.4): Bricht die Strombedarfsrechnung ab, war das bisher
@@ -227,6 +231,14 @@ namespace WindowsFormsApplication1
             m.Energiebedarf.Waermerestbedarf = sim.Restwaerme;   // Restwärmebedarf nach allen Erzeugern
             m.Energiebedarf.Stromrestbedarf = sim.Reststrom;     // Reststrombedarf/Netzbezug
 
+            // PAKET E1 (Konzept 4.4): der Jahresbedarf JE KANAL [MWh]. Quelle ist der
+            // Kanalsatz, aus dem seit Paket K1 auch Waermebedarf_Gesamt gebildet wird
+            // (die Kanäle sind die führende Größe, die Summe die abgeleitete) — es ist
+            // die Aufschlüsselung desselben Werts, keine zweite Rechnung. Die Summe der
+            // drei Spalten ist deshalb Waermebedarf_Gesamt bis auf die float-Rundung, mit
+            // der Kanalsatz.Summe() den Summenvektor stundenweise bildet.
+            m.Energiebedarf.Waermebedarf_Kanal = BedarfJeKanal(simulation_Waermebedarf);
+
             // Detail: Waermepumpe (nur wenn gerechnet), Werte wie in der WP-Ansicht (MWh).
             if (sim.bSimulationWP)
             {
@@ -236,13 +248,10 @@ namespace WindowsFormsApplication1
                 w.Waermeproduktion_WP = wp.WP_Waermeproduktion_gesamt / 1000.0;
                 w.Stromverbrauch_WP = wp.WP_Strombedarf_gesamt / 1000.0;
                 w.Stromverbrauch_Heizstab = wp.Heizstab_gesamt / 1000.0;
-                // B0-7a: Restbedarf aus der Stundenganglinie statt aus der Differenzformel —
-                // die alte Formel ignorierte Speichereffekte und zog zudem den Heizstab
-                // (Stromgröße) von einer Wärmemenge ab. Quelle ist dieselbe Größe,
-                // die auch die Detailansicht anzeigt (waermerestbedarf_gesamt).
-                // Seit Nutzerentscheidung 6-5 gilt das nur noch für den ALTPFAD — der
-                // zweikanalige Weg überschreibt den Wert weiter unten (Stufeneingang
-                // minus Eigenanteil).
+                // B0-7a: Vorbelegung aus der Stundenganglinie. Sie wird seit
+                // Nutzerentscheidung 6-5 weiter unten ausnahmslos überschrieben
+                // (Stufeneingang minus Eigenanteil) und steht hier nur noch als
+                // definierter Ausgangswert.
                 w.Restwaermebedarf = wp.waermerestbedarf_gesamt / 1000.0;
                 // Paket 7 / Konzept 6.6: Kapazität kommt aus dem zugeordneten Speicher
                 // (SimulationPufferspeicher.Q_max in kWh), nicht mehr aus dem Legacy-
@@ -251,7 +260,16 @@ namespace WindowsFormsApplication1
                 // WP-Datensatz statt aus dem Puffer - und widersprach damit der Anzeige.
                 // DOKUMENTIERTE ERGEBNISÄNDERUNG in Projekten mit Puffer-Zuordnung.
                 // Ohne zugeordneten Puffer wird 0 gespeichert (es gibt keine Kapazität).
-                w.Kapazitaet_Pufferspeicher = (sim.puffer_wp != null) ? sim.puffer_wp.Q_max : 0;
+                //
+                // PAKET E1 (Konzept 6.3, Befund S-1): Nicht mehr der Alias puffer_wp (der
+                // ERSTE Heizungspuffer), sondern die SUMME aller Senkenspeicher des
+                // Laufs. Der Alias wies bei zwei Puffern je Kanal nur einen aus und bei
+                // einem reinen Brauchwasser- oder Kombispeicher gar keinen (0), obwohl
+                // der Lauf ihn bewirtschaftet hat. DOKUMENTIERTE ERGEBNISÄNDERUNG genau
+                // in diesen Projekten; mit genau einem Heizungspuffer — dem Fall der
+                // meisten Bestandsprojekte — ist der Wert unverändert. Begründung und
+                // Abgrenzung gegen die Quellspeicher bei SenkenspeicherKapazitaet().
+                w.Kapazitaet_Pufferspeicher = sim.SenkenspeicherKapazitaet();
                 w.Vollbenutzungsstunden = (wp.wp_list.Count > 0) ? wp.WP_Laufzeit / wp.wp_list.Count : 0;
                 w.Bivalenzpunkt = (wp.Bivalenzpunkt != -100) ? (double?)wp.Bivalenzpunkt : null;
 
@@ -263,9 +281,7 @@ namespace WindowsFormsApplication1
 
                 // EIGENANTEIL der Wärmepumpe [MWh] — Direktdeckung (Phase B) plus der ihr
                 // zugerechnete Anteil an der bedarfsdeckenden Speicherentladung plus
-                // Heizstab (er gehört zur WP, Tab_WP.Heizung je Modul). NUR im
-                // zweikanaligen Weg gefüllt; im Altpfad sind Direktdeckung_gesamt und
-                // Speicherentladung_Anteil exakt 0.
+                // Heizstab (er gehört zur WP, Tab_WP.Heizung je Modul).
                 double wpEigen = (wp.Direktdeckung_gesamt + wp.Speicherentladung_Anteil +
                                   wp.Heizstab_gesamt) / 1000.0;
 
@@ -288,10 +304,6 @@ namespace WindowsFormsApplication1
                 // zugerechnete Entladung und Heizstab alle aus demselben Stufeneingang
                 // stammen (die Klemmung ist Rundungsschutz).
                 //
-                // NUR IM NEUEN PFAD: Im Altpfad ist Heizstab_gesamt NICHT null, während
-                // die beiden anderen Summanden fehlen — der Ausdruck wäre dort keine
-                // Bilanz. Der Altpfad behält unverändert die Jahressumme der Ganglinie.
-                //
                 // BEWUSST UNVERÄNDERT bleibt die GANGLINIE waermerestbedarf_stuendlich
                 // (Export wp_restwaerme.csv) und mit ihr Min_Spitzenkesselleistung: Sie
                 // führt den PROJEKTrest der Stunde, und genau der ist die Bezugsgröße für
@@ -305,11 +317,8 @@ namespace WindowsFormsApplication1
                 // gehört in ein eigenes Paket. Anders als beim BHKW (Befund N4) ist das
                 // kein Widerspruch: Dort meldeten Skalar und Ganglinie DIESELBE Größe in
                 // zwei Fassungen, hier sind es zwei verschiedene Größen.
-                if (sim.KaskadeZweikanalig)
-                {
-                    w.Restwaermebedarf = w.Waermebedarf - wpEigen;
-                    if (w.Restwaermebedarf < 0) w.Restwaermebedarf = 0;   // Rundungsschutz
-                }
+                w.Restwaermebedarf = w.Waermebedarf - wpEigen;
+                if (w.Restwaermebedarf < 0) w.Restwaermebedarf = 0;   // Rundungsschutz
 
                 // B0-7b: Waermebedarfsdeckung (%) restbedarfsbasiert als EIGENANTEIL der
                 // WP-Stufe: (Stufeneingang - Rest) / Gesamtbedarf. Bericht und
@@ -328,8 +337,8 @@ namespace WindowsFormsApplication1
                 // einem präparierten 1023: Summe der ausgewiesenen Deckungen 85,71 % bei
                 // tatsächlich 67,06 %.
                 //
-                // Im zweikanaligen Weg wird der Eigenanteil deshalb aus den Größen
-                // gebildet, die die Kaskadenschleife je Erzeuger führt:
+                // Der Eigenanteil wird deshalb aus den Größen gebildet, die die
+                // Kaskadenschleife je Erzeuger führt:
                 //   Direktdeckung (Phase B) + zugerechnete Speicherentladung + Heizstab.
                 // Der Heizstab gehört zur Wärmepumpe (Tab_WP.Heizung je Modul); die
                 // Zurechnung der Entladung folgt der Interimsregel "Vermischung im
@@ -339,16 +348,23 @@ namespace WindowsFormsApplication1
                 double basis = simulation_Waermebedarf.Waermebedarf_Gesamt;
                 if (basis > 0)
                 {
-                    double deckung;
-                    if (sim.KaskadeZweikanalig)
-                        deckung = wpEigen / basis * 100.0;   // dieselbe Größe wie im Restbedarf (6-5)
-                    else
-                        deckung = (w.Waermebedarf - w.Restwaermebedarf) / basis * 100.0;
+                    // dieselbe Größe wie im Restbedarf (6-5)
+                    double deckung = wpEigen / basis * 100.0;
 
                     if (deckung > 100) deckung = 100;
                     if (deckung < 0) deckung = 0;
                     w.Waermebedarfsdeckung = deckung;
                 }
+
+                // PAKET E1 (Konzept 4.4): dieselbe Deckung, aufgeschlüsselt auf die drei
+                // Kanäle. Der Zähler ist derselbe Eigenanteil wie oben — nur eben aus den
+                // KANALZEILEN, die die Module seit Paket K2 mitführen (Direktdeckung +
+                // zugerechnete Speicherentladung + Heizstab). KEINE neue Verteilregel:
+                // Der Kanal einer Buchung steht in der Engine fest, hier wird nur
+                // umgerechnet und auf den führenden Skalar normiert.
+                w.Deckung_Kanal = DeckungJeKanal(
+                    Summiere(wp.Direktdeckung_Kanal, wp.Speicherentladung_Kanal, wp.Heizstab_Kanal),
+                    basis, w.Waermebedarfsdeckung);
 
                 // Modulauflistung.
                 for (int i = 0; i < wp.wp_list.Count; i++)
@@ -372,15 +388,12 @@ namespace WindowsFormsApplication1
                 SimulationBHKW bh = sim.simulation_bhkw;
                 ErgebnisBHKWModel b = new ErgebnisBHKWModel();
 
-                // NACHARBEIT PAKET 6, BEFUND N8: Der Stufeneingang kommt jetzt aus der
+                // NACHARBEIT PAKET 6, BEFUND N8: Der Stufeneingang kommt aus der
                 // double-Jahressumme des Moduls statt aus der Summe der float-Ganglinie.
                 // Das ist dieselbe Größe, nur ohne die Summationsfehler von 8760
                 // float-Additionen — und es bindet Waermebedarf_gesamt an, das bis dahin
-                // nur geschrieben wurde. Im Altpfad führt das Modul die Summe nicht; dort
-                // gilt weiter die Ganglinie.
-                double waermebedarfMWh = sim.KaskadeZweikanalig
-                    ? bh.Waermebedarf_gesamt / 1000.0
-                    : bh.waermebedarf.Sum() / 1000.0;
+                // nur geschrieben wurde.
+                double waermebedarfMWh = bh.Waermebedarf_gesamt / 1000.0;
                 double strombedarfMWh = bh.strombedarf.Sum() / 1000.0;
                 float[] restwaermeBhkw = sim.SubVectors(bh.waermebedarf, bh.waermeproduktion);
 
@@ -435,9 +448,9 @@ namespace WindowsFormsApplication1
                 //     Speicher", siehe Kaskadenschleife). Damit geht die Summe der
                 //     Erzeugerdeckungen auch mit dem BHKW als viertem Lader auf.
                 //
-                // IM ALTPFAD unverändert: Direktdeckung_gesamt und
-                // Speicherentladung_Anteil sind dort exakt 0, der Zweig wird nicht betreten.
-                if (sim.KaskadeZweikanalig)
+                // PAKET A1: Der Block stand hinter „if (sim.KaskadeZweikanalig)". Die
+                // Bedingung ist mit dem Altpfad entfallen; die Klammern bleiben und
+                // halten die drei Hilfsgrößen beisammen.
                 {
                     double bhkwDirekt = bh.Direktdeckung_gesamt / 1000.0;
                     double bhkwEigen = bhkwDirekt + bh.Speicherentladung_Anteil / 1000.0;
@@ -452,6 +465,12 @@ namespace WindowsFormsApplication1
                         if (deckungB < 0) deckungB = 0;
                         b.Waermebedarfsdeckung = deckungB;
                     }
+
+                    // PAKET E1: Aufschlüsselung derselben Deckung auf die drei Kanäle
+                    // (Direktdeckung + zugerechnete Speicherentladung je Kanal).
+                    b.Deckung_Kanal = DeckungJeKanal(
+                        Summiere(bh.Direktdeckung_Kanal, bh.Speicherentladung_Kanal),
+                        simulation_Waermebedarf.Waermebedarf_Gesamt, b.Waermebedarfsdeckung);
                 }
                 //b.Gasverbrauch_Hu = bh.Gasverbrauch_BHKW;
 
@@ -554,8 +573,8 @@ namespace WindowsFormsApplication1
                 //
                 // Bezugsgröße für Restbedarf und Deckung ist deshalb der EIGENANTEIL:
                 // Direktdeckung plus zugerechneter Anteil an der Speicherentladung
-                // (Befund N2). Im Altpfad und ohne Puffer-Senke sind beide Zusatzgrößen
-                // exakt 0 — der Ausdruck ist dann bitgleich der bisherige.
+                // (Befund N2). Ohne Puffer-Senke sind beide Zusatzgrößen exakt 0 — der
+                // Ausdruck ist dann bitgleich der bisherige.
                 //
                 // NACHARBEIT PAKET 6, BEFUND N1: Der Restbedarf zog bis dahin nur die
                 // DIREKTDECKUNG ab. Bei Puffer-Hauptsenke ist die konstruktiv 0, und der
@@ -581,6 +600,14 @@ namespace WindowsFormsApplication1
                     if (deckungK < 0) deckungK = 0;
                     h.Waermebedarfsdeckung = deckungK;
                 }
+
+                // PAKET E1: Aufschlüsselung derselben Deckung auf die drei Kanäle. Die
+                // Kanalzeile der Direktdeckung summiert sich zu „Kesselabgabe −
+                // Speicherladung", also genau zu kesselDirekt (siehe SimulationSPK).
+                h.Deckung_Kanal = DeckungJeKanal(
+                    Summiere(spk.Direktdeckung_Kanal, spk.Speicherentladung_Kanal),
+                    simulation_Waermebedarf.Waermebedarf_Gesamt, h.Waermebedarfsdeckung);
+
                 h.Maximale_Kesselleistung = spk.Maximale_Kesselleistung_Spk;
                 h.Gasspitze = spk.Gasspitze_Spk;
 
@@ -642,15 +669,15 @@ namespace WindowsFormsApplication1
                 // Größe steht weiterhin vollständig in Waermeproduktion (und getrennt in
                 // Speicherladung_gesamt).
                 //
-                // IM ALTPFAD IST DIE KORREKTUR WIRKUNGSLOS: Dort lädt die Solarthermie
-                // keinen Puffer, Speicherladung_gesamt ist exakt 0,0 und der Ausdruck
-                // damit bitgleich der bisherige.
+                // OHNE PUFFER-SENKE IST DIE KORREKTUR WIRKUNGSLOS: Dann lädt die
+                // Solarthermie keinen Puffer, Speicherladung_gesamt ist exakt 0,0 und der
+                // Ausdruck damit bitgleich der bisherige.
                 double solarDirekt = st.Waermeproduktion_gesamt - st.Speicherladung_gesamt;
                 // Rundungsschutz: Beide Summen entstehen getrennt; geht die gesamte
                 // Produktion in den Speicher, kann die Differenz um wenige 1e-10 unter
-                // null liegen. Im Altpfad ist Speicherladung_gesamt exakt 0,0 und
+                // null liegen. Ohne Puffer-Senke ist Speicherladung_gesamt exakt 0,0 und
                 // Waermeproduktion_gesamt eine Summe nichtnegativer Werte — die Klemmung
-                // greift dort nachweislich nie.
+                // greift dann nachweislich nie.
                 if (solarDirekt < 0) solarDirekt = 0;
 
                 // BEFUND N2 (Nacharbeit): Der DECKUNGSGRAD ist der Eigenanteil dieses
@@ -666,22 +693,50 @@ namespace WindowsFormsApplication1
                 // während es zugleich Deckung auswies. Beide Größen bilden jetzt dieselbe
                 // Rechnung ab; "Restbedarf >= 0" bleibt erfüllt, weil Direktdeckung und
                 // zugerechnete Entladung zusammen aus demselben Stufeneingang stammen
-                // (Klemmung nur als Rundungsschutz). Im Altpfad sind beide Zusatzgrößen
-                // exakt 0, der Ausdruck also bitgleich der bisherige.
+                // (Klemmung nur als Rundungsschutz). Ohne Puffer-Senke sind beide
+                // Zusatzgrößen exakt 0, der Ausdruck also bitgleich der bisherige.
                 double solarEigen = solarDirekt + st.Speicherentladung_Anteil;
 
                 stm.Waermebedarf = st.Waermebedarf_gesamt / 1000.0;
                 stm.Waermeproduktion = st.Waermeproduktion_gesamt / 1000.0;
                 stm.Restwaermebedarf = (st.Waermebedarf_gesamt - solarEigen) / 1000.0;
                 if (stm.Restwaermebedarf < 0) stm.Restwaermebedarf = 0;   // Rundungsschutz
+                // PAKET E1 — BEFUND V0-O1 BEHOBEN (GEWOLLTE WERTÄNDERUNG genau dieser
+                // einen Kennzahl):
+                //
+                // Der Nenner war bis hierher st.Waermebedarf_gesamt, also der
+                // STUFENEINGANG der Solarthermie — der Bedarf, der bei ihr ankommt,
+                // nachdem vorgelagerte Erzeuger der Kaskade bereits gedeckt haben.
+                // Wärmepumpe, Heizkessel und BHKW teilen alle drei durch den
+                // PROJEKTbedarf. Damit war die Solar-Deckung die einzige Größe, die sich
+                // auf eine andere Bezugsmenge stützte: Steht die Solarthermie an zweiter
+                // Kaskadenposition, ist ihr Stufeneingang kleiner als der Projektbedarf,
+                // und ihr ausgewiesener Deckungsgrad fiel entsprechend ZU HOCH aus. Die
+                // Summe der Erzeugerdeckungen ging dann über 100 % hinaus, obwohl genau
+                // das die Eigenanteils-Logik (Befund N2) ausschließen soll — Bericht und
+                // Wirtschaftlichkeit addieren die Anteile.
+                //
+                // Steht die Solarthermie allein bzw. an erster Position, sind beide
+                // Nenner identisch und der Wert unverändert.
+                //
+                // Der RESTWÄRMEBEDARF oben bleibt bewusst auf dem Stufeneingang: Er ist
+                // die Frage „was bleibt NACH diesem Erzeuger offen" und damit eine
+                // Stufengröße — genauso wie bei Wärmepumpe, Kessel und BHKW.
                 stm.Waermebedarfsdeckung = 0;
-                if (st.Waermebedarf_gesamt > 0)
+                if (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
                 {
-                    double deckungS = solarEigen * 100.0 / st.Waermebedarf_gesamt;
+                    double deckungS = solarEigen / 1000.0 * 100.0
+                                      / simulation_Waermebedarf.Waermebedarf_Gesamt;
                     if (deckungS > 100) deckungS = 100;
                     if (deckungS < 0) deckungS = 0;
                     stm.Waermebedarfsdeckung = deckungS;
                 }
+
+                // PAKET E1: Aufschlüsselung derselben Deckung auf die drei Kanäle.
+                stm.Deckung_Kanal = DeckungJeKanal(
+                    Summiere(st.Direktdeckung_Kanal, st.Speicherentladung_Kanal),
+                    simulation_Waermebedarf.Waermebedarf_Gesamt, stm.Waermebedarfsdeckung);
+
                 stm.Ueberschuss = st.Ueberschuss_summe / 1000.0;
 
                 if (st.Kollektor_Ergebnisse != null)
@@ -704,7 +759,27 @@ namespace WindowsFormsApplication1
                 var pvs = sim.simulation_pv;
                 ErgebnisPhotovoltaikModel pvm = new ErgebnisPhotovoltaikModel();
                 pvm.Stromproduktion = pvs.Stromproduktion.Sum() / 1000.0;
-                pvm.Ueberschuss = pvs.Ueberschuss.Sum() / 1000.0;
+
+                // V2 (PV-Konzept § 2.3, Etappe P1): In den Speicher geladene
+                // PV-Energie ist KEINE Einspeisung — sie wirkt bereits als
+                // vermiedener Netzbezug (Entladung senkt den Restbedarf). Die
+                // Einspeisemenge ist deshalb max(0, Überschuss − Ladung) je
+                // Viertelstunde; die Ladereihe (LadungAcKwh) hält die
+                // SpeicherEngine genau dafür vor. Ohne Speicherlauf bleibt die
+                // Formel der Bestand (Summe des Überschusses).
+                if (sim.Speicherergebnis != null &&
+                    sim.Speicherergebnis.LadungAcKwh != null &&
+                    sim.Speicherergebnis.LadungAcKwh.Length == pvs.Ueberschuss_viertelstunde.Length)
+                {
+                    double[] ladungKwh = sim.Speicherergebnis.LadungAcKwh;
+                    double einspKwh = 0;
+                    for (int vi = 0; vi < ladungKwh.Length; vi++)
+                        einspKwh += Math.Max(0,
+                            pvs.Ueberschuss_viertelstunde[vi] * 0.25 - ladungKwh[vi]);
+                    pvm.Ueberschuss = einspKwh / 1000.0;
+                }
+                else
+                    pvm.Ueberschuss = pvs.Ueberschuss.Sum() / 1000.0;
                 pvm.Strombedarf = pvs.Strombedarf.Sum() / 4000.0;
                 pvm.Reststrombedarf = sim.Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0;
                 pvm.Strombedarfsdeckung = (pvs.Strombedarf_stuendlich.Sum() > 0)
@@ -730,7 +805,7 @@ namespace WindowsFormsApplication1
             // der sich auch Navigator, CSV-Export und die Ergebnistabelle speisen.
             foreach (SimulationPufferspeicher sp in sim.AlleSpeicher())
             {
-                m.Pufferspeicher.Add(new ErgebnisPufferspeicherModel
+                var pz = new ErgebnisPufferspeicherModel
                 {
                     ID_Pufferspeicher = sp.ID_Pufferspeicher,
                     Bezeichner = sp.Bezeichner ?? "",
@@ -742,8 +817,46 @@ namespace WindowsFormsApplication1
                     SOC_Ende = sp.SOC,
                     SOC_Mittel = sp.SOC_Mittel,
                     SOC_Max = sp.SOC_Max,
-                    Vollzyklen = sp.Vollzyklen
-                });
+                    Vollzyklen = sp.Vollzyklen,
+
+                    // PAKET E1 (Schritt 52). ID_Anlage ist bei QUELLspeichern belegt und
+                    // stellt die Zeile dem Serienschlüssel QUELLE_<AnlagenID> und den
+                    // gleichnamigen Ganglinien-Dateien zur Seite; bei Senkenspeichern
+                    // bleibt sie 0 und wird als NULL geschrieben.
+                    ID_Anlage = sp.ID_Anlage,
+
+                    // Die beiden Durchsatzsummen aus Befund N6 — bis Schritt 52 standen
+                    // sie nur am Objekt („NICHT PERSISTIERT … vorgemerkte Erweiterung").
+                    // Ohne Durchlass sind beide exakt 0.
+                    Durchsatz_Geladen = sp.Durchsatz_Ladung_gesamt,
+                    Durchsatz_Entladen = sp.Durchsatz_Entladung_gesamt,
+
+                    // PAKET P1 (Befund E1-O5): Die beiden Temperaturspalten aus Schritt 52
+                    // werden jetzt GEFÜLLT — Jahresmittel und Jahresminimum der obersten
+                    // Schicht, gebildet aus derselben Stundenganglinie, die auch die
+                    // Berichtsreihe PUFFER_<ID>_TOBEN trägt.
+                    //
+                    // Sie sind auch bei N = 1 belegt: Dort ist die eine Schichttemperatur
+                    // die Ein-Zonen-Ersatztemperatur RL_eff + A/Q_max · (VL_eff − RL_eff)
+                    // (Konzept 8.2) — eine reine Umrechnung des Füllstands, ohne
+                    // Rückwirkung auf die Rechnung.
+                    //
+                    // QUELLSPEICHER bleiben NULL: Ihr Temperaturpaar ist ein Ersatzpaar
+                    // aus der Anlagen-Spreizung und keine Speichertemperatur; eine
+                    // Zustandsformel darauf wäre Scheinphysik (Konzept 8.2). NULL heißt in
+                    // der Ergebniszeile „nicht erhoben" — genau das trifft dort zu.
+                    T_oben_Mittel = sp.T_oben_Mittel,
+                    T_oben_Min = sp.T_oben_Min
+                };
+
+                // Kanalaufteilung der Entladung — dieselbe Buchung wie Entladung_gesamt,
+                // nur indiziert (SimulationPufferspeicher.Entladung_Kanal). KOPIERT statt
+                // zugewiesen: Das Ergebnismodell darf nicht auf den Laufzustand des
+                // Speicherobjekts zeigen (Aliasing-Regel B0-2).
+                for (int k = 0; k < Kanal.ANZAHL; k++)
+                    pz.Entladung_Kanal[k] = sp.Entladung_Kanal[k];
+
+                m.Pufferspeicher.Add(pz);
             }
 
             // Detail: Stromspeicher (Fachkonzept Stromspeicher 7.1) - eine Zeile je
@@ -763,6 +876,105 @@ namespace WindowsFormsApplication1
             }
 
             return m;
+        }
+
+        // =====================================================================
+        // PAKET E1 (Konzept 4.4) — Ergebnis je Kanal
+        //
+        //   Die drei Methoden hier sind die EINE Stelle, an der aus der
+        //   kanalindizierten Buchführung der Engine (Paket K2) die gespeicherten
+        //   Kanalgrößen werden. Sie sind bewusst public und static: Die
+        //   Detailansicht zeigt dieselben Zahlen und muss dafür dieselbe Formel
+        //   benutzen, nicht eine nachgebaute (Befund V0-7, „Dialog = Tab_Ergebnis").
+        // =====================================================================
+
+        /// <summary>
+        /// Jahres-Wärmebedarf je Kanal [MWh] aus dem Kanalsatz des Laufs.
+        ///
+        /// <para>Es ist die AUFSCHLÜSSELUNG von
+        /// <c>SimulationWaermebedarf.Waermebedarf_Gesamt</c>, keine zweite Rechnung:
+        /// Dieselben Vektoren, aus denen seit Paket K1 der Summenvektor gebildet wird
+        /// (die Kanäle sind die führende Größe), und dieselbe Umrechnung kWh → MWh.
+        /// Die Summe der drei Werte ist der Gesamtbedarf bis auf die float-Rundung, mit
+        /// der <c>Kanalsatz.Summe()</c> je Stunde addiert (Konzept 4.2, 1-ULP-Klasse) —
+        /// bei den Größenordnungen des Rechenkerns liegt das um Zehnerpotenzen unter der
+        /// kaufmännischen Rundung der Ergebniszeile.</para>
+        /// </summary>
+        public static double[] BedarfJeKanal(SimulationWaermebedarf bedarf)
+        {
+            double[] mwh = new double[Kanal.ANZAHL];
+            if (bedarf == null) return mwh;
+
+            Kanalsatz ks = bedarf.KanaeleDrei();
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+            {
+                float[] v = ks.Bedarf[k];
+                double summe = 0;
+                for (int h = 0; h < v.Length; h++) summe += v[h];
+                mwh[k] = summe / 1000.0;
+            }
+            return mwh;
+        }
+
+        /// <summary>
+        /// Elementweise Summe mehrerer Kanalzeilen [kWh] — der EIGENANTEIL eines
+        /// Erzeugers je Kanal, zusammengesetzt aus genau den Summanden, aus denen der
+        /// Runner auch seinen Skalar bildet (Direktdeckung + zugerechnete
+        /// Speicherentladung, bei der Wärmepumpe zusätzlich der Heizstab).
+        /// </summary>
+        public static double[] Summiere(params double[][] zeilen)
+        {
+            double[] s = new double[Kanal.ANZAHL];
+            if (zeilen == null) return s;
+
+            foreach (double[] z in zeilen)
+            {
+                if (z == null) continue;
+                for (int k = 0; k < Kanal.ANZAHL && k < z.Length; k++) s[k] += z[k];
+            }
+            return s;
+        }
+
+        /// <summary>
+        /// Zerlegt die Wärmebedarfsdeckung eines Erzeugers [%] in ihre drei Kanalanteile.
+        /// </summary>
+        /// <param name="eigenanteilKanalKWh">Eigenanteil je Kanal [kWh] (siehe <see cref="Summiere"/>).</param>
+        /// <param name="basisMWh">Wärmebedarf des PROJEKTS [MWh] — derselbe Nenner wie beim Skalar.</param>
+        /// <param name="deckungGesamt">Der bereits gebildete (und geklemmte) Skalar [%].</param>
+        /// <remarks>
+        /// <para><b>Keine neue Verteilregel.</b> Welcher Kanal eine Deckung bekommt,
+        /// entscheidet die Engine beim Abziehen vom Bedarf (<c>SenkeAbziehen</c>); hier
+        /// wird nur derselbe Bruch je Kanal gebildet, mit demselben Nenner wie der
+        /// Skalar.</para>
+        ///
+        /// <para><b>Normierung auf den führenden Skalar.</b> Die drei Rohwerte werden am
+        /// Ende so skaliert, dass ihre Summe GENAU <paramref name="deckungGesamt"/>
+        /// ergibt. Zwei Gründe: Der Skalar ist geklemmt (0..100), die Kanalwerte sind es
+        /// nicht — ohne Normierung liefen beide im Klemmfall auseinander; und die
+        /// Kanalakkumulatoren der Engine sind getrennte double-Ströme, deren Summe um
+        /// eine Rundung neben dem Skalar liegen kann. Die zugesicherte Invariante
+        /// „Σ Kanalwerte = Bestandsskalar" gilt damit ausnahmslos. Der Faktor liegt im
+        /// Normalfall bei 1 ± 1e-12.</para>
+        /// </remarks>
+        public static double[] DeckungJeKanal(double[] eigenanteilKanalKWh, double basisMWh,
+                                              double deckungGesamt)
+        {
+            double[] k = new double[Kanal.ANZAHL];
+            if (eigenanteilKanalKWh == null || basisMWh <= 0) return k;
+
+            double summe = 0;
+            for (int i = 0; i < Kanal.ANZAHL && i < eigenanteilKanalKWh.Length; i++)
+            {
+                k[i] = eigenanteilKanalKWh[i] / 1000.0 / basisMWh * 100.0;
+                summe += k[i];
+            }
+
+            if (summe > 0)
+            {
+                double faktor = deckungGesamt / summe;
+                for (int i = 0; i < Kanal.ANZAHL; i++) k[i] *= faktor;
+            }
+            return k;
         }
 
         /// <summary>

@@ -34,8 +34,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <c>Tab_Energieanlagen.ID</c> je Kollektorfeld, INDEXGLEICH zur Reihenfolge der
-        /// Felder im zweikanaligen Weg (Konzept 6.2). Nur dort gefüllt; der einkanalige
-        /// Altpfad braucht sie nicht.
+        /// Felder (Konzept 6.2).
         ///
         /// Über sie findet <c>SimulationControl.LadeordnungAufbauen</c> zu einer
         /// Senkenzuordnung das rechnende Modul — <c>solarthermie_list</c> trägt die
@@ -54,7 +53,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double[] Speicherladung_stuendlich = new double[8760];
 
-        /// <summary>Jahressumme der Speicherladung [kWh]; im Altpfad immer exakt 0.</summary>
+        /// <summary>Jahressumme der Speicherladung [kWh]; ohne Puffer-Senke exakt 0.</summary>
         public double Speicherladung_gesamt = 0;
 
         /// <summary>
@@ -67,12 +66,52 @@ namespace WindowsFormsApplication1
         /// Der Anteil dieses Erzeugers an der SPEICHERENTLADUNG, die Bedarf gedeckt hat
         /// [kWh] (Paket-5-Nacharbeit N2, Interimsregel „Vermischung im Speicher").
         ///
-        /// Gefüllt von <see cref="Kaskadenschleife"/>; im Altpfad und ohne Puffer-Senke
+        /// Gefüllt von <see cref="Kaskadenschleife"/>; ohne Puffer-Senke
         /// exakt 0. Direktdeckung PLUS dieser Anteil ist der EIGENANTEIL der Solarthermie
         /// an der Bedarfsdeckung — die Größe hinter
         /// <c>Tab_ErgebnisSolarthermie.Waermebedarfsdeckung</c>.
         /// </summary>
         public double Speicherentladung_Anteil = 0;
+
+        // ------------------------------------------------------------------
+        // KANALINDIZIERTE DECKUNGSBUCHFÜHRUNG (Paket K2, Konzept 4.4)
+        //
+        // ZUSÄTZLICHE Aufschlüsselung, kein Ersatz: Direktdeckung_gesamt,
+        // Speicherladung_gesamt, Speicherentladung_Anteil und die Ganglinien
+        // werden unverändert gebildet und gelesen. Es gilt
+        //
+        //   Σ Direktdeckung_Kanal[k]     == Direktdeckung_gesamt
+        //   Σ Speicherentladung_Kanal[k] == Speicherentladung_Anteil
+        //
+        // bis auf die Rundungsklasse der getrennten Kanalarithmetik.
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Direkt gedeckter Momentanbedarf je Kanal [kWh] (Phase B) — die Aufschlüsselung
+        /// von <see cref="Direktdeckung_gesamt"/>.
+        /// </summary>
+        public double[] Direktdeckung_Kanal = new double[Kanal.ANZAHL];
+
+        /// <summary>
+        /// Anteil dieses Erzeugers an der bedarfsdeckenden Speicherentladung je Kanal
+        /// [kWh] — die Aufschlüsselung von <see cref="Speicherentladung_Anteil"/>.
+        /// Gefüllt von der <see cref="Kaskadenschleife"/>, wie der Skalar selbst.
+        /// </summary>
+        public double[] Speicherentladung_Kanal = new double[Kanal.ANZAHL];
+
+        // ------------------------------------------------------------------
+        // PAKET E2 (Nachtrag zu Konzept 4.4) — DIESELBEN GRÖSSEN ALS GANGLINIE,
+        // gebucht an genau derselben Stelle und aus derselben Variablen. Je Kanal k gilt
+        //   Σ_h Direktdeckung_KanalStuendlich[k][h]     == Direktdeckung_Kanal[k]
+        //   Σ_h Speicherentladung_KanalStuendlich[k][h] == Speicherentladung_Kanal[k]
+        // bis auf die Assoziativität der double-Addition.
+        // ------------------------------------------------------------------
+
+        /// <summary>Stundenfassung von <see cref="Direktdeckung_Kanal"/> [kWh] (Paket E2).</summary>
+        public readonly Kanalganglinie Direktdeckung_KanalStuendlich = new Kanalganglinie();
+
+        /// <summary>Stundenfassung von <see cref="Speicherentladung_Kanal"/> [kWh] (Paket E2).</summary>
+        public readonly Kanalganglinie Speicherentladung_KanalStuendlich = new Kanalganglinie();
 
         /// <summary>Potenzieller Bruttoertrag je Kollektorfeld und Stunde [kWh].</summary>
         private double[][] _potenzialFeld = new double[0][];
@@ -89,79 +128,24 @@ namespace WindowsFormsApplication1
         private readonly List<string> _feldName = new List<string>();
         private readonly List<double> _feldFlaeche = new List<double>();
         private readonly List<long> _feldAnzahl = new List<long>();
-        private readonly List<Senkenzuordnung> _feldSenke = new List<Senkenzuordnung>();
+        private readonly List<Senkenliste> _feldSenke = new List<Senkenliste>();
 
         /// <summary>Anzahl der Kollektorfelder des zweikanaligen Wegs.</summary>
         public int FelderAnzahl { get { return _feldName.Count; } }
 
-        /// <summary>Senkenzuordnung eines Kollektorfelds (nie null nach dem Aufbau).</summary>
-        public Senkenzuordnung FeldSenke(int index)
+        /// <summary>Senkenliste eines Kollektorfelds (nie null nach dem Aufbau, Paket S1).</summary>
+        public Senkenliste FeldSenke(int index)
         {
             if (index < 0 || index >= _feldSenke.Count) return null;
             return _feldSenke[index];
         }
 
-        public bool Berechnung(int ID_Projekt)
-        {
-            m_ID_Projekt = ID_Projekt;
-
-            // 1./2. ID_Klimaregion und Geokoordinaten — EINE Fassung für beide Rechenwege
-            // (Paket-5-Nacharbeit, Befund N6/N9).
-            KlimaregionUndGeoLesen();
-
-            Init();
-
-            // 3. Wärmebedarf initialisieren
-            Waermebedarf_gesamt = Waermebedarf.Sum();
-            Max_Waermebedarf = Waermebedarf.Max();
-
-            // 4. Kollektorfelder samt STÜNDLICHEM POTENZIAL einlesen — Schritte 1 und 2
-            // des Kollektormodells, gemeinsam mit dem zweikanaligen Weg (N6).
-            List<SolarFeld> felder = Kollektorfelder_Lesen();
-
-            for (int i = 0; i < 8760; i++) Restwaerme[i] = Waermebedarf[i];
-
-            // 5. Bilanzierung je Feld — der KAPPUNGSPUNKT des Altpfads: Was über den
-            // Momentanbedarf hinausgeht, ist verworfen (im zweikanaligen Weg darf es
-            // stattdessen einen Puffer laden, Konzept 6.4).
-            for (int n = 0; n < felder.Count; n++)
-            {
-                SolarFeld f = felder[n];
-
-                // Jahressummen dieses Kollektor(felds) fuer die Auflistung.
-                double prodSummeKoll = 0;
-                double ueberSummeKoll = 0;
-
-                for (int i = 0; i < f.Stunden; i++)
-                {
-                    var (prod, rest, ueber) = Bilanzieren(Restwaerme[i], f.Potenzial[i]);
-
-                    // Ergebnisse aufsummieren (für mehrere Kollektorfelder)
-                    Waermeproduktion[i] += prod;
-                    Restwaerme[i] = rest; // Restwärme wird pro Zeitschritt überschrieben
-                    Ueberschuss[i] += ueber;
-
-                    prodSummeKoll += prod;
-                    ueberSummeKoll += ueber;
-                }
-
-                Kollektor_Ergebnisse.Add(new SolarKollektorErgebnis
-                {
-                    Name = f.Name,
-                    Flaeche = f.Flaeche,
-                    Anzahl = f.Anzahl,
-                    Waermeproduktion = prodSummeKoll,
-                    Ueberschuss = ueberSummeKoll
-                });
-            }
-
-            Waermeproduktion_gesamt = Waermeproduktion.Sum();
-            Waermeproduktion_max = Waermeproduktion.Max();
-            Ueberschuss_summe = Ueberschuss.Sum();
-            Restwaerme_summe = Restwaerme.Sum();
-
-            return true;
-        }
+        // PAKET A1: Hier stand "Berechnung(int ID_Projekt)" - der Einstieg des
+        // einkanaligen Altpfads (Klimaregion, Kollektorfelder_Lesen, Jahresschleife je
+        // Feld auf EINEM Bedarfsvektor mit Bilanzieren). Er ist mit dem Altpfad
+        // ersatzlos entfallen; der Einstieg des Moduls ist Vorbereiten_Zweikanalig(),
+        // gerechnet wird in der Kaskadenschleife oder als Vektorstufe
+        // (Berechnung_Zweikanalig).
 
         /// <summary>
         /// EIN Kollektorfeld des Projekts samt seinem stündlichen Bruttopotenzial.
@@ -225,14 +209,10 @@ namespace WindowsFormsApplication1
         /// Leistung, potenzielle Erzeugung), also alles, was NICHT vom Wärmebedarf und
         /// nicht vom Speicherfüllstand abhängt.
         ///
-        /// EINE Fassung für beide Rechenwege (Paket-5-Nacharbeit, Befund N6): Bis dahin
-        /// stand dieser Block zweimal im Modul — einmal in <see cref="Berechnung"/>,
-        /// einmal in <see cref="Vorbereiten_Zweikanalig"/>. Term für Term waren beide
-        /// gleich, aber ein Fix am Altpfad hätte im neuen Weg nicht gewirkt, und die
-        /// Regressionssuite (Flag aus) hätte das nie gemeldet. Zwei Abweichungen waren
-        /// bereits entstanden: die Stundenzahl (<c>rows</c> gegen
-        /// <c>Math.Min(rows, 8760)</c>) — hier auf die abgesicherte Fassung vereinheitlicht,
-        /// die zugleich einen möglichen Indexüberlauf des Altpfads schließt.
+        /// EINE Fassung (Paket-5-Nacharbeit, Befund N6): Bis dahin stand dieser Block
+        /// zweimal im Modul — je einmal für den einkanaligen und den zweikanaligen Weg.
+        /// Term für Term waren beide gleich; vereinheitlicht wurde auf die abgesicherte
+        /// Stundenzahl <c>Math.Min(rows, 8760)</c>.
         /// </summary>
         private List<SolarFeld> Kollektorfelder_Lesen()
         {
@@ -308,12 +288,20 @@ namespace WindowsFormsApplication1
             Ueberschuss_summe = 0;
             Kollektor_Ergebnisse.Clear();
 
-            // Zweikanaliger Weg (Paket 5) - im Altpfad bleiben alle Größen auf 0, damit
+            // Speichergrößen (Paket 5) - ohne Puffer-Senke bleiben sie auf 0, damit
             // die Mitkorrektur in SimulationRunner dort nachweislich wirkungslos ist.
             Array.Clear(Speicherladung_stuendlich, 0, Speicherladung_stuendlich.Length);
             Speicherladung_gesamt = 0;
             Direktdeckung_gesamt = 0;
             Speicherentladung_Anteil = 0;
+
+            // K2: die Kanalaufschlüsselung derselben Größen (Konzept 4.4).
+            Array.Clear(Direktdeckung_Kanal, 0, Kanal.ANZAHL);
+            Array.Clear(Speicherentladung_Kanal, 0, Kanal.ANZAHL);
+
+            // E2: und ihre Ganglinienfassung, an derselben Stelle.
+            Direktdeckung_KanalStuendlich.Nullen();
+            Speicherentladung_KanalStuendlich.Nullen();
         }
 
         public (double produktion, double restbedarf, double ueberschuss) BerechneSolarthermie(
@@ -398,13 +386,13 @@ namespace WindowsFormsApplication1
         /// Gerechnet wird mit denselben Aufrufen und in derselben Reihenfolge wie in
         /// <see cref="Berechnung"/> — die Potenzialwerte sind damit dieselben Zahlen.
         /// </summary>
-        /// <param name="senken">Senkenzuordnungen des Projekts (Konzept 6.1).</param>
-        public bool Vorbereiten_Zweikanalig(int ID_Projekt, List<Senkenzuordnung> senken)
+        /// <param name="senken">Geordnete Senkenlisten des Projekts (Konzept 5.1).</param>
+        public bool Vorbereiten_Zweikanalig(int ID_Projekt, List<Senkenliste> senken)
         {
             m_ID_Projekt = ID_Projekt;
 
             // Klimaregion, Geokoordinaten und Kollektorfelder samt Potenzial kommen aus
-            // denselben Methoden wie im Altpfad (Paket-5-Nacharbeit, Befund N6) — damit
+            // denselben Methoden wie die Kollektorbilanz (Paket-5-Nacharbeit, N6) — damit
             // ist „dieselben Aufrufe, dieselbe Reihenfolge, dieselben Zahlen" nicht mehr
             // eine Zusage über zwei Kopien, sondern dieselbe Anweisungsfolge.
             KlimaregionUndGeoLesen();
@@ -442,16 +430,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Senkenzuordnung einer Anlage; ohne Zeile gilt die Vorbelegung Heizkreis/Beides —
-        /// dieselbe Regel wie beim Kontextaufbau der Wärmepumpe (Konzept 4.6).
+        /// Senkenliste einer Anlage; ohne Zeile gilt die Rang-1-Invariante
+        /// Heizkreis/Beides — dieselbe Regel wie beim Kontextaufbau der Wärmepumpe
+        /// (Konzept 4.6/5.1).
         /// </summary>
-        private static Senkenzuordnung SenkeZuAnlage(List<Senkenzuordnung> senken, int idAnlage)
+        private static Senkenliste SenkeZuAnlage(List<Senkenliste> senken, int idAnlage)
         {
             if (senken != null)
-                foreach (Senkenzuordnung z in senken)
-                    if (z != null && z.AnlagenID == idAnlage) return z;
+                foreach (Senkenliste s in senken)
+                    if (s != null && s.AnlagenID == idAnlage) return s;
 
-            return new Senkenzuordnung { AnlagenID = idAnlage };
+            return Senkenliste.Vorbelegung(idAnlage);
         }
 
         /// <summary>
@@ -459,15 +448,19 @@ namespace WindowsFormsApplication1
         /// und der STUFENEINGANG wird festgehalten.
         ///
         /// NACHARBEIT PAKET 6, BEFUND N1: Der Stufeneingang ist der Kanalstand VOR der
-        /// Vorabentladung (Phase A) — dieselbe Bezugsgröße wie im Altpfad und bei der
+        /// Vorabentladung (Phase A) — dieselbe Bezugsgröße wie bei der
         /// Wärmepumpe. Vorher stand er in <see cref="Stunde_Bedarf"/>, also nach Phase A.
+        ///
+        /// <para>PAKET K2: Der Stufeneingang ist die Summe ÜBER ALLE Kanäle des
+        /// Restbedarfsfeldes — ohne Prozesswärmeanteil Zeichen für Zeichen die bisherige
+        /// Größe <c>rest_heiz + rest_ww</c>.</para>
         /// </summary>
-        public void Stunde_Start(int stunde, double rest_heiz, double rest_ww)
+        public void Stunde_Start(int stunde, double[] rest)
         {
             for (int f = 0; f < _restPotenzial.Length; f++)
                 _restPotenzial[f] = (stunde >= 0 && stunde < 8760) ? _potenzialFeld[f][stunde] : 0;
 
-            double eingang = rest_heiz + rest_ww;
+            double eingang = Kaskadenschleife.RestSumme(rest);
             if (eingang < 0) eingang = 0;
             if (stunde >= 0 && stunde < 8760) Waermebedarf[stunde] = eingang;
         }
@@ -479,8 +472,15 @@ namespace WindowsFormsApplication1
         /// Ein Feld mit Puffer-Hauptsenke deckt hier NICHTS — es lädt ausschließlich
         /// (Phase C). Daraus folgt derselbe Doppelzählungs-Freibeweis wie bei der
         /// Wärmepumpe: Eine Anlage ist eindeutig in Phase B ODER in Phase C.
+        ///
+        /// <para>PAKET K2: <paramref name="rest"/> ist der offene Bedarf je Kanal und
+        /// tritt an die Stelle des Paares <c>ref rest_heiz, ref rest_ww</c>; es wird
+        /// IN-PLACE fortgeschrieben. Die Bezugsgröße <c>verfuegbar</c> kommt nicht mehr
+        /// aus einer eigenen Dreifach-Verzweigung über <c>WS_Typ</c>, sondern aus
+        /// <see cref="Kanalabzug.Offen"/> — derselben Quelle, gegen die gleich abgezogen
+        /// wird (Konzept 4.3).</para>
         /// </summary>
-        public void Stunde_Bedarf(int stunde, ref double rest_heiz, ref double rest_ww)
+        public void Stunde_Bedarf(int stunde, double[] rest)
         {
             // Der Stufeneingang steht seit der Nacharbeit N1 in Stunde_Start - VOR der
             // Vorabentladung (Phase A).
@@ -488,21 +488,27 @@ namespace WindowsFormsApplication1
             {
                 if (_restPotenzial[f] <= 0) continue;
 
-                Senkenzuordnung z = _feldSenke[f];
-                if (z != null && z.Haupt != Senke.Heizkreis) continue;
+                // PAKET S1: Gefragt wird die DIREKTSENKEN-KETTE des Felds (Konzept 5.2).
+                // Ein Feld ganz ohne Direktsenke lädt ausschließlich und deckt hier
+                // nichts - das ist die Nachfolge der Prüfung „Hauptsenke != Heizkreis".
+                Senkenliste senken = _feldSenke[f];
+                if (senken != null && !senken.HatDirektsenke) continue;
 
-                string wsTyp = (z != null) ? z.WSTyp : WaermequelleClass.SENKE_BEIDES;
-                double verfuegbar;
-                if (wsTyp == WaermequelleClass.SENKE_WARMWASSER) verfuegbar = rest_ww;
-                else if (wsTyp == WaermequelleClass.SENKE_HEIZUNG) verfuegbar = rest_heiz;
-                else verfuegbar = rest_heiz + rest_ww;
+                double verfuegbar = Kanalabzug.Offen(senken, rest);
 
                 if (verfuegbar <= 0) continue;
 
                 double prod = Math.Min(_restPotenzial[f], verfuegbar);
                 if (prod <= 0) continue;
 
-                Kaskadenschleife.SenkeAbziehen(wsTyp, prod, ref rest_ww, ref rest_heiz);
+                // K2: Abzug über die eine Kanalregel, mit gemessener Aufschlüsselung je
+                // Kanal (Konzept 4.4). Die abgezogene Gesamtmenge ist konstruktiv genau
+                // "prod" - sie ist auf den offenen Kanalbedarf begrenzt.
+                //
+                // PAKET E2: derselbe Abzug schreibt zusätzlich die Kanalganglinie der
+                // Stunde - aus derselben gemessenen rest-Differenz.
+                Kanalabzug.Abziehen(senken, prod, rest, Direktdeckung_Kanal,
+                                    Direktdeckung_KanalStuendlich, stunde);
 
                 _restPotenzial[f] -= prod;
                 _prodFeld[f] += prod;
@@ -510,7 +516,7 @@ namespace WindowsFormsApplication1
                 if (stunde >= 0 && stunde < 8760) Waermeproduktion[stunde] += prod;
             }
 
-            if (stunde >= 0 && stunde < 8760) Restwaerme[stunde] = rest_heiz + rest_ww;
+            if (stunde >= 0 && stunde < 8760) Restwaerme[stunde] = Kaskadenschleife.RestSumme(rest);
         }
 
         /// <summary>
@@ -613,31 +619,31 @@ namespace WindowsFormsApplication1
         ///
         /// Sie ist der Weg für Projekte, in denen kein Kollektorfeld eine Puffer-Senke
         /// trägt. Ohne Speicher gibt es nichts zu ordnen: Die Phasen A, C, D, E und G
-        /// haben für diese Stufe keinen Inhalt, und die Stufe bleibt — wie im Altpfad —
-        /// ein Vektormodul an ihrer Kaskadenposition. Der einzige Unterschied zum Altpfad
-        /// ist die Kanalführung: Statt auf der Kanalsumme zu rechnen und den Rest über
-        /// <c>Waermekanaele.Uebernehmen</c> proportional zurückzuverteilen, deckt die
-        /// Anlage ihren Kanal nach <c>WS_Typ</c> (bei „Beides" mit Warmwasservorrang).
+        /// haben für diese Stufe keinen Inhalt, und die Stufe bleibt ein Vektormodul an
+        /// ihrer Kaskadenposition. Sie rechnet KANALGERECHT — die Anlage deckt ihren
+        /// Kanal nach <c>WS_Typ</c> (bei „Beides" mit Warmwasservorrang), statt wie bis
+        /// Paket 5 auf der Kanalsumme.
         /// </summary>
-        public bool Berechnung_Zweikanalig(int ID_Projekt, Waermekanaele kanaele,
-                                           List<Senkenzuordnung> senken)
+        public bool Berechnung_Zweikanalig(int ID_Projekt, Kanalsatz kanaele,
+                                           List<Senkenliste> senken)
         {
             if (kanaele == null) return false;
             if (!Vorbereiten_Zweikanalig(ID_Projekt, senken)) return false;
 
+            double[] rest = new double[Kanal.ANZAHL];
+
             for (int stunde = 0; stunde < 8760; stunde++)
             {
-                double rest_heiz = kanaele.Heiz[stunde];
-                double rest_ww = kanaele.WW[stunde];
+                for (int k = 0; k < Kanal.ANZAHL; k++) rest[k] = kanaele.Bedarf[k][stunde];
 
                 // Ohne Speicher gibt es keine Vorabentladung: Der Stufeneingang ist der
                 // Kanalstand an dieser Kaskadenposition.
-                Stunde_Start(stunde, rest_heiz, rest_ww);
-                Stunde_Bedarf(stunde, ref rest_heiz, ref rest_ww);
+                Stunde_Start(stunde, rest);
+                Stunde_Bedarf(stunde, rest);
                 Stunde_Ende(stunde);
 
-                kanaele.Heiz[stunde] = (float)rest_heiz;
-                kanaele.WW[stunde] = (float)rest_ww;
+                for (int k = 0; k < Kanal.ANZAHL; k++)
+                    kanaele.Bedarf[k][stunde] = (float)rest[k];
             }
 
             Abschluss_Zweikanalig();

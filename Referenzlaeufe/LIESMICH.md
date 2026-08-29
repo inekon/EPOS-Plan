@@ -12,16 +12,161 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
-**`2026-08-19_B6/`** — seit dem 19.08.2026, 17:16 Uhr die gültige Referenz,
-**neun Projekte** (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, **1030**), **216 CSV,
-2 366 177 Werte**. Jeder neue Vergleich läuft gegen diesen Ordner.
+**`2026-08-29_Booster/`** — seit dem 29.08.2026 die gültige Referenz, **dreizehn
+Projekte** (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, 1030, **1039, 1040, 1041,
+1042**), **332 CSV**. Jeder neue Vergleich läuft gegen diesen Ordner.
 
-> **B6 ist mit B5 byte-identisch** (9/9 PASS, 216/216 gleich). Der Basiswechsel erfolgt allein wegen
-> der **Zuordnung**: Gerechnet ist B6 mit dem Codestand nach Abschluss der Ausbaustufe W4
-> (`e94be10`, Etappen E3 bis E7 plus den zusammengeführten KI-Strang) und auf einer Quelle mit
-> **Schemastand 21** statt 17. Damit lässt sich eine spätere Abweichung zweifelsfrei einer
-> Folgeänderung zuschreiben. Einzelheiten und — wichtiger — die Liste **„Was diese Basis nicht
-> absichert"** stehen im [Laufprotokoll der Basis](2026-08-19_B6/lauf_protokoll.md).
+> **Anlass: Booster-Temperaturkopplung erstmals scharf im Referenznetz** (Codestand
+> `0787aec` = B3, rechnerisch identisch B2). Datenänderung: `WQ_Unbegrenzt = False` an
+> Anlage 14818 (mit Anwender-Freigabe per UPDATE gesetzt; Sicherung in `DB-Backup\`) —
+> das Häkchen hatte die B1/B2-Kopplung still abgeschaltet (Warnkriterium und Dialogrot
+> dazu: Paket B3). Die Basis trägt erstmals die Zeilen „Booster … GETEILTER Puffer …"
+> und **„Booster-Lesepunkt: DAVOR"** (Default aus Paket B2). Gegen `2026-08-28_B2`:
+> **319/332 byte-gleich, alle 13 Abweichungen in 1042** (gewollt — Booster-JAZ
+> 4,60 → 3,05, die 45-°C-Fiktion ist weg; Zahlen im
+> [Laufprotokoll der Basis](2026-08-29_Booster/lauf_protokoll.md)).
+> **Selbstvergleich 332/332 byte-/MD5-gleich** (zwei `projekt`-Läufe auf EINER festen
+> Quellkopie, Datenstand 29.08.2026 00:29).
+>
+> **Die feste Projektliste (dreizehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
+> ```
+
+> *(Fassung vor Booster — Begründung der früheren Basis `2026-08-28_B2`:)*
+>
+> **Anlass: Paket B2 (Kessel-Temperaturmodus, wählbarer Booster-Lesepunkt, Schema 55) +
+> Datenänderung des Anwenders an 1042** (`4be1862`). E2 war durch die
+> 1042-Umverschaltung des Anwenders bereits überholt (Kontrolllauf des unveränderten
+> Codes: 321/332, alle 11 Abweichungen in 1042). B2 selbst ist per A/B auf gemeinsamer
+> Kopie **332/332 byte-gleich** belegt; gegen E2 ist die neue Basis für die zwölf
+> übrigen Projekte byte-gleich. Arbeitskopie auf Schemastand **55** (Vorbelegungen
+> „Berechnet"/„Davor" wirksam). **Selbstvergleich 332/332 byte-/MD5-gleich** (zwei
+> `projekt`-Läufe auf EINER festen Quellkopie, Datenstand 28.08.2026 17:19).
+> **ACHTUNG: Die Booster-Temperaturkopplung ist in dieser Basis NICHT scharf** — an
+> Anlage 14818 steht noch `WQ_Unbegrenzt = True` (konstant 45 °C statt
+> Speicherkopplung); Details und Folge im
+> [Laufprotokoll der Basis](2026-08-28_B2/lauf_protokoll.md). Wird das Häkchen
+> entfernt, ist die Basis für 1042 zu erneuern.
+>
+> **Die feste Projektliste (dreizehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
+> ```
+
+> *(Fassung vor B2 — Begründung der früheren Basis `2026-08-28_E2`:)*
+>
+> **Anlass: Booster-Kette produktiv scharf + Codestand E2/D-Check** (`babab27`). Der
+> Anwender hat in 1042 die Booster-Verschaltung konfiguriert (CS6800iAW + Kessel →
+> „Puffer 3000Ltr" → Booster-WP → Stora B) — die Basis trägt damit erstmals die
+> stundengekoppelte Booster-Rechnung samt `wp_quellentemperatur.csv` (drei neue Dateien,
+> alle 1042). Die Codepakete seit P1 (E2 Kanal-Ganglinien, D-Check-Layoutfixes) waren per
+> A/B byte-gleich belegt; alle CSV-Unterschiede zur P1-Basis sind die 1042-Datenänderung.
+> **Selbstvergleich 332/332 byte-gleich** (zwei `projekt`-Läufe auf EINER festen
+> Quellkopie, Datenstand 28.08.2026 09:05). Details:
+> [Laufprotokoll der Basis](2026-08-28_E2/lauf_protokoll.md).
+>
+> **Die feste Projektliste (dreizehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
+> ```
+
+> *(Fassung vor E2 — Begründung der früheren Basis `2026-08-28_P1`:)*
+>
+> **Anlass: Paket P1 (Schichtspeichermodell, Migrationsschritt 53).** Das Multi-Node-Modell
+> ist eingebaut; die gesamte Referenzmenge rechnet mit N = 1 und ist **konstruktiv
+> byte-gleich** zum E1-Stand: alle 316 Ganglinien byte-/MD5-identisch, die einzige Änderung
+> sind die jetzt gefüllten Kennzahlen `Pufferspeicher[i].T_oben_Mittel`/`T_oben_Min`
+> (28 Einträge in 9 `aggregate.csv`; die Quellspeicherzeile von 1021 bleibt leer).
+> Toleranzvergleich mit `--ohne` dieser Schlüssel: **13/13 PASS (3 532 029 Werte)**.
+> Details und N>1-Wirkproben im
+> [P1-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/P1_Schichtmodell_Protokoll.md).
+> Datenquelle: produktive `Kenndaten.accdb` (27.08.2026 20:45, nur gelesen), Arbeitskopie
+> migriert auf Schemastand **53**.
+>
+> **Die feste Projektliste (dreizehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
+> ```
+
+> *(Fassung vor P1 — Begründung der früheren Basis `2026-08-27_E1`:)*
+>
+> **Anlass: Paket E1 (Ergebnis je Kanal, Migrationsschritt 52) — Meilenstein Z3: Bedarf →
+> Kaskade → Ergebnis → Bericht durchgängig dreikanalig.** Gegenüber A1 wachsen die
+> `aggregate.csv` um **39 neue Kanal-Schlüssel** (Bedarf/Deckung/Entladung je Kanal,
+> Durchsatzsummen, `ID_Anlage`, `T_oben_*`-Vorgriff); geänderte Bestandswerte sind allein
+> die vier `Kapazitaet_Pufferspeicher` der dokumentierten `puffer_wp`-Ablösung (S-1) —
+> alle Ganglinien der zwölf unveränderten Projekte byte-gleich, Kanal-Summenprobe 54/54
+> (Details im [E1-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/E1_ErgebnisJeKanal_Protokoll.md)).
+> Projekt **1042** trägt zusätzlich eine **Datenänderung des Anwenders** (WP-Module 3 → 2,
+> Kombi-Speicher 1054195 entfernt — die Basis friert den neuen Stand ein; das
+> Warnkriterium `QUELLE_FEHLT` der unkonfigurierten Booster-Quelle steht im Protokoll).
+>
+> **Codestand:** Paket E1 auf `Pufferspeicher`. **Datenquelle:** produktive
+> `Kenndaten.accdb`, Zeitstempel **27.08.2026 20:45**, nur gelesen (keine `laccdb`, kein
+> App-Prozess); Arbeitskopie migriert auf Schemastand **52**. **Selbstvergleich:** zweiter
+> Lauf **329/329 byte-/MD5-gleich** — reproduzierbar. `pruefen`: 13/13 plausibel.
+>
+> **Die feste Projektliste umfasst dreizehn IDs:**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
+> ```
+
+> *(Fassung vor A1 — Begründung der früheren Basis `2026-08-27_K1`:)*
+>
+> **Anlass: Paket K1 (Dreikanal-Bedarf) — Entscheidungen F2 und F3.** Gegenüber V0 ändern sich
+> **sieben** Projekte gewollt: die Netzverluste werden je Stunde **anteilig** auf die Kanäle
+> Heizung/Brauchwasser/Prozess verteilt statt vollständig auf Heizung (F2), und alle
+> Profil-Bedarfe (Brauchwasser, Prozesswärme, Strom) kacheln ihr Wochenprofil am
+> **Klimadaten-Kalender** statt fest „1. Januar = Sonntag" (F3; produktiv ist der 1. Januar ein
+> Donnerstag — die Wochengänge verschieben sich um drei Tage). **Die Jahressummen sind in allen
+> neun Projekten exakt unverändert** (`Waermebedarf_Gesamt`, `Strombedarf_Gesamt` je Projekt
+> identisch — nur zeitliche Verteilung und Kanalzuordnung ändern sich). **PASS gegen V0: 1018
+> und 1030** — die einzigen Projekte ohne Profil-/Brauchwasser-/Prozessanteil. Die neue
+> **Energieprobe** (Kanalsumme gegen unabhängige Gesamtsumme, je Stunde, 8760 × 9 Projekte)
+> meldet **null Verletzungen**; das Laufprotokoll trägt 12 bekannte Bestandswarnungen
+> (Energieträger-Zuordnung, Rückfall-ΔT), 0 Fehler.
+>
+> **Codestand:** Paket K1 auf `Pufferspeicher` (Details
+> [K1-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/K1_Dreikanal_Protokoll.md)).
+> **Datenquelle:** produktive `Kenndaten.accdb`, Zeitstempel 26.08.2026 23:39, nur gelesen;
+> Arbeitskopie migriert auf Schemastand **48**. **Selbstvergleich:** zweiter Lauf
+> **216/216 byte-/MD5-gleich** — reproduzierbar.
+
+> **Anlass: Paket V0 (Bestandsfehler) des Konzepts Brauchwasser/Heizung/Pufferspeicher.**
+> Drei Projekte ändern sich durch die Fixes **gewollt** gegenüber B6 — **1008**
+> (Mehrgebäude-Doppelzählung V0-1: Wärmebedarf 98,26 → 54,88 MWh), **1007** und **1011**
+> (Stromprofile werden summiert statt überschrieben, V0-2: 12 → 24 bzw. 5 462 → 6 806 MWh) —
+> vollständig zugeordnet im
+> [V0-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/V0_Bestandsfehler_Protokoll.md)
+> über einen Vorher/Nachher-Lauf auf **gemeinsamer** Datenbankkopie (dort 6/9 byte-stabil).
+> Ein PASS/FAIL-Vergleich B6 → V0 wird bewusst **nicht** geführt: Zwischen beiden Ständen
+> liegen neben V0 auch der Merge des Branches `kostenformulare` (Migrationsschritte bis 44),
+> die x64-Umstellung und Datenpflege des Anwenders — Code und Daten haben sich gleichzeitig
+> geändert.
+>
+> **Codestand:** `2409996` (Branch `Pufferspeicher`), x64 Debug, 0 Fehler.
+> **Datenquelle:** produktive `Kenndaten.accdb`, Zeitstempel **26.08.2026 23:39**, nur
+> gelesen; vor dem Lauf wurde eine **verwaiste** `Kenndaten.laccdb` dreier fensterloser
+> Access-Prozesse bereinigt. Die Migration auf den Schema-Zielstand lief ausschließlich auf
+> der Arbeitskopie. **Selbstvergleich:** zweiter Lauf desselben Codes auf derselben Quelle
+> **9/9 PASS (2 366 177 Werte), 216/216 byte-/MD5-gleich** — die Basis ist reproduzierbar.
+> `pruefen`: alle neun Projekte plausibel, keine NaN/Inf.
+>
+> **Neu sichtbar im Protokoll:** der V0-9-Hinweis zur oberen Kennlinienkappung meldet in
+> Projekt 1024 real **957 Kappungsstunden** (WP „CS6800iAW MB + AW 10 OR-T", oberste
+> Stützstelle 20,0 °C) — der Booster-relevante Fall existiert bereits im Bestand.
+>
+> **Was diese Basis weiterhin nicht absichert:** unverändert die Lücken der B6-Liste (u. a.
+> kein Projekt mit zwei Puffern je Kanal, kein Kessel an Quellpuffer mit Wert ≠ 0, keine
+> Wirtschaftlichkeit). Die **vier neuen Referenzprojekte** aus Konzept 11.1 (Mehrgebäude;
+> zwei Puffer je Kanal; Prozesswärme mit eigenem Puffer; Booster-Kette mit Kombi-Speicher)
+> stehen noch aus — 1008 deckt Mehrgebäude seit V0 immerhin rechnerisch korrekt ab.
 
 > **Der Referenzlauf deckt den Rechenkern ab, nicht die Wirtschaftlichkeit.** Er ruft
 > `WirtschaftlichkeitCtrl` nicht auf. Kapitalwert, KWK-Zuschlag, Steuergutschriften, Tarife und
@@ -29,10 +174,11 @@ Paket B1, Kapitel 9.
 > Vorgängerstand gemessen. Ein grünes 216/216 sagt über die Ausbaustufe W4 deshalb nur, dass sie den
 > Rechenkern nicht berührt hat.
 
-> **Die Projektliste ist FEST VORGEGEBEN und muss bei jedem Folgelauf mitgegeben werden:**
+> **Die Projektliste ist FEST VORGEGEBEN und muss bei jedem Folgelauf mitgegeben werden**
+> (seit Basis A1 dreizehn IDs):
 >
 > ```powershell
-> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
 > ```
 >
 > Ohne `--projekte` wählt die Suite datengetrieben — und diese Wahl **wandert mit dem
@@ -107,7 +253,51 @@ reproduzierbar.
 
 ## Frühere Stände
 
-`2026-08-19_B5/` bleibt als **vorheriger Stand** liegen (Codestand `ef8e537`, Quelle mit Schemastand
+`2026-08-28_B2/` bleibt als **vorheriger Stand** liegen (Codestand 4be1862, Schemastand
+55, dreizehn Projekte, 332 CSV) — der Stand unmittelbar vor dem Unbegrenzt-Fix: 1042
+dort mit abgeschalteter Kopplung (konstant 45 °C); für die zwölf übrigen Projekte
+byte-gleich mit der Booster-Basis. Begründung im Abschnitt „(Fassung vor Booster)"
+darüber.
+
+`2026-08-28_E2/` bleibt als **älterer Stand** liegen (Codestand babab27, Schemastand
+54, dreizehn Projekte, 332 CSV) — die erste Basis, in der die
+**Booster-Temperaturkopplung in 1042 scharf** war (frühere Verschaltung: geteilter
+Puffer 1054196, Lesepunkt implizit „Danach"); für die zwölf übrigen Projekte
+byte-gleich mit B2. Begründung im Abschnitt „(Fassung vor B2)" darüber.
+
+`2026-08-28_P1/` bleibt als **älterer Stand** liegen (Codestand P1, Schemastand 53,
+dreizehn Projekte, 329 CSV) — die Basis der Pakete B1/Q1/P2/L/E2 (alle je byte-gleich
+dagegen); 1042 dort noch mit unkonfigurierter Booster-Quelle. Begründung im Abschnitt
+„(Fassung vor E2)" darüber.
+
+`2026-08-27_E1/` bleibt als **älterer Stand** liegen (Codestand E1, Schemastand 52,
+dreizehn Projekte, 329 CSV) — die Basis des Meilensteins Z3; P1 war gegen sie in allen
+316 Ganglinien byte-gleich (einzige Änderung: T_oben-Füllung). Begründung im Abschnitt
+„(Fassung vor P1)" darüber.
+
+`2026-08-27_A1/` bleibt als **älterer Stand** liegen (Codestand A1, Schemastand 51,
+dreizehn Projekte, 329 CSV) — die erste Basis mit den vier Konzept-11.1-Projekten,
+Meilenstein „ein Rechenweg". A/B-Zuordnung des Altpfad-Abrisses im
+[Laufprotokoll](2026-08-27_A1/lauf_protokoll.md); 1042 dort noch mit drei WP-Modulen und
+Kombi-Speicher 1054195 (vor der Datenänderung des Anwenders).
+
+`2026-08-27_K1/` bleibt als **älterer Stand** liegen (Codestand K1 auf `Pufferspeicher`,
+Schemastand 48, neun Projekte, 216 CSV, 2 366 177 Werte) — die Basis der Pakete K1 bis S2;
+K2, S1 und S2 waren gegen sie jeweils **216/216 byte-gleich**, sie blieb deshalb bis A1
+unverändert gültig. Warum K1 seinerzeit gesetzt wurde, steht im Abschnitt darunter
+(Fassung vor A1) bzw. im K1-Protokoll.
+
+`2026-08-27_V0/` bleibt als **älterer Stand** liegen (Codestand `2409996`, Schemastand 47,
+neun Projekte, 216 CSV, 2 366 177 Werte) — der Stand nach den V0-Bestandsfehler-Fixes und vor
+der Dreikanal-Umstellung. Warum V0 seinerzeit gesetzt wurde, steht im Abschnitt darüber
+(Fassung vor K1) bzw. im V0-Protokoll.
+
+`2026-08-19_B6/` bleibt als **älterer Stand** liegen (Codestand `e94be10`, Schemastand 21,
+neun Projekte, 216 CSV, 2 366 177 Werte) — die letzte Basis **vor** dem `kostenformulare`-Merge
+und Paket V0. Warum B6 seinerzeit gesetzt wurde, steht im Abschnitt „Warum die Basis auf B6
+gewechselt wurde" darüber.
+
+`2026-08-19_B5/` bleibt als **älterer Stand** liegen (Codestand `ef8e537`, Quelle mit Schemastand
 17, neun Projekte, 216 CSV, 2 366 177 Werte) — **für alle 216 Dateien byte-gleich mit B6** und damit
 der Beleg des Standes vor den Etappen E3 bis E7. Warum B5 seinerzeit gesetzt wurde, steht im
 Abschnitt „Warum die Basis auf B5 gewechselt wurde" darüber.
@@ -496,12 +686,15 @@ die Projektdaten, vergleicht man Äpfel mit Birnen. Die Quelle steht im Kopf von
 **Für jeden Vergleichslauf gilt die feste Liste. `--projekte` ist Pflicht:**
 
 ```powershell
-& $exe lauf --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030
+& $exe lauf --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
 ```
 
-Neun IDs, seit Basis B5 (19.08.2026): die acht Projekte von B4 plus das Kaskadenprojekt
-**1030**. Wer sie wegläßt, bekommt einen Ordner, der sich mit der Basis nicht vergleichen
-läßt — der Vergleich meldet dann fehlende und zusätzliche Projekte, nicht Rechenabweichungen.
+Dreizehn IDs, seit Basis A1 (27.08.2026): die neun Projekte der B5-Linie (acht von B4 plus
+Kaskadenprojekt **1030**) plus die **vier Referenzprojekte aus Konzept 11.1** — 1039
+(Mehrgebäude), 1040 (zwei Puffer je Kanal), 1041 (Prozesswärme mit eigenem Puffer), 1042
+(Booster-Kette mit Kombi-Speicher). Wer sie wegläßt, bekommt einen Ordner, der sich mit der
+Basis nicht vergleichen läßt — der Vergleich meldet dann fehlende und zusätzliche Projekte,
+nicht Rechenabweichungen.
 
 ### Warum nicht die Automatik
 

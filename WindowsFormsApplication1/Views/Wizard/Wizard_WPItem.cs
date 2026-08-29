@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -59,6 +60,10 @@ namespace WindowsFormsApplication1
             // entfernt - der Pufferspeicher wird jetzt über die Zuordnung in der
             // Simulation-Konfiguration gepflegt. Gespeicherte Werte bleiben erhalten.
             groupBox1.Visible = false;
+
+            // Ä19: Die Kostenzeile ersetzt die Modulkosten in JEDEM Zustand des
+            // Dialogs — auch vor SetControls (leerer Neuanlage-Fall).
+            KostenAnzeigeEinrichten();
         }
 
         public Wizard_WPItem(string wpname)
@@ -77,6 +82,10 @@ namespace WindowsFormsApplication1
 
             // Pufferspeicher-Bereich entfernt (siehe Kommentar im anderen Konstruktor)
             groupBox1.Visible = false;
+
+            // Ä19: Die Kostenzeile ersetzt die Modulkosten in JEDEM Zustand des
+            // Dialogs — auch vor SetControls (leerer Neuanlage-Fall).
+            KostenAnzeigeEinrichten();
         }
 
         /// <summary>
@@ -144,7 +153,12 @@ namespace WindowsFormsApplication1
             {
                 item = m_werzitemlist.ElementAt(index);
 
-                listBox_WP.Text = item.Bezeichner;
+                // Ä21-Fix: stille Vorwahl — der Auswahl-Handler darf die
+                // Projekt-Geräte-Id dieses Listeneintrags nicht mit der
+                // Stammkatalog-Id überschreiben (siehe m_bStilleFuellung).
+                m_bStilleFuellung = true;
+                try { listBox_WP.Text = item.Bezeichner; }
+                finally { m_bStilleFuellung = false; }
                 textBox_Abschalttemp.Text = item.Abschaltpunkt.ToString();
                 comboBox_Betriebsart.Text = item.Betriebsart;
                 checkBox_Bivalent.Checked = item.Bivalenter_Betrieb;
@@ -165,6 +179,7 @@ namespace WindowsFormsApplication1
                 textBox_Anteil.Text = item.Solaranteil.ToString();
                 textBox_Nutzungszeit.Text = item.Nutzungszeit.ToString();
                 textBox_PHeizstab.Text = item.Heizung.ToString();
+                KostenAnzeigeEinrichten();   // Ä19: Kosten statt Modulkosten
   
 
                 // WP spezifische Daten im Dialog mit anzeigen
@@ -259,13 +274,48 @@ namespace WindowsFormsApplication1
             CloseWithOK = false;
             Close();
         }
+        /// <summary>
+        /// Ä21-Fix (Nutzerbefund 27.08.2026, „Datensatz ID 67 nicht gefunden"):
+        /// true, während SetControls die Auswahl PROGRAMMATISCH setzt. Der
+        /// Auswahl-Handler schrieb bisher bei JEDER Textzuweisung die
+        /// STAMMKATALOG-Id (Tab_WP_STAMM) in <c>item.ID_WP</c> — item ist aber die
+        /// Referenz in die Projektliste der Verwaltung, deren ID_WP die
+        /// PROJEKT-Geräte-Id (Tab_WP) trägt. Nach dem ersten Öffnen der
+        /// Detailansicht zeigte der Listeneintrag damit auf den Katalog, und das
+        /// nächste „Ändern.." fand die Geräte-Id nicht mehr. Nur eine ECHTE
+        /// Nutzerauswahl darf die Id wechseln (der Speicherweg materialisiert
+        /// die Stammwahl dann wie im Neu-Fluss).
+        /// </summary>
+        private bool m_bStilleFuellung;
+
         private void listBox_WP_SelectedIndexChanged(object sender, EventArgs e)
         {
             FillVorlaufCombo(listBox_WP.Text);
             WPStammCtrl wpctrl = new WPStammCtrl();
             wpctrl.ReadSingle("select * from Tab_WP_STAMM where Bezeichner='" + listBox_WP.Text + "'");
-            m_nID_WP = wpctrl.ID;
-            item.ID_WP = wpctrl.ID;
+            if (m_bStilleFuellung)
+            {
+                // Programmatische Vorwahl: Anzeige (Stammfelder, Kennlinien) laufen
+                // lassen, aber die Projekt-Geräte-Id des Eintrags behalten — auch
+                // für btn_OK, das item.ID_WP aus m_nID_WP setzt.
+                m_nID_WP = item.ID_WP;
+            }
+            else
+            {
+                m_nID_WP = wpctrl.ID;
+                item.ID_WP = wpctrl.ID;
+                // Ä23: Die Wahl gilt auch für das Listenobjekt — sonst trüge es
+                // nach einem WP-Wechsel weiter die Stammdaten (u. a. Nennleistung)
+                // der vorherigen Wahl und die Verwaltungsliste zeigte 0 kW.
+                item.Regelung = wpctrl.Regelung;
+                item.Nennleistung = wpctrl.Nennleistung;
+                item.Modulkosten = wpctrl.Modulkosten;
+                item.Baujahr = wpctrl.Baujahr;
+                item.Beschreibung = wpctrl.Beschreibung;
+                item.Firma = wpctrl.Firma;
+                item.Typ = wpctrl.Typ;
+                item.Heizung = wpctrl.Heizung;
+            }
             // WP spezifische Daten im Dialog mit anzeigen
 
             // WP spezifische Daten im Dialog mit anzeigen
@@ -320,6 +370,230 @@ namespace WindowsFormsApplication1
             }
             return;
         }
+        // ================================================================= Ä19
+
+        /// <summary>Ä19 (Nutzerauftrag 26.08.2026): Geräte-„Modulkosten“ sind
+        /// Kostendialog-Sache — die Zeile weicht den KOMPONENTENSUMMEN (Invest/Betrieb
+        /// der Wärmepumpe aus der Kostenverwaltung) und dem Einstieg „Kosten
+        /// bearbeiten…“ (Projektmodus, Komponente Wärmepumpe). Das Feld bleibt im
+        /// Designer (resx-Layout unangetastet) und wird nur verborgen; sein Wert
+        /// läuft im Speicherweg unverändert mit.</summary>
+        private Button btnKosten;
+        private Label lblKostenSummen;
+
+        private void KostenAnzeigeEinrichten()
+        {
+            if (btnKosten != null) { KostenSummenAnzeigen(); return; }
+
+            Control eltern = textBox_Modulkosten.Parent;
+            if (eltern == null) return;
+            int links = label32 != null ? 29 : textBox_Modulkosten.Left - 112;
+            int oben = textBox_Modulkosten.Top;
+
+            // ENTFERNEN statt Verbergen: Der Offscreen-Weg (DrawToBitmap) dieser
+            // Alt-Dialoge zeichnet per Visible=false versteckte Controls weiter
+            // (Befund Ä19). Das Textfeld wird nur ausgehängt — sein Wert läuft im
+            // Speicherweg unverändert mit. label32/label33 sind Beschriftung und
+            // €-Kästchen der Zeile (Namen aus dem Layout-Dump).
+            eltern.Controls.Remove(textBox_Modulkosten);
+            foreach (string name in new[] { "label32", "label33" })
+            {
+                Control[] c = this.Controls.Find(name, true);
+                if (c.Length > 0 &&
+                    ((c[0].Text ?? "").StartsWith("Modulkosten") || c[0].Text == "€"))
+                {
+                    c[0].Parent.Controls.Remove(c[0]);
+                    c[0].Dispose();
+                }
+            }
+
+            btnKosten = new Button
+            {
+                Text = TWpi("WPI_BTN_KOSTEN", "Kosten bearbeiten…"),
+                Location = new Point(links, oben - 2),
+                Size = new Size(150, 25),
+                UseVisualStyleBackColor = true
+            };
+            btnKosten.Click += new EventHandler(btnKosten_Click);
+            eltern.Controls.Add(btnKosten);
+            btnKosten.BringToFront();
+
+            lblKostenSummen = new Label
+            {
+                AutoSize = true,
+                ForeColor = Color.FromArgb(26, 50, 97),
+                Location = new Point(links + 158, oben + 2)
+            };
+            eltern.Controls.Add(lblKostenSummen);
+            lblKostenSummen.BringToFront();
+
+            KostenSummenAnzeigen();
+        }
+
+        /// <summary>Ä20: Invest-/Betriebssumme DIESER Anlage (Tab_ProjektWerte.ID_Anlage
+        /// = Anlagenzeile item.ID); vor Migrationsschritt 45 bzw. ohne Anlage 0.</summary>
+        private ToolTip _kostenTip;
+
+        /// <summary>
+        /// Ä25 (Nutzerbefund 27.08.2026): „Kosten bearbeiten…“ blieb GESPERRT,
+        /// obwohl die Wärmepumpe im Projekt verbaut ist.
+        ///
+        /// <para><b>Ursache.</b> Der Knopf hing allein an zwei Feldern des
+        /// LISTENOBJEKTS: <c>item.ID</c> (Anlagenzeile) und <c>item.ID_Projekt</c>.
+        /// Beide trägt es nicht in jedem Einstieg. Ein Eintrag aus „Neu…“
+        /// (<c>Form_WPAuswahl.btn_Neu_Click</c>, <c>WPKontextMenuCtrl</c>, Wizard)
+        /// startet mit 0/0; der Del+Add-Speicherweg schreibt seit Ä24 zwar die
+        /// frische Anlagen-Id zurück (<c>WizardCtrl.Add_WP_Waermeerzeuger</c>),
+        /// <c>ID_Projekt</c> aber NICHT. Nach dem Speichern stand die Anlage damit
+        /// in der Datenbank, während der Dialog sie weiter für eine Neuanlage
+        /// hielt — Knopf grau, Summenzeile „Invest — · Betrieb —“.</para>
+        ///
+        /// <para><b>Behebung: Anker beim Öffnen nachziehen</b> — dasselbe Muster wie
+        /// <c>KostenProjektPositionenCtrl.ZuordnungReparieren</c> (Ä21) und
+        /// Migrationsschritt 47. Die Anlagenzeile wird aus der Datenbank geholt:
+        /// erst über <c>item.ID</c> (die Zeile liefert dann das Projekt), sonst über
+        /// den GERÄTEANKER — Projekt-Gerätekopie <c>Tab_WP.ID</c> →
+        /// <c>Tab_Energieanlagen.ID_WP</c> desselben Projekts. Der Verbund mit
+        /// <c>Tab_WP</c> hält Stammkatalog-Ids heraus (eine Katalogzeile trägt kein
+        /// <c>ID_Projekt</c> dieses Projekts — dieselbe Prüfung wie
+        /// <c>WizardCtrl.PufferGehoertZuProjekt</c>). Findet auch das nichts, ist die
+        /// Anlage wirklich noch nicht gespeichert: der Ä22-Fall, in dem der Knopf
+        /// gesperrt bleibt und der Tooltip den Weg nennt.</para>
+        /// </summary>
+        /// <returns>true, wenn <c>item.ID</c> und <c>item.ID_Projekt</c> danach eine
+        /// GESPEICHERTE Anlagenzeile bezeichnen.</returns>
+        private bool AnlagenzeileNachziehen()
+        {
+            if (item == null) return false;
+            try
+            {
+                // 1) Gültige Anlagen-Id am Listenobjekt: Die Zeile selbst nennt das
+                //    Projekt — das heilt den Ä24-Rückschreibfall (ID gesetzt,
+                //    ID_Projekt 0).
+                if (item.ID > 0)
+                {
+                    object p = DataRepository.ExecuteScalar(
+                        "SELECT ID_Projekt FROM Tab_Energieanlagen WHERE ID = ?",
+                        new OleDbParameter("@id", item.ID));
+                    if (p != null && p != DBNull.Value && Convert.ToInt32(p) > 0)
+                    {
+                        item.ID_Projekt = Convert.ToInt32(p);
+                        return true;
+                    }
+                }
+
+                // 2) Sonst über den Geräteanker. Projekt: das des Listenobjekts,
+                //    ersatzweise das GEÖFFNETE Projekt — der Dialog wird nur aus
+                //    dessen Verwaltung heraus aufgerufen.
+                int projekt = item.ID_Projekt;
+                if (projekt <= 0 && Program.startfrm != null)
+                    projekt = Program.startfrm.m_ID_Projekt;
+                if (projekt <= 0 || item.ID_WP <= 0) return false;
+
+                // Ids als LITERALE: ACE bindet positionale Parameter im Verbund
+                // nicht verlässlich (Ä21-Befund, dieselbe Falle wie bei
+                // Unterabfragen).
+                object a = DataRepository.ExecuteScalar(
+                    "SELECT MIN(a.ID) FROM Tab_Energieanlagen AS a " +
+                    "INNER JOIN Tab_WP AS g ON a.ID_WP = g.ID " +
+                    "WHERE a.ID_Projekt = " + projekt +
+                    " AND g.ID_Projekt = " + projekt +
+                    " AND a.ID_WP = " + item.ID_WP);
+                if (a == null || a == DBNull.Value) return false;
+
+                item.ID = Convert.ToInt32(a);
+                item.ID_Projekt = projekt;
+                return true;
+            }
+            catch { return false; }
+        }
+
+        private void KostenSummenAnzeigen()
+        {
+            if (lblKostenSummen == null) return;
+
+            // Ä22: Kosten hängen an der ANLAGENZEILE (item.ID) — bei einer noch
+            // nicht gespeicherten Neuanlage gibt es sie nicht. Der Knopf bleibt
+            // dann gesperrt, sagt aber im Tooltip warum und wie es weitergeht;
+            // die Summen zeigen „—“ statt einer falschen 0.
+            // Ä25: Vorher wird die Anlagenzeile NACHGEZOGEN (siehe dort) — sonst
+            // bliebe der Knopf auch bei längst gespeicherter Anlage grau.
+            bool bereit = AnlagenzeileNachziehen();
+            if (btnKosten != null)
+            {
+                btnKosten.Enabled = bereit;
+                if (_kostenTip == null) _kostenTip = new ToolTip();
+                _kostenTip.SetToolTip(btnKosten, bereit
+                    ? TWpi("WPI_TIP_KOSTEN",
+                        "Kostenverwaltung dieser Anlage öffnen (Projektmodus).")
+                    : TWpi("WPI_TIP_KOSTEN_NEU",
+                        "Kosten werden je ANLAGE gepflegt — die Wärmepumpe zuerst mit " +
+                        "OK anlegen und speichern; danach über „Ändern..“ die Kosten " +
+                        "bearbeiten."));
+            }
+            if (!bereit)
+            {
+                lblKostenSummen.Text = TWpi("WPI_KOSTEN_KEINE", "Invest — · Betrieb —");
+                return;
+            }
+            try
+            {
+                double invest = AnlagenSumme(Form_Kosten.KATEGORIE_INVESTITION);
+                double betrieb = AnlagenSumme(Form_Kosten.KATEGORIE_BETRIEB);
+                lblKostenSummen.Text = string.Format(
+                    TWpi("WPI_KOSTEN_SUMMEN", "Invest {0:N0} € · Betrieb {1:N0} €/a"),
+                    invest, betrieb);
+            }
+            catch { lblKostenSummen.Text = ""; }
+        }
+
+        private double AnlagenSumme(int kategorie)
+        {
+            if (item == null || item.ID <= 0 || item.ID_Projekt <= 0) return 0;
+            bool spalteDa = false;
+            try { spalteDa = KostenPositionCtrl.StelleSpaltenSicher(); } catch { }
+            if (!spalteDa) return 0;
+            object o = DataRepository.ExecuteScalar(
+                "SELECT SUM(EingegebenerWert) FROM Tab_ProjektWerte " +
+                "WHERE ProjektID = ? AND KategorieID = ? AND ID_Anlage = ?",
+                new OleDbParameter("@p", item.ID_Projekt),
+                new OleDbParameter("@k", kategorie),
+                new OleDbParameter("@a", item.ID));
+            return (o == null || o == DBNull.Value) ? 0 : Convert.ToDouble(o);
+        }
+
+        private void btnKosten_Click(object sender, EventArgs e)
+        {
+            if (item == null || item.ID_Projekt <= 0) return;
+            string projektname = "";
+            try
+            {
+                var pc = new ProjektCtrl();
+                pc.ReadSingle(item.ID_Projekt);
+                if (pc.rows > 0) projektname = pc.m_szProjektname;
+            }
+            catch { }
+            using (var dlg = new Form_KostenKomponente())
+            {
+                // Ä20: direkt die Kosten DIESER Anlage (item.ID = Anlagenzeile).
+                dlg.SetProjekt(item.ID_Projekt, projektname, DbWerte.ERZEUGER_WAERMEPUMPE,
+                               false, item.ID);
+                dlg.ShowDialog(this);
+            }
+            KostenSummenAnzeigen();
+        }
+
+        /// <summary>MyResource mit deutschem Rückfall (Drei-Schichten-Regel).</summary>
+        private static string TWpi(string schluessel, string rueckfall)
+        {
+            try
+            {
+                string s = MyResource.Resource.ResourceManager.GetString(schluessel);
+                return string.IsNullOrEmpty(s) ? rueckfall : s;
+            }
+            catch { return rueckfall; }
+        }
+
         private void btn_WP_Click(object sender, EventArgs e)
         {
             Form_WP frm = new Form_WP(listBox_WP.Text);
@@ -329,13 +603,20 @@ namespace WindowsFormsApplication1
             WPCtrl wpctrl = new WPCtrl();
             wpctrl.ReadAll("ID=" + item.ID_WP);
 
-            textBox_Beschreibung.Text = wpctrl.items[0].Beschreibung;
-            textBox_Baujahr.Text = wpctrl.items[0].Baujahr.ToString();
-            textBox_Leistungsstufen.Text = wpctrl.items[0].Regelung;
-            textBox_Waermepumpentyp.Text = wpctrl.items[0].Typ;
-            textBox_Hersteller.Text = wpctrl.items[0].Firma;
-            textBox_Modulkosten.Text = wpctrl.items[0].Modulkosten.ToString();
-            textBox_Nennleistung.Text = wpctrl.items[0].Nennleistung.ToString();
+            // Befund 26.08.2026: Wurde die Waermepumpe im Dialog geloescht oder
+            // ist ID_WP nicht (mehr) vergeben, kommt eine LEERE Liste zurueck -
+            // der ungepruefte items[0]-Zugriff warf eine
+            // ArgumentOutOfRangeException. Dann bleibt die Anzeige unveraendert.
+            if (wpctrl.items == null || wpctrl.items.Count == 0) return;
+
+            var wp = wpctrl.items[0];
+            textBox_Beschreibung.Text = wp.Beschreibung;
+            textBox_Baujahr.Text = wp.Baujahr.ToString();
+            textBox_Leistungsstufen.Text = wp.Regelung;
+            textBox_Waermepumpentyp.Text = wp.Typ;
+            textBox_Hersteller.Text = wp.Firma;
+            textBox_Modulkosten.Text = wp.Modulkosten.ToString();
+            textBox_Nennleistung.Text = wp.Nennleistung.ToString();
         }
         private void checkBox_Bivalent_CheckedChanged(object sender, EventArgs e)
         {

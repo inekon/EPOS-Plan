@@ -90,6 +90,14 @@ namespace WindowsFormsApplication1
                 ListViewItem item = listView_WaermebedarfExtern.Items[indexes[0]];
                 List<Z_ProjWaermebedarfModel> waelist = new List<Z_ProjWaermebedarfModel>();
 
+                // Migrationsschritt 48 (F18): Die Kanäle VOR dem Löschen sichern.
+                // Die ListView führt nur Bezeichner, ID_Z und ID_Ganglinie; die Liste
+                // unten entsteht allein aus ihr, und der Speicherweg ist Löschen +
+                // Neuanlegen - ohne diese Karte verlören die verbleibenden Ganglinien
+                // ihren Kanal beim Entfernen einer einzigen Zeile.
+                Dictionary<int, string> kanaele =
+                    Z_ProjektGebGanglinieCtrl.KanaeleLesen(m_ID_Projekt);
+
                 listView_WaermebedarfExtern.Items[indexes[0]].Remove();
                 wizctrl.Del_WaermebedarfExtern(m_ID_Projekt);
                 
@@ -102,6 +110,10 @@ namespace WindowsFormsApplication1
                     item = listView_WaermebedarfExtern.Items[i];
                     model.m_ID_Z =  Int32.Parse(item.SubItems[1].Text);
                     model.m_ID_Ganglinie = Int32.Parse(item.SubItems[2].Text);
+
+                    string kanal;
+                    if (kanaele.TryGetValue(model.m_ID_Z, out kanal)) model.Kanal = kanal;
+
                     waelist.Add(model);
                 }
                 

@@ -25,6 +25,17 @@
         /// <summary>Rolle im Lauf: "Heizung" (Senke) oder "Quelle" - TEXT(50).</summary>
         public string Verwendung = "";
 
+        /// <summary>
+        /// PAKET E1 (Migrationsschritt 52): Energieanlage, zu der dieser Speicher gehört -
+        /// belegt bei QUELLspeichern (SimulationPufferspeicher.ID_Anlage, Serienschlüssel
+        /// QUELLE_&lt;AnlagenID&gt;), 0 bei Senkenspeichern. Ohne ihn waren zwei Module am
+        /// selben Quellpuffer in der Persistenz nicht unterscheidbar, und die
+        /// Ganglinien-Dateien quellspeicher_&lt;AnlagenID&gt;_*.csv liessen sich der Zeile
+        /// nicht zuordnen. Geschrieben wird NULL statt 0 (keine Anlage), gelesen wird
+        /// beides als 0.
+        /// </summary>
+        public int ID_Anlage;
+
         public double Q_max;             // kWh (nutzbare Kapazität)
         public double Ladung_gesamt;     // kWh/a
         public double Entladung_gesamt;  // kWh/a
@@ -33,5 +44,46 @@
         public double SOC_Mittel;        // kWh (Jahresmittel der Ganglinie)
         public double SOC_Max;           // kWh (Jahresmaximum der Ganglinie)
         public double Vollzyklen;        // - (Ladung_gesamt / Q_max)
+
+        /// <summary>
+        /// PAKET E1 (Konzept 4.4): bedarfsdeckende Entladung JE KANAL [kWh/a], indiziert
+        /// mit Kanal.HEIZUNG/BRAUCHWASSER/PROZESS.
+        ///
+        /// <para>Gebucht wird an derselben Stelle wie Entladung_gesamt
+        /// (SimulationPufferspeicher.Entladen), mit dem Kanal des Durchlaufs aus der
+        /// Entladeordnung - die Summe der drei Werte ist deshalb Entladung_gesamt; der
+        /// Skalar bleibt getrennt akkumuliert und verschiebt sich durch die Aufteilung
+        /// nicht.</para>
+        ///
+        /// <para>QUELLSPEICHER: Die Entnahme eines Moduls aus seinem Quellpuffer traegt
+        /// keinen Bedarfskanal und wird - wie schon in
+        /// Kaskadenschleife.Anteil_Entladen(sp, gedeckt) - auf dem HEIZKANAL gebucht
+        /// (altverhaltenserhaltende Vorbelegung des Kanalmodells, Konzept 4.2/F18).</para>
+        /// </summary>
+        public double[] Entladung_Kanal = new double[Kanal.ANZAHL];
+
+        /// <summary>
+        /// PAKET E1 (Befund N6): durchgeflossene Aufnahme [kWh/a] - was der Speicher in
+        /// derselben Stunde wieder abgegeben hat und deshalb nie Speicherinhalt war.
+        /// Ohne Durchlass exakt 0. Bis Schritt 52 stand die Groesse nur am Objekt.
+        /// </summary>
+        public double Durchsatz_Geladen;
+
+        /// <summary>PAKET E1 (Befund N6): wieder abgegebene Durchflussmenge [kWh/a];
+        /// siehe Durchsatz_Geladen.</summary>
+        public double Durchsatz_Entladen;
+
+        /// <summary>
+        /// Mittlere Temperatur der obersten Schicht [Grad C] (Migrationsschritt 52 legte
+        /// als P1-Vorgriff nur die Spalte an; SEIT PAKET P1 wird sie GEFUELLT).
+        /// <para>NULL heisst weiterhin "nicht erhoben" und bleibt der Regelfall dort, wo
+        /// es keine Speichertemperatur gibt - bei einem Quellspeicher ist das
+        /// Temperaturpaar ein Ersatzwertpaar (Spreizung/0), keine Schichttemperatur.
+        /// Eine 0 waere dort eine Behauptung.</para>
+        /// </summary>
+        public double? T_oben_Mittel;
+
+        /// <summary>Jahresminimum der obersten Schicht [Grad C]; siehe T_oben_Mittel.</summary>
+        public double? T_oben_Min;
     }
 }

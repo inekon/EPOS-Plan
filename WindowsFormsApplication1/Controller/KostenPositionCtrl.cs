@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -105,6 +105,54 @@ namespace WindowsFormsApplication1
                             catch (Exception ex)
                             {
                                 Protokoll(s.Tabelle + "." + s.Name + ": " + ex.Message);
+                                ok = false;
+                            }
+                        }
+
+                        // ETAPPE KD6 (§ 11, FK10): dieselbe Vorsorge für die
+                        // Tab_ProjektWerte-Spalten des Schritts 38 (VorlageID,
+                        // StartJahr) — die Leser fragen sie fest an. Nur die
+                        // PW-Spalten; die energy_carrier-Spalten des Schritts
+                        // gehören nicht in diese Vorsorge.
+                        foreach (SchemaSpalte s in SchemaKatalog.Schritt38_Spalten)
+                        {
+                            if (!string.Equals(s.Tabelle, SchemaKatalog.TAB_PROJEKTWERTE,
+                                               StringComparison.Ordinal)) continue;
+                            if (vorhanden.Contains(s.Name)) continue;
+                            try
+                            {
+                                using (OleDbCommand cmd = new OleDbCommand(
+                                    "ALTER TABLE [" + s.Tabelle + "] ADD COLUMN [" + s.Name + "] " +
+                                    s.TypDefinition, conn))
+                                    cmd.ExecuteNonQuery();
+                            }
+                            catch (Exception ex)
+                            {
+                                Protokoll(s.Tabelle + "." + s.Name + ": " + ex.Message);
+                                ok = false;
+                            }
+                        }
+                        // Ä20/Ä21 (Migrationsschritte 45/46): Anlagenbezug der
+                        // Positionen samt Geräteanker — die Lese-/Schreibwege
+                        // filtern fest nach ID_Anlage, die Reparatur braucht
+                        // ID_AnlageGeraet.
+                        foreach (string spalte in new[]
+                                 { SchemaKatalog.SPALTE_PW_ID_ANLAGE,
+                                   SchemaKatalog.SPALTE_PW_ID_ANLAGE_GERAET })
+                        {
+                            if (vorhanden.Contains(spalte)) continue;
+                            try
+                            {
+                                using (OleDbCommand cmd = new OleDbCommand(
+                                    "ALTER TABLE [" + SchemaKatalog.TAB_PROJEKTWERTE +
+                                    "] ADD COLUMN [" + spalte + "] LONG",
+                                    conn))
+                                    cmd.ExecuteNonQuery();
+                            }
+                            catch (Exception ex)
+                            {
+                                Protokoll(SchemaKatalog.TAB_PROJEKTWERTE + "." +
+                                          spalte + ": " + ex.Message);
                                 ok = false;
                             }
                         }
@@ -279,6 +327,31 @@ namespace WindowsFormsApplication1
             return (o != null && o != DBNull.Value) ? Convert.ToInt32(o) : 0;
         }
 
+        /// <summary>
+        /// Ä25: Dieselbe Suche MIT Anlagenbezug — <c>Tab_ProjektWerte.ID_Anlage</c>
+        /// (Migrationsschritt 45). Ohne die Spalte fällt sie auf die
+        /// Bestandssignatur zurück.
+        /// </summary>
+        internal static int FindePosition(int projektID, int kategorieID, int komponentenID,
+                                          int stammID, int idAnlage)
+        {
+            bool spalteDa = false;
+            try { spalteDa = StelleSpaltenSicher(); } catch { }
+            if (!spalteDa || idAnlage <= 0)
+                return FindePosition(projektID, kategorieID, komponentenID, stammID);
+
+            object o = DataRepository.ExecuteScalar(
+                "SELECT MIN(ID) FROM Tab_ProjektWerte " +
+                "WHERE ProjektID = ? AND KategorieID = ? AND KomponentenID = ? " +
+                "AND StammID = ? AND ID_Anlage = ?",
+                new OleDbParameter("@p", projektID),
+                new OleDbParameter("@k", kategorieID),
+                new OleDbParameter("@c", komponentenID),
+                new OleDbParameter("@s", stammID),
+                new OleDbParameter("@a", idAnlage));
+            return (o != null && o != DBNull.Value) ? Convert.ToInt32(o) : 0;
+        }
+
         /// <summary>Aktuell erfasster Betrag einer Position (0, wenn sie fehlt).</summary>
         internal static double LiesBetrag(int positionsID)
         {
@@ -327,6 +400,75 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@g", gruppe ?? DbWerte.KOSTEN_GRUPPE_ALLGEMEIN));
 
             return FindePosition(projektID, kategorieID, komponentenID, stammID);
+        }
+
+        /// <summary>
+        /// Ä25 (Nutzerbefund 27.08.2026, „Pufferkosten verschwinden“): dasselbe MIT
+        /// ANLAGENBEZUG — die Signatur der Ä20-Schreibwege
+        /// (<c>KostenProjektPositionenCtrl.Neu</c>,
+        /// <c>KostenVorlagenUebernahmeCtrl.AusVorlage</c>).
+        ///
+        /// <para><b>Warum es die zweite Fassung braucht.</b> Die Bestandsfassung
+        /// sucht über (Projekt, Kategorie, Komponente, StammID) — <b>ohne</b>
+        /// <c>ID_Anlage</c>. Seit Ä20 hängen die Positionen aber an der ANLAGE, und
+        /// ein Projekt führt regelmäßig MEHRERE Anlagen derselben Komponente (fünf
+        /// Pufferspeicher in Projekt 1040). Legte man dort für die zweite Anlage
+        /// eine Position gleichen Namens an, fand die Suche die Zeile der ERSTEN
+        /// Anlage, überschrieb ihren Betrag mit dem Startwert (meist 0) und der
+        /// anschließende <c>AnlageZuordnen</c>-Aufruf hängte sie an die zweite
+        /// Anlage um: Die Kosten der ersten Anlage waren weg — genau das
+        /// Fehlerbild „Investitionskosten der Pufferspeicher-Zeilen verschwinden,
+        /// nachdem die Kostenverwaltung geöffnet wurde“.</para>
+        ///
+        /// <para><c>ID_Anlage</c> steht deshalb MIT im INSERT: Nur so ist die frische
+        /// Zeile über die anlagenbezogene Suche wiederfindbar, und es kann keine
+        /// Zeile ohne Zuordnung zurückbleiben, wenn der Nachtrag scheitert. Den
+        /// GERÄTEANKER trägt anschließend wie bisher
+        /// <c>KostenProjektPositionenCtrl.AnlageZuordnen</c> nach.</para>
+        ///
+        /// <para>Ohne Anlagenbezug (<paramref name="idAnlage"/> ≤ 0) oder auf einer
+        /// Datenbank ohne die Spalte gilt unverändert die Bestandssignatur.</para>
+        /// </summary>
+        internal static int SetzeBetrag(int projektID, int kategorieID, int komponentenID,
+                                        int stammID, double betrag, string gruppe,
+                                        bool anlegenWennFehlt, int idAnlage)
+        {
+            bool spalteDa = false;
+            try { spalteDa = StelleSpaltenSicher(); } catch { }
+            if (idAnlage <= 0 || !spalteDa)
+                return SetzeBetrag(projektID, kategorieID, komponentenID, stammID,
+                                   betrag, gruppe, anlegenWennFehlt);
+
+            if (stammID <= 0 || komponentenID <= 0) return 0;
+
+            int id = FindePosition(projektID, kategorieID, komponentenID, stammID, idAnlage);
+            if (id > 0)
+            {
+                // Aktualisieren über den Primärschlüssel (wie in der Bestandsfassung).
+                DataRepository.ExecuteSQL(
+                    "UPDATE Tab_ProjektWerte SET EingegebenerWert = ? WHERE ID = ?",
+                    new OleDbParameter("@v", betrag),
+                    new OleDbParameter("@id", id));
+                return id;
+            }
+
+            if (!anlegenWennFehlt) return 0;
+
+            GruppeSichern(gruppe);
+            DataRepository.ExecuteSQL(
+                "INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID, KategorieID, " +
+                "EingegebenerWert, Nutzungsdauer, Einheit, Gruppe, [" +
+                SchemaKatalog.SPALTE_PW_ID_ANLAGE + "]) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)",
+                new OleDbParameter("@p", projektID),
+                new OleDbParameter("@s", stammID),
+                new OleDbParameter("@c", komponentenID),
+                new OleDbParameter("@k", kategorieID),
+                new OleDbParameter("@v", betrag),
+                new OleDbParameter("@e", DbWerte.KOSTEN_EINHEIT_EURO),
+                new OleDbParameter("@g", gruppe ?? DbWerte.KOSTEN_GRUPPE_ALLGEMEIN),
+                new OleDbParameter("@a", idAnlage));
+
+            return FindePosition(projektID, kategorieID, komponentenID, stammID, idAnlage);
         }
 
         /// <summary>Wie <see cref="SchreibeNebenkosten"/> mit vorhandenen Zeilen umgeht.</summary>
@@ -539,6 +681,10 @@ namespace WindowsFormsApplication1
 
             /// <summary>Satz der Bemessung, null = nicht gepflegt.</summary>
             public double? Einheitpreis;
+
+            /// <summary>ETAPPE KD6 (§ 11, FK10): Startjahr der Position —
+            /// 0 = t0 (NULL in der Datenbank), X ≥ 2 = Zahlung/Betrieb ab Jahr X.</summary>
+            public int StartJahr;
         }
 
         /// <summary>
@@ -566,7 +712,8 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.SPALTE_PW_BEMESSUNG + "], [" +
                     SchemaKatalog.SPALTE_PW_IST_ERLOES + "], [" +
                     SchemaKatalog.SPALTE_PW_MENGE + "], [" +
-                    SchemaKatalog.SPALTE_PW_EINHEITPREIS + "] " +
+                    SchemaKatalog.SPALTE_PW_EINHEITPREIS + "], [" +
+                    SchemaKatalog.SPALTE_PW_STARTJAHR + "] " +
                     "FROM " + SchemaKatalog.TAB_PROJEKTWERTE +
                     " WHERE ProjektID = ? AND KategorieID = ?",
                     new OleDbParameter("@p", projektID),
@@ -596,7 +743,8 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.SPALTE_PW_BEMESSUNG + "], [" +
                     SchemaKatalog.SPALTE_PW_IST_ERLOES + "], [" +
                     SchemaKatalog.SPALTE_PW_MENGE + "], [" +
-                    SchemaKatalog.SPALTE_PW_EINHEITPREIS + "] " +
+                    SchemaKatalog.SPALTE_PW_EINHEITPREIS + "], [" +
+                    SchemaKatalog.SPALTE_PW_STARTJAHR + "] " +
                     "FROM " + SchemaKatalog.TAB_PROJEKTWERTE + " WHERE ID = ?",
                     new OleDbParameter("@id", positionsID));
                 if (dt != null && dt.Rows.Count > 0) return AusZeile(dt.Rows[0]);
@@ -624,6 +772,9 @@ namespace WindowsFormsApplication1
 
             z.Menge = Feldzahl(r, SchemaKatalog.SPALTE_PW_MENGE);
             z.Einheitpreis = Feldzahl(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS);
+
+            double? start = Feldzahl(r, SchemaKatalog.SPALTE_PW_STARTJAHR);
+            z.StartJahr = start.HasValue && start.Value > 1 ? (int)start.Value : 0;
             return z;
         }
 
