@@ -125,6 +125,40 @@ namespace WindowsFormsApplication1
         public const string KOSTEN_KOMPONENTE_STROMEINSPEISUNG = "Stromeinspeisung";
 
         // =====================================================================
+        // ETAPPE KD1 — die sechs BESTANDS-Techniknamen als Konstanten
+        //   Tab_KostenKomponente.Komponente, IDs 1..5 und 7 der Auslieferung
+        //   (an der Produktiv-DB nachgemessen, 25.08.2026). Bisher standen sie
+        //   nur als Datenzeilen in der Datenbank und als Literale in
+        //   KomponentenUebernahmeCtrl/Form_Kosten; die Vorlagen-Seeds des
+        //   Migrationsschritts 39 brauchen sie als EINE Wahrheit.
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        // =====================================================================
+
+        /// <summary>Bestandskomponente „Wärmepumpe" (<c>Tab_KostenKomponente.ID = 1</c>).
+        /// Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).</summary>
+        public const string KOSTEN_KOMPONENTE_WAERMEPUMPE = "Wärmepumpe";
+
+        /// <summary>Bestandskomponente „Heizkessel" (<c>ID = 2</c>).
+        /// <inheritdoc cref="KOSTEN_KOMPONENTE_WAERMEPUMPE" path="/summary/text()[last()]"/></summary>
+        public const string KOSTEN_KOMPONENTE_HEIZKESSEL = "Heizkessel";
+
+        /// <summary>Bestandskomponente „Photovoltaik" (<c>ID = 3</c>).
+        /// <inheritdoc cref="KOSTEN_KOMPONENTE_WAERMEPUMPE" path="/summary/text()[last()]"/></summary>
+        public const string KOSTEN_KOMPONENTE_PHOTOVOLTAIK = "Photovoltaik";
+
+        /// <summary>Bestandskomponente „Solarthermie" (<c>ID = 4</c>).
+        /// <inheritdoc cref="KOSTEN_KOMPONENTE_WAERMEPUMPE" path="/summary/text()[last()]"/></summary>
+        public const string KOSTEN_KOMPONENTE_SOLARTHERMIE = "Solarthermie";
+
+        /// <summary>Bestandskomponente „Stromspeicher" (<c>ID = 5</c>).
+        /// <inheritdoc cref="KOSTEN_KOMPONENTE_WAERMEPUMPE" path="/summary/text()[last()]"/></summary>
+        public const string KOSTEN_KOMPONENTE_STROMSPEICHER = "Stromspeicher";
+
+        /// <summary>Bestandskomponente „BHKW" (<c>ID = 7</c>).
+        /// <inheritdoc cref="KOSTEN_KOMPONENTE_WAERMEPUMPE" path="/summary/text()[last()]"/></summary>
+        public const string KOSTEN_KOMPONENTE_BHKW = "BHKW";
+
+        // =====================================================================
         // Nebenkosten-Positionen einer Kostenkomponente
         //   Tab_Kostenfaktor.Bezeichnung (IsMainComponent = False), verwendet als
         //   Unterposition in der Gruppe der Komponente (Tab_ProjektWerte)
@@ -442,6 +476,91 @@ namespace WindowsFormsApplication1
         /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/>
         /// </summary>
         public const string BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN = "PROZENT_BRENNSTOFFKOSTEN";
+
+        // =====================================================================
+        // ETAPPE KD1 — Bemessungsarten der Kostenvorlagen
+        //   Tab_KostenVorlagePosition.Bemessung und (nach Übernahme)
+        //   Tab_ProjektWerte.Bemessung (Migrationsschritt 38/39).
+        //
+        //   Der Katalog aus Konzept Kostendialoge Rev. 1.2, § 5.3: Die
+        //   technischen Bezugsgrößen (kW, kWp, kWh Kapazität, m²) bekommen je
+        //   einen EIGENEN Persistenzwert, weil die Bezugsgröße komponenten-
+        //   abhängig aufgelöst wird (TechnikPlanwertCtrl-Kette, Etappe KD2) und
+        //   ein generisches "EUR_PRO_KW" beim Speicher (kWh) oder der
+        //   Solarthermie (m²) nicht unterscheidbar wäre.
+        //
+        //   BESTAND BLEIBT: BETRAG, EUR_PRO_H, EUR_PRO_KWH,
+        //   PROZENT_INVESTITION, PROZENT_BRENNSTOFFKOSTEN gelten unverändert;
+        //   Altdaten werden NICHT migriert. "fester Jahresbetrag" und "€/a"
+        //   der Vorlage sind EIN Persistenzwert (JAHRESBETRAG, § 5.3).
+        //   ASCII und Grossbuchstaben, nach der Auslieferung EINGEFROREN
+        //   (Drei-Schichten-Regel); Anzeigetexte folgen in Etappe KD2.
+        // =====================================================================
+
+        /// <summary>Fester Jahresbetrag [€/a] — Betriebskosten ohne Bezugsgröße.
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_JAHRESBETRAG = "JAHRESBETRAG";
+
+        /// <summary>Je erzeugter kWh Wärme [€/kWh] — Bezugsgröße Wärmeproduktion des
+        /// jüngsten Simulationslaufs.
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_EUR_PRO_KWH_THERMISCH = "EUR_PRO_KWH_THERMISCH";
+
+        /// <summary>Je erzeugter/bezogener kWh Strom [€/kWh] — Bezugsgröße aus dem
+        /// jüngsten Simulationslauf.
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH = "EUR_PRO_KWH_ELEKTRISCH";
+
+        /// <summary>Je kW thermischer Nennleistung [€/kW] (Heizkessel).
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_EUR_PRO_KW_LEISTUNG = "EUR_PRO_KW_LEISTUNG";
+
+        /// <summary>Je kW Heizleistung [€/kW] (Wärmepumpe).
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG = "EUR_PRO_KW_HEIZLEISTUNG";
+
+        /// <summary>Je kW elektrischer Nennleistung [€/kW] (BHKW).
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_EUR_PRO_KW_ELEKTRISCH = "EUR_PRO_KW_ELEKTRISCH";
+
+        /// <summary>Je kWp installierter Leistung [€/kWp] (Photovoltaik; kWp rechnerisch,
+        /// geteilte Hilfsfunktion aus PV-Konzept Befund V3).
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_EUR_PRO_KWP = "EUR_PRO_KWP";
+
+        /// <summary>Je kWh Speicherkapazität [€/kWh] (Puffer-/Stromspeicher).
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_EUR_PRO_KWH_KAPAZITAET = "EUR_PRO_KWH_KAPAZITAET";
+
+        /// <summary>Je m² Kollektorfläche [€/m²] (Solarthermie).
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_EUR_PRO_M2_KOLLEKTOR = "EUR_PRO_M2_KOLLEKTOR";
+
+        /// <summary>Anteil des Betrags der Hauptposition [%] („% der Erzeugerkosten").
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_PROZENT_ERZEUGERKOSTEN = "PROZENT_ERZEUGERKOSTEN";
+
+        /// <summary>Anteil der Stromkosten des Trägerbezugs [%] — Basis kommt DIREKT aus
+        /// der Energieträgerwelt (KL7/FK3: keine Positionszeile im Betriebskosten-Raster).
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
+        public const string BEMESSUNG_PROZENT_STROMKOSTEN = "PROZENT_STROMKOSTEN";
+
+        // =====================================================================
+        // ETAPPE KD1 — Leistungspreis-Modus der Energieträger
+        //   energy_carrier.price_power_modus und (Übersteuerung, Etappe KD4)
+        //   energy_project_settings (Migrationsschritt 38; Konzept Kostendialoge
+        //   Rev. 1.2, § 7.1, Entscheidung FK6).
+        //   ASCII, eingefroren (Drei-Schichten-Regel); Rechenwirkung in KD4.
+        // =====================================================================
+
+        /// <summary>Jahresleistungspreis [€/(kW·a)] × Jahreshöchstlast des
+        /// Trägerbezugs. Persistenzwert, eingefroren (Drei-Schichten-Regel).</summary>
+        public const string LEISTUNGSPREIS_MODUS_JAHR = "JAHR";
+
+        /// <summary>Monatsleistungspreis [€/(kW·Monat)] × Monatshöchstlast, über
+        /// zwölf Monate summiert (FK6).
+        /// <inheritdoc cref="LEISTUNGSPREIS_MODUS_JAHR" path="/summary/text()[last()]"/></summary>
+        public const string LEISTUNGSPREIS_MODUS_MONAT = "MONAT";
 
         // =====================================================================
         // ETAPPE E4 — Projektangaben der Steuerpruefung
@@ -931,6 +1050,53 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string WS_ZIEL_PUFFER_KOMBI = "PufferKombi";
 
+        /// <summary>
+        /// S1 (Migrationsschritt 50, Konzept Brauchwasser/Heizung/Pufferspeicher
+        /// § 5.1 und Kapitel 15): Direkte Deckung des PROZESSWÄRMEBEDARFS — die
+        /// zweite Direktsenke neben <see cref="WS_ZIEL_HEIZKREIS"/>.
+        ///
+        /// <para>Bis Paket K1 lief die Prozesswärme als Teil des Restkanals still
+        /// über den Heizkreis mit; mit der Dreikanalbilanz (L3, kein Residuum) ist
+        /// sie ein eigener Kanal und braucht ein eigenes Senkenziel. Die
+        /// Migrationsregel R-Prozess (F17) trägt es allen Bestandsanlagen nach, die
+        /// den Heizkreis mit Bedarfsart <see cref="WS_TYP_BEIDES"/> oder
+        /// <see cref="WS_TYP_HEIZUNG"/> bedienen — ohne sie bliebe der Prozesskanal
+        /// in jedem Bestandsprojekt ungedeckt.</para>
+        ///
+        /// <para>Wertgleich mit <see cref="KANAL_PROZESS"/>, aber bewusst eine
+        /// EIGENE Konstante: Das eine ist der Kanal eines BEDARFS
+        /// (<c>Z_ProjektWaermebedarf.Kanal</c>), das andere das Ziel einer SENKE
+        /// (<c>Z_AnlageSenke.Ziel</c>). Zwei Fragen, zwei Konstanten — sonst
+        /// koppelte eine spätere Änderung an einer Stelle die andere still mit.
+        /// Ebenfalls bewusst OHNE Umlaut, wie alle Zielwerte (SQL-Vergleich,
+        /// U+FFFD-Altlast).</para>
+        ///
+        /// Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string WS_ZIEL_PROZESS = "Prozesswaerme";
+
+        /// <summary>
+        /// S1 (Migrationsschritt 50, Konzept § 5.1 und Kapitel 15): Die Anlage lädt
+        /// einen Puffer mit dem Ladezweck PROZESSWÄRME — das sechste und letzte
+        /// Senkenziel (F5-Alternative: die sechs geforderten Senkentypen SIND die
+        /// sechs <c>Ziel</c>-Werte).
+        ///
+        /// <para>Das Puffer-Ziel benennt den ZWECK der Ladung — Auswahlfilter, Chip
+        /// und Schema-Kante hängen daran. Welche Kanäle der Speicher ENTLÄDT,
+        /// bestimmt allein sein Klassen-Set
+        /// (<c>Nutzung_Heizung</c>/<c>_Brauchwasser</c>/<c>_Prozess</c>,
+        /// Schritt 49); weicht das Set vom Ziel ab, greift Warnkriterium W1 —
+        /// gewarnt, nicht gesperrt (§ 6.2).</para>
+        ///
+        /// <para>Im Bestand kommt der Wert NICHT vor: Die Migration schreibt ihn
+        /// nirgends, weil Schritt 49 auch <c>Nutzung_Prozess</c> überall auf FALSCH
+        /// lässt — ein Prozessspeicher wäre erfunden. Gesetzt wird er erst durch den
+        /// Anwender im Senkendialog.</para>
+        ///
+        /// Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string WS_ZIEL_PUFFER_PROZESS = "PufferProzess";
+
         // =====================================================================
         // Wärmesenke — abgedeckter Bedarfsanteil
         //   Tab_Energieanlagen.WS_Typ
@@ -940,6 +1106,82 @@ namespace WindowsFormsApplication1
         public const string WS_TYP_BEIDES = "Beides";
         public const string WS_TYP_WARMWASSER = "Warmwasser";
         public const string WS_TYP_HEIZUNG = "Heizung";
+
+        // =====================================================================
+        // Bedarfskanal
+        //   Z_ProjektWaermebedarf.Kanal  (Migrationsschritt 48, Konzept
+        //   Brauchwasser/Heizung/Pufferspeicher § 4.2, Rückfrage F18)
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        //
+        //   Die drei Kanäle des Bedarfsmodells (L3: kein Residuum mehr). Der
+        //   Rechenkern indiziert sie (KANAL_HEIZUNG = 0 usw., L2); DIESE Werte sind
+        //   ausschließlich das, was in der Datenbank steht — nie ein Anzeigetext und
+        //   nie ein Index. Die Anzeige läuft über MyResource.Resource.KANAL_*_ANZEIGE.
+        //
+        //   LEER oder NULL gilt überall als Heizung: So steht die Spalte in jeder
+        //   Zeile, die vor Schritt 48 entstanden ist, und so bleibt eine Datenbank
+        //   ohne die Spalte verhaltensgleich zum Bestand (F18: Vorbelegung „Heizung"
+        //   ist altverhaltenserhaltend).
+        // =====================================================================
+
+        /// <summary>Raumwärme — der Vorbelegungs- und Rückfallwert (leer/NULL = Heizung).</summary>
+        public const string KANAL_HEIZUNG = "Heizung";
+
+        /// <summary>Trinkwarmwasser.</summary>
+        public const string KANAL_BRAUCHWASSER = "Brauchwasser";
+
+        /// <summary>
+        /// Prozesswärme. Bewusst OHNE Umlaut geschrieben („Prozesswaerme"), wie
+        /// <see cref="WS_ZIEL_PUFFER_HEIZUNG"/> &amp; Co. — der Wert wird in SQL
+        /// verglichen, und die Altdaten-Beschädigung mit U+FFFD aus früheren
+        /// Importen trifft genau solche Vergleiche.
+        /// </summary>
+        public const string KANAL_PROZESS = "Prozesswaerme";
+
+        // =====================================================================
+        // Kanal-Knappheitsreihenfolge
+        //   Tab_Einstellungen.Kanal_Knappheitsreihenfolge  (Migrationsschritt 49,
+        //   Konzept Brauchwasser/Heizung/Pufferspeicher § 4.3, Rückfrage F10)
+        //
+        //   BEWUSSTE AUSNAHME VON DER DEUTSCH-REGEL. Die übrigen Persistenzwerte
+        //   dieser Datei sind deutsch und eingefroren; diese hier sind
+        //   SPRACHNEUTRALE ASCII-SCHLÜSSEL. So legt es Konzept Kapitel 15
+        //   ausdrücklich fest: Der Spaltenwert ist keine Wertaufzählung mit
+        //   Anzeigebezug, sondern eine REIHENFOLGE — eine Liste von Schlüsseln,
+        //   die zerlegt, umsortiert und wieder zusammengesetzt wird. Umlaute und
+        //   deutsche Schreibweisen wären dort nur eine weitere Fehlerquelle
+        //   (Kodierungsschäden mit U+FFFD treffen genau solche Vergleiche).
+        //
+        //   PERSISTENZFORMAT der Spalte: die drei Schlüssel, getrennt durch
+        //   Semikolon, in der gewünschten Rangfolge — z. B.
+        //   "BRAUCHWASSER;PROZESS;HEIZUNG". Der Leser ist tolerant: unbekannte
+        //   Glieder werden übergangen, fehlende Kanäle hinten in der Reihenfolge
+        //   des Vorgabewerts ergänzt, NULL/leer bedeutet den Vorgabewert.
+        //
+        //   FACHLICHE BEGRÜNDUNG der Vorbelegung (4.3): Warmwasser-Vorrang wie
+        //   bisher (Komfortkriterium), Prozess vor Heizung (ein Produktionsausfall
+        //   wiegt schwerer als Raumkomfort).
+        // =====================================================================
+
+        /// <summary>Steuerwert des Brauchwasserkanals in der Knappheitsreihenfolge.</summary>
+        public const string KNAPPHEIT_BRAUCHWASSER = "BRAUCHWASSER";
+
+        /// <summary>Steuerwert des Prozesswärmekanals in der Knappheitsreihenfolge.</summary>
+        public const string KNAPPHEIT_PROZESS = "PROZESS";
+
+        /// <summary>Steuerwert des Heizkanals in der Knappheitsreihenfolge.</summary>
+        public const string KNAPPHEIT_HEIZUNG = "HEIZUNG";
+
+        /// <summary>
+        /// Vorbelegung der Spalte <c>Tab_Einstellungen.Kanal_Knappheitsreihenfolge</c>
+        /// (Migrationsschritt 49) und Rückfallwert bei NULL, Leerwert oder fehlender
+        /// Spalte: <c>BRAUCHWASSER;PROZESS;HEIZUNG</c> — die drei Schlüssel oben in
+        /// genau dieser Rangfolge. Bewusst als LITERAL geschrieben und nicht aus den
+        /// drei Konstanten zusammengesetzt: Der Wert steht so auch im
+        /// Migrationsskript und in der Datenbank, und er soll im Quelltext genauso
+        /// lesbar sein wie dort.
+        /// </summary>
+        public const string KNAPPHEIT_DEFAULT = "BRAUCHWASSER;PROZESS;HEIZUNG";
 
         // =====================================================================
         // Wärmequelle
@@ -971,6 +1213,185 @@ namespace WindowsFormsApplication1
         /// <see cref="WQ_TYP_PUFFERSPEICHER"/>).
         /// </summary>
         public const string WQ_TYP_OHNE = "";
+
+        // =====================================================================
+        // Temperaturbezug des Quellbezugs
+        //   Tab_Energieanlagen.WQ_TemperaturModus  (Migrationsschritt 55, Paket B2)
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        //
+        //   Er beantwortet EINE Frage: Woher kommt das Temperaturpaar (Vorlauf /
+        //   Rücklauf), gegen das der Heizkessel den Anteil seiner Nutzwärme rechnet,
+        //   den ihm der Quellpuffer abnimmt?
+        //
+        //       Anteil(h) = (T_Quelle(h) − RL) / (VL − RL)
+        //
+        //   T_Quelle liefert der Speicher (Paket B1/Q1, Schichthöhe aus
+        //   WQ_Anschlusshoehe) — daran ändert der Modus NICHTS. Er steuert allein das
+        //   BEZUGSPAAR VL/RL.
+        //
+        //   Nutzerauftrag 28.08.2026: „Die Vorlauf- und die Rücklauftemperatur sollen
+        //   fest vorgegeben werden können […] oder entsprechend der berechneten
+        //   Speichertemperatur (unter Beachtung Schichtspeicher) Verwendung finden
+        //   können — im Falle berechnet ist die Vorgabe der Vor- und
+        //   Rücklauftemperatur nicht erforderlich (keinen Hinweis geben)."
+        // =====================================================================
+
+        /// <summary>
+        /// BERECHNET — das Bezugspaar kommt aus dem Lauf und nicht aus der Pflege:
+        /// primär die wirksamen Betriebstemperaturen <c>VL_eff</c>/<c>RL_eff</c> des
+        /// Rang-1-Senkenspeichers des Kessels, ersatzweise die gepflegte Kette
+        /// Anlage → <c>Tab_Heizkessel</c>, zuletzt die dokumentierte Konstante
+        /// 70/50 °C (<c>SimulationControl.KESSEL_VORLAUF_RUECKFALL</c>).
+        ///
+        /// <para><b>Vorbelegung des Bestands</b> (Migrationsschritt 55, DML): In der
+        /// produktiven Datenbank trägt kein einziger Heizkessel ein Temperaturpaar
+        /// (Ticket B1-O10, 0 von 23) — mit „Fest" als Vorbelegung bliebe die
+        /// Kessel-Kaskade weiterhin flächendeckend wirkungslos und der Anwender müsste
+        /// 23 Kessel von Hand pflegen. In diesem Modus gibt es weder Pflegepflicht noch
+        /// Warnung.</para>
+        /// </summary>
+        public const string WQ_TEMPMODUS_BERECHNET = "Berechnet";
+
+        /// <summary>
+        /// FEST — das Bezugspaar ist eine Anwendervorgabe und wird ausschließlich aus
+        /// der gepflegten Kette gelesen (Anlage <c>Tab_Energieanlagen.Vorlauf</c>/
+        /// <c>[Rücklauf]</c>, dann <c>Tab_Heizkessel</c>, dann der Senkenpuffer — die
+        /// W3-Kette aus Paket B1).
+        ///
+        /// <para>Fehlt das Paar, meldet der Warnkriterienkatalog
+        /// <see cref="Warnkriterien.KESSEL_TEMPERATURPAAR"/> und die Engine fällt
+        /// SICHTBAR auf den Berechnet-Weg zurück. Der frühere Zustand — Quellbezug
+        /// stumm wirkungslos — ist damit abgelöst.</para>
+        /// </summary>
+        public const string WQ_TEMPMODUS_FEST = "Fest";
+
+        /// <summary>
+        /// Der Modus einer gelesenen Spalte; <c>null</c>, <c>DBNull</c>, Leerwert und
+        /// jeder unbekannte Wert ergeben <see cref="WQ_TEMPMODUS_BERECHNET"/> — die
+        /// Vorbelegung des Migrationsschritts 55 und zugleich der Modus, der ohne jede
+        /// Datenpflege auskommt.
+        ///
+        /// <para>Bewusst TOLERANT gegenüber Groß-/Kleinschreibung (Befund L0-1: ältere
+        /// Stände haben lokalisierte ComboBox-Texte in Steuerwertspalten geschrieben).</para>
+        /// </summary>
+        public static string TemperaturModusOderDefault(object feld)
+        {
+            if (feld == null || feld == System.DBNull.Value) return WQ_TEMPMODUS_BERECHNET;
+
+            string wert = (feld.ToString() ?? "").Trim();
+            return string.Equals(wert, WQ_TEMPMODUS_FEST,
+                                 System.StringComparison.OrdinalIgnoreCase)
+                ? WQ_TEMPMODUS_FEST : WQ_TEMPMODUS_BERECHNET;
+        }
+
+        // =====================================================================
+        // Lesepunkt der Booster-Quelltemperatur
+        //   Tab_Einstellungen.Booster_Lesepunkt  (Migrationsschritt 55, Paket B2)
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        //
+        //   Paket B1 liest die Quelltemperatur eines gekoppelten Moduls je Stunde
+        //   GENAU EINMAL — bis B2 fest unmittelbar vor Phase B der Rechenebene des
+        //   beziehenden Moduls und damit NACH der Ladephase der Vorebene (Ticket
+        //   B1-O2). Der Booster sah den Speicher deshalb im am weitesten geladenen
+        //   Zustand der Stunde.
+        //
+        //   Nutzerauftrag 28.08.2026: „Zu welchem Zeitpunkt innerhalb der Stunde liest
+        //   der Booster die Quelltemperatur? Es soll eine Auswahl für den Nutzer
+        //   möglich sein. Stelle 'davor' als Default ein."
+        //
+        //   ES BLEIBT BEI GENAU EINEM LESEORT JE MODUS — der Modus entscheidet nur,
+        //   WELCHER es ist. Zwei Abfragen je Stunde wären nicht reproduzierbar
+        //   spezifiziert (der SOC ändert sich zwischen den Phasen mehrfach).
+        // =====================================================================
+
+        /// <summary>
+        /// DAVOR (Vorbelegung seit Paket B2) — alle gekoppelten Module lesen EINMAL am
+        /// Stundenanfang, vor Phase A und damit vor Phase B der ersten Rechenebene. Der
+        /// gelesene Zustand ist der des Vorstunden-Endes: Regeneration trifft nur
+        /// eigenständige Quellspeicher, ein geteilter Puffer ist zu diesem Zeitpunkt
+        /// unberührt.
+        ///
+        /// <para>Die KONSERVATIVE Aussage: Der Booster bekommt nicht gutgeschrieben,
+        /// was ein vorgelagerter Erzeuger erst in derselben Stunde nachlädt.</para>
+        /// </summary>
+        public const string BOOSTER_LESEPUNKT_DAVOR = "Davor";
+
+        /// <summary>
+        /// DANACH — der Lesepunkt von Paket B1: je Rechenebene unmittelbar vor deren
+        /// Phase B und damit nach den Ladephasen aller Vorebenen dieser Stunde.
+        /// </summary>
+        public const string BOOSTER_LESEPUNKT_DANACH = "Danach";
+
+        /// <summary>
+        /// Der Lesepunkt einer gelesenen Spalte; <c>null</c>, <c>DBNull</c>, Leerwert
+        /// und jeder unbekannte Wert ergeben <see cref="BOOSTER_LESEPUNKT_DAVOR"/> —
+        /// dieselbe tolerante Auslegung wie bei der Knappheitsreihenfolge
+        /// (<see cref="KNAPPHEIT_DEFAULT"/>): Ein unbrauchbarer Wert verwirft nicht den
+        /// Lauf, sondern fällt vollständig auf die Vorbelegung zurück.
+        /// </summary>
+        public static string BoosterLesepunktOderDefault(object feld)
+        {
+            if (feld == null || feld == System.DBNull.Value) return BOOSTER_LESEPUNKT_DAVOR;
+
+            string wert = (feld.ToString() ?? "").Trim();
+            return string.Equals(wert, BOOSTER_LESEPUNKT_DANACH,
+                                 System.StringComparison.OrdinalIgnoreCase)
+                ? BOOSTER_LESEPUNKT_DANACH : BOOSTER_LESEPUNKT_DAVOR;
+        }
+
+        // =====================================================================
+        // Quellprofil — Betriebsart
+        //   Tab_Quellprofil.Betriebsart  (Migrationsschritt 54, Paket Q1)
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        //
+        //   Die Betriebsart sagt, WIE VIELE Werte ein Profil führt und wie sie auf
+        //   die 8760 Jahresstunden gekachelt werden (Konzept 8.1 Punkt 2):
+        //
+        //     Monat  : 12 Werte  -> jeder gilt für alle Stunden seines Monats
+        //     Tag    : 365 Werte -> jeder gilt für die 24 Stunden SEINES Tages;
+        //                           kalenderunabhängig, Tag i -> Tag i, KEIN
+        //                           Wochentagsbezug (das ist der fachliche Kern der
+        //                           Tagesvariante)
+        //     Stunde : 8760 Werte -> unmittelbar das Jahresprofil
+        //
+        //   Umlautfrei und ohne Leerzeichen wie alle Steuerwerte dieser Datei; die
+        //   Anzeigetexte stehen in MyResource (SIMQ_QUELLPROFIL_BA_*).
+        // =====================================================================
+
+        /// <summary>12 Monatswerte; der Altweg <c>WQ_Monatswerte</c> trug dieselbe Aussage.</summary>
+        public const string WQ_PROFIL_BETRIEBSART_MONAT = "Monat";
+
+        /// <summary>
+        /// 365 Tageswerte, <b>kalenderunabhängig</b> gekachelt (Konzept 8.1 Punkt 2):
+        /// Wert <c>i</c> gilt für die Stunden <c>24·i … 24·i+23</c>. Es gibt hier
+        /// bewusst KEINEN Wochentagsbezug — der additive Wochengang der Monatsvariante
+        /// wird zur Tagesvariante gar nicht erst angeboten.
+        /// </summary>
+        public const string WQ_PROFIL_BETRIEBSART_TAG = "Tag";
+
+        /// <summary>
+        /// 8760 Stundenwerte. Sie sind der Weg, auf dem ein CSV-Stundenprofil in die
+        /// DATENBANK kommt (Konzept 8.1 Punkt 3) — anders als
+        /// <c>Tab_Energieanlagen.WQ_CSV</c>, das nur einen Dateipfad speichert und die
+        /// Quelle bei jeder Projektweitergabe verliert.
+        /// </summary>
+        public const string WQ_PROFIL_BETRIEBSART_STUNDE = "Stunde";
+
+        /// <summary>
+        /// Zahl der Werte einer Betriebsart; 0 für einen unbekannten Wert. EINE
+        /// Wahrheit für Migration, Engine und Dialog — die drei Zahlen 12/365/8760
+        /// stehen sonst nirgends im Quelltext.
+        /// </summary>
+        public static int QuellprofilWerteanzahl(string betriebsart)
+        {
+            switch (betriebsart)
+            {
+                case WQ_PROFIL_BETRIEBSART_MONAT: return 12;
+                case WQ_PROFIL_BETRIEBSART_TAG: return 365;
+                case WQ_PROFIL_BETRIEBSART_STUNDE: return 8760;
+                default: return 0;
+            }
+        }
 
         // =====================================================================
         // Erdreich — Quellsystem
@@ -1205,10 +1626,25 @@ namespace WindowsFormsApplication1
         public const string PREISREIHE_AUFLOESUNG_VIERTELSTUNDE = "Viertelstunde";
 
         /// <summary>
-        /// Einheit jeder Preisreihe. Sprachneutral und zugleich Anzeigeeinheit — die
+        /// 12 Monatswerte — saisonale Leistungspreis-Reihen je Energieträger
+        /// (Konzept Kostendialoge § 7.1, FK6a; Etappe KD4). Monatsreihen sind KEINE
+        /// Spotreihen: Auswahllisten und Stichtagsregel der Simulation
+        /// (<c>PreisreiheCtrl.ReadVerfuegbare</c>) filtern auf Stunde/Viertelstunde.
+        /// </summary>
+        public const string PREISREIHE_AUFLOESUNG_MONAT = "Monat";
+
+        /// <summary>
+        /// Einheit der Spot-Preisreihen. Sprachneutral und zugleich Anzeigeeinheit — die
         /// Engine kennt ausschliesslich ct/kWh (Fachkonzept 4.1).
         /// </summary>
         public const string PREISREIHE_EINHEIT_CT_KWH = "ct/kWh";
+
+        /// <summary>
+        /// Einheit der Leistungspreis-Reihen [€ je kW und Monat] — Etappe KD4 (FK6a).
+        /// Reihen dieser Einheit gehören immer einem Energieträger
+        /// (<c>Tab_Preisreihe.ID_Energietraeger</c>) und tragen 12 Monatswerte.
+        /// </summary>
+        public const string PREISREIHE_EINHEIT_EUR_KW_MONAT = "EUR/kW/Monat";
 
         // =====================================================================
         // Energietraeger — Anzeigename einer Umrechnungsregel
@@ -1343,6 +1779,108 @@ namespace WindowsFormsApplication1
 
         /// <summary>Umsatzsteuer — loest die 40-fach hart codierte 1,19 ab (L8).</summary>
         public const string GESETZ_KLASSE_UMSATZSTEUER = "UMSATZSTEUER";
+
+        /// <summary>EEG-Photovoltaik (PV-Konzept § 6.2, Etappe P2): anzulegende
+        /// Werte, Degression, Abschläge, § 51/§ 51a, Kappung.</summary>
+        public const string GESETZ_KLASSE_EEG = "EEG";
+
+        // =====================================================================
+        // EEG-Photovoltaik — Schlüssel der Klasse EEG (Etappe P2, Saat-Generation 5)
+        //   Persistenzwerte, eingefroren (Drei-Schichten-Regel).
+        //   Basiswerte der Fassung IBN 30.07.2022–31.01.2024 (§ 49 EEG);
+        //   der EegSatzRechner degressiert UNRUNDET (Nachtrag N1) und rundet nur
+        //   den Ausgabewert.
+        // =====================================================================
+
+        /// <summary>AW-Basiswert Überschusseinspeisung bis 10 kWp [ct/kWh].</summary>
+        public const string GESETZ_EEG_AW_BASIS_UE_10 = "EEG_AW_BASIS_UE_10";
+        public const string GESETZ_EEG_AW_BASIS_UE_40 = "EEG_AW_BASIS_UE_40";
+        public const string GESETZ_EEG_AW_BASIS_UE_100 = "EEG_AW_BASIS_UE_100";
+        public const string GESETZ_EEG_AW_BASIS_UE_400 = "EEG_AW_BASIS_UE_400";
+        public const string GESETZ_EEG_AW_BASIS_UE_1000 = "EEG_AW_BASIS_UE_1000";
+
+        /// <summary>Zuschlag Volleinspeisung auf den Basiswert je Klasse [ct/kWh].</summary>
+        public const string GESETZ_EEG_AW_VOLL_ZUSCHLAG_10 = "EEG_AW_VOLL_ZUSCHLAG_10";
+        public const string GESETZ_EEG_AW_VOLL_ZUSCHLAG_40 = "EEG_AW_VOLL_ZUSCHLAG_40";
+        public const string GESETZ_EEG_AW_VOLL_ZUSCHLAG_100 = "EEG_AW_VOLL_ZUSCHLAG_100";
+        public const string GESETZ_EEG_AW_VOLL_ZUSCHLAG_400 = "EEG_AW_VOLL_ZUSCHLAG_400";
+        public const string GESETZ_EEG_AW_VOLL_ZUSCHLAG_1000 = "EEG_AW_VOLL_ZUSCHLAG_1000";
+
+        /// <summary>Degression je Halbjahresstichtag (1.2./1.8., erstmals 01.02.2024) [%].</summary>
+        public const string GESETZ_EEG_DEGRESSION_HALBJAHR = "EEG_DEGRESSION_HALBJAHR";
+
+        /// <summary>Abschlag der festen Einspeisevergütung auf den AW (§ 53 Abs. 1) [ct/kWh].</summary>
+        public const string GESETZ_EEG_EV_ABSCHLAG = "EEG_EV_ABSCHLAG";
+
+        /// <summary>Abschlag der Ausfallvergütung (§ 53 Abs. 3) [%] — nur Anlagen &gt; 100 kW (N3).</summary>
+        public const string GESETZ_EEG_AUSFALLVERG_ABSCHLAG = "EEG_AUSFALLVERG_ABSCHLAG";
+
+        /// <summary>Obergrenze der festen Einspeisevergütung (§ 21 Abs. 1 Nr. 1) [kW].</summary>
+        public const string GESETZ_EEG_EV_GRENZE_KW = "EEG_EV_GRENZE_KW";
+
+        /// <summary>Obergrenze der unentgeltlichen Abnahme (§ 21 Abs. 1 Nr. 2, N4) [kW].</summary>
+        public const string GESETZ_EEG_UNENTGELTLICH_GRENZE_KW = "EEG_UNENTGELTLICH_GRENZE_KW";
+
+        /// <summary>Ausschreibungsgrenze — darüber AW = Zuschlagswert (manuell) [kW].</summary>
+        public const string GESETZ_EEG_AUSSCHREIBUNG_GRENZE_KW = "EEG_AUSSCHREIBUNG_GRENZE_KW";
+
+        /// <summary>§ 51-Verschonungsgrenze: darunter erst ab iMSys-Einbau [kW].</summary>
+        public const string GESETZ_EEG_51_GRENZE_KW = "EEG_51_GRENZE_KW";
+
+        /// <summary>§ 51a-Kompensationsfaktor Solar (0,5 Viertelstunden je Ausfall-Viertelstunde).</summary>
+        public const string GESETZ_EEG_51A_FAKTOR_SOLAR = "EEG_51A_FAKTOR_SOLAR";
+
+        /// <summary>§ 51a-Monatskontingent verlängerbarer Viertelstunden, Monat 1–12 (Anhang der
+        /// Festlegung; ertragsgewichtet). Schlüssel + laufende Monatsnummer.</summary>
+        public const string GESETZ_EEG_51A_VLVST_MONAT_PRAEFIX = "EEG_51A_VLVST_MONAT_";
+
+        /// <summary>60-%-Wirkleistungsbegrenzung ohne iMSys (§ 9 Abs. 2) [%].</summary>
+        public const string GESETZ_EEG_KAPPUNG_PROZENT = "EEG_KAPPUNG_PROZENT";
+
+        /// <summary>Vergütungsdauer (§ 25 Abs. 1) [Jahre] — zzgl. Inbetriebnahmemonate.</summary>
+        public const string GESETZ_EEG_VERGUETUNGSDAUER = "EEG_VERGUETUNGSDAUER";
+
+        /// <summary>Solarpaket-I-Erhöhung &gt; 40 kW [ct/kWh] — Status VORLAEUFIG
+        /// (§ 101 EEG, EU-Beihilfevorbehalt): NICHT anwenden (F8/N.2).</summary>
+        public const string GESETZ_EEG_SOLARPAKET_AUFSCHLAG = "EEG_SOLARPAKET_AUFSCHLAG";
+
+        /// <summary>Amtlicher JAHRESmarktwert Solar [ct/kWh] je Kalenderjahr
+        /// (netztransparenz.de, § 23a EEG) — die Marktprämien-Basis der
+        /// Jahresmarktwert-Systematik (Nachtrag N2): MP = max(0, AW_mix − JW).
+        /// Je Jahr eine Katalogzeile (JahrVon-Stichtagsmuster). NICHT der
+        /// „Jahresmittelwert nach § 33 EEG 2012" (Verwechslungswarnung N.2).</summary>
+        public const string GESETZ_EEG_JAHRESMARKTWERT_SOLAR = "EEG_JAHRESMARKTWERT_SOLAR";
+
+        // =====================================================================
+        // PV-Vergütung — Steuerwerte der Tab_ProjektPhotovoltaik (Etappe P3)
+        //   Persistenzwerte, eingefroren (Drei-Schichten-Regel).
+        // =====================================================================
+
+        /// <summary>Vermarktungsform: feste Einspeisevergütung (§ 21 Abs. 1 Nr. 1, nur ≤ 100 kW).</summary>
+        public const string PV_VERMARKTUNG_EV = "PV_EV";
+        /// <summary>Direktvermarktung mit Marktprämie (§§ 20, 23a EEG).</summary>
+        public const string PV_VERMARKTUNG_MARKTPRAEMIE = "PV_MARKTPRAEMIE";
+        /// <summary>Sonstige Direktvermarktung / PPA (fester Preis oder Spot ± Aufschlag).</summary>
+        public const string PV_VERMARKTUNG_SONSTIGE_DV = "PV_SONSTIGE_DV";
+        /// <summary>Keine Vergütung (unentgeltliche Abnahme, &lt; 200 kW — N4).</summary>
+        public const string PV_VERMARKTUNG_KEINE = "PV_KEINE";
+
+        /// <summary>Einspeiseart Überschusseinspeisung.</summary>
+        public const string PV_EINSPEISEART_UEBERSCHUSS = "PV_UEBERSCHUSS";
+        /// <summary>Einspeiseart Volleinspeisung (AW-Spalte „Voll"; Eigenverbrauch 0).</summary>
+        public const string PV_EINSPEISEART_VOLL = "PV_VOLL";
+
+        /// <summary>Dreiwege-Schalter (Par51_Anwenden, Kappung60_Anwenden): Regel
+        /// automatisch anwenden.</summary>
+        public const string PV_SCHALTER_AUTO = "AUTO";
+        public const string PV_SCHALTER_JA = "JA";
+        public const string PV_SCHALTER_NEIN = "NEIN";
+
+        /// <summary>Bezeichner der Marktwert-Stammreihen in <c>Tab_Preisreihe</c>
+        /// (Auflösung Monat, Einheit ct/kWh, ID_Projekt NULL; je Kalenderjahr eine
+        /// Reihe). Datenwert in der Datenbank — deutsch und eingefroren
+        /// (dasselbe Muster wie <c>energy_conversion.faktor_name</c>).</summary>
+        public const string PV_MARKTWERT_BEZEICHNER = "Marktwert Solar";
 
         // --------------------------------------------------------------- Status
 
@@ -1706,5 +2244,152 @@ namespace WindowsFormsApplication1
         // ------------------------------------------------ Schluessel Umsatzsteuer
 
         public const string GESETZ_UMSATZSTEUER_REGELSATZ = "UMSATZSTEUER_REGELSATZ";
+
+        // =====================================================================
+        // EMISSIONSARTEN-KATALOG UND CO2-AEQUIVALENT
+        //   Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md, Rev. 1.2.
+        //   Steuerwerte der beiden Tabellen emissionsart/emissionswert und des
+        //   Berechnungsmodus; angelegt und eingesaet mit Migrationsschritt 56
+        //   (Etappe E2). Sprachneutrale ASCII-Schluessel wie ueberall in dieser
+        //   Datei - der Anzeigename kommt aus MyResource, nie von hier.
+        // =====================================================================
+
+        /// <summary>
+        /// Berechnungsmodus <b>CO2</b> (Konzept F7): Die CO2-Kennzahlen entstehen
+        /// aus dem Faktor der Emissionsart CO2 allein - genau das Verhalten, das
+        /// die Anwendung seit jeher zeigt. Vorbelegung der globalen Vorgabe und
+        /// Wert, den <b>jedes Bestandsprojekt</b> bei der Migration erhaelt.
+        ///
+        /// <para>Gespeichert in <c>Tab_Applikation.Emission_Berechnungsmodus</c>
+        /// (globale Vorgabe fuer NEUE Projekte) und in
+        /// <c>Tab_Projekt.Emission_Berechnungsmodus</c> (der Modus, in dem das
+        /// Projekt rechnet). Zwei Orte, weil ein Projekt seine Rechenmethode
+        /// dauerhaft in sich tragen muss: Es rechnet auch nach Jahren im Modus
+        /// seiner Entstehung, gleichgueltig wie die Vorgabe inzwischen steht
+        /// (Hausregel Reproduzierbarkeit).</para>
+        /// </summary>
+        public const string EMISSION_MODUS_CO2 = "CO2";
+
+        /// <summary>
+        /// Berechnungsmodus <b>CO2-Aequivalent</b> (GWP100, Konzept F6/F7): Die
+        /// CO2-Kennzahlen entstehen aus der Summe der ausgewaehlten Emissionsarten,
+        /// jede mit ihrem Aequivalenzfaktor gewichtet. <b>Sonderfall F3:</b> Traegt
+        /// das CO2-Feld eines Traegers einen Wert mit <c>ist_co2e</c>, IST dieser
+        /// Wert bereits die Summe - dann wird nichts aufsummiert.
+        ///
+        /// <para>Der Modus wirkt erst mit Etappe E5. Bis dahin ist er ein reines
+        /// Speicherfeld: Kein Rechner liest ihn, und die Etappen E1/E2 aendern
+        /// deshalb kein Ergebnis (Konzept F9).</para>
+        /// </summary>
+        public const string EMISSION_MODUS_CO2E = "CO2E";
+
+        // ------------------------------------- Kuerzel der Auslieferungs-Arten
+        //   Die sieben Zeilen, die Migrationsschritt 56 in emissionsart einsaet.
+        //   Sie tragen ist_auslieferung = WAHR und sind damit nicht loeschbar,
+        //   nur abwaehlbar (Konzept F5); CO2 ist zusaetzlich Pflicht (F1).
+
+        /// <summary>Kohlendioxid - die PFLICHTART. Einheit g/kWh, Aequivalenzfaktor
+        /// fest 1, nicht abwaehlbar und nicht loeschbar (Konzept F1).</summary>
+        public const string EMISSIONSART_CO2 = "CO2";
+
+        /// <summary>Schwefeldioxid. Einheit mg/kWh, Aequivalenzfaktor 0 - kein
+        /// Treibhausgas, eigenstaendige Kennzahl (Konzept F2). Vorausgewaehlt.</summary>
+        public const string EMISSIONSART_SO2 = "SO2";
+
+        /// <summary>Stickoxide. Einheit mg/kWh, Aequivalenzfaktor 0 (Konzept F2).
+        /// Vorausgewaehlt.</summary>
+        public const string EMISSIONSART_NOX = "NOX";
+
+        /// <summary>Methan aus fossiler Quelle. GWP100 = 29,8 (IPCC AR6);
+        /// ausgeliefert, aber abgewaehlt - Werte je Traeger traegt ein, wer sie
+        /// belegen kann (Konzept § 5).</summary>
+        public const string EMISSIONSART_CH4_FOSSIL = "CH4_FOSSIL";
+
+        /// <summary>Methan aus biogener Quelle. GWP100 = 27,0 (IPCC AR6) - der
+        /// Unterschied zum fossilen Methan ist das CO2, das bei seinem Abbau
+        /// entsteht und beim biogenen Kohlenstoff nicht zaehlt. Abgewaehlt.</summary>
+        public const string EMISSIONSART_CH4_BIOGEN = "CH4_BIOGEN";
+
+        /// <summary>Distickstoffmonoxid (Lachgas). GWP100 = 273 (IPCC AR6).
+        /// Abgewaehlt.</summary>
+        public const string EMISSIONSART_N2O = "N2O";
+
+        /// <summary>Gesamtstaub. Einheit mg/kWh, Aequivalenzfaktor 0 (Konzept F2).
+        /// Abgewaehlt.</summary>
+        public const string EMISSIONSART_STAUB = "STAUB";
+
+        // --------------------------------------------- Einheiten der Arten (F4)
+        //   GEMESSEN, nicht angenommen: Der Rechner fuehrt CO2 in g/kWh, SO2/NOx
+        //   in mg/kWh (EmissionsBilanzRechner.cs:20 und die Bestandswerte -
+        //   Heizoel S traegt SO2 = 800, als g/kWh physikalisch unmoeglich).
+        //   Die Bestandszahlen bleiben unveraendert; berichtigt wird allein die
+        //   Beschriftung (Etappe E3).
+
+        /// <summary>Anzeigeeinheit der Emissionsart CO2 und der CO2e-Summe.</summary>
+        public const string EMISSION_EINHEIT_G_KWH = "g/kWh";
+
+        /// <summary>Anzeigeeinheit von SO2, NOx, Staub, CH4 und N2O.</summary>
+        public const string EMISSION_EINHEIT_MG_KWH = "mg/kWh";
+
+        // ------------------------------------ Herkunft eines Emissionswertes (F8)
+        //   Uebernehmen heisst kopieren: Der Zahlenwert wandert in den Traeger,
+        //   die Herkunft bleibt am Wert vermerkt. Eine spaetere Katalogaenderung
+        //   aendert deshalb KEINEN Traeger rueckwirkend.
+
+        /// <summary>BAFA-Infoblatt CO2-Faktoren EEW. <b>Diese Werte sind bereits
+        /// CO2-Aequivalente</b> einschliesslich Vorketten (CH4/N2O eingerechnet,
+        /// heizwertbezogen) - Zeilen dieser Quelle tragen <c>ist_co2e</c>
+        /// (Konzept F3).</summary>
+        public const string EMISSIONSWERT_QUELLE_BAFA_EEW = "BAFA_EEW";
+
+        /// <summary>Emissionsberichterstattungsverordnung 2030, Anlage 2 Teil 4 -
+        /// die rechtsverbindliche Grundlage der CO2-Bepreisung. <b>Reines CO2</b>
+        /// ohne Vorkette, also KEIN Aequivalent (<c>ist_co2e</c> = falsch).</summary>
+        public const string EMISSIONSWERT_QUELLE_EBEV_2030 = "EBEV_2030";
+
+        /// <summary>UBA-Strommix. Liegt in beiden Lesarten vor: <c>CO2_DIREKT</c>
+        /// ist reines CO2 (kein Aequivalent), <c>THG_OHNE/MIT_VORKETTE</c> sind
+        /// Treibhausgas-Aequivalente (<c>ist_co2e</c>).</summary>
+        public const string EMISSIONSWERT_QUELLE_UBA_STROMMIX = "UBA_STROMMIX";
+
+        /// <summary>Traegerfaktoren der GEG/GModG-Nachweislinie (Anlage 9). Sie
+        /// gehoeren in den Energieausweis, nicht in die reale Bilanz (L11) - hier
+        /// stehen sie als waehlbare Vorlage, nicht als Vorbelegung. Reines CO2.
+        ///
+        /// <para>Nicht in der Beispielliste des Konzepts (§ 3) genannt, aber
+        /// noetig: Ohne eigene Quellkennung waeren die Nachweisfaktoren von den
+        /// EBeV-Werten nicht mehr zu unterscheiden - und genau diese Vermischung
+        /// verbietet L11.</para></summary>
+        public const string EMISSIONSWERT_QUELLE_GEG_NACHWEIS = "GEG_NACHWEIS";
+
+        /// <summary>Altbestand aus <c>Tab_Brennstoff_Stamm</c> - Literaturwerte
+        /// ohne greifbare Fundstelle. Ausdruecklich als <b>unbelegt</b>
+        /// gekennzeichnet; belegte Luftschadstoff-Quellen kommen mit Etappe E6
+        /// (Konzept § 5).</summary>
+        public const string EMISSIONSWERT_QUELLE_STAMM_ALT = "STAMM_ALT";
+
+        /// <summary>Vom Anwender gepflegter Wert - oder ein Bestandswert, der
+        /// weder zur Saat noch zum Brennstoff-Stamm passt. <b>Auch die 0 ist ein
+        /// eigener Wert</b>: Ein Traeger mit CO2 = 0 wird nie als BAFA-Wert
+        /// ausgewiesen, sonst behauptete der Katalog eine Fundstelle fuer eine
+        /// Zahl, die niemand belegt hat.</summary>
+        public const string EMISSIONSWERT_QUELLE_EIGENER_WERT = "EIGENER_WERT";
+
+        /// <summary>Anzeigetext der Auslieferungswerte aus dem BAFA-Merkblatt
+        /// (Konzept_CO2-Faktoren Rev. 1, § 1).</summary>
+        public const string EMISSIONSWERT_TEXT_BAFA_EEW = "BAFA EEW 3.4, 2026";
+
+        /// <summary>Zusatz fuer die fuenf Traeger, deren Wert NICHT im
+        /// BAFA-Merkblatt steht, sondern aus dessen eigenen Werten hergeleitet ist
+        /// (Heizoel Bio 10/15, Koks, Stadtgas, Tierische Fette -
+        /// Konzept_CO2-Faktoren § 2.3). Die Kennzeichnung ist Pflicht: Es sind
+        /// keine belegten BAFA-Werte.</summary>
+        public const string EMISSIONSWERT_TEXT_ABGELEITET = "BAFA EEW 3.4, 2026 (abgeleitet)";
+
+        /// <summary>Anzeigetext der uebernommenen Brennstoff-Stammwerte.</summary>
+        public const string EMISSIONSWERT_TEXT_STAMM_ALT = "Altbestand Brennstoff-Stamm (unbelegt)";
+
+        /// <summary>Anzeigetext eines vom Anwender gepflegten Wertes (F8).</summary>
+        public const string EMISSIONSWERT_TEXT_EIGENER_WERT = "Eigener Wert";
     }
 }

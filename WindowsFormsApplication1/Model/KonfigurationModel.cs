@@ -35,23 +35,17 @@
         /// </summary>
         public double Pendelspeicher;
 
-        /// <summary>
-        /// Feature-Flag der zweikanaligen Kaskade (Konzept Kapitel 9, „Feature-Flag
-        /// empfohlen"), Spalte <c>Tab_Einstellungen.Kaskade_Zweikanalig</c>.
-        /// <b>Vorbelegung aus</b> — Altprojekte rechnen weiter auf dem einkanaligen Pfad.
-        ///
-        /// Gelesen wird NAMENSBASIERT (<c>KonfigurationCtrl.ReadSingle</c>), nicht über
-        /// die Ordinalkette row[0..22]; geschrieben ausschließlich über
-        /// <see cref="KonfigurationCtrl.KaskadeZweikanaligSchreiben"/>, damit die
-        /// INSERT-/UPDATE-Spaltenlisten der Konfiguration unverändert bleiben und ein
-        /// noch nicht migrierter Bestand das Speichern nicht scheitern lässt.
-        ///
-        /// WIRKSAM seit Etappe 4b: <c>SimulationControl.Do_Simulation</c> verzweigt auf
-        /// diesen Wert in die zweikanalige Kaskade mit herausgelöster Ladephase; ohne ihn
-        /// rechnet der unveränderte einkanalige Altpfad. Die dokumentierten
-        /// Ergebnisänderungen stehen im Umsetzungsprotokoll zu Paket 4, Teil 7.
-        /// </summary>
-        public bool Kaskade_Zweikanalig;
+        // PAKET L (Aufräumen): Das Feld Kaskade_Zweikanalig ist ENTFALLEN. Es trug die
+        // Spalte Tab_Einstellungen.Kaskade_Zweikanalig, ehemals das Feature-Flag der
+        // zweikanaligen Kaskade (Konzept Kapitel 9). Mit Paket A1 hat die Engine sie
+        // nicht mehr gelesen, mit Paket L ist auch der letzte Lese-/Schreibweg der
+        // Anwendung entfallen (KonfigurationCtrl.KaskadeZweikanalig*).
+        //
+        // DIE SPALTE SELBST BLEIBT (Konzept Kapitel 15, "Stillgelegt: Lese-Altlast nach
+        // Migration"): Migrationsschritt 51 setzt sie im Bestand auf WAHR und loescht
+        // nichts. Das Feld hier war NAMENSBASIERT gelesen und haengt deshalb NICHT an der
+        // Ordinalkette row[0..22] von ReadSingle - sein Wegfall verschiebt keine Position
+        // und beruehrt weder die INSERT- noch die UPDATE-Spaltenliste.
 
         /// <summary>
         /// Projekteinstellung „Extrapolation der Wärmepumpen-Kennlinie erlaubt"
@@ -76,10 +70,37 @@
         ///
         /// Gelesen wird NAMENSBASIERT (<c>KonfigurationCtrl.ReadSingle</c>), nicht über
         /// die Ordinalkette row[0..22]; geschrieben ausschließlich über
-        /// <see cref="KonfigurationCtrl.ExtrapolationErlaubtSchreiben"/> — dieselbe
-        /// Begründung wie bei <see cref="Kaskade_Zweikanalig"/>.
+        /// <see cref="KonfigurationCtrl.ExtrapolationErlaubtSchreiben"/> — damit die
+        /// INSERT-/UPDATE-Spaltenlisten der Konfiguration unverändert bleiben und ein
+        /// noch nicht migrierter Bestand das Speichern nicht scheitern lässt.
         /// </summary>
         public bool Extrapolation_erlaubt;
+
+        /// <summary>
+        /// Projektweite KANAL-KNAPPHEITSREIHENFOLGE (Paket K2, Konzept
+        /// Brauchwasser/Heizung/Pufferspeicher § 4.3, Entscheidung F10 vom 27.08.2026),
+        /// Spalte <c>Tab_Einstellungen.Kanal_Knappheitsreihenfolge</c>.
+        /// <b>Vorbelegung <see cref="DbWerte.KNAPPHEIT_DEFAULT"/></b>
+        /// (<c>BRAUCHWASSER;PROZESS;HEIZUNG</c>).
+        ///
+        /// <para>Sie beantwortet die Frage, die sich mit der dreikanaligen Kaskade
+        /// erstmals stellt: In welcher Rangfolge wird eine mehrelementige Kanalmaske
+        /// bedient, wenn die Wärme nicht für alle reicht? Bis hierher kannte
+        /// <c>SenkeAbziehen</c> nur „Warmwasser vor Heizung", fest verdrahtet; der
+        /// Vorgabewert ist genau diese Regel, um den Prozesskanal ergänzt
+        /// (Produktionsausfall wiegt schwerer als Raumkomfort).</para>
+        ///
+        /// <para>Der Wert ist eine LISTE sprachneutraler ASCII-Schlüssel, getrennt
+        /// durch Semikolon — kein Anzeigetext und kein einzelner Steuerwert. Die
+        /// Ausnahme von der Deutsch-Regel ist in <c>DbWerte</c> begründet
+        /// (Konzept Kapitel 15).</para>
+        ///
+        /// <para>Gelesen wird NAMENSBASIERT (<c>KonfigurationCtrl.ReadSingle</c>), nicht
+        /// über die Ordinalkette row[0..22]; geschrieben ausschließlich über
+        /// <see cref="KonfigurationCtrl.KnappheitsreihenfolgeSchreiben"/> — dieselbe
+        /// Begründung wie bei <see cref="Extrapolation_erlaubt"/>.</para>
+        /// </summary>
+        public string Kanal_Knappheitsreihenfolge = DbWerte.KNAPPHEIT_DEFAULT;
 
         public KonfigurationModel()
         {
@@ -106,8 +127,10 @@
             Betriebsart = 0;
             Leistungsgrenze = 0;
             Pendelspeicher = 0;
-            Kaskade_Zweikanalig = false;
             Extrapolation_erlaubt = true;   // Vorbelegung: erlaubt (Konzept 13.4, Paket 8)
+            // Vorbelegung BRAUCHWASSER;PROZESS;HEIZUNG (Paket K2, F10) - die bis dahin
+            // fest verdrahtete Reihenfolge, um den Prozesskanal ergaenzt.
+            Kanal_Knappheitsreihenfolge = DbWerte.KNAPPHEIT_DEFAULT;
         }
     }
 }

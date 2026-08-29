@@ -159,9 +159,6 @@
   <data name="PSP_KARTE_TEMP_SYSTEM" xml:space="preserve">
     <value>project system default</value>
   </data>
-  <data name="PSP_KARTE_TEMP_ZUORDNUNG" xml:space="preserve">
-    <value>from the assignment row</value>
-  </data>
   <data name="PSP_KARTE_TIP_BEARBEITEN" xml:space="preserve">
     <value>Edit buffer storage (open management)</value>
   </data>
@@ -176,6 +173,101 @@
 Here the full cycles are the annual throughput relative to the capacity —
 with a small tank the figure becomes large without any additional ageing.</value>
   </data>
+  <data name="SIMQ_PUFFER_ANSCHLUSSHOEHE" xml:space="preserve">
+    <value>Source draw-off height (0…1):</value>
+  </data>
+  <data name="SIMQ_PUFFER_ANSCHLUSSHOEHE_HINWEIS" xml:space="preserve">
+    <value>Empty = top. 1 = topmost, 0 = bottom. Effective only with a stratified store (more than one layer).</value>
+  </data>
+  <data name="SIMQ_PUFFER_MSG_ANSCHLUSSHOEHE" xml:space="preserve">
+    <value>The source draw-off height must lie between 0 and 1 (1 = topmost, 0 = bottom).
+Leaving it empty means top.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_ALLE_WERTE_TEXT" xml:space="preserve">
+    <value>Which source temperature applies to every data point? [°C]</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BA_MONAT" xml:space="preserve">
+    <value>Monthly values (12)</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BA_STUNDE" xml:space="preserve">
+    <value>Hourly values (8760)</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BA_TAG" xml:space="preserve">
+    <value>Daily values (365)</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BTN_ALLE_WERTE" xml:space="preserve">
+    <value>Set all values alike …</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BTN_CSV" xml:space="preserve">
+    <value>Import values from CSV file …</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_CSV_HINWEIS" xml:space="preserve">
+    <value>Expected are {0} numeric values, one per line.
+A time stamp before the value is allowed (separator semicolon or tab); lines without a number are skipped.
+The file is read as ANSI.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_HINWEIS_ALTWEG" xml:space="preserve">
+    <value>Legacy: this weekly pattern still sits on the plant and is used as long as no source profile is stored. A stored source profile replaces it - the values remain but no longer take effect. Its successor is the daily-value mode, which needs no weekday reference.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_HINWEIS_STUNDE" xml:space="preserve">
+    <value>8760 hourly values: one value per hour of the year. The values are held in the database, so the profile survives when the project is passed on.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_HINWEIS_TAG" xml:space="preserve">
+    <value>365 daily values: the first value applies to all 24 hours of the first day, the second to the second day and so on - independent of any calendar, with no weekday reference.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_INFO" xml:space="preserve">
+    <value>The source profile describes the temperature of the heat source over the year - as 12 monthly, 365 daily or 8760 hourly values.
+It is held in the database and can be used by more than one plant.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_INFO_WERTE" xml:space="preserve">
+    <value>{0} values
+from {1} to {2} °C
+mean {3} °C</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Description:</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_LBL_BETRIEBSART" xml:space="preserve">
+    <value>Operating mode:</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_LBL_PROFIL" xml:space="preserve">
+    <value>Profile:</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_MSG_BEZEICHNER" xml:space="preserve">
+    <value>Please enter a name for the source profile.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_MSG_CSV_FEHLER" xml:space="preserve">
+    <value>The file did not yield {0} values.
+Please check the number of lines and the number format.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_MSG_SPEICHERN" xml:space="preserve">
+    <value>The source profile could not be saved. Please check whether the database is writable.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_MSG_WERTE_FEHLEN" xml:space="preserve">
+    <value>This operating mode needs {0} values.
+Please import a CSV file first or set all values alike.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_NEU" xml:space="preserve">
+    <value>(new profile)</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_SPALTE_NR" xml:space="preserve">
+    <value>No.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_SPALTE_WERT" xml:space="preserve">
+    <value>Source temperature [°C]</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_TAB_STUNDENWERTE" xml:space="preserve">
+    <value>Hourly values</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_TAB_TAGESWERTE" xml:space="preserve">
+    <value>Daily values</value>
+  </data>
+  <data name="SIMQ_TIP_QUELLE_BAUART" xml:space="preserve">
+    <value>Type {0}: the heat source is the outside air and cannot be chosen. Only brine-water and water-water heat pumps have a selectable source.</value>
+  </data>
   <data name="SIM_ANSICHT_LABEL" xml:space="preserve">
     <value>View:</value>
   </data>
@@ -185,11 +277,32 @@ with a small tank the figure becomes large without any additional ageing.</value
   <data name="SIM_ANSICHT_SCHEMA" xml:space="preserve">
     <value>Schematic</value>
   </data>
+  <data name="SIM_BTN_SENKE_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="SIM_BTN_SENKE_HINZU" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="SIM_BTN_SENKE_RAUF" xml:space="preserve">
+    <value>▲ Move up</value>
+  </data>
+  <data name="SIM_BTN_SENKE_RUNTER" xml:space="preserve">
+    <value>▼ Move down</value>
+  </data>
+  <data name="SIM_GRUPPE_SENKENLISTE" xml:space="preserve">
+    <value>Heat sinks in order of supply</value>
+  </data>
+  <data name="SIM_GRUPPE_SENKENZEILE" xml:space="preserve">
+    <value>Selected sink</value>
+  </data>
   <data name="SIM_KARTEN_KOPF_ERZEUGER" xml:space="preserve">
     <value>Simulation components</value>
   </data>
   <data name="SIM_KARTE_ANLAGE_HINZU" xml:space="preserve">
     <value>+ Add unit: units are created on the project page.</value>
+  </data>
+  <data name="SIM_KARTE_BOOSTER" xml:space="preserve">
+    <value>Booster</value>
   </data>
   <data name="SIM_KARTE_AUFNEHMEN" xml:space="preserve">
     <value>+ include</value>
@@ -209,6 +322,9 @@ with a small tank the figure becomes large without any additional ageing.</value
   <data name="SIM_KARTE_SENKE" xml:space="preserve">
     <value>Sink: {0}</value>
   </data>
+  <data name="SIM_KARTE_SENKE_WEITER" xml:space="preserve">
+    <value>→ {0}</value>
+  </data>
   <data name="SIM_KARTE_TEMPERATURPAAR" xml:space="preserve">
     <value>{0} / {1} °C</value>
   </data>
@@ -218,6 +334,11 @@ and takes the last cascade rank (move it forward with ▲).</value>
   </data>
   <data name="SIM_KARTE_TIP_BEARBEITEN" xml:space="preserve">
     <value>Edit heat sink (double-click on the card works as well)</value>
+  </data>
+  <data name="SIM_KARTE_TIP_BOOSTER" xml:space="preserve">
+    <value>Booster: the source storage “{0}” is charged by another generator of this project.
+The source temperature therefore follows the state of charge of the storage and is formed anew each hour —
+the warmer the storage, the more efficiently this generator works.</value>
   </data>
   <data name="SIM_KARTE_TIP_ENTFERNEN" xml:space="preserve">
     <value>Remove from the simulation — the component stays in the project
@@ -267,6 +388,21 @@ This is a hint, not a block.</value>
 It is already part of the heat production; only the remaining share consumes fuel.
 Without a source buffer this reads 0.00.</value>
   </data>
+  <data name="SIM_MSG_SENKE_DOPPELT" xml:space="preserve">
+    <value>The buffer storage "{0}" appears more than once in the sink list. Each storage may be a target of this unit only once.</value>
+  </data>
+  <data name="SIM_MSG_SENKE_LETZTE_ZEILE" xml:space="preserve">
+    <value>Every unit needs at least one heat sink. The last row can therefore not be removed.</value>
+  </data>
+  <data name="SIM_MSG_SENKE_PUFFER_FEHLT" xml:space="preserve">
+    <value>Rank {0}: no buffer storage is selected for the target "{1}".</value>
+  </data>
+  <data name="SIM_ROLLE_RANG" xml:space="preserve">
+    <value>sink at rank {0}</value>
+  </data>
+  <data name="SIM_REIHE_QUELLTEMPERATUR" xml:space="preserve">
+    <value>Source temperature [°C]</value>
+  </data>
   <data name="SIM_SCHEMA_ABNEHMER_WARMWASSER" xml:space="preserve">
     <value>Domestic hot water</value>
   </data>
@@ -284,6 +420,9 @@ Without a source buffer this reads 0.00.</value>
   </data>
   <data name="SIM_SCHEMA_LEGENDE_LADUNG" xml:space="preserve">
     <value>Charging (circle = effective priority)</value>
+  </data>
+  <data name="SIM_SCHEMA_LEGENDE_PROZESS" xml:space="preserve">
+    <value>Process supply</value>
   </data>
   <data name="SIM_SCHEMA_LEGENDE_QUELLE" xml:space="preserve">
     <value>Source side</value>
@@ -600,6 +739,9 @@ Without a source buffer this reads 0.00.</value>
   <data name="PSP_FEHLER_EIN_KLEINER_AUS" xml:space="preserve">
     <value>The switch-on threshold must be lower than the switch-off threshold.</value>
   </data>
+  <data name="PSP_FEHLER_KLASSENSET_LEER" xml:space="preserve">
+    <value>At least one use must be ticked: heating, domestic hot water or process heat. A storage without a use is discharged by no plant at all (concept 6.1).</value>
+  </data>
   <data name="PSP_FEHLER_NACHRANG_UEBER_AUS" xml:space="preserve">
     <value>The switch-off threshold for lower-priority heat generators must not exceed the switch-off threshold - it is the reserve zone for the priority (concept 3.4).</value>
   </data>
@@ -614,9 +756,6 @@ Without a source buffer this reads 0.00.</value>
   </data>
   <data name="PSP_FEHLER_VERLUSTE" xml:space="preserve">
     <value>The standby losses must be a number ≥ 0 [kWh/24h].</value>
-  </data>
-  <data name="PSP_FEHLER_VERWENDUNG_PFLICHT" xml:space="preserve">
-    <value>The use is a mandatory field: heating or domestic hot water (concept 5.1).</value>
   </data>
   <data name="PSP_FEHLER_VOLUMEN" xml:space="preserve">
     <value>Please enter a total volume in litres (whole number greater than 0).</value>
@@ -654,6 +793,9 @@ Without a source buffer this reads 0.00.</value>
   <data name="PSP_GRUPPE_LADEREIHENFOLGE" xml:space="preserve">
     <value>Charging order of this storage (from the generator assignments)</value>
   </data>
+  <data name="PSP_HINWEIS_KLASSENSET_OHNE_ALTWERT" xml:space="preserve">
+    <value>Set without a legacy equivalent — the check boxes are what counts. The use above only shows the closest legacy value.</value>
+  </data>
   <data name="PSP_KANALWORT_BRAUCHWASSERSPEICHER" xml:space="preserve">
     <value>DHW storage unit</value>
   </data>
@@ -689,6 +831,9 @@ Without a source buffer this reads 0.00.</value>
   </data>
   <data name="PSP_LABEL_GESAMTVOLUMEN" xml:space="preserve">
     <value>Total volume [l]:</value>
+  </data>
+  <data name="PSP_LABEL_KLASSENSET" xml:space="preserve">
+    <value>Use (class set):</value>
   </data>
   <data name="PSP_LABEL_RUECKLAUF" xml:space="preserve">
     <value>Return [°C]:</value>
@@ -770,25 +915,8 @@ Really delete it from the master data?</value>
   <data name="PSP_MELDUNG_SPEICHERN_FEHLER" xml:space="preserve">
     <value>Error saving the record!</value>
   </data>
-  <data name="PSP_MELDUNG_VERWENDUNGSWECHSEL" xml:space="preserve">
-    <value>The use of the buffer storage "{0}" is being changed from "{1}" to "{2}".
-
-The storage is assigned to:
-  • {3}
-
-These assignments will then no longer match the use and must be set again in the heat sink dialogue.
-Change the use anyway?</value>
-  </data>
   <data name="PSP_MELDUNG_WIRKLICH_LOESCHEN" xml:space="preserve">
     <value>Really delete {0} ?</value>
-  </data>
-  <data name="PSP_MSG_SCHWELLEN_BEREICH" xml:space="preserve">
-    <value>The values must be between 0 and 100 % and
-the switch-on threshold must be smaller than the switch-off threshold!</value>
-  </data>
-  <data name="PSP_MSG_WP_OHNE_SPEICHER" xml:space="preserve">
-    <value>No buffer storage is assigned to the heat pump.
-The assignment is made in the 'Buffer storage assignment' table.</value>
   </data>
   <data name="PSP_MSG_ZAHLENWERTE" xml:space="preserve">
     <value>Please enter valid numeric values!</value>
@@ -844,40 +972,14 @@ The assignment is made in the 'Buffer storage assignment' table.</value>
   <data name="PSP_SPALTE_ROLLE" xml:space="preserve">
     <value>Role</value>
   </data>
-  <data name="PSP_SPALTE_RUECKLAUF" xml:space="preserve">
-    <value>Return [°C]</value>
-  </data>
   <data name="PSP_SPALTE_VERLUSTE" xml:space="preserve">
     <value>Losses [kWh/a]</value>
   </data>
   <data name="PSP_SPALTE_VOLLZYKLEN" xml:space="preserve">
     <value>Full cycles</value>
   </data>
-  <data name="PSP_SPALTE_VORLAUF" xml:space="preserve">
-    <value>Flow [°C]</value>
-  </data>
-  <data name="PSP_SPALTE_WAERMEERZEUGER" xml:space="preserve">
-    <value>Heat generator</value>
-  </data>
   <data name="PSP_SPALTE_ZUORDNUNG_ALT" xml:space="preserve">
     <value>Assignment (old)</value>
-  </data>
-  <data name="PSP_SPEICHERREGELUNG_ABSCHALT" xml:space="preserve">
-    <value>Switch-off threshold [% of capacity]:</value>
-  </data>
-  <data name="PSP_SPEICHERREGELUNG_EINSCHALT" xml:space="preserve">
-    <value>Switch-on threshold [% of capacity]:</value>
-  </data>
-  <data name="PSP_SPEICHERREGELUNG_FENSTERTITEL" xml:space="preserve">
-    <value>Storage control - {0}</value>
-  </data>
-  <data name="PSP_SPEICHERREGELUNG_HINWEIS" xml:space="preserve">
-    <value>If the storage charge level falls below the switch-on threshold, the heat pump starts up and charges through to the switch-off threshold. In between it stays off and the demand is covered from the storage.
-
-The switch-off threshold should be below 100 %, because the standby losses continuously lower the charge level.</value>
-  </data>
-  <data name="PSP_SPEICHERREGELUNG_KOPF" xml:space="preserve">
-    <value>Switch-on and switch-off threshold of the buffer storage</value>
   </data>
   <data name="PSP_STATUS_AENDERUNGEN_UEBERNOMMEN" xml:space="preserve">
     <value>Changes applied.</value>
@@ -888,46 +990,12 @@ The switch-off threshold should be below 100 %, because the standby losses conti
   <data name="PSP_STATUS_ENTFERNT" xml:space="preserve">
     <value>Buffer storage removed.</value>
   </data>
-  <data name="PSP_STATUS_SPEICHERREGELUNG_GESPEICHERT" xml:space="preserve">
-    <value>✔ Storage control saved ({0} % / {1} %)</value>
-  </data>
-  <data name="PSP_STATUS_ZUORDNUNG_FEHLGESCHLAGEN" xml:space="preserve">
-    <value>⚠ {0} buffer storage assignment(s) could not be saved</value>
-  </data>
   <data name="PSP_TIP_ZUORDNUNG_ALTMODELL" xml:space="preserve">
     <value>Assignment in the old model (double-click opens the storage control)
 This column shows the assignment from Z_ProjektPufferSp, which the
 simulation still evaluates until the engine is converted. It is
 updated automatically from the heat sink of the heat pump.
 Switch-on and switch-off threshold in % of the usable capacity.</value>
-  </data>
-  <data name="PSP_TIP_ZUORDNUNG_ERZEUGER" xml:space="preserve">
-    <value>Heat generator to which this buffer storage is assigned.
-Assignments are created via 'Add...' and removed via
-'Delete'.</value>
-  </data>
-  <data name="PSP_TIP_ZUORDNUNG_RUECKLAUF" xml:space="preserve">
-    <value>Return temperature [°C] (double-click to change)
-Lower temperature of the storage. The larger the temperature spread to
-the flow, the more energy the storage can take up.</value>
-  </data>
-  <data name="PSP_TIP_ZUORDNUNG_SPEICHER" xml:space="preserve">
-    <value>Buffer storage (double-click to change)
-Selection from the master data. Volume and standby losses
-come from the storage record and, together with
-flow and return, determine the usable capacity.</value>
-  </data>
-  <data name="PSP_TIP_ZUORDNUNG_STAMMDATEN" xml:space="preserve">
-    <value>Double-click opens the buffer storage master data (view only).</value>
-  </data>
-  <data name="PSP_TIP_ZUORDNUNG_STANDARD" xml:space="preserve">
-    <value>Buffer storage assignment: double-click on buffer storage,
-flow or return to edit.</value>
-  </data>
-  <data name="PSP_TIP_ZUORDNUNG_VORLAUF" xml:space="preserve">
-    <value>Flow temperature [°C] (double-click to change)
-Upper temperature of the storage. The usable capacity results
-from: volume × 1,16 Wh/(l·K) × (flow − return).</value>
   </data>
   <data name="PSP_TITEL_KATALOG_LOESCHUNG" xml:space="preserve">
     <value>Catalogue deletion</value>
@@ -937,15 +1005,6 @@ from: volume × 1,16 Wh/(l·K) × (flow − return).</value>
   </data>
   <data name="PSP_TITEL_PUFFER_ENTFERNEN" xml:space="preserve">
     <value>Remove buffer storage</value>
-  </data>
-  <data name="PSP_TITEL_SPEICHERREGELUNG" xml:space="preserve">
-    <value>Storage control</value>
-  </data>
-  <data name="PSP_TITEL_TEMPERATUR_PRUEFEN" xml:space="preserve">
-    <value>Check temperature</value>
-  </data>
-  <data name="PSP_TITEL_VERWENDUNG_AENDERN" xml:space="preserve">
-    <value>Change use</value>
   </data>
   <data name="PSP_TITEL_ZUORDNUNG" xml:space="preserve">
     <value>Buffer storage assignment</value>
@@ -1110,23 +1169,6 @@ the curve then has to be supplemented with lower data points.</value>
   <data name="SIM_KACHEL_SIMULATIONSERGEBNISSE" xml:space="preserve">
     <value>Simulation results in detail</value>
   </data>
-  <data name="SIM_KASKADE_SCHALTER" xml:space="preserve">
-    <value>Two-channel cascade</value>
-  </data>
-  <data name="SIM_KASKADE_TOOLTIP" xml:space="preserve">
-    <value>Calculates space heating and domestic hot water demand as separate channels and
-separates the storage charging from the generator cascade.
-
-This CHANGES the results: units with a buffer storage as sink charge
-it instead of covering the demand directly; the demand is covered from the storage.
-What changes in detail is described in the implementation log for package 4
-(part 7, Documented result changes). Without the tick, the
-previous single-channel cascade continues to calculate unchanged.
-
-The tick is set automatically as soon as the configuration handles domestic
-hot water and space heating separately - the single-channel path would then
-be blind to DHW/combi storage sinks and source references.</value>
-  </data>
   <data name="SIM_KEIN_BRAUCHWASSERBEDARF" xml:space="preserve">
     <value>Note: no domestic hot water demand is assigned to the project.
 A DHW storage is then charged but never discharged.</value>
@@ -1138,6 +1180,9 @@ The project must contain a buffer storage with the use "{2}".</value>
   </data>
   <data name="SIM_KEINE_SENKENDATEN" xml:space="preserve">
     <value>No heat sink data supplied.</value>
+  </data>
+  <data name="SIM_LABEL_BEDARF_JE_KANAL" xml:space="preserve">
+    <value>Heat demand by demand type</value>
   </data>
   <data name="SIM_LABEL_GASVERBRAUCH" xml:space="preserve">
     <value>Gas consumption (NCV):</value>
@@ -1211,34 +1256,11 @@ The project must contain a buffer storage with the use "{2}".</value>
   <data name="SIM_MODUS_PV" xml:space="preserve">
     <value>PV-optimised</value>
   </data>
-  <data name="SIM_MSG_BRAUCHWASSER_UEBERGANG" xml:space="preserve">
-    <value>Note: The DHW/combi sink only becomes effective once the two-channel cascade is enabled (switch in the configuration dialog).
-It is saved and displayed, but does not yet enter the simulation.</value>
-  </data>
-  <data name="SIM_MSG_BRAUCHWASSER_WP_ZUSATZ" xml:space="preserve">
-    <value>The previous buffer storage assignment of this heat pump is removed in the process; without the two-channel cascade the simulation then calculates without storage.</value>
-  </data>
   <data name="SIM_MSG_ERGEBNIS_GESPEICHERT" xml:space="preserve">
     <value>Simulation result saved.</value>
   </data>
   <data name="SIM_MSG_ERGEBNIS_NICHT_GESPEICHERT" xml:space="preserve">
     <value>The result could not be saved.</value>
-  </data>
-  <data name="SIM_MSG_KASKADE_ABWAHL" xml:space="preserve">
-    <value>The configuration handles domestic hot water and space heating separately. Without
-the two-channel cascade, DHW/combi storage sinks and source references are not
-included in the simulation.
-
-Deactivate anyway?</value>
-  </data>
-  <data name="SIM_MSG_KASKADE_AUTOMATISCH" xml:space="preserve">
-    <value>The two-channel cascade has been activated automatically for this project because
-domestic hot water and space heating are handled separately.</value>
-  </data>
-  <data name="SIM_MSG_KASKADE_FRAGE" xml:space="preserve">
-    <value>The configuration handles domestic hot water and space heating separately.
-
-Should the two-channel cascade be switched on for this project?</value>
   </data>
   <data name="SIM_MSG_KEIN_BRENNSTOFF" xml:space="preserve">
     <value>No fuel defined for this CHP unit.</value>
@@ -1351,17 +1373,15 @@ Please create a project buffer storage with the use "{1}".</value>
   <data name="SIM_PUFFER_KOMBI_KURZ" xml:space="preserve">
     <value>Buffer combined</value>
   </data>
+  <data name="SIM_PUFFER_PROZESS_KURZ" xml:space="preserve">
+    <value>Buffer process</value>
+  </data>
   <data name="SIM_PUFFER_MIT_VOLUMEN" xml:space="preserve">
     <value>{0} ({1} l)</value>
   </data>
   <data name="SIM_PUFFER_QUELLE_UND_SENKE" xml:space="preserve">
     <value>The buffer storage "{0}" is already the HEAT SOURCE of this unit.
 The same storage cannot be source and sink at the same time (short circuit); please select a different storage.</value>
-  </data>
-  <data name="SIM_PUFFER_VERWENDUNG_PASST_NICHT" xml:space="preserve">
-    <value>The buffer storage "{0}" has the use "{1}", but the {2} requires "{3}".
-
-Please select a suitable storage or change the use in the buffer storage management.</value>
   </data>
   <data name="SIM_QUELLE_BETEILIGT" xml:space="preserve">
     <value>{0} (source: {1})</value>
@@ -1387,9 +1407,6 @@ Please select a different buffer storage or change the heat sink of one of the u
   <data name="SIM_RB_PUFFER_KOMBI" xml:space="preserve">
     <value>Buffer combined (heating + DHW)</value>
   </data>
-  <data name="SIM_ROLLE_HAUPTSENKE" xml:space="preserve">
-    <value>main sink</value>
-  </data>
   <data name="SIM_ROLLE_ZWEITSENKE" xml:space="preserve">
     <value>secondary sink</value>
   </data>
@@ -1408,11 +1425,17 @@ Please select a different buffer storage or change the heat sink of one of the u
   <data name="SIM_SPALTE_ANZAHL" xml:space="preserve">
     <value>Quantity</value>
   </data>
+  <data name="SIM_SPALTE_BEDARFSART" xml:space="preserve">
+    <value>Demand type</value>
+  </data>
   <data name="SIM_SPALTE_BETRIEBSSTUNDEN" xml:space="preserve">
     <value>Operating hours [h/a]</value>
   </data>
   <data name="SIM_SPALTE_BRENNSTOFFE" xml:space="preserve">
     <value>Gas/biogas/rapeseed oil/wood... [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_DECKUNG_KANAL" xml:space="preserve">
+    <value>Coverage {0} [MWh/a]</value>
   </data>
   <data name="SIM_SPALTE_ENERGIE_ERZEUGER" xml:space="preserve">
     <value>Energy generator</value>
@@ -1428,6 +1451,9 @@ Please select a different buffer storage or change the heat sink of one of the u
   </data>
   <data name="SIM_SPALTE_JAHRESNUTZUNGSGRAD" xml:space="preserve">
     <value>Annual utilisation ratio [%]</value>
+  </data>
+  <data name="SIM_SPALTE_LADEN" xml:space="preserve">
+    <value>Charging</value>
   </data>
   <data name="SIM_SPALTE_LEISTUNG" xml:space="preserve">
     <value>Power [kW]</value>
@@ -1447,11 +1473,17 @@ Please select a different buffer storage or change the heat sink of one of the u
   <data name="SIM_SPALTE_PRIO" xml:space="preserve">
     <value>prio</value>
   </data>
+  <data name="SIM_SPALTE_RANG" xml:space="preserve">
+    <value>Rank</value>
+  </data>
   <data name="SIM_SPALTE_SENKE" xml:space="preserve">
     <value>Sink</value>
   </data>
   <data name="SIM_SPALTE_SOLARKOLLEKTOR" xml:space="preserve">
     <value>Solar collector</value>
+  </data>
+  <data name="SIM_SPALTE_SPEICHER" xml:space="preserve">
+    <value>Buffer storage</value>
   </data>
   <data name="SIM_SPALTE_STROMPRODUKTION" xml:space="preserve">
     <value>Electricity generation [MWh/a]</value>
@@ -1468,6 +1500,9 @@ Please select a different buffer storage or change the heat sink of one of the u
   <data name="SIM_SPALTE_WPPRIO" xml:space="preserve">
     <value>HP prio</value>
   </data>
+  <data name="SIM_SPALTE_ZIEL" xml:space="preserve">
+    <value>Target</value>
+  </data>
   <data name="SIM_STATUS_EINSTELLUNG_FEHLER" xml:space="preserve">
     <value>The setting could not be saved.</value>
   </data>
@@ -1476,12 +1511,6 @@ Please select a different buffer storage or change the heat sink of one of the u
   </data>
   <data name="SIM_STATUS_EXTRAPOLATION_EIN" xml:space="preserve">
     <value>Extrapolation of the heat pump characteristic curve allowed - the run records it as a note.</value>
-  </data>
-  <data name="SIM_STATUS_KASKADE_AUS" xml:space="preserve">
-    <value>Two-channel cascade deselected - the single-channel cascade calculates again.</value>
-  </data>
-  <data name="SIM_STATUS_KASKADE_EIN" xml:space="preserve">
-    <value>Two-channel cascade switched on - the next run calculates with it and delivers different results.</value>
   </data>
   <data name="SIM_STATUS_KONFIG_GESPEICHERT" xml:space="preserve">
     <value>✔ Configuration saved successfully</value>
@@ -1551,9 +1580,6 @@ remaining charging potential - never mandatory demand.
   <data name="SIM_TITEL_HINWEIS" xml:space="preserve">
     <value>Note</value>
   </data>
-  <data name="SIM_TITEL_KASKADE" xml:space="preserve">
-    <value>Two-channel cascade</value>
-  </data>
   <data name="SIM_TITEL_MELDUNGEN_LAUF" xml:space="preserve">
     <value>Messages from the simulation run</value>
   </data>
@@ -1597,6 +1623,9 @@ remaining charging potential - never mandatory demand.
   <data name="SIM_ZIEL_PUFFERSPEICHER_KOMBI" xml:space="preserve">
     <value>Buffer storage combined (heating + DHW)</value>
   </data>
+  <data name="SIM_ZIEL_PUFFERSPEICHER_PROZESS" xml:space="preserve">
+    <value>Buffer storage process heat</value>
+  </data>
   <data name="SIM_ZWEITSENKE_GLEICH_HAUPTSENKE" xml:space="preserve">
     <value>The secondary sink must differ from the main sink.
 Both point to {0} "{1}".</value>
@@ -1610,8 +1639,14 @@ Both point to {0} "{1}".</value>
   <data name="SIMENG_DB_ZUGRIFF_WAEHREND_LAUF" xml:space="preserve">
     <value>Database access during the run: {0}</value>
   </data>
+  <data name="SIMENG_ENERGIEPROBE_KANAELE" xml:space="preserve">
+    <value>Energy check of the channel split: in {0} of 8760 hours the sum of the three demand channels deviates from the independently calculated total demand (largest deviation {1} kWh). The channel split of the heat demand needs to be checked.</value>
+  </data>
   <data name="SIMENG_ERGEBNIS_NICHT_GESPEICHERT" xml:space="preserve">
     <value>The simulation result could not be saved.</value>
+  </data>
+  <data name="SIMENG_KALENDER_WOCHENENDE_UNBESTIMMT" xml:space="preserve">
+    <value>Calendar: no weekend (Saturday and Sunday) can be identified in the first 14 days of the climate data. The demand profiles are therefore distributed over the year as before, starting with Sunday as 1 January.</value>
   </data>
   <data name="SIMENG_KEINE_KLIMAREGION" xml:space="preserve">
     <value>No climate region is set for project {0}.</value>
@@ -1624,6 +1659,9 @@ Both point to {0} "{1}".</value>
   </data>
   <data name="SIMENG_KESSEL_NICHT_HINTERLEGT" xml:space="preserve">
     <value>The boiler '{0}' is not stored in the project. The boiler simulation was aborted.</value>
+  </data>
+  <data name="SIMENG_KESSEL_QUELLKOPPLUNG_HINWEIS" xml:space="preserve">
+    <value>Boiler '{0}': the inlet temperature followed the shared source storage — {1} to {2} °C over the year, {3} °C on average, relative to the boiler's temperature lift of {4}/{5} °C. In {6} hours the storage was not above the return temperature; there the boiler provided the full lift itself.</value>
   </data>
   <data name="SIMENG_LADEORDNUNG_ART_NICHT_IN_SPEICHERSTUFE" xml:space="preserve">
     <value>Charging order: unit {0} ({1}) is configured to charge the storage {2} ({3}). This generator type is not part of the storage stage in this run; the unit is calculated as a vector stage, like a heating-circuit unit.</value>
@@ -1649,14 +1687,26 @@ Both point to {0} "{1}".</value>
   <data name="SIMENG_PENDELSPEICHER_ZEILE_FEHLT" xml:space="preserve">
     <value>CHP buffer storage: for project {0} a volume of {1} l is known, but there is no buffer storage record "{2}". The run was aborted so that the CHP unit does not silently calculate without storage.</value>
   </data>
+  <data name="SIMENG_PRAEFIX_BRAUCHWASSER" xml:space="preserve">
+    <value>Domestic hot water: </value>
+  </data>
   <data name="SIMENG_PRAEFIX_HEIZKESSEL" xml:space="preserve">
     <value>Boiler: </value>
+  </data>
+  <data name="SIMENG_PRAEFIX_PROZESSWAERME" xml:space="preserve">
+    <value>Process heat: </value>
   </data>
   <data name="SIMENG_PRAEFIX_STROMBEDARF" xml:space="preserve">
     <value>Electricity demand: </value>
   </data>
   <data name="SIMENG_PRAEFIX_WAERMEPUMPE" xml:space="preserve">
     <value>Heat pump: </value>
+  </data>
+  <data name="SIMENG_PROFIL_MONATSSUMME_NULL" xml:space="preserve">
+    <value>{0}the twelve monthly values of the entry '{1}' add up to 0. The annual consumption stored in the project cannot be distributed over them; its calculation is skipped and its share remains 0.</value>
+  </data>
+  <data name="SIMENG_PROFIL_WOCHENPROFIL_NULL" xml:space="preserve">
+    <value>{0}the weekly profile of type '{1}' (entry '{2}') contains only zero values. Distributing it over the year would be a division by 0; its calculation is skipped and its share remains 0.</value>
   </data>
   <data name="SIMENG_PROZESSWAERME_TYP_UNDEFINIERT" xml:space="preserve">
     <value>Process heat: the type of the process '{0}' is not defined. The process heat calculation was aborted; its share remains 0.</value>
@@ -1682,6 +1732,15 @@ Both point to {0} "{1}".</value>
   <data name="SIMENG_SPEICHERN_DES_ERGEBNISSES" xml:space="preserve">
     <value>Saving the result: {0}</value>
   </data>
+  <data name="SIMENG_STROMPROFIL_KOPF_FEHLT" xml:space="preserve">
+    <value>Electricity demand: no record is stored for the electricity profile '{0}'. Its calculation is skipped; its share remains 0.</value>
+  </data>
+  <data name="SIMENG_STROMPROFIL_TYP_UNDEFINIERT" xml:space="preserve">
+    <value>Electricity demand: the type of the electricity profile '{0}' is not defined. The calculation was aborted; its share remains 0.</value>
+  </data>
+  <data name="SIMENG_STROMPROFIL_TYPPROFIL_FEHLT" xml:space="preserve">
+    <value>Electricity demand: no weekly profile is stored for type '{0}' of the electricity profile '{1}'. Its calculation is skipped; its share remains 0.</value>
+  </data>
   <data name="SIMENG_STROMPROFIL_ZULETZT_BEARBEITET" xml:space="preserve">
     <value> (last processed: electricity profile '{0}')</value>
   </data>
@@ -1702,6 +1761,12 @@ Both point to {0} "{1}".</value>
   </data>
   <data name="SIMENG_WP_EXTRAPOLATION_VERBOTEN" xml:space="preserve">
     <value>The source temperature falls below the lowest data point of the performance curve of the heat pump '{0}' ({1} °C). The project setting "Allow extrapolation of the performance curve" is deselected, therefore the simulation was aborted. Either add lower data points to the performance curve or set the option.</value>
+  </data>
+  <data name="SIMENG_WP_KAPPUNG_OBEN_HINWEIS" xml:space="preserve">
+    <value>Heat pump '{0}': in {1} hours the source temperature exceeds the upper data point of the performance curve ({2} °C). For these hours the COP of the highest data point applies; no extrapolation is performed. If the manufacturer supplies a high-temperature performance map, the curve should be extended with higher data points.</value>
+  </data>
+  <data name="SIMENG_WP_KAPPUNG_UNTEN_HINWEIS" xml:space="preserve">
+    <value>Heat pump '{0}': in {1} hours the source temperature falls below the lowest data point of the performance curve ({2} °C); measured were {3} to {4} °C. For these hours the COP of the lowest data point applies. The source is a shared buffer storage — there the value is capped deliberately instead of extrapolated, because falling below only means that the storage currently sits at return temperature.</value>
   </data>
   <data name="SIMENG_WP_KEINE_KENNDATEN" xml:space="preserve">
     <value>For the heat pump '{0}' there is no performance data (performance curve) for a flow temperature of {1} °C. The simulation was aborted.</value>
@@ -1958,7 +2023,10 @@ annual full-load hours from a simulation run.</value>
     <value>For air-to-water heat pumps the heat source is always the outdoor air
 (outdoor temperature of the selected climate region).
 
-HP type: {0}</value>
+HP type: {0}
+
+If this unit is to use a buffer storage as its heat source (booster operation), it must be listed as a brine-to-water or water-to-water heat pump:
+Administration → Heat pump → change the heat pump type, then select the heat pump again in the project.</value>
   </data>
   <data name="SIMQ_MSG_QUELLE_ART" xml:space="preserve">
     <value>Only the heat pump and the boiler can select a heat source.
@@ -1985,6 +2053,9 @@ operating limits are in the respective input forms.</value>
   </data>
   <data name="SIMQ_PUFFER_CB_UNBEGRENZT" xml:space="preserve">
     <value>Source available without limit (only temperature relevant)</value>
+  </data>
+  <data name="SIMQ_PUFFER_CB_UNBEGRENZT_KONFLIKT" xml:space="preserve">
+    <value>Source available without limit — storage coupling OFF, constant {0} °C!</value>
   </data>
   <data name="SIMQ_PUFFER_DATEN" xml:space="preserve">
     <value>Storage type: {0}
@@ -2063,6 +2134,9 @@ If the storage is empty, the output of the heat pump is limited; the regeneratio
   <data name="SIMQ_QUELLE_AUSSENLUFT" xml:space="preserve">
     <value>Outdoor air</value>
   </data>
+  <data name="SIMQ_QUELLE_FEHLT" xml:space="preserve">
+    <value>Select source!</value>
+  </data>
   <data name="SIMQ_QUELLE_CSVPROFIL" xml:space="preserve">
     <value>CSV profile</value>
   </data>
@@ -2081,25 +2155,6 @@ If the storage is empty, the output of the heat pump is limited; the regeneratio
   <data name="SIMQ_QUELLPROFIL_BTN_ALLE_MONATE" xml:space="preserve">
     <value>Set all months to the January value</value>
   </data>
-  <data name="SIMQ_QUELLPROFIL_BTN_ALLE_TAGE" xml:space="preserve">
-    <value>Apply to all days</value>
-  </data>
-  <data name="SIMQ_QUELLPROFIL_BTN_TAG_EINFUEGEN" xml:space="preserve">
-    <value>Paste day</value>
-  </data>
-  <data name="SIMQ_QUELLPROFIL_BTN_TAG_KOPIEREN" xml:space="preserve">
-    <value>Copy day</value>
-  </data>
-  <data name="SIMQ_QUELLPROFIL_BTN_UEBERNEHMEN" xml:space="preserve">
-    <value>Apply changes</value>
-  </data>
-  <data name="SIMQ_QUELLPROFIL_HINWEIS_ABWEICHUNG" xml:space="preserve">
-    <value>Note: 0 = no deviation (source temperature equals the monthly value).</value>
-  </data>
-  <data name="SIMQ_QUELLPROFIL_INFO" xml:space="preserve">
-    <value>Source temperature = monthly value [°C] + weekly value [K].
-The monthly values define the annual variation, the weekly values the daily/weekly variation.</value>
-  </data>
   <data name="SIMQ_QUELLPROFIL_KOPF_MONAT" xml:space="preserve">
     <value>Monthly mean temperature of the heat source [°C]</value>
   </data>
@@ -2109,20 +2164,11 @@ The monthly values define the annual variation, the weekly values the daily/week
   <data name="SIMQ_QUELLPROFIL_LBL_WOCHENTAG" xml:space="preserve">
     <value>Weekday selection</value>
   </data>
-  <data name="SIMQ_QUELLPROFIL_MSG_ALLE_TAGE" xml:space="preserve">
-    <value>The daily variation has been applied to all weekdays.</value>
-  </data>
-  <data name="SIMQ_QUELLPROFIL_MSG_ERST_KOPIEREN" xml:space="preserve">
-    <value>Please copy a day first!</value>
-  </data>
   <data name="SIMQ_QUELLPROFIL_MSG_JANUAR" xml:space="preserve">
     <value>Please enter a valid number in the January field!</value>
   </data>
   <data name="SIMQ_QUELLPROFIL_MSG_MONAT_UNGUELTIG" xml:space="preserve">
     <value>{0}: '{1}' is not a valid number!</value>
-  </data>
-  <data name="SIMQ_QUELLPROFIL_MSG_STUNDE_UNGUELTIG" xml:space="preserve">
-    <value>Hour {0}: '{1}' is not a valid number!</value>
   </data>
   <data name="SIMQ_QUELLPROFIL_TAB_GRAFIK" xml:space="preserve">
     <value>Chart</value>
@@ -4358,7 +4404,7 @@ It then feeds the overview and the overall simulation. The existing simulation r
     <value>{0} investment item(s) · {1}</value>
   </data>
   <data name="BK_KOSTEN_LBL_KOMPONENTEN" xml:space="preserve">
-    <value>Investment per component</value>
+    <value>Plant components</value>
   </data>
   <data name="BK_KOSTEN_LBL_TRAEGER" xml:space="preserve">
     <value>Energy carriers of the project</value>
@@ -7137,5 +7183,1071 @@ Please run the EPOS-Plan setup again or install the Microsoft Access Database En
   </data>
   <data name="KI_REG_ZWECK_PROJEKT_SUCHEN" xml:space="preserve">
     <value>Searches for projects whose name or customer contains the search text. The comparison runs locally against the complete project list, so no match really does mean that there is no such project.</value>
+  </data>
+  <data name="KDLG_TITEL" xml:space="preserve">
+    <value>Cost management {0}</value>
+  </data>
+  <data name="KDLG_UNTERTITEL_INVEST" xml:space="preserve">
+    <value>Capital costs according to VDI 2067</value>
+  </data>
+  <data name="KDLG_UNTERTITEL_BETRIEB" xml:space="preserve">
+    <value>Operating costs according to VDI 2067</value>
+  </data>
+  <data name="KDLG_TAB_KOSTEN" xml:space="preserve">
+    <value>Costs capex/opex</value>
+  </data>
+  <data name="KDLG_TAB_ERTRAG" xml:space="preserve">
+    <value>Revenue/bonus</value>
+  </data>
+  <data name="KDLG_TAB_ERTRAG_HINWEIS" xml:space="preserve">
+    <value>The revenue/bonus tab follows in stage KD5 (CHP: KWKG and taxes; photovoltaics: EEG remuneration).</value>
+  </data>
+  <data name="KDLG_BANNER" xml:space="preserve">
+    <value>All amounts and all reference quantities are NET. The VAT rate comes from the “statutory parameters” catalogue. A maintained rate takes precedence — the absolute field is then locked but not cleared.</value>
+  </data>
+  <data name="KDLG_LBL_KOMPONENTE" xml:space="preserve">
+    <value>Component:</value>
+  </data>
+  <data name="KDLG_KAT_INVEST" xml:space="preserve">
+    <value>Capital costs</value>
+  </data>
+  <data name="KDLG_KAT_BETRIEB" xml:space="preserve">
+    <value>Operating costs</value>
+  </data>
+  <data name="KDLG_LBL_VARIANTE" xml:space="preserve">
+    <value>Variant:</value>
+  </data>
+  <data name="KDLG_BTN_NEU" xml:space="preserve">
+    <value>New…</value>
+  </data>
+  <data name="KDLG_BTN_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Save as…</value>
+  </data>
+  <data name="KDLG_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="KDLG_BTN_POSITION" xml:space="preserve">
+    <value>+ Add item</value>
+  </data>
+  <data name="KDLG_SP_AKTIONEN" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="KDLG_SP_POSITION" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="KDLG_SP_BEMESSUNG" xml:space="preserve">
+    <value>Basis</value>
+  </data>
+  <data name="KDLG_SP_SATZ" xml:space="preserve">
+    <value>Rate</value>
+  </data>
+  <data name="KDLG_SP_BETRAG" xml:space="preserve">
+    <value>Net amount [€]</value>
+  </data>
+  <data name="KDLG_SP_BETRAG_JAHR" xml:space="preserve">
+    <value>Net amount [€/a]</value>
+  </data>
+  <data name="KDLG_SP_NUTZUNG" xml:space="preserve">
+    <value>Service
+life [a]</value>
+  </data>
+  <data name="KDLG_SP_WORSTBEST" xml:space="preserve">
+    <value>Worst/best</value>
+  </data>
+  <data name="KDLG_SUMME_NETTO_INVEST" xml:space="preserve">
+    <value>Total capital costs net: {0} €</value>
+  </data>
+  <data name="KDLG_SUMME_NETTO_BETRIEB" xml:space="preserve">
+    <value>Total operating costs net: {0} €/a</value>
+  </data>
+  <data name="KDLG_SUMME_BRUTTO" xml:space="preserve">
+    <value>Total gross: {0} (VAT {1} % from the catalogue)</value>
+  </data>
+  <data name="KDLG_READONLY_HINWEIS" xml:space="preserve">
+    <value>Factory template (read-only) — use “Save as…” to modify.</value>
+  </data>
+  <data name="KDLG_TT_KETTE" xml:space="preserve">
+    <value>Rate and net amount are linked and converted on input.</value>
+  </data>
+  <data name="KDLG_TT_WORSTBEST" xml:space="preserve">
+    <value>Worst/best is maintained per project item (“worst/best case entry”), not in the master template.</value>
+  </data>
+  <data name="KDLG_TT_BETRAG_ADMIN" xml:space="preserve">
+    <value>Reference quantity known only in the project — the amount is derived on adoption.</value>
+  </data>
+  <data name="KDLG_MSG_NEU_NAME" xml:space="preserve">
+    <value>Name of the new variant:</value>
+  </data>
+  <data name="KDLG_MSG_NEU_TITEL" xml:space="preserve">
+    <value>New variant</value>
+  </data>
+  <data name="KDLG_MSG_KOPIE_TITEL" xml:space="preserve">
+    <value>Save as</value>
+  </data>
+  <data name="KDLG_MSG_LOESCHEN" xml:space="preserve">
+    <value>Really delete variant “{0}”?</value>
+  </data>
+  <data name="KDLG_MSG_READONLY" xml:space="preserve">
+    <value>Factory templates are read-only.</value>
+  </data>
+  <data name="KDLG_MSG_POS_LOESCHEN" xml:space="preserve">
+    <value>Delete item “{0}”?</value>
+  </data>
+  <data name="KDLG_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>The name is already in use or empty.</value>
+  </data>
+  <data name="KDLG_MENUE_VORLAGEN" xml:space="preserve">
+    <value>Cost management …</value>
+  </data>
+  <data name="KDLG_POS_NEU_VORGABE" xml:space="preserve">
+    <value>New item</value>
+  </data>
+  <data name="BM_BETRAG" xml:space="preserve">
+    <value>fixed amount</value>
+  </data>
+  <data name="BM_JAHRESBETRAG" xml:space="preserve">
+    <value>fixed annual amount</value>
+  </data>
+  <data name="BM_P_INVESTITION" xml:space="preserve">
+    <value>% of investment</value>
+  </data>
+  <data name="BM_P_ERZEUGER" xml:space="preserve">
+    <value>% of generator costs</value>
+  </data>
+  <data name="BM_P_BRENNSTOFF" xml:space="preserve">
+    <value>% of fuel costs</value>
+  </data>
+  <data name="BM_P_STROM" xml:space="preserve">
+    <value>% of electricity costs</value>
+  </data>
+  <data name="BM_KWH_THERMISCH" xml:space="preserve">
+    <value>per kWh thermal</value>
+  </data>
+  <data name="BM_KWH_ELEKTRISCH" xml:space="preserve">
+    <value>per kWh electric</value>
+  </data>
+  <data name="BM_KW_LEISTUNG" xml:space="preserve">
+    <value>per kW capacity</value>
+  </data>
+  <data name="BM_KW_HEIZLEISTUNG" xml:space="preserve">
+    <value>per kW heating capacity</value>
+  </data>
+  <data name="BM_KW_ELEKTRISCH" xml:space="preserve">
+    <value>per kW electric</value>
+  </data>
+  <data name="BM_KWP" xml:space="preserve">
+    <value>per kWp capacity</value>
+  </data>
+  <data name="BM_KWH_KAPAZITAET" xml:space="preserve">
+    <value>per kWh capacity</value>
+  </data>
+  <data name="BM_M2_KOLLEKTOR" xml:space="preserve">
+    <value>per m² collector area</value>
+  </data>
+  <data name="BM_KWH" xml:space="preserve">
+    <value>per kWh</value>
+  </data>
+  <data name="BM_STUNDE" xml:space="preserve">
+    <value>per hour</value>
+  </data>
+  <data name="KDLG_BTN_UEBERNAHME" xml:space="preserve">
+    <value>Adopt into project…</value>
+  </data>
+  <data name="KDLG_UEB_QUELLE_VORLAGE" xml:space="preserve">
+    <value>From template/variant:</value>
+  </data>
+  <data name="KDLG_UEB_VORSCHAU" xml:space="preserve">
+    <value>The source holds {0} items. The target (this plant) already holds {1} items — existing ones stay untouched, only missing ones are created. The origin is recorded per item.</value>
+  </data>
+  <data name="KDLG_ET_KATALOG_NUR_LESEN" xml:space="preserve">
+    <value>Catalogue prices cannot be edited here yet (coming with carrier variants).</value>
+  </data>
+  <data name="KDLG_ET_KONTEXT_KATALOG" xml:space="preserve">
+    <value>Context: catalogue (master data)</value>
+  </data>
+  <data name="KDLG_ET_KONTEXT_PROJEKT" xml:space="preserve">
+    <value>Context: project {0}</value>
+  </data>
+  <data name="KDLG_ET_LISTE" xml:space="preserve">
+    <value>Energy carriers</value>
+  </data>
+  <data name="KDLG_ET_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="KDLG_ET_SPOT_KEINE" xml:space="preserve">
+    <value>No price series available yet.</value>
+  </data>
+  <data name="KDLG_ET_SPOT_STATUS" xml:space="preserve">
+    <value>{0} series, years {1}–{2}</value>
+  </data>
+  <data name="KDLG_ET_TITEL" xml:space="preserve">
+    <value>Energy carrier management</value>
+  </data>
+  <data name="KDLG_KOSTEN_ET_KNOPF" xml:space="preserve">
+    <value>Energy carriers…</value>
+  </data>
+  <data name="KDLG_LPR_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="KDLG_LPR_ALLES_NULL" xml:space="preserve">
+    <value>All twelve rates are 0 — please use “Delete series” to remove the series.</value>
+  </data>
+  <data name="KDLG_LPR_EBENE_PROJEKT" xml:space="preserve">
+    <value>Project series</value>
+  </data>
+  <data name="KDLG_LPR_EBENE_STAMM" xml:space="preserve">
+    <value>Master series (catalogue)</value>
+  </data>
+  <data name="KDLG_LPR_HINWEIS_STAMM" xml:space="preserve">
+    <value>Prefilled from the master series ({0}); saving creates a project series that takes precedence.</value>
+  </data>
+  <data name="KDLG_LPR_HINWEIS_VORRANG" xml:space="preserve">
+    <value>A maintained series takes precedence over the flat rate.</value>
+  </data>
+  <data name="KDLG_LPR_JAHR" xml:space="preserve">
+    <value>Year:</value>
+  </data>
+  <data name="KDLG_LPR_LOESCHEN" xml:space="preserve">
+    <value>Delete series</value>
+  </data>
+  <data name="KDLG_LPR_TITEL" xml:space="preserve">
+    <value>Seasonal capacity price rates</value>
+  </data>
+  <data name="KDLG_LPR_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="KDLG_LP_MODUS_JAHR" xml:space="preserve">
+    <value>Annual capacity price</value>
+  </data>
+  <data name="KDLG_LP_MODUS_MONAT" xml:space="preserve">
+    <value>Monthly capacity price</value>
+  </data>
+  <data name="KDLG_LP_REIHE_STATUS" xml:space="preserve">
+    <value>Seasonal series {0} ({1}) — takes precedence over the flat rate.</value>
+  </data>
+  <data name="KDLG_LP_SAISON" xml:space="preserve">
+    <value>Seasonal rates…</value>
+  </data>
+  <data name="KDLG_LP_STROM_TARIF" xml:space="preserve">
+    <value>Electricity capacity price: managed via the tariff structure.</value>
+  </data>
+  <data name="KDLG_MENUE_ENERGIETRAEGER" xml:space="preserve">
+    <value>Energy carrier management…</value>
+  </data>
+  <data name="SIM_PV_V1_BHKW_GETRENNT" xml:space="preserve">
+    <value>CHP electricity surplus of {0:N0} kWh reported separately from the PV feed-in (finding V1).</value>
+  </data>
+  <data name="PVW_51A" xml:space="preserve">
+    <value>Sec. 51a compensation (term extension)</value>
+  </data>
+  <data name="PVW_51_ALTANLAGE" xml:space="preserve">
+    <value>does not apply: commissioned before 25 Feb 2025.</value>
+  </data>
+  <data name="PVW_51_GREIFT" xml:space="preserve">
+    <value>applies from the first negative quarter-hour.</value>
+  </data>
+  <data name="PVW_51_IMSYS" xml:space="preserve">
+    <value>applies from {0} (year after smart-meter installation).</value>
+  </data>
+  <data name="PVW_51_VERSCHONT" xml:space="preserve">
+    <value>does not apply: plant &lt; 100 kW without smart meter.</value>
+  </data>
+  <data name="PVW_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="PVW_AKTIV" xml:space="preserve">
+    <value>Apply remuneration</value>
+  </data>
+  <data name="PVW_ANWENDEN" xml:space="preserve">
+    <value>Apply:</value>
+  </data>
+  <data name="PVW_AUSFALL" xml:space="preserve">
+    <value>Share of feed-in energy lost [%]:</value>
+  </data>
+  <data name="PVW_AUTO" xml:space="preserve">
+    <value>Automatic</value>
+  </data>
+  <data name="PVW_AW_OVERRIDE" xml:space="preserve">
+    <value>(override)</value>
+  </data>
+  <data name="PVW_AW_OVR" xml:space="preserve">
+    <value>AW override [ct/kWh] (0 = catalogue):</value>
+  </data>
+  <data name="PVW_BEZUG_REIHE" xml:space="preserve">
+    <value>Value grid consumption hourly from the price series</value>
+  </data>
+  <data name="PVW_DV" xml:space="preserve">
+    <value>DM fee [ct/kWh]:</value>
+  </data>
+  <data name="PVW_EV" xml:space="preserve">
+    <value>Fixed feed-in tariff</value>
+  </data>
+  <data name="PVW_EV_GESPERRT" xml:space="preserve">
+    <value>Fixed tariff only up to 100 kW (sec. 21 (1) no. 1 EEG).</value>
+  </data>
+  <data name="PVW_EV_SATZ" xml:space="preserve">
+    <value>Fixed tariff (AW − {0:0.00}): {1:0.00} ct/kWh</value>
+  </data>
+  <data name="PVW_G_51" xml:space="preserve">
+    <value>Remuneration loss (sec. 51 / 51a)</value>
+  </data>
+  <data name="PVW_G_ANLAGE" xml:space="preserve">
+    <value>Plant</value>
+  </data>
+  <data name="PVW_G_AW" xml:space="preserve">
+    <value>Applicable value</value>
+  </data>
+  <data name="PVW_G_BEZUG" xml:space="preserve">
+    <value>Electricity price / consumption valuation</value>
+  </data>
+  <data name="PVW_G_KAPPUNG" xml:space="preserve">
+    <value>60 % active-power limitation (sec. 9 (2) EEG)</value>
+  </data>
+  <data name="PVW_G_VERMARKTUNG" xml:space="preserve">
+    <value>Marketing</value>
+  </data>
+  <data name="PVW_G_VORSCHAU" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="PVW_HINWEIS_21C" xml:space="preserve">
+    <value>Without active assignment at the grid operator, plants &lt; 200 kW default to unpaid acceptance (sec. 21c EEG).</value>
+  </data>
+  <data name="PVW_IBN" xml:space="preserve">
+    <value>Commissioning date:</value>
+  </data>
+  <data name="PVW_IBN_PFLICHT" xml:space="preserve">
+    <value>Please enter the commissioning date.</value>
+  </data>
+  <data name="PVW_IMSYS" xml:space="preserve">
+    <value>Smart-meter installation year (0 = none):</value>
+  </data>
+  <data name="PVW_JA" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="PVW_KAP_AN" xml:space="preserve">
+    <value>active: feed-in capped at 60 % of kWp (no smart meter).</value>
+  </data>
+  <data name="PVW_KAP_AUS" xml:space="preserve">
+    <value>switched off.</value>
+  </data>
+  <data name="PVW_KAP_INAKTIV" xml:space="preserve">
+    <value>does not apply (direct marketing or smart meter present).</value>
+  </data>
+  <data name="PVW_KEINE" xml:space="preserve">
+    <value>No remuneration (free of charge)</value>
+  </data>
+  <data name="PVW_KNOPF" xml:space="preserve">
+    <value>Photovoltaics…</value>
+  </data>
+  <data name="PVW_KWP" xml:space="preserve">
+    <value>Installed capacity:</value>
+  </data>
+  <data name="PVW_KWP_OVERRIDE" xml:space="preserve">
+    <value> — override {0:N1}</value>
+  </data>
+  <data name="PVW_KWP_OVR" xml:space="preserve">
+    <value>Override [kWp] (0 = none):</value>
+  </data>
+  <data name="PVW_KWP_WERT" xml:space="preserve">
+    <value>calculated {0:N1} kWp</value>
+  </data>
+  <data name="PVW_MP" xml:space="preserve">
+    <value>Direct marketing with market premium</value>
+  </data>
+  <data name="PVW_NEIN" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="PVW_PPA" xml:space="preserve">
+    <value>Other direct marketing / PPA</value>
+  </data>
+  <data name="PVW_PPA_AUFSCHLAG" xml:space="preserve">
+    <value>PPA premium on spot [ct/kWh]:</value>
+  </data>
+  <data name="PVW_PPA_PREIS" xml:space="preserve">
+    <value>PPA fixed price [ct/kWh] (0 = none):</value>
+  </data>
+  <data name="PVW_STROMSTEUER" xml:space="preserve">
+    <value>Self-consumption from plants ≤ 2 MW in spatial context is exempt from electricity tax (sec. 9 StromStG); supplying third parties follows different rules.</value>
+  </data>
+  <data name="PVW_TITEL" xml:space="preserve">
+    <value>PV remuneration (EEG)</value>
+  </data>
+  <data name="PVW_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="PVW_UEBERSCHUSS" xml:space="preserve">
+    <value>Surplus feed-in</value>
+  </data>
+  <data name="PVW_VOLL" xml:space="preserve">
+    <value>Full feed-in</value>
+  </data>
+  <data name="PVW_VORSCHAU" xml:space="preserve">
+    <value>Feed-in {0:N1} MWh/a · rate year 1: {1:0.00} ct/kWh · revenue year 1: {2:N0} €/a · remuneration loss {3:N0} kWh ({4:N0} €) · sec. 51a credit {5:N0} € (year {6})</value>
+  </data>
+  <data name="PVW_VORSCHAU_OHNE_ERGEBNIS" xml:space="preserve">
+    <value>No simulation result yet — the preview shows quantities and revenue after a run; the rates above already apply.</value>
+  </data>
+  <data name="PVW_WARN_AUSSCHREIBUNG" xml:space="preserve">
+    <value>above 1 MW: tendering — AW override required.</value>
+  </data>
+  <data name="PVW_WARN_STROMSTEUER" xml:space="preserve">
+    <value>above 2 MW: check electricity tax on self-consumption.</value>
+  </data>
+  <data name="KDLG_ERTRAG_BTN_GESETZE" xml:space="preserve">
+    <value>Statutory parameters…</value>
+  </data>
+  <data name="KDLG_ERTRAG_DAUER" xml:space="preserve">
+    <value>New plants: {0} full-load hours funding quota. Annual caps [FLh/a]: {1}(quota override per plant in the economics module).</value>
+  </data>
+  <data name="KDLG_ERTRAG_EIGEN" xml:space="preserve">
+    <value>Self-consumed CHP electricity (sec. 7 (2), only within the cases of sec. 6 (3) — e.g. plant ≤ 100 kW): up to 50 kW {0} · 50–100 kW {1} ct/kWh. Case and plant type are maintained PER PLANT in the economics module (CHP modules) — no duplicate maintenance here.</value>
+  </data>
+  <data name="KDLG_ERTRAG_EINSP_TITEL" xml:space="preserve">
+    <value>Fed-in CHP electricity (tranches):</value>
+  </data>
+  <data name="KDLG_ERTRAG_FK7" xml:space="preserve">
+    <value>FK7: The ELECTRICITY-PRICE part of the CHP feed-in remuneration stays in the project's tariff structure (Einsp_* is purely CHP) — this tab displays the statutory CHP/tax figures; calculation is done exclusively by the KwkgSatzRechner and the tax credit calculators of the economics module. Project-related switches (case, plant type, sec. 9 lump-sum mode, quota override) are maintained there per plant.</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_DAUER" xml:space="preserve">
+    <value>Funding duration and annual caps</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_KWKG" xml:space="preserve">
+    <value>CHP surcharge (sec. 7 KWKG 2025) — display from the statutory catalogue</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_PV" xml:space="preserve">
+    <value>PV remuneration (EEG) — one remuneration truth (V4/F7)</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_STEUERN" xml:space="preserve">
+    <value>Tax privileges (HF6, rates from the statutory catalogue)</value>
+  </data>
+  <data name="KDLG_ERTRAG_G_VERWEISE" xml:space="preserve">
+    <value>Maintenance places (one truth per figure)</value>
+  </data>
+  <data name="KDLG_ERTRAG_LEER" xml:space="preserve">
+    <value>This component has no recurring revenue — grants/subsidies run as a subsidy position within the investment costs (FK5).</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV" xml:space="preserve">
+    <value>PV remuneration is maintained PER MASTER PROJECT in the remuneration dialog — the same form the “Photovoltaics…” button of the economics tab opens (one remuneration truth, finding V4). Applicable value, marketing form, sec. 51/51a and the 60 % limitation act on the NPV via the PV revenue series.</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV_OEFFNEN" xml:space="preserve">
+    <value>Open PV remuneration dialog…</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV_PROJEKT" xml:space="preserve">
+    <value>Master project:</value>
+  </data>
+  <data name="KDLG_ERTRAG_SONDERREGEL" xml:space="preserve">
+    <value>Special rule for new plants ≤ 50 kWel (sec. 7 (3a)): fed-in {0} · not fed-in {1} ct/kWh — takes precedence over paras 1 and 2.</value>
+  </data>
+  <data name="KDLG_ERTRAG_ST_53A" xml:space="preserve">
+    <value>Energy tax relief sec. 53a (5) EnergieStG: natural gas {0} €/MWh · fuel oil {1} €/1,000 l · LPG {2} €/1,000 kg (minimum efficiency {3} %).</value>
+  </data>
+  <data name="KDLG_ERTRAG_ST_9B" xml:space="preserve">
+    <value>Electricity tax relief sec. 9b StromStG: {0} €/MWh, base amount {1} €/a.</value>
+  </data>
+  <data name="KDLG_ERTRAG_ST_BEFREIUNG" xml:space="preserve">
+    <value>Electricity tax exemption sec. 9 (1) no. 3 StromStG: high-efficiency plants ≤ 2 MW in spatial context (4.5 km); CO₂ criterion from 2026.</value>
+  </data>
+  <data name="KDLG_ERTRAG_T100" xml:space="preserve">
+    <value>above 50 up to 100 kW</value>
+  </data>
+  <data name="KDLG_ERTRAG_T250" xml:space="preserve">
+    <value>above 100 up to 250 kW</value>
+  </data>
+  <data name="KDLG_ERTRAG_T2MW" xml:space="preserve">
+    <value>above 250 kW up to 2 MW</value>
+  </data>
+  <data name="KDLG_ERTRAG_T50" xml:space="preserve">
+    <value>up to 50 kW</value>
+  </data>
+  <data name="KDLG_ERTRAG_UE2MW" xml:space="preserve">
+    <value>above 2 MW (new/modernised)</value>
+  </data>
+  <data name="KDLG_ERTRAG_UE2MWN" xml:space="preserve">
+    <value>above 2 MW (retrofitted)</value>
+  </data>
+  <data name="BK_KOSTEN_SP_BETRIEB" xml:space="preserve">
+    <value>Operation [€/a]</value>
+  </data>
+  <data name="BK_KOSTEN_SP_LEISTUNGSPREIS" xml:space="preserve">
+    <value>Capacity price [€/(kW·a)]</value>
+  </data>
+  <data name="KDLG_FK8_HINWEIS" xml:space="preserve">
+    <value>Maintained in the cost dialog — fields are read-only.</value>
+  </data>
+  <data name="KDLG_KNOPF_BETRIEB" xml:space="preserve">
+    <value>Operating costs…</value>
+  </data>
+  <data name="KDLG_KNOPF_ENERGIE" xml:space="preserve">
+    <value>Energy costs…</value>
+  </data>
+  <data name="KDLG_KNOPF_INVEST" xml:space="preserve">
+    <value>Investment costs…</value>
+  </data>
+  <data name="KOSTEN_CASE_ABSOLUT" xml:space="preserve">
+    <value>Absolute input [€]</value>
+  </data>
+  <data name="KOSTEN_CASE_PROZENT" xml:space="preserve">
+    <value>Input in % of the expected value</value>
+  </data>
+  <data name="KOSTEN_CASE_STARTJAHR" xml:space="preserve">
+    <value>Start year (0 = immediately; year X: payment/operation from X):</value>
+  </data>
+  <data name="KOSTEN_CASE_UMRECHNUNG" xml:space="preserve">
+    <value>results in: best {0:N2} € · worst {1:N2} €</value>
+  </data>
+  <data name="KDLG_FK8_KURZ" xml:space="preserve">
+    <value>Maintained in the cost dialog.</value>
+  </data>
+  <data name="KDLG_BTN_KATALOG" xml:space="preserve">
+    <value>Item catalog…</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_51A" xml:space="preserve">
+    <value>PV: compensation § 51a (final remuneration year) [€]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_AUSFALL_EUR" xml:space="preserve">
+    <value>PV: remuneration loss § 51 [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_AUSFALL_KWH" xml:space="preserve">
+    <value>PV: remuneration loss § 51 [kWh/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_AW" xml:space="preserve">
+    <value>PV: applicable value AW_mix [ct/kWh]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM" xml:space="preserve">
+    <value>PV remuneration (marketing form)</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM_DV" xml:space="preserve">
+    <value>other direct marketing (PPA)</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM_EV" xml:space="preserve">
+    <value>fixed feed-in tariff</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM_KEINE" xml:space="preserve">
+    <value>uncompensated feed-in</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_FORM_MP" xml:space="preserve">
+    <value>direct marketing with market premium</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_KAPPUNG" xml:space="preserve">
+    <value>PV: curtailment loss 60 % [kWh/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_MARKTPRAEMIE" xml:space="preserve">
+    <value>PV: market premium year 1 [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_VERMIEDEN" xml:space="preserve">
+    <value>PV: avoided grid purchase (informative) [€/a]</value>
+  </data>
+  <data name="PVW_KZ_LCOE" xml:space="preserve">
+    <value>Levelised cost of electricity: {0:N2} ct/kWh (LCOE₀, comparable to a tariff) · {1:N2} ct/kWh (discounted)</value>
+  </data>
+  <data name="PVW_KZ_MIT_SPEICHER" xml:space="preserve">
+    <value> (with storage)</value>
+  </data>
+  <data name="PVW_KZ_OHNE_KOSTEN" xml:space="preserve">
+    <value>PV costs (investment/operation) not maintained — LCOE and benefit omitted.</value>
+  </data>
+  <data name="PVW_KZ_OHNE_PREIS" xml:space="preserve">
+    <value>Electricity energy rate not maintained — savings share omitted.</value>
+  </data>
+  <data name="PVW_KZ_QUOTEN" xml:space="preserve">
+    <value>Self-consumption ratio {0:N1} % · self-sufficiency {1} %{2}</value>
+  </data>
+  <data name="PVW_KZ_VORTEIL" xml:space="preserve">
+    <value>Benefit from PV: {0:N0} €/a</value>
+  </data>
+  <data name="PVW_BTN_MARKTWERTE" xml:space="preserve">
+    <value>Import market values…</value>
+  </data>
+  <data name="PVW_IMPORT_FEHLER" xml:space="preserve">
+    <value>Import failed: </value>
+  </data>
+  <data name="PVW_IMPORT_FILTER" xml:space="preserve">
+    <value>CSV files (*.csv)|*.csv|All files (*.*)|*.*</value>
+  </data>
+  <data name="PVW_IMPORT_OK" xml:space="preserve">
+    <value>Market values imported: </value>
+  </data>
+  <data name="BK_KOSTEN_BTN_TRAEGER" xml:space="preserve">
+    <value>Energy carrier management…</value>
+  </data>
+  <data name="KDLG_BTN_UEBERNAHME_PROJEKT" xml:space="preserve">
+    <value>Apply from template…</value>
+  </data>
+  <data name="KDLG_TITEL_PROJEKT" xml:space="preserve">
+    <value>Cost management {0} — {1}</value>
+  </data>
+  <data name="KDLG_TT_BETRAG_PROJEKT" xml:space="preserve">
+    <value>Calculated from rate and the project's reference quantity.</value>
+  </data>
+  <data name="WIRT_KACHEL_AMORTISATION" xml:space="preserve">
+    <value>Payback</value>
+  </data>
+  <data name="WIRT_KACHEL_ANNUITAET" xml:space="preserve">
+    <value>Annuity</value>
+  </data>
+  <data name="WIRT_KACHEL_BESTE" xml:space="preserve">
+    <value>best variant: {0}</value>
+  </data>
+  <data name="WIRT_KACHEL_IRR" xml:space="preserve">
+    <value>Internal rate of return</value>
+  </data>
+  <data name="WIRT_KACHEL_KEINE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="WIRT_KACHEL_KW" xml:space="preserve">
+    <value>NPV vs. base project</value>
+  </data>
+  <data name="WIRT_KACHEL_NUR_STAMM" xml:space="preserve">
+    <value>only base project computed</value>
+  </data>
+  <data name="WIRT_KACHEL_STAMM_KW" xml:space="preserve">
+    <value>net present value of the base project</value>
+  </data>
+  <data name="KDLG_MSG_STANDARD_LOESCHEN" xml:space="preserve">
+    <value>The standard template cannot be deleted — variants can.</value>
+  </data>
+  <data name="KDLG_ET_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="KDLG_ET_BTN_NEU" xml:space="preserve">
+    <value>New…</value>
+  </data>
+  <data name="KDLG_ET_BTN_VARIANTE" xml:space="preserve">
+    <value>Variant</value>
+  </data>
+  <data name="KDLG_ET_KATALOG_SPEICHERN" xml:space="preserve">
+    <value>Writes the CATALOG values of this carrier (applies wherever no project value is maintained).</value>
+  </data>
+  <data name="KDLG_ET_LOESCHEN_FRAGE" xml:space="preserve">
+    <value>Delete energy carrier „{0}“?</value>
+  </data>
+  <data name="KDLG_ET_LOESCHEN_GESPERRT" xml:space="preserve">
+    <value>The carrier is in use and remains: {0}</value>
+  </data>
+  <data name="KDLG_ET_NEU_NAME" xml:space="preserve">
+    <value>Name of the new carrier:</value>
+  </data>
+  <data name="KDLG_ET_NEU_TITEL" xml:space="preserve">
+    <value>New energy carrier</value>
+  </data>
+  <data name="KDLG_ET_NEU_VORGABE" xml:space="preserve">
+    <value>New energy carrier</value>
+  </data>
+  <data name="KDLG_ET_STAMM_FEHLER" xml:space="preserve">
+    <value>The name must not be empty.</value>
+  </data>
+  <data name="KDLG_ET_STAMM_GRUPPE" xml:space="preserve">
+    <value>Group:</value>
+  </data>
+  <data name="KDLG_ET_STAMM_NAME" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="KDLG_ET_STAMM_SPEICHERN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="KDLG_ET_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="KDLG_ET_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply from catalog…</value>
+  </data>
+  <data name="KDLG_ET_ENTFERNEN_FRAGE" xml:space="preserve">
+    <value>Remove carrier „{0}“ from the project? (The catalog entry remains.)</value>
+  </data>
+  <data name="KDLG_ET_ENTFERNEN_GESPERRT" xml:space="preserve">
+    <value>Not possible: {0}</value>
+  </data>
+  <data name="KDLG_ET_UEBERNAHME_LEER" xml:space="preserve">
+    <value>All catalog carriers are already assigned to the project.</value>
+  </data>
+  <data name="KDLG_ET_UEBERNAHME_OK" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="KDLG_ET_UEBERNAHME_TITEL" xml:space="preserve">
+    <value>Apply from catalog</value>
+  </data>
+  <data name="KDLG_GESPEICHERT" xml:space="preserve">
+    <value>saved {0:HH:mm}</value>
+  </data>
+  <data name="KDLG_BTN_SPEICHERN" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="KDLG_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="KDLG_ET_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="KDLG_LP_STROM_TARIF_BTN" xml:space="preserve">
+    <value>Tariff structure…</value>
+  </data>
+  <data name="KDLG_AUFSCHLAG_ANWENDEN" xml:space="preserve">
+    <value>Apply surcharges in the profitability calculation</value>
+  </data>
+  <data name="KDLG_EFFEKTIVPREIS" xml:space="preserve">
+    <value>Purchase price incl. surcharges: {0:N2} ct/kWh  (energy rate {1:N2} + surcharge {2:N2})</value>
+  </data>
+  <data name="WIRT_BTN_BHKW_TARIF" xml:space="preserve">
+    <value>CHP tariff…</value>
+  </data>
+  <data name="WIRT_BTN_STROM_TARIF" xml:space="preserve">
+    <value>Grid supply…</value>
+  </data>
+  <data name="PVW_BTN_TARIF" xml:space="preserve">
+    <value>Feed-in tariff…</value>
+  </data>
+  <data name="BK_KOSTEN_SP_ANLAGE" xml:space="preserve">
+    <value>Plant / component</value>
+  </data>
+  <data name="BK_KOSTEN_JE_KOMPONENTE" xml:space="preserve">
+    <value>Costs are maintained per component — the total is shown at the component's first plant.</value>
+  </data>
+  <data name="BK_KOSTEN_NICHT_VERBAUT" xml:space="preserve">
+    <value>{0} — no plant assignment</value>
+  </data>
+  <data name="BK_KOSTEN_NICHT_VERBAUT_HINT" xml:space="preserve">
+    <value>Cost items without a (valid) plant assignment — they still enter the profitability figures. Double-click deletes them after confirmation; edit them via the cost management entry “(no plant assignment)”.</value>
+  </data>
+  <data name="BK_KOSTEN_STATUS_NICHT_VERBAUT" xml:space="preserve">
+    <value>Cost items without an installed plant: {0}</value>
+  </data>
+  <data name="WP_BTN_BEENDEN" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="WPI_BTN_KOSTEN" xml:space="preserve">
+    <value>Edit costs…</value>
+  </data>
+  <data name="WPI_KOSTEN_SUMMEN" xml:space="preserve">
+    <value>Capex {0:N0} € · Opex {1:N0} €/a</value>
+  </data>
+  <data name="KDLG_UEB_QUELLE_PROJEKT" xml:space="preserve">
+    <value>From project/plant:</value>
+  </data>
+  <data name="KDLG_UEB_QUELLE_LOSE" xml:space="preserve">
+    <value>(no plant assignment)</value>
+  </data>
+  <data name="BK_KOSTEN_LOSE_LOESCHEN" xml:space="preserve">
+    <value>Delete all cost items of component “{0}” without a plant assignment?
+
+They typically stem from a variant copy without this trade and keep entering the profitability figures until removed.</value>
+  </data>
+  <data name="BK_KOSTEN_LOSE_TITEL" xml:space="preserve">
+    <value>Items without plant assignment</value>
+  </data>
+  <data name="BK_KOSTEN_LOSE_GELOESCHT" xml:space="preserve">
+    <value>{0} item(s) of component “{1}” deleted.</value>
+  </data>
+  <data name="WPI_TIP_KOSTEN" xml:space="preserve">
+    <value>Open this plant's cost management (project mode).</value>
+  </data>
+  <data name="WPI_TIP_KOSTEN_NEU" xml:space="preserve">
+    <value>Costs are maintained per PLANT — create and save the heat pump with OK first; then edit its costs via “Change..”.</value>
+  </data>
+  <data name="WPI_KOSTEN_KEINE" xml:space="preserve">
+    <value>Capex — · Opex —</value>
+  </data>
+  <data name="SIMENG_WAERMEGANGLINIE_RASTER_PASST_NICHT" xml:space="preserve">
+    <value>Heat demand: external load curve {0} has {1} values instead of 8760 or 35040. The load curve was not calculated - please import it again.</value>
+  </data>
+  <data name="SIMENG_PROZESSWAERME_KOPF_FEHLT" xml:space="preserve">
+    <value>Process heat: no record is stored in the project for the process '{0}'. Its calculation is skipped; its share remains 0.</value>
+  </data>
+  <data name="SIMENG_PROZESSWAERME_TYPPROFIL_FEHLT" xml:space="preserve">
+    <value>Process heat: no weekly profile is stored in the project for type '{0}' of process '{1}'. Its calculation is skipped; its share remains 0.</value>
+  </data>
+  <data name="SIMENG_BRAUCHWASSER_KOPF_FEHLT" xml:space="preserve">
+    <value>Domestic hot water: no record is stored in the project for the entry '{0}'. Its calculation is skipped; its share remains 0.</value>
+  </data>
+  <data name="SIMENG_BRAUCHWASSER_TYPPROFIL_FEHLT" xml:space="preserve">
+    <value>Domestic hot water: no weekly profile is stored in the project for type '{0}' of entry '{1}'. Its calculation is skipped; its share remains 0.</value>
+  </data>
+  <data name="KANAL_LABEL" xml:space="preserve">
+    <value>Channel</value>
+  </data>
+  <data name="KANAL_HEIZUNG_ANZEIGE" xml:space="preserve">
+    <value>Heating</value>
+  </data>
+  <data name="KANAL_BRAUCHWASSER_ANZEIGE" xml:space="preserve">
+    <value>Domestic hot water</value>
+  </data>
+  <data name="KANAL_PROZESS_ANZEIGE" xml:space="preserve">
+    <value>Process heat</value>
+  </data>
+  <data name="SIMWARN_W1_ZIEL_AUSSERHALB_SET" xml:space="preserve">
+    <value>Unit "{0}" (rank {1}): storage "{2}" is charged as {3}, but its class set is {4}. Channel {5} is missing — heat charged for this purpose is never discharged by this storage.</value>
+  </data>
+  <data name="SIMWARN_W2_BAUFORM_WIDERSPRUCH" xml:space="preserve">
+    <value>Storage "{0}": design type "{1}" is built for domestic hot water, but the class set is {2}. The hot-water side of the tank remains unused.</value>
+  </data>
+  <data name="SIMWARN_W3_VORLAUF_ZU_NIEDRIG" xml:space="preserve">
+    <value>Unit "{0}": the generator flow temperature of {1} °C is below the effective flow temperature of {2} °C of target storage "{3}". The generator can never charge the storage to its set temperature.</value>
+  </data>
+  <data name="SIMWARN_W5_QUELLE_OHNE_LADER" xml:space="preserve">
+    <value>Unit "{0}": storage "{1}" is its heat source but is not charged by any unit of this project. After the initial fill the source would run empty.</value>
+  </data>
+  <data name="SIMWARN_QUELLE_FEHLT" xml:space="preserve">
+    <value>Unit "{0}": this {1} heat pump has no configured heat source — the run falls back to outdoor air, which does not match this design. Select the source via the "Source" chip on the generator card (ground, constant temperature, source profile or buffer storage).</value>
+  </data>
+  <data name="SIMWARN_QUELLE_UNBEGRENZT" xml:space="preserve">
+    <value>Unit "{0}": buffer storage "{1}" is selected as heat source, but "available without limit" is set — storage coupling is therefore disabled and a constant {2} °C applies. Uncheck the box in the source dialog so the source temperature follows the storage state.</value>
+  </data>
+  <data name="SIMWARN_HART_RING" xml:space="preserve">
+    <value>The buffer-storage source references form a LOOP: {0}. There is no calculation order in which every generator runs after its buffer — please change the heat source of one of the units involved.</value>
+  </data>
+  <data name="SIMWARN_HART_LEERES_SET" xml:space="preserve">
+    <value>Storage "{0}": the class set is empty — no channel discharges it. At least one usage (heating, domestic hot water, process heat) must be set.</value>
+  </data>
+  <data name="SIMWARN_TRENNER" xml:space="preserve">
+    <value> + </value>
+  </data>
+  <data name="SIMWARN_DIALOG_KOPF" xml:space="preserve">
+    <value>The assignment is permitted and will be saved, but it is considered implausible:</value>
+  </data>
+  <data name="SIMWARN_KARTE_CHIP" xml:space="preserve">
+    <value>check configuration</value>
+  </data>
+  <data name="SIMWARN_KARTE_CHIP_TIP" xml:space="preserve">
+    <value>The warning-criteria catalogue (concept 6.2) reports for this unit:</value>
+  </data>
+  <data name="PSP_KLASSENSET_LEER" xml:space="preserve">
+    <value>no usage</value>
+  </data>
+  <data name="SIM_PUFFERGRUPPE_KOPF" xml:space="preserve">
+    <value>— {0} —</value>
+  </data>
+  <data name="PSP_MELDUNG_KLASSENSETWECHSEL" xml:space="preserve">
+    <value>The usage of buffer storage "{0}" is being changed from {1} to {2}.
+
+The storage is assigned to:
+  • {3}
+
+Assignments to a channel the storage no longer serves will be reported as a warning from now on (criterion W1) — they are no longer blocked.
+Change the usage anyway?</value>
+  </data>
+  <data name="PSP_TITEL_KLASSENSET_AENDERN" xml:space="preserve">
+    <value>Change usage</value>
+  </data>
+  <data name="PSP_GRUPPE_SCHICHTUNG" xml:space="preserve">
+    <value>Stratification and power limits</value>
+  </data>
+  <data name="PSP_LABEL_SCHICHTEN" xml:space="preserve">
+    <value>Layers:</value>
+  </data>
+  <data name="PSP_HINWEIS_SCHICHTEN" xml:space="preserve">
+    <value>1 = one single store as before; from 2 on the tank is calculated stratified.</value>
+  </data>
+  <data name="PSP_LABEL_HOEHE" xml:space="preserve">
+    <value>Height [m]:</value>
+  </data>
+  <data name="PSP_HINWEIS_HOEHE" xml:space="preserve">
+    <value>empty = derived from the height/diameter ratio of 2.5</value>
+  </data>
+  <data name="PSP_LABEL_LAMBDA_EFF" xml:space="preserve">
+    <value>λ effective [W/(m·K)]:</value>
+  </data>
+  <data name="PSP_HINWEIS_LAMBDA_EFF" xml:space="preserve">
+    <value>empty = 1.5</value>
+  </data>
+  <data name="PSP_LABEL_T_NUTZ_BW" xml:space="preserve">
+    <value>Usable temperature DHW [°C]:</value>
+  </data>
+  <data name="PSP_HINWEIS_T_NUTZ_BW" xml:space="preserve">
+    <value>empty = return temperature of the tank</value>
+  </data>
+  <data name="PSP_LABEL_ENTNAHMEHOEHEN" xml:space="preserve">
+    <value>Draw-off height per channel (0 = bottom, 1 = top; empty = default):</value>
+  </data>
+  <data name="PSP_LABEL_LADELEISTUNG_MAX" xml:space="preserve">
+    <value>Max. charging power [kW]:</value>
+  </data>
+  <data name="PSP_LABEL_ENTLADELEISTUNG_MAX" xml:space="preserve">
+    <value>Max. discharging power [kW]:</value>
+  </data>
+  <data name="PSP_HINWEIS_LEISTUNG_UNBEGRENZT" xml:space="preserve">
+    <value>0 = unlimited</value>
+  </data>
+  <data name="PSP_NAME_LADELEISTUNG_MAX" xml:space="preserve">
+    <value>maximum charging power</value>
+  </data>
+  <data name="PSP_NAME_ENTLADELEISTUNG_MAX" xml:space="preserve">
+    <value>maximum discharging power</value>
+  </data>
+  <data name="PSP_FEHLER_HOEHE" xml:space="preserve">
+    <value>The height must be a number greater than 0 [m] - or be left empty.</value>
+  </data>
+  <data name="PSP_FEHLER_LAMBDA_EFF" xml:space="preserve">
+    <value>The effective thermal conductivity must be a number greater than 0 [W/(m·K)] - or be left empty.</value>
+  </data>
+  <data name="PSP_FEHLER_T_NUTZ_BW" xml:space="preserve">
+    <value>The usable DHW temperature must be a number greater than 0 [°C] - or be left empty.</value>
+  </data>
+  <data name="PSP_FEHLER_ENTNAHMEHOEHE" xml:space="preserve">
+    <value>The draw-off height {0} must be a number between 0 and 1 - or be left empty.</value>
+  </data>
+  <data name="PSP_FEHLER_LEISTUNG" xml:space="preserve">
+    <value>The {0} must be a number ≥ 0 [kW]; 0 means unlimited.</value>
+  </data>
+  <data name="PSP_FEHLER_SCHICHTUNG_AM_VERBUND" xml:space="preserve">
+    <value>Tank "{0}" is the lead tank of a parallel bank and therefore cannot be stratified.
+
+A bank is calculated as ONE heat store holding the summed capacity of all its members; a layer model derived from the lead tank's volume would describe a vessel that does not exist (concept 6.3, criterion W6).
+
+Please either set the number of layers to 1 or dissolve the bank in the heat sink dialog.</value>
+  </data>
+  <data name="PSP_KARTE_SCHICHTEN" xml:space="preserve">
+    <value>{0} layers</value>
+  </data>
+  <data name="PSP_KARTE_T_OBEN" xml:space="preserve">
+    <value>Top layer: {0} °C annual mean</value>
+  </data>
+  <data name="SIMWARN_W3_UNTER_TNUTZ" xml:space="preserve">
+    <value>Unit "{0}": the generator flow temperature of {1} °C is below the usable DHW temperature of {2} °C of target storage "{3}". The DHW channel would stay switched off permanently at this generator.</value>
+  </data>
+  <data name="SIMWARN_W4_TNUTZ_UEBER_VLEFF" xml:space="preserve">
+    <value>Storage "{0}": the usable DHW temperature of {1} °C is above the effective flow temperature of {2} °C. The run clamps it to {2} °C - otherwise the DHW channel would be switched off permanently.</value>
+  </data>
+  <data name="SIMWARN_W6_SCHICHTUNG_AM_VERBUND" xml:space="preserve">
+    <value>Storage "{0}": it holds {1} layers and is at the same time the lead tank of a parallel bank. That combination is not permitted - a bank is calculated as ONE store holding the summed capacity of all its members. Please set the number of layers to 1 or dissolve the bank.</value>
+  </data>
+  <data name="SIM_VERBUND_KONFLIKT_LEIT_GESCHICHTET" xml:space="preserve">
+    <value>Buffer tank "{0}" is stratified and therefore cannot serve as the lead tank of a bank: a bank is calculated as ONE store holding the summed capacity of all its members, so a layer model derived from it would be wrong.</value>
+  </data>
+  <data name="SIM_SPALTE_EINSPEISEHOEHE" xml:space="preserve">
+    <value>Height</value>
+  </data>
+  <data name="SIM_CHK_EINSPEISEHOEHE" xml:space="preserve">
+    <value>own inlet height:</value>
+  </data>
+  <data name="SIM_LBL_EINSPEISEHOEHE_EINHEIT" xml:space="preserve">
+    <value>0…1  (1 = top, 0 = bottom; empty = top)</value>
+  </data>
+  <data name="SIM_TIP_EINSPEISEHOEHE" xml:space="preserve">
+    <value>Height at which this sink feeds into the target storage: 1 = top (default), 0 = bottom.
+
+Effective only with a STRATIFIED target storage (layers &gt; 1): from the inlet height downwards the layers are raised to the flow temperature one after another, layers above remain untouched. With a single-zone storage (layers = 1) the value has no effect.</value>
+  </data>
+  <data name="SIM_MSG_EINSPEISEHOEHE_ZAHL" xml:space="preserve">
+    <value>The inlet height of the {0} must be a number.</value>
+  </data>
+  <data name="SIM_MSG_EINSPEISEHOEHE_BEREICH" xml:space="preserve">
+    <value>The inlet height of the {0} must be between 0 and 1.</value>
+  </data>
+  <data name="SIM_TAB_SPEICHERTEMPERATUR" xml:space="preserve">
+    <value>Storage temperatures</value>
+  </data>
+  <data name="CHART_TITEL_SPEICHERTEMPERATUR" xml:space="preserve">
+    <value>Storage temperatures over the year</value>
+  </data>
+  <data name="SIM_REIHE_T_OBEN" xml:space="preserve">
+    <value>T top [°C]</value>
+  </data>
+  <data name="SIM_REIHE_T_UNTEN" xml:space="preserve">
+    <value>T bottom [°C]</value>
+  </data>
+  <data name="SIMENG_SCHICHT_INVARIANTE" xml:space="preserve">
+    <value>Layer model: At buffer {0} ({1}) the sum of the layer energies deviated from the storage content in {2} hours (largest deviation {3} kWh). The layer level was corrected in every hour, the energy balance of the run is unaffected - the message indicates a fault in the layer model and belongs with development.</value>
+  </data>
+  <data name="SIMENG_SENKE_OHNE_LADEAUFTRAG_RANG" xml:space="preserve">
+    <value>Heat sink: Plant {0} ({1}) carries target {3} at rank {2} (buffer {4}), but receives NO charging order in this run - the buffer belongs to another project or is not part of the calculation.{5}</value>
+  </data>
+  <data name="SIMENG_SENKE_OHNE_LADEAUFTRAG_RANG1" xml:space="preserve">
+    <value> The plant therefore supplies the HEATING CIRCUIT; without this fallback it would produce nothing all year.</value>
+  </data>
+  <data name="SIMENG_SENKE_OHNE_LADEAUFTRAG_NACHRANG" xml:space="preserve">
+    <value> This sink is disregarded in this run.</value>
+  </data>
+  <data name="SIMENG_PENDELSPEICHER_ENTLADEORDNUNG" xml:space="preserve">
+    <value>CHP buffer tank: Storage {0} is not part of the discharge order of channel {1} - it is placed at the end.</value>
+  </data>
+  <data name="SIMENG_ENTLADEORDNUNG_NACHTRAG" xml:space="preserve">
+    <value>Storage {0} ({1}) is not part of the discharge order of channel {2} - it is placed at the end.</value>
+  </data>
+  <data name="SIMENG_KLASSENSET_ROLLE" xml:space="preserve">
+    <value>Storage {0} ({1}): The class set {2} does not match the legacy use "{3}". The set is used for the calculation; the role shown in the display and in the result row is "{4}".</value>
+  </data>
+  <data name="SIMENG_VERBUND_SCHICHTUNG" xml:space="preserve">
+    <value>Parallel group: The lead storage {0} ({1}) is configured with {2} layers. A group is calculated as ONE heat reservoir with the summed capacity of all vessels - a stratification derived from the volume of the lead storage alone would be wrong. The calculation runs unstratified (1 layer); please either dissolve the group or set the number of layers to 1.</value>
+  </data>
+  <data name="SIMENG_TNUTZ_UEBER_VORLAUF" xml:space="preserve">
+    <value>Layer model: At buffer {0} ({1}) the minimum usable domestic hot water temperature of {2} °C is ABOVE the effective flow temperature of {3} °C. No layer could ever reach it, the domestic hot water channel would be permanently blocked. The calculation uses {3} °C - please correct T_Nutz_BW or the temperature pair of the storage.</value>
+  </data>
+  <data name="SIMENG_BOOSTER_KOPPLUNG" xml:space="preserve">
+    <value>Booster: Plant {0} draws its source heat from buffer {1} ({2}), a SHARED buffer. The source temperature follows the storage state and is formed anew in every hour ({3} … {4} °C, {5} layer(s){6}) instead of being taken from an annual profile. If it falls below the lowest node of the characteristic curve, that node applies (capping, no extrapolation).</value>
+  </data>
+  <data name="SIMENG_KESSEL_BOOSTER_KOPPLUNG" xml:space="preserve">
+    <value>Boiler cascade (booster): Plant {0} draws its inlet temperature from buffer {1} ({2}), a SHARED buffer. The source temperature follows the storage state and is formed anew in every hour ({3} … {4} °C{5}). Boiler lift {6}/{7} °C; at full charge the buffer contributes {8} % of the useful heat. The boiler is calculated AFTER the generator that charges the buffer.</value>
+  </data>
+  <data name="SIMENG_KNAPPHEIT_UNGUELTIG" xml:space="preserve">
+    <value>Scarcity order: The project setting "{0}" is unusable - the three keys {1};{2};{3} are expected in any order, each exactly once. The calculation uses the default {4} -&gt; {5} -&gt; {6}.</value>
+  </data>
+  <data name="SIMENG_QUELLPROFIL_UNLESBAR" xml:space="preserve">
+    <value>Source profile {0} of plant {1} is unreadable or incomplete (the number of values does not match the operating mode) - the legacy path or the outdoor temperature applies.</value>
+  </data>
+  <data name="SIMENG_SENKENZEILE_OHNE_PUFFER" xml:space="preserve">
+    <value>Heat sink: Plant {0} carries target {2} at rank {1}, but has NO buffer storage assigned there (Z_AnlageSenke.ID_Puffer empty). The row therefore supplies the HEATING CIRCUIT.</value>
+  </data>
+  <data name="SIMENG_SENKENLISTE_LEER" xml:space="preserve">
+    <value>Heat sink: For plant {0} there is not a single row in Z_AnlageSenke. The run uses the default {1}/{2}.</value>
+  </data>
+  <data name="PSP_SPEICHERTYP_ANZEIGE_SOLAR" xml:space="preserve">
+    <value>Solar storage</value>
+  </data>
+  <data name="PSP_SPEICHERTYP_ANZEIGE_PUFFER" xml:space="preserve">
+    <value>Buffer storage</value>
+  </data>
+  <data name="PSP_SPEICHERTYP_ANZEIGE_KOMBI" xml:space="preserve">
+    <value>Combination storage</value>
+  </data>
+  <data name="SIM_LABEL_BEDARFSART" xml:space="preserve">
+    <value>Demand type:</value>
+  </data>
+  <data name="CHART_TITEL_DECKUNG_JE_BEDARFSART" xml:space="preserve">
+    <value>{0} coverage — annual load profile</value>
+  </data>
+  <data name="BK_SP_KOMPONENTE" xml:space="preserve">
+    <value>Component</value>
+  </data>
+  <data name="BK_SP_KOMPONENTE_N" xml:space="preserve">
+    <value>Component {0}</value>
+  </data>
+  <data name="SIMQ_PUFFER_TEMPERATURBEZUG" xml:space="preserve">
+    <value>Temperature reference:</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_BERECHNET" xml:space="preserve">
+    <value>calculated (from the plant)</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_FEST" xml:space="preserve">
+    <value>fixed specification</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_VORLAUF" xml:space="preserve">
+    <value>Flow [°C]:</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_RUECKLAUF" xml:space="preserve">
+    <value>Return [°C]:</value>
+  </data>
+  <data name="SIMQ_PUFFER_TB_HINWEIS" xml:space="preserve">
+    <value>The boiler raises the temperature from its return to its flow; the buffer contributes the part covered by its own temperature. "Calculated" uses the operating temperatures of the storage the boiler charges (including stratification) — nothing needs to be maintained here.</value>
+  </data>
+  <data name="SIMQ_PUFFER_MSG_TEMPERATURPAAR" xml:space="preserve">
+    <value>Please enter flow and return as whole numbers: return above 0 °C and flow above return. If you do not want to specify a pair, select "calculated (from the plant)".</value>
+  </data>
+  <data name="SIMWARN_KESSEL_TEMPERATURPAAR" xml:space="preserve">
+    <value>Unit "{0}": the temperature reference is set to "fixed", but no complete flow/return pair is maintained. The share contributed by source storage "{1}" therefore cannot be calculated against a specification. The run falls back to "calculated" — please enter the pair or switch to "calculated".</value>
+  </data>
+  <data name="SIM_BOOSTER_LESEPUNKT_SCHALTER" xml:space="preserve">
+    <value>Booster reads storage state at the start of the hour (conservative)</value>
+  </data>
+  <data name="SIM_BOOSTER_LESEPUNKT_TOOLTIP" xml:space="preserve">
+    <value>Checked: a generator drawing its heat from a shared buffer storage reads its temperature once at the start of the hour — i.e. from the state at the end of the previous hour. Whatever an upstream generator recharges within the same hour is not credited to it.
+
+Unchecked: the reading is taken after the charging phase of the upstream generator; the booster then sees the storage in the most fully charged state of the hour.
+
+The switch is only shown if the project contains such a generator.</value>
+  </data>
+  <data name="SIM_STATUS_LESEPUNKT_DAVOR" xml:space="preserve">
+    <value>Booster reading point: start of the hour (conservative).</value>
+  </data>
+  <data name="SIM_STATUS_LESEPUNKT_DANACH" xml:space="preserve">
+    <value>Booster reading point: after the charging phase of the preceding level.</value>
   </data>
 </root>

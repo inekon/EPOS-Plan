@@ -99,7 +99,33 @@ namespace WindowsFormsApplication1
             {"ID_Klimaregion","Tab_Klimaregion"}, {"ID_ProjektGebaeude","Z_ProjektGebaeude"},
             {"ID_Gebaeude","Tab_Gebaeude"}, {"ID_TagV","Tab_DBTagV"},
             {"ID_Stromverbraucher","Tab_Stromverbraucher"}, {"ID_Prozesswaerme","Tab_Prozesswaerme"},
-            {"ID_Brauchwasser","Tab_Brauchwasser"}
+            {"ID_Brauchwasser","Tab_Brauchwasser"},
+            // Ä20: Anlagenbezug der Kostenpositionen (Tab_ProjektWerte.ID_Anlage,
+            // Migrationsschritt 45). Ohne Versatz zeigten die Positionen einer
+            // Variante auf die Anlagen des QUELLprojekts und stünden dort als
+            // „ohne Anlagenzuordnung“ da.
+            {"ID_Anlage","Tab_Energieanlagen"},
+            // S1 (Migrationsschritt 50): Der Parallelverbund haengt kuenftig an einer
+            // bestimmten Puffersenke. Ohne Versatz zeigte die Verbundzeile der Kopie
+            // auf die Senkenzeile des QUELLprojekts - und weil ID_Senke KEINE
+            // deklarierte Access-Beziehung hat (nur die Spalte, siehe Schritt 50b),
+            // faellt das nicht einmal beim Einfuegen auf.
+            //
+            // NICHT hier: Z_AnlageSenke.ID_Puffer. Diese Map vergleicht ohne
+            // Gross-/Kleinschreibung (StringComparer.OrdinalIgnoreCase) - "ID_Puffer"
+            // IST fuer sie derselbe Schluessel wie das bereits eingetragene
+            // "ID_PUFFER" und wird davon mit abgedeckt. Ein zweiter Eintrag waere
+            // nicht ueberfluessig, sondern eine ArgumentException beim Laden der
+            // Klasse. ID_Anlage steht ohnehin schon oben (Ä20).
+            {"ID_Senke","Z_AnlageSenke"},
+            // Q1 (Migrationsschritt 54): Quellprofile. Zwei Spalten, beide eindeutig
+            // benannt - der Profilschluessel an der Anlage (WQ_ID_Quellprofil, echte
+            // Access-Beziehung FK_Anlage_Quellprofil, die _echteFks ohnehin erkennt) und
+            // der Elternverweis der Wertzeilen (ID_Quellprofil). Ohne Versatz zeigte die
+            // Kopie auf das Profil des QUELLprojekts; eine Aenderung dort schlueg dann
+            // stillschweigend in beiden Projekten durch.
+            {"WQ_ID_Quellprofil","Tab_Quellprofil"},
+            {"ID_Quellprofil","Tab_Quellprofil"}
         };
 
         // Mehrdeutige FK-Spalten (gleicher Name, verschiedene Zieltabellen) -> je Tabelle aufgeloest.
@@ -125,6 +151,34 @@ namespace WindowsFormsApplication1
             {"Tab_StromganglinieDaten","ID_Ganglinie IN (SELECT ID FROM Tab_Stromganglinie WHERE ID_Projekt = {0})"},
             {"Tab_SolarganglinieDaten","ID_Ganglinie IN (SELECT ID FROM Tab_Solarganglinie WHERE ID_Projekt = {0})"},
             {"Tab_Stromverbrauchertyp","ID_Stromverbraucher IN (SELECT ID FROM Tab_Stromverbraucher WHERE ID_Projekt = {0})"},
+
+            // S1 (Migrationsschritt 50): Die Senkenliste und der Parallelverbund
+            // haengen an der ANLAGE und fuehren bewusst kein eigenes ID_Projekt.
+            //
+            // WARUM AUSDRUECKLICH UND NICHT UEBER DIE AUTO-ERKENNUNG. Die Erkennung
+            // FK-gebundener Kindtabellen (:327-358) nimmt die ERSTE Spalte, zu der sie
+            // eine deklarierte Beziehung auf eine bereits geplante Tabelle findet -
+            // bei Z_AnlageSenke waeren das ID_Anlage ODER ID_Puffer, je nach
+            // Spaltenreihenfolge. Ueber ID_Puffer gefiltert fielen alle Senken OHNE
+            // Puffer (jede Direktsenke Heizkreis/Prozesswaerme, also die Mehrheit)
+            // aus der Kopie. Der feste Eintrag macht die Wahl eindeutig.
+            //
+            // Z_AnlagePufferVerbund stand hier bis heute NICHT (Befund Konzept § 5.1):
+            // Die Kopie hing allein an der Auto-Erkennung und damit an derselben
+            // Spaltenreihenfolge-Lotterie. „Projekt mit mehreren Senken duplizieren"
+            // ist Abnahmekriterium von S1 - dafuer muessen beide Tabellen sicher
+            // mitkommen.
+            {"Z_AnlageSenke",          "ID_Anlage IN (SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = {0})"},
+            {"Z_AnlagePufferVerbund",  "ID_Anlage IN (SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = {0})"},
+
+            // Q1 (Migrationsschritt 54): Die Wertzeilen eines Quellprofils haengen am
+            // KOPF und fuehren bewusst kein eigenes ID_Projekt - dasselbe Muster wie
+            // Tab_StromganglinieDaten eine Zeile hoeher. Ausdruecklich statt ueber die
+            // Auto-Erkennung: Tab_QuellprofilDaten hat mit ID_Quellprofil zwar nur EINEN
+            // Elternschluessel, aber die Auto-Erkennung braucht dafuer eine deklarierte
+            // Beziehung, und Schritt 54 legt FK_QuellprofilDaten_Kopf bewusst WEICH an.
+            // Ohne den Eintrag faehrt eine Variantenkopie mit leerem Profil.
+            {"Tab_QuellprofilDaten",   "ID_Quellprofil IN (SELECT ID FROM Tab_Quellprofil WHERE ID_Projekt = {0})"},
         };
 
         // Echte, in Access deklarierte Fremdschluessel: Key "Tabelle||Spalte" -> referenzierte Tabelle.
@@ -199,6 +253,33 @@ namespace WindowsFormsApplication1
                 if (!offset.ContainsKey("Tab_Projekt"))
                 { try { trans.Rollback(); } catch { } MessageBox.Show("Projekt konnte nicht gelesen werden."); return -1; }
 
+                // 2b) DIE NEUE PROJEKT-ID MUSS IN JEDER PROJEKTTABELLE FREI SEIN, nicht nur in
+                //     Tab_Projekt (Befund 27.08.2026, Fehler D-a).
+                //
+                //     Der Offset aus 2) legt die Kopie auf MAX(Tab_Projekt.ID) + 1. Diese ID ist
+                //     nach einem Projekt-Loeschen WIEDERVERWENDET: Von den Projekttabellen haengen
+                //     nur wenige mit Loeschweitergabe an Tab_Projekt (Tab_Pufferspeicher,
+                //     Tab_Energieanlagen, Tab_Einstellungen, die Z_*-Zuordnungen). Alle uebrigen -
+                //     Tab_WP, Tab_Heizkessel, Tab_BHKW, Tab_PV, Tab_Solarkollektoren,
+                //     Tab_Stromspeicher, Tab_Brauchwasser(typ), Tab_Prozesswaerme, Tab_Stromganglinie,
+                //     Tab_Stromverbraucher(typ), Tab_Waermebedarf, Tab_Ergebnis* - behalten ihre
+                //     Zeilen (siehe GeraeteWaisen). Faellt die Kopie auf eine solche ID, ERBT sie
+                //     den Rueckstand des geloeschten Projekts: Die Kopie zeigt Komponenten in
+                //     Solarthermie, Stromspeicher oder Photovoltaik, die das Ausgangsprojekt nie
+                //     hatte. Gemessen an einer Arbeitskopie: Kopie von Projekt 1040 auf die ID des
+                //     zuvor geloeschten 1042 -> 3 statt 1 Waermepumpe, 2 statt 1 Heizkessel,
+                //     70 080 statt 35 040 Stromganglinien-Werte.
+                //
+                //     Der normale Weg hat das Problem nicht: Tab_Projekt.ID ist ein AutoWert, und
+                //     der vergibt keine ID zweimal (ProjektCtrl.Insert schreibt die Spalte gar
+                //     nicht mit). Nur diese Kopie setzt die ID selbst - also korrigiert sie sich
+                //     auch hier.
+                //
+                //     KEIN LOESCHEN: Der Rueckstand bleibt unangetastet, die Kopie weicht ihm nur
+                //     aus. Die ID kann dadurch nur STEIGEN, nie sinken.
+                long freieId = FreieProjektId(conn, trans, specs, srcId + offset["Tab_Projekt"]);
+                offset["Tab_Projekt"] = freieId - srcId;
+
                 // 3) Kopieren. Nur Tabellen mit Quellzeilen (offset vorhanden) werden gezaehlt/gemeldet.
                 var zuKopieren = new List<Spec>();
                 foreach (Spec s in specs)
@@ -223,7 +304,17 @@ namespace WindowsFormsApplication1
                     fortschritt.Report(new Fortschritt { Aktuell = gesamt, Gesamt = gesamt, Tabelle = "" });
 
                 trans.Commit();
-                return (int)(srcId + offset["Tab_Projekt"]);
+
+                // Ä24: Geräteanker der kopierten Kostenpositionen auf die
+                // KOPIERTEN Geräte umstellen. Der generische Lauf versetzt
+                // ID_Anlage (FK_MAP); ID_AnlageGeraet kann er nicht versetzen —
+                // die Zieltabelle hängt an der Komponente. Ohne den Nachzug
+                // zeigten die Anker auf die Geräte des QUELLprojekts, und der
+                // erste Anlagen-Wizard-Lauf der Kopie löste die Zuordnungen
+                // (Befund 27.08.2026: WP-Positionen der Varianten 1038/1039).
+                int neuId = (int)(srcId + offset["Tab_Projekt"]);
+                try { KostenProjektPositionenCtrl.AnkerNachziehen(neuId); } catch { }
+                return neuId;
             }
             catch (Exception ex)
             {
@@ -240,11 +331,26 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// B1 (Konzept Projekttransfer T1): Laedt die deklarierten Beziehungen in
+        /// <see cref="_echteFks"/> — die Wissensbasis von
+        /// <see cref="ErmittleZieltabelle"/>. Bisher fuellte nur
+        /// <see cref="ErmittlePlan"/> sie (Duplizieren und EXPORT); der reine
+        /// IMPORT arbeitete auf einem leeren Stand, und jede Beziehung ausserhalb
+        /// der handgepflegten FK_MAP (z. B. Tab_ErgebnisEnergiebedarf.ID_Ergebnis
+        /// -> Tab_Ergebnis) blieb unversetzt — der Nutzerbefund
+        /// „Tab_Ergebnis[ID] FEHLT" beim Import eines fremden Pakets.
+        /// </summary>
+        internal void BeziehungenLaden(OleDbConnection conn, OleDbTransaction trans)
+        {
+            _echteFks = LiesEchteFks(conn, trans);
+        }
+
         // Ermittelt die zu kopierenden Tabellen generisch aus dem Schema.
         internal List<Spec> ErmittlePlan(OleDbConnection conn, OleDbTransaction trans)
         {
             // Zuerst die deklarierten Beziehungen einlesen (fuer Reihenfolge + Offset-Ziel).
-            _echteFks = LiesEchteFks(conn, trans);
+            BeziehungenLaden(conn, trans);
 
             var plan = new Dictionary<string, Spec>(StringComparer.OrdinalIgnoreCase);
             var uebrig = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase); // Tabellen ohne eigenen Projektbezug -> evtl. FK-gebundene Kinder
@@ -546,6 +652,57 @@ namespace WindowsFormsApplication1
             offset = max - min + 1;
             if (offset < 1) offset = 1;
             return true;
+        }
+
+        /// <summary>
+        /// Die erste Projekt-ID ab <paramref name="vorschlag"/>, zu der KEINE Tabelle des
+        /// Kopierplans mehr eine Zeile fuehrt.
+        ///
+        /// <para>
+        /// Gefragt wird jede Plantabelle mit eigener Projektspalte (<c>ID_Projekt</c> bzw.
+        /// <c>ProjektID</c>) nach ihrem groessten Wert. Ist er kleiner als der Vorschlag,
+        /// liegt dort kein Rueckstand ueber dem Vorschlag - dann bleibt es beim Vorschlag.
+        /// Sonst rueckt die Kopie hinter den hoechsten gefundenen Wert. Tabellen ohne
+        /// eigene Projektspalte (die FK-gebundenen Kindtabellen) brauchen nicht gefragt zu
+        /// werden: Sie haengen an einer dieser Tabellen und sind ohne ihren Elternsatz
+        /// nicht erreichbar.
+        /// </para>
+        ///
+        /// <para>
+        /// Eine Tabelle, die sich nicht lesen laesst, wird UEBERSPRUNGEN - dieselbe
+        /// Vorsicht wie in <see cref="BerechneOffset"/>. Die Kopie liegt dann schlimmstenfalls
+        /// so wie vorher, nie schlechter.
+        /// </para>
+        /// </summary>
+        private long FreieProjektId(OleDbConnection conn, OleDbTransaction trans, List<Spec> specs, long vorschlag)
+        {
+            long hoechste = vorschlag - 1;
+
+            foreach (Spec s in specs)
+            {
+                string spalte = null;
+                if (s.Cols != null)
+                {
+                    if (Enthaelt(s.Cols, "ID_Projekt")) spalte = "ID_Projekt";
+                    else if (Enthaelt(s.Cols, "ProjektID")) spalte = "ProjektID";
+                }
+                if (spalte == null) continue;
+
+                try
+                {
+                    using (var c = new OleDbCommand(
+                        "SELECT MAX([" + spalte + "]) FROM [" + s.Tabelle + "]", conn, trans))
+                    {
+                        object v = c.ExecuteScalar();
+                        if (v == null || v == DBNull.Value) continue;
+                        long max = Convert.ToInt64(v);
+                        if (max > hoechste) hoechste = max;
+                    }
+                }
+                catch { /* Tabelle nicht lesbar -> ueberspringen, nie nach unten korrigieren */ }
+            }
+
+            return hoechste + 1;
         }
 
         // Baut das generische INSERT ... SELECT.

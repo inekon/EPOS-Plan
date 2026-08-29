@@ -237,8 +237,15 @@ namespace WindowsFormsApplication1
             var ergebnisse = new List<AnlageErgebnis>();
             try
             {
+                // PAKET E1: Gefragt ist, ob die WÄRMEPUMPE einen Senkenspeicher lädt —
+                // das steht am Modul selbst. Bis hierher stand hier der Alias
+                // sim.puffer_wp; SimulationControl setzt simulation_wp.Pufferspeicher aus
+                // genau diesem Alias, der Wert ist also unverändert (kein Ergebniseffekt).
+                // Der Umweg über den Alias entfällt, weil er den ERSTEN Heizungspuffer
+                // des Laufs meint und nicht den der Wärmepumpe (Konzept 6.3).
                 if (sim.bSimulationWP && sim.simulation_wp != null)
-                    ergebnisse = Auswerten(sim.m_ID_Projekt, sim.simulation_wp, sim.puffer_wp != null);
+                    ergebnisse = Auswerten(sim.m_ID_Projekt, sim.simulation_wp,
+                                           sim.simulation_wp.Pufferspeicher != null);
             }
             catch (Exception ex)
             {

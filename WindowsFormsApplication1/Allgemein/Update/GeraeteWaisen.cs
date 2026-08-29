@@ -268,9 +268,22 @@ namespace WindowsFormsApplication1
         /// PUFFERSPEICHER SIND DER SONDERFALL. Auf <c>Tab_Pufferspeicher</c> zeigen außer
         /// <c>ID_PUFFER</c> auch die Quellen-/Senken-Spalten FREMDER Gewerke
         /// (<see cref="KomponentenUebernahmeCtrl.PUFFER_VERWEISE"/>), die Verbundzuordnung
-        /// <c>Z_AnlagePufferVerbund</c> und die Alt-Zuordnung <c>Z_ProjektPufferSp</c>, aus
-        /// der die Simulation den Senkenspeicher der Wärmepumpe noch liest. Alle drei
-        /// zählen als Verweis.
+        /// <c>Z_AnlagePufferVerbund</c>, die Senkenliste <c>Z_AnlageSenke</c> (Schritt 50)
+        /// und die Alt-Zuordnung <c>Z_ProjektPufferSp</c>, aus der die Simulation den
+        /// Senkenspeicher der Wärmepumpe noch liest. Alle vier zählen als Verweis.
+        /// </para>
+        ///
+        /// <para>
+        /// WAS DIESE MENGE NICHT LEISTET (FR-1, gemessen 27.08.2026). Ein Projekt-Puffer,
+        /// dessen EINZIGER Verweis das <c>ID_PUFFER</c> seiner eigenen Anlagenzeile
+        /// (<c>ID_Type = 12</c>) ist, wird in dem Augenblick zur Waise, in dem der
+        /// Del+Add-Speicherweg diese Zeile löscht und nicht zurückschreibt — und die
+        /// Verbundzeilen, die ihn sonst noch schützten, nimmt die Löschweitergabe
+        /// <c>FK_Verbund_Anlage</c> im selben DELETE mit. Auf der Arbeitskopie traf das
+        /// vier von sechzehn Puffern der vier Referenzprojekte. Die Lücke ist deshalb
+        /// NICHT hier zu schließen (der Aufräumlauf urteilt richtig über das, was er
+        /// sieht), sondern an der Quelle: <c>WizardCtrl</c> rettet die
+        /// Puffer-Anlagenzeilen über den Del+Add-Weg.
         /// </para>
         /// </summary>
         private static HashSet<int> Referenzen(KomponentenUebernahmeCtrl.GewerkPlan plan, int idProjekt,
@@ -314,6 +327,22 @@ namespace WindowsFormsApplication1
                 "WHERE [ID_Pufferspeicher] IS NOT NULL");
             if (altZuordnung == null) return null;
             foreach (int id in altZuordnung) menge.Add(id);
+
+            // PAKET S1 (Migrationsschritt 50): die SENKENLISTE. Sie ist die WICHTIGSTE
+            // der drei Zuordnungen, sobald sie gefuellt ist: Ab der dritten Senke einer
+            // Anlage steht der Verweis auf den Puffer NUR NOCH hier - die beiden
+            // WS_*-Slots oben fassen ihn gar nicht mehr. Ohne diese Abfrage haelte der
+            // Aufraeumlauf jeden Puffer der Raenge 3..n fuer verwaist und loeschte ihn.
+            //
+            // Ohne Projektfilter wie bei den beiden Zuordnungen darueber: Die Tabelle
+            // fuehrt kein ID_Projekt, und ein Verweis von ausserhalb waere erst recht
+            // ein Grund, die Zeile stehen zu lassen. Fehlt die Tabelle auf einer
+            // Datenbank vor Schritt 50, gilt sie als leer.
+            List<int> senken = SpalteOhneTabelle(conn,
+                "SELECT [ID_Puffer] FROM [" + SchemaKatalog.Z_ANLAGESENKE + "] " +
+                "WHERE [ID_Puffer] IS NOT NULL");
+            if (senken == null) return null;
+            foreach (int id in senken) menge.Add(id);
 
             return menge;
         }

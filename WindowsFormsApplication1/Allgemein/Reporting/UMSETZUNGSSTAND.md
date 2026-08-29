@@ -1,6 +1,7 @@
 # Umsetzungsstand Berichtserstellung + Wirtschaftlichkeit
 
-**Stand: 15.08.2026 (nach Phase 11 + verbindlicher Rechenkette)** · Bezug:
+**Stand: 15.08.2026 (nach Phase 11 + verbindlicher Rechenkette); Nachtrag 28.08.2026
+(Dreikanal-Berichtsteile, siehe Ende von Abschnitt 1)** · Bezug:
 `Konzept_Berichtserstellung_EPOS-Plan.md`, `Konzept_Wirtschaftlichkeit.md` (Fassung 7).
 Diese Datei beschreibt nur den **aktuellen** Stand; die Phasen-Historie steht in
 `Allgemein\Bericht\LIESMICH_Phase1.md`.
@@ -29,6 +30,20 @@ Diese Datei beschreibt nur den **aktuellen** Stand; die Phasen-Historie steht in
   `energy_project_settings → Tab_Brennstoff_Stamm → energy_carrier`
   (Projektwert vor Stammdaten vor Fallback); Einheiten verifiziert
   (CO₂ g/kWh, SO₂/NOx mg/kWh).
+- **Nachtrag 28.08.2026 — Dreikanal-Berichtsteile** (Konzeptumsetzung
+  Brauchwasser/Heizung/Pufferspeicher, Pakete E1/P2/E2): Der Kennzahlenkatalog
+  weist die drei Wärmebedarfe („davon Heizung/Brauchwasser/Prozesswärme") und
+  **Deckungsgrade je Bedarfsart** aus (die eine Umrechnung liegt zentral im
+  `KennzahlenKatalog`); neuer Word-Abschnitt **Speichertemperaturen** (Tabelle
+  `T_oben_Mittel`/`T_oben_Min` je Speicher, entfällt ohne Werte) mit dem
+  **fünften Ganglinientyp** (Temperaturverlauf, `ChartRenderer.Speichertemperaturen`);
+  SOC-Zeitreihen laufen **je Speicher** über `PUFFER_<ID>` (der Alias `puffer_wp`
+  ist abgelöst, `ChartRenderer.Speicherverlauf` zeichnet mehrlinig); der
+  `ZeitreihenSatz` führt zusätzlich `PUFFER_<ID>_TOBEN/_TUNTEN`,
+  `QUELLTEMP_<AnlagenID>` (Booster) sowie `BEDARF_<KANAL>`- und
+  `DECKUNG_<ERZEUGER>_<KANAL>`-Reihen. Offen: der Bericht zeichnet die
+  Kanal-Bedarfs-/Deckungsreihen noch nicht als eigenes Diagramm (E2-O2) und der
+  Variantenbericht kennt den fünften Ganglinientyp noch nicht (P2-Restpunkt).
 
 ### Wirtschaftlichkeit (Phasen 6–10)
 - **W1 — Kapitalwertmethode DIN EN 17463**: KW, Annuität, Barwerte je

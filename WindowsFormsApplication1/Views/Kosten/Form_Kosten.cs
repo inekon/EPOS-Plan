@@ -151,9 +151,16 @@ namespace WindowsFormsApplication1
             // haben, wenn die Bindung sie zeichnet.
             KopfzeilenEntfernen();
 
-            FillCarrierComboBox();
-            RenderEnergieTab();
-            BaueKostenprofilReiter();
+            // Ä1 (Konzept Kostendialoge § 6.4, Etappe KD4): Der Kosteneditor führt nur
+            // noch Investitions- und Betriebskosten. Energie-Reiter und Kostenprofil-
+            // Reiter sind in die Energieträgerverwaltung (Form_Energietraeger)
+            // umgezogen. Der Reiter wird PROGRAMMATISCH entfernt, damit die
+            // Designer-Datei unberührt bleibt — dasselbe Muster, mit dem der
+            // Kostenprofil-Reiter einst angebaut wurde. Sein Bestandscode
+            // (FillCarrierComboBox, RenderEnergieTab, listBox-Handler) bleibt stehen
+            // und ist ohne den Reiter unerreichbar.
+            tabMain.TabPages.Remove(tabEnergie);
+            BaueEnergietraegerKnopf();
 
             // Notebook-Schutz: Fenster in die Arbeitsflaeche des Bildschirms einpassen und
             // den Inhalt per Bildlauf erreichbar halten (Allgemein\FensterEinpassung.cs).
@@ -195,7 +202,64 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// ETAPPE KD6 (§ 9): Vorwahl von Komponente und Kategorie — die Knöpfe
+        /// „Investitionskosten…"/„Betriebskosten…" des Anlagendialogs springen
+        /// direkt auf die Gruppe der Komponente im passenden Reiter.
+        /// </summary>
+        public void WaehleKomponente(string komponente, bool betrieb)
+        {
+            try
+            {
+                tabMain.SelectedTab = betrieb ? tabWartung : tabInvest;
+
+                Gruppenblock block;
+                if (!string.IsNullOrEmpty(komponente) &&
+                    _gruppen.TryGetValue(komponente, out block) && block.Kopf != null)
+                    flp.ScrollControlIntoView(block.Kopf);
+            }
+            catch { /* Vorwahl ist Komfort — der Dialog öffnet trotzdem */ }
+        }
+
+        /// <summary>
+        /// Übergangs-Einstieg (Etappe KD4, bis KD6): unten rechts ein Knopf
+        /// „Energieträger…", der die Energieträgerverwaltung im Projektkontext
+        /// öffnet. Die endgültigen Projekt-Einstiege (§ 3.2: Anlagendialog
+        /// „Energiekosten…", Berichte &amp; Kosten) kommen mit KD6 — bis dahin
+        /// bliebe der frühere Energie-Reiter sonst ohne erreichbaren Nachfolger.
+        /// </summary>
+        private void BaueEnergietraegerKnopf()
+        {
+            string text = null;
+            try { text = MyResource.Resource.ResourceManager.GetString("KDLG_KOSTEN_ET_KNOPF"); }
+            catch { }
+            if (string.IsNullOrEmpty(text)) text = "Energieträger…";
+
+            Panel fuss = new Panel { Dock = DockStyle.Bottom, Height = 44, BackColor = Surface };
+            Button knopf = new Button
+            {
+                Text = text,
+                Size = new Size(190, 30),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                UseVisualStyleBackColor = true
+            };
+            knopf.Click += (s, e) =>
+            {
+                using (Form_Energietraeger frm = new Form_Energietraeger())
+                {
+                    frm.SetControls(m_ID_Projekt);
+                    frm.ShowDialog(this);
+                }
+            };
+            fuss.Controls.Add(knopf);
+            Controls.Add(fuss);
+            knopf.Location = new Point(fuss.ClientSize.Width - knopf.Width - 16, 7);
+        }
+
+        /// <summary>
         /// Baut den vierten Reiter „Kostenprofil" (K4/HF4 6.1) mit zwei Einstiegskarten.
+        /// Seit KD4 (Ä1) NICHT mehr aufgerufen — die Karten leben beim Stromträger der
+        /// Energieträgerverwaltung (<see cref="Form_Energietraeger"/>); der Rückbau
+        /// dieses Codes folgt mit KD6/FK8 (erst schreibgeschützt, dann entfernen).
         /// </summary>
         /// <remarks>
         /// <para>
@@ -576,6 +640,27 @@ namespace WindowsFormsApplication1
                                 INNER JOIN Tab_ProjektWerte AS w ON k.ID = w.KomponentenID
                            WHERE w.ProjektID = ? AND w.KategorieID = ?
                            GROUP BY k.Komponente";
+
+            return DataRepository.GetDataTable(sql,
+                new OleDbParameter("@pid", projektID),
+                new OleDbParameter("@kat", kategorieID));
+        }
+
+        /// <summary>Ä20: dieselbe Summe je ANLAGENZEILE (Spalten Komponente,
+        /// ID_Anlage, Summe; ID_Anlage NULL = ohne Anlagenzuordnung). <c>null</c>,
+        /// wenn die Spalte auf dieser Datenbank nicht anlegbar ist — der Aufrufer
+        /// fällt dann auf die Komponentensummen zurück.</summary>
+        internal static DataTable LiesAnlagenSummen(int projektID, int kategorieID)
+        {
+            bool spalteDa = false;
+            try { spalteDa = KostenPositionCtrl.StelleSpaltenSicher(); } catch { }
+            if (!spalteDa) return null;
+
+            string sql = @"SELECT k.Komponente, w.ID_Anlage, Sum(w.EingegebenerWert) AS Summe
+                           FROM Tab_KostenKomponente AS k
+                                INNER JOIN Tab_ProjektWerte AS w ON k.ID = w.KomponentenID
+                           WHERE w.ProjektID = ? AND w.KategorieID = ?
+                           GROUP BY k.Komponente, w.ID_Anlage";
 
             return DataRepository.GetDataTable(sql,
                 new OleDbParameter("@pid", projektID),
@@ -1230,6 +1315,7 @@ namespace WindowsFormsApplication1
                 p.IstErloes = z.IstErloes;
                 p.Bemessung = z.Bemessung;
                 p.Kostenart = z.Kostenart;      // K5: trägt das Zuschuss-Kennzeichen
+                p.StartJahr = z.StartJahr;      // KD6 (§ 11, FK10)
                 if (p.Abgeleitet && z.Menge.HasValue && z.Einheitpreis.HasValue)
                     p.Herleitung = string.Format(MyResource.Resource.KOSTEN_BEMESSUNG_HERLEITUNG,
                                                  z.Einheitpreis.Value.ToString("N4", BerichtTexte.Kultur),
@@ -1467,7 +1553,7 @@ namespace WindowsFormsApplication1
         /// zeigten nur Gewerke, die im (Assistenten-)Projekt vorkommen.
         /// </para>
         /// </remarks>
-        private static List<string> ProjektKomponenten(int projektID)
+        internal static List<string> ProjektKomponenten(int projektID)
         {
             var liste = new List<string>();
             if (projektID <= 0) return liste;
@@ -1499,42 +1585,15 @@ namespace WindowsFormsApplication1
                     if (r["Komponente"] == DBNull.Value) continue;
                     string k = r["Komponente"].ToString();
                     if (k.Length == 0) continue;
-                    if (mitPositionen.Contains(k) || TechnikPlanwertCtrl.Verbaut(projektID, k) ||
-                        IstErfassungsgruppe(k))
+                    // Ä7: Erfassungsgruppen erscheinen nicht mehr automatisch —
+                    // nur noch verbaute Anlagen und Komponenten mit Positionen.
+                    if (mitPositionen.Contains(k) || TechnikPlanwertCtrl.Verbaut(projektID, k))
                         liste.Add(k);
                 }
             }
             catch { }
 
             return liste;
-        }
-
-        /// <summary>
-        /// ETAPPE K5: true für die drei ERFASSUNGSGRUPPEN aus Migrationsschritt 27 —
-        /// Wärmezentrale, Bauliche Anlagen, Stromeinspeisung.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// <b>Warum sie immer angeboten werden.</b> Die Auswahlliste zeigt sonst nur
-        /// Gewerke, die entweder in <c>Tab_Energieanlagen</c> verbaut sind oder bereits
-        /// Kostenpositionen tragen. Die drei neuen Gruppen sind aber <b>keine Gewerke</b>:
-        /// Es gibt für sie keine Gerätetabelle und damit auch kein „verbaut"
-        /// (<c>TechnikPlanwertCtrl.Plaene</c> führt weiterhin sieben Einträge). Ohne diese
-        /// Ausnahme wären sie in einem frischen Projekt unerreichbar — man könnte keine
-        /// erste Position erfassen, und weil sie ohne Position nicht in der Liste
-        /// erscheinen, bliebe es dabei.
-        /// </para>
-        /// <para>
-        /// <b>Es ist eine Namensprüfung, keine Katalogabfrage.</b> Angeboten wird nur, was
-        /// die Anwendung als Erfassungsgruppe KENNT; eine später von Hand angelegte
-        /// Komponente ohne Gewerk und ohne Positionen bleibt draussen — genau wie bisher.
-        /// </para>
-        /// </remarks>
-        private static bool IstErfassungsgruppe(string komponente)
-        {
-            return string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE, StringComparison.Ordinal)
-                || string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_BAULICHE_ANLAGEN, StringComparison.Ordinal)
-                || string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_STROMEINSPEISUNG, StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -1634,6 +1693,30 @@ namespace WindowsFormsApplication1
             );
 
             KostenartSichern(pos);
+            StartjahrSichern(pos);
+        }
+
+        /// <summary>
+        /// ETAPPE KD6 (§ 11, FK10): schreibt das Startjahr der Position nach —
+        /// getrennt aus demselben Grund wie <see cref="KostenartSichern"/> (die
+        /// Spalte stammt aus Migrationsschritt 38 und darf das Speichern der
+        /// Beträge nie mitreißen). NULL = t0, nie 0 (Hausregel).
+        /// </summary>
+        private void StartjahrSichern(KostenPosition pos)
+        {
+            if (pos == null || pos.ID <= 0) return;
+            try
+            {
+                if (!KostenPositionCtrl.StelleSpaltenSicher()) return;
+
+                DataRepository.ExecuteSQL(
+                    "UPDATE Tab_ProjektWerte SET [" + SchemaKatalog.SPALTE_PW_STARTJAHR +
+                    "] = ? WHERE ID = ?",
+                    new OleDbParameter("@sj", OleDbType.Integer)
+                    { Value = pos.StartJahr > 1 ? (object)pos.StartJahr : DBNull.Value },
+                    new OleDbParameter("@id", pos.ID));
+            }
+            catch { /* Vorsorgeweg — der Betragsspeicherweg bleibt unberührt */ }
         }
 
         /// <summary>
@@ -1904,7 +1987,19 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@p", ID_Projekt),
             };
 
-            DataTable dt = DataRepository.GetDataTable(sql, ps);
+            // KD6a-Nachtrag (Befund 26.08.2026): Im KATALOGkontext (Projekt 0)
+            // lieferte der Zuordnungs-Join eine leere Liste — die
+            // Energieträgerverwaltung unter Administration blieb leer. Der
+            // Katalog listet alle Träger direkt (der Mapper liest nur ec.* + Flags).
+            if (ID_Projekt <= 0)
+                sql = @"SELECT ec.*, pm.has_hi, pm.has_hs, pm.has_powerprice
+                        FROM energy_carrier AS ec
+                             LEFT JOIN pricing_model AS pm ON ec.pricing_model = pm.code
+                        ORDER BY ec.name";
+
+            DataTable dt = ID_Projekt <= 0
+                ? DataRepository.GetDataTable(sql)
+                : DataRepository.GetDataTable(sql, ps);
 
             foreach (DataRow row in dt.Rows)
             {

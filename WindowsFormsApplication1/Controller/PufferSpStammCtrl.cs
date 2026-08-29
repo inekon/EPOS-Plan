@@ -56,6 +56,22 @@ namespace WindowsFormsApplication1
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
+        /// <summary>
+        /// Schreibschutz des Katalogeintrags mit der angegebenen STAMM-ID.
+        /// </summary>
+        /// <remarks>
+        /// V0-9: eindeutige Fassung von <see cref="IsReadOnlyStatic(string)"/>. Bei
+        /// gleichnamigen Katalogeinträgen liefert die Namensfassung den Schreibschutz
+        /// irgendeines Treffers, nicht den der gemeinten Zeile.
+        /// </remarks>
+        public static bool IsReadOnlyStatic(int id)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT ReadOnly FROM [" + TABLE + "] WHERE ID = ?",
+                new OleDbParameter("@id", id));
+            return v != null && v != DBNull.Value && Convert.ToBoolean(v);
+        }
+
         // Uebernimmt die Werte aus einem Model und legt einen neuen Stammdatensatz an.
         public bool InsertFrom(PufferSpModel m)
         {
@@ -165,17 +181,45 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(sql, ps);
         }
 
-        public bool Delete(string szName)
+        /// <summary>
+        /// Löscht den Katalogeintrag mit der angegebenen STAMM-ID.
+        /// </summary>
+        /// <remarks>
+        /// V0-9: Gelöscht wird über die ID der ausgewählten Zeile statt über den
+        /// Bezeichner. Der Katalog kann gleichnamige Einträge enthalten - die
+        /// Eingabemasken verhindern nur neue Dubletten über die Oberfläche, der
+        /// VDI-3805-Import legt sie durchaus an -, und "WHERE Bezeichner = ?" hat dann
+        /// ALLE Namensvettern auf einmal getilgt. Die B0-8-Rückfrage im Dialog schützt
+        /// nur vor dem versehentlichen Auslösen, nicht vor dem Mehrfachtreffer.
+        /// </remarks>
+        public bool Delete(int id)
         {
-            if (IsReadOnlyStatic(szName))
+            if (id <= 0) return false;
+
+            if (IsReadOnlyStatic(id))
             {
                 MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
                     "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
 
-            string sql = "DELETE FROM [" + TABLE + "] WHERE Bezeichner = ?";
-            return DataRepository.ExecuteSQL(sql, new OleDbParameter("@bez", szName ?? ""));
+            string sql = "DELETE FROM [" + TABLE + "] WHERE ID = ?";
+            return DataRepository.ExecuteSQL(sql, new OleDbParameter("@id", id));
+        }
+
+        /// <summary>
+        /// Löschung über den Bezeichner - Zugang für Aufrufer, die keine ID zur Hand
+        /// haben (Katalogdialog der Administration).
+        /// </summary>
+        /// <remarks>
+        /// V0-9: Der Name wird zuerst auf GENAU EINE ID aufgelöst; gelöscht wird dann
+        /// über <see cref="Delete(int)"/>. Damit trifft auch dieser Weg bei
+        /// gleichnamigen Katalogeinträgen nur noch einen Datensatz statt alle. Neuer
+        /// Code reicht die ID der ausgewählten Zeile durch und ruft <see cref="Delete(int)"/>.
+        /// </remarks>
+        public bool Delete(string szName)
+        {
+            return Delete(DataRepository.GetIdByName(TABLE, "Bezeichner", szName ?? ""));
         }
 
         private PufferSpModel MapRowToModel(DataRow row)

@@ -423,6 +423,15 @@ namespace WindowsFormsApplication1
             // Vor der Begrüßung: Sie fällt im Hilfe-Betrieb anders aus und braucht den
             // Merker bereits gesetzt.
             HilfeBetriebAnwenden();
+
+            // Der Schalter „Aktionen zulassen“ bleibt über Dialogaufrufe erhalten
+            // (Wunsch Philipp 26.08.2026). Wiederhergestellt wird nur, wenn die
+            // Einwilligung der aktuellen Fassung vorliegt — sonst stünde beim
+            // Öffnen sofort eine rote Ablehnungszeile im Verlauf. Das Setzen
+            // durchläuft AktionsschalterGeaendert und zeigt dieselbe
+            // Datenschutzzeile wie das Einschalten von Hand.
+            if (!_hilfeBetrieb && KiChatService.AktionenZulassen && KiEinwilligung.Erteilt)
+                _chkAktionen.Checked = true;
             FeldsicherungAnwenden();
 
             Begruessung();
@@ -788,6 +797,10 @@ namespace WindowsFormsApplication1
                               ? MyResource.Resource.KI_AKT_DATENSCHUTZ_EIN
                               : MyResource.Resource.KI_AKT_DATENSCHUTZ_AUS,
                           Color.FromArgb(0, 90, 160), false);
+
+            // Zustand merken (nach der Einwilligungshürde — ein abgelehntes
+            // Einschalten kommt hier nicht an, der Rücksetzzweig kehrt früher um).
+            KiChatService.AktionenZulassen = _chkAktionen.Checked;
         }
 
         /// <summary>Schaltet Eingaben ab, solange etwas laeuft.</summary>

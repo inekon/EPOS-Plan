@@ -145,7 +145,7 @@ namespace WindowsFormsApplication1
             // 
             // dotnet tool install --global dotnet-serve
             // starten mit : dotnet serve --directory "C:\Pfad\zu\deinem\Hilfeordner" --port 8080
-            HelpCatalog = new WordPressHelpCatalog(Properties.Settings.Default.WordPressUrl); // Lokaler Testserver mit Testartik
+            HelpCatalog = new WordPressHelpCatalog("https://wiki.epos-plan.de");// (Properties.Settings.Default.WordPressUrl); // Lokaler Testserver mit Testartik
 
             // F6 / Startwettlauf: Der Katalog wird SOFORT belegt — aus der lokalen
             // Sicherung, sonst aus dem mitgelieferten Startbestand. MDIMainForm_Load

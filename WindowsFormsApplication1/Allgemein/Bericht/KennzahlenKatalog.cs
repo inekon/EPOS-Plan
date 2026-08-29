@@ -47,6 +47,119 @@ namespace WindowsFormsApplication1
         private static ErgebnisSolarthermieModel SO(VariantenDaten v) { return v?.Ergebnis?.Solarthermie; }
         private static ErgebnisPhotovoltaikModel PV(VariantenDaten v) { return v?.Ergebnis?.Photovoltaik; }
 
+        // ------------------------------------------------------------------
+        // PAKET E1 (Konzept 4.4) — die drei Bedarfskanäle im Bericht
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Jahres-Wärmebedarf eines Kanals [MWh/a]; null, wenn kein Ergebnis vorliegt.
+        ///
+        /// <para>0 wird ausdrücklich ALS 0 gemeldet, nicht als „—": Ein Projekt ohne
+        /// Prozesswärme hat einen Prozessbedarf von null, und das ist eine Aussage.
+        /// Zeilen aus Läufen VOR Paket E1 tragen die Spalten nicht — dort steht in allen
+        /// drei Kanälen 0, was an der Gesamtsumme unmittelbar erkennbar ist.</para>
+        /// </summary>
+        private static double? BedarfKanal(VariantenDaten v, int kanal)
+        {
+            var e = E(v);
+            if (e == null || e.Waermebedarf_Kanal == null || kanal >= e.Waermebedarf_Kanal.Length)
+                return null;
+            return e.Waermebedarf_Kanal[kanal];
+        }
+
+        /// <summary>
+        /// DECKUNGSGRAD eines Kanals über ALLE Erzeuger [%] — „wie viel des
+        /// Brauchwasserbedarfs wurde gedeckt?".
+        ///
+        /// <para>Die gespeicherten Spalten <c>Deckung_&lt;Kanal&gt;</c> sind die
+        /// Aufschlüsselung der Erzeuger-Deckung und beziehen sich auf den
+        /// PROJEKT-Gesamtbedarf (siehe <see cref="ErgebnisWaermepumpeModel.Deckung_Kanal"/>).
+        /// Der Deckungsgrad DIESES Kanals ist daraus die Umrechnung auf den Kanalbedarf:
+        /// Σ Erzeugeranteile · Gesamtbedarf / Kanalbedarf. Es ist die einzige Stelle, an
+        /// der diese Umrechnung steht — als eigene Ergebnisspalte wäre sie eine zweite
+        /// Wahrheit.</para>
+        ///
+        /// <para>null (Anzeige „—") ohne Ergebnis oder ohne Bedarf in diesem Kanal: Ein
+        /// Deckungsgrad ohne Bedarf ist keine 0, sondern undefiniert.</para>
+        /// </summary>
+        private static double? DeckungKanal(VariantenDaten v, int kanal)
+        {
+            var e = E(v);
+            if (e == null || e.Waermebedarf_Kanal == null || kanal >= e.Waermebedarf_Kanal.Length)
+                return null;
+
+            double kanalbedarf = e.Waermebedarf_Kanal[kanal];
+            if (kanalbedarf <= 0 || e.Waermebedarf_Gesamt <= 0) return null;
+
+            double anteil = 0;
+            if (WP(v) != null) anteil += Kanalwert(WP(v).Deckung_Kanal, kanal);
+            if (BH(v) != null) anteil += Kanalwert(BH(v).Deckung_Kanal, kanal);
+            if (HK(v) != null) anteil += Kanalwert(HK(v).Deckung_Kanal, kanal);
+            if (SO(v) != null) anteil += Kanalwert(SO(v).Deckung_Kanal, kanal);
+
+            return anteil * e.Waermebedarf_Gesamt / kanalbedarf;
+        }
+
+        private static double Kanalwert(double[] zeile, int kanal)
+        {
+            return (zeile != null && kanal < zeile.Length) ? zeile[kanal] : 0.0;
+        }
+
+        // ------------------------------------------------------------------
+        // PAKET P2 (Konzept 7.4) — die Speichertemperaturen des Schichtmodells
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Mittlere Temperatur der obersten Schicht über ALLE Speicher des Laufs [°C];
+        /// null, wenn kein Speicher einen Wert trägt.
+        ///
+        /// <para><b>Ungewichtetes Mittel über die Speicher mit Wert</b> — bewusst die
+        /// einfachste nachvollziehbare Zusammenfassung. Im Regelfall (ein Senkenspeicher)
+        /// ist sie der Wert dieses Speichers; bei mehreren beantwortet die Kennzahl die
+        /// Vergleichsfrage „liegt diese Variante insgesamt wärmer?". Die
+        /// AUFSCHLÜSSELUNG je Speicher steht im Baustein Projektbeschreibung — eine
+        /// Katalogzeile trägt genau EINEN Wert je Variante, mehr gäbe die
+        /// Vergleichstabelle nicht her.</para>
+        ///
+        /// <para>Speicher ohne Wert werden übergangen, nicht als 0 gezählt: Quellspeicher
+        /// tragen keine Schichttemperatur (Konzept 8.2), und Ergebniszeilen aus Läufen
+        /// VOR Paket P1 haben die Spalte nie gefüllt. Eine 0 °C stünde in beiden Fällen
+        /// als Messwert da, den es nicht gibt.</para>
+        /// </summary>
+        private static double? TObenMittel(VariantenDaten v)
+        {
+            var liste = v?.Ergebnis?.Pufferspeicher;
+            if (liste == null) return null;
+
+            double summe = 0;
+            int n = 0;
+            foreach (ErgebnisPufferspeicherModel p in liste)
+                if (p != null && p.T_oben_Mittel.HasValue) { summe += p.T_oben_Mittel.Value; n++; }
+
+            return n > 0 ? (double?)(summe / n) : null;
+        }
+
+        /// <summary>
+        /// KLEINSTE Temperatur der obersten Schicht über alle Speicher [°C] — der
+        /// ungünstigste Punkt des Jahres im ungünstigsten Speicher; null ohne Wert.
+        ///
+        /// <para>Anders als beim Mittel ist das Minimum über mehrere Speicher wieder ein
+        /// Minimum und braucht keine Konvention.</para>
+        /// </summary>
+        private static double? TObenMin(VariantenDaten v)
+        {
+            var liste = v?.Ergebnis?.Pufferspeicher;
+            if (liste == null) return null;
+
+            double? kleinster = null;
+            foreach (ErgebnisPufferspeicherModel p in liste)
+                if (p != null && p.T_oben_Min.HasValue &&
+                    (!kleinster.HasValue || p.T_oben_Min.Value < kleinster.Value))
+                    kleinster = p.T_oben_Min.Value;
+
+            return kleinster;
+        }
+
         /// <summary>Summe der Brennstoffverbräuche eines Erzeugers (MWh/a).</summary>
         private static double Brennstoffsumme(ErgebnisBHKWModel b)
         {
@@ -74,6 +187,16 @@ namespace WindowsFormsApplication1
             // ---------------- Energiebilanz ----------------
             l.Add(new Kennzahl("energie.waermebedarf", "Wärmebedarf gesamt", "Total heat demand", "MWh/a", GR_ENERGIE, "N0", true,
                 v => E(v) == null ? (double?)null : E(v).Waermebedarf_Gesamt));
+            // PAKET E1 (Konzept 4.4): der Gesamtbedarf aufgeschlüsselt auf die drei
+            // Kanäle — unmittelbar unter der Summe, damit die Zerlegung als solche
+            // lesbar bleibt. Die drei Zeilen addieren sich zum Wärmebedarf gesamt.
+            l.Add(new Kennzahl("energie.waermebedarf_heizung", "davon Heizung", "of which space heating",
+                "MWh/a", GR_ENERGIE, "N0", true, v => BedarfKanal(v, Kanal.HEIZUNG)));
+            l.Add(new Kennzahl("energie.waermebedarf_brauchwasser", "davon Brauchwasser", "of which domestic hot water",
+                "MWh/a", GR_ENERGIE, "N0", true, v => BedarfKanal(v, Kanal.BRAUCHWASSER)));
+            l.Add(new Kennzahl("energie.waermebedarf_prozess", "davon Prozesswärme", "of which process heat",
+                "MWh/a", GR_ENERGIE, "N0", true, v => BedarfKanal(v, Kanal.PROZESS)));
+
             l.Add(new Kennzahl("energie.waermelast", "Wärmelast max.", "Peak heat load", "kW", GR_ENERGIE, "N0", true,
                 v => E(v) == null ? (double?)null : E(v).Waermelast_Max));
             l.Add(new Kennzahl("energie.strombedarf", "Strombedarf gesamt", "Total electricity demand", "MWh/a", GR_ENERGIE, "N0", true,
@@ -104,6 +227,17 @@ namespace WindowsFormsApplication1
                 v => PV(v) == null ? (double?)null : PV(v).Ueberschuss));
             l.Add(new Kennzahl("energie.waermerest", "Wärmerestbedarf (ungedeckt)", "Uncovered heat demand", "MWh/a", GR_ENERGIE, "N0", true,
                 v => E(v) == null ? (double?)null : E(v).Waermerestbedarf));
+
+            // PAKET E1: die Deckungsgrade JE BEDARFSART, über alle Erzeuger. Sie
+            // beantworten die Frage, die der Gesamtdeckungsgrad verdeckt — ob die
+            // Auslegung Warmwasser und Prozess ebenso trägt wie die Heizung. „—", wenn
+            // das Projekt in diesem Kanal keinen Bedarf hat (Konzept 4.4).
+            l.Add(new Kennzahl("energie.deckung_heizung", "Deckungsgrad Heizung", "Coverage space heating",
+                "%", GR_ENERGIE, "N1", false, v => DeckungKanal(v, Kanal.HEIZUNG)));
+            l.Add(new Kennzahl("energie.deckung_brauchwasser", "Deckungsgrad Brauchwasser", "Coverage domestic hot water",
+                "%", GR_ENERGIE, "N1", false, v => DeckungKanal(v, Kanal.BRAUCHWASSER)));
+            l.Add(new Kennzahl("energie.deckung_prozess", "Deckungsgrad Prozesswärme", "Coverage process heat",
+                "%", GR_ENERGIE, "N1", false, v => DeckungKanal(v, Kanal.PROZESS)));
 
             // ---------------- Effizienz ----------------
             l.Add(new Kennzahl("eff.jaz", "Jahresarbeitszahl (JAZ) WP", "Heat pump SPF", "–", GR_EFFIZIENZ, "N2", true,
@@ -138,6 +272,17 @@ namespace WindowsFormsApplication1
                     if (p == null || p.Stromproduktion <= 0) return null;
                     return (p.Stromproduktion - p.Ueberschuss) / p.Stromproduktion * 100.0;
                 }));
+            // PAKET P2 (Konzept 7.4): die Temperaturen der obersten Speicherschicht. Sie
+            // beantworten, was Energiemengen nicht zeigen — ob der Vorrat auf dem
+            // Temperaturniveau steht, das die Senken brauchen. „—", solange kein
+            // Speicher einen Wert trägt (kein Senkenspeicher, oder ein Ergebnis von vor
+            // Paket P1); die Aufschlüsselung je Speicher steht in der
+            // Projektbeschreibung.
+            l.Add(new Kennzahl("eff.t_oben_mittel", "Speichertemperatur oben (Mittel)",
+                "Storage top temperature (mean)", "°C", GR_EFFIZIENZ, "N1", false, TObenMittel));
+            l.Add(new Kennzahl("eff.t_oben_min", "Speichertemperatur oben (Minimum)",
+                "Storage top temperature (minimum)", "°C", GR_EFFIZIENZ, "N1", false, TObenMin));
+
             l.Add(new Kennzahl("eff.autarkie", "Autarkiegrad Strom", "Electric self-sufficiency", "%", GR_EFFIZIENZ, "N1", true,
                 v =>
                 {

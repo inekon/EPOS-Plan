@@ -121,7 +121,9 @@ namespace WindowsFormsApplication1
         private void UmschalterPlatzieren()
         {
             int oben = Math.Max(8, KARTEN_OBEN - 32);
-            int rechts = ClientSize.Width - KARTEN_RAND;
+            // D3 (28.08.2026): rechts das Randmaß der Fußzeilen-Norm, damit Umschalter,
+            // Kartenfläche und Knopfreihe in EINER Flucht enden (siehe KARTEN_RAND_RECHTS).
+            int rechts = ClientSize.Width - KARTEN_RAND_RECHTS;
 
             btn_AnsichtSchema.Location = new Point(rechts - btn_AnsichtSchema.Width, oben);
             btn_AnsichtListe.Location =
@@ -222,6 +224,15 @@ namespace WindowsFormsApplication1
         private void SchemaHinweiseSetzen(SchemaModell modell)
         {
             if (modell == null || m_ID_Projekt <= 0) return;
+
+            // PAKET S2: Der Warn-Chip ist Teil der Kartenkurzinfo und muss deshalb auch
+            // hier frisch sein — die Schema-Ansicht kann aufgefrischt werden, ohne dass
+            // die Kartenspalte neu gebaut wurde (Umschalter).
+            WarnbefundeSammeln();
+
+            // PAKET B1 (F9): Das Booster-Badge ist ebenso Teil der Kartenkurzinfo und
+            // erscheint deshalb auch in den Schema-Hinweisen — eine Quelle für beide.
+            BoosterAnlagenSammeln();
 
             // Erzeugerkarten: die Chips der Karte als Zeilen.
             Dictionary<int, string> chips = new Dictionary<int, string>();

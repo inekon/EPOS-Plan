@@ -253,7 +253,10 @@ namespace WindowsFormsApplication1
             int bandHoehe = BandAnordnen(_bandOben);
             _legendeOben = _bandOben + bandHoehe + BAND_ABSTAND / 2;
 
-            int gesamt = _legendeOben + 2 * LEGENDE_ZEILE + RAND;
+            // PAKET E1: drei statt zwei Legendenzeilen reserviert. Die Legende bricht
+            // selbst um (LegendeZeichnen); mit dem fünften Eintrag reicht ein schmales
+            // Fenster für zwei Zeilen nicht mehr, und die dritte wäre abgeschnitten.
+            int gesamt = _legendeOben + 3 * LEGENDE_ZEILE + RAND;
             AutoScrollMinSize = new Size(_inhaltBreite, gesamt);
             Invalidate();
         }
@@ -469,12 +472,27 @@ namespace WindowsFormsApplication1
             {
                 case SchemaModell.Kantenart.Ladung: return KartenStil.SENKE_RAHMEN;
                 case SchemaModell.Kantenart.Versorgung: return FARBE_VERSORGUNG;
+                case SchemaModell.Kantenart.Prozess: return FARBE_PROZESS;
                 default: return KartenStil.QUELLE_RAHMEN;
             }
         }
 
         /// <summary>Grün der Versorgungsleitung (#1D9E75 aus dem Entwurf).</summary>
         private static readonly Color FARBE_VERSORGUNG = Color.FromArgb(29, 158, 117);
+
+        /// <summary>
+        /// PAKET E1 (Befund S2-O7): Violett der PROZESS-Versorgung (#7E57A6).
+        ///
+        /// <para>Die Farbwahl ist an den Bestand angelegt, nicht daneben gestellt: Die
+        /// drei belegten Farbwinkel sind Blau (Quelle, #378ADD), Koralle (Ladung,
+        /// #D85A30) und Grün (Versorgung, #1D9E75); Violett liegt zwischen Blau und
+        /// Koralle und ist der einzige verbliebene Sektor mit deutlichem Abstand zu
+        /// allen dreien. Sättigung und Helligkeit sind bewusst auf demselben gedämpften
+        /// Niveau wie die Nachbarn — ein kräftiges Violett spränge aus dem Bild.
+        /// AMBER (~40°) wäre der andere freie Sektor, ist im Kartenstil aber mit
+        /// „Warnung" belegt (siehe <c>ErzeugerKarte</c>) und schiede damit aus.</para>
+        /// </summary>
+        private static readonly Color FARBE_PROZESS = Color.FromArgb(126, 87, 166);
 
         private void KanteZeichnen(Graphics g, SchemaModell.Kante kante)
         {
@@ -712,18 +730,24 @@ namespace WindowsFormsApplication1
 
         private void LegendeZeichnen(Graphics g)
         {
+            // PAKET E1 (Befund S2-O7): fünfter Eintrag für die Prozessversorgung. Die
+            // drei Felder sind index-gekoppelt; die Strichelung hängt seither an einem
+            // eigenen Feld statt an der hart kodierten Position „i == 3" — ein
+            // eingeschobener Eintrag hätte sie sonst auf die falsche Zeile geschoben.
             string[] texte =
             {
                 MyResource.Resource.SIM_SCHEMA_LEGENDE_LADUNG,
                 MyResource.Resource.SIM_SCHEMA_LEGENDE_VERSORGUNG,
+                MyResource.Resource.SIM_SCHEMA_LEGENDE_PROZESS,
                 MyResource.Resource.SIM_SCHEMA_LEGENDE_QUELLE,
                 MyResource.Resource.SIM_SCHEMA_LEGENDE_KASKADE
             };
             Color[] farben =
             {
-                KartenStil.SENKE_RAHMEN, FARBE_VERSORGUNG,
+                KartenStil.SENKE_RAHMEN, FARBE_VERSORGUNG, FARBE_PROZESS,
                 KartenStil.QUELLE_RAHMEN, KartenStil.QUELLE_RAHMEN
             };
+            bool[] gestrichelt = { false, false, false, false, true };
 
             int x = RAND;
             int y = _legendeOben;
@@ -739,7 +763,7 @@ namespace WindowsFormsApplication1
 
                 using (Pen p = new Pen(farben[i], 2f))
                 {
-                    if (i == 3) p.DashStyle = DashStyle.Dash;
+                    if (gestrichelt[i]) p.DashStyle = DashStyle.Dash;
                     g.DrawLine(p, x, y + LEGENDE_ZEILE / 2, x + 26, y + LEGENDE_ZEILE / 2);
                 }
 

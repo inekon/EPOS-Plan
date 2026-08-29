@@ -166,6 +166,11 @@ namespace WPPlan.Core
         /// strom_wochetojahr @0x4162BA – expandiert ein 168h-Wochenprofil auf 8760h und
         /// normiert je Monat auf die 12 Monatsverbräuche (×1000, kWh→Wh). ret 0x14.
         ///
+        /// ALTKONVENTION, unverändert: Das Jahr beginnt mit einem SONNTAG. Diese Fassung
+        /// delegiert deshalb mit <c>wochentagJan1 = 6</c> und ist Anweisung für Anweisung
+        /// das bisherige Verhalten — für jeden Aufrufer außerhalb der Bedarfsrechnung
+        /// bleibt das Ergebnis bitgleich.
+        ///
         /// Phase 1 (Kachelung): out[0..23] = wo[144..167] (Sonntag zuerst → Kalenderausrichtung
         /// 1. Januar), danach 52× wo[0..167] angehängt (24 + 52·168 = 8760).
         /// Phase 2 (Monatsnormierung): pro Monat sum = Σ out[Monat]; out[h] = out[h]/sum ·
@@ -175,13 +180,45 @@ namespace WPPlan.Core
         public static int StromWocheToJahr(float[] wo, float[] monatsverbrauch, float[] outJahr,
                                            int[] moAnfang, int[] moEnde)
         {
-            // Phase 1 – Kachelung
-            int c = 0;
-            for (int h = WeekHours - HoursPerDay; h < WeekHours; h++) // wo[144..167] (Sonntag)
-                outJahr[c++] = wo[h];
-            for (int week = 1; week <= 52; week++)
-                for (int h = 0; h < WeekHours; h++)
-                    outJahr[c++] = wo[h];
+            return StromWocheToJahr(wo, monatsverbrauch, outJahr, moAnfang, moEnde, 6);
+        }
+
+        /// <summary>
+        /// Dieselbe Expansion mit FREIEM KALENDERSTART (Konzept-Entscheidung F3,
+        /// Paket K1): Das 168-Stunden-Wochenprofil wird ab dem tatsächlichen Wochentag
+        /// des 1. Januar gekachelt statt fest ab Sonntag.
+        ///
+        /// HERKUNFT DER ALTKONVENTION. Die native DLL kachelte hart „Sonntag zuerst":
+        /// 24 Stunden aus <c>wo[144..167]</c>, danach 52 volle Wochen. Damit fiel der
+        /// Profilpfad (Strom, Prozesswärme, Brauchwasser) mit keinem der beiden anderen
+        /// Kalender des Programms zusammen — weder mit dem Gebäudepfad
+        /// (<c>Tab_Klimadaten.WE</c>) noch mit dem WP-Quellprofil
+        /// (<c>WaermequelleClass.cs:934-938</c>, „nächstes Nicht-Schaltjahr"). F3 zieht
+        /// alle drei auf den Klimadaten-Kalender zusammen.
+        ///
+        /// KONVENTION: <c>wochentagJan1</c> zählt <b>Montag = 0 … Sonntag = 6</b> —
+        /// identisch mit der Umrechnung in <c>WaermequelleClass</c>
+        /// (<c>((int)DayOfWeek + 6) % 7</c>). Das Wochenprofil ist entsprechend gelesen:
+        /// <c>wo[0..23]</c> ist Montag, <c>wo[144..167]</c> ist Sonntag.
+        ///
+        /// Phase 1 wird damit zur MODULO-KACHELUNG:
+        /// <code>outJahr[h] = wo[((wochentagJan1 · 24) + h) mod 168]</code>
+        /// Für <c>wochentagJan1 = 6</c> ist das nachweislich EXAKT die bisherige Sequenz
+        /// (<c>wo[144..167]</c>, danach 52 × <c>wo[0..167]</c>), denn 8760 = 24 + 52·168.
+        ///
+        /// Phase 2 (Monatsnormierung) bleibt unverändert. Die Kalenderumstellung ist
+        /// deshalb ENERGIEWIRKUNGSFREI je Monat: Sie verschiebt allein die
+        /// Stundenverteilung innerhalb des Monats, nicht die Monatsmenge.
+        /// </summary>
+        /// <param name="wochentagJan1">Wochentag des 1. Januar, Montag = 0 … Sonntag = 6.</param>
+        public static int StromWocheToJahr(float[] wo, float[] monatsverbrauch, float[] outJahr,
+                                           int[] moAnfang, int[] moEnde, int wochentagJan1)
+        {
+            // Phase 1 – Kachelung ab dem Wochentag des 1. Januar. Der Modulo auf 7 faengt
+            // einen Fremdwert ab, ohne zu werfen: Der Rechenkern bricht nirgends ab.
+            int start = (((wochentagJan1 % 7) + 7) % 7) * HoursPerDay;
+            for (int h = 0; h < Hours; h++)
+                outJahr[h] = wo[(start + h) % WeekHours];
 
             // Phase 2 – Monatsnormierung
             for (int m = 0; m < Months; m++)

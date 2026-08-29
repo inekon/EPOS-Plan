@@ -80,8 +80,19 @@ namespace WindowsFormsApplication1
 
         // Verrechnete Kosten-/Emissionswerte (KostenEmissionRechner, Phase 5) —
         // null = mangels Preisen/Faktoren nicht bestimmbar (Anzeige „—").
-        public double? Energiekosten;      // €/a (Brennstoffe + Netzstrom inkl. Grundpreise)
+        public double? Energiekosten;      // €/a (Brennstoffe + Netzstrom inkl. Grund- und Leistungspreisen)
         public double? StromkostenNetz;    // €/a (Netzbezug)
+
+        /// <summary>
+        /// Leistungspreis-Anteil der Brennstoffkosten [€/a] (Etappe KD4, Konzept
+        /// Kostendialoge § 7.1, Entscheidung FK6): Jahres- bzw. Monatsleistungspreis
+        /// der GASTRÄGER × vorgehaltene Anschlussleistung (Gerätedaten). In
+        /// <see cref="Energiekosten"/> ENTHALTEN, hier getrennt ausgewiesen.
+        /// null = kein Träger mit gepflegtem Leistungspreis; der Stromträger bleibt
+        /// außen vor — sein Leistungspreis ist die Tarifstruktur (Schritt 21,
+        /// keine zweite Wahrheit).
+        /// </summary>
+        public double? EnergieLeistungsanteil;
         public double? CO2Gesamt;          // t/a
         public double? CO2Spezifisch;      // g/kWh Wärme
         public double? CO2Brennstoff;      // t/a nur BEHG-pflichtige Brennstoffe (Phase 7/W2)
@@ -144,16 +155,136 @@ namespace WindowsFormsApplication1
         public const string HEIZSTAB = "Heizstab";
         public const string BHKW_WAERME = "BHKW_Waerme";
         public const string BHKW_STROM = "BHKW_Strom";
+        /// <summary>V1 (PV-Konzept § 2.3, Etappe P1): BHKW-Stromüberschuss, getrennt
+        /// von der PV-Einspeisung (stand bis P1 fälschlich in PV_UEBERSCHUSS).</summary>
+        public const string BHKW_UEBERSCHUSS = "BHKW_Ueberschuss";
         public const string KESSEL_WAERME = "Kessel_Waerme";
         public const string SOLAR_WAERME = "Solar_Waerme";
         public const string PV_GENUTZT = "PV_Genutzt";
         public const string PV_UEBERSCHUSS = "PV_Ueberschuss";
         public const string NETZBEZUG = "Netzbezug";
         public const string WAERMEREST = "Waermerest";
-        public const string PUFFER_SOC = "Puffer_SOC";
         public const string PV_SPEICHER_SOC = "PVSpeicher_SOC";
 
+        // ---------------------------------------------------------------------
+        // PAKET E1 (Konzept 6.3, Befund S-1): Der Wärmespeicher-Füllstand läuft JE
+        // SPEICHER, nicht mehr über den einen Schlüssel „Puffer_SOC".
+        //
+        // Bis hierher füllte der ZeitreihenExtraktor genau eine Reihe, und zwar aus
+        // sim.puffer_wp — dem ERSTEN Heizungspuffer des Laufs. Ein Projekt mit zwei
+        // Puffern zeigte im Bericht den einen und verschwieg den anderen; ein Projekt,
+        // dessen einziger Speicher ein Brauchwasser- oder Kombispeicher ist, zeigte
+        // GAR KEINEN Füllstand. Die Schlüssel sind jetzt die technischen
+        // Serienschlüssel, die Navigator, CSV-Export und Detailansicht seit Paket 7
+        // ohnehin verwenden (SimulationPufferspeicher.Schluessel, Konzept 13.3):
+        // PUFFER_<SpeicherID> bzw. QUELLE_<AnlagenID>.
+        //
+        // Sie sind SPRACHNEUTRAL und ASCII (Schicht 2 der Drei-Schichten-Regel); der
+        // Anzeigetext steht getrennt in Beschriftungen.
+        // ---------------------------------------------------------------------
+
+        /// <summary>Präfix der Senkenspeicher-Füllstandsreihen (<c>PUFFER_&lt;ID&gt;</c>).</summary>
+        public const string PUFFER_PRAEFIX = "PUFFER_";
+
+        /// <summary>Präfix der Quellspeicher-Füllstandsreihen (<c>QUELLE_&lt;AnlagenID&gt;</c>).</summary>
+        public const string QUELLE_PRAEFIX = "QUELLE_";
+
+        // ---------------------------------------------------------------------
+        // PAKET P1/B1/P2 — die TEMPERATURREIHEN. Sie hängen als Nachsilbe am
+        // Füllstandsschlüssel eines Speichers (PUFFER_<ID>_TOBEN / _TUNTEN) bzw. tragen
+        // ein eigenes Präfix mit der ANLAGEN-ID (QUELLTEMP_<AnlagenID>).
+        //
+        // Sie stehen BEWUSST NICHT in Speicherreihen: Diese Liste führt das
+        // kWh-Füllstandsdiagramm, und eine Temperaturreihe auf einer kWh-Achse wäre dort
+        // sinnlos. Wer Temperaturen zeichnet, holt sie über diese Schlüssel (Bericht:
+        // ChartRenderer.Speichertemperaturen; Oberfläche: die Diagrammseite
+        // „Speichertemperaturen" der Detailansicht).
+        //
+        // Sprachneutral und ASCII — Schicht 2 der Drei-Schichten-Regel.
+        // ---------------------------------------------------------------------
+
+        /// <summary>Nachsilbe der Reihe „Temperatur der obersten Schicht" [°C].</summary>
+        public const string SUFFIX_T_OBEN = "_TOBEN";
+
+        /// <summary>Nachsilbe der Reihe „Temperatur der untersten Schicht" [°C].</summary>
+        public const string SUFFIX_T_UNTEN = "_TUNTEN";
+
+        /// <summary>Präfix der Quelltemperatur-Reihen (<c>QUELLTEMP_&lt;AnlagenID&gt;</c>).</summary>
+        public const string QUELLTEMP_PRAEFIX = "QUELLTEMP_";
+
+        // ---------------------------------------------------------------------
+        // PAKET E2 (Nachtrag zu Konzept 4.4) — DIE KANALREIHEN.
+        //
+        //   BEDARF_<KANAL>            der Wärmebedarf EINES Kanals [kWh/h]
+        //   DECKUNG_<ERZEUGER>_<KANAL> die Deckung dieses Kanals durch einen Erzeuger
+        //
+        // Sprachneutral und ASCII (Schicht 2 der Drei-Schichten-Regel), Muster
+        // PUFFER_<ID>. Sie stehen — wie die Temperaturreihen — BEWUSST NICHT in
+        // Speicherreihen: Diese Liste führt das Füllstandsdiagramm.
+        //
+        // Der Bericht ZEICHNET sie (noch) nicht: Sein Ganglinienteil hat fünf feste
+        // Bildtypen, ein sechster wäre ein Layoutumbau. Sie stehen im Satz und sind damit
+        // für einen Kanal-Ganglinienbaustein und für Auswertungen verfügbar (offener
+        // Punkt E2-O2).
+        // ---------------------------------------------------------------------
+
+        /// <summary>Präfix der Kanal-Bedarfsreihen (<c>BEDARF_&lt;KANAL&gt;</c>).</summary>
+        public const string BEDARF_PRAEFIX = "BEDARF_";
+
+        /// <summary>Präfix der Kanal-Deckungsreihen (<c>DECKUNG_&lt;ERZEUGER&gt;_&lt;KANAL&gt;</c>).</summary>
+        public const string DECKUNG_PRAEFIX = "DECKUNG_";
+
+        /// <summary>
+        /// Sprachneutrale Kanalnamen in der Reihenfolge von <c>Kanal.HEIZUNG</c>,
+        /// <c>BRAUCHWASSER</c>, <c>PROZESS</c> — die eine Stelle, an der aus dem
+        /// Kanalindex ein Schlüsselbestandteil wird.
+        /// </summary>
+        public static readonly string[] KANAL_SCHLUESSEL =
+        { "HEIZUNG", "BRAUCHWASSER", "PROZESS" };
+
+        /// <summary>Schlüssel der Bedarfsreihe eines Kanals; "" außerhalb des Bereichs.</summary>
+        public static string BedarfSchluessel(int kanal)
+        {
+            return (kanal >= 0 && kanal < KANAL_SCHLUESSEL.Length)
+                   ? BEDARF_PRAEFIX + KANAL_SCHLUESSEL[kanal] : "";
+        }
+
+        /// <summary>
+        /// Schlüssel der Deckungsreihe eines Erzeugers auf einem Kanal;
+        /// <paramref name="erzeuger"/> ist einer der Serienschlüssel des
+        /// Ergebnis-Diagramms (<c>WAERMEPUMPE</c>, <c>HEIZSTAB</c>, <c>HEIZKESSEL</c>,
+        /// <c>SOLARTHERMIE</c>, <c>BHKW_WAERME</c>).
+        /// </summary>
+        public static string DeckungSchluessel(string erzeuger, int kanal)
+        {
+            return (kanal >= 0 && kanal < KANAL_SCHLUESSEL.Length)
+                   ? DECKUNG_PRAEFIX + erzeuger + "_" + KANAL_SCHLUESSEL[kanal] : "";
+        }
+
         public Dictionary<string, double[]> Reihen = new Dictionary<string, double[]>();
+
+        /// <summary>
+        /// Schlüssel der Wärmespeicher-Füllstandsreihen in STABILER Reihenfolge (die
+        /// Aufnahmereihenfolge des Laufs). Eine eigene Liste statt der
+        /// Dictionary-Reihenfolge: Die ist nicht zugesichert, und die Legende eines
+        /// Diagramms darf sich zwischen zwei Berichten nicht umsortieren.
+        /// </summary>
+        public List<string> Speicherreihen = new List<string>();
+
+        /// <summary>
+        /// Anzeigetext je Schlüssel (Schicht 3) — für die Speicherreihen der
+        /// Legendentext „Bezeichner (Rolle)". Fehlt ein Eintrag, ist der Schlüssel
+        /// selbst der Text.
+        /// </summary>
+        public Dictionary<string, string> Beschriftungen = new Dictionary<string, string>();
+
+        /// <summary>Anzeigetext eines Schlüssels; Rückfall auf den Schlüssel selbst.</summary>
+        public string Beschriftung(string schluessel)
+        {
+            string t;
+            return (Beschriftungen.TryGetValue(schluessel, out t) && !string.IsNullOrEmpty(t))
+                ? t : schluessel;
+        }
 
         public double[] Hole(string schluessel)
         { return Reihen.ContainsKey(schluessel) ? Reihen[schluessel] : null; }

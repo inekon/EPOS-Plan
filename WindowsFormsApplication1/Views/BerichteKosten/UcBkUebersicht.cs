@@ -129,173 +129,301 @@ namespace WindowsFormsApplication1
 
         private void InitializeComponent()
         {
-            this.tl = new TableLayoutPanel();
-            this.pnlKopf = new TableLayoutPanel();
-            this.lblStamm = new Label();
-            this.cbStamm = new ComboBox();
-            this.chkNurStaemme = new CheckBox();
-            this.lvAuswahl = new ListView();
-            this.colArt = new ColumnHeader();
-            this.colBezeichner = new ColumnHeader();
-            this.colProjektname = new ColumnHeader();
-            this.colSim = new ColumnHeader();
-            this.pnlVerwaltung = new TableLayoutPanel();
-            this.lblBez = new Label();
-            this.txtBezeichner = new TextBox();
-            this.btnAnlegen = new Button();
-            this.btnLoeschen = new Button();
-            this.btnSimulieren = new Button();
-            this.pnlKomponenten = new TableLayoutPanel();
-            this.lblKomponenten = new Label();
-            this.gridKomp = new DataGridView();
-            this.lblStatus = new Label();
-            this.SuspendLayout();
-
-            // --- Kopfzeile: Stammprojekt + Filter (Raster statt Festkoordinaten) ---
-            this.lblStamm.AutoSize = true;
-            this.lblStamm.Anchor = AnchorStyles.Left;
-            this.lblStamm.Margin = new Padding(0, 0, 8, 0);
-            this.lblStamm.Text = MyResource.Resource.BK_LBL_STAMM;
-
-            this.cbStamm.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-            this.cbStamm.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.cbStamm.Margin = new Padding(0, 2, 12, 2);
-            this.cbStamm.SelectedIndexChanged += new EventHandler(this.cbStamm_SelectedIndexChanged);
-
-            this.chkNurStaemme.Anchor = AnchorStyles.Left;
-            this.chkNurStaemme.AutoSize = true;
-            this.chkNurStaemme.Margin = new Padding(0);
-            this.chkNurStaemme.Text = MyResource.Resource.BK_CHK_NURSTAEMME;
-            this.chkNurStaemme.CheckedChanged += new EventHandler(this.chkNurStaemme_CheckedChanged);
-
-            this.pnlKopf.Dock = DockStyle.Fill;
-            this.pnlKopf.ColumnCount = 3;
-            this.pnlKopf.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            this.pnlKopf.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
-            this.pnlKopf.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            this.pnlKopf.RowCount = 1;
-            this.pnlKopf.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
-            this.pnlKopf.Margin = new Padding(0, 0, 0, 6);
-            this.pnlKopf.Controls.Add(this.lblStamm, 0, 0);
-            this.pnlKopf.Controls.Add(this.cbStamm, 1, 0);
-            this.pnlKopf.Controls.Add(this.chkNurStaemme, 2, 0);
-
-            // --- Liste Stamm + Varianten ---
-            this.lvAuswahl.Dock = DockStyle.Fill;
-            this.lvAuswahl.Columns.AddRange(new ColumnHeader[]
-                { this.colArt, this.colBezeichner, this.colProjektname, this.colSim });
-            this.lvAuswahl.FullRowSelect = true;
-            this.lvAuswahl.HideSelection = false;
-            this.lvAuswahl.MultiSelect = false;
-            this.lvAuswahl.View = View.Details;
-            this.lvAuswahl.Margin = new Padding(0, 0, 8, 6);
-            this.lvAuswahl.SelectedIndexChanged += new EventHandler(this.lvAuswahl_SelectedIndexChanged);
-
-            this.colArt.Text = MyResource.Resource.BK_SP_ART; this.colArt.Width = 90;
-            this.colBezeichner.Text = MyResource.Resource.BK_SP_BEZEICHNER; this.colBezeichner.Width = 190;
-            this.colProjektname.Text = MyResource.Resource.BK_SP_PROJEKTNAME; this.colProjektname.Width = 300;
-            this.colSim.Text = MyResource.Resource.BK_SP_SIMSTAND; this.colSim.Width = 140;
-
-            // --- Verwaltungsknöpfe rechts neben der Liste (Raster, keine Festkoordinaten) ---
-            this.lblBez.AutoSize = true;
-            this.lblBez.Dock = DockStyle.Fill;
-            this.lblBez.Margin = new Padding(0);
-            this.lblBez.Text = MyResource.Resource.BK_LBL_BEZEICHNER;
-
-            this.txtBezeichner.Dock = DockStyle.Fill;
-            this.txtBezeichner.Margin = new Padding(0, 2, 0, 8);
-
-            this.btnAnlegen.Dock = DockStyle.Fill;
-            this.btnAnlegen.Margin = new Padding(0, 0, 0, 6);
-            this.btnAnlegen.Text = MyResource.Resource.BK_BTN_ANLEGEN;
-            this.btnAnlegen.Click += new EventHandler(this.btnAnlegen_Click);
-
-            this.btnLoeschen.Dock = DockStyle.Fill;
-            this.btnLoeschen.Margin = new Padding(0, 0, 0, 14);
-            this.btnLoeschen.Text = MyResource.Resource.BK_BTN_LOESCHEN;
-            this.btnLoeschen.Click += new EventHandler(this.btnLoeschen_Click);
-
-            this.btnSimulieren.Dock = DockStyle.Fill;
-            this.btnSimulieren.Margin = new Padding(0);
-            this.btnSimulieren.Text = MyResource.Resource.BK_BTN_SIMULIEREN;
-            this.btnSimulieren.Click += new EventHandler(this.btnSimulieren_Click);
-
-            this.pnlVerwaltung.Dock = DockStyle.Fill;
-            this.pnlVerwaltung.ColumnCount = 1;
-            this.pnlVerwaltung.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
-            this.pnlVerwaltung.RowCount = 6;
-            this.pnlVerwaltung.RowStyles.Add(new RowStyle(SizeType.Absolute, 18f));   // lblBez
-            this.pnlVerwaltung.RowStyles.Add(new RowStyle(SizeType.Absolute, 33f));   // txtBezeichner
-            this.pnlVerwaltung.RowStyles.Add(new RowStyle(SizeType.Absolute, 32f));   // btnAnlegen
-            this.pnlVerwaltung.RowStyles.Add(new RowStyle(SizeType.Absolute, 40f));   // btnLoeschen
-            this.pnlVerwaltung.RowStyles.Add(new RowStyle(SizeType.Absolute, 34f));   // btnSimulieren
-            this.pnlVerwaltung.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));   // Restfläche
-            this.pnlVerwaltung.Margin = new Padding(0, 0, 0, 6);
-            this.pnlVerwaltung.Controls.Add(this.lblBez, 0, 0);
-            this.pnlVerwaltung.Controls.Add(this.txtBezeichner, 0, 1);
-            this.pnlVerwaltung.Controls.Add(this.btnAnlegen, 0, 2);
-            this.pnlVerwaltung.Controls.Add(this.btnLoeschen, 0, 3);
-            this.pnlVerwaltung.Controls.Add(this.btnSimulieren, 0, 4);
-
-            // --- Komponenten- bzw. Unterschiedsanzeige ---
-            this.lblKomponenten.Dock = DockStyle.Fill;
-            this.lblKomponenten.Margin = new Padding(0);
-            this.lblKomponenten.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
-            this.lblKomponenten.Text = MyResource.Resource.BK_LBL_KOMPONENTEN_VERGLEICH;
-
-            this.gridKomp.Dock = DockStyle.Fill;
-            this.gridKomp.Margin = new Padding(0);
-            this.gridKomp.AllowUserToAddRows = false;
-            this.gridKomp.AllowUserToDeleteRows = false;
-            this.gridKomp.AllowUserToResizeRows = false;
-            this.gridKomp.ReadOnly = true;
-            this.gridKomp.RowHeadersVisible = false;
-            this.gridKomp.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            this.gridKomp.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            this.gridKomp.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
-            this.gridKomp.ShowCellToolTips = true;
-            this.gridKomp.CellContentClick += new DataGridViewCellEventHandler(this.gridKomp_CellContentClick);
-
-            this.pnlKomponenten.Dock = DockStyle.Fill;
-            this.pnlKomponenten.ColumnCount = 1;
-            this.pnlKomponenten.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
-            this.pnlKomponenten.RowCount = 2;
-            this.pnlKomponenten.RowStyles.Add(new RowStyle(SizeType.Absolute, 22f));
-            this.pnlKomponenten.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
-            this.pnlKomponenten.Margin = new Padding(0);
-            this.pnlKomponenten.Controls.Add(this.lblKomponenten, 0, 0);
-            this.pnlKomponenten.Controls.Add(this.gridKomp, 0, 1);
-
-            // --- Statuszeile ---
-            this.lblStatus.Dock = DockStyle.Fill;
-            this.lblStatus.ForeColor = Color.DimGray;
-            this.lblStatus.Margin = new Padding(0, 4, 0, 0);
-
-            // --- Raster ---
-            this.tl.Dock = DockStyle.Fill;
-            this.tl.ColumnCount = 2;
-            this.tl.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
-            this.tl.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 222f));
-            this.tl.RowCount = 4;
-            this.tl.RowStyles.Add(new RowStyle(SizeType.Absolute, 32f));
-            this.tl.RowStyles.Add(new RowStyle(SizeType.Percent, 46f));
-            this.tl.RowStyles.Add(new RowStyle(SizeType.Percent, 54f));
-            this.tl.RowStyles.Add(new RowStyle(SizeType.Absolute, 24f));
-            this.tl.Padding = new Padding(10, 8, 10, 6);
-            this.tl.Controls.Add(this.pnlKopf, 0, 0);
-            this.tl.SetColumnSpan(this.pnlKopf, 2);
-            this.tl.Controls.Add(this.lvAuswahl, 0, 1);
-            this.tl.Controls.Add(this.pnlVerwaltung, 1, 1);
-            this.tl.Controls.Add(this.pnlKomponenten, 0, 2);
-            this.tl.SetColumnSpan(this.pnlKomponenten, 2);
-            this.tl.Controls.Add(this.lblStatus, 0, 3);
-            this.tl.SetColumnSpan(this.lblStatus, 2);
-
-            this.Controls.Add(this.tl);
-            this.Font = new Font("Segoe UI", 9f);
-            this.Name = "UcBkUebersicht";
-            this.Size = new Size(1040, 520);
-            this.ResumeLayout(false);
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            tl = new TableLayoutPanel();
+            pnlKopf = new TableLayoutPanel();
+            lblStamm = new Label();
+            cbStamm = new ComboBox();
+            chkNurStaemme = new CheckBox();
+            lvAuswahl = new ListView();
+            colArt = new ColumnHeader();
+            colBezeichner = new ColumnHeader();
+            colProjektname = new ColumnHeader();
+            colSim = new ColumnHeader();
+            pnlVerwaltung = new TableLayoutPanel();
+            lblBez = new Label();
+            txtBezeichner = new TextBox();
+            btnAnlegen = new Button();
+            btnLoeschen = new Button();
+            btnSimulieren = new Button();
+            pnlKomponenten = new TableLayoutPanel();
+            lblKomponenten = new Label();
+            gridKomp = new DataGridView();
+            lblStatus = new Label();
+            tl.SuspendLayout();
+            pnlKopf.SuspendLayout();
+            pnlVerwaltung.SuspendLayout();
+            pnlKomponenten.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)gridKomp).BeginInit();
+            SuspendLayout();
+            // 
+            // tl
+            // 
+            tl.ColumnCount = 2;
+            tl.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tl.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 222F));
+            tl.Controls.Add(pnlKopf, 0, 0);
+            tl.Controls.Add(lvAuswahl, 0, 1);
+            tl.Controls.Add(pnlVerwaltung, 1, 1);
+            tl.Controls.Add(pnlKomponenten, 0, 2);
+            tl.Controls.Add(lblStatus, 0, 3);
+            tl.Dock = DockStyle.Fill;
+            tl.Location = new Point(0, 0);
+            tl.Name = "tl";
+            tl.Padding = new Padding(10, 8, 10, 6);
+            tl.RowCount = 4;
+            tl.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+            tl.RowStyles.Add(new RowStyle(SizeType.Percent, 46F));
+            tl.RowStyles.Add(new RowStyle(SizeType.Percent, 54F));
+            tl.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
+            tl.Size = new Size(1040, 520);
+            tl.TabIndex = 0;
+            // 
+            // pnlKopf
+            // 
+            pnlKopf.ColumnCount = 3;
+            tl.SetColumnSpan(pnlKopf, 2);
+            pnlKopf.ColumnStyles.Add(new ColumnStyle());
+            pnlKopf.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            pnlKopf.ColumnStyles.Add(new ColumnStyle());
+            pnlKopf.Controls.Add(lblStamm, 0, 0);
+            pnlKopf.Controls.Add(cbStamm, 1, 0);
+            pnlKopf.Controls.Add(chkNurStaemme, 2, 0);
+            pnlKopf.Dock = DockStyle.Fill;
+            pnlKopf.Location = new Point(10, 8);
+            pnlKopf.Margin = new Padding(0, 0, 0, 6);
+            pnlKopf.Name = "pnlKopf";
+            pnlKopf.RowCount = 1;
+            pnlKopf.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            pnlKopf.Size = new Size(1020, 26);
+            pnlKopf.TabIndex = 0;
+            // 
+            // lblStamm
+            // 
+            lblStamm.Anchor = AnchorStyles.Left;
+            lblStamm.AutoSize = true;
+            lblStamm.Location = new Point(0, 0);
+            lblStamm.Margin = new Padding(0, 0, 8, 0);
+            lblStamm.Name = "lblStamm";
+            lblStamm.Size = new Size(128, 25);
+            lblStamm.TabIndex = 0;
+            lblStamm.Text = "Stammprojekt:";
+            // 
+            // cbStamm
+            // 
+            cbStamm.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+            cbStamm.DropDownStyle = ComboBoxStyle.DropDownList;
+            cbStamm.Location = new Point(136, 2);
+            cbStamm.Margin = new Padding(0, 2, 12, 2);
+            cbStamm.Name = "cbStamm";
+            cbStamm.Size = new Size(682, 33);
+            cbStamm.TabIndex = 1;
+            cbStamm.SelectedIndexChanged += cbStamm_SelectedIndexChanged;
+            // 
+            // chkNurStaemme
+            // 
+            chkNurStaemme.Anchor = AnchorStyles.Left;
+            chkNurStaemme.AutoSize = true;
+            chkNurStaemme.Location = new Point(830, 0);
+            chkNurStaemme.Margin = new Padding(0);
+            chkNurStaemme.Name = "chkNurStaemme";
+            chkNurStaemme.Size = new Size(190, 26);
+            chkNurStaemme.TabIndex = 2;
+            chkNurStaemme.Text = MyResource.Resource.BK_CHK_NURSTAEMME;
+            chkNurStaemme.CheckedChanged += chkNurStaemme_CheckedChanged;
+            // 
+            // lvAuswahl
+            // 
+            lvAuswahl.Columns.AddRange(new ColumnHeader[] { colArt, colBezeichner, colProjektname, colSim });
+            lvAuswahl.Dock = DockStyle.Fill;
+            lvAuswahl.FullRowSelect = true;
+            lvAuswahl.Location = new Point(10, 40);
+            lvAuswahl.Margin = new Padding(0, 0, 8, 6);
+            lvAuswahl.MultiSelect = false;
+            lvAuswahl.Name = "lvAuswahl";
+            lvAuswahl.Size = new Size(790, 201);
+            lvAuswahl.TabIndex = 1;
+            lvAuswahl.UseCompatibleStateImageBehavior = false;
+            lvAuswahl.View = View.Details;
+            lvAuswahl.SelectedIndexChanged += lvAuswahl_SelectedIndexChanged;
+            // 
+            // colArt
+            // 
+            colArt.Text = MyResource.Resource.BK_SP_ART;
+            colArt.Width = 90;
+            // 
+            // colBezeichner
+            // 
+            colBezeichner.Text = MyResource.Resource.BK_SP_BEZEICHNER;
+            colBezeichner.Width = 190;
+            // 
+            // colProjektname
+            // 
+            colProjektname.Text = MyResource.Resource.BK_SP_PROJEKTNAME;
+            colProjektname.Width = 300;
+            // 
+            // colSim
+            // 
+            colSim.Text = MyResource.Resource.BK_SP_SIMSTAND;
+            colSim.Width = 140;
+            // 
+            // pnlVerwaltung
+            // 
+            pnlVerwaltung.ColumnCount = 1;
+            pnlVerwaltung.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            pnlVerwaltung.Controls.Add(lblBez, 0, 0);
+            pnlVerwaltung.Controls.Add(txtBezeichner, 0, 1);
+            pnlVerwaltung.Controls.Add(btnAnlegen, 0, 2);
+            pnlVerwaltung.Controls.Add(btnLoeschen, 0, 3);
+            pnlVerwaltung.Controls.Add(btnSimulieren, 0, 4);
+            pnlVerwaltung.Dock = DockStyle.Fill;
+            pnlVerwaltung.Location = new Point(808, 40);
+            pnlVerwaltung.Margin = new Padding(0, 0, 0, 6);
+            pnlVerwaltung.Name = "pnlVerwaltung";
+            pnlVerwaltung.RowCount = 6;
+            pnlVerwaltung.RowStyles.Add(new RowStyle(SizeType.Absolute, 18F));
+            pnlVerwaltung.RowStyles.Add(new RowStyle(SizeType.Absolute, 33F));
+            pnlVerwaltung.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+            pnlVerwaltung.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            pnlVerwaltung.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+            pnlVerwaltung.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            pnlVerwaltung.Size = new Size(222, 201);
+            pnlVerwaltung.TabIndex = 2;
+            // 
+            // lblBez
+            // 
+            lblBez.AutoSize = true;
+            lblBez.Dock = DockStyle.Fill;
+            lblBez.Location = new Point(0, 0);
+            lblBez.Margin = new Padding(0);
+            lblBez.Name = "lblBez";
+            lblBez.Size = new Size(222, 18);
+            lblBez.TabIndex = 0;
+            lblBez.Text = "Bezeichner:";
+            // 
+            // txtBezeichner
+            // 
+            txtBezeichner.Dock = DockStyle.Fill;
+            txtBezeichner.Location = new Point(0, 20);
+            txtBezeichner.Margin = new Padding(0, 2, 0, 8);
+            txtBezeichner.Name = "txtBezeichner";
+            txtBezeichner.Size = new Size(222, 31);
+            txtBezeichner.TabIndex = 1;
+            // 
+            // btnAnlegen
+            // 
+            btnAnlegen.Dock = DockStyle.Fill;
+            btnAnlegen.Location = new Point(0, 51);
+            btnAnlegen.Margin = new Padding(0, 0, 0, 6);
+            btnAnlegen.Name = "btnAnlegen";
+            btnAnlegen.Size = new Size(222, 26);
+            btnAnlegen.TabIndex = 2;
+            btnAnlegen.Text = MyResource.Resource.BK_BTN_ANLEGEN;
+            btnAnlegen.Click += btnAnlegen_Click;
+            // 
+            // btnLoeschen
+            // 
+            btnLoeschen.Dock = DockStyle.Fill;
+            btnLoeschen.Location = new Point(0, 83);
+            btnLoeschen.Margin = new Padding(0, 0, 0, 14);
+            btnLoeschen.Name = "btnLoeschen";
+            btnLoeschen.Size = new Size(222, 26);
+            btnLoeschen.TabIndex = 3;
+            btnLoeschen.Text = MyResource.Resource.BK_BTN_LOESCHEN;
+            btnLoeschen.Click += btnLoeschen_Click;
+            // 
+            // btnSimulieren
+            // 
+            btnSimulieren.Dock = DockStyle.Fill;
+            btnSimulieren.Location = new Point(0, 123);
+            btnSimulieren.Margin = new Padding(0);
+            btnSimulieren.Name = "btnSimulieren";
+            btnSimulieren.Size = new Size(222, 34);
+            btnSimulieren.TabIndex = 4;
+            btnSimulieren.Text = MyResource.Resource.BK_BTN_SIMULIEREN;
+            btnSimulieren.Click += btnSimulieren_Click;
+            // 
+            // pnlKomponenten
+            // 
+            pnlKomponenten.ColumnCount = 1;
+            tl.SetColumnSpan(pnlKomponenten, 2);
+            pnlKomponenten.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            pnlKomponenten.Controls.Add(lblKomponenten, 0, 0);
+            pnlKomponenten.Controls.Add(gridKomp, 0, 1);
+            pnlKomponenten.Dock = DockStyle.Fill;
+            pnlKomponenten.Location = new Point(10, 247);
+            pnlKomponenten.Margin = new Padding(0);
+            pnlKomponenten.Name = "pnlKomponenten";
+            pnlKomponenten.RowCount = 2;
+            pnlKomponenten.RowStyles.Add(new RowStyle(SizeType.Absolute, 22F));
+            pnlKomponenten.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            pnlKomponenten.Size = new Size(1020, 243);
+            pnlKomponenten.TabIndex = 3;
+            // 
+            // lblKomponenten
+            // 
+            lblKomponenten.Dock = DockStyle.Fill;
+            lblKomponenten.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            lblKomponenten.Location = new Point(0, 0);
+            lblKomponenten.Margin = new Padding(0);
+            lblKomponenten.Name = "lblKomponenten";
+            lblKomponenten.Size = new Size(1020, 22);
+            lblKomponenten.TabIndex = 0;
+            lblKomponenten.Text = "Komponenten im Vergleich — Stammprojekt und Varianten";
+            // 
+            // gridKomp
+            // 
+            gridKomp.AllowUserToAddRows = false;
+            gridKomp.AllowUserToDeleteRows = false;
+            gridKomp.AllowUserToResizeRows = false;
+            gridKomp.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = SystemColors.Control;
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            gridKomp.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            gridKomp.ColumnHeadersHeight = 34;
+            gridKomp.Dock = DockStyle.Fill;
+            gridKomp.Location = new Point(0, 22);
+            gridKomp.Margin = new Padding(0);
+            gridKomp.Name = "gridKomp";
+            gridKomp.ReadOnly = true;
+            gridKomp.RowHeadersVisible = false;
+            gridKomp.RowHeadersWidth = 62;
+            gridKomp.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            gridKomp.Size = new Size(1020, 221);
+            gridKomp.TabIndex = 1;
+            gridKomp.CellContentClick += gridKomp_CellContentClick;
+            gridKomp.SelectionChanged += gridKomp_KomponentenAuswahl;
+            // 
+            // lblStatus
+            // 
+            tl.SetColumnSpan(lblStatus, 2);
+            lblStatus.Dock = DockStyle.Fill;
+            lblStatus.ForeColor = Color.DimGray;
+            lblStatus.Location = new Point(10, 494);
+            lblStatus.Margin = new Padding(0, 4, 0, 0);
+            lblStatus.Name = "lblStatus";
+            lblStatus.Size = new Size(1020, 20);
+            lblStatus.TabIndex = 4;
+            // 
+            // UcBkUebersicht
+            // 
+            Controls.Add(tl);
+            Font = new Font("Segoe UI", 9F);
+            Name = "UcBkUebersicht";
+            Size = new Size(1040, 520);
+            tl.ResumeLayout(false);
+            pnlKopf.ResumeLayout(false);
+            pnlKopf.PerformLayout();
+            pnlVerwaltung.ResumeLayout(false);
+            pnlVerwaltung.PerformLayout();
+            pnlKomponenten.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)gridKomp).EndInit();
+            ResumeLayout(false);
         }
 
         // ------------------------------------------------------------- Laden
@@ -607,6 +735,9 @@ namespace WindowsFormsApplication1
                 string bezeichner = (txtBezeichner.Text ?? "").Trim();
                 txtBezeichner.Clear();
                 AktualisiereStammCombo(stamm.Id);   // Combo neu (neue Variante -> Stammstatus), Auswahl beibehalten
+                // Ä19: Auch die Varianten-Klappliste des Projektkopfs kennt die neue
+                // Variante sofort (bisher zog nur der Menüweg über Form_AlsVariante nach).
+                Program.startfrm?.VariantenAnzeigeAktualisieren();
                 Melde(string.Format(MyResource.Resource.BK_MSG_VARIANTE_ANGELEGT, bezeichner));
             }
             catch (Exception ex) { Melde(string.Format(MyResource.Resource.BK_MSG_ANLEGEFEHLER, ex.Message)); }
@@ -768,6 +899,24 @@ namespace WindowsFormsApplication1
         /// </summary>
         private const string OHNE_WERT = "—";
 
+        // Kontext der Gegenüberstellung für Tooltip und Auswahlanzeige
+        // (Nutzerauftrag 28.08.2026: eine Zeile je Komponente).
+        private List<ProjektDetails> _vergleichsVersionen;
+        private List<string> _vergleichsKoepfe;
+        private sealed class KomponentenZelle { public string Gewerk; public int Index; }
+
+        // Ressourcen-Helfer mit deutschem Fallback (Drei-Schichten-Regel; die
+        // generierten Resource-Eigenschaften entstehen erst im VS-Designer).
+        private static string TUeb(string key, string fallback)
+        {
+            try
+            {
+                string s = MyResource.Resource.ResourceManager.GetString(key);
+                return string.IsNullOrEmpty(s) ? fallback : s;
+            }
+            catch { return fallback; }
+        }
+
         // Gegenüberstellung Stamm ↔ Varianten: Gewerk · Merkmal · Stamm · je Variante eine
         // Spalte, in der Reihenfolge der oberen Liste. Sie ersetzt die frühere
         // Einzelansicht des Stammprojekts: Deren eigentlicher Zweck — der Vergleich der
@@ -789,6 +938,11 @@ namespace WindowsFormsApplication1
             // Die Versionen in Spaltenreihenfolge: Stamm zuerst, dann die Varianten.
             var versionen = new List<ProjektDetails> { ds };
             foreach (AuswahlZeile v in varianten) versionen.Add(Details(stamm.Id, v.IdProjekt));
+
+            // Kontext für Tooltip/Auswahlanzeige der Komponentenzeilen (28.08.2026).
+            _vergleichsVersionen = versionen;
+            _vergleichsKoepfe = new List<string> { MyResource.Resource.BK_SP_WERT_STAMM };
+            foreach (AuswahlZeile v in varianten) _vergleichsKoepfe.Add(SpaltenKopf(v));
 
             int zeilen = FuelleVergleich(versionen);
 
@@ -873,6 +1027,14 @@ namespace WindowsFormsApplication1
                 // „Anlage" und „Gebäude" sind Konfigurationsblöcke ohne Komponentenbestand;
                 // nur die echten Gewerke der GewerkTabellen führen eine Stückzahl.
                 bool zaehlbar = ProjektDetails.GewerkTabellen.Any(g => g.Key == gewerk);
+
+                // Artefakt-Guard (Nutzerbefund 28.08.2026): Der Anlage-Block erscheint
+                // nur, wenn alle Versionen mit echter Anlagenzeile DASSELBE Gewerk
+                // führen — sonst stünden Werte verschiedener Gewerke nebeneinander
+                // (WP-Stamm neben BHKW- und Kessel-Variante); Referenzanlagen zählen
+                // ohnehin nicht (AbweichungsErmittler.ErsteEchteAnlage).
+                if (!zaehlbar && felder[0].Tabelle == "Tab_Energieanlagen" &&
+                    !AbweichungsErmittler.AnlagenEinheitlich(versionen)) continue;
                 bool irgendwo = versionen.Any(d => AbweichungsErmittler.ZeileFuer(d, felder[0]) != null)
                              || (zaehlbar && versionen.Any(d => AbweichungsErmittler.Anzahl(d, gewerk) > 0));
                 if (!irgendwo) continue;
@@ -889,8 +1051,41 @@ namespace WindowsFormsApplication1
                     foreach (ProjektDetails d in versionen)
                         anzahlen.Add(AbweichungsErmittler.AnzahlText(AbweichungsErmittler.Anzahl(d, gewerk)));
                     SchreibeVergleichsZeile(gewerk, AbweichungsErmittler.MERKMAL_ANZAHL, anzahlen);
-                    ersteZeile = false;
                     zeilen++;
+
+                    // Nutzerauftrag 28.08.2026: eine Zeile JE KOMPONENTE mit ihrem
+                    // Bezeichner je Version — vorher zeigten die Merkmalszeilen nur
+                    // die ERSTE Komponente (bei zwei Wärmepumpen fehlte die zweite
+                    // komplett). Die Merkmale wandern in den Tooltip der Zelle
+                    // (Mouse-over) und in die Statuszeile bei Auswahl.
+                    AbweichungsErmittler.Merkmal bez = AbweichungsErmittler.BezeichnerMerkmal(gewerk);
+                    int maxKomp = 0;
+                    foreach (ProjektDetails d in versionen)
+                        maxKomp = Math.Max(maxKomp, AbweichungsErmittler.Anzahl(d, gewerk));
+                    for (int k = 0; k < maxKomp; k++)
+                    {
+                        var namen = new List<string>();
+                        foreach (ProjektDetails d in versionen)
+                        {
+                            DataRow rk = AbweichungsErmittler.KomponenteZeile(d, gewerk, k);
+                            namen.Add(rk == null || bez == null ? OHNE_WERT
+                                                                : AbweichungsErmittler.Formatiere(rk, bez));
+                        }
+                        string label = maxKomp == 1
+                            ? TUeb("BK_SP_KOMPONENTE", "Komponente")
+                            : string.Format(TUeb("BK_SP_KOMPONENTE_N", "Komponente {0}"), k + 1);
+                        DataGridViewRow zk = SchreibeVergleichsZeile("", label, namen);
+                        zk.Tag = new KomponentenZelle { Gewerk = gewerk, Index = k };
+                        for (int c = 0; c < versionen.Count; c++)
+                        {
+                            DataRow rk = AbweichungsErmittler.KomponenteZeile(versionen[c], gewerk, k);
+                            if (rk != null)
+                                zk.Cells[2 + c].ToolTipText =
+                                    AbweichungsErmittler.MerkmaleText(rk, gewerk, "\r\n");
+                        }
+                        zeilen++;
+                    }
+                    continue;   // Merkmalszeilen entfallen für zählbare Gewerke
                 }
 
                 foreach (AbweichungsErmittler.Merkmal f in felder)
@@ -916,7 +1111,7 @@ namespace WindowsFormsApplication1
         // Trägt eine Zeile ein: das Gewerk nur in der ersten Zeile seines Blocks (fett),
         // Zellen ohne Bestand grau - der Strich allein wäre in einer Zahlenspalte leicht
         // als Zahl zu übersehen.
-        private void SchreibeVergleichsZeile(string gewerk, string merkmal, List<string> werte)
+        private DataGridViewRow SchreibeVergleichsZeile(string gewerk, string merkmal, List<string> werte)
         {
             var zellen = new List<object> { gewerk, merkmal };
             foreach (string w in werte) zellen.Add(w);
@@ -928,6 +1123,32 @@ namespace WindowsFormsApplication1
             for (int c = 0; c < werte.Count; c++)
                 if (werte[c] == OHNE_WERT || werte[c] == AbweichungsErmittler.BESTAND_FEHLT)
                     zeile.Cells[2 + c].Style.ForeColor = SystemColors.GrayText;
+            return zeile;
+        }
+
+        /// <summary>
+        /// Nutzerauftrag 28.08.2026 — „Anzeige bei Auswahl": Die Merkmale der in der
+        /// Gegenüberstellung gewählten Komponente erscheinen in der Statuszeile
+        /// (Hersteller, Typ, Leistung, … der Zelle unter dem Cursor); das Mouse-over
+        /// der Zelle zeigt dieselben Merkmale mehrzeilig als Tooltip.
+        /// </summary>
+        private void gridKomp_KomponentenAuswahl(object sender, EventArgs e)
+        {
+            if (_vergleichsVersionen == null || gridKomp.CurrentCell == null) return;
+            var kz = gridKomp.CurrentCell.OwningRow?.Tag as KomponentenZelle;
+            if (kz == null) return;
+
+            int v = gridKomp.CurrentCell.ColumnIndex - 2;
+            if (v < 0 || v >= _vergleichsVersionen.Count) v = 0;
+            DataRow r = AbweichungsErmittler.KomponenteZeile(_vergleichsVersionen[v], kz.Gewerk, kz.Index);
+            if (r == null) return;
+
+            AbweichungsErmittler.Merkmal bez = AbweichungsErmittler.BezeichnerMerkmal(kz.Gewerk);
+            string name = bez != null ? AbweichungsErmittler.Formatiere(r, bez) : kz.Gewerk;
+            string kopf = (_vergleichsKoepfe != null && v < _vergleichsKoepfe.Count) ? _vergleichsKoepfe[v] : "";
+            string merkmale = AbweichungsErmittler.MerkmaleText(r, kz.Gewerk, "  ·  ");
+            Melde(name + (kopf.Length > 0 ? "  (" + kopf + ")" : "") +
+                  (merkmale.Length > 0 ? "  —  " + merkmale : ""));
         }
 
         // Unterschiede der Variante gegenüber dem Stamm (vorhandene Diff-Logik).

@@ -70,8 +70,6 @@
             MenuItem_PV_Import_CEC = new System.Windows.Forms.ToolStripMenuItem();
             MenuItem_ST_Import = new System.Windows.Forms.ToolStripMenuItem();
             MenuItem_KostenVerwaltung = new System.Windows.Forms.ToolStripMenuItem();
-            MenuItem_Kosten = new System.Windows.Forms.ToolStripMenuItem();
-            kostenAdminToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             MenuItem_Gebaeude = new System.Windows.Forms.ToolStripMenuItem();
             MenuItem_GebBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
             MenuItem_GebTypen = new System.Windows.Forms.ToolStripMenuItem();
@@ -335,21 +333,8 @@
             // 
             // MenuItem_KostenVerwaltung
             // 
-            MenuItem_KostenVerwaltung.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { MenuItem_Kosten, kostenAdminToolStripMenuItem });
             resources.ApplyResources(MenuItem_KostenVerwaltung, "MenuItem_KostenVerwaltung");
             MenuItem_KostenVerwaltung.Name = "MenuItem_KostenVerwaltung";
-            // 
-            // MenuItem_Kosten
-            // 
-            MenuItem_Kosten.Name = "MenuItem_Kosten";
-            resources.ApplyResources(MenuItem_Kosten, "MenuItem_Kosten");
-            MenuItem_Kosten.Click += MenuItem_Kosten_Click;
-            // 
-            // kostenAdminToolStripMenuItem
-            // 
-            kostenAdminToolStripMenuItem.Name = "kostenAdminToolStripMenuItem";
-            resources.ApplyResources(kostenAdminToolStripMenuItem, "kostenAdminToolStripMenuItem");
-            kostenAdminToolStripMenuItem.Click += kostenAdminToolStripMenuItem_Click;
             // 
             // MenuItem_Gebaeude
             // 
@@ -497,8 +482,6 @@
         private System.Windows.Forms.ToolStripMenuItem MeniItem_VDI3805;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_PV_Import_CEC;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_ST_Import;
-        private System.Windows.Forms.ToolStripMenuItem MenuItem_Kosten;
-        private System.Windows.Forms.ToolStripMenuItem kostenAdminToolStripMenuItem;
         private System.Windows.Forms.Label label_OnlineDoku;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Einstellungen;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Dokumentation;

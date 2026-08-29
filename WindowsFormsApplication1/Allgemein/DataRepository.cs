@@ -121,8 +121,7 @@ namespace WindowsFormsApplication1
         /// (Engine-Modus). EINE Entscheidungsstelle für alle sechs Fehlerpfade dieser
         /// Klasse UND für die datenbanknahen Meldungen der Controller, die aus dem
         /// Rechenpfad heraus erreichbar sind (<c>ErgebnisCtrl.Save</c> beim Speichern des
-        /// Laufergebnisses, <c>PufferSpCtrl.CopyFromStamm</c>,
-        /// <c>Z_ProjektPufferSpCtrl.Insert</c>).
+        /// Laufergebnisses, <c>PufferSpCtrl.CopyFromStamm</c>).
         ///
         /// Öffentlich, damit es bei EINER Entscheidung bleibt: Jede zweite Fassung des
         /// „Dialog oder Protokoll"-Musters wäre die Stelle, an der der nächste
@@ -218,10 +217,24 @@ namespace WindowsFormsApplication1
                 }
                 catch (Exception ex)
                 {
-                    FehlerMelden("Fehler beim Laden der Daten: " + ex.Message);
+                    FehlerMelden("Fehler beim Laden der Daten: " + ex.Message + KurzSql(sql));
                     return new DataTable();
                 }
             }
+        }
+
+        /// <summary>
+        /// Diagnosezusatz der Fehlermeldungen (26.08.2026): Die Box „Für mindestens
+        /// einen erforderlichen Parameter …“ nennt ohne die Abfrage weder Ort noch
+        /// Ursache — der Anfang des SQL macht jede Meldung selbstverortend.
+        /// </summary>
+        private static string KurzSql(string sql)
+        {
+            if (string.IsNullOrEmpty(sql)) return "";
+            string s = sql.Replace("\r", " ").Replace("\n", " ").Trim();
+            while (s.IndexOf("  ", StringComparison.Ordinal) >= 0) s = s.Replace("  ", " ");
+            if (s.Length > 160) s = s.Substring(0, 160) + "…";
+            return Environment.NewLine + Environment.NewLine + "Abfrage: " + s;
         }
 
         // Für INSERT, UPDATE, DELETE
@@ -329,7 +342,7 @@ namespace WindowsFormsApplication1
                 }
                 catch (Exception ex)
                 {
-                    FehlerMelden("Datenbankfehler (Scalar): " + ex.Message);
+                    FehlerMelden("Datenbankfehler (Scalar): " + ex.Message + KurzSql(sql));
                     return null;
                 }
             }

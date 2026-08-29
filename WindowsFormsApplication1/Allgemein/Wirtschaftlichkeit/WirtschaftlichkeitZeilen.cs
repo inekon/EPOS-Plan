@@ -160,6 +160,43 @@ namespace WindowsFormsApplication1
                            e => (double?)e.EinspeiseerloesKwkJahr));
             }
 
+            // ETAPPE P6 (PV-Konzept § 6.4): Ausweis des PV-Vergütungsdialogs —
+            // direkt hinter den Einspeisezeilen, deren PV-Anteil er erklärt. Der
+            // Block erscheint nur, wenn irgendein Lauf der Gruppe den Dialog aktiv
+            // hatte; die Unterzeilen folgen dem üblichen Nullzeilen-Muster.
+            if (Irgendein(menge, e => !string.IsNullOrEmpty(e.PvVerguetungsform)))
+            {
+                z.Add(new WirtZeile
+                {
+                    Schluessel = "PV_FORM",
+                    Titel = MyResource.Resource.WIRT_ZEILE_PV_FORM,
+                    Text = e => PvFormText(e.PvVerguetungsform)
+                });
+                WirtZeile aw = Zahl("PV_AW", MyResource.Resource.WIRT_ZEILE_PV_AW,
+                                    e => e.PvAnzulegenderWert);
+                aw.Format = "N2"; aw.ExcelFormat = "#,##0.00";
+                z.Add(aw);
+                if (Irgendein(menge, e => e.PvMarktpraemie > 0))
+                    z.Add(Zahl("PV_MARKTPRAEMIE", MyResource.Resource.WIRT_ZEILE_PV_MARKTPRAEMIE,
+                               e => (double?)e.PvMarktpraemie));
+                if (Irgendein(menge, e => e.PvVerguetungsausfallKwh > 0))
+                {
+                    z.Add(Zahl("PV_AUSFALL_KWH", MyResource.Resource.WIRT_ZEILE_PV_AUSFALL_KWH,
+                               e => (double?)e.PvVerguetungsausfallKwh));
+                    z.Add(Zahl("PV_AUSFALL_EUR", MyResource.Resource.WIRT_ZEILE_PV_AUSFALL_EUR,
+                               e => (double?)e.PvVerguetungsausfall));
+                }
+                if (Irgendein(menge, e => e.PvKompensation51a > 0))
+                    z.Add(Zahl("PV_51A", MyResource.Resource.WIRT_ZEILE_PV_51A,
+                               e => (double?)e.PvKompensation51a));
+                if (Irgendein(menge, e => e.PvKappungsverlustKwh > 0))
+                    z.Add(Zahl("PV_KAPPUNG", MyResource.Resource.WIRT_ZEILE_PV_KAPPUNG,
+                               e => (double?)e.PvKappungsverlustKwh));
+                if (Irgendein(menge, e => e.PvVermiedenerBezug.HasValue))
+                    z.Add(Zahl("PV_VERMIEDEN", MyResource.Resource.WIRT_ZEILE_PV_VERMIEDEN,
+                               e => e.PvVermiedenerBezug));
+            }
+
             if (Irgendein(menge, e => e.KwkgErloesJahr1 > 0))
                 z.Add(Zahl("KWKG", MyResource.Resource.WIRT_ZEILE_KWKG,
                            e => (double?)e.KwkgErloesJahr1));
@@ -243,6 +280,16 @@ namespace WindowsFormsApplication1
                                       Func<WirtschaftlichkeitErgebnis, double?> wert)
         {
             return new WirtZeile { Schluessel = schluessel, Titel = titel, Wert = wert };
+        }
+
+        /// <summary>Klartext der Vermarktungsform (Persistenzwert ist ASCII, P6).</summary>
+        private static string PvFormText(string form)
+        {
+            if (form == DbWerte.PV_VERMARKTUNG_EV) return MyResource.Resource.WIRT_ZEILE_PV_FORM_EV;
+            if (form == DbWerte.PV_VERMARKTUNG_MARKTPRAEMIE) return MyResource.Resource.WIRT_ZEILE_PV_FORM_MP;
+            if (form == DbWerte.PV_VERMARKTUNG_SONSTIGE_DV) return MyResource.Resource.WIRT_ZEILE_PV_FORM_DV;
+            if (form == DbWerte.PV_VERMARKTUNG_KEINE) return MyResource.Resource.WIRT_ZEILE_PV_FORM_KEINE;
+            return form;
         }
 
         private static bool Irgendein(IList<WirtschaftlichkeitErgebnis> menge,

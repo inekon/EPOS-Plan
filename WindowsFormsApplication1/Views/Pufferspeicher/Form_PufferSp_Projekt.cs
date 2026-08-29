@@ -91,6 +91,73 @@ namespace WindowsFormsApplication1
             public override string ToString() { return Anzeige; }
         }
 
+        // --- Klassen-Set (Paket K2, Migrationsschritt 49, Konzept 6.1) ----------------
+        //
+        // Die drei Häkchen sind FÜHREND; die Verwendungs-ComboBox darüber bleibt als
+        // Bestandsanzeige stehen und zeigt den abgeleiteten Altwert. Aufbau und Regeln
+        // stehen in KlassenSetAufbauen().
+
+        private Label _lblKlassenSet;
+        private CheckBox _chkNutzungHeizung;
+        private CheckBox _chkNutzungBrauchwasser;
+        private CheckBox _chkNutzungProzess;
+        private ToolTip _ttKlassenSet;
+
+        /// <summary>Sperre gegen das gegenseitige Nachziehen von ComboBox und Häkchen.</summary>
+        private bool _klassenSetSpiegelt;
+
+        // --- Schichtung (Paket P1, Migrationsschritt 53, Konzept 7.2) -----------------
+        //
+        // Ebenfalls programmatisch; Aufbau und Regeln stehen in SchichtungAufbauen().
+
+        private GroupBox _gbSchichtung;
+        private NumericUpDown _nudSchichten;
+        private TextBox _tbLadeleistung;
+        private TextBox _tbEntladeleistung;
+        private TextBox _tbHoehe;
+        private TextBox _tbLambda;
+        private TextBox _tbTNutzBW;
+        private TextBox _tbEntnahmeHeizung;
+        private TextBox _tbEntnahmeBW;
+        private TextBox _tbEntnahmeProzess;
+        private Label _lblEntnahmeHeizung;
+        private Label _lblEntnahmeBW;
+        private Label _lblEntnahmeProzess;
+
+        /// <summary>Die Steuerelemente, die nur bei <c>N &gt; 1</c> erscheinen.</summary>
+        private readonly List<Control> _schichtNurErweitert = new List<Control>();
+
+        /// <summary>Aktueller Zustand der Gruppe: true = erweiterte Zeilen sichtbar.</summary>
+        private bool _schichtErweitert;
+
+        /// <summary>
+        /// Client-Höhe der Maske OHNE Bildschirmklemmung — die Rechengröße beim
+        /// Auf- und Zuklappen der Schichtgruppe.
+        ///
+        /// <para><b>Warum nicht einfach <c>ClientSize.Height ± Delta</c>.</b> Auf einem
+        /// kleinen Schirm hat <see cref="FensterEinpassung"/> das Fenster bereits auf die
+        /// Arbeitsfläche geklemmt. Eine Rechnung auf dem GEKLEMMTEN Maß verlöre beim
+        /// Zuklappen 150 px, die gar nicht sichtbar waren — das Fenster würde kleiner als
+        /// der Bildschirm hergibt und behielte trotzdem seine Bildlaufleisten. Gerechnet
+        /// wird deshalb auf dem Sollmaß; die Klemmung setzt anschließend wieder auf, was
+        /// tatsächlich passt.</para>
+        /// </summary>
+        private int _schichtSollHoehe;
+
+        /// <summary>
+        /// Client-BREITE der Maske ohne Bildlaufleiste — die Untergrenze beim Auf- und
+        /// Zuklappen.
+        ///
+        /// <para><b>D3 (28.08.2026), Beifang der Ratchet-Doppelprobe.</b> Das Umschalten
+        /// schrieb die Breite mit <c>this.ClientSize.Width</c> zurück. Rollt der Dialog auf
+        /// einem kleinen Schirm, ist dieser Wert um die Breite der senkrechten
+        /// Bildlaufleiste (17 px) kleiner als das Fenster — jedes Auf- oder Zuklappen
+        /// verlor also 17 px Fensterbreite. Fünf Umschaltvorgänge kosteten gemessen
+        /// 68 px (716 → 648). Das Sollmaß hält die Breite fest; ein vom Anwender
+        /// aufgezogenes Fenster bleibt trotzdem breit, weil das Maximum gebildet wird.</para>
+        /// </summary>
+        private int _schichtSollBreite;
+
         public Form_PufferSp_Projekt()
         {
             // Der Designer setzt AutoScaleMode bewusst auf None und lässt
@@ -102,7 +169,22 @@ namespace WindowsFormsApplication1
             InitializeComponent();
             TexteSetzen();
             VerwendungslisteFuellen();
+
+            // PAKET K2: die drei Klassen-Set-Häkchen. Programmatisch, nicht im Designer
+            // (Konzept 10) - und VOR FensterEinpassung, weil die Maske dabei um eine
+            // Zeile wächst und die Einpassung das Entwurfsmaß beim ersten Aufruf misst.
+            KlassenSetAufbauen();
+
+            // PAKET P1: die Gruppe „Schichtung und Leistungsgrenzen" - aus demselben
+            // Grund programmatisch und ebenfalls vor der Einpassung.
+            SchichtungAufbauen();
+
             FensterEinpassung.Einhaengen(this);
+
+            // D2 (28.08.2026): Fußzeile auf die Norm. „Übernehmen" ist die Primäraktion
+            // und steht deshalb ganz rechts, „Schließen" links daneben — bisher war es
+            // umgekehrt, und beide standen unverankert auf Top/Left.
+            FusszeilenNorm.Einhaengen(this, _btnUebernehmen, _btnSchliessen);
         }
 
         // ==================================================================
@@ -169,6 +251,15 @@ namespace WindowsFormsApplication1
         // Knopf-Semantik NICHT angetastet: Der Dialog bleibt eine Verwaltung mit
         // Sofortwirkung — „Übernehmen" (AcceptButton) und „Schließen" (CancelButton,
         // DialogResult.OK), bewusst ohne „Abbrechen" (siehe Klassenkommentar oben).
+        //
+        // PAKET K2 und P1 rücken die Maske ein weiteres Mal auseinander, aber NICHT im
+        // Designer: KlassenSetAufbauen() schiebt für die Häkchenzeile alles unterhalb der
+        // Verwendungszeile um 30 px nach unten, SchichtungAufbauen() setzt die Gruppe
+        // „Schichtung und Leistungsgrenzen" unter die Eigenschaften und schiebt alles
+        // darunter um deren Höhe. Beide rechnen mit denselben Pixeln wie die Liste oben —
+        // die Zahlen stehen als Konstanten bei den jeweiligen Aufbaumethoden. Damit
+        // bleibt der Designer-Entwurf unangetastet und ein späterer Blick in den Designer
+        // zeigt weiter den Bestand.
 
         /// <summary>
         /// Setzt alle sichtbaren Texte aus <c>MyResource</c>. Läuft direkt nach
@@ -249,6 +340,720 @@ namespace WindowsFormsApplication1
                     Anzeige = MyResource.Resource.PSP_VERWENDUNG_KOMBI_ANZEIGE
                 }
             });
+        }
+
+        // ==================================================================
+        // Klassen-Set (Paket K2, Migrationsschritt 49, Konzept 6.1)
+        // ==================================================================
+        //
+        // WAS SICH ÄNDERT. Ein Pufferspeicher trug bisher EINE Verwendung: Heizung,
+        // Brauchwasser oder „Kombi" für beides. Jetzt trägt er ein SET aus drei
+        // unabhängigen Klassen - auch {Heizung, Prozesswärme} oder {H, B, P} sind
+        // möglich, und „Kombi" ist nur noch der Anzeigename des Sets {H, B}.
+        //
+        // WARUM DIE COMBOBOX BLEIBT. Der risikoärmere Weg (Konzept 10 nennt die
+        // Häkchen „statt der ComboBox"): Bis Paket S2 lesen Anzeigen, Auswahllisten und
+        // Meldungen weiter Tab_Pufferspeicher.Verwendung - die Puffer-Liste dieses
+        // Dialogs, der Senkendialog, die Speicherkarte, die Entladereihenfolge. Wäre
+        // die ComboBox schon jetzt weg, verschwände auch die Anzeige dieses Altwerts,
+        // während er noch wirkt. Sie bleibt deshalb sichtbar und funktionsfähig; die
+        // Häkchen spiegeln das Set, und beim Speichern wird IMMER BEIDES geschrieben:
+        // die Flags als führende Wahrheit, die Verwendung als abgeleiteter Altwert.
+        //
+        // DIE INTERAKTIONSREGEL. Beide Richtungen ziehen einander nach:
+        //   ComboBox geändert -> Häkchen werden abgeleitet gesetzt (Heizung -> {H},
+        //     Brauchwasser -> {B}, Kombi -> {H, B}).
+        //   Häkchen geändert  -> ComboBox geht auf den passenden Altwert. Für Sets
+        //     OHNE Alt-Entsprechung ({P}, {H, P}, {B, P}, {H, B, P}) gibt es keinen -
+        //     dann steht dort der NÄCHSTLIEGENDE Wert, und ein Kurzhinweis am
+        //     Steuerelement sagt, dass die Häkchen führen.
+        // _klassenSetSpiegelt verhindert dabei das gegenseitige Aufschaukeln.
+        //
+        // PFLICHT. Mindestens ein Häkchen (Konzept 6.1) - ein Speicher, den niemand
+        // entlädt, wäre sinnlos. Geprüft wird beim Übernehmen, nicht beim Klicken:
+        // Wer von {H} auf {B} umstellt, muss zwischendurch durch das leere Set gehen.
+
+        /// <summary>Höhe der neu eingefügten Häkchenzeile [px].</summary>
+        private const int KLASSENSET_ZEILENHOEHE = 30;
+
+        /// <summary>
+        /// Oberkante, ab der die Steuerelemente der Eigenschaftengruppe nachrücken.
+        /// Die Verwendungszeile liegt bei 86/90, die Vorlaufzeile bei 121/124 — der
+        /// Schnitt liegt dazwischen.
+        /// </summary>
+        private const int KLASSENSET_SCHNITT = 110;
+
+        /// <summary>Oberkante der Häkchen in der neuen Zeile.</summary>
+        private const int KLASSENSET_Y = 120;
+
+        /// <summary>Linke Kante der Häkchenreihe — dieselbe Spalte wie alle Eingabefelder.</summary>
+        private const int KLASSENSET_X = 180;
+
+        /// <summary>Abstand zwischen zwei Häkchen [px].</summary>
+        private const int KLASSENSET_ABSTAND = 14;
+
+        /// <summary>
+        /// Baut die Häkchenzeile PROGRAMMATISCH auf und schafft ihr Platz.
+        ///
+        /// <para>Die Maske ist ein <c>FixedDialog</c> mit fest gerechneten
+        /// Pixelpositionen (siehe Geometrieblock oben) und läuft DpiUnaware. Eine neue
+        /// Zeile heißt deshalb: alles unterhalb um <see cref="KLASSENSET_ZEILENHOEHE"/>
+        /// nachrücken, die Eigenschaftengruppe und die Fensterhöhe um denselben Betrag
+        /// wachsen lassen. Genau das tut diese Methode — in derselben Rechnung, mit der
+        /// die Abnahmebefunde die Zeilen bisher von Hand verschoben haben.</para>
+        ///
+        /// <para>Die Beschriftungen der drei Häkchen kommen aus den KANAL-Ressourcen und
+        /// nicht aus den <c>PSP_VERWENDUNG_*</c>-Texten: Gefragt ist hier, welche KANÄLE
+        /// der Speicher bedient, und diese Ressourcenfamilie ist genau dafür da und in
+        /// beiden Sprachen vollständig (einschließlich Prozesswärme, wo es keinen
+        /// Verwendungs-Text gibt).</para>
+        /// </summary>
+        private void KlassenSetAufbauen()
+        {
+            // --- 1. Platz schaffen ----------------------------------------------------
+            foreach (Control c in _gbDaten.Controls)
+                if (c.Top > KLASSENSET_SCHNITT) c.Top += KLASSENSET_ZEILENHOEHE;
+
+            _gbDaten.Height += KLASSENSET_ZEILENHOEHE;
+
+            foreach (Control c in this.Controls)
+                if (c != _gbDaten && c.Top > _gbDaten.Top) c.Top += KLASSENSET_ZEILENHOEHE;
+
+            this.ClientSize = new Size(this.ClientSize.Width,
+                                       this.ClientSize.Height + KLASSENSET_ZEILENHOEHE);
+
+            // --- 2. Steuerelemente ----------------------------------------------------
+            _lblKlassenSet = new Label();
+            _lblKlassenSet.Name = "_lblKlassenSet";
+            _lblKlassenSet.AutoSize = true;
+            _lblKlassenSet.Location = new Point(16, KLASSENSET_Y + 2);
+            _lblKlassenSet.Text = MyResource.Resource.PSP_LABEL_KLASSENSET;
+
+            _chkNutzungHeizung =
+                KlassenSetHaekchen("_chkNutzungHeizung", MyResource.Resource.KANAL_HEIZUNG_ANZEIGE);
+            _chkNutzungBrauchwasser =
+                KlassenSetHaekchen("_chkNutzungBrauchwasser", MyResource.Resource.KANAL_BRAUCHWASSER_ANZEIGE);
+            _chkNutzungProzess =
+                KlassenSetHaekchen("_chkNutzungProzess", MyResource.Resource.KANAL_PROZESS_ANZEIGE);
+
+            _gbDaten.Controls.Add(_lblKlassenSet);
+            _gbDaten.Controls.Add(_chkNutzungHeizung);
+            _gbDaten.Controls.Add(_chkNutzungBrauchwasser);
+            _gbDaten.Controls.Add(_chkNutzungProzess);
+
+            // Nebeneinander, jedes so breit wie sein Text - die deutsche und die
+            // englische Beschriftung sind unterschiedlich lang, feste Breiten schnitten
+            // in einer der beiden Sprachen ab.
+            int x = KLASSENSET_X;
+            foreach (CheckBox c in new[] { _chkNutzungHeizung, _chkNutzungBrauchwasser, _chkNutzungProzess })
+            {
+                c.Location = new Point(x, KLASSENSET_Y);
+                x += c.PreferredSize.Width + KLASSENSET_ABSTAND;
+            }
+
+            // Tabreihenfolge: unmittelbar hinter die Verwendungs-ComboBox. Alle
+            // Steuerelemente dieser Maske tragen TabIndex 0, die Reihenfolge ergibt sich
+            // damit aus dem Platz in der Kindliste.
+            int nachVerwendung = _gbDaten.Controls.GetChildIndex(_cbVerwendung) + 1;
+            _gbDaten.Controls.SetChildIndex(_lblKlassenSet, nachVerwendung);
+            _gbDaten.Controls.SetChildIndex(_chkNutzungHeizung, nachVerwendung + 1);
+            _gbDaten.Controls.SetChildIndex(_chkNutzungBrauchwasser, nachVerwendung + 2);
+            _gbDaten.Controls.SetChildIndex(_chkNutzungProzess, nachVerwendung + 3);
+
+            // --- 3. Verdrahtung -------------------------------------------------------
+            // Der Kurzhinweis kommt in den Komponentenbehälter des Formulars, damit ihn
+            // dessen Dispose mit abräumt. Der Designer hat ihn nie angelegt (die Maske
+            // führte bisher keine Komponente), also entsteht er hier.
+            if (components == null) components = new System.ComponentModel.Container();
+            _ttKlassenSet = new ToolTip(components);
+            _ttKlassenSet.AutoPopDelay = 10000;
+
+            _cbVerwendung.SelectedIndexChanged += Verwendung_Geaendert;
+            _chkNutzungHeizung.CheckedChanged += KlassenSet_Geaendert;
+            _chkNutzungBrauchwasser.CheckedChanged += KlassenSet_Geaendert;
+            _chkNutzungProzess.CheckedChanged += KlassenSet_Geaendert;
+
+            // Anfangszustand: die Vorbelegung der ComboBox (Heizung) auf die Häkchen.
+            KlassenSetSetzen(PufferSpCtrl.KlassenSetAusVerwendung(GewaehlteVerwendung()));
+        }
+
+        private static CheckBox KlassenSetHaekchen(string name, string text)
+        {
+            CheckBox c = new CheckBox();
+            c.Name = name;
+            c.AutoSize = true;
+            c.Text = text;
+            return c;
+        }
+
+        /// <summary>Das an den Häkchen abgelesene Set — die führende Wahrheit der Maske.</summary>
+        private PufferSpCtrl.KlassenSet GewaehltesKlassenSet()
+        {
+            return new PufferSpCtrl.KlassenSet(_chkNutzungHeizung.Checked,
+                                               _chkNutzungBrauchwasser.Checked,
+                                               _chkNutzungProzess.Checked);
+        }
+
+        /// <summary>
+        /// Setzt die Häkchen OHNE die ComboBox nachzuziehen (die Sperre
+        /// <see cref="_klassenSetSpiegelt"/> unterbricht die Gegenrichtung) und frischt
+        /// den Kurzhinweis auf.
+        /// </summary>
+        private void KlassenSetSetzen(PufferSpCtrl.KlassenSet set)
+        {
+            if (set == null || _chkNutzungHeizung == null) return;
+
+            _klassenSetSpiegelt = true;
+            try
+            {
+                _chkNutzungHeizung.Checked = set.Heizung;
+                _chkNutzungBrauchwasser.Checked = set.Brauchwasser;
+                _chkNutzungProzess.Checked = set.Prozess;
+            }
+            finally
+            {
+                _klassenSetSpiegelt = false;
+            }
+
+            KlassenSetHinweisAktualisieren();
+        }
+
+        /// <summary>
+        /// Der Kurzhinweis an der ComboBox: Nur für Sets, die der Altwert nicht
+        /// verlustfrei abbildet, steht dort „führend sind die Häkchen". Für {H}, {B} und
+        /// {H, B} bleibt er leer — dort sagt die ComboBox die volle Wahrheit.
+        /// </summary>
+        private void KlassenSetHinweisAktualisieren()
+        {
+            if (_ttKlassenSet == null) return;
+
+            PufferSpCtrl.KlassenSet set = GewaehltesKlassenSet();
+            string hinweis = set.HatAltEntsprechung
+                ? ""
+                : MyResource.Resource.PSP_HINWEIS_KLASSENSET_OHNE_ALTWERT;
+
+            _ttKlassenSet.SetToolTip(_cbVerwendung, hinweis);
+            _ttKlassenSet.SetToolTip(_lblKlassenSet, hinweis);
+        }
+
+        /// <summary>ComboBox geändert → die Häkchen werden abgeleitet gesetzt.</summary>
+        private void Verwendung_Geaendert(object sender, EventArgs e)
+        {
+            if (_klassenSetSpiegelt) return;
+            KlassenSetSetzen(PufferSpCtrl.KlassenSetAusVerwendung(GewaehlteVerwendung()));
+        }
+
+        /// <summary>
+        /// Häkchen geändert → die ComboBox geht auf den abgeleiteten Altwert.
+        ///
+        /// Das LEERE Set wird hier NICHT abgefangen: Wer von „nur Heizung" auf „nur
+        /// Brauchwasser" umstellt, muss zwischendurch durch das leere Set gehen. Eine
+        /// Meldung an dieser Stelle machte jede zweite Umstellung zum Hindernislauf; die
+        /// Pflichtprüfung sitzt deshalb im Übernehmen (<see cref="EingabenLesen"/>).
+        /// </summary>
+        private void KlassenSet_Geaendert(object sender, EventArgs e)
+        {
+            if (_klassenSetSpiegelt) return;
+
+            string vorher = GewaehlteVerwendung();
+
+            _klassenSetSpiegelt = true;
+            try { VerwendungWaehlen(GewaehltesKlassenSet().Verwendung); }
+            finally { _klassenSetSpiegelt = false; }
+
+            KlassenSetHinweisAktualisieren();
+
+            // Hat sich der Altwert mitgeändert, hat die ComboBox über den
+            // Designer-Behandler Daten_Geaendert bereits aufgefrischt - sonst hier
+            // nachholen. Die Reihenfolge-Anzeigen fragen die Datenbank ab; sie zweimal
+            // je Klick zu holen, wäre der teurere Weg zum selben Bild.
+            if (!_aktualisiert && string.Equals(vorher, GewaehlteVerwendung(), StringComparison.Ordinal))
+                AnzeigenAktualisieren();
+
+            // PAKET P1: Die Entnahmehöhen werden nur für die Kanäle des Sets angeboten -
+            // eine Entnahmehöhe für einen Kanal, den der Speicher nicht bedient, wäre
+            // eine Angabe ohne Wirkung.
+            EntnahmezeileOrdnen();
+        }
+
+        // ==================================================================
+        // Schichtung und Leistungsgrenzen (Paket P1, Schritt 53, Konzept 7.2)
+        // ==================================================================
+        //
+        // WAS DIE GRUPPE LEISTET. Ein Pufferspeicher war bisher EIN Vorrat mit einer
+        // Temperatur. Ab N > 1 rechnet die Engine ihn als N übereinanderliegende
+        // Schichten (Konzept 7.1) - oben warm, unten kalt, mit idealer Einschichtung
+        // beim Laden und Verdrängung am Anschluss beim Entladen. Die Gruppe pflegt die
+        // dafür nötigen Größen; alle sind so vorbelegt, dass ein Speicher ohne Eingabe
+        // exakt wie bisher rechnet.
+        //
+        // ZWEI SICHTBARKEITSSTUFEN.
+        //   IMMER   Schichtenzahl, Lade- und Entladeleistung. Die beiden Leistungsgrenzen
+        //           wirken AUCH bei N = 1 (Konzept 6.3) und dürfen deshalb nicht hinter
+        //           der Schichtung verschwinden.
+        //   AB N>1  Höhe, λ_eff, Nutztemperatur Brauchwasser, Entnahmehöhen. Sie
+        //           beschreiben die Schichtebene und haben bei einem Ein-Zonen-Speicher
+        //           keine Bedeutung - sichtbar wären sie dort nur Fragen ohne Antwort.
+        //
+        // DIE MASKE WÄCHST UND SCHRUMPFT dabei um die Höhendifferenz der beiden Stufen,
+        // wie schon bei der Häkchenzeile aus K2: FixedDialog mit fest gerechneten
+        // Pixelpositionen, DpiUnaware. Nach jeder Änderung läuft FensterEinpassung.Anwenden
+        // erneut - auf einem kleinen Schirm bekommt der Dialog dadurch Bildlaufleisten,
+        // auf einem großen ändert sich nichts (die Klasse ist dort wirkungslos).
+        //
+        // DER 55-°C-VORSCHLAG (Konzept 7.2/7.5). Wechselt der Anwender auf N > 1 und ist
+        // die Nutztemperatur leer, trägt der Dialog EINMALIG 55 °C ein - der Wert, ab dem
+        // ein Kombispeicher eine echte Brauchwasser-Bereitschaftszone bekommt. Es ist ein
+        // VORSCHLAG und keine stille Festschreibung: Der Spalten-Default bleibt NULL
+        // (= Rücklauf), und wer das Feld wieder leert, bekommt genau das.
+
+        /// <summary>Waagerechter Abstand zwischen zwei Gruppen [px].</summary>
+        private const int SCHICHT_ABSTAND = 12;
+
+        /// <summary>Linke Kante der Beschriftungen in der Gruppe.</summary>
+        private const int SCHICHT_X_LABEL = 16;
+
+        /// <summary>
+        /// Linke Kante der Eingabefelder. WEITER RECHTS als in der Eigenschaftengruppe
+        /// (180): „Nutztemperatur Brauchwasser [°C]:" misst rund 200 px und stieße bei 180
+        /// unter das Feld — derselbe Fehler, den die Designpolitur bei
+        /// <c>_lblGesamtvolumen</c> behoben hat.
+        /// </summary>
+        private const int SCHICHT_X_FELD = 250;
+
+        /// <summary>Linke Kante der leisen Hinweistexte rechts neben den Feldern.</summary>
+        private const int SCHICHT_X_HINWEIS = 336;
+
+        private const int SCHICHT_FELD_BREITE = 70;
+        private const int SCHICHT_ENTNAHME_BREITE = 50;
+
+        /// <summary>Zeilenraster der Gruppe [px].</summary>
+        private const int SCHICHT_ZEILE = 30;
+
+        private const int SCHICHT_Y_ANZAHL = 24;
+        private const int SCHICHT_Y_LADELEISTUNG = SCHICHT_Y_ANZAHL + SCHICHT_ZEILE;
+        private const int SCHICHT_Y_ENTLADELEISTUNG = SCHICHT_Y_LADELEISTUNG + SCHICHT_ZEILE;
+
+        private const int SCHICHT_Y_HOEHE = SCHICHT_Y_ENTLADELEISTUNG + 34;
+        private const int SCHICHT_Y_LAMBDA = SCHICHT_Y_HOEHE + SCHICHT_ZEILE;
+        private const int SCHICHT_Y_TNUTZ = SCHICHT_Y_LAMBDA + SCHICHT_ZEILE;
+        private const int SCHICHT_Y_ENTNAHME_KOPF = SCHICHT_Y_TNUTZ + 32;
+        private const int SCHICHT_Y_ENTNAHME = SCHICHT_Y_ENTNAHME_KOPF + 24;
+
+        /// <summary>Höhe der Gruppe bei N = 1 (nur die drei stets sichtbaren Zeilen).</summary>
+        private const int SCHICHT_HOEHE_KOMPAKT = SCHICHT_Y_ENTLADELEISTUNG + 38;
+
+        /// <summary>Höhe der Gruppe bei N &gt; 1 (alle Zeilen).</summary>
+        private const int SCHICHT_HOEHE_ERWEITERT = SCHICHT_Y_ENTNAHME + 38;
+
+        /// <summary>Vorschlagswert der Nutztemperatur Brauchwasser [°C] (Konzept 7.2).</summary>
+        private const int T_NUTZ_VORSCHLAG = 55;
+
+        /// <summary>
+        /// Baut die Gruppe „Schichtung und Leistungsgrenzen" PROGRAMMATISCH auf und
+        /// schafft ihr Platz — dieselbe Rechnung wie <see cref="KlassenSetAufbauen"/>,
+        /// nur um eine ganze Gruppe statt um eine Zeile.
+        /// </summary>
+        private void SchichtungAufbauen()
+        {
+            // --- 1. Gruppe anlegen (Lage NOCH aus den unverschobenen Maßen) -----------
+            _gbSchichtung = new GroupBox();
+            _gbSchichtung.Name = "_gbSchichtung";
+            _gbSchichtung.Text = MyResource.Resource.PSP_GRUPPE_SCHICHTUNG;
+            _gbSchichtung.Location = new Point(_gbDaten.Left, _gbDaten.Bottom + SCHICHT_ABSTAND);
+            _gbSchichtung.Size = new Size(_gbDaten.Width, SCHICHT_HOEHE_KOMPAKT);
+
+            // AUSDRÜCKLICHER Anker statt des Vorgabewerts: Bekommt der Dialog auf einem
+            // kleinen Schirm AutoScroll (FensterEinpassung), verschiebt WinForms beim
+            // Rollen nur direkte Kinder MIT Handle - ein handle-loses Kind mit
+            // Default-Anker bliebe stehen und verdeckte seine Nachbarn (Befundmuster
+            // d49075e). Ein gesetzter Anker heilt das, weil der Layoutlauf das
+            // Steuerelement dann gegen das DisplayRectangle neu positioniert.
+            _gbSchichtung.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+
+            // --- 2. Platz schaffen ---------------------------------------------------
+            int platz = SCHICHT_HOEHE_KOMPAKT + SCHICHT_ABSTAND;
+
+            foreach (Control c in this.Controls)
+                if (c.Top > _gbDaten.Top) c.Top += platz;
+
+            this.ClientSize = new Size(this.ClientSize.Width, this.ClientSize.Height + platz);
+            _schichtSollHoehe = this.ClientSize.Height;   // Sollmaß, noch ungeklemmt
+            _schichtSollBreite = this.ClientSize.Width;   // dito, siehe Feldkommentar
+            this.Controls.Add(_gbSchichtung);
+
+            // Tabreihenfolge: unmittelbar hinter die Eigenschaftengruppe. Alle
+            // Steuerelemente dieser Maske tragen TabIndex 0, die Reihenfolge ergibt sich
+            // damit aus dem Platz in der Kindliste (Muster KlassenSetAufbauen).
+            this.Controls.SetChildIndex(_gbSchichtung,
+                                        this.Controls.GetChildIndex(_gbDaten) + 1);
+
+            // --- 3. Stets sichtbare Zeilen -------------------------------------------
+            SchichtZeile(MyResource.Resource.PSP_LABEL_SCHICHTEN, SCHICHT_Y_ANZAHL,
+                         MyResource.Resource.PSP_HINWEIS_SCHICHTEN, false);
+
+            _nudSchichten = new NumericUpDown();
+            _nudSchichten.Name = "_nudSchichten";
+            _nudSchichten.Minimum = PufferSpModel.SCHICHTEN_DEFAULT;
+            _nudSchichten.Maximum = PufferSpModel.SCHICHTEN_MAX;
+            _nudSchichten.Value = PufferSpModel.SCHICHTEN_DEFAULT;
+            _nudSchichten.Location = new Point(SCHICHT_X_FELD, SCHICHT_Y_ANZAHL);
+            _nudSchichten.Size = new Size(60, 22);
+            _nudSchichten.ValueChanged += Schichten_Geaendert;
+            _gbSchichtung.Controls.Add(_nudSchichten);
+
+            SchichtZeile(MyResource.Resource.PSP_LABEL_LADELEISTUNG_MAX,
+                         SCHICHT_Y_LADELEISTUNG,
+                         MyResource.Resource.PSP_HINWEIS_LEISTUNG_UNBEGRENZT, false);
+            _tbLadeleistung = SchichtFeld("_tbLadeleistung", SCHICHT_Y_LADELEISTUNG,
+                                          SCHICHT_FELD_BREITE, false);
+
+            SchichtZeile(MyResource.Resource.PSP_LABEL_ENTLADELEISTUNG_MAX,
+                         SCHICHT_Y_ENTLADELEISTUNG,
+                         MyResource.Resource.PSP_HINWEIS_LEISTUNG_UNBEGRENZT, false);
+            _tbEntladeleistung = SchichtFeld("_tbEntladeleistung", SCHICHT_Y_ENTLADELEISTUNG,
+                                             SCHICHT_FELD_BREITE, false);
+
+            // --- 4. Zeilen ab N > 1 ---------------------------------------------------
+            SchichtZeile(MyResource.Resource.PSP_LABEL_HOEHE, SCHICHT_Y_HOEHE,
+                         MyResource.Resource.PSP_HINWEIS_HOEHE, true);
+            _tbHoehe = SchichtFeld("_tbHoehe", SCHICHT_Y_HOEHE, SCHICHT_FELD_BREITE, true);
+
+            SchichtZeile(MyResource.Resource.PSP_LABEL_LAMBDA_EFF, SCHICHT_Y_LAMBDA,
+                         MyResource.Resource.PSP_HINWEIS_LAMBDA_EFF, true);
+            _tbLambda = SchichtFeld("_tbLambda", SCHICHT_Y_LAMBDA, SCHICHT_FELD_BREITE, true);
+
+            SchichtZeile(MyResource.Resource.PSP_LABEL_T_NUTZ_BW, SCHICHT_Y_TNUTZ,
+                         MyResource.Resource.PSP_HINWEIS_T_NUTZ_BW, true);
+            _tbTNutzBW = SchichtFeld("_tbTNutzBW", SCHICHT_Y_TNUTZ, SCHICHT_FELD_BREITE, true);
+
+            SchichtLabel("_lblEntnahmeKopf", MyResource.Resource.PSP_LABEL_ENTNAHMEHOEHEN,
+                         SCHICHT_X_LABEL, SCHICHT_Y_ENTNAHME_KOPF, false, true);
+
+            _lblEntnahmeHeizung = SchichtLabel("_lblEntnahmeHeizung",
+                                               MyResource.Resource.KANAL_HEIZUNG_ANZEIGE + ":",
+                                               0, SCHICHT_Y_ENTNAHME + 3, false, true);
+            _tbEntnahmeHeizung = SchichtFeld("_tbEntnahmeHeizung", SCHICHT_Y_ENTNAHME,
+                                             SCHICHT_ENTNAHME_BREITE, true);
+
+            _lblEntnahmeBW = SchichtLabel("_lblEntnahmeBW",
+                                          MyResource.Resource.KANAL_BRAUCHWASSER_ANZEIGE + ":",
+                                          0, SCHICHT_Y_ENTNAHME + 3, false, true);
+            _tbEntnahmeBW = SchichtFeld("_tbEntnahmeBW", SCHICHT_Y_ENTNAHME,
+                                        SCHICHT_ENTNAHME_BREITE, true);
+
+            _lblEntnahmeProzess = SchichtLabel("_lblEntnahmeProzess",
+                                               MyResource.Resource.KANAL_PROZESS_ANZEIGE + ":",
+                                               0, SCHICHT_Y_ENTNAHME + 3, false, true);
+            _tbEntnahmeProzess = SchichtFeld("_tbEntnahmeProzess", SCHICHT_Y_ENTNAHME,
+                                             SCHICHT_ENTNAHME_BREITE, true);
+
+            // --- 5. Anfangszustand ----------------------------------------------------
+            foreach (Control c in _schichtNurErweitert) c.Visible = false;
+            _schichtErweitert = false;
+            EntnahmezeileOrdnen();
+        }
+
+        /// <summary>Beschriftung und leiser Hinweistext einer Zeile der Schichtgruppe.</summary>
+        private void SchichtZeile(string text, int y, string hinweis, bool nurErweitert)
+        {
+            SchichtLabel(null, text, SCHICHT_X_LABEL, y + 3, false, nurErweitert);
+
+            if (!string.IsNullOrEmpty(hinweis))
+                SchichtLabel(null, hinweis, SCHICHT_X_HINWEIS, y + 3, true, nurErweitert);
+        }
+
+        /// <summary>Ein Label der Schichtgruppe; <paramref name="leise"/> = Hinweistext.</summary>
+        private Label SchichtLabel(string name, string text, int x, int y, bool leise,
+                                   bool nurErweitert)
+        {
+            Label l = new Label();
+            if (!string.IsNullOrEmpty(name)) l.Name = name;
+            l.AutoSize = true;
+            l.Text = text;
+            l.Location = new Point(x, y);
+            if (leise) l.ForeColor = SystemColors.GrayText;
+
+            _gbSchichtung.Controls.Add(l);
+            if (nurErweitert) _schichtNurErweitert.Add(l);
+            return l;
+        }
+
+        /// <summary>Ein Eingabefeld der Schichtgruppe in der Feldspalte.</summary>
+        private TextBox SchichtFeld(string name, int y, int breite, bool nurErweitert)
+        {
+            TextBox t = new TextBox();
+            t.Name = name;
+            t.Location = new Point(SCHICHT_X_FELD, y);
+            t.Size = new Size(breite, 22);
+
+            _gbSchichtung.Controls.Add(t);
+            if (nurErweitert) _schichtNurErweitert.Add(t);
+            return t;
+        }
+
+        /// <summary>
+        /// Ordnet die Entnahmehöhen-Zeile: Angeboten werden NUR die Kanäle des aktuellen
+        /// Klassen-Sets, nebeneinander und jeder so breit, wie seine Beschriftung ist.
+        ///
+        /// <para>Feste Spaltenpositionen gingen hier nicht: Die drei Kanalnamen sind in
+        /// den beiden Sprachen unterschiedlich lang („Brauchwasser" gegen „Domestic hot
+        /// water"), und welche überhaupt erscheinen, entscheidet das Klassen-Set — beides
+        /// steht erst zur Laufzeit fest.</para>
+        ///
+        /// <para>Die Felder AUSGEBLENDETER Kanäle behalten ihren geladenen Wert und werden
+        /// beim Speichern unverändert zurückgeschrieben. Wer den Prozesskanal
+        /// vorübergehend abwählt, verliert dessen Entnahmehöhe also nicht.</para>
+        /// </summary>
+        private void EntnahmezeileOrdnen()
+        {
+            if (_gbSchichtung == null || _lblEntnahmeHeizung == null) return;
+
+            PufferSpCtrl.KlassenSet set = GewaehltesKlassenSet();
+
+            int x = SCHICHT_X_LABEL + 16;
+            x = EntnahmePaar(_lblEntnahmeHeizung, _tbEntnahmeHeizung, set.Heizung, x);
+            x = EntnahmePaar(_lblEntnahmeBW, _tbEntnahmeBW, set.Brauchwasser, x);
+            EntnahmePaar(_lblEntnahmeProzess, _tbEntnahmeProzess, set.Prozess, x);
+        }
+
+        /// <summary>Ein Kanalpaar der Entnahmezeile setzen; liefert die nächste freie x-Kante.</summary>
+        private int EntnahmePaar(Label label, TextBox feld, bool imSet, int x)
+        {
+            bool sichtbar = imSet && _schichtErweitert;
+
+            label.Visible = sichtbar;
+            feld.Visible = sichtbar;
+            if (!imSet) return x;
+
+            label.Location = new Point(x, SCHICHT_Y_ENTNAHME + 3);
+            feld.Location = new Point(x + label.PreferredSize.Width + 4, SCHICHT_Y_ENTNAHME);
+
+            return feld.Right + 16;
+        }
+
+        /// <summary>
+        /// Schichtenzahl geändert: Sichtbarkeit umstellen und — beim Wechsel auf N &gt; 1
+        /// mit noch leerem Feld — die Nutztemperatur mit 55 °C VORSCHLAGEN (Konzept 7.2).
+        ///
+        /// <para>Der Vorschlag unterbleibt während des Befüllens (<c>_aktualisiert</c>):
+        /// Ein gespeicherter Speicher mit N = 5 und bewusst leerer Nutztemperatur soll
+        /// beim Öffnen keine 55 bekommen, die er nie hatte.</para>
+        /// </summary>
+        private void Schichten_Geaendert(object sender, EventArgs e)
+        {
+            bool erweitert = GewaehlteSchichten() > PufferSpModel.SCHICHTEN_DEFAULT;
+
+            if (!_aktualisiert && erweitert && !_schichtErweitert &&
+                _tbTNutzBW.Text.Trim().Length == 0)
+                _tbTNutzBW.Text = T_NUTZ_VORSCHLAG.ToString(CultureInfo.InvariantCulture);
+
+            SchichtSichtbarkeitSetzen(erweitert);
+        }
+
+        /// <summary>Die eingestellte Schichtenzahl.</summary>
+        private int GewaehlteSchichten()
+        {
+            return _nudSchichten != null
+                ? PufferSpCtrl.SchichtenKlemmen((int)_nudSchichten.Value)
+                : PufferSpModel.SCHICHTEN_DEFAULT;
+        }
+
+        /// <summary>
+        /// Blendet die Zeilen ab N &gt; 1 ein oder aus und passt Gruppe, Folgeelemente und
+        /// Fensterhöhe an — dieselbe Pixelrechnung wie beim Aufbau, nur mit Vorzeichen.
+        /// </summary>
+        private void SchichtSichtbarkeitSetzen(bool erweitert)
+        {
+            if (_gbSchichtung == null || _schichtErweitert == erweitert) return;
+
+            int neueHoehe = erweitert ? SCHICHT_HOEHE_ERWEITERT : SCHICHT_HOEHE_KOMPAKT;
+            int delta = neueHoehe - _gbSchichtung.Height;
+
+            // D2 (28.08.2026): Die Schleife unten verschiebt ALLE Elemente unterhalb der
+            // Rubrik selbst — die Fußzeilenknöpfe also auch. Bliebe ihr unterer Anker
+            // aktiv, verschöbe er sie ein zweites Mal, und diese Zwischenlage ginge in
+            // das Inhaltsmaß von FensterEinpassung ein. Der Anker kommt mit dem
+            // FusszeilenNorm.Anwenden weiter unten zurück.
+            FusszeilenNorm.AnkerLoesen(_btnUebernehmen, _btnSchliessen);
+
+            this.SuspendLayout();
+            try
+            {
+                _schichtErweitert = erweitert;
+
+                foreach (Control c in _schichtNurErweitert) c.Visible = erweitert;
+                EntnahmezeileOrdnen();   // nach dem Umschalten - es liest _schichtErweitert
+
+                _gbSchichtung.Height = neueHoehe;
+
+                foreach (Control c in this.Controls)
+                    if (!ReferenceEquals(c, _gbSchichtung) && c.Top > _gbSchichtung.Top)
+                        c.Top += delta;
+
+                _schichtSollHoehe += delta;
+                // D3: NICHT this.ClientSize.Width — der Wert ist bei sichtbarer
+                // Bildlaufleiste um deren Breite kleiner, und das Fenster schrumpfte
+                // bei jedem Umschalten um 17 px (siehe _schichtSollBreite).
+                this.ClientSize = new Size(Math.Max(this.ClientSize.Width, _schichtSollBreite),
+                                           _schichtSollHoehe);
+            }
+            finally
+            {
+                this.ResumeLayout();
+            }
+
+            // Die Maske ist gerade gewachsen oder geschrumpft. Auf einem großen Schirm
+            // tut dieser Aufruf nichts (FensterEinpassung prüft jede Stufe einzeln); auf
+            // einem kleinen sorgt er dafür, dass die Fußknöpfe erreichbar bleiben.
+            //
+            // D2 (28.08.2026): Der Aufruf kommt VOR der Fußzeilennorm, und die Knopfreihe
+            // ist bis hierher ohne Anker (AnkerLoesen oben). Nur so misst die Einpassung
+            // das Inhaltsmaß an der Lage, welche die Verschiebeschleife hergestellt hat.
+            // Mit aktivem Anker maß sie eine Zwischenlage und blähte den Bildlaufbereich
+            // dauerhaft auf.
+            //
+            // D3 (28.08.2026): _schichtSollHoehe geht der Einpassung jetzt AUSDRÜCKLICH
+            // mit — sie misst sonst die geklemmte Client-Fläche und käme beim Zuklappen
+            // nie wieder unter das größte je erreichte Maß (Bildlauf-Ratchet P1-O8).
+            FensterEinpassung.SollmassSetzen(this, new Size(0, _schichtSollHoehe));
+            FensterEinpassung.Anwenden(this);
+
+            // D2: Fußzeile zuletzt. _schichtSollHoehe ist die UNGEKLEMMTE Sollhöhe und
+            // damit der einzige verlässliche Bezug — die Client-Fläche ist auf einem
+            // kleinen Schirm gerade geklemmt worden. Der Aufruf setzt auch den Anker
+            // wieder, den AnkerLoesen oben abgenommen hat.
+            FusszeilenNorm.BezugSetzen(this, new Size(0, _schichtSollHoehe));
+            FusszeilenNorm.Anwenden(this, _btnUebernehmen, _btnSchliessen);
+        }
+
+        /// <summary>Zeigt die Schicht- und Leistungsdaten eines Speichers in der Maske.</summary>
+        private void SchichtdatenAnzeigen(PufferSpCtrl.Schichtdaten d)
+        {
+            if (d == null || _nudSchichten == null) return;
+
+            bool vorher = _aktualisiert;
+            _aktualisiert = true;
+            try
+            {
+                _nudSchichten.Value = PufferSpCtrl.SchichtenKlemmen(d.Schichten);
+
+                _tbHoehe.Text = Kommazahl(d.Hoehe);
+                _tbLambda.Text = Kommazahl(d.LambdaEff);
+                _tbTNutzBW.Text = Kommazahl(d.TNutzBW);
+                _tbEntnahmeHeizung.Text = Kommazahl(d.EntnahmeHeizung);
+                _tbEntnahmeBW.Text = Kommazahl(d.EntnahmeBW);
+                _tbEntnahmeProzess.Text = Kommazahl(d.EntnahmeProzess);
+
+                // 0 = unbegrenzt und wird als leeres Feld gezeigt: Eine „0" in einem
+                // Leistungsfeld liest sich wie „keine Leistung" und meint das Gegenteil.
+                _tbLadeleistung.Text = d.LadeleistungMax > 0 ? Kommazahl(d.LadeleistungMax) : "";
+                _tbEntladeleistung.Text = d.EntladeleistungMax > 0
+                    ? Kommazahl(d.EntladeleistungMax) : "";
+            }
+            finally
+            {
+                _aktualisiert = vorher;
+            }
+
+            // AUSDRÜCKLICH und nicht dem ValueChanged überlassen: Stand die Schichtenzahl
+            // schon auf dem Zielwert, feuert das Ereignis nicht, und die Gruppe behielte
+            // den Zustand des zuvor angezeigten Speichers (dieselbe Falle wie bei den
+            // Klassen-Set-Häkchen in NeuVorbereiten).
+            SchichtSichtbarkeitSetzen(GewaehlteSchichten() > PufferSpModel.SCHICHTEN_DEFAULT);
+            EntnahmezeileOrdnen();
+        }
+
+        /// <summary>Eine nullbare Kommazahl als Feldinhalt; <c>null</c> ergibt das leere Feld.</summary>
+        private static string Kommazahl(double? wert)
+        {
+            return wert.HasValue ? wert.Value.ToString("0.###") : "";
+        }
+
+        /// <summary>
+        /// Liest die Schicht- und Leistungsfelder; <c>false</c> = Eingabefehler, dann
+        /// steht der Grund in <paramref name="fehler"/>.
+        ///
+        /// <para>LEER ist überall zulässig und bedeutet „Vorbelegung" — genau die
+        /// NULL-Bedeutung der Spalten (Konzept 7.2). Geprüft wird nur, was dasteht.</para>
+        /// </summary>
+        private bool SchichtdatenLesen(out PufferSpCtrl.Schichtdaten schicht, out string fehler)
+        {
+            schicht = new PufferSpCtrl.Schichtdaten();
+            fehler = null;
+
+            schicht.Schichten = GewaehlteSchichten();
+
+            if (!ZahlOderLeer(_tbHoehe, MyResource.Resource.PSP_FEHLER_HOEHE, 0, double.MaxValue,
+                              false, out schicht.Hoehe, out fehler)) return false;
+
+            if (!ZahlOderLeer(_tbLambda, MyResource.Resource.PSP_FEHLER_LAMBDA_EFF, 0,
+                              double.MaxValue, false, out schicht.LambdaEff, out fehler))
+                return false;
+
+            if (!ZahlOderLeer(_tbTNutzBW, MyResource.Resource.PSP_FEHLER_T_NUTZ_BW, 0,
+                              double.MaxValue, false, out schicht.TNutzBW, out fehler))
+                return false;
+
+            if (!EntnahmehoeheLesen(_tbEntnahmeHeizung, MyResource.Resource.KANAL_HEIZUNG_ANZEIGE,
+                                    out schicht.EntnahmeHeizung, out fehler)) return false;
+            if (!EntnahmehoeheLesen(_tbEntnahmeBW, MyResource.Resource.KANAL_BRAUCHWASSER_ANZEIGE,
+                                    out schicht.EntnahmeBW, out fehler)) return false;
+            if (!EntnahmehoeheLesen(_tbEntnahmeProzess, MyResource.Resource.KANAL_PROZESS_ANZEIGE,
+                                    out schicht.EntnahmeProzess, out fehler)) return false;
+
+            double? leistung;
+            if (!ZahlOderLeer(_tbLadeleistung,
+                              string.Format(MyResource.Resource.PSP_FEHLER_LEISTUNG,
+                                            MyResource.Resource.PSP_NAME_LADELEISTUNG_MAX),
+                              0, double.MaxValue, true, out leistung, out fehler)) return false;
+            schicht.LadeleistungMax = leistung ?? 0;
+
+            if (!ZahlOderLeer(_tbEntladeleistung,
+                              string.Format(MyResource.Resource.PSP_FEHLER_LEISTUNG,
+                                            MyResource.Resource.PSP_NAME_ENTLADELEISTUNG_MAX),
+                              0, double.MaxValue, true, out leistung, out fehler)) return false;
+            schicht.EntladeleistungMax = leistung ?? 0;
+
+            return true;
+        }
+
+        /// <summary>Eine Entnahmehöhe 0…1; leer bleibt leer (Kanal-Default).</summary>
+        private static bool EntnahmehoeheLesen(TextBox tb, string kanal, out double? wert,
+                                               out string fehler)
+        {
+            return ZahlOderLeer(tb,
+                                string.Format(MyResource.Resource.PSP_FEHLER_ENTNAHMEHOEHE, kanal),
+                                0, 1, true, out wert, out fehler);
+        }
+
+        /// <summary>
+        /// Ein Zahlenfeld, das auch LEER bleiben darf.
+        /// </summary>
+        /// <param name="nullErlaubt">
+        /// <c>true</c> = der Wert 0 ist eine gültige Angabe (Entnahmehöhe „ganz unten",
+        /// Leistung „unbegrenzt"); <c>false</c> = 0 ist Unsinn (Höhe, λ, Temperatur).
+        /// Dieselbe Unterscheidung wie in <see cref="SchwelleLesen"/>.
+        /// </param>
+        private static bool ZahlOderLeer(TextBox tb, string fehlertext, double min, double max,
+                                         bool nullErlaubt, out double? wert, out string fehler)
+        {
+            wert = null;
+            fehler = null;
+
+            string text = (tb.Text ?? "").Trim();
+            if (text.Length == 0) return true;
+
+            float f;
+            if (!WaermequelleClass.ZahlParsen(text, out f) ||
+                f < min || f > max || (f == 0 && !nullErlaubt))
+            {
+                fehler = fehlertext;
+                return false;
+            }
+
+            wert = f;
+            return true;
         }
 
         // --- Befüllen -----------------------------------------------------------------
@@ -392,6 +1197,12 @@ namespace WindowsFormsApplication1
                             ? WaermesenkeClass.VERWENDUNG_BRAUCHWASSER
                             : WaermesenkeClass.VERWENDUNG_HEIZUNG);
 
+                // PAKET K2: die Häkchen mitziehen. Ausdrücklich und nicht dem Ereignis
+                // überlassen - hat die ComboBox schon auf dem Zielwert gestanden, feuert
+                // SelectedIndexChanged nicht, und die Häkchen behielten das Set des
+                // zuvor bearbeiteten Speichers.
+                KlassenSetSetzen(PufferSpCtrl.KlassenSetAusVerwendung(GewaehlteVerwendung()));
+
                 // Vorbelegung aus den SYSTEMVORGABEN des Projekts (Konzept 4.3, Punkt 3):
                 // kleinster Vorlauf und größter Rücklauf über die Erzeuger. Fehlen sie,
                 // bleiben die Felder leer - eine erfundene Vorbelegung wäre bei einem
@@ -418,6 +1229,11 @@ namespace WindowsFormsApplication1
                 _aktualisiert = false;
             }
 
+            // PAKET P1: die Schichtgruppe auf die Vorbelegung - Ein-Zonen-Speicher ohne
+            // Leistungsgrenzen. Ausdrücklich und nicht dem Ereignis überlassen, aus
+            // demselben Grund wie beim Klassen-Set oben.
+            SchichtdatenAnzeigen(new PufferSpCtrl.Schichtdaten());
+
             AnzeigenAktualisieren();
         }
 
@@ -440,6 +1256,15 @@ namespace WindowsFormsApplication1
                 _tbVerluste.Text = p.Bereitschaftsverluste.ToString("0.###");
                 VerwendungWaehlen(WaermesenkeClass.WirksameVerwendung(p));
 
+                // PAKET K2: Das KLASSEN-SET ist führend und kann mehr aussagen als der
+                // Altwert ({Heizung, Prozess} etwa steht in der ComboBox als „Heizung").
+                // Es wird deshalb NACH der ComboBox gesetzt und überschreibt die eben
+                // abgeleiteten Häkchen. Gelesen wird es aus der Datenbank statt aus
+                // PufferInfo: Die Puffer-Liste des Dialogs stammt aus
+                // WaermesenkeClass.ProjektPufferListe, und deren Datensatz führt bis zur
+                // Engine-Umstellung nur die Verwendung.
+                KlassenSetSetzen(PufferSpCtrl.KlassenSetLesen(p.ID));
+
                 _tbVorlauf.Text = p.Vorlauf > 0 ? p.Vorlauf.ToString(CultureInfo.InvariantCulture) : "";
                 _tbRuecklauf.Text = p.Ruecklauf > 0 ? p.Ruecklauf.ToString(CultureInfo.InvariantCulture) : "";
 
@@ -457,6 +1282,12 @@ namespace WindowsFormsApplication1
             {
                 _aktualisiert = false;
             }
+
+            // PAKET P1: Schichtung und Leistungsgrenzen. Wie das Klassen-Set aus der
+            // DATENBANK gelesen und nicht aus PufferInfo - deren Datensatz führt die
+            // Spalten des Schritts 53 nicht. Spaltentolerant: Ohne die Spalten kommt die
+            // Vorbelegung zurück, und die Gruppe zeigt N = 1 mit leeren Feldern.
+            SchichtdatenAnzeigen(PufferSpCtrl.SchichtdatenLesen(p.ID));
 
             AnzeigenAktualisieren();
         }
@@ -776,16 +1607,21 @@ namespace WindowsFormsApplication1
             int volumen, entladeprio;
             double verluste, schwelleEin, schwelleAus, schwelleNachrang, schwelleReserve;
             int? vorlauf, ruecklauf;
+            PufferSpCtrl.KlassenSet klassenSet;
+            PufferSpCtrl.Schichtdaten schicht;
 
             if (!EingabenLesen(out bezeichner, out verwendung, out volumen, out verluste,
                                out vorlauf, out ruecklauf, out schwelleEin, out schwelleAus,
                                out schwelleNachrang, out entladeprio, out schwelleReserve,
-                               out fehler))
+                               out klassenSet, out schicht, out fehler))
             {
                 MessageBox.Show(fehler, MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER,
                                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+
+            // KRITERIUM W6 - HART, ABGEWIESEN (Konzept 6.2/6.3, Entscheidung F8).
+            if (!SchichtungAmVerbundGeprueft(schicht, bezeichner)) return;
 
             string hersteller = "", speichertyp = ProjektPuffer.SPEICHERTYP_PUFFER;
             double investition = 0;
@@ -798,7 +1634,8 @@ namespace WindowsFormsApplication1
                 int neueId = PufferSpCtrl.ProjektPufferAnlegen(
                     ID_Projekt, bezeichner, hersteller, speichertyp, volumen, verluste,
                     investition, verwendung, vorlauf, ruecklauf,
-                    schwelleEin, schwelleAus, schwelleNachrang, entladeprio, schwelleReserve);
+                    schwelleEin, schwelleAus, schwelleNachrang, entladeprio, schwelleReserve,
+                    klassenSet.Heizung, klassenSet.Brauchwasser, klassenSet.Prozess, schicht);
 
                 if (neueId <= 0)
                 {
@@ -815,14 +1652,16 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                // Konzept 5.2, Konsistenzregel: Ein Verwendungswechsel an einem bereits
-                // zugeordneten Speicher darf nicht still durchgehen.
-                if (!VerwendungswechselBestaetigt(verwendung)) return;
+                // Konzept 5.2, Konsistenzregel: Ein Nutzungswechsel an einem bereits
+                // zugeordneten Speicher darf nicht still durchgehen (K2-O8: gemessen wird
+                // seit S2 das KLASSEN-SET, nicht mehr der abgeleitete Altwert).
+                if (!KlassenSetWechselBestaetigt(klassenSet)) return;
 
                 if (!PufferSpCtrl.ProjektPufferAendern(
                         _bearbeiteteId, ID_Projekt, bezeichner, hersteller, speichertyp, volumen,
                         verluste, investition, verwendung, vorlauf, ruecklauf,
-                        schwelleEin, schwelleAus, schwelleNachrang, entladeprio, schwelleReserve))
+                        schwelleEin, schwelleAus, schwelleNachrang, entladeprio, schwelleReserve,
+                        klassenSet.Heizung, klassenSet.Brauchwasser, klassenSet.Prozess, schicht))
                 {
                     MessageBox.Show(MyResource.Resource.PSP_MELDUNG_AENDERN_FEHLGESCHLAGEN,
                                     MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER,
@@ -836,52 +1675,143 @@ namespace WindowsFormsApplication1
             }
 
             BestandNeuLaden(ID_Puffer);
+
+            // KRITERIUM W4 - WEICH, NACH dem Speichern (Konzept 7.2). Derselbe Umgang wie
+            // im Senkendialog: Die Angabe ist zulässig und wird gespeichert, der Anwender
+            // erfährt nur, was der Lauf damit macht.
+            KlemmhinweisZeigen(schicht, bezeichner, vorlauf, ruecklauf);
         }
 
         /// <summary>
-        /// Rückfrage vor dem Wechsel der Verwendung eines bereits REFERENZIERTEN
-        /// Speichers; <c>true</c> = weitermachen.
+        /// KRITERIUM W6 — die HARTE Abweisung im Dialog (Konzept 6.2/6.3, Entscheidung
+        /// F8); <c>true</c> = speichern darf weitergehen.
         ///
-        /// Die Verwendung entscheidet, welche Senke den Speicher überhaupt wählen darf
-        /// (<c>WaermesenkeClass.PufferPasst</c>). Wird sie an einem Speicher umgestellt,
-        /// den eine Anlage schon als Haupt- oder Zweitsenke führt, passt diese Zuordnung
-        /// hinterher nicht mehr: Der Senkendialog blockiert beim nächsten Öffnen mit
-        /// „falsche Verwendung", und bis dahin steht in der Anlage eine Senke, die die
-        /// Prüfung nach 4.6 nicht mehr bestehen würde. Deshalb die Rückfrage MIT der
-        /// Liste der betroffenen Anlagen.
+        /// <para><b>Warum abgewiesen und nicht gewarnt.</b> Ein Parallelverbund ist EIN
+        /// Wärmevorrat aus mehreren Behältern, und sein <c>Q_max</c> ist die aufsummierte
+        /// Kapazität ALLER Mitglieder (<c>SimulationControl</c>, Verbundaufbau). Eine
+        /// Schichtebene, die aus dem Volumen des Leitspeichers abgeleitet wäre, beschriebe
+        /// damit einen Behälter, den es so nicht gibt — die Schicht-Invariante aus
+        /// Konzept 7.3 ließe sich nicht erfüllen. Anders als W1 bis W5 ist das kein
+        /// unplausibler, sondern ein UNMÖGLICHER Zustand; der Katalog führt ihn deshalb
+        /// als harten Befund, und hier steht die Sperre.</para>
         ///
-        /// Die Rückfrage sitzt hier im Dialog und nicht in
+        /// <para>Die GEGENRICHTUNG — ein Verbund, dessen Leitspeicher schon geschichtet
+        /// ist — hält <c>AnlagePufferVerbundCtrl.KonfliktPruefen</c> ab
+        /// (<c>GRUND_LEIT_GESCHICHTET</c>). Beide Wege in denselben Zustand sind damit
+        /// verschlossen.</para>
+        ///
+        /// <para>Bei der NEUANLAGE kann der Fall nicht auftreten: Ein Speicher, den es
+        /// noch nicht gibt, ist kein Leitspeicher. Die Abfrage entfällt deshalb dort.</para>
+        /// </summary>
+        private bool SchichtungAmVerbundGeprueft(PufferSpCtrl.Schichtdaten schicht,
+                                                 string bezeichner)
+        {
+            if (schicht == null || !schicht.Geschichtet) return true;
+            if (_bearbeiteteId <= 0) return true;
+            if (!AnlagePufferVerbundCtrl.IstLeitspeicher(_bearbeiteteId)) return true;
+
+            MessageBox.Show(
+                string.Format(
+                    Zeilenumbruch.Normalisieren(
+                        MyResource.Resource.PSP_FEHLER_SCHICHTUNG_AM_VERBUND),
+                    bezeichner),
+                MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER,
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+            return false;
+        }
+
+        /// <summary>
+        /// KRITERIUM W4 — der WEICHE Hinweis auf die Laufzeit-Klemmung (Konzept 7.2).
+        ///
+        /// <para>Liegt die Nutztemperatur Brauchwasser über dem WIRKSAMEN Vorlauf des
+        /// Speichers, könnte keine Schicht sie je erreichen: Der Brauchwasserkanal wäre
+        /// still komplett abgeschaltet. Der Lauf klemmt sie deshalb auf <c>VL_eff</c> und
+        /// schreibt eine Protokollwarnung — gespeichert wird die Angabe trotzdem
+        /// unverändert, denn sie ist nicht falsch, sondern nur nicht erreichbar (etwa
+        /// weil das Temperaturpaar des Speichers noch fehlt).</para>
+        ///
+        /// <para><c>VL_eff</c> kommt aus <see cref="Warnkriterien.WirksamerVorlauf"/> —
+        /// derselben Rückfallregel, mit der der Katalog und die Engine rechnen. Ein
+        /// eigener Vergleich hier könnte eine andere Antwort geben als die
+        /// Protokollwarnung, die der Anwender gleich darauf liest.</para>
+        /// </summary>
+        private void KlemmhinweisZeigen(PufferSpCtrl.Schichtdaten schicht, string bezeichner,
+                                        int? vorlauf, int? ruecklauf)
+        {
+            if (schicht == null || !schicht.TNutzBW.HasValue) return;
+
+            double tNutz = schicht.TNutzBW.Value;
+            double vlEff = Warnkriterien.WirksamerVorlauf(vorlauf ?? 0, ruecklauf ?? 0,
+                                                          bezeichner);
+            if (tNutz <= vlEff) return;
+
+            MessageBox.Show(
+                MyResource.Resource.SIMWARN_DIALOG_KOPF + Environment.NewLine +
+                Environment.NewLine + "  • " +
+                string.Format(MyResource.Resource.SIMWARN_W4_TNUTZ_UEBER_VLEFF,
+                              bezeichner,
+                              tNutz.ToString("0.#", CultureInfo.CurrentCulture),
+                              vlEff.ToString("0.#", CultureInfo.CurrentCulture)),
+                MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER,
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+        /// <summary>
+        /// Rückfrage vor dem Wechsel der NUTZUNG (Klassen-Set) eines bereits
+        /// REFERENZIERTEN Speichers; <c>true</c> = weitermachen.
+        ///
+        /// <para><b>PAKET S2, Ticket K2-O8 — geprüft wird das SET, nicht mehr der
+        /// Altwert.</b> Bis K2 verglich die Rückfrage <c>Verwendung</c> gegen
+        /// <c>Verwendung</c>. Seit dem Klassen-Set hat dieser Altwert für vier der acht
+        /// Sets keine genaue Entsprechung mehr (<c>PufferSpCtrl.KlassenSet.Verwendung</c>
+        /// liefert dann den nächstliegenden): Ein Wechsel von {H} auf {H, P} ändert die
+        /// abgeleitete Verwendung NICHT — beide ergeben „Heizung" — und ging deshalb
+        /// still durch, obwohl der Speicher danach einen Kanal mehr bedient. Verglichen
+        /// werden jetzt die drei Flags; damit schlägt jede echte Änderung an.</para>
+        ///
+        /// <para><b>Die Begründung hat sich mitgeändert.</b> Früher war eine
+        /// unpassende Zuordnung nach dem Wechsel GESPERRT — der Senkendialog wies sie
+        /// beim nächsten Öffnen ab. Seit S2 (Konzept 6.2) ist sie zulässig und erzeugt
+        /// eine Warnung (Kriterium W1). Die Rückfrage bleibt trotzdem: Sie ist der
+        /// einzige Moment, in dem der Anwender sieht, WELCHE Anlagen sein Wechsel
+        /// betrifft. Nur der Meldungstext sagt jetzt „wird gewarnt" statt „muss neu
+        /// gesetzt werden" (<c>PSP_MELDUNG_KLASSENSETWECHSEL</c>).</para>
+        ///
+        /// <para>Die Rückfrage sitzt hier im Dialog und nicht in
         /// <c>PufferSpCtrl.ProjektPufferAendern</c>: die Ctrl-Bausteine aus Paket 2 sind
         /// durchgehend dialogfrei (Konzept 13.4), damit die headless laufenden Proben und
         /// der Referenzlauf sie benutzen können. Eine MessageBox dort brächte den
-        /// nächsten Lauf zum Stehen.
+        /// nächsten Lauf zum Stehen.</para>
         /// </summary>
-        private bool VerwendungswechselBestaetigt(string verwendungNeu)
+        private bool KlassenSetWechselBestaetigt(PufferSpCtrl.KlassenSet setNeu)
         {
-            if (_bearbeiteteId <= 0) return true;
+            if (_bearbeiteteId <= 0 || setNeu == null) return true;
 
             WaermesenkeClass.PufferInfo alt = WaermesenkeClass.PufferLesen(_bearbeiteteId);
             if (alt == null) return true;
 
-            string verwendungAlt = WaermesenkeClass.WirksameVerwendung(alt);
-            if (string.Equals(verwendungAlt, verwendungNeu, StringComparison.OrdinalIgnoreCase))
+            PufferSpCtrl.KlassenSet setAlt = PufferSpCtrl.KlassenSetLesen(_bearbeiteteId);
+            if (setAlt.Heizung == setNeu.Heizung &&
+                setAlt.Brauchwasser == setNeu.Brauchwasser &&
+                setAlt.Prozess == setNeu.Prozess)
                 return true;
 
             List<string> referenzen = PufferSpCtrl.ReferenzenAufPuffer(_bearbeiteteId);
             if (referenzen.Count == 0) return true;
 
-            // Die beiden Verwendungen sind DB-Werte und werden für die Meldung übersetzt
+            // Die beiden Sets sind Steuerwerte und werden für die Meldung übersetzt
             // (Befund L0-2) - sonst mischte die englische Meldung die Sprachen.
             return MessageBox.Show(
                 string.Format(
                     // Umbrüche der Ressource VOR dem Einsetzen auf die Plattformform
                     // bringen (Details in Zeilenumbruch).
-                    Zeilenumbruch.Normalisieren(MyResource.Resource.PSP_MELDUNG_VERWENDUNGSWECHSEL),
+                    Zeilenumbruch.Normalisieren(MyResource.Resource.PSP_MELDUNG_KLASSENSETWECHSEL),
                     alt.Bezeichner,
-                    WaermesenkeClass.VerwendungAnzeige(verwendungAlt),
-                    WaermesenkeClass.VerwendungAnzeige(verwendungNeu),
+                    Warnkriterien.KlassenSetAnzeige(setAlt),
+                    Warnkriterien.KlassenSetAnzeige(setNeu),
                     string.Join(Environment.NewLine + "  • ", referenzen)),
-                MyResource.Resource.PSP_TITEL_VERWENDUNG_AENDERN, MessageBoxButtons.YesNo,
+                MyResource.Resource.PSP_TITEL_KLASSENSET_AENDERN, MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning) == DialogResult.Yes;
         }
 
@@ -984,10 +1914,21 @@ namespace WindowsFormsApplication1
                                    out double verluste, out int? vorlauf, out int? ruecklauf,
                                    out double schwelleEin, out double schwelleAus,
                                    out double schwelleNachrang, out int entladeprio,
-                                   out double schwelleReserve, out string fehler)
+                                   out double schwelleReserve,
+                                   out PufferSpCtrl.KlassenSet klassenSet,
+                                   out PufferSpCtrl.Schichtdaten schicht, out string fehler)
         {
+            schicht = new PufferSpCtrl.Schichtdaten();
             bezeichner = (_tbBezeichner.Text ?? "").Trim();
-            verwendung = GewaehlteVerwendung();   // DB-Wert, nicht der Anzeigetext (L0-2)
+
+            // PAKET K2: Gespeichert wird IMMER BEIDES - die Häkchen als führende
+            // Wahrheit und die davon abgeleitete Verwendung als Altwert für die bis
+            // Paket S2 nicht umgestellten Anzeigen. Die ComboBox wird dafür NICHT
+            // gelesen: Sie folgt den Häkchen, und bei einem Set ohne Alt-Entsprechung
+            // zeigt sie ohnehin nur den nächstliegenden Wert.
+            klassenSet = GewaehltesKlassenSet();
+            verwendung = klassenSet.Verwendung;   // DB-Wert, nicht der Anzeigetext (L0-2)
+
             volumen = 0;
             verluste = 0;
             vorlauf = null;
@@ -1005,9 +1946,13 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
-            if (verwendung.Length == 0)
+            // PFLICHT: mindestens ein Häkchen (Konzept 6.1). Das leere Set wäre ein
+            // Speicher, den keine einzige Entladeordnung führt - er nähme Wärme auf und
+            // gäbe sie nie ab. Die frühere Pflichtprüfung „Verwendung gewählt?" ist damit
+            // abgelöst: Die Verwendung wird jetzt abgeleitet und kann nicht leer sein.
+            if (klassenSet.Leer)
             {
-                fehler = MyResource.Resource.PSP_FEHLER_VERWENDUNG_PFLICHT;
+                fehler = MyResource.Resource.PSP_FEHLER_KLASSENSET_LEER;
                 return false;
             }
 
@@ -1081,6 +2026,11 @@ namespace WindowsFormsApplication1
                 fehler = MyResource.Resource.PSP_FEHLER_RESERVE_UEBER_AUS;
                 return false;
             }
+
+            // PAKET P1: Schichtung und Leistungsgrenzen. ZULETZT geprüft, weil ihre
+            // Felder in der Maske unter allen anderen stehen - die Fehlermeldungen
+            // erscheinen damit in derselben Reihenfolge, in der der Anwender liest.
+            if (!SchichtdatenLesen(out schicht, out fehler)) return false;
 
             return true;
         }

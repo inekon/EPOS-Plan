@@ -62,6 +62,22 @@ namespace WindowsFormsApplication1
         public double Strombedarf_Max;        // kW
         public double Waermerestbedarf;       // MWh (Restwärmebedarf nach allen Erzeugern, sim.Restwaerme)
         public double Stromrestbedarf;        // MWh (Reststrombedarf/Netzbezug, sim.Reststrom)
+
+        /// <summary>
+        /// PAKET E1 (Konzept 4.4): Jahres-Wärmebedarf JE KANAL [MWh], indiziert mit
+        /// <see cref="Kanal.HEIZUNG"/>/<c>BRAUCHWASSER</c>/<c>PROZESS</c>.
+        ///
+        /// <para>Die AUFSCHLÜSSELUNG von <see cref="Waermebedarf_Gesamt"/>, nicht eine
+        /// zweite Rechnung: Quelle ist derselbe Kanalsatz, aus dem seit Paket K1 auch der
+        /// Summenvektor gebildet wird (<c>SimulationWaermebedarf.KanaeleDrei</c> ist die
+        /// FÜHRENDE Größe, die Summe die abgeleitete). Ihre Summe ist deshalb der
+        /// Gesamtbedarf — bis auf die float-Rundung, mit der die Kanäle stundenweise zum
+        /// Summenvektor addiert werden (Konzept 4.2, 1-ULP-Klasse).</para>
+        ///
+        /// <para>Spalten <c>Waermebedarf_Heizung/_Brauchwasser/_Prozess</c>, angelegt in
+        /// Migrationsschritt 52.</para>
+        /// </summary>
+        public double[] Waermebedarf_Kanal = new double[Kanal.ANZAHL];
     }
 
     // Detail: Waermepumpe-Aggregat (Tab_ErgebnisWaermepumpe) + Modulliste.
@@ -77,6 +93,29 @@ namespace WindowsFormsApplication1
         public double Waermebedarfsdeckung;       // %
         public double Vollbenutzungsstunden;      // h/a
         public double? Bivalenzpunkt;             // Grad C (null = kein Bivalenzpunkt)
+
+        /// <summary>
+        /// PAKET E1 (Konzept 4.4): Wärmebedarfsdeckung dieses Erzeugers JE KANAL [%],
+        /// indiziert mit <see cref="Kanal.HEIZUNG"/>/<c>BRAUCHWASSER</c>/<c>PROZESS</c>.
+        ///
+        /// <para><b>Es ist die AUFSCHLÜSSELUNG von <see cref="Waermebedarfsdeckung"/></b>,
+        /// nicht der Deckungsgrad des einzelnen Kanals: gleicher Nenner (Wärmebedarf des
+        /// PROJEKTS), gleiche Eigenanteils-Logik des Runners, nur der Zähler ist
+        /// kanalindiziert (Direktdeckung + zugerechnete Speicherentladung + Heizstab je
+        /// Kanal — die Buchführung aus Paket K2). Die Summe der drei Werte IST der
+        /// Skalar; darauf normiert <c>SimulationRunner.DeckungJeKanal</c>.
+        /// Dieselbe Bedeutung haben die gleichnamigen Felder der Modelle für BHKW,
+        /// Heizkessel und Solarthermie.</para>
+        ///
+        /// <para>Der Deckungsgrad EINES Kanals („die WP deckt 80 % des
+        /// Brauchwasserbedarfs") ergibt sich daraus zusammen mit
+        /// <see cref="ErgebnisEnergiebedarfModel.Waermebedarf_Kanal"/>:
+        /// <c>Deckung_Kanal[k] · Waermebedarf_Gesamt / Waermebedarf_Kanal[k]</c>.</para>
+        ///
+        /// <para>Spalten <c>Deckung_Heizung/_Brauchwasser/_Prozess</c>, angelegt in
+        /// Migrationsschritt 52.</para>
+        /// </summary>
+        public double[] Deckung_Kanal = new double[Kanal.ANZAHL];
 
         public List<ErgebnisWaermepumpeModulModel> Module = new List<ErgebnisWaermepumpeModulModel>();
     }
@@ -135,6 +174,11 @@ namespace WindowsFormsApplication1
         public double Sonstigverbrauch;
         public double Pellets;
         public double TierischeFette;
+
+        /// <summary>PAKET E1: Deckung je Kanal [%] — Bedeutung und Normierung wie bei
+        /// <see cref="ErgebnisWaermepumpeModel.Deckung_Kanal"/>.</summary>
+        public double[] Deckung_Kanal = new double[Kanal.ANZAHL];
+
         public List<ErgebnisBHKWModulModel> Module = new List<ErgebnisBHKWModulModel>();
     }
 
@@ -203,6 +247,10 @@ namespace WindowsFormsApplication1
         public double Pellets;
         public double TierischeFette;
 
+        /// <summary>PAKET E1: Deckung je Kanal [%] — Bedeutung und Normierung wie bei
+        /// <see cref="ErgebnisWaermepumpeModel.Deckung_Kanal"/>.</summary>
+        public double[] Deckung_Kanal = new double[Kanal.ANZAHL];
+
         public List<ErgebnisHeizkesselModulModel> Module = new List<ErgebnisHeizkesselModulModel>();
     }
 
@@ -228,6 +276,10 @@ namespace WindowsFormsApplication1
         public double Waermeproduktion;      // MWh/a (Gesamte Waermeleistung der Module)
         public double Waermebedarfsdeckung;  // %
         public double Ueberschuss;           // MWh/a
+
+        /// <summary>PAKET E1: Deckung je Kanal [%] — Bedeutung und Normierung wie bei
+        /// <see cref="ErgebnisWaermepumpeModel.Deckung_Kanal"/>.</summary>
+        public double[] Deckung_Kanal = new double[Kanal.ANZAHL];
 
         public List<ErgebnisSolarthermieModulModel> Module = new List<ErgebnisSolarthermieModulModel>();
     }

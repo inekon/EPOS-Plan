@@ -34,6 +34,23 @@ Das Feld `ReadOnly` in den `_STAMM`-Tabellen bedeutet faktisch „gehört zur Au
 Migrationsskript behält `ReadOnly = TRUE` aus der Vorlage und ersetzt alles Übrige durch die
 Anwenderdaten.
 
+**Stand der Wärme-Datenhaltung (Konzeptumsetzung 27./28.08.2026, Schema-Schritte 48–54;
+Nachtrag B2 28.08.2026 = Schritt 55, `Tab_Applikation.SchemaVersion` = 55; die Nummern 56/57
+sind für die geparkten CO2-/Emissionsarten-Etappen reserviert — Kollisionsauflösung 29.08.2026
+in `SchemaMigration.ZIEL_VERSION` —, **neue Schritte ab 58**):**
+Die Senken einer Anlage stehen
+in **`Z_AnlageSenke`** (je Zeile Rang 1..n, eines von sechs Zielen, Bedarfsart, `ID_Puffer`,
+Ladeparameter, Einspeisehöhe) — die `WS_*`-Spalten in `Tab_Energieanlagen` sind **Lese-Altlast**.
+Pufferklassen sind das Klassen-Set `Tab_Pufferspeicher.Nutzung_Heizung/_Brauchwasser/_Prozess`
+(`Verwendung` Altlast); dazu Schichtmodell-Spalten (`Schichten_Anzahl`, `Hoehe`, `Lambda_Eff`,
+`T_Nutz_BW`, `Entnahme_*`, `Lade-/Entladeleistung_Max`). Quellprofile liegen in
+**`Tab_Quellprofil`/`Tab_QuellprofilDaten`** (Betriebsarten Monat/Tag/Stunde; Kopplung über
+`Tab_Energieanlagen.WQ_ID_Quellprofil`, Quell-Entnahmehöhe `WQ_Anschlusshoehe`).
+**Stillgelegt** (bleiben stehen, werden nicht mehr gelesen/geschrieben): `Z_ProjektPufferSp`,
+`Tab_Einstellungen.Kaskade_Zweikanalig`, `WQ_CSV`/`WQ_Monats-/Wochenwerte` als Alt-Lesewege.
+Ergebnistabellen führen Bedarf/Deckung/Entladung **je Kanal** (Heizung/Brauchwasser/Prozess).
+Details und Beweise: die `*_Protokoll.md`-Reihe in `WindowsFormsApplication1/Allgemein/Simulation/`.
+
 ## Migration
 
 Die DB Migration ist eine separate Anwendung. Das sql migrationsskript wird jedes mal neu erstellt und ist daher nicht als Referenz geeignet.

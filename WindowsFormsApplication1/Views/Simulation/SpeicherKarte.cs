@@ -115,6 +115,16 @@ namespace WindowsFormsApplication1
             /// <summary>Verwendungs-Badge (Heizung | Warmwasser | …), bereits übersetzt.</summary>
             public string Verwendung = "";
 
+            /// <summary>
+            /// PAKET P1 — Schicht-Badge („5 Schichten"), bereits übersetzt; leer bei einem
+            /// Ein-Zonen-Speicher (Konzept 10, Zeile <c>Form_Simulation_Config</c>).
+            ///
+            /// <para>Eigenes Badge und kein Flächen-Chip: Die Schichtung ändert, WIE der
+            /// Speicher rechnet — sie steht damit auf derselben Ebene wie die Nutzung und
+            /// nicht bei den Kenngrößen Volumen und Temperaturpaar.</para>
+            /// </summary>
+            public string Schichtung = "";
+
             /// <summary>Volumen mit Einheit, z. B. „778 l"; leer = nicht gepflegt.</summary>
             public string Volumen = "";
 
@@ -345,15 +355,8 @@ namespace WindowsFormsApplication1
                 foreach (Control c in _kopfChips.Controls) c.Dispose();
                 _kopfChips.Controls.Clear();
 
-                if (!string.IsNullOrEmpty(d.Verwendung))
-                {
-                    KartenChip badge = new KartenChip();
-                    badge.Text = d.Verwendung;
-                    badge.OhneRand = true;
-                    badge.BackColor = KartenStil.BADGE_FLAECHE;
-                    badge.ForeColor = KartenStil.BADGE_TEXT;
-                    _kopfChips.Controls.Add(badge);
-                }
+                Badge(d.Verwendung);
+                Badge(d.Schichtung);       // PAKET P1: nur bei N > 1 gefüllt
 
                 FlaechenChip(d.Volumen);
                 FlaechenChip(d.Temperaturpaar);
@@ -395,6 +398,19 @@ namespace WindowsFormsApplication1
 
             KlickDurchreichen(this);
             Neuordnen();
+        }
+
+        /// <summary>Ein hervorgehobenes Badge im Kartenkopf; leerer Text = kein Badge.</summary>
+        private void Badge(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+
+            KartenChip badge = new KartenChip();
+            badge.Text = text;
+            badge.OhneRand = true;
+            badge.BackColor = KartenStil.BADGE_FLAECHE;
+            badge.ForeColor = KartenStil.BADGE_TEXT;
+            _kopfChips.Controls.Add(badge);
         }
 
         private void FlaechenChip(string text)
@@ -451,7 +467,18 @@ namespace WindowsFormsApplication1
             _lblName.Bounds = new Rectangle(links, y, nameBreite, _lblPfeil.Height);
 
             _kopfChips.Location = new Point(_lblName.Right + 6, y - 2);
-            _kopfChips.Width = Math.Max(40, rechts - _lblName.Right - 6);
+
+            // D-CHECK 28.08.2026: Die gesetzte Breite allein hält den Chipstreifen NICHT
+            // in seiner Spur. Ein FlowLayoutPanel mit AutoSize und GrowAndShrink misst
+            // seine Wunschgröße OHNE Breitenvorgabe, legt alle Chips in eine Zeile und
+            // überschreibt die Breite in der nächsten Layoutrunde wieder — gemessen:
+            // 142 px statt der zugewiesenen 76, der Streifen lief unter das Bilanzfeld
+            // (Schnitt 58 x 17 px). Erst MaximumSize begrenzt die Messung, dann greift
+            // WrapContents. Dasselbe Mittel wie in ErzeugerKarte.Innenbreite.
+            int chipBreite = Math.Max(40, rechts - _lblName.Right - 6);
+            if (_kopfChips.MaximumSize.Width != chipBreite)
+                _kopfChips.MaximumSize = new Size(chipBreite, 0);
+            _kopfChips.Width = chipBreite;
 
             int kopfUnten = Math.Max(_kopfChips.Bottom, _lblName.Bottom);
 
