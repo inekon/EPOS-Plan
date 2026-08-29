@@ -58,6 +58,12 @@ namespace WindowsFormsApplication1
             // ---- Projekte, Varianten, Speichervarianten
             register.Aufnehmen(KiAktionenProjekt.ProjekteAuflisten());
 
+            // projekt_aktiv beantwortet „Woran arbeite ich gerade?". Aus der
+            // platzgehaltenen Gesamtliste ist das NICHT ablesbar, und der mitgegebene
+            // Kontext nennt bewusst nur den Bereich - den Projektnamen schneidet
+            // HilfeKontext.OhneKlarnamen sogar ausdruecklich heraus (Paket H8).
+            register.Aufnehmen(KiAktionenProjekt.ProjektAktiv());
+
             // projekt_suchen gehoert unmittelbar daneben: Es ist die Antwort auf die
             // Frage „gibt es ein Projekt X?", die sich aus der platzgehaltenen Liste
             // NICHT beantworten laesst (Fachkonzept 4.2, Fehlerfall 23.08.2026).

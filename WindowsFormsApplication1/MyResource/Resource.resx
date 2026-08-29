@@ -8275,4 +8275,16 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="KI_WIKI_SUCHE_LAEUFT" xml:space="preserve">
     <value>Die Online-Dokumentation wird durchsucht...</value>
   </data>
+  <data name="KI_REG_ZWECK_PROJEKT_AKTIV" xml:space="preserve">
+    <value>Nennt das gerade geöffnete Projekt - also das, an dem der Benutzer aktuell arbeitet. Nimm diese Aktion bei Fragen wie "Wie heißt das aktuelle Projekt?", "Welches Projekt ist offen?" oder "Woran arbeite ich gerade?". Liefert genau eine Zeile mit ID, Projektname, Kunde, Bearbeiter und Änderungsdatum.</value>
+  </data>
+  <data name="KI_REG_PROJEKT_AKTIV_GELESEN" xml:space="preserve">
+    <value>Aktuell geöffnet ist das Projekt {0} (ID {1}).</value>
+  </data>
+  <data name="KI_REG_PROJEKT_AKTIV_KEINES" xml:space="preserve">
+    <value>Zurzeit ist kein Projekt geöffnet.</value>
+  </data>
+  <data name="KI_REG_PROJEKT_AKTIV_NICHT_GELESEN" xml:space="preserve">
+    <value>Die Kopfdaten zu ID {0} konnten nicht gelesen werden; es gelten die Angaben der Oberfläche.</value>
+  </data>
 </root>
