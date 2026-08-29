@@ -111,6 +111,41 @@ namespace WindowsFormsApplication1
             set { label_Beschreibung.Text = value ?? ""; NeuAnordnen(); }
         }
 
+        // Vorgabeschrift der Überschrift - dieselben Werte, die InitializeComponent
+        // setzt. Sie steht hier zusaetzlich als Feld, damit ShouldSerialize/Reset dem
+        // Designer melden koennen, ob eine Karte von der Vorgabe abweicht.
+        private static readonly Font TITEL_VORGABE =
+            new Font("Segoe UI Semibold", 13F, FontStyle.Bold);
+
+        /// <summary>
+        /// Schrift der Überschrift. Vorgabe ist „Segoe UI Semibold 13 pt fett" — die
+        /// Optik der grossen Startmasken-Kacheln. Kleine Kachelfelder (etwa die dreizehn
+        /// Komponentenkacheln des Projektassistenten) setzen hier eine kleinere Schrift,
+        /// damit Überschrift und Beschreibung in eine niedrige Karte passen.
+        /// </summary>
+        [Category("Darstellung")]
+        [Description("Schrift der Überschrift.")]
+        public Font TitelSchrift
+        {
+            get { return label_Titel.Font; }
+            set
+            {
+                label_Titel.Font = value ?? TITEL_VORGABE;
+                NeuAnordnen();
+                Invalidate();
+            }
+        }
+
+        private bool ShouldSerializeTitelSchrift()
+        {
+            return !TITEL_VORGABE.Equals(label_Titel.Font);
+        }
+
+        private void ResetTitelSchrift()
+        {
+            TitelSchrift = TITEL_VORGABE;
+        }
+
         /// <summary>true = der Statuspunkt oben rechts wird gezeichnet.</summary>
         [Category("Darstellung")]
         [Description("Zeigt oben rechts einen Statuspunkt in der Farbe StatusFarbe.")]
@@ -204,35 +239,60 @@ namespace WindowsFormsApplication1
             int rand = KartenStil.KARTE_RAND;
             int breite = Math.Max(10, Width - 2 * rand);
 
-            int bildBlock = 0;
-            int seite = 0;
-            if (pictureBox_Bild.Visible)
-            {
-                seite = Math.Max(24, Math.Min(64, Height / 3));
-                bildBlock = seite + 8;
-            }
+            // WICHTIG: nach Image fragen, nie nach Visible — der Visible-Getter
+            // liefert false, solange die Elternkette unsichtbar ist (also während
+            // des gesamten InitializeComponent). Genau das ließ die Anordnung im
+            // „ohne Bild“-Zweig laufen, obwohl ein Logo gesetzt war.
+            bool mitBild = pictureBox_Bild.Image != null;
 
             int titelHoehe = label_Titel.Font.Height + 6;
 
-            // Die Beschreibung bekommt genau die Höhe, die ihr Text bei dieser Breite
-            // braucht — nur so lässt sich der Block als Ganzes senkrecht mittig setzen
-            // (nähme man den ganzen Rest, klebte die Überschrift am oberen Rand).
-            int gemessen = TextRenderer.MeasureText(label_Beschreibung.Text ?? "", label_Beschreibung.Font,
-                                                    new Size(breite, 0), TextFormatFlags.WordBreak).Height;
-            int platz = Math.Max(18, Height - 2 * rand - bildBlock - titelHoehe - 6);
-            int beschrHoehe = Math.Max(18, Math.Min(gemessen + 2, platz));
-
-            int blockHoehe = bildBlock + titelHoehe + 6 + beschrHoehe;
-            int oben = Math.Max(rand, (Height - blockHoehe) / 2);
-
-            if (pictureBox_Bild.Visible)
+            if (mitBild)
             {
-                pictureBox_Bild.Bounds = new Rectangle((Width - seite) / 2, oben, seite, seite);
-                oben = pictureBox_Bild.Bottom + 8;
+                // Anordnung wie die früheren Kacheln: Logo links oben, Überschrift
+                // rechts daneben auf Logo-Mitte, Beschreibung darunter über die
+                // volle Breite.
+                int seite = Math.Max(24, Math.Min(64, Height / 3));
+                int bildX = rand + 24;
+                int bildY = rand + 24;
+                pictureBox_Bild.Bounds = new Rectangle(bildX, bildY, seite, seite);
+
+                int titelX = bildX + seite + 16;
+                int titelBreite = Math.Max(10, Width - titelX - rand);
+                int titelY = bildY + Math.Max(0, (seite - titelHoehe) / 2);
+                label_Titel.Bounds = new Rectangle(titelX, titelY, titelBreite, titelHoehe);
+
+                int oben = pictureBox_Bild.Bottom + 14;
+                int beschrHoehe = Math.Max(18, Height - oben - rand);
+                label_Beschreibung.Bounds = new Rectangle(rand, oben, breite, beschrHoehe);
+                return;
             }
 
-            label_Titel.Bounds = new Rectangle(rand, oben, breite, titelHoehe);
-            label_Beschreibung.Bounds = new Rectangle(rand, label_Titel.Bottom + 6, breite, beschrHoehe);
+            // Ohne Bild: Überschrift und Beschreibung als senkrecht mittiger Block.
+            int gemessen = TextRenderer.MeasureText(label_Beschreibung.Text ?? "", label_Beschreibung.Font,
+                                                    new Size(breite, 0), TextFormatFlags.WordBreak).Height;
+            int platz = Math.Max(18, Height - 2 * rand - titelHoehe - 6);
+            int beschrHoeheOhne = Math.Max(18, Math.Min(gemessen + 2, platz));
+
+            int blockHoehe = titelHoehe + 6 + beschrHoeheOhne;
+            int start = Math.Max(rand, (Height - blockHoehe) / 2);
+
+            label_Titel.Bounds = new Rectangle(rand, start, breite, titelHoehe);
+            label_Beschreibung.Bounds = new Rectangle(rand, label_Titel.Bottom + 6, breite, beschrHoeheOhne);
+        }
+
+        /// <summary>Schriftwechsel (auch durch AutoScale nach InitializeComponent) ordnet neu an.</summary>
+        protected override void OnFontChanged(EventArgs e)
+        {
+            base.OnFontChanged(e);
+            NeuAnordnen();
+        }
+
+        /// <summary>Sicherheitsanker: spätestens mit dem Handle stimmt die Anordnung.</summary>
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            NeuAnordnen();
         }
 
         protected override void OnPaint(PaintEventArgs e)
