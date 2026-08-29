@@ -14,8 +14,11 @@ Info-Buttons (3 Startmasken-Tabs + 70 Hauptdialoge, zentrale Klasse
 Zuordnungen auf 32 Unterseiten**; Popup-Position wird am Bildschirmrand geklemmt.
 Inventar-, Entscheidungs- und Umsetzungsprotokoll:
 [`WindowsFormsApplication1/Allgemein/Hilfe/H7_InfoButtons_Protokoll.md`](WindowsFormsApplication1/Allgemein/Hilfe/H7_InfoButtons_Protokoll.md).
-**H8 beauftragt** (Aktion `projekt_aktiv` + lokale Klarnamen-Rückeinsetzung in der
-Chat-Anzeige — Klarnamen gehen weiterhin nie an Google).
+**H8 umgesetzt am 29.08.2026**: Aktion `projekt_aktiv` + Klarnamen-Rückeinsetzung
+ausschließlich in der Chat-Anzeige — dabei ein Platzhalter-Leck geschlossen (aufgelöste
+Namen wären über den Gesprächsverlauf ab der zweiten Frage doch übertragen worden).
+Protokoll:
+[`WindowsFormsApplication1/Allgemein/KI/H8_ProjektAktiv_Protokoll.md`](WindowsFormsApplication1/Allgemein/KI/H8_ProjektAktiv_Protokoll.md).
 Betrachtet wurde der Bestand unter `WindowsFormsApplication1` (ohne Altkopien und
 Worktrees) sowie — per API und Seitenabruf empirisch verifiziert — das Wiki unter
 `https://wiki.epos-plan.de`.
