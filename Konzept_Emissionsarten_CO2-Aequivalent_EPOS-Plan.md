@@ -55,18 +55,27 @@ entfernen.
 **Verhältnis zu den bestehenden Konzepten:**
 
 - [`Konzept_CO2-Faktoren_Energietraeger_EPOS-Plan.md`](Konzept_CO2-Faktoren_Energietraeger_EPOS-Plan.md)
-  (Rev. 1, zur Abnahme, **noch nicht umgesetzt** — Messung 28.08.: Erdgas LL, Heizöl EL u. a.
-  tragen weiterhin `co2 = 0`) bleibt gültig und läuft als Saat-Migration **vor** diesem Konzept.
+  (Rev. 1.1) ist **umgesetzt** — die Saat lief am 29.08.2026 als Migrationsschritt 56
+  (= Etappe E1 dieses Konzepts); der dort offene STROMMIX-Punkt wurde mit E5
+  entschieden und umgesetzt (380 → 435).
 - [`Konzept_Emissionsfaktoren_Quellenwahl_EPOS-Plan.md`](Konzept_Emissionsfaktoren_Quellenwahl_EPOS-Plan.md)
-  (Rev. 1, zur Abnahme, nicht umgesetzt) bleibt das Modell für **Herkunft und Projektwahl**.
+  (Rev. 1, zur Abnahme) bleibt das Modell für die **Projektwahl** einer Leitquelle.
   Dieses Konzept fügt die dritte Dimension hinzu: die **Emissionsart** wird vom festen
-  Spaltensatz (`co2`, `so2`, `nox`) zum Katalogobjekt. Wo Rev. 1 der Quellenwahl feste Spalten
-  vorsah (`emissionsfaktor.co2/so2/nox/staub`), gilt künftig die generische Form aus § 3 —
-  das ist die einzige Änderung an jenem Konzept (dort bei Umsetzung als Rev. 2 nachzuziehen).
+  Spaltensatz (`co2`, `so2`, `nox`) zum Katalogobjekt. Die **Herkunftsführung** jenes
+  Konzepts ist mit § 3 (Felder `quelle`, `quelle_text`, `herkunft_id`, `ist_co2e` in
+  `emissionswert`) bereits in vereinfachter Form realisiert; **offen von dort** ist nur
+  noch die projektbezogene Quellenwahl (Leitquelle je Projekt, Ausnahme je Träger —
+  dessen F4/E3). Wo Rev. 1 der Quellenwahl feste Spalten vorsah
+  (`emissionsfaktor.co2/so2/nox/staub`), gilt die generische Form aus § 3 — bei einer
+  Umsetzung dort als Rev. 2 nachzuziehen.
 
 ---
 
 ## 1 Ist-Stand (gemessen 28.08.2026, Produktiv-DB `C:\ProgramData\EPOS_PLAN\Kenndaten.accdb`)
+
+*Historischer Befund — beschreibt den Zustand VOR der Umsetzung. Die hier benannten
+Mängel (Nullwerte, falsche Einheiten-Beschriftung, Drehfelder, fehlende Herkunft) sind
+mit E1–E5 behoben; der Abschnitt bleibt als Begründung und Messreferenz stehen.*
 
 **Drei feste Schadstoffspalten, drei Ebenen.** `energy_project_settings.co2/so2/nox` →
 `Tab_Brennstoff_Stamm.CO2/SO2/NOx` (+ `Staub`, `PE_Faktor`) → `energy_carrier.co2/so2/nox`.
@@ -610,7 +619,10 @@ Vergleich Modus CO₂ vs. CO₂e an einem Handbeispiel.
 1. ~~Modus-Reichweite~~ — **entschieden 28.08.2026: globale Vorgabe + Projekt-Override**
    (F7).
 2. ~~Luftschadstoffe mit oder ohne Vorkette~~ — **entschieden 28.08.2026: ohne** (§ 5).
-3. **Fundstellen** für GEMIS/UBA TEXTE 97/2025 zur E6-Saat.
+3. ~~Fundstellen zur E6-Saat~~ — **geliefert 29.08.2026** (Nutzer): UBA-Liste
+   „Emissionsfaktoren zur THG-Bilanzierung" v2.1/2024 (CC0 1.0) und GEMIS-5.2-
+   Ergebnistabelle (IINAS) — statt des ursprünglich angedachten UBA TEXTE 97/2025.
+   Quelldateien archiviert unter `Quellen\Emissionsfaktoren\`; Saat als E6 (§ 5.2).
 4. ~~Auswahl je Träger statt global~~ — **entschieden 28.08.2026: global** (F5).
 5. ~~Mapping-Liste gesetzliche Parameter → Träger (E2) bei Umsetzung zur Durchsicht
    vorlegen~~ — **vorgelegt 29.08.2026 in § 5.1** (Fernwärme: nur `BAFA_FERNWAERME`,
