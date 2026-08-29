@@ -4324,13 +4324,18 @@ namespace WindowsFormsApplication1
 
                             // ETAPPE H2: Die Endenergie-Bemessungen holen ihre Menge
                             // bei JEDEM Lesen frisch aus dem jüngsten Simulationslauf
-                            // (Konzept § 4.5) — die DB-Menge ist nur Ausweis. Alle
-                            // übrigen Arten lesen unverändert die persistierte
-                            // Herleitung.
-                            double? menge = IstEndenergieArt(bem)
-                                ? EndenergieMenge(idProjekt, r, bem,
-                                                  ref endenergie, ref endenergieVersucht)
-                                : D(r, SchemaKatalog.SPALTE_PW_MENGE);
+                            // (Konzept § 4.5) — die DB-Menge ist nur Ausweis.
+                            // ETAPPE H4a: Investitions- und kWh-Bemessungen ermitteln
+                            // ihre Bezugsgröße nur als RÜCKFALL, wenn keine Menge
+                            // gepflegt ist — eine persistierte Menge behält Vorrang.
+                            // Alle übrigen Arten lesen unverändert die Herleitung.
+                            double? menge = D(r, SchemaKatalog.SPALTE_PW_MENGE);
+                            if (IstEndenergieArt(bem))
+                                menge = EndenergieMenge(idProjekt, r, bem,
+                                                        ref endenergie, ref endenergieVersucht);
+                            else if (!menge.HasValue && IstRueckfallErmittelbareArt(bem))
+                                menge = RueckfallMenge(idProjekt, r, bem,
+                                                       ref endenergie, ref endenergieVersucht);
 
                             beitrag = szenarioGepflegt
                                 ? (erloes && wert > 0 ? -wert : wert)
@@ -4412,16 +4417,23 @@ namespace WindowsFormsApplication1
                     double erwartet = D(r, "EingegebenerWert") ?? 0;
                     bool szenarioGepflegt = Math.Abs(wert - erwartet) > 1e-9;
 
+                    // H2/H4a: dieselbe Mengenregel wie in der Summenschleife — die
+                    // Nachweisliste muss deren Summe treffen (E7-Probe).
+                    double? menge = D(r, SchemaKatalog.SPALTE_PW_MENGE);
+                    if (IstEndenergieArt(bem))
+                        menge = EndenergieMenge(idProjekt, r, bem,
+                                                ref endenergie, ref endenergieVersucht);
+                    else if (!menge.HasValue && IstRueckfallErmittelbareArt(bem))
+                        menge = RueckfallMenge(idProjekt, r, bem,
+                                               ref endenergie, ref endenergieVersucht);
+
                     var n = new KostenPositionNachweis
                     {
                         Bezeichnung = Text(r, "Bezeichnung"),
                         Gruppe = Text(r, "Gruppe"),
                         Kostenart = Text(r, SchemaKatalog.SPALTE_PW_KOSTENART),
                         Bemessung = bem,
-                        Menge = IstEndenergieArt(bem)
-                            ? EndenergieMenge(idProjekt, r, bem,
-                                              ref endenergie, ref endenergieVersucht)
-                            : D(r, SchemaKatalog.SPALTE_PW_MENGE),
+                        Menge = menge,
                         Einheitpreis = D(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS),
                         IstErloes = erloes,
                         SzenarioGepflegt = szenarioGepflegt
@@ -4475,22 +4487,8 @@ namespace WindowsFormsApplication1
             }
             if (aufloeser == null) return null;
 
-            int komponente = 0;
-            try
-            {
-                if (r.Table.Columns.Contains("KomponentenID") && r["KomponentenID"] != DBNull.Value)
-                    komponente = Convert.ToInt32(r["KomponentenID"]);
-            }
-            catch { }
-
-            int idAnlage = 0;
-            try
-            {
-                if (r.Table.Columns.Contains(SchemaKatalog.SPALTE_PW_ID_ANLAGE) &&
-                    r[SchemaKatalog.SPALTE_PW_ID_ANLAGE] != DBNull.Value)
-                    idAnlage = Convert.ToInt32(r[SchemaKatalog.SPALTE_PW_ID_ANLAGE]);
-            }
-            catch { }
+            int komponente, idAnlage;
+            KomponenteUndAnlage(r, out komponente, out idAnlage);
 
             EndenergieAufloeser.Groesse g = aufloeser.FuerPosition(komponente, idAnlage);
             if (g == null) return null;
@@ -4500,6 +4498,66 @@ namespace WindowsFormsApplication1
 
             double? strompreis = aufloeser.StrompreisJeKwh;
             return strompreis.HasValue ? g.BedarfKwh * strompreis.Value : (double?)null;
+        }
+
+        /// <summary>Komponente und Anlage der Positionszeile (0 = nicht gesetzt bzw.
+        /// Spalte nicht mitgelesen) — gemeinsamer Helfer von H2 und H4a.</summary>
+        private static void KomponenteUndAnlage(DataRow r, out int komponente, out int idAnlage)
+        {
+            komponente = 0;
+            idAnlage = 0;
+            try
+            {
+                if (r.Table.Columns.Contains("KomponentenID") && r["KomponentenID"] != DBNull.Value)
+                    komponente = Convert.ToInt32(r["KomponentenID"]);
+            }
+            catch { }
+            try
+            {
+                if (r.Table.Columns.Contains(SchemaKatalog.SPALTE_PW_ID_ANLAGE) &&
+                    r[SchemaKatalog.SPALTE_PW_ID_ANLAGE] != DBNull.Value)
+                    idAnlage = Convert.ToInt32(r[SchemaKatalog.SPALTE_PW_ID_ANLAGE]);
+            }
+            catch { }
+        }
+
+        /// <summary>ETAPPE H4a: Bemessungsarten mit Rückfall-Ermittlung der
+        /// Bezugsgröße (Konzept Kostendialoge § 5.3) — „% der Investition" aus der
+        /// Kostenwelt, die kWh-Arten aus dem jüngsten Lauf. „% der Erzeugerkosten"
+        /// gehört zum Investitionsraster und bleibt H4b.</summary>
+        private static bool IstRueckfallErmittelbareArt(string bem)
+        {
+            return string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal) ||
+                   string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH, StringComparison.Ordinal) ||
+                   string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// ETAPPE H4a: Bezugsgröße einer Position ohne gepflegte Menge — im
+        /// Unterschied zur Endenergie (H2, immer frisch) nur als RÜCKFALL: Eine
+        /// persistierte Menge behält Vorrang (der Alt-BHKW-Dialog schreibt welche;
+        /// VALERI-Geist „gepflegt schlägt abgeleitet"). null = keine Basis, dann
+        /// bleibt der dokumentierte Betrag 0.
+        /// </summary>
+        private static double? RueckfallMenge(int idProjekt, DataRow r, string bem,
+                                              ref EndenergieAufloeser aufloeser, ref bool versucht)
+        {
+            int komponente, idAnlage;
+            KomponenteUndAnlage(r, out komponente, out idAnlage);
+
+            if (string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal))
+                return BetriebskostenCtrl.InvestSummeFuer(idProjekt, komponente, idAnlage);
+
+            if (!versucht)
+            {
+                versucht = true;
+                aufloeser = EndenergieAufloeser.FuerProjekt(idProjekt);
+            }
+            if (aufloeser == null) return null;
+
+            return string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH, StringComparison.Ordinal)
+                ? aufloeser.WaermeerzeugungKwh(komponente, idAnlage)
+                : aufloeser.StromgroesseKwh(komponente, idAnlage);
         }
 
         /// <summary>ID des jüngsten Simulationslaufs (Tab_Ergebnis) des Projekts, 0 = keiner.</summary>

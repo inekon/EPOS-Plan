@@ -53,6 +53,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal const int KOMPONENTE_WAERMEPUMPE = 1;
 
+        /// <summary>ETAPPE H4a: Photovoltaik (3) und Solarthermie (4) — Quelle wie oben.</summary>
+        internal const int KOMPONENTE_PHOTOVOLTAIK = 3;
+        internal const int KOMPONENTE_SOLARTHERMIE = 4;
+
         /// <summary>Endenergie einer Position — das Ergebnis des Auflösers.</summary>
         internal sealed class Groesse
         {
@@ -82,16 +86,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Baut den Auflöser für ein Projekt; null, wenn es keinen Simulationslauf
-        /// gibt — dann hat keine Endenergie-Position eine Bezugsgröße (Festlegung:
-        /// „ohne Lauf keine Menge und damit kein Betrag").
+        /// Baut den Auflöser für ein Projekt. ETAPPE H4a: Auch OHNE Simulationslauf
+        /// entsteht eine Instanz (<c>_ergebnis</c> = null) — die Investitions-Bezugsgröße
+        /// braucht keinen Lauf. Die Lauf-Größen (Endenergie, kWh-Mengen) liefern dann
+        /// null, wie es die Festlegung verlangt („ohne Lauf keine Menge, kein Betrag").
         /// </summary>
         internal static EndenergieAufloeser FuerProjekt(int idProjekt)
         {
             try
             {
-                ErgebnisModel erg = new ErgebnisCtrl().Load(idProjekt);
-                if (erg == null) return null;
+                ErgebnisModel erg = null;
+                try { erg = new ErgebnisCtrl().Load(idProjekt); } catch { }
 
                 var a = new EndenergieAufloeser(idProjekt, erg);
                 a.AnlagenNamenLaden();
@@ -185,7 +190,7 @@ namespace WindowsFormsApplication1
         private List<Brennstoffzeile> BhkwModule()
         {
             var liste = new List<Brennstoffzeile>();
-            if (_ergebnis.BHKW != null && _ergebnis.BHKW.Module != null)
+            if (_ergebnis != null && _ergebnis.BHKW != null && _ergebnis.BHKW.Module != null)
                 foreach (ErgebnisBHKWModulModel m in _ergebnis.BHKW.Module)
                     liste.Add(new Brennstoffzeile { Modul = m.Modul, VerbrauchMWh = m.Verbrauch, CarrierId = m.CarrierId });
             return liste;
@@ -194,7 +199,7 @@ namespace WindowsFormsApplication1
         private List<Brennstoffzeile> KesselModule()
         {
             var liste = new List<Brennstoffzeile>();
-            if (_ergebnis.Heizkessel != null && _ergebnis.Heizkessel.Module != null)
+            if (_ergebnis != null && _ergebnis.Heizkessel != null && _ergebnis.Heizkessel.Module != null)
                 foreach (ErgebnisHeizkesselModulModel m in _ergebnis.Heizkessel.Module)
                     liste.Add(new Brennstoffzeile { Modul = m.Modul, VerbrauchMWh = m.Verbrauch, CarrierId = m.CarrierId });
             return liste;
@@ -241,7 +246,7 @@ namespace WindowsFormsApplication1
         /// Strombezugspreis.</summary>
         private Groesse Waermepumpensumme(string anlagenName)
         {
-            if (_ergebnis.Waermepumpe == null || _ergebnis.Waermepumpe.Module == null) return null;
+            if (_ergebnis == null || _ergebnis.Waermepumpe == null || _ergebnis.Waermepumpe.Module == null) return null;
 
             double bedarfKwh = 0;
             int getroffen = 0;
@@ -266,6 +271,102 @@ namespace WindowsFormsApplication1
                     ? "Wärmepumpe „" + anlagenName + "“"
                     : "alle Wärmepumpen-Module"
             };
+        }
+
+        // ================================================================ ETAPPE H4a
+        // Lauf-Bezugsgrößen der KD1-Bemessungsarten (Konzept Kostendialoge § 5.3):
+        // „je kWh thermisch" = erzeugte Wärme, „je kWh elektrisch" = erzeugter bzw.
+        // bezogener Strom aus dem Simulationslauf — anlagenscharf über den
+        // Bezeichner, Komponentensumme als Rückfall (dasselbe Verfahren wie die
+        // Endenergie oben). null = keine Basis (kein Lauf, Komponente ohne die
+        // Größe, Anlage nicht im Lauf, Summe 0) — nie eine Fantasiezahl.
+
+        /// <summary>Erzeugte Wärme [kWh/a] der Komponente bzw. Anlage; null = keine Basis.</summary>
+        internal double? WaermeerzeugungKwh(int komponentenID, int idAnlage)
+        {
+            string anlagenName = null;
+            if (idAnlage > 0 && !_anlagenName.TryGetValue(idAnlage, out anlagenName)) return null;
+
+            // Die Brennstoffzeile dient hier nur als (Modul, MWh)-Paar — befüllt wird
+            // sie mit der WÄRMEproduktion, nicht mit dem Brennstoff.
+            var zeilen = new List<Brennstoffzeile>();
+            switch (komponentenID)
+            {
+                case BetriebskostenCtrl.KOMPONENTE_BHKW:
+                    if (_ergebnis != null && _ergebnis.BHKW != null && _ergebnis.BHKW.Module != null)
+                        foreach (ErgebnisBHKWModulModel m in _ergebnis.BHKW.Module)
+                            zeilen.Add(new Brennstoffzeile { Modul = m.Modul, VerbrauchMWh = m.Waermeproduktion });
+                    break;
+                case BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL:
+                    if (_ergebnis != null && _ergebnis.Heizkessel != null && _ergebnis.Heizkessel.Module != null)
+                        foreach (ErgebnisHeizkesselModulModel m in _ergebnis.Heizkessel.Module)
+                            zeilen.Add(new Brennstoffzeile { Modul = m.Modul, VerbrauchMWh = m.Waermeproduktion });
+                    break;
+                case KOMPONENTE_WAERMEPUMPE:
+                    if (_ergebnis != null && _ergebnis.Waermepumpe != null && _ergebnis.Waermepumpe.Module != null)
+                        foreach (ErgebnisWaermepumpeModulModel m in _ergebnis.Waermepumpe.Module)
+                            zeilen.Add(new Brennstoffzeile { Modul = m.Modul, VerbrauchMWh = m.Waermeproduktion });
+                    break;
+                case KOMPONENTE_SOLARTHERMIE:
+                    if (_ergebnis != null && _ergebnis.Solarthermie != null && _ergebnis.Solarthermie.Module != null)
+                        foreach (ErgebnisSolarthermieModulModel m in _ergebnis.Solarthermie.Module)
+                            zeilen.Add(new Brennstoffzeile { Modul = m.Modul, VerbrauchMWh = m.Waermeproduktion });
+                    break;
+                default:
+                    return null;
+            }
+
+            return SummeKwh(zeilen, anlagenName);
+        }
+
+        /// <summary>Strommenge [kWh/a] der Komponente bzw. Anlage — erzeugt bei
+        /// BHKW/Photovoltaik, bezogen bei der Wärmepumpe (Stromverbrauch + Heizstab);
+        /// null = keine Basis.</summary>
+        internal double? StromgroesseKwh(int komponentenID, int idAnlage)
+        {
+            string anlagenName = null;
+            if (idAnlage > 0 && !_anlagenName.TryGetValue(idAnlage, out anlagenName)) return null;
+
+            var zeilen = new List<Brennstoffzeile>();
+            switch (komponentenID)
+            {
+                case BetriebskostenCtrl.KOMPONENTE_BHKW:
+                    if (_ergebnis != null && _ergebnis.BHKW != null && _ergebnis.BHKW.Module != null)
+                        foreach (ErgebnisBHKWModulModel m in _ergebnis.BHKW.Module)
+                            zeilen.Add(new Brennstoffzeile { Modul = m.Modul, VerbrauchMWh = m.Stromproduktion });
+                    break;
+                case KOMPONENTE_PHOTOVOLTAIK:
+                    if (_ergebnis != null && _ergebnis.Photovoltaik != null && _ergebnis.Photovoltaik.Module != null)
+                        foreach (ErgebnisPhotovoltaikModulModel m in _ergebnis.Photovoltaik.Module)
+                            zeilen.Add(new Brennstoffzeile { Modul = m.Modul, VerbrauchMWh = m.Stromproduktion });
+                    break;
+                case KOMPONENTE_WAERMEPUMPE:
+                    if (_ergebnis != null && _ergebnis.Waermepumpe != null && _ergebnis.Waermepumpe.Module != null)
+                        foreach (ErgebnisWaermepumpeModulModel m in _ergebnis.Waermepumpe.Module)
+                            zeilen.Add(new Brennstoffzeile { Modul = m.Modul, VerbrauchMWh = m.Stromverbrauch + m.Heizstab });
+                    break;
+                default:
+                    return null;
+            }
+
+            return SummeKwh(zeilen, anlagenName);
+        }
+
+        /// <summary>Anlagen-/Komponentensumme in kWh nach den H2-Filterregeln.</summary>
+        private double? SummeKwh(List<Brennstoffzeile> zeilen, string anlagenName)
+        {
+            double kwh = 0;
+            int getroffen = 0;
+            foreach (Brennstoffzeile m in zeilen)
+            {
+                if (anlagenName != null &&
+                    !string.Equals(m.Modul ?? "", anlagenName, StringComparison.Ordinal))
+                    continue;
+                getroffen++;
+                if (m.VerbrauchMWh > 0) kwh += m.VerbrauchMWh * 1000.0;
+            }
+            if (anlagenName != null && getroffen == 0) return null;
+            return kwh > 0 ? kwh : (double?)null;
         }
     }
 }
