@@ -348,7 +348,9 @@ namespace WindowsFormsApplication1
         };
 
         // =================================================================================
-        // Etappe E2 - Emissionsarten-Katalog und CO2-Aequivalent (Migrationsschritt 57)
+        // Etappe E2 - Emissionsarten-Katalog und CO2-Aequivalent (Migrationsschritt 57;
+        //   Kollisionsaufloesung 29.08.2026: von 56 auf 57 gerueckt, siehe
+        //   SchemaMigration.ZIEL_VERSION)
         //   Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md, Rev. 1.2, § 3.
         // =================================================================================
 

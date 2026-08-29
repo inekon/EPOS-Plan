@@ -73,7 +73,18 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class SchemaMigration
     {
-        /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
+        /// <summary>
+        /// Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.
+        ///
+        /// KOLLISIONSAUFLÖSUNG 29.08.2026: Zwei parallele Stränge hatten die 55 vergeben —
+        /// Paket B2 (Temperaturbezug) und Etappe E1 (CO2-Saat, samt 56 für die
+        /// Emissionsarten). Die 55 gehört unverrückbar dem Temperaturbezug (die
+        /// produktive Datenbank des Zweitstands war zum Merge-Zeitpunkt bereits damit
+        /// migriert, nachweisbar an Tab_Energieanlagen.WQ_TemperaturModus); CO2-Saat und
+        /// Emissionsarten sind auf die Nummern 56 und 57 gerückt. Mit dem Merge vom
+        /// 29.08.2026 ist der E1/E2-Vollstand (Schrittmethoden) eingetroffen: beide
+        /// Einträge in <see cref="SCHRITTE"/> sind aktiv, das Ziel steht auf 57.
+        /// </summary>
         public const int ZIEL_VERSION = 57;
 
         /// <summary>

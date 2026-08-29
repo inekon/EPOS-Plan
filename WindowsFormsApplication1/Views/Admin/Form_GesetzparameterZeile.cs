@@ -75,10 +75,10 @@ namespace WindowsFormsApplication1
         //   10 px: btnAbbruch 490, btnOk 370. Unterkante 240, also 20 px Luft bis
         //   zum Fensterrand — die ClientSize musste dafür nicht wachsen.
         // * Knopf-Semantik unverändert: btnOk ist AcceptButton, btnAbbruch ist
-        //   CancelButton mit DialogResult.Cancel. Beschriftet bleiben sie über
-        //   GESETZ_BTN_UEBERNEHMEN/GESETZ_BTN_ABBRECHEN — einen Schlüssel mit dem
-        //   Wert „OK" gibt es im GESETZ_-Vorrat nicht, und neue Schlüssel sind
-        //   ausgeschlossen. „Übernehmen" ist keine „Speichern"-Beschriftung; die
+        //   CancelButton mit DialogResult.Cancel. Beschriftet seit dem
+        //   Nutzerentscheid vom 29.08.2026 strikt mit „OK" über den generischen
+        //   SIM_BTN_OK (Hausmuster wie Form_GanglinieImportOptionen);
+        //   GESETZ_BTN_UEBERNEHMEN bleibt unverwendet im Katalog stehen. Die
         //   geforderte Fußzeilen-Ordnung (Zusage links, Abbruch rechts) steht.
 
         // ==================================================================
@@ -104,7 +104,7 @@ namespace WindowsFormsApplication1
             this.lblStatus.Text = MyResource.Resource.GESETZ_SP_STATUS;
             this.lblQuelle.Text = MyResource.Resource.GESETZ_SP_QUELLE;
 
-            this.btnOk.Text = MyResource.Resource.GESETZ_BTN_UEBERNEHMEN;
+            this.btnOk.Text = MyResource.Resource.SIM_BTN_OK;
             this.btnAbbruch.Text = MyResource.Resource.GESETZ_BTN_ABBRECHEN;
         }
 
