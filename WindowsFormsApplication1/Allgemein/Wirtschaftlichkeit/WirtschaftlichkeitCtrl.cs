@@ -4240,10 +4240,13 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// ETAPPE H4b: wirksamer Betrag einer Investitionszeile. BETRAG/leer = der
         /// Bestandsweg (Szenariowert unverändert); abgeleitete Arten rechnen
-        /// Menge × Satz über <see cref="BetriebskostenCtrl.Betrag"/> — die Menge aus
-        /// der Zeile, sonst aus <paramref name="kaskadenBasis"/> (Runden 2/3), sonst
-        /// frisch aus der Gerätewelt. Gepflegte Best-/Worst-Beträge schlagen die
-        /// Ableitung (VALERI).
+        /// Menge × Satz über <see cref="BetriebskostenCtrl.Betrag"/>. Gepflegte
+        /// Best-/Worst-Beträge schlagen die Ableitung (VALERI).
+        /// ETAPPE H2-1: Mengenreihenfolge FRISCH vor Konserve — erst
+        /// <paramref name="kaskadenBasis"/> (Runden 2/3), dann die Gerätewelt,
+        /// zuletzt die Menge-Spalte. Die ist nur Ausweisgröße („Stand des Laufs",
+        /// Konzept BHKW-Wirtschaftlichkeit § 4.5), sonst rechnete die Kaskade nach
+        /// einer Geräteänderung stillschweigend mit der alten Baugröße weiter.
         /// </summary>
         private static double InvestBetrag(InvestZeile z, int idProjekt, double? kaskadenBasis)
         {
@@ -4254,10 +4257,10 @@ namespace WindowsFormsApplication1
             bool szenarioGepflegt = Math.Abs(z.Wert - z.Erwartet) > 1e-9;
             if (szenarioGepflegt) return z.Wert;
 
-            double? menge = z.Menge;
-            if (!menge.HasValue) menge = kaskadenBasis;
+            double? menge = kaskadenBasis;
             if (!menge.HasValue)
                 menge = TechnikPlanwertCtrl.BaugroesseSumme(idProjekt, z.Komponente, z.Bem, z.Anlage);
+            if (!menge.HasValue) menge = z.Menge;
 
             return BetriebskostenCtrl.Betrag(z.Bem, z.Erwartet, menge, z.Satz, false);
         }
@@ -4454,20 +4457,23 @@ namespace WindowsFormsApplication1
                             double erwartet = D(r, "EingegebenerWert") ?? 0;
                             bool szenarioGepflegt = Math.Abs(wert - erwartet) > 1e-9;
 
-                            // ETAPPE H2: Die Endenergie-Bemessungen holen ihre Menge
-                            // bei JEDEM Lesen frisch aus dem jüngsten Simulationslauf
-                            // (Konzept § 4.5) — die DB-Menge ist nur Ausweis.
-                            // ETAPPE H4a: Investitions- und kWh-Bemessungen ermitteln
-                            // ihre Bezugsgröße nur als RÜCKFALL, wenn keine Menge
-                            // gepflegt ist — eine persistierte Menge behält Vorrang.
-                            // Alle übrigen Arten lesen unverändert die Herleitung.
+                            // ETAPPE H2/H2-1: Ermittelbare Bemessungsarten holen ihre
+                            // Bezugsgröße bei JEDEM Lesen frisch (Endenergie aus dem
+                            // jüngsten Lauf, Investsumme aus der Kostenwelt, Baugrößen
+                            // aus der Gerätewelt) — die Menge-Spalte ist Ausweisgröße
+                            // („Stand des Laufs", Konzept § 4.5) und gilt nur noch als
+                            // Konserve, wenn frisch nichts ermittelbar ist. Alle übrigen
+                            // Arten lesen unverändert die gepflegte Herleitung.
                             double? menge = D(r, SchemaKatalog.SPALTE_PW_MENGE);
                             if (IstEndenergieArt(bem))
                                 menge = EndenergieMenge(idProjekt, r, bem,
                                                         ref endenergie, ref endenergieVersucht);
-                            else if (!menge.HasValue && IstRueckfallErmittelbareArt(bem))
-                                menge = RueckfallMenge(idProjekt, r, bem,
-                                                       ref endenergie, ref endenergieVersucht);
+                            else if (IstRueckfallErmittelbareArt(bem))
+                            {
+                                double? frisch = RueckfallMenge(idProjekt, r, bem,
+                                                                ref endenergie, ref endenergieVersucht);
+                                if (frisch.HasValue) menge = frisch;
+                            }
 
                             beitrag = szenarioGepflegt
                                 ? (erloes && wert > 0 ? -wert : wert)
@@ -4549,15 +4555,19 @@ namespace WindowsFormsApplication1
                     double erwartet = D(r, "EingegebenerWert") ?? 0;
                     bool szenarioGepflegt = Math.Abs(wert - erwartet) > 1e-9;
 
-                    // H2/H4a: dieselbe Mengenregel wie in der Summenschleife — die
-                    // Nachweisliste muss deren Summe treffen (E7-Probe).
+                    // H2/H4a/H2-1: dieselbe Mengenregel wie in der Summenschleife
+                    // (frisch vor Konserve) — die Nachweisliste muss deren Summe
+                    // treffen (E7-Probe).
                     double? menge = D(r, SchemaKatalog.SPALTE_PW_MENGE);
                     if (IstEndenergieArt(bem))
                         menge = EndenergieMenge(idProjekt, r, bem,
                                                 ref endenergie, ref endenergieVersucht);
-                    else if (!menge.HasValue && IstRueckfallErmittelbareArt(bem))
-                        menge = RueckfallMenge(idProjekt, r, bem,
-                                               ref endenergie, ref endenergieVersucht);
+                    else if (IstRueckfallErmittelbareArt(bem))
+                    {
+                        double? frisch = RueckfallMenge(idProjekt, r, bem,
+                                                        ref endenergie, ref endenergieVersucht);
+                        if (frisch.HasValue) menge = frisch;
+                    }
 
                     var n = new KostenPositionNachweis
                     {
@@ -4653,23 +4663,31 @@ namespace WindowsFormsApplication1
             catch { }
         }
 
-        /// <summary>ETAPPE H4a: Bemessungsarten mit Rückfall-Ermittlung der
-        /// Bezugsgröße (Konzept Kostendialoge § 5.3) — „% der Investition" aus der
-        /// Kostenwelt, die kWh-Arten aus dem jüngsten Lauf. „% der Erzeugerkosten"
-        /// gehört zum Investitionsraster und bleibt H4b.</summary>
+        /// <summary>ETAPPE H4a: Bemessungsarten mit Ermittlung der Bezugsgröße
+        /// (Konzept Kostendialoge § 5.3) — „% der Investition" aus der Kostenwelt,
+        /// die kWh-Arten aus dem jüngsten Lauf. ETAPPE H2-1: dazu die sechs
+        /// Gerätewelt-Arten (Baugrößen über die Anlagen-Geräteverweise, H4b) —
+        /// damit zieht z. B. „Wartung je kW" ihre kW auch auf der Betriebsseite
+        /// selbst. „% der Erzeugerkosten" bleibt Kaskadenmaterie der Investseite.</summary>
         private static bool IstRueckfallErmittelbareArt(string bem)
         {
             return string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal) ||
                    string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH, StringComparison.Ordinal) ||
-                   string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal);
+                   string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal) ||
+                   string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, StringComparison.Ordinal) ||
+                   string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG, StringComparison.Ordinal) ||
+                   string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, StringComparison.Ordinal) ||
+                   string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWP, StringComparison.Ordinal) ||
+                   string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET, StringComparison.Ordinal) ||
+                   string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_M2_KOLLEKTOR, StringComparison.Ordinal);
         }
 
         /// <summary>
-        /// ETAPPE H4a: Bezugsgröße einer Position ohne gepflegte Menge — im
-        /// Unterschied zur Endenergie (H2, immer frisch) nur als RÜCKFALL: Eine
-        /// persistierte Menge behält Vorrang (der Alt-BHKW-Dialog schreibt welche;
-        /// VALERI-Geist „gepflegt schlägt abgeleitet"). null = keine Basis, dann
-        /// bleibt der dokumentierte Betrag 0.
+        /// ETAPPE H4a: frische Bezugsgröße einer Position. ETAPPE H2-1: nicht mehr
+        /// nur Rückfall — die Frische gewinnt an den Lesestellen Vorrang vor der
+        /// Menge-Spalte, die nach Konzept § 4.5 reine Ausweisgröße ist („Stand des
+        /// Laufs"); die Konserve gilt nur noch, wenn hier nichts ermittelbar ist.
+        /// null = keine Basis (kein Lauf, kein Gerät, keine Investsumme).
         /// </summary>
         private static double? RueckfallMenge(int idProjekt, DataRow r, string bem,
                                               ref EndenergieAufloeser aufloeser, ref bool versucht)
@@ -4679,6 +4697,10 @@ namespace WindowsFormsApplication1
 
             if (string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal))
                 return BetriebskostenCtrl.InvestSummeFuer(idProjekt, komponente, idAnlage);
+
+            if (!string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH, StringComparison.Ordinal) &&
+                !string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal))
+                return TechnikPlanwertCtrl.BaugroesseSumme(idProjekt, komponente, bem, idAnlage);
 
             if (!versucht)
             {
@@ -4690,6 +4712,60 @@ namespace WindowsFormsApplication1
             return string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH, StringComparison.Ordinal)
                 ? aufloeser.WaermeerzeugungKwh(komponente, idAnlage)
                 : aufloeser.StromgroesseKwh(komponente, idAnlage);
+        }
+
+        /// <summary>
+        /// ETAPPE H2-1 (Konzept BHKW-Wirtschaftlichkeit § 4.5): AUSWEIS der frischen
+        /// Bezugsgröße einer Position nach <c>Tab_ProjektWerte.Menge</c> — „Stand des
+        /// Laufs" beim Dialog-Speichern. Die Rechenwege lesen ohnehin frisch; der
+        /// Ausweis dient dem Dialog und Fremdlesern der Spalte. Geschrieben wird auch
+        /// NULL (nichts ermittelbar = ehrlich kein Stand). false = keine ermittelbare
+        /// Art (die Menge bleibt Eingabewert, z. B. „je Stunde") oder Zeile unauffindbar.
+        /// „% der Investition" in Kategorie 1 bemisst sich an der KASKADE (H4b,
+        /// Runde 3), nicht an der Kostenwelt-Summe — dort kein Einzelzeilen-Ausweis.
+        /// </summary>
+        internal static bool MengeAusweisen(int positionsId, out double? menge)
+        {
+            menge = null;
+            if (positionsId <= 0) return false;
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT w.ProjektID, w.KategorieID, w.KomponentenID, " +
+                    "w.[" + SchemaKatalog.SPALTE_PW_BEMESSUNG + "]" +
+                    (AnlagenSpalteVorhanden()
+                        ? ", w.[" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "] "
+                        : " ") +
+                    "FROM Tab_ProjektWerte AS w WHERE w.ID = ?",
+                    new OleDbParameter("@id", positionsId));
+                if (dt == null || dt.Rows.Count == 0) return false;
+                DataRow r = dt.Rows[0];
+
+                string bem = Text(r, SchemaKatalog.SPALTE_PW_BEMESSUNG);
+                bool endenergie = IstEndenergieArt(bem);
+                if (!endenergie && !IstRueckfallErmittelbareArt(bem)) return false;
+
+                int idProjekt = r["ProjektID"] == DBNull.Value ? 0 : Convert.ToInt32(r["ProjektID"]);
+                int kategorie = r["KategorieID"] == DBNull.Value ? 0 : Convert.ToInt32(r["KategorieID"]);
+                if (kategorie == Form_Kosten.KATEGORIE_INVESTITION &&
+                    string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal))
+                    return false;
+
+                EndenergieAufloeser aufloeser = null;
+                bool versucht = false;
+                menge = endenergie
+                    ? EndenergieMenge(idProjekt, r, bem, ref aufloeser, ref versucht)
+                    : RueckfallMenge(idProjekt, r, bem, ref aufloeser, ref versucht);
+
+                var p = new OleDbParameter("@m", OleDbType.Double);
+                p.Value = menge.HasValue ? (object)menge.Value : DBNull.Value;
+                DataRepository.ExecuteSQL(
+                    "UPDATE Tab_ProjektWerte SET [" + SchemaKatalog.SPALTE_PW_MENGE +
+                    "] = ? WHERE ID = ?",
+                    p, new OleDbParameter("@id", positionsId));
+                return true;
+            }
+            catch { menge = null; return false; }
         }
 
         /// <summary>ID des jüngsten Simulationslaufs (Tab_Ergebnis) des Projekts, 0 = keiner.</summary>

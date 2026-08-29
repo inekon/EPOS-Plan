@@ -178,6 +178,17 @@ namespace WindowsFormsApplication1
                 Zahl("@n", z.Raster.Nutzungsdauer),
                 new OleDbParameter("@id", z.Raster.Id));
 
+            // ETAPPE H2-1 (Konzept BHKW-Wirtschaftlichkeit § 4.5): für ermittelbare
+            // Bemessungsarten weist das Speichern den FRISCHEN Stand der Bezugsgröße
+            // in Tab_ProjektWerte.Menge aus („Stand des Laufs"). Die Rechenwege lesen
+            // ohnehin frisch — der Ausweis versorgt Dialoganzeige und Fremdleser.
+            double? ausweis;
+            if (WirtschaftlichkeitCtrl.MengeAusweisen(z.Raster.Id, out ausweis))
+            {
+                z.Menge = ausweis;
+                zusatz.Menge = ausweis;
+            }
+
             KostenPositionCtrl.Zusatz zu2 = zusatz;
             double betrag;
             try { betrag = BetriebskostenCtrl.Betrag(eingegeben, zu2); }
