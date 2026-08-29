@@ -426,7 +426,7 @@ Stromsteuerrechnung ohne Zweitrechnung zur Verfügung steht.
 
 | Spalte | Typ | Inhalt | Vorbelegung |
 |---|---|---|---|
-| `Stromst_Befreiung_Modus` | TEXT(12) | `ERLOES` / `AUSWEIS` (BW3) | `ERLOES` = heutiges Verhalten |
+| `Stromst_Befreiung_Modus` | TEXT(12) | `ERLOES` / `AUSWEIS` (BW3) | `AUSWEIS` (BF1 entschieden 30.08.2026; bestandsneutral, da kein Bestandslauf die Reihe bucht — B1) |
 | `Kohaerenz_Pruefung` | YESNO | Warnzeilen nach 4.1 erzeugen | True (nur Ausweis, keine Rechenwirkung) |
 
 **Doppelte Schema-Wahrheit beachten:** `WirtschaftlichkeitCtrl.StelleTabellenSicher()` legt die
