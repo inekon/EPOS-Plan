@@ -14,7 +14,18 @@ neuen und umgebauten Oberflächen entstehen als Designer-bearbeitbare
 code-gebaute Oberflächen sind ausdrücklich **nicht** das Muster. Programmatische
 Ergänzungen ohne Layoutwirkung (Muster `InfoKnopf`) bleiben zulässig.
 
-Dieses Dokument ist reine Analyse und Planung — es wurde keine Zeile Code geändert.
+**Umsetzungsvermerk (29.08.2026): P1–P6 vollständig umgesetzt.**
+Schnitt 1 (P1–P3) Commit `0a270a1` mit Nachträgen `038e1bc`/`ce12371` (Logos,
+Kartenlayout); Schnitt 2 (P4+P5) `9a57069`; P6 `15b83af`; Nutzerregel Hilfe-Hover
+`af3a1c5`. Nachweise und offene Kleinpunkte in den Protokollen
+[`Projektdialoge_P1P3_Protokoll.md`](WindowsFormsApplication1/Views/Hauptformular/Projektdialoge_P1P3_Protokoll.md),
+[`Projektdialoge_P4P5_Protokoll.md`](WindowsFormsApplication1/Views/Wizard/Projektdialoge_P4P5_Protokoll.md)
+und [`Projektdialoge_P6_Protokoll.md`](WindowsFormsApplication1/Views/Wizard/Projektdialoge_P6_Protokoll.md).
+Der Wiki-Angleich (§ 2.5, D1–D10) ist am 29.08.2026 importiert — fünf Seiten
+(`Kurzanleitung`, `Projektverwaltung`, `Projekt anlegen`, `Erste Schritte`,
+Vertragstabelle `Programm Dokumentation`), Anker/Kategorien erhalten. Von der
+Prüfliste (§ 6) sind die maschinell belegbaren Punkte grün (Proben p13/p45/p6,
+Referenzlauf); die Oberflächen-Punkte 1–10 stehen zur Anwenderabnahme.
 
 ---
 
