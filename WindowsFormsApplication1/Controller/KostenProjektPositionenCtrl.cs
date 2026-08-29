@@ -421,8 +421,59 @@ namespace WindowsFormsApplication1
             return id;
         }
 
+        /// <summary>ETAPPE H3: Probe der Schritt-59-Spalte (Ergebnis je Prozess
+        /// gemerkt, Muster <see cref="WirtschaftlichkeitCtrl.SpalteVorhanden"/>).</summary>
+        private static bool? _pflichtSpalte;
+
+        internal static bool PflichtSpalteVorhanden()
+        {
+            if (_pflichtSpalte.HasValue) return _pflichtSpalte.Value;
+            _pflichtSpalte = WirtschaftlichkeitCtrl.SpalteVorhanden(
+                SchemaKatalog.TAB_PROJEKTWERTE, SchemaKatalog.SPALTE_PW_IST_PFLICHT);
+            return _pflichtSpalte.Value;
+        }
+
+        /// <summary>ETAPPE H3 (H1-2): true, wenn die Projektzeile eine
+        /// Pflichtposition ist (Schritt 59). Fehlende Spalte oder Lesefehler
+        /// bedeuten false — keine Sperre auf Verdacht.</summary>
+        internal static bool IstPflicht(int id)
+        {
+            if (id <= 0 || !PflichtSpalteVorhanden()) return false;
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT [" + SchemaKatalog.SPALTE_PW_IST_PFLICHT +
+                    "] FROM Tab_ProjektWerte WHERE ID = ?",
+                    new OleDbParameter("@id", id));
+                return o != null && o != DBNull.Value && Convert.ToBoolean(o);
+            }
+            catch { return false; }
+        }
+
+        /// <summary>ETAPPE H3: Pflichtmerkmal einer Projektzeile setzen — die
+        /// Übernahme reicht es aus der Vorlage durch (Lücke der H1-Saat:
+        /// Schritt 59 markiert nur den Bestand, neue Übernahmen liefen sonst
+        /// ohne Merkmal und die Löschsperre liefe ins Leere).</summary>
+        internal static void PflichtSetzen(int id, bool pflicht)
+        {
+            if (id <= 0 || !PflichtSpalteVorhanden()) return;
+            try
+            {
+                DataRepository.ExecuteSQL(
+                    "UPDATE Tab_ProjektWerte SET [" + SchemaKatalog.SPALTE_PW_IST_PFLICHT +
+                    "] = ? WHERE ID = ?",
+                    new OleDbParameter("@p", pflicht),
+                    new OleDbParameter("@id", id));
+            }
+            catch { }
+        }
+
+        /// <summary>Zeile löschen. ETAPPE H3 (H1-2): Pflichtpositionen sind
+        /// gesperrt — die zweite Schicht neben der Dialogmeldung (dasselbe Doppel
+        /// wie beim ReadOnly-Schutz der Kataloge); der Ausweg ist der Satz 0.</summary>
         internal static bool Loeschen(int id)
         {
+            if (IstPflicht(id)) return false;
             return id > 0 && DataRepository.ExecuteSQL(
                 "DELETE FROM Tab_ProjektWerte WHERE ID = ?",
                 new OleDbParameter("@id", id));

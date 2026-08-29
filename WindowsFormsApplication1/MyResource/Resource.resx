@@ -7318,6 +7318,10 @@ dauer [a]</value>
   <data name="KDLG_MSG_READONLY" xml:space="preserve">
     <value>Auslieferungsvorlagen sind schreibgeschützt.</value>
   </data>
+  <data name="KDLG_MSG_PFLICHT_LOESCHEN" xml:space="preserve">
+    <value>„{0}“ ist eine Pflichtposition dieser Komponente und kann nicht gelöscht werden.
+Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
+  </data>
   <data name="KDLG_MSG_POS_LOESCHEN" xml:space="preserve">
     <value>Position „{0}“ löschen?</value>
   </data>
@@ -7344,6 +7348,12 @@ dauer [a]</value>
   </data>
   <data name="BM_P_BRENNSTOFF" xml:space="preserve">
     <value>% der Brennstoffkosten</value>
+  </data>
+  <data name="BM_P_ENDENERGIEKOSTEN" xml:space="preserve">
+    <value>% der Endenergiekosten</value>
+  </data>
+  <data name="BM_P_ENDENERGIEBEDARF" xml:space="preserve">
+    <value>% des Endenergiebedarfs</value>
   </data>
   <data name="BM_P_STROM" xml:space="preserve">
     <value>% der Stromkosten</value>

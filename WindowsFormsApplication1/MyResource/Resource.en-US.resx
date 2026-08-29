@@ -7311,6 +7311,10 @@ life [a]</value>
   <data name="KDLG_MSG_READONLY" xml:space="preserve">
     <value>Factory templates are read-only.</value>
   </data>
+  <data name="KDLG_MSG_PFLICHT_LOESCHEN" xml:space="preserve">
+    <value>“{0}” is a mandatory item of this component and cannot be deleted.
+To deactivate it, set its rate or amount to 0.</value>
+  </data>
   <data name="KDLG_MSG_POS_LOESCHEN" xml:space="preserve">
     <value>Delete item “{0}”?</value>
   </data>
@@ -7337,6 +7341,12 @@ life [a]</value>
   </data>
   <data name="BM_P_BRENNSTOFF" xml:space="preserve">
     <value>% of fuel costs</value>
+  </data>
+  <data name="BM_P_ENDENERGIEKOSTEN" xml:space="preserve">
+    <value>% of final energy costs</value>
+  </data>
+  <data name="BM_P_ENDENERGIEBEDARF" xml:space="preserve">
+    <value>% of final energy demand</value>
   </data>
   <data name="BM_P_STROM" xml:space="preserve">
     <value>% of electricity costs</value>

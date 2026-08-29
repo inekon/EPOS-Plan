@@ -38,6 +38,12 @@ namespace WindowsFormsApplication1
         public double? EmpfehlungVon;
         public double? EmpfehlungBis;
         public int Sortierung;
+
+        /// <summary>ETAPPE H3 (Schritt 59): Pflichtposition der Komponente — wandert
+        /// bei jeder Übernahme in die Projektzeile (Löschsperre H1-2) und steuert die
+        /// Auto-Anlage (H1-3). false, wenn die Spalte in einer nie migrierten
+        /// Datenbank fehlt.</summary>
+        public bool IstPflicht;
     }
 
     /// <summary>
@@ -130,6 +136,9 @@ namespace WindowsFormsApplication1
         public static IList<KostenVorlagenPosition> Positionen(int vorlageId)
         {
             var liste = new List<KostenVorlagenPosition>();
+            // ETAPPE H3: IstPflicht (Schritt 59) nur lesen, wo die Spalte existiert —
+            // eine nie migrierte Datenbank lieferte sonst einen Abfragefehler.
+            bool mitPflicht = PflichtSpalteVorhanden();
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT [ID], [" + SchemaKatalog.SPALTE_KVP_STAMMID + "], [" +
                 SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "], [" +
@@ -141,7 +150,9 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_KVP_NUTZUNGSDAUER + "], [" +
                 SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_VON + "], [" +
                 SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_BIS + "], [" +
-                SchemaKatalog.SPALTE_KVP_SORTIERUNG + "] FROM [" +
+                SchemaKatalog.SPALTE_KVP_SORTIERUNG + "]" +
+                (mitPflicht ? ", [" + SchemaKatalog.SPALTE_KVP_IST_PFLICHT + "]" : "") +
+                " FROM [" +
                 SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] WHERE [" +
                 SchemaKatalog.SPALTE_KVP_VORLAGEID + "] = ? ORDER BY [" +
                 SchemaKatalog.SPALTE_KVP_SORTIERUNG + "], [ID]",
@@ -162,8 +173,22 @@ namespace WindowsFormsApplication1
                     EmpfehlungVon = WertOderNull(r[9]),
                     EmpfehlungBis = WertOderNull(r[10]),
                     Sortierung = r[11] == DBNull.Value ? 0 : Convert.ToInt32(r[11]),
+                    IstPflicht = mitPflicht && r[12] != DBNull.Value && Convert.ToBoolean(r[12]),
                 });
             return liste;
+        }
+
+        /// <summary>ETAPPE H3: Probe der Schritt-59-Spalte an der Vorlagentabelle
+        /// (Muster <see cref="WirtschaftlichkeitCtrl.SpalteVorhanden"/>, Ergebnis je
+        /// Prozess gemerkt).</summary>
+        private static bool? _pflichtSpalte;
+
+        private static bool PflichtSpalteVorhanden()
+        {
+            if (_pflichtSpalte.HasValue) return _pflichtSpalte.Value;
+            _pflichtSpalte = WirtschaftlichkeitCtrl.SpalteVorhanden(
+                SchemaKatalog.TAB_KOSTENVORLAGEPOSITION, SchemaKatalog.SPALTE_KVP_IST_PFLICHT);
+            return _pflichtSpalte.Value;
         }
 
         /// <summary>

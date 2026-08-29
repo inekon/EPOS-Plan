@@ -1302,6 +1302,16 @@ namespace WindowsFormsApplication1
                 // (Begruendung im Block ueber SenkenSichern).
                 SenkenWiederherstellen(projektID);
 
+                // ETAPPE H3 (H1-3): Pflichtpositionen der Standardvorlagen an jeder
+                // Anlagenzeile sicherstellen - NACH ZuordnungReparieren/AnkerNachziehen
+                // (die Bestandspositionen haengen dann wieder an den neuen Anlagen-Ids,
+                // der NurAnlegen-Dublettencheck je Anlage greift und es entstehen keine
+                // Doppel). Saetze bleiben leer, der Lauf ist ergebnisneutral - es
+                // entsteht nur Struktur. BEST EFFORT wie die Nachbarn: ein gelungenes
+                // Speichern scheitert nicht an der Kostenseite.
+                try { KostenVorlagenUebernahmeCtrl.PflichtpositionenSicherstellen(projektID); }
+                catch { }
+
                 GeraeteWaisen.Aufraeumen(projektID);
 
                 Console.WriteLine("Daten erfolgreich aktualisiert.");
