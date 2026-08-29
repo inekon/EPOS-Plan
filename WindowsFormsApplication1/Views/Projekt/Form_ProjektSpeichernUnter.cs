@@ -49,7 +49,6 @@ namespace WindowsFormsApplication1
             }
             listView_Projekt.Select();
             if (listView_Projekt.Items.Count > 0) listView_Projekt.Items[0].Selected = true;
-            listView_Projekt.Items[0].Selected = true;
             listView_Projekt.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView_Projekt.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
             ctrl = null;
