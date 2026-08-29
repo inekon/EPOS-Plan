@@ -40,7 +40,9 @@ namespace WindowsFormsApplication1
 
             // Timer für das verzögerte Schließen initialisieren
             _closeDelayTimer = new Timer();
-            _closeDelayTimer.Interval = 50; // 50 Millisekunden Puffer gegen Flackern
+            // Schonfrist beim Verlassen des Popups selbst: 50 ms waren nur ein
+            // Flacker-Puffer und fuer den Weg zum Link zu knapp (Befund 29.08.).
+            _closeDelayTimer.Interval = 300;
             _closeDelayTimer.Tick += CloseDelayTimer_Tick;
 
             // Events für alle Beteiligten registrieren

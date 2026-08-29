@@ -1787,14 +1787,23 @@ namespace WindowsFormsApplication1
             // Angeheftet bleibt stehen (F1).
             if (_popup.IstAngeheftet) return;
 
+            // Der Uebertritt in ein KIND-Steuerelement (Eingabefeld in einer
+            // GroupBox) feuert in WinForms ebenfalls MouseLeave — die
+            // Bereichshilfe (H12) verschwand dadurch, sobald die Maus ein Feld
+            // beruehrte. Solange der Zeiger im Quellbereich oder im Popup
+            // steht, bleibt das Popup deshalb offen.
+            Control quelle = sender as Control;
             Timer delayTimer = new Timer { Interval = 500 };
             delayTimer.Tick += (s, ev) =>
             {
                 delayTimer.Stop();
                 delayTimer.Dispose();
 
-                if (_popup != null && !_popup.IsDisposed && !_popup.IstAngeheftet
-                    && !_popup.Bounds.Contains(Cursor.Position)) _popup.Hide();
+                if (_popup == null || _popup.IsDisposed || _popup.IstAngeheftet) return;
+                if (_popup.Bounds.Contains(Cursor.Position)) return;
+                if (quelle != null && !quelle.IsDisposed && quelle.Visible
+                    && quelle.RectangleToScreen(quelle.ClientRectangle).Contains(Cursor.Position)) return;
+                _popup.Hide();
             };
             delayTimer.Start();
         }
