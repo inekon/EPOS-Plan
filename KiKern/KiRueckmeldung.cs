@@ -297,13 +297,22 @@ namespace KiKern
         /// Parameter, unbekannte Aktion, geschlossener Riegel. Sie geht als
         /// <c>functionResponse</c> zurueck und loest die Korrekturrunde aus.
         /// </summary>
-        public static string Abgelehnt(string? aktion, string grund)
+        /// <remarks>
+        /// Auch der Ablehnungsgrund ist ein SATZ auf dem Weg zum Modell und laeuft durch
+        /// <see cref="Saeubern"/>: bekannte Bezeichner werden ersetzt, Bedien- und
+        /// Fachsprache bleibt fuer die Korrekturrunde stehen - dieselbe Regel wie fuer
+        /// den Ergebnissatz in <see cref="Erzeuge"/> (Fachkonzept 4.2). Klarnamen, die
+        /// die Tabelle noch nicht kennt, muss der Aufrufer VORHER anmelden
+        /// (<see cref="KiPlatzhalter.Fuer"/>) - aus dem Satz allein laesst sich nicht
+        /// ablesen, welcher Teil ein Bezeichner ist.
+        /// </remarks>
+        public static string Abgelehnt(string? aktion, string grund, KiPlatzhalter? platzhalter = null)
         {
             var objekt = new JsonObject
             {
                 ["aktion"] = aktion ?? "",
                 ["status"] = SchutzstufeText.Schluessel(KiStatus.Abgelehnt),
-                ["grund"] = grund ?? ""
+                ["grund"] = Saeubern(grund, platzhalter)
             };
             return objekt.ToJsonString(Kompakt);
         }

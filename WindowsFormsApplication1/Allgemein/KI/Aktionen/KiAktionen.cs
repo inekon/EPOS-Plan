@@ -292,6 +292,57 @@ namespace WindowsFormsApplication1
             return ProjektWaehlen(a, parameter).Fehler;
         }
 
+        /// <summary>
+        /// Meldet jeden Projekt- und Kundennamen, der in einem der Texte vorkommt, in der
+        /// Platzhaltertabelle an - der Vorschutz fuer Ablehnungsgruende (H8-Protokoll,
+        /// Befund 4).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Ein Ablehnungsgrund ist ein SATZ: <c>KiRueckmeldung</c> kann darin nur
+        /// ersetzen, was die Tabelle schon kennt. Scheitert aber etwa die Vorbedingung
+        /// <see cref="ProjektMussAufloesbarSein"/>, zaehlt der Grund ueber
+        /// <see cref="Aufzaehlen"/> bis zu zwoelf Projektnamen samt Kunde auf, die in
+        /// noch keiner Ergebniszeile standen - bei leerer Tabelle gingen sie im Klartext
+        /// an das Modell. Deshalb meldet der Chatdienst VOR dem Verdichten jeden
+        /// bekannten Klarnamen an, der in einem der Texte tatsaechlich vorkommt
+        /// (<see cref="KiPlatzhalter.Fuer"/>); ersetzt wird weiterhin allein in
+        /// <c>KiRueckmeldung</c>. Der Anwender sieht unter dem Schritt den
+        /// unveraenderten Klartext.
+        /// </para>
+        /// <para>
+        /// Angemeldet wird NUR, was vorkommt - sonst wuechse die Tabelle mit jedem
+        /// Fehlschlag um saemtliche Projekte (Obergrenze
+        /// <see cref="KiPlatzhalter.MaxEintraege"/>). Namen unter drei Zeichen bleiben
+        /// aussen vor: ein Projekt „A" wuerde als Ersetzungsmuster jedes Wort mit A
+        /// zerschneiden.
+        /// </para>
+        /// </remarks>
+        internal static void KlarnamenAnmelden(KiPlatzhalter platzhalter, params string[] texte)
+        {
+            if (platzhalter == null || texte == null) return;
+
+            List<Kandidat> kandidaten = null;
+            foreach (string text in texte)
+            {
+                if (string.IsNullOrWhiteSpace(text)) continue;
+                if (kandidaten == null) kandidaten = ProjektKandidaten();
+
+                foreach (Kandidat k in kandidaten)
+                {
+                    KlarnameAnmelden(platzhalter, text, k.Name);
+                    KlarnameAnmelden(platzhalter, text, k.Zusatz);
+                }
+            }
+        }
+
+        private static void KlarnameAnmelden(KiPlatzhalter platzhalter, string text, string klarname)
+        {
+            string name = (klarname ?? "").Trim();
+            if (name.Length < 3) return;
+            if (text.IndexOf(name, StringComparison.Ordinal) >= 0) platzhalter.Fuer(name);
+        }
+
 
         /// <summary>
         /// Mehrere Projekte aus einer Aufzaehlung von Namen (Semikolon getrennt).

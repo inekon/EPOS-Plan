@@ -211,6 +211,51 @@ namespace KiKern.Tests
         }
 
         [Fact]
+        public void AbgelehntErsetztBekannteKlarnamenImGrund()
+        {
+            // H8-Protokoll, Befund 4: der Ablehnungsgrund kann Klarnamen führen - etwa
+            // die Kandidatenliste einer gescheiterten Namensauflösung. Bekannte
+            // Bezeichner werden ersetzt, die Fachsprache bleibt stehen.
+            var p = new KiPlatzhalter();
+            p.Fuer("Musterstraße 7");
+            p.Fuer("Muster GmbH");
+
+            JsonNode k = JsonNode.Parse(KiRueckmeldung.Abgelehnt(
+                "projekt_lesen",
+                "„Muster“ ist mehrdeutig: Musterstraße 7 (Muster GmbH).", p))!;
+
+            string grund = k["grund"]!.GetValue<string>();
+            Assert.DoesNotContain("Musterstraße", grund);
+            Assert.DoesNotContain("Muster GmbH", grund);
+            Assert.Contains("Name 1", grund);
+            Assert.Contains("Name 2", grund);
+            Assert.Contains("mehrdeutig", grund);
+        }
+
+        [Fact]
+        public void AbgelehntKannNurBekannteBezeichnerSchuetzen()
+        {
+            // Die Grenze der Schicht: was die Tabelle nicht kennt, kann sie nicht
+            // ersetzen. Dafür melden die Aufrufer ihre Klarnamen VORHER an
+            // (KiHilfe.KlarnamenAnmelden im Anwendungsprojekt).
+            var p = new KiPlatzhalter();
+
+            JsonNode k = JsonNode.Parse(KiRueckmeldung.Abgelehnt(
+                "projekt_lesen", "Unbekannt: Musterstraße 7.", p))!;
+
+            Assert.Contains("Musterstraße 7", k["grund"]!.GetValue<string>());
+        }
+
+        [Fact]
+        public void AbgelehntOhneTabelleWieBisher()
+        {
+            JsonNode k = JsonNode.Parse(KiRueckmeldung.Abgelehnt(
+                "projekt_lesen", "Musterstraße 7 ist gesperrt.", null))!;
+
+            Assert.Contains("Musterstraße 7", k["grund"]!.GetValue<string>());
+        }
+
+        [Fact]
         public void OhnePlatzhaltertabelleBleibtAllesStehen()
         {
             // Fuer den Aktionsharnisch und die Anzeige im Chat, wo nichts verborgen wird.
