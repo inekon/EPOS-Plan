@@ -167,10 +167,10 @@
     <value>Charge level [%]:</value>
   </data>
   <data name="label7.Size" type="System.Drawing.Size, System.Drawing">
-    <value>86, 19</value>
+    <value>155, 19</value>
   </data>
   <data name="label7.Text" xml:space="preserve">
-    <value>Energy [kW]:</value>
+    <value>Energy (capacity) [kWh]:</value>
   </data>
   <data name="textBox_Degradation.Text" xml:space="preserve">
     <value>0.1</value>
