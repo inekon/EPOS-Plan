@@ -398,13 +398,15 @@ namespace WindowsFormsApplication1
             // gemacht, was noetig ist - er wird deshalb komplett von
             // ProjektKontextUebernehmen abgeloest (gleiche Bedingung: nur bei gefundenem
             // Projekt wird Tab_Applikation geschrieben).
+            //
+            // Der Nachzug greift AUCH, wenn der Anwender im Assistenten „Projekt
+            // öffnen" gewählt hat: WizardParent setzt Program.wizardctrl.Projektname
+            // dann auf das geöffnete Projekt, damit hier derselbe Kontext bestätigt
+            // und nicht ein früher gespeichertes Projekt zurückgeholt wird.
             if (Program.wizardctrl.Projektname != ""
                 && ProjektKontextUebernehmen(Program.wizardctrl.Projektname))
             {
-                ApplikationCtrl ctrl_app = new ApplikationCtrl();
-                ctrl_app.m_ID_Projekt = m_ID_Projekt;
-                ctrl_app.m_szProjektname = m_szProjektname;
-                ctrl_app.Update();
+                ZuletztGeoeffnetMerken();
             }
         }
 
@@ -876,15 +878,60 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            // Zuletzt geoeffnetes Projekt merken - dieselbe Schreiblogik wie bei den
-            // Kacheln "Neues Projekt" und "Projekt oeffnen/bearbeiten".
+            ZuletztGeoeffnetMerken();
+            HinweisProjektGeoeffnet(karte_ProjektZuletzt);
+        }
+
+        /// <summary>
+        /// Schreibt das gerade aktive Projekt (<see cref="m_ID_Projekt"/> /
+        /// <see cref="m_szProjektname"/>) als „zuletzt geöffnet" nach
+        /// <c>Tab_Applikation</c> — die Quelle, aus der die Kachel „Zuletzt geöffnet"
+        /// und der Menüpunkt „Projekt → Zuletzt geöffnet" schöpfen.
+        ///
+        /// <para>
+        /// Die vier Zeilen standen bisher wortgleich in jedem Weg, der ein Projekt
+        /// aktiv setzt. Seit dem Direktöffnen im Assistenten (Nutzerwunsch
+        /// 30.08.2026) gibt es einen Weg mehr — deshalb stehen sie jetzt an EINER
+        /// Stelle. Aufrufen erst, NACHDEM <see cref="ProjektKontextUebernehmen"/>
+        /// erfolgreich war: die Methode schreibt genau das, was dort gesetzt wurde.
+        /// </para>
+        /// </summary>
+        public void ZuletztGeoeffnetMerken()
+        {
             ApplikationCtrl ctrl_app = new ApplikationCtrl();
             ctrl_app.m_ID_Projekt = m_ID_Projekt;
             ctrl_app.m_szProjektname = m_szProjektname;
             ctrl_app.Update();
+        }
 
-            Form_Hinweis frm = new Form_Hinweis(MyResource.Resource.Text_Hinweis, MyResource.Resource.Text_Projekt + " " + m_szProjektname + " " + MyResource.Resource.Text_Geoeffnet + "!");
-            frm.Location = this.PointToScreen(tabControl_Wizard.PointToScreen(karte_ProjektZuletzt.Location));
+        /// <summary>
+        /// Kurzhinweis „Projekt &lt;Name&gt; geöffnet!" an der Kachel
+        /// <paramref name="kachel"/> (ohne Angabe: an der Kachel „Projekt
+        /// öffnen/bearbeiten", von der aus der Assistent gestartet wird). Der Hinweis
+        /// schließt sich nach drei Sekunden von selbst (<see cref="Form_Hinweis"/>).
+        ///
+        /// <para>
+        /// Gemeinsame Rückmeldung aller Wege, die ein Projekt DIREKT aktiv setzen —
+        /// Kachel „Zuletzt geöffnet" und „Projekt öffnen" im Assistenten. Die
+        /// Bildschirmposition wird über das ELTERNSTEUERELEMENT der Kachel berechnet;
+        /// die frühere Fassung schachtelte zwei <c>PointToScreen</c>-Aufrufe
+        /// ineinander und addierte damit den Bildschirmursprung der Startmaske ein
+        /// zweites Mal.
+        /// </para>
+        /// </summary>
+        public void HinweisProjektGeoeffnet(Control kachel = null)
+        {
+            Control anker = kachel ?? karte_ProjektOeffnen;
+
+            // Bewusst OHNE using: Form_Hinweis schliesst sich per "await Task.Delay"
+            // selbst; ein Dispose direkt nach ShowDialog liesse diese Fortsetzung auf
+            // ein bereits entsorgtes Fenster laufen.
+            Form_Hinweis frm = new Form_Hinweis(MyResource.Resource.Text_Hinweis,
+                MyResource.Resource.Text_Projekt + " " + m_szProjektname + " " + MyResource.Resource.Text_Geoeffnet + "!");
+
+            if (anker != null && anker.Parent != null) frm.Location = anker.Parent.PointToScreen(anker.Location);
+            else frm.StartPosition = FormStartPosition.CenterScreen;
+
             frm.ShowDialog();
         }
 
