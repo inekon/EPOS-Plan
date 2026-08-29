@@ -488,6 +488,105 @@ namespace WindowsFormsApplication1
             return false;
         }
 
+        // ============================================================== ETAPPE H4b
+        // Rohe BAUGRÖSSEN der verbauten Geräte — die Bezugsmengen der
+        // Gerätewelt-Bemessungen des Kostendialoge-Konzepts § 5.3 („je kW …",
+        // „je kWp", „je kWh Kapazität", „je m² Kollektorfläche"). Die Kostenbasen
+        // oben liefern EURO-Werte; hier geht es um die Größe selbst. Dieselbe
+        // Gewerke-Landkarte (Plaene), dieselbe Verweislogik.
+
+        /// <summary><c>Tab_KostenKomponente.ID</c> (die festen Nummern 1…7 aus
+        /// <c>Form_Kosten.GetKomponentenID</c>) → Komponentenname der Landkarte.</summary>
+        private static string KomponentenName(int komponentenID)
+        {
+            switch (komponentenID)
+            {
+                case 1: return DbWerte.ERZEUGER_WAERMEPUMPE;
+                case 2: return DbWerte.ERZEUGER_HEIZKESSEL;
+                case 3: return DbWerte.ERZEUGER_PHOTOVOLTAIK;
+                case 4: return DbWerte.ERZEUGER_SOLARTHERMIE;
+                case 5: return DbWerte.ERZEUGER_STROMSPEICHER;
+                case 6: return DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER;
+                case 7: return DbWerte.ERZEUGER_BHKW;
+                default: return null;
+            }
+        }
+
+        /// <summary>
+        /// Summe der Baugröße der verbauten Geräte einer Komponente — optional auf
+        /// EINE Anlagenzeile eingegrenzt. Je Bemessungsart gilt die passende
+        /// Gerätespalte; passt die Art nicht zum Gewerk (z. B. „je kW elektrisch" an
+        /// der Wärmepumpe), gibt es bewusst <c>null</c> statt einer Fantasiezahl.
+        ///
+        /// <para>Spaltenlage (29.08.2026 gegen die Produktivdatenbank erhoben):
+        /// WP <c>Nennleistung</c> [kW Heizleistung] · Kessel <c>Ptherm</c> [kW] ·
+        /// BHKW <c>Pel</c> [kW el] · PV <c>Tab_Energieanlagen.PV_Leistung</c> [kWp]
+        /// (Anlagenspalte, Nutzerentscheidung 18.08.2026) · Stromspeicher
+        /// <c>Energie</c> [kWh] · Solar <c>Aperturflaeche</c> [m² je Modul] ×
+        /// <c>Kollektormodulanzahl</c> der Anlagenzeile. Der PUFFERSPEICHER hat
+        /// bewusst KEINE kWh-Kapazität hier: Ohne Temperaturpaar gibt es keine
+        /// belastbare Umrechnung des Volumens (Speicher-Registry-Warnung) — die
+        /// Definition gehört zur Speicherrechnung, nicht in eine Kostenformel.</para>
+        /// </summary>
+        internal static double? BaugroesseSumme(int projektID, int komponentenID,
+                                                string bemessung, int idAnlage)
+        {
+            string komponente = KomponentenName(komponentenID);
+            if (komponente == null) return null;
+            Plan plan;
+            if (!Plaene.TryGetValue(komponente, out plan)) return null;
+
+            string geraetespalte = null;
+            bool anlagenspalte = false;   // Baugröße steht an Tab_Energieanlagen
+            bool malModulanzahl = false;  // Gerätewert × Stückzahl der Anlagenzeile
+
+            if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG, StringComparison.Ordinal)
+                && komponentenID == 1) geraetespalte = "Nennleistung";
+            else if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, StringComparison.Ordinal)
+                && komponentenID == 2) geraetespalte = "Ptherm";
+            else if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, StringComparison.Ordinal)
+                && komponentenID == 7) geraetespalte = "Pel";
+            else if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWP, StringComparison.Ordinal)
+                && komponentenID == 3) { geraetespalte = "PV_Leistung"; anlagenspalte = true; }
+            else if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET, StringComparison.Ordinal)
+                && komponentenID == 5) geraetespalte = "Energie";
+            else if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_M2_KOLLEKTOR, StringComparison.Ordinal)
+                && komponentenID == 4) { geraetespalte = "Aperturflaeche"; malModulanzahl = true; }
+            else return null;
+
+            try
+            {
+                string sql;
+                var ps = new List<OleDbParameter> { new OleDbParameter("@p", projektID) };
+
+                if (anlagenspalte)
+                {
+                    sql = "SELECT SUM(a.[" + geraetespalte + "]) FROM Tab_Energieanlagen AS a " +
+                          "WHERE a.ID_Projekt = ? AND a.[" + plan.Verweis + "] > 0";
+                }
+                else
+                {
+                    string wert = malModulanzahl
+                        ? "g.[" + geraetespalte + "] * a.[" + plan.Mengenspalte + "]"
+                        : "g.[" + geraetespalte + "]";
+                    sql = "SELECT SUM(" + wert + ") FROM [" + plan.Tabelle + "] AS g " +
+                          "INNER JOIN Tab_Energieanlagen AS a ON g.ID = a.[" + plan.Verweis + "] " +
+                          "WHERE a.ID_Projekt = ?";
+                }
+                if (idAnlage > 0)
+                {
+                    sql += " AND a.ID = ?";
+                    ps.Add(new OleDbParameter("@a", idAnlage));
+                }
+
+                object o = DataRepository.ExecuteScalar(sql, ps.ToArray());
+                if (o == null || o == DBNull.Value) return null;
+                double summe = Convert.ToDouble(o);
+                return summe > 0 ? summe : (double?)null;
+            }
+            catch { return null; }
+        }
+
         /// <summary>Anzeigename einer Kostenbasis (lokalisiert).</summary>
         internal static string BasisName(string schluessel)
         {
