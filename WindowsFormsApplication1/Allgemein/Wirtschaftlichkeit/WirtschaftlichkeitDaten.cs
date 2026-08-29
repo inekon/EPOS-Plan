@@ -705,6 +705,22 @@ namespace WindowsFormsApplication1
         /// </summary>
         public List<KostenPositionNachweis> Betriebskosten = new List<KostenPositionNachweis>();
 
+        /// <summary>
+        /// ETAPPE B2 (Konzept BHKW-Wirtschaftlichkeit § 4.1, BW2/BF2) — die Zeilen der
+        /// Kohärenzprüfung: Widersprüche zwischen einer gebuchten Steuergutschrift und
+        /// dem Steueranteil, den der erfasste Energiepreis ausweist. Leere Liste =
+        /// konsistent (Fall 1) oder kein Steuerpfad im Lauf.
+        ///
+        /// <para><b>Reine Ausgabe, ohne jede Rechenwirkung</b> — Entscheidung BF2 lautet
+        /// „nur warnen". Keine Gutschrift, keine Reihe und kein Kapitalwert ändern sich
+        /// dadurch.</para>
+        ///
+        /// <para><b>Nicht persistiert</b>, wie <see cref="KwkgModule"/> und
+        /// <see cref="Betriebskosten"/>: Die Zeilen entstehen bei jedem Lauf neu. Der
+        /// Rückfallpfad auf gespeicherte Ergebnisse zeigt sie deshalb nicht.</para>
+        /// </summary>
+        public List<KohaerenzHinweis> KohaerenzHinweise = new List<KohaerenzHinweis>();
+
         public double? IRR;                    // interner Zinsfuß der Differenzreihe [%] (null beim Stamm/nie)
 
         // Stufe W3 (Phase 8)

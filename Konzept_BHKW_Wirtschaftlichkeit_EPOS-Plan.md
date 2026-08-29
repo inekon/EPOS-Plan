@@ -396,6 +396,11 @@ der Wert, der **nichts auslöst**.
 | `Anteil_Vertrieb` · `_Aktiv` | DOUBLE / YESNO | ct/kWh | NULL / False |
 | `Anteil_Modus` | TEXT(20) | `AUFGESCHLUESSELT` / `GESAMTWERT` | `GESAMTWERT` |
 
+> **Persistenzwert-Fußnote (B2, 30.08.2026):** Gespeichert wird `Gesamtwert` /
+> `Aufgeschluesselt` — die Werte der bestehenden Konstanten
+> `DbWerte.SP_AUFSCHLAG_MODUS_*` (Regel „keine neuen Persistenzliterale"). Die
+> Großschreibung in dieser Tabelle ist Dokumentationsschreibweise.
+
 > **Falle aus E5, die hier greift:** Access legt `YESNO` durchgängig mit `False` an, und der Leseweg
 > des Strom-Aufschlagsblocks behandelt `NULL` als „nicht gepflegt" und setzt dann den **vollen
 > Vorschlagssatz** — bei Projekt 1030 gemessen 11,746 ct/kWh trotz fünf abgeschalteter Flags. Der
@@ -482,6 +487,10 @@ Einheit, Live-Summenzeile, rot markierter Rest, Override-Modus mit lesbaren Komp
   „nach § 54", jeweils mit dem Jahressatz beschriftet und über die Einheitenkette (€/MWh, €/1.000 l,
   €/1.000 kg) in ct/kWh umgerechnet
 - CO₂-Anteil [ct/kWh] mit Schnellwahl aus dem CO₂-Preispfad × Emissionsfaktor des Trägers
+  — **heizwertbezogen** (B2, 30.08.2026): Der Arbeitspreis des Dialogs ist `Preis ÷ Hi`,
+  die Zerlegung muss dieselbe Basis tragen, sonst wäre die Restzeile schief. Für Erdgas
+  sind das 1,31 ct/kWh bei 65 €/t; die 1,18 im Beispiel der Herleitungstafel (6.3)
+  waren brennwertbezogen
 - Netz-/Messentgelt, Vertrieb — frei
 - Restzeile und Effektivpreiszeile wie beim Strom
 
@@ -562,7 +571,7 @@ sie als **Varianten** — dafür gibt es den Variantenvergleich, und er ist der 
 | # | Inhalt | Ergebniswirkung | Abnahme |
 |---|---|---|---|
 | **B1** | **Zahlenprobe zuerst.** Befund B2 (Doppelzählung § 9 Nr. 3) an einem Projekt mit Stundenreihen rechnen; zugleich die seit E8 offene Zahlenprobe gegen die Altanwendung (Bedarf 100 MWh, Restbezug 62, Einspeisung 34, Eigenverbrauch 38) nachholen | keine (Messung) | Handrechnung gegen Referenzprojekt; jede Abweichung gegen die 17 Altbefunde bewertet |
-| **B2** | M-1 Preisbestandteile Brennstoff + `ucBrennstoffBestandteile` + Kohärenzprüfung als **reine Warnzeile** | **keine** — Vorbelegung `GESAMTWERT`, alle Flags aus | Referenzläufe byte-gleich gegen B6; Warnzeilen plausibel |
+| **B2** | M-1 Preisbestandteile Brennstoff + `ucBrennstoffBestandteile` + Kohärenzprüfung als **reine Warnzeile** — **umgesetzt 30.08.2026** (Schema-Schritt 60, `B2_Preisbestandteile_Protokoll.md`) | **keine** — Vorbelegung `GESAMTWERT`, alle Flags aus | Referenzläufe byte-gleich gegen B6; Warnzeilen plausibel |
 | **B3** | M-2 Steuerwahl und Hilfsstrom je Anlage; § 54 auf Kesselbrennstoff; Eigenstrom-Tatbestand je Anlage | **ja, gewollt** bei gepflegten Angaben; ohne Pflege keine | A/B-Nachweis mit Zahlen, Handrechnung je Vorschrift, präparierte Kopie für den Kesselfall |
 | **B4** | BW4: Energieintensität als eine Wahrheit; Katalog löst die Konstanten in `StromAufschlagModel` ab (Befund A7) | keine (wertgleich) | Gleichstand Katalog ↔ Aufschlagsblock gemessen |
 | **B5** | `Form_BhkwWirtschaftlichkeit`; Auszug der beiden Gruppen aus `Form_WirtschaftlichkeitParameter`; Andockung an `UcWirtschaftlichkeit` und `ucErtragBonus` | keine (Eingabe) | Roundtrip aller Felder; Layout-Sweep; Sichtprüfung Philipp |

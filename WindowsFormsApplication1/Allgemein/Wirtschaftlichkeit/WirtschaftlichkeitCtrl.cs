@@ -1396,6 +1396,16 @@ namespace WindowsFormsApplication1
                 new List<KeyValuePair<double, int>>();
             /// <summary>Betriebskostenpositionen mit Kostenart und Herleitung (E3 → E7).</summary>
             public List<KostenPositionNachweis> Betriebskosten = new List<KostenPositionNachweis>();
+
+            /// <summary>
+            /// ETAPPE B2 — die Eingabe der Steuerrechnung dieses Laufs (Anlagen mit
+            /// Träger, Heizwerten und Katalogschlüsseln, gewählte Norm, Netzbezug).
+            /// <c>null</c> = kein Steuerpfad im Lauf (kein BHKW und kein produzierendes
+            /// Gewerbe). <b>Reine Ausgabe:</b> Sie wird festgehalten, damit die
+            /// Kohärenzprüfung dieselbe Grundlage liest, mit der gerechnet wurde, statt
+            /// die Anlagen ein zweites Mal aufzulösen.
+            /// </summary>
+            public SteuerEingabe SteuerEingabe;
         }
 
         private ProjektEingabe BaueEingabe(VariantenDaten v, WirtschaftlichkeitParameter p,
@@ -2602,6 +2612,7 @@ namespace WindowsFormsApplication1
 
             SteuerEingabe eingabe = BaueSteuerEingabe(v, p, e.Matrix);
             if (eingabe == null) return;
+            e.SteuerEingabe = eingabe;      // B2: Grundlage der Kohärenzprüfung, reine Ausgabe
 
             if (_gesetze == null) _gesetze = new GesetzKatalog();
             System.Globalization.CultureInfo kultur = BerichtTexte.Kultur;
@@ -2768,6 +2779,7 @@ namespace WindowsFormsApplication1
             a.EffHi = t.EffHi;
             a.EffHs = t.EffHs;
             a.Abrechnungseinheit = t.Einheit;
+            a.CarrierId = carrier;          // B2: Bezugspunkt der Kohärenzprüfung
             return a;
         }
 
@@ -2862,7 +2874,13 @@ namespace WindowsFormsApplication1
         /// BEHG-Einstufung arbeitet.</para>
         /// </summary>
         /// <param name="teilsatz">true = Teilsatz nach § 53a Abs. 5, false = voller Satz nach § 2.</param>
-        private static string EnergiesteuerSchluessel(int idBrennstoff, bool teilsatz)
+        /// <remarks>
+        /// <b>Sichtbarkeit <c>internal</c> seit Etappe B2</b> (Konzept BHKW-Wirtschaftlichkeit
+        /// § 6.2): Die Schnellwahl in <see cref="ucBrennstoffBestandteile"/> braucht dieselbe
+        /// Zuordnung. Sie zu kopieren wäre genau die doppelte Wahrheit, die Befund A7 benennt —
+        /// deshalb liest der Dialog diese Methode, statt eine zweite Tabelle zu führen.
+        /// </remarks>
+        internal static string EnergiesteuerSchluessel(int idBrennstoff, bool teilsatz)
         {
             switch (idBrennstoff)
             {
@@ -2899,8 +2917,11 @@ namespace WindowsFormsApplication1
         /// darin nicht vor. Für sie liefert die Methode einen leeren Schlüssel — die
         /// Rechnung meldet dann „dem Energieträger ist kein Satz zugeordnet", statt
         /// einen fremden Satz zu verwenden.
+        ///
+        /// <para><b>Sichtbarkeit <c>internal</c> seit Etappe B2</b> — siehe
+        /// <see cref="EnergiesteuerSchluessel"/>.</para>
         /// </summary>
-        private static string Energiesteuer54Schluessel(int idBrennstoff)
+        internal static string Energiesteuer54Schluessel(int idBrennstoff)
         {
             switch (idBrennstoff)
             {
@@ -3991,6 +4012,25 @@ namespace WindowsFormsApplication1
             erg.KwkgModule = eingabe.KwkgModule;
             erg.Betriebskosten = eingabe.Betriebskosten;
             erg.Hinweis = eingabe.Hinweis;
+
+            // ETAPPE B2 (BW2/BF2) — Kohärenzprüfung als REINE Warnzeile. Sie liest die
+            // Preiszerlegung und vergleicht sie mit den bereits gebuchten Gutschriften;
+            // sie rechnet nichts nach und ändert nichts. Ein Fehlschlag darf den Lauf
+            // niemals kippen — deshalb der Fangzaun: lieber keine Hinweiszeile als kein
+            // Kapitalwert.
+            try
+            {
+                erg.KohaerenzHinweise = KohaerenzPruefung.Pruefe(v.IdProjekt, new KohaerenzLauf
+                {
+                    Jahr = Foerderbeginn(p),
+                    Steuer = eingabe.SteuerEingabe,
+                    AufschlaegeAnwenden = p.AufschlaegeAnwenden,
+                    EnergiesteuerEur = eingabe.EnergiesteuerJahr1,
+                    StromsteuerBefreiungEur = eingabe.StromsteuerBefreiungJahr1,
+                    StromsteuerEntlastungEur = eingabe.StromsteuerEntlastungJahr1
+                });
+            }
+            catch { }
             foreach (KapitalwertRechner.InvestPosition pos in eingabe.Investitionen)
                 erg.Investition += pos.Betrag;
 

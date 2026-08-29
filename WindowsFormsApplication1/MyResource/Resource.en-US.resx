@@ -8323,4 +8323,142 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="WIZ_BTN_SPEICHERN" xml:space="preserve">
     <value>Save</value>
   </data>
+  <data name="BB_GRUPPE_BESTANDTEILE" xml:space="preserve">
+    <value>Fuel price components</value>
+  </data>
+  <data name="BB_MODUS_AUFGESCHLUESSELT" xml:space="preserve">
+    <value>itemised (the sum is the price)</value>
+  </data>
+  <data name="BB_MODUS_GESAMTWERT" xml:space="preserve">
+    <value>total value (work price applies)</value>
+  </data>
+  <data name="BB_KOMP_ENERGIESTEUER" xml:space="preserve">
+    <value>Energy tax</value>
+  </data>
+  <data name="BB_KOMP_CO2" xml:space="preserve">
+    <value>CO₂ component (BEHG)</value>
+  </data>
+  <data name="BB_KOMP_NETZENTGELT" xml:space="preserve">
+    <value>Grid and metering charge</value>
+  </data>
+  <data name="BB_KOMP_VERTRIEB" xml:space="preserve">
+    <value>Sales margin</value>
+  </data>
+  <data name="BB_SCHNELLWAHL" xml:space="preserve">
+    <value>Quick pick (catalogue):</value>
+  </data>
+  <data name="BB_LABEL_ARBEITSPREIS" xml:space="preserve">
+    <value>Work price (carrier dialog)</value>
+  </data>
+  <data name="BB_BTN_IN_ARBEITSPREIS" xml:space="preserve">
+    <value>Apply to work price</value>
+  </data>
+  <data name="BB_BTN_SATZ_REGEL" xml:space="preserve">
+    <value>Sec. 2: {0}</value>
+  </data>
+  <data name="BB_BTN_SATZ_53A" xml:space="preserve">
+    <value>Sec. 53a: {0}</value>
+  </data>
+  <data name="BB_BTN_SATZ_54" xml:space="preserve">
+    <value>Sec. 54: {0}</value>
+  </data>
+  <data name="BB_BTN_CO2" xml:space="preserve">
+    <value>BEHG: {0}</value>
+  </data>
+  <data name="BB_BTN_KEIN_SATZ" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="BB_PREIS_AUS_BESTANDTEILEN" xml:space="preserve">
+    <value>Price from the components: {0} ct/kWh</value>
+  </data>
+  <data name="BB_SUMME_AKTIV" xml:space="preserve">
+    <value>Sum of the active components: {0} ct/kWh</value>
+  </data>
+  <data name="BB_REST" xml:space="preserve">
+    <value>Unitemised remainder: {0} ct/kWh</value>
+  </data>
+  <data name="BB_REST_HINWEIS_MODUS" xml:space="preserve">
+    <value>In mode “itemised” the sum of the components is the price. The work price only changes once you apply it.</value>
+  </data>
+  <data name="BB_QUELLE" xml:space="preserve">
+    <value>{0} {1} (from {2}, {3})</value>
+  </data>
+  <data name="BB_QUELLE_CO2" xml:space="preserve">
+    <value>{0} × {1} g/kWh</value>
+  </data>
+  <data name="BB_QUELLE_CO2_PROJEKT" xml:space="preserve">
+    <value>{0} €/t (project value)</value>
+  </data>
+  <data name="BB_QUELLE_CO2_KATALOG" xml:space="preserve">
+    <value>{0} €/t (from {1}, {2})</value>
+  </data>
+  <data name="BB_GRUND_KEIN_SCHLUESSEL" xml:space="preserve">
+    <value>No energy tax rate is assigned to this energy carrier in the catalogue.</value>
+  </data>
+  <data name="BB_GRUND_KEIN_JAHR" xml:space="preserve">
+    <value>The catalogue holds no rate for {0} in the year {1}.</value>
+  </data>
+  <data name="BB_GRUND_KEIN_CO2_PREIS" xml:space="preserve">
+    <value>The catalogue holds no CO₂ price for the year {0}.</value>
+  </data>
+  <data name="BB_GRUND_KEIN_EF" xml:space="preserve">
+    <value>No CO₂ factor greater than zero is maintained for this energy carrier.</value>
+  </data>
+  <data name="BB_GRUND_EINHEIT" xml:space="preserve">
+    <value>The rate applies per 1,000 {0}; this carrier is billed per {1}. Without a maintained density the conversion cannot be substantiated.</value>
+  </data>
+  <data name="BB_GRUND_EINHEIT_UNBEKANNT" xml:space="preserve">
+    <value>The catalogue unit “{0}” cannot be converted to ct/kWh.</value>
+  </data>
+  <data name="BB_GRUND_HEIZWERT" xml:space="preserve">
+    <value>Without a calorific value the rate cannot be converted to ct/kWh.</value>
+  </data>
+  <data name="KOH_ZEILE_TITEL" xml:space="preserve">
+    <value>Coherence check</value>
+  </data>
+  <data name="KOH_FALL2_ENERGIESTEUER" xml:space="preserve">
+    <value>The energy tax credit of {0} €/a presupposes that the fuel price on record includes the energy tax. The price does not show it: {1}.</value>
+  </data>
+  <data name="KOH_FALL3_ENERGIESTEUER" xml:space="preserve">
+    <value>The fuel price on record shows an energy tax share, but no relief has been selected (§ 53 / § 53a (5) / § 54): {0}.</value>
+  </data>
+  <data name="KOH_FALL4_ENERGIESTEUER" xml:space="preserve">
+    <value>{0}: The energy tax share on record, {1} ct/kWh, differs from the catalogue rate {2} {3} for {4} — that is {5} ct/kWh.</value>
+  </data>
+  <data name="KOH_FALL2_STROMST_9B" xml:space="preserve">
+    <value>The electricity tax relief under § 9b StromStG of {0} €/a presupposes that the electricity price on record includes the electricity tax. The price does not show it ({1}).</value>
+  </data>
+  <data name="KOH_FALL2_STROMST_9_1_3" xml:space="preserve">
+    <value>The electricity tax exemption under § 9 (1) no. 3 StromStG of {0} €/a is booked as revenue although the electricity price on record does not show the electricity tax ({1}).</value>
+  </data>
+  <data name="KOH_FALL3_STROMSTEUER" xml:space="preserve">
+    <value>The electricity price on record shows an electricity tax of {0} ct/kWh, but no relief under § 9b StromStG is booked.</value>
+  </data>
+  <data name="KOH_FALL4_STROMSTEUER" xml:space="preserve">
+    <value>The electricity tax share on record, {0} ct/kWh, differs from the catalogue rate {1} {2} for {3} — that is {4} ct/kWh.</value>
+  </data>
+  <data name="KOH_GRUND_AUFSCHLAG_AUS" xml:space="preserve">
+    <value>the switch "Apply surcharges in the economic analysis" is off</value>
+  </data>
+  <data name="KOH_GRUND_KEIN_STROMTRAEGER" xml:space="preserve">
+    <value>no electricity energy carrier is assigned to the project</value>
+  </data>
+  <data name="KOH_GRUND_STROM_GESAMTWERT" xml:space="preserve">
+    <value>the surcharge is recorded as a total value and is not itemised</value>
+  </data>
+  <data name="KOH_GRUND_STROM_INAKTIV" xml:space="preserve">
+    <value>the electricity tax component is switched off</value>
+  </data>
+  <data name="KOH_GRUND_STROM_NULL" xml:space="preserve">
+    <value>the electricity tax component is set to 0 ct/kWh</value>
+  </data>
+  <data name="KOH_GRUND_BB_FEHLT" xml:space="preserve">
+    <value>no share recorded</value>
+  </data>
+  <data name="KOH_GRUND_BB_INAKTIV" xml:space="preserve">
+    <value>share switched off</value>
+  </data>
+  <data name="KOH_GRUND_BB_NULL" xml:space="preserve">
+    <value>share is 0 ct/kWh</value>
+  </data>
 </root>

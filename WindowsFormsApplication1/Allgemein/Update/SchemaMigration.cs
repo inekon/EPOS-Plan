@@ -92,9 +92,18 @@ namespace WindowsFormsApplication1
         /// 29.08.2026, 09:25). Seither gilt die Reihenfolge: erst Schrittkonstante,
         /// Methode und <see cref="SCHRITTE"/>-Eintrag, DANN das Ziel. Beides ist jetzt
         /// da — <see cref="SCHRITT_58_QUELLEN_SAAT"/> ist eingetragen, das Ziel steht
-        /// auf 58. Neue Schritte ab 59.
+        /// auf 58.
+        ///
+        /// 29.08.2026, Etappe H1: <see cref="SCHRITT_59_PFLICHTPOSITIONEN"/> — Ziel 59.
+        ///
+        /// 30.08.2026, Etappe B2 Paket A (Konzept BHKW-Wirtschaftlichkeit § 5.1,
+        /// Schritt M-1): <see cref="SCHRITT_60_BRENNSTOFF_BESTANDTEILE"/> — die
+        /// Preisbestandteile der Brennstoffe. Nach der Regel des E6-Vorfalls in dieser
+        /// Reihenfolge angelegt: erst Schrittkonstante, Methode
+        /// (<c>Schritt_60_BrennstoffBestandteile</c>) und <see cref="SCHRITTE"/>-Eintrag,
+        /// DANN das Ziel. <b>Neue Schritte ab 61.</b>
         /// </summary>
-        public const int ZIEL_VERSION = 59;
+        public const int ZIEL_VERSION = 60;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -2110,6 +2119,55 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_59_PFLICHTPOSITIONEN = 59;
 
+        /// <summary>
+        /// ETAPPE B2, Paket A (Konzept <c>Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan</c>
+        /// § 5.1, Schritt M-1): <b>Preisbestandteile für Brennstoffe.</b> Der Schritt legt
+        /// an <c>energy_project_settings</c> die vier Bestandteile Energiesteuer, CO₂
+        /// (BEHG), Netz-/Messentgelt und Vertrieb — je Wert [ct/kWh] und Aktiv-Schalter —
+        /// sowie den Modus der Zerlegung an
+        /// (<see cref="SchemaKatalog.Schritt60_BrennstoffBestandteile"/>).
+        ///
+        /// <para><b>Wozu.</b> Der Arbeitspreis eines Brennstoffs steht heute als EINE Zahl
+        /// in der Datenbank. Ob der Anwender einen Preis <b>einschließlich</b>
+        /// Energiesteuer erfasst hat (der Regelfall einer Lieferantenrechnung) oder einen
+        /// Nettopreis, ist nirgends erfasst — die Entlastung nach § 53/§ 53a EnergieStG
+        /// wird trotzdem in voller Höhe gutgeschrieben (Befund B1 des Konzepts). Diese
+        /// Spalten sind die Datengrundlage, auf der die Kohärenzprüfung (BW2) später
+        /// überhaupt erst eine Aussage treffen kann.</para>
+        ///
+        /// <para><b>KEINE WERTSAAT — das ist der Kern dieses Schritts.</b> Die Anteile
+        /// bleiben NULL, und NULL heißt hier <b>„kein Anteil"</b>, nicht „nicht gepflegt,
+        /// also Vorschlagswert". Schritt 12 macht es für den STROM anders herum: Sein
+        /// DML-Teil belegt die fünf Komponenten mit den Vorschlagswerten des
+        /// Fachkonzepts vor, und <c>StromAufschlagCtrl.Read</c> setzt bei NULL denselben
+        /// Vorschlag — bei Projekt 1030 gemessene 11,746 ct/kWh trotz fünf abgeschalteter
+        /// Flags (E5-Falle, Konzept § 5.1). Eine solche Vorbelegung wäre hier eine
+        /// Behauptung über eine konkrete Lieferantenrechnung: Wieviel Energiesteuer im
+        /// Gaspreis eines Projekts steckt, weiß allein der Anwender. Der Vorschlagssatz
+        /// kommt deshalb nur auf ausdrückliche Übernahme in das Feld — im Dialog, über die
+        /// Schnellwahl aus dem Gesetzeskatalog (Konzept § 6.2), nie durch die Migration.
+        /// Die Leseseite <c>BrennstoffBestandteilCtrl</c> führt die Werte folgerichtig als
+        /// <c>double?</c> und lässt NULL NULL bleiben.</para>
+        ///
+        /// <para><b>Das einzige DML</b> ist die Vorbelegung des Modus auf
+        /// <see cref="DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT"/> — und auch sie ist der
+        /// Wert, der nichts auslöst: „Der erfasste Preis ist der Preis; die Bestandteile
+        /// sind Ausweis." Stünde dort „Aufgeschluesselt", wäre die Summe der (leeren)
+        /// Bestandteile plötzlich der wirksame Preis, also 0.</para>
+        ///
+        /// <para><b>ERGEBNISNEUTRAL.</b> Es entstehen ausschließlich neue Spalten. Keine
+        /// Altspalte wird berührt, kein vorhandener Leser kennt die Namen, kein
+        /// Rechenergebnis ändert sich. Die Wirkung setzt erst ein, wenn Dialog und
+        /// Kohärenzprüfung der folgenden Pakete darauf aufsetzen.</para>
+        ///
+        /// <para><b>Idempotenz:</b> Das DDL läuft über
+        /// <c>SchemaKatalog.Schritt60_BrennstoffBestandteile</c>, das Vorhandene
+        /// überspringt; das eine UPDATE trägt seine Einschränkung im WHERE
+        /// (<c>IS NULL</c>). Der Zweitlauf meldet 0 Änderungen, ein vom Anwender
+        /// umgestellter Modus wird nie überschrieben.</para>
+        /// </summary>
+        public const int SCHRITT_60_BRENNSTOFF_BESTANDTEILE = 60;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -3211,6 +3269,22 @@ namespace WindowsFormsApplication1
                         "Auslieferungsvorlagen weichen von den Empfehlungsbereichen der " +
                         "Altanwendung ab.",
                         Schritt_59_Pflichtpositionen),
+
+            // ETAPPE B2 Paket A (Konzept BHKW-Wirtschaftlichkeit § 5.1, Schritt M-1):
+            //             die Preisbestandteile eines BRENNSTOFFpreises. Reines DDL
+            //             plus die Modus-Vorbelegung; KEINE Wertsaat fuer die Anteile -
+            //             NULL heisst "kein Anteil" (E5-Falle). Begruendung und
+            //             Idempotenzzusage bei der Schrittkonstanten.
+            new Schritt(SCHRITT_60_BRENNSTOFF_BESTANDTEILE,
+                        "Preisbestandteile fuer Brennstoffe: Energiesteuer, CO2 (BEHG), " +
+                        "Netz-/Messentgelt und Vertrieb je mit Aktiv-Schalter sowie den " +
+                        "Modus an energy_project_settings anlegen; Modus auf Gesamtwert " +
+                        "vorbelegen, die Anteile bleiben NULL (Etappe B2 Paket A)",
+                        "Die Preiszerlegung der Brennstoffe fehlt dann - es bleibt " +
+                        "unbelegbar, ob der erfasste Arbeitspreis die Energiesteuer " +
+                        "enthaelt, und die Entlastung nach Paragraf 53/53a wird weiter " +
+                        "ohne Gegenpruefung gutgeschrieben.",
+                        Schritt_60_BrennstoffBestandteile),
         };
 
         // =================================================================================
@@ -8964,6 +9038,73 @@ namespace WindowsFormsApplication1
             l.Notiz("59: Position \"" + p.Bezeichnung + "\" konnte in Vorlage " + vorlageId +
                     " nicht ergaenzt werden.");
             return false;
+        }
+
+        // =================================================================================
+        // Schritt 60 - Preisbestandteile fuer Brennstoffe (Etappe B2 Paket A)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 60. Anlass, Ergebnisneutralität und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_60_BRENNSTOFF_BESTANDTEILE"/>.
+        /// </summary>
+        private static bool Schritt_60_BrennstoffBestandteile(Lauf l)
+        {
+            string sModus = SchemaKatalog.SPALTE_BB_MODUS;
+
+            // --- 60a) die neun Spalten ------------------------------------------------
+            // HART: Ohne sie gibt es nichts vorzubelegen.
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt60_BrennstoffBestandteile)) return false;
+
+            // Nachweis statt Annahme: Erst diese Leseprobe belegt, dass die Spalte da UND
+            // lesbar ist (dieselbe Vorsichtsmassnahme wie in den Schritten 49, 53 und 55).
+            object probe = Scalar(l,
+                "SELECT COUNT(*) FROM [" + SchemaKatalog.ENERGY_PROJECT_SETTINGS +
+                "] WHERE [" + sModus + "] IS NULL OR Trim([" + sModus + "]) = ''");
+            if (probe == null)
+            {
+                l.Zeile("Preisbestandteile (Schritt 60): die Spalte " + sModus +
+                        " ist nicht anlegbar/lesbar.");
+                return false;
+            }
+
+            // --- 60b) Vorbelegung des Modus ------------------------------------------
+            //
+            // AUSDRUECKLICH KEINE WERTSAAT FUER DIE ANTEILE (Konzept Paragraf 5.1, E5-Falle).
+            // Anteil_Energiesteuer, Anteil_CO2, Anteil_Netzentgelt und Anteil_Vertrieb
+            // bleiben NULL, und NULL heisst hier "kein Anteil" - nicht "nicht gepflegt,
+            // also Vorschlagswert". Wieviel Energiesteuer im Gaspreis eines Projekts
+            // steckt, weiss allein der Anwender; jede Zahl, die die Migration hier
+            // setzte, waere eine Behauptung ueber seine Lieferantenrechnung. Der
+            // Vorschlagssatz kommt nur ueber die Schnellwahl des Dialogs ins Feld.
+            //
+            // Auch die Aktiv-Schalter bleiben unangetastet: ADD COLUMN ... YESNO belegt
+            // bestehende Zeilen in Access mit FALSCH, und "Anteil nicht ausgewiesen" ist
+            // genau die gewollte Vorbelegung. Ein DML wie in Schritt 12 (der die
+            // Stromkomponenten auf WAHR setzt) waere hier die stille Ergebnisaenderung.
+            //
+            // Vorbelegt wird deshalb NUR der Modus - und auch er auf den Wert, der nichts
+            // ausloest: Gesamtwert heisst "der erfasste Preis ist der Preis, die
+            // Bestandteile sind Ausweis". Stuende dort Aufgeschluesselt, waere die Summe
+            // der leeren Bestandteile ploetzlich der wirksame Preis, also 0.
+            //
+            // Der Steuerwert als LITERAL statt als Parameter: der im Bestand gewaehlte
+            // Weg (Schritte 44/46/47/48/49/55), der die ACE-Bindungsfalle ganz spart.
+            // Die Bedingung faengt beide Auslieferungszustaende einer angehaengten
+            // Textspalte ab: NULL (der Regelfall) und den Leerwert.
+            int modus = NonQuery(l,
+                "UPDATE [" + SchemaKatalog.ENERGY_PROJECT_SETTINGS +
+                "] SET [" + sModus + "] = '" + DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT + "'" +
+                " WHERE [" + sModus + "] IS NULL OR Trim([" + sModus + "]) = ''");
+            if (modus < 0) return false;
+
+            l.Notiz("60a: 9 Spalte(n) fuer die Preisbestandteile der Brennstoffe an " +
+                    SchemaKatalog.ENERGY_PROJECT_SETTINGS + " sichergestellt.");
+            l.Notiz("60b: " + modus + " Zeile(n) auf Modus \"" +
+                    DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT + "\" vorbelegt. Die Anteile " +
+                    "bleiben NULL - NULL heisst \"kein Anteil\" (Konzept Paragraf 5.1); es " +
+                    "gibt bewusst KEINE Wertsaat. KEIN Rechenergebnis aendert sich.");
+            return true;
         }
 
         // --- Hilfsmittel des Schritts 58 ---------------------------------------------

@@ -143,6 +143,7 @@ namespace WindowsFormsApplication1
             LoadData();
             BaueUmrechnungsblock();   // ETAPPE K3 - vor dem Aufschlagsblock, der an this.Height andockt
             BaueAufschlagsblock();
+            BaueBrennstoffblock();    // ETAPPE B2 - Gegenstueck zum Aufschlagsblock, andere Traegerfamilie
             BaueLeistungspreisZusatz();   // ETAPPE KD4 (FK6/FK6a) - nach LoadData, das die Einheit setzt
             BaueEmissionsReiter();        // ETAPPE E3 - ZULETZT: haengt den fertigen Bestand um
 
@@ -387,6 +388,165 @@ namespace WindowsFormsApplication1
                 // etwa auf einer Datenbank, deren Migrationsschritt 12 nicht durchlief.
                 Console.WriteLine("Der Aufschlagsblock konnte nicht aufgebaut werden: " + ex.Message);
                 _aufschlaege = null;
+            }
+        }
+
+        // =====================================================================
+        // ETAPPE B2 - Preisbestandteile der BRENNSTOFF-Traeger
+        // (Konzept BHKW-Wirtschaftlichkeit § 4.1 / § 6.2, Befund BW1)
+        // =====================================================================
+
+        /// <summary>
+        /// Preiszerlegung des Brennstoffs (Energiesteuer, CO2-Anteil, Netz-/Messentgelt,
+        /// Vertrieb) - nur bei der Brennstoff-Familie belegt, sonst <c>null</c>.
+        /// </summary>
+        private ucBrennstoffBestandteile _bestandteile;
+
+        /// <summary>
+        /// Preismodelle, deren Traeger eine Preiszerlegung nach § 4.1 bekommen.
+        /// </summary>
+        /// <remarks>
+        /// <para>Der Bestand fuehrt sechs Codes in <c>pricing_model</c> (gemessen am
+        /// 30.08.2026: ANIMAL_FAT, ELECTRICITY, GASEOUS_FUEL, HEAT, LIQUID_FUEL,
+        /// SOLID_FUEL). Vier davon sind Brennstoffe und stehen hier.</para>
+        ///
+        /// <para><b>ELECTRICITY</b> hat seinen eigenen Block
+        /// (<see cref="BaueAufschlagsblock"/>) - Netzentgelt, Umlagen und Stromsteuer
+        /// sind dort schon zerlegt, und beide Bloecke nebeneinander waeren zwei
+        /// Wahrheiten ueber denselben Preis.</para>
+        ///
+        /// <para><b>HEAT</b> (Fernwaerme) bleibt ausdruecklich aussen vor: Energiesteuer
+        /// und BEHG-Abgabe entstehen beim ERZEUGER der Waerme, nicht beim Bezieher. Im
+        /// Fernwaermepreis stecken sie allenfalls eingepreist - einen ausweisbaren
+        /// gesetzlichen Satz je bezogener Kilowattstunde gibt es nicht, und die
+        /// Schnellwahl haette nichts zu lesen (der Traeger fuehrt weder Brennstoff-ID
+        /// noch Heizwert). Eine leere Maske waere schlechter als keine.</para>
+        /// </remarks>
+        private static readonly string[] PREISMODELLE_BRENNSTOFF =
+        {
+            "GASEOUS_FUEL", "LIQUID_FUEL", "SOLID_FUEL", "ANIMAL_FAT"
+        };
+
+        /// <summary>
+        /// Haengt bei den Brennstoff-Traegern die Preiszerlegung unter den Bestand und
+        /// waechst um deren Hoehe - dieselbe Bauform wie
+        /// <see cref="BaueAufschlagsblock"/> (programmatisch, Designer unberuehrt).
+        /// </summary>
+        /// <remarks>
+        /// Die beiden Bloecke schliessen einander aus: Strom bekommt den Aufschlagsblock,
+        /// Brennstoff die Zerlegung. Deshalb dockt dieser Block an dieselbe Stelle an -
+        /// zum Zeitpunkt des Aufrufs hat <see cref="BaueAufschlagsblock"/> die Hoehe bei
+        /// einem Brennstoff-Traeger nicht angefasst.
+        /// </remarks>
+        private void BaueBrennstoffblock()
+        {
+            if (_carrier == null) return;
+            if (Array.IndexOf(PREISMODELLE_BRENNSTOFF, (_carrier.PricingModel ?? "").ToUpperInvariant()) < 0)
+                return;
+
+            try
+            {
+                _bestandteile = new ucBrennstoffBestandteile(_projectId, _carrier.ID);
+                _bestandteile.Location = new Point(17, this.Height + 8);
+                this.Height += ucBrennstoffBestandteile.HOEHE + 16;
+                this.Controls.Add(_bestandteile);
+
+                // Der Arbeitspreis ist die Bezugsgroesse der Restzeile und wird bei jeder
+                // Aenderung nachgezogen - auch beim Einheitenwechsel, der beide Felder
+                // umrechnet. Der Heizwert geht in die Einheitenkette der Schnellwahl ein.
+                _bestandteile.ArbeitspreisCtKwh = ArbeitspreisInCtKwh();
+                numArbeitspreis.ValueChanged += (s, e2) => BestandteileNachziehen();
+                numHeizwert.ValueChanged += (s, e2) => BestandteileNachziehen();
+                numBrennwert.ValueChanged += (s, e2) => BestandteileNachziehen();
+
+                // Der Block schreibt den Preis NIE selbst: Er meldet nur, dass der
+                // Anwender ihn uebernehmen moechte. Eingetragen wird er hier.
+                _bestandteile.InArbeitspreisUebernehmen += (s, e2) => ArbeitspreisAusBestandteilen();
+            }
+            catch (Exception ex)
+            {
+                // Ein fehlender Zerlegungsblock darf die Preispflege nicht blockieren -
+                // etwa auf einer Datenbank, deren Migrationsschritt M-1 nicht durchlief.
+                Console.WriteLine("Der Zerlegungsblock konnte nicht aufgebaut werden: " + ex.Message);
+                _bestandteile = null;
+            }
+        }
+
+        /// <summary>
+        /// Der Arbeitspreis dieses Traegers in ct/kWh - die Einheit, in der die
+        /// Preisbestandteile gefuehrt werden.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum der Quotient und nicht der Feldwert.</b> Der Arbeitspreis steht
+        /// bei einem Brennstoff in <b>€ je Abrechnungseinheit</b> (€/Nm³, €/L, €/kg), nur
+        /// bei Traegern ohne Heizwert (Strom, Fernwaerme) direkt in €/kWh - das ist
+        /// dieselbe Fallunterscheidung wie in <see cref="UpdatePricePerKWh"/>.</para>
+        ///
+        /// <para><b>Warum die Basiswerte und nicht die Eingabefelder.</b>
+        /// <c>_baseWorkPrice</c> und <c>_baseHi</c> sind auf die Abrechnungseinheit
+        /// normiert und bleiben beim Einheitenwechsel unveraendert. Die Felder dagegen
+        /// werden in <see cref="CmbUnit_SelectedIndexChanged"/> NACHEINANDER umgerechnet -
+        /// zwischen den beiden Zuweisungen stuenden Preis und Heizwert kurz in
+        /// verschiedenen Einheiten, und der Quotient waere fuer diesen Moment falsch.
+        /// </para>
+        /// </remarks>
+        private double ArbeitspreisInCtKwh()
+        {
+            try
+            {
+                if (!_carrier.HasHi) return _baseWorkPrice * 100.0;
+                if (_baseHi <= 0.0) return 0.0;
+                return _baseWorkPrice / _baseHi * 100.0;
+            }
+            catch { return 0.0; }
+        }
+
+        /// <summary>Zieht Arbeitspreis und Heizwerte im Zerlegungsblock nach.</summary>
+        private void BestandteileNachziehen()
+        {
+            if (_bestandteile == null) return;
+            try
+            {
+                _bestandteile.ArbeitspreisCtKwh = ArbeitspreisInCtKwh();
+                _bestandteile.HeizwerteAktualisieren(_baseHi, _baseHs);
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// Traegt den Preis aus den Bestandteilen in das Arbeitspreisfeld ein - der
+        /// Rueckweg von ct/kWh in die Abrechnungseinheit des Traegers.
+        /// </summary>
+        /// <remarks>
+        /// Geschrieben wird erst mit dem Speichern des Dialogs; hier steht nur der Wert
+        /// im Feld. Ohne Heizwert gibt es keinen Rueckweg - dann bleibt das Feld, wie es
+        /// war, statt eine geratene Umrechnung zu zeigen.
+        /// </remarks>
+        private void ArbeitspreisAusBestandteilen()
+        {
+            if (_bestandteile == null) return;
+            try
+            {
+                double ctKwh = _bestandteile.PreisAusBestandteilenCtKwh;
+                double jeEinheit;
+
+                if (!_carrier.HasHi) jeEinheit = ctKwh / 100.0;
+                else
+                {
+                    double hi = (double)numHeizwert.Value;
+                    if (hi <= 0.0) return;
+                    jeEinheit = ctKwh / 100.0 * hi;
+                }
+
+                decimal wert = (decimal)jeEinheit;
+                if (wert < numArbeitspreis.Minimum) wert = numArbeitspreis.Minimum;
+                if (wert > numArbeitspreis.Maximum) wert = numArbeitspreis.Maximum;
+                numArbeitspreis.Value = wert;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Der Preis aus den Bestandteilen konnte nicht uebernommen werden: "
+                                  + ex.Message);
             }
         }
 
@@ -1732,6 +1892,11 @@ namespace WindowsFormsApplication1
             // AP4: Der Aufschlagsblock schreibt in dieselbe Zeile und deshalb ERST
             // JETZT - vor dem Upsert oben gäbe es beim ersten Speichern noch keine.
             if (_aufschlaege != null) _aufschlaege.Uebernehmen();
+
+            // ETAPPE B2: derselbe Grund, dieselbe Zeile in energy_project_settings -
+            // nur die andere Trägerfamilie. Der Block schreibt AUSSCHLIESSLICH die
+            // Bestandteile; custom_price_work oben bleibt seine einzige Wahrheit.
+            if (_bestandteile != null) _bestandteile.Uebernehmen();
         }
 
         private void btn_Save_Click(object sender, EventArgs e)
