@@ -84,8 +84,11 @@ namespace WindowsFormsApplication1
         /// Emissionsarten sind auf die Nummern 56 und 57 gerückt. Mit dem Merge vom
         /// 29.08.2026 ist der E1/E2-Vollstand (Schrittmethoden) eingetroffen: beide
         /// Einträge in <see cref="SCHRITTE"/> sind aktiv, das Ziel steht auf 57.
+        ///
+        /// 29.08.2026, Etappe E6: die Quellen-Saat UBA/GEMIS kommt als Schritt 58 dazu,
+        /// das Ziel steht auf 58.
         /// </summary>
-        public const int ZIEL_VERSION = 57;
+        public const int ZIEL_VERSION = 58;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
