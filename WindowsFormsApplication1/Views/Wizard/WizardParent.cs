@@ -925,8 +925,21 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void button_ProjektOeffnen_Click(object sender, EventArgs e)
         {
-            int id = ucProjektAuswahl.GewaehlteID;
-            string name = ucProjektAuswahl.GewaehlterName;
+            ProjektOeffnenUndSchliessen(ucProjektAuswahl.GewaehlteID, ucProjektAuswahl.GewaehlterName);
+        }
+
+        /// <summary>
+        /// Doppelklick in der Projektliste wirkt wie „Projekt öffnen"
+        /// (Nutzerwunsch 30.08.2026).
+        /// </summary>
+        private void ucProjektAuswahl_ProjektGewaehlt(int id, string name)
+        {
+            if (top != WizardItemClass.KOMPONENTEN_ITEM) return;
+            ProjektOeffnenUndSchliessen(id, name);
+        }
+
+        private void ProjektOeffnenUndSchliessen(int id, string name)
+        {
             if (id <= 0 || string.IsNullOrWhiteSpace(name)) return;
 
             // Erst regulär laden (Detailformular als Dialog), danach den

@@ -156,7 +156,7 @@
     <value>Projekt geöffnet:</value>
   </data>
   <data name="button1.Text" xml:space="preserve">
-    <value>SP</value>
+    <value>Stromzuordnung…</value>
   </data>
   <data name="btn_DragDestination.Text" xml:space="preserve">
     <value>..</value>
@@ -174,7 +174,7 @@
     <value>Strombedarf</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>Detailformular</value>
+    <value>Konfiguration Projekt</value>
   </data>
   <data name="tabPage12.Text" xml:space="preserve">
     <value>Stromganglinie</value>
@@ -204,7 +204,7 @@
     <value>Prozesswärme</value>
   </data>
   <data name="button_Beenden.Text" xml:space="preserve">
-    <value>Beenden</value>
+    <value>OK</value>
   </data>
   <data name="label8.Text" xml:space="preserve">
     <value>Änderungsdatum:</value>
