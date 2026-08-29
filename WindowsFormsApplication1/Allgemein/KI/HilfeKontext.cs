@@ -31,7 +31,10 @@ namespace WindowsFormsApplication1
         public const string BEREICH_UNBEKANNT = "Unbekannter Bereich";
 
         private const string B_ADMIN = "Administration";
-        private const string B_ASSISTENT = "Assistent (Wizard)";
+        // E5 (Projektdialoge, 29.08.2026): der Bereich heisst wie das Fenster
+        // "Projektassistent". Der Wert ist zugleich Schluessel in
+        // WikiWissen.SEITE_JE_BEREICH - beide Stellen nur gemeinsam aendern.
+        private const string B_ASSISTENT = "Projektassistent";
         private const string B_BERICHT = "Bericht";
         private const string B_BHKW = "BHKW";
         private const string B_BRAUCHWASSER = "Brauchwasser";
@@ -162,6 +165,10 @@ namespace WindowsFormsApplication1
             // wie ihre Datei heisst.
             { "Main_PV_Test",                B_PHOTOVOLTAIK },
 
+            // P6 nachgetragen: die Huellform "Projekt oeffnen" aus Paket P3. Ohne
+            // Eintrag griff erst die Kennungsstufe ("projekt" im Typnamen) - das
+            // Ergebnis war zwar dasselbe, aber unbeabsichtigt.
+            { "Form_ProjektAuswahl",         B_PROJEKT },
             { "Form_ProjektDelete",          B_PROJEKT },
             { "Form_ProjektSpeichernUnter",  B_PROJEKT },
 

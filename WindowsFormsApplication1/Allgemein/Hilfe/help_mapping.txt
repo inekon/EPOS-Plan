@@ -159,6 +159,12 @@ Form_Variantentest.btn_Help         = Varianten
 # --- Projekt --------------------------------------------------------------
 Form_ProjektSpeichernUnter.btn_Help = Projektverwaltung
 
+# P6: Die Huellform "Projekt oeffnen" (Views\Projekt\Form_ProjektAuswahl.cs) ist
+# seit P3 der Weg hinter Menue "Projekt -> Oeffnen..." und hinter der Kachel
+# "Zuletzt geoeffnet" - dieselbe Projektliste, dieselbe Seite wie beim
+# Duplizieren daneben.
+Form_ProjektAuswahl.btn_Help        = Projektverwaltung
+
 # --- Import ---------------------------------------------------------------
 #
 # Der Konfliktdialog gehoert zum Uebernehmen fremder Projekte, also zur
