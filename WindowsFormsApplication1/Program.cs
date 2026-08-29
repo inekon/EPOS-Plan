@@ -96,6 +96,14 @@ namespace WindowsFormsApplication1
                 return;
             }
 
+            // Zustimmung zur Lizenzvereinbarung beim ersten Start (einmal je
+            // Windows-Benutzer; Ablage HKCU\Software\wp-plan\LizenzZugestimmt mit
+            // Programmversion und Datum, siehe Form_Lizenz.ZustimmungMerken).
+            // NACH der ACE-Prüfung - eine nicht startfähige Installation braucht
+            // keine Zustimmung - und VOR der Schema-Migration: Wer ablehnt, dessen
+            // Datenbank wird nicht angefasst.
+            if (!Form_Lizenz.ZustimmungSicherstellen()) return;
+
             // Textlieferant des KI-Kerns einhaengen - NACH der Sprachwahl, damit
             // KiKern seine Schluessel in der eingestellten Sprache beantwortet
             // bekommt (Fachkonzept 3.7; KiKern darf MyResource nicht kennen).
