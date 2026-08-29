@@ -145,7 +145,7 @@
     <value>Degradation [%/a]:</value>
   </data>
   <data name="label7.Text" xml:space="preserve">
-    <value>Energie [kW]:</value>
+    <value>Energie (Kapazität) [kWh]:</value>
   </data>
   <data name="label_Type.Text" xml:space="preserve">
     <value>Geben Sie Daten der Stromspeicher ein</value>
