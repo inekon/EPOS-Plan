@@ -6,7 +6,9 @@ Antworten und Code-Kommentare auf Deutsch.
 
 ## Build
 
-`net8.0-windows`, WinForms + WPF, `WinExe`, Namespace/Assembly `WindowsFormsApplication1`.
+`net8.0-windows`, WinForms + WPF, `WinExe`. Namespace `WindowsFormsApplication1`;
+**Assembly/EXE/Prozess `EPOS_Plan`** (Umbenennung Stufe 0 am 29.08.2026 — nur der
+Ausgabename; Stufe 1 = Namespace-Umstellung bräuchte ein eigenes Konzept).
 Solution: `..\WP-Plan.sln` (Debug/Release × x64).
 
 ```powershell
@@ -124,6 +126,12 @@ COM-Referenzen: `Microsoft.Office.Interop.Excel`, `VBIDE` (`EmbedInteropTypes=Tr
   eigenen Unterordner) bricht den Build sofort (CS0017, zweites `Main`).
 - **Läuft die Anwendung, ist `bin\` gesperrt** (EXE + DLL geladen) — Verifikations-Builds dann
   mit `-p:OutDir=<Ordner außerhalb>` umleiten; der Compile-Beweis bleibt vollwertig.
+- **Assembly heißt `EPOS_Plan`, der Namespace weiter `WindowsFormsApplication1`**
+  (Stufe 0, 29.08.2026). Folgen: In `bin\` kann eine alte `WindowsFormsApplication1.exe`
+  als Leiche liegen (einmal bereinigen); Wegwerf-Harnesse unter `..\dev\` referenzieren
+  künftig `EPOS_Plan.dll`; die `user.config`-Ablage wandert mit dem Namen (Bestand war
+  leer — geprüft, keine Übernahme nötig); das DLL-Tausch-Rezept der Referenzläufe
+  tauscht künftig `EPOS_Plan.dll`.
 - **Visual Studio regeneriert `MyResource/Resource.Designer.cs` selbst**, sobald es eine
   `.resx`-Änderung bemerkt (alphabetische Einordnung). Wer den Designer parallel von Hand
   ergänzt hat, baut Duplikate (CS0102) — vor dem Build prüfen und die Hand-Einfügung
