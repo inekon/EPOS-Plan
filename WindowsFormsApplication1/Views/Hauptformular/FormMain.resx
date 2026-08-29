@@ -144,16 +144,16 @@
     <value>0</value>
   </data>
   <data name="button1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 308</value>
+    <value>291, 290</value>
   </data>
   <data name="button1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>75, 31</value>
+    <value>148, 32</value>
   </data>
   <data name="button1.TabIndex" type="System.Int32, mscorlib">
     <value>52</value>
   </data>
   <data name="button1.Text" xml:space="preserve">
-    <value>SP</value>
+    <value>Stromzuordnung…</value>
   </data>
   <data name="&gt;&gt;button1.Name" xml:space="preserve">
     <value>button1</value>
@@ -174,10 +174,10 @@
     <value>MiddleLeft</value>
   </data>
   <data name="btn_Speichern.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 250</value>
+    <value>135, 290</value>
   </data>
   <data name="btn_Speichern.Size" type="System.Drawing.Size, System.Drawing">
-    <value>115, 30</value>
+    <value>148, 32</value>
   </data>
   <data name="btn_Speichern.TabIndex" type="System.Int32, mscorlib">
     <value>51</value>
@@ -217,7 +217,7 @@
 </value>
   </data>
   <data name="btn_DragDestination.Location" type="System.Drawing.Point, System.Drawing">
-    <value>814, 23</value>
+    <value>1337, 23</value>
   </data>
   <data name="btn_DragDestination.Size" type="System.Drawing.Size, System.Drawing">
     <value>33, 35</value>
@@ -848,7 +848,7 @@
     <value>485, 74</value>
   </data>
   <data name="tabControl_Komponenten.Size" type="System.Drawing.Size, System.Drawing">
-    <value>875, 281</value>
+    <value>885, 656</value>
   </data>
   <data name="tabControl_Komponenten.TabIndex" type="System.Int32, mscorlib">
     <value>46</value>
@@ -1274,10 +1274,10 @@
     <value>66, 30</value>
   </data>
   <data name="tabControl_Main.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 62</value>
+    <value>12, 12</value>
   </data>
   <data name="tabControl_Main.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1390, 778</value>
+    <value>1390, 828</value>
   </data>
   <data name="tabControl_Main.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1298,16 +1298,16 @@
     <value>Segoe UI, 10pt</value>
   </data>
   <data name="button_Beenden.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1234, 846</value>
+    <value>12, 848</value>
   </data>
   <data name="button_Beenden.Size" type="System.Drawing.Size, System.Drawing">
-    <value>168, 35</value>
+    <value>120, 35</value>
   </data>
   <data name="button_Beenden.TabIndex" type="System.Int32, mscorlib">
     <value>34</value>
   </data>
   <data name="button_Beenden.Text" xml:space="preserve">
-    <value>Beenden</value>
+    <value>OK</value>
   </data>
   <data name="&gt;&gt;button_Beenden.Name" xml:space="preserve">
     <value>button_Beenden</value>
@@ -1338,18 +1338,66 @@
     <value>None</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>1447, 1000</value>
+    <value>1447, 900</value>
   </data>
   <data name="$this.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft Sans Serif, 8.25pt, style=Bold</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>Detailformular</value>
+    <value>Konfiguration Projekt</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>FormMain</value>
   </data>
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
     <value>System.Windows.Forms.Form, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="tabControl_Main.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <data name="tabControl_Komponenten.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <data name="btn_DragDestination.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
+  <data name="button_Beenden.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left</value>
+  </data>
+  <data name="listView_Gebaeude.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="listView_WaermebedarfExtern.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="listView_BHKW.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="listView_WP.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="listView_SP.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="listView_Solar.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="listView_PV.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="listView_Heizkessel.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="listView_Prozesswaerme.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="listView_Strombedarf.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="listView_Stromganglinie.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="listView_Pufferspeicher.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
   </data>
 </root>

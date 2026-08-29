@@ -77,6 +77,7 @@ namespace WindowsFormsApplication1
             ucProjektAuswahl.Name = "ucProjektAuswahl";
             ucProjektAuswahl.NurNamensspalte = true;
             ucProjektAuswahl.MarkierungGeaendert += ucProjektAuswahl_MarkierungGeaendert;
+            ucProjektAuswahl.ProjektGewaehlt += ucProjektAuswahl_ProjektGewaehlt;
             //
             // pnlBottom
             //
