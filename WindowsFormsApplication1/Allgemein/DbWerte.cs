@@ -546,6 +546,62 @@ namespace WindowsFormsApplication1
         public const string BEMESSUNG_PROZENT_STROMKOSTEN = "PROZENT_STROMKOSTEN";
 
         // =====================================================================
+        // ETAPPE H1 — Hilfsenergie an der ENDENERGIE der Anlage (Festlegung
+        //   29.08.2026, Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan.md § 4.5).
+        //
+        //   HILFSENERGIE IST IMMER STROM fuer den Betrieb der Komponente. Bemessen
+        //   wird sie an der ENDENERGIE DER BETRACHTETEN ANLAGE - Brennstoff bei BHKW
+        //   und Heizkessel, Strom bei der Waermepumpe. Drei gleichwertige Wege:
+        //
+        //     A  PROZENT_ENDENERGIEKOSTEN   Betrag = Endenergiekosten x Satz / 100
+        //     B  PROZENT_ENDENERGIEBEDARF   Menge  = Endenergiebedarf x Satz / 100
+        //                                   Betrag = Menge x Strombezugspreis
+        //     C  JAHRESBETRAG               Betrag = Eingabe
+        //
+        //   DIE SAETZE VON A UND B SIND NICHT AUSTAUSCHBAR. Der Faktor zwischen
+        //   ihnen ist das Preisverhaeltnis Strom zu Brennstoff (bei 24,60 gegen
+        //   7,20 ct/kWh rund 3,4). Die Oberflaeche muss die Basis benennen und darf
+        //   den Satz beim Umschalten der Bemessung NICHT stillschweigend uebernehmen.
+        //
+        //   ERFAHRUNGSWERTE gelten fuer Weg A: BHKW 2-4 %, Heizkessel 4-8 %.
+        //
+        //   NUR WEG C bei Puffer- und Stromspeicher sowie Photovoltaik: Ihre
+        //   Umwandlungsverluste stecken bereits im Wirkungsgrad der Speicherrechnung
+        //   (ein Prozentsatz auf den Durchsatz zaehlte sie doppelt), und ihr
+        //   Hilfsbedarf - Klimatisierung, Batteriemanagement, Standby - ist
+        //   ueberwiegend ZEITabhaengig statt durchsatzabhaengig.
+        //
+        //   ABGELOEST werden damit PROZENT_BRENNSTOFFKOSTEN und PROZENT_STROMKOSTEN:
+        //   die Vorlaeufer von Weg A, aber je Energieart getrennt und projektweit
+        //   bemessen. Sie bleiben fuer Altdaten gueltig und verschwinden aus den
+        //   Seeds; "Endenergie" fasst beide zusammen und ist anlagenscharf.
+        //
+        //   LAENGE: beide Werte haben 24 Zeichen wie PROZENT_BRENNSTOFFKOSTEN - die
+        //   Spaltenbreite TEXT(30) reicht weiterhin.
+        // =====================================================================
+
+        /// <summary>
+        /// Hilfsenergie als Anteil der <b>Endenergiekosten</b> der Anlage [%] (Weg A).
+        /// Basis ist der bewertete Energieeinsatz der Komponente: Brennstoffmenge des
+        /// Moduls × Trägerpreis (BHKW, Heizkessel) bzw. Strombezug × Bezugspreis
+        /// (Wärmepumpe). Die Strommenge für die Steuerrechnung wird aus dem Betrag über
+        /// den Strombezugspreis <b>zurückgerechnet</b> und als solche ausgewiesen.
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string BEMESSUNG_PROZENT_ENDENERGIEKOSTEN = "PROZENT_ENDENERGIEKOSTEN";
+
+        /// <summary>
+        /// Hilfsenergie als Anteil des <b>Endenergiebedarfs</b> der Anlage [%] (Weg B) —
+        /// dieselbe Menge wie bei <see cref="BEMESSUNG_PROZENT_ENDENERGIEKOSTEN"/>, aber
+        /// unbewertet. Ergibt unmittelbar eine Strommenge [kWh], die mit dem
+        /// Strombezugspreis bewertet wird. <b>Keine Auslieferungsvorlage nutzt diesen
+        /// Weg</b> — er steht als ausdrückliche Alternative zur Kostenbasis zur Wahl
+        /// (Festlegung 29.08.2026). Die Sätze beider Wege sind NICHT austauschbar.
+        /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string BEMESSUNG_PROZENT_ENDENERGIEBEDARF = "PROZENT_ENDENERGIEBEDARF";
+
+        // =====================================================================
         // ETAPPE KD1 — Leistungspreis-Modus der Energieträger
         //   energy_carrier.price_power_modus und (Übersteuerung, Etappe KD4)
         //   energy_project_settings (Migrationsschritt 38; Konzept Kostendialoge

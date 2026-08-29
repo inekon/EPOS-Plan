@@ -282,10 +282,23 @@ namespace WindowsFormsApplication1
 
                 double m = menge.Value, s = satz.Value;
 
+                // ETAPPE H1 — die beiden Endenergie-Bemessungen rechnen wie jede andere
+                // Prozentangabe. Die MENGE ist dabei ein ERGEBNISWERT aus dem
+                // Simulationslauf, kein Eingabewert (Festlegung 29.08.2026); im Dialog
+                // wird nur der Satz gepflegt.
+                //
+                // WEG B liefert eine Strommenge, keine Kosten: Der Bezugsgroessen-Aufloeser
+                // uebergibt fuer PROZENT_ENDENERGIEBEDARF deshalb den BEWERTETEN Bedarf
+                // (kWh x Strombezugspreis). Das ist rechnerisch dasselbe wie
+                // "Menge x Satz/100 x Preis" - die Multiplikation ist kommutativ - und
+                // kommt ohne zweite Formel aus. Die unbewertete Menge bleibt fuer die
+                // Herleitungszeile erhalten.
                 if (string.Equals(bemessung, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal) ||
                     string.Equals(bemessung, DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN, StringComparison.Ordinal) ||
                     string.Equals(bemessung, DbWerte.BEMESSUNG_PROZENT_ERZEUGERKOSTEN, StringComparison.Ordinal) ||
-                    string.Equals(bemessung, DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN, StringComparison.Ordinal))
+                    string.Equals(bemessung, DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN, StringComparison.Ordinal) ||
+                    string.Equals(bemessung, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN, StringComparison.Ordinal) ||
+                    string.Equals(bemessung, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF, StringComparison.Ordinal))
                     wert = m * s / 100.0;
                 else if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_H, StringComparison.Ordinal) ||
                          string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH, StringComparison.Ordinal) ||

@@ -491,8 +491,17 @@ namespace WindowsFormsApplication1
             N(DbWerte.BEMESSUNG_JAHRESBETRAG,            "BM_JAHRESBETRAG",      "fester Jahresbetrag",    "€/a",   false, true,  true),
             N(DbWerte.BEMESSUNG_PROZENT_INVESTITION,     "BM_P_INVESTITION",     "% der Investition",      "%",     true,  true,  false),
             N(DbWerte.BEMESSUNG_PROZENT_ERZEUGERKOSTEN,  "BM_P_ERZEUGER",        "% der Erzeugerkosten",   "%",     true,  false, false),
-            N(DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN,"BM_P_BRENNSTOFF",      "% der Brennstoffkosten", "%",     false, true,  false),
-            N(DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN,     "BM_P_STROM",           "% der Stromkosten",      "%",     false, true,  false),
+            // ETAPPE H1 — Hilfsenergie an der Endenergie der Anlage (Festlegung 29.08.2026).
+            // Die MENGE ist kein Eingabewert, sondern ein ERGEBNISWERT: Sie kommt aus dem
+            // Simulationslauf, im Dialog wird nur der Satz gepflegt. Ohne Lauf gibt es
+            // keine Menge und damit keinen Betrag - dann bleibt die absolute Angabe.
+            N(DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN,"BM_P_ENDENERGIEKOSTEN","% der Endenergiekosten", "%",     false, true,  false),
+            N(DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF,"BM_P_ENDENERGIEBEDARF","% des Endenergiebedarfs","%",     false, true,  false),
+            // Von H1 abgeloest: dieselbe Groesse, aber je Energieart getrennt und
+            // projektweit bemessen. Bestandsdaten werden weiter ANGEZEIGT und gerechnet,
+            // zur Neuauswahl stehen sie nicht mehr (FuerBetrieb = false).
+            N(DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN,"BM_P_BRENNSTOFF",      "% der Brennstoffkosten", "%",     false, false, false),
+            N(DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN,     "BM_P_STROM",           "% der Stromkosten",      "%",     false, false, false),
             N(DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH,   "BM_KWH_THERMISCH",     "je kWh thermisch",       "€/kWh", false, true,  false),
             N(DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH,  "BM_KWH_ELEKTRISCH",    "je kWh elektrisch",      "€/kWh", false, true,  false),
             N(DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,     "BM_KW_LEISTUNG",       "je kW Leistung",         "€/kW",  true,  false, false),
