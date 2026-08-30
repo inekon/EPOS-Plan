@@ -1,6 +1,6 @@
 # Einheitenbruch zwischen Brennstoff-Stamm und Umrechnungstabelle — Analyse und Vorgehensweise
 
-Stand: 30.08.2026. Betrachtet wurden die vier Ableitungsstellen der Umrechnungsregel, die Tabellen `Tab_Brennstoff_Stamm`, `energy_carrier`, `energy_conversion`, `energy_project_settings` und `energy_price` sowie alle 25 Brennstoffe des Katalogs.
+Stand: 30.08.2026. Betrachtet wurden die vier Ableitungsstellen der Umrechnungsregel, die Tabellen `Tab_Brennstoff_Stamm`, `energy_carrier`, `energy_conversion`, `energy_project_settings` und `energy_price` sowie alle 25 Brennstoffe des Katalogs. **Entscheidung 30.08.2026: Weg (a) — siehe 5.1.**
 
 **Bezugsstand.** Codebasis ist der Zweig `Pufferspeicher` = Commit **`2ab47b1`** (Etappe BK3, 30.08.2026), lokal deckungsgleich mit `claude/nostalgic-matsumoto-481128`. Dieser Stand liegt **nicht auf origin** (13 Commits vor `origin/Pufferspeicher` = `acf2e30`) und **nicht in main**. `main` = `b3d305b` führt `ZIEL_VERSION` **55** mit den geparkten Schritten 56/57, der Pufferspeicher-Strang **61**. Zeilenangaben ohne Revisionsvorsatz beziehen sich auf `2ab47b1`. Diese Konzeptdatei selbst liegt auf `claude/lucid-cori-a9a425`.
 
@@ -210,6 +210,8 @@ Diese sieben Befunde sind mitgemessen worden. Sie sind real, gehören aber nicht
 Empfehlung: **(a) für die fünf Gase sofort als Schemaschritt 62, (c) als Folgepaket, (b) nur nach ausdrücklichem Fachentscheid und dann nur für kg/rm — für die Gase abgelehnt.**
 
 (a) ist die bereits getroffene Entscheidung L4, nur auf die zweite Tabelle angewandt: reine Semantik, kein Zahlenwert, durch die z-Faktoren 68–72 = 1 auch rechnerisch nachweislich neutral. (a) ist zugleich der einzige Weg, der die Regressionsquelle „neuer Träger kopiert den Stammtext in `billing_unit`" schließt; ohne ihn erzeugt jede Neuanlage den Bruch erneut. (b) heilt für die Gase zwar die Zählung, führt aber eine Regel ein, die dem Katalog widerspricht und den Dialog `€/m³` auf Nm³-Zahlen schreiben ließe — der Zustand danach wäre schwerer zu erkennen als der heutige. (c) ist billig und richtig, ändert nach (a) aber nichts Messbares und gehört deshalb in ein Folgepaket.
+
+**Entschieden (30.08.2026).** Der Anwender wählt **Weg (a)**: Der Stammtext der fünf Gase (Brennstoffe 1, 2, 3, 14, 25) wird auf „Nm³" gezogen, ausgeführt als Schemaschritt **62**. Die Wege **(b) und (c) sind nicht beauftragt** — auch nicht als Folgepaket; das Paket P3 aus § 6 entfällt damit vorerst, die Empfehlung oben bleibt als Begründung stehen. Die Randfragen **5.3.1 bis 5.3.5** (Waisenheilung, kg-/rm-Abrechnung, Brennstoff 24, Regel 67, Prüfschritt) sind **offen** und mit dieser Entscheidung ausdrücklich **nicht** mitentschieden. **Die Umsetzung ist damit noch nicht freigegeben:** Nach der Konzept-vor-Code-Regel des Projekts ist zuerst dieses Konzept abzunehmen; die Arbeit gehört anschließend nach § 6 und § 9 auf den Pufferspeicher-Strang (`2ab47b1`), nicht in diesen Worktree.
 
 ### 5.2 Varianten-Tabelle
 
