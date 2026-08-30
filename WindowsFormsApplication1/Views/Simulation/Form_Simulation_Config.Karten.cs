@@ -1220,7 +1220,9 @@ namespace WindowsFormsApplication1
             System.Data.DataTable dt = DataRepository.GetDataTable(
                 "SELECT Bezeichner FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt=" + m_ID_Projekt + " AND ID_Type=" + idType +
-                " ORDER BY Prioritaet, ID");
+                // Ungepflegte Priorität ans ENDE (ANLAGENPRIO_UNGEPFLEGT), sonst stünde
+                // eine frisch angelegte Anlage in der Kopfzeile vor der konfigurierten.
+                " ORDER BY " + Ladeordnung.SqlAnlagenprio(null) + ", ID");
             if (dt == null) return namen;
 
             foreach (System.Data.DataRow r in dt.Rows)
@@ -2003,7 +2005,9 @@ namespace WindowsFormsApplication1
                 "SELECT ID, Bezeichner FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt=" + m_ID_Projekt +
                 " AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ")" +
-                " ORDER BY Prioritaet, ID");
+                // Ungepflegte Priorität ans ENDE (ANLAGENPRIO_UNGEPFLEGT) - die
+                // Reihenfolge steht auf der Speicherkarte als Kaskadenliste.
+                " ORDER BY " + Ladeordnung.SqlAnlagenprio(null) + ", ID");
             if (dt == null) return map;
 
             foreach (System.Data.DataRow r in dt.Rows)

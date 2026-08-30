@@ -1316,17 +1316,19 @@ namespace WindowsFormsApplication1
 
             /// <summary>
             /// Die geordneten Senkenlisten des Projekts. Fuer eine Anlage OHNE Zeile in
-            /// <c>Z_AnlageSenke</c> gelten die Slot-Daten aus <see cref="Hydraulikbild"/>
-            /// (Rang-1-Vorbelegung Heizkreis/Beides) — seit Paket A1 der einzige
-            /// Rueckfall: Die WS_-Spiegelung ist abgerissen, und die Migrationspflicht
-            /// (Schritt 50 laeuft vor jedem Programmstart) macht den Fall „Tabelle
-            /// fehlt" unerreichbar.
+            /// <c>Z_AnlageSenke</c> gilt die Rang-1-Vorbelegung Heizkreis/Beides aus
+            /// <see cref="Hydraulikbild"/> — seit Paket A1 der einzige Rueckfall: Die
+            /// WS_-Spiegelung ist abgerissen, und die Migrationspflicht (Schritt 50
+            /// laeuft vor jedem Programmstart) macht den Fall „Tabelle fehlt"
+            /// unerreichbar.
             ///
-            /// <para>Dabei wird auch die Laderabbildung des Hydraulikbilds ERGAENZT: Sie
-            /// entsteht dort aus den zwei Altspalten und kennt die Raenge ab 3 nicht.
-            /// Fuer W5 („kein Lader") und den Ring waere das eine falsche Antwort — ein
-            /// Speicher, den nur eine drittrangige Senke laedt, gaelte sonst als
-            /// ladelos.</para>
+            /// <para><b>NACHZUG A1.</b> <see cref="LaderErgaenzen"/> war noetig, solange
+            /// die Laderabbildung des Hydraulikbilds aus den zwei Altspalten entstand und
+            /// die Raenge ab 3 nicht kannte. Das Bild liest seine Senken inzwischen
+            /// selbst aus <c>Z_AnlageSenke</c>, ueber alle Raenge — die Ergaenzung traegt
+            /// deshalb nichts mehr nach und bleibt nur als idempotenter Abgleich stehen:
+            /// Sie und das Bild speisen sich aus derselben Tabelle und demselben
+            /// Rueckfall.</para>
             /// </summary>
             private void SenkenLesen(int idProjekt)
             {
@@ -1347,13 +1349,21 @@ namespace WindowsFormsApplication1
 
                 foreach (Hydraulikbild.AnlagenEintrag a in Bild.Anlagen)
                     if (!_senken.ContainsKey(a.ID))
-                        _senken[a.ID] = AusAltspalten(a);
+                        _senken[a.ID] = AusBildSenke(a);
 
                 LaderErgaenzen();
             }
 
-            /// <summary>Die zwei Altslots einer Anlage als Senkenliste (Rang 1 und 2).</summary>
-            private static List<Z_AnlageSenkeModel> AusAltspalten(Hydraulikbild.AnlagenEintrag a)
+            /// <summary>
+            /// Die Zwei-Platz-Sicht einer Anlage als Senkenliste (Rang 1 und 2).
+            ///
+            /// <para>Der Name hiess bis zum Nachzug A1 <c>AusAltspalten</c>; die Quelle
+            /// war <c>Hydraulikbild.AnlagenEintrag.Senke</c>, und die kam aus den
+            /// WS_-Spalten. Sie kommt jetzt aus <c>Z_AnlageSenke</c>, und dieser Zweig
+            /// laeuft nur noch fuer eine Anlage OHNE jede Zeile — dann traegt sie die
+            /// Rang-1-Vorbelegung Heizkreis/Beides.</para>
+            /// </summary>
+            private static List<Z_AnlageSenkeModel> AusBildSenke(Hydraulikbild.AnlagenEintrag a)
             {
                 List<Z_AnlageSenkeModel> kette = new List<Z_AnlageSenkeModel>();
 
@@ -1379,7 +1389,11 @@ namespace WindowsFormsApplication1
                 return kette;
             }
 
-            /// <summary>Traegt die Lader ab Rang 3 in die Abbildung des Hydraulikbilds nach.</summary>
+            /// <summary>
+            /// Gleicht die Laderabbildung des Hydraulikbilds gegen die hier gelesenen
+            /// Senkenzeilen ab. Seit dem Nachzug A1 ein IDEMPOTENTER Abgleich (siehe
+            /// <see cref="SenkenLesen"/>) — beide Seiten stammen aus derselben Tabelle.
+            /// </summary>
             private void LaderErgaenzen()
             {
                 foreach (KeyValuePair<int, List<Z_AnlageSenkeModel>> e in _senken)
