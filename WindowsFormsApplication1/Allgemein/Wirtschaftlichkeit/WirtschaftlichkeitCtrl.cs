@@ -48,6 +48,11 @@ namespace WindowsFormsApplication1
         private readonly Dictionary<int, List<BhkwAnlage>> _anlagenCache =
             new Dictionary<int, List<BhkwAnlage>>();
 
+        /// <summary>ETAPPE B3 Paket a — dasselbe für die HEIZKESSEL-Anlagenzeilen
+        /// (§ 54 EnergieStG trifft auch sie, Entscheidung BF5).</summary>
+        private readonly Dictionary<int, List<BhkwAnlage>> _kesselCache =
+            new Dictionary<int, List<BhkwAnlage>>();
+
         /// <summary>
         /// Die beiden Nachschlagewerke des Heizöl-Ausschlusses (Nachtrag 2 zu E2), je
         /// Berechne-Lauf einmal gelesen — sie sind projektunabhängige Katalogtabellen:
@@ -435,6 +440,16 @@ namespace WindowsFormsApplication1
                     // in Schritt 22: NULL heißt „kein eigener Wert", und dann gilt der
                     // Projektwert.
                     foreach (SchemaSpalte s in SchemaKatalog.Schritt22_KwkgJeAnlage)
+                        SpalteSicher(conn, s.Tabelle, s.Name, s.TypDefinition);
+
+                    // ETAPPE B3 Paket a — die drei Angaben JE ANLAGE (Steuerwahl,
+                    // Aufteilungsmethode, Hilfsenergieanteil) an Tab_Energieanlagen. Sie
+                    // entstehen regulär über Migrationsschritt 61a; das hier ist die
+                    // tolerante VORSORGE unmittelbar vor dem Zugriff — dasselbe Muster
+                    // wie bei E4, E5 und E6. Eine WERTE-Vorbelegung gibt es weder hier
+                    // noch in Schritt 61: NULL heißt „kein eigener Wert", und dann gilt
+                    // der Projektwert bzw. „keine Hilfsenergie".
+                    foreach (SchemaSpalte s in SchemaKatalog.Schritt61_SteuerJeAnlage)
                         SpalteSicher(conn, s.Tabelle, s.Name, s.TypDefinition);
 
                     // LEITENTSCHEIDUNGEN L12/L13 — die vier Bilanzierungsangaben. Sie
@@ -1184,6 +1199,7 @@ namespace WindowsFormsApplication1
             _staffelCache = null; _pelCache.Clear(); _oelCache.Clear();
             _refKesselCache.Clear();                                       // frischer Lauf
             _anlagenCache.Clear(); _gesetze = null;                        // Nachtrag zu E2
+            _kesselCache.Clear();                                          // Etappe B3 Paket a
             _brennstoffKategorie = null; _carrierBrennstoff = null;        // Nachtrag 2 zu E2
             _traegerCache.Clear();                                         // Etappe E4
 
@@ -1256,6 +1272,7 @@ namespace WindowsFormsApplication1
             TarifParameter tarif = LadeTarif(daten.IdStamm);
             _staffelCache = null; _pelCache.Clear(); _oelCache.Clear();   // frischer Lauf
             _anlagenCache.Clear(); _gesetze = null;                       // wie in Berechne
+            _kesselCache.Clear();                                         // Etappe B3 Paket a
             _brennstoffKategorie = null; _carrierBrennstoff = null;
             _traegerCache.Clear();
 
@@ -2600,9 +2617,13 @@ namespace WindowsFormsApplication1
         /// <para><b>Die Begründungen entstehen nur EINMAL</b>, aus dem ersten Jahr. Sonst
         /// stünde derselbe Satz zwanzigmal im Hinweisfeld.</para>
         ///
-        /// <para><b>Nur BHKW-Brennstoff.</b> Die Anlagenliste enthält ausschließlich
-        /// BHKW-Anlagen; Kessel- und Spitzenlastbrennstoff bleiben außen vor — genau die
-        /// Abgrenzung, die das Energiesteuerrecht verlangt.</para>
+        /// <para><b>Seit B3: BHKW UND Heizkessel.</b> Bis dahin enthielt die Anlagenliste
+        /// ausschließlich BHKW-Anlagen — richtig für § 53 und § 53a, die den Brennstoff
+        /// der Stromerzeugung entlasten, aber falsch für § 54: Der hängt an keiner
+        /// KWK-Anlage, sondern am produzierenden Gewerbe (Entscheidung BF5). Die
+        /// Abgrenzung liegt seither dort, wo sie hingehört — je Anlage im
+        /// <c>SteuerGutschriftRechner</c> über
+        /// <see cref="SteuerAnlage.Stromerzeuger"/>, nicht in der Zuführung.</para>
         /// </summary>
         private void BaueSteuerReihen(VariantenDaten v, WirtschaftlichkeitParameter p,
                                       ProjektEingabe e, out string hinweis)
@@ -2727,15 +2748,22 @@ namespace WindowsFormsApplication1
                 if (zuordnung != null)
                     for (int i = 0; i < anlagen.Count; i++)
                         eingabe.Anlagen.Add(BaueSteuerAnlage(v.IdProjekt, anlagen[i].Bezeichner,
-                            anlagen[i].PelKW, zuordnung[i], anlagen[i].IdCarrier, anlagen[i].IdBrennstoff));
+                            anlagen[i].PelKW, zuordnung[i], anlagen[i].IdCarrier, anlagen[i].IdBrennstoff,
+                            anlagen[i].EnergiesteuerWahl, anlagen[i].AufteilungMethode));
                 else
                 {
                     double pelProjekt = PelKW(v.IdProjekt);
                     foreach (ErgebnisBHKWModulModel m in module)
                         eingabe.Anlagen.Add(BaueSteuerAnlage(v.IdProjekt,
-                            m.Modul ?? "", pelProjekt, m, 0, 0));
+                            m.Modul ?? "", pelProjekt, m, 0, 0, null, null));
                 }
             }
+
+            // ETAPPE B3 Paket a (BF5) — die HEIZKESSEL. § 54 EnergieStG hängt an keiner
+            // KWK-Anlage; er entlastet den Brennstoff eines Unternehmens des
+            // produzierenden Gewerbes, gleich ob er in einem BHKW oder in einem Kessel
+            // verbrannt wird.
+            KesselAnlagenErgaenzen(v, eingabe);
 
             // Eigenverbrauch: NUR aus der Stundenreihe. Ohne sie bleibt der Wert null,
             // und die Befreiung entfällt mit Begründung (siehe SteuerGutschriftRechner).
@@ -2753,7 +2781,8 @@ namespace WindowsFormsApplication1
         /// <summary>Eine Anlagenzeile der Steuerprüfung aus Anlagen- und Modulangaben.</summary>
         private SteuerAnlage BaueSteuerAnlage(int idProjekt, string bezeichner, double pelKW,
                                               ErgebnisBHKWModulModel modul,
-                                              int idCarrierAnlage, int idBrennstoffAnlage)
+                                              int idCarrierAnlage, int idBrennstoffAnlage,
+                                              string wahl, string methode)
         {
             var a = new SteuerAnlage { Bezeichner = bezeichner, PelKW = pelKW };
             if (modul != null)
@@ -2769,6 +2798,21 @@ namespace WindowsFormsApplication1
             int brennstoff = carrier > 0 ? BrennstoffId(carrier, idBrennstoffAnlage)
                                          : idBrennstoffAnlage;
 
+            SteuerschluesselSetzen(idProjekt, a, carrier, brennstoff);
+
+            // ETAPPE B3 Paket a — die Wahl DIESER Anlage; leer heißt „es gilt der
+            // Projektwert", und der steht bereits in der SteuerEingabe.
+            a.EnergiesteuerWahl = wahl;
+            a.AufteilungMethode = methode;
+            return a;
+        }
+
+        /// <summary>
+        /// Satzschlüssel, Heizwerte und Abrechnungseinheit einer Steuerzeile — der Teil,
+        /// den BHKW und Heizkessel wörtlich teilen (B3a).
+        /// </summary>
+        private void SteuerschluesselSetzen(int idProjekt, SteuerAnlage a, int carrier, int brennstoff)
+        {
             a.SchluesselSatzVoll = EnergiesteuerSchluessel(brennstoff, false);
             a.SchluesselSatz53a = EnergiesteuerSchluessel(brennstoff, true);
             a.SchluesselSatz54 = Energiesteuer54Schluessel(brennstoff);     // K6
@@ -2780,7 +2824,161 @@ namespace WindowsFormsApplication1
             a.EffHs = t.EffHs;
             a.Abrechnungseinheit = t.Einheit;
             a.CarrierId = carrier;          // B2: Bezugspunkt der Kohärenzprüfung
+        }
+
+        /// <summary>
+        /// ETAPPE B3 Paket a (BF5) — hängt die HEIZKESSEL des Projekts an die
+        /// Steuereingabe. § 54 EnergieStG entlastet den Brennstoff eines Unternehmens des
+        /// produzierenden Gewerbes; ob er in einem BHKW oder in einem Kessel verbrannt
+        /// wird, ist der Vorschrift gleichgültig.
+        ///
+        /// <para><b>Das Tor: es muss überhaupt etwas gewählt sein.</b> Ohne eine
+        /// Steuerwahl — weder im Projekt noch an einer Anlage — bleiben die Kesselzeilen
+        /// draußen. Sonst bekämen 26 der 28 Bestandsprojekte mit Kessel schlagartig die
+        /// Hinweiszeile „keine Entlastung gewählt", die es dort nie gab; die Etappe soll
+        /// aber wirken, wenn gepflegt wird, und sonst gar nicht. Rechenwirkung hat das
+        /// Tor keine: Ohne Wahl gäbe es ohnehin 0 €.</para>
+        ///
+        /// <para><b>Verwaiste Modulzeilen</b> (Bezeichner ohne passende Anlagenzeile —
+        /// im Bestand die Projekte 1042 und 1044, wo nach dem Lauf die Anlage getauscht
+        /// wurde) werden wie beim BHKW über den Ersatzweg geführt: je Modulzeile eine
+        /// Rechenzeile mit der PROJEKTwahl und dem Modulnamen. Verschluckt wird keine
+        /// Zeile, doppelt gezählt auch keine — <c>ModulJeAnlage</c> vergibt jede
+        /// Modulzeile höchstens einmal.</para>
+        /// </summary>
+        private void KesselAnlagenErgaenzen(VariantenDaten v, SteuerEingabe eingabe)
+        {
+            List<ErgebnisHeizkesselModulModel> module =
+                v.Ergebnis.Heizkessel != null ? v.Ergebnis.Heizkessel.Module : null;
+            if (module == null || module.Count == 0) return;
+
+            List<BhkwAnlage> anlagen = KesselAnlagen(v.IdProjekt);
+
+            bool projektwahl = !string.IsNullOrEmpty(eingabe.EnergiesteuerWahl) &&
+                               !string.Equals(eingabe.EnergiesteuerWahl,
+                                              DbWerte.ENERGIESTEUER_WAHL_KEINE, StringComparison.Ordinal);
+            bool anlagenwahl = false;
+            foreach (BhkwAnlage k in anlagen) if (k.HatEigeneSteuerwahl) { anlagenwahl = true; break; }
+            if (!projektwahl && !anlagenwahl) return;
+
+            ErgebnisHeizkesselModulModel[] zuordnung = anlagen.Count > 0
+                ? KesselModulJeAnlage(anlagen, module) : null;
+
+            if (zuordnung != null)
+            {
+                for (int i = 0; i < anlagen.Count; i++)
+                    eingabe.Anlagen.Add(BaueSteuerAnlageKessel(v.IdProjekt, anlagen[i].Bezeichner,
+                        zuordnung[i], anlagen[i].IdCarrier, anlagen[i].IdBrennstoff,
+                        anlagen[i].EnergiesteuerWahl, anlagen[i].AufteilungMethode));
+                return;
+            }
+
+            foreach (ErgebnisHeizkesselModulModel m in module)
+                eingabe.Anlagen.Add(BaueSteuerAnlageKessel(v.IdProjekt, m.Modul ?? "", m, 0, 0, null, null));
+        }
+
+        /// <summary>
+        /// Eine KESSEL-Zeile der Steuerprüfung (B3a). Unterschiede zur BHKW-Zeile:
+        /// <c>PelKW</c> und <c>StromMWh</c> sind 0 (ein Kessel erzeugt keinen Strom, und
+        /// keine stromseitige Prüfung darf ihn meinen), die Wärme ist
+        /// <c>Waerme_Gas + Waerme_Oel</c>, und der Brennstoff wird abgeleitet — siehe
+        /// <see cref="KesselBrennstoffMWh"/>.
+        /// </summary>
+        private SteuerAnlage BaueSteuerAnlageKessel(int idProjekt, string bezeichner,
+                                                    ErgebnisHeizkesselModulModel modul,
+                                                    int idCarrierAnlage, int idBrennstoffAnlage,
+                                                    string wahl, string methode)
+        {
+            var a = new SteuerAnlage { Bezeichner = bezeichner, PelKW = 0, Stromerzeuger = false };
+            if (modul != null)
+            {
+                a.WaermeMWh = modul.Waerme_Gas + modul.Waerme_Oel;
+                a.BrennstoffMWh = KesselBrennstoffMWh(modul);
+            }
+
+            int carrier = modul != null && modul.CarrierId > 0 ? modul.CarrierId : idCarrierAnlage;
+            int brennstoff = carrier > 0 ? BrennstoffId(carrier, idBrennstoffAnlage)
+                                         : idBrennstoffAnlage;
+            SteuerschluesselSetzen(idProjekt, a, carrier, brennstoff);
+
+            a.EnergiesteuerWahl = wahl;
+            a.AufteilungMethode = methode;
             return a;
+        }
+
+        /// <summary>
+        /// Bemessungsmenge des § 54 für einen Kessel [MWh/a, heizwertbezogen].
+        ///
+        /// <para><b>Warum sie abgeleitet und nicht gelesen wird.</b>
+        /// <c>Tab_ErgebnisHeizkesselModul.Verbrauch</c> existiert seit jeher, wird vom
+        /// Rechenkern aber NIE gesetzt (<c>SimulationRunner</c> füllt an der Modulzeile
+        /// nur Modul, Waerme_Gas, Waerme_Oel, Jahresnutzungsgrad und carrier_id) — im
+        /// ganzen Bestand steht dort 0. Gelesen wird die Spalte trotzdem zuerst: Sobald
+        /// sie einmal gefüllt wird, ist sie die bessere Quelle, und diese Reihenfolge
+        /// muss dann nicht noch einmal angefasst werden.</para>
+        ///
+        /// <para><b>Die Ableitung ist die exakte Umkehrung der Vorwärtsrechnung.</b>
+        /// <c>SimulationSPK.Bilanz_und_Nutzungsgrad</c> bildet den Nutzungsgrad als
+        /// <c>(Waerme_Gas + Waerme_Oel) / Brennstoffeinsatz × 100</c> — in PROZENT und
+        /// über denselben Zähler. Die Rückrechnung
+        /// <c>(Waerme_Gas + Waerme_Oel) / (Nutzungsgrad / 100)</c> liefert deshalb wieder
+        /// den Brennstoffeinsatz des Laufs, nicht eine Näherung. Einzige Ausnahme sind
+        /// die Plausibilitätsklemmen des Rechenkerns (Nutzungsgrad über 110 % wird auf
+        /// 108 gesetzt, unter 1 % auf 1); in diesen Fällen weicht die Rückrechnung um
+        /// genau den geklemmten Betrag ab — ein Fall, den es nur bei absurden
+        /// Eingangsdaten gibt.</para>
+        ///
+        /// <para><b>Ohne Nutzungsgrad keine Menge:</b> 0, und die Steuerrechnung meldet
+        /// „Menge unklar" mit dem Anlagennamen. Eine geratene Menge wäre hier dasselbe wie
+        /// eine geratene Dichte (Leitentscheidung L3).</para>
+        ///
+        /// <para><b>Der Simulationspfad bleibt unberührt.</b> Die Ableitung steht
+        /// bewusst hier in der Zuführung und nicht im <c>SimulationRunner</c>: Eine neu
+        /// gefüllte Ergebnisspalte änderte gespeicherte Läufe und damit die
+        /// Referenzlaufvergleiche, ohne dass die Wirtschaftlichkeit davon mehr hätte.</para>
+        /// </summary>
+        private static double KesselBrennstoffMWh(ErgebnisHeizkesselModulModel m)
+        {
+            if (m.Verbrauch > 0) return m.Verbrauch;
+            double waerme = m.Waerme_Gas + m.Waerme_Oel;
+            if (waerme <= 0 || m.Jahresnutzungsgrad <= 0) return 0;
+            return waerme / (m.Jahresnutzungsgrad / 100.0);
+        }
+
+        /// <summary>
+        /// Ordnet jeder KESSEL-Anlagenzeile ihre Ergebnis-Modulzeile zu — Zeile für Zeile
+        /// dasselbe Verfahren wie <see cref="ModulJeAnlage"/> beim BHKW (Bezeichner
+        /// zuerst, Reihenfolge bei gleicher Anzahl als Rückfall, sonst <c>null</c>).
+        ///
+        /// <para>Eine gemeinsame generische Fassung hätte beide Modultypen unter eine
+        /// Schnittstelle zwingen müssen, die es im Modell nicht gibt
+        /// (<c>ErgebnisBHKWModulModel</c> und <c>ErgebnisHeizkesselModulModel</c> teilen
+        /// nur das Feld <c>Modul</c>) — für zwanzig Zeilen der falsche Preis.</para>
+        /// </summary>
+        private static ErgebnisHeizkesselModulModel[] KesselModulJeAnlage(
+            List<BhkwAnlage> anlagen, List<ErgebnisHeizkesselModulModel> module)
+        {
+            var treffer = new ErgebnisHeizkesselModulModel[anlagen.Count];
+            bool[] belegt = new bool[module.Count];
+            int getroffen = 0;
+
+            for (int i = 0; i < anlagen.Count; i++)
+                for (int j = 0; j < module.Count; j++)
+                {
+                    if (belegt[j]) continue;
+                    string name = module[j].Modul == null ? "" : module[j].Modul.Trim();
+                    if (!string.Equals(name, anlagen[i].Bezeichner, StringComparison.OrdinalIgnoreCase))
+                        continue;
+                    belegt[j] = true;
+                    treffer[i] = module[j];
+                    getroffen++;
+                    break;
+                }
+            if (getroffen == anlagen.Count) return treffer;
+
+            if (anlagen.Count != module.Count) return null;
+            for (int i = 0; i < anlagen.Count; i++) treffer[i] = module[i];
+            return treffer;
         }
 
         /// <summary>Abrechnungseinheit und Heizwerte eines Energieträgers.</summary>
@@ -3198,6 +3396,29 @@ namespace WindowsFormsApplication1
                            VbhKontingent.HasValue || VbhDeckel.HasValue;
                 }
             }
+
+            // ---------------- ETAPPE B3 Paket a — Steuerwahl je Anlage ----------------
+            //
+            // Beide sind leer-fähig, und leer heißt „kein eigener Wert, es gilt der
+            // Projektwert" — dasselbe Rückfallmuster wie bei den acht E6-Angaben darüber
+            // und derselbe Grund: In jeder Datenbank vor Migrationsschritt 61 sind sie
+            // leer, und dann rechnet die Steuerreihe Zeile für Zeile wie vorher.
+
+            /// <summary><c>Tab_Energieanlagen.Energiesteuer_Wahl</c>, Steuerwert
+            /// <c>DbWerte.ENERGIESTEUER_WAHL_*</c>; leer = Projektwahl (BF6).</summary>
+            public string EnergiesteuerWahl = "";
+
+            /// <summary><c>Tab_Energieanlagen.Aufteilung_Methode</c>, Steuerwert
+            /// <c>DbWerte.AUFTEILUNG_*</c>; leer = Projektmethode.</summary>
+            public string AufteilungMethode = "";
+
+            /// <summary>true, wenn diese Anlage eine eigene Steuerwahl trägt — die
+            /// Bedingung, unter der Kesselzeilen überhaupt in die Steuerprüfung
+            /// aufgenommen werden (siehe <c>BaueSteuerEingabe</c>).</summary>
+            public bool HatEigeneSteuerwahl
+            {
+                get { return !string.IsNullOrEmpty(EnergiesteuerWahl); }
+            }
         }
 
         /// <summary>
@@ -3465,13 +3686,29 @@ namespace WindowsFormsApplication1
             return m == null ? 0 : m.Stromproduktion;
         }
 
-        /// <summary>Anlagenzeilen des Projekts, einmal je Berechne-Lauf gelesen.</summary>
+        /// <summary>BHKW-Anlagenzeilen des Projekts, einmal je Berechne-Lauf gelesen.</summary>
         private List<BhkwAnlage> BhkwAnlagen(int idProjekt)
         {
             List<BhkwAnlage> liste;
             if (_anlagenCache.TryGetValue(idProjekt, out liste)) return liste;
-            liste = LiesBhkwAnlagen(idProjekt);
+            liste = LiesAnlagen(idProjekt, WizardItemClass.BHKW_TYP);
             _anlagenCache[idProjekt] = liste;
+            return liste;
+        }
+
+        /// <summary>
+        /// ETAPPE B3 Paket a — HEIZKESSEL-Anlagenzeilen des Projekts, einmal je
+        /// Berechne-Lauf gelesen. Eigener Cache statt eines zusammengesetzten Schlüssels:
+        /// Der BHKW-Cache wird an mehreren Stellen als „die Anlagen" geleert und gelesen,
+        /// und ein Dictionary, in dem zwei Anlagenarten unter einem Zahlenschlüssel
+        /// liegen, wäre genau die Verwechslung, die keiner sucht.
+        /// </summary>
+        private List<BhkwAnlage> KesselAnlagen(int idProjekt)
+        {
+            List<BhkwAnlage> liste;
+            if (_kesselCache.TryGetValue(idProjekt, out liste)) return liste;
+            liste = LiesAnlagen(idProjekt, WizardItemClass.KESSEL_TYP);
+            _kesselCache[idProjekt] = liste;
             return liste;
         }
 
@@ -3503,8 +3740,18 @@ namespace WindowsFormsApplication1
         /// KATALOGGERÄTS. Wechselt der Anwender den Energieträger der Anlage, bleibt die
         /// Gerätezeile stehen — der Trägerverweis ist dann die jüngere und für Kosten,
         /// Emissionen und Bericht bereits maßgebliche Aussage.</para>
+        ///
+        /// <para><b>ETAPPE B3 Paket a: derselbe Leser auch für HEIZKESSEL</b>
+        /// (<paramref name="idType"/> = <c>WizardItemClass.KESSEL_TYP</c>). § 54 EnergieStG
+        /// hängt an keiner KWK-Anlage (BF5), die Kesselzeilen brauchen deshalb dieselben
+        /// Angaben: Bezeichner, Energieträger, Brennstoffart und die Steuerwahl. Was es
+        /// beim Kessel nicht gibt, ist die elektrische Nennleistung — sie kommt als 0
+        /// zurück, und mit ihr fällt die Anlage aus jeder stromseitigen Bezugsgröße
+        /// heraus, ohne sie zu verfälschen. Ein zweiter, fast wortgleicher Leser wäre die
+        /// schlechtere Lösung gewesen: Die E6- und B3a-Fähigkeitsproben müssten dann
+        /// zweimal gepflegt werden.</para>
         /// </summary>
-        private List<BhkwAnlage> LiesBhkwAnlagen(int idProjekt)
+        private List<BhkwAnlage> LiesAnlagen(int idProjekt, int idType)
         {
             // ETAPPE E6: Zuerst mit den acht neuen Spalten. Fehlen sie (Datenbank vor
             // Migrationsschritt 22, in der auch StelleTabellenSicher nie lief), scheitert
@@ -3515,10 +3762,21 @@ namespace WindowsFormsApplication1
             // liefert bei einem SQL-Fehler eine LEERE DataTable statt zu werfen (und
             // meldet still, weil die Abfrage im Engine-Modus läuft). Ein Blick auf die
             // Spaltenliste ist deshalb die einzige verlässliche Unterscheidung zwischen
-            // „Abfrage lief, Projekt hat keine BHKW-Anlage" und „Spalten fehlen".
-            DataTable dt = AnlagenTabelle(idProjekt, true);
+            // „Abfrage lief, Projekt hat keine solche Anlage" und „Spalten fehlen".
+            //
+            // ETAPPE B3 Paket a: dieselbe Treppe eine Stufe tiefer. Zuerst mit E6 UND den
+            // zwei Steuerspalten, dann nur mit E6, dann ohne beides. Die Zwischenstufe ist
+            // kein Papierfall: Eine Datenbank auf Schema 22..60 hat die E6-Spalten und die
+            // B3a-Spalten nicht.
+            DataTable dt = AnlagenTabelle(idProjekt, idType, true, true);
+            bool mitB3a = dt != null && dt.Columns.Contains(SchemaKatalog.SPALTE_EA_ENERGIESTEUER_WAHL);
             bool mitE6 = dt != null && dt.Columns.Contains(SchemaKatalog.SPALTE_EA_KWKG_STICHTAG);
-            if (!mitE6) dt = AnlagenTabelle(idProjekt, false);
+            if (!mitB3a)
+            {
+                dt = AnlagenTabelle(idProjekt, idType, true, false);
+                mitE6 = dt != null && dt.Columns.Contains(SchemaKatalog.SPALTE_EA_KWKG_STICHTAG);
+            }
+            if (!mitE6) dt = AnlagenTabelle(idProjekt, idType, false, false);
 
             var liste = new List<BhkwAnlage>();
             if (dt == null) return liste;
@@ -3548,6 +3806,15 @@ namespace WindowsFormsApplication1
                         anl.VbhKontingent = D(r, SchemaKatalog.SPALTE_EA_KWKG_KONTINGENT);
                         anl.VbhDeckel = D(r, SchemaKatalog.SPALTE_EA_KWKG_DECKEL);
                     }
+
+                    if (mitB3a)
+                    {
+                        // Text() liefert "" für NULL und für die fehlende Spalte — und ""
+                        // heißt hier durchgehend „kein eigener Wert, es gilt der
+                        // Projektwert" (Etappe B3 Paket a).
+                        anl.EnergiesteuerWahl = Text(r, SchemaKatalog.SPALTE_EA_ENERGIESTEUER_WAHL) ?? "";
+                        anl.AufteilungMethode = Text(r, SchemaKatalog.SPALTE_EA_AUFTEILUNG_METHODE) ?? "";
+                    }
                     liste.Add(anl);
                 }
             }
@@ -3556,11 +3823,21 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Anlagenabfrage — mit oder ohne die acht E6-Spalten. <c>null</c> = die
-        /// Abfrage ist gescheitert (bei <paramref name="mitE6"/> in aller Regel, weil die
-        /// Spalten fehlen).
+        /// Die Anlagenabfrage — mit oder ohne die acht E6-Spalten und mit oder ohne die
+        /// zwei Steuerspalten aus B3a. <c>null</c> = die Abfrage ist gescheitert (bei
+        /// gesetzten Flags in aller Regel, weil die Spalten fehlen).
+        ///
+        /// <para><b>Zwei Gerätewelten, eine Abfrage</b> (B3a): Beim BHKW liefert
+        /// <c>Tab_BHKW</c> die elektrische Nennleistung und den Katalogbrennstoff, beim
+        /// Heizkessel <c>Tab_Heizkessel</c> nur den Brennstoff — <c>Pel</c> ist dort
+        /// konstant 0, weil ein Kessel keine elektrische Nennleistung hat und keine der
+        /// stromseitigen Prüfungen ihn je meinen darf. Der Kessel-Join ist ein
+        /// <c>LEFT JOIN</c>: Eine Anlagenzeile ohne <c>ID_Kessel</c> soll ihre Steuerwahl
+        /// behalten, nicht aus der Liste fallen. Beim BHKW bleibt es beim <c>INNER
+        /// JOIN</c> des Bestands — dort hängt die 2-MW-Prüfung an <c>Pel</c>, und eine
+        /// Zeile ohne Gerät hätte keine.</para>
         /// </summary>
-        private static DataTable AnlagenTabelle(int idProjekt, bool mitE6)
+        private static DataTable AnlagenTabelle(int idProjekt, int idType, bool mitE6, bool mitB3a)
         {
             string e6 = mitE6
                 ? ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_STICHTAG + "]" +
@@ -3572,21 +3849,31 @@ namespace WindowsFormsApplication1
                   ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_KONTINGENT + "]" +
                   ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_DECKEL + "]"
                 : "";
+            string b3a = mitB3a
+                ? ", a.[" + SchemaKatalog.SPALTE_EA_ENERGIESTEUER_WAHL + "]" +
+                  ", a.[" + SchemaKatalog.SPALTE_EA_AUFTEILUNG_METHODE + "]"
+                : "";
+
+            bool bhkw = idType == WizardItemClass.BHKW_TYP;
+            string geraet = bhkw ? "b.Pel, b.Brennstoff" : "0 AS Pel, b.Brennstoff";
+            string join = bhkw
+                ? "INNER JOIN Tab_BHKW AS b ON a.ID_BHKW = b.ID "
+                : "LEFT JOIN Tab_Heizkessel AS b ON a.ID_Kessel = b.ID ";
             try
             {
                 using (DataRepository.EngineModus())
                     return DataRepository.GetDataTable(
                         "SELECT a.ID, a.ID_Projekt, a.Bezeichner, a.ID_Carrier, " +
-                        "b.Pel, b.Brennstoff" + e6 + " " +
-                        "FROM Tab_Energieanlagen AS a " +
-                        "INNER JOIN Tab_BHKW AS b ON a.ID_BHKW = b.ID " +
+                        geraet + e6 + b3a + " " +
+                        "FROM Tab_Energieanlagen AS a " + join +
                         // KEIN ORDER BY — bewusst. Die Zuordnung Anlage ↔ Ergebnismodul
                         // fällt bei nicht passenden Bezeichnern auf die REIHENFOLGE
                         // zurück, und die Modulzeilen entstehen in der Reihenfolge von
-                        // SimulationControl.BHKW_Liste_Laden, das ebenfalls ohne ORDER BY
-                        // liest. Eine Sortierung hier könnte beide auseinanderlaufen
-                        // lassen.
-                        "WHERE a.ID_Projekt = ? AND a.ID_Type = " + WizardItemClass.BHKW_TYP,
+                        // SimulationControl.BHKW_Liste_Laden bzw. SPK_Liste_Laden, die
+                        // beide ebenfalls ohne ORDER BY lesen. Eine Sortierung hier
+                        // könnte beide auseinanderlaufen lassen.
+                        "WHERE a.ID_Projekt = ? AND a.ID_Type = " +
+                        idType.ToString(System.Globalization.CultureInfo.InvariantCulture),
                         new OleDbParameter("@p", idProjekt));
             }
             catch { return null; }

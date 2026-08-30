@@ -217,6 +217,20 @@ namespace WindowsFormsApplication1
         /// <para>0 = nicht erhoben (Zeile vor Etappe E2) oder P_el nicht gepflegt.</para>
         /// </summary>
         public double VbhElektrisch;      // h/a
+
+        /// <summary>
+        /// ETAPPE B3 Paket a - Hilfsenergie dieses Moduls [MWh/a] (Konzept
+        /// <c>Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan</c> Paragraf 4.5 und 5.2).
+        ///
+        /// <para><b>Bleibt 0, bis Paket b sie bildet.</b> Paket a legt allein die Spalte
+        /// an und schreibt sie mit - keine Rechnung liest sie. In Paket b wird sie zur
+        /// Bezugsgroesse der Nettostromerzeugung
+        /// (Stromproduktion minus Hilfsstrom).</para>
+        ///
+        /// <para>0 = nicht erhoben (Zeile vor Etappe B3) oder kein Hilfsenergieanteil
+        /// gepflegt - beides ist rechnerisch dasselbe.</para>
+        /// </summary>
+        public double Hilfsenergie;       // MWh/a
     }
 
     // Detail: Heizkessel/Spitzenkessel-Aggregat (Tab_ErgebnisHeizkessel) + Modulliste.
@@ -265,7 +279,24 @@ namespace WindowsFormsApplication1
         public double Verbrauch = 0.0;          // MWh/a
         public int CarrierId;              // energy_carrier.id (0 = keine Zuordnung)
 
+        /// <summary>
+        /// Jahresnutzungsgrad dieses Kessels in PROZENT (nicht als Anteil):
+        /// <c>(Waerme_Gas + Waerme_Oel) / Brennstoffeinsatz x 100</c>, gebildet in
+        /// <c>SimulationSPK.Bilanz_und_Nutzungsgrad</c> und dort auf 1..108 % geklemmt.
+        /// 0 = der Kessel stand still oder der Wert wurde nicht erhoben.
+        ///
+        /// <para><b>Die Einheit ist tragend</b> (Etappe B3 Paket a): Aus ihr leitet
+        /// <c>WirtschaftlichkeitCtrl</c> die Bemessungsmenge des Paragrafen 54 zurueck
+        /// (<c>(Waerme_Gas + Waerme_Oel) / (Jahresnutzungsgrad / 100)</c>), weil
+        /// <see cref="Verbrauch"/> vom Rechenkern nie gesetzt wird.</para>
+        /// </summary>
         public double Jahresnutzungsgrad;  // %
+
+        /// <summary>
+        /// ETAPPE B3 Paket a - Hilfsenergie dieses Kessels [MWh/a]; Bedeutung, Herkunft
+        /// und Vorbelegung wie bei <see cref="ErgebnisBHKWModulModel.Hilfsenergie"/>.
+        /// </summary>
+        public double Hilfsenergie;        // MWh/a
     }
 
     // Detail: Solarthermie-Aggregat (Tab_ErgebnisSolarthermie) + Kollektor-Liste.

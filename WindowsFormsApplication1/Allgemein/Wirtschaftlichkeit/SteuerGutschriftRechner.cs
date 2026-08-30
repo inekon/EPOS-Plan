@@ -74,6 +74,39 @@ namespace WindowsFormsApplication1
         /// CO₂-Grenzwert des § 2 StromStG.</summary>
         public bool Fossil;
 
+        /// <summary>
+        /// ETAPPE B3 Paket a (BF6) — die für DIESE Anlage gewählte Entlastungsnorm,
+        /// Steuerwert aus <c>DbWerte.ENERGIESTEUER_WAHL_*</c>.
+        /// <b><c>null</c> oder leer = kein eigener Wert; dann gilt
+        /// <see cref="SteuerEingabe.EnergiesteuerWahl"/>.</b> Genau dieser Rückfall macht
+        /// die Etappe für Bestandsprojekte ergebnisneutral: Solange niemand
+        /// <c>Tab_Energieanlagen.Energiesteuer_Wahl</c> pflegt, rechnet jede Anlage mit
+        /// der Projektwahl — also Zeile für Zeile wie vorher.
+        /// </summary>
+        public string EnergiesteuerWahl;
+
+        /// <summary>
+        /// ETAPPE B3 Paket a — Aufteilungsmethode DIESER Anlage für § 53,
+        /// Steuerwert aus <c>DbWerte.AUFTEILUNG_*</c>; <c>null</c> oder leer =
+        /// <see cref="SteuerEingabe.AufteilungMethode"/>.
+        /// </summary>
+        public string AufteilungMethode;
+
+        /// <summary>
+        /// ETAPPE B3 Paket a — true, wenn diese Anlage Strom erzeugt (BHKW).
+        ///
+        /// <para><b>Wozu die Unterscheidung.</b> § 53 und § 53a Abs. 5 EnergieStG
+        /// entlasten Energieerzeugnisse, die zur STROMerzeugung verwendet werden; ein
+        /// Heizkessel erfüllt den Tatbestand nie. § 54 dagegen hängt an keiner
+        /// Stromerzeugung, sondern am produzierenden Gewerbe — er trifft Kessel und BHKW
+        /// gleichermaßen (Entscheidung BF5). Eine Kesselanlage mit der Wahl § 53 oder
+        /// § 53a rechnet deshalb 0 und bekommt eine Begründung, statt still zu zählen.</para>
+        ///
+        /// <para><b>Vorgabe true</b>, damit jede vorhandene Konstruktion dieser Klasse
+        /// (bis B3 gab es ausschließlich BHKW-Zeilen) unverändert weiterrechnet.</para>
+        /// </summary>
+        public bool Stromerzeuger = true;
+
         /// <summary>Klartext „Bezeichner (n kW)" für Meldungen — dieselbe Form wie im
         /// KWKG-Guard.</summary>
         public string Klartext(CultureInfo kultur)
@@ -97,14 +130,27 @@ namespace WindowsFormsApplication1
         /// <summary>Jahresnutzungsgrad [%]; <c>null</c> = nicht gepflegt.</summary>
         public double? JahresnutzungsgradProzent;
 
-        /// <summary>Gewählte Entlastungsnorm, Steuerwert aus
-        /// <c>DbWerte.ENERGIESTEUER_WAHL_*</c>.</summary>
+        /// <summary>Gewählte Entlastungsnorm des PROJEKTS, Steuerwert aus
+        /// <c>DbWerte.ENERGIESTEUER_WAHL_*</c>. Seit B3 ist sie der RÜCKFALL: Trägt eine
+        /// Anlage eine eigene Wahl (<see cref="SteuerAnlage.EnergiesteuerWahl"/>), gilt
+        /// diese; sonst gilt der Projektwert.</summary>
         public string EnergiesteuerWahl = DbWerte.ENERGIESTEUER_WAHL_KEINE;
 
-        /// <summary>Aufteilungsmethode, Steuerwert aus <c>DbWerte.AUFTEILUNG_*</c>.</summary>
+        /// <summary>Aufteilungsmethode des PROJEKTS, Steuerwert aus
+        /// <c>DbWerte.AUFTEILUNG_*</c>; seit B3 Rückfall zu
+        /// <see cref="SteuerAnlage.AufteilungMethode"/>.</summary>
         public string AufteilungMethode = DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF;
 
-        /// <summary>Die BHKW-Anlagen des Projekts; leer = kein BHKW.</summary>
+        /// <summary>
+        /// Die Anlagen des Projekts, für die eine Energiesteuerentlastung überhaupt in
+        /// Betracht kommt; leer = keine.
+        ///
+        /// <para><b>Seit B3 stehen hier auch HEIZKESSEL</b> (BF5) — erkennbar an
+        /// <see cref="SteuerAnlage.Stromerzeuger"/> <c>= false</c>. Die Stromsteuerpfade
+        /// (§ 9 Abs. 1 Nr. 3) bleiben davon unberührt: Eine Kesselzeile führt weder
+        /// Nennleistung noch Stromerzeugung, sie kann die Bezugsgrößen dort also weder
+        /// heben noch senken.</para>
+        /// </summary>
         public List<SteuerAnlage> Anlagen = new List<SteuerAnlage>();
 
         /// <summary>
@@ -210,56 +256,104 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Energiesteuer-Entlastung auf den <b>BHKW</b>-Brennstoff — nie auf Kessel:
-        /// Die Anlagenliste enthält ausschließlich BHKW, und der Rechenkern führt den
-        /// Kesselbrennstoff ohnehin getrennt. Genau diese Abgrenzung verlangt die
-        /// Anleitung zum Formular 1131 („nur der Erdgasanteil ist entlastungsfähig, der
-        /// für den Prozess der Stromerzeugung eingesetzt wurde").
+        /// Energiesteuer-Entlastung, <b>je Anlage</b> geprüft und begründet
+        /// (Etappe B3 Paket a, Konzept § 4.2, Entscheidungen BF5 und BF6).
+        ///
+        /// <para><b>Was sich gegenüber E4/K6 geändert hat.</b> Bis B3 galt EINE Wahl für
+        /// das ganze Projekt: Sie wurde einmal vor der Anlagenschleife ausgewertet, und
+        /// eine gescheiterte Bedingung (Nutzungsgrad, Unternehmensart) brach die ganze
+        /// Rechnung ab. Jetzt löst jede Anlage ihre Wahl selbst auf
+        /// (<c>Anlagenwert ?? Projektwert</c>), und eine Anlage, die an einer Bedingung
+        /// scheitert, nimmt die übrigen nicht mit. Ohne gepflegte Anlagenwahlen ist das
+        /// Zeile für Zeile die alte Rechnung — jede Anlage löst dann denselben
+        /// Projektwert auf.</para>
+        ///
+        /// <para><b>§ 53 und § 53a nur für Stromerzeuger.</b> Beide entlasten
+        /// Energieerzeugnisse, die zur Stromerzeugung verwendet werden — die Anleitung zum
+        /// Formular 1131 sagt es wörtlich („nur der Erdgasanteil ist entlastungsfähig, der
+        /// für den Prozess der Stromerzeugung eingesetzt wurde"). Ein Heizkessel
+        /// (<see cref="SteuerAnlage.Stromerzeuger"/> <c>= false</c>) erfüllt den Tatbestand
+        /// nie und rechnet mit diesen Wahlen 0 plus Begründung. § 54 dagegen hängt an
+        /// keiner Stromerzeugung, sondern am produzierenden Gewerbe (BF5) und trifft
+        /// beide Anlagenarten.</para>
+        ///
+        /// <para><b>Der Sockelbetrag bleibt EINMAL je Lauf</b> — er ist ein
+        /// Kalenderjahresbetrag des Antragstellers, keine Anlagengröße. Abgezogen wird er
+        /// vom § 54-TEIL der Summe; ein § 53-Betrag derselben Rechnung wird davon nicht
+        /// berührt (sonst zahlte eine Anlage den Sockel einer anderen).</para>
         /// </summary>
         private static void Energiesteuer(SteuerEingabe e, Func<string, GesetzParameter> satz,
                                           CultureInfo kultur, SteuerErgebnis r)
         {
-            bool nach53 = string.Equals(e.EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_53,
-                                        StringComparison.Ordinal);
-            bool nach53a = string.Equals(e.EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_53A,
-                                         StringComparison.Ordinal);
-            // ETAPPE K6 — § 54 EnergieStG als dritte Wahl. Er hat, anders als § 53 und
-            // § 53a, zwei zusätzliche Bedingungen: die Unternehmensart und einen
-            // Sockelbetrag von 250 €/a.
-            bool nach54 = string.Equals(e.EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_54,
-                                        StringComparison.Ordinal);
-            if (!nach53 && !nach53a && !nach54)
+            // Trägt KEINE Anlage eine Wahl — weder eigene noch über den Projektrückfall —,
+            // ist der Regelfall für Bestandsprojekte erreicht: nichts gewählt, nichts
+            // gerechnet. Die Meldung erscheint nur, wenn überhaupt Brennstoff im Spiel
+            // ist; sonst wäre sie an jedem Wärmepumpenprojekt Rauschen.
+            if (!IrgendeineWahl(e))
             {
-                // Der Regelfall für Bestandsprojekte: nichts gewählt, nichts gerechnet.
-                // Die Meldung erscheint nur, wenn überhaupt ein BHKW Brennstoff
-                // verbraucht — sonst wäre sie an jedem Wärmepumpenprojekt Rauschen.
                 if (BrennstoffGesamt(e) > 0)
                     r.Begruendungen.Add(MyResource.Resource.STEUER_ENERGIEST_NICHT_GEWAEHLT);
                 return;
             }
 
-            // § 53a Abs. 5 setzt einen Jahresnutzungsgrad von mindestens 70 % voraus
-            // (§ 53a Abs. 1 EnergieStG). Die Schwelle steht im Katalog.
-            if (nach53a && !NutzungsgradErfuellt(e, satz, kultur, r)) return;
+            // Die 70-%-Prüfung des § 53a bleibt eine PROJEKTgröße (der Jahresnutzungsgrad
+            // steht in Tab_ProjektWirtschaftlichkeit). Sie wird deshalb höchstens EINMAL
+            // ausgeführt und ihre Begründung höchstens einmal angehängt — mehrere
+            // § 53a-Anlagen würden sonst denselben Satz mehrfach melden. Neu ist allein,
+            // dass sie den Lauf nicht mehr abbricht: Anlagen mit anderer Wahl rechnen
+            // weiter.
+            bool? nutzungsgradOk = null;
 
-            // § 54 setzt ein Unternehmen des produzierenden Gewerbes bzw. einen Betrieb
-            // der Land- und Forstwirtschaft voraus — dieselbe Bedingung wie § 9b.
-            if (nach54)
-            {
-                if (!ProduzierendesGewerbe(e))
-                {
-                    r.Begruendungen.Add(MyResource.Resource.STEUER_ENERGIEST_54_UNTERNEHMENSART);
-                    return;
-                }
-                // Die Bemessungsgrundlage ist eine bewusste Lücke und wird ausgewiesen,
-                // nicht verschwiegen (Begründung an DbWerte.ENERGIESTEUER_WAHL_54).
-                r.Begruendungen.Add(MyResource.Resource.STEUER_ENERGIEST_54_BEMESSUNG);
-            }
+            double summeGesamt = 0;      // alle Vorschriften zusammen
+            double summe54 = 0;          // der Teil, den der Sockel des § 54 mindert
 
-            double summe = 0;
             foreach (SteuerAnlage a in e.Anlagen)
             {
                 if (a == null || a.BrennstoffMWh <= 0) continue;
+
+                string wahl = Wahl(a, e);
+                bool nach53 = string.Equals(wahl, DbWerte.ENERGIESTEUER_WAHL_53, StringComparison.Ordinal);
+                bool nach53a = string.Equals(wahl, DbWerte.ENERGIESTEUER_WAHL_53A, StringComparison.Ordinal);
+                // ETAPPE K6 — § 54 EnergieStG als dritte Wahl. Er hat, anders als § 53
+                // und § 53a, zwei zusätzliche Bedingungen: die Unternehmensart und einen
+                // Sockelbetrag von 250 €/a.
+                bool nach54 = string.Equals(wahl, DbWerte.ENERGIESTEUER_WAHL_54, StringComparison.Ordinal);
+                if (!nach53 && !nach53a && !nach54) continue;   // diese Anlage: keine Wahl
+
+                // ETAPPE B3 — § 53/§ 53a setzen Stromerzeugung voraus.
+                if (!a.Stromerzeuger && !nach54)
+                {
+                    r.Begruendungen.Add(string.Format(kultur,
+                        T("STEUER_ENERGIEST_NUR_54",
+                          "{0}: § 53 und § 53a Abs. 5 EnergieStG entlasten nur Anlagen mit " +
+                          "Stromerzeugung. Für diese Anlage kommt allein § 54 EnergieStG in Betracht."),
+                        a.Klartext(kultur)));
+                    continue;
+                }
+
+                if (nach53a)
+                {
+                    if (!nutzungsgradOk.HasValue)
+                        nutzungsgradOk = NutzungsgradErfuellt(e, satz, kultur, r);
+                    if (!nutzungsgradOk.Value) continue;
+                }
+
+                // § 54 setzt ein Unternehmen des produzierenden Gewerbes bzw. einen
+                // Betrieb der Land- und Forstwirtschaft voraus — dieselbe Bedingung wie
+                // § 9b. Die Begründung wird über die Deduplizierung in
+                // WirtschaftlichkeitCtrl.BaueSteuerReihen ohnehin nur einmal ausgegeben.
+                //
+                // ENTFALLEN mit B3: die Pauschalzeile STEUER_ENERGIEST_54_BEMESSUNG
+                // („die Bemessungsgrundlage ist eine bewusste Lücke"). Sie war richtig,
+                // solange § 54 nur den BHKW-Brennstoff sah; jetzt steht der
+                // Kesselbrennstoff in der Anlagenliste, und die Lücke ist geschlossen.
+                // Der Ressourcenschlüssel bleibt in beiden .resx stehen — er wird nur
+                // nicht mehr erzeugt.
+                if (nach54 && !ProduzierendesGewerbe(e))
+                {
+                    r.Begruendungen.Add(MyResource.Resource.STEUER_ENERGIEST_54_UNTERNEHMENSART);
+                    continue;
+                }
 
                 string schluessel = nach53 ? a.SchluesselSatzVoll
                                            : (nach54 ? a.SchluesselSatz54 : a.SchluesselSatz53a);
@@ -279,9 +373,10 @@ namespace WindowsFormsApplication1
                 }
 
                 // § 53 entlastet den Brennstoff der Stromerzeugung. Welche Menge das ist,
-                // entscheidet die gewählte Aufteilungsmethode; § 53a Abs. 5 bemisst sich
-                // immer nach dem GESAMTeinsatz.
-                double brennstoffMWh = nach53 ? Stromanteil(e.AufteilungMethode, a) : a.BrennstoffMWh;
+                // entscheidet die gewählte Aufteilungsmethode — seit B3 die dieser Anlage,
+                // ersatzweise die des Projekts; § 53a Abs. 5 und § 54 bemessen sich immer
+                // nach dem GESAMTeinsatz.
+                double brennstoffMWh = nach53 ? Stromanteil(Methode(a, e), a) : a.BrennstoffMWh;
                 if (brennstoffMWh <= 0)
                 {
                     r.Begruendungen.Add(string.Format(kultur,
@@ -297,31 +392,95 @@ namespace WindowsFormsApplication1
                     continue;
                 }
 
-                summe += p.Wert.Value * menge.Value;
+                double betrag = p.Wert.Value * menge.Value;
+                summeGesamt += betrag;
+                if (nach54) summe54 += betrag;
                 r.Herkunft.Add(Herkunft(p, kultur));
             }
 
             // ETAPPE K6 — Sockelbetrag. Nur § 54 hat einen (250 €/Kalenderjahr);
             // § 53 und § 53a haben keinen (Grundlagen, Abschnitt 4). Er wird VOR dem
             // Ausweis abgezogen — dieselbe Mechanik wie bei § 9b StromStG.
-            if (nach54 && summe > 0)
+            //
+            // ETAPPE B3: Bezugsgröße ist der § 54-TEIL. Bei einem reinen § 54-Lauf (dem
+            // einzigen, den es bis B3 geben konnte) ist summe54 == summeGesamt, die
+            // Rechnung also zeilengleich der bisherigen. Deckt der Sockel den § 54-Teil,
+            // entfällt genau dieser Teil — ein § 53-Betrag derselben Rechnung bleibt.
+            if (summe54 > 0)
             {
                 GesetzParameter sockelZeile = satz(DbWerte.GESETZ_ENERGIEST_54_SOCKELBETRAG);
                 double sockel = sockelZeile != null && sockelZeile.Wert.HasValue
                               ? sockelZeile.Wert.Value : 0;
-                double netto = summe - sockel;
+                double netto = summe54 - sockel;
                 if (netto <= 0)
                 {
                     r.Begruendungen.Add(string.Format(kultur,
                         MyResource.Resource.STEUER_ENERGIEST_54_SOCKEL,
-                        summe.ToString("N2", kultur), sockel.ToString("N0", kultur)));
-                    return;                       // 0 € mit Hinweis, nie eine stille Null
+                        summe54.ToString("N2", kultur), sockel.ToString("N0", kultur)));
+                    summeGesamt -= summe54;       // 0 € mit Hinweis, nie eine stille Null
                 }
-                summe = netto;
-                if (sockelZeile != null) r.Herkunft.Add(Herkunft(sockelZeile, kultur));
+                else
+                {
+                    summeGesamt -= sockel;
+                    if (sockelZeile != null) r.Herkunft.Add(Herkunft(sockelZeile, kultur));
+                }
             }
 
-            r.EnergiesteuerEur = summe;
+            r.EnergiesteuerEur = summeGesamt;
+        }
+
+        /// <summary>
+        /// Die für eine Anlage geltende Entlastungsnorm: ihr eigener Wert, ersatzweise
+        /// der Projektwert (B3, BF6). Leer und <c>null</c> heißen beide „kein eigener
+        /// Wert" — das Rückfallmuster der E6-Textspalten.
+        /// </summary>
+        private static string Wahl(SteuerAnlage a, SteuerEingabe e)
+        {
+            string eigen = a.EnergiesteuerWahl == null ? null : a.EnergiesteuerWahl.Trim();
+            return string.IsNullOrEmpty(eigen) ? e.EnergiesteuerWahl : eigen;
+        }
+
+        /// <summary>Die für eine Anlage geltende Aufteilungsmethode — Rückfall wie bei
+        /// <see cref="Wahl"/>.</summary>
+        private static string Methode(SteuerAnlage a, SteuerEingabe e)
+        {
+            string eigen = a.AufteilungMethode == null ? null : a.AufteilungMethode.Trim();
+            return string.IsNullOrEmpty(eigen) ? e.AufteilungMethode : eigen;
+        }
+
+        /// <summary>
+        /// true, sobald IRGENDEINE Anlage eine der drei Normen auflöst. Nur dann ist
+        /// überhaupt etwas gewählt — und nur dann darf die Meldung „keine Entlastung
+        /// gewählt" ausbleiben.
+        /// </summary>
+        private static bool IrgendeineWahl(SteuerEingabe e)
+        {
+            foreach (SteuerAnlage a in e.Anlagen)
+            {
+                if (a == null) continue;
+                string w = Wahl(a, e);
+                if (string.Equals(w, DbWerte.ENERGIESTEUER_WAHL_53, StringComparison.Ordinal) ||
+                    string.Equals(w, DbWerte.ENERGIESTEUER_WAHL_53A, StringComparison.Ordinal) ||
+                    string.Equals(w, DbWerte.ENERGIESTEUER_WAHL_54, StringComparison.Ordinal))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Anzeigetext über den Ressourcenschlüssel, mit deutschem Rückfall — dasselbe
+        /// Muster wie in <see cref="KohaerenzPruefung"/>. Es hält neue Texte aus
+        /// <c>MyResource/Resource.Designer.cs</c> heraus, die Visual Studio selbst
+        /// regeneriert.
+        /// </summary>
+        private static string T(string schluessel, string rueckfall)
+        {
+            try
+            {
+                string s = MyResource.Resource.ResourceManager.GetString(schluessel);
+                return string.IsNullOrEmpty(s) ? rueckfall : s;
+            }
+            catch { return rueckfall; }
         }
 
         /// <summary>Produzierendes Gewerbe oder Land- und Forstwirtschaft — die

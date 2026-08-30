@@ -209,9 +209,12 @@ namespace WindowsFormsApplication1
             // an einer Bedingung scheitert (Nutzungsgrad, Unternehmensart, Einheit),
             // begründet SteuerGutschriftRechner bereits selbst. Eine zweite Meldung
             // darüber wäre Rauschen.
-            if (mitAnteil.Count > 0 &&
-                string.Equals(lauf.Steuer.EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_KEINE,
-                              StringComparison.Ordinal))
+            //
+            // ETAPPE B3 Paket a: „gewählt" heißt seither Projektwahl ODER Anlagenwahl
+            // (BF6). Ohne diese Erweiterung meldete die Prüfung „keine Entlastung
+            // gewählt", während eine Anlage längst nach § 53 entlastet wird — genau der
+            // Widerspruch, den sie aufdecken soll.
+            if (mitAnteil.Count > 0 && !EntlastungGewaehlt(lauf.Steuer))
                 liste.Add(new KohaerenzHinweis
                 {
                     Schwere = KohaerenzSchwere.HINWEIS,
@@ -220,6 +223,33 @@ namespace WindowsFormsApplication1
                             "keine Entlastung gewählt (§ 53 / § 53a Abs. 5 / § 54): {0}."),
                         string.Join(", ", mitAnteil.ToArray()))
                 });
+        }
+
+        /// <summary>
+        /// ETAPPE B3 Paket a — true, sobald IRGENDEINE Entlastungsnorm im Spiel ist:
+        /// entweder als Projektwahl oder als eigene Wahl einer Anlage
+        /// (<c>Tab_Energieanlagen.Energiesteuer_Wahl</c>, BF6).
+        ///
+        /// <para>Die Aufteilungsmethode bleibt außen vor — sie sagt nur, WIE bemessen
+        /// wird, nicht OB entlastet wird.</para>
+        /// </summary>
+        private static bool EntlastungGewaehlt(SteuerEingabe e)
+        {
+            if (Gewaehlt(e.EnergiesteuerWahl)) return true;
+            foreach (SteuerAnlage a in e.Anlagen)
+                if (a != null && Gewaehlt(a.EnergiesteuerWahl)) return true;
+            return false;
+        }
+
+        /// <summary>Eine Wahl ist gesetzt, wenn sie weder leer noch
+        /// <c>KEINE</c> ist — dasselbe Rückfallmuster wie im
+        /// <see cref="SteuerGutschriftRechner"/>.</summary>
+        private static bool Gewaehlt(string wahl)
+        {
+            if (string.IsNullOrEmpty(wahl)) return false;
+            string w = wahl.Trim();
+            return w.Length > 0 &&
+                   !string.Equals(w, DbWerte.ENERGIESTEUER_WAHL_KEINE, StringComparison.Ordinal);
         }
 
         /// <summary>

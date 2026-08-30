@@ -318,8 +318,9 @@ namespace WindowsFormsApplication1
                         string sqlM = "INSERT INTO " + TAB_BHKW_MODUL + " (" +
                             "ID, ID_ErgebnisBHKW, Modul, Waermeproduktion, Stromproduktion, Brennstoff, Verbrauch, carrier_id, " +
                             SchemaKatalog.SPALTE_MODUL_VBH_THERMISCH + ", " +
-                            SchemaKatalog.SPALTE_MODUL_VBH_ELEKTRISCH + ") " +
-                            "VALUES (?,?,?,?,?,?,?,?,?,?)";
+                            SchemaKatalog.SPALTE_MODUL_VBH_ELEKTRISCH + ", " +
+                            SchemaKatalog.SPALTE_MODUL_HILFSENERGIE + ") " +
+                            "VALUES (?,?,?,?,?,?,?,?,?,?,?)";
                         foreach (ErgebnisBHKWModulModel mo in m.BHKW.Module)
                         {
                             double anteil = basis > 0 ? mo.Waermeproduktion / basis : 1.0 / m.BHKW.Module.Count;
@@ -348,6 +349,12 @@ namespace WindowsFormsApplication1
                                 // unterscheidbar; dieselbe Begruendung wie bei Quellwaerme.
                                 c.Parameters.Add("@vth", OleDbType.Double).Value = R(mo.VbhThermisch);
                                 c.Parameters.Add("@vel", OleDbType.Double).Value = R(mo.VbhElektrisch);
+                                // ETAPPE B3 Paket a: Hilfsenergie. Paket a bildet sie noch
+                                // nicht, geschrieben wird deshalb 0 - und zwar IMMER, aus
+                                // derselben Begruendung wie bei den Vbh: sonst waere
+                                // "erhoben und null" von "nicht erhoben" (NULL) nicht mehr
+                                // unterscheidbar.
+                                c.Parameters.Add("@hen", OleDbType.Double).Value = R(mo.Hilfsenergie);
                                 c.ExecuteNonQuery();
                             }
                         }
@@ -404,8 +411,9 @@ namespace WindowsFormsApplication1
                         // Parametername @g war doppelt vergeben.
                         string sqlM = "INSERT INTO " + TAB_KESSEL_MODUL + " (" +
                             "ID, ID_ErgebnisHeizkessel, Modul, Waerme_Gas, Waerme_Oel, Waermeproduktion, " +
-                            "Brennstoff, Verbrauch, Jahresnutzungsgrad, carrier_id) " +
-                            "VALUES (?,?,?,?,?,?,?,?,?,?)";
+                            "Brennstoff, Verbrauch, Jahresnutzungsgrad, carrier_id, " +
+                            SchemaKatalog.SPALTE_MODUL_HILFSENERGIE + ") " +
+                            "VALUES (?,?,?,?,?,?,?,?,?,?,?)";
                         foreach (ErgebnisHeizkesselModulModel mo in m.Heizkessel.Module)
                         {
                             using (OleDbCommand c = new OleDbCommand(sqlM, conn, trans))
@@ -421,6 +429,9 @@ namespace WindowsFormsApplication1
                                 c.Parameters.Add("@j", OleDbType.Double).Value = R(mo.Jahresnutzungsgrad);
                                 c.Parameters.Add("@ca", OleDbType.Integer).Value =
                                     mo.CarrierId > 0 ? (object)mo.CarrierId : DBNull.Value;
+                                // ETAPPE B3 Paket a: Hilfsenergie des Kessels - Begruendung
+                                // wortgleich zur BHKW-Modulzeile weiter oben.
+                                c.Parameters.Add("@hen", OleDbType.Double).Value = R(mo.Hilfsenergie);
                                 c.ExecuteNonQuery();
                             }
                         }
@@ -808,6 +819,10 @@ namespace WindowsFormsApplication1
                         mo.CarrierId = I(rm, "carrier_id");
                         mo.VbhThermisch = D(rm, SchemaKatalog.SPALTE_MODUL_VBH_THERMISCH);
                         mo.VbhElektrisch = D(rm, SchemaKatalog.SPALTE_MODUL_VBH_ELEKTRISCH);
+                        // ETAPPE B3 Paket a: D() liefert 0, wenn die Spalte fehlt (Zeile
+                        // vor Schritt 61) oder NULL ist - genau die Behandlung, die
+                        // "keine Hilfsenergie" braucht.
+                        mo.Hilfsenergie = D(rm, SchemaKatalog.SPALTE_MODUL_HILFSENERGIE);
                         b.Module.Add(mo);
                     }
 
@@ -860,6 +875,8 @@ namespace WindowsFormsApplication1
                         mo.Verbrauch = D(rm, "Verbrauch");
                         mo.CarrierId = I(rm, "carrier_id");
                         mo.Jahresnutzungsgrad = D(rm, "Jahresnutzungsgrad");
+                        // ETAPPE B3 Paket a - Begruendung wie bei der BHKW-Modulzeile.
+                        mo.Hilfsenergie = D(rm, SchemaKatalog.SPALTE_MODUL_HILFSENERGIE);
                         h.Module.Add(mo);
                     }
 
@@ -1128,6 +1145,15 @@ namespace WindowsFormsApplication1
                     // führen keine zweite Liste.
                     ErgaenzeSpalte(conn, TAB_BHKW_MODUL, SchemaKatalog.SPALTE_MODUL_VBH_THERMISCH, "DOUBLE");
                     ErgaenzeSpalte(conn, TAB_BHKW_MODUL, SchemaKatalog.SPALTE_MODUL_VBH_ELEKTRISCH, "DOUBLE");
+
+                    // ETAPPE B3 Paket a - Rueckfallebene zu Migrationsschritt 61b, aus
+                    // derselben Not wie eine Zeile darueber: Beide Modul-INSERTs fuehren
+                    // die Hilfsenergie NAMENTLICH auf; fehlt die Spalte, scheitert nicht
+                    // nur die neue Groesse, sondern die ganze Modulzeile - und mit ihr
+                    // der Lauf. Die Namen kommen aus SchemaKatalog, Migration und
+                    // Rueckfallebene fuehren keine zweite Liste.
+                    ErgaenzeSpalte(conn, TAB_BHKW_MODUL, SchemaKatalog.SPALTE_MODUL_HILFSENERGIE, "DOUBLE");
+                    ErgaenzeSpalte(conn, TAB_KESSEL_MODUL, SchemaKatalog.SPALTE_MODUL_HILFSENERGIE, "DOUBLE");
                 }
             }
             catch { /* best effort - Spalten existieren dann ggf. schon */ }
