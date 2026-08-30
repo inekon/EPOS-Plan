@@ -2180,6 +2180,33 @@ namespace WindowsFormsApplication1
         public const string GESETZ_STROMST_CO2_GRENZWERT = "STROMST_CO2_GRENZWERT_HOCHEFFIZIENT";
         public const string GESETZ_STROMST_ERLAUBNISSCHWELLE = "STROMST_ERLAUBNISSCHWELLE_KW";
 
+        /// <summary>
+        /// ETAPPE B4 — <b>reduzierter Stromsteuersatz</b> energieintensiver Unternehmen
+        /// [ct/kWh oder EUR/MWh], die zweite Schnellwahl des Aufschlagsblocks
+        /// (<c>ucStromAufschlaege</c>).
+        ///
+        /// <para><b>Diese Zeile wird bewusst NICHT eingesaet.</b> B4 loest die
+        /// Konstanten in <c>StromAufschlagModel</c> als QUELLE ab (Befund A7), ohne eine
+        /// neue Zahl zu behaupten. Ein Restsatz nach § 9b ist kein eigener gesetzlicher
+        /// Steuersatz, sondern das, was nach der Entlastung stehen bleibt — und die
+        /// Leitentscheidung L4 verbietet ausdruecklich, ihn als Differenz aus
+        /// <see cref="GESETZ_STROMST_REGELSATZ"/> und
+        /// <see cref="GESETZ_STROMST_ENTLASTUNG_9B"/> zu RATEN. Solange niemand einen
+        /// belegten Satz pflegt, greift deshalb die Rueckfallebene
+        /// <c>StromAufschlagModel.STROMSTEUER_REDUZIERT</c> (0,050 ct/kWh).</para>
+        ///
+        /// <para><b>Nachpflege ohne Schemaschritt.</b> Wer den Satz belegen kann, legt
+        /// die Zeile in „Gesetzliche Parameter" (<c>Form_Gesetzesparameter</c>, Knopf
+        /// „Neu") mit Klasse <see cref="GESETZ_KLASSE_STROMSTEUER"/> und Einheit
+        /// <see cref="GESETZ_EINHEIT_CT_KWH"/> oder <see cref="GESETZ_EINHEIT_EUR_MWH"/>
+        /// an; die Schnellwahl liest sie ab dem naechsten Oeffnen des Traegerdialogs.
+        /// Der Schluessel steht hier, damit dieser Lesepfad ueberhaupt existiert —
+        /// eine leere Katalogzeile waere sonst wirkungslos.</para>
+        ///
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string GESETZ_STROMST_REDUZIERT = "STROMST_REDUZIERT_SATZ";
+
         // ----------------------------------------------- Schluessel Energiesteuer
         //   Grundlagen, Abschnitt 3. EINHEITENFALLE: Erdgas je MWh, Heizoel je
         //   1.000 Liter, Fluessiggas und Schweroel je 1.000 kg.
