@@ -1498,9 +1498,17 @@ namespace WindowsFormsApplication1
 
             if (projectSettings != null)
             {
-                numArbeitspreis.Value = (decimal)projectSettings.ArbeitspreisEurYear;
-                numGrundpreis.Value = (decimal)projectSettings.GrundpreisEurYear;
-                numLeistungspreis.Value = (decimal)projectSettings.LeistungspreisEurYear;
+                // Ä-BK3: Die drei Preisspalten dürfen NULL sein. Seit die
+                // Trägerzuordnung (EnergietraegerKatalogCtrl.InsProjekt) ihr
+                // Versprechen „es gelten die Katalogwerte" auch schreibt, kommt NULL
+                // hier regulär vor; der frühere nackte (decimal)-Cast warf dann
+                // (gemessen: RuntimeBinderException „Cannot convert null to
+                // 'decimal' because it is a non-nullable value type"). Rückfall ist derselbe
+                // Katalogwert, den auch der else-Zweig ohne Projektzeile setzt —
+                // gleiche Spalte, gleiche Einheit, gleiches Zielfeld.
+                numArbeitspreis.Value = (decimal)(projectSettings.ArbeitspreisEurYear ?? _carrier.price_work);
+                numGrundpreis.Value = (decimal)(projectSettings.GrundpreisEurYear ?? _carrier.price_base);
+                numLeistungspreis.Value = (decimal)(projectSettings.LeistungspreisEurYear ?? _carrier.price_power);
 
                 numHeizwert.Value = (decimal)(projectSettings.CustomHi ?? _carrier.HiKwhPerUnit);
                 numBrennwert.Value = (decimal)(projectSettings.CustomHs ?? _carrier.HsKwhPerUnit);
@@ -1518,13 +1526,20 @@ namespace WindowsFormsApplication1
                 _baseSO2 = (double)numSO2.Value;
                 _baseNOx = (double)numNOx.Value;
 
-                string project_conversion = GetTargetUnitByConversionId(projectSettings.IDUmrechnung);
+                // Ä-BK3: ID_Umrechnung darf NULL sein — SpeichereWerte schreibt bei
+                // leerer Auswahl selbst DBNull, und die Trägerzuordnung trägt seit
+                // BK3 -1 ein, wenn es keine Identitätsregel gibt. Der dynamic-Aufruf
+                // reichte NULL bisher in einen int-Parameter und warf
+                // (RuntimeBinderException); -1 findet planmäßig keine Regel und lässt
+                // die Vorwahl schlicht aus.
+                int idUmrechnung = projectSettings.IDUmrechnung ?? -1;
+                string project_conversion = GetTargetUnitByConversionId(idUmrechnung);
                 var selectedUnit = _conversions.FirstOrDefault(c => c.ToUnitCode == project_conversion);
 
                 if (selectedUnit != null)
                 {
                     cmbUnit.SelectedItem = selectedUnit;
-                    id_conversion = projectSettings.IDUmrechnung ?? -1;
+                    id_conversion = idUmrechnung;
                 }
             }
             else

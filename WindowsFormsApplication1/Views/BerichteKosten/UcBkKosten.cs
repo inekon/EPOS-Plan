@@ -875,7 +875,9 @@ namespace WindowsFormsApplication1
 
                     // Weder Projekt- noch Katalogpreis gepflegt: der Träger kann keine
                     // Energiekosten erzeugen. Der Grund gehört in die Statuszeile, nicht nur
-                    // die 0,0000 in die Tabelle.
+                    // die 0,0000 in die Tabelle. Ä-BK3: LiesPreise liefert dafür jetzt selbst
+                    // null (Rechnerkette), die Preisspalte zeigt also „—" statt „0,0000";
+                    // die Betragsprüfung bleibt als zweite Sicherung stehen.
                     bool ohnePreis = !preis.HasValue || Math.Abs(preis.Value) < 1e-9;
                     if (ohnePreis) _traegerOhnePreis.Add(S(r, "name"));
 
@@ -1096,11 +1098,27 @@ namespace WindowsFormsApplication1
             catch { return rueckfall; }
         }
 
+        /// <summary>
+        /// Arbeits- und Grundpreis eines Trägers — <b>dieselbe Vorrangkette wie
+        /// <c>KostenEmissionRechner.LadeTraeger</c></b>, damit Tabelle, Rechner und
+        /// Fußzeile denselben Träger gleich beurteilen (Ä-BK3).
+        ///
+        /// <para><b>Arbeitspreis: 0 zählt als NICHT GEPFLEGT</b> (Befund D5) —
+        /// Projektwert nur, wenn &gt; 0, sonst Katalogwert nur, wenn &gt; 0, sonst
+        /// gar keiner. Vorher kam die 0 als gültiger Preis durch und stand als
+        /// „0,0000" in der Spalte, während Rechner und Fußzeile denselben Träger
+        /// bereits als preislos führten; die Zelle zeigt jetzt „—".</para>
+        ///
+        /// <para><b>Der Grundpreis bleibt bei „Projektwert vor Katalogwert"</b>,
+        /// die 0 ausdrücklich eingeschlossen: 0 €/a ist dort ein üblicher und
+        /// gültiger Vertragswert (Abgrenzung wie im Rechner).</para>
+        /// </summary>
         private void LiesPreise(int carrierId, out double? arbeit, out double? grund)
         {
             arbeit = null; grund = null;
             if (carrierId <= 0) return;
 
+            double? sArbeit = null, sGrund = null;
             try
             {
                 DataTable s = DataRepository.GetDataTable(
@@ -1109,14 +1127,13 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("@p", _idProjekt), new OleDbParameter("@c", carrierId));
                 if (s != null && s.Rows.Count > 0)
                 {
-                    arbeit = D(s.Rows[0], "custom_price_work");
-                    grund = D(s.Rows[0], "custom_price_base");
+                    sArbeit = D(s.Rows[0], "custom_price_work");
+                    sGrund = D(s.Rows[0], "custom_price_base");
                 }
             }
             catch { }
 
-            if (arbeit.HasValue && grund.HasValue) return;
-
+            double? kArbeit = null, kGrund = null;
             try
             {
                 DataTable k = DataRepository.GetDataTable(
@@ -1124,11 +1141,15 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("@c", carrierId));
                 if (k != null && k.Rows.Count > 0)
                 {
-                    if (!arbeit.HasValue) arbeit = D(k.Rows[0], "price_work");
-                    if (!grund.HasValue) grund = D(k.Rows[0], "price_base");
+                    kArbeit = D(k.Rows[0], "price_work");
+                    kGrund = D(k.Rows[0], "price_base");
                 }
             }
             catch { }
+
+            arbeit = (sArbeit.HasValue && sArbeit.Value > 0) ? sArbeit
+                   : ((kArbeit.HasValue && kArbeit.Value > 0) ? kArbeit : null);
+            grund = sGrund ?? kGrund;
         }
 
         // ------------------------------------------------------------- Aktionen

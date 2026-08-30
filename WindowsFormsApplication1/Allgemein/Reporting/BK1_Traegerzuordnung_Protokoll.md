@@ -69,8 +69,10 @@ Bestandsprojekte heilen beim nächsten Wizard-Speichern.
 > 10,68 mit Kopie), der Brennerweg wechselt gewollt von 240 auf 201. Preise,
 > Heizwerte und Umrechnungssatz bleiben Bestandsverhalten. Bestandszeilen wurden
 > nicht angefasst (die 7 Zeilen 560/200/280 stehen unverändert). Der manuelle Weg
-> `EnergietraegerKatalogCtrl.InsProjekt` kopierte nie Emissionen und blieb
-> unverändert. Nachweise: Harness `..\dev\bk2\`.
+> `EnergietraegerKatalogCtrl.InsProjekt` kopierte nie Emissionen und blieb in BK2
+> unverändert — er schrieb allerdings, was BK2 gleich mitmaß, auf ALLE nicht
+> genannten Spalten den Access-Default 0 statt NULL; das hat Etappe BK3 gerichtet
+> (`BK3_InsProjekt_Defaultspalten_Protokoll.md`). Nachweise: Harness `..\dev\bk2\`.
 
 Der ursprüngliche Befund, unverändert:
 
