@@ -27,13 +27,39 @@
         /// <summary>Umlagen [ct/kWh] - Summe aus 0,446 + 1,559 + 0,941 (Fachkonzept 4.2).</summary>
         public const double UMLAGEN_VORGABE = 2.946;
 
-        /// <summary>Stromsteuer im Regelfall [ct/kWh].</summary>
+        /// <summary>
+        /// Stromsteuer im Regelfall [ct/kWh].
+        ///
+        /// <para><b>ETAPPE B4 (BW4): Rueckfallebene, nicht Quelle.</b> Die Schnellwahl
+        /// der Oberflaeche liest seit B4 den Gesetzeskatalog
+        /// (<c>DbWerte.GESETZ_STROMST_REGELSATZ</c>, 20,50 EUR/MWh ab 2026 = 2,050
+        /// ct/kWh) und nicht mehr diese Konstante — damit ist die von Befund A7
+        /// benannte doppelte Wahrheit aufgeloest. Der Wert hier greift nur noch, wenn
+        /// der Katalog fuer das Bilanzjahr nichts liefert, und ist mit dem Katalogsatz
+        /// ausdruecklich WERTGLEICH: Er darf nicht fuer sich fortgeschrieben werden.
+        /// Eine Satzaenderung ist eine neue Jahreszeile im Katalog.</para>
+        ///
+        /// <para><b>Der Leseweg bleibt unberuehrt.</b> <c>StromAufschlagCtrl.Read</c>
+        /// setzt bei NULL weiterhin diesen Wert als Vorschlag ein (siehe
+        /// <see cref="Stromsteuer"/>) — B4 hat nur die KNOPF-Quelle umgestellt, nicht
+        /// die Semantik des Lesewegs; alles andere waere ergebniswirksam.</para>
+        /// </summary>
         public const double STROMSTEUER_REGELFALL = 2.050;
 
         /// <summary>
         /// Stromsteuer fuer energieintensive Unternehmen mit Stromsteuerreduktion
         /// [ct/kWh]. Die zweite Schnellwahl der Oberflaeche; sie erklaert den
         /// Widerspruch der V7-Mappe (Parameterblock 0,05 - Variantenblaetter 2,05).
+        ///
+        /// <para><b>ETAPPE B4 (BW4): Rueckfallebene, nicht Quelle</b> — mit einer
+        /// Einschraenkung, die im Bestand die Regel ist: Fuer den reduzierten Satz
+        /// fuehrt der Katalog <b>keine</b> Zeile. Der Schluessel
+        /// <c>DbWerte.GESETZ_STROMST_REDUZIERT</c> existiert, ist aber nicht eingesaet
+        /// (L4: Steuersatz und Entlastungssatz sind getrennte Groessen — der Restsatz
+        /// nach § 9b darf nicht als Differenz geraten werden). Bis jemand ihn ueber
+        /// „Gesetzliche Parameter" nachpflegt, ist diese Konstante der wirksame Wert;
+        /// die Oberflaeche weist das im Kurzhinweis des Knopfes aus, statt eine
+        /// Katalogherkunft vorzutaeuschen.</para>
         /// </summary>
         public const double STROMSTEUER_REDUZIERT = 0.050;
 
