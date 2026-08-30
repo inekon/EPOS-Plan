@@ -43,6 +43,43 @@ zuschlagsberechtigt. Für Wärme-/Kältenetze und -speicher gilt Analoges.
 Der beihilferechtliche Genehmigungsvorbehalt für Anlagen > 300 MW wurde zum
 01.04.2025 aufgehoben.
 
+### 1.2a Worauf der Zuschlag bemessen wird — KWK-Strom und Nettostromerzeugung
+
+*Nachgetragen 30.08.2026. Diese Definitionskette fehlte bislang; die Software hat die Regel
+implementiert, ohne dass sie hier belegt war.*
+
+§ 7 zahlt den Zuschlag auf **KWK-Strom** — Abs. 1 auf den „in ein Netz der allgemeinen Versorgung
+eingespeist(en)", Abs. 2 auf den „nicht … eingespeist(en)". Was KWK-Strom ist, sagt § 2:
+
+> **§ 2 Nr. 16:** „KWK-Strom ist das rechnerische Produkt aus Nutzwärme und Stromkennzahl der
+> KWK-Anlage; bei Anlagen, die nicht über Vorrichtungen zur Abwärmeabfuhr verfügen, ist die
+> gesamte Nettostromerzeugung KWK-Strom."
+
+> **§ 2 Nr. 20:** „Nettostromerzeugung ist die an den Generatorklemmen gemessene Stromerzeugung
+> einer Anlage abzüglich des Stromverbrauchs der Stromerzeugungsanlage oder von deren Neben- und
+> Hilfsanlagen."
+
+**Daraus folgen zwei verschiedene Bemessungsgrundlagen:**
+
+| Anlage | KWK-Strom ist | Wirkung des Hilfsstroms |
+|---|---|---|
+| **ohne** Vorrichtung zur Abwärmeabfuhr | die gesamte **Nettostromerzeugung** | mindert die Bemessungsgrundlage (§ 2 Nr. 20) |
+| **mit** Vorrichtung zur Abwärmeabfuhr (Notkühler) | **Nutzwärme × Stromkennzahl** | hängt an der genutzten Wärme, nicht an der Stromerzeugung |
+
+Der zweite Fall ist bei größeren BHKW der Regelfall und kann bei Wärmeüberschuss deutlich unter
+der Nettostromerzeugung liegen. **Die Bruttostromerzeugung an den Generatorklemmen ist in keinem
+der beiden Fälle die Bemessungsgrundlage.**
+
+> **Folge für die Software.** EPOS-Plan rechnet ausschließlich den ersten Fall und führt weder ein
+> Kennzeichen „Vorrichtung zur Abwärmeabfuhr" noch eine Stromkennzahl. Für Anlagen mit Notkühler
+> fällt der Zuschlag deshalb zu hoch aus — offener Punkt K-1 in
+> [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md).
+>
+> **Nicht verwechseln:** Die Stromkennzahl des KWKG hat nichts mit dem Energiesteuerrecht zu tun —
+> dort kommt sie nicht vor (Abschnitt 3.5).
+
+*Quelle: KWKG 2025 §§ 2 und 7, gesetze-im-internet.de, abgerufen 30.08.2026.*
+
 ### 1.3 Zuschlagssätze (§ 7)
 
 **Eingespeister KWK-Strom (Abs. 1):**
