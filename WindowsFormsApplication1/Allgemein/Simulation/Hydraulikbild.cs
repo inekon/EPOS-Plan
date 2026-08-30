@@ -18,11 +18,31 @@ namespace WindowsFormsApplication1
     /// schreiben". Also wandert sie hierher; <see cref="WaermesenkeClass.RingMeldung"/>
     /// ruft sie auf und rechnet nichts mehr selbst.
     ///
-    /// <b>Verhalten unverändert.</b> Abfrage, Reihenfolge der Zeilen, die Bedingung
-    /// „lädt" (Puffer-ID auf einem Senkenfeld UND ein Puffer-Ziel dazu), die
-    /// Einschränkung auf Wärmepumpe und Heizkessel (Befund E-K2-2) und die
-    /// Ebenen-Relaxation sind Zeile für Zeile die aus D5b. Die Abfrage holt nur
-    /// zusätzliche SPALTEN — dieselben Zeilen in derselben Ordnung.
+    /// <b>Verhalten bei der Verschiebung unverändert (D4).</b> Die Bedingung „lädt"
+    /// (Puffer-ID auf einem Senkenfeld UND ein Puffer-Ziel dazu), die Einschränkung auf
+    /// Wärmepumpe und Heizkessel (Befund E-K2-2) und die Ebenen-Relaxation waren Zeile
+    /// für Zeile die aus D5b; die Abfrage holte nur zusätzliche SPALTEN. Was sich
+    /// seither geändert hat, steht im nächsten Absatz.
+    ///
+    /// <b>NACHZUG A1 — die Senken kommen aus <c>Z_AnlageSenke</c>.</b> Bis hierher las
+    /// diese Klasse als letzter Leser die stillgelegten Altspalten
+    /// <c>WS_Ziel</c>/<c>WS_ID_Puffer</c>/<c>WS_Ziel2</c>/<c>WS_ID_Puffer2</c>, während der
+    /// Senkendialog seit Paket A1 AUSSCHLIESSLICH nach <c>Z_AnlageSenke</c> schreibt
+    /// (<c>Form_Waermesenke.ListeSpeichern</c>). Wer im Dialog eine Senke setzte, blieb
+    /// damit für Ring- und Rechenebenenprüfung unsichtbar: Der Ladebezug stand in der
+    /// neuen Tabelle, das Bild fragte die alte. Karten, Schema-Ansicht und Ladeordnung
+    /// lasen längst die Senkenliste (<c>SchemaModell.SenkenlistenLesen</c>,
+    /// <c>Ladeordnung.Ladereihenfolge</c>) — dieses Bild zieht nach, über denselben
+    /// Leseweg <c>Z_AnlageSenkeCtrl.LesenJeProjekt</c>. Die WS_*-Spalten werden hier
+    /// nicht mehr gelesen.
+    ///
+    /// <b>Mehrsenken (Rang 1..n).</b> Der Altweg kannte genau zwei Senkenplätze. Die
+    /// LADERABBILDUNG <see cref="LaderJePuffer"/> läuft jetzt über ALLE Ränge — ein
+    /// Speicher, den erst eine drittrangige Senke lädt, hat damit auch hier seinen
+    /// Lader. <see cref="AnlagenEintrag.Senkenliste"/> trägt die vollständige Kette;
+    /// <see cref="AnlagenEintrag.Senke"/> bleibt als Zwei-Platz-Sicht bestehen
+    /// (führende Senke = Rang 1, zweiter Platz = die nächste Puffersenke darüber) —
+    /// siehe <see cref="SenkeAusListe"/>.
     ///
     /// <b>Zwei Auflösungen der Quellidentität, mit Absicht.</b>
     /// <list type="bullet">
@@ -78,7 +98,21 @@ namespace WindowsFormsApplication1
             public int Vorlauf;
             public int Ruecklauf;
 
-            /// <summary>Haupt- und Zweitsenke (Konzept 5.3), bereits normalisiert.</summary>
+            /// <summary>
+            /// Die GEORDNETE SENKENLISTE der Anlage aus <c>Z_AnlageSenke</c>, Rang
+            /// aufsteigend (Nachzug A1). Nie <c>null</c>, nie leer: Eine Anlage ohne
+            /// eigene Zeile bekommt die Rang-1-Vorbelegung <c>Heizkreis/Beides</c> —
+            /// dieselbe Invariante, mit der Engine und Schema-Ansicht für sie rechnen.
+            /// </summary>
+            public List<Z_AnlageSenkeModel> Senkenliste = new List<Z_AnlageSenkeModel>();
+
+            /// <summary>
+            /// Haupt- und Zweitsenke (Konzept 5.3), bereits normalisiert — die
+            /// ZWEI-PLATZ-SICHT auf <see cref="Senkenliste"/> (Nachzug A1, vorher aus den
+            /// Altspalten <c>WS_*</c>). Ränge ab 3 bildet sie nicht ab; wer die ganze
+            /// Kette braucht, nimmt <see cref="Senkenliste"/>, und die Laderabbildung
+            /// <see cref="LaderJePuffer"/> läuft ohnehin über alle Ränge.
+            /// </summary>
             public WaermesenkeClass.SenkeDaten Senke = new WaermesenkeClass.SenkeDaten();
 
             /// <summary>true = diese Erzeugerart darf überhaupt eine Wärmequelle wählen.</summary>
@@ -105,8 +139,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Puffer → Anlagen, die ihn LADEN. Bedingung wie in
-        /// <c>Ladeordnung.Ladereihenfolge</c>: Puffer-ID auf einem der beiden
-        /// Senkenfelder UND ein Puffer-Ziel dazu.
+        /// <c>Ladeordnung.Ladereihenfolge</c>: Puffer-ID auf einer Senkenzeile UND ein
+        /// Puffer-Ziel dazu — seit dem Nachzug A1 über ALLE Ränge der Senkenliste
+        /// statt über die zwei Altspalten-Plätze.
         /// </summary>
         public readonly Dictionary<int, List<int>> LaderJePuffer = new Dictionary<int, List<int>>();
 
@@ -128,21 +163,42 @@ namespace WindowsFormsApplication1
             // Die Rücklaufspalte trägt in Tab_Energieanlagen den UMLAUT (Befund B0-4,
             // siehe ProjektPuffer.SQL_SYSTEM_RUECKLAUF), der LEFT JOIN auf Tab_WP liefert
             // die Bauart für die Quellenanzeige der Wärmepumpe.
+            //
+            // NACHZUG A1: Die WS_*-Spalten sind aus der Auswahl heraus - die Senken kommen
+            // aus Z_AnlageSenke (siehe unten). Die Sortierung stellt eine ungepflegte
+            // Priorität ans ENDE (Ladeordnung.SqlAnlagenprio, ANLAGENPRIO_UNGEPFLEGT);
+            // vorher drängte sich eine frisch angelegte Anlage vor die konfigurierte.
             DataTable dt = StilleDb.Tabelle(
                 "SELECT a.ID, a.ID_Type, a.Bezeichner, a.Prioritaet, " +
                 "       a.Vorlauf, a.[Rücklauf] AS Ruecklauf, " +
                 "       a.WQ_Typ, a.WQ_Temp, a.WQ_ID_Puffer, a.WQ_Puffer, " +
-                "       a.WS_Ziel, a.WS_ID_Puffer, a.WS_Typ, a.WS_Ladeprio, a.WS_Ladegrenze, a.WS_Ladeprio_PV, " +
-                "       a.WS_Ziel2, a.WS_ID_Puffer2, a.WS_Ladeprio2, a.WS_Ladegrenze2, " +
                 "       w.Typ AS WPTyp " +
                 "FROM Tab_Energieanlagen AS a LEFT JOIN Tab_WP AS w ON a.ID_WP = w.ID " +
                 "WHERE a.ID_Projekt = ? AND a.ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ") " +
-                "ORDER BY a.Prioritaet, a.ID",
+                "ORDER BY " + Ladeordnung.SqlAnlagenprio("a") + ", a.ID",
                 StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
             if (dt == null) return null;
 
             Hydraulikbild bild = new Hydraulikbild();
             bild.ID_Projekt = idProjekt;
+
+            // Die SENKEN des ganzen Projekts in EINER Abfrage - derselbe Leseweg, den
+            // SchemaModell.SenkenlistenLesen und Warnkriterien.Projektbild.SenkenLesen
+            // benutzen. Ein Aufruf je Anlage wäre hier ein N+1 mitten im Dialogaufbau.
+            Dictionary<int, List<Z_AnlageSenkeModel>> senken =
+                new Dictionary<int, List<Z_AnlageSenkeModel>>();
+            foreach (Z_AnlageSenkeModel z in new Z_AnlageSenkeCtrl().LesenJeProjekt(idProjekt))
+            {
+                if (z == null || z.ID_Anlage <= 0) continue;
+
+                List<Z_AnlageSenkeModel> kette;
+                if (!senken.TryGetValue(z.ID_Anlage, out kette))
+                {
+                    kette = new List<Z_AnlageSenkeModel>();
+                    senken[z.ID_Anlage] = kette;
+                }
+                kette.Add(z);
+            }
 
             foreach (DataRow r in dt.Rows)
             {
@@ -161,7 +217,13 @@ namespace WindowsFormsApplication1
                 a.WQ_Temp = StilleDb.Kommazahl(StilleDb.Feld(r, "WQ_Temp"));
                 a.WQ_ID_Puffer = StilleDb.Zahl(StilleDb.Feld(r, "WQ_ID_Puffer"));
                 a.WQ_Puffer = StilleDb.Text(StilleDb.Feld(r, "WQ_Puffer"));
-                a.Senke = WaermesenkeClass.AusDatenzeile(r);
+
+                List<Z_AnlageSenkeModel> kette;
+                if (!senken.TryGetValue(id, out kette) || kette.Count == 0)
+                    kette = RangEinsVorbelegung(id);
+
+                a.Senkenliste = kette;
+                a.Senke = SenkeAusListe(kette);
 
                 bild.Anlagen.Add(a);
                 bild.JeId[id] = a;
@@ -174,11 +236,92 @@ namespace WindowsFormsApplication1
                     a.WQ_ID_Puffer > 0)
                     bild.QuelleJeAnlage[id] = a.WQ_ID_Puffer;
 
-                bild.LaderEintragen(id, a.Senke.Ziel, a.Senke.ID_Puffer);
-                bild.LaderEintragen(id, a.Senke.Ziel2, a.Senke.ID_Puffer2);
+                // Über ALLE Ränge (Nachzug A1) statt über die zwei Altslots.
+                foreach (Z_AnlageSenkeModel z in kette)
+                    if (z != null) bild.LaderEintragen(id, z.Ziel, z.ID_Puffer);
             }
 
             return bild;
+        }
+
+        /// <summary>
+        /// Die RANG-1-VORBELEGUNG <c>Heizkreis/Beides</c> für eine Anlage ohne eigene
+        /// Zeile in <c>Z_AnlageSenke</c> (Konzept 5.1, Rang-1-Invariante).
+        ///
+        /// <para>Dasselbe, was <c>WaermesenkeClass.SenkenlistenLaden</c> für die Engine
+        /// und <c>SchemaModell.SenkenlistenLesen</c> für die Zeichnung anlegen — hier
+        /// still, denn dieses Bild wird aus Dialogen heraus gebaut und dürfte nichts in
+        /// das Protokoll des nächsten Laufs schreiben.</para>
+        /// </summary>
+        private static List<Z_AnlageSenkeModel> RangEinsVorbelegung(int idAnlage)
+        {
+            List<Z_AnlageSenkeModel> kette = new List<Z_AnlageSenkeModel>();
+            kette.Add(new Z_AnlageSenkeModel
+            {
+                ID_Anlage = idAnlage,
+                Rang = 1,
+                Ziel = DbWerte.WS_ZIEL_HEIZKREIS,
+                Bedarfsart = WaermequelleClass.SENKE_BEIDES
+            });
+            return kette;
+        }
+
+        /// <summary>
+        /// Die ZWEI-PLATZ-SICHT <see cref="WaermesenkeClass.SenkeDaten"/> aus der
+        /// geordneten Senkenliste (Nachzug A1).
+        ///
+        /// <para><b>Die Ranglogik.</b> FÜHRENDE Senke ist Rang 1 — die erste Zeile der
+        /// nach Rang sortierten Liste; sie besetzt Ziel/Puffer/Bedarfsart und die
+        /// Ladeparameter des ersten Platzes. Den ZWEITEN Platz bekommt die nächste
+        /// PUFFERSENKE darüber (kleinster Rang &gt; 1 mit Puffer-Ziel). Das ist genau die
+        /// Umkehrung der Migration, die <c>WS_*</c> nach Rang 1 und <c>WS_*2</c> nach
+        /// Rang 2 überführt hat: <c>Ziel2</c> konnte konstruktiv nur ein Puffer-Ziel
+        /// tragen (<c>WaermesenkeClass.Normalisieren</c> räumt jedes andere weg), eine
+        /// Direktsenke ab Rang 2 ist in dieser Sicht nicht darstellbar.</para>
+        ///
+        /// <para>Ränge ab 3 fallen aus der Zwei-Platz-Sicht heraus — für die beiden
+        /// Auswerter, die sie benutzen, ist das ohne Belang: Die Schema-Ansicht fragt
+        /// <c>Senke.Bedarfsart</c> ausschließlich für eine Anlage, deren Rang 1 eine
+        /// Direktsenke ist (<c>SchemaModell.DirektAbschliessen</c>), und die Warnprüfung
+        /// greift auf sie nur zurück, wenn die Anlage überhaupt keine Zeile hat
+        /// (<c>Warnkriterien.Projektbild.AusBildSenke</c>). Die vollständige Kette
+        /// steht in <see cref="AnlagenEintrag.Senkenliste"/>, die Laderabbildung läuft
+        /// über alle Ränge.</para>
+        ///
+        /// <para><see cref="WaermesenkeClass.Normalisieren"/> läuft zum Schluss wie
+        /// bisher: Ein Puffer-Ziel ohne Puffer ist kein Ziel (Befund N5), und die
+        /// Feldregeln bleiben dieselben wie auf dem Altweg.</para>
+        /// </summary>
+        private static WaermesenkeClass.SenkeDaten SenkeAusListe(List<Z_AnlageSenkeModel> kette)
+        {
+            WaermesenkeClass.SenkeDaten d = new WaermesenkeClass.SenkeDaten();
+            if (kette == null || kette.Count == 0) return d;
+
+            Z_AnlageSenkeModel eins = kette[0];
+            if (eins != null)
+            {
+                d.Ziel = eins.Ziel;
+                d.ID_Puffer = eins.ID_Puffer;
+                d.Bedarfsart = eins.Bedarfsart;
+                d.Ladeprio = eins.Ladeprio;
+                d.Ladegrenze = eins.Ladegrenze;
+                d.LadeprioPV = eins.Ladeprio_PV;
+            }
+
+            for (int i = 1; i < kette.Count; i++)
+            {
+                Z_AnlageSenkeModel z = kette[i];
+                if (z == null || !WaermesenkeClass.IstPufferZiel(z.Ziel)) continue;
+
+                d.Ziel2 = z.Ziel;
+                d.ID_Puffer2 = z.ID_Puffer;
+                d.Ladeprio2 = z.Ladeprio;
+                d.Ladegrenze2 = z.Ladegrenze;
+                break;
+            }
+
+            WaermesenkeClass.Normalisieren(d);
+            return d;
         }
 
         /// <summary>Trägt eine Anlage als LADER eines Puffers ein (Bedingung wie Ladeordnung).</summary>

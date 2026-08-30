@@ -398,7 +398,9 @@ namespace WindowsFormsApplication1
                 "       w.Typ AS WPTyp " +
                 "FROM Tab_Energieanlagen AS a LEFT JOIN Tab_WP AS w ON a.ID_WP = w.ID " +
                 "WHERE a.ID_Projekt=" + m_ID_Projekt + " AND a.ID_Type=" + typ +
-                " ORDER BY a.Prioritaet, a.ID");
+                // Ungepflegte Priorität (NULL oder 0) ans ENDE, nicht an den Anfang -
+                // dieselbe Regel wie in der Ladeordnung (ANLAGENPRIO_UNGEPFLEGT).
+                " ORDER BY " + Ladeordnung.SqlAnlagenprio("a") + ", a.ID");
             if (dt == null) return anlagen;
 
             Dictionary<int, List<Z_AnlageSenkeModel>> senken = SenkenJeAnlage();

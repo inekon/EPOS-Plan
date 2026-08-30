@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
+using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -49,6 +50,34 @@ namespace WindowsFormsApplication1
         /// stünde eine ungepflegte Anlage vor jeder gepflegten (1 = zuerst).
         /// </summary>
         public const int ANLAGENPRIO_UNGEPFLEGT = 99;
+
+        /// <summary>
+        /// Dieselbe Regel als SQL-Ausdruck, für jeden Leser, der Anlagen direkt in der
+        /// Datenbank nach <c>Tab_Energieanlagen.Prioritaet</c> ordnet.
+        ///
+        /// <para><b>Warum das nötig ist.</b> In der Datenbank steht die nicht gepflegte
+        /// Priorität als NULL oder 0, und ACE sortiert beides VOR die 1. Ein
+        /// <c>ORDER BY Prioritaet, ID</c> stellt damit jede frisch angelegte Anlage vor
+        /// die konfigurierte — genau umgekehrt zu dem, was
+        /// <see cref="ANLAGENPRIO_UNGEPFLEGT"/> für die Ladeordnung längst festlegt
+        /// (siehe <see cref="SortierenNachLadeprio"/>, dritte Stufe der Kette). Auf den
+        /// Erzeugerkarten erbt die vorderste Karte eines Typs außerdem die Pfeil- und
+        /// Entfernen-Knöpfe; die ungepflegte Anlage nahm sie der konfigurierten weg.</para>
+        ///
+        /// <para>Der Ausdruck steht hier und nicht in den Abfragen, damit die Regel EINE
+        /// bleibt: Zahl und Bedingung stehen genau einmal da, direkt neben der Konstante,
+        /// aus der sie kommen.</para>
+        ///
+        /// <paramref name="alias"/> ist der Tabellen-Alias der Abfrage (z. B. <c>"a"</c>);
+        /// leer oder <c>null</c> für eine Abfrage ohne Alias.
+        /// </summary>
+        public static string SqlAnlagenprio(string alias)
+        {
+            string t = string.IsNullOrEmpty(alias) ? "" : alias + ".";
+            return "IIF(" + t + "Prioritaet IS NULL OR " + t + "Prioritaet = 0, " +
+                   ANLAGENPRIO_UNGEPFLEGT.ToString(CultureInfo.InvariantCulture) + ", " +
+                   t + "Prioritaet)";
+        }
 
         /// <summary>Kaskadenposition einer Anlage, die in <c>Tool_1..4</c> nicht vorkommt.</summary>
         public const int KASKADE_UNBEKANNT = 99;

@@ -249,8 +249,12 @@ namespace WindowsFormsApplication1
         // Anlage aus den Altspalten WS_* und belieferte damit den Senkendialog; der liest
         // seine Liste seit S1 aus Z_AnlageSenke und seine Verbundmitglieder aus
         // VerbundLesen. Ein zweiter Lesepfad auf eine Ablage, die niemand mehr schreibt,
-        // wäre ab hier eine Falle. AusDatenzeile bleibt - Hydraulikbild und die
-        // Übergangsfassung SenkenLaden lesen darüber weiter.
+        // wäre ab hier eine Falle.
+        //
+        // NACHZUG A1: AusDatenzeile hat nur noch EINEN Aufrufer, die Übergangsfassung
+        // SenkenLaden (BHKW-Modul). Hydraulikbild las bis dahin ebenfalls darüber und
+        // war damit der letzte Leser der WS_*-Spalten außerhalb der Schutznetze; es
+        // baut seine Senken jetzt aus Z_AnlageSenke (Hydraulikbild.SenkeAusListe).
 
         /// <summary>
         /// Die zusätzlichen Verbundmitglieder einer Anlage (Paket Parallelverbund); nie
@@ -1372,7 +1376,9 @@ namespace WindowsFormsApplication1
         /// Anders als die Engine arbeitet die Prüfung auf der DATENBANKSICHT statt auf den
         /// Ladeaufträgen: Ein Ladeauftrag entsteht erst im Lauf. Die Bedingung „lädt" ist
         /// deshalb dieselbe wie in <c>Ladeordnung.Ladereihenfolge</c> — Puffer-ID auf
-        /// einem der beiden Senkenfelder UND ein Puffer-Ziel dazu.
+        /// einer Senkenzeile UND ein Puffer-Ziel dazu, seit dem Nachzug A1 über ALLE
+        /// Ränge aus <c>Z_AnlageSenke</c> statt über die zwei Altspalten-Plätze. Damit
+        /// sieht der Ring genau die Ladebezüge, die der Senkendialog geschrieben hat.
         ///
         /// <b>ETAPPE D4 — die Ableitung steht jetzt in <see cref="Hydraulikbild"/>.</b>
         /// Sie war bis D5b eine lokale Rechnung IN dieser Methode; die Schema-Ansicht
