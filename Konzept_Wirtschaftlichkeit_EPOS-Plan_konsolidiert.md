@@ -885,6 +885,25 @@ Dazu die Entscheidungen zur Darstellung (30.08.2026):
 | **E-1** | Modus `CO2E`, wenn außer CO₂ nichts gepflegt ist bzw. der Wert schon ein Äquivalent ist | **Wert zeigen, Umstand im Tooltip benennen** — drei Herleitungsfälle, kein stiller Rückfall auf „CO₂" (§ 2.5) |
 | **D-2** | Erlösdarstellung | eigene Rubrik in zwei Blöcken, getrennte Summen; Block B (Ausweis) wird nicht addiert (§ 2.6) |
 
+Aus dem Energieträger-Umfeld kommt eine weitere Entscheidung desselben Tages hinzu. Sie betrifft
+die Wirtschaftlichkeitsrechnung nicht, wohl aber den gemeinsamen Schema-Nummernraum:
+
+| # | Frage | Entscheidung |
+|---|---|---|
+| **U-1** | Einheitenbruch `Tab_Brennstoff_Stamm.Einheit` ↔ `energy_conversion` (BK3 § 6 Nr. 4): die Identitätsregel-Ableitung liefert für 9 von 25 Brennstoffen `-1` | **entschieden 30.08.2026 — Weg (a)**: Der Stammtext der fünf Gase (Brennstoffe 1, 2, 3, 14, 25) wird „m³" → „Nm³" gezogen, als **Schemaschritt 62** (Muster Schritt 26a; Leitentscheidung L4 auf die Stammseite fortgeschrieben). Die Wege (b) Identitätsregel-Saat und (c) `billing_unit`-Ableitung sind **nicht beauftragt** |
+
+**Folge für den Schema-Nummernraum: 62 ist damit vergeben — neue Schritte anderer Etappen ab 63.**
+Das schreibt die bisherige Regel „ab 62" (KOORDINATION § 4 Nr. 2) fort. Betroffen sind K3 oben sowie
+§ 7 (Zeile B6 und „Voraussetzungen"): Dort steht für M-3 / § 9 Nr. 3 noch „Schritt 62" — diese
+Nennung ist auf **63** nachzuziehen. Reine Nummernfrage, keine fachliche Änderung an B6.
+
+Offen bleiben die Randfragen des Einheitenbruch-Konzepts: Waisenheilung (`energy_project_settings`
+Zeile 10076, Projekt 1039), kg-/rm-Abrechnung der Brennstoffe 4/5/12, Brennstoff 24 „Sonstige", der
+Fremdkörper Regel 67 und ein Prüfschritt in `EnergieEinheitenPruefung`. **Die Umsetzung ist noch
+nicht freigegeben** (Konzept-vor-Code) und gehört auf den Pufferspeicher-Strang. Quelle:
+`Konzept_Einheitenbruch_Energietraeger_EPOS-Plan.md` — liegt derzeit **nur** auf Zweig
+`claude/lucid-cori-a9a425` (`37bd068` Konzept, `8e34222` Entscheidungseintrag), noch nicht gemergt.
+
 ---
 
 # 6 Umsetzungsstand
