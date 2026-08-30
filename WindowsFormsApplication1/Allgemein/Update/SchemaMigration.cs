@@ -101,9 +101,15 @@ namespace WindowsFormsApplication1
         /// Preisbestandteile der Brennstoffe. Nach der Regel des E6-Vorfalls in dieser
         /// Reihenfolge angelegt: erst Schrittkonstante, Methode
         /// (<c>Schritt_60_BrennstoffBestandteile</c>) und <see cref="SCHRITTE"/>-Eintrag,
-        /// DANN das Ziel. <b>Neue Schritte ab 61.</b>
+        /// DANN das Ziel.
+        ///
+        /// 30.08.2026, Etappe B3 Paket a (Konzept BHKW-Wirtschaftlichkeit § 5.2,
+        /// Schritt M-2): <see cref="SCHRITT_61_STEUER_JE_ANLAGE"/> — Steuerwahl und
+        /// Hilfsenergie je Anlage. In derselben Reihenfolge angelegt: erst
+        /// Schrittkonstante, Methode (<c>Schritt_61_SteuerJeAnlage</c>) und
+        /// <see cref="SCHRITTE"/>-Eintrag, DANN das Ziel. <b>Neue Schritte ab 62.</b>
         /// </summary>
-        public const int ZIEL_VERSION = 60;
+        public const int ZIEL_VERSION = 61;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -2168,6 +2174,49 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_60_BRENNSTOFF_BESTANDTEILE = 60;
 
+        /// <summary>
+        /// ETAPPE B3, Paket a (Konzept <c>Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan</c>
+        /// § 5.2, Schritt M-2): <b>Steuerwahl und Hilfsenergie je Anlage.</b> Der Schritt
+        /// legt an <c>Tab_Energieanlagen</c> die drei Spalten
+        /// <c>Energiesteuer_Wahl</c>, <c>Aufteilung_Methode</c> und
+        /// <c>Hilfsenergie_Anteil</c> an
+        /// (<see cref="SchemaKatalog.Schritt61_SteuerJeAnlage"/>) sowie an BEIDEN
+        /// Ergebnis-Modultabellen die Spalte <c>Hilfsenergie</c>
+        /// (<see cref="SchemaKatalog.Schritt61_Hilfsenergie"/>).
+        ///
+        /// <para><b>Wozu.</b> Bis B3 galt die Wahl der Entlastungsnorm für das ganze
+        /// Projekt (Befund B4 des Konzepts). Ein Projekt mit zwei BHKW auf verschiedenen
+        /// Brennstoffen ist damit ebenso wenig abbildbar wie eines, in dem das BHKW nach
+        /// § 53 EnergieStG entlastet wird und der Heizkessel nach § 54 — der Fall, den
+        /// die Entscheidungen BF5 und BF6 ausdrücklich verlangen. Die Spalten sind die
+        /// Datengrundlage dafür; gelesen werden sie von
+        /// <c>WirtschaftlichkeitCtrl.LiesAnlagen</c>, aufgelöst in
+        /// <c>SteuerGutschriftRechner.Energiesteuer</c> als
+        /// <c>Anlagenwert ?? Projektwert</c>.</para>
+        ///
+        /// <para><b>KEIN DML — das ist die Ergebnisneutralität.</b> Wie bei Schritt 22
+        /// braucht dieser Schritt keine Vorbelegung: <c>TEXT</c> und <c>DOUBLE</c>
+        /// bleiben in Access nach <c>ADD COLUMN</c> ohnehin NULL, und NULL ist hier genau
+        /// der Wert, der nichts auslöst — „kein eigener Wert, es gilt der Projektwert"
+        /// bei den beiden Steuerangaben, „keine Hilfsenergie" beim Anteil. Eine
+        /// Bestandsdatenbank rechnet danach Zeile für Zeile dasselbe wie vorher.
+        /// <c>YESNO</c> kommt nicht vor, ein DDL-<c>DEFAULT</c> auf Fachwerten erst
+        /// recht nicht.</para>
+        ///
+        /// <para><b>Warum <c>Hilfsenergie_Anteil</c> und <c>Hilfsenergie</c> schon jetzt
+        /// mitkommen.</b> Gelesen werden beide erst in Paket b (Hilfsstrom und
+        /// Nettostromerzeugung). Sie stehen trotzdem hier, damit M-2 EIN Schritt bleibt:
+        /// Eine Datenbank, die Paket a migriert hat, braucht für Paket b keinen zweiten
+        /// Schemastand. Bis dahin sind es Spalten ohne Leser — die Ergebnis-Modulzeile
+        /// schreibt <c>Hilfsenergie</c> mit 0 mit, damit „erhoben und null" von „nicht
+        /// erhoben" unterscheidbar bleibt.</para>
+        ///
+        /// <para><b>Idempotenz:</b> Beide Teile laufen über <c>SpaltenAnlegen</c>, das
+        /// Vorhandene überspringt. Es gibt kein UPDATE, das ein zweiter Lauf wiederholen
+        /// könnte; der Zweitlauf meldet 0 neue Spalten.</para>
+        /// </summary>
+        public const int SCHRITT_61_STEUER_JE_ANLAGE = 61;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -3285,6 +3334,23 @@ namespace WindowsFormsApplication1
                         "enthaelt, und die Entlastung nach Paragraf 53/53a wird weiter " +
                         "ohne Gegenpruefung gutgeschrieben.",
                         Schritt_60_BrennstoffBestandteile),
+
+            // ETAPPE B3 Paket a (Konzept BHKW-Wirtschaftlichkeit § 5.2, Schritt M-2):
+            //             Steuerwahl und Hilfsenergie JE ANLAGE plus die
+            //             Hilfsenergie-Spalte an beiden Ergebnis-Modultabellen. Reines
+            //             DDL, KEIN DML - NULL heisst "kein eigener Wert, es gilt der
+            //             Projektwert" bzw. "keine Hilfsenergie". Begruendung und
+            //             Idempotenzzusage bei der Schrittkonstanten.
+            new Schritt(SCHRITT_61_STEUER_JE_ANLAGE,
+                        "Steuerwahl je Anlage (Energiesteuer_Wahl, Aufteilung_Methode) " +
+                        "und Hilfsenergie_Anteil an Tab_Energieanlagen anlegen; " +
+                        "Hilfsenergie an Tab_ErgebnisBHKWModul und " +
+                        "Tab_ErgebnisHeizkesselModul ergaenzen (Etappe B3 Paket a)",
+                        "Die Entlastungsnorm bleibt dann eine Projektgroesse - ein " +
+                        "Projekt mit zwei Brennstoffen oder mit Kessel nach Paragraf 54 " +
+                        "neben BHKW nach Paragraf 53 laesst sich nicht abbilden, und die " +
+                        "Hilfsenergie hat keinen Ablageort.",
+                        Schritt_61_SteuerJeAnlage),
         };
 
         // =================================================================================
@@ -9104,6 +9170,41 @@ namespace WindowsFormsApplication1
                     DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT + "\" vorbelegt. Die Anteile " +
                     "bleiben NULL - NULL heisst \"kein Anteil\" (Konzept Paragraf 5.1); es " +
                     "gibt bewusst KEINE Wertsaat. KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 61 - Steuerwahl und Hilfsenergie je Anlage (Etappe B3 Paket a)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 61. Anlass, Ergebnisneutralität und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_61_STEUER_JE_ANLAGE"/>.
+        ///
+        /// <para><b>Zwei DDL-Teile, KEIN DML.</b> Beide Teile sind hart: Ohne die
+        /// Anlagenspalten bleibt die Wahl eine Projektgröße, ohne die
+        /// Hilfsenergie-Spalten scheitert das INSERT der Modulzeile, das sie namentlich
+        /// aufführt (dieselbe Kette wie bei Schritt 18). Eine Vorbelegung gibt es
+        /// nicht — NULL ist bei allen fünf Spalten der Wert, der nichts auslöst.</para>
+        /// </summary>
+        private static bool Schritt_61_SteuerJeAnlage(Lauf l)
+        {
+            // --- 61a) die drei Angaben je Anlage --------------------------------------
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt61_SteuerJeAnlage)) return false;
+
+            // --- 61b) die Hilfsenergie an beiden Ergebnis-Modultabellen ---------------
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt61_Hilfsenergie)) return false;
+
+            l.Notiz("61a: 3 Spalte(n) (" + SchemaKatalog.SPALTE_EA_ENERGIESTEUER_WAHL + ", " +
+                    SchemaKatalog.SPALTE_EA_AUFTEILUNG_METHODE + ", " +
+                    SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL + ") an " +
+                    SchemaKatalog.TAB_ENERGIEANLAGEN + " sichergestellt.");
+            l.Notiz("61b: Spalte " + SchemaKatalog.SPALTE_MODUL_HILFSENERGIE + " an " +
+                    SchemaKatalog.TAB_ERGEBNISBHKWMODUL + " und " +
+                    SchemaKatalog.TAB_ERGEBNISHEIZKESSELMODUL + " sichergestellt. " +
+                    "KEIN DML: alle fuenf Spalten bleiben NULL, und NULL heisst \"kein " +
+                    "eigener Wert, es gilt der Projektwert\" bzw. \"keine Hilfsenergie\". " +
+                    "KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

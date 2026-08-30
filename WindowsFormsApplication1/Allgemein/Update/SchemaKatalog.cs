@@ -1003,6 +1003,140 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_BB_MODUS, "TEXT(20)"),
         };
 
+        // =====================================================================
+        // Schritt 61 - Steuerwahl und Hilfsenergie JE ANLAGE
+        //   (Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan § 5.2, Etappe B3 Paket a,
+        //    Schritt M-2; Entscheidungen BF5 und BF6)
+        // =====================================================================
+
+        /// <summary>
+        /// Gewählte Entlastungsnorm dieser ANLAGE, Steuerwert aus
+        /// <c>DbWerte.ENERGIESTEUER_WAHL_*</c>. <b>NULL bzw. leer heißt „kein eigener
+        /// Wert" — dann gilt der Projektwert</b>
+        /// (<see cref="SPALTE_PW_ENERGIESTEUER_WAHL"/>); dasselbe Rückfallmuster wie bei
+        /// den acht E6-Spalten aus <see cref="Schritt22_KwkgJeAnlage"/>.
+        ///
+        /// <b>Wozu je Anlage (BF6).</b> Bis B3 galt die Wahl für das ganze Projekt. Ein
+        /// Projekt mit zwei BHKW auf verschiedenen Brennstoffen — oder mit BHKW und
+        /// Heizkessel — ist damit nicht abbildbar: § 53 entlastet den Brennstoff der
+        /// Stromerzeugung, § 54 den Brennstoff eines Unternehmens des produzierenden
+        /// Gewerbes, und beide schließen einander je Anlage aus, nicht je Projekt.
+        ///
+        /// <b>TEXT(20) wie das Projektpendant.</b> Die Breite spiegelt bewusst
+        /// <see cref="Schritt20_Steuerangaben"/> (<c>TEXT(20)</c>) und nicht die
+        /// Dokumentationsschreibweise des Konzepts: Steuerwert und Projektwert werden
+        /// gegeneinander gelesen und müssen dieselbe Kappung vertragen. Der längste
+        /// Wert (<c>PARAGRAF_53A</c>) hat 12 Zeichen.
+        /// </summary>
+        public const string SPALTE_EA_ENERGIESTEUER_WAHL = "Energiesteuer_Wahl";
+
+        /// <summary>
+        /// Aufteilungsmethode dieser ANLAGE für § 53 EnergieStG, Steuerwert aus
+        /// <c>DbWerte.AUFTEILUNG_*</c>; NULL bzw. leer = Projektwert
+        /// (<see cref="SPALTE_PW_AUFTEILUNG"/>).
+        ///
+        /// <b>TEXT(30) wie das Projektpendant</b> — dieselbe Begründung wie bei
+        /// <see cref="SPALTE_EA_ENERGIESTEUER_WAHL"/>. Der längste Wert
+        /// (<c>VOLLER_BRENNSTOFF</c>) hat 17 Zeichen.
+        /// </summary>
+        public const string SPALTE_EA_AUFTEILUNG_METHODE = "Aufteilung_Methode";
+
+        /// <summary>
+        /// Hilfsenergieanteil dieser Komponente [% des Energieeinsatzes] (Konzept § 4.5).
+        /// <b>0 bzw. NULL = keine Hilfsenergie</b> — der Wert, der nichts auslöst
+        /// (Entscheidung BF4: Katalogwerte kommen nur als Vorschlagsknopf im Dialog, nie
+        /// als stiller Rückfall im Rechenweg).
+        ///
+        /// <b>Warum die Spalte schon mit Paket a kommt.</b> Gelesen wird sie erst in
+        /// Paket b (Hilfsstrom und Nettostromerzeugung). Sie steht trotzdem hier, damit
+        /// M-2 EIN Migrationsschritt bleibt: Eine Datenbank, die Paket a migriert hat,
+        /// braucht für Paket b keinen zweiten Schemastand. Solange niemand sie füllt, ist
+        /// sie eine leere Spalte ohne jeden Leser.
+        ///
+        /// <b>An <c>Tab_Energieanlagen</c>, nicht an <c>Tab_BHKW</c></b> (Konzept § 5.2):
+        /// Hilfsenergie hat jede Komponente — Wärmepumpe, Solarkreis, Speicherladepumpe —,
+        /// nicht nur das BHKW.
+        /// </summary>
+        public const string SPALTE_EA_HILFSENERGIE_ANTEIL = "Hilfsenergie_Anteil";
+
+        /// <summary>
+        /// Schritt 61a der Migration — die drei Angaben JE ANLAGE an
+        /// <c>Tab_Energieanlagen</c> (Konzept § 5.2, Schritt M-2).
+        ///
+        /// <b>KEIN DML, und das ist die Ergebnisneutralität.</b> Wie bei
+        /// <see cref="Schritt22_KwkgJeAnlage"/> braucht dieser Schritt keine Vorbelegung:
+        /// <c>TEXT</c> und <c>DOUBLE</c> bleiben in Access nach <c>ADD COLUMN</c> ohnehin
+        /// NULL, und NULL ist hier genau der Wert, der nichts auslöst — „kein eigener
+        /// Wert, es gilt der Projektwert" bei den beiden Steuerangaben, „keine
+        /// Hilfsenergie" beim Anteil. Eine Bestandsdatenbank rechnet danach Zeile für
+        /// Zeile dasselbe wie vorher. <c>YESNO</c> kommt nicht vor.
+        ///
+        /// <b>Warum kein <c>_STAMM</c>-Gegenstück.</b> Wortgleich zu
+        /// <see cref="Schritt22_KwkgJeAnlage"/>: <c>Tab_Energieanlagen</c> ist eine reine
+        /// PROJEKTtabelle und hat keinen Auslieferungskatalog; eine Tabelle
+        /// <c>Tab_Energieanlagen_STAMM</c> existiert im ganzen Schema nicht.
+        ///
+        /// <b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access immer
+        /// hinten an. Folgenlos: <c>Tab_Energieanlagen</c> wird namensbasiert gelesen
+        /// (<c>WaermequelleClass</c>, <c>WaermesenkeClass</c>, <c>SimulationControl</c>,
+        /// <c>WirtschaftlichkeitCtrl.LiesAnlagen</c>); die SELECT-Listen des Rechenkerns
+        /// zählen ihre Spalten namentlich auf und bleiben unberührt.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt61_SteuerJeAnlage =
+        {
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_ENERGIESTEUER_WAHL,  "TEXT(20)"),
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_AUFTEILUNG_METHODE,  "TEXT(30)"),
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_HILFSENERGIE_ANTEIL, "DOUBLE"),
+        };
+
+        /// <summary>
+        /// Name der Modultabelle der Heizkessel-Ergebnisse. Sie hatte bis Schritt 61
+        /// keine Konstante, weil kein Migrationsschritt sie brauchte — der Name stand
+        /// allein in <c>ErgebnisCtrl.TAB_KESSEL_MODUL</c>. Gegenstück zu
+        /// <see cref="TAB_ERGEBNISBHKWMODUL"/>.
+        /// </summary>
+        public const string TAB_ERGEBNISHEIZKESSELMODUL = "Tab_ErgebnisHeizkesselModul";
+
+        /// <summary>
+        /// Hilfsenergie einer Modulzeile [MWh/a] (Konzept § 4.5 und § 5.2) — die Größe,
+        /// die Paket b von der Stromerzeugung abzieht (Nettostromerzeugung) und die der
+        /// Bericht ausweist.
+        ///
+        /// <b>Persistiert statt nachgerechnet.</b> Dieselbe Begründung wie bei
+        /// <see cref="SPALTE_MODUL_VBH_ELEKTRISCH"/>: Aus den gespeicherten Größen ließe
+        /// sich der Wert nur zurückrechnen, wenn man den Anteil des LAUFS kennte — und
+        /// <c>Tab_Energieanlagen.Hilfsenergie_Anteil</c> kann sich seither geändert haben.
+        ///
+        /// <b>Bleibt 0, bis Paket b sie füllt.</b> Paket a legt die Spalte nur an und
+        /// schreibt sie mit 0 mit; keine Rechnung liest sie.
+        /// </summary>
+        public const string SPALTE_MODUL_HILFSENERGIE = "Hilfsenergie";
+
+        /// <summary>
+        /// Schritt 61b der Migration — die Hilfsenergie-Spalte an BEIDEN Modultabellen
+        /// der Ergebnisse (Konzept § 5.2).
+        ///
+        /// <b>DOUBLE, NULL-fähig, KEIN Backfill</b> — Muster
+        /// <see cref="Schritt18_BhkwVollbenutzungsstunden"/>. Ein Lauf, der vor dieser
+        /// Fassung gerechnet wurde, hat die Größe nicht erhoben; NULL sagt „nicht
+        /// erhoben". Die Leseseite (<c>ErgebnisCtrl.ReadLast</c> über <c>D(row, …)</c>)
+        /// behandelt NULL und fehlende Spalte gleich als 0.
+        ///
+        /// <b>Warum beide Tabellen in einem Schritt.</b> Hilfsenergie ist keine
+        /// BHKW-Eigenschaft, sondern eine Komponenteneigenschaft (§ 4.5): Kesselpumpen
+        /// und Gebläse zählen genauso. Zwei Schritte für dieselbe Größe wären zwei
+        /// Wahrheiten über einen Sachverhalt.
+        ///
+        /// <b>Ordinalposition.</b> Beide Tabellen werden ausschließlich NAMENSBASIERT
+        /// gelesen (<c>ErgebnisCtrl.ReadLast</c> mit <c>SELECT *</c>), das Anhängen ist
+        /// deshalb gefahrlos.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt61_Hilfsenergie =
+        {
+            new SchemaSpalte(TAB_ERGEBNISBHKWMODUL,       SPALTE_MODUL_HILFSENERGIE, "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNISHEIZKESSELMODUL, SPALTE_MODUL_HILFSENERGIE, "DOUBLE"),
+        };
+
         /// <summary>
         /// Name der Bezugsgröße der Kessel-Wartungskosten (Entscheidung des Anwenders
         /// 18.08.2026, Punkt 1). EINE Wahrheit für Migration, Katalog-Editor
@@ -3292,6 +3426,23 @@ namespace WindowsFormsApplication1
         /// <c>Z_AnlageSenkeCtrl.SpalteVorhanden</c>: Fehlt die Tabelle, meldet sie das
         /// EINMAL, und jeder Leser fällt auf die Altspalten
         /// <c>WS_Ziel</c>/<c>WS_Ziel2</c> zurück — also auf das Bestandsverhalten.
+        ///
+        /// <see cref="Schritt61_SteuerJeAnlage"/> ist BEWUSST NICHT aufgeführt, obwohl
+        /// seine Spalten an <c>Tab_Energieanlagen</c> hängen — wortgleiche Begründung wie
+        /// bei <see cref="Schritt22_KwkgJeAnlage"/>: Der Grund ist der LESER, nicht die
+        /// Tabelle. Die drei Spalten gehören fachlich zum Wirtschaftlichkeitsmodul, der
+        /// Rechenkern liest keine einzige davon, und die Rückfallebene läuft bei JEDEM
+        /// Simulationsstart. Die tolerante Vorsorge steht deshalb unmittelbar vor dem
+        /// Zugriff in <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>; zusätzlich
+        /// fällt <c>WirtschaftlichkeitCtrl.LiesAnlagen</c> auf die Abfrage ohne die
+        /// neuen Spalten zurück, wenn sie fehlen.
+        ///
+        /// <see cref="Schritt61_Hilfsenergie"/> ist BEWUSST NICHT aufgeführt — dieselbe
+        /// Begründung wie bei <see cref="Schritt18_BhkwVollbenutzungsstunden"/>: Die
+        /// Rückfallebene soll die Spalten der EINGABEseite sicherstellen, nicht die der
+        /// Ergebnistabellen. Für die zwei Ergebnisspalten gibt es die eigene, tolerante
+        /// Vorsorge unmittelbar vor dem Schreiben
+        /// (<c>ErgebnisCtrl.StelleModulSpaltenSicher</c>).
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {
