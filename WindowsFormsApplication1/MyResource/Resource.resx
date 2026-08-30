@@ -8504,4 +8504,40 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="WIRT_KWKG_TATBESTAND_ANLAGE_OFFEN" xml:space="preserve">
     <value>KWKG: „{0}“ trägt einen eigenen Satz auf selbst genutzten Strom, aber keinen Tatbestand nach § 6 Abs. 3 — ohne ihn gibt es den Eigenverbrauchszuschlag nicht (§ 7 Abs. 2); Satz dieser Anlage = 0.</value>
   </data>
+  <data name="PREIS_ST_ART_KEIN_PROD_GEWERBE" xml:space="preserve">
+    <value>kein produzierendes Gewerbe</value>
+  </data>
+  <data name="PREIS_ST_ART_LAND_FORST" xml:space="preserve">
+    <value>Land- und Forstwirtschaft</value>
+  </data>
+  <data name="PREIS_ST_ART_PROD_GEWERBE" xml:space="preserve">
+    <value>produzierendes Gewerbe</value>
+  </data>
+  <data name="PREIS_ST_EMPFOHLEN" xml:space="preserve">
+    <value>Vorschlag zur Unternehmensart „{0}“ dieses Projekts. Eingetragen wird der Satz erst mit einem Klick.</value>
+  </data>
+  <data name="PREIS_ST_GRUND_EINHEIT" xml:space="preserve">
+    <value>Die Katalogeinheit „{0}“ lässt sich nicht in ct/kWh umrechnen.</value>
+  </data>
+  <data name="PREIS_ST_GRUND_KEIN_JAHR" xml:space="preserve">
+    <value>Der Katalog führt für „{0}“ keinen Satz im Jahr {1}.</value>
+  </data>
+  <data name="PREIS_ST_QUELLE" xml:space="preserve">
+    <value>Katalog: {0} {1} (ab {2}, {3})</value>
+  </data>
+  <data name="PREIS_ST_QUELLE_RUECKFALL" xml:space="preserve">
+    <value>Rückfallebene: {0} ct/kWh aus dem Programm. {1} Nachpflegbar über „Gesetzliche Parameter“.</value>
+  </data>
+  <data name="PREIS_ST_ZWECK_REDUZIERT" xml:space="preserve">
+    <value>Stromsteuer energieintensiver Unternehmen — was nach der Entlastung nach § 9b StromStG im Preis verbleibt.</value>
+  </data>
+  <data name="PREIS_ST_ZWECK_REGELFALL" xml:space="preserve">
+    <value>Stromsteuer im Regelfall (§ 3 StromStG).</value>
+  </data>
+  <data name="SIM_KARTE_MODUL" xml:space="preserve">
+    <value>Modul {0} von {1}</value>
+  </data>
+  <data name="SIM_KARTE_TIP_MODUL" xml:space="preserve">
+    <value>Der Rang gilt dem Erzeugertyp. Dieses Projekt führt {0} Anlagen dieses Typs — jede hat ihre eigene Karte.</value>
+  </data>
 </root>
