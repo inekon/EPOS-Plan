@@ -59,7 +59,20 @@ Bestandsprojekte heilen beim nächsten Wizard-Speichern.
 | Regressionsanker | Betrieb 1024 = 99,00; Invest 1018/1024/1042 = 45.312,50/12.001,00/13.000,00 — exakt |
 | Sweep | kein `<<<<<<<`-Treffer |
 
-## 5. Offener Anwenderentscheid: Emissions-Stammkopie (Altbefund)
+## 5. Emissions-Stammkopie (Altbefund) — **entschieden am 30.08.2026**
+
+> **Nachtrag (Etappe BK2).** Der Anwender hat entschieden: **Die Katalogwahrheit
+> gilt.** `TraegerSatzAnlegen` schreibt die drei Emissionsspalten seither
+> ausdrücklich als NULL; die Lesekette liefert damit die aktive Katalogzeile
+> (Strom 435, Erdgas 201), danach wie bisher Stamm und Carrier. Die Zuordnung ist
+> emissionsneutral (1026 gemessen: 8,30 t/a vor **und** nach der Automatik, statt
+> 10,68 mit Kopie), der Brennerweg wechselt gewollt von 240 auf 201. Preise,
+> Heizwerte und Umrechnungssatz bleiben Bestandsverhalten. Bestandszeilen wurden
+> nicht angefasst (die 7 Zeilen 560/200/280 stehen unverändert). Der manuelle Weg
+> `EnergietraegerKatalogCtrl.InsProjekt` kopierte nie Emissionen und blieb
+> unverändert. Nachweise: Harness `..\dev\bk2\`.
+
+Der ursprüngliche Befund, unverändert:
 
 `TraegerSatzAnlegen` kopiert seit jeher `Tab_Brennstoff_Stamm.CO2/SO2/NOx` in die
 Projektzeile — und der **Projektwert übersteuert den Katalog** (oberste Ebene der
