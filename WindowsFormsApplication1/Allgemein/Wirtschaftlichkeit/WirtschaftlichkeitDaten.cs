@@ -761,8 +761,37 @@ namespace WindowsFormsApplication1
         /// <summary>Elektrische Nennleistung [kW].</summary>
         public double PelKW;
 
-        /// <summary>Angesetzte elektrische Vollbenutzungsstunden dieses Moduls [h/a].</summary>
+        /// <summary>Angesetzte elektrische Vollbenutzungsstunden dieses Moduls [h/a]
+        /// — <b>brutto</b>, siehe <see cref="StromNettoMWh"/>.</summary>
         public double VbhElektrisch;
+
+        // ------------- ETAPPE B3 Paket b — die Mengenherleitung (§ 4.3) -------------
+        //
+        // Fünf Zahlen, aus denen die Herleitungstafel (BW8, Etappe B6) die Zeile
+        // „so kommt der Zuschlag zu seiner Menge" ohne jede Zweitrechnung bauen kann:
+        //   Brutto − Hilfsstrom = Netto,  Netto = Eigen + Einspeisung.
+        // Alle Werte sind die TATSÄCHLICH angesetzten dieses Laufs.
+
+        /// <summary>Stromerzeugung dieses Moduls [MWh/a] an der Klemme (brutto).</summary>
+        public double StromBruttoMWh;
+
+        /// <summary>
+        /// Hilfsstrom dieser Anlage [MWh/a] — <c>Hilfsenergie_Anteil × Brennstoff</c>
+        /// (<see cref="HilfsstromRechner.MengeMWh"/>). 0 = kein Anteil gepflegt.
+        /// </summary>
+        public double HilfsstromMWh;
+
+        /// <summary>Zuschlagsfähige Nettostromerzeugung [MWh/a] =
+        /// <see cref="StromBruttoMWh"/> − <see cref="HilfsstromMWh"/>, bei 0 geklemmt.</summary>
+        public double StromNettoMWh;
+
+        /// <summary>Anteil dieser Anlage am selbst genutzten KWK-Strom [MWh/a] —
+        /// die Bezugsmenge des Satzes nach § 7 Abs. 2.</summary>
+        public double EigenMWh;
+
+        /// <summary>Anteil dieser Anlage an der KWK-Einspeisung [MWh/a] —
+        /// die Bezugsmenge des Satzes nach § 7 Abs. 1.</summary>
+        public double EinspeisungMWh;
 
         /// <summary>Angesetzter Satz auf selbst genutzten KWK-Strom [ct/kWh].</summary>
         public double SatzEigenCt;

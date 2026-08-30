@@ -2070,6 +2070,36 @@ namespace WindowsFormsApplication1
                               && p.KwkgInbetriebnahme.Value.Year >= 2025;
             KwkgAnlagenauswahl auswahl = Anlagenauswahl(v, p, foerderbeginn, grenzeKW);
 
+            // ---------------- ETAPPE B3 Paket b: der EINE Netto-Ort ----------------
+            //
+            // § 4.3 des Konzepts: Der KWK-Zuschlag bemisst sich auf die NETTOstrom-
+            // erzeugung — Erzeugung minus Hilfsstrom. Gebildet wird die Minderung genau
+            // hier, EINMAL, und von hier aus in JEDEN Mengenpfad gereicht:
+            //   (a) die Anteilsbildung je Anlage in ReiheJeAnlage,
+            //   (b) die beiden Splitmengen aus der StromMatrix,
+            //   (c) den projektweiten Ersatzweg.
+            // Die StromMatrix selbst bleibt unangetastet: Ihre Stundenreihen sind die
+            // BRUTTO-Welt und speisen außer dem Zuschlag auch Bezugskosten,
+            // KWK-Einspeiseerlös und die Stromsteuer — eine Minderung an der Quelle
+            // würde in all diese Rechnungen durchschlagen, wo sie nicht hingehört.
+            //
+            // ERGEBNISNEUTRAL: Ohne gepflegten Anteil ist GesamtMWh = 0, und jede
+            // Netto-Größe unten ist zeilengleich ihrer Brutto-Vorgängerin.
+            HilfsstromSatz hilfsstrom = HilfsstromDesProjekts(v);
+            if (hilfsstrom.Gepflegt && !hilfsstrom.Zuordenbar)
+                hinweise.Add(T("WIRT_KWKG_HILFSSTROM_UNKLAR",
+                    "KWKG: Für mindestens eine Anlage ist ein Hilfsenergieanteil gepflegt, " +
+                    "Anlagen- und Ergebniszeilen lassen sich aber nicht zuordnen — der " +
+                    "Zuschlag rechnet mit der Bruttostromerzeugung."));
+
+            // Der Split des Projekts, um den Hilfsstrom gemindert (Reihenfolge und
+            // Begründung: HilfsstromRechner.NettoSplit).
+            bool mitMatrix = matrix != null &&
+                             matrix.KwkEigenGesamtMWh + matrix.KwkEinspeisungGesamtMWh > 0;
+            double eigenNettoMWh = matrix != null ? matrix.KwkEigenGesamtMWh : 0;
+            double einspNettoMWh = matrix != null ? matrix.KwkEinspeisungGesamtMWh : 0;
+            HilfsstromRechner.NettoSplit(hilfsstrom.GesamtMWh, ref eigenNettoMWh, ref einspNettoMWh);
+
             if (!auswahl.Bestimmbar)
             {
                 // Ohne zuordenbare Anlagenzeilen bleiben nur die Projektsumme und die
@@ -2095,7 +2125,16 @@ namespace WindowsFormsApplication1
                     hinweise.Add(MyResource.Resource.WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR);
 
                 // ERSATZWEG: die projektweite Rechnung, Zeile für Zeile der Stand vor E6.
-                double[] ersatz = ReiheProjektweit(p, matrix, stromMWh, vbh, foerderbeginn,
+                //
+                // ETAPPE B3 Paket b: Er zieht dieselbe Minderung wie der Weg je Anlage —
+                // in der Sache greift sie hier allerdings nie, weil die fehlgeschlagene
+                // Zuordnung, die diesen Zweig überhaupt auslöst, DIESELBE ist, an der
+                // auch HilfsstromDesProjekts scheitert (GesamtMWh = 0). Die Netto-Größen
+                // stehen trotzdem in der Signatur: Der Ersatzweg soll nicht der eine
+                // Pfad sein, der beim nächsten Ausbau brutto rechnet.
+                double stromNettoMWh = Math.Max(0, stromMWh - hilfsstrom.GesamtMWh);
+                double[] ersatz = ReiheProjektweit(p, mitMatrix, eigenNettoMWh, einspNettoMWh,
+                                                   stromNettoMWh, vbh, foerderbeginn,
                                                    satzEigenProjekt, kontingentProjekt, out jahr1);
                 if (hinweise.Count > 0) hinweis = string.Join(" | ", hinweise);
                 return ersatz;
@@ -2137,9 +2176,10 @@ namespace WindowsFormsApplication1
                 hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_HEIZOEL_OHNE_IBN,
                                            auswahl.Klartext(auswahl.OelOhneIbn)));
 
-            double[] reihe = ReiheJeAnlage(v, p, matrix, auswahl, foerderbeginn, hinweise,
-                                           nachweise, satzEigenProjekt, kontingentProjekt,
-                                           out jahr1);
+            double[] reihe = ReiheJeAnlage(v, p, mitMatrix, eigenNettoMWh, einspNettoMWh,
+                                           hilfsstrom, auswahl, foerderbeginn, hinweise,
+                                           nachweise, satzEigenProjekt, tatbestand,
+                                           kontingentProjekt, out jahr1);
             if (hinweise.Count > 0) hinweis = string.Join(" | ", hinweise);
             return reihe;
         }
@@ -2175,8 +2215,16 @@ namespace WindowsFormsApplication1
         /// Tatbestand ausdrücklich auf „keiner" gesetzt (dann 0).</param>
         /// <param name="kontingentProjekt">ETAPPE K6: das Vbh-Kontingent — der Override
         /// aus <c>p.KwkgVbhKontingent</c>, sonst der nach § 8 abgeleitete Wert.</param>
-        private double[] ReiheProjektweit(WirtschaftlichkeitParameter p, StromMatrix matrix,
-                                          double stromMWh, double vbh, int foerderbeginn,
+        /// <param name="mitMatrix">true = die Stundenreihen liefern einen Eigen-/
+        /// Einspeise-Split; false = Fallback „alles ist Eigenverbrauch" (W2).</param>
+        /// <param name="eigenNettoMWh">ETAPPE B3 Paket b: KWK-Eigenverbrauch des
+        /// Projekts NACH Abzug des Hilfsstroms [MWh/a].</param>
+        /// <param name="einspNettoMWh">Ebenso die KWK-Einspeisung [MWh/a].</param>
+        /// <param name="stromNettoMWh">Ebenso die Gesamterzeugung [MWh/a] — die
+        /// Bezugsgröße des Fallbacks ohne Stundenreihen.</param>
+        private double[] ReiheProjektweit(WirtschaftlichkeitParameter p, bool mitMatrix,
+                                          double eigenNettoMWh, double einspNettoMWh,
+                                          double stromNettoMWh, double vbh, int foerderbeginn,
                                           double satzEigenProjekt, double kontingentProjekt,
                                           out double jahr1)
         {
@@ -2185,12 +2233,14 @@ namespace WindowsFormsApplication1
             // ---------------- Bonus bei voller Vergütung [€/a] ----------------
             //  - W3-Split: getrennte Sätze auf KWK-Eigenstrom und -Einspeisung.
             //  - Fallback ohne Stundenreihen: Eigenstrom-Satz auf die Gesamtmenge (W2).
+            //  - B3b: beide Mengen sind NETTO (Erzeugung minus Hilfsstrom, § 4.3);
+            //    ohne gepflegten Anteil sind sie zeilengleich den Bruttomengen.
             double bonusVoll;
-            if (matrix != null && matrix.KwkEigenGesamtMWh + matrix.KwkEinspeisungGesamtMWh > 0)
-                bonusVoll = matrix.KwkEigenGesamtMWh * 1000.0 * (satzEigenProjekt / 100.0)
-                          + matrix.KwkEinspeisungGesamtMWh * 1000.0 * (p.KwkgBonusEinspeisung / 100.0);
+            if (mitMatrix)
+                bonusVoll = eigenNettoMWh * 1000.0 * (satzEigenProjekt / 100.0)
+                          + einspNettoMWh * 1000.0 * (p.KwkgBonusEinspeisung / 100.0);
             else
-                bonusVoll = stromMWh * 1000.0 * (satzEigenProjekt / 100.0);
+                bonusVoll = stromNettoMWh * 1000.0 * (satzEigenProjekt / 100.0);
             if (bonusVoll <= 0) return null;
 
             if (_staffelCache == null) _staffelCache = LadeKwkgStaffel();
@@ -2238,20 +2288,43 @@ namespace WindowsFormsApplication1
         /// Die Summe über eine Reihe ist die Reihe; der Anteil dieser einen Anlage am Split
         /// ist 1; ihre Vbh sind die leistungsgewichteten Vbh des Projekts (bei einem Modul
         /// identisch); Satz, Deckel und Kontingent fallen auf den Projektwert zurück.</para>
+        ///
+        /// <para><b>ETAPPE B3 Paket b (§ 4.3): die Mengen sind NETTO.</b> Jede Anlage
+        /// bringt ihre Erzeugung abzüglich ihres Hilfsstroms in die Anteilsbildung ein,
+        /// und der projektweite Split ist bereits um den Gesamthilfsstrom gemindert
+        /// (<see cref="HilfsstromRechner"/>). Zähler und Nenner des Anteils stammen aus
+        /// derselben Netto-Reihe — die Anteile summieren sich deshalb weiter zu eins,
+        /// und die verteilten Mengen zur Nettoerzeugung. Ohne gepflegten Anteil ist
+        /// jede Netto-Größe zeilengleich ihrer Brutto-Vorgängerin.</para>
+        ///
+        /// <para><b>Die Vollbenutzungsstunden bleiben BRUTTO</b>
+        /// (<see cref="VbhDerAnlage"/>). Sie sind eine Auslegungsgröße der Anlage und
+        /// stehen in <c>reihe[t]</c> in Zähler UND Nenner desselben Bruchs; der
+        /// Hilfsstrom wirkt deshalb ausschließlich über <c>bonusVoll</c>, also als
+        /// proportionale Minderung des Zuschlags — genau das, was § 4.3 verlangt.</para>
         /// </summary>
         /// <param name="satzEigenProjekt">ETAPPE K6: der Eigenstrom-Satz des PROJEKTS nach
-        /// der Prüfung des § 6 Abs. 3 — er greift für jede Anlage ohne eigenen Satz.
-        /// Trägt eine Anlage einen eigenen Wert, gilt er weiter unverändert; die Prüfung
-        /// des Tatbestands je Anlage bleibt beim Katalogvorschlag aus E6.</param>
+        /// der Prüfung des § 6 Abs. 3 — er greift für jede Anlage ohne eigenen Satz.</param>
+        /// <param name="tatbestandProjekt">ETAPPE B3 Paket b: der Tatbestand des § 6
+        /// Abs. 3 aus dem Projekt (<c>DbWerte.KWKG_EIGENFALL_*</c>, leer = keiner) —
+        /// Rückfall der Prüfung je Anlage.</param>
         /// <param name="kontingentProjekt">ETAPPE K6: das Vbh-Kontingent des PROJEKTS —
         /// Override, sonst nach § 8 abgeleitet; Rückfall für jede Anlage ohne eigenen
         /// Wert.</param>
+        /// <param name="mitMatrix">true = die Stundenreihen liefern einen Eigen-/
+        /// Einspeise-Split; false = Fallback „alles ist Eigenverbrauch" (W2).</param>
+        /// <param name="eigenNettoMWh">KWK-Eigenverbrauch des Projekts nach Abzug des
+        /// Hilfsstroms [MWh/a].</param>
+        /// <param name="einspNettoMWh">Ebenso die KWK-Einspeisung [MWh/a].</param>
+        /// <param name="hilfsstrom">Der Hilfsstrom je Anlage — indexgleich zu
+        /// <see cref="KwkgAnlagenauswahl.Anlagen"/>.</param>
         private double[] ReiheJeAnlage(VariantenDaten v, WirtschaftlichkeitParameter p,
-                                       StromMatrix matrix, KwkgAnlagenauswahl auswahl,
+                                       bool mitMatrix, double eigenNettoMWh, double einspNettoMWh,
+                                       HilfsstromSatz hilfsstrom, KwkgAnlagenauswahl auswahl,
                                        int foerderbeginn, List<string> hinweise,
                                        List<KwkgModulNachweis> nachweise,
-                                       double satzEigenProjekt, double kontingentProjekt,
-                                       out double jahr1)
+                                       double satzEigenProjekt, string tatbestandProjekt,
+                                       double kontingentProjekt, out double jahr1)
         {
             jahr1 = 0;
             if (_staffelCache == null) _staffelCache = LadeKwkgStaffel();
@@ -2259,10 +2332,21 @@ namespace WindowsFormsApplication1
             double abschlag = Math.Min(100.0, Math.Max(0.0, p.KwkgAbschlagNegativ)) / 100.0;
             int T = Math.Max(1, p.Betrachtungszeitraum);
 
-            // Split des Projekts; ohne Stundenreihen gilt „alles Eigenverbrauch" (W2).
-            bool mitMatrix = matrix != null &&
-                             matrix.KwkEigenGesamtMWh + matrix.KwkEinspeisungGesamtMWh > 0;
-            double stromSumme = auswahl.StromGesamtMWh;
+            // ETAPPE B3 Paket b — die NETTO-Erzeugung je Anlage und ihre Summe, in EINEM
+            // Durchlauf über ALLE Anlagen (auch die nicht förderfähigen): Der Nenner der
+            // Anteilsbildung muss dieselbe Größe sein wie der Zähler, sonst summierten
+            // sich die verteilten Mengen nicht mehr zum Split. Die Klemme bei 0 fängt den
+            // absurden Fall ab, dass ein gepflegter Anteil mehr Hilfsstrom fordert, als
+            // die Anlage erzeugt — eine negative Menge darf hier nie entstehen.
+            var stromNettoJeAnlage = new double[auswahl.Anlagen.Count];
+            double stromSumme = 0;
+            for (int i = 0; i < auswahl.Anlagen.Count; i++)
+            {
+                double hs = hilfsstrom != null && i < hilfsstrom.JeAnlage.Length
+                          ? hilfsstrom.JeAnlage[i] : 0;
+                stromNettoJeAnlage[i] = Math.Max(0, StromVon(auswahl.Module[i]) - hs);
+                stromSumme += stromNettoJeAnlage[i];
+            }
 
             var reihe = new double[T + 1];
             var beschreibung = new List<string>();
@@ -2272,14 +2356,18 @@ namespace WindowsFormsApplication1
             {
                 if (!auswahl.Foerderfaehig[i]) continue;
                 BhkwAnlage a = auswahl.Anlagen[i];
-                double stromAnlageMWh = StromVon(auswahl.Module[i]);
+                double stromBruttoMWh = StromVon(auswahl.Module[i]);
+                double hilfsstromMWh = hilfsstrom != null && i < hilfsstrom.JeAnlage.Length
+                                     ? hilfsstrom.JeAnlage[i] : 0;
+                double stromAnlageMWh = stromNettoJeAnlage[i];
                 if (stromAnlageMWh <= 0) continue;
 
                 double anteil = stromSumme > 0 ? stromAnlageMWh / stromSumme : 0;
-                double eigenMWh = mitMatrix ? matrix.KwkEigenGesamtMWh * anteil : stromAnlageMWh;
-                double einspMWh = mitMatrix ? matrix.KwkEinspeisungGesamtMWh * anteil : 0;
+                double eigenMWh = mitMatrix ? eigenNettoMWh * anteil : stromAnlageMWh;
+                double einspMWh = mitMatrix ? einspNettoMWh * anteil : 0;
 
-                double satzEigen = a.SatzEigenCt ?? satzEigenProjekt;   // K6: geprüfter Projektsatz
+                double satzEigen = SatzEigenDerAnlage(a, satzEigenProjekt, tatbestandProjekt,
+                                                      hinweise);
                 double satzEinsp = a.SatzEinspCt ?? p.KwkgBonusEinspeisung;
                 double bonusVoll = eigenMWh * 1000.0 * (satzEigen / 100.0)
                                  + einspMWh * 1000.0 * (satzEinsp / 100.0);
@@ -2328,7 +2416,15 @@ namespace WindowsFormsApplication1
                         JahresdeckelH = deckelFest,
                         Foerderbeginn = beginn,
                         Jahr1Eur = jahr1Modul,
-                        ErschoepftAbJahr = erschoepftAb
+                        ErschoepftAbJahr = erschoepftAb,
+                        // ETAPPE B3 Paket b: die Mengenherleitung, damit die
+                        // Herleitungstafel (BW8) sie fertig vorfindet und niemand sie
+                        // nachrechnet.
+                        StromBruttoMWh = stromBruttoMWh,
+                        HilfsstromMWh = hilfsstromMWh,
+                        StromNettoMWh = stromAnlageMWh,
+                        EigenMWh = eigenMWh,
+                        EinspeisungMWh = einspMWh
                     };
                     try
                     {
@@ -2367,12 +2463,77 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// ETAPPE B3 Paket b (§ 4.4) — der Eigenstrom-Satz EINER Anlage [ct/kWh] nach der
+        /// Prüfung des Tatbestands nach § 6 Abs. 3 KWKG.
+        ///
+        /// <para><b>Die Lücke, die das schließt.</b> Seit K6 prüft
+        /// <see cref="BaueKwkgReihe"/> den Tatbestand — aber nur gegen den PROJEKTsatz.
+        /// Trug eine Anlage einen eigenen <c>KWKG_Satz_Eigen</c>, ging dieser Satz an der
+        /// Prüfung vorbei und erzeugte einen Eigenverbrauchszuschlag, obwohl kein
+        /// Tatbestand vorlag. Genau dieser Weg läuft jetzt durch dieselbe Prüfung, mit
+        /// dem Tatbestand DIESER Anlage (<c>Tab_Energieanlagen.KWKG_Eigenstromfall</c>)
+        /// und dem Projektwert als Rückfall.</para>
+        ///
+        /// <para><b>Warum der Anlagenweg strenger ist als der Projektweg.</b> Am Projekt
+        /// lässt ein LEERER Tatbestand den Satz stehen und meldet nur „ungeprüft" — das
+        /// war die Bedingung, unter der K6 für Bestandsprojekte ergebnisneutral bleiben
+        /// konnte (jede Bestandsdatenbank hat die Angabe nie gemacht). An der Anlage gilt
+        /// diese Rücksicht nicht: Ein <c>KWKG_Satz_Eigen</c> ist eine ausdrückliche
+        /// Eingabe, die es im Bestand nirgends gibt (geprüft: alle Anlagenzeilen NULL).
+        /// Wer ihn pflegt, muss auch den Tatbestand nennen, der ihn trägt — <b>ohne
+        /// Tatbestand gibt es den Zuschlag nach § 7 Abs. 2 nicht</b> (Etappendefinition:
+        /// Ergebniswirkung nur bei gepflegten Anlagenangaben, und dort gewollt).</para>
+        ///
+        /// <para><b>Anlagen ohne eigenen Satz bleiben unberührt</b> — für sie hat die
+        /// Prüfung am Projekt bereits entschieden, und <c>KWKG_Eigenstromfall</c> behält
+        /// dort seine E6-Rolle als reiner Steuerwert des Katalogvorschlags.</para>
+        /// </summary>
+        private static double SatzEigenDerAnlage(BhkwAnlage a, double satzEigenProjekt,
+                                                 string tatbestandProjekt, List<string> hinweise)
+        {
+            if (!a.SatzEigenCt.HasValue) return satzEigenProjekt;   // K6: geprüfter Projektsatz
+
+            double satz = a.SatzEigenCt.Value;
+            if (satz <= 0) return satz;                             // nichts zu prüfen
+
+            string fall = (a.Eigenfall ?? "").Trim();
+            if (fall.Length == 0) fall = (tatbestandProjekt ?? "").Trim();
+
+            if (fall.Length == 0)
+            {
+                hinweise.Add(string.Format(T("WIRT_KWKG_TATBESTAND_ANLAGE_OFFEN",
+                    "KWKG: „{0}“ trägt einen eigenen Satz auf selbst genutzten Strom, aber " +
+                    "keinen Tatbestand nach § 6 Abs. 3 — ohne ihn gibt es den " +
+                    "Eigenverbrauchszuschlag nicht (§ 7 Abs. 2); Satz dieser Anlage = 0."),
+                    a.Bezeichner));
+                return 0;
+            }
+
+            if (string.Equals(fall, DbWerte.KWKG_EIGENFALL_KEINER, StringComparison.Ordinal))
+            {
+                hinweise.Add(string.Format(T("WIRT_KWKG_TATBESTAND_ANLAGE_KEINER",
+                    "KWKG: Für „{0}“ ist als Tatbestand nach § 6 Abs. 3 „keiner“ gewählt — " +
+                    "der eigene Satz auf selbst genutzten Strom entfällt (§ 7 Abs. 2)."),
+                    a.Bezeichner));
+                return 0;
+            }
+            return satz;
+        }
+
+        /// <summary>
         /// Elektrische Vollbenutzungsstunden EINER Anlage [h/a] (Etappe E6). Vorrang hat der
         /// beim Lauf berechnete Wert aus <c>Tab_ErgebnisBHKWModul.VbhElektrisch</c>
         /// (Migrationsschritt 18) — er trägt die Leistung, die zum Zeitpunkt des Laufs
         /// installiert war. Fehlt er (Ergebniszeile vor E2), wird er aus der Stromerzeugung
         /// dieser Anlage und ihrer heutigen Nennleistung gebildet — dieselbe Formel, die der
         /// Rechenkern verwendet.
+        ///
+        /// <para><b>ETAPPE B3 Paket b: BRUTTO.</b> Vollbenutzungsstunden sind eine
+        /// Auslegungsgröße — die Zeit, die eine Anlage rechnerisch unter Nennlast lief.
+        /// Ein Hilfsstromabzug würde sie zu einer Erlösgröße machen und den Deckel des
+        /// § 8 Abs. 4 verschieben, obwohl die Anlage genauso lange gelaufen ist. Der
+        /// Hilfsstrom wirkt ausschließlich über die Mengen (siehe
+        /// <see cref="ReiheJeAnlage"/>).</para>
         /// </summary>
         private static double VbhDerAnlage(BhkwAnlage a, ErgebnisBHKWModulModel modul, double stromMWh)
         {
@@ -2598,6 +2759,23 @@ namespace WindowsFormsApplication1
             return string.IsNullOrEmpty(bisher) ? neu : bisher + " | " + neu;
         }
 
+        /// <summary>
+        /// ETAPPE B3 Paket b — MyResource mit deutschem Rückfall (Drei-Schichten-Regel),
+        /// dasselbe Muster wie <c>SteuerGutschriftRechner.T</c> und
+        /// <c>KohaerenzPruefung.T</c>. Der Rückfall greift auf einer Ressourcendatei
+        /// ohne die neuen Einträge; die Schlüssel werden mit dem nächsten
+        /// resx-Sammelnachtrag ergänzt.
+        /// </summary>
+        private static string T(string schluessel, string rueckfall)
+        {
+            try
+            {
+                string s = MyResource.Resource.ResourceManager.GetString(schluessel);
+                return string.IsNullOrEmpty(s) ? rueckfall : s;
+            }
+            catch { return rueckfall; }
+        }
+
         // =====================================================================
         // ETAPPE E4 — Energiesteuer- und Stromsteuergutschriften
         // =====================================================================
@@ -2767,6 +2945,16 @@ namespace WindowsFormsApplication1
 
             // Eigenverbrauch: NUR aus der Stundenreihe. Ohne sie bleibt der Wert null,
             // und die Befreiung entfällt mit Begründung (siehe SteuerGutschriftRechner).
+            //
+            // ETAPPE B3 Paket b — BRUTTO, und das ist keine Auslassung, sondern die
+            // Vorschrift. § 4.3 des Konzepts sagt zum Hilfsstrom ausdrücklich:
+            // „steuerlich Teil des KWK-Eigenverbrauchs, sofern die Anlage die Bedingungen
+            // des § 9 Abs. 1 Nr. 3 erfüllt". Der Hilfsstrom wird in der Anlage selbst
+            // verbraucht — er ist der Musterfall des begünstigten Eigenverbrauchs und
+            // gehört deshalb in die Bemessungsgrundlage der Befreiung hinein. Gemindert
+            // wird von ihm allein die ZUSCHLAGSfähige Nettoerzeugung des KWKG
+            // (BaueKwkgReihe); die beiden Vorschriften stellen auf verschiedene Größen
+            // ab, und genau diese Trennung wird hier festgehalten.
             if (matrix != null && !matrix.StrombedarfFehlt)
                 eingabe.KwkEigenMWh = matrix.KwkEigenGesamtMWh;
 
@@ -2788,6 +2976,15 @@ namespace WindowsFormsApplication1
             if (modul != null)
             {
                 a.BrennstoffMWh = modul.Verbrauch;
+                // ETAPPE B3 Paket b — BRUTTO, bewusst. Die Stromerzeugung geht im
+                // SteuerGutschriftRechner in zwei Größen ein, und beide meinen die
+                // ERZEUGUNG, nicht die zuschlagsfähige Menge: die Anteilsbereinigung des
+                // § 9 Abs. 1 Nr. 3 (welcher Teil der Erzeugung stammt aus Anlagen, die
+                // die Bedingungen erfüllen) und der CO₂-Grenzwert des § 2 StromStG
+                // (Brennstoff-CO₂ je kWh Energieertrag Strom + Wärme). Ein Abzug des
+                // Hilfsstroms würde hier den Energieertrag kleinrechnen und damit die
+                // spezifischen Emissionen künstlich erhöhen — die Anlage fiele unter
+                // Umständen aus der Befreiung, weil sie eine Pumpe betreibt.
                 a.StromMWh = modul.Stromproduktion;
                 a.WaermeMWh = modul.Waermeproduktion;
             }
@@ -2936,8 +3133,13 @@ namespace WindowsFormsApplication1
         /// bewusst hier in der Zuführung und nicht im <c>SimulationRunner</c>: Eine neu
         /// gefüllte Ergebnisspalte änderte gespeicherte Läufe und damit die
         /// Referenzlaufvergleiche, ohne dass die Wirtschaftlichkeit davon mehr hätte.</para>
+        ///
+        /// <para><b>ETAPPE B3 Paket b: <c>internal</c>.</b> Der Speicherweg
+        /// (<see cref="ErgebnisCtrl"/>) braucht dieselbe Menge als Bemessungsgrundlage
+        /// des Hilfsstroms. Eine zweite Ableitung daneben wäre die zweite Wahrheit über
+        /// genau die Frage, die dieser Kommentar beantwortet.</para>
         /// </summary>
-        private static double KesselBrennstoffMWh(ErgebnisHeizkesselModulModel m)
+        internal static double KesselBrennstoffMWh(ErgebnisHeizkesselModulModel m)
         {
             if (m.Verbrauch > 0) return m.Verbrauch;
             double waerme = m.Waerme_Gas + m.Waerme_Oel;
@@ -3419,6 +3621,17 @@ namespace WindowsFormsApplication1
             {
                 get { return !string.IsNullOrEmpty(EnergiesteuerWahl); }
             }
+
+            // ---------------- ETAPPE B3 Paket b — Hilfsenergie je Anlage ----------------
+
+            /// <summary>
+            /// <c>Tab_Energieanlagen.Hilfsenergie_Anteil</c> [% des Energieeinsatzes
+            /// dieser Anlage, Konzept § 4.5 Weg B]. <c>null</c> oder 0 = keine
+            /// Hilfsenergie — der Wert, der nichts auslöst, und damit derselbe
+            /// Rückfall wie bei allen Angaben darüber. Die MENGE bildet allein
+            /// <see cref="HilfsstromRechner.MengeMWh"/>.
+            /// </summary>
+            public double? HilfsenergieAnteil;
         }
 
         /// <summary>
@@ -3680,10 +3893,98 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Stromproduktion einer zugeordneten Modulzeile [MWh/a]; eine nicht
-        /// getroffene Zeile zählt wie bisher mit 0.</summary>
+        /// getroffene Zeile zählt wie bisher mit 0.
+        ///
+        /// <para><b>BRUTTO</b> — die Erzeugung an der Klemme. Was davon nach Abzug des
+        /// Hilfsstroms zuschlagsfähig bleibt, bildet
+        /// <see cref="HilfsstromDesProjekts"/> (Etappe B3 Paket b).</para></summary>
         private static double StromVon(ErgebnisBHKWModulModel m)
         {
             return m == null ? 0 : m.Stromproduktion;
+        }
+
+        /// <summary>Brennstoffeinsatz einer zugeordneten BHKW-Modulzeile [MWh/a] — die
+        /// ENDENERGIE dieser Anlage und damit die Bemessungsgrundlage des Hilfsstroms
+        /// (Konzept § 4.5). Dieselbe Größe, die <see cref="BaueSteuerAnlage"/> als
+        /// <c>SteuerAnlage.BrennstoffMWh</c> ansetzt — es gibt nur eine.</summary>
+        private static double BrennstoffVon(ErgebnisBHKWModulModel m)
+        {
+            return m == null ? 0 : m.Verbrauch;
+        }
+
+        /// <summary>
+        /// ETAPPE B3 Paket b — <b>der Hilfsstrom eines Projekts, je Anlage und in
+        /// Summe</b>. Das Ergebnis dieser Klasse ist der EINE Netto-Ort: Jeder Pfad der
+        /// KWKG-Rechnung bezieht seine geminderten Mengen aus ihr, keiner rechnet sie
+        /// selbst.
+        /// </summary>
+        private sealed class HilfsstromSatz
+        {
+            /// <summary>Hilfsstrom je Anlagenzeile [MWh/a], in der Lesereihenfolge von
+            /// <see cref="BhkwAnlagen"/> — und damit indexgleich zu
+            /// <see cref="KwkgAnlagenauswahl.Anlagen"/>.</summary>
+            public double[] JeAnlage = new double[0];
+
+            /// <summary>Summe über ALLE Anlagen des Projekts [MWh/a] — auch über die
+            /// nicht förderfähigen: Hilfsstrom verbraucht die Anlage unabhängig davon,
+            /// ob ihr Strom einen Zuschlag bekommt.</summary>
+            public double GesamtMWh;
+
+            /// <summary>true, sobald irgendeine Anlage einen Anteil &gt; 0 trägt.</summary>
+            public bool Gepflegt;
+
+            /// <summary>false = ein Anteil ist gepflegt, aber Anlagen- und Modulzeilen
+            /// ließen sich nicht paaren. Dann bleibt alles brutto, und der Anwender
+            /// bekommt eine Meldung statt einer stillen Null.</summary>
+            public bool Zuordenbar = true;
+        }
+
+        /// <summary>
+        /// Bildet den Hilfsstrom aller BHKW-Anlagen eines Projekts (Konzept § 4.3):
+        /// <c>Hilfsenergie_Anteil × Brennstoff der zugeordneten Modulzeile</c>, über
+        /// <see cref="HilfsstromRechner.MengeMWh"/> — dieselbe Funktion, die beim
+        /// Speichern eines Laufs die Ergebnisspalte <c>Hilfsenergie</c> füllt.
+        ///
+        /// <para><b>Frisch statt gelesen.</b> Die persistierte Spalte wird bewusst NICHT
+        /// verwendet: Sie trägt den Stand des Laufs, an dem gespeichert wurde, und der
+        /// Anteil an der Anlage kann sich seither geändert haben (Konzept § 4.5, „die
+        /// Menge ist ein Ergebniswert").</para>
+        ///
+        /// <para><b>Die Zuordnung ist dieselbe wie überall</b>
+        /// (<see cref="ModulJeAnlage"/>) — und sie scheitert unter genau denselben
+        /// Bedingungen wie <see cref="Anlagenauswahl"/>. Ist sie nicht möglich, bleibt
+        /// der Hilfsstrom 0 und <see cref="HilfsstromSatz.Zuordenbar"/> false; die
+        /// KWKG-Rechnung läuft dann ohnehin auf ihrem projektweiten Ersatzweg, der
+        /// keine Anlagen kennt.</para>
+        /// </summary>
+        private HilfsstromSatz HilfsstromDesProjekts(VariantenDaten v)
+        {
+            var h = new HilfsstromSatz();
+            if (v == null) return h;
+
+            List<BhkwAnlage> anlagen = BhkwAnlagen(v.IdProjekt);
+            h.JeAnlage = new double[anlagen.Count];
+
+            foreach (BhkwAnlage a in anlagen)
+                if (a.HilfsenergieAnteil.HasValue && a.HilfsenergieAnteil.Value > 0)
+                { h.Gepflegt = true; break; }
+            if (!h.Gepflegt) return h;    // nichts gepflegt: alles 0, nichts zu melden
+
+            List<ErgebnisBHKWModulModel> module = v.Ergebnis != null && v.Ergebnis.BHKW != null
+                                                ? v.Ergebnis.BHKW.Module : null;
+            if (anlagen.Count == 0 || module == null || module.Count == 0)
+            { h.Zuordenbar = false; return h; }
+
+            ErgebnisBHKWModulModel[] zuordnung = ModulJeAnlage(anlagen, module);
+            if (zuordnung == null) { h.Zuordenbar = false; return h; }
+
+            for (int i = 0; i < anlagen.Count; i++)
+            {
+                h.JeAnlage[i] = HilfsstromRechner.MengeMWh(anlagen[i].HilfsenergieAnteil,
+                                                           BrennstoffVon(zuordnung[i]));
+                h.GesamtMWh += h.JeAnlage[i];
+            }
+            return h;
         }
 
         /// <summary>BHKW-Anlagenzeilen des Projekts, einmal je Berechne-Lauf gelesen.</summary>
@@ -3814,6 +4115,10 @@ namespace WindowsFormsApplication1
                         // Projektwert" (Etappe B3 Paket a).
                         anl.EnergiesteuerWahl = Text(r, SchemaKatalog.SPALTE_EA_ENERGIESTEUER_WAHL) ?? "";
                         anl.AufteilungMethode = Text(r, SchemaKatalog.SPALTE_EA_AUFTEILUNG_METHODE) ?? "";
+
+                        // ETAPPE B3 Paket b: D() liefert null für NULL und für die
+                        // fehlende Spalte — und null heißt hier „keine Hilfsenergie".
+                        anl.HilfsenergieAnteil = D(r, SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL);
                     }
                     liste.Add(anl);
                 }
@@ -3849,9 +4154,13 @@ namespace WindowsFormsApplication1
                   ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_KONTINGENT + "]" +
                   ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_DECKEL + "]"
                 : "";
+            // Paket b nimmt den Hilfsenergieanteil in DIESELBE Fähigkeitsstufe: Alle drei
+            // Spalten entstehen zusammen in Migrationsschritt 61a, eine Datenbank hat
+            // also entweder alle drei oder keine.
             string b3a = mitB3a
                 ? ", a.[" + SchemaKatalog.SPALTE_EA_ENERGIESTEUER_WAHL + "]" +
-                  ", a.[" + SchemaKatalog.SPALTE_EA_AUFTEILUNG_METHODE + "]"
+                  ", a.[" + SchemaKatalog.SPALTE_EA_AUFTEILUNG_METHODE + "]" +
+                  ", a.[" + SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL + "]"
                 : "";
 
             bool bhkw = idType == WizardItemClass.BHKW_TYP;
@@ -4299,6 +4608,16 @@ namespace WindowsFormsApplication1
             erg.KwkgModule = eingabe.KwkgModule;
             erg.Betriebskosten = eingabe.Betriebskosten;
             erg.Hinweis = eingabe.Hinweis;
+
+            // Trägerzuordnungs-Etappe: Fiel die Emissionsrechnung mangels zugeordnetem
+            // Strom-Energieträger auf den Strommix-Vorgabewert zurück (Flag aus
+            // KostenEmissionRechner), gehört das in denselben Hinweiskanal wie jede
+            // andere dokumentierte Vereinfachung — sonst steht im Ergebnis eine
+            // CO₂-Bilanz, deren Bezugsgröße niemand erfasst hat.
+            if (v.CO2StrommixRueckfall)
+                erg.Hinweis = Anhaengen(erg.Hinweis, T("WIRT_CO2_STROMMIX_RUECKFALL",
+                    "CO₂-Bilanz: kein Strom-Energieträger zugeordnet — Netzbezug mit " +
+                    "Strommix-Vorgabewert gerechnet."));
 
             // ETAPPE B2 (BW2/BF2) — Kohärenzprüfung als REINE Warnzeile. Sie liest die
             // Preiszerlegung und vergleicht sie mit den bereits gebuchten Gutschriften;
