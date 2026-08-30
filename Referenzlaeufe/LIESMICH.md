@@ -12,21 +12,70 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
-**Zwei Basen vom 29.08.2026 — die beiden Produktiv-Datenbestände sind
+**`2026-08-30_B3-Kaskade/`** — **dreizehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1030, 1039, 1040, 1041, 1042), **332 CSV**. **Die Datenbestände sind
+wieder zusammengeführt:** 1040–1042 stehen auf diesem Rechner wieder im Bestand, die
+Zweiteilung vom 29.08. (`Booster` für den Zweitstand, `E1E2` für diesen Stand) ist
+damit erledigt — es gilt wieder **eine** Basis.
+
+> **Anlass: Datenänderungen des Anwenders an 1030 und 1042.** Das zweite BHKW von
+> Projekt 1030 (Anlage 14921, „EC-POWER XRGI 9") hatte keine Senkenzeile und lief nicht
+> mehr in der Kaskade mit; der Anwender hat es in `Z_AnlageSenke` wieder eingehängt
+> (Rang 1 Heizkreis, Rang 2 PufferHeizung auf Puffer 1054170, Ladeprio 2) und dabei das
+> Gerät gewechselt — **die Zwei-Modul-Kaskade rechnet wieder, `aggregate.csv` führt
+> `BHKWModul[0]` und `BHKWModul[1]`**. Projekt 1042 ist nach der Löschung vom 28./29.08.
+> auf diesem Bestand neu aufgebaut (anderer Kessel, andere Speicher) und deshalb nicht
+> mehr mit dem 1042 der Booster-Basis vergleichbar.
+>
+> **Codestand:** `bad41f8` (Branch `Pufferspeicher`, B3-Serie), gebaut aus einem
+> `git archive HEAD`-Export außerhalb des Repos (`C:\Waermeplan\_basisbuild`; 0 Fehler).
+> **Datenquelle:** produktive `Kenndaten.accdb`, Zeitstempel **30.08.2026 06:13:43**,
+> Schemastand **61**, nur gelesen (keine `laccdb`); die Migration der Arbeitskopie war
+> ein No-op. **Selbstvergleich 13/13 PASS (3 558 333 Werte), 332/332 byte-/MD5-gleich**;
+> `pruefen` 13/13 plausibel.
+>
+> Gegen `2026-08-29_Booster`: **297/332 byte-gleich**. Die 35 Abweichungen sind
+> vollständig zugeordnet — sieben `aggregate.csv` weichen **ausschließlich** um die neue
+> Ergebnisspalte `Hilfsenergie` ab (Migrationsschritt 61, Etappe B3 Paket a; Wert überall
+> 0), die übrigen 28 liegen in **1030** (7) und **1042** (21). Der Vergleich mit
+> `--ohne BHKWModul[0].Hilfsenergie,BHKWModul[1].Hilfsenergie,HeizkesselModul[0].Hilfsenergie`
+> meldet **elf Projekte PASS** und FAIL nur in 1030 und 1042 — der Rechenkern ist
+> unverändert. Zahlen und Zuordnung im
+> [Laufprotokoll der Basis](2026-08-30_B3-Kaskade/lauf_protokoll.md).
+>
+> **ACHTUNG bei 1030:** Das zweite Modul ist jetzt „EC-POWER XRGI 9" (9 kW el) statt
+> „Agenitor 306 (250 kw.el) Gas". Die Pfade bleiben abgedeckt (beide Module Erdgas, beide
+> unter 500 kW, alle drei Vollbenutzungsstunden-Aggregate belegt), **die Zahlen der
+> Vorbasen gelten aber nicht mehr** — u. a. ist die Summe thermisch nicht mehr
+> 12 860,72 h. Der Lauf trägt neu die Warnung, dass 14921 eine andere Senke führt als die
+> führende Anlage 14920 und deshalb die Senke der führenden Anlage gilt.
+>
+> Der Bestand führt inzwischen auch **1043** und **1044** (weitere Booster-Varianten).
+> Sie sind **bewusst nicht** Teil der Basis — ihre Aufnahme wäre ein eigener,
+> bewusster Basiswechsel.
+>
+> **Die feste Projektliste (dreizehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
+> ```
+
+### Frühere Fassung: die beiden Basen vom 29.08.2026
+
+*(Sie bleiben liegen; die Zweiteilung ist mit `B3-Kaskade` aufgehoben.)*
+
+**Zwei Basen vom 29.08.2026 — die beiden Produktiv-Datenbestände waren
 auseinandergelaufen.** Die Referenzarbeit lief am 29.08. parallel auf zwei Ständen:
 Auf dem **Zweitstand** (13 Projekte, 1042 mit scharfer Booster-Kopplung) entstand
 `2026-08-29_Booster/`; auf **diesem Stand** (1040–1042 vom Anwender gelöscht, 1039
 umgebaut) entstand `2026-08-29_E1E2/`. Für die **neun gemeinsamen, unveränderten
 Projekte (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, 1030) sind beide Basen
 byte-gleich zueinander** — jede ist dort byte-gleich zu B2; der Rechenkern-Kern ist
-EIN Stand. Bis die Datenbestände zusammengeführt sind (Wiederherstellung/Neuimport
-von 1040–1042 oder bewusste Übernahme der Löschung — jeweils ein bewusster
-Basiswechsel), gilt: **auf einem 13-Projekte-Bestand gegen `Booster` vergleichen, auf
-dem 10-Projekte-Bestand gegen `E1E2`.**
+EIN Stand.
 
 **`2026-08-29_Booster/`** — **dreizehn Projekte** (1007, 1008, 1011, 1017, 1018, 1021,
 1023, 1024, 1030, **1039, 1040, 1041, 1042**), **332 CSV** — die Referenz für den
-13-Projekte-Bestand (Zweitstand).
+13-Projekte-Bestand (Zweitstand), abgelöst durch `2026-08-30_B3-Kaskade`.
 
 > **Anlass: Booster-Temperaturkopplung erstmals scharf im Referenznetz** (Codestand
 > `0787aec` = B3, rechnerisch identisch B2). Datenänderung: `WQ_Unbegrenzt = False` an
@@ -224,14 +273,16 @@ dem 10-Projekte-Bestand gegen `E1E2`.**
 > Rechenkern nicht berührt hat.
 
 > **Die Projektliste ist FEST VORGEGEBEN und muss bei jedem Folgelauf mitgegeben
-> werden** — seit dem 29.08.2026 je Datenbestand (siehe „Aktuelle Basis"):
+> werden** — seit dem 30.08.2026 wieder **eine** Liste für einen Bestand (siehe
+> „Aktuelle Basis"):
 >
 > ```powershell
-> # 13-Projekte-Bestand (Zweitstand) -> Vergleich gegen 2026-08-29_Booster:
+> # Vergleich gegen 2026-08-30_B3-Kaskade:
 > & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
-> # Bestand dieses Rechners (1040-1042 geloescht, 1039 umgebaut) -> gegen 2026-08-29_E1E2:
-> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039
 > ```
+>
+> *(29.08.2026 bis 30.08.2026 galten zwei Listen je Datenbestand — 13 Projekte gegen
+> `Booster`, 10 Projekte gegen `E1E2`. Diese Zweiteilung ist aufgehoben.)*
 >
 > Ohne `--projekte` wählt die Suite datengetrieben — und diese Wahl **wandert mit dem
 > Projektbestand**. Mit den Beispielprojekten 1026–1029 zieht sie inzwischen 1012 und 1026
@@ -242,15 +293,23 @@ dem 10-Projekte-Bestand gegen `E1E2`.**
 > zum Einfrieren einer Basis.
 
 > **Projekt 1030 „Referenz BHKW-Kaskade (Regressionstest)" ist der Anker für
-> Mehrmodul-Kaskaden.** Zwei BHKW-Module (50 kW el / 250 kW el), Spitzenkessel,
-> Pufferspeicher, gepflegter KWKG-Satz und gepflegte Energiepreise. Es deckt als **einziges**
-> Projekt der Referenzmenge ab: die drei Vollbenutzungsstunden-Aggregate aus Etappe E2
-> (Summe thermisch 12 860,72 h, ungewichtetes Mittel 6 430,36 h, leistungsgewichtet
-> elektrisch 5 733,59 h), eine **bindende** KWKG-Deckelung (Erlös Jahr 1 44 265,13 € bei
-> Jahresdeckel 3 100 Vbh) und die Positivseite beider KWKG-Guards (beide Module unter der
-> 500-kW-Ausschreibungsgrenze, beide Erdgas). Im übrigen Bestand steht `KWKG_Bonus` auf 0 —
-> ohne 1030 wäre dieser ganze Pfad ungetestet. **Wird 1030 verändert oder gelöscht, verliert
-> die Referenzmenge ihre einzige Abdeckung dieses Pfades.**
+> Mehrmodul-Kaskaden.** Zwei BHKW-Module, Spitzenkessel, Pufferspeicher, gepflegter
+> KWKG-Satz und gepflegte Energiepreise. Es deckt als **einziges** Projekt der
+> Referenzmenge ab: die drei Vollbenutzungsstunden-Aggregate aus Etappe E2, eine
+> **bindende** KWKG-Deckelung und die Positivseite beider KWKG-Guards (beide Module unter
+> der 500-kW-Ausschreibungsgrenze, beide Erdgas). Im übrigen Bestand steht `KWKG_Bonus`
+> auf 0 — ohne 1030 wäre dieser ganze Pfad ungetestet. **Wird 1030 verändert oder
+> gelöscht, verliert die Referenzmenge ihre einzige Abdeckung dieses Pfades.**
+>
+> **Genau das ist zwischenzeitlich passiert und seit `2026-08-30_B3-Kaskade` geheilt.**
+> Das zweite Modul war ohne Senkenzeile aus der Kaskade gefallen; der Anwender hat es
+> wieder eingehängt und dabei gewechselt: statt „Agenitor 306 (250 kw.el) Gas" fährt jetzt
+> **„EC-POWER XRGI 9"** mit. Die abgedeckten Pfade bleiben, **die Zahlen sind neue**:
+> Summe thermisch **13 977,95 h** (vorher 12 860,72 h), ungewichtetes Mittel **6 988,98 h**
+> (vorher 6 430,36 h), leistungsgewichtet elektrisch **7 327,17 h** (vorher 5 733,59 h).
+> Die frühere Zahl der KWKG-Deckelung (Erlös Jahr 1 44 265,13 € bei Jahresdeckel
+> 3 100 Vbh) gilt entsprechend nicht mehr; sie stammt ohnehin aus der
+> Wirtschaftlichkeit, die der Referenzlauf nicht abdeckt.
 
 > **Das Feature-Flag `Kaskade_Zweikanalig` beschreibt die Basis nicht mehr pauschal.** Für
 > **BHKW-Projekte** (1017, 1018, 1024, 1030) ist es seit Paket BHKW-Regulär **wirkungslos** —
@@ -305,7 +364,20 @@ reproduzierbar.
 
 ## Frühere Stände
 
-`2026-08-28_B2/` bleibt als **vorheriger Stand** liegen (Codestand `4be1862`, Schemastand
+`2026-08-29_Booster/` bleibt als **vorheriger Stand** liegen (Codestand `0787aec`,
+Schemastand 55, dreizehn Projekte, 332 CSV) — die letzte Basis **vor** der
+Wiederherstellung der 1030-Kaskade und dem Neuaufbau von 1042 und damit die einzige
+Quelle der Ganglinien des früheren zweiten Kaskadenmoduls „Agenitor 306 (250 kw.el) Gas"
+sowie des alten 1042. Gegen `2026-08-30_B3-Kaskade` ist sie in **elf von dreizehn
+Projekten wertgleich** (die sieben `aggregate.csv`-Byte-Unterschiede sind allein die neue
+Spalte `Hilfsenergie`). Begründung im Abschnitt „Frühere Fassung: die beiden Basen vom
+29.08.2026" darüber.
+
+`2026-08-29_E1E2/` bleibt als **älterer Stand** liegen (zehn Projekte, 234 CSV) — die
+Basis des zwischenzeitlichen 10-Projekte-Bestands dieses Rechners, überholt seit
+1040–1042 wieder im Bestand stehen.
+
+`2026-08-28_B2/` bleibt als **älterer Stand** liegen (Codestand `4be1862`, Schemastand
 55, dreizehn Projekte, 332 CSV) — der gemeinsame Ausgangspunkt beider 29.08.-Basen: auf
 dem Zweitstand der Stand unmittelbar vor dem Unbegrenzt-Fix (1042 dort mit
 abgeschalteter Kopplung, konstant 45 °C; für die zwölf übrigen Projekte byte-gleich mit
@@ -739,23 +811,21 @@ die Projektdaten, vergleicht man Äpfel mit Birnen. Die Quelle steht im Kopf von
 ## Die Projektauswahl
 
 **Für jeden Vergleichslauf gilt die feste Liste. `--projekte` ist Pflicht** — seit dem
-29.08.2026 je Datenbestand (siehe „Aktuelle Basis"):
+30.08.2026 wieder eine einzige Liste (siehe „Aktuelle Basis"):
 
 ```powershell
-# 13-Projekte-Bestand (Zweitstand) -> Vergleich gegen 2026-08-29_Booster:
+# Vergleich gegen 2026-08-30_B3-Kaskade:
 & $exe lauf --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
-# Bestand dieses Rechners -> Vergleich gegen 2026-08-29_E1E2:
-& $exe lauf --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039
 ```
 
-Kern beider Listen sind die neun Projekte der B5-Linie (acht von B4 plus Kaskadenprojekt
-**1030**) plus **1039**. Auf dem Zweitstand kommen die drei Konzept-11.1-Projekte
-**1040 (zwei Puffer je Kanal), 1041 (Prozesswärme mit eigenem Puffer) und 1042
-(Booster-Kette mit Kombi-Speicher)** hinzu; auf dem Bestand dieses Rechners **hat der
-Anwender sie am 28./29.08.2026 gelöscht** und 1039 umgebaut (Tools: Wärmepumpe, einzige
-Anlage ein BHKW, WP-Produktion 0) — dort sind ihre Kategorien unbesetzt, bis
-Ersatzprojekte nachrücken (ein bewusster Basiswechsel, kein Nebenbei-Schritt). Wer die
-Liste wegläßt, bekommt einen Ordner, der sich mit der Basis nicht vergleichen läßt — der
+Kern der Liste sind die neun Projekte der B5-Linie (acht von B4 plus Kaskadenprojekt
+**1030**) plus **1039** und die drei Konzept-11.1-Projekte **1040 (zwei Puffer je
+Kanal), 1041 (Prozesswärme mit eigenem Puffer) und 1042 (Booster-Kette mit
+Kombi-Speicher)**. Die Löschung von 1040–1042 auf diesem Rechner am 28./29.08.2026 ist
+rückgängig — die Projekte stehen wieder im Bestand (1042 neu aufgebaut). Die weiteren
+Booster-Varianten **1043** und **1044** gehören **nicht** zur festen Liste; sie
+aufzunehmen wäre ein bewusster Basiswechsel, kein Nebenbei-Schritt. Wer die Liste
+wegläßt, bekommt einen Ordner, der sich mit der Basis nicht vergleichen läßt — der
 Vergleich meldet dann fehlende und zusätzliche Projekte, nicht Rechenabweichungen.
 
 ### Warum nicht die Automatik
