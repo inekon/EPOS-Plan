@@ -8468,4 +8468,22 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="KOH_GRUND_BB_NULL" xml:space="preserve">
     <value>Anteil 0 ct/kWh</value>
   </data>
+  <data name="BK_KOSTEN_SP_CO2" xml:space="preserve">
+    <value>CO₂ [g/kWh]</value>
+  </data>
+  <data name="BK_KOSTEN_SP_SO2" xml:space="preserve">
+    <value>SO₂ [mg/kWh]</value>
+  </data>
+  <data name="BK_KOSTEN_SP_NOX" xml:space="preserve">
+    <value>NOx [mg/kWh]</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_HINT" xml:space="preserve">
+    <value>Emissionsfaktoren — CO₂ aus Ebene „{0}“, Berechnungsmodus {1}. Lesekette: Projektwert → aktiver Emissionswert → Brennstoff-Stamm → Trägerkatalog.</value>
+  </data>
+  <data name="BK_KOSTEN_TRAEGER_FEHLZEILE" xml:space="preserve">
+    <value>{0} — nicht zugeordnet</value>
+  </data>
+  <data name="BK_KOSTEN_TRAEGER_FEHLZEILE_HINT" xml:space="preserve">
+    <value>„{0}“ wird von {1} verwendet, ist dem Projekt aber nicht zugeordnet — ohne Zuordnung gibt es weder Preis noch Heizwert noch Emissionsfaktoren, und die Energiekosten bleiben „—“. Zuordnen über den Knopf „{2}“ oben rechts.</value>
+  </data>
 </root>

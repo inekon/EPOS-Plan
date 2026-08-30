@@ -8461,4 +8461,22 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="KOH_GRUND_BB_NULL" xml:space="preserve">
     <value>share is 0 ct/kWh</value>
   </data>
+  <data name="BK_KOSTEN_SP_CO2" xml:space="preserve">
+    <value>CO₂ [g/kWh]</value>
+  </data>
+  <data name="BK_KOSTEN_SP_SO2" xml:space="preserve">
+    <value>SO₂ [mg/kWh]</value>
+  </data>
+  <data name="BK_KOSTEN_SP_NOX" xml:space="preserve">
+    <value>NOx [mg/kWh]</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_HINT" xml:space="preserve">
+    <value>Emission factors — CO₂ from level “{0}”, calculation mode {1}. Lookup chain: project value → active emission value → fuel master data → carrier catalogue.</value>
+  </data>
+  <data name="BK_KOSTEN_TRAEGER_FEHLZEILE" xml:space="preserve">
+    <value>{0} — not assigned</value>
+  </data>
+  <data name="BK_KOSTEN_TRAEGER_FEHLZEILE_HINT" xml:space="preserve">
+    <value>“{0}” is used by {1} but is not assigned to this project — without an assignment there is neither a price nor a calorific value nor emission factors, and the energy costs stay “—”. Assign it via the “{2}” button at the top right.</value>
+  </data>
 </root>

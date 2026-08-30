@@ -198,8 +198,11 @@ namespace WindowsFormsApplication1
             // kWh-bezogenen Arbeitspreis SECHS Spalten, die Komponententabelle nach dem
             // Wegfall des Technik-Planwerts nur noch zwei. Die zusätzlichen vier Prozent
             // gehen dorthin, wo sie gebraucht werden.
-            this.pnlListen.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38f));
-            this.pnlListen.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 62f));
+            // 30/70 seit 30.08.2026: Die Trägertabelle führt jetzt ZEHN Spalten
+            // (Preise, Leistungspreis, drei Emissionsfaktoren), die Komponententabelle
+            // unverändert drei. Begründung und Spaltengewichte in LadeTraeger.
+            this.pnlListen.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30f));
+            this.pnlListen.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70f));
             this.pnlListen.RowCount = 2;
             this.pnlListen.RowStyles.Add(new RowStyle(SizeType.Absolute, 22f));
             this.pnlListen.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
@@ -758,6 +761,15 @@ namespace WindowsFormsApplication1
             // Monatssätze × 12, dieselbe Vorrangkette wie im KostenEmissionRechner
             // (Projekt vor Katalog, 0 = nicht gepflegt); Strom zeigt „—“ (Tarifwelt).
             gridTraeger.Columns.Add("leistung", Text_("BK_KOSTEN_SP_LEISTUNGSPREIS", "Leistungspreis [€/(kW·a)]"));
+            // 30.08.2026 (Anwenderentscheid): die drei Emissionsfaktoren, mit denen die
+            // Kennzahlen dieses Projekts tatsächlich rechnen — gelesen über die EINE
+            // Kette EmissionsFaktorLader (Projektwert → aktive emissionswert-Zeile →
+            // Tab_Brennstoff_Stamm → energy_carrier). Der Tooltip nennt die Ebene, aus
+            // der der CO₂-Wert stammt; ohne sie wäre eine Zahl ohne Herkunft
+            // ununterscheidbar von einer Katalog-Vorgabe.
+            gridTraeger.Columns.Add("co2", Text_("BK_KOSTEN_SP_CO2", "CO₂ [g/kWh]"));
+            gridTraeger.Columns.Add("so2", Text_("BK_KOSTEN_SP_SO2", "SO₂ [mg/kWh]"));
+            gridTraeger.Columns.Add("nox", Text_("BK_KOSTEN_SP_NOX", "NOx [mg/kWh]"));
 
             // SECHS KÖPFE PASSEN EINZEILIG NICHT MEHR NEBENEINANDER. Gemessen bei 1040 px
             // Seitenbreite: 622 px stehen der Tabelle zur Verfügung, die sechs Köpfe
@@ -770,20 +782,42 @@ namespace WindowsFormsApplication1
             gridTraeger.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
             gridTraeger.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 
-            // Die Gewichte sind die bei 1040 px GEMESSENEN Mindestbreiten, nicht geraten:
-            // Träger 135 (breiteste Zelle „Elektrische Energie“ = 105 px),
-            // Abrechnungseinheit 125 — EIN Wort, das nicht umbrechen kann, also zählt hier
-            // die volle Kopfbreite von 119 px; mit den bisherigen 103 px stand sie schon
-            // vor dieser Änderung gekürzt da,
-            // die vier Zahlenspalten 90/95/92/85 gegen ihre UMBROCHENEN Köpfe (84/77/77/72 px)
-            // und ihre Zellen (höchstens 40 px). Danach ist kein Kopf mehr gekürzt.
-            gridTraeger.Columns[0].FillWeight = 135;
-            gridTraeger.Columns[1].FillWeight = 125;
-            gridTraeger.Columns[2].FillWeight = 90;
-            gridTraeger.Columns[3].FillWeight = 95;
-            gridTraeger.Columns[4].FillWeight = 92;
-            gridTraeger.Columns[5].FillWeight = 85;
-            for (int i = 2; i <= 5; i++)
+            // DIE GEWICHTE SIND MINDESTBREITEN, KEINE WUNSCHBREITEN. Sie stammen aus der
+            // Messung bei 1040 px Seitenbreite: Träger 135 (breiteste Zelle
+            // „Elektrische Energie“ = 105 px), Abrechnungseinheit 125 — EIN Wort, das nicht
+            // umbrechen kann, also zählt die volle Kopfbreite von 119 px —, die vier
+            // Preis-/Heizwertspalten 90/95/92/85 gegen ihre UMBROCHENEN Köpfe
+            // (84/77/77/72 px) und ihre Zellen (höchstens 40 px).
+            //
+            // NEU AUSTARIERT AM 30.08.2026. Die Tabelle führt jetzt ZEHN Spalten: die
+            // sechs von 2026-08-23, den Leistungspreis (KD6 § 10 — er lief bisher ohne
+            // eigenes Gewicht und zog als Vorgabe 100 mehr Platz, als sein umbrochener
+            // Kopf braucht) und die drei Emissionsspalten. Deren Köpfe sind kurz und
+            // brechen sauber („CO₂“ / „[g/kWh]“), ihre Zellen tragen höchstens sechs
+            // Zeichen — 62/70/70 genügen. Der Leistungspreis bekommt seine gemessenen
+            // 105 statt der stillen 100.
+            //
+            // Summe 929 statt bisher 722. Bei 1040 px Seitenbreite ist das MEHR, als die
+            // Tabelle hat; im Fill-Modus schrumpfen deshalb alle Spalten gleichmäßig, und
+            // die Köpfe brechen in die zweite Zeile (ColumnHeadersHeightSizeMode =
+            // AutoSize, s. o.). Das ist die bewusste Entscheidung: Zehn Spalten passen bei
+            // dieser Fensterbreite nicht mehr in ihre Mindestbreiten, aber sie behalten
+            // untereinander das RICHTIGE Verhältnis — und wer das Fenster größer zieht,
+            // bekommt sofort die gemessenen Breiten. Kompensiert wird zusätzlich über die
+            // Spaltenaufteilung der beiden Listen (pnlListen 30/70 statt 38/62): Die
+            // Komponententabelle braucht für ihre drei Spalten 260 px, die Trägertabelle
+            // für zehn ein Vielfaches davon.
+            gridTraeger.Columns[0].FillWeight = 135;   // Träger
+            gridTraeger.Columns[1].FillWeight = 125;   // Abrechnungseinheit
+            gridTraeger.Columns[2].FillWeight = 90;    // Heizwert
+            gridTraeger.Columns[3].FillWeight = 95;    // Arbeitspreis je Einheit
+            gridTraeger.Columns[4].FillWeight = 92;    // Arbeitspreis je kWh
+            gridTraeger.Columns[5].FillWeight = 85;    // Grundpreis
+            gridTraeger.Columns[6].FillWeight = 105;   // Leistungspreis
+            gridTraeger.Columns[7].FillWeight = 62;    // CO₂
+            gridTraeger.Columns[8].FillWeight = 70;    // SO₂
+            gridTraeger.Columns[9].FillWeight = 70;    // NOx
+            for (int i = 2; i < gridTraeger.Columns.Count; i++)
                 gridTraeger.Columns[i].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
             // Die VERWENDUNGSMENGE — die eine Frage, die die gespeicherte Abfrage nicht
@@ -807,6 +841,16 @@ namespace WindowsFormsApplication1
             }
             catch { verwendet.Clear(); }
 
+            // Der Berechnungsmodus des Projekts (F7) gilt für die CO₂-Spalte: Angezeigt
+            // wird der Faktor, mit dem die Kennzahlen dieses Projekts WIRKLICH rechnen.
+            string emissionsModus;
+            try { emissionsModus = EmissionenCtrl.ModusFuerRechenlauf(_idProjekt); }
+            catch { emissionsModus = DbWerte.EMISSION_MODUS_CO2; }
+
+            // Die Träger, für die eine echte Zeile entstanden ist — die übrigen
+            // verwendeten bekommen darunter ihre rote Fehlzeile.
+            var angezeigt = new HashSet<int>();
+
             try
             {
                 DataTable dt = DataRepository.GetDataTable(
@@ -823,6 +867,7 @@ namespace WindowsFormsApplication1
                     // wirklich ein Gewerk fährt.
                     ProjektEnergietraegerCtrl.Verwendung v;
                     if (!verwendet.TryGetValue(carrier, out v)) continue;
+                    angezeigt.Add(carrier);
 
                     double? preis, grund;
                     LiesPreise(carrier, out preis, out grund);
@@ -840,6 +885,8 @@ namespace WindowsFormsApplication1
                     bool ohneHeizwert = !hi.HasValue || hi.Value <= 0;
                     if (ohneHeizwert && !ohnePreis) _traegerOhneHeizwert.Add(S(r, "name"));
 
+                    EmissionsFaktorSatz faktoren = EmissionsFaktoren(carrier);
+
                     int idx = gridTraeger.Rows.Add(
                         S(r, "name"),
                         S(r, "billing_unit"),
@@ -849,7 +896,10 @@ namespace WindowsFormsApplication1
                             ? "—"
                             : (preis.Value / hi.Value).ToString("N4", kultur),
                         grund.HasValue ? grund.Value.ToString("N2", kultur) : "—",
-                        LeistungspreisText(carrier, kultur));
+                        LeistungspreisText(carrier, kultur),
+                        Faktor(faktoren.Wirksam(emissionsModus), kultur),
+                        Faktor(faktoren.So2, kultur),
+                        Faktor(faktoren.Nox, kultur));
                     // Ä19: Schlüssel für die Anlagen-Auswahl (Träger kennzeichnen).
                     gridTraeger.Rows[idx].Tag = carrier;
 
@@ -857,12 +907,107 @@ namespace WindowsFormsApplication1
                     // nachvollziehbar, wenn er seine Begründung mitliefert.
                     gridTraeger.Rows[idx].Cells[0].ToolTipText = string.Format(
                         MyResource.Resource.BK_KOSTEN_TRAEGER_HINT, v.BeitraegerText);
+
+                    // Die Herkunftsebene gehört an die Zahl: 240 g/kWh aus der
+                    // Projektübersteuerung ist eine andere Aussage als 240 g/kWh aus
+                    // dem Katalog — und nur die Ebene sagt, wo man sie ändert.
+                    string herkunft = string.Format(
+                        Text_("BK_KOSTEN_EMISSION_HINT",
+                              "Emissionsfaktoren — CO₂ aus Ebene „{0}“, Berechnungsmodus {1}. " +
+                              "Lesekette: Projektwert → aktiver Emissionswert → " +
+                              "Brennstoff-Stamm → Trägerkatalog."),
+                        faktoren.Co2Ebene, emissionsModus);
+                    for (int c = 7; c <= 9; c++)
+                        gridTraeger.Rows[idx].Cells[c].ToolTipText = herkunft;
                 }
                 gridTraeger.ClearSelection();
             }
             catch { }
 
+            ZeigeFehlendeTraeger(verwendet, angezeigt, kultur);
+
             if (gridTraeger.Rows.Count == 0) ZeigeKeineTraeger(verwendet.Values);
+        }
+
+        /// <summary>
+        /// <b>Die rote Fehlzeile je verwendetem, aber nicht angezeigtem Energieträger</b>
+        /// (Anwenderentscheid 30.08.2026) — dasselbe Muster wie bei den Gewerken ohne
+        /// Kostenposition in <see cref="LadeKomponenten"/>.
+        ///
+        /// <para><b>Warum eine ZEILE und nicht nur die Fußzeile.</b> Ein Träger, den das
+        /// Projekt fährt, dem aber keine Projekteinstellung gegenübersteht, hat in
+        /// <c>Abfrage_Energietraeger_Effektiv</c> keine Zeile — er fehlte in der Tabelle
+        /// vollständig. Die graue Sammelfußzeile
+        /// (<c>BK_KOSTEN_TRAEGER_FEHLT</c>) nannte ihn zwar, aber sie ist eine Zeile
+        /// unter fünf anderen Hinweisen; in der Tabelle, in der man ihn sucht, war
+        /// weiterhin nichts zu sehen. Die rote Zeile steht dort, wo der Träger fehlt,
+        /// nennt die verursachenden Erzeuger im Tooltip und verweist auf den Knopf
+        /// „Energieträgerverwaltung…“, über den die Zuordnung entsteht.</para>
+        ///
+        /// <para><b>Kriterium ist „nicht angezeigt“, nicht „nicht zugeordnet“.</b> Das
+        /// ist der Obermenge-Fall: Auch ein zugeordneter Träger, zu dem die gespeicherte
+        /// Abfrage nichts liefert, verschwände sonst wortlos. Die Fußzeile behält ihr
+        /// eigenes, engeres Kriterium (<see cref="_traegerNichtZugeordnet"/>) — sie sagt
+        /// etwas anderes, nämlich WARUM Preis und Heizwert fehlen.</para>
+        /// </summary>
+        private void ZeigeFehlendeTraeger(
+            Dictionary<int, ProjektEnergietraegerCtrl.Verwendung> verwendet,
+            HashSet<int> angezeigt, System.Globalization.CultureInfo kultur)
+        {
+            var fehlend = new List<ProjektEnergietraegerCtrl.Verwendung>();
+            foreach (ProjektEnergietraegerCtrl.Verwendung v in verwendet.Values)
+                if (!angezeigt.Contains(v.CarrierId)) fehlend.Add(v);
+            if (fehlend.Count == 0) return;
+
+            fehlend.Sort(delegate (ProjektEnergietraegerCtrl.Verwendung a,
+                                   ProjektEnergietraegerCtrl.Verwendung b)
+                         { return a.CarrierId.CompareTo(b.CarrierId); });
+
+            foreach (ProjektEnergietraegerCtrl.Verwendung v in fehlend)
+            {
+                string name = v.Name.Length > 0 ? v.Name : "#" + v.CarrierId.ToString(kultur);
+                int idx = gridTraeger.Rows.Add(
+                    string.Format(Text_("BK_KOSTEN_TRAEGER_FEHLZEILE", "{0} — nicht zugeordnet"),
+                                  name),
+                    "—", "—", "—", "—", "—", "—", "—", "—", "—");
+                gridTraeger.Rows[idx].DefaultCellStyle.BackColor =
+                    Color.FromArgb(0xFF, 0xE6, 0xE6);
+                gridTraeger.Rows[idx].Tag = v.CarrierId;
+
+                string hinweis = string.Format(
+                    Text_("BK_KOSTEN_TRAEGER_FEHLZEILE_HINT",
+                          "„{0}“ wird von {1} verwendet, ist dem Projekt aber nicht " +
+                          "zugeordnet — ohne Zuordnung gibt es weder Preis noch Heizwert " +
+                          "noch Emissionsfaktoren, und die Energiekosten bleiben „—“. " +
+                          "Zuordnen über den Knopf „{2}“ oben rechts."),
+                    name, v.BeitraegerText,
+                    Text_("BK_KOSTEN_BTN_TRAEGER", "Energieträgerverwaltung…"));
+                foreach (DataGridViewCell c in gridTraeger.Rows[idx].Cells)
+                    c.ToolTipText = hinweis;
+            }
+            gridTraeger.ClearSelection();
+        }
+
+        /// <summary>
+        /// Der Faktorsatz eines Trägers über die EINE Lesekette
+        /// (<see cref="EmissionsFaktorLader"/>) — dieselbe Quelle, aus der
+        /// <see cref="KostenEmissionRechner"/> und <see cref="EmissionsBilanzRechner"/>
+        /// rechnen. Eine eigene Abfrage auf <c>energy_project_settings.co2</c> wäre eine
+        /// zweite Wahrheit: Sie sähe weder die aktive <c>emissionswert</c>-Zeile noch den
+        /// Brennstoff-Stamm und zeigte damit Zahlen, mit denen niemand rechnet.
+        /// </summary>
+        private EmissionsFaktorSatz EmissionsFaktoren(int carrierId)
+        {
+            try { return EmissionsFaktorLader.Lade(_idProjekt, carrierId); }
+            catch { return new EmissionsFaktorSatz(); }
+        }
+
+        /// <summary>Emissionsfaktor als Zellentext; „—“ = nicht gepflegt (dieselbe
+        /// Lesart wie beim Arbeitspreis: eine 0 wäre eine Aussage, die niemand
+        /// getroffen hat).</summary>
+        private static string Faktor(double? wert, System.Globalization.CultureInfo kultur)
+        {
+            return wert.HasValue ? wert.Value.ToString("N2", kultur) : "—";
         }
 
         /// <summary>
@@ -887,7 +1032,7 @@ namespace WindowsFormsApplication1
                                 string.Join(", ", namen.ToArray()))
                 : MyResource.Resource.BK_KOSTEN_TRAEGER_KEINE;
 
-            int idx = gridTraeger.Rows.Add(text, "", "", "", "", "");
+            int idx = gridTraeger.Rows.Add(text, "", "", "", "", "", "", "", "", "");
             gridTraeger.Rows[idx].DefaultCellStyle.ForeColor = Color.DimGray;
             gridTraeger.Rows[idx].DefaultCellStyle.Font =
                 new Font(gridTraeger.Font, FontStyle.Italic);
@@ -1051,6 +1196,31 @@ namespace WindowsFormsApplication1
         public int TraegerOhnePreis { get { return _traegerOhnePreis.Count; } }
         public int TraegerNichtZugeordnet { get { return _traegerNichtZugeordnet.Count; } }
         public int TraegerOhneHeizwert { get { return _traegerOhneHeizwert.Count; } }
+
+        /// <summary>Prüfhilfe: eine Trägerzeile als „Zelle | Zelle | …“ samt Kennzeichnung
+        /// der roten Fehlzeile — der Headless-Harnisch kann die Tabelle nicht ansehen,
+        /// aber ihren Inhalt lesen.</summary>
+        public string TraegerZeile(int zeile)
+        {
+            if (zeile < 0 || zeile >= gridTraeger.Rows.Count) return "";
+            var teile = new List<string>();
+            foreach (DataGridViewCell c in gridTraeger.Rows[zeile].Cells)
+                teile.Add(c.Value == null ? "" : c.Value.ToString());
+            bool rot = gridTraeger.Rows[zeile].DefaultCellStyle.BackColor ==
+                       Color.FromArgb(0xFF, 0xE6, 0xE6);
+            return (rot ? "[ROT] " : "[   ] ") + string.Join(" | ", teile.ToArray());
+        }
+
+        /// <summary>Prüfhilfe: der Tooltip einer Trägerzelle (Herkunft, Verursacher).</summary>
+        public string TraegerTooltip(int zeile, int spalte)
+        {
+            if (zeile < 0 || zeile >= gridTraeger.Rows.Count) return "";
+            if (spalte < 0 || spalte >= gridTraeger.Columns.Count) return "";
+            return gridTraeger.Rows[zeile].Cells[spalte].ToolTipText ?? "";
+        }
+
+        /// <summary>Prüfhilfe: Anzahl der Spalten der Trägertabelle.</summary>
+        public int TraegerSpalten { get { return gridTraeger.Columns.Count; } }
 
         // ------------------------------------------------------ Kategorie-Kachel
 

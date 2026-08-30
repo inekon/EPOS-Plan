@@ -422,6 +422,20 @@ namespace WindowsFormsApplication1
             KostenEmissionRechner.Berechne(v);
             KennzahlenKatalog.Berechne(v);
 
+            // Ersatzannahme des Emissionspfades sichtbar machen (Befund 30.08.2026):
+            // Ohne zugeordneten Stromträger rechnet der Netzbezug mit dem
+            // Strommix-Vorgabewert weiter, während die Kosten in derselben Lage „—"
+            // melden. Dieselbe Behandlung wie die Ersatzannahmen eines
+            // Simulationslaufs (LaufmeldungenUebernehmen).
+            if (v.CO2StrommixRueckfall && _warnungen != null)
+                _warnungen.Add((v.IstStamm ? "Stamm" : "Variante") + " '" + v.Anzeige +
+                               "': Der Netzstrom rechnet mit dem Strommix-Vorgabewert (" +
+                               KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH.ToString(
+                                   "0.#", System.Globalization.CultureInfo.InvariantCulture) +
+                               " g/kWh) — dem Projekt ist kein Stromträger mit gepflegtem " +
+                               "Emissionsfaktor zugeordnet. Die CO₂-Kennzahlen stammen " +
+                               "insoweit nicht aus den Projektdaten.");
+
             // 6. Detail-Daten (Gebäude, Anlage, Komponenten, Klimaregion) für
             //    Projektbeschreibung, Kenndaten-Tabellen und Abweichungserkennung.
             try { v.Details = ProjektDetails.Lade(v.IdProjekt); }
