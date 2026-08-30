@@ -314,6 +314,27 @@ namespace WindowsFormsApplication1
                         double basis = 0;
                         foreach (ErgebnisBHKWModulModel mo in m.BHKW.Module) basis += mo.Waermeproduktion;
 
+                        // ETAPPE B3 Paket b: Hilfsenergie je Modulzeile [MWh/a] aus
+                        // Hilfsenergie_Anteil der Anlage x Brennstoff DIESER Zeile
+                        // (HilfsstromRechner - die eine Formel, die auch die
+                        // Wirtschaftlichkeit fuer die KWKG-Nettomenge verwendet). Die
+                        // Bemessungsgroesse ist derselbe anteilig verteilte Brennstoff,
+                        // der unten als Verbrauch geschrieben wird; mo.Verbrauch ist an
+                        // dieser Stelle noch leer (es fuellt ihn erst der Leseweg).
+                        var bhNamen = new string[m.BHKW.Module.Count];
+                        var bhBrennstoff = new double[m.BHKW.Module.Count];
+                        for (int ix = 0; ix < m.BHKW.Module.Count; ix++)
+                        {
+                            ErgebnisBHKWModulModel mx = m.BHKW.Module[ix];
+                            double anteilX = basis > 0 ? mx.Waermeproduktion / basis
+                                                       : 1.0 / m.BHKW.Module.Count;
+                            bhNamen[ix] = mx.Modul ?? "";
+                            bhBrennstoff[ix] = bhArt != null ? bhVerbrauch * anteilX : 0;
+                        }
+                        double[] bhHilfsenergie = HilfsstromRechner.JeModul(
+                            m.ID_Projekt, WizardItemClass.BHKW_TYP, bhNamen, bhBrennstoff);
+                        int bhIndex = 0;
+
                         int modId = NextId(conn, trans, TAB_BHKW_MODUL);
                         string sqlM = "INSERT INTO " + TAB_BHKW_MODUL + " (" +
                             "ID, ID_ErgebnisBHKW, Modul, Waermeproduktion, Stromproduktion, Brennstoff, Verbrauch, carrier_id, " +
@@ -349,11 +370,17 @@ namespace WindowsFormsApplication1
                                 // unterscheidbar; dieselbe Begruendung wie bei Quellwaerme.
                                 c.Parameters.Add("@vth", OleDbType.Double).Value = R(mo.VbhThermisch);
                                 c.Parameters.Add("@vel", OleDbType.Double).Value = R(mo.VbhElektrisch);
-                                // ETAPPE B3 Paket a: Hilfsenergie. Paket a bildet sie noch
-                                // nicht, geschrieben wird deshalb 0 - und zwar IMMER, aus
-                                // derselben Begruendung wie bei den Vbh: sonst waere
-                                // "erhoben und null" von "nicht erhoben" (NULL) nicht mehr
-                                // unterscheidbar.
+                                // ETAPPE B3 Paket a/b: Hilfsenergie [MWh/a]. Paket b
+                                // bildet den Wert (Anteil der Anlage x Brennstoff dieser
+                                // Zeile); ohne gepflegten Anteil bleibt es bei 0.
+                                // Geschrieben wird sie IMMER - auch die 0, aus derselben
+                                // Begruendung wie bei den Vbh: sonst waere "erhoben und
+                                // null" von "nicht erhoben" (NULL) nicht unterscheidbar.
+                                // Das Modell traegt den Wert mit, damit ein Ergebnis im
+                                // Speicher dieselbe Auskunft gibt wie die Zeile in der DB.
+                                mo.Hilfsenergie = bhIndex < bhHilfsenergie.Length
+                                                ? bhHilfsenergie[bhIndex] : 0;
+                                bhIndex++;
                                 c.Parameters.Add("@hen", OleDbType.Double).Value = R(mo.Hilfsenergie);
                                 c.ExecuteNonQuery();
                             }
@@ -406,6 +433,30 @@ namespace WindowsFormsApplication1
 
                     if (m.Heizkessel.Module != null && m.Heizkessel.Module.Count > 0)
                     {
+                        // ETAPPE B3 Paket b: Hilfsenergie des Kessels - dieselbe Formel
+                        // wie beim BHKW. Die Endenergie kommt aus
+                        // WirtschaftlichkeitCtrl.KesselBrennstoffMWh: Verbrauch, sofern
+                        // gesetzt, sonst die Rueckrechnung Waerme / Nutzungsgrad (Paket a
+                        // hat begruendet, warum der Rechenkern Verbrauch nie fuellt).
+                        //
+                        // KEINE Strommengenwirkung: Ein Kessel erzeugt keinen Strom, sein
+                        // Hilfsstrom mindert also weder eine KWKG-Nettoerzeugung noch eine
+                        // Steuerbemessung. Der Wert ist hier reiner Ausweis fuer Bericht
+                        // und Konzept 5.2 - die Kostenwirkung laeuft ueber die
+                        // Betriebskostenposition, die Mengenwirkung kaeme erst mit einer
+                        // spaeteren Etappe (Strombilanz der Hilfsantriebe).
+                        var hkNamen = new string[m.Heizkessel.Module.Count];
+                        var hkBrennstoff = new double[m.Heizkessel.Module.Count];
+                        for (int ix = 0; ix < m.Heizkessel.Module.Count; ix++)
+                        {
+                            ErgebnisHeizkesselModulModel mx = m.Heizkessel.Module[ix];
+                            hkNamen[ix] = mx.Modul ?? "";
+                            hkBrennstoff[ix] = WirtschaftlichkeitCtrl.KesselBrennstoffMWh(mx);
+                        }
+                        double[] hkHilfsenergie = HilfsstromRechner.JeModul(
+                            m.ID_Projekt, WizardItemClass.KESSEL_TYP, hkNamen, hkBrennstoff);
+                        int hkIndex = 0;
+
                         int modId = NextId(conn, trans, TAB_KESSEL_MODUL);
                         // Befund B3 behoben: Waermeproduktion wird persistiert; Verbrauch gerundet;
                         // Parametername @g war doppelt vergeben.
@@ -429,8 +480,11 @@ namespace WindowsFormsApplication1
                                 c.Parameters.Add("@j", OleDbType.Double).Value = R(mo.Jahresnutzungsgrad);
                                 c.Parameters.Add("@ca", OleDbType.Integer).Value =
                                     mo.CarrierId > 0 ? (object)mo.CarrierId : DBNull.Value;
-                                // ETAPPE B3 Paket a: Hilfsenergie des Kessels - Begruendung
-                                // wortgleich zur BHKW-Modulzeile weiter oben.
+                                // ETAPPE B3 Paket a/b: Hilfsenergie des Kessels -
+                                // Begruendung wortgleich zur BHKW-Modulzeile weiter oben.
+                                mo.Hilfsenergie = hkIndex < hkHilfsenergie.Length
+                                                ? hkHilfsenergie[hkIndex] : 0;
+                                hkIndex++;
                                 c.Parameters.Add("@hen", OleDbType.Double).Value = R(mo.Hilfsenergie);
                                 c.ExecuteNonQuery();
                             }

@@ -127,9 +127,16 @@ namespace WindowsFormsApplication1
         internal static List<KohaerenzHinweis> Pruefe(int idProjekt, KohaerenzLauf lauf)
         {
             var liste = new List<KohaerenzHinweis>();
-            if (idProjekt <= 0 || lauf == null || lauf.Steuer == null) return liste;
+            if (idProjekt <= 0) return liste;
 
             CultureInfo kultur = BerichtTexte.Kultur;
+
+            // ETAPPE B3 Paket b: Die Doppelpflege der Hilfsenergie hängt an KEINEM
+            // Steuerpfad — sie ist auch an einem reinen Wärmepumpenprojekt möglich und
+            // wird deshalb VOR der Prüfung auf lauf.Steuer erledigt.
+            try { HilfsenergieDoppelpflege(idProjekt, kultur, liste); } catch { }
+
+            if (lauf == null || lauf.Steuer == null) return liste;
 
             // Jede Seite für sich gekapselt: Ein Fehlschlag der Brennstoffseite darf die
             // Stromseite nicht mitnehmen — und keiner von beiden den Lauf.
@@ -137,6 +144,165 @@ namespace WindowsFormsApplication1
             try { Stromseite(idProjekt, lauf, kultur, liste); } catch { }
 
             return liste;
+        }
+
+        // =====================================================================
+        // Hilfsenergie — Doppelpflege Menge (Anlage) gegen Kosten (Position)
+        // =====================================================================
+
+        /// <summary>
+        /// ETAPPE B3 Paket b — <b>Hilfsenergie an zwei Orten gepflegt</b>.
+        ///
+        /// <para>Seit Paket b gibt es zwei Wege, denselben Hilfsbedarf zu erfassen: den
+        /// MENGENweg über <c>Tab_Energieanlagen.Hilfsenergie_Anteil</c> (Konzept § 4.5
+        /// Weg B — er mindert die zuschlagsfähige Nettostromerzeugung) und den
+        /// KOSTENweg über die Betriebskostenposition
+        /// <c>DbWerte.VDI_POS_HILFSENERGIE</c> (Wege A und C — sie belastet die
+        /// Betriebskosten). Beide dürfen nebeneinander stehen; sinnvoll ist es selten,
+        /// weil dann derselbe Strom zweimal in der Rechnung erscheint: einmal als
+        /// entgangener Zuschlag und einmal als Kostenposition.</para>
+        ///
+        /// <para><b>Nur melden, nichts verrechnen</b> — dieselbe Haltung wie in der
+        /// ganzen Klasse (BF2). Welcher der beiden Wege gemeint ist, kann die Anwendung
+        /// nicht wissen; sie kann nur sagen, dass beide gesetzt sind.</para>
+        ///
+        /// <para><b>„Aktiv" heißt: die Position trägt eine Zahl</b> — einen Satz
+        /// (<c>Einheitpreis</c>, Wege A und B) oder einen Jahresbetrag
+        /// (<c>EingegebenerWert</c>, Weg C). Eine Vorlagenzeile mit 0 ist eine
+        /// vorbereitete, keine gepflegte Position; im Bestand steht sie an fast jedem
+        /// Projekt und dürfte niemals warnen.</para>
+        /// </summary>
+        private static void HilfsenergieDoppelpflege(int idProjekt, CultureInfo kultur,
+                                                     List<KohaerenzHinweis> liste)
+        {
+            // Die billigste Frage zuerst: Gibt es überhaupt einen gepflegten Anteil? Im
+            // gesamten Bestand ist die Antwort nein (alle Spalten NULL) — dann kostet die
+            // Prüfung genau eine Abfrage je Projekt und endet hier. Die Spaltenprobe für
+            // ID_Anlage ist ein SELECT MAX über die ganze Tabelle und läuft erst danach.
+            List<HilfsstromRechner.AnlagenAnteil> mitAnteil = AnlagenMitAnteil(idProjekt);
+            if (mitAnteil.Count == 0) return;
+
+            // Ohne ID_Anlage (Datenbank vor Schritt 45) gibt es keine anlagenscharfe
+            // Zuordnung — dann lässt sich die Doppelpflege nicht feststellen.
+            if (!WirtschaftlichkeitCtrl.SpalteVorhanden("Tab_ProjektWerte",
+                                                        SchemaKatalog.SPALTE_PW_ID_ANLAGE))
+                return;
+
+            List<int> mitPosition = AnlagenMitHilfsenergiePosition(idProjekt);
+            if (mitPosition.Count == 0) return;
+
+            foreach (HilfsstromRechner.AnlagenAnteil a in mitAnteil)
+            {
+                if (!mitPosition.Contains(a.IdAnlage)) continue;
+                liste.Add(new KohaerenzHinweis
+                {
+                    Schwere = KohaerenzSchwere.WARNUNG,
+                    Text = string.Format(kultur, T("KOH_HILFSENERGIE_DOPPELT",
+                            "Hilfsenergie doppelt gepflegt (Menge an der Anlage und " +
+                            "Kostenposition {0}): {1} führt einen Hilfsenergieanteil von " +
+                            "{2} % und zugleich eine aktive Hilfsenergie-Kostenposition. " +
+                            "Die Mengenangabe mindert den KWK-Zuschlag, die Kostenposition " +
+                            "belastet die Betriebskosten — verrechnet wird nichts."),
+                        DbWerte.VDI_POS_HILFSENERGIE,
+                        a.Bezeichner,
+                        (a.AnteilProzent ?? 0).ToString("N2", kultur))
+                });
+            }
+        }
+
+        /// <summary>Anlagenzeilen des Projekts mit einem Hilfsenergieanteil &gt; 0 —
+        /// über <b>alle</b> Anlagenarten, weil jede Komponente Hilfsenergie haben
+        /// kann (Konzept § 5.2).</summary>
+        private static List<HilfsstromRechner.AnlagenAnteil> AnlagenMitAnteil(int idProjekt)
+        {
+            var treffer = new List<HilfsstromRechner.AnlagenAnteil>();
+            try
+            {
+                DataTable dt;
+                using (DataRepository.EngineModus())
+                    dt = DataRepository.GetDataTable(
+                        "SELECT ID, Bezeichner, [" +
+                        SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL + "] " +
+                        "FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
+                        new OleDbParameter("@p", idProjekt));
+
+                if (dt == null ||
+                    !dt.Columns.Contains(SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL))
+                    return treffer;
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    object w = r[SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL];
+                    if (w == DBNull.Value) continue;
+                    double anteil = Convert.ToDouble(w);
+                    if (anteil <= 0) continue;
+                    treffer.Add(new HilfsstromRechner.AnlagenAnteil
+                    {
+                        IdAnlage = r["ID"] == DBNull.Value ? 0 : Convert.ToInt32(r["ID"]),
+                        Bezeichner = r["Bezeichner"] == DBNull.Value
+                                   ? "" : Convert.ToString(r["Bezeichner"]).Trim(),
+                        AnteilProzent = anteil
+                    });
+                }
+            }
+            catch { treffer.Clear(); }
+            return treffer;
+        }
+
+        /// <summary>
+        /// <c>ID_Anlage</c> jeder AKTIVEN Hilfsenergie-Kostenposition des Projekts.
+        ///
+        /// <para><b>Der Namensvergleich läuft in C#, nicht in SQL.</b> Der Katalog kennt
+        /// neben <c>DbWerte.VDI_POS_HILFSENERGIE</c> die Spielarten
+        /// „Hilfsenergiekosten (Strom)", „… (Pumpen)", „… (Solarpumpe)" und
+        /// „… (Speicherladepumpe)" — sie sind dieselbe Kostenart unter anderem Namen und
+        /// müssen mitwarnen. Ein <c>LIKE</c> dafür wäre in Access mit <c>*</c> und über
+        /// OLE DB mit <c>%</c> zu schreiben; diese Falle wird hier nicht aufgestellt.</para>
+        /// </summary>
+        private static List<int> AnlagenMitHilfsenergiePosition(int idProjekt)
+        {
+            var treffer = new List<int>();
+            try
+            {
+                DataTable dt;
+                using (DataRepository.EngineModus())
+                    dt = DataRepository.GetDataTable(
+                        "SELECT f.Bezeichnung, w.[" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "], " +
+                        "w.[" + SchemaKatalog.SPALTE_PW_EINHEITPREIS + "], w.EingegebenerWert " +
+                        "FROM Tab_ProjektWerte AS w LEFT JOIN Tab_Kostenfaktor AS f " +
+                        "ON w.StammID = f.StammID " +
+                        "WHERE w.ProjektID = ? AND w.KategorieID = 2",
+                        new OleDbParameter("@p", idProjekt));
+                if (dt == null) return treffer;
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    string name = r["Bezeichnung"] == DBNull.Value
+                                ? "" : Convert.ToString(r["Bezeichnung"]).Trim();
+                    if (!name.StartsWith(DbWerte.VDI_POS_HILFSENERGIE,
+                                         StringComparison.OrdinalIgnoreCase)) continue;
+
+                    object ida = r[SchemaKatalog.SPALTE_PW_ID_ANLAGE];
+                    if (ida == DBNull.Value) continue;
+                    int idAnlage = Convert.ToInt32(ida);
+                    if (idAnlage <= 0 || treffer.Contains(idAnlage)) continue;
+
+                    if (!Aktiv(r[SchemaKatalog.SPALTE_PW_EINHEITPREIS]) &&
+                        !Aktiv(r["EingegebenerWert"])) continue;
+
+                    treffer.Add(idAnlage);
+                }
+            }
+            catch { treffer.Clear(); }
+            return treffer;
+        }
+
+        /// <summary>Ein Zahlenfeld ist „gepflegt", wenn es weder NULL noch 0 ist.</summary>
+        private static bool Aktiv(object wert)
+        {
+            if (wert == null || wert == DBNull.Value) return false;
+            try { return Math.Abs(Convert.ToDouble(wert)) > 1e-9; }
+            catch { return false; }
         }
 
         // =====================================================================
