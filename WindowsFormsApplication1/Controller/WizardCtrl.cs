@@ -1606,8 +1606,13 @@ namespace WindowsFormsApplication1
         /// Dieselbe Ableitung wie <c>Form_Kosten_Auswahl.GetConvID</c>: Umrechnungssatz über
         /// Brennstoff und Abrechnungseinheit (from_unit = to_unit). -1, wenn es keinen gibt -
         /// genau der Wert, den der Dialog in diesem Fall ebenfalls schreibt.
+        ///
+        /// <para><c>internal</c> seit Etappe BK3: Der manuelle Zuordnungsweg
+        /// <c>EnergietraegerKatalogCtrl.InsProjekt</c> (Ä10) benennt die Recheneinheit
+        /// seiner neuen Zeile über DIESELBE Regel — beide Wege sollen denselben
+        /// Umrechnungssatz eintragen.</para>
         /// </summary>
-        private static int ConvIdErmitteln(int idBrennstoff, string einheit)
+        internal static int ConvIdErmitteln(int idBrennstoff, string einheit)
         {
             object o = DataRepository.ExecuteScalar(
                 "SELECT ID FROM ENERGY_CONVERSION WHERE id_brennstoff = ? AND from_unit = ? AND to_unit = ?",
