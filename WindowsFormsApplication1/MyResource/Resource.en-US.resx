@@ -8497,4 +8497,40 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="WIRT_KWKG_TATBESTAND_ANLAGE_OFFEN" xml:space="preserve">
     <value>CHP Act: "{0}" carries its own rate for self-consumed electricity but no qualifying case under Section 6 (3) — without it there is no self-consumption bonus (Section 7 (2)); rate of this unit = 0.</value>
   </data>
+  <data name="PREIS_ST_ART_KEIN_PROD_GEWERBE" xml:space="preserve">
+    <value>not manufacturing industry</value>
+  </data>
+  <data name="PREIS_ST_ART_LAND_FORST" xml:space="preserve">
+    <value>agriculture and forestry</value>
+  </data>
+  <data name="PREIS_ST_ART_PROD_GEWERBE" xml:space="preserve">
+    <value>manufacturing industry</value>
+  </data>
+  <data name="PREIS_ST_EMPFOHLEN" xml:space="preserve">
+    <value>Suggested for this project's company type "{0}". The rate is only entered when you click.</value>
+  </data>
+  <data name="PREIS_ST_GRUND_EINHEIT" xml:space="preserve">
+    <value>The catalogue unit "{0}" cannot be converted to ct/kWh.</value>
+  </data>
+  <data name="PREIS_ST_GRUND_KEIN_JAHR" xml:space="preserve">
+    <value>The catalogue holds no rate for "{0}" in {1}.</value>
+  </data>
+  <data name="PREIS_ST_QUELLE" xml:space="preserve">
+    <value>Catalogue: {0} {1} (from {2}, {3})</value>
+  </data>
+  <data name="PREIS_ST_QUELLE_RUECKFALL" xml:space="preserve">
+    <value>Fallback: {0} ct/kWh from the program. {1} Can be added under "Statutory parameters".</value>
+  </data>
+  <data name="PREIS_ST_ZWECK_REDUZIERT" xml:space="preserve">
+    <value>Electricity tax for energy-intensive companies — what remains in the price after relief under § 9b StromStG.</value>
+  </data>
+  <data name="PREIS_ST_ZWECK_REGELFALL" xml:space="preserve">
+    <value>Electricity tax, standard rate (§ 3 StromStG).</value>
+  </data>
+  <data name="SIM_KARTE_MODUL" xml:space="preserve">
+    <value>Module {0} of {1}</value>
+  </data>
+  <data name="SIM_KARTE_TIP_MODUL" xml:space="preserve">
+    <value>The rank refers to the generator type. This project has {0} units of this type — each has its own card.</value>
+  </data>
 </root>
