@@ -701,6 +701,15 @@ namespace WindowsFormsApplication1
         /// ERSTEN Karte des Erzeugers: Reihenfolge und Teilnahme gelten dem Erzeugertyp,
         /// nicht der einzelnen Anlage — genau so, wie ein Auswahlfeld des Bestands für
         /// alle Anlagen seines Typs zugleich entschied.
+        ///
+        /// <b>ANWENDERENTSCHEID F2 (30.08.2026) — „Modul n von m".</b> Genau diese
+        /// Absicht war an der Karte nicht ablesbar: Zwei BHKW trugen beide „1", ohne dass
+        /// irgendetwas den Rang als Typrang auswies — ein Anwender hielt sein zweites
+        /// BHKW daraufhin für gar nicht angezeigt. Der Rang bleibt, wie er ist (er IST
+        /// die Kaskadenstufe des Typs); dazu bekommt jede Karte bei MEHREREN Anlagen
+        /// desselben Typs den Ausweis <see cref="ModulChip"/> — <c>n</c> in der
+        /// Anzeigereihenfolge dieser Gruppe, <c>m</c> = Anlagen des Typs. Bei m = 1
+        /// entsteht kein Ausweis; dort bleibt das Bestandsbild unverändert.
         /// </summary>
         private void WaermeerzeugerGruppe()
         {
@@ -750,7 +759,9 @@ namespace WindowsFormsApplication1
                         Rang = rang,
                         Titel = string.Format(MyResource.Resource.SIM_KARTE_TITEL,
                                               erzeuger, info.Bezeichner),
-                        Chips = ErzeugerChips(info),
+                        // F2: n = Platz in der Anzeigereihenfolge dieser Gruppe,
+                        // m = Anlagen des Typs. Beides steht hier bereits fest.
+                        Chips = ErzeugerChips(info, a + 1, anlagen.Count),
                         Reihenfolge = a == 0,
                         AufMoeglich = i > 0,
                         AbMoeglich = i < kaskade.Count - 1,
@@ -1317,11 +1328,20 @@ namespace WindowsFormsApplication1
             return new Rectangle(imFormular, new Size(Math.Min(karte.Width, 260), 24));
         }
 
-        /// <summary>Die Chips einer Erzeugerkarte (Konzept Abschnitt 3, Mockup 4).</summary>
-        private List<ErzeugerKarte.ChipDaten> ErzeugerChips(AnlagenInfo info)
+        /// <summary>
+        /// Die Chips einer Erzeugerkarte (Konzept Abschnitt 3, Mockup 4).
+        ///
+        /// <paramref name="modulNr"/> und <paramref name="modulAnzahl"/> sind die Stelle
+        /// dieser Anlage unter den Anlagen ihres Erzeugertyps (Anwenderentscheid F2,
+        /// siehe <see cref="ModulChip"/>); <c>modulAnzahl &lt; 2</c> heißt „einzige Anlage
+        /// des Typs" und erzeugt keinen Ausweis.
+        /// </summary>
+        private List<ErzeugerKarte.ChipDaten> ErzeugerChips(AnlagenInfo info,
+                                                            int modulNr, int modulAnzahl)
         {
             List<ErzeugerKarte.ChipDaten> chips = new List<ErzeugerKarte.ChipDaten>();
 
+            ModulChip(chips, modulNr, modulAnzahl);
             QuellenChip(info, chips);
             BoosterChip(info, chips);
             SenkenChips(info, chips);
@@ -1347,6 +1367,68 @@ namespace WindowsFormsApplication1
             }
 
             return chips;
+        }
+
+        /// <summary>
+        /// Der MODUL-AUSWEIS einer Erzeugerkarte (Anwenderentscheid F2, 30.08.2026):
+        /// „Modul n von m", sobald das Projekt MEHRERE Anlagen desselben Erzeugertyps
+        /// führt.
+        ///
+        /// <para><b>Was er beantwortet.</b> Die Rangziffer der Kopfzeile ist die
+        /// Kaskadenstufe des ERZEUGERTYPS (<see cref="WaermeerzeugerGruppe"/>); alle
+        /// Karten eines Typs tragen deshalb dieselbe. Das ist richtig, sah aber aus wie
+        /// eine doppelt gezeigte Karte — der gemeldete Fall: zwei BHKW, zweimal „1", der
+        /// Anwender vermisste sein zweites BHKW. Der Ausweis nennt die Stelle innerhalb
+        /// des Typs und lässt den Rang dabei unangetastet.</para>
+        ///
+        /// <para><b>Nur bei m &gt; 1.</b> „Modul 1 von 1" sagt nichts, was die Karte
+        /// nicht schon sagt; Projekte mit einer Anlage je Typ behalten ihr
+        /// Bestandsbild.</para>
+        ///
+        /// <para><paramref name="nr"/> zählt in der ANZEIGEREIHENFOLGE — der von
+        /// <see cref="AnlagenImProjekt"/> gelieferten (gepflegte Priorität zuerst,
+        /// ungepflegte dahinter, dann ID; Fix HB1). Damit ist „Modul 2" dieselbe Karte,
+        /// die auch als zweite in der Spalte steht.</para>
+        ///
+        /// <para><b>Stil <c>Flaeche</c></b> — graue Füllung ohne Rahmen, wie beim
+        /// Temperaturpaar: ein stiller Ausweis, der den bedeutungstragenden Farben
+        /// daneben (Quelle blau, Senke koralle, Warnung amber) nicht ins Gehege kommt.
+        /// Kein <c>ChipZiel</c>: An der Modulnummer gibt es nichts zu bearbeiten, ein
+        /// Doppelklick öffnet deshalb den Standard-Editor der Karte wie auf jeder
+        /// anderen zielfreien Stelle. Er läuft als gewöhnlicher Chip im umbrechenden
+        /// Chipbereich mit — die Kartenhöhe folgt (<c>ErzeugerKarte.HoeheNachfuehren</c>),
+        /// die Kopfzeile bleibt unberührt.</para>
+        /// </summary>
+        private void ModulChip(List<ErzeugerKarte.ChipDaten> chips, int nr, int anzahl)
+        {
+            if (chips == null || anzahl < 2 || nr < 1) return;
+
+            chips.Add(new ErzeugerKarte.ChipDaten
+            {
+                Text = string.Format(T("SIM_KARTE_MODUL", "Modul {0} von {1}"), nr, anzahl),
+                Stil = ErzeugerKarte.ChipStil.Flaeche,
+                Hinweis = string.Format(
+                    T("SIM_KARTE_TIP_MODUL",
+                      "Der Rang gilt dem Erzeugertyp. Dieses Projekt führt {0} Anlagen " +
+                      "dieses Typs — jede hat ihre eigene Karte."),
+                    anzahl)
+            });
+        }
+
+        /// <summary>
+        /// Anzeigetext über den Ressourcenschlüssel, mit deutschem Rückfall — dasselbe
+        /// Muster wie in <c>SteuerGutschriftRechner.T</c>. Es hält neue Texte aus
+        /// <c>MyResource/Resource.Designer.cs</c> heraus, die Visual Studio selbst
+        /// regeneriert; die Schlüssel werden in den <c>.resx</c> nachgetragen.
+        /// </summary>
+        private static string T(string schluessel, string rueckfall)
+        {
+            try
+            {
+                string s = MyResource.Resource.ResourceManager.GetString(schluessel);
+                return string.IsNullOrEmpty(s) ? rueckfall : s;
+            }
+            catch { return rueckfall; }
         }
 
         /// <summary>
