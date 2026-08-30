@@ -1392,11 +1392,13 @@ namespace WindowsFormsApplication1
         /// KATALOG-Träger an (<c>energy_carrier</c>, projektfrei) und merken dessen ID am Modell
         /// vor; die projektgebundenen Sätze entstehen erst hier, mit der echten Projekt-ID.
         ///
-        /// WERTEHERKUNFT. Aus der Katalogzeile kommt nur <c>ID_Brennstoff</c>; alle Zahlen
-        /// stammen danach aus <c>Tab_Brennstoff_Stamm</c> - exakt die Quellen, aus denen auch
-        /// der Kosten-Weg liest: <c>Form_Kosten_Auswahl</c> holt Hi, Hs und Einheit von dort,
-        /// <c>Form_Kosten</c> die Standardpreise und Emissionsfaktoren. <c>ID_Umrechnung</c> ist
-        /// im Dialog ebenfalls abgeleitet (Brennstoff + Einheit) und wird hier genauso ermittelt.
+        /// WERTEHERKUNFT. Aus der Katalogzeile kommt nur <c>ID_Brennstoff</c>; die PREISE und
+        /// Heizwerte stammen danach aus <c>Tab_Brennstoff_Stamm</c> - exakt die Quellen, aus
+        /// denen auch der Kosten-Weg liest: <c>Form_Kosten_Auswahl</c> holt Hi, Hs und Einheit
+        /// von dort, <c>Form_Kosten</c> die Standardpreise. <c>ID_Umrechnung</c> ist im Dialog
+        /// ebenfalls abgeleitet (Brennstoff + Einheit) und wird hier genauso ermittelt. Die
+        /// EMISSIONEN werden seit dem Anwenderentscheid vom 30.08.2026 NICHT mehr mitkopiert -
+        /// Begründung im Block vor dem INSERT in <see cref="TraegerSatzAnlegen"/>.
         ///
         /// IDEMPOTENT. Derselbe COUNT-Test wie im Kosten-Dialog verhindert doppelte Sätze - er
         /// trägt den Bearbeiten-Zweig des Wizards, der bei jedem Speichern erneut durchläuft.
@@ -1502,13 +1504,11 @@ namespace WindowsFormsApplication1
             if (oBrennstoff == null) return true;   // Katalogzeile fehlt -> nichts anzulegen
             int idBrennstoff = Convert.ToInt32(oBrennstoff);
 
-            // Default-Werte aus dem Brennstoff-Stamm (Preise/Emissionen)
+            // Default-Werte aus dem Brennstoff-Stamm (nur noch PREISE — zu den
+            // Emissionen siehe den Block vor dem INSERT der Projekt-Einstellungen)
             double default_arbeitspreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Arbeitspreis", idBrennstoff));
             double default_grundpreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Grundpreis", idBrennstoff));
             double default_leistungspreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Leistungspreis", idBrennstoff));
-            double default_co2 = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "CO2", idBrennstoff));
-            double default_so2 = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "SO2", idBrennstoff));
-            double default_nox = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "NOx", idBrennstoff));
 
             // Hi, Hs und Abrechnungseinheit - im Kosten-Dialog die Felder
             // SelectedHi / SelectedHs / SelectedBillingUnit aus derselben Stammzeile
@@ -1543,7 +1543,44 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@lp",   Math.Round(default_leistungspreis, 4))
             })) return false;
 
-            // Projekt-Einstellungen
+            // ---------------------------------------------------------------------
+            // ANWENDERENTSCHEID 30.08.2026 („435 g/kWh") — KEINE Emissions-Stammkopie
+            // ---------------------------------------------------------------------
+            //
+            // BEFUND (BK1 § 5). Bis hierher kopierte diese Stelle
+            // Tab_Brennstoff_Stamm.CO2/SO2/NOx in die Projektzeile. Das ist keine
+            // harmlose Vorbelegung: energy_project_settings.co2/so2/nox ist die
+            // OBERSTE Ebene der Lesekette des EmissionsFaktorLaders und übersteuert
+            // damit die AKTIVE Katalogzeile (emissionswert). Eine bloße Zuordnung
+            // fror also den Stammwert im Projekt ein — Strom: Stamm 560 gegen
+            // Katalog 435 (BAFA_EEW), Erdgas: Stamm 240 gegen Katalog 201 — und die
+            // Pflege des Katalogs blieb an solchen Projekten wirkungslos.
+            //
+            // ENTSCHEID. Die KATALOGWAHRHEIT soll gelten. Die drei Emissionsspalten
+            // bleiben deshalb bei der Neuanlage LEER; die Lesekette liefert dann von
+            // selbst der Reihe nach: aktive Katalogzeile -> Tab_Brennstoff_Stamm ->
+            // Altspalte energy_carrier. Es geht also nichts verloren (der Stamm ist
+            // weiterhin Ebene 3), nur die Einfrierung entfällt: Die Zuordnung ist
+            // emissionsneutral, und beide Rechner (KostenEmissionRechner,
+            // EmissionsBilanzRechner) sehen dieselbe Wahrheit wie der Katalog.
+            // Ein Projektwert entsteht künftig nur noch durch bewusste Pflege im
+            // Projektkontext — genau das, was diese Ebene bedeuten soll.
+            //
+            // AUSDRÜCKLICH DBNull STATT WEGLASSEN. Die drei Spalten tragen in
+            // Access den Spaltendefault 0; ein Weglassen aus der Spaltenliste
+            // schriebe also eine 0 statt NULL. Zwar fällt auch eine 0 in der
+            // Lesekette durch (dort gilt „gepflegt" = größer als 0), aber NULL ist
+            // die ehrliche Aussage „nicht gepflegt" und die einzige, die sich in der
+            // Datenbank von einem echten Nullwert unterscheiden lässt.
+            //
+            // NUR DIE EMISSIONEN. Preise (custom_price_work/_power/_base), Heizwerte
+            // (custom_hi/custom_Hs), Abrechnungseinheit und ID_Umrechnung werden
+            // weiterhin aus dem Stamm vorbelegt — dieselbe Vorbelegung erzeugt der
+            // Kosten-Dialog, und der Entscheid galt allein den Emissionen.
+            //
+            // BESTANDSZEILEN BLEIBEN UNANGETASTET (kein Heilungsschritt): Die sieben
+            // Projekte mit den alten 560/200/280 behalten ihre Werte, bis sie im
+            // Projektkontext gepflegt werden.
             string sqlInsert = @"INSERT INTO energy_Project_settings
                  (ID_Projekt, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs,
                   custom_price_base, ID_Umrechnung, co2, so2, nox)
@@ -1557,9 +1594,9 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@hs",     Math.Round(hs, 4)),
                 new OleDbParameter("@b",      Math.Round(default_grundpreis, 4)),
                 new OleDbParameter("@convid", convId),
-                new OleDbParameter("@co2",    default_co2),
-                new OleDbParameter("@so2",    default_so2),
-                new OleDbParameter("@nox",    default_nox)
+                new OleDbParameter("@co2",    OleDbType.Double) { Value = DBNull.Value },
+                new OleDbParameter("@so2",    OleDbType.Double) { Value = DBNull.Value },
+                new OleDbParameter("@nox",    OleDbType.Double) { Value = DBNull.Value }
             })) return false;
 
             return true;

@@ -145,9 +145,20 @@ namespace WindowsFormsApplication1
         // ------------------------------------------ Projektzuordnung (Ä10) ---
         //
         // Der offene KD4-Punkt § 7.2: Katalogträger werden dem Projekt per
-        // Zuordnungszeile in energy_project_settings zugeteilt — alle
-        // custom_-Felder bleiben NULL, es GELTEN also die Katalogwerte (eine
-        // Wahrheit; Projektwerte entstehen erst durch Pflege im Projektkontext).
+        // Zuordnungszeile in energy_project_settings zugeteilt — die Zeile nennt nur
+        // Projekt und Träger, es GELTEN also die Katalogwerte (eine Wahrheit;
+        // Projektwerte entstehen erst durch Pflege im Projektkontext).
+        //
+        // GEMESSEN 30.08.2026 (Etappe BK2). Dieser Weg kopiert KEINE Emissionen —
+        // er nennt co2/so2/nox gar nicht erst. Nicht genannte Spalten landen aber
+        // nicht als NULL in der Datenbank, sondern auf ihrem ACCESS-SPALTENDEFAULT,
+        // und der ist hier 0 (gilt ebenso für die custom_-Felder und ID_Umrechnung).
+        // Für die Emissionen ist das folgenlos: Die Lesekette des
+        // EmissionsFaktorLaders zählt nur einen Wert GRÖSSER als 0 als „gepflegt",
+        // eine 0 fällt also durch auf die aktive Katalogzeile. Der Weg erfüllt den
+        // Anwenderentscheid vom 30.08.2026 („435 g/kWh": Katalogwahrheit statt
+        // Stammkopie) damit von sich aus und blieb deshalb unverändert — anders als
+        // WizardCtrl.TraegerSatzAnlegen, das die Stammwerte ausdrücklich schrieb.
 
         /// <summary>Katalogträger, die dem Projekt noch nicht zugeordnet sind.</summary>
         internal static List<EnergyCarrier> NichtZugeordnete(int projektId)
