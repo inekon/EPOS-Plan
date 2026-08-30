@@ -235,16 +235,26 @@ namespace WindowsFormsApplication1
             BoosterAnlagenSammeln();
 
             // Erzeugerkarten: die Chips der Karte als Zeilen.
+            //
+            // ANWENDERENTSCHEID F2: Der Modul-Ausweis („Modul n von m") ist Teil der
+            // Kartenkurzinfo und steht deshalb auch hier - eine Quelle für beide, wie
+            // beim Booster-Badge. Dazu zählt diese Schleife dieselbe Stelle mit, die die
+            // Kartenspalte zählt: die Anzeigereihenfolge aus AnlagenImProjekt.
             Dictionary<int, string> chips = new Dictionary<int, string>();
             foreach (string dbWert in KaskadeBelegt())
-                foreach (AnlagenInfo info in AnlagenImProjekt(dbWert))
+            {
+                List<AnlagenInfo> anlagen = AnlagenImProjekt(dbWert);
+                for (int a = 0; a < anlagen.Count; a++)
                 {
+                    AnlagenInfo info = anlagen[a];
                     List<string> zeilen = new List<string>();
-                    foreach (ErzeugerKarte.ChipDaten c in ErzeugerChips(info))
+                    foreach (ErzeugerKarte.ChipDaten c in
+                             ErzeugerChips(info, a + 1, anlagen.Count))
                         if (c != null && !string.IsNullOrEmpty(c.Text)) zeilen.Add(c.Text);
 
                     chips[info.ID] = string.Join(Environment.NewLine, zeilen.ToArray());
                 }
+            }
 
             // Speicherkarten: die Detailzeilen der Karte.
             Dictionary<int, string> speicher = new Dictionary<int, string>();
