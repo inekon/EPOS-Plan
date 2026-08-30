@@ -70,6 +70,7 @@ namespace WindowsFormsApplication1
                 v.CO2Gesamt = null; v.CO2Spezifisch = null; v.CO2Brennstoff = null;
                 v.BiogenMengeMWh = 0; v.BiogenBehgMengeMWh = 0;
                 v.EmissionsModus = DbWerte.EMISSION_MODUS_CO2;
+                v.CO2StrommixRueckfall = false;
             }
         }
 
@@ -195,6 +196,10 @@ namespace WindowsFormsApplication1
             double? stromKosten = null;
             double stromCO2 = STROMMIX_CO2_G_JE_KWH;   // Vorgabewert, falls kein Träger gepflegt
             int stromCarrier = stromCarrierId;   // bereits vor der Brennstoffschleife bestimmt (KD4)
+
+            // BEFUND 30.08.2026: Der Vorgabewert greift STILL. Er wird jetzt festgehalten
+            // (v.CO2StrommixRueckfall) - siehe Feldkommentar in VariantenDaten.
+            bool strommixRueckfall = true;
             if (stromCarrier > 0)
             {
                 TraegerInfo strom = LadeTraeger(v.IdProjekt, stromCarrier);
@@ -208,8 +213,16 @@ namespace WindowsFormsApplication1
                 // Netzstrom-Anteil gehört zu CO2Gesamt und darf keine andere Methode
                 // führen als der Rest der Kennzahl.
                 double? stromWirksam = strom.Faktoren.Wirksam(modus);
-                if (stromWirksam.HasValue && stromWirksam.Value > 0) stromCO2 = stromWirksam.Value;
+                if (stromWirksam.HasValue && stromWirksam.Value > 0)
+                {
+                    stromCO2 = stromWirksam.Value;
+                    strommixRueckfall = false;
+                }
             }
+            // Ohne Netzbezug ändert der Vorgabewert nichts - dann ist er kein Rückfall,
+            // sondern eine Zahl, die mit 0 MWh multipliziert wird.
+            v.CO2StrommixRueckfall = strommixRueckfall && netzbezugMWh > 0;
+
             double netzCO2t = netzbezugMWh * stromCO2 / 1000.0;
 
             // ---------------- Kennzahlen setzen ----------------

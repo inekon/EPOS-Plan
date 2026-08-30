@@ -1740,6 +1740,39 @@ namespace WindowsFormsApplication1
         public const string UMRECHNUNG_NAME_Z_FAKTOR = "z-Faktor";
 
         // =====================================================================
+        // Energietraeger — Auslieferungskennung des STROMTRAEGERS
+        //   energy_carrier.code
+        //   (Anwenderentscheid 30.08.2026: „Die mit elektrischem Strom betriebene
+        //   Waermepumpe muss dem Energietraeger Strom zugeordnet sein, ebenfalls
+        //   PV und Stromspeicher.")
+        //   Persistenzwert, deutsch, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>
+        /// <c>energy_carrier.code</c> des ausgelieferten Stromtraegers — die
+        /// Kennung, an der <see cref="ProjektEnergietraegerCtrl"/> den
+        /// STANDARD-Stromtraeger eines Projekts erkennt.
+        ///
+        /// <para><b>Warum <c>code</c> und nicht <c>name</c>.</b> Der Code ist der
+        /// Verweisanker der Katalogzeile und wird beim Umbenennen ausdruecklich
+        /// NICHT mitgezogen (<c>EnergietraegerKatalogCtrl.Umbenennen</c> schreibt
+        /// nur <c>name</c> und <c>group_code</c>); der Name ist Anzeigetext und
+        /// vom Anwender frei aenderbar. Genau dieser Unterschied ist im Bestand
+        /// belegt: Alle DREI Traeger mit <c>pricing_model = ELECTRICITY</c> tragen
+        /// den Code „Elektrische Energie", heissen aber „Strom Variante" (54),
+        /// „Elektrische Energie 2" (58) und „Elektrische Energie" (60). Der Code
+        /// benennt also die Traegerfamilie und ueberlebt jede Umbenennung —
+        /// dasselbe Muster fuehrt der Katalog bei „Biogas" (49/61/65/66) und
+        /// „Heizoel L" (62/70/71).
+        ///
+        /// <para><b>Kein Anzeigetext als Steuerwert.</b> Der Wert ist deutsch,
+        /// weil er in der Datenbank deutsch STEHT — Schicht 1 der
+        /// Drei-Schichten-Regel. Angezeigt wird nie diese Konstante, sondern
+        /// immer <c>energy_carrier.name</c> der gefundenen Zeile.</para>
+        /// </summary>
+        public const string ENERGIETRAEGER_CODE_STROM = "Elektrische Energie";
+
+        // =====================================================================
         // Energietraeger — Einheitencodes
         //   energy_carrier.billing_unit, energy_conversion.from_unit/.to_unit,
         //   energy_price.arbeitspreis_unit

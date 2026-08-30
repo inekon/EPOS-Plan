@@ -119,6 +119,27 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string EmissionsModus = DbWerte.EMISSION_MODUS_CO2;
 
+        /// <summary>
+        /// <b>Der Netzstrom-Anteil von <see cref="CO2Gesamt"/> steht auf dem
+        /// VORGABEWERT, nicht auf einem gepflegten Trägerfaktor</b> (Befund
+        /// 30.08.2026). Gesetzt von <see cref="KostenEmissionRechner"/>, wenn das
+        /// Projekt Netzstrom bezieht und dabei entweder gar keinen Stromträger führt
+        /// oder dessen Faktor nicht gepflegt ist — dann rechnet der Rechner mit
+        /// <see cref="KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH"/>.
+        ///
+        /// <para><b>Warum das gemeldet gehört.</b> Die KOSTEN verweigern in derselben
+        /// Lage sauber die Auskunft (<see cref="Energiekosten"/> bleibt null, die
+        /// Anzeige zeigt „—"). Die EMISSIONEN taten das nicht: Sie lieferten
+        /// klaglos eine Zahl aus einem Vorgabewert, ohne dass irgendwo stand, dass
+        /// sie nicht aus den Projektdaten stammt. Genau diese Ersatzannahme wird
+        /// hier festgehalten — nach dem Muster der Simulationsläufe, die ihre
+        /// Ersatzannahmen ebenfalls melden, statt sie zu verschweigen.</para>
+        ///
+        /// <para><b>Nur wenn er wirkt.</b> Ohne Netzbezug ändert der Vorgabewert
+        /// nichts an der Kennzahl; dann bleibt die Fahne false.</para>
+        /// </summary>
+        public bool CO2StrommixRueckfall;
+
         // LEITENTSCHEIDUNG L13 — die beiden MENGEN, an denen die Bilanzierungskonvention
         // für Biomasse ansetzt. Bewusst Mengen und keine fertigen Emissionen: Der
         // Emissionsfaktor hängt an der gewählten Konvention und am Bilanzjahr, und beides

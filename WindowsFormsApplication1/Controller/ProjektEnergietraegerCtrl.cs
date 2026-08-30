@@ -84,10 +84,21 @@ namespace WindowsFormsApplication1
     /// <b>Mehrere Träger auf denselben Brennstoff.</b> Der Katalog führt zu einem
     /// <c>Tab_Brennstoff_Stamm</c>-Eintrag oft mehrere Träger (Brennstoff 13
     /// „Elektrische Energie" → 54 „Strom Variante", 58 „Elektrische Energie 2",
-    /// 60 „Elektrische Energie"). Vorrang hat dann der dem Projekt ZUGEORDNETE Träger,
-    /// sonst der mit der kleinsten Nummer — dieselbe Auflösung wie in
-    /// <c>ErgebnisCtrl.CarrierIdFuerProjekt</c> und dieselbe Ordnungsregel wie in
-    /// <see cref="StromAufschlagCtrl.StromCarrierId"/>.
+    /// 60 „Elektrische Energie"). Für den BRENNSTOFFWEG hat dann der dem Projekt
+    /// ZUGEORDNETE Träger Vorrang, sonst der mit der kleinsten Nummer — dieselbe
+    /// Auflösung wie in <c>ErgebnisCtrl.CarrierIdFuerProjekt</c> und dieselbe
+    /// Ordnungsregel wie in <see cref="StromAufschlagCtrl.StromCarrierId"/>
+    /// (<see cref="Auswahl"/>).
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Der STROMTRÄGER folgt seit dem 30.08.2026 einer eigenen, fachlichen
+    /// Regel</b> (<see cref="StandardStromTraeger"/>): „kleinste Nummer" traf im
+    /// Bestand die umbenannte Variante 54 und damit den falschen Träger für
+    /// Wärmepumpe, Photovoltaik und Stromspeicher. Maßgeblich ist jetzt die
+    /// Auslieferungskennung <c>energy_carrier.code</c>
+    /// (<see cref="DbWerte.ENERGIETRAEGER_CODE_STROM"/>); Anzeige und
+    /// Wizard-Automatik lesen dieselbe Funktion.
     /// </para>
     ///
     /// <para>
@@ -132,6 +143,7 @@ namespace WindowsFormsApplication1
         {
             public int Id;
             public string Name = "";
+            public string Code = "";
             public int IdBrennstoff;
             public string Preismodell = "";
         }
@@ -311,13 +323,39 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Stromträger des Projekts. Zuerst der zugeordnete
-        /// (<see cref="StromAufschlagCtrl.StromCarrierId"/> — dieselbe Auswahl, die auch
-        /// Strompreis und Aufschläge verwenden), sonst der kleinste Katalogträger mit
-        /// Preismodell <c>ELECTRICITY</c>. 0 = der Katalog führt keinen.
+        /// <b>DIE eine Wahrheit: der Stromträger eines Projekts</b> — Wärmepumpe,
+        /// Photovoltaik und Stromspeicher beziehen ihn (Anwenderentscheid 30.08.2026).
+        /// 0 = der Katalog führt keinen Stromträger.
+        ///
+        /// <para>Dieselbe Funktion beantwortet die Frage für die ANZEIGE
+        /// (<c>UcBkKosten.LadeTraeger</c>, <see cref="Verwendete"/>,
+        /// <see cref="AnlagenMitTraeger"/>) und für die AUTOMATIK
+        /// (<c>WizardCtrl.Add_Projekt_Energietraeger</c>). Zwei Fassungen hätten
+        /// genau den Befund erzeugt, der zu dieser Änderung führte: Die Anzeige
+        /// nannte einen anderen Träger, als die Automatik zugeordnet hätte.</para>
+        ///
+        /// <para><b>Die Regel, in dieser Reihenfolge:</b></para>
+        /// <list type="number">
+        ///   <item><description><b>Was das Projekt schon führt.</b> Ist dem Projekt
+        ///     in <c>energy_project_settings</c> bereits ein Träger mit
+        ///     <c>pricing_model = ELECTRICITY</c> zugeordnet, gilt der
+        ///     (<see cref="StromAufschlagCtrl.StromCarrierId"/> — dieselbe Auswahl,
+        ///     die Strompreis, Aufschläge und <c>KostenEmissionRechner</c> nutzen).
+        ///     Eine Entscheidung des Anwenders wird nicht überstimmt.</description></item>
+        ///   <item><description><b>Sonst der Auslieferungsträger des Katalogs</b>
+        ///     nach <see cref="KatalogStromTraeger"/>.</description></item>
+        /// </list>
         /// </summary>
+        internal static int StandardStromTraeger(int projektID)
+        {
+            return StromTraeger(Katalog(), Zugeordnete(projektID), projektID);
+        }
+
+        /// <summary>Innenfassung von <see cref="StandardStromTraeger"/> für die
+        /// Aufrufer, die Katalog und Zuordnungsmenge ohnehin schon gelesen haben.</summary>
         private static int StromTraeger(List<Traeger> katalog, HashSet<int> zugeordnet, int projektID)
         {
+            // Stufe 1 - der dem Projekt bereits zugeordnete Stromtraeger.
             try
             {
                 int id = StromAufschlagCtrl.StromCarrierId(projektID);
@@ -325,11 +363,77 @@ namespace WindowsFormsApplication1
             }
             catch { }
 
-            return Auswahl(katalog, zugeordnet, delegate (Traeger t)
+            // Stufe 2 - der Auslieferungstraeger des Katalogs. Die Zuordnungsmenge
+            // spielt hier bewusst KEINE Rolle mehr: Sie ist in Stufe 1 bereits
+            // abschliessend ausgewertet (StromCarrierId liest genau sie).
+            return KatalogStromTraeger(katalog);
+        }
+
+        /// <summary>
+        /// <b>Der Auslieferungs-Stromträger des Katalogs</b>, wenn das Projekt selbst
+        /// noch keinen führt. 0 = der Katalog führt keinen.
+        ///
+        /// <para><b>Warum die frühere Regel „kleinste Nummer" falsch war.</b> Der
+        /// Bestand führt DREI Träger mit <c>pricing_model = ELECTRICITY</c>: 54
+        /// („Strom Variante"), 58 („Elektrische Energie 2") und 60 („Elektrische
+        /// Energie"). Die kleinste Nummer traf damit ausgerechnet die vom Anwender
+        /// umbenannte Variante — für eine Wärmepumpe, eine PV-Anlage oder einen
+        /// Stromspeicher die falsche Aussage.</para>
+        ///
+        /// <para><b>Die Kennung, an der erkannt wird.</b> Erhoben wurde, was an
+        /// belastbaren Merkmalen überhaupt vorhanden ist: <c>is_active</c> steht bei
+        /// allen 27 Katalogzeilen auf TRUE, <c>sort_order</c> ist durchgehend NULL,
+        /// ein <c>ReadOnly</c>-/Auslieferungskennzeichen gibt es in
+        /// <c>energy_carrier</c> nicht, und <c>id_brennstoff</c> ist bei allen drei
+        /// Zeilen 13. Übrig bleibt <c>code</c> — der Verweisanker, den
+        /// <c>EnergietraegerKatalogCtrl.Umbenennen</c> nie anfasst; alle drei tragen
+        /// „Elektrische Energie" (<see cref="DbWerte.ENERGIETRAEGER_CODE_STROM"/>).
+        /// Er benennt die FAMILIE, nicht die einzelne Zeile — deshalb entscheidet ein
+        /// zweites, ebenso persistentes Merkmal den Gleichstand.</para>
+        ///
+        /// <para><b>Rangfolge</b> (höchster Rang gewinnt, bei Gleichstand die
+        /// kleinste Nummer):</para>
+        /// <list type="bullet">
+        ///   <item><description><b>+2 · <c>code</c> = Auslieferungskennung.</b> Die
+        ///     Zeile gehört zur Stromfamilie der Auslieferung.</description></item>
+        ///   <item><description><b>+1 · <c>name</c> = <c>code</c>.</b> Die Zeile trägt
+        ///     noch ihre Auslieferungsbezeichnung, ist also nicht umbenannt worden.
+        ///     Das trifft im Bestand genau die 60 — 54 und 58 sind umbenannt. Auch für
+        ///     eine über die Oberfläche erzeugte Variante gilt <c>name = code</c>
+        ///     (<c>EnergietraegerKatalogCtrl.Variante</c> setzt beide auf „X Variante"),
+        ///     sie trägt dann aber einen ANDEREN Code und bleibt mit +1 hinter der
+        ///     Auslieferungszeile mit +3.</description></item>
+        /// </list>
+        ///
+        /// <para><b>Rückfall.</b> Führt keine Zeile die Auslieferungskennung (fremd
+        /// aufgebauter Katalog), gewinnt unter allen ELECTRICITY-Trägern die nicht
+        /// umbenannte, sonst die mit der kleinsten Nummer — dieselbe Ordnungsregel
+        /// wie bisher, nur nachrangig statt allein.</para>
+        /// </summary>
+        private static int KatalogStromTraeger(List<Traeger> katalog)
+        {
+            int besterRang = -1, bester = 0;
+            foreach (Traeger t in katalog)
             {
-                return string.Equals(t.Preismodell, StromAufschlagCtrl.PRICING_MODEL_STROM,
-                                     StringComparison.OrdinalIgnoreCase);
-            });
+                if (!string.Equals(t.Preismodell, StromAufschlagCtrl.PRICING_MODEL_STROM,
+                                   StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                int rang = 0;
+                if (string.Equals(t.Code, DbWerte.ENERGIETRAEGER_CODE_STROM,
+                                  StringComparison.OrdinalIgnoreCase))
+                    rang += 2;
+                if (t.Code.Length > 0 &&
+                    string.Equals(t.Name, t.Code, StringComparison.OrdinalIgnoreCase))
+                    rang += 1;
+
+                if (rang > besterRang || (rang == besterRang && bester > 0 && t.Id < bester))
+                {
+                    besterRang = rang;
+                    bester = t.Id;
+                }
+            }
+            return bester;
         }
 
         /// <summary>
@@ -391,7 +495,7 @@ namespace WindowsFormsApplication1
             try
             {
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT id, name, id_brennstoff, pricing_model FROM [" +
+                    "SELECT id, name, code, id_brennstoff, pricing_model FROM [" +
                     SchemaKatalog.ENERGY_CARRIER + "]");
                 if (dt == null) return liste;
                 foreach (DataRow r in dt.Rows)
@@ -402,6 +506,7 @@ namespace WindowsFormsApplication1
                     {
                         Id = id,
                         Name = Text(r, "name"),
+                        Code = Text(r, "code"),
                         IdBrennstoff = Ganz(r, "id_brennstoff"),
                         Preismodell = Text(r, "pricing_model")
                     });
